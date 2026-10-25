@@ -270,177 +270,212 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.jsonl",
       "sha1": "0bf1388a5b4412c5aa257c057c610f85a922ac7c",
-      "size": 303231
+      "size": 303231,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.char_select.pick.png",
       "sha1": "9b35b0063fe3968d1fbdbe885acc3a5f6fc57a9f",
-      "size": 26560
+      "size": 26560,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.char_select.last.png",
       "sha1": "076c90ed89d40ac4067ff7fb0e1c32dcf8df4a2c",
-      "size": 22409
+      "size": 22409,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.weapon_select.first.png",
       "sha1": "0784574f61b8fa2f5059eb33e7732e6840f1376c",
-      "size": 19626
+      "size": 19626,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.weapon_select.7650.png",
       "sha1": "b4f0171905504d8ea877eb26283383605ef04689",
-      "size": 22893
+      "size": 22893,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.weapon_select.last.png",
       "sha1": "261bb242b8af310d82017dcfc8b91228e484ec1d",
-      "size": 15294
+      "size": 15294,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.stage_select.first.png",
       "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
-      "size": 13166
+      "size": 13166,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.t_load.mid.png",
       "sha1": "32bd0f42da70d1e69e0d44ab797c0c286608d5c9",
-      "size": 8572
+      "size": 8572,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.t_load.last.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.first.png",
       "sha1": "d8993b824a72a56f4d5801c00e1ef856f6e55110",
-      "size": 31261
+      "size": 31261,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.8950.png",
       "sha1": "91f54396c4740bd26395345987a65338f5061045",
-      "size": 30887
+      "size": 30887,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.9070.png",
       "sha1": "ac146f0f7ace5ee666589eee37e7cb575fef543c",
-      "size": 30883
+      "size": 30883,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.9100.png",
       "sha1": "c6470e7de84842979e6f815728999276c4ba8543",
-      "size": 30827
+      "size": 30827,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.9400.png",
       "sha1": "40b270b8e91bf76995837c4a45695c79183be95d",
-      "size": 31378
+      "size": 31378,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.9700.png",
       "sha1": "7ad00b6677f09eece1a1e413776b5844d1c89dd5",
-      "size": 29737
+      "size": 29737,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10000.png",
       "sha1": "e0610de7138e46350222c80dd530a412e2241d5d",
-      "size": 23571
+      "size": 23571,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10300.png",
       "sha1": "632dc0dfff4a569908f50935c244304948c2a189",
-      "size": 32742
+      "size": 32742,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10560.png",
       "sha1": "41459bf5e0dfc0280c608e46df74dc7a08456478",
-      "size": 31971
+      "size": 31971,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10580.png",
       "sha1": "240f480b38603cbd7bfb922df0e1ff0cb13e4a1e",
-      "size": 33297
+      "size": 33297,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10650.png",
       "sha1": "31caf26cc7ad60158645c618ec8f8907c094e89a",
-      "size": 33263
+      "size": 33263,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10699.png",
       "sha1": "017088f954c25e7bbf89bf059dccdba26da70af4",
-      "size": 31695
+      "size": 31695,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10800.png",
       "sha1": "4e6a14a8e519fb4bc72a53742ffe8d94618159f9",
-      "size": 31478
+      "size": 31478,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.10950.png",
       "sha1": "84286b783102d8a037ea353b38aaf4b5f3388383",
-      "size": 36088
+      "size": 36088,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.11100.png",
       "sha1": "16b082ae936ce8c1d50e86c5764971c5674e0ed0",
-      "size": 34275
+      "size": 34275,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.11149.png",
       "sha1": "4643144488488b488b665bf77ee5a1f188ef6281",
-      "size": 35969
+      "size": 35969,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.11155.png",
       "sha1": "34769a1ddb217dac7b3b4efff562759555184b52",
-      "size": 36045
+      "size": 36045,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.11500.png",
       "sha1": "b8a3606c9032f56ad4180e54f4798bc045057ffe",
-      "size": 29633
+      "size": 29633,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.fight.last.png",
       "sha1": "377b4d9a498138cbe94968bfe7c545ff437b7d76",
-      "size": 29290
+      "size": 29290,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.script.log",
       "sha1": "6f643c75f78dda0cb394bd5101be0778563ea8dd",
-      "size": 3436
+      "size": 3436,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-nightstalker-1\\capture.mc1.mcd",

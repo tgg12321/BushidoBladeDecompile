@@ -7,17 +7,20 @@
     {
       "path": "compare.memory_card.7150.diff.png",
       "sha1": "3bbed10c684e38daa4c33037239549ffc0262233",
-      "size": 15730
+      "size": 15730,
+      "stored": true
     },
     {
       "path": "compare.memory_card.first.diff.png",
       "sha1": "3bbed10c684e38daa4c33037239549ffc0262233",
-      "size": 15730
+      "size": 15730,
+      "stored": true
     },
     {
       "path": "compare.memory_card.last.diff.png",
       "sha1": "3bbed10c684e38daa4c33037239549ffc0262233",
-      "size": 15730
+      "size": 15730,
+      "stored": true
     }
   ]
 }

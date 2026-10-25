@@ -254,247 +254,296 @@
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.jsonl",
       "sha1": "7424fb50d70b549f5b8df199c72e793323dd4134",
-      "size": 72672
+      "size": 72672,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.char_select.pre.png",
       "sha1": "566857c09ce68bf863f8baef20175d243b608f6d",
-      "size": 21757
+      "size": 21757,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.char_select.last.png",
       "sha1": "edb6bb38d635470b02d6bd86a41e1535f7cdaf99",
-      "size": 21701
+      "size": 21701,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.weapon_select.first.png",
       "sha1": "7549ab8e0ed97eb976d7775e106f542e9beb3e46",
-      "size": 22168
+      "size": 22168,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.weapon_select.last.png",
       "sha1": "3ab192a15e80eaec9ae430236c70001bc7ffd14d",
-      "size": 4504
+      "size": 4504,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.t_load.mid.png",
       "sha1": "ec2f99d4d7f08ab237e79512b7a7da417af722f4",
-      "size": 9149
+      "size": 9149,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.t_load.last.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.fight.first.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_00_r2_circle_3.15.png",
       "sha1": "6c6e4db7e4c386f8f6ac03783be6551554ab61a1",
-      "size": 49468
+      "size": 49468,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_00_r2_circle_3.30.png",
       "sha1": "42a72bad753d0a7c70e5423a2a3a1bd12b58d9b3",
-      "size": 49752
+      "size": 49752,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_00_r2_circle_3.60.png",
       "sha1": "032c004c5f60adf76ec8e89f40e67525efd8e68c",
-      "size": 49397
+      "size": 49397,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_01_r2_cross_3.15.png",
       "sha1": "3b6667ffa80399da97751c343984f37cba9f3b93",
-      "size": 48812
+      "size": 48812,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_01_r2_cross_3.30.png",
       "sha1": "2cb08847aa747751ae6ca20d95eaa28a3a944ad8",
-      "size": 48192
+      "size": 48192,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_01_r2_cross_3.60.png",
       "sha1": "552726e88d0dbf92297d58a2d7c8ca909534b2eb",
-      "size": 53346
+      "size": 53346,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_02_r2_circle_1.15.png",
       "sha1": "4c2cab5110129dfc792307c628901b1532d389a0",
-      "size": 56784
+      "size": 56784,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_02_r2_circle_1.30.png",
       "sha1": "136758b21c6569b181aea13044473512af1ccdcf",
-      "size": 20545
+      "size": 20545,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_02_r2_circle_1.60.png",
       "sha1": "680f08a73590d434b9874bc67be3e95e794f0d72",
-      "size": 19663
+      "size": 19663,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_03_r2_cross_5.15.png",
       "sha1": "9da94ae39fa9a2e276f322ad7e6147cf1bfb675b",
-      "size": 32526
+      "size": 32526,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_03_r2_cross_5.30.png",
       "sha1": "5d04c69f43d69f5abdb65e1ca9bb730a1adc4cc2",
-      "size": 31164
+      "size": 31164,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_03_r2_cross_5.60.png",
       "sha1": "467f3c8799f3ff3eb30acd15e8bff86b5be9867d",
-      "size": 27879
+      "size": 27879,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_04_r2_circle_7.15.png",
       "sha1": "bb0d702d9a4a1bbb88436bb45fa4bd307e0b8839",
-      "size": 34831
+      "size": 34831,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_04_r2_circle_7.30.png",
       "sha1": "3ee1d4a29ea7ea6619a3b7f89f6e7e9f0b002e90",
-      "size": 37589
+      "size": 37589,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_04_r2_circle_7.60.png",
       "sha1": "af96fb91867b8d144559ceb97b81654f184fd8e1",
-      "size": 42652
+      "size": 42652,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_05_r2_square_3.15.png",
       "sha1": "18f73a99f7319e936b93eda76e52e3b35aac9aa4",
-      "size": 32084
+      "size": 32084,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_05_r2_square_3.30.png",
       "sha1": "f0b0f1787d28af9c8972f39248077a7deeda236e",
-      "size": 33281
+      "size": 33281,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_05_r2_square_3.60.png",
       "sha1": "0d07d50ba2a6bec12251413d2f1b7e93c860afd2",
-      "size": 34801
+      "size": 34801,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_06_r2_alone.15.png",
       "sha1": "6d5483cfa947c069d47f238c98f57e19a9ea15a6",
-      "size": 32611
+      "size": 32611,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_06_r2_alone.30.png",
       "sha1": "62474b19d3d7db4dcd45886b59bf0f52d292962d",
-      "size": 32672
+      "size": 32672,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_06_r2_alone.60.png",
       "sha1": "e6f0c95459c5530e5e8b4f6efd27ee34fe74d8c1",
-      "size": 31466
+      "size": 31466,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_07_r2_circle_3b.15.png",
       "sha1": "67c6670060d0668d5064bcf68fb22b2d25eef579",
-      "size": 26015
+      "size": 26015,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_07_r2_circle_3b.30.png",
       "sha1": "2556adddf29549e046576c73c578afbbe9dc9c81",
-      "size": 28090
+      "size": 28090,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_07_r2_circle_3b.60.png",
       "sha1": "5b8a716c9b6e6a884c29ebced74037fc656389e8",
-      "size": 32024
+      "size": 32024,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_08_r2_alone_b.15.png",
       "sha1": "e5ead65382bf6b3785a7f675e92558999dafabfd",
-      "size": 34052
+      "size": 34052,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_08_r2_alone_b.30.png",
       "sha1": "29320743de412b554f842dbc9cf69e4179e70613",
-      "size": 34384
+      "size": 34384,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_08_r2_alone_b.60.png",
       "sha1": "6f54162c932237f0567e543b07500122e1fba424",
-      "size": 33573
+      "size": 33573,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_09_r2_cross_3b.15.png",
       "sha1": "3ca7b0c20a2ef8d81444f4e053c4f39a29092825",
-      "size": 24912
+      "size": 24912,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_09_r2_cross_3b.30.png",
       "sha1": "7d712327dad02cf0574ca6c9ace01b3651ad76cf",
-      "size": 27213
+      "size": 27213,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.in_09_r2_cross_3b.60.png",
       "sha1": "2fa72a17cae1e72f3b0a2f7090c99e6949d99aa7",
-      "size": 30516
+      "size": 30516,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.last.png",
       "sha1": "b61d45223921b274522e80976234aaebb81dce9a",
-      "size": 32951
+      "size": 32951,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.script.log",
@@ -504,12 +553,14 @@
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\tatsumi\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

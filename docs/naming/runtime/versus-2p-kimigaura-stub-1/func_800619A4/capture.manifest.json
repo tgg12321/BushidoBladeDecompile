@@ -276,542 +276,650 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.jsonl",
       "sha1": "0534e6a77045bfe32064a4d1cde329f7b175d822",
-      "size": 21230
+      "size": 21230,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.t_load.mid.png",
       "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
-      "size": 9489
+      "size": 9489,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.t_load.last.png",
       "sha1": "2cffc4b4614f621d4a63100d706f3020964a4a0a",
-      "size": 55445
+      "size": 55445,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.first.png",
       "sha1": "aa4cda7bc1ec0ce22348b12572dde5308c90ee9a",
-      "size": 54529
+      "size": 54529,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8280.png",
       "sha1": "ea526b4237abf5e316916ab4da5f1a91ed3fb6a8",
-      "size": 51306
+      "size": 51306,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8330.png",
       "sha1": "a507f1381f38d428bb5138709dd4dbc0f0027f8e",
-      "size": 51221
+      "size": 51221,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8380.png",
       "sha1": "e86f10d8de310db053998298c02d510f592ad85a",
-      "size": 51320
+      "size": 51320,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8430.png",
       "sha1": "ad145dd09ca9f3acbf1cfc7aab3067fd1bb87445",
-      "size": 51237
+      "size": 51237,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8480.png",
       "sha1": "81c0ff70eca0fdf596beb45c48e295d14e64b113",
-      "size": 51315
+      "size": 51315,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8530.png",
       "sha1": "05c0c67a4d703230ba15a610a733e7f404f290ae",
-      "size": 53035
+      "size": 53035,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8580.png",
       "sha1": "0b7b7638df6fc7aa986b5b837e775bc59165d19c",
-      "size": 54483
+      "size": 54483,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8630.png",
       "sha1": "412e9200fe7dec798184d10b2626fb83f3abecad",
-      "size": 55678
+      "size": 55678,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8680.png",
       "sha1": "291c41bcab51823e8cc3d6f29c37fddeab9e4fcd",
-      "size": 56073
+      "size": 56073,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8730.png",
       "sha1": "7492e27dae0e334cd78270220ef020a066661cb4",
-      "size": 57199
+      "size": 57199,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8780.png",
       "sha1": "d14016cd5055b6a991b341f02754687c21bf1233",
-      "size": 57756
+      "size": 57756,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8830.png",
       "sha1": "35e5c8b89422ce652406664d6037d8b8ebd90d6a",
-      "size": 56005
+      "size": 56005,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8880.png",
       "sha1": "01899b44221c32c88489ddd7cdb194211850a2b6",
-      "size": 56567
+      "size": 56567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8930.png",
       "sha1": "1e83236a8151634a0ad2f3df7b84f629c25ca7fb",
-      "size": 56381
+      "size": 56381,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.8980.png",
       "sha1": "ce9cb16f86746a7948a4168d9d9a6c14967d8e89",
-      "size": 54828
+      "size": 54828,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9030.png",
       "sha1": "3a7e6ab2a8c06f939f80967d51a6b32b740be903",
-      "size": 55813
+      "size": 55813,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9080.png",
       "sha1": "e9f287c6c027053f30ce6fda487199275c732e29",
-      "size": 56175
+      "size": 56175,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9130.png",
       "sha1": "929ac2b8fd9e73953a79acd8ebba62751c64db4a",
-      "size": 55847
+      "size": 55847,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9180.png",
       "sha1": "e6e281b2e89e98eb18d96327b3c463a083a7b78f",
-      "size": 56144
+      "size": 56144,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9230.png",
       "sha1": "fed84e4684d9f6c0935222b9b2bb6b6527a98efd",
-      "size": 56959
+      "size": 56959,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9280.png",
       "sha1": "36608389a5100eaca6151f67551afd781c862eaa",
-      "size": 54961
+      "size": 54961,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9330.png",
       "sha1": "0791e8c22de94d90d2686e3c5fe9f3ee17c888c8",
-      "size": 53931
+      "size": 53931,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9380.png",
       "sha1": "c15759f0fe1107ecb5f6f8f995031e01bbcc2348",
-      "size": 54095
+      "size": 54095,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9430.png",
       "sha1": "efe917c94e929078723cdfe147bc7972680ff066",
-      "size": 52962
+      "size": 52962,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9480.png",
       "sha1": "8360b2e49cc198c2d6a2a4e1ae4879295dda00ba",
-      "size": 52428
+      "size": 52428,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9530.png",
       "sha1": "f2902657e22888a8ee31fe45119d81c1b4d24085",
-      "size": 52147
+      "size": 52147,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9580.png",
       "sha1": "1c173f9b30dce309a0a1d00d4ca37a407fce38ea",
-      "size": 51649
+      "size": 51649,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9630.png",
       "sha1": "6fa3773e30f2424e211b9160733a8d37ac6ed2ab",
-      "size": 52054
+      "size": 52054,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9680.png",
       "sha1": "5bca1dd35407a08403ecd0acf2e4906b637fa99c",
-      "size": 50124
+      "size": 50124,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9730.png",
       "sha1": "14ca3eebf7fd2a8083d00954191516d39da4a691",
-      "size": 50453
+      "size": 50453,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9780.png",
       "sha1": "21be12265269a6e80932791d9fbdb36af04901db",
-      "size": 50684
+      "size": 50684,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9830.png",
       "sha1": "c1909f25dc6126406d341d0d80e0b825305b5add",
-      "size": 50536
+      "size": 50536,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9880.png",
       "sha1": "6c605e583422e40021ecdc244cf1873ca7414611",
-      "size": 50777
+      "size": 50777,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9930.png",
       "sha1": "374a3f691c1202f8b975336eb85f6cbab45c86b2",
-      "size": 49202
+      "size": 49202,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.9980.png",
       "sha1": "c2654a1ae7f04fd813fd890e5f6b8e9138e2a97b",
-      "size": 49812
+      "size": 49812,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10030.png",
       "sha1": "bb8d9b2bf042e018df96cac872ff1a6f92ce78fc",
-      "size": 50730
+      "size": 50730,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10080.png",
       "sha1": "ca4f019b3f5229e8e842311c80667d9ef2e9ce64",
-      "size": 51611
+      "size": 51611,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10130.png",
       "sha1": "615a4ae92123d5e25915b73fbb568691511543dc",
-      "size": 53660
+      "size": 53660,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10180.png",
       "sha1": "c018d2f76d0e3be955549e8d00a0dfc2576ce634",
-      "size": 55820
+      "size": 55820,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10230.png",
       "sha1": "ceb455fc95fb03af75bf9fe9b42305a3c5c6fe9e",
-      "size": 55580
+      "size": 55580,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10280.png",
       "sha1": "a3bb84452d78496f1785c7307c2d6899571b455c",
-      "size": 53376
+      "size": 53376,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10330.png",
       "sha1": "9751d25e5904794ee2d5cad8a54d8c28979fcb23",
-      "size": 55328
+      "size": 55328,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10380.png",
       "sha1": "0269983a372a8e59278987a23235bad97709ec65",
-      "size": 54376
+      "size": 54376,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10430.png",
       "sha1": "59ced5ed19e6e7d2bdbf4215ecaf0c22810572b2",
-      "size": 54265
+      "size": 54265,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10480.png",
       "sha1": "8ba69f7ba946f7476f059c60ecf134f3a8afbb70",
-      "size": 52624
+      "size": 52624,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10530.png",
       "sha1": "dff89b76faa8dfcde5da53071f86ecdb5d339c65",
-      "size": 52204
+      "size": 52204,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10580.png",
       "sha1": "422c7b6a0c45ca83605c42bd6b561bedc35c773e",
-      "size": 52694
+      "size": 52694,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10630.png",
       "sha1": "6cc6fcf831de9dd3b77d00d0aafd207384604a2b",
-      "size": 52941
+      "size": 52941,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10680.png",
       "sha1": "36d5aefc7da06c645370af6b19d1d8860c07f8f4",
-      "size": 52957
+      "size": 52957,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10730.png",
       "sha1": "94445874f556399b7afe40eae506d2e6806e6846",
-      "size": 51116
+      "size": 51116,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10780.png",
       "sha1": "9ccead00ad14e246ffab4c37c0449a9cf2957d2a",
-      "size": 52497
+      "size": 52497,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10830.png",
       "sha1": "ca670e7591498dfc98e4294a204cfdb77e1f288c",
-      "size": 52336
+      "size": 52336,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10880.png",
       "sha1": "96a468bb5817003928eb5842aa8a231e9a7fe26e",
-      "size": 52181
+      "size": 52181,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10930.png",
       "sha1": "8ebfa192776fccf6579ef726aa24d90b64d840a1",
-      "size": 43198
+      "size": 43198,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.10980.png",
       "sha1": "4f6a3a69ff9ece56fb571956cae72dd190095ce7",
-      "size": 37048
+      "size": 37048,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11030.png",
       "sha1": "c0e2fa47fe0d1e441fa8263f07108cabd0e3f9ba",
-      "size": 36579
+      "size": 36579,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11080.png",
       "sha1": "538f870b8038f795b3e201c91e94ff1d7329c235",
-      "size": 37008
+      "size": 37008,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11130.png",
       "sha1": "ba8d58b310a8da8689d5c1ec26bac03fefa5f6ce",
-      "size": 40657
+      "size": 40657,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11180.png",
       "sha1": "ccc7e7cd71f85f4d62a3d9aa99905e480f6720b1",
-      "size": 34675
+      "size": 34675,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11230.png",
       "sha1": "aa7772a73363f76f635db2eeb5a4f697de95bac1",
-      "size": 37552
+      "size": 37552,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11280.png",
       "sha1": "9af0ed38c7b2405f920323a396d036eca3017ebb",
-      "size": 36642
+      "size": 36642,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11330.png",
       "sha1": "0f21ee69401c8dfc2e4c9ae3ca6c2e18c18c432e",
-      "size": 37068
+      "size": 37068,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11380.png",
       "sha1": "a48a07ecca020b4da9930c3e8495bbd78581d53c",
-      "size": 34350
+      "size": 34350,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11430.png",
       "sha1": "fb2c6320b8227bf12dcf4e625de30bc959c3b9eb",
-      "size": 35559
+      "size": 35559,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11480.png",
       "sha1": "114cebe207871e9355e9c3910e9df0d3a39bd27b",
-      "size": 37278
+      "size": 37278,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11530.png",
       "sha1": "e238638c7c48d9acc4bf651e48f1dec4af32433b",
-      "size": 37371
+      "size": 37371,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11580.png",
       "sha1": "b07ca7fc1a1c0e6a8c7193b743202743f3522d33",
-      "size": 39950
+      "size": 39950,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11630.png",
       "sha1": "a6e99bd4d81079e5d0df01b2aa0f29f39024cb67",
-      "size": 38511
+      "size": 38511,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11680.png",
       "sha1": "f472ebe24d83ec1c3ec9816dde1f15a7a5decaa7",
-      "size": 43036
+      "size": 43036,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11730.png",
       "sha1": "2d9aa84f0a1237468d63e414a7204f530339085b",
-      "size": 43206
+      "size": 43206,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11780.png",
       "sha1": "21feb0102c0aa52bc14ccd1ffac6facc0dad1e11",
-      "size": 42606
+      "size": 42606,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11830.png",
       "sha1": "165c29d9ef527daaeaae374d12f9334c77572df1",
-      "size": 42328
+      "size": 42328,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11880.png",
       "sha1": "3ff5f8453fcf96ad34dfdba7042a17deccd1a62c",
-      "size": 39676
+      "size": 39676,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11930.png",
       "sha1": "4a9711e87d32a98cf3c5ac437731bd7d0f317a12",
-      "size": 33625
+      "size": 33625,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.11980.png",
       "sha1": "237936396a4aeca2489c4cc06fc3ccd39a041022",
-      "size": 40043
+      "size": 40043,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12030.png",
       "sha1": "c041393280dc6844866207c0b2c318239aec66ac",
-      "size": 34667
+      "size": 34667,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12080.png",
       "sha1": "1c084c054412ee38239dd58f13d2ad127515385a",
-      "size": 37572
+      "size": 37572,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12130.png",
       "sha1": "f62627288a5cc12ba52a1ab6e4138ff987e534f5",
-      "size": 36936
+      "size": 36936,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12180.png",
       "sha1": "27b9b215ced88339fb0bc222c76f4dd7067d7d41",
-      "size": 38297
+      "size": 38297,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12230.png",
       "sha1": "8b0e577ef8130edfb59329b04b3a5e3760c48acd",
-      "size": 38407
+      "size": 38407,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12280.png",
       "sha1": "7ec1fd274f621e88d4adc0c8518dc5bb1d562cc7",
-      "size": 37041
+      "size": 37041,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12330.png",
       "sha1": "c0e68930226aeeea56a960eef8b04bb3400c5d9a",
-      "size": 37312
+      "size": 37312,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12380.png",
       "sha1": "865055a7147ba6402653c019a851b338e9ff6bbc",
-      "size": 37570
+      "size": 37570,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12430.png",
       "sha1": "5cc22585e40fecc3291aac00259fbd9034f06445",
-      "size": 36736
+      "size": 36736,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12480.png",
       "sha1": "195d257c211cd905f221016b899df29852db9dc6",
-      "size": 36645
+      "size": 36645,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12530.png",
       "sha1": "ab7d50e1dc3a5aea5ae3ff54e4e2a9647008bf6f",
-      "size": 36481
+      "size": 36481,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12580.png",
       "sha1": "7789ce38dd6cd0b395a5d74f4ac6cc03c6c12792",
-      "size": 36557
+      "size": 36557,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12630.png",
       "sha1": "3dc1d9585a024e16b8e5f5fe76160ca81fc68778",
-      "size": 37192
+      "size": 37192,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.12680.png",
       "sha1": "5357093ac76c4acbe22eb1bc93fd35171db967db",
-      "size": 36809
+      "size": 36809,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.fight.last.png",
       "sha1": "7ca00038ec827fb1332be2d5522d0b07bb87deb4",
-      "size": 37147
+      "size": 37147,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.script.log",
       "sha1": "e007580ae93a3a0f16609bd9b49d633e66aedcf4",
-      "size": 16828
+      "size": 16828,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\func_800619A4\\capture.mc1.mcd",

@@ -254,177 +254,212 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.jsonl",
       "sha1": "3bb82a3902f510069ff8f20d4b8931782b867c97",
-      "size": 405630
+      "size": 405630,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_load.mid.png",
       "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
-      "size": 9489
+      "size": 9489,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_load.last.png",
       "sha1": "2cffc4b4614f621d4a63100d706f3020964a4a0a",
-      "size": 55445
+      "size": 55445,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.first.png",
       "sha1": "aa4cda7bc1ec0ce22348b12572dde5308c90ee9a",
-      "size": 54529
+      "size": 54529,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.8700.png",
       "sha1": "7b47a63377e5cff66eb91f157771c4bc1fb8b1d1",
-      "size": 51275
+      "size": 51275,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.9200.png",
       "sha1": "c2730607b5122e8477664c69ace6f32c81406bf0",
-      "size": 51286
+      "size": 51286,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.9600.png",
       "sha1": "b744398c45d71097db1ec07fc93426cf9a890750",
-      "size": 53431
+      "size": 53431,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.9850.png",
       "sha1": "ff57808c92fb2dc17df774d27cbf26e09ff5d33a",
-      "size": 52879
+      "size": 52879,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.10050.png",
       "sha1": "ab31c2d4a03f0b4f3791e73421b2444bb990adb8",
-      "size": 55936
+      "size": 55936,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.10300.png",
       "sha1": "85c678f09bd1d1ccfa1ae841275eb525e5ccc7b8",
-      "size": 56869
+      "size": 56869,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.10650.png",
       "sha1": "dac2de37106508d855b902ba3e8e4ee266b4774d",
-      "size": 55833
+      "size": 55833,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.fight.last.png",
       "sha1": "1ee0a4e6afa52881246743e7ae29213a09bee877",
-      "size": 836
+      "size": 836,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_ko.10800.png",
       "sha1": "bba5025468f8f5aa1c54b57ae3877eb49546e998",
-      "size": 55656
+      "size": 55656,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_ko.10900.png",
       "sha1": "b4f49f70116b85b601926c464b5ab0cdcd0cc1e2",
-      "size": 21258
+      "size": 21258,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_ko.11000.png",
       "sha1": "70e213a48f7cd371720efa5ef7625c1d9586317d",
-      "size": 35369
+      "size": 35369,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_ko.11100.png",
       "sha1": "95a577566573d3388d337ce603e5e5ceac709d44",
-      "size": 44351
+      "size": 44351,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.t_ko.last.png",
       "sha1": "b189a13730bb9264efa60ffc40b228d8e4a58f3e",
-      "size": 33626
+      "size": 33626,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.rematch_menu.first.png",
       "sha1": "b189a13730bb9264efa60ffc40b228d8e4a58f3e",
-      "size": 33626
+      "size": 33626,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.rematch_menu.11500.png",
       "sha1": "075c475060b7eeb51eeab98c40d29da065acf88e",
-      "size": 34961
+      "size": 34961,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.rematch_menu.11800.png",
       "sha1": "1b5fc725d6ba9244a563909240a5dc31c4ec9640",
-      "size": 36973
+      "size": 36973,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.rematch_menu.last.png",
       "sha1": "43862417fa87776c4adc966b6febffe840feb714",
-      "size": 35223
+      "size": 35223,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.script.log",
       "sha1": "ec7a6cc87ec27c7f39c0ebd5c36f47b58086b3c8",
-      "size": 4389
+      "size": 4389,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-versus-2p-kimigaura-1\\capture.mc1.mcd",

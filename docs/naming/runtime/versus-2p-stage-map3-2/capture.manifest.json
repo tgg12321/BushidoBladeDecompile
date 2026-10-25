@@ -254,202 +254,242 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.jsonl",
       "sha1": "2c688ef5b8e96a5d32a44d4ceb8be0afc34a0b3b",
-      "size": 353912
+      "size": 353912,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7350.png",
       "sha1": "847949bb8f24391e6f19c2315b0d23499381a906",
-      "size": 21999
+      "size": 21999,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7410.png",
       "sha1": "df0f86684f708f7058336e6c250c8f728b97b1d7",
-      "size": 22038
+      "size": 22038,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7470.png",
       "sha1": "c81222dd1262f11d0d65752c94cf6f6ac008b7d1",
-      "size": 22097
+      "size": 22097,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7530.png",
       "sha1": "dcaecd1f669c922f0f315c4421df5bedfc9b7bfa",
-      "size": 23016
+      "size": 23016,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7599.png",
       "sha1": "d9942ef326050cb8399679033c8703d16f6fdafb",
-      "size": 23081
+      "size": 23081,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7645.png",
       "sha1": "35a890cb0e2096d500536e79e25156e9610b6bb4",
-      "size": 22976
+      "size": 22976,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.7705.png",
       "sha1": "d712d2c26650bef70a2ceea25b8ae8cd7f1d6970",
-      "size": 23006
+      "size": 23006,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.stage_select.last.png",
       "sha1": "d4d6106c5143b0304b6da39b902504e369f9156c",
-      "size": 22849
+      "size": 22849,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_load.mid.png",
       "sha1": "2060c3b5e9fedcaa9d236aafef7be70b1c68f691",
-      "size": 9966
+      "size": 9966,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_load.last.png",
       "sha1": "9d872fa5c1a6188dc6a4009b0d5466dab8a202ba",
-      "size": 38675
+      "size": 38675,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.first.png",
       "sha1": "f599d18e0d262ea04c7efce66b05b7839827862e",
-      "size": 38694
+      "size": 38694,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.8900.png",
       "sha1": "f58de44bdb9a8a1a0e114edd5184f3fa5b9384c1",
-      "size": 37375
+      "size": 37375,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.9400.png",
       "sha1": "596cf9f2e4d0213364703c4bcac1116a7ca9fa92",
-      "size": 37503
+      "size": 37503,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.9700.png",
       "sha1": "42f977d0614d06bc9f9ba9ac3a9c3ab035dab4ac",
-      "size": 42043
+      "size": 42043,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.10000.png",
       "sha1": "18405c9cd46d1fb9bb04e066e387d33b89a9386f",
-      "size": 51349
+      "size": 51349,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.10200.png",
       "sha1": "df0d9bed66695aebba1a7b4c3cdd7f4f4b104bcd",
-      "size": 52208
+      "size": 52208,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.10300.png",
       "sha1": "4bc4d2cc58693659db3839db643f70a05f354195",
-      "size": 53131
+      "size": 53131,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.fight.last.png",
       "sha1": "96d6d20da86001754df2cebfccf3c3d3605ce922",
-      "size": 833
+      "size": 833,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_ko.10450.png",
       "sha1": "64caff5e7940a2e3bbd3b018f203dd24f5cc5b42",
-      "size": 49165
+      "size": 49165,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_ko.10550.png",
       "sha1": "e88be0aeb7bbb64ead97007c7d6e9c8ba05a74bd",
-      "size": 53347
+      "size": 53347,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_ko.10650.png",
       "sha1": "ec7cc2fc126624d56b2538ac174a49b27b7e6288",
-      "size": 66839
+      "size": 66839,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_ko.10750.png",
       "sha1": "5b64c70d6b1c0e7c9997f09899d6d523799c642f",
-      "size": 54432
+      "size": 54432,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_ko.10850.png",
       "sha1": "3c6a8ac08555433b1d4c3e99760374cafd0a83fb",
-      "size": 49028
+      "size": 49028,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.t_ko.last.png",
       "sha1": "4c707b25a1336a7b92a3e3084b3fc79229845278",
-      "size": 31928
+      "size": 31928,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.rematch_menu.first.png",
       "sha1": "4c707b25a1336a7b92a3e3084b3fc79229845278",
-      "size": 31928
+      "size": 31928,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.rematch_menu.11255.png",
       "sha1": "f4525c7420726c3e3576a0cfe4e635a6e4f62c0f",
-      "size": 58812
+      "size": 58812,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.rematch_menu.11555.png",
       "sha1": "9e656816d7ecc51f4b7b5ee2f8201885e6508e9b",
-      "size": 60015
+      "size": 60015,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.rematch_menu.last.png",
       "sha1": "95616d6157e1d2df7e4df66ba296c4aaa3fe684b",
-      "size": 38061
+      "size": 38061,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.script.log",
       "sha1": "84d01db6c5df0e03a1cd9b39ae4f9378030b0474",
-      "size": 4318
+      "size": 4318,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-stage-map3-2\\capture.mc1.mcd",

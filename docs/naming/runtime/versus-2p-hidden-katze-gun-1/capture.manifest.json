@@ -270,237 +270,284 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.jsonl",
       "sha1": "795feb100eb3d80fd2608002c80ab47b86bd452a",
-      "size": 28227
+      "size": 28227,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.char_select.pick.png",
       "sha1": "7963066238a091c3fba52c9d1a3ccfe468ec44a2",
-      "size": 26913
+      "size": 26913,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.char_select.last.png",
       "sha1": "3e50cfddf2b0395f38b69ba3ab7f1adccbbd42a0",
-      "size": 22796
+      "size": 22796,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.weapon_select.first.png",
       "sha1": "88b712ebc5a1c261a8bcb4f826852bcaf1e7c6ad",
-      "size": 19968
+      "size": 19968,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.weapon_select.7650.png",
       "sha1": "36640379e0cc49a1acfd311dd800c4f0f8ead354",
-      "size": 22317
+      "size": 22317,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.weapon_select.last.png",
       "sha1": "e41834bb49b8ba37498f7b5c6af79fdd508b876b",
-      "size": 19022
+      "size": 19022,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.t_stage.mid.png",
       "sha1": "cc132b209b72b24d352f988a8753959f5b017cfe",
-      "size": 6512
+      "size": 6512,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.stage_select.first.png",
       "sha1": "f3a27a3f7cdda4a31ae7b2a07518c83141d6f54a",
-      "size": 12882
+      "size": 12882,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.t_load.mid.png",
       "sha1": "184a4a8af09c19dad588981744ad3ed5e49c1780",
-      "size": 8609
+      "size": 8609,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.t_load.last.png",
       "sha1": "32fe756acf5698fe0aa2cc07cb83694c64c1d135",
-      "size": 29619
+      "size": 29619,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.first.png",
       "sha1": "60172ad44ad22674cdb64d492db8e56960304422",
-      "size": 30417
+      "size": 30417,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.8950.png",
       "sha1": "3eb97a7eedf4f73fb5a37655225b6594992a5fd7",
-      "size": 30447
+      "size": 30447,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9050.png",
       "sha1": "1518fc35b668f05658941ad111f6c0b1fe02bff1",
-      "size": 30726
+      "size": 30726,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9150.png",
       "sha1": "8ec58026a53cd5c47cf5d3091fc4e312d42b4a7e",
-      "size": 28175
+      "size": 28175,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9250.png",
       "sha1": "b6dc4ee02afbdffd11a741c314119868ab14c28a",
-      "size": 32807
+      "size": 32807,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9350.png",
       "sha1": "9aff40f5216d1c0e176836e3c058f0f70a8cae92",
-      "size": 27804
+      "size": 27804,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9450.png",
       "sha1": "71da176ef731a109bbc39ae116f30d75e26d6e88",
-      "size": 30913
+      "size": 30913,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9550.png",
       "sha1": "73ff01e153b57fdb6d41e924d89c7bdba2e1b1d2",
-      "size": 31755
+      "size": 31755,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9650.png",
       "sha1": "88747b8ba02e1e1167114a2999907ef2dc047a89",
-      "size": 25521
+      "size": 25521,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9750.png",
       "sha1": "551121f7e0ffa0dae714c1c12ad410b2a5378afc",
-      "size": 29514
+      "size": 29514,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9850.png",
       "sha1": "d743d56a74eee7fbc77bc7dbd64064eb01fb498c",
-      "size": 30545
+      "size": 30545,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.9950.png",
       "sha1": "c84a1b861cdd947eca7b3aa3d58ac398f4c97e6c",
-      "size": 28390
+      "size": 28390,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10050.png",
       "sha1": "b6dc4ee02afbdffd11a741c314119868ab14c28a",
-      "size": 32807
+      "size": 32807,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10150.png",
       "sha1": "13abaa2975695c1dc863f3e6d1dd57b5ba0f18f1",
-      "size": 27808
+      "size": 27808,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10250.png",
       "sha1": "91f98796a897cd7c8f3728cec8b9fcd6e9d767af",
-      "size": 31150
+      "size": 31150,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10350.png",
       "sha1": "ad61c3a8e0456e49aff754e513b90c5a3d4cf935",
-      "size": 31904
+      "size": 31904,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10450.png",
       "sha1": "cc86e32c63b82bf4bc968af14cc5107e3e5d02b4",
-      "size": 25639
+      "size": 25639,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10550.png",
       "sha1": "0ac332daedd7ee2c9c21c5b7edc39749676b4a92",
-      "size": 29546
+      "size": 29546,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10650.png",
       "sha1": "b10192d091b559773af85a1d65eaa8b53df96cde",
-      "size": 30868
+      "size": 30868,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10750.png",
       "sha1": "b21baeda1cdc47ec5078e538f5f2b2c3d90b4cef",
-      "size": 28271
+      "size": 28271,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10850.png",
       "sha1": "a018dbd7039a1b2976ba3d7587e7edd9ec5f8296",
-      "size": 32905
+      "size": 32905,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.10950.png",
       "sha1": "13abaa2975695c1dc863f3e6d1dd57b5ba0f18f1",
-      "size": 27808
+      "size": 27808,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11050.png",
       "sha1": "fb4ebd52cd822a8dba737a7636d0321df9645b86",
-      "size": 30934
+      "size": 30934,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11150.png",
       "sha1": "c8704ecb9af0fc4e550db6ab6b5c24db032a3a9d",
-      "size": 31831
+      "size": 31831,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11250.png",
       "sha1": "cb6f4062a5a7e4a61e2a0e1174ce4801fa8aad8e",
-      "size": 25603
+      "size": 25603,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11350.png",
       "sha1": "f72d058f9cf926404cbdf2fa38c10a93bcdbbc08",
-      "size": 29574
+      "size": 29574,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11450.png",
       "sha1": "19ced59fdabded126e704f13d746a2aebebe589c",
-      "size": 30532
+      "size": 30532,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11550.png",
       "sha1": "22f5816b13fdaee33d8b60d4e455a94781296c5d",
-      "size": 28403
+      "size": 28403,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11650.png",
       "sha1": "0d353b461409afb3f207fe1cefb1ca25c9811a3f",
-      "size": 32818
+      "size": 32818,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.11750.png",
       "sha1": "13abaa2975695c1dc863f3e6d1dd57b5ba0f18f1",
-      "size": 27808
+      "size": 27808,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.rounds.last.png",
       "sha1": "bf15213ff51e4621b75f2243eb011b913a30e22a",
-      "size": 37706
+      "size": 37706,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.script.log",
       "sha1": "b42744e4dabf4dacb340725accb7c619527f7025",
-      "size": 3761
+      "size": 3761,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-katze-gun-1\\capture.mc1.mcd",

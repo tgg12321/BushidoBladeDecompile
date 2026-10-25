@@ -254,242 +254,290 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.jsonl",
       "sha1": "db49d604bf1636824e8613493bbd8f49d7b1967a",
-      "size": 82968
+      "size": 82968,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.t_load.mid.png",
       "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
-      "size": 9489
+      "size": 9489,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.t_load.last.png",
       "sha1": "2cffc4b4614f621d4a63100d706f3020964a4a0a",
-      "size": 55445
+      "size": 55445,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.fight.first.png",
       "sha1": "aa4cda7bc1ec0ce22348b12572dde5308c90ee9a",
-      "size": 54529
+      "size": 54529,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c00.55.png",
       "sha1": "4745a38e6e4ea3aa32040aec2f3612d57e4a72a6",
-      "size": 50854
+      "size": 50854,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c00.75.png",
       "sha1": "96368e4204ff19282c8f5e46e26e8ae28327103a",
-      "size": 50809
+      "size": 50809,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c00.95.png",
       "sha1": "ac0c6c72e54792aa3c3e9515f1349b087f52083f",
-      "size": 50291
+      "size": 50291,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c01.55.png",
       "sha1": "f81f8c487f4284c3a2f8fdefb754e7408953bbbb",
-      "size": 51650
+      "size": 51650,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c01.75.png",
       "sha1": "8c2cd479e743b79eacb0a45799ab87a924de14a1",
-      "size": 50913
+      "size": 50913,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c01.95.png",
       "sha1": "5c4e1e6cc52e227cba0c85bd7eb45a95e1222ec8",
-      "size": 50931
+      "size": 50931,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c02.55.png",
       "sha1": "b0da0bbec53eb9d479bb9b5b2cfef44b728543c0",
-      "size": 52611
+      "size": 52611,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c02.75.png",
       "sha1": "0a69a03663c3ded129e046bbf2fbdcac5fe70055",
-      "size": 51390
+      "size": 51390,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c02.95.png",
       "sha1": "dfa758ad0d1c3c8ca56c65865cc1c976af24cd97",
-      "size": 51519
+      "size": 51519,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c03.55.png",
       "sha1": "310781b9c0092789393615f6e0f453ac1c922de4",
-      "size": 51970
+      "size": 51970,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c03.75.png",
       "sha1": "847e04059c92244e4bf3cb114ca51eb97541a874",
-      "size": 50949
+      "size": 50949,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c03.95.png",
       "sha1": "c73794aef87390f205df0c3d0c364c9c7114f5a0",
-      "size": 50981
+      "size": 50981,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c04.55.png",
       "sha1": "32242d6359f45436ee8d7e91e1f964a88293a9df",
-      "size": 53271
+      "size": 53271,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c04.75.png",
       "sha1": "2aa61946d4fadae7b031086f10466a9d0f811c0e",
-      "size": 52269
+      "size": 52269,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c04.95.png",
       "sha1": "b1068d6b129b099dbfc53f6dd19b00c1fd04927f",
-      "size": 50730
+      "size": 50730,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c05.55.png",
       "sha1": "d77252e000b48c9b9071b582672034b57ee1db99",
-      "size": 52246
+      "size": 52246,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c05.75.png",
       "sha1": "27af01f95a961f8a523cd3de253c8c08ec695378",
-      "size": 52055
+      "size": 52055,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c05.95.png",
       "sha1": "9278fc1bb11118c3ba53651b6f05b643be180861",
-      "size": 50965
+      "size": 50965,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c06.55.png",
       "sha1": "1ee0a4e6afa52881246743e7ae29213a09bee877",
-      "size": 836
+      "size": 836,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c06.75.png",
       "sha1": "c20b8da1d1383315713b98c044626a51190c1f9b",
-      "size": 32551
+      "size": 32551,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c06.95.png",
       "sha1": "a2d0f4f2cf226dbc58dc6c0dc6560a79e0611380",
-      "size": 33267
+      "size": 33267,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c07.55.png",
       "sha1": "08a97f55640cc3acb77618a5f16a1f1c913ecdbb",
-      "size": 34739
+      "size": 34739,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c07.75.png",
       "sha1": "924c6ef217d503f8ec5f2cf657396b016152f114",
-      "size": 45300
+      "size": 45300,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c07.95.png",
       "sha1": "e089422e2ba8c97f35be6d7becea157d016d5c4f",
-      "size": 48185
+      "size": 48185,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c08.55.png",
       "sha1": "99e59030ba1317b96c078a2df60380f7f19132b9",
-      "size": 47040
+      "size": 47040,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c08.75.png",
       "sha1": "e17b205cf1246d293bd1839750469b1171efe8f1",
-      "size": 43196
+      "size": 43196,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c08.95.png",
       "sha1": "1bb1deae4e8725edee92a3f89287dc6991396810",
-      "size": 41424
+      "size": 41424,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c09.55.png",
       "sha1": "83ac881e59c5912a5b980ab6233cd9e6fdc091aa",
-      "size": 35026
+      "size": 35026,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c09.75.png",
       "sha1": "3921ea8bc4ce2a508984af479e49d44d5c75534a",
-      "size": 33834
+      "size": 33834,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.c09.95.png",
       "sha1": "f1275550f6478804ed31ec9ba193b8c5e2337ffd",
-      "size": 53817
+      "size": 53817,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.last.png",
       "sha1": "cd6a068ac08f347bf67a08e60b19d4b319c7c5d9",
-      "size": 53374
+      "size": 53374,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.script.log",
@@ -499,12 +547,14 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-paired-1\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

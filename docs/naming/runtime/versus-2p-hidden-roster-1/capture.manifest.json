@@ -270,277 +270,332 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.jsonl",
       "sha1": "b6c8e77b70e2adc573f08d878112a022e0352ae7",
-      "size": 352988
+      "size": 352988,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6620.png",
       "sha1": "3d495e9c4714a67fc5dff203b95ff4c5ee079e39",
-      "size": 25720
+      "size": 25720,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6650.png",
       "sha1": "d456a13391e3a44d891de12367fb8a6c213013e0",
-      "size": 25268
+      "size": 25268,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6680.png",
       "sha1": "ad139bf2f630cd1ae36fd6b24a53aab96e28044d",
-      "size": 25803
+      "size": 25803,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6710.png",
       "sha1": "d70dcca8b88c95c19122b984f214165436ae5327",
-      "size": 27365
+      "size": 27365,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6740.png",
       "sha1": "ed8c55410322d3785bdfeeb5b251c14338abb383",
-      "size": 26791
+      "size": 26791,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6770.png",
       "sha1": "5fc938e9bb9867822eee9978c8140033b261ec9f",
-      "size": 25272
+      "size": 25272,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6800.png",
       "sha1": "b84e4c85977546fcb54baa7be5197db24e724430",
-      "size": 24895
+      "size": 24895,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6830.png",
       "sha1": "c1a66ea08029812d014ee41087219bd0255907f9",
-      "size": 26553
+      "size": 26553,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6860.png",
       "sha1": "690a766de3efe36ae9747f27596b5f232e8d4dc1",
-      "size": 27579
+      "size": 27579,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6890.png",
       "sha1": "a051bb29d8934652242dba76069403493313b404",
-      "size": 25687
+      "size": 25687,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6920.png",
       "sha1": "4526c4fe7c45e929833778ebdabf766179ded611",
-      "size": 25801
+      "size": 25801,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6950.png",
       "sha1": "e1e5a22821e296525b97eab7ea1d284c6a5f314e",
-      "size": 25536
+      "size": 25536,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.6980.png",
       "sha1": "8b68de570e3657acc1b45780dba536bcfc424d40",
-      "size": 26527
+      "size": 26527,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7010.png",
       "sha1": "c4a90a132fd44cdc0366b2febe6098d0156ef628",
-      "size": 26076
+      "size": 26076,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7040.png",
       "sha1": "d44972139db96b67f1bf49565950a8cca11d33eb",
-      "size": 24144
+      "size": 24144,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7070.png",
       "sha1": "2f027a907918f683e50a9ac226961423006106f2",
-      "size": 26146
+      "size": 26146,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7100.png",
       "sha1": "b4d2ea3b06cb871a23ddc83b489d728ecd76a50d",
-      "size": 28258
+      "size": 28258,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7130.png",
       "sha1": "7a3a94699ab87442dabf2ae28da379ae6acf981f",
-      "size": 26070
+      "size": 26070,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7160.png",
       "sha1": "f1982b70ab2992b2f97c508d87314cbe426a5bbc",
-      "size": 26105
+      "size": 26105,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7190.png",
       "sha1": "988fd27488d9609d66b9a711d3b86a8891a05595",
-      "size": 26240
+      "size": 26240,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7220.png",
       "sha1": "2e3cabe33b7ea278d98c462f40aacf6dbdda9937",
-      "size": 26350
+      "size": 26350,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7250.png",
       "sha1": "80b23effd8c768f49bb01b6a696cdff9debf7f25",
-      "size": 25601
+      "size": 25601,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.7280.png",
       "sha1": "18d290e9786e7a631e8299a9710108f0288af952",
-      "size": 26481
+      "size": 26481,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.char_select.last.png",
       "sha1": "fcd5a727400419e0f0060e9161508b6552201b25",
-      "size": 22948
+      "size": 22948,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.weapon_select.first.png",
       "sha1": "eb35ec9699c4fe69e9d9ee243b6b31cdebc25de1",
-      "size": 20169
+      "size": 20169,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.weapon_select.7650.png",
       "sha1": "f325336bcbd8821836a0e4734fb9fcacd9d6a939",
-      "size": 23412
+      "size": 23412,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.weapon_select.last.png",
       "sha1": "ce603677f5bc357da0dce70eff4963e126404afd",
-      "size": 15972
+      "size": 15972,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_stage.mid.png",
       "sha1": "622742c20c930cce957e8d60bc5f42e017e9854a",
-      "size": 5176
+      "size": 5176,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.stage_select.first.png",
       "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
-      "size": 13166
+      "size": 13166,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_load.mid.png",
       "sha1": "8be136c70faba5b5bf1ad7c07a53ae0661079203",
-      "size": 9057
+      "size": 9057,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_load.last.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.first.png",
       "sha1": "a6da79717c34fb2b2dfa89bc9b49ba7b15f9dff4",
-      "size": 26220
+      "size": 26220,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.9100.png",
       "sha1": "eeffbdbef1f97200d17ba480a71459b28c724df4",
-      "size": 29317
+      "size": 29317,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.9400.png",
       "sha1": "426beedbc5d747c834080670e41e8cfb74321b5f",
-      "size": 28393
+      "size": 28393,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.9700.png",
       "sha1": "9ba8d06c6f9951e46091f6cd7446d8eb02b295ca",
-      "size": 29864
+      "size": 29864,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.10000.png",
       "sha1": "6df619dd61a0be4e87cc3f4a986a1f0617b2099f",
-      "size": 29253
+      "size": 29253,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.10300.png",
       "sha1": "44757ddfa8c6dfadb87a3446428f8621325e67b7",
-      "size": 27354
+      "size": 27354,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.10560.png",
       "sha1": "e63cc3f9b731a69e90856122e8763c829105cfc1",
-      "size": 27536
+      "size": 27536,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.10580.png",
       "sha1": "a86623bd508feb07bc7c23619a8467ec5b90a1e5",
-      "size": 26646
+      "size": 26646,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.10650.png",
       "sha1": "693c37f106c5d7d28f433cd3e400b380f1534070",
-      "size": 26555
+      "size": 26555,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.fight.last.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_ko.10800.png",
       "sha1": "3f3c5307f29a7713fab0d3ed1c41540919bf24f5",
-      "size": 25503
+      "size": 25503,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_ko.10950.png",
       "sha1": "d3f7e300e27fa2495cbf64e6775ce7497c5cb39c",
-      "size": 33352
+      "size": 33352,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_ko.11100.png",
       "sha1": "75a64c3488779feea55114edeb9eb3bd60eaf702",
-      "size": 18092
+      "size": 18092,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.t_ko.last.png",
       "sha1": "a02b550f9ab344e55f92c0dc6718e0c2b24a63ff",
-      "size": 21209
+      "size": 21209,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.rematch_menu.first.png",
       "sha1": "8a1f3cf90bcd2e5c3b94751049303702a39abc0d",
-      "size": 28295
+      "size": 28295,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.rematch_menu.11500.png",
       "sha1": "5e29ad4b9a056d7ef7fee08888af121a42a36aca",
-      "size": 34993
+      "size": 34993,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.rematch_menu.last.png",
       "sha1": "a5563046bd7e5c637b6ec08ecb037a56a53f95eb",
-      "size": 32839
+      "size": 32839,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.script.log",
       "sha1": "b25b9ea16dc785a5f00f5a0dc7459ece62ca630e",
-      "size": 4765
+      "size": 4765,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-roster-1\\capture.mc1.mcd",

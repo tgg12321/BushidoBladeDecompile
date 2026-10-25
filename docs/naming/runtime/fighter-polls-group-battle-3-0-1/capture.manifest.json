@@ -254,202 +254,242 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.jsonl",
       "sha1": "b4465bfd97ca4cdc6f16549aca300d1b2f3051a5",
-      "size": 4391248
+      "size": 4391248,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.top_menu.last.png",
       "sha1": "8e6762850f6bcac3a812b384f61447a489f4b128",
-      "size": 31022
+      "size": 31022,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.group_settings.first.png",
       "sha1": "3fbe126a2309765f6d3abe123fa084dd9fdc3a46",
-      "size": 21768
+      "size": 21768,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.school_select.first.png",
       "sha1": "bdaddbb25668ab324bfa5623a22ff6691aa8d920",
-      "size": 15830
+      "size": 15830,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.school_select.mid.png",
       "sha1": "da3af07540a5d17476858128396d40c474a132b2",
-      "size": 15843
+      "size": 15843,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.char_select.first.png",
       "sha1": "fc2bb56478c8811542f0f51b9a2281f391187bee",
-      "size": 15442
+      "size": 15442,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.char_select.pick1.png",
       "sha1": "c23d6308db32f3c6bba6d887799101c1342a3faa",
-      "size": 15325
+      "size": 15325,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.char_select.pick2.png",
       "sha1": "075f68993e712cea1ad040e61e237a19ef03ce77",
-      "size": 15900
+      "size": 15900,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.weapon_select.first.png",
       "sha1": "4acb0b03dc476785b5a7ab6ff0890f68a22f13ce",
-      "size": 11526
+      "size": 11526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.weapon_select.8000.png",
       "sha1": "cf3cecc0fe62570b79cf231ea36c8d84bad25f06",
-      "size": 12294
+      "size": 12294,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.weapon_select.8300.png",
       "sha1": "336fcd6fc98b88623edd19a61f9351a3f6748d7b",
-      "size": 12594
+      "size": 12594,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.weapon_select.last.png",
       "sha1": "2007ef734de59b22bcea031e492d822bc29d8918",
-      "size": 12599
+      "size": 12599,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster.first.png",
       "sha1": "aa713a6468fff56cd4ef0efe29cec372ceff563d",
-      "size": 7451
+      "size": 7451,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster.mid.png",
       "sha1": "aa713a6468fff56cd4ef0efe29cec372ceff563d",
-      "size": 7451
+      "size": 7451,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout1.first.png",
       "sha1": "6e47165850b36a59af2c08ff99dce23e82873be7",
-      "size": 25238
+      "size": 25238,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout1.ippon.png",
       "sha1": "345db6892a8004ea4919cbf7c22e419999d7b509",
-      "size": 31208
+      "size": 31208,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout1.out_of_bounds.png",
       "sha1": "f87a7fce944188327b05f16b9033d240895d3bbf",
-      "size": 34689
+      "size": 34689,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout1.13000.png",
       "sha1": "489260a7472afa0b36e882973eccd250f45a2a7d",
-      "size": 30623
+      "size": 30623,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout1.14950.png",
       "sha1": "9be5037038fb79f834ef9ed37dc55cd35223bc83",
-      "size": 33236
+      "size": 33236,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout1.down.png",
       "sha1": "b5d9063b53d1992d8009be4009783f70194152fc",
-      "size": 36773
+      "size": 36773,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_1.first.png",
       "sha1": "490bc4fe956770d5606683060cd9044e0b0700b4",
-      "size": 7857
+      "size": 7857,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_1.last.png",
       "sha1": "490bc4fe956770d5606683060cd9044e0b0700b4",
-      "size": 7857
+      "size": 7857,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout2.first.png",
       "sha1": "6666cd90aa29ac2fdcbca2f452863bceccef54b0",
-      "size": 25303
+      "size": 25303,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout2.16750.png",
       "sha1": "36af374d2dd411e41dbd2053b5c13bb31267d386",
-      "size": 28814
+      "size": 28814,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout2.20050.png",
       "sha1": "16215795c90483edc4f05f76ea1ae5d088fa8bf7",
-      "size": 34697
+      "size": 34697,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout2.21550.png",
       "sha1": "9f764e29b0255ec54f6d5bf27f9fabe4e1dfb82d",
-      "size": 28460
+      "size": 28460,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout2.last.png",
       "sha1": "89ebe54ebc08d91937138a832d137055ef2da9da",
-      "size": 25623
+      "size": 25623,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_2.first.png",
       "sha1": "397b9a8605e0b39ccf94b187e47e85d28725f9df",
-      "size": 8051
+      "size": 8051,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_2.last.png",
       "sha1": "397b9a8605e0b39ccf94b187e47e85d28725f9df",
-      "size": 8051
+      "size": 8051,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout3.first.png",
       "sha1": "768f56453714283dcd52d9d33f49ebec1bac2ec9",
-      "size": 25233
+      "size": 25233,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout3.23950.png",
       "sha1": "1e804c9eb6702e67f148a2c332cf38d39998b14c",
-      "size": 32742
+      "size": 32742,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout3.25450.png",
       "sha1": "c9d29314391e290f2fbd7d7e19b04faf626cad85",
-      "size": 32557
+      "size": 32557,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.bout3.last.png",
       "sha1": "c137bf9fee48abae1f85237d9b7111c6c96a9587",
-      "size": 31375
+      "size": 31375,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_3.first.png",
       "sha1": "ef0096aefaa0ab458bd705421b600b12139b35de",
-      "size": 8175
+      "size": 8175,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_3.26200.png",
       "sha1": "ef0096aefaa0ab458bd705421b600b12139b35de",
-      "size": 8175
+      "size": 8175,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_3.26500.png",
       "sha1": "16301b66b4240b29a06abf8958468d8b4869456f",
-      "size": 42068
+      "size": 42068,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_3.26800.png",
       "sha1": "917d80ca4c245253fbf22c0efee9832b15b99ec7",
-      "size": 38049
+      "size": 38049,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.roster_3.last.png",
       "sha1": "6a7956cce6dd5e1b5da6f484e50255c1c1e2dce0",
-      "size": 36025
+      "size": 36025,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.script.log",
       "sha1": "c9dc6a72a7f76a03b2f304c2bfcb33f1e6709b82",
-      "size": 16894
+      "size": 16894,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-group-battle-3-0-1\\capture.mc1.mcd",

@@ -254,247 +254,296 @@
     {
       "path": "tmp/throwchars/out\\kaun\\capture.jsonl",
       "sha1": "ec99be9bec7804693c4c6c4d5e2e6ec5377b5709",
-      "size": 72782
+      "size": 72782,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.char_select.pre.png",
       "sha1": "5ab30a6a601912dc9b4d4612cc55186602f6b273",
-      "size": 24203
+      "size": 24203,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.char_select.last.png",
       "sha1": "a0dc611b426d8ac321b1d3ac88ccc318a3f2337e",
-      "size": 24227
+      "size": 24227,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.weapon_select.first.png",
       "sha1": "9b947b7b86a24917f420f0fb2d6f346d7de936c4",
-      "size": 24686
+      "size": 24686,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.weapon_select.last.png",
       "sha1": "3cd17359815277175649bf2934c2840e5e9c7ead",
-      "size": 8099
+      "size": 8099,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.t_load.mid.png",
       "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
-      "size": 9489
+      "size": 9489,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.t_load.last.png",
       "sha1": "095325d286f8d9ff92db200415df52a69bae4b0b",
-      "size": 56650
+      "size": 56650,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.fight.first.png",
       "sha1": "095325d286f8d9ff92db200415df52a69bae4b0b",
-      "size": 56650
+      "size": 56650,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_00_r2_circle_3.15.png",
       "sha1": "c459eca4a7fd0688d20c26e2efc3b3642e9cf104",
-      "size": 50782
+      "size": 50782,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_00_r2_circle_3.30.png",
       "sha1": "9263b79a9274f747cc0db5266c3ed86d5541dcd6",
-      "size": 50870
+      "size": 50870,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_00_r2_circle_3.60.png",
       "sha1": "44aa944b5514b714c9c99b6ccd10856e6da39ab0",
-      "size": 50335
+      "size": 50335,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_01_r2_cross_3.15.png",
       "sha1": "a5ba403429e9c5fea12e90d54ebd463580b81631",
-      "size": 50739
+      "size": 50739,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_01_r2_cross_3.30.png",
       "sha1": "2ada287527f6213c24cc309182e739cafb5cf8eb",
-      "size": 49949
+      "size": 49949,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_01_r2_cross_3.60.png",
       "sha1": "3aa81af030b51f3c4df60fd080cc99f6b392cd5d",
-      "size": 53897
+      "size": 53897,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_02_r2_circle_1.15.png",
       "sha1": "429ffdc5bb37a5ee651dea12bb5a0fbd6feb8b30",
-      "size": 24810
+      "size": 24810,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_02_r2_circle_1.30.png",
       "sha1": "be88768a532f040ff20d4030a28bdcfbf2025ca1",
-      "size": 25899
+      "size": 25899,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_02_r2_circle_1.60.png",
       "sha1": "5b227961298a81aa9a06165959fc1f7b1f8860c9",
-      "size": 56325
+      "size": 56325,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_03_r2_cross_5.15.png",
       "sha1": "222551d98a88f73c5ac46ec01dd4097d6882dd0d",
-      "size": 53217
+      "size": 53217,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_03_r2_cross_5.30.png",
       "sha1": "00827d57c976f906c954066edd662ed61f8ddf40",
-      "size": 53763
+      "size": 53763,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_03_r2_cross_5.60.png",
       "sha1": "37139b5f4c0bf3dff0f9860bd42b3014969208f3",
-      "size": 52884
+      "size": 52884,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_04_r2_circle_7.15.png",
       "sha1": "0cb195ba74f0e050f4982dc21028f99657d2e688",
-      "size": 47902
+      "size": 47902,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_04_r2_circle_7.30.png",
       "sha1": "c186cad85ff73f349c787b43b20266be937dea14",
-      "size": 42276
+      "size": 42276,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_04_r2_circle_7.60.png",
       "sha1": "0291e33219661f4554320d4ecbaba41852d28e9b",
-      "size": 32165
+      "size": 32165,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_05_r2_square_3.15.png",
       "sha1": "cb376a618339c2f06fc96046ae147c9acc712c13",
-      "size": 35607
+      "size": 35607,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_05_r2_square_3.30.png",
       "sha1": "9f65cfb41a4abb835bc0200e8a1c2fcb6337a7c1",
-      "size": 36673
+      "size": 36673,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_05_r2_square_3.60.png",
       "sha1": "677d4697f648f5aeb64341b6bc15814f54fcd7bd",
-      "size": 38155
+      "size": 38155,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_06_r2_alone.15.png",
       "sha1": "3969037c1653e3fd09a4fa634e2887edb69c83f8",
-      "size": 36405
+      "size": 36405,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_06_r2_alone.30.png",
       "sha1": "5130ae9968af66b29aa608b5e880fdbbf7187213",
-      "size": 35634
+      "size": 35634,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_06_r2_alone.60.png",
       "sha1": "968a7c848b6106bfe7b5038daf7d416be6d33f7c",
-      "size": 33705
+      "size": 33705,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_07_r2_circle_3b.15.png",
       "sha1": "6d94801c9c8387c04f7e5b046129812998f47fcd",
-      "size": 28202
+      "size": 28202,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_07_r2_circle_3b.30.png",
       "sha1": "381d11cd256a5c655ab20a9c495358f29343d0a7",
-      "size": 30951
+      "size": 30951,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_07_r2_circle_3b.60.png",
       "sha1": "774a81e23f34a79b29ba2c309640792324c65d82",
-      "size": 34023
+      "size": 34023,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_08_r2_alone_b.15.png",
       "sha1": "a59f0548ee40500009a44ce5165f69ec9f417d6e",
-      "size": 37346
+      "size": 37346,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_08_r2_alone_b.30.png",
       "sha1": "102ac3c2ca430f561503e19806e69c9108069aed",
-      "size": 37841
+      "size": 37841,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_08_r2_alone_b.60.png",
       "sha1": "8b7f0d75787bc51fc322effd68dacef0f64129f4",
-      "size": 36806
+      "size": 36806,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_09_r2_cross_3b.15.png",
       "sha1": "e31a4d7f5800ef7d60cb22693fcc079cb1959aae",
-      "size": 26658
+      "size": 26658,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_09_r2_cross_3b.30.png",
       "sha1": "4f1d970439df844b596a96d43fce7099187290aa",
-      "size": 29704
+      "size": 29704,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.in_09_r2_cross_3b.60.png",
       "sha1": "e818d1a96f50cacc0d762daadf56c600486f91da",
-      "size": 33396
+      "size": 33396,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.last.png",
       "sha1": "7c8cc4d69b25117f229ee50f6ebaebcfddc18fd8",
-      "size": 36192
+      "size": 36192,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.script.log",
@@ -504,12 +553,14 @@
     {
       "path": "tmp/throwchars/out\\kaun\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\kaun\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

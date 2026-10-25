@@ -259,92 +259,110 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.jsonl",
       "sha1": "5d003ee01a4d941fc0e7c6a5ca51ab64be2eb8bf",
-      "size": 6174
+      "size": 6174,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.top_menu.last.png",
       "sha1": "57796f5581d020994b86527d04ce6154a42aff56",
-      "size": 29577
+      "size": 29577,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.char_select.first.png",
       "sha1": "12650dd73302791d6a75641d19b06d87746a5997",
-      "size": 20117
+      "size": 20117,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.char_select.last.png",
       "sha1": "2fb06c65e4209755a1cee5aff2b086341bf38fe2",
-      "size": 20796
+      "size": 20796,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.weapon_select.first.png",
       "sha1": "667c1ffaf2241b7013b0e9ad188224737f5c1d01",
-      "size": 19627
+      "size": 19627,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.weapon_select.last.png",
       "sha1": "8a0d4d9964d165274144ee5d6a06a0befc0947d0",
-      "size": 20381
+      "size": 20381,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.t_load.mid.png",
       "sha1": "f138c2114b0116972866751ca74fc598a0950654",
-      "size": 9152
+      "size": 9152,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8350.png",
       "sha1": "3854ff364f140c427352e83df9738d212b2daabd",
-      "size": 29906
+      "size": 29906,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8410.png",
       "sha1": "15066b9eb412e1e8b54233fb7c34d69a5b5edcbc",
-      "size": 29257
+      "size": 29257,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8470.png",
       "sha1": "a9e7277cb2e1253c8eb72bcab9ff0dff2e6f75b0",
-      "size": 35592
+      "size": 35592,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8530.png",
       "sha1": "cded678298ffad9175cd934aa75a9d687131ee02",
-      "size": 39250
+      "size": 39250,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8590.png",
       "sha1": "45abe8187ea8df64398c081127bac16b446dcc52",
-      "size": 39025
+      "size": 39025,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.last.png",
       "sha1": "01b6a0bc37db0d1d59549ceff9a4c6d5d48b5114",
-      "size": 43175
+      "size": 43175,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.after_ko.first.png",
       "sha1": "fc35620e516e01f5bf43aa60ae529881bdd71839",
-      "size": 43227
+      "size": 43227,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.after_ko.last.png",
       "sha1": "75a8bc2d76dd6b295a1bd40969860c4d55e75c5f",
-      "size": 49700
+      "size": 49700,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.script.log",
       "sha1": "5acecb4ad23369a640984adb50464a6e22e38be7",
-      "size": 1429
+      "size": 1429,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc1.mcd",

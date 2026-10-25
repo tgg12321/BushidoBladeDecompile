@@ -254,197 +254,236 @@
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.jsonl",
       "sha1": "ea88b127e2b55b9e45eb8c9737042505bc3470ff",
-      "size": 1106305
+      "size": 1106305,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7350.png",
       "sha1": "847949bb8f24391e6f19c2315b0d23499381a906",
-      "size": 21999
+      "size": 21999,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7410.png",
       "sha1": "df0f86684f708f7058336e6c250c8f728b97b1d7",
-      "size": 22038
+      "size": 22038,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7470.png",
       "sha1": "c81222dd1262f11d0d65752c94cf6f6ac008b7d1",
-      "size": 22097
+      "size": 22097,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7530.png",
       "sha1": "dcaecd1f669c922f0f315c4421df5bedfc9b7bfa",
-      "size": 23016
+      "size": 23016,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7599.png",
       "sha1": "d9942ef326050cb8399679033c8703d16f6fdafb",
-      "size": 23081
+      "size": 23081,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.7645.png",
       "sha1": "aedc9a7fd39c5db67938fdacee69356cd5be6cb2",
-      "size": 23055
+      "size": 23055,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.stage_select.last.png",
       "sha1": "9ab5b38fa2be1b6dfbd9041bfb993ef2538f735f",
-      "size": 23072
+      "size": 23072,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_load.mid.png",
       "sha1": "7011db60e54e8713b5de1e9bcf3e4fb7692ba343",
-      "size": 10340
+      "size": 10340,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_load.last.png",
       "sha1": "137f6050b674a85e1afea9934f962f7c537adb3e",
-      "size": 26672
+      "size": 26672,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.first.png",
       "sha1": "7d242a1f66e7483fdd2064e5ef4b44f76510481e",
-      "size": 26748
+      "size": 26748,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.8900.png",
       "sha1": "c1a5e3293113570b586c30b5f1df26ac1cfb44db",
-      "size": 26268
+      "size": 26268,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.9400.png",
       "sha1": "972448e590bf1825b1e98f92befef1a76aea844c",
-      "size": 26197
+      "size": 26197,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.9700.png",
       "sha1": "f7173924a5cc1798189c6cd4592653ec7bb36168",
-      "size": 30021
+      "size": 30021,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.10000.png",
       "sha1": "cd963f702ba34fa3b5d386048cd38cf3a298b6c0",
-      "size": 31767
+      "size": 31767,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.10200.png",
       "sha1": "58ae2537fccf37fbb1a9987894ac64f7ce99e43d",
-      "size": 31328
+      "size": 31328,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.10300.png",
       "sha1": "1c499cbb7661fac3125e6171341d5c9ef2a1c92c",
-      "size": 30993
+      "size": 30993,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.fight.last.png",
       "sha1": "21cb1a21652de8fa57bc661087c37757e3a94f3f",
-      "size": 33235
+      "size": 33235,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_ko.10455.png",
       "sha1": "06a58586dd61051caa2563464b992fc0df1763fb",
-      "size": 30434
+      "size": 30434,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_ko.10555.png",
       "sha1": "849325cb21901dac1f16734efdcfb33aed0cfa58",
-      "size": 38198
+      "size": 38198,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_ko.10655.png",
       "sha1": "910266385cb604cb46890fcfe34b5dd9e902ad5b",
-      "size": 59397
+      "size": 59397,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_ko.10755.png",
       "sha1": "1f63b8f0393f5c3494cb51d397b55fc6539c7516",
-      "size": 52703
+      "size": 52703,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_ko.10855.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.t_ko.last.png",
       "sha1": "f11d1cbbfe0e13c22828d601919fa9dc07c9b648",
-      "size": 44025
+      "size": 44025,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.rematch_menu.first.png",
       "sha1": "f11d1cbbfe0e13c22828d601919fa9dc07c9b648",
-      "size": 44025
+      "size": 44025,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.rematch_menu.11260.png",
       "sha1": "4325fe20159bd3a7c987250582daa6643403f0ac",
-      "size": 48516
+      "size": 48516,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.rematch_menu.11560.png",
       "sha1": "96fa6621bb1a10859054a2e16858c3bb6eb9c258",
-      "size": 47952
+      "size": 47952,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.rematch_menu.last.png",
       "sha1": "ea43e2cc196dab6eaf4c6148d26cd6459d415298",
-      "size": 45670
+      "size": 45670,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.script.log",
       "sha1": "2fe2e9a327d19abb3087d2fda0ebd2de10b3a523",
-      "size": 4294
+      "size": 4294,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs2\\versus-2p-underrail\\capture.mc1.mcd",

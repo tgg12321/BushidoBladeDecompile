@@ -270,177 +270,212 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.jsonl",
       "sha1": "f5af2ab0bf39628222d596057aa77cfa02f5e9d7",
-      "size": 295094
+      "size": 295094,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.char_select.pick.png",
       "sha1": "bffab7a7132014685f289b1224ada0b949688585",
-      "size": 24832
+      "size": 24832,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.char_select.last.png",
       "sha1": "17a979d4501ff401688a03b98b5f58295db8a728",
-      "size": 20708
+      "size": 20708,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.weapon_select.first.png",
       "sha1": "e667d19cf5ec6648e98793271e6eedf9f31329ee",
-      "size": 17934
+      "size": 17934,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.weapon_select.7650.png",
       "sha1": "da31fa1827f20497b82ab14d7e19d1aecb3c35f5",
-      "size": 21042
+      "size": 21042,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.weapon_select.last.png",
       "sha1": "9aec11421e30f58728754ea0245bf54c062dd7ca",
-      "size": 13440
+      "size": 13440,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.t_stage.mid.png",
       "sha1": "622742c20c930cce957e8d60bc5f42e017e9854a",
-      "size": 5176
+      "size": 5176,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.stage_select.first.png",
       "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
-      "size": 13166
+      "size": 13166,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.t_load.mid.png",
       "sha1": "f6958d2362235b71986d8a7acd3364a4ce464301",
-      "size": 8430
+      "size": 8430,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.t_load.last.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.first.png",
       "sha1": "1dc8d9e179b2564b6247a16f372b309f78a00c0d",
-      "size": 29013
+      "size": 29013,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.8950.png",
       "sha1": "cf69964275fa16e88f5f3f544f300203537c16c2",
-      "size": 30792
+      "size": 30792,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.9070.png",
       "sha1": "6520aa62fb0e5e2915bc5c4d969c0cc46405a745",
-      "size": 30219
+      "size": 30219,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.9100.png",
       "sha1": "28522afce257682e55d4ee3d76e951a341489c0f",
-      "size": 30215
+      "size": 30215,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.9400.png",
       "sha1": "58e790762761439afd72169040b2673cf1d7815e",
-      "size": 28114
+      "size": 28114,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.9700.png",
       "sha1": "54f2f89b4e9a19ce2533b98fdc8230fd3c090b9b",
-      "size": 17544
+      "size": 17544,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10000.png",
       "sha1": "387b21956be94a540acfcc5ac541c18b206225e5",
-      "size": 35071
+      "size": 35071,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10300.png",
       "sha1": "40195f94bfe1d7443ecf3d0f184641e104bb261c",
-      "size": 37204
+      "size": 37204,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10560.png",
       "sha1": "a9e2753554af25b6e129a4bc80d6abdcb27f3e04",
-      "size": 38702
+      "size": 38702,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10580.png",
       "sha1": "6ea0640365f98daea7738fd17ce8f6f74c0558b0",
-      "size": 38656
+      "size": 38656,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10650.png",
       "sha1": "86b2d5727db52eedb5b3d227e07c28e5a0ac5e1c",
-      "size": 35555
+      "size": 35555,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10699.png",
       "sha1": "8048f8af5c6bccf984b914b0e636650bb8783b83",
-      "size": 29883
+      "size": 29883,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10800.png",
       "sha1": "9050027534ae6b6e91f66868885bc3c51a02ccea",
-      "size": 36398
+      "size": 36398,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.10950.png",
       "sha1": "ec2f7c52a6283e11da9a3f3e5cfd14d165a369e4",
-      "size": 30083
+      "size": 30083,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.11100.png",
       "sha1": "a7b628d0858ac867dd0a54f57d4f1c00979092e6",
-      "size": 35531
+      "size": 35531,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.11149.png",
       "sha1": "6aa7ae3721c5f35056fa69024a75d2fbfaf1cc45",
-      "size": 33988
+      "size": 33988,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.11155.png",
       "sha1": "2afc46ddb45a3a95ae87549ebd4812779ed69e82",
-      "size": 33274
+      "size": 33274,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.11500.png",
       "sha1": "a96772909e138491a7a4aba0d3d0b5b81c60b5d4",
-      "size": 35932
+      "size": 35932,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.fight.last.png",
       "sha1": "50459cb5bcea82e77ee011834932eafedb5b38cb",
-      "size": 35661
+      "size": 35661,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.script.log",
       "sha1": "73b6b6b9f9cfa7d2ccaf1a24e2c37edb816dc26a",
-      "size": 3510
+      "size": 3510,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-chihiro-1\\capture.mc1.mcd",

@@ -7,72 +7,86 @@
     {
       "path": "compare.fight.10430.diff.png",
       "sha1": "f1032a1d4981b7f0aa3b618a56d953eac874a1b7",
-      "size": 54395
+      "size": 54395,
+      "stored": true
     },
     {
       "path": "compare.fight.10480.diff.png",
       "sha1": "cd27654712aa91b7db63952de56dcaa74ace8325",
-      "size": 52766
+      "size": 52766,
+      "stored": true
     },
     {
       "path": "compare.fight.10880.diff.png",
       "sha1": "efaaf02523704fe4113c35717780ae44c4315e80",
-      "size": 51584
+      "size": 51584,
+      "stored": true
     },
     {
       "path": "compare.fight.10930.diff.png",
       "sha1": "1136a19b09b37f2a02686e43b05104772eeefdfa",
-      "size": 42998
+      "size": 42998,
+      "stored": true
     },
     {
       "path": "compare.fight.11030.diff.png",
       "sha1": "f8ff550f689d9980aad110ea9ce00fbcbb75264f",
-      "size": 36634
+      "size": 36634,
+      "stored": true
     },
     {
       "path": "compare.fight.11080.diff.png",
       "sha1": "d7de9bc11482a3d3769c55db29301fc13a079ff2",
-      "size": 37169
+      "size": 37169,
+      "stored": true
     },
     {
       "path": "compare.fight.11130.diff.png",
       "sha1": "84fe5a1d0ef418bd3b436ff6b58d3215d7481044",
-      "size": 40660
+      "size": 40660,
+      "stored": true
     },
     {
       "path": "compare.fight.11280.diff.png",
       "sha1": "569117f9ffd7907bc0b69d08fa0fdaf5856e6bcd",
-      "size": 36553
+      "size": 36553,
+      "stored": true
     },
     {
       "path": "compare.fight.11530.diff.png",
       "sha1": "4276cf3ed6bdbe1880685a43a1ad6c1e6dd912ae",
-      "size": 37380
+      "size": 37380,
+      "stored": true
     },
     {
       "path": "compare.fight.11880.diff.png",
       "sha1": "6f2918d1e1d98a1c25b55540d2af4427abb1431e",
-      "size": 39739
+      "size": 39739,
+      "stored": true
     },
     {
       "path": "compare.fight.11930.diff.png",
       "sha1": "8a10fdb8cb89099b90b2c350e8fbefb59b884798",
-      "size": 33765
+      "size": 33765,
+      "stored": true
     },
     {
       "path": "compare.fight.12130.diff.png",
       "sha1": "229c64d82f38d709a0aa5c1dedd32cdd27284afe",
-      "size": 36938
+      "size": 36938,
+      "stored": true
     },
     {
       "path": "compare.fight.9580.diff.png",
       "sha1": "68205ea7454549c1c31827ed920e284ca8ec76de",
-      "size": 51719
+      "size": 51719,
+      "stored": true
     },
     {
       "path": "compare.fight.9930.diff.png",
       "sha1": "080691f7d1d14ff03ed9aa3eb9511e3a8893f635",
-      "size": 49239
+      "size": 49239,
+      "stored": true
     }
   ]
 }

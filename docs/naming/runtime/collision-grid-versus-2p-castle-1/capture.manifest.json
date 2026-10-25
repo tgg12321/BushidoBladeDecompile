@@ -254,202 +254,242 @@
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.jsonl",
       "sha1": "d697de2c7a5f8506fbb31806fcdb55cb150e63e1",
-      "size": 270920
+      "size": 270920,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7350.png",
       "sha1": "847949bb8f24391e6f19c2315b0d23499381a906",
-      "size": 21999
+      "size": 21999,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7410.png",
       "sha1": "df0f86684f708f7058336e6c250c8f728b97b1d7",
-      "size": 22038
+      "size": 22038,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7470.png",
       "sha1": "c81222dd1262f11d0d65752c94cf6f6ac008b7d1",
-      "size": 22097
+      "size": 22097,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7530.png",
       "sha1": "dcaecd1f669c922f0f315c4421df5bedfc9b7bfa",
-      "size": 23016
+      "size": 23016,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7599.png",
       "sha1": "d9942ef326050cb8399679033c8703d16f6fdafb",
-      "size": 23081
+      "size": 23081,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7645.png",
       "sha1": "35a890cb0e2096d500536e79e25156e9610b6bb4",
-      "size": 22976
+      "size": 22976,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.7705.png",
       "sha1": "576e00ce6bb546631d20f41e57ce753b34c930a9",
-      "size": 22922
+      "size": 22922,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.stage_select.last.png",
       "sha1": "6a1e79f477f1d5bce263976191f85b8918e0203a",
-      "size": 22817
+      "size": 22817,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_load.mid.png",
       "sha1": "2060c3b5e9fedcaa9d236aafef7be70b1c68f691",
-      "size": 9966
+      "size": 9966,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_load.last.png",
       "sha1": "ee13fbdfe1c4ab8f946e59b778c5314148c42610",
-      "size": 23346
+      "size": 23346,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.first.png",
       "sha1": "ee13fbdfe1c4ab8f946e59b778c5314148c42610",
-      "size": 23346
+      "size": 23346,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.8900.png",
       "sha1": "c5c9864c58437aca8b0bdc5b47d65d3bcdc33651",
-      "size": 18955
+      "size": 18955,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.9400.png",
       "sha1": "54da2fda044b56b703ca6b4dcacfb173bce13adf",
-      "size": 18986
+      "size": 18986,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.9700.png",
       "sha1": "497bcdfe285e1f05af3190616f3fd1c355fa7f56",
-      "size": 21097
+      "size": 21097,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.10000.png",
       "sha1": "9eea49d960726c8f4e4fc56418a9faafd8d9ee8e",
-      "size": 23123
+      "size": 23123,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.10200.png",
       "sha1": "d57d492b3855a575cde21132971ce19ccafeaa0a",
-      "size": 24027
+      "size": 24027,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.10300.png",
       "sha1": "c8f1c42e80660f6f18a5a63ff32d44fc1bd25dd6",
-      "size": 23670
+      "size": 23670,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.fight.last.png",
       "sha1": "44c388857cd5d9b2cb4532ea99decd9fe3d23df0",
-      "size": 17672
+      "size": 17672,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_ko.10450.png",
       "sha1": "c3efcd0496928b76228672a86fa3426acdc07427",
-      "size": 18716
+      "size": 18716,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_ko.10550.png",
       "sha1": "2935c925bef589095ae004b7aa9ee3aadbe88db9",
-      "size": 21883
+      "size": 21883,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_ko.10650.png",
       "sha1": "3f8017773629555695d28580b9bc0f29aac305d3",
-      "size": 18221
+      "size": 18221,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_ko.10750.png",
       "sha1": "ac9864217d38dd1850799e63fc188b21846d3525",
-      "size": 28502
+      "size": 28502,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_ko.10850.png",
       "sha1": "90358176b2feb916c9bab9c1b4303545872d29d8",
-      "size": 31107
+      "size": 31107,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.t_ko.last.png",
       "sha1": "03b9ac113ccb1317991a4873279b9fa01d7e7f13",
-      "size": 13172
+      "size": 13172,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.rematch_menu.first.png",
       "sha1": "00fc942adfcfabe54ead560ad1fa0b4019d89b45",
-      "size": 13239
+      "size": 13239,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.rematch_menu.11255.png",
       "sha1": "7784cfc463988dd66ad058a98310c0f2e1299382",
-      "size": 25124
+      "size": 25124,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.rematch_menu.11555.png",
       "sha1": "5dbbd2c508cc736a3cc3880d49b5e4041ee26d11",
-      "size": 35881
+      "size": 35881,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.rematch_menu.last.png",
       "sha1": "c18d50ffbff14de04b7cdfed8a3d57866e6499f7",
-      "size": 14453
+      "size": 14453,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.script.log",
       "sha1": "1583d3457397c74ce97d23004685064827388bb2",
-      "size": 4324
+      "size": 4324,
+      "stored": true
     },
     {
       "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/grid4\\versus-2p-castle\\capture.mc1.mcd",

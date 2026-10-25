@@ -259,112 +259,134 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.jsonl",
       "sha1": "4d37ff24aa9df9e78e838a0d06a77130473ce4c6",
-      "size": 6741
+      "size": 6741,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.top_menu.first.png",
       "sha1": "2607fc28352b684edfa2617119a39a158017a61e",
-      "size": 31576
+      "size": 31576,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.top_menu.last.png",
       "sha1": "3c4c3b1a239dcecc8015af2910d6a16bcf8fa8ab",
-      "size": 31548
+      "size": 31548,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.story_text.first.png",
       "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
-      "size": 2288
+      "size": 2288,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.story_text.last.png",
       "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
-      "size": 2288
+      "size": 2288,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.char_select.first.png",
       "sha1": "05c8fcd620261e5646396035747d1e834ab658b3",
-      "size": 19403
+      "size": 19403,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.char_select.last.png",
       "sha1": "e32d5901a4df1c8709e3c040b581b3822d6835fb",
-      "size": 19486
+      "size": 19486,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.weapon_select.first.png",
       "sha1": "8cac00beb32a7a94286a78fe9e4be8f62abf9bf7",
-      "size": 19165
+      "size": 19165,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.weapon_select.last.png",
       "sha1": "45e25dccdfa07a4bed83b6edb0c1cbf8868c7fc6",
-      "size": 18990
+      "size": 18990,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.stage_card.first.png",
       "sha1": "bdb8c6a866f4f40fd3d5ceedd46a617117dba60a",
-      "size": 23905
+      "size": 23905,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.stage_card.last.png",
       "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
-      "size": 24066
+      "size": 24066,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.fight.8900.png",
       "sha1": "b3c06a5c8af18e147aa5bcf40eca551c01365eb3",
-      "size": 32526
+      "size": 32526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.fight.8960.png",
       "sha1": "093e164e2c7dc9a4da60deb6403339e4fb9d8020",
-      "size": 35810
+      "size": 35810,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.fight.9020.png",
       "sha1": "3cf30efd34fad86f29608020224b3bc484c04534",
-      "size": 36991
+      "size": 36991,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.fight.9080.png",
       "sha1": "65cde93f9a038b2d24f9e363785f19403d76fb08",
-      "size": 37976
+      "size": 37976,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.fight.9140.png",
       "sha1": "81d7dda25214e88901b4158fde42fbfe1c34f5b7",
-      "size": 37107
+      "size": 37107,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.fight.last.png",
       "sha1": "b59a3e83bdc16dcbfb01d0b28c4bff1045baf4d4",
-      "size": 38104
+      "size": 38104,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.t_ko.f9299.png",
       "sha1": "98caa6d1f4cff0fd200a6dac95ecdf305edf1ed0",
-      "size": 39340
+      "size": 39340,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.script.log",
       "sha1": "66e4ba32a2cd7b76ca0398925b62f1f9891e8153",
-      "size": 1658
+      "size": 1658,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-stub-1\\func_8003DA8C\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

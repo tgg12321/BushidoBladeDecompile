@@ -254,252 +254,302 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.jsonl",
       "sha1": "592828dcce413c8df43a902a2651d4a4814bd935",
-      "size": 236527
+      "size": 236527,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.8900.png",
       "sha1": "d3e996a99ed9299fb7e0b0da9bb1aae1e0b1c230",
-      "size": 30582
+      "size": 30582,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9050.png",
       "sha1": "d0792bb6238d8c5a57a31f15eb14797171ea9ad0",
-      "size": 35838
+      "size": 35838,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9200.png",
       "sha1": "a4f96bd3f5431941d0332ced666d83c5d03d7a9a",
-      "size": 36013
+      "size": 36013,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9350.png",
       "sha1": "7329041bc493eca4bf8f64c600548f1ca675cc97",
-      "size": 37008
+      "size": 37008,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9500.png",
       "sha1": "ca79ffce27967bac31838bbe337251b41c89145d",
-      "size": 34266
+      "size": 34266,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9650.png",
       "sha1": "2be3769c3178faa6c80e3272f694fcd2ddf04483",
-      "size": 37113
+      "size": 37113,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9800.png",
       "sha1": "5a5109dea01d2c411d61c765ebeb633518a5957d",
-      "size": 32449
+      "size": 32449,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.9950.png",
       "sha1": "e3337fed5e82f4f0cbf7a0d4dbe2eac9e808ac29",
-      "size": 35407
+      "size": 35407,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.10100.png",
       "sha1": "4100d896b1d59e78edc473766a5115a1e598a279",
-      "size": 44148
+      "size": 44148,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.10250.png",
       "sha1": "d10f122f91f437efc528f7160f48dc4e2ebf4d72",
-      "size": 41722
+      "size": 41722,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.10400.png",
       "sha1": "8d6ec5583c0dbb22bb72ea50b1b1a5342667e242",
-      "size": 40695
+      "size": 40695,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.10550.png",
       "sha1": "0b524b3caadf5e6fbf55c97b0251c5d7a173db44",
-      "size": 25204
+      "size": 25204,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.10700.png",
       "sha1": "ea1c7ee7ee7d61b87f48350270f8bdc5596be9a4",
-      "size": 26618
+      "size": 26618,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.10850.png",
       "sha1": "43d3a15596daf4dd3007042ce40d691d28055dee",
-      "size": 26271
+      "size": 26271,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11000.png",
       "sha1": "2ed32a3e6692cd583058e9102ea64dada9d327e2",
-      "size": 32647
+      "size": 32647,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11150.png",
       "sha1": "bd83cdfae542d6e548f4a727616a714c23639b62",
-      "size": 33476
+      "size": 33476,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11300.png",
       "sha1": "eb176b18333bbb03afc66f7d5fb08ab1141705da",
-      "size": 35343
+      "size": 35343,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11450.png",
       "sha1": "ca0d82207de64b8a99b0892fff5d70d7e9197f50",
-      "size": 35041
+      "size": 35041,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11600.png",
       "sha1": "58ce868600a44fdd785842c87eeec1a82d2f8d4e",
-      "size": 36337
+      "size": 36337,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11750.png",
       "sha1": "d8312cb8618b67a18e6b638ce7abbecf0d4da1c2",
-      "size": 37824
+      "size": 37824,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.11900.png",
       "sha1": "41ef2d2cebd86e15fa95b6a436a2e7623b5cf2f8",
-      "size": 36622
+      "size": 36622,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12050.png",
       "sha1": "6afae29ae9d50b6cb0f3a3347db28332ff04aa1f",
-      "size": 36838
+      "size": 36838,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12200.png",
       "sha1": "fe991206ef3386f4cf6bf9da9cbdd72663a59f13",
-      "size": 36662
+      "size": 36662,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12350.png",
       "sha1": "3969f56235b29808d7f485a798a5b79d4d30b8a9",
-      "size": 30643
+      "size": 30643,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12500.png",
       "sha1": "a52d587ebcda6b76640ff15f8a24a386fad70e00",
-      "size": 30685
+      "size": 30685,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12650.png",
       "sha1": "fd0ff16e895d72740014b571deafb8e144e16cc8",
-      "size": 29820
+      "size": 29820,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12800.png",
       "sha1": "9f626919ee5f5a3e98c81784cc4b9193859a8f25",
-      "size": 30846
+      "size": 30846,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.12950.png",
       "sha1": "d27c3ca196bf883fcfacd7fc60e9b4985ecee80e",
-      "size": 31864
+      "size": 31864,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.13100.png",
       "sha1": "f2c7ef314047fecd0dbff8b89137132bb6844b77",
-      "size": 32632
+      "size": 32632,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.13250.png",
       "sha1": "e1af549428114bc1e57cb885e44e15716e1846e8",
-      "size": 33774
+      "size": 33774,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.13400.png",
       "sha1": "4b08780978b6b3108fa371ec5fd63373c317069a",
-      "size": 34653
+      "size": 34653,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.13550.png",
       "sha1": "1efc8d4eeb047510f749e7d52e6f8f38ec068694",
-      "size": 34469
+      "size": 34469,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.13700.png",
       "sha1": "98378d43a9ce1de6e014a5eb4131d01b7e1657c4",
-      "size": 34862
+      "size": 34862,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.13850.png",
       "sha1": "eb18085d134ca472812f2d56efecf6fb66553e73",
-      "size": 36231
+      "size": 36231,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14000.png",
       "sha1": "3a41fe7e899700bc7b2ee01538a3ba3e583d8ba4",
-      "size": 35616
+      "size": 35616,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14150.png",
       "sha1": "cdf2b9680d729575220e4a1a74329d11333bc52e",
-      "size": 34702
+      "size": 34702,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14300.png",
       "sha1": "9673d89b5ae09a184650ebed11cdc744d8a2ec23",
-      "size": 35929
+      "size": 35929,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14450.png",
       "sha1": "bf62f09043292cd3b5ae4dda5d1ae1ae0a7596e7",
-      "size": 29190
+      "size": 29190,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14600.png",
       "sha1": "023b055d809aadfe462802243944109822ddf83f",
-      "size": 30962
+      "size": 30962,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14750.png",
       "sha1": "e107f32fcaaa6a76fdb85c8198c7e68616c0602c",
-      "size": 31546
+      "size": 31546,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.14900.png",
       "sha1": "89645dec40ff1ebd71ee44f056130c874ab2be2c",
-      "size": 32562
+      "size": 32562,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15050.png",
       "sha1": "c039756fe989ba19f84fd34db4ad2a0b96cdc197",
-      "size": 33522
+      "size": 33522,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15200.png",
       "sha1": "7c4a9def02e3bea6000ab6579e3921b268b4ae87",
-      "size": 34840
+      "size": 34840,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15350.png",
       "sha1": "3b2db05bc471cd1d11a907ee27812fe07d8ccedc",
-      "size": 34774
+      "size": 34774,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15500.png",
       "sha1": "b5d262e938929ae388f84422751648e8b64d3518",
-      "size": 35571
+      "size": 35571,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15650.png",
       "sha1": "bd5dc42e49289341b6c5dea82034587ddac28d5b",
-      "size": 36590
+      "size": 36590,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15800.png",
       "sha1": "b7b7843adae9fdda4839761a7569f2e8228b745a",
-      "size": 35306
+      "size": 35306,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.s.15950.png",
       "sha1": "8201f159fdaee75ac4de6cd3fe1f544e1f871465",
-      "size": 28572
+      "size": 28572,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.script.log",
@@ -509,12 +559,14 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\story\\idle1\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

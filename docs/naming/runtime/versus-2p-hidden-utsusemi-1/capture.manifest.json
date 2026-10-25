@@ -270,177 +270,212 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.jsonl",
       "sha1": "e2de6b83a14cd533ff784449bcb159fdcad344f4",
-      "size": 259483
+      "size": 259483,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.char_select.pick.png",
       "sha1": "0c7a413e8180160b582769c517cb2d29e863575b",
-      "size": 26781
+      "size": 26781,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.char_select.last.png",
       "sha1": "9bdff221a55ba8cc87f0e3a558a0b8862ce9c6e9",
-      "size": 23161
+      "size": 23161,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.weapon_select.first.png",
       "sha1": "617d1996b078ffe835daa754f4528377a73dc28c",
-      "size": 19857
+      "size": 19857,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.weapon_select.7650.png",
       "sha1": "fe6dcb891b9ba3e934575d555ea34fe3a5074b2f",
-      "size": 22785
+      "size": 22785,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.weapon_select.last.png",
       "sha1": "f55775def54fa8ac9f94a4a4e7b2dddf215aa0d6",
-      "size": 15124
+      "size": 15124,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.stage_select.first.png",
       "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
-      "size": 13166
+      "size": 13166,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.t_load.mid.png",
       "sha1": "cce40ef37dc172899fd6f61b5fcb673aafe3550a",
-      "size": 8988
+      "size": 8988,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.t_load.last.png",
       "sha1": "bee7a6e0276461d6dde355c1e87c9bd2a0ad54f5",
-      "size": 11591
+      "size": 11591,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.first.png",
       "sha1": "bee7a6e0276461d6dde355c1e87c9bd2a0ad54f5",
-      "size": 11591
+      "size": 11591,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.8950.png",
       "sha1": "8b0126f92ed54bc0ea97b3acf34c4316b3b17b6c",
-      "size": 32275
+      "size": 32275,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.9070.png",
       "sha1": "f95cdf79894a611d8fdeff0cd0dde8468c3ee30c",
-      "size": 27345
+      "size": 27345,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.9100.png",
       "sha1": "3ec79def672443a4e32c59e6ab000efe4e1c8b8e",
-      "size": 37627
+      "size": 37627,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.9400.png",
       "sha1": "102f2025247bac370ab2cfd20d3bdfcb6128547c",
-      "size": 31970
+      "size": 31970,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.9700.png",
       "sha1": "606859553ec9ea643ee45e35a9415ec7cc987b2c",
-      "size": 32559
+      "size": 32559,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10000.png",
       "sha1": "19f8fc73596a701bd51e575e666ffed74b50aa79",
-      "size": 40272
+      "size": 40272,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10300.png",
       "sha1": "c4337bc01f6c96e9a0d38ee127fa3bdb11d8cbb7",
-      "size": 27416
+      "size": 27416,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10560.png",
       "sha1": "e5dfe221f527762384cd5aafb4f133ef5c34239f",
-      "size": 28048
+      "size": 28048,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10580.png",
       "sha1": "f87ff1bd6ed22aa7b8a5e7951daec982909d635c",
-      "size": 31114
+      "size": 31114,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10650.png",
       "sha1": "71655cc3f846ddc712b64cd7c31d3e0b3ac3e4df",
-      "size": 34440
+      "size": 34440,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10699.png",
       "sha1": "7e8410524a41a9fe91139008bab9d9b21c4466cd",
-      "size": 33344
+      "size": 33344,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10800.png",
       "sha1": "ca7fad7e1a967d793403f3ded10dfd736e8bce31",
-      "size": 28124
+      "size": 28124,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.10950.png",
       "sha1": "d16c3f2006b93e5335d828d3790c6188b34f4c88",
-      "size": 33402
+      "size": 33402,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.11100.png",
       "sha1": "66744b67e396566ae9fddc744c70c35c528ac2e1",
-      "size": 30695
+      "size": 30695,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.11149.png",
       "sha1": "98173ac987e5401529cd206b5cee09b3845e2256",
-      "size": 33934
+      "size": 33934,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.11155.png",
       "sha1": "1ff0567f57969901188c58147ea329664b6864e7",
-      "size": 34113
+      "size": 34113,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.11500.png",
       "sha1": "cd686167a70ec69aed1dd32fc38477caec6c8b67",
-      "size": 35685
+      "size": 35685,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.fight.last.png",
       "sha1": "9204cb83a0ec0fa64ddabc77fc11dfaffeaaf4e3",
-      "size": 29061
+      "size": 29061,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.script.log",
       "sha1": "417bd4162dfb798bd82ce1cc9f188c045e32f6a4",
-      "size": 3434
+      "size": 3434,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-utsusemi-1\\capture.mc1.mcd",

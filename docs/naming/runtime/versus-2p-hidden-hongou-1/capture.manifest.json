@@ -270,177 +270,212 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.jsonl",
       "sha1": "4f7240091db91564b91cb6fec96976cd762fe344",
-      "size": 301160
+      "size": 301160,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.char_select.pick.png",
       "sha1": "c83dedb8ebdacbcd1ce9710944135f51a1b88b0f",
-      "size": 26337
+      "size": 26337,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.char_select.last.png",
       "sha1": "1516fe6acf7386c1c4c6c9bd09fe2edf10129668",
-      "size": 22253
+      "size": 22253,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.weapon_select.first.png",
       "sha1": "1a46dfab560906f647972acda33cfc81a5d9a991",
-      "size": 19473
+      "size": 19473,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.weapon_select.7650.png",
       "sha1": "71f51264a7f9f5f2aa6c1032fd4c27219b2b3ea1",
-      "size": 22532
+      "size": 22532,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.weapon_select.last.png",
       "sha1": "15bdde406cb03f7361b517b598c895eb6059a3bb",
-      "size": 14645
+      "size": 14645,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.t_stage.mid.png",
       "sha1": "622742c20c930cce957e8d60bc5f42e017e9854a",
-      "size": 5176
+      "size": 5176,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.stage_select.first.png",
       "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
-      "size": 13166
+      "size": 13166,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.t_load.mid.png",
       "sha1": "b91fdcda70fbfc4ce5e306700af116dd879c879f",
-      "size": 7947
+      "size": 7947,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.t_load.last.png",
       "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
-      "size": 526
+      "size": 526,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.first.png",
       "sha1": "3f314e5aeebf193d39beb5c0179c706b23a10036",
-      "size": 28708
+      "size": 28708,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.8950.png",
       "sha1": "c4e181068460c8a062a5506bb87541331b7aa46f",
-      "size": 30553
+      "size": 30553,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.9070.png",
       "sha1": "46f219b7fc795322533777044831be2243be9c2c",
-      "size": 26780
+      "size": 26780,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.9100.png",
       "sha1": "2026d787e307e7ac18c2a96b373e3fba2c6449ff",
-      "size": 36962
+      "size": 36962,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.9400.png",
       "sha1": "19ae590db39fc5b85b140ba834af25f8546623d8",
-      "size": 30546
+      "size": 30546,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.9700.png",
       "sha1": "ce73eda0289da4546da9b4560d52c49e01cd51f2",
-      "size": 32479
+      "size": 32479,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10000.png",
       "sha1": "ae28f2b5211ed9651271f765cd0289ef3ae8ad25",
-      "size": 33204
+      "size": 33204,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10300.png",
       "sha1": "2532b00dd55c5e62f9f13447b76dd9cb43c5322f",
-      "size": 27842
+      "size": 27842,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10560.png",
       "sha1": "cf6884549eec0cf02c7ddc2ceeffd4b6f6589da4",
-      "size": 25921
+      "size": 25921,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10580.png",
       "sha1": "6b0bfcbdb3b8576b21bcb732d35d3ff589dd7a14",
-      "size": 28554
+      "size": 28554,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10650.png",
       "sha1": "51b17c6ec58c33bb541bd919ce7ccc39e5a5cd4c",
-      "size": 32685
+      "size": 32685,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10699.png",
       "sha1": "b5b900f3d646603c3d56c3d76441718734c847c9",
-      "size": 31989
+      "size": 31989,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10800.png",
       "sha1": "13a40bbe6a405bde97b688432ba520e0387e12d9",
-      "size": 27430
+      "size": 27430,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.10950.png",
       "sha1": "88a4539be6dd8dbba5ddf1c103c825259c679175",
-      "size": 32997
+      "size": 32997,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.11100.png",
       "sha1": "75d190b9046ac5a8a6133e991d105a7502beaa8c",
-      "size": 30193
+      "size": 30193,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.11149.png",
       "sha1": "ea641ddde2d11b056d0b93dbe12bdbe80a24b157",
-      "size": 33829
+      "size": 33829,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.11155.png",
       "sha1": "7db06766d163b1dad749eabbde5e47e08322ff12",
-      "size": 34349
+      "size": 34349,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.11500.png",
       "sha1": "a4c7e84e83f3251f74fda6ed2872b37cabe6eced",
-      "size": 34464
+      "size": 34464,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.fight.last.png",
       "sha1": "9ecf0e8bb2fb6e380c3c2d0f4a5be3c104446e6d",
-      "size": 29412
+      "size": 29412,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.script.log",
       "sha1": "462f9ca66dde5d188a9ad75c2a90f40c81909139",
-      "size": 3476
+      "size": 3476,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-hongou-1\\capture.mc1.mcd",

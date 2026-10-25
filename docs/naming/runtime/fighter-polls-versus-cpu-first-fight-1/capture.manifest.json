@@ -254,82 +254,98 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.jsonl",
       "sha1": "6f7e6d922db63ab7928e90c00a65152b0b22d083",
-      "size": 1622654
+      "size": 1622654,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.top_menu.last.png",
       "sha1": "57796f5581d020994b86527d04ce6154a42aff56",
-      "size": 29577
+      "size": 29577,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.char_select.first.png",
       "sha1": "12650dd73302791d6a75641d19b06d87746a5997",
-      "size": 20117
+      "size": 20117,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.char_select.last.png",
       "sha1": "2fb06c65e4209755a1cee5aff2b086341bf38fe2",
-      "size": 20796
+      "size": 20796,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.weapon_select.first.png",
       "sha1": "667c1ffaf2241b7013b0e9ad188224737f5c1d01",
-      "size": 19627
+      "size": 19627,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.weapon_select.last.png",
       "sha1": "8a0d4d9964d165274144ee5d6a06a0befc0947d0",
-      "size": 20381
+      "size": 20381,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.t_load.mid.png",
       "sha1": "f138c2114b0116972866751ca74fc598a0950654",
-      "size": 9152
+      "size": 9152,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.fight.first.png",
       "sha1": "3854ff364f140c427352e83df9738d212b2daabd",
-      "size": 29906
+      "size": 29906,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.fight.last.png",
       "sha1": "4ac65faf5320a487108f8c3613d34c25618c5cba",
-      "size": 44599
+      "size": 44599,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.after_ko.first.png",
       "sha1": "4770c78ff35be1d7f2877e38f3fdddc1badd5c49",
-      "size": 41774
+      "size": 41774,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.after_ko.last.png",
       "sha1": "42a2ddf8aeeaae6a4bd989fba32a9c20a91ce1c9",
-      "size": 41715
+      "size": 41715,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.pause_menu.first.png",
       "sha1": "7002da9e15e93b2b2f2f7ecd9a540d8c009c91ee",
-      "size": 45272
+      "size": 45272,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.pause_menu.last.png",
       "sha1": "7002da9e15e93b2b2f2f7ecd9a540d8c009c91ee",
-      "size": 45272
+      "size": 45272,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.script.log",
       "sha1": "dc8203b678960a9a3424b54c4ddacc11f79716ba",
-      "size": 1457
+      "size": 1457,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\fighter-polls-versus-cpu-first-fight-1\\capture.mc1.mcd",

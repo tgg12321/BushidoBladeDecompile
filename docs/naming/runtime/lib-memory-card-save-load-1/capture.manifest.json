@@ -237,122 +237,146 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.jsonl",
       "sha1": "6c1fabd725a761b95e03fb1c4d51f4fa17d31146",
-      "size": 208634
+      "size": 208634,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.top_menu.last.png",
       "sha1": "60c1ea16d7d09be1cfc0ec912b4c4615b77aecf1",
-      "size": 29644
+      "size": 29644,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.option_menu.first.png",
       "sha1": "66f7dc9b271e5b9ff90d046635613b8a039715b8",
-      "size": 23021
+      "size": 23021,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.option_menu.card_cursor.png",
       "sha1": "dd1d60c0f88f207ebcaa67ecabb8839602f8554f",
-      "size": 23037
+      "size": 23037,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.memory_card.first.png",
       "sha1": "a253cfb2090e75c02531d50b9e38183c68a67ac2",
-      "size": 18169
+      "size": 18169,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.memory_card.load_cursor.png",
       "sha1": "ba9c050426b436a91fbfc40a0063ffe3c4bd831f",
-      "size": 18071
+      "size": 18071,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load_empty.checking.png",
       "sha1": "c834fa51e42284ba5b63c9bcff1f62f8fe379ffd",
-      "size": 19206
+      "size": 19206,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load_empty.no_data.png",
       "sha1": "d5a136883a5dc1ca5e9ea0613e86ed571a488efe",
-      "size": 19100
+      "size": 19100,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load_empty.save_cursor.png",
       "sha1": "ffc8720fe28e21b9950ab60f5fdb1ad68306088e",
-      "size": 18156
+      "size": 18156,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.save.prompt.png",
       "sha1": "9da034048d521aa5129de40392fab4c0747c6c2e",
-      "size": 19588
+      "size": 19588,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.save.checking.png",
       "sha1": "044407a26fd77a9ece5b93c896c385b5026f87a1",
-      "size": 19210
+      "size": 19210,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.save.saving.png",
       "sha1": "6d23a20a0be7475d3341c1478336634eca28a38b",
-      "size": 18868
+      "size": 18868,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.save.completed.png",
       "sha1": "c6779afa8480f59b4caab8066410ba39810aec03",
-      "size": 18989
+      "size": 18989,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.save.last.png",
       "sha1": "ffc8720fe28e21b9950ab60f5fdb1ad68306088e",
-      "size": 18156
+      "size": 18156,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.save.load_cursor.png",
       "sha1": "ba9c050426b436a91fbfc40a0063ffe3c4bd831f",
-      "size": 18071
+      "size": 18071,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load.checking.png",
       "sha1": "c834fa51e42284ba5b63c9bcff1f62f8fe379ffd",
-      "size": 19206
+      "size": 19206,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load.loading.png",
       "sha1": "119ffe2ee871c20076f5e2d32e4fcd97fd8b9eab",
-      "size": 18760
+      "size": 18760,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load.completed.png",
       "sha1": "2c9c0d494c4cd60a30cd618fc62a8ecf27c6bdb7",
-      "size": 18890
+      "size": 18890,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.load.last.png",
       "sha1": "ba9c050426b436a91fbfc40a0063ffe3c4bd831f",
-      "size": 18071
+      "size": 18071,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.option_menu_2.first.png",
       "sha1": "77e9b02712267cad629aaeef6ed6be0e07cf95d9",
-      "size": 22994
+      "size": 22994,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.option_menu_2.last.png",
       "sha1": "7808d7da3490ceaefbce902ea51c54f3ddd0e853",
-      "size": 22993
+      "size": 22993,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.script.log",
       "sha1": "cd72af8bbf61d1da1a4464af9e1402425fc4e5c7",
-      "size": 1854
+      "size": 1854,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-b\\docs\\naming\\runtime\\lib-memory-card-save-load-1\\capture.mc1.mcd",

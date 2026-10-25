@@ -254,222 +254,266 @@
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.jsonl",
       "sha1": "ac5de431bba468ea14c8efcbfffd8ca2c91fa52d",
-      "size": 218891
+      "size": 218891,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.weapon_select.pick.png",
       "sha1": "b59a589a5b7cb6dbab16ab41063dd39b3be5bbc7",
-      "size": 22840
+      "size": 22840,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.t_stage.mid.png",
       "sha1": "be2e1b42b4a564a456d2a671bc150ec07ef51304",
-      "size": 6614
+      "size": 6614,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.t_load.mid.png",
       "sha1": "f9098b9de6f3bb59c7ba9cba2eb425d5f7726c79",
-      "size": 10069
+      "size": 10069,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.t_load.last.png",
       "sha1": "67a199c89a729f1d7b2af37b33404879a862bca9",
-      "size": 54662
+      "size": 54662,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.first.png",
       "sha1": "d3a39a550d9e19608666b50e34d50367537817bd",
-      "size": 54214
+      "size": 54214,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8330.png",
       "sha1": "54eec6d582996c3bec9b9183a029038b3507feeb",
-      "size": 50665
+      "size": 50665,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8430.png",
       "sha1": "171a01d8a51796074a79ac66991d1479e89f1f05",
-      "size": 50742
+      "size": 50742,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8530.png",
       "sha1": "1b61548438b3363056b6b43f20a6203ed1bfc155",
-      "size": 51426
+      "size": 51426,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8630.png",
       "sha1": "a174151784816e1408df5324409c5716e95a28a6",
-      "size": 54538
+      "size": 54538,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8730.png",
       "sha1": "aeb2fe34cfe7111063f991f9343e2716e73557cb",
-      "size": 55767
+      "size": 55767,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8830.png",
       "sha1": "ecc77f4652f66f214e9488f828df15b268733458",
-      "size": 54197
+      "size": 54197,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.8930.png",
       "sha1": "0426cc68c0fe4f512ed16508ee33100ef627ee13",
-      "size": 54864
+      "size": 54864,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9030.png",
       "sha1": "223e7a3ffe474d346bd2a47df3f6652e3b45c4d7",
-      "size": 53037
+      "size": 53037,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9130.png",
       "sha1": "be68f16ece9b7394ea4e07e068dc10a918747476",
-      "size": 53518
+      "size": 53518,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9230.png",
       "sha1": "956f25bc03658896260a5736c5a4541e18a6333f",
-      "size": 54235
+      "size": 54235,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9330.png",
       "sha1": "38f74f534755ca7f45d00fb33676c86f0e156d42",
-      "size": 53900
+      "size": 53900,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9430.png",
       "sha1": "e819375a54845bf3e41582ca3c4afb5f82bf54a9",
-      "size": 54301
+      "size": 54301,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9530.png",
       "sha1": "8b983b2daa41398d23123abc813625619d040f21",
-      "size": 53286
+      "size": 53286,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9630.png",
       "sha1": "90bbf8f420fd9abfdaa9a154f4ed50ca10bcbdac",
-      "size": 50485
+      "size": 50485,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9730.png",
       "sha1": "e68f03ae601d2d5aa3875e6086e184b4fec830e1",
-      "size": 51779
+      "size": 51779,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9830.png",
       "sha1": "faf3c4df43342d54a0f9d18a36e903528c2761ec",
-      "size": 51902
+      "size": 51902,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.9930.png",
       "sha1": "07909ac4c2e279088692e68dcbfe15a3d0cc2897",
-      "size": 51436
+      "size": 51436,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.10030.png",
       "sha1": "ad8d472f9126a867d2052928233bc892217548e8",
-      "size": 53601
+      "size": 53601,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.10130.png",
       "sha1": "d2cb3c4c46f369cec13a6415ca0592389cc75b3e",
-      "size": 51422
+      "size": 51422,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.10230.png",
       "sha1": "32db07b03aef2fbf9937043e5be87aa39a19df30",
-      "size": 56095
+      "size": 56095,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.10330.png",
       "sha1": "1af0259954e099bc023dfdf9567140dc71d55912",
-      "size": 33181
+      "size": 33181,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.10430.png",
       "sha1": "afe8f58054745c93cb527c6686219c214f7e5cdf",
-      "size": 35380
+      "size": 35380,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.fight.10530.png",
       "sha1": "60904b0cae14092f593cdbec333a77c781e9336e",
-      "size": 37364
+      "size": 37364,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.script.log",
       "sha1": "02364d33e6b86b7a2b8990ee878effa5ab28d1b0",
-      "size": 9081
+      "size": 9081,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-broadsword-longsword\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

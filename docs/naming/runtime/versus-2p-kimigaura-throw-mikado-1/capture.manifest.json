@@ -254,247 +254,296 @@
     {
       "path": "tmp/throwchars/out\\mikado\\capture.jsonl",
       "sha1": "3ca21975923172682eccdc94732641d2ad3800bd",
-      "size": 49749
+      "size": 49749,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.char_select.pre.png",
       "sha1": "c4f58cdb780aea1e48648d84fd6d5896bc16f5bd",
-      "size": 21388
+      "size": 21388,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.char_select.last.png",
       "sha1": "ee4ddc2b6a12eb538959a5f58c6c78e7f2e84797",
-      "size": 21256
+      "size": 21256,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.weapon_select.first.png",
       "sha1": "4a82439b20eb329029a676cab49ccffc97d0de24",
-      "size": 21722
+      "size": 21722,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.weapon_select.last.png",
       "sha1": "1bdb3fea668430119f6734ea2718aeb675d8d3e7",
-      "size": 4352
+      "size": 4352,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.t_stage.mid.png",
       "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
-      "size": 5188
+      "size": 5188,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.t_load.mid.png",
       "sha1": "cdf81f626542189ba68c7b80412da3dd56cdb0c3",
-      "size": 9193
+      "size": 9193,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.t_load.last.png",
       "sha1": "4b117266d24c591d27899f23622c0482ec09f7e4",
-      "size": 53225
+      "size": 53225,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.fight.first.png",
       "sha1": "e9c1803497187f4c88b62f3b4b3aa5bfcfae1f71",
-      "size": 52470
+      "size": 52470,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_00_r2_circle_3.15.png",
       "sha1": "66c899a2e15f741a3f438c59429f1e6e93b568b4",
-      "size": 49340
+      "size": 49340,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_00_r2_circle_3.30.png",
       "sha1": "535055aacf53d1a49412fa0368455a92b39e6e90",
-      "size": 49684
+      "size": 49684,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_00_r2_circle_3.60.png",
       "sha1": "6a906429a3732c20529cc10efa3edd1ecd573bd4",
-      "size": 51039
+      "size": 51039,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_01_r2_cross_3.15.png",
       "sha1": "52efda4853ae3f8c2ae96ce309c5ab3b2cda12af",
-      "size": 49876
+      "size": 49876,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_01_r2_cross_3.30.png",
       "sha1": "92f7c4a1b3ddf704b565604f9501d89591135ad9",
-      "size": 48891
+      "size": 48891,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_01_r2_cross_3.60.png",
       "sha1": "51bd6a9ab95992d380843d6a146107e159aa5234",
-      "size": 50404
+      "size": 50404,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_02_r2_circle_1.15.png",
       "sha1": "e0cfafa5e65e3a557d19f029dd5cd24ae09b34db",
-      "size": 49352
+      "size": 49352,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_02_r2_circle_1.30.png",
       "sha1": "f3ea31f7a532c9c1ef690eb93f00d69fce15fa11",
-      "size": 49307
+      "size": 49307,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_02_r2_circle_1.60.png",
       "sha1": "03a9b0287dd05df5f0c49bcfd8e3744d25bff1d3",
-      "size": 50428
+      "size": 50428,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_03_r2_cross_5.15.png",
       "sha1": "0bad5ab46d51e5f9784465256e35a7ebfb494e63",
-      "size": 49382
+      "size": 49382,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_03_r2_cross_5.30.png",
       "sha1": "4ba966891bf6250b9ff891b30dcc1d56639f1911",
-      "size": 49164
+      "size": 49164,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_03_r2_cross_5.60.png",
       "sha1": "d8381a1d8c28a2089b03407721804461f2fbd5c8",
-      "size": 50886
+      "size": 50886,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_04_r2_circle_7.15.png",
       "sha1": "08168f04a77d6e97625504697957f50c7dd1b091",
-      "size": 49447
+      "size": 49447,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_04_r2_circle_7.30.png",
       "sha1": "8fe4cf0867edccda61cd90f19825cfff3b89849a",
-      "size": 50553
+      "size": 50553,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_04_r2_circle_7.60.png",
       "sha1": "a55e17e10da6ccddf95958de492d8a21729bac50",
-      "size": 51439
+      "size": 51439,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_05_r2_square_3.15.png",
       "sha1": "826315849aa6b70e7193b1c7671e168e5aae492a",
-      "size": 49737
+      "size": 49737,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_05_r2_square_3.30.png",
       "sha1": "aa92ff8d184b38db83093c93725a067e5ffc5a1c",
-      "size": 48632
+      "size": 48632,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_05_r2_square_3.60.png",
       "sha1": "509d5dd9086351f8f28dc887dd207aacb2942c32",
-      "size": 49770
+      "size": 49770,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_06_r2_alone.15.png",
       "sha1": "79e9bfc1258815287da4b14086fc980748d8ae50",
-      "size": 48987
+      "size": 48987,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_06_r2_alone.30.png",
       "sha1": "8fccb2cea846cb8ef0fe600325c04586de7b2b4f",
-      "size": 48647
+      "size": 48647,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_06_r2_alone.60.png",
       "sha1": "0d441b6ea79daf8645aad84cde1e9ba252cac0a3",
-      "size": 49536
+      "size": 49536,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_07_r2_circle_3b.15.png",
       "sha1": "fa7ff5a59484593dd23e3307b90831f312f619b2",
-      "size": 48659
+      "size": 48659,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_07_r2_circle_3b.30.png",
       "sha1": "1c42592f2b49caa27a404895155395141edefda5",
-      "size": 49555
+      "size": 49555,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_07_r2_circle_3b.60.png",
       "sha1": "92c19854a5c9c133825fdc7c24cf8608397cb89d",
-      "size": 49860
+      "size": 49860,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_08_r2_alone_b.15.png",
       "sha1": "43d86ee50bb772d4e5b13e6f1850ab79166b6b8b",
-      "size": 51281
+      "size": 51281,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_08_r2_alone_b.30.png",
       "sha1": "6fef916cdaccce0498c2550c7c18798f9c54282a",
-      "size": 49704
+      "size": 49704,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_08_r2_alone_b.60.png",
       "sha1": "5a84ba00e242b6d6b1cda058226e7be42b19ccc9",
-      "size": 50958
+      "size": 50958,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_09_r2_cross_3b.15.png",
       "sha1": "d8bcc66716a6d7363cf052cc40a0003b937d85e5",
-      "size": 49844
+      "size": 49844,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_09_r2_cross_3b.30.png",
       "sha1": "ebfea264e43dd0b9f2e98896bcd6006774994352",
-      "size": 49602
+      "size": 49602,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.in_09_r2_cross_3b.60.png",
       "sha1": "0b0dc4165e2e69fac24c88246ebd09f302fa9502",
-      "size": 51294
+      "size": 51294,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.last.png",
       "sha1": "2c6b8bc22d76ffc883a960ea80ed187e89439172",
-      "size": 51380
+      "size": 51380,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.script.log",
@@ -504,12 +553,14 @@
     {
       "path": "tmp/throwchars/out\\mikado\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "tmp/throwchars/out\\mikado\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

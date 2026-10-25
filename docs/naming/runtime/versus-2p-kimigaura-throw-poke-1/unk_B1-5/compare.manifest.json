@@ -7,27 +7,32 @@
     {
       "path": "compare.in_01_r2_cross_3.60.diff.png",
       "sha1": "7e63078999015b2c16150c33ac97995546156b85",
-      "size": 51569
+      "size": 51569,
+      "stored": true
     },
     {
       "path": "compare.in_03_r2_cross_5.60.diff.png",
       "sha1": "32606f9cb1acb5f452cc91c9333e54dfceaa7865",
-      "size": 52147
+      "size": 52147,
+      "stored": true
     },
     {
       "path": "compare.in_04_r2_circle_7.60.diff.png",
       "sha1": "e91fd900b6a9f4aa81a5e05df4743f7dc6bd2f1e",
-      "size": 52094
+      "size": 52094,
+      "stored": true
     },
     {
       "path": "compare.in_07_r2_circle_3b.60.diff.png",
       "sha1": "74cd3215367c6d3e9b4095f30a487f5c08108383",
-      "size": 52949
+      "size": 52949,
+      "stored": true
     },
     {
       "path": "compare.in_09_r2_cross_3b.60.diff.png",
       "sha1": "aa2724c6c005c16e445d3dba10b4ca4d4de217d1",
-      "size": 52531
+      "size": 52531,
+      "stored": true
     }
   ]
 }

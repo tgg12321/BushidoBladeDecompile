@@ -270,177 +270,212 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.jsonl",
       "sha1": "6a37f1cd317035701b41f40f473532b07b79c862",
-      "size": 294350
+      "size": 294350,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.char_select.first.png",
       "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
-      "size": 26567
+      "size": 26567,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.char_select.pick.png",
       "sha1": "73aa7e5d41c784b879da483dd7a69ecc501bfb8d",
-      "size": 26879
+      "size": 26879,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.char_select.last.png",
       "sha1": "6e4328bd901ada87fc924970da446f3f814880bc",
-      "size": 22707
+      "size": 22707,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.weapon_select.first.png",
       "sha1": "22f8b95d0fa1d5651f19480bbf633d52ffa5fd75",
-      "size": 19917
+      "size": 19917,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.weapon_select.7650.png",
       "sha1": "a93db7b2a8b6b977125d06a379d894be618315aa",
-      "size": 22931
+      "size": 22931,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.weapon_select.last.png",
       "sha1": "2721deb9081239839f7371df7e47aa200d3919ee",
-      "size": 15591
+      "size": 15591,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.t_stage.mid.png",
       "sha1": "622742c20c930cce957e8d60bc5f42e017e9854a",
-      "size": 5176
+      "size": 5176,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.stage_select.first.png",
       "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
-      "size": 13166
+      "size": 13166,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.stage_select.last.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.t_load.mid.png",
       "sha1": "61be90f7fc200ce2a8aa9c4a776de2e68b1656dc",
-      "size": 8970
+      "size": 8970,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.t_load.last.png",
       "sha1": "04c0244ce4d3c265e3c65d9e8696b8ef48278cb8",
-      "size": 28103
+      "size": 28103,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.first.png",
       "sha1": "d8653ff374771f37c618c1806a9ff7b1cfe497fc",
-      "size": 28372
+      "size": 28372,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.8950.png",
       "sha1": "3b82af298fce7e9483e8707210e1bb3a91466df4",
-      "size": 30127
+      "size": 30127,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.9070.png",
       "sha1": "4f18a842f4b314efb8febaf8d932e7a0c28c97fa",
-      "size": 29605
+      "size": 29605,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.9100.png",
       "sha1": "c585fe4d7217acf7751ba39ee702e643c94a141c",
-      "size": 29858
+      "size": 29858,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.9400.png",
       "sha1": "9d33b01f0e7a361e7d73192169a28b9af6c33ea9",
-      "size": 34218
+      "size": 34218,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.9700.png",
       "sha1": "31cd4ab8fc64069a346dc5dede15cabcca40376b",
-      "size": 34947
+      "size": 34947,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10000.png",
       "sha1": "64c7b6d49851c05f7c3e271bcb78d96685732558",
-      "size": 18036
+      "size": 18036,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10300.png",
       "sha1": "112f28fa973191cd380649e92c43e38e22bb9f98",
-      "size": 35543
+      "size": 35543,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10560.png",
       "sha1": "ac27867f00fd3b10bd480f2996245532e426734e",
-      "size": 31889
+      "size": 31889,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10580.png",
       "sha1": "a6c993701015c1ba5f8ec8f05e19a459ce186322",
-      "size": 33479
+      "size": 33479,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10650.png",
       "sha1": "7d27db5d015e9447342c1969875ac726e1de69a5",
-      "size": 33426
+      "size": 33426,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10699.png",
       "sha1": "61c3a15f8a737d5c00a13833256999006af710d9",
-      "size": 35132
+      "size": 35132,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10800.png",
       "sha1": "8dd6931b7f796b3bae94a968e596f17f9406eb4c",
-      "size": 37554
+      "size": 37554,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.10950.png",
       "sha1": "7ddd5597a821bff10b19a1242361a71f4146fb37",
-      "size": 34482
+      "size": 34482,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.11100.png",
       "sha1": "6d9917584c619ccd598a9965c0ac3fd025a64a53",
-      "size": 38729
+      "size": 38729,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.11149.png",
       "sha1": "cdc8dcff3b6e479ed13c97fae94b0380f6f8cf48",
-      "size": 38831
+      "size": 38831,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.11155.png",
       "sha1": "ae5e608bbc55b7362e5961966d8beb7567d430ef",
-      "size": 39037
+      "size": 39037,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.11500.png",
       "sha1": "7b6db8080d6bbcffec589d94c9fa603deb438134",
-      "size": 28681
+      "size": 28681,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.fight.last.png",
       "sha1": "89b1d48653a1d0426842c3139dc278a0e2eff49b",
-      "size": 33113
+      "size": 33113,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.script.log",
       "sha1": "dbb5109e6d14152f5c21afe6b6bfd26e5af2db4a",
-      "size": 3546
+      "size": 3546,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\versus-2p-hidden-isohachi-1\\capture.mc1.mcd",

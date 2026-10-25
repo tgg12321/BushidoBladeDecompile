@@ -254,222 +254,266 @@
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.jsonl",
       "sha1": "837a7fcb88319b207be9d6ce8edb69271339540a",
-      "size": 227236
+      "size": 227236,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.top_menu.last.png",
       "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
-      "size": 31607
+      "size": 31607,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.char_select.first.png",
       "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
-      "size": 23135
+      "size": 23135,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.char_select.last.png",
       "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
-      "size": 22155
+      "size": 22155,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.weapon_select.first.png",
       "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
-      "size": 22616
+      "size": 22616,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.weapon_select.pick.png",
       "sha1": "15745078289b77e607ea79420818bc12a751af8a",
-      "size": 22501
+      "size": 22501,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.weapon_select.last.png",
       "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
-      "size": 4459
+      "size": 4459,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.t_stage.mid.png",
       "sha1": "b6029d7a56d34804506dde7467b20a911a23d4bc",
-      "size": 4872
+      "size": 4872,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.first.png",
       "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
-      "size": 21853
+      "size": 21853,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.7299.png",
       "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
-      "size": 21972
+      "size": 21972,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.7325.png",
       "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
-      "size": 18207
+      "size": 18207,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.7355.png",
       "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
-      "size": 22809
+      "size": 22809,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.last.png",
       "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
-      "size": 22781
+      "size": 22781,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.t_load.mid.png",
       "sha1": "03289951f450d5a50c08ca77beb439d067f8f28f",
-      "size": 10320
+      "size": 10320,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.t_load.last.png",
       "sha1": "1ee0a4e6afa52881246743e7ae29213a09bee877",
-      "size": 836
+      "size": 836,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.first.png",
       "sha1": "1ee0a4e6afa52881246743e7ae29213a09bee877",
-      "size": 836
+      "size": 836,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8330.png",
       "sha1": "05f8fb70fd21f979873db4c493dc45d8711063ec",
-      "size": 51341
+      "size": 51341,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8430.png",
       "sha1": "6ac85257a1f919fe95c899b008dd96f56c56d292",
-      "size": 51714
+      "size": 51714,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8530.png",
       "sha1": "b19c4218f1f394ba39866b86c98298b018fd0ea7",
-      "size": 52005
+      "size": 52005,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8630.png",
       "sha1": "a17e6f3ac3734732d68e438a280fc796f4608f42",
-      "size": 52437
+      "size": 52437,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8730.png",
       "sha1": "c393d0b41bab2527c7d8a23fe247435879150da9",
-      "size": 55497
+      "size": 55497,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8830.png",
       "sha1": "23ef34587ba902cc8578c888b60e1fba9d5a6e01",
-      "size": 41659
+      "size": 41659,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8930.png",
       "sha1": "7475fddd99464ffc3f372f02f8a89d64b23e53d3",
-      "size": 31131
+      "size": 31131,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9030.png",
       "sha1": "62ed38c83e3bcbfcbe92c6e9d3a0064ef8d24837",
-      "size": 21700
+      "size": 21700,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9130.png",
       "sha1": "de1017622d64a007822f63c580e1c02eb7033155",
-      "size": 27058
+      "size": 27058,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9230.png",
       "sha1": "84281f1b8bf08d0a79ff6719ddaac6a2e03b5c44",
-      "size": 32832
+      "size": 32832,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9330.png",
       "sha1": "9759328b7ac6feeb521caecacd6ceeaf77364c50",
-      "size": 29504
+      "size": 29504,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9430.png",
       "sha1": "ca113398fa063ba2ca3509340187f12be8ac271e",
-      "size": 28207
+      "size": 28207,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9530.png",
       "sha1": "29b41aa55a07a084aa54802a4642d4b477768501",
-      "size": 48755
+      "size": 48755,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9630.png",
       "sha1": "1179e3f7783359e7dc497b61e53a7a461a776ea3",
-      "size": 53975
+      "size": 53975,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9730.png",
       "sha1": "4110d8c4af058c6acc07686945391bafc7c2b2fc",
-      "size": 57563
+      "size": 57563,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9830.png",
       "sha1": "57ad3ad9a5e48b952b13691abcfe6aa9f312136f",
-      "size": 52868
+      "size": 52868,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9930.png",
       "sha1": "6084ddbbcf87b9323cf1c53175f26de981611cf6",
-      "size": 54113
+      "size": 54113,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10030.png",
       "sha1": "eccf81d70d2699b8bd6b6cb2325cbd5d56494d24",
-      "size": 22950
+      "size": 22950,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10130.png",
       "sha1": "414962731d837e0ddb0a75c3a711448dcd743aef",
-      "size": 51654
+      "size": 51654,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10230.png",
       "sha1": "53b219ef1417dd6dd1ffdab30cdd172fb94cc18c",
-      "size": 32773
+      "size": 32773,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10330.png",
       "sha1": "c3c9b7cca2081f84d3f7cd2aef6b971a33718b16",
-      "size": 32703
+      "size": 32703,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10430.png",
       "sha1": "b3102cec27a4aaa078251d2bc2c3a4037e522961",
-      "size": 32586
+      "size": 32586,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10530.png",
       "sha1": "854c0f3618d53d3f3bd563948af08a8fa884c7c7",
-      "size": 52500
+      "size": 52500,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.script.log",
       "sha1": "866c9a1434ae1eb83d5051d46ff3df5d673e7b90",
-      "size": 9161
+      "size": 9161,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc1.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     },
     {
       "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc2.mcd",
       "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
-      "size": 131072
+      "size": 131072,
+      "stored": true
     }
   ]
 }

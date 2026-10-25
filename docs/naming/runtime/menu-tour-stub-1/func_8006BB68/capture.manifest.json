@@ -243,162 +243,194 @@
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.jsonl",
       "sha1": "820029d306659dff7e30be78e56255b769f88428",
-      "size": 7830
+      "size": 7830,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.boot_intro.last.png",
       "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
-      "size": 79155
+      "size": 79155,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.first.png",
       "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
-      "size": 31550
+      "size": 31550,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry1.png",
       "sha1": "a475bedacf60e505d018fd1fe3a16f09e519c69a",
-      "size": 31542
+      "size": 31542,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry2.png",
       "sha1": "548cfd619766951013c43fa716a3c32cdfd4c7dc",
-      "size": 29560
+      "size": 29560,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry3.png",
       "sha1": "f2ecfd214d65b8cf334cba9cda263d787523ea7d",
-      "size": 30142
+      "size": 30142,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry4.png",
       "sha1": "4b5c5d6d26fd20e48865788bb75fc1c7c13073c1",
-      "size": 31605
+      "size": 31605,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry5.png",
       "sha1": "b96a3feabb8a1749d685432041622b2eea36c71e",
-      "size": 31022
+      "size": 31022,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry6.png",
       "sha1": "16d94103acf1e3b9669126e6d015ba553863cd0e",
-      "size": 31716
+      "size": 31716,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.entry7.png",
       "sha1": "e27dd43e6799cd22d8934d6db1f0f6730c7e1dfe",
-      "size": 29637
+      "size": 29637,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu.last.png",
       "sha1": "60c1ea16d7d09be1cfc0ec912b4c4615b77aecf1",
-      "size": 29644
+      "size": 29644,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_menu.first.png",
       "sha1": "66f7dc9b271e5b9ff90d046635613b8a039715b8",
-      "size": 23021
+      "size": 23021,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_menu.last.png",
       "sha1": "8a0d05deb2c51aa66674706896429d8137a8c3a5",
-      "size": 23034
+      "size": 23034,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.t_key.6620.png",
       "sha1": "a27dd0323e67b70d6d7aa52b2dc09320fdf8a756",
-      "size": 16191
+      "size": 16191,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.key_config.first.png",
       "sha1": "8e19639eb15bf3642f04e78a76f25c95d89fa0d0",
-      "size": 16188
+      "size": 16188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.key_config.6700.png",
       "sha1": "8e19639eb15bf3642f04e78a76f25c95d89fa0d0",
-      "size": 16188
+      "size": 16188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.key_config.last.png",
       "sha1": "3a8e237b21cb58588a598841614c3ebae089bef1",
-      "size": 16184
+      "size": 16184,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_menu_2.first.png",
       "sha1": "e78c773e943da57aac2f2be77a08b2bbd195f7ba",
-      "size": 23066
+      "size": 23066,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_menu_2.6880.png",
       "sha1": "66f7dc9b271e5b9ff90d046635613b8a039715b8",
-      "size": 23021
+      "size": 23021,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_menu_2.last.png",
       "sha1": "82e6d219d3a9f5db75d7b839771053f989a4c927",
-      "size": 22994
+      "size": 22994,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.memory_card.first.png",
       "sha1": "a9b5986b89b0452abfb9b04589924c709aaf8b72",
-      "size": 15368
+      "size": 15368,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.memory_card.7150.png",
       "sha1": "a9b5986b89b0452abfb9b04589924c709aaf8b72",
-      "size": 15368
+      "size": 15368,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.memory_card.last.png",
       "sha1": "a9b5986b89b0452abfb9b04589924c709aaf8b72",
-      "size": 15368
+      "size": 15368,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_toggles.first.png",
       "sha1": "9992b7348f5b27bc271fb3b03922b161de6d517d",
-      "size": 22986
+      "size": 22986,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_toggles.7500.png",
       "sha1": "b7d3d74e001489b20277e9b5fd2a1891bcfc355d",
-      "size": 23234
+      "size": 23234,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_toggles.music.png",
       "sha1": "f468272f858c842a5eecba36b871db24c26b8130",
-      "size": 23188
+      "size": 23188,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_toggles.difficulty.png",
       "sha1": "ec10af5607f8c700f2cc4b89f59924bf0f68e8b7",
-      "size": 23035
+      "size": 23035,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_toggles.monitor.png",
       "sha1": "a09d7c1dabc2474a801ede627523cde6472b85ba",
-      "size": 18504
+      "size": 18504,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.option_toggles.last.png",
       "sha1": "8c3ff141b0414b907dbe1228867520725073180a",
-      "size": 18472
+      "size": 18472,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu_2.first.png",
       "sha1": "ebf8fa178f15079ee2e040baf318cc4c38d07862",
-      "size": 22154
+      "size": 22154,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.top_menu_2.last.png",
       "sha1": "ea0fa64658b20e3eea1b8133c58bc5337fdf65c3",
-      "size": 22242
+      "size": 22242,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.script.log",
       "sha1": "4660e655c5d3d4ee0c8883b16d379566733b4f42",
-      "size": 2515
+      "size": 2515,
+      "stored": true
     },
     {
       "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\menu-tour-stub-1\\func_8006BB68\\capture.mc1.mcd",
