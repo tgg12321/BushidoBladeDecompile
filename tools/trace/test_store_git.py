@@ -35,6 +35,7 @@ class PublicationGitTest(unittest.TestCase):
         self.git("commit", "--allow-empty", "-m", "Private test fixture")
         for replacement in (patch.object(store, "REPO_ROOT", self.repo),
                             patch.object(store, "LEGACY_BASE", self.git("rev-parse", "HEAD").strip()),
+                            patch.object(store, "MIGRATION_COMMIT", store.MIGRATION_COMMIT),
                             patch.dict(os.environ, {"BB2_CAPTURE_STORE": str(self.external),
                                                     "BB2_CAPTURE_STORE_WRITE": "1"})):
             replacement.start()
@@ -176,6 +177,51 @@ class PublicationGitTest(unittest.TestCase):
         self.trace.write_bytes(b'{"ev":"start"}\n')
         self.git("add", "--", self.trace.relative_to(self.repo).as_posix())
         self.assertIn("legacy_never_published=0", self.command("check-commit")[1])
+
+    def test_bulk_blob_refused_after_migration_commit(self):
+        manifest = self.seal()
+        old_shot = self.capture / "old.png"
+        old_shot.write_bytes(b"old")
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Pre-migration capture with bulk in git")
+        before = self.git("rev-parse", "HEAD").strip()
+        self.git("rm", "--cached", "-q", "--", self.trace.relative_to(self.repo).as_posix())
+        store.offload(self.capture, manifest)
+        self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Migration fixture")
+        store.MIGRATION_COMMIT = self.git("rev-parse", "HEAD").strip()
+        # The pre-migration commit is still judged by the old rules.
+        self.assertEqual(self.command("check-commit", "--rev", before)[0], 0)
+        # A carried-over bulk entry and its deletion stay allowed.
+        self.git("commit", "--allow-empty", "-m", "Post-migration commit")
+        self.assertEqual(self.command("check-commit", "--rev", "HEAD")[0], 0)
+        self.git("rm", "--cached", "-q", "--", old_shot.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 0)
+        self.git("commit", "-m", "Post-migration deletion")
+        self.assertEqual(self.command("check-commit", "--rev", "HEAD")[0], 0)
+        # A recorded, matching bulk blob is refused once the parent is migrated.
+        self.trace.write_bytes(self.stored_trace.read_bytes())
+        self.git("add", "-f", "--", self.trace.relative_to(self.repo).as_posix())
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("bulk blob added to git after the store migration", output)
+        self.git("commit", "-m", "Lane replay re-adds bulk")
+        self.assertEqual(self.command("check-commit", "--rev", "HEAD")[0], 1)
+        self.git("reset", "-q", "--soft", "HEAD^")
+        self.git("rm", "--cached", "-q", "--", self.trace.relative_to(self.repo).as_posix())
+        self.trace.unlink()
+        self.assertEqual(self.command("check-commit")[0], 0)
+        # An unrecorded bulk file is refused too.
+        stray = self.capture / "shot.png"
+        stray.write_bytes(b"png")
+        self.git("add", "-f", "--", stray.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.git("rm", "--cached", "-q", "--", stray.relative_to(self.repo).as_posix())
+        # So is a case-variant bulk name.
+        upper = self.capture / "Shot.PNG"
+        upper.write_bytes(b"png")
+        self.git("add", "-f", "--", upper.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 1)
 
     def test_new_manifest_only_commit_is_loss_even_without_flag(self):
         self.seal()

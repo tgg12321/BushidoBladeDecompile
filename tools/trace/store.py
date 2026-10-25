@@ -26,6 +26,9 @@ import shutil
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _warned_git_fallback = False
 LEGACY_BASE = "5b51335f3c627710f3109bd10cc78821fbf5466d^"
+# The bulk migration (migrate --apply). A commit whose parent descends from it
+# may not add or change a bulk blob: bulk lives in the store from then on.
+MIGRATION_COMMIT = "dab4c0fc1698816e9b997f173be4937f98094aa6"
 
 
 class StoreError(Exception):
@@ -83,7 +86,7 @@ def store_root():
 
 def is_bulk(name):
     """Bulk means capture.jsonl, PNG screenshots, script logs, or card copies."""
-    name = Path(name).name
+    name = Path(name).name.casefold()
     return name == "capture.jsonl" or name.endswith((".png", ".script.log", ".mcd"))
 
 
@@ -808,6 +811,27 @@ class LegacyRecords:
         return record_identity(rec) in self.manifests.get(key, set())
 
 
+def after_migration(parent):
+    """True when parent is MIGRATION_COMMIT or descends from it (ancestry, not date)."""
+    if parent is None:
+        return False
+    if git_output("rev-parse", "--is-shallow-repository") == "true":
+        raise StoreUnverified("migration ancestry requires complete Git history")
+    try:
+        result = subprocess.run(["git", "-C", str(REPO_ROOT), "merge-base", "--is-ancestor",
+                                 MIGRATION_COMMIT, parent], capture_output=True)
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise StoreUnverified(f"cannot establish migration ancestry: {exc}") from exc
+    if result.returncode not in (0, 1):
+        # An unknown migration commit (a clone without it) is not an ancestor.
+        probe = subprocess.run(["git", "-C", str(REPO_ROOT), "cat-file", "-e",
+                                MIGRATION_COMMIT + "^{commit}"], capture_output=True)
+        if probe.returncode == 0:
+            raise StoreUnverified("cannot establish migration ancestry: "
+                                  + result.stderr.decode("utf-8", "replace").strip())
+    return result.returncode == 0
+
+
 def check_commit(root, revision=None):
     """Judge index vs HEAD, or a commit's immutable tree vs its first parent."""
     count = failed = legacy = 0
@@ -829,6 +853,14 @@ def check_commit(root, revision=None):
     blobs = git_blobs([entries[key] for entries in (indexed, previous)
                        for key in manifest_keys if key in entries])
     digests = git_blob_digests(blob for key, blob in indexed.items() if is_bulk(key))
+    if after_migration(parent):
+        # Recorded or not, a new bulk blob would re-bloat git; carried-over
+        # entries and deletions stay allowed.
+        for key in sorted(key for key, blob in indexed.items()
+                          if is_bulk(key) and previous.get(key) != blob):
+            print(f"REFUSE {REPO_ROOT / key}: bulk blob added to git after the store "
+                  "migration; offload it to the capture store instead")
+            failed += 1
     for key in sorted(manifest_keys, key=lambda key: REPO_ROOT / key):
         path = REPO_ROOT / key
         try:
