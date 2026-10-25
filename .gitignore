@@ -159,3 +159,11 @@ asm/data/800.rodata.s
 # write-then-rename staging file. Runtime only, never committed.
 engine/queue.json.lock
 engine/queue.json.tmp.*
+
+# Bulk trace capture output lives in the untracked capture store
+# (../bb2-captures/, env BB2_CAPTURE_STORE; tools/trace/store.py is_bulk), named
+# by SHA1 in each committed manifest. Keep it out of git.
+/docs/naming/runtime/**/capture.jsonl
+/docs/naming/runtime/**/*.png
+/docs/naming/runtime/**/*.script.log
+/docs/naming/runtime/**/*.mcd
