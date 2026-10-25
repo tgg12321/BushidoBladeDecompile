@@ -1,0 +1,113 @@
+==============================================================================
+NAMING WAVE — 9 operations (0 RESET, 9 RENAME)
+  9 identifiers remapped
+  link map: OK   — build/bb2.map is present and newer than every build input
+==============================================================================
+
+-- file edits (16) --
+  asm: 12 files, 27 substitutions
+      asm/funcs/func_80035828.s  (1)
+      asm/funcs/func_8006C1FC.s  (1)
+      asm/funcs/menu_DrawReturningChoices.s  (2)
+      asm/funcs/menu_DrawRowBitSheetsTilesAndGradientQuads.s  (2)
+      asm/funcs/menu_DrawRowBitsGetEmptyRowSides.s  (2)
+      asm/funcs/menu_DrawToggleChoices.s  (2)
+      ... and 6 more
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 3 files, 22 substitutions
+      src/main/25C38.c  (1)
+      src/main/596CC.c  (19)
+      src/main/64FD8.c  (2)
+
+-- .s file renames (9) --
+  asm/funcs/menu_DrawReturningChoices.s -> asm/funcs/menu_DrawMemCardChoices.s
+  asm/funcs/menu_DrawRowBitSheetsTilesAndGradientQuads.s -> asm/funcs/menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads.s
+  asm/funcs/menu_DrawRowBitsGetEmptyRowSides.s -> asm/funcs/menu_DrawKeyConfigRowBitsGetEmptyRowSides.s
+  asm/funcs/menu_DrawToggleChoices.s -> asm/funcs/menu_DrawOptionMenuChoices.s
+  asm/funcs/menu_HandleReturningChoices.s -> asm/funcs/menu_HandleMemCardChoices.s
+  asm/funcs/menu_HandleToggleChoices.s -> asm/funcs/menu_HandleOptionMenuChoices.s
+  asm/funcs/menu_RunFlowStateWithRowBitEdit.s -> asm/funcs/menu_RunOptionModeFlowStateWithRowBitEdit.s
+  asm/funcs/menu_UpdateReturningChoices.s -> asm/funcs/menu_UpdateMemCardChoices.s
+  asm/funcs/menu_UpdateToggleChoices.s -> asm/funcs/menu_UpdateOptionMenuChoices.s
+
+-- ledger directory renames (16) --
+  memory/grind/menu_DrawRowBitSheetsTilesAndGradientQuads -> memory/grind/menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+  memory/grind/menu_DrawRowBitsGetEmptyRowSides -> memory/grind/menu_DrawKeyConfigRowBitsGetEmptyRowSides
+  memory/grind/menu_DrawToggleChoices -> memory/grind/menu_DrawOptionMenuChoices
+  memory/grind/menu_HandleReturningChoices -> memory/grind/menu_HandleMemCardChoices
+  memory/grind/menu_HandleToggleChoices -> memory/grind/menu_HandleOptionMenuChoices
+  memory/grind/menu_RunFlowStateWithRowBitEdit -> memory/grind/menu_RunOptionModeFlowStateWithRowBitEdit
+  memory/grind/menu_UpdateToggleChoices -> memory/grind/menu_UpdateOptionMenuChoices
+  memory/grind/_completed/menu_DrawReturningChoices -> memory/grind/_completed/menu_DrawMemCardChoices
+  memory/grind/_completed/menu_DrawRowBitSheetsTilesAndGradientQuads -> memory/grind/_completed/menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+  memory/grind/_completed/menu_DrawRowBitsGetEmptyRowSides -> memory/grind/_completed/menu_DrawKeyConfigRowBitsGetEmptyRowSides
+  ... and 6 more
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (16) --
+  memory/grind/menu_DrawRowBitSheetsTilesAndGradientQuads/layer2.jsonl: 3 changes
+      line 1: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      line 2: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      line 3: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+  memory/grind/menu_DrawRowBitsGetEmptyRowSides/layer2.jsonl: 1 changes
+      line 1: func menu_DrawRowBitsGetEmptyRowSides -> menu_DrawKeyConfigRowBitsGetEmptyRowSides
+  memory/grind/menu_DrawToggleChoices/layer2.jsonl: 1 changes
+      line 1: func menu_DrawToggleChoices -> menu_DrawOptionMenuChoices
+  memory/grind/menu_HandleReturningChoices/layer2.jsonl: 1 changes
+      line 1: func menu_HandleReturningChoices -> menu_HandleMemCardChoices
+  memory/grind/menu_HandleToggleChoices/layer2.jsonl: 1 changes
+      line 1: func menu_HandleToggleChoices -> menu_HandleOptionMenuChoices
+  memory/grind/menu_RunFlowStateWithRowBitEdit/layer2.jsonl: 1 changes
+      line 1: func menu_RunFlowStateWithRowBitEdit -> menu_RunOptionModeFlowStateWithRowBitEdit
+  memory/grind/menu_UpdateToggleChoices/layer2.jsonl: 1 changes
+      line 1: func menu_UpdateToggleChoices -> menu_UpdateOptionMenuChoices
+  memory/grind/_completed/menu_DrawReturningChoices/layer2.jsonl: 7 changes
+      line 1: func menu_DrawReturningChoices -> menu_DrawMemCardChoices
+      line 2: func menu_DrawReturningChoices -> menu_DrawMemCardChoices
+      line 3: func menu_DrawReturningChoices -> menu_DrawMemCardChoices
+      line 4: func menu_DrawReturningChoices -> menu_DrawMemCardChoices
+      line 5: func menu_DrawReturningChoices -> menu_DrawMemCardChoices
+      ... and 2 more
+  memory/grind/_completed/menu_DrawRowBitSheetsTilesAndGradientQuads/layer2.jsonl: 10 changes
+      line 1: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      line 2: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      line 3: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      line 4: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      line 5: func menu_DrawRowBitSheetsTilesAndGradientQuads -> menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
+      ... and 5 more
+  memory/grind/_completed/menu_DrawRowBitsGetEmptyRowSides/layer2.jsonl: 9 changes
+      line 1: func menu_DrawRowBitsGetEmptyRowSides -> menu_DrawKeyConfigRowBitsGetEmptyRowSides
+      line 2: func menu_DrawRowBitsGetEmptyRowSides -> menu_DrawKeyConfigRowBitsGetEmptyRowSides
+      line 3: func menu_DrawRowBitsGetEmptyRowSides -> menu_DrawKeyConfigRowBitsGetEmptyRowSides
+      line 4: func menu_DrawRowBitsGetEmptyRowSides -> menu_DrawKeyConfigRowBitsGetEmptyRowSides
+      line 5: func menu_DrawRowBitsGetEmptyRowSides -> menu_DrawKeyConfigRowBitsGetEmptyRowSides
+      ... and 4 more
+  memory/grind/_completed/menu_DrawToggleChoices/layer2.jsonl: 8 changes
+      line 1: func menu_DrawToggleChoices -> menu_DrawOptionMenuChoices
+      line 2: func menu_DrawToggleChoices -> menu_DrawOptionMenuChoices
+      line 3: func menu_DrawToggleChoices -> menu_DrawOptionMenuChoices
+      line 4: func menu_DrawToggleChoices -> menu_DrawOptionMenuChoices
+      line 5: func menu_DrawToggleChoices -> menu_DrawOptionMenuChoices
+      ... and 3 more
+  memory/grind/_completed/menu_HandleReturningChoices/layer2.jsonl: 2 changes
+      line 1: func menu_HandleReturningChoices -> menu_HandleMemCardChoices
+      line 2: func menu_HandleReturningChoices -> menu_HandleMemCardChoices
+  memory/grind/_completed/menu_HandleToggleChoices/layer2.jsonl: 4 changes
+      line 1: func menu_HandleToggleChoices -> menu_HandleOptionMenuChoices
+      line 2: func menu_HandleToggleChoices -> menu_HandleOptionMenuChoices
+      line 3: func menu_HandleToggleChoices -> menu_HandleOptionMenuChoices
+      line 4: func menu_HandleToggleChoices -> menu_HandleOptionMenuChoices
+  memory/grind/_completed/menu_RunFlowStateWithRowBitEdit/layer2.jsonl: 3 changes
+      line 1: func menu_RunFlowStateWithRowBitEdit -> menu_RunOptionModeFlowStateWithRowBitEdit
+      line 2: func menu_RunFlowStateWithRowBitEdit -> menu_RunOptionModeFlowStateWithRowBitEdit
+      line 3: func menu_RunFlowStateWithRowBitEdit -> menu_RunOptionModeFlowStateWithRowBitEdit
+  memory/grind/_completed/menu_UpdateReturningChoices/layer2.jsonl: 1 changes
+      line 1: func menu_UpdateReturningChoices -> menu_UpdateMemCardChoices
+  memory/grind/_completed/menu_UpdateToggleChoices/layer2.jsonl: 3 changes
+      line 1: func menu_UpdateToggleChoices -> menu_UpdateOptionMenuChoices
+      line 2: func menu_UpdateToggleChoices -> menu_UpdateOptionMenuChoices
+      line 3: func menu_UpdateToggleChoices -> menu_UpdateOptionMenuChoices
+
+DRY RUN — nothing written. Re-run with --apply.
