@@ -13,7 +13,8 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-hidden-katze-gun-1/spec.json"
+    "docs/naming/runtime/versus-2p-hidden-katze-gun-1/spec.json",
+    "docs/naming/runtime/versus-2p-hidden-katze-gun-poke-1/unk_34A-0/spec.json"
   ],
   "use": [
     "boot"
