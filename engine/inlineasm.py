@@ -609,10 +609,9 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     the NEXT function's opening brace when `func` had an extern declaration
     at the top of the file, attributing far-away unrelated cheats to it.
 
-    Two real shapes in this tree that a strict column-0 + `)`-then-`{` rule
-    missed, leaving the function's cheat count UNKNOWN and its body's cheats
-    invisible to the completion gate:
-      * `}s32 func_8007DE08(s32 arg0) {`  (display.c) — the definition shares a
+    Supported shapes beyond a strict column-0 + `)`-then-`{` rule (missing
+    these would leave the cheat count UNKNOWN and body cheats invisible):
+      * `}s32 func_8007DE08(s32 arg0) {` — the definition shares a
         line with the previous function's closing brace. A single optional `}`
         is allowed before the return type; arbitrary indentation still is NOT,
         because that is what distinguishes a definition from a call.

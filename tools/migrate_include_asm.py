@@ -172,11 +172,33 @@ def find_body_span(text, func):
     # that eats the following newline and glues the next definition onto the
     # INCLUDE_ASM line (observed 2026-08-19: two adjacent functions dropped out
     # of the COMPLETED census because their signatures no longer sat at line
-    # start). Snap lo to its line start; return hi as-is.
-    line_start = text.rfind("\n", 0, lo) + 1
-    if hi <= line_start:
+    # start). Keep lo at the definition's own start so a previous function's
+    # closing brace on the same line survives the replacement; splice_text
+    # then starts the INCLUDE_ASM on its own line.
+    if hi <= lo:
         return None  # defensive: never hand back an inverted span
-    return line_start, hi
+    return lo, hi
+
+
+def splice_text(text, lo, hi, line):
+    """text with [lo, hi) replaced by `line`, each piece at line start.
+
+    A head sharing a line with the previous function's `}` (`}s32 f(void) {`)
+    starts mid-line: the `}` stays, trailing spaces / tabs after it are
+    dropped and a newline follows it, because INCLUDE_ASM / INCLUDE_RODATA are
+    recognised only at line start (engine/inlineasm._INCLUDE_ASM_MACRO_RE).
+    A newline is added after `line` whenever the tail does not start with one
+    (a body ending "}" flush against the next definition glued
+    get_alarm/_version on 2026-08-19 and silently dropped a COMPLETED
+    function from the census parse).
+    """
+    head = text[:lo]
+    if head and not head.endswith("\n"):
+        head = head.rstrip(" \t") + "\n"
+    tail = text[hi:]
+    if not tail.startswith("\n"):
+        line += "\n"
+    return head + line + tail
 
 
 def migrate_one(func, stem, dry, defer_build=False):
@@ -247,18 +269,12 @@ def migrate_one(func, stem, dry, defer_build=False):
             if os.path.isfile(f"asm/rodata/{sym}.s"):
                 created_rodata.append(f"asm/rodata/{sym}.s")
 
-    # splice — with an explicit trailing newline whenever the tail doesn't
-    # start with one (a body ending "}" flush against the next definition
-    # glued get_alarm/_version on 2026-08-19 and silently dropped a COMPLETED
-    # function from the census parse).
+    # splice (splice_text keeps every inserted line at line start)
     line = ""
     if jtbls and WITH_JTBL:
         line = "".join(f'INCLUDE_RODATA("asm/rodata", {s});\n' for s in jtbls)
     line += f'INCLUDE_ASM("asm/funcs", {func});'
-    tail = text[hi:]
-    if not tail.startswith("\n"):
-        line += "\n"
-    new_text = text[:lo] + line + tail
+    new_text = splice_text(text, lo, hi, line)
     wr(src, new_text)
     # delete rules (by exact line content, from each file)
     originals = {}

@@ -101,6 +101,33 @@ class TestPrecheckAmbiguity(unittest.TestCase):
                 self.assertEqual(report["checks"]["body"]["note"], "\n".join(expected))
                 self.assertEqual(report["mechanical_flags"], expected)
 
+    def test_working_tree_reports_all_ambiguous_files_in_json(self):
+        for sources in (
+                [self.ambiguous, self.ambiguous],
+                ["int f(void) {}\n", self.ambiguous, self.ambiguous],
+                [self.ambiguous, "int f(void) {}\n", self.ambiguous],
+                [self.ambiguous, self.ambiguous, "int f(void) {}\n"]):
+            with self.subTest(sources=sources):
+                paths = [precheck.ROOT / "src" / f"{i}.c"
+                         for i in range(len(sources))]
+                expected = [f"{path.relative_to(precheck.ROOT)}: ambiguous definitions of f"
+                            for path, text in zip(paths, sources)
+                            if text == self.ambiguous]
+                output = io.StringIO()
+                with patch.object(sys, "argv", ["precheck", "--func", "f", "--json"]), \
+                        patch.object(Path, "rglob", return_value=paths), \
+                        patch.object(Path, "exists", lambda p: p in paths), \
+                        patch.object(Path, "read_text", side_effect=sources), \
+                        patch.object(precheck, "rule_lines", return_value={}), \
+                        patch.object(precheck, "diff_files", return_value=[]), \
+                        patch.object(precheck, "diff_text", return_value=""), \
+                        contextlib.redirect_stdout(output):
+                    self.assertEqual(precheck.main(), 0)
+                report = json.loads(output.getvalue())
+                self.assertIsNone(report["checks"]["body"]["file"])
+                self.assertEqual(report["checks"]["body"]["note"], "\n".join(expected))
+                self.assertEqual(report["mechanical_flags"], expected)
+
     def test_main_reports_ambiguity_distinctly(self):
         output = io.StringIO()
         with patch.object(sys, "argv", ["precheck", "--func", "f", "--json"]), \

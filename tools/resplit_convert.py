@@ -219,10 +219,9 @@ def convert_source(text: str, func: str) -> tuple[str, str]:
                              f"{len(candidates)} definition-shaped heads")
         raise SystemExit(f"{func}: no C definition found — already converted?")
     lo, hi = span
-    # _func_body_span's `^(?:\}[ \t]*)?` prefix means the span can START at the
-    # PREVIOUS function's closing brace (the `}s32 func_8007DE08(...) {` shape in
-    # display.c, a campaign TU). Deleting that would delete the previous
-    # function's body terminator.
+    # _func_body_span starts at the return type, past any previous `}`.
+    # Keep this defensive strip: a split return-type line can still start
+    # with spaces/tabs, which conversion has historically excluded.
     while lo < hi and text[lo] in "} \t":
         lo += 1
     body = text[lo:hi]

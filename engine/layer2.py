@@ -202,8 +202,8 @@ def body_source(text: str, func: str, read=_disk,
     if span is not None:
         if pieces:
             return None  # C AND asm: ambiguous
-        # A definition sharing a line with the previous function's `}` starts
-        # its span at that brace; it is not part of this function.
+        # Spans now exclude the previous function's `}`. This brace strip
+        # is a no-op; keep the key-producing code unchanged for key stability.
         parts = [re.sub(r"^\}", "", text[span[0]:span[1]])]
         # Owner ruling Q126: each same-TU `static inline` helper the body
         # reaches is part of the reviewed body. Appended in file order; a

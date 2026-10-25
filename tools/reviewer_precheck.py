@@ -142,6 +142,8 @@ def function_body(func: str, file_stem: str | None,
     # working-tree path (CLI default; no --commit)
     candidates = ([ROOT / "src" / f"{file_stem}.c"] if file_stem
                   else sorted((ROOT / "src").rglob("*.c")))
+    body = None
+    errors = []
     for src in candidates:
         if not src.exists():
             continue
@@ -149,12 +151,15 @@ def function_body(func: str, file_stem: str | None,
         if re.search(rf"\b{re.escape(func)}\s*\(", text):
             try:
                 s, e = find_function_span(text, func)
-                return str(src.relative_to(ROOT)), text[s:e]
+                if body is None:
+                    body = str(src.relative_to(ROOT)), text[s:e]
             except AmbiguousDefinition as exc:
-                raise AmbiguousBody(f"{src.relative_to(ROOT)}: {exc}") from exc
+                errors.append(f"{src.relative_to(ROOT)}: {exc}")
             except ValueError:
                 continue
-    return None
+    if errors:
+        raise AmbiguousBody(*errors)
+    return body
 
 
 def main() -> int:
