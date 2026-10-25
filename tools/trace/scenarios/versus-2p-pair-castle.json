@@ -1,0 +1,43 @@
+{
+  "description": "controlled stage pair: the versus-2p flow, stage cursor DOWN DOWN RIGHT RIGHT UP RIGHT (path of versus-2p-castle), CROSS at 7840; no fight input: both fighters stand idle to 10200. Same script for every stage but the stage_select cursor presses",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:castle_rooftop",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-pair-castle-1/spec.json",
+    "docs/naming/runtime/versus-2p-pair-castle-2/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 10200,
+  "inputs": [
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:RIGHT",
+    "7480:RIGHT",
+    "7600:UP",
+    "7660:RIGHT",
+    "7840:CROSS"
+  ],
+  "phases": [
+    "7840:t_load",
+    "8700:fight"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7839:stage_select.last",
+    "8200:t_load.mid",
+    "8699:t_load.last",
+    "8700:fight.first",
+    "9000:fight.9000",
+    "9500:fight.9500",
+    "10199:fight.last"
+  ]
+}
