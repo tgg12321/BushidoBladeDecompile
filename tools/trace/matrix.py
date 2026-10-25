@@ -107,7 +107,7 @@ def table(text, header):
 
 
 def family(part):
-    return "-stub-" in part or "-poke-" in part
+    return "-stub-" in part or "-poke-" in part or "-knockout-" in part
 
 
 def load_capture(path):
@@ -135,7 +135,8 @@ def load_capture(path):
     except ValueError:
         relative = Path()
     # Poked captures are modified games too: sources only, like stubs. A
-    # -stub- or -poke- family (its baseline included) is a compare set.
+    # -stub-, -poke- or -knockout- family (its baseline included) is a
+    # compare set.
     is_stub = any(family(part) for part in relative.parts) or any(
         e["ev"] in ("stub", "poke") for e in events) or bool(
         spec.get("stubs") or spec.get("pokes"))

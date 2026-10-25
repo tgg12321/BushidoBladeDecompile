@@ -298,7 +298,7 @@ class EventsTest(unittest.TestCase):
                 del self.records[3]
         self.save()
         self.assertEqual(self.rows(), baseline)
-        for family in ("x-stub-1", "x-poke-1"):
+        for family in ("x-stub-1", "x-poke-1", "x-knockout-1"):
             with self.subTest(family=family):
                 nested = self.runtime / family / "baseline"
                 shutil.copytree(self.capture, nested)

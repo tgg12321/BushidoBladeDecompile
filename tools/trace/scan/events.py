@@ -4,7 +4,7 @@
 All relative CLI paths are repository-relative. Counts describe recorded watch
 hits and explicitly declared breakpoints, never hit-map or stub entries. A
 capture from a modified game or its compare set (spec stubs or pokes,
-stub/poke records, or a -stub-/-poke- family directory: the test
+stub/poke records, or a -stub-/-poke-/-knockout- family directory: the test
 tools/trace/matrix.py uses for kind stub) contributes no rows. Values are
 compact JSON lists (call values are a0..a3 tuples), sorted and capped at eight.
 values_omitted counts additional distinct values. All inputs are exact index
@@ -79,7 +79,8 @@ def selected(event, declared):
 def modified(relative, spec, events):
     # Hits after a stub or poke went in are from a modified game; a family's
     # baseline is there for compare (matrix.py: kind stub as well).
-    return any("-stub-" in part or "-poke-" in part for part in relative.parts) or bool(
+    return any("-stub-" in part or "-poke-" in part or "-knockout-" in part
+               for part in relative.parts) or bool(
         spec.get("stubs") or spec.get("pokes")) or any(
         e["ev"] in ("stub", "poke") for e in events)
 

@@ -327,6 +327,9 @@ class MatrixTest(unittest.TestCase):
         poke = self.capture("docs/naming/runtime/scenario-poke-1/baseline", 40, values=True)
         outputs = matrix.render([poke])
         self.assertIn("scenario-poke-1/baseline\tstub\ttrue", outputs["sources.tsv"])
+        knockout = self.capture("docs/naming/runtime/scenario-knockout-1/baseline", 40)
+        outputs = matrix.render([knockout])
+        self.assertIn("scenario-knockout-1/baseline\tstub\ttrue", outputs["sources.tsv"])
         with self.assertRaisesRegex(matrix.InvalidCapture, "duplicate capture ID"):
             matrix.render([self.a, self.a])
 
