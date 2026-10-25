@@ -221,7 +221,10 @@ class Tick(unittest.TestCase):
         self.saved = {k: getattr(o, k) for k in ("STATE", "MAX_FILE", "REGISTRY", "backlogs",
                                                  "agents", "sh", "read_json", "PAUSED",
                                                  "CODEX_FILE", "ATTENTION_DIR", "CODEX_BRIEF",
-                                                 "transcript_path", "bridge_status", "owner_away")}
+                                                 "transcript_path", "bridge_status", "owner_away",
+                                                 "disk_free_gb", "stale_tmp_dirs")}
+        o.disk_free_gb = lambda path=None: 50.0  # never the machine's real free space
+        o.stale_tmp_dirs = lambda root, now, days=None: []  # never scan the real tmp/
         o.STATE, o.MAX_FILE = self.d / "state.json", self.d / "max"
         o.PAUSED, o.CODEX_FILE = self.d / "paused.json", self.d / "codex.json"
         o.ATTENTION_DIR, o.CODEX_BRIEF = self.d / "att", self.d / "brief.md"
@@ -281,6 +284,21 @@ class Tick(unittest.TestCase):
         for f in self.d.iterdir():
             f.unlink()
         self.d.rmdir()
+
+    def test_disk_low_starts_nothing_but_drains(self):
+        o.write_max(1)
+        o.disk_free_gb = lambda path=None: 1.0
+        with redirect_stdout(io.StringIO()):
+            self.assertTrue(o.tick(self.args))  # work left, disk low: wait, start nothing
+        self.assertEqual(self.started, [])
+        o.write_max(0)
+        with redirect_stdout(io.StringIO()):
+            self.assertFalse(o.tick(self.args))  # drain still exits
+        o.write_max(1)
+        o.disk_free_gb = lambda path=None: 50.0
+        with redirect_stdout(io.StringIO()):
+            self.assertTrue(o.tick(self.args))  # space back: starts again
+        self.assertEqual(self.started, ["/foundation-session pins"])
 
     def test_fills_then_replaces_finished(self):
         o.write_max(1)
@@ -575,6 +593,42 @@ class Pause(unittest.TestCase):
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "naming", {"naming": {}}), [])
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "naming", {"naming-a": {}}),
                          ["naming-b", "naming-c"])
+
+
+class Housekeeping(unittest.TestCase):
+    def test_stale_tmp_dirs_one_level_and_keep_list(self):
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            old = time.time() - 10 * 86400
+            for name in ("rev-old", "lanes-state", "fresh", "rev-touched"):
+                (root / name).mkdir()
+            (root / "rev-old" / "f.txt").write_text("x")
+            (root / "rev-touched" / "sub").mkdir()
+            for p in (root / "rev-old" / "f.txt", root / "rev-old", root / "lanes-state",
+                      root / "rev-touched"):
+                os.utime(p, (old, old))
+            (root / "file.txt").write_text("x")
+            self.assertEqual(o.stale_tmp_dirs(root, time.time()), ["rev-old"])
+
+    def test_disk_low_blocks_starts_and_recovers(self):
+        saved = o.disk_free_gb, o.note_attention
+        notes = []
+        o.note_attention = lambda key, reason, text, now: notes.append(key)
+        try:
+            st = {"tmp_scan_at": NOW}
+            o.disk_free_gb = lambda path=None: 1.0
+            with redirect_stdout(io.StringIO()):
+                self.assertTrue(o.check_housekeeping(st, NOW))
+                self.assertTrue(o.check_housekeeping(st, NOW))
+            self.assertEqual(notes, ["disk"])  # raised once, not every tick
+            o.disk_free_gb = lambda path=None: 50.0
+            with redirect_stdout(io.StringIO()):
+                self.assertFalse(o.check_housekeeping(st, NOW))
+            self.assertNotIn("disk_low", st)
+        finally:
+            o.disk_free_gb, o.note_attention = saved
 
 
 class Io(unittest.TestCase):

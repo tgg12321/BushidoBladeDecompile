@@ -69,7 +69,9 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   the session ended, every lane commit must be on main (`lanes.py status` shows `unlanded=0`; land
   or drop what is left), then run `lanes.py close <lane> --remove`. It removes the lane and landing
   worktrees through `tools/safe_remove_worktree.ps1` and deletes the branch (never use a raw
-  `git worktree remove`). Report one line per unit, say plainly that the session is complete, and
+  `git worktree remove`). Remove the scratch you and your subagents made under main's `tmp/`
+  (e.g. `tmp/p3w<N>`, review copies; CLAUDE.md: list, delete the files, `rmdir`; the research
+  extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
 - **Pick order:** LAND first (oldest `reviewed` row no other lane claims), then PREPARE (first
   unclaimed `researched` row, or `researching` row whose cited Codex run has finished, then

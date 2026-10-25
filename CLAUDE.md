@@ -79,6 +79,11 @@ in an `authorize` bucket and take the Judge-gated canonical-grant path ([[judge-
   `cp tools/hooks/commit_msg_chain.sh .git/hooks/commit-msg`. Root-write cleanliness is wired in
   `settings.local.json` (a fresh clone must re-enable it).
 - Commit conventions: `docs/COMMIT_CONVENTIONS.md` (engine work uses `engine:`).
+- **Clean up your own scratch (owner 2026-10-25).** One `tmp/<task>-<id>/` folder per task
+  (reviewers and other subagents included); before you end or return, remove what you created:
+  list it, delete your files, `rmdir` the folders. No clones, wave copies or captures left
+  behind; Codex items end with `codex_worker.py cleanup <item>`. The orchestrator starts no
+  session under 5 GB free and reports `tmp/` folders untouched for 3+ days.
 
 ## Documentation budget (owner directive 2026-10-01)
 

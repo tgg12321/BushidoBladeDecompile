@@ -111,6 +111,13 @@ briefed on — if not, FAIL ("src/ does not hold the briefed body"); (2) run
 that tree and put its `body_hash` in your verdict. `queue done` refuses unless a recorded PASS
 matches the landed body. For a draft/candidate file not in `src/`, `body_hash` is `""`.
 
+# Scratch
+
+If you need a scratch copy (a clone, a build, a diff dump), make ONE folder `tmp/rev-<topic>-<id>/`
+under main and delete everything you put in it before you return: list it, delete the files,
+`rmdir` the folders (never a recursive force delete; don't follow junctions). Prefer reading
+`git show` / `git diff` output over cloning the repo.
+
 # Output — JSON only
 
 {

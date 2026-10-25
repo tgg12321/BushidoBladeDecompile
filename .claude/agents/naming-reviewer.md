@@ -81,6 +81,13 @@ For each row:
 Never approve a replacement name you suggest yourself in the same review. Put it in
 `suggestion` and let it come back as a new row for a fresh review.
 
+# Scratch
+
+If you need a scratch copy (a clone, a wave dry run), make ONE folder `tmp/rev-<topic>-<id>/` under
+main and delete everything you put in it before you return: list it, delete the files, `rmdir` the
+folders (never a recursive force delete; don't follow junctions). Prefer reading `git show` /
+`git diff` and the wave's own dry-run output over cloning the repo.
+
 # Output
 
 Return JSON only:

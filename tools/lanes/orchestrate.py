@@ -310,6 +310,89 @@ def last_assistant_text(path: Path | None, tail_bytes: int = 4 << 20) -> str:
     return ""
 
 
+DISK_MIN_GB = 5.0           # below this, start no session (owner 2026-10-25, after C: hit 0.4 GB)
+TMP_STALE_DAYS = 3          # tmp/ scratch untouched this long is reported (sessions clean their own)
+TMP_SCAN_SECS = 60 * 60
+# long-lived tooling state under tmp/ (not scratch): lanes, Codex prompts, trace runners, emulator
+# build and portable profile (gdbtrace --portable_dir), Grinder log/lock, manual lane, cc1psx workdir
+TMP_KEEP = {"lanes-state", "codex", "trace-instances", "audit", "grind", "redux-portable",
+            "pcsx-redux", "manual", "cc1psx", "decomp_me_corpus"}
+
+
+def disk_free_gb(path: Path = MAIN) -> float | None:
+    try:
+        return shutil.disk_usage(path).free / 2**30
+    except OSError:
+        return None
+
+
+def stale_tmp_dirs(root: Path, now: float, days: float = TMP_STALE_DAYS) -> list[str]:
+    """Top-level tmp/ directories (not tooling state) whose own mtime and every direct child's
+    mtime are older than `days`: abandoned scratch. Never follows links; cheap (one level)."""
+    out = []
+    try:
+        entries = sorted(os.scandir(root), key=lambda e: e.name)
+    except OSError:
+        return out
+    for e in entries:
+        if e.name in TMP_KEEP or not e.is_dir(follow_symlinks=False):
+            continue
+        try:
+            newest = e.stat(follow_symlinks=False).st_mtime
+            with os.scandir(e.path) as kids:
+                for k in kids:
+                    newest = max(newest, k.stat(follow_symlinks=False).st_mtime)
+        except OSError:
+            continue
+        if now - newest > days * 86400:
+            out.append(e.name)
+    return out
+
+
+def note_attention(key: str, reason: str, text: str, now: float) -> dict:
+    """An attention item that is not about a session (disk, stale scratch)."""
+    out = ATTENTION_DIR / f"{key}.md"
+    try:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(f"# {key}: {reason}\n\n{text}\n", encoding="utf-8", newline="\n")
+    except OSError as e:
+        log(f"could not write {out}: {e}")
+    log(f"ATTENTION {key}: {reason}; full text: {out}")
+    item = {"lane": key, "sid": "-", "session": "", "time": now, "reason": reason,
+            "path": str(out), "summary": reason}
+    try:
+        update_attention(lambda items: [i for i in items if i.get("lane") != key] + [item])
+    except OSError as e:  # a full disk must not turn the guard off
+        log(f"could not record attention item {key}: {e}")
+    return item
+
+
+def check_housekeeping(st: dict, now: float) -> bool:
+    """Stale-scratch report, then the disk guard. True when disk is too low to start sessions."""
+    if now - float(st.get("tmp_scan_at", 0)) >= TMP_SCAN_SECS:
+        st["tmp_scan_at"] = now
+        stale = stale_tmp_dirs(MAIN / "tmp", now)
+        if stale and stale != st.get("tmp_stale"):
+            note_attention("tmp-scratch", f"{len(stale)} tmp/ folder(s) untouched for "
+                           f"{TMP_STALE_DAYS}+ days",
+                           "Sessions must remove their own scratch before ending (CLAUDE.md). "
+                           "Abandoned folders:\n\n" + "\n".join(f"- tmp/{n}" for n in stale), now)
+        st["tmp_stale"] = stale
+    free = disk_free_gb()
+    if free is not None and free < DISK_MIN_GB:
+        first = not st.get("disk_low")
+        st["disk_low"] = True
+        if first:
+            note_attention("disk", f"C: has {free:.1f} GB free (< {DISK_MIN_GB:g} GB)",
+                           "No session is started until free space is back above the limit. "
+                           "Running sessions continue. Stale tmp/ folders, if any, are in the "
+                           "`tmp-scratch` attention item.", now)
+        return True
+    if st.pop("disk_low", None):
+        log(f"disk recovered ({free:.1f} GB free); starting sessions again")
+    return False
+
+
 def raise_attention(lane: str, sid: str, session: str, cwd: str | None, reason: str,
                     now: float | None = None) -> dict:
     """Save the session's last message for the owner, log it, and list it in the state."""
@@ -827,6 +910,7 @@ def tick(args) -> bool:
     for ev, sid in update_slots(st, ag, reg, bl, now):
         _guarded(f"handling {ev} of session {sid}", handle_event, st, ev, sid, slots[sid], ag,
                  now)
+    disk_low = _guarded("housekeeping", check_housekeeping, st, now)
     write_state(st)
     # live lane sessions, minus the ones this pass just found finished (still listed until gone)
     live = {lane for lane, sid in live_lanes(ag, reg).items() if sid not in slots or sid in st["sessions"]}
@@ -837,7 +921,7 @@ def tick(args) -> bool:
     failed = 0
     cands = candidates(bl, reg, st, now, args.only, paused, away, live)
     for lane in cands:
-        if lane_count >= limit:
+        if lane_count >= limit or disk_low:  # low disk: start nothing, keep tracking/draining
             break
         got = _guarded(f"starting {lane}", start_session, lane, args)
         if not got:
@@ -848,8 +932,11 @@ def tick(args) -> bool:
         st["sessions"][sid] = slot
         lane_count += 1
         write_state(st)
-    if limit > 0:
+    if limit > 0 and not disk_low:
         _guarded("starting the codex lane", maybe_start_codex, st, args, paused, away, now)
+    if disk_low and limit > 0 and not st["sessions"]:
+        write_state(st)
+        return True  # nothing running; wait for space instead of declaring the work done
     if st["sessions"]:
         st.pop("waiting", None)
         write_state(st)

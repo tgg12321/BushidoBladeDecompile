@@ -84,8 +84,10 @@ live session owns, and say which one you took.
    the session ended, every lane commit must be on main (`lanes.py status` shows `unlanded=0`;
    land or drop what is left), then run `python tools/lanes/lanes.py close <lane> --remove`. It
    removes the lane and landing worktrees through `tools/safe_remove_worktree.ps1` and deletes the
-   branch. Report one line per unit, say plainly that the session is complete, and stop. Don't
-   hand off and don't wait on anything.
+   branch. Remove the scratch you and your subagents made under main's `tmp/` (CLAUDE.md:
+   list it, delete the files, `rmdir` the folders) and `codex_worker.py cleanup <item>` for every
+   landed Codex item. Report one line per unit (and the scratch removed), say plainly that the
+   session is complete, and stop. Don't hand off and don't wait on anything.
 
 ## Lane notes
 
