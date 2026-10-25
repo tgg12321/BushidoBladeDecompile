@@ -3137,6 +3137,38 @@ def test_substitute_body() -> None:
         check("substitute_body: absent function raises", True)
 
 
+def test_brace_prefixed_definition_head() -> None:
+    previous = "void prev(void) { return;\n}"
+    replacement = "s32 func_X(void) { return 2; }"
+    for gap in ("", " ", "\t", " \t "):
+        body = "s32 func_X(void) { return 1; }"
+        prefix = previous + gap
+        src = prefix + body + "\n"
+        span = (len(prefix), len(prefix) + len(body))
+        eq(f"brace head {gap!r}: starts at type",
+           inlineasm.func_definition_candidates(src, "func_X"), [span])
+        eq(f"brace head {gap!r}: substitution preserves previous brace and gap",
+           inlineasm.substitute_body(src, "func_X", replacement),
+           prefix + replacement + "\n")
+        eq(f"brace head {gap!r}: attribution uses corrected span",
+           inlineasm.attributed_spans(src, "func_X"), [("func_X", span)])
+        eq(f"brace head {gap!r}: TU brace walk agrees",
+           [(f.start, f.end) for f in inlineasm.tu_functions(src)
+            if f.name == "func_X"], [span])
+        eq(f"brace head {gap!r}: previous span unchanged",
+           inlineasm._func_body_span(src, "prev"), (0, len(previous)))
+    for desc, body in (("ordinary", "s32 func_X(void) { return 1; }"),
+                       ("split", "static s32\nfunc_X(void) { return 1; }")):
+        src = previous + "\n" + body + "\n"
+        start = len(previous) + 1
+        eq(f"brace head: {desc} span unchanged",
+           inlineasm.func_definition_candidates(src, "func_X"),
+           [(start, start + len(body))])
+    src = previous + "s32 func_X(void) {}\ns32 func_Y(void) {}\n"
+    eq("brace head: head order unchanged", inlineasm.definition_head_names(src),
+       ["prev", "func_X", "func_Y"])
+
+
 def test_split_definition_head() -> None:
     split = "static s32\n\nfunc_X(s32 a) { return a; }"
     src = "extern int g;\n" + split + "\nint tail;\n"
@@ -3224,7 +3256,8 @@ def test_body_span_ambiguous() -> None:
     ):
         eq(f"body-span unique: exact original span for {desc}",
            inlineasm._func_body_span(prefix + body + "\n", "func_X"),
-           (len(prefix), len(prefix) + len(body)))
+           (len(prefix) + (1 if body.startswith("}") else 0),
+            len(prefix) + len(body)))
 
 
 def test_ambiguous_c_asm_fallbacks() -> None:
@@ -14364,6 +14397,7 @@ def main() -> int:
     test_asm_keyword_recognition()
     test_macro_asm_strip_round_trip()
     test_substitute_body()
+    test_brace_prefixed_definition_head()
     test_split_definition_head()
     test_definition_type_line()
     test_definition_names()

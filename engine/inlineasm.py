@@ -553,8 +553,16 @@ def _definition_heads(
     text: str, name: str = r"[A-Za-z_]\w*"
 ) -> list[tuple[str, int, int]]:
     """Return (name, definition start, opening-paren end) in head order."""
-    heads = [(m.group(1), m.start(), m.end()) for m in re.finditer(
-        _DEFINITION_HEAD_PREFIX + "(" + name + r")\s*\(", text)]
+    heads = []
+    for m in re.finditer(
+            _DEFINITION_HEAD_PREFIX + "(" + name + r")\s*\(", text):
+        start = m.start()
+        if text[start] == "}":
+            # The prefix belongs to the previous definition, not this one.
+            start += 1
+            while text[start] in " \t":
+                start += 1
+        heads.append((m.group(1), start, m.end()))
     for m in re.finditer(r"(?m)^(" + name + r")\s*\(", text):
         # A bare column-0 name needs a preceding return-type line. Keep this
         # raw, like the one-line heads: disabled/comment copies count too.
@@ -594,8 +602,8 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     No comment, literal or preprocessor modelling is performed: copies in
     comments, strings or disabled branches make the result ambiguous too.
     Callers must refuse ambiguity rather than use an assembly-only fallback.
-    Offsets index the original text, with
-    an exclusive end.
+    Offsets index the original text, starting at the return type (excluding
+    any previous function's `}` and following spaces/tabs), with an exclusive end.
 
     Earlier versions used `text.find('{', m.end())` which silently picked up
     the NEXT function's opening brace when `func` had an extern declaration

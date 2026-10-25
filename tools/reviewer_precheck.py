@@ -29,7 +29,11 @@ RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt"]
 
 
 class AmbiguousBody(ValueError):
-    """A source file contains multiple candidates for the requested body."""
+    """Source files contain multiple candidates for the requested body."""
+
+    def __init__(self, *errors: str):
+        self.errors = errors
+        super().__init__("\n".join(errors))
 
 
 def git(*args: str) -> str:
@@ -117,6 +121,8 @@ def function_body(func: str, file_stem: str | None,
             paths = [f"src/{file_stem}.c"]
         else:
             paths = list_src_files_at_commit(commit)
+        body = None
+        errors = []
         for rel in paths:
             text = read_text_at_commit(rel, commit)
             if text is None:
@@ -124,12 +130,15 @@ def function_body(func: str, file_stem: str | None,
             if re.search(rf"\b{re.escape(func)}\s*\(", text):
                 try:
                     s, e = find_function_span(text, func)
-                    return rel, text[s:e]
+                    if body is None:
+                        body = rel, text[s:e]
                 except AmbiguousDefinition as exc:
-                    raise AmbiguousBody(f"{rel}: {exc}") from exc
+                    errors.append(f"{rel}: {exc}")
                 except ValueError:
                     continue
-        return None
+        if errors:
+            raise AmbiguousBody(*errors)
+        return body
     # working-tree path (CLI default; no --commit)
     candidates = ([ROOT / "src" / f"{file_stem}.c"] if file_stem
                   else sorted((ROOT / "src").rglob("*.c")))
@@ -170,11 +179,11 @@ def main() -> int:
 
     # 2. Cheat-asm constructs inside the function body. Read from the candidate
     #    commit's src/ tree when --commit is given (same bugfix as #1).
-    body_error = None
+    body_errors = ()
     try:
         body = function_body(a.func, a.file, a.commit)
     except AmbiguousBody as exc:
-        body, body_error = None, str(exc)
+        body, body_errors = None, exc.errors
     if body:
         path, text = body
         pins = re.findall(r"register\s+\w[\w\s\*]*asm\s*\(\s*\"[^\"]+\"\s*\)", text)
@@ -192,7 +201,7 @@ def main() -> int:
                       "hardcoded_dollarN_asm": len(hard_n)}
     else:
         ck["body"] = {"file": None,
-                      "note": body_error or "function body not found in working tree "
+                      "note": "\n".join(body_errors) or "function body not found in working tree "
                               "(whole-body glabel asm or wrong --file?)"}
 
     # 3. Diff-scoped checks
@@ -238,8 +247,7 @@ def main() -> int:
 
     # Verdict-ish summary (mechanical only — the reviewer makes the real call)
     flags = []
-    if body_error:
-        flags.append(body_error)
+    flags.extend(body_errors)
     if ck["rules"]["count"]:
         flags.append(f"{ck['rules']['count']} residual rule line(s)")
     if ck.get("body", {}).get("register_asm_pins"):

@@ -76,6 +76,31 @@ class TestPrecheckAmbiguity(unittest.TestCase):
             with self.assertRaisesRegex(precheck.AmbiguousBody, "ambiguous definitions of f"):
                 precheck.function_body("f", "main/a")
 
+    def test_commit_reports_all_ambiguous_files_in_json(self):
+        for sources in (
+                [self.ambiguous, self.ambiguous],
+                ["int f(void) {}\n", self.ambiguous, self.ambiguous],
+                [self.ambiguous, "int f(void) {}\n", self.ambiguous]):
+            with self.subTest(sources=sources):
+                paths = [f"src/{i}.c" for i in range(len(sources))]
+                expected = [f"{path}: ambiguous definitions of f"
+                            for path, text in zip(paths, sources)
+                            if text == self.ambiguous]
+                output = io.StringIO()
+                with patch.object(sys, "argv", ["precheck", "--func", "f",
+                                                 "--commit", "candidate", "--json"]), \
+                        patch.object(precheck, "list_src_files_at_commit", return_value=paths), \
+                        patch.object(precheck, "read_text_at_commit", side_effect=sources), \
+                        patch.object(precheck, "rule_lines", return_value={}), \
+                        patch.object(precheck, "diff_files", return_value=[]), \
+                        patch.object(precheck, "diff_text", return_value=""), \
+                        contextlib.redirect_stdout(output):
+                    self.assertEqual(precheck.main(), 0)
+                report = json.loads(output.getvalue())
+                self.assertIsNone(report["checks"]["body"]["file"])
+                self.assertEqual(report["checks"]["body"]["note"], "\n".join(expected))
+                self.assertEqual(report["mechanical_flags"], expected)
+
     def test_main_reports_ambiguity_distinctly(self):
         output = io.StringIO()
         with patch.object(sys, "argv", ["precheck", "--func", "f", "--json"]), \
