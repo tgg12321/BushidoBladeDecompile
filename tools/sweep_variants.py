@@ -19,8 +19,8 @@ Each candidate file holds the COMPLETE replacement function definition
 (signature through closing brace; an optional leading block comment is
 spliced along with it). The tool:
 
-  1. Locates the function's current span in src/<file>.c (signature line +
-     brace matching, or its INCLUDE_ASM line).
+  1. Locates the function's current span in src/<file>.c (the engine's unique
+     definition candidate, or its INCLUDE_ASM line).
   2. For each candidate: splices it in, runs
      `python3 -m engine.cli sandbox <func> --disable all`, records the score.
   3. ALWAYS restores src/<file>.c byte-exact afterwards (finally-guarded),
@@ -51,17 +51,22 @@ sys.path.insert(0, str(ROOT))
 from engine import inlineasm  # noqa: E402
 
 
+class AmbiguousDefinition(ValueError):
+    """More than one raw definition candidate prevents selecting a body."""
+
+
 def find_function_span(text: str, func: str) -> tuple[int, int]:
     """Return (start, end) char offsets of the function's definition in text,
     or its INCLUDE_ASM line.
 
-    start = beginning of the signature line; end = char after the closing
-    brace (+ trailing newline). Brace matching skips string/char literals and
-    comments. Raises ValueError if not found or unbalanced.
+    Uses the engine's raw definition candidates, including split and K&R
+    heads. Returns the unique candidate's span plus an immediate trailing
+    newline. Raises AmbiguousDefinition before any INCLUDE_ASM fallback when
+    multiple candidates exist; raises ValueError if neither form is found.
     """
     candidates = inlineasm.func_definition_candidates(text, func)
     if len(candidates) > 1:
-        raise ValueError(f"ambiguous definitions of {func}")
+        raise AmbiguousDefinition(f"ambiguous definitions of {func}")
     if candidates:
         start, end = candidates[0]
         if end < len(text) and text[end] == "\n":

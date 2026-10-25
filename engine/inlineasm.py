@@ -530,6 +530,23 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
 
 
 _DEFINITION_HEAD_PREFIX = r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
+_TYPE_LINE_TOKEN = re.compile(r"[A-Za-z_]\w*|[ \t*]+")
+
+
+def _definition_type_line(text: str) -> bool:
+    """Match the old (identifier|space/tab/star)+ language in linear time.
+
+    Greedily consume disjoint tokens without retrying identifier partitions
+    when an ordinary statement ends in punctuation. Keep Python's Unicode
+    word-character semantics for identifier continuations; reject empty text.
+    """
+    at = 0
+    while at < len(text):
+        token = _TYPE_LINE_TOKEN.match(text, at)
+        if token is None:
+            return False
+        at = token.end()
+    return at > 0
 
 
 def _definition_heads(
@@ -544,7 +561,7 @@ def _definition_heads(
         previous_end = len(text[:m.start()].rstrip(" \t\r\n"))
         previous_start = text.rfind("\n", 0, previous_end) + 1
         previous = text[previous_start:previous_end]
-        if re.fullmatch(r"(?:[A-Za-z_]\w*|[ \t*])+", previous):
+        if _definition_type_line(previous):
             heads.append((m.group(1), previous_start, m.end()))
     return sorted(heads, key=lambda head: head[1])
 

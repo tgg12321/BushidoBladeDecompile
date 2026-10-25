@@ -44,15 +44,38 @@ class _SynthAddrs(dict):
 @contextlib.contextmanager
 def _synth_addrs():
     """queue.generate()/reopen() refuse an item without an address (owner
-    ruling Q39); tests that queue made-up functions give them one."""
-    from engine import layer2
+    ruling Q39); tests that queue made-up functions give them one.
+
+    This globally patches layer2.addr_index, also consumed by the departures
+    audit. Running that audit here is forbidden: synthetic addresses would
+    hide missing-address failures.
+    """
+    from engine import departures, layer2
+    from unittest.mock import patch
     real_index, real_of = layer2.addr_index, layer2.addr_of
     layer2.addr_index = lambda: _SynthAddrs(real_index())
     layer2.addr_of = lambda f: real_of(f) or _SynthAddrs().get(f)
     try:
-        yield
+        with patch.object(departures, "unreviewed_departures", side_effect=
+                          AssertionError("departures audit inside _synth_addrs")):
+            yield
     finally:
         layer2.addr_index, layer2.addr_of = real_index, real_of
+
+
+def test_synth_addrs_guard() -> None:
+    from engine import departures, layer2
+    real_index, real_audit = layer2.addr_index, departures.unreviewed_departures
+    with _synth_addrs():
+        try:
+            departures.unreviewed_departures()
+        except AssertionError as exc:
+            eq("synthetic addresses forbid departures audit", str(exc),
+               "departures audit inside _synth_addrs")
+        else:
+            check("synthetic addresses forbid departures audit", False)
+    check("synthetic addresses restore the index", layer2.addr_index is real_index)
+    check("synthetic addresses restore the audit", departures.unreviewed_departures is real_audit)
 
 
 @contextlib.contextmanager
@@ -10109,15 +10132,28 @@ def test_queue_regen_diff_repo_root() -> None:
 
         try:
             os.chdir(other)
-            with patch.object(gtemacro, "REPO_ROOT", root), \
-                    patch.object(Q, "generate", side_effect=generate):
-                for path in ("engine/queue.json", str(queue)):
-                    with patch.object(Q, "QUEUE_PATH", path):
-                        eq("regen root: mocked generation result",
-                           regen.regen_to_scratch("unused"), {"items": []})
-                        eq("regen root: queue path restored", Q.QUEUE_PATH, path)
-                    check("regen root: scratch lock removed",
-                          not scratch.with_name(scratch.name + ".lock").exists())
+            with patch.object(gtemacro, "REPO_ROOT", root):
+                for raises in (False, True):
+                    def attempt(**kwargs):
+                        result = generate(**kwargs)
+                        if raises:
+                            raise RuntimeError("generation failed")
+                        return result
+
+                    for path in ("engine/queue.json", str(queue)):
+                        with patch.object(Q, "QUEUE_PATH", path), \
+                                patch.object(Q, "generate", side_effect=attempt):
+                            try:
+                                eq("regen root: mocked generation result",
+                                   regen.regen_to_scratch("unused"), {"items": []})
+                            except RuntimeError as exc:
+                                check("regen root: generation error propagated",
+                                      raises and str(exc) == "generation failed")
+                            else:
+                                check("regen root: expected outcome", not raises)
+                            eq("regen root: queue path restored", Q.QUEUE_PATH, path)
+                        check("regen root: scratch lock removed",
+                              not scratch.with_name(scratch.name + ".lock").exists())
             eq("regen root: real queue unchanged", queue.read_text(encoding="utf-8"), seed)
             eq("regen root: cwd queue unchanged",
                decoy.read_text(encoding="utf-8"), '{"items": []}\n')
@@ -10305,14 +10341,29 @@ def test_departures() -> None:
                 ledger.unlink()
                 eq("departures root: foreign cwd sees an unreviewed hand-drop",
                    audit()[1], ["func_ROOT"])
-                with patch.object(layer2, "addr_index", return_value={
-                        "shared_name": addrs["func_ROOT"]}), \
+                # The addr-less current item must resolve through this index;
+                # at_d must reject ROOT's PASS when the index moves its name.
+                (root / "engine/queue.json").write_text(
+                    json.dumps({"items": [item("func_KEEP", False)]}), encoding="utf-8")
+                rec("func_ROOT", h)
+                shared_index = {"shared_name": addrs["func_ROOT"],
+                                "func_ROOT": addrs["func_KEEP"],
+                                "func_KEEP": addrs["func_KEEP"]}
+                with patch.object(layer2, "addr_index", return_value=shared_index), \
+                        patch.object(layer2, "lookup", wraps=layer2.lookup) as lookup, \
                         patch.object(departures, "_current_name",
                                      wraps=departures._current_name) as current_name:
-                    audit()
+                    eq("departures root: at_d uses shared index over a recorded PASS",
+                       audit()[1], ["func_ROOT"])
                     eq("departures root: audit uses layer2's address index",
-                       current_name.call_args.args[1],
-                       {"shared_name": addrs["func_ROOT"]})
+                       current_name.call_args.args[1], shared_index)
+                    for name in ("func_KEEP", "func_ROOT"):
+                        check("departures root: shared lookup for " + name,
+                              any(call.args[0] is shared_index and call.args[1] == name
+                                  for call in lookup.call_args_list))
+                (root / "engine/queue.json").write_text(
+                    json.dumps({"items": [item("func_KEEP")]}), encoding="utf-8")
+                ledger.unlink()
                 graft = root / ".git/info/grafts"
                 graft.parent.mkdir(exist_ok=True)
                 graft.write_text("\n")
@@ -12896,6 +12947,33 @@ def test_naming_member_apply() -> None:
            (len(masked), masked.split(), masked.index("\n")), (len(raw), ["a(", ",", ")", "b(", "c"], raw.index("\n")))
 
 
+def test_definition_type_line() -> None:
+    import itertools
+    import re
+    import time
+
+    old = re.compile(r"(?:[A-Za-z_]\w*|[ \t*])+")
+    mismatch = None
+    for length in range(8):
+        for chars in itertools.product("a1_ *;(", repeat=length):
+            text = "".join(chars)
+            if bool(old.fullmatch(text)) != inlineasm._definition_type_line(text):
+                mismatch = text
+                break
+        if mismatch is not None:
+            break
+    eq("type line: exhaustive old/new equivalence through length 7", mismatch, None)
+    for text in ("\t*", "a\u00e91", "\u00e9", "a\u0661", "\u0661", "a\n", "a\r"):
+        eq("type line: tab/Unicode/newline equivalence " + repr(text),
+           inlineasm._definition_type_line(text), bool(old.fullmatch(text)))
+    text = "a" * 5000 + ";"
+    start = time.perf_counter()
+    valid = inlineasm._definition_type_line(text)
+    elapsed = time.perf_counter() - start
+    check("type line: long invalid statement rejected", not valid)
+    check("type line: 5000-character rejection under 50 ms", elapsed < 0.05)
+
+
 def test_definition_names() -> None:
     text = ("extern int declared(void);\n"
             "int first(void) { return 1;\n"
@@ -13745,6 +13823,38 @@ def test_data_wave_retire_alias() -> None:
             eq("retire-alias different-address survivor rejected", e.code, 2)
         else:
             check("retire-alias different-address refuses", False)
+    for head in ("int fixture_false(void) { return 1; }",
+                 "int\nfixture_false(void) { return 1; }",
+                 "int fixture_false(x)\nint x;\n{ return x; }"):
+        nested = "int outer(void) {\n" + "\n".join(
+            "    " + line for line in head.splitlines()) + "\n    return fixture_false();\n}\n"
+        nested_files = {**files, "src/main/a.c": nested}
+        output = io.StringIO()
+        with _data_wave_tree(nested_files, rows) as (dw, root), \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+            try:
+                dw.main()
+            except SystemExit as exc:
+                eq("retire-alias rejects nested definition", exc.code, 2)
+            else:
+                check("retire-alias rejects nested definition", False)
+            check("retire-alias names nested function refusal",
+                  "cannot retire a function" in output.getvalue())
+            eq("retire-alias leaves nested source intact",
+               (root / "src/main/a.c").read_text(encoding="utf-8"), nested)
+
+
+def test_data_wave_nested_census() -> None:
+    import data_wave as dw
+    text = ("int outer(int value) {\n"
+            "    if (value) { return 1; }\n"
+            "    else\n"
+            "        if (value + 1) { return 2; }\n"
+            "    return 0;\n}\n")
+    eq("nested census excludes deindented control statement", dw.c_function_names(text), {"outer"})
+    eq("nested census keeps genuine nested helper",
+       dw.c_function_names("int outer(void) {\n    inline int ENCODE_BCD(n) { return n; }\n}\n"),
+       {"outer", "ENCODE_BCD"})
 
 
 def test_data_wave_commented_dedupe() -> None:
@@ -14220,6 +14330,7 @@ def main() -> int:
     test_data_wave_curated_dedupe()
     test_data_wave_fictional_symbols()
     test_keycheck_index_once()
+    test_data_wave_nested_census()
     test_data_wave_retire_alias()
     test_data_wave_scratchpad()
     test_data_wave_dlabel_only()
@@ -14254,6 +14365,7 @@ def main() -> int:
     test_macro_asm_strip_round_trip()
     test_substitute_body()
     test_split_definition_head()
+    test_definition_type_line()
     test_definition_names()
     test_tool_definition_heads()
     test_queue_ambiguous_definition_message()
@@ -14262,6 +14374,7 @@ def main() -> int:
     test_ambiguous_body_discovery_and_stripping()
     test_tool_ambiguous_cheat_readers()
     test_data_as_code_conflicts()
+    test_synth_addrs_guard()
     with _synth_addrs():
         test_include_asm_whole_body()
     test_completion_region_grants()

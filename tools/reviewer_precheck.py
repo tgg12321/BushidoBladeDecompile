@@ -28,6 +28,10 @@ ROOT = Path(__file__).resolve().parent.parent
 RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt"]
 
 
+class AmbiguousBody(ValueError):
+    """A source file contains multiple candidates for the requested body."""
+
+
 def git(*args: str) -> str:
     return subprocess.run(["git", *args], capture_output=True, text=True,
                           cwd=ROOT).stdout
@@ -105,7 +109,7 @@ def function_body(func: str, file_stem: str | None,
     instead of the worker's clean candidate — false-positive on every submit."""
     sys.path.insert(0, str(ROOT / "tools"))
     try:
-        from sweep_variants import find_function_span  # reuse the span finder
+        from sweep_variants import AmbiguousDefinition, find_function_span
     except ImportError:
         return None
     if commit:
@@ -121,6 +125,8 @@ def function_body(func: str, file_stem: str | None,
                 try:
                     s, e = find_function_span(text, func)
                     return rel, text[s:e]
+                except AmbiguousDefinition as exc:
+                    raise AmbiguousBody(f"{rel}: {exc}") from exc
                 except ValueError:
                     continue
         return None
@@ -130,11 +136,13 @@ def function_body(func: str, file_stem: str | None,
     for src in candidates:
         if not src.exists():
             continue
-        text = src.read_text(errors="replace")
+        text = src.read_text(encoding="utf-8", errors="replace")
         if re.search(rf"\b{re.escape(func)}\s*\(", text):
             try:
                 s, e = find_function_span(text, func)
                 return str(src.relative_to(ROOT)), text[s:e]
+            except AmbiguousDefinition as exc:
+                raise AmbiguousBody(f"{src.relative_to(ROOT)}: {exc}") from exc
             except ValueError:
                 continue
     return None
@@ -162,7 +170,11 @@ def main() -> int:
 
     # 2. Cheat-asm constructs inside the function body. Read from the candidate
     #    commit's src/ tree when --commit is given (same bugfix as #1).
-    body = function_body(a.func, a.file, a.commit)
+    body_error = None
+    try:
+        body = function_body(a.func, a.file, a.commit)
+    except AmbiguousBody as exc:
+        body, body_error = None, str(exc)
     if body:
         path, text = body
         pins = re.findall(r"register\s+\w[\w\s\*]*asm\s*\(\s*\"[^\"]+\"\s*\)", text)
@@ -180,7 +192,7 @@ def main() -> int:
                       "hardcoded_dollarN_asm": len(hard_n)}
     else:
         ck["body"] = {"file": None,
-                      "note": "function body not found in working tree "
+                      "note": body_error or "function body not found in working tree "
                               "(whole-body glabel asm or wrong --file?)"}
 
     # 3. Diff-scoped checks
@@ -226,6 +238,8 @@ def main() -> int:
 
     # Verdict-ish summary (mechanical only — the reviewer makes the real call)
     flags = []
+    if body_error:
+        flags.append(body_error)
     if ck["rules"]["count"]:
         flags.append(f"{ck['rules']['count']} residual rule line(s)")
     if ck.get("body", {}).get("register_asm_pins"):

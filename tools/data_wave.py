@@ -168,6 +168,17 @@ def c_data_defined(text, name):
     return name in c_data_names(text)
 
 
+def c_function_names(text):
+    """Retirement guard: preserve raw candidates and include nested functions.
+
+    De-indenting can turn an else/if statement into a split definition head.
+    Control keywords cannot name C functions, so exclude those added names.
+    """
+    nested = definition_names(re.sub(r"(?m)^[ \t]+", "", text))
+    return set(definition_names(text)) | (set(nested) - {
+        "if", "for", "while", "switch", "sizeof"})
+
+
 def c_defined(name):
     return any(c_data_defined(nw.read(p), name) for p in sorted((ROOT / "src").rglob("*.c")))
 
@@ -218,7 +229,8 @@ def main() -> int:
             if m.group(1) in initialized_by_file[p] and m.group(1) not in c_homed:
                 object_homes[m.group(1)] = f"{p.relative_to(ROOT).as_posix()}:{text[:m.start()].count(chr(10)) + 1}"
                 c_homed.add(m.group(1))
-    functions = {name for text in c_sources.values() for name in definition_names(text)}
+    functions = {name for text in c_sources.values()
+                 for name in c_function_names(text)}
     text_addrs = {ad for p, text in asm_sources.items() if p.parent.name == "funcs" for ad, _ in asm_defs(text)}
     mp = ROOT / "build/bb2.map"
     if mp.exists():
