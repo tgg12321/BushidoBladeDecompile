@@ -1,0 +1,146 @@
+0 pad2 connected
+0 phase boot_intro
+5200 press START
+5206 release START
+5489 shot boot_intro.last 320 240 24
+5490 phase t_menu
+5500 press CROSS
+5506 release CROSS
+5800 press START
+5806 release START
+6050 shot top_menu.first 640 240 16
+6050 phase top_menu
+6080 press DOWN
+6086 release DOWN
+6140 press DOWN
+6146 release DOWN
+6200 press DOWN
+6206 release DOWN
+6259 shot top_menu.last 640 240 16
+6260 press CROSS
+6260 phase t_char
+6266 release CROSS
+6550 shot char_select.first 640 240 16
+6550 phase char_select
+6600 press CROSS
+6606 release CROSS
+6640 press P2.CROSS
+6646 release P2.CROSS
+6699 shot char_select.last 640 240 16
+6700 shot weapon_select.first 640 240 16
+6700 phase weapon_select
+6900 press CROSS
+6906 release CROSS
+6940 press P2.CROSS
+6946 release P2.CROSS
+6999 shot weapon_select.last 640 240 16
+7000 phase t_stage
+7100 shot t_stage.mid 640 240 16
+7175 shot stage_select.first 640 240 16
+7175 phase stage_select
+7300 press LEFT
+7306 release LEFT
+7450 press CROSS
+7450 phase t_load
+7456 release CROSS
+8229 shot t_load.last 640 240 16
+8230 shot fight.first 640 240 16
+8230 phase fight
+8430 press DOWN
+8430 phase walk_0
+8490 release DOWN
+8510 press R2
+8510 shot kick_0.0 640 240 16
+8510 phase kick_0
+8513 press CROSS
+8514 release R2
+8517 release CROSS
+8525 shot kick_0.15 640 240 16
+8540 shot kick_0.30 640 240 16
+8570 shot kick_0.60 640 240 16
+8630 press DOWN
+8630 phase walk_1
+8690 release DOWN
+8710 press R2
+8710 shot kick_1.0 640 240 16
+8710 phase kick_1
+8713 press CROSS
+8714 release R2
+8717 release CROSS
+8725 shot kick_1.15 640 240 16
+8740 shot kick_1.30 640 240 16
+8770 shot kick_1.60 640 240 16
+8830 press DOWN
+8830 phase walk_2
+8890 release DOWN
+8910 press R2
+8910 shot kick_2.0 640 240 16
+8910 phase kick_2
+8913 press CROSS
+8914 release R2
+8917 release CROSS
+8925 shot kick_2.15 640 240 16
+8940 shot kick_2.30 640 240 16
+8970 shot kick_2.60 640 240 16
+9030 press DOWN
+9030 phase walk_3
+9090 release DOWN
+9110 press R2
+9110 shot kick_3.0 640 240 16
+9110 phase kick_3
+9113 press CROSS
+9114 release R2
+9117 release CROSS
+9125 shot kick_3.15 640 240 16
+9140 shot kick_3.30 640 240 16
+9170 shot kick_3.60 640 240 16
+9230 press DOWN
+9230 phase walk_4
+9290 release DOWN
+9310 press R2
+9310 shot kick_4.0 640 240 16
+9310 phase kick_4
+9313 press CROSS
+9314 release R2
+9317 release CROSS
+9325 shot kick_4.15 640 240 16
+9340 shot kick_4.30 640 240 16
+9370 shot kick_4.60 640 240 16
+9430 press DOWN
+9430 phase walk_5
+9490 release DOWN
+9510 press R2
+9510 shot kick_5.0 640 240 16
+9510 phase kick_5
+9513 press CROSS
+9514 release R2
+9517 release CROSS
+9525 shot kick_5.15 640 240 16
+9540 shot kick_5.30 640 240 16
+9570 shot kick_5.60 640 240 16
+9630 press DOWN
+9630 phase walk_6
+9690 release DOWN
+9710 press R2
+9710 shot kick_6.0 640 240 16
+9710 phase kick_6
+9713 press CROSS
+9714 release R2
+9717 release CROSS
+9725 shot kick_6.15 640 240 16
+9740 shot kick_6.30 640 240 16
+9770 shot kick_6.60 640 240 16
+9830 press DOWN
+9830 phase walk_7
+9890 release DOWN
+9910 press R2
+9910 shot kick_7.0 640 240 16
+9910 phase kick_7
+9913 press CROSS
+9914 release R2
+9917 release CROSS
+9925 shot kick_7.15 640 240 16
+9940 shot kick_7.30 640 240 16
+9970 shot kick_7.60 640 240 16
+10059 shot last 640 240 16
+10060 finish -
