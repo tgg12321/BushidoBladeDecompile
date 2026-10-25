@@ -68,7 +68,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from . import inlineasm
+from . import gtemacro, inlineasm
 
 RECORD_NAME = "layer2.jsonl"
 VERDICTS = ("PASS", "FAIL", "NEEDS_USER")
@@ -122,19 +122,32 @@ def _key(text: str) -> str:
     return hashlib.sha1(" ".join(tokens(text)).encode("utf-8")).hexdigest()[:16]
 
 
+def _repo_path(path: str | Path) -> Path:
+    """Resolve disk access at call time; absolute caller paths stay absolute."""
+    return gtemacro.REPO_ROOT / path
+
+
+def _display_path(path: Path) -> str:
+    """Keep persisted paths and diagnostics relative to the repository."""
+    try:
+        return path.relative_to(gtemacro.REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def record_path(func: str) -> Path:
-    return Path("memory/grind") / func / RECORD_NAME
+    return _repo_path("memory/grind") / func / RECORD_NAME
 
 
 def completed_record_path(func: str) -> Path:
     """Where the record lives once the ledger is archived (the grinder's
     close-ledger step; manual ledgers archived under _completed/)."""
-    return Path("memory/grind/_completed") / func / RECORD_NAME
+    return _repo_path("memory/grind/_completed") / func / RECORD_NAME
 
 
 def _read_text(p: Path) -> str | None:
     try:
-        return p.read_text(encoding="utf-8", errors="replace")
+        return _repo_path(p).read_text(encoding="utf-8", errors="replace")
     except OSError:
         return None
 
@@ -288,7 +301,7 @@ def addr_index() -> dict[str, str]:
     then the link map build/bb2.map (definition AND `name = 0x...` lines).
     Names only an auto-name addresses are not listed: use lookup()."""
     out: dict[str, str] = {}
-    for p in sorted(Path("asm/funcs").glob("*.s")):
+    for p in sorted(_repo_path("asm/funcs").glob("*.s")):
         text = _read_text(p) or ""
         g = _GLABEL_RE.search(text)
         a = _asm_addr(text, g.group(1)) if g else None
@@ -331,7 +344,7 @@ def locate_stems(func: str) -> list[str]:
     second (`#if 0`) copy makes its own body ambiguous still counts."""
     from . import tus
     out = []
-    for tid in tus.src_tus():
+    for tid in tus.src_tus(_repo_path("src")):
         text = _read_text(Path(tus.src_path(tid)))
         if text and func in text and (inlineasm.func_definition_candidates(text, func)
                                       or _asm_pieces(text, func)):
@@ -343,7 +356,7 @@ def locate_stem(func: str) -> str | None:
     """src/<stem>.c holding `func`'s body: the queue item's file, else a scan.
     Raises AmbiguousStem when the scan finds the name in more than one TU."""
     try:
-        q = json.loads(Path("engine/queue.json").read_text())
+        q = json.loads(_repo_path("engine/queue.json").read_text())
         for it in q.get("items", []):
             if it.get("func") == func and it.get("file"):
                 return it["file"]
@@ -358,10 +371,11 @@ def locate_stem(func: str) -> str | None:
 def read_records(func: str, path: Path | None = None) -> list[dict]:
     """Every record for `func`, oldest first. Raises ValueError on a malformed
     line — a record the gate cannot read must never read as absent."""
-    p = path or record_path(func)
+    p = _repo_path(path) if path is not None else record_path(func)
+    display = Path(_display_path(p))
     text = _read_text(p) if p.exists() else ""
     if text is None:
-        raise ValueError(f"{p} is unreadable")
+        raise ValueError(f"{display} is unreadable")
     out = []
     for n, line in enumerate(text.splitlines(), 1):
         if not line.strip():
@@ -369,10 +383,10 @@ def read_records(func: str, path: Path | None = None) -> list[dict]:
         try:
             rec = json.loads(line)
         except ValueError as e:
-            raise ValueError(f"{p}:{n} is not JSON ({e})") from None
+            raise ValueError(f"{display}:{n} is not JSON ({e})") from None
         if (not isinstance(rec, dict) or rec.get("verdict") not in VERDICTS
                 or not rec.get("body_hash") or rec.get("func") != func):
-            raise ValueError(f"{p}:{n} is not a {func} layer-2 record")
+            raise ValueError(f"{display}:{n} is not a {func} layer-2 record")
         out.append(rec)
     return out
 
@@ -383,7 +397,7 @@ def read_verdict_file(path: str) -> dict:
     is auditable back to it. Tolerates text around the JSON object (first `{`
     to last `}`). Raises ValueError when it is not a usable verdict."""
     try:
-        raw = Path(path).read_bytes()
+        raw = _repo_path(path).read_bytes()
     except OSError as e:
         raise ValueError(f"cannot read verdict file {path}: {e}") from None
     text = raw.decode("utf-8", errors="replace")
@@ -440,7 +454,7 @@ def record_from_verdict_file(func: str, path: str, reviewer: str, scope: str,
         copy.write_bytes(vf["raw"])
     r = record(func, vf["verdict"], reviewer, scope, notes or vf["summary"], stem=stem,
                expect_hash=vf["body_hash"],
-               extra={"verdict_file": copy.as_posix(), "verdict_source": vf["verdict_file"],
+               extra={"verdict_file": _display_path(copy), "verdict_source": vf["verdict_file"],
                       "verdict_sha1": vf["verdict_sha1"]})
     if not r.get("ok") and not existed:
         copy.unlink()
@@ -454,7 +468,7 @@ def record_from_verdict_file(func: str, path: str, reviewer: str, scope: str,
 def _head() -> str:
     try:
         return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
-                              text=True, check=True).stdout.strip()
+                              text=True, check=True, cwd=gtemacro.REPO_ROOT).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return ""
 
@@ -544,7 +558,7 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "a", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    return {"ok": True, "path": p.as_posix(), **rec}
+    return {"ok": True, "path": _display_path(p), **rec}
 
 
 def addr_dates(addr: str) -> list[str]:
@@ -553,7 +567,7 @@ def addr_dates(addr: str) -> list[str]:
     raised to the running maximum of the dates before it in its own file,
     exactly the order engine/departures.py merges records by."""
     out = []
-    for p in sorted(Path("memory/grind").glob("**/" + RECORD_NAME)):
+    for p in sorted(_repo_path("memory/grind").glob("**/" + RECORD_NAME)):
         eff = ""
         for line in (_read_text(p) or "").splitlines():
             try:

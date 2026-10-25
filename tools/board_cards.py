@@ -126,6 +126,10 @@ def _leading_comment_start(text, def_start):
     return start
 
 
+class AmbiguousCBody(ValueError):
+    """More than one definition-shaped head prevents choosing a C body."""
+
+
 def extract_c_body(src_path, func_name):
     """Full C text of func_name's DEFINITION in src_path (signature -> matching
     `}`, plus an immediately-preceding comment), or None if not a definition in
@@ -136,7 +140,7 @@ def extract_c_body(src_path, func_name):
     from engine.inlineasm import func_definition_candidates
     candidates = func_definition_candidates(text, func_name)
     if len(candidates) > 1:
-        raise ValueError(f"{func_name}: ambiguous C definition: "
+        raise AmbiguousCBody(f"{func_name}: ambiguous C definition: "
                          f"{len(candidates)} definition-shaped heads")
     if not candidates:
         return None
@@ -1020,7 +1024,10 @@ def build_one_card(func):
     head_short = _git_head_short()
 
     stem = card.get("file")
-    c_body = extract_c_body(ROOT / "src" / f"{stem}.c", func) if stem else None
+    try:
+        c_body = extract_c_body(ROOT / "src" / f"{stem}.c", func) if stem else None
+    except AmbiguousCBody as exc:
+        c_body = f"C body unavailable: {exc}"
     wip = read_wip(func)
     body, _trunc = build_body(
         card,
@@ -1091,7 +1098,10 @@ def assemble_all(one_func=None):
     def build_one(func):
         card = board[func]
         stem = card.get("file")
-        c_body = extract_c_body(ROOT / "src" / f"{stem}.c", func) if stem else None
+        try:
+            c_body = extract_c_body(ROOT / "src" / f"{stem}.c", func) if stem else None
+        except AmbiguousCBody as exc:
+            c_body = f"C body unavailable: {exc}"
         wip = read_wip(func)
         body, trunc = build_body(
             card,

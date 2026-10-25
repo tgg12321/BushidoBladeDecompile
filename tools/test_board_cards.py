@@ -496,7 +496,48 @@ def test_extract_definition_heads():
             check("commented copy must refuse", False)
 
 
+def test_ambiguous_card_builds():
+    import contextlib
+    from unittest.mock import MagicMock, mock_open, patch
+    source = ("int ambiguous(void) { return 1; }\n"
+              "#if 0\nint ambiguous(void) { return 2; }\n#endif\n"
+              "int healthy(void) { return 3; }\n")
+    with contextlib.ExitStack() as stack:
+        missing = MagicMock()
+        missing.exists.return_value = False
+        for attr, value in {
+                "ROOT": Path("fixture"), "MAP": missing, "ELF": missing,
+                "CARDS_DIR": MagicMock()}.items():
+            stack.enter_context(patch.object(bc, attr, value))
+        stack.enter_context(patch.object(bc, "_read_text", return_value=source))
+        writes = stack.enter_context(patch("builtins.open", mock_open()))
+        for attr, value in {
+                "load_queue_items": [_card(func=f, file="fixture")
+                                     for f in ("ambiguous", "healthy")],
+                "load_rule_cache": {}, "load_technique_index": {}, "known_rule_slugs": set(),
+                "_git_head_short": "fixture", "read_wip": None, "history_one_func": [],
+                "history_by_func": {}, "disasm_by_func": {}, "collect_func_cheats": []}.items():
+            stack.enter_context(patch.object(bc, attr, return_value=value))
+        note = "C body unavailable: ambiguous: ambiguous C definition: 2 definition-shaped heads"
+        check("single ambiguous card shows note", note in bc.build_one_card("ambiguous"))
+        _, stats = bc.assemble_all()
+        eq("ambiguous card does not abort board", stats["assembled"], 2)
+        bodies = [call.args[0] for call in writes().write.call_args_list]
+        check("bulk ambiguous card shows note", note in bodies[0])
+        check("subsequent healthy card built", "return 3;" in bodies[1])
+        for label, build in (("single", lambda: bc.build_one_card("ambiguous")),
+                             ("bulk", bc.assemble_all)):
+            with patch.object(bc, "extract_c_body", side_effect=ValueError("unrelated")):
+                try:
+                    build()
+                except ValueError as exc:
+                    eq(f"{label} unrelated error propagates", str(exc), "unrelated")
+                else:
+                    check(f"{label} unrelated error must raise", False)
+
+
 def main():
+    test_ambiguous_card_builds()
     test_extract_definition_heads()
     test_small_body_not_truncated()
     test_huge_asm_truncated_and_under_limit()

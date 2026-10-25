@@ -9987,7 +9987,13 @@ def test_departures() -> None:
     import re
     import subprocess
     from datetime import datetime, timedelta
-    from engine import departures, layer2
+    from engine import departures, gtemacro, layer2
+
+    original_root = gtemacro.REPO_ROOT
+
+    def enter_repo(path):
+        os.chdir(path)
+        gtemacro.REPO_ROOT = Path.cwd()
 
     def git(*a, date=None):
         env = dict(os.environ)
@@ -10087,7 +10093,7 @@ def test_departures() -> None:
         """A repo with a pre-address queue commit, then the anchor (every item
         addressed)."""
         path.mkdir()
-        os.chdir(path)
+        enter_repo(path)
         addrs.clear()
         git("init", "-q")
         Path("engine").mkdir()
@@ -10109,7 +10115,7 @@ def test_departures() -> None:
     real_git = departures._git_cmd()          # this tree's git (a worktree, maybe)
     with tempfile.TemporaryDirectory() as td:
         try:
-            os.chdir(td)
+            enter_repo(td)
             Path(".git").write_text("gitdir: C:/Repo/.git/worktrees/w\n")
             eq("departures: WSL git reads a Windows gitdir",
                departures._git_cmd("posix"),
@@ -10164,7 +10170,7 @@ def test_departures() -> None:
                    "func_T", "func_CAL", "func_CL", "func_SK", "func_SX", "func_FA2",
                    "CdTest", "func_Q"]
             Path(td, "a").mkdir()
-            os.chdir(Path(td, "a"))
+            enter_repo(Path(td, "a"))
             git("init", "-q")
             Path("engine").mkdir()
             for f in fns:
@@ -10317,9 +10323,9 @@ def test_departures() -> None:
             check("departures: a git failure fails the audit closed",
                   len(v) == 1 and "could not read git history" in v[0])
 
-            os.chdir(td)
+            enter_repo(td)
             git("clone", "-q", "--depth", "1", f"file://{Path(td) / 'a'}", "shallow")
-            os.chdir(Path(td) / "shallow")
+            enter_repo(Path(td) / "shallow")
             v = departures.unreviewed_departures()
             check("departures: a shallow clone fails closed",
                   len(v) == 1 and "cannot establish the anchor (shallow clone?)" in v[0])
@@ -10497,15 +10503,15 @@ def test_departures() -> None:
                     common = str((repo_root / common).resolve())
                 # the real audit on this tree — the clone of its HEAD must agree
                 # unless the working tree has uncommitted edits the audit reads
-                os.chdir(repo_root)
+                enter_repo(repo_root)
                 expected = audit()
                 dirty = subprocess.run([*real_git, "status", "--porcelain", "--", "engine/queue.json",
                                         "memory/grind", "src", "include", "asm/funcs",
                                         "docs/naming", ":(glob)*.txt"],
                                        cwd=str(repo_root), capture_output=True, text=True).stdout
-                os.chdir(td)
+                enter_repo(td)
                 git("clone", "-q", "--shared", "--no-checkout", common, "real")
-                os.chdir(Path(td) / "real")
+                enter_repo(Path(td) / "real")
                 # every path the audit reads: the queue, the source, the asm
                 # bodies and glabel files, every ledger (memory/grind/**/
                 # layer2.jsonl, _completed/ too), the census; cone mode keeps
@@ -10553,6 +10559,7 @@ def test_departures() -> None:
                        audit()[1], sorted(got[1] + [gone["func"]]))
         finally:
             os.chdir(cwd)
+            gtemacro.REPO_ROOT = original_root
 
     # naming_wave no longer writes renamed_from on queue items (FAIL-4), and
     # its residual audit is clean after a wave over a queued function
@@ -10592,6 +10599,76 @@ def test_departures() -> None:
             verdict_at = i if verdict_at is None else verdict_at
     check("departures: check_completion_integrity.main() runs the audit before its verdict",
           wired is not None and verdict_at is not None and wired < verdict_at)
+
+
+def test_layer2_repo_paths() -> None:
+    """Layer-2 disk access follows the patched repo, independent of cwd."""
+    from engine import gtemacro, layer2
+    from unittest.mock import patch
+    cwd = Path.cwd()
+    real_source = cwd / "src/main/368E4.c"
+    if real_source.exists():
+        text = real_source.read_text(encoding="utf-8", errors="replace")
+        names = inlineasm.definition_names(text)
+        for name in names:
+            eq("layer2 root: current key unchanged",
+               layer2.current_key(name, "main/368E4"), layer2.body_key(text, name))
+    (cwd / "tmp").mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=cwd / "tmp") as td:
+        root = Path(td) / "repo"
+        elsewhere = Path(td) / "elsewhere"
+        elsewhere.mkdir()
+        def write(rel, text):
+            p = root / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8")
+        source = 'INCLUDE_ASM("asm/funcs", fixture);\n'
+        assembly = "glabel fixture\n/* 0 80012340 00000000 */ nop\n"
+        write("src/main/fixture.c", source)
+        write("asm/funcs/fixture.s", assembly)
+        write("src/main/scanned.c", "int scanned(void) { return 1; }\n")
+        write("symbol_addrs.txt", "registered = 0x80012344;\n")
+        write("build/bb2.map", "  0x80012348 mapped\n")
+        write("engine/queue.json", json.dumps({"items": [
+            {"func": "fixture", "file": "main/fixture"}]}))
+        rec = {"func": "fixture", "addr": "80012340", "verdict": "PASS",
+               "body_hash": "0123456789abcdef", "date": "2026-10-01T00:00:00Z"}
+        write("memory/grind/fixture/layer2.jsonl", json.dumps(rec) + "\n")
+        write("memory/grind/_completed/old/layer2.jsonl", json.dumps(rec) + "\n")
+        write("tmp/verdict.json", json.dumps({"function": "fixture", "decision": "FAIL",
+              "body_hash": rec["body_hash"], "summary": "fixture verdict"}))
+        with patch.object(gtemacro, "REPO_ROOT", root):
+            try:
+                os.chdir(elsewhere)
+                eq("layer2 away: current key reads TU and included assembly",
+                   layer2.current_key("fixture", "main/fixture"),
+                   layer2.body_key(source, "fixture", lambda p: assembly))
+                eq("layer2 away: queue locates TU", layer2.locate_stem("fixture"), "main/fixture")
+                eq("layer2 away: fallback scan", layer2.locate_stem("scanned"), "main/scanned")
+                eq("layer2 away: active ledger", layer2.read_records("fixture"), [rec])
+                eq("layer2 away: archived ledger",
+                   layer2.read_records("fixture", layer2.completed_record_path("old")), [rec])
+                eq("layer2 away: recursive ledger dates", layer2.addr_dates("80012340"),
+                   [rec["date"], rec["date"]])
+                eq("layer2 away: address sources", layer2.addr_index(),
+                   {"fixture": "80012340", "registered": "80012344", "mapped": "80012348"})
+                eq("layer2 away: record display remains relative",
+                   layer2._display_path(layer2.record_path("fixture")),
+                   "memory/grind/fixture/layer2.jsonl")
+                with patch.object(layer2, "_head", return_value="fixture"):
+                    result = layer2.record_from_verdict_file(
+                        "fixture", "tmp/verdict.json", "reviewer", "match")
+                eq("layer2 away: recorded path remains relative", result.get("path"),
+                   "memory/grind/fixture/layer2.jsonl")
+                eq("layer2 away: verdict source remains relative", result.get("verdict_source"),
+                   "tmp/verdict.json")
+                check("layer2 away: copied verdict path remains relative",
+                      result.get("verdict_file", "").startswith(
+                          "memory/grind/fixture/layer2_verdicts/"))
+                check("layer2 away: copied verdict exists under root",
+                      (root / result["verdict_file"]).is_file())
+            finally:
+                os.chdir(cwd)
 
 
 def test_layer2_addresses() -> None:
@@ -13329,7 +13406,7 @@ def test_data_wave_standalone() -> None:
         (root / "engine").mkdir()
         for name in ("data_wave.py", "naming_wave.py", "classify_inline_asm.py"):
             shutil.copyfile(dw.ROOT / "tools" / name, root / "tools" / name)
-        for name in ("__init__.py", "layer2.py", "inlineasm.py"):
+        for name in ("__init__.py", "layer2.py", "inlineasm.py", "gtemacro.py"):
             shutil.copyfile(dw.ROOT / "engine" / name, root / "engine" / name)
         (root / "src").mkdir()
         (root / "src/a.c").write_text("int fixture_standalone = 1;\n", encoding="utf-8")
@@ -13940,6 +14017,7 @@ def main() -> int:
     with _synth_addrs():
         test_layer2_gate()
     test_departures()
+    test_layer2_repo_paths()
     test_layer2_addresses()
     test_layer2_asm_addr_after_glabel()
     test_naming_wave_own_target()
