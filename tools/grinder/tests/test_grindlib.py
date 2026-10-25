@@ -2361,7 +2361,9 @@ class TestModuleMates(unittest.TestCase):
             root = Path(td)
             manifest = root / "docs/naming/libscan/rename_manifest.csv"
             manifest.parent.mkdir(parents=True)
-            manifest.write_text("proposed_name,module,lib,classification\njoined,BIOS,LIBCD,FILL\n",
+            manifest.write_text("proposed_name,module,lib,classification,evidence\n"
+                                "other,BIOS,LIBCD,FILL,libscan-verbatim\n"
+                                "joined,BIOS,LIBCD,FILL,libscan-verbatim\n",
                                 encoding="utf-8")
             (root / "src").mkdir()
             unique = "}int joined(void) { return 1; }\n"
@@ -2369,10 +2371,90 @@ class TestModuleMates(unittest.TestCase):
             with patch.object(G, "_queue_status", return_value="not in queue"):
                 self.assertEqual(G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
                                  [("joined", "COMPLETED (not in queue)", "src/z.c")])
+                self.assertIn(
+                    "  - joined: COMPLETED (not in queue) — matched C in src/z.c\n",
+                    G.psyq_identity(str(root), "other"))
                 (root / "src/a.c").write_text(
                     "/*\nint joined(void) { return 0; }\n*/\n" + unique, encoding="utf-8")
                 self.assertEqual(G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
                                  [("joined", "ambiguous C definition", "src/a.c")])
+                out = G.psyq_identity(str(root), "other")
+                self.assertIn(
+                    "  - joined: ambiguous C definition — several definition-shaped copies in src/a.c\n",
+                    out)
+                self.assertNotIn("matched C in", out)
+
+    def test_row_failures_preserve_other_mates(self):
+        from pathlib import Path
+        from unittest.mock import patch
+        from engine.inlineasm import func_definition_candidates
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            manifest = root / "docs/naming/libscan/rename_manifest.csv"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                "proposed_name,module,lib,classification,evidence\n"
+                "other,BIOS,LIBCD,FILL,libscan-verbatim\n"
+                "broken,BIOS,LIBCD,FILL,libscan-verbatim\n"
+                "good,BIOS,LIBCD,FILL,libscan-verbatim\n",
+                encoding="utf-8")
+            (root / "src").mkdir()
+            (root / "src/a.c").write_text(
+                "int broken(void) { return 0; }\n"
+                "int good(void) { return 1; }\n", encoding="utf-8")
+
+            def queue_status(root, name):
+                if name == "broken":
+                    raise ValueError("bad queue row")
+                return "not in queue"
+
+            def candidates(text, name):
+                if name == "broken":
+                    raise ValueError("bad definition")
+                return func_definition_candidates(text, name)
+
+            for failure in ("queue", "candidates"):
+                with self.subTest(failure=failure):
+                    with patch.object(G, "_queue_status", side_effect=(
+                            queue_status if failure == "queue" else
+                            lambda root, name: "not in queue")), patch(
+                            "engine.inlineasm.func_definition_candidates",
+                            side_effect=candidates):
+                        out = G.psyq_identity(str(root), "other")
+                    self.assertIn("  - broken: status unknown (ValueError)\n", out)
+                    self.assertIn(
+                        "  - good: COMPLETED (not in queue) — matched C in src/a.c\n",
+                        out)
+
+    def test_helper_import_failure_is_reported_once_for_affected_rows(self):
+        from pathlib import Path
+        from unittest.mock import patch
+        import builtins
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            manifest = root / "docs/naming/libscan/rename_manifest.csv"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                "proposed_name,module,lib,classification\n"
+                "first,BIOS,LIBCD,FILL\nsecond,BIOS,LIBCD,FILL\n"
+                "queued,BIOS,LIBCD,FILL\n", encoding="utf-8")
+            real_import = builtins.__import__
+
+            def import_helper(name, *args, **kwargs):
+                if name == "engine.inlineasm":
+                    raise ImportError("helper unavailable")
+                return real_import(name, *args, **kwargs)
+
+            with patch("builtins.__import__", side_effect=import_helper) as imports, \
+                    patch.object(G, "_queue_status", side_effect=(
+                        "not in queue", "not in queue", "active")):
+                mates = G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"})
+            self.assertEqual(mates, [
+                ("first", "status unknown (ImportError)", ""),
+                ("second", "status unknown (ImportError)", ""),
+                ("queued", "active", "")])
+            self.assertEqual(sum(c.args[0] == "engine.inlineasm"
+                                 for c in imports.call_args_list), 1)
 
     def test_same_module_listed_with_matched_src(self):
         root = tempfile.mkdtemp()

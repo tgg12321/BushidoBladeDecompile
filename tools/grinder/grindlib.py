@@ -2205,7 +2205,12 @@ MODALITY_PLAYBOOK = {
 
 def _module_mates(root, func, proven):
     """Other applied libscan names in the same lib+module as `func`, as
-    (name, status, src file holding matched C or ''). Never raises."""
+    (name, status, source paths or ''). Ambiguous paths hold several
+    definition-shaped copies. Artifact read failures degrade to no data;
+    per-row failures retain the name with status unknown (exception type).
+    The definition helper is imported once, lazily, with failures reported
+    on affected rows instead of breaking the brief.
+    """
     lib, mod = proven.get("lib"), proven.get("mod")
     if not lib or not mod:
         return []
@@ -2225,25 +2230,38 @@ def _module_mates(root, func, proven):
                 for tid in _src_ids(src_dir)}
     except Exception:
         srcs = {}
+    definition_candidates = None
+    import_error = None
     for r in rows:
         name = r["proposed_name"]
-        qs = _queue_status(root, name)
         where = ""
-        if qs == "not in queue":
-            # defined as C (not INCLUDE_ASM) somewhere in src/ => matched
-            repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            if repo not in sys.path:
-                sys.path.insert(0, repo)
-            from engine.inlineasm import func_definition_candidates
-            candidates = [(f, func_definition_candidates(t, name))
-                          for f, t in sorted(srcs.items())]
-            ambiguous = [f"src/{f}" for f, spans in candidates if len(spans) > 1]
-            if ambiguous:
-                qs = "ambiguous C definition"
-                where = ", ".join(ambiguous)
-            else:
-                where = next((f"src/{f}" for f, spans in candidates if spans), "")
-                qs = "COMPLETED (not in queue)" if where else "not in queue"
+        try:
+            qs = _queue_status(root, name)
+            if qs == "not in queue":
+                # defined as C (not INCLUDE_ASM) somewhere in src/ => matched
+                if definition_candidates is None and import_error is None:
+                    try:
+                        repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                        if repo not in sys.path:
+                            sys.path.insert(0, repo)
+                        from engine.inlineasm import func_definition_candidates
+                        definition_candidates = func_definition_candidates
+                    except Exception as exc:
+                        import_error = exc
+                if import_error is not None:
+                    raise import_error
+                candidates = [(f, definition_candidates(t, name))
+                              for f, t in sorted(srcs.items())]
+                ambiguous = [f"src/{f}" for f, spans in candidates if len(spans) > 1]
+                if ambiguous:
+                    qs = "ambiguous C definition"
+                    where = ", ".join(ambiguous)
+                else:
+                    where = next((f"src/{f}" for f, spans in candidates if spans), "")
+                    qs = "COMPLETED (not in queue)" if where else "not in queue"
+        except Exception as exc:
+            qs = f"status unknown ({type(exc).__name__})"
+            where = ""
         out.append((name, qs, where))
     return out
 
@@ -2258,8 +2276,9 @@ def psyq_identity(root, func):
     of the KNOWLEDGE: nothing carried the identity across, so sessions
     re-derived library routines blind (marionation_Exec = CD_ready ground 57
     sessions; saEft01Init = CD_datasync ground 6). This function is that
-    missing link. Never raises — a missing/!malformed closer artifact must
-    degrade to a normal brief, never break the pipeline.
+    missing link. Missing/malformed closer artifacts degrade to a normal
+    brief; module-mate status failures are shown as unknown per row.
+    Ambiguous definition paths are reported without claiming matched C.
     """
     proven, probable, refs = None, None, []
     try:
@@ -2375,7 +2394,9 @@ def psyq_identity(root, func):
         out += ["", "Same Sony module (their C is the closest possible reference — same "
                 "source file, same build, same compiler):"]
         for name, status, where in mates:
-            out.append(f"  - {name}: {status}" + (f" — matched C in {where}" if where else ""))
+            location = (f" — several definition-shaped copies in {where}"
+                        if status == "ambiguous C definition" else f" — matched C in {where}")
+            out.append(f"  - {name}: {status}" + (location if where else ""))
     if refs:
         out += ["", "Banked reference material from the retired closer campaign "
                     "(read before probing — this work is already done):"]
