@@ -1,0 +1,150 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 6900,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6400,
+        "name": "t_link"
+      },
+      {
+        "frame": 6640,
+        "name": "top_menu_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6390,
+        "name": "top_menu.link_cursor"
+      },
+      {
+        "frame": 6450,
+        "name": "t_link.black"
+      },
+      {
+        "frame": 6550,
+        "name": "t_link.black_2"
+      },
+      {
+        "frame": 6590,
+        "name": "t_link.s6590"
+      },
+      {
+        "frame": 6600,
+        "name": "t_link.waiting"
+      },
+      {
+        "frame": 6610,
+        "name": "t_link.s6610"
+      },
+      {
+        "frame": 6620,
+        "name": "t_link.menu_back"
+      },
+      {
+        "frame": 6650,
+        "name": "top_menu_2.first"
+      },
+      {
+        "frame": 6899,
+        "name": "top_menu_2.last"
+      }
+    ]
+  }
+}

@@ -10,7 +10,7 @@
         "mode:link"
       ],
       "notes": {
-        "mode:link": "two consoles over a link cable: not reachable with one emulator"
+        "mode:link": "two consoles over a link cable: not reachable with one emulator (one emulator reaches only the no-cable attempt, menu:link_wait)"
       }
     },
     "menus": {
@@ -29,8 +29,12 @@
         "menu:memory_card",
         "menu:group_settings",
         "menu:school_select",
-        "menu:team_roster"
-      ]
+        "menu:team_roster",
+        "menu:link_wait"
+      ],
+      "notes": {
+        "menu:link_wait": "Link Mode with no cable: CROSS on the top menu's Link Mode entry, a black load, Waiting for Challenger, then the top menu again (link-no-cable-1)"
+      }
     },
     "stages": {
       "keys": [

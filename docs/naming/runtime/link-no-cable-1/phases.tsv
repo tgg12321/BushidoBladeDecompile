@@ -1,0 +1,6 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6399	top menu, cursor walked DOWN x5 to Link Mode (2 Player Link Battle)	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN,6320:DOWN	capture.top_menu.first.png,capture.top_menu.link_cursor.png
+t_link	6400	6639	CROSS on Link Mode with no cable: black screen (6450, 6550), Waiting for Challenger (6590, 6600), the top menu on Link Mode again by 6610	6400:CROSS	capture.t_link.black.png,capture.t_link.black_2.png,capture.t_link.s6590.png,capture.t_link.waiting.png,capture.t_link.s6610.png,capture.t_link.menu_back.png
+top_menu_2	6640	6899	top menu, cursor on Link Mode, no input	-	capture.top_menu_2.first.png,capture.top_menu_2.last.png

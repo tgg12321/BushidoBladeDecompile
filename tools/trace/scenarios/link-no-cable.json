@@ -1,0 +1,39 @@
+{
+  "description": "top menu DOWN x5 to Link Mode, CROSS with no link cable: black load, the cable handshake gives up within ~10 frames (comb_ResetClose), Waiting for Challenger (shots 6590, 6600; the menu again by 6610), back to the top menu on Link Mode",
+  "covers": [
+    "menu:top",
+    "menu:link_wait"
+  ],
+  "evidence": [
+    "docs/naming/runtime/link-no-cable-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 6900,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:DOWN",
+    "6320:DOWN",
+    "6400:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6400:t_link",
+    "6640:top_menu_2"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6390:top_menu.link_cursor",
+    "6450:t_link.black",
+    "6550:t_link.black_2",
+    "6590:t_link.s6590",
+    "6600:t_link.waiting",
+    "6610:t_link.s6610",
+    "6620:t_link.menu_back",
+    "6650:top_menu_2.first",
+    "6899:top_menu_2.last"
+  ]
+}
