@@ -1,0 +1,451 @@
+0 phase boot_intro
+5200 press START
+5206 release START
+5489 shot boot_intro.last 320 240 24
+5490 phase t_menu
+5500 press CROSS
+5506 release CROSS
+5800 press START
+5806 release START
+6060 shot top_menu.first 640 240 16
+6060 phase top_menu
+6099 shot top_menu.last 640 240 16
+6100 press CROSS
+6100 phase t_story
+6106 release CROSS
+6400 press START
+6406 release START
+6700 press CROSS
+6706 release CROSS
+6810 shot story_text.first 640 240 16
+6810 phase story_text
+6909 shot story_text.last 640 240 16
+6910 phase t_char
+6950 shot char_select.first 640 240 16
+6950 phase char_select
+7000 press START
+7006 release START
+7299 shot char_select.last 640 240 16
+7300 press CROSS
+7300 phase t_weapon
+7306 release CROSS
+7360 shot weapon_select.first 640 240 16
+7360 phase weapon_select
+7600 press START
+7606 release START
+7899 shot weapon_select.last 640 240 16
+7900 press CROSS
+7900 shot s.7900 640 240 16
+7900 phase t_stage
+7906 release CROSS
+8050 shot s.8050 640 240 16
+8100 phase stage_card
+8200 press START
+8200 shot s.8200 640 240 16
+8206 release START
+8350 shot s.8350 640 240 16
+8500 press CROSS
+8500 shot s.8500 640 240 16
+8506 release CROSS
+8600 phase intro
+8650 shot s.8650 640 240 16
+8800 press START
+8800 shot s.8800 640 240 16
+8806 release START
+8950 shot s.8950 640 240 16
+9100 shot s.9100 640 240 16
+9250 shot s.9250 640 240 16
+9400 shot s.9400 640 240 16
+9550 shot s.9550 640 240 16
+9700 shot s.9700 640 240 16
+9800 phase fight
+9850 shot s.9850 640 240 16
+10000 shot s.10000 640 240 16
+10050 shot s.10050 640 240 16
+10100 shot s.10100 640 240 16
+10150 shot s.10150 640 240 16
+10200 press RIGHT
+10200 shot s.10200 640 240 16
+10212 release RIGHT
+10212 press R2
+10215 press CIRCLE
+10216 release R2
+10219 release CIRCLE
+10220 press RIGHT
+10232 release RIGHT
+10232 press R2
+10235 press CIRCLE
+10236 release R2
+10239 release CIRCLE
+10240 press RIGHT
+10250 shot s.10250 640 240 16
+10252 release RIGHT
+10252 press R2
+10255 press CIRCLE
+10256 release R2
+10259 release CIRCLE
+10260 press RIGHT
+10272 release RIGHT
+10272 press R2
+10275 press CIRCLE
+10276 release R2
+10279 release CIRCLE
+10280 press RIGHT
+10292 release RIGHT
+10292 press R2
+10295 press CIRCLE
+10296 release R2
+10299 release CIRCLE
+10300 press RIGHT
+10300 shot s.10300 640 240 16
+10312 release RIGHT
+10312 press R2
+10315 press CIRCLE
+10316 release R2
+10319 release CIRCLE
+10320 press RIGHT
+10332 release RIGHT
+10332 press R2
+10335 press CIRCLE
+10336 release R2
+10339 release CIRCLE
+10340 press RIGHT
+10350 shot s.10350 640 240 16
+10352 release RIGHT
+10352 press R2
+10355 press CIRCLE
+10356 release R2
+10359 release CIRCLE
+10360 press RIGHT
+10372 release RIGHT
+10372 press R2
+10375 press CIRCLE
+10376 release R2
+10379 release CIRCLE
+10380 press RIGHT
+10392 release RIGHT
+10392 press R2
+10395 press CIRCLE
+10396 release R2
+10399 release CIRCLE
+10400 press RIGHT
+10400 shot s.10400 640 240 16
+10412 release RIGHT
+10412 press R2
+10415 press CIRCLE
+10416 release R2
+10419 release CIRCLE
+10420 press RIGHT
+10432 release RIGHT
+10432 press R2
+10435 press CIRCLE
+10436 release R2
+10439 release CIRCLE
+10440 press RIGHT
+10450 shot s.10450 640 240 16
+10452 release RIGHT
+10452 press R2
+10455 press CIRCLE
+10456 release R2
+10459 release CIRCLE
+10460 press RIGHT
+10472 release RIGHT
+10472 press R2
+10475 press CIRCLE
+10476 release R2
+10479 release CIRCLE
+10480 press RIGHT
+10492 release RIGHT
+10492 press R2
+10495 press CIRCLE
+10496 release R2
+10499 release CIRCLE
+10500 press RIGHT
+10500 shot s.10500 640 240 16
+10512 release RIGHT
+10512 press R2
+10515 press CIRCLE
+10516 release R2
+10519 release CIRCLE
+10520 press RIGHT
+10532 release RIGHT
+10532 press R2
+10535 press CIRCLE
+10536 release R2
+10539 release CIRCLE
+10540 press RIGHT
+10550 shot s.10550 640 240 16
+10552 release RIGHT
+10552 press R2
+10555 press CIRCLE
+10556 release R2
+10559 release CIRCLE
+10560 press RIGHT
+10572 release RIGHT
+10572 press R2
+10575 press CIRCLE
+10576 release R2
+10579 release CIRCLE
+10580 press RIGHT
+10592 release RIGHT
+10592 press R2
+10595 press CIRCLE
+10596 release R2
+10599 release CIRCLE
+10600 press RIGHT
+10600 shot s.10600 640 240 16
+10612 release RIGHT
+10612 press R2
+10615 press CIRCLE
+10616 release R2
+10619 release CIRCLE
+10620 press RIGHT
+10632 release RIGHT
+10632 press R2
+10635 press CIRCLE
+10636 release R2
+10639 release CIRCLE
+10640 press RIGHT
+10650 shot s.10650 640 240 16
+10652 release RIGHT
+10652 press R2
+10655 press CIRCLE
+10656 release R2
+10659 release CIRCLE
+10660 press RIGHT
+10672 release RIGHT
+10672 press R2
+10675 press CIRCLE
+10676 release R2
+10679 release CIRCLE
+10680 press RIGHT
+10692 release RIGHT
+10692 press R2
+10695 press CIRCLE
+10696 release R2
+10699 release CIRCLE
+10700 press RIGHT
+10700 shot s.10700 640 240 16
+10712 release RIGHT
+10712 press R2
+10715 press CIRCLE
+10716 release R2
+10719 release CIRCLE
+10720 press RIGHT
+10732 release RIGHT
+10732 press R2
+10735 press CIRCLE
+10736 release R2
+10739 release CIRCLE
+10740 press RIGHT
+10750 shot s.10750 640 240 16
+10752 release RIGHT
+10752 press R2
+10755 press CIRCLE
+10756 release R2
+10759 release CIRCLE
+10760 press RIGHT
+10772 release RIGHT
+10772 press R2
+10775 press CIRCLE
+10776 release R2
+10779 release CIRCLE
+10780 press RIGHT
+10792 release RIGHT
+10792 press R2
+10795 press CIRCLE
+10796 release R2
+10799 release CIRCLE
+10800 press RIGHT
+10800 shot s.10800 640 240 16
+10812 release RIGHT
+10812 press R2
+10815 press CIRCLE
+10816 release R2
+10819 release CIRCLE
+10820 press RIGHT
+10832 release RIGHT
+10832 press R2
+10835 press CIRCLE
+10836 release R2
+10839 release CIRCLE
+10840 press RIGHT
+10850 shot s.10850 640 240 16
+10852 release RIGHT
+10852 press R2
+10855 press CIRCLE
+10856 release R2
+10859 release CIRCLE
+10860 press RIGHT
+10872 release RIGHT
+10872 press R2
+10875 press CIRCLE
+10876 release R2
+10879 release CIRCLE
+10880 press RIGHT
+10892 release RIGHT
+10892 press R2
+10895 press CIRCLE
+10896 release R2
+10899 release CIRCLE
+10900 press RIGHT
+10900 shot s.10900 640 240 16
+10912 release RIGHT
+10912 press R2
+10915 press CIRCLE
+10916 release R2
+10919 release CIRCLE
+10920 press RIGHT
+10932 release RIGHT
+10932 press R2
+10935 press CIRCLE
+10936 release R2
+10939 release CIRCLE
+10940 press RIGHT
+10950 shot s.10950 640 240 16
+10952 release RIGHT
+10952 press R2
+10955 press CIRCLE
+10956 release R2
+10959 release CIRCLE
+10960 press RIGHT
+10972 release RIGHT
+10972 press R2
+10975 press CIRCLE
+10976 release R2
+10979 release CIRCLE
+10980 press RIGHT
+10992 release RIGHT
+10992 press R2
+10995 press CIRCLE
+10996 release R2
+10999 release CIRCLE
+11000 press RIGHT
+11000 shot s.11000 640 240 16
+11012 release RIGHT
+11012 press R2
+11015 press CIRCLE
+11016 release R2
+11019 release CIRCLE
+11020 press RIGHT
+11032 release RIGHT
+11032 press R2
+11035 press CIRCLE
+11036 release R2
+11039 release CIRCLE
+11040 press RIGHT
+11050 shot s.11050 640 240 16
+11052 release RIGHT
+11052 press R2
+11055 press CIRCLE
+11056 release R2
+11059 release CIRCLE
+11060 press RIGHT
+11072 release RIGHT
+11072 press R2
+11075 press CIRCLE
+11076 release R2
+11079 release CIRCLE
+11080 press RIGHT
+11092 release RIGHT
+11092 press R2
+11095 press CIRCLE
+11096 release R2
+11099 release CIRCLE
+11100 press RIGHT
+11100 shot s.11100 640 240 16
+11112 release RIGHT
+11112 press R2
+11115 press CIRCLE
+11116 release R2
+11119 release CIRCLE
+11120 press RIGHT
+11132 release RIGHT
+11132 press R2
+11135 press CIRCLE
+11136 release R2
+11139 release CIRCLE
+11140 press RIGHT
+11150 shot s.11150 640 240 16
+11152 release RIGHT
+11152 press R2
+11155 press CIRCLE
+11156 release R2
+11159 release CIRCLE
+11160 press RIGHT
+11172 release RIGHT
+11172 press R2
+11175 press CIRCLE
+11176 release R2
+11179 release CIRCLE
+11180 press RIGHT
+11192 release RIGHT
+11192 press R2
+11195 press CIRCLE
+11196 release R2
+11199 release CIRCLE
+11200 press RIGHT
+11200 shot s.11200 640 240 16
+11212 release RIGHT
+11212 press R2
+11215 press CIRCLE
+11216 release R2
+11219 release CIRCLE
+11220 press RIGHT
+11232 release RIGHT
+11232 press R2
+11235 press CIRCLE
+11236 release R2
+11239 release CIRCLE
+11240 press RIGHT
+11250 shot s.11250 640 240 16
+11252 release RIGHT
+11252 press R2
+11255 press CIRCLE
+11256 release R2
+11259 release CIRCLE
+11260 press RIGHT
+11272 release RIGHT
+11272 press R2
+11275 press CIRCLE
+11276 release R2
+11279 release CIRCLE
+11280 press RIGHT
+11292 release RIGHT
+11292 press R2
+11295 press CIRCLE
+11296 release R2
+11299 release CIRCLE
+11300 press RIGHT
+11300 shot s.11300 640 240 16
+11312 release RIGHT
+11312 press R2
+11315 press CIRCLE
+11316 release R2
+11319 release CIRCLE
+11320 press RIGHT
+11332 release RIGHT
+11332 press R2
+11335 press CIRCLE
+11336 release R2
+11339 release CIRCLE
+11340 press RIGHT
+11350 shot s.11350 640 240 16
+11352 release RIGHT
+11352 press R2
+11355 press CIRCLE
+11356 release R2
+11359 release CIRCLE
+11360 press RIGHT
+11372 release RIGHT
+11372 press R2
+11375 press CIRCLE
+11376 release R2
+11379 release CIRCLE
+11380 press RIGHT
+11392 release RIGHT
+11392 press R2
+11395 press CIRCLE
+11396 release R2
+11399 release CIRCLE
+11400 finish -

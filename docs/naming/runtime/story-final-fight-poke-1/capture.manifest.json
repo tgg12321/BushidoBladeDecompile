@@ -1,0 +1,546 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "53b2a1ad11776b1516a8e420a8c3b555b4cc13f6",
+      "size": 106008
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "fbef84f61bbac5cd56e6205ab6053aecf3d7641b",
+      "size": 28331
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "6de45b17173967ed80d63e250193c0b28b179921",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "8a0c9f2399dd68bc1511e20ad10a3cfa29c837dc",
+      "size": 400803
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "5f7a5f816b79bcf4ef4739840898bc488d2083ed",
+      "size": 851884
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\spec.json",
+    "sha1": "6d0f7d95c8bae8a3281e481dcd12e5e9f38f045a",
+    "size": 25612
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.script.lua",
+      "sha1": "10bfdfe469be4959c1488b75bf2eaa32e0ad0b8c",
+      "size": 22697
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 73,
+    "ambiguous_stops": 0,
+    "pokes": [
+      {
+        "at": "0x8008F222",
+        "addr": 2148069922,
+        "when": "top_menu",
+        "hex": "111c00c0131515040312",
+        "orig": "10071003332412130019",
+        "applied": {
+          "frame": 6060,
+          "pc": 2147483776,
+          "ok": true
+        },
+        "at_end": "111c00c0131515040312"
+      }
+    ],
+    "modified_game": "poked memory: hits and screenshots after a stub or poke went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.jsonl",
+      "sha1": "4145e076affe853008122578315c46254b37dd91",
+      "size": 89811
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.top_menu.first.png",
+      "sha1": "2607fc28352b684edfa2617119a39a158017a61e",
+      "size": 31576
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.top_menu.last.png",
+      "sha1": "3c4c3b1a239dcecc8015af2910d6a16bcf8fa8ab",
+      "size": 31548
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.story_text.first.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.story_text.last.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.char_select.first.png",
+      "sha1": "05c8fcd620261e5646396035747d1e834ab658b3",
+      "size": 19403
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.char_select.last.png",
+      "sha1": "e32d5901a4df1c8709e3c040b581b3822d6835fb",
+      "size": 19486
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.weapon_select.first.png",
+      "sha1": "8cac00beb32a7a94286a78fe9e4be8f62abf9bf7",
+      "size": 19165
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.weapon_select.last.png",
+      "sha1": "45e25dccdfa07a4bed83b6edb0c1cbf8868c7fc6",
+      "size": 18990
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.7900.png",
+      "sha1": "281037b8abee0ece1fabc1917280c4940f230513",
+      "size": 18989
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8050.png",
+      "sha1": "f4e1408811926e181431f150ff36d726032d5faf",
+      "size": 3028
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8200.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8350.png",
+      "sha1": "bdb8c6a866f4f40fd3d5ceedd46a617117dba60a",
+      "size": 23905
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8500.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8650.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8800.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.8950.png",
+      "sha1": "fd718488d8b8f6b68b41051b22b125b509b6a798",
+      "size": 34242
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.9100.png",
+      "sha1": "1b0ea222bd22851198915915ed7acf0e929ba57e",
+      "size": 35437
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.9250.png",
+      "sha1": "4f0159568c64784889dddc7815ca4fde4a4f688b",
+      "size": 35135
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.9400.png",
+      "sha1": "24a8f35cc6adda82a5ebad81fea997e586b922bd",
+      "size": 34105
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.9550.png",
+      "sha1": "fc1a06e38210f49abfb661088dc750b4ab99ffb8",
+      "size": 35947
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.9700.png",
+      "sha1": "7a2eef7abbeb15f49d94a46d1d6ef8d6b22047ed",
+      "size": 40633
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.9850.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10000.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10050.png",
+      "sha1": "e4135d2dbd65c1f9cab2c8de2f1fdc2a7d1d1788",
+      "size": 31283
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10100.png",
+      "sha1": "35541a14419535102caa6605ac12680c21ad5b25",
+      "size": 32027
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10150.png",
+      "sha1": "5334c7371ecc349df6100a2e6070ca84652f7b4b",
+      "size": 32327
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10200.png",
+      "sha1": "2156d8f36b14510ac23fcc1047c8efbc72a44b11",
+      "size": 32212
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10250.png",
+      "sha1": "da46a1b1fe21d80d8ed3046e5a39785d0c543763",
+      "size": 32078
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10300.png",
+      "sha1": "b10b98a11bb624bde36cb6e0ad2f410efc282b94",
+      "size": 39947
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10350.png",
+      "sha1": "e4b4dbef9172a4ed62c6fffd4b44e1466e7c3e77",
+      "size": 38599
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10400.png",
+      "sha1": "69f6281f1f1198763b9d97dd3b5a007e0b1d23b8",
+      "size": 42939
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10450.png",
+      "sha1": "58ce2b4b643462624043af5c06e5688301d5e1a2",
+      "size": 43618
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10500.png",
+      "sha1": "898e5424b9f3239207de4dd1630b0b4d954a7f2f",
+      "size": 37771
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10550.png",
+      "sha1": "fcb2b41023970494c42874178d887c1fa0f2e55f",
+      "size": 41002
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10600.png",
+      "sha1": "3250026d674796a150f736de049a59be4b8ba748",
+      "size": 38132
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10650.png",
+      "sha1": "b857f312c3f956c3db7dc69f1e55e7407198ea6e",
+      "size": 38156
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10700.png",
+      "sha1": "3200fb4b8858c4c31a52314f1d9a64bea342c175",
+      "size": 37462
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10750.png",
+      "sha1": "707496e3ff31faa480b137966638ff4e3eef9834",
+      "size": 37988
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10800.png",
+      "sha1": "08e706cf6bacb5efb0b5fa8df14468f4c0d5170c",
+      "size": 40495
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10850.png",
+      "sha1": "ec4ae1cde337042c798fb6e7dcedd1a38978d890",
+      "size": 38487
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10900.png",
+      "sha1": "b7234e82de353a7eb9c14ce2ab6a822ff5f8f327",
+      "size": 39632
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.10950.png",
+      "sha1": "519dcbf746ead2b18fd6076e7f8144815c2592f2",
+      "size": 38905
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11000.png",
+      "sha1": "e56eb607a70d228c4a7334a14f6d9223685a765a",
+      "size": 42648
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11050.png",
+      "sha1": "22a924b4e9fcc6fc5c309f079192a5af3b760ac8",
+      "size": 41739
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11100.png",
+      "sha1": "f85363d9eb2448971a59008657e4c0ee084c504a",
+      "size": 38876
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11150.png",
+      "sha1": "26f7d2657d5f756ad886a07b45b207ccaf31b2f2",
+      "size": 38954
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11200.png",
+      "sha1": "d2546c04d5a6c5c9b823dfa7786ff589132137b5",
+      "size": 38601
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11250.png",
+      "sha1": "9db72a040a18fa4b6ec44390aa09943fb07089d8",
+      "size": 39411
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11300.png",
+      "sha1": "31ce0c81e86c468e24098455d0aee2c6f0f67943",
+      "size": 41354
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.s.11350.png",
+      "sha1": "90dff5965dc74290570a03e55d133bf83d97f527",
+      "size": 39401
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.script.log",
+      "sha1": "080aecced154a05af448b824fd4ae8f7a38f155d",
+      "size": 9366
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\story-final-fight-poke-1\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}
