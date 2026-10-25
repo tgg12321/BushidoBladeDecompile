@@ -6,6 +6,8 @@
     "stage:kimigaura_coast",
     "char:kannuki",
     "char:gengoro",
+    "weapon:naginata",
+    "weapon:yari",
     "event:round_start"
   ],
   "evidence": [

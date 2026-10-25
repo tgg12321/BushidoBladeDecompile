@@ -6,6 +6,8 @@
     "stage:kimigaura_coast",
     "char:kannuki",
     "char:gengoro",
+    "weapon:broadsword",
+    "weapon:long_sword",
     "event:round_start"
   ],
   "evidence": [

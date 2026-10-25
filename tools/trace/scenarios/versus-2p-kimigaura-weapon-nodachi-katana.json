@@ -6,6 +6,8 @@
     "stage:kimigaura_coast",
     "char:kannuki",
     "char:gengoro",
+    "weapon:nodachi",
+    "weapon:katana",
     "event:round_start"
   ],
   "evidence": [
