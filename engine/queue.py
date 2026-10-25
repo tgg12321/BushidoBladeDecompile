@@ -77,6 +77,7 @@ from typing import Callable
 from . import buildconfig as cfg
 from . import canonical
 from . import cheats
+from . import gtemacro
 from . import inlineasm
 from . import layer2
 from . import oracle as O
@@ -102,11 +103,15 @@ class QueueConflict(RuntimeError):
     """
 
 
+def _queue_path() -> Path:
+    return gtemacro.REPO_ROOT / QUEUE_PATH
+
+
 def _fingerprint() -> str:
     """Content digest of queue.json ("" when absent). Content rather than mtime:
     the file is small, and mtime resolution can hide a fast write."""
     try:
-        return hashlib.sha1(Path(QUEUE_PATH).read_bytes()).hexdigest()
+        return hashlib.sha1(_queue_path().read_bytes()).hexdigest()
     except OSError:
         return ""
 
@@ -120,7 +125,8 @@ def _locked():
     neither is importable the lock degrades to a no-op and the fingerprint
     check in save() is the remaining protection.
     """
-    lock_path = Path(str(QUEUE_PATH) + ".lock")
+    p = _queue_path()
+    lock_path = p.with_name(p.name + ".lock")
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     fh = open(lock_path, "a+")
     try:
@@ -152,7 +158,7 @@ def _locked():
 def load() -> dict:
     """The queue; an item's `addr` (its function's VRAM address — the key the
     Q39 departures audit uses) must be 8 upper-case hex digits when present."""
-    p = Path(QUEUE_PATH)
+    p = _queue_path()
     q = json.loads(p.read_text()) if p.exists() else {"items": []}
     for it in q.get("items", []):
         if "addr" in it and not (isinstance(it["addr"], str)
@@ -175,7 +181,7 @@ def save(q: dict, expect: str | None = None) -> None:
         raise QueueConflict(
             f"{QUEUE_PATH} changed on disk during this update — refusing to "
             f"overwrite. Re-read the queue and retry.")
-    p = Path(QUEUE_PATH)
+    p = _queue_path()
     tmp = p.with_name(p.name + f".tmp.{os.getpid()}")
     tmp.write_text(json.dumps(q, indent=2) + "\n")
     os.replace(tmp, p)
@@ -341,7 +347,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     # does — read regardless of `preserve`, or `regen --no-preserve` would be
     # the bypass. Items never listed (historical completions) are not gated.
     listed = ({it["func"]: it for it in load().get("items", [])}
-              if Path(QUEUE_PATH).exists() else {})
+              if _queue_path().exists() else {})
 
     # Listed funcs whose drop was DECIDED in the scan (their gate passed).
     # Every other listed func missing from the new items —
@@ -361,7 +367,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
         return {**listed[func], "file": stem, "distance": dist, "rules": rules,
                 "layer2_pending": why[:400]}
 
-    if preserve and Path(QUEUE_PATH).exists():
+    if preserve and _queue_path().exists():
         for it in load().get("items", []):
             # `owner_override` is carried across too: routing here is mechanical
             # (distance > NEAR_CERTAIN -> ASM-STRUCTURAL -> authorize) and an owner

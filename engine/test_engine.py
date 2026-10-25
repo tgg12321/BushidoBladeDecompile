@@ -4865,6 +4865,7 @@ def test_queue_non_function_labels() -> None:
                 obj.touch()
             stack.enter_context(patch.dict(inlineasm._FILE_TEXT_CACHE, {}, clear=True))
             for obj, attr, value in (
+                (Q.gtemacro, "REPO_ROOT", Path(td).resolve()),
                 (Q, "QUEUE_PATH", "queue.json"),
                 (P, "c_stems", lambda: list(texts)),
                 (canonical, "scan_all", lambda: []),
@@ -10022,6 +10023,62 @@ def test_naming_keycheck_scoped_pairs() -> None:
         check("keycheck: scoped pairs cannot explain " + path, result == 1)
 
 
+def test_queue_repo_root() -> None:
+    """Queue storage follows the call-time root, including lock and CAS."""
+    from unittest.mock import patch
+    from engine import gtemacro, queue as Q
+
+    cwd = Path.cwd()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td).resolve()
+        (root / "engine").mkdir()
+        other = root / "elsewhere"
+        (other / "engine").mkdir(parents=True)
+        decoy = other / "engine/queue.json"
+        decoy.write_text('{"items": [{"func": "decoy"}]}\n')
+        before = decoy.read_bytes()
+        q = {"items": [{"func": "rooted", "addr": "80010000"}]}
+        qp = root / "engine/queue.json"
+        qp.write_text(json.dumps(q, indent=2) + "\n")
+        with patch.object(gtemacro, "REPO_ROOT", root), \
+                patch.object(Q, "QUEUE_PATH", "engine/queue.json"):
+            try:
+                os.chdir(other)
+                eq("queue root: foreign cwd reads rooted queue", Q.load(), q)
+                token = Q._fingerprint()
+                original_replace = os.replace
+                replaced = []
+
+                def replace(src, dst):
+                    replaced.append((src, dst))
+                    return original_replace(src, dst)
+
+                with Q._locked(), patch.object(Q.os, "replace", replace):
+                    check("queue root: sidecar lock sits beside rooted queue",
+                          qp.with_name("queue.json.lock").is_file())
+                    Q.save(q, expect=token)
+                eq("queue root: saved bytes retain the root format", qp.read_text(),
+                   json.dumps(q, indent=2) + "\n")
+                check("queue root: atomic replace stays in queue directory",
+                      len(replaced) == 1 and replaced[0][0].parent == qp.parent
+                      and replaced[0][1] == qp)
+                qp.write_text('{"items": []}\n')
+                try:
+                    Q.save(q, expect=token)
+                    check("queue root: fingerprint rejects intervening write", False)
+                except Q.QueueConflict as e:
+                    check("queue root: conflict keeps relative queue name",
+                          str(e).startswith("engine/queue.json changed on disk"))
+                eq("queue root: foreign queue untouched", decoy.read_bytes(), before)
+                check("queue root: no lock or temporary files in cwd",
+                      sorted(p.name for p in decoy.parent.iterdir()) == ["queue.json"])
+                with patch.object(gtemacro, "REPO_ROOT", other):
+                    eq("queue root: root changes take effect at call time",
+                       Q.load()["items"][0]["func"], "decoy")
+            finally:
+                os.chdir(cwd)
+
+
 def test_departures() -> None:
     """Q39 departures audit (engine/departures.py), keyed by function ADDRESS,
     on throwaway git repos: every departure shape the name-keyed rounds had to
@@ -10036,6 +10093,7 @@ def test_departures() -> None:
     import subprocess
     from datetime import datetime, timedelta
     from engine import departures, gtemacro, layer2
+    from unittest.mock import patch
 
     original_root = gtemacro.REPO_ROOT
 
@@ -10161,7 +10219,7 @@ def test_departures() -> None:
 
     cwd = os.getcwd()
     real_git = departures._git_cmd()          # this tree's git (a worktree, maybe)
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, patch.object(gtemacro, "REPO_ROOT", gtemacro.REPO_ROOT):
         try:
             enter_repo(td)
             Path(".git").write_text("gitdir: C:/Repo/.git/worktrees/w\n")
@@ -10173,6 +10231,49 @@ def test_departures() -> None:
                departures._git_cmd("nt"),
                ["git", "--no-replace-objects", "--git-dir=C:/Repo/.git/worktrees/w"])
             Path(".git").unlink()
+
+            new_repo(Path(td) / "rooted", ["func_ROOT", "func_KEEP"])
+            Path("src/k.c").write_text(
+                'INCLUDE_ASM("asm/funcs", func_ROOT);\n'
+                'int func_KEEP(void) { return 0; }\n')
+            drop("func_ROOT")
+            h = key("func_ROOT")
+            rec("func_ROOT", h)
+            root = Path.cwd()
+            other = Path(td) / "elsewhere"
+            other.mkdir()
+            try:
+                os.chdir(other)  # Keep REPO_ROOT on the synthetic repository.
+                eq("departures root: foreign cwd reads git, source, asm and ledger",
+                   audit(), ([], []))
+                eq("departures root: current name returns a relative TU",
+                   departures._current_name(addrs["func_ROOT"], departures._addr_index(),
+                                            None, None), ("func_ROOT", "k"))
+                ledger = root / "memory/grind/func_ROOT/layer2.jsonl"
+                ledger.write_text("{broken\n")
+                v = departures.unreviewed_departures()
+                check("departures root: record errors stay repo-relative",
+                      len(v) == 1 and "memory/grind/func_ROOT/layer2.jsonl:1 is not JSON" in v[0]
+                      and str(root) not in v[0])
+                ledger.unlink()
+                eq("departures root: foreign cwd sees an unreviewed hand-drop",
+                   audit()[1], ["func_ROOT"])
+                graft = root / ".git/info/grafts"
+                graft.parent.mkdir(exist_ok=True)
+                graft.write_text("\n")
+                check("departures root: relative git graft path uses repo root",
+                      "grafts file" in departures.unreviewed_departures()[0])
+                graft.unlink()
+                # A worktree gitdir file is read from the root even outside it.
+                fake = other / "worktree"
+                fake.mkdir()
+                (fake / ".git").write_text("gitdir: C:/Repo/.git/worktrees/w\n")
+                with patch.object(gtemacro, "REPO_ROOT", fake):
+                    eq("departures root: translated gitdir command",
+                       departures._git_cmd("posix"),
+                       ["git", "--no-replace-objects", "--git-dir=/mnt/c/Repo/.git/worktrees/w"])
+            finally:
+                enter_repo(root)
 
             # Q126: thread the departure's committer date into the legacy-key
             # fallback; an old record alone cannot clear a new departure.
@@ -10616,7 +10717,7 @@ def test_departures() -> None:
     nw.retarget_queue_items(data, {"func_A": "func_A2"})
     eq("departures: naming_wave renames a queue item's func only",
        data["items"], [{"func": "func_A2", "addr": "80010000"}])
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, patch.object(gtemacro, "REPO_ROOT", gtemacro.REPO_ROOT):
         saved = nw.ROOT
         nw.ROOT = Path(td)
         try:
@@ -14116,6 +14217,7 @@ def main() -> int:
         test_queue_non_function_labels()
     with _synth_addrs():
         test_layer2_gate()
+    test_queue_repo_root()
     test_departures()
     test_layer2_repo_paths()
     test_layer2_addresses()

@@ -68,7 +68,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import layer2
+from . import gtemacro, layer2
 
 QUEUE_FILE = "engine/queue.json"
 _ADDR_PAT = re.compile(rb'"addr"\s*:\s*"([0-9A-Fa-f]{8})"')
@@ -80,6 +80,31 @@ _ZERO = "0" * 40
 
 class _AuditError(Exception):
     pass
+
+
+def _repo_path(path: str | Path) -> Path:
+    return gtemacro.REPO_ROOT / path
+
+
+def _disk(path: str) -> str | None:
+    return layer2._read_text(_repo_path(path))
+
+
+def _addr_index() -> dict[str, str]:
+    # Explicit readers keep this audit independent of layer2's cwd defaults.
+    out = {}
+    for p in sorted(_repo_path("asm/funcs").glob("*.s")):
+        text = layer2._read_text(p) or ""
+        g = layer2._GLABEL_RE.search(text)
+        a = layer2._asm_addr(text, g.group(1)) if g else None
+        if a:
+            out.setdefault(g.group(1), a)
+    for n, a in layer2._registry_addrs(_disk).items():
+        out.setdefault(n, a)
+    for m in layer2._MAP_DEF.finditer(_disk("build/bb2.map") or ""):
+        out.setdefault(m.group(2), layer2.auto_addr(m.group(2)) or
+                       m.group(1).upper().zfill(8))
+    return out
 
 
 def _gitdir_line(text: str) -> str | None:
@@ -101,8 +126,8 @@ def win_gitdir(git_file_text: str) -> str | None:
 
 def _git_cmd(osname: str | None = None) -> list[str]:
     cmd = ["git", "--no-replace-objects"]
-    if Path(".git").is_file():
-        text = layer2._read_text(Path(".git")) or ""
+    if _repo_path(".git").is_file():
+        text = _disk(".git") or ""
         g = (wsl_gitdir if (osname or os.name) == "posix" else win_gitdir)(text)
         if g:
             cmd.append(f"--git-dir={g}")
@@ -111,7 +136,8 @@ def _git_cmd(osname: str | None = None) -> list[str]:
 
 def _git(*args: str) -> bytes:
     try:
-        r = subprocess.run([*_git_cmd(), *args], capture_output=True)
+        r = subprocess.run([*_git_cmd(), *args], capture_output=True,
+                           cwd=gtemacro.REPO_ROOT)
     except OSError as e:
         raise _AuditError(f"git {args[0]} could not run: {e}") from None
     if r.returncode != 0:
@@ -128,7 +154,7 @@ class _Batch:
         try:
             self.p = subprocess.Popen([*_git_cmd(), "cat-file", "--batch"],
                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE)
+                                      stderr=subprocess.PIPE, cwd=gtemacro.REPO_ROOT)
         except OSError as e:
             raise _AuditError(f"git cat-file could not run: {e}") from None
         self.cache: dict[str, bytes | None] = {}
@@ -276,7 +302,7 @@ def _pre_q126(batch: _Batch, c: str | None) -> bool:
     raise _AuditError(f"departure commit {c} has an invalid committer timestamp")
 
 
-def _keys(text: str, name: str, read=layer2._disk) -> tuple[str, str] | None:
+def _keys(text: str, name: str, read=_disk) -> tuple[str, str] | None:
     """(helper-inclusive key, definition-only key) of `name` in `text`."""
     k = layer2.body_key(text, name, read)
     if not k:
@@ -318,9 +344,9 @@ def _body_at(batch: _Batch, rev: str, name: str,
 
 
 def _body_now(name: str, file: str | None) -> tuple[str, str] | None:
-    paths = [Path(f"src/{file}.c")] if file else []
+    paths = [_repo_path(f"src/{file}.c")] if file else []
     for pat in ("src/**/*.c", "src/**/*.h", "include/**/*.h"):
-        paths += sorted(Path(".").glob(pat))
+        paths += sorted(gtemacro.REPO_ROOT.glob(pat))
     for p in paths:
         text = layer2._read_text(p)
         k = _keys(text, name) if text and name in text else None
@@ -335,11 +361,12 @@ def _records() -> dict[str, list[dict]]:
     back never reorders one file's history (line order decides there); files
     are merged by effective date. An unreadable record file fails the audit."""
     by_addr: dict[str, list[tuple]] = {}
-    files = sorted(Path("memory/grind").glob("**/" + layer2.RECORD_NAME))
+    files = sorted(_repo_path("memory/grind").glob("**/" + layer2.RECORD_NAME))
     for fi, p in enumerate(files):
+        display = p.relative_to(gtemacro.REPO_ROOT).as_posix()
         text = layer2._read_text(p)
         if text is None:
-            raise _AuditError(f"{p.as_posix()} is unreadable")
+            raise _AuditError(f"{display} is unreadable")
         eff = ""
         for li, line in enumerate(text.splitlines()):
             if not line.strip():
@@ -347,7 +374,7 @@ def _records() -> dict[str, list[dict]]:
             try:
                 rec = json.loads(line)
             except ValueError:
-                raise _AuditError(f"{p.as_posix()}:{li + 1} is not JSON") from None
+                raise _AuditError(f"{display}:{li + 1} is not JSON") from None
             eff = max(eff, str(rec.get("date", "")) if isinstance(rec, dict) else "")
             a = rec.get("addr") if isinstance(rec, dict) else None
             if isinstance(a, str):
@@ -363,10 +390,12 @@ def _current_name(addr: str, index: dict, name: str | None, file: str | None):
                     key=lambda n: n != name):
         if layer2.lookup(index, n) not in (addr, None):
             continue                        # that name is another function now
-        for p in ([Path(f"src/{file}.c")] if file else []) + sorted(Path("src").glob("**/*.c")):
+        paths = [_repo_path(f"src/{file}.c")] if file else []
+        paths += sorted(_repo_path("src").glob("**/*.c"))
+        for p in paths:
             text = layer2._read_text(p)
-            if text and n in text and layer2.body_key(text, n):
-                return n, p.relative_to("src").with_suffix("").as_posix()
+            if text and n in text and layer2.body_key(text, n, _disk):
+                return n, p.relative_to(_repo_path("src")).with_suffix("").as_posix()
     return name, file
 
 
@@ -381,13 +410,13 @@ def _fix(name: str, file: str) -> str:
 
 def _no_grafts() -> None:
     p = _git("rev-parse", "--git-path", "info/grafts").decode().strip()
-    if p and Path(p).exists():
+    if p and _repo_path(p).exists():
         raise _AuditError(f"a grafts file ({p}) rewrites this history's parents")
 
 
 def unreviewed_departures() -> list[str]:
-    """Violations (strings) — see the module docstring. Run from the repo root."""
-    cur_text = layer2._read_text(Path(QUEUE_FILE))
+    """Violations (strings) — see the module docstring."""
+    cur_text = _disk(QUEUE_FILE)
     try:
         current = _items(cur_text.encode()) if cur_text is not None else None
     except AttributeError:
@@ -396,7 +425,7 @@ def unreviewed_departures() -> list[str]:
         return [f"Q39 departures audit: working-tree {QUEUE_FILE} is unreadable or has no "
                 f"addresses"]
     for k in [k for k in current if k.startswith("?")]:
-        a = layer2.addr_of(k[1:])           # addressed from the working tree's files
+        a = layer2.lookup(_addr_index(), k[1:])  # working tree's files
         if a:
             current[a] = current.pop(k)
     out = [f"Q39 departures audit: working-tree {QUEUE_FILE} item {k[1:]} has no valid "
@@ -507,7 +536,7 @@ def unreviewed_departures() -> list[str]:
             def at_d(n):
                 """n's address in D's own files (the working tree's for "WORKTREE")."""
                 if c == "WORKTREE":
-                    return layer2.addr_of(n)
+                    return layer2.lookup(_addr_index(), n)
                 return layer2.addr_at(n, lambda p: batch.text(f"{c}:{p}"))
             # name@D's body only where D's files do not give name@D ANOTHER
             # address (a chain rename in the same wave: X->Y and W->X)
@@ -535,7 +564,7 @@ def unreviewed_departures() -> list[str]:
                        for n in alt):
                     continue
             if index is None:
-                index = layer2.addr_index()
+                index = _addr_index()
             now_name, now_file = _current_name(a, index, name, file)
             why = ("no layer-2 record carries this address" if not recs else
                    f"no record on that body (latest: {recs[-1].get('verdict')} on "
