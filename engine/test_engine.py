@@ -12615,6 +12615,70 @@ def test_naming_member_apply() -> None:
            (len(masked), masked.split(), masked.index("\n")), (len(raw), ["a(", ",", ")", "b(", "c"], raw.index("\n")))
 
 
+def test_definition_names() -> None:
+    text = ("extern int declared(void);\n"
+            "int first(void) { return 1;\n"
+            "}int joined(void) { return 2; }\n"
+            "/*\nint copied(void) { return 0; }\n*/\n"
+            "int copied(void) { return 3; }\n"
+            "void old_style(arg) int arg; { }\n")
+    eq("definition names: ordered, unique, definitions only",
+       inlineasm.definition_names(text), ["first", "joined", "copied", "old_style"])
+    eq("definition names: ambiguous name remains visible",
+       len(inlineasm.func_definition_candidates(text, "copied")), 2)
+    eq("definition names: empty", inlineasm.definition_names(""), [])
+
+
+def test_tool_definition_heads() -> None:
+    from unittest.mock import patch
+    import gte_macro_rewrite as rewrite
+    from engine import completion
+    unique = "}int func_HEAD(void) { return 1; }\n"
+    ambiguous = "/*\nint func_HEAD(void) { return 0; }\n*/\n" + unique
+    paths = [rewrite.ROOT / "src/a.c", rewrite.ROOT / "src/z.c"]
+    for texts, queued in [(ts, q) for ts in ([ambiguous, unique], [unique, ambiguous])
+                          for q in (False, True)]:
+        mapping = dict(zip(paths, texts))
+        with patch.object(Path, "is_file", return_value=False), \
+             patch.object(Path, "rglob", return_value=paths), \
+             patch.object(Path, "read_text", autospec=True,
+                          side_effect=lambda p, **kw: json.dumps({"items": [{"func": "func_HEAD", "file": "z"}] if queued else []})
+                          if p.name == "queue.json" else mapping[p]):
+            try:
+                rewrite._functions("func_HEAD")
+            except SystemExit as exc:
+                check("GTE lookup refuses ambiguity in either TU order", "ambiguous C definition" in str(exc))
+            else:
+                check("GTE lookup must refuse ambiguity", False)
+    for text, want_error in [(unique, False), (ambiguous, True)]:
+        with patch.object(Path, "is_file", return_value=True), \
+             patch.object(Path, "read_text", return_value=text), \
+             patch.object(completion, "own_blocks", return_value=[object()]):
+            try:
+                result = rewrite._functions("a")
+            except SystemExit as exc:
+                check("GTE TU census refuses ambiguity", want_error and "ambiguous" in str(exc))
+            else:
+                check("GTE TU census accepts brace-prefixed definition", not want_error)
+                eq("GTE TU census names", result, [("func_HEAD", "a")])
+
+
+def test_queue_ambiguous_definition_message() -> None:
+    from unittest.mock import patch
+    source = "/*\nint func_HEAD(void) { }\n*/\nint func_HEAD(void) { }\n"
+    with patch.object(Q, "load", return_value={"items": [{"func": "func_HEAD", "file": "fake"}]}), \
+         patch.object(inlineasm, "live_tu_refusal", return_value=None), \
+         patch.object(Q, "_rule_count", return_value=0), \
+         patch.object(cheats, "func_prologue_count", return_value=0), \
+         patch.object(cheats, "maspsx_gate_entries", return_value=[]), \
+         patch.object(cheats, "canonical_asm_funcs", return_value=set()), \
+         patch.object(inlineasm, "file_func_cheat_asm_count", return_value=-1), \
+         patch.object(Path, "read_text", return_value=source):
+        result = Q.mark_done("func_HEAD")
+    check("queue refusal names ambiguity", not result["ok"] and
+          "ambiguous C definition: 2 definition-shaped heads" in result["reason"])
+
+
 def test_ambiguous_tool_diagnostics() -> None:
     import move_tu as mt
     import migrate_include_asm as migrate
@@ -13857,6 +13921,9 @@ def main() -> int:
     test_asm_keyword_recognition()
     test_macro_asm_strip_round_trip()
     test_substitute_body()
+    test_definition_names()
+    test_tool_definition_heads()
+    test_queue_ambiguous_definition_message()
     test_body_span_ambiguous()
     test_ambiguous_c_asm_fallbacks()
     test_ambiguous_body_discovery_and_stripping()

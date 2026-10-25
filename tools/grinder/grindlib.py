@@ -2231,9 +2231,19 @@ def _module_mates(root, func, proven):
         where = ""
         if qs == "not in queue":
             # defined as C (not INCLUDE_ASM) somewhere in src/ => matched
-            pat = re.compile(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(name) + r"\s*\([^;]*$")
-            where = next((f"src/{f}" for f, t in sorted(srcs.items()) if pat.search(t)), "")
-            qs = "COMPLETED (not in queue)" if where else "not in queue"
+            repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            if repo not in sys.path:
+                sys.path.insert(0, repo)
+            from engine.inlineasm import func_definition_candidates
+            candidates = [(f, func_definition_candidates(t, name))
+                          for f, t in sorted(srcs.items())]
+            ambiguous = [f"src/{f}" for f, spans in candidates if len(spans) > 1]
+            if ambiguous:
+                qs = "ambiguous C definition"
+                where = ", ".join(ambiguous)
+            else:
+                where = next((f"src/{f}" for f, spans in candidates if spans), "")
+                qs = "COMPLETED (not in queue)" if where else "not in queue"
         out.append((name, qs, where))
     return out
 

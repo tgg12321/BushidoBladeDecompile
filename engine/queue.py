@@ -730,6 +730,16 @@ def mark_done(func: str) -> dict:
             # is not canonical-authorized, so there is nothing to certify as
             # pure C. Refusing is the safe direction: treating unknown as zero is
             # exactly how an undecompiled function gets recorded COMPLETED-C.
+            try:
+                text = Path(f"src/{item['file']}.c").read_text(encoding="utf-8")
+            except OSError:
+                text = ""
+            candidates = inlineasm.func_definition_candidates(text, func)
+            if len(candidates) > 1:
+                return {"ok": False, "func": func,
+                        "reason": (f"cheat-construct count for {func} is UNKNOWN — ambiguous C "
+                                   f"definition: {len(candidates)} definition-shaped heads in "
+                                   f"src/{item['file']}.c. Cannot certify COMPLETED-C.")}
             return {"ok": False, "func": func,
                     "reason": (f"cheat-construct count for {func} is UNKNOWN — no C "
                                f"definition found in src/{item['file']}.c. A function "

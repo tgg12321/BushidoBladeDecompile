@@ -2354,6 +2354,26 @@ class TestSiblingNameMatching(unittest.TestCase):
 
 
 class TestModuleMates(unittest.TestCase):
+    def test_definition_heads_and_ambiguous_tu(self):
+        from pathlib import Path
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            manifest = root / "docs/naming/libscan/rename_manifest.csv"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text("proposed_name,module,lib,classification\njoined,BIOS,LIBCD,FILL\n",
+                                encoding="utf-8")
+            (root / "src").mkdir()
+            unique = "}int joined(void) { return 1; }\n"
+            (root / "src/z.c").write_text(unique, encoding="utf-8")
+            with patch.object(G, "_queue_status", return_value="not in queue"):
+                self.assertEqual(G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
+                                 [("joined", "COMPLETED (not in queue)", "src/z.c")])
+                (root / "src/a.c").write_text(
+                    "/*\nint joined(void) { return 0; }\n*/\n" + unique, encoding="utf-8")
+                self.assertEqual(G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
+                                 [("joined", "ambiguous C definition", "src/a.c")])
+
     def test_same_module_listed_with_matched_src(self):
         root = tempfile.mkdtemp()
         os.makedirs(os.path.join(root, "docs", "naming", "libscan"))

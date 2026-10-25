@@ -529,6 +529,21 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
     return spans[0] if len(spans) == 1 else None
 
 
+_DEFINITION_HEAD_PREFIX = r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
+
+
+def definition_names(text: str) -> list[str]:
+    """Unique names with at least one raw definition candidate, in head order.
+
+    Ambiguous names remain in this census; body readers must check candidates.
+    Declarations alone do not qualify. Comments/strings/directives are unmasked,
+    exactly as in func_definition_candidates.
+    """
+    heads = re.finditer(_DEFINITION_HEAD_PREFIX + r"([A-Za-z_]\w*)\s*\(", text)
+    return [name for name in dict.fromkeys(m.group(1) for m in heads)
+            if func_definition_candidates(text, name)]
+
+
 def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     """Locate `func`'s DEFINITION body (not its declaration). Splat-generated
     src/*.c put each definition at column 0; calls and nested references are
@@ -558,7 +573,7 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     """
     # Leading whitespace is permitted ONLY after a closing `}`; a bare indented
     # line stays non-matching, which is what separates a definition from a call.
-    pattern = re.compile(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
+    pattern = re.compile(_DEFINITION_HEAD_PREFIX
                          + re.escape(func) + r"\s*\(")
     spans = []
     n = len(text)

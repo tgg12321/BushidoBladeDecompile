@@ -41,6 +41,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 import naming_wave as nw  # noqa: E402  (sub_c, sub_hash, sub_py, read, write_lf)
+from engine.inlineasm import definition_names  # noqa: E402
 
 REGISTRIES = ["undefined_syms_auto.txt", "named_syms.txt", "symbol_addrs.txt"]
 SYM_LINE = re.compile(r"^(\s*)([A-Za-z_]\w*)(\s*=\s*)(0x[0-9A-Fa-f]{8})(\s*;)(.*)$")
@@ -217,8 +218,7 @@ def main() -> int:
             if m.group(1) in initialized_by_file[p] and m.group(1) not in c_homed:
                 object_homes[m.group(1)] = f"{p.relative_to(ROOT).as_posix()}:{text[:m.start()].count(chr(10)) + 1}"
                 c_homed.add(m.group(1))
-    functions = {m.group(1) for text in c_sources.values() for m in re.finditer(
-        r"(?m)^[\w \t*]+\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{", text)}
+    functions = {name for text in c_sources.values() for name in definition_names(text)}
     text_addrs = {ad for p, text in asm_sources.items() if p.parent.name == "funcs" for ad, _ in asm_defs(text)}
     mp = ROOT / "build/bb2.map"
     if mp.exists():

@@ -979,6 +979,8 @@ def function_tokens(text: str, name: str) -> list[str]:
 
 
 def original_census(text):
+    # This is a name census, including declarations, for scoped rename proof.
+    # Keep directive blanking and do not narrow it to C body candidates.
     directives, _ = pp_regions(text)
     for a, b in reversed(directives):
         text = text[:a] + re.sub(r"[^\n]", " ", text[a:b]) + text[b:]
@@ -4372,8 +4374,8 @@ def main() -> int:
         except ValueError as e:
             fails.append(f"{path}: {e}")
             continue
-        census = definitions | original_census(new) if scoped else {m.group(1) for m in re.finditer(
-            r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\(", new)}
+        census = (definitions | original_census(new) if scoped
+                  else set(layer2.inlineasm.definition_names(new)))
         for name in sorted({m.group(1) for m in layer2.inlineasm._INCLUDE_ASM_MACRO_RE.finditer(new)} |
                            census):
             k_new = layer2.body_key(new, name, lambda p: show(a.new, p))

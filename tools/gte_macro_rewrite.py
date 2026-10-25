@@ -492,9 +492,11 @@ def _functions(target: str) -> list[tuple[str, str]]:
     completion, _G, inlineasm = _engine()
     if (ROOT / "src" / f"{target}.c").is_file():
         text = (ROOT / "src" / f"{target}.c").read_text(encoding="utf-8")
-        names = re.findall(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\(", text)
+        names = inlineasm.definition_names(text)
         out = []
-        for f in dict.fromkeys(names):
+        for f in names:
+            if len(inlineasm.func_definition_candidates(text, f)) > 1:
+                raise SystemExit(f"gte_macro_rewrite: {f}: ambiguous C definition in src/{target}.c")
             try:
                 if inlineasm._func_body_span(text, f) and completion.own_blocks(text, f):
                     out.append((f, target))
@@ -502,19 +504,19 @@ def _functions(target: str) -> list[tuple[str, str]]:
                 continue
         return out
     q = json.loads((ROOT / "engine/queue.json").read_text(encoding="utf-8"))
-    for it in q.get("items", []):
-        if it["func"] == target:
-            return [(target, it["file"])]
+    found = [(target, it["file"]) for it in q.get("items", []) if it["func"] == target][:1]
     ambiguous = []
     for p in sorted((ROOT / "src").rglob("*.c")):
         text = p.read_text(encoding="utf-8")
-        if inlineasm._func_body_span(text, target):
-            return [(target, p.relative_to(ROOT / "src").with_suffix("").as_posix())]
+        if inlineasm._func_body_span(text, target) and not found:
+            found = [(target, p.relative_to(ROOT / "src").with_suffix("").as_posix())]
         if len(inlineasm.func_definition_candidates(text, target)) > 1:
             ambiguous.append(p.relative_to(ROOT).as_posix())
     if ambiguous:
         raise SystemExit(f"gte_macro_rewrite: {target}: ambiguous C definition in "
                          + ", ".join(ambiguous))
+    if found:
+        return found
     raise SystemExit(f"gte_macro_rewrite: {target}: no such function or TU")
 
 

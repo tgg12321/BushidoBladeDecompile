@@ -49,6 +49,7 @@ MEMORY_PROJECT = ROOT / "memory" / "project"
 BODY_LIMIT = 65000
 TRUNCATE_TARGET = 60000
 
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tmp"))
 
@@ -105,25 +106,6 @@ def _match_brace(text, open_idx):
     return -1
 
 
-def _def_pattern(func):
-    return re.compile(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(")
-
-
-def _matching_paren(text, i):
-    n, depth = len(text), 1
-    while i < n and depth > 0:
-        c = text[i]
-        if c in "\"'":
-            i = _skip_literal(text, i, n)
-            continue
-        if c == "(":
-            depth += 1
-        elif c == ")":
-            depth -= 1
-        i += 1
-    return i if depth == 0 else -1
-
-
 def _leading_comment_start(text, def_start):
     start = def_start
     line_start = text.rfind("\n", 0, start) + 1
@@ -147,41 +129,19 @@ def _leading_comment_start(text, def_start):
 def extract_c_body(src_path, func_name):
     """Full C text of func_name's DEFINITION in src_path (signature -> matching
     `}`, plus an immediately-preceding comment), or None if not a definition in
-    this file. Column-0-anchored, comment/string-aware. (tmp/extract_c_body.py.)"""
+    this file. Refuses ambiguous raw definition-shaped heads."""
     text = _read_text(src_path)
     if not text:
         return None
-    n = len(text)
-    for m in _def_pattern(func_name).finditer(text):
-        i = _matching_paren(text, m.end())
-        if i == -1:
-            continue
-        j = i
-        while j < n:
-            c = text[j]
-            if c in " \t\r\n":
-                j += 1
-                continue
-            if c == ";":
-                k = j + 1
-                while k < n and text[k] in " \t\r\n":
-                    k += 1
-                if k < n and text[k] == "{":
-                    j = k
-                    continue
-                if k < n and (text[k].isalpha() or text[k] == "_"):
-                    j = k
-                    continue
-                break
-            break
-        if j >= n or text[j] != "{":
-            continue
-        end = _match_brace(text, j)
-        if end == -1:
-            continue
-        start = _leading_comment_start(text, m.start())
-        return text[start:end]
-    return None
+    from engine.inlineasm import func_definition_candidates
+    candidates = func_definition_candidates(text, func_name)
+    if len(candidates) > 1:
+        raise ValueError(f"{func_name}: ambiguous C definition: "
+                         f"{len(candidates)} definition-shaped heads")
+    if not candidates:
+        return None
+    start, end = candidates[0]
+    return text[_leading_comment_start(text, start):end]
 
 
 # --- collect_func_cheats (tmp/collect_cheats.py) ---------------------------

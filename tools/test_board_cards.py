@@ -481,7 +481,23 @@ def test_collect_cheats_real_cache():
           all(set(c) >= {"type", "rule_text", "description", "source_file"} for c in cheats))
 
 
+def test_extract_definition_heads():
+    from unittest.mock import patch
+    source = "}int joined(void) { return 1; }\n"
+    with patch.object(bc, "_read_text", return_value=source):
+        eq("brace-prefixed definition", bc.extract_c_body("unused", "joined"), source.rstrip())
+    copied = "/*\nint joined(void) { return 0; }\n*/\n" + source
+    with patch.object(bc, "_read_text", return_value=copied):
+        try:
+            bc.extract_c_body("unused", "joined")
+        except ValueError as exc:
+            check("commented copy refuses", "ambiguous C definition" in str(exc))
+        else:
+            check("commented copy must refuse", False)
+
+
 def main():
+    test_extract_definition_heads()
     test_small_body_not_truncated()
     test_huge_asm_truncated_and_under_limit()
     test_huge_c_and_asm_both_truncate()
