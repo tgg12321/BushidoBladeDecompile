@@ -1334,6 +1334,110 @@ def engine_layer2_check(main, trusted, func):
 
 # ---------------------------------------------------------------- rebase / land
 
+def windows_argv(cmd):
+    """MSVC argv rules, including argv[0]'s simpler quote handling.
+
+    Reject incomplete quoting/control characters rather than guess at intent.
+    No shell syntax or POSIX escaping is involved.
+    """
+    if not cmd or cmd[0] in " \t" or any(ord(c) < 32 and c != "\t" for c in cmd):
+        raise ValueError("ambiguous command line")
+    args, word, quoted, i = [], [], cmd.startswith('"'), 0
+    if quoted:
+        i = 1
+    while i < len(cmd):
+        c = cmd[i]
+        if c == '"':
+            if not quoted:
+                raise ValueError("quote inside program name")
+            quoted = False
+            i += 1
+            if i < len(cmd) and cmd[i] not in " \t":
+                raise ValueError("data after program name quote")
+            break
+        elif c in " \t" and not quoted:
+            break
+        else:
+            word.append(c)
+        i += 1
+    if quoted or not word:
+        raise ValueError("unclosed program name")
+    args.append("".join(word))
+    while i < len(cmd):
+        while i < len(cmd) and cmd[i] in " \t":
+            i += 1
+        if i == len(cmd):
+            break
+        word, quoted = [], False
+        while i < len(cmd) and (quoted or cmd[i] not in " \t"):
+            slashes = 0
+            while i < len(cmd) and cmd[i] == "\\":
+                slashes += 1
+                i += 1
+            if i < len(cmd) and cmd[i] == '"':
+                word.append("\\" * (slashes // 2))
+                if slashes % 2:
+                    word.append('"')
+                elif quoted and i + 1 < len(cmd) and cmd[i + 1] == '"':
+                    word.append('"')
+                    i += 1
+                else:
+                    quoted = not quoted
+                i += 1
+            else:
+                word.append("\\" * slashes)
+                if i < len(cmd) and (quoted or cmd[i] not in " \t"):
+                    word.append(cmd[i])
+                    i += 1
+        if quoted:
+            raise ValueError("unclosed argument")
+        args.append("".join(word))
+    return args
+
+
+def research_config(value):
+    """Parse a single key=bare-word or key=TOML-basic-string override."""
+    key, sep, value = value.partition("=")
+    key, value = key.strip(), value.strip()
+    if not sep or not re.fullmatch(r"[a-z_]+", key):
+        raise ValueError("invalid config key")
+    if re.fullmatch(r"[A-Za-z0-9_-]+", value):
+        return key, value
+    if not value.startswith('"'):
+        raise ValueError("invalid config value")
+    result, i = [], 1
+    escapes = {'b': '\b', 't': '\t', 'n': '\n', 'f': '\f', 'r': '\r', '"': '"', '\\': '\\'}
+    while i < len(value):
+        c = value[i]
+        i += 1
+        if c == '"':
+            if value[i:].strip():
+                raise ValueError("trailing config data")
+            return key, "".join(result)
+        if ord(c) < 32 or ord(c) == 127:
+            raise ValueError("control character in config")
+        if c == "\\":
+            if i == len(value):
+                break
+            c = value[i]
+            i += 1
+            if c in ("u", "U"):
+                size = 4 if c == "u" else 8
+                digits = value[i:i + size]
+                if len(digits) != size or not re.fullmatch(r"[0-9a-fA-F]+", digits):
+                    raise ValueError("invalid unicode escape")
+                code = int(digits, 16)
+                if code > 0x10ffff or 0xd800 <= code <= 0xdfff:
+                    raise ValueError("invalid unicode scalar")
+                c, i = chr(code), i + size
+            elif c in escapes:
+                c = escapes[c]
+            else:
+                raise ValueError("invalid string escape")
+        result.append(c)
+    raise ValueError("unclosed config string")
+
+
 def readonly_research_running(main, scratch, st, busy):
     """Only the active bridge run may exempt attributed research processes from land's idle gate.
 
@@ -1377,19 +1481,57 @@ def readonly_research_running(main, scratch, st, busy):
         if not busy or type(pid) is not int or pid <= 0 or pid not in [p["pid"] for p in busy]:
             return False
         snap_norm = norm(snap).lower()
-        cwd_flag = re.compile(r"(?:^|\s)-c\s+" + re.escape(snap_norm) + r"(?=\s|$)")
         for proc in busy:
             proc_pid, cmd = proc["pid"], proc.get("cmd", "")
             if type(proc_pid) is not int or proc_pid <= 0 or not isinstance(cmd, str):
                 return False
-            flat = cmd.lower().replace('\\"', '"').replace('"', "").replace("'", "")
-            flat = flat.replace("/", "\\")
-            # Exactly one sandbox setting, and none of the flags that override it.
-            if (len(re.findall(r"sandbox_mode=", flat)) != 1
-                    or not re.search(r"(?:^|\s)-c\s+sandbox_mode=read-only(?=\s|$)", flat)
-                    or re.search(r"(?:^|\s)(?:-s|--sandbox|--full-auto|--yolo"
-                                 r"|--dangerously-bypass\S*)(?=[\s=]|$)", flat)
-                    or "--add-dir" in flat or not cwd_flag.search(flat)):
+            args = windows_argv(cmd)
+            if len(args) < 2 or args[1] != "exec" or "--" in args:
+                return False
+            # Count even malformed/spaced settings outside a config argument.
+            if len(re.findall(r"sandbox_mode\s*=", " ".join(args))) != 1:
+                return False
+            readonly, directories = False, []
+            args = iter(args[2:])
+            for arg in args:
+                if arg in ("-o", "--output-last-message", "-m", "--model"):
+                    value = next(args, "")
+                    if arg in ("-o", "--output-last-message"):
+                        if value.replace("/", "\\").lower() != norm(home / "runs" / run_id / "last.md").lower():
+                            return False
+                    elif not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", value):
+                        return False
+                    continue
+                if arg in ("--json", "-"):
+                    continue
+                if (arg.startswith(("-s", "-p", "--sandbox", "--profile", "--add-dir",
+                                    "--dangerously-bypass"))
+                        or arg.split("=", 1)[0] in ("--full-auto", "--yolo")):
+                    return False
+                if arg in ("-C", "--cd", "-c", "--config"):
+                    value = next(args, "")
+                elif arg.startswith(("--cd=", "--config=")):
+                    value = arg.split("=", 1)[1]
+                elif arg.startswith(("-C", "-c")):
+                    value = arg[2:].removeprefix("=")
+                else:
+                    return False
+                # Short options are case-sensitive: -C is never config proof.
+                # Unknown configs fail closed: only the three
+                # keys emitted by the bridge are known safe here.
+                if arg.startswith(("--cd", "-C")):
+                    directories.append(value.replace("/", "\\").lower())
+                    continue
+                key, setting = research_config(value)
+                allowed = {"sandbox_mode": ("read-only",), "approval_policy": ("never",),
+                           "model_reasoning_effort": ("low", "medium", "high", "xhigh", "max", "ultra")}
+                if setting not in allowed.get(key, ()):
+                    return False
+                if key == "sandbox_mode":
+                    if setting != "read-only":
+                        return False
+                    readonly = True
+            if not readonly or not directories or any(d != snap_norm for d in directories):
                 return False
         return True
     except Exception:

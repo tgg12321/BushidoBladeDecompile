@@ -44,6 +44,38 @@ def rec(verdict, h=H1, reviewer="r1"):
                        "reviewer": reviewer}) + "\n"
 
 
+class WindowsArgv(unittest.TestCase):
+    def test_hand_computed_windows_arguments(self):
+        cases = [
+            (r'"C:\Program Files\codex.exe" exec', [r'C:\Program Files\codex.exe', 'exec']),
+            (r'codex.exe a\\b d"e f"g h', ['codex.exe', r'a\\b', 'de fg', 'h']),
+            (r'codex.exe a\"b c', ['codex.exe', 'a"b', 'c']),
+            (r'codex.exe a\\"b c" d', ['codex.exe', 'a\\b c', 'd']),
+            (r'codex.exe a\\\"b c', ['codex.exe', 'a\\"b', 'c']),
+            (r'codex.exe a\\\\"b c"', ['codex.exe', 'a\\\\b c']),
+            (r'codex.exe "a""b" c', ['codex.exe', 'a"b', 'c']),
+            (r'codex.exe "" tail\\', ['codex.exe', '', 'tail\\\\']),
+            (r'"C:\bin\" exec', ['C:\\bin\\', 'exec']),
+            (r'codex.exe -c sandbox_mode=\"read-only\"',
+             ['codex.exe', '-c', 'sandbox_mode="read-only"']),
+        ]
+        for command, expected in cases:
+            with self.subTest(command=command):
+                self.assertEqual(cw.windows_argv(command), expected)
+
+    def test_ambiguous_commands_refused(self):
+        for command in (' codex.exe exec', 'codex.exe "unfinished', '"codex.exe', 'codex.exe\0',
+                        'co"dex.exe" exec', '"codex.exe"suffix exec'):
+            with self.subTest(command=command), self.assertRaises(ValueError):
+                cw.windows_argv(command)
+
+    def test_config_strings_and_bare_words(self):
+        for value in ('sandbox_mode = read-only', 'sandbox_mode="read-only"',
+                      r'sandbox_mode="read-\u006fnly"', r'sandbox_mode="read-\U0000006fnly"'):
+            with self.subTest(value=value):
+                self.assertEqual(cw.research_config(value), ('sandbox_mode', 'read-only'))
+
+
 class CodexIdle(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="cw-idle-")
@@ -65,7 +97,8 @@ class CodexIdle(unittest.TestCase):
 
     def exec_cmd(self, sandbox="read-only", cwd=None, extra=""):
         # The bridge's own exec command line (codex_bridge.py run).
-        return (f'codex.exe exec --json -o last.md -m gpt -c model_reasoning_effort="medium" '
+        output = subprocess.list2cmdline([str(self.meta_file.parent / "last.md")])
+        return (f'codex.exe exec --json -o {output} -m gpt -c model_reasoning_effort="medium" '
                 f'-c sandbox_mode="{sandbox}" -c approval_policy="never" {extra}'
                 f'-C {cwd or self.snap} -')
 
@@ -85,9 +118,131 @@ class CodexIdle(unittest.TestCase):
     def test_readonly_research_exec_attributed(self):
         self.check(True)
 
+    def test_readonly_research_real_bridge_command_line(self):
+        # start_task's argv, serialized as Popen does on Windows (TOML quotes
+        # are escaped, and executable/output paths can contain spaces).
+        self.status["processes"][0]["cmd"] = subprocess.list2cmdline([
+            r"C:\Program Files\Codex\codex.exe", "exec", "--json", "-o",
+            str(self.meta_file.parent / "last.md"), "-m", "gpt-6.1-sol",
+            "-c", 'model_reasoning_effort="medium"',
+            "-c", 'sandbox_mode="read-only"', "-c", 'approval_policy="never"',
+            "-C", str(self.snap), "-",
+        ])
+        self.check(True)
+
+    def test_readonly_research_literal_quote_bypasses_refused(self):
+        for override in ('-s danger-full-access', f'--add-dir {self.main}', f'-C {self.main}'):
+            with self.subTest(override=override):
+                self.status["processes"][0]["cmd"] = (
+                    r'codex.exe exec -m \"gpt ' + override
+                    + r' -c x=\"y -c sandbox_mode=read-only -C ' + str(self.snap) + ' -')
+                self.check(False)
+
+    def test_readonly_research_bridge_values_pinned(self):
+        base = self.exec_cmd()
+        output = subprocess.list2cmdline([str(self.meta_file.parent / "last.md")])
+        replacements = [
+            (f'-o {output}', '-o elsewhere.md'),
+            ('approval_policy="never"', 'approval_policy=on-request'),
+            ('model_reasoning_effort="medium"', 'model_reasoning_effort=unknown'),
+            ('-m gpt', r'-m \"gpt\"'),
+            ('-m gpt', '-m "gpt odd"'),
+            ('-m gpt', '-m -gpt'),
+        ]
+        for old, new in replacements:
+            with self.subTest(new=new):
+                self.status["processes"][0]["cmd"] = base.replace(old, new)
+                self.check(False)
+
+    def test_readonly_research_config_syntax_refused(self):
+        for setting in ("'read-only'", '"read-only"junk', 'read-only=extra',
+                        '"read-only"=extra', '["read-only"]', '"read-only', '"read-only\\q"'):
+            with self.subTest(setting=setting):
+                override = subprocess.list2cmdline(['sandbox_mode=' + setting])
+                self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+                    '-c sandbox_mode="read-only"', '-c ' + override)
+                self.check(False)
+
+    def test_readonly_research_config_spellings(self):
+        for flag in ("-c ", "-c", "-c=", "--config ", "--config="):
+            for assignment in ("sandbox_mode=read-only", "sandbox_mode= read-only", "sandbox_mode = read-only",
+                               "sandbox_mode =read-only"):
+                with self.subTest(flag=flag, assignment=assignment):
+                    self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+                        '-c sandbox_mode="read-only"', f'{flag}"{assignment}"')
+                    self.check(True)
+
+    def test_readonly_research_sandbox_config_overrides_refused(self):
+        for flag in ("-c ", "-c", "-c=", "--config ", "--config="):
+            for assignment in ("sandbox_mode=workspace-write", "sandbox_mode= workspace-write", "sandbox_mode = workspace-write",
+                               "sandbox_mode =workspace-write", "sandbox_mode=read-only"):
+                with self.subTest(flag=flag, assignment=assignment):
+                    self.status["processes"][0]["cmd"] = self.exec_cmd(
+                        extra=f'{flag}"{assignment}" ')
+                    self.check(False)
+
+    def test_readonly_research_unquoted_spaced_overrides_refused(self):
+        for setting in ("sandbox_mode = workspace-write", "sandbox_mode =workspace-write",
+                        "sandbox_mode= workspace-write"):
+            with self.subTest(setting=setting):
+                self.status["processes"][0]["cmd"] = self.exec_cmd(extra=f"-c {setting} ")
+                self.check(False)
+
+    def test_readonly_research_option_values_are_not_evidence(self):
+        for option in ("-o", "-m"):
+            with self.subTest(option=option):
+                self.status["processes"][0]["cmd"] = (
+                    f"codex.exe exec {option} -csandbox_mode=read-only -C {self.snap} -")
+                self.check(False)
+
+    def test_readonly_research_short_option_case_is_significant(self):
+        for replacement in ('-Csandbox_mode="read-only"', '-c SANDBOX_MODE="read-only"'):
+            with self.subTest(replacement=replacement):
+                self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+                    '-c sandbox_mode="read-only"', replacement)
+                self.check(False)
+
+    def test_readonly_research_other_sandbox_configs_refused(self):
+        for key in ("sandbox_workspace_write", "sandbox_workspace_write.writable_roots",
+                    "sandbox_permissions", "writable_roots", "permissions"):
+            for flag in ("-c ", "-c", "--config ", "--config="):
+                with self.subTest(key=key, flag=flag):
+                    self.status["processes"][0]["cmd"] = self.exec_cmd(
+                        extra=f'{flag}"{key} = []" ')
+                    self.check(False)
+
+    def test_readonly_research_option_overrides_refused(self):
+        for option in ("-s workspace-write", "-sworkspace-write", "-s=workspace-write",
+                       "--sandbox workspace-write", "--sandbox=workspace-write",
+                       "-p NAME", "-pNAME", "-p=NAME", "--profile NAME", "--profile=NAME"):
+            with self.subTest(option=option):
+                self.status["processes"][0]["cmd"] = self.exec_cmd(extra=option + " ")
+                self.check(False)
+
+    def test_readonly_research_directory_spellings(self):
+        for directory in (f'-C "{self.snap}"', f'-C"{self.snap}"',
+                          f'--cd "{self.snap}"', f'--cd="{self.snap}"'):
+            with self.subTest(directory=directory):
+                self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+                    f"-C {self.snap}", directory)
+                self.check(True)
+                for other in (self.scratch, f"{self.snap}-2", f"{self.snap} other"):
+                    with self.subTest(other=str(other)):
+                        override = directory.replace(str(self.snap), str(other))
+                        self.status["processes"][0]["cmd"] = self.exec_cmd(extra=override + " ")
+                        self.check(False)
+                        self.status["processes"][0]["cmd"] = self.exec_cmd() + " " + override
+                        self.check(False)
+
+    def test_readonly_research_resume_without_directory_refused(self):
+        self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+            "exec ", "exec resume ").replace(f"-C {self.snap} -", "thread-id -")
+        self.check(False)
+
     def test_readonly_research_second_process_attributed(self):
         self.status["processes"].append({"pid": 42, "kind": "headless-task",
-                                         "cmd": self.exec_cmd().replace("/", "\\").upper()})
+                                         "cmd": self.exec_cmd().replace(
+                                             str(self.snap), str(self.snap).replace("/", "\\").upper())})
         self.check(True)
 
     def test_no_listed_process_or_unlisted_holder_refused(self):
