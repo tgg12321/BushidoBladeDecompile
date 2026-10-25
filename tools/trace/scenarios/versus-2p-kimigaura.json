@@ -14,7 +14,8 @@
     "docs/naming/runtime/lib-versus-2p-kimigaura-1/spec.json",
     "docs/naming/runtime/fighter-values-versus-2p-kimigaura-1/spec.json",
     "docs/naming/runtime/fighter-polls-versus-2p-kimigaura-1/spec.json",
-    "docs/naming/runtime/ground-tag-versus-2p-kimigaura-1/spec.json"
+    "docs/naming/runtime/ground-tag-versus-2p-kimigaura-1/spec.json",
+    "docs/naming/runtime/collision-grid-versus-2p-kimigaura-1/spec.json"
   ],
   "use": [
     "boot",

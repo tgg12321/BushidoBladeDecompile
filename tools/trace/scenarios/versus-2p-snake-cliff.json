@@ -12,7 +12,8 @@
   ],
   "evidence": [
     "docs/naming/runtime/versus-2p-stage-map1-3/spec.json",
-    "docs/naming/runtime/ground-tag-versus-2p-snake-cliff-1/spec.json"
+    "docs/naming/runtime/ground-tag-versus-2p-snake-cliff-1/spec.json",
+    "docs/naming/runtime/collision-grid-versus-2p-snake-cliff-1/spec.json"
   ],
   "use": [
     "boot",

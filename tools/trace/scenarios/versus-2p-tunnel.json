@@ -12,7 +12,8 @@
   ],
   "evidence": [
     "docs/naming/runtime/versus-2p-stage-map3-2/spec.json",
-    "docs/naming/runtime/ground-tag-versus-2p-tunnel-1/spec.json"
+    "docs/naming/runtime/ground-tag-versus-2p-tunnel-1/spec.json",
+    "docs/naming/runtime/collision-grid-versus-2p-tunnel-1/spec.json"
   ],
   "use": [
     "boot",
