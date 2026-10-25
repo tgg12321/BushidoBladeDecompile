@@ -54,6 +54,20 @@
       "inputs": ["docs/naming/runtime/matrix/", "tools/trace/scan/notes.py",
                  "tools/trace/scan/facts.py", "engine/tus.py", "bb2.ld",
                  "src/main/psxsdk/libapi/c67.c"]
+    },
+    {
+      "path": "docs/naming/runtime/evidence/only_x.tsv",
+      "cmd": "python3 tools/trace/scan/diff.py build",
+      "subject": "docs: runtime only-X evidence refresh",
+      "inputs": ["docs/naming/runtime/", "tools/trace/scan/diff.py",
+                 "tools/trace/scan/facts.py", "tools/trace/runkit.py", "tools/trace/gdbtrace.py"]
+    },
+    {
+      "path": "docs/naming/runtime/evidence/only_x_sets.tsv",
+      "cmd": "python3 tools/trace/scan/diff.py build",
+      "subject": "docs: runtime only-X evidence refresh",
+      "inputs": ["docs/naming/runtime/", "tools/trace/scan/diff.py",
+                 "tools/trace/scan/facts.py", "tools/trace/runkit.py", "tools/trace/gdbtrace.py"]
     }
   ],
   "gates": {
