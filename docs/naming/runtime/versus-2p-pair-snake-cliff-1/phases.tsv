@@ -1,0 +1,12 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV (byte-identical to versus-2p-stage-map1-6)	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6259	top menu: first frame Story Mode, last frame Vs. Mode (Select Battle Stage) named in the right panel (both byte-identical to versus-2p-stage-map1-6)	6080:DOWN,6140:DOWN,6200:DOWN	capture.top_menu.first.png,capture.top_menu.last.png
+t_char	6260	6549	transition; no screen claim	6260:CROSS	-
+char_select	6550	6699	first frame Select Character, cursor 壱 on KANNUKI and cursor 弐 on GENGORO; last frame (6699) already Select Weapon, Katana named on both sides (both byte-identical to versus-2p-stage-map1-6)	6600:CROSS,6640:CROSS(2P)	capture.char_select.first.png,capture.char_select.last.png
+weapon_select	6700	6999	first frame Select Weapon; last frame (6999) the screen dimmed to dark red (both byte-identical to versus-2p-stage-map1-6)	6900:CROSS,6940:CROSS(2P)	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_stage	7000	7174	transition; no screen claim (its one screenshot, frame 7100, shows two crossed swords on black, byte-identical to versus-2p-stage-map1-6)	-	capture.t_stage.mid.png
+stage_select	7175	7839	Select Battle Stage; first frame and 7299 byte-identical to versus-2p-stage-map1-6 ([Map 2] scroll); cursor LEFT DOWN to Snake Cliff; last frame (7839) a Select Battle Stage scroll	7300:LEFT,7360:DOWN	capture.stage_select.first.png,capture.stage_select.7299.png,capture.stage_select.last.png
+t_load	7840	8699	its frame 8200 screenshot shows red splashes and the Bushido Blade 弐 logo; its last frame (8699) already shows the fight scene, WINS 00 / 00 WINS at the top	7840:CROSS	capture.t_load.mid.png,capture.t_load.last.png
+fight	8700	10149	the Snake Cliff scene (the stage of versus-2p-stage-map1-3), two fighters standing apart, WINS 00 / 00 WINS at the top in every screenshot; no input after 7840: both fighters stand idle to the end (no cut, no KO)	-	capture.fight.first.png,capture.fight.9000.png,capture.fight.9500.png,capture.fight.last.png
+fight_tail	10150	10199	the same scene, both fighters still standing idle, WINS 00 / 00 WINS at the top (first and last frame)	-	capture.fight_tail.first.png,capture.fight_tail.last.png
