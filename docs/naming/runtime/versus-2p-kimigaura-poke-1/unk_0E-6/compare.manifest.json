@@ -1,0 +1,113 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.fight.10030.diff.png",
+      "sha1": "926068dc1f6e331d104a3ef7ebcc3f2be39a209a",
+      "size": 1068
+    },
+    {
+      "path": "compare.fight.10130.diff.png",
+      "sha1": "f1cee728dce68fe608b8889f6eda8260769b2297",
+      "size": 1321
+    },
+    {
+      "path": "compare.fight.10230.diff.png",
+      "sha1": "d8f9720629d2ecaeebb8919b1de551da59c4d6c8",
+      "size": 1208
+    },
+    {
+      "path": "compare.fight.10330.diff.png",
+      "sha1": "b080607f5f009cd6faf059b6e19364e5d9492018",
+      "size": 1042
+    },
+    {
+      "path": "compare.fight.10430.diff.png",
+      "sha1": "3701ebbd1246ecfcedae88fd53f4b27209dcb360",
+      "size": 1157
+    },
+    {
+      "path": "compare.fight.10530.diff.png",
+      "sha1": "341409bf83953e399a8e80d54b7f6f6005f373a3",
+      "size": 1240
+    },
+    {
+      "path": "compare.fight.8530.diff.png",
+      "sha1": "940cf13268e35e06ce9da66dff2e934d810cbf15",
+      "size": 50930
+    },
+    {
+      "path": "compare.fight.8630.diff.png",
+      "sha1": "90f6c80e41a2aaffbe0b25d0337cf6b291034fba",
+      "size": 12097
+    },
+    {
+      "path": "compare.fight.8730.diff.png",
+      "sha1": "c1aa6d52ef21a5cea32e463d40f4488088744add",
+      "size": 9313
+    },
+    {
+      "path": "compare.fight.8830.diff.png",
+      "sha1": "ed0caf67b497ac49977fad91ae9a358918ccbe62",
+      "size": 9564
+    },
+    {
+      "path": "compare.fight.8930.diff.png",
+      "sha1": "f0e277e5f7effa096c30d4e546db617fabf7d7e4",
+      "size": 5296
+    },
+    {
+      "path": "compare.fight.9030.diff.png",
+      "sha1": "ae0f92c9e48b23f9bbbbe74b0b453ca198b6772f",
+      "size": 4355
+    },
+    {
+      "path": "compare.fight.9130.diff.png",
+      "sha1": "cc8ad896ccfa3087dc6d8064c077bc30fb2ad341",
+      "size": 2033
+    },
+    {
+      "path": "compare.fight.9230.diff.png",
+      "sha1": "4d5fed46ff1941d137846e684e55b547bc84ec6f",
+      "size": 1853
+    },
+    {
+      "path": "compare.fight.9330.diff.png",
+      "sha1": "0ab49549f3d4063cf9ae6c41d9a95ef70a738a1a",
+      "size": 1375
+    },
+    {
+      "path": "compare.fight.9430.diff.png",
+      "sha1": "5dbb7d0cbfc02b48507f5531f628e11044f7821a",
+      "size": 1442
+    },
+    {
+      "path": "compare.fight.9530.diff.png",
+      "sha1": "374b13f398a4bd6f9a541546173f4299539dcaed",
+      "size": 968
+    },
+    {
+      "path": "compare.fight.9630.diff.png",
+      "sha1": "530ed4d631d6f04eb49d55334d974614f0b653b4",
+      "size": 1200
+    },
+    {
+      "path": "compare.fight.9730.diff.png",
+      "sha1": "cb9562d6c219a7a6b4d22fbf4c284092d3d3b098",
+      "size": 1066
+    },
+    {
+      "path": "compare.fight.9830.diff.png",
+      "sha1": "d3b11d4437d2b71cf303bc93fcd9feadac68541e",
+      "size": 1289
+    },
+    {
+      "path": "compare.fight.9930.diff.png",
+      "sha1": "2741cfaf623a4e1e2982b057ab031a5cf20f7138",
+      "size": 1454
+    }
+  ]
+}

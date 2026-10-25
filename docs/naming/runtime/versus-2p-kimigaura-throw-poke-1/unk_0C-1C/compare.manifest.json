@@ -1,0 +1,153 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.in_00_r2_circle_3.60.diff.png",
+      "sha1": "b5649299c4e6ceb2f6e197f2678c434dacffebae",
+      "size": 46463
+    },
+    {
+      "path": "compare.in_01_r2_cross_3.15.diff.png",
+      "sha1": "253b57b64e27ef675882e6f61f08094691d87c1c",
+      "size": 25145
+    },
+    {
+      "path": "compare.in_01_r2_cross_3.30.diff.png",
+      "sha1": "dfaa40fc13d3109bddf32badfe645e4dee6910b3",
+      "size": 24828
+    },
+    {
+      "path": "compare.in_01_r2_cross_3.60.diff.png",
+      "sha1": "fb188b1b14b95dae28b5a5253b89169ec17c93bf",
+      "size": 23459
+    },
+    {
+      "path": "compare.in_02_r2_circle_1.15.diff.png",
+      "sha1": "131d36cc037ae4825a6a8d69920d9bfe3250954a",
+      "size": 24572
+    },
+    {
+      "path": "compare.in_02_r2_circle_1.30.diff.png",
+      "sha1": "741e975f559e88ce0cc33f6eda8f8abaf761e265",
+      "size": 24733
+    },
+    {
+      "path": "compare.in_02_r2_circle_1.60.diff.png",
+      "sha1": "a1289b9b407943adf5816caf5ddf252e90cf1137",
+      "size": 18442
+    },
+    {
+      "path": "compare.in_03_r2_cross_5.15.diff.png",
+      "sha1": "f1fd669c64729b3178c5de62b76c4b8c118cec27",
+      "size": 13825
+    },
+    {
+      "path": "compare.in_03_r2_cross_5.30.diff.png",
+      "sha1": "7b225cfdb9405854f0e18056d4432d41e1c76fe8",
+      "size": 13778
+    },
+    {
+      "path": "compare.in_03_r2_cross_5.60.diff.png",
+      "sha1": "1d5294714fd73596a1bf321a340e0a3fd001ed91",
+      "size": 15309
+    },
+    {
+      "path": "compare.in_04_r2_circle_7.15.diff.png",
+      "sha1": "b1f2245720d83b036b28738e77ca11cda6cda700",
+      "size": 21731
+    },
+    {
+      "path": "compare.in_04_r2_circle_7.30.diff.png",
+      "sha1": "70c654d8bcf017cf235d007bf66c429f8db874e9",
+      "size": 21606
+    },
+    {
+      "path": "compare.in_04_r2_circle_7.60.diff.png",
+      "sha1": "b1824bce472ae6bd589b1ba1097682cdcc83ce0a",
+      "size": 18650
+    },
+    {
+      "path": "compare.in_05_r2_square_3.15.diff.png",
+      "sha1": "9ac258ba3e4d8e494985dcdd633db290d9847f65",
+      "size": 18669
+    },
+    {
+      "path": "compare.in_05_r2_square_3.30.diff.png",
+      "sha1": "80b6aa60ce9c84c15288d70febaeeab88afda3f0",
+      "size": 18809
+    },
+    {
+      "path": "compare.in_05_r2_square_3.60.diff.png",
+      "sha1": "1d9ead39dd60a5648c825b58a2a9535d021d41c3",
+      "size": 18284
+    },
+    {
+      "path": "compare.in_06_r2_alone.15.diff.png",
+      "sha1": "28ff581ba22665446f73cb49e1c3a27bd7b72853",
+      "size": 18721
+    },
+    {
+      "path": "compare.in_06_r2_alone.30.diff.png",
+      "sha1": "1b89be1c79ce9e5a0f890ad3f91a9cc8fa244242",
+      "size": 18715
+    },
+    {
+      "path": "compare.in_06_r2_alone.60.diff.png",
+      "sha1": "698f24d9fb2cb3eb2508e369cca2f81516f43890",
+      "size": 18281
+    },
+    {
+      "path": "compare.in_07_r2_circle_3b.15.diff.png",
+      "sha1": "1fe6df1508a8cc501913d128cf2492847a0e9f4a",
+      "size": 18733
+    },
+    {
+      "path": "compare.in_07_r2_circle_3b.30.diff.png",
+      "sha1": "cbaee1e5477b96845ccbe7fdfa892d4ff8469b24",
+      "size": 18732
+    },
+    {
+      "path": "compare.in_07_r2_circle_3b.60.diff.png",
+      "sha1": "02f5b18576137673cc5e9609a60afe6f3cd6ab09",
+      "size": 16808
+    },
+    {
+      "path": "compare.in_08_r2_alone_b.15.diff.png",
+      "sha1": "c73181f97480e99f54d50c0ce4118aacaf79ada7",
+      "size": 15127
+    },
+    {
+      "path": "compare.in_08_r2_alone_b.30.diff.png",
+      "sha1": "5e7ac4f878741d5317306c462bd5a5924bac9624",
+      "size": 14992
+    },
+    {
+      "path": "compare.in_08_r2_alone_b.60.diff.png",
+      "sha1": "c1de2feefd05e3d3f9cfbfa23b9bc33cefc4ce2f",
+      "size": 14669
+    },
+    {
+      "path": "compare.in_09_r2_cross_3b.15.diff.png",
+      "sha1": "204ff693c46e4605c6c38e7572dc8269a74e6308",
+      "size": 15115
+    },
+    {
+      "path": "compare.in_09_r2_cross_3b.30.diff.png",
+      "sha1": "6be4feb7b67c649b7539833e03ce6c313f7ba969",
+      "size": 15213
+    },
+    {
+      "path": "compare.in_09_r2_cross_3b.60.diff.png",
+      "sha1": "076f014386f3f221ee423e5566bcc51fb9628a92",
+      "size": 14112
+    },
+    {
+      "path": "compare.last.diff.png",
+      "sha1": "7162bb0f273e667fefaf32560cc64b7031698ab4",
+      "size": 16976
+    }
+  ]
+}

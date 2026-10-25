@@ -1,0 +1,28 @@
+{
+  "kind": "compare",
+  "version": 1,
+  "base": "../baseline/capture.jsonl",
+  "other": "capture.jsonl",
+  "outputs": [
+    {
+      "path": "compare.key_config.6700.diff.png",
+      "sha1": "748f7a0befea4205b2af33214528d4c708c8be07",
+      "size": 10699
+    },
+    {
+      "path": "compare.key_config.first.diff.png",
+      "sha1": "748f7a0befea4205b2af33214528d4c708c8be07",
+      "size": 10699
+    },
+    {
+      "path": "compare.key_config.last.diff.png",
+      "sha1": "748f7a0befea4205b2af33214528d4c708c8be07",
+      "size": 10699
+    },
+    {
+      "path": "compare.t_key.6620.diff.png",
+      "sha1": "748f7a0befea4205b2af33214528d4c708c8be07",
+      "size": 10699
+    }
+  ]
+}
