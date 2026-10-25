@@ -1,0 +1,458 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "de1cfe396d54e5e1d2d32b9e299b2f68f6d72b0a",
+      "size": 97578
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a7066f35d3f65aac8a8876d34607d846f053a85f",
+      "size": 28157
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "9c03ff81e8e4f73be1b484fb28dd64afcf688a7b",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--headless",
+    "--emulator",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--bios",
+    "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+    "--cue",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--portable-dir",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\tmp\\redux-portable"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\build\\bb2.map",
+      "sha1": "44a3ad9f41033bc32dd6c8334f2b2a7d799617c7",
+      "size": 400769
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\build\\bb2.elf",
+      "sha1": "e31950e3a183f6d8d270f6b9171dd6364867a288",
+      "size": 851848
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\spec.json",
+    "sha1": "7fc7b290203e1bae3f188ca13ee23264c41fd841",
+    "size": 6839
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.script.lua",
+      "sha1": "2a12d005931b6f20850a6e782aa556b1b49f2787",
+      "size": 7984
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 12,
+    "ambiguous_stops": 0,
+    "stubs": [
+      {
+        "at": "menu_RunFlowStateWithRowBitEdit",
+        "addr": 2147973936,
+        "when": "t_option",
+        "ret": 0,
+        "words": "0800e00300000224",
+        "orig": "1805838fe0ffbd27",
+        "applied": {
+          "frame": 6460,
+          "pc": 2147483776,
+          "ok": true,
+          "mid_stub": false
+        },
+        "at_end": "intact"
+      }
+    ],
+    "modified_game": "stubbed functions: hits and screenshots after a stub went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x80077B30+8"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.jsonl",
+      "sha1": "e0c0cb3bbdcad970ce5d29525880a90e632135d7",
+      "size": 10149
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry1.png",
+      "sha1": "a475bedacf60e505d018fd1fe3a16f09e519c69a",
+      "size": 31542
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry2.png",
+      "sha1": "548cfd619766951013c43fa716a3c32cdfd4c7dc",
+      "size": 29560
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry3.png",
+      "sha1": "f2ecfd214d65b8cf334cba9cda263d787523ea7d",
+      "size": 30142
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry4.png",
+      "sha1": "4b5c5d6d26fd20e48865788bb75fc1c7c13073c1",
+      "size": 31605
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry5.png",
+      "sha1": "b96a3feabb8a1749d685432041622b2eea36c71e",
+      "size": 31022
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry6.png",
+      "sha1": "16d94103acf1e3b9669126e6d015ba553863cd0e",
+      "size": 31716
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.entry7.png",
+      "sha1": "e27dd43e6799cd22d8934d6db1f0f6730c7e1dfe",
+      "size": 29637
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu.last.png",
+      "sha1": "60c1ea16d7d09be1cfc0ec912b4c4615b77aecf1",
+      "size": 29644
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_menu.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.knockout.6580.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_menu.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.t_key.6620.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.key_config.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.key_config.6700.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.knockout.6700.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.key_config.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_menu_2.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.knockout.6880.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_menu_2.6880.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_menu_2.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.memory_card.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.knockout.7150.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.memory_card.7150.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.memory_card.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_toggles.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.knockout.7500.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_toggles.7500.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_toggles.music.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_toggles.difficulty.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_toggles.monitor.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.option_toggles.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu_2.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.knockout.live.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.top_menu_2.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.script.log",
+      "sha1": "4d4c900c1b3542b9f5438d9608ae4cb52c4d42fa",
+      "size": 2731
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-naming-a\\docs\\naming\\runtime\\menu-tour-knockout-1\\menu_RunFlowStateWithRowBitEdit\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}

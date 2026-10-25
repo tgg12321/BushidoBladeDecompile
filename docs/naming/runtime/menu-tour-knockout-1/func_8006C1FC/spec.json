@@ -1,0 +1,413 @@
+{
+  "duration_s": 7200,
+  "max_events": 200000,
+  "script": {
+    "end_frame": 9000,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "t_option"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu"
+      },
+      {
+        "frame": 6600,
+        "name": "t_key"
+      },
+      {
+        "frame": 6640,
+        "name": "key_config"
+      },
+      {
+        "frame": 6750,
+        "name": "t_key_exit"
+      },
+      {
+        "frame": 6800,
+        "name": "option_menu_2"
+      },
+      {
+        "frame": 6960,
+        "name": "t_card"
+      },
+      {
+        "frame": 7000,
+        "name": "memory_card"
+      },
+      {
+        "frame": 7300,
+        "name": "t_card_exit"
+      },
+      {
+        "frame": 7350,
+        "name": "option_toggles"
+      },
+      {
+        "frame": 8150,
+        "name": "t_top"
+      },
+      {
+        "frame": 8350,
+        "name": "top_menu_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6380,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6750,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6900,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6960,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7400,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7460,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7550,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7610,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7700,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7760,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7850,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7910,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7970,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8030,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8090,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8150,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6070,
+        "name": "top_menu.entry1"
+      },
+      {
+        "frame": 6130,
+        "name": "top_menu.entry2"
+      },
+      {
+        "frame": 6190,
+        "name": "top_menu.entry3"
+      },
+      {
+        "frame": 6250,
+        "name": "top_menu.entry4"
+      },
+      {
+        "frame": 6310,
+        "name": "top_menu.entry5"
+      },
+      {
+        "frame": 6370,
+        "name": "top_menu.entry6"
+      },
+      {
+        "frame": 6430,
+        "name": "top_menu.entry7"
+      },
+      {
+        "frame": 6459,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu.first"
+      },
+      {
+        "frame": 6580,
+        "name": "knockout.6580"
+      },
+      {
+        "frame": 6599,
+        "name": "option_menu.last"
+      },
+      {
+        "frame": 6620,
+        "name": "t_key.6620"
+      },
+      {
+        "frame": 6640,
+        "name": "key_config.first"
+      },
+      {
+        "frame": 6700,
+        "name": "key_config.6700"
+      },
+      {
+        "frame": 6700,
+        "name": "knockout.6700"
+      },
+      {
+        "frame": 6749,
+        "name": "key_config.last"
+      },
+      {
+        "frame": 6800,
+        "name": "option_menu_2.first"
+      },
+      {
+        "frame": 6880,
+        "name": "option_menu_2.6880"
+      },
+      {
+        "frame": 6880,
+        "name": "knockout.6880"
+      },
+      {
+        "frame": 6959,
+        "name": "option_menu_2.last"
+      },
+      {
+        "frame": 7000,
+        "name": "memory_card.first"
+      },
+      {
+        "frame": 7150,
+        "name": "memory_card.7150"
+      },
+      {
+        "frame": 7150,
+        "name": "knockout.7150"
+      },
+      {
+        "frame": 7299,
+        "name": "memory_card.last"
+      },
+      {
+        "frame": 7350,
+        "name": "option_toggles.first"
+      },
+      {
+        "frame": 7500,
+        "name": "option_toggles.7500"
+      },
+      {
+        "frame": 7500,
+        "name": "knockout.7500"
+      },
+      {
+        "frame": 7540,
+        "name": "option_toggles.music"
+      },
+      {
+        "frame": 7690,
+        "name": "option_toggles.difficulty"
+      },
+      {
+        "frame": 7840,
+        "name": "option_toggles.monitor"
+      },
+      {
+        "frame": 8149,
+        "name": "option_toggles.last"
+      },
+      {
+        "frame": 8350,
+        "name": "top_menu_2.first"
+      },
+      {
+        "frame": 8999,
+        "name": "top_menu_2.last"
+      },
+      {
+        "frame": 8999,
+        "name": "knockout.live"
+      }
+    ]
+  },
+  "stubs": [
+    {
+      "at": "func_8006C1FC",
+      "ret": 0,
+      "phase": "t_option"
+    }
+  ]
+}
