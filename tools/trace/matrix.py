@@ -414,7 +414,8 @@ def main(argv=None):
     parser.add_argument("--all", action="store_true", help="discover all runtime captures")
     parser.add_argument("--out", default="docs/naming/runtime/matrix")
     parser.add_argument("--no-name", type=Path)
-    args = parser.parse_args(argv)
+    # Intermixed: captures may follow options (argparse before 3.12.7 refuses that).
+    args = parser.parse_intermixed_args(argv)
     if not args.captures and not args.all:
         parser.error("provide capture directories or --all")
     try:
