@@ -1,0 +1,131 @@
+0 pad2 connected
+0 phase boot_intro
+5200 press START
+5206 release START
+5489 shot boot_intro.last 320 240 24
+5490 phase t_menu
+5500 press CROSS
+5506 release CROSS
+5800 press START
+5806 release START
+6050 shot top_menu.first 640 240 16
+6050 phase top_menu
+6080 press DOWN
+6086 release DOWN
+6140 press DOWN
+6146 release DOWN
+6200 press DOWN
+6206 release DOWN
+6259 shot top_menu.last 640 240 16
+6260 press CROSS
+6260 phase t_char
+6266 release CROSS
+6550 shot char_select.first 640 240 16
+6550 phase char_select
+6600 press CROSS
+6606 release CROSS
+6640 press P2.CROSS
+6646 release P2.CROSS
+6699 shot char_select.last 640 240 16
+6700 shot weapon_select.first 640 240 16
+6700 phase weapon_select
+6900 press CROSS
+6906 release CROSS
+6940 press P2.CROSS
+6946 release P2.CROSS
+6999 shot weapon_select.last 640 240 16
+7000 phase t_stage
+7100 shot t_stage.mid 640 240 16
+7175 shot stage_select.first 640 240 16
+7175 phase stage_select
+7299 shot stage_select.7299 640 240 16
+7300 press LEFT
+7306 release LEFT
+7325 shot stage_select.7325 640 240 16
+7355 shot stage_select.7355 640 240 16
+7449 shot stage_select.last 640 240 16
+7450 press CROSS
+7450 phase t_load
+7456 release CROSS
+7900 shot t_load.mid 640 240 16
+8229 shot t_load.last 640 240 16
+8230 shot fight.first 640 240 16
+8230 phase fight
+8430 press R2
+8430 phase in_00_r2_circle_3
+8433 press CIRCLE
+8434 release R2
+8437 release CIRCLE
+8445 shot in_00_r2_circle_3.15 640 240 16
+8460 shot in_00_r2_circle_3.30 640 240 16
+8490 shot in_00_r2_circle_3.60 640 240 16
+8550 press R2
+8550 phase in_01_r2_cross_3
+8553 press CROSS
+8554 release R2
+8557 release CROSS
+8565 shot in_01_r2_cross_3.15 640 240 16
+8580 shot in_01_r2_cross_3.30 640 240 16
+8610 shot in_01_r2_cross_3.60 640 240 16
+8670 press R2
+8670 phase in_02_r2_circle_1
+8671 press CIRCLE
+8674 release R2
+8675 release CIRCLE
+8685 shot in_02_r2_circle_1.15 640 240 16
+8700 shot in_02_r2_circle_1.30 640 240 16
+8730 shot in_02_r2_circle_1.60 640 240 16
+8790 press R2
+8790 phase in_03_r2_cross_5
+8794 release R2
+8795 press CROSS
+8799 release CROSS
+8805 shot in_03_r2_cross_5.15 640 240 16
+8820 shot in_03_r2_cross_5.30 640 240 16
+8850 shot in_03_r2_cross_5.60 640 240 16
+8910 press R2
+8910 phase in_04_r2_circle_7
+8914 release R2
+8917 press CIRCLE
+8921 release CIRCLE
+8925 shot in_04_r2_circle_7.15 640 240 16
+8940 shot in_04_r2_circle_7.30 640 240 16
+8970 shot in_04_r2_circle_7.60 640 240 16
+9030 press R2
+9030 phase in_05_r2_square_3
+9033 press SQUARE
+9034 release R2
+9037 release SQUARE
+9045 shot in_05_r2_square_3.15 640 240 16
+9060 shot in_05_r2_square_3.30 640 240 16
+9090 shot in_05_r2_square_3.60 640 240 16
+9150 press R2
+9150 phase in_06_r2_alone
+9154 release R2
+9165 shot in_06_r2_alone.15 640 240 16
+9180 shot in_06_r2_alone.30 640 240 16
+9210 shot in_06_r2_alone.60 640 240 16
+9270 press R2
+9270 phase in_07_r2_circle_3b
+9273 press CIRCLE
+9274 release R2
+9277 release CIRCLE
+9285 shot in_07_r2_circle_3b.15 640 240 16
+9300 shot in_07_r2_circle_3b.30 640 240 16
+9330 shot in_07_r2_circle_3b.60 640 240 16
+9390 press R2
+9390 phase in_08_r2_alone_b
+9394 release R2
+9405 shot in_08_r2_alone_b.15 640 240 16
+9420 shot in_08_r2_alone_b.30 640 240 16
+9450 shot in_08_r2_alone_b.60 640 240 16
+9510 press R2
+9510 phase in_09_r2_cross_3b
+9513 press CROSS
+9514 release R2
+9517 release CROSS
+9525 shot in_09_r2_cross_3b.15 640 240 16
+9540 shot in_09_r2_cross_3b.30 640 240 16
+9570 shot in_09_r2_cross_3b.60 640 240 16
+9629 shot last 640 240 16
+9630 finish -

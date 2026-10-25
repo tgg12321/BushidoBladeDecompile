@@ -11,7 +11,8 @@
   "evidence": [
     "docs/naming/runtime/versus-2p-kimigaura-throw-1/spec.json",
     "docs/naming/runtime/versus-2p-kimigaura-throw-poke-1/baseline/spec.json",
-    "docs/naming/runtime/versus-2p-kimigaura-throw-poke-1/unk_B1-5/spec.json"
+    "docs/naming/runtime/versus-2p-kimigaura-throw-poke-1/unk_B1-5/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-throw-poke-1/unk_0C-1C/spec.json"
   ],
   "use": [
     "boot",

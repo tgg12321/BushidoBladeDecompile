@@ -1,0 +1,526 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "10a4a9a88298017f3a81085b7a74c7f9d9be96f3",
+      "size": 103397
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "fbef84f61bbac5cd56e6205ab6053aecf3d7641b",
+      "size": 28331
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "adb0521591c336cf425abe48e76fe7bbf7e856b5",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "5ede770aab8d7468a0fa3984c5e09e51e5077dcd",
+      "size": 547657
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "1b93789287300d338d56ffaf43549479864d0c4e",
+      "size": 889736
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\spec.json",
+    "sha1": "1d7b6f1f04febc00fa4a317776d28c27a9f999ea",
+    "size": 9380
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-1\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2401",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.script.lua",
+      "sha1": "2a3119ab1733e67b00902e068ebf598bcb29557a",
+      "size": 9351
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 1,
+    "port": 2401,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-1\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 1470,
+    "ambiguous_stops": 0,
+    "pokes": [
+      {
+        "at": "0x80102320",
+        "addr": 2148541216,
+        "when": "fight",
+        "hex": "1c00",
+        "orig": "1200",
+        "applied": {
+          "frame": 8230,
+          "pc": 2147788916,
+          "ok": true
+        },
+        "at_end": "1c00"
+      }
+    ],
+    "modified_game": "poked memory: hits and screenshots after a stub or poke went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.jsonl",
+      "sha1": "7c66e7e9278bc560162dcf20a81255c4d15a0ff9",
+      "size": 454713
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.char_select.first.png",
+      "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
+      "size": 23135
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.char_select.last.png",
+      "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
+      "size": 22155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.weapon_select.first.png",
+      "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
+      "size": 22616
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.weapon_select.last.png",
+      "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
+      "size": 4459
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.t_stage.mid.png",
+      "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
+      "size": 5188
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.stage_select.first.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.stage_select.7299.png",
+      "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
+      "size": 21972
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.stage_select.7325.png",
+      "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
+      "size": 18207
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.stage_select.7355.png",
+      "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
+      "size": 22809
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.stage_select.last.png",
+      "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
+      "size": 22781
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.t_load.mid.png",
+      "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
+      "size": 9489
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.t_load.last.png",
+      "sha1": "2cffc4b4614f621d4a63100d706f3020964a4a0a",
+      "size": 55445
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.fight.first.png",
+      "sha1": "aa4cda7bc1ec0ce22348b12572dde5308c90ee9a",
+      "size": 54529
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_00_r2_circle_3.15.png",
+      "sha1": "18c3c137fde9ba4a3c2d16c977751c3347527c34",
+      "size": 50564
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_00_r2_circle_3.30.png",
+      "sha1": "93f7b7bf034c6478cddb032744bd9e527c25b038",
+      "size": 50826
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_00_r2_circle_3.60.png",
+      "sha1": "195eb0bbcb8b32a381037468c2d5fd0916651580",
+      "size": 50173
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_01_r2_cross_3.15.png",
+      "sha1": "db74e7433ce6d0702c2b5829cfb83478f33b7b8b",
+      "size": 51010
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_01_r2_cross_3.30.png",
+      "sha1": "ea5b89294bea2a36d788249d11b0f76b869629d1",
+      "size": 50378
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_01_r2_cross_3.60.png",
+      "sha1": "58b219862df3fc5f5b9f855bbcd8a010b3d7fe5c",
+      "size": 51887
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_02_r2_circle_1.15.png",
+      "sha1": "5ab978d4f4cecf0b5af32404d7296dc89ad12900",
+      "size": 50954
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_02_r2_circle_1.30.png",
+      "sha1": "71fcf051076b3a9f492fed51e429180cb4a6204c",
+      "size": 51946
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_02_r2_circle_1.60.png",
+      "sha1": "5923e8dda298a0ba9cfc1a663567c5c848cc68cb",
+      "size": 51224
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_03_r2_cross_5.15.png",
+      "sha1": "28ad834691a24c0b800edacc702e11cf8b5056ca",
+      "size": 49267
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_03_r2_cross_5.30.png",
+      "sha1": "07e25723f31076c8b1dcee5845b60f7fb52066b9",
+      "size": 48696
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_03_r2_cross_5.60.png",
+      "sha1": "5cad3af822a14169e44caf25f6bb30fc8eff12d9",
+      "size": 50291
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_04_r2_circle_7.15.png",
+      "sha1": "9975d7cf357c7aa3e236e8ebaff0ec94e4ed7a0b",
+      "size": 52064
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_04_r2_circle_7.30.png",
+      "sha1": "bff2e42483db9c1f7480eb69f7a69742e017b893",
+      "size": 52565
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_04_r2_circle_7.60.png",
+      "sha1": "128d1a492f39be542afd98c2b5f88f1b82832b07",
+      "size": 51715
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_05_r2_square_3.15.png",
+      "sha1": "cc19d9aff422034e142639a8bee95c11a5ae0edf",
+      "size": 51749
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_05_r2_square_3.30.png",
+      "sha1": "851b7f9834b22bf40eb2b511e20f62b1107d571f",
+      "size": 51946
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_05_r2_square_3.60.png",
+      "sha1": "0e828b8a3d00590d17753c3863e5eaf6c6157294",
+      "size": 52567
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_06_r2_alone.15.png",
+      "sha1": "0def8473956b6001e313a627a588098f98c8bc96",
+      "size": 51776
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_06_r2_alone.30.png",
+      "sha1": "d79224f6d3eb4b0c56457e58fd830e8c8269d13f",
+      "size": 52101
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_06_r2_alone.60.png",
+      "sha1": "f3bdf92854763e886d963ed33adac2b9f9189777",
+      "size": 52636
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_07_r2_circle_3b.15.png",
+      "sha1": "7cde740d556be63570d41a9dfdac8adca6728f8f",
+      "size": 51783
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_07_r2_circle_3b.30.png",
+      "sha1": "c1c57e84616517662faf5744afd3ea6c4661f5dc",
+      "size": 52640
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_07_r2_circle_3b.60.png",
+      "sha1": "d9d50a64aacc2b97eab4c98299aec0ac9adb63f6",
+      "size": 53650
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_08_r2_alone_b.15.png",
+      "sha1": "0cd1cad50807c3f91769c4beb597ada4e1e48821",
+      "size": 52766
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_08_r2_alone_b.30.png",
+      "sha1": "2f5ef989d4e2eb20b8456102944e6c75733a1938",
+      "size": 53180
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_08_r2_alone_b.60.png",
+      "sha1": "4006e286c145dab2d04858d0b296561e32312a7a",
+      "size": 53609
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_09_r2_cross_3b.15.png",
+      "sha1": "086e807f92bcd2e1767b3fecb7f4654d5da83811",
+      "size": 52720
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_09_r2_cross_3b.30.png",
+      "sha1": "0f9a9154531dfda7832e6c1266dc57a099aa0149",
+      "size": 52062
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.in_09_r2_cross_3b.60.png",
+      "sha1": "d9185b532ddc58fed6df4d90381ec3f5ad40f266",
+      "size": 53702
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.last.png",
+      "sha1": "d50482ed7bdde40f916ab6671f02ff5e62e3ee34",
+      "size": 54128
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.script.log",
+      "sha1": "be72e684856682c83a2831071b793fbdc2b69e0c",
+      "size": 3582
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-throw-poke-1\\unk_0C-1C\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}
