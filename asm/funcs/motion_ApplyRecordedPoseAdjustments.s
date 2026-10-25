@@ -13,9 +13,9 @@ glabel motion_ApplyRecordedPoseAdjustments
     /* F9F0 8001F1F0 80004230 */  andi       $v0, $v0, 0x80
     /* F9F4 8001F1F4 05004014 */  bnez       $v0, .L8001F20C
     /* F9F8 8001F1F8 2190E000 */   addu      $s2, $a3, $zero
-    /* F9FC 8001F1FC CD9C000C */  jal        func_80027334
+    /* F9FC 8001F1FC CD9C000C */  jal        motion_SetFixedChannelBlock
     /* FA00 8001F200 21202002 */   addu      $a0, $s1, $zero
-    /* FA04 8001F204 CD9C000C */  jal        func_80027334
+    /* FA04 8001F204 CD9C000C */  jal        motion_SetFixedChannelBlock
     /* FA08 8001F208 21204002 */   addu      $a0, $s2, $zero
   .L8001F20C:
     /* FA0C 8001F20C 36002426 */  addiu      $a0, $s1, 0x36
@@ -23,14 +23,14 @@ glabel motion_ApplyRecordedPoseAdjustments
     /* FA14 8001F214 14000582 */  lb         $a1, 0x14($s0)
     /* FA18 8001F218 15000682 */  lb         $a2, 0x15($s0)
     /* FA1C 8001F21C 80280500 */  sll        $a1, $a1, 2
-    /* FA20 8001F220 DCBD000C */  jal        func_8002F770
+    /* FA20 8001F220 DCBD000C */  jal        math_ComposeAxisRotationsAndRewriteAngles
     /* FA24 8001F224 80300600 */   sll       $a2, $a2, 2
     /* FA28 8001F228 36004426 */  addiu      $a0, $s2, 0x36
     /* FA2C 8001F22C 21380000 */  addu       $a3, $zero, $zero
     /* FA30 8001F230 14000582 */  lb         $a1, 0x14($s0)
     /* FA34 8001F234 15000682 */  lb         $a2, 0x15($s0)
     /* FA38 8001F238 80280500 */  sll        $a1, $a1, 2
-    /* FA3C 8001F23C DCBD000C */  jal        func_8002F770
+    /* FA3C 8001F23C DCBD000C */  jal        math_ComposeAxisRotationsAndRewriteAngles
     /* FA40 8001F240 80300600 */   sll       $a2, $a2, 2
     /* FA44 8001F244 0C006386 */  lh         $v1, 0xC($s3)
     /* FA48 8001F248 1D000224 */  addiu      $v0, $zero, 0x1D

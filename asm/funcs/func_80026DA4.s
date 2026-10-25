@@ -4,7 +4,7 @@ glabel func_80026DA4
     /* 175AC 80026DAC 3C00B3AF */  sw         $s3, 0x3C($sp)
     /* 175B0 80026DB0 3800B2AF */  sw         $s2, 0x38($sp)
     /* 175B4 80026DB4 3400B1AF */  sw         $s1, 0x34($sp)
-    /* 175B8 80026DB8 A8AF000C */  jal        func_8002BEA0
+    /* 175B8 80026DB8 A8AF000C */  jal        fighter_CalcSeparationErrorAndOpposedOffsets
     /* 175BC 80026DBC 3000B0AF */   sw        $s0, 0x30($sp)
     /* 175C0 80026DC0 1080103C */  lui        $s0, %hi(D_80101EC8)
     /* 175C4 80026DC4 C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
@@ -161,7 +161,7 @@ glabel func_80026DA4
     /* 177F8 80026FF8 21000224 */  addiu      $v0, $zero, 0x21
     /* 177FC 80026FFC 04006214 */  bne        $v1, $v0, .L80027010
     /* 17800 80027000 01000424 */   addiu     $a0, $zero, 0x1
-    /* 17804 80027004 969E000C */  jal        func_80027A58
+    /* 17804 80027004 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 17808 80027008 21202002 */   addu      $a0, $s1, $zero
     /* 1780C 8002700C 01000424 */  addiu      $a0, $zero, 0x1
   .L80027010:
@@ -182,7 +182,7 @@ glabel func_80026DA4
     /* 17844 80027044 21000224 */  addiu      $v0, $zero, 0x21
     /* 17848 80027048 04006214 */  bne        $v1, $v0, .L8002705C
     /* 1784C 8002704C 21200000 */   addu      $a0, $zero, $zero
-    /* 17850 80027050 969E000C */  jal        func_80027A58
+    /* 17850 80027050 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 17854 80027054 21200002 */   addu      $a0, $s0, $zero
     /* 17858 80027058 21200000 */  addu       $a0, $zero, $zero
   .L8002705C:

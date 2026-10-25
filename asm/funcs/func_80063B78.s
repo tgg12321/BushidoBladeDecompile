@@ -4,7 +4,7 @@ glabel func_80063B78
     /* 54380 80063B80 90038287 */  lh         $v0, %gp_rel(D_800A345C)($gp)
     /* 54384 80063B84 21200000 */  addu       $a0, $zero, $zero
     /* 54388 80063B88 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 5438C 80063B8C 848F010C */  jal        func_80063E10
+    /* 5438C 80063B8C 848F010C */  jal        eff_DrawYawedSlotQuads
     /* 54390 80063B90 000062AC */   sw        $v0, 0x0($v1)
     /* 54394 80063B94 1000BF8F */  lw         $ra, 0x10($sp)
     /* 54398 80063B98 FF004230 */  andi       $v0, $v0, 0xFF

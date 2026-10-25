@@ -1,0 +1,1 @@
+{"func": "eff_AllocateOrRecycleYawedQuadSlot", "addr": "80063BD0", "verdict": "PASS", "body_hash": "bbe755fa65259bf8", "body_kind": "c", "file": "main/51268", "reviewer": "aabf97e728a81ad36", "scope": "cheat-cleanup", "date": "2026-10-16T17:52:12Z", "head": "f24433eb2", "notes": "", "renamed_from": ["func_80063BD0"]}

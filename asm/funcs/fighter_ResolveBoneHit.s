@@ -126,7 +126,7 @@ glabel fighter_ResolveBoneHit
     /* 184A4 80027CA4 6800A88F */  lw         $t0, 0x68($sp)
     /* 184A8 80027CA8 2138C003 */  addu       $a3, $fp, $zero
     /* 184AC 80027CAC 1000B3AF */  sw         $s3, 0x10($sp)
-    /* 184B0 80027CB0 309E000C */  jal        func_800278C0
+    /* 184B0 80027CB0 309E000C */  jal        fighter_DispatchBoneHitSoundEvent
     /* 184B4 80027CB4 1400A8AF */   sw        $t0, 0x14($sp)
     /* 184B8 80027CB8 E7A00008 */  j          .L8002839C
     /* 184BC 80027CBC 01000224 */   addiu     $v0, $zero, 0x1
@@ -145,7 +145,7 @@ glabel fighter_ResolveBoneHit
     /* 184EC 80027CEC 6800A88F */  lw         $t0, 0x68($sp)
     /* 184F0 80027CF0 2138C003 */  addu       $a3, $fp, $zero
     /* 184F4 80027CF4 1000B3AF */  sw         $s3, 0x10($sp)
-    /* 184F8 80027CF8 309E000C */  jal        func_800278C0
+    /* 184F8 80027CF8 309E000C */  jal        fighter_DispatchBoneHitSoundEvent
     /* 184FC 80027CFC 1400A8AF */   sw        $t0, 0x14($sp)
     /* 18500 80027D00 01000224 */  addiu      $v0, $zero, 0x1
     /* 18504 80027D04 07000324 */  addiu      $v1, $zero, 0x7
@@ -253,7 +253,7 @@ glabel fighter_ResolveBoneHit
     /* 18684 80027E84 21306002 */  addu       $a2, $s3, $zero
     /* 18688 80027E88 15CA000C */  jal        func_80032854
     /* 1868C 80027E8C 21380000 */   addu      $a3, $zero, $zero
-    /* 18690 80027E90 969E000C */  jal        func_80027A58
+    /* 18690 80027E90 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18694 80027E94 21202002 */   addu      $a0, $s1, $zero
   .L80027E98:
     /* 18698 80027E98 86022386 */  lh         $v1, 0x286($s1)
@@ -384,7 +384,7 @@ glabel fighter_ResolveBoneHit
     /* 18864 80028064 6800A88F */  lw         $t0, 0x68($sp)
     /* 18868 80028068 2138C003 */  addu       $a3, $fp, $zero
     /* 1886C 8002806C 1000B3AF */  sw         $s3, 0x10($sp)
-    /* 18870 80028070 309E000C */  jal        func_800278C0
+    /* 18870 80028070 309E000C */  jal        fighter_DispatchBoneHitSoundEvent
     /* 18874 80028074 1400A8AF */   sw        $t0, 0x14($sp)
     /* 18878 80028078 6A002396 */  lhu        $v1, 0x6A($s1)
     /* 1887C 8002807C 06000224 */  addiu      $v0, $zero, 0x6
@@ -425,7 +425,7 @@ glabel fighter_ResolveBoneHit
     /* 188F8 800280F8 21380000 */   addu      $a3, $zero, $zero
     /* 188FC 800280FC 21202002 */  addu       $a0, $s1, $zero
     /* 18900 80028100 21280002 */  addu       $a1, $s0, $zero
-    /* 18904 80028104 0E9D000C */  jal        func_80027438
+    /* 18904 80028104 0E9D000C */  jal        fighter_AccumulateOrClearByBoneGroup
     /* 18908 80028108 01000624 */   addiu     $a2, $zero, 0x1
   .L8002810C:
     /* 1890C 8002810C E7A00008 */  j          .L8002839C
@@ -455,7 +455,7 @@ glabel fighter_ResolveBoneHit
     /* 18964 80028164 02000624 */  addiu      $a2, $zero, 0x2
   .L80028168:
     /* 18968 80028168 21202002 */  addu       $a0, $s1, $zero
-    /* 1896C 8002816C 0E9D000C */  jal        func_80027438
+    /* 1896C 8002816C 0E9D000C */  jal        fighter_AccumulateOrClearByBoneGroup
     /* 18970 80028170 21280002 */   addu      $a1, $s0, $zero
     /* 18974 80028174 1B000224 */  addiu      $v0, $zero, 0x1B
     /* 18978 80028178 860222A6 */  sh         $v0, 0x286($s1)
@@ -544,7 +544,7 @@ glabel fighter_ResolveBoneHit
     /* 18A9C 8002829C 21280002 */  addu       $a1, $s0, $zero
     /* 18AA0 800282A0 ED80000C */  jal        func_800203B4
     /* 18AA4 800282A4 2130E002 */   addu      $a2, $s7, $zero
-    /* 18AA8 800282A8 969E000C */  jal        func_80027A58
+    /* 18AA8 800282A8 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18AAC 800282AC 21202002 */   addu      $a0, $s1, $zero
     /* 18AB0 800282B0 E7A00008 */  j          .L8002839C
     /* 18AB4 800282B4 01000224 */   addiu     $v0, $zero, 0x1
@@ -563,7 +563,7 @@ glabel fighter_ResolveBoneHit
     /* 18AE0 800282E0 860222A6 */  sh         $v0, 0x286($s1)
     /* 18AE4 800282E4 15CA000C */  jal        func_80032854
     /* 18AE8 800282E8 900020A6 */   sh        $zero, 0x90($s1)
-    /* 18AEC 800282EC 969E000C */  jal        func_80027A58
+    /* 18AEC 800282EC 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18AF0 800282F0 21202002 */   addu      $a0, $s1, $zero
     /* 18AF4 800282F4 21100000 */  addu       $v0, $zero, $zero
     /* 18AF8 800282F8 E7A00008 */  j          .L8002839C
@@ -587,7 +587,7 @@ glabel fighter_ResolveBoneHit
     /* 18B34 80028334 21306002 */  addu       $a2, $s3, $zero
     /* 18B38 80028338 15CA000C */  jal        func_80032854
     /* 18B3C 8002833C 21380000 */   addu      $a3, $zero, $zero
-    /* 18B40 80028340 969E000C */  jal        func_80027A58
+    /* 18B40 80028340 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18B44 80028344 21202002 */   addu      $a0, $s1, $zero
     /* 18B48 80028348 E7A00008 */  j          .L8002839C
     /* 18B4C 8002834C 21100000 */   addu      $v0, $zero, $zero
@@ -609,7 +609,7 @@ glabel fighter_ResolveBoneHit
     /* 18B84 80028384 21306002 */  addu       $a2, $s3, $zero
     /* 18B88 80028388 15CA000C */  jal        func_80032854
     /* 18B8C 8002838C 21380000 */   addu      $a3, $zero, $zero
-    /* 18B90 80028390 969E000C */  jal        func_80027A58
+    /* 18B90 80028390 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18B94 80028394 21202002 */   addu      $a0, $s1, $zero
     /* 18B98 80028398 21100000 */  addu       $v0, $zero, $zero
   .L8002839C:

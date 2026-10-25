@@ -42,7 +42,7 @@ glabel func_8001EEB4
     /* F754 8001EF54 0A80043C */  lui        $a0, %hi(D_800A3748)
     /* F758 8001EF58 48378480 */  lb         $a0, %lo(D_800A3748)($a0)
     /* F75C 8001EF5C 01000624 */  addiu      $a2, $zero, 0x1
-    /* F760 8001EF60 A686000C */  jal        func_80021A98
+    /* F760 8001EF60 A686000C */  jal        fighter_StartMoveScript
     /* F764 8001EF64 5E0030A6 */   sh        $s0, 0x5E($s1)
     /* F768 8001EF68 6C0230A6 */  sh         $s0, 0x26C($s1)
   .L8001EF6C:

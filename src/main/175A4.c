@@ -11,10 +11,11 @@
  * chooses a winner, the distance/input checks choose follow-up states, and
  * the tail emits a mode-specific effect at the players' midpoint.
  *
- * FAKE: leave the void callee func_80027A58 undeclared, as in the matched SOTN
- * callers below. Declared truthfully (void, Unk80101EC8Record *) it scores 7:
- * the s0 save and the first record-base load move ahead of the func_8002BEA0
- * call (8 words differ in the linked EXE).
+ * FAKE: leave the void callee fighter_TryDropQueuedHeadAtBone undeclared, as in
+ * the matched SOTN callers below. Declared truthfully (void, Unk80101EC8Record
+ * *) it scores 7: the s0 save and the first record-base load move ahead of the
+ * fighter_CalcSeparationErrorAndOpposedOffsets call (8 words differ in the
+ * linked EXE).
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107
  * @db41b28eee52969244a52cc269c8163d1ed8826a */
@@ -29,7 +30,7 @@ void func_80026DA4(void) {
     s32 kind;
     s32 pos[3];
 
-    var_3 = func_8002BEA0();
+    var_3 = fighter_CalcSeparationErrorAndOpposedOffsets();
     record = D_80101EC8;
     D_800A3824 = -1;
     if ((u16)D_80101EC8[0].move_kind == 0x1C) {
@@ -89,14 +90,14 @@ void func_80026DA4(void) {
                 D_80101EC8[0].pending_move_event = 3;
                 D_80101EC8[1].pending_move_event = 4;
                 if ((u16)D_80101EC8[1].move_kind == 0x21) {
-                    func_80027A58(var_1);
+                    fighter_TryDropQueuedHeadAtBone(var_1);
                 }
                 func_80032854(1, 0x2D, &var_1->world_pos.x, (s16 *)0);
             } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
                 D_80101EC8[1].pending_move_event = 3;
                 D_80101EC8[0].pending_move_event = 4;
                 if ((u16)D_80101EC8[0].move_kind == 0x21) {
-                    func_80027A58(record);
+                    fighter_TryDropQueuedHeadAtBone(record);
                 }
                 func_80032854(0, 0x2D, &record->world_pos.x, (s16 *)0);
             }

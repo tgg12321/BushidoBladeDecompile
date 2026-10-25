@@ -10,7 +10,7 @@ glabel func_80063B34
     /* 54354 80063B54 43140200 */  sra        $v0, $v0, 17
     /* 54358 80063B58 03004230 */  andi       $v0, $v0, 0x3
     /* 5435C 80063B5C 920382A7 */  sh         $v0, %gp_rel(D_800A345E)($gp)
-    /* 54360 80063B60 F48E010C */  jal        func_80063BD0
+    /* 54360 80063B60 F48E010C */  jal        eff_AllocateOrRecycleYawedQuadSlot
     /* 54364 80063B64 01000424 */   addiu     $a0, $zero, 0x1
     /* 54368 80063B68 1000BF8F */  lw         $ra, 0x10($sp)
     /* 5436C 80063B6C FF004230 */  andi       $v0, $v0, 0xFF

@@ -1,1 +1,0 @@
-{"func": "func_80027A58", "addr": "80027A58", "verdict": "PASS", "body_hash": "e5e09d9ab814179c", "body_kind": "c", "file": "main/17AFC", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T02:19:27Z", "head": "95535d32e", "notes": "typed node_matrix_ptrs[19]->t read (MATRIX **), (Vec3i32 *) for the callee's struct copy, as 9F9C.c:5202; byte-neutral"}

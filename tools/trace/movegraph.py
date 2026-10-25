@@ -481,7 +481,7 @@ class Fight:
         if m.covered(tbl, 0x32):
             if kind in (0x15, 0x19, 0x1A, 0x13, 0x30, 0x31):
                 add(m.u16(tbl + 2 * 0xD), "held R1/L3 + a direction (event "
-                    "0xD, if func_800233AC finds a turn)")
+                    "0xD, if fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow finds a turn)")
             if kind == 0xA:
                 for code in (0x17, 0x18):
                     add(m.u16(tbl + 2 * code), f"landing after a fall of more "

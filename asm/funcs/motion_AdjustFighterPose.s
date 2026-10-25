@@ -12,9 +12,9 @@ glabel motion_AdjustFighterPose
     /* FB0C 8001F30C 00000000 */  nop
     /* FB10 8001F310 05004014 */  bnez       $v0, .L8001F328
     /* FB14 8001F314 21A0C000 */   addu      $s4, $a2, $zero
-    /* FB18 8001F318 CD9C000C */  jal        func_80027334
+    /* FB18 8001F318 CD9C000C */  jal        motion_SetFixedChannelBlock
     /* FB1C 8001F31C 21206002 */   addu      $a0, $s3, $zero
-    /* FB20 8001F320 CD9C000C */  jal        func_80027334
+    /* FB20 8001F320 CD9C000C */  jal        motion_SetFixedChannelBlock
     /* FB24 8001F324 21208002 */   addu      $a0, $s4, $zero
   .L8001F328:
     /* FB28 8001F328 6A000396 */  lhu        $v1, 0x6A($s0)
@@ -159,12 +159,12 @@ glabel motion_AdjustFighterPose
     /* FD10 8001F510 03340600 */  sra        $a2, $a2, 16
     /* FD14 8001F514 E6010586 */  lh         $a1, 0x1E6($s0)
     /* FD18 8001F518 21384002 */  addu       $a3, $s2, $zero
-    /* FD1C 8001F51C DCBD000C */  jal        func_8002F770
+    /* FD1C 8001F51C DCBD000C */  jal        math_ComposeAxisRotationsAndRewriteAngles
     /* FD20 8001F520 E80102A6 */   sh        $v0, 0x1E8($s0)
     /* FD24 8001F524 36008426 */  addiu      $a0, $s4, 0x36
     /* FD28 8001F528 E6010586 */  lh         $a1, 0x1E6($s0)
     /* FD2C 8001F52C E8010686 */  lh         $a2, 0x1E8($s0)
-    /* FD30 8001F530 DCBD000C */  jal        func_8002F770
+    /* FD30 8001F530 DCBD000C */  jal        math_ComposeAxisRotationsAndRewriteAngles
     /* FD34 8001F534 21384002 */   addu      $a3, $s2, $zero
     /* FD38 8001F538 0C000386 */  lh         $v1, 0xC($s0)
     /* FD3C 8001F53C 1D000224 */  addiu      $v0, $zero, 0x1D

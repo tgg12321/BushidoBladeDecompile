@@ -74,7 +74,7 @@ glabel replay_PlayFrame
   .L80039A4C:
     /* 2A24C 80039A4C 21204000 */  addu       $a0, $v0, $zero
     /* 2A250 80039A50 21286000 */  addu       $a1, $v1, $zero
-    /* 2A254 80039A54 B96E000C */  jal        func_8001BAE4
+    /* 2A254 80039A54 B96E000C */  jal        camera_UpdateReplayViewWithSineYawOffset
     /* 2A258 80039A58 21300002 */   addu      $a2, $s0, $zero
     /* 2A25C 80039A5C 2006828F */  lw         $v0, %gp_rel(g_replay_fighter_frames)($gp)
     /* 2A260 80039A60 0A80033C */  lui        $v1, %hi(D_800A3748)
@@ -88,7 +88,7 @@ glabel replay_PlayFrame
     /* 2A280 80039A80 2120A200 */   addu      $a0, $a1, $v0
     /* 2A284 80039A84 1C00A524 */  addiu      $a1, $a1, 0x1C
   .L80039A88:
-    /* 2A288 80039A88 F66E000C */  jal        func_8001BBD8
+    /* 2A288 80039A88 F66E000C */  jal        camera_UpdateReplayViewWithConstantYawOffset
     /* 2A28C 80039A8C 21300002 */   addu      $a2, $s0, $zero
     /* 2A290 80039A90 B979000C */  jal        camera_ApplyReplayView
     /* 2A294 80039A94 21200002 */   addu      $a0, $s0, $zero

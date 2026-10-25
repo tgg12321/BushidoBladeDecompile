@@ -58,13 +58,13 @@
         "4ae8a48ba5ca1ab26b6e27a29113a7aab8dadcf3400c2414af981f49a2bc283e"
       ]
     },
-    "func_8002BEA0": {
+    "fighter_CalcSeparationErrorAndOpposedOffsets": {
       "file": "main/17AFC",
       "sha256": [
         "4ae8a48ba5ca1ab26b6e27a29113a7aab8dadcf3400c2414af981f49a2bc283e"
       ]
     },
-    "func_8002D320": {
+    "math_TestSphereAgainstPreparedAxialVertexSpan": {
       "file": "main/17AFC",
       "sha256": [
         "9214276b02a9f0aec9fcf3c3da5c095ca6659ceba9c8f870d5a6e39d2f22b3fd",
@@ -103,7 +103,7 @@
         "fb3b92e1f4c4165559fe551b2120fc2a65c9b4abf1d43ef455f9b0b70bd5b2cc"
       ]
     },
-    "func_8002FDB0": {
+    "fighter_IsBoneTriangleCrossYPositive": {
       "file": "main/17AFC",
       "sha256": [
         "a87912cce8b75771c81d1a077212e668a48f127cc4abbcda4a65179f5054ff11"
@@ -136,7 +136,7 @@
         "a2349db2679872b7813d166d802d67a88c9ba5c302c3c27d3c3792b3c78eb0d1"
       ]
     },
-    "func_80032314": {
+    "fight_TriggerOpposingFighterEventFromNearBallisticRecords": {
       "file": "main/17AFC",
       "sha256": [
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d"
@@ -200,7 +200,7 @@
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
       ]
     },
-    "func_80063E10": {
+    "eff_DrawYawedSlotQuads": {
       "file": "main/51268",
       "sha256": [
         "6a61803748b612ec439d47698192f3a77982c7de08921531891005cc83657b4e",
@@ -351,7 +351,7 @@
         "7421912c9b1a80d95a0366d63abd0417187f7e5008177aac346f0c971d139543"
       ]
     },
-    "func_8002F770": {
+    "math_ComposeAxisRotationsAndRewriteAngles": {
       "file": "main/17AFC",
       "sha256": [
         "fcfbda292eec73d7ecfe5966b6c9892e502b14d19392e0eda4e79e015269c882",

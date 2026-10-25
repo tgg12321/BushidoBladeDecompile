@@ -1373,14 +1373,16 @@ void replay_PlayFrame(void) {
     /* The frame record's address is written out at each argument (F3
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */
-    func_8001BAE4(&g_replay_fighter_frames[idx][D_800A3748],
-                  D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
-                                  : &g_replay_fighter_frames[idx][0],
-                  var_8);
-    func_8001BBD8(&g_replay_fighter_frames[idx][D_800A3748],
-                  D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
-                                  : &g_replay_fighter_frames[idx][0],
-                  var_8);
+    camera_UpdateReplayViewWithSineYawOffset(
+        &g_replay_fighter_frames[idx][D_800A3748],
+        D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
+                        : &g_replay_fighter_frames[idx][0],
+        var_8);
+    camera_UpdateReplayViewWithConstantYawOffset(
+        &g_replay_fighter_frames[idx][D_800A3748],
+        D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
+                        : &g_replay_fighter_frames[idx][0],
+        var_8);
     camera_ApplyReplayView(var_8);
 
     for (i = 0; i < 2; i++) {

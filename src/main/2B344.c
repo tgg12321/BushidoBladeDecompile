@@ -530,7 +530,7 @@ void func_8003B9D0(void) {
     if ((s8)D_80102778.unk_4[1] == 0xE || (s8)D_80102778.unk_4[1] == 0x1D) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
-    func_8001DBE4();
+    fight_WaitForCounterThenClearAndEnableDisplay();
     D_800A3768 = DISP_DISABLED;
     D_800A36A8 = 0;
     snd_SerialMixOn();
@@ -1078,7 +1078,7 @@ void func_8003CF84(void) {
         vec[0] += D_8008EB10;
         vec[1] += D_8008EB14;
         vec[2] += D_8008EB18;
-        func_800618B4(vec, &D_800A312C.vx);
+        eff_StartRecycledVectorCommandWithRedLight(vec, &D_800A312C.vx);
     }
     a = motion_GetPlaybackViewAngles();
     b = func_8005508C();

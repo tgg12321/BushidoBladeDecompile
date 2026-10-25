@@ -17,7 +17,7 @@ glabel func_8001C4C0
     /* CCF8 8001C4F8 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)
     /* CCFC 8001C4FC 21200000 */  addu       $a0, $zero, $zero
     /* CD00 8001C500 21284000 */  addu       $a1, $v0, $zero
-    /* CD04 8001C504 A686000C */  jal        func_80021A98
+    /* CD04 8001C504 A686000C */  jal        fighter_StartMoveScript
     /* CD08 8001C508 21300000 */   addu      $a2, $zero, $zero
   .L8001C50C:
     /* CD0C 8001C50C 1000BF8F */  lw         $ra, 0x10($sp)

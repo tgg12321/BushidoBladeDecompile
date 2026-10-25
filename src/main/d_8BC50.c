@@ -142,7 +142,7 @@ u16 D_8009B850[32] = {
 /* 51268.c's: the effect texture records (TexRec runs), D_8009BA60 and the
  * handler table D_8009BA7C (eff_StartCommand / eff_StepCommand), D_8009BB74
  * (eff_SetRotMatrix), D_8009BB84 (func_8006295C) and D_8009BBE4 .. D_8009BBFC
- * (func_80063E10). */
+ * (eff_DrawYawedSlotQuads). */
 TexRec D_8009B890[4] = {{0x380, 0xFF, 0xA0, 0xE0},
                         {0x380, 0xFF, 0xA0, 0xE8},
                         {0x380, 0xFF, 0xA0, 0xE8},
@@ -206,8 +206,8 @@ u8 func_800676C8(void);
 u8 func_80066F28(void);
 u8 func_80066F5C(void);
 u8 func_80067704(void);
-void func_80064E90(void);
-u8 func_800652F4(void);
+void eff_InitCosineScaledQuad(void);
+u8 eff_DrawAndAdvanceCosineScaledQuad(void);
 void func_80064ED8(void);
 u8 func_80065344(void);
 void func_80064F20(void);
@@ -220,8 +220,8 @@ s32 func_80064F68(void);
 u8 func_800653E4(void);
 s32 func_80064FB4(void);
 u8 func_80065434(void);
-s32 func_80065000(void);
-u8 func_80065484(void);
+s32 eff_InitRateSelectedCosineScaledQuad(void);
+u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void);
 void func_8006505C(void);
 u8 func_80065540(void);
 void func_800650A4(void);
@@ -270,8 +270,8 @@ s32 D_8009BA7C[62] = {
     (s32)func_80066F28,
     (s32)func_80066F5C,
     (s32)func_80067704,
-    (s32)func_80064E90,
-    (s32)func_800652F4,
+    (s32)eff_InitCosineScaledQuad,
+    (s32)eff_DrawAndAdvanceCosineScaledQuad,
     (s32)func_80064ED8,
     (s32)func_80065344,
     (s32)func_80064F20,
@@ -284,8 +284,8 @@ s32 D_8009BA7C[62] = {
     (s32)func_800653E4,
     (s32)func_80064FB4,
     (s32)func_80065434,
-    (s32)func_80065000,
-    (s32)func_80065484,
+    (s32)eff_InitRateSelectedCosineScaledQuad,
+    (s32)eff_DrawAndAdvanceRateSelectedCosineScaledQuad,
     (s32)func_8006505C,
     (s32)func_80065540,
     (s32)func_800650A4,

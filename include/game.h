@@ -94,9 +94,9 @@ typedef struct {
 } Unk800A9CF8Rec;
 
 /* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one 3-word
- * record (12 bytes; lane stride 120). func_80063BD0 writes it, func_80063E10
- * reads it. The slot bitmask D_800A3454[n] and the sibling SVECTOR table
- * D_800F1000[n][10] index the same pair (n, slot). */
+ * record (12 bytes; lane stride 120). eff_AllocateOrRecycleYawedQuadSlot writes
+ * it, eff_DrawYawedSlotQuads reads it. The slot bitmask D_800A3454[n] and the
+ * sibling SVECTOR table D_800F1000[n][10] index the same pair (n, slot). */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -736,16 +736,17 @@ typedef struct {
 } Unk8008DCCCEntry;
 
 /* The file motion_LoadFighterData loads into g_motion_fighter_buffers[slot]
- * (slot = rec+0x4A, the load slot func_80021280 sets; fighters with the same
- * model id share it). f14 is the modulus func_800213A0 / motion_ResolveMoveData
- * wrap rec+0x86 with. The u16 fields at +0x4E are indices into
- * g_motion_fighter_sections[slot].unk_00, as motion_ResolveMoveData reads them:
- * f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4), f54[rec+0x86][t]
- * (id 0x7FF3), and f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16
- * (func_800219E4) and f18[unk_0A] (func_80021A3C; Unk80101EC8Record.unk_0A,
- * 0..26 as D_8008D538 holds and as the [27][6] tables D_8008DE34 / D_8008DF78
- * are sized; 27 halfwords end exactly at f4E) are indices into
- * g_motion_common_sections.unk_00; both readers load them with lhu. */
+ * (slot = rec+0x4A, the load slot fighter_AssignMotionSlotAndScanDataIdNibbles
+ * sets; fighters with the same model id share it). f14 is the modulus
+ * func_800213A0 / motion_ResolveMoveData wrap rec+0x86 with. The u16 fields at
+ * +0x4E are indices into g_motion_fighter_sections[slot].unk_00, as
+ * motion_ResolveMoveData reads them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86]
+ * (ids 0x7FF1/2/4), f54[rec+0x86][t] (id 0x7FF3), and f66[id -
+ * 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and f18[unk_0A]
+ * (func_80021A3C; Unk80101EC8Record.unk_0A, 0..26 as D_8008D538 holds and as
+ * the [27][6] tables D_8008DE34 / D_8008DF78 are sized; 27 halfwords end
+ * exactly at f4E) are indices into g_motion_common_sections.unk_00; both
+ * readers load them with lhu. */
 typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].unk_00 =
@@ -769,9 +770,9 @@ typedef struct {
  * (motion_LoadCommonData: unk_00 = file + 0x14, the others file + its header
  * words 1 / 2 / 4; unk_0C unset). unk_00: halfword streams
  * motion_ResolveMoveData indexes (the f4E / f54 / f66 / f16 / f18 entries);
- * unk_04: 4-byte entries whose second halfword offsets unk_08 (func_80021A98,
- * replay_PlayFrame); unk_0C: fighter_InitCpuControl's table; unk_10:
- * motion_InitStream's motion bitstream. */
+ * unk_04: 4-byte entries whose second halfword offsets unk_08
+ * (fighter_StartMoveScript, replay_PlayFrame); unk_0C: fighter_InitCpuControl's
+ * table; unk_10: motion_InitStream's motion bitstream. */
 typedef struct Unk801027B0Rec {
     u16 *unk_00;
     u16 *unk_04;
@@ -800,12 +801,13 @@ typedef struct {
 } SVec4i16;
 
 /* D_80104E88[4]: the four 0x2C-byte records func_80032064 claims (first with
- * unk_00 == 0) and func_800321E8 steps each frame (unk_02 counts frames; unk_10
- * keeps the previous unk_04; unk_1C is added to unk_04 with unk_1C.y growing by
- * 0xD; the record is freed when func_8005344C reports a hit or unk_04.y passes
- * unk_28). func_80032314 measures the distance from the other player's
- * world_pos to unk_04 (unk_03 is the owner). func_80032040 clears unk_00 of all
- * four. */
+ * unk_00 == 0) and fight_UpdateBallisticRecords steps each frame (unk_02 counts
+ * frames; unk_10 keeps the previous unk_04; unk_1C is added to unk_04 with
+ * unk_1C.y growing by 0xD; the record is freed when func_8005344C reports a hit
+ * or unk_04.y passes unk_28).
+ * fight_TriggerOpposingFighterEventFromNearBallisticRecords measures the
+ * distance from the other player's world_pos to unk_04 (unk_03 is the owner).
+ * fight_ClearBallisticRecords clears unk_00 of all four. */
 typedef struct Unk80104E88Rec {
     u8 unk_00; /* 0 = free; func_80032064's type (1 / 2) */
     u8 unk_01;
@@ -850,9 +852,9 @@ typedef struct BoneHitRec {
  * frame from the two pads (one u16 half per player in each word):
  * held = current bits, pressed = held & ~previous, released = ~held & previous,
  * unheld = ~held; pad_ResetState sets type[] and the four bit words to
- * (4, 4, 0, 0, 0, -1) and leaves valid[] alone.  func_8001BE20
- * copies the whole record to its caller's buffer, and pad_ClearStateBits clears
- * the four bit words of such a buffer. */
+ * (4, 4, 0, 0, 0, -1) and leaves valid[] alone.
+ * fighter_BuildCpuOrMappedPadState copies the whole record to its caller's
+ * buffer, and pad_ClearStateBits clears the four bit words of such a buffer. */
 typedef struct PadState {
     /* per pad: InitPAD buffer byte 1 >> 4, 5 and 7 folded
        to 4, 4 when the status byte != 0 (pad_Update,
@@ -897,9 +899,10 @@ typedef struct {
  * follows g_eff_command_block, so that copy ends at +0x2C. Each copy sets one
  * pointer pair:
  * - unk00: one word, stored whole and read whole (bit 21 in eff_StartCommand,
- * bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 / func_80065000);
- * eff_StartCommand / eff_StepCommand also read its low halfword (`lhu`), their
- * g_eff_command_phase / D_8009BA60 index.
+ * bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
+ * eff_InitRateSelectedCosineScaledQuad); eff_StartCommand / eff_StepCommand
+ * also read its low halfword (`lhu`), their g_eff_command_phase / D_8009BA60
+ * index.
  * - unk04 / unk08: the three halfwords / three words eff_StepCommand and
  * eff_DrawBillboardList copy into the scratchpad block's unk18 / unk20 (through
  * D_800A346C / D_800A3470). Only the scratchpad block's are set:
@@ -913,7 +916,7 @@ typedef struct {
  * block's, D_800A3478 / D_800A347C at the g_eff_command_block block's
  * (eff_StartCommand). unk18 is s16 like its sources (unk04 / unk10) and every
  * consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix, func_8006288C,
- * func_80063BD0, eff_SpawnParticles).
+ * eff_AllocateOrRecycleYawedQuadSlot, eff_SpawnParticles).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -1059,8 +1062,8 @@ typedef struct {
 /* Unk1F800000Rec.unkB8, the 51268 work area D_800A34EC points at (0x1F8000B8 to
  * the end of the scratchpad). Each user lays it out for one call (or, for the
  * eff_PrepareParticles trio, one wrapper call); raw sizes the union.
- * eff_SetRotMatrix's is one SVECTOR. func_8006295C and func_80063E10 still
- * convert D_800A34EC (their work-area base is staged through a POLY_FT4 *
+ * eff_SetRotMatrix's is one SVECTOR. func_8006295C and eff_DrawYawedSlotQuads
+ * still convert D_800A34EC (their work-area base is staged through a POLY_FT4 *
  * local). */
 typedef union {
     u8 raw[0x400 - 0xB8];
@@ -1135,8 +1138,8 @@ typedef struct {
  * (collision_WalkSegmentGrid and its helpers, through D_800A33F4).
  * func_8005344C / collision_TestSegmentWithWork place it at their last
  * argument; func_80053304 / collision_TestSegment at D_800EF9F8. 17AFC
- * object_UpdatePool / func_800321E8 pass 0x1F8002F0, its place in their
- * scratchpad layout (Unk1F8002B8_8005344C.unk38). */
+ * object_UpdatePool / fight_UpdateBallisticRecords pass 0x1F8002F0, its place
+ * in their scratchpad layout (Unk1F8002B8_8005344C.unk38). */
 typedef struct {
     s32 unk0;
     u16 unk4;
@@ -1208,10 +1211,11 @@ typedef struct {
  * character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3] the same two
  * from its record (unk_210 or unk_234), [4] / [5] the midpoints of [0] / [2]
  * and [1] / [3]; for each triangle it hands math_PrepareTriangleCollisionFrame
- * it aims unk60[0..2] at three of them. object_UpdatePool / func_800321E8 lay
- * the bytes out differently (func_8005344C's argument block, its work area from
- * +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
- * Unk1F8002B8Union. raw sizes the union to 0x60. */
+ * it aims unk60[0..2] at three of them. object_UpdatePool /
+ * fight_UpdateBallisticRecords lay the bytes out differently (func_8005344C's
+ * argument block, its work area from +0x38 through +0x123):
+ * Unk1F8002B8_8005344C, the other member of Unk1F8002B8Union. raw sizes the
+ * union to 0x60. */
 typedef union {
     u8 raw[0x60];
     Unk80107850Rec unk00[6];
@@ -1233,15 +1237,15 @@ typedef union {
  * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
  * into the record for i >= 2.
  * In 17AFC, the collision code takes the record's address (`scr`) and passes it
- * on, or addresses it directly (object_UpdatePool / func_800321E8 use
- * Unk1F8002B8_8005344C instead). unk60 / unk6C hold point pointers
- * (fighter_ProcessWeaponContacts reads unk60[0..2]); unkB4 / unkC4 are
- * fighter_TestTriangleBoneHits's two hit masks (fighter_ProcessWeaponBodyHits
- * reads them; no 17AFC code accesses unkD4 as a member); unkD8 is the matrix
- * the RotMatrix* calls build, and the GTE rotates unkA8 through it;
- * func_8002DE20 rotates three points, relative to the origin *unk60[0], into
- * unk118 and tests them against the triangle (0,0) / unkA8 / unkB8. unk00 is
- * scratch (Unk1F8002B8Unk00): fighter_CastWeaponSegment /
+ * on, or addresses it directly (object_UpdatePool /
+ * fight_UpdateBallisticRecords use Unk1F8002B8_8005344C instead). unk60 / unk6C
+ * hold point pointers (fighter_ProcessWeaponContacts reads unk60[0..2]); unkB4
+ * / unkC4 are fighter_TestTriangleBoneHits's two hit masks
+ * (fighter_ProcessWeaponBodyHits reads them; no 17AFC code accesses unkD4 as a
+ * member); unkD8 is the matrix the RotMatrix* calls build, and the GTE rotates
+ * unkA8 through it; func_8002DE20 rotates three points, relative to the origin
+ * *unk60[0], into unk118 and tests them against the triangle (0,0) / unkA8 /
+ * unkB8. unk00 is scratch (Unk1F8002B8Unk00): fighter_CastWeaponSegment /
  * object_ResolveFighterHits / fighter_ProcessWeaponBodyHits use its points. */
 typedef struct {
     Unk1F8002B8Unk00 unk00;
@@ -1264,10 +1268,10 @@ typedef struct {
     Vec3i32 unk13C;
 } Unk1F8002B8Rec;
 
-/* The layout object_UpdatePool and func_800321E8 give the scratchpad area at
- * 0x1F8002B8 (Unk1F8002B8Union.v8005344C): the to point, hit point and normal
- * they pass func_8005344C, and its work area, which runs over Unk1F8002B8Rec's
- * unk60..unk118. */
+/* The layout object_UpdatePool and fight_UpdateBallisticRecords give the
+ * scratchpad area at 0x1F8002B8 (Unk1F8002B8Union.v8005344C): the to point, hit
+ * point and normal they pass func_8005344C, and its work area, which runs over
+ * Unk1F8002B8Rec's unk60..unk118. */
 typedef struct {
     /* to; func_8005344C copies 16 bytes from it */
     Vec3i32 unk00;
@@ -1277,7 +1281,7 @@ typedef struct {
     Vec3i32 unk10;
     s32 unk1C; /* no access */
     /* object_UpdatePool's turn block's second rotated vector
-       (func_800321E8 does not access it) */
+       (fight_UpdateBallisticRecords does not access it) */
     Vec3i32 unk20;
     s32 unk2C;    /* no access */
     s16 unk30[3]; /* the hit normal */
@@ -1288,24 +1292,24 @@ typedef struct {
 
 /* ScrPad.unk2B8: the scratchpad's last 0x148 bytes, 0x1F8002B8..0x1F8003FF,
  * which 17AFC uses with two layouts. Its collision code uses rec
- * (Unk1F8002B8Rec). object_UpdatePool and func_800321E8 use v8005344C: they
- * pass 0x1F8002F0 as func_8005344C's work-area address, so its 0xEC-byte
- * Work_80053E9C sits at +0x38..+0x123, over rec's unk60..unk118. */
+ * (Unk1F8002B8Rec). object_UpdatePool and fight_UpdateBallisticRecords use
+ * v8005344C: they pass 0x1F8002F0 as func_8005344C's work-area address, so its
+ * 0xEC-byte Work_80053E9C sits at +0x38..+0x123, over rec's unk60..unk118. */
 typedef union {
     Unk1F8002B8Rec rec;
     Unk1F8002B8_8005344C v8005344C;
 } Unk1F8002B8Union;
 
 /* Scratchpad point tables at 0x1F800000.  unk00: three points per character
- * (func_8002C61C copies [0][0..2] and [1][0..2] to the two records' +0x210);
- * unk48: two more per character (copied to +0x234); unk78: two body points
- * per character (fighter_ResolveBodyOverlap builds them from unkA8 joint 1 and
- * the midpoint of joints 15 and 19); unkA8: 22 points per character
- * (fighter_CastWeaponSegment reads 0x1F8000A8 + id * 0x108 + i * 0xC, i < 22).
- * fighter_Update hands fighter_UpdateBoneWorldData its character's unkA8 /
- * unk00 / unk48. unk2B8: the area at 0x1F8002B8 (Unk1F8002B8Union), to the end
- * of the scratchpad; the scratchpad is shared scratch that other code also uses
- * with its own views (see Unk1F8002B8Rec). */
+ * (fight_UpdateFighterInteractionsAndPointCaches copies [0][0..2] and [1][0..2]
+ * to the two records' +0x210); unk48: two more per character (copied to
+ * +0x234); unk78: two body points per character (fighter_ResolveBodyOverlap
+ * builds them from unkA8 joint 1 and the midpoint of joints 15 and 19); unkA8:
+ * 22 points per character (fighter_CastWeaponSegment reads 0x1F8000A8 + id *
+ * 0x108 + i * 0xC, i < 22). fighter_Update hands fighter_UpdateBoneWorldData
+ * its character's unkA8 / unk00 / unk48. unk2B8: the area at 0x1F8002B8
+ * (Unk1F8002B8Union), to the end of the scratchpad; the scratchpad is shared
+ * scratch that other code also uses with its own views (see Unk1F8002B8Rec). */
 typedef struct {
     Unk80107850Rec unk00[2][3];
     Unk80107850Rec unk48[2][2];
@@ -1366,8 +1370,9 @@ typedef struct NavPolySet {
  * copy fighter_Update shows.  unk_00 is the root offset it negates, unk_02 /
  * unk_04 the root heading and distance, unk_06.. unk_0A the three rotation
  * angles it hands math_RotMatrixZYXAngles.  unk_0C[] holds signed channels:
- * func_8002F770 reads the triplet at +0x36 with lh, and motion_DecodeFrame
- * sign-extends the 12-bit values at +0x6C..+0x70 / +0x78..+0x7C.
+ * math_ComposeAxisRotationsAndRewriteAngles reads the triplet at +0x36 with lh,
+ * and motion_DecodeFrame sign-extends the 12-bit values at +0x6C..+0x70 /
+ * +0x78..+0x7C.
  */
 typedef struct MotionFrame {
     s16 unk_00;
@@ -1426,9 +1431,10 @@ typedef struct Unk800F1B18Rec {
 typedef struct MoveScript {
     u16 event_move_table_id;
     u16 fallback_move_id;
-    /* row of the bank's 4-byte entry table (func_80021A98) */
+    /* row of the bank's 4-byte entry table (fighter_StartMoveScript) */
     u16 motion_bank_entry_index;
-    /* first frame: Unk80101EC8Record.move_frame starts here (func_80021A98) */
+    /* first frame: Unk80101EC8Record.move_frame starts here
+     * (fighter_StartMoveScript) */
     u8 first_move_frame;
     u8 last_move_frame;
     u8 last_command_frame;
@@ -1444,7 +1450,8 @@ typedef struct Unk80101EC8Record {
     /* the other record: [1] for record 0, else [0] (fighter_Init) */
     struct Unk80101EC8Record *other;
     s16 index; /* this record's own index (fighter_Init) */
-    /* != 0: func_8001BE20 hands pad input to fighter_BuildCpuPad */
+    /* != 0: fighter_BuildCpuOrMappedPadState hands pad input to
+     * fighter_BuildCpuPad */
     s16 cpu_controlled;
     s16 unk_08;
     /* row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
@@ -1468,8 +1475,8 @@ typedef struct Unk80101EC8Record {
     s16 move_frame_frac; /* frame fraction, 0x1000 = one frame */
     s16 move_frame_step; /* frame-fraction step */
     s16 unk_46;
-    /* motion data id (motion_LoadFighterData); func_80021280 finds it in
-     * D_800A38C4 */
+    /* motion data id (motion_LoadFighterData);
+     * fighter_AssignMotionSlotAndScanDataIdNibbles finds it in D_800A38C4 */
     u16 motion_data_id;
     s16 motion_slot;
     s16 borrow_other_motion;
@@ -1490,7 +1497,7 @@ typedef struct Unk80101EC8Record {
     u16 unk_64;
     u16 unk_66;
     s16 pose_interp_weight;
-    /* byte 0 of the current move's frame metadata (func_80021A98) */
+    /* byte 0 of the current move's frame metadata (fighter_StartMoveScript) */
     u16 move_kind;
     s16 prev_move_kind;
     s16 unk_6E;
@@ -1526,7 +1533,8 @@ typedef struct Unk80101EC8Record {
     u8 unk_AA;
     u8 unk_AB;
     u8 unk_AC;
-    /* != 0: func_8002C61C re-runs fighter_ResolveWeaponContact for both records
+    /* != 0: fight_UpdateFighterInteractionsAndPointCaches re-runs
+     * fighter_ResolveWeaponContact for both records
      */
     u8 unk_AD;
     u8 unk_AE;
@@ -1595,9 +1603,11 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_1EC;
     Vec3i32 unk_1F8;
     u8 unk_204[0x210 - 0x204];
-    /* func_8002C61C: copy of scratchpad points 0x1F800000 + idx * 0x24 */
+    /* fight_UpdateFighterInteractionsAndPointCaches: copy of scratchpad points
+     * 0x1F800000 + idx * 0x24 */
     Unk80107850Rec unk_210[3];
-    /* func_8002C61C: copy of scratchpad points 0x1F800048 + idx * 0x18 */
+    /* fight_UpdateFighterInteractionsAndPointCaches: copy of scratchpad points
+     * 0x1F800048 + idx * 0x18 */
     Unk80107850Rec unk_234[2];
     VECTOR unk_24C;
     /* fighter_Update: copy of scratchpad point unk00[idx][0] */
@@ -1634,7 +1644,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_34B;
     u8 unk_34C;
     u8 unk_34D;
-    /* written by func_8001BE20 for the OTHER record */
+    /* written by fighter_BuildCpuOrMappedPadState for the OTHER record */
     u8 unk_34E;
     u8 unk_34F[0x350 - 0x34F];
     s16 unk_350;
@@ -1669,7 +1679,8 @@ typedef struct Unk80101EC8Record {
     s32 unk_3C4;
     s32 cpu_pad_script_held;
     s32 unk_3CC;
-    /* the pad record fighter_BuildCpuPad builds for func_8001BE20 */
+    /* the pad record fighter_BuildCpuPad builds for
+     * fighter_BuildCpuOrMappedPadState */
     PadState last_cpu_pad;
     u16 cpu_pad_build_count;
     u8 unk_3EA[0x3EE - 0x3EA];
@@ -1854,7 +1865,8 @@ typedef struct Unk800FF5C8Rec {
  * g_replay_fighter_frames (frames of two, Rec1C[2] = 0x38 bytes;
  * replay_RecordFighter writes player a0->index's record of frame
  * g_replay_write_frame from the character record, replay_PlayFrame reads both
- * back and passes two of them to func_8001BAE4 / func_8001BBD8,
+ * back and passes two of them to camera_UpdateReplayViewWithSineYawOffset /
+ * camera_UpdateReplayViewWithConstantYawOffset,
  * motion_ApplyRecordedPoseAdjustments reads b14..b16 / b18).
  * - w0: the character's current move (Unk80101EC8Record.cur_move);
  * replay_PlayFrame reads its motion_bank_entry_index.
@@ -1919,7 +1931,8 @@ typedef struct Unk80101BF0Rec {
  * per second): unk_0 = count / 1800, unk_2 = count / 30 % 60, unk_3 = count %
  * 30 * 100 / 30 (99 / 59 / 99 past 0x2BF1F). func_8005D814 draws the three as
  * two-digit numbers; func_8003C714 copies them into its save record at
- * +0x2D..+0x2F. func_8001CE60 also fills only unk_2 = n / 30 and unk_3 = n % 30
+ * +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills only unk_2
+ * = n / 30 and unk_3 = n % 30
  * * 100 / 30 from a frame countdown n, for func_8005F1C8 to draw. */
 typedef struct Unk8001CD68Rec {
     s16 unk_0;
@@ -2180,8 +2193,9 @@ typedef struct {
  * every byte of it except 0x82/0x83): two u16 values, three per-player byte
  * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
  * fourth per-player pair only other functions touch (unk_A, indexed by player
- * in func_80022F34) and four single bytes. One object: func_80034708 reaches
- * unk_4 and unk_E as offsets from the address of unk_C. */
+ * in fighter_ConfigureCpuControl) and four single bytes. One object:
+ * func_80034708 reaches unk_4 and unk_E as offsets from the address of unk_C.
+ */
 typedef struct {
     u16 unk_0[2];
     u8 unk_4[6];

@@ -1107,8 +1107,8 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B5A0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     /* The second DR_MODE goes at the record's end, past the size this function
-     * returns (its caller, 9F9C func_8001CE60, advances its cursor
-     * g_prim_buf_cursor by that size). */
+     * returns (its caller, 9F9C fight_UpdateModeDisplaysAndMatchProgress,
+     * advances its cursor g_prim_buf_cursor by that size). */
     mode_off++;
 
     s.has_color = 0;

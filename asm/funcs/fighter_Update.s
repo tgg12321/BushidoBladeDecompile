@@ -198,7 +198,7 @@ glabel fighter_Update
     /* 149E8 800241E8 21300002 */   addu      $a2, $s0, $zero
     /* 149EC 800241EC 21206002 */  addu       $a0, $s3, $zero
     /* 149F0 800241F0 5E002686 */  lh         $a2, 0x5E($s1)
-    /* 149F4 800241F4 A686000C */  jal        func_80021A98
+    /* 149F4 800241F4 A686000C */  jal        fighter_StartMoveScript
     /* 149F8 800241F8 21284000 */   addu      $a1, $v0, $zero
     /* 149FC 800241FC FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 14A00 80024200 860222A6 */  sh         $v0, 0x286($s1)
@@ -225,7 +225,7 @@ glabel fighter_Update
     /* 14A50 80024250 00000000 */   nop
   .L80024254:
     /* 14A54 80024254 21202002 */  addu       $a0, $s1, $zero
-    /* 14A58 80024258 EB8C000C */  jal        func_800233AC
+    /* 14A58 80024258 EB8C000C */  jal        fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
     /* 14A5C 8002425C 5001A527 */   addiu     $a1, $sp, 0x150
     /* 14A60 80024260 16004010 */  beqz       $v0, .L800242BC
     /* 14A64 80024264 00000000 */   nop
@@ -245,7 +245,7 @@ glabel fighter_Update
     /* 14A9C 8002429C 21300002 */   addu      $a2, $s0, $zero
     /* 14AA0 800242A0 21206002 */  addu       $a0, $s3, $zero
     /* 14AA4 800242A4 5E002686 */  lh         $a2, 0x5E($s1)
-    /* 14AA8 800242A8 A686000C */  jal        func_80021A98
+    /* 14AA8 800242A8 A686000C */  jal        fighter_StartMoveScript
     /* 14AAC 800242AC 21284000 */   addu      $a1, $v0, $zero
     /* 14AB0 800242B0 040120AE */  sw         $zero, 0x104($s1)
     /* 14AB4 800242B4 080120AE */  sw         $zero, 0x108($s1)
@@ -314,7 +314,7 @@ glabel fighter_Update
     /* 14B94 80024394 5E002686 */  lh         $a2, 0x5E($s1)
     /* 14B98 80024398 21284000 */  addu       $a1, $v0, $zero
   .L8002439C:
-    /* 14B9C 8002439C A686000C */  jal        func_80021A98
+    /* 14B9C 8002439C A686000C */  jal        fighter_StartMoveScript
     /* 14BA0 800243A0 00000000 */   nop
   .L800243A4:
     /* 14BA4 800243A4 7C00228E */  lw         $v0, 0x7C($s1)
@@ -356,7 +356,7 @@ glabel fighter_Update
   .L80024430:
     /* 14C30 80024430 7C00258E */  lw         $a1, 0x7C($s1)
     /* 14C34 80024434 80002686 */  lh         $a2, 0x80($s1)
-    /* 14C38 80024438 A686000C */  jal        func_80021A98
+    /* 14C38 80024438 A686000C */  jal        fighter_StartMoveScript
     /* 14C3C 8002443C 21206002 */   addu      $a0, $s3, $zero
     /* 14C40 80024440 AC910008 */  j          .L800246B0
     /* 14C44 80024444 00000000 */   nop
@@ -516,7 +516,7 @@ glabel fighter_Update
     /* 14E64 80024664 00000000 */  nop
     /* 14E68 80024668 00340200 */  sll        $a2, $v0, 16
     /* 14E6C 8002466C 03340600 */  sra        $a2, $a2, 16
-    /* 14E70 80024670 A686000C */  jal        func_80021A98
+    /* 14E70 80024670 A686000C */  jal        fighter_StartMoveScript
     /* 14E74 80024674 5E0022A6 */   sh        $v0, 0x5E($s1)
     /* 14E78 80024678 AC910008 */  j          .L800246B0
     /* 14E7C 8002467C 00000000 */   nop
@@ -586,7 +586,7 @@ glabel fighter_Update
     /* 14F58 80024758 5E002626 */   addiu     $a2, $s1, 0x5E
     /* 14F5C 8002475C 21206002 */  addu       $a0, $s3, $zero
     /* 14F60 80024760 5E002686 */  lh         $a2, 0x5E($s1)
-    /* 14F64 80024764 A686000C */  jal        func_80021A98
+    /* 14F64 80024764 A686000C */  jal        fighter_StartMoveScript
     /* 14F68 80024768 21284000 */   addu      $a1, $v0, $zero
   .L8002476C:
     /* 14F6C 8002476C FD910008 */  j          .L800247F4
@@ -622,7 +622,7 @@ glabel fighter_Update
     /* 14FE0 800247E0 21300002 */   addu      $a2, $s0, $zero
     /* 14FE4 800247E4 21206002 */  addu       $a0, $s3, $zero
     /* 14FE8 800247E8 5E002686 */  lh         $a2, 0x5E($s1)
-    /* 14FEC 800247EC A686000C */  jal        func_80021A98
+    /* 14FEC 800247EC A686000C */  jal        fighter_StartMoveScript
     /* 14FF0 800247F0 21284000 */   addu      $a1, $v0, $zero
   .L800247F4:
     /* 14FF4 800247F4 70002386 */  lh         $v1, 0x70($s1)
@@ -1237,7 +1237,7 @@ glabel fighter_Update
     /* 158E8 800250E8 CA012296 */  lhu        $v0, 0x1CA($s1)
     /* 158EC 800250EC 21206002 */  addu       $a0, $s3, $zero
     /* 158F0 800250F0 21104500 */  addu       $v0, $v0, $a1
-    /* 158F4 800250F4 A46D000C */  jal        func_8001B690
+    /* 158F4 800250F4 A46D000C */  jal        camera_StartTurnEasingOnLargeHeadingChange
     /* 158F8 800250F8 CA0122A6 */   sh        $v0, 0x1CA($s1)
   .L800250FC:
     /* 158FC 800250FC 21202002 */  addu       $a0, $s1, $zero
@@ -1661,9 +1661,9 @@ glabel fighter_Update
     /* 15F3C 8002573C 21186200 */  addu       $v1, $v1, $v0
     /* 15F40 80025740 DC0023AE */  sw         $v1, 0xDC($s1)
   .L80025744:
-    /* 15F44 80025744 928D000C */  jal        func_80023648
+    /* 15F44 80025744 928D000C */  jal        fighter_UpdateInputSteeredForwardMotion
     /* 15F48 80025748 21202002 */   addu      $a0, $s1, $zero
-    /* 15F4C 8002574C 318E000C */  jal        func_800238C4
+    /* 15F4C 8002574C 318E000C */  jal        fighter_HandleMissingSupportWhileDescending
     /* 15F50 80025750 21202002 */   addu      $a0, $s1, $zero
     /* 15F54 80025754 6A002396 */  lhu        $v1, 0x6A($s1)
     /* 15F58 80025758 08000224 */  addiu      $v0, $zero, 0x8
@@ -2027,7 +2027,7 @@ glabel fighter_Update
     /* 16484 80025C84 21202002 */  addu       $a0, $s1, $zero
     /* 16488 80025C88 700123AE */  sw         $v1, 0x170($s1)
     /* 1648C 80025C8C 7CFC4224 */  addiu      $v0, $v0, -0x384
-    /* 16490 80025C90 908F000C */  jal        func_80023E40
+    /* 16490 80025C90 908F000C */  jal        fighter_UpdateGroundYByMoveKind
     /* 16494 80025C94 6C0122AE */   sw        $v0, 0x16C($s1)
     /* 16498 80025C98 801F023C */  lui        $v0, (0x1F8001B0 >> 16)
     /* 1649C 80025C9C B0014234 */  ori        $v0, $v0, (0x1F8001B0 & 0xFFFF)
@@ -2581,7 +2581,7 @@ glabel fighter_Update
     /* 16C88 80026488 500223AE */  sw         $v1, 0x250($s1)
     /* 16C8C 8002648C 540224AE */  sw         $a0, 0x254($s1)
     /* 16C90 80026490 580225AE */  sw         $a1, 0x258($s1)
-    /* 16C94 80026494 4A8F000C */  jal        func_80023D28
+    /* 16C94 80026494 4A8F000C */  jal        fighter_CacheDownwardProbeHit
     /* 16C98 80026498 21202002 */   addu      $a0, $s1, $zero
     /* 16C9C 8002649C 801F023C */  lui        $v0, (0x1F8000A8 >> 16)
     /* 16CA0 800264A0 A8004234 */  ori        $v0, $v0, (0x1F8000A8 & 0xFFFF)
@@ -2742,7 +2742,7 @@ glabel fighter_Update
     /* 16EF8 800266F8 3C02238E */  lw         $v1, 0x23C($s1)
     /* 16EFC 800266FC 21202002 */  addu       $a0, $s1, $zero
     /* 16F00 80026700 23104300 */  subu       $v0, $v0, $v1
-    /* 16F04 80026704 6CBF000C */  jal        func_8002FDB0
+    /* 16F04 80026704 6CBF000C */  jal        fighter_IsBoneTriangleCrossYPositive
     /* 16F08 80026708 2C0122AE */   sw        $v0, 0x12C($s1)
     /* 16F0C 8002670C 6A002396 */  lhu        $v1, 0x6A($s1)
     /* 16F10 80026710 DA0122A6 */  sh         $v0, 0x1DA($s1)

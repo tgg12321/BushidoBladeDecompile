@@ -97,23 +97,23 @@ glabel func_80032854
     /* 231AC 800329AC 05006214 */  bne        $v1, $v0, .L800329C4
     /* 231B0 800329B0 21202002 */   addu      $a0, $s1, $zero
   .L800329B4:
-    /* 231B4 800329B4 F285010C */  jal        func_800617C8
+    /* 231B4 800329B4 F285010C */  jal        eff_StartRecycledCommandWithOrangeLight
     /* 231B8 800329B8 21202002 */   addu      $a0, $s1, $zero
     /* 231BC 800329BC 0ACB0008 */  j          .L80032C28
     /* 231C0 800329C0 00000000 */   nop
   .L800329C4:
-    /* 231C4 800329C4 2D86010C */  jal        func_800618B4
+    /* 231C4 800329C4 2D86010C */  jal        eff_StartRecycledVectorCommandWithRedLight
     /* 231C8 800329C8 2128A002 */   addu      $a1, $s5, $zero
     /* 231CC 800329CC 0ACB0008 */  j          .L80032C28
     /* 231D0 800329D0 00000000 */   nop
   jlabel .L800329D4
-    /* 231D4 800329D4 9484010C */  jal        func_80061250
+    /* 231D4 800329D4 9484010C */  jal        eff_StartRecycledCommandWithRoseLight
     /* 231D8 800329D8 21202002 */   addu      $a0, $s1, $zero
     /* 231DC 800329DC 0ACB0008 */  j          .L80032C28
     /* 231E0 800329E0 00000000 */   nop
   jlabel .L800329E4
     /* 231E4 800329E4 21202002 */  addu       $a0, $s1, $zero
-    /* 231E8 800329E8 9685010C */  jal        func_80061658
+    /* 231E8 800329E8 9685010C */  jal        eff_StartArgSelectedCommandWithCyanLight
     /* 231EC 800329EC 21286002 */   addu      $a1, $s3, $zero
     /* 231F0 800329F0 0ACB0008 */  j          .L80032C28
     /* 231F4 800329F4 00000000 */   nop
@@ -124,7 +124,7 @@ glabel func_80032854
     /* 23204 80032A04 0ACB0008 */  j          .L80032C28
     /* 23208 80032A08 00000000 */   nop
   jlabel .L80032A0C
-    /* 2320C 80032A0C 5B85010C */  jal        func_8006156C
+    /* 2320C 80032A0C 5B85010C */  jal        eff_StartRecycledCommandWithPaleRedLight
     /* 23210 80032A10 21202002 */   addu      $a0, $s1, $zero
     /* 23214 80032A14 0ACB0008 */  j          .L80032C28
     /* 23218 80032A18 00000000 */   nop
@@ -135,7 +135,7 @@ glabel func_80032854
     /* 23228 80032A28 3C008426 */  addiu      $a0, $s4, 0x3C
     /* 2322C 80032A2C 78C9000C */  jal        snd_QueuePositionalSound
     /* 23230 80032A30 21282002 */   addu      $a1, $s1, $zero
-    /* 23234 80032A34 CF84010C */  jal        func_8006133C
+    /* 23234 80032A34 CF84010C */  jal        eff_StartCosineScaledQuadWithPaleBlueLight
     /* 23238 80032A38 21202002 */   addu      $a0, $s1, $zero
     /* 2323C 80032A3C 0A80013C */  lui        $at, %hi(D_800A3910)
     /* 23240 80032A40 103922A4 */  sh         $v0, %lo(D_800A3910)($at)

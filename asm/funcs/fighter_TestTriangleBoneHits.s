@@ -127,7 +127,7 @@ glabel fighter_TestTriangleBoneHits
     /* 1D46C 8002CC6C 2130E602 */  addu       $a2, $s7, $a2
     /* 1D470 8002CC70 FCFF4296 */  lhu        $v0, -0x4($s2)
     /* 1D474 8002CC74 2130C603 */  addu       $a2, $fp, $a2
-    /* 1D478 8002CC78 C8B4000C */  jal        func_8002D320
+    /* 1D478 8002CC78 C8B4000C */  jal        math_TestSphereAgainstPreparedAxialVertexSpan
     /* 1D47C 8002CC7C 1000A2AF */   sw        $v0, 0x10($sp)
     /* 1D480 8002CC80 21804000 */  addu       $s0, $v0, $zero
     /* 1D484 8002CC84 1C000012 */  beqz       $s0, .L8002CCF8
@@ -144,7 +144,7 @@ glabel fighter_TestTriangleBoneHits
     /* 1D4B0 8002CCB0 FEFF4796 */  lhu        $a3, -0x2($s2)
     /* 1D4B4 8002CCB4 00004296 */  lhu        $v0, 0x0($s2)
     /* 1D4B8 8002CCB8 21300000 */  addu       $a2, $zero, $zero
-    /* 1D4BC 8002CCBC C8B4000C */  jal        func_8002D320
+    /* 1D4BC 8002CCBC C8B4000C */  jal        math_TestSphereAgainstPreparedAxialVertexSpan
     /* 1D4C0 8002CCC0 1000A2AF */   sw        $v0, 0x10($sp)
   .L8002CCC4:
     /* 1D4C4 8002CCC4 04004010 */  beqz       $v0, .L8002CCD8

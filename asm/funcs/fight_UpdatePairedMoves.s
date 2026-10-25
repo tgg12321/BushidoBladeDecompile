@@ -32,7 +32,7 @@ glabel fight_UpdatePairedMoves
     /* 10460 8001FC60 D836A58C */  lw         $a1, %lo(D_800A36D8)($a1)
     /* 10464 8001FC64 0A80063C */  lui        $a2, %hi(D_800A381C)
     /* 10468 8001FC68 1C38C684 */  lh         $a2, %lo(D_800A381C)($a2)
-    /* 1046C 8001FC6C A686000C */  jal        func_80021A98
+    /* 1046C 8001FC6C A686000C */  jal        fighter_StartMoveScript
     /* 10470 8001FC70 00000000 */   nop
     /* 10474 8001FC74 0A80023C */  lui        $v0, %hi(D_800A36CA)
     /* 10478 8001FC78 CA364294 */  lhu        $v0, %lo(D_800A36CA)($v0)
@@ -56,7 +56,7 @@ glabel fight_UpdatePairedMoves
     /* 104BC 8001FCBC AE388484 */  lh         $a0, %lo(D_800A38AE)($a0)
     /* 104C0 8001FCC0 0A80063C */  lui        $a2, %hi(D_800A381C)
     /* 104C4 8001FCC4 1C38C684 */  lh         $a2, %lo(D_800A381C)($a2)
-    /* 104C8 8001FCC8 A686000C */  jal        func_80021A98
+    /* 104C8 8001FCC8 A686000C */  jal        fighter_StartMoveScript
     /* 104CC 8001FCCC 0100842C */   sltiu     $a0, $a0, 0x1
     /* 104D0 8001FCD0 02000224 */  addiu      $v0, $zero, 0x2
     /* 104D4 8001FCD4 1080013C */  lui        $at, %hi(D_80101EC8 + 0x4C6)
@@ -224,7 +224,7 @@ glabel fight_UpdatePairedMoves
     /* 1073C 8001FF3C 2120A002 */  addu       $a0, $s5, $zero
     /* 10740 8001FF40 21804000 */  addu       $s0, $v0, $zero
     /* 10744 8001FF44 5E002686 */  lh         $a2, 0x5E($s1)
-    /* 10748 8001FF48 A686000C */  jal        func_80021A98
+    /* 10748 8001FF48 A686000C */  jal        fighter_StartMoveScript
     /* 1074C 8001FF4C 21280002 */   addu      $a1, $s0, $zero
     /* 10750 8001FF50 0000238E */  lw         $v1, 0x0($s1)
     /* 10754 8001FF54 01000224 */  addiu      $v0, $zero, 0x1
@@ -234,7 +234,7 @@ glabel fight_UpdatePairedMoves
     /* 10764 8001FF64 0100A42E */  sltiu      $a0, $s5, 0x1
     /* 10768 8001FF68 5E0062A4 */  sh         $v0, 0x5E($v1)
     /* 1076C 8001FF6C 5E002686 */  lh         $a2, 0x5E($s1)
-    /* 10770 8001FF70 A686000C */  jal        func_80021A98
+    /* 10770 8001FF70 A686000C */  jal        fighter_StartMoveScript
     /* 10774 8001FF74 21280002 */   addu      $a1, $s0, $zero
     /* 10778 8001FF78 0000238E */  lw         $v1, 0x0($s1)
     /* 1077C 8001FF7C 02000224 */  addiu      $v0, $zero, 0x2

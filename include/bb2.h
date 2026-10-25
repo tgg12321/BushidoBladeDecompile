@@ -115,9 +115,9 @@ extern Unk800EFAE8Rec D_800EFAE8;
 extern Unk800F0C10Record D_800F0C10[4][3];
 
 /* Per-effect-mode state, modes 0..0x11 (eff_DrawAnimatedQuads): the timers here
- * and the position records in D_800F0CA0. The init functions func_80064E90..
- * func_800652AC fill them; the step functions func_800652F4..func_800657B0
- * advance the timers. */
+ * and the position records in D_800F0CA0. The init functions
+ * eff_InitCosineScaledQuad.. func_800652AC fill them; the step functions
+ * eff_DrawAndAdvanceCosineScaledQuad..func_800657B0 advance the timers. */
 extern s16 D_800F0BA8[18];
 
 extern Unk800F0C10Record D_800F0CA0[18];
@@ -133,8 +133,9 @@ extern u8 g_sqrt_table_u8[0x400];
 
 extern Unk8008DCCCEntry D_8008DCCC[18];
 
-/* 3 x 3 s16 angle offsets, [row][col] from the pad bits (func_800233AC,
- * func_80023648). */
+/* 3 x 3 s16 angle offsets, [row][col] from the pad bits
+ * (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow,
+ * fighter_UpdateInputSteeredForwardMotion). */
 extern s16 D_8008EB40[3][3];
 
 /* Judge: the sine table, one full turn in 0x1000 steps, 1.0 = 0x1000
@@ -532,7 +533,7 @@ extern u8 D_801077B0[24];
 extern Unk80107850Rec g_snd_sequence_positions[6];
 extern void camera_UpdateReplayView(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void font_Printf(u8 *, s32, ...);
-extern void func_80021A98(s32, MoveScript *, s32);
+extern void fighter_StartMoveScript(s32, MoveScript *, s32);
 extern void fighter_Init(s32, s32, s32, s32, s32);
 extern s32 cdrom_GetFileIndex(s32, s32);
 extern void comb_ExchangePad(PadState *);
@@ -661,26 +662,26 @@ extern void motion_InitStream(s32, u32 *);
 extern void motion_DecodeFrame(s32, s32, MotionFrame *, u16 *);
 extern void camera_UpdatePadOffset(s32 *);
 extern void func_8001B6F4(void);
-extern void func_8001BAE4(Rec1C *, Rec1C *, s32);
-extern void func_8001BBD8(Rec1C *, Rec1C *, s32);
+extern void camera_UpdateReplayViewWithSineYawOffset(Rec1C *, Rec1C *, s32);
+extern void camera_UpdateReplayViewWithConstantYawOffset(Rec1C *, Rec1C *, s32);
 extern void fight_InitSettings(void);
 extern void func_8001CD68(Unk8001CD68Rec *);
 extern void func_8001D790(void);
 extern void func_8001DA2C(void);
 extern s32 snd_ShouldUpdateStageSoundSlots(void);
-extern void func_8001DBE4(void);
+extern void fight_WaitForCounterThenClearAndEnableDisplay(void);
 extern void camera_ApplyReplayView(s32);
 extern void motion_ApplyRecordedPoseAdjustments(
     Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void fighter_SetTurnDelta(Unk80101EC8Record *, s32);
 extern void func_800203B4(Unk80101EC8Record *, s32, s16 *);
-extern s32 func_8002006C(void);
+extern s32 fight_UpdateSeparationAndPairedMoves(void);
 extern void fighter_UpdateBoneWorldData(
     Unk80101EC8Record *, Unk80107850Rec *, Unk80107850Rec *, Unk80107850Rec *);
 extern void func_80020CDC(void);
 extern void func_80020D38(void);
 extern void motion_InitBuffers(void);
-extern void func_80021280(s32);
+extern void fighter_AssignMotionSlotAndScanDataIdNibbles(s32);
 extern void *motion_ResolveMoveData(Unk80101EC8Record *, s32, s16 *);
 extern void motion_ResetVariantIndex(s32);
 extern MoveScript *motion_GetCurrentVariantScript(s32);
@@ -690,25 +691,26 @@ extern MoveScript *func_80021A3C(s32, s32);
 extern void fight_GetStartPosition(s32, s32 *, s32);
 extern s32 fight_FindNearestStartPair(Vec3i32 *);
 extern void func_80022568(Unk80101EC8Record *);
-extern void func_80022F34(void);
-extern s32 func_800233AC(Unk80101EC8Record *, s32 *);
+extern void fighter_ConfigureCpuControl(void);
+extern s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
+    Unk80101EC8Record *, s32 *);
 extern void fighter_Update(s32, PadState *);
 extern void func_80026DA4(void);
-extern void func_80027334(MotionFrame *);
+extern void motion_SetFixedChannelBlock(MotionFrame *);
 extern s32 func_8002798C(Unk80101EC8Record *);
-/* func_80027A58 (17AFC.c, void (Unk80101EC8Record *)) has no declaration:
- * 175A4.c calls it implicitly, and any truthful declaration changes
- * func_80026DA4's register-save order. */
+/* fighter_TryDropQueuedHeadAtBone (17AFC.c, void (Unk80101EC8Record *)) has no
+ * declaration: 175A4.c calls it implicitly, and any truthful declaration
+ * changes func_80026DA4's register-save order. */
 extern void fighter_ResolveBodyOverlap(void);
 extern void func_8002906C(void);
 extern s32 fighter_ProcessWeaponContacts(void);
 extern void fighter_ProcessWeaponBodyHits(s32);
-extern s32 func_8002BEA0(void);
-extern void func_8002C61C(void);
+extern s32 fighter_CalcSeparationErrorAndOpposedOffsets(void);
+extern void fight_UpdateFighterInteractionsAndPointCaches(void);
 extern void math_ScaleVectorInDirectionFrame(s32 *, s16 *, s32 *, s32, s32);
 extern void math_InvertMatrix3x3(void *, void *);
-extern void func_8002F770(s16 *, s32, s32, s32);
-extern s32 func_8002FDB0(Unk80101EC8Record *);
+extern void math_ComposeAxisRotationsAndRewriteAngles(s16 *, s32, s32, s32);
+extern s32 fighter_IsBoneTriangleCrossYPositive(Unk80101EC8Record *);
 extern void object_ResetPool(void);
 extern void object_InitKindQueue(Unk80101EC8Record *);
 extern void object_FreeAttachedObjects(void);
@@ -719,10 +721,10 @@ extern s32 object_PickUpNearby(Unk80101EC8Record *);
 extern void func_80030D04(void);
 extern void object_UpdatePool(void);
 extern void object_ResolveFighterHits(void);
-extern void func_80032040(void);
+extern void fight_ClearBallisticRecords(void);
 extern Unk80104E88Rec *func_80032064(Unk80101EC8Record *, s32);
-extern void func_800321E8(void);
-extern void func_80032314(void);
+extern void fight_UpdateBallisticRecords(void);
+extern void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void);
 extern void fighter_ReadFrameMetadata(Unk80101EC8Record *);
 extern void snd_QueuePositionalSound(s32, s32 *);
 extern void func_80032854(s32, s32, s32 *, s16 *);
@@ -961,19 +963,19 @@ extern s32 eff_LoadImagesAndSetup(s32, s32);
 extern void eff_SelectQuadBuffer(s32);
 extern void func_80061064(s16 *, s32 *);
 extern void func_800611A4(s32 *, s16 *);
-extern void func_80061250(s32 *);
-extern s32 func_8006133C(s32 *);
+extern void eff_StartRecycledCommandWithRoseLight(s32 *);
+extern s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *);
 extern s32 func_800613C8(s32 *);
 extern s32 func_80061454(s32 *);
 extern s32 func_800614E0(s32 *);
-extern void func_8006156C(s32 *);
-extern void func_80061658(s32 *, s32);
+extern void eff_StartRecycledCommandWithPaleRedLight(s32 *);
+extern void eff_StartArgSelectedCommandWithCyanLight(s32 *, s32);
 extern void func_80061710(s32 *, s32);
-extern void func_800617C8(s32 *);
-extern void func_800618B4(s32 *, s16 *);
+extern void eff_StartRecycledCommandWithOrangeLight(s32 *);
+extern void eff_StartRecycledVectorCommandWithRedLight(s32 *, s16 *);
 extern void func_800619A4(s32 *);
 extern void func_800619F0(s32 *);
-extern void func_80061A3C(s32 *, s16, s32, s32);
+extern void eff_StartYawedQuadSlotCommand(s32 *, s16, s32, s32);
 extern void func_80061ACC(s32 *, s16 *);
 extern void func_80061D74(s32 *, s16);
 extern void func_80061EC0(s32 *);

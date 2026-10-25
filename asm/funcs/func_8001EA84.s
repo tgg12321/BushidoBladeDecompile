@@ -27,7 +27,7 @@ glabel func_8001EA84
     /* F2E4 8001EAE4 00000000 */   nop
     /* F2E8 8001EAE8 C8E4000C */  jal        replay_BeginFrame
     /* F2EC 8001EAEC 00000000 */   nop
-    /* F2F0 8001EAF0 1B80000C */  jal        func_8002006C
+    /* F2F0 8001EAF0 1B80000C */  jal        fight_UpdateSeparationAndPairedMoves
     /* F2F4 8001EAF4 00000000 */   nop
     /* F2F8 8001EAF8 826F000C */  jal        pad_ClearStateBits
     /* F2FC 8001EAFC 1000A427 */   addiu     $a0, $sp, 0x10
@@ -37,11 +37,11 @@ glabel func_8001EA84
     /* F30C 8001EB0C 01000424 */  addiu      $a0, $zero, 0x1
     /* F310 8001EB10 C28F000C */  jal        fighter_Update
     /* F314 8001EB14 1000A527 */   addiu     $a1, $sp, 0x10
-    /* F318 8001EB18 87B1000C */  jal        func_8002C61C
+    /* F318 8001EB18 87B1000C */  jal        fight_UpdateFighterInteractionsAndPointCaches
     /* F31C 8001EB1C 00000000 */   nop
     /* F320 8001EB20 5FC3000C */  jal        object_UpdatePool
     /* F324 8001EB24 00000000 */   nop
-    /* F328 8001EB28 7AC8000C */  jal        func_800321E8
+    /* F328 8001EB28 7AC8000C */  jal        fight_UpdateBallisticRecords
     /* F32C 8001EB2C 00000000 */   nop
     /* F330 8001EB30 E8E5000C */  jal        replay_AdvanceFrame
     /* F334 8001EB34 00000000 */   nop

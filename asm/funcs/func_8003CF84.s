@@ -124,7 +124,7 @@ glabel func_8003CF84
     /* 2D954 8003D154 21104600 */  addu       $v0, $v0, $a2
     /* 2D958 8003D158 21186700 */  addu       $v1, $v1, $a3
     /* 2D95C 8003D15C 2400A2AF */  sw         $v0, 0x24($sp)
-    /* 2D960 8003D160 2D86010C */  jal        func_800618B4
+    /* 2D960 8003D160 2D86010C */  jal        eff_StartRecycledVectorCommandWithRedLight
     /* 2D964 8003D164 2800A3AF */   sw        $v1, 0x28($sp)
   .L8003D168:
     /* 2D968 8003D168 1F54010C */  jal        motion_GetPlaybackViewAngles

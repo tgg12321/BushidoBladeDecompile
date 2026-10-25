@@ -232,7 +232,7 @@ const char *D_8008D91C[52] = {
 u8 D_8008D9EC[28] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0};
 
-/* func_80023648's table. */
+/* fighter_UpdateInputSteeredForwardMotion's table. */
 u8 D_8008DA08[72] = {
     0, 1, 2, 1, 2, 1, 0, 0, 2, 1, 1, 2, 0, 1, 2, 0, 1, 1, 2, 0, 2, 1, 1, 2,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 2, 1, 1, 2,
@@ -616,8 +616,9 @@ u8 D_8008EB28[8][2] = {
 /* [unk_0E] -> Unk80101EC8Record.unk_12 */
 u8 D_8008EB38[8] = {51, 52, 53, 54, 55, 56, 51, 51};
 
-/* 3 x 3 s16 angle offsets, [row][col] from the pad bits (func_800233AC,
- * func_80023648). */
+/* 3 x 3 s16 angle offsets, [row][col] from the pad bits
+ * (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow,
+ * fighter_UpdateInputSteeredForwardMotion). */
 s16 D_8008EB40[3][3] = {{-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
 
 /* func_80026DA4's 6 rows (D_80101EC8[0].move_kind mode). */

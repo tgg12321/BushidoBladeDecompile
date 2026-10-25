@@ -34,25 +34,25 @@ glabel fight_Update
     /* F0F4 8001E8F4 00000000 */   nop
     /* F0F8 8001E8F8 C8E4000C */  jal        replay_BeginFrame
     /* F0FC 8001E8FC 00000000 */   nop
-    /* F100 8001E900 1B80000C */  jal        func_8002006C
+    /* F100 8001E900 1B80000C */  jal        fight_UpdateSeparationAndPairedMoves
     /* F104 8001E904 00000000 */   nop
     /* F108 8001E908 21200000 */  addu       $a0, $zero, $zero
-    /* F10C 8001E90C 886F000C */  jal        func_8001BE20
+    /* F10C 8001E90C 886F000C */  jal        fighter_BuildCpuOrMappedPadState
     /* F110 8001E910 1000A527 */   addiu     $a1, $sp, 0x10
     /* F114 8001E914 21200000 */  addu       $a0, $zero, $zero
     /* F118 8001E918 C28F000C */  jal        fighter_Update
     /* F11C 8001E91C 1000A527 */   addiu     $a1, $sp, 0x10
     /* F120 8001E920 01000424 */  addiu      $a0, $zero, 0x1
-    /* F124 8001E924 886F000C */  jal        func_8001BE20
+    /* F124 8001E924 886F000C */  jal        fighter_BuildCpuOrMappedPadState
     /* F128 8001E928 1000A527 */   addiu     $a1, $sp, 0x10
     /* F12C 8001E92C 01000424 */  addiu      $a0, $zero, 0x1
     /* F130 8001E930 C28F000C */  jal        fighter_Update
     /* F134 8001E934 1000A527 */   addiu     $a1, $sp, 0x10
-    /* F138 8001E938 87B1000C */  jal        func_8002C61C
+    /* F138 8001E938 87B1000C */  jal        fight_UpdateFighterInteractionsAndPointCaches
     /* F13C 8001E93C 00000000 */   nop
     /* F140 8001E940 5FC3000C */  jal        object_UpdatePool
     /* F144 8001E944 00000000 */   nop
-    /* F148 8001E948 7AC8000C */  jal        func_800321E8
+    /* F148 8001E948 7AC8000C */  jal        fight_UpdateBallisticRecords
     /* F14C 8001E94C 00000000 */   nop
     /* F150 8001E950 E8E5000C */  jal        replay_AdvanceFrame
     /* F154 8001E954 00000000 */   nop
@@ -90,11 +90,11 @@ glabel fight_Update
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
     /* F1D0 8001E9D0 6A1B010C */  jal        func_80046DA8
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
-    /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
+    /* F1D8 8001E9D8 9873000C */  jal        fight_UpdateModeDisplaysAndMatchProgress
     /* F1DC 8001E9DC 00000000 */   nop
     /* F1E0 8001E9E0 76CD000C */  jal        snd_UpdateStageSounds
     /* F1E4 8001E9E4 00000000 */   nop
-    /* F1E8 8001E9E8 3772000C */  jal        func_8001C8DC
+    /* F1E8 8001E9E8 3772000C */  jal        fight_UpdateDefeatDelayAndModeProgress
     /* F1EC 8001E9EC 00000000 */   nop
     /* F1F0 8001E9F0 2C00BF8F */  lw         $ra, 0x2C($sp)
     /* F1F4 8001E9F4 2800B08F */  lw         $s0, 0x28($sp)

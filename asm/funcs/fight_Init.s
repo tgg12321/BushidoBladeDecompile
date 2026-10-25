@@ -23,7 +23,7 @@ glabel fight_Init
     /* E500 8001DD00 00000000 */   nop
     /* E504 8001DD04 0FC1000C */  jal        object_ResetPool
     /* E508 8001DD08 00000000 */   nop
-    /* E50C 8001DD0C 10C8000C */  jal        func_80032040
+    /* E50C 8001DD0C 10C8000C */  jal        fight_ClearBallisticRecords
     /* E510 8001DD10 00000000 */   nop
     /* E514 8001DD14 0A80043C */  lui        $a0, %hi(D_800A38BA)
     /* E518 8001DD18 BA388484 */  lh         $a0, %lo(D_800A38BA)($a0)
@@ -333,11 +333,11 @@ glabel fight_Init
   .L8001E17C:
     /* E97C 8001E17C 8484000C */  jal        motion_InitStreams
     /* E980 8001E180 02001024 */   addiu     $s0, $zero, 0x2
-    /* E984 8001E184 A084000C */  jal        func_80021280
+    /* E984 8001E184 A084000C */  jal        fighter_AssignMotionSlotAndScanDataIdNibbles
     /* E988 8001E188 21200000 */   addu      $a0, $zero, $zero
-    /* E98C 8001E18C A084000C */  jal        func_80021280
+    /* E98C 8001E18C A084000C */  jal        fighter_AssignMotionSlotAndScanDataIdNibbles
     /* E990 8001E190 01000424 */   addiu     $a0, $zero, 0x1
-    /* E994 8001E194 CD8B000C */  jal        func_80022F34
+    /* E994 8001E194 CD8B000C */  jal        fighter_ConfigureCpuControl
     /* E998 8001E198 00000000 */   nop
     /* E99C 8001E19C 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E9A0 8001E1A0 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -360,7 +360,7 @@ glabel fight_Init
     /* E9E0 8001E1E0 21284000 */  addu       $a1, $v0, $zero
     /* E9E4 8001E1E4 1080013C */  lui        $at, %hi(D_80101EC8 + 0x5E)
     /* E9E8 8001E1E8 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)
-    /* E9EC 8001E1EC A686000C */  jal        func_80021A98
+    /* E9EC 8001E1EC A686000C */  jal        fighter_StartMoveScript
     /* E9F0 8001E1F0 21300000 */   addu      $a2, $zero, $zero
     /* E9F4 8001E1F4 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* E9F8 8001E1F8 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
@@ -403,7 +403,7 @@ glabel fight_Init
     /* EA84 8001E284 01001024 */  addiu      $s0, $zero, 0x1
     /* EA88 8001E288 1080013C */  lui        $at, %hi(D_80101EC8 + 0x5E)
     /* EA8C 8001E28C 261F30A4 */  sh         $s0, %lo(D_80101EC8 + 0x5E)($at)
-    /* EA90 8001E290 A686000C */  jal        func_80021A98
+    /* EA90 8001E290 A686000C */  jal        fighter_StartMoveScript
     /* EA94 8001E294 01000624 */   addiu     $a2, $zero, 0x1
     /* EA98 8001E298 7986000C */  jal        func_800219E4
     /* EA9C 8001E29C 01000424 */   addiu     $a0, $zero, 0x1
@@ -424,7 +424,7 @@ glabel fight_Init
     /* EAD4 8001E2D4 21284000 */  addu       $a1, $v0, $zero
     /* EAD8 8001E2D8 1080013C */  lui        $at, %hi(D_80101EC8 + 0x5E)
     /* EADC 8001E2DC 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)
-    /* EAE0 8001E2E0 A686000C */  jal        func_80021A98
+    /* EAE0 8001E2E0 A686000C */  jal        fighter_StartMoveScript
     /* EAE4 8001E2E4 21300000 */   addu      $a2, $zero, $zero
     /* EAE8 8001E2E8 5D86000C */  jal        motion_GetDefaultVariantScript
     /* EAEC 8001E2EC 01000424 */   addiu     $a0, $zero, 0x1
@@ -434,7 +434,7 @@ glabel fight_Init
     /* EAFC 8001E2FC 1080013C */  lui        $at, %hi(D_80101EC8 + 0x4AA)
     /* EB00 8001E300 722320A4 */  sh         $zero, %lo(D_80101EC8 + 0x4AA)($at)
   .L8001E304:
-    /* EB04 8001E304 A686000C */  jal        func_80021A98
+    /* EB04 8001E304 A686000C */  jal        fighter_StartMoveScript
     /* EB08 8001E308 00000000 */   nop
     /* EB0C 8001E30C 1080103C */  lui        $s0, %hi(D_80101EC8)
     /* EB10 8001E310 C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
@@ -459,7 +459,7 @@ glabel fight_Init
     /* EB58 8001E358 00000000 */   nop
     /* EB5C 8001E35C 5E84010C */  jal        eff_StopCommands
     /* EB60 8001E360 00000000 */   nop
-    /* EB64 8001E364 F976000C */  jal        func_8001DBE4
+    /* EB64 8001E364 F976000C */  jal        fight_WaitForCounterThenClearAndEnableDisplay
     /* EB68 8001E368 00000000 */   nop
     /* EB6C 8001E36C FF000224 */  addiu      $v0, $zero, 0xFF
     /* EB70 8001E370 0A80013C */  lui        $at, %hi(D_800A3768)
@@ -473,7 +473,7 @@ glabel fight_Init
     /* EB90 8001E390 703620A0 */  sb         $zero, %lo(D_800A3670)($at)
     /* EB94 8001E394 0A80013C */  lui        $at, %hi(D_800A3834)
     /* EB98 8001E398 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* EB9C 8001E39C 0872000C */  jal        func_8001C820
+    /* EB9C 8001E39C 0872000C */  jal        fight_QueuePositionalSoundWithRandomAlternate
     /* EBA0 8001E3A0 00000000 */   nop
     /* EBA4 8001E3A4 A376000C */  jal        snd_StartFightCdAudio
     /* EBA8 8001E3A8 00000000 */   nop

@@ -353,9 +353,9 @@ glabel fighter_ResolveBodyOverlap
     /* 195EC 80028DEC 9A2522A4 */  sh         $v0, %lo(D_8010259A)($at)
     /* 195F0 80028DF0 1080013C */  lui        $at, %hi(D_8010214E)
     /* 195F4 80028DF4 4E2122A4 */  sh         $v0, %lo(D_8010214E)($at)
-    /* 195F8 80028DF8 969E000C */  jal        func_80027A58
+    /* 195F8 80028DF8 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 195FC 80028DFC 36FE2426 */   addiu     $a0, $s1, -0x1CA
-    /* 19600 80028E00 969E000C */  jal        func_80027A58
+    /* 19600 80028E00 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 19604 80028E04 82022426 */   addiu     $a0, $s1, 0x282
     /* 19608 80028E08 F7A30008 */  j          .L80028FDC
     /* 1960C 80028E0C 21980000 */   addu      $s3, $zero, $zero
@@ -371,7 +371,7 @@ glabel fighter_ResolveBodyOverlap
     /* 19630 80028E30 10000224 */  addiu      $v0, $zero, 0x10
     /* 19634 80028E34 1080013C */  lui        $at, %hi(D_8010259A)
     /* 19638 80028E38 9A2522A4 */  sh         $v0, %lo(D_8010259A)($at)
-    /* 1963C 80028E3C 969E000C */  jal        func_80027A58
+    /* 1963C 80028E3C 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 19640 80028E40 82022426 */   addiu     $a0, $s1, 0x282
   .L80028E44:
     /* 19644 80028E44 0106022A */  slti       $v0, $s0, 0x601
@@ -435,7 +435,7 @@ glabel fighter_ResolveBodyOverlap
     /* 1971C 80028F1C 10000224 */  addiu      $v0, $zero, 0x10
     /* 19720 80028F20 1080013C */  lui        $at, %hi(D_8010214E)
     /* 19724 80028F24 4E2122A4 */  sh         $v0, %lo(D_8010214E)($at)
-    /* 19728 80028F28 969E000C */  jal        func_80027A58
+    /* 19728 80028F28 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 1972C 80028F2C 36FE2426 */   addiu     $a0, $s1, -0x1CA
   .L80028F30:
     /* 19730 80028F30 0106022A */  slti       $v0, $s0, 0x601

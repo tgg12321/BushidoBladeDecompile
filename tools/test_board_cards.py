@@ -242,9 +242,9 @@ def test_build_board_set_park_reason_carried():
 # --- WIP reader (real func_8002BEA0) ---------------------------------------
 
 def test_read_wip_real_func_8002bea0():
-    wip = bc.read_wip("func_8002BEA0")
+    wip = bc.read_wip("fighter_CalcSeparationErrorAndOpposedOffsets")
     if wip is None:
-        check("SKIP read_wip (func_8002BEA0 WIP absent)", True)
+        check("SKIP read_wip (fighter_CalcSeparationErrorAndOpposedOffsets WIP absent)", True)
         return
     eq("candidate floor", wip["candidate_floor"], 4)
     eq("head floor", wip["head_floor"], 9)

@@ -159,7 +159,7 @@ glabel func_8003B9D0
     /* 2C414 8003BC14 FD06010C */  jal        func_80041BF4
     /* 2C418 8003BC18 00000000 */   nop
   .L8003BC1C:
-    /* 2C41C 8003BC1C F976000C */  jal        func_8001DBE4
+    /* 2C41C 8003BC1C F976000C */  jal        fight_WaitForCounterThenClearAndEnableDisplay
     /* 2C420 8003BC20 00000000 */   nop
     /* 2C424 8003BC24 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2C428 8003BC28 0A80013C */  lui        $at, %hi(D_800A3768)

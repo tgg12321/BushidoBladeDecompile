@@ -33,7 +33,7 @@ glabel func_8001C51C
   .L8001C594:
     /* CD94 8001C594 6089000C */  jal        fighter_Init
     /* CD98 8001C598 00000000 */   nop
-    /* CD9C 8001C59C CD8B000C */  jal        func_80022F34
+    /* CD9C 8001C59C CD8B000C */  jal        fighter_ConfigureCpuControl
     /* CDA0 8001C5A0 00000000 */   nop
     /* CDA4 8001C5A4 3286000C */  jal        motion_ResetVariantIndex
     /* CDA8 8001C5A8 01000424 */   addiu     $a0, $zero, 0x1
@@ -44,7 +44,7 @@ glabel func_8001C51C
     /* CDBC 8001C5BC 21300000 */  addu       $a2, $zero, $zero
     /* CDC0 8001C5C0 1080103C */  lui        $s0, %hi(D_80101EC8 + 0x4AA)
     /* CDC4 8001C5C4 72231026 */  addiu      $s0, $s0, %lo(D_80101EC8 + 0x4AA)
-    /* CDC8 8001C5C8 A686000C */  jal        func_80021A98
+    /* CDC8 8001C5C8 A686000C */  jal        fighter_StartMoveScript
     /* CDCC 8001C5CC 000000A6 */   sh        $zero, 0x0($s0)
     /* CDD0 8001C5D0 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* CDD4 8001C5D4 0A80013C */  lui        $at, %hi(D_800A382E)
@@ -60,7 +60,7 @@ glabel func_8001C51C
     /* CDFC 8001C5FC A2FF0526 */   addiu     $a1, $s0, -0x5E
     /* CE00 8001C600 B2E4000C */  jal        replay_Reset
     /* CE04 8001C604 00000000 */   nop
-    /* CE08 8001C608 A084000C */  jal        func_80021280
+    /* CE08 8001C608 A084000C */  jal        fighter_AssignMotionSlotAndScanDataIdNibbles
     /* CE0C 8001C60C 01000424 */   addiu     $a0, $zero, 0x1
     /* CE10 8001C610 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* CE14 8001C614 1800B08F */  lw         $s0, 0x18($sp)

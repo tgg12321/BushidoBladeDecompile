@@ -16,9 +16,9 @@
  * index-variable and regrouped-condition spellings miss its match-result
  * stores or compares); dummy-index and pointer-alias spellings are refused
  * (Q22/Q23). src/main/9F9C.c declares the same bytes as D_800A3898[2] /
- * D_800A38AA[2] for func_8001CE60, whose player-indexed accesses single bytes
- * do not produce; no single declaration compiles both files with a counting
- * spelling. */
+ * D_800A38AA[2] for fight_UpdateModeDisplaysAndMatchProgress, whose
+ * player-indexed accesses single bytes do not produce; no single declaration
+ * compiles both files with a counting spelling. */
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
@@ -51,7 +51,7 @@ s32 math_ClassifyAbsMagnitude(s32 a0) {
     return v1;
 }
 
-void func_80027334(MotionFrame *arg0) {
+void motion_SetFixedChannelBlock(MotionFrame *arg0) {
     arg0->unk_0C[0x18] = 0x3F5;
     arg0->unk_0C[0x19] = 0x2B6;
     arg0->unk_0C[0x1A] = 0x77A;
@@ -110,7 +110,8 @@ void func_8002738C(s32 a0, s32 a1) {
     }
 }
 
-void func_80027438(Unk80101EC8Record *a0, s32 a1, s16 a2) {
+void fighter_AccumulateOrClearByBoneGroup(
+    Unk80101EC8Record *a0, s32 a1, s16 a2) {
     s16 v1;
     v1 = D_800A38DC;
     if (v1 == 5) {
@@ -239,12 +240,13 @@ void func_80027640(Unk80101EC8Record *arg0) {
     r1 = motion_ResolveMoveData(
         arg0, arg0->cur_move->event_move_table_id, &arg0->move_is_common);
     r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->move_is_common);
-    func_80021A98(idx, r2, arg0->move_is_common);
+    fighter_StartMoveScript(idx, r2, arg0->move_is_common);
     func_80032854(arg0->index, 0x30, &arg0->world_pos.x, 0);
 }
 
-void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 arg2, Tbl8008E194 *a3,
-                   s32 *stack_a2, s32 stack_v1) {
+void fighter_DispatchBoneHitSoundEvent(
+    s32 a0, Unk80101EC8Record *ptr, s32 arg2, Tbl8008E194 *a3, s32 *stack_a2,
+    s32 stack_v1) {
     Unk80101EC8Record *chk_obj;
 
     if (a0 == 1) {
@@ -308,7 +310,7 @@ s32 func_8002798C(Unk80101EC8Record *a0) {
     return ret;
 }
 
-void func_80027A58(Unk80101EC8Record *a0) {
+void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *a0) {
     s16 v1 = a0->unk_86;
     if (v1 == a0->unk_88) {
         if (a0->unk_8A) {
@@ -336,7 +338,7 @@ static inline s32 fighter_ResolveBoneHitTail(
     }
     arg1->pending_move_event = 5;
     func_80032854(var_4, 3, scr, 0);
-    func_80027A58(arg1);
+    fighter_TryDropQueuedHeadAtBone(arg1);
     return 0;
 }
 
@@ -347,7 +349,8 @@ s32 fighter_ResolveBoneHit(
      * unmodified stack parameter gets half the register priority); rec used
      * directly: score 78 (Ruling 12) */
     Tbl8008E194 *var_0; /* the record, read field by field */
-    Tbl8008E194 *var_1; /* the record, passed on to func_800278C0 */
+    /* the record, passed on to fighter_DispatchBoneHitSoundEvent */
+    Tbl8008E194 *var_1;
     s16 *vec;
     s32 *scr;
     s32 var_4;
@@ -399,12 +402,12 @@ s32 fighter_ResolveBoneHit(
     var_8 = arg1->move_kind;
     if (var_8 == 4 || var_8 == 0x14) {
         func_800203B4(arg1, arg2, vec);
-        func_800278C0(arg0, arg1, arg2, var_1, scr, arg6);
+        fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
         return 1;
     }
     if (arg1->unk_0C == 0x1F) {
         func_800203B4(arg1, arg2, vec);
-        func_800278C0(arg0, arg1, arg2, var_1, scr, arg6);
+        fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
         arg1->pending_move_event = 7;
         return 1;
     }
@@ -429,7 +432,7 @@ s32 fighter_ResolveBoneHit(
                 func_80032854(var_4 == 0, 0x26, scr, 0);
                 func_80032854(var_4, 0x26, scr, 0);
                 func_80032854(var_4, 0x2D, scr, 0);
-                func_80027A58(arg1);
+                fighter_TryDropQueuedHeadAtBone(arg1);
             } else {
                 return 0;
             }
@@ -466,7 +469,7 @@ s32 fighter_ResolveBoneHit(
     if (D_800A38DC == 0 && var_4 == 0) {
         func_8002738C(0, arg2);
     }
-    func_800278C0(arg0, arg1, arg2, var_1, scr, arg6);
+    fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
     var_8 = arg1->move_kind;
     if (var_8 == 6 || var_8 == 9) {
         if (flag) {
@@ -476,13 +479,14 @@ s32 fighter_ResolveBoneHit(
         }
         arg1->pending_move_event = arg1->unk_1DA ? 3 : 4;
         func_80032854(var_4, 3, scr, 0);
-        func_80027438(arg1, arg2, 1);
+        fighter_AccumulateOrClearByBoneGroup(arg1, arg2, 1);
         return 0;
     }
     if (arg0 == 1 && var_0->unk0 == 4) {
         s16 kind = arg1->unk_0A;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
-            func_80027438(arg1, arg2, var_0->unkD == 2 ? 2 : 1);
+            fighter_AccumulateOrClearByBoneGroup(
+                arg1, arg2, var_0->unkD == 2 ? 2 : 1);
             arg1->pending_move_event = 0x1B;
             func_80032854(var_4, 3, scr, 0);
             return 0;
@@ -493,7 +497,7 @@ s32 fighter_ResolveBoneHit(
         if (flag) {
             arg1->pending_move_event = thresh > 0x400 ? 6 : 9;
             func_800203B4(arg1, arg2, vec);
-            func_80027A58(arg1);
+            fighter_TryDropQueuedHeadAtBone(arg1);
             return 1;
         }
         return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
@@ -503,7 +507,7 @@ s32 fighter_ResolveBoneHit(
         if (flag) {
             arg1->pending_move_event = thresh > 0x400 ? 7 : 9;
             func_800203B4(arg1, arg2, vec);
-            func_80027A58(arg1);
+            fighter_TryDropQueuedHeadAtBone(arg1);
             return 1;
         }
         return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
@@ -514,7 +518,7 @@ s32 fighter_ResolveBoneHit(
         }
         arg1->pending_move_event = thresh > 0x400 ? 8 : 9;
         func_800203B4(arg1, arg2, vec);
-        func_80027A58(arg1);
+        fighter_TryDropQueuedHeadAtBone(arg1);
         return 1;
     case 6:
     case 7:
@@ -526,7 +530,7 @@ s32 fighter_ResolveBoneHit(
         arg1->pending_move_event = 4;
         arg1->unk_90 = 0;
         func_80032854(var_4, 3, scr, 0);
-        func_80027A58(arg1);
+        fighter_TryDropQueuedHeadAtBone(arg1);
         arg1->unk_8A = 0;
         return 0;
     case 10:
@@ -538,7 +542,7 @@ s32 fighter_ResolveBoneHit(
         }
         arg1->pending_move_event = 5;
         func_80032854(var_4, 3, scr, 0);
-        func_80027A58(arg1);
+        fighter_TryDropQueuedHeadAtBone(arg1);
         return 0;
     case 14:
     case 15:
@@ -553,7 +557,7 @@ s32 fighter_ResolveBoneHit(
         }
         arg1->pending_move_event = 3;
         func_80032854(var_4, 3, scr, 0);
-        func_80027A58(arg1);
+        fighter_TryDropQueuedHeadAtBone(arg1);
         return 0;
     }
 }
@@ -724,7 +728,7 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
     }
 }
 
-void func_8002872C(void) {
+void fighter_TriggerOpponentResponseOnMoveFrame(void) {
     s32 i;
     Unk80101EC8Record *base;
     u16 state;
@@ -743,7 +747,7 @@ void func_8002872C(void) {
             state == 0x12 || state == 0x2A || state == 0xC || state == 0x19) {
             if (D_800A387C < D_800A3134) {
                 base->other->pending_move_event = 0x1C;
-                func_80027A58(base->other);
+                fighter_TryDropQueuedHeadAtBone(base->other);
                 if (base->other->move_kind == 0x25) {
                     base->other->unk_86 = base->other->unk_84;
                 }
@@ -885,14 +889,14 @@ void fighter_ResolveBodyOverlap(void) {
                 func_80032854(0, 0x21, &D_80101EC8[0].world_pos.x, 0);
                 D_80101EC8[1].pending_move_event = 0xF;
                 D_80101EC8[0].pending_move_event = 0xF;
-                func_80027A58(&D_80101EC8[0]);
-                func_80027A58(&D_80101EC8[1]);
+                fighter_TryDropQueuedHeadAtBone(&D_80101EC8[0]);
+                fighter_TryDropQueuedHeadAtBone(&D_80101EC8[1]);
                 var_1 = 0;
             }
         } else {
             if (var_19 < 0x400 && D_80101EC8[1].move_kind == 0x15) {
                 D_80101EC8[1].pending_move_event = 0x10;
-                func_80027A58(&D_80101EC8[1]);
+                fighter_TryDropQueuedHeadAtBone(&D_80101EC8[1]);
             }
             if (var_19 > 0x600 && D_80101EC8[1].move_kind == 0x15) {
                 if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
@@ -909,7 +913,7 @@ void fighter_ResolveBodyOverlap(void) {
     } else if (flag2) {
         if (var_19 < 0x400 && D_80101EC8[0].move_kind == 0x15) {
             D_80101EC8[0].pending_move_event = 0x10;
-            func_80027A58(&D_80101EC8[0]);
+            fighter_TryDropQueuedHeadAtBone(&D_80101EC8[0]);
         }
         if (var_19 > 0x600 && D_80101EC8[0].move_kind == 0x15) {
             if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
@@ -962,7 +966,7 @@ void snd_QueuePositionSequence(Unk80107850Rec *arg0);
  * or a miss with `flag` set and idx not 0, stores the average of unk78.y and
  * the top y in unk100[0].y and returns
  * 1. Returns 0 when the list runs out. */
-s32 func_800290B8(s32 idx, s32 flag, Unk80107850Rec *tbl) {
+s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     PosRec *rec;
     Unk80107850Rec *a;
@@ -1065,17 +1069,18 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
                          Unk80107850Rec *p1, Unk80107850Rec *p2);
 
 /* Blade contact test between the two D_80101EC8 records (called by
- * func_8002C61C; the result goes to D_800A3824). Returns -1 unless both
- * records' +0x3C are at least 4. Borrows the first 16 SPAD->unkA8 points as
- * two 2x2 grids per record (func_800290B8's layout). A record whose +0xE is
- * not 6 or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid func_800290B8
- * hits plays effects 1, 0x26 and 0x2D and sets +0x286 to 0x19 or 0xB; the hit
- * counts only when +0x40 lies within +0xA1..+0xA3 (+0xA2..+0xA4 for grid 1,
- * which is tested only with +0x8C set). Then each record-0 triangle
- * math_TryPrepareTriangleNormalFrame accepts is tested against each record-1
- * triangle (bounding boxes, then func_8002DE20), the rejected ones again with
- * the roles swapped. A hit returns (record-1 grid << 1) | record-0 grid, else
- * -1; the points are restored. */
+ * fight_UpdateFighterInteractionsAndPointCaches; the result goes to
+ * D_800A3824). Returns -1 unless both records' +0x3C are at least 4. Borrows
+ * the first 16 SPAD->unkA8 points as two 2x2 grids per record
+ * (fight_ProcessPositionRecordsInQuad's layout). A record whose +0xE is not 6
+ * or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid
+ * fight_ProcessPositionRecordsInQuad hits plays effects 1, 0x26 and 0x2D and
+ * sets +0x286 to 0x19 or 0xB; the hit counts only when +0x40 lies within
+ * +0xA1..+0xA3 (+0xA2..+0xA4 for grid 1, which is tested only with +0x8C set).
+ * Then each record-0 triangle math_TryPrepareTriangleNormalFrame accepts is
+ * tested against each record-1 triangle (bounding boxes, then func_8002DE20),
+ * the rejected ones again with the roles swapped. A hit returns (record-1 grid
+ * << 1) | record-0 grid, else -1; the points are restored. */
 s32 fighter_ProcessWeaponContacts(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80107850Rec *var_1 = SPAD->unkA8[0];
@@ -1134,8 +1139,8 @@ s32 fighter_ProcessWeaponContacts(void) {
         }
         if (rec->move_frame >= rec->weapon_hit_start_frames[0] &&
             rec->move_frame <= rec->weapon_hit_end_frames[0] &&
-            func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, var_1) !=
-                0) {
+            fight_ProcessPositionRecordsInQuad(
+                0, rec->unk_0E == 4 || rec->unk_0E == 5, var_1) != 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
@@ -1144,7 +1149,7 @@ s32 fighter_ProcessWeaponContacts(void) {
         } else if (rec->unk_8C != 0 &&
                    rec->move_frame >= rec->weapon_hit_start_frames[1] &&
                    rec->move_frame <= rec->weapon_hit_end_frames[1] &&
-                   func_800290B8(1, 0, var_1) != 0) {
+                   fight_ProcessPositionRecordsInQuad(1, 0, var_1) != 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
@@ -2025,7 +2030,7 @@ s32 func_8002BC68(s32 arg0) {
     return (s32)var_t0;
 }
 
-s32 func_8002BEA0(void) {
+s32 fighter_CalcSeparationErrorAndOpposedOffsets(void) {
     s32 temp_a3;
     s32 temp_t1;
     s32 var_a0;
@@ -2128,9 +2133,9 @@ void func_8002C0DC(void) {
 /* Accumulates a character's shadow vectors in the scratchpad record at
  * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points (unk48[k]
  * when bit k of D_800A3824 is set, else unk00[k]); unkB8 sums the matching pair
- * func_8002C61C copied into D_80101EC8[k] (unk_234 / unk_210); the result goes
- * to unk13C. */
-void func_8002C22C(void) {
+ * fight_UpdateFighterInteractionsAndPointCaches copied into D_80101EC8[k]
+ * (unk_234 / unk_210); the result goes to unk13C. */
+void fighter_BlendCurrentAndPreviousContactPoints(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80101EC8Record *rec0 = &D_80101EC8[0];
     Unk80101EC8Record *rec1 = &D_80101EC8[1];
@@ -2203,10 +2208,11 @@ void func_8002C22C(void) {
 
 /* Per-frame update of the two D_80101EC8 records.  The three
  * scratchpad points per character at SPAD->unk00 and the two at SPAD->unk48
- * are copied into each record's unk_210 / unk_234 (func_8002C22C reads them
- * back); unk_18C is the centroid of SPAD->unkA8[k][1..3] and unk_174 the
- * midpoint of SPAD->unkA8[k][4..5]. */
-void func_8002C61C(void) {
+ * are copied into each record's unk_210 / unk_234
+ * (fighter_BlendCurrentAndPreviousContactPoints reads them back); unk_18C is
+ * the centroid of SPAD->unkA8[k][1..3] and unk_174 the midpoint of
+ * SPAD->unkA8[k][4..5]. */
+void fight_UpdateFighterInteractionsAndPointCaches(void) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
      * both players' pending_move_event values are tested before the clash
      * checks select event 0xA; contact resolution also reads and clears
@@ -2224,11 +2230,11 @@ void func_8002C61C(void) {
     } else if (mode == 0x11) {
         func_8002C0DC();
     } else {
-        func_8002872C();
+        fighter_TriggerOpponentResponseOnMoveFrame();
         fighter_ResolveBodyOverlap();
         D_800A3824 = fighter_ProcessWeaponContacts();
         if (D_800A3824 >= 0) {
-            func_8002C22C();
+            fighter_BlendCurrentAndPreviousContactPoints();
         }
         if (D_800A3824 >= 0 &&
             (firstPlayer->unk_AD != 0 || secondPlayer->unk_AD != 0)) {
@@ -2300,14 +2306,15 @@ void func_8002C61C(void) {
         if (saved == -1) {
             object_ResolveFighterHits();
             if (firstPlayer->pending_move_event == saved) {
-                func_80032314();
+                fight_TriggerOpposingFighterEventFromNearBallisticRecords();
             }
         }
     }
 }
 
-extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
-                         s32 threshold, s32 r_sq);
+extern s32 math_TestSphereAgainstPreparedAxialVertexSpan(
+    s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos, s32 threshold,
+    s32 r_sq);
 extern s32 math_TestPreparedTriangleSphere(
     s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
@@ -2366,11 +2373,12 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
                 }
             }
         } else {
-            var_11 = func_8002D320(0, scr, &SPAD->unkA8[id][i], r, rec->unk_0E);
+            var_11 = math_TestSphereAgainstPreparedAxialVertexSpan(
+                0, scr, &SPAD->unkA8[id][i], r, rec->unk_0E);
             if (var_11 != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D320(1, scr, NULL, rec->unk_10, rec->unk_12) !=
-                        0) {
+                    if (math_TestSphereAgainstPreparedAxialVertexSpan(
+                            1, scr, NULL, rec->unk_10, rec->unk_12) != 0) {
                         var_4 |= 1 << i;
                     }
                 }
@@ -2516,8 +2524,9 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     return 1;
 }
 
-s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
-                  s32 threshold, s32 r_sq) {
+s32 math_TestSphereAgainstPreparedAxialVertexSpan(
+    s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos, s32 threshold,
+    s32 r_sq) {
     if (flag == 0) {
         obj->unkF8.vx = pos->x - obj->unk60[0]->x;
         obj->unkF8.vy = pos->y - obj->unk60[0]->y;
@@ -3457,7 +3466,8 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     a1[2] = -ang_z;
 }
 
-void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
+void math_ComposeAxisRotationsAndRewriteAngles(
+    s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *m;
     Unk1F8002B8Rec *scr;
     MATRIX *mat;
@@ -3580,7 +3590,7 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     return ret;
 }
 
-s32 func_8002FDB0(Unk80101EC8Record *arg0) {
+s32 fighter_IsBoneTriangleCrossYPositive(Unk80101EC8Record *arg0) {
     Unk80107850Rec *var_0;
 
     /* The character's points 2 and 3 relative to its point 1, into the
@@ -4379,7 +4389,7 @@ void object_ResolveFighterHits(void) {
     }
 }
 
-void func_80032040(void) {
+void fight_ClearBallisticRecords(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
         D_80104E88[i].unk_00 = 0;
@@ -4429,7 +4439,7 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     return s0;
 }
 
-void func_800321E8(void) {
+void fight_UpdateBallisticRecords(void) {
     Unk1F8002B8_8005344C *scr = &SPAD->unk2B8.v8005344C;
     Unk80104E88Rec *base = D_80104E88;
     s32 i;
@@ -4456,7 +4466,7 @@ void func_800321E8(void) {
     } while (i < 4);
 }
 
-void func_80032314(void) {
+void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
     Unk80104E88Rec *rec = D_80104E88;
     s32 i;
     for (i = 0; i < 4; i++, rec++) {
@@ -4679,31 +4689,31 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     switch (arg1) {
     case 4:
         if (D_800A38DC == 2 && D_800A389A == 0) {
-            func_800617C8(arg2);
+            eff_StartRecycledCommandWithOrangeLight(arg2);
             break;
         }
         if (D_800A38DC == 5) {
-            func_800617C8(arg2);
+            eff_StartRecycledCommandWithOrangeLight(arg2);
             break;
         }
-        func_800618B4(arg2, arg3);
+        eff_StartRecycledVectorCommandWithRedLight(arg2, arg3);
         break;
     case 3:
-        func_80061250(arg2);
+        eff_StartRecycledCommandWithRoseLight(arg2);
         break;
     case 2:
-        func_80061658(arg2, arg0);
+        eff_StartArgSelectedCommandWithCyanLight(arg2, arg0);
         break;
     case 15:
         func_80061710(arg2, arg0);
         break;
     case 1:
-        func_8006156C(arg2);
+        eff_StartRecycledCommandWithPaleRedLight(arg2);
         break;
     case 5:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = func_8006133C(arg2);
+        D_800A3910 = eff_StartCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 6:
         snd_QueuePositionalSound(0x3C, arg2);
@@ -4848,8 +4858,9 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[0] = obj->unk_198[0].x;
                 pos[1] = obj->unk_1B0[0];
                 pos[2] = obj->unk_198[0].z;
-                func_80061A3C(pos, obj->unk_1BA,
-                              D_8008EBE0[D_8008E5A8[obj->unk_0C]], obj->index);
+                eff_StartYawedQuadSlotCommand(
+                    pos, obj->unk_1BA, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
+                    obj->index);
                 if ((0x60 >> obj->unk_B1) & 1) {
                     func_80032854(obj->index, 9, pos, 0);
                 }
@@ -4870,8 +4881,9 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[0] = obj->unk_198[1].x;
                 pos[1] = obj->unk_1B0[1];
                 pos[2] = obj->unk_198[1].z;
-                func_80061A3C(pos, obj->unk_1C2,
-                              D_8008EBE0[D_8008E5A8[obj->unk_0C]], obj->index);
+                eff_StartYawedQuadSlotCommand(
+                    pos, obj->unk_1C2, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
+                    obj->index);
                 if ((0x60 >> obj->unk_B1) & 1) {
                     func_80032854(obj->index, 9, pos, 0);
                 }

@@ -304,7 +304,7 @@ void func_800611A4(s32 *arg0, s16 *arg1) {
     D_800A3464 = 0xFFFFEF;
 }
 
-void func_80061250(s32 *arg0) {
+void eff_StartRecycledCommandWithRoseLight(s32 *arg0) {
     s32 *p;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = arg0;
@@ -327,7 +327,7 @@ void func_80061250(s32 *arg0) {
     D_800A3464 = 0xFF0060;
 }
 
-s32 func_8006133C(s32 *a0) {
+s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = a0;
@@ -383,7 +383,7 @@ s32 func_800614E0(s32 *a0) {
     return 5;
 }
 
-void func_8006156C(s32 *arg0) {
+void eff_StartRecycledCommandWithPaleRedLight(s32 *arg0) {
     s32 *p;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = arg0;
@@ -406,7 +406,7 @@ void func_8006156C(s32 *arg0) {
     D_800A3464 = 0xFF8080;
 }
 
-void func_80061658(s32 *arg0, s32 arg1) {
+void eff_StartArgSelectedCommandWithCyanLight(s32 *arg0, s32 arg1) {
     s32 *p;
 
     D_800A3468 = &g_eff_command_block;
@@ -456,7 +456,7 @@ void func_80061710(s32 *arg0, s32 arg1) {
     D_800A3464 = 0x10FF10;
 }
 
-void func_800617C8(s32 *arg0) {
+void eff_StartRecycledCommandWithOrangeLight(s32 *arg0) {
     s32 *p;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = arg0;
@@ -479,7 +479,7 @@ void func_800617C8(s32 *arg0) {
     D_800A3464 = 0xC06013;
 }
 
-void func_800618B4(s32 *arg0, s16 *arg1) {
+void eff_StartRecycledVectorCommandWithRedLight(s32 *arg0, s16 *arg1) {
     s32 *p;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = arg0;
@@ -519,7 +519,7 @@ void func_800619F0(s32 *a0) {
     eff_StartCommand();
 }
 
-void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
+void eff_StartYawedQuadSlotCommand(s32 *a0, s16 a1, s32 a2, s32 a3) {
     s16 sp[4];
 
     D_800A3468 = &g_eff_command_block;
@@ -1240,43 +1240,43 @@ s32 func_80063084(void) {
     return D_800A3448 != 0;
 }
 
-u8 func_80063BD0(s32);
+u8 eff_AllocateOrRecycleYawedQuadSlot(s32);
 
 u8 func_80063AF0(void) {
     g_eff_command_phase[0] = 1;
     D_800A345C[0] = (D_800A3468->unk00.w >> 17) & 3;
-    return func_80063BD0(0);
+    return eff_AllocateOrRecycleYawedQuadSlot(0);
 }
 
 u8 func_80063B34(void) {
     g_eff_command_phase[1] = 1;
     D_800A345C[1] = (D_800A3468->unk00.w >> 17) & 3;
-    return func_80063BD0(1);
+    return eff_AllocateOrRecycleYawedQuadSlot(1);
 }
 
-s32 func_80063E10(s32);
+s32 eff_DrawYawedSlotQuads(s32);
 void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx);
 
 u8 func_80063B78(void) {
     *D_800A3480 = D_800A345C[0];
-    return func_80063E10(0);
+    return eff_DrawYawedSlotQuads(0);
 }
 
 u8 func_80063BA4(void) {
     *D_800A3480 = D_800A345C[1];
-    return func_80063E10(1);
+    return eff_DrawYawedSlotQuads(1);
 }
 
 extern SVECTOR D_800F1000[][10];
 
-/* func_80063BD0 -- slot allocator for lane `idx`: D_800A344C[idx] counts live
- * entries, and D_800A3454[idx] is the per-slot in-use bitmask. While fewer
- * than 10 entries are live, take the lowest free bit, mark it, and fill that
- * slot's SVECTOR (D_800F1000[idx][slot]) and 3-word record
- * (D_800F0EC8[idx][slot]) from D_800A3478 / D_800A347C. Once the lane is
+/* eff_AllocateOrRecycleYawedQuadSlot -- slot allocator for lane `idx`:
+ * D_800A344C[idx] counts live entries, and D_800A3454[idx] is the per-slot
+ * in-use bitmask. While fewer than 10 entries are live, take the lowest free
+ * bit, mark it, and fill that slot's SVECTOR (D_800F1000[idx][slot]) and 3-word
+ * record (D_800F0EC8[idx][slot]) from D_800A3478 / D_800A347C. Once the lane is
  * full, the counter wraps through 10..19 and slots are overwritten in
  * rotation. */
-u8 func_80063BD0(s32 idx) {
+u8 eff_AllocateOrRecycleYawedQuadSlot(s32 idx) {
     s32 mask;
     s32 i;
 
@@ -1305,12 +1305,12 @@ u8 func_80063BD0(s32 idx) {
     return 1;
 }
 
-/* Draw the live slots (up to 10, see func_80063BD0) of `arg0`: per slot whose
- * bit is set in D_800A3454[arg0], emit one textured POLY_FT4 billboard at the
- * slot's position (relative to *D_800A3470) through the composite of
- * D_800A3474 and the slot's matrix, keep it when its depth is in range, then
- * link every new quad into the OT at its depth. Returns 1. */
-s32 func_80063E10(s32 arg0) {
+/* Draw the live slots (up to 10, see eff_AllocateOrRecycleYawedQuadSlot) of
+ * `arg0`: per slot whose bit is set in D_800A3454[arg0], emit one textured
+ * POLY_FT4 billboard at the slot's position (relative to *D_800A3470) through
+ * the composite of D_800A3474 and the slot's matrix, keep it when its depth is
+ * in range, then link every new quad into the OT at its depth. Returns 1. */
+s32 eff_DrawYawedSlotQuads(s32 arg0) {
     extern SVECTOR D_8009BBE4;
     extern SVECTOR D_8009BBEC;
     extern SVECTOR D_8009BBF4;
@@ -1605,7 +1605,7 @@ s32 func_800646E8(void) {
     return 1;
 }
 
-void func_80064E90(void) {
+void eff_InitCosineScaledQuad(void) {
     D_800F0CA0[0].unk0 = D_800A347C[0];
     D_800F0CA0[0].unk4 = D_800A347C[1];
     D_800F0CA0[0].unk8 = D_800A347C[2];
@@ -1647,7 +1647,7 @@ s32 func_80064FB4(void) {
     return 1;
 }
 
-s32 func_80065000(void) {
+s32 eff_InitRateSelectedCosineScaledQuad(void) {
     D_800F0CA0[5].unk0 = D_800A347C[0];
     D_800F0CA0[5].unk4 = D_800A347C[1];
     D_800F0CA0[5].unk8 = D_800A347C[2];
@@ -1731,7 +1731,7 @@ void func_800652AC(void) {
 
 u8 eff_DrawAnimatedQuads(s32);
 
-u8 func_800652F4(void) {
+u8 eff_DrawAndAdvanceCosineScaledQuad(void) {
     u8 v0 = eff_DrawAnimatedQuads(0);
     s16 *p = &D_800F0BA8[0];
     s16 v1 = *p;
@@ -1791,7 +1791,7 @@ u8 func_80065434(void) {
     return 0;
 }
 
-u8 func_80065484(void) {
+u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
     unsigned int temp_v1;
     u8 v0;
     *D_800A3484 = D_800A3440;
@@ -1921,12 +1921,12 @@ u8 func_800657B0(void) {
 }
 
 /* Shared draw routine of the per-mode effect wrappers
- * (func_800652F4..func_800657B0, mode 0..0x11): projects this mode's D_800F0CA0
- * position record through the current camera, picks the texture/colour and quad
- * size from the mode and its D_800F0BA8 timer, shapes the four corners (switch
- * 2) and links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the
- * paired mode (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by
- * `arg0 < 9`, so modes 10/11 draw once. */
+ * (eff_DrawAndAdvanceCosineScaledQuad..func_800657B0, mode 0..0x11): projects
+ * this mode's D_800F0CA0 position record through the current camera, picks the
+ * texture/colour and quad size from the mode and its D_800F0BA8 timer, shapes
+ * the four corners (switch 2) and links one POLY_FT4 into the OT. Modes 6/7
+ * re-run the body for the paired mode (arg0 + 2, i.e. 8/9) via `goto again`;
+ * the re-run is guarded by `arg0 < 9`, so modes 10/11 draw once. */
 u8 eff_DrawAnimatedQuads(s32 arg0) {
     extern s16 D_800A3834;
     extern s32 ReadGeomScreen(void);

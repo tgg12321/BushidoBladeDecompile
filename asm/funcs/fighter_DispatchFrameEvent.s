@@ -150,7 +150,7 @@ glabel fighter_DispatchFrameEvent
     /* 23680 80032E80 0980013C */  lui        $at, %hi(D_8008EBE0)
     /* 23684 80032E84 21082200 */  addu       $at, $at, $v0
     /* 23688 80032E88 E0EB268C */  lw         $a2, %lo(D_8008EBE0)($at)
-    /* 2368C 80032E8C 8F86010C */  jal        func_80061A3C
+    /* 2368C 80032E8C 8F86010C */  jal        eff_StartYawedQuadSlotCommand
     /* 23690 80032E90 1000A427 */   addiu     $a0, $sp, 0x10
     /* 23694 80032E94 B1000392 */  lbu        $v1, 0xB1($s0)
     /* 23698 80032E98 60000224 */  addiu      $v0, $zero, 0x60
@@ -219,7 +219,7 @@ glabel fighter_DispatchFrameEvent
     /* 2378C 80032F8C 0980013C */  lui        $at, %hi(D_8008EBE0)
     /* 23790 80032F90 21082200 */  addu       $at, $at, $v0
     /* 23794 80032F94 E0EB268C */  lw         $a2, %lo(D_8008EBE0)($at)
-    /* 23798 80032F98 8F86010C */  jal        func_80061A3C
+    /* 23798 80032F98 8F86010C */  jal        eff_StartYawedQuadSlotCommand
     /* 2379C 80032F9C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 237A0 80032FA0 B1000392 */  lbu        $v1, 0xB1($s0)
     /* 237A4 80032FA4 60000224 */  addiu      $v0, $zero, 0x60
