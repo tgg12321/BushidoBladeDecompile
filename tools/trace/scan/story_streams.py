@@ -16,7 +16,8 @@ fighter_Init's arg2 for fighter 1, 9F9C.c:1796):
   op 17 (3): func_8003B484, unk_4[1] = op0, unk_4[3] = op1,
         unk_A[1] = op2
   op 3  (2): unk_4[1] = op0, unk_4[3] = op1
-  op 2  (29): D_800A3894 = the operands, func_8003B3A4(operands + 1)
+  op 2  (29): D_800A3894 = the operands, func_8003B2C8 (unk_4[0] = op0,
+        the old unk_4[0] kept in D_800A3836), func_8003AF40(0), func_8003B3A4(operands + 1)
         (0xE or 0x1D as op 16), then as op 18; after that fight
         func_8003B484(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
         unk_4[1] = operand 6, shown as "0x0E|0x1D then 0xNN"
@@ -121,7 +122,7 @@ def main(argv=None):
     table = read(exe, table_addr, 32 * 4)
     starts = sorted({int.from_bytes(table[i * 4:i * 4 + 4], "little")
                      for i in range(32)})
-    # The streams are contiguous and end at the table (2B344.c:2755).
+    # The streams are contiguous and end at the table (2B344.c:2763).
     ends = dict(zip(starts, starts[1:] + [table_addr]))
     out = sys.stdout
     out.write("\t".join(COLUMNS) + "\n")
