@@ -12,7 +12,8 @@
   "evidence": [
     "docs/naming/runtime/training-hitmap-1/spec.json",
     "docs/naming/runtime/lib-training-ninja-1/spec.json",
-    "docs/naming/runtime/fighter-values-training-ninja-1/spec.json"
+    "docs/naming/runtime/fighter-values-training-ninja-1/spec.json",
+    "docs/naming/runtime/fighter-polls-training-ninja-1/spec.json"
   ],
   "use": [
     "boot"
