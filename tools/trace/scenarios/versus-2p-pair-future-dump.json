@@ -1,5 +1,5 @@
 {
-  "description": "controlled stage pair: the versus-2p flow, stage cursor DOWN DOWN (path of versus-2p-future-dump), CROSS at 7840; no fight input: both fighters stand idle to 10200. Same script for every stage but the stage_select cursor presses",
+  "description": "controlled stage pair: the versus-2p flow, stage cursor DOWN DOWN (path of versus-2p-future-dump), CROSS at 7840; no fight input: both fighters stand idle to 10200 (fight_tail: the last 50 frames, so a fight hit is followed by more run on the other side of a pair). Same script for every stage but the stage_select cursor presses",
   "covers": [
     "mode:vs_2p",
     "menu:stage_select",
@@ -24,7 +24,8 @@
   ],
   "phases": [
     "7840:t_load",
-    "8700:fight"
+    "8700:fight",
+    "10150:fight_tail"
   ],
   "shots": [
     "7299:stage_select.7299",
@@ -34,6 +35,8 @@
     "8700:fight.first",
     "9000:fight.9000",
     "9500:fight.9500",
-    "10199:fight.last"
+    "10149:fight.last",
+    "10150:fight_tail.first",
+    "10199:fight_tail.last"
   ]
 }
