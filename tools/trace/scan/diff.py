@@ -191,7 +191,10 @@ def capture_start(path):
     for keys in [("start", "kind"), ("disc", "cue")] + SAME_INPUTS:
         scalar = keys[-1] in ("kind", "version")
         field = ".".join(keys) + ("" if scalar or keys[-1] == "sha1_at_start" else ".sha1")
-        value = manifest_part(manifest, keys)
+        try:
+            value = manifest_part(manifest, keys)
+        except (AttributeError, TypeError):
+            value = None
         hashes = value if isinstance(value, list) else [value]
         if not value or (not scalar and any(
                 not re.fullmatch(r"[0-9a-fA-F]{40}", str(h)) for h in hashes)) or (
@@ -203,7 +206,9 @@ def capture_start(path):
     if fields.get("start.kind") != "power-on: emulator held at the reset vector until armed":
         unknown.append("start (unsupported kind)")
         fields["start.record"] = manifest.get("start")
-    fields["emulator.headless"] = manifest.get("emulator", {}).get("headless", False)
+    emulator = manifest.get("emulator", {})
+    fields["emulator.headless"] = (emulator.get("headless", False)
+                                   if isinstance(emulator, dict) else None)
     if not isinstance(fields["emulator.headless"], bool):
         unknown.append("emulator.headless")
     if not manifest_path.is_file():
@@ -449,7 +454,13 @@ def render(matrix):
                     reasons["multi_value_capture"] = multi_value
                 reasons.update(confounds(axis, hits, zeros, tags, matrix_axes))
                 if axis == "stage":
-                    reasons.update(divergence_reasons(phases_hit, zeros, phases, pair=False))
+                    for c in sorted(hits | zeros):
+                        for key, value in recorded[c][1].items():
+                            if isinstance(value, dict):
+                                reasons.setdefault(key, {}).update(value)
+                            else:
+                                reasons.setdefault(key, []).extend(value)
+                    reasons.update(divergence_reasons(phases_hit, zeros, pair_phases, pair=False))
             for key, status in (("outside_partial", "?"), ("outside_not_targeted", "-")):
                 unknown = sorted(c for c in outside if states[c][0] == status)
                 if unknown:

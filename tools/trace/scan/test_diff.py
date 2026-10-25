@@ -662,6 +662,22 @@ class DiffTest(unittest.TestCase):
         row = next(r for r in self.rows() if r["kind"] == "pair")
         self.assertEqual(self.reasons(row)["start_state_differs"]["emulator.headless"], [False, True])
 
+    def test_pair_invalid_emulator_is_unknown(self):
+        self.cells = ["p:1", "p:2", ".", "fight:1"]
+        for emulator in (None, "invalid", [], 1):
+            with self.subTest(emulator=emulator):
+                manifest = self.provenance("b")
+                manifest["emulator"] = emulator
+                self.write_json(self.matrix.parent / "b/capture.manifest.json", manifest)
+                fields, unknown, _ = diff.capture_start(self.matrix.parent / "b")
+                self.assertIsNone(fields["emulator.headless"])
+                for field in ("emulator.headless", "emulator.exe.sha1",
+                              "emulator.main.sha1", "emulator.version"):
+                    self.assertIn(field, unknown)
+                row = next(r for r in self.rows() if r["kind"] == "pair")
+                self.assertEqual(row["inconclusive"], "1")
+                self.assertIn("b:emulator.headless", self.reasons(row)["start_state_unknown"])
+
     def test_pair_unsupported_savestate_record_is_not_accepted(self):
         self.cells = ["p:1", "p:2", ".", "fight:1"]
         for capture in ("a", "a2", "b"):
@@ -706,6 +722,32 @@ class DiffTest(unittest.TestCase):
         self.verified_specs()
         row = next(r for r in self.rows() if r["kind"] == "pair")
         self.assertEqual(row["inconclusive"], "0")
+
+    def test_stage_only_x_uses_recorded_spec_despite_tsv_drift(self):
+        self.verified_specs()
+        self.scenarios = [(c, s, "menu:top,mode:x,stage:" + ("c" if c == "c" else "a"))
+                          for c, s, _ in self.scenarios]
+        self.cells = ["load:1", "load:2", "load:3", "."]
+        self.assertEqual(self.reasons(self.only("stage:a")), {})
+        for missing in (False, True):
+            with self.subTest(missing=missing):
+                path = self.matrix.parent / "c/phases.tsv"
+                if missing:
+                    path.unlink()
+                else:
+                    # TSV claims identical inputs, but the recorded specs diverge
+                    # in choose, before the hit in load.
+                    self.phase_table("c", [("choose", "1:LEFT"), ("load", "")])
+                row = self.only("stage:a")
+                reasons = self.reasons(row)
+                self.assertEqual(row["inconclusive"], "1")
+                self.assertEqual(reasons["phases_tsv_differs_from_spec"],
+                                 {"c": ["choose", "load", "tail"]} if missing else
+                                 {"c": ["choose"]})
+                self.assertNotIn("hit_at_or_before_divergence", reasons)
+                self.assertNotIn("no_comparable_zero_capture", reasons)
+                if missing:
+                    self.assertEqual(reasons["phases_missing"], ["c"])
 
     def test_pair_uses_same_inputs_tool_and_build_hashes(self):
         self.cells = ["p:1", "p:2", ".", "fight:1"]
