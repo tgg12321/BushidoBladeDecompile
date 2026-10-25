@@ -88,10 +88,10 @@ Cited by function name.
   the row index with that result, applies the row's `opt[].mode` to
   `D_800A3524->unk20_3`, and on Cross (with per-player conditions on the
   row's `state`) returns that `state`; Triangle returns -2, otherwise -1.
-- `menu_HandleToggleChoices` steps the bits 10-12 cursor; in positions 0..2 the
+- `menu_HandleOptionMenuChoices` steps the bits 10-12 cursor; in positions 0..2 the
   low-half result toggles `D_800A3524->unk20_0..2`, and Cross advances the
   cursor; positions 3, 4, 5 return 2, 3, 1 on Cross, and Triangle returns 1.
-- `menu_HandleReturningChoices` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
+- `menu_HandleMemCardChoices` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
   (position 2 also advances the bits 10-12 cursor); Triangle returns 1.
 
 ## The selection screen (src/main/5ED34.c)

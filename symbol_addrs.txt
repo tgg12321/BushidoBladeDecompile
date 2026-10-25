@@ -888,8 +888,8 @@ D_800A32BC = 0x800A32BC; /* set to 0xA by eff_StartCommand when the command word
 is_pad_init = 0x8009BD80; /* PAD-initialised flag: 1 by PAD_init / InitPAD, 0 by StopPAD; set by SetInitPadFlag, returned by ReadInitPadFlag (libapi/pad.c:15-68) */  /* data-wave 2026-10-09: was g_intro_get_set_value */
 D_800A3304 = 0x800A3304; /* incremented & ANDed with 1 to select alternating buffer in gpu_GetScrollingSpritePrimBuffer */  /* data-wave 2026-10-08: was g_intro_dbuf_parity */
 _ctype__plus_0x1 = 0x8009BD8D; /* 256-byte char-class lookup; bit 1 = is_upper, bit 2 = is_lower */  /* data-wave 2026-09-24: was g_char_class_table */
-D_8009BD3C = 0x8009BD3C; /* D_8009BD24.unk17[1]: edited in place (596CC.c:1939-1941), loaded from unk1D[1] by menu_RunFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_b */
-D_8009BD41 = 0x8009BD41; /* D_8009BD24.unk1D[0]: copied into unk17[0] on entering state 4, written back from it when menu_UpdateRowBitMenu returns 1 (menu_RunFlowStateWithRowBitEdit) */  /* data-wave 2026-10-08: was g_menu_screen_live_byte_a */
+D_8009BD3C = 0x8009BD3C; /* D_8009BD24.unk17[1]: edited in place (596CC.c:1939-1941), loaded from unk1D[1] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_b */
+D_8009BD41 = 0x8009BD41; /* D_8009BD24.unk1D[0]: copied into unk17[0] on entering state 4, written back from it when menu_UpdateRowBitMenu returns 1 (menu_RunOptionModeFlowStateWithRowBitEdit) */  /* data-wave 2026-10-08: was g_menu_screen_live_byte_a */
 D_8009BD42 = 0x8009BD42; /* data-wave 2026-10-08: was g_menu_screen_live_byte_b */
 D_8009BD68 = 0x8009BD68; /* holds 0x1F801070 (I_STAT); [1] = I_MASK, where StartRCnt / StopRCnt set and clear a counter's bit (counter.c:61, :68) */  /* data-wave 2026-10-09: was g_irq_event_struct_ptr */
 D_8009BD6C = 0x8009BD6C; /* holds 0x1F801100, the root-counter registers (count / mode / target, 16-byte stride; counter.c:20-77) */  /* data-wave 2026-10-09: was g_irq_event_slots_3x16 */
@@ -984,7 +984,7 @@ def_cbread = 0x80080064; /* MISNAMED: not motion-pre-calc; duplicate of 0x800800
 // RENAME 0x80077B20: retired name 'func_80077B20' — preserved note: MISNAMED: not gauge init; 1-line D_800A35E4 = 1
 func_80077D00 = 0x80077D00; /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
 func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
-func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateReturningChoices(a0, a1) */
+func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateMemCardChoices(a0, a1) */
 func_80077A60 = 0x80077A60; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateConfirmMenu() */
 func_80077AC0 = 0x80077AC0; /* 1-line wrapper of menu_StepSelScreen() */
 func_800444BC = 0x800444BC; /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
@@ -1319,8 +1319,8 @@ mode_handler_14_NoOp = 0x80035430; /* empty body -- no-op */
 D_800A33CA = 0x800A33CA; /* vertical angle (single_game_getEnemyCharId(x, z) result) */  /* data-wave 2026-09-29: was g_sound_3d_angle_v */
 D_800A350E = 0x800A350E; /* D_800A350C[1]: pad_StepOffsetsGetDirectionEvents's second-axis step (see D_800A350C) */  /* data-wave 2026-10-08: was g_menuctl_pad_result_1 */
 D_800A3512 = 0x800A3512; /* only a zero store found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
-D_8009BD3B = 0x8009BD3B; /* D_8009BD24.unk17[0]: edited in place (596CC.c:1939-1941), loaded from unk1D[0] by menu_RunFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_a */
-D_8009BD3D = 0x8009BD3D; /* D_8009BD24.unk17[2]: edited in place (596CC.c:1939-1941), loaded from unk1D[2] by menu_RunFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_c */
+D_8009BD3B = 0x8009BD3B; /* D_8009BD24.unk17[0]: edited in place (596CC.c:1939-1941), loaded from unk1D[0] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_a */
+D_8009BD3D = 0x8009BD3D; /* D_8009BD24.unk17[2]: edited in place (596CC.c:1939-1941), loaded from unk1D[2] by menu_RunOptionModeFlowStateWithRowBitEdit */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_c */
 D_8009BD43 = 0x8009BD43; /* data-wave 2026-10-08: was g_menu_screen_live_byte_c */
 D_800A33EA = 0x800A33EA; /* element [1] of the D_800A33E8 pair; -1 = unset */  /* data-wave 2026-10-08: was g_gnd_target_id_1 */
 D_800A3450 = 0x800A3450; /* data-wave 2026-10-08: was g_satan1_gauge_state_b */
@@ -1395,7 +1395,7 @@ D_800A3550 = 0x800A3550; /* shorts; full-screen tile intensity ramp */  /* data-
 D_800A34F8 = 0x800A34F8; /* packed cursor state: bits 0-3, 10-12 and 13-15 step over 8, 6 and 3 entries (596CC.c:303-326, :1325-1339, :1435-1448) */  /* data-wave 2026-10-09: was g_menuctl_state_bitfield */
 D_800A34FC = 0x800A34FC; /* Unk800A34FCRec *: menu_LoadResourcesInitStateSelectFirstEnabledRow stores gpu_InitPrimBufferPair(..., D_800A351C)'s result (596CC.c:71-74); read throughout 596CC.c */  /* data-wave 2026-10-09: was g_menuctl_mode_state_ptr */
 D_800A350C = 0x800A350C; /* s16[2]: pad_StepOffsetsGetDirectionEvents's per-axis step (its arg3): set to 1 / -1 / -6 / 0 and added to D_800A34FC->unk_0C[i]; zeroed by menu_LoadResourcesInitStateSelectFirstEnabledRow with D_800A3510 / D_800A3512 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_buf */
-D_800A3514 = 0x800A3514; /* counter: += 1 per call of menu_UpdateToggleChoices / C168 / D338 / D74C / E068 and per cursor-row draw in menu_DrawMaskedRowList; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
+D_800A3514 = 0x800A3514; /* counter: += 1 per call of menu_UpdateOptionMenuChoices / C168 / D338 / D74C / E068 and per cursor-row draw in menu_DrawMaskedRowList; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
 D_800A3444 = 0x800A3444; /* live mask of 16 effect slots: eff_SpawnJitteredBillboards claims a slot (1 << slot), func_800646E8 draws it and clears its bit */  /* data-wave 2026-10-08: was g_particle_slot_bitmap */
 cb_read = 0x80082050; /* passed to CdReadyCallback by cd_read_retry (cdread.c:142) */  /* data-wave 2026-09-24: was g_cdrom_callback_b_obj */
 D_800A33F4 = 0x800A33F4; /* pointer to the Work_80053E9C cast work area in use (&D_800EF9F8 or arg4: func_80053304 / func_8005344C / collision_TestSegment / collision_TestSegmentWithWork) */  /* data-wave 2026-10-08: was g_effect_active_ptr */
@@ -1418,7 +1418,7 @@ D_800A3510 = 0x800A3510; /* only two zero stores found */  /* data-wave 2026-10-
 D_800A3518 = 0x800A3518; /* counter bumped on every gpu_AdvanceBufferCounterAndBuildDrawContext call; its low bit picks the g_gpu_db buffer */  /* data-wave 2026-10-08: was g_menuctl_init_state */
 D_800A351C = 0x800A351C; /* Unk8006E49CRec *: menu_LoadResourcesInitStateSelectFirstEnabledRow's arg0 (596CC.c:56), passed to gpu_InitPrimBufferPair (:71); gpu_GetPrimBufferAndRefreshStrip returns &D_800A351C[a0] (:172) */  /* data-wave 2026-10-09: was g_menuctl_arg0_saved */
 D_800A3528 = 0x800A3528; /* three-way cursor (wraps mod 3) moved by pad_StepOffsetsGetDirectionEvents's decoded input */  /* data-wave 2026-10-08: was g_menuctl_call_counter */
-D_800A35E4 = 0x800A35E4; /* state (0..5) of the handler menu_RunFlowStateWithRowBitEdit over D_8009BD24; = 0 by InitRowMenuBlackBgResetFlow..menu_ResetFlowBackgroundAndConfirmCursor, = 1 by SetFlowStateOne */  /* data-wave 2026-10-08: was g_menu_screen_result_pending */
+D_800A35E4 = 0x800A35E4; /* state (0..5) of the handler menu_RunOptionModeFlowStateWithRowBitEdit over D_8009BD24; = 0 by InitRowMenuBlackBgResetFlow..menu_ResetFlowBackgroundAndConfirmCursor, = 1 by SetFlowStateOne */  /* data-wave 2026-10-08: was g_menu_screen_result_pending */
 D_800A3608 = 0x800A3608; /* frame count (StepScrollingSpriteDisplay +1, returns >= 0xB40); gpu_DrawScrollingAndDelayedSheets scrolls by it (s.y = -D), tests >= 0xAAA, and from >= 0xB04 fades over 15 frames (color = 0x80 - (D - 0xB04)*128/15) */  /* data-wave 2026-10-08: was g_intro_fade_phase */
 D_800A35F0 = 0x800A35F0; /* state value (init 0; > 0 = active) */  /* data-wave 2026-10-08: was g_menu_screen_b_active */
 D_800A35F4 = 0x800A35F4; /* arg passed to gpu_InitPrimBufferPair */  /* data-wave 2026-10-08: was g_menu_screen_b_state_arg */
