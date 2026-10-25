@@ -16,6 +16,11 @@ wall-clock t since arming (not a frame), the phase when the run had a script,
 and len from the first spec poll with the same `at` (gdbtrace's default 4 when
 it sets none), else len(hex_string)//2. Polls never touch coverage.
 Stub leaf IDs include their parent directory to distinguish baseline captures.
+A capture that is not q124_complete is refused, except a non-baseline leaf of
+a -stub-, -poke- or -knockout- family whose manifest records q124_complete:
+false (a compare set keeps its failed runs, reported NOT COMPARABLE): it adds
+sources rows only, q124_complete false, and no values, polls or coverage. A
+family baseline must be complete.
 An events capture (breakpoints, watch or polls, no hit-map declaration and no
 hitmap.tsv) adds sources rows only: no coverage column, and its phases.tsv is
 hashed but not validated; the same holds for the phases.tsv of such a capture
@@ -121,7 +126,15 @@ def load_capture(path):
         return data.decode("utf-8")
 
     manifest = json.loads(read("capture.manifest.json"))
-    if manifest.get("q124_complete") is not True:
+    try:
+        relative = path.relative_to(REPO_ROOT / "docs/naming/runtime")
+    except ValueError:
+        relative = Path()
+    in_family = any(family(part) for part in relative.parts)
+    complete = manifest.get("q124_complete") is True
+    failed_leaf = (in_family and path.name != "baseline"
+                   and manifest.get("q124_complete") is False)
+    if not complete and not failed_leaf:
         raise InvalidCapture("manifest requires q124_complete: true")
     events = [json.loads(line) for line in read("capture.jsonl").splitlines()]
     if any(not isinstance(e, dict) or "ev" not in e for e in events):
@@ -130,14 +143,10 @@ def load_capture(path):
     if len(starts) != 1:
         raise InvalidCapture("expected exactly one JSONL start event")
     spec = starts[0].get("spec", {})
-    try:
-        relative = path.relative_to(REPO_ROOT / "docs/naming/runtime")
-    except ValueError:
-        relative = Path()
     # Poked captures are modified games too: sources only, like stubs. A
     # -stub-, -poke- or -knockout- family (its baseline included) is a
     # compare set.
-    is_stub = any(family(part) for part in relative.parts) or any(
+    is_stub = in_family or any(
         e["ev"] in ("stub", "poke") for e in events) or bool(
         spec.get("stubs") or spec.get("pokes"))
     is_values = bool(spec.get("values")) or any(e["ev"] == "value" for e in events)
@@ -161,8 +170,8 @@ def load_capture(path):
     # polls and no hit map (kind events, or values when it also reads
     # values; not a stub) is only recorded in sources.
     unmapped_phases = is_events and not has_map and not is_stub
-    mapped = (has_map or ((path / "phases.tsv").exists() and not unmapped_phases)
-              or declares_map or kind == "other")
+    mapped = complete and (has_map or ((path / "phases.tsv").exists() and not unmapped_phases)
+                           or declares_map or kind == "other")
     if unmapped_phases and (path / "phases.tsv").exists():
         read("phases.tsv")
     functions = {}
@@ -238,7 +247,9 @@ def load_capture(path):
     kinds = sorted(k for k, present in (("hitmap", has_map), ("values", is_values),
                                        ("stub", is_stub), ("events", kind == "events"))
                    if present)
-    return dict(ident=ident, kind=kind, kinds=kinds, path=path,
+    if not complete:
+        values, polls = [], []
+    return dict(ident=ident, kind=kind, kinds=kinds, path=path, complete=complete,
                 manifest=manifest, script=spec.get("script"), start=when, order=order,
                 hashes=hashes, functions=functions, mapped=mapped, values=values,
                 polls=polls)
@@ -371,7 +382,8 @@ def render(paths, no_name=None, all_evidence=False):
         if registry_hash is not None:
             hashes["no_name.tsv"] = registry_hash
         for filename, sha1 in sorted(hashes.items()):
-            sources.append([capture["ident"], capture["kind"], "true",
+            sources.append([capture["ident"], capture["kind"],
+                            "true" if capture["complete"] else "false",
                             git.get("head", git.get("commit", "")), scalar(trace_status),
                             manifest.get("build", {}).get("exe", {}).get("sha1", ""),
                             scalar(capture["start"]), filename, sha1])

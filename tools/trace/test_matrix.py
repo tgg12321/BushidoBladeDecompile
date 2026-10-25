@@ -330,6 +330,15 @@ class MatrixTest(unittest.TestCase):
         knockout = self.capture("docs/naming/runtime/scenario-knockout-1/baseline", 40)
         outputs = matrix.render([knockout])
         self.assertIn("scenario-knockout-1/baseline\tstub\ttrue", outputs["sources.tsv"])
+        failed = self.capture("docs/naming/runtime/scenario-knockout-1/func", 41, values=True)
+        self.write(failed / "capture.manifest.json", json.dumps({"q124_complete": False}))
+        outputs = matrix.render([knockout, failed])
+        self.assertIn("scenario-knockout-1/func\tstub\tfalse", outputs["sources.tsv"])
+        self.assertNotIn("scenario-knockout-1/func", outputs["values.tsv"])
+        for path, manifest in [(failed, {}), (knockout, {"q124_complete": False})]:
+            self.write(path / "capture.manifest.json", json.dumps(manifest))
+            with self.assertRaisesRegex(matrix.InvalidCapture, "q124_complete"):
+                matrix.render([path])
         with self.assertRaisesRegex(matrix.InvalidCapture, "duplicate capture ID"):
             matrix.render([self.a, self.a])
 
