@@ -76,7 +76,12 @@ def retire_function(func: str) -> dict:
             # __asm__). If so, the honest fix is to strip the asm too. See
             # pre-slim-2026-10-01:.claude/rules/sandbox-zero-retire-fails.md.
             n = inlineasm.file_func_cheat_asm_count(stem, func)
-            if n > 0:
+            text = inlineasm._read_src_cached(stem)
+            candidates = inlineasm.func_definition_candidates(text, func) if text is not None else []
+            if len(candidates) > 1:
+                result["hint"] = (f"{func}: ambiguous C definition: {len(candidates)} "
+                                  "definition-shaped heads; resolve the copies before retrying.")
+            elif n > 0:
                 result["hint"] = (
                     f"{func}'s source still has {n} cheat-asm block(s)/pin(s). "
                     "retire drops regfix/asmfix rules but NOT source __asm__; if those "

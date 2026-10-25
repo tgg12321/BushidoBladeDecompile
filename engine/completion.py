@@ -141,8 +141,10 @@ def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[s
         return ['source unavailable']
     if canonical is None:
         canonical = func in cheats.canonical_asm_funcs()
-    span = inlineasm._func_body_span(text, func)
-    if span is None:
+    candidates = inlineasm.func_definition_candidates(text, func)
+    if len(candidates) > 1:
+        return [f'ambiguous C definition: {len(candidates)} definition-shaped heads']
+    if not candidates:
         if canonical and func in inlineasm.whole_body_asm_funcs(text):
             return []
         return ['no C body or authorized whole assembly body']

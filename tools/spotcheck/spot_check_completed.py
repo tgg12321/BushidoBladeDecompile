@@ -293,7 +293,8 @@ def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
     third return value so no run hides the exclusion.
 
     `unknown_is_completed` governs a symbol whose cheat count is -1, i.e. the C
-    body could not be located at all:
+    body could not be located at all. Ambiguous definition candidates always
+    produce a violation, independently of this setting:
 
       * True (the CURRENT pool) — counted as COMPLETED-C. This is not an
         opinion, it mirrors tools/check_completion_integrity.py, whose
@@ -319,7 +320,17 @@ def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
         file_has_cheat_asm = (text is None
                               or inlineasm.strip_cheat_asm_file(text)[1] > 0)
         for func in funcs:
-            if func in in_queue or func in canon:
+            if func in in_queue:
+                continue
+            if text is not None and Q.data_as_code_conflict(text, func, read_asm):
+                violations.append(f"{func} ({stem}.c): {Q.DATA_AS_CODE_CONFLICT}")
+                continue
+            candidates = inlineasm.func_definition_candidates(text, func) if text is not None else []
+            if len(candidates) > 1:
+                violations.append(f"{func} ({stem}.c): ambiguous C definition: "
+                                  f"{len(candidates)} definition-shaped heads")
+                continue
+            if func in canon:
                 continue
             if text is not None and Q.not_a_c_function_text(text, func, read_asm):
                 no_body.append((func, stem))

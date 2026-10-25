@@ -181,11 +181,14 @@ def body_source(text: str, func: str, read=_disk,
     reached same-TU `static inline` helpers unless helpers=False), or the asm
     that supplies the function — or None when there is no single body.
     TU-only: historical `read=` callers do not consult live headers."""
-    span = inlineasm._func_body_span(text, func)
+    candidates = inlineasm.func_definition_candidates(text, func)
+    if len(candidates) > 1:
+        return None
+    span = candidates[0] if candidates else None
     pieces = _asm_pieces(text, func, read)
     if span is not None:
-        if pieces or inlineasm._func_body_span(text[span[1]:], func) is not None:
-            return None  # a second definition, or C AND asm: ambiguous
+        if pieces:
+            return None  # C AND asm: ambiguous
         # A definition sharing a line with the previous function's `}` starts
         # its span at that brace; it is not part of this function.
         parts = [re.sub(r"^\}", "", text[span[0]:span[1]])]
@@ -330,7 +333,7 @@ def locate_stems(func: str) -> list[str]:
     out = []
     for tid in tus.src_tus():
         text = _read_text(Path(tus.src_path(tid)))
-        if text and func in text and (inlineasm._func_body_span(text, func) is not None
+        if text and func in text and (inlineasm.func_definition_candidates(text, func)
                                       or _asm_pieces(text, func)):
             out.append(tid)
     return out

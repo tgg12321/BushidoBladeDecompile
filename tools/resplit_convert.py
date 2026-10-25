@@ -213,6 +213,10 @@ def convert_source(text: str, func: str) -> tuple[str, str]:
     """
     span = inlineasm._func_body_span(text, func)
     if span is None:
+        candidates = inlineasm.func_definition_candidates(text, func)
+        if len(candidates) > 1:
+            raise SystemExit(f"{func}: ambiguous C definition: "
+                             f"{len(candidates)} definition-shaped heads")
         raise SystemExit(f"{func}: no C definition found — already converted?")
     lo, hi = span
     # _func_body_span's `^(?:\}[ \t]*)?` prefix means the span can START at the

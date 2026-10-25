@@ -195,7 +195,7 @@ def _no_c_body(stem: str, func: str) -> bool:
     except OSError:
         return False
     return (func in inlineasm.whole_body_asm_funcs(text)
-            and inlineasm._func_body_span(text, func) is None)
+            and not inlineasm.func_definition_candidates(text, func))
 
 
 _AENT_RE = re.compile(r'\.aent\s+([A-Za-z_]\w*)')
@@ -265,6 +265,21 @@ def not_a_c_function_text(text: str, func: str,
         return False
     return (func in set(_AENT_RE.findall(text))
             or func in inlineasm.symbol_marker_funcs(text))
+
+
+DATA_AS_CODE_CONFLICT = "definition-shaped head for a data-as-code symbol"
+
+
+def data_as_code_conflict(text: str, func: str,
+                          read_asm: Callable[[str], str | None] | None = None) -> bool:
+    """C candidates and structural data-as-code evidence cannot certify either.
+
+    Keep this separate from not_a_c_function_text's structural answer: even a
+    single disabled/commented decoy conflicts with an alternate-entry marker.
+    """
+    return bool(inlineasm.func_definition_candidates(text, func)
+                and not_a_c_function_text(text, func,
+                                         read_asm if read_asm is not None else read_asm_file))
 
 
 def _route_with_evidence(func: str, opcode_verdict: str,
@@ -383,8 +398,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             rules = _rule_count(func)
             prologue = cheats.func_prologue_count(func)
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
+            source = inlineasm._read_src_cached(stem)
+            conflict = source is not None and data_as_code_conflict(source, func)
             if (rules == 0 and prologue == 0 and cheat_count < 0
-                    and _not_a_c_function(stem, func)):
+                    and not conflict and _not_a_c_function(stem, func)):
                 # Data/alternate-entry labels have no body to score or audit.
                 # Check before source_issues treats that absence as incomplete.
                 # A previously listed label still needs the Q39 departure gate.
@@ -406,7 +423,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # honest distance here. Distance is recorded as -1 to indicate
                 # unscored.
                 cheats_unscored = inlineasm.file_func_cheat_asm_count(stem, func)
-                source_ok = not completion.source_issues(stem, func, func in canon_funcs)
+                source_ok = not conflict and not completion.source_issues(stem, func, func in canon_funcs)
                 if rules == 0 and prologue == 0 and source_ok:
                     if cheats_unscored == 0 or func in canon_funcs:
                         held = _held(func, stem, -1, rules)
@@ -461,6 +478,8 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                         dist = min(pins)
                         scorable = True
             source_issues = completion.source_issues(stem, func, func in canon_funcs)
+            if conflict:
+                source_issues = [DATA_AS_CODE_CONFLICT] + source_issues
             if source_issues:
                 cheat_count = max(1, cheat_count)
             if rules == 0 and prologue == 0 and not source_issues:

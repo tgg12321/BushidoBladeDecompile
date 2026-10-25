@@ -119,7 +119,7 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
             try:
                 src_text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
                 no_c_body = (func in inlineasm.whole_body_asm_funcs(src_text)
-                             and inlineasm._func_body_span(src_text, func) is None)
+                             and not inlineasm.func_definition_candidates(src_text, func))
             except OSError:
                 no_c_body = False
         if no_c_body:

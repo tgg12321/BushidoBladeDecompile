@@ -198,6 +198,10 @@ def migrate_one(func, stem, dry, defer_build=False):
         return "REFUSED: asm references a C-generated jtbl_ symbol (deferred)", []
     span = find_body_span(text, func)
     if span is None:
+        candidates = inlineasm.func_definition_candidates(text, func)
+        if len(candidates) > 1:
+            return (f"REFUSED: ambiguous C definition for {func} in {src}: "
+                    f"{len(candidates)} definition-shaped heads"), []
         return f"REFUSED: no C body span for {func} in {src}", []
     lo, hi = span
     body = text[lo:hi]

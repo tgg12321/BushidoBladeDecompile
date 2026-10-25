@@ -390,7 +390,9 @@ def rewrite_function(text: str, func: str, stem: str = "", header: str | None = 
     res = Result(func, stem)
     span = inlineasm._func_body_span(text, func)
     if span is None:
-        res.error = "no C body"
+        candidates = inlineasm.func_definition_candidates(text, func)
+        res.error = (f"ambiguous C definition: {len(candidates)} definition-shaped heads"
+                     if len(candidates) > 1 else "no C body")
         return res
     runs = _runs(text, func)
     if not runs:
@@ -503,10 +505,16 @@ def _functions(target: str) -> list[tuple[str, str]]:
     for it in q.get("items", []):
         if it["func"] == target:
             return [(target, it["file"])]
+    ambiguous = []
     for p in sorted((ROOT / "src").rglob("*.c")):
         text = p.read_text(encoding="utf-8")
         if inlineasm._func_body_span(text, target):
             return [(target, p.relative_to(ROOT / "src").with_suffix("").as_posix())]
+        if len(inlineasm.func_definition_candidates(text, target)) > 1:
+            ambiguous.append(p.relative_to(ROOT).as_posix())
+    if ambiguous:
+        raise SystemExit(f"gte_macro_rewrite: {target}: ambiguous C definition in "
+                         + ", ".join(ambiguous))
     raise SystemExit(f"gte_macro_rewrite: {target}: no such function or TU")
 
 

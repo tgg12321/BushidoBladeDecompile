@@ -3114,6 +3114,355 @@ def test_substitute_body() -> None:
         check("substitute_body: absent function raises", True)
 
 
+def test_body_span_ambiguous() -> None:
+    from engine import layer2
+
+    fake = 's32 func_X(s32 a) { return a; }\n'
+    real = ('s32 func_X(s32 a) {\n'
+            '    __asm__ volatile("addu $8,$3,$0");\n'
+            '    return a + 1;\n}\n')
+    for desc, prefix, suffix in (
+        ("block comment", "/* old version:\n" + fake + "*/\n", ""),
+        # The splice makes the column-0 head part of the // comment to cpp.
+        ("line comment", "// old version: \\\n" + fake, ""),
+        ("if 0", "#if 0\n" + fake + "#endif\n", ""),
+        ("if 0 else", "#if 0\n" + fake + "#else\n", "#endif\n"),
+        ("if 1 else", "#if 1\n", "#else\n" + fake + "#endif\n"),
+        ("string literal", 'char *s = "old version:\n' + fake + '";\n', ""),
+        ("unclosed quote directive", 'char *s = "x\n#if 0\n";\n'
+         + fake + '#else\n";\n', "#endif\n"),
+        ("digraph directives", '%:if 0\n' + fake + '%:else\n', '%:endif\n'),
+        ("ifdef branches", "#ifdef X\n" + fake + "#else\n", "#endif\n"),
+    ):
+        src = prefix + real + suffix
+        eq(f"body-span ambiguous: {desc}",
+           inlineasm._func_body_span(src, "func_X"), None)
+        eq(f"body-span ambiguous: cheat count unknown for {desc}",
+           inlineasm.func_cheat_asm_count(src, "func_X"), -1)
+        try:
+            inlineasm.substitute_body(src, "func_X", fake)
+        except KeyError:
+            refused = True
+        else:
+            refused = False
+        check(f"body-span ambiguous: substitute refuses {desc}", refused)
+        eq(f"body-span ambiguous: no layer2 key for {desc}",
+           layer2.body_key(src, "func_X"), None)
+    for desc, prefix, body in (
+        ("brace prefix", "void prev(void) { return;\n",
+         "}s32 func_X(s32 a) { return a; }"),
+        ("K&R parameters", "", "s32 func_X(a) s32 a; { return a; }"),
+        ("extern declaration", "extern s32 func_X(s32 a);\n", real.rstrip("\n")),
+    ):
+        eq(f"body-span unique: exact original span for {desc}",
+           inlineasm._func_body_span(prefix + body + "\n", "func_X"),
+           (len(prefix), len(prefix) + len(body)))
+
+
+def test_ambiguous_c_asm_fallbacks() -> None:
+    from engine import gtemacro, layer2, sandbox, tus
+    from unittest.mock import patch
+
+    fake = 's32 func_X(s32 a) { return a; }\n'
+    real = 's32 func_X(s32 a) { __asm__("addu $8,$3,$0"); return a; }\n'
+    asm = 'INCLUDE_ASM("asm/funcs", func_X);\n'
+    for desc, src, count in (
+        ("reviewer one-line comment", "/* " + fake.rstrip("\n") + " */\n"
+         + "#if 0\n" + asm + "#endif\n" + real, 1),
+        ("ambiguous comment and asm", "/* old version:\n" + fake + "*/\n"
+         + "#if 0\n" + asm + "#endif\n" + real, 2),
+        ("GNUC C or asm", "#ifdef __GNUC__\n" + real + "#else\n"
+         + asm + "#endif\n", 1),
+    ):
+        eq(f"C/asm fallback: candidate count for {desc}",
+           len(inlineasm.func_definition_candidates(src, "func_X")), count)
+        with patch.object(inlineasm, "_read_src_cached", return_value=src):
+            issues = completion.source_issues("fake", "func_X", canonical=True)
+        check(f"C/asm fallback: completion refuses {desc}", bool(issues))
+        if count > 1:
+            eq("C/asm fallback: explicit ambiguity issue", issues,
+               ["ambiguous C definition: 2 definition-shaped heads"])
+            eq("C/asm fallback: ambiguous cheat count remains unknown",
+               inlineasm.func_cheat_asm_count(src, "func_X"), -1)
+            try:
+                gtemacro.call_sites(src, "func_X")
+            except ValueError:
+                refused = True
+            else:
+                refused = False
+            check("C/asm fallback: macro call scan refuses ambiguity", refused)
+        eq(f"C/asm fallback: no layer2 key for {desc}",
+           layer2.body_key(src, "func_X", read=lambda p: "asm body"), None)
+        with patch.object(Path, "read_text", return_value=src):
+            eq(f"C/asm fallback: queue sees C for {desc}",
+               Q._no_c_body("fake", "func_X"), False)
+
+    # Exercise sandbox_score's missing-symbol fallback without building/writing.
+    for desc, src, no_c in (("ambiguous C", "/*\n" + fake + "*/\n" + real + asm, False),
+                            ("GNUC C", "#ifdef __GNUC__\n" + real + "#else\n"
+                             + asm + "#endif\n", False),
+                            ("reviewer one-line comment", "/* " + fake.rstrip("\n")
+                             + " */\n#if 0\n" + asm + "#endif\n" + real, False),
+                            ("assembly only", asm, True)):
+        with patch.object(sandbox, "func_file", return_value="fake"), \
+             patch.object(sandbox.cheats, "empty_overrides", return_value={}), \
+             patch.object(sandbox.cheats, "func_rule_lines", return_value=[]), \
+             patch.object(inlineasm, "write_stripped", return_value=0), \
+             patch.object(sandbox.pipeline, "build_c_object"), \
+             patch.object(Path, "exists", return_value=True), \
+             patch.object(Path, "read_text", return_value=src), \
+             patch.object(sandbox.score, "score_func", side_effect=KeyError("missing")), \
+             patch.object(sandbox.score, "normalized_insns", return_value=["target"]):
+            result = sandbox.sandbox_score("func_X", disable="all", strip_cheat_asm=True)
+            eq(f"C/asm fallback: sandbox no_c_body for {desc}",
+               result.get("no_c_body", False), no_c)
+            eq(f"C/asm fallback: sandbox scorable for {desc}", result["scorable"], no_c)
+            eq(f"C/asm fallback: queue agrees for {desc}", Q._no_c_body("fake", "func_X"), no_c)
+
+    ambiguous = "/*\n" + fake + "*/\n" + real
+    with patch.object(tus, "src_tus", return_value=["fake"]), \
+         patch.object(layer2, "_read_text", return_value=ambiguous):
+        eq("C/asm fallback: ambiguous TU still found by locate_stems",
+           layer2.locate_stems("func_X"), ["fake"])
+
+
+def test_ambiguous_body_discovery_and_stripping() -> None:
+    from engine import layer2, tus
+    from unittest.mock import patch
+
+    cheat = ('s32 func_DECOY(s32 a) {\n'
+             '    volatile s32 pad_a;\n    a = 0;\n    return 1;\n}\n')
+    decoy = 's32 func_DECOY(s32 b) { return b; }\n'
+    sources = {"src/a.c": cheat + "/* old version:\n" + decoy + "*/\n",
+               "src/b.c": "#if 0\n" + decoy + "#endif\n"}
+    with patch.object(tus, "src_tus", return_value=["a", "b"]), \
+         patch.object(layer2, "_read_text", side_effect=lambda p: sources[p.as_posix()]), \
+         patch.object(Path, "read_text", return_value='{"items": []}'):
+        eq("body discovery: real+comment TU and disabled-only TU both count",
+           layer2.locate_stems("func_DECOY"), ["a", "b"])
+        try:
+            layer2.locate_stem("func_DECOY")
+        except layer2.AmbiguousStem as exc:
+            stems = exc.stems
+        else:
+            stems = []
+        eq("body discovery: decoys cannot redirect stem selection", stems, ["a", "b"])
+        sources["src/b.c"] = cheat + "#if 0\n" + decoy + "#endif\n"
+        eq("layer2: a TU with an #if 0 second copy still counts as a candidate",
+           layer2.locate_stems("func_DECOY"), ["a", "b"])
+
+    other = cheat.replace("pad_a", "pad_b").replace("s32 a", "s32 b").replace("a =", "b =")
+    for desc, src in (("commented copy", "/* old version:\n" + decoy + "*/\n" + cheat),
+                      ("disabled copy", "#if 0\n" + other + "#endif\n" + cheat)):
+        candidates = inlineasm.func_definition_candidates(src, "func_DECOY")
+        bodies = list(volatile_cheats._iter_func_bodies(src))
+        eq(f"body discovery: every {desc} span yielded once",
+           [(lo, hi) for _name, lo, hi, _params in bodies], candidates)
+        eq(f"body discovery: each {desc} has its own parameters",
+           [params for _name, _lo, _hi, params in bodies], [["b"], ["a"]])
+        hits = volatile_cheats.find_all_cheats(src)
+        stripped, count = volatile_cheats.strip_volatile_cheats_file(src)
+        for snippet in (["volatile s32 pad_a;", "a = 0;"] if desc == "commented copy"
+                        else ["volatile s32 pad_a;", "a = 0;", "volatile s32 pad_b;", "b = 0;"]):
+            start = src.index(snippet)
+            check(f"body discovery: roster finds {snippet} after {desc}",
+                  any(s <= start and e >= start + len(snippet) for s, e, _anchor in hits))
+            check(f"body discovery: stripper removes {snippet} after {desc}", snippet not in stripped)
+        check(f"body discovery: nonzero strip count for {desc}", count >= 2)
+        check(f"body discovery: real return survives {desc}", "return 1;" in stripped)
+
+    prefixed = ('void prev(void) { return;\n}s32 func_Y(s32 a) {\n'
+                '    volatile s32 pad_a;\n    a = 0;\n    return 1;\n}\n')
+    bodies = list(volatile_cheats._iter_func_bodies(prefixed))
+    eq("body discovery: brace-prefixed func_Y is yielded",
+       [(name, params) for name, _lo, _hi, params in bodies],
+       [("prev", []), ("func_Y", ["a"])])
+    hits = volatile_cheats.find_all_cheats(prefixed)
+    stripped, count = volatile_cheats.strip_volatile_cheats_file(prefixed)
+    for snippet in ("volatile s32 pad_a;", "a = 0;"):
+        start = prefixed.index(snippet)
+        check(f"body discovery: brace-prefixed roster finds {snippet}",
+              any(s <= start and e >= start + len(snippet) for s, e, _anchor in hits))
+        check(f"body discovery: brace-prefixed stripper removes {snippet}", snippet not in stripped)
+    eq("body discovery: brace-prefixed strip count", count, 2)
+
+
+def test_tool_ambiguous_cheat_readers() -> None:
+    from engine import integrate
+    from tools.spotcheck import spot_check_completed as spot
+    import audit_asm_cheats as audit
+    import headless_review as headless
+    from unittest.mock import patch
+
+    cheat = ('s32 func_X(s32 a) {\n'
+             '    __asm__("addu $8,$3,$0");\n    return a;\n}\n')
+    copy = 's32 func_X(s32 a) { return a; }\n'
+    rec = {"func": "func_X", "file": "fake", "advanced": True,
+           "head_before": "same", "head_after": "same"}
+
+    def review(src, count=None):
+        with patch.object(headless, "queue_item", return_value=None), \
+             patch.object(headless.ha, "find_projects_dir", return_value=None), \
+             patch.object(headless, "uncommitted_leftover", return_value=[]), \
+             patch.object(headless, "classify_outcome", return_value="MATCHED"), \
+             patch.object(cheats, "canonical_asm_funcs", return_value=set()), \
+             patch.object(inlineasm, "_read_src_cached", return_value=src), \
+             patch.object(inlineasm, "file_func_cheat_asm_count",
+                          side_effect=count or (lambda stem, f: inlineasm.func_cheat_asm_count(src, f))):
+            return headless.review(rec)
+
+    for desc, src in (("comment copy", cheat + "/* old version:\n" + copy + "*/\n"),
+                      ("disabled copy", cheat + "#if 0\n" + copy + "#endif\n")):
+        for unknown in (True, False):
+            completed, violations, no_body = spot.classify_pool(
+                {"fake": ["func_X"]}, set(), set(), {}, set(), {"fake": src},
+                lambda p: None, unknown_is_completed=unknown)
+            eq(f"tool ambiguity: spot excludes {desc}, unknown={unknown}", completed, [])
+            check(f"tool ambiguity: spot reports {desc}, unknown={unknown}",
+                  len(violations) == 1 and "ambiguous C definition: 2" in violations[0])
+            eq(f"tool ambiguity: spot does not call {desc} absent", no_body, [])
+        packet = review(src)
+        eq(f"tool ambiguity: headless escalates {desc}", packet["decision"], "ESCALATE")
+        check(f"tool ambiguity: headless names {desc}", "ambiguous C definition: 2" in packet["why"])
+        for authorized in (set(), {"func_X"}):
+            err = io.StringIO()
+            with patch.object(Path, "rglob", return_value=[Path("src/fake.c")]), \
+                 patch.object(Path, "read_text", return_value=src), \
+                 patch.object(audit, "load_authorized", return_value=authorized), \
+                 contextlib.redirect_stderr(err):
+                rc = audit.cmd_func("func_X")
+            eq(f"tool ambiguity: audit refuses {desc}, authorized={bool(authorized)}", rc, 1)
+            check(f"tool ambiguity: audit names {desc}",
+                  "UNAUTHORIZED" in err.getvalue() and "ambiguous C definition: 2" in err.getvalue())
+
+    def fail_count(stem, f):
+        raise RuntimeError("test failure")
+
+    for desc, counter in (("UNKNOWN", lambda stem, f: -1),
+                          ("audit exception", fail_count)):
+        packet = review(copy, counter)
+        eq(f"tool ambiguity: headless escalates {desc}", packet["decision"], "ESCALATE")
+        check(f"tool ambiguity: headless explains {desc}",
+              ("UNKNOWN" if desc == "UNKNOWN" else "RuntimeError: test failure") in packet["why"])
+        eq(f"tool ambiguity: headless does not clamp {desc}", packet["match_cheat_asm"], -1)
+    eq("tool ambiguity: headless still accepts uniquely clean C", review(copy)["decision"], "ACCEPT")
+
+    # Unlocated spot-check symbols keep their existing pool policy; this task
+    # distinguishes ambiguous definitions from that separate absence policy.
+    with patch.object(Q, "not_a_c_function_text", return_value=False):
+        completed, violations, _no_body = spot.classify_pool(
+            {"fake": ["absent"]}, set(), set(), {}, set(), {"fake": cheat}, lambda p: None)
+    eq("tool ambiguity: spot absent-body policy unchanged", (completed, violations), ([("absent", "fake")], []))
+
+    src = cheat + "#if 0\n" + copy + "#endif\n"
+    with patch.object(integrate.sandbox, "func_file", return_value="fake"), \
+         patch.object(integrate, "_backup", return_value={}), \
+         patch.object(integrate, "_restore"), \
+         patch.object(integrate.cheats, "_filter_text", return_value=("", 1)), \
+         patch.object(integrate.cheats, "drop_prologue_fix_entries", return_value=0), \
+         patch.object(Path, "write_bytes"), \
+         patch.object(integrate, "_rebuild_file_and_sha1", return_value="mismatch"), \
+         patch.object(inlineasm, "file_func_cheat_asm_count", return_value=-1), \
+         patch.object(inlineasm, "_read_src_cached", return_value=src):
+        result = integrate.retire_function("func_X")
+    check("tool ambiguity: failed retirement hint names ambiguous C",
+          not result["ok"] and "ambiguous C definition: 2" in result["hint"])
+
+
+def test_data_as_code_conflicts() -> None:
+    import check_completion_integrity as CCI
+    from tools.spotcheck import spot_check_completed as spot
+    from unittest.mock import patch
+
+    base = Path("src/main/d_7D870.c").read_text(encoding="utf-8")
+    cases = []
+    for func in ("g_data_start", "D_8008D090"):
+        decoy = f"void {func}(void) {{ }}\n"
+        cases.extend(((f"{func} plain data", base, func, False),
+                      (f"{func} disabled decoy", base + "#if 0\n" + decoy + "#endif\n", func, True),
+                      (f"{func} commented decoy", base + "/* old version:\n" + decoy + "*/\n", func, True)))
+    cheat = ('s32 func_X(s32 a) {\n'
+             '    volatile s32 pad;\n    a = 0;\n    return 1;\n}\n')
+    copy = 's32 func_X(s32 a) { return a; }\n'
+    ambiguous = cheat + "#if 0\n" + copy + "#endif\n// .aent func_X\n"
+    cases.extend((("real C and comment signal", cheat + "// .aent func_X\n", "func_X", True),
+                  ("ambiguous C and comment signal", ambiguous, "func_X", True)))
+    for text in (ambiguous, ambiguous + 'INCLUDE_ASM("asm/funcs", func_X);\n'):
+        try:
+            inlineasm.substitute_body(text, "func_X", copy)
+        except KeyError as exc:
+            reason = str(exc)
+        else:
+            reason = ""
+        check("data conflict: substitution names ambiguity even with INCLUDE_ASM",
+              "ambiguous C definition: 2" in reason and "neither" not in reason)
+
+    with contextlib.ExitStack() as stack:
+        for obj, attr, value in (
+            (P, "c_stems", lambda: ["fake"]),
+            (Path, "exists", lambda p: p.as_posix() == "build/src/fake.o"),
+            (inlineasm, "_read_src_cached", lambda stem: src),
+            (canonical, "scan_all", lambda: []),
+            (cheats, "canonical_asm_funcs", lambda: set()),
+            (cheats, "func_prologue_count", lambda f: 0),
+            (cheats, "func_rule_lines", lambda *a: []),
+            (cheats, "all_keyed_functions", lambda: set()),
+            (cheats, "maspsx_gate_entries", lambda f: []),
+            (cheats, "is_jtbl_infra", lambda f: False),
+            (cheats, "is_canonical_extraction_only", lambda f: False),
+            (Q, "_rule_count", lambda f: 0),
+            (Q, "_fingerprint", lambda: "dry"),
+            (Q, "_locked", contextlib.nullcontext),
+            (Q, "_route_with_evidence", lambda *a: ("C", None)),
+            (Q.sandbox, "build_stripped_object", lambda *a, **k: {}),
+            (score, "_o_func_table", lambda p: {func: (0, 4)}),
+            (score, "score_func", lambda *a: {"score": 0}),
+            (Q.layer2, "addr_index", lambda: {func: "80010000"}),
+            (CCI.buildstamp, "check", lambda: {"fresh": True}),
+            (inlineasm, "project_header_texts", lambda *a: []),
+            (inlineasm, "project_header_macro_facts", lambda *a, **k: frozenset()),
+            (CCI, "_helper_issues", lambda *a: []),
+            (CCI, "_island_funcs", lambda *a: {}),
+            (CCI.buildconfig, "LINKED_ASM_FUNCS", set()),
+            (CCI.departures, "unreviewed_departures", lambda: []),
+            (completion, "grant_issues", lambda *a: []),
+            (CCI.gtemacro, "check_vendored", lambda: []),
+            (CCI.gtemacro, "header_registry_issues", lambda: []),
+            (CCI, "_header_function_issues", lambda **k: []),
+            (CCI, "_header_safety_issues", lambda **k: []),
+            (CCI.CRN, "scan", lambda *a: ([], [], [])),
+        ):
+            stack.enter_context(patch.object(obj, attr, value))
+        stack.enter_context(patch.object(Q, "save"))
+        for desc, src, func, conflict in cases:
+            eq(f"data conflict: structural signal preserved for {desc}",
+               Q.not_a_c_function_text(src, func, lambda p: None), True)
+            eq(f"data conflict: shared helper for {desc}", Q.data_as_code_conflict(src, func), conflict)
+            for missing in (False, True):
+                with patch.object(score, "score_func", side_effect=KeyError("missing") if missing else None,
+                                  return_value={"score": 0}):
+                    q = Q.generate(workdir="tmp/codex/mock-queue")
+                eq(f"data conflict: queue membership for {desc}, missing={missing}",
+                   [it["func"] for it in q["items"]], [func] if conflict else [])
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = CCI.main()
+            eq(f"data conflict: integrity result for {desc}", rc, 1 if conflict else 0)
+            eq(f"data conflict: integrity diagnostic for {desc}",
+               Q.DATA_AS_CODE_CONFLICT in out.getvalue(), conflict)
+            eq(f"data conflict: integrity data-as-code bucket for {desc}",
+               "data-as-code symbols" in out.getvalue(), not conflict)
+            check(f"data conflict: never counted as completed for {desc}",
+                  "COMPLETED-C:                    0 functions" in out.getvalue())
+            done, violations, no_body = spot.classify_pool(
+                {"fake": [func]}, set(), set(), {}, set(), {"fake": src}, lambda p: None)
+            eq(f"data conflict: spot never completes {desc}", done, [])
+            eq(f"data conflict: spot diagnostic for {desc}",
+               violations, [f"{func} (fake.c): {Q.DATA_AS_CODE_CONFLICT}"] if conflict else [])
+            eq(f"data conflict: spot no-body bucket for {desc}", no_body,
+               [] if conflict else [(func, "fake")])
+
+
 def test_include_asm_whole_body() -> None:
     """A whole-body INCLUDE_ASM must never read as clean, pure-C, or complete.
 
@@ -4981,6 +5330,9 @@ def test_layer2_gate() -> None:
           != layer2.body_key("int func_C(void) {\n#if X a();\n#endif\n}\n", "func_C"))
     eq("layer2: two definitions (an `#if 0` copy) -> no key (fail closed)",
        layer2.body_key("#if 0\nint func_D(void) { return 1; }\n#endif\n"
+                       "int func_D(void) { return 2; }\n", "func_D"), None)
+    eq("layer2: two live definitions -> no key (fail closed)",
+       layer2.body_key("int func_D(void) { return 1; }\n"
                        "int func_D(void) { return 2; }\n", "func_D"), None)
     eq("layer2: a C definition AND an asm body -> no key (fail closed)",
        layer2.body_key('int func_D(void) { return 1; }\nINCLUDE_ASM("asm/funcs", func_D);\n',
@@ -12263,6 +12615,70 @@ def test_naming_member_apply() -> None:
            (len(masked), masked.split(), masked.index("\n")), (len(raw), ["a(", ",", ")", "b(", "c"], raw.index("\n")))
 
 
+def test_ambiguous_tool_diagnostics() -> None:
+    import move_tu as mt
+    import migrate_include_asm as migrate
+    import resplit_convert as resplit
+    import gte_macro_rewrite as rewrite
+    from engine import tus
+    from unittest.mock import patch
+
+    source = ('s32 func_MOVE(void) { return 1; }\n#if 0\n'
+              's32 func_MOVE(void) { return 2; }\n#endif\n')
+    root = Path("tmp/codex/mock-move")
+    files = {"bb2.ld": "build/src/old.o(.text);\n", "Makefile": "",
+             "engine/buildconfig.py": "", "src/old.c": source,
+             "tools/canonical_asm_regions.json": json.dumps({"functions": {
+                 "func_MOVE": {"file": "old", "sha256": []}}})}
+    with patch.object(Path, "is_file", return_value=True), \
+         patch.object(Path, "exists", autospec=True,
+                      side_effect=lambda p: p.name == "canonical_asm_regions.json"), \
+         patch.object(Path, "read_text", autospec=True,
+                      side_effect=lambda p, **kw: files[p.relative_to(root).as_posix()]), \
+         patch.object(mt, "_buildconfig_lists", return_value={}), \
+         patch.object(tus, "check", return_value=[]), \
+         patch.object(tus, "ld_sections", return_value={"text": ["old"]}):
+        try:
+            mt.plan(root, "old", "new")
+        except mt.MoveError as exc:
+            reason, cause = str(exc), exc.__cause__
+        else:
+            reason, cause = "", None
+    check("move_tu: ambiguous granted function raises MoveError with context",
+          "func_MOVE in src/old.c" in reason and "ambiguous C definition: 2" in reason)
+    check("move_tu: grant error preserves the region-hash ValueError cause", isinstance(cause, ValueError))
+
+    for desc, text, want in (("ambiguous", source, "ambiguous C definition"),
+                             ("absent", "int unrelated;\n", "no C")):
+        with patch.object(migrate, "rd", side_effect=lambda p: text if p.startswith("src/") else ""), \
+             patch.object(migrate.os.path, "isfile", return_value=True):
+            status, details = migrate.migrate_one("func_MOVE", "fake", dry=True)
+        check(f"migration diagnostic: {desc} reason", want in status)
+        eq(f"migration diagnostic: {desc} has no applied edits", details, [])
+        try:
+            resplit.convert_source(text, "func_MOVE")
+        except SystemExit as exc:
+            reason = str(exc)
+        else:
+            reason = ""
+        check(f"resplit diagnostic: {desc} reason", want in reason)
+        check(f"macro rewrite diagnostic: {desc} reason",
+              want in rewrite.rewrite_function(text, "func_MOVE").error)
+
+    with patch.object(Path, "is_file", return_value=False), \
+         patch.object(Path, "read_text", autospec=True, side_effect=lambda p, **kw: '{"items": []}'
+                      if p.name == "queue.json" else source), \
+         patch.object(Path, "rglob", return_value=[rewrite.ROOT / "src/fake.c"]):
+        try:
+            rewrite._functions("func_MOVE")
+        except SystemExit as exc:
+            reason = str(exc)
+        else:
+            reason = ""
+    check("macro rewrite diagnostic: ambiguous lookup names the TU",
+          "ambiguous C definition in src/fake.c" in reason)
+
+
 def test_move_tu() -> None:
     """tools/move_tu.py on a scratch git repo: dry run writes nothing, a dirty
     tree refuses, --apply moves every keyed surface, and moving back restores
@@ -13441,6 +13857,11 @@ def main() -> int:
     test_asm_keyword_recognition()
     test_macro_asm_strip_round_trip()
     test_substitute_body()
+    test_body_span_ambiguous()
+    test_ambiguous_c_asm_fallbacks()
+    test_ambiguous_body_discovery_and_stripping()
+    test_tool_ambiguous_cheat_readers()
+    test_data_as_code_conflicts()
     with _synth_addrs():
         test_include_asm_whole_body()
     test_completion_region_grants()
@@ -13484,6 +13905,7 @@ def main() -> int:
     test_data_only_files_fixture()
     test_tus()
     test_naming_member_apply()
+    test_ambiguous_tool_diagnostics()
     test_move_tu()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()

@@ -243,6 +243,10 @@ def main() -> int:
             if func in in_queue:
                 size["incomplete"] += fsize
                 continue  # INCOMPLETE — the queue covers it
+            if (src_text is not None
+                    and Q.data_as_code_conflict(src_text, func, Q.read_asm_file)):
+                violations.append(f'{func} ({stem}.c): {Q.DATA_AS_CODE_CONFLICT}')
+                continue
             # Data-as-code: a symbol in the object's function table that is not
             # a C-level function of the file at all (an `alabel` / `.aent` of an
             # included asm body, `.aent` alternate entry, instruction-less
@@ -264,6 +268,9 @@ def main() -> int:
             is_canon = func in canon
             for issue in completion.source_issues(stem, func, is_canon):
                 violations.append(f'{func} ({stem}.c): {issue}')
+            if (src_text is not None
+                    and len(inlineasm.func_definition_candidates(src_text, func)) > 1):
+                continue  # Reported above; ambiguity is not a completed category.
 
             if is_canon:
                 total_completed_canon += 1

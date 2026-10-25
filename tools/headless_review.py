@@ -163,17 +163,30 @@ def review(rec: dict) -> dict:
     # is authorized COMPLETED-INLINE-ASM-CANONICAL. SHA1 can't catch this (cheat
     # asm emits right bytes), so audit the committed source directly.
     match_cheat_asm = 0
-    if rec.get("advanced") and rec.get("file") and func not in cheats.canonical_asm_funcs():
+    match_cheat_error = None
+    if rec.get("advanced") and rec.get("file"):
         try:
-            match_cheat_asm = max(0, inlineasm.file_func_cheat_asm_count(rec["file"], func))
-        except Exception:
-            match_cheat_asm = 0
+            text = inlineasm._read_src_cached(rec["file"])
+            candidates = inlineasm.func_definition_candidates(text, func) if text is not None else []
+            if len(candidates) > 1:
+                match_cheat_asm = -1
+                match_cheat_error = (f"ambiguous C definition: {len(candidates)} "
+                                     "definition-shaped heads")
+            elif func not in cheats.canonical_asm_funcs():
+                match_cheat_asm = inlineasm.file_func_cheat_asm_count(rec["file"], func)
+                if match_cheat_asm < 0:
+                    match_cheat_error = f"cheat-construct count for {func} is UNKNOWN"
+        except Exception as exc:
+            match_cheat_asm = -1
+            match_cheat_error = f"cheat-construct audit failed: {type(exc).__name__}: {exc}"
 
     # apply the maximal-autonomy escalation boundary
     if leftover:
         # a dirty tree (uncommitted worker work, e.g. budget cutoff mid-function)
         # must be resolved before the loop continues — never run onto it.
         decision, why = "ESCALATE", f"uncommitted leftover ({len(leftover)} path(s)) — orchestrator must commit/revert before continuing"
+    elif match_cheat_error:
+        decision, why = "ESCALATE", match_cheat_error
     elif match_cheat_asm > 0:
         decision, why = "ESCALATE", (f"CHEATED MATCH: {func} committed with {match_cheat_asm} "
                                      f"cheat-asm block(s), non-canonical — NOT COMPLETED-C pure C")
@@ -218,7 +231,7 @@ def print_human(r: dict) -> None:
             print(f"    error breakdown: {a['error_breakdown']}")
     if r.get("uncommitted_leftover"):
         print(f"  UNCOMMITTED LEFTOVER ({len(r['uncommitted_leftover'])}): {r['uncommitted_leftover'][:6]}")
-    if r.get("match_cheat_asm"):
+    if r.get("match_cheat_asm", 0) > 0:
         print(f"  ** CHEATED MATCH: {r['match_cheat_asm']} cheat-asm block(s) in committed source (non-canonical)")
     if r.get("park_confirmation"):
         print(f"  PARK: [{r['park_confirmation']}] {r['park_detail']}")

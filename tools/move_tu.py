@@ -146,7 +146,12 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], list[str], l
             from engine import completion
             text = src_old.read_text(encoding="utf-8")
             for f in moved:
-                if completion.region_hashes(text, f) != data["functions"][f]["sha256"]:
+                try:
+                    hashes = completion.region_hashes(text, f)
+                except ValueError as exc:
+                    raise MoveError(f"canonical_asm_regions: {f} in src/{old}.c: {exc}; "
+                                    "refusing to relocate its grant") from exc
+                if hashes != data["functions"][f]["sha256"]:
                     raise MoveError(f"canonical_asm_regions: {f}'s islands in src/{old}.c no longer "
                                     "hash to the reviewed grant; refusing to relocate it")
                 data["functions"][f]["file"] = new

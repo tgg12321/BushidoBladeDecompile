@@ -1121,7 +1121,11 @@ def call_sites(text: str, func: str, root: str | Path = REPO_ROOT,
     definition span to scan instead of locating `func`'s (a Q126 helper found
     in the compiler view, engine.inlineasm.attributed_spans)."""
     if span is None:
-        span = inlineasm._func_body_span(text, func)
+        candidates = inlineasm.func_definition_candidates(text, func)
+        if len(candidates) > 1:
+            raise ValueError(f"{func}: ambiguous C definition: "
+                             f"{len(candidates)} definition-shaped heads")
+        span = candidates[0] if candidates else None
     names = vendored_names(root)
     if span is None or not names:
         return []

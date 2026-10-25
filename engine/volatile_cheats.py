@@ -904,13 +904,25 @@ def body_cheat_spans(text: str, body_lo: int, body_hi: int,
 
 
 def _iter_func_bodies(text: str):
-    """Yield (fname, body_lo, body_hi, params) for each function DEFINITION."""
-    for m in re.finditer(r"(?m)^[A-Za-z_][\w \t\*]*\b([A-Za-z_]\w*)\s*\(", text):
+    """Yield every raw definition candidate, including ambiguous copies once.
+
+    Ambiguity refuses completion, but must not hide cheats from the roster or
+    stripper. Each candidate supplies its own span and parameter list.
+    """
+    from . import inlineasm
+
+    seen_names, seen_spans = set(), set()
+    for m in re.finditer(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
+                         r"([A-Za-z_]\w*)\s*\(", text):
         fname = m.group(1)
-        span = _func_body_span(text, fname)
-        if span is None or m.start() != span[0]:
+        if fname in seen_names:
             continue
-        yield fname, span[0], span[1], _extract_func_params(text, span)
+        seen_names.add(fname)
+        for span in inlineasm.func_definition_candidates(text, fname):
+            if span in seen_spans:
+                continue
+            seen_spans.add(span)
+            yield fname, span[0], span[1], _extract_func_params(text, span)
 
 
 def orphaned_decl_audit(text: str) -> dict:

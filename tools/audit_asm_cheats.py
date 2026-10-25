@@ -1263,6 +1263,15 @@ def cmd_all():
 
 
 def cmd_func(name):
+    sources = []
+    for src in sorted(Path("src").rglob("*.c")):
+        text = src.read_text(encoding="utf-8")
+        candidates = engine_inlineasm.func_definition_candidates(text, name)
+        if len(candidates) > 1:
+            print(f"UNAUTHORIZED: {name} in {src}: ambiguous C definition: "
+                  f"{len(candidates)} definition-shaped heads", file=sys.stderr)
+            return 1
+        sources.append((src, text))
     auth = load_authorized()
     if name in auth:
         return 0
@@ -1312,8 +1321,7 @@ def cmd_func(name):
               f"inline_asm_canonical.txt or rewrite the C to defeat the optimizer "
               f"(register pinning, structure change, etc.).", file=sys.stderr)
         return 1
-    for src in sorted(Path("src").rglob("*.c")):
-        text = src.read_text(encoding="utf-8")
+    for src, text in sources:
         for f, l, n, fname, is_bios in scan_inline_asm_bodies(text, src.name):
             if fname == name and n >= GLABEL_BODY_LINES and not is_bios:
                 print(f"UNAUTHORIZED: {name} has inline __asm__ body in {f}:{l} "

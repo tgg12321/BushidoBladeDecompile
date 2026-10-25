@@ -64,7 +64,8 @@ _REGISTER_KEYWORD = re.compile(r"\bregister\b")
 # blind spot let a function with zero lines of decompiled C report an honest
 # pure-C sandbox distance of 0 (measured on ang_hosei: recorded distance 50,
 # post-conversion `sandbox --disable all` score 0), and made
-# func_cheat_asm_count return -1, which queue.generate/mark_done read as clean.
+# func_cheat_asm_count return -1, which those gates historically read as clean.
+# queue.generate/mark_done now refuse UNKNOWN (-1) rather than accept it.
 _INCLUDE_ASM_MACRO_RE = re.compile(
     r'(?m)^[ \t]*INCLUDE_ASM\s*\(\s*"[^"]*"\s*,\s*([A-Za-z_]\w*)\s*\)\s*;?[ \t]*')
 # BIOS_[ABC]_FUNCTION(name, id) (include/bios.h): the BIOS vector trampoline
@@ -490,9 +491,14 @@ def substitute_body(text: str, func: str, new_body: str) -> str:
     Handles both representations a function can have on main: the
     `INCLUDE_ASM("asm/funcs", func);` line that every INCOMPLETE function
     carries since asm-until-matched (owner ruling 2026-08-19), and an existing
-    C definition. Raises KeyError when neither is present, because silently
-    appending or no-op'ing would produce a score for something other than what
-    the caller asked about — the exact class of lie this exists to detect."""
+    C definition. Raises KeyError on ambiguous C candidates or when neither
+    representation is present, because silently appending or no-op'ing would
+    produce a score for something other than what the caller asked about — the
+    exact class of lie this exists to detect."""
+    candidates = func_definition_candidates(text, func)
+    if len(candidates) > 1:
+        raise KeyError(f"{func}: ambiguous C definition: {len(candidates)} "
+                       "definition-shaped heads — cannot substitute a candidate body")
     for name, start, end in include_asm_spans(text):
         if name == func:
             # The macro invocation carries a trailing `;` the span excludes.
@@ -502,7 +508,7 @@ def substitute_body(text: str, func: str, new_body: str) -> str:
             if tail < len(text) and text[tail] == ";":
                 end = tail + 1
             return text[:start] + new_body.rstrip("\n") + text[end:]
-    span = _func_body_span(text, func)
+    span = candidates[0] if candidates else None
     if span is None:
         raise KeyError(
             f"{func} has neither an INCLUDE_ASM line nor a C definition in this "
@@ -514,12 +520,27 @@ def substitute_body(text: str, func: str, new_body: str) -> str:
 
 
 def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
+    """The single raw definition-shaped candidate, or None if absent/ambiguous.
+
+    Callers distinguishing no C body from ambiguity must inspect
+    func_definition_candidates instead of treating None as absence.
+    """
+    spans = func_definition_candidates(text, func)
+    return spans[0] if len(spans) == 1 else None
+
+
+def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     """Locate `func`'s DEFINITION body (not its declaration). Splat-generated
     src/*.c put each definition at column 0; calls and nested references are
     indented. We must SKIP extern declarations (`extern T func(args);`) which
     match the same column-0 pattern — these are recognised by the FIRST non-
-    whitespace after the closing `)` being `;` rather than `{`. Returns None
-    rather than guess, so callers degrade to no-signal.
+    whitespace after the closing `)` being `;` rather than `{`. Returns every
+    definition-shaped candidate found in the RAW text.
+    No comment, literal or preprocessor modelling is performed: copies in
+    comments, strings or disabled branches make the result ambiguous too.
+    Callers must refuse ambiguity rather than use an assembly-only fallback.
+    Offsets index the original text, with
+    an exclusive end.
 
     Earlier versions used `text.find('{', m.end())` which silently picked up
     the NEXT function's opening brace when `func` had an extern declaration
@@ -539,6 +560,7 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
     # line stays non-matching, which is what separates a definition from a call.
     pattern = re.compile(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
                          + re.escape(func) + r"\s*\(")
+    spans = []
     n = len(text)
     for m in pattern.finditer(text):
         # Walk to the matching `)` of the opening `(`.
@@ -581,8 +603,8 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
             continue  # declaration or other; skip this candidate
         end = _match_brace(text, j)
         if end != -1:
-            return (m.start(), end)
-    return None
+            spans.append((m.start(), end))
+    return spans
 
 
 # --- same-TU `static inline` helpers (owner ruling Q126, 2026-10-23) ---------
@@ -1320,11 +1342,15 @@ def _inline_helpers_cached(text: str, func: str, span: tuple[int, int]) -> tuple
 def attributed_spans(text: str, func: str) -> list[tuple[str, tuple[int, int]]]:
     """(name, definition span) of `func`'s body and then of each helper it
     reaches (inline_helpers): every span a per-function gate reads for `func`.
-    [] when `func` has no C body. Raises ValueError when a reached helper has
-    more than one definition (ambiguous: fail closed)."""
-    span = _func_body_span(text, func)
-    if span is None:
+    [] when `func` has no C body. Raises ValueError when `func` or a reached
+    helper has more than one definition (ambiguous: fail closed)."""
+    candidates = func_definition_candidates(text, func)
+    if len(candidates) > 1:
+        raise ValueError(f"{func}: ambiguous C definition: "
+                         f"{len(candidates)} definition-shaped heads")
+    if not candidates:
         return []
+    span = candidates[0]
     defs = static_inline_defs(text)
     out = [(func, span)]
     for h in inline_helpers(text, func):
