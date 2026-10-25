@@ -120,15 +120,60 @@ class CodexIdle(unittest.TestCase):
 
     def test_readonly_research_real_bridge_command_line(self):
         # start_task's argv, serialized as Popen does on Windows (TOML quotes
-        # are escaped, and executable/output paths can contain spaces).
-        self.status["processes"][0]["cmd"] = subprocess.list2cmdline([
-            r"C:\Program Files\Codex\codex.exe", "exec", "--json", "-o",
-            str(self.meta_file.parent / "last.md"), "-m", "gpt-6.1-sol",
-            "-c", 'model_reasoning_effort="medium"',
-            "-c", 'sandbox_mode="read-only"', "-c", 'approval_policy="never"',
-            "-C", str(self.snap), "-",
-        ])
-        self.check(True)
+        # are escaped). Exercise spaces in executable, output and cwd paths,
+        # for every effort accepted by the proof (not a live models cache).
+        self.snap = self.main.parent / "space here" / "bb2-worktrees" / self.snap.name
+        self.main = self.snap.parent.parent / "main"
+        self.scratch = self.snap.parent / "codex-item"
+        self.meta["cwd"] = str(self.snap)
+        self.meta_file = self.root / "bridge with spaces" / "runs" / "research-1" / "meta.json"
+        self.meta_file.parent.mkdir(parents=True)
+        self.meta_file.write_text(json.dumps(self.meta), encoding="utf-8")
+        with mock.patch.dict(os.environ, CODEX_BRIDGE_HOME=str(self.meta_file.parents[2])):
+            for effort in ("low", "medium", "high", "xhigh", "max", "ultra"):
+                with self.subTest(effort=effort):
+                    common = ["--json", "-o", str(self.meta_file.parent / "last.md"),
+                              "-m", "gpt-6.1-sol", "-c", f'model_reasoning_effort="{effort}"',
+                              "-c", 'sandbox_mode="read-only"', "-c", 'approval_policy="never"']
+                    cmd = [r"C:\Program Files\Codex\codex.exe", "exec"] + common + ["-C", str(self.snap), "-"]
+                    self.status["processes"][0]["cmd"] = subprocess.list2cmdline(cmd)
+                    self.check(True)
+
+    def test_readonly_research_exec_without_directory_refused(self):
+        self.status["processes"][0]["cmd"] = self.exec_cmd().replace(f"-C {self.snap} ", "")
+        self.check(False)
+
+    def test_readonly_research_unknown_options_and_positionals_refused(self):
+        for extra in ("--unknown-option", "unexpected-positional"):
+            with self.subTest(extra=extra):
+                self.status["processes"][0]["cmd"] = self.exec_cmd(extra=extra + " ")
+                self.check(False)
+
+    def test_readonly_research_parseable_unknown_config_keys_refused(self):
+        for setting in ("profile=full", "model_provider=oss"):
+            with self.subTest(setting=setting):
+                self.assertEqual(cw.research_config(setting), tuple(setting.split("=")))
+                self.status["processes"][0]["cmd"] = self.exec_cmd(extra=f"-c {setting} ")
+                self.check(False)
+
+    def test_readonly_research_requires_exec_subcommand(self):
+        for subcommand in ("--yolo", "resume"):
+            with self.subTest(subcommand=subcommand):
+                self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+                    "codex.exe exec ", f"codex.exe {subcommand} ")
+                self.check(False)
+
+    def test_readonly_research_executable_basename(self):
+        for executable, allowed in (
+                ("codex", True), ("CODEX.EXE", True),
+                (r"C:\Program Files\Codex\CoDeX.ExE", True),
+                ("C:/Program Files/Codex/CODEX", True),
+                ("other.exe", False), (r"C:\codex.exe\other.exe", False),
+                ("C:/codex/other.exe", False), ("codex.exe.bak", False)):
+            with self.subTest(executable=executable):
+                self.status["processes"][0]["cmd"] = self.exec_cmd().replace(
+                    "codex.exe", subprocess.list2cmdline([executable]), 1)
+                self.check(allowed)
 
     def test_readonly_research_literal_quote_bypasses_refused(self):
         for override in ('-s danger-full-access', f'--add-dir {self.main}', f'-C {self.main}'):

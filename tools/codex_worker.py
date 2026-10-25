@@ -1488,6 +1488,8 @@ def readonly_research_running(main, scratch, st, busy):
             args = windows_argv(cmd)
             if len(args) < 2 or args[1] != "exec" or "--" in args:
                 return False
+            if args[0].replace("\\", "/").rsplit("/", 1)[-1].lower() not in ("codex.exe", "codex"):
+                return False
             # Count even malformed/spaced settings outside a config argument.
             if len(re.findall(r"sandbox_mode\s*=", " ".join(args))) != 1:
                 return False
