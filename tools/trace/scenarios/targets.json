@@ -93,10 +93,13 @@
         "weapon:katana",
         "weapon:nodachi",
         "weapon:long_sword",
-        "weapon:yari"
+        "weapon:yari",
+        "weapon:id_6",
+        "weapon:id_7"
       ],
       "notes": {
-        "weapon:naginata": "the six weapons drawn on the 2P Vs. Mode Select Weapon scroll, left to right, names as the label under the portrait shows them (versus-2p-weapon-tour-1); KANNUKI's cursor stops at Long Sword, GENGORO's reaches Yari"
+        "weapon:naginata": "the six weapons drawn on the 2P Vs. Mode Select Weapon scroll, left to right, names as the label under the portrait shows them (versus-2p-weapon-tour-1); KANNUKI's cursor stops at Long Sword, GENGORO's reaches Yari",
+        "weapon:id_6": "weapon:id_6 / weapon:id_7: weapons no Select Weapon scroll draws (it shows the same six for every fighter), named by their weapon id (fighter_Init a3, record unk_0E) since the game shows no name for them; each is a hidden fighter's own default weapon, held in its fight screenshots: id 6 TSUBAME's (fighter_Init a2 8 a3 6; record 0 unk_0E 6 at the fight start: versus-2p-hidden-tsubame-weapon-1), id 7 KATZE's (a2 0x16 a3 7: versus-2p-hidden-katze-1). Only ids 6 and 7 spend the counter unk_34A on an attack's first hit frame (weapon_hit_start_frames[0]) and cast a weapon segment, or call code 0x32 when it is empty (17AFC.c:1659-1674; unk_0C 0x1D / 0xE spend it on [1], 17AFC.c:1676-1682); fighter_Init sets it to 10, or 2 for unk_0C 0x1D / 0xE, in the last arm of its mode test (9F9C.c:3795-3805); both records read 10 at the fight start. KATZE's spend: versus-2p-hidden-katze-gun-1"
       }
     },
     "events": {

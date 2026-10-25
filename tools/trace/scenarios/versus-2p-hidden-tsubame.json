@@ -9,11 +9,13 @@
     "stage:building_rooftop",
     "char:tsubame",
     "char:gengoro",
+    "weapon:id_6",
     "event:round_start",
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-hidden-tsubame-1/spec.json"
+    "docs/naming/runtime/versus-2p-hidden-tsubame-1/spec.json",
+    "docs/naming/runtime/versus-2p-hidden-tsubame-weapon-1/spec.json"
   ],
   "use": [
     "boot"

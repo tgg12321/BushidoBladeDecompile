@@ -9,6 +9,7 @@
     "stage:building_rooftop",
     "char:katze",
     "char:gengoro",
+    "weapon:id_7",
     "event:round_start",
     "event:ko"
   ],
