@@ -1,0 +1,340 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 7800,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "t_option"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu"
+      },
+      {
+        "frame": 6600,
+        "name": "t_key"
+      },
+      {
+        "frame": 6640,
+        "name": "key_config"
+      },
+      {
+        "frame": 6700,
+        "name": "key_edit"
+      },
+      {
+        "frame": 7180,
+        "name": "key_default"
+      },
+      {
+        "frame": 7300,
+        "name": "key_custom"
+      },
+      {
+        "frame": 7420,
+        "name": "key_exit"
+      },
+      {
+        "frame": 7540,
+        "name": "t_key_exit"
+      },
+      {
+        "frame": 7600,
+        "name": "option_menu_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6380,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6760,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6820,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6880,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6940,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7000,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7060,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 7120,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 7180,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7240,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7360,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7420,
+        "press": [
+          "UP"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 7480,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7540,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu.first"
+      },
+      {
+        "frame": 6699,
+        "name": "key_config.first"
+      },
+      {
+        "frame": 6750,
+        "name": "key_edit.frontal_cursor"
+      },
+      {
+        "frame": 6810,
+        "name": "key_edit.frontal_triangle"
+      },
+      {
+        "frame": 6870,
+        "name": "key_edit.reverse_cursor"
+      },
+      {
+        "frame": 6930,
+        "name": "key_edit.reverse_square"
+      },
+      {
+        "frame": 6990,
+        "name": "key_edit.stance_cursor"
+      },
+      {
+        "frame": 7050,
+        "name": "key_edit.stance_circle"
+      },
+      {
+        "frame": 7110,
+        "name": "key_edit.p2_frontal_cursor"
+      },
+      {
+        "frame": 7170,
+        "name": "key_edit.p2_frontal_triangle"
+      },
+      {
+        "frame": 7230,
+        "name": "key_default.cursor"
+      },
+      {
+        "frame": 7290,
+        "name": "key_default.applied"
+      },
+      {
+        "frame": 7350,
+        "name": "key_custom.cursor"
+      },
+      {
+        "frame": 7410,
+        "name": "key_custom.applied"
+      },
+      {
+        "frame": 7470,
+        "name": "key_exit.p2_exit"
+      },
+      {
+        "frame": 7530,
+        "name": "key_exit.both_exit"
+      },
+      {
+        "frame": 7600,
+        "name": "option_menu_2.first"
+      },
+      {
+        "frame": 7799,
+        "name": "option_menu_2.last"
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6459	top menu (cursor on the first entry at 6050); DOWN x6 toward Option, end position not shot	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN,6320:DOWN,6380:DOWN	capture.top_menu.first.png
+t_option	6460	6559	transition; no screen claim	6460:CROSS	-
+option_menu	6560	6599	Option Menu	-	capture.option_menu.first.png
+t_key	6600	6639	transition; no screen claim	6600:CROSS	-
+key_config	6640	6699	Key Configuration, both columns O / X / SQUARE, both cursors on the bottom row (EXIT)	-	capture.key_config.first.png
+key_edit	6700	7179	1P: TRIANGLE on Frontal Attack gives O + TRIANGLE; SQUARE on Reverse Attack gives X + SQUARE and leaves Change Stance empty, 1P's bottom box N/A; CIRCLE on Change Stance gives O there and Frontal Attack TRIANGLE only; 2P: TRIANGLE on Frontal Attack gives O + TRIANGLE	6700:DOWN,6760:TRIANGLE,6820:DOWN,6880:SQUARE,6940:DOWN,7000:CIRCLE,7060:DOWN@2,7120:TRIANGLE@2	capture.key_edit.frontal_cursor.png,capture.key_edit.frontal_triangle.png,capture.key_edit.reverse_cursor.png,capture.key_edit.reverse_square.png,capture.key_edit.stance_cursor.png,capture.key_edit.stance_circle.png,capture.key_edit.p2_frontal_cursor.png,capture.key_edit.p2_frontal_triangle.png
+key_default	7180	7299	1P cursor to Default, CROSS: 1P's rows back to O / X / SQUARE; 2P unchanged	7180:DOWN,7240:CROSS	capture.key_default.cursor.png,capture.key_default.applied.png
+key_custom	7300	7419	1P cursor to Custom, CROSS: no change on screen	7300:DOWN,7360:CROSS	capture.key_custom.cursor.png,capture.key_custom.applied.png
+key_exit	7420	7539	2P cursor UP to the bottom row, 1P cursor DOWN to it: both on EXIT	7420:UP@2,7480:DOWN	capture.key_exit.p2_exit.png,capture.key_exit.both_exit.png
+t_key_exit	7540	7599	transition; no screen claim	7540:CROSS	-
+option_menu_2	7600	7799	Option Menu, cursor on Key Configuration	-	capture.option_menu_2.first.png,capture.option_menu_2.last.png

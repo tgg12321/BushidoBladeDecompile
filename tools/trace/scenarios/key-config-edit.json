@@ -1,0 +1,75 @@
+{
+  "description": "Option Menu, Key Configuration: a pressed button moves to the cursor's row (taken off any other row of that column): 1P TRIANGLE on Frontal Attack (O + TRIANGLE), SQUARE on Reverse Attack (X + SQUARE, Change Stance left empty, the bottom box reads N/A), CIRCLE on Change Stance (Frontal Attack back to TRIANGLE only); 2P TRIANGLE on Frontal Attack (O + TRIANGLE); 1P Default puts 1P's rows back to O / X / SQUARE, 1P Custom shows no change; both cursors to the bottom row, CROSS back to the Option Menu",
+  "covers": [
+    "menu:top",
+    "menu:option",
+    "menu:key_config",
+    "event:key_config_change"
+  ],
+  "evidence": [
+    "docs/naming/runtime/key-config-edit-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 7800,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:DOWN",
+    "6320:DOWN",
+    "6380:DOWN",
+    "6460:CROSS",
+    "6600:CROSS",
+    "6700:DOWN",
+    "6760:TRIANGLE",
+    "6820:DOWN",
+    "6880:SQUARE",
+    "6940:DOWN",
+    "7000:CIRCLE",
+    "7060:DOWN@2",
+    "7120:TRIANGLE@2",
+    "7180:DOWN",
+    "7240:CROSS",
+    "7300:DOWN",
+    "7360:CROSS",
+    "7420:UP@2",
+    "7480:DOWN",
+    "7540:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6460:t_option",
+    "6560:option_menu",
+    "6600:t_key",
+    "6640:key_config",
+    "6700:key_edit",
+    "7180:key_default",
+    "7300:key_custom",
+    "7420:key_exit",
+    "7540:t_key_exit",
+    "7600:option_menu_2"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6560:option_menu.first",
+    "6699:key_config.first",
+    "6750:key_edit.frontal_cursor",
+    "6810:key_edit.frontal_triangle",
+    "6870:key_edit.reverse_cursor",
+    "6930:key_edit.reverse_square",
+    "6990:key_edit.stance_cursor",
+    "7050:key_edit.stance_circle",
+    "7110:key_edit.p2_frontal_cursor",
+    "7170:key_edit.p2_frontal_triangle",
+    "7230:key_default.cursor",
+    "7290:key_default.applied",
+    "7350:key_custom.cursor",
+    "7410:key_custom.applied",
+    "7470:key_exit.p2_exit",
+    "7530:key_exit.both_exit",
+    "7600:option_menu_2.first",
+    "7799:option_menu_2.last"
+  ]
+}
