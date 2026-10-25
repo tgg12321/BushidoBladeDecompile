@@ -3,6 +3,11 @@
 Example: <store>/docs/naming/runtime/family/baseline/capture.jsonl.
 External artifacts require an outputs SHA1 and byte count; local reads retain
 their historical behavior.
+
+To re-record, run the capture writer again at the same logical path. offload()
+automatically selects <filename>.sha1-<SHA1> when the old key has different
+bytes, and records that sibling as outputs[].store_name before publication.
+Existing manifests continue to resolve their original immutable generation.
 """
 import hashlib
 import json
@@ -13,9 +18,12 @@ import sys
 import argparse
 import tempfile
 import re
+import errno
+import shutil
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _warned_git_fallback = False
+LEGACY_BASE = "5b51335f3c627710f3109bd10cc78821fbf5466d^"
 
 
 class StoreError(Exception):
@@ -133,13 +141,18 @@ def resolve(capture_dir, name, manifest=None, allow_local=True):
     except ValueError:
         raise StoreMissing(f"capture file missing: {local}; no store key outside "
                            "the repository (BB2_CAPTURE_STORE)") from None
-    external = store_root() / key / name
+    if manifest is None:
+        # Preserve the missing-file diagnostic even when no manifest exists.
+        try:
+            manifest = _manifest(capture_dir, name)
+        except StoreUnverified:
+            if (store_root() / key / name).is_file():
+                raise
+    records = _records(manifest, name)
+    external = store_target(capture_dir / name, records)
     if not external.is_file():
         raise StoreMissing(f"capture file missing: {local}; store: {external}; "
                            "set BB2_CAPTURE_STORE to the capture store root")
-    if manifest is None:
-        manifest = _manifest(capture_dir, name)
-    records = _records(manifest, name)
     if not records:
         raise StoreUnverified(f"{external}: no manifest outputs record for {name}")
     for rec in records:
@@ -179,6 +192,47 @@ def file_record(path):
 
 def store_key(path):
     return Path(path).resolve().relative_to(REPO_ROOT.resolve())
+
+
+def store_target(path, records):
+    """store_name is a sibling content generation, never a path supplied by a writer."""
+    names = []
+    for rec in records:
+        name = rec.get("store_name", Path(path).name)
+        if not isinstance(name, str):
+            raise StoreUnverified(f"{path}: invalid store generation")
+        names.append(name)
+    names = set(names)
+    if len(names) > 1:
+        raise StoreUnverified(f"{path}: conflicting store generations")
+    name = next(iter(names), Path(path).name)
+    if name != Path(path).name and (not isinstance(name, str) or not re.fullmatch(
+            re.escape(Path(path).name) + r"\.sha1-[0-9a-f]{40}", name)):
+        raise StoreUnverified(f"{path}: invalid store generation")
+    return store_root() / store_key(path).parent / name
+
+
+def select_generation(path, records):
+    """Re-record automatically into a content-suffixed immutable sibling key.
+
+    Old manifests keep their original key. Persist this selection before moving
+    any bytes, so interruption cannot claim the old generation as the new one.
+    """
+    for rec in records:
+        verify(path, rec)
+    target = store_target(path, records)
+    if target.exists():
+        try:
+            for rec in records:
+                verify(target, rec)
+        except StoreMismatch:
+            name = Path(path).name + ".sha1-" + file_record(path)["sha1"]
+            for rec in records:
+                rec["store_name"] = name
+            target = store_target(path, records)
+            if target.exists():
+                for rec in records:
+                    verify(target, rec)
 
 
 def git_output(*args):
@@ -243,6 +297,21 @@ def mark_stored(manifest_path, manifest, names):
         write_manifest(manifest_path, manifest)
 
 
+def rollback_stored(path, manifest, names):
+    """Remove failed publication intent, preserving identical HEAD evidence."""
+    committed = {}
+    if head_blob(path) is not None:
+        committed = json.loads(git_output("show", "HEAD:" + store_key(path).as_posix()))
+    for name in names:
+        for rec in _records(manifest, name):
+            if not any(old.get("stored") is True
+                       and record_identity(old) == record_identity(rec)
+                       and old.get("store_name") == rec.get("store_name")
+                       for old in _records(committed, name)):
+                rec.pop("stored", None)
+    write_manifest(path, manifest)
+
+
 def check_migration_manifest(path, manifest):
     """Allow only our exact stored-flag additions when resuming a migration."""
     try:
@@ -252,6 +321,8 @@ def check_migration_manifest(path, manifest):
         if head_blob(path) is None:
             raise
     committed = json.loads(git_output("show", "HEAD:" + store_key(path).as_posix()))
+    if not isinstance(committed, dict):
+        raise StoreUnverified(f"{path}: HEAD manifest must be an object")
     added = False
     for old, new in zip(committed.get("outputs", []), manifest.get("outputs", [])):
         if isinstance(old, dict) and isinstance(new, dict) and "stored" not in old and new.get("stored") is True:
@@ -268,7 +339,7 @@ def move_verified(path, records):
     if not records:
         raise StoreUnverified(f"{path}: no outputs record")
     before = path.stat()
-    target = store_root() / store_key(path)
+    target = store_target(path, records)
     if target.resolve() == path.resolve():
         raise StoreUnverified(f"{path}: store target is the local source")
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -294,6 +365,28 @@ def move_verified(path, records):
             except FileExistsError:
                 for rec in records:
                     verify(target, rec)
+            except OSError as exc:
+                if exc.errno not in {errno.EPERM, errno.EXDEV, errno.ENOSYS,
+                                     errno.EOPNOTSUPP, errno.EINVAL}:
+                    raise
+                # Filesystems without hard links: exclusive create still
+                # refuses another writer's bytes. A partial copy is never
+                # accepted by readers (digest verification is mandatory).
+                created = False
+                try:
+                    try:
+                        with open(temporary, "rb") as source, target.open("xb") as output:
+                            created = True
+                            shutil.copyfileobj(source, output)
+                    except FileExistsError:
+                        if created:
+                            raise
+                    for rec in records:
+                        verify(target, rec)
+                except BaseException:
+                    if created:
+                        target.unlink()
+                    raise
         finally:
             if os.path.exists(temporary):
                 os.unlink(temporary)
@@ -323,9 +416,22 @@ def offload(capture_dir, manifest, keep_cards=False, manifest_path=None):
                               if json.loads(p.read_text(encoding="utf-8")) == manifest), None)
     if manifest_path is None:
         raise StoreUnverified(f"{capture_dir}: offload requires an owning manifest")
-    mark_stored(manifest_path, manifest, names)
     for name in names:
-        move_verified(capture_dir / name, _records(manifest, name))
+        select_generation(capture_dir / name, _records(manifest, name))
+    # Generation metadata must be persisted even if stored was already true.
+    for name in names:
+        for rec in _records(manifest, name):
+            rec["stored"] = True
+    write_manifest(manifest_path, manifest)
+    for name in names:
+        try:
+            move_verified(capture_dir / name, _records(manifest, name))
+        except Exception:
+            # A concurrent publisher may have taken the preflighted key.
+            # Never leave publication intent claiming its different bytes.
+            rollback_stored(manifest_path, manifest,
+                            [n for n in names if (capture_dir / n).is_file()])
+            raise
 
 
 def offload_report(capture_dir, manifest, keep_cards=False, manifest_path=None):
@@ -482,7 +588,8 @@ def migrate(root, apply=False):
                         check_migration_manifest(owner, owning_manifest)
                         checked.add(owner)
                     owners.append((owner, owning_manifest))
-            records = _records(manifest, path.name)
+            records = [rec for _, owning_manifest in owners
+                       for rec in _records(owning_manifest, path.name)]
             if not records:
                 raise StoreUnverified(f"{path}: no outputs record")
             for rec in records:
@@ -493,7 +600,12 @@ def migrate(root, apply=False):
             if apply:
                 for owner, owning_manifest in owners:
                     mark_stored(owner, owning_manifest, [path.name])
-                move_verified(path, records)
+                try:
+                    move_verified(path, records)
+                except Exception:
+                    for owner, owning_manifest in owners:
+                        rollback_stored(owner, owning_manifest, [path.name])
+                    raise
             count += 1
             size += length
         except (OSError, ValueError, StoreError) as exc:
@@ -503,12 +615,126 @@ def migrate(root, apply=False):
     return int(bool(refused))
 
 
-def verify_tree(root):
-    count = size = failed = never_published = 0
-    for path in sorted(Path(root).rglob("*.manifest.json")):
+def tracked_manifests(root, revision="HEAD"):
+    key = store_key(root).as_posix()
+    if revision == ":":
+        names = git_output("ls-files", "--", key)
+    else:
+        names = git_output("ls-tree", "-r", "--name-only", revision, "--", key)
+    return {REPO_ROOT / name for name in names.splitlines()
+            if name.endswith(".manifest.json")}
+
+
+def record_identity(rec):
+    return (rec.get("path"), rec.get("sha1"), rec.get("size", rec.get("bytes")))
+
+
+def recorded_absence(rec):
+    return rec.get("missing") is True and "sha1" not in rec
+
+
+class LegacyRecords:
+    """Per-command provenance cache, using ancestry rather than commit dates.
+
+    Only identical path/SHA1/size records in a same-path manifest blob at an
+    ancestor of module 2's parent qualify. Renamed manifests may stay refused
+    (we deliberately do not follow renames). New/changed records cannot borrow
+    a manifest's age. Bulk paths with any HEAD-reachable history never qualify.
+    """
+
+    def __init__(self):
+        self.manifests = {}
+        self.histories = {}
+
+    def was_committed(self, logical):
+        directory = store_key(logical).parent.as_posix()
+        if directory not in self.histories:
+            self.histories[directory] = set(git_output(
+                "log", "--full-history", "--format=", "--name-only", "--no-renames", "--",
+                directory).splitlines())
+        return store_key(logical).as_posix() in self.histories[directory]
+
+    def qualifies(self, manifest_path, rec):
+        if "stored" in rec:
+            return False
+        name = PureWindowsPath(rec["path"]).name
+        if self.was_committed(manifest_path.parent / name):
+            return False
+        key = store_key(manifest_path).as_posix()
+        if key not in self.manifests:
+            records = set()
+            # Restrict traversal to the fixed boundary's ancestors. Backdated
+            # descendants and unrelated commits cannot enter this walk.
+            commits = git_output("log", "--full-history", "--format=%H", "--diff-filter=AM",
+                                 "--no-renames", LEGACY_BASE, "--", key)
+            for commit in commits.splitlines():
+                old = json.loads(git_output("show", commit + ":" + key))
+                if isinstance(old, dict) and isinstance(old.get("outputs"), list):
+                    for output in old["outputs"]:
+                        if (isinstance(output, dict) and "stored" not in output
+                                and isinstance(output.get("path"), str)
+                                and isinstance(output.get("sha1"), str)
+                                and type(output.get("size", output.get("bytes"))) is int):
+                            records.add(record_identity(output))
+            self.manifests[key] = records
+        return record_identity(rec) in self.manifests[key]
+
+
+def check_commit(root):
+    """Check the proposed index, including ignored bulk absent from that index.
+
+    Local ignored files are deliberately insufficient: a manifest-only commit
+    must have verified store bytes or be a historical never-published record.
+    """
+    count = failed = legacy = 0
+    history = LegacyRecords()
+    indexed = set(git_output("ls-files", "--", store_key(root).as_posix()).splitlines())
+    for path in sorted(tracked_manifests(root, ":")):
         try:
-            manifest = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as exc:
+            manifest = json.loads(git_output("show", ":" + store_key(path).as_posix()))
+            if not isinstance(manifest, dict) or not isinstance(manifest.get("outputs", []), list):
+                raise StoreUnverified("manifest must be an object with outputs list")
+            for rec in manifest.get("outputs", []):
+                if not isinstance(rec, dict) or not isinstance(rec.get("path"), str):
+                    raise StoreUnverified("invalid output record")
+                name = PureWindowsPath(rec["path"]).name
+                if not is_bulk(name) or recorded_absence(rec):
+                    continue
+                logical = path.parent / name
+                count += 1
+                if store_key(logical).as_posix() in indexed:
+                    continue
+                try:
+                    resolve(path.parent, name, manifest, allow_local=False)
+                except StoreMissing:
+                    if history.qualifies(path, rec):
+                        legacy += 1
+                        continue
+                    raise StoreUnverified(f"{name}: bulk output neither indexed nor stored")
+        except (OSError, ValueError, StoreError) as exc:
+            print(f"REFUSE {path}: {exc}")
+            failed += 1
+    print(f"check-commit: outputs={count} refused={failed} legacy_never_published={legacy}")
+    return int(bool(failed))
+
+
+def verify_tree(root):
+    root = Path(root).resolve()
+    count = size = failed = never_published = 0
+    history = LegacyRecords()
+    tracked = tracked_manifests(root)
+    for path in sorted(set(Path(root).rglob("*.manifest.json")) | tracked):
+        try:
+            if path in tracked:
+                try:
+                    check_head(path, required=True)
+                except (OSError, StoreError) as exc:
+                    print(f"MANIFEST DIFFERS {path}: {exc}")
+                    failed += 1
+                manifest = json.loads(git_output("show", "HEAD:" + store_key(path).as_posix()))
+            else:
+                manifest = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, StoreError) as exc:
             print(f"MALFORMED {path}: {exc}")
             failed += 1
             continue
@@ -522,7 +748,7 @@ def verify_tree(root):
                 failed += 1
                 continue
             name = PureWindowsPath(rec["path"]).name
-            if not is_bulk(name):
+            if not is_bulk(name) or recorded_absence(rec):
                 continue
             try:
                 if not rec.get("missing"):
@@ -538,7 +764,8 @@ def verify_tree(root):
             except StoreMissing as exc:
                 logical = path.parent / name
                 try:
-                    lost = rec.get("stored") is True or ever_committed(logical)
+                    lost = (not history.qualifies(path, rec) if path in tracked
+                            else rec.get("stored") is True or history.was_committed(logical))
                 except (OSError, ValueError, StoreError):
                     lost = True
                 if lost:
@@ -559,7 +786,7 @@ def verify_tree(root):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for command in ("backfill-records", "migrate", "verify"):
+    for command in ("backfill-records", "migrate", "verify", "check-commit"):
         sub = commands.add_parser(command)
         sub.add_argument("--root", type=Path, default=REPO_ROOT / "docs/naming/runtime")
         if command == "backfill-records":
@@ -573,6 +800,8 @@ def main(argv=None):
         return backfill_records(args.root, args.check)
     if args.command == "migrate":
         return migrate(args.root, args.apply)
+    if args.command == "check-commit":
+        return check_commit(args.root)
     return verify_tree(args.root)
 
 

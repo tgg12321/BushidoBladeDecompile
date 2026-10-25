@@ -2319,7 +2319,11 @@ def compare(args) -> int:
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
         summary = store.compare_manifest(args.out, args.base, args.other, diff_outputs)
-        store.write_manifest(summary_path, summary)
+        try:
+            store.write_manifest(summary_path, summary)
+        except (OSError, ValueError, store.StoreError) as exc:
+            print(f"capture store: report written; manifest write failed: {exc}", file=sys.stderr)
+            return 1
         if not store.offload_report(Path(args.out).parent, summary,
                                     manifest_path=summary_path):
             return 1

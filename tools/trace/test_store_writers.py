@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 import uuid
+import errno
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -52,6 +53,11 @@ class WriterTest(unittest.TestCase):
             return self.blob(args[-1])
         if args[0] == "ls-files":
             return ""
+        if args[0] == "log":
+            return ""
+        if args[0] == "ls-tree":
+            return "\n".join(Path(p).relative_to(self.repo).as_posix()
+                             for p in self.head if p.endswith(".manifest.json"))
         if args[0] == "show":
             return self.head_contents[str((self.repo / args[1][len("HEAD:"):]).resolve())].decode("utf-8")
         raise AssertionError(args)
@@ -134,7 +140,7 @@ class WriterTest(unittest.TestCase):
         store.offload(self.capture, self.seal([path]))
         path.write_bytes(b"new trace")
         args = argparse.Namespace(out=str(path), lua=False, keep_emulator=False)
-        with patch.object(runkit, "convert_shots", return_value=[]), contextlib.redirect_stderr(io.StringIO()) as errors:
+        with patch.object(runkit, "convert_shots", return_value=[]), patch.object(store, "move_verified", side_effect=OSError("interrupted")), contextlib.redirect_stderr(io.StringIO()) as errors:
             manifest_path = runkit.finish_manifest(args, {}, None, dict(outcome="ok"))
         self.assertTrue(Path(manifest_path).exists())
         self.assertTrue(path.exists())
@@ -149,16 +155,150 @@ class WriterTest(unittest.TestCase):
             store.offload(path.parent, dict(outputs=[store.file_record(path)]))
         self.assertTrue(path.exists())
 
-    def test_writer_refuses_different_generation_preserving_main(self):
+    def test_writer_rerecords_different_generation_preserving_main(self):
         path = self.capture_file()
         main_manifest = self.seal([path])
         store.offload(self.capture, main_manifest)
         path.write_bytes(b"new capture")
-        with self.assertRaisesRegex(store.StoreMismatch, "store key.*different bytes"):
-            store.offload(self.capture, self.seal([path]))
-        self.assertEqual(path.read_bytes(), b"new capture")
+        new_manifest = self.seal([path])
+        store.offload(self.capture, new_manifest)
+        self.assertFalse(path.exists())
+        self.assertIn("store_name", new_manifest["outputs"][0])
+        self.assertEqual(store.resolve(self.capture, path.name).read_bytes(), b"new capture")
         self.assertEqual(store.resolve(self.capture, path.name, main_manifest,
                                        allow_local=False).read_bytes(), b"trace")
+
+    def test_generation_conflict_refuses_before_flag(self):
+        path = self.capture_file()
+        store.offload(self.capture, self.seal([path]))
+        path.write_bytes(b"new capture")
+        manifest = self.seal([path])
+        generation = self.stored / (path.name + ".sha1-" + manifest["outputs"][0]["sha1"])
+        generation.write_bytes(b"conflicting bytes")
+        with self.assertRaises(store.StoreMismatch):
+            store.offload(self.capture, manifest)
+        saved = json.loads((self.capture / "capture.manifest.json").read_text(encoding="utf-8"))
+        self.assertNotIn("stored", saved["outputs"][0])
+        self.assertEqual(path.read_bytes(), b"new capture")
+        self.assertEqual(generation.read_bytes(), b"conflicting bytes")
+
+    def test_generation_crash_records_new_key_before_move(self):
+        path = self.capture_file()
+        store.offload(self.capture, self.seal([path]))
+        path.write_bytes(b"new capture")
+        manifest = self.seal([path])
+        with patch.object(store, "move_verified", side_effect=OSError("crash")):
+            self.assertFalse(store.offload_report(self.capture, manifest))
+        saved = json.loads((self.capture / "capture.manifest.json").read_text(encoding="utf-8"))
+        self.assertNotIn("stored", saved["outputs"][0])
+        self.assertIn("store_name", saved["outputs"][0])
+        with self.assertRaises(store.StoreMissing):
+            store.resolve(self.capture, path.name, saved, allow_local=False)
+        store.offload(self.capture, saved)
+        self.assertEqual(store.resolve(self.capture, path.name).read_bytes(), b"new capture")
+
+    def test_link_unsupported_uses_exclusive_verified_copy(self):
+        for code in (errno.EPERM, errno.EXDEV, errno.EOPNOTSUPP):
+            path = self.capture_file("capture.%s.png" % code)
+            with patch.object(store.os, "link", side_effect=OSError(code, "unsupported")):
+                store.offload(self.capture, self.seal([path]))
+            self.assertFalse(path.exists())
+            self.assertEqual((self.stored / path.name).read_bytes(), b"trace")
+
+    def test_copy_fallback_race_never_overwrites(self):
+        path = self.capture_file()
+        manifest = self.seal([path])
+        target = self.stored / path.name
+        def race(source, destination):
+            Path(destination).write_bytes(b"other lane")
+            raise OSError(errno.EXDEV, "unsupported")
+        with patch.object(store.os, "link", side_effect=race):
+            with self.assertRaises(store.StoreMismatch):
+                store.offload(self.capture, manifest)
+        self.assertEqual(target.read_bytes(), b"other lane")
+        self.assertTrue(path.exists())
+        saved = json.loads((self.capture / "capture.manifest.json").read_text(encoding="utf-8"))
+        self.assertNotIn("stored", saved["outputs"][0])
+
+    def test_copy_fallback_partial_error_removes_only_own_target(self):
+        path = self.capture_file()
+        manifest = self.seal([path])
+        def partial(source, target):
+            target.write(b"partial")
+            raise OSError("copy interrupted")
+        with patch.object(store.os, "link", side_effect=OSError(errno.EXDEV, "unsupported")), patch.object(store.shutil, "copyfileobj", side_effect=partial):
+            with self.assertRaisesRegex(OSError, "copy interrupted"):
+                store.offload(self.capture, manifest)
+        self.assertFalse((self.stored / path.name).exists())
+        self.assertTrue(path.exists())
+        saved = json.loads((self.capture / "capture.manifest.json").read_text(encoding="utf-8"))
+        self.assertNotIn("stored", saved["outputs"][0])
+        store.offload(self.capture, saved)
+        self.assertFalse(path.exists())
+
+    def test_copy_fallback_verification_failure_removes_own_target(self):
+        path = self.capture_file()
+        manifest = self.seal([path])
+        def corrupt(source, target):
+            target.write(b"wrong")
+        with patch.object(store.os, "link", side_effect=OSError(errno.EPERM, "unsupported")), patch.object(store.shutil, "copyfileobj", side_effect=corrupt):
+            with self.assertRaises(store.StoreMismatch):
+                store.offload(self.capture, manifest)
+        self.assertFalse((self.stored / path.name).exists())
+        self.assertTrue(path.exists())
+
+    def test_migrate_refuses_disagreement_in_second_owner(self):
+        path = self.capture_file()
+        self.seal([path])
+        store.write_manifest(self.capture / "other.manifest.json",
+                             dict(outputs=[dict(store.file_record(path), sha1="0" * 40)]))
+        self.assertEqual(self.quiet(store.migrate, self.repo, apply=True), 1)
+        self.assertTrue(path.exists())
+        self.assertFalse(self.external.exists())
+
+    def test_manifest_replace_failure_cleans_temp(self):
+        path = self.capture / "capture.manifest.json"
+        with patch.object(store.os, "replace", side_effect=PermissionError("reader")):
+            with self.assertRaises(PermissionError):
+                store.write_manifest(path, dict(outputs=[]))
+        self.assertEqual(list(self.capture.glob(".manifest-*")), [])
+
+    def test_compare_manifest_write_failure_is_reported(self):
+        import test_knockout
+        fixture = test_knockout.KnockoutTest(methodName="runTest")
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        self.assertEqual(fixture.batch(funcs=("one",))[0], 0)
+        other = fixture.out / "one"
+        with patch.object(store.os, "replace", side_effect=PermissionError("reader")), contextlib.redirect_stderr(io.StringIO()) as errors:
+            code = gdbtrace.compare(argparse.Namespace(
+                base=str(fixture.out / "baseline/capture.jsonl"),
+                other=str(other / "capture.jsonl"),
+                base_spec=str(fixture.out / "baseline/spec.json"),
+                other_spec=str(other / "spec.json"), context=None,
+                out=str(other / "compare.md")))
+        self.assertEqual(code, 1)
+        self.assertIn("manifest write failed", errors.getvalue())
+        self.assertTrue((other / "compare.md").exists())
+        self.assertEqual(list(other.glob(".manifest-*")), [])
+
+    def test_knockout_rejects_uninventoried_obsolete_receipt(self):
+        import test_knockout
+        fixture = test_knockout.KnockoutTest(methodName="runTest")
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        self.assertEqual(fixture.batch(funcs=("one",))[0], 0)
+        (fixture.out / ".capture-store.json").write_text("{}", encoding="utf-8")
+        with contextlib.redirect_stderr(io.StringIO()) as errors:
+            self.assertEqual(test_knockout.k.check(fixture.out), 1)
+        self.assertIn("unrecorded file:", errors.getvalue())
+
+    def test_generation_name_cannot_escape_store(self):
+        path = self.capture_file()
+        manifest = self.seal([path])
+        manifest["outputs"][0]["store_name"] = "../../outside"
+        with self.assertRaises(store.StoreUnverified):
+            store.resolve(self.capture, path.name, manifest, allow_local=False)
 
     def legacy_compare(self):
         source = self.capture / "capture.menu.png"
@@ -328,7 +468,7 @@ class WriterTest(unittest.TestCase):
         manifest = self.seal([path])
         path.unlink()
         self.assertEqual(self.quiet(store.verify_tree, self.repo), 0)
-        with patch.object(store, "ever_committed", return_value=True):
+        with patch.object(store.LegacyRecords, "was_committed", return_value=True):
             self.assertEqual(self.quiet(store.verify_tree, self.repo), 1)
         path.write_bytes(b"trace")
         store.offload(self.capture, manifest)
@@ -429,7 +569,7 @@ class WriterTest(unittest.TestCase):
                 Path(output).write_bytes(b"different generation")
                 return (1, 2, (0, 0, 0, 0)), None
             with patch.object(gdbtrace, "diff_shot", side_effect=different_diff), contextlib.redirect_stderr(io.StringIO()):
-                self.assertEqual(gdbtrace.compare(args), 1)
+                self.assertEqual(gdbtrace.compare(args), 0)
             for rec in summary["outputs"]:
                 store.verify(store.resolve(other, rec["path"], summary, allow_local=False), rec)
 
