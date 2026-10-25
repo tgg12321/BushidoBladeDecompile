@@ -11,7 +11,8 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-stage-map2-2/spec.json"
+    "docs/naming/runtime/versus-2p-stage-map2-2/spec.json",
+    "docs/naming/runtime/ground-tag-versus-2p-parking-lot-1/spec.json"
   ],
   "use": [
     "boot",

@@ -1,0 +1,440 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "53b2a1ad11776b1516a8e420a8c3b555b4cc13f6",
+      "size": 106008
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "fbef84f61bbac5cd56e6205ab6053aecf3d7641b",
+      "size": 28331
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "6f918cc107e6504542d02442a547e5c2cfa8b34c",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\spec.json",
+    "--out",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "5ede770aab8d7468a0fa3984c5e09e51e5077dcd",
+      "size": 547657
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "1b93789287300d338d56ffaf43549479864d0c4e",
+      "size": 889736
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\spec.json",
+    "sha1": "48cc96d8ba78166ffb8f3e245b4f69fde10d4a77",
+    "size": 11682
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-14\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2414",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-gt\\runs\\versus-2p-abandoned-station\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-gt\\runs\\versus-2p-abandoned-station\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-gt\\runs\\versus-2p-abandoned-station\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.script.lua",
+      "sha1": "4b849f2e323423d4014dc93193f6b1b404a8fd91",
+      "size": 12139
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 14,
+    "port": 2414,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-14\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 3736,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.jsonl",
+      "sha1": "80f303c239c678080ab9aadb293d89d186918d19",
+      "size": 1190536
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.char_select.first.png",
+      "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
+      "size": 23135
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.char_select.last.png",
+      "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
+      "size": 22155
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.weapon_select.first.png",
+      "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
+      "size": 22616
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.weapon_select.last.png",
+      "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
+      "size": 4459
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_stage.mid.png",
+      "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
+      "size": 5188
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.stage_select.first.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.stage_select.7299.png",
+      "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
+      "size": 21972
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.stage_select.7325.png",
+      "sha1": "a3377bff1a936973e72d4b63a82b4722764c7d85",
+      "size": 22000
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.stage_select.7385.png",
+      "sha1": "3b46398b60c713175311034ed50374d07bfd89ea",
+      "size": 22006
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.stage_select.last.png",
+      "sha1": "90ea58d1411479e4a108bfed88a623f8a61e9067",
+      "size": 22007
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_load.mid.png",
+      "sha1": "88f9f3077234a8025e58b8ec87f76b87b5b0271e",
+      "size": 9690
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_load.last.png",
+      "sha1": "5bfce217f257bbaf28848d119bdf9574fbb119f7",
+      "size": 30329
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.first.png",
+      "sha1": "5bfce217f257bbaf28848d119bdf9574fbb119f7",
+      "size": 30329
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.8700.png",
+      "sha1": "10d7c70d47aeb8b4c2fcd3fad5c3d3033fd22b83",
+      "size": 31897
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.9200.png",
+      "sha1": "33451b8311de5063ab222d1f2e5f0c255d70ea4b",
+      "size": 31956
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.9600.png",
+      "sha1": "b2bd56f2b8422fced475ae1df16b49e7b94171c9",
+      "size": 39812
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.10000.png",
+      "sha1": "15ac8c3e005b0d92ac0a52db2d28b5ce24e5acd8",
+      "size": 40286
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.10400.png",
+      "sha1": "62a23b16955309ae1a25a66d77cb46b61f421f53",
+      "size": 38826
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.10650.png",
+      "sha1": "6d73be33db57ae9976ca01c4720ed4cddc54e238",
+      "size": 42070
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.fight.last.png",
+      "sha1": "ed32cb97e33cc1b8cfb875f6261e9b2e8b3578ca",
+      "size": 837
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_ko.10755.png",
+      "sha1": "ead4eb5238294d30ecd6dfa6f8360b44e3491795",
+      "size": 37989
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_ko.10855.png",
+      "sha1": "8a7121b3326c30f715da241b0dcbe446c690a525",
+      "size": 43838
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_ko.10955.png",
+      "sha1": "a0a737ed90f4511ebe72b39b46fb70414fcbebe6",
+      "size": 51141
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_ko.11055.png",
+      "sha1": "ea6904d24eee326c9656f95a1adb5ac432ee3c29",
+      "size": 36959
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_ko.11155.png",
+      "sha1": "9321ca05c6efa5a7e22bbf2d7c66afd31860e256",
+      "size": 38587
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.t_ko.last.png",
+      "sha1": "579c160f3c216daa14ccac252abdad681da13f6c",
+      "size": 39638
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.rematch_menu.first.png",
+      "sha1": "579c160f3c216daa14ccac252abdad681da13f6c",
+      "size": 39638
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.rematch_menu.11465.png",
+      "sha1": "bb7fcb50267b2d0387c797c2057b695bb4706b96",
+      "size": 43316
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.rematch_menu.11765.png",
+      "sha1": "a1be72f9296b7eb0f8c2154f08ea4f157d087e06",
+      "size": 51060
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.rematch_menu.last.png",
+      "sha1": "034abdba3749e6f3bcddc5c8a9237e9b89ddcf85",
+      "size": 42738
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.script.log",
+      "sha1": "bf916b2bbf9617afb1e40f8f37ff82d26d06b475",
+      "size": 4510
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/trace-gt/runs\\versus-2p-abandoned-station\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}

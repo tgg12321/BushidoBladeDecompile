@@ -13,7 +13,8 @@
     "docs/naming/runtime/versus-2p-stage-map1-2/spec.json",
     "docs/naming/runtime/lib-versus-2p-shainto-cemetery-1/spec.json",
     "docs/naming/runtime/fighter-values-versus-2p-shainto-cemetery-1/spec.json",
-    "docs/naming/runtime/fighter-polls-versus-2p-shainto-cemetery-1/spec.json"
+    "docs/naming/runtime/fighter-polls-versus-2p-shainto-cemetery-1/spec.json",
+    "docs/naming/runtime/ground-tag-versus-2p-shainto-cemetery-1/spec.json"
   ],
   "use": [
     "boot",
