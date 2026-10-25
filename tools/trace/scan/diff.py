@@ -186,6 +186,8 @@ def capture_start(path):
     """Read runkit.inputs_record / gdbtrace.run provenance, never follow paths."""
     manifest_path, spec_path = path / "capture.manifest.json", path / "spec.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else {}
+    if not isinstance(manifest, dict):
+        manifest = {}
     spec = json.loads(spec_path.read_text(encoding="utf-8")) if spec_path.is_file() else None
     fields, unknown = {}, []
     for keys in [("start", "kind"), ("disc", "cue")] + SAME_INPUTS:
@@ -197,7 +199,8 @@ def capture_start(path):
             value = None
         hashes = value if isinstance(value, list) else [value]
         if not value or (not scalar and any(
-                not re.fullmatch(r"[0-9a-fA-F]{40}", str(h)) for h in hashes)) or (
+                not isinstance(h, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", h)
+                for h in hashes)) or (
                 keys[-1] == "version" and str(value).startswith("unknown")):
             unknown.append(field)
         else:
@@ -231,7 +234,8 @@ def recorded_phases(path, tsv):
     try:
         raw = (path / "spec.json").read_bytes()
         manifest = json.loads((path / "capture.manifest.json").read_text(encoding="utf-8"))
-        if hashlib.sha1(raw).hexdigest() != manifest.get("spec", {}).get("sha1"):
+        spec_record = manifest.get("spec") if isinstance(manifest, dict) else None
+        if not isinstance(spec_record, dict) or hashlib.sha1(raw).hexdigest() != spec_record.get("sha1"):
             return None, {"spec_unverified": [capture]}
         script = json.loads(raw)["script"]
         runkit.check_script(script)
@@ -265,6 +269,15 @@ def recorded_phases(path, tsv):
             differs.add(name)
     reasons = {"phases_tsv_differs_from_spec": {capture: sorted(differs)}} if differs else {}
     return spans, reasons
+
+
+def merge_recorded_reasons(reasons, captures, recorded):
+    for capture in sorted(captures):
+        for key, value in recorded[capture][1].items():
+            if isinstance(value, dict):
+                reasons.setdefault(key, {}).update(value)
+            else:
+                reasons.setdefault(key, []).extend(value)
 
 
 def start_reasons(captures, starts):
@@ -454,12 +467,7 @@ def render(matrix):
                     reasons["multi_value_capture"] = multi_value
                 reasons.update(confounds(axis, hits, zeros, tags, matrix_axes))
                 if axis == "stage":
-                    for c in sorted(hits | zeros):
-                        for key, value in recorded[c][1].items():
-                            if isinstance(value, dict):
-                                reasons.setdefault(key, {}).update(value)
-                            else:
-                                reasons.setdefault(key, []).extend(value)
+                    merge_recorded_reasons(reasons, hits | zeros, recorded)
                     reasons.update(divergence_reasons(phases_hit, zeros, pair_phases, pair=False))
             for key, status in (("outside_partial", "?"), ("outside_not_targeted", "-")):
                 unknown = sorted(c for c in outside if states[c][0] == status)
@@ -475,12 +483,7 @@ def render(matrix):
             partial = sorted(c for c in groups[a] if states[c][1])
             untargeted = sorted(c for c in groups[a] if states[c][0] == "-")
             reasons = start_reasons(set(groups[a]) | set(groups[b]), starts)
-            for c in sorted(set(groups[a]) | set(groups[b])):
-                for key, value in recorded[c][1].items():
-                    if isinstance(value, dict):
-                        reasons.setdefault(key, {}).update(value)
-                    else:
-                        reasons.setdefault(key, []).extend(value)
+            merge_recorded_reasons(reasons, set(groups[a]) | set(groups[b]), recorded)
             if len(hit_scenarios) == 1:
                 reasons["single_hit_scenario"] = sorted(hit_scenarios)
             pair_axes = {t.split(":", 1)[0] for t in (tag, other)}

@@ -723,6 +723,56 @@ class DiffTest(unittest.TestCase):
         row = next(r for r in self.rows() if r["kind"] == "pair")
         self.assertEqual(row["inconclusive"], "0")
 
+    def test_non_dict_spec_record_is_unverified(self):
+        self.verified_specs()
+        path = self.matrix.parent / "b/capture.manifest.json"
+        manifest = json.loads(path.read_text())
+        for value in (None, [], "invalid", 123):
+            with self.subTest(value=value):
+                manifest["spec"] = value
+                self.write_json(path, manifest)
+                row = next(r for r in self.rows() if r["kind"] == "pair")
+                self.assertEqual(row["inconclusive"], "1")
+                self.assertEqual(self.reasons(row)["spec_unverified"], ["b"])
+
+    def test_non_dict_manifest_is_unknown_and_unverified(self):
+        self.verified_specs()
+        for value in (None, [], "invalid", 123):
+            with self.subTest(value=value):
+                self.write_json(self.matrix.parent / "b/capture.manifest.json", value)
+                row = next(r for r in self.rows() if r["kind"] == "pair")
+                self.assertEqual(row["inconclusive"], "1")
+                reasons = self.reasons(row)
+                self.assertEqual(reasons["spec_unverified"], ["b"])
+                self.assertIn("b:start.kind", reasons["start_state_unknown"])
+
+    def test_integer_hash_is_unknown(self):
+        self.verified_specs()
+        path = self.matrix.parent / "b/capture.manifest.json"
+        manifest = json.loads(path.read_text())
+        for group, key in (("bios", "sha1"), ("disc", "tracks")):
+            with self.subTest(group=group):
+                changed = json.loads(json.dumps(manifest))
+                value = int("1" * 40)
+                changed[group][key] = [dict(sha1=value)] if key == "tracks" else value
+                self.write_json(path, changed)
+                row = next(r for r in self.rows() if r["kind"] == "pair")
+                self.assertEqual(row["inconclusive"], "1")
+                field = group + (".tracks" if key == "tracks" else "") + ".sha1"
+                self.assertIn("b:" + field,
+                              self.reasons(row)["start_state_unknown"])
+
+    def test_stage_only_x_hit_spec_unverified(self):
+        self.verified_specs()
+        self.scenarios = [(c, s, "menu:top,mode:x,stage:" + ("c" if c == "c" else "a"))
+                          for c, s, _ in self.scenarios]
+        self.cells = ["load:1", "load:2", "load:3", "."]
+        path = self.matrix.parent / "a/spec.json"
+        path.write_bytes(path.read_bytes() + b" ")
+        row = self.only("stage:a")
+        self.assertEqual(row["inconclusive"], "1")
+        self.assertEqual(self.reasons(row)["spec_unverified"], ["a"])
+
     def test_stage_only_x_uses_recorded_spec_despite_tsv_drift(self):
         self.verified_specs()
         self.scenarios = [(c, s, "menu:top,mode:x,stage:" + ("c" if c == "c" else "a"))
