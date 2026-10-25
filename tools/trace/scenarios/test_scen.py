@@ -341,8 +341,75 @@ def main():
             finally:
                 scen.HERE, scen.REPO = real
 
+    def verify_memcards():
+        real = (scen.HERE, scen.REPO)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scen.HERE = str(root / "scen")
+            scen.REPO = str(root)
+            try:
+                write(root / "scen", "targets", {"groups": {}})
+                write(root / "scen", "m", {
+                    "end_frame": 100, "phases": ["0:boot", "50:menu"],
+                    "memcards": {"1": "unformatted", "2": "blank"},
+                    "evidence": ["docs/naming/runtime/c/spec.json"]})
+                write(root / "scen", "m-child", {"extends": "m"})
+                write(root / "scen", "m-reset", {
+                    "extends": "m", "memcards": {"1": "blank"}})
+                run("memcards: blank slots omitted from the spec",
+                    lambda: equal(scen.build_spec("m", "none")["memcards"],
+                                  {"1": "unformatted"}))
+                run("memcards: extends inherits them", lambda: equal(
+                    scen.compile_memcards("m-child"), {"1": "unformatted"}))
+                run("memcards: a child sets a slot back to blank",
+                    lambda: equal("memcards" in scen.build_spec(
+                        "m-reset", "none"), False))
+                for label, cards, message in (
+                    ("slot", {"3": "blank"}, "slot"),
+                    ("kind", {"1": "full"}, "kind"),
+                    ("not an object", ["unformatted"], "not an object"),
+                ):
+                    path = write(root / "drafts", "bad-cards", {
+                        "end_frame": 100, "phases": ["0:boot"],
+                        "memcards": cards})
+                    run("reject memcards " + label, lambda p=path, m=message:
+                        rejects(lambda: scen.compile_memcards(p), m))
+                script = scen.compile_script("m")
+                for label, cards, want in (
+                    ("verify: capture names the same card", {"1":
+                     "unformatted"}, 0),
+                    ("verify: capture lists the blank slot too",
+                     {"1": "unformatted", "2": "blank"}, 0),
+                    ("verify: capture without memcards", None, 1),
+                    ("verify: capture card in the other slot",
+                     {"2": "unformatted"}, 1),
+                ):
+                    spec = {"script": script}
+                    if cards is not None:
+                        spec["memcards"] = cards
+                    write(root / "docs/naming/runtime/c", "spec", spec)
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        got = scen.main(["verify"])
+                    run(label, lambda g=got, w=want, o=output.getvalue():
+                        equal((g, o.strip().splitlines()[-1]),
+                              (w, "scen verify: " +
+                               ("PASS" if w == 0 else "FAIL"))))
+                with tempfile.TemporaryDirectory() as cards_dir:
+                    for kind, head in (("blank", b"MC"),
+                                       ("unformatted", bytes(2))):
+                        path = Path(cards_dir) / (kind + ".mcd")
+                        scen.runkit.CARD_KINDS[kind][0](str(path))
+                        data = path.read_bytes()
+                        run(f"runkit card {kind}: 128 KiB, header "
+                            f"{head!r}", lambda d=data, h=head: equal(
+                                (len(d), d[:2]), (128 * 1024, h)))
+            finally:
+                scen.HERE, scen.REPO = real
+
     verify_pokes()
     verify_knockout()
+    verify_memcards()
     run("real library verify", verify_library)
     return 0 if ok else 1
 

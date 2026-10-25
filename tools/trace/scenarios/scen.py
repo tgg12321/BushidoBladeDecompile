@@ -38,6 +38,10 @@ Scenario keys (all optional except end_frame, unless "extends" gives it):
                starts (gdbtrace pokes); part of the run, so a build puts
                them ahead of any instrument pokes and `verify` requires
                them at the head of each evidence capture's spec "pokes"
+  memcards     {"1"|"2": "blank"|"unformatted"}: the memory card each slot
+               starts with (default blank: formatted, empty); compiled to
+               the spec's "memcards" (gdbtrace writes the card), and
+               `verify` requires the evidence spec to name the same cards
 
   python tools/trace/scenarios/scen.py list
   python tools/trace/scenarios/scen.py show <name> [--instrument I]
@@ -84,7 +88,7 @@ STEP_RE = re.compile(r"\+(\d+):([A-Z0-9_|+]+)(?:/(\d+))?(?:@([12]))?")
 MARK_RE = re.compile(r"(\d+):(\S+)")
 KEYS = {"description", "covers", "evidence", "extends", "use", "end_frame",
         "inputs", "repeat", "phases", "shots", "shots_drop", "segment",
-        "pokes"}
+        "pokes", "memcards"}
 POKE_KEYS = {"at", "hex", "phase"}
 INSTRUMENT = {
     "none": {"max_events": 200000, "duration_s": 7200},
@@ -214,7 +218,17 @@ def parse_pokes(pokes, where: str) -> list[dict]:
     return out
 
 
+def parse_memcards(cards, where: str) -> dict:
+    """{"1"|"2": kind} as given, checked (runkit.check_memcards)."""
+    try:
+        runkit.check_memcards(cards)
+    except ValueError as e:
+        raise ScenError(f"{where}: {e}")
+    return dict(cards or {})
+
+
 def merge(acc: dict, d: dict, where: str):
+    acc["memcards"].update(parse_memcards(d.get("memcards"), where))
     acc["pokes"] += parse_pokes(d.get("pokes", []), where)
     acc["inputs"] += parse_inputs(d.get("inputs", []), where)
     acc["inputs"] += expand_repeat(d.get("repeat", []), where)
@@ -235,7 +249,7 @@ def collect(name: str, seen=()) -> tuple[dict, int | None, dict]:
         acc, end, _ = collect(d["extends"], seen + (name,))
     else:
         acc, end = {"inputs": [], "phases": [], "screenshots": [],
-                    "pokes": []}, None
+                    "pokes": [], "memcards": {}}, None
     for seg in d.get("use", []):
         sp = segment_path(seg)
         if not os.path.exists(sp):
@@ -331,6 +345,13 @@ def compile_pokes(name: str) -> list[dict]:
     return acc["pokes"]
 
 
+def compile_memcards(name: str) -> dict:
+    """The cards the run starts with, slots left blank omitted (a spec
+    without "memcards" gets blank cards)."""
+    acc, _, _ = collect(name)
+    return {k: v for k, v in sorted(acc["memcards"].items()) if v != "blank"}
+
+
 def instrument(arg: str | None) -> dict:
     if not arg or arg in INSTRUMENT:
         return dict(INSTRUMENT[arg or "hitmap"])
@@ -346,6 +367,10 @@ def build_spec(name: str, inst: str | None) -> dict:
     pokes = compile_pokes(name)
     if pokes:
         spec["pokes"] = pokes + spec.get("pokes", [])
+    spec.pop("memcards", None)  # the cards are the scenario's, not the
+    cards = compile_memcards(name)  # instrument's
+    if cards:
+        spec["memcards"] = cards
     return spec
 
 
@@ -419,6 +444,7 @@ def cmd_verify(args) -> int:
             _, _, d = collect(n)
             script = compile_script(n)
             pokes = compile_pokes(n)
+            cards = compile_memcards(n)
         except ScenError as e:
             print(f"FAIL {n}: {e}")
             ok = False
@@ -442,6 +468,9 @@ def cmd_verify(args) -> int:
                     raise ValueError(f"spec \"pokes\" is not a list: "
                                      f"{want_pokes!r}")
                 want_pokes = want_pokes[:len(pokes)]
+                want_cards = {str(k): v for k, v in
+                              runkit.check_memcards(spec.get("memcards"))
+                              .items() if v != "blank"}
             except (OSError, ValueError, AttributeError) as e:
                 print(f"FAIL {n}: evidence {ev}: {e}")
                 ok = False
@@ -464,6 +493,10 @@ def cmd_verify(args) -> int:
                     json.dumps(pokes, sort_keys=True):
                 print(f"FAIL {n}: evidence {ev}: "
                       f"{first_diff(pokes, want_pokes, 'pokes')}")
+                ok = False
+            elif want_cards != cards:
+                print(f"FAIL {n}: evidence {ev}: memcards {want_cards} != "
+                      f"the scenario's {cards}")
                 ok = False
             else:
                 print(f"ok   {n} == {ev}{how}")

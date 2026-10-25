@@ -1,0 +1,251 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 8000,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "t_option"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu"
+      },
+      {
+        "frame": 6660,
+        "name": "t_card"
+      },
+      {
+        "frame": 6700,
+        "name": "memory_card"
+      },
+      {
+        "frame": 6860,
+        "name": "load_unformatted"
+      },
+      {
+        "frame": 7120,
+        "name": "save"
+      },
+      {
+        "frame": 7300,
+        "name": "format_prompt"
+      },
+      {
+        "frame": 7520,
+        "name": "format"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6380,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6660,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6800,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6860,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7060,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7120,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7450,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7520,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6700,
+        "name": "memory_card.first"
+      },
+      {
+        "frame": 6900,
+        "name": "load_unformatted.message"
+      },
+      {
+        "frame": 7200,
+        "name": "save.prompt"
+      },
+      {
+        "frame": 7350,
+        "name": "format_prompt.no"
+      },
+      {
+        "frame": 7500,
+        "name": "format_prompt.yes"
+      },
+      {
+        "frame": 7580,
+        "name": "format.formatting"
+      },
+      {
+        "frame": 7660,
+        "name": "format.checking"
+      },
+      {
+        "frame": 7740,
+        "name": "format.save_completed"
+      },
+      {
+        "frame": 7820,
+        "name": "format.menu"
+      },
+      {
+        "frame": 7999,
+        "name": "format.last"
+      }
+    ]
+  },
+  "memcards": {
+    "1": "unformatted"
+  }
+}

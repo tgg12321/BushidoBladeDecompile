@@ -1,0 +1,12 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6459	top menu (cursor on the first entry at 6050); DOWN x6 toward Option, end position not shot	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN,6320:DOWN,6380:DOWN	capture.top_menu.first.png
+t_option	6460	6559	transition; no screen claim	6460:CROSS	-
+option_menu	6560	6659	Option Menu, no screenshot in this capture; UP toward Memory Card (the memory_card phase at 6700 shows the Memory Card screen)	6600:UP	-
+t_card	6660	6699	transition; no screen claim	6660:CROSS	-
+memory_card	6700	6859	Memory Card screen (Load Data, Save Data, Return)	6800:DOWN	capture.memory_card.first.png
+load_unformatted	6860	7119	Load Data on an unformatted card in slot 1: Memory Card is unformatted, then the Memory Card screen (Load Data offers no Format? prompt)	6860:CROSS,7060:DOWN	capture.load_unformatted.message.png
+save	7120	7299	Save Data: Save current data on Memory Card? YES / NO	7120:CROSS	capture.save.prompt.png
+format_prompt	7300	7519	YES: Memory Card is unformatted / Format? YES / NO, cursor on NO (7350); LEFT moves it to YES (7500)	7300:CROSS,7450:LEFT	capture.format_prompt.no.png,capture.format_prompt.yes.png
+format	7520	7999	YES: Formatting Memory Card (7580), Checking Memory Card (7660), Save completed (7740), the Memory Card screen again (7820)	7520:CROSS	capture.format.formatting.png,capture.format.checking.png,capture.format.save_completed.png,capture.format.menu.png,capture.format.last.png

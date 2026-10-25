@@ -823,15 +823,23 @@ def map_matches_elf(syms: Symbols, args) -> bool:
 
 def prepare_memcards(args) -> dict:
     """Memory cards are part of the start state. Each PCSX-Redux run gets
-    its own pair next to the capture: a copy of --memcardN, or a freshly
-    formatted blank card. Returns the start-state record (hashed later,
-    before launch)."""
+    its own pair next to the capture: a copy of --memcardN, the card kind
+    the spec's "memcards" names, or a freshly formatted blank card. Returns
+    the start-state record (hashed later, before launch)."""
     rec = {}
+    kinds = runkit.check_memcards((getattr(args, "spec_obj", None) or {})
+                                  .get("memcards"))
     if args.launch != "pcsx-redux":
+        if kinds:
+            raise SystemExit("gdbtrace: spec \"memcards\" needs --launch "
+                             "pcsx-redux")
         return rec
     for n in (1, 2):
         dst = runkit.companion(args.out, f".mc{n}.mcd")
         src = getattr(args, f"memcard{n}")
+        if src and n in kinds:
+            raise SystemExit(f"gdbtrace: --memcard{n} and spec \"memcards\" "
+                             f"both set slot {n}")
         if src and os.path.normcase(os.path.abspath(src)) == \
                 os.path.normcase(os.path.abspath(dst)):
             raise SystemExit(f"gdbtrace: --memcard{n} is this run's own card "
@@ -842,8 +850,9 @@ def prepare_memcards(args) -> dict:
             shutil.copyfile(src, dst)
             rec[f"memcard{n}"] = {"from": os.path.abspath(src)}
         else:
-            runkit.write_blank_card(dst)
-            rec[f"memcard{n}"] = {"from": "blank card (runkit.write_blank_card)"}
+            write, what = runkit.CARD_KINDS[kinds.get(n, "blank")]
+            write(dst)
+            rec[f"memcard{n}"] = {"from": what}
         rec[f"memcard{n}"]["card"] = dst
     return rec
 
@@ -2372,7 +2381,8 @@ def main(argv=None) -> int:
                    help="--headless: seconds to wait for a free slot")
     for n in (1, 2):
         r.add_argument(f"--memcard{n}", help=f"pcsx-redux: start with a copy "
-                       f"of this card in slot {n} (default: a blank card)")
+                       f"of this card in slot {n} (default: the spec's "
+                       "\"memcards\" kind, else a blank card)")
 
     p = sub.add_parser("report", help="summarize a trace as markdown evidence")
     p.add_argument("trace")

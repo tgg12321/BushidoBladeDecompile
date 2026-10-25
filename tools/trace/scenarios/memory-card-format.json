@@ -1,0 +1,62 @@
+{
+  "description": "Option Menu UP to Memory Card with an unformatted card in slot 1: Load Data reports Memory Card is unformatted, Save Data (YES) offers Format? (cursor on NO), LEFT to YES, CROSS: Formatting Memory Card, Checking Memory Card, Save completed",
+  "covers": [
+    "menu:top",
+    "menu:option",
+    "menu:memory_card",
+    "event:save",
+    "event:format"
+  ],
+  "evidence": [
+    "docs/naming/runtime/memory-card-format-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "memcards": {
+    "1": "unformatted"
+  },
+  "end_frame": 8000,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:DOWN",
+    "6320:DOWN",
+    "6380:DOWN",
+    "6460:CROSS",
+    "6600:UP",
+    "6660:CROSS",
+    "6800:DOWN",
+    "6860:CROSS",
+    "7060:DOWN",
+    "7120:CROSS",
+    "7300:CROSS",
+    "7450:LEFT",
+    "7520:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6460:t_option",
+    "6560:option_menu",
+    "6660:t_card",
+    "6700:memory_card",
+    "6860:load_unformatted",
+    "7120:save",
+    "7300:format_prompt",
+    "7520:format"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6700:memory_card.first",
+    "6900:load_unformatted.message",
+    "7200:save.prompt",
+    "7350:format_prompt.no",
+    "7500:format_prompt.yes",
+    "7580:format.formatting",
+    "7660:format.checking",
+    "7740:format.save_completed",
+    "7820:format.menu",
+    "7999:format.last"
+  ]
+}

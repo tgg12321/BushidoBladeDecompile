@@ -177,6 +177,40 @@ def write_blank_card(path: str):
         f.write(card)
 
 
+def write_unformatted_card(path: str):
+    """A 128 KiB card of zero bytes: no "MC" header frame, so the game
+    reports it unformatted and offers to format it."""
+    with open(path, "wb") as f:
+        f.write(bytes(128 * 1024))
+
+
+# spec "memcards" values -> (writer, start-state "from" text)
+CARD_KINDS = {
+    "blank": (write_blank_card, "blank card (runkit.write_blank_card)"),
+    "unformatted": (write_unformatted_card,
+                    "unformatted card (runkit.write_unformatted_card)"),
+}
+
+
+def check_memcards(cards) -> dict:
+    """A spec's "memcards": {"1"|"2": kind}; a slot not listed gets a blank
+    card. Returns {slot number: kind}."""
+    if cards is None:
+        return {}
+    if not isinstance(cards, dict):
+        raise ValueError(f"spec \"memcards\" is not an object: {cards!r}")
+    out = {}
+    for slot, kind in cards.items():
+        if slot not in ("1", "2"):
+            raise ValueError(f"spec \"memcards\": slot {slot!r} is not "
+                             "\"1\" or \"2\"")
+        if kind not in CARD_KINDS:
+            raise ValueError(f"spec \"memcards\": slot {slot} kind {kind!r} "
+                             f"is not one of {sorted(CARD_KINDS)}")
+        out[int(slot)] = kind
+    return out
+
+
 def lua_str(s: str) -> str:
     return "[==[" + s + "]==]"
 
