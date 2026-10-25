@@ -248,6 +248,44 @@ def main():
         if result != 0:
             raise AssertionError(output.getvalue().strip())
 
+    def verify_pokes():
+        real = (scen.HERE, scen.REPO)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scen.HERE = str(root / "scen")
+            scen.REPO = str(root)
+            try:
+                write(root / "scen", "targets", {"groups": {}})
+                poke = {"at": "0x80106A50", "hex": "FFF33F05",
+                        "phase": "menu"}
+                write(root / "scen", "p", {
+                    "end_frame": 100, "phases": ["0:boot", "50:menu"],
+                    "pokes": [poke],
+                    "evidence": ["docs/naming/runtime/c/spec.json"]})
+                script = scen.compile_script("p")
+                extra = {"at": "0x80100000", "hex": "01", "phase": "menu"}
+                for label, pokes, want in (
+                    ("verify: scenario pokes then instrument pokes",
+                     [poke, extra], 0),
+                    ("verify: capture missing the poke", [], 1),
+                    ("verify: capture poke changed",
+                     [{**poke, "hex": "00"}], 1),
+                    ("verify: capture pokes reordered", [extra, poke], 1),
+                    ("verify: capture pokes null", None, 1),
+                ):
+                    write(root / "docs/naming/runtime/c", "spec",
+                          {"script": script, "pokes": pokes})
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        got = scen.main(["verify"])
+                    run(label, lambda g=got, w=want, o=output.getvalue():
+                        equal((g, o.strip().splitlines()[-1]),
+                              (w, "scen verify: " +
+                               ("PASS" if w == 0 else "FAIL"))))
+            finally:
+                scen.HERE, scen.REPO = real
+
+    verify_pokes()
     run("real library verify", verify_library)
     return 0 if ok else 1
 

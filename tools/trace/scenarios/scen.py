@@ -400,7 +400,11 @@ def cmd_verify(args) -> int:
                 with open(p, encoding="utf-8") as f:
                     spec = json.load(f)
                 want = spec.get("script")
-                want_pokes = spec.get("pokes", [])[:len(pokes)]
+                want_pokes = spec.get("pokes", [])
+                if not isinstance(want_pokes, list):
+                    raise ValueError(f"spec \"pokes\" is not a list: "
+                                     f"{want_pokes!r}")
+                want_pokes = want_pokes[:len(pokes)]
             except (OSError, ValueError, AttributeError) as e:
                 print(f"FAIL {n}: evidence {ev}: {e}")
                 ok = False
