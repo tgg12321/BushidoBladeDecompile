@@ -13,7 +13,8 @@
     "docs/naming/runtime/versus-cpu-hitmap-1/spec.json",
     "docs/naming/runtime/versus-cpu-values-1/spec.json",
     "docs/naming/runtime/lib-versus-cpu-first-fight-1/spec.json",
-    "docs/naming/runtime/fighter-values-versus-cpu-first-fight-1/spec.json"
+    "docs/naming/runtime/fighter-values-versus-cpu-first-fight-1/spec.json",
+    "docs/naming/runtime/fighter-polls-versus-cpu-first-fight-1/spec.json"
   ],
   "use": [
     "boot"
