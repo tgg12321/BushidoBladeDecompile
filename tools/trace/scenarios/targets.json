@@ -58,7 +58,7 @@
       }
     },
     "characters": {
-      "open": "Select School draws two schools, Narukagami and Shainto (group-battle-hitmap-1 school_select); 2P Vs. Mode Select Character is a grid of four columns by five rows: the six default fighters (versus-2p-stage-map1-6 char_select.first), and with the unlock word D_80106A50.unk_00 set (versus-2p-hidden-roster-1) all 20 names; each further fighter's own fight not yet captured",
+      "open": "Select School draws two schools, Narukagami and Shainto (group-battle-hitmap-1 school_select); 2P Vs. Mode Select Character is a grid of four columns by five rows: the six default fighters (versus-2p-stage-map1-6 char_select.first), and with the unlock word D_80106A50.unk_00 set (versus-2p-hidden-roster-1) all 20 names; every one of the 14 further fighters now has its own fight vs GENGORO (versus-2p-hidden-<fighter>, HIGHWAYMAN in versus-2p-hidden-roster)",
       "keys": [
         "char:kannuki",
         "char:mikado",
@@ -82,7 +82,7 @@
         "char:katze"
       ],
       "notes": {
-        "char:utsusemi": "char:utsusemi .. char:katze: the 14 names drawn only with the unlock word set, reached by P1's cursor on Select Character (portrait drawn, versus-2p-hidden-roster-1 char_select.* shots); only HIGHWAYMAN fought"
+        "char:utsusemi": "char:utsusemi .. char:katze: the 14 names drawn only with the unlock word set, reached by P1's cursor on Select Character (portrait drawn, versus-2p-hidden-roster-1 char_select.* shots); each fought GENGORO on Building Rooftop by its versus-2p-hidden-<fighter> scenario (HIGHWAYMAN by versus-2p-hidden-roster)"
       }
     },
     "weapons": {
