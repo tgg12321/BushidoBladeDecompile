@@ -133,10 +133,35 @@ class ScreensTest(unittest.TestCase):
                          ("0x80020000", "observed_caller"))
         self.assertEqual(row["inconclusive"], "0")
 
-    def test_phase_with_only_frameless_hits_emits_no_row(self):
+    def test_phase_with_only_frameless_hits_emits_diagnostic_row(self):
         self.hits.append(self.hit(None, "q"))
-        row, = self.rows()
-        self.assertEqual(row["phase"], "p")
+        p, q = self.rows()
+        self.assertEqual(p["phase"], "p")
+        self.assertEqual(q["phase"], "q")
+        self.assertEqual((q["first_frame"], q["last_frame"], q["hits_with_frame"]),
+                         ("", "", "0"))
+        self.assertEqual(q["inconclusive"], "1")
+        self.assertEqual(q["reason"], "hits_without_frame")
+
+    def test_limits_cached_per_target_and_phase(self):
+        self.hits = [self.hit(5), self.hit(6), self.hit(21, "q"),
+                     self.hit(22, "q")]
+        expected = self.rows()
+        with patch.object(screens.events, "limits", wraps=screens.events.limits) as limits:
+            self.assertEqual(self.rows(), expected)
+        self.assertEqual(limits.call_count, 2)
+
+    def test_invalid_hits_name_capture(self):
+        for change, message in (({"kind": True}, "invalid hit kind"),
+                                ({"phase": 1}, "invalid phase"),
+                                ({"args": []}, "call args"),
+                                ({"frame": -1}, "invalid hit frame")):
+            with self.subTest(change=change):
+                self.hits = [dict(self.hit(5), **change)]
+                with self.assertRaises(ValueError) as caught:
+                    self.rows()
+                self.assertIn(str(self.capture), str(caught.exception))
+                self.assertIn(message, str(caught.exception))
 
     def test_modified_skipped(self):
         for key in ("stubs", "pokes"):
@@ -144,6 +169,9 @@ class ScreensTest(unittest.TestCase):
                 self.spec[key] = [dict(at="f")]
                 self.assertEqual(self.rows(), [])
                 del self.spec[key]
+
+    def test_stub_directory_skipped(self):
+        self.capture.rmdir()
         self.capture = self.runtime / "sample-stub-f"
         self.capture.mkdir()
         self.assertEqual(self.rows(), [])

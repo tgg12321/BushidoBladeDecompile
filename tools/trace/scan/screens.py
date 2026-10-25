@@ -10,8 +10,9 @@ taken in the Vsync handler as F starts, before any code that runs in F, so
 the screen for a hit on F is the first shot on a frame after F. Boundary
 screenshots run before the phase change (runkit.ACTION_ORDER); shots before the
 first phase belong to runkit.first_phase. Old frameless captures emit no rows.
-Mixed groups retain missing-frame diagnostics. Hit maps credit only their
-configured first hits per phase, not all calls. PNG hashes are manifest facts.
+In captures with framed hits, all groups retain missing-frame diagnostics,
+including groups with no framed hits (empty frame bounds and zero framed hits).
+Hit maps credit only their configured first hits per phase, not all calls. PNG hashes are manifest facts.
 """
 
 import argparse
@@ -80,76 +81,87 @@ def render(runtime=None):
     coverage = events.coverage_rows(blobs.get(runtime / "matrix/coverage.tsv"))
     groups = {}
     for path in sorted(p for p in blobs if p.name == "capture.manifest.json"):
-        manifest = json.loads(blobs[path])
-        if manifest.get("q124_complete") is not True:
-            continue
-        relative = path.parent.relative_to(runtime)
-        raw = blobs[path.with_name("capture.jsonl")]
-        records = [json.loads(line) for line in raw.decode("utf-8").splitlines()]
-        starts = [e for e in records if e.get("ev") == "start"]
-        if len(starts) != 1:
-            raise ValueError(str(path) + ": expected one start")
-        spec = starts[0].get("spec", {})
-        if events.modified(relative, spec, records):
-            continue
-        hits = [e for e in records if e.get("ev") == "hit"]
-        if not any(events.integer(e.get("frame"), "hit frame") is not None for e in hits):
-            continue
-        digest = hashlib.sha1(raw).hexdigest()
-        capture = relative.as_posix() + "@" + digest[:12]
-        resolved = events.report_sites(blobs.get(path.with_name("report.md")),
-                                       records, digest, coverage)
-        events.resolve_ranges(records, resolved, events.coverage_ranges(coverage))
-        shots = screenshots(spec, manifest)
-        ends = [e for e in records if e.get("ev") == "end"]
-        if len(ends) > 1:
-            raise ValueError(str(path) + ": multiple end records")
-        end = ends[0] if ends else None
-        declared = events.declarations(spec)
-        for hit in hits:
-            if hit.get("stub_call") or hit.get("stub_leak"):
+        try:
+            manifest = json.loads(blobs[path])
+            if manifest.get("q124_complete") is not True:
                 continue
-            addr, name, reasons = function(hit, resolved, coverage)
-            phase = hit.get("phase") or "?"
-            if phase == "?":
-                reasons.add("unknown_phase")
-            key = ("?" if addr is None else f"0x{addr:08X}", name, capture, phase)
-            group = groups.setdefault(key, dict(frames=[], screens=set(),
-                                                coverage=set(), reasons=set()))
-            group["reasons"].update(reasons)
-            entry = declared.get((events.normalized_target(hit["at"]), hit["kind"]), {})
-            # Run limits as events.py reports them; reaching a per-phase
-            # credit is the coverage column's caveat, not a defect.
-            group["reasons"].update(
-                r for r in events.limits(spec, records, end,
-                                         entry or {"at": hit["at"]}, hit)
-                if not r.startswith("per_phase_reached:"))
-            if hit.get("hm"):
-                credit = spec.get("hitmap", {}).get("per_phase", 1)
-                group["coverage"].add(f"hitmap:first {credit} hits per phase only")
-            elif "per_phase" in entry:
-                group["coverage"].add(f"breakpoint:first {entry['per_phase']} hits per phase only")
-            else:
-                group["coverage"].add("recorded hits only; capture limits apply")
-            frame = events.integer(hit.get("frame"), "hit frame")
-            if frame is None:
-                group["reasons"].add("hits_without_frame")
+            relative = path.parent.relative_to(runtime)
+            raw = blobs[path.with_name("capture.jsonl")]
+            records = [json.loads(line) for line in raw.decode("utf-8").splitlines()]
+            for event in records:
+                if not isinstance(event, dict) or not isinstance(event.get("ev"), str):
+                    raise ValueError("expected event object with ev")
+                if event["ev"] == "hit":
+                    events.observation(event, {})
+            starts = [e for e in records if e.get("ev") == "start"]
+            if len(starts) != 1:
+                raise ValueError(str(path) + ": expected one start")
+            spec = starts[0].get("spec", {})
+            if events.modified(relative, spec, records):
                 continue
-            group["frames"].append(frame)
-            later = [s for s in shots if s[2] == phase and s[0] > frame]
-            if later:
-                group["screens"].add(later[0][3])
-            else:
-                group["reasons"].add("no_later_screenshot")
+            hits = [e for e in records if e.get("ev") == "hit"]
+            if not any(events.integer(e.get("frame"), "hit frame") is not None for e in hits):
+                continue
+            digest = hashlib.sha1(raw).hexdigest()
+            capture = relative.as_posix() + "@" + digest[:12]
+            resolved = events.report_sites(blobs.get(path.with_name("report.md")),
+                                           records, digest, coverage)
+            events.resolve_ranges(records, resolved, events.coverage_ranges(coverage))
+            shots = screenshots(spec, manifest)
+            ends = [e for e in records if e.get("ev") == "end"]
+            if len(ends) > 1:
+                raise ValueError(str(path) + ": multiple end records")
+            end = ends[0] if ends else None
+            declared = events.declarations(spec)
+            limit_cache = {}
+            for hit in hits:
+                if hit.get("stub_call") or hit.get("stub_leak"):
+                    continue
+                addr, name, reasons = function(hit, resolved, coverage)
+                phase = hit.get("phase") or "?"
+                if phase == "?":
+                    reasons.add("unknown_phase")
+                key = ("?" if addr is None else f"0x{addr:08X}", name, capture, phase)
+                group = groups.setdefault(key, dict(frames=[], screens=set(),
+                                                    coverage=set(), reasons=set()))
+                group["reasons"].update(reasons)
+                entry = declared.get((events.normalized_target(hit["at"]), hit["kind"]), {})
+                # Run limits as events.py reports them; reaching a per-phase
+                # credit is the coverage column's caveat, not a defect.
+                limit_key = (hit["kind"], hit["at"], hit.get("phase"))
+                if limit_key not in limit_cache:
+                    limit_cache[limit_key] = events.limits(
+                        spec, records, end, entry or {"at": hit["at"]}, hit)
+                group["reasons"].update(
+                    r for r in limit_cache[limit_key]
+                    if not r.startswith("per_phase_reached:"))
+                if hit.get("hm"):
+                    credit = spec.get("hitmap", {}).get("per_phase", 1)
+                    group["coverage"].add(f"hitmap:first {credit} hits per phase only")
+                elif "per_phase" in entry:
+                    group["coverage"].add(f"breakpoint:first {entry['per_phase']} hits per phase only")
+                else:
+                    group["coverage"].add("recorded hits only; capture limits apply")
+                frame = events.integer(hit.get("frame"), "hit frame")
+                if frame is None:
+                    group["reasons"].add("hits_without_frame")
+                    continue
+                group["frames"].append(frame)
+                later = [s for s in shots if s[2] == phase and s[0] > frame]
+                if later:
+                    group["screens"].add(later[0][3])
+                else:
+                    group["reasons"].add("no_later_screenshot")
+        except (OSError, ValueError, KeyError, TypeError) as ex:
+            raise ValueError(f"{path.parent}: {ex}") from ex
     out = io.StringIO(newline="\n")
     writer = csv.writer(out, delimiter="\t", lineterminator="\n",
                         quoting=csv.QUOTE_NONE, quotechar=None)
     writer.writerow(HEADER)
     for key, group in sorted(groups.items()):
         frames = group["frames"]
-        if not frames:
-            continue
-        row = [*key, min(frames), max(frames), len(frames),
+        row = [*key, min(frames) if frames else "",
+               max(frames) if frames else "", len(frames),
                ";".join(sorted(group["screens"])), ";".join(sorted(group["coverage"])),
                int(bool(group["reasons"])), ";".join(sorted(group["reasons"]))]
         if any(any(c in str(cell) for c in "\t\r\n") for cell in row):
