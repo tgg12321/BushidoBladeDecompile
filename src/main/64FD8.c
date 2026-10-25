@@ -1349,14 +1349,14 @@ extern s32 column;
 
 extern s32 rand(void);
 
-s32 menu_RunFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
+s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
     s32 s2;
     s32 result;
 
     switch (D_800A35E4) {
     case 0:
         s2 = 0;
-        result = menu_UpdateToggleChoices(arg0, arg1);
+        result = menu_UpdateOptionMenuChoices(arg0, arg1);
         switch (result) {
         case 1:
             s2 = -1;

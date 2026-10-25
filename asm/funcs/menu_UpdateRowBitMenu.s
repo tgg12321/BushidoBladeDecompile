@@ -26,9 +26,9 @@ glabel menu_UpdateRowBitMenu
     /* 5DB98 8006D398 02000524 */  addiu      $a1, $zero, 0x2
     /* 5DB9C 8006D39C B9A6010C */  jal        gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
     /* 5DBA0 8006D3A0 21300002 */   addu      $a2, $s0, $zero
-    /* 5DBA4 8006D3A4 87B0010C */  jal        menu_DrawRowBitSheetsTilesAndGradientQuads
+    /* 5DBA4 8006D3A4 87B0010C */  jal        menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
     /* 5DBA8 8006D3A8 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 5DBAC 8006D3AC EFB3010C */  jal        menu_DrawRowBitsGetEmptyRowSides
+    /* 5DBAC 8006D3AC EFB3010C */  jal        menu_DrawKeyConfigRowBitsGetEmptyRowSides
     /* 5DBB0 8006D3B0 1000A427 */   addiu     $a0, $sp, 0x10
     /* 5DBB4 8006D3B4 7000A427 */  addiu      $a0, $sp, 0x70
     /* 5DBB8 8006D3B8 7400A527 */  addiu      $a1, $sp, 0x74

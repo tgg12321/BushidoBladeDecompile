@@ -277,7 +277,7 @@ void func_80035828(void) {
         }
         break;
     case 2:
-        switch (menu_RunFlowStateWithRowBitEdit(
+        switch (menu_RunOptionModeFlowStateWithRowBitEdit(
             g_pad_state.held, g_pad_state.pressed)) {
         case -1:
         case 1:

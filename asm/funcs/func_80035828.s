@@ -190,7 +190,7 @@ glabel func_80035828
     /* 262DC 80035ADC 9027848C */  lw         $a0, %lo(g_pad_state + 0x8)($a0)
     /* 262E0 80035AE0 1080053C */  lui        $a1, %hi(g_pad_state + 0xC)
     /* 262E4 80035AE4 9427A58C */  lw         $a1, %lo(g_pad_state + 0xC)($a1)
-    /* 262E8 80035AE8 CCDE010C */  jal        menu_RunFlowStateWithRowBitEdit
+    /* 262E8 80035AE8 CCDE010C */  jal        menu_RunOptionModeFlowStateWithRowBitEdit
     /* 262EC 80035AEC 00000000 */   nop
     /* 262F0 80035AF0 01004324 */  addiu      $v1, $v0, 0x1
     /* 262F4 80035AF4 0500622C */  sltiu      $v0, $v1, 0x5

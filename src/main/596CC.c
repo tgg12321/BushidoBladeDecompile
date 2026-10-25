@@ -1,10 +1,11 @@
 /* 48 game functions: the row menu (menu_SetEnabledRows,
- * menu_LoadResourcesInitStateSelectFirstEnabledRow, menu_HandleToggleChoices,
+ * menu_LoadResourcesInitStateSelectFirstEnabledRow,
+ * menu_HandleOptionMenuChoices,
  * ..., gpu_InitPrimBufferPair). .text 0x80068ECC (ROM 0x596CC). Start boundary:
  * SEAM (owner ruling 2026-10-17; Codex seam #99): no direct call or static
  * crosses the cut; 51268.c's .sbss ends at D_800A34F4 and these functions own
- * D_800A34F8..D_800A352C; .rodata 0x80015988+0x28 (menu_HandleToggleChoices's
- * table, D_800159A0) follows 51268.o's. */
+ * D_800A34F8..D_800A352C; .rodata 0x80015988+0x28
+ * (menu_HandleOptionMenuChoices's table, D_800159A0) follows 51268.o's. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -1177,9 +1178,9 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
 }
 
 /* One argument: the caller's s32[10] (asm reads a0 only). */
-void menu_DrawToggleChoices(s32 *arg0);
+void menu_DrawOptionMenuChoices(s32 *arg0);
 
-void menu_DrawToggleChoices(s32 *arg0) {
+void menu_DrawOptionMenuChoices(s32 *arg0) {
     Unk8007352CRec s;
     u16 r[4];
     Unk8009B0E0Record **tbl;
@@ -1327,9 +1328,9 @@ void menu_DrawToggleChoices(s32 *arg0) {
     gpu_AddThreeGreyTilesStackedUp(arg0, r, 0x11);
 }
 
-/* menu_HandleToggleChoices — menu/config input dispatch. Its second switch's
- * 6-entry jump table lands at 0x80015988 in this TU's .rodata. */
-s32 menu_HandleToggleChoices(s32 *arg0, u32 *arg1) {
+/* menu_HandleOptionMenuChoices — menu/config input dispatch. Its second
+ * switch's 6-entry jump table lands at 0x80015988 in this TU's .rodata. */
+s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
     s32 ret;
@@ -1428,18 +1429,18 @@ s32 menu_HandleToggleChoices(s32 *arg0, u32 *arg1) {
  * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
 
-s32 menu_UpdateToggleChoices(s32 arg0, u32 arg1) {
+s32 menu_UpdateOptionMenuChoices(s32 arg0, u32 arg1) {
     s32 sp10[10];
     GpuDb *t;
     D_800A3514 += 1;
     t = &g_gpu_db[D_800A36AC & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
-    menu_DrawToggleChoices(sp10);
-    return menu_HandleToggleChoices(&arg0, &arg1);
+    menu_DrawOptionMenuChoices(sp10);
+    return menu_HandleOptionMenuChoices(&arg0, &arg1);
 }
 
-s32 menu_HandleReturningChoices(s32 *arg0, u32 *arg1) {
+s32 menu_HandleMemCardChoices(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
     s32 ret;
@@ -1502,7 +1503,7 @@ s32 menu_HandleReturningChoices(s32 *arg0, u32 *arg1) {
     return var_s0;
 }
 
-void menu_DrawReturningChoices(s32 *arg0) {
+void menu_DrawMemCardChoices(s32 *arg0) {
     Unk8007352CRec s;
     u16 var_1[4];
     s32 i;
@@ -1671,29 +1672,27 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32 arg0, s32 arg1) {
     D_800A36DC++;
 }
 
-extern s32 menu_HandleReturningChoices();
+extern s32 menu_HandleMemCardChoices();
 
-s32 menu_UpdateReturningChoices(s32 arg0, s32 arg1) {
+s32 menu_UpdateMemCardChoices(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
     D_800A3514 += 1;
     t = &g_gpu_db[D_800A36AC & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
-    menu_DrawReturningChoices(sp10);
-    return menu_HandleReturningChoices(&arg0, &arg1);
+    menu_DrawMemCardChoices(sp10);
+    return menu_HandleMemCardChoices(&arg0, &arg1);
 }
 
-s32 func_8006C1FC(s32 a0, s32 a1) {
-    return menu_UpdateReturningChoices(a0, a1);
-}
+s32 func_8006C1FC(s32 a0, s32 a1) { return menu_UpdateMemCardChoices(a0, a1); }
 
 #define setXYWH(p, _x0, _y0, _w, _h)                                           \
     (p)->x0 = (_x0), (p)->y0 = (_y0), (p)->x1 = (_x0) + (_w), (p)->y1 = (_y0), \
     (p)->x2 = (_x0), (p)->y2 = (_y0) + (_h), (p)->x3 = (_x0) + (_w),           \
     (p)->y3 = (_y0) + (_h)
 
-void menu_DrawRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
+void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     Unk8007352CRec s;
     s32 j;
     /* FAKE: reused: re-stored with the sheet list it already holds at the
@@ -2059,7 +2058,7 @@ typedef union {
     s32 word;
 } Counts_8006CFBC;
 
-s32 menu_DrawRowBitsGetEmptyRowSides(s32 *arg0) {
+s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *arg0) {
     Unk8007352CRec s;
     Counts_8006CFBC counts;
     Unk8009B0E0Record **table;
@@ -2155,8 +2154,8 @@ void menu_ResetRowBitCursors(void) {
     D_800A34FC->unk_28.half[0] = 5;
 }
 
-extern void menu_DrawRowBitSheetsTilesAndGradientQuads(s32 *);
-extern s32 menu_DrawRowBitsGetEmptyRowSides(s32 *);
+extern void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *);
+extern s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *);
 
 s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     s32 sp10[22];
@@ -2166,8 +2165,8 @@ s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     t = &g_gpu_db[D_800A36AC & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 2, t);
-    menu_DrawRowBitSheetsTilesAndGradientQuads(sp10);
-    r = menu_DrawRowBitsGetEmptyRowSides(sp10);
+    menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(sp10);
+    r = menu_DrawKeyConfigRowBitsGetEmptyRowSides(sp10);
     return menu_HandleRowBitInput(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
 

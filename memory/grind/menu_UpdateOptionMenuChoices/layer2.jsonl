@@ -1,0 +1,1 @@
+{"func": "menu_UpdateOptionMenuChoices", "addr": "8006B898", "verdict": "PASS", "body_hash": "64d2383d37c2f704", "body_kind": "c", "file": "main/51268", "reviewer": "a661d538a90c71986", "scope": "cheat-cleanup", "date": "2026-10-16T14:47:02Z", "head": "29bfc4b7d", "notes": "", "renamed_from": ["func_8006B898", "menu_UpdateToggleChoices"]}

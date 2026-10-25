@@ -268,8 +268,8 @@ typedef struct {
 } Unk80078824Rec;
 
 /* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's unk_44
- * (menu_DrawRowBitSheetsTilesAndGradientQuads draws them) and D_SEL.BIN's
- * unk_3C (menu_DrawSelRowTiles). */
+ * (menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws them) and
+ * D_SEL.BIN's unk_3C (menu_DrawSelRowTiles). */
 typedef struct {
     s16 x, y, w, h;
     u8 r, g, b, pad;
@@ -2316,8 +2316,9 @@ typedef struct {
  * -1), except unk_3C, menu_DrawConfirmSheetsAndDigitPairs's list
  * (Unk8006DD94List); reloc_RelocateTwelveListsAndLoadVabPack walks the twelve
  * slots as one run of list pointers.
- * - unk_44: the Rec_8006C21C rows menu_DrawRowBitSheetsTilesAndGradientQuads
- * draws; unk_48: the Size2s16 box sizes (x = width, y = height)
+ * - unk_44: the Rec_8006C21C rows
+ * menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws; unk_48: the
+ * Size2s16 box sizes (x = width, y = height)
  * gpu_DrawSheetPairCenteredTileWithOptionalSelection reads. The -1 ending
  * reloc_RelocateSelfOffsets's offset list follows at +0x4C; no reader touches
  * it. */
@@ -2384,10 +2385,11 @@ typedef struct {
  * the MOD.BIN root in unk_24.
  * - unk_0C: the s16 pair pad_StepOffsetsGetDirectionEvents steps (its arg2);
  * the draw functions use unk_0C[0] / [1] as x / y offsets.
- * - unk_28: one s16 per player (menu_DrawRowBitSheetsTilesAndGradientQuads,
+ * - unk_28: one s16 per player
+ * (menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads,
  * menu_SetExclusiveRowBit, menu_HandleRowBitInput); menu_HandleRowBitInput and
- * menu_DrawRowBitsGetEmptyRowSides also test the pair as one word (== 0x50005:
- * both 5), as SelWork's f1C / f20. No code touches the other bytes. */
+ * menu_DrawKeyConfigRowBitsGetEmptyRowSides also test the pair as one word (==
+ * 0x50005: both 5), as SelWork's f1C / f20. No code touches the other bytes. */
 typedef struct {
     u8 pad00[0xC];
     s16 unk_0C[2];
