@@ -4,7 +4,7 @@ for every movable in every loop of one function, from the -da dumps.
 
 WHY (post-mortem 2026-09-01): func_80041188 foreclosed its winning chassis
 on an incomplete reading of scan_loop's movable test (it never enumerated
-`n_times_set`); func_8003C714 spent eight sessions on the single inequality
+`n_times_set`); fight_PackTimeRecordsAndInitPresentation spent eight sessions on the single inequality
 at loop.c:1631. The dump already carries most terms -- this tool lines them
 up and names the C-level lever for each.
 
@@ -36,7 +36,7 @@ Derived (not printed by cc1) and labelled as such in the output:
     range in the .cse RTL. If the .cse dump is absent the report WARNS and
     does not substitute the .loop RTL (which is POST-loop and misleading).
   * n_non_fixed_regs -- 60 on the shipped hard-float chassis (ledger
-    func_8003C714 s1/s8), 28 with --soft-float. CC_FLAGS is not a lever
+    fight_PackTimeRecordsAndInitPresentation s1/s8), 28 with --soft-float. CC_FLAGS is not a lever
     (no-compiler-divergence); the flag exists only to reproduce a ledger
     measurement.
   * n_times_set[regno] -- count of `(set (reg:M R) ...)`/`(clobber (reg:M R))`
@@ -98,7 +98,7 @@ LEVERS = {
                "doubles it (:1223) and combine_movables adds matched movables' (:1283, :1331)",
     "lifetime": "life = uid_luid span of the reg's uses; a second in-loop USE of the pseudo raises it",
     "insn_count": "count_loop_regs_set counts insns BEFORE loop_optimize deletes them: loop-carried "
-                  "arithmetic that biv elimination later removes still counts (func_8003C714 s6). "
+                  "arithmetic that biv elimination later removes still counts (fight_PackTimeRecordsAndInitPresentation s6). "
                   "Doubled per `halved` row and the doubling PERSISTS (loop.c:1611)",
     "threshold": "loop.c:532 (loop_has_call halves it; a call in the loop is the only C-level input) "
                  "then -3 per move (loop.c:1719/1904, but NOT the partial&&match branch :1646). "

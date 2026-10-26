@@ -3437,7 +3437,7 @@ def compact_ledger(root, func, cap=LEDGER_MAX, force=False):
 # A ledger paraphrases a rule's scope at the time it was written; rule text
 # moves by owner ruling. fighter_ResolveWeaponContact banked its decisive find as "out of
 # scope" by quoting a scoping abolished seven weeks earlier and lost 18
-# sessions; func_8003C714 s1 carried the same caveat. The brief now prints the
+# sessions; fight_PackTimeRecordsAndInitPresentation s1 carried the same caveat. The brief now prints the
 # CURRENT `description:` line of every rule slug the ledger mentions, so a
 # stale kill cannot survive a dispatch unchallenged.
 _RULE_DESC_RE = re.compile(r'(?m)^description:\s*"?(.+?)"?\s*$')

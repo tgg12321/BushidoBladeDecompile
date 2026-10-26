@@ -11,17 +11,17 @@ the retail EXE's bytes, with the operand count and the opponent id each
 fight-setting command leaves in D_80102778.unk_4[1] (P2's character id,
 fighter_Init's arg2 for fighter 1, 9F9C.c:1796):
 
-  op 16 (5 operands): func_8003B3A4, unk_4[1] = 0xE or 0x1D (2B344.c:270:
+  op 16 (5 operands): fight_ConfigureFighter1FromLookupAndOperandsAndLoad, unk_4[1] = 0xE or 0x1D (2B344.c:270:
         0xE when D_8008D9EC[P1's D_8008D538 entry] != 0 and D_800A37A0 != 1)
-  op 17 (3): func_8003B484, unk_4[1] = op0, unk_4[3] = op1,
+  op 17 (3): fight_ConfigureFighter1FromOperandsAndLoad, unk_4[1] = op0, unk_4[3] = op1,
         unk_A[1] = op2
   op 3  (2): unk_4[1] = op0, unk_4[3] = op1
-  op 2  (29): D_800A3894 = the operands, func_8003B2C8 (unk_4[0] = op0,
-        the old unk_4[0] kept in D_800A3836), func_8003AF40(0), func_8003B3A4(operands + 1)
+  op 2  (29): D_800A3894 = the operands, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState (unk_4[0] = op0,
+        the old unk_4[0] kept in D_800A3836), fight_FillMissingConfigInitFighterAndLoadObject(0), fight_ConfigureFighter1FromLookupAndOperandsAndLoad(operands + 1)
         (0xE or 0x1D as op 16), then as op 18; after that fight
-        func_8003B484(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
+        fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
         unk_4[1] = operand 6, shown as "0x0E|0x1D then 0xNN"
-  op 20 (12): D_800A385C = the operands, func_8003B4DC: unk_4[1] = 0x1F,
+  op 20 (12): D_800A385C = the operands, fight_SetFixedFighterBytesAndLoadBothFighters: unk_4[1] = 0x1F,
         func_8003B56C(1): D_800A3834 = 6, ends the call
   op 1  (1): D_800A36A4 = op0, D_800A3834 = 22, ends the call
   op 19 (4): D_800A3878 = the operands, D_800A3834 = 6, ends the call

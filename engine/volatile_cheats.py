@@ -765,7 +765,7 @@ def _record_kept_orphan_candidates(
 _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     "camera_ApplyFightView": frozenset({("pre_pad", 2)}),
     "camera_ApplyReplayView": frozenset({("pre_pad", 2)}),
-    # 2026-08-18 owner ruling: func_8003CF84 carries a SECOND, trailing
+    # 2026-08-18 owner ruling: fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams carries a SECOND, trailing
     # 8-byte untouched frame object (census in memory/wip/func_8003CF84/);
     # sanctioned as pad2[2] for this function only.
     "fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams": frozenset({("pre_pad", 4), ("pad2", 2)}),
