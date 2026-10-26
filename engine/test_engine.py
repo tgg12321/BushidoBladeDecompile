@@ -3169,6 +3169,149 @@ def test_brace_prefixed_definition_head() -> None:
        ["prev", "func_X", "func_Y"])
 
 
+def test_additional_file_scope_heads() -> None:
+    from engine import volatile_cheats
+
+    cheat = 'register int x; __asm__ volatile("addu $8,$3,$0");'
+    for gap in ("", " ", "\t"):
+        prefix = "void prev(void) {\n}" + gap
+        body = "int\nf(void) { " + cheat + " return 1; }"
+        src = prefix + body + "\n"
+        span = (len(prefix), len(prefix) + len(body))
+        eq(f"additional head: brace split {gap!r}",
+           inlineasm.func_definition_candidates(src, "f"), [span])
+        eq(f"additional head: brace split replacement {gap!r}",
+           inlineasm.substitute_body(src, "f", "int f(void) {}"),
+           prefix + "int f(void) {}\n")
+    for indent in (" ", "  ", "\t", " \t "):
+        body = "int f(void) { " + cheat + " return 1; }"
+        src = indent + body + "\n"
+        span = (len(indent), len(indent) + len(body))
+        eq(f"additional head: indented {indent!r}",
+           inlineasm.func_definition_candidates(src, "f"), [span])
+        eq(f"additional head: indented roster {indent!r}",
+           [(f, lo, hi) for f, lo, hi, _ in
+            volatile_cheats._iter_func_bodies(src)], [("f", *span)])
+        check(f"additional head: cheats visible {indent!r}",
+              inlineasm.func_cheat_asm_count(src, "f") > 0)
+    lookalikes = (
+        "  int f(void) { return 1; }",
+        "  int f(void);",
+        "  f(x);",
+        "  (int)f(x);",
+        "  if (x) (int)y;",
+        "  MACRO(x) { x++; }",
+        "  int f(x) int x; { return x; }",
+        "  {\n}int\nf(void) { return 1; }",
+    )
+    for statement in lookalikes:
+        src = "void outer(void) {\n" + statement + "\n}\n"
+        eq(f"additional head: body lookalike {statement!r}",
+           inlineasm.definition_head_names(src), ["outer"])
+    for body in ("  int f(void) {}", "void p(void) {\n}int\nf(void) {}"):
+        for prefix, suffix in (("/*\n", "\n*/"),
+                               ('const char *s = "\\\n', '\\n";'),
+                               ("#if 0\n", "\n#endif"),
+                               ("// spliced \\\n", "\n")):
+            src = prefix + body + suffix
+            eq(f"additional head: inactive {prefix!r} {body!r}",
+               inlineasm.func_definition_candidates(src, "f"), [])
+    # Braces in literals, comments and macro replacements must not hide a head.
+    prefix = 'const char *s = "{"; /* { */\n#define OPEN {\n'
+    src = prefix + "  int f(void) {}"
+    eq("additional head: masked braces do not alter scope",
+       inlineasm.func_definition_candidates(src, "f"),
+       [(len(prefix) + 2, len(src))])
+    prefix = '#if 0\n"\n#endif\n'
+    for body in ("  int f(void) {}", "void p(void) {\n}int\nf(void) {}"):
+        src = prefix + body
+        eq("additional head: disabled stray quote does not hide live head",
+           inlineasm.func_definition_candidates(src, "f"),
+           [(src.index("int f") if "int f" in body else src.index("int\nf"),
+             len(src))])
+
+
+def test_file_scope_head_review() -> None:
+    from engine import volatile_cheats
+
+    for alternative in ("#else", "#elif OTHER\nvoid g(char a) {\n#else"):
+        src = ("#ifdef OPTION\nvoid g(int a) {\n" + alternative
+               + "\nvoid g(void) {\n#endif\n"
+               "    if (a) {}\n    else if (a) { a++; }\n"
+               "    int nested(void) { return 1; }\n}\n"
+               "  int tail(void) {}\n")
+        g_span = (src.index("void g(void)"), src.index("\n}\n") + 2)
+        eq("scope review: alternate-head g span unchanged",
+           inlineasm.func_definition_candidates(src, "g"), [g_span])
+        eq("scope review: alternate heads do not expose body definitions",
+           inlineasm.definition_names(src), ["g", "tail"])
+        eq("scope review: roster has no if/nested body",
+           [(name, lo, hi) for name, lo, hi, _ in
+            volatile_cheats._iter_func_bodies(src)],
+           [("g", *g_span), ("tail", src.index("int tail"),
+                                src.index("int tail") + len("int tail(void) {}"))])
+        check("scope review: joined depth is first arm exit",
+              src.index("int nested") not in inlineasm._file_scope_tokens(src))
+    for region in ("#ifdef X\n{\n#else\n#endif\n",
+                   "#ifdef X\n#else\n{\n#endif\n",
+                   "#ifdef X\n{\n#elif Y\n{\n#else\n#endif\n",
+                   "#ifdef X\n{\n#endif\n"):
+        src = "  int before(void) {}\n" + region + "  int after(void) {}\n"
+        eq("scope review: unequal exits stop new heads",
+           inlineasm.definition_names(src), ["before"])
+    # A #ifdef with no #else has an implicit empty arm: a `}`-only arm
+    # exits one level below its entry, so the exits differ and fail closed.
+    src = ("void g(void) {\n#ifdef X\n}\n#endif\n"
+           "  if (a) { }\n  int z(void) {}\n}\n")
+    eq("scope review: implicit empty arm keeps an in-body head hidden",
+       inlineasm.definition_names(src), ["g"])
+    # `%:` is the `#` digraph: its directives are skipped and its #if 0
+    # arms removed like `#` ones; an #elif 0 arm is removed too.
+    for src in ("void f(void) {\n%:define CLOSE }\n"
+                "  int z(void) { return 0; }\n}\n",
+                "%:if 0\n  int z(void) { return 0; }\n%:endif\n",
+                "#if A\n#elif 0\n  int z(void) { return 0; }\n#endif\n"):
+        eq("scope review: %: directives and #elif 0 arms hide z",
+           inlineasm.func_definition_candidates(src, "z"), [])
+    src = ("void g(void) <%\n  int hidden(void) {}\n%>\n"
+           "  int tail(void) {}\n")
+    eq("scope review: digraph body is not file scope",
+       inlineasm.func_definition_candidates(src, "hidden"), [])
+    eq("scope review: digraph close restores file scope",
+       inlineasm.func_definition_candidates(src, "tail"),
+       [(src.index("int tail"), len(src) - 1)])
+    for keyword in ("if", "else", "while", "for", "switch", "return", "sizeof",
+                    "do", "case", "goto", "volatile", "__asm__", "asm",
+                    "typeof", "__typeof__", "int", "static", "const"):
+        for src in (f"  int {keyword}(void) {{}}",
+                    f"void p(void) {{\n}}int\n{keyword}(void) {{}}"):
+            eq(f"scope review: keyword name {keyword}",
+               inlineasm.func_definition_candidates(src, keyword), [])
+    for keyword in ("if", "else", "while", "for", "switch", "return", "sizeof",
+                    "do", "case", "goto", "volatile", "__asm__", "asm",
+                    "typeof", "__typeof__", "static", "const"):
+        for src in (f"  {keyword} f(void) {{}}",
+                    f"void p(void) {{\n}}{keyword}\nf(void) {{}}"):
+            eq(f"scope review: keyword type tail {keyword}",
+               inlineasm.func_definition_candidates(src, "f"), [])
+    for src in ('  __asm__ volatile("nop");',
+                'void p(void) {\n}__asm__\nvolatile("nop");'):
+        eq("scope review: file-scope asm is not a head named volatile",
+           inlineasm._definition_heads(src, "volatile"), [])
+        eq("scope review: file-scope asm has no definition body",
+           inlineasm.func_definition_candidates(src, "volatile"), [])
+    # A second splice pass would remove the remaining backslash + newline,
+    # shifting scope offsets relative to compiler_view(text).pos.
+    prefix = "\\" * 2 + "\n\n"
+    src = prefix + "  int f(void) {}"
+    eq("scope review: scope token positions survive one splice only",
+       inlineasm._file_scope_tokens(src),
+       frozenset(i for i, c in enumerate(src) if c.isalpha()))
+    eq("scope review: already-spliced indexes stay aligned",
+       inlineasm.func_definition_candidates(src, "f"),
+       [(len(prefix) + 2, len(src))])
+
+
 def test_split_definition_head() -> None:
     split = "static s32\n\nfunc_X(s32 a) { return a; }"
     src = "extern int g;\n" + split + "\nint tail;\n"
@@ -14480,6 +14623,8 @@ def main() -> int:
     test_macro_asm_strip_round_trip()
     test_substitute_body()
     test_brace_prefixed_definition_head()
+    test_additional_file_scope_heads()
+    test_file_scope_head_review()
     test_split_definition_head()
     test_definition_type_line()
     test_definition_names()

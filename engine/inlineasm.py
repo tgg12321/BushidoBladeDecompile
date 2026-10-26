@@ -549,6 +549,103 @@ def _definition_type_line(text: str) -> bool:
     return at > 0
 
 
+_NEW_HEAD_KEYWORDS = frozenset("""
+auto break case char const continue default do double else enum extern float
+for goto if inline int long register restrict return short signed sizeof static
+struct switch typedef union unsigned void volatile while _Alignas _Alignof
+_Atomic _Bool _Complex _Generic _Imaginary _Noreturn _Static_assert _Thread_local
+asm __asm __asm__ typeof __typeof __typeof__ __attribute __attribute__
+__extension__ __inline __inline__ __restrict __restrict__ __volatile __volatile__
+__const __const__ __signed __signed__ __alignof __alignof__
+""".split())
+_TYPE_TAIL_KEYWORDS = _NEW_HEAD_KEYWORDS - frozenset(
+    "char double float int long short signed unsigned void _Bool _Complex _Imaginary".split())
+
+
+def _new_definition_head(name: str, type_text: str) -> bool:
+    """Reject statement/extension keywords; builtin return types remain valid."""
+    words = re.findall(r"[A-Za-z_]\w*", type_text)
+    return (name not in _NEW_HEAD_KEYWORDS and bool(words)
+            and words[-1] not in _TYPE_TAIL_KEYWORDS)
+
+
+@functools.lru_cache(maxsize=64)
+def _file_scope_tokens(text: str) -> frozenset[int]:
+    """Token offsets at brace depth zero for the additional head shapes.
+
+    Use the spliced compiler view, so braces in comments, literals and macro
+    directives do not affect scope. Literal #if 0 arms are excluded; unknown
+    conditions retain both arms, like the existing raw candidate grammar.
+    Each arm restarts at entry depth; matching exits join at the first arm's
+    exit depth. Unequal exits discard tokens from that conditional onwards.
+    This is a lexical scope filter, not a C preprocessor.
+    """
+    view = cia.compiler_view(text)
+    # cpp ends literals at EOL when recognizing directives. Remove disabled
+    # text BEFORE cc1-style multiline literal masking: a stray quote in #if 0
+    # must not mask a live head after #endif. Directive replacements (e.g. a
+    # quote or brace in a #define) likewise cannot change lexical body scope.
+    code, directives, conditions = list(view.code), {}, []
+    active, offset = True, 0
+    for line in view.masked_eol.splitlines(keepends=True):
+        directive = re.match(r"[ \t]*(?:#|%:)[ \t]*(\w+)\b(.*)", line)
+        if directive:
+            kind, arg = directive.groups()
+            before = active
+            if kind in ("if", "ifdef", "ifndef"):
+                conditions.append(active)
+                active = active and not (kind == "if" and arg.strip() == "0")
+            elif kind in ("else", "elif") and conditions:
+                active = conditions[-1] and not (
+                    kind == "elif" and arg.strip() == "0")
+            elif kind == "endif" and conditions:
+                active = conditions.pop()
+            directives[offset] = (kind, arg, before, active)
+        if directive or not active:
+            for i in range(offset, offset + len(line)):
+                if code[i] != "\n":
+                    code[i] = " "
+        offset += len(line)
+    # Already spliced and index mapped: mask literals without splicing again.
+    masked = cia._blank("".join(code), strings=True, multiline=True)
+    depth, offset = 0, 0
+    branches, tokens = [], set()
+    for line in masked.splitlines(keepends=True):
+        directive = directives.get(offset)
+        if directive:
+            kind, arg, before, after = directive
+            if kind in ("if", "ifdef", "ifndef"):
+                branches.append([depth, [], False, before, offset])
+            elif kind in ("else", "elif") and branches:
+                branch = branches[-1]
+                if before:
+                    branch[1].append(depth)
+                if kind == "else":
+                    branch[2] = True
+                depth = branch[0]
+            elif kind == "endif" and branches:
+                entry, exits, has_else, parent, branch_start = branches.pop()
+                if before:
+                    exits.append(depth)
+                if parent and not has_else:
+                    exits.append(entry)  # implicit empty alternative
+                if exits and any(exit_depth != exits[0] for exit_depth in exits):
+                    # Unknown scope: do not invent new heads in/after it.
+                    return frozenset(p for p in tokens
+                                     if p < view.pos[branch_start])
+                depth = exits[0] if exits else entry
+        else:
+            for i, c in enumerate(line):
+                if depth == 0 and (c.isalpha() or c == "_"):
+                    tokens.add(view.pos[offset + i])
+                if c == "{" or line.startswith("<%", i):
+                    depth += 1
+                elif c == "}" or line.startswith("%>", i):
+                    depth -= 1
+        offset += len(line)
+    return frozenset(tokens)
+
+
 def _definition_heads(
     text: str, name: str = r"[A-Za-z_]\w*"
 ) -> list[tuple[str, int, int]]:
@@ -571,6 +668,24 @@ def _definition_heads(
         previous = text[previous_start:previous_end]
         if _definition_type_line(previous):
             heads.append((m.group(1), previous_start, m.end()))
+        elif previous.startswith("}"):
+            # Shared-line closing brace followed by a split return type.
+            type_start = previous_start + 1
+            while type_start < previous_end and text[type_start] in " \t":
+                type_start += 1
+            if (_definition_type_line(text[type_start:previous_end])
+                    and _new_definition_head(m.group(1), text[type_start:previous_end])
+                    and type_start in _file_scope_tokens(text)):
+                heads.append((m.group(1), type_start, m.end()))
+    for m in re.finditer(
+            r"(?m)^[ \t]+([A-Za-z_][\w \t\*]*\b)(" + name + r")\s*\(",
+            text):
+        # Indentation alone no longer hides a file-scope definition. Apply
+        # scope only to this extension; old raw ambiguity checks stay intact.
+        start = m.start(1)
+        if (_new_definition_head(m.group(2), m.group(1))
+                and start in _file_scope_tokens(text)):
+            heads.append((m.group(2), start, m.end()))
     return sorted(heads, key=lambda head: head[1])
 
 
@@ -599,8 +714,9 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     match the same column-0 pattern — these are recognised by the FIRST non-
     whitespace after the closing `)` being `;` rather than `{`. Returns every
     definition-shaped candidate found in the RAW text.
-    No comment, literal or preprocessor modelling is performed: copies in
-    comments, strings or disabled branches make the result ambiguous too.
+    Existing raw shapes retain copies in comments, strings and disabled
+    branches, making the result ambiguous too. Additional indented and
+    brace-prefixed split heads require lexical file scope.
     Callers must refuse ambiguity rather than use an assembly-only fallback.
     Offsets index the original text, starting at the return type (excluding
     any previous function's `}` and following spaces/tabs), with an exclusive end.
@@ -615,15 +731,14 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     these would leave the cheat count UNKNOWN and body cheats invisible):
       * `}s32 func_8007DE08(s32 arg0) {` — the definition shares a
         line with the previous function's closing brace. A single optional `}`
-        is allowed before the return type; arbitrary indentation still is NOT,
-        because that is what distinguishes a definition from a call.
+        is allowed before the return type, including a split type/name head.
+      * Indented one-line heads qualify at lexical brace depth zero, outside
+        comments, literals, directives and literal #if 0 arms.
       * `void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;` (368E4.c) — old-style K&R
         parameter declarations sit between `)` and `{`.
     A bare column-0 name also qualifies after a non-blank line containing only
     declaration-specifier identifiers and `*`; its span includes that type line.
     """
-    # Leading whitespace is permitted ONLY after a closing `}`; a bare indented
-    # line stays non-matching, which is what separates a definition from a call.
     spans = []
     n = len(text)
     for _name, start, head_end in _definition_heads(text, re.escape(func)):
