@@ -984,7 +984,8 @@ class LandMovingMain(unittest.TestCase):
 
     def land(self, moved=("docs/peer.md",), item=("src/item.c",), moves=1,
              extra=(), held=False, dry_run=False, failure=None, ancestor=True,
-             changed_item=None, initial_behind=False, rebase_race=False):
+             changed_item=None, initial_behind=False, rebase_race=False,
+             override=None, already=False):
         events = []
         state = {"main": "m0", "base": "old" if initial_behind else "m0",
                  "tip": "t0", "acquires": 0, "revision": 0, "rebases": 0,
@@ -995,6 +996,7 @@ class LandMovingMain(unittest.TestCase):
 
         def advance():
             state["revision"] += 1
+            self.assertLess(state["revision"], 12, "land failed to bound retries")
             tree = dict(trees[state["main"]])
             for path in moved:
                 tree[path] = "main revision " + str(state["revision"])
@@ -1025,7 +1027,7 @@ class LandMovingMain(unittest.TestCase):
 
         def run(cmd, **kwargs):
             if cmd[1] == "merge-base":
-                return SimpleNamespace(returncode=int(cmd[-1] == "main" or not ancestor))
+                return SimpleNamespace(returncode=int((cmd[-1] == "main" and not already) or not ancestor))
             events.append(cmd[1])
             if cmd[1] == "rebase":
                 state["rebases"] += 1
@@ -1041,7 +1043,7 @@ class LandMovingMain(unittest.TestCase):
                 state["merges"] += 1
                 if failure == "merge":
                     return SimpleNamespace(returncode=1, stdout="", stderr="failed")
-                if failure == "merge-move" and state["merges"] == 1:
+                if failure == "locked-merge-move" or (failure == "merge-move" and state["merges"] == 1):
                     advance()
                     return SimpleNamespace(returncode=1, stdout="", stderr="main moved")
                 state["main"] = state["tip"]
@@ -1058,11 +1060,13 @@ class LandMovingMain(unittest.TestCase):
 
         def build(*args):
             events.append("build")
-            if failure == "verify" and state["acquires"] >= 4:
+            if failure == "first-verify" or (failure == "verify" and state["acquires"] >= 4):
                 raise SystemExit(2)
 
         def checked(cmd, what, **kwargs):
             events.append(what)
+            if failure == "locked-gate-move" and what == "completion-integrity audit":
+                advance()
             if failure == "audit" and state["rebases"] and what == "completion-integrity audit":
                 raise SystemExit(2)
 
@@ -1098,25 +1102,27 @@ class LandMovingMain(unittest.TestCase):
             "peer_paths": lambda *a: set(),
             "save_state": lambda *a, **k: events.append("landed"),
             "push": lambda *a: events.append("push"),
+            "load_state": lambda *a: {"landed": "t0"},
             "git": git,
         }
         with ExitStack() as stack:
             stack.enter_context(mock.patch.dict(os.environ, {"CLAUDE_CODE_SESSION_ID": "test"}))
             for key in ("PROLOGUE_CONFIG", "DELAY_SLOT_RA_FUNCS", "FRAME_FIX_FUNCS"):
-                stack.enter_context(mock.patch.dict(os.environ, {key: ""}))
+                stack.enter_context(mock.patch.dict(os.environ, {key: "redirected" if key == override else ""}))
             for name, replacement in patches.items():
                 stack.enter_context(mock.patch.object(cw, name, replacement))
             stack.enter_context(mock.patch.object(cw.subprocess, "run", side_effect=run))
             stack.enter_context(mock.patch.object(Path, "exists", return_value=False))
             stack.enter_context(mock.patch.object(Path, "mkdir"))
             stack.enter_context(mock.patch.object(Path, "write_text", autospec=True, side_effect=write_marker))
-            stack.enter_context(redirect_stdout(io.StringIO()))
+            output = stack.enter_context(redirect_stdout(io.StringIO()))
             stack.enter_context(redirect_stderr(io.StringIO()))
             code = 0
             try:
                 cw.cmd_land(SimpleNamespace(item="item", dry_run=dry_run, no_push=False))
             except SystemExit as e:
                 code = e.code
+            self.last_output = output.getvalue()
         return code, events
 
     def assert_locked_rebase(self, events, acquire_number=2):
@@ -1292,6 +1298,71 @@ class LandMovingMain(unittest.TestCase):
         self.assertIn("build", events)
         self.assertNotIn("acquire", events)
         self.assertNotIn("merge", events)
+
+    def test_pipeline_environment_overrides_disable_build_reuse(self):
+        for key in ("PROLOGUE_CONFIG", "DELAY_SLOT_RA_FUNCS", "FRAME_FIX_FUNCS"):
+            with self.subTest(key=key):
+                code, events = self.land(override=key)
+                self.assertEqual(code, 0)
+                self.assertEqual(events.count("build"), 2)
+
+    def test_refusal_releases_only_a_lock_acquired_here(self):
+        for held, failure in ((True, "audit"), (False, "first-verify")):
+            with self.subTest(held=held, failure=failure):
+                code, events = self.land(held=held, failure=failure)
+                self.assertEqual(code, 2)
+                self.assertEqual("acquire" in events, held)
+                self.assertNotIn("release", events)
+                self.assertNotIn("push", events)
+
+    def test_locked_retries_are_bounded_even_when_writer_ignores_lock(self):
+        for failure in ("locked-gate-move", "locked-merge-move"):
+            for held in (False, True):
+                with self.subTest(failure=failure, held=held):
+                    code, events = self.land(moves=0, held=held, failure=failure)
+                    self.assertEqual(code, 2)
+                    self.assertIn("main kept moving", self.last_output)
+                    self.assertIn("reintegration lock", self.last_output)
+                    self.assertIn("3 locked attempts", self.last_output)
+                    self.assertEqual(events.count("acquire"), 5)  # one unlocked, three locked, refusal
+                    self.assertEqual(events.count("release"), 0 if held else 5)
+                    self.assertNotIn("push", events)
+                    self.assertNotIn("landed", events)
+
+    def test_already_landed_dry_run_never_locks_or_pushes(self):
+        code, events = self.land(already=True, dry_run=True)
+        self.assertEqual(code, 0)
+        self.assertIn("DRY RUN", self.last_output)
+        self.assertIn("would push main to origin", self.last_output)
+        for event in ("status", "acquire", "release", "push", "merge", "build"):
+            self.assertNotIn(event, events)
+
+    def test_odd_case_source_path_runs_engine_suite(self):
+        code, events = self.land(item=("SRC/item.c",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("engine test suite"), 2)
+
+    def test_build_inert_prefixes_exclude_buildstamp_inputs(self):
+        from engine import buildstamp
+
+        # Importing buildstamp/buildconfig only defines data/functions. Exercise the
+        # actual input discovery, but avoid hashing sources, tools and the runtime.
+        directories = set()
+        real_rglob = Path.rglob
+        def rglob(directory, pattern):
+            directories.add(directory.as_posix().casefold().rstrip("/") + "/")
+            return real_rglob(directory, pattern)
+        with mock.patch.object(buildstamp, "digest", return_value="digest"), \
+                mock.patch.object(buildstamp.shutil, "which", return_value=None), \
+                mock.patch.object(Path, "rglob", rglob):
+            paths = set(buildstamp.CONFIGS) | set(buildstamp.inputs())
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertFalse(path.casefold().startswith(cw.BUILD_INERT_PREFIXES), path)
+        # Pin glob roots too, even when a future input directory is empty today.
+        for directory in directories:
+            for prefix in cw.BUILD_INERT_PREFIXES:
+                self.assertFalse(directory.startswith(prefix) or prefix.startswith(directory), directory)
 
     def test_disjointness_helper_casefolds_both_sides(self):
         verified = ("m0", "t0", "tree-t0", {"docs/PEER.md"})

@@ -69,6 +69,7 @@ ORACLE_SHA1 = "62efab4f73f992798c43e8c730aa43baa10bb4fa"
 # Narrower than lanes.json: all other paths conservatively require a full build.
 BUILD_INERT_PREFIXES = ("docs/", "tools/trace/")
 LAND_UNLOCKED_ATTEMPTS = 5
+LAND_LOCKED_ATTEMPTS = 3
 DATA_ONLY = re.compile(r"^(src|include|asm)/")      # what Codex may build through `shadow`
 ENGINE_READONLY = ("sandbox", "canonical", "diagnose", "dossier", "verify-oracle", "tus-check", "test",
                    "fixtures-verify", "layer2", "queue")
@@ -1768,7 +1769,7 @@ def verify_gates(main, trusted, tip, paths, moved=()):
     """Gates on the exact clean tip, including build-inert naming/trace inputs; no build receipt."""
     trusted_at_tip(trusted, tip)
     wteng = str(main / "tools" / "wteng.ps1")
-    if (any(not CHEAT_PATHS.match(p.casefold()) and not p.casefold().startswith("docs/")
+    if (any(not CHEAT_PATHS.match(p) and not p.casefold().startswith("docs/")
             for p in paths)
             or any(p.casefold().startswith("docs/naming/") or p.casefold().endswith(".py")
                    for p in moved)):
@@ -1871,23 +1872,28 @@ def cmd_land(a):
     if not already:
         scratch_committed(main, a.item, scratch, branch)
     verified = None  # last full pass: (base, tip, tree, item paths)
-    full_reverifies = attempt = 0
+    full_reverifies = attempt = locked_attempts = 0
     while True:
         attempt += 1
         acquired = held_before = False
         try:
             main_tip = git("rev-parse", "main", cwd=main)
-            # A dry run returns after its first verification, so verified remains None
+            # A dry run of an already-landed item returns before taking any lock.
+            # Otherwise it returns after its first verification, so verified remains None
             # at every lock decision it can reach; neither early-lock condition is live.
             quick_paths = land_quick_paths(main, verified, main_tip)
             if full_reverifies >= 2 or quick_paths is not None:
                 held_before = acquire_land_lock(main, a.item)
                 acquired = True
+                locked_attempts += 1
+                if locked_attempts > LAND_LOCKED_ATTEMPTS:
+                    refuse("main kept moving despite the reintegration lock; gave up after "
+                           f"{LAND_LOCKED_ATTEMPTS} locked attempts -- land again")
                 print("codex_worker: holding reintegration lock through rebase and gates "
                       + ("for build-only reuse" if quick_paths is not None else
                          "after two full re-verifies caused by main moving"))
                 main_tip = git("rev-parse", "main", cwd=main)
-            # Locked attempts always get to finish, even after the unlocked budget.
+            # Locked attempts have their own budget and can outlast the unlocked budget.
             if attempt > LAND_UNLOCKED_ATTEMPTS and not acquired:
                 refuse("main kept moving; gave up after 5 attempts -- land again")
             if not already:
@@ -1966,6 +1972,10 @@ def cmd_land(a):
                     return
             else:
                 tip, paths = tip0, []
+                if a.dry_run:
+                    print(f"codex_worker: DRY RUN -- {tip[:9]} is already on main; "
+                          + ("would push main to origin" if not a.no_push else "no push requested"))
+                    return
                 print(f"codex_worker: {tip[:9]} is already on main; pushing only")
             if not acquired:
                 held_before = acquire_land_lock(main, a.item)
