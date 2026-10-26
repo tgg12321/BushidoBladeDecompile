@@ -55,6 +55,7 @@ import argparse
 import fnmatch
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -499,6 +500,16 @@ def write_lock(ctx: Ctx, label: str):
     os.replace(tmp, p)
 
 
+def lock_age(lk: dict) -> float:
+    """Seconds since the lock's ts. A missing, non-numeric or non-finite ts is infinitely old
+    (stale), as reintegrate_lock.ps1's Lock-Age treats it."""
+    try:
+        ts = float(lk.get("ts"))
+    except (TypeError, ValueError, OverflowError):
+        return math.inf
+    return time.time() - ts if math.isfinite(ts) else math.inf
+
+
 def acquire_lock(ctx: Ctx, label: str):
     deadline = time.time() + 60 * float(ctx.cfg.get("lock_wait_minutes", 45))
     announced = False
@@ -506,7 +517,7 @@ def acquire_lock(ctx: Ctx, label: str):
         if _create_lock(ctx, label):
             return
         lk = read_lock(ctx)
-        age = time.time() - float(lk.get("ts", 0)) if lk else 0
+        age = lock_age(lk) if lk else 0
         if lk and lk.get("session") == ctx.session:
             write_lock(ctx, label)
             return
@@ -515,7 +526,7 @@ def acquire_lock(ctx: Ctx, label: str):
             # O_EXCL create, so two stealers cannot both win.
             time.sleep(1)
             lk2 = read_lock(ctx)
-            if lk2 == lk or (lk2 and time.time() - float(lk2.get("ts", 0)) > LOCK_STALE_SECS):
+            if lk2 == lk or (lk2 and lock_age(lk2) > LOCK_STALE_SECS):
                 try:
                     (ctx.main / LOCK_REL).unlink()
                 except FileNotFoundError:
@@ -645,8 +656,10 @@ def cmd_status(ctx: Ctx, a):
                           "gate_queue": reg.get("gate_queue", [])}, indent=2))
         return 0
     main_head = git("rev-parse", "--short", "main", cwd=ctx.main)
+    age = lock_age(lk) if lk else 0
     print(f"main {main_head}   lock: " + (f"HELD by {lk.get('label') or lk.get('session')} "
-                                          f"({int(time.time() - float(lk.get('ts', 0)))}s)"
+                                          + (f"({int(age)}s)" if math.isfinite(age)
+                                             else "(malformed ts: stale)")
                                           if lk else "free"))
     print("full-gate queue:" + (" empty" if not reg.get("gate_queue") else ""))
     for position, ticket in enumerate(reg.get("gate_queue", []), 1):
@@ -1502,12 +1515,15 @@ def cmd_land(ctx: Ctx, a):
     full_runs = attempts = 0
     queue = GateQueue(ctx, lane)
     ld = log = None
+    body_failed = main_fast_forwarded = False
     try:
         # Refuse --no-wait before bootstrapping a landing tree; refresh main only after waiting.
         land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
         lk = read_lock(ctx)
         held_before = bool(lk and lk.get("session") == ctx.session
-                           and time.time() - float(lk.get("ts", 0)) < LOCK_STALE_SECS)
+                           and lock_age(lk) < LOCK_STALE_SECS)
+        if held_before:
+            write_lock(ctx, lk.get("label") or f"lanes land {lane}")
         # The lane's own paths: build_candidate later decides on the replayed diff, which can
         # differ; that changes only who waits, never which gates run. A session that already
         # holds the main lock does not queue: no one can fast-forward main ahead of it, and a
@@ -1584,6 +1600,7 @@ def cmd_land(ctx: Ctx, a):
                 # holding lane work it does not know has landed
                 mark_landed(ctx, lane, ctx.replayed)
                 git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
+                main_fast_forwarded = True
                 pushed = push_main(ctx, remote) if remote else "not pushed: --no-push"
             finally:
                 if not held_before:
@@ -1593,9 +1610,12 @@ def cmd_land(ctx: Ctx, a):
             return 0
         raise Refuse(f"main kept moving during {attempts} land attempts ({full_runs} full gate "
                      f"runs); try again", 1)
+    except BaseException:
+        body_failed = True
+        raise
     finally:
-        body_failed = sys.exc_info()[0] is not None
         cleanup_error = None
+        cleanup_interrupt = None
         for cleanup in (
             lambda: run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
             if ld is not None else None,
@@ -1606,10 +1626,18 @@ def cmd_land(ctx: Ctx, a):
             try:
                 cleanup()
             except BaseException as e:
-                if cleanup_error is None:
+                if not isinstance(e, Exception) and cleanup_interrupt is None:
+                    cleanup_interrupt = e
+                elif cleanup_error is None:
                     cleanup_error = e
+        if cleanup_interrupt is not None:
+            raise cleanup_interrupt
         if cleanup_error is not None and not body_failed:
-            raise cleanup_error
+            if main_fast_forwarded:
+                print(f"lanes: warning: cleanup failed after main fast-forwarded: {cleanup_error}",
+                      file=sys.stderr)
+            else:
+                raise cleanup_error
 
 
 def push_main(ctx: Ctx, remote: str) -> str:

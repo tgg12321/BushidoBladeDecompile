@@ -490,6 +490,139 @@ class GateQueueTest(unittest.TestCase):
             self.assertEqual(self.ctx.load()["gate_queue"], [])
             self.assertFalse(lanes.land_pidfile(self.ctx, "a").exists())
 
+    def test_successful_land_in_callers_except_raises_cleanup_error(self):
+        from unittest.mock import patch
+        error = ValueError("abort failed")
+        with self.land_fixture() as args, \
+                patch.object(lanes, "run", side_effect=error), redirect_stdout(io.StringIO()):
+            try:
+                raise RuntimeError("caller's exception")
+            except RuntimeError:
+                with self.assertRaises(ValueError) as caught:
+                    lanes.cmd_land(self.ctx, args)
+        self.assertIs(caught.exception, error)
+        self.assertEqual(self.ctx.load()["gate_queue"], [])
+
+    def test_cleanup_interrupt_outranks_failed_body_and_ordinary_cleanup_error(self):
+        from unittest.mock import Mock, patch
+        for interrupt_type in (KeyboardInterrupt, SystemExit):
+            with self.subTest(interrupt=interrupt_type), self.land_fixture() as args:
+                error = interrupt_type("cleanup interrupted")
+                log = Mock()
+                log.close.side_effect = error
+                real_close = lanes.GateQueue.close
+                with patch.object(lanes, "build_candidate", side_effect=RuntimeError("gates")), \
+                        patch.object(lanes, "run", side_effect=ValueError("abort failed")), \
+                        patch.object(lanes, "open", return_value=log), \
+                        patch.object(lanes.GateQueue, "close", autospec=True,
+                                     side_effect=real_close) as close, \
+                        redirect_stdout(io.StringIO()):
+                    with self.assertRaises(interrupt_type) as caught:
+                        lanes.cmd_land(self.ctx, args)
+                self.assertIs(caught.exception, error)
+                log.close.assert_called_once()
+                close.assert_called_once()
+                self.assertFalse(lanes.land_pidfile(self.ctx, "a").exists())
+                self.assertEqual(self.ctx.load()["gate_queue"], [])
+
+    def test_malformed_own_lock_timestamp_queues_as_stale(self):
+        from unittest.mock import patch
+        for fields in ({"ts": "invalid"}, {"ts": float("nan")}, {}, {"ts": None}):
+            with self.subTest(fields=fields), \
+                    self.land_fixture({"session": self.ctx.session, **fields}) as args, \
+                    patch.object(lanes.time, "time", return_value=1), \
+                    patch.object(lanes.GateQueue, "wait") as wait, \
+                    patch.object(lanes, "write_lock") as write, redirect_stdout(io.StringIO()):
+                self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+                wait.assert_called_once_with(True)
+                write.assert_not_called()
+
+    def test_malformed_lock_timestamp_lands_through_acquire(self):
+        # own lock: queued, then re-adopted by acquire_lock without a crash after the gates
+        from unittest.mock import patch
+        for fields in ({"ts": "invalid"}, {"ts": float("nan")}, {}, {"ts": None}):
+            with self.subTest(fields=fields), \
+                    self.fast_forward_fixture({"session": self.ctx.session,
+                                               **fields}) as (args, state), \
+                    patch.object(lanes.time, "sleep"), \
+                    patch.object(lanes.GateQueue, "wait"):
+                self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+                self.assertEqual(state["main"], "tip")
+            self.assertIsNone(lanes.read_lock(self.ctx))
+
+    def test_acquire_lock_steals_peer_lock_with_malformed_timestamp(self):
+        from unittest.mock import patch
+        lockpath = self.ctx.main / lanes.LOCK_REL
+        lockpath.parent.mkdir(parents=True, exist_ok=True)
+        for fields in ({"ts": "invalid"}, {"ts": float("nan")}, {}, {"ts": None}):
+            with self.subTest(fields=fields):
+                lockpath.write_text(json.dumps({"session": "peer", **fields}), encoding="utf-8")
+                with patch.object(lanes.time, "sleep"), \
+                        patch.object(lanes, "git", return_value="abc1234"):
+                    lanes.acquire_lock(self.ctx, "test")
+                self.assertEqual(lanes.read_lock(self.ctx)["session"], self.ctx.session)
+                lanes.release_lock(self.ctx)
+
+    def test_lock_age_treats_malformed_timestamp_as_stale(self):
+        import math
+        for fields in ({"ts": "invalid"}, {"ts": float("nan")}, {"ts": float("inf")}, {},
+                       {"ts": None}):
+            with self.subTest(fields=fields):
+                self.assertEqual(lanes.lock_age(fields), math.inf)
+        self.assertLess(lanes.lock_age({"ts": time.time()}), 5)
+
+    def test_preheld_lock_refreshed_before_gates_with_holder_label(self):
+        from unittest.mock import patch
+        now = 100000
+
+        def gates(path):
+            lock = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(lock["ts"], now)
+            self.assertEqual(lock["label"], "outer holder")
+            self.assertEqual(lock["session"], self.ctx.session)
+
+        with self.fast_forward_fixture(
+                {"session": self.ctx.session, "ts": now - lanes.LOCK_STALE_SECS + 1,
+                 "label": "outer holder"}, gates) as (args, state), \
+                patch.object(lanes.time, "time", return_value=now):
+            self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+            self.assertEqual(state["main"], "tip")
+
+    def test_completed_fast_forward_and_push_warns_on_cleanup_error(self):
+        from unittest.mock import Mock, patch
+        for failure in ("abort", "log.close", "queue.close"):
+            with self.subTest(failure=failure), self.fast_forward_fixture(
+                    {"session": self.ctx.session, "ts": time.time()}) as (args, state):
+                error = ValueError("cleanup failed")
+                log = Mock()
+                if failure == "log.close":
+                    log.close.side_effect = error
+                real_close = lanes.GateQueue.close
+
+                def close(queue):
+                    real_close(queue)
+                    if failure == "queue.close":
+                        raise error
+
+                err = io.StringIO()
+                with patch.dict(self.ctx.cfg, {"remote": "origin"}), \
+                        patch.object(lanes, "sync_main_with_remote"), \
+                        patch.object(lanes, "push_main", return_value="pushed") as push, \
+                        patch.object(lanes, "run",
+                                     side_effect=error if failure == "abort" else None), \
+                        patch.object(lanes, "open", return_value=log), \
+                        patch.object(lanes.GateQueue, "close", close), redirect_stderr(err):
+                    args.no_push = False
+                    self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+                self.assertEqual(state["main"], "tip")
+                push.assert_called_once_with(self.ctx, "origin")
+                self.assertEqual(err.getvalue(),
+                                 "lanes: warning: cleanup failed after main fast-forwarded: "
+                                 "cleanup failed\n")
+                log.close.assert_called_once()
+                self.assertFalse(lanes.land_pidfile(self.ctx, "a").exists())
+                self.assertEqual(self.ctx.load().get("gate_queue", []), [])
+
     def test_land_lock_holder_bypasses_queue_but_other_holder_queues(self):
         from unittest.mock import patch
         peer = lanes.GateQueue(self.ctx, "peer").ticket
@@ -501,6 +634,7 @@ class GateQueueTest(unittest.TestCase):
                                   (self.ctx.session, now - lanes.LOCK_STALE_SECS - 1, False)):
             with self.subTest(session=session, ts=ts), \
                     self.land_fixture({"session": session, "ts": ts}) as args, \
+                    patch.object(lanes, "write_lock"), \
                     patch.object(lanes.time, "time", return_value=now):
                 self.ctx.update(lambda reg: reg.update(gate_queue=[peer]))
                 out = io.StringIO()
