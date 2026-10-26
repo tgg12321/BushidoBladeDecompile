@@ -892,6 +892,69 @@ class HarvestCasePaths(Repo):
                 self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
                 self.assertEqual(self.harvest_tree(tree)[2], [path])
 
+    def test_make_documentation_keeps_code_routing(self):
+        for parent in ("", "docs/", "docs/nested/"):
+            for suffix in ("md", "rst", "txt", "MD", "RST", "TXT"):
+                path = parent + "Makefile." + suffix
+                with self.subTest(path=path):
+                    tree = self.tree_with(path)
+                    commit = self.g("commit-tree", tree, "-p", "main", "-m", "make docs")
+                    self.assertEqual(cw.required_kinds(self.repo, commit), (["code-reviewer"], [path]))
+
+    def test_overlay_substance_routes_and_skips_suite_like_main(self):
+        for path in ("movovl/src/draft/f.c", "movovl/include/header.h", "movovl/asm/data/d.s",
+                     "movovl/movovl.ld", "movovl/other.ld", "movovl/expand_funcs.txt",
+                     "movovl/comm_syms.txt", "movovl/unit_files.txt", "movovl/other_auto.txt",
+                     "movovl/undefined_funcs_auto.movovl.txt", "movovl/undefined_syms_auto.movovl.txt"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "overlay substance")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (["cheat-reviewer"], [path]))
+                self.assertTrue(cw.SUITE_SKIP_PATHS.match(path))
+
+    def test_overlay_oracle_config_and_layer2_names_require_both(self):
+        for path in ("other.sha1", "OTHER.SHA1", "movovl/movovl.sha1", "movovl/other.sha1",
+                     "splat.other.yaml", "splat-custom.yaml", "movovl/splat.movovl.yaml",
+                     "movovl/splat.yaml", "movovl/Makefile", "docs/naming/function-names.csv",
+                     "symbol_addrs.extra.txt", "movovl/symbol_addrs.movovl.txt",
+                     "movovl/symbol_addrs.txt"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "oracle config")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
+                self.assertFalse(cw.SUITE_SKIP_PATHS.match(path))
+
+    def test_undefined_lists_keep_substance_routing_and_suite_exemption(self):
+        for path in ("undefined_funcs_auto.txt", "undefined_syms_auto.txt",
+                     "movovl/undefined_funcs_auto.movovl.txt", "movovl/undefined_syms_auto.movovl.txt"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "undefined list")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (["cheat-reviewer"], [path]))
+                self.assertTrue(cw.SUITE_SKIP_PATHS.match(path))
+
+    def test_undefined_prefix_scripts_do_not_skip_suite(self):
+        for prefix in ("undefined_funcs", "undefined_syms"):
+            for parent, kinds in (("", sorted(cw.KINDS)), ("movovl/", ["code-reviewer"])):
+                path = parent + prefix + "_evil.py"
+                with self.subTest(path=path):
+                    tree = self.tree_with(path)
+                    commit = self.g("commit-tree", tree, "-p", "main", "-m", "undefined script")
+                    self.assertEqual(cw.required_kinds(self.repo, commit), (kinds, [path]))
+                    self.assertFalse(cw.CHEAT_PATHS.match(path))
+                    self.assertFalse(cw.SUITE_SKIP_PATHS.match(path))
+
+    def test_nested_overlay_docs_and_nonroot_oracles_keep_code_routing(self):
+        for path in ("movovl/README.md", "movovl/tools/helper.py", "docs/other.sha1",
+                     "docs/splat.other.yaml", "movovl/nested/other.sha1",
+                     "movovl/nested/splat.yaml", "movovl/nested/other.ld",
+                     "movovl/nested/expand_funcs.txt"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "ordinary overlay path")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (["code-reviewer"], [path]))
+                self.assertFalse(cw.SUITE_SKIP_PATHS.match(path))
+
     def test_root_data_inputs_require_substance_review(self):
         for path in ("volatile_extern_allowlist.txt", "regfix.txt", "regfix_stage2.txt", "asmfix.txt",
                      "known_psyq_stdlib.txt", "sdata_exclude.txt", "inline_asm_canonical.txt",
@@ -978,17 +1041,79 @@ class HarvestCasePaths(Repo):
         self.g("rm", "json.py")
         self.assertEqual(self.harvest_tree(self.g("write-tree"))[2], ["json.py"])
 
+    def test_new_reserved_top_level_packages_refused(self):
+        for name in ("json", "re", "engine", "tools", "JSON"):
+            for suffix in ("py", "pyw", "pyc", "so", "pyd", "abi3.so", "abi3.pyd",
+                           "cpython-312-x86_64-linux-gnu.so", "cp312-win_amd64.pyd", "SO"):
+                path = name + "/__init__." + suffix
+                with self.subTest(path=path):
+                    self.refused(self.tree_with(path), path,
+                                 "shadows a standard-library or gate module")
+        for path in ("json/helper.py", "engine/helper.py", "mylib/__init__.py",
+                     "docs/json/__init__.py"):
+            with self.subTest(path=path):
+                self.assertEqual(self.harvest_tree(self.tree_with(path))[2], [path])
+
+    def test_new_tools_stdlib_modules_refused_at_any_depth(self):
+        for path in ("tools/json.py", "tools/hooks/re.py", "tools/a/b/xml.pyw",
+                     "tools/hooks/json.abi3.so", "tools/hooks/json.cp312-win_amd64.pyd",
+                     "tools/hooks/json.pyc"):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path,
+                             "shadows a standard-library or gate module")
+        for path in ("tools/helper.py", "tools/hooks/helper.py", "tools/hooks/engine.py"):
+            with self.subTest(path=path):
+                self.assertEqual(self.harvest_tree(self.tree_with(path))[2], [path])
+
+    def test_existing_tools_stdlib_module_modifications_remain_usable(self):
+        paths = ("tools/json.py", "tools/hooks/re.py")
+        for path in paths:
+            target = self.repo / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("# existing\n", encoding="utf-8", newline="\n")
+        self.g("add", *paths)
+        self.g("commit", "-qm", "existing tools scripts")
+        self.g("update-ref", "refs/heads/main", "HEAD")
+        self.assertEqual(self.harvest_tree(self.tree_with(*paths))[2], sorted(paths))
+
+    def test_tools_stdlib_packages_and_overlay_imports(self):
+        for parent in ("tools/", "tools/hooks/", "movovl/tools/", "movovl/tools/hooks/"):
+            for suffix in ("py", "pyw", "pyc", "so", "pyd", "abi3.so",
+                           "cpython-312-x86_64-linux-gnu.so", "cp312-win_amd64.pyd"):
+                for relative in ("json." + suffix, "re/__init__." + suffix):
+                    path = parent + relative
+                    with self.subTest(path=path):
+                        self.refused(self.tree_with(path), path,
+                                     "shadows a standard-library or gate module")
+            for relative in ("mylib/__init__.py", "engine/__init__.py", "mylib.py"):
+                path = parent + relative
+                with self.subTest(path=path):
+                    self.assertEqual(self.harvest_tree(self.tree_with(path))[2], [path])
+        self.refused(self.tree_with("tools/json/__init__.py"), "tools/json/__init__.py",
+                     "shadows a standard-library or gate module")
+
+    def test_existing_gate_package_initializers_remain_usable(self):
+        paths = ("engine/__init__.py", "tools/__init__.py")
+        for path in paths:
+            target = self.repo / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("# existing\n", encoding="utf-8", newline="\n")
+        self.g("add", *paths)
+        self.g("commit", "-qm", "existing gate packages")
+        self.g("update-ref", "refs/heads/main", "HEAD")
+        self.assertEqual(self.harvest_tree(self.tree_with(*paths))[2], sorted(paths))
+
     def test_top_level_package_contents_require_both_reviewers(self):
-        tree = self.tree_with("json/__init__.py", "json/helper.py")
+        tree = self.tree_with("mylib/__init__.py", "mylib/helper.py")
         commit = self.g("commit-tree", tree, "-p", "main", "-m", "new package")
         self.assertEqual(cw.required_kinds(self.repo, commit),
-                         (sorted(cw.KINDS), ["json/__init__.py", "json/helper.py"]))
-        self.assertEqual(self.harvest_tree(tree)[2], ["json/__init__.py", "json/helper.py"])
+                         (sorted(cw.KINDS), ["mylib/__init__.py", "mylib/helper.py"]))
+        self.assertEqual(self.harvest_tree(tree)[2], ["mylib/__init__.py", "mylib/helper.py"])
         # Later edits to package contents, and removal of its initializer, also route both.
         self.g("update-ref", "refs/heads/main", commit)
-        changed = self.tree_with("json/other.py")
+        changed = self.tree_with("mylib/other.py")
         edit = self.g("commit-tree", changed, "-p", "main", "-m", "package contents")
-        self.assertEqual(cw.required_kinds(self.repo, edit), (sorted(cw.KINDS), ["json/other.py"]))
+        self.assertEqual(cw.required_kinds(self.repo, edit), (sorted(cw.KINDS), ["mylib/other.py"]))
         removed = self.g("commit-tree", self.g("rev-parse", "HEAD^{tree}"), "-p", "main",
                          "-m", "remove package")
         self.assertEqual(cw.required_kinds(self.repo, removed)[0], sorted(cw.KINDS))

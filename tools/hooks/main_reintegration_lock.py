@@ -33,6 +33,7 @@ Read-only git (show/log/diff/status/rev-parse/worktree) is never gated. Fails OP
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import subprocess
@@ -41,6 +42,7 @@ import time
 
 LOCK_REL = os.path.join("tmp", ".main_reintegration.lock")
 STALE_SECS = 5400  # 90 min
+LOCK_CLOCK_SKEW_SECS = 300  # Allow small clock skew before treating a future ts as unreadable.
 
 # git GLOBAL options that may precede the subcommand (so the verb stays anchored).
 # _ARG is quote-aware so a -C target with SPACES (e.g. "Bushido Blade 2 Decompile")
@@ -165,11 +167,28 @@ def workers_live(root: str) -> bool:
 
 
 def read_lock(root: str) -> dict | None:
+    """Keep parsed non-dicts as held, stale locks so malformed shapes cannot fail open."""
     try:
         with open(os.path.join(root, LOCK_REL), "r", encoding="utf-8") as fh:
-            return json.load(fh)
+            lock = json.load(fh)
+        return lock if isinstance(lock, dict) else {}
     except Exception:
         return None
+
+
+def _lock_age(lock: dict) -> float:
+    """Seconds since ts; unreadable timestamps are infinitely old (stale)."""
+    try:
+        value = lock.get("ts")
+        if isinstance(value, bool):
+            return math.inf
+        ts = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return math.inf
+    now = time.time()
+    if not math.isfinite(ts) or ts > now + LOCK_CLOCK_SKEW_SECS:
+        return math.inf
+    return now - ts
 
 
 def block(sid: str, lock: dict | None, what: str) -> int:
@@ -183,11 +202,9 @@ def block(sid: str, lock: dict | None, what: str) -> int:
             "on main wiped another session's uncommitted reintegration.",
         ]
     else:
-        try:
-            age = f" (held {int((time.time() - float(lock.get('ts', 0))) / 60)} min)"
-            stale = (time.time() - float(lock.get("ts", 0))) > STALE_SECS
-        except Exception:
-            age, stale = "", False
+        seconds = _lock_age(lock)
+        age = f" (held {int(seconds / 60)} min)" if math.isfinite(seconds) else " (ts is unreadable)"
+        stale = seconds > STALE_SECS
         msg = [
             f"BLOCKED by main_reintegration_lock.py — {what} on MAIN, but the",
             f"main-reintegration lock is held by ANOTHER session{age}:",

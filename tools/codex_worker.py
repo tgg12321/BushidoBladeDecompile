@@ -74,27 +74,23 @@ DATA_ONLY = re.compile(r"^(src|include|asm)/")      # what Codex may build throu
 ENGINE_READONLY = ("sandbox", "canonical", "diagnose", "dossier", "verify-oracle", "tus-check", "test",
                    "fixtures-verify", "layer2", "queue")
 ARG_OK = re.compile(r"^[A-Za-z0-9_./:=,+-]+$")
-# Decomp substance -> cheat-reviewer: src/include/asm, .claude/rules, linker/symbol
-# lists, per-function config lists, canonical/volatile admissions, legacy rewrite
-# rules and PsyQ naming evidence. Pipeline/oracle/config inputs -> BOTH reviewers:
-# engine/tools, oracle/, make controls at any depth, bb2.sha1, symbol_addrs.txt, formatting,
-# dependency/setup config, root Python modules/.pth and top-level packages (below).
-# Other paths -> code-reviewer; layer-2 ledgers remain separately managed.
-CHEAT_PATHS = re.compile(r"^(src/|include/|asm/|\.claude/rules/|inline_asm_canonical\.txt$|named_syms\.txt$|"
+# Main/overlay decomp and build lists/admissions -> cheat; pipeline, oracle/config, make controls,
+# Python gates/packages and layer-2 naming CSV -> both; other paths -> code (ledgers separate).
+CHEAT_PATHS = re.compile(r"^((?:movovl/)?(?:src/|include/|asm/)|\.claude/rules/|inline_asm_canonical\.txt$|named_syms\.txt$|"
                          r"(?i:volatile_extern_allowlist\.txt|known_psyq_stdlib\.txt|"
                          r"regfix(?:_stage2)?\.txt|asmfix\.txt|sdata_exclude\.txt)$|"
-                         r"undefined_syms|undefined_funcs|[^/]*_auto\.txt$|[^/]*\.ld$|[^/]*_funcs\.txt$|"
-                         r"[^/]*_syms\.txt$|[^/]*_files\.txt$)")
-# The engine suite may be skipped only for these paths (the bytes and build lists the clean
-# build itself checks). Every other path runs it, including the admission / rewrite-rule data
-# files CHEAT_PATHS routes for review: engine/test_engine.py pins e.g. that no live regfix /
-# asmfix rule file exists.
-SUITE_SKIP_PATHS = re.compile(r"^(src/|include/|asm/|\.claude/rules/|inline_asm_canonical\.txt$|"
-                              r"named_syms\.txt$|undefined_syms|undefined_funcs|[^/]*_auto\.txt$|"
-                              r"[^/]*\.ld$|[^/]*_funcs\.txt$|[^/]*_syms\.txt$|[^/]*_files\.txt$)")
-BOTH_PATHS = re.compile(r"^(Makefile(?:\.[^/]*)?$|engine/|tools/|oracle/|(?i:[^/]*\.(?:py|pyw|pyc|so|pyd|pth))$|"
-                        r"(?i:bb2\.sha1|symbol_addrs\.txt|requirements\.txt|splat\.yaml|\.clang-format)$|"
-                        r"(?i:(?:[^/]+/)*(?:GNUmakefile|makefile(?:\.[^/]*)?|[^/]*\.mk))$)")
+                         r"(?:movovl/)?(?:undefined_(?:syms|funcs)[^/]*\.txt$|[^/]*_auto\.txt$|[^/]*\.ld$|[^/]*_funcs\.txt$|"
+                         r"[^/]*_syms\.txt$|[^/]*_files\.txt$))")
+# Main bytes/build lists are checked by the clean build; overlay bytes are not checked by land.
+# Overlay files skip the suite because engine tests read only temporary fixtures, not these files.
+SUITE_SKIP_PATHS = re.compile(r"^((?:movovl/)?(?:src/|include/|asm/)|\.claude/rules/|inline_asm_canonical\.txt$|"
+                              r"named_syms\.txt$|(?:movovl/)?(?:undefined_(?:syms|funcs)[^/]*\.txt$|[^/]*_auto\.txt$|"
+                              r"[^/]*\.ld$|[^/]*_funcs\.txt$|[^/]*_syms\.txt$|[^/]*_files\.txt$))")
+BOTH_PATHS = re.compile(r"^(engine/|tools/|oracle/|docs/naming/function-names\.csv$|"
+                        r"(?i:[^/]*\.(?:py|pyw|pyc|so|pyd|pth))$|"
+                        r"(?i:(?:movovl/)?(?:[^/]*\.sha1|splat[^/]*\.yaml|symbol_addrs[^/]*\.txt)|"
+                        r"requirements\.txt|\.clang-format)$|"
+                        r"(?i:(?:[^/]+/)*(?:GNUmakefile|makefile(?:\.(?!(?:md|rst|txt)$)[^/]*)?|[^/]*\.mk))$)")
 # Cross-platform import suffixes: Windows gates must also recognize Linux extensions.
 PYTHON_MODULE = re.compile(r"^(?P<name>[^/.]+)(?:\.(?:cpython-[^/]+|cp[0-9]+-[^/]+|abi3))?"
                            r"\.(?:py|pyw|pyc|so|pyd)$", re.I)
@@ -401,12 +397,20 @@ def check_tree(main, item, base, tree):
             continue
         om, nm = meta[1:].split()[:2]
         paths.append(path)
-        # Only additions: existing root scripts (currently diff_settings.py)
-        # remain usable. Root imports run before engine gates can defend themselves.
-        module = PYTHON_MODULE.fullmatch(path)
+        # Only additions: existing modules remain usable. Root packages and scripts,
+        # plus main/overlay tools scripts' sibling imports, can shadow imports before gates run.
+        parts = path.casefold().split("/")
+        module = PYTHON_MODULE.fullmatch(parts[-1])
         if om == "000000" and module:
             stem = module["name"].casefold()
-            if stem in sys.stdlib_module_names or stem in ("engine", "tools"):
+            root_import = len(parts) == 1
+            if len(parts) >= 2 and stem == "__init__":
+                stem = parts[-2]
+                root_import = len(parts) == 2
+            tools_import = parts[0] == "tools" or parts[:2] == ["movovl", "tools"]
+            reserved = (root_import and stem in ("engine", "tools")) or (
+                (root_import or tools_import) and stem in sys.stdlib_module_names)
+            if reserved:
                 bad.append(f"{path} (shadows a standard-library or gate module)")
         canonical = canonical_case(path)
         if canonical != path:
