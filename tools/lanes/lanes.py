@@ -1505,16 +1505,22 @@ def cmd_land(ctx: Ctx, a):
     try:
         # Refuse --no-wait before bootstrapping a landing tree; refresh main only after waiting.
         land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
+        lk = read_lock(ctx)
+        held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
         # The lane's own paths: build_candidate later decides on the replayed diff, which can
-        # differ; that changes only who waits, never which gates run.
+        # differ; that changes only who waits, never which gates run. A session that already
+        # holds the main lock does not queue: no one can fast-forward main ahead of it, and a
+        # head waiting on its lock would otherwise wait on it while it waits on the head.
         if queues_full_gates(ctx, paths_of(ctx, commits)):
-            queue.wait(getattr(a, "no_wait", False))
+            if held_before:
+                print("lanes: this session holds the main lock; not queueing for the full gates",
+                      flush=True)
+            else:
+                queue.wait(getattr(a, "no_wait", False))
         ld = ensure_land_tree(ctx, lane)
         logp = ctx.state_dir / "logs" / f"{lane}-{time.strftime('%Y%m%d-%H%M%S')}.log"
         logp.parent.mkdir(parents=True, exist_ok=True)
         log = open(logp, "w", encoding="utf-8", newline="\n")
-        lk = read_lock(ctx)
-        held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
         for attempt in range(LAND_ATTEMPTS):
             base = git("rev-parse", "main", cwd=ctx.main)
             # against this attempt's base: main may have moved, or been reset, since the last look

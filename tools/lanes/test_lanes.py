@@ -15,7 +15,7 @@ import tempfile
 import threading
 import time
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import ExitStack, contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -401,6 +401,122 @@ class GateQueueTest(unittest.TestCase):
         self.ctx.mutex = self.ctx.state_dir / ".registry.mutex"
         self.ctx.cfg = CFG
         self.ctx.wt_root = self.ctx.state_dir / "wts"
+
+    @contextmanager
+    def land_fixture(self, lock=None):
+        """Exercise cmd_land with the temp registry, without Git or gate subprocesses."""
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        self.ctx.replayed = []
+        with ExitStack() as stack:
+            for name, value in {
+                "require_owner": None, "recover_lane": None, "git": "commit",
+                "unlanded": ["commit"], "paths_of": ["src/a.c"], "check_claims": None,
+                "read_lock": lock, "ensure_land_tree": self.ctx.state_dir,
+                "cheap_recheck_paths": None, "build_candidate": "commit",
+                "mark_landed": None, "advance_lane": None, "run": None,
+            }.items():
+                stack.enter_context(patch.object(lanes, name, return_value=value))
+            yield SimpleNamespace(lane="a", no_push=True, no_wait=True)
+
+    def test_reenqueue_preserves_unique_ticket_and_peer_positions(self):
+        first = lanes.GateQueue(self.ctx, "first")
+        mine = lanes.GateQueue(self.ctx, "mine")
+        last = lanes.GateQueue(self.ctx, "last")
+        stale = lanes.GateQueue(self.ctx, "stale")
+        self.addCleanup(mine.close)
+        original = [dict(q.ticket) for q in (first, mine, last)]
+        stale.ticket["beat"] -= lanes.HEARTBEAT_STALE_SECS + 1
+        self.ctx.update(lambda reg: reg.update(gate_queue=original + [stale.ticket]))
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(mine._poll(), 2)  # stale peer forces _enqueue_and_prune again
+        self.assertEqual(self.ctx.load()["gate_queue"], original)
+        self.assertEqual(self.ctx.update(mine._enqueue_and_prune), 2)
+        self.assertEqual(self.ctx.load()["gate_queue"], original)
+
+    def test_land_closes_queue_last_even_when_cleanup_raises(self):
+        from unittest.mock import Mock, patch
+        for failure in (None, "unlink", "log.close"):
+            with self.subTest(failure=failure), self.land_fixture() as args:
+                events = []
+                error = RuntimeError("cleanup failed")
+                real_close = lanes.GateQueue.close
+                pidfile = lanes.land_pidfile(self.ctx, "a")
+                real_unlink = Path.unlink
+
+                def cleanup(name):
+                    self.assertEqual(len(self.ctx.load()["gate_queue"]), 1)
+                    events.append(name)
+                    if name == failure:
+                        raise error
+
+                def unlink(path, *a, **kw):
+                    if path == pidfile:
+                        cleanup("unlink")
+                    return real_unlink(path, *a, **kw)
+
+                def close(queue):
+                    events.append("queue.close")
+                    real_close(queue)
+
+                log = Mock()
+                log.close.side_effect = lambda: cleanup("log.close")
+                with patch.object(lanes, "open", return_value=log), \
+                        patch.object(lanes, "run", side_effect=lambda *a, **kw: cleanup("abort")), \
+                        patch.object(Path, "unlink", unlink), \
+                        patch.object(lanes.GateQueue, "close", close), redirect_stdout(io.StringIO()):
+                    if failure:
+                        with self.assertRaises(RuntimeError) as caught:
+                            lanes.cmd_land(self.ctx, args)
+                        self.assertIs(caught.exception, error)
+                    else:
+                        self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+                expected = ["abort", "unlink"]
+                if failure != "unlink":
+                    expected.append("log.close")
+                self.assertEqual(events, expected + ["queue.close"])
+                self.assertEqual(self.ctx.load()["gate_queue"], [])
+
+    def test_land_lock_holder_bypasses_queue_but_other_holder_queues(self):
+        from unittest.mock import patch
+        peer = lanes.GateQueue(self.ctx, "peer").ticket
+        peer["session"] = "peer-session"
+        for session in (self.ctx.session, "other-session"):
+            with self.subTest(session=session), self.land_fixture({"session": session}) as args:
+                self.ctx.update(lambda reg: reg.update(gate_queue=[peer]))
+                out = io.StringIO()
+                real_wait = lanes.GateQueue.wait
+                real_poll = lanes.GateQueue._poll
+                real_enqueue = lanes.GateQueue._enqueue_and_prune
+
+                def poll(queue):
+                    position = real_poll(queue)
+                    self.assertEqual(position, 2)
+                    self.assertEqual([t["lane"] for t in self.ctx.load()["gate_queue"]],
+                                     ["peer", "a"])
+                    return position
+
+                with patch.object(lanes.GateQueue, "wait", autospec=True,
+                                  side_effect=real_wait) as wait, \
+                        patch.object(lanes.GateQueue, "_poll", autospec=True,
+                                     side_effect=poll) as poll_mock, \
+                        patch.object(lanes.GateQueue, "_enqueue_and_prune", autospec=True,
+                                     side_effect=real_enqueue) as enqueue, redirect_stdout(out):
+                    if session == self.ctx.session:
+                        self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+                        wait.assert_not_called()
+                        poll_mock.assert_not_called()
+                        enqueue.assert_not_called()
+                        self.assertEqual(out.getvalue().count(
+                            "this session holds the main lock; not queueing for the full gates"), 1)
+                    else:
+                        with self.assertRaises(lanes.Refuse) as caught:
+                            lanes.cmd_land(self.ctx, args)
+                        self.assertEqual(caught.exception.code, 6)
+                        wait.assert_called_once()
+                        poll_mock.assert_called_once()
+                        enqueue.assert_called_once()
+                self.assertEqual(self.ctx.load()["gate_queue"], [peer])
 
     def test_fifo_head_check_and_cleanup(self):
         from unittest.mock import patch
