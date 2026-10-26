@@ -3312,6 +3312,73 @@ def test_file_scope_head_review() -> None:
        [(len(prefix) + 2, len(src))])
 
 
+def test_shared_brace_head_review() -> None:
+    prefixes = ("int g(void) {\n  }", "int g(void) { return 0; }")
+    for prefix in prefixes:
+        for separator in (" ", "\n"):
+            src = prefix + "int" + separator + "f(void) {}"
+            eq("shared brace: plain int head span",
+               inlineasm.func_definition_candidates(src, "f"),
+               [(len(prefix), len(src))])
+    for prefix in prefixes:
+        for separator in (" ", "\n"):
+            for gap in ("", " \t"):
+                head = "static int *" + separator + "f(void) {}"
+                src = prefix + gap + head
+                expected = [(len(prefix + gap), len(src))]
+                eq("shared brace: span starts at return type",
+                   inlineasm.func_definition_candidates(src, "f"), expected)
+                eq("shared brace: census sees both bodies",
+                   inlineasm.definition_names(src), ["g", "f"])
+                eq("shared brace: head census sees both heads",
+                   inlineasm.definition_head_names(src), ["g", "f"])
+                eq("shared brace: substitution preserves preceding brace",
+                   inlineasm.substitute_body(src, "f", "int f(void) {}"),
+                   prefix + gap + "int f(void) {}")
+                ambiguous = src + "\nint f(void) {}"
+                eq("shared brace: duplicate stays ambiguous",
+                   len(inlineasm.func_definition_candidates(ambiguous, "f")), 2)
+                for keyword in ("if", "else", "int", "return", "volatile",
+                                "__asm__", "typeof", "const"):
+                    bad = prefix + gap + "int" + separator + keyword + "(void) {}"
+                    eq("shared brace: keyword name rejected",
+                       inlineasm.func_definition_candidates(bad, keyword), [])
+                    if keyword != "int":
+                        bad = prefix + gap + keyword + separator + "f(void) {}"
+                        eq("shared brace: keyword type tail rejected",
+                           inlineasm.func_definition_candidates(bad, "f"), [])
+    for separator in (" ", "\n"):
+        for prefix in ("int g(void) {\n  if (x) { }",
+                       "int g(void) { if (x) { }"):
+            for tail in ("int" + separator + "f(void) {}",
+                         "else if (x) {}", "int y;"):
+                src = prefix + tail + "\n}"
+                eq("shared brace: body look-alikes hidden",
+                   inlineasm.definition_names(src), ["g"])
+                eq("shared brace: body head names hidden",
+                   inlineasm.definition_head_names(src), ["g"])
+        for prefix in prefixes:
+            head = prefix + "int" + separator + "f(void) {}"
+            for src in ("/*\n" + head + "\n*/",
+                        "#if 0\n" + head + "\n#endif",
+                        "#ifdef X\n{\n#endif\n" + head):
+                eq("shared brace: masked or unknown scope hides head",
+                   inlineasm.func_definition_candidates(src, "f"), [])
+    # A cached roster is immutable; callers get independent lists and edits
+    # select a new cache entry even when only the function name changes.
+    src = prefixes[0] + "int f(void) {}"
+    inlineasm._definition_heads_cached.cache_clear()
+    heads = inlineasm._definition_heads(src)
+    heads.clear()
+    inlineasm.func_definition_candidates(src, "f")
+    eq("head cache: one scan across names",
+       inlineasm._definition_heads_cached.cache_info().misses, 1)
+    eq("head cache: caller mutation cannot erase heads",
+       inlineasm.definition_head_names(src), ["g", "f"])
+    eq("head cache: changed text has new names",
+       inlineasm.definition_names(src.replace("f(void)", "h(void)")), ["g", "h"])
+
+
 def test_split_definition_head() -> None:
     split = "static s32\n\nfunc_X(s32 a) { return a; }"
     src = "extern int g;\n" + split + "\nint tail;\n"
@@ -14625,6 +14692,7 @@ def main() -> int:
     test_brace_prefixed_definition_head()
     test_additional_file_scope_heads()
     test_file_scope_head_review()
+    test_shared_brace_head_review()
     test_split_definition_head()
     test_definition_type_line()
     test_definition_names()

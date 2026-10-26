@@ -650,6 +650,16 @@ def _definition_heads(
     text: str, name: str = r"[A-Za-z_]\w*"
 ) -> list[tuple[str, int, int]]:
     """Return (name, definition start, opening-paren end) in head order."""
+    heads = _definition_heads_cached(text)
+    if name == r"[A-Za-z_]\w*":
+        return list(heads)
+    return [head for head in heads if re.fullmatch(name, head[0])]
+
+
+@functools.lru_cache(maxsize=64)
+def _definition_heads_cached(text: str) -> tuple[tuple[str, int, int], ...]:
+    """Scan once per text, shared by the census and every per-name lookup."""
+    name = r"[A-Za-z_]\w*"
     heads = []
     for m in re.finditer(
             _DEFINITION_HEAD_PREFIX + "(" + name + r")\s*\(", text):
@@ -668,9 +678,9 @@ def _definition_heads(
         previous = text[previous_start:previous_end]
         if _definition_type_line(previous):
             heads.append((m.group(1), previous_start, m.end()))
-        elif previous.startswith("}"):
-            # Shared-line closing brace followed by a split return type.
-            type_start = previous_start + 1
+        elif "}" in previous:
+            # The nearest shared-line brace may be indented or mid-line.
+            type_start = previous_start + previous.rfind("}") + 1
             while type_start < previous_end and text[type_start] in " \t":
                 type_start += 1
             if (_definition_type_line(text[type_start:previous_end])
@@ -686,7 +696,17 @@ def _definition_heads(
         if (_new_definition_head(m.group(2), m.group(1))
                 and start in _file_scope_tokens(text)):
             heads.append((m.group(2), start, m.end()))
-    return sorted(heads, key=lambda head: head[1])
+    seen = {(start, end) for _, start, end in heads}
+    for m in re.finditer(
+            r"\}[ \t]*([A-Za-z_][\w \t\*]*\b)(" + name + r")\s*\(", text):
+        # A brace anywhere on the line can finish the preceding definition.
+        # Existing raw heads above keep their ambiguity policy unchanged.
+        start = m.start(1)
+        if ((start, m.end()) not in seen
+                and _new_definition_head(m.group(2), m.group(1))
+                and start in _file_scope_tokens(text)):
+            heads.append((m.group(2), start, m.end()))
+    return tuple(sorted(heads, key=lambda head: head[1]))
 
 
 def definition_head_names(text: str) -> list[str]:
@@ -716,7 +736,7 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     definition-shaped candidate found in the RAW text.
     Existing raw shapes retain copies in comments, strings and disabled
     branches, making the result ambiguous too. Additional indented and
-    brace-prefixed split heads require lexical file scope.
+    shared-brace heads require lexical file scope.
     Callers must refuse ambiguity rather than use an assembly-only fallback.
     Offsets index the original text, starting at the return type (excluding
     any previous function's `}` and following spaces/tabs), with an exclusive end.
@@ -730,8 +750,9 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     Supported shapes beyond a strict column-0 + `)`-then-`{` rule (missing
     these would leave the cheat count UNKNOWN and body cheats invisible):
       * `}s32 func_8007DE08(s32 arg0) {` — the definition shares a
-        line with the previous function's closing brace. A single optional `}`
-        is allowed before the return type, including a split type/name head.
+        line with the previous function's closing brace. Indented or mid-line
+        braces also qualify at lexical file scope, including split type/name
+        heads. Existing column-0 one-line heads retain their raw treatment.
       * Indented one-line heads qualify at lexical brace depth zero, outside
         comments, literals, directives and literal #if 0 arms.
       * `void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;` (368E4.c) — old-style K&R
