@@ -1,0 +1,161 @@
+==============================================================================
+NAMING WAVE — 17 operations (0 RESET, 17 RENAME)
+  17 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — symbol_addrs.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (24) --
+  (root): 1 files, 3 substitutions
+      inline_asm_canonical.txt  (3)
+  asm: 18 files, 45 substitutions
+      asm/funcs/func_80032854.s  (11)
+      asm/funcs/func_800611A4.s  (2)
+      asm/funcs/func_800613C8.s  (2)
+      asm/funcs/func_80061454.s  (2)
+      asm/funcs/func_800614E0.s  (2)
+      asm/funcs/func_80061710.s  (2)
+      ... and 12 more
+  include: 1 files, 10 substitutions
+      include/bb2.h  (10)
+  src: 3 files, 41 substitutions
+      src/main/17AFC.c  (12)
+      src/main/51268.c  (17)
+      src/main/d_8BC50.c  (12)
+  tools: 1 files, 1 substitutions
+      tools/ra_solver/sweep.py  (1)
+
+-- .s file renames (17) --
+  asm/funcs/func_800611A4.s -> asm/funcs/eff_StartRotatedQuadClusterWithNearWhiteLight.s
+  asm/funcs/func_800613C8.s -> asm/funcs/eff_StartSlowRateCosineScaledQuadWithPaleBlueLight.s
+  asm/funcs/func_80061454.s -> asm/funcs/eff_StartMediumRateCosineScaledQuadWithPaleBlueLight.s
+  asm/funcs/func_800614E0.s -> asm/funcs/eff_StartFastRateCosineScaledQuadWithPaleBlueLight.s
+  asm/funcs/func_80061710.s -> asm/funcs/eff_StartArgSelectedCommandWithGreenLight.s
+  asm/funcs/func_800619A4.s -> asm/funcs/eff_StartBillboardPairCommand.s
+  asm/funcs/func_800619F0.s -> asm/funcs/eff_StartJitteredBillboardsCommand.s
+  asm/funcs/func_80061ACC.s -> asm/funcs/eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight.s
+  asm/funcs/func_80061C00.s -> asm/funcs/eff_StartRecycledYawedParticlesWithTextureSelection.s
+  asm/funcs/func_80061D74.s -> asm/funcs/eff_StartRecycledYawedParticlesWithJitteredQuads.s
+  ... and 7 more
+
+-- ledger directory renames (30) --
+  memory/grind/func_800611A4 -> memory/grind/eff_StartRotatedQuadClusterWithNearWhiteLight
+  memory/grind/func_800613C8 -> memory/grind/eff_StartSlowRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_80061454 -> memory/grind/eff_StartMediumRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_800614E0 -> memory/grind/eff_StartFastRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_80061710 -> memory/grind/eff_StartArgSelectedCommandWithGreenLight
+  memory/grind/func_800619A4 -> memory/grind/eff_StartBillboardPairCommand
+  memory/grind/func_800619F0 -> memory/grind/eff_StartJitteredBillboardsCommand
+  memory/grind/func_80061ACC -> memory/grind/eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
+  memory/grind/func_80061C00 -> memory/grind/eff_StartRecycledYawedParticlesWithTextureSelection
+  memory/grind/func_80061D74 -> memory/grind/eff_StartRecycledYawedParticlesWithJitteredQuads
+  ... and 20 more
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (31) --
+  tools/canonical_asm_regions.json: 3 changes
+      func_8006295C
+      func_800646E8
+      func_80063084
+  memory/grind/func_800611A4/layer2.jsonl: 2 changes
+      line 1: func func_800611A4 -> eff_StartRotatedQuadClusterWithNearWhiteLight
+      line 2: func func_800611A4 -> eff_StartRotatedQuadClusterWithNearWhiteLight
+  memory/grind/func_800613C8/layer2.jsonl: 1 changes
+      line 1: func func_800613C8 -> eff_StartSlowRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_80061454/layer2.jsonl: 1 changes
+      line 1: func func_80061454 -> eff_StartMediumRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_800614E0/layer2.jsonl: 1 changes
+      line 1: func func_800614E0 -> eff_StartFastRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_80061710/layer2.jsonl: 2 changes
+      line 1: func func_80061710 -> eff_StartArgSelectedCommandWithGreenLight
+      line 2: func func_80061710 -> eff_StartArgSelectedCommandWithGreenLight
+  memory/grind/func_800619A4/layer2.jsonl: 1 changes
+      line 1: func func_800619A4 -> eff_StartBillboardPairCommand
+  memory/grind/func_800619F0/layer2.jsonl: 1 changes
+      line 1: func func_800619F0 -> eff_StartJitteredBillboardsCommand
+  memory/grind/func_80061ACC/layer2.jsonl: 2 changes
+      line 1: func func_80061ACC -> eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
+      line 2: func func_80061ACC -> eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
+  memory/grind/func_80061C00/layer2.jsonl: 2 changes
+      line 1: func func_80061C00 -> eff_StartRecycledYawedParticlesWithTextureSelection
+      line 2: func func_80061C00 -> eff_StartRecycledYawedParticlesWithTextureSelection
+  memory/grind/func_80061D74/layer2.jsonl: 2 changes
+      line 1: func func_80061D74 -> eff_StartRecycledYawedParticlesWithJitteredQuads
+      line 2: func func_80061D74 -> eff_StartRecycledYawedParticlesWithJitteredQuads
+  memory/grind/func_80061EC0/layer2.jsonl: 2 changes
+      line 1: func func_80061EC0 -> eff_StartRecycledCommandWithMagentaLight
+      line 2: func func_80061EC0 -> eff_StartRecycledCommandWithMagentaLight
+  memory/grind/func_8006288C/layer2.jsonl: 1 changes
+      line 1: func func_8006288C -> eff_SpawnRotatedQuadCluster
+  memory/grind/func_8006295C/layer2.jsonl: 4 changes
+      line 1: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 2: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 3: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 4: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+  memory/grind/func_80063084/layer2.jsonl: 2 changes
+      line 1: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+      line 2: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+  memory/grind/func_800646E8/layer2.jsonl: 2 changes
+      line 1: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+      line 2: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+  memory/grind/_completed/func_800611A4/layer2.jsonl: 3 changes
+      line 1: func func_800611A4 -> eff_StartRotatedQuadClusterWithNearWhiteLight
+      line 2: func func_800611A4 -> eff_StartRotatedQuadClusterWithNearWhiteLight
+      line 3: func func_800611A4 -> eff_StartRotatedQuadClusterWithNearWhiteLight
+  memory/grind/_completed/func_800613C8/layer2.jsonl: 2 changes
+      line 1: func func_800613C8 -> eff_StartSlowRateCosineScaledQuadWithPaleBlueLight
+      line 2: func func_800613C8 -> eff_StartSlowRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/_completed/func_80061454/layer2.jsonl: 2 changes
+      line 1: func func_80061454 -> eff_StartMediumRateCosineScaledQuadWithPaleBlueLight
+      line 2: func func_80061454 -> eff_StartMediumRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/_completed/func_800614E0/layer2.jsonl: 2 changes
+      line 1: func func_800614E0 -> eff_StartFastRateCosineScaledQuadWithPaleBlueLight
+      line 2: func func_800614E0 -> eff_StartFastRateCosineScaledQuadWithPaleBlueLight
+  memory/grind/_completed/func_80061710/layer2.jsonl: 2 changes
+      line 1: func func_80061710 -> eff_StartArgSelectedCommandWithGreenLight
+      line 2: func func_80061710 -> eff_StartArgSelectedCommandWithGreenLight
+  memory/grind/_completed/func_800619A4/layer2.jsonl: 1 changes
+      line 1: func func_800619A4 -> eff_StartBillboardPairCommand
+  memory/grind/_completed/func_800619F0/layer2.jsonl: 1 changes
+      line 1: func func_800619F0 -> eff_StartJitteredBillboardsCommand
+  memory/grind/_completed/func_80061ACC/layer2.jsonl: 2 changes
+      line 1: func func_80061ACC -> eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
+      line 2: func func_80061ACC -> eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
+  memory/grind/_completed/func_80061C00/layer2.jsonl: 3 changes
+      line 1: func func_80061C00 -> eff_StartRecycledYawedParticlesWithTextureSelection
+      line 2: func func_80061C00 -> eff_StartRecycledYawedParticlesWithTextureSelection
+      line 3: func func_80061C00 -> eff_StartRecycledYawedParticlesWithTextureSelection
+  memory/grind/_completed/func_80061D74/layer2.jsonl: 3 changes
+      line 1: func func_80061D74 -> eff_StartRecycledYawedParticlesWithJitteredQuads
+      line 2: func func_80061D74 -> eff_StartRecycledYawedParticlesWithJitteredQuads
+      line 3: func func_80061D74 -> eff_StartRecycledYawedParticlesWithJitteredQuads
+  memory/grind/_completed/func_80061EC0/layer2.jsonl: 2 changes
+      line 1: func func_80061EC0 -> eff_StartRecycledCommandWithMagentaLight
+      line 2: func func_80061EC0 -> eff_StartRecycledCommandWithMagentaLight
+  memory/grind/_completed/func_8006288C/layer2.jsonl: 3 changes
+      line 1: func func_8006288C -> eff_SpawnRotatedQuadCluster
+      line 2: func func_8006288C -> eff_SpawnRotatedQuadCluster
+      line 3: func func_8006288C -> eff_SpawnRotatedQuadCluster
+  memory/grind/_completed/func_8006295C/layer2.jsonl: 11 changes
+      line 1: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 2: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 3: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 4: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      line 5: func func_8006295C -> eff_DrawAndAdvanceRotatedQuadClusters
+      ... and 6 more
+  memory/grind/_completed/func_80063084/layer2.jsonl: 9 changes
+      line 1: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+      line 2: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+      line 3: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+      line 4: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+      line 5: func func_80063084 -> eff_DrawAndAdvanceBillboardPairs
+      ... and 4 more
+  memory/grind/_completed/func_800646E8/layer2.jsonl: 10 changes
+      line 1: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+      line 2: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+      line 3: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+      line 4: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+      line 5: func func_800646E8 -> eff_DrawAndAdvanceJitteredBillboards
+      ... and 5 more
+
+DRY RUN — nothing written. Re-run with --apply.
