@@ -570,15 +570,12 @@ def _new_definition_head(name: str, type_text: str) -> bool:
 
 
 @functools.lru_cache(maxsize=64)
-def _file_scope_tokens(text: str) -> frozenset[int]:
-    """Token offsets at brace depth zero for the additional head shapes.
+def _definition_view(text: str):
+    """Spliced, comment/literal-masked code and directives, before scope parsing.
 
-    Use the spliced compiler view, so braces in comments, literals and macro
-    directives do not affect scope. Literal #if 0 arms are excluded; unknown
-    conditions retain both arms, like the existing raw candidate grammar.
-    Each arm restarts at entry depth; matching exits join at the first arm's
-    exit depth. Unequal exits discard tokens from that conditional onwards.
-    This is a lexical scope filter, not a C preprocessor.
+    Blank directives and literal #if 0 arms before masking multiline strings:
+    quotes in preprocessor prose must never consume a live definition.
+    view.pos maps every retained character back to the original source.
     """
     view = cia.compiler_view(text)
     # cpp ends literals at EOL when recognizing directives. Remove disabled
@@ -608,6 +605,21 @@ def _file_scope_tokens(text: str) -> frozenset[int]:
         offset += len(line)
     # Already spliced and index mapped: mask literals without splicing again.
     masked = cia._blank("".join(code), strings=True, multiline=True)
+    return view, masked, directives
+
+
+@functools.lru_cache(maxsize=64)
+def _file_scope_tokens(text: str) -> frozenset[int]:
+    """Token offsets at brace depth zero for the additional head shapes.
+
+    Use the spliced compiler view, so braces in comments, literals and macro
+    directives do not affect scope. Literal #if 0 arms are excluded; unknown
+    conditions retain both arms, like the existing raw candidate grammar.
+    Each arm restarts at entry depth; matching exits join at the first arm's
+    exit depth. Unequal exits discard tokens from that conditional onwards.
+    This is a lexical scope filter, not a C preprocessor.
+    """
+    view, masked, directives = _definition_view(text)
     depth, offset = 0, 0
     branches, tokens = [], set()
     for line in masked.splitlines(keepends=True):
@@ -706,37 +718,135 @@ def _definition_heads_cached(text: str) -> tuple[tuple[str, int, int], ...]:
                 and _new_definition_head(m.group(2), m.group(1))
                 and start in _file_scope_tokens(text)):
             heads.append((m.group(2), start, m.end()))
-    # Comments and leading GNU attributes may separate a shared brace from
-    # the return type. A completed declaration's semicolon is another head
-    # boundary. Mask only for this extension; preserve the old raw grammar.
-    masked = _code_without_comments_and_strings(text)
-    for attr in reversed(list(_ATTRIBUTE_RE.finditer(masked))):
-        close = _match_paren(masked, attr.end() - 1)
-        if close >= 0:
-            masked = (masked[:attr.start()] +
-                      " " * (close - attr.start()) + masked[close:])
-    seen = {(start, end) for _, start, end in heads}
-    for m in re.finditer(
-            r"([};])[ \t]*([A-Za-z_][\w \t*]*\b)[ \t]*(?:\r?\n)?("
-            + name + r")\s*\(",
-            masked):
-        start = m.start(2)
-        # Plain shared-brace heads already have dedicated one-line/split
-        # handling above. Do not give them a second, weaker reading here;
-        # a head masking changed (a comment or attribute inside it) has no
-        # raw reading, so it is read here.
-        if (m.group(1) == "}" and not text[m.start() + 1:start].strip()
-                and masked[m.start():m.end()] == text[m.start():m.end()]):
+    # Extend the raw grammar using the SAME preprocessor/scope view. Tokenize
+    # once: a greedy type/name regex retries quadratically on long failing
+    # whitespace runs. Attribute and aggregate erasure preserve all offsets.
+    view, masked, _directives = _definition_view(text)
+    chars = list(masked)
+    attributes = {}
+    head_newlines = set()
+    # Match parentheses once. An unbalanced attribute must not hide a later
+    # balanced one, nor cause repeated scans of a long failing suffix.
+    parens, closes = [], {}
+    for i, char in enumerate(masked):
+        if char == "(":
+            parens.append(i)
+        elif char == ")" and parens:
+            closes[parens.pop()] = i + 1
+    at = 0
+    for attr in _ATTRIBUTE_RE.finditer(masked):
+        if attr.start() < at:
             continue
-        if ((start, m.end()) not in seen
-                and _new_definition_head(m.group(3), m.group(2))
-                and start in _file_scope_tokens(text)):
-            heads.append((m.group(3), start, m.end()))
+        close = closes.get(attr.end() - 1)
+        if close is None:
+            continue
+        attributes[attr.start()] = close
+        for i in range(attr.start(), close):
+            if chars[i] == "\n":
+                head_newlines.add(i)
+            else:
+                chars[i] = " "
+        at = close
+    masked = "".join(chars)
+    # An inline tag body is part of the RETURN TYPE, not the function body.
+    # Collapse balanced tag bodies to a synthetic identifier. The candidate
+    # still starts at the real struct/union/enum token, at lexical depth zero.
+    tokens = list(re.finditer(r"[A-Za-z_]\w*|[^\s]", masked))
+    tag = False
+    at = 0
+    while at < len(tokens):
+        tok = tokens[at]
+        word = tok.group()
+        if word in ("struct", "union", "enum"):
+            tag = True
+        elif word == "{" and tag:
+            depth, end = 1, at + 1
+            while end < len(tokens) and depth:
+                depth += (tokens[end].group() == "{") - (tokens[end].group() == "}")
+                end += 1
+            if depth == 0:
+                close = tokens[end - 1].end()
+                chars[tok.start()] = "T"
+                for i in range(tok.start() + 1, close):
+                    if chars[i] == "\n":
+                        head_newlines.add(i)
+                    else:
+                        chars[i] = " "
+                at = end
+                tag = False
+                continue
+            break  # unbalanced tag body; lexical scope cannot resume inside
+        elif not _IDENT_TOKEN_RE.fullmatch(word):
+            tag = False
+        at += 1
+    masked = "".join(chars)
+    scope = _file_scope_tokens(text)
+    # Keep at most one type/name line break. A boundary on either line can
+    # be file start, newline, ';' or '}', including a masked comment prefix.
+    run, line_breaks = [], 0
+    attribute_items = iter(attributes.items())
+    pending = next(attribute_items, None)
+    leading_attribute = None
+    directive_offsets = iter(_directives)
+    pending_directive = next(directive_offsets, None)
+    heads_by_end = {head[2]: head for head in heads}
+    boundary = head_boundary = 0
+    for tok in re.finditer(r"[A-Za-z_]\w*|\n|[^\s]", masked):
+        while pending_directive is not None and pending_directive <= tok.start():
+            # A directive always breaks a head. A blank line also clears a
+            # leading attribute; one newline may separate it from the type.
+            run, line_breaks, leading_attribute = [], 0, None
+            boundary = tok.start()
+            pending_directive = next(directive_offsets, None)
+        while pending is not None and pending[1] <= tok.start():
+            ast, _end = pending
+            if not run and leading_attribute is None and ast >= boundary:
+                leading_attribute = ast
+            pending = next(attribute_items, None)
+        word = tok.group()
+        if word == "\n":
+            if tok.start() in head_newlines:
+                continue
+            line_breaks = line_breaks + 1 if run or leading_attribute is not None else 0
+            if line_breaks > 1:
+                run, leading_attribute = [], None
+            if not run:
+                boundary = tok.end()
+            continue
+        if (word == "(" and len(run) >= 2
+                and _IDENT_TOKEN_RE.fullmatch(run[-1].group())):
+            fn = run[-1]
+            start = run[0].start()
+            type_text = masked[start:fn.start()]
+            if (_new_definition_head(fn.group(), type_text)
+                    and view.pos[start] in scope
+                    and view.pos[fn.start()] in scope):
+                he = view.pos[tok.end() - 1] + 1
+                # Attributes and comments stay outside the return-type span.
+                hs = view.pos[start]
+                # Preserve the legacy grammar for unchanged, undelimited
+                # heads (including its raw ambiguity policy and split spans).
+                changed = (masked[head_boundary:tok.end()] !=
+                           text[view.pos[head_boundary]:he])
+                delimited = head_boundary > 0 and masked[head_boundary - 1] in ";}"
+                if (he not in heads_by_end
+                        and (changed or delimited or leading_attribute is not None)):
+                    head = (fn.group(), hs, he)
+                    heads.append(head)
+                    heads_by_end[he] = head
+        if _IDENT_TOKEN_RE.fullmatch(word) or word == "*":
+            if not run:
+                head_boundary = boundary
+                line_breaks = 0
+            run.append(tok)
+        else:
+            run, line_breaks, leading_attribute = [], 0, None
+            boundary = tok.end()
     return tuple(sorted(heads, key=lambda head: head[1]))
 
 
 def definition_head_names(text: str) -> list[str]:
-    """Unique names of every raw definition-shaped head (one-line or split),
+    """Unique names of every raw or scope-filtered definition-shaped head,
     in head order, before the `)`-then-`{` test: the name list every body
     walk must start from, so a split head is never skipped."""
     return list(dict.fromkeys(h[0] for h in _definition_heads(text)))
@@ -746,8 +856,10 @@ def definition_names(text: str) -> list[str]:
     """Unique names with at least one raw definition candidate, in head order.
 
     Ambiguous names remain in this census; body readers must check candidates.
-    Declarations alone do not qualify. Comments/strings/directives are unmasked,
-    exactly as in func_definition_candidates.
+    Declarations alone do not qualify. Legacy column-zero heads are read raw
+    (including comments, strings and disabled branches). Extensions mask comments,
+    literals, directives and literal #if 0 arms, and require lexical file scope;
+    unknown conditional alternatives remain candidates on both paths.
     """
     return [name for name in definition_head_names(text)
             if func_definition_candidates(text, name)]
@@ -765,6 +877,7 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     shared-brace heads require lexical file scope.
     Callers must refuse ambiguity rather than use an assembly-only fallback.
     Offsets index the original text, starting at the return type (excluding
+    leading GNU attributes and comments as well as
     any previous function's `}` and following spaces/tabs), with an exclusive end.
     For a split head, the span starts at the type line's start, including any
     leading whitespace.
@@ -781,8 +894,11 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
         heads. Existing column-0 one-line heads retain their raw treatment.
       * Indented one-line heads qualify at lexical brace depth zero, outside
         comments, literals, directives and literal #if 0 arms.
-      * Comments or GNU attributes after a shared `}`, and a completed
-        declaration's same-line `;`, may precede the return type too.
+      * Comments or GNU attributes at line start or after a shared `}`, and
+        a completed declaration's `;`, may precede the type. A name may be
+        indented on the next line after these delimiters.
+      * A balanced inline struct/union/enum return type belongs to the head;
+        its braces do not terminate the return-type span.
       * `void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;` (368E4.c) — old-style K&R
         parameter declarations sit between `)` and `{`.
     A bare column-0 name also qualifies after a non-blank line containing only

@@ -3397,7 +3397,8 @@ def test_delimited_definition_heads() -> None:
         for separator in (" ", "\n"):
             head = "int" + separator + "f(void) {}"
             src = prefix + head
-            expected = [(len(prefix), len(src))]
+            span_start = len(prefix)
+            expected = [(span_start, len(src))]
             eq("delimited head: span begins at return type",
                inlineasm.func_definition_candidates(src, "f"), expected)
             check("delimited head: definition census includes f",
@@ -3406,7 +3407,7 @@ def test_delimited_definition_heads() -> None:
                   "f" in inlineasm.definition_head_names(src))
             eq("delimited head: substitution preserves delimiter and gap",
                inlineasm.substitute_body(src, "f", "int f(void) {}"),
-               prefix + "int f(void) {}")
+               src[:span_start] + "int f(void) {}")
             eq("delimited head: duplicate remains ambiguous",
                len(inlineasm.func_definition_candidates(src + "\nint f(void) {}", "f")), 2)
             for keyword in ("if", "else", "int", "return", "volatile", "__asm__"):
@@ -3421,7 +3422,9 @@ def test_delimited_definition_heads() -> None:
                             '#if 0\n%s\n#endif',
                             '#ifdef X\n{\n#endif\n%s'):
                 eq("delimited head: nested, masked or unknown scope excluded",
-                   inlineasm.func_definition_candidates(wrapper % src, "f"), [])
+                   inlineasm.func_definition_candidates(
+                       wrapper % (src.replace("/*c*/", "")
+                                  if wrapper.startswith("/*") else src), "f"), [])
             # Unknown but balanced arms remain visible: no clean fallback
             # when one arm supplies another spelling of the same definition.
             conditional = "#ifdef X\n" + src + "\n#else\nint f(void) {}\n#endif"
@@ -3436,6 +3439,147 @@ def test_delimited_definition_heads() -> None:
             src = prefix + head
             eq("delimited head: in-type comment or attribute, span from type",
                inlineasm.func_definition_candidates(src, "f"), [(len(prefix), len(src))])
+
+
+def test_definition_head_debt() -> None:
+    # Every added spelling must be found with its WHOLE type/attribute span.
+    cases = []
+    for prefix in ("", "\n", "int g(void) {}\n", "int g(void) {}\n\n",
+                   "int x; ", "int g(void) {} "):
+        for lead in ("__attribute__((unused)) static int ", "/*c*/ int "):
+            head = lead + "f(void) {}"
+            start = len(prefix) + (len("/*c*/ ") if lead.startswith("/*")
+                                   else len("__attribute__((unused)) "))
+            cases.append((prefix + head, start))
+    for prefix in ("int x; ", "int g(void) {} "):
+        cases.append((prefix + "int\n    f(void) {}", len(prefix)))
+    for kind in ("struct", "union", "enum"):
+        for tag in (" S", ""):
+            body = " A, B " if kind == "enum" else " int a; struct N { int b; } n; "
+            for prefix in ("", "int g(void) {} ", "int x; "):
+                cases.append((prefix + kind + tag + " {" + body + "} f(void) {}",
+                              len(prefix)))
+    cases += [("struct S {\n int a;\n union { int b; } n;\n} f(void) {}", 0),
+              ("__attribute__((\nunused\n)) static int f(void) {}",
+               len("__attribute__((\nunused\n)) ")),
+              ("__attribute__((aligned(4))) __attribute__((unused)) int f(void) {}",
+               len("__attribute__((aligned(4))) __attribute__((unused)) "))]
+    for src, start in cases:
+        eq("head debt: exact span", inlineasm.func_definition_candidates(src, "f"),
+           [(start, len(src))])
+        check("head debt: definition census", "f" in inlineasm.definition_names(src))
+        check("head debt: head census", "f" in inlineasm.definition_head_names(src))
+        eq("head debt: substitution keeps delimiter",
+           inlineasm.substitute_body(src, "f", "int f(void) {}"),
+           src[:start] + "int f(void) {}")
+        eq("head debt: duplicate ambiguous",
+           len(inlineasm.func_definition_candidates(src + "\nint f(void) {}", "f")), 2)
+        try:
+            inlineasm.substitute_body(src + "\nint f(void) {}", "f", "int f(void) {}")
+        except KeyError:
+            check("head debt: duplicate substitution refuses", True)
+        else:
+            check("head debt: duplicate substitution refuses", False)
+        # Avoid invalid nested C comments in the comment look-alike.
+        plain = src.replace("/*c*/", "")
+        for wrapped in ("int outer(void) {\n" + src + "\n}",
+                        "/*\n" + plain + "\n*/", '#if 0\n' + src + '\n#endif',
+                        'const char *s = "' + src.replace('\n', ' ') + '";',
+                        '#ifdef X\n{\n#endif\n' + src):
+            eq("head debt: lexical look-alike excluded",
+               inlineasm.func_definition_candidates(wrapped, "f"), [])
+        for keyword in ("if", "return", "int", "__asm__", "__attribute__"):
+            eq("head debt: keyword name rejected",
+               inlineasm.func_definition_candidates(src.replace("f(void)", keyword + "(void)"),
+                                                    keyword), [])
+        conditional = '#if X\n' + src + '\n#else\n' + src + '\n#endif'
+        eq("head debt: unknown alternatives ambiguous",
+           len(inlineasm.func_definition_candidates(conditional, "f")), 2)
+    # Preprocessor prose must be removed BEFORE multiline quote masking.
+    for prefix in ("#error don't\n", '#warning "unclosed\n',
+                   "#if 0\ndon't\n#endif\n", '#if 0\n"\n#else\n#endif\n',
+                   "%:warning don't\n", "#error don't \\\ncontinued\n"):
+        head = "/*c*/ __attribute__((unused)) int\n    f(void) {}"
+        src = prefix + head
+        start = len(prefix) + len("/*c*/ __attribute__((unused)) ")
+        eq("head debt: directive quote cannot mask live head",
+           inlineasm.func_definition_candidates(src, "f"), [(start, len(src))])
+        view, masked, _ = inlineasm._definition_view(src)
+        eq("head debt: view mapping length", len(view.pos), len(masked) + 1)
+        eq("head debt: view mapping end", view.pos[-1], len(src))
+        eq("head debt: substitution keeps directive",
+           inlineasm.substitute_body(src, "f", "int f(void) {}"),
+           src[:start] + "int f(void) {}")
+    src = 'int g(void) {} __attribute__((noinline)) int f(void) {}'
+    eq("head debt: leading attribute outside span", inlineasm.func_definition_candidates(src, "f"),
+       [(src.index("int f("), len(src))])
+
+
+def test_definition_head_consumers() -> None:
+    from engine import gtemacro
+
+    plain = "void f(int a, int b) {\n a = 0;\n g();\n}"
+    eq("head consumers: plain cheat baseline", inlineasm.func_cheat_asm_count(plain, "f"), 1)
+    for prefix in ("", "int g(void) {} ", "int g(void) {}\n"):
+        for ret in ("__attribute__((unused)) void",
+                    "static __attribute__((unused)) void",
+                    "struct S { int (*fp)(void); }",
+                    "union S { int (*fp)(void); }",
+                    "enum E { A = sizeof(int) }"):
+            src = prefix + plain.replace("void f(", ret + " f(")
+            span = inlineasm.func_definition_candidates(src, "f")[0]
+            eq("head consumers: actual parameter names",
+               volatile_cheats._extract_func_params(src, span), ["a", "b"])
+            eq("head consumers: cheat count equals plain head",
+               inlineasm.func_cheat_asm_count(src, "f"), 1)
+            eq("head consumers: body brace excludes tag brace",
+               gtemacro._body_open(src, span), src.index("{\n a ="))
+    for conditional in ("#ifdef X\n__attribute__((unused))\n#endif\n",
+                        "#ifdef X\n__attribute__((unused))\n#else\n"
+                        "__attribute__((noinline))\n#endif\n"):
+        prefix = "int a;\n" + conditional
+        src = prefix + "static int f(void) { return 1; }"
+        eq("head consumers: conditional attributes outside span",
+           inlineasm.func_definition_candidates(src, "f"), [(len(prefix), len(src))])
+        eq("head consumers: substitution keeps all directives",
+           inlineasm.substitute_body(src, "f", "int f(void) {}"),
+           prefix + "int f(void) {}")
+        # These split names need a leading attribute to admit them. Neither
+        # a directive nor a blank line may carry that attribute into the head.
+        src = prefix + "int\n    f(void) {}"
+        eq("head consumers: directive breaks leading attribute",
+           inlineasm.func_definition_candidates(src, "f"), [])
+    src = "__attribute__((unused))\n\nint\n    f(void) {}"
+    eq("head consumers: blank line clears leading attribute",
+       inlineasm.func_definition_candidates(src, "f"), [])
+    src = "__attribute__((unused))\nint\n    f(void) {}"
+    eq("head consumers: adjacent attribute admits split head",
+       inlineasm.func_definition_candidates(src, "f"), [(src.index("int\n"), len(src))])
+    # TU-index helpers the head grammar does not read keep their parameters
+    # (Lever D still counts the helper's dead parameter store in the caller).
+    for helper in ("static inline int\n    helper(int a) {\n  a = 0;\n  g();\n  return 0;\n}",
+                   "static inline int (*helper(int a))(void) {\n  a = 0;\n  g();\n  return 0;\n}",
+                   "static inline int (*helper(int a))[4] {\n  a = 0;\n  g();\n  return 0;\n}"):
+        src = "void g(void);\n" + helper + "\nvoid f(int b) { helper(b); }\n"
+        eq("head consumers: helper dead param store counted",
+           inlineasm.func_cheat_asm_count(src, "f"), 1)
+    # Head-shaped text inside a helper's body (or a comment in its head) never
+    # supplies the parameters.
+    for helper in ("static inline int\n    helper(int a) {\n/*\nint helper(int q) */\n  a = 0;\n  g();\n  return 0;\n}",
+                   "static inline int (*helper(int a))(void) {\n/*\nint helper(int q) */\n  a = 0;\n  g();\n  return 0;\n}",
+                   "static inline int (*helper(int a))(void) {\n#if 0\nint helper(int q)\n#endif\n  a = 0;\n  g();\n  return 0;\n}",
+                   "static inline int (* /* helper(int q) */ helper(int a))(void) {\n  a = 0;\n  g();\n  return 0;\n}",
+                   "static inline int (*helper(int a))[4] {\n/* see:\nint helper(int unused) */\n  a = 0;\n  g();\n  return 0;\n}"):
+        src = "void g(void);\n" + helper + "\nvoid f(int b) { helper(b); }\n"
+        eq("head consumers: look-alike head never supplies helper params",
+           inlineasm.func_cheat_asm_count(src, "f"), 1)
+    src = ("void g(void);\nstatic inline int (*helper(int a, int b))(void) {\n  b = 0;\n"
+           "  return a;\n}\nvoid f(int c) { helper(c, c); }\n")
+    eq("head consumers: helper second param store counted",
+       inlineasm.func_cheat_asm_count(src, "f"), 1)
+    src = "__attribute__((\n__attribute__((unused)) int f(void) {}"
+    eq("head consumers: unbalanced attribute cannot hide later attribute",
+       inlineasm.func_definition_candidates(src, "f"), [(src.index("int f("), len(src))])
 
 
 def test_split_definition_head() -> None:
@@ -14793,6 +14937,8 @@ def main() -> int:
     test_file_scope_head_review()
     test_shared_brace_head_review()
     test_delimited_definition_heads()
+    test_definition_head_debt()
+    test_definition_head_consumers()
     test_split_definition_head()
     test_definition_type_line()
     test_definition_names()

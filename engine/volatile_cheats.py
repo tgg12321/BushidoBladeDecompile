@@ -921,7 +921,7 @@ def _iter_func_bodies(text: str):
             if span in seen_spans:
                 continue
             seen_spans.add(span)
-            yield fname, span[0], span[1], _extract_func_params(text, span)
+            yield fname, span[0], span[1], _extract_func_params(text, span, fname)
 
 
 def orphaned_decl_audit(text: str) -> dict:
@@ -1214,16 +1214,43 @@ def find_dead_param_assigns(text: str, body_lo: int, body_hi: int,
     return out
 
 
-def _extract_func_params(text: str, span: tuple[int, int]) -> list[str]:
-    """Extract C identifier list from the parameter list of the function
-    whose definition starts at span[0]. Returns [] if extraction fails."""
-    start = span[0]
-    # The first `(` after `start` opens the param list (assuming a real def).
-    open_paren = text.find("(", start)
-    if open_paren < 0 or open_paren > span[1]:
-        return []
+def _extract_func_params(text: str, span: tuple[int, int],
+                         func: str | None = None) -> list[str]:
+    """Parameter identifiers after the function NAME in this definition.
+
+    Return-type attributes and inline tag members may have earlier parentheses.
+    Reuse the head grammar's recorded opening paren, not the first in the span.
+    A supplied name also handles helper spans from the TU index, whose start
+    may include leading attributes. Only the head text before the body's `{`
+    counts: head-shaped text inside the body (a comment, an #if 0 arm, a
+    prototype) never supplies the parameters. With no unique head there (a
+    TU-index helper the head grammar does not read, e.g. `int (*h(int a))(void)`),
+    the list is the first `(` after the name token, else the first `(`, in the
+    head with comments and literals blanked.
+    """
+    from . import gtemacro, inlineasm
+
+    body = gtemacro._body_open(text, span)
+    if body <= span[0]:
+        body = span[1]
+    heads = [(start, end) for name, start, end in inlineasm._definition_heads(text)
+             if name not in inlineasm._NEW_HEAD_KEYWORDS
+             and ((start == span[0]) if func is None
+                  else (name == func and span[0] <= start))
+             and span[0] < end <= body]
+    first = min((start for start, _end in heads), default=-1)
+    ends = {end for start, end in heads if start == first}
+    if len(ends) == 1:
+        open_paren = ends.pop() - 1
+    else:
+        head = inlineasm._code_without_comments_and_strings(text[:body])
+        m = (re.compile(r"\b" + re.escape(func) + r"\s*\(").search(head, span[0], body)
+             if func else None)
+        open_paren = m.end() - 1 if m else head.find("(", span[0], body)
+        if open_paren < 0:
+            return []
     # Walk to matching `)`.
-    depth, i, n = 1, open_paren + 1, len(text)
+    depth, i, n = 1, open_paren + 1, span[1]
     while i < n and depth > 0:
         c = text[i]
         if c == "(":
@@ -1756,7 +1783,7 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     helper_roster: set[tuple[int, int]] = set()
     for name, span in spans[1:]:
         helper_roster |= set(body_cheat_spans(text, span[0], span[1],
-                                              _extract_func_params(text, span), name))
+                                              _extract_func_params(text, span, name), name))
     # In-body cheats (inline casts, in-body extern decls).
     for s, e, vp in find_all_cheats(text):
         if inside(s) and not (vp == s and (s, e) in helper_roster):
@@ -1786,8 +1813,8 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     # In-body cheats (unused locals, dead stores, orphaned declarations, ...) —
     # the same roster the strip path removes, so the gate refuses exactly what
     # the sandbox makes invisible.
-    for _n, span in spans:
-        params = _extract_func_params(text, span)
+    for name, span in spans:
+        params = _extract_func_params(text, span, name)
         for s, _e in body_cheat_spans(text, span[0], span[1], params, func):
             counted_vol_positions.add(s)
     return len(counted_vol_positions)
