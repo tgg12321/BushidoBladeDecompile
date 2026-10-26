@@ -1,0 +1,214 @@
+==============================================================================
+NAMING WAVE — 52 operations (0 RESET, 52 RENAME)
+  52 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (126) --
+  (root): 3 files, 59 substitutions
+      inline_asm_canonical.txt  (25)
+      known_psyq_stdlib.txt  (24)
+      symbol_addrs.txt  (10)
+  asm: 104 files, 205 substitutions
+      asm/funcs/arena_Copy.s  (1)
+      asm/funcs/arena_ShiftBlocks.s  (1)
+      asm/funcs/camera_ApplyFightView.s  (3)
+      asm/funcs/camera_ApplyReplayView.s  (1)
+      asm/funcs/fight_FindNearestStartPair.s  (1)
+      asm/funcs/fight_GetStartPosition.s  (1)
+      ... and 98 more
+  engine: 1 files, 1 substitutions
+      engine/volatile_cheats.py  (1)
+  include: 1 files, 25 substitutions
+      include/bb2.h  (25)
+  src: 16 files, 206 substitutions
+      src/main/17AFC.c  (8)
+      src/main/28708.c  (7)
+      src/main/2B344.c  (30)
+      src/main/309CC.c  (1)
+      src/main/31548.c  (2)
+      src/main/31D3C.c  (4)
+      ... and 10 more
+  tools: 1 files, 2 substitutions
+      tools/ra_solver/validate.py  (2)
+
+-- .s file renames (52) --
+  asm/funcs/func_8003C42C.s -> asm/funcs/fight_TallyMatchResultsAndInitPresentation.s
+  asm/funcs/func_8003C560.s -> asm/funcs/fight_UpdateMatchTallyPresentation.s
+  asm/funcs/func_8003DA8C.s -> asm/funcs/gpu_LatchFogDepthOnTransitionAndQueueMoves.s
+  asm/funcs/func_8003DBE4.s -> asm/funcs/gpu_QueueDepthSpacedMovesAndLinkTerminalPacket.s
+  asm/funcs/func_8003E2D8.s -> asm/funcs/gpu_SetSegmentCellsGateBit.s
+  asm/funcs/func_8003E6A0.s -> asm/funcs/gpu_SetViewOriginSegmentCellsGateBit.s
+  asm/funcs/func_8003E6D8.s -> asm/funcs/gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards.s
+  asm/funcs/func_8003F274.s -> asm/funcs/gpu_ResetAndStampViewCenteredCellAttributes.s
+  asm/funcs/func_8003F388.s -> asm/funcs/gpu_SetCellGateBit.s
+  asm/funcs/func_8003F3D4.s -> asm/funcs/gpu_SetCellForceBit.s
+  ... and 42 more
+
+-- ledger directory renames (48) --
+  memory/grind/func_8003C42C -> memory/grind/fight_TallyMatchResultsAndInitPresentation
+  memory/grind/func_8003DA8C -> memory/grind/gpu_LatchFogDepthOnTransitionAndQueueMoves
+  memory/grind/func_8003E2D8 -> memory/grind/gpu_SetSegmentCellsGateBit
+  memory/grind/func_8003E6D8 -> memory/grind/gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+  memory/grind/func_80046BF4 -> memory/grind/gpu_ResetDrawQueueAndPrepareViewAndLighting
+  memory/grind/func_800472B0 -> memory/grind/camera_GetViewMatrixWithHalvedMiddleRow
+  memory/grind/func_800475A4 -> memory/grind/node_OrientAndQueueViewOffsetNode
+  memory/grind/func_80049718 -> memory/grind/node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+  memory/grind/func_80049A2C -> memory/grind/node_QueueTableEntryNodePairUnderSlotNode
+  memory/grind/func_8004BCC0 -> memory/grind/gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision
+  ... and 38 more
+
+-- symbol-registry line deletions (10) --
+  symbol_addrs.txt:654  func_80046798 = 0x80046798; /* 4-insn lh-based signed getter for D_80099478 */  /* naming wave07 2026-10-08: w
+  symbol_addrs.txt:660  func_8004678C = 0x8004678C; /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
+  symbol_addrs.txt:661  func_80046DEC = 0x80046DEC; /* func_8004153C(a0)->node_matrix_ptrs: a MATRIX * table */
+  symbol_addrs.txt:662  func_80046E54 = 0x80046E54; /* writes (a0 ? 1 : 0) to g_game_pause_flag */
+  symbol_addrs.txt:663  func_80046E7C = 0x80046E7C; /* lh getter for g_game_pause_flag */
+  symbol_addrs.txt:664  func_80046F14 = 0x80046F14; /* returns &D_8009947C (stage-data slot address) */
+  symbol_addrs.txt:665  func_800472B0 = 0x800472B0; /* returns &D_800EEDD0 (the matrix func_80047210 writes) */
+  symbol_addrs.txt:712  func_80046DA8 = 0x80046DA8; /* 15-insn stage init calling game_InitStageSound */
+  symbol_addrs.txt:968  func_8004939C = 0x8004939C; /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_
+  symbol_addrs.txt:1199  func_8003F274 = 0x8003F274; /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks
+
+-- JSON key/field edits (49) --
+  tools/canonical_asm_regions.json: 1 changes
+      func_8003E6D8
+  memory/grind/func_8003C42C/layer2.jsonl: 2 changes
+      line 1: func func_8003C42C -> fight_TallyMatchResultsAndInitPresentation
+      line 2: func func_8003C42C -> fight_TallyMatchResultsAndInitPresentation
+  memory/grind/func_8003DA8C/layer2.jsonl: 1 changes
+      line 1: func func_8003DA8C -> gpu_LatchFogDepthOnTransitionAndQueueMoves
+  memory/grind/func_8003E2D8/layer2.jsonl: 1 changes
+      line 1: func func_8003E2D8 -> gpu_SetSegmentCellsGateBit
+  memory/grind/func_8003E6D8/layer2.jsonl: 2 changes
+      line 1: func func_8003E6D8 -> gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+      line 2: func func_8003E6D8 -> gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+  memory/grind/func_80046BF4/layer2.jsonl: 1 changes
+      line 1: func func_80046BF4 -> gpu_ResetDrawQueueAndPrepareViewAndLighting
+  memory/grind/func_800472B0/layer2.jsonl: 1 changes
+      line 1: func func_800472B0 -> camera_GetViewMatrixWithHalvedMiddleRow
+  memory/grind/func_800475A4/layer2.jsonl: 2 changes
+      line 1: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+      line 2: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+  memory/grind/func_80049718/layer2.jsonl: 2 changes
+      line 1: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+      line 2: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+  memory/grind/func_80049A2C/layer2.jsonl: 4 changes
+      line 1: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 2: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 3: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 4: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+  memory/grind/func_8004BCC0/layer2.jsonl: 1 changes
+      line 1: func func_8004BCC0 -> gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision
+  memory/grind/func_8004C994/layer2.jsonl: 1 changes
+      line 1: func func_8004C994 -> gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles
+  memory/grind/func_8004CB8C/layer2.jsonl: 1 changes
+      line 1: func func_8004CB8C -> gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads
+  memory/grind/func_8004CDB0/layer2.jsonl: 1 changes
+      line 1: func func_8004CDB0 -> gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles
+  memory/grind/func_8004D244/layer2.jsonl: 1 changes
+      line 1: func func_8004D244 -> gpu_EmitOtCutoffFlatLitTexturedTriangles
+  memory/grind/func_8004D424/layer2.jsonl: 1 changes
+      line 1: func func_8004D424 -> gpu_EmitOtCutoffFlatLitTexturedQuads
+  memory/grind/func_8004DA74/layer2.jsonl: 1 changes
+      line 1: func func_8004DA74 -> gpu_ProjectStridedNodeVerticesAndDispatchPackets
+  memory/grind/func_8004E574/layer2.jsonl: 1 changes
+      line 1: func func_8004E574 -> gpu_EmitAveragedTableColorTexturedTriangles
+  memory/grind/func_8004E7E4/layer2.jsonl: 1 changes
+      line 1: func func_8004E7E4 -> gpu_EmitAveragedTableColorTexturedQuads
+  memory/grind/func_8004EAC8/layer2.jsonl: 1 changes
+      line 1: func func_8004EAC8 -> gpu_EmitTableColorGouraudTexturedTriangles
+  memory/grind/func_8004ECC8/layer2.jsonl: 1 changes
+      line 1: func func_8004ECC8 -> gpu_EmitTableColorGouraudTexturedQuads
+  memory/grind/func_8004EF10/layer2.jsonl: 1 changes
+      line 1: func func_8004EF10 -> gpu_EmitOrientationAdjustedFlatLitTexturedTriangles
+  memory/grind/func_8004F0FC/layer2.jsonl: 1 changes
+      line 1: func func_8004F0FC -> gpu_EmitOrientationAdjustedFlatLitTexturedQuads
+  memory/grind/func_8004F314/layer2.jsonl: 1 changes
+      line 1: func func_8004F314 -> gpu_EmitOrientationAdjustedGouraudTexturedTriangles
+  memory/grind/func_8004F53C/layer2.jsonl: 1 changes
+      line 1: func func_8004F53C -> gpu_EmitOrientationAdjustedGouraudTexturedQuads
+  memory/grind/func_8004F798/layer2.jsonl: 1 changes
+      line 1: func func_8004F798 -> gpu_EmitOtCutoffRawTexturedTriangles
+  memory/grind/func_8004F970/layer2.jsonl: 1 changes
+      line 1: func func_8004F970 -> gpu_EmitOtCutoffRawTexturedQuads
+  memory/grind/func_8004FB74/layer2.jsonl: 1 changes
+      line 1: func func_8004FB74 -> gpu_EmitFlatLitTexturedTriangles
+  memory/grind/func_8004FD40/layer2.jsonl: 1 changes
+      line 1: func func_8004FD40 -> gpu_EmitFlatLitTexturedQuads
+  memory/grind/func_80050774/layer2.jsonl: 1 changes
+      line 1: func func_80050774 -> gpu_EmitBlackFlatTriangles
+  memory/grind/func_80050908/layer2.jsonl: 1 changes
+      line 1: func func_80050908 -> gpu_EmitBlackFlatQuads
+  memory/grind/func_800520B8/layer2.jsonl: 1 changes
+      line 1: func func_800520B8 -> mem_MoveBlockRoundedUpToWords
+  memory/grind/func_800523E0/layer2.jsonl: 1 changes
+      line 1: func func_800523E0 -> gte_LerpMatrixRowsAndRebuildOrthonormalBasis
+  memory/grind/func_80052C4C/layer2.jsonl: 1 changes
+      line 1: func func_80052C4C -> gte_TransformPointDifferenceWithInheritedLastRow
+  memory/grind/_completed/func_8003C42C/layer2.jsonl: 1 changes
+      line 1: func func_8003C42C -> fight_TallyMatchResultsAndInitPresentation
+  memory/grind/_completed/func_8003C560/layer2.jsonl: 2 changes
+      line 1: func func_8003C560 -> fight_UpdateMatchTallyPresentation
+      line 2: func func_8003C560 -> fight_UpdateMatchTallyPresentation
+  memory/grind/_completed/func_8003DA8C/layer2.jsonl: 2 changes
+      line 1: func func_8003DA8C -> gpu_LatchFogDepthOnTransitionAndQueueMoves
+      line 2: func func_8003DA8C -> gpu_LatchFogDepthOnTransitionAndQueueMoves
+  memory/grind/_completed/func_8003DBE4/layer2.jsonl: 3 changes
+      line 1: func func_8003DBE4 -> gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
+      line 2: func func_8003DBE4 -> gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
+      line 3: func func_8003DBE4 -> gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
+  memory/grind/_completed/func_8003E6D8/layer2.jsonl: 4 changes
+      line 1: func func_8003E6D8 -> gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+      line 2: func func_8003E6D8 -> gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+      line 3: func func_8003E6D8 -> gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+      line 4: func func_8003E6D8 -> gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+  memory/grind/_completed/func_8003F274/layer2.jsonl: 1 changes
+      line 1: func func_8003F274 -> gpu_ResetAndStampViewCenteredCellAttributes
+  memory/grind/_completed/func_8003F568/layer2.jsonl: 1 changes
+      line 1: func func_8003F568 -> ClearSavedWordPairsAndTwoWriteOnlyWords
+  memory/grind/_completed/func_80046BF4/layer2.jsonl: 10 changes
+      line 1: func func_80046BF4 -> gpu_ResetDrawQueueAndPrepareViewAndLighting
+      line 2: func func_80046BF4 -> gpu_ResetDrawQueueAndPrepareViewAndLighting
+      line 3: func func_80046BF4 -> gpu_ResetDrawQueueAndPrepareViewAndLighting
+      line 4: func func_80046BF4 -> gpu_ResetDrawQueueAndPrepareViewAndLighting
+      line 5: func func_80046BF4 -> gpu_ResetDrawQueueAndPrepareViewAndLighting
+      ... and 5 more
+  memory/grind/_completed/func_80046DEC/layer2.jsonl: 2 changes
+      line 1: func func_80046DEC -> node_GetSlotMatrixPointerArray
+      line 2: func func_80046DEC -> node_GetSlotMatrixPointerArray
+  memory/grind/_completed/func_80047210/layer2.jsonl: 2 changes
+      line 1: func func_80047210 -> camera_CopyViewMatrixWithHalvedMiddleRow
+      line 2: func func_80047210 -> camera_CopyViewMatrixWithHalvedMiddleRow
+  memory/grind/_completed/func_800475A4/layer2.jsonl: 5 changes
+      line 1: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+      line 2: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+      line 3: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+      line 4: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+      line 5: func func_800475A4 -> node_OrientAndQueueViewOffsetNode
+  memory/grind/_completed/func_800486FC/layer2.jsonl: 1 changes
+      line 1: func func_800486FC -> gpu_RefreshGrayscaleMode
+  memory/grind/_completed/func_8004939C/layer2.jsonl: 1 changes
+      line 1: func func_8004939C -> ResetEntrySelectionState
+  memory/grind/_completed/func_80049718/layer2.jsonl: 8 changes
+      line 1: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+      line 2: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+      line 3: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+      line 4: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+      line 5: func func_80049718 -> node_QueueEntryNodesFromTransformOrUpdatedSlotNode
+      ... and 3 more
+  memory/grind/_completed/func_80049A2C/layer2.jsonl: 5 changes
+      line 1: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 2: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 3: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 4: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+      line 5: func func_80049A2C -> node_QueueTableEntryNodePairUnderSlotNode
+
+-- OUT OF SCOPE / manual follow-up (5) --
+  ~ tools/rtl_track/dump.py:L2: ['func_8003F388'] in prose/docstring — NOT rewritten
+  ~ tools/rtl_track/find.py:L2: ['func_8003F388'] in prose/docstring — NOT rewritten
+  ~ tools/rtl_track/region.py:L2: ['func_8003F388'] in prose/docstring — NOT rewritten
+  ~ tools/scan_hand_coded.py:L2: ['func_80050774'] in prose/docstring — NOT rewritten
+  ~ tools/trace/scan/collision_grid.py:L2: ['func_80052C4C'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
