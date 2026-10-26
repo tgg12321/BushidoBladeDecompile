@@ -1,0 +1,70 @@
+{
+  "description": "Vs. CPU Mode on blank cards with P1 TATSUMI (DOWN x2 on Select Character), no poke: fight_BuildOpponentOrder leaves KANNUKI (fighter 0) in the order (0C 02 00 0E 0D in D_801077B0), so the third opponent is KANNUKI and fight_AdvanceOpponentOrder loads D_800A36A4 = D_8008E75C[0] = 4 (17AFC.c:5466-5468) for that fight. P1 TRIANGLE / CROSS alternating every 20 frames from 8360 wins the first two fights; the third ends with P1 down",
+  "covers": [
+    "mode:vs_cpu",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-cpu-tatsumi-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 13000,
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6520:DOWN",
+    "6540:DOWN",
+    "6600:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START"
+  ],
+  "repeat": [
+    {
+      "from": 8360,
+      "every": 20,
+      "count": 231,
+      "steps": [
+        "+0:TRIANGLE|CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "8350:opp1",
+    "8900:opp2",
+    "10560:opp3"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6599:char_select.pick",
+    "6900:weapon_select.first",
+    "8000:t_load.mid",
+    "8350:opp1.first",
+    "8600:opp1.8600",
+    "8850:opp1.last",
+    "9200:opp2.9200",
+    "10000:opp2.10000",
+    "10540:opp2.last",
+    "10800:opp3.10800",
+    "11200:opp3.11200",
+    "11600:opp3.11600",
+    "12000:opp3.12000",
+    "12400:opp3.12400",
+    "12999:opp3.last"
+  ]
+}

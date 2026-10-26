@@ -1758,6 +1758,38 @@ D_800A38A4	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-clear-re
 D_800A391F	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	group_has_unresolved_site;unresolved_function
 D_800A391F	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	group_has_unresolved_site
 D_800A391F	write	fight_BuildOpponentOrder	t_load	0x80033B90	coverage	0	1	1	[5]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A36A4	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site;unresolved_function
+D_800A36A4	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site
+D_800A36A4	write	fight_AdvanceOpponentOrder	opp1	0x80033D2C	coverage	0	2	1	[3]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A36A4	write	fight_AdvanceOpponentOrder	opp2	0x80033D2C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A36A4	write	fight_AdvanceOpponentOrder	t_load	0x80033D2C	coverage	0	2	1	[26]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A36A4	write	func_800343F0	t_load	0x80034458	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3783	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site;unresolved_function
+D_800A3783	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site
+D_800A3783	write	fight_AdvanceOpponentOrder	opp1	0x80033C58	coverage	0	1	1	[2]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3783	write	fight_AdvanceOpponentOrder	opp2	0x80033C58	coverage	0	1	1	[3]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3783	write	fight_AdvanceOpponentOrder	t_load	0x80033C58	coverage	0	1	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3783	write	fight_BuildOpponentOrder	t_load	0x80033B98	coverage	0	1	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site
+D_800A3834	write	fight_AdvanceOpponentOrder	opp1	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_AdvanceOpponentOrder	opp2	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_AdvanceOpponentOrder	t_load	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	opp1	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	opp2	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	opp3	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp1	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp2	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	func_8001EEB4	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	func_8001EEB4	opp2	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	replay_PlayFrame	opp1	0x8003A13C	coverage	0	2	1	[16]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	replay_PlayFrame	opp2	0x8003A13C	coverage	0	2	1	[16]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	replay_Start	opp1	0x80039838	coverage	0	2	1	[5]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	replay_Start	opp2	0x80039838	coverage	0	2	1	[5]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A34F0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
 D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
 D_800A38DC	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
