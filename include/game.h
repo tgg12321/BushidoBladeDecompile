@@ -476,7 +476,8 @@ typedef struct {
 } Unk8009BD24Record;
 
 /* One of the three 4-byte records at Unk8009BD24Block.unk21
-   (fight_PackTimeRecordsAndInitPresentation and func_80035280 store them;
+   (fight_PackTimeRecordsAndInitPresentation and
+   CopySavedFlagsButtonMappingsAndTimesToWorkingRecord store them;
    gpu_DrawIndexedCellsAndDecimalDigitPairs reads them). */
 typedef struct {
     u8 unk0;
@@ -485,11 +486,11 @@ typedef struct {
     u8 unk3;
 } Unk8009BD45Rec;
 
-/* 0x8009BD24..0x8009BD57: the settings record func_80077D00 returns and 64FD8
-   hands to menu_LoadResourcesInitStateSelectFirstEnabledRow / func_8006E534 /
-   menu_InitSelScreen, whose callees reach every field off that one base (596CC
-   D_800A3524, 5ED34 D_800A3568, SelWork.f00). Bit fields are named by bit
-   offset.
+/* 0x8009BD24..0x8009BD57: the settings record GetWorkingRecord returns and
+   64FD8 hands to menu_LoadResourcesInitStateSelectFirstEnabledRow /
+   func_8006E534 / menu_InitSelScreen, whose callees reach every field off that
+   one base (596CC D_800A3524, 5ED34 D_800A3568, SelWork.f00). Bit fields are
+   named by bit offset.
    - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; menu_UpdateRowMenuStoreResult
    stores it), unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
    results-screen layout), unk14_12 (`== 2` tests), unk14_14, unk14_15 (one bit
@@ -811,11 +812,11 @@ typedef struct {
 /* D_80104E88[4]: the four 0x2C-byte records func_80032064 claims (first with
  * unk_00 == 0) and fight_UpdateBallisticRecords steps each frame (unk_02 counts
  * frames; unk_10 keeps the previous unk_04; unk_1C is added to unk_04 with
- * unk_1C.y growing by 0xD; the record is freed when func_8005344C reports a hit
- * or unk_04.y passes unk_28).
- * fight_TriggerOpposingFighterEventFromNearBallisticRecords measures the
- * distance from the other player's world_pos to unk_04 (unk_03 is the owner).
- * fight_ClearBallisticRecords clears unk_00 of all four. */
+ * unk_1C.y growing by 0xD; the record is freed when
+ * collision_TestSegmentExtendingShortStartWithWork reports a hit or unk_04.y
+ * passes unk_28). fight_TriggerOpposingFighterEventFromNearBallisticRecords
+ * measures the distance from the other player's world_pos to unk_04 (unk_03 is
+ * the owner). fight_ClearBallisticRecords clears unk_00 of all four. */
 typedef struct Unk80104E88Rec {
     u8 unk_00; /* 0 = free; func_80032064's type (1 / 2) */
     u8 unk_01;
@@ -1148,10 +1149,12 @@ typedef struct {
 
 /* The 0xEC-byte work area of 43500's stage-collision cast
  * (collision_WalkSegmentGrid and its helpers, through D_800A33F4).
- * func_8005344C / collision_TestSegmentWithWork place it at their last
- * argument; func_80053304 / collision_TestSegment at D_800EF9F8. 17AFC
- * object_UpdatePool / fight_UpdateBallisticRecords pass 0x1F8002F0, its place
- * in their scratchpad layout (Unk1F8002B8_8005344C.unk38). */
+ * collision_TestSegmentExtendingShortStartWithWork /
+ * collision_TestSegmentWithWork place it at their last argument;
+ * collision_TestSegmentExtendingShortStart / collision_TestSegment at
+ * D_800EF9F8. 17AFC object_UpdatePool / fight_UpdateBallisticRecords pass
+ * 0x1F8002F0, its place in their scratchpad layout
+ * (Unk1F8002B8_8005344C.unk38). */
 typedef struct {
     s32 unk0;
     u16 unk4;
@@ -1224,10 +1227,10 @@ typedef struct {
  * from its record (unk_210 or unk_234), [4] / [5] the midpoints of [0] / [2]
  * and [1] / [3]; for each triangle it hands math_PrepareTriangleCollisionFrame
  * it aims unk60[0..2] at three of them. object_UpdatePool /
- * fight_UpdateBallisticRecords lay the bytes out differently (func_8005344C's
- * argument block, its work area from +0x38 through +0x123):
- * Unk1F8002B8_8005344C, the other member of Unk1F8002B8Union. raw sizes the
- * union to 0x60. */
+ * fight_UpdateBallisticRecords lay the bytes out differently
+ * (collision_TestSegmentExtendingShortStartWithWork's argument block, its work
+ * area from +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
+ * Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
     Unk80107850Rec unk00[6];
@@ -1237,7 +1240,8 @@ typedef union {
  * 0x1F8002B8..0x1F8003FF (ScrPad.unk2B8.rec). The scratchpad is shared scratch:
  * other code puts its own data in these bytes at other times, with its own
  * views. Among others:
- * - 43500 collision_TestSegmentWithWork / func_8005344C keep their work area
+ * - 43500 collision_TestSegmentWithWork /
+ * collision_TestSegmentExtendingShortStartWithWork keep their work area
  * (Work_80053E9C, 0xEC bytes) at the address of their last argument
  * (D_800A33F4); callers pass 0x1F8002B8 (the area spans record +0x00..+0xEB) or
  * 0x1F8002F0 (+0x38..+0x123, over unk60 up into unk118).
@@ -1283,10 +1287,11 @@ typedef struct {
 
 /* The layout object_UpdatePool and fight_UpdateBallisticRecords give the
  * scratchpad area at 0x1F8002B8 (Unk1F8002B8Union.v8005344C): the to point, hit
- * point and normal they pass func_8005344C, and its work area, which runs over
- * Unk1F8002B8Rec's unk60..unk118. */
+ * point and normal they pass collision_TestSegmentExtendingShortStartWithWork,
+ * and its work area, which runs over Unk1F8002B8Rec's unk60..unk118. */
 typedef struct {
-    /* to; func_8005344C copies 16 bytes from it */
+    /* to; collision_TestSegmentExtendingShortStartWithWork copies 16 bytes from
+     * it */
     Vec3i32 unk00;
     s32 unk0C; /* read only as the 4th word of that copy */
     /* the hit point; object_UpdatePool's turn block first keeps a
@@ -1299,14 +1304,16 @@ typedef struct {
     s32 unk2C;    /* no access */
     s16 unk30[3]; /* the hit normal */
     s16 unk36;    /* no access */
-    /* func_8005344C's work area, +0x38..+0x123 */
+    /* collision_TestSegmentExtendingShortStartWithWork's work area,
+     * +0x38..+0x123 */
     Work_80053E9C unk38;
 } Unk1F8002B8_8005344C;
 
 /* ScrPad.unk2B8: the scratchpad's last 0x148 bytes, 0x1F8002B8..0x1F8003FF,
  * which 17AFC uses with two layouts. Its collision code uses rec
  * (Unk1F8002B8Rec). object_UpdatePool and fight_UpdateBallisticRecords use
- * v8005344C: they pass 0x1F8002F0 as func_8005344C's work-area address, so its
+ * v8005344C: they pass 0x1F8002F0 as
+ * collision_TestSegmentExtendingShortStartWithWork's work-area address, so its
  * 0xEC-byte Work_80053E9C sits at +0x38..+0x123, over rec's unk60..unk118. */
 typedef union {
     Unk1F8002B8Rec rec;
@@ -1334,7 +1341,8 @@ typedef struct {
 #define SPAD ((ScrPad *)0x1F800000)
 
 /* One CPU path waypoint (CpuRoute.node[]): fighter_BuildCpuOrbitRoute writes
- * x/z from the opponent's position and kind 2; func_80058580 walks them back to
+ * x/z from the opponent's position and kind 2;
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput walks them back to
  * front. */
 typedef struct CpuWaypoint {
     s16 x;
@@ -1432,15 +1440,15 @@ typedef struct Unk800F1B18Rec {
  * last_move_frame with no queued move or 0x2000 entry, and on landing),
  * last_move_frame / last_command_frame frame bounds against
  * Unk80101EC8Record.move_frame, unk_09 flag bits (fighter_Update,
- * fighter_BuildCpuPad, func_80058580); transition_commands starts the command
- * list fighter_Update walks: (flags, move id) entries of 2 halfwords, or 4 when
- * flags has a 0xC000 bit, ended by a zero flags word. The two extra halfwords
- * are [mask lo, mask hi], except in a 0x4000 paired entry
- * (motion_FindPairedMoveEntry), whose four bytes are a distance range (min,
- * max, x 20), a target separation (x 20, stored to D_800A371C: the distance
- * func_8002BC68 pulls the two fighters toward) and a flags byte (bit 7 tested;
- * the low 7 bits, stored to D_800A38E8, are a frame threshold for
- * func_8002C0DC; fight_UpdatePairedMoves). */
+ * fighter_BuildCpuPad, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput);
+ * transition_commands starts the command list fighter_Update walks: (flags,
+ * move id) entries of 2 halfwords, or 4 when flags has a 0xC000 bit, ended by a
+ * zero flags word. The two extra halfwords are [mask lo, mask hi], except in a
+ * 0x4000 paired entry (motion_FindPairedMoveEntry), whose four bytes are a
+ * distance range (min, max, x 20), a target separation (x 20, stored to
+ * D_800A371C: the distance func_8002BC68 pulls the two fighters toward) and a
+ * flags byte (bit 7 tested; the low 7 bits, stored to D_800A38E8, are a frame
+ * threshold for func_8002C0DC; fight_UpdatePairedMoves). */
 typedef struct MoveScript {
     u16 event_move_table_id;
     u16 fallback_move_id;
@@ -1494,10 +1502,12 @@ typedef struct Unk80101EC8Record {
     s16 motion_slot;
     s16 borrow_other_motion;
     u8 unk_4E[0x50 - 0x4E];
-    /* current move; last_command_frame bounds move_frame (func_80058580) */
+    /* current move; last_command_frame bounds move_frame
+     * (fighter_UpdateCpuNavigationChooseScriptsAndHeldInput) */
     MoveScript *cur_move;
     u16 *motion_entry;
-    u8 *motion_metadata; /* byte 3 read by func_80056FE8 */
+    /* byte 3 read by fighter_CalcOpponentDistanceThresholdFromTables */
+    u8 *motion_metadata;
     u16 motion_entry_index;
     /* 1: the last-resolved move is in g_motion_common_sections
      * (motion_ResolveMoveData's out flag), 0: in a fighter slot (its own, or
@@ -1800,9 +1810,10 @@ typedef struct {
     u8 b;
 } Unk8008EA44Entry;
 
-/* 6-row tables func_80026DA4 selects by D_80101EC8[0].move_kind mode (row
- * 0..5): unk0 scales the Judge sin/cos offset, unk2 is added to y;
- * D_8008EB6C[row] is passed as func_80032854's arg1. */
+/* 6-row tables fight_UpdatePairedInputTotalsEventsAndMidpointEffects selects by
+ * D_80101EC8[0].move_kind mode (row 0..5): unk0 scales the Judge sin/cos
+ * offset, unk2 is added to y; D_8008EB6C[row] is passed as func_80032854's
+ * arg1. */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -1810,7 +1821,8 @@ typedef struct {
 
 /* 0x18-byte record table at 0x80099D88 (behaviour flags and random-pick
  * weights), indexed by Unk80101EC8Record.cpu_profile in fighter_InitCpuControl,
- * fighter_StepCpuPadScript, fighter_BuildCpuPad and func_80058580. */
+ * fighter_StepCpuPadScript, fighter_BuildCpuPad and
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput. */
 typedef struct Unk80099D88Rec {
     u16 flags;
     u8 unk2;
@@ -1819,11 +1831,13 @@ typedef struct Unk80099D88Rec {
     u8 unk5;
     u8 unk6;
     u8 unk7;
-    /* +0x8: func_80058580 scales a random 12-bit draw by an element, and
-       compares [4] with a random 8-bit draw */
+    /* +0x8: fighter_UpdateCpuNavigationChooseScriptsAndHeldInput scales a
+       random 12-bit draw by an element, and compares [4] with a random 8-bit
+       draw */
     u8 pick_weight[7];
-    /* +0xF: func_80058580 scales a random 12-bit draw by an element, and
-       compares [5] >> 2 and [6] >> 2 with a random 8-bit draw */
+    /* +0xF: fighter_UpdateCpuNavigationChooseScriptsAndHeldInput scales a
+       random 12-bit draw by an element, and compares [5] >> 2 and [6] >> 2 with
+       a random 8-bit draw */
     u8 unkF[8];
     u8 unk17;
 } Unk80099D88Rec; /* size 0x18 */
@@ -1831,7 +1845,8 @@ typedef struct Unk80099D88Rec {
 /* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends
  * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924). Both readers index
  * the column 1-based, [row][D_800A37A0 - 1]: fighter_InitCpuControl reads
- * unk0/unk1, func_80058580 the mask halfword. */
+ * unk0/unk1, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput the mask
+ * halfword. */
 typedef struct Unk8009A8C8Entry {
     u8 unk0;
     u8 unk1;
@@ -2073,8 +2088,8 @@ typedef struct {
 /* The per-slot model object func_80045878 builds (0x1A88 bytes, its
  * arena_SetBlockEnd block) and D_800A9A10[] / slot_GetObject hand out. The
  * header (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
- * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
- * 20-entry pointer tables.
+ * (slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers rebases them as
+ * 0x15, 0x14 and 0x14 records), then three 20-entry pointer tables.
  * - unk_00: flag word; slot_FinalizeObjectLoadSoundTexturesAndArena sets bit 1
  * and keeps the TIM-group request (D_80094B88[arena_id] & 0x1F) in bits 16..20,
  * which slot_RequestTimGroupsAndMarkReloadOnChange /
@@ -2225,7 +2240,8 @@ typedef struct {
  * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
  * fourth per-player pair only other functions touch (unk_A, indexed by player
  * in fighter_ConfigureCpuControl) and four single bytes. One object:
- * func_80034708 reaches unk_4 and unk_E as offsets from the address of unk_C.
+ * menu_PrintEditAndApplyConfigWithPerPadCursors reaches unk_4 and unk_E as
+ * offsets from the address of unk_C.
  */
 typedef struct {
     u16 unk_0[2];

@@ -8,7 +8,7 @@ glabel func_80045AA4
     /* 362BC 80045ABC 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 362C0 80045AC0 05004010 */  beqz       $v0, .L80045AD8
     /* 362C4 80045AC4 1400B1AF */   sw        $s1, 0x14($sp)
-    /* 362C8 80045AC8 0C05010C */  jal        func_80041430
+    /* 362C8 80045AC8 0C05010C */  jal        slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
     /* 362CC 80045ACC 00000000 */   nop
     /* 362D0 80045AD0 D3160108 */  j          .L80045B4C
     /* 362D4 80045AD4 00000000 */   nop

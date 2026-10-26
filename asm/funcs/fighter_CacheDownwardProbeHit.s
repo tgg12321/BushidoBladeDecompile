@@ -28,7 +28,7 @@ glabel fighter_CacheDownwardProbeHit
     /* 1458C 80023D8C 1000A3AF */  sw         $v1, 0x10($sp)
     /* 14590 80023D90 801F013C */  lui        $at, (0x1F8001E8 >> 16)
     /* 14594 80023D94 E80122AC */  sw         $v0, (0x1F8001E8 & 0xFFFF)($at)
-    /* 14598 80023D98 134D010C */  jal        func_8005344C
+    /* 14598 80023D98 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 1459C 80023D9C B8000426 */   addiu     $a0, $s0, 0xB8
     /* 145A0 80023DA0 DC0102A6 */  sh         $v0, 0x1DC($s0)
   .L80023DA4:

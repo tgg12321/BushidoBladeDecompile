@@ -134,7 +134,7 @@ glabel fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
     /* 127B0 80021FB0 23186800 */  subu       $v1, $v1, $t0
     /* 127B4 80021FB4 21104300 */  addu       $v0, $v0, $v1
     /* 127B8 80021FB8 4000A2AF */  sw         $v0, 0x40($sp)
-    /* 127BC 80021FBC 134D010C */  jal        func_8005344C
+    /* 127BC 80021FBC 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 127C0 80021FC0 1000AAAF */   sw        $t2, 0x10($sp)
     /* 127C4 80021FC4 12004014 */  bnez       $v0, .L80022010
     /* 127C8 80021FC8 00000000 */   nop
@@ -195,7 +195,7 @@ glabel fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
     /* 1289C 8002209C 8000AA8F */  lw         $t2, 0x80($sp)
     /* 128A0 800220A0 21105000 */  addu       $v0, $v0, $s0
     /* 128A4 800220A4 3C00A2AF */  sw         $v0, 0x3C($sp)
-    /* 128A8 800220A8 134D010C */  jal        func_8005344C
+    /* 128A8 800220A8 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 128AC 800220AC 1000AAAF */   sw        $t2, 0x10($sp)
     /* 128B0 800220B0 05004010 */  beqz       $v0, .L800220C8
     /* 128B4 800220B4 00F00224 */   addiu     $v0, $zero, -0x1000

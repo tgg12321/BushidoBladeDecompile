@@ -129,12 +129,12 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D168:
     /* 2D968 8003D168 1F54010C */  jal        motion_GetPlaybackViewAngles
     /* 2D96C 8003D16C 00000000 */   nop
-    /* 2D970 8003D170 2354010C */  jal        func_8005508C
+    /* 2D970 8003D170 2354010C */  jal        node_GetRootNodeMatrixTranslation
     /* 2D974 8003D174 21804000 */   addu      $s0, $v0, $zero
     /* 2D978 8003D178 21200002 */  addu       $a0, $s0, $zero
     /* 2D97C 8003D17C 1984010C */  jal        func_80061064
     /* 2D980 8003D180 21284000 */   addu      $a1, $v0, $zero
-    /* 2D984 8003D184 DA53010C */  jal        func_80054F68
+    /* 2D984 8003D184 DA53010C */  jal        motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
     /* 2D988 8003D188 00000000 */   nop
     /* 2D98C 8003D18C 02004014 */  bnez       $v0, .L8003D198
     /* 2D990 8003D190 00000000 */   nop
@@ -149,7 +149,7 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D9B0 8003D1B0 38004010 */  beqz       $v0, .L8003D294
     /* 2D9B4 8003D1B4 00000000 */   nop
   .L8003D1B8:
-    /* 2D9B8 8003D1B8 3752010C */  jal        func_800548DC
+    /* 2D9B8 8003D1B8 3752010C */  jal        motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock
     /* 2D9BC 8003D1BC 00000000 */   nop
     /* 2D9C0 8003D1C0 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* 2D9C4 8003D1C4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

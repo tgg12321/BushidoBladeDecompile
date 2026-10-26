@@ -134,7 +134,7 @@ glabel replay_PlayFrame
     /* 2A330 80039B30 6003A68F */  lw         $a2, 0x360($sp)
     /* 2A334 80039B34 12000786 */  lh         $a3, 0x12($s0)
     /* 2A338 80039B38 2001A227 */  addiu      $v0, $sp, 0x120
-    /* 2A33C 80039B3C 6204010C */  jal        func_80041188
+    /* 2A33C 80039B3C 6204010C */  jal        slot_BlendTwoPosesIntoNodeMatrices
     /* 2A340 80039B40 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2A344 80039B44 04000286 */  lh         $v0, 0x4($s0)
     /* 2A348 80039B48 00000000 */  nop
@@ -222,7 +222,7 @@ glabel replay_PlayFrame
     /* 2A480 80039C80 2138E300 */   addu      $a3, $a3, $v1
     /* 2A484 80039C84 21202002 */  addu       $a0, $s1, $zero
     /* 2A488 80039C88 5003A527 */  addiu      $a1, $sp, 0x350
-    /* 2A48C 80039C8C 13E6000C */  jal        func_8003984C
+    /* 2A48C 80039C8C 13E6000C */  jal        fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass
     /* 2A490 80039C90 5403A627 */   addiu     $a2, $sp, 0x354
     /* 2A494 80039C94 5003A38F */  lw         $v1, 0x350($sp)
     /* 2A498 80039C98 01000224 */  addiu      $v0, $zero, 0x1

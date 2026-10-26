@@ -27,7 +27,7 @@ glabel sys_ExecMovieOverlay
     /* 27DA4 800375A4 C0100200 */  sll        $v0, $v0, 3
     /* 27DA8 800375A8 21105000 */  addu       $v0, $v0, $s0
     /* 27DAC 800375AC 2000A2AF */  sw         $v0, 0x20($sp)
-    /* 27DB0 800375B0 AEE4000C */  jal        func_800392B8
+    /* 27DB0 800375B0 AEE4000C */  jal        GetSharedBuffer
     /* 27DB4 800375B4 2400B4AF */   sw        $s4, 0x24($sp)
     /* 27DB8 800375B8 06000424 */  addiu      $a0, $zero, 0x6
     /* 27DBC 800375BC 1000A527 */  addiu      $a1, $sp, 0x10

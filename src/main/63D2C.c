@@ -276,7 +276,8 @@ s32 mode;
     return (s32)p;
 }
 
-void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
+void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
+    Unk8006EACCRec *arg0, s32 arg1) {
     Unk8007352CRec s;
     s32 i;
     Unk8009B0E0Record **temp_s2;
@@ -359,7 +360,8 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     arg0->unk_04.unk_04 = q;
 }
 
-void func_80074488(Unk8006EACCRec *arg0) {
+void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
+    Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     s16 mask;
     s16 i;

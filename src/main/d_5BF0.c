@@ -132,14 +132,15 @@ const u32 g_sqrt_table[128] = {
     0x1FCF1FBF, 0x1FEF1FDF,
 };
 
-/* D_80015820: 8 words (32B) @ 0x80015820: the code sites func_80041398
- * patches */
+/* D_80015820: 8 words (32B) @ 0x80015820: the code sites
+ * PatchColorImmediatesAtListedCodeSites patches */
 void * const D_80015820[8] = {
     L80050C0C, L80050DAC, L80050FB4, L80051154,
     L80051358, L800514FC, L800516FC, L80051894,
 };
 
 /* The cluster continues in 43500.c's rodata: motion_StartPlayback's string
- * D_80015840 at 0x80015840; then 4510C.c's: func_80058580's three switch
- * tables at 0x8001585C (rodata-object-alignment ruling 2026-09-30); then
- * 4BC3C.c's: the sound-bank loader's two strings at 0x800158B4. */
+ * D_80015840 at 0x80015840; then 4510C.c's:
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's three switch tables at
+ * 0x8001585C (rodata-object-alignment ruling 2026-09-30); then 4BC3C.c's: the
+ * sound-bank loader's two strings at 0x800158B4. */

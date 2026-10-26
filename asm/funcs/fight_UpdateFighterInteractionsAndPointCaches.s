@@ -22,7 +22,7 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1CE6C 8002C66C 05004010 */  beqz       $v0, .L8002C684
     /* 1CE70 8002C670 11000224 */   addiu     $v0, $zero, 0x11
   .L8002C674:
-    /* 1CE74 8002C674 699B000C */  jal        func_80026DA4
+    /* 1CE74 8002C674 699B000C */  jal        fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 1CE78 8002C678 00000000 */   nop
     /* 1CE7C 8002C67C 03B20008 */  j          .L8002C80C
     /* 1CE80 8002C680 00000000 */   nop

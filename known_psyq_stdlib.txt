@@ -82,7 +82,7 @@ func_80052788                         handwritten_asm           uses GCC-unfrien
 func_800527FC                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 gpu_DepthToOtIndex                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 gte_TransformPointDifferenceWithInheritedLastRow                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_80054440                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
+gte_ColorGroupedNormalStreamWithSelectedMatrices                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 bios_Exec                         bios_table_0xA0           3 insns, BIOS trampoline shape
 bios__bu_init_A0                         bios_table_0xA0           3 insns, BIOS trampoline shape
 bios_SetMem                         bios_table_0xA0           3 insns, BIOS trampoline shape

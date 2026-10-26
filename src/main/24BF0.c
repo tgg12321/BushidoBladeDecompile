@@ -1,4 +1,5 @@
-/* func_800343F0 and func_800344B4. .text 0x800343F0 (ROM 0x24BF0). Start
+/* ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests and
+ * ApplyPendingConfigAndInitializeMode. .text 0x800343F0 (ROM 0x24BF0). Start
  * boundary: PHASE (rodata-align site 3), placed by the per-file gp model (Q65).
  */
 #define INCLUDE_ASM_USE_MACRO_INC 1
@@ -8,9 +9,10 @@
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
-/* func_800343F0 lives in this file because the file boundary follows the
- * per-file gp evidence (owner ruling Q65). */
-void func_800343F0(void) {
+/* ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests lives in this file
+ * because the file boundary follows the per-file gp evidence (owner ruling
+ * Q65). */
+void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
     s8 val_85 = (s8)D_80102778.unk_D;
     s8 val_86 = (s8)D_80102778.unk_E;
     s8 val_84 = (s8)D_80102778.unk_C;
@@ -31,15 +33,15 @@ void func_800343F0(void) {
     D_800A37D2 = 0;
 }
 
-void func_800343F0(void);
+void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void);
 
 const char g_str_chanbara[] = "CHANBARA";
 const char g_str_practice[] = "PRACTICE";
 const char D_80010834[] = "%sCR%3d\n";
 const char D_80010840[] = "%sCO%3d\n";
 
-void func_800344B4(void) {
-    func_800343F0();
+void ApplyPendingConfigAndInitializeMode(void) {
+    ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests();
 
     switch (D_800A38DC) {
     case 6:

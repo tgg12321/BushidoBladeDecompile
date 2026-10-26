@@ -2035,7 +2035,7 @@ glabel fighter_Update
     /* 164A4 80025CA4 1800A527 */  addiu      $a1, $sp, 0x18
     /* 164A8 80025CA8 68002786 */  lh         $a3, 0x68($s1)
     /* 164AC 80025CAC 9C00A627 */  addiu      $a2, $sp, 0x9C
-    /* 164B0 80025CB0 6204010C */  jal        func_80041188
+    /* 164B0 80025CB0 6204010C */  jal        slot_BlendTwoPosesIntoNodeMatrices
     /* 164B4 80025CB4 1000A2AF */   sw        $v0, 0x10($sp)
     /* 164B8 80025CB8 CA5F000C */  jal        scratchpad_Save
     /* 164BC 80025CBC 00000000 */   nop

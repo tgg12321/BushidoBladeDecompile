@@ -24,8 +24,8 @@ glabel collision_TestSegment
     /* 43DDC 800535DC 1C0044AC */  sw         $a0, 0x1C($v0)
     /* 43DE0 800535E0 200048AC */  sw         $t0, 0x20($v0)
     /* 43DE4 800535E4 240049AC */  sw         $t1, 0x24($v0)
-    /* 43DE8 800535E8 0580023C */  lui        $v0, %hi(func_80053E9C)
-    /* 43DEC 800535EC 9C3E4224 */  addiu      $v0, $v0, %lo(func_80053E9C)
+    /* 43DE8 800535E8 0580023C */  lui        $v0, %hi(collision_TestCellKeepingNearestHitGteProjection)
+    /* 43DEC 800535EC 9C3E4224 */  addiu      $v0, $v0, %lo(collision_TestCellKeepingNearestHitGteProjection)
     /* 43DF0 800535F0 2120C000 */  addu       $a0, $a2, $zero
     /* 43DF4 800535F4 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
     /* 43DF8 800535F8 2128E000 */  addu       $a1, $a3, $zero

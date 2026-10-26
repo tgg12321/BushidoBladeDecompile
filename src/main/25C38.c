@@ -17,10 +17,10 @@ extern void AddPrim(void *, void *);
 
 extern u8 D_800A3740;
 
-void func_80035438(void) {
+void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
     s32 a0;
     D_800A3740 = 1;
-    func_80035280();
+    CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
     if (D_80106A50.unk_04 == 0x3F) {
         a0 = 0xFF;
     } else {
@@ -31,7 +31,7 @@ void func_80035438(void) {
 
 extern u8 D_800A31D8;
 
-void func_80035480(void) {
+void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
     if (D_800A31DA == 0) {
@@ -46,7 +46,7 @@ void func_80035480(void) {
         D_800A390E = -1;
     }
     D_800A31D8 = 1;
-    func_80035438();
+    menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
     D_800A37B8 = 0;
     D_800A3834 = 9;
@@ -83,7 +83,7 @@ void gpu_AddScreenGradient(void) {
     g_prim_buf_cursor = (u32 *)g;
 }
 
-void func_800355E8(void) {
+void cdrom_EnableSerialMixAndStartRepeatingAudio(void) {
     snd_SerialMixOn();
     cdrom_StartAudioEntry(1);
     cdrom_SetAudioRepeat(1);
@@ -93,7 +93,7 @@ void func_800355E8(void) {
 #include "common.h"
 #include "include_asm.h"
 
-void func_80035618(s32 arg0) {
+void menu_InitSubflowForMode(s32 arg0) {
     s32 temp;
 
     if ((u32)arg0 >= 8) {
@@ -111,12 +111,12 @@ void func_80035618(s32 arg0) {
         }
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 2:
         D_800A3740 = 5;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 3:
@@ -126,16 +126,16 @@ void func_80035618(s32 arg0) {
         } else {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
-            func_800355E8();
+            cdrom_EnableSerialMixAndStartRepeatingAudio();
         }
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 6:
         if (D_800A31DA != 0) {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
-            func_800355E8();
+            cdrom_EnableSerialMixAndStartRepeatingAudio();
             return;
         }
 
@@ -145,7 +145,7 @@ void func_80035618(s32 arg0) {
                 (D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
-            func_800355E8();
+            cdrom_EnableSerialMixAndStartRepeatingAudio();
             return;
         }
 
@@ -161,38 +161,38 @@ void func_80035618(s32 arg0) {
         StoreCompactedBits(D_80106A50.unk_00 & 0x003EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 5:
         StoreCompactedBits(D_80106A50.unk_00 & 0x003FF3FF);
         menu_InitSelWithStoredBits(0x80118800);
         D_800A3740 = 0xA;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 4:
         StoreCompactedBits(D_80106A50.unk_00 & 0x053FF3FF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 7:
         D_800A3740 = 2;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
     }
 }
 
 /* Merged section (Q65: one original file). */
 extern u8 D_800A31D9;
-extern void func_80035618(s32);
+extern void menu_InitSubflowForMode(s32);
 extern void gpu_AddScreenGradient(void);
-extern void func_80035438(void);
-extern void func_800355E8(void);
+extern void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void);
+extern void cdrom_EnableSerialMixAndStartRepeatingAudio(void);
 
-void func_80035828(void) {
+void menu_UpdateRowMenuAndSubflows(void) {
     s32 ret;
 
     D_800A36F1 = 1;
@@ -202,13 +202,13 @@ void func_80035828(void) {
         D_800A3740 = 7;
     }
     if (D_800A31DA != 0) {
-        func_80035618(D_800A38DC);
+        menu_InitSubflowForMode(D_800A38DC);
         D_800A31DA = 0;
     }
     switch (D_800A3740) {
     case 7:
         gpu_AddScreenGradient();
-        ret = func_8003880C();
+        ret = memcard_StartLoadOnceStepAndDrawSheetPair();
         if (ret == 1) {
             D_800A3740 = 8;
             break;
@@ -219,7 +219,7 @@ void func_80035828(void) {
         break;
     case 8:
         gpu_AddScreenGradient();
-        ret = func_800388A8();
+        ret = menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult();
         if (ret == 1) {
             D_800A3740 = 9;
             break;
@@ -230,8 +230,8 @@ void func_80035828(void) {
         break;
     case 9:
         gpu_AddScreenGradient();
-        if (func_80038988() != 0) {
-            func_80035438();
+        if (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress() != 0) {
+            menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();
         }
         break;
     case 1:
@@ -267,7 +267,7 @@ void func_80035828(void) {
         if (--D_800A37B8 == 0) {
             cdrom_PauseAndWait();
             D_80102778.unk_D = ResetFlowAndFetchRowTablePair();
-            func_80035618((s8)D_80102778.unk_D);
+            menu_InitSubflowForMode((s8)D_80102778.unk_D);
         }
         break;
     case 12:
@@ -283,7 +283,7 @@ void func_80035828(void) {
         case 1:
             cdrom_PauseAndWait();
             D_800A3740 = 1;
-            func_80034F88();
+            CopyWorkingFlagsAndButtonMappingsToSavedRecord();
             D_800A37B8 = 0;
             if (D_80106A50.unk_04 == 0x3F) {
                 menu_SetEnabledRows(0xFF);
@@ -294,26 +294,26 @@ void func_80035828(void) {
         case 0:
             break;
         case 2:
-            func_80034F88();
+            CopyWorkingFlagsAndButtonMappingsToSavedRecord();
             D_800A3740 = 0xD;
             break;
         case 3:
-            func_80034F88();
+            CopyWorkingFlagsAndButtonMappingsToSavedRecord();
             D_800A3740 = 0xE;
             break;
         }
         break;
     case 13:
         func_8006C1FC(0, 0);
-        if (func_80038988() != 0) {
+        if (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress() != 0) {
             SetFlowStateOne();
-            func_80035280();
+            CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
             D_800A3740 = 2;
         }
         break;
     case 14:
         func_8006C1FC(0, 0);
-        if (func_80038C70() != 0) {
+        if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
             SetFlowStateOne();
             D_800A3740 = 2;
         }
@@ -359,7 +359,7 @@ void func_80035828(void) {
         StoreCompactedBits(D_80106A50.unk_00 & 0x3EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
-        func_800355E8();
+        cdrom_EnableSerialMixAndStartRepeatingAudio();
         break;
     check_cancel:
         if (ret == -1) {
@@ -379,7 +379,7 @@ void func_80035828(void) {
     reset_mode:
         cdrom_PauseAndWait();
         D_800A3834 = 0;
-        func_8003504C();
+        ApplyWorkingRecordToPendingConfigAndInitializeMode();
         break;
     check_quit:
         if (ret == -1) {
@@ -394,7 +394,7 @@ void func_80035828(void) {
     }
 }
 
-void func_80035DC8(void) {
+void menu_ReleaseResourcesCloseVabsAndInitRowMenu(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
@@ -407,10 +407,10 @@ void func_80035DC8(void) {
     gpu_SetDispMaskOn();
 }
 
-void func_80035E38(void) {
+void DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit(void) {
     D_800A36F1 = 1;
     gpu_AddScreenGradient();
-    if (func_80038C70() != 0) {
+    if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
         D_800A3834 = 8;
         D_800A36F1 = 2;
     }

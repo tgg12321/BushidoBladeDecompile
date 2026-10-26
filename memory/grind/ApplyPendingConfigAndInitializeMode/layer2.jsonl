@@ -1,0 +1,1 @@
+{"func": "ApplyPendingConfigAndInitializeMode", "addr": "800344B4", "verdict": "PASS", "body_hash": "753169adce357360", "body_kind": "c", "file": "main/24BF0", "reviewer": "aad60cfb299cc8f80", "scope": "cheat-cleanup", "date": "2026-10-16T13:19:36Z", "head": "0f62405c8", "notes": "", "renamed_from": ["func_800344B4"]}

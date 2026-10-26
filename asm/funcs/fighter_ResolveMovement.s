@@ -44,7 +44,7 @@ glabel fighter_ResolveMovement
     /* 138EC 800230EC 21202002 */  addu       $a0, $s1, $zero
     /* 138F0 800230F0 21284002 */  addu       $a1, $s2, $zero
     /* 138F4 800230F4 21300002 */  addu       $a2, $s0, $zero
-    /* 138F8 800230F8 134D010C */  jal        func_8005344C
+    /* 138F8 800230F8 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 138FC 800230FC 21388002 */   addu      $a3, $s4, $zero
     /* 13900 80023100 0A004014 */  bnez       $v0, .L8002312C
     /* 13904 80023104 00000000 */   nop
@@ -133,7 +133,7 @@ glabel fighter_ResolveMovement
     /* 13A34 80023234 831A0300 */  sra        $v1, $v1, 10
     /* 13A38 80023238 21104300 */  addu       $v0, $v0, $v1
     /* 13A3C 8002323C 080042AE */  sw         $v0, 0x8($s2)
-    /* 13A40 80023240 134D010C */  jal        func_8005344C
+    /* 13A40 80023240 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 13A44 80023244 1000B7AF */   sw        $s7, 0x10($sp)
     /* 13A48 80023248 4B004014 */  bnez       $v0, .L80023378
     /* 13A4C 8002324C 00000000 */   nop

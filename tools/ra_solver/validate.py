@@ -5,7 +5,7 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 CASES = [
-    ("func_80041188", "text1a"),
+    ("slot_BlendTwoPosesIntoNodeMatrices", "text1a"),
     ("gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels", "text1a"),
     ("_SsVmDoAllocate", "main"),
     ("func_800858D0", "main"),

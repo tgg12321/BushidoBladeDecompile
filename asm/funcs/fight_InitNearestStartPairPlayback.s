@@ -71,7 +71,7 @@ glabel fight_InitNearestStartPairPlayback
     /* 2D720 8003CF20 21280002 */  addu       $a1, $s0, $zero
     /* 2D724 8003CF24 4C0786AF */  sw         $a2, %gp_rel(D_800A3818)($gp)
     /* 2D728 8003CF28 1C00A0AF */  sw         $zero, 0x1C($sp)
-    /* 2D72C 8003CF2C 2152010C */  jal        func_80054884
+    /* 2D72C 8003CF2C 2152010C */  jal        motion_StartPlaybackAtIndexedBasePlusOffset
     /* 2D730 8003CF30 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2D734 8003CF34 21200000 */  addu       $a0, $zero, $zero
     /* 2D738 8003CF38 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor

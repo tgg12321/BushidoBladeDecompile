@@ -189,7 +189,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
 extern s32 D_80094CFC[];
 
-void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
+void slot_BlendTwoPosesIntoNodeMatrices(
+    s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
     Unk80045878Obj *base = D_800A9A10[a0];
@@ -263,7 +264,7 @@ extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
 
-void func_80041398(s32 a0) {
+void PatchColorImmediatesAtListedCodeSites(s32 a0) {
     s32 **t0 = D_80015820;
     s32 t1 = 0;
     s32 mask8 = ~0xFF;
@@ -289,7 +290,7 @@ void func_80041398(s32 a0) {
     } while (t1 < 4);
 }
 
-void func_80041430(s32 a0, s32 a1) {
+void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32 a0, s32 a1) {
     Unk80045878Obj **base;
     Unk80045878Obj *s0;
     s32 i;
@@ -325,7 +326,8 @@ void func_80041430(s32 a0, s32 a1) {
 /* .data 0x80094CFC..0x80094D40, this file's whole .data (D_80094C68, read by
  * 309CC.c and 9F9C.c, ends at 0x80094CFC; 31D3C.c's D_80094D40 follows): 17
  * node indices, a permutation of 1..17, that func_80040D48 and
- * func_80041188 step through to index per-node rotation triples. Defined after
- * every function, so no body sees a definition where it saw an extern. */
+ * slot_BlendTwoPosesIntoNodeMatrices step through to index per-node rotation
+ * triples. Defined after every function, so no body sees a definition where it
+ * saw an extern. */
 s32 D_80094CFC[17] = {8,  9, 14, 15, 16, 17, 10, 11, 12,
                       13, 1, 2,  3,  4,  5,  6,  7};

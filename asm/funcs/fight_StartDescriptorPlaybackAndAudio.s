@@ -123,7 +123,7 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C38C 8003BB8C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 2C390 8003BB90 1400A2AF */  sw         $v0, 0x14($sp)
     /* 2C394 8003BB94 1800A2AF */  sw         $v0, 0x18($sp)
-    /* 2C398 8003BB98 2152010C */  jal        func_80054884
+    /* 2C398 8003BB98 2152010C */  jal        motion_StartPlaybackAtIndexedBasePlusOffset
     /* 2C39C 8003BB9C 1C00B3AF */   sw        $s3, 0x1C($sp)
     /* 2C3A0 8003BBA0 21200000 */  addu       $a0, $zero, $zero
     /* 2C3A4 8003BBA4 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor

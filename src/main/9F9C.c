@@ -3501,8 +3501,8 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
             var_2.y = base.y;
             var_2.x = base.x + (dx * temp) / 40;
             var_2.z = base.z + (dz * temp) / 40;
-            if (func_8005344C(&cur.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) !=
-                0) {
+            if (collision_TestSegmentExtendingShortStartWithWork(
+                    &cur.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) != 0) {
                 break;
             }
             *out = var_2;
@@ -3520,8 +3520,8 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
         cur = *out;
         for (temp = 1; temp < 41; temp++) {
             var_2.y = out->y + temp * 100;
-            if (func_8005344C(&cur.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) !=
-                    0 &&
+            if (collision_TestSegmentExtendingShortStartWithWork(
+                    &cur.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) != 0 &&
                 var_4[1] == -0x1000) {
                 out->y = var_3.y;
                 return;
@@ -3921,8 +3921,8 @@ void fighter_ResolveMovement(
 loop:
     if (((pos1->vx != pos2->vx) || (pos1->vy != pos2->vy)) ||
         (pos1->vz != pos2->vz)) {
-        if (func_8005344C(&pos1->vx, &pos2->vx, scratch, scratch_c, work) ==
-            0) {
+        if (collision_TestSegmentExtendingShortStartWithWork(
+                &pos1->vx, &pos2->vx, scratch, scratch_c, work) == 0) {
             *pos1 = *pos2;
             goto done;
         }
@@ -3935,8 +3935,9 @@ loop:
         pos2->vx += *((s16 *)(((u8 *)scratch) + 0x10)) / 1024;
         pos2->vy += *((s16 *)(((u8 *)scratch) + 0x12)) / 1024;
         pos2->vz += *((s16 *)(((u8 *)scratch) + 0x14)) / 1024;
-        if (func_8005344C(&pos1->vx, scratch + 12, scratch,
-                          (s16 *)(scratch + 6), work) == 0) {
+        if (collision_TestSegmentExtendingShortStartWithWork(
+                &pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6), work) ==
+            0) {
             *pos1 = *(VECTOR *)(scratch + 12);
             scratch[8] = pos2->vx - pos1->vx;
             scratch[9] = pos2->vy - pos1->vy;
@@ -4307,9 +4308,9 @@ void fighter_CacheDownwardProbeHit(Unk80101EC8Record *arg0) {
     ((VECTOR *)0x1F8001E0)->vx = arg0->collision_pos.vx;
     ((VECTOR *)0x1F8001E0)->vy = arg0->collision_pos.vy + 0x1F4;
     ((VECTOR *)0x1F8001E0)->vz = arg0->collision_pos.vz;
-    arg0->downward_probe_hit =
-        func_8005344C(&arg0->collision_pos.vx, (s32 *)0x1F8001E0,
-                      (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
+    arg0->downward_probe_hit = collision_TestSegmentExtendingShortStartWithWork(
+        &arg0->collision_pos.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0,
+        (s16 *)0x1F8001C0, 0x1F8002B8);
 }
 
 s32 fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface(
@@ -4318,8 +4319,9 @@ s32 fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface(
     ((VECTOR *)0x1F8001E0)->vx = arg0->collision_pos.vx;
     ((VECTOR *)0x1F8001E0)->vy = arg0->collision_pos.vy + 5;
     ((VECTOR *)0x1F8001E0)->vz = arg0->collision_pos.vz;
-    if (func_8005344C(&arg0->collision_pos.vx, (s32 *)0x1F8001E0,
-                      (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
+    if (collision_TestSegmentExtendingShortStartWithWork(
+            &arg0->collision_pos.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0,
+            (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
         result = *(s16 *)0x1F8001C2 < -0x800;
     } else {
         result = 0;
@@ -4976,8 +4978,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec->camera_fighter_point.y = rec->base_pos.y - 0x384;
     rec->camera_fighter_point.z = rec->world_pos.z;
     fighter_UpdateGroundYByMoveKind(rec);
-    func_80041188(arg0, (u8 *)&var_0[0], (u8 *)&var_0[1],
-                  rec->pose_interp_weight, (MATRIX *)0x1F8001B0);
+    slot_BlendTwoPosesIntoNodeMatrices(
+        arg0, (u8 *)&var_0[0], (u8 *)&var_0[1], rec->pose_interp_weight,
+        (MATRIX *)0x1F8001B0);
     scratchpad_Save();
     func_80040D48(arg0, 1, (s32 *)&rec->world_pos, (s16 *)&rec->orientation, 0,
                   rec->ground_y);

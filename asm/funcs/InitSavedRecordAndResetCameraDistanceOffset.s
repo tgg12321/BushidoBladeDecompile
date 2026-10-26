@@ -25,7 +25,7 @@ glabel InitSavedRecordAndResetCameraDistanceOffset
     /* 7044 80016844 78690224 */  addiu      $v0, $zero, 0x6978
     /* 7048 80016848 1080013C */  lui        $at, %hi(D_80106A50 + 0xC)
     /* 704C 8001684C 5C6A22AC */  sw         $v0, %lo(D_80106A50 + 0xC)($at)
-    /* 7050 80016850 1765000C */  jal        func_8001945C
+    /* 7050 80016850 1765000C */  jal        pad_SetDefaultSavedButtonMappings
     /* 7054 80016854 00000000 */   nop
     /* 7058 80016858 1000BF8F */  lw         $ra, 0x10($sp)
     /* 705C 8001685C 1800BD27 */  addiu      $sp, $sp, 0x18

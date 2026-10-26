@@ -20,7 +20,7 @@ glabel func_8004DDB4
     /* 3E5FC 8004DDFC 2198C002 */  addu       $s3, $s6, $zero
     /* 3E600 8004DE00 2402D422 */  addi       $s4, $s6, 0x224 /* handwritten instruction */
     /* 3E604 8004DE04 02000422 */  addi       $a0, $s0, 0x2 /* handwritten instruction */
-    /* 3E608 8004DE08 1051010C */  jal        func_80054440
+    /* 3E608 8004DE08 1051010C */  jal        gte_ColorGroupedNormalStreamWithSelectedMatrices
     /* 3E60C 8004DE0C 2128C003 */   addu      $a1, $fp, $zero
     /* 3E610 8004DE10 FEFF5020 */  addi       $s0, $v0, -0x2 /* handwritten instruction */
   .L8004DE14:

@@ -1,6 +1,7 @@
-/* func_80034708 alone. .text 0x80034708 (ROM 0x24F08). Start boundary: G8:
- * compiled -G8, as the gp-relative reads of the cursor array D_800A3174 show;
- * so the <=8-byte strings sit in .sdata, the 9-byte ones in .rodata. */
+/* menu_PrintEditAndApplyConfigWithPerPadCursors alone. .text 0x80034708 (ROM
+ * 0x24F08). Start boundary: G8: compiled -G8, as the gp-relative reads of the
+ * cursor array D_800A3174 show; so the <=8-byte strings sit in .sdata, the
+ * 9-byte ones in .rodata. */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
@@ -25,7 +26,7 @@ extern u8 D_800A31D0[];
 extern const char D_80010834[];
 extern const char D_80010840[];
 
-void func_80034708(void) {
+void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     s32 i;
     u8 *var_1;
     u8 *var_2;
@@ -175,7 +176,7 @@ void func_80034708(void) {
     D_800A3690 &= 1;
     if (g_pad_state.pressed & 0x08000800) {
         snd_QueueSound(1, 0x7F, 0x7F);
-        func_800344B4();
+        ApplyPendingConfigAndInitializeMode();
     }
 }
 

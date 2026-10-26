@@ -44,7 +44,7 @@ glabel fight_UpdateBallisticRecords
     /* 22A8C 8003228C 1000A2AF */  sw         $v0, 0x10($sp)
     /* 22A90 80032290 21186400 */  addu       $v1, $v1, $a0
     /* 22A94 80032294 21200002 */  addu       $a0, $s0, $zero
-    /* 22A98 80032298 134D010C */  jal        func_8005344C
+    /* 22A98 80032298 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 22A9C 8003229C 080023AE */   sw        $v1, 0x8($s1)
     /* 22AA0 800322A0 07004014 */  bnez       $v0, .L800322C0
     /* 22AA4 800322A4 00000000 */   nop

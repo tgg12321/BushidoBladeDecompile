@@ -1,13 +1,14 @@
 /* 20 game functions: motion-stream playback (motion_UpdatePlayback,
  * motion_RebasePlayback, ...) and the CPU fighter's control
- * (fighter_BuildCpuPad, fighter_GetNavCornerPoint, func_80058580, ...). .text
- * 0x8005490C (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17;
- * Codex seam #85, placed before motion_UpdatePlayback rather than
- * motion_StartPlayback so the string D_80015840 belongs to its user's object):
- * no static crosses the cut; the .sdata D_800A3250..D_800A3263 belongs to these
- * functions, and func_80058580's jump tables start this file's .rodata at
- * 0x8001585C, right after 43500.o's string; the only calls back are to
- * 43500.c's collision API collision_TestSegmentWithWork. */
+ * (fighter_BuildCpuPad, fighter_GetNavCornerPoint,
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput, ...). .text 0x8005490C
+ * (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #85,
+ * placed before motion_UpdatePlayback rather than motion_StartPlayback so the
+ * string D_80015840 belongs to its user's object): no static crosses the cut;
+ * the .sdata D_800A3250..D_800A3263 belongs to these functions, and
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's jump tables start this
+ * file's .rodata at 0x8001585C, right after 43500.o's string; the only calls
+ * back are to 43500.c's collision API collision_TestSegmentWithWork. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -180,7 +181,7 @@ s32 motion_UpdatePlayback(void) {
 
 extern s32 motion_UpdatePlayback(void);
 
-s32 func_80054F68(void) {
+s32 motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush(void) {
     s32 s0;
     g_draw_queue_cursor = g_draw_queue;
     D_800A38D6 = D_800A38D6 + 1;
@@ -211,7 +212,7 @@ void motion_RebasePlayback(s32 a0) {
 
 s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.unk24; }
 
-s32 *func_8005508C(void) { return D_80101DF0.xf.mat.t; }
+s32 *node_GetRootNodeMatrixTranslation(void) { return D_80101DF0.xf.mat.t; }
 
 void fighter_ClearCpuTally(s32 arg0) {
     s32 i;
@@ -546,9 +547,10 @@ typedef struct {
 
 extern PadBitTable D_800A3258;
 extern u8 D_8009A088[];
-extern s32 func_80058580(Unk80101EC8Record *);
+extern s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(
+    Unk80101EC8Record *);
 extern void fighter_UpdateCpuProbes(Unk80101EC8Record *);
-extern s32 func_80056FE8(Unk80101EC8Record *);
+extern s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *);
 
 void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     Unk80101EC8Record *rec;
@@ -563,14 +565,17 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     /* temp holds six values: the ground_y distance, a slot count minus one
      * (clamped at 0), the slot increment (4 or 8, then plus the old count,
      * clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
-     * difference and the poll result of fighter_StepCpuPadScript/func_80058580
+     * difference and the poll result of
+     * fighter_StepCpuPadScript/fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
      * (Ruling 11; per-branch constants: Q20). */
     s32 temp;
-    /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
-     * result and the SquareRoot0() distance (Ruling 11). */
+    /* temp2 holds three values: the unk7 * 25 >> 3 limit, the
+     * fighter_CalcOpponentDistanceThresholdFromTables() result and the
+     * SquareRoot0() distance (Ruling 11). */
     s32 temp2;
     /* temp3 holds two values: the least slot count seen (starting at 0x100) and
-     * the func_80056FE8() result plus 800 (Ruling 11). */
+     * the fighter_CalcOpponentDistanceThresholdFromTables() result plus 800
+     * (Ruling 11). */
     s32 temp3;
     /* the counter of each of the four loops, reused loop to loop the way
        SOTN's AddToInventory reuses i for its two loops (Q51) */
@@ -760,7 +765,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
                                    ? rec->other->motion_entry_index
                                    : 0xFE;
                 rec->unk_427 = lo;
-                temp2 = func_80056FE8(rec);
+                temp2 = fighter_CalcOpponentDistanceThresholdFromTables(rec);
                 temp3 = temp2 + 800;
                 if (rec->unk_442 != 0 ||
                     ((rec->unk_430 & 0x100) &&
@@ -883,7 +888,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         if (rec->cpu_pad_script_cursor != 0) {
             temp = fighter_StepCpuPadScript(rec);
         } else {
-            temp = func_80058580(rec);
+            temp = fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(rec);
         }
         i++;
     } while (temp == -1 && i < 4);
@@ -1010,16 +1015,18 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
 #undef sp70
 #undef sp78
 /* Three byte tables (8, 8 and 16 bytes). D_8009A838 is read signed (lb) here
- * and in func_80058580; the other two unsigned (lbu). */
+ * and in fighter_UpdateCpuNavigationChooseScriptsAndHeldInput; the other two
+ * unsigned (lbu). */
 extern u8 D_8009A830[];
 extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 
-/* func_80056FE8: per-record table lookup on arg0->other: its row
- * (motion_metadata[3] * 40), plus a D_8009A830 / D_8009A838 (by
- * arg0->move_is_common) or D_8009A840 (when weapon_hit_end_frames[0] is 0xFF)
- * term, plus its scale_distance_offset and 300. */
-s32 func_80056FE8(Unk80101EC8Record *arg0) {
+/* fighter_CalcOpponentDistanceThresholdFromTables: per-record table lookup on
+ * arg0->other: its row (motion_metadata[3] * 40), plus a D_8009A830 /
+ * D_8009A838 (by arg0->move_is_common) or D_8009A840 (when
+ * weapon_hit_end_frames[0] is 0xFF) term, plus its scale_distance_offset and
+ * 300. */
+s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
     s32 base = a2->motion_metadata[3] * 40;
 
@@ -1032,7 +1039,8 @@ s32 func_80056FE8(Unk80101EC8Record *arg0) {
 
 extern s32 D_8009AA50[];
 
-s32 func_80057094(Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
+    Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 sp10;
     s32 temp_s0;
     s32 temp_v0;
@@ -1577,7 +1585,7 @@ extern void fighter_AppendNavDetour(
 
 #define CPU_SQ(x) ((x) * (x))
 
-s32 func_80058580(Unk80101EC8Record *p) {
+s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 wx;
     u8 *var_1;
     s32 wz;
@@ -2083,7 +2091,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         }
                     }
                     work3 = lim < dist;
-                    p->unk_3CC = func_80057094(p, wx, wz, work3);
+                    p->unk_3CC = fighter_BuildCpuRoutePadWithSurfaceProbe(
+                        p, wx, wz, work3);
                     var_19 = 300;
                     var_22 = p->unk_3CC & 4;
                     if (var_22) {

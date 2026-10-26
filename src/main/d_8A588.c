@@ -7,11 +7,13 @@
  * 2. Small objects in .data, each sized by its own reader or by the pointer
  *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
  *    D_8009A384 / D_8009A3E0 / D_8009A3F4 / D_8009A598 (their D_8009A658
- *    row's npolys); the distance byte tables D_8009A830 (func_80056FE8) and
- *    D_8009A838 (func_80056FE8, func_80058580); the pad scripts D_8009A870 ..
- *    D_8009A8C0 (0x80 ends a script, fighter_StepCpuPadScript); g_vab_id_list
- *    (u8[4], the run's end). Under -G8 the original compiler puts them in
- *    .sdata, so no -G8 file defined them.
+ *    row's npolys); the distance byte tables D_8009A830
+ * (fighter_CalcOpponentDistanceThresholdFromTables) and D_8009A838
+ * (fighter_CalcOpponentDistanceThresholdFromTables,
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); the pad scripts
+ * D_8009A870 .. D_8009A8C0 (0x80 ends a script, fighter_StepCpuPadScript);
+ * g_vab_id_list (u8[4], the run's end). Under -G8 the original compiler puts
+ * them in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 4510C.c and 4BC3C.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005490C + 0x6B30 = 0x8005B43C); so no code module owns them.

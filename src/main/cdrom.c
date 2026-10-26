@@ -244,7 +244,7 @@ void sys_ExecMovieOverlay(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     v0 = cdrom_GetFileIndex(6, 2);
     sp[4] = (s32)&g_cd_file_table[v0];
     sp[5] = a4;
-    v0 = (s32)func_800392B8();
+    v0 = (s32)GetSharedBuffer();
     sys_Exec(6, sp, v0 + 0x7FC);
 }
 

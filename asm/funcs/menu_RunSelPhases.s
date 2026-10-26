@@ -23,7 +23,7 @@ glabel menu_RunSelPhases
     /* 67BC4 800773C4 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
     /* 67BC8 800773C8 00000000 */  nop
     /* 67BCC 800773CC 14004584 */  lh         $a1, 0x14($v0)
-    /* 67BD0 800773D0 88D0010C */  jal        func_80074220
+    /* 67BD0 800773D0 88D0010C */  jal        gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
     /* 67BD4 800773D4 21204002 */   addu      $a0, $s2, $zero
     /* 67BD8 800773D8 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
     /* 67BDC 800773DC 00000000 */  nop
@@ -58,7 +58,7 @@ glabel menu_RunSelPhases
     /* 67C44 80077444 F6D1010C */  jal        menu_HandleSelPhase0CursorInput
     /* 67C48 80077448 21208002 */   addu      $a0, $s4, $zero
     /* 67C4C 8007744C 21A84000 */  addu       $s5, $v0, $zero
-    /* 67C50 80077450 22D1010C */  jal        func_80074488
+    /* 67C50 80077450 22D1010C */  jal        menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
     /* 67C54 80077454 21204002 */   addu      $a0, $s2, $zero
     /* 67C58 80077458 B8DD0108 */  j          .L800776E0
     /* 67C5C 8007745C 01006226 */   addiu     $v0, $s3, 0x1

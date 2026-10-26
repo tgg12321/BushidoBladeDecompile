@@ -50,7 +50,9 @@ import re
 
 VERDICT = "CONFIRM"
 VERIFIER_NOTE = ("naming-reviewer pre-apply (round 1): 40/43 PASS as proposed; 3 FAIL (80035618, 80040D48, 80041398) "
-                 "replaced by the reviewer-suggested names (NOTES); none dropped.")
+                 "replaced by the reviewer-suggested names (NOTES). R6 (round 1) failed the suggested name of 80040D48 "
+                 "(slot_SetRootTransform...: omits the mode-0 pose write at 4510C.c:154); that row is dropped (DROPPED_R6) "
+                 "and the wave re-applied with 42 rows.")
 NOTES = {
     "0x80035618": ("suggested: naming-reviewer pre-apply round 1 failed menu_InitSubflowForRow ('ForRow' false at 25C38.c:205, "
                    "where the switched value is the mode cell D_800A38DC that func_800343F0 copies from D_80102778.unk_D; it "
@@ -750,3 +752,11 @@ FUNCS = [
 ]
 
 DATA = []
+
+
+# R6 round 1 failed the reviewer-suggested name of 0x80040D48 (slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget):
+# in mode 0 (4510C.c:154, motion_UpdatePlayback) the body writes the 17 joint rotations and the two trailing node transforms
+# from arg4, so 'SetRootTransform' omits the pose application; 'Softbody' also lacks a verb. Dropped; it stays neutral and
+# needs a fresh row (a name covering both modes) to come back.
+DROPPED_R6 = ["0x80040D48"]
+FUNCS = [r for r in FUNCS if r[0] not in DROPPED_R6]

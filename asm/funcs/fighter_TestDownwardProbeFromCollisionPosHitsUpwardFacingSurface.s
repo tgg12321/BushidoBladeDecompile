@@ -20,7 +20,7 @@ glabel fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface
     /* 14600 80023E00 1000A3AF */  sw         $v1, 0x10($sp)
     /* 14604 80023E04 801F013C */  lui        $at, (0x1F8001E8 >> 16)
     /* 14608 80023E08 E80122AC */  sw         $v0, (0x1F8001E8 & 0xFFFF)($at)
-    /* 1460C 80023E0C 134D010C */  jal        func_8005344C
+    /* 1460C 80023E0C 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 14610 80023E10 B8008424 */   addiu     $a0, $a0, 0xB8
     /* 14614 80023E14 05004010 */  beqz       $v0, .L80023E2C
     /* 14618 80023E18 00000000 */   nop

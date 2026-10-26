@@ -90,14 +90,14 @@ s32 comb_Connect(void) {
     VSync(1);
     comb_ExchangeEmptyPad();
     D_800A38E4 = bits_DepositMask3F83F8(D_800A36C6);
-    D_800A37C4 = func_80019488();
+    D_800A37C4 = pad_PackSavedButtonMappingLowNibbles();
     VSync(1);
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
-    func_800194C0(D_800A36C6);
+    pad_UnpackButtonMappingNibblesToCells(D_800A36C6);
     D_800A37C4 = rand();
     VSync(1);
     comb_ExchangeEmptyPad();
@@ -529,7 +529,8 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     if (flags & 0x20)
         a0_arg = 0x32;
     D_800A390F = 0;
-    func_80054884(D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, var_4);
+    motion_StartPlaybackAtIndexedBasePlusOffset(
+        D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, var_4);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     if (D_800A3878[3] & 0x40)
@@ -553,11 +554,12 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
 void fight_HandleDescriptorPlaybackCompletion(void) {
     D_800A37B8++;
 
-    if (func_80054F68() != 0 && (g_pad_state.pressed & 0x400040) == 0) {
+    if (motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush() != 0 &&
+        (g_pad_state.pressed & 0x400040) == 0) {
         return;
     }
     cdrom_PauseAndWait();
-    func_800548DC();
+    motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
     if (D_800A38DC != 0) {
         return;
     }
@@ -709,8 +711,9 @@ void fight_InitImageAndPlaybackPresentation(void) {
         fight_FillMissingConfigInitFighterAndLoadObject(0);
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     }
-    func_80054884(0x16, D_8009016C[D_800A38A4], 0, D_80101EC8[0].unk_12, -1, -1,
-                  -1, (s32)0x80118800);
+    motion_StartPlaybackAtIndexedBasePlusOffset(
+        0x16, D_8009016C[D_800A38A4], 0, D_80101EC8[0].unk_12, -1, -1, -1,
+        (s32)0x80118800);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
@@ -729,7 +732,8 @@ void fight_UpdateSplitWipeImageAndPlaybackPresentation(void) {
     D_800A37B8 = D_800A37B8 + 1;
     g_prim_buf_cursor +=
         gpu_DrawImageAndAdvanceSplitWipe((s32)g_prim_buf_cursor, 1);
-    if (func_80054F68() == 0 || (g_pad_state.pressed & 0x400040) != 0) {
+    if (motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush() == 0 ||
+        (g_pad_state.pressed & 0x400040) != 0) {
         if ((u32)(D_800A38A4 - 6) < 2u && D_800A3781 != 0) {
             D_800A38A4 = D_8008D9EC[D_80101EC8[0].unk_0A] != 0 ? 9 : 8;
             D_800A3834 = 0x12;
@@ -750,7 +754,7 @@ void fight_UpdateSplitWipeImageAndPlaybackPresentation(void) {
     if (D_800A3834 != 0x13) {
         cdrom_PauseAndWait();
         if (D_800A3834 != 0x12) {
-            func_800548DC();
+            motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
         }
     }
 }
@@ -819,7 +823,7 @@ void fight_UpdateMatchTallyPresentation(void) {
 
 /*
  * Copies the three clock records (D_80106A50.times, frame counts at 30 fps)
- * into the record at func_80077D00(): minutes (/1800), seconds ((/30) % 60),
+ * into the record at GetWorkingRecord(): minutes (/1800), seconds ((/30) % 60),
  * hundredths ((% 30) * 100 / 30) and the record's unk_0 byte at +0x21 + i*4;
  * then three bytes from fight_SplitFrameCounterIntoMinutesSecondsHundredths at
  * +0x2D..+0x2F and the stage at +0x30.
@@ -832,7 +836,7 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
     TimeRec *base;
     TimeRec *src;
 
-    s0 = func_80077D00();
+    s0 = GetWorkingRecord();
     cdrom_PauseAndWait();
     gpu_HideResetAndClear();
     func_80060758();
@@ -1029,8 +1033,9 @@ void fight_InitNearestStartPairPlayback(void) {
         }
         result = fight_FindNearestStartPair(addr);
         D_800A3818 = result;
-        func_80054884(0x16, s0, result, (s32)D_80101EC8[0].unk_12,
-                      (s32)D_80101EC8[1].unk_12, -1, -1, 0);
+        motion_StartPlaybackAtIndexedBasePlusOffset(
+            0x16, s0, result, (s32)D_80101EC8[0].unk_12,
+            (s32)D_80101EC8[1].unk_12, -1, -1, 0);
     }
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
@@ -1094,13 +1099,13 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
         eff_StartRecycledVectorCommandWithRedLight(vec, &D_800A312C.vx);
     }
     a = motion_GetPlaybackViewAngles();
-    b = func_8005508C();
+    b = node_GetRootNodeMatrixTranslation();
     func_80061064(a, b);
-    if (func_80054F68() == 0) {
+    if (motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush() == 0) {
         flag = 1;
     }
     if (flag != 0 || (g_pad_state.pressed & 0x400040) != 0) {
-        func_800548DC();
+        motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock();
         if (D_800A38DC == 4 || D_800A38DC == 6) {
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number
              * (Q63, this byte pair only); no single array or struct gives the
@@ -3153,8 +3158,8 @@ u8 *D_800900EC[32] = {
     D_8008F220, D_8008F220,
 };
 /* fight_InitImageAndPlaybackPresentation's per-mode values, passed to
- * func_80054884; D_800A38A4 is only ever 0..9. The 2 zero bytes after it are
- * g_font_image's alignment. */
+ * motion_StartPlaybackAtIndexedBasePlusOffset; D_800A38A4 is only ever 0..9.
+ * The 2 zero bytes after it are g_font_image's alignment. */
 u8 D_8009016C[10] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x0B, 0x0A, 0x0C, 0x0D,
 };

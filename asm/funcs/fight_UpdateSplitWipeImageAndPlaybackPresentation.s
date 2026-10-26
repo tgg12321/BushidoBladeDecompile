@@ -16,7 +16,7 @@ glabel fight_UpdateSplitWipeImageAndPlaybackPresentation
     /* 2CAF8 8003C2F8 21186200 */  addu       $v1, $v1, $v0
     /* 2CAFC 8003C2FC 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
     /* 2CB00 8003C300 B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
-    /* 2CB04 8003C304 DA53010C */  jal        func_80054F68
+    /* 2CB04 8003C304 DA53010C */  jal        motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
     /* 2CB08 8003C308 00000000 */   nop
     /* 2CB0C 8003C30C 07004010 */  beqz       $v0, .L8003C32C
     /* 2CB10 8003C310 4000033C */   lui       $v1, (0x400040 >> 16)
@@ -89,7 +89,7 @@ glabel fight_UpdateSplitWipeImageAndPlaybackPresentation
     /* 2CC08 8003C408 12000224 */  addiu      $v0, $zero, 0x12
     /* 2CC0C 8003C40C 03006210 */  beq        $v1, $v0, .L8003C41C
     /* 2CC10 8003C410 00000000 */   nop
-    /* 2CC14 8003C414 3752010C */  jal        func_800548DC
+    /* 2CC14 8003C414 3752010C */  jal        motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock
     /* 2CC18 8003C418 00000000 */   nop
   .L8003C41C:
     /* 2CC1C 8003C41C 1000BF8F */  lw         $ra, 0x10($sp)

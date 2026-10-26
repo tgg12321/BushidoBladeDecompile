@@ -8,8 +8,8 @@
 #include "game.h"
 
 /* Adds delta to the parent pointer (node.parent_node) of each of the n nodes
- * that is not null: func_80041430 moved the model object, and the three node
- * arrays with it, by delta bytes. */
+ * that is not null: slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
+ * moved the model object, and the three node arrays with it, by delta bytes. */
 void node_RebaseParents(s32 delta, Unk80045878Node *rec, s32 n) {
     s32 i;
 

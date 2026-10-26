@@ -46,7 +46,7 @@ glabel comb_Connect
     /* 2B564 8003AD64 00000000 */   nop
     /* 2B568 8003AD68 0A80013C */  lui        $at, %hi(D_800A38E4)
     /* 2B56C 8003AD6C E43822AC */  sw         $v0, %lo(D_800A38E4)($at)
-    /* 2B570 8003AD70 2265000C */  jal        func_80019488
+    /* 2B570 8003AD70 2265000C */  jal        pad_PackSavedButtonMappingLowNibbles
     /* 2B574 8003AD74 00000000 */   nop
     /* 2B578 8003AD78 F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
     /* 2B57C 8003AD7C 330A020C */  jal        VSync
@@ -63,7 +63,7 @@ glabel comb_Connect
     /* 2B5A8 8003ADA8 00000000 */   nop
     /* 2B5AC 8003ADAC 0A80043C */  lui        $a0, %hi(D_800A36C6)
     /* 2B5B0 8003ADB0 C6368484 */  lh         $a0, %lo(D_800A36C6)($a0)
-    /* 2B5B4 8003ADB4 3065000C */  jal        func_800194C0
+    /* 2B5B4 8003ADB4 3065000C */  jal        pad_UnpackButtonMappingNibblesToCells
     /* 2B5B8 8003ADB8 00000000 */   nop
     /* 2B5BC 8003ADBC 55E4010C */  jal        rand
     /* 2B5C0 8003ADC0 00000000 */   nop

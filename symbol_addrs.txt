@@ -960,7 +960,7 @@ CdSync = 0x800801E8; /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of 
 CdReady = 0x80080208; /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
 CdGetSector2 = 0x80080640; /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */
 CdDataSync = 0x80080684; /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of saEft01Init(a0) */
-func_80056FE8 = 0x80056FE8; /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40 */
+// RENAME 0x80056FE8: retired name 'func_80056FE8' — preserved note: MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40
 // RENAME 0x80044378: retired name 'func_80044378' — preserved note: MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section)
 // RENAME 0x800203B4: retired name 'func_800203B4' — preserved note: MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector
 // RENAME 0x8001DBE4: retired name 'func_8001DBE4' — preserved note: MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1729-1747)
@@ -968,7 +968,7 @@ gpu_MoveObjectClutsToFogBlock = 0x8003E164; /* when arg0 is not the selected obj
 // RENAME 0x8004939C: retired name 'func_8004939C' — preserved note: MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells
 // RENAME 0x80041688: retired name 'func_80041688' — preserved note: MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+)
 font_LoadImage = 0x8003D2C4; /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */
-func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+resource_SelectRetainedSubblockOrApplyHeaderSections(-1)+snd_StopSelection() */
+// RENAME 0x800548DC: retired name 'func_800548DC' — preserved note: MISNAMED: not katinuki data; gpu_DrawSync(0)+resource_SelectRetainedSubblockOrApplyHeaderSections(-1)+snd_StopSelection()
 camera_InitTrackedFighterFocus = 0x8001B3C0; /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
 // RENAME 0x8001C820: retired name 'func_8001C820' — preserved note: MISNAMED: not voice data; conditional snd_QueuePositionalSound with sound IDs 0x56..0x58
 // RENAME 0x80048AD0: retired name 'func_80048AD0' — preserved note: MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68
@@ -982,7 +982,7 @@ def_cbsync = 0x80080014; /* MISNAMED: not motion-pre-calc; calls bios_DeliverEve
 def_cbready = 0x8008003C; /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
 def_cbread = 0x80080064; /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
 // RENAME 0x80077B20: retired name 'func_80077B20' — preserved note: MISNAMED: not gauge init; 1-line D_800A35E4 = 1
-func_80077D00 = 0x80077D00; /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
+// RENAME 0x80077D00: retired name 'func_80077D00' — preserved note: MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr)
 func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
 func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateMemCardChoices(a0, a1) */
 func_80077A60 = 0x80077A60; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateConfirmMenu() */

@@ -1,19 +1,24 @@
 /* 16 game functions: the collision grid walk (collision_WalkSegmentGrid) and
  * its per-cell tests, accessors and setters (collision_TestSegmentWithWork,
- * collision_GetHit, func_80053754, func_80053E9C, ...), then the
- * motion-sequence loader motion_StartPlayback and its wrappers func_80054884 /
- * func_800548DC. .text 0x80052D00 (ROM 0x43500). Start boundary: SEAM (owner
- * ruling 2026-10-17; Codex seam #72): the statics D_800A33F0, D_800A33F4 and
- * g_collision_hit_tag (0x800A33F0..0x800A33F8) are used only here and open the
- * old 3AB48 .sbss group in address order; calls run from here into 3AB48.c's
- * GTE helpers (gte_SumSquares3, gte_ReadIR1IR2Sra2,
+ * collision_GetHit, collision_TestCellKeepingNearestHitScalarProjection,
+ * collision_TestCellKeepingNearestHitGteProjection, ...), then the
+ * motion-sequence loader motion_StartPlayback and its wrappers
+ * motion_StartPlaybackAtIndexedBasePlusOffset /
+ * motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock. .text 0x80052D00 (ROM
+ * 0x43500). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #72): the
+ * statics D_800A33F0, D_800A33F4 and g_collision_hit_tag
+ * (0x800A33F0..0x800A33F8) are used only here and open the old 3AB48 .sbss
+ * group in address order; calls run from here into 3AB48.c's GTE helpers
+ * (gte_SumSquares3, gte_ReadIR1IR2Sra2,
  * gte_TransformPointDifferenceWithInheritedLastRow), back only once
- * (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2. A
- * control cut inside this group (before func_80053754) does not byte-match: the
+ * (func_8004DDB4 -> gte_ColorGroupedNormalStreamWithSelectedMatrices); three
+ * NOPs follow gte_ReadIR1IR2Sra2. A control cut inside this group (before
+ * collision_TestCellKeepingNearestHitScalarProjection) does not byte-match: the
  * shared statics lose gp access. End: before motion_UpdatePlayback (seam #85,
  * moved there from motion_StartPlayback), so motion_StartPlayback's printf
  * string D_80015840 is this file's .rodata (0x80015840+0x1C) and 4510C.o's
- * starts with func_80058580's tables at offset 0. */
+ * starts with fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's tables at
+ * offset 0. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -35,7 +40,8 @@ extern s32 collision_GetHit(s32 *, s16 *);
  * major/minor extents (exchanged, with +0x60/+0x64 and +0x68/+0x6C, when
  * +0x74 > +0x70), +0x7C the 4.12 slope and
  * +0x90 the major-axis steps left. Each cell crossed goes to the per-cell
- * test at +0x5C (func_80053E9C or func_80053754) until one reports a hit;
+ * test at +0x5C (collision_TestCellKeepingNearestHitGteProjection or
+ * collision_TestCellKeepingNearestHitScalarProjection) until one reports a hit;
  * collision_GetHit then reads the result back out. */
 s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
     s32 var_0;
@@ -159,11 +165,12 @@ s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
 }
 
 extern s32 collision_WalkSegmentGrid(s32 *, s16 *);
-extern s32 func_80053754();
-extern s32 func_80053E9C();
+extern s32 collision_TestCellKeepingNearestHitScalarProjection();
+extern s32 collision_TestCellKeepingNearestHitGteProjection();
 extern Work_80053E9C D_800EF9F8;
 
-void func_80053304(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
+void collision_TestSegmentExtendingShortStart(
+    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     s32 a, b, c;
     s32 hi0, hi1, hi2;
     D_800A33F4 = &D_800EF9F8;
@@ -176,19 +183,20 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
         a = D_800A33F4->unk8.vx;
         hi1 = D_800A33F4->unk18.vy;
         b = D_800A33F4->unk8.vy;
-        D_800A33F4->unk5C = func_80053754;
+        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitScalarProjection;
         hi2 = D_800A33F4->unk18.vz;
         D_800A33F4->unk8.vx = a - ((hi0 - a) << 1);
         D_800A33F4->unk8.vy = b - ((hi1 - b) << 1);
         c = D_800A33F4->unk8.vz;
         D_800A33F4->unk8.vz = c - ((hi2 - c) << 1);
     } else {
-        D_800A33F4->unk5C = func_80053E9C;
+        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
     }
     collision_WalkSegmentGrid(arg2, arg3);
 }
 
-s32 func_8005344C(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
+s32 collision_TestSegmentExtendingShortStartWithWork(
+    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
     s32 a, b, c;
     s32 hi0, hi1, hi2;
     D_800A33F4 = (Work_80053E9C *)arg4;
@@ -201,14 +209,14 @@ s32 func_8005344C(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
         a = D_800A33F4->unk8.vx;
         hi1 = D_800A33F4->unk18.vy;
         b = D_800A33F4->unk8.vy;
-        D_800A33F4->unk5C = func_80053754;
+        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitScalarProjection;
         hi2 = D_800A33F4->unk18.vz;
         D_800A33F4->unk8.vx = a - ((hi0 - a) << 1);
         D_800A33F4->unk8.vy = b - ((hi1 - b) << 1);
         c = D_800A33F4->unk8.vz;
         D_800A33F4->unk8.vz = c - ((hi2 - c) << 1);
     } else {
-        D_800A33F4->unk5C = func_80053E9C;
+        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
     }
     return collision_WalkSegmentGrid(arg2, arg3);
 }
@@ -217,7 +225,7 @@ s32 collision_TestSegment(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     D_800A33F4 = &D_800EF9F8;
     D_800EF9F8.unk8 = *(VECTOR *)arg0;
     D_800A33F4->unk18 = *(VECTOR *)arg1;
-    D_800A33F4->unk5C = func_80053E9C;
+    D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
     return collision_WalkSegmentGrid(arg2, arg3);
 }
 
@@ -226,7 +234,7 @@ s32 collision_TestSegmentWithWork(
     D_800A33F4 = (Work_80053E9C *)arg4;
     D_800A33F4->unk8 = *(VECTOR *)arg0;
     D_800A33F4->unk18 = *(VECTOR *)arg1;
-    D_800A33F4->unk5C = func_80053E9C;
+    D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
     return collision_WalkSegmentGrid(arg2, arg3);
 }
 
@@ -252,7 +260,7 @@ extern void gte_TransformPointDifferenceWithInheritedLastRow(
     s32, s32, s32, s32);
 extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
 
-s32 func_80053754(s32 arg0, s32 arg1) {
+s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
     s32 n;
     s16 *data;
     s32 count;
@@ -424,7 +432,7 @@ s32 func_80053754(s32 arg0, s32 arg1) {
     return D_800A33F4->unk0 != 0x7FFFFFFF;
 }
 
-s32 func_80053E9C(s32 arg0, s32 arg1) {
+s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
     s32 n;
     s16 *data;
     s32 count;
@@ -563,7 +571,7 @@ void collision_RebaseGrid(s32 a0) { D_800A33F0 += a0; }
 
 s16 collision_GetHitTag(void) { return g_collision_hit_tag; }
 
-INCLUDE_ASM("asm/funcs", func_80054440);
+INCLUDE_ASM("asm/funcs", gte_ColorGroupedNormalStreamWithSelectedMatrices);
 INCLUDE_ASM("asm/funcs", func_800545F4);
 
 const char D_80015840[28] = "Destruction tiny model.\n";
@@ -640,12 +648,12 @@ s32 motion_StartPlayback(
 
 extern s16 D_80099D54[];
 
-void func_80054884(
+void motion_StartPlaybackAtIndexedBasePlusOffset(
     s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
     motion_StartPlayback(D_80099D54[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
 
-void func_800548DC(void) {
+void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void) {
     DrawSync(0);
     resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     motion_FreePlaybackBlock();
@@ -653,10 +661,10 @@ void func_800548DC(void) {
 
 /* .data 0x80099D54..0x80099D88, this file's whole .data (d_89C78.c's
  * D_80099D3C ends at 0x80099D54; 4510C.c's D_80099D88 follows):
- * per-entry base sequence ids (-1: none); func_80054884 starts sequence
- * D_80099D54[a0] + a1 - 0x131. The final 0 fills the 0x34 bytes to D_80099D88.
- * Defined after every function, so no body sees a definition where it saw
- * an extern. */
+ * per-entry base sequence ids (-1: none);
+ * motion_StartPlaybackAtIndexedBasePlusOffset starts sequence D_80099D54[a0] +
+ * a1 - 0x131. The final 0 fills the 0x34 bytes to D_80099D88. Defined after
+ * every function, so no body sees a definition where it saw an extern. */
 s16 D_80099D54[26] = {
     0x131, 0x151, 0x171, 0x192, 0x1AD, -1,    0x1CB, 0x1E6, 0x204,
     0x222, -1,    -1,    0x241, 0x264, 0x287, 0x2AA, -1,    0x2CD,

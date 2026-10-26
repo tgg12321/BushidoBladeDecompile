@@ -150,7 +150,7 @@ void gpu_LoadVramBottomStrip(Unk8006E950Head *a0) {
     Unk8009BD24Block *p;
     s32 data;
     RECT rect;
-    p = func_80077D00();
+    p = GetWorkingRecord();
     if (p->unk20_0) {
         data = a0->unk_10;
     } else {

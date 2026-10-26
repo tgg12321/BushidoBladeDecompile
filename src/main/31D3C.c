@@ -55,7 +55,8 @@ s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
 
 /* Sets or clears bit 0 of the flag byte in every bone record of
  * D_800A9A10[arg0], then pushes its colour (greyscaled when
- * gpu_RefreshGrayscaleMode() is set) through func_80041398. */
+ * gpu_RefreshGrayscaleMode() is set) through
+ * PatchColorImmediatesAtListedCodeSites. */
 void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
     s32 arg0, s32 arg1) {
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
@@ -111,12 +112,12 @@ after2:
     if (gpu_RefreshGrayscaleMode()) {
         v = math_Grayscale3(var_1->unk_18.byte[2], var_1->unk_18.byte[1],
                             var_1->unk_18.byte[0]);
-        func_80041398((v << 16) | (v << 8) | v);
+        PatchColorImmediatesAtListedCodeSites((v << 16) | (v << 8) | v);
     } else {
         r = var_1->unk_18.byte[0];
         g = var_1->unk_18.byte[1];
         b = var_1->unk_18.byte[2];
-        func_80041398(b | ((r << 16) | (g << 8)));
+        PatchColorImmediatesAtListedCodeSites(b | ((r << 16) | (g << 8)));
     }
 }
 

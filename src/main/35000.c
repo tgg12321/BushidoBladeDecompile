@@ -586,7 +586,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     Unk80045878Obj *ptr;
     s32 idx;
     if (a0 < 3) {
-        func_80041430(a0, a1);
+        slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(a0, a1);
         return;
     }
     idx = a0 - 3;

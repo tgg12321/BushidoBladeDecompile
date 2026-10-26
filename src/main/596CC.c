@@ -447,7 +447,7 @@ void gpu_AddThreeGreyTilesStackedUp(s32 *arg0, u16 *arg1, s32 arg2) {
 
 void gpu_SetTileRgbFromBlockFlag(void *arg0) {
     TILE *a0 = arg0;
-    Unk8009BD24Block *p = func_80077D00();
+    Unk8009BD24Block *p = GetWorkingRecord();
     s32 v0;
     if (p->unk20_0) {
         v0 = 0x22;
@@ -464,7 +464,7 @@ void gpu_SetTileRgbFromBlockFlag(void *arg0) {
 
 void gpu_SetPolyF4RgbFromBlockFlag(void *arg0) {
     POLY_F4 *a0 = arg0;
-    Unk8009BD24Block *p = func_80077D00();
+    Unk8009BD24Block *p = GetWorkingRecord();
     s32 v0;
     if (p->unk20_0) {
         v0 = 8;

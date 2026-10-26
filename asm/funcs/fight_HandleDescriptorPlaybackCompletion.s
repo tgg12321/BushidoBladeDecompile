@@ -6,7 +6,7 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C4C4 8003BCC4 01004224 */  addiu      $v0, $v0, 0x1
     /* 2C4C8 8003BCC8 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* 2C4CC 8003BCCC B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
-    /* 2C4D0 8003BCD0 DA53010C */  jal        func_80054F68
+    /* 2C4D0 8003BCD0 DA53010C */  jal        motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
     /* 2C4D4 8003BCD4 00000000 */   nop
     /* 2C4D8 8003BCD8 07004010 */  beqz       $v0, .L8003BCF8
     /* 2C4DC 8003BCDC 4000033C */   lui       $v1, (0x400040 >> 16)
@@ -19,7 +19,7 @@ glabel fight_HandleDescriptorPlaybackCompletion
   .L8003BCF8:
     /* 2C4F8 8003BCF8 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2C4FC 8003BCFC 00000000 */   nop
-    /* 2C500 8003BD00 3752010C */  jal        func_800548DC
+    /* 2C500 8003BD00 3752010C */  jal        motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock
     /* 2C504 8003BD04 00000000 */   nop
     /* 2C508 8003BD08 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* 2C50C 8003BD0C DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)

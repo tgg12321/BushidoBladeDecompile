@@ -10,7 +10,8 @@
  *    D_8008D86C set), D_8008EB04 .. D_8008EB0C (s16) and D_8008EB10 ..
  *    D_8008EB18 (s32), each with its own reader in
  * fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams, D_8008EB38
- * (u8[8], fighter_Init), D_8008EB6C (u8[6], func_80026DA4, after D_8008EB54's 6
+ * (u8[8], fighter_Init), D_8008EB6C (u8[6],
+ * fight_UpdatePairedInputTotalsEventsAndMidpointEffects, after D_8008EB54's 6
  * rows), D_8008EBF4 (u8[6], snd_UpdateStageSounds, before D_8008EBFC's 6 pairs)
  * and D_8008EC30 (u8[4], 25788.c's D_800A36CC per setting; the run's end).
  * Under -G8 the original compiler puts them in .sdata, so no -G8 file defined
@@ -628,7 +629,8 @@ u8 D_8008EB38[8] = {51, 52, 53, 54, 55, 56, 51, 51};
  * fighter_UpdateInputSteeredForwardMotion). */
 s16 D_8008EB40[3][3] = {{-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
 
-/* func_80026DA4's 6 rows (D_80101EC8[0].move_kind mode). */
+/* fight_UpdatePairedInputTotalsEventsAndMidpointEffects's 6 rows
+ * (D_80101EC8[0].move_kind mode). */
 Tbl8008EB54Entry D_8008EB54[6] = {{0, -1280}, {-149, -680}, {-112, -1280},
                                   {0, -1280}, {112, -1280}, {149, -680}};
 

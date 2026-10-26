@@ -1,19 +1,20 @@
-/* The 4 game functions after func_80034708. .text 0x80034F88 (ROM 0x25788).
- * Start boundary: G8 (the end of 24F08.c's -G8 unit). */
+/* The 4 game functions after menu_PrintEditAndApplyConfigWithPerPadCursors.
+ * .text 0x80034F88 (ROM 0x25788). Start boundary: G8 (the end of 24F08.c's -G8
+ * unit). */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
-/* Copies the record at func_80077D00() into the FileRecord D_80106A50:
+/* Copies the record at GetWorkingRecord() into the FileRecord D_80106A50:
  * flags bits 0-2 are cleared and re-set from p->unk20_0..2, then the three
  * bytes at p->unk17 are copied to D_80106A50.frec20. */
-void func_80034F88(void) {
+void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
     Unk8009BD24Block *p;
     s32 i;
 
-    p = func_80077D00();
+    p = GetWorkingRecord();
     D_80106A50.flags &= ~7;
     D_80106A50.flags |= p->unk20_0 ? 1 : 0;
     D_80106A50.flags |= p->unk20_1 ? 2 : 0;
@@ -23,7 +24,7 @@ void func_80034F88(void) {
     }
 }
 
-void func_8003504C(void) {
+void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     Unk8009BD24Block *p;
     s32 i;
     u8 *s;
@@ -35,7 +36,7 @@ void func_8003504C(void) {
     s8 val;
     u8 tmp;
 
-    p = func_80077D00();
+    p = GetWorkingRecord();
     i = 0;
     new_var = 5;
     new_var2 = 20;
@@ -104,17 +105,17 @@ void func_8003504C(void) {
         }
     }
 
-    func_800344B4();
+    ApplyPendingConfigAndInitializeMode();
 }
 
-void func_80035280(void) {
+void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
     Unk8009BD24Block *p;
     u8 *src;
     /* the three 8-byte clock records */
     TimeRec *times;
     s32 i;
 
-    p = func_80077D00();
+    p = GetWorkingRecord();
     i = 0;
     p->unk20_0 = D_80106A50.flags & 1;
     p->unk20_1 = (D_80106A50.flags >> 1) & 1;

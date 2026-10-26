@@ -57,7 +57,9 @@ extern u8 D_8009BCE4[20];
 extern Unk8009BCF8Record D_8009BCF8[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by
- * menu_HandleSelPhase0CursorInput, func_80074488 and menu_InitSelScreen. */
+ * menu_HandleSelPhase0CursorInput,
+ * menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles and
+ * menu_InitSelScreen. */
 extern u8 D_8009BD20[2][2];
 
 extern u8 *D_800A36A0;
@@ -557,7 +559,7 @@ extern void resource_SetPairSelectionSlotWithBoundChecks(s32, s32);
 extern void resource_RankRequestedEntriesAndReloadOnChange(s32);
 extern s32 snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles(s32);
 extern void snd_FlushSoundQueue(void);
-extern s32 func_80038C70(void);
+extern s32 memcard_StepSaveOverwriteAndFormatPrompts(void);
 extern void gpu_SetSegmentCellsGateBit(s32, s32, s32, s32);
 extern void cdrom_Update(void);
 
@@ -662,9 +664,9 @@ extern void eff_ClearInitFlag(void);
 extern void gpu_DrawDisplayModeOnLocalOtAndSync(void);
 extern s32 softbody_Create(Func80017A44Input *);
 extern void softbody_UpdateList(Unk80017FA0Rec *, s32);
-extern void func_8001945C(void);
-extern s32 func_80019488(void);
-extern void func_800194C0(s32);
+extern void pad_SetDefaultSavedButtonMappings(void);
+extern s32 pad_PackSavedButtonMappingLowNibbles(void);
+extern void pad_UnpackButtonMappingNibblesToCells(s32);
 /* No prototype: defined void (s32), but menu_RunPauseMenu calls it with no
  * argument. */
 extern void pad_Update();
@@ -707,12 +709,13 @@ extern void fighter_ConfigureCpuControl(void);
 extern s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
     Unk80101EC8Record *, s32 *);
 extern void fighter_Update(s32, PadState *);
-extern void func_80026DA4(void);
+extern void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void);
 extern void motion_SetFixedChannelBlock(MotionFrame *);
 extern s32 func_8002798C(Unk80101EC8Record *);
 /* fighter_TryDropQueuedHeadAtBone (17AFC.c, void (Unk80101EC8Record *)) has no
  * declaration: 175A4.c calls it implicitly, and any truthful declaration
- * changes func_80026DA4's register-save order. */
+ * changes fight_UpdatePairedInputTotalsEventsAndMidpointEffects's register-save
+ * order. */
 extern void fighter_ResolveBodyOverlap(void);
 extern void func_8002906C(void);
 extern s32 fighter_ProcessWeaponContacts(void);
@@ -749,10 +752,10 @@ extern s32 func_80033DF4(void);
 extern void func_80033FE4(void);
 extern void fight_RecordMatchResult(void);
 extern void fight_AdvanceMatch(void);
-extern void func_800344B4(void);
-extern void func_80034F88(void);
-extern void func_8003504C(void);
-extern void func_80035280(void);
+extern void ApplyPendingConfigAndInitializeMode(void);
+extern void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void);
+extern void ApplyWorkingRecordToPendingConfigAndInitializeMode(void);
+extern void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void);
 extern void cdrom_StartMixFade(s16, s32, s32, s32, s32);
 extern s32 cdrom_StartAudioEntry(s32);
 extern void cdrom_SetAudioRepeat(s16);
@@ -763,10 +766,10 @@ extern s32 memcard_PollSwEvents(void);
 extern s32 memcard_CountFreeBlocks(void);
 extern s32 memcard_HasFile(u8 *);
 extern s32 func_80037D14(s32, s32);
-extern s32 func_8003880C(void);
-extern s32 func_800388A8(void);
-extern s32 func_80038988(void);
-extern s32 *func_800392B8(void);
+extern s32 memcard_StartLoadOnceStepAndDrawSheetPair(void);
+extern s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void);
+extern s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void);
+extern s32 *GetSharedBuffer(void);
 extern void replay_Reset(void);
 extern void replay_BeginFrame(void);
 extern void replay_RecordModelDraw(s32, s32, s32 *, s16 *);
@@ -834,9 +837,9 @@ extern Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
 extern void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *);
 extern void node_BuildProjectedNodeList(Unk80045878Obj *);
 extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
-extern void func_80041188(s32, u8 *, u8 *, s32, MATRIX *);
-extern void func_80041398(s32);
-extern void func_80041430(s32, s32);
+extern void slot_BlendTwoPosesIntoNodeMatrices(s32, u8 *, u8 *, s32, MATRIX *);
+extern void PatchColorImmediatesAtListedCodeSites(s32);
+extern void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32, s32);
 extern void node_RebaseParents(s32, Unk80045878Node *, s32);
 extern Unk80045878Obj *slot_GetObject(s32);
 extern void node_UpdateWorldMatrix(Unk80101DF0Record *);
@@ -936,17 +939,19 @@ extern void gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
  * gpu_UnpackGridRecordsNodesAndCellRuns / softbody_CreateForNode pass it one.
  */
 extern void func_80052C10();
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s16 *, s32);
+extern s32 collision_TestSegmentExtendingShortStartWithWork(
+    s32 *, s32 *, s32 *, s16 *, s32);
 extern s32 collision_TestSegment(s32 *, s32 *, s32 *, s16 *);
 extern s32 collision_TestSegmentWithWork(s32 *, s32 *, s32 *, s16 *, s32);
 extern void collision_SetGrid(s32);
 extern void collision_RebaseGrid(s32);
-extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
-extern void func_800548DC(void);
-extern s32 func_80054F68(void);
+extern void motion_StartPlaybackAtIndexedBasePlusOffset(
+    s32, s32, s32, s32, s32, s32, s32, s32);
+extern void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void);
+extern s32 motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush(void);
 extern void motion_RebasePlayback(s32);
 extern s16 *motion_GetPlaybackViewAngles(void);
-extern s32 *func_8005508C(void);
+extern s32 *node_GetRootNodeMatrixTranslation(void);
 extern void fighter_ClearCpuTally(s32);
 extern void fighter_HalveCpuTally(s32);
 extern void fighter_InitCpuControl(s32, u16 *, u16 *);
@@ -1040,8 +1045,10 @@ extern s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *, s32);
 /* No prototype: defined old-style (63D2C.c) with an s16 parameter, which a
  * prototype cannot match. */
 extern s32 gpu_AddRotatedSpriteQuads();
-extern void func_80074220(Unk8006EACCRec *, s32);
-extern void func_80074488(Unk8006EACCRec *);
+extern void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
+    Unk8006EACCRec *, s32);
+extern void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
+    Unk8006EACCRec *);
 extern s32 InitRowMenuBlackBgResetFlow(s32);
 extern s32 menu_UpdateRowMenuStoreResult(s32, s32);
 extern s32 ResetFlowAndFetchRowTablePair(void);
@@ -1057,7 +1064,7 @@ extern void func_80077AE0(void);
 extern void func_80077B00(void);
 extern void SetFlowStateOne(void);
 extern s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32, s32);
-extern Unk8009BD24Block *func_80077D00(void);
+extern Unk8009BD24Block *GetWorkingRecord(void);
 extern s32 InitTimedSpriteSequence(s32);
 extern s32 StepTimedSpriteSequenceWithSkip(s32);
 extern s32 InitScrollingSpriteDisplay(s32);

@@ -443,7 +443,7 @@ s32 snd_LoadVabPack(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
     s16 i;
     s16 id;
 
-    if (func_80077D00()->unk14_0 == 3 && arg1 == 5) {
+    if (GetWorkingRecord()->unk14_0 == 3 && arg1 == 5) {
         return 0;
     }
     func_800858D0(0);

@@ -297,7 +297,7 @@ glabel object_UpdatePool
     /* 219DC 800311DC F8FF4224 */  addiu      $v0, $v0, -0x8
     /* 219E0 800311E0 2E0002AE */  sw         $v0, 0x2E($s0)
     /* 219E4 800311E4 38006226 */  addiu      $v0, $s3, 0x38
-    /* 219E8 800311E8 134D010C */  jal        func_8005344C
+    /* 219E8 800311E8 134D010C */  jal        collision_TestSegmentExtendingShortStartWithWork
     /* 219EC 800311EC 1000A2AF */   sw        $v0, 0x10($sp)
     /* 219F0 800311F0 21A04000 */  addu       $s4, $v0, $zero
     /* 219F4 800311F4 F8008012 */  beqz       $s4, .L800315D8

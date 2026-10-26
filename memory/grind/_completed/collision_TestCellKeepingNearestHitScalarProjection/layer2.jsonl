@@ -1,0 +1,1 @@
+{"func": "collision_TestCellKeepingNearestHitScalarProjection", "addr": "80053754", "verdict": "PASS", "body_hash": "e55bed05280c3dee", "body_kind": "c", "file": "main/3AB48", "reviewer": "cheat-reviewer:rev-f04", "scope": "cheat-cleanup", "date": "2026-10-06T07:57:30Z", "head": "72802430d", "notes": "", "renamed_from": ["func_80053754"]}

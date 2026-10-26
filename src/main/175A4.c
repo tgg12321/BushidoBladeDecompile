@@ -1,5 +1,6 @@
-/* One game function, func_80026DA4. .text 0x80026DA4 (ROM 0x175A4). Start
- * boundary: LEGACY (a tooling split, no evidence either way). */
+/* One game function, fight_UpdatePairedInputTotalsEventsAndMidpointEffects.
+ * .text 0x80026DA4 (ROM 0x175A4). Start boundary: LEGACY (a tooling split, no
+ * evidence either way). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -19,7 +20,7 @@
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107
  * @db41b28eee52969244a52cc269c8163d1ed8826a */
-void func_80026DA4(void) {
+void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
     Unk80101EC8Record *record;
     Unk80101EC8Record *var_1;
     Unk80101EC8Record *current;

@@ -1178,7 +1178,8 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
         SELWORK->f14.half[0] = 5;
         SELWORK->f36 = 0;
     }
-    func_80074220(arg1, SELWORK->f14.half[0]);
+    gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
+        arg1, SELWORK->f14.half[0]);
     if (SELWORK->f14.half[0] != 5) {
         menu_StepSelPanelSlides();
     }
@@ -1188,7 +1189,8 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
         case 0:
             if (i == 0) {
                 ret = menu_HandleSelPhase0CursorInput(arg0);
-                func_80074488(arg1);
+                menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
+                    arg1);
             }
             break;
         case 1:
@@ -1263,7 +1265,7 @@ s32 InitRowMenuBlackBgResetFlow(s32 a0) {
     return 1;
 }
 
-s32 func_80077860(void) {
+s32 DrawWhiteTileAndSheetsAndResetFlowOnPadMatch(void) {
     if (((s32(*)())gpu_DrawWhiteTileAndSheetsTestPadMask)() == 1) {
         D_800A35E4 = 0;
         return 1;
@@ -1409,7 +1411,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
     return s2;
 }
 
-Unk8009BD24Block *func_80077D00(void) { return &D_8009BD24; }
+Unk8009BD24Block *GetWorkingRecord(void) { return &D_8009BD24; }
 
 s32 reloc_RelocateFiveOffsetListsAndGetWord1(s32 *a0) {
     reloc_RelocateOffsetList(a0, a0[6]);

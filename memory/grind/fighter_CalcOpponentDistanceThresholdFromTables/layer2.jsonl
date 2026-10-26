@@ -1,0 +1,1 @@
+{"func": "fighter_CalcOpponentDistanceThresholdFromTables", "addr": "80056FE8", "verdict": "PASS", "body_hash": "22f9f50c4b4741e0", "body_kind": "c", "file": "main/3AB48", "reviewer": "a4a3abfacf949f31d", "scope": "cheat-cleanup", "date": "2026-10-16T15:14:07Z", "head": "0dbef6943", "notes": "", "renamed_from": ["func_80056FE8"]}

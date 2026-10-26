@@ -138,7 +138,7 @@ void InitSavedRecordAndResetCameraDistanceOffset(void) {
         var_1->times[i].unk_4 = 0x1A5E0;
     }
     D_80106A50.times[0].unk_4 = 0x6978;
-    func_8001945C();
+    pad_SetDefaultSavedButtonMappings();
 }
 
 void gpu_ResetGraphMode1(void) { ResetGraph(1); }

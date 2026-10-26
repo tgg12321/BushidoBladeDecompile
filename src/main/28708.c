@@ -499,7 +499,7 @@ extern u8 D_800A31FC;
 extern void memcard_RequestLoad(void);
 extern s32 memcard_Update(void);
 
-s32 func_8003880C(void) {
+s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
     s32 s0;
     s32 v0;
 
@@ -576,7 +576,7 @@ static u8 D_800A334C;
 static u8 D_800A3350;
 static u8 D_800A3354;
 
-s32 func_800388A8(void) {
+s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
     extern u8 D_800A3204;
     s32 result = 0;
     u32 var_1;
@@ -606,7 +606,7 @@ s32 func_800388A8(void) {
     return result;
 }
 
-s32 func_80038988(void) {
+s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     extern u8 D_800A3205;
     s32 result = 0;
     s32 v0;
@@ -775,7 +775,7 @@ end:
     return result;
 }
 
-s32 func_80038C70(void) {
+s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     extern u8 D_800A3207;
     extern u8 D_800A3206;
     extern void memcard_RequestLoad(void);
@@ -1095,7 +1095,7 @@ end:
     return result;
 }
 
-s32 *func_800392B8(void) { return (s32 *)D_800F33D8; }
+s32 *GetSharedBuffer(void) { return (s32 *)D_800F33D8; }
 
 void replay_Reset(void) {
     s32 i;
@@ -1302,7 +1302,8 @@ void replay_Start(void) {
 
 extern s32 collision_GetHitTag(void);
 
-void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
+void fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
+    Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
     s32 sp10[3];
     s32 sp20[3];
     s32 sp30[4];
@@ -1340,8 +1341,9 @@ extern u8 g_replay_replaying_event;
 
 void replay_PlayFrame(void) {
     MotionFrame work[2];
-    /* FAKE: frame layout - func_80041188 writes two MATRIXes (0x40 bytes); 0x88
-     * keeps the frame (MATRIX[2]: score 58; MATRIX[4] also differs) */
+    /* FAKE: frame layout - slot_BlendTwoPosesIntoNodeMatrices writes two
+     * MATRIXes (0x40 bytes); 0x88 keeps the frame (MATRIX[2]: score 58;
+     * MATRIX[4] also differs) */
     s32 sp120[34];
     s32 pos[3];
     s16 rot[3];
@@ -1397,7 +1399,7 @@ void replay_PlayFrame(void) {
         motion_DecodeFrame(
             (p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
         motion_ApplyRecordedPoseAdjustments(var_11, p, &work[0], &work[1]);
-        func_80041188(
+        slot_BlendTwoPosesIntoNodeMatrices(
             i, (u8 *)&work[0], (u8 *)&work[1], p->h12, (MATRIX *)sp120);
         pos[0] = p->h4;
         pos[1] = p->h6;
@@ -1424,7 +1426,8 @@ void replay_PlayFrame(void) {
         }
         fighter_UpdateBoneWorldData(
             var_11, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
-        func_8003984C(var_11, &out_b1, &out_b2);
+        fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
+            var_11, &out_b1, &out_b2);
         if (out_b1 != 1) {
             var_11->unk_B1 = out_b1;
             if (out_b2 != -1) {

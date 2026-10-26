@@ -2229,7 +2229,7 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
 
     if (mode == 0xF || mode == 0x1C || mode == 0x1D || mode == 0x1E ||
         mode == 0x1F || mode == 0x20 || mode == 0x21) {
-        func_80026DA4();
+        fight_UpdatePairedInputTotalsEventsAndMidpointEffects();
     } else if (mode == 0x11) {
         func_8002C0DC();
     } else {
@@ -4022,10 +4022,10 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
 }
 
 /* Per-frame update of the twelve 0x64-byte records at g_object_pool: velocity
- * turn, spin decay, gravity, collision test through func_8005344C, reflection
- * off the returned normal, func_80032854 cues, and the rest / re-hop logic.
- * Scratch vectors live in its layout of the scratchpad area at 0x1F8002B8
- * (Unk1F8002B8_8005344C). */
+ * turn, spin decay, gravity, collision test through
+ * collision_TestSegmentExtendingShortStartWithWork, reflection off the returned
+ * normal, func_80032854 cues, and the rest / re-hop logic. Scratch vectors live
+ * in its layout of the scratchpad area at 0x1F8002B8 (Unk1F8002B8_8005344C). */
 void object_UpdatePool(void) {
     Unk1F8002B8_8005344C *scr;
     Obj80106A78 *obj;
@@ -4044,8 +4044,9 @@ void object_UpdatePool(void) {
          * ordinary-c-judge-decidable) */
         s32 work;
         /* temp: the ratan2() heading of the velocity (turn block), then
-         * the func_8005344C() collision result (cleared when
-         * collision_GetHitTag() == 7) (Ruling 11, ordinary-c-judge-decidable)
+         * the collision_TestSegmentExtendingShortStartWithWork() collision
+         * result (cleared when collision_GetHitTag() == 7) (Ruling 11,
+         * ordinary-c-judge-decidable)
          */
         s32 temp;
 
@@ -4109,7 +4110,7 @@ void object_UpdatePool(void) {
         scr->unk00.z = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
         var_7 = scr->unk30;
-        temp = func_8005344C(
+        temp = collision_TestSegmentExtendingShortStartWithWork(
             &obj->pos.x, &scr->unk00.x, &scr->unk10.x, var_7, (s32)&scr->unk38);
         if (temp != 0 && collision_GetHitTag() == 7) {
             temp = 0;
@@ -4458,8 +4459,9 @@ void fight_UpdateBallisticRecords(void) {
             scr->unk00.x = base->unk_04.x + base->unk_1C.x;
             scr->unk00.y = base->unk_04.y + base->unk_1C.y;
             scr->unk00.z = base->unk_04.z + base->unk_1C.z;
-            if (func_8005344C(&base->unk_04.x, &scr->unk00.x, &scr->unk10.x,
-                              scr->unk30, (s32)&scr->unk38) != 0 ||
+            if (collision_TestSegmentExtendingShortStartWithWork(
+                    &base->unk_04.x, &scr->unk00.x, &scr->unk10.x, scr->unk30,
+                    (s32)&scr->unk38) != 0 ||
                 base->unk_04.y > base->unk_28) {
                 base->unk_00 = 0;
             } else {

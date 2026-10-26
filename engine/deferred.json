@@ -3,9 +3,9 @@
   "verified": "2026-08-24",
   "members": {
     "eff_StartCommand": "FAILED: sha1=699695d890f0570a3039af734ed84a6a7c44302c != oracle \u2014 ROLLED BACK. Build tail:",
-    "func_80038C70": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "memcard_StepSaveOverwriteAndFormatPrompts": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
     "fighter_ReadFrameMetadata": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
-    "func_80041188": "FAILED: sha1=3e9fe25b6909958246876089d1a153b794e89543 != oracle \u2014 ROLLED BACK. Build tail:",
+    "slot_BlendTwoPosesIntoNodeMatrices": "FAILED: sha1=3e9fe25b6909958246876089d1a153b794e89543 != oracle \u2014 ROLLED BACK. Build tail:",
     "func_8003D888": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "node_BuildIdToNodeMapWithDuplicates": "FAILED: sha1=e29f91cc3054aef4ec75be34376b4d386d8d4460 != oracle \u2014 ROLLED BACK. Build tail:",
     "func_80040D48": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
