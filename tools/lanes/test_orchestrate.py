@@ -520,12 +520,72 @@ class Tick(unittest.TestCase):
             self.assertTrue(o.tick(self.args))
         self.assertEqual(self.started, [])
         self.assertIn("naming waits for the naming backlog to change", out.getvalue())
-        self.assertIn("naming backlog", o.load_state()["waiting"])
+        self.assertEqual(o.load_state()["waiting"],
+                         "naming waits for the naming backlog to change")
         b["naming"][0]["note"] = "PROMPT READY"
         self.assertTrue(o.tick(self.args))
         self.assertEqual(self.started, ["/naming-session naming-a"])
         self.assertNotIn("no_progress_naming", o.load_state())
         self.assertNotIn("waiting", o.load_state())
+
+    def test_held_naming_when_away_keeps_polling(self):
+        b = bl(foundation=())
+        o.backlogs = lambda: b
+        state = st()
+        state["no_progress_naming"] = o.naming_hold(b)
+        o.write_state(state)
+        o.write_max(1)
+        o.write_json(o.PAUSED, {"naming": {"when_away": True}})
+        with redirect_stdout(io.StringIO()):
+            self.assertTrue(o.tick(self.args))
+            self.assertEqual(o.load_state()["waiting"],
+                             "naming waits for the naming backlog to change")
+            o.owner_away = lambda: True
+            self.assertTrue(o.tick(self.args))
+        self.assertEqual(self.started, [])
+
+    def test_naming_wait_joins_existing_away_wait(self):
+        b = bl(foundation=(("pins", "idea"),))
+        o.backlogs = lambda: b
+        state = st()
+        state["no_progress_naming"] = o.naming_hold(b)
+        o.write_state(state)
+        o.write_max(1)
+        o.write_json(o.PAUSED, {"pins": {"when_away": True}})
+        with redirect_stdout(io.StringIO()):
+            self.assertTrue(o.tick(self.args))
+        self.assertEqual(o.load_state()["waiting"],
+                         f"pins start when the owner is away ({o.AWAY_SECS // 60} min without input); "
+                         "naming waits for the naming backlog to change")
+        self.assertEqual(self.started, [])
+
+    def test_status_shows_waiting_only_for_live_runner(self):
+        reasons = ("naming waits for the naming backlog to change",
+                   "pins start when the owner is away (20 min without input)",
+                   "codex lane: usage limit")
+        for reason in reasons:
+            for runner, alive in ((123, True), (123, False), (None, True)):
+                with self.subTest(reason=reason, runner=runner, alive=alive):
+                    state = st()
+                    state.update(runner_pid=runner, waiting=reason)
+                    o.write_state(state)
+                    out = io.StringIO()
+                    with patch.object(o, "pid_alive", return_value=alive), redirect_stdout(out):
+                        o.main(["status"])
+                    lines = [line for line in out.getvalue().splitlines()
+                             if line.startswith("waiting:")]
+                    self.assertEqual(lines, [f"waiting: {reason}"] if runner and alive else [])
+
+    def test_status_omits_empty_or_missing_waiting(self):
+        for waiting in ({}, {"waiting": ""}, {"waiting": None}):
+            with self.subTest(waiting=waiting):
+                state = st()
+                state.update(runner_pid=123, **waiting)
+                o.write_state(state)
+                out = io.StringIO()
+                with patch.object(o, "pid_alive", return_value=True), redirect_stdout(out):
+                    o.main(["status"])
+                self.assertNotIn("waiting:", out.getvalue())
 
     def test_naming_hold_without_work_still_ends(self):
         for only, stages in ((None, ()), (None, ("landed",)), ("foundation", ("idea",))):
@@ -536,8 +596,11 @@ class Tick(unittest.TestCase):
                 state["no_progress_naming"] = o.naming_hold(b)
                 o.write_state(state)
                 o.write_max(1)
-                with patch.object(self.args, "only", only):
-                    self.assertFalse(o.tick(self.args))
+                o.write_json(o.PAUSED, {"naming": {"when_away": True}})
+                for away in (False, True):
+                    with self.subTest(away=away), patch.object(self.args, "only", only), \
+                            patch.object(o, "owner_away", return_value=away):
+                        self.assertFalse(o.tick(self.args))
         self.assertEqual(self.started, [])
 
     def test_naming_hold_preserves_drain_and_plain_pause(self):

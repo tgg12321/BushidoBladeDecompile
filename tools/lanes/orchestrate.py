@@ -42,7 +42,8 @@ under 90% (5 h) / 80% (week), the bridge is not BLOCKED, and its last two sessio
 land nothing (a main commit whose body has a line starting `Codex run:`); `codex on` re-arms
 that. An untracked `lane-<x>` session (from before a restart) is adopted, and keeps lane x busy,
 only while it works or, idle, still owns lane x in the registry. With nothing running it keeps polling only while work
-waits for the owner to be away, naming waits on a backlog change, or the codex lane waits on usage; attention: attention/index.json.
+waits for the owner to be away, naming waits on a backlog change, or the codex lane waits on
+usage; attention: attention/index.json.
 """
 from __future__ import annotations
 
@@ -1021,7 +1022,7 @@ def tick(args) -> bool:
     if "no_progress_naming" in st:
         unheld = dict(st)
         del unheld["no_progress_naming"]
-        if candidates(bl, reg, unheld, now, args.only, paused, away, live):
+        if candidates(bl, reg, unheld, now, args.only, paused, True, live):
             naming_wait = "naming waits for the naming backlog to change"
             wait = f"{wait}; {naming_wait}" if wait else naming_wait
     if wait:
@@ -1142,14 +1143,17 @@ def cmd_status(_args):
         ag = {}
     reg = read_json(REGISTRY, {"lanes": {}})
     runner = st.get("runner_pid")
+    running = bool(runner and pid_alive(runner))
     cx = read_codex()
     no_progress = list(st["no_progress"])
     if "no_progress_naming" in st:
         no_progress.append("naming (until the naming backlog changes)")
-    print(f"orchestrator {'running (pid %d)' % runner if runner and pid_alive(runner) else 'not running'}"
+    print(f"orchestrator {'running (pid %d)' % runner if running else 'not running'}"
           f", max {read_max()}, sessions {len(st['sessions'])}"
           + f", codex lane {'on' if cx.get('enabled') else 'off'}"
           + (f", not restarting: {', '.join(no_progress)}" if no_progress else ""))
+    if running and st.get("waiting"):
+        print(f"waiting: {st['waiting']}")
     now = time.time()
     for sid, slot in sorted(st["sessions"].items(), key=lambda kv: kv[1]["lane"]):
         mins = int((now - slot["started"]) / 60)
