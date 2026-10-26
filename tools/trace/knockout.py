@@ -33,9 +33,14 @@ FIELDS = ['func', 'ret', 'called', 'leak', 'vsync_live', 'reason', 'status',
           'baseline_sha1', 'stub_sha1']
 
 
+def write_text(path, text):
+    # Path.write_text(newline=) is Python 3.10+; open() takes it everywhere.
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(text)
+
+
 def write_json(path, obj):
-    Path(path).write_text(json.dumps(obj, indent=2) + '\n', encoding='utf-8',
-                          newline='\n')
+    write_text(path, json.dumps(obj, indent=2) + '\n')
 
 
 def read_json(path):
@@ -205,7 +210,7 @@ def summarize(out, funcs, returns, frames, scenario, codes, baseline_problem=Non
         writer = csv.DictWriter(f, fieldnames=FIELDS, delimiter='\t', lineterminator='\n')
         writer.writeheader()
         writer.writerows(rows)
-    (out / 'knockout.md').write_text('\n'.join(notes), encoding='utf-8', newline='\n')
+    write_text(out / 'knockout.md', '\n'.join(notes))
     # Seal capture manifests and the TSV too, so neither can silently be edited.
     inventory = {p.relative_to(out).as_posix(): runkit.sha1_file(str(p))
                  for p in sorted(out.rglob('*')) if p.is_file()}
