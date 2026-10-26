@@ -1,0 +1,27 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV (byte-identical to lib-versus-2p-kimigaura-1)	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6259	top menu: first frame Story Mode, last frame Vs. Mode (Select Battle Stage) named in the right panel (both byte-identical to lib-versus-2p-kimigaura-1)	6080:DOWN,6140:DOWN,6200:DOWN	capture.top_menu.first.png,capture.top_menu.last.png
+t_char	6260	6549	transition; no screen claim	6260:CROSS	-
+char_select	6550	6699	first frame Select Character, cursor 壱 on KANNUKI and cursor 弐 on GENGORO; last frame (6699) already Select Weapon, Katana named on both sides (both byte-identical to lib-versus-2p-kimigaura-1)	6600:CROSS,6640:CROSS(2P)	capture.char_select.first.png,capture.char_select.last.png
+weapon_select	6700	6999	first frame Select Weapon; last frame (6999) the screen dimmed to dark red (both byte-identical to lib-versus-2p-kimigaura-1)	6900:CROSS,6940:CROSS(2P)	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_stage	7000	7174	transition; no screen claim (its one screenshot, frame 7100, shows two crossed swords on black, byte-identical to lib-versus-2p-kimigaura-1)	-	capture.t_stage.mid.png
+stage_select	7175	7449	Select Battle Stage, first frame only (byte-identical to lib-versus-2p-kimigaura-1); LEFT at 7300 and CROSS at 7450 as in lib-versus-2p-kimigaura-1 (Kimigaura Coast)	7300:LEFT	capture.stage_select.first.png
+t_load	7450	8229	its last frame (8229) already shows the fight scene as at fight.first (byte-identical to lib-versus-2p-kimigaura-1)	7450:CROSS	capture.t_load.last.png
+fight	8230	8429	two fighters on a pale grey floor in front of a dark rock wall, WINS 00 / 00 WINS at the top (first frame byte-identical to lib-versus-2p-kimigaura-1); stage Kimigaura Coast per the stage_select inputs (as in lib-versus-2p-kimigaura-1, whose stage_select shots show it highlighted); no 2P input after 6940	-	capture.fight.first.png
+walk_0	8430	8509	P1 walks (DOWN held 60 frames); no screenshot	8430:DOWN/60	-
+kick_0	8510	8629	R2+CROSS; screenshots viewed: +15, 60; at +60 brown particles in front of P1, crouched with one arm forward; WINS 00 / 00 WINS; at +15 P1 crouched, no particles	8510:R2/4,8513:CROSS/4	capture.kick_0.0.png,capture.kick_0.15.png,capture.kick_0.30.png,capture.kick_0.60.png
+walk_1	8630	8709	P1 walks (DOWN held 60 frames); no screenshot	8630:DOWN/60	-
+kick_1	8710	8829	R2+CROSS; screenshots viewed: +60; at +60 brown particles in front of P1, crouched with one arm forward; WINS 00 / 00 WINS	8710:R2/4,8713:CROSS/4	capture.kick_1.0.png,capture.kick_1.15.png,capture.kick_1.30.png,capture.kick_1.60.png
+walk_2	8830	8909	P1 walks (DOWN held 60 frames); no screenshot	8830:DOWN/60	-
+kick_2	8910	9029	R2+CROSS; screenshots viewed: +60; at +60 brown particles in front of P1, crouched with one arm forward; WINS 00 / 00 WINS	8910:R2/4,8913:CROSS/4	capture.kick_2.0.png,capture.kick_2.15.png,capture.kick_2.30.png,capture.kick_2.60.png
+walk_3	9030	9109	P1 walks (DOWN held 60 frames); no screenshot	9030:DOWN/60	-
+kick_3	9110	9229	R2+CROSS; screenshots viewed: +15, 60; at +60 white particles in front of P1, crouched with one arm forward; WINS 00 / 00 WINS; at +15 P1 crouched, no particles	9110:R2/4,9113:CROSS/4	capture.kick_3.0.png,capture.kick_3.15.png,capture.kick_3.30.png,capture.kick_3.60.png
+walk_4	9230	9309	P1 walks (DOWN held 60 frames); no screenshot	9230:DOWN/60	-
+kick_4	9310	9429	R2+CROSS; screenshots listed, not described	9310:R2/4,9313:CROSS/4	capture.kick_4.0.png,capture.kick_4.15.png,capture.kick_4.30.png,capture.kick_4.60.png
+walk_5	9430	9509	P1 walks (DOWN held 60 frames); no screenshot	9430:DOWN/60	-
+kick_5	9510	9629	R2+CROSS; screenshots viewed: +60; at +60 white particles in front of P1, crouched with one arm forward; WINS 00 / 00 WINS	9510:R2/4,9513:CROSS/4	capture.kick_5.0.png,capture.kick_5.15.png,capture.kick_5.30.png,capture.kick_5.60.png
+walk_6	9630	9709	P1 walks (DOWN held 60 frames); no screenshot	9630:DOWN/60	-
+kick_6	9710	9829	R2+CROSS; screenshots listed, not described	9710:R2/4,9713:CROSS/4	capture.kick_6.0.png,capture.kick_6.15.png,capture.kick_6.30.png,capture.kick_6.60.png
+walk_7	9830	9909	P1 walks (DOWN held 60 frames); no screenshot	9830:DOWN/60	-
+kick_7	9910	10059	R2+CROSS; screenshots viewed: +60; at +60 white particles in front of P1, crouched with one arm forward; WINS 00 / 00 WINS; last frame (10059): both fighters standing apart, WINS 00 / 00 WINS	9910:R2/4,9913:CROSS/4	capture.kick_7.0.png,capture.kick_7.15.png,capture.kick_7.30.png,capture.kick_7.60.png,capture.last.png
