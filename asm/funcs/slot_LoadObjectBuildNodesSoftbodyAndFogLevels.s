@@ -3,7 +3,7 @@ glabel slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* 30D14 80040514 1400B1AF */  sw         $s1, 0x14($sp)
     /* 30D18 80040518 21888000 */  addu       $s1, $a0, $zero
     /* 30D1C 8004051C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 30D20 80040520 1E16010C */  jal        func_80045878
+    /* 30D20 80040520 1E16010C */  jal        slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock
     /* 30D24 80040524 1000B0AF */   sw        $s0, 0x10($sp)
     /* 30D28 80040528 21804000 */  addu       $s0, $v0, $zero
     /* 30D2C 8004052C 80881100 */  sll        $s1, $s1, 2

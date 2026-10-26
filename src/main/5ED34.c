@@ -1,10 +1,11 @@
-/* func_8006E534..func_80073200. .text 0x8006E534 (ROM 0x5ED34). Start boundary:
- * G8. Compiled -G8 (Q10, Q44, Q54): the original bytes reach the small globals
- * 0x800A32E8..0x800A35CA straight off $gp, which the original compiler emits
- * only at -G8, and no function outside this range gp-accesses any of them.
- * gpu_LoadVramBottomStrip, func_8006E950, func_8006EA28 and
- * gpu_AddPanelGridTile have no gp access and compile identically at -G8 and -G0
- * (Q54). */
+/* InitDisplayStateLoadPackAndSetEntryFlags..gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer.
+ * .text 0x8006E534 (ROM 0x5ED34). Start boundary: G8. Compiled -G8 (Q10, Q44,
+ * Q54): the original bytes reach the small globals 0x800A32E8..0x800A35CA
+ * straight off $gp, which the original compiler emits only at -G8, and no
+ * function outside this range gp-accesses any of them. gpu_LoadVramBottomStrip,
+ * gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip,
+ * resource_RelocateNineOffsetListsAndLoadVabPack and gpu_AddPanelGridTile have
+ * no gp access and compile identically at -G8 and -G0 (Q54). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -58,7 +59,8 @@ static GpuDb *D_800A35C0;
 static Unk800A35C4Rec *D_800A35C4;
 static s16 D_800A35C8[2];
 
-s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
+s32 InitDisplayStateLoadPackAndSetEntryFlags(
+    s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     RECT rect;
     s16 i;
 
@@ -77,26 +79,32 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
 
     switch (D_800A35BC) {
     case 0:
-        func_8006E950(5, (Unk8006E950Head *)D_800A356C);
+        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+            5, (Unk8006E950Head *)D_800A356C);
         break;
     case 4:
     case 6:
-        func_8006E950(3, (Unk8006E950Head *)D_800A356C);
+        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+            3, (Unk8006E950Head *)D_800A356C);
         break;
     case 2:
         if (D_800A3568->unk14_17) {
-            func_8006E950(3, (Unk8006E950Head *)D_800A356C);
+            gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+                3, (Unk8006E950Head *)D_800A356C);
         } else {
-            func_8006E950(4, (Unk8006E950Head *)D_800A356C);
+            gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+                4, (Unk8006E950Head *)D_800A356C);
         }
         break;
     case 1:
     case 3:
-        func_8006E950(4, (Unk8006E950Head *)D_800A356C);
+        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+            4, (Unk8006E950Head *)D_800A356C);
         break;
     }
 
-    D_800A356C = func_8006EA28((Unk8006EA28Rec *)D_800A356C);
+    D_800A356C = resource_RelocateNineOffsetListsAndLoadVabPack(
+        (Unk8006EA28Rec *)D_800A356C);
     D_800A356C = gpu_InitPrimBufferPair(D_800A356C, D_800A35AC);
     D_800A3560.word = -1;
     D_800A3570 = 0;
@@ -144,7 +152,9 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     return 1;
 }
 
-Unk8006E49CRec *func_8006E8AC(s32 a0) { return &D_800A35AC[a0]; }
+Unk8006E49CRec *gpu_GetIndexedPrimBufferRecord(s32 a0) {
+    return &D_800A35AC[a0];
+}
 
 void gpu_LoadVramBottomStrip(Unk8006E950Head *a0) {
     Unk8009BD24Block *p;
@@ -165,7 +175,8 @@ void gpu_LoadVramBottomStrip(Unk8006E950Head *a0) {
     DrawSync(0);
 }
 
-void func_8006E950(s32 a0, Unk8006E950Head *a1) {
+void gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+    s32 a0, Unk8006E950Head *a1) {
     s32 s3;
     RECT rect;
 
@@ -193,7 +204,7 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
     gpu_LoadVramBottomStrip(a1);
 }
 
-s32 func_8006EA28(Unk8006EA28Rec *a0) {
+s32 resource_RelocateNineOffsetListsAndLoadVabPack(Unk8006EA28Rec *a0) {
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_54);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_58);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_5C);
@@ -207,10 +218,10 @@ s32 func_8006EA28(Unk8006EA28Rec *a0) {
     return a0->unk_00.unk_04;
 }
 
-void func_8006EC0C(void);
-void func_8006F528(Unk8006EACCRec *);
+void StepSlideProgressCommitPendingStateAndQueueSound(void);
+void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *);
 
-s32 func_8006EACC(s32 arg0, s32 arg1) {
+s32 StepSlideBuildFrameRecordAndDispatchStateHandler(s32 arg0, s32 arg1) {
     Unk8006EACCRec sp10;
     Unk8006E49CRec *temp_v0;
     s32 temp_v1;
@@ -221,11 +232,11 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     if (D_800A35BC == 2) {
         D_800A354C = arg1 & 0xFFFF;
     }
-    func_8006EC0C();
+    StepSlideProgressCommitPendingStateAndQueueSound();
     temp_v1 = D_800A35C4->unk_0C + 1;
     D_800A35C4->unk_08 = D_800A35C4->unk_08 + 1;
     D_800A35C4->unk_0C = temp_v1;
-    temp_v0 = func_8006E8AC(temp_v1 & 1);
+    temp_v0 = gpu_GetIndexedPrimBufferRecord(temp_v1 & 1);
     sp10.unk_00.v8006EA28 = D_800A35A8;
     sp10.unk_04.unk_00 = temp_v0->unk_00;
     sp10.unk_04.unk_08 = temp_v0->unk_08;
@@ -237,13 +248,13 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     sp10.unk_04.unk_1C = temp_v0->unk_1C;
     sp10.unk_24 = temp_v0->unk_20;
     if ((u16)(D_800A3580 - 2) >= 2U) {
-        func_8006F528(&sp10);
+        gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(&sp10);
     }
     D_8009BC1C[D_800A3580](&sp10);
     return D_800A35A0;
 }
 
-void func_8006EC0C(void) {
+void StepSlideProgressCommitPendingStateAndQueueSound(void) {
     switch (D_800A3578 & 0xFF) {
     case 1:
     case 3:
@@ -274,7 +285,7 @@ extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern RECT D_800A32F4;
 
-void func_8006ECF4(Unk8006EACCRec *arg0) {
+void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     Unk8006ECF4Rec *s3;
     Unk8009B0E0Record *s0;
@@ -390,9 +401,11 @@ void gpu_AddScreenDarken(Unk8006EACCRec *arg0) {
 }
 
 extern void gpu_AddGradientPanel(Unk8006EACCRec *);
-extern void func_80073200(Unk8006EACCRec *);
+extern void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
+    Unk8006EACCRec *);
 
-void func_8006F100(Unk8006EACCRec *arg0) {
+void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
+    Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     s32 i;
     Unk8009B0E0Record **base;
@@ -412,9 +425,9 @@ void func_8006F100(Unk8006EACCRec *arg0) {
         } else {
             gpu_AddScreenDarken(arg0);
         }
-        func_8006ECF4(arg0);
+        gpu_UploadAndDrawSelectedEntryQuads(arg0);
         gpu_AddGradientPanel(arg0);
-        func_80073200(arg0);
+        gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(arg0);
         return;
     }
 
@@ -480,7 +493,7 @@ void func_8006F100(Unk8006EACCRec *arg0) {
     D_800A355C++;
 }
 
-void func_8006F528(Unk8006EACCRec *arg0) {
+void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     RECT rect;
     Unk8009B0E0Record **var_2;
@@ -618,7 +631,8 @@ void func_8006F528(Unk8006EACCRec *arg0) {
 }
 
 extern void menu_UpdateEntryGridCursors(Unk8006EACCRec *);
-extern void func_80073200(Unk8006EACCRec *);
+extern void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
+    Unk8006EACCRec *);
 
 void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
@@ -776,11 +790,11 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
      * +0x18 is the DR_MODE cursor unk_04.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_2, 1);
     menu_UpdateEntryGridCursors(arg0);
-    func_8006ECF4(arg0);
+    gpu_UploadAndDrawSelectedEntryQuads(arg0);
     D_800A32E8 = D_800A3560.rec[1].unk1;
     D_800A32E9 = D_800A3554;
     gpu_AddGradientPanel(arg0);
-    func_80073200(arg0);
+    gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(arg0);
 }
 
 void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
@@ -966,9 +980,10 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
 }
 
 extern void menu_UpdateRowCursors(Unk8006EACCRec *a0, Unk8007352CRec *s);
-extern void func_8006ECF4(Unk8006EACCRec *);
+extern void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *);
 extern void gpu_AddGradientPanel(Unk8006EACCRec *);
-extern void func_80073200(Unk8006EACCRec *);
+extern void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
+    Unk8006EACCRec *);
 
 typedef struct Unk80070C70Rec {
     s16 sp48;
@@ -1058,9 +1073,9 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     menu_UpdateRowCursors(arg0, &var_1);
-    func_8006ECF4(arg0);
+    gpu_UploadAndDrawSelectedEntryQuads(arg0);
     gpu_AddGradientPanel(arg0);
-    func_80073200(arg0);
+    gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(arg0);
 }
 
 void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
@@ -1361,7 +1376,8 @@ s32 func_80071C20(void) {
     return v1;
 }
 
-void func_80071C4C(Unk8006EACCRec *arg0) {
+void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections(
+    Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     s32 i;
     Unk8009B0E0Record **base;
@@ -1687,7 +1703,7 @@ void menu_UpdateChoiceGrid(
     }
 end:
     gpu_AddGradientPanel(arg0);
-    func_80073200(arg0);
+    gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(arg0);
     snd_FlushSoundQueue();
 }
 
@@ -1838,7 +1854,7 @@ TILE *gpu_AddPanelGridTile(s32 a0, TILE *a1) {
     return a1 + 1;
 }
 
-TILE *func_80072FCC(s32 arg0, TILE *a1) {
+TILE *gpu_AddBrownOrBlackPanelGridTile(s32 arg0, TILE *a1) {
     SetTile(a1);
     if (D_800A3580 < 4) {
         a1->r0 = 0x46;
@@ -1886,24 +1902,26 @@ void gpu_AddPanelGrid(Unk8006EACCRec *arg0) {
         p->y0 = 0x32;
         p->w = 5 - i;
         p->h = 0x3F;
-        p = func_80072FCC(D_800A3580, p);
+        p = gpu_AddBrownOrBlackPanelGridTile(D_800A3580, p);
     }
     for (i = 0; i < 5; i++) {
         p->x0 = 0x211 - i * 0x20;
         p->y0 = 0x32;
         p->w = 5 - i;
         p->h = 0x3F;
-        p = func_80072FCC(D_800A3580, p);
+        p = gpu_AddBrownOrBlackPanelGridTile(D_800A3580, p);
     }
     arg0->unk_04.unk_10 = p;
 }
 
-/* func_80073200 - draws three sprite-sheet layers: in modes D_800A3580 < 4,
- * four cells of var_1[4]'s sheet through gpu_AddScaledSpriteQuads; then
- * var_1[5]'s sheet and, for D_800A3580 < 2, the var_1[10..13] sheet picked by
- * the frame counter at D_800A35C4->unk_08 (incremented in func_8006EACC), each
+/* gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer - draws three
+ * sprite-sheet layers: in modes D_800A3580 < 4, four cells of var_1[4]'s sheet
+ * through gpu_AddScaledSpriteQuads; then var_1[5]'s sheet and, for D_800A3580 <
+ * 2, the var_1[10..13] sheet picked by the frame counter at D_800A35C4->unk_08
+ * (incremented in StepSlideBuildFrameRecordAndDispatchStateHandler), each
  * through gpu_AddSpriteCells, with a draw-mode primitive per layer. */
-void func_80073200(Unk8006EACCRec *arg0) {
+void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
+    Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     Unk8009B0E0Record **var_1;
     /* FAKE: the holder between the header's cells and s.table; stored directly:

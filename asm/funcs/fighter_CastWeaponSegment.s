@@ -124,7 +124,7 @@ glabel fighter_CastWeaponSegment
     /* 1AE30 8002A630 0100E42E */  sltiu      $a0, $s7, 0x1
     /* 1AE34 8002A634 0B000524 */  addiu      $a1, $zero, 0xB
     /* 1AE38 8002A638 C800A626 */  addiu      $a2, $s5, 0xC8
-    /* 1AE3C 8002A63C 15CA000C */  jal        func_80032854
+    /* 1AE3C 8002A63C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1AE40 8002A640 F800A726 */   addiu     $a3, $s5, 0xF8
     /* 1AE44 8002A644 18005202 */  mult       $s2, $s2
   .L8002A648:
@@ -420,7 +420,7 @@ glabel fighter_CastWeaponSegment
     /* 1B28C 8002AA8C 0100E42E */   sltiu     $a0, $s7, 0x1
     /* 1B290 8002AA90 0A000524 */  addiu      $a1, $zero, 0xA
     /* 1B294 8002AA94 21300002 */  addu       $a2, $s0, $zero
-    /* 1B298 8002AA98 15CA000C */  jal        func_80032854
+    /* 1B298 8002AA98 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1B29C 8002AA9C 21380000 */   addu      $a3, $zero, $zero
   .L8002AAA0:
     /* 1B2A0 8002AAA0 3801A98F */  lw         $t1, 0x138($sp)

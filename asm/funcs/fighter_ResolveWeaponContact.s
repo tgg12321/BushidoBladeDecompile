@@ -94,12 +94,12 @@ glabel fighter_ResolveWeaponContact
     /* 18D20 80028520 01000524 */  addiu      $a1, $zero, 0x1
     /* 18D24 80028524 21304002 */  addu       $a2, $s2, $zero
     /* 18D28 80028528 04000486 */  lh         $a0, 0x4($s0)
-    /* 18D2C 8002852C 15CA000C */  jal        func_80032854
+    /* 18D2C 8002852C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18D30 80028530 21380000 */   addu      $a3, $zero, $zero
     /* 18D34 80028534 25000524 */  addiu      $a1, $zero, 0x25
     /* 18D38 80028538 21304002 */  addu       $a2, $s2, $zero
     /* 18D3C 8002853C 04000486 */  lh         $a0, 0x4($s0)
-    /* 18D40 80028540 15CA000C */  jal        func_80032854
+    /* 18D40 80028540 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18D44 80028544 21380000 */   addu      $a3, $zero, $zero
     /* 18D48 80028548 C0A10008 */  j          .L80028700
     /* 18D4C 8002854C 2110C002 */   addu      $v0, $s6, $zero
@@ -112,12 +112,12 @@ glabel fighter_ResolveWeaponContact
     /* 18D64 80028564 01000524 */  addiu      $a1, $zero, 0x1
     /* 18D68 80028568 21304002 */  addu       $a2, $s2, $zero
     /* 18D6C 8002856C 04000486 */  lh         $a0, 0x4($s0)
-    /* 18D70 80028570 15CA000C */  jal        func_80032854
+    /* 18D70 80028570 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18D74 80028574 21380000 */   addu      $a3, $zero, $zero
     /* 18D78 80028578 25000524 */  addiu      $a1, $zero, 0x25
     /* 18D7C 8002857C 21304002 */  addu       $a2, $s2, $zero
     /* 18D80 80028580 04000486 */  lh         $a0, 0x4($s0)
-    /* 18D84 80028584 15CA000C */  jal        func_80032854
+    /* 18D84 80028584 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18D88 80028588 21380000 */   addu      $a3, $zero, $zero
     /* 18D8C 8002858C 88026386 */  lh         $v1, 0x288($s3)
     /* 18D90 80028590 05000224 */  addiu      $v0, $zero, 0x5
@@ -163,12 +163,12 @@ glabel fighter_ResolveWeaponContact
   .L80028620:
     /* 18E20 80028620 21304002 */  addu       $a2, $s2, $zero
     /* 18E24 80028624 04000486 */  lh         $a0, 0x4($s0)
-    /* 18E28 80028628 15CA000C */  jal        func_80032854
+    /* 18E28 80028628 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18E2C 8002862C 21380000 */   addu      $a3, $zero, $zero
     /* 18E30 80028630 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 18E34 80028634 21304002 */  addu       $a2, $s2, $zero
     /* 18E38 80028638 04000486 */  lh         $a0, 0x4($s0)
-    /* 18E3C 8002863C 15CA000C */  jal        func_80032854
+    /* 18E3C 8002863C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18E40 80028640 21380000 */   addu      $a3, $zero, $zero
     /* 18E44 80028644 2C002016 */  bnez       $s1, .L800286F8
     /* 18E48 80028648 1A000224 */   addiu     $v0, $zero, 0x1A

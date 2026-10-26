@@ -10,7 +10,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D680 8001CE80 83378490 */  lbu        $a0, %lo(D_800A3783)($a0)
     /* D684 8001CE84 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* D688 8001CE88 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* D68C 8001CE8C 4779010C */  jal        func_8005E51C
+    /* D68C 8001CE8C 4779010C */  jal        gpu_DrawDecrementedSingleSideCounter
     /* D690 8001CE90 01000624 */   addiu     $a2, $zero, 0x1
     /* D694 8001CE94 D5750008 */  j          .L8001D754
     /* D698 8001CE98 00000000 */   nop
@@ -54,7 +54,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D724 8001CF24 E238A590 */  lbu        $a1, %lo(D_800A38E2)($a1)
     /* D728 8001CF28 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* D72C 8001CF2C B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
-    /* D730 8001CF30 0576010C */  jal        func_8005D814
+    /* D730 8001CF30 0576010C */  jal        gpu_DrawTimeFieldsAndDecimalCounter
     /* D734 8001CF34 01000724 */   addiu     $a3, $zero, 0x1
     /* D738 8001CF38 D5750008 */  j          .L8001D754
     /* D73C 8001CF3C 00000000 */   nop
@@ -76,7 +76,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D770 8001CF70 D337A590 */  lbu        $a1, %lo(D_800A37D3)($a1)
     /* D774 8001CF74 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* D778 8001CF78 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
-    /* D77C 8001CF7C 2678010C */  jal        func_8005E098
+    /* D77C 8001CF7C 2678010C */  jal        gpu_DrawTwoDigitCounterWithOptionalSecondSide
     /* D780 8001CF80 01000724 */   addiu     $a3, $zero, 0x1
     /* D784 8001CF84 D5750008 */  j          .L8001D754
     /* D788 8001CF88 00000000 */   nop
@@ -136,7 +136,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D84C 8001D04C 02000424 */   addiu     $a0, $zero, 0x2
     /* D850 8001D050 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* D854 8001D054 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* D858 8001D058 A67E010C */  jal        func_8005FA98
+    /* D858 8001D058 A67E010C */  jal        gpu_DrawSelectedStretchedSpritePair
     /* D85C 8001D05C 01000624 */   addiu     $a2, $zero, 0x1
     /* D860 8001D060 02004104 */  bgez       $v0, .L8001D06C
     /* D864 8001D064 00000000 */   nop
@@ -230,7 +230,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D9B8 8001D1B8 01000424 */   addiu     $a0, $zero, 0x1
     /* D9BC 8001D1BC 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* D9C0 8001D1C0 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* D9C4 8001D1C4 A67E010C */  jal        func_8005FA98
+    /* D9C4 8001D1C4 A67E010C */  jal        gpu_DrawSelectedStretchedSpritePair
     /* D9C8 8001D1C8 01000624 */   addiu     $a2, $zero, 0x1
     /* D9CC 8001D1CC 02004104 */  bgez       $v0, .L8001D1D8
     /* D9D0 8001D1D0 00000000 */   nop
@@ -612,7 +612,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DF40 8001D740 AB38A590 */  lbu        $a1, %lo(D_800A38AB)($a1)
     /* DF44 8001D744 25186200 */  or         $v1, $v1, $v0
     /* DF48 8001D748 002B0500 */  sll        $a1, $a1, 12
-    /* DF4C 8001D74C 727C010C */  jal        func_8005F1C8
+    /* DF4C 8001D74C 727C010C */  jal        gpu_DrawPairedMarkRowsAndTimeFields
     /* DF50 8001D750 25286500 */   or        $a1, $v1, $a1
   .L8001D754:
     /* DF54 8001D754 02004104 */  bgez       $v0, .L8001D760

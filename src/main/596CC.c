@@ -77,7 +77,8 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     temp_s0 = arg0 + 0x58;
     D_800A3500 = temp_s0;
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
-    func_8006E950(2, (Unk8006E950Head *)D_800A3500);
+    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+        2, (Unk8006E950Head *)D_800A3500);
     D_800A372C = D_800A3500;
     var_2 = reloc_RelocateTwelveListsAndLoadVabPack(D_800A3500);
     D_800A3500 = var_2;

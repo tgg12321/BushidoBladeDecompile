@@ -11,7 +11,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 59794 80068F94 A81A010C */  jal        resource_FreeSlotsAndBlocksAndInvalidateEntryCache
     /* 59798 80068F98 2188A000 */   addu      $s1, $a1, $zero
     /* 5979C 80068F9C 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
-    /* 597A0 80068FA0 54BA010C */  jal        func_8006E950
+    /* 597A0 80068FA0 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 597A4 80068FA4 02000424 */   addiu     $a0, $zero, 0x2
     /* 597A8 80068FA8 3404848F */  lw         $a0, %gp_rel(D_800A3500)($gp)
     /* 597AC 80068FAC 00000000 */  nop

@@ -29,7 +29,7 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
   .L8002C684:
     /* 1CE84 8002C684 05008214 */  bne        $a0, $v0, .L8002C69C
     /* 1CE88 8002C688 00000000 */   nop
-    /* 1CE8C 8002C68C 37B0000C */  jal        func_8002C0DC
+    /* 1CE8C 8002C68C 37B0000C */  jal        fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
     /* 1CE90 8002C690 00000000 */   nop
     /* 1CE94 8002C694 03B20008 */  j          .L8002C80C
     /* 1CE98 8002C698 00000000 */   nop

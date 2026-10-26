@@ -1,5 +1,8 @@
-/* 17 game functions: UI drawing (func_8005C8A8, func_8005D554,
- * func_8005FA98, func_800600C8, func_80060768, ...). .text 0x8005C8A8 (ROM
+/* 17 game functions: UI drawing (gpu_DrawModeSizedPanelWithSelectedCellOpaque,
+ * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle,
+ * gpu_DrawSelectedStretchedSpritePair,
+ * gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite,
+ * gpu_DrawIndexedCellsDigitPairsAndGrowingBars, ...). .text 0x8005C8A8 (ROM
  * 0x4D0A8). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #136): no
  * direct call crosses the cut; the static D_800A3418 and the .sdata
  * D_800A3264..D_800A32B6 (RECTs and draw records) are used only here and
@@ -22,12 +25,14 @@ extern Unk8009B400Record D_8009B23C[12];
 extern Unk8009B400Record D_8009B29C[2];
 extern Unk8009B400Record *D_8009B2AC[4];
 /* AddPrim has no prototype here: this TU called it as an implicit-int function.
- * With PsyQ's void AddPrim(void *, void *), func_80060768's return value is
- * computed after its last AddPrim's dead sp1C bump and a load-delay nop is
- * added (192 -> 193 insns). */
+ * With PsyQ's void AddPrim(void *, void *),
+ * gpu_DrawIndexedCellsDigitPairsAndGrowingBars's return value is computed after
+ * its last AddPrim's dead sp1C bump and a load-delay nop is added (192 -> 193
+ * insns). */
 extern int AddPrim();
 
-s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
+s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
+    s32 mode, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005C8A8Rec *var_0 = (Unk8005C8A8Rec *)arg2;
     Unk8007352CRec s;
     TILE *tile;
@@ -314,15 +319,17 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
     return size;
 }
 
-/* 0x8009B2C8: two rows of five sprite-sheet headers (func_8005D46C draws
- * headers 0 / 1 of row idx with the cells at D_8009B340 / D_8009B358;
- * func_8005D554 headers 2 and 3 / 4 with D_8009B388's), then the cells: three
- * under header 0 (count 3), six under header 1 (count 6). */
+/* 0x8009B2C8: two rows of five sprite-sheet headers
+ * (gpu_DrawFixedSpritePairWithSelectedSheets draws headers 0 / 1 of row idx
+ * with the cells at D_8009B340 / D_8009B358;
+ * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle headers 2 and 3 / 4 with
+ * D_8009B388's), then the cells: three under header 0 (count 3), six under
+ * header 1 (count 6). */
 extern Unk8009B0E0Record D_8009B2C8[2][5];
 extern Unk8009B400Record D_8009B340[3];
 extern Unk8009B400Record D_8009B358[6];
 
-s32 func_8005D46C(s32 arg0, s32 arg1) {
+s32 gpu_DrawFixedSpritePairWithSelectedSheets(s32 arg0, s32 arg1) {
     Unk8007352CRec s;
     s32 idx;
     idx = arg1;
@@ -353,7 +360,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     return gpu_AddScaledSpriteQuads(&s, 0);
 }
 
-s32 func_8005D554(s32 arg0, s32 arg1) {
+s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 arg0, s32 arg1) {
     Unk8007352CRec s;
     s32 i;
     u32 base_x;
@@ -448,11 +455,12 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     return var_4;
 }
 
-/* func_8005D814's 7 sprite cells: [0..2] drawn with header D_8009B398[0],
- * [3..4] with [1], [5] / [6] with [2] / [3] */
+/* gpu_DrawTimeFieldsAndDecimalCounter's 7 sprite cells: [0..2] drawn with
+ * header D_8009B398[0], [3..4] with [1], [5] / [6] with [2] / [3] */
 extern Unk8009B400Record D_8009B3C8[7];
 
-s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 gpu_DrawTimeFieldsAndDecimalCounter(
+    Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
     Unk8007352CRec s;
     s16 var_2[3];
@@ -616,7 +624,8 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
 extern Unk8009B400Record D_8009B488;
 
-s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
+    s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
     Unk8007352CRec s;
     s16 d[2];
@@ -731,8 +740,8 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     return end_off - arg2;
 }
 
-s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
-    return func_8005E098(-1, a0 - 1, a1, a2);
+s32 gpu_DrawDecrementedSingleSideCounter(s32 a0, s32 a1, s32 a2) {
+    return gpu_DrawTwoDigitCounterWithOptionalSecondSide(-1, a0 - 1, a1, a2);
 }
 
 extern Unk8009B0E0Record D_8009ADB4;
@@ -757,7 +766,7 @@ extern Unk8009B400Record D_8009B57C[2];
 extern u8 D_8009B58C[];
 extern u8 D_800A3270[];
 
-s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
+s32 gpu_DrawPackedComparisonRowsAndTotals(u32 arg0, s32 arg1, s32 arg2) {
     Unk8005E54CRec *var_0 = (Unk8005E54CRec *)arg1;
     /* An s16 pair: the round rows' values, then the totals under them. The
        target addresses both through the one frame slot sp+0x18 (a separate
@@ -766,9 +775,10 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 var_2[2];
     Unk8007352CRec s;
     /* FAKE: frame layout: unused; keeps the 8 untouched bytes at sp+0x58 where
-     * the siblings func_8005D814 and func_8005F1C8 keep a real s16[3]
-     * array (Q35, no-new-park-categories phantom-frame-slot pad family).
-     * Removed: score 47 */
+     * the siblings gpu_DrawTimeFieldsAndDecimalCounter and
+     * gpu_DrawPairedMarkRowsAndTimeFields keep a real s16[3] array (Q35,
+     * no-new-park-categories phantom-frame-slot pad family). Removed: score 47
+     */
     volatile s16 digit[3];
     TILE *tile;
     s32 cur;
@@ -781,7 +791,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* i counts the players (first loop) and then the rounds; j is the player
        and k the mark; each phase restarts them loop to loop as plain indices,
        the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
-       and its row countdown (Q51), as func_8005E098 / func_8005F1C8 do */
+       and its row countdown (Q51), as
+       gpu_DrawTwoDigitCounterWithOptionalSecondSide /
+       gpu_DrawPairedMarkRowsAndTimeFields do */
     /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 i;
     s16 j;
@@ -1049,7 +1061,8 @@ extern Unk8009B400Record D_8009B5B8[2][2];
 extern Unk8009B400Record D_8009B5D8[2];
 extern Unk8009B400Record D_8009B5E8;
 
-s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 gpu_DrawPairedMarkRowsAndTimeFields(
+    Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
     Unk8007352CRec s;
     s16 d[3];
@@ -1224,15 +1237,16 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     return end_off - arg2;
 }
 
-/* func_8005FA98's sheets: three headers at 0x8009B610 (the second draw, header
- * arg0, its one cell at 0x8009B634) and three at 0x8009B63C (counts 2 / 1 / 4)
- * whose cells follow at 0x8009B660 (0-1, 2, 3-6). */
+/* gpu_DrawSelectedStretchedSpritePair's sheets: three headers at 0x8009B610
+ * (the second draw, header arg0, its one cell at 0x8009B634) and three at
+ * 0x8009B63C (counts 2 / 1 / 4) whose cells follow at 0x8009B660 (0-1, 2, 3-6).
+ */
 extern Unk8009B0E0Record D_8009B610[3];
 extern Unk8009B400Record D_8009B634;
 extern Unk8009B0E0Record D_8009B63C[3];
 extern Unk8009B400Record D_8009B660[7];
 
-s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
+s32 gpu_DrawSelectedStretchedSpritePair(s32 arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
     s32 cursor = arg1;
     /* FAKE: the returned size is computed as the chunk end minus its start
@@ -1272,7 +1286,7 @@ extern RECT D_800A327C;
 extern RECT D_800A3284;
 extern s32 D_800A3278;
 
-void func_8005FBC8(s32 arg0, u8 *arg1) {
+void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(s32 arg0, u8 *arg1) {
     RECT r1, r2;
     s32 s0;
     s0 = cdrom_GetFileIndex(2, arg0 + 0x33);
@@ -1401,13 +1415,15 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 arg1) {
     return end_off - arg0;
 }
 
-/* func_800600C8's sheets: the frame header (3 cells, D_8009B758) and the digit
- * header (1 cell; one of the ten digit cells D_8009B708). */
+/* gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite's sheets: the frame
+ * header (3 cells, D_8009B758) and the digit header (1 cell; one of the ten
+ * digit cells D_8009B708). */
 extern Unk8009B0E0Record D_8009B6F0[2];
 extern Unk8009B400Record D_8009B708[10];
 extern Unk8009B400Record D_8009B758[3];
 
-s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
+s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
+    s32 arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
     s16 d[2];
     Unk800600C8Rec *var_2 = (Unk800600C8Rec *)arg1;
@@ -1459,7 +1475,7 @@ extern RECT D_800A329C;
 extern RECT D_800A32A4;
 extern RECT D_800A32AC;
 
-void func_800602AC(s32 arg0, s32 *arg1) {
+void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(s32 arg0, s32 *arg1) {
     RECT r1, r2, r3, r4;
     s32 s1;
     u8 *p;
@@ -1490,7 +1506,7 @@ extern Unk8009B0E0Record D_8009B7AC[3];
 /* packed screen positions: x = (v >> 7) + 0x37, y = (v & 0x7F) + 0x2A */
 extern u16 D_8009B850[];
 
-s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
+s32 gpu_DrawSpriteAtPackedTablePosition(s16 arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
     Unk80060414Rec *var_1 = (Unk80060414Rec *)arg1;
     DR_MODE *mode_off;
@@ -1528,7 +1544,7 @@ extern Unk8009B400Record D_8009B800[4];
 extern Unk8009B400Record D_8009B820[4];
 extern Unk8009B400Record D_8009B840[2];
 
-s32 func_80060544(s32 arg0, s32 arg1) {
+s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(s32 arg0, s32 arg1) {
     Unk80060544Rec *var_0 = (Unk80060544Rec *)arg0;
     Unk8007352CRec s;
     /* FAKE: the returned size is computed as the chunk end minus its start
@@ -1604,14 +1620,14 @@ s32 func_80060544(s32 arg0, s32 arg1) {
 extern u16 D_800A32B6;
 extern u16 D_800A32B4;
 
-void func_80060758(void) {
+void gpu_ResetGrowingBarProgress(void) {
     D_800A32B6 = 0;
     D_800A32B4 = 0;
 }
 
 extern Unk8006D808Rec D_8009B0C0;
 
-s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
+s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(s32 arg0, s32 arg1, s32 arg2) {
     s32 sp18;
     s32 sp1C;
     s32 t1;
@@ -1709,11 +1725,11 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
  * and 4BC3C.c's D_8009AD1C precede; the data-only d_8BC50.c's
  * D_8009B450 .. follow). D_8009ADB4 is the 3-cell sheet header
  * whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
- * (func_8005E54C picks a row by D_8009BD24's bd0, less 2 from 12; the old
- * D_8009AF94 label inside row 18 was only sin_1's folded rsin_tbl base),
- * D_8009AFB8 20 x offsets (D_8009B0C0.unk_1C). D_8009ADD8 must follow
- * D_8009ADC0: gpu_DrawIndexedCellsAndDecimalDigitPairs reaches row idx as
- * D_8009B0C0.unk_10 + 3 + idx * 3, so the two read as one table of a 3-cell
+ * (gpu_DrawPackedComparisonRowsAndTotals picks a row by D_8009BD24's bd0, less
+ * 2 from 12; the old D_8009AF94 label inside row 18 was only sin_1's folded
+ * rsin_tbl base), D_8009AFB8 20 x offsets (D_8009B0C0.unk_1C). D_8009ADD8 must
+ * follow D_8009ADC0: gpu_DrawIndexedCellsAndDecimalDigitPairs reaches row idx
+ * as D_8009B0C0.unk_10 + 3 + idx * 3, so the two read as one table of a 3-cell
  * group and 20 rows. */
 Unk8009B0E0Record D_8009ADB4 = {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FF, 0x0, 0x77};
 Unk8009B400Record D_8009ADC0[3] = {
@@ -1792,9 +1808,10 @@ s16 D_8009AFB8[20] = {
  * header followed by its cells; after D_8009AFE0's six cells come 8 zero
  * bytes, kept as a seventh, empty cell), the digit sheet D_8009B0B4 (its one
  * cell is the .sdata D_800A3264), then D_8009B0C0 itself. D_8009B0E0 is
- * func_8005C8A8's table of 9 headers; D_8009B14C / D_8009B158 two more.
- * These cells sit in the header's cells[0] tail (a GNU extension; .size says
- * 12) because only the header is ever named, unlike D_8009ADC0. */
+ * gpu_DrawModeSizedPanelWithSelectedCellOpaque's table of 9 headers; D_8009B14C
+ * / D_8009B158 two more. These cells sit in the header's cells[0] tail (a GNU
+ * extension; .size says 12) because only the header is ever named, unlike
+ * D_8009ADC0. */
 Unk8009B0E0Record D_8009AFE0 = {
     0x1E,
     0x00,
@@ -1871,10 +1888,10 @@ Unk8009B0E0Record D_8009B0E0[9] = {
 Unk8009B0E0Record D_8009B14C = {0x1F, 0x00, 4, 0x00, 0x3E0, 0x1FC, 0x0, 0x0};
 Unk8009B0E0Record D_8009B158 = {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FF, 0x0, 0x0};
 
-/* func_8005C8A8's cell tables D_8009B164 / D_8009B184 .. D_8009B29C;
- * D_8009B2AC, the cell-table pointers it picks by j (D_8009B1AC twice,
- * D_8009B1CC, D_8009B1EC; the last two have no other reader); D_8009B2BC,
- * the frame sizes per mode. */
+/* gpu_DrawModeSizedPanelWithSelectedCellOpaque's cell tables D_8009B164 /
+ * D_8009B184 .. D_8009B29C; D_8009B2AC, the cell-table pointers it picks by j
+ * (D_8009B1AC twice, D_8009B1CC, D_8009B1EC; the last two have no other
+ * reader); D_8009B2BC, the frame sizes per mode. */
 Unk8009B400Record D_8009B164[2][2] = {
     {{0, 0, 0x00, 0x00, 0x10, 0x06}, {0, 0, 0x10, 0x00, 0x10, 0x06}},
     {{0, -6, 0x00, 0x00, 0x10, 0x08}, {0, -6, 0x10, 0x00, 0x10, 0x08}},
@@ -1937,10 +1954,12 @@ Unk8009B2BCRecord D_8009B2BC[3] = {
     {328, 155},
 };
 
-/* func_8005D46C / func_8005D554's header rows D_8009B2C8 and their cells
- * D_8009B340 / D_8009B358 / D_8009B388; the sheet headers D_8009B398 that
- * func_8005D814 .. func_80060544 draw with, the cells D_8009B3C8,
- * and the ten digit cells D_8009B400. */
+/* gpu_DrawFixedSpritePairWithSelectedSheets /
+ * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle's header rows D_8009B2C8 and
+ * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
+ * D_8009B398 that gpu_DrawTimeFieldsAndDecimalCounter ..
+ * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells
+ * D_8009B3C8, and the ten digit cells D_8009B400. */
 Unk8009B0E0Record D_8009B2C8[2][5] = {
     {
         {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FE, 0x0, 0x64},

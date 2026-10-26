@@ -1,7 +1,7 @@
 glabel StepThenCloseVab1OnNonzero
     /* 681C8 800779C8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 681CC 800779CC 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 681D0 800779D0 B3BA010C */  jal        func_8006EACC
+    /* 681D0 800779D0 B3BA010C */  jal        StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 681D4 800779D4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 681D8 800779D8 21804000 */  addu       $s0, $v0, $zero
     /* 681DC 800779DC 04000012 */  beqz       $s0, .L800779F0

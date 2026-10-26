@@ -12,7 +12,7 @@ glabel InitTimedSpriteSequence
     /* 68D0C 8007850C 58003026 */  addiu      $s0, $s1, 0x58
     /* 68D10 80078510 280591AF */  sw         $s1, %gp_rel(D_800A35F4)($gp)
     /* 68D14 80078514 2C0590AF */  sw         $s0, %gp_rel(D_800A35F8)($gp)
-    /* 68D18 80078518 54BA010C */  jal        func_8006E950
+    /* 68D18 80078518 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 68D1C 8007851C 21280002 */   addu      $a1, $s0, $zero
     /* 68D20 80078520 44DF010C */  jal        reloc_RelocateFiveOffsetListsAndGetWord1
     /* 68D24 80078524 21200002 */   addu      $a0, $s0, $zero

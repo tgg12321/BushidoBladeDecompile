@@ -72,7 +72,7 @@ glabel object_PickUpNearby
     /* 214B8 80030CB8 F4002626 */  addiu      $a2, $s1, 0xF4
     /* 214BC 80030CBC 21380000 */  addu       $a3, $zero, $zero
   .L80030CC0:
-    /* 214C0 80030CC0 15CA000C */  jal        func_80032854
+    /* 214C0 80030CC0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 214C4 80030CC4 00000000 */   nop
     /* 214C8 80030CC8 39C30008 */  j          .L80030CE4
     /* 214CC 80030CCC 21104002 */   addu      $v0, $s2, $zero

@@ -73,44 +73,50 @@ extern MATRIX D_800FF558;
 
 extern Unk8009BC94Record D_8009BC94[][6];
 /* The SEL.BIN menu's tables (d_8C41C.c, read by 5ED34.c): the per-mode
- * update handlers (func_8006EACC), menu_UpdateRowCursors' row values, the
- * entry grid and its per-value flags. */
+ * update handlers (StepSlideBuildFrameRecordAndDispatchStateHandler),
+ * menu_UpdateRowCursors' row values, the entry grid and its per-value flags. */
 extern void (*D_8009BC1C[7])(Unk8006EACCRec *);
 extern u8 D_8009BC38[];
 extern SelectEntryE534 D_8009BC40[][6];
 extern u8 D_8009BC7C[];
-/* Table of 4 sprite-sheet headers, 12 bytes each (func_8005E098,
- * func_8005E54C). */
+/* Table of 4 sprite-sheet headers, 12 bytes each
+ * (gpu_DrawTwoDigitCounterWithOptionalSecondSide,
+ * gpu_DrawPackedComparisonRowsAndTotals). */
 extern Unk8009B0E0Record D_8009B398[4];
 extern Unk8009B400Record D_8009B400[10];
 extern Unk8009B400Record D_8009B458[3][2];
 extern Unk8009B450Record D_8009B450[2];
 
-/* Two 8-byte sprite cells, the cell table func_8005D554 hands
- * gpu_AddScaledSpriteQuads for the row's header record 2 (cell 0) and records
- * 3/4 (cell 1). */
+/* Two 8-byte sprite cells, the cell table
+ * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle hands gpu_AddScaledSpriteQuads
+ * for the row's header record 2 (cell 0) and records 3/4 (cell 1). */
 extern Unk8009B400Record D_8009B388[2];
 
-/* 2 x 2 table of 8-byte sprite records (func_8005F1C8). */
+/* 2 x 2 table of 8-byte sprite records (gpu_DrawPairedMarkRowsAndTimeFields).
+ */
 extern Unk8009B400Record D_8009B5F0[2][2];
 
-/* 2 x 2 table of 8-byte sprite records (func_8005E54C). */
+/* 2 x 2 table of 8-byte sprite records (gpu_DrawPackedComparisonRowsAndTotals).
+ */
 extern Unk8009B400Record D_8009B490[2][2];
 
 extern Unk8009B0E0Record D_8009B0E0[9];
 extern Unk8009B0E0Record D_8009B14C;
 extern Unk8009B0E0Record D_8009B158;
 
-/* 2 x 2 table of 8-byte sprite records; func_8005C8A8 passes row 1 as the
- * second draw's cell table and stores column 1's x in each row. */
+/* 2 x 2 table of 8-byte sprite records;
+ * gpu_DrawModeSizedPanelWithSelectedCellOpaque passes row 1 as the second
+ * draw's cell table and stores column 1's x in each row. */
 extern Unk8009B400Record D_8009B164[2][2];
 
-/* Two 8-byte sprite records, a cell table func_8005C8A8 passes (the sheet
- * header's count is 2) after storing each record's x. */
+/* Two 8-byte sprite records, a cell table
+ * gpu_DrawModeSizedPanelWithSelectedCellOpaque passes (the sheet header's count
+ * is 2) after storing each record's x. */
 extern Unk8009B400Record D_8009B184[2];
 
 /* One 8-byte sprite cell (x, y = 0, u, v = 0, w 0x14, h 0x0E), the cell
- * table func_80060414 hands gpu_AddSpriteCells in its descriptor. */
+ * table gpu_DrawSpriteAtPackedTablePosition hands gpu_AddSpriteCells in its
+ * descriptor. */
 extern Unk8009B400Record D_800A328C;
 
 extern Unk8009B2BCRecord D_8009B2BC[3];
@@ -717,7 +723,7 @@ extern s32 func_8002798C(Unk80101EC8Record *);
  * changes fight_UpdatePairedInputTotalsEventsAndMidpointEffects's register-save
  * order. */
 extern void fighter_ResolveBodyOverlap(void);
-extern void func_8002906C(void);
+extern void fight_ClearPositionRecordUsage(void);
 extern s32 fighter_ProcessWeaponContacts(void);
 extern void fighter_ProcessWeaponBodyHits(s32);
 extern s32 fighter_CalcSeparationErrorAndOpposedOffsets(void);
@@ -733,23 +739,25 @@ extern s32 object_ThrowQueuedKind(Unk80101EC8Record *);
 extern void object_DropQueuedHeadAt(Unk80101EC8Record *, Vec3i32 *);
 extern void object_SpawnScatteredAt(Unk80101EC8Record *, s32, Vec3i32 *);
 extern s32 object_PickUpNearby(Unk80101EC8Record *);
-extern void func_80030D04(void);
+extern void object_ClearFixedKindRange(void);
 extern void object_UpdatePool(void);
 extern void object_ResolveFighterHits(void);
 extern void fight_ClearBallisticRecords(void);
-extern Unk80104E88Rec *func_80032064(Unk80101EC8Record *, s32);
+extern Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
+    Unk80101EC8Record *, s32);
 extern void fight_UpdateBallisticRecords(void);
 extern void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void);
 extern void fighter_ReadFrameMetadata(Unk80101EC8Record *);
 extern void snd_QueuePositionalSound(s32, s32 *);
-extern void func_80032854(s32, s32, s32 *, s16 *);
+extern void fight_RecordReplayEventAndDispatchSoundOrEffect(
+    s32, s32, s32 *, s16 *);
 extern void fighter_ProcessFrameEvents(Unk80101EC8Record *);
 extern void snd_ResetStageSoundState(void);
 extern void snd_UpdateStageSounds(void);
 extern void fight_BuildOpponentOrder(void);
 extern void fight_AdvanceOpponentOrder(void);
-extern s32 func_80033DF4(void);
-extern void func_80033FE4(void);
+extern s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void);
+extern void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void);
 extern void fight_RecordMatchResult(void);
 extern void fight_AdvanceMatch(void);
 extern void ApplyPendingConfigAndInitializeMode(void);
@@ -871,9 +879,9 @@ extern void func_800444E0(void);
 extern void gpu_PrepareViewAndFlushDrawQueue(u32 *);
 extern s32 node_BindFrameDataAndReserveEntryBuffer(s16 *, s16, s32);
 extern void node_InitFrameEntriesFromWorldTranslations(void);
-extern void func_80044800(void);
-extern void func_80044B30(s32, s32);
-extern void func_80044C70(s32);
+extern void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void);
+extern void node_StartFrameAnimatedEntryAndInitPairedNode(s32, s32);
+extern void resource_RebaseFrameAnimatedEntryBlockAndPointers(s32);
 extern void math_LerpShortVectorsNegateYZ(s16 *, s16 *, s32, s32);
 extern void func_80044F30(s32, s32);
 extern void func_80044F80(s32, s32);
@@ -895,11 +903,12 @@ extern s32 arena_GetFreeSize(void);
 extern s32 arena_GetSize(void);
 extern void *arena_GetBase(void);
 extern void arena_Copy(s32, s32, s32);
-extern Unk80045878Obj *func_80045878(s32, s32, s32);
-extern void func_80045A28(s32, s32);
-extern void func_80045A50(s32);
-extern void func_80045B68(s32, s32, s16 *, s32);
-extern void func_80046020(void);
+extern Unk80045878Obj *slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
+    s32, s32, s32);
+extern void slot_ResizeAssetBlockAndUpdatePeak(s32, s32);
+extern void slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(s32);
+extern void resource_LoadSelectedEntriesTexturesAndSound(s32, s32, s16 *, s32);
+extern void resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs(void);
 extern void resource_SelectRetainedSubblockOrApplyHeaderSections(s32);
 extern s32 fight_GetPositionRecordList(void);
 extern void resource_FreeNodeAssetBlock(void);
@@ -971,22 +980,22 @@ extern void snd_CloseListedVabs(void);
 extern void snd_StopVoicesAndReverb(void);
 extern void snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode(void);
 extern s32 snd_QueueSound(s32, s32, s32); /* FAKE: int, see definition */
-extern s32 func_8005C8A8(s32, s32, s32, s32);
-extern s32 func_8005D46C(s32, s32);
-extern s32 func_8005D554(s32, s32);
-extern s32 func_8005D814(Unk8001CD68Rec *, s32, s32, s32);
-extern s32 func_8005E098(s32, s32, s32, s32);
-extern s32 func_8005E51C(s32, s32, s32);
-extern s32 func_8005E54C(u32, s32, s32);
-extern s32 func_8005F1C8(Unk8001CD68Rec *, s32, s32, s32);
-extern s32 func_8005FA98(s32, s32, s32);
-extern void func_8005FBC8(s32, u8 *);
+extern s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(s32, s32, s32, s32);
+extern s32 gpu_DrawFixedSpritePairWithSelectedSheets(s32, s32);
+extern s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32, s32);
+extern s32 gpu_DrawTimeFieldsAndDecimalCounter(Unk8001CD68Rec *, s32, s32, s32);
+extern s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(s32, s32, s32, s32);
+extern s32 gpu_DrawDecrementedSingleSideCounter(s32, s32, s32);
+extern s32 gpu_DrawPackedComparisonRowsAndTotals(u32, s32, s32);
+extern s32 gpu_DrawPairedMarkRowsAndTimeFields(Unk8001CD68Rec *, s32, s32, s32);
+extern s32 gpu_DrawSelectedStretchedSpritePair(s32, s32, s32);
+extern void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(s32, u8 *);
 extern s32 gpu_DrawImageAndAdvanceSplitWipe(s32, s32);
-extern s32 func_800600C8(s32, s32, s32);
-extern void func_800602AC(s32, s32 *);
-extern s32 func_80060544(s32, s32);
-extern void func_80060758(void);
-extern s32 func_80060768(s32, s32, s32);
+extern s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(s32, s32, s32);
+extern void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(s32, s32 *);
+extern s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(s32, s32);
+extern void gpu_ResetGrowingBarProgress(void);
+extern s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(s32, s32, s32);
 extern s32 eff_LoadImagesAndSetup(s32, s32);
 extern void eff_SelectQuadBuffer(s32);
 extern void func_80061064(s16 *, s32 *);
@@ -1035,10 +1044,12 @@ extern s32 gpu_EndFullscreenImageDisplay(void);
 extern void reloc_RelocateSelfOffsets(s32 *);
 extern s32 gpu_GetSheetTPage(Unk8009B0E0Record *, s32);
 extern s32 gpu_InitPrimBufferPair(s32, Unk8006E49CRec *);
-extern s32 func_8006E534(s32, s32, Unk8009BD24Block *, u32);
-extern void func_8006E950(s32, Unk8006E950Head *);
-extern s32 func_8006EA28(Unk8006EA28Rec *);
-extern s32 func_8006EACC(s32, s32);
+extern s32 InitDisplayStateLoadPackAndSetEntryFlags(
+    s32, s32, Unk8009BD24Block *, u32);
+extern void gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+    s32, Unk8006E950Head *);
+extern s32 resource_RelocateNineOffsetListsAndLoadVabPack(Unk8006EA28Rec *);
+extern s32 StepSlideBuildFrameRecordAndDispatchStateHandler(s32, s32);
 extern void gpu_AddPanelGrid(Unk8006EACCRec *);
 extern s32 gpu_AddSpriteCells(Unk8007352CRec *);
 extern s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *, s32);

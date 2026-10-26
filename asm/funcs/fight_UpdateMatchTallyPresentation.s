@@ -53,7 +53,7 @@ glabel fight_UpdateMatchTallyPresentation
     /* 2CE18 8003C618 8437848C */  lw         $a0, %lo(D_800A3784)($a0)
     /* 2CE1C 8003C61C 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* 2CE20 8003C620 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* 2CE24 8003C624 5379010C */  jal        func_8005E54C
+    /* 2CE24 8003C624 5379010C */  jal        gpu_DrawPackedComparisonRowsAndTotals
     /* 2CE28 8003C628 01000624 */   addiu     $a2, $zero, 0x1
     /* 2CE2C 8003C62C 02004104 */  bgez       $v0, .L8003C638
     /* 2CE30 8003C630 4000053C */   lui       $a1, (0x400040 >> 16)

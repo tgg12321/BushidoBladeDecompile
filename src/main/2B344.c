@@ -156,7 +156,7 @@ void fight_ScanCommandStreamAndLoadImage(u8 *arg0) {
         D_800A37A8[D_800A37A0] = D_800A36A4;
         gpu_ResetGraphMode1();
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
-        func_800602AC(result, addr);
+        gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(result, addr);
     }
 }
 
@@ -436,7 +436,10 @@ void fight_InitCommandStreamImageLoad(void) {
 void fight_UpdateCommandStreamImageLoadAndResume(void) {
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 < 3) {
-        g_prim_buf_cursor += func_80060544((s32)g_prim_buf_cursor, 1) / 4;
+        g_prim_buf_cursor +=
+            gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
+                (s32)g_prim_buf_cursor, 1) /
+            4;
     }
     if (D_800A37B8 == 3) {
         DrawSync(0);
@@ -703,7 +706,7 @@ void fight_InitImageAndPlaybackPresentation(void) {
     } else {
         var_1 = 8;
     }
-    func_8005FBC8(var_1, (u8 *)0x80118800);
+    gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(var_1, (u8 *)0x80118800);
     if ((D_800A38A4 == 4 && D_8008D9EC[D_80101EC8[0].unk_0A] != 0) ||
         (D_800A38A4 == 5 && D_8008D9EC[D_80101EC8[0].unk_0A] == 0)) {
         D_80102778.unk_4[0] = D_80102778.unk_4[1];
@@ -808,8 +811,9 @@ void fight_UpdateMatchTallyPresentation(void) {
             snd_QueueSound(0xA9, 0x7F, 0x7F);
         }
     }
-    g_prim_buf_cursor +=
-        func_8005E54C(D_800A3784, (s32)g_prim_buf_cursor, 1) / 4;
+    g_prim_buf_cursor += gpu_DrawPackedComparisonRowsAndTotals(
+                             D_800A3784, (s32)g_prim_buf_cursor, 1) /
+                         4;
     if ((g_pad_state.pressed & 0x400040) != 0 || D_800A37B8 >= 0xF1) {
         if (D_800A382D == 2) {
             D_800A3834 = 0x18;
@@ -839,7 +843,7 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
     s0 = GetWorkingRecord();
     cdrom_PauseAndWait();
     gpu_HideResetAndClear();
-    func_80060758();
+    gpu_ResetGrowingBarProgress();
     i = 0;
     base = D_80106A50.times;
     do {
@@ -876,10 +880,11 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
 
 void fight_UpdateTimeRecordPresentation(void) {
     D_800A37B8 = D_800A37B8 + 1;
-    g_prim_buf_cursor +=
-        func_80060768((s32)g_prim_buf_cursor, 1, D_800A38E9) / 4;
+    g_prim_buf_cursor += gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
+                             (s32)g_prim_buf_cursor, 1, D_800A38E9) /
+                         4;
     if ((g_pad_state.pressed & 0x400040) != 0 || D_800A37B8 >= 0xF1) {
-        func_80033FE4();
+        fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank();
     }
 }
 
@@ -906,8 +911,9 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
     if (D_800A3929 == 0) {
-        g_prim_buf_cursor +=
-            func_8005C8A8(1, D_800A3817, (s32)g_prim_buf_cursor, 0) / 4;
+        g_prim_buf_cursor += gpu_DrawModeSizedPanelWithSelectedCellOpaque(
+                                 1, D_800A3817, (s32)g_prim_buf_cursor, 0) /
+                             4;
 
         if ((g_pad_state.pressed & 0x10001000) != 0) {
             snd_QueueSound(0, 0x7F, 0x7F);
@@ -933,7 +939,9 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
     }
 
     if (D_800A3817 == 0) {
-        g_prim_buf_cursor += func_8005FA98(0, (s32)g_prim_buf_cursor, 1) / 4;
+        g_prim_buf_cursor +=
+            gpu_DrawSelectedStretchedSpritePair(0, (s32)g_prim_buf_cursor, 1) /
+            4;
     }
     D_800A3929 = D_800A3929 + 1;
     if (D_800A3929 < 0x3C)
@@ -988,7 +996,8 @@ void fight_UpdateRotatingViewDecimalPresentation(void) {
         &D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
-    g_prim_buf_cursor += func_800600C8(D_800A391F, (s32)g_prim_buf_cursor, 1);
+    g_prim_buf_cursor += gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
+        D_800A391F, (s32)g_prim_buf_cursor, 1);
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 >= 0x97 || (g_pad_state.pressed & 0x400040) != 0) {
         cdrom_PauseAndWait();
@@ -2474,7 +2483,8 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
         }
     }
     if (arg1) {
-        func_80045A28(arg0->arena_id, cur - (u8 *)arg0->unk_1C);
+        slot_ResizeAssetBlockAndUpdatePeak(
+            arg0->arena_id, cur - (u8 *)arg0->unk_1C);
     }
 }
 

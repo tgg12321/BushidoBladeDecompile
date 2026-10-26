@@ -112,7 +112,7 @@ glabel fighter_DispatchArmedBoneVectorEventAndDisarm
     /* 10E68 80020668 80300600 */  sll        $a2, $a2, 2
     /* 10E6C 8002066C 2130C500 */  addu       $a2, $a2, $a1
     /* 10E70 80020670 04000524 */  addiu      $a1, $zero, 0x4
-    /* 10E74 80020674 15CA000C */  jal        func_80032854
+    /* 10E74 80020674 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 10E78 80020678 21304600 */   addu      $a2, $v0, $a2
   .L8002067C:
     /* 10E7C 8002067C 50030286 */  lh         $v0, 0x350($s0)

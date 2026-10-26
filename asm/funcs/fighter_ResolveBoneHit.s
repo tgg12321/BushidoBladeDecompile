@@ -104,7 +104,7 @@ glabel fighter_ResolveBoneHit
     /* 18454 80027C54 00000000 */  nop
     /* 18458 80027C58 05006210 */  beq        $v1, $v0, .L80027C70
     /* 1845C 80027C5C 00000000 */   nop
-    /* 18460 80027C60 909D000C */  jal        func_80027640
+    /* 18460 80027C60 909D000C */  jal        fighter_RelocateAndStartEventMove
     /* 18464 80027C64 21202002 */   addu      $a0, $s1, $zero
     /* 18468 80027C68 E7A00008 */  j          .L8002839C
     /* 1846C 80027C6C 02000224 */   addiu     $v0, $zero, 0x2
@@ -191,7 +191,7 @@ glabel fighter_ResolveBoneHit
   .L80027D9C:
     /* 1859C 80027D9C 21204002 */  addu       $a0, $s2, $zero
     /* 185A0 80027DA0 21306002 */  addu       $a2, $s3, $zero
-    /* 185A4 80027DA4 15CA000C */  jal        func_80032854
+    /* 185A4 80027DA4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 185A8 80027DA8 21380000 */   addu      $a3, $zero, $zero
     /* 185AC 80027DAC 0980023C */  lui        $v0, %hi(D_8008EB74)
     /* 185B0 80027DB0 74EB4224 */  addiu      $v0, $v0, %lo(D_8008EB74)
@@ -208,7 +208,7 @@ glabel fighter_ResolveBoneHit
     /* 185DC 80027DDC 0100442E */  sltiu      $a0, $s2, 0x1
     /* 185E0 80027DE0 25000524 */  addiu      $a1, $zero, 0x25
     /* 185E4 80027DE4 21306002 */  addu       $a2, $s3, $zero
-    /* 185E8 80027DE8 15CA000C */  jal        func_80032854
+    /* 185E8 80027DE8 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 185EC 80027DEC 21380000 */   addu      $a3, $zero, $zero
     /* 185F0 80027DF0 21204002 */  addu       $a0, $s2, $zero
     /* 185F4 80027DF4 8E9F0008 */  j          .L80027E38
@@ -220,18 +220,18 @@ glabel fighter_ResolveBoneHit
     /* 18608 80027E08 0100442E */  sltiu      $a0, $s2, 0x1
     /* 1860C 80027E0C 26000524 */  addiu      $a1, $zero, 0x26
     /* 18610 80027E10 21306002 */  addu       $a2, $s3, $zero
-    /* 18614 80027E14 15CA000C */  jal        func_80032854
+    /* 18614 80027E14 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18618 80027E18 21380000 */   addu      $a3, $zero, $zero
     /* 1861C 80027E1C 21204002 */  addu       $a0, $s2, $zero
     /* 18620 80027E20 25000524 */  addiu      $a1, $zero, 0x25
     /* 18624 80027E24 21306002 */  addu       $a2, $s3, $zero
-    /* 18628 80027E28 15CA000C */  jal        func_80032854
+    /* 18628 80027E28 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1862C 80027E2C 21380000 */   addu      $a3, $zero, $zero
     /* 18630 80027E30 21204002 */  addu       $a0, $s2, $zero
     /* 18634 80027E34 2D000524 */  addiu      $a1, $zero, 0x2D
   .L80027E38:
     /* 18638 80027E38 21306002 */  addu       $a2, $s3, $zero
-    /* 1863C 80027E3C 15CA000C */  jal        func_80032854
+    /* 1863C 80027E3C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18640 80027E40 21380000 */   addu      $a3, $zero, $zero
     /* 18644 80027E44 A69F0008 */  j          .L80027E98
     /* 18648 80027E48 00000000 */   nop
@@ -241,17 +241,17 @@ glabel fighter_ResolveBoneHit
     /* 18654 80027E54 0100442E */  sltiu      $a0, $s2, 0x1
     /* 18658 80027E58 26000524 */  addiu      $a1, $zero, 0x26
     /* 1865C 80027E5C 21306002 */  addu       $a2, $s3, $zero
-    /* 18660 80027E60 15CA000C */  jal        func_80032854
+    /* 18660 80027E60 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18664 80027E64 21380000 */   addu      $a3, $zero, $zero
     /* 18668 80027E68 21204002 */  addu       $a0, $s2, $zero
     /* 1866C 80027E6C 26000524 */  addiu      $a1, $zero, 0x26
     /* 18670 80027E70 21306002 */  addu       $a2, $s3, $zero
-    /* 18674 80027E74 15CA000C */  jal        func_80032854
+    /* 18674 80027E74 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18678 80027E78 21380000 */   addu      $a3, $zero, $zero
     /* 1867C 80027E7C 21204002 */  addu       $a0, $s2, $zero
     /* 18680 80027E80 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 18684 80027E84 21306002 */  addu       $a2, $s3, $zero
-    /* 18688 80027E88 15CA000C */  jal        func_80032854
+    /* 18688 80027E88 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1868C 80027E8C 21380000 */   addu      $a3, $zero, $zero
     /* 18690 80027E90 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18694 80027E94 21202002 */   addu      $a0, $s1, $zero
@@ -311,12 +311,12 @@ glabel fighter_ResolveBoneHit
     /* 1875C 80027F5C 21204002 */   addu      $a0, $s2, $zero
     /* 18760 80027F60 02000524 */  addiu      $a1, $zero, 0x2
     /* 18764 80027F64 21306002 */  addu       $a2, $s3, $zero
-    /* 18768 80027F68 15CA000C */  jal        func_80032854
+    /* 18768 80027F68 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1876C 80027F6C 21380000 */   addu      $a3, $zero, $zero
     /* 18770 80027F70 21204002 */  addu       $a0, $s2, $zero
     /* 18774 80027F74 25000524 */  addiu      $a1, $zero, 0x25
     /* 18778 80027F78 21306002 */  addu       $a2, $s3, $zero
-    /* 1877C 80027F7C 15CA000C */  jal        func_80032854
+    /* 1877C 80027F7C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18780 80027F80 21380000 */   addu      $a3, $zero, $zero
     /* 18784 80027F84 08A00008 */  j          .L80028020
     /* 18788 80027F88 860220A6 */   sh        $zero, 0x286($s1)
@@ -324,12 +324,12 @@ glabel fighter_ResolveBoneHit
     /* 1878C 80027F8C 28005414 */  bne        $v0, $s4, .L80028030
     /* 18790 80027F90 02000524 */   addiu     $a1, $zero, 0x2
     /* 18794 80027F94 21306002 */  addu       $a2, $s3, $zero
-    /* 18798 80027F98 15CA000C */  jal        func_80032854
+    /* 18798 80027F98 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1879C 80027F9C 21380000 */   addu      $a3, $zero, $zero
     /* 187A0 80027FA0 21204002 */  addu       $a0, $s2, $zero
     /* 187A4 80027FA4 25000524 */  addiu      $a1, $zero, 0x25
     /* 187A8 80027FA8 21306002 */  addu       $a2, $s3, $zero
-    /* 187AC 80027FAC 15CA000C */  jal        func_80032854
+    /* 187AC 80027FAC 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 187B0 80027FB0 21380000 */   addu      $a3, $zero, $zero
     /* 187B4 80027FB4 01000224 */  addiu      $v0, $zero, 0x1
     /* 187B8 80027FB8 860222A6 */  sh         $v0, 0x286($s1)
@@ -374,7 +374,7 @@ glabel fighter_ResolveBoneHit
     /* 18844 80028044 06004016 */  bnez       $s2, .L80028060
     /* 18848 80028048 21282002 */   addu      $a1, $s1, $zero
     /* 1884C 8002804C 21200000 */  addu       $a0, $zero, $zero
-    /* 18850 80028050 E39C000C */  jal        func_8002738C
+    /* 18850 80028050 E39C000C */  jal        fighter_AccumulateBoneGroupFlagWhenGameModeZero
     /* 18854 80028054 21280002 */   addu      $a1, $s0, $zero
     /* 18858 80028058 21208002 */  addu       $a0, $s4, $zero
   .L8002805C:
@@ -421,7 +421,7 @@ glabel fighter_ResolveBoneHit
     /* 188E8 800280E8 21204002 */  addu       $a0, $s2, $zero
     /* 188EC 800280EC 03000524 */  addiu      $a1, $zero, 0x3
     /* 188F0 800280F0 21306002 */  addu       $a2, $s3, $zero
-    /* 188F4 800280F4 15CA000C */  jal        func_80032854
+    /* 188F4 800280F4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 188F8 800280F8 21380000 */   addu      $a3, $zero, $zero
     /* 188FC 800280FC 21202002 */  addu       $a0, $s1, $zero
     /* 18900 80028100 21280002 */  addu       $a1, $s0, $zero
@@ -463,7 +463,7 @@ glabel fighter_ResolveBoneHit
     /* 18980 80028180 03000524 */  addiu      $a1, $zero, 0x3
   .L80028184:
     /* 18984 80028184 21306002 */  addu       $a2, $s3, $zero
-    /* 18988 80028188 15CA000C */  jal        func_80032854
+    /* 18988 80028188 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1898C 8002818C 21380000 */   addu      $a3, $zero, $zero
     /* 18990 80028190 E7A00008 */  j          .L8002839C
     /* 18994 80028194 21100000 */   addu      $v0, $zero, $zero
@@ -561,7 +561,7 @@ glabel fighter_ResolveBoneHit
     /* 18AD8 800282D8 21380000 */  addu       $a3, $zero, $zero
     /* 18ADC 800282DC 04000224 */  addiu      $v0, $zero, 0x4
     /* 18AE0 800282E0 860222A6 */  sh         $v0, 0x286($s1)
-    /* 18AE4 800282E4 15CA000C */  jal        func_80032854
+    /* 18AE4 800282E4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18AE8 800282E8 900020A6 */   sh        $zero, 0x90($s1)
     /* 18AEC 800282EC 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18AF0 800282F0 21202002 */   addu      $a0, $s1, $zero
@@ -585,7 +585,7 @@ glabel fighter_ResolveBoneHit
     /* 18B2C 8002832C 21204002 */  addu       $a0, $s2, $zero
     /* 18B30 80028330 03000524 */  addiu      $a1, $zero, 0x3
     /* 18B34 80028334 21306002 */  addu       $a2, $s3, $zero
-    /* 18B38 80028338 15CA000C */  jal        func_80032854
+    /* 18B38 80028338 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18B3C 8002833C 21380000 */   addu      $a3, $zero, $zero
     /* 18B40 80028340 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18B44 80028344 21202002 */   addu      $a0, $s1, $zero
@@ -607,7 +607,7 @@ glabel fighter_ResolveBoneHit
     /* 18B7C 8002837C 21204002 */  addu       $a0, $s2, $zero
     /* 18B80 80028380 03000524 */  addiu      $a1, $zero, 0x3
     /* 18B84 80028384 21306002 */  addu       $a2, $s3, $zero
-    /* 18B88 80028388 15CA000C */  jal        func_80032854
+    /* 18B88 80028388 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18B8C 8002838C 21380000 */   addu      $a3, $zero, $zero
     /* 18B90 80028390 969E000C */  jal        fighter_TryDropQueuedHeadAtBone
     /* 18B94 80028394 21202002 */   addu      $a0, $s1, $zero

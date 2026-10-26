@@ -12,7 +12,7 @@ glabel InitScrollingSpriteDisplay
     /* 6904C 8007884C 58003026 */  addiu      $s0, $s1, 0x58
     /* 69050 80078850 400591AF */  sw         $s1, %gp_rel(D_800A360C)($gp)
     /* 69054 80078854 440590AF */  sw         $s0, %gp_rel(D_800A3610)($gp)
-    /* 69058 80078858 54BA010C */  jal        func_8006E950
+    /* 69058 80078858 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 6905C 8007885C 21280002 */   addu      $a1, $s0, $zero
     /* 69060 80078860 8AE1010C */  jal        GetScrollingSpriteRecordWord1
     /* 69064 80078864 21200002 */   addu      $a0, $s0, $zero

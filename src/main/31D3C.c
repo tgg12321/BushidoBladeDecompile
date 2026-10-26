@@ -31,7 +31,7 @@ s32 slot_FindEmpty(void) {
 
 void slot_ReleaseObjectAndResources(s32 a0) {
     softbody_FreeObjectById(a0);
-    func_80045A50(a0);
+    slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(a0);
     D_800A9A10[a0] = 0;
 }
 

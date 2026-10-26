@@ -5,7 +5,7 @@ glabel InitWithCachedValueAndStoredBitsBlackBg
     /* 68190 80077990 0A80063C */  lui        $a2, %hi(D_8009BD24)
     /* 68194 80077994 24BDC624 */  addiu      $a2, $a2, %lo(D_8009BD24)
     /* 68198 80077998 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 6819C 8007799C 4DB9010C */  jal        func_8006E534
+    /* 6819C 8007799C 4DB9010C */  jal        InitDisplayStateLoadPackAndSetEntryFlags
     /* 681A0 800779A0 00000000 */   nop
     /* 681A4 800779A4 01000424 */  addiu      $a0, $zero, 0x1
     /* 681A8 800779A8 21280000 */  addu       $a1, $zero, $zero

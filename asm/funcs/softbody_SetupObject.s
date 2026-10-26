@@ -122,7 +122,7 @@ glabel softbody_SetupObject
     /* 301E0 8003F9E0 00000000 */   nop
     /* 301E4 8003F9E4 1C00858E */  lw         $a1, 0x1C($s4)
     /* 301E8 8003F9E8 04008486 */  lh         $a0, 0x4($s4)
-    /* 301EC 8003F9EC 8A16010C */  jal        func_80045A28
+    /* 301EC 8003F9EC 8A16010C */  jal        slot_ResizeAssetBlockAndUpdatePeak
     /* 301F0 8003F9F0 23280502 */   subu      $a1, $s0, $a1
   .L8003F9F4:
     /* 301F4 8003F9F4 4000BF8F */  lw         $ra, 0x40($sp)

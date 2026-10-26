@@ -34,7 +34,7 @@ glabel resource_RebaseLoadedBlockSections
     /* 36F3C 8004673C 08004000 */  jr         $v0
     /* 36F40 80046740 00000000 */   nop
   jlabel .L80046744
-    /* 36F44 80046744 1C13010C */  jal        func_80044C70
+    /* 36F44 80046744 1C13010C */  jal        resource_RebaseFrameAnimatedEntryBlockAndPointers
     /* 36F48 80046748 21200002 */   addu      $a0, $s0, $zero
     /* 36F4C 8004674C DB190108 */  j          .L8004676C
     /* 36F50 80046750 00000000 */   nop

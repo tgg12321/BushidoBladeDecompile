@@ -81,8 +81,9 @@ typedef struct {
 } Unk800F1198Record;
 
 /* 0x800A9CF8 record (0x18 bytes); node_InitFrameEntriesFromWorldTranslations
- * reaches its fields off one base register, and func_80044C70 bumps the unk8 /
- * unkC pointers together.
+ * reaches its fields off one base register, and
+ * resource_RebaseFrameAnimatedEntryBlockAndPointers bumps the unk8 / unkC
+ * pointers together.
  */
 typedef struct {
     s16 unk0;
@@ -202,8 +203,10 @@ typedef struct {
  * size (gpu_AddSpriteCells: x0 = x + the descriptor's x, u0 = u + ubase, w / h
  * copied). A sheet's cells follow its header(s) (Unk8009B0E0Record.cells). The
  * 0x8009B400 tables hold such cells: 0x8009B400..0x8009B44F is 10 records, one
- * per digit (func_8005D814 / func_8005E098 index it with a 0..9 value), and
- * 0x8009B458..0x8009B487 6 more (func_8005E098); D_8009B450 and D_8009B488
+ * per digit (gpu_DrawTimeFieldsAndDecimalCounter /
+ * gpu_DrawTwoDigitCounterWithOptionalSecondSide index it with a 0..9 value),
+ * and 0x8009B458..0x8009B487 6 more
+ * (gpu_DrawTwoDigitCounterWithOptionalSecondSide); D_8009B450 and D_8009B488
  * follow. */
 typedef struct {
     s16 x;
@@ -222,8 +225,9 @@ typedef struct {
  * (the plain one, then one highlight per player: menu_UpdateEntryGrid,
  * menu_DrawSelGrid) ahead of one shared cell table, which then starts at the
  * last header's cells. 0x8009B0E0 is a table of 9 such headers
- * (0x8009B0E0..0x8009B14B) that func_8005C8A8 reaches off one base; D_8009B14C
- * and D_8009B158 are two more of the same shape. */
+ * (0x8009B0E0..0x8009B14B) that gpu_DrawModeSizedPanelWithSelectedCellOpaque
+ * reaches off one base; D_8009B14C and D_8009B158 are two more of the same
+ * shape. */
 typedef struct {
     u8 tp0;
     u8 tp1;
@@ -236,21 +240,25 @@ typedef struct {
     Unk8009B400Record cells[0];
 } Unk8009B0E0Record;
 
-/* The head of the resource files func_8006E950 loads. By g_cd_file_table's
- * sizes, file 2 of cdrom_GetFileIndex's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5
- * SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts with a list of
- * file-relative offsets ending in -1, which reloc_RelocateSelfOffsets turns
- * into addresses. The first five mean the same in every file:
- * reloc_RelocateTwelveListsAndLoadVabPack / func_8006EA28 pass unk_00 and
- * unk_04 to the VAB loader snd_LoadVabPack (menu_RelocateSelLists /
+/* The head of the resource files
+ * gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip loads. By
+ * g_cd_file_table's sizes, file 2 of cdrom_GetFileIndex's group 2 is MOD.BIN, 3
+ * SEL.BIN, 4 / 5 SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts
+ * with a list of file-relative offsets ending in -1, which
+ * reloc_RelocateSelfOffsets turns into addresses. The first five mean the same
+ * in every file: reloc_RelocateTwelveListsAndLoadVabPack /
+ * resource_RelocateNineOffsetListsAndLoadVabPack pass unk_00 and unk_04 to the
+ * VAB loader snd_LoadVabPack (menu_RelocateSelLists /
  * reloc_RelocateFiveOffsetListsAndGetWord1, for D_SEL / NAR, make no such call,
- * and those files' unk_00..unk_08 are equal), func_8006E950 loads the image at
- * unk_08 into VRAM, and gpu_LoadVramBottomStrip loads the 640x32 strip at
- * unk_0C or unk_10. The four per-file relocators
- * (reloc_RelocateTwelveListsAndLoadVabPack, func_8006EA28,
- * menu_RelocateSelLists, reloc_RelocateFiveOffsetListsAndGetWord1) return
- * unk_04, where the caller's gpu_InitPrimBufferPair buffer starts. The words
- * after the head differ per file. */
+ * and those files' unk_00..unk_08 are equal),
+ * gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip loads the image at unk_08
+ * into VRAM, and gpu_LoadVramBottomStrip loads the 640x32 strip at unk_0C or
+ * unk_10. The four per-file relocators
+ * (reloc_RelocateTwelveListsAndLoadVabPack,
+ * resource_RelocateNineOffsetListsAndLoadVabPack, menu_RelocateSelLists,
+ * reloc_RelocateFiveOffsetListsAndGetWord1) return unk_04, where the caller's
+ * gpu_InitPrimBufferPair buffer starts. The words after the head differ per
+ * file. */
 typedef struct {
     Unk8005C2A8Pack *unk_00;
     s32 unk_04;
@@ -278,10 +286,11 @@ typedef struct {
     u8 r, g, b, pad;
 } Rec_8006C21C;
 
-/* SEL.BIN's unk_54 block, func_8006ECF4's: two cell tables (unk_00[i], one per
- * player), a 0 word, then the 12-byte sheet headers the cells are drawn with
- * (unk_0C[v] for the D_8009BC40 entry value v it reads; after its first
- * iteration the values 12, 13, 14, 0 and 3 take unk_0C[22..26]). */
+/* SEL.BIN's unk_54 block, gpu_UploadAndDrawSelectedEntryQuads's: two cell
+ * tables (unk_00[i], one per player), a 0 word, then the 12-byte sheet headers
+ * the cells are drawn with (unk_0C[v] for the D_8009BC40 entry value v it
+ * reads; after its first iteration the values 12, 13, 14, 0 and 3 take
+ * unk_0C[22..26]). */
 typedef struct {
     Unk8009B400Record *unk_00[2];
     s32 unk_08;
@@ -289,17 +298,20 @@ typedef struct {
 } Unk8006ECF4Rec;
 
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's
- * func_8006E534 loads at its work area + 0x58 (D_800A35A8; func_8006EACC hands
- * it to the handlers as Unk8006EACCRec.unk_00). After the head:
+ * InitDisplayStateLoadPackAndSetEntryFlags loads at its work area + 0x58
+ * (D_800A35A8; StepSlideBuildFrameRecordAndDispatchStateHandler hands it to the
+ * handlers as Unk8006EACCRec.unk_00). After the head:
  * - unk_14: per entry id two TIM pixel addresses, one per column,
  * menu_UpdateRowCursors loads (LoadImage).
- * - unk_54..unk_74: the nine lists func_8006EA28 relocates
- * (reloc_RelocateOffsetList): unk_54, the header block func_8006ECF4 draws
- * (Unk8006ECF4Rec); unk_58..unk_74, sprite-sheet lists. unk_78 is a further
- * offset no code reads.
+ * - unk_54..unk_74: the nine lists
+ * resource_RelocateNineOffsetListsAndLoadVabPack relocates
+ * (reloc_RelocateOffsetList): unk_54, the header block
+ * gpu_UploadAndDrawSelectedEntryQuads draws (Unk8006ECF4Rec); unk_58..unk_74,
+ * sprite-sheet lists. unk_78 is a further offset no code reads.
  * - unk_7C: per player a row of eight VRAM RECTs menu_UpdateRowCursors hands
  * LoadImage as the destination; unk_80: the bytes menu_UpdateChoiceGrid reads.
- * - unk_84: TIM pixel addresses func_8006ECF4 loads per character case. */
+ * - unk_84: TIM pixel addresses gpu_UploadAndDrawSelectedEntryQuads loads per
+ * character case. */
 typedef struct {
     Unk8006E950Head unk_00;
     s32 unk_14[8][2];
@@ -362,11 +374,12 @@ typedef struct {
     s32 img38[5];
 } Ctx77D94;
 
-/* Draw context filled by 5ED34 func_8006EACC and 64FD8 menu_StepSelScreen /
- * StepTimedSpriteSequenceWithSkip: unk_00 the resource root (SEL for
- * func_8006EACC's handlers, D_SEL for menu_StepSelScreen's;
- * StepTimedSpriteSequenceWithSkip leaves it unset), then the cursors; unk_24
- * (pool word +0x20) only func_8006EACC / menu_StepSelScreen set. */
+/* Draw context filled by 5ED34 StepSlideBuildFrameRecordAndDispatchStateHandler
+ * and 64FD8 menu_StepSelScreen / StepTimedSpriteSequenceWithSkip: unk_00 the
+ * resource root (SEL for StepSlideBuildFrameRecordAndDispatchStateHandler's
+ * handlers, D_SEL for menu_StepSelScreen's; StepTimedSpriteSequenceWithSkip
+ * leaves it unset), then the cursors; unk_24 (pool word +0x20) only
+ * StepSlideBuildFrameRecordAndDispatchStateHandler / menu_StepSelScreen set. */
 typedef struct {
     union {
         Unk8006EA28Rec *v8006EA28;
@@ -377,10 +390,11 @@ typedef struct {
     void *unk_24;
 } Unk8006EACCRec;
 
-/* The draw chunk 4D0A8 func_8005C8A8 builds at the address its caller passes:
- * TILEs from +0 up to +0xF0 (15; it writes at most 13), SPRTs from +0xF0 up to
- * +0x4D8 (50; gpu_AddSpriteCells's cursor), then the DR_MODE at +0x4D8. It
- * returns the chunk size, 0x4F0; the last 0xC bytes are never written. */
+/* The draw chunk 4D0A8 gpu_DrawModeSizedPanelWithSelectedCellOpaque builds at
+ * the address its caller passes: TILEs from +0 up to +0xF0 (15; it writes at
+ * most 13), SPRTs from +0xF0 up to +0x4D8 (50; gpu_AddSpriteCells's cursor),
+ * then the DR_MODE at +0x4D8. It returns the chunk size, 0x4F0; the last 0xC
+ * bytes are never written. */
 typedef struct {
     TILE unk_00[15];
     SPRT unk_F0[50];
@@ -388,24 +402,26 @@ typedef struct {
     u8 unk_4E4[0xC];
 } Unk8005C8A8Rec;
 
-/* The draw chunk 4D0A8 func_8005D814, func_8005E098 and func_8005F1C8 each
- * build at the address their caller passes (one layout): TILEs from +0 up to
- * +0xA0 (10; they write at most 2, 2 and 4), SPRTs from +0xA0 up to +0x2F8 (30;
- * gpu_AddSpriteCells's cursor), then the DR_MODE at +0x2F8. Each returns the
- * chunk size, 0x304. func_8005F1C8 also writes a second DR_MODE at the chunk's
- * end, outside the chunk. */
+/* The draw chunk 4D0A8 gpu_DrawTimeFieldsAndDecimalCounter,
+ * gpu_DrawTwoDigitCounterWithOptionalSecondSide and
+ * gpu_DrawPairedMarkRowsAndTimeFields each build at the address their caller
+ * passes (one layout): TILEs from +0 up to +0xA0 (10; they write at most 2, 2
+ * and 4), SPRTs from +0xA0 up to +0x2F8 (30; gpu_AddSpriteCells's cursor), then
+ * the DR_MODE at +0x2F8. Each returns the chunk size, 0x304.
+ * gpu_DrawPairedMarkRowsAndTimeFields also writes a second DR_MODE at the
+ * chunk's end, outside the chunk. */
 typedef struct {
     TILE unk_00[10];
     SPRT unk_A0[30];
     DR_MODE unk_2F8;
 } Unk8005D814Rec;
 
-/* The draw chunk 4D0A8 func_8005E54C builds at the address its caller passes:
- * TILEs from +0 up to +0xA0 (10; it writes 3), SPRTs from +0xA0 up to +0x898
- * (102; gpu_AddSpriteCells's cursor), POLY_FT4s from +0x898 up to +0xBB8 (20;
- * gpu_AddScaledSpriteQuads's cursor), then the DR_MODE at +0xBB8. It returns
- * the chunk size, 0xBC4, and also writes a second DR_MODE at the chunk's end,
- * outside the chunk. */
+/* The draw chunk 4D0A8 gpu_DrawPackedComparisonRowsAndTotals builds at the
+ * address its caller passes: TILEs from +0 up to +0xA0 (10; it writes 3), SPRTs
+ * from +0xA0 up to +0x898 (102; gpu_AddSpriteCells's cursor), POLY_FT4s from
+ * +0x898 up to +0xBB8 (20; gpu_AddScaledSpriteQuads's cursor), then the DR_MODE
+ * at +0xBB8. It returns the chunk size, 0xBC4, and also writes a second DR_MODE
+ * at the chunk's end, outside the chunk. */
 typedef struct {
     TILE unk_00[10];
     SPRT unk_A0[102];
@@ -429,36 +445,39 @@ typedef struct {
     DR_AREA unk_2D4[3];
 } Unk8005FC9CRec;
 
-/* The draw chunk 4D0A8 func_800600C8 builds at the address its caller passes:
- * 0xB4 bytes of SPRTs from +0 (gpu_AddSpriteCells's cursor), then the DR_MODE
- * at +0xB4. func_800600C8 returns the chunk size, 0xC0. At most 5 SPRTs are
- * written: gpu_AddSpriteCells writes at most one per cell of the sheet header
- * it is given (cell count: the byte at +2); D_8009B6F0's header holds 3, and
- * D_8009B6FC's holds 1, drawn once per digit for up to two digits. */
+/* The draw chunk 4D0A8 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+ * builds at the address its caller passes: 0xB4 bytes of SPRTs from +0
+ * (gpu_AddSpriteCells's cursor), then the DR_MODE at +0xB4.
+ * gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite returns the chunk size,
+ * 0xC0. At most 5 SPRTs are written: gpu_AddSpriteCells writes at most one per
+ * cell of the sheet header it is given (cell count: the byte at +2);
+ * D_8009B6F0's header holds 3, and D_8009B6FC's holds 1, drawn once per digit
+ * for up to two digits. */
 typedef struct {
     SPRT unk_00[9];
     DR_MODE unk_B4;
 } Unk800600C8Rec;
 
-/* The draw chunk 4D0A8 func_80060414 builds at the address its caller passes:
- * one SPRT at +0 (gpu_AddSpriteCells's cursor; each of the three sheet headers
- * it may pass, D_8009B7AC / D_8009B7B8 / D_8009B7C4, has one cell: the count
- * byte at +2 is 1), then the DR_MODE at +0x14. It returns the chunk size, 0x2C;
- * the last 0xC bytes are never written. */
+/* The draw chunk 4D0A8 gpu_DrawSpriteAtPackedTablePosition builds at the
+ * address its caller passes: one SPRT at +0 (gpu_AddSpriteCells's cursor; each
+ * of the three sheet headers it may pass, D_8009B7AC / D_8009B7B8 / D_8009B7C4,
+ * has one cell: the count byte at +2 is 1), then the DR_MODE at +0x14. It
+ * returns the chunk size, 0x2C; the last 0xC bytes are never written. */
 typedef struct {
     SPRT unk_00;
     DR_MODE unk_14;
     u8 unk_20[0xC];
 } Unk80060414Rec;
 
-/* The draw chunk 4D0A8 func_80060544 builds at the address its caller passes:
- * SPRTs from +0 up to +0x4EC (63; gpu_AddSpriteCells's cursor), POLY_FT4s from
- * +0x4EC up to +0x5DC (6; gpu_AddScaledSpriteQuads's cursor), then the DR_MODE
- * at +0x5DC. It returns the chunk size, 0x5F4; the last 0xC bytes are never
- * written. The walkers write at most one primitive per cell of the sheet header
- * they are given (cell count: the byte at +2): at most 19 SPRTs
- * (D_8009B770[0..2] hold 5 / 4 / 4 cells, D_8009B7A0 4, D_8009B398[2] / [3] 1
- * each) and 1 POLY_FT4 (D_8009B770[3] holds 1). */
+/* The draw chunk 4D0A8 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+ * builds at the address its caller passes: SPRTs from +0 up to +0x4EC (63;
+ * gpu_AddSpriteCells's cursor), POLY_FT4s from +0x4EC up to +0x5DC (6;
+ * gpu_AddScaledSpriteQuads's cursor), then the DR_MODE at +0x5DC. It returns
+ * the chunk size, 0x5F4; the last 0xC bytes are never written. The walkers
+ * write at most one primitive per cell of the sheet header they are given (cell
+ * count: the byte at +2): at most 19 SPRTs (D_8009B770[0..2] hold 5 / 4 / 4
+ * cells, D_8009B7A0 4, D_8009B398[2] / [3] 1 each) and 1 POLY_FT4
+ * (D_8009B770[3] holds 1). */
 typedef struct {
     SPRT unk_00[63];
     POLY_FT4 unk_4EC[6];
@@ -467,9 +486,10 @@ typedef struct {
 } Unk80060544Rec;
 
 /* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is an
-   index (func_8005E54C reads it at
-   j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it; func_80060414 reads
-   player 0 round 0). Unk8009BD24Block.unk00. */
+   index (gpu_DrawPackedComparisonRowsAndTotals reads it at
+   j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it;
+   gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0).
+   Unk8009BD24Block.unk00. */
 typedef struct {
     u8 bd0;
     u8 unk1;
@@ -488,9 +508,9 @@ typedef struct {
 
 /* 0x8009BD24..0x8009BD57: the settings record GetWorkingRecord returns and
    64FD8 hands to menu_LoadResourcesInitStateSelectFirstEnabledRow /
-   func_8006E534 / menu_InitSelScreen, whose callees reach every field off that
-   one base (596CC D_800A3524, 5ED34 D_800A3568, SelWork.f00). Bit fields are
-   named by bit offset.
+   InitDisplayStateLoadPackAndSetEntryFlags / menu_InitSelScreen, whose callees
+   reach every field off that one base (596CC D_800A3524, 5ED34 D_800A3568,
+   SelWork.f00). Bit fields are named by bit offset.
    - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; menu_UpdateRowMenuStoreResult
    stores it), unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
    results-screen layout), unk14_12 (`== 2` tests), unk14_14, unk14_15 (one bit
@@ -589,7 +609,9 @@ typedef struct {
 } SelWork;
 
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
- * row; func_8006F100 and func_80071C4C index it [row][D_800A3590[row]]. */
+ * row; DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection and
+ * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
+ * index it [row][D_800A3590[row]]. */
 typedef struct {
     s16 x;
     s16 y;
@@ -603,8 +625,8 @@ typedef struct SelectEntryE534 {
 } SelectEntryE534;
 
 /* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
- * func_8005D814 uses x as a TILE's x0 (and w = 0x238 - x) and y as its y0 and
- * the text row. */
+ * gpu_DrawTimeFieldsAndDecimalCounter uses x as a TILE's x0 (and w = 0x238 - x)
+ * and y as its y0 and the text row. */
 typedef struct {
     s16 x;
     s16 y;
@@ -640,7 +662,7 @@ typedef struct {
 
 /* 0x8009B2BC: three {w, h} menu-frame sizes, one per mode (0x8009B2BC..
  * 0x8009B2C7; D_8009B2C8 follows, different data), indexed by mode in
- * func_8005C8A8. */
+ * gpu_DrawModeSizedPanelWithSelectedCellOpaque. */
 typedef struct {
     s16 w;
     s16 h;
@@ -696,11 +718,13 @@ typedef struct {
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
  * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object-model
- * evidence: func_8006F100 and menu_UpdateRow step one offset register by 3 per
- * slot; menu_UpdateEntryGridCursors reaches +0 / +1 / +2 through i * 3;
- * func_8006E534 stores byte +1 of both. `word` (Q33 union word view) is
- * func_8006E534's one word store of -1 over bytes 0..3; every other access goes
- * through rec[]. Every consumer is in the -G8 file src/main/5ED34.c (Q44/Q54).
+ * evidence: DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+ * and menu_UpdateRow step one offset register by 3 per slot;
+ * menu_UpdateEntryGridCursors reaches +0 / +1 / +2 through i * 3;
+ * InitDisplayStateLoadPackAndSetEntryFlags stores byte +1 of both. `word` (Q33
+ * union word view) is InitDisplayStateLoadPackAndSetEntryFlags's one word store
+ * of -1 over bytes 0..3; every other access goes through rec[]. Every consumer
+ * is in the -G8 file src/main/5ED34.c (Q44/Q54).
  */
 typedef struct {
     u8 unk0;
@@ -809,16 +833,18 @@ typedef struct {
     s16 vx, vy, vz, pad;
 } SVec4i16;
 
-/* D_80104E88[4]: the four 0x2C-byte records func_80032064 claims (first with
- * unk_00 == 0) and fight_UpdateBallisticRecords steps each frame (unk_02 counts
- * frames; unk_10 keeps the previous unk_04; unk_1C is added to unk_04 with
- * unk_1C.y growing by 0xD; the record is freed when
+/* D_80104E88[4]: the four 0x2C-byte records
+ * fight_CreateBallisticRecordAndDispatchEvent claims (first with unk_00 == 0)
+ * and fight_UpdateBallisticRecords steps each frame (unk_02 counts frames;
+ * unk_10 keeps the previous unk_04; unk_1C is added to unk_04 with unk_1C.y
+ * growing by 0xD; the record is freed when
  * collision_TestSegmentExtendingShortStartWithWork reports a hit or unk_04.y
  * passes unk_28). fight_TriggerOpposingFighterEventFromNearBallisticRecords
  * measures the distance from the other player's world_pos to unk_04 (unk_03 is
  * the owner). fight_ClearBallisticRecords clears unk_00 of all four. */
 typedef struct Unk80104E88Rec {
-    u8 unk_00; /* 0 = free; func_80032064's type (1 / 2) */
+    /* 0 = free; fight_CreateBallisticRecordAndDispatchEvent's type (1 / 2) */
+    u8 unk_00;
     u8 unk_01;
     u8 unk_02;
     u8 unk_03; /* player index (Unk80101EC8Record.index) */
@@ -1446,9 +1472,12 @@ typedef struct Unk800F1B18Rec {
  * zero flags word. The two extra halfwords are [mask lo, mask hi], except in a
  * 0x4000 paired entry (motion_FindPairedMoveEntry), whose four bytes are a
  * distance range (min, max, x 20), a target separation (x 20, stored to
- * D_800A371C: the distance func_8002BC68 pulls the two fighters toward) and a
- * flags byte (bit 7 tested; the low 7 bits, stored to D_800A38E8, are a frame
- * threshold for func_8002C0DC; fight_UpdatePairedMoves). */
+ * D_800A371C: the distance
+ * fighter_SetBasePositionSeparationCorrectionsAndGetDistance pulls the two
+ * fighters toward) and a flags byte (bit 7 tested; the low 7 bits, stored to
+ * D_800A38E8, are a frame threshold for
+ * fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents;
+ * fight_UpdatePairedMoves). */
 typedef struct MoveScript {
     u16 event_move_table_id;
     u16 fallback_move_id;
@@ -1812,8 +1841,8 @@ typedef struct {
 
 /* 6-row tables fight_UpdatePairedInputTotalsEventsAndMidpointEffects selects by
  * D_80101EC8[0].move_kind mode (row 0..5): unk0 scales the Judge sin/cos
- * offset, unk2 is added to y; D_8008EB6C[row] is passed as func_80032854's
- * arg1. */
+ * offset, unk2 is added to y; D_8008EB6C[row] is passed as
+ * fight_RecordReplayEventAndDispatchSoundOrEffect's arg1. */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -1961,11 +1990,12 @@ typedef struct Unk80101BF0Rec {
 /* The 4-byte record fight_SplitFrameCounterIntoMinutesSecondsHundredths fills
  * from the frame counter D_800A3858 (30 per second): unk_0 = count / 1800,
  * unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30 (99 / 59 / 99 past
- * 0x2BF1F). func_8005D814 draws the three as two-digit numbers;
- * fight_PackTimeRecordsAndInitPresentation copies them into its save record at
- * +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills only unk_2
- * = n / 30 and unk_3 = n % 30
- * * 100 / 30 from a frame countdown n, for func_8005F1C8 to draw. */
+ * 0x2BF1F). gpu_DrawTimeFieldsAndDecimalCounter draws the three as two-digit
+ * numbers; fight_PackTimeRecordsAndInitPresentation copies them into its save
+ * record at +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills
+ * only unk_2 = n / 30 and unk_3 = n % 30
+ * * 100 / 30 from a frame countdown n, for gpu_DrawPairedMarkRowsAndTimeFields
+ * to draw. */
 typedef struct Unk8001CD68Rec {
     s16 unk_0;
     u8 unk_2;
@@ -2057,14 +2087,17 @@ typedef struct {
  * count * 104). Each is a transform node of the Unk80101DF0Record layout paired
  * with one gpu_GetGridNodeRecordTable entry of the same index
  * (D_800A9CF8.unk10): node_InitFrameEntriesFromWorldTranslations initialises
- * the node and copies the paired entry's xf.mat.t into work.t; func_80044B30 /
- * func_80044800 run the node from the D_800A9CF8.unk8 key frames and queue it
- * on g_draw_queue. unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
- * func_80044B30, -2 done), unk5C the word Y angle func_80044B30 stores,
- * unk60 an s16 func_80044800 sets to 0x1000 at the last key frame and then
- * lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless D_800A9CF8.unk4 is
- * 4); +0x62..0x67 are not accessed. Not the Unk800A6690Rec layout: that
- * table's +0x58 is a byte. */
+ * the node and copies the paired entry's xf.mat.t into work.t;
+ * node_StartFrameAnimatedEntryAndInitPairedNode /
+ * node_AdvanceFrameAnimatedEntriesAndQueueDraws run the node from the
+ * D_800A9CF8.unk8 key frames and queue it on g_draw_queue. unk58 is a word
+ * frame counter (lw/sw: -1 idle, 0 started by
+ * node_StartFrameAnimatedEntryAndInitPairedNode, -2 done), unk5C the word Y
+ * angle node_StartFrameAnimatedEntryAndInitPairedNode stores, unk60 an s16
+ * node_AdvanceFrameAnimatedEntriesAndQueueDraws sets to 0x1000 at the last key
+ * frame and then lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless
+ * D_800A9CF8.unk4 is 4); +0x62..0x67 are not accessed. Not the Unk800A6690Rec
+ * layout: that table's +0x58 is a byte. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
@@ -2085,29 +2118,36 @@ typedef struct {
     s16 unk_08;
 } Unk80094B96Rec;
 
-/* The per-slot model object func_80045878 builds (0x1A88 bytes, its
- * arena_SetBlockEnd block) and D_800A9A10[] / slot_GetObject hand out. The
- * header (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
- * (slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers rebases them as
- * 0x15, 0x14 and 0x14 records), then three 20-entry pointer tables.
+/* The per-slot model object
+ * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock builds (0x1A88
+ * bytes, its arena_SetBlockEnd block) and D_800A9A10[] / slot_GetObject hand
+ * out. The header (0x00..0x2B) is followed by three arrays of 0x68-byte
+ * transform nodes (slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
+ * rebases them as 0x15, 0x14 and 0x14 records), then three 20-entry pointer
+ * tables.
  * - unk_00: flag word; slot_FinalizeObjectLoadSoundTexturesAndArena sets bit 1
  * and keeps the TIM-group request (D_80094B88[arena_id] & 0x1F) in bits 16..20,
  * which slot_RequestTimGroupsAndMarkReloadOnChange /
  * slot_GetLastLoadTimGroupRequest read as (word >> 16) & 0x1F; no code reads it
  * through half[].
- * - arena_id: func_80045878's a0, the arena_OpenBlock id and the D_800A9A10
- * index; load_status: 0, 1 after a fresh load (func_80045878), -2 to request a
- * reload (slot_RequestTimGroupsAndMarkReloadOnChange);
+ * - arena_id: slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0,
+ * the arena_OpenBlock id and the D_800A9A10 index; load_status: 0, 1 after a
+ * fresh load (slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock), -2 to
+ * request a reload (slot_RequestTimGroupsAndMarkReloadOnChange);
  * slot_FinalizeObjectLoadSoundTexturesAndArena returns at once when it is 0,
- * else clears it and runs its setup; unk_08: func_80045878's a1, indexing the
+ * else clears it and runs its setup; unk_08:
+ * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a1, indexing the
  * D_80094C68 / D_80094B48 tables.
- * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16
- * are the reloc_RelocateBlock / gpu_OffsetBlockTexPrimStreams ids);
- * position_scale: the Q12 scale node_InitObjectHierarchyFromTemplates sets from
- * D_80094C68.
- * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
- * bytes by node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor.
- * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 /
+ * - unk_10 / unk_14 / unk_16:
+ * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0 / a0 / a0 + 3
+ * (unk_14 / unk_16 are the reloc_RelocateBlock / gpu_OffsetBlockTexPrimStreams
+ * ids); position_scale: the Q12 scale node_InitObjectHierarchyFromTemplates
+ * sets from D_80094C68.
+ * - unk_18: written as the word 0x8000 by
+ * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock, read as three
+ * colour bytes by node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor.
+ * - unk_1C / unk_20: the resource blocks
+ * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock stores; unk_24 /
  * softbody_params: the attached Unk8003F62CRec block and the s16 list
  * softbody_SetupObject walks up to its -3 end (softbody_RebaseObject moves both
  * by its a1).
@@ -2420,13 +2460,14 @@ typedef struct {
     s16 unkC[6];
 } Unk800A3D40Rec;
 
-/* 5ED34's work block: the 0x14 bytes func_8006E534 keeps at the start of
- * gpu_InitPrimBufferPair's returned space (D_800A35C4; the arena cursor
- * D_800A356C moves past it), as 596CC's Unk800A34FCRec.
+/* 5ED34's work block: the 0x14 bytes InitDisplayStateLoadPackAndSetEntryFlags
+ * keeps at the start of gpu_InitPrimBufferPair's returned space (D_800A35C4;
+ * the arena cursor D_800A356C moves past it), as 596CC's Unk800A34FCRec.
  * - unk_00 / unk_04: one s16 per player each (counted down from 0x1E by the
  * draw handlers).
- * - unk_08: the frame counter func_8006EACC advances; unk_0C: its buffer
- * counter (bit 0 picks the half of the Unk8006E49CRec pair).
+ * - unk_08: the frame counter StepSlideBuildFrameRecordAndDispatchStateHandler
+ * advances; unk_0C: its buffer counter (bit 0 picks the half of the
+ * Unk8006E49CRec pair).
  * - unk_10: the draw offset the handlers hand to SetDrawOffset. */
 typedef struct {
     s16 unk_00[2];

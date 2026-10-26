@@ -317,7 +317,7 @@ glabel object_UpdatePool
     /* 21A28 80031228 0E000524 */   addiu     $a1, $zero, 0xE
     /* 21A2C 8003122C 1800A68F */  lw         $a2, 0x18($sp)
     /* 21A30 80031230 04000492 */  lbu        $a0, 0x4($s0)
-    /* 21A34 80031234 15CA000C */  jal        func_80032854
+    /* 21A34 80031234 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 21A38 80031238 21382002 */   addu      $a3, $s1, $zero
     /* 21A3C 8003123C 0EC60008 */  j          .L80031838
     /* 21A40 80031240 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -462,7 +462,7 @@ glabel object_UpdatePool
     /* 21C44 80031444 01000524 */   addiu     $a1, $zero, 0x1
     /* 21C48 80031448 04000492 */  lbu        $a0, 0x4($s0)
     /* 21C4C 8003144C 2130A002 */  addu       $a2, $s5, $zero
-    /* 21C50 80031450 15CA000C */  jal        func_80032854
+    /* 21C50 80031450 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 21C54 80031454 21380000 */   addu      $a3, $zero, $zero
   .L80031458:
     /* 21C58 80031458 00000886 */  lh         $t0, 0x0($s0)
@@ -556,7 +556,7 @@ glabel object_UpdatePool
   .L8003159C:
     /* 21D9C 8003159C 2B200400 */  sltu       $a0, $zero, $a0
   .L800315A0:
-    /* 21DA0 800315A0 15CA000C */  jal        func_80032854
+    /* 21DA0 800315A0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 21DA4 800315A4 00000000 */   nop
   .L800315A8:
     /* 21DA8 800315A8 05000392 */  lbu        $v1, 0x5($s0)
@@ -674,7 +674,7 @@ glabel object_UpdatePool
     /* 21F44 80031744 26068293 */  lbu        $v0, %gp_rel(D_800A36F2)($gp)
     /* 21F48 80031748 21380000 */  addu       $a3, $zero, $zero
     /* 21F4C 8003174C 26208200 */  xor        $a0, $a0, $v0
-    /* 21F50 80031750 15CA000C */  jal        func_80032854
+    /* 21F50 80031750 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 21F54 80031754 2B200400 */   sltu      $a0, $zero, $a0
   .L80031758:
     /* 21F58 80031758 05000292 */  lbu        $v0, 0x5($s0)

@@ -52,9 +52,9 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(t[s:e], "s32 f(void)\n{\n    return 1;\n}\n")
 
     def test_include_asm_line(self):
-        t = 'void a(void) {}\n\nINCLUDE_ASM("asm/funcs", func_80027640);\n\nvoid b(void) {}\n'
-        s, e = find_function_span(t, "func_80027640")
-        self.assertEqual(t[s:e], 'INCLUDE_ASM("asm/funcs", func_80027640);\n')
+        t = 'void a(void) {}\n\nINCLUDE_ASM("asm/funcs", fighter_RelocateAndStartEventMove);\n\nvoid b(void) {}\n'
+        s, e = find_function_span(t, "fighter_RelocateAndStartEventMove")
+        self.assertEqual(t[s:e], 'INCLUDE_ASM("asm/funcs", fighter_RelocateAndStartEventMove);\n')
 
     def test_missing_raises(self):
         with self.assertRaises(ValueError):

@@ -2941,7 +2941,7 @@ glabel fighter_Update
     /* 171C4 800269C4 21206002 */  addu       $a0, $s3, $zero
     /* 171C8 800269C8 2E000524 */  addiu      $a1, $zero, 0x2E
     /* 171CC 800269CC F4002626 */  addiu      $a2, $s1, 0xF4
-    /* 171D0 800269D0 15CA000C */  jal        func_80032854
+    /* 171D0 800269D0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 171D4 800269D4 21380000 */   addu      $a3, $zero, $zero
   .L800269D8:
     /* 171D8 800269D8 0C002386 */  lh         $v1, 0xC($s1)
@@ -3107,7 +3107,7 @@ glabel fighter_Update
     /* 17430 80026C30 02000524 */   addiu     $a1, $zero, 0x2
     /* 17434 80026C34 01000524 */  addiu      $a1, $zero, 0x1
   .L80026C38:
-    /* 17438 80026C38 19C8000C */  jal        func_80032064
+    /* 17438 80026C38 19C8000C */  jal        fight_CreateBallisticRecordAndDispatchEvent
     /* 1743C 80026C3C 21202002 */   addu      $a0, $s1, $zero
   .L80026C40:
     /* 17440 80026C40 6A002396 */  lhu        $v1, 0x6A($s1)
@@ -3135,7 +3135,7 @@ glabel fighter_Update
     /* 17494 80026C94 0A000324 */  addiu      $v1, $zero, 0xA
     /* 17498 80026C98 4A0323A2 */  sb         $v1, 0x34A($s1)
     /* 1749C 80026C9C FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 174A0 80026CA0 15CA000C */  jal        func_80032854
+    /* 174A0 80026CA0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 174A4 80026CA4 4B0322A2 */   sb        $v0, 0x34B($s1)
   .L80026CA8:
     /* 174A8 80026CA8 46002286 */  lh         $v0, 0x46($s1)

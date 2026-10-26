@@ -71,7 +71,7 @@ glabel object_ThrowQueuedKind
     /* 210CC 800308CC 21380000 */  addu       $a3, $zero, $zero
     /* 210D0 800308D0 26206400 */  xor        $a0, $v1, $a0
   .L800308D4:
-    /* 210D4 800308D4 15CA000C */  jal        func_80032854
+    /* 210D4 800308D4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 210D8 800308D8 2B200400 */   sltu      $a0, $zero, $a0
     /* 210DC 800308DC 21106002 */  addu       $v0, $s3, $zero
   .L800308E0:

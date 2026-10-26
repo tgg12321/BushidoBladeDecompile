@@ -515,7 +515,7 @@ glabel menu_UpdateEntryGrid
     /* 60920 80070120 5600A2A7 */   sh        $v0, 0x56($sp)
     /* 60924 80070124 62C0010C */  jal        menu_UpdateEntryGridCursors
     /* 60928 80070128 21208002 */   addu      $a0, $s4, $zero
-    /* 6092C 8007012C 3DBB010C */  jal        func_8006ECF4
+    /* 6092C 8007012C 3DBB010C */  jal        gpu_UploadAndDrawSelectedEntryQuads
     /* 60930 80070130 21208002 */   addu      $a0, $s4, $zero
     /* 60934 80070134 98048293 */  lbu        $v0, %gp_rel(D_800A3564)($gp)
     /* 60938 80070138 88048397 */  lhu        $v1, %gp_rel(D_800A3554)($gp)
@@ -523,7 +523,7 @@ glabel menu_UpdateEntryGrid
     /* 60940 80070140 1D0283A3 */  sb         $v1, %gp_rel(D_800A32E9)($gp)
     /* 60944 80070144 84CB010C */  jal        gpu_AddGradientPanel
     /* 60948 80070148 21208002 */   addu      $a0, $s4, $zero
-    /* 6094C 8007014C 80CC010C */  jal        func_80073200
+    /* 6094C 8007014C 80CC010C */  jal        gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
     /* 60950 80070150 21208002 */   addu      $a0, $s4, $zero
     /* 60954 80070154 8400BF8F */  lw         $ra, 0x84($sp)
     /* 60958 80070158 8000BE8F */  lw         $fp, 0x80($sp)

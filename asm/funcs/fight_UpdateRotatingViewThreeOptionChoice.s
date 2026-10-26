@@ -37,7 +37,7 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D230 8003CA30 1738A590 */  lbu        $a1, %lo(D_800A3817)($a1)
     /* 2D234 8003CA34 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* 2D238 8003CA38 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
-    /* 2D23C 8003CA3C 2A72010C */  jal        func_8005C8A8
+    /* 2D23C 8003CA3C 2A72010C */  jal        gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 2D240 8003CA40 21380000 */   addu      $a3, $zero, $zero
     /* 2D244 8003CA44 02004104 */  bgez       $v0, .L8003CA50
     /* 2D248 8003CA48 0010043C */   lui       $a0, (0x10001000 >> 16)
@@ -118,7 +118,7 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D358 8003CB58 21200000 */   addu      $a0, $zero, $zero
     /* 2D35C 8003CB5C 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* 2D360 8003CB60 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* 2D364 8003CB64 A67E010C */  jal        func_8005FA98
+    /* 2D364 8003CB64 A67E010C */  jal        gpu_DrawSelectedStretchedSpritePair
     /* 2D368 8003CB68 01000624 */   addiu     $a2, $zero, 0x1
     /* 2D36C 8003CB6C 02004104 */  bgez       $v0, .L8003CB78
     /* 2D370 8003CB70 00000000 */   nop

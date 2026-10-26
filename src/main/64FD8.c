@@ -1086,7 +1086,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     work = (void *)(arg0 + 0x58);
     D_800A35D8 = (Unk8006E49CRec *)arg0;
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
-    func_8006E950(6, work);
+    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(6, work);
     r = menu_RelocateSelLists(work);
     {
         Unk80076FF8Rec *list = work;
@@ -1302,13 +1302,14 @@ void StoreCompactedBits(s32 arg0) {
 }
 
 s32 InitWithCachedValueAndStoredBitsBlackBg(s32 a0) {
-    func_8006E534(a0, D_800A35E0, &D_8009BD24, D_800A35E8);
+    InitDisplayStateLoadPackAndSetEntryFlags(
+        a0, D_800A35E0, &D_8009BD24, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 
 s32 StepThenCloseVab1OnNonzero(s32 arg0, s32 arg1) {
-    s32 ret = func_8006EACC(arg0, arg1);
+    s32 ret = StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, arg1);
     if (ret) {
         snd_CloseVab1();
     }
@@ -1603,7 +1604,7 @@ s32 InitTimedSpriteSequence(s32 arg0) {
     s0 = (Ctx77D94 *)(arg0 + 0x58);
     D_800A35F4 = (Unk8006E49CRec *)arg0;
     D_800A35F8 = s0;
-    func_8006E950(0x32, &s0->unk_00);
+    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x32, &s0->unk_00);
     r = reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)s0);
     gpu_InitPrimBufferPair(r, D_800A35F4);
     D_800A35FC = 0;
@@ -1704,7 +1705,7 @@ s32 InitScrollingSpriteDisplay(s32 arg0) {
     s0 = (Unk80078824Rec *)(arg0 + 0x58);
     D_800A360C = (Unk8006E49CRec *)arg0;
     D_800A3610 = s0;
-    func_8006E950(0x5F, &s0->unk_00);
+    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x5F, &s0->unk_00);
     gpu_InitPrimBufferPair(GetScrollingSpriteRecordWord1(s0), D_800A360C);
     D_800A3304 = 0;
     D_800A3608 = 0;

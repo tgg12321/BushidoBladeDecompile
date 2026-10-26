@@ -61,7 +61,7 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F36C 8001EB6C E238A590 */  lbu        $a1, %lo(D_800A38E2)($a1)
     /* F370 8001EB70 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* F374 8001EB74 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
-    /* F378 8001EB78 0576010C */  jal        func_8005D814
+    /* F378 8001EB78 0576010C */  jal        gpu_DrawTimeFieldsAndDecimalCounter
     /* F37C 8001EB7C 01000724 */   addiu     $a3, $zero, 0x1
     /* F380 8001EB80 02004104 */  bgez       $v0, .L8001EB8C
     /* F384 8001EB84 00000000 */   nop
@@ -84,7 +84,7 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F3C0 8001EBC0 1738A590 */  lbu        $a1, %lo(D_800A3817)($a1)
     /* F3C4 8001EBC4 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* F3C8 8001EBC8 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
-    /* F3CC 8001EBCC 2A72010C */  jal        func_8005C8A8
+    /* F3CC 8001EBCC 2A72010C */  jal        gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* F3D0 8001EBD0 21380000 */   addu      $a3, $zero, $zero
     /* F3D4 8001EBD4 02004104 */  bgez       $v0, .L8001EBE0
     /* F3D8 8001EBD8 0010043C */   lui       $a0, (0x10001000 >> 16)
@@ -191,7 +191,7 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F554 8001ED54 21200000 */   addu      $a0, $zero, $zero
     /* F558 8001ED58 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* F55C 8001ED5C B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* F560 8001ED60 A67E010C */  jal        func_8005FA98
+    /* F560 8001ED60 A67E010C */  jal        gpu_DrawSelectedStretchedSpritePair
     /* F564 8001ED64 01000624 */   addiu     $a2, $zero, 0x1
     /* F568 8001ED68 02004104 */  bgez       $v0, .L8001ED74
     /* F56C 8001ED6C 00000000 */   nop

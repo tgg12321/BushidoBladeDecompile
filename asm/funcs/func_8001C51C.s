@@ -53,7 +53,7 @@ glabel func_8001C51C
     /* CDE0 8001C5E0 483722A0 */  sb         $v0, %lo(D_800A3748)($at)
     /* CDE4 8001C5E4 49C1000C */  jal        object_FreeAttachedObjects
     /* CDE8 8001C5E8 00000000 */   nop
-    /* CDEC 8001C5EC 41C3000C */  jal        func_80030D04
+    /* CDEC 8001C5EC 41C3000C */  jal        object_ClearFixedKindRange
     /* CDF0 8001C5F0 00000000 */   nop
     /* CDF4 8001C5F4 56FB0426 */  addiu      $a0, $s0, -0x4AA
     /* CDF8 8001C5F8 A56C000C */  jal        camera_InitTwoFighterView

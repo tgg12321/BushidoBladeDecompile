@@ -189,7 +189,7 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 1785C 8002705C 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 17860 80027060 F4000626 */  addiu      $a2, $s0, 0xF4
   .L80027064:
-    /* 17864 80027064 15CA000C */  jal        func_80032854
+    /* 17864 80027064 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 17868 80027068 21380000 */   addu      $a3, $zero, $zero
   .L8002706C:
     /* 1786C 8002706C 8C0220AE */  sw         $zero, 0x28C($s1)
@@ -358,7 +358,7 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17AB4 800272B4 0980013C */  lui        $at, %hi(D_8008EB6C)
     /* 17AB8 800272B8 21083200 */  addu       $at, $at, $s2
     /* 17ABC 800272BC 6CEB2590 */  lbu        $a1, %lo(D_8008EB6C)($at)
-    /* 17AC0 800272C0 15CA000C */  jal        func_80032854
+    /* 17AC0 800272C0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 17AC4 800272C4 21380000 */   addu      $a3, $zero, $zero
     /* 17AC8 800272C8 B79C0008 */  j          .L800272DC
     /* 17ACC 800272CC 00000000 */   nop

@@ -10,7 +10,7 @@ glabel fight_UpdateTimeRecordPresentation
     /* 2D0D4 8003C8D4 01004224 */  addiu      $v0, $v0, 0x1
     /* 2D0D8 8003C8D8 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* 2D0DC 8003C8DC B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
-    /* 2D0E0 8003C8E0 DA81010C */  jal        func_80060768
+    /* 2D0E0 8003C8E0 DA81010C */  jal        gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 2D0E4 8003C8E4 01000524 */   addiu     $a1, $zero, 0x1
     /* 2D0E8 8003C8E8 02004104 */  bgez       $v0, .L8003C8F4
     /* 2D0EC 8003C8EC 4000053C */   lui       $a1, (0x400040 >> 16)
@@ -36,7 +36,7 @@ glabel fight_UpdateTimeRecordPresentation
     /* 2D138 8003C938 03004014 */  bnez       $v0, .L8003C948
     /* 2D13C 8003C93C 00000000 */   nop
   .L8003C940:
-    /* 2D140 8003C940 F9CF000C */  jal        func_80033FE4
+    /* 2D140 8003C940 F9CF000C */  jal        fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 2D144 8003C944 00000000 */   nop
   .L8003C948:
     /* 2D148 8003C948 1000BF8F */  lw         $ra, 0x10($sp)

@@ -57,7 +57,7 @@ glabel fight_ScanCommandStreamAndLoadImage
     /* 2B714 8003AF14 4E83000C */  jal        motion_InvalidateMarkedNdataPackAndClearSlot1Id
     /* 2B718 8003AF18 00000000 */   nop
     /* 2B71C 8003AF1C 21200002 */  addu       $a0, $s0, $zero
-    /* 2B720 8003AF20 AB80010C */  jal        func_800602AC
+    /* 2B720 8003AF20 AB80010C */  jal        gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions
     /* 2B724 8003AF24 21282002 */   addu      $a1, $s1, $zero
   .L8003AF28:
     /* 2B728 8003AF28 1800BF8F */  lw         $ra, 0x18($sp)

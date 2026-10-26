@@ -549,9 +549,10 @@ void gpu_OffsetBlockTexPrimStreamsByPages(
         a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
 }
 
-/* Old-style definition: the only caller, func_80045B68, passes every
- * argument as a plain int (no sign-extension at the call site), so no
- * prototype was in scope there; the body narrows each argument itself. */
+/* Old-style definition: the only caller,
+ * resource_LoadSelectedEntriesTexturesAndSound, passes every argument as a
+ * plain int (no sign-extension at the call site), so no prototype was in scope
+ * there; the body narrows each argument itself. */
 void gpu_OffsetBlockTexPrimStream(arg0, arg1, arg2, arg3, arg4, arg5) s16 arg0;
 s16 arg1;
 s16 arg2;

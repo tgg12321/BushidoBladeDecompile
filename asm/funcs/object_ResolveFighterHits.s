@@ -238,7 +238,7 @@ glabel object_ResolveFighterHits
     /* 226BC 80031EBC 26068293 */  lbu        $v0, %gp_rel(D_800A36F2)($gp)
     /* 226C0 80031EC0 21380000 */  addu       $a3, $zero, $zero
     /* 226C4 80031EC4 26208200 */  xor        $a0, $a0, $v0
-    /* 226C8 80031EC8 15CA000C */  jal        func_80032854
+    /* 226C8 80031EC8 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 226CC 80031ECC 2B200400 */   sltu      $a0, $zero, $a0
     /* 226D0 80031ED0 0200C587 */  lh         $a1, 0x2($fp)
     /* 226D4 80031ED4 4000A48F */  lw         $a0, 0x40($sp)
@@ -276,7 +276,7 @@ glabel object_ResolveFighterHits
     /* 2274C 80031F4C 0A80073C */  lui        $a3, %hi(D_800A37E8)
     /* 22750 80031F50 E837E724 */  addiu      $a3, $a3, %lo(D_800A37E8)
     /* 22754 80031F54 2130C900 */  addu       $a2, $a2, $t1
-    /* 22758 80031F58 15CA000C */  jal        func_80032854
+    /* 22758 80031F58 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 2275C 80031F5C 21304600 */   addu      $a2, $v0, $a2
     /* 22760 80031F60 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 22764 80031F64 FAC70008 */  j          .L80031FE8
@@ -308,7 +308,7 @@ glabel object_ResolveFighterHits
     /* 227C4 80031FC4 2130C200 */  addu       $a2, $a2, $v0
     /* 227C8 80031FC8 26206400 */  xor        $a0, $v1, $a0
   .L80031FCC:
-    /* 227CC 80031FCC 15CA000C */  jal        func_80032854
+    /* 227CC 80031FCC 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 227D0 80031FD0 2B200400 */   sltu      $a0, $zero, $a0
   .L80031FD4:
     /* 227D4 80031FD4 2800A48F */  lw         $a0, 0x28($sp)

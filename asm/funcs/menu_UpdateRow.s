@@ -185,11 +185,11 @@ glabel menu_UpdateRow
     /* 61730 80070F30 0C004224 */  addiu      $v0, $v0, 0xC
     /* 61734 80070F34 DEC3010C */  jal        menu_UpdateRowCursors
     /* 61738 80070F38 180022AE */   sw        $v0, 0x18($s1)
-    /* 6173C 80070F3C 3DBB010C */  jal        func_8006ECF4
+    /* 6173C 80070F3C 3DBB010C */  jal        gpu_UploadAndDrawSelectedEntryQuads
     /* 61740 80070F40 21202002 */   addu      $a0, $s1, $zero
     /* 61744 80070F44 84CB010C */  jal        gpu_AddGradientPanel
     /* 61748 80070F48 21202002 */   addu      $a0, $s1, $zero
-    /* 6174C 80070F4C 80CC010C */  jal        func_80073200
+    /* 6174C 80070F4C 80CC010C */  jal        gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
     /* 61750 80070F50 21202002 */   addu      $a0, $s1, $zero
     /* 61754 80070F54 7C00BF8F */  lw         $ra, 0x7C($sp)
     /* 61758 80070F58 7800B48F */  lw         $s4, 0x78($sp)

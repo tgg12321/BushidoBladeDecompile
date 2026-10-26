@@ -194,11 +194,11 @@ glabel fight_ProcessPositionRecordsInQuad
     /* 19B84 80029384 21284002 */  addu       $a1, $s2, $zero
   .L80029388:
     /* 19B88 80029388 21302002 */  addu       $a2, $s1, $zero
-    /* 19B8C 8002938C 20BF000C */  jal        func_8002FC80
+    /* 19B8C 8002938C 20BF000C */  jal        math_TriangleNormalYawWithPositiveYHalfTurn
     /* 19B90 80029390 1800A8AF */   sw        $t0, 0x18($sp)
     /* 19B94 80029394 1800A88F */  lw         $t0, 0x18($sp)
     /* 19B98 80029398 21284000 */  addu       $a1, $v0, $zero
-    /* 19B9C 8002939C CC12010C */  jal        func_80044B30
+    /* 19B9C 8002939C CC12010C */  jal        node_StartFrameAnimatedEntryAndInitPairedNode
     /* 19BA0 800293A0 21200001 */   addu      $a0, $t0, $zero
     /* 19BA4 800293A4 54CD000C */  jal        snd_QueuePositionSequence
     /* 19BA8 800293A8 21208002 */   addu      $a0, $s4, $zero

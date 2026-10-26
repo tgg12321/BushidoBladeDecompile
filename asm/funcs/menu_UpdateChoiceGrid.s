@@ -715,7 +715,7 @@ glabel menu_UpdateChoiceGrid
   .L80072B78:
     /* 63378 80072B78 84CB010C */  jal        gpu_AddGradientPanel
     /* 6337C 80072B7C 21208002 */   addu      $a0, $s4, $zero
-    /* 63380 80072B80 80CC010C */  jal        func_80073200
+    /* 63380 80072B80 80CC010C */  jal        gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
     /* 63384 80072B84 21208002 */   addu      $a0, $s4, $zero
     /* 63388 80072B88 B471010C */  jal        snd_FlushSoundQueue
     /* 6338C 80072B8C 00000000 */   nop

@@ -1,0 +1,1 @@
+{"func": "gpu_UploadAndDrawSelectedEntryQuads", "addr": "8006ECF4", "verdict": "PASS", "body_hash": "d731b69218e947e5", "body_kind": "c", "file": "main/5ED34", "reviewer": "cheat-reviewer-fakeb2-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T10:19:34Z", "head": "3e929cfa7", "notes": "", "renamed_from": ["func_8006ECF4"]}

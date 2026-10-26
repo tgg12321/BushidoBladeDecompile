@@ -1197,7 +1197,7 @@ void func_8001C51C(void) {
     D_800A382E = 0;
     D_800A3748 = -1;
     object_FreeAttachedObjects();
-    func_80030D04();
+    object_ClearFixedKindRange();
     camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
     replay_Reset();
     fighter_AssignMotionSlotAndScanDataIdNibbles(1);
@@ -1324,7 +1324,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
     case 3:
         if (D_80101EC8[0].is_defeated != 0)
             break;
-        if (func_80033DF4() == 0)
+        if (fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags() == 0)
             goto end;
         D_800A390D = 1;
         gpu_ResetGraphMode1();
@@ -1447,8 +1447,9 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
     Unk8001CD68Rec buf;
 
     if (D_800A38DC == 1) {
-        g_prim_buf_cursor +=
-            func_8005E51C(D_800A3783, (s32)g_prim_buf_cursor, 1) / 4;
+        g_prim_buf_cursor += gpu_DrawDecrementedSingleSideCounter(
+                                 D_800A3783, (s32)g_prim_buf_cursor, 1) /
+                             4;
     } else if (D_800A38DC == 3) {
         if (D_80101EC8[0].is_defeated == 0 &&
             (D_80101EC8[1].is_defeated == 0 || D_800A38E2 != 100)) {
@@ -1458,11 +1459,13 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             }
         }
         fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-        g_prim_buf_cursor +=
-            func_8005D814(&buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) / 4;
+        g_prim_buf_cursor += gpu_DrawTimeFieldsAndDecimalCounter(
+                                 &buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) /
+                             4;
     } else if ((D_800A38DC == 2 && D_800A389A == 1) || D_800A38DC == 4) {
         g_prim_buf_cursor +=
-            func_8005E098(D_800A37D2, D_800A37D3, (s32)g_prim_buf_cursor, 1) /
+            gpu_DrawTwoDigitCounterWithOptionalSecondSide(
+                D_800A37D2, D_800A37D3, (s32)g_prim_buf_cursor, 1) /
             4;
     } else if (D_800A38DC == 5) {
         /* temp holds two values (Ruling 11, ordinary-c-judge-decidable): the
@@ -1488,8 +1491,9 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 D_800A3834 = 0;
             }
         } else if (D_800A37E1 != 0) {
-            g_prim_buf_cursor +=
-                func_8005FA98(2, (s32)g_prim_buf_cursor, 1) / 4;
+            g_prim_buf_cursor += gpu_DrawSelectedStretchedSpritePair(
+                                     2, (s32)g_prim_buf_cursor, 1) /
+                                 4;
             if (++D_800A37E1 == 0x3C) {
                 D_800A37E1 = 0;
                 if (D_800A38B0 != 2) {
@@ -1514,8 +1518,9 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 }
             }
         } else if (D_800A3920 != 0) {
-            g_prim_buf_cursor +=
-                func_8005FA98(1, (s32)g_prim_buf_cursor, 1) / 4;
+            g_prim_buf_cursor += gpu_DrawSelectedStretchedSpritePair(
+                                     1, (s32)g_prim_buf_cursor, 1) /
+                                 4;
             if (++D_800A3920 == 0x1E) {
                 snd_QueueSound(0xA1, 0x7F, 0x7F);
             }
@@ -1612,10 +1617,11 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             buf.unk_3 = temp % 30 * 100 / 30;
         }
         g_prim_buf_cursor +=
-            func_8005F1C8(&buf,
-                          D_800A3898[0] | (D_800A38AA[0] << 8) |
-                              (D_800A3898[1] << 4) | (D_800A38AA[1] << 12),
-                          (s32)g_prim_buf_cursor, 1) /
+            gpu_DrawPairedMarkRowsAndTimeFields(
+                &buf,
+                D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) |
+                    (D_800A38AA[1] << 12),
+                (s32)g_prim_buf_cursor, 1) /
             4;
     }
 }
@@ -1637,7 +1643,7 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
             D_800A36A4, s2);
-        func_8002906C();
+        fight_ClearPositionRecordUsage();
         snd_CloseListedVabs();
 
         s1 = snd_ReloadListedVabsFromFileAndInstallBillboards(
@@ -2142,12 +2148,14 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     snd_UpdateStageSounds();
     if (D_800A38DC == 3) {
         fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-        g_prim_buf_cursor +=
-            func_8005D814(&buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) / 4;
+        g_prim_buf_cursor += gpu_DrawTimeFieldsAndDecimalCounter(
+                                 &buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) /
+                             4;
     }
     if (D_800A3929 == 0) {
-        g_prim_buf_cursor +=
-            func_8005C8A8(1, D_800A3817, (s32)g_prim_buf_cursor, 0) / 4;
+        g_prim_buf_cursor += gpu_DrawModeSizedPanelWithSelectedCellOpaque(
+                                 1, D_800A3817, (s32)g_prim_buf_cursor, 0) /
+                             4;
         if ((g_pad_state.pressed & 0x10001000) != 0) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3817 != D_800A3804) {
@@ -2179,7 +2187,9 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
         return;
     }
     if (D_800A3817 == 0) {
-        g_prim_buf_cursor += func_8005FA98(0, (s32)g_prim_buf_cursor, 1) / 4;
+        g_prim_buf_cursor +=
+            gpu_DrawSelectedStretchedSpritePair(0, (s32)g_prim_buf_cursor, 1) /
+            4;
     }
     D_800A3929 = D_800A3929 + 1;
     if (D_800A3929 < 0x3C)
@@ -2757,7 +2767,7 @@ void fight_UpdatePairedMoves(void) {
         pos[0] = (rec->world_pos.x + rec->other->world_pos.x) / 2;
         pos[1] = (rec->world_pos.y + rec->other->world_pos.y) / 2;
         pos[2] = (rec->world_pos.z + rec->other->world_pos.z) / 2;
-        func_80032854(i, 0x10, pos, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(i, 0x10, pos, 0);
         return;
     }
 }
@@ -2864,10 +2874,11 @@ void fighter_StoreBoneLocalVectorAndArmEventTrigger(
  * (counter & 7) == 2, the vector fighter_StoreBoneLocalVectorAndArmEventTrigger
  * stored at rec->unk_354 is rotated by matrix rec->unk_352 of
  * node_GetSlotMatrixPointerArray(var_2) (GTE MVMVA), scaled by (150 - counter)
- * / 150, negated when its y exceeds 0x800, and handed to func_80032854 with
- * scratchpad point SPAD->unkA8[var_2][rec->unk_352]. The counter is cleared on
- * every call that finds it running (the original stores 0 under `>= 150` and
- * then again unconditionally). */
+ * / 150, negated when its y exceeds 0x800, and handed to
+ * fight_RecordReplayEventAndDispatchSoundOrEffect with scratchpad point
+ * SPAD->unkA8[var_2][rec->unk_352]. The counter is cleared on every call that
+ * finds it running (the original stores 0 under `>= 150` and then again
+ * unconditionally). */
 void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
     s32 mac[3];
     s16 out[3];
@@ -2893,7 +2904,8 @@ void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
                 out[1] = -out[1];
                 out[2] = -out[2];
             }
-            func_80032854(var_2, 4, &SPAD->unkA8[var_2][rec->unk_352].x, out);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                var_2, 4, &SPAD->unkA8[var_2][rec->unk_352].x, out);
         }
         if (rec->unk_350 >= 0x96) {
             rec->unk_350 = 0;
@@ -5185,7 +5197,8 @@ skip_62:
         MATRIX **var_37 = node_GetSlotMatrixPointerArray(arg0);
         if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 ||
             D_800A37A0 != 1 || arg0 != D_800A37A0) {
-            func_80032854(arg0, 0x2E, &rec->world_pos.x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                arg0, 0x2E, &rec->world_pos.x, 0);
         }
         if (rec->unk_0C != 0x1F) {
             object_SpawnScatteredAt(
@@ -5227,13 +5240,15 @@ skip_62:
         }
         if (rec->move_kind == 0x12 && rec->move_frame == rec->unk_A7 &&
             ((0x78 >> rec->unk_B1) & 1) && rec->unk_26C != 0) {
-            func_80032064(rec, ((0x18 >> rec->unk_B1) & 1) ? 1 : 2);
+            fight_CreateBallisticRecordAndDispatchEvent(
+                rec, ((0x18 >> rec->unk_B1) & 1) ? 1 : 2);
         }
         if (rec->move_kind == 0x10 && rec->move_frame == rec->unk_AC &&
             rec->unk_26C != 0 && rec->unk_34B != 0) {
             rec->unk_34A = 0xA;
             rec->unk_34B--;
-            func_80032854(arg0, 0x31, &rec->world_pos.x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                arg0, 0x31, &rec->world_pos.x, 0);
         }
         if (rec->unk_46 == 0 &&
             (rec->move_kind != 0x11 || arg0 == D_800A38AE)) {

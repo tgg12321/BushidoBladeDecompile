@@ -498,7 +498,8 @@ u8 D_8008E75C[28] = {4,  5,  3,  1,  24, 9,  23, 6, 8, 22, 0, 0, 26, 12,
                      19, 13, 29, 31, 27, 28, 17, 2, 0, 0,  0, 0, 0,  0};
 
 /* [D_800A38E2 - 1][0] + 0x1B -> cpu_profile (fighter_InitCpuControl); also
- * func_80033DF4; 100 rows from the gap. */
+ * fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags; 100 rows from the gap.
+ */
 u8 D_8008E778[100][4] = {
     {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},
     {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},
@@ -526,7 +527,8 @@ u8 D_8008E778[100][4] = {
     {3, 112, 112, 32}, {3, 80, 32, 175},  {3, 48, 48, 255},  {3, 255, 255, 48},
     {3, 48, 255, 48},  {2, 144, 48, 144}, {2, 255, 48, 48},  {4, 0, 0, 0}};
 
-/* func_80033DF4's move rows (with D_8008EC24's rank rows). */
+/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's move rows (with
+ * D_8008EC24's rank rows). */
 u8 D_8008E908[2][5] = {{7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
 
 /* 38 rows indexed by D_800A36A4 (g_fight_start_position_pairs also has 38
@@ -634,7 +636,7 @@ s16 D_8008EB40[3][3] = {{-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
 Tbl8008EB54Entry D_8008EB54[6] = {{0, -1280}, {-149, -680}, {-112, -1280},
                                   {0, -1280}, {112, -1280}, {149, -680}};
 
-/* func_80032854's arg1 per D_8008EB54 row. */
+/* fight_RecordReplayEventAndDispatchSoundOrEffect's arg1 per D_8008EB54 row. */
 u8 D_8008EB6C[6] = {5, 8, 7, 6, 7, 8};
 
 /* fighter_ResolveBoneHit's table */
@@ -655,8 +657,8 @@ u16 D_8008EBA0[22] = {
     0xFE00, 0xFE80, 0x500,  0x480, 0x200,  0x180, 0xFD00, 0xFD80,
     0xFF00, 0xFF80, 0x300,  0x280, 0x100,  0x80};
 
-/* fighter_DispatchFrameEvent / func_80032854; D_8008EBCC and D_8008EBE0
- * sized from the gaps. */
+/* fighter_DispatchFrameEvent / fight_RecordReplayEventAndDispatchSoundOrEffect;
+ * D_8008EBCC and D_8008EBE0 sized from the gaps. */
 s32 D_8008EBCC[5] = {0, 51, 58, 65, 72};
 
 s32 D_8008EBE0[5] = {0, 262144, 131072, 393216, 0};
@@ -674,7 +676,7 @@ const char *D_8008EC08[7] = {
     D_800A316C, D_800A3164, g_str_practice, g_str_chanbara,
     D_800A3160, D_800A3158, D_800A3150};
 
-/* func_80033DF4's rank rows. */
+/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's rank rows. */
 u8 D_8008EC24[2][5] = {{58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};
 
 /* 25788.c's D_800A36CC per setting (D_8008EC30[p->unk14_12]). */

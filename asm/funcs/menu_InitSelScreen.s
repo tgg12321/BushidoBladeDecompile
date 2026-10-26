@@ -19,7 +19,7 @@ glabel menu_InitSelScreen
     /* 678FC 800770FC A81A010C */  jal        resource_FreeSlotsAndBlocksAndInvalidateEntryCache
     /* 67900 80077100 00000000 */   nop
     /* 67904 80077104 06000424 */  addiu      $a0, $zero, 0x6
-    /* 67908 80077108 54BA010C */  jal        func_8006E950
+    /* 67908 80077108 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 6790C 8007710C 21282002 */   addu      $a1, $s1, $zero
     /* 67910 80077110 FEDB010C */  jal        menu_RelocateSelLists
     /* 67914 80077114 21202002 */   addu      $a0, $s1, $zero

@@ -270,7 +270,7 @@ void resource_RebaseLoadedBlockSections(s32 a0, s32 a1) {
     case 4:
     case 7:
     case 18:
-        func_80044C70(a1);
+        resource_RebaseFrameAnimatedEntryBlockAndPointers(a1);
         break;
     case 13:
         reloc_RebaseBlock(8);
@@ -409,7 +409,7 @@ void resource_FreeSlotsAndBlocksAndInvalidateEntryCache(void) {
     slot_ReleaseObjectAndResources(0);
     slot_ReleaseObjectAndResources(1);
     resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks();
-    func_80046020();
+    resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
     resource_InvalidateEntrySelectionCache();
     resource_FreeNodeAssetBlock();
 }
@@ -658,7 +658,7 @@ s16 *camera_CalcAngles(void) {
 
 void func_8004746C(void) { node_InitFrameEntriesFromWorldTranslations(); }
 
-void func_8004748C(void) { func_80044800(); }
+void func_8004748C(void) { node_AdvanceFrameAnimatedEntriesAndQueueDraws(); }
 
 void func_800474AC(void) { gpu_InitVramScroll(0, 0); }
 
@@ -666,7 +666,7 @@ void func_800474D0(void) { gpu_QueueVramScroll(0); }
 
 void func_800474F0(void) { node_InitFrameEntriesFromWorldTranslations(); }
 
-void func_80047510(void) { func_80044800(); }
+void func_80047510(void) { node_AdvanceFrameAnimatedEntriesAndQueueDraws(); }
 
 void wave_InitCallback(void) { wave_Init(); }
 
@@ -731,7 +731,7 @@ void func_8004775C(void) { gpu_QueueVramScroll(0); }
 
 void func_8004777C(void) { node_InitFrameEntriesFromWorldTranslations(); }
 
-void func_8004779C(void) { func_80044800(); }
+void func_8004779C(void) { node_AdvanceFrameAnimatedEntriesAndQueueDraws(); }
 
 void func_800477BC(void) {}
 
@@ -1881,8 +1881,9 @@ end:
         var_4 = 0;
     }
     if (var_4 == 0) {
-        func_80046020();
-        func_80045B68(D_800A33EC, i, D_800EF980, arg0);
+        resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
+        resource_LoadSelectedEntriesTexturesAndSound(
+            D_800A33EC, i, D_800EF980, arg0);
         gpu_BuildFogBlockLevels();
     }
 }

@@ -6,11 +6,11 @@
  *    empty, so 596CC.c's D_8009BC04 follows at 0x8009BC04. No uninitialized
  *    objects.
  * 2. Small objects in .data, each with its own readers: D_8009B450 (two
- *    points, func_8005D814), the single cells D_8009B488, D_8009B4FC ..
- *    D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the one-record
- *    TexRec tables D_8009B8C8 .. D_8009B9E8 and the SVECTORs D_8009BBE4 ..
- *    D_8009BBFC (51268.c). Under -G8 the original compiler puts them in
- *    .sdata, so no -G8 file defined them.
+ *    points, gpu_DrawTimeFieldsAndDecimalCounter), the single cells D_8009B488,
+ * D_8009B4FC .. D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the
+ * one-record TexRec tables D_8009B8C8 .. D_8009B9E8 and the SVECTORs D_8009BBE4
+ * .. D_8009BBFC (51268.c). Under -G8 the original compiler puts them in .sdata,
+ * so no -G8 file defined them.
  * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005C8A8 + 0x41C0 = 0x80060A68); so no code module owns them.

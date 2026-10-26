@@ -4,7 +4,7 @@ glabel slot_ReleaseObjectAndResources
     /* 31DCC 800415CC 1400BFAF */  sw         $ra, 0x14($sp)
     /* 31DD0 800415D0 5B00010C */  jal        softbody_FreeObjectById
     /* 31DD4 800415D4 21808000 */   addu      $s0, $a0, $zero
-    /* 31DD8 800415D8 9416010C */  jal        func_80045A50
+    /* 31DD8 800415D8 9416010C */  jal        slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks
     /* 31DDC 800415DC 21200002 */   addu      $a0, $s0, $zero
     /* 31DE0 800415E0 80801000 */  sll        $s0, $s0, 2
     /* 31DE4 800415E4 0B80013C */  lui        $at, %hi(D_800A9A10)

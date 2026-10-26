@@ -51,7 +51,7 @@ glabel fighter_DispatchBoneHitSoundEvent
   .L80027970:
     /* 18170 80027970 04004484 */  lh         $a0, 0x4($v0)
   .L80027974:
-    /* 18174 80027974 15CA000C */  jal        func_80032854
+    /* 18174 80027974 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 18178 80027978 21380000 */   addu      $a3, $zero, $zero
   .L8002797C:
     /* 1817C 8002797C 1000BF8F */  lw         $ra, 0x10($sp)

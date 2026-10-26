@@ -43,7 +43,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7D94 80017594 00000000 */   nop
     /* 7D98 80017598 5200A010 */  beqz       $a1, .L800176E4
     /* 7D9C 8001759C 00000000 */   nop
-    /* 7DA0 800175A0 1B75010C */  jal        func_8005D46C
+    /* 7DA0 800175A0 1B75010C */  jal        gpu_DrawFixedSpritePairWithSelectedSheets
     /* 7DA4 800175A4 21204002 */   addu      $a0, $s2, $zero
     /* 7DA8 800175A8 DC058393 */  lbu        $v1, %gp_rel(D_800A36A8)($gp)
     /* 7DAC 800175AC 00000000 */  nop
@@ -58,7 +58,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7DD0 800175D0 21204002 */  addu       $a0, $s2, $zero
   .L800175D4:
     /* 7DD4 800175D4 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
-    /* 7DD8 800175D8 5575010C */  jal        func_8005D554
+    /* 7DD8 800175D8 5575010C */  jal        gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 7DDC 800175DC 01001026 */   addiu     $s0, $s0, 0x1
     /* 7DE0 800175E0 21904000 */  addu       $s2, $v0, $zero
     /* 7DE4 800175E4 2A101102 */  slt        $v0, $s0, $s1
@@ -73,14 +73,14 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E04 80017604 37004014 */  bnez       $v0, .L800176E4
     /* 7E08 80017608 00000000 */   nop
     /* 7E0C 8001760C 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
-    /* 7E10 80017610 5575010C */  jal        func_8005D554
+    /* 7E10 80017610 5575010C */  jal        gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 7E14 80017614 21204002 */   addu      $a0, $s2, $zero
     /* 7E18 80017618 B95D0008 */  j          .L800176E4
     /* 7E1C 8001761C 00000000 */   nop
   .L80017620:
     /* 7E20 80017620 B806848F */  lw         $a0, %gp_rel(D_800A3784)($gp)
     /* 7E24 80017624 21284002 */  addu       $a1, $s2, $zero
-    /* 7E28 80017628 5379010C */  jal        func_8005E54C
+    /* 7E28 80017628 5379010C */  jal        gpu_DrawPackedComparisonRowsAndTotals
     /* 7E2C 8001762C 21300000 */   addu      $a2, $zero, $zero
     /* 7E30 80017630 B95D0008 */  j          .L800176E4
     /* 7E34 80017634 00000000 */   nop
@@ -130,7 +130,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
   .L800176D4:
     /* 7ED4 800176D4 21202002 */  addu       $a0, $s1, $zero
     /* 7ED8 800176D8 21284002 */  addu       $a1, $s2, $zero
-    /* 7EDC 800176DC 0581010C */  jal        func_80060414
+    /* 7EDC 800176DC 0581010C */  jal        gpu_DrawSpriteAtPackedTablePosition
     /* 7EE0 800176E0 21300000 */   addu      $a2, $zero, $zero
   .L800176E4:
     /* 7EE4 800176E4 8006848F */  lw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)

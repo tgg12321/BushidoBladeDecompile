@@ -74,7 +74,7 @@ glabel fight_InitImageAndPlaybackPresentation
   .L8003C144:
     /* 2C944 8003C144 1180053C */  lui        $a1, (0x80118800 >> 16)
   .L8003C148:
-    /* 2C948 8003C148 F27E010C */  jal        func_8005FBC8
+    /* 2C948 8003C148 F27E010C */  jal        gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe
     /* 2C94C 8003C14C 0088A534 */   ori       $a1, $a1, (0x80118800 & 0xFFFF)
     /* 2C950 8003C150 0A80033C */  lui        $v1, %hi(D_800A38A4)
     /* 2C954 8003C154 A4386390 */  lbu        $v1, %lo(D_800A38A4)($v1)

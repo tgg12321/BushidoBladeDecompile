@@ -26,9 +26,10 @@ extern u8 D_800A38AB;
 
 /* replay_RecordEvent (28708.c: u8, u8, s32 *, u16 *) and
  * eff_StartRecycledYawedParticlesWithTextureSelection (51268.c: s32 *, s32,
- * s32) are called without a prototype: the u8 prototype narrows func_80032854's
- * arguments, and eff_StartRecycledYawedParticlesWithTextureSelection is called
- * with two of its three arguments. */
+ * s32) are called without a prototype: the u8 prototype narrows
+ * fight_RecordReplayEventAndDispatchSoundOrEffect's arguments, and
+ * eff_StartRecycledYawedParticlesWithTextureSelection is called with two of its
+ * three arguments. */
 extern void replay_RecordEvent();
 extern void eff_StartRecycledYawedParticlesWithTextureSelection();
 
@@ -67,13 +68,14 @@ void motion_SetFixedChannelBlock(MotionFrame *arg0) {
     arg0->unk_0C[0x23] = 0xBCD;
 }
 
-/* func_8002738C ORs limb bits into `*(&D_800A376A + a0)`; its only caller
- * passes a0 = 0 (fighter_ResolveBoneHit), so D_800A376B (written 0 elsewhere,
- * never read) is not reached from here. FAKE (Q97): two u8 scalars; as u8[2],
+/* fighter_AccumulateBoneGroupFlagWhenGameModeZero ORs limb bits into
+ * `*(&D_800A376A + a0)`; its only caller passes a0 = 0
+ * (fighter_ResolveBoneHit), so D_800A376B (written 0 elsewhere, never read) is
+ * not reached from here. FAKE (Q97): two u8 scalars; as u8[2],
  * fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState /
  * fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
  * were reported at 12 / 16 (not banked). */
-void func_8002738C(s32 a0, s32 a1) {
+void fighter_AccumulateBoneGroupFlagWhenGameModeZero(s32 a0, s32 a1) {
     if (D_800A38DC != 0) {
         return;
     }
@@ -186,7 +188,7 @@ void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
     arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)var_1));
 }
 
-void func_80027640(Unk80101EC8Record *arg0) {
+void fighter_RelocateAndStartEventMove(Unk80101EC8Record *arg0) {
     VECTOR var_0;
     VECTOR var_1;
     s32 idx;
@@ -244,7 +246,8 @@ void func_80027640(Unk80101EC8Record *arg0) {
         arg0, arg0->cur_move->event_move_table_id, &arg0->move_is_common);
     r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->move_is_common);
     fighter_StartMoveScript(idx, r2, arg0->move_is_common);
-    func_80032854(arg0->index, 0x30, &arg0->world_pos.x, 0);
+    fight_RecordReplayEventAndDispatchSoundOrEffect(
+        arg0->index, 0x30, &arg0->world_pos.x, 0);
 }
 
 void fighter_DispatchBoneHitSoundEvent(
@@ -257,7 +260,8 @@ void fighter_DispatchBoneHitSoundEvent(
     }
 
     if (stack_v1 != 0) {
-        func_80032854(ptr->other->index, 0x2B, stack_a2, (s16 *)0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            ptr->other->index, 0x2B, stack_a2, (s16 *)0);
         return;
     }
 
@@ -267,30 +271,35 @@ void fighter_DispatchBoneHitSoundEvent(
         s16 f8E = chk_obj->unk_8E;
 
         if (f86 == f8E) {
-            func_80032854(chk_obj->index, 0x28, stack_a2, (s16 *)0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                chk_obj->index, 0x28, stack_a2, (s16 *)0);
             return;
         }
 
         {
             s16 f88 = chk_obj->unk_88;
             if (f86 == f88 && a3 != 0) {
-                func_80032854(chk_obj->index, 0x27, stack_a2, (s16 *)0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    chk_obj->index, 0x27, stack_a2, (s16 *)0);
                 return;
             }
         }
     }
 
     if (arg2 == 0) {
-        func_80032854(ptr->other->index, 0x22, stack_a2, (s16 *)0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            ptr->other->index, 0x22, stack_a2, (s16 *)0);
         return;
     }
 
     if (arg2 < 6) {
-        func_80032854(ptr->other->index, 0x23, stack_a2, (s16 *)0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            ptr->other->index, 0x23, stack_a2, (s16 *)0);
         return;
     }
 
-    func_80032854(ptr->other->index, 0x24, stack_a2, (s16 *)0);
+    fight_RecordReplayEventAndDispatchSoundOrEffect(
+        ptr->other->index, 0x24, stack_a2, (s16 *)0);
 }
 
 s32 func_8002798C(Unk80101EC8Record *a0) {
@@ -340,7 +349,7 @@ static inline s32 fighter_ResolveBoneHitTail(
         arg1->unk_272++;
     }
     arg1->pending_move_event = 5;
-    func_80032854(var_4, 3, scr, 0);
+    fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
     fighter_TryDropQueuedHeadAtBone(arg1);
     return 0;
 }
@@ -393,13 +402,14 @@ s32 fighter_ResolveBoneHit(
             if (arg0 == 0 && var_5->pending_move_event == -1) {
                 var_5->pending_move_event = var_0 == NULL ? 0xB : 0x19;
             }
-            func_80032854(var_4, 0x12, scr, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                var_4, 0x12, scr, 0);
             return 0;
         }
     }
     if (arg1->unk_0C == 0xD && arg1->is_defeated == 0 &&
         arg1->move_kind != 0x2E) {
-        func_80027640(arg1);
+        fighter_RelocateAndStartEventMove(arg1);
         return 2;
     }
     var_8 = arg1->move_kind;
@@ -422,19 +432,28 @@ s32 fighter_ResolveBoneHit(
             sign = (u32)diff >> 31;
             var_12 = arg1->unk_AF == var_5->unk_AF;
             arg1->unk_B4 = var_5->unk_B4 = var_12;
-            func_80032854(var_4, var_12 ? 0xF : 2, scr, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                var_4, var_12 ? 0xF : 2, scr, 0);
             code = arg1->pending_move_event = D_8008EB74[var_10][sign][var_12];
             if (code == 0) {
-                func_80032854(var_4 == 0, 0x25, scr, 0);
-                func_80032854(var_4, 0x25, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4 == 0, 0x25, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x25, scr, 0);
             } else if (code == 1) {
-                func_80032854(var_4 == 0, 0x26, scr, 0);
-                func_80032854(var_4, 0x25, scr, 0);
-                func_80032854(var_4, 0x2D, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4 == 0, 0x26, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x25, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x2D, scr, 0);
             } else if (code == 2) {
-                func_80032854(var_4 == 0, 0x26, scr, 0);
-                func_80032854(var_4, 0x26, scr, 0);
-                func_80032854(var_4, 0x2D, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4 == 0, 0x26, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x26, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x2D, scr, 0);
                 fighter_TryDropQueuedHeadAtBone(arg1);
             } else {
                 return 0;
@@ -451,15 +470,19 @@ s32 fighter_ResolveBoneHit(
         }
         if (arg0 == 1) {
             if (var_0->unkC == 0) {
-                func_80032854(var_4, 2, scr, 0);
-                func_80032854(var_4, 0x25, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 2, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x25, scr, 0);
                 arg1->pending_move_event = 0;
                 *out = arg0;
                 return 0;
             }
             if (var_0->unkC == 1) {
-                func_80032854(var_4, 2, scr, 0);
-                func_80032854(var_4, 0x25, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 2, scr, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    var_4, 0x25, scr, 0);
                 arg1->pending_move_event = 1;
                 fighter_SetTurnDelta(arg1, ratan2(vec[0], vec[2]));
                 arg1->unk_134.vx -= vec[0] / 16;
@@ -470,7 +493,7 @@ s32 fighter_ResolveBoneHit(
         }
     }
     if (D_800A38DC == 0 && var_4 == 0) {
-        func_8002738C(0, arg2);
+        fighter_AccumulateBoneGroupFlagWhenGameModeZero(0, arg2);
     }
     fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
     var_8 = arg1->move_kind;
@@ -481,7 +504,7 @@ s32 fighter_ResolveBoneHit(
             return 1;
         }
         arg1->pending_move_event = arg1->unk_1DA ? 3 : 4;
-        func_80032854(var_4, 3, scr, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
         fighter_AccumulateOrClearByBoneGroup(arg1, arg2, 1);
         return 0;
     }
@@ -491,7 +514,7 @@ s32 fighter_ResolveBoneHit(
             fighter_AccumulateOrClearByBoneGroup(
                 arg1, arg2, var_0->unkD == 2 ? 2 : 1);
             arg1->pending_move_event = 0x1B;
-            func_80032854(var_4, 3, scr, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
             return 0;
         }
     }
@@ -532,7 +555,7 @@ s32 fighter_ResolveBoneHit(
         }
         arg1->pending_move_event = 4;
         arg1->unk_90 = 0;
-        func_80032854(var_4, 3, scr, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
         fighter_TryDropQueuedHeadAtBone(arg1);
         arg1->unk_8A = 0;
         return 0;
@@ -544,7 +567,7 @@ s32 fighter_ResolveBoneHit(
             arg1->unk_270++;
         }
         arg1->pending_move_event = 5;
-        func_80032854(var_4, 3, scr, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
         fighter_TryDropQueuedHeadAtBone(arg1);
         return 0;
     case 14:
@@ -559,7 +582,7 @@ s32 fighter_ResolveBoneHit(
             arg1->unk_26E++;
         }
         arg1->pending_move_event = 3;
-        func_80032854(var_4, 3, scr, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
         fighter_TryDropQueuedHeadAtBone(arg1);
         return 0;
     }
@@ -631,8 +654,10 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                 do_store_calls:
                     arg0->pending_move_event = var_v0;
                 do_calls:
-                    func_80032854(arg0->index, 1, arg1, (s16 *)0);
-                    func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
+                        arg0->index, 1, arg1, (s16 *)0);
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
+                        arg0->index, 0x25, arg1, (s16 *)0);
                     return ret;
                 }
                 goto block_49;
@@ -645,8 +670,10 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                      * register allocation; without it score 12
                      * (do-while-zero-exception) */
                     do {
-                        func_80032854(arg0->index, 1, arg1, (s16 *)0);
-                        func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            arg0->index, 1, arg1, (s16 *)0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            arg0->index, 0x25, arg1, (s16 *)0);
                     } while (0);
                     if (arg0->unk_288[temp_a1_2] == 5) {
                         if (arg0->unk_0E == 6 || arg0->unk_0E == 7 ||
@@ -688,8 +715,10 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                     arg0->pending_move_event = var_v0_4;
                     goto do_calls;
                 }
-                func_80032854(arg0->index, 0x26, arg1, (s16 *)0);
-                func_80032854(arg0->index, 0x2D, arg1, (s16 *)0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    arg0->index, 0x26, arg1, (s16 *)0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    arg0->index, 0x2D, arg1, (s16 *)0);
                 var_v0_2 = 0x1A;
                 if (var_s1 == 0) {
                     s32 temp_v1_4 = -arg0->orientation.vy;
@@ -889,7 +918,8 @@ void fighter_ResolveBodyOverlap(void) {
     if (flag1) {
         if (flag2) {
             if (var_19 > 0x600) {
-                func_80032854(0, 0x21, &D_80101EC8[0].world_pos.x, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    0, 0x21, &D_80101EC8[0].world_pos.x, 0);
                 D_80101EC8[1].pending_move_event = 0xF;
                 D_80101EC8[0].pending_move_event = 0xF;
                 fighter_TryDropQueuedHeadAtBone(&D_80101EC8[0]);
@@ -904,8 +934,10 @@ void fighter_ResolveBodyOverlap(void) {
             if (var_19 > 0x600 && D_80101EC8[1].move_kind == 0x15) {
                 if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
                     D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
-                    func_80032854(1, 0x21, &D_80101EC8[1].world_pos.x, 0);
-                    func_80032854(1, 0x2D, &D_80101EC8[1].world_pos.x, 0);
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
+                        1, 0x21, &D_80101EC8[1].world_pos.x, 0);
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
+                        1, 0x2D, &D_80101EC8[1].world_pos.x, 0);
                     D_80101EC8[1].pending_move_event = 5;
                 } else {
                     D_800A38A8 = 1;
@@ -921,8 +953,10 @@ void fighter_ResolveBodyOverlap(void) {
         if (var_19 > 0x600 && D_80101EC8[0].move_kind == 0x15) {
             if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
                 D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
-                func_80032854(0, 0x21, &D_80101EC8[0].world_pos.x, 0);
-                func_80032854(0, 0x2D, &D_80101EC8[0].world_pos.x, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    0, 0x21, &D_80101EC8[0].world_pos.x, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    0, 0x2D, &D_80101EC8[0].world_pos.x, 0);
                 D_80101EC8[0].pending_move_event = 5;
             } else {
                 D_800A38A8 = 1;
@@ -939,7 +973,8 @@ void fighter_ResolveBodyOverlap(void) {
 }
 
 /* One 16-byte entry of the list fight_GetPositionRecordList returns (terminated
- * by a zero `type`); func_8002906C clears every entry's `used`. */
+ * by a zero `type`); fight_ClearPositionRecordUsage clears every entry's
+ * `used`. */
 typedef struct {
     s16 type;
     s16 used;
@@ -948,7 +983,7 @@ typedef struct {
     s32 z;
 } PosRec;
 
-void func_8002906C(void) {
+void fight_ClearPositionRecordUsage(void) {
     PosRec *ptr = (PosRec *)fight_GetPositionRecordList();
     while (ptr->type != 0) {
         ptr->used = 0;
@@ -957,17 +992,19 @@ void func_8002906C(void) {
 }
 
 s32 math_PointInTriangleXZ(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
-s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2);
+s32 math_TriangleNormalYawWithPositiveYHalfTurn(
+    VECTOR *a0, VECTOR *a1, VECTOR *a2);
 void snd_QueuePositionSequence(Unk80107850Rec *arg0);
 
 /* Tests the unused PosRec entries inside grid `idx`'s x/z bounds against the
  * grid's two triangles (points 0,1,2 and 1,2,3) with math_PointInTriangleXZ.
  * `tbl` holds two 2x2 grids of points (entry idx * 4 + row * 2 + col); the
  * bounds go to the scratch record at 0x1F8002B8. A type-2 hit restarts on grid
- * 1 when `flag` is set and idx is 0; otherwise it calls func_80044B30 /
- * snd_QueuePositionSequence, marks the entry used and returns 0. Any other hit,
- * or a miss with `flag` set and idx not 0, stores the average of unk78.y and
- * the top y in unk100[0].y and returns
+ * 1 when `flag` is set and idx is 0; otherwise it calls
+ * node_StartFrameAnimatedEntryAndInitPairedNode / snd_QueuePositionSequence,
+ * marks the entry used and returns 0. Any other hit, or a miss with `flag` set
+ * and idx not 0, stores the average of unk78.y and the top y in unk100[0].y and
+ * returns
  * 1. Returns 0 when the list runs out. */
 s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
@@ -978,7 +1015,7 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     s32 i;
     s32 n;
     /* two values: the grid row i / 2, then the list index passed to
-     * func_80044B30 (Ruling 11) */
+     * node_StartFrameAnimatedEntryAndInitPairedNode (Ruling 11) */
     s32 temp;
     /* two values: the grid column i & 1, then the triangle number
      * (Ruling 11) */
@@ -1042,8 +1079,9 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
                     temp2 = -1;
                     continue;
                 }
-                func_80044B30(
-                    temp, func_8002FC80((VECTOR *)a, (VECTOR *)b, (VECTOR *)c));
+                node_StartFrameAnimatedEntryAndInitPairedNode(
+                    temp, math_TriangleNormalYawWithPositiveYHalfTurn(
+                              (VECTOR *)a, (VECTOR *)b, (VECTOR *)c));
                 snd_QueuePositionSequence(a);
                 rec->used = 1;
                 return 0;
@@ -1144,18 +1182,24 @@ s32 fighter_ProcessWeaponContacts(void) {
             rec->move_frame <= rec->weapon_hit_end_frames[0] &&
             fight_ProcessPositionRecordsInQuad(
                 0, rec->unk_0E == 4 || rec->unk_0E == 5, var_1) != 0) {
-            func_80032854(i, 1, &scr->unk100[0].x, 0);
-            func_80032854(i, 0x26, &scr->unk100[0].x, 0);
-            func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 1, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 0x26, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 0x2D, &scr->unk100[0].x, 0);
             rec->pending_move_event = rec->unk_8C != 0 ? 0x19 : 0xB;
             rec->unk_AD = 0;
         } else if (rec->unk_8C != 0 &&
                    rec->move_frame >= rec->weapon_hit_start_frames[1] &&
                    rec->move_frame <= rec->weapon_hit_end_frames[1] &&
                    fight_ProcessPositionRecordsInQuad(1, 0, var_1) != 0) {
-            func_80032854(i, 1, &scr->unk100[0].x, 0);
-            func_80032854(i, 0x26, &scr->unk100[0].x, 0);
-            func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 1, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 0x26, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 0x2D, &scr->unk100[0].x, 0);
             rec->pending_move_event = 0xB;
             rec->unk_AD = 0;
         }
@@ -1494,7 +1538,8 @@ void fighter_CastWeaponSegment(
     scr->unkF8.vy = ratan2(dx, dz);
     scr->unkF8.vz = 0;
     if (arg3 == 0) {
-        func_80032854(id == 0, 0xB, &scr->unkC8.x, &scr->unkF8.vx);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            id == 0, 0xB, &scr->unkC8.x, &scr->unkF8.vx);
     }
     len_sq = dx * dx + dy * dy + dz * dz;
     if ((u32)len_sq < 0x400) {
@@ -1567,7 +1612,8 @@ void fighter_CastWeaponSegment(
             *arg1 = 0;
         }
         if (arg3 == 0) {
-            func_80032854(id == 0, 0xA, &scr->unk100[0].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                id == 0, 0xA, &scr->unk100[0].x, 0);
         }
     }
 done:
@@ -1675,7 +1721,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 fighter_CastWeaponSegment(var_4, &var_5, &var_6, 0);
                 mask_a |= var_5;
             } else {
-                func_80032854(
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
                     i == 0, 0x32,
                     i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
                 var_10 = 0;
@@ -1692,7 +1738,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
             fighter_CastWeaponSegment(
                 var_4, &var_5, &var_6, var_3->unk_0C == 0xE);
-            func_80032854(
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i == 0, 0x2A,
                 i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
             mask_a |= var_5;
@@ -1840,7 +1886,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         if (mode == 1) {
             math_NegNormalize3D(&var_3->weapon_point_delta[0].vx, var_1);
-            func_80032854(i, 4, &SPAD->unkA8[i][idx].x, var_1);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                i, 4, &SPAD->unkA8[i][idx].x, var_1);
             return;
         }
         var_24 = 0;
@@ -1928,14 +1975,16 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                     if (var_4->unk_0E == 6 || var_4->unk_0E == 7 ||
                         var_3->unk_0E == 6 || var_3->unk_0E == 7) {
                         var_3->pending_move_event = 5;
-                        func_80032854(i == 0, 0x21,
-                                      i == 0 ? &D_80101EC8[1].world_pos.x
-                                             : &D_80101EC8[0].world_pos.x,
-                                      0);
-                        func_80032854(i == 0, 0x2D,
-                                      i == 0 ? &D_80101EC8[1].world_pos.x
-                                             : &D_80101EC8[0].world_pos.x,
-                                      0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            i == 0, 0x21,
+                            i == 0 ? &D_80101EC8[1].world_pos.x
+                                   : &D_80101EC8[0].world_pos.x,
+                            0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            i == 0, 0x2D,
+                            i == 0 ? &D_80101EC8[1].world_pos.x
+                                   : &D_80101EC8[0].world_pos.x,
+                            0);
                     } else {
                         D_800A38A8 = 1;
                         D_800A3876 = i;
@@ -1985,7 +2034,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
     }
 }
 
-s32 func_8002BC68(s32 arg0) {
+s32 fighter_SetBasePositionSeparationCorrectionsAndGetDistance(s32 arg0) {
     s32 temp_a3;
     s32 temp_t1;
     s32 var_a0;
@@ -2081,12 +2130,13 @@ s32 fighter_CalcSeparationErrorAndOpposedOffsets(void) {
     return (s32)var_t0 - 0x44C;
 }
 
-void func_8002C0DC(void) {
+void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
     s32 i;
     Unk80101EC8Record *var_s0;
     s32 temp_s2;
 
-    temp_s2 = func_8002BC68(D_800A371C);
+    temp_s2 =
+        fighter_SetBasePositionSeparationCorrectionsAndGetDistance(D_800A371C);
 
     for (i = 0; i < 2; i++) {
         Unk80101EC8Record *e = &D_80101EC8[i];
@@ -2231,7 +2281,7 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
         mode == 0x1F || mode == 0x20 || mode == 0x21) {
         fight_UpdatePairedInputTotalsEventsAndMidpointEffects();
     } else if (mode == 0x11) {
-        func_8002C0DC();
+        fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents();
     } else {
         fighter_TriggerOpponentResponseOnMoveFrame();
         fighter_ResolveBodyOverlap();
@@ -3565,7 +3615,8 @@ void math_ComposeAxisRotationsAndRewriteAngles(
     angles[2] = -ang_z;
 }
 
-s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
+s32 math_TriangleNormalYawWithPositiveYHalfTurn(
+    VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     Vec3i32 *p;
     s32 ret;
 
@@ -3727,7 +3778,7 @@ void object_SubmitPoolTransforms(void) {
     }
 }
 
-void func_8003032C(s32 *a0, s16 *a1) {
+void math_ReflectAndDampRecordVector(s32 *a0, s16 *a1) {
     s32 angle;
     s32 cos_val;
     s32 sin_val;
@@ -3878,9 +3929,11 @@ s32 object_ThrowQueuedKind(Unk80101EC8Record *a0) {
     a0->carried_object_count--;
     kind = obj->kind;
     if (kind == 0xE) {
-        func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
     } else {
-        func_80032854((kind ^ D_800A36F2[0]) != 0, 0x2A, &obj->pos.x, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            (kind ^ D_800A36F2[0]) != 0, 0x2A, &obj->pos.x, 0);
     }
     return id;
 }
@@ -3992,17 +4045,18 @@ s32 object_PickUpNearby(Unk80101EC8Record *arg0) {
         old_val = p->kind;
         p->kind = -1;
         if (old_val == 0xE) {
-            func_80032854(
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
                 (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &arg0->world_pos.x, 0);
         } else {
-            func_80032854(arg0->index, 0x11, &arg0->world_pos.x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                arg0->index, 0x11, &arg0->world_pos.x, 0);
         }
         return old_val;
     }
     return -1;
 }
 
-void func_80030D04(void) {
+void object_ClearFixedKindRange(void) {
     s32 i = 0;
     do {
         if (g_object_pool[i].kind >= 0x12 && g_object_pool[i].kind < 0x1E) {
@@ -4024,8 +4078,9 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
 /* Per-frame update of the twelve 0x64-byte records at g_object_pool: velocity
  * turn, spin decay, gravity, collision test through
  * collision_TestSegmentExtendingShortStartWithWork, reflection off the returned
- * normal, func_80032854 cues, and the rest / re-hop logic. Scratch vectors live
- * in its layout of the scratchpad area at 0x1F8002B8 (Unk1F8002B8_8005344C). */
+ * normal, fight_RecordReplayEventAndDispatchSoundOrEffect cues, and the rest /
+ * re-hop logic. Scratch vectors live in its layout of the scratchpad area at
+ * 0x1F8002B8 (Unk1F8002B8_8005344C). */
 void object_UpdatePool(void) {
     Unk1F8002B8_8005344C *scr;
     Obj80106A78 *obj;
@@ -4117,7 +4172,8 @@ void object_UpdatePool(void) {
         }
         if (temp != 0) {
             if (obj->kind == 0xF) {
-                func_80032854(obj->owner, 0xE, &scr->unk10.x, var_7);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    obj->owner, 0xE, &scr->unk10.x, var_7);
                 obj->kind = -1;
                 continue;
             }
@@ -4139,22 +4195,26 @@ void object_UpdatePool(void) {
                     obj->rot_vel[1] +=
                         (rng_Next() & 1) ? var_5 / 64 : -var_5 / 64;
                     if (obj->kind != 0xE && obj->unk_04 != 0) {
-                        func_80032854(obj->owner, 1, &obj->pos.x, 0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            obj->owner, 1, &obj->pos.x, 0);
                     }
                 }
                 if (obj->kind == 0xE) {
                     if (obj->unk_04 != 0) {
-                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F,
-                                      &obj->pos.x, 0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x,
+                            0);
                     }
                 } else if (obj->kind < 0x12) {
                     if (var_5 > 0x10) {
-                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2C,
-                                      &obj->pos.x, 0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            (obj->kind ^ D_800A36F2[0]) != 0, 0x2C, &obj->pos.x,
+                            0);
                     }
                 } else if (obj->kind >= 0x12 && obj->kind < 0x1E) {
                     if (var_5 > 0x10) {
-                        func_80032854(obj->owner, 0x29, &obj->pos.x, 0);
+                        fight_RecordReplayEventAndDispatchSoundOrEffect(
+                            obj->owner, 0x29, &obj->pos.x, 0);
                     }
                 }
             } else if (scr->unk30[1] >= -0x7FF && kind == 0xE) {
@@ -4165,7 +4225,7 @@ void object_UpdatePool(void) {
                     obj->vel.y = -150;
                     obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                     obj->unk_05 = 2;
-                    func_80032854(
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
                         (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
                 }
             }
@@ -4203,7 +4263,7 @@ void object_UpdatePool(void) {
                 obj->vel.y = -150;
                 obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                 obj->unk_05 = 2;
-                func_80032854(
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
                     (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
             }
         }
@@ -4363,8 +4423,9 @@ void object_ResolveFighterHits(void) {
         if (r == 2)
             continue;
         if (r != 0) {
-            func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
-                          &SPAD->unkA8[var_6][j].x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                (obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
+                &SPAD->unkA8[var_6][j].x, 0);
             object_AttachToOpponentBone(obj, rec->bone);
             obj->unk_04 = 0;
             var_7 = var_5->move_kind;
@@ -4375,19 +4436,21 @@ void object_ResolveFighterHits(void) {
         }
         kind = obj->kind;
         if (kind == 0xF) {
-            func_80032854(
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
                 var_6 ^ 1, 0xE, &SPAD->unkA8[var_6][j].x,
                 /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
-                 * by the first's address, passed to func_80032854 (Q96 / Q117;
+                 * by the first's address, passed to
+                 * fight_RecordReplayEventAndDispatchSoundOrEffect (Q96 / Q117;
                  * as s16[3] or {x,y,z}, fighter_ResolveBoneHit scores 2) */
                 &D_800A37E8);
             obj->kind = -1;
             continue;
         }
         if (kind == 0xE) {
-            func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
         } else if (flag == 0) {
-            func_80032854(
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
                 (kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[var_6][j].x, 0);
         }
         object_DeflectFromFighterHit(scr, obj, j);
@@ -4402,7 +4465,8 @@ void fight_ClearBallisticRecords(void) {
     }
 }
 
-Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
+Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
+    Unk80101EC8Record *src, s32 type) {
     s32 speed = 0x50;
     /* FAKE: constant holder for -0xC8 (stored to unk_1C.y); the literal
      * reorders the li pair: score 7 (y store moved after .z: 8, before .x:
@@ -4441,7 +4505,8 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     s0->unk_10 = s0->unk_04;
     s0->unk_28 = src->collision_pos.vy;
     var_5[1] = src->orientation.vy;
-    func_80032854(src->unk_B2, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
+    fight_RecordReplayEventAndDispatchSoundOrEffect(
+        src->unk_B2, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
     return s0;
 }
 
@@ -4673,7 +4738,8 @@ void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
     snd_QueueSound(arg0, var_9, var_10);
 }
 
-void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
+void fight_RecordReplayEventAndDispatchSoundOrEffect(
+    s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     s32 s0;
     s32 s4;
 
@@ -4870,7 +4936,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                     pos, obj->unk_1BA, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
                     obj->index);
                 if ((0x60 >> obj->unk_B1) & 1) {
-                    func_80032854(obj->index, 9, pos, 0);
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
+                        obj->index, 9, pos, 0);
                 }
             }
         } else if (D_800A36A4 == 14) {
@@ -4879,7 +4946,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[0] = obj->unk_198[0].x;
                 pos[1] = obj->unk_1B0[0];
                 pos[2] = obj->unk_198[0].z;
-                func_80032854(obj->index, 9, pos, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    obj->index, 9, pos, 0);
             }
         }
         break;
@@ -4893,7 +4961,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                     pos, obj->unk_1C2, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
                     obj->index);
                 if ((0x60 >> obj->unk_B1) & 1) {
-                    func_80032854(obj->index, 9, pos, 0);
+                    fight_RecordReplayEventAndDispatchSoundOrEffect(
+                        obj->index, 9, pos, 0);
                 }
             }
         } else if (D_800A36A4 == 14) {
@@ -4902,18 +4971,22 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[0] = obj->unk_198[1].x;
                 pos[1] = obj->unk_1B0[1];
                 pos[2] = obj->unk_198[1].z;
-                func_80032854(obj->index, 9, pos, 0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    obj->index, 9, pos, 0);
             }
         }
         break;
     case 2:
-        func_80032854(obj->index, 10, &obj->unk_180.x, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            obj->index, 10, &obj->unk_180.x, 0);
         break;
     case 3:
-        func_80032854(obj->index, 10, &obj->unk_18C.x, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            obj->index, 10, &obj->unk_18C.x, 0);
         break;
     case 4:
-        func_80032854(obj->index, 10, &obj->unk_174.x, 0);
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            obj->index, 10, &obj->unk_174.x, 0);
         break;
     case 7:
         snd_QueuePositionalSound(base + 0x31, &obj->world_pos.x);
@@ -5297,7 +5370,7 @@ void snd_UpdateStageSounds(void) {
     }
 }
 
-void func_80033898(void) {
+void ResetGraphClearFrameCounterAndSetMainLoopHandler3(void) {
     gpu_ResetGraphMode1();
     D_800A37B8 = 0;
     D_800A3834 = 3;
@@ -5501,7 +5574,7 @@ void fight_InsertBestTime(void) {
     }
 }
 
-s32 func_80033DF4(void) {
+s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
     u8 state;
     s32 tableIndex;
 
@@ -5566,7 +5639,7 @@ s32 func_80033DF4(void) {
     }
 }
 
-void func_80033FE4(void) {
+void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
     s32 v1;
     if (D_800A36F0 != 0) {
         v1 = 6;

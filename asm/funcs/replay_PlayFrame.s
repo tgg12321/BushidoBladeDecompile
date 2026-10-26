@@ -327,7 +327,7 @@ glabel replay_PlayFrame
     /* 2A610 80039E10 BC01A3A7 */  sh         $v1, 0x1BC($sp)
     /* 2A614 80039E14 FFFF0492 */  lbu        $a0, -0x1($s0)
     /* 2A618 80039E18 00000592 */  lbu        $a1, 0x0($s0)
-    /* 2A61C 80039E1C 15CA000C */  jal        func_80032854
+    /* 2A61C 80039E1C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 2A620 80039E20 B801A727 */   addiu     $a3, $sp, 0x1B8
     /* 2A624 80039E24 3C0180A3 */  sb         $zero, %gp_rel(g_replay_replaying_event)($gp)
   .L80039E28:

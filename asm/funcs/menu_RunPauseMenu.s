@@ -74,7 +74,7 @@ glabel menu_RunPauseMenu
     /* 7770 80016F70 21282002 */  addu       $a1, $s1, $zero
     /* 7774 80016F74 E807868F */  lw         $a2, %gp_rel(g_prim_buf_cursor)($gp)
   .L80016F78:
-    /* 7778 80016F78 2A72010C */  jal        func_8005C8A8
+    /* 7778 80016F78 2A72010C */  jal        gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 777C 80016F7C 00000000 */   nop
     /* 7780 80016F80 50DA000C */  jal        cdrom_Update
     /* 7784 80016F84 00000000 */   nop

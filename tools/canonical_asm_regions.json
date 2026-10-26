@@ -52,7 +52,7 @@
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d"
       ]
     },
-    "func_8002BC68": {
+    "fighter_SetBasePositionSeparationCorrectionsAndGetDistance": {
       "file": "main/17AFC",
       "sha256": [
         "4ae8a48ba5ca1ab26b6e27a29113a7aab8dadcf3400c2414af981f49a2bc283e"
@@ -94,7 +94,7 @@
         "94901d48e9783db2481fb86176af0ee7b838cf6aba6d2ac22e6bd43a9a6a5141"
       ]
     },
-    "func_8002FC80": {
+    "math_TriangleNormalYawWithPositiveYHalfTurn": {
       "file": "main/17AFC",
       "sha256": [
         "eea630cb5b55c4cda054f846c977ba4df369b031f4e354366484dcc6d8f985da",

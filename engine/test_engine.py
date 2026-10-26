@@ -10488,7 +10488,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
     for fn, old_name, dest in [("gpu_BuildFogRowLevels", "buf", "dst"),
                                 ("func_800167EC", "rec", "obj"),
                                 ("func_80049C24", "temp_v0", "next"),
-                                ("func_8006ECF4", "i", "j"),
+                                ("gpu_UploadAndDrawSelectedEntryQuads", "i", "j"),
                                 ("func_80040CB8", "kind", "mode")]:
         text = (f"#define M({dest}) ({dest})\nextern int proto(int {dest});\n"
                 f"int other({dest})\nint {dest};\n{{return {dest};}}\n"

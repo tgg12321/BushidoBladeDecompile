@@ -217,7 +217,7 @@ glabel slot_FinalizeObjectLoadSoundTexturesAndArena
     /* 310C0 800408C0 1C00428E */  lw         $v0, 0x1C($s2)
     /* 310C4 800408C4 04004486 */  lh         $a0, 0x4($s2)
     /* 310C8 800408C8 21104500 */  addu       $v0, $v0, $a1
-    /* 310CC 800408CC 8A16010C */  jal        func_80045A28
+    /* 310CC 800408CC 8A16010C */  jal        slot_ResizeAssetBlockAndUpdatePeak
     /* 310D0 800408D0 240042AE */   sw        $v0, 0x24($s2)
   .L800408D4:
     /* 310D4 800408D4 3C00BF8F */  lw         $ra, 0x3C($sp)

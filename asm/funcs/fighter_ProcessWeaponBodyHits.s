@@ -159,7 +159,7 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1B55C 8002AD5C 3000C634 */  ori        $a2, $a2, (0x1F800030 & 0xFFFF)
   .L8002AD60:
     /* 1B560 8002AD60 32000524 */  addiu      $a1, $zero, 0x32
-    /* 1B564 8002AD64 15CA000C */  jal        func_80032854
+    /* 1B564 8002AD64 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1B568 8002AD68 21380000 */   addu      $a3, $zero, $zero
     /* 1B56C 8002AD6C 21480000 */  addu       $t1, $zero, $zero
   .L8002AD70:
@@ -240,7 +240,7 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1B68C 8002AE8C 21200002 */  addu       $a0, $s0, $zero
     /* 1B690 8002AE90 2A000524 */  addiu      $a1, $zero, 0x2A
     /* 1B694 8002AE94 21380000 */  addu       $a3, $zero, $zero
-    /* 1B698 8002AE98 15CA000C */  jal        func_80032854
+    /* 1B698 8002AE98 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1B69C 8002AE9C 9000A9AF */   sw        $t1, 0x90($sp)
     /* 1B6A0 8002AEA0 2000A28F */  lw         $v0, 0x20($sp)
     /* 1B6A4 8002AEA4 3800AC8F */  lw         $t4, 0x38($sp)
@@ -727,7 +727,7 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1BD90 8002B590 8800AB8F */  lw         $t3, 0x88($sp)
     /* 1BD94 8002B594 0A80073C */  lui        $a3, %hi(D_800A37E8)
     /* 1BD98 8002B598 E837E724 */  addiu      $a3, $a3, %lo(D_800A37E8)
-    /* 1BD9C 8002B59C 15CA000C */  jal        func_80032854
+    /* 1BD9C 8002B59C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1BDA0 8002B5A0 21306601 */   addu      $a2, $t3, $a2
     /* 1BDA4 8002B5A4 0DAF0008 */  j          .L8002BC34
     /* 1BDA8 8002B5A8 00000000 */   nop
@@ -1070,7 +1070,7 @@ glabel fighter_ProcessWeaponBodyHits
   .L8002BA8C:
     /* 1C28C 8002BA8C 21200002 */  addu       $a0, $s0, $zero
     /* 1C290 8002BA90 21000524 */  addiu      $a1, $zero, 0x21
-    /* 1C294 8002BA94 15CA000C */  jal        func_80032854
+    /* 1C294 8002BA94 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1C298 8002BA98 21380000 */   addu      $a3, $zero, $zero
     /* 1C29C 8002BA9C 1080063C */  lui        $a2, %hi(D_80101FBC)
     /* 1C2A0 8002BAA0 BC1FC624 */  addiu      $a2, $a2, %lo(D_80101FBC)
@@ -1079,7 +1079,7 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1C2AC 8002BAAC 4C04C624 */  addiu      $a2, $a2, 0x44C
   .L8002BAB0:
     /* 1C2B0 8002BAB0 2D000524 */  addiu      $a1, $zero, 0x2D
-    /* 1C2B4 8002BAB4 15CA000C */  jal        func_80032854
+    /* 1C2B4 8002BAB4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1C2B8 8002BAB8 21380000 */   addu      $a3, $zero, $zero
     /* 1C2BC 8002BABC B6AE0008 */  j          .L8002BAD8
     /* 1C2C0 8002BAC0 00000000 */   nop

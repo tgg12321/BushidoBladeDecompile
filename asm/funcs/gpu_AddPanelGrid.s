@@ -68,7 +68,7 @@ glabel gpu_AddPanelGrid
     /* 63960 80073160 01007326 */  addiu      $s3, $s3, 0x1
     /* 63964 80073164 0A00BEA4 */  sh         $fp, 0xA($a1)
     /* 63968 80073168 0C00A2A4 */  sh         $v0, 0xC($a1)
-    /* 6396C 8007316C F3CB010C */  jal        func_80072FCC
+    /* 6396C 8007316C F3CB010C */  jal        gpu_AddBrownOrBlackPanelGridTile
     /* 63970 80073170 0E00B6A4 */   sh        $s6, 0xE($a1)
     /* 63974 80073174 21284000 */  addu       $a1, $v0, $zero
     /* 63978 80073178 0500622A */  slti       $v0, $s3, 0x5
@@ -86,7 +86,7 @@ glabel gpu_AddPanelGrid
     /* 639A4 800731A4 0C00A2A4 */  sh         $v0, 0xC($a1)
     /* 639A8 800731A8 3F000224 */  addiu      $v0, $zero, 0x3F
     /* 639AC 800731AC 0A00B2A4 */  sh         $s2, 0xA($a1)
-    /* 639B0 800731B0 F3CB010C */  jal        func_80072FCC
+    /* 639B0 800731B0 F3CB010C */  jal        gpu_AddBrownOrBlackPanelGridTile
     /* 639B4 800731B4 0E00A2A4 */   sh        $v0, 0xE($a1)
     /* 639B8 800731B8 21284000 */  addu       $a1, $v0, $zero
     /* 639BC 800731BC 0500622A */  slti       $v0, $s3, 0x5

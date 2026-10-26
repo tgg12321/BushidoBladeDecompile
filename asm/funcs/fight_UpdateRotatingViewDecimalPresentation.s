@@ -32,7 +32,7 @@ glabel fight_UpdateRotatingViewDecimalPresentation
     /* 2D588 8003CD88 1F398490 */  lbu        $a0, %lo(D_800A391F)($a0)
     /* 2D58C 8003CD8C 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* 2D590 8003CD90 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* 2D594 8003CD94 3280010C */  jal        func_800600C8
+    /* 2D594 8003CD94 3280010C */  jal        gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
     /* 2D598 8003CD98 01000624 */   addiu     $a2, $zero, 0x1
     /* 2D59C 8003CD9C 80100200 */  sll        $v0, $v0, 2
     /* 2D5A0 8003CDA0 0A80033C */  lui        $v1, %hi(g_prim_buf_cursor)

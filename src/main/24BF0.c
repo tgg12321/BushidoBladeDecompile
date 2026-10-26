@@ -71,7 +71,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         D_800A3858 = 0;
         D_800A3728 = 0;
         D_800A36A4 = 0x22;
-        func_80033DF4();
+        fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags();
         D_800A3768 = 1;
         D_800A3834 = 0;
         break;

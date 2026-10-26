@@ -12,27 +12,39 @@
  * 3. Neighbours in .data link order: 596CC.c (its own .sdata, gp accesses)
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.
- * Readers: D_8009BC1C (func_8006EACC), D_8009BC38 (menu_UpdateRowCursors),
- * D_8009BC40 (func_8006E534, func_8006ECF4, menu_UpdateEntryGrid,
- * menu_UpdateEntryGridCursors), D_8009BC7C (those, func_8006F100,
- * menu_UpdateRowCursors, func_80071C20, func_80071C4C), D_8009BC94
- * (func_8006F100, func_80071C4C), D_8009BCC4 / D_8009BCD0
- * (menu_UpdateChoiceGrid). */
+ * Readers: D_8009BC1C (StepSlideBuildFrameRecordAndDispatchStateHandler),
+ * D_8009BC38 (menu_UpdateRowCursors), D_8009BC40
+ * (InitDisplayStateLoadPackAndSetEntryFlags,
+ * gpu_UploadAndDrawSelectedEntryQuads, menu_UpdateEntryGrid,
+ * menu_UpdateEntryGridCursors), D_8009BC7C (those,
+ * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
+ * menu_UpdateRowCursors, func_80071C20,
+ * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
+ * D_8009BC94 (DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
+ * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
+ * D_8009BCC4 / D_8009BCD0 (menu_UpdateChoiceGrid). */
 #include "common.h"
 #include "bb2.h"
 
 void menu_UpdateEntryGrid(Unk8006EACCRec *);
 void menu_UpdateRow(Unk8006EACCRec *);
-void func_8006F100(Unk8006EACCRec *);
-void func_80071C4C(Unk8006EACCRec *);
+void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
+    Unk8006EACCRec *);
+void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections(
+    Unk8006EACCRec *);
 void func_80072084(Unk8006EACCRec *);
 void func_800720AC(Unk8006EACCRec *);
 void func_800720D4(Unk8006EACCRec *);
 
 /* the SEL.BIN menu's per-mode update handlers, indexed by D_800A3580 */
 void (*D_8009BC1C[7])(Unk8006EACCRec *) = {
-    menu_UpdateEntryGrid, menu_UpdateRow, func_8006F100, func_80071C4C,
-    func_80072084,        func_800720AC,  func_800720D4,
+    menu_UpdateEntryGrid,
+    menu_UpdateRow,
+    DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
+    DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections,
+    func_80072084,
+    func_800720AC,
+    func_800720D4,
 };
 
 u8 D_8009BC38[6] = {4, 3, 0, 2, 1, 5};

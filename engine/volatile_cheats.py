@@ -801,7 +801,7 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # 8 untouched bytes at sp+0x58 = descriptor + 0x30, the s16[3] digit slot of
     # its COMPLETED siblings func_8005D814 / func_8005F1C8
     # (pre-slim-2026-10-01:memory/grind/func_8005E54C/frame_census.txt, evidence.md [s4]/[s5]).
-    "func_8005E54C": frozenset({("digit", 3)}),
+    "gpu_DrawPackedComparisonRowsAndTotals": frozenset({("digit", 3)}),
 }
 
 

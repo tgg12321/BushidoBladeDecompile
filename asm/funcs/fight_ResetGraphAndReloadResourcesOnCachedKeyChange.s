@@ -38,7 +38,7 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E01C 8001D81C A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
     /* E020 8001D820 B71B010C */  jal        resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels
     /* E024 8001D824 21284002 */   addu      $a1, $s2, $zero
-    /* E028 8001D828 1BA4000C */  jal        func_8002906C
+    /* E028 8001D828 1BA4000C */  jal        fight_ClearPositionRecordUsage
     /* E02C 8001D82C 00000000 */   nop
     /* E030 8001D830 7C6F010C */  jal        snd_CloseListedVabs
     /* E034 8001D834 00000000 */   nop

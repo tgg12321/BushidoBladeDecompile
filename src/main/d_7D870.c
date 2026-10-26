@@ -29,7 +29,7 @@ __asm__(
     "    .aent D_8008D090\n"
     "    .word fight_Init\n"
     "    .word fight_Update\n"
-    "    .word func_80033898\n"
+    "    .word ResetGraphClearFrameCounterAndSetMainLoopHandler3\n"
     "    .word menu_PrintEditAndApplyConfigWithPerPadCursors\n"
     "    .word replay_Start\n"
     "    .word replay_PlayFrame\n"

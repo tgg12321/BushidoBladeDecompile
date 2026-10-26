@@ -272,7 +272,7 @@ glabel fighter_DispatchFrameEvent
     /* 23850 80033050 0A000524 */  addiu      $a1, $zero, 0xA
     /* 23854 80033054 74010626 */  addiu      $a2, $s0, 0x174
   .L80033058:
-    /* 23858 80033058 15CA000C */  jal        func_80032854
+    /* 23858 80033058 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 2385C 8003305C 21380000 */   addu      $a3, $zero, $zero
     /* 23860 80033060 E2CC0008 */  j          .L80033388
     /* 23864 80033064 00000000 */   nop

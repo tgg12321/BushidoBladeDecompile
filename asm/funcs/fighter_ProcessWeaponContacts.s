@@ -203,17 +203,17 @@ glabel fighter_ProcessWeaponContacts
     /* 19F64 80029764 21206002 */   addu      $a0, $s3, $zero
     /* 19F68 80029768 01000524 */  addiu      $a1, $zero, 0x1
     /* 19F6C 8002976C 2130A002 */  addu       $a2, $s5, $zero
-    /* 19F70 80029770 15CA000C */  jal        func_80032854
+    /* 19F70 80029770 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 19F74 80029774 21380000 */   addu      $a3, $zero, $zero
     /* 19F78 80029778 21206002 */  addu       $a0, $s3, $zero
     /* 19F7C 8002977C 26000524 */  addiu      $a1, $zero, 0x26
     /* 19F80 80029780 2130A002 */  addu       $a2, $s5, $zero
-    /* 19F84 80029784 15CA000C */  jal        func_80032854
+    /* 19F84 80029784 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 19F88 80029788 21380000 */   addu      $a3, $zero, $zero
     /* 19F8C 8002978C 21206002 */  addu       $a0, $s3, $zero
     /* 19F90 80029790 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 19F94 80029794 2130A002 */  addu       $a2, $s5, $zero
-    /* 19F98 80029798 15CA000C */  jal        func_80032854
+    /* 19F98 80029798 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 19F9C 8002979C 21380000 */   addu      $a3, $zero, $zero
     /* 19FA0 800297A0 8C002286 */  lh         $v0, 0x8C($s1)
     /* 19FA4 800297A4 00000000 */  nop
@@ -246,17 +246,17 @@ glabel fighter_ProcessWeaponContacts
     /* 1A008 80029808 21206002 */   addu      $a0, $s3, $zero
     /* 1A00C 8002980C 01000524 */  addiu      $a1, $zero, 0x1
     /* 1A010 80029810 2130A002 */  addu       $a2, $s5, $zero
-    /* 1A014 80029814 15CA000C */  jal        func_80032854
+    /* 1A014 80029814 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1A018 80029818 21380000 */   addu      $a3, $zero, $zero
     /* 1A01C 8002981C 21206002 */  addu       $a0, $s3, $zero
     /* 1A020 80029820 26000524 */  addiu      $a1, $zero, 0x26
     /* 1A024 80029824 2130A002 */  addu       $a2, $s5, $zero
-    /* 1A028 80029828 15CA000C */  jal        func_80032854
+    /* 1A028 80029828 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1A02C 8002982C 21380000 */   addu      $a3, $zero, $zero
     /* 1A030 80029830 21206002 */  addu       $a0, $s3, $zero
     /* 1A034 80029834 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 1A038 80029838 2130A002 */  addu       $a2, $s5, $zero
-    /* 1A03C 8002983C 15CA000C */  jal        func_80032854
+    /* 1A03C 8002983C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 1A040 80029840 21380000 */   addu      $a3, $zero, $zero
     /* 1A044 80029844 0B000224 */  addiu      $v0, $zero, 0xB
     /* 1A048 80029848 860222A6 */  sh         $v0, 0x286($s1)

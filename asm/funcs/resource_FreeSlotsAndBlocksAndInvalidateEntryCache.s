@@ -7,7 +7,7 @@ glabel resource_FreeSlotsAndBlocksAndInvalidateEntryCache
     /* 372B4 80046AB4 01000424 */   addiu     $a0, $zero, 0x1
     /* 372B8 80046AB8 A319010C */  jal        resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks
     /* 372BC 80046ABC 00000000 */   nop
-    /* 372C0 80046AC0 0818010C */  jal        func_80046020
+    /* 372C0 80046AC0 0818010C */  jal        resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs
     /* 372C4 80046AC4 00000000 */   nop
     /* 372C8 80046AC8 8727010C */  jal        resource_InvalidateEntrySelectionCache
     /* 372CC 80046ACC 00000000 */   nop

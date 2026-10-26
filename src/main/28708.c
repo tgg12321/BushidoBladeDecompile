@@ -1467,7 +1467,8 @@ void replay_PlayFrame(void) {
             rot[1] = e->unk_A[1];
             rot[2] = e->unk_A[2];
             g_replay_replaying_event = 1;
-            func_80032854(e->unk_1, e->unk_2, pos, rot);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                e->unk_1, e->unk_2, pos, rot);
             g_replay_replaying_event = 0;
         }
     }

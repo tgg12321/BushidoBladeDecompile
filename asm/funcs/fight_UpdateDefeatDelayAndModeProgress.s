@@ -134,7 +134,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D2C4 8001CAC4 00000000 */  nop
     /* D2C8 8001CAC8 8F004014 */  bnez       $v0, .L8001CD08
     /* D2CC 8001CACC 04000224 */   addiu     $v0, $zero, 0x4
-    /* D2D0 8001CAD0 7DCF000C */  jal        func_80033DF4
+    /* D2D0 8001CAD0 7DCF000C */  jal        fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* D2D4 8001CAD4 00000000 */   nop
     /* D2D8 8001CAD8 8D004010 */  beqz       $v0, .L8001CD10
     /* D2DC 8001CADC 01001024 */   addiu     $s0, $zero, 0x1

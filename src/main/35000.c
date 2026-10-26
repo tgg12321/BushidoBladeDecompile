@@ -8,7 +8,7 @@
 
 void gpu_OffsetBlockTexPrimStream();
 
-void func_80044800(void) {
+void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     SVECTOR var_0;
     MATRIX mat;
     Unk800A9CF8Entry *rec;
@@ -101,7 +101,7 @@ void func_80044800(void) {
     }
 }
 
-void func_80044B30(s32 a0, s32 a1) {
+void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
     Unk800A9CF8Entry *p;
 
     if (a0 >= D_800A9CF8.unk6)
@@ -146,13 +146,14 @@ void func_80044B30(s32 a0, s32 a1) {
     }
 }
 
-void func_80044C70(s32 a0) {
+void resource_RebaseFrameAnimatedEntryBlockAndPointers(s32 a0) {
     reloc_RebaseBlock((s32)D_800A9CF8.unk0, a0);
     D_800A9CF8.unkC += a0;
     D_800A9CF8.unk8 += a0;
 }
 
-void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
+void math_BlendCylindricalPositionsWithNegatedYZ(
+    s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
     s32 angle;
@@ -209,7 +210,7 @@ void ndata_Read(s32 a0, s32 a1) {
     cdrom_WaitIdle();
 }
 
-void func_80044ED8(s32 a0, s32 a1) {
+void ndata_ReadRemappedIndexPackFirstElseRead(s32 a0, s32 a1) {
     if (a0 >= 0x1F) {
         a0 -= 0x1B;
     }
@@ -222,7 +223,7 @@ extern void ndata_Read(s32, s32);
 
 void func_80044F30(s32 a0, s32 a1) { ndata_Read(a0 + 0x27, a1); }
 
-void func_80044F50(s32 a0, s32 a1, s32 a2) {
+void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 a2) {
     if (!a0) {
         ndata_Read(a1 + 0x83, a2);
     } else {
@@ -509,10 +510,11 @@ void arena_Copy(s32 a0, s32 a1, s32 a2) {
     mem_MoveBlockRoundedUpToWords(a0, a1, a2);
 }
 
-extern void func_80044ED8(s32, s32);
-extern void func_80045AA4(s32, s32);
+extern void ndata_ReadRemappedIndexPackFirstElseRead(s32, s32);
+extern void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32, s32);
 
-Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
+Unk80045878Obj *slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
+    s32 a0, s32 a1, s32 a2) {
     s32 s3;
     s32 *v0;
     Unk80045878Obj *s1;
@@ -524,7 +526,8 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
         s1 = (Unk80045878Obj *)arena_OpenBlock(a0);
         arena_SetBlockEnd(a0, sizeof(Unk80045878Obj) + ((s32)s1));
         arena_UpdatePeak(0);
-        arena_SetMoveCallback(a0, (s32)(&func_80045AA4));
+        arena_SetMoveCallback(
+            a0, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
         s1->unk_08 = -1;
         s1->load_status = 0;
     }
@@ -540,14 +543,15 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
         s0 = (s32)arena_OpenBlock(s3);
         s1->unk_1C = s0;
         if (a2 != 0) {
-            func_80044ED8(a1, a2);
+            ndata_ReadRemappedIndexPackFirstElseRead(a1, a2);
         } else {
-            func_80044ED8(a1, s0);
+            ndata_ReadRemappedIndexPackFirstElseRead(a1, s0);
             s0 = s0 + ((((u32)((s32 *)s0)[*((s32 *)s0)]) >> 2) << 2);
             arena_UpdatePeak(s0);
         }
         arena_SetBlockEnd(s3, s0);
-        arena_SetMoveCallback(s3, (s32)(&func_80045AA4));
+        arena_SetMoveCallback(
+            s3, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
         s1->load_status = 1;
         s1->unk_24 = 0;
         s1->unk_00.word = 0;
@@ -561,14 +565,14 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     return s1;
 }
 
-void func_80045A28(s32 a0, s32 a1) {
+void slot_ResizeAssetBlockAndUpdatePeak(s32 a0, s32 a1) {
     arena_Resize(a0 + 3, a1);
     arena_UpdatePeak(0);
 }
 
 extern void arena_ClearMoveCallback(s32);
 
-void func_80045A50(s32 a0) {
+void slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(s32 a0) {
     s32 a0p3 = a0 + 3;
     snd_StopAllVoicesAndCloseSlotVab(a0);
     arena_ClearMoveCallback(a0p3);
@@ -579,10 +583,11 @@ void func_80045A50(s32 a0) {
 
 /* Not the definition's spelling: snd_VabFakeOpen takes an s16 second
  * parameter, but the calls here pass it unextended (an s16 prototype adds
- * sll/sra in func_80045AA4, lh for lw in func_80046048). */
+ * sll/sra in slot_RebaseObjectOrAssetBlockAndFakeOpenVab, lh for lw in
+ * resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs). */
 extern s32 snd_VabFakeOpen(s32, s32);
 
-void func_80045AA4(s32 a0, s32 a1) {
+void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 a1) {
     Unk80045878Obj *ptr;
     s32 idx;
     if (a0 < 3) {
@@ -606,10 +611,11 @@ void func_80045AA4(s32 a0, s32 a1) {
 }
 
 extern s16 D_800993FC[];
-extern void func_80044F50(s32, s32, s32);
-extern void func_80046048(s32, s32);
+extern void ndata_ReadIndexInRangeSelectedByFlag(s32, s32, s32);
+extern void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32, s32);
 
-void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void resource_LoadSelectedEntriesTexturesAndSound(
+    s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s16 sp18[120];
     s16 sp108[32];
     s32 *p;
@@ -632,7 +638,7 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     } else {
         var_3 = p;
     }
-    func_80044F50(arg0, arg1, (s32)var_3);
+    ndata_ReadIndexInRangeSelectedByFlag(arg0, arg1, (s32)var_3);
 
     last = (s32)var_3 + (((u32)var_3[1] >> 2) << 2);
     n = var_3[0];
@@ -748,15 +754,16 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         *p = 0;
     }
     arena_SetBlockEnd(6, var_6);
-    arena_SetMoveCallback(6, (s32)&func_80046048);
+    arena_SetMoveCallback(
+        6, (s32)&resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs);
 }
 
-void func_80046020(void) {
+void resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs(void) {
     arena_Free(6);
     snd_StopAllVoicesAndCloseSelectedEntryVabs();
 }
 
-void func_80046048(s32 a0, s32 a1) {
+void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
     reloc_RebaseBlock(6, a1);
@@ -790,11 +797,12 @@ void func_80046048(s32 a0, s32 a1) {
  * NDATA.INF sector table g_ndata_inf ({start, length} per file, read over from
  * disc by ndata_StartReadInf; trailing zero entries implicit),
  * ndata_ReadFromPack's pack index, the 0x1000-step sine table Judge (bb2.h),
- * and func_80045B68's index list D_800993FC. D_800955E0 sits between 32D04.c's
- * .data and this file's with no reorder either way; it is this file's by
- * subsystem (the NDATA file names, next to the NDATA file table; 899 is also
- * g_ndata_inf's explicit entry count, 760 packed + 139 {-1, -1}). Defined after
- * every function, so no body sees a definition where it saw an extern. */
+ * and resource_LoadSelectedEntriesTexturesAndSound's index list D_800993FC.
+ * D_800955E0 sits between 32D04.c's .data and this file's with no reorder
+ * either way; it is this file's by subsystem (the NDATA file names, next to the
+ * NDATA file table; 899 is also g_ndata_inf's explicit entry count, 760 packed
+ * + 139 {-1, -1}). Defined after every function, so no body sees a definition
+ * where it saw an extern. */
 extern const char D_80010DEC[];
 const char *D_800955E0[899] = {
     D_80010DEC + 0x4490, D_80010DEC + 0x4480, D_80010DEC + 0x4470,

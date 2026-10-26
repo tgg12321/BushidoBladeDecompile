@@ -11,7 +11,7 @@ glabel fight_UpdateCommandStreamImageLoadAndResume
     /* 2C108 8003B908 00000000 */   nop
     /* 2C10C 8003B90C 0A80043C */  lui        $a0, %hi(g_prim_buf_cursor)
     /* 2C110 8003B910 B438848C */  lw         $a0, %lo(g_prim_buf_cursor)($a0)
-    /* 2C114 8003B914 5181010C */  jal        func_80060544
+    /* 2C114 8003B914 5181010C */  jal        gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
     /* 2C118 8003B918 01000524 */   addiu     $a1, $zero, 0x1
     /* 2C11C 8003B91C 02004104 */  bgez       $v0, .L8003B928
     /* 2C120 8003B920 00000000 */   nop

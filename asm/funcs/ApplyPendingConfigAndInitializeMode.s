@@ -77,7 +77,7 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24DD0 800345D0 283720A0 */  sb         $zero, %lo(D_800A3728)($at)
     /* 24DD4 800345D4 0A80013C */  lui        $at, %hi(D_800A36A4)
     /* 24DD8 800345D8 A43622A4 */  sh         $v0, %lo(D_800A36A4)($at)
-    /* 24DDC 800345DC 7DCF000C */  jal        func_80033DF4
+    /* 24DDC 800345DC 7DCF000C */  jal        fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24DE0 800345E0 00000000 */   nop
     /* 24DE4 800345E4 0A80013C */  lui        $at, %hi(D_800A3768)
     /* 24DE8 800345E8 683730A0 */  sb         $s0, %lo(D_800A3768)($at)

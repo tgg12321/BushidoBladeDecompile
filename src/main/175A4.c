@@ -93,14 +93,16 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
                 if ((u16)D_80101EC8[1].move_kind == 0x21) {
                     fighter_TryDropQueuedHeadAtBone(var_1);
                 }
-                func_80032854(1, 0x2D, &var_1->world_pos.x, (s16 *)0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    1, 0x2D, &var_1->world_pos.x, (s16 *)0);
             } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
                 D_80101EC8[1].pending_move_event = 3;
                 D_80101EC8[0].pending_move_event = 4;
                 if ((u16)D_80101EC8[0].move_kind == 0x21) {
                     fighter_TryDropQueuedHeadAtBone(record);
                 }
-                func_80032854(0, 0x2D, &record->world_pos.x, (s16 *)0);
+                fight_RecordReplayEventAndDispatchSoundOrEffect(
+                    0, 0x2D, &record->world_pos.x, (s16 *)0);
             }
             var_1->unk_28C = 0;
             record->unk_28C = 0;
@@ -181,7 +183,8 @@ tail:
             pos[2] += (Judge[(record->opponent_bearing + 0x400) & 0xFFF] *
                        D_8008EB54[kind].unk0) >>
                       12;
-            func_80032854(0, D_8008EB6C[kind], pos, (s16 *)0);
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                0, D_8008EB6C[kind], pos, (s16 *)0);
         }
     } else {
         D_800A3910--;

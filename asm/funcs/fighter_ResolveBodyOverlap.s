@@ -346,7 +346,7 @@ glabel fighter_ResolveBodyOverlap
     /* 195D0 80028DD0 21200000 */   addu      $a0, $zero, $zero
     /* 195D4 80028DD4 21000524 */  addiu      $a1, $zero, 0x21
     /* 195D8 80028DD8 2AFF2626 */  addiu      $a2, $s1, -0xD6
-    /* 195DC 80028DDC 15CA000C */  jal        func_80032854
+    /* 195DC 80028DDC 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 195E0 80028DE0 21380000 */   addu      $a3, $zero, $zero
     /* 195E4 80028DE4 0F000224 */  addiu      $v0, $zero, 0xF
     /* 195E8 80028DE8 1080013C */  lui        $at, %hi(D_8010259A)
@@ -403,12 +403,12 @@ glabel fighter_ResolveBodyOverlap
     /* 196A4 80028EA4 21000524 */  addiu      $a1, $zero, 0x21
     /* 196A8 80028EA8 8A001026 */  addiu      $s0, $s0, 0x8A
     /* 196AC 80028EAC 21300002 */  addu       $a2, $s0, $zero
-    /* 196B0 80028EB0 15CA000C */  jal        func_80032854
+    /* 196B0 80028EB0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 196B4 80028EB4 21380000 */   addu      $a3, $zero, $zero
     /* 196B8 80028EB8 01000424 */  addiu      $a0, $zero, 0x1
     /* 196BC 80028EBC 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 196C0 80028EC0 21300002 */  addu       $a2, $s0, $zero
-    /* 196C4 80028EC4 15CA000C */  jal        func_80032854
+    /* 196C4 80028EC4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 196C8 80028EC8 21380000 */   addu      $a3, $zero, $zero
     /* 196CC 80028ECC 05000224 */  addiu      $v0, $zero, 0x5
     /* 196D0 80028ED0 1080013C */  lui        $at, %hi(D_8010259A)
@@ -467,12 +467,12 @@ glabel fighter_ResolveBodyOverlap
     /* 19790 80028F90 21000524 */  addiu      $a1, $zero, 0x21
     /* 19794 80028F94 8A001026 */  addiu      $s0, $s0, 0x8A
     /* 19798 80028F98 21300002 */  addu       $a2, $s0, $zero
-    /* 1979C 80028F9C 15CA000C */  jal        func_80032854
+    /* 1979C 80028F9C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 197A0 80028FA0 21380000 */   addu      $a3, $zero, $zero
     /* 197A4 80028FA4 21200000 */  addu       $a0, $zero, $zero
     /* 197A8 80028FA8 2D000524 */  addiu      $a1, $zero, 0x2D
     /* 197AC 80028FAC 21300002 */  addu       $a2, $s0, $zero
-    /* 197B0 80028FB0 15CA000C */  jal        func_80032854
+    /* 197B0 80028FB0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 197B4 80028FB4 21380000 */   addu      $a3, $zero, $zero
     /* 197B8 80028FB8 05000224 */  addiu      $v0, $zero, 0x5
     /* 197BC 80028FBC 1080013C */  lui        $at, %hi(D_8010214E)

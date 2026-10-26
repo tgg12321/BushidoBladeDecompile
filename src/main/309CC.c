@@ -142,7 +142,7 @@ extern s32 snd_VabFakeOpen(s32, s32);
 Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
     s32 a0, s32 a1, s32 a2) {
     Unk80045878Obj *ptr;
-    ptr = func_80045878(a0, a1, a2);
+    ptr = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(a0, a1, a2);
     D_800A9A10[a0] = ptr;
     slot_FinalizeObjectLoadSoundTexturesAndArena(ptr);
     node_InitObjectHierarchyFromTemplates(ptr);
@@ -270,7 +270,7 @@ done_cases:
 
     DrawSync(0);
     a0->unk_24 = (void *)(a0->unk_1C + off);
-    func_80045A28(a0->arena_id, off);
+    slot_ResizeAssetBlockAndUpdatePeak(a0->arena_id, off);
 }
 
 /* The 21 node-template records at 0x80094B96 follow an s16 -1 at 0x80094B94

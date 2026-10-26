@@ -277,7 +277,7 @@ glabel fight_UpdatePairedMoves
     /* 10810 80020010 C21F0200 */  srl        $v1, $v0, 31
     /* 10814 80020014 21104300 */  addu       $v0, $v0, $v1
     /* 10818 80020018 43100200 */  sra        $v0, $v0, 1
-    /* 1081C 8002001C 15CA000C */  jal        func_80032854
+    /* 1081C 8002001C 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 10820 80020020 1800A2AF */   sw        $v0, 0x18($sp)
     /* 10824 80020024 0F800008 */  j          .L8002003C
     /* 10828 80020028 00000000 */   nop
