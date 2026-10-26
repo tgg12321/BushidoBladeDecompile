@@ -1,0 +1,138 @@
+rc=0
+==============================================================================
+NAMING WAVE — 27 operations (0 RESET, 27 RENAME)
+  27 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (55) --
+  (root): 1 files, 3 substitutions
+      symbol_addrs.txt  (3)
+  asm: 42 files, 97 substitutions
+      asm/funcs/arena_Reset.s  (1)
+      asm/funcs/fight_Init.s  (6)
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (1)
+      asm/funcs/func_8001D790.s  (1)
+      asm/funcs/func_8001E800.s  (1)
+      asm/funcs/func_8003AFFC.s  (5)
+      ... and 36 more
+  engine: 2 files, 2 substitutions
+      engine/test_engine.py  (1)
+      engine/volatile_cheats.py  (1)
+  include: 1 files, 12 substitutions
+      include/bb2.h  (12)
+  src: 9 files, 84 substitutions
+      src/main/2B344.c  (10)
+      src/main/35000.c  (2)
+      src/main/368E4.c  (49)
+      src/main/43500.c  (6)
+      src/main/596CC.c  (1)
+      src/main/5ED34.c  (1)
+      ... and 3 more
+
+-- .s file renames (27) --
+  asm/funcs/func_800460E4.s -> asm/funcs/resource_LoadOrReuseSelectedBlock.s
+  asm/funcs/func_800464C4.s -> asm/funcs/resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks.s
+  asm/funcs/func_8004659C.s -> asm/funcs/resource_SelectRetainedSubblockOrApplyHeaderSections.s
+  asm/funcs/func_8004668C.s -> asm/funcs/resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks.s
+  asm/funcs/func_800466C0.s -> asm/funcs/resource_RebaseLoadedBlockSections.s
+  asm/funcs/func_800467B8.s -> asm/funcs/resource_LoadOrReuseGrayscaleAdjustedNodeAsset.s
+  asm/funcs/func_800468B0.s -> asm/funcs/resource_ResizeNodeAssetBlockAndUpdatePeak.s
+  asm/funcs/func_800468DC.s -> asm/funcs/resource_RebaseNodeAssetBlock.s
+  asm/funcs/func_80046914.s -> asm/funcs/resource_FreeNodeAssetBlock.s
+  asm/funcs/func_800469C4.s -> asm/funcs/motion_LoadPlaybackBlock.s
+  ... and 17 more
+
+-- ledger directory renames (26) --
+  memory/grind/func_800460E4 -> memory/grind/resource_LoadOrReuseSelectedBlock
+  memory/grind/func_8004659C -> memory/grind/resource_SelectRetainedSubblockOrApplyHeaderSections
+  memory/grind/func_80047D94 -> memory/grind/wave_SampleLastRowCachingIndexAndRemainderParity
+  memory/grind/func_80047E5C -> memory/grind/wave_SampleLastRowStepsAtCachedIndex
+  memory/grind/func_800481E8 -> memory/grind/gpu_LoadTimGroupWithConditionalClutRowAdvance
+  memory/grind/func_80048AD0 -> memory/grind/node_LoadSlotMappedAssetAndInitRetainedDrawNodes
+  memory/grind/func_80048BA4 -> memory/grind/node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
+  memory/grind/func_800493E4 -> memory/grind/resource_RequestEntryWithLinkedEntriesAndLatchCategory
+  memory/grind/func_80049584 -> memory/grind/resource_RankRequestedEntriesAndReloadOnChange
+  memory/grind/func_80049C24 -> memory/grind/snd_CopySelectedPackSectionsAndLoadVabPacks
+  ... and 16 more
+
+-- symbol-registry line deletions (3) --
+  symbol_addrs.txt:668  func_800468B0 = 0x800468B0; /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
+  symbol_addrs.txt:710  func_800467B8 = 0x800467B8; /* 62-insn loader using saTan2InfoInit + saTan5TakeGetPos */
+  symbol_addrs.txt:974  func_80048AD0 = 0x80048AD0; /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at
+
+-- JSON key/field edits (27) --
+  engine/deferred.json: 1 changes
+      func_800460E4
+  memory/grind/func_800460E4/layer2.jsonl: 2 changes
+      line 1: func func_800460E4 -> resource_LoadOrReuseSelectedBlock
+      line 2: func func_800460E4 -> resource_LoadOrReuseSelectedBlock
+  memory/grind/func_8004659C/layer2.jsonl: 1 changes
+      line 1: func func_8004659C -> resource_SelectRetainedSubblockOrApplyHeaderSections
+  memory/grind/func_80047D94/layer2.jsonl: 1 changes
+      line 1: func func_80047D94 -> wave_SampleLastRowCachingIndexAndRemainderParity
+  memory/grind/func_80047E5C/layer2.jsonl: 1 changes
+      line 1: func func_80047E5C -> wave_SampleLastRowStepsAtCachedIndex
+  memory/grind/func_800481E8/layer2.jsonl: 1 changes
+      line 1: func func_800481E8 -> gpu_LoadTimGroupWithConditionalClutRowAdvance
+  memory/grind/func_80048AD0/layer2.jsonl: 2 changes
+      line 1: func func_80048AD0 -> node_LoadSlotMappedAssetAndInitRetainedDrawNodes
+      line 2: func func_80048AD0 -> node_LoadSlotMappedAssetAndInitRetainedDrawNodes
+  memory/grind/func_80048BA4/layer2.jsonl: 1 changes
+      line 1: func func_80048BA4 -> node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
+  memory/grind/func_800493E4/layer2.jsonl: 1 changes
+      line 1: func func_800493E4 -> resource_RequestEntryWithLinkedEntriesAndLatchCategory
+  memory/grind/func_80049584/layer2.jsonl: 1 changes
+      line 1: func func_80049584 -> resource_RankRequestedEntriesAndReloadOnChange
+  memory/grind/func_80049C24/layer2.jsonl: 3 changes
+      line 1: func func_80049C24 -> snd_CopySelectedPackSectionsAndLoadVabPacks
+      line 2: func func_80049C24 -> snd_CopySelectedPackSectionsAndLoadVabPacks
+      line 3: func func_80049C24 -> snd_CopySelectedPackSectionsAndLoadVabPacks
+  memory/grind/func_80049E1C/layer2.jsonl: 1 changes
+      line 1: func func_80049E1C -> resource_InvalidateEntrySelectionCache
+  memory/grind/_completed/func_800460E4/layer2.jsonl: 3 changes
+      line 1: func func_800460E4 -> resource_LoadOrReuseSelectedBlock
+      line 2: func func_800460E4 -> resource_LoadOrReuseSelectedBlock
+      line 3: func func_800460E4 -> resource_LoadOrReuseSelectedBlock
+  memory/grind/_completed/func_800464C4/layer2.jsonl: 1 changes
+      line 1: func func_800464C4 -> resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks
+  memory/grind/_completed/func_8004659C/layer2.jsonl: 1 changes
+      line 1: func func_8004659C -> resource_SelectRetainedSubblockOrApplyHeaderSections
+  memory/grind/_completed/func_800466C0/layer2.jsonl: 1 changes
+      line 1: func func_800466C0 -> resource_RebaseLoadedBlockSections
+  memory/grind/_completed/func_800467B8/layer2.jsonl: 2 changes
+      line 1: func func_800467B8 -> resource_LoadOrReuseGrayscaleAdjustedNodeAsset
+      line 2: func func_800467B8 -> resource_LoadOrReuseGrayscaleAdjustedNodeAsset
+  memory/grind/_completed/func_800469C4/layer2.jsonl: 1 changes
+      line 1: func func_800469C4 -> motion_LoadPlaybackBlock
+  memory/grind/_completed/func_80046E18/layer2.jsonl: 2 changes
+      line 1: func func_80046E18 -> node_GetSlotTransformNodes
+      line 2: func func_80046E18 -> node_GetSlotTransformNodes
+  memory/grind/_completed/func_80046EDC/layer2.jsonl: 1 changes
+      line 1: func func_80046EDC -> resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels
+  memory/grind/_completed/func_80047570/layer2.jsonl: 1 changes
+      line 1: func func_80047570 -> node_InitViewOffsetNodeWithYXZRotation
+  memory/grind/_completed/func_80048AD0/layer2.jsonl: 2 changes
+      line 1: func func_80048AD0 -> node_LoadSlotMappedAssetAndInitRetainedDrawNodes
+      line 2: func func_80048AD0 -> node_LoadSlotMappedAssetAndInitRetainedDrawNodes
+  memory/grind/_completed/func_80048BA4/layer2.jsonl: 4 changes
+      line 1: func func_80048BA4 -> node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
+      line 2: func func_80048BA4 -> node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
+      line 3: func func_80048BA4 -> node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
+      line 4: func func_80048BA4 -> node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
+  memory/grind/_completed/func_800494D4/layer2.jsonl: 1 changes
+      line 1: func func_800494D4 -> resource_SetPairSelectionSlotWithBoundChecks
+  memory/grind/_completed/func_80049584/layer2.jsonl: 1 changes
+      line 1: func func_80049584 -> resource_RankRequestedEntriesAndReloadOnChange
+  memory/grind/_completed/func_80049C24/layer2.jsonl: 3 changes
+      line 1: func func_80049C24 -> snd_CopySelectedPackSectionsAndLoadVabPacks
+      line 2: func func_80049C24 -> snd_CopySelectedPackSectionsAndLoadVabPacks
+      line 3: func func_80049C24 -> snd_CopySelectedPackSectionsAndLoadVabPacks
+  memory/grind/_completed/func_80049E4C/layer2.jsonl: 2 changes
+      line 1: func func_80049E4C -> node_InitRootNodePairWithNegatedRotationMatrices
+      line 2: func func_80049E4C -> node_InitRootNodePairWithNegatedRotationMatrices
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ engine/dossier.py:L63: ['func_800481E8'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
