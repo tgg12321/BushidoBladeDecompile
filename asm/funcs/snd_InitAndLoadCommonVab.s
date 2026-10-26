@@ -23,7 +23,7 @@ glabel snd_InitAndLoadCommonVab
     /* 7548 80016D48 00538434 */  ori        $a0, $a0, (0xFFF35300 & 0xFFFF)
     /* 754C 80016D4C 3071010C */  jal        snd_VabFakeOpen
     /* 7550 80016D50 21280000 */   addu      $a1, $zero, $zero
-    /* 7554 80016D54 8571010C */  jal        func_8005C614
+    /* 7554 80016D54 8571010C */  jal        snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode
     /* 7558 80016D58 00000000 */   nop
     /* 755C 80016D5C 01000224 */  addiu      $v0, $zero, 0x1
     /* 7560 80016D60 3A0882A3 */  sb         $v0, %gp_rel(D_800A3906)($gp)

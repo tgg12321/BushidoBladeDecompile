@@ -9,10 +9,10 @@ glabel snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9
     /* E120 8001D920 1000B0AF */   sw        $s0, 0x10($sp)
     /* E124 8001D924 4E83000C */  jal        motion_InvalidateMarkedNdataPackAndClearSlot1Id
     /* E128 8001D928 00000000 */   nop
-    /* E12C 8001D92C 716E010C */  jal        func_8005B9C4
+    /* E12C 8001D92C 716E010C */  jal        snd_StopAllVoicesAndCloseSingleFileVab
     /* E130 8001D930 00000000 */   nop
     /* E134 8001D934 1980043C */  lui        $a0, (0x80190800 >> 16)
-    /* E138 8001D938 7F6E010C */  jal        func_8005B9FC
+    /* E138 8001D938 7F6E010C */  jal        snd_CloseThenReadSingleFileAndLoadVab
     /* E13C 8001D93C 00088434 */   ori       $a0, $a0, (0x80190800 & 0xFFFF)
     /* E140 8001D940 21884000 */  addu       $s1, $v0, $zero
     /* E144 8001D944 810E222A */  slti       $v0, $s1, 0xE81

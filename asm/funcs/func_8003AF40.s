@@ -40,7 +40,7 @@ glabel func_8003AF40
     /* 2B7D4 8003AFD4 0980013C */  lui        $at, %hi(D_8008D578)
     /* 2B7D8 8003AFD8 21082200 */  addu       $at, $at, $v0
     /* 2B7DC 8003AFDC 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
-    /* 2B7E0 8003AFE0 4401010C */  jal        func_80040510
+    /* 2B7E0 8003AFE0 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* 2B7E4 8003AFE4 0008C634 */   ori       $a2, $a2, (0x80190800 & 0xFFFF)
     /* 2B7E8 8003AFE8 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 2B7EC 8003AFEC 1800B08F */  lw         $s0, 0x18($sp)

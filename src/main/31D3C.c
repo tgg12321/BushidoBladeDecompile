@@ -7,9 +7,9 @@
 
 extern u8 D_80094D40[];
 
-Unk80045878Obj *func_8004153C(s32 a0) { return D_800A9A10[a0]; }
+Unk80045878Obj *slot_GetObject(s32 a0) { return D_800A9A10[a0]; }
 
-s32 func_80041554(s32 a0) {
+s32 slot_GetAssetIndex(s32 a0) {
     Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         return ptr->unk_08;
@@ -17,7 +17,7 @@ s32 func_80041554(s32 a0) {
     return -1;
 }
 
-s32 func_80041584(void) {
+s32 slot_FindEmpty(void) {
     s32 i;
     s32 ret = -1;
     for (i = 0; i < 3; i++) {
@@ -29,13 +29,13 @@ s32 func_80041584(void) {
     return ret;
 }
 
-void func_800415C4(s32 a0) {
+void slot_ReleaseObjectAndResources(s32 a0) {
     softbody_FreeObjectById(a0);
     func_80045A50(a0);
     D_800A9A10[a0] = 0;
 }
 
-void func_80041604(s32 a0, s32 a1) {
+void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
     Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         if (((ptr->unk_00.word >> 16) & 0x1F) != a1) {
@@ -45,7 +45,7 @@ void func_80041604(s32 a0, s32 a1) {
     D_80094B88[a0] = a1;
 }
 
-s32 func_80041650(s32 a0) {
+s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
     Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         return (ptr->unk_00.word >> 16) & 0x1F;
@@ -56,7 +56,8 @@ s32 func_80041650(s32 a0) {
 /* Sets or clears bit 0 of the flag byte in every bone record of
  * D_800A9A10[arg0], then pushes its colour (greyscaled when
  * gpu_RefreshGrayscaleMode() is set) through func_80041398. */
-void func_80041688(s32 arg0, s32 arg1) {
+void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
+    s32 arg0, s32 arg1) {
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
        untouched (phantom-frame pad); without it: score 6 */
     volatile u32 pre_pad[8];
@@ -154,7 +155,8 @@ void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
     a0->xf.mat = a0->work;
 }
 
-void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
+void gpu_LoadRequestedAvailableTimGroupsForSlot(
+    s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 mask_table;
     s32 bit;
     s32 i;
@@ -193,7 +195,7 @@ extern u8 D_80094E08[];
 extern s16 D_800A9A20;
 extern u16 g_gpu_store_buf[][16];
 
-void func_80041AC8(Unk80045878Obj *arg0) {
+void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     RECT rect;
     s16 *tbl;
     s32 i;
@@ -231,7 +233,8 @@ void func_80041AC8(Unk80045878Obj *arg0) {
     DrawSync(0);
 }
 
-void func_80041BF4(s32 a0, s32 a1, s32 a2) {
+void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+    s32 a0, s32 a1, s32 a2) {
     Unk80045878Obj *obj;
     s32 r;
     s32 g;
@@ -244,7 +247,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
     s32 slot = 1;
     RECT rect;
 
-    obj = func_8004153C(slot);
+    obj = slot_GetObject(slot);
     if (obj == 0) {
         return;
     }
@@ -417,20 +420,20 @@ extern void light_ApplyPointLight(s32, s32);
 
 void light_DisablePointLight(void) { light_ApplyPointLight(0, 0); }
 
-extern void func_800422BC(s32, s32, s32, s32);
-extern void func_80042478(s32);
+extern void light_SetLightOrBackColorOfSelectedSetups(s32, s32, s32, s32);
+extern void gpu_SetBackgroundClearColorAndFarColor(s32);
 
 /* 0x18-byte rows: four colour words, the angle word, a parameter */
 extern s32 D_80094E48[][6];
 
-void func_800421C8(s32 a0) {
+void ApplyLightPresetRowBackgroundClearAndFarColor(s32 a0) {
     s32 *p = D_80094E48[a0];
     s32 var_1;
     s32 var_2;
-    func_800422BC(a0, *p++, 0, 0);
-    func_800422BC(a0, *p++, 0, 1);
-    func_800422BC(a0, *p++, 1, 0);
-    func_800422BC(a0, *p++, 1, 1);
+    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 0, 0);
+    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 0, 1);
+    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 1, 0);
+    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 1, 1);
     var_1 = *p;
     D_800F62E0[4].light[0].yaw = var_1 & 0xFFF;
     D_800F62E0[1].light[0].yaw = var_1 & 0xFFF;
@@ -439,10 +442,11 @@ void func_800421C8(s32 a0) {
     D_800F62E0[4].light[0].pitch = var_2 & 0xFFF;
     D_800F62E0[1].light[0].pitch = var_2 & 0xFFF;
     D_800F62E0[0].light[0].pitch = var_2 & 0xFFF;
-    func_80042478(p[1]);
+    gpu_SetBackgroundClearColorAndFarColor(p[1]);
 }
 
-void func_800422BC(s32 a0, s32 arg1, s32 a2, s32 a3) {
+void light_SetLightOrBackColorOfSelectedSetups(
+    s32 a0, s32 arg1, s32 a2, s32 a3) {
     s32 r = (arg1 >> 16) & 0xFF;
     s32 g = (arg1 >> 8) & 0xFF;
     s32 b = arg1 & 0xFF;
@@ -486,7 +490,7 @@ void func_800422BC(s32 a0, s32 arg1, s32 a2, s32 a3) {
     }
 }
 
-void func_80042478(s32 a0) {
+void gpu_SetBackgroundClearColorAndFarColor(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;
     s32 b = a0 & 0xFF;
@@ -501,11 +505,12 @@ void func_80042478(s32 a0) {
 
 /* .data 0x80094D40..0x800951D8, this file's whole .data (31548.c's D_80094CFC
  * ends at 0x80094D40; 32D04.c's D_800951D8 follows), in address order:
- * func_80041988's per-index 5-bit mask table, the six VRAM CLUT-row lists
+ * gpu_LoadRequestedAvailableTimGroupsForSlot's per-index 5-bit mask table, the
+ * six VRAM CLUT-row lists
  * ({x, y} pairs ending in {-1, 0}) that D_80094DF0 points at, the id ->
- * list index map D_80094E08 (0xFF: none), and func_800421C8's 38 light
- * rows. Defined after every function, so no body sees a definition where it
- * saw an extern. */
+ * list index map D_80094E08 (0xFF: none), and
+ * ApplyLightPresetRowBackgroundClearAndFarColor's 38 light rows. Defined after
+ * every function, so no body sees a definition where it saw an extern. */
 u8 D_80094D40[64] = {
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1F, 0x1F, 0x0,  0x0,  0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,

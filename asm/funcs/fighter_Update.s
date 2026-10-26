@@ -3188,7 +3188,7 @@ glabel fighter_Update
     /* 17550 80026D50 B30022A2 */  sb         $v0, 0xB3($s1)
   .L80026D54:
     /* 17554 80026D54 B3002592 */  lbu        $a1, 0xB3($s1)
-    /* 17558 80026D58 C100010C */  jal        func_80040304
+    /* 17558 80026D58 C100010C */  jal        gpu_QueueSlotDrawMovesForSelectedSet
     /* 1755C 80026D5C 21206002 */   addu      $a0, $s3, $zero
     /* 17560 80026D60 3081000C */  jal        fighter_DispatchArmedBoneVectorEventAndDisarm
     /* 17564 80026D64 21202002 */   addu      $a0, $s1, $zero

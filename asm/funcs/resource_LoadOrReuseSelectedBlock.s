@@ -167,7 +167,7 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36B4C 8004634C 21302002 */  addu       $a2, $s1, $zero
     /* 36B50 80046350 82200400 */  srl        $a0, $a0, 2
     /* 36B54 80046354 80200400 */  sll        $a0, $a0, 2
-    /* 36B58 80046358 9C11010C */  jal        func_80044670
+    /* 36B58 80046358 9C11010C */  jal        node_BindFrameDataAndReserveEntryBuffer
     /* 36B5C 8004635C 21200402 */   addu      $a0, $s0, $a0
     /* 36B60 80046360 FE180108 */  j          .L800463F8
     /* 36B64 80046364 21884000 */   addu      $s1, $v0, $zero

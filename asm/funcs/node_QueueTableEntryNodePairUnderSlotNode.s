@@ -25,7 +25,7 @@ glabel node_QueueTableEntryNodePairUnderSlotNode
     /* 3A288 80049A88 044B010C */  jal        func_80052C10
     /* 3A28C 80049A8C 00000000 */   nop
   .L80049A90:
-    /* 3A290 80049A90 4F05010C */  jal        func_8004153C
+    /* 3A290 80049A90 4F05010C */  jal        slot_GetObject
     /* 3A294 80049A94 43201100 */   sra       $a0, $s1, 1
     /* 3A298 80049A98 01002432 */  andi       $a0, $s1, 0x1
     /* 3A29C 80049A9C 40180400 */  sll        $v1, $a0, 1

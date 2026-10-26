@@ -4,7 +4,7 @@ glabel resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels
     /* 376E4 80046EE4 1400BFAF */  sw         $ra, 0x14($sp)
     /* 376E8 80046EE8 3918010C */  jal        resource_LoadOrReuseSelectedBlock
     /* 376EC 80046EEC 21808000 */   addu      $s0, $a0, $zero
-    /* 376F0 80046EF0 7208010C */  jal        func_800421C8
+    /* 376F0 80046EF0 7208010C */  jal        ApplyLightPresetRowBackgroundClearAndFarColor
     /* 376F4 80046EF4 21200002 */   addu      $a0, $s0, $zero
     /* 376F8 80046EF8 38F8000C */  jal        func_8003E0E0
     /* 376FC 80046EFC 00000000 */   nop

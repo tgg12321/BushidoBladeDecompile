@@ -145,7 +145,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D2F0 8001CAF0 01000424 */  addiu      $a0, $zero, 0x1
     /* D2F4 8001CAF4 0A80053C */  lui        $a1, %hi(D_800A38DE)
     /* D2F8 8001CAF8 DE38A590 */  lbu        $a1, %lo(D_800A38DE)($a1)
-    /* D2FC 8001CAFC 4401010C */  jal        func_80040510
+    /* D2FC 8001CAFC 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* D300 8001CB00 21300000 */   addu      $a2, $zero, $zero
     /* D304 8001CB04 33000224 */  addiu      $v0, $zero, 0x33
     /* D308 8001CB08 0A80033C */  lui        $v1, %hi(D_800A38E2)
@@ -220,7 +220,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D400 8001CC00 ED38A590 */  lbu        $a1, %lo(D_800A38ED)($a1)
     /* D404 8001CC04 0A80063C */  lui        $a2, %hi(D_800A38EE)
     /* D408 8001CC08 EE38C690 */  lbu        $a2, %lo(D_800A38EE)($a2)
-    /* D40C 8001CC0C FD06010C */  jal        func_80041BF4
+    /* D40C 8001CC0C FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* D410 8001CC10 00000000 */   nop
     /* D414 8001CC14 44730008 */  j          .L8001CD10
     /* D418 8001CC18 00000000 */   nop

@@ -23,7 +23,7 @@ bb2_memcpy                            psyq_memcpy               13 insns, lbu/sb
 func_80016768                         psyq_memset               17 insns, store-loop with no load
 object_ResetPool                         psyq_memset               16 insns, store-loop with no load
 memcard_ClearBuffer                         psyq_memset               10 insns, store-loop with no load
-func_800404D8                         psyq_memset               14 insns, store-loop with no load
+slot_ClearObjectPointersAndTextureRequests                         psyq_memset               14 insns, store-loop with no load
 func_8004A348                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004A4E0                         handwritten_asm           uses GCC-unfriendly mnemonics: 2 trapping addi (0x8004A5A0, 0x8004A67C) and 4 ctc2; no add/sub/syscall (corrected 2026-09-29, owner Q40)
 gte_ProjectPackedVertices                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)

@@ -570,7 +570,7 @@ extern void arena_ClearMoveCallback(s32);
 
 void func_80045A50(s32 a0) {
     s32 a0p3 = a0 + 3;
-    func_8005B644(a0);
+    snd_StopAllVoicesAndCloseSlotVab(a0);
     arena_ClearMoveCallback(a0p3);
     arena_ClearMoveCallback(a0);
     arena_Free(a0p3);
@@ -753,7 +753,7 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
 void func_80046020(void) {
     arena_Free(6);
-    func_8005B6AC();
+    snd_StopAllVoicesAndCloseSelectedEntryVabs();
 }
 
 void func_80046048(s32 a0, s32 a1) {

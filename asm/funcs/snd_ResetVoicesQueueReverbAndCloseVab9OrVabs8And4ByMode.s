@@ -10,7 +10,7 @@ glabel snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* E24C 8001DA4C 05000224 */  addiu      $v0, $zero, 0x5
     /* E250 8001DA50 06006214 */  bne        $v1, $v0, .L8001DA6C
     /* E254 8001DA54 03000224 */   addiu     $v0, $zero, 0x3
-    /* E258 8001DA58 716E010C */  jal        func_8005B9C4
+    /* E258 8001DA58 716E010C */  jal        snd_StopAllVoicesAndCloseSingleFileVab
     /* E25C 8001DA5C 00000000 */   nop
     /* E260 8001DA60 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E264 8001DA64 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -18,7 +18,7 @@ glabel snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
   .L8001DA6C:
     /* E26C 8001DA6C 03006214 */  bne        $v1, $v0, .L8001DA7C
     /* E270 8001DA70 00000000 */   nop
-    /* E274 8001DA74 1A6E010C */  jal        func_8005B868
+    /* E274 8001DA74 1A6E010C */  jal        snd_StopAllVoicesAndClosePairedFileVabs
     /* E278 8001DA78 00000000 */   nop
   .L8001DA7C:
     /* E27C 8001DA7C 1000BF8F */  lw         $ra, 0x10($sp)

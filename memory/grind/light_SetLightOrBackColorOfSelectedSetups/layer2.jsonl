@@ -1,0 +1,1 @@
+{"func": "light_SetLightOrBackColorOfSelectedSetups", "addr": "800422BC", "verdict": "PASS", "body_hash": "59e5a13eb9b65455", "body_kind": "c", "file": "main/31D3C", "reviewer": "cheat-reviewer-fakeb3-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T11:10:36Z", "head": "bf43e110c", "notes": "", "renamed_from": ["func_800422BC"]}

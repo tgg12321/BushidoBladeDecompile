@@ -1292,8 +1292,8 @@ void replay_Start(void) {
     gpu_RestoreObjectClutOffsets();
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     func_8001B6F4();
     eff_StopCommands();
     g_replay_playback_frame = 0;
@@ -1451,7 +1451,7 @@ void replay_PlayFrame(void) {
         }
         var_11->move_frame = var_15;
         var_11->motion_metadata = var_16;
-        func_80040304(i, (p->hA >> 12) & 7);
+        gpu_QueueSlotDrawMovesForSelectedSet(i, (p->hA >> 12) & 7);
     }
 
     e = g_replay_events;

@@ -701,7 +701,7 @@ def test_elf_func_symbols_real_file():
     syms = board_sync._elf_func_symbols(elf)
     intext = [a for a in syms if board_sync.TEXT_LO <= a < board_sync.TEXT_HI]
     check("plausible function count 1200-1700", 1200 <= len(intext) <= 1700)
-    check("a known function is present", "func_80016A8C" in syms.values())
+    check("a known function is present", "gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth" in syms.values())
 
 def test_build_desired_done():
     inv = {"func_done": "text1b", "func_active": "display"}

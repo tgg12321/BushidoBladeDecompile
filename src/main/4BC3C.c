@@ -98,7 +98,7 @@ void snd_ResetVoicesAndQueue(void) {
     }
 }
 
-void func_8005B644(s32 a0) {
+void snd_StopAllVoicesAndCloseSlotVab(s32 a0) {
     s32 v;
     func_800858D0(0);
     v = a0 * 2 + a0 + 1;
@@ -107,7 +107,7 @@ void func_8005B644(s32 a0) {
     g_vab_vb_sbaddr[v] = 0;
 }
 
-void func_8005B6AC(void) {
+void snd_StopAllVoicesAndCloseSelectedEntryVabs(void) {
     func_800858D0(0);
     SsVabClose(2);
     g_vab_rec_ptr[2] = 0;
@@ -125,7 +125,7 @@ void snd_CloseVab1(void) {
 
 s32 SsUtSetReverbType(s32);
 
-void func_8005B72C(void) {
+void snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb(void) {
     s32 s0;
     s32 *s2;
     Unk8005C2A8Pack **s1;
@@ -168,7 +168,7 @@ s32 snd_LoadCommonVab(s32 arg0) {
     return ret;
 }
 
-void func_8005B868(void) {
+void snd_StopAllVoicesAndClosePairedFileVabs(void) {
     func_800858D0(0);
     SsVabClose(8);
     g_vab_rec_ptr[8] = 0;
@@ -178,13 +178,13 @@ void func_8005B868(void) {
     g_vab_vb_sbaddr[4] = 0;
 }
 
-s32 func_8005B8B8(s32 arg0) {
+s32 snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles(s32 arg0) {
     s32 t0;
     s32 size;
     s32 ret;
     s32 t0_2;
 
-    func_8005B868();
+    snd_StopAllVoicesAndClosePairedFileVabs();
     func_800858D0(0);
     t0 = cdrom_GetFileIndex(2, 0x5D);
     cdrom_WaitIdle();
@@ -208,17 +208,17 @@ void snd_VabFakeOpen8And4(s32 a0) {
     snd_VabFakeOpen(a0, 4);
 }
 
-void func_8005B9C4(void) {
+void snd_StopAllVoicesAndCloseSingleFileVab(void) {
     func_800858D0(0);
     SsVabClose(9);
     g_vab_rec_ptr[9] = 0;
     g_vab_vb_sbaddr[9] = 0;
 }
 
-s32 func_8005B9FC(s32 a0) {
+s32 snd_CloseThenReadSingleFileAndLoadVab(s32 a0) {
     s32 var_0;
     s32 size;
-    func_8005B9C4();
+    snd_StopAllVoicesAndCloseSingleFileVab();
     var_0 = cdrom_GetFileIndex(2, 8);
     cdrom_WaitIdle();
     cdrom_StartRead(var_0, a0);
@@ -241,7 +241,8 @@ typedef struct {
 
 extern u8 g_vab_id_list[];
 
-s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
+    s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     VabLoad var_0;
     u8 *p;
     s32 base;
@@ -516,7 +517,7 @@ s32 snd_VabOpen(Unk8005C2A8Pack *a0, s16 a1) {
     return (s16)SsVabTransBody(a0->unk_08, a1);
 }
 
-void func_8005C614(void) {
+void snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode(void) {
     SsSetMVol(0x7F, 0x7F);
     func_800858D0(0);
     SsSetStereo();

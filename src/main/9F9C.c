@@ -865,8 +865,8 @@ void camera_StartTurnEasingOnLargeHeadingChange(s32 arg0, s32 arg1) {
 }
 
 void func_8001B6F4(void) {
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     g_camera_fight_view_mode = 1;
     D_800F6608.b1F = 0;
     D_800F5328.b1F = 0;
@@ -1328,7 +1328,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             goto end;
         D_800A390D = 1;
         gpu_ResetGraphMode1();
-        func_80040510(1, D_800A38DE, 0);
+        slot_LoadObjectBuildNodesSoftbodyAndFogLevels(1, D_800A38DE, 0);
         prev = D_800A38E0;
         switch (D_800A38E2) {
         case 0x1F:
@@ -1352,7 +1352,8 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         }
         func_8001C51C();
         if (D_800A384C < 4) {
-            func_80041BF4(D_800A38EC, D_800A38ED, D_800A38EE);
+            gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+                D_800A38EC, D_800A38ED, D_800A38EE);
         }
         goto end;
     case 2: {
@@ -1639,8 +1640,9 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
         func_8002906C();
         snd_CloseListedVabs();
 
-        s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)D_80102778.unk_4[0]],
-                           D_8008E5A8[(s8)D_80102778.unk_4[1]]);
+        s1 = snd_ReloadListedVabsFromFileAndInstallBillboards(
+            s2, D_800A36A4, D_8008E5A8[(s8)D_80102778.unk_4[0]],
+            D_8008E5A8[(s8)D_80102778.unk_4[1]]);
 
         D_800A390E = D_800A36A4;
         D_800A30FC = D_8008E5A8[(s8)D_80102778.unk_4[0]];
@@ -1662,8 +1664,8 @@ void snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9(void) {
     s32 *s0;
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
-    func_8005B9C4();
-    s1 = func_8005B9FC((s32)0x80190800);
+    snd_StopAllVoicesAndCloseSingleFileVab();
+    s1 = snd_CloseThenReadSingleFileAndLoadVab((s32)0x80190800);
     if (s1 >= 0xE81) {
         sys_Panic();
     }
@@ -1678,8 +1680,8 @@ void snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4(void) {
     s32 *s0;
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
-    func_8005B868();
-    s1 = func_8005B8B8((s32)0x80190800);
+    snd_StopAllVoicesAndClosePairedFileVabs();
+    s1 = snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles((s32)0x80190800);
     if (s1 >= 0x1B19) {
         sys_Panic();
     }
@@ -1692,16 +1694,16 @@ void snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(void) {
     snd_ResetVoicesAndQueue();
     snd_StopVoicesAndReverb();
     if (D_800A38DC == 5) {
-        func_8005B9C4();
+        snd_StopAllVoicesAndCloseSingleFileVab();
     }
     if (D_800A38DC == 3) {
-        func_8005B868();
+        snd_StopAllVoicesAndClosePairedFileVabs();
     }
 }
 
 void snd_StartFightCdAudio(void) {
     snd_SerialMixOn();
-    if (func_800167D4()) {
+    if (snd_GetSavedCdAudioSuppressFlag()) {
         return;
     }
     switch (D_800A38DC) {
@@ -1738,7 +1740,7 @@ s32 snd_ShouldUpdateStageSoundSlots(void) {
         return 1;
     }
     if (v >= 2) {
-        return func_800167D4();
+        return snd_GetSavedCdAudioSuppressFlag();
     }
     return 1;
 }
@@ -1758,14 +1760,14 @@ void fight_WaitForCounterThenClearAndEnableDisplay(void) {
     if (!(D_800A38F8 > D_800A37A0)) {
         do {
             comb_ExchangeEmptyPad();
-            func_800174F4();
+            gpu_DrawDisplayModeOnLocalOtAndSync();
             VSync(2);
         } while (!(D_800A38F8 > D_800A37A0));
         i = 0;
         do {
             comb_ExchangeEmptyPad();
             i += 1;
-            func_800174F4();
+            gpu_DrawDisplayModeOnLocalOtAndSync();
             VSync(2);
         } while (i < 15);
     }
@@ -1789,7 +1791,7 @@ void fight_Init(void) {
         gpu_HideResetAndClear();
         gpu_SetDispMaskOn();
     }
-    func_800174F4();
+    gpu_DrawDisplayModeOnLocalOtAndSync();
     gpu_ResetGraphMode1();
     gpu_RestoreObjectClutOffsets();
     object_ResetPool();
@@ -1798,7 +1800,7 @@ void fight_Init(void) {
     SetGeomScreen(math_FovToScreenDist(D_800A38BA != 0 ? 0x50 : 0x2D));
     for (i = 0; i < 2; i++) {
         if (D_800A38DC != 0) {
-            func_80041604(0, 0);
+            slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
         }
         fighter_Init(i, (s8)D_80102778.unk_4[4 + i], (s8)D_80102778.unk_4[i],
                      (s8)D_80102778.unk_4[2 + i], 0);
@@ -1814,12 +1816,14 @@ void fight_Init(void) {
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         for (i = 0; i < 2; i++) {
             if (D_800A38BA != 0 && D_800A36F6 == i) {
-                func_80040510(i, D_8008D578[(s8)D_80102778.unk_4[i]], addr);
+                slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
+                    i, D_8008D578[(s8)D_80102778.unk_4[i]], addr);
                 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(i);
             } else if (D_800A38DC == 3 && i == 1) {
-                func_80040510(1, D_800A38DE, 0);
+                slot_LoadObjectBuildNodesSoftbodyAndFogLevels(1, D_800A38DE, 0);
             } else {
-                func_80040510(i, D_8008D578[(s8)D_80102778.unk_4[i]], addr);
+                slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
+                    i, D_8008D578[(s8)D_80102778.unk_4[i]], addr);
             }
             resource_RequestEntryWithLinkedEntriesAndLatchCategory(
                 D_80101EC8[i].unk_12);
@@ -1844,16 +1848,19 @@ void fight_Init(void) {
             }
         }
         resource_RankRequestedEntriesAndReloadOnChange(addr);
-        func_80041688(0, 0);
-        func_80041688(1, 0);
+        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
         if (D_800A38DC == 0 && D_800A3712 == 0) {
-            func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
+            gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+                D_800A37B4, D_800A37B5, D_800A37B6);
         } else if (D_800A38DC == 3) {
-            func_80041BF4(D_800A38EC, D_800A38ED, D_800A38EE);
+            gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+                D_800A38EC, D_800A38ED, D_800A38EE);
         } else if (D_800A38DC == 2) {
             u8 *p = D_800A3100[D_8008D9EC[D_80101EC8[0].unk_0A]];
             if (D_800A389A == 0) {
-                func_80041BF4(p[0], p[1], p[2]);
+                gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+                    p[0], p[1], p[2]);
             }
         }
         fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
@@ -1978,11 +1985,13 @@ void camera_ApplyFightView(void) {
             math_FovToScreenDist(g_camera_fight_view_mode == 0 ? 0x50 : 0x2D));
 
         if (g_camera_fight_view_mode == 0) {
-            func_80041688(D_800A36F6, 1);
-            func_80041688(D_800A36F6 == 0, 0);
+            node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
+                D_800A36F6, 1);
+            node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
+                D_800A36F6 == 0, 0);
         } else {
-            func_80041688(0, 0);
-            func_80041688(1, 0);
+            node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+            node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
         }
     } else {
         s2 = &D_800F6608;
@@ -2098,8 +2107,8 @@ void fight_Update(void) {
 
 void func_8001EA04(void) {
     u8 v;
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
     v = D_800A38D4;
     D_80101EC8[1].unk_31A = 0;
@@ -5242,7 +5251,7 @@ skip_62:
     if (rec->unk_0C == 0x1F) {
         rec->unk_B3 = 4;
     }
-    func_80040304(arg0, rec->unk_B3);
+    gpu_QueueSlotDrawMovesForSelectedSet(arg0, rec->unk_B3);
     fighter_DispatchArmedBoneVectorEventAndDisarm(rec);
     if (rec->move_started == 2) {
         rec->move_started = 0;

@@ -1,7 +1,7 @@
 glabel softbody_RequestSnap
     /* 307E0 8003FFE0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 307E4 8003FFE4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 307E8 8003FFE8 4F05010C */  jal        func_8004153C
+    /* 307E8 8003FFE8 4F05010C */  jal        slot_GetObject
     /* 307EC 8003FFEC 00000000 */   nop
     /* 307F0 8003FFF0 06004010 */  beqz       $v0, .L8004000C
     /* 307F4 8003FFF4 00000000 */   nop

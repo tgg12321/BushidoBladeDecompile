@@ -609,11 +609,11 @@ s32 motion_StartPlayback(
     if (!(s->unk4 & 0x40000000)) {
         s->unk44[1] = -1;
     }
-    v = func_8004153C(0);
+    v = slot_GetObject(0);
     if (v != 0) {
         softbody_RequestRebuild(v);
     }
-    v = func_8004153C(1);
+    v = slot_GetObject(1);
     if (v != 0) {
         softbody_RequestRebuild(v);
     }

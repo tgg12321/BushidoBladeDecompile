@@ -336,8 +336,8 @@ def test_disasm_by_func_real():
         check("SKIP disasm_by_func (objdump unavailable)", True)
         return
     check("objdump returns >1000 funcs", len(d) > 1000)
-    check("known func has asm", "func_80016A8C" in d and bool(d["func_80016A8C"]))
-    check("addr parsed from header", bc.addr_from_disasm(d["func_80016A8C"]) is not None)
+    check("known func has asm", "gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth" in d and bool(d["gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth"]))
+    check("addr parsed from header", bc.addr_from_disasm(d["gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth"]) is not None)
     # address-sliced path recovers MORE STT_FUNC names than header parsing
     # (header parsing drops functions objdump emits without a `<name>:` separator).
     import board_sync
@@ -347,7 +347,7 @@ def test_disasm_by_func_real():
     header_funcs = func_names & set(d)
     addr_funcs = func_names & set(d2)
     check("address-sliced recovers >= header STT_FUNC names", len(addr_funcs) >= len(header_funcs))
-    check("address-sliced has known func", "func_80016A8C" in d2)
+    check("address-sliced has known func", "gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth" in d2)
 
 
 def test_build_one_card_fast_path_real_func():
@@ -356,18 +356,18 @@ def test_build_one_card_fast_path_real_func():
     if not bc.ELF.exists():
         check("SKIP build_one_card fast path (build/bb2.elf absent)", True)
         return
-    body = bc.build_one_card("func_80016A8C")
+    body = bc.build_one_card("gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth")
     if body is None:
         check("SKIP build_one_card (func not a board function)", True)
         return
     check("fast-path card non-empty", bool(body and body.strip()))
-    check("fast-path header names func", "# func_80016A8C" in body)
+    check("fast-path header names func", "# gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth" in body)
     check("fast-path has metadata", "**File:**" in body)
     check("fast-path has cheats section", "## Identified cheats / rules" in body)
     check("fast-path has C details", "Current C source" in body)
     check("fast-path has asm details", "Target disassembly" in body)
     # asm block should carry the synthesized header for this func (not a placeholder)
-    check("fast-path asm has func header", "<func_80016A8C>:" in body)
+    check("fast-path asm has func header", "<gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth>:" in body)
     check("fast-path asm not placeholder", "disassembly not available" not in body)
 
 
@@ -377,7 +377,7 @@ def test_build_one_card_byte_identical_to_full_pass():
     if not bc.ELF.exists():
         check("SKIP fast-vs-full identity (build/bb2.elf absent)", True)
         return
-    func = "func_80016A8C"
+    func = "gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth"
     fast = bc.build_one_card(func)
     full = _full_pass_body(func)
     if fast is None or full is None:
@@ -442,7 +442,7 @@ def test_build_one_card_avoids_bulk_passes():
         # Use a queue func so build_one_card resolves a board entry even without
         # an ELF inventory (queue funcs are always in the board set).
         items = bc.load_queue_items()
-        func = items[0]["func"] if items else "func_80016A8C"
+        func = items[0]["func"] if items else "gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth"
         body = bc.build_one_card(func)
     finally:
         bc.disasm_by_func = real_disasm
@@ -454,7 +454,7 @@ def test_build_one_card_avoids_bulk_passes():
 
 def test_history_one_func_shape():
     """history_one_func returns the same record shape as history_by_func entries."""
-    recs = bc.history_one_func("func_80016A8C")
+    recs = bc.history_one_func("gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth")
     check("history_one_func returns a list", isinstance(recs, list))
     if recs:
         r = recs[0]

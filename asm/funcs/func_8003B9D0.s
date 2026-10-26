@@ -26,7 +26,7 @@ glabel func_8003B9D0
     /* 2C22C 8003BA2C 345A000C */  jal        gpu_SetDispMaskOn
     /* 2C230 8003BA30 00000000 */   nop
   .L8003BA34:
-    /* 2C234 8003BA34 3D5D000C */  jal        func_800174F4
+    /* 2C234 8003BA34 3D5D000C */  jal        gpu_DrawDisplayModeOnLocalOtAndSync
     /* 2C238 8003BA38 00000000 */   nop
     /* 2C23C 8003BA3C 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2C240 8003BA40 00000000 */   nop
@@ -126,10 +126,10 @@ glabel func_8003B9D0
     /* 2C398 8003BB98 2152010C */  jal        func_80054884
     /* 2C39C 8003BB9C 1C00B3AF */   sw        $s3, 0x1C($sp)
     /* 2C3A0 8003BBA0 21200000 */  addu       $a0, $zero, $zero
-    /* 2C3A4 8003BBA4 A205010C */  jal        func_80041688
+    /* 2C3A4 8003BBA4 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* 2C3A8 8003BBA8 21280000 */   addu      $a1, $zero, $zero
     /* 2C3AC 8003BBAC 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2C3B0 8003BBB0 A205010C */  jal        func_80041688
+    /* 2C3B0 8003BBB0 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* 2C3B4 8003BBB4 21280000 */   addu      $a1, $zero, $zero
     /* 2C3B8 8003BBB8 0A80023C */  lui        $v0, %hi(D_800A3878)
     /* 2C3BC 8003BBBC 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
@@ -156,7 +156,7 @@ glabel func_8003B9D0
     /* 2C408 8003BC08 B537A590 */  lbu        $a1, %lo(D_800A37B5)($a1)
     /* 2C40C 8003BC0C 0A80063C */  lui        $a2, %hi(D_800A37B6)
     /* 2C410 8003BC10 B637C690 */  lbu        $a2, %lo(D_800A37B6)($a2)
-    /* 2C414 8003BC14 FD06010C */  jal        func_80041BF4
+    /* 2C414 8003BC14 FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* 2C418 8003BC18 00000000 */   nop
   .L8003BC1C:
     /* 2C41C 8003BC1C F976000C */  jal        fight_WaitForCounterThenClearAndEnableDisplay

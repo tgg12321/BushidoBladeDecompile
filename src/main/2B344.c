@@ -168,7 +168,7 @@ void func_8003AF40(s32 arg0) {
                  (s8)D_80102778.unk_4[arg0], (s8)D_80102778.unk_4[2 + arg0], 0);
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
-    func_80040510(
+    slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
         arg0, D_8008D578[(s8)D_80102778.unk_4[arg0]], (s32)0x80190800);
 }
 
@@ -245,7 +245,7 @@ void func_8003B2C8(void) {
         D_800A376A = 0;
         D_80102778.unk_4[0] = v0;
     }
-    func_80041604(0, 0);
+    slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
 }
 
 void func_8003B328(void) {
@@ -258,7 +258,7 @@ void func_8003B328(void) {
     D_800A36F4 = v_376A;
     D_80102778.unk_4[0] = v_3836;
     D_800A376A = v_36C8;
-    func_80041604(0, v_36C8);
+    slot_RequestTimGroupsAndMarkReloadOnChange(0, v_36C8);
     fighter_ResetBoneGroupHitState(D_80101EC8);
 }
 
@@ -355,7 +355,7 @@ void fight_RunCommandStream(void) {
             var_1[0] = byte0;
             var_1[2] = p[1];
             if ((s8)byte0 == D_800A3915) {
-                func_80041604(1, D_800A36F4);
+                slot_RequestTimGroupsAndMarkReloadOnChange(1, D_800A36F4);
             }
             func_8003AF40(1);
             func_8003AFFC();
@@ -420,8 +420,8 @@ void fight_RunCommandStream(void) {
 }
 
 void func_8003B870(void) {
-    func_80041604(0, D_800A376A);
-    func_80041604(1, 0);
+    slot_RequestTimGroupsAndMarkReloadOnChange(0, D_800A376A);
+    slot_RequestTimGroupsAndMarkReloadOnChange(1, 0);
     snd_ResetVoicesAndQueue();
     gpu_HideResetAndClear();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -490,7 +490,7 @@ void func_8003B9D0(void) {
         gpu_HideResetAndClear();
     if (D_800A3768 != DISP_DISABLED)
         gpu_SetDispMaskOn();
-    func_800174F4();
+    gpu_DrawDisplayModeOnLocalOtAndSync();
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -527,12 +527,13 @@ void func_8003B9D0(void) {
         a0_arg = 0x32;
     D_800A390F = 0;
     func_80054884(D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, var_4);
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     if (D_800A3878[3] & 0x40)
         resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     if ((s8)D_80102778.unk_4[1] == 0xE || (s8)D_80102778.unk_4[1] == 0x1D) {
-        func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
+        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+            D_800A37B4, D_800A37B5, D_800A37B6);
     }
     fight_WaitForCounterThenClearAndEnableDisplay();
     D_800A3768 = DISP_DISABLED;
@@ -595,10 +596,10 @@ void func_8003BE10(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
-    func_800415C4(0);
-    func_800415C4(1);
+    slot_ReleaseObjectAndResources(0);
+    slot_ReleaseObjectAndResources(1);
     eff_ClearInitFlag();
-    func_8005B72C();
+    snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
     InitScrollingSpriteDisplay((s32)0x80118800);
     snd_SerialMixOn();
     {
@@ -651,8 +652,8 @@ void func_8003BFC4(void) {
     s32 v;
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
-    func_800415C4(0);
-    func_800415C4(1);
+    slot_ReleaseObjectAndResources(0);
+    slot_ReleaseObjectAndResources(1);
     eff_ClearInitFlag();
     v = (s32)arena_GetBase();
     sys_ExecMovieOverlay(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
@@ -707,8 +708,8 @@ void func_8003C040(void) {
     }
     func_80054884(0x16, D_8009016C[D_800A38A4], 0, D_80101EC8[0].unk_12, -1, -1,
                   -1, (s32)0x80118800);
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
     p = D_8008EA70[D_800A38A4];
     if (p[0] >= 0) {
@@ -1028,8 +1029,8 @@ void func_8003CE18(void) {
         func_80054884(0x16, s0, result, (s32)D_80101EC8[0].unk_12,
                       (s32)D_80101EC8[1].unk_12, -1, -1, 0);
     }
-    func_80041688(0, 0);
-    func_80041688(1, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
+    node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
     D_800A37B8 = 0;
     D_800A3834 = 0x1D;
@@ -1663,7 +1664,7 @@ void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
 
     if (g_gpu_fog_clut_object != arg0) {
         gpu_RestoreObjectClutOffsets();
-        obj = func_8004153C(arg0);
+        obj = slot_GetObject(arg0);
         if (obj != 0) {
             if (arg0 != 0) {
                 buf.x = 0x300;
@@ -1690,7 +1691,7 @@ void gpu_RestoreObjectClutOffsets(void) {
     Unk80045878Obj *v1;
 
     if (g_gpu_fog_clut_object != -1) {
-        v1 = func_8004153C(g_gpu_fog_clut_object);
+        v1 = slot_GetObject(g_gpu_fog_clut_object);
         if (v1 != 0) {
             if (g_gpu_fog_clut_object == 0) {
                 gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x140, -0xE8);
@@ -2705,7 +2706,7 @@ void softbody_RequestRebuild(Unk80045878Obj *a0) {
 }
 
 void softbody_RequestSnap(s32 a0) {
-    Unk80045878Obj *v0 = func_8004153C(a0);
+    Unk80045878Obj *v0 = slot_GetObject(a0);
     if (v0) {
         Unk8003F62CRec *v1 = v0->unk_24;
         if (v1) {
@@ -2752,7 +2753,7 @@ void softbody_FreeObject(Unk80045878Obj *a0) {
 }
 
 void softbody_FreeObjectById(s32 a0) {
-    Unk80045878Obj *v0 = func_8004153C(a0);
+    Unk80045878Obj *v0 = slot_GetObject(a0);
     if (v0) {
         softbody_FreeObject(v0);
     }

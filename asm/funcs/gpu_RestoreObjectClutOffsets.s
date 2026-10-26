@@ -4,7 +4,7 @@ glabel gpu_RestoreObjectClutOffsets
     /* 2EA34 8003E234 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 2EA38 8003E238 15008210 */  beq        $a0, $v0, .L8003E290
     /* 2EA3C 8003E23C 1800BFAF */   sw        $ra, 0x18($sp)
-    /* 2EA40 8003E240 4F05010C */  jal        func_8004153C
+    /* 2EA40 8003E240 4F05010C */  jal        slot_GetObject
     /* 2EA44 8003E244 00000000 */   nop
     /* 2EA48 8003E248 21184000 */  addu       $v1, $v0, $zero
     /* 2EA4C 8003E24C 0F006010 */  beqz       $v1, .L8003E28C

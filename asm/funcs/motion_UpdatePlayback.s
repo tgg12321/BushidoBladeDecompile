@@ -84,7 +84,7 @@ glabel motion_UpdatePlayback
     /* 45240 80054A40 21104300 */  addu       $v0, $v0, $v1
     /* 45244 80054A44 400062AE */  sw         $v0, 0x40($s3)
   .L80054A48:
-    /* 45248 80054A48 4F05010C */  jal        func_8004153C
+    /* 45248 80054A48 4F05010C */  jal        slot_GetObject
     /* 4524C 80054A4C 21200000 */   addu      $a0, $zero, $zero
     /* 45250 80054A50 21804000 */  addu       $s0, $v0, $zero
     /* 45254 80054A54 03000012 */  beqz       $s0, .L80054A64
@@ -92,7 +92,7 @@ glabel motion_UpdatePlayback
     /* 4525C 80054A5C F1FF000C */  jal        softbody_RequestRebuild
     /* 45260 80054A60 21200002 */   addu      $a0, $s0, $zero
   .L80054A64:
-    /* 45264 80054A64 4F05010C */  jal        func_8004153C
+    /* 45264 80054A64 4F05010C */  jal        slot_GetObject
     /* 45268 80054A68 01000424 */   addiu     $a0, $zero, 0x1
     /* 4526C 80054A6C 21804000 */  addu       $s0, $v0, $zero
     /* 45270 80054A70 03000012 */  beqz       $s0, .L80054A80
@@ -259,7 +259,7 @@ glabel motion_UpdatePlayback
     /* 454E4 80054CE4 00000000 */  nop
     /* 454E8 80054CE8 81004010 */  beqz       $v0, .L80054EF0
     /* 454EC 80054CEC 00000000 */   nop
-    /* 454F0 80054CF0 4F05010C */  jal        func_8004153C
+    /* 454F0 80054CF0 4F05010C */  jal        slot_GetObject
     /* 454F4 80054CF4 21202002 */   addu      $a0, $s1, $zero
     /* 454F8 80054CF8 21804000 */  addu       $s0, $v0, $zero
     /* 454FC 80054CFC 21202002 */  addu       $a0, $s1, $zero
@@ -388,7 +388,7 @@ glabel motion_UpdatePlayback
     /* 456DC 80054EDC 0000658C */  lw         $a1, 0x0($v1)
     /* 456E0 80054EE0 83130200 */  sra        $v0, $v0, 14
     /* 456E4 80054EE4 06284500 */  srlv       $a1, $a1, $v0
-    /* 456E8 80054EE8 C100010C */  jal        func_80040304
+    /* 456E8 80054EE8 C100010C */  jal        gpu_QueueSlotDrawMovesForSelectedSet
     /* 456EC 80054EEC 0F00A530 */   andi      $a1, $a1, 0xF
   .L80054EF0:
     /* 456F0 80054EF0 02005226 */  addiu      $s2, $s2, 0x2

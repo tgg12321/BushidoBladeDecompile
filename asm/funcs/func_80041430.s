@@ -46,7 +46,7 @@ glabel func_80041430
     /* 31CD0 800414D0 14008228 */  slti       $v0, $a0, 0x14
     /* 31CD4 800414D4 F8FF4014 */  bnez       $v0, .L800414B8
     /* 31CD8 800414D8 04006324 */   addiu     $v1, $v1, 0x4
-    /* 31CDC 800414DC 9E02010C */  jal        func_80040A78
+    /* 31CDC 800414DC 9E02010C */  jal        node_RefreshObjectMatrixPointerTables
     /* 31CE0 800414E0 21200002 */   addu      $a0, $s0, $zero
     /* 31CE4 800414E4 1800BF8F */  lw         $ra, 0x18($sp)
     /* 31CE8 800414E8 1400B18F */  lw         $s1, 0x14($sp)

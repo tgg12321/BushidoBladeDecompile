@@ -784,7 +784,7 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # phantom-frame-slot family as the rows above; no family extension.
     "node_QueueTableEntryNodePairUnderSlotNode": frozenset({("pre_pad", 2)}),
     "gpu_LoadTimGroupWithConditionalClutRowAdvance": frozenset({("pre_pad", 8)}),
-    "func_80041688": frozenset({("pre_pad", 8)}),
+    "node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor": frozenset({("pre_pad", 8)}),
     # 2026-09-02 owner ruling (docs/grind/decisions.md, "foreclosed-bucket
     # disposition"): byte-proven (operator full build == oracle before the
     # grant), target vars=24 vs ours 8 with zero ($sp) references in the body;

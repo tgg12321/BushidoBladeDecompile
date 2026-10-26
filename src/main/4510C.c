@@ -26,7 +26,7 @@ extern s32 D_800A3250[2];
  * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
  * per-object nibble tables (unk3C[]). Every frame it places the camera (rotated
  * about y by unk1E, plus the offset unkC..unk14 motion_StartPlayback picks),
- * then decodes (motion_DecodeFrame) and places each func_8004153C object's
+ * then decodes (motion_DecodeFrame) and places each slot_GetObject object's
  * data. The block holds those addresses as integers: typed as pointers, the
  * relocation sums in motion_RebasePlayback and motion_StartPlayback swap their
  * addu operands.
@@ -40,7 +40,7 @@ s32 motion_UpdatePlayback(void) {
     s16 var_2[0x42];
     s16 *v;
     s32 i;
-    /* the func_8004153C object being handled: objects 0 and 1 on the first
+    /* the slot_GetObject object being handled: objects 0 and 1 on the first
      * frame, object i in the loop, as SOTN's secret-room wall reuses
      * newEntity for each AllocEntity result, once and then in a loop (Q51) */
     /* SOTN: src/st/nz0/e_left_secret_room_wall.c:74 @db41b28 */
@@ -76,11 +76,11 @@ s32 motion_UpdatePlayback(void) {
         if (s->unk4 & 0x40) {
             s->unk3C[1] = ((Unk800469C4Hdr *)s->unk2C)->unk18[1] + s->unk2C;
         }
-        var_5 = func_8004153C(0);
+        var_5 = slot_GetObject(0);
         if (var_5 != 0) {
             softbody_RequestRebuild(var_5);
         }
-        var_5 = func_8004153C(1);
+        var_5 = slot_GetObject(1);
         if (var_5 != 0) {
             softbody_RequestRebuild(var_5);
         }
@@ -130,7 +130,7 @@ s32 motion_UpdatePlayback(void) {
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
             s32 ang;
-            var_5 = func_8004153C(i);
+            var_5 = slot_GetObject(i);
             motion_DecodeFrame(
                 i, s->unk0, (MotionFrame *)var_2, (u16 *)0x1F800000);
             vec.vy = var_2[0];
@@ -163,9 +163,10 @@ s32 motion_UpdatePlayback(void) {
                     s->unk48[i], (i * 2) | 1, 1);
             }
             if (s->unk3C[i] != 0) {
-                func_80040304(i, (((u32 *)s->unk3C[i])[s->unk0 / 8] >>
-                                  ((s->unk0 % 8) * 4)) &
-                                     0xF);
+                gpu_QueueSlotDrawMovesForSelectedSet(
+                    i,
+                    (((u32 *)s->unk3C[i])[s->unk0 / 8] >> ((s->unk0 % 8) * 4)) &
+                        0xF);
             }
         }
     }
@@ -321,7 +322,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
         p->unk_3F6 = var_2[1];
         break;
     }
-    if (func_800167BC() && D_800A38DC != 3) {
+    if (fighter_GetSavedCpuBehaviorAdjustFlag() && D_800A38DC != 3) {
         p->unk_438 = p->unk_438 * 11 >> 4;
     }
     if (!(D_80099D88[p->cpu_profile].flags & 0xFF00)) {
@@ -708,7 +709,8 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
              : rec->cur_move->last_command_frame < rec->move_frame)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
-                (func_800167BC() == 0 || D_800A38DC == 3)) {
+                (fighter_GetSavedCpuBehaviorAdjustFlag() == 0 ||
+                 D_800A38DC == 3)) {
                 s32 var_12;
                 s32 var_13;
 
@@ -1679,7 +1681,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                           (p->unk_438 >> 8) + 1)) &&
                       (!(D_80099D88[p->cpu_profile].flags & 0xFF00) ||
                        (f & 0x40))) ||
-                    (func_800167BC() && D_800A38DC != 3)) {
+                    (fighter_GetSavedCpuBehaviorAdjustFlag() &&
+                     D_800A38DC != 3)) {
                     work3 = !work3;
                 }
                 var_7 = tbl[work3];
@@ -1833,7 +1836,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                      ? p->ground_y - p->collision_pos.vy
                      : p->collision_pos.vy - p->ground_y) < 200 &&
                 !(D_80099D88[p->cpu_profile].flags & 0x8C00) &&
-                ((!func_800167BC() && D_800A38DC != 3) || D_800A38DC == 3)) {
+                ((!fighter_GetSavedCpuBehaviorAdjustFlag() &&
+                  D_800A38DC != 3) ||
+                 D_800A38DC == 3)) {
                 work3 = 0;
                 if ((p->unk_426 == 1 || p->unk_425 == 2) && (p->unk_430 & 8)) {
                     work3 = 1;

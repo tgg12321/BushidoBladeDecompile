@@ -107,14 +107,14 @@ glabel motion_StartPlayback
     /* 44F98 80054798 FFFF0224 */   addiu     $v0, $zero, -0x1
     /* 44F9C 8005479C 460022A6 */  sh         $v0, 0x46($s1)
   .L800547A0:
-    /* 44FA0 800547A0 4F05010C */  jal        func_8004153C
+    /* 44FA0 800547A0 4F05010C */  jal        slot_GetObject
     /* 44FA4 800547A4 21200000 */   addu      $a0, $zero, $zero
     /* 44FA8 800547A8 03004010 */  beqz       $v0, .L800547B8
     /* 44FAC 800547AC 00000000 */   nop
     /* 44FB0 800547B0 F1FF000C */  jal        softbody_RequestRebuild
     /* 44FB4 800547B4 21204000 */   addu      $a0, $v0, $zero
   .L800547B8:
-    /* 44FB8 800547B8 4F05010C */  jal        func_8004153C
+    /* 44FB8 800547B8 4F05010C */  jal        slot_GetObject
     /* 44FBC 800547BC 01000424 */   addiu     $a0, $zero, 0x1
     /* 44FC0 800547C0 03004010 */  beqz       $v0, .L800547D0
     /* 44FC4 800547C4 00000000 */   nop

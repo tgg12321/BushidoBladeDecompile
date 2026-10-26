@@ -2,7 +2,7 @@ glabel node_LoadSlotMappedAssetAndInitRetainedDrawNodes
     /* 392D0 80048AD0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 392D4 80048AD4 1000B0AF */  sw         $s0, 0x10($sp)
     /* 392D8 80048AD8 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 392DC 80048ADC 4F05010C */  jal        func_8004153C
+    /* 392DC 80048ADC 4F05010C */  jal        slot_GetObject
     /* 392E0 80048AE0 21808000 */   addu      $s0, $a0, $zero
     /* 392E4 80048AE4 09004010 */  beqz       $v0, .L80048B0C
     /* 392E8 80048AE8 00000000 */   nop

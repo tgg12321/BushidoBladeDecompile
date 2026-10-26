@@ -147,8 +147,8 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     case 18:
         s1 = s2;
         reloc_RelocateBlock((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
-        s1 =
-            (s32 *)func_80044670((s16 *)PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
+        s1 = (s32 *)node_BindFrameDataAndReserveEntryBuffer(
+            (s16 *)PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
     case 11:
         wave_SetCellBuffer((s32)s1);
@@ -405,8 +405,8 @@ void motion_FreePlaybackBlock(void) { arena_Free(0xA); }
 void func_80046A80(s32 a0, s32 a1) { motion_RebasePlayback(a1); }
 
 void resource_FreeSlotsAndBlocksAndInvalidateEntryCache(void) {
-    func_800415C4(0);
-    func_800415C4(1);
+    slot_ReleaseObjectAndResources(0);
+    slot_ReleaseObjectAndResources(1);
     resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks();
     func_80046020();
     resource_InvalidateEntrySelectionCache();
@@ -428,7 +428,7 @@ void func_80046B44(void) {
     node_InitRootNodePairWithNegatedRotationMatrices();
     light_InitDefaults();
     gpu_InitFogDrawMoves();
-    func_800404D8();
+    slot_ClearObjectPointersAndTextureRequests();
     func_8003F7F4();
     g_color_mode = 0;
     D_800F6650 = 0;
@@ -503,7 +503,7 @@ void gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
 s32 func_80046DE4(void) { return 0; }
 
 void *node_GetSlotMatrixPointerArray(s32 a0) {
-    Unk80045878Obj *v0 = func_8004153C(a0);
+    Unk80045878Obj *v0 = slot_GetObject(a0);
     if (v0) {
         return v0->node_matrix_ptrs;
     }
@@ -511,7 +511,7 @@ void *node_GetSlotMatrixPointerArray(s32 a0) {
 }
 
 void *node_GetSlotTransformNodes(s32 a0) {
-    Unk80045878Obj *v0 = func_8004153C(a0);
+    Unk80045878Obj *v0 = slot_GetObject(a0);
     if (v0) {
         return v0->transform_nodes;
     }
@@ -547,7 +547,7 @@ void gpu_RunGridDrawPassAndQueueFogMoves(s32 a0) {
 void resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
     s32 a0, s32 a1) {
     resource_LoadOrReuseSelectedBlock(a0, a1);
-    func_800421C8(a0);
+    ApplyLightPresetRowBackgroundClearAndFarColor(a0);
     func_8003E0E0();
 }
 
@@ -655,7 +655,7 @@ s16 *camera_CalcAngles(void) {
     return D_800A33C8;
 }
 
-void func_8004746C(void) { func_8004473C(); }
+void func_8004746C(void) { node_InitFrameEntriesFromWorldTranslations(); }
 
 void func_8004748C(void) { func_80044800(); }
 
@@ -663,7 +663,7 @@ void func_800474AC(void) { gpu_InitVramScroll(0, 0); }
 
 void func_800474D0(void) { gpu_QueueVramScroll(0); }
 
-void func_800474F0(void) { func_8004473C(); }
+void func_800474F0(void) { node_InitFrameEntriesFromWorldTranslations(); }
 
 void func_80047510(void) { func_80044800(); }
 
@@ -728,7 +728,7 @@ void func_80047738(void) { gpu_InitVramScroll(1, 0); }
 
 void func_8004775C(void) { gpu_QueueVramScroll(0); }
 
-void func_8004777C(void) { func_8004473C(); }
+void func_8004777C(void) { node_InitFrameEntriesFromWorldTranslations(); }
 
 void func_8004779C(void) { func_80044800(); }
 
@@ -1398,7 +1398,7 @@ u16 cx, cy;
 }
 
 s32 gpu_RefreshGrayscaleMode(void) {
-    if (func_800167AC()) {
+    if (gpu_GetSavedGrayscaleFlag()) {
         g_color_mode = 1;
     } else {
         g_color_mode = 0;
@@ -1530,7 +1530,7 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 arg0) {
     u8 *p;
     u8 *q;
 
-    temp_v0 = func_8004153C(arg0);
+    temp_v0 = slot_GetObject(arg0);
     if (temp_v0 == 0)
         return 0;
     D_800A33E0 = arg0;
@@ -1892,7 +1892,7 @@ void func_80049710(void) {}
  * entry arg0 and queues each on g_draw_queue. The first
  * node (type 0) takes its rotation and position from rot_in / pos (flags == 1)
  * or from node 19 + (flags & 1) of the object in D_800A9A10 slot flags >> 1
- * (func_8004153C), whose offset it scales in place by the object's
+ * (slot_GetObject), whose offset it scales in place by the object's
  * position_scale and into which it copies the new matrix back; the second (type
  * 3, parent = the first) follows unless flags is still 1. */
 void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
@@ -1934,7 +1934,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             node_bit = flags & 1;
-            slot_obj = func_8004153C(flags >> 1);
+            slot_obj = slot_GetObject(flags >> 1);
             var_4 = &slot_obj->transform_nodes[19 + node_bit];
             var_4->node.work.t[0] =
                 (var_4->node.work.t[0] * slot_obj->position_scale) >> 12;
@@ -2019,7 +2019,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     if (D_800EF980[temp_v1] < 0) {
         func_80052C10();
     }
-    slot_obj = func_8004153C(arg1 >> 1);
+    slot_obj = slot_GetObject(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;

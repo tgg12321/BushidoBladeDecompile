@@ -21,7 +21,7 @@ glabel main
     /* 7A4C 8001724C 1180043C */  lui        $a0, (0x80118800 >> 16)
     /* 7A50 80017250 00888434 */  ori        $a0, $a0, (0x80118800 & 0xFFFF)
     /* 7A54 80017254 21284002 */  addu       $a1, $s2, $zero
-    /* 7A58 80017258 A35A000C */  jal        func_80016A8C
+    /* 7A58 80017258 A35A000C */  jal        gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
     /* 7A5C 8001725C 21302002 */   addu      $a2, $s1, $zero
     /* 7A60 80017260 0A80143C */  lui        $s4, %hi(D_800A3770)
     /* 7A64 80017264 70379426 */  addiu      $s4, $s4, %lo(D_800A3770)

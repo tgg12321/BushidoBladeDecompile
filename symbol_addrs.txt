@@ -670,7 +670,7 @@ rcnt_StartCnt1 = 0x80046AE8; /* SsSet stuff with 0xF2000001 (SS event class) */
 eff_ClearInitFlag = 0x80016C74; /* 3-insn flag-clear setter */
 eff_Init = 0x80016C80; /* calls debug_printf + sys_Panic on failure */
 snd_InitAndLoadCommonVab = 0x80016CF8; /* snd_Init + snd_LoadCommonVab + memcpy to 0x8010DB00 + snd_VabFakeOpen + func_8005C614 */
-func_800167D4 = 0x800167D4; /* `return (D_80106A73 >> 2) & 1` */
+// RENAME 0x800167D4: retired name 'func_800167D4' — preserved note: `return (D_80106A73 >> 2) & 1`
 math_FovToScreenDist = 0x800166C4; /* uses Judge table for trig calc */
 gpu_SetDrawEnvBg = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
 gpu_HideResetAndClear = 0x80016888; /* SetDispMask(0) + ResetGraph(1) + ClearImage(640x480) + DrawSync */
@@ -966,7 +966,7 @@ func_80056FE8 = 0x80056FE8; /* MISNAMED: not angle correction; character display
 // RENAME 0x8001DBE4: retired name 'func_8001DBE4' — preserved note: MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1729-1747)
 gpu_MoveObjectClutsToFogBlock = 0x8003E164; /* when arg0 is not the selected object D_800A3228: restores the previous object's CLUT offsets; if object arg0 exists, copies its 64 x 6 palette block from (0x280 or 0x300, 0xF8) to (0x140, 0x1E8) (MoveImage), shifts its CLUT coordinates (gpu_OffsetBlockTexPrimStreams) and rebuilds the block's fog levels (func_8003E120); then D_800A3228 = arg0; 2B344.c */
 // RENAME 0x8004939C: retired name 'func_8004939C' — preserved note: MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells
-func_80041688 = 0x80041688; /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
+// RENAME 0x80041688: retired name 'func_80041688' — preserved note: MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+)
 font_LoadImage = 0x8003D2C4; /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */
 func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+resource_SelectRetainedSubblockOrApplyHeaderSections(-1)+snd_StopSelection() */
 camera_InitTrackedFighterFocus = 0x8001B3C0; /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */

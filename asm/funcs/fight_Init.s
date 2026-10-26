@@ -15,7 +15,7 @@ glabel fight_Init
     /* E4E4 8001DCE4 345A000C */  jal        gpu_SetDispMaskOn
     /* E4E8 8001DCE8 00000000 */   nop
   .L8001DCEC:
-    /* E4EC 8001DCEC 3D5D000C */  jal        func_800174F4
+    /* E4EC 8001DCEC 3D5D000C */  jal        gpu_DrawDisplayModeOnLocalOtAndSync
     /* E4F0 8001DCF0 00000000 */   nop
     /* E4F4 8001DCF4 1A5A000C */  jal        gpu_ResetGraphMode1
     /* E4F8 8001DCF8 00000000 */   nop
@@ -46,7 +46,7 @@ glabel fight_Init
     /* E554 8001DD54 00000000 */  nop
     /* E558 8001DD58 03004010 */  beqz       $v0, .L8001DD68
     /* E55C 8001DD5C 21200000 */   addu      $a0, $zero, $zero
-    /* E560 8001DD60 8105010C */  jal        func_80041604
+    /* E560 8001DD60 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* E564 8001DD64 21280000 */   addu      $a1, $zero, $zero
   .L8001DD68:
     /* E568 8001DD68 1080013C */  lui        $at, %hi(D_80102778 + 0x8)
@@ -110,7 +110,7 @@ glabel fight_Init
     /* E648 8001DE48 0980013C */  lui        $at, %hi(D_8008D578)
     /* E64C 8001DE4C 21082200 */  addu       $at, $at, $v0
     /* E650 8001DE50 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
-    /* E654 8001DE54 4401010C */  jal        func_80040510
+    /* E654 8001DE54 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* E658 8001DE58 21304002 */   addu      $a2, $s2, $zero
     /* E65C 8001DE5C B422010C */  jal        node_LoadSlotMappedAssetAndInitRetainedDrawNodes
     /* E660 8001DE60 21200002 */   addu      $a0, $s0, $zero
@@ -138,7 +138,7 @@ glabel fight_Init
     /* E6B0 8001DEB0 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
     /* E6B4 8001DEB4 21304002 */  addu       $a2, $s2, $zero
   .L8001DEB8:
-    /* E6B8 8001DEB8 4401010C */  jal        func_80040510
+    /* E6B8 8001DEB8 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* E6BC 8001DEBC 00000000 */   nop
   .L8001DEC0:
     /* E6C0 8001DEC0 1080013C */  lui        $at, %hi(D_80101EC8 + 0x12)
@@ -225,10 +225,10 @@ glabel fight_Init
     /* E7E8 8001DFE8 6125010C */  jal        resource_RankRequestedEntriesAndReloadOnChange
     /* E7EC 8001DFEC 21204002 */   addu      $a0, $s2, $zero
     /* E7F0 8001DFF0 21200000 */  addu       $a0, $zero, $zero
-    /* E7F4 8001DFF4 A205010C */  jal        func_80041688
+    /* E7F4 8001DFF4 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* E7F8 8001DFF8 21280000 */   addu      $a1, $zero, $zero
     /* E7FC 8001DFFC 01000424 */  addiu      $a0, $zero, 0x1
-    /* E800 8001E000 A205010C */  jal        func_80041688
+    /* E800 8001E000 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* E804 8001E004 21280000 */   addu      $a1, $zero, $zero
     /* E808 8001E008 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* E80C 8001E00C DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
@@ -281,7 +281,7 @@ glabel fight_Init
     /* E8C0 8001E0C0 01004590 */  lbu        $a1, 0x1($v0)
     /* E8C4 8001E0C4 02004690 */  lbu        $a2, 0x2($v0)
   .L8001E0C8:
-    /* E8C8 8001E0C8 FD06010C */  jal        func_80041BF4
+    /* E8C8 8001E0C8 FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* E8CC 8001E0CC 00000000 */   nop
   .L8001E0D0:
     /* E8D0 8001E0D0 E475000C */  jal        fight_ResetGraphAndReloadResourcesOnCachedKeyChange

@@ -510,7 +510,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
     *(s32 *)0x1F80001C = (s32)&D_80095328;
 }
 
-s32 func_80043244(s32 a0) {
+s32 math_ClassifyThresholdBand(s32 a0) {
     s32 ret;
     if (a0 > 0x16A09) {
         ret = 3;
@@ -522,7 +522,7 @@ s32 func_80043244(s32 a0) {
     return ret;
 }
 
-s32 func_80043278(s32 a0) {
+s32 gpu_RemapDepthToOtIndex(s32 a0) {
     s32 v0 = a0 >> *(s32 *)0x1F800008;
     s32 shift = v0 >> 11;
     s32 mant = (v0 & 0x7FF) | -0x1000;
@@ -1116,15 +1116,15 @@ void reloc_ClearCounts(void) {
     }
 }
 
-void func_800444BC(void) { func_80044504(D_800A378C); }
+void func_800444BC(void) { gpu_PrepareViewAndFlushDrawQueue(D_800A378C); }
 
-void func_800444E0(void) { func_80044504(D_800A378C); }
+void func_800444E0(void) { gpu_PrepareViewAndFlushDrawQueue(D_800A378C); }
 
 extern MATRIX D_80101BD0;
 
 extern void func_8004A4E0(void);
 
-void func_80044504(u32 *a0) {
+void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
     math_RotMatrixZXY(D_800A3678, &D_80101BD0);
     MulMatrix(&D_80101BD0, &D_800A3708->xf.mat);
     MulMatrix2(&D_800A370C->xf.mat, &D_80101BD0);
@@ -1156,7 +1156,7 @@ void func_80044504(u32 *a0) {
 
 void func_80044650(void) { func_80052C10(); }
 
-s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
+s32 node_BindFrameDataAndReserveEntryBuffer(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
     D_800A9CF8.unk0 = a1;
     D_800A9CF8.unk2 = *a0++;
@@ -1179,7 +1179,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     return a2;
 }
 
-void func_8004473C(void) {
+void node_InitFrameEntriesFromWorldTranslations(void) {
     Unk800A6690Rec *src;
     Unk800A9CF8Entry *dst;
     s32 i;

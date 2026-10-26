@@ -55,7 +55,7 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E060 8001D860 0980013C */  lui        $at, %hi(D_8008E5A8)
     /* E064 8001D864 21082300 */  addu       $at, $at, $v1
     /* E068 8001D868 A8E52790 */  lbu        $a3, %lo(D_8008E5A8)($at)
-    /* E06C 8001D86C A36E010C */  jal        func_8005BA8C
+    /* E06C 8001D86C A36E010C */  jal        snd_ReloadListedVabsFromFileAndInstallBillboards
     /* E070 8001D870 21204002 */   addu      $a0, $s2, $zero
     /* E074 8001D874 0A80033C */  lui        $v1, %hi(D_800A36A4)
     /* E078 8001D878 A4366394 */  lhu        $v1, %lo(D_800A36A4)($v1)

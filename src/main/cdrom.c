@@ -65,7 +65,7 @@ void cdrom_WaitIdle(void) {
         if (D_800A3906 != 0) {
             snd_FlushSoundQueue();
         }
-        func_800174F4();
+        gpu_DrawDisplayModeOnLocalOtAndSync();
         *p = *p + 2;
         VSync(2);
     }

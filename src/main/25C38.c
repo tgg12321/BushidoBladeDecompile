@@ -38,11 +38,11 @@ void func_80035480(void) {
         comb_RequestClose();
     }
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
-    func_800415C4(0);
-    func_800415C4(1);
+    slot_ReleaseObjectAndResources(0);
+    slot_ReleaseObjectAndResources(1);
     eff_ClearInitFlag();
     if (D_800A31D8 != 0) {
-        func_8005B72C();
+        snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
         D_800A390E = -1;
     }
     D_800A31D8 = 1;
@@ -398,10 +398,10 @@ void func_80035DC8(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
-    func_800415C4(0);
-    func_800415C4(1);
+    slot_ReleaseObjectAndResources(0);
+    slot_ReleaseObjectAndResources(1);
     eff_ClearInitFlag();
-    func_8005B72C();
+    snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
     D_800A3834 = 0x1B;
     gpu_SetDispMaskOn();

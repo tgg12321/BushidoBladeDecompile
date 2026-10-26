@@ -5,8 +5,9 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-/* Unprototyped: func_80040594 passes arena_id * 3 + 1 as an int; the s16
- * prototype 4BC3C defines it with narrows that argument before the call. */
+/* Unprototyped: slot_FinalizeObjectLoadSoundTexturesAndArena passes arena_id *
+ * 3 + 1 as an int; the s16 prototype 4BC3C defines it with narrows that
+ * argument before the call. */
 extern s32 snd_LoadVabPack();
 extern s32 g_gpu_draw_move_bank;
 extern u16 g_gpu_draw_move_table[];
@@ -47,12 +48,12 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
     }
 }
 
-void func_80040304(s32 a0, s32 a1) {
+void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
     Unk80045878Obj *ptr;
     s32 mask;
     s32 i;
 
-    ptr = func_8004153C(a0);
+    ptr = slot_GetObject(a0);
     if (ptr != 0) {
         switch (a1) {
         case 0:
@@ -91,7 +92,8 @@ void func_80040304(s32 a0, s32 a1) {
     }
 }
 
-void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
+void node_AppendProjectedNodeToList(
+    Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
     while (a1->node.unk2 != -1) {
         a1++;
     }
@@ -107,12 +109,12 @@ void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
     a1[1].node.unk2 = -1;
 }
 
-Unk80045878Node *func_8004046C(s32 a0, s32 a1) {
-    Unk80045878Obj *base = func_8004153C(a0);
+Unk80045878Node *node_GetSlotNodeById(s32 a0, s32 a1) {
+    Unk80045878Obj *base = slot_GetObject(a0);
     return base->node_by_id[a1];
 }
 
-void func_800404A0(Unk80045878Node *a0, s32 a1) {
+void node_SetWordOnAllListedNodes(Unk80045878Node *a0, s32 a1) {
     if (a0->node.unk2 == -1) {
         return;
     }
@@ -122,7 +124,7 @@ void func_800404A0(Unk80045878Node *a0, s32 a1) {
     } while (a0->node.unk2 != -1);
 }
 
-void func_800404D8(void) {
+void slot_ClearObjectPointersAndTextureRequests(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
         D_800A9A10[i] = 0;
@@ -130,28 +132,29 @@ void func_800404D8(void) {
     }
 }
 
-extern void func_80040594(Unk80045878Obj *);
-extern void func_800408F8(Unk80045878Obj *);
-extern void func_80040B44(Unk80045878Obj *);
+extern void slot_FinalizeObjectLoadSoundTexturesAndArena(Unk80045878Obj *);
+extern void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *);
+extern void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *);
 /* Not the definition's spelling: snd_VabFakeOpen takes an s16 second parameter,
  * but this call passes it unextended (an s16 prototype adds sll/sra). */
 extern s32 snd_VabFakeOpen(s32, s32);
 
-Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
+Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
+    s32 a0, s32 a1, s32 a2) {
     Unk80045878Obj *ptr;
     ptr = func_80045878(a0, a1, a2);
     D_800A9A10[a0] = ptr;
-    func_80040594(ptr);
-    func_800408F8(ptr);
-    func_80040B44(ptr);
+    slot_FinalizeObjectLoadSoundTexturesAndArena(ptr);
+    node_InitObjectHierarchyFromTemplates(ptr);
+    node_BuildIdToNodeMapWithDuplicates(ptr);
     softbody_SetupObject(ptr, 1);
     softbody_RequestRebuild(ptr);
-    func_80040CB8(ptr);
+    node_BuildProjectedNodeList(ptr);
     func_8003E120();
     return ptr;
 }
 
-void func_80040594(Unk80045878Obj *a0) {
+void slot_FinalizeObjectLoadSoundTexturesAndArena(Unk80045878Obj *a0) {
     s32 *var_0;
     s32 *var_1;
     s32 count;
@@ -179,7 +182,7 @@ void func_80040594(Unk80045878Obj *a0) {
         goto after_b644;
 
 call_b644:
-    func_8005B644(a0->arena_id);
+    snd_StopAllVoicesAndCloseSlotVab(a0->arena_id);
 
 after_b644:
     if (count < 6)
@@ -251,12 +254,12 @@ after_select:
         gpu_OffsetBlockTexPrimStreamsByPages(a0->unk_14, 2, 0, 2, 0);
 
     case_1_done:
-        func_80041AC8(a0);
+        gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(a0);
     }
 
 done_cases:
     DrawSync(0);
-    func_80041988(
+    gpu_LoadRequestedAvailableTimGroupsForSlot(
         a0->arena_id, a0->unk_08, D_80094B88[a0->arena_id], (s32)var_1);
 
     {
@@ -281,7 +284,7 @@ typedef struct {
 
 extern Unk80094B94Table D_80094B94;
 
-void func_800408F8(Unk80045878Obj *a0) {
+void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
     s16 *tbl;
     s32 count;
     s16 idx;
@@ -333,10 +336,10 @@ void func_800408F8(Unk80045878Obj *a0) {
         } while (i < 21);
     }
 
-    func_80040A78(a0);
+    node_RefreshObjectMatrixPointerTables(a0);
 }
 
-void func_80040A78(Unk80045878Obj *arg0) {
+void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *arg0) {
     s32 var_a1;
     Unk80045878Node *n;
 
@@ -369,7 +372,7 @@ void func_80040A78(Unk80045878Obj *arg0) {
     } while (var_a1 < 0x14);
 }
 
-void func_80040B44(Unk80045878Obj *arg0) {
+void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
     s32 var_0[18];
     Unk80045878Node *t5;
     Unk80045878Node *t7;
@@ -412,7 +415,7 @@ void func_80040B44(Unk80045878Obj *arg0) {
     t5->unk58 = 0;
 }
 
-void func_80040CB8(Unk80045878Obj *arg0) {
+void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
     s32 i;
     Unk80045878Node *p;
     /* Once-written named intermediate (no-new-park-categories entry 6):
@@ -456,7 +459,7 @@ u16 g_gpu_draw_move_table[42] = {
     0x02D0, 0x0040, 0x0010, 0x0028, 0x0280, 0x0020,
 };
 
-/* func_80040304's per-model masks, indexed by unk_08. */
+/* gpu_QueueSlotDrawMovesForSelectedSet's per-model masks, indexed by unk_08. */
 u8 D_80094B48[64] = {
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1C, 0x1F, 0x1F, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
@@ -466,7 +469,8 @@ u8 D_80094B48[64] = {
     0x00, 0x00, 0x00, 0x1C, 0x1F, 0x1F, 0x1F, 0x00, 0x1F,
 };
 
-/* Per arena_id: func_800404D8 clears the three slots. */
+/* Per arena_id: slot_ClearObjectPointersAndTextureRequests clears the three
+ * slots. */
 s32 D_80094B88[3] = {-1, -1, -1};
 
 Unk80094B94Table D_80094B94 = {
@@ -483,8 +487,8 @@ Unk80094B94Table D_80094B94 = {
 };
 
 /* D_80094C68, the position scales
- * func_800408F8 counts up to the -1 at [70] and indexes (9F9C.c reads it as
- * size_scale); three zero entries follow the -1. */
+ * node_InitObjectHierarchyFromTemplates counts up to the -1 at [70] and indexes
+ * (9F9C.c reads it as size_scale); three zero entries follow the -1. */
 u16 D_80094C68[74] = {
     0x107A, 0x1000, 0x0F5C, 0x107A, 0x1000, 0x0F5C, 0x1000, 0x1000, 0x1000,
     0x1028, 0x10A3, 0x1000, 0x1000, 0x1000, 0x1000, 0x1051, 0x1000, 0x0F85,

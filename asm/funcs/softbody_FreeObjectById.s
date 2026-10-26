@@ -1,7 +1,7 @@
 glabel softbody_FreeObjectById
     /* 3096C 8004016C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 30970 80040170 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 30974 80040174 4F05010C */  jal        func_8004153C
+    /* 30974 80040174 4F05010C */  jal        slot_GetObject
     /* 30978 80040178 00000000 */   nop
     /* 3097C 8004017C 03004010 */  beqz       $v0, .L8004018C
     /* 30980 80040180 00000000 */   nop

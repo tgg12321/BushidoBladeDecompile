@@ -22,7 +22,7 @@ glabel cdrom_WaitIdle
     /* 2778C 80036F8C B471010C */  jal        snd_FlushSoundQueue
     /* 27790 80036F90 00000000 */   nop
   .L80036F94:
-    /* 27794 80036F94 3D5D000C */  jal        func_800174F4
+    /* 27794 80036F94 3D5D000C */  jal        gpu_DrawDisplayModeOnLocalOtAndSync
     /* 27798 80036F98 00000000 */   nop
     /* 2779C 80036F9C 00000296 */  lhu        $v0, 0x0($s0)
     /* 277A0 80036FA0 02000424 */  addiu      $a0, $zero, 0x2

@@ -20,7 +20,7 @@
 #include <psxsdk/libspu.h>
 
 /* The 0x24-byte file record at 0x80106A50 (memcard_BuildSaveBlock checksums it
- * as one block; func_800167EC initialises it). */
+ * as one block; InitSavedRecordAndResetCameraDistanceOffset initialises it). */
 typedef struct {
     u8 unk_0;
     u8 unk_1;
@@ -33,7 +33,8 @@ typedef struct {
     u8 unk_05[3];
     TimeRec times[3]; /* 0x80106A58 */
     u8 frec20[3];     /* 0x80106A70 */
-    /* 0x80106A73: bits 0/1/2: func_800167AC, func_800167BC, func_800167D4 */
+    /* 0x80106A73: bits 0/1/2: gpu_GetSavedGrayscaleFlag,
+     * fighter_GetSavedCpuBehaviorAdjustFlag, snd_GetSavedCdAudioSuppressFlag */
     u8 flags;
 } FileRecord;
 
@@ -79,8 +80,9 @@ typedef struct {
     s32 unk8;
 } Unk800F1198Record;
 
-/* 0x800A9CF8 record (0x18 bytes); func_8004473C reaches its fields off
- * one base register, and func_80044C70 bumps the unk8 / unkC pointers together.
+/* 0x800A9CF8 record (0x18 bytes); node_InitFrameEntriesFromWorldTranslations
+ * reaches its fields off one base register, and func_80044C70 bumps the unk8 /
+ * unkC pointers together.
  */
 typedef struct {
     s16 unk0;
@@ -2035,12 +2037,12 @@ typedef struct {
 } Unk800A6690Rec;           /* 0x68 */
 
 /* The 0x68-byte entries of the D_800A9CF8.unkC table (the buffer
- * func_80044670 is handed; it returns the end, base + count * 104). Each
- * is a transform node of the Unk80101DF0Record layout paired with one
- * func_8003F1D4 entry of the same index (D_800A9CF8.unk10):
- * func_8004473C initialises the node and copies the paired entry's
- * xf.mat.t into work.t; func_80044B30 / func_80044800 run the node from
- * the D_800A9CF8.unk8 key frames and queue it on g_draw_queue.
+ * node_BindFrameDataAndReserveEntryBuffer is handed; it returns the end, base +
+ * count * 104). Each is a transform node of the Unk80101DF0Record layout paired
+ * with one func_8003F1D4 entry of the same index (D_800A9CF8.unk10):
+ * node_InitFrameEntriesFromWorldTranslations initialises the node and copies
+ * the paired entry's xf.mat.t into work.t; func_80044B30 / func_80044800 run
+ * the node from the D_800A9CF8.unk8 key frames and queue it on g_draw_queue.
  * unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
  * func_80044B30, -2 done), unk5C the word Y angle func_80044B30 stores,
  * unk60 an s16 func_80044800 sets to 0x1000 at the last key frame and then
@@ -2056,9 +2058,10 @@ typedef struct {
 } Unk800A9CF8Entry;         /* 0x68 */
 
 /* The 21 ten-byte node-template records at 0x80094B96 (up to D_80094C68):
- * func_800408F8 builds Unk80045878Obj.transform_nodes[i] from record i (unk_00:
- * the parent node index, -1 for none; unk_02: the position, scaled by
- * position_scale), func_80040CB8 copies unk_08 (-1: no node) into
+ * node_InitObjectHierarchyFromTemplates builds
+ * Unk80045878Obj.transform_nodes[i] from record i (unk_00: the parent node
+ * index, -1 for none; unk_02: the position, scaled by position_scale),
+ * node_BuildProjectedNodeList copies unk_08 (-1: no node) into
  * projected_nodes[]. */
 typedef struct {
     s16 unk_00;
@@ -2067,35 +2070,40 @@ typedef struct {
 } Unk80094B96Rec;
 
 /* The per-slot model object func_80045878 builds (0x1A88 bytes, its
- * arena_SetBlockEnd block) and D_800A9A10[] / func_8004153C hand out. The
+ * arena_SetBlockEnd block) and D_800A9A10[] / slot_GetObject hand out. The
  * header (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
  * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
  * 20-entry pointer tables.
- * - unk_00: flag word; func_80040594 sets bit 1 and keeps the character id in
- * bits 16..20, which func_80041604 / func_80041650 read as
- * (word >> 16) & 0x1F; no code reads it through half[].
+ * - unk_00: flag word; slot_FinalizeObjectLoadSoundTexturesAndArena sets bit 1
+ * and keeps the character id in bits 16..20, which
+ * slot_RequestTimGroupsAndMarkReloadOnChange / slot_GetLastLoadTimGroupRequest
+ * read as (word >> 16) & 0x1F; no code reads it through half[].
  * - arena_id: func_80045878's a0, the arena_OpenBlock id and the D_800A9A10
  * index; load_status: 0, 1 after a fresh load (func_80045878), -2 to request a
- * reload (func_80041604); func_80040594 returns at once when it is 0, else
- * clears it and runs its setup; unk_08: func_80045878's a1, indexing the
+ * reload (slot_RequestTimGroupsAndMarkReloadOnChange);
+ * slot_FinalizeObjectLoadSoundTexturesAndArena returns at once when it is 0,
+ * else clears it and runs its setup; unk_08: func_80045878's a1, indexing the
  * D_80094C68 / D_80094B48 tables.
  * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16
  * are the reloc_RelocateBlock / gpu_OffsetBlockTexPrimStreams ids);
- * position_scale: the Q12 scale func_800408F8 sets from D_80094C68.
+ * position_scale: the Q12 scale node_InitObjectHierarchyFromTemplates sets from
+ * D_80094C68.
  * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
- * bytes by func_80041688.
+ * bytes by node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor.
  * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 /
  * softbody_params: the attached Unk8003F62CRec block and the s16 list
  * softbody_SetupObject walks up to its -3 end (softbody_RebaseObject moves both
  * by its a1).
  * - transform_nodes[]: node 0 is the root
  * (node_QueueEntryNodesFromTransformOrUpdatedSlotNode reads its xf.mat);
- * func_800408F8 builds 0..20, func_80040CB8 fills projected_nodes[] (unk2 = -1
- * ends it), func_80040B44 copies duplicates into duplicate_nodes[] (unk58 = the
- * source node; 0 ends it).
+ * node_InitObjectHierarchyFromTemplates builds 0..20,
+ * node_BuildProjectedNodeList fills projected_nodes[] (unk2 = -1 ends it),
+ * node_BuildIdToNodeMapWithDuplicates copies duplicates into duplicate_nodes[]
+ * (unk58 = the source node; 0 ends it).
  * - unk_18F4[] / node_matrix_ptrs[]: &node.xf.mat of transform_nodes[] nodes
- * (func_80040A78); node_by_id[]: the node each id selects (func_80040B44);
- * unk_1A84: func_80040D48's arg5. */
+ * (node_RefreshObjectMatrixPointerTables); node_by_id[]: the node each id
+ * selects (node_BuildIdToNodeMapWithDuplicates); unk_1A84: func_80040D48's
+ * arg5. */
 typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */

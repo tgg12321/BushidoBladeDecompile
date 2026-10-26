@@ -111,13 +111,17 @@ void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     }
 }
 
-u32 func_800167AC(void) { return D_80106A50.flags & 1; }
+u32 gpu_GetSavedGrayscaleFlag(void) { return D_80106A50.flags & 1; }
 
-u32 func_800167BC(void) { return (D_80106A50.flags >> 1) & 1; }
+u32 fighter_GetSavedCpuBehaviorAdjustFlag(void) {
+    return (D_80106A50.flags >> 1) & 1;
+}
 
-u32 func_800167D4(void) { return (D_80106A50.flags >> 2) & 1; }
+u32 snd_GetSavedCdAudioSuppressFlag(void) {
+    return (D_80106A50.flags >> 2) & 1;
+}
 
-void func_800167EC(void) {
+void InitSavedRecordAndResetCameraDistanceOffset(void) {
     s32 i;
     /* FAKE: second handle to D_80106A50; using the global directly
      * everywhere: score 19; final times[0].unk_4 store through var_1: score 10
@@ -185,7 +189,8 @@ void sys_Init(void) {
     rcnt_StartCnt1Wrapper();
 }
 
-void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
+void gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
+    u8 *arg0, void *arg1, s32 arg2) {
     RECT rect;
     s32 i;
 
@@ -262,7 +267,7 @@ void snd_InitAndLoadCommonVab(void) {
     }
     memcpy(0x8010DB00, 0x801D8800, size);
     snd_VabFakeOpen(0xFFF35300, 0);
-    func_8005C614();
+    snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode();
     D_800A3906 = 1;
 }
 
@@ -274,7 +279,7 @@ extern u8 D_800A36B0;
 
 void func_80016D78(void) {
     printf(g_str_limit, 0x8010DB00);
-    func_800167EC();
+    InitSavedRecordAndResetCameraDistanceOffset();
     motion_InitBuffers();
     D_800A3770[0] = 0x801D8800;
     D_800A3770[1] = 0x801EBC00;
@@ -433,7 +438,8 @@ void main(void) {
     sys_Init();
     func_80016D78();
     SetDispMask(1);
-    func_80016A8C((u8 *)0x80118800, var_1, idx);
+    gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
+        (u8 *)0x80118800, var_1, idx);
 
     var_4 = D_800A3770;
     D_800A3834 = 0xF;
@@ -519,7 +525,7 @@ call_func:
     goto loop;
 }
 
-void func_800174F4(void) {
+void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     u32 var_0[2];
     DRAWENV env;
     /* holds two values: the case-1/2 fade loop's iteration count, then the

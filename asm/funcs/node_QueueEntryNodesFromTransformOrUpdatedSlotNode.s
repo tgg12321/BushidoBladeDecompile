@@ -65,7 +65,7 @@ glabel node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 3A010 80049810 340042AE */   sw        $v0, 0x34($s2)
   .L80049814:
     /* 3A014 80049814 FF7F7332 */  andi       $s3, $s3, 0x7FFF
-    /* 3A018 80049818 4F05010C */  jal        func_8004153C
+    /* 3A018 80049818 4F05010C */  jal        slot_GetObject
     /* 3A01C 8004981C 42201300 */   srl       $a0, $s3, 1
     /* 3A020 80049820 01006332 */  andi       $v1, $s3, 0x1
     /* 3A024 80049824 21884000 */  addu       $s1, $v0, $zero
