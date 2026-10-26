@@ -742,13 +742,13 @@ D_800A3164 = 0x800A3164; /* 'VSCPU' */  /* data-wave 2026-10-09: was g_str_mode_
 D_800A316C = 0x800A316C; /* 'STORY' */  /* data-wave 2026-10-09: was g_str_mode_story_800A316C */
 D_800A31DC = 0x800A31DC; /* '%s' */  /* data-wave 2026-10-09: was g_str_pct_s_800A31DC_fmt */
 g_str_sio_800A3210 = 0x800A3210; /* 'sio:' serial-port device opened by comb_Init (libcomb link cable); the memcard device is bu%1d%1d: */
-D_800A31DA = 0x800A31DA; /* ref: func_80035480 */  /* data-wave 2026-10-08: was g_game_session_running */
-D_800A31FC = 0x800A31FC; /* 0/1 flag of the memory-card status flow (func_80038988 / func_80038C70) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
+D_800A31DA = 0x800A31DA; /* ref: menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu */  /* data-wave 2026-10-08: was g_game_session_running */
+D_800A31FC = 0x800A31FC; /* 0/1 flag of the memory-card status flow (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress / memcard_StepSaveOverwriteAndFormatPrompts) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
 D_800A3203 = 0x800A3203; /* one-shot latch that re-arms the memory-card status poll through memcard_RequestLoad (28708.c:457-462) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
 D_800A3678 = 0x800A3678; /* ref: func_80042874 */  /* data-wave 2026-10-08: was g_leaf_muki_buffer */
 D_800A370C = 0x800A370C; /* = &D_800FF638 (node_InitRootNodePairWithNegatedRotationMatrices); read by gpu_PrepareViewAndFlushDrawQueue */  /* data-wave 2026-10-08: was g_replay_camera_target_ptr_b */
 g_gpu_ot_ptr = 0x800A374C; /* ref: tslDrTex1Init2 */  /* data-wave 2026-09-24: was g_dma_buf_base */
-D_800A376A = 0x800A376A; /* refs: func_8002738C, func_800343F0, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState, fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields, fight_InitCommandStreamImageLoad */  /* data-wave 2026-10-08: was g_tslTm_loaded_flags */
+D_800A376A = 0x800A376A; /* refs: func_8002738C, ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState, fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields, fight_InitCommandStreamImageLoad */  /* data-wave 2026-10-08: was g_tslTm_loaded_flags */
 D_800A37A8 = 0x800A37A8; /* command-1 operand bytes of the running script (count D_800A37A0), shown one by one by gpu_DrawDisplayModeOnLocalOtAndSync (6CF8.c:566-590) */  /* data-wave 2026-10-08: was g_mental_bar_packet_buf */
 D_80015470 = 0x80015470; /* 4 ptrs: saTan2LineDraw, InitFadePanel x2, func_8004B6E4 */  /* data-wave 2026-10-08: was g_text1a_seq_start_callback_table */
 D_80015480 = 0x80015480; /* 8 ptrs: gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles .. func_80051754 */  /* data-wave 2026-10-08: was g_text1a_seq_step_callback_table */
@@ -785,7 +785,7 @@ DMA6_MADR = 0x8009BF58; /* -> 0x1F8010E0 DMA6 (OTC) base address; _otc */  /* da
 D_8009B0E0 = 0x8009B0E0; /* nine 12-byte sprite-sheet headers (counts 2, 2, 2, 3, 2, 2, 4, 4, 6 at +2) drawn by func_8005C8A8 */  /* data-wave 2026-10-08: was g_cpu_no_action_table_24x3 */
 D_8009B1AC = 0x8009B1AC; /* two 8-byte sprite cells (x, y, u, v, w, h); func_8005C8A8 draws them with header D_8009B0E0[4] */  /* data-wave 2026-10-08: was g_cpu_no_action_table_16x3 */
 D_8009B530 = 0x8009B530; /* one 12-byte sprite-sheet header (count 2), drawn by func_8005E54C with cell table D_8009B56C */  /* data-wave 2026-10-08: was g_cpu_attack_arc_table_12x4 */
-D_8009A830 = 0x8009A830; /* u8[8] (dlabel D_8009A830); func_80056FE8. 0x8009A838 (s8[8]) and 0x8009A840 (u8[16]) are separate tables, not rows of one 3x8 record */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3 */
+D_8009A830 = 0x8009A830; /* u8[8] (dlabel D_8009A830); fighter_CalcOpponentDistanceThresholdFromTables. 0x8009A838 (s8[8]) and 0x8009A840 (u8[16]) are separate tables, not rows of one 3x8 record */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3 */
 D_800A327C = 0x800A327C; /* RECT {0x380, 0, 0x40, 0x100}, LoadImage destination in func_8005FBC8 */  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7 */
 D_800A32C8 = 0x800A32C8; /* u32[2] bit masks {0x2000, 0x4000}, tested against *arg0 by pad_StepOffsetsGetDirectionEvents */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_a */
 D_800A32EC = 0x800A32EC; /* RECT {0x90, 0x1FB, 0x30, 1}, MoveImage source in func_8006E534 */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_b */
@@ -805,7 +805,7 @@ D_8008D090 = 0x8008D090; /* handler table: main calls D_8008D090[D_800A3834]() e
 D_8008DCCC = 0x8008DCCC; /* model id -> BBM file name table, zero-id terminated */  /* data-wave 2026-10-08: was menuDat */
 D_8008E778 = 0x8008E778; /* 100 rows of 4 bytes; func_80033DF4 copies a row into D_800A384C / D_800A38EC..EE */  /* data-wave 2026-10-08: was cpu_practice_honmokuroku_data_tbl */
 g_cd_file_table = 0x8008EC34; /* CD file table: CdFileEntry[159] {CdlLOC loc, u32 size} per disc file (include/bb2.h:480) */  /* data-wave 2026-09-24: was SpecialCam */
-D_80099D54 = 0x80099D54; /* s16 CD file id bases (-1 gaps), read by func_80054884 for motion_StartPlayback */  /* data-wave 2026-10-08: was InfoPosYTbl1 */
+D_80099D54 = 0x80099D54; /* s16 CD file id bases (-1 gaps), read by motion_StartPlaybackAtIndexedBasePlusOffset for motion_StartPlayback */  /* data-wave 2026-10-08: was InfoPosYTbl1 */
 D_8009ADD8 = 0x8009ADD8; /* per-character rows of three 8-byte sprite cells, read by func_8005E54C */  /* data-wave 2026-10-08: was UesrWorkDef */
 D_8009BA7C = 0x8009BA7C; /* 62 function pointers, called by jalr in eff_StartCommand / eff_StepCommand */  /* data-wave 2026-10-08: was chractar_use_pset_combo_id_table */
 dma_spu_madr = 0x800A2CE0; /* holds 0x1F8010C0 (DMA channel 4 MADR); written through by _spu_Fr_ / _spu_t (spu.c:214, :299) */  /* data-wave 2026-10-09: was g_dma_chcr_ch4_ptr */
@@ -865,11 +865,11 @@ softbody_Step = 0x800187F4; /* src/main/87A0.c */
 D_8008E914 = 0x8008E914; /* u8[][8] rows indexed by D_800A36A4; snd_UpdateStageSounds reads 4 (type, value) pairs that queue sounds 0x7B + i */  /* data-wave 2026-10-08: was g_leaf_stage_data_table */
 D_8008EBF4 = 0x8008EBF4; /* per-category byte; + 0 / 1 / 2 it is snd_QueuePositionalSound's first argument (17AFC.c:6268-6277) */  /* data-wave 2026-10-08: was g_leaf_action_id_base */
 D_8008EBFC = 0x8008EBFC; /* per-category {a, b} thresholds compared with the g_snd_sequence_ticks slot counter (cat*2 index) */  /* data-wave 2026-10-08: was g_leaf_action_threshold_a */
-D_800A3740 = 0x800A3740; /* state of func_80035828's switch (1-14 stored) */  /* data-wave 2026-10-08: was g_replay_camera_mode */
+D_800A3740 = 0x800A3740; /* state of menu_UpdateRowMenuAndSubflows's switch (1-14 stored) */  /* data-wave 2026-10-08: was g_replay_camera_mode */
 D_800A30DC = 0x800A30DC; /* min observed bytes left in the frame's primitive buffer; tripping <0 triggers sys_Panic ("common prim over flow") */  /* data-wave 2026-10-08: was g_ot_remaining_min */
 D_800A3713 = 0x800A3713; /* countdown gating the START-pause menu (menu_RunPauseMenu) entry; main_loop.md step 13 */  /* data-wave 2026-10-08: was g_select_pause_countdown */
 D_800A37C0 = 0x800A37C0; /* per-step timer of gpu_DrawDisplayModeOnLocalOtAndSync's case 20 (6CF8.c:566-590), preset to 500; reset at 6CF8.c:585 and 2B344.c:452 */  /* data-wave 2026-10-08: was g_global_frame_counter */
-D_800A3788 = 0x800A3788; /* 3-bit set toggled per menu line (var_2 3..5) by menu_RunPauseMenu, passed as var_2 | D << 16 to func_8005C8A8; column index of D_8009A9F0 in func_80058580 */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
+D_800A3788 = 0x800A3788; /* 3-bit set toggled per menu line (var_2 3..5) by menu_RunPauseMenu, passed as var_2 | D << 16 to func_8005C8A8; column index of D_8009A9F0 in fighter_UpdateCpuNavigationChooseScriptsAndHeldInput */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
 _spu_rev_reserve_wa = 0x800A2880; /* current allocator a0 (0 = none); compared against incoming alloc requests */  /* data-wave 2026-09-07: was g_spu_voice_alloc_current_a0 */
 _spu_rev_offsetaddr = 0x800A2884; /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset */
 D_800A30FC = 0x800A30FC; /* caches D_8008E5A8[(s8)D_80102778.unk_4[0]]; fight_ResetGraphAndReloadResourcesOnCachedKeyChange reloads the 0x80190800 block through snd_ReloadListedVabsFromFileAndInstallBillboards when it changes */  /* data-wave 2026-10-08: was g_char_pose_id_p1 */
@@ -926,8 +926,8 @@ D_800A30D4 = 0x800A30D4; /* 8-byte RECT, a 256x48 band at (0x20, 0x60): read onc
 D_800A3744 = 0x800A3744; /* zeroed by func_80016D78; never read */  /* data-wave 2026-10-08: was g_sys_init_byte_a */
 D_800A3745 = 0x800A3745; /* data-wave 2026-10-08: was g_sys_init_byte_b */
 D_800A3746 = 0x800A3746; /* data-wave 2026-10-08: was g_sys_init_byte_c */
-D_800A36F9 = 0x800A36F9; /* four-valued option (option line 10) cycled by func_80034708; zeroed by func_80016D78 */  /* data-wave 2026-10-08: was g_sys_init_flag */
-D_800A3690 = 0x800A3690; /* 0/1 option (option line 11) edited by func_80034708; selects the camera focus in camera_UpdateTwoFighterView */  /* data-wave 2026-10-08: was g_sys_init_substate */
+D_800A36F9 = 0x800A36F9; /* four-valued option (option line 10) cycled by menu_PrintEditAndApplyConfigWithPerPadCursors; zeroed by func_80016D78 */  /* data-wave 2026-10-08: was g_sys_init_flag */
+D_800A3690 = 0x800A3690; /* 0/1 option (option line 11) edited by menu_PrintEditAndApplyConfigWithPerPadCursors; selects the camera focus in camera_UpdateTwoFighterView */  /* data-wave 2026-10-08: was g_sys_init_substate */
 D_8009BCE4 = 0x8009BCE4; /* 20 u8 entries indexed by entry id: bit 0 = selectable (set from arg2's bit idx), bit (4 << arg3) = held by selector arg3 (64FD8.c:598-1132) */  /* data-wave 2026-10-08: was g_per_player_slot_flags_20 */
 D_800A362C = 0x800A362C; /* cached fn ptr from BIOS call result + 0x7A0 (1952) offset; called via jalr */  /* data-wave 2026-10-09: was g_bios_callback_v0_1952 */
 D_800A3618 = 0x800A3618; /* _patch_pad's own $ra save slot (libapi/patch.c:14) */  /* data-wave 2026-10-09: was g_kernel_intr_ra_save_a */
@@ -938,9 +938,9 @@ D_8008E5CC = 0x8008E5CC; /* u8[27][8]: [D_80101EC8[i].unk_0A][.unk_0E] goes to r
 D_8008E6A4 = 0x8008E6A4; /* u8[27][6]: read instead of D_8008E5CC in some D_800A38DC modes (9F9C.c:1910-1914, 2B344.c:211-213) */  /* data-wave 2026-10-09: was g_char_lookup_table_c */
 D_800A36C8 = 0x800A36C8; /* fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState saves D_800A376A here; fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields restores it and passes it to slot_RequestTimGroupsAndMarkReloadOnChange */  /* data-wave 2026-10-08: was g_char_id_saved_d */
 D_800A31F8 = 0x800A31F8; /* func_80037D14's return D_800A3890: 0 while the card machine runs, then status 1/2/-1/-2/-3 */  /* data-wave 2026-10-08: was g_memcard_op_alt_handle */
-D_800A3204 = 0x800A3204; /* re-arm latch: func_800388A8 sets it when its two-way pad prompt returns a choice; the next call clears it and resets D_800A3318 (28708.c:573-595) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear */
+D_800A3204 = 0x800A3204; /* re-arm latch: menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult sets it when its two-way pad prompt returns a choice; the next call clears it and resets D_800A3318 (28708.c:573-595) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear */
 D_8008EA70 = 0x8008EA70; /* paired bytes table; indexed by D_800A38A4 * 2; each pair = (motion_id, sub_value) */  /* data-wave 2026-10-08: was g_unlock_anim_p_pair_table */
-D_8009016C = 0x8009016C; /* u8[12] offsets indexed by D_800A38A4 (0..9) in fight_InitImageAndPlaybackPresentation (2B344.c:783); func_80054884 adds one to D_80099D54[0x16] to form motion_StartPlayback's id (43500.c:637) */  /* data-wave 2026-10-08: was g_unlock_anim_char_table */
+D_8009016C = 0x8009016C; /* u8[12] offsets indexed by D_800A38A4 (0..9) in fight_InitImageAndPlaybackPresentation (2B344.c:783); motion_StartPlaybackAtIndexedBasePlusOffset adds one to D_80099D54[0x16] to form motion_StartPlayback's id (43500.c:637) */  /* data-wave 2026-10-08: was g_unlock_anim_char_table */
 D_80095328 = 0x80095328; /* 88-word table of function addresses; func_800430E4 / gpu_PrepareViewAndFlushDrawQueue store its address to scratchpad 0x1F80001C */  /* data-wave 2026-10-08: was g_scratchpad_cached_data_ptr */
 spu_bcr = 0x800A2D34; /* SPU DMA block count = (count >> 6) + (count & 0x3F != 0), BCR's high half (spu.c:297-300) */  /* data-wave 2026-10-09: was g_spu_dma_madr_high */
 dma_spu_bcr = 0x800A2CE4; /* pointer to SPU DMA BCR register (block count) */  /* data-wave 2026-10-09: was g_spu_dma_bcr_reg_ptr */
@@ -992,7 +992,7 @@ func_80046020 = 0x80046020; /* MISNAMED: not ground display; arena_Free(6) then 
 // RENAME 0x80077A04: retired name 'func_80077A04' — preserved note: MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1)
 func_8004A940 = 0x8004A940; /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to gte_ProjectSVectorTriples */
 D_80090600 = 0x80090600; /* cached distance: the step between packets gpu_QueueDepthSpacedMovesAndLinkTerminalPacket inserts (written by gpu_LatchFogDepthOnTransitionAndQueueMoves) */  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8 */
-D_8009A838 = 0x8009A838; /* s8[8] (dlabel D_8009A838, read lb); func_80056FE8, func_80058580 */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8 */
+D_8009A838 = 0x8009A838; /* s8[8] (dlabel D_8009A838, read lb); fighter_CalcOpponentDistanceThresholdFromTables, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8 */
 D_8009AD1C = 0x8009AD1C; /* data-wave 2026-10-03: was g_byte_lookup_table_256_plus_4 (basis-withdrawn: spelled from the contradicted 0x8009AD18 alias, now g_vab_id_list) */
 D_8009BC04 = 0x8009BC04; /* MenuState: rows_on, unk4 (0x8009BC08), opt[8] (0x8009BC0C) */  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8 */
 D_8009BD44 = 0x8009BD44; /* D_8009BD24.unk20 bit-field word (+0x20) */  /* data-wave 2026-10-08: was g_menu_screen_live_byte_c_plus_1 */
@@ -1047,7 +1047,7 @@ D_80099C50 = 0x80099C50; /* data-wave 2026-10-08: was g_text1b_value_99C50 */
 D_80099CC2 = 0x80099CC2; /* data-wave 2026-10-08: was g_text1b_s16_base_99CC2 */
 D_80099D3C = 0x80099D3C; /* data-wave 2026-10-08: was g_text1b_pair_6byte_99D3C */
 D_8009A088 = 0x8009A088; /* data-wave 2026-10-08: was g_text1b_addr_8009A088 */
-D_8009A840 = 0x8009A840; /* u8[16] (dlabel D_8009A840); func_80056FE8 */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8_plus_8 */
+D_8009A840 = 0x8009A840; /* u8[16] (dlabel D_8009A840); fighter_CalcOpponentDistanceThresholdFromTables */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8_plus_8 */
 D_8009A850 = 0x8009A850; /* data-wave 2026-10-08: was g_text1b_addr_8009A850 */
 D_8009AA50 = 0x8009AA50; /* data-wave 2026-10-08: was g_text1b_lookup8_aa50 */
 D_8009AA70 = 0x8009AA70; /* data-wave 2026-10-08: was g_text1b_s32_arr_aa70 */
@@ -1181,7 +1181,7 @@ D_800A37E8 = 0x800A37E8; /* 35 refs; s16 paired with g_round_timer; reload value
 D_800A37EA = 0x800A37EA; /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
 D_800A37EC = 0x800A37EC; /* 11 refs; +4 from timer base */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */
 D_800A3258 = 0x800A3258; /* 7 refs; constant table of four bit numbers: fighter_BuildCpuPad sets pad.held |= 1 << bits.bit[rec->unk_441] (4510C.c:867) */  /* data-wave 2026-10-08: was g_game_state_field_0_800A3258 */
-D_800A325C = 0x800A325C; /* 7 refs; constant 4-byte table func_80058580 indexes by p->other->unk_441 when p->other->unk_6A == 0x19 (4510C.c:2153) */  /* data-wave 2026-10-08: was g_game_state_field_4_800A325C */
+D_800A325C = 0x800A325C; /* 7 refs; constant 4-byte table fighter_UpdateCpuNavigationChooseScriptsAndHeldInput indexes by p->other->unk_441 when p->other->unk_6A == 0x19 (4510C.c:2153) */  /* data-wave 2026-10-08: was g_game_state_field_4_800A325C */
 D_800A3260 = 0x800A3260; /* 7 refs; sibling constant table, indexed when p->other->unk_6A == 0x1A (4510C.c:2157) */  /* data-wave 2026-10-08: was g_game_state_field_8_800A3260 */
 CD_init = 0x800819C4; /* MISNAMED: first-pass auto-tag; body is CD-ROM init (called by cdrom_CheckReady) -- see cdrom_Initialize */
 CdReset = 0x800800DC; /* mode 2 -> Shutdown; else Initialize (+ ConfigSPU if mode 1); returns 1 ok / 0 fail */
@@ -1385,7 +1385,7 @@ g_font_row = 0x800A3360; /* row of font_Printf's text console (column at g_font_
 g_arena_block_count = 0x800A33AC; /* live entry count of the block table g_arena_blocks */  /* data-wave 2026-10-08: was g_text1a_active_count */
 D_800A3418 = 0x800A3418; /* ref: bb2_rand */  /* data-wave 2026-10-08: was g_gnd_landing_rand_seed */
 D_800A3524 = 0x800A3524; /* pointer to the Unk8009BD24Block work block: = arg1 of menu_LoadResourcesInitStateSelectFirstEnabledRow, &D_8009BD24 at its one call site */  /* data-wave 2026-10-08: was g_text1b_arg1_struct_ptr */
-D_800A3338 = 0x800A3338; /* 17 x 4-byte cells (zero-init, never incremented; consumed by func_80038988). Renamed from _event_counter_ since they're not actually counters. */  /* data-wave 2026-10-08: was g_file_io_state_event_cells_17 */
+D_800A3338 = 0x800A3338; /* 17 x 4-byte cells (zero-init, never incremented; consumed by memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress). Renamed from _event_counter_ since they're not actually counters. */  /* data-wave 2026-10-08: was g_file_io_state_event_cells_17 */
 D_800A3460 = 0x800A3460; /* s32 live-slot bit mask for the six slots eff_SpawnRotatedQuadCluster spawns and eff_DrawAndAdvanceRotatedQuadClusters draws */  /* data-wave 2026-10-08: was g_text1b_state_record_table_4x36 */
 D_800A3578 = 0x800A3578; /* 5ED34.c selection-screen state; func_8006EC0C reads its low byte as the fade state */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_a */
 D_800A35A0 = 0x800A35A0; /* func_8006EACC's result (0 / -1 / 1) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_b */
@@ -1398,7 +1398,7 @@ D_800A350C = 0x800A350C; /* s16[2]: pad_StepOffsetsGetDirectionEvents's per-axis
 D_800A3514 = 0x800A3514; /* counter: += 1 per call of menu_UpdateOptionMenuChoices / C168 / D338 / D74C / E068 and per cursor-row draw in menu_DrawMaskedRowList; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
 D_800A3444 = 0x800A3444; /* live mask of 16 effect slots: eff_SpawnJitteredBillboards claims a slot (1 << slot), eff_DrawAndAdvanceJitteredBillboards draws it and clears its bit */  /* data-wave 2026-10-08: was g_particle_slot_bitmap */
 cb_read = 0x80082050; /* passed to CdReadyCallback by cd_read_retry (cdread.c:142) */  /* data-wave 2026-09-24: was g_cdrom_callback_b_obj */
-D_800A33F4 = 0x800A33F4; /* pointer to the Work_80053E9C cast work area in use (&D_800EF9F8 or arg4: func_80053304 / func_8005344C / collision_TestSegment / collision_TestSegmentWithWork) */  /* data-wave 2026-10-08: was g_effect_active_ptr */
+D_800A33F4 = 0x800A33F4; /* pointer to the Work_80053E9C cast work area in use (&D_800EF9F8 or arg4: collision_TestSegmentExtendingShortStart / collision_TestSegmentExtendingShortStartWithWork / collision_TestSegment / collision_TestSegmentWithWork) */  /* data-wave 2026-10-08: was g_effect_active_ptr */
 D_800A35D8 = 0x800A35D8; /* record array menu_InitSelScreen was given (arg0); passed to gpu_InitPrimBufferPair, indexed by menu_GetSelPrimBuffer */  /* data-wave 2026-10-08: was g_mode_state_arg_alt */
 D_800A3570 = 0x800A3570; /* s16 slide offset, 0..0x1E8 (488), stepped by +/-0x20 in func_8006EC0C; an x displacement and width in func_8006F528 (5ED34.c:266-288, :558-637) */  /* data-wave 2026-10-08: was g_fade_value */
 D_800A3580 = 0x800A3580; /* the module's current mode: indexes the handler table at 0x8009BC1C, D_8009BCC4 and the menu table (5ED34.c:245, :1600, :1653) */  /* data-wave 2026-10-08: was g_fade_dispatch_idx */
@@ -1436,7 +1436,7 @@ D_800A3454 = 0x800A3454; /* data-wave 2026-10-08: was g_satan1_gauge_state_c */
 D_800A345C = 0x800A345C; /* data-wave 2026-10-08: was g_satan1_gauge_state_e */
 g_collision_hit_tag = 0x800A33F8; /* u16 = the cast work area's unk4 on a hit (collision_GetHit); returned by the getter collision_GetHitTag */  /* data-wave 2026-10-08: was g_effect_cached_id */
 D_800A33F0 = 0x800A33F0; /* s32 set by collision_SetGrid / incremented by collision_RebaseGrid */  /* data-wave 2026-10-08: was g_effect_accumulator */
-D_800A3318 = 0x800A3318; /* current choice (0 / 1) of func_800388A8's two-way pad prompt: confirm returns +1 when 0, -1 otherwise; D_800A3204 resets it (28708.c:573-595) */  /* data-wave 2026-10-08: was g_input_pause_pending_flag */
+D_800A3318 = 0x800A3318; /* current choice (0 / 1) of menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult's two-way pad prompt: confirm returns +1 when 0, -1 otherwise; D_800A3204 resets it (28708.c:573-595) */  /* data-wave 2026-10-08: was g_input_pause_pending_flag */
 D_800A3350 = 0x800A3350; /* two-way choice cursor (0 / 1) of a memory-card message, gpu_DrawSheetPairCenteredTileWithOptionalSelection's second argument */  /* data-wave 2026-10-08: was g_result_screen_state_c */
 D_800A35E8 = 0x800A35E8; /* bit-packed from StoreCompactedBits's arg0: bits0-9 + (bits12-21 >> 2) + (bit24 >> 4) + (bit26 >> 5); read as an argument of func_8006E534 / menu_InitSelScreen */  /* data-wave 2026-10-08: was g_text1b_packed_arg */
 D_800A35E0 = 0x800A35E0; /* s32 word = D_8009BD58[D_8009BD24.unk14_0][1] (ResetFlowAndFetchRowTablePair); func_8006E534's second argument in InitWithCachedValueAndStoredBitsBlackBg */  /* data-wave 2026-10-08: was g_text1b_cached_byte */
@@ -1884,7 +1884,7 @@ Alarm = 0x800F19B8; /* libcd bios.c alarm {time, count, name} (SOTN name; pre-sl
 Result = 0x800F19A0; /* 8-byte payload buffer for Callback A */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_a */
 Result_plus_0x8 = 0x800F19A8; /* 8-byte payload buffer for Callback B */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_b */
 g_memcard_poll_count = 0x800A3924; /* incremented once per memcard_PollSwEventsTimeout call (result forced to 2 at >= 0x78); zeroed by func_80037D14 after _card_info / _card_load */  /* data-wave 2026-10-08: was g_pad_press_tick_counter */
-g_fight_match_count = 0x800A389B; /* entry count p->unk14_10 + 3 (func_8003504C); fight_AdvanceMatch stops when g_fight_match_cursor reaches it */  /* data-wave 2026-10-08: was g_match_round_byte_b */
+g_fight_match_count = 0x800A389B; /* entry count p->unk14_10 + 3 (ApplyWorkingRecordToPendingConfigAndInitializeMode); fight_AdvanceMatch stops when g_fight_match_cursor reaches it */  /* data-wave 2026-10-08: was g_match_round_byte_b */
 g_draw_queue_cursor = 0x800A3820; /* data-wave 2026-10-07: was g_hira_packet_cursor */
 D_800A384C = 0x800A384C; /* data-wave 2026-10-08: was g_practice_select_cursor */
 D_800A385C = 0x800A385C; /* data-wave 2026-10-08: was g_seq_check_pending */
@@ -1946,7 +1946,7 @@ D_800EF59C = 0x800EF59C; /* the 9 x 17 wave grid (stride 0x44): row 0 = (Judge[p
 D_800A3906 = 0x800A3906; /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D78; gates snd_FlushSoundQueue in cdrom_WaitIdle */  /* data-wave 2026-10-07: was g_intro_render_busy */
 g_pad_state_plus_0xC = 0x80102794; /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 _que = 0x80103680; /* function-pointer field (offset 0) of each 0x60-byte slot in the 64-slot queue; paired with g_gpu_packet_buffer_64x96 (+4) */  /* data-wave 2026-09-07: was g_gpu_packet_queue_base */
-D_800EF9F8 = 0x800EF9F8; /* static Work_80053E9C cast work area; D_800A33F4 = &D_800EF9F8 in func_80053304 / collision_TestSegment */  /* data-wave 2026-10-08: was g_effect_struct_a */
+D_800EF9F8 = 0x800EF9F8; /* static Work_80053E9C cast work area; D_800A33F4 = &D_800EF9F8 in collision_TestSegmentExtendingShortStart / collision_TestSegment */  /* data-wave 2026-10-08: was g_effect_struct_a */
 D_800EFA00 = 0x800EFA00; /* D_800EF9F8.unk8 (+8): the cast's start VECTOR */  /* data-wave 2026-10-08: was g_effect_struct_a_vfield */
 g_vab_rec_ptr = 0x800EFC38; /* data-wave 2026-09-24: was g_effect_struct_b */
 D_800F1160 = 0x800F1160; /* g_eff_command_status[16..19], status bytes for commands 0x210010-0x210013 (eff_StartRecycledCommandWithOrangeLight, eff_StartRecycledCommandWithMagentaLight) */  /* data-wave 2026-10-08: was g_text1b_slot_a_flags */
@@ -1954,11 +1954,11 @@ D_800F1152 = 0x800F1152; /* g_eff_command_status[2..3], status bytes for command
 D_800F1164 = 0x800F1164; /* g_eff_command_status[20..23], status bytes for commands 0x210014 / 0x210015 (eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight) and 0x10016 / 0x10017 (eff_StartRecycledYawedParticlesWithTextureSelection) */  /* data-wave 2026-10-08: was g_text1b_slot_c_flags */
 D_800F117C = 0x800F117C; /* g_eff_command_block.unk10: s16-triple source (arg1, or a local in four of six stores); eff_StartCommand copies it into unk18 (D_800A3478) */  /* data-wave 2026-10-08: was g_text1b_render_arg1_cache */
 D_800EF980 = 0x800EF980; /* s16 array; D[arg0] = 1 to mark slot active; size >= 0x65 entries */  /* data-wave 2026-10-08: was g_gnd_target_active_slots */
-D_800A38DC = 0x800A38DC; /* the game mode (u16): copied from D_80102778.unk_D by func_800343F0, then only compared (func_800344B4's switch over 0..6; == 2 / 3 / 5 tests) */  /* data-wave 2026-10-08: was g_voice_play_state */
-D_800A390E = 0x800A390E; /* previous D_800A36A4: fight_ResetGraphAndReloadResourcesOnCachedKeyChange compares and copies it; func_80035480 sets -1 */  /* data-wave 2026-10-08: was g_stage_id_prev */
+D_800A38DC = 0x800A38DC; /* the game mode (u16): copied from D_80102778.unk_D by ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests, then only compared (ApplyPendingConfigAndInitializeMode's switch over 0..6; == 2 / 3 / 5 tests) */  /* data-wave 2026-10-08: was g_voice_play_state */
+D_800A390E = 0x800A390E; /* previous D_800A36A4: fight_ResetGraphAndReloadResourcesOnCachedKeyChange compares and copies it; menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu sets -1 */  /* data-wave 2026-10-08: was g_stage_id_prev */
 D_800F5328 = 0x800F5328; /* Rec44 record (as D_800F6608): position, rotation, distance fed to gpu_ResetDrawQueueAndPrepareViewAndLighting / camera_CalcEye; g_listener_cam points at it (camera_ApplyFightView) */  /* data-wave 2026-10-08: was g_mario_voice_data */
 D_800A387C = 0x800A387C; /* planar distance between the two fighters (fighter_CalcHorizontalSeparation: SquareRoot0 of the unk_F4 x / z deltas of D_80101EC8[1] and [0]), stored each frame by fight_UpdateSeparationAndPairedMoves; readers compare it with ranges (e.g. < 0x2711) */  /* data-wave 2026-10-08: was g_round_total_score */
-D_800A38BA = 0x800A38BA; /* (s8)D_80102778.unk_E (func_800343F0); non-zero picks 0x50 over 0x2D for SetGeomScreen and gates per-fighter paths */  /* data-wave 2026-10-08: was g_practice_dispatch_active */
+D_800A38BA = 0x800A38BA; /* (s8)D_80102778.unk_E (ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests); non-zero picks 0x50 over 0x2D for SetGeomScreen and gates per-fighter paths */  /* data-wave 2026-10-08: was g_practice_dispatch_active */
 D_800A3824 = 0x800A3824; /* fighter_ProcessWeaponContacts()'s result (negative = skip); bits tested per fighter index */  /* data-wave 2026-10-08: was g_practice_state_word */
 D_801077B0 = 0x801077B0; /* order list built and shuffled by fight_BuildOpponentOrder; fight_AdvanceOpponentOrder takes entry [D_800A3783] */  /* data-wave 2026-10-08: was g_practice_byte_table */
 D_800F6340 = 0x800F6340; /* D_800F62E0[1], a lighting record (light angles, lmat, cmat, back) passed to calc_LightMatrix */  /* data-wave 2026-10-08: was g_text1a_buffer_a */
@@ -2040,7 +2040,7 @@ column = 0x800F1850; /* stdout column counter; reset to 0 on newline, incremente
 D_800F1159 = 0x800F1159; /* g_eff_command_status[9..10] (C spells them D_800F1154[5] / [6]), tested and cleared in pairs (eff_StartRecycledCommandWithRoseLight) */  /* data-wave 2026-10-08: was g_text1b_slot_d_flags */
 D_801027A0 = 0x801027A0; /* per-match table, one byte for each of the two sides (u8, stride 2 per match) */  /* data-wave 2026-10-08: was g_round_p1_char_id_table */
 D_801027D8 = 0x801027D8; /* per-match table of each side's settings unk1 byte (parallel to D_801027A0) */  /* data-wave 2026-10-08: was g_round_p2_char_id_table */
-D_800A3910 = 0x800A3910; /* countdown: seeded with the return of eff_StartCosineScaledQuadWithPaleBlueLight / eff_StartSlowRateCosineScaledQuadWithPaleBlueLight / eff_StartMediumRateCosineScaledQuadWithPaleBlueLight / eff_StartFastRateCosineScaledQuadWithPaleBlueLight (func_80032854), decremented by func_80026DA4 until zero */  /* data-wave 2026-10-08: was g_text1b_render_call_result */
+D_800A3910 = 0x800A3910; /* countdown: seeded with the return of eff_StartCosineScaledQuadWithPaleBlueLight / eff_StartSlowRateCosineScaledQuadWithPaleBlueLight / eff_StartMediumRateCosineScaledQuadWithPaleBlueLight / eff_StartFastRateCosineScaledQuadWithPaleBlueLight (func_80032854), decremented by fight_UpdatePairedInputTotalsEventsAndMidpointEffects until zero */  /* data-wave 2026-10-08: was g_text1b_render_call_result */
 D_800A389A = 0x800A389A; /* 0/1 settings bit D_8009BD24 unk14_17 (copied when D_80102778.unk_D == 2); tested beside the game mode D_800A38DC == 2 */  /* data-wave 2026-10-08: was g_voice_state_flag */
 D_800A38A8 = 0x800A38A8; /* set 1 with D_800A3876, cleared by fight_UpdateSeparationAndPairedMoves; one condition of fight_UpdateFighterInteractionsAndPointCaches's unk_286 = 0xA step */  /* data-wave 2026-10-08: was g_practice_round_active_flag */
 _svm_rattr = 0x800F5750; /* SpuReverbAttr: the libsnd voice manager's reverb attributes */  /* data-wave 2026-09-07: was g_buki_cmd_buf_id */
@@ -2115,13 +2115,13 @@ g_memcard_hw_event_timeout = 0x800A3848; /* OpenEvent(HwCARD=0xF0000011, EvSpTIM
 g_memcard_hw_event_new = 0x800A3850; /* OpenEvent(HwCARD=0xF0000011, EvSpNEW=0x2000) by memcard_Init */
 D_800A3816 = 0x800A3816; /* +2 from D_800A3814 */  /* data-wave 2026-10-08: was g_pad_analog_frame_counter_plus_2 */
 D_800A381E = 0x800A381E; /* frame counter of fight_UpdateModeDisplaysAndMatchProgress's D_800A38DC == 5 branch; cleared by fight_AdvanceMatch */  /* data-wave 2026-10-08: was g_stage_helper_result_cache_plus_6 */
-D_800A3828 = 0x800A3828; /* = &D_800F62E0[arg2] (func_800430E4); read by func_80054440 */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
+D_800A3828 = 0x800A3828; /* = &D_800F62E0[arg2] (func_800430E4); read by gte_ColorGroupedNormalStreamWithSelectedMatrices */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
 D_800A382E = 0x800A382E; /* frame counter gating fight_UpdateDefeatDelayAndModeProgress at 0x3D */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_1 */
 g_motion_common_buffer = 0x800A3830; /* load address 0x80120000 used as a CD read destination (9F9C.c:3302 / :3311) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_3 */
 D_800A3864 = 0x800A3864; /* g_motion_fighter_buffers[1] (= 0x80190800, motion_InitBuffers) */  /* data-wave 2026-10-08: was g_motion_data_base_ptr_plus_4 */
-D_800A3876 = 0x800A3876; /* fighter index 0 / 1 / -1, set with D_800A38A8 = 1; read by func_80026DA4 */  /* data-wave 2026-10-08: was g_match_round_index_plus_2 */
+D_800A3876 = 0x800A3876; /* fighter index 0 / 1 / -1, set with D_800A38A8 = 1; read by fight_UpdatePairedInputTotalsEventsAndMidpointEffects */  /* data-wave 2026-10-08: was g_match_round_index_plus_2 */
 g_motion_common_loaded = 0x800A3880; /* loaded latch: motion_LoadCommonData sets it after reading a CD file into g_motion_common_buffer; motion_LoadFighterData calls motion_LoadCommonData while it is 0; motion_InvalidateMarkedNdataPackAndResetLoadCaches clears it */  /* data-wave 2026-10-08: was g_round_total_score_plus_4 */
-D_800A389C = 0x800A389C; /* halfword frame counter of func_80026DA4 (reset at >= 0x2B) */  /* data-wave 2026-10-08: was g_match_round_byte_b_plus_1 */
+D_800A389C = 0x800A389C; /* halfword frame counter of fight_UpdatePairedInputTotalsEventsAndMidpointEffects (reset at >= 0x2B) */  /* data-wave 2026-10-08: was g_match_round_byte_b_plus_1 */
 D_800A38AE = 0x800A38AE; /* +2 from g_comb_handshake_step (0x800A38AC) */  /* data-wave 2026-10-08: was g_voice_dialog_state_plus_2 */
 D_800A38B8 = 0x800A38B8; /* u8 counter: set to 1, incremented, cleared at 0x3C (9F9C.c fight_UpdateModeDisplaysAndMatchProgress) */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor_plus_4 */
 g_motion_frame_set_ids = 0x800A38C0; /* +4 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_4 */
@@ -2129,7 +2129,7 @@ D_800A38D4 = 0x800A38D4; /* +4 from D_800A38D0 */  /* data-wave 2026-10-08: was 
 g_gpu_ot256_ptr = 0x800A38D8; /* = g_gpu_ot256_db[D_800A36AC & 1], cleared with ClearOTagR(., 0x100) and linked into D_800A378C[0] (368E4.c:1714-1718) */  /* data-wave 2026-09-24: was g_replay_pos_change_count_plus_2 */
 D_800A38DF = 0x800A38DF; /* fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4); read by fighter_Init */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
 D_800A38E0 = 0x800A38E0; /* 0..3, set by fight_UpdateDefeatDelayAndModeProgress at D_800A38E2 = 0x1F / 0x33 / 0x51; fight_GetStartPosition's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
-D_800A38E1 = 0x800A38E1; /* = p->unk14_15 (func_8003504C); bit 0 picks D_800A36A4 = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
+D_800A38E1 = 0x800A38E1; /* = p->unk14_15 (ApplyWorkingRecordToPendingConfigAndInitializeMode); bit 0 picks D_800A36A4 = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
 D_800A38E4 = 0x800A38E4; /* bits_DepositMask3F83F8(D_800A36C6) (comb_Connect); OR-ed into StoreCompactedBits's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
 D_800A38E8 = 0x800A38E8; /* 0xFF or data[3] & 0x7F (fight_UpdatePairedMoves); lower bound on unk_40 in func_8002C0DC */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
 D_800A38F0 = 0x800A38F0; /* store-only: fight_UpdateSeparationAndPairedMoves stores the change of D_800A387C */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */

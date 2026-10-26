@@ -579,15 +579,15 @@
 /* data-wave 2026-09-25: g_gpu_packet_pending_fn = 0x8009BF68 retired; _qlog is now object-defined */
 
 /* === Effect/physics object cluster (2026-05-17) -- 4 highs === */
-/* From text1b.c func_80053304 (line 11052) + func_8005344C (11082): */
+/* From text1b.c collision_TestSegmentExtendingShortStart (line 11052) + collision_TestSegmentExtendingShortStartWithWork (11082): */
 /* D_800A33F4 is the active effect-state pointer; the struct it points */
 /* to has a 96-byte layout with: */
 /*   +0x8/+0xC/+0x10 = vx/vy/vz (current position) */
 /*   +0x18/+0x1C/+0x20 = bx/by/bz (target/base position) */
 /*   +0x5C = handler function pointer */
 /* The flow: compute |b-v| via func_80052754, if <= 0x9C3F (40000) */
-/* reflect v to opposite side of b and set handler = func_80053754; */
-/* otherwise set handler = func_80053E9C. */
+/* reflect v to opposite side of b and set handler = collision_TestCellKeepingNearestHitScalarProjection; */
+/* otherwise set handler = collision_TestCellKeepingNearestHitGteProjection. */
 
 /* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
 /* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
@@ -676,7 +676,7 @@
 /* From code6cac.c:1345 fight_InitSettings (init): sets up the parameter */
 /* block at 0x80102778-80102787, declared in C as the one aggregate */
 /* Unk80102778Rec D_80102778 (include/bb2.h:484, merged 2026-09-26 with */
-/* func_80034708); its per-word names are retired. */
+/* menu_PrintEditAndApplyConfigWithPerPadCursors); its per-word names are retired. */
 
 
 /* === g_eff_command_phase dispatch-offset slots (2026-05-17) -- 3 highs === */
@@ -848,7 +848,7 @@
 /* === Misc state arrays in code6cac_b.c (2026-05-17) -- 4 highs === */
 
 /* === Result-screen state machine (2026-05-17) -- 3 highs === */
-/* From code6cac_c_mid.c func_80038988 around line 900: a memcard- */
+/* From code6cac_c_mid.c memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress around line 900: a memcard- */
 /* result-display state machine with 90-frame countdown timer. */
 /* RENAME 0x800A36F8: retired name 'D_800A36F8' — preserved note: byte value compared against array entries at D_80101BF0 to find/clear matching slots */  /* data-wave 2026-10-08: was g_result_screen_active_marker */
 
@@ -1094,7 +1094,7 @@
 /* === D_800A38A4-indexed byte tables + misc state (2026-05-17) -- 4 highs === */
 
 /* === Packed-nibble color values + components (2026-05-17) -- 6 highs === */
-/* From code6cac.c func_8001945C / func_80019488 / func_800194C0: */
+/* From code6cac.c pad_SetDefaultSavedButtonMappings / pad_PackSavedButtonMappingLowNibbles / pad_UnpackButtonMappingNibblesToCells: */
 /* RGB-like triple stored as 3 separate bytes (low nibble of each) */
 /* combined into a 12-bit packed value (R | G<<4 | B<<8). */
 
@@ -1118,7 +1118,7 @@
 /* === Attack scale factor extensions + effect slot field+2 (2026-05-17) -- 5 highs === */
 
 /* === Instruction words of func_800545F4 (2026-05-17) -- 3 highs === */
-/* func_800545F4 (43500.c:562) is two lui/ori pairs; func_80041398 copies */
+/* func_800545F4 (43500.c:562) is two lui/ori pairs; PatchColorImmediatesAtListedCodeSites copies */
 /* them, with new immediates, over the renderers' code at the eight */
 /* addresses in D_80015820 (31548.c:274-298).  Nothing runs them in place. */
 
