@@ -1225,8 +1225,8 @@ def _extract_func_params(text: str, span: tuple[int, int],
     counts: head-shaped text inside the body (a comment, an #if 0 arm, a
     prototype) never supplies the parameters. With no unique head there (a
     TU-index helper the head grammar does not read, e.g. `int (*h(int a))(void)`),
-    the list is the first `(` after the name token, else the first `(`, in the
-    head with comments and literals blanked.
+    the list follows the name token, else the last top-level named parameter
+    group (excluding attributes), in the masked head.
     """
     from . import gtemacro, inlineasm
 
@@ -1246,13 +1246,31 @@ def _extract_func_params(text: str, span: tuple[int, int],
         head = inlineasm._code_without_comments_and_strings(text[:body])
         m = (re.compile(r"\b" + re.escape(func) + r"\s*\(").search(head, span[0], body)
              if func else None)
-        open_paren = m.end() - 1 if m else head.find("(", span[0], body)
+        open_paren = m.end() - 1 if m else -1
+        if m is None:
+            at = span[0]
+            while at < body:
+                opening = head.find("(", at, body)
+                if opening < 0:
+                    break
+                close = inlineasm._match_paren(head, opening)
+                if close < 0:
+                    return []
+                name = re.search(r"([A-Za-z_]\w*)\s*$", head[at:opening])
+                if name and name.group(1) not in (
+                        inlineasm._HEAD_KEYWORDS | {"__attribute", "__attribute__"}):
+                    open_paren = opening
+                at = close
         if open_paren < 0:
             return []
-    # Walk to matching `)`.
-    depth, i, n = 1, open_paren + 1, span[1]
+    # Mask only the parameter tail; offsets still map directly to the source.
+    params = text[open_paren + 1:body]
+    if any(c in params for c in ("/", '"', "'")):
+        params = inlineasm._code_without_comments_and_strings(params)
+    # Walk to matching `)` in the masked text.
+    depth, i, n = 1, 0, len(params)
     while i < n and depth > 0:
-        c = text[i]
+        c = params[i]
         if c == "(":
             depth += 1
         elif c == ")":
@@ -1262,7 +1280,7 @@ def _extract_func_params(text: str, span: tuple[int, int],
         i += 1
     if depth != 0:
         return []
-    raw = text[open_paren + 1:i]
+    raw = params[:i]
     if not raw.strip() or raw.strip() == "void":
         return []
     out = []

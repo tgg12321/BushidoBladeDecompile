@@ -3518,6 +3518,28 @@ def test_definition_head_debt() -> None:
 def test_definition_head_consumers() -> None:
     from engine import gtemacro
 
+    src = "__attribute__((unused)) static int h(int a) { return a; }"
+    eq("head params: unnamed fallback skips leading attribute",
+       volatile_cheats._extract_func_params(src, (0, len(src))), ["a"])
+    src = "__attribute__((unused)) static int h(void) { return 0; }"
+    eq("head params: attribute is not a parameter in void fallback",
+       volatile_cheats._extract_func_params(src, (0, len(src))), [])
+    for noise in ("/* ) */", '/* "(" */', '__attribute__((annotate(")")))'):
+        src = "int f(int " + noise + " a, int b) { return a; }"
+        eq("head params: masked parentheses preserve both parameters",
+           volatile_cheats._extract_func_params(src, (0, len(src)), "f"),
+           ["a", "b"])
+    src = "int f(int a /* ) */, int b { return a; }"
+    eq("head params: comment cannot close an unbalanced parameter list",
+       volatile_cheats._extract_func_params(src, (0, len(src)), "f"), [])
+    src = "int x;\nstatic int\n    f(void) {}"
+    eq("head debt: prior-line semicolon admits split head",
+       inlineasm.func_definition_candidates(src, "f"),
+       [(src.index("static int"), len(src))])
+    src = "int x;\nstatic int\n    f(void);\nint g(void) {}"
+    eq("head debt: split declaration cannot borrow next body",
+       inlineasm.func_definition_candidates(src, "f"), [])
+
     plain = "void f(int a, int b) {\n a = 0;\n g();\n}"
     eq("head consumers: plain cheat baseline", inlineasm.func_cheat_asm_count(plain, "f"), 1)
     for prefix in ("", "int g(void) {} ", "int g(void) {}\n"):

@@ -810,7 +810,9 @@ def _definition_heads_cached(text: str) -> tuple[tuple[str, int, int], ...]:
             line_breaks = line_breaks + 1 if run or leading_attribute is not None else 0
             if line_breaks > 1:
                 run, leading_attribute = [], None
-            if not run:
+            if not run and not (boundary > 0 and masked[boundary - 1] == ";"):
+                # A completed declaration also bounds a split head on the
+                # following line; do not lose its delimiter at the newline.
                 boundary = tok.end()
             continue
         if (word == "(" and len(run) >= 2
