@@ -36,7 +36,7 @@ pad). The ordinary-C exception: spell the conditional as a real **`if/else`** in
 "initialise to a default, then conditionally overwrite". An `else` arm ends in an unconditional jump
 + BARRIER, and the fold stops at the join.
 
-Example (func_8003B9D0 region B, a 7-insn shortfall closed): `x = -1; if (c) x = v;` →
+Example (fight_StartDescriptorPlaybackAndAudio region B, a 7-insn shortfall closed): `x = -1; if (c) x = v;` →
 `if (c) x = v; else x = -1;`.
 
 ## Measured dead (do not re-probe)

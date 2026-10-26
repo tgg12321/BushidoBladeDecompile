@@ -22,8 +22,8 @@ annotation, layer-1 + layer-2) plus:
 - ledger frame forensics showing the target slot genuinely untouched
   ([[phantom-slot-frame-lever]] procedure), honest producers measured inert first.
 
-Earlier per-function grants stand: camera_ApplyFightView, camera_ApplyReplayView, func_8003CF84 (leading pads),
-func_8003CF84 `pad2[2]` (trailing, that function only).
+Earlier per-function grants stand: camera_ApplyFightView, camera_ApplyReplayView, fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams (leading pads),
+fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams `pad2[2]` (trailing, that function only).
 
 ## Trailing array with sibling evidence (Q35, 2026-09-29)
 

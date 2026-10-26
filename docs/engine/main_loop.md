@@ -27,7 +27,7 @@ start-up code, in order:
    `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(0x80118800, ...)` (src/main/6CF8.c:188), which reads file
    `cdrom_GetFileIndex(2, 0x61)`, shows it for 150 frames and darkens it over
    the last 29.
-2. `D_800A3834 = 0xF` (the first mode, `func_8003BFC4`), `D_800A390D = 0`,
+2. `D_800A3834 = 0xF` (the first mode, `ExecMovieOverlayAndReinitialize`), `D_800A390D = 0`,
    `D_800A36AC = 0`.
 3. The loop (src/main/6CF8.c:447):
    - picks the buffer `g_gpu_db[D_800A36AC & 1]`, clears its OT
@@ -96,34 +96,34 @@ assigns to `D_800A3834` itself.
 | 3 | `func_80034708` (src/main/24F08.c:28) | | prints the `D_80102778` settings with `font_Printf` and steps the two cursors `D_800A3174`; calls `func_800344B4` |
 | 4 | `replay_Start` (src/main/28708.c:1287) | 5 | view and fighter setup |
 | 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
-| 6 | `func_8003B9D0` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
-| 7 | `func_8003BCB4` (src/main/2B344.c:550) | 0 | waits, then the next script step |
+| 6 | `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
+| 7 | `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550) | 0 | waits, then the next script step |
 | 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 9 | `func_80035828` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
-| 10 | `func_8003BE10` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
-| 11 | `func_8003BEA8` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `D_80106A50` |
+| 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
+| 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `D_80106A50` |
 | 12 | `func_8001EA04` (src/main/9F9C.c:2060) | 0xD | |
 | 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2075) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `D_800A3817` |
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
-| 15 | `func_8003BFC4` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
+| 15 | `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
 | 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | when gated, starts an indexed common script on fighter `D_800A3748` (`fighter_StartMoveScript`) and sets its `unk_26C` |
 | 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `fight_AdvanceOpponentOrder` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
-| 18 | `func_8003C040` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
-| 19 | `func_8003C2C0` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
+| 18 | `fight_InitImageAndPlaybackPresentation` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
+| 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
 | 20 | `fight_TallyMatchResultsAndInitPresentation` (src/main/2B344.c:754) | 0x15 | |
 | 21 | `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
-| 22 | `func_8003B870` (src/main/2B344.c:421) | 0x17 | |
-| 23 | `func_8003B8E4` (src/main/2B344.c:432) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
-| 24 | `func_8003C958` (src/main/2B344.c:877) | 0x19 | |
-| 25 | `func_8003C9A4` (src/main/2B344.c:886) | 0, 8 | view (`gpu_ResetDrawQueueAndPrepareViewAndLighting`) and its own per-frame work |
+| 22 | `fight_InitCommandStreamImageLoad` (src/main/2B344.c:421) | 0x17 | |
+| 23 | `fight_UpdateCommandStreamImageLoadAndResume` (src/main/2B344.c:432) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
+| 24 | `fight_InitRotatingViewThreeOptionChoice` (src/main/2B344.c:877) | 0x19 | |
+| 25 | `fight_UpdateRotatingViewThreeOptionChoice` (src/main/2B344.c:886) | 0, 8 | view (`gpu_ResetDrawQueueAndPrepareViewAndLighting`) and its own per-frame work |
 | 26 | `func_80035DC8` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 27 | `func_80035E38` (src/main/25C38.c:407) | 8 | screen gradient and the memory-card flow `func_80038C70` |
-| 28 | `func_8003CE18` (src/main/2B344.c:990) | 0x1D | view and scene setup |
-| 29 | `func_8003CF84` (src/main/2B344.c:1039) | 0x18 | frame-threshold cues on `D_800A37B8` |
-| 30 | `func_8003C714` (src/main/2B344.c:822) | 0x1F | stores the three clock records |
-| 31 | `func_8003C8B4` (src/main/2B344.c:868) | | on Cross or frame 0xF1 calls `func_80033FE4` (src/main/17AFC.c:5542), which sets 0x12, 0x1A or 8 |
-| 32 | `func_8003CCCC` (src/main/2B344.c:959) | 0x21 | |
-| 33 | `func_8003CD10` (src/main/2B344.c:967) | 8 | |
+| 28 | `fight_InitNearestStartPairPlayback` (src/main/2B344.c:990) | 0x1D | view and scene setup |
+| 29 | `fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams` (src/main/2B344.c:1039) | 0x18 | frame-threshold cues on `D_800A37B8` |
+| 30 | `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822) | 0x1F | stores the three clock records |
+| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:868) | | on Cross or frame 0xF1 calls `func_80033FE4` (src/main/17AFC.c:5542), which sets 0x12, 0x1A or 8 |
+| 32 | `fight_InitRotatingViewDecimalPresentation` (src/main/2B344.c:959) | 0x21 | |
+| 33 | `fight_UpdateRotatingViewDecimalPresentation` (src/main/2B344.c:967) | 8 | |
 
 Modes the main loop itself sets: 0xF at start, 8 on a link abort. Many
 handlers draw through `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526), which returns at

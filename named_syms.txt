@@ -852,9 +852,9 @@
 /* result-display state machine with 90-frame countdown timer. */
 /* RENAME 0x800A36F8: retired name 'D_800A36F8' — preserved note: byte value compared against array entries at D_80101BF0 to find/clear matching slots */  /* data-wave 2026-10-08: was g_result_screen_active_marker */
 
-/* === Save / restore bytes of func_8003B2C8 / func_8003B328 (2026-05-17) -- 4 highs === */
-/* func_8003B2C8 saves D_80102778.unk_4[0] in D_800A3836 before overwriting */
-/* it; func_8003B328 writes it back and sets D_800A3836 = 0xFF (empty) */
+/* === Save / restore bytes of fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState / fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields (2026-05-17) -- 4 highs === */
+/* fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState saves D_80102778.unk_4[0] in D_800A3836 before overwriting */
+/* it; fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields writes it back and sets D_800A3836 = 0xFF (empty) */
 /* (2B344.c:238-262).  D_800A37D8 / D_800A3844: see their lines. */
 
 /* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
@@ -991,7 +991,7 @@
 /* RENAME 0x800A3730: retired name 'D_800A3730' — preserved note: bit 30 of the link word: a link-close request (a side that sees it calls comb_ResetClose) */  /* data-wave 2026-10-08: was g_pad_rec_record_flag */
 
 /* === Practice-lesson arg dispatch state (2026-05-17) -- 6 highs === */
-/* From code6cac_c_ab.c func_8003B3A4 / func_8003B484: 2 alternate */
+/* From code6cac_c_ab.c fight_ConfigureFighter1FromLookupAndOperandsAndLoad / fight_ConfigureFighter1FromOperandsAndLoad: 2 alternate */
 /* arg-passing formats for lesson dispatch.  D_800A3712 selects format */
 /* (0 = primary, 1 = alternate). */
 

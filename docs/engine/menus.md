@@ -36,39 +36,39 @@ until an opcode ends the step. The opcodes and what they do:
 - 1: one operand byte into `D_800A36A4` and the history `D_800A37A8[]`;
   mode 22.
 - 2: keeps a 0x1D-byte block in `D_800A3894`, sets up fighter 0
-  (`func_8003AF40(0)`), then as 18.
+  (`fight_FillMissingConfigInitFighterAndLoadObject(0)`), then as 18.
 - 3: two operand bytes into `D_80102778.unk_4[1]` / `[3]`; sets up fighter 1
-  (`func_8003AF40(1)`, `func_8003AFFC`).
-- 16 / 17: `func_8003B3A4` / `func_8003B484` on the operands, which return
+  (`fight_FillMissingConfigInitFighterAndLoadObject(1)`, `fight_RequestBothFightersEntriesAndReloadOnChange`).
+- 16 / 17: `fight_ConfigureFighter1FromLookupAndOperandsAndLoad` / `fight_ConfigureFighter1FromOperandsAndLoad` on the operands, which return
   how many bytes they used.
 - 18: mode 0.
 - 19: keeps a 4-byte block in `D_800A3878`; mode 6.
-- 20: keeps a 12-byte block in `D_800A385C` (`func_8003B4DC`,
+- 20: keeps a 12-byte block in `D_800A385C` (`fight_SetFixedFighterBytesAndLoadBothFighters`,
   `func_8003B56C(1)`).
 
 Handlers that the script's modes reach:
 
-- `func_8003B9D0` (src/main/2B344.c:478, mode 6) loads the scene the
+- `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478, mode 6) loads the scene the
   `D_800A3878` block describes (`func_80054884` with its byte 0 and the
   fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, D_800A3878[1])`) and sets mode 7.
-- `func_8003BCB4` (src/main/2B344.c:550, mode 7) counts `D_800A37B8`; while
+- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550, mode 7) counts `D_800A37B8`; while
   `func_80054F68()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
-- `func_8003BE10` (src/main/2B344.c:595, mode 10) resets the scene state
+- `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595, mode 10) resets the scene state
   (`motion_InvalidateMarkedNdataPackAndResetLoadCaches`, `slot_ReleaseObjectAndResources`, `eff_ClearInitFlag`, `snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb`,
   `InitScrollingSpriteDisplay(0x80118800)`), starts CD audio
   (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
   display on.
-- `func_8003BEA8` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
+- `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
   player 0) or `StepScrollingSpriteDisplay()`, merges `D_800A37A4` into
   `D_80106A50.unk_00` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
-- `func_8003BFC4` (src/main/2B344.c:651, mode 15) runs the FMV overlay
+- `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651, mode 15) runs the FMV overlay
   through `sys_ExecMovieOverlay` and sets mode 8.
 - `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786, mode 21) plays sounds at frames
   0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
-- `func_8003C714` (src/main/2B344.c:822, mode 30) copies the three clock
+- `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822, mode 30) copies the three clock
   records `D_80106A50.times` into the record `func_80077D00()` returns, as
   minutes, seconds and hundredths (its comment, src/main/2B344.c:817).
 

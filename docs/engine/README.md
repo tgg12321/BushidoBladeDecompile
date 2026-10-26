@@ -181,7 +181,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   three of the values.
 - `D_800A36A8` — a 0/1 switch that multiplies the `func_8005D554` sprite passes.
 - `D_800A36AC` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
-  double-buffer index, `func_8003C9A4` / `func_8003CD10` use the whole value.
+  double-buffer index, `fight_UpdateRotatingViewThreeOptionChoice` / `fight_UpdateRotatingViewDecimalPresentation` use the whole value.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
   drawenv+dispenv+OT structures (one per buffer).
 
