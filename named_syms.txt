@@ -483,16 +483,16 @@
 /* See also: g_comb_send_buf (0x800A3698), the 8-byte link-cable send buffer of */
 /* comb_Write8; 0x800A369C below is its bytes 4..7 (naming sweep 2026-09-29). */
 
-/* === func_80033DF4 / func_80033FE4 cluster (2026-05-17) -- 7 highs === */
-/* Source: code6cac_b.c:3709 (func_80033DF4) and 3787 (func_80033FE4). */
+/* === fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags / fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank cluster (2026-05-17) -- 7 highs === */
+/* Source: code6cac_b.c:3709 (fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags) and 3787 (fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank). */
 /* */
-/* func_80033DF4 steps D_800A38E2 through a table; at 0x64 it sets */
+/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags steps D_800A38E2 through a table; at 0x64 it sets */
 /* D_800A36F0 / D_800A3781 to whether a chosen bit of the bitmap at */
 /* &D_80106A50 */
 /* (g_file_disc_size -- MISNOMER, see MISNOMERS.md) was still clear, */
 /* then sets that bit. */
 /* */
-/* func_80033FE4 then sets D_800A38A4 = 6/7 (D_800A36F0) or 8/9 */
+/* fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank then sets D_800A38A4 = 6/7 (D_800A36F0) or 8/9 */
 /* (D_800A3781) and D_800A3834 = 0x12. */
 
 /* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
@@ -515,8 +515,8 @@
 /* RENAME 0x8007B3A8: retired name 'gpu_DebugCheckRect' — preserved note: PSX-style rect validator: at debug-level 1 validates against g_gpu_ctx.width/height; logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via GPU_printf */
 /* RENAME 0x8007BAB4: retired name 'gpu_DrawOTagEnv' — preserved note: PSX libgpu DrawOTagEnv: copies the DRAWENV into g_gpu_ctx.draw_env, submits 0x40 bytes via D_8009BE6C->addque2 (sys.c:385); logs "DrawOTagEnv(%08x,%08x)" */
 
-/* === func_80033DF4 row-fetch globals (2026-05-17) -- 5 highs === */
-/* From src/main/17AFC.c func_80033DF4 (:6605-6620): each row */
+/* === fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags row-fetch globals (2026-05-17) -- 5 highs === */
+/* From src/main/17AFC.c fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags (:6605-6620): each row */
 /* of D_8008E778 is 4 bytes (table[0..3]).  The */
 /* fetcher copies them into the globals below. */
 
@@ -597,13 +597,13 @@
 /* See each line. */
 
 /* === Fade/transition state machine (2026-05-17) -- 4 highs === */
-/* From text1b.c func_8006EC0C (line 16108): fade-in/out state machine */
+/* From text1b.c StepSlideProgressCommitPendingStateAndQueueSound (line 16108): fade-in/out state machine */
 /* with ramp value (D_800A3570: 0..0x1E8 in 0x20 steps), state */
 /* (D_800A3578: 1-4), dispatch table index (D_800A3580), deferred next */
 /* index (D_800A3584). */
 /* Note: D_800A3578 and D_800A35A0 are 5ED34.c statics: D_800A3578's */
 /* whole halfword is also the file's selection-screen state, and */
-/* D_800A35A0 is func_8006EACC's result. */
+/* D_800A35A0 is StepSlideBuildFrameRecordAndDispatchStateHandler's result. */
 
 /* === g_eff_command_block command-block cluster (2026-05-17) -- 4 highs === */
 /* From 51268.c eff_StartRecycledCommandWithOrangeLight etc.  Complements the command block */
