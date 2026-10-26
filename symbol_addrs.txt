@@ -129,10 +129,10 @@ D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); func_80
 D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: D_800F66A0 index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
 
 // === func_800460E4 state, D_800A8FB0 grid, D_800948BC hooks ===
-D_80099478 = 0x80099478; // id func_800460E4 caches (-1 = none); resource_GetLoadedSelector returns it  // data-wave 2026-10-08: was g_stage_id
+g_loaded_resource_selector = 0x80099478; // id func_800460E4 caches (-1 = none); resource_GetLoadedSelector returns it  // data-wave 2026-10-08: was g_stage_id
 D_8009947A = 0x8009947A; // 0/1: set by func_800460E4, gates func_800464C4 / func_8004659C; resource_HasRetainedSubblocks returns it  // data-wave 2026-10-08: was g_stage_variant
-D_8009947C = 0x8009947C; // block whose address fight_GetStartPositionPairTable returns (u8 is a stand-in)  // data-wave 2026-10-08: was g_stage_data
-D_800A8FB0 = 0x800A8FB0; // 32x32 grid filled by gpu_ResetAndStampViewCenteredCellAttributes and kin, read by the draw walks gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards / func_8003EB84  // data-wave 2026-10-08: was g_stage_collision
+g_fight_start_position_pairs = 0x8009947C; // block whose address fight_GetStartPositionPairTable returns (u8 is a stand-in)  // data-wave 2026-10-08: was g_stage_data
+g_gpu_cell_draw_attributes = 0x800A8FB0; // 32x32 grid filled by gpu_ResetAndStampViewCenteredCellAttributes and kin, read by the draw walks gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards / func_8003EB84  // data-wave 2026-10-08: was g_stage_collision
 D_800A93B0 = 0x800A93B0; // [3]: zeroed by ClearSavedWordPairsAndTwoWriteOnlyWords, set by func_8003F5A8, passed by func_8003F5CC to the empty func_80017F98  // data-wave 2026-10-08: was g_stage_light_pos
 D_800A93BC = 0x800A93BC; // [3]: D_800A93B0's partner, same users  // data-wave 2026-10-08: was g_stage_light_dir
 D_800948BC = 0x800948BC; // {init, unk4} pairs indexed by resource_GetLoadedSelector(): func_8003F168 calls .init, gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards .unk4  // data-wave 2026-10-08: was g_stage_init_tbl
@@ -145,12 +145,12 @@ D_800F6656 = 0x800F6656; // P1 controller port  // data-wave 2026-09-25: was g_g
 D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / func_8003F7F4)  // data-wave 2026-10-08: was g_game_flag_a
 D_800A3374 = 0x800A3374; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / func_8003F7F4)  // data-wave 2026-10-08: was g_game_flag_b
-D_800F6654 = 0x800F6654; // pause state flag  // data-wave 2026-09-25: was g_game_pause
+g_gpu_raised_ot_cutoff_requested = 0x800F6654; // pause state flag  // data-wave 2026-09-25: was g_game_pause
 D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
 
 // === Sound Config ===
 D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
-D_800A33B4 = 0x800A33B4; // current SE id  // data-wave 2026-09-25: was g_snd_se_id
+g_fight_position_records = 0x800A33B4; // current SE id  // data-wave 2026-09-25: was g_snd_se_id
 D_800A33C0 = 0x800A33C0; // stage BGM id  // data-wave 2026-09-25: was g_snd_stage_bgm
 g_wave_cell_buffer = 0x800A33D0; // the wave grid's cell buffer (wave_SetCellBuffer, 368E4.c:733)  // data-wave 2026-09-25: was g_snd_volume
 D_800A33D4 = 0x800A33D4; // fade position  // data-wave 2026-09-25: was g_snd_fade_pos
@@ -597,7 +597,7 @@ D_80094B88 = 0x80094B88; /* data-wave 2026-10-08: was g_player_char_ids */
 D_8009AF94 = 0x8009AF94; /* data-wave 2026-10-09: was g_sin_lut_q3 */
 D_800A307C = 0x800A307C; /* data-wave 2026-09-29: was g_snd_callback */
 D_80099C34 = 0x80099C34; /* data-wave 2026-09-29: was g_snd_se_bank */
-D_8009947C = 0x8009947C; /* data-wave 2026-10-08: was g_stage_data */
+g_fight_start_position_pairs = 0x8009947C; /* data-wave 2026-10-08: was g_stage_data */
 D_800948BC = 0x800948BC; /* data-wave 2026-10-08: was g_stage_init_tbl */
 g_InterruptMask = 0x800A2608; /* data-wave 2026-10-08: was i_mask */
 pCallbacks = 0x800A2600; /* data-wave 2026-10-08: was g_sys_irq_vtable */
@@ -641,7 +641,7 @@ _spu_trans_mode = 0x800A2878; /* data-wave 2026-09-07: was g_snd_reverb_flag */
 g_InterruptMask = 0x800A2608; /* libetc intr.c g_InterruptMask (SOTN): .word 0x1F801074 (I_MASK pointer); was g_sys_irq_counter */  /* data-wave 2026-10-08: was i_mask */
 D_800A1500 = 0x800A1500; /* D_800A14D0.tslmode; named only by cb_read */  /* data-wave 2026-09-24: was g_sys_timer */
 Vcount = 0x800A2634; /* data-wave 2026-09-07: was g_sys_dma_region */
-D_80099478 = 0x80099478; /* data-wave 2026-10-08: was g_stage_id */
+g_loaded_resource_selector = 0x80099478; /* data-wave 2026-10-08: was g_stage_id */
 D_8009947A = 0x8009947A; /* data-wave 2026-10-08: was g_stage_variant */
 D_800A3790 = 0x800A3790; /* data-wave 2026-09-25: was g_game_timer */
 D_800A3768 = 0x800A3768; /* data-wave 2026-10-08: was g_disp_enable */
@@ -1832,12 +1832,12 @@ D_800EEDD0 = 0x800EEDD0; /* data-wave 2026-10-07: was g_cam_bone_data */
 D_800EEDF0 = 0x800EEDF0; /* data-wave 2026-10-07: was g_cam_bone_data2 */
 D_800EEDF8 = 0x800EEDF8; /* data-wave 2026-10-07: was g_cam_interp */
 D_800F6656 = 0x800F6656; /* data-wave 2026-09-25: was g_game_p1_ctrl */
-D_800F6654 = 0x800F6654; /* data-wave 2026-09-25: was g_game_pause */
+g_gpu_raised_ot_cutoff_requested = 0x800F6654; /* data-wave 2026-09-25: was g_game_pause */
 D_800A9A10 = 0x800A9A10; /* data-wave 2026-10-08: was g_player_ptrs */
 D_800EF848 = 0x800EF848; /* data-wave 2026-09-29: was g_snd_ch_data */
 D_800EF7BC = 0x800EF7BC; /* data-wave 2026-09-25: was g_snd_config_tbl */
 D_800EF800 = 0x800EF800; /* data-wave 2026-09-25: was g_snd_fade_curve */
-D_800A8FB0 = 0x800A8FB0; /* data-wave 2026-10-08: was g_stage_collision */
+g_gpu_cell_draw_attributes = 0x800A8FB0; /* data-wave 2026-10-08: was g_stage_collision */
 D_800A93BC = 0x800A93BC; /* data-wave 2026-10-08: was g_stage_light_dir */
 D_800A93B0 = 0x800A93B0; /* data-wave 2026-10-08: was g_stage_light_pos */
 ctlbuf = 0x800F189C; /* data-wave 2026-09-25: was g_gpu_color_table */

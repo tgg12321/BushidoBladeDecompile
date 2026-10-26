@@ -17,8 +17,8 @@ glabel func_800460E4
     /* 36920 80046120 21804000 */  addu       $s0, $v0, $zero
     /* 36924 80046124 21000012 */  beqz       $s0, .L800461AC
     /* 36928 80046128 00000000 */   nop
-    /* 3692C 8004612C 0A80023C */  lui        $v0, %hi(D_80099478)
-    /* 36930 80046130 78944284 */  lh         $v0, %lo(D_80099478)($v0)
+    /* 3692C 8004612C 0A80023C */  lui        $v0, %hi(g_loaded_resource_selector)
+    /* 36930 80046130 78944284 */  lh         $v0, %lo(g_loaded_resource_selector)($v0)
     /* 36934 80046134 00000000 */  nop
     /* 36938 80046138 1C005514 */  bne        $v0, $s5, .L800461AC
     /* 3693C 8004613C FDFFA326 */   addiu     $v1, $s5, -0x3
@@ -53,8 +53,8 @@ glabel func_800460E4
     /* 369A4 800461A4 BA00E016 */  bnez       $s7, .L80046490
     /* 369A8 800461A8 00000000 */   nop
   .L800461AC:
-    /* 369AC 800461AC 0A80013C */  lui        $at, %hi(D_80099478)
-    /* 369B0 800461B0 789435A4 */  sh         $s5, %lo(D_80099478)($at)
+    /* 369AC 800461AC 0A80013C */  lui        $at, %hi(g_loaded_resource_selector)
+    /* 369B0 800461B0 789435A4 */  sh         $s5, %lo(g_loaded_resource_selector)($at)
     /* 369B4 800461B4 07001724 */  addiu      $s7, $zero, 0x7
     /* 369B8 800461B8 6B15010C */  jal        arena_OpenBlock
     /* 369BC 800461BC 07000424 */   addiu     $a0, $zero, 0x7
@@ -229,7 +229,7 @@ glabel func_800460E4
     /* 36C30 80046430 E40287AF */  sw         $a3, %gp_rel(D_800A33B0)($gp)
     /* 36C34 80046434 2000A78F */  lw         $a3, 0x20($sp)
     /* 36C38 80046438 00000000 */  nop
-    /* 36C3C 8004643C E80287AF */  sw         $a3, %gp_rel(D_800A33B4)($gp)
+    /* 36C3C 8004643C E80287AF */  sw         $a3, %gp_rel(g_fight_position_records)($gp)
     /* 36C40 80046440 CFEC010C */  jal        DrawSync
     /* 36C44 80046444 21200000 */   addu      $a0, $zero, $zero
     /* 36C48 80046448 2120E002 */  addu       $a0, $s7, $zero

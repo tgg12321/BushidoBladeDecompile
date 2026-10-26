@@ -21,8 +21,8 @@ glabel func_80046B44
     /* 37390 80046B90 00000000 */   nop
     /* 37394 80046B94 01000224 */  addiu      $v0, $zero, 0x1
     /* 37398 80046B98 02000324 */  addiu      $v1, $zero, 0x2
-    /* 3739C 80046B9C 0F80013C */  lui        $at, %hi(D_800F6654)
-    /* 373A0 80046BA0 546622A4 */  sh         $v0, %lo(D_800F6654)($at)
+    /* 3739C 80046B9C 0F80013C */  lui        $at, %hi(g_gpu_raised_ot_cutoff_requested)
+    /* 373A0 80046BA0 546622A4 */  sh         $v0, %lo(g_gpu_raised_ot_cutoff_requested)($at)
     /* 373A4 80046BA4 0F80013C */  lui        $at, %hi(D_800F665A)
     /* 373A8 80046BA8 5A6622A4 */  sh         $v0, %lo(D_800F665A)($at)
     /* 373AC 80046BAC 23000224 */  addiu      $v0, $zero, 0x23

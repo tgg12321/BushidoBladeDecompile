@@ -1,6 +1,6 @@
 glabel gpu_GetRaisedOtCutoffRequested
-    /* 3767C 80046E7C 0F80023C */  lui        $v0, %hi(D_800F6654)
-    /* 37680 80046E80 54664284 */  lh         $v0, %lo(D_800F6654)($v0)
+    /* 3767C 80046E7C 0F80023C */  lui        $v0, %hi(g_gpu_raised_ot_cutoff_requested)
+    /* 37680 80046E80 54664284 */  lh         $v0, %lo(g_gpu_raised_ot_cutoff_requested)($v0)
     /* 37684 80046E84 0800E003 */  jr         $ra
     /* 37688 80046E88 00000000 */   nop
 endlabel gpu_GetRaisedOtCutoffRequested

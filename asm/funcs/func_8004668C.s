@@ -4,8 +4,8 @@ glabel func_8004668C
     /* 36E94 80046694 F814010C */  jal        arena_Free
     /* 36E98 80046698 07000424 */   addiu     $a0, $zero, 0x7
     /* 36E9C 8004669C FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* 36EA0 800466A0 0A80013C */  lui        $at, %hi(D_80099478)
-    /* 36EA4 800466A4 789422A4 */  sh         $v0, %lo(D_80099478)($at)
+    /* 36EA0 800466A0 0A80013C */  lui        $at, %hi(g_loaded_resource_selector)
+    /* 36EA4 800466A4 789422A4 */  sh         $v0, %lo(g_loaded_resource_selector)($at)
     /* 36EA8 800466A8 0A80013C */  lui        $at, %hi(D_8009947A)
     /* 36EAC 800466AC 7A9420A4 */  sh         $zero, %lo(D_8009947A)($at)
     /* 36EB0 800466B0 1000BF8F */  lw         $ra, 0x10($sp)

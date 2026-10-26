@@ -8,8 +8,8 @@ glabel gpu_SetCellForceBit
     /* 2FBEC 8003F3EC 2000622C */  sltiu      $v0, $v1, 0x20
     /* 2FBF0 8003F3F0 09004010 */  beqz       $v0, .L8003F418
     /* 2FBF4 8003F3F4 40190300 */   sll       $v1, $v1, 5
-    /* 2FBF8 8003F3F8 0B80023C */  lui        $v0, %hi(D_800A8FB0)
-    /* 2FBFC 8003F3FC B08F4224 */  addiu      $v0, $v0, %lo(D_800A8FB0)
+    /* 2FBF8 8003F3F8 0B80023C */  lui        $v0, %hi(g_gpu_cell_draw_attributes)
+    /* 2FBFC 8003F3FC B08F4224 */  addiu      $v0, $v0, %lo(g_gpu_cell_draw_attributes)
     /* 2FC00 8003F400 21186400 */  addu       $v1, $v1, $a0
     /* 2FC04 8003F404 21186200 */  addu       $v1, $v1, $v0
     /* 2FC08 8003F408 00006290 */  lbu        $v0, 0x0($v1)

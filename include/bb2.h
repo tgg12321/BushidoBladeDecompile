@@ -36,7 +36,7 @@ extern u8 D_800A36A8;
 extern s16 D_800F665C;
 extern s16 D_800F6658;
 extern s32 D_800A3790;
-extern s16 D_80099478;
+extern s16 g_loaded_resource_selector;
 extern s16 D_8009947A;
 extern Unk800F1198Record g_eff_billboards[];
 extern Unk800A9CF8Rec D_800A9CF8;

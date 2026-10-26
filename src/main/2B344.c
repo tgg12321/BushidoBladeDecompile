@@ -460,7 +460,7 @@ extern Unk800A4750Rec D_800A4750[];
 extern Unk800A6690Rec D_800A6690[];
 extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
-extern u8 D_800A8FB0[];
+extern u8 g_gpu_cell_draw_attributes[];
 
 extern void func_8003AF40(s32);
 
@@ -1944,7 +1944,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
             if (bits < 0) {
                 vidx = D_800A7FE0[row][col];
                 if (vidx >= 0) {
-                    a3 = D_800A8FB0[row * 0x20 + col];
+                    a3 = g_gpu_cell_draw_attributes[row * 0x20 + col];
                     do {
                         t0 = D_800A87E0[vidx++];
                         v1 = t0 & 0x7FFF;
@@ -2041,7 +2041,7 @@ skip:
                 if (t2 < 0) {
                     vidx = D_800A7FE0[t4][t1];
                     if (vidx >= 0) {
-                        a3 = D_800A8FB0[t4 * 0x20 + t1];
+                        a3 = g_gpu_cell_draw_attributes[t4 * 0x20 + t1];
                         do {
                             t0 = D_800A87E0[vidx++];
                             v1 = t0 & 0x7FFF;
@@ -2221,7 +2221,7 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     s32 data;
     s32 var_5;
     s32 var_6;
-    s32 *ptr = (s32 *)D_800A8FB0;
+    s32 *ptr = (s32 *)g_gpu_cell_draw_attributes;
 
     i = 0xFF;
     do {
@@ -2247,7 +2247,7 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
                         u32 x = (u32)(var_2 + var_6);
                         if (x < 0x20) {
                             s32 bits = (data >> ((15 - j) * 2)) & 3;
-                            D_800A8FB0[(y << 5) + x] |= bits;
+                            g_gpu_cell_draw_attributes[(y << 5) + x] |= bits;
                         }
                     }
                 }
@@ -2260,7 +2260,7 @@ void gpu_SetCellGateBit(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
-        D_800A8FB0[y * 32 + x] |= 0x4;
+        g_gpu_cell_draw_attributes[y * 32 + x] |= 0x4;
     }
 }
 
@@ -2268,7 +2268,7 @@ void gpu_SetCellForceBit(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
-        D_800A8FB0[y * 32 + x] |= 0x8;
+        g_gpu_cell_draw_attributes[y * 32 + x] |= 0x8;
     }
 }
 
@@ -2299,10 +2299,12 @@ void func_8003F420(s32 a0, s32 a1) {
 }
 
 void func_8003F52C(s32 a0, s32 a1, s32 a2) {
-    D_800A8FB0[a1 * 32 + a0] = a2 & 3;
+    g_gpu_cell_draw_attributes[a1 * 32 + a0] = a2 & 3;
 }
 
-u32 func_8003F54C(s32 a0, s32 a1) { return D_800A8FB0[a1 * 32 + a0]; }
+u32 func_8003F54C(s32 a0, s32 a1) {
+    return g_gpu_cell_draw_attributes[a1 * 32 + a0];
+}
 
 void ClearSavedWordPairsAndTwoWriteOnlyWords(void) {
     D_800A3374 = 0;

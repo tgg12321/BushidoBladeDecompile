@@ -51,8 +51,8 @@ glabel func_8003EB84
     /* 2F428 8003EC28 F6FF4014 */  bnez       $v0, .L8003EC04
     /* 2F42C 8003EC2C 2A108800 */   slt       $v0, $a0, $t0
     /* 2F430 8003EC30 21600000 */  addu       $t4, $zero, $zero
-    /* 2F434 8003EC34 0B80183C */  lui        $t8, %hi(D_800A8FB0)
-    /* 2F438 8003EC38 B08F1827 */  addiu      $t8, $t8, %lo(D_800A8FB0)
+    /* 2F434 8003EC34 0B80183C */  lui        $t8, %hi(g_gpu_cell_draw_attributes)
+    /* 2F438 8003EC38 B08F1827 */  addiu      $t8, $t8, %lo(g_gpu_cell_draw_attributes)
     /* 2F43C 8003EC3C 0B800F3C */  lui        $t7, %hi(D_800A87E0)
     /* 2F440 8003EC40 E087EF25 */  addiu      $t7, $t7, %lo(D_800A87E0)
     /* 2F444 8003EC44 0A800E3C */  lui        $t6, %hi(D_800A7FE0)

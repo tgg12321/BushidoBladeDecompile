@@ -21,7 +21,7 @@ void gpu_LoadTimClut();
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
 static s32 D_800A33B0;
-static s32 D_800A33B4;
+static s32 g_fight_position_records;
 static s32 D_800A33B8; /* not named by any code or data: size from the gap */
 static s32 D_800A33BC;
 static s32 D_800A33C0;
@@ -48,7 +48,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
 
     s0 = (s32 *)arena_GetBlockAddr(7);
     if (s0 != NULL) {
-        if (D_80099478 == arg0) {
+        if (g_loaded_resource_selector == arg0) {
             s7 = 1;
             switch (arg0) {
             case 3:
@@ -73,7 +73,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
         }
     }
 
-    D_80099478 = (s16)arg0;
+    g_loaded_resource_selector = (s16)arg0;
     /* FAKE: s7 (the early-return flag above) reused as slot id 7 for
      * arena_SetBlockEnd / arena_SetMoveCallback; the literal or a separate
      * local scores 37.
@@ -173,7 +173,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
     func_8003EDC0((u16 *)s4, 7);
     collision_SetGrid((s32)sp10);
     D_800A33B0 = (s32)sp18;
-    D_800A33B4 = (s32)sp20;
+    g_fight_position_records = (s32)sp20;
     DrawSync(0);
     arena_SetBlockEnd(s7, (s32)s1);
     arena_SetMoveCallback(s7, (s32)func_800466C0);
@@ -197,7 +197,7 @@ void func_800464C4(void) {
     s0 = (s32 *)arena_GetBlockAddr(7);
     v0 = ((u32)s0[1] >> 2) << 2;
     a0 = (s32 *)((u8 *)s0 + v0);
-    switch (D_80099478) {
+    switch (g_loaded_resource_selector) {
     case 0xD:
         v0 = ((u32)s0[6] >> 2) << 2;
         s1 = (s32 *)((u8 *)s0 + v0);
@@ -245,13 +245,13 @@ void func_8004659C(s32 a0) {
     reloc_RelocateBlock(s2, 7);
     collision_SetGrid((s32)s3);
     D_800A33B0 = (s32)s4p;
-    D_800A33B4 = (s32)s1p;
+    g_fight_position_records = (s32)s1p;
     func_8003EDC0((u16 *)s0p, 7);
 }
 
 void func_8004668C(void) {
     arena_Free(7);
-    D_80099478 = -1;
+    g_loaded_resource_selector = -1;
     D_8009947A = 0;
 }
 
@@ -264,8 +264,8 @@ void func_800466C0(s32 a0, s32 a1) {
     collision_RebaseGrid(a1);
     var_0 = (a1 / 4) * 4;
     D_800A33B0 += var_0;
-    D_800A33B4 += var_0;
-    switch (D_80099478) {
+    g_fight_position_records += var_0;
+    switch (g_loaded_resource_selector) {
     case 4:
     case 7:
     case 18:
@@ -303,8 +303,8 @@ extern MATRIX g_math_light_plane_projection;
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
  * D_800EF848, which func_80047E5C's [v1 + 1] reaches at v1 == 17 */
 extern s32 D_800EF800[18];
-extern u8 D_8009947C;
-extern s16 D_800F6654;
+extern u8 g_fight_start_position_pairs;
+extern s16 g_gpu_raised_ot_cutoff_requested;
 extern MATRIX D_800EEDD0;
 
 extern void func_80049E4C(void);
@@ -317,9 +317,9 @@ void func_800468DC(s32 a0, s32 a1);
 
 s32 func_80046780(void) { return D_800A33B0; }
 
-s32 fight_GetPositionRecordList(void) { return D_800A33B4; }
+s32 fight_GetPositionRecordList(void) { return g_fight_position_records; }
 
-s32 resource_GetLoadedSelector(void) { return D_80099478; }
+s32 resource_GetLoadedSelector(void) { return g_loaded_resource_selector; }
 
 s32 resource_HasRetainedSubblocks(void) { return D_8009947A; }
 
@@ -431,7 +431,7 @@ void func_80046B44(void) {
     func_8003F7F4();
     g_color_mode = 0;
     D_800F6650 = 0;
-    D_800F6654 = 1;
+    g_gpu_raised_ot_cutoff_requested = 1;
     D_800F6656 = 0;
     D_800F6658 = 2;
     D_800F665A = 1;
@@ -517,17 +517,19 @@ void *func_80046E18(s32 a0) {
     return NULL;
 }
 
-void func_80046E44(void) { D_800F6654 = 0; }
+void func_80046E44(void) { g_gpu_raised_ot_cutoff_requested = 0; }
 
 void gpu_SetRaisedOtCutoffRequested(s32 a0) {
     if (a0) {
-        D_800F6654 = 1;
+        g_gpu_raised_ot_cutoff_requested = 1;
     } else {
-        D_800F6654 = 0;
+        g_gpu_raised_ot_cutoff_requested = 0;
     }
 }
 
-s32 gpu_GetRaisedOtCutoffRequested(void) { return D_800F6654; }
+s32 gpu_GetRaisedOtCutoffRequested(void) {
+    return g_gpu_raised_ot_cutoff_requested;
+}
 
 void func_80046E8C(void) { D_800A3790 = 0x23; }
 
@@ -545,7 +547,9 @@ void func_80046EDC(s32 a0, s32 a1) {
     func_8003E0E0();
 }
 
-void *fight_GetStartPositionPairTable(void) { return &D_8009947C; }
+void *fight_GetStartPositionPairTable(void) {
+    return &g_fight_start_position_pairs;
+}
 
 void math_SetLightPlaneProjection(void) {
     s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;

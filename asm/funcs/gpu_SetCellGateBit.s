@@ -8,8 +8,8 @@ glabel gpu_SetCellGateBit
     /* 2FBA0 8003F3A0 2000622C */  sltiu      $v0, $v1, 0x20
     /* 2FBA4 8003F3A4 09004010 */  beqz       $v0, .L8003F3CC
     /* 2FBA8 8003F3A8 40190300 */   sll       $v1, $v1, 5
-    /* 2FBAC 8003F3AC 0B80023C */  lui        $v0, %hi(D_800A8FB0)
-    /* 2FBB0 8003F3B0 B08F4224 */  addiu      $v0, $v0, %lo(D_800A8FB0)
+    /* 2FBAC 8003F3AC 0B80023C */  lui        $v0, %hi(g_gpu_cell_draw_attributes)
+    /* 2FBB0 8003F3B0 B08F4224 */  addiu      $v0, $v0, %lo(g_gpu_cell_draw_attributes)
     /* 2FBB4 8003F3B4 21186400 */  addu       $v1, $v1, $a0
     /* 2FBB8 8003F3B8 21186200 */  addu       $v1, $v1, $v0
     /* 2FBBC 8003F3BC 00006290 */  lbu        $v0, 0x0($v1)

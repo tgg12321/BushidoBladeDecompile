@@ -526,8 +526,8 @@ u8 D_8008E778[100][4] = {
 /* func_80033DF4's move rows (with D_8008EC24's rank rows). */
 u8 D_8008E908[2][5] = {{7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
 
-/* Per stage (D_800A36A4; 38 rows, as D_8009947C): the four (type, value)
- * sound pairs snd_UpdateStageSounds walks. */
+/* Per stage (D_800A36A4; 38 rows, as g_fight_start_position_pairs): the four
+ * (type, value) sound pairs snd_UpdateStageSounds walks. */
 u8 D_8008E914[38][8] = {
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},

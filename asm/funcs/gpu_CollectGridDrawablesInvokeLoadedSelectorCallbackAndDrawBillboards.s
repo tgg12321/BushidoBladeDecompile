@@ -113,8 +113,8 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2F084 8003E884 21680000 */  addu       $t5, $zero, $zero
     /* 2F088 8003E888 0A80193C */  lui        $t9, %hi(D_800A7FE0)
     /* 2F08C 8003E88C E07F3927 */  addiu      $t9, $t9, %lo(D_800A7FE0)
-    /* 2F090 8003E890 0B80113C */  lui        $s1, %hi(D_800A8FB0)
-    /* 2F094 8003E894 B08F3126 */  addiu      $s1, $s1, %lo(D_800A8FB0)
+    /* 2F090 8003E890 0B80113C */  lui        $s1, %hi(g_gpu_cell_draw_attributes)
+    /* 2F094 8003E894 B08F3126 */  addiu      $s1, $s1, %lo(g_gpu_cell_draw_attributes)
     /* 2F098 8003E898 0B80103C */  lui        $s0, %hi(D_800A87E0)
     /* 2F09C 8003E89C E0871026 */  addiu      $s0, $s0, %lo(D_800A87E0)
     /* 2F0A0 8003E8A0 2110AD00 */  addu       $v0, $a1, $t5

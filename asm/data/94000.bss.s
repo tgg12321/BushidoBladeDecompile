@@ -584,9 +584,9 @@ dlabel D_800A87E0
 enddlabel D_800A87E0
 
 /* 800A8FB0 */
-dlabel D_800A8FB0
+dlabel g_gpu_cell_draw_attributes
     .space 0x400
-enddlabel D_800A8FB0
+enddlabel g_gpu_cell_draw_attributes
 
 /* 800A93B0 */
 dlabel D_800A93B0
@@ -1643,9 +1643,9 @@ enddlabel D_800F6652
 enddlabel g_color_mode
 
 /* 800F6654 */
-dlabel D_800F6654
+dlabel g_gpu_raised_ot_cutoff_requested
     .space 0x2
-enddlabel D_800F6654
+enddlabel g_gpu_raised_ot_cutoff_requested
 
 /* 800F6656 */
 dlabel D_800F6656

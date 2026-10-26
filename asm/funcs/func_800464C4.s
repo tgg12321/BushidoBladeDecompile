@@ -10,8 +10,8 @@ glabel func_800464C4
     /* 36CE4 800464E4 07000424 */   addiu     $a0, $zero, 0x7
     /* 36CE8 800464E8 21804000 */  addu       $s0, $v0, $zero
     /* 36CEC 800464EC 0400028E */  lw         $v0, 0x4($s0)
-    /* 36CF0 800464F0 0A80033C */  lui        $v1, %hi(D_80099478)
-    /* 36CF4 800464F4 78946384 */  lh         $v1, %lo(D_80099478)($v1)
+    /* 36CF0 800464F0 0A80033C */  lui        $v1, %hi(g_loaded_resource_selector)
+    /* 36CF4 800464F4 78946384 */  lh         $v1, %lo(g_loaded_resource_selector)($v1)
     /* 36CF8 800464F8 82100200 */  srl        $v0, $v0, 2
     /* 36CFC 800464FC 80100200 */  sll        $v0, $v0, 2
     /* 36D00 80046500 21200202 */  addu       $a0, $s0, $v0
