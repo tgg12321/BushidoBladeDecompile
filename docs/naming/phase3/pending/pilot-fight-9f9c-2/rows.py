@@ -14,10 +14,10 @@ import json
 import os
 import re
 
-VERDICT = "PENDING"
-VERIFIER_NOTE = ""
+VERDICT = "CONFIRM"
+VERIFIER_NOTE = 'naming-reviewer pre-apply (round 1): 22/28 PASS as proposed; 6 FAIL: 3 replaced by reviewer-suggested names (NOTES), 3 dropped with no supportable replacement (DROPPED).'
 
-NOTES = {}
+NOTES = {'0x8001D790': 'suggested: naming-reviewer pre-apply round 1 failed fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged and suggested fight_ResetGraphAndReloadResourcesOnCachedKeyChange; R6 must judge it fresh at every use.', '0x8001EEB4': 'suggested: naming-reviewer pre-apply round 1 failed fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase and suggested fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase; R6 must judge it fresh at every use.', '0x8001FB34': 'suggested: naming-reviewer pre-apply round 1 failed fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates and suggested fighter_PassesPairedMoveEntryGates; R6 must judge it fresh at every use.'}
 
 WT = os.environ.get("P3WT", r"C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b")
 
@@ -123,16 +123,6 @@ FUNCS = [
      f"camera_UpdateTwoFighterView. "
      + L("0x8001A67C", "That objection (output coordinate convention) asked what the stored values mean; the name states exactly what is computed (a floor-divided x/z of an offset point) "
         "without claiming a convention, which Q132 permits.") + " " + T("0x8001A67C")),
-    ("0x8001B6F4", "fight_SetViewMode1RestoreNodesClearCameraB1FAndSelectRenderConfig0", "RENAME",
-     f"CHANGED FROM RESEARCH: fight_ConfigureReplayCameraAndRendering; 'Replay' is a role inferred from the sole caller, 'Camera/Rendering' hides that the body writes view mode 1 where every camera init writes 0 "
-     f"and names none of the writes. BODY: {B('func_8001B6F4')}: func_80041688(0,0) and func_80041688(1,0) (clears bit 0 of the node flags of the nodes with unk2 >= 0 and of the list at +0x10D5, then reloads the "
-     f"stored or grayscale colour; 31D3C.c:59-120); g_camera_fight_view_mode = 1 (9F9C.c:706,727 write 0; 1950-1963 write 0/1/2); D_800F6608.b1F = 0 and D_800F5328.b1F = 0 (the b1F byte of the two camera records, "
-     f"set to 1 at 9F9C.c:894); func_8003F1E4(0) (2B344.c:2192-2200: D_800F6656 = 0, D_800F6658 = 1, the 3/2 pair for nonzero). CALLER: {C('func_8001B6F4')}: replay_Start only, once, "
-     f"after its own func_80041688 pair. RETURN USE: void. WHY: fight_ follows g_camera_fight_view_mode and the two camera records it writes; every write is spelled in the name (the wave81 failure "
-     f"was exactly 'Reset' being false and the b1F clears being omitted). COUNTER-EVIDENCE: not a reset (view mode 1 is not the init value); no meaning of b1F or of render config 0 is claimed "
-     f"(func_8003F1E4 stays neutral); no replay role is claimed. "
-     + L("0x8001B6F4", "The unnamed callees are now read (func_80041688 above, func_8003F1E4 two stores) and each effect is in the name, so a camera-only name omitting non-camera effects is not what is proposed.")
-     + " " + T("0x8001B6F4")),
     ("0x8001C4C0", "fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11", "RENAME",
      f"CHANGED FROM RESEARCH: fight_ConditionallyRestoreDefaultScriptBeforeOpponentReinit ('BeforeOpponentReinit' and 'Restore' are context/guesses; the gate is the discriminator). "
      f"BODY: {B('func_8001C4C0')}: if D_80101EC8[0].move_kind is 0x32 or 0x11: motion_ResetVariantIndex(0); v0 = motion_GetDefaultVariantScript(0); D_80101EC8[0].move_is_common = 0; "
@@ -141,16 +131,6 @@ FUNCS = [
      f"COUNTER-EVIDENCE: not a general fighter reset; fixed record 0; the move kinds are named by their literal values, no identity is claimed. "
      + L("0x8001C4C0", "Q132: an unknown identity of the gate values is no ground for neutral; the literal values are in the name, which also keeps the narrow gate and fixed record the old objection asked for.")
      + " " + T("0x8001C4C0")),
-    ("0x8001C51C", "fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay", "RENAME",
-     f"CHANGED FROM RESEARCH: fight_RestoreDefaultMovesReinitOpponentAndResetObjectsViewAndReplay ('Opponent' and 'Restore' are guesses; the two scalar clears were omitted). "
-     f"BODY: {B('func_8001C51C')}: func_8001C4C0() (the move-kind-gated restart of fighter 0's default script); fighter_Init(1, D_80102778.unk_4[5], unk_4[1], unk_4[3], flag) with flag 0 when D_800A38DC == 3 && D_800A3728 != 0, else 1; "
-     f"fighter_ConfigureCpuControl(); motion_ResetVariantIndex(1) and the default variant script started for fighter 1; D_800A382E = 0 (symbol_addrs.txt:2119: the frame counter gating fight_UpdateDefeatDelayAndModeProgress at 0x3D); "
-     f"D_800A3748 = -1 (symbol_addrs.txt:657: index into D_80101EC8, -1 == none); object_FreeAttachedObjects() (17AFC.c:3778: kind = -1 for every pool object with is_attached) and func_80030D04() (17AFC.c:4002: kind = -1 for pool kinds 0x12..0x1D); "
-     f"camera_InitTwoFighterView(&rec0,&rec1); replay_Reset(); fighter_AssignMotionSlotAndScanDataIdNibbles(1). CALLERS: {C('func_8001C51C')}: both inside fight_UpdateDefeatDelayAndModeProgress "
-     f"after the 0x3D delay, each time as the replacement step before the fight proceeds; neither caller depends on a result (void). WHY: each sub-effect is a name part in execution order. "
-     f"COUNTER-EVIDENCE: no next-round, rematch or opponent semantics are claimed; the object reset is selective (attached objects and kinds 0x12..0x1D), not a pool clear. "
-     + L("0x8001C51C", "The name carries the session counters, objects, camera and replay effects the old fighter-one-only name omitted, and claims no round or opponent identity.")
-     + " " + T("0x8001C51C")),
     ("0x8001CD68", "fight_SplitFrameCounterIntoMinutesSecondsHundredths", "RENAME",
      f"CHANGED FROM RESEARCH: fight_FormatElapsedTimeMinutesSecondsHundredths ('Format' suggests text; 'Elapsed' is an inference from the counter's role, the code shows a frame counter). "
      f"BODY: {B('func_8001CD68')}: val = D_800A3858; above 0x2BF1F stores 99 / 59 / 99 into unk_0 / unk_2 / unk_3; else unk_0 = val / 1800, unk_2 = val / 30 - unk_0 * 60, unk_3 = (val % 30) * 100 / 30 "
@@ -160,7 +140,8 @@ FUNCS = [
      f"1800 = 30 * 60 and 30 per second is the arithmetic itself. COUNTER-EVIDENCE: global input, so no math_; not rounding (hundredths truncate); 30 Hz is the code's constant, not a claim about elapsed real time. "
      f"LEDGER: no_name.tsv has no row for this address (a free target), so no earlier objection applies. "
      + T("0x8001CD68")),
-    ("0x8001D790", "fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged", "RENAME",
+    ("0x8001D790", "fight_ResetGraphAndReloadResourcesOnCachedKeyChange", "RENAME",
+     f"SUGGESTED NAME: naming-reviewer pre-apply round 1 FAILED fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged (N1: the guard compares D_8008E5A8 lookups of the fighter ids, not the ids, so IfSelectionsChanged is false (9F9C.c:1629-1631)) and suggested fight_ResetGraphAndReloadResourcesOnCachedKeyChange; the citations below were written for the failed name and remain the verified facts. "
      f"CHANGED FROM RESEARCH: resource_ResetGraphAndReloadChangedFightResources (resource_ has only the 368E4 selector uses and is unexplained for this body; 'Fight' is the caller's TU, 'Changed' is vague). "
      f"BODY: {B('func_8001D790')}: gpu_ResetGraphMode1() always; if D_800A36A4 != D_800A390E or D_8008E5A8[(s8)D_80102778.unk_4[0]] != D_800A30FC or the [1] analogue != D_800A30FD: func_80020D38(); "
      f"func_80046EDC(D_800A36A4, 0x80190800) (368E4.c:542: func_800460E4, func_800421C8, func_8003E0E0); func_8002906C() (17AFC.c:948: clears `used` of every position record); snd_CloseListedVabs(); "
@@ -214,15 +195,6 @@ FUNCS = [
      f"COUNTER-EVIDENCE: no shadow, reflection or weapon identity of the nodes is claimed; the unk_62 bit meanings are not claimed; it is not the whole fighter update. "
      + L("0x8001E800", "the rendered-node identity is not needed: the name states whose slot, which record flags select the extra nodes, and that the callee queues nodes and initialises the OT (callee body read).")
      + " " + T("0x8001E800")),
-    ("0x8001EA04", "fight_RestoreNodesStopEffectsClearUnk31AAndInitThreeItemMenu", "RENAME",
-     f"CHANGED FROM RESEARCH: fight_InitChoiceLoopRestoreNodeColoursAndStopEffects ('ChoiceLoop' and the omitted unk_31A clears). "
-     f"BODY: {B('func_8001EA04')}: func_80041688(0,0) and (1,0) (node flag bit 0 cleared, colours reloaded; 31D3C.c:59-120); eff_StopCommands(); unk_31A of both records = 0; D_800A37B8 = 0 (frame counter); D_800A3929 = 0; "
-     f"D_800A3834 = 0xD; D_800A3804 = D_800A3817 = (D_800A38D4 < 1). D_800A3817 is documented (symbol_addrs.txt:1868) as the cursor of a three-item pad menu with lower bound D_800A3804, D_800A3929 as its confirm delay "
-     f"(0 while choosing); phase 0xD is index 13 of the handler table D_8008D090 (d_7D870.c:30-60), which is func_8001EA84. CALLERS: {C('func_8001EA04')}: only the handler table slot 12 (d_7D870.c:42), "
-     f"entered by writes of D_800A3834 = 0xC (28708.c:1527,1544,1552, and func_8001EFA0's own D_800A3834 = var_v0 = 0xC); no direct C call. RETURN USE: void. WHY: the name lists the writes and the menu state it initialises; fight_ because it runs the fight records "
-     f"(80041688 on both fighter slots) and the handler-table pair is the fight's. COUNTER-EVIDENCE: no meaning of the three items or of why the menu appears is claimed; unk_31A is a raw field. "
-     + L("0x8001EA04", "the display helpers are now resolved (func_80041688 body) and the selector is shown as D_800A38D4 < 1 initialising D_800A3804 / D_800A3817; no continue/retry labels are used.")
-     + " " + T("0x8001EA04")),
     ("0x8001EA84", "fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange", "RENAME",
      f"CHANGED FROM RESEARCH: fight_UpdateFighterFocusChoiceLoopAndDelayedTransitions ('ChoiceLoop' unsupported; the menu is the documented three-item pad menu). "
      f"BODY: {B('func_8001EA84')}: D_800A37B8++; camera_SetFighterFocusView(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3); camera_ApplyFightView; the simulation frame with pad_ClearStateBits'd input "
@@ -234,7 +206,8 @@ FUNCS = [
      f"COUNTER-EVIDENCE: not merely a menu draw; no meaning of the three items is claimed, nor of the time penalty. "
      + L("0x8001EA84", "the choices need no identity: they are named by structure (three-item menu, confirm delay, phase change) and the simulation, penalty and delayed exits the old note warned about are in the name's parts.")
      + " " + T("0x8001EA84")),
-    ("0x8001EEB4", "fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase", "RENAME",
+    ("0x8001EEB4", "fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase", "RENAME",
+     f"SUGGESTED NAME: naming-reviewer pre-apply round 1 FAILED fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase (N4: nothing selects D_800A3748 (symbol_addrs.txt:657; writers 17AFC.c:2268-2273, 28708.c:1525, 9F9C.c:1195,1918), so SelectedFighter is unsupported) and suggested fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase; the citations below were written for the failed name and remain the verified facts. "
      f"CHANGED FROM RESEARCH: fight_StartConditionalCommonMoveAndTimedFocusPhase (the script start is the indexed common script of func_80021A3C, not a 'move'; 'Timed' is the frame-counter interpolation). "
      f"BODY: {B('func_8001EEB4')}: entry = D_80101EC8[D_800A3748]; when move_kind is not 0xA, 0x17, 0x18, unk_72 == 0 and is_defeated == 0: motion_ResetVariantIndex(D_800A3748); ret = func_80021A3C(D_800A3748, entry->unk_0A); "
      f"entry->move_is_common = 1; fighter_StartMoveScript(D_800A3748, ret, 1); entry->unk_26C = 1; always eff_StopCommands(); D_800A37B8 = 0; D_800A3834 = 0x11. Phase 0x11 is table slot 17 = func_8001EFA0, whose camera is "
@@ -251,7 +224,8 @@ FUNCS = [
      f"WHY: the view call is the discriminator against func_8001EA84; the dispatch is the switch over D_800A38DC. COUNTER-EVIDENCE: no menu_ prefix (the pad bits only skip the timer), no replay_ prefix (no replay ring access), no scene identity. "
      + L("0x8001EFA0", "scene identity is not claimed: the name carries the interpolated view, the timeout-or-pad condition and the mode switch; the rejected menu_ / replay_ prefixes are not used.")
      + " " + T("0x8001EFA0")),
-    ("0x8001FB34", "fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates", "RENAME",
+    ("0x8001FB34", "fighter_PassesPairedMoveEntryGates", "RENAME",
+     f"SUGGESTED NAME: naming-reviewer pre-apply round 1 FAILED fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates (R4/N2: Unk0C / Unk26C copy neutral member placeholders into a function name and the name lists fields instead of the operation) and suggested fighter_PassesPairedMoveEntryGates; the citations below were written for the failed name and remain the verified facts. "
      f"CHANGED FROM RESEARCH: fighter_PassesPairedMoveEntryStateGates ('State' was vague; the body's four gates are listed). "
      f"BODY: {B('func_8001FB34')}: returns 0 when D_800A38DC is 2, 5 or 3; or D_800A38DC == 0 && D_800A385C != 0; or arg0->other->unk_0C is 0xD or 0x1C; or arg0->unk_0A == 0xE and (carried_object_count == 0 or carried_object_kinds[0] != 0xA); "
      f"then arg1 != 0 ? arg0->unk_26C != 0 : 1. CALLER: {C('func_8001FB34')}: fight_UpdatePairedMoves (9F9C.c:2706) passes the entry's (data[3] & 0x80), and afterwards tests the distance window, height and opponent move kind itself. RETURN USE: s32 tested "
@@ -385,4 +359,4 @@ ADJUSTED = {
     "0x80023DB8": "fighter_TestUpwardFacingContactWithExtendedDownwardProbe -> fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface (Extended belongs to the callee)",
 }
 
-DROPPED = {}
+DROPPED = {'0x8001B6F4': "pre-apply FAIL (N4): RestoreNodes is a guessed verb (func_80041688 clears node flag bit 0 and pushes a colour; nothing is saved and restored, no_name.tsv:142) and RenderConfig0 aliases the caller's argument to func_8003F1E4 (stores 0/1 into D_800F6656/D_800F6658); no complete replacement offered. Stays neutral; a future row could name func_80041688 / func_8003F1E4 first.", '0x8001C51C': 'pre-apply FAIL (N1/N4): RestartFighter0 is unconditional in the name but func_8001C4C0 restarts fighter 0 only for move_kind 0x32 / 0x11 (9F9C.c:1169); Selection for D_800A3748 is unsupported (symbol_addrs.txt:657, writers 17AFC.c:2268-2273, 28708.c:1525). No complete replacement offered. Stays neutral.', '0x8001EA04': 'pre-apply FAIL (N4/R4): RestoreNodes is the same guessed verb as 8001B6F4, and Unk31A puts a neutral member placeholder into a function name. No complete replacement offered. Stays neutral.'}

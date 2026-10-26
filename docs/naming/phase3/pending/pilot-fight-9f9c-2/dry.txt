@@ -1,62 +1,61 @@
-rc=0
 ==============================================================================
-NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
-  28 identifiers remapped
+NAMING WAVE — 25 operations (0 RESET, 25 RENAME)
+  25 identifiers remapped
   link map: STALE — build/bb2.map is STALE — symbol_addrs.txt is newer than the map, so its symbol table may not describe the current tree
 ==============================================================================
 
--- file edits (68) --
+-- file edits (64) --
   (root): 2 files, 4 substitutions
       inline_asm_canonical.txt  (3)
       symbol_addrs.txt  (1)
-  asm: 59 files, 117 substitutions
+  asm: 55 files, 108 substitutions
       asm/funcs/camera_UpdateTwoFighterView.s  (2)
       asm/funcs/fight_Init.s  (7)
       asm/funcs/fight_RunCommandStream.s  (1)
       asm/funcs/fight_Update.s  (1)
-      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (2)
       asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (1)
-      ... and 53 more
-  include: 1 files, 10 substitutions
-      include/bb2.h  (10)
-  src: 6 files, 96 substitutions
+      asm/funcs/fight_UpdatePairedMoves.s  (1)
+      ... and 49 more
+  include: 1 files, 9 substitutions
+      include/bb2.h  (9)
+  src: 6 files, 89 substitutions
       src/main/17AFC.c  (6)
       src/main/25C38.c  (2)
-      src/main/28708.c  (3)
+      src/main/28708.c  (2)
       src/main/2B344.c  (20)
-      src/main/9F9C.c  (61)
-      src/main/d_7D870.c  (4)
+      src/main/9F9C.c  (56)
+      src/main/d_7D870.c  (3)
 
--- .s file renames (28) --
+-- .s file renames (25) --
   asm/funcs/func_8001A67C.s -> asm/funcs/math_StoreFloorDiv2000XZOfPointStepTowards.s
-  asm/funcs/func_8001B6F4.s -> asm/funcs/fight_SetViewMode1RestoreNodesClearCameraB1FAndSelectRenderConfig0.s
   asm/funcs/func_8001C4C0.s -> asm/funcs/fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11.s
-  asm/funcs/func_8001C51C.s -> asm/funcs/fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay.s
   asm/funcs/func_8001CD68.s -> asm/funcs/fight_SplitFrameCounterIntoMinutesSecondsHundredths.s
-  asm/funcs/func_8001D790.s -> asm/funcs/fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged.s
+  asm/funcs/func_8001D790.s -> asm/funcs/fight_ResetGraphAndReloadResourcesOnCachedKeyChange.s
   asm/funcs/func_8001D904.s -> asm/funcs/snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9.s
   asm/funcs/func_8001D998.s -> asm/funcs/snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4.s
   asm/funcs/func_8001DA2C.s -> asm/funcs/snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode.s
   asm/funcs/func_8001DB9C.s -> asm/funcs/motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id.s
-  ... and 18 more
+  asm/funcs/func_8001E800.s -> asm/funcs/fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt.s
+  asm/funcs/func_8001EA84.s -> asm/funcs/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s
+  ... and 15 more
 
--- ledger directory renames (39) --
+-- ledger directory renames (36) --
   memory/grind/func_8001A67C -> memory/grind/math_StoreFloorDiv2000XZOfPointStepTowards
   memory/grind/func_8001C4C0 -> memory/grind/fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
-  memory/grind/func_8001C51C -> memory/grind/fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
   memory/grind/func_8001EA84 -> memory/grind/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
-  memory/grind/func_8001EEB4 -> memory/grind/fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+  memory/grind/func_8001EEB4 -> memory/grind/fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase
   memory/grind/func_8001EFA0 -> memory/grind/fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
-  memory/grind/func_8001FB34 -> memory/grind/fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+  memory/grind/func_8001FB34 -> memory/grind/fighter_PassesPairedMoveEntryGates
   memory/grind/func_800203B4 -> memory/grind/fighter_StoreBoneLocalVectorAndArmEventTrigger
   memory/grind/func_800204C0 -> memory/grind/fighter_DispatchArmedBoneVectorEventAndDisarm
   memory/grind/func_80020CDC -> memory/grind/motion_InvalidateMarkedNdataPackAndResetLoadCaches
-  ... and 29 more
+  memory/grind/func_80020D38 -> memory/grind/motion_InvalidateMarkedNdataPackAndClearSlot1Id
+  ... and 26 more
 
 -- symbol-registry line deletions (1) --
   symbol_addrs.txt:965  func_800203B4 = 0x800203B4; /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a 
 
--- JSON key/field edits (40) --
+-- JSON key/field edits (37) --
   tools/canonical_asm_regions.json: 3 changes
       func_8001A67C
       func_800203B4
@@ -66,16 +65,14 @@ NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
       line 2: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
   memory/grind/func_8001C4C0/layer2.jsonl: 1 changes
       line 1: func func_8001C4C0 -> fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
-  memory/grind/func_8001C51C/layer2.jsonl: 1 changes
-      line 1: func func_8001C51C -> fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
   memory/grind/func_8001EA84/layer2.jsonl: 1 changes
       line 1: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
   memory/grind/func_8001EEB4/layer2.jsonl: 1 changes
-      line 1: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+      line 1: func func_8001EEB4 -> fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase
   memory/grind/func_8001EFA0/layer2.jsonl: 1 changes
       line 1: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
   memory/grind/func_8001FB34/layer2.jsonl: 1 changes
-      line 1: func func_8001FB34 -> fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+      line 1: func func_8001FB34 -> fighter_PassesPairedMoveEntryGates
   memory/grind/func_800203B4/layer2.jsonl: 1 changes
       line 1: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
   memory/grind/func_800204C0/layer2.jsonl: 1 changes
@@ -102,13 +99,10 @@ NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
   memory/grind/_completed/func_8001C4C0/layer2.jsonl: 2 changes
       line 1: func func_8001C4C0 -> fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
       line 2: func func_8001C4C0 -> fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
-  memory/grind/_completed/func_8001C51C/layer2.jsonl: 2 changes
-      line 1: func func_8001C51C -> fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
-      line 2: func func_8001C51C -> fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
   memory/grind/_completed/func_8001CD68/layer2.jsonl: 1 changes
       line 1: func func_8001CD68 -> fight_SplitFrameCounterIntoMinutesSecondsHundredths
   memory/grind/_completed/func_8001D790/layer2.jsonl: 1 changes
-      line 1: func func_8001D790 -> fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged
+      line 1: func func_8001D790 -> fight_ResetGraphAndReloadResourcesOnCachedKeyChange
   memory/grind/_completed/func_8001DB9C/layer2.jsonl: 2 changes
       line 1: func func_8001DB9C -> motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
       line 2: func func_8001DB9C -> motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
@@ -116,9 +110,6 @@ NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
       line 1: func func_8001E800 -> fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
       line 2: func func_8001E800 -> fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
       line 3: func func_8001E800 -> fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
-  memory/grind/_completed/func_8001EA04/layer2.jsonl: 2 changes
-      line 1: func func_8001EA04 -> fight_RestoreNodesStopEffectsClearUnk31AAndInitThreeItemMenu
-      line 2: func func_8001EA04 -> fight_RestoreNodesStopEffectsClearUnk31AAndInitThreeItemMenu
   memory/grind/_completed/func_8001EA84/layer2.jsonl: 10 changes
       line 1: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
       line 2: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
@@ -127,9 +118,9 @@ NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
       line 5: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
       ... and 5 more
   memory/grind/_completed/func_8001EEB4/layer2.jsonl: 3 changes
-      line 1: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
-      line 2: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
-      line 3: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+      line 1: func func_8001EEB4 -> fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase
+      line 2: func func_8001EEB4 -> fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase
+      line 3: func func_8001EEB4 -> fight_StartGatedIndexedCommonScriptAndEnterInterpolatedViewPhase
   memory/grind/_completed/func_8001EFA0/layer2.jsonl: 7 changes
       line 1: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
       line 2: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
@@ -138,8 +129,8 @@ NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
       line 5: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
       ... and 2 more
   memory/grind/_completed/func_8001FB34/layer2.jsonl: 2 changes
-      line 1: func func_8001FB34 -> fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
-      line 2: func func_8001FB34 -> fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+      line 1: func func_8001FB34 -> fighter_PassesPairedMoveEntryGates
+      line 2: func func_8001FB34 -> fighter_PassesPairedMoveEntryGates
   memory/grind/_completed/func_800203B4/layer2.jsonl: 3 changes
       line 1: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
       line 2: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
