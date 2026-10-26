@@ -1,0 +1,20 @@
+{
+  "description": "versus-2p-hidden-katze-gun with P2 (GENGORO) holding DOWN from 8850 to 11790: KATZE's shots meet GENGORO behind the rooftop's translucent glass pane (rounds.9850); the 9800 CIRCLE shot gives func_80032854 code 0xA from fighter_CastWeaponSegment+0x640 besides every shot's 0xB, no defeat (capture by the trace lane)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_select",
+    "stage:building_rooftop",
+    "char:katze",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-hidden-katze-gun-glass-1/spec.json"
+  ],
+  "extends": "versus-2p-hidden-katze-gun",
+  "inputs": [
+    "8850:DOWN/2940@2"
+  ]
+}
