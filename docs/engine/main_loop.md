@@ -106,7 +106,7 @@ assigns to `D_800A3834` itself.
 | 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2075) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `D_800A3817` |
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
 | 15 | `func_8003BFC4` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
-| 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | sets both fighters' moves (`fighter_StartMoveScript`) |
+| 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | when gated, starts an indexed common script on fighter `D_800A3748` (`fighter_StartMoveScript`) and sets its `unk_26C` |
 | 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `fight_AdvanceOpponentOrder` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
 | 18 | `func_8003C040` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
 | 19 | `func_8003C2C0` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
