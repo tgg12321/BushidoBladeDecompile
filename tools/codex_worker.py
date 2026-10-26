@@ -55,7 +55,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import tomllib
 from pathlib import Path
 
 BRIDGE = Path.home() / ".claude" / "skills" / "codex" / "codex_bridge.py"
@@ -83,6 +82,8 @@ TOKEN = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_:.-]*$")
 
 if sys.version_info < (3, 12):
     sys.exit("codex_worker: needs Python 3.12+ (junction detection: os.path.isjunction / DirEntry.is_junction)")
+
+import tomllib
 
 # Windows CreateProcess searches the CURRENT directory before PATH. When Codex's allow-ruled door
 # calls us, that directory would be its scratch tree: forbid the search for every child process.
@@ -1466,7 +1467,8 @@ def research_user_config_safe():
         return isinstance(table, dict) and (
             "sandbox_mode" in table or any(sets_sandbox(v) for v in table.values()))
 
-    return not sets_sandbox(config.get("profiles", {}))
+    profiles = config.get("profiles", {})
+    return isinstance(profiles, dict) and not sets_sandbox(profiles)
 
 
 def readonly_research_running(main, scratch, st, busy):

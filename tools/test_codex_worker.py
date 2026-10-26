@@ -77,6 +77,43 @@ class WindowsArgv(unittest.TestCase):
 
 
 class FailureOutput(unittest.TestCase):
+    def test_refusal_tests_capture_both_streams(self):
+        names = (
+            "CodexIdle.test_research_config_writable_sandbox_refused",
+            "CodexIdle.test_no_codex_running_still_refuses_research",
+            "CodexIdle.test_idle_still_checks_processes_for_scratch",
+            "PassAfterVeto.test_review_older_than_fail_refused",
+            "LoadVerdict.test_refusals",
+        )
+        for name in names:
+            with self.subTest(test=name):
+                out, err = io.StringIO(), io.StringIO()
+                suite = unittest.defaultTestLoader.loadTestsFromName(f"{__name__}.{name}")
+                with redirect_stdout(out), redirect_stderr(err):
+                    result = unittest.TestResult()
+                    suite.run(result)
+                self.assertTrue(result.wasSuccessful(), result.errors + result.failures)
+                self.assertNotIn("codex_worker: REFUSED", out.getvalue() + err.getvalue())
+                self.assertNotIn("codex_worker: FAILED", out.getvalue() + err.getvalue())
+
+    def test_old_python_reports_version_before_importing_tomllib(self):
+        script = '''
+import builtins, runpy, sys
+original_import = builtins.__import__
+def without_tomllib(name, *args, **kwargs):
+    if name == "tomllib":
+        raise ImportError("tomllib unavailable on old Python")
+    return original_import(name, *args, **kwargs)
+builtins.__import__ = without_tomllib
+sys.version_info = (3, 10)
+runpy.run_path(sys.argv[1], run_name="__main__")
+'''
+        result = subprocess.run([sys.executable, "-c", script, str(Path(cw.__file__))],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("codex_worker: needs Python 3.12+", result.stderr)
+        self.assertNotIn("ImportError", result.stderr)
+
     def capture_exit(self, action):
         out, err = io.StringIO(), io.StringIO()
         with redirect_stdout(out), redirect_stderr(err), \
@@ -173,7 +210,7 @@ class CodexIdle(unittest.TestCase):
                    SimpleNamespace(returncode=0, stdout="unrelated process")]
         with mock.patch.object(cw, "pin_file", return_value=self.root / "pin"), \
                 mock.patch.object(cw.subprocess, "run", side_effect=results), \
-                redirect_stderr(io.StringIO()):
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             if allowed:
                 cw.codex_idle(self.main, self.scratch)
             else:
@@ -227,6 +264,13 @@ class CodexIdle(unittest.TestCase):
     def test_research_config_profile_selection_refused(self):
         self.config.write_text('profile = "full"\n', encoding="utf-8")
         self.check(False)
+
+    def test_research_config_profiles_must_be_table(self):
+        for value in ('"text"', '[]', '[{model = "gpt"}]', '42', 'true'):
+            with self.subTest(value=value):
+                self.config.write_text(f'profiles = {value}\n', encoding="utf-8")
+                self.assertFalse(cw.research_user_config_safe())
+                self.check(False)
 
     def test_research_config_profile_sandbox_refused(self):
         for mode in ("workspace-write", "read-only"):
@@ -497,7 +541,8 @@ class CodexIdle(unittest.TestCase):
     def test_no_codex_running_still_refuses_research(self):
         with mock.patch.object(cw, "pin_file", return_value=self.root / "pin"), \
                 mock.patch.object(cw.subprocess, "run", return_value=SimpleNamespace(
-                    returncode=0, stdout=json.dumps(self.status))), redirect_stderr(io.StringIO()):
+                    returncode=0, stdout=json.dumps(self.status))), \
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
                 cw.no_codex_running(self.main)
 
@@ -506,7 +551,7 @@ class CodexIdle(unittest.TestCase):
                 mock.patch.object(cw.subprocess, "run", side_effect=[
                     SimpleNamespace(returncode=0, stdout=json.dumps(self.status)),
                     SimpleNamespace(returncode=0, stdout=f'editor "{self.scratch}"')]), \
-                redirect_stderr(io.StringIO()):
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
                 cw.codex_idle(self.main, self.scratch)
 
@@ -581,7 +626,7 @@ class PassAfterVeto(unittest.TestCase):
 
     def refused(self, records, reviews, sha="b" * 40, mine=None):
         mine = [len(reviews) - 1] if mine is None else mine
-        with redirect_stderr(io.StringIO()) as err:
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()) as err:
             try:
                 cw.pass_after_last_veto(records, reviews, mine, sha)
             except SystemExit as e:
@@ -632,7 +677,8 @@ class LoadVerdict(unittest.TestCase):
         for bad in ({"decision": "MAYBE", "function": FUNC, "body_hash": H1},
                     {"decision": "FAIL", "function": "other", "body_hash": H1},
                     {"decision": "FAIL", "function": FUNC, "body_hash": "xyz"}):
-            with self.assertRaises(SystemExit) as e, redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as e, \
+                    redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
                 cw.load_verdict(self.vf(bad), FUNC)
             self.assertEqual(e.exception.code, 2)
 

@@ -2398,6 +2398,8 @@ def psyq_identity(root, func):
         for name, status, where in mates:
             location = (f" — several definition-shaped copies in {where}"
                         if status == "ambiguous C definition" else f" — C definition in {where}")
+            if status == "C definition (not in queue)":
+                location = f" in {where}"
             out.append(f"  - {name}: {status}" + (location if where else ""))
     if refs:
         out += ["", "Banked reference material from the retired closer campaign "

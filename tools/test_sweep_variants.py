@@ -64,6 +64,31 @@ class TestSpan(unittest.TestCase):
 class TestPrecheckAmbiguity(unittest.TestCase):
     ambiguous = 'int f(void) {}\nint f(void) {}\nINCLUDE_ASM("asm/funcs", f);\n'
 
+    def test_unscanned_body_flags_json_and_text(self):
+        for stem in ("missing", "/outside/f", r"C:\outside\f", r"\outside\f"):
+            for json_mode in (False, True):
+                with self.subTest(stem=stem, json_mode=json_mode):
+                    output = io.StringIO()
+                    argv = ["precheck", "--func", "f", "--file", stem]
+                    if json_mode:
+                        argv.append("--json")
+                    with patch.object(sys, "argv", argv), \
+                            patch.object(precheck, "function_body", return_value=None), \
+                            patch.object(precheck, "rule_lines", return_value={}), \
+                            patch.object(precheck, "diff_files", return_value=[]), \
+                            patch.object(precheck, "diff_text", return_value=""), \
+                            contextlib.redirect_stdout(output):
+                        self.assertEqual(precheck.main(), 0)
+                    text = output.getvalue()
+                    if json_mode:
+                        report = json.loads(text)
+                        self.assertEqual(report["mechanical_flags"], [
+                            "function body not scanned: " + report["checks"]["body"]["note"]])
+                    else:
+                        self.assertIn("MECHANICAL FLAGS", text)
+                        self.assertIn("function body not scanned:", text)
+                        self.assertNotIn("mechanical checks clean", text)
+
     def test_absolute_and_drive_stems_use_missing_body_contract(self):
         reports = []
         for stem in ("missing", "/outside/f", r"C:\outside\f", r"C:outside\f",
@@ -91,6 +116,7 @@ class TestPrecheckAmbiguity(unittest.TestCase):
         self.assertTrue(all(report == reports[1] for report in reports[1:]))
 
     def test_real_outside_file_refuses_absolute_and_rooted_stems(self):
+        (precheck.ROOT / "tmp").mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=precheck.ROOT / "tmp") as td:
             outside = Path(td) / "f.c"
             outside.write_text("int f(void) {}\n", encoding="utf-8")

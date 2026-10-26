@@ -253,6 +253,8 @@ def main() -> int:
     # Verdict-ish summary (mechanical only — the reviewer makes the real call)
     flags = []
     flags.extend(body_errors)
+    if body is None and not body_errors:
+        flags.append(f"function body not scanned: {ck['body']['note']}")
     if ck["rules"]["count"]:
         flags.append(f"{ck['rules']['count']} residual rule line(s)")
     if ck.get("body", {}).get("register_asm_pins"):
