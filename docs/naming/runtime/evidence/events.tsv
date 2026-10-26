@@ -715,6 +715,34 @@ func_80032854	call	func_800278C0	fight	0x80027974	report			2	[[1,36,528482556,0]
 func_800619A4	call	func_80032854	fight	0x80032ADC	report			33	[[2149579848,8,2149579848,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
 func_80061A3C	call	fighter_DispatchFrameEvent	fight	0x80032E8C	report			20	[[2149579848,114,262144,0],[2149579848,125,262144,0],[2149579848,211,262144,0],[2149579848,325,262144,0],[2149579848,330,262144,0],[2149579848,379,262144,0],[2149579848,465,262144,0],[2149579848,473,262144,0]]	12	versus-2p-kimigaura-events-1@97c1903fa67d	0	
 func_80061A3C	call	fighter_DispatchFrameEvent	fight	0x80032F98	report			29	[[2149579848,25,262144,0],[2149579848,66,262144,0],[2149579848,76,262144,0],[2149579848,106,262144,0],[2149579848,120,262144,0],[2149579848,121,262144,0],[2149579848,286,262144,0],[2149579848,1522,131072,1]]	20	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032064	call	fighter_Update	kick2p_0	0x80026C38	report			2	[[2148540104,1,2,1],[2148541204,1,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick2p_1	0x80026C38	report			2	[[2148540104,1,2,1],[2148541204,1,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick2p_2	0x80026C38	report			2	[[2148540104,1,2,1],[2148541204,1,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick2p_3	0x80026C38	report			2	[[2148540104,2,2,1],[2148541204,2,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick_4	0x80026C38	report			2	[[2148540104,2,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick_5	0x80026C38	report			2	[[2148540104,2,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick_6	0x80026C38	report			2	[[2148540104,2,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80032064	call	fighter_Update	kick_7	0x80026C38	report			2	[[2148540104,2,2,1]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061C00	call	func_80032854	kick2p_0	0x80032B2C	report			2	[[2148552332,0,102,0],[2148552376,2044,117,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061C00	call	func_80032854	kick2p_1	0x80032B2C	report			2	[[2148552332,1,102,0],[2148552376,2045,117,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061C00	call	func_80032854	kick2p_2	0x80032B2C	report			2	[[2148552332,1,102,0],[2148552376,2046,117,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061D74	call	func_80032854	kick2p_3	0x80032B4C	report			2	[[2148552332,3,102,0],[2148552376,2047,117,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061D74	call	func_80032854	kick_4	0x80032B4C	report			2	[[2148552332,1904,116,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061D74	call	func_80032854	kick_5	0x80032B4C	report			2	[[2148552332,1740,114,0],[2148552332,1740,115,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061D74	call	func_80032854	kick_6	0x80032B4C	report			2	[[2148552332,1583,113,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80061D74	call	func_80032854	kick_7	0x80032B4C	report			2	[[2148552332,1439,112,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067060	call	eff_StartCommand	kick2p_0	0x80060B24	report			1	[[22,2560,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067060	call	eff_StartCommand	kick2p_1	0x80060B24	report			1	[[22,2560,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067060	call	eff_StartCommand	kick2p_2	0x80060B24	report			1	[[22,2560,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_800670C8	call	eff_StartCommand	kick2p_0	0x80060B24	report			1	[[23,62976,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_800670C8	call	eff_StartCommand	kick2p_1	0x80060B24	report			1	[[23,62976,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_800670C8	call	eff_StartCommand	kick2p_2	0x80060B24	report			1	[[23,62976,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067130	call	eff_StartCommand	kick2p_3	0x80060B24	report			1	[[24,2560,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067130	call	eff_StartCommand	kick_4	0x80060B24	report			2	[[24,63038,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067130	call	eff_StartCommand	kick_5	0x80060B24	report			2	[[24,63256,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067130	call	eff_StartCommand	kick_6	0x80060B24	report			2	[[24,63600,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067130	call	eff_StartCommand	kick_7	0x80060B24	report			2	[[24,64014,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
+func_80067198	call	eff_StartCommand	kick2p_3	0x80060B24	report			1	[[25,62976,2149579792,0]]	0	versus-2p-kimigaura-kick-2p-1@1e9765aab3ec	0	
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	

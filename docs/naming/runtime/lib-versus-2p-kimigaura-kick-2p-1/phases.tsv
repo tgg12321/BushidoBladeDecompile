@@ -1,0 +1,19 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; not viewed; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	5200:START/6	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS/6,5800:START/6	-
+top_menu	6050	6259	not viewed; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	6080:DOWN/6,6140:DOWN/6,6200:DOWN/6	capture.top_menu.first.png,capture.top_menu.last.png
+t_char	6260	6549	transition; no screen claim	6260:CROSS/6	-
+char_select	6550	6699	KANNUKI vs GENGORO (scenario base versus-2p-kimigaura-shore-kick); not viewed; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	6600:CROSS/6,6640:CROSS/6(2P)	capture.char_select.first.png,capture.char_select.last.png
+weapon_select	6700	6999	not viewed; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	6900:CROSS/6,6940:CROSS/6(2P)	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_stage	7000	7174	transition; no screen claim; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	-	capture.t_stage.mid.png
+stage_select	7175	7449	Kimigaura Coast picked (LEFT at 7300); not viewed; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	7300:LEFT/6	capture.stage_select.first.png
+t_load	7450	8229	not viewed; all its screenshots byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	7450:CROSS/6	capture.t_load.last.png
+fight	8230	8429	fight start, both idle; fight.first byte-identical to lib-versus-2p-kimigaura-shore-kick-1's	-	capture.fight.first.png
+walk_0	8430	8509	both pads hold DOWN 60 frames; no screen claim	8430:DOWN/60,8430:DOWN/60(2P)	-
+kick2p_0	8510	8629	both pads press R2 then CROSS on the same frames; screenshot +45 viewed: P1 (left) crouched low with sword extended, P2 (right) low over a dark block-like shape with an arm out; byte-identical to versus-2p-kimigaura-kick-2p-1's	8510:R2/4,8510:R2/4(2P),8513:CROSS/4,8513:CROSS/4(2P)	capture.kick2p_0.45.png
+walk_1	8630	8709	both pads hold DOWN 60 frames; no screen claim	8630:DOWN/60,8630:DOWN/60(2P)	-
+kick2p_1	8710	8829	both pads press R2 then CROSS on the same frames; screenshot +45 not viewed; byte-identical to versus-2p-kimigaura-kick-2p-1's	8710:R2/4,8710:R2/4(2P),8713:CROSS/4,8713:CROSS/4(2P)	capture.kick2p_1.45.png
+walk_2	8830	8909	both pads hold DOWN 60 frames; no screen claim	8830:DOWN/60,8830:DOWN/60(2P)	-
+kick2p_2	8910	9029	both pads press R2 then CROSS on the same frames; screenshot +45 not viewed; byte-identical to versus-2p-kimigaura-kick-2p-1's	8910:R2/4,8910:R2/4(2P),8913:CROSS/4,8913:CROSS/4(2P)	capture.kick2p_2.45.png
+walk_3	9030	9109	both pads hold DOWN 60 frames; no screen claim	9030:DOWN/60,9030:DOWN/60(2P)	-
+kick2p_3	9110	9179	both pads press R2 then CROSS on the same frames; screenshot +45 viewed: P1 (left) crouched low with sword extended, P2 (right) low over a dark block-like shape with an arm out; byte-identical to versus-2p-kimigaura-kick-2p-1's	9110:R2/4,9110:R2/4(2P),9113:CROSS/4,9113:CROSS/4(2P)	capture.kick2p_3.45.png,capture.last.png
