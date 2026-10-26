@@ -444,6 +444,17 @@ D_800A3834	write	func_80035828	top_menu	0x800359D0	coverage	0	2	1	[15]	0	title-a
 D_800A3834	write	func_8003BFC4	t_top	0x8003C02C	coverage	0	2	1	[8]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
 D_800A3834	write	func_8003BFC4	t_top_2	0x8003C02C	coverage	0	2	1	[8]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	title-attract-1@4668a6f759c2	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	top-menu-back-1@dbfc6b65c7ee	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	top-menu-back-1@dbfc6b65c7ee	1	group_has_unresolved_site
+D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_skip	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_skip_2	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_back	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_back_2	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_skip	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_skip_2	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	1	coverage_next_start_bound;group_has_unresolved_site
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	181	[2,3,15,19,21,25,26,28]	10	versus-2p-blade-contact-1@1e1cfebac1a9	0	

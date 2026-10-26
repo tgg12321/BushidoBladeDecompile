@@ -1,0 +1,221 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "watch": [
+    {
+      "at": "D_800A3834",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 60
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A37B8",
+      "len": 4
+    },
+    {
+      "at": "D_800A3834",
+      "len": 2
+    },
+    {
+      "at": "D_800A3740",
+      "len": 1
+    }
+  ],
+  "script": {
+    "end_frame": 15400,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6200,
+        "name": "t_back"
+      },
+      {
+        "frame": 6300,
+        "name": "movie"
+      },
+      {
+        "frame": 7600,
+        "name": "t_skip"
+      },
+      {
+        "frame": 8100,
+        "name": "top_menu_2"
+      },
+      {
+        "frame": 8300,
+        "name": "t_back_2"
+      },
+      {
+        "frame": 8400,
+        "name": "movie_2"
+      },
+      {
+        "frame": 14250,
+        "name": "title"
+      },
+      {
+        "frame": 14600,
+        "name": "t_skip_2"
+      },
+      {
+        "frame": 15100,
+        "name": "top_menu_3"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7400,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8300,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 14600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6199,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6250,
+        "name": "t_back.black"
+      },
+      {
+        "frame": 6900,
+        "name": "movie.first"
+      },
+      {
+        "frame": 7399,
+        "name": "movie.before_start"
+      },
+      {
+        "frame": 7550,
+        "name": "movie.after_start"
+      },
+      {
+        "frame": 7650,
+        "name": "t_skip.black"
+      },
+      {
+        "frame": 8100,
+        "name": "top_menu_2.first"
+      },
+      {
+        "frame": 8299,
+        "name": "top_menu_2.last"
+      },
+      {
+        "frame": 9000,
+        "name": "movie_2.first"
+      },
+      {
+        "frame": 11000,
+        "name": "movie_2.mid"
+      },
+      {
+        "frame": 14000,
+        "name": "movie_2.late"
+      },
+      {
+        "frame": 14300,
+        "name": "title.first"
+      },
+      {
+        "frame": 14599,
+        "name": "title.last"
+      },
+      {
+        "frame": 14650,
+        "name": "t_skip_2.black"
+      },
+      {
+        "frame": 15100,
+        "name": "top_menu_3.first"
+      },
+      {
+        "frame": 15399,
+        "name": "top_menu_3.last"
+      }
+    ]
+  }
+}

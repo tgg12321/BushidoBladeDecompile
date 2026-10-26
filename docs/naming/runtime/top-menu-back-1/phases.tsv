@@ -1,0 +1,13 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV (still the movie after the 5200 START)	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim. the 5500 CROSS ends the overlay (sys_Init, ra-8 0x80037504, at 5501); mode 8 at 5764 (pc 0x8003C02C), func_80035480 5765, mode 9 at 5967	5500:CROSS,5800:START	-
+top_menu	6050	6199	top menu, cursor on Story Mode (6050, 6199); D_800A3740 1	-	capture.top_menu.first.png,capture.top_menu.last.png
+t_back	6200	6299	TRIANGLE: cdrom_StartMixFade (0x1E) at 6200 called from func_80035828 (ra 0x80035A34); black at 6250; cdrom_PauseAndWait at 6260 (ra 0x80035AC4), mode 0xF stored at 6294 (pc 0x80035ACC); func_8003BFC4 -> sys_ExecMovieOverlay (0x800A9D10, 0x80118000, 1, 0xCF8) at 6295	6200:TRIANGLE	capture.t_back.black.png
+movie	6300	7599	D_800A3740 0xC, mode 0xF; the overlay is loaded (cdrom_LoadExec, cdrom_GetFileIndex, cdrom_ReadWait at 6303); the SQUARESOFT logo (6900), the moon shot before and after the START at 7400 (7399, 7550): the movie runs on	7400:START	capture.movie.first.png,capture.movie.before_start.png,capture.movie.after_start.png
+t_skip	7600	8099	CROSS on the movie: the overlay call is back by 7602 (sys_Init called from sys_Exec+0x9C, ra-8 0x80037504); black at 7650; mode 8 at 7865 (pc 0x8003C02C), func_80035480 7866, mode 9 at 8068; no title shown	7600:CROSS	capture.t_skip.black.png
+top_menu_2	8100	8299	top menu again, cursor on Story Mode (8100, 8299)	-	capture.top_menu_2.first.png,capture.top_menu_2.last.png
+t_back_2	8300	8399	TRIANGLE again: cdrom_StartMixFade 8300, cdrom_PauseAndWait 8360, mode 0xF at 8394 (pc 0x80035ACC), sys_ExecMovieOverlay with the same arguments at 8395	8300:TRIANGLE	-
+movie_2	8400	14249	the overlay loaded again (8403); the SQUARESOFT logo (9000), movie frames (11000, 14000), no input	-	capture.movie_2.first.png,capture.movie_2.mid.png,capture.movie_2.late.png
+title	14250	14599	the BUSHIDO BLADE 2 title (14300, 14599); no hit-map function reached in this phase	-	capture.title.first.png,capture.title.last.png
+t_skip_2	14600	15099	CROSS on the title: the overlay call is back by 14601 (sys_Init from sys_Exec+0x9C); black at 14650; mode 8 at 14864 (pc 0x8003C02C), func_80035480 14865, mode 9 at 15067	14600:CROSS	capture.t_skip_2.black.png
+top_menu_3	15100	15399	top menu again, cursor on Story Mode (15100, 15399)	-	capture.top_menu_3.first.png,capture.top_menu_3.last.png

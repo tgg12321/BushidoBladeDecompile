@@ -127,7 +127,9 @@
         "event:format",
         "event:options_change",
         "event:key_config_change",
-        "event:attract_loop"
+        "event:attract_loop",
+        "event:top_menu_back",
+        "event:movie_skip"
       ],
       "notes": {
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
@@ -141,7 +143,9 @@
         "event:format": "an unformatted memory card formatted from the game, after the Memory Card is unformatted / Format? prompt (memory-card-format-1)",
         "event:overwrite": "a save written over earlier save data on the card, after the Overwrite data? / Previous data will be erased prompt (memory-card-overwrite-1)",
         "event:out_of_bounds": "OUT OF BOUNDS (場外) call",
-        "event:attract_loop": "the top menu left with no input: func_80035828 counts its calls (one per main-loop pass) in D_800A37B8 (any held button resets it to 1) and at 0xCA9 stores mode 0xF (25C38.c:243-249), whose handler func_8003BFC4 calls sys_ExecMovieOverlay again with the boot's arguments (the movie and the title), then the top menu (title-attract-1)"
+        "event:attract_loop": "the top menu left with no input: func_80035828 counts its calls (one per main-loop pass) in D_800A37B8 (any held button resets it to 1) and at 0xCA9 stores mode 0xF (25C38.c:243-249), whose handler func_8003BFC4 calls sys_ExecMovieOverlay again with the boot's arguments (the movie and the title), then the top menu (title-attract-1)",
+        "event:top_menu_back": "TRIANGLE on the top menu: func_80035828's cancel result starts cdrom_StartMixFade and a 60-pass countdown, then cdrom_PauseAndWait and mode 0xF (25C38.c:258-276), so func_8003BFC4 runs the movie overlay (movie, then title) and the top menu is rebuilt (top-menu-back-1)",
+        "event:movie_skip": "inside the movie overlay, CROSS during the movie or on the title ends the overlay call within 2 frames (sys_Init from sys_Exec+0x9C after it returns; the title not shown when skipped from the movie) and the top menu is rebuilt; START during the movie changes nothing (top-menu-back-1)"
       }
     }
   }

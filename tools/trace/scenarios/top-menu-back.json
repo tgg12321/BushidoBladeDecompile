@@ -1,0 +1,54 @@
+{
+  "description": "top menu TRIANGLE: func_80035828's cancel path (cdrom_StartMixFade, 60 frames, cdrom_PauseAndWait) stores mode 0xF (25C38.c:258-276), so func_8003BFC4 runs the movie overlay again; START during the movie does nothing, CROSS during the movie ends the overlay at once (no title) and the top menu returns; a second TRIANGLE, the movie left to run, CROSS on the title: the top menu again; end 15400",
+  "covers": [
+    "menu:top",
+    "menu:title",
+    "event:top_menu_back",
+    "event:movie_skip"
+  ],
+  "evidence": [
+    "docs/naming/runtime/top-menu-back-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 15400,
+  "inputs": [
+    "6200:TRIANGLE",
+    "7400:START",
+    "7600:CROSS",
+    "8300:TRIANGLE",
+    "14600:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_back",
+    "6300:movie",
+    "7600:t_skip",
+    "8100:top_menu_2",
+    "8300:t_back_2",
+    "8400:movie_2",
+    "14250:title",
+    "14600:t_skip_2",
+    "15100:top_menu_3"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6199:top_menu.last",
+    "6250:t_back.black",
+    "6900:movie.first",
+    "7399:movie.before_start",
+    "7550:movie.after_start",
+    "7650:t_skip.black",
+    "8100:top_menu_2.first",
+    "8299:top_menu_2.last",
+    "9000:movie_2.first",
+    "11000:movie_2.mid",
+    "14000:movie_2.late",
+    "14300:title.first",
+    "14599:title.last",
+    "14650:t_skip_2.black",
+    "15100:top_menu_3.first",
+    "15399:top_menu_3.last"
+  ]
+}

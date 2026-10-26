@@ -1,6 +1,6 @@
 {
   "segment": true,
-  "description": "power-on intro to the title, START, CROSS, START to the top menu",
+  "description": "power-on intro movie; START (5200) leaves the movie running, CROSS (5500) ends the movie overlay (top-menu-back-1: sys_Init from sys_Exec at 5501), START (5800); the top menu by 6050",
   "inputs": [
     "5200:START",
     "5500:CROSS",
