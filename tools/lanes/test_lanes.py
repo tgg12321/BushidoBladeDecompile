@@ -436,7 +436,7 @@ class GateQueueTest(unittest.TestCase):
 
     def test_land_closes_queue_last_even_when_cleanup_raises(self):
         from unittest.mock import Mock, patch
-        for failure in (None, "unlink", "log.close"):
+        for failure in (None, "abort", "unlink", "log.close", "all"):
             with self.subTest(failure=failure), self.land_fixture() as args:
                 events = []
                 error = RuntimeError("cleanup failed")
@@ -447,8 +447,8 @@ class GateQueueTest(unittest.TestCase):
                 def cleanup(name):
                     self.assertEqual(len(self.ctx.load()["gate_queue"]), 1)
                     events.append(name)
-                    if name == failure:
-                        raise error
+                    if name == failure or failure == "all":
+                        raise error if name == "abort" or failure != "all" else ValueError(name)
 
                 def unlink(path, *a, **kw):
                     if path == pidfile:
@@ -471,18 +471,37 @@ class GateQueueTest(unittest.TestCase):
                         self.assertIs(caught.exception, error)
                     else:
                         self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
-                expected = ["abort", "unlink"]
-                if failure != "unlink":
-                    expected.append("log.close")
-                self.assertEqual(events, expected + ["queue.close"])
+                self.assertEqual(events, ["abort", "unlink", "log.close", "queue.close"])
                 self.assertEqual(self.ctx.load()["gate_queue"], [])
+                if failure not in ("unlink", "all"):
+                    self.assertFalse(pidfile.exists())
+
+    def test_land_body_exception_propagates_and_removes_ticket(self):
+        from unittest.mock import patch
+        error = RuntimeError("gates failed")
+        for abort_error in (None, ValueError("abort failed")):
+            with self.subTest(abort_error=abort_error), self.land_fixture() as args, \
+                    patch.object(lanes, "build_candidate", side_effect=error), \
+                    patch.object(lanes, "run", side_effect=abort_error), \
+                    redirect_stdout(io.StringIO()):
+                with self.assertRaises(RuntimeError) as caught:
+                    lanes.cmd_land(self.ctx, args)
+            self.assertIs(caught.exception, error)
+            self.assertEqual(self.ctx.load()["gate_queue"], [])
+            self.assertFalse(lanes.land_pidfile(self.ctx, "a").exists())
 
     def test_land_lock_holder_bypasses_queue_but_other_holder_queues(self):
         from unittest.mock import patch
         peer = lanes.GateQueue(self.ctx, "peer").ticket
         peer["session"] = "peer-session"
-        for session in (self.ctx.session, "other-session"):
-            with self.subTest(session=session), self.land_fixture({"session": session}) as args:
+        now = time.time()
+        for session, ts, held in ((self.ctx.session, now, True),
+                                  ("other-session", now, False),
+                                  (self.ctx.session, now - lanes.LOCK_STALE_SECS, False),
+                                  (self.ctx.session, now - lanes.LOCK_STALE_SECS - 1, False)):
+            with self.subTest(session=session, ts=ts), \
+                    self.land_fixture({"session": session, "ts": ts}) as args, \
+                    patch.object(lanes.time, "time", return_value=now):
                 self.ctx.update(lambda reg: reg.update(gate_queue=[peer]))
                 out = io.StringIO()
                 real_wait = lanes.GateQueue.wait
@@ -502,7 +521,7 @@ class GateQueueTest(unittest.TestCase):
                                      side_effect=poll) as poll_mock, \
                         patch.object(lanes.GateQueue, "_enqueue_and_prune", autospec=True,
                                      side_effect=real_enqueue) as enqueue, redirect_stdout(out):
-                    if session == self.ctx.session:
+                    if held:
                         self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
                         wait.assert_not_called()
                         poll_mock.assert_not_called()
@@ -517,6 +536,142 @@ class GateQueueTest(unittest.TestCase):
                         poll_mock.assert_called_once()
                         enqueue.assert_called_once()
                 self.assertEqual(self.ctx.load()["gate_queue"], [peer])
+
+    @contextmanager
+    def fast_forward_fixture(self, lock, after_gates=None):
+        """Drive the critical section with a real temp lock and a small Git state model."""
+        from unittest.mock import patch
+        read_lock = lanes.read_lock
+        lockpath = self.ctx.main / lanes.LOCK_REL
+        lockpath.parent.mkdir(parents=True, exist_ok=True)
+        lockpath.write_text(json.dumps(lock), encoding="utf-8")
+        state = {"main": "base"}
+
+        def git(*args, **kw):
+            if args == ("rev-parse", "main"):
+                return state["main"]
+            if args[:1] == ("merge",):
+                state["main"] = args[-1]
+                return ""
+            return "commit"
+
+        def gates(*args, **kw):
+            if after_gates:
+                after_gates(lockpath)
+            return "tip"
+
+        with self.land_fixture() as args, \
+                patch.object(lanes, "git", side_effect=git), \
+                patch.object(lanes, "read_lock", side_effect=read_lock), \
+                patch.object(lanes, "check_main_idle"), \
+                patch.object(lanes, "build_candidate", side_effect=gates), \
+                redirect_stdout(io.StringIO()):
+            yield args, state
+
+    def test_holder_fast_forward_refreshes_lock_without_acquiring_or_releasing(self):
+        from unittest.mock import patch
+        now = 100000
+
+        def long_gates(path):
+            path.write_text(json.dumps({"session": self.ctx.session, "ts": 1,
+                                        "label": "codex-item"}), encoding="utf-8")
+
+        with self.fast_forward_fixture({"session": self.ctx.session, "ts": now - 1,
+                                        "label": "codex-item"},
+                                       long_gates) as (args, state), \
+                patch.object(lanes.time, "time", return_value=now), \
+                patch.object(lanes, "acquire_lock") as acquire, \
+                patch.object(lanes, "release_lock") as release, \
+                patch.object(lanes.GateQueue, "wait") as wait:
+            self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+            self.assertEqual(state["main"], "tip")
+            acquire.assert_not_called()
+            release.assert_not_called()
+            wait.assert_not_called()
+        lock = lanes.read_lock(self.ctx)
+        self.assertEqual(lock["session"], self.ctx.session)
+        self.assertEqual(lock["ts"], now)
+        self.assertEqual(lock["label"], "codex-item")  # the holder's label survives the refresh
+
+    def test_stale_own_lock_queues_acquires_and_releases_on_fast_forward(self):
+        from unittest.mock import patch
+        lock = {"session": self.ctx.session, "ts": time.time() - lanes.LOCK_STALE_SECS - 1}
+        with self.fast_forward_fixture(lock) as (args, state), \
+                patch.object(lanes.time, "sleep"), \
+                patch.object(lanes.GateQueue, "wait", autospec=True,
+                             side_effect=lanes.GateQueue.wait) as wait, \
+                patch.object(lanes, "acquire_lock", wraps=lanes.acquire_lock) as acquire, \
+                patch.object(lanes, "release_lock", wraps=lanes.release_lock) as release:
+            self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+            self.assertEqual(state["main"], "tip")
+            wait.assert_called_once()
+            acquire.assert_called_once()
+            release.assert_called_once()
+        self.assertIsNone(lanes.read_lock(self.ctx))
+        self.assertEqual(self.ctx.load()["gate_queue"], [])
+
+    def test_lost_lock_before_fast_forward_refuses_and_keeps_main_at_base(self):
+        from unittest.mock import patch
+        for initial_session in (self.ctx.session, "peer"):
+            for lost in (None, {"session": "peer", "ts": time.time()}):
+                with self.subTest(initial_session=initial_session, lost=lost):
+                    def lose_lock(path):
+                        if lost is None:
+                            path.unlink()
+                        else:
+                            path.write_text(json.dumps(lost), encoding="utf-8")
+
+                    with self.fast_forward_fixture(
+                            {"session": initial_session, "ts": time.time()},
+                            lose_lock) as (args, state), \
+                            patch.dict(self.ctx.cfg, {"remote": "origin"}), \
+                            patch.object(lanes, "acquire_lock"), \
+                            patch.object(lanes, "sync_main_with_remote") as sync, \
+                            patch.object(lanes, "push_main") as push, \
+                            patch.object(lanes, "mark_landed") as mark:
+                        args.no_push = False
+                        with self.assertRaisesRegex(lanes.Refuse, "lost the main lock mid-land"):
+                            lanes.cmd_land(self.ctx, args)
+                        self.assertEqual(state["main"], "base")
+                        sync.assert_not_called()  # refused before sync can move main
+                        push.assert_not_called()
+                        mark.assert_not_called()
+                    self.assertEqual(self.ctx.load().get("gate_queue", []), [])
+
+    def test_lock_lost_during_sync_refuses_before_fast_forward(self):
+        from unittest.mock import patch
+        for initial_session in (self.ctx.session, "peer"):
+            for lost in (None, {"session": "peer", "ts": time.time()}):
+                with self.subTest(initial_session=initial_session, lost=lost):
+                    lockpath = self.ctx.main / lanes.LOCK_REL
+
+                    def sync(ctx, remote):
+                        # the lock is ours at the top check; it goes during the sync
+                        if lost is None:
+                            lockpath.unlink()
+                        else:
+                            lockpath.write_text(json.dumps(lost), encoding="utf-8")
+
+                    def acquire(ctx, label):
+                        lockpath.write_text(json.dumps({"session": ctx.session,
+                                                        "ts": time.time()}), encoding="utf-8")
+
+                    with self.fast_forward_fixture(
+                            {"session": initial_session, "ts": time.time()}) as (args, state), \
+                            patch.dict(self.ctx.cfg, {"remote": "origin"}), \
+                            patch.object(lanes, "acquire_lock", side_effect=acquire), \
+                            patch.object(lanes, "sync_main_with_remote",
+                                         side_effect=sync) as sync_mock, \
+                            patch.object(lanes, "push_main") as push, \
+                            patch.object(lanes, "mark_landed") as mark:
+                        args.no_push = False
+                        with self.assertRaisesRegex(lanes.Refuse, "lost the main lock mid-land"):
+                            lanes.cmd_land(self.ctx, args)
+                        sync_mock.assert_called_once()  # passed the top check
+                        self.assertEqual(state["main"], "base")
+                        push.assert_not_called()
+                        mark.assert_not_called()
+                    self.assertEqual(self.ctx.load().get("gate_queue", []), [])
 
     def test_fifo_head_check_and_cleanup(self):
         from unittest.mock import patch

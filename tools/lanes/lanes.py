@@ -1506,7 +1506,8 @@ def cmd_land(ctx: Ctx, a):
         # Refuse --no-wait before bootstrapping a landing tree; refresh main only after waiting.
         land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
         lk = read_lock(ctx)
-        held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
+        held_before = bool(lk and lk.get("session") == ctx.session
+                           and time.time() - float(lk.get("ts", 0)) < LOCK_STALE_SECS)
         # The lane's own paths: build_candidate later decides on the replayed diff, which can
         # differ; that changes only who waits, never which gates run. A session that already
         # holds the main lock does not queue: no one can fast-forward main ahead of it, and a
@@ -1558,6 +1559,14 @@ def cmd_land(ctx: Ctx, a):
             if not held_before:
                 acquire_lock(ctx, f"lanes land {lane}")
             try:
+                # Ours before anything here can move main (sync fast-forwards it); a lock held
+                # from before the land gets a fresh ts (keeping its holder's label).
+                lk = read_lock(ctx)
+                if not lk or lk.get("session") != ctx.session:
+                    raise Refuse("lost the main lock mid-land (another session took it); main was "
+                                 "not changed by this land", 1)
+                if held_before:
+                    write_lock(ctx, lk.get("label") or f"lanes land {lane}")
                 check_claims(ctx, lane,  # a freeze may have arrived meanwhile
                              git("diff", "--name-only", "--no-renames", f"{base}..{tip}",
                                  cwd=ctx.main).split())
@@ -1566,6 +1575,10 @@ def cmd_land(ctx: Ctx, a):
                     sync_main_with_remote(ctx, remote)
                 if git("rev-parse", "main", cwd=ctx.main) != base:
                     continue  # main moved: rebuild on the new main (finally releases the lock)
+                lk = read_lock(ctx)  # and still ours right before the fast-forward
+                if not lk or lk.get("session") != ctx.session:
+                    raise Refuse("lost the main lock mid-land (another session took it); main was "
+                                 "not changed by this land", 1)
                 # recorded first: a mapping is trusted only once its commit is in main, so this
                 # is harmless if the fast-forward fails, and a failure here cannot leave main
                 # holding lane work it does not know has landed
@@ -1581,17 +1594,22 @@ def cmd_land(ctx: Ctx, a):
         raise Refuse(f"main kept moving during {attempts} land attempts ({full_runs} full gate "
                      f"runs); try again", 1)
     finally:
-        try:
-            if ld is not None:
-                run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
+        body_failed = sys.exc_info()[0] is not None
+        cleanup_error = None
+        for cleanup in (
+            lambda: run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
+            if ld is not None else None,
+            lambda: land_pidfile(ctx, lane).unlink(missing_ok=True),
+            lambda: log.close() if log is not None else None,
+            queue.close,  # last, after all landing resources have been cleaned up
+        ):
             try:
-                land_pidfile(ctx, lane).unlink()
-            except FileNotFoundError:
-                pass
-            if log is not None:
-                log.close()
-        finally:
-            queue.close()  # last; it never raises, so the original exception propagates
+                cleanup()
+            except BaseException as e:
+                if cleanup_error is None:
+                    cleanup_error = e
+        if cleanup_error is not None and not body_failed:
+            raise cleanup_error
 
 
 def push_main(ctx: Ctx, remote: str) -> str:
