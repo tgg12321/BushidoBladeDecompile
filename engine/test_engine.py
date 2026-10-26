@@ -13193,6 +13193,22 @@ def test_move_tu() -> None:
             "engine/queue.json": json.dumps({"items": [{"func": "f", "file": "comb"}]}, indent=2) + "\n",
             ".claude/rules/r.md": '---\nname: r\npaths: ["src/comb.c", "src/**/*.c"]\n---\nbody src/comb.c\n',
             "tools/other.sh": "case $stem in comb) ;; esac\n",
+            "tools/lanes/lanes.json": (
+                '{\n  "regenerate": [\n'
+                '    {"path": "docs/naming/runtime/evidence/comb.tsv",\n'
+                '     "cmd": "python3 notes.py build --tu comb --verbose",\n'
+                '     "subject": "docs: notes (comb)",\n'
+                '     "inputs": ["src/comb.c", "src/comb_extra.c"]},\n'
+                '    {"path": "docs/naming/runtime/evidence/comb_extra.tsv",\n'
+                '     "cmd": "python3 notes.py build --tu=comb_extra",\n'
+                '     "subject": "docs: notes (comb_extra)",\n'
+                '     "inputs": ["src/comb.c", "bb2.ld"]},\n'
+                '    {"path": "unrelated.tsv", "cmd": "python3 notes.py build --tu=comb",\n'
+                '     "subject": "comb", "inputs": ["src/gpu.c"]}\n'
+                '  ],\n  "other": {"path": "docs/naming/runtime/evidence/comb.tsv",\n'
+                '    "cmd": "python3 notes.py build --tu comb",\n'
+                '    "subject": "docs: notes (comb)", "inputs": ["src/comb.c"]}\n}\n'),
+            "docs/naming/runtime/evidence/comb.tsv": "generated note\n",
         }
         for rel, t in files.items():
             Path(R, rel).parent.mkdir(parents=True, exist_ok=True)
@@ -13213,6 +13229,48 @@ def test_move_tu() -> None:
                   all(Path(R, rel).read_bytes() == b for rel, b in snapshot.items())
                   and not Path(R, "tools/tu_renames.tsv").exists())
             check("move_tu: dry run lists a hand-review leftover", "tools/other.sh" in out.getvalue())
+            old_note = "docs/naming/runtime/evidence/comb.tsv"
+            new_note = f"docs/naming/runtime/evidence/{new.replace('/', '__')}.tsv"
+            check("move_tu: dry run lists lanes edits and the generated note move",
+                  "lanes.json regenerate: 1 path(s), 2 command(s), 1 subject(s), 2 input(s)"
+                  in out.getvalue() and f"generated evidence: {old_note} -> {new_note}" in out.getvalue())
+            edits, moves, _, leftovers = mt.plan(R, "comb", new)
+            lane_text = edits.get("tools/lanes/lanes.json", b"").decode()
+            entries = json.loads(lane_text or '{"regenerate": []}')["regenerate"]
+            eq("move_tu: lane evidence path encodes nested TU id",
+               entries[0]["path"] if entries else None,
+               f"docs/naming/runtime/evidence/{new.replace('/', '__')}.tsv")
+            eq("move_tu: lane command rewrites exact --tu argument",
+               entries[0]["cmd"] if entries else None,
+               f"python3 notes.py build --tu {new} --verbose")
+            eq("move_tu: lane command rewrites --tu=id at end of command",
+               entries[2]["cmd"] if len(entries) > 2 else None,
+               f"python3 notes.py build --tu={new}")
+            eq("move_tu: lane subject rewrites parenthesized id",
+               entries[0]["subject"] if entries else None, f"docs: notes ({new})")
+            check("move_tu: lane inputs follow in every regenerate entry",
+                  len(entries) == 3 and all(f"src/{new}.c" in e["inputs"] for e in entries[:2]))
+            before, after = files["tools/lanes/lanes.json"].split('  "other":', 1)
+            expected = (before.replace('evidence/comb.tsv',
+                                      f"evidence/{new.replace('/', '__')}.tsv")
+                        .replace('--tu comb ', f'--tu {new} ')
+                        .replace('--tu=comb"', f'--tu={new}"')
+                        .replace('(comb)', f'({new})')
+                        .replace('"src/comb.c"', f'"src/{new}.c"') + '  "other":' + after)
+            eq("move_tu: lane formatting and unrelated strings are byte-stable",
+               lane_text, expected)
+            eq("move_tu: generated evidence is a planned move", moves, {old_note: new_note})
+            check("move_tu: generated evidence is not a leftover",
+                  not any(old_note in line for line in leftovers))
+            Path(R, new_note).write_bytes(b"existing target\n")
+            try:
+                mt.plan(R, "comb", new)
+            except mt.MoveError as exc:
+                eq("move_tu: an existing evidence target refuses", str(exc), f"{new_note} already exists")
+            else:
+                check("move_tu: an existing evidence target refuses", False)
+            eq("move_tu: refusal preserves the evidence target", Path(R, new_note).read_bytes(), b"existing target\n")
+            Path(R, new_note).unlink()
             Path(R, "src/gpu.c").write_text("int gpu2;\n")
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 eq("move_tu: a dirty tree refuses", mt.main(["comb", new, "--root", td, "--apply"]), 1)
@@ -13221,6 +13279,11 @@ def test_move_tu() -> None:
                 eq("move_tu: apply exits 0", mt.main(["comb", new, "--root", td, "--apply"]), 0)
             check("move_tu: the source moved", Path(R, f"src/{new}.c").read_text() == "int comb;\n"
                   and not Path(R, "src/comb.c").exists())
+            eq("move_tu: apply writes the planned lane configuration",
+               Path(R, "tools/lanes/lanes.json").read_bytes(), expected.encode())
+            check("move_tu: apply moves generated evidence byte-identical",
+                  not Path(R, old_note).exists() and Path(R, new_note).is_file()
+                  and Path(R, new_note).read_bytes() == snapshot[old_note])
             ld = Path(R, "bb2.ld").read_text()
             check("move_tu: every bb2.ld section line moved in place",
                   ld == files["bb2.ld"].replace("build/src/comb.o", f"build/src/{new}.o"))
@@ -13243,8 +13306,8 @@ def test_move_tu() -> None:
             git("commit", "-qm", "move")
             with contextlib.redirect_stdout(io.StringIO()):
                 eq("move_tu: moving back exits 0", mt.main([new, "comb", "--root", td, "--apply"]), 0)
-            check("move_tu: the round trip restores every keyed file byte-for-byte",
-                  all(Path(R, rel).read_bytes() == b for rel, b in snapshot.items()))
+            for rel, b in snapshot.items():
+                eq(f"move_tu: round trip restores {rel} byte-for-byte", Path(R, rel).read_bytes(), b)
             check("move_tu: the round trip removes the emptied directories",
                   not Path(R, "src/main").exists())
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):

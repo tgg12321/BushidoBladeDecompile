@@ -15,6 +15,8 @@ Every surface keyed by the id follows the file:
   - oracle/manifest.json corpus key and golden-fixture `file` (hash kept: the
     bytes did not change)
   - tools/cc1_tu_expectation.txt TU key, engine/queue.json item `file`
+  - tools/lanes/lanes.json regenerate paths, commands, subjects and inputs
+    (existing generated evidence files move byte-for-byte with their paths)
   - exact `"src/OLD.c"` entries in .claude/rules/*.md `paths:`
   - tools/tu_renames.tsv: one appended row (old id, new id, `after:<HEAD>`)
 Any other tracked reference to the old id outside docs/ and memory/ (historical
@@ -77,8 +79,8 @@ def _sub_exact(text: str, old: str, new: str, want: int | None, what: str) -> tu
     return text.replace(old, new), n
 
 
-def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], list[str], list[str]]:
-    """({path: new bytes}, notes, leftover references) for the move; raises MoveError."""
+def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], dict[str, str], list[str], list[str]]:
+    """(edits, generated file moves, notes, leftover references); raises MoveError."""
     from engine import tus
     src_old, src_new = root / "src" / f"{old}.c", root / "src" / f"{new}.c"
     if old == new:
@@ -98,6 +100,7 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], list[str], l
 
     edits: dict[str, bytes] = {}
     notes: list[str] = []
+    moves: dict[str, str] = {}
 
     def put(rel: str, text: str) -> None:
         edits[rel] = text.encode("utf-8")
@@ -199,6 +202,42 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], list[str], l
             put("engine/queue.json", json.dumps(q, indent=2) + "\n")
         notes.append(f"queue.json: {n} item(s)")
 
+    # Lane regenerate entries are hand-formatted: edit only the keyed strings,
+    # retaining whitespace and all unrelated configuration verbatim.
+    lp = root / "tools/lanes/lanes.json"
+    if lp.exists():
+        t = lp.read_text(encoding="utf-8")
+        m = re.search(r'"regenerate"\s*:\s*(?=\[)', t)
+        if m:
+            _, end = json.JSONDecoder().raw_decode(t, m.end())
+            block = t[m.end():end]
+            old_note = f"docs/naming/runtime/evidence/{old.replace('/', '__')}.tsv"
+            new_note = f"docs/naming/runtime/evidence/{new.replace('/', '__')}.tsv"
+            block, paths = re.subn(r'("path"\s*:\s*)"' + re.escape(old_note) + r'"',
+                                   lambda m: m[1] + f'"{new_note}"', block)
+            block, cmds = re.subn(r'("cmd"\s*:\s*"[^"\n]*?--tu[ =])' + re.escape(old)
+                                  + r'(?=\s|")', lambda m: m[1] + new, block)
+            block, subjects = re.subn(r'("subject"\s*:\s*"[^"\n]*?)\(' + re.escape(old)
+                                      + r'\)', lambda m: m[1] + f'({new})', block)
+            inputs = 0
+
+            def lane_inputs(m: re.Match) -> str:
+                nonlocal inputs
+                text, n = _sub_exact(m[0], f'"src/{old}.c"', f'"src/{new}.c"',
+                                     None, "lanes.json inputs")
+                inputs += n
+                return text
+            block = re.sub(r'"inputs"\s*:\s*\[[^\]]*\]', lane_inputs, block)
+            if paths + cmds + subjects + inputs:
+                put("tools/lanes/lanes.json", t[:m.end()] + block + t[end:])
+            notes.append(f"lanes.json regenerate: {paths} path(s), {cmds} command(s), "
+                         f"{subjects} subject(s), {inputs} input(s)")
+            if paths and (root / old_note).is_file():
+                if (root / new_note).exists():
+                    raise MoveError(f"{new_note} already exists")
+                moves[old_note] = new_note
+                notes.append(f"generated evidence: {old_note} -> {new_note}")
+
     # rule frontmatter `paths:` naming the file exactly
     rules = 0
     for p in sorted((root / ".claude/rules").glob("*.md")):
@@ -230,7 +269,7 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], list[str], l
     out = git(root, "grep", "-n", "-E", pat, "--", ".", ":!docs", ":!memory",
               ":!src", ":!bb2.ld", ":!tools/tu_renames.tsv", check=False)
     leftovers = [l for l in out.splitlines() if l.split(":", 1)[0] not in edits]
-    return edits, notes, leftovers
+    return edits, moves, notes, leftovers
 
 
 def _buildconfig_lists(root: Path, text: bytes | None = None) -> dict[str, set]:
@@ -245,9 +284,12 @@ def _buildconfig_lists(root: Path, text: bytes | None = None) -> dict[str, set]:
     return out
 
 
-def apply(root: Path, old: str, new: str, edits: dict[str, bytes]) -> None:
+def apply(root: Path, old: str, new: str, edits: dict[str, bytes], moves: dict[str, str]) -> None:
     (root / "src" / f"{new}.c").parent.mkdir(parents=True, exist_ok=True)
     git(root, "mv", f"src/{old}.c", f"src/{new}.c")
+    for old_path, new_path in moves.items():
+        (root / new_path).parent.mkdir(parents=True, exist_ok=True)
+        git(root, "mv", old_path, new_path)
     for rel, data in edits.items():
         (root / rel).write_bytes(data)
     git(root, "add", "--", *edits)
@@ -271,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
         d = dirty(root)
         if d:
             raise MoveError("dirty tree; commit or stash first:\n  " + "\n  ".join(d[:20]))
-        edits, notes, leftovers = plan(root, old, new)
+        edits, moves, notes, leftovers = plan(root, old, new)
     except MoveError as e:
         print(f"move_tu: REFUSED: {e}", file=sys.stderr)
         return 1
@@ -286,7 +328,7 @@ def main(argv: list[str] | None = None) -> int:
     if not a.apply:
         print("  (dry run: pass --apply to perform)")
         return 0
-    apply(root, old, new, edits)
+    apply(root, old, new, edits, moves)
     print("  applied and staged. Next: clean build + `verify-oracle --rebuild`, then commit.")
     return 0
 
