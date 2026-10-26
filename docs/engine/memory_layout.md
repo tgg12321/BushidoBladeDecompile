@@ -56,7 +56,7 @@ These addresses are set in code:
 | 0x801D8800 | | also load scratch: `eff_Init`'s `eff_LoadImagesAndSetup(0x801D8800, ...)` (called from mode handlers) and `snd_LoadCommonVab(0x801D8800)` (at boot and again after `sys_Exec` returns) | src/main/6CF8.c:254, :269 |
 | 0x8010DB00 | <= 0xD00 | the common VAB's main-RAM part (sound table + VabHdr), copied from 0x801D8800 | src/main/6CF8.c:273 |
 | 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `D_800A3420` / `D_800A3424` set by `eff_LoadImagesAndSetup` | 51268.c, `eff_LoadImagesAndSetup` |
-| 0x80118800 | | `func_80016A8C`'s image buffer at boot | src/main/6CF8.c:440 |
+| 0x80118800 | | `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`'s image buffer at boot | src/main/6CF8.c:440 |
 | 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
 
 Each frame, `main` checks the cursor against the buffer's end, `var_4[idx] +
@@ -72,7 +72,7 @@ Large objects named elsewhere in these pages:
   records. See [file_io.md](file_io.md).
 - `D_800F33D8`: the 0x200-byte memory-card image. Its second half is
   `Unk800F34D8Save D_800F34D8` (include/game.h:40-52).
-  `func_800174F4` also builds its overlay primitives there
+  `gpu_DrawDisplayModeOnLocalOtAndSync` also builds its overlay primitives there
   (src/main/6CF8.c:537).
 - `g_scratchpad_save` (0x800F5370): `scratchpad_Save` /
   `scratchpad_Restore` copy 0xF8 words (992 bytes) between it and

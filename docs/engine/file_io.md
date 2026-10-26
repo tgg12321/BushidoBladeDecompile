@@ -20,7 +20,7 @@ plus an offset. The groups that appear in calls:
   at `g_motion_common_buffer` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
   `(1, j + 2)` (9F9C.c:3040, :3090).
 - group 2: image and data files. Readers include `eff_LoadImagesAndSetup`,
-  `func_80016A8C`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
+  `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
   `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
   `func_8003B9D0` (src/main/2B344.c:478), `func_8003BE10` (:595) and
@@ -114,7 +114,7 @@ Waits:
 
 - `cdrom_WaitIdle` (src/main/cdrom.c:57) loops until state 0. Each pass calls
   `comb_ExchangeEmptyPad`, `cdrom_Update`, `snd_FlushSoundQueue` (while
-  `D_800A3906` is set), `func_800174F4`, and `VSync(2)`. The loop sits
+  `D_800A3906` is set), `gpu_DrawDisplayModeOnLocalOtAndSync`, and `VSync(2)`. The loop sits
   between `comb_BeginWait` and `comb_EndWait`.
 - `cdrom_WaitAudioStarted` (src/main/cdrom.c:146) loops until state 0x16.
 - `cdrom_PauseAndWait` (:154) pauses a busy drive, then waits.
@@ -150,7 +150,7 @@ are described in [replay.md](replay.md).
   bytes or more. It copies that part to 0x8010DB00, opens it with
   `snd_VabFakeOpen(0xFFF35300, 0)` and sets `D_800A3906`. See
   [sound.md](sound.md).
-- `func_80016A8C` (src/main/6CF8.c:188) reads group-2 file 0x61 to 0x80118800
+- `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth` (src/main/6CF8.c:188) reads group-2 file 0x61 to 0x80118800
   (`main`, src/main/6CF8.c:440) and shows it as a 15-bit image. From frame
   0x79 of 0x96 it halves each RGB channel of the image per frame.
 

@@ -114,7 +114,7 @@ address is the stable key.
 | `text1a_pre.c` | 0x800401CC-0x80040D48 | Player-model ("rob") init, draw-move list (`gpu_AddDrawMove`) |
 | `text1a_pre_tu2.c` | 0x80040D48-0x800414FC | 4 functions; mixed / unclear |
 | `text1a_svc.c` | 0x800414FC-0x8004153C | `save_vc_ctrl` alone |
-| `text1a_post.c` | 0x8004153C-0x80042504 | Slot management (`func_800415C4`, `func_80041604`), effect dispatch |
+| `text1a_post.c` | 0x8004153C-0x80042504 | Slot management (`slot_ReleaseObjectAndResources`, `slot_RequestTimGroupsAndMarkReloadOnChange`), effect dispatch |
 | `text1a_c.c` | 0x80042504-0x80044800 | Matrix/colour math (`math_RotMatrix*`, `math_RgbToHsv`), primitive texture-offset helpers (`gpu_OffsetTexPoly*`), prim-buffer slots |
 | `text1a_c_tu2.c` | 0x80044800-0x800460E4 | NDATA pack cache (`ndata_LoadPack` / `ndata_ReadFromPack`) and channel helpers |
 | `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`resource_LoadOrReuseSelectedBlock`, `game_*Init`, `resource_HasRetainedSubblocks`), SE allocation/stop, camera bone setup |
@@ -177,7 +177,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Display / frame
 - `D_800A3768` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
-  `func_800174F4` draws each frame (6CF8.c:540-590); `bb2_const.h` names
+  `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590); `bb2_const.h` names
   three of the values.
 - `D_800A36A8` — a 0/1 switch that multiplies the `func_8005D554` sprite passes.
 - `D_800A36AC` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
@@ -195,9 +195,9 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `g_loaded_resource_selector` (selector cached by `resource_LoadOrReuseSelectedBlock`), `D_8009947A` (0/1 flag),
   `g_gpu_cell_draw_attributes` — 32x32 cell grid read by the draw walks (no collision use)
 - `D_800A9A10` — three slots for the model objects `func_80045878` builds
-  (`func_80041584` scans i < 3)
-- `D_80094B88` — per-slot 5-bit codes `func_80041604` stores and
-  `func_80040594` packs into the model object's flag word
+  (`slot_FindEmpty` scans i < 3)
+- `D_80094B88` — per-slot 5-bit codes `slot_RequestTimGroupsAndMarkReloadOnChange` stores and
+  `slot_FinalizeObjectLoadSoundTexturesAndArena` packs into the model object's flag word
 - `D_800A6690` — transform-node records (0x68 bytes) unpacked from a u16
   stream and queued by the grid draw walks
 - `g_cam_matrix` (0x800EEDB0) — camera rotation matrix base

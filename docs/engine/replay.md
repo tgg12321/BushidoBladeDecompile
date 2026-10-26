@@ -144,7 +144,7 @@ while (1) {
     comb_ExchangeEmptyPad();
     cdrom_Update();
     if (D_800A3906 != 0) snd_FlushSoundQueue();
-    func_800174F4();
+    gpu_DrawDisplayModeOnLocalOtAndSync();
     *p = *p + 2;                          // D_80101E58.rec.unk3E
     VSync(2);
 }

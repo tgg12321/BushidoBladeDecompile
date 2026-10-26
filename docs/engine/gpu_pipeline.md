@@ -40,7 +40,7 @@ are 640 x 240.
 
 Two small extra lists use a local 1- or 2-entry OT:
 
-- `func_800174F4` (src/main/6CF8.c:526) draws a full-screen overlay into the
+- `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526) draws a full-screen overlay into the
   buffer at `D_800F33D8`, chosen by `D_800A3768`. It uses `ClearOTagR(ot, 2)`
   and `DrawOTag(ot + 1)`.
 - `menu_RunPauseMenu` (src/main/6CF8.c:312), the pause menu loop, uses
@@ -156,5 +156,5 @@ The sprite sheets are 12-byte headers `Unk8009B0E0Record`
 
 `func_80060414` (4D0A8.c) takes the screen position from the packed table
 `D_8009B850`, picks one of the `D_8009B7AC` sheets, and draws it with
-`gpu_AddSpriteCells` plus a `DR_MODE`. `func_800174F4` calls
+`gpu_AddSpriteCells` plus a `DR_MODE`. `gpu_DrawDisplayModeOnLocalOtAndSync` calls
 it in overlay mode 20.

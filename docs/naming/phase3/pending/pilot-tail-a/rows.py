@@ -43,8 +43,9 @@ ADJUSTED = {
                    "object_ is the 17AFC.c thrown-object pool prefix (another structure); the table's own vocabulary is slot_ "
                    "(D_800A9A10[3]); the function returns the object stored in a slot"),
     "0x80041554": ("object_GetSlotAssetSelector", "slot_GetAssetIndex",
-                   "unk_08 is func_80045878's a1, which func_80044ED8 passes to ndata_ReadFromPack / ndata_Read as the pack index "
-                   "('Selector' is not shown; the ndata subsystem is); prefix as 8004153C"),
+                   "unk_08 is func_80045878's a1, the load id the slot was built from: func_80044ED8 maps it to a pack entry "
+                   "(ids >= 0x1F minus 0x1B) before ndata_ReadFromPack / ndata_Read, and it indexes the tables "
+                   "D_80094D40 / D_80094E08 / D_80094B48 ('Selector' is not shown); prefix as 8004153C"),
     "0x80041584": ("object_FindEmptySlot", "slot_FindEmpty", "prefix as 8004153C"),
     "0x800415C4": ("object_ReleaseSlotAndResources", "slot_ReleaseObjectAndResources",
                    "prefix as 8004153C; it releases the object stored in the slot (softbody, VAB, both arena blocks) and the pointer"),
@@ -276,7 +277,7 @@ FUNCS = [
       "returns (D_800A9A10[a0]->unk_00.word >> 16) & 0x1F, or -1 without an object",
       "none (no C call, no jal, no address word)",
       _SLOT + "bits 16..20 of unk_00 are written only by func_80040594 (309CC.c:263-264) with the request set that "
-      "func_80041604 stored, i.e. the set that was loaded; func_80041604 compares against the same field",
+      "func_80041604 stored, i.e. the request in force at the last load; func_80041604 compares against the same field",
       "no group identity; uncalled",
       "w64 'no current caller and group identities remain unresolved'"),
 

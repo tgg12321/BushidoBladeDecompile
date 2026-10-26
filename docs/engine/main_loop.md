@@ -24,7 +24,7 @@ start-up code, in order:
 1. Start-up: `__main()` (the SN constructor walker; the game has no
    constructors, src/main/psxsdk/libsn/73E98.c:16-22), `SetSp(0x801FFF00)`,
    `SetMem(2)`, `sys_Init()`, `func_80016D78()`, `SetDispMask(1)`, then
-   `func_80016A8C(0x80118800, ...)` (src/main/6CF8.c:188), which reads file
+   `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(0x80118800, ...)` (src/main/6CF8.c:188), which reads file
    `cdrom_GetFileIndex(2, 0x61)`, shows it for 150 frames and darkens it over
    the last 29.
 2. `D_800A3834 = 0xF` (the first mode, `func_8003BFC4`), `D_800A390D = 0`,
@@ -126,5 +126,5 @@ assigns to `D_800A3834` itself.
 | 33 | `func_8003CD10` (src/main/2B344.c:967) | 8 | |
 
 Modes the main loop itself sets: 0xF at start, 8 on a link abort. Many
-handlers draw through `func_800174F4` (src/main/6CF8.c:526), which returns at
+handlers draw through `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526), which returns at
 once while `D_800A3768` is `DISP_DISABLED` and otherwise switches on it.

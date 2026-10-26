@@ -61,7 +61,7 @@ func_80034F88 include/game.h include/bb2.h src/main/87A0.c undefined_syms_auto.t
 # fighter_ConfigureCpuControl: pipeline scope grant 2026-09-05 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 fighter_ConfigureCpuControl include/game.h include/bb2.h src/main/9F9C.c
-# func_8004473C: pipeline scope grant 2026-09-06 (judge ESCALATE integration-handoff,
+# node_InitFrameEntriesFromWorldTranslations (was func_8004473C): pipeline scope grant 2026-09-06 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 node_InitFrameEntriesFromWorldTranslations include/game.h undefined_syms_auto.txt named_syms.txt
 # _addque2: pipeline scope grant 2026-09-06 (judge ESCALATE integration-handoff,

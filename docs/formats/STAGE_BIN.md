@@ -60,9 +60,9 @@ A 52-byte header (13 little-endian u32 words), six VAB packs back to back,
 then a billboard list. No geometry or textures: every record is a VAB pack
 with exactly the shape of an `.SE` file ([SE.md](SE.md)).
 
-### Loader (`func_8005BA8C`, `src/main/4BC3C.c`)
+### Loader (`snd_ReloadListedVabsFromFileAndInstallBillboards`, `src/main/4BC3C.c`)
 
-The stage load in `src/main/9F9C.c` calls `func_8005BA8C(buf, stage, a, b)`
+The stage load in `src/main/9F9C.c` calls `snd_ReloadListedVabsFromFileAndInstallBillboards(buf, stage, a, b)`
 with `a` and `b` read from `D_8008E5A8` for the two fighter slots. It
 reads group-2 file `stage + 9` (`cdrom_GetFileIndex(2, stage + 9)`) into
 `buf`, rebases header word 12 and passes it to `eff_SetBillboardList`
@@ -139,7 +139,7 @@ python tools/repack_stage.py --roundtrip disc/LOADSE1              # exit 1 unle
 
 All 38 files round-trip byte-identically; both directions check the
 billboard list's shape. Size limits: `fight_ResetGraphAndReloadResourcesOnCachedKeyChange` (`src/main/9F9C.c`)
-panics when the compacted size `func_8005BA8C` returns reaches 0x2519. That
+panics when the compacted size `snd_ReloadListedVabsFromFileAndInstallBillboards` returns reaches 0x2519. That
 size is the bytes ahead of the VB in the three loaded packs
 (`snd_LoadVabPack` returns the VB offset), so it grows with the event table
 and VH, not with VAGs. A file that grows also has to fit its disc slot (see
@@ -263,7 +263,7 @@ and feed any TIMs to `inspect_tim.py`.
 * `STAGE*.BIN`: `tools/repack_stage.py --roundtrip` over `disc/LOADSE` and
   `disc/LOADSE1` (every record passes `repack_vab.py`'s VH / size-table
   checks; header and billboard-list checks as in §2), read against
-  `func_8005BA8C`, `eff_SetBillboardList` and `eff_DrawBillboardList`.
+  `snd_ReloadListedVabsFromFileAndInstallBillboards`, `eff_SetBillboardList` and `eff_DrawBillboardList`.
 
 ## Unverified / TODO
 

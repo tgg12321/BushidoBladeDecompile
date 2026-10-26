@@ -75,7 +75,7 @@ Unnamed functions keep `func_<addr>`.
 | `D_800F33D8` / `D_800F34D8` | memory-card image / `Unk800F34D8Save` | [file_io.md](file_io.md) |
 | `g_vab_rec_ptr[16]`, `g_vab_vb_sbaddr[16]` | VAB slots, `Unk8005C2A8Pack` | [sound.md](sound.md) |
 | `g_snd_queue[24]` | `Unk800EFB78Entry` sound request pool | [sound.md](sound.md) |
-| `D_80106A50` | `FileRecord`; `flags` bits read by `func_800167AC` / `func_800167BC` / `func_800167D4` (src/main/6CF8.c:115-119) | |
+| `D_80106A50` | `FileRecord`; `flags` bits read by `gpu_GetSavedGrayscaleFlag` / `fighter_GetSavedCpuBehaviorAdjustFlag` / `snd_GetSavedCdAudioSuppressFlag` (src/main/6CF8.c:115-119) | |
 | `g_rng_state` | `rng_Next`'s state (src/main/6CF8.c:415) | |
 
 ## Finding a name

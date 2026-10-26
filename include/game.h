@@ -2075,9 +2075,10 @@ typedef struct {
  * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
  * 20-entry pointer tables.
  * - unk_00: flag word; slot_FinalizeObjectLoadSoundTexturesAndArena sets bit 1
- * and keeps the character id in bits 16..20, which
- * slot_RequestTimGroupsAndMarkReloadOnChange / slot_GetLastLoadTimGroupRequest
- * read as (word >> 16) & 0x1F; no code reads it through half[].
+ * and keeps the TIM-group request (D_80094B88[arena_id] & 0x1F) in bits 16..20,
+ * which slot_RequestTimGroupsAndMarkReloadOnChange /
+ * slot_GetLastLoadTimGroupRequest read as (word >> 16) & 0x1F; no code reads it
+ * through half[].
  * - arena_id: func_80045878's a0, the arena_OpenBlock id and the D_800A9A10
  * index; load_status: 0, 1 after a fresh load (func_80045878), -2 to request a
  * reload (slot_RequestTimGroupsAndMarkReloadOnChange);

@@ -10,7 +10,7 @@ record is a VAB pack (docs/formats/SE.md), handled by repack_vab.py.
 
 The file is a 13-word header (six (offset, size) pairs, one per record,
 then the offset of the billboard list), the six records back to back from
-0x34, and the billboard list after record 5. func_8005BA8C
+0x34, and the billboard list after record 5. snd_ReloadListedVabsFromFileAndInstallBillboards
 (src/main/4BC3C.c) loads record 0 and two of records 1..5 with
 snd_LoadVabPack and hands the list to eff_SetBillboardList
 (src/main/51268.c): 12-byte entries (three s32), ending at the first entry

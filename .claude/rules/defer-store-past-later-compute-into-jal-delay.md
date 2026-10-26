@@ -34,7 +34,7 @@ foo(texA, ...);                           /* sw lands in the delay slot */
 foo(texB, ...);
 ```
 
-Ordinary restructuring (compute offsets, store, call). Example: AllocRobRmd (now func_80040594, main/309CC.c) — honest
+Ordinary restructuring (compute offsets, store, call). Example: AllocRobRmd (now slot_FinalizeObjectLoadSoundTexturesAndArena, main/309CC.c) — honest
 distance 12 → 1.
 
 ## Applies when / not

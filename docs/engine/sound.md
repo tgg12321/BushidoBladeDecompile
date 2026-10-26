@@ -23,7 +23,7 @@ are described in [docs/formats/](../formats/README.md).
 3. Copies the bank's main-RAM part (sound table + VabHdr) to 0x8010DB00 and
    rebases slot 0 there with
    `snd_VabFakeOpen(0xFFF35300, 0)` (0x8010DB00 - 0x801D8800).
-4. `func_8005C614`, which sets `SsSetMVol(0x7F, 0x7F)`, stereo and auto
+4. `snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode`, which sets `SsSetMVol(0x7F, 0x7F)`, stereo and auto
    key-off mode 0.
 5. Sets `D_800A3906 = 1`. That flag lets `cdrom_WaitIdle` call
    `snd_FlushSoundQueue` on each pass (`main` calls it every frame regardless,
@@ -50,8 +50,8 @@ fourth is the body size in SPU RAM.
 | `snd_VabFakeOpen(delta, slot)` | moves a slot's pack in main RAM by `delta` and re-registers it with `SsVabFakeHead` / `SsVabFakeBody` |
 | `snd_CompactVabBodies(slot, buf)` | sorts slots 1..15 by SPU address and moves every body after the first gap down to close it (`snd_MoveVabBody`) |
 | `snd_MoveVabBody(buf, slot, dst, src)` | copies a body inside SPU RAM through `buf` (`SpuRead`, then `SpuWrite`) and re-fakes its head |
-| `func_8005B8B8` / `func_8005B9FC` / `func_8005BA8C` | load group-2 files 0x5D + 0x5E into slots 8 and 4, file 8 into slot 9, and file `9 + arg1` into the three slots in `g_vab_id_list` |
-| `snd_CloseVab1`, `snd_CloseListedVabs`, `func_8005B644`, `func_8005B6AC`, `func_8005B868`, `func_8005B9C4`, `func_8005B72C` | `SsVabClose` on fixed slots (`func_8005B644(a0)`: slot `3*a0 + 1`; `func_8005B72C`: slots 1..15, plus reverb off and a pool reset), clearing their records |
+| `snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles` / `snd_CloseThenReadSingleFileAndLoadVab` / `snd_ReloadListedVabsFromFileAndInstallBillboards` | load group-2 files 0x5D + 0x5E into slots 8 and 4, file 8 into slot 9, and file `9 + arg1` into the three slots in `g_vab_id_list` |
+| `snd_CloseVab1`, `snd_CloseListedVabs`, `snd_StopAllVoicesAndCloseSlotVab`, `snd_StopAllVoicesAndCloseSelectedEntryVabs`, `snd_StopAllVoicesAndClosePairedFileVabs`, `snd_StopAllVoicesAndCloseSingleFileVab`, `snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb` | `SsVabClose` on fixed slots (`snd_StopAllVoicesAndCloseSlotVab(a0)`: slot `3*a0 + 1`; `snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb`: slots 1..15, plus reverb off and a pool reset), clearing their records |
 | `snd_SetReverb(n)` / `snd_StopVoicesAndReverb` | set reverb type `D_8009AD1C[n][0]` (`SpuClearReverbWorkArea`, `SsUtReverbOn`) and depth `2n + 1` / reverb off |
 
 ## One-shot sounds
