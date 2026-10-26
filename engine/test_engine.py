@@ -13419,11 +13419,20 @@ def test_move_tu() -> None:
                 '    "cmd": "python3 notes.py build --tu comb",\n'
                 '    "subject": "docs: notes (comb)", "inputs": ["src/comb.c"]}\n}\n'),
             "docs/naming/runtime/evidence/comb.tsv": "generated note\n",
+            "docs/naming/runtime/evidence/gpu.tsv": "orphaned generated note\n",
         }
+        quoted_commands = [f"python3 notes.py build --tu{sep}{quote}{tu}{quote} --verbose"
+                           for sep in (" ", "=") for quote in ("'", '"')
+                           for tu in ("comb", "comb_extra")]
+        quoted_entries = "".join(
+            '    ' + json.dumps({"cmd": cmd}) + ',\n' for cmd in quoted_commands)
+        files["tools/lanes/lanes.json"] = files["tools/lanes/lanes.json"].replace(
+            '  "regenerate": [\n', '  "regenerate": [\n' + quoted_entries)
         for rel, t in files.items():
             Path(R, rel).parent.mkdir(parents=True, exist_ok=True)
             Path(R, rel).write_bytes(t.encode())
         git("init", "-q")
+        git("config", "core.autocrlf", "false")
         git("add", "-A")
         git("commit", "-qm", "base")
         snapshot = {rel: Path(R, rel).read_bytes() for rel in files}
@@ -13442,11 +13451,19 @@ def test_move_tu() -> None:
             old_note = "docs/naming/runtime/evidence/comb.tsv"
             new_note = f"docs/naming/runtime/evidence/{new.replace('/', '__')}.tsv"
             check("move_tu: dry run lists lanes edits and the generated note move",
-                  "lanes.json regenerate: 1 path(s), 2 command(s), 1 subject(s), 2 input(s)"
+                  "lanes.json regenerate: 1 path(s), 6 command(s), 1 subject(s), 2 input(s)"
                   in out.getvalue() and f"generated evidence: {old_note} -> {new_note}" in out.getvalue())
+            check("move_tu: dry run reports references outside rewritten lane spans",
+                  '"subject": "comb"' in out.getvalue()
+                  and '"cmd": "python3 notes.py build --tu comb"' in out.getvalue())
             edits, moves, _, leftovers = mt.plan(R, "comb", new)
             lane_text = edits.get("tools/lanes/lanes.json", b"").decode()
             entries = json.loads(lane_text or '{"regenerate": []}')["regenerate"]
+            eq("move_tu: quoted commands rewrite only whole ids",
+               [entry["cmd"] for entry in entries[:len(quoted_commands)]],
+               [cmd.replace("'comb'", f"'{new}'").replace('"comb"', f'"{new}"')
+                for cmd in quoted_commands])
+            entries = entries[len(quoted_commands):]
             eq("move_tu: lane evidence path encodes nested TU id",
                entries[0]["path"] if entries else None,
                f"docs/naming/runtime/evidence/{new.replace('/', '__')}.tsv")
@@ -13467,11 +13484,18 @@ def test_move_tu() -> None:
                         .replace('--tu=comb"', f'--tu={new}"')
                         .replace('(comb)', f'({new})')
                         .replace('"src/comb.c"', f'"src/{new}.c"') + '  "other":' + after)
+            for cmd in quoted_commands:
+                expected = expected.replace(
+                    json.dumps(cmd), json.dumps(cmd.replace("'comb'", f"'{new}'")
+                                               .replace('"comb"', f'"{new}"')))
             eq("move_tu: lane formatting and unrelated strings are byte-stable",
                lane_text, expected)
             eq("move_tu: generated evidence is a planned move", moves, {old_note: new_note})
             check("move_tu: generated evidence is not a leftover",
-                  not any(old_note in line for line in leftovers))
+                  not any(line.startswith("generated evidence with no regenerate entry:")
+                          for line in leftovers))
+            check("move_tu: lanes leftovers include unchanged fields on rewritten lines",
+                  any('"subject": "comb"' in line for line in leftovers))
             Path(R, new_note).write_bytes(b"existing target\n")
             try:
                 mt.plan(R, "comb", new)
@@ -13485,8 +13509,12 @@ def test_move_tu() -> None:
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 eq("move_tu: a dirty tree refuses", mt.main(["comb", new, "--root", td, "--apply"]), 1)
             git("checkout", "--", "src/gpu.c")
-            with contextlib.redirect_stdout(io.StringIO()):
+            applied = io.StringIO()
+            with contextlib.redirect_stdout(applied):
                 eq("move_tu: apply exits 0", mt.main(["comb", new, "--root", td, "--apply"]), 0)
+            check("move_tu: apply reports unchanged lane references",
+                  '"subject": "comb"' in applied.getvalue()
+                  and '"cmd": "python3 notes.py build --tu comb"' in applied.getvalue())
             check("move_tu: the source moved", Path(R, f"src/{new}.c").read_text() == "int comb;\n"
                   and not Path(R, "src/comb.c").exists())
             eq("move_tu: apply writes the planned lane configuration",
@@ -13525,6 +13553,18 @@ def test_move_tu() -> None:
                 eq("move_tu: an existing target refuses", mt.main(["comb", "gpu", "--root", td]), 1)
                 eq("move_tu: a missing source refuses", mt.main(["nope", "x", "--root", td]), 1)
                 eq("move_tu: a non-id target refuses", mt.main(["comb", "../x", "--root", td]), 1)
+            orphan = "docs/naming/runtime/evidence/gpu.tsv"
+            warning = f"generated evidence with no regenerate entry: {orphan}"
+            for mode in ([], ["--apply"]):
+                out = io.StringIO()
+                with contextlib.redirect_stdout(out):
+                    eq(f"move_tu: orphan evidence rename {mode} exits 0",
+                       mt.main(["gpu", "main/gpu", "--root", td, *mode]), 0)
+                check(f"move_tu: orphan evidence is reported {mode}", warning in out.getvalue())
+                eq(f"move_tu: orphan evidence stays byte-identical {mode}",
+                   Path(R, orphan).read_bytes(), snapshot[orphan])
+                check(f"move_tu: orphan evidence is not moved {mode}",
+                      not Path(R, "docs/naming/runtime/evidence/main__gpu.tsv").exists())
         finally:
             os.chdir(cwd)
         shutil.rmtree(Path(R, ".git"), ignore_errors=True)

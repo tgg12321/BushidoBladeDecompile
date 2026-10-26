@@ -101,6 +101,7 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], dict[str, st
     edits: dict[str, bytes] = {}
     notes: list[str] = []
     moves: dict[str, str] = {}
+    old_note = f"docs/naming/runtime/evidence/{old.replace('/', '__')}.tsv"
 
     def put(rel: str, text: str) -> None:
         edits[rel] = text.encode("utf-8")
@@ -211,12 +212,24 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], dict[str, st
         if m:
             _, end = json.JSONDecoder().raw_decode(t, m.end())
             block = t[m.end():end]
-            old_note = f"docs/naming/runtime/evidence/{old.replace('/', '__')}.tsv"
             new_note = f"docs/naming/runtime/evidence/{new.replace('/', '__')}.tsv"
             block, paths = re.subn(r'("path"\s*:\s*)"' + re.escape(old_note) + r'"',
                                    lambda m: m[1] + f'"{new_note}"', block)
-            block, cmds = re.subn(r'("cmd"\s*:\s*"[^"\n]*?--tu[ =])' + re.escape(old)
-                                  + r'(?=\s|")', lambda m: m[1] + new, block)
+            cmds = 0
+
+            def lane_command(m: re.Match) -> str:
+                nonlocal cmds
+                command = json.loads(m[2])
+                command, n = re.subn(
+                    r"(?<!\S)(--tu(?:\s+|=))(?:(['\"])" + re.escape(old)
+                    + r"\2|" + re.escape(old) + r")(?=\s|$)",
+                    lambda arg: arg[1] + (arg[2] or "") + new + (arg[2] or ""),
+                    command)
+                cmds += n
+                return m[1] + json.dumps(command) if n else m[0]
+
+            block = re.sub(r'("cmd"\s*:\s*)("(?:\\.|[^"\\])*")',
+                           lane_command, block)
             block, subjects = re.subn(r'("subject"\s*:\s*"[^"\n]*?)\(' + re.escape(old)
                                       + r'\)', lambda m: m[1] + f'({new})', block)
             inputs = 0
@@ -269,6 +282,15 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], dict[str, st
     out = git(root, "grep", "-n", "-E", pat, "--", ".", ":!docs", ":!memory",
               ":!src", ":!bb2.ld", ":!tools/tu_renames.tsv", check=False)
     leftovers = [l for l in out.splitlines() if l.split(":", 1)[0] not in edits]
+    # A rewritten lanes file can still contain unrelated references, including
+    # ones on the same line as a rewritten field. Scan the resulting text.
+    if "tools/lanes/lanes.json" in edits:
+        leftovers.extend(f"tools/lanes/lanes.json:{i}:{line}"
+                         for i, line in enumerate(
+                             edits["tools/lanes/lanes.json"].decode("utf-8").splitlines(), 1)
+                         if re.search(pat, line))
+    if (root / old_note).is_file() and old_note not in moves:
+        leftovers.append(f"generated evidence with no regenerate entry: {old_note}")
     return edits, moves, notes, leftovers
 
 
