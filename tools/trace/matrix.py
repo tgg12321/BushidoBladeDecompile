@@ -5,7 +5,10 @@ Coverage cells are phase:cell pairs separated by semicolons. Unknown (?) cells
 are retained but do not count toward captures_hit. Dots are omitted within
 phase lists; a lone dot means targeted with no hits in fully covered phases.
 A dash (-) means the function was not targeted by that capture. capture_name
-and other_capture_names are recorded symbols, not current-tree names. Value rows
+and other_capture_names are recorded symbols, not current-tree names: capture_name
+is the newest capture's recorded name among those the current tree still uses
+(an identifier in src/**/*.c outside comments; a capture made on a stale build
+map records pre-rename names), else the newest capture's recorded name. Value rows
 retain JSONL order within each capture, including duplicate readings and errors.
 Value len is int(watch len) from the spec watch, 4 when the watch sets none
 (gdbtrace's own default); only an event whose watch index does not resolve
@@ -111,6 +114,16 @@ def table(text, header):
     if any(len(row) != len(rows[0]) for row in rows[1:]):
         raise InvalidCapture("inconsistent TSV row width")
     return rows
+
+
+def tree_names(root):
+    """Identifiers used in the tree's C sources, comments stripped."""
+    names = set()
+    for path in sorted((root / "src").rglob("*.c")):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        text = re.sub(r"/\*.*?\*/|//[^\n]*", " ", text, flags=re.S)
+        names.update(re.findall(r"[A-Za-z_]\w*", text))
+    return names
 
 
 def family(part):
@@ -338,7 +351,7 @@ def scenario_rows(captures, all_evidence=False):
     return rows
 
 
-def render(paths, no_name=None, all_evidence=False):
+def render(paths, no_name=None, all_evidence=False, current=frozenset()):
     captures = []
     for path in paths:
         path = Path(path)
@@ -366,7 +379,8 @@ def render(paths, no_name=None, all_evidence=False):
     coverage = [["addr", "capture_name", "other_capture_names", "no_name", "captures_hit"]
                 + [c["ident"] for c in mapped]]
     for addr, versions in sorted(functions.items()):
-        name = max(versions)[2]
+        # prefer a name the tree still uses over a stale map's retired one
+        name = max(versions, key=lambda v: (v[2] in current, v))[2]
         others = ";".join(sorted({v[2] for v in versions} - {name}))
         readings = [c["functions"].get(addr, ("", "-", False)) for c in mapped]
         coverage.append([f"0x{addr:08X}", name, others, int(addr in registry),
@@ -426,7 +440,8 @@ def main(argv=None):
         if not paths:
             raise InvalidCapture("no capture directories found")
         no_name = REPO_ROOT / args.no_name if args.no_name is not None else None
-        outputs = render(paths, no_name, all_evidence=args.all)
+        outputs = render(paths, no_name, all_evidence=args.all,
+                         current=tree_names(REPO_ROOT))
         out = REPO_ROOT / args.out
         if args.command == "check":
             expected = set(outputs)

@@ -443,6 +443,27 @@ class MatrixTest(unittest.TestCase):
         self.write(path, json.dumps(manifest))
         self.assertIn("0x80010000\told\tnew\t", matrix.render(self.paths)["coverage.tsv"])
 
+    def test_capture_name_prefers_a_name_the_tree_uses(self):
+        # b is newest; a name only the older capture recorded wins when the tree uses it
+        self.assertIn("0x80010000\told\tnew\t",
+                      matrix.render(self.paths, current={"old", "quiet"})["coverage.tsv"])
+        self.assertIn("0x80010000\tnew\told\t",
+                      matrix.render(self.paths, current={"old", "new"})["coverage.tsv"])
+        self.assertIn("0x80010000\tnew\told\t",
+                      matrix.render(self.paths, current={"quiet"})["coverage.tsv"])
+
+    def test_tree_names_skip_comments(self):
+        src = self.root / "src/main"
+        src.mkdir(parents=True)
+        self.write(src / "x.c", "/* new\n was */ void old(void) {} // gone\n"
+                   'INCLUDE_ASM("asm/funcs", kept);\n')
+        names = matrix.tree_names(self.root)
+        self.assertTrue({"old", "kept", "INCLUDE_ASM"} <= names)
+        self.assertFalse({"new", "was", "gone"} & names)
+        code, _ = self.cli("build", [self.a, self.b])
+        self.assertEqual(code, 0)
+        self.assertIn("0x80010000\told\tnew\t", (self.out / "coverage.tsv").read_text())
+
     def test_all_discovery_and_refused_leaf(self):
         runtime = self.root / "docs/naming/runtime"
         values = self.capture("docs/naming/runtime/z-values-1", 30, values=True)
