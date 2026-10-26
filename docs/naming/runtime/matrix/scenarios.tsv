@@ -1,5 +1,6 @@
 capture	scenario	extends	covers	kind	manifest_sha1	match
 group-battle-hitmap-1	group-battle-3-0	-	char:gengoro,char:jo,char:kannuki,char:kaun,char:mikado,char:tatsumi,event:ko,event:out_of_bounds,event:round_start,event:win,menu:char_select,menu:group_settings,menu:school_select,menu:team_roster,menu:top,menu:weapon_select,mode:group_battle,weapon:katana,weapon:long_sword,weapon:nodachi	hitmap	2a120a9ba7c1530ba5196b8aa876628a764f86c6	evidence
+key-config-edit-1	key-config-edit	-	event:key_config_change,menu:key_config,menu:option,menu:top	hitmap	6d9d5a0924c718b7a494202c3fcfbfc8b6fa767e	evidence
 lib-group-battle-3-0-1	group-battle-3-0	-	char:gengoro,char:jo,char:kannuki,char:kaun,char:mikado,char:tatsumi,event:ko,event:out_of_bounds,event:round_start,event:win,menu:char_select,menu:group_settings,menu:school_select,menu:team_roster,menu:top,menu:weapon_select,mode:group_battle,weapon:katana,weapon:long_sword,weapon:nodachi	hitmap,values	556ef853d788d94a181f801dc364dbcddb3f42f1	evidence
 lib-memory-card-save-load-1	memory-card-save-load	-	event:load,event:save,menu:memory_card,menu:option,menu:top	hitmap,values	9b38948415ac794bd2bc6cf577a99595e3ae84c4	evidence
 lib-menu-tour-1	menu-tour	-	event:options_change,menu:key_config,menu:memory_card,menu:option,menu:top	hitmap,values	5e196f7dca6fb1a20d533207d6d11c821f76cbf5	evidence
@@ -13,6 +14,7 @@ lib-versus-2p-shainto-cemetery-1	versus-2p-shainto-cemetery	-	char:gengoro,char:
 lib-versus-cpu-first-fight-1	versus-cpu-first-fight	-	event:ko,event:round_start,menu:char_select,menu:pause,menu:top,menu:weapon_select,mode:vs_cpu	hitmap,values	adafd83ca6967352fdf174a73b70c85e629aa5bc	evidence
 link-no-cable-1	link-no-cable	-	menu:link_wait,menu:top	hitmap	7bcfd0314b7ed7038a3f1bbc91a0d165eccccbf9	evidence
 memory-card-hitmap-1	memory-card-save-load	-	event:load,event:save,menu:memory_card,menu:option,menu:top	hitmap	34e8f835547a7b96cd09b941d2af2fe39e1e1162	evidence
+memory-card-overwrite-1	memory-card-overwrite	-	event:load,event:overwrite,event:save,menu:memory_card,menu:option,menu:top	hitmap	5493d4353f71e54f0aeceffcaf4e9553d7a93cb2	evidence
 menu-tour-hitmap-1	menu-tour	-	event:options_change,menu:key_config,menu:memory_card,menu:option,menu:top	hitmap	9f69c7bf6732fbaf2d4b034ee39590ee1509117b	evidence
 story-hitmap-1	story-first-fight	-	event:ko,event:round_start,menu:char_select,menu:rematch,menu:stage_card,menu:story_text,menu:top,menu:weapon_select,mode:story	hitmap	5dd7cf20adf06f34a9e2b8e2d3665f32fa6d4b51	evidence
 training-hitmap-1	training-ninja	-	event:round_start,menu:char_select,menu:pause,menu:top,menu:training_settings,menu:weapon_select,mode:training	hitmap	ff5ef869ddcdaa6f3448fc5266e2a1a72f7c4986	evidence
