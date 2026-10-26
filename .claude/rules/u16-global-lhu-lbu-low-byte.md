@@ -24,7 +24,7 @@ u16 word = D_800A3578;            /* lhu — sibling still needs the halfword */
 ```
 
 Little-endian: offset 0 is the low byte; GCC keeps gp-rel addressing through the cast. Use `*(s8 *)&G` for
-`lb`. Example: func_8006EC0C, 1 → 0.
+`lb`. Example: StepSlideProgressCommitPendingStateAndQueueSound, 1 → 0.
 
 ## Related
 

@@ -179,7 +179,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `D_800A3768` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
   `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590); `bb2_const.h` names
   three of the values.
-- `D_800A36A8` — a 0/1 switch that multiplies the `func_8005D554` sprite passes.
+- `D_800A36A8` — a 0/1 switch that multiplies the `gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle` sprite passes.
 - `D_800A36AC` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
   double-buffer index, `fight_UpdateRotatingViewThreeOptionChoice` / `fight_UpdateRotatingViewDecimalPresentation` use the whole value.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
@@ -194,7 +194,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `g_fight_position_records` (0x800A33B4) — pointer into the loaded block's position-record list
 - `g_loaded_resource_selector` (selector cached by `resource_LoadOrReuseSelectedBlock`), `D_8009947A` (0/1 flag),
   `g_gpu_cell_draw_attributes` — 32x32 cell grid read by the draw walks (no collision use)
-- `D_800A9A10` — three slots for the model objects `func_80045878` builds
+- `D_800A9A10` — three slots for the model objects `slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock` builds
   (`slot_FindEmpty` scans i < 3)
 - `D_80094B88` — per-slot 5-bit codes `slot_RequestTimGroupsAndMarkReloadOnChange` stores and
   `slot_FinalizeObjectLoadSoundTexturesAndArena` packs into the model object's flag word

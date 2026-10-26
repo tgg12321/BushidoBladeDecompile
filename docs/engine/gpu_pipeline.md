@@ -154,7 +154,7 @@ The sprite sheets are 12-byte headers `Unk8009B0E0Record`
   with a printed warning.
 - `gpu_AddScaledSpriteQuads(arg0, mode)` (:55) is the `POLY_FT4` form.
 
-`func_80060414` (4D0A8.c) takes the screen position from the packed table
+`gpu_DrawSpriteAtPackedTablePosition` (4D0A8.c) takes the screen position from the packed table
 `D_8009B850`, picks one of the `D_8009B7AC` sheets, and draws it with
 `gpu_AddSpriteCells` plus a `DR_MODE`. `gpu_DrawDisplayModeOnLocalOtAndSync` calls
 it in overlay mode 20.

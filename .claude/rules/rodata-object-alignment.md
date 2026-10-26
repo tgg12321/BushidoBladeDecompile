@@ -49,7 +49,7 @@ commit.
 
 **Seam boundaries (owner ruling 2026-10-17).** Five game-code boundaries take existence from seam evidence
 instead of condition 1: 51268 | 596CC at func_80068ECC; 3AB48 | 43500 | 4510C | 4BC3C | 4D0A8 at func_80052D00,
-func_8005490C, snd_Init, func_8005C8A8. Each cut separates no static's or `.sdata` object's users, follows the
+func_8005490C, snd_Init, gpu_DrawModeSizedPanelWithSelectedCellOpaque. Each cut separates no static's or `.sdata` object's users, follows the
 `.sbss`/`.sdata`/`.rodata` address order and the call graph, and byte-matches with each part its own object (a
 control cut across shared statics does not). Conditions 2-4 apply; evidence in each file's top comment and
 § 15 of the evidence doc. Any other seam needs its own ruling.

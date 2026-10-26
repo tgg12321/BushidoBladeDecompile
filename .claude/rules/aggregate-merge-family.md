@@ -62,8 +62,8 @@ follow the naming-evidence rules (offset names always ok).
 
 ## Narrow per-function exceptions (Q63, Q73, Q96-Q99, Q125); nothing else may cite them
 
-Interim labels for the named functions only (owner direction 2026-10-03): each is retired, not
-extended, once a one-object spelling matches.
+Interim labels for the named functions only (owner 2026-10-03), retired, not extended, once a
+one-object spelling matches.
 
 - **D_800A37D2 / D_800A37D3 (Q63):** only after the one-array and two-member-struct whole-tree
   forms are banked failing (scratch SHA1 + differing words). Then two adjacent `u8` scalars,
@@ -72,7 +72,7 @@ extended, once a one-object spelling matches.
   `p` meeting [[pointer-alias-fake-exception]]. For fight_UpdateDefeatDelayAndModeProgress and func_8003CF84 only.
 - **D_80101EC8 per-word reads (Q73):** `D_80101FA0`, `D_80101FA8`, `D_801023EC`,
   `D_801023F4`, `D_80101FBC`, `D_80101FC4`, `D_80102408`, `D_80102410`, read by name only in
-  func_8002BC68 / fighter_CalcSeparationErrorAndOpposedOffsets, only after the three single-object spellings (direct
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance / fighter_CalcSeparationErrorAndOpposedOffsets, only after the three single-object spellings (direct
   field, typed base pointer, per-record pointer) are banked missing for the shared-base reason
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; all other accesses use
@@ -83,10 +83,10 @@ extended, once a one-object spelling matches.
   assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]
   address to `vec`'s register; cc1psx identical),
   memory/grind/judge-decl-cleanup/followups/fighter_ResolveBoneHit.vec-investigation.md.
-- **D_800A376A / D_800A376B (Q97):** func_8002738C only: the per-player byte indexed as
+- **D_800A376A / D_800A376B (Q97):** fighter_AccumulateBoneGroupFlagWhenGameModeZero only: the per-player byte indexed as
   `*(&D_800A376A + a0)`, `/* FAKE */`-annotated. Basis: the `u8 D_800A376A[2]` form only
   (source in followups/func_8002738C.c12-merge-variant.diff; func_8003B2C8 12 / func_8003B328 16
-  as reported by the cheat-sweep lane, scores not banked). No struct form was measured: open debt
+  per the cheat-sweep lane, not banked). No struct form was measured: open debt
   (docs/grind/handoff-2026-09-30.md); a one-object form that matches retires Q97.
 - **D_800906A4 / D_8009060C (Q98, item 4):** declared `s16 D_800906A4[39][2]`,
   `s32 D_8009060C[38]` (StatusUpBuf retires). gpu_LatchFogDepthOnTransitionAndQueueMoves only: the pair's [1] read (twice) as
@@ -104,8 +104,8 @@ extended, once a one-object spelling matches.
   per word 4, its member reads forcing the address into $s0; (u16) word low reads 4; u16 h[2] 7;
   s16 h[2] with casts 4; aligned halves 4), scores in the fake-reduce row.
 
-Records: docs/grind/decisions.md OWNER RULING entries of 2026-08-17, 2026-09-03, 2026-09-26
-(Q7, Q13, Q14) and 2026-09-30 (Q63, Q73) and 2026-10-03 (Q96-Q99) and 2026-10-23 (Q125).
+Records: docs/grind/decisions.md OWNER RULINGs 2026-08-17, 09-03, 09-26 (Q7, Q13, Q14),
+09-30 (Q63, Q73), 10-03 (Q96-Q99), 10-23 (Q125).
 
 Related: [[aggregate-declaration-views]] · [[split-scalars-hide-aggregate]] ·
 [[header-type-correction-from-use-sites]]

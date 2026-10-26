@@ -98,7 +98,7 @@ picks sub-block k; the block must start with the count word 5 (otherwise the
 flag is cleared), and sub-block k lies at `block + (block[1 + k] & ~3)`, length
 `block[2 + k] - block[1 + k]`, copied with `mem_MoveBlockRoundedUpToWords`. It returns 1 when it
 served the read. `ndata_InvalidatePack` clears the flag (memory untouched) and
-`ndata_IsPackLoaded` returns it. `func_80044ED8` remaps ids >= 0x1F to `id - 0x1B`,
+`ndata_IsPackLoaded` returns it. `ndata_ReadRemappedIndexPackFirstElseRead` remaps ids >= 0x1F to `id - 0x1B`,
 tries the pack, and falls back to `ndata_Read`.
 
 ## File-ID → name mapping (source-side filename tables)

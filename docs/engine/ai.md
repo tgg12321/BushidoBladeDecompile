@@ -30,7 +30,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 - `object_ThrowQueuedKind(rec)` (src/main/17AFC.c:3819) takes an entry off the queue
   (index 1 instead of 0 when it holds two or more, the head equals
   `rec->unk_14` and `rec->unk_88 != -1`), spawns it through `object_SpawnFromFighter`, and plays a cue
-  through `func_80032854`. `object_DropQueuedHeadAt(rec, pos)` (src/main/17AFC.c:3853)
+  through `fight_RecordReplayEventAndDispatchSoundOrEffect`. `object_DropQueuedHeadAt(rec, pos)` (src/main/17AFC.c:3853)
   spawns the head entry at `pos`, and `object_SpawnScatteredAt(rec, kind, pos)`
   (src/main/17AFC.c:3879) spawns `kind` at `pos`; both give the object a
   random velocity and spin from `rng_Next`.
@@ -45,7 +45,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   record's `move_kind` / `move_frame` values.
 - Pool cleanup: `object_ResetPool` (src/main/17AFC.c:3719) frees all twelve
   slots (called at src/main/9F9C.c:1769); `object_FreeAttachedObjects`
-  (src/main/17AFC.c:3764) frees objects with `is_attached != 0` and `func_80030D04`
+  (src/main/17AFC.c:3764) frees objects with `is_attached != 0` and `object_ClearFixedKindRange`
   (src/main/17AFC.c:3967) frees kinds 0x12..0x1D (both called at
   src/main/9F9C.c:1180-1181).
 
@@ -86,11 +86,11 @@ an opponent order; the code does not name it.
 
 ## Standalone helpers
 
-- `func_8003032C(a0, a1)` (src/main/17AFC.c:3694) takes the angle
+- `math_ReflectAndDampRecordVector(a0, a1)` (src/main/17AFC.c:3694) takes the angle
   `ratan2(a1[0], a1[2])`, rotates the X/Z pair at `a0[0x11]` / `a0[0x13]`
   into that angle's frame (`>> 12`), negates the second component, rotates back
   with `>> 15` (an eighth of the magnitude), and divides `a0[0x12]` by four. No direct caller appears in `src/`.
-- `func_80027640(rec)` (src/main/17AFC.c:178), called from `fighter_ResolveBoneHit`
+- `fighter_RelocateAndStartEventMove(rec)` (src/main/17AFC.c:178), called from `fighter_ResolveBoneHit`
   (src/main/17AFC.c:370) when `rec->unk_0C == 0xD`, moves the fighter's
   positions (`world_pos`, `base_pos`, `collision_pos`) to a target: with
   `D_800A36A4 == 3` a percentage blend from the fighter's position toward the

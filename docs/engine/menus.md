@@ -96,12 +96,12 @@ Cited by function name.
 
 ## The selection screen (src/main/5ED34.c)
 
-- `func_8006EACC(arg0, pad)` (src/main/5ED34.c:216) keeps the pad word in
-  `D_800A354C`, runs `func_8006EC0C`, calls `func_8006F528`
+- `StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pad)` (src/main/5ED34.c:216) keeps the pad word in
+  `D_800A354C`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
   (src/main/5ED34.c:503) unless the screen mode
   `D_800A3580` is 2 or 3, and calls `D_8009BC1C[D_800A3580]`; it returns
   `D_800A35A0`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1307).
-- `func_8006EC0C` (src/main/5ED34.c:249) slides `D_800A3570` by 0x20 a frame:
+- `StepSlideProgressCommitPendingStateAndQueueSound` (src/main/5ED34.c:249) slides `D_800A3570` by 0x20 a frame:
   states 1 / 3 (low byte of `D_800A3578`) slide in to 0x1E8 and then switch
   `D_800A3580` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5
   as they start.

@@ -31,10 +31,10 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `43500.c` | 0x80052D00 | 16 functions: the stage-collision grid walk `collision_WalkSegmentGrid` and its tests and accessors (`collision_TestSegmentWithWork`), then the motion-sequence loader `motion_StartPlayback` ([motion.md](motion.md)) |
 | `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`motion_UpdatePlayback`) and CPU navigation (`fighter_UpdateCpuNavigationChooseScriptsAndHeldInput`) ([motion.md](motion.md)) |
 | `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `snd_QueueSound` / `snd_FlushSoundQueue` ([sound.md](sound.md)) |
-| `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`func_8005C8A8` .. `func_80060768`) |
+| `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`gpu_DrawModeSizedPanelWithSelectedCellOpaque` .. `gpu_DrawIndexedCellsDigitPairsAndGrowingBars`) |
 | `51268.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |
 | `596CC.c` | 0x80068ECC | 48 functions: the row menu (`menu_LoadResourcesInitStateSelectFirstEnabledRow`, `menu_HandleOptionMenuChoices`) and `gpu_InitPrimBufferPair` ([menus.md](menus.md)) |
-| `5ED34.c` | 0x8006E534 | `func_8006E534` .. `func_80073200` (`menu_UpdateEntryGridCursors`, [replay.md](replay.md)) |
+| `5ED34.c` | 0x8006E534 | `InitDisplayStateLoadPackAndSetEntryFlags` .. `gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer` (`menu_UpdateEntryGridCursors`, [replay.md](replay.md)) |
 | `63D2C.c` | 0x8007352C | 5 functions: the sprite walkers `gpu_AddSpriteCells` / `gpu_AddScaledSpriteQuads` ([gpu_pipeline.md](gpu_pipeline.md)) |
 | `64FD8.c` | 0x800747D8 | `menu_HandleSelPhase0CursorInput` .. `StepScrollingSpriteDisplay`, the character-select screen among them |
 

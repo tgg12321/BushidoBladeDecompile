@@ -797,9 +797,9 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # general phantom-frame-slot family, no family extension.
     "gpu_LoadTimGroupSplitOffset": frozenset({("pre_pad", 8)}),
     # 2026-09-29 owner ruling Q35 (no-new-park-categories.md, phantom-frame-slot
-    # pad family, trailing unused array with sibling evidence): func_8005E54C's
+    # pad family, trailing unused array with sibling evidence): gpu_DrawPackedComparisonRowsAndTotals's
     # 8 untouched bytes at sp+0x58 = descriptor + 0x30, the s16[3] digit slot of
-    # its COMPLETED siblings func_8005D814 / func_8005F1C8
+    # its COMPLETED siblings gpu_DrawTimeFieldsAndDecimalCounter / gpu_DrawPairedMarkRowsAndTimeFields
     # (pre-slim-2026-10-01:memory/grind/func_8005E54C/frame_census.txt, evidence.md [s4]/[s5]).
     "gpu_DrawPackedComparisonRowsAndTotals": frozenset({("digit", 3)}),
 }

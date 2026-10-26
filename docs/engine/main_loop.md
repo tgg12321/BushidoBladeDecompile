@@ -76,7 +76,7 @@ start-up code, in order:
 ## The pause menu: `menu_RunPauseMenu`
 
 `menu_RunPauseMenu` (src/main/6CF8.c:312) runs its own frame loop (OT, `pad_Update`,
-`func_8005C8A8` to draw, `cdrom_Update`, `snd_FlushSoundQueue`, present) with 3
+`gpu_DrawModeSizedPanelWithSelectedCellOpaque` to draw, `cdrom_Update`, `snd_FlushSoundQueue`, present) with 3
 choices, or 6 when `D_800A38DC == 2` and `D_800A389A` is 0. Up / Down move
 the choice, Left / Right toggle bits of `D_800A3788` on choices 3..5, Cross
 confirms and Triangle cancels. Choice 1 sets `D_800A31DA = 1` and mode 8;
@@ -92,7 +92,7 @@ assigns to `D_800A3834` itself.
 | --- | --- | --- | --- |
 | 0 | `fight_Init` (src/main/9F9C.c:1757) | 1 | sets up the fight (fighters through `fighter_Init`, the object pool, the view) |
 | 1 | `fight_Update` (src/main/9F9C.c:2028) | | per-frame fight: `fighter_BuildCpuOrMappedPadState` / `fighter_Update` per fighter, `fight_UpdateFighterInteractionsAndPointCaches`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
-| 2 | `func_80033898` (src/main/17AFC.c:5273) | 3 | resets graphics, clears `D_800A37B8` |
+| 2 | `ResetGraphClearFrameCounterAndSetMainLoopHandler3` (src/main/17AFC.c:5273) | 3 | resets graphics, clears `D_800A37B8` |
 | 3 | `menu_PrintEditAndApplyConfigWithPerPadCursors` (src/main/24F08.c:28) | | prints the `D_80102778` settings with `font_Printf` and steps the two cursors `D_800A3174`; calls `ApplyPendingConfigAndInitializeMode` |
 | 4 | `replay_Start` (src/main/28708.c:1287) | 5 | view and fighter setup |
 | 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
@@ -121,7 +121,7 @@ assigns to `D_800A3834` itself.
 | 28 | `fight_InitNearestStartPairPlayback` (src/main/2B344.c:990) | 0x1D | view and scene setup |
 | 29 | `fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams` (src/main/2B344.c:1039) | 0x18 | frame-threshold cues on `D_800A37B8` |
 | 30 | `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822) | 0x1F | stores the three clock records |
-| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:868) | | on Cross or frame 0xF1 calls `func_80033FE4` (src/main/17AFC.c:5542), which sets 0x12, 0x1A or 8 |
+| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:868) | | on Cross or frame 0xF1 calls `fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank` (src/main/17AFC.c:5542), which sets 0x12, 0x1A or 8 |
 | 32 | `fight_InitRotatingViewDecimalPresentation` (src/main/2B344.c:959) | 0x21 | |
 | 33 | `fight_UpdateRotatingViewDecimalPresentation` (src/main/2B344.c:967) | 8 | |
 

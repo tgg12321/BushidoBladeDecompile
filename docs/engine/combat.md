@@ -14,7 +14,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 `move_kind`:
 
 - 0xF, 0x1C..0x21: `fight_UpdatePairedInputTotalsEventsAndMidpointEffects` (src/main/175A4.c:21) only.
-- 0x11: `func_8002C0DC` (src/main/17AFC.c:2061) only.
+- 0x11: `fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents` (src/main/17AFC.c:2061) only.
 - otherwise, in order:
   1. `fighter_TriggerOpponentResponseOnMoveFrame` (src/main/17AFC.c:736): per-fighter checks of
      `unk_0C == 0x1B` records against the opponent's state.
@@ -86,7 +86,7 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
   `unk_1EC` with the vector `D_800A37E8` is under 0x400, it plays cue 0x12,
   sets `pending_move_event = 0x1E` (and, with `src == 0`, the attacker's `pending_move_event` to 0xB
   or 0x19) and returns 0.
-- `rec->unk_0C == 0xD` (outside state 0x2E): `func_80027640`, see
+- `rec->unk_0C == 0xD` (outside state 0x2E): `fighter_RelocateAndStartEventMove`, see
   [ai.md](ai.md).
 - `move_kind` 4 or 0x14, or `unk_0C == 0x1F`: `fighter_StoreBoneLocalVectorAndArmEventTrigger`
   (src/main/9F9C.c:2779) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:238); the
@@ -131,7 +131,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
   matrix with the plane z = 0 and tests the cut segment against a second
   triangle.
 - `math_PointInTriangleXZ` (src/main/17AFC.c:3082): point in triangle.
-- `func_8002FC80` (src/main/17AFC.c:3535): the GTE cross product of
+- `math_TriangleNormalYawWithPositiveYHalfTurn` (src/main/17AFC.c:3535): the GTE cross product of
   `(a1 - a0)` and `(a2 - a0)`, returning `ratan2` of its x/z (+0x800 when y is
   positive). `fighter_IsBoneTriangleCrossYPositive` (src/main/17AFC.c:3563) takes the same cross
   product for a fighter's scratchpad points 2 and 3 about point 1 and returns
@@ -140,7 +140,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 
 ## Cues
 
-`func_80032854(who, cue, pos, dir)` (src/main/17AFC.c:4657) dispatches the
+`fight_RecordReplayEventAndDispatchSoundOrEffect(who, cue, pos, dir)` (src/main/17AFC.c:4657) dispatches the
 effect and sound cues the paths above play; sound cues are `who * 40 + id`
 (per-player blocks of 40) panned by `snd_QueuePositionalSound` (src/main/17AFC.c:4576)
 from `pos` relative to `g_listener_cam`.
