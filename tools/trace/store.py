@@ -849,7 +849,9 @@ class LegacyRecords:
         return repo_key(logical) in self.histories
 
     def qualifies(self, manifest_path, rec):
-        if "stored" in rec:
+        # A legacy record predates both flags: stored marks an offload and a
+        # store_name names a stored generation: a record with either is not legacy.
+        if "stored" in rec or "store_name" in rec:
             return False
         name = PureWindowsPath(rec["path"]).name
         if self.was_committed(manifest_path.parent / name):

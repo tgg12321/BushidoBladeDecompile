@@ -379,6 +379,17 @@ class StoreTest(unittest.TestCase):
         with patch.object(store, "git_output", side_effect=store.StoreUnverified("no blob")):
             self.assertFalse(store.inventoried_before_migration(inventory, "a/run.log", "1" * 40))
 
+    def test_legacy_record_with_store_name_is_not_legacy(self):
+        manifest_path = self.capture / "capture.manifest.json"
+        history = store.LegacyRecords(self.root / "repo")
+        history.histories = set()
+        history.manifests = {"sample/capture.manifest.json": {store.record_identity(self.rec)}}
+        self.assertTrue(history.qualifies(manifest_path, self.rec))
+        named = dict(self.rec, store_name="capture.jsonl.sha1-" + self.rec["sha1"])
+        self.assertEqual(store.record_identity(named), store.record_identity(self.rec))
+        self.assertFalse(history.qualifies(manifest_path, named))
+        self.assertFalse(history.qualifies(manifest_path, dict(self.rec, stored=True)))
+
 
 if __name__ == "__main__":
     unittest.main()
