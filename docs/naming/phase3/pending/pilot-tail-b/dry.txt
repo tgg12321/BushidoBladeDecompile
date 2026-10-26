@@ -1,0 +1,213 @@
+==============================================================================
+NAMING WAVE — 43 operations (0 RESET, 43 RENAME)
+  43 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (105) --
+  (root): 3 files, 5 substitutions
+      inline_asm_canonical.txt  (1)
+      known_psyq_stdlib.txt  (1)
+      symbol_addrs.txt  (3)
+  asm: 74 files, 165 substitutions
+      asm/funcs/InitSavedRecordAndResetCameraDistanceOffset.s  (1)
+      asm/funcs/collision_TestSegment.s  (2)
+      asm/funcs/collision_TestSegmentWithWork.s  (2)
+      asm/funcs/comb_Connect.s  (2)
+      asm/funcs/fight_SearchRadialFlatSurfacePointOrUseStartPositionPair.s  (2)
+      asm/funcs/fight_UpdateBallisticRecords.s  (1)
+      ... and 68 more
+  engine: 1 files, 2 substitutions
+      engine/test_engine.py  (2)
+  include: 1 files, 25 substitutions
+      include/bb2.h  (25)
+  src: 23 files, 137 substitutions
+      src/main/175A4.c  (1)
+      src/main/17AFC.c  (3)
+      src/main/24BF0.c  (4)
+      src/main/24F08.c  (2)
+      src/main/25788.c  (7)
+      src/main/25C38.c  (37)
+      ... and 17 more
+  tools: 3 files, 3 substitutions
+      tools/grinder/scope_allow.txt  (1)
+      tools/ra_solver/sweep.py  (1)
+      tools/ra_solver/validate.py  (1)
+
+-- .s file renames (43) --
+  asm/funcs/func_8001945C.s -> asm/funcs/pad_SetDefaultSavedButtonMappings.s
+  asm/funcs/func_80019488.s -> asm/funcs/pad_PackSavedButtonMappingLowNibbles.s
+  asm/funcs/func_800194C0.s -> asm/funcs/pad_UnpackButtonMappingNibblesToCells.s
+  asm/funcs/func_80026DA4.s -> asm/funcs/fight_UpdatePairedInputTotalsEventsAndMidpointEffects.s
+  asm/funcs/func_800343F0.s -> asm/funcs/ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests.s
+  asm/funcs/func_800344B4.s -> asm/funcs/ApplyPendingConfigAndInitializeMode.s
+  asm/funcs/func_80034708.s -> asm/funcs/menu_PrintEditAndApplyConfigWithPerPadCursors.s
+  asm/funcs/func_80034F88.s -> asm/funcs/CopyWorkingFlagsAndButtonMappingsToSavedRecord.s
+  asm/funcs/func_8003504C.s -> asm/funcs/ApplyWorkingRecordToPendingConfigAndInitializeMode.s
+  asm/funcs/func_80035280.s -> asm/funcs/CopySavedFlagsButtonMappingsAndTimesToWorkingRecord.s
+  ... and 33 more
+
+-- ledger directory renames (38) --
+  memory/grind/func_80026DA4 -> memory/grind/fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+  memory/grind/func_800344B4 -> memory/grind/ApplyPendingConfigAndInitializeMode
+  memory/grind/func_80034708 -> memory/grind/menu_PrintEditAndApplyConfigWithPerPadCursors
+  memory/grind/func_80034F88 -> memory/grind/CopyWorkingFlagsAndButtonMappingsToSavedRecord
+  memory/grind/func_8003504C -> memory/grind/ApplyWorkingRecordToPendingConfigAndInitializeMode
+  memory/grind/func_80035280 -> memory/grind/CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
+  memory/grind/func_80038C70 -> memory/grind/memcard_StepSaveOverwriteAndFormatPrompts
+  memory/grind/func_80040D48 -> memory/grind/slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+  memory/grind/func_80041188 -> memory/grind/slot_BlendTwoPosesIntoNodeMatrices
+  memory/grind/func_80054440 -> memory/grind/gte_ColorGroupedNormalStreamWithSelectedMatrices
+  ... and 28 more
+
+-- symbol-registry line deletions (3) --
+  symbol_addrs.txt:963  func_80056FE8 = 0x80056FE8; /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/
+  symbol_addrs.txt:971  func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+resource_SelectRetainedSubblockOrA
+  symbol_addrs.txt:985  func_80077D00 = 0x80077D00; /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
+
+-- JSON key/field edits (39) --
+  engine/deferred.json: 3 changes
+      func_80038C70
+      func_80041188
+      func_80040D48
+  memory/grind/func_80026DA4/layer2.jsonl: 1 changes
+      line 1: func func_80026DA4 -> fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+  memory/grind/func_800344B4/layer2.jsonl: 1 changes
+      line 1: func func_800344B4 -> ApplyPendingConfigAndInitializeMode
+  memory/grind/func_80034708/layer2.jsonl: 1 changes
+      line 1: func func_80034708 -> menu_PrintEditAndApplyConfigWithPerPadCursors
+  memory/grind/func_80034F88/layer2.jsonl: 1 changes
+      line 1: func func_80034F88 -> CopyWorkingFlagsAndButtonMappingsToSavedRecord
+  memory/grind/func_8003504C/layer2.jsonl: 1 changes
+      line 1: func func_8003504C -> ApplyWorkingRecordToPendingConfigAndInitializeMode
+  memory/grind/func_80035280/layer2.jsonl: 3 changes
+      line 1: func func_80035280 -> CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
+      line 2: func func_80035280 -> CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
+      line 3: func func_80035280 -> CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
+  memory/grind/func_80038C70/layer2.jsonl: 2 changes
+      line 1: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+      line 2: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+  memory/grind/func_80040D48/layer2.jsonl: 3 changes
+      line 1: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      line 2: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      line 3: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+  memory/grind/func_80041188/layer2.jsonl: 1 changes
+      line 1: func func_80041188 -> slot_BlendTwoPosesIntoNodeMatrices
+  memory/grind/func_80054440/layer2.jsonl: 1 changes
+      line 1: func func_80054440 -> gte_ColorGroupedNormalStreamWithSelectedMatrices
+  memory/grind/func_80056FE8/layer2.jsonl: 1 changes
+      line 1: func func_80056FE8 -> fighter_CalcOpponentDistanceThresholdFromTables
+  memory/grind/func_80058580/layer2.jsonl: 1 changes
+      line 1: func func_80058580 -> fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+  memory/grind/func_80074220/layer2.jsonl: 1 changes
+      line 1: func func_80074220 -> gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
+  memory/grind/_completed/func_80026DA4/layer2.jsonl: 6 changes
+      line 1: func func_80026DA4 -> fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+      line 2: func func_80026DA4 -> fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+      line 3: func func_80026DA4 -> fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+      line 4: func func_80026DA4 -> fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+      line 5: func func_80026DA4 -> fight_UpdatePairedInputTotalsEventsAndMidpointEffects
+      ... and 1 more
+  memory/grind/_completed/func_800344B4/layer2.jsonl: 1 changes
+      line 1: func func_800344B4 -> ApplyPendingConfigAndInitializeMode
+  memory/grind/_completed/func_80034708/layer2.jsonl: 1 changes
+      line 1: func func_80034708 -> menu_PrintEditAndApplyConfigWithPerPadCursors
+  memory/grind/_completed/func_80034F88/layer2.jsonl: 1 changes
+      line 1: func func_80034F88 -> CopyWorkingFlagsAndButtonMappingsToSavedRecord
+  memory/grind/_completed/func_8003504C/layer2.jsonl: 1 changes
+      line 1: func func_8003504C -> ApplyWorkingRecordToPendingConfigAndInitializeMode
+  memory/grind/_completed/func_80035280/layer2.jsonl: 1 changes
+      line 1: func func_80035280 -> CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
+  memory/grind/_completed/func_80035828/layer2.jsonl: 1 changes
+      line 1: func func_80035828 -> menu_UpdateRowMenuAndSubflows
+  memory/grind/_completed/func_800388A8/layer2.jsonl: 2 changes
+      line 1: func func_800388A8 -> menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
+      line 2: func func_800388A8 -> menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
+  memory/grind/_completed/func_80038988/layer2.jsonl: 2 changes
+      line 1: func func_80038988 -> memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
+      line 2: func func_80038988 -> memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
+  memory/grind/_completed/func_80038C70/layer2.jsonl: 5 changes
+      line 1: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+      line 2: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+      line 3: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+      line 4: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+      line 5: func func_80038C70 -> memcard_StepSaveOverwriteAndFormatPrompts
+  memory/grind/_completed/func_8003984C/layer2.jsonl: 3 changes
+      line 1: func func_8003984C -> fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass
+      line 2: func func_8003984C -> fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass
+      line 3: func func_8003984C -> fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass
+  memory/grind/_completed/func_80040D48/layer2.jsonl: 8 changes
+      line 1: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      line 2: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      line 3: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      line 4: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      line 5: func func_80040D48 -> slot_SetRootTransformUpdateMatricesQueueNodesSoftbodyAndLightTarget
+      ... and 3 more
+  memory/grind/_completed/func_80041188/layer2.jsonl: 5 changes
+      line 1: func func_80041188 -> slot_BlendTwoPosesIntoNodeMatrices
+      line 2: func func_80041188 -> slot_BlendTwoPosesIntoNodeMatrices
+      line 3: func func_80041188 -> slot_BlendTwoPosesIntoNodeMatrices
+      line 4: func func_80041188 -> slot_BlendTwoPosesIntoNodeMatrices
+      line 5: func func_80041188 -> slot_BlendTwoPosesIntoNodeMatrices
+  memory/grind/_completed/func_80041430/layer2.jsonl: 3 changes
+      line 1: func func_80041430 -> slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
+      line 2: func func_80041430 -> slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
+      line 3: func func_80041430 -> slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
+  memory/grind/_completed/func_80053304/layer2.jsonl: 2 changes
+      line 1: func func_80053304 -> collision_TestSegmentExtendingShortStart
+      line 2: func func_80053304 -> collision_TestSegmentExtendingShortStart
+  memory/grind/_completed/func_8005344C/layer2.jsonl: 2 changes
+      line 1: func func_8005344C -> collision_TestSegmentExtendingShortStartWithWork
+      line 2: func func_8005344C -> collision_TestSegmentExtendingShortStartWithWork
+  memory/grind/_completed/func_80053754/layer2.jsonl: 1 changes
+      line 1: func func_80053754 -> collision_TestCellKeepingNearestHitScalarProjection
+  memory/grind/_completed/func_80053E9C/layer2.jsonl: 1 changes
+      line 1: func func_80053E9C -> collision_TestCellKeepingNearestHitGteProjection
+  memory/grind/_completed/func_80054F68/layer2.jsonl: 4 changes
+      line 1: func func_80054F68 -> motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
+      line 2: func func_80054F68 -> motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
+      line 3: func func_80054F68 -> motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
+      line 4: func func_80054F68 -> motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
+  memory/grind/_completed/func_80056FE8/layer2.jsonl: 3 changes
+      line 1: func func_80056FE8 -> fighter_CalcOpponentDistanceThresholdFromTables
+      line 2: func func_80056FE8 -> fighter_CalcOpponentDistanceThresholdFromTables
+      line 3: func func_80056FE8 -> fighter_CalcOpponentDistanceThresholdFromTables
+  memory/grind/_completed/func_80057094/layer2.jsonl: 3 changes
+      line 1: func func_80057094 -> fighter_BuildCpuRoutePadWithSurfaceProbe
+      line 2: func func_80057094 -> fighter_BuildCpuRoutePadWithSurfaceProbe
+      line 3: func func_80057094 -> fighter_BuildCpuRoutePadWithSurfaceProbe
+  memory/grind/_completed/func_80058580/layer2.jsonl: 7 changes
+      line 1: func func_80058580 -> fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+      line 2: func func_80058580 -> fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+      line 3: func func_80058580 -> fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+      line 4: func func_80058580 -> fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+      line 5: func func_80058580 -> fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+      ... and 2 more
+  memory/grind/_completed/func_80074220/layer2.jsonl: 7 changes
+      line 1: func func_80074220 -> gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
+      line 2: func func_80074220 -> gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
+      line 3: func func_80074220 -> gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
+      line 4: func func_80074220 -> gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
+      line 5: func func_80074220 -> gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
+      ... and 2 more
+  memory/grind/_completed/func_80074488/layer2.jsonl: 6 changes
+      line 1: func func_80074488 -> menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
+      line 2: func func_80074488 -> menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
+      line 3: func func_80074488 -> menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
+      line 4: func func_80074488 -> menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
+      line 5: func func_80074488 -> menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
+      ... and 1 more
+  memory/grind/_completed/func_80077D00/layer2.jsonl: 2 changes
+      line 1: func func_80077D00 -> GetWorkingRecord
+      line 2: func func_80077D00 -> GetWorkingRecord
+
+-- OUT OF SCOPE / manual follow-up (7) --
+  ~ tools/grinder/grindlib.py:L2070: ['func_80041188'] in prose/docstring — NOT rewritten
+  ~ tools/grinder/grindlib.py:L2075: ['func_80041188'] in prose/docstring — NOT rewritten
+  ~ tools/grinder/grindlib.py:L2086: ['func_80038C70'] in prose/docstring — NOT rewritten
+  ~ tools/grinder/grindlib.py:L2106: ['func_80041188'] in prose/docstring — NOT rewritten
+  ~ tools/loop_movables.py:L111: ['func_80041188'] in prose/docstring — NOT rewritten
+  ~ tools/loop_movables.py:L2: ['func_80041188'] in prose/docstring — NOT rewritten
+  ~ tools/trace/scan/collision_grid.py:L2: ['func_80053754', 'func_80053E9C'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
