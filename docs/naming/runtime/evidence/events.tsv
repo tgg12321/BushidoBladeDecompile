@@ -424,6 +424,45 @@ g_fight_match_cursor	write	fight_RecordMatchResult	bout2	0x800341F4	coverage	0	1
 g_fight_match_cursor	write	fight_RecordMatchResult	bout3	0x800341F4	coverage	0	1	1	[3]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 g_fight_match_cursor	write	func_800344B4	t_roster	0x8003461C	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 g_fight_match_cursor	write	func_8003C9A4	t_rematch	0x8003CC00	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
+D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
+D_800A3817	write	func_8003C958	victory	0x8003C970	coverage	0	1	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3817	write	func_8003C9A4	post_menu	0x8003CAF4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A382D	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
+D_800A382D	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
+D_800A382D	write	func_8003C42C	result	0x8003C524	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
+D_800A3834	write	fight_AdvanceMatch	t_bout2	0x800343DC	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_AdvanceMatch	t_bout3	0x800343DC	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_AdvanceMatch	t_result	0x800342E8	coverage	0	2	1	[20]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_AdvanceMatch	t_roster	0x800343DC	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	bout1	0x8001E398	coverage	0	2	7	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	bout2	0x8001E398	coverage	0	2	2	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	bout3	0x8001E398	coverage	0	2	3	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateModeDisplaysAndMatchProgress	bout1	0x8001D2C4	coverage	0	2	6	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateModeDisplaysAndMatchProgress	bout2	0x8001D2C4	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateModeDisplaysAndMatchProgress	bout3	0x8001D2C4	coverage	0	2	2	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	sub_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_roster	0x80035D68	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003C040	result	0x8003C2A0	coverage	0	2	1	[19]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003C2C0	victory	0x8003C3E0	coverage	0	2	1	[24]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003C42C	result	0x8003C54C	coverage	0	2	1	[21]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003C560	result	0x8003C700	coverage	0	2	1	[18]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003C958	victory	0x8003C988	coverage	0	2	1	[25]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	func_8003C9A4	sub_menu	0x8003CCB8	coverage	0	2	1	[8]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	group-battle-shainto-wins-1@27428197ed01	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A38A4	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
+D_800A38A4	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
+D_800A38A4	write	func_8003C560	result	0x8003C6F8	coverage	0	1	1	[5]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+g_fight_match_cursor	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
+g_fight_match_cursor	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
+g_fight_match_cursor	write	fight_RecordMatchResult	t_bout2	0x800341F4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+g_fight_match_cursor	write	fight_RecordMatchResult	t_bout3	0x800341F4	coverage	0	1	1	[2]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+g_fight_match_cursor	write	fight_RecordMatchResult	t_result	0x800341F4	coverage	0	1	1	[3]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+g_fight_match_cursor	write	func_800344B4	t_roster	0x8003461C	coverage	0	1	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 fighter_Init	call	fight_Init	after_katze	0x8001DD90	report			18	[[0,0,0,0],[0,0,12,0],[1,1,15,3],[1,1,17,1],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	fight_Init	boot_intro	0x8001DD90	report			2	[[0,0,0,0],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	fight_Init	final_fight	0x8001DD90	report			6	[[0,0,0,0],[1,1,28,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	

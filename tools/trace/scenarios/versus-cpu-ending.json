@@ -1,0 +1,92 @@
+{
+  "description": "Vs. CPU Mode as versus-cpu-clear, with both the order's length D_800A391F and the opponent counter D_800A3783 poked to 0x14 at the fight start (a modified game: on blank cards the order holds 5): P1's first kill makes fight_AdvanceOpponentOrder take its 0x14 arm (17AFC.c:5427-5433), D_800A38A4 2 and mode 0x12: func_8003C040 / func_8003C2C0 play 20 Kills Completed! Excellent Accomplishment, Bushido Dance Temari danced by KANNUKI (P1; keyed on D_800A38A4 2 and fighter 0's unk_12; whether it differs per fighter is not shown), then mode 8 (2B344.c:742) and the top menu",
+  "covers": [
+    "mode:vs_cpu",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select",
+    "event:round_start",
+    "event:ko",
+    "event:vs_cpu_ending"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-cpu-ending-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 11800,
+  "pokes": [
+    {
+      "at": "0x800A391F",
+      "hex": "14",
+      "phase": "fight"
+    },
+    {
+      "at": "0x800A3783",
+      "hex": "14",
+      "phase": "fight"
+    }
+  ],
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START"
+  ],
+  "repeat": [
+    {
+      "from": 8360,
+      "every": 20,
+      "count": 46,
+      "steps": [
+        "+0:CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "8350:fight",
+    "9254:t_clear",
+    "9650:dance",
+    "11450:top_menu_again"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6500:char_select.first",
+    "6900:weapon_select.first",
+    "8000:t_load.mid",
+    "8350:fight.first",
+    "8600:fight.8600",
+    "8900:fight.8900",
+    "9100:fight.9100",
+    "9250:fight.last",
+    "9300:t_clear.9300",
+    "9450:t_clear.9450",
+    "9620:t_clear.last",
+    "9700:dance.9700",
+    "9850:dance.9850",
+    "10000:dance.10000",
+    "10150:dance.10150",
+    "10300:dance.10300",
+    "10450:dance.10450",
+    "10600:dance.10600",
+    "10750:dance.10750",
+    "10900:dance.10900",
+    "11050:dance.11050",
+    "11200:dance.11200",
+    "11350:dance.11350",
+    "11450:top_menu_again.first",
+    "11799:top_menu_again.last"
+  ]
+}
