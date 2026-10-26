@@ -21,6 +21,7 @@ slash-mode-1	slash-mode	-	char:kannuki,menu:char_select,menu:slash_records,menu:
 slash-mode-clear-1	slash-mode-clear	slash-mode<slash-mode-clear	event:best_time,menu:slash_records,mode:slash	hitmap,stub	d947ada6cfa88b59701e0913d950a88960e3d12f	evidence
 story-hitmap-1	story-first-fight	-	event:ko,event:round_start,menu:char_select,menu:rematch,menu:stage_card,menu:story_text,menu:top,menu:weapon_select,mode:story	hitmap	5dd7cf20adf06f34a9e2b8e2d3665f32fa6d4b51	evidence
 title-attract-1	title-attract	-	event:attract_loop,menu:title,menu:top	hitmap,values	7a887e1bd798277c5ea29f082b77464f44748a78	evidence
+top-menu-back-1	top-menu-back	-	event:movie_skip,event:top_menu_back,menu:title,menu:top	hitmap,values	230f28acd9daabf25d21fcce8c6303da82996ebe	evidence
 training-hitmap-1	training-ninja	-	event:round_start,menu:char_select,menu:pause,menu:top,menu:training_settings,menu:weapon_select,mode:training	hitmap	ff5ef869ddcdaa6f3448fc5266e2a1a72f7c4986	evidence
 versus-2p-effects-1	versus-2p-effects	-	char:gengoro,char:kannuki,event:ko,event:round_start,menu:char_select,menu:rematch,menu:stage_select,menu:top,menu:weapon_select,mode:vs_2p,stage:building_rooftop	hitmap	071e7fd4a7054a88ca92e2be9cb140eac02fcd47	evidence
 versus-2p-hidden-chihiro-1	versus-2p-hidden-chihiro	-	char:chihiro,char:gengoro,event:ko,event:round_start,menu:char_select,menu:rematch,menu:stage_select,menu:weapon_select,mode:vs_2p,stage:building_rooftop	hitmap,stub	70f74d52e27d354d7edf2b2e8ffad4baec8c6ad3	evidence
