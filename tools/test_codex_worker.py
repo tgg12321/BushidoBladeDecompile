@@ -883,6 +883,123 @@ class HarvestCasePaths(Repo):
                 commit = self.g("commit-tree", tree, "-p", "main", "-m", "build control")
                 self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
 
+    def test_nested_make_controls_require_both_reviewers(self):
+        for path in ("movovl/Makefile", "a/b/makefile", "a/GNUmakefile", "a/b/flags.mk",
+                     "a/b/FLAGS.MK", "a/MAKEFILE", "movovl/Makefile.local", "a/b/MAKEFILE.Local"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "nested make")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
+                self.assertEqual(self.harvest_tree(tree)[2], [path])
+
+    def test_root_data_inputs_require_substance_review(self):
+        for path in ("volatile_extern_allowlist.txt", "regfix.txt", "regfix_stage2.txt", "asmfix.txt",
+                     "known_psyq_stdlib.txt", "sdata_exclude.txt", "inline_asm_canonical.txt",
+                     "named_syms.txt", "undefined_funcs_auto.txt", "undefined_syms_auto.txt",
+                     "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
+                     "multu_pad_funcs.txt", "maspsx_prefill_label_funcs.txt", "maspsx_comm_syms.txt",
+                     "delay_slot_ra_funcs.txt", "frame_fix_funcs.txt", "sdata_funcs.txt", "bb2.ld",
+                     "VOLATILE_EXTERN_ALLOWLIST.TXT"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "substance input")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (["cheat-reviewer"], [path]))
+
+    def test_root_pipeline_data_requires_both_reviewers(self):
+        for path in ("bb2.sha1", "symbol_addrs.txt", "requirements.txt", "splat.yaml", ".clang-format",
+                     "BB2.SHA1", "SYMBOL_ADDRS.TXT"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "pipeline input")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
+
+    def test_root_extension_modules_require_both_reviewers(self):
+        for suffix in ("so", "cpython-312-x86_64-linux-gnu.so", "abi3.so", "pyd",
+                       "cp312-win_amd64.pyd", "cpython-312-win_amd64.pyd", "abi3.pyd", "pyc", "SO"):
+            with self.subTest(suffix=suffix):
+                path = "json." + suffix
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "extension input")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
+
+    def test_new_root_reserved_extension_modules_refused(self):
+        for path in ("json.so", "json.cpython-312-x86_64-linux-gnu.so", "json.abi3.so", "json.pyd",
+                     "engine.so", "tools.pyd", "JSON.ABI3.SO", "engine.cpython-312-win_amd64.pyd",
+                     "json.cp312-win_amd64.pyd", "json.pyc"):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, "shadows a standard-library or gate module")
+        # Ordinary new extensions and nested reserved names remain permitted.
+        for path in ("helper.so", "helper.abi3.so", "helper.pyd", "docs/json.so"):
+            with self.subTest(path=path):
+                self.assertEqual(self.harvest_tree(self.tree_with(path))[2], [path])
+
+    def test_extension_and_bytecode_initializers_mark_top_level_packages(self):
+        for suffix in ("so", "pyd", "pyc", "cpython-312-x86_64-linux-gnu.so", "abi3.so",
+                       "cpython-312-win_amd64.pyd", "cp312-win_amd64.pyd", "abi3.pyd", "SO"):
+            with self.subTest(suffix=suffix):
+                marker = "json/__init__." + suffix
+                tree = self.tree_with(marker)
+                base = self.g("commit-tree", tree, "-p", "main", "-m", "extension package")
+                changed = self.tree_with(marker, "json/helper.py")
+                commit = self.g("commit-tree", changed, "-p", base, "-m", "package contents")
+                self.assertEqual(cw.required_kinds(self.repo, commit),
+                                 (sorted(cw.KINDS), ["json/helper.py"]))
+
+    def test_root_python_paths_require_both_reviewers(self):
+        for path in ("diff_settings.py", "helper.py", "json.py", "hooks.pth",
+                     "sitecustomize.py", "usercustomize.py", "HELPER.PY", "HOOKS.PTH"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "root Python")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
+
+    def test_new_root_reserved_python_modules_refused(self):
+        for path in ("json.py", "re.py", "sys.py", "xml.py", "engine.py", "tools.py", "JSON.PY"):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, "shadows a standard-library or gate module")
+        # Pin use of Python's complete inventory rather than a hand-maintained list.
+        with mock.patch.object(sys, "stdlib_module_names", {"future_stdlib"}):
+            self.refused(self.tree_with("future_stdlib.py"), "future_stdlib.py",
+                         "shadows a standard-library or gate module")
+
+    def test_existing_root_python_modules_remain_usable(self):
+        # diff_settings.py is the real tree's sole existing root Python file.
+        # Also prove an already-present reserved name can be edited or deleted.
+        for name in ("diff_settings.py", "json.py"):
+            (self.repo / name).write_text("# existing\n", encoding="utf-8", newline="\n")
+        self.g("add", "diff_settings.py", "json.py")
+        self.g("commit", "-qm", "existing scripts")
+        self.g("update-ref", "refs/heads/main", "HEAD")
+        tree = self.tree_with("diff_settings.py", "json.py", "helper.py", "hooks.pth",
+                              "sitecustomize.py", "usercustomize.py", "docs/json.py")
+        self.assertEqual(set(self.harvest_tree(tree)[2]),
+                         {"diff_settings.py", "json.py", "helper.py", "hooks.pth",
+                          "sitecustomize.py", "usercustomize.py", "docs/json.py"})
+        self.g("rm", "json.py")
+        self.assertEqual(self.harvest_tree(self.g("write-tree"))[2], ["json.py"])
+
+    def test_top_level_package_contents_require_both_reviewers(self):
+        tree = self.tree_with("json/__init__.py", "json/helper.py")
+        commit = self.g("commit-tree", tree, "-p", "main", "-m", "new package")
+        self.assertEqual(cw.required_kinds(self.repo, commit),
+                         (sorted(cw.KINDS), ["json/__init__.py", "json/helper.py"]))
+        self.assertEqual(self.harvest_tree(tree)[2], ["json/__init__.py", "json/helper.py"])
+        # Later edits to package contents, and removal of its initializer, also route both.
+        self.g("update-ref", "refs/heads/main", commit)
+        changed = self.tree_with("json/other.py")
+        edit = self.g("commit-tree", changed, "-p", "main", "-m", "package contents")
+        self.assertEqual(cw.required_kinds(self.repo, edit), (sorted(cw.KINDS), ["json/other.py"]))
+        removed = self.g("commit-tree", self.g("rev-parse", "HEAD^{tree}"), "-p", "main",
+                         "-m", "remove package")
+        self.assertEqual(cw.required_kinds(self.repo, removed)[0], sorted(cw.KINDS))
+
+    def test_nested_python_and_nonpackage_paths_keep_code_routing(self):
+        for path in ("docs/helper.py", "docs/hooks.pth", "docs/sub/__init__.py", "plain/data.txt"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "ordinary path")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (["code-reviewer"], [path]))
+
     def test_build_control_case_variants_refused(self):
         for path, canonical in (("GNUMAKEFILE", "GNUmakefile"),
                                 ("Foo.MK", "Foo.mk"), ("MAKEFILE.Local", "Makefile.Local")):
@@ -891,9 +1008,13 @@ class HarvestCasePaths(Repo):
 
     def test_short_name_components_refused(self):
         for path in ("CLAUDE~1/x.md", "INLINE~1.TXT", "UNDEFI~1.TXT",
-                     "docs/SUBDIR~2/x.md", "docs/note~9.md"):
+                     "docs/SUBDIR~2/x.md", "docs/note~9.md", "docs/notes~2026.md"):
             with self.subTest(path=path):
                 self.refused(self.tree_with(path), path, "Windows 8.3 alias form")
+        tree = self.tree_with("docs/notes~2026.md")
+        commit = self.g("commit-tree", tree, "-p", "main", "-m", "existing broad alias")
+        self.g("update-ref", "refs/heads/main", commit)
+        self.refused(self.tree_with("docs/unrelated.md"), "docs/notes~2026.md", "Windows 8.3 alias form")
 
     def test_uppercase_ledger_function_preserves_ledger_rules(self):
         path = "memory/grind/PlayerUpdate/layer2.jsonl"
@@ -1520,6 +1641,26 @@ class LandMovingMain(unittest.TestCase):
         self.assertIn("0 locked attempts", self.last_output)
         self.assertNotIn("acquire", events)
 
+    def test_real_capped_attempt_never_calls_acquire(self):
+        cap = cw.LAND_LOCKED_ATTEMPTS
+        real_acquire = cw.acquire_land_lock
+        calls = []
+
+        def acquire(*args):
+            calls.append(args)
+            # One ordinary acquisition precedes the real budget of locked retries.
+            self.assertLessEqual(len(calls), cap + 1, "capped attempt took lock")
+            return real_acquire(*args)
+
+        with mock.patch.object(cw, "acquire_land_lock", side_effect=acquire):
+            code, events = self.land(moves=0, failure="locked-gate-move")
+        self.assertEqual(code, 2)
+        self.assertIn(f"{cap} locked attempts", self.last_output)
+        self.assertEqual(len(calls), cap + 1)
+        self.assertEqual(events.count("acquire"), cap + 1)
+        self.assertEqual(events.count("release"), cap + 1)
+        self.assertNotIn("landed", events)
+
     def test_already_landed_dry_run_no_push_requested(self):
         code, events = self.land(already=True, dry_run=True, no_push=True)
         self.assertEqual(code, 0)
@@ -1533,6 +1674,26 @@ class LandMovingMain(unittest.TestCase):
         code, events = self.land(item=("SRC/item.c",))
         self.assertEqual(code, 0)
         self.assertEqual(events.count("engine test suite"), 2)
+
+    def test_admission_and_rule_data_run_engine_suite(self):
+        # routed to the cheat-reviewer, but never exempt from the engine suite
+        for name in ("regfix.txt", "regfix_stage2.txt", "asmfix.txt",
+                     "volatile_extern_allowlist.txt", "known_psyq_stdlib.txt", "sdata_exclude.txt"):
+            with self.subTest(name=name):
+                self.assertTrue(cw.CHEAT_PATHS.match(name))
+                self.assertFalse(cw.SUITE_SKIP_PATHS.match(name))
+                code, events = self.land(item=(name,))
+                self.assertEqual(code, 0)
+                self.assertEqual(events.count("engine test suite"), 2)
+
+    def test_oracle_routes_to_both_reviewers(self):
+        self.assertTrue(cw.BOTH_PATHS.match("oracle/manifest.json"))
+
+    def test_pyw_is_an_importable_root_module(self):
+        # Windows Python imports .pyw sources (importlib.machinery.SOURCE_SUFFIXES)
+        self.assertTrue(cw.BOTH_PATHS.match("json.pyw"))
+        self.assertEqual(cw.PYTHON_MODULE.fullmatch("json.pyw")["name"], "json")
+        self.assertEqual(cw.PYTHON_MODULE.fullmatch("__init__.pyw")["name"], "__init__")
 
     def test_build_inert_prefixes_exclude_buildstamp_inputs(self):
         from engine import buildstamp

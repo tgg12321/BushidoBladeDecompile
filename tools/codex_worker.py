@@ -74,13 +74,30 @@ DATA_ONLY = re.compile(r"^(src|include|asm)/")      # what Codex may build throu
 ENGINE_READONLY = ("sandbox", "canonical", "diagnose", "dossier", "verify-oracle", "tus-check", "test",
                    "fixtures-verify", "layer2", "queue")
 ARG_OK = re.compile(r"^[A-Za-z0-9_./:=,+-]+$")
-# Decomp substance (bytes, declarations, FAKE labels, rules, grants, per-function build rewriting):
-# the completion bar applies -> a fresh default-FAIL cheat-reviewer. The build pipeline itself
-# (Makefile, engine/, tools/) can rewrite output too -> BOTH reviewers. Anything else -> code-reviewer.
+# Decomp substance -> cheat-reviewer: src/include/asm, .claude/rules, linker/symbol
+# lists, per-function config lists, canonical/volatile admissions, legacy rewrite
+# rules and PsyQ naming evidence. Pipeline/oracle/config inputs -> BOTH reviewers:
+# engine/tools, oracle/, make controls at any depth, bb2.sha1, symbol_addrs.txt, formatting,
+# dependency/setup config, root Python modules/.pth and top-level packages (below).
+# Other paths -> code-reviewer; layer-2 ledgers remain separately managed.
 CHEAT_PATHS = re.compile(r"^(src/|include/|asm/|\.claude/rules/|inline_asm_canonical\.txt$|named_syms\.txt$|"
+                         r"(?i:volatile_extern_allowlist\.txt|known_psyq_stdlib\.txt|"
+                         r"regfix(?:_stage2)?\.txt|asmfix\.txt|sdata_exclude\.txt)$|"
                          r"undefined_syms|undefined_funcs|[^/]*_auto\.txt$|[^/]*\.ld$|[^/]*_funcs\.txt$|"
                          r"[^/]*_syms\.txt$|[^/]*_files\.txt$)")
-BOTH_PATHS = re.compile(r"^(GNUmakefile$|makefile$|Makefile(?:\.[^/]*)?$|[^/]*\.mk$|engine/|tools/)")
+# The engine suite may be skipped only for these paths (the bytes and build lists the clean
+# build itself checks). Every other path runs it, including the admission / rewrite-rule data
+# files CHEAT_PATHS routes for review: engine/test_engine.py pins e.g. that no live regfix /
+# asmfix rule file exists.
+SUITE_SKIP_PATHS = re.compile(r"^(src/|include/|asm/|\.claude/rules/|inline_asm_canonical\.txt$|"
+                              r"named_syms\.txt$|undefined_syms|undefined_funcs|[^/]*_auto\.txt$|"
+                              r"[^/]*\.ld$|[^/]*_funcs\.txt$|[^/]*_syms\.txt$|[^/]*_files\.txt$)")
+BOTH_PATHS = re.compile(r"^(Makefile(?:\.[^/]*)?$|engine/|tools/|oracle/|(?i:[^/]*\.(?:py|pyw|pyc|so|pyd|pth))$|"
+                        r"(?i:bb2\.sha1|symbol_addrs\.txt|requirements\.txt|splat\.yaml|\.clang-format)$|"
+                        r"(?i:(?:[^/]+/)*(?:GNUmakefile|makefile(?:\.[^/]*)?|[^/]*\.mk))$)")
+# Cross-platform import suffixes: Windows gates must also recognize Linux extensions.
+PYTHON_MODULE = re.compile(r"^(?P<name>[^/.]+)(?:\.(?:cpython-[^/]+|cp[0-9]+-[^/]+|abi3))?"
+                           r"\.(?:py|pyw|pyc|so|pyd)$", re.I)
 KINDS = ("cheat-reviewer", "code-reviewer")
 # The engine's layer-2 verdict ledger (owner ruling Q39): written only by `codex_worker.py layer2`
 # from a recorded reviewer verdict, so it is bookkeeping of the review, not reviewed content.
@@ -367,6 +384,8 @@ def check_tree(main, item, base, tree):
             continue
         if path in ("GNUmakefile", "makefile"):
             bad.append(f"{path} (shadows Makefile)")
+        # Deliberately broader than real 8.3 names (NAME~N.EXT): fail closed,
+        # tree-wide. One such name on main blocks every harvest, even notes~2026.md.
         if any(re.search(r"~[0-9]", part) for part in path.split("/")):
             bad.append(f"{path} (Windows 8.3 alias form)")
         folded = path.casefold()
@@ -382,6 +401,13 @@ def check_tree(main, item, base, tree):
             continue
         om, nm = meta[1:].split()[:2]
         paths.append(path)
+        # Only additions: existing root scripts (currently diff_settings.py)
+        # remain usable. Root imports run before engine gates can defend themselves.
+        module = PYTHON_MODULE.fullmatch(path)
+        if om == "000000" and module:
+            stem = module["name"].casefold()
+            if stem in sys.stdlib_module_names or stem in ("engine", "tools"):
+                bad.append(f"{path} (shadows a standard-library or gate module)")
         canonical = canonical_case(path)
         if canonical != path:
             bad.append(f"{path} (canonical spelling: {canonical})")
@@ -937,9 +963,19 @@ def diff_key(main, rev):
 def required_kinds(main, rev):
     paths = [p for p in git("diff", "--no-renames", "--name-only", "-z", f"{rev}^", rev, cwd=main).split("\0")
              if p and not LEDGER.match(p)]
+    # A top-level package can shadow imports used by root-run Python gates.
+    # Inspect Git trees, never the checkout; cover all contents and deletions too.
+    packages = set()
+    for tree in (f"{rev}^", rev):
+        for p in git("ls-tree", "-r", "--name-only", "-z", tree, cwd=main).split("\0"):
+            parts = p.casefold().split("/")
+            if len(parts) == 2:
+                module = PYTHON_MODULE.fullmatch(parts[1])
+                if module and module["name"].casefold() == "__init__":
+                    packages.add(parts[0])
     kinds = set()
     for p in paths:
-        if BOTH_PATHS.match(p):
+        if BOTH_PATHS.match(p) or p.split("/", 1)[0].casefold() in packages:
             kinds.update(KINDS)
         elif CHEAT_PATHS.match(p):
             kinds.add("cheat-reviewer")
@@ -1844,7 +1880,7 @@ def verify_gates(main, trusted, tip, paths, moved=()):
     """Gates on the exact clean tip, including build-inert naming/trace inputs; no build receipt."""
     trusted_at_tip(trusted, tip)
     wteng = str(main / "tools" / "wteng.ps1")
-    if (any(not CHEAT_PATHS.match(p) and not p.casefold().startswith("docs/")
+    if (any(not SUITE_SKIP_PATHS.match(p) and not p.casefold().startswith("docs/")
             for p in paths)
             or any(p.casefold().startswith("docs/naming/") or p.casefold().endswith(".py")
                    for p in moved)):
