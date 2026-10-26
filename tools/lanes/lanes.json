@@ -34,6 +34,14 @@
       "inputs": ["docs/naming/runtime/"]
     }
   ],
+  "tip_checks": [
+    {
+      "cmd": "python3 tools/trace/scan/notes.py check",
+      "inputs": ["docs/naming/runtime/matrix/", "tools/trace/scan/notes.py",
+                 "tools/trace/scan/facts.py", "engine/tus.py", "bb2.ld",
+                 "src/main/psxsdk/libapi/c67.c", "docs/naming/runtime/evidence/"]
+    }
+  ],
   "regenerate": [
     {
       "path": "docs/naming/function-names.csv",

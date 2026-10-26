@@ -120,6 +120,103 @@ class InputCheckTest(unittest.TestCase):
         git.assert_not_called()
 
 
+class TipCheckTest(unittest.TestCase):
+    def candidate(self, paths, commits=("first", "second"), quick=False, fail=False,
+                  dirty=False, inputs=None):
+        """Exercise build_candidate dispatch even where Git fixture creation is denied."""
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        ctx = SimpleNamespace(cfg=dict(CFG, regenerate=[], tip_checks=[{
+            "cmd": "check-tip", "inputs": inputs if inputs is not None else ["docs/runtime/"]}]),
+            load=lambda: {"lanes": {"a": {"kind": "foundation"}}})
+        state = {"fresh": False, "folded": False, "input_checked": False}
+        calls = []
+        log = io.StringIO()
+        log.name = "tip.log"
+
+        def git(*args, **kwargs):
+            if args[0] == "diff":
+                return "\n".join(paths)
+            if args[0] == "status":
+                return " M tracked.txt" if dirty and state["input_checked"] else ""
+            return "folded-tip" if state["folded"] else "tip"
+
+        def regen(*args, **kwargs):
+            state.update(fresh=True, folded=True)
+            return ["docs/evidence/fresh.tsv"]
+
+        def check_inputs(*args):
+            state["input_checked"] = True
+
+        def shell(_ctx, _ld, cmd, _log):
+            if cmd == "check-tip":
+                self.assertTrue(state["fresh"], "tip check ran before regeneration")
+                self.assertTrue(state["folded"], "tip check ran before the fold")
+                self.assertTrue(state["input_checked"], "tip check ran before input_checks")
+                calls.append(cmd)
+                return 1 if fail else 0
+            return 0
+
+        with patch.object(lanes, "run"), patch.object(lanes, "git", side_effect=git), \
+                patch.object(lanes, "replay_commit", return_value="picked") as replay, \
+                patch.object(lanes, "check_untracked"), \
+                patch.object(lanes, "regenerate", side_effect=regen), \
+                patch.object(lanes, "input_checks", side_effect=check_inputs), \
+                patch.object(lanes, "run_shell", side_effect=shell), redirect_stdout(io.StringIO()):
+            tip = lanes.build_candidate(ctx, "a", Path("candidate"), commits, "base", log,
+                                        quick_paths=paths if quick else None)
+        return ctx, tip, calls, replay.call_count
+
+    def test_candidate_tip_runs_once_after_fold_and_input_checks_on_docs_land(self):
+        ctx, tip, calls, replays = self.candidate(["docs/runtime/capture.txt"])
+        self.assertEqual(ctx.gated, "docs")
+        self.assertEqual(tip, "folded-tip")
+        self.assertEqual(replays, 2)
+        self.assertEqual(calls, ["check-tip"])
+
+    def test_candidate_tip_runs_on_quick_land(self):
+        ctx, _, calls, _ = self.candidate(["src/a.c"], quick=True, inputs=["src/"])
+        self.assertEqual(ctx.gated, "quick")
+        self.assertEqual(calls, ["check-tip"])
+
+    def test_candidate_tip_skips_unrelated_paths(self):
+        for paths in (["docs/note.txt"], ["src/a.c"]):
+            with self.subTest(paths=paths):
+                self.assertEqual(self.candidate(paths)[2], [])
+
+    def test_candidate_tip_uses_regenerated_paths(self):
+        self.assertEqual(self.candidate(["src/a.c"], inputs=["docs/evidence/"])[2],
+                         ["check-tip"])
+
+    def test_candidate_tip_failure_names_command_and_log(self):
+        with self.assertRaisesRegex(lanes.Refuse, r"tip check failed: check-tip  \(log tip.log\)") as e:
+            self.candidate(["docs/runtime/capture.txt"], fail=True)
+        self.assertEqual(e.exception.code, 4)
+
+    def test_candidate_tip_preserves_tracked_change_guard(self):
+        with self.assertRaisesRegex(lanes.Refuse, "gates left tracked changes") as e:
+            self.candidate(["docs/runtime/capture.txt"], dirty=True)
+        self.assertEqual(e.exception.code, 4)
+
+    def test_notes_configuration_covers_regeneration_inputs_and_evidence(self):
+        cfg = json.loads(Path(__file__).with_name("lanes.json").read_text(encoding="utf-8"))
+        inputs = {p for g in cfg["regenerate"] if "notes.py build" in g["cmd"]
+                  for p in g["inputs"]} | {"docs/naming/runtime/evidence/"}
+        checks = [c for c in cfg["tip_checks"]
+                  if c["cmd"] == "python3 tools/trace/scan/notes.py check"]
+        self.assertEqual(len(checks), 1)
+        self.assertEqual(set(checks[0]["inputs"]), inputs)
+
+    def test_case_insensitive_scoping_includes_regenerated_outputs(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        ctx = SimpleNamespace(cand_paths={"src/a.c"}, cfg={"tip_checks": [
+            {"cmd": "check", "inputs": ["docs/evidence/"]}]})
+        with patch.object(lanes, "run_shell", return_value=0) as run:
+            lanes.tip_checks(ctx, Path("candidate"), io.StringIO(), ["Docs/Evidence/a.tsv"])
+        self.assertEqual(run.call_count, 1)
+
+
 class GateQueueTest(unittest.TestCase):
     """Queue coverage also runs where the sandbox denies Git fixture creation."""
     def setUp(self):
@@ -1035,6 +1132,80 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
         self.assertIn("TREE REFUSED", self.last)
         self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+
+    def _tip_checks(self, inputs, body="print('TIP CHECK RAN')\n"):
+        self._main_commit("check_tip.py", body)
+        cfg = json.loads(self.main_file("tools/lanes/lanes.json"))
+        cfg["tip_checks"] = [{"cmd": "python check_tip.py", "inputs": inputs}]
+        self._main_commit("tools/lanes/lanes.json", json.dumps(cfg))
+
+    def test_tip_check_runs_once_after_regenerate_fold(self):
+        self._inputs_regen()
+        self._tip_checks(["docs/runtime/"],
+                         "from pathlib import Path\nimport subprocess\n"
+                         "assert Path('docs/runtime/events.tsv').read_text() == 'fresh\\n'\n"
+                         "assert subprocess.check_output(['git', 'show', "
+                         "'HEAD:docs/runtime/events.tsv'], text=True) == 'fresh\\n'\n"
+                         "print('TIP CHECK RAN')\n")
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/first.txt", "first\n")
+        self.commit("a", "docs/runtime/second.txt", "second\n")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("docs-only", self.last)
+        self.assertEqual(self.last.count("TIP CHECK RAN"), 1)
+        self.assertEqual(sh("rev-list", "--count", f"{before}..main", cwd=self.main), "2")
+
+    def test_tip_check_scopes_to_regenerated_output(self):
+        self._inputs_regen()
+        self._tip_checks(["docs/runtime/events.tsv"])
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/capture.txt", "capture\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(self.last.count("TIP CHECK RAN"), 1)
+
+    def test_tip_check_skips_unrelated_docs_and_build_inputs(self):
+        self._tip_checks(["docs/runtime/"])
+        self.L("s1", "open", "a")
+        for path, text in [("docs/note.txt", "note\n"), ("src/b.c", "int b;\n")]:
+            self.commit("a", path, text)
+            self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+            self.assertNotIn("$ python check_tip.py", self.last)
+            self.assertNotIn("TIP CHECK RAN", self.last)
+
+    def test_failing_tip_check_refuses_with_main_unmoved(self):
+        self._tip_checks(["docs/runtime/"], "import sys\nsys.exit(1)\n")
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/capture.txt", "capture\n")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertRegex(self.last, r"tip check failed: python check_tip.py  \(log .*\.log\)")
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+
+    def test_tip_check_tracked_edits_refuse(self):
+        self._tip_checks(["docs/runtime/"],
+                         "from pathlib import Path\nPath('shared.txt').write_text('dirty')\n")
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/capture.txt", "capture\n")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertIn("gates left tracked changes", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+
+    def test_tip_check_runs_on_quick_candidate(self):
+        self._tip_checks(["src/"])
+        self.L("s1", "open", "a")
+        base = sh("rev-parse", "main", cwd=self.main)
+        self.commit("a", "src/b.c", "int b;\n")
+        commit = sh("rev-parse", "HEAD", cwd=self.wt("a"))
+        ctx = lanes.Ctx(self.main, "s1")
+        ld = lanes.ensure_land_tree(ctx, "a")
+        log = io.StringIO()
+        log.name = "quick-tip.log"
+        with redirect_stdout(io.StringIO()):
+            lanes.build_candidate(ctx, "a", ld, [commit], base, log, quick_paths=["src/b.c"])
+        self.assertEqual(ctx.gated, "quick")
+        self.assertEqual(log.getvalue().count("TIP CHECK RAN"), 1)
 
     def _inputs_regen(self, cmd="python gen_events.py", initial="stale\n"):
         self._main_commit("docs/runtime/events.tsv", initial)

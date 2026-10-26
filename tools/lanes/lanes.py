@@ -13,6 +13,7 @@ regenerate), never when build inputs changed on both sides.
 
 Full lands wait FIFO in tmp/lanes-state/registry.json's gate_queue before reading main.
 Docs-only lands (lanes.json docs_only_paths) bypass it; quick retries keep the existing ticket.
+Scoped tip_checks run once after regeneration and input_checks, including docs-only and quick lands.
 Owners heartbeat while waiting and landing; waiters prune expired heartbeats across PID
 namespaces, as well as provably dead local PIDs.
 
@@ -1201,7 +1202,7 @@ def mergeable_paths(ctx: Ctx) -> set:
 
 def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
                     quick_paths=None) -> str:
-    """Replay the lane's commits onto `base` in the private landing worktree, gate, regenerate.
+    """Replay the lane's commits onto `base`, gate, regenerate, then check the final tip once.
     No reintegration lock is held: nothing here touches main or the lane worktree. Returns the gated tip
     (equal to `base` if every commit was already in main).
 
@@ -1263,12 +1264,25 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
         if got != ctx.cfg["oracle_sha1"]:
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
-    regenerate(ctx, lane, ld, log, docs_only=docs_only)
+    regenerated = regenerate(ctx, lane, ld, log, docs_only=docs_only)
     input_checks(ctx, ld, base, log)
+    tip_checks(ctx, ld, log, regenerated)
     if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
         raise Refuse("the gates left tracked changes in the landing worktree: "
                      + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
     return git("rev-parse", "HEAD", cwd=ld)
+
+
+def tip_checks(ctx: Ctx, ld: Path, log, regenerated):
+    """Check HEAD once for inputs touched by the candidate or regenerated outputs."""
+    paths = set(ctx.cand_paths) | set(regenerated)
+    for check in ctx.cfg.get("tip_checks", []):
+        if not any(p.casefold().startswith(prefix.casefold())
+                   for p in paths for prefix in check["inputs"]):
+            continue
+        cmd = check["cmd"]
+        if run_shell(ctx, ld, cmd, log) != 0:
+            raise Refuse(f"tip check failed: {cmd}  (log {log.name})", 4)
 
 
 def input_checks(ctx: Ctx, ld: Path, base: str, log):
@@ -1303,7 +1317,7 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
     Entries with inputs run only when the candidate's pre-regeneration paths touch an input
     prefix (excluding the output itself), including on docs-only lands. Thus a failing runtime
     events build refuses only lands touching its capture inputs. Entries without inputs keep
-    running on every non-docs land and never on docs-only lands."""
+    running on every non-docs land and never on docs-only lands. Returns changed output paths."""
     changed = []
     for g in ctx.cfg.get("regenerate", []):
         if "inputs" in g:
@@ -1318,7 +1332,7 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
         if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
             changed.append(g)
     if not changed:
-        return
+        return []
     old = git("rev-parse", "HEAD", cwd=ld)
     if old in ctx.replayed.values() and git_ok("diff", "--cached", "--quiet", "HEAD~1", cwd=ld):
         # the commit changed only regenerated files, and regeneration undid that: drop it (its
@@ -1344,6 +1358,7 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
         how = "own commit"
     for g in changed:
         print(f"lanes:   regenerated {g['path']} ({how})")
+    return [g["path"] for g in changed]
 
 
 def sync_main_with_remote(ctx: Ctx, remote: str):
