@@ -530,6 +530,24 @@ class PublicationGitTest(unittest.TestCase):
         self.git("commit", "-m", "Case variant fixture")
         self.assertIn("case-variant runtime root", self.command("check-commit", "--rev", "HEAD")[1])
 
+    def test_windows_alias_output_name_is_refused_in_both_commands(self):
+        manifest = self.seal()
+        self.commit_manifest()
+        self.assertNotIn("Windows alias output name", self.command("check-commit")[1])
+        for name in ("capture.jsonl.", "capture.jsonl ", "capture.jsonl:x", "CAPTUR~1.JSO"):
+            with self.subTest(name=name):
+                rec = dict(manifest["outputs"][0], path="C:\\old\\sample\\" + name)
+                store.write_manifest(self.manifest_path, dict(outputs=[rec]))
+                self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+                code, output = self.command("check-commit")
+                self.assertEqual(code, 1, output)
+                self.assertIn("Windows alias output name", output)
+                self.git("commit", "-m", "Alias name fixture")
+                code, output = self.command("verify")
+                self.assertEqual(code, 1, output)
+                self.assertIn("MALFORMED", output)
+                self.assertIn("Windows alias output name", output)
+
     def test_verify_reports_nonregular_entry_and_continues(self):
         self.seal()
         self.git("add", "--", self.capture.relative_to(self.repo).as_posix())

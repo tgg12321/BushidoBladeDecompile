@@ -138,6 +138,18 @@ class StoreTest(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(store.StoreUnverified):
                 store.resolve(self.capture, name)
 
+    def test_windows_alias_names(self):
+        for name in ("capture.jsonl.", "capture.jsonl ", "capture.jsonl:x",
+                     "CAPTUR~1.JSO", "captur~12", "a~1.png"):
+            with self.subTest(name=name):
+                self.assertTrue(store.alias_name(name))
+                with self.assertRaisesRegex(store.StoreUnverified, "invalid capture filename"):
+                    store.resolve(self.capture, name)
+        for name in ("capture.jsonl", "capture.a.png", "capture.mc1.mcd",
+                     "capture.script.log", "diff~1.png.png", "longname~1.png"):
+            with self.subTest(name=name):
+                self.assertFalse(store.alias_name(name))
+
     def test_existing_local_outside_repo_is_read_without_store_lookup(self):
         outside = self.root / "outside"
         outside.mkdir()

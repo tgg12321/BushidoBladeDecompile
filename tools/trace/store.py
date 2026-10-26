@@ -90,6 +90,14 @@ def is_bulk(name):
     return name == "capture.jsonl" or name.endswith((".png", ".script.log", ".mcd"))
 
 
+def alias_name(name):
+    """Windows drops a trailing dot or space, opens a stream at ':' and may
+    read NAME~N.EXT as an 8.3 short name: such a name can reach another file
+    than the one it spells (and "capture.jsonl." escapes is_bulk)."""
+    return (name != name.rstrip(". ") or ":" in name or
+            re.fullmatch(r"[^.]{1,6}~[0-9]+(\.[^.]{0,3})?", name) is not None)
+
+
 def verify(path, manifest_rec):
     """Require and check SHA1 plus runkit.file_rec's size (or bytes)."""
     size = manifest_rec.get("size", manifest_rec.get("bytes"))
@@ -145,7 +153,8 @@ def resolve(capture_dir, name, manifest=None, allow_local=True):
     Index readers disable allow_local so an untracked working file cannot
     substitute for an indexed capture.
     """
-    if not isinstance(name, str) or name in ("", ".", "..") or "/" in name or "\\" in name or PureWindowsPath(name).drive:
+    if (not isinstance(name, str) or name in ("", ".", "..") or "/" in name or "\\" in name
+            or PureWindowsPath(name).drive or alias_name(name)):
         raise StoreUnverified(f"invalid capture filename: {name!r}")
     capture_dir = Path(capture_dir).resolve()
     local = capture_dir / name
@@ -941,6 +950,8 @@ def check_commit(root, revision=None):
                     failed += 1
             for rec in new_records:
                 name = PureWindowsPath(rec["path"]).name
+                if alias_name(name):
+                    raise StoreUnverified(f"{name!r}: Windows alias output name")
                 if not is_bulk(name):
                     continue
                 logical = path.parent / name
@@ -1017,6 +1028,10 @@ def verify_tree(root):
                 failed += 1
                 continue
             name = PureWindowsPath(rec["path"]).name
+            if alias_name(name):
+                print(f"MALFORMED {path}: Windows alias output name {name!r}")
+                failed += 1
+                continue
             if not is_bulk(name) or recorded_absence(rec):
                 continue
             try:
