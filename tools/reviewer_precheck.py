@@ -22,7 +22,7 @@ import json
 import re
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 ROOT = Path(__file__).resolve().parent.parent
 RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt"]
@@ -104,6 +104,11 @@ def diff_files(staged: bool, commit: str | None) -> list[str]:
     return [l.strip() for l in out.splitlines() if l.strip()]
 
 
+def absolute_file_stem(file_stem: str | None) -> bool:
+    return bool(file_stem and (PurePosixPath(file_stem).anchor
+                              or PureWindowsPath(file_stem).anchor))
+
+
 def function_body(func: str, file_stem: str | None,
                   commit: str | None = None) -> tuple[str, str] | None:
     """(path, body) for the function. When `commit` is given, read src/*.c via
@@ -111,6 +116,9 @@ def function_body(func: str, file_stem: str | None,
     working tree. Bugfix 2026-06-22: previously always read working tree, which
     meant the worker-side precheck gate (lane.ps1) saw MAIN's still-pinned src
     instead of the worker's clean candidate — false-positive on every submit."""
+    # --file is a src-relative stem, on both host and target platforms.
+    if absolute_file_stem(file_stem):
+        return None
     sys.path.insert(0, str(ROOT / "tools"))
     try:
         from sweep_variants import AmbiguousDefinition, find_function_span
@@ -194,9 +202,12 @@ def main() -> int:
                       "asm_blocks": len(asms),
                       "hardcoded_dollarN_asm": len(hard_n)}
     else:
+        missing_note = ("absolute --file not accepted; pass a src-relative stem"
+                        if absolute_file_stem(a.file) else
+                        "function body not found in working tree "
+                        "(whole-body glabel asm or wrong --file?)")
         ck["body"] = {"file": None,
-                      "note": "\n".join(body_errors) or "function body not found in working tree "
-                              "(whole-body glabel asm or wrong --file?)"}
+                      "note": "\n".join(body_errors) or missing_note}
 
     # 3. Diff-scoped checks
     files = diff_files(a.staged, a.commit)

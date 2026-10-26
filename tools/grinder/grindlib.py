@@ -2260,7 +2260,7 @@ def _module_mates(root, func, proven):
                     where = ", ".join(ambiguous)
                 else:
                     where = next((f"src/{f}" for f, spans in candidates if spans), "")
-                    qs = "COMPLETED (not in queue)" if where else "not in queue"
+                    qs = "C definition (not in queue)" if where else "not in queue"
         except Exception as exc:
             qs = f"status unknown ({type(exc).__name__})"
             where = ""

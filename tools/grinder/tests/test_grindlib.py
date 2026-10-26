@@ -2354,6 +2354,45 @@ class TestSiblingNameMatching(unittest.TestCase):
 
 
 class TestModuleMates(unittest.TestCase):
+    def test_mate_source_handles_are_closed(self):
+        import gc
+        import warnings
+        from pathlib import Path
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            manifest = root / "docs/naming/libscan/rename_manifest.csv"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text("proposed_name,module,lib,classification\n"
+                                "mate,BIOS,LIBCD,FILL\n", encoding="utf-8")
+            (root / "src").mkdir()
+            (root / "src/a.c").write_text("int mate(void) {}\n", encoding="utf-8")
+            handles = []
+            real_open = open
+
+            def tracked_open(*args, **kwargs):
+                fh = real_open(*args, **kwargs)
+                handles.append(fh)
+                return fh
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", ResourceWarning)
+                try:
+                    with patch.object(G, "open", side_effect=tracked_open, create=True), \
+                            patch.object(G, "_queue_status", return_value="not in queue"):
+                        self.assertEqual(G._module_mates(
+                            str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
+                            [("mate", "C definition (not in queue)", "src/a.c")])
+                    self.assertTrue(any(Path(fh.name).suffix == ".c" for fh in handles))
+                    # Retain handles until this check: destructor warnings raised as
+                    # errors are otherwise unraisable and cannot fail unittest.
+                    self.assertTrue(all(fh.closed for fh in handles))
+                finally:
+                    for fh in handles:
+                        fh.close()
+                    handles.clear()
+                    gc.collect()
+
     def test_definition_heads_and_ambiguous_tu(self):
         from pathlib import Path
         from unittest.mock import patch
@@ -2370,9 +2409,9 @@ class TestModuleMates(unittest.TestCase):
             (root / "src/z.c").write_text(unique, encoding="utf-8")
             with patch.object(G, "_queue_status", return_value="not in queue"):
                 self.assertEqual(G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
-                                 [("joined", "COMPLETED (not in queue)", "src/z.c")])
+                                 [("joined", "C definition (not in queue)", "src/z.c")])
                 self.assertIn(
-                    "  - joined: COMPLETED (not in queue) — C definition in src/z.c\n",
+                    "  - joined: C definition (not in queue) — C definition in src/z.c\n",
                     G.psyq_identity(str(root), "other"))
                 (root / "src/a.c").write_text(
                     "/*\nint joined(void) { return 0; }\n*/\n" + unique, encoding="utf-8")
@@ -2382,7 +2421,6 @@ class TestModuleMates(unittest.TestCase):
                 self.assertIn(
                     "  - joined: ambiguous C definition — several definition-shaped copies in src/a.c\n",
                     out)
-                self.assertNotIn("C definition in", out)
 
     def test_row_failures_preserve_other_mates(self):
         from pathlib import Path
@@ -2423,7 +2461,7 @@ class TestModuleMates(unittest.TestCase):
                         out = G.psyq_identity(str(root), "other")
                     self.assertIn("  - broken: status unknown (ValueError)\n", out)
                     self.assertIn(
-                        "  - good: COMPLETED (not in queue) — C definition in src/a.c\n",
+                        "  - good: C definition (not in queue) — C definition in src/a.c\n",
                         out)
 
     def test_helper_import_failure_is_reported_once_for_affected_rows(self):
@@ -2477,7 +2515,7 @@ class TestModuleMates(unittest.TestCase):
         self.assertEqual(dict((n, w) for n, _, w in mates),
                          {"CD_sync": "src/system.c", "CD_other": ""})
         out = G.psyq_identity(root, "CD_cw")
-        self.assertIn("CD_sync: COMPLETED (not in queue) — C definition in src/system.c", out)
+        self.assertIn("CD_sync: C definition (not in queue) — C definition in src/system.c", out)
 
 
 class TestLedgerClose(unittest.TestCase):

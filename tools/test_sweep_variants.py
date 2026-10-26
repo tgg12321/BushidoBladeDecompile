@@ -4,6 +4,7 @@ import os, sys, unittest
 import contextlib
 import io
 import json
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -62,6 +63,56 @@ class TestSpan(unittest.TestCase):
 
 class TestPrecheckAmbiguity(unittest.TestCase):
     ambiguous = 'int f(void) {}\nint f(void) {}\nINCLUDE_ASM("asm/funcs", f);\n'
+
+    def test_absolute_and_drive_stems_use_missing_body_contract(self):
+        reports = []
+        for stem in ("missing", "/outside/f", r"C:\outside\f", r"C:outside\f",
+                     r"\outside\f", r"\\server\share\f"):
+            with self.subTest(stem=stem):
+                output = io.StringIO()
+                with patch.object(sys, "argv", ["precheck", "--func", "f",
+                                                 "--file", stem, "--json"]), \
+                        patch.object(Path, "exists", lambda p: p.suffix == ".c"
+                                     and p.stem != "missing"), \
+                        patch.object(Path, "read_text", return_value="int f(void) {}\n"), \
+                        patch.object(precheck, "rule_lines", return_value={}), \
+                        patch.object(precheck, "diff_files", return_value=[]), \
+                        patch.object(precheck, "diff_text", return_value=""), \
+                        contextlib.redirect_stdout(output):
+                    self.assertEqual(precheck.main(), 0)
+                report = json.loads(output.getvalue())
+                self.assertIsNone(report["checks"]["body"]["file"])
+                if stem == "missing":
+                    self.assertIn("function body not found", report["checks"]["body"]["note"])
+                else:
+                    self.assertEqual(report["checks"]["body"]["note"],
+                                     "absolute --file not accepted; pass a src-relative stem")
+                reports.append(report)
+        self.assertTrue(all(report == reports[1] for report in reports[1:]))
+
+    def test_real_outside_file_refuses_absolute_and_rooted_stems(self):
+        with tempfile.TemporaryDirectory(dir=precheck.ROOT / "tmp") as td:
+            outside = Path(td) / "f.c"
+            outside.write_text("int f(void) {}\n", encoding="utf-8")
+            root = Path(td) / "repo"
+            (root / "src").mkdir(parents=True)
+            stem = str(outside.with_suffix(""))
+            stems = [stem]
+            if os.name == "nt":
+                stems.append(os.path.splitdrive(stem)[1])
+            with patch.object(precheck, "ROOT", root):
+                for stem in stems:
+                    with self.subTest(stem=stem):
+                        self.assertTrue(Path(stem + ".c").is_file())
+                        self.assertIsNone(precheck.function_body("f", stem))
+
+    def test_commit_rejects_absolute_and_drive_stems_before_read(self):
+        for stem in ("/outside/f", r"C:\outside\f", r"C:outside\f",
+                     r"\outside\f", r"\\server\share\f"):
+            with self.subTest(stem=stem), patch.object(
+                    precheck, "read_text_at_commit", return_value="int f(void) {}\n") as read:
+                self.assertIsNone(precheck.function_body("f", stem, "candidate"))
+                read.assert_not_called()
 
     def test_commit_ambiguity_does_not_fall_through(self):
         with patch.object(precheck, "list_src_files_at_commit", return_value=["src/a.c", "src/b.c"]), \
