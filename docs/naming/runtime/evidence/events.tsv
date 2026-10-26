@@ -686,6 +686,36 @@ func_80032854	call	func_80026DA4	fight	0x800272C0	report			84	[[0,5,2149580408,0
 func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,35,528482760,0],[1,36,528482544,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[1,41,2148559524,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	report			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+D_800A3748	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site;unresolved_function
+D_800A3748	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site
+D_800A3748	write	fight_Init	t_load	0x8001E32C	coverage	0	1	1	[255]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3748	write	fight_Init	t_rematch	0x8001E32C	coverage	0	1	1	[255]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3748	write	fight_UpdateFighterInteractionsAndPointCaches	concede	0x8002C824	coverage	0	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3748	write	fight_UpdateFighterInteractionsAndPointCaches	concede_2	0x8002C84C	coverage	0	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A37D2	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site;unresolved_function
+D_800A37D2	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site
+D_800A37D2	write	func_800343F0	t_load	0x80034498	coverage	1	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A37D2	write	func_800343F0	t_load	0x800344A0	coverage	0	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A37D2	write	func_8003CF84	cutscene	0x8003D200	coverage	1	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A37D2	write	func_8003CF84	cutscene_2	0x8003D200	coverage	0	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site
+D_800A3834	write	fight_Init	t_load	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterInteractionsAndPointCaches	concede	0x8002C854	coverage	0	2	1	[28]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterInteractionsAndPointCaches	concede_2	0x8002C854	coverage	0	2	1	[28]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_800344B4	t_load	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003C958	cutscene	0x8003C988	coverage	0	2	1	[25]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003C958	cutscene_2	0x8003C988	coverage	0	2	1	[25]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003C9A4	t_rematch	0x8003CC70	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003CE18	concede	0x8003CF64	coverage	0	2	1	[29]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003CE18	concede_2	0x8003CF64	coverage	0	2	1	[29]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003CF84	cutscene	0x8003D290	coverage	0	2	1	[24]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	func_8003CF84	cutscene_2	0x8003D290	coverage	0	2	1	[24]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-2p-concede-1@7566d1d1621b	1	coverage_next_start_bound;group_has_unresolved_site
 D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
 D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
 D_800A3910	write	func_80026DA4	fight	0x800272D8	report	0	2	620	[0,1,2,3,4,5,6,7]	8	versus-2p-effects-events-1@2fa05558de81	0	partial_store

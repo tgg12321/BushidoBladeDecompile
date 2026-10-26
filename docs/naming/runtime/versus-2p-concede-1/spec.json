@@ -1,0 +1,469 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "watch": [
+    {
+      "at": "D_800A3834",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 80
+    },
+    {
+      "at": "D_800A3748",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 40
+    },
+    {
+      "at": "D_800A37D2",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 40
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A3834",
+      "len": 2
+    },
+    {
+      "at": "D_800A3748",
+      "len": 1
+    },
+    {
+      "at": "D_800A37D2",
+      "len": 2
+    },
+    {
+      "at": "D_800A38DC",
+      "len": 1
+    }
+  ],
+  "script": {
+    "end_frame": 12000,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6260,
+        "name": "t_char"
+      },
+      {
+        "frame": 6550,
+        "name": "char_select"
+      },
+      {
+        "frame": 6700,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7000,
+        "name": "t_stage"
+      },
+      {
+        "frame": 7175,
+        "name": "stage_select"
+      },
+      {
+        "frame": 7525,
+        "name": "t_load"
+      },
+      {
+        "frame": 8300,
+        "name": "fight"
+      },
+      {
+        "frame": 9000,
+        "name": "concede"
+      },
+      {
+        "frame": 9320,
+        "name": "cutscene"
+      },
+      {
+        "frame": 9920,
+        "name": "rematch_menu"
+      },
+      {
+        "frame": 10000,
+        "name": "t_rematch"
+      },
+      {
+        "frame": 10150,
+        "name": "fight_2"
+      },
+      {
+        "frame": 10900,
+        "name": "concede_2"
+      },
+      {
+        "frame": 11220,
+        "name": "cutscene_2"
+      },
+      {
+        "frame": 11850,
+        "name": "rematch_menu_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6640,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 6900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6940,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 7500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "SELECT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10000,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10900,
+        "press": [
+          "SELECT"
+        ],
+        "hold": 6,
+        "pad": 2
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6259,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6550,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 6699,
+        "name": "char_select.last"
+      },
+      {
+        "frame": 6700,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 6999,
+        "name": "weapon_select.last"
+      },
+      {
+        "frame": 7100,
+        "name": "t_stage.mid"
+      },
+      {
+        "frame": 7175,
+        "name": "stage_select.first"
+      },
+      {
+        "frame": 7524,
+        "name": "stage_select.last"
+      },
+      {
+        "frame": 7900,
+        "name": "t_load.mid"
+      },
+      {
+        "frame": 8300,
+        "name": "fight.first"
+      },
+      {
+        "frame": 8900,
+        "name": "fight.last"
+      },
+      {
+        "frame": 9000,
+        "name": "concede.9000"
+      },
+      {
+        "frame": 9050,
+        "name": "concede.9050"
+      },
+      {
+        "frame": 9100,
+        "name": "concede.9100"
+      },
+      {
+        "frame": 9150,
+        "name": "concede.9150"
+      },
+      {
+        "frame": 9250,
+        "name": "concede.9250"
+      },
+      {
+        "frame": 9300,
+        "name": "concede.9300"
+      },
+      {
+        "frame": 9350,
+        "name": "cutscene.9350"
+      },
+      {
+        "frame": 9400,
+        "name": "cutscene.9400"
+      },
+      {
+        "frame": 9450,
+        "name": "cutscene.9450"
+      },
+      {
+        "frame": 9500,
+        "name": "cutscene.9500"
+      },
+      {
+        "frame": 9550,
+        "name": "cutscene.9550"
+      },
+      {
+        "frame": 9600,
+        "name": "cutscene.9600"
+      },
+      {
+        "frame": 9650,
+        "name": "cutscene.9650"
+      },
+      {
+        "frame": 9700,
+        "name": "cutscene.9700"
+      },
+      {
+        "frame": 9750,
+        "name": "cutscene.9750"
+      },
+      {
+        "frame": 9800,
+        "name": "cutscene.9800"
+      },
+      {
+        "frame": 9850,
+        "name": "cutscene.9850"
+      },
+      {
+        "frame": 9920,
+        "name": "rematch_menu.first"
+      },
+      {
+        "frame": 9999,
+        "name": "rematch_menu.last"
+      },
+      {
+        "frame": 10150,
+        "name": "fight_2.10150"
+      },
+      {
+        "frame": 10300,
+        "name": "fight_2.10300"
+      },
+      {
+        "frame": 10450,
+        "name": "fight_2.10450"
+      },
+      {
+        "frame": 10600,
+        "name": "fight_2.10600"
+      },
+      {
+        "frame": 10750,
+        "name": "fight_2.10750"
+      },
+      {
+        "frame": 10900,
+        "name": "concede_2.10900"
+      },
+      {
+        "frame": 10950,
+        "name": "concede_2.10950"
+      },
+      {
+        "frame": 11000,
+        "name": "concede_2.11000"
+      },
+      {
+        "frame": 11050,
+        "name": "concede_2.11050"
+      },
+      {
+        "frame": 11100,
+        "name": "concede_2.11100"
+      },
+      {
+        "frame": 11150,
+        "name": "concede_2.11150"
+      },
+      {
+        "frame": 11200,
+        "name": "concede_2.11200"
+      },
+      {
+        "frame": 11250,
+        "name": "cutscene_2.11250"
+      },
+      {
+        "frame": 11300,
+        "name": "cutscene_2.11300"
+      },
+      {
+        "frame": 11350,
+        "name": "cutscene_2.11350"
+      },
+      {
+        "frame": 11400,
+        "name": "cutscene_2.11400"
+      },
+      {
+        "frame": 11450,
+        "name": "cutscene_2.11450"
+      },
+      {
+        "frame": 11500,
+        "name": "cutscene_2.11500"
+      },
+      {
+        "frame": 11550,
+        "name": "cutscene_2.11550"
+      },
+      {
+        "frame": 11600,
+        "name": "cutscene_2.11600"
+      },
+      {
+        "frame": 11650,
+        "name": "cutscene_2.11650"
+      },
+      {
+        "frame": 11700,
+        "name": "cutscene_2.11700"
+      },
+      {
+        "frame": 11750,
+        "name": "cutscene_2.11750"
+      },
+      {
+        "frame": 11850,
+        "name": "rematch_menu_2.first"
+      },
+      {
+        "frame": 11999,
+        "name": "rematch_menu_2.last"
+      }
+    ]
+  }
+}
