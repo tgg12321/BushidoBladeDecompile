@@ -1,0 +1,1 @@
+{"func": "fighter_PassesPairedMoveEntryGates", "addr": "8001FB34", "verdict": "PASS", "body_hash": "3b474dd04b3bfa13", "body_kind": "c", "file": "main/9F9C", "reviewer": "cheat-reviewer-fakeb3-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T11:09:54Z", "head": "bf43e110c", "notes": "", "renamed_from": ["func_8001FB34"]}

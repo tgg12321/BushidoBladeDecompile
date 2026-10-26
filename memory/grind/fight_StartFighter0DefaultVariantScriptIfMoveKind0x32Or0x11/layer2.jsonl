@@ -1,0 +1,1 @@
+{"func": "fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11", "addr": "8001C4C0", "verdict": "PASS", "body_hash": "16e7c4836148597f", "body_kind": "c", "file": "main/9F9C", "reviewer": "ab876d2eca6ae0220", "scope": "cheat-cleanup", "date": "2026-10-16T13:29:52Z", "head": "c6e0b139b", "notes": "", "renamed_from": ["func_8001C4C0"]}

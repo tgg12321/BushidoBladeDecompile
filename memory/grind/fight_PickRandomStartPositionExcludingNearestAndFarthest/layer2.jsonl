@@ -1,0 +1,1 @@
+{"func": "fight_PickRandomStartPositionExcludingNearestAndFarthest", "addr": "80022224", "verdict": "PASS", "body_hash": "646c7a92d072fed0", "body_kind": "c", "file": "main/9F9C", "reviewer": "abfeef45afdec8731", "scope": "cheat-cleanup", "date": "2026-10-16T14:57:49Z", "head": "7e2e150f2", "notes": "", "renamed_from": ["func_80022224"]}

@@ -66,7 +66,7 @@ glabel fight_Update
     /* F174 8001E974 00000000 */  nop
     /* F178 8001E978 05004014 */  bnez       $v0, .L8001E990
     /* F17C 8001E97C 00000000 */   nop
-    /* F180 8001E980 007A000C */  jal        func_8001E800
+    /* F180 8001E980 007A000C */  jal        fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
     /* F184 8001E984 00000000 */   nop
     /* F188 8001E988 707A0008 */  j          .L8001E9C0
     /* F18C 8001E98C 00000000 */   nop

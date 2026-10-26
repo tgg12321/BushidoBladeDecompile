@@ -165,7 +165,7 @@ glabel fighter_Init
     /* 12FE4 800227E4 01000224 */   addiu     $v0, $zero, 0x1
     /* 12FE8 800227E8 2B004216 */  bne        $s2, $v0, .L80022898
     /* 12FEC 800227EC 00000000 */   nop
-    /* 12FF0 800227F0 3889000C */  jal        func_800224E0
+    /* 12FF0 800227F0 3889000C */  jal        motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
     /* 12FF4 800227F4 21200002 */   addu      $a0, $s0, $zero
     /* 12FF8 800227F8 6666043C */  lui        $a0, (0x66666667 >> 16)
     /* 12FFC 800227FC 0A80033C */  lui        $v1, %hi(D_800A38E2)
@@ -261,7 +261,7 @@ glabel fighter_Init
     /* 13140 80022940 1000A3AF */  sw         $v1, 0x10($sp)
     /* 13144 80022944 1400A7AF */  sw         $a3, 0x14($sp)
     /* 13148 80022948 1800A8AF */  sw         $t0, 0x18($sp)
-    /* 1314C 8002294C 8988000C */  jal        func_80022224
+    /* 1314C 8002294C 8988000C */  jal        fight_PickRandomStartPositionExcludingNearestAndFarthest
     /* 13150 80022950 1000A627 */   addiu     $a2, $sp, 0x10
     /* 13154 80022954 788A0008 */  j          .L800229E0
     /* 13158 80022958 00000000 */   nop
@@ -277,7 +277,7 @@ glabel fighter_Init
     /* 1317C 8002297C 1000A3AF */  sw         $v1, 0x10($sp)
     /* 13180 80022980 1400A7AF */  sw         $a3, 0x14($sp)
     /* 13184 80022984 1800A8AF */  sw         $t0, 0x18($sp)
-    /* 13188 80022988 6C87000C */  jal        func_80021DB0
+    /* 13188 80022988 6C87000C */  jal        fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
     /* 1318C 8002298C 1000A627 */   addiu     $a2, $sp, 0x10
     /* 13190 80022990 788A0008 */  j          .L800229E0
     /* 13194 80022994 00000000 */   nop
@@ -468,7 +468,7 @@ glabel fighter_Init
     /* 13460 80022C60 04004010 */  beqz       $v0, .L80022C74
     /* 13464 80022C64 21280000 */   addu      $a1, $zero, $zero
   .L80022C68:
-    /* 13468 80022C68 5A89000C */  jal        func_80022568
+    /* 13468 80022C68 5A89000C */  jal        fighter_ResetBoneGroupHitState
     /* 1346C 80022C6C 21200002 */   addu      $a0, $s0, $zero
     /* 13470 80022C70 21280000 */  addu       $a1, $zero, $zero
   .L80022C74:

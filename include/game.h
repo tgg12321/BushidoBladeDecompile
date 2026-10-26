@@ -741,15 +741,17 @@ typedef struct {
 /* The file motion_LoadFighterData loads into g_motion_fighter_buffers[slot]
  * (slot = rec+0x4A, the load slot fighter_AssignMotionSlotAndScanDataIdNibbles
  * sets; fighters with the same model id share it). f14 is the modulus
- * func_800213A0 / motion_ResolveMoveData wrap rec+0x86 with. The u16 fields at
- * +0x4E are indices into g_motion_fighter_sections[slot].unk_00, as
- * motion_ResolveMoveData reads them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86]
- * (ids 0x7FF1/2/4), f54[rec+0x86][t] (id 0x7FF3), and f66[id -
- * 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and f18[unk_0A]
- * (func_80021A3C; Unk80101EC8Record.unk_0A, 0..26 as D_8008D538 holds and as
- * the [27][6] tables D_8008DE34 / D_8008DF78 are sized; 27 halfwords end
- * exactly at f4E) are indices into g_motion_common_sections.unk_00; both
- * readers load them with lhu. */
+ * motion_AdvanceVariantIfAtNibble4Or5Position / motion_ResolveMoveData wrap
+ * rec+0x86 with. The u16 fields at +0x4E are indices into
+ * g_motion_fighter_sections[slot].unk_00, as motion_ResolveMoveData reads them:
+ * f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4), f54[rec+0x86][t]
+ * (id 0x7FF3), and f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16
+ * (motion_GetCommonScriptAtFighterBufferOffset) and f18[unk_0A]
+ * (motion_GetCommonScriptAtFighterBufferIndexedOffset;
+ * Unk80101EC8Record.unk_0A, 0..26 as D_8008D538 holds and as the [27][6] tables
+ * D_8008DE34 / D_8008DF78 are sized; 27 halfwords end exactly at f4E) are
+ * indices into g_motion_common_sections.unk_00; both readers load them with
+ * lhu. */
 typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].unk_00 =
@@ -785,7 +787,8 @@ typedef struct Unk801027B0Rec {
 } Unk801027B0Rec; /* sizeof == 0x14 */
 
 /* s32 x/y/z triple.  Unk80101EC8Record's position-like triples are copied as
- * whole 12-byte objects (fighter_Init), and func_80021DB0 writes one through
+ * whole 12-byte objects (fighter_Init), and
+ * fight_SearchRadialFlatSurfacePointOrUseStartPositionPair writes one through
  * its out parameter. */
 typedef struct {
     s32 x, y, z;
@@ -1657,9 +1660,10 @@ typedef struct Unk80101EC8Record {
     u8 unk_34F[0x350 - 0x34F];
     s16 unk_350;
     /* index into node_GetSlotMatrixPointerArray()'s MATRIX * table and
-     * SPAD->unkA8[] (func_800204C0) */
+     * SPAD->unkA8[] (fighter_DispatchArmedBoneVectorEventAndDisarm) */
     s16 unk_352;
-    /* func_800203B4's gte_stlvnl output; func_800204C0's gte_ldlv0 input */
+    /* fighter_StoreBoneLocalVectorAndArmEventTrigger's gte_stlvnl output;
+     * fighter_DispatchArmedBoneVectorEventAndDisarm's gte_ldlv0 input */
     Vec3i32 unk_354;
     CpuRoute cpu_route; /* 0x360 */
     s32 unk_394;
@@ -1852,7 +1856,7 @@ typedef struct Rec44 {
     s32 w28;
     s32 w2C;
     /* two limit vectors; camera_UpdateTwoFighterView passes h30[p] to
-     * func_8001A67C */
+     * math_StoreFloorDiv2000XZOfPointStepTowards */
     s16 h30[2][4];
     u8 b40;
     u8 b41;
@@ -1937,12 +1941,13 @@ typedef struct Unk80101BF0Rec {
     u16 unk_A[3];
 } Unk80101BF0Rec;
 
-/* The 4-byte record func_8001CD68 fills from the frame counter D_800A3858 (30
- * per second): unk_0 = count / 1800, unk_2 = count / 30 % 60, unk_3 = count %
- * 30 * 100 / 30 (99 / 59 / 99 past 0x2BF1F). func_8005D814 draws the three as
- * two-digit numbers; func_8003C714 copies them into its save record at
- * +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills only unk_2
- * = n / 30 and unk_3 = n % 30
+/* The 4-byte record fight_SplitFrameCounterIntoMinutesSecondsHundredths fills
+ * from the frame counter D_800A3858 (30 per second): unk_0 = count / 1800,
+ * unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30 (99 / 59 / 99 past
+ * 0x2BF1F). func_8005D814 draws the three as two-digit numbers; func_8003C714
+ * copies them into its save record at +0x2D..+0x2F.
+ * fight_UpdateModeDisplaysAndMatchProgress also fills only unk_2 = n / 30 and
+ * unk_3 = n % 30
  * * 100 / 30 from a frame countdown n, for func_8005F1C8 to draw. */
 typedef struct Unk8001CD68Rec {
     s16 unk_0;

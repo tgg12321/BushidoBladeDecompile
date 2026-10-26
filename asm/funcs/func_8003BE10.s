@@ -5,7 +5,7 @@ glabel func_8003BE10
     /* 2C61C 8003BE1C 00000000 */   nop
     /* 2C620 8003BE20 225A000C */  jal        gpu_HideResetAndClear
     /* 2C624 8003BE24 00000000 */   nop
-    /* 2C628 8003BE28 3783000C */  jal        func_80020CDC
+    /* 2C628 8003BE28 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 2C62C 8003BE2C 00000000 */   nop
     /* 2C630 8003BE30 7105010C */  jal        func_800415C4
     /* 2C634 8003BE34 21200000 */   addu      $a0, $zero, $zero

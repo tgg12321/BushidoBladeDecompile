@@ -36,7 +36,7 @@ glabel func_8001EEB4
     /* F73C 8001EF3C 0A80043C */  lui        $a0, %hi(D_800A3748)
     /* F740 8001EF40 48378480 */  lb         $a0, %lo(D_800A3748)($a0)
     /* F744 8001EF44 0A002586 */  lh         $a1, 0xA($s1)
-    /* F748 8001EF48 8F86000C */  jal        func_80021A3C
+    /* F748 8001EF48 8F86000C */  jal        motion_GetCommonScriptAtFighterBufferIndexedOffset
     /* F74C 8001EF4C 00000000 */   nop
     /* F750 8001EF50 21284000 */  addu       $a1, $v0, $zero
     /* F754 8001EF54 0A80043C */  lui        $a0, %hi(D_800A3748)

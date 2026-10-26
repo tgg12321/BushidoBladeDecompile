@@ -89,7 +89,7 @@ glabel fight_Init
     /* E5F8 8001DDF8 05000224 */   addiu     $v0, $zero, 0x5
     /* E5FC 8001DDFC E724010C */  jal        ResetEntrySelectionState
     /* E600 8001DE00 1980123C */   lui       $s2, (0x80190800 >> 16)
-    /* E604 8001DE04 4E83000C */  jal        func_80020D38
+    /* E604 8001DE04 4E83000C */  jal        motion_InvalidateMarkedNdataPackAndClearSlot1Id
     /* E608 8001DE08 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
     /* E60C 8001DE0C 21800000 */  addu       $s0, $zero, $zero
     /* E610 8001DE10 21880000 */  addu       $s1, $zero, $zero
@@ -284,14 +284,14 @@ glabel fight_Init
     /* E8C8 8001E0C8 FD06010C */  jal        func_80041BF4
     /* E8CC 8001E0CC 00000000 */   nop
   .L8001E0D0:
-    /* E8D0 8001E0D0 E475000C */  jal        func_8001D790
+    /* E8D0 8001E0D0 E475000C */  jal        fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E8D4 8001E0D4 00000000 */   nop
     /* E8D8 8001E0D8 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E8DC 8001E0DC DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
     /* E8E0 8001E0E0 05000224 */  addiu      $v0, $zero, 0x5
     /* E8E4 8001E0E4 06006214 */  bne        $v1, $v0, .L8001E100
     /* E8E8 8001E0E8 03000224 */   addiu     $v0, $zero, 0x3
-    /* E8EC 8001E0EC 4176000C */  jal        func_8001D904
+    /* E8EC 8001E0EC 4176000C */  jal        snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9
     /* E8F0 8001E0F0 00000000 */   nop
     /* E8F4 8001E0F4 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E8F8 8001E0F8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -299,9 +299,9 @@ glabel fight_Init
   .L8001E100:
     /* E900 8001E100 05006214 */  bne        $v1, $v0, .L8001E118
     /* E904 8001E104 00000000 */   nop
-    /* E908 8001E108 6676000C */  jal        func_8001D998
+    /* E908 8001E108 6676000C */  jal        snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4
     /* E90C 8001E10C 00000000 */   nop
-    /* E910 8001E110 E776000C */  jal        func_8001DB9C
+    /* E910 8001E110 E776000C */  jal        motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
     /* E914 8001E114 00000000 */   nop
   .L8001E118:
     /* E918 8001E118 1080053C */  lui        $a1, %hi(D_80102778 + 0x6)
@@ -396,7 +396,7 @@ glabel fight_Init
     /* EA68 8001E268 21200000 */   addu      $a0, $zero, $zero
     /* EA6C 8001E26C 3286000C */  jal        motion_ResetVariantIndex
     /* EA70 8001E270 01000424 */   addiu     $a0, $zero, 0x1
-    /* EA74 8001E274 7986000C */  jal        func_800219E4
+    /* EA74 8001E274 7986000C */  jal        motion_GetCommonScriptAtFighterBufferOffset
     /* EA78 8001E278 21200000 */   addu      $a0, $zero, $zero
     /* EA7C 8001E27C 21200000 */  addu       $a0, $zero, $zero
     /* EA80 8001E280 21284000 */  addu       $a1, $v0, $zero
@@ -405,7 +405,7 @@ glabel fight_Init
     /* EA8C 8001E28C 261F30A4 */  sh         $s0, %lo(D_80101EC8 + 0x5E)($at)
     /* EA90 8001E290 A686000C */  jal        fighter_StartMoveScript
     /* EA94 8001E294 01000624 */   addiu     $a2, $zero, 0x1
-    /* EA98 8001E298 7986000C */  jal        func_800219E4
+    /* EA98 8001E298 7986000C */  jal        motion_GetCommonScriptAtFighterBufferOffset
     /* EA9C 8001E29C 01000424 */   addiu     $a0, $zero, 0x1
     /* EAA0 8001E2A0 01000424 */  addiu      $a0, $zero, 0x1
     /* EAA4 8001E2A4 21284000 */  addu       $a1, $v0, $zero

@@ -462,7 +462,7 @@ glabel replay_PlayFrame
     /* 2A804 8003A004 CAEC000C */  jal        func_8003B328
     /* 2A808 8003A008 00000000 */   nop
   .L8003A00C:
-    /* 2A80C 8003A00C 8B76000C */  jal        func_8001DA2C
+    /* 2A80C 8003A00C 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2A810 8003A010 00000000 */   nop
     /* 2A814 8003A014 0A80043C */  lui        $a0, %hi(D_800A3894)
     /* 2A818 8003A018 9438848C */  lw         $a0, %lo(D_800A3894)($a0)
@@ -498,7 +498,7 @@ glabel replay_PlayFrame
     /* 2A884 8003A084 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2A888 8003A088 2B006210 */  beq        $v1, $v0, .L8003A138
     /* 2A88C 8003A08C 0C000224 */   addiu     $v0, $zero, 0xC
-    /* 2A890 8003A090 8B76000C */  jal        func_8001DA2C
+    /* 2A890 8003A090 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2A894 8003A094 00000000 */   nop
     /* 2A898 8003A098 CAEC000C */  jal        func_8003B328
     /* 2A89C 8003A09C 00000000 */   nop

@@ -171,7 +171,7 @@ glabel fight_UpdatePairedMoves
     /* 1066C 8001FE6C 8000A530 */  andi       $a1, $a1, 0x80
     /* 10670 8001FE70 BC00638C */  lw         $v1, 0xBC($v1)
     /* 10674 8001FE74 80800200 */  sll        $s0, $v0, 2
-    /* 10678 8001FE78 CD7E000C */  jal        func_8001FB34
+    /* 10678 8001FE78 CD7E000C */  jal        fighter_PassesPairedMoveEntryGates
     /* 1067C 8001FE7C 2390C300 */   subu      $s2, $a2, $v1
     /* 10680 8001FE80 6A004010 */  beqz       $v0, .L8002002C
     /* 10684 8001FE84 00000000 */   nop

@@ -76,7 +76,7 @@ glabel func_8003C714
     /* 2D038 8003C838 03000229 */  slti       $v0, $t0, 0x3
     /* 2D03C 8003C83C C5FF4014 */  bnez       $v0, .L8003C754
     /* 2D040 8003C840 0400A524 */   addiu     $a1, $a1, 0x4
-    /* 2D044 8003C844 5A73000C */  jal        func_8001CD68
+    /* 2D044 8003C844 5A73000C */  jal        fight_SplitFrameCounterIntoMinutesSecondsHundredths
     /* 2D048 8003C848 1000A427 */   addiu     $a0, $sp, 0x10
     /* 2D04C 8003C84C 1000A297 */  lhu        $v0, 0x10($sp)
     /* 2D050 8003C850 01000424 */  addiu      $a0, $zero, 0x1

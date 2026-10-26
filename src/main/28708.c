@@ -1509,7 +1509,7 @@ void replay_PlayFrame(void) {
                         func_8003B328();
                     }
                 }
-                func_8001DA2C();
+                snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
                 if (D_800A3894 != 0) {
                     if (D_800A3712 != 0) {
                         func_8003B534(var_19 ? 3 : 6);
@@ -1527,7 +1527,7 @@ void replay_PlayFrame(void) {
                 D_800A3834 = 0xC;
                 break;
             }
-            func_8001DA2C();
+            snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
             func_8003B328();
             func_8003AF40(0);
             func_8003AFFC();

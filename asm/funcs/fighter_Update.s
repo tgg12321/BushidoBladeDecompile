@@ -546,7 +546,7 @@ glabel fighter_Update
     /* 14ECC 800246CC 29004010 */  beqz       $v0, .L80024774
     /* 14ED0 800246D0 00000000 */   nop
   .L800246D4:
-    /* 14ED4 800246D4 6E8F000C */  jal        func_80023DB8
+    /* 14ED4 800246D4 6E8F000C */  jal        fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface
     /* 14ED8 800246D8 21202002 */   addu      $a0, $s1, $zero
     /* 14EDC 800246DC 45004010 */  beqz       $v0, .L800247F4
     /* 14EE0 800246E0 00000000 */   nop
@@ -3190,7 +3190,7 @@ glabel fighter_Update
     /* 17554 80026D54 B3002592 */  lbu        $a1, 0xB3($s1)
     /* 17558 80026D58 C100010C */  jal        func_80040304
     /* 1755C 80026D5C 21206002 */   addu      $a0, $s3, $zero
-    /* 17560 80026D60 3081000C */  jal        func_800204C0
+    /* 17560 80026D60 3081000C */  jal        fighter_DispatchArmedBoneVectorEventAndDisarm
     /* 17564 80026D64 21202002 */   addu      $a0, $s1, $zero
     /* 17568 80026D68 7A002386 */  lh         $v1, 0x7A($s1)
     /* 1756C 80026D6C 02000224 */  addiu      $v0, $zero, 0x2

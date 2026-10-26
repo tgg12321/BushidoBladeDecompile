@@ -47,7 +47,7 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D70C 8001CF0C 0A80013C */  lui        $at, %hi(D_800A3858)
     /* D710 8001CF10 583823AC */  sw         $v1, %lo(D_800A3858)($at)
   .L8001CF14:
-    /* D714 8001CF14 5A73000C */  jal        func_8001CD68
+    /* D714 8001CF14 5A73000C */  jal        fight_SplitFrameCounterIntoMinutesSecondsHundredths
     /* D718 8001CF18 1000A427 */   addiu     $a0, $sp, 0x10
     /* D71C 8001CF1C 1000A427 */  addiu      $a0, $sp, 0x10
     /* D720 8001CF20 0A80053C */  lui        $a1, %hi(D_800A38E2)

@@ -37,7 +37,7 @@ void func_80035480(void) {
     if (D_800A31DA == 0) {
         comb_RequestClose();
     }
-    func_80020CDC();
+    motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     func_800415C4(0);
     func_800415C4(1);
     eff_ClearInitFlag();
@@ -397,7 +397,7 @@ void func_80035828(void) {
 void func_80035DC8(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
-    func_80020CDC();
+    motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     func_800415C4(0);
     func_800415C4(1);
     eff_ClearInitFlag();

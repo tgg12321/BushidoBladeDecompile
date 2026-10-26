@@ -366,8 +366,8 @@ s32 fighter_ResolveBoneHit(
     s32 code;
 
     /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached by the
-     * first's address, passed to func_800203B4 and read as vec[0..2] (Q96); as
-     * s16[3] or {x,y,z}: score 2 */
+     * first's address, passed to fighter_StoreBoneLocalVectorAndArmEventTrigger
+     * and read as vec[0..2] (Q96); as s16[3] or {x,y,z}: score 2 */
     vec = &D_800A37E8;
     var_4 = arg1->index;
     var_5 = arg1->other;
@@ -402,12 +402,12 @@ s32 fighter_ResolveBoneHit(
     }
     var_8 = arg1->move_kind;
     if (var_8 == 4 || var_8 == 0x14) {
-        func_800203B4(arg1, arg2, vec);
+        fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
         fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
         return 1;
     }
     if (arg1->unk_0C == 0x1F) {
-        func_800203B4(arg1, arg2, vec);
+        fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
         fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
         arg1->pending_move_event = 7;
         return 1;
@@ -475,7 +475,7 @@ s32 fighter_ResolveBoneHit(
     if (var_8 == 6 || var_8 == 9) {
         if (flag) {
             arg1->pending_move_event = arg1->unk_1DA ? 6 : 7;
-            func_800203B4(arg1, arg2, vec);
+            fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
             return 1;
         }
         arg1->pending_move_event = arg1->unk_1DA ? 3 : 4;
@@ -497,7 +497,7 @@ s32 fighter_ResolveBoneHit(
     case 0:
         if (flag) {
             arg1->pending_move_event = thresh > 0x400 ? 6 : 9;
-            func_800203B4(arg1, arg2, vec);
+            fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
             fighter_TryDropQueuedHeadAtBone(arg1);
             return 1;
         }
@@ -507,7 +507,7 @@ s32 fighter_ResolveBoneHit(
     case 3:
         if (flag) {
             arg1->pending_move_event = thresh > 0x400 ? 7 : 9;
-            func_800203B4(arg1, arg2, vec);
+            fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
             fighter_TryDropQueuedHeadAtBone(arg1);
             return 1;
         }
@@ -518,7 +518,7 @@ s32 fighter_ResolveBoneHit(
             return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
         }
         arg1->pending_move_event = thresh > 0x400 ? 8 : 9;
-        func_800203B4(arg1, arg2, vec);
+        fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
         fighter_TryDropQueuedHeadAtBone(arg1);
         return 1;
     case 6:

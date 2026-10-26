@@ -5,7 +5,7 @@ glabel func_80035DC8
     /* 265D4 80035DD4 00000000 */   nop
     /* 265D8 80035DD8 225A000C */  jal        gpu_HideResetAndClear
     /* 265DC 80035DDC 00000000 */   nop
-    /* 265E0 80035DE0 3783000C */  jal        func_80020CDC
+    /* 265E0 80035DE0 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 265E4 80035DE4 00000000 */   nop
     /* 265E8 80035DE8 7105010C */  jal        func_800415C4
     /* 265EC 80035DEC 21200000 */   addu      $a0, $zero, $zero

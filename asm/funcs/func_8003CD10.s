@@ -57,7 +57,7 @@ glabel func_8003CD10
   .L8003CDEC:
     /* 2D5EC 8003CDEC B0DC000C */  jal        cdrom_PauseAndWait
     /* 2D5F0 8003CDF0 00000000 */   nop
-    /* 2D5F4 8003CDF4 8B76000C */  jal        func_8001DA2C
+    /* 2D5F4 8003CDF4 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2D5F8 8003CDF8 00000000 */   nop
     /* 2D5FC 8003CDFC 08000224 */  addiu      $v0, $zero, 0x8
     /* 2D600 8003CE00 0A80013C */  lui        $at, %hi(D_800A3834)

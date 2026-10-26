@@ -155,7 +155,7 @@ void func_8003AE5C(u8 *arg0) {
     if (result >= 0) {
         D_800A37A8[D_800A37A0] = D_800A36A4;
         gpu_ResetGraphMode1();
-        func_80020D38();
+        motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         func_800602AC(result, addr);
     }
 }
@@ -167,7 +167,7 @@ void func_8003AF40(s32 arg0) {
     fighter_Init(arg0, (s8)D_80102778.unk_4[4 + arg0],
                  (s8)D_80102778.unk_4[arg0], (s8)D_80102778.unk_4[2 + arg0], 0);
     gpu_ResetGraphMode1();
-    func_80020D38();
+    motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     func_80040510(
         arg0, D_8008D578[(s8)D_80102778.unk_4[arg0]], (s32)0x80190800);
 }
@@ -177,7 +177,7 @@ void func_8003AFFC(void) {
     s32 i;
 
     gpu_ResetGraphMode1();
-    func_80020D38();
+    motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     ResetEntrySelectionState();
 
     for (i = 0; i < 2; i++) {
@@ -202,7 +202,7 @@ void func_8003B10C(s32 arg0) {
     s32 addr = (s32)0x80190800;
 
     gpu_ResetGraphMode1();
-    func_80020D38();
+    motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     ResetEntrySelectionState();
 
     resource_RequestEntryWithLinkedEntriesAndLatchCategory(
@@ -259,7 +259,7 @@ void func_8003B328(void) {
     D_80102778.unk_4[0] = v_3836;
     D_800A376A = v_36C8;
     func_80041604(0, v_36C8);
-    func_80022568(D_80101EC8);
+    fighter_ResetBoneGroupHitState(D_80101EC8);
 }
 
 s32 func_8003B3A4(u8 *arg0) {
@@ -373,7 +373,7 @@ void fight_RunCommandStream(void) {
             D_800A37A8[counter] = byte;
             D_800A3834 = 22;
             var_0 = 1;
-            func_80022568(D_80101EC8);
+            fighter_ResetBoneGroupHitState(D_80101EC8);
             D_800A3907 = 0;
             break;
         }
@@ -441,7 +441,7 @@ void func_8003B8E4(void) {
         D_800A37C0 = 500;
         D_800A38F8 = 0;
         D_800A3768 = DISP_ACTIVE;
-        func_8001D790();
+        fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
         fight_RunCommandStream();
         gpu_SetDrawEnvBg(1, 0, 0, 0);
         D_800A390D = 1;
@@ -484,7 +484,7 @@ void func_8003B9D0(void) {
     u8 flags;
 
     var_4 = 0x80190800;
-    func_8001DA2C();
+    snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
     eff_StopCommands();
     if (D_800A3768 != DISP_ACTIVE)
         gpu_HideResetAndClear();
@@ -492,10 +492,10 @@ void func_8003B9D0(void) {
         gpu_SetDispMaskOn();
     func_800174F4();
     gpu_ResetGraphMode1();
-    func_80020D38();
+    motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     if (D_800A3878[3] & 0x80) {
-        func_80020CDC();
+        motion_InvalidateMarkedNdataPackAndResetLoadCaches();
         var_4 = 0x80118800;
     }
     {
@@ -594,7 +594,7 @@ void func_8003BCB4(void) {
 void func_8003BE10(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
-    func_80020CDC();
+    motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     func_800415C4(0);
     func_800415C4(1);
     eff_ClearInitFlag();
@@ -650,7 +650,7 @@ void func_8003BEA8(void) {
 void func_8003BFC4(void) {
     s32 v;
     gpu_ResetGraphMode1();
-    func_80020CDC();
+    motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     func_800415C4(0);
     func_800415C4(1);
     eff_ClearInitFlag();
@@ -667,7 +667,7 @@ void func_8003C040(void) {
     s8 *p;
     gpu_HideResetAndClear();
     gpu_ResetGraphMode1();
-    func_80020CDC();
+    motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     if (D_800A38A4 == 4 || D_800A38A4 == 5) {
         eff_ClearInitFlag();
     }
@@ -817,7 +817,8 @@ void fight_UpdateMatchTallyPresentation(void) {
  * Copies the three clock records (D_80106A50.times, frame counts at 30 fps)
  * into the record at func_80077D00(): minutes (/1800), seconds ((/30) % 60),
  * hundredths ((% 30) * 100 / 30) and the record's unk_0 byte at +0x21 + i*4;
- * then three bytes from func_8001CD68 at +0x2D..+0x2F and the stage at +0x30.
+ * then three bytes from fight_SplitFrameCounterIntoMinutesSecondsHundredths at
+ * +0x2D..+0x2F and the stage at +0x30.
  */
 void func_8003C714(void) {
     Unk8001CD68Rec buf;
@@ -854,7 +855,7 @@ void func_8003C714(void) {
             break;
         }
     } while (1);
-    func_8001CD68(&buf);
+    fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
     s0->unk2D[0] = buf.unk_0;
     s0->unk2D[1] = buf.unk_2;
     s0->unk2D[2] = buf.unk_3;
@@ -934,7 +935,7 @@ void func_8003C9A4(void) {
     if (D_800A3817 == 0) {
         if (D_800A38DC == 5) {
             gpu_ResetGraphMode1();
-            func_80020CDC();
+            motion_InvalidateMarkedNdataPackAndResetLoadCaches();
             g_fight_match_cursor = 0;
             fight_AdvanceMatch();
             return;
@@ -947,13 +948,13 @@ void func_8003C9A4(void) {
         return;
     }
     if (D_800A3817 == 1) {
-        func_8001DA2C();
+        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         D_800A31DA = 1;
         D_800A3834 = 8;
         return;
     }
     if (D_800A3817 == 2) {
-        func_8001DA2C();
+        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         D_800A3834 = 8;
     }
 }
@@ -983,7 +984,7 @@ void func_8003CD10(void) {
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 >= 0x97 || (g_pad_state.pressed & 0x400040) != 0) {
         cdrom_PauseAndWait();
-        func_8001DA2C();
+        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
         D_800A3834 = 8;
     }
 }
@@ -994,7 +995,7 @@ void func_8003CE18(void) {
     s32 s0;
     s8 var_1;
 
-    func_8001DA2C();
+    snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
     cdrom_PauseAndWait();
     gpu_HideResetAndClear();
     gpu_ResetGraphMode1();
@@ -1104,7 +1105,7 @@ void func_8003CF84(void) {
         motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
         motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
         if (D_800A38DC == 0 && (u8)D_800A3836 != 0xFF) {
-            func_8001DA2C();
+            snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
             func_8003B328();
             func_8003AF40(0);
             func_8003AFFC();

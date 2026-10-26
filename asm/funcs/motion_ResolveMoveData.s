@@ -148,7 +148,7 @@ glabel motion_ResolveMoveData
     /* 11E3C 8002163C 00000000 */  nop
     /* 11E40 80021640 03004010 */  beqz       $v0, .L80021650
     /* 11E44 80021644 00000000 */   nop
-    /* 11E48 80021648 E884000C */  jal        func_800213A0
+    /* 11E48 80021648 E884000C */  jal        motion_AdvanceVariantIfAtNibble4Or5Position
     /* 11E4C 8002164C 21200002 */   addu      $a0, $s0, $zero
   .L80021650:
     /* 11E50 80021650 4A000386 */  lh         $v1, 0x4A($s0)

@@ -1,7 +1,7 @@
 glabel func_8001C51C
     /* CD1C 8001C51C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* CD20 8001C520 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* CD24 8001C524 3071000C */  jal        func_8001C4C0
+    /* CD24 8001C524 3071000C */  jal        fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
     /* CD28 8001C528 1800B0AF */   sw        $s0, 0x18($sp)
     /* CD2C 8001C52C 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* CD30 8001C530 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

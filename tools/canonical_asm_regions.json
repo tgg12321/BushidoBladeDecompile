@@ -31,13 +31,13 @@
         "8adf5bfed87b0a00128e8cdf6e61e87e21c1068dcae5ac7e2cc2eea431712de2"
       ]
     },
-    "func_8001A67C": {
+    "math_StoreFloorDiv2000XZOfPointStepTowards": {
       "file": "main/9F9C",
       "sha256": [
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d"
       ]
     },
-    "func_800203B4": {
+    "fighter_StoreBoneLocalVectorAndArmEventTrigger": {
       "file": "main/9F9C",
       "sha256": [
         "0c26ac8afc328f78cfc769104332e86da4d944b1e277dd08b8db4815c8fd0d28",
@@ -392,7 +392,7 @@
         "e9741a9db113f7c162c70801d261f489b94e77198601728751d2e72676bdbb23"
       ]
     },
-    "func_800204C0": {
+    "fighter_DispatchArmedBoneVectorEventAndDisarm": {
       "file": "main/9F9C",
       "sha256": [
         "49b02fc605e20ed131355ffd97f37bce1695e1875ac230abc6efe1ab7168e3c9",

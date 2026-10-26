@@ -20,7 +20,7 @@ glabel motion_InitBuffers
     /* 115B8 80020DB8 603825AC */  sw         $a1, %lo(g_motion_fighter_buffers)($at)
     /* 115BC 80020DBC 0A80013C */  lui        $at, %hi(D_800A3864)
     /* 115C0 80020DC0 643823AC */  sw         $v1, %lo(D_800A3864)($at)
-    /* 115C4 80020DC4 3783000C */  jal        func_80020CDC
+    /* 115C4 80020DC4 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 115C8 80020DC8 00000000 */   nop
     /* 115CC 80020DCC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 115D0 80020DD0 1800BD27 */  addiu      $sp, $sp, 0x18

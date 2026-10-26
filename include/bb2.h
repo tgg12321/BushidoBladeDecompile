@@ -429,9 +429,11 @@ extern s16 D_800A38BA;
  * g_motion_frame_buffers[i] (0xFF = none) */
 extern u8 g_motion_frame_set_ids[2];
 /* per slot: model id in the g_motion_fighter_buffers[i] buffer
- * (motion_LoadFighterData); [1] = 0xFFFF: func_8001DB9C passed 0x80190800
- * (g_motion_fighter_buffers[1]'s buffer) to ndata_LoadPack; func_80020D38 calls
- * ndata_InvalidatePack for it */
+ * (motion_LoadFighterData); [1] = 0xFFFF:
+ * motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id passed 0x80190800
+ * (g_motion_fighter_buffers[1]'s buffer) to ndata_LoadPack;
+ * motion_InvalidateMarkedNdataPackAndClearSlot1Id calls ndata_InvalidatePack
+ * for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
@@ -672,32 +674,34 @@ extern void func_8001B6F4(void);
 extern void camera_UpdateReplayViewWithSineYawOffset(Rec1C *, Rec1C *, s32);
 extern void camera_UpdateReplayViewWithConstantYawOffset(Rec1C *, Rec1C *, s32);
 extern void fight_InitSettings(void);
-extern void func_8001CD68(Unk8001CD68Rec *);
-extern void func_8001D790(void);
-extern void func_8001DA2C(void);
+extern void fight_SplitFrameCounterIntoMinutesSecondsHundredths(
+    Unk8001CD68Rec *);
+extern void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void);
+extern void snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(void);
 extern s32 snd_ShouldUpdateStageSoundSlots(void);
 extern void fight_WaitForCounterThenClearAndEnableDisplay(void);
 extern void camera_ApplyReplayView(s32);
 extern void motion_ApplyRecordedPoseAdjustments(
     Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void fighter_SetTurnDelta(Unk80101EC8Record *, s32);
-extern void func_800203B4(Unk80101EC8Record *, s32, s16 *);
+extern void fighter_StoreBoneLocalVectorAndArmEventTrigger(
+    Unk80101EC8Record *, s32, s16 *);
 extern s32 fight_UpdateSeparationAndPairedMoves(void);
 extern void fighter_UpdateBoneWorldData(
     Unk80101EC8Record *, Unk80107850Rec *, Unk80107850Rec *, Unk80107850Rec *);
-extern void func_80020CDC(void);
-extern void func_80020D38(void);
+extern void motion_InvalidateMarkedNdataPackAndResetLoadCaches(void);
+extern void motion_InvalidateMarkedNdataPackAndClearSlot1Id(void);
 extern void motion_InitBuffers(void);
 extern void fighter_AssignMotionSlotAndScanDataIdNibbles(s32);
 extern void *motion_ResolveMoveData(Unk80101EC8Record *, s32, s16 *);
 extern void motion_ResetVariantIndex(s32);
 extern MoveScript *motion_GetCurrentVariantScript(s32);
 extern MoveScript *motion_GetDefaultVariantScript(s32);
-extern MoveScript *func_800219E4(s32);
-extern MoveScript *func_80021A3C(s32, s32);
+extern MoveScript *motion_GetCommonScriptAtFighterBufferOffset(s32);
+extern MoveScript *motion_GetCommonScriptAtFighterBufferIndexedOffset(s32, s32);
 extern void fight_GetStartPosition(s32, s32 *, s32);
 extern s32 fight_FindNearestStartPair(Vec3i32 *);
-extern void func_80022568(Unk80101EC8Record *);
+extern void fighter_ResetBoneGroupHitState(Unk80101EC8Record *);
 extern void fighter_ConfigureCpuControl(void);
 extern s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
     Unk80101EC8Record *, s32 *);

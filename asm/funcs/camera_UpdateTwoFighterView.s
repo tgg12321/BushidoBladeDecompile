@@ -407,7 +407,7 @@ glabel camera_UpdateTwoFighterView
     /* B60C 8001AE0C 21288002 */   addu      $a1, $s4, $zero
     /* B610 8001AE10 5000AA8F */  lw         $t2, 0x50($sp)
     /* B614 8001AE14 4800A68F */  lw         $a2, 0x48($sp)
-    /* B618 8001AE18 9F69000C */  jal        func_8001A67C
+    /* B618 8001AE18 9F69000C */  jal        math_StoreFloorDiv2000XZOfPointStepTowards
     /* B61C 8001AE1C 2120CA02 */   addu      $a0, $s6, $t2
     /* B620 8001AE20 0000A292 */  lbu        $v0, 0x0($s5)
     /* B624 8001AE24 00000000 */  nop
@@ -558,7 +558,7 @@ glabel camera_UpdateTwoFighterView
     /* B824 8001B024 07004010 */  beqz       $v0, .L8001B044
     /* B828 8001B028 2120DE02 */   addu      $a0, $s6, $fp
     /* B82C 8001B02C 4800A68F */  lw         $a2, 0x48($sp)
-    /* B830 8001B030 9F69000C */  jal        func_8001A67C
+    /* B830 8001B030 9F69000C */  jal        math_StoreFloorDiv2000XZOfPointStepTowards
     /* B834 8001B034 21288002 */   addu      $a1, $s4, $zero
     /* B838 8001B038 1000D086 */  lh         $s0, 0x10($s6)
     /* B83C 8001B03C 136C0008 */  j          .L8001B04C

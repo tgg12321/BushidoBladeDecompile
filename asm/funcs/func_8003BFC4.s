@@ -3,7 +3,7 @@ glabel func_8003BFC4
     /* 2C7C8 8003BFC8 1800BFAF */  sw         $ra, 0x18($sp)
     /* 2C7CC 8003BFCC 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2C7D0 8003BFD0 00000000 */   nop
-    /* 2C7D4 8003BFD4 3783000C */  jal        func_80020CDC
+    /* 2C7D4 8003BFD4 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 2C7D8 8003BFD8 00000000 */   nop
     /* 2C7DC 8003BFDC 7105010C */  jal        func_800415C4
     /* 2C7E0 8003BFE0 21200000 */   addu      $a0, $zero, $zero

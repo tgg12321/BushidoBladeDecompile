@@ -156,7 +156,7 @@ glabel func_8003C9A4
     /* 2D3E8 8003CBE8 01000224 */   addiu     $v0, $zero, 0x1
     /* 2D3EC 8003CBEC 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2D3F0 8003CBF0 00000000 */   nop
-    /* 2D3F4 8003CBF4 3783000C */  jal        func_80020CDC
+    /* 2D3F4 8003CBF4 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 2D3F8 8003CBF8 00000000 */   nop
     /* 2D3FC 8003CBFC 0A80013C */  lui        $at, %hi(g_fight_match_cursor)
     /* 2D400 8003CC00 743820A0 */  sb         $zero, %lo(g_fight_match_cursor)($at)
@@ -194,7 +194,7 @@ glabel func_8003C9A4
   .L8003CC7C:
     /* 2D47C 8003CC7C 08006214 */  bne        $v1, $v0, .L8003CCA0
     /* 2D480 8003CC80 02000224 */   addiu     $v0, $zero, 0x2
-    /* 2D484 8003CC84 8B76000C */  jal        func_8001DA2C
+    /* 2D484 8003CC84 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2D488 8003CC88 00000000 */   nop
     /* 2D48C 8003CC8C 01000224 */  addiu      $v0, $zero, 0x1
     /* 2D490 8003CC90 0A80013C */  lui        $at, %hi(D_800A31DA)
@@ -204,7 +204,7 @@ glabel func_8003C9A4
   .L8003CCA0:
     /* 2D4A0 8003CCA0 06006214 */  bne        $v1, $v0, .L8003CCBC
     /* 2D4A4 8003CCA4 00000000 */   nop
-    /* 2D4A8 8003CCA8 8B76000C */  jal        func_8001DA2C
+    /* 2D4A8 8003CCA8 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2D4AC 8003CCAC 00000000 */   nop
     /* 2D4B0 8003CCB0 08000224 */  addiu      $v0, $zero, 0x8
   .L8003CCB4:

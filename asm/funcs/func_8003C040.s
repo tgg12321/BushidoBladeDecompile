@@ -5,7 +5,7 @@ glabel func_8003C040
     /* 2C84C 8003C04C 2000B0AF */   sw        $s0, 0x20($sp)
     /* 2C850 8003C050 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2C854 8003C054 00000000 */   nop
-    /* 2C858 8003C058 3783000C */  jal        func_80020CDC
+    /* 2C858 8003C058 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 2C85C 8003C05C 00000000 */   nop
     /* 2C860 8003C060 0A80023C */  lui        $v0, %hi(D_800A38A4)
     /* 2C864 8003C064 A4384290 */  lbu        $v0, %lo(D_800A38A4)($v0)

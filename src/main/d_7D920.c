@@ -606,7 +606,9 @@ s32 D_8008EB14 = -800;
 
 s32 D_8008EB18 = 0;
 
-/* [D_800A384C] (func_800224E0); 6 pairs from the gap. */
+/* [D_800A384C]
+ * (motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue); 6
+ * pairs from the gap. */
 u8 D_8008EB1C[6][2] = {{1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
 
 /* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */

@@ -1,0 +1,1 @@
+{"func": "motion_GetCommonScriptAtFighterBufferIndexedOffset", "addr": "80021A3C", "verdict": "PASS", "body_hash": "c7a870c19c6866c5", "body_kind": "c", "file": "main/9F9C", "reviewer": "ab876d2eca6ae0220", "scope": "cheat-cleanup", "date": "2026-10-16T13:32:05Z", "head": "c6e0b139b", "notes": "", "renamed_from": ["func_80021A3C"]}

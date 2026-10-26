@@ -12,7 +12,7 @@ glabel func_80035480
     /* 25CA8 800354A8 07E9000C */  jal        comb_RequestClose
     /* 25CAC 800354AC 00000000 */   nop
   .L800354B0:
-    /* 25CB0 800354B0 3783000C */  jal        func_80020CDC
+    /* 25CB0 800354B0 3783000C */  jal        motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 25CB4 800354B4 00000000 */   nop
     /* 25CB8 800354B8 7105010C */  jal        func_800415C4
     /* 25CBC 800354BC 21200000 */   addu      $a0, $zero, $zero

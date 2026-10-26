@@ -192,7 +192,7 @@ glabel func_8003CF84
     /* 2DA50 8003D250 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2DA54 8003D254 0D006210 */  beq        $v1, $v0, .L8003D28C
     /* 2DA58 8003D258 18000224 */   addiu     $v0, $zero, 0x18
-    /* 2DA5C 8003D25C 8B76000C */  jal        func_8001DA2C
+    /* 2DA5C 8003D25C 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2DA60 8003D260 00000000 */   nop
     /* 2DA64 8003D264 CAEC000C */  jal        func_8003B328
     /* 2DA68 8003D268 00000000 */   nop
