@@ -79,7 +79,7 @@ glabel func_80040594
     /* 30EAC 800406AC 11008010 */  beqz       $a0, .L800406F4
     /* 30EB0 800406B0 23A01102 */   subu      $s4, $s0, $s1
     /* 30EB4 800406B4 1C00458E */  lw         $a1, 0x1C($s2)
-    /* 30EB8 800406B8 2E48010C */  jal        func_800520B8
+    /* 30EB8 800406B8 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 30EBC 800406BC 21308002 */   addu      $a2, $s4, $zero
     /* 30EC0 800406C0 0000428E */  lw         $v0, 0x0($s2)
     /* 30EC4 800406C4 1C00518E */  lw         $s1, 0x1C($s2)

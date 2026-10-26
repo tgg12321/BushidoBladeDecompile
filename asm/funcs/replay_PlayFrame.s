@@ -54,7 +54,7 @@ glabel replay_PlayFrame
   .L80039A04:
     /* 2A204 80039A04 12800000 */  mflo       $s0
   .L80039A08:
-    /* 2A208 80039A08 AC1C010C */  jal        func_800472B0
+    /* 2A208 80039A08 AC1C010C */  jal        camera_GetViewMatrixWithHalvedMiddleRow
     /* 2A20C 80039A0C 00000000 */   nop
     /* 2A210 80039A10 0A80013C */  lui        $at, %hi(D_800A3778)
     /* 2A214 80039A14 783722AC */  sw         $v0, %lo(D_800A3778)($at)
@@ -163,7 +163,7 @@ glabel replay_PlayFrame
     /* 2A3A4 80039BA4 12002486 */  lh         $a0, 0x12($s1)
     /* 2A3A8 80039BA8 21288502 */  addu       $a1, $s4, $a1
     /* 2A3AC 80039BAC 21300000 */  addu       $a2, $zero, $zero
-    /* 2A3B0 80039BB0 C625010C */  jal        func_80049718
+    /* 2A3B0 80039BB0 C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 2A3B4 80039BB4 21380000 */   addu      $a3, $zero, $zero
   .L80039BB8:
     /* 2A3B8 80039BB8 18000292 */  lbu        $v0, 0x18($s0)
@@ -177,7 +177,7 @@ glabel replay_PlayFrame
     /* 2A3D8 80039BD8 0980013C */  lui        $at, %hi(D_8008EB80)
     /* 2A3DC 80039BDC 21082200 */  addu       $at, $at, $v0
     /* 2A3E0 80039BE0 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* 2A3E4 80039BE4 C625010C */  jal        func_80049718
+    /* 2A3E4 80039BE4 C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 2A3E8 80039BE8 21380000 */   addu      $a3, $zero, $zero
   .L80039BEC:
     /* 2A3EC 80039BEC 18000692 */  lbu        $a2, 0x18($s0)
@@ -187,7 +187,7 @@ glabel replay_PlayFrame
     /* 2A3FC 80039BFC 21288002 */   addu      $a1, $s4, $zero
     /* 2A400 80039C00 12002486 */  lh         $a0, 0x12($s1)
     /* 2A404 80039C04 02310600 */  srl        $a2, $a2, 4
-    /* 2A408 80039C08 8B26010C */  jal        func_80049A2C
+    /* 2A408 80039C08 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 2A40C 80039C0C 0100C630 */   andi      $a2, $a2, 0x1
     /* 2A410 80039C10 18000692 */  lbu        $a2, 0x18($s0)
   .L80039C14:
@@ -200,7 +200,7 @@ glabel replay_PlayFrame
     /* 2A42C 80039C2C 0980013C */  lui        $at, %hi(D_8008EB80)
     /* 2A430 80039C30 21082200 */  addu       $at, $at, $v0
     /* 2A434 80039C34 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* 2A438 80039C38 8B26010C */  jal        func_80049A2C
+    /* 2A438 80039C38 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 2A43C 80039C3C 0100C630 */   andi      $a2, $a2, 0x1
   .L80039C40:
     /* 2A440 80039C40 801F023C */  lui        $v0, (0x1F8000A8 >> 16)
@@ -384,7 +384,7 @@ glabel replay_PlayFrame
     /* 2A6E4 80039EE4 A801A627 */  addiu      $a2, $sp, 0x1A8
     /* 2A6E8 80039EE8 BC01A2A7 */  sh         $v0, 0x1BC($sp)
     /* 2A6EC 80039EEC 00000492 */  lbu        $a0, 0x0($s0)
-    /* 2A6F0 80039EF0 C625010C */  jal        func_80049718
+    /* 2A6F0 80039EF0 C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 2A6F4 80039EF4 B801A727 */   addiu     $a3, $sp, 0x1B8
   .L80039EF8:
     /* 2A6F8 80039EF8 01007326 */  addiu      $s3, $s3, 0x1
@@ -392,7 +392,7 @@ glabel replay_PlayFrame
     /* 2A700 80039F00 B400622A */  slti       $v0, $s3, 0xB4
     /* 2A704 80039F04 DCFF4014 */  bnez       $v0, .L80039E78
     /* 2A708 80039F08 10003126 */   addiu     $s1, $s1, 0x10
-    /* 2A70C 80039F0C 6A1B010C */  jal        func_80046DA8
+    /* 2A70C 80039F0C 6A1B010C */  jal        gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue
     /* 2A710 80039F10 01000424 */   addiu     $a0, $zero, 0x1
     /* 2A714 80039F14 76CD000C */  jal        snd_UpdateStageSounds
     /* 2A718 80039F18 00000000 */   nop

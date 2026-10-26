@@ -53,7 +53,7 @@ glabel func_80041BF4
     /* 324C0 80041CC0 2110E500 */  addu       $v0, $a3, $a1
     /* 324C4 80041CC4 C3110200 */  sra        $v0, $v0, 7
     /* 324C8 80041CC8 C32F0500 */  sra        $a1, $a1, 31
-    /* 324CC 80041CCC BF21010C */  jal        func_800486FC
+    /* 324CC 80041CCC BF21010C */  jal        gpu_RefreshGrayscaleMode
     /* 324D0 80041CD0 23984500 */   subu      $s3, $v0, $a1
     /* 324D4 80041CD4 07004010 */  beqz       $v0, .L80041CF4
     /* 324D8 80041CD8 2120E002 */   addu      $a0, $s7, $zero

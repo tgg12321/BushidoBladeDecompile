@@ -1805,7 +1805,7 @@ void fight_Init(void) {
     softbody_RequestSnap(0);
     softbody_RequestSnap(1);
     if (D_800A3670 == 0) {
-        func_8004939C();
+        ResetEntrySelectionState();
         addr = (s32)0x80190800;
         func_80020D38();
         for (i = 0; i < 2; i++) {
@@ -1993,13 +1993,14 @@ void camera_ApplyFightView(void) {
         local = *s2;
     }
 
-    func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
+    gpu_ResetDrawQueueAndPrepareViewAndLighting(
+        &local.unk_00, &local.unk_10, local.w18);
     {
         camera_CalcEye(&local, &s2->w20);
         func_80061064(&local.unk_10.vx, &s2->w20);
     }
-    func_8003F3D4(s2->h30[0]);
-    func_8003F3D4(s2->h30[1]);
+    gpu_SetCellForceBit(s2->h30[0]);
+    gpu_SetCellForceBit(s2->h30[1]);
     g_listener_cam = s2;
 }
 
@@ -2025,7 +2026,8 @@ void camera_ApplyReplayView(s32 arg0) {
     local.unk_10.vz = s2->unk_10.vz + g_camera_view_offset.unk_10.vz;
 
     local.w18 = s2->w18 + g_camera_view_offset.w18;
-    func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
+    gpu_ResetDrawQueueAndPrepareViewAndLighting(
+        &local.unk_00, &local.unk_10, local.w18);
 
     {
         camera_CalcEye(&local, &s2->w20);
@@ -2053,7 +2055,7 @@ void func_8001E800(void) {
 void fight_Update(void) {
     PadState buf;
 
-    D_800A3778 = func_800472B0();
+    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
     camera_UpdateTwoFighterView(
         &D_80101EC8[0].camera_fighter_point,
         &D_80101EC8[1].camera_fighter_point, &D_80101EC8[0], &D_80101EC8[1]);
@@ -2074,10 +2076,13 @@ void fight_Update(void) {
     if (D_800A38BA != 0 && g_camera_fight_view_mode == 0) {
         func_8001E800();
     } else {
-        func_8003E6A0(D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z);
-        func_8003E6A0(D_80101EC8[1].world_pos.x, D_80101EC8[1].world_pos.z);
+        gpu_SetViewOriginSegmentCellsGateBit(
+            D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z);
+        gpu_SetViewOriginSegmentCellsGateBit(
+            D_80101EC8[1].world_pos.x, D_80101EC8[1].world_pos.z);
     }
-    func_80046DA8((D_800A3690 ^ 1) != 0);
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
+        (D_800A3690 ^ 1) != 0);
     fight_UpdateModeDisplaysAndMatchProgress();
     snd_UpdateStageSounds();
     fight_UpdateDefeatDelayAndModeProgress();
@@ -2103,7 +2108,7 @@ void func_8001EA84(void) {
     Unk8001CD68Rec buf;
 
     D_800A37B8 += 1;
-    D_800A3778 = func_800472B0();
+    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
     camera_SetFighterFocusView(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3);
     camera_ApplyFightView();
     replay_BeginFrame();
@@ -2115,7 +2120,7 @@ void func_8001EA84(void) {
     object_UpdatePool();
     fight_UpdateBallisticRecords();
     replay_AdvanceFrame();
-    func_80046DA8(1);
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
     snd_UpdateStageSounds();
     if (D_800A38DC == 3) {
         func_8001CD68(&buf);
@@ -2213,7 +2218,7 @@ void func_8001EFA0(void) {
     s16 var_v0;
 
     D_800A37B8 += 1;
-    D_800A3778 = func_800472B0();
+    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
     camera_SetInterpolatedFighterView(
         &D_80101EC8[D_800A3748], (D_800A37B8 << 12) / 105);
     camera_ApplyFightView();
@@ -2226,7 +2231,7 @@ void func_8001EFA0(void) {
     object_UpdatePool();
     fight_UpdateBallisticRecords();
     replay_AdvanceFrame();
-    func_80046DA8(1);
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
     snd_UpdateStageSounds();
 
     if (D_80101EC8[D_800A3748].is_defeated != 0 && D_800A38DC == 1) {
@@ -2812,7 +2817,8 @@ void math_ComputeBallisticVelocityXZ(
 
 /* Starts the rec->unk_350 frame counter, records bone index
  * D_8008D59C[arg1].bone at rec->unk_352, and rotates the vector arg2 by that
- * bone's matrix of func_80046DEC(rec->index) into rec->unk_354. */
+ * bone's matrix of node_GetSlotMatrixPointerArray(rec->index) into
+ * rec->unk_354. */
 void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];
@@ -2820,7 +2826,7 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
 
     rec->unk_350 = 1;
     rec->unk_352 = D_8008D59C[arg1].bone;
-    src = ((MATRIX **)func_80046DEC(rec->index))[rec->unk_352];
+    src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->unk_352];
     math_InvertMatrix3x3(src, mat);
     gte_SetRotMatrix(mat);
     vec[0] = arg2[0];
@@ -2833,9 +2839,9 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
 
 /* rec->unk_350 is a frame counter func_800203B4 starts at 1. On the tick
  * where (counter & 7) == 2, the vector func_800203B4 stored at rec->unk_354
- * is rotated by matrix rec->unk_352 of func_80046DEC(var_2) (GTE MVMVA),
- * scaled by (150 - counter) / 150, negated when its y exceeds 0x800, and
- * handed to func_80032854 with scratchpad point
+ * is rotated by matrix rec->unk_352 of node_GetSlotMatrixPointerArray(var_2)
+ * (GTE MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds
+ * 0x800, and handed to func_80032854 with scratchpad point
  * SPAD->unkA8[var_2][rec->unk_352]. The counter is cleared on every call that
  * finds it running (the original stores 0 under `>= 150` and then again
  * unconditionally). */
@@ -2850,7 +2856,7 @@ void func_800204C0(Unk80101EC8Record *rec) {
     if (rec->unk_350 != 0) {
         rec->unk_350 += 1;
         if ((rec->unk_350 & 7) == 2) {
-            var_4 = func_80046DEC(var_2);
+            var_4 = node_GetSlotMatrixPointerArray(var_2);
             gte_SetRotMatrix(var_4[rec->unk_352]);
             gte_ldlv0(&rec->unk_354);
             gte_rtv0();
@@ -2892,10 +2898,10 @@ void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
 }
 
 /* Places character rec->index's points in world space with its bone
- * matrices (func_80046DEC()): each of the 22 hit records' offsets through
- * its bone into arg1 (the callers pass SPAD->unkA8[i]); the point set
- * D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18 into
- * arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
+ * matrices (node_GetSlotMatrixPointerArray()): each of the 22 hit records'
+ * offsets through its bone into arg1 (the callers pass SPAD->unkA8[i]); the
+ * point set D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18
+ * into arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
  * arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
  * matrix translation. Then: bone 11's y axis into rec->unk_1EC, arg1[0]
  * into rec->unk_180, the translations of bones 17 and 14 (y raised by
@@ -2916,7 +2922,7 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
     Unk80107850Rec *o;
     s32 i;
 
-    var_1 = func_80046DEC(rec->index);
+    var_1 = node_GetSlotMatrixPointerArray(rec->index);
     var_5 = D_800F5F68[rec->index];
     o = arg1;
     for (i = 0; i < 22; i++, var_5++, o++) {
@@ -3416,7 +3422,7 @@ void fighter_StartMoveScript(s32 arg0, MoveScript *arg1, s32 arg2) {
 
 void fight_GetStartPosition(s32 arg0, s32 *arg1, s32 arg2) {
     s16 *temp_v0;
-    temp_v0 = (s16 *)func_80046F14() +
+    temp_v0 = (s16 *)fight_GetStartPositionPairTable() +
               ((D_800A36A4 * 0x18) + (arg2 * 6) + (arg0 * 3));
     arg1[0] = (s32)temp_v0[0];
     arg1[1] = (s32)temp_v0[1];
@@ -3439,8 +3445,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     /* Ruling 11 (ordinary-c-judge-decidable): holds three values -- the
      * horizontal step (1..40, dx / dz scaled by temp / 40), the vertical
      * step (1..40, temp * 100 in y), then the index of a record of
-     * func_80046F14's block (D_800A38E0 when D_800A38DC is 3, else the one of
-     * four nearest pos in x / z). */
+     * fight_GetStartPositionPairTable's block (D_800A38E0 when D_800A38DC is 3,
+     * else the one of four nearest pos in x / z). */
     s32 temp;
     s32 angle;
     s32 dx;
@@ -3448,7 +3454,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s32 best;
     s32 d;
 
-    var_5 = func_80046F14();
+    var_5 = fight_GetStartPositionPairTable();
     var_7 = rand();
     ofs = rand() & 7;
     base.x = pos[0];
@@ -3529,7 +3535,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 best;
     s32 j;
 
-    base = (s16 *)func_80046F14() + (D_800A36A4 * 3) * 8;
+    base = (s16 *)fight_GetStartPositionPairTable() + (D_800A36A4 * 3) * 8;
     for (i = 0; i < 4; i++) {
         dx = base[i * 6 + 3] - arg2[0];
         dz = base[i * 6 + 5] - arg2[2];
@@ -3575,7 +3581,7 @@ s32 fight_FindNearestStartPair(Vec3i32 *arg0) {
     s32 dz;
     s32 dist;
 
-    p = func_80046F14();
+    p = fight_GetStartPositionPairTable();
     best_dist = 0x7FFFFFFF;
     x = arg0->x;
     z = arg0->z;
@@ -5013,20 +5019,24 @@ skip_62:
         if (rec->carried_object_count > 0 &&
             rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
             rec->unk_62 = (rec->unk_62 | 8) & ~0x20;
-            func_80049A2C(D_8008EB80[rec->unk_14], (arg0 * 2) | 1, 0);
+            node_QueueTableEntryNodePairUnderSlotNode(
+                D_8008EB80[rec->unk_14], (arg0 * 2) | 1, 0);
         }
     }
     if (rec->unk_62 & 1) {
-        func_80049718(rec->unk_12, arg0 * 2 + 0x8000, 0, 0);
+        node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+            rec->unk_12, arg0 * 2 + 0x8000, 0, 0);
     }
     if (rec->unk_62 & 4) {
-        func_80049718(D_8008EB80[rec->unk_14], arg0 * 2 + 0x8001, 0, 0);
+        node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+            D_8008EB80[rec->unk_14], arg0 * 2 + 0x8001, 0, 0);
     }
     if (rec->unk_62 & 2) {
-        func_80049A2C(rec->unk_12, arg0 * 2, (rec->unk_62 >> 4) & 1);
+        node_QueueTableEntryNodePairUnderSlotNode(
+            rec->unk_12, arg0 * 2, (rec->unk_62 >> 4) & 1);
     }
     if (rec->unk_62 & 8) {
-        func_80049A2C(
+        node_QueueTableEntryNodePairUnderSlotNode(
             D_8008EB80[rec->unk_14], (arg0 * 2) | 1, (rec->unk_62 >> 5) & 1);
     }
     rec->saved_motion_frame = var_0[0];
@@ -5136,7 +5146,7 @@ skip_62:
           (rec->move_kind == 4 || rec->move_kind == 0x14)) ||
          (rec->move_kind == 0x11 && arg0 != D_800A38AE &&
           rec->unk_AA == rec->move_frame))) {
-        MATRIX **var_37 = func_80046DEC(arg0);
+        MATRIX **var_37 = node_GetSlotMatrixPointerArray(arg0);
         if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 ||
             D_800A37A0 != 1 || arg0 != D_800A37A0) {
             func_80032854(arg0, 0x2E, &rec->world_pos.x, 0);

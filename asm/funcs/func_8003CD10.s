@@ -24,9 +24,9 @@ glabel func_8003CD10
     /* 2D568 8003CD68 80100200 */  sll        $v0, $v0, 2
     /* 2D56C 8003CD6C 0F80013C */  lui        $at, %hi(D_800F661A)
     /* 2D570 8003CD70 1A6622A4 */  sh         $v0, %lo(D_800F661A)($at)
-    /* 2D574 8003CD74 FD1A010C */  jal        func_80046BF4
+    /* 2D574 8003CD74 FD1A010C */  jal        gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* 2D578 8003CD78 10270624 */   addiu     $a2, $zero, 0x2710
-    /* 2D57C 8003CD7C 6A1B010C */  jal        func_80046DA8
+    /* 2D57C 8003CD7C 6A1B010C */  jal        gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue
     /* 2D580 8003CD80 01000424 */   addiu     $a0, $zero, 0x1
     /* 2D584 8003CD84 0A80043C */  lui        $a0, %hi(D_800A391F)
     /* 2D588 8003CD88 1F398490 */  lbu        $a0, %lo(D_800A391F)($a0)

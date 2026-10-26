@@ -196,7 +196,7 @@ void func_80027640(Unk80101EC8Record *arg0) {
     s32 vz;
 
     idx = arg0->index;
-    tbl = func_80046F14();
+    tbl = fight_GetStartPositionPairTable();
     cnt = arg0->unk_34C;
     if (cnt < 0x40) {
         arg0->unk_34C = cnt + 1;
@@ -315,7 +315,7 @@ void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *a0) {
     if (v1 == a0->unk_88) {
         if (a0->unk_8A) {
             if (func_8002798C(a0)) {
-                MATRIX **v0 = func_80046DEC(a0->index);
+                MATRIX **v0 = node_GetSlotMatrixPointerArray(a0->index);
                 object_DropQueuedHeadAt(a0, (Vec3i32 *)v0[19]->t);
                 a0->unk_8A = 0;
                 a0->unk_86 = a0->unk_84;
@@ -935,8 +935,8 @@ void fighter_ResolveBodyOverlap(void) {
     }
 }
 
-/* One 16-byte entry of the list func_8004678C returns (terminated by a zero
- * `type`); func_8002906C clears every entry's `used`. */
+/* One 16-byte entry of the list fight_GetPositionRecordList returns (terminated
+ * by a zero `type`); func_8002906C clears every entry's `used`. */
 typedef struct {
     s16 type;
     s16 used;
@@ -946,7 +946,7 @@ typedef struct {
 } PosRec;
 
 void func_8002906C(void) {
-    PosRec *ptr = (PosRec *)func_8004678C();
+    PosRec *ptr = (PosRec *)fight_GetPositionRecordList();
     while (ptr->type != 0) {
         ptr->used = 0;
         ptr++;
@@ -1003,7 +1003,7 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
         }
     }
 
-    rec = (PosRec *)func_8004678C();
+    rec = (PosRec *)fight_GetPositionRecordList();
     for (temp = 0; rec->type != 0; temp++, rec++) {
         if (rec->used != 0)
             continue;
@@ -3611,10 +3611,10 @@ s32 fighter_IsBoneTriangleCrossYPositive(Unk80101EC8Record *arg0) {
 }
 
 /* Starts the record (is_attached = 1, bone attached_bone = arg1): its matrix
- * becomes the inverse of bone attached_bone's rotation (func_80046DEC()'s
- * table, inverted by math_InvertMatrix3x3) times the rot[] rotation (X, Y, Z),
- * and pos is taken into the bone's frame: less the bone translation, rotated by
- * that inverse, then halved. */
+ * becomes the inverse of bone attached_bone's rotation
+ * (node_GetSlotMatrixPointerArray()'s table, inverted by math_InvertMatrix3x3)
+ * times the rot[] rotation (X, Y, Z), and pos is taken into the bone's frame:
+ * less the bone translation, rotated by that inverse, then halved. */
 void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
     MATRIX mat_local;
     MATRIX **mat_tbl;
@@ -3623,7 +3623,7 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
 
     arg0->is_attached = 1;
     arg0->attached_bone = arg1;
-    mat_tbl = func_80046DEC(arg0->owner < 1);
+    mat_tbl = node_GetSlotMatrixPointerArray(arg0->owner < 1);
     rot_mat = &arg0->mtx;
     s2_ptr = mat_tbl[arg0->attached_bone];
 
@@ -3660,10 +3660,11 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
 }
 
 /* Rotates the object's local vector (pos) by bone attached_bone's matrix of
- * func_80046DEC() and adds that matrix's translation, composes the bone
- * matrix with the object's, and hands the point and the angles
- * math_MatrixToAngles reads from that matrix to func_80049718 /
- * replay_RecordModelDraw. */
+ * node_GetSlotMatrixPointerArray() and adds that matrix's translation, composes
+ * the bone matrix with the object's, and hands the point and the angles
+ * math_MatrixToAngles reads from that matrix to
+ * node_QueueEntryNodesFromTransformOrUpdatedSlotNode / replay_RecordModelDraw.
+ */
 void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 var_1[4];
@@ -3672,7 +3673,7 @@ void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     MATRIX *mat;
     s32 lookup;
 
-    mat_tbl = func_80046DEC(arg0->owner < 1);
+    mat_tbl = node_GetSlotMatrixPointerArray(arg0->owner < 1);
     mat = mat_tbl[arg0->attached_bone];
 
     gte_SetRotMatrix(mat);
@@ -3689,7 +3690,7 @@ void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     math_MatrixToAngles(&mtx, var_1);
 
     lookup = D_8008EB80[arg0->kind];
-    func_80049718(lookup, 1, mac, var_1);
+    node_QueueEntryNodesFromTransformOrUpdatedSlotNode(lookup, 1, mac, var_1);
     replay_RecordModelDraw(arg0->slot, lookup, mac, var_1);
 }
 
@@ -3717,7 +3718,8 @@ void object_SubmitPoolTransforms(void) {
         } else if (kind == 0xE && obj->unk_05 == 2) {
             lookup += 3;
         }
-        func_80049718(lookup, 1, &obj->pos.x, obj->rot);
+        node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+            lookup, 1, &obj->pos.x, obj->rot);
         replay_RecordModelDraw(obj->slot, lookup, &obj->pos.x, obj->rot);
     }
 }

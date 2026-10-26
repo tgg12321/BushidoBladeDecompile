@@ -148,7 +148,7 @@
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d"
       ]
     },
-    "func_8003E6D8": {
+    "gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards": {
       "file": "main/2B344",
       "sha256": [
         "1c6a3148cb0796eb902a43a6081410f5d1c7cd9f534a77e39820854dbf8df9ac"

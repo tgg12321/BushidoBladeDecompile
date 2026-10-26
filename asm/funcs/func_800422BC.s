@@ -12,7 +12,7 @@ glabel func_800422BC
     /* 32AE4 800422E4 FF005230 */  andi       $s2, $v0, 0xFF
     /* 32AE8 800422E8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 32AEC 800422EC 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 32AF0 800422F0 BF21010C */  jal        func_800486FC
+    /* 32AF0 800422F0 BF21010C */  jal        gpu_RefreshGrayscaleMode
     /* 32AF4 800422F4 FF00B030 */   andi      $s0, $a1, 0xFF
     /* 32AF8 800422F8 07004010 */  beqz       $v0, .L80042318
     /* 32AFC 800422FC 21202002 */   addu      $a0, $s1, $zero

@@ -66,7 +66,7 @@ glabel func_80044504
     /* 34DF4 800445F4 00000000 */   nop
     /* 34DF8 800445F8 06004014 */  bnez       $v0, .L80044614
     /* 34DFC 800445FC BE000224 */   addiu     $v0, $zero, 0xBE
-    /* 34E00 80044600 9F1B010C */  jal        func_80046E7C
+    /* 34E00 80044600 9F1B010C */  jal        gpu_GetRaisedOtCutoffRequested
     /* 34E04 80044604 00000000 */   nop
     /* 34E08 80044608 02004014 */  bnez       $v0, .L80044614
     /* 34E0C 8004460C 82010224 */   addiu     $v0, $zero, 0x182
@@ -76,7 +76,7 @@ glabel func_80044504
     /* 34E18 80044618 180022AC */  sw         $v0, (0x1F800018 & 0xFFFF)($at)
     /* 34E1C 8004461C 3829010C */  jal        func_8004A4E0
     /* 34E20 80044620 00000000 */   nop
-    /* 34E24 80044624 951B010C */  jal        func_80046E54
+    /* 34E24 80044624 951B010C */  jal        gpu_SetRaisedOtCutoffRequested
     /* 34E28 80044628 01000424 */   addiu     $a0, $zero, 0x1
     /* 34E2C 8004462C 1080023C */  lui        $v0, %hi(g_draw_queue)
     /* 34E30 80044630 002C4224 */  addiu      $v0, $v0, %lo(g_draw_queue)

@@ -7,7 +7,7 @@ glabel object_SubmitAttachedTransform
     /* 208C8 800300C8 4C00B1AF */  sw         $s1, 0x4C($sp)
     /* 208CC 800300CC 4800B0AF */  sw         $s0, 0x48($sp)
     /* 208D0 800300D0 06006492 */  lbu        $a0, 0x6($s3)
-    /* 208D4 800300D4 7B1B010C */  jal        func_80046DEC
+    /* 208D4 800300D4 7B1B010C */  jal        node_GetSlotMatrixPointerArray
     /* 208D8 800300D8 0100842C */   sltiu     $a0, $a0, 0x1
     /* 208DC 800300DC 09006392 */  lbu        $v1, 0x9($s3)
     /* 208E0 800300E0 00000000 */  nop
@@ -69,7 +69,7 @@ glabel object_SubmitAttachedTransform
     /* 209C0 800301C0 21082200 */  addu       $at, $at, $v0
     /* 209C4 800301C4 80EB3090 */  lbu        $s0, %lo(D_8008EB80)($at)
     /* 209C8 800301C8 21382002 */  addu       $a3, $s1, $zero
-    /* 209CC 800301CC C625010C */  jal        func_80049718
+    /* 209CC 800301CC C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 209D0 800301D0 21200002 */   addu      $a0, $s0, $zero
     /* 209D4 800301D4 21280002 */  addu       $a1, $s0, $zero
     /* 209D8 800301D8 21304002 */  addu       $a2, $s2, $zero

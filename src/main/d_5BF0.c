@@ -43,11 +43,11 @@ extern u8 L800514FC[] __asm__(".L800514FC");
 extern u8 L800516FC[] __asm__(".L800516FC");
 extern u8 L80051894[] __asm__(".L80051894");
 
-void func_8004BCC0();
+void gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision();
 void func_80052C10();
-void func_8004C994();
-void func_8004CB8C();
-void func_8004CDB0();
+void gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles();
+void gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads();
+void gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles();
 void func_8004CFE0();
 void func_80051208();
 void func_800513B0();
@@ -69,15 +69,21 @@ void * const jtbl_8001545C[5] = {
 /* D_80015470: 4 words (16B) @ 0x80015470 */
 void * const D_80015470[4] = {
     L8004B6E4,
-    func_8004BCC0,
+    gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision,
     func_80052C10,
     func_80052C10,
 };
 
 /* D_80015480: 8 words (32B) @ 0x80015480 — function-pointer table */
 void (* const D_80015480[8])() = {
-    func_8004C994, func_8004CB8C, func_8004CDB0, func_8004CFE0,
-    func_80051208, func_800513B0, func_800515AC, func_80051754,
+    gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles,
+    gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads,
+    gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles,
+    func_8004CFE0,
+    func_80051208,
+    func_800513B0,
+    func_800515AC,
+    func_80051754,
 };
 
 /* g_rsqrt_table: 96 words (384B) @ 0x800154A0 */

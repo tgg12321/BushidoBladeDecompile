@@ -87,7 +87,7 @@ glabel fight_Init
     /* E5F0 8001DDF0 00000000 */  nop
     /* E5F4 8001DDF4 DA004014 */  bnez       $v0, .L8001E160
     /* E5F8 8001DDF8 05000224 */   addiu     $v0, $zero, 0x5
-    /* E5FC 8001DDFC E724010C */  jal        func_8004939C
+    /* E5FC 8001DDFC E724010C */  jal        ResetEntrySelectionState
     /* E600 8001DE00 1980123C */   lui       $s2, (0x80190800 >> 16)
     /* E604 8001DE04 4E83000C */  jal        func_80020D38
     /* E608 8001DE08 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)

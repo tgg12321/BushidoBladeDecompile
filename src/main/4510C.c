@@ -122,8 +122,8 @@ s32 motion_UpdatePlayback(void) {
     s->unk24[2] = -D_80101DF0.xf.rot.vz;
     light_ResetPointLight();
     light_ApplyPointLightTargets();
-    func_80047210();
-    func_8003F274();
+    camera_CopyViewMatrixWithHalvedMiddleRow();
+    gpu_ResetAndStampViewCenteredCellAttributes();
     calc_LightMatrix(&D_800F62E0[0]);
     calc_LightMatrix(&D_800F62E0[1]);
     calc_LightMatrix(&D_800F62E0[4]);
@@ -153,11 +153,14 @@ s32 motion_UpdatePlayback(void) {
             vec.vz += s->unk14;
             func_80040D48(i, 0, &vec.vx, &s->unk1C, var_2, s->unk10);
             if (s->unk44[i] >= 0) {
-                func_80049718(s->unk44[i], (i * 2) | 0x8000, 0, 0);
-                func_80049A2C(s->unk44[i], i * 2, 0);
+                node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+                    s->unk44[i], (i * 2) | 0x8000, 0, 0);
+                node_QueueTableEntryNodePairUnderSlotNode(
+                    s->unk44[i], i * 2, 0);
             }
             if (s->unk48[i] >= 0) {
-                func_80049A2C(s->unk48[i], (i * 2) | 1, 1);
+                node_QueueTableEntryNodePairUnderSlotNode(
+                    s->unk48[i], (i * 2) | 1, 1);
             }
             if (s->unk3C[i] != 0) {
                 func_80040304(i, (((u32 *)s->unk3C[i])[s->unk0 / 8] >>
@@ -166,7 +169,7 @@ s32 motion_UpdatePlayback(void) {
             }
         }
     }
-    func_80046EA0(10000);
+    gpu_RunGridDrawPassAndQueueFogMoves(10000);
     s->unk0++;
     if (s->unk0 >= s->unk2) {
         s->unk0 = -1;

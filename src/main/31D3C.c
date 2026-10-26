@@ -54,8 +54,8 @@ s32 func_80041650(s32 a0) {
 }
 
 /* Sets or clears bit 0 of the flag byte in every bone record of
- * D_800A9A10[arg0], then pushes its colour (greyscaled when func_800486FC() is
- * set) through func_80041398. */
+ * D_800A9A10[arg0], then pushes its colour (greyscaled when
+ * gpu_RefreshGrayscaleMode() is set) through func_80041398. */
 void func_80041688(s32 arg0, s32 arg1) {
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
        untouched (phantom-frame pad); without it: score 6 */
@@ -107,7 +107,7 @@ loop2:
     goto loop2;
 after2:
 
-    if (func_800486FC()) {
+    if (gpu_RefreshGrayscaleMode()) {
         v = math_Grayscale3(var_1->unk_18.byte[2], var_1->unk_18.byte[1],
                             var_1->unk_18.byte[0]);
         func_80041398((v << 16) | (v << 8) | v);
@@ -257,7 +257,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
     r = (a0 << 12) / 255;
     g = (a1 << 12) / 255;
     b = (a2 << 12) / 255;
-    if (func_800486FC()) {
+    if (gpu_RefreshGrayscaleMode()) {
         r = g = b = math_Grayscale3(r, g, b);
     }
     for (k = 0; k < 2; k++) {
@@ -450,7 +450,7 @@ void func_800422BC(s32 a0, s32 arg1, s32 a2, s32 a3) {
     s16 g2;
     s16 b2;
 
-    if (func_800486FC()) {
+    if (gpu_RefreshGrayscaleMode()) {
         r = g = b = math_Grayscale3(r, g, b);
     }
     if (a3 == 0) {
@@ -490,7 +490,7 @@ void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;
     s32 b = a0 & 0xFF;
-    if (func_800486FC()) {
+    if (gpu_RefreshGrayscaleMode()) {
         b = math_Grayscale3(r, g, b);
         g = b;
         r = b;

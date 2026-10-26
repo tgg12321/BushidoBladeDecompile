@@ -55,7 +55,7 @@ glabel object_SubmitPoolTransforms
     /* 20AC8 800302C8 2C009126 */  addiu      $s1, $s4, 0x2C
     /* 20ACC 800302CC 21302002 */  addu       $a2, $s1, $zero
     /* 20AD0 800302D0 54009026 */  addiu      $s0, $s4, 0x54
-    /* 20AD4 800302D4 C625010C */  jal        func_80049718
+    /* 20AD4 800302D4 C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 20AD8 800302D8 21380002 */   addu      $a3, $s0, $zero
     /* 20ADC 800302DC 00006492 */  lbu        $a0, 0x0($s3)
     /* 20AE0 800302E0 21284002 */  addu       $a1, $s2, $zero

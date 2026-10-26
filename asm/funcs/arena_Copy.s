@@ -11,7 +11,7 @@ glabel arena_Copy
     /* 36048 80045848 21203202 */   addu      $a0, $s1, $s2
     /* 3604C 8004584C 21200002 */  addu       $a0, $s0, $zero
     /* 36050 80045850 21282002 */  addu       $a1, $s1, $zero
-    /* 36054 80045854 2E48010C */  jal        func_800520B8
+    /* 36054 80045854 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 36058 80045858 21304002 */   addu      $a2, $s2, $zero
     /* 3605C 8004585C 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 36060 80045860 1800B28F */  lw         $s2, 0x18($sp)

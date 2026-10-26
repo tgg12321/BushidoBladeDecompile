@@ -85,7 +85,7 @@ typedef struct {
 typedef struct {
     s16 unk0;
     s16 unk2;
-    s16 unk4; /* = func_80046798() (D_80099478) */
+    s16 unk4; /* = resource_GetLoadedSelector() (D_80099478) */
     s16 unk6; /* entry count */
     s32 unk8;
     s32 unkC;  /* entry table (stride 0x68) */
@@ -719,9 +719,11 @@ typedef struct {
     /* 0x8 */ s32 unk8;
 } Unk800F0C10Record;
 
-/* 0x800948BC (D_800948BC): function-pointer pairs, indexed by func_80046798().
- * func_8003F168 calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
- * holds func_80047570 / func_800475A4). */
+/* 0x800948BC (D_800948BC): function-pointer pairs, indexed by
+ * resource_GetLoadedSelector(). func_8003F168 calls .init;
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards calls
+ * .unk4 (e.g. entry 13 holds func_80047570 /
+ * node_OrientAndQueueViewOffsetNode). */
 typedef struct {
     void (*init)(void);
     void (*unk4)(void);
@@ -822,8 +824,8 @@ typedef struct Unk80104E88Rec {
 /* The 10-entry block table over the 0x45000-byte buffer at g_arena
  * (arena_Reset .. arena_FindBlock; g_arena_block_count live entries).
  * arena_Reset clears id in all 10. arena_ShiftBlocks(a0, a1) hands
- * func_800520B8 entry a0's unk4, unk4 + a1 and the summed amt of entries a0..,
- * then adds a1 to their unk4 and calls each fn(id, a1). */
+ * mem_MoveBlockRoundedUpToWords entry a0's unk4, unk4 + a1 and the summed amt
+ * of entries a0.., then adds a1 to their unk4 and calls each fn(id, a1). */
 typedef struct {
     s16 id;
     s16 unk2;
@@ -834,10 +836,11 @@ typedef struct {
 
 /* A hit record: one of the 22 test points of a character.
  * fighter_UpdateBoneWorldData places point i at SPAD->unkA8[ch][i] (`ofs`
- * rotated by func_80046DEC()'s matrix `bone`, plus that matrix's translation);
- * the hit tests (fighter_CastWeaponSegment, fighter_TestTriangleBoneHits,
- * object_ResolveFighterHits) take unk_0C / unk_0E as the first test's limits
- * and, when unk_00 != 0, unk_10 / unk_12 as a second test's. */
+ * rotated by node_GetSlotMatrixPointerArray()'s matrix `bone`, plus that
+ * matrix's translation); the hit tests (fighter_CastWeaponSegment,
+ * fighter_TestTriangleBoneHits, object_ResolveFighterHits) take unk_0C / unk_0E
+ * as the first test's limits and, when unk_00 != 0, unk_10 / unk_12 as a second
+ * test's. */
 typedef struct BoneHitRec {
     s16 unk_00;
     s16 bone;
@@ -1233,7 +1236,8 @@ typedef union {
  * whole argument record at 0x1F8002B8: from, to, hit, normal, then that work
  * area.
  * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
- * - 3AB48 func_8004DA74 fills, and the renderers func_8004C994 ..
+ * - 3AB48 gpu_ProjectStridedNodeVerticesAndDispatchPackets fills, and the
+ * renderers gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles ..
  * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
  * into the record for i >= 2.
  * In 17AFC, the collision code takes the record's address (`scr`) and passes it
@@ -1648,8 +1652,8 @@ typedef struct Unk80101EC8Record {
     u8 unk_34E;
     u8 unk_34F[0x350 - 0x34F];
     s16 unk_350;
-    /* index into func_80046DEC()'s MATRIX * table and SPAD->unkA8[]
-     * (func_800204C0) */
+    /* index into node_GetSlotMatrixPointerArray()'s MATRIX * table and
+     * SPAD->unkA8[] (func_800204C0) */
     s16 unk_352;
     /* func_800203B4's gte_stlvnl output; func_800204C0's gte_ldlv0 input */
     Vec3i32 unk_354;
@@ -1756,8 +1760,9 @@ typedef struct {
     u8 owner;
     u8 unk_07;
     u8 is_attached;
-    /* index into the opponent's bone-matrix table, func_80046DEC(owner < 1)
-     * (object_AttachToOpponentBone, object_SubmitAttachedTransform) */
+    /* index into the opponent's bone-matrix table,
+     * node_GetSlotMatrixPointerArray(owner < 1) (object_AttachToOpponentBone,
+     * object_SubmitAttachedTransform) */
     u8 attached_bone;
     /* own index in g_object_pool once allocated; 0xFF = free (set by
      * object_ResetPool at init and by object_UpdatePool once kind == -1) */
@@ -1828,7 +1833,8 @@ typedef struct Unk8009A8C8Entry {
  * initialise them). +0x00 is one 12-byte vector, copied whole by
  * camera_SetFighterFocusView / camera_SetInterpolatedFighterView. +0x10 is the
  * camera rotation: camera_CalcEye builds the matrix from vx / vy / vz and
- * func_80046BF4 takes it with the +0x00 vector; its pad (+0x16) is unused. */
+ * gpu_ResetDrawQueueAndPrepareViewAndLighting takes it with the +0x00 vector;
+ * its pad (+0x16) is unused. */
 typedef struct Rec44 {
     Vec3i32 unk_00;
     s32 wC;
@@ -1944,13 +1950,14 @@ typedef struct Unk8001CD68Rec {
  * (unk0 = 0x64, rotation_order = 5; pointer stored to D_800A3708) and
  * 0x800FF638 (unk0 = 0x65, rotation_order = 2; pointer stored to D_800A370C).
  * node_SetMatrixFromNegatedRot passes a negated stack copy of xf.rot and &work
- * to D_800F66A0[rotation_order], then copies work to xf.mat; func_80046BF4
- * writes work.t just before that call. func_800475A4 passes &xf.rot to
- * D_800F66A0[0] and &xf.mat to ApplyMatrix. D_800EEDF0 and D_800EF070 are two
- * more records of this layout: node_InitIdentity initialises the first,
- * wave_Init sets up the second and passes it to node_UpdateWorldMatrix, which
- * reads matrix_state. rot is the RotMatrix-style angle SVECTOR the rotation
- * handlers take; mat and work are libgte MATRIXes. */
+ * to D_800F66A0[rotation_order], then copies work to xf.mat;
+ * gpu_ResetDrawQueueAndPrepareViewAndLighting writes work.t just before that
+ * call. node_OrientAndQueueViewOffsetNode passes &xf.rot to D_800F66A0[0] and
+ * &xf.mat to ApplyMatrix. D_800EEDF0 and D_800EF070 are two more records of
+ * this layout: node_InitIdentity initialises the first, wave_Init sets up the
+ * second and passes it to node_UpdateWorldMatrix, which reads matrix_state. rot
+ * is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and work
+ * are libgte MATRIXes. */
 typedef struct {
     SVECTOR rot; /* +0x00 */
     MATRIX mat;  /* +0x08 */
@@ -2007,7 +2014,8 @@ typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
  * fills them from a stream and calls D_800F66A0[rotation_order] on &xf.rot /
  * &xf.mat (the angles as stored, straight into xf.mat; unlike
- * node_SetMatrixFromNegatedRot, no negation and no work); func_8003E6D8 and
+ * node_SetMatrixFromNegatedRot, no negation and no work);
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
  * func_8003EB84 queue each one on g_draw_queue at most once, guarded by unk58.
  */
 typedef struct {
@@ -2070,7 +2078,8 @@ typedef struct {
  * softbody_params: the attached Unk8003F62CRec block and the s16 list
  * softbody_SetupObject walks up to its -3 end (softbody_RebaseObject moves both
  * by its a1).
- * - transform_nodes[]: node 0 is the root (func_80049718 reads its xf.mat);
+ * - transform_nodes[]: node 0 is the root
+ * (node_QueueEntryNodesFromTransformOrUpdatedSlotNode reads its xf.mat);
  * func_800408F8 builds 0..20, func_80040CB8 fills projected_nodes[] (unk2 = -1
  * ends it), func_80040B44 copies duplicates into duplicate_nodes[] (unk58 = the
  * source node; 0 ends it).
@@ -2123,8 +2132,9 @@ typedef struct Unk80045878Obj {
 } Unk80045878Obj;                        /* 0x1A88 */
 
 /* The 16-byte records func_8003EDC0 fills ahead of those (unk8 / unkC = the
- * grid cell's column / row * 2000 - 32000); func_8003E6D8 and func_8003EB84
- * set unk6 and the unk7 bits and queue them on g_draw_queue. */
+ * grid cell's column / row * 2000 - 32000);
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
+ * func_8003EB84 set unk6 and the unk7 bits and queue them on g_draw_queue. */
 typedef struct {
     s16 unk0;     /* +0x00 */
     s16 unk2;     /* +0x02 */

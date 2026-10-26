@@ -1,1 +1,0 @@
-{"func": "func_8003DA8C", "addr": "8003DA8C", "verdict": "PASS", "body_hash": "d58c66e439356b60", "body_kind": "c", "file": "main/2B344", "reviewer": "cheat-reviewer:af355653", "scope": "cheat-cleanup", "date": "2026-10-22T09:00:01Z", "head": "94f04f287", "notes": "fake-reduce: once-written named intermediate, FAKE label retired (comment-only); sandbox 0, oracle SHA1 match"}

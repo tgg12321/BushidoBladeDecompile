@@ -632,7 +632,8 @@ u8 D_8008EB6C[6] = {5, 8, 7, 6, 7, 8};
 u8 D_8008EB74[3][2][2] = {{{1, 2}, {0, 0}}, {{0, 1}, {0, 1}}, {{0, 2}, {0, 1}}};
 
 /* [Unk80101EC8Record.unk_14] and [object kind]: the id handed to
- * func_800493E4 / func_80049718 / func_80049A2C; 32 from the gap. */
+ * func_800493E4 / node_QueueEntryNodesFromTransformOrUpdatedSlotNode /
+ * node_QueueTableEntryNodePairUnderSlotNode; 32 from the gap. */
 u8 D_8008EB80[32] = {
     0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14,
     0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x39, 0x00, 0x01, 0x02, 0x03,

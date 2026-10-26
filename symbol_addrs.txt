@@ -651,18 +651,18 @@ gpu_SetDispMaskOn = 0x800168D0; /* body = SetDispMask(1) only (display ON); reti
 func_80046934 = 0x80046934; /* body = arena_OpenBlock(9) only */
 D_8008F13C = 0x8008F13C; /* data-wave 2026-10-08: was g_special_cam_command_table */
 D_8009BD24 = 0x8009BD24; /* data-wave 2026-10-08: was g_disp_config */
-func_80046798 = 0x80046798; /* 4-insn lh-based signed getter for D_80099478 */  /* naming wave07 2026-10-08: was stage_GetId */
+// RENAME 0x80046798: retired name 'func_80046798' — preserved note: 4-insn lh-based signed getter for D_80099478 */  /* naming wave07 2026-10-08: was stage_GetId
 D_800A36AC = 0x800A36AC; /* presented-frame count: zeroed by main, ++ after each DrawOTag; most readers take `& 1` as the double-buffer index, func_8003C9A4 / func_8003CD10 use the whole value */  /* data-wave 2026-10-08: was g_frame_parity */
 D_800A3708 = 0x800A3708; /* = &D_80101DF0 (func_80049E4C); +0x4C/+0x54 are work.t[0]/[2], mapped to a 32x32 cell */  /* data-wave 2026-10-08: was g_stage_data_ptr */
 D_800A3748 = 0x800A3748; /* index into D_80101EC8; -1 == none */  /* data-wave 2026-10-03: was g_practice_menu_index */
 D_800A378C = 0x800A378C; /* ordering-table pointer: every store is g_gpu_ot_ptr + 4; every reader links GPU packets (DR_MOVE, OT words) into it */  /* data-wave 2026-10-08: was g_palette_base_ptr */
 D_800A3044 = 0x800A3044; /* SioRegs *: holds 0x1F801050, the SIO port 1 (link cable) register block; libcomb only (comb.c:17, include/psxsdk/libapi.h:23-37) */  /* data-wave 2026-10-09: was g_spu_reg_base_ptr */
-func_8004678C = 0x8004678C; /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
-func_80046DEC = 0x80046DEC; /* func_8004153C(a0)->node_matrix_ptrs: a MATRIX * table */
-func_80046E54 = 0x80046E54; /* writes (a0 ? 1 : 0) to g_game_pause_flag */
-func_80046E7C = 0x80046E7C; /* lh getter for g_game_pause_flag */
-func_80046F14 = 0x80046F14; /* returns &D_8009947C (stage-data slot address) */
-func_800472B0 = 0x800472B0; /* returns &D_800EEDD0 (the matrix func_80047210 writes) */
+// RENAME 0x8004678C: retired name 'func_8004678C' — preserved note: gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id)
+// RENAME 0x80046DEC: retired name 'func_80046DEC' — preserved note: func_8004153C(a0)->node_matrix_ptrs: a MATRIX * table
+// RENAME 0x80046E54: retired name 'func_80046E54' — preserved note: writes (a0 ? 1 : 0) to g_game_pause_flag
+// RENAME 0x80046E7C: retired name 'func_80046E7C' — preserved note: lh getter for g_game_pause_flag
+// RENAME 0x80046F14: retired name 'func_80046F14' — preserved note: returns &D_8009947C (stage-data slot address)
+// RENAME 0x800472B0: retired name 'func_800472B0' — preserved note: returns &D_800EEDD0 (the matrix func_80047210 writes)
 wave_SetCellBuffer = 0x800477DC; /* sets g_wave_cell_buffer, the wave grid's cell buffer (368E4.c:733) */
 wave_GetCellBufferSize = 0x80047EC8; /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
 func_800468B0 = 0x800468B0; /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
@@ -709,7 +709,7 @@ SsSetReservedVoice = 0x80087F34;
 SpuInit = 0x800885AC;
 func_800467B8 = 0x800467B8; /* 62-insn loader using saTan2InfoInit + saTan5TakeGetPos */
 func_80046B44 = 0x80046B44; /* start-up init (func_80016D78, func_8003BFC4) */
-func_80046DA8 = 0x80046DA8; /* 15-insn stage init calling game_InitStageSound */
+// RENAME 0x80046DA8: retired name 'func_80046DA8' — preserved note: 15-insn stage init calling game_InitStageSound
 math_SetLightPlaneProjection = 0x80046F24; /* 58-insn writing to D_800EEDB[4-C] matrix fields */
 // RENAME 0x800472C0: retired name 'func_800472C0' — preserved note: resets an Unk80101DF0Record to identity (header fields, rot, t, mat)
 D_800A37B8 = 0x800A37B8; /* frame counter; `<<3` for byte stride, `<<12 / 105` for BAM angle conversion */  /* data-wave 2026-10-08: was g_practice_loop_frame */
@@ -965,7 +965,7 @@ func_80056FE8 = 0x80056FE8; /* MISNAMED: not angle correction; character display
 func_800203B4 = 0x800203B4; /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
 // RENAME 0x8001DBE4: retired name 'func_8001DBE4' — preserved note: MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1729-1747)
 gpu_MoveObjectClutsToFogBlock = 0x8003E164; /* when arg0 is not the selected object D_800A3228: restores the previous object's CLUT offsets; if object arg0 exists, copies its 64 x 6 palette block from (0x280 or 0x300, 0xF8) to (0x140, 0x1E8) (MoveImage), shifts its CLUT coordinates (gpu_OffsetBlockTexPrimStreams) and rebuilds the block's fog levels (func_8003E120); then D_800A3228 = arg0; 2B344.c */
-func_8004939C = 0x8004939C; /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
+// RENAME 0x8004939C: retired name 'func_8004939C' — preserved note: MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells
 func_80041688 = 0x80041688; /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
 font_LoadImage = 0x8003D2C4; /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */
 func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
@@ -1196,7 +1196,7 @@ CD_getsector = 0x80081D1C; /* CD sector DMA -> RAM via g_cd_dma_ctrl + libcd_CDR
 CD_getsector2 = 0x80081E1C; /* chopped CD DMA transfer; libcd_CDRegister0/g_cd_dma_ctrl */
 func_8003F168 = 0x8003F168; /* calls D_800948BC[func_80046798()].init when non-null */
 func_8003F218 = 0x8003F218; /* store D_800F665C + game_SetControllerPorts */
-func_8003F274 = 0x8003F274; /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks */
+// RENAME 0x8003F274: retired name 'func_8003F274' — preserved note: rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks
 func_8003F5CC = 0x8003F5CC; /* func_80017F98(D_800A93B0[i], D_800A93BC[i], i) for i = 0..2; func_80017F98 is empty, so no effect */
 D_8009A8C8 = 0x8009A8C8; /* Unk8009A8C8Entry D_8009A8C8[][8] (include/bb2.h:260); inside asm/data/7D920.data.s dlabel D_8009A8C4 */
 D_8009B794 = 0x8009B794; /* data-wave 2026-10-09: was g_cos_lut_q2 */

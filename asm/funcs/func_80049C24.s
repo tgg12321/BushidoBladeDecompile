@@ -83,14 +83,14 @@ glabel func_80049C24
     /* 3A540 80049D40 04007326 */   addiu     $s3, $s3, 0x4
     /* 3A544 80049D44 2120C003 */  addu       $a0, $fp, $zero
     /* 3A548 80049D48 21282002 */  addu       $a1, $s1, $zero
-    /* 3A54C 80049D4C 2E48010C */  jal        func_800520B8
+    /* 3A54C 80049D4C 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 3A550 80049D50 2130A002 */   addu      $a2, $s5, $zero
     /* 3A554 80049D54 5C270108 */  j          .L80049D70
     /* 3A558 80049D58 21203502 */   addu      $a0, $s1, $s5
   .L80049D5C:
     /* 3A55C 80049D5C 2120C002 */  addu       $a0, $s6, $zero
     /* 3A560 80049D60 21282002 */  addu       $a1, $s1, $zero
-    /* 3A564 80049D64 2E48010C */  jal        func_800520B8
+    /* 3A564 80049D64 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 3A568 80049D68 21308002 */   addu      $a2, $s4, $zero
     /* 3A56C 80049D6C 21203402 */  addu       $a0, $s1, $s4
   .L80049D70:
@@ -108,14 +108,14 @@ glabel func_80049C24
     /* 3A598 80049D98 000062AE */   sw        $v0, 0x0($s3)
     /* 3A59C 80049D9C 2120C003 */  addu       $a0, $fp, $zero
     /* 3A5A0 80049DA0 21282002 */  addu       $a1, $s1, $zero
-    /* 3A5A4 80049DA4 2E48010C */  jal        func_800520B8
+    /* 3A5A4 80049DA4 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 3A5A8 80049DA8 2130A002 */   addu      $a2, $s5, $zero
     /* 3A5AC 80049DAC 72270108 */  j          .L80049DC8
     /* 3A5B0 80049DB0 21203502 */   addu      $a0, $s1, $s5
   .L80049DB4:
     /* 3A5B4 80049DB4 2120C002 */  addu       $a0, $s6, $zero
     /* 3A5B8 80049DB8 21282002 */  addu       $a1, $s1, $zero
-    /* 3A5BC 80049DBC 2E48010C */  jal        func_800520B8
+    /* 3A5BC 80049DBC 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 3A5C0 80049DC0 21308002 */   addu      $a2, $s4, $zero
     /* 3A5C4 80049DC4 21203402 */  addu       $a0, $s1, $s4
   .L80049DC8:

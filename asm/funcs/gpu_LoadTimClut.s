@@ -19,7 +19,7 @@ glabel gpu_LoadTimClut
     /* 38CE4 800484E4 04001026 */  addiu      $s0, $s0, 0x4
     /* 38CE8 800484E8 02140300 */  srl        $v0, $v1, 16
     /* 38CEC 800484EC 1600A2A7 */  sh         $v0, 0x16($sp)
-    /* 38CF0 800484F0 BF21010C */  jal        func_800486FC
+    /* 38CF0 800484F0 BF21010C */  jal        gpu_RefreshGrayscaleMode
     /* 38CF4 800484F4 1400A3A7 */   sh        $v1, 0x14($sp)
     /* 38CF8 800484F8 05004010 */  beqz       $v0, .L80048510
     /* 38CFC 800484FC 21200002 */   addu      $a0, $s0, $zero

@@ -216,7 +216,8 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
         buf.vy = -p[1];
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, a4 + 1);
-        func_800523E0(a4, a4 + 1, a3, &ents[i].node.work);
+        gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
+            a4, a4 + 1, a3, &ents[i].node.work);
         ents[i].node.matrix_state = 2;
         i++;
     } while (i < 0x12);
@@ -246,7 +247,8 @@ loop2:
     buf.vz = -(*((u16 *)a2));
     a2 += 2;
     math_RotMatrixZYX(&buf, out2);
-    func_800523E0(a4, out2, a3, &var_9->node.work);
+    gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
+        a4, out2, a3, &var_9->node.work);
     var_9->node.matrix_state = 1;
     var_9++;
     i++;

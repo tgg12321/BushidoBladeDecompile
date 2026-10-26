@@ -317,18 +317,18 @@ void func_800468DC(s32 a0, s32 a1);
 
 s32 func_80046780(void) { return D_800A33B0; }
 
-s32 func_8004678C(void) { return D_800A33B4; }
+s32 fight_GetPositionRecordList(void) { return D_800A33B4; }
 
-s32 func_80046798(void) { return D_80099478; }
+s32 resource_GetLoadedSelector(void) { return D_80099478; }
 
-s32 func_800467A8(void) { return D_8009947A; }
+s32 resource_HasRetainedSubblocks(void) { return D_8009947A; }
 
 s32 *func_800467B8(s32 a0) {
     s32 arg = a0;
     s32 var_1 = 8;
     s32 *s2;
 
-    if (func_800486FC()) {
+    if (gpu_RefreshGrayscaleMode()) {
         arg = arg + 0x1B;
     }
     {
@@ -440,7 +440,8 @@ void func_80046B44(void) {
     D_800A33BC = 0;
 }
 
-void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
+void gpu_ResetDrawQueueAndPrepareViewAndLighting(
+    Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     s32 result[3];
     s32 var_2[3];
     SVECTOR rot;
@@ -475,8 +476,8 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
         }
 
         node_SetMatrixFromNegatedRot(&D_80101DF0);
-        func_80047210();
-        func_8003F274();
+        camera_CopyViewMatrixWithHalvedMiddleRow();
+        gpu_ResetAndStampViewCenteredCellAttributes();
 
         D_800A33C0 = a2;
     }
@@ -485,13 +486,14 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     calc_LightMatrix(&D_800F62E0[1]);
     calc_LightMatrix(&D_800F62E0[4]);
     light_ResetPointLight();
-    func_8003F568();
+    ClearSavedWordPairsAndTwoWriteOnlyWords();
     func_8003F5CC();
 }
 
-void func_80046DA8(s32 a0) {
+void gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
+    s32 a0) {
     if (a0 & 1) {
-        func_80046EA0(D_800A33C0);
+        gpu_RunGridDrawPassAndQueueFogMoves(D_800A33C0);
     }
     light_ApplyPointLightTargets();
     func_800444BC();
@@ -499,7 +501,7 @@ void func_80046DA8(s32 a0) {
 
 s32 func_80046DE4(void) { return 0; }
 
-void *func_80046DEC(s32 a0) {
+void *node_GetSlotMatrixPointerArray(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
         return v0->node_matrix_ptrs;
@@ -517,7 +519,7 @@ void *func_80046E18(s32 a0) {
 
 void func_80046E44(void) { D_800F6654 = 0; }
 
-void func_80046E54(s32 a0) {
+void gpu_SetRaisedOtCutoffRequested(s32 a0) {
     if (a0) {
         D_800F6654 = 1;
     } else {
@@ -525,15 +527,15 @@ void func_80046E54(s32 a0) {
     }
 }
 
-s32 func_80046E7C(void) { return D_800F6654; }
+s32 gpu_GetRaisedOtCutoffRequested(void) { return D_800F6654; }
 
 void func_80046E8C(void) { D_800A3790 = 0x23; }
 
-void func_80046EA0(s32 a0) {
-    func_8003E6D8(a0);
+void gpu_RunGridDrawPassAndQueueFogMoves(s32 a0) {
+    gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(a0);
     {
-        s32 v0 = func_80046798();
-        func_8003DA8C(v0, a0);
+        s32 v0 = resource_GetLoadedSelector();
+        gpu_LatchFogDepthOnTransitionAndQueueMoves(v0, a0);
     }
 }
 
@@ -543,7 +545,7 @@ void func_80046EDC(s32 a0, s32 a1) {
     func_8003E0E0();
 }
 
-void *func_80046F14(void) { return &D_8009947C; }
+void *fight_GetStartPositionPairTable(void) { return &D_8009947C; }
 
 void math_SetLightPlaneProjection(void) {
     s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;
@@ -598,14 +600,14 @@ typedef struct {
     s32 w[8];
 } Block32;
 
-void func_80047210(void) {
+void camera_CopyViewMatrixWithHalvedMiddleRow(void) {
     D_800EEDD0 = D_80101DF0.xf.mat;
     D_800EEDD0.m[1][0] >>= 1;
     D_800EEDD0.m[1][1] >>= 1;
     D_800EEDD0.m[1][2] >>= 1;
 }
 
-MATRIX *func_800472B0(void) { return &D_800EEDD0; }
+MATRIX *camera_GetViewMatrixWithHalvedMiddleRow(void) { return &D_800EEDD0; }
 
 void node_InitIdentity(Unk80101DF0Record *node) {
     node->unk4 = 8;
@@ -666,7 +668,7 @@ void func_80047570(void) {
     D_800EEDF0.rotation_order = 4;
 }
 
-void func_800475A4(void) {
+void node_OrientAndQueueViewOffsetNode(void) {
     SVECTOR rot;
     VECTOR result;
     MATRIX buf1;
@@ -675,7 +677,7 @@ void func_800475A4(void) {
     s32 var_5;
     Unk80101DF0Record *base;
 
-    if (func_800467A8() != 0) {
+    if (resource_HasRetainedSubblocks() != 0) {
         return;
     }
 
@@ -963,7 +965,8 @@ void wave_Draw(void) {
             j++;
         }
         if (i != 0) {
-            s7val = func_8004BCC0(0x10, (s16 *)base, s7val, 0);
+            s7val = gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision(
+                0x10, (s16 *)base, s7val, 0);
         }
         i++;
         src += 17;
@@ -1227,7 +1230,7 @@ u16 arg4;
     var_2 += 4;
     rect.h = var_5 >> 16;
     rect.w = var_5;
-    if (func_800486FC() != 0) {
+    if (gpu_RefreshGrayscaleMode() != 0) {
         math_GrayscaleRgb555((u16 *)var_2, rect.w, buf);
         LoadImage(&rect, (u32 *)buf);
         DrawSync(0);
@@ -1293,7 +1296,7 @@ s16 arg2;
     arg0 += 4;
     rect.h = var_2 >> 16;
     rect.w = var_2;
-    if (func_800486FC() != 0) {
+    if (gpu_RefreshGrayscaleMode() != 0) {
         math_GrayscaleRgb555((u16 *)arg0, rect.w, buf);
         LoadImage(&rect, (u32 *)buf);
         return;
@@ -1386,7 +1389,7 @@ u16 cx, cy;
     }
 }
 
-s32 func_800486FC(void) {
+s32 gpu_RefreshGrayscaleMode(void) {
     if (func_800167AC()) {
         g_color_mode = 1;
     } else {
@@ -1567,7 +1570,7 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     MATRIX **mat_tbl;
     Unk80045878Node *node;
 
-    mat_tbl = func_80046DEC(D_800A33E0);
+    mat_tbl = node_GetSlotMatrixPointerArray(D_800A33E0);
     if (mat_tbl == 0) {
         return;
     }
@@ -1721,7 +1724,7 @@ void gpu_QueueVramScroll(s32 arg0) {
 extern s16 D_800EF9F2;
 extern s16 D_800EF9F4;
 
-void func_8004939C(void) {
+void ResetEntrySelectionState(void) {
     s16 val = -1;
     s32 i = 0x39;
     s16 *p = &D_800EF9F2;
@@ -1881,7 +1884,8 @@ void func_80049710(void) {}
  * (func_8004153C), whose offset it scales in place by the object's
  * position_scale and into which it copies the new matrix back; the second (type
  * 3, parent = the first) follows unless flags is still 1. */
-void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
+void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+    s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
     Unk80045878Obj *slot_obj;
@@ -1979,13 +1983,13 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
 
 extern s16 D_80099D3C[];
 
-/* func_80049A2C: `volatile u32 pre_pad[2]` is a labelled FAKE (phantom-frame
- * pad) giving the target's frame signature (.frame $sp,48, vars= 8, regs= 5).
- * The only fold-capable symbol (D_80099D3C) cannot host the vars region
- * without costing a sixth callee-saved register, and the function is
- * loopless, so no back-edge carrier exists; hence the FAKE pad. SOTN
- * precedent: `volatile char pad[8] //! FAKE`. */
-void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
+/* node_QueueTableEntryNodePairUnderSlotNode: `volatile u32 pre_pad[2]` is a
+ * labelled FAKE (phantom-frame pad) giving the target's frame signature (.frame
+ * $sp,48, vars= 8, regs= 5). The only fold-capable symbol (D_80099D3C) cannot
+ * host the vars region without costing a sixth callee-saved register, and the
+ * function is loopless, so no back-edge carrier exists; hence the FAKE pad.
+ * SOTN precedent: `volatile char pad[8] //! FAKE`. */
+void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     // !FAKE: phantom-frame-slot pad, without it: score 12
     // (no-new-park-categories): target reserves 8 locals bytes at
     // sp+0x10..sp+0x17 that no instruction touches
@@ -2135,10 +2139,10 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         *(s32 *)var_s3 = 2;
         var_s3 += 4;
         if (var_s0 == 0) {
-            func_800520B8(var_fp, var_s1, var_s5);
+            mem_MoveBlockRoundedUpToWords(var_fp, var_s1, var_s5);
             a0_arg = var_s1 + var_s5;
         } else {
-            func_800520B8(var_s6, var_s1, var_s4);
+            mem_MoveBlockRoundedUpToWords(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
         arena_UpdatePeak(a0_arg);
@@ -2148,10 +2152,10 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     if (var_s2 >= 0) {
         *(s32 *)var_s3 = 5;
         if (var_s2 == 0) {
-            func_800520B8(var_fp, var_s1, var_s5);
+            mem_MoveBlockRoundedUpToWords(var_fp, var_s1, var_s5);
             a0_arg = var_s1 + var_s5;
         } else {
-            func_800520B8(var_s6, var_s1, var_s4);
+            mem_MoveBlockRoundedUpToWords(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
         arena_UpdatePeak(a0_arg);

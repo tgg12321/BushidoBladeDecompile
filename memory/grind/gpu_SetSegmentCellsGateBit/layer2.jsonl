@@ -1,0 +1,1 @@
+{"func": "gpu_SetSegmentCellsGateBit", "addr": "8003E2D8", "verdict": "PASS", "body_hash": "c2fa283fa871bf18", "body_kind": "c", "file": "main/2B344", "reviewer": "a91371abafd813e69", "scope": "cheat-cleanup", "date": "2026-10-16T13:47:57Z", "head": "e1948eec2", "notes": "", "renamed_from": ["func_8003E2D8"]}

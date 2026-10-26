@@ -33,7 +33,7 @@ glabel reloc_KeepSelectedEntries
     /* 34B04 80044304 21284002 */  addu       $a1, $s2, $zero
     /* 34B08 80044308 23800402 */  subu       $s0, $s0, $a0
     /* 34B0C 8004430C 21208402 */  addu       $a0, $s4, $a0
-    /* 34B10 80044310 2E48010C */  jal        func_800520B8
+    /* 34B10 80044310 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 34B14 80044314 21300002 */   addu      $a2, $s0, $zero
     /* 34B18 80044318 82801000 */  srl        $s0, $s0, 2
     /* 34B1C 8004431C 80801000 */  sll        $s0, $s0, 2

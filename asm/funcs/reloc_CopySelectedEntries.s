@@ -50,7 +50,7 @@ glabel reloc_CopySelectedEntries
     /* 34C28 80044428 21284002 */  addu       $a1, $s2, $zero
     /* 34C2C 8004442C 23800402 */  subu       $s0, $s0, $a0
     /* 34C30 80044430 2120C402 */  addu       $a0, $s6, $a0
-    /* 34C34 80044434 2E48010C */  jal        func_800520B8
+    /* 34C34 80044434 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 34C38 80044438 21300002 */   addu      $a2, $s0, $zero
     /* 34C3C 8004443C 82801000 */  srl        $s0, $s0, 2
     /* 34C40 80044440 80801000 */  sll        $s0, $s0, 2

@@ -60,7 +60,7 @@ glabel func_80041188
     /* 31A6C 8004126C 2120E002 */  addu       $a0, $s7, $zero
     /* 31A70 80041270 2128C002 */  addu       $a1, $s6, $zero
     /* 31A74 80041274 2130C003 */  addu       $a2, $fp, $zero
-    /* 31A78 80041278 F848010C */  jal        func_800523E0
+    /* 31A78 80041278 F848010C */  jal        gte_LerpMatrixRowsAndRebuildOrthonormalBasis
     /* 31A7C 8004127C 38006726 */   addiu     $a3, $s3, 0x38
     /* 31A80 80041280 02000224 */  addiu      $v0, $zero, 0x2
     /* 31A84 80041284 060062A6 */  sh         $v0, 0x6($s3)
@@ -113,7 +113,7 @@ glabel func_80041188
     /* 31B3C 8004133C 2120E002 */  addu       $a0, $s7, $zero
     /* 31B40 80041340 21286002 */  addu       $a1, $s3, $zero
     /* 31B44 80041344 2130C003 */  addu       $a2, $fp, $zero
-    /* 31B48 80041348 F848010C */  jal        func_800523E0
+    /* 31B48 80041348 F848010C */  jal        gte_LerpMatrixRowsAndRebuildOrthonormalBasis
     /* 31B4C 8004134C 38000726 */   addiu     $a3, $s0, 0x38
     /* 31B50 80041350 01000224 */  addiu      $v0, $zero, 0x1
     /* 31B54 80041354 060002A6 */  sh         $v0, 0x6($s0)

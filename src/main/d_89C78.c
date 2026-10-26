@@ -13,8 +13,8 @@
  *    data, references no object in the run (Q123: not an owner candidate);
  *    43500.c is a -G8 code module with its own .sbss and gp accesses, whose
  *    .text follows 3AB48.c's.
- * Readers: all 368E4.c; D_8009947C also through func_80046F14 (9F9C.c,
- * 17AFC.c, 43500.c). */
+ * Readers: all 368E4.c; D_8009947C also through fight_GetStartPositionPairTable
+ * (9F9C.c, 17AFC.c, 43500.c). */
 #include "common.h"
 #include "bb2.h"
 
@@ -29,8 +29,8 @@ typedef struct {
 s16 D_80099478 = -1;
 s16 D_8009947A = 0;
 
-/* func_80046F14's block: per stage (D_800A36A4, 38 rows like D_8009A658's
- * navigation sets), four start records of two (x, y, z) points. */
+/* fight_GetStartPositionPairTable's block: per stage (D_800A36A4, 38 rows like
+ * D_8009A658's navigation sets), four start records of two (x, y, z) points. */
 s16 D_8009947C[38][4][2][3] = {
     {{{-2000, 0, 0}, {2000, 0, 0}},
      {{2000, 0, 2000}, {2000, 0, -2000}},

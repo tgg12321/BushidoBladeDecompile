@@ -265,9 +265,11 @@ extern s32 D_80090600;
 extern s32 D_80090604;
 extern s16 D_80090608;
 
-/* Two per-stage tables, indexed by the stage id func_80046EA0 passes to
- * func_8003DA8C: 38 s32, then s16 pairs ([0] tested, [1] passed to
- * func_8003DBE4; the last pair is zero). */
+/* Two per-stage tables, indexed by the stage id
+ * gpu_RunGridDrawPassAndQueueFogMoves passes to
+ * gpu_LatchFogDepthOnTransitionAndQueueMoves: 38 s32, then s16 pairs ([0]
+ * tested, [1] passed to gpu_QueueDepthSpacedMovesAndLinkTerminalPacket; the
+ * last pair is zero). */
 extern s32 D_8009060C[38];
 
 extern s16 D_800906A4[39][2];
@@ -471,8 +473,9 @@ extern u8 D_800A3929;
 extern Unk800A3D40Rec g_bitstream_delta_accumulators[];
 
 /* Three word pairs: the uncalled func_8003F5A8 stores pair i,
- * func_8003F568 zeroes all six, func_8003F5CC passes pair i to
- * func_80017F98(a, b, i), an empty function; nothing else reads them. */
+ * ClearSavedWordPairsAndTwoWriteOnlyWords zeroes all six, func_8003F5CC passes
+ * pair i to func_80017F98(a, b, i), an empty function; nothing else reads them.
+ */
 extern s32 D_800A93B0[3];
 
 extern s32 D_800A93BC[3];
@@ -481,8 +484,8 @@ extern Rec44 D_800F6608;
 
 /* Per-match snapshot: fight_RecordMatchResult stores both players' counters
  * (D_800A3898 / D_800A3899) for match g_fight_match_cursor;
- * fight_PackMatchScores packs the pairs into D_800A3784, func_8003C42C sums
- * them. */
+ * fight_PackMatchScores packs the pairs into D_800A3784,
+ * fight_TallyMatchResultsAndInitPresentation sums them. */
 extern u8 g_fight_match_scores[8][2];
 
 extern Unk800F68E0Rec g_replay_model_draws[0xB4];
@@ -548,7 +551,7 @@ extern void func_80049584(s32);
 extern s32 func_8005B8B8(s32);
 extern void snd_FlushSoundQueue(void);
 extern s32 func_80038C70(void);
-extern void func_8003E2D8(s32, s32, s32, s32);
+extern void gpu_SetSegmentCellsGateBit(s32, s32, s32, s32);
 extern void cdrom_Update(void);
 
 /* Declared by more than one translation unit: data, then functions, by name. */
@@ -595,7 +598,7 @@ extern u32 D_800A32C8[2];
 extern Unk80101DF0Record *D_800A370C;
 extern Unk80101DF0Record *D_800A3708;
 extern s32 g_memcard_poll_count;
-extern void func_800520B8(s32, s32, s32);
+extern void mem_MoveBlockRoundedUpToWords(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
 extern POLY_FT4 *g_eff_quad_cursor;
@@ -633,7 +636,7 @@ extern Unk80045878Obj *D_800A9A10[];
 extern s32 bits_DepositMask3F83F8(s32);
 extern s32 bits_ExtractMask3F83F8(s32);
 extern s16 *camera_CalcAngles(void);
-extern void func_80047210(void);
+extern void camera_CopyViewMatrixWithHalvedMiddleRow(void);
 extern u32 cdrom_GetFileSize(s32);
 extern void cdrom_Init(void);
 extern void cdrom_ReadyCallback(u8, u8 *);
@@ -641,7 +644,7 @@ extern void cdrom_SetMix(s32, s32, s32, s32);
 extern s32 cdrom_StartAudio(s32, s32);
 extern s32 cdrom_StartRead(s32, s32);
 extern s32 cdrom_StartReadAt(s32, s32, s32, s32);
-extern MATRIX *func_800472B0(void);
+extern MATRIX *camera_GetViewMatrixWithHalvedMiddleRow(void);
 extern void eff_Init(void);
 extern void func_800164F8(void);
 extern u32 func_800167AC(void);
@@ -786,7 +789,7 @@ extern void font_AddTpage(void);
 extern void bitstream_InitDeltaAccumulator(s32, s32);
 extern s16 *bitstream_AccumulateDeltas(s32);
 extern void gpu_InitFogDrawMoves(void);
-extern void func_8003DA8C(s32, s32);
+extern void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32, s32);
 extern void func_8003DDF8(u32);
 extern void func_8003E0E0(void);
 extern void func_8003E120(void);
@@ -795,12 +798,13 @@ extern void gpu_RestoreObjectClutOffsets(void);
 extern s32 gpu_GetFogClutObject(void);
 extern u32 gpu_GetLastFogOtIndex(void);
 extern s32 gpu_DepthToOtIndex(s32, s32);
-extern void func_8003E6A0(s32, s32);
-extern void func_8003E6D8(s32);
+extern void gpu_SetViewOriginSegmentCellsGateBit(s32, s32);
+extern void
+    gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(s32);
 extern void func_8003EDC0(u16 *, s32);
 extern void func_8003F218(s32);
 extern s32 func_8003F268(void);
-extern void func_8003F3D4(s16 *);
+extern void gpu_SetCellForceBit(s16 *);
 extern void func_8003F52C(s32, s32, s32);
 extern void softbody_UpdateObject(Unk80045878Obj *);
 extern void func_8003F7F4(void);
@@ -882,15 +886,18 @@ extern void func_80045A50(s32);
 extern void func_80045B68(s32, s32, s16 *, s32);
 extern void func_80046020(void);
 extern void func_8004659C(s32);
-extern s32 func_8004678C(void);
+extern s32 fight_GetPositionRecordList(void);
 extern void func_80046914(void);
 extern s32 *func_800469C4(s32);
 extern void motion_FreePlaybackBlock(void);
-extern void func_80046BF4(Vec3i32 *, SVECTOR *, s32);
-extern void func_80046DA8(s32);
-extern void func_80046E54(s32);
-extern s32 func_80046E7C(void);
-extern void func_80046EA0(s32);
+extern void gpu_ResetDrawQueueAndPrepareViewAndLighting(
+    Vec3i32 *, SVECTOR *, s32);
+extern void
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
+        s32);
+extern void gpu_SetRaisedOtCutoffRequested(s32);
+extern s32 gpu_GetRaisedOtCutoffRequested(void);
+extern void gpu_RunGridDrawPassAndQueueFogMoves(s32);
 extern void math_SetLightPlaneProjection(void);
 extern void gpu_LoadTimGroup(u32 *, s32);
 extern void gpu_LoadTimGroupOffset(u32 *, s32, s16, s16);
@@ -898,18 +905,21 @@ extern void gpu_LoadTimGroupSplitOffset(u32 *, s32, s16, s16, s16, s16);
 /* gpu_LoadTim and gpu_LoadTimClut have no prototype: 368E4.c calls them
  * above their old-style (K&R) definitions with int arguments, and a prototype's
  * s16 / u16 parameters change its bytes. */
-extern s32 func_800486FC(void);
+extern s32 gpu_RefreshGrayscaleMode(void);
 extern void math_GrayscaleRgb555(u16 *, s32, u16 *);
 extern void gpu_TintVramRowInPlace(s32, s32, s32, s32, s32, s32);
 extern s32 func_80048AD0(s32);
-extern void func_8004939C(void);
-extern void func_80049718(s32, s32, s32 *, s16 *);
-extern void func_80049A2C(s32, s32, s32);
+extern void ResetEntrySelectionState(void);
+extern void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+    s32, s32, s32 *, s16 *);
+extern void node_QueueTableEntryNodePairUnderSlotNode(s32, s32, s32);
 extern s32 func_80049C24(s32, s32);
 extern void func_80049E1C(void);
 extern void calc_LightMatrix(Unk800F62E0Rec *);
-extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
-extern void func_800523E0(MATRIX *, MATRIX *, s32, MATRIX *);
+extern s16 *gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision(
+    s32, s16 *, s16 *, s32);
+extern void gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
+    MATRIX *, MATRIX *, s32, MATRIX *);
 /* No prototype: defined with no arguments, but func_8003EDC0 /
  * softbody_CreateForNode pass it one. */
 extern void func_80052C10();
@@ -1041,7 +1051,7 @@ extern s32 StepScrollingSpriteDisplay(void);
 extern void eff_StopCommands(void);
 extern void cdrom_WaitIdle(void);
 extern void *func_8003F1D4(void);
-extern void *func_80046DEC(s32);
+extern void *node_GetSlotMatrixPointerArray(s32);
 extern void func_80046B44(void);
 extern void func_80046EDC(s32, s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
@@ -1085,11 +1095,11 @@ extern void func_80046AA0(void);
 extern void snd_VabFakeOpen8And4(s32);
 extern void snd_VabFakeOpen9(s32);
 extern void func_8003F5CC(void);
-extern void func_8003F568(void);
+extern void ClearSavedWordPairsAndTwoWriteOnlyWords(void);
 extern void func_8003F168(void);
-extern s32 func_80046798(void);
-extern void *func_80046F14(void);
-extern void func_8003F274(void);
+extern s32 resource_GetLoadedSelector(void);
+extern void *fight_GetStartPositionPairTable(void);
+extern void gpu_ResetAndStampViewCenteredCellAttributes(void);
 extern void sys_Init(void);
 extern void sys_Panic(void);
 extern void func_80017F90(void);

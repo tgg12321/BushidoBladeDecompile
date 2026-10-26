@@ -8,10 +8,10 @@
  *    g_gpu_last_fog_ot_index (u32, gpu_GetLastFogOtIndex) and the unread
  *    word after it (D_80090600 is read on its own); D_80090600 / D_80090604
  *    (s32) and D_80090608 (s16, word-padded before D_8009060C), each read
- *    on its own by func_8003DA8C / func_8003DBE4; D_80094AEC (s16[4], the
- *    run's end, softbody_CreateForNode's per-mode strides 12, 12, 18, 22).
- *    Under -G8 the original compiler puts them in .sdata, so no -G8 file
- *    defined them.
+ *    on its own by gpu_LatchFogDepthOnTransitionAndQueueMoves /
+ * gpu_QueueDepthSpacedMovesAndLinkTerminalPacket; D_80094AEC (s16[4], the run's
+ * end, softbody_CreateForNode's per-mode strides 12, 12, 18, 22). Under -G8 the
+ * original compiler puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 2B344.c and 309CC.c, -G8 code modules
  *    with their own .sdata and gp accesses, whose .text is adjacent (bb2.ld
  *    2B344.o then 309CC.o); so no code module owns them.
@@ -31,7 +31,7 @@ void func_800477D4(void);
 void wave_InitCallback(void);
 void wave_UpdateCallback(void);
 void func_80047570(void);
-void func_800475A4(void);
+void node_OrientAndQueueViewOffsetNode(void);
 void func_80047738(void);
 void func_8004775C(void);
 void func_8004777C(void);
@@ -61,8 +61,9 @@ s16 D_800906A4[39][2] = {
     {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {0, 0},
 };
 
-/* func_8003E6D8's row masks, 64 angle rows and a 65th (size from the gap
- * to D_800927C0; the .L80091560 label inside was a stray branch target). */
+/* gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's row
+ * masks, 64 angle rows and a 65th (size from the gap to D_800927C0; the
+ * .L80091560 label inside was a stray branch target). */
 s32 D_80090740[65][32] = {
     {0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
      0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -850,7 +851,9 @@ s32 D_800927C0[65][32] = {
      0x00000000, 0x00000000},
 };
 
-/* ANDed with a D_80090740 row: 31 words, func_8003E6D8's loop count. */
+/* ANDed with a D_80090740 row: 31 words,
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's loop
+ * count. */
 s32 D_80094840[31] = {
     0x00000000, 0x00000000, 0x0001C000, 0x001FFC00, 0x007FFF00, 0x00FFFF80,
     0x01FFFFC0, 0x03FFFFE0, 0x07FFFFF0, 0x07FFFFF0, 0x0FFFFFF8, 0x0FFFFFF8,
@@ -861,8 +864,9 @@ s32 D_80094840[31] = {
 };
 
 /* One {init, unk4} pair per stage (38, as D_8009060C), indexed by
- * func_80046798(); the label D_800948C0 was func_8003E6D8's folded
- * &D_800948BC[0].unk4. */
+ * resource_GetLoadedSelector(); the label D_800948C0 was
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's
+ * folded &D_800948BC[0].unk4. */
 Unk800948BCEntry D_800948BC[38] = {
     {0, 0},
     {0, 0},
@@ -877,7 +881,7 @@ Unk800948BCEntry D_800948BC[38] = {
     {0, 0},
     {wave_InitCallback, wave_UpdateCallback},
     {0, 0},
-    {func_80047570, func_800475A4},
+    {func_80047570, node_OrientAndQueueViewOffsetNode},
     {func_80047738, func_8004775C},
     {0, 0},
     {0, 0},
@@ -915,8 +919,8 @@ s32 D_800949EC[32] = {
     0x00000000, 0x00000000,
 };
 
-/* func_8003F274's 16 rows of 2-bit cell flags, then 16 zero words (size
- * from the gap to D_80094AEC). */
+/* gpu_ResetAndStampViewCenteredCellAttributes's 16 rows of 2-bit cell flags,
+ * then 16 zero words (size from the gap to D_80094AEC). */
 s32 D_80094A6C[32] = {
     0x00000000, 0x00000000, 0x00155500, 0x01555550, 0x01555550, 0x0556A554,
     0x055AA954, 0x056AAA54, 0x056AAA54, 0x056AAA54, 0x055AA954, 0x0556A554,

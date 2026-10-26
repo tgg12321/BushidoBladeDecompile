@@ -308,7 +308,7 @@ s32 ndata_ReadFromPack(s32 a0, s32 a1) {
     {
         s32 a0_new = (s32)a2_ptr + (((u32)v1 >> 2) << 2);
         s32 a2_val = v0_ptr[1] - v1;
-        func_800520B8(a0_new, a1, a2_val);
+        mem_MoveBlockRoundedUpToWords(a0_new, a1, a2_val);
     }
     return 1;
 }
@@ -363,7 +363,7 @@ void arena_ShiftBlocks(s32 a0, s32 a1) {
     }
     if (sum != 0) {
         DrawSync(0);
-        func_800520B8(src, dst, sum);
+        mem_MoveBlockRoundedUpToWords(src, dst, sum);
         for (i = a0; i < g_arena_block_count; i++) {
             g_arena_blocks[i].unk4 += a1;
             if (g_arena_blocks[i].fn != 0) {
@@ -506,7 +506,7 @@ void *arena_GetBase(void) { return &g_arena; }
 
 void arena_Copy(s32 a0, s32 a1, s32 a2) {
     arena_UpdatePeak(a1 + a2);
-    func_800520B8(a0, a1, a2);
+    mem_MoveBlockRoundedUpToWords(a0, a1, a2);
 }
 
 extern void func_80044ED8(s32, s32);

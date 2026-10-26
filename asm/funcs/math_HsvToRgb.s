@@ -11,7 +11,7 @@ glabel math_HsvToRgb
     /* 32D28 80042528 0000908C */  lw         $s0, 0x0($a0)
     /* 32D2C 8004252C 0400928C */  lw         $s2, 0x4($a0)
     /* 32D30 80042530 0800918C */  lw         $s1, 0x8($a0)
-    /* 32D34 80042534 BF21010C */  jal        func_800486FC
+    /* 32D34 80042534 BF21010C */  jal        gpu_RefreshGrayscaleMode
     /* 32D38 80042538 21B0A000 */   addu      $s6, $a1, $zero
     /* 32D3C 8004253C 02004010 */  beqz       $v0, .L80042548
     /* 32D40 80042540 00000000 */   nop

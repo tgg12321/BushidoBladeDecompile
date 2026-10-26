@@ -208,7 +208,7 @@ after_select:
     off = (s32)ptr - (s32)var_0;
 
     if (a0->unk_20 != 0) {
-        func_800520B8(a0->unk_20, a0->unk_1C, off);
+        mem_MoveBlockRoundedUpToWords(a0->unk_20, a0->unk_1C, off);
         var_0 = (s32 *)a0->unk_1C;
         if ((a0->unk_00.word >> 1) & 1) {
             snd_VabFakeOpen((s32)var_0 - a0->unk_20, a0->arena_id * 3 + 1);

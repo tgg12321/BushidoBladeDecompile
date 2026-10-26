@@ -594,7 +594,7 @@ glabel func_8004A940
     /* 3BA60 8004B260 0030C048 */  ctc2       $zero, $6 /* handwritten instruction */
     /* 3BA64 8004B264 0038C048 */  ctc2       $zero, $7 /* handwritten instruction */
     /* 3BA68 8004B268 2128A002 */  addu       $a1, $s5, $zero
-    /* 3BA6C 8004B26C 9D36010C */  jal        func_8004DA74
+    /* 3BA6C 8004B26C 9D36010C */  jal        gpu_ProjectStridedNodeVerticesAndDispatchPackets
     /* 3BA70 8004B270 21204002 */   addu      $a0, $s2, $zero
     /* 3BA74 8004B274 74290108 */  j          .L8004A5D0
     /* 3BA78 8004B278 00000000 */   nop

@@ -43,7 +43,7 @@ glabel gpu_LoadTim
     /* 38B68 80048368 04001026 */  addiu      $s0, $s0, 0x4
     /* 38B6C 8004836C 02140300 */  srl        $v0, $v1, 16
     /* 38B70 80048370 1600A2A7 */  sh         $v0, 0x16($sp)
-    /* 38B74 80048374 BF21010C */  jal        func_800486FC
+    /* 38B74 80048374 BF21010C */  jal        gpu_RefreshGrayscaleMode
     /* 38B78 80048378 1400A3A7 */   sh        $v1, 0x14($sp)
     /* 38B7C 8004837C 0C004010 */  beqz       $v0, .L800483B0
     /* 38B80 80048380 21200002 */   addu      $a0, $s0, $zero

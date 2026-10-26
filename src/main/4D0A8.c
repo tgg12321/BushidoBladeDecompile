@@ -915,8 +915,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     /* The second DR_MODE goes at the record's end, past the size this function
-     * returns (2B344 func_8003C560 advances its cursor g_prim_buf_cursor by
-     * that size; 6CF8 func_800174F4 ignores it). */
+     * returns (2B344 fight_UpdateMatchTallyPresentation advances its cursor
+     * g_prim_buf_cursor by that size; 6CF8 func_800174F4 ignores it). */
     mode_off++;
 
     s.ot_idx = arg2;

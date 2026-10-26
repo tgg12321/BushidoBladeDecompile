@@ -1,7 +1,7 @@
 glabel fight_Update
     /* F078 8001E878 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* F07C 8001E87C 2C00BFAF */  sw         $ra, 0x2C($sp)
-    /* F080 8001E880 AC1C010C */  jal        func_800472B0
+    /* F080 8001E880 AC1C010C */  jal        camera_GetViewMatrixWithHalvedMiddleRow
     /* F084 8001E884 2800B0AF */   sw        $s0, 0x28($sp)
     /* F088 8001E888 1080043C */  lui        $a0, %hi(D_80102030)
     /* F08C 8001E88C 30208424 */  addiu      $a0, $a0, %lo(D_80102030)
@@ -75,20 +75,20 @@ glabel fight_Update
     /* F194 8001E994 BC1F848C */  lw         $a0, %lo(D_80101FBC)($a0)
     /* F198 8001E998 1080053C */  lui        $a1, %hi(D_80101FC4)
     /* F19C 8001E99C C41FA58C */  lw         $a1, %lo(D_80101FC4)($a1)
-    /* F1A0 8001E9A0 A8F9000C */  jal        func_8003E6A0
+    /* F1A0 8001E9A0 A8F9000C */  jal        gpu_SetViewOriginSegmentCellsGateBit
     /* F1A4 8001E9A4 00000000 */   nop
     /* F1A8 8001E9A8 1080043C */  lui        $a0, %hi(D_80102408)
     /* F1AC 8001E9AC 0824848C */  lw         $a0, %lo(D_80102408)($a0)
     /* F1B0 8001E9B0 1080053C */  lui        $a1, %hi(D_80102410)
     /* F1B4 8001E9B4 1024A58C */  lw         $a1, %lo(D_80102410)($a1)
-    /* F1B8 8001E9B8 A8F9000C */  jal        func_8003E6A0
+    /* F1B8 8001E9B8 A8F9000C */  jal        gpu_SetViewOriginSegmentCellsGateBit
     /* F1BC 8001E9BC 00000000 */   nop
   .L8001E9C0:
     /* F1C0 8001E9C0 0A80043C */  lui        $a0, %hi(D_800A3690)
     /* F1C4 8001E9C4 90368490 */  lbu        $a0, %lo(D_800A3690)($a0)
     /* F1C8 8001E9C8 00000000 */  nop
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
-    /* F1D0 8001E9D0 6A1B010C */  jal        func_80046DA8
+    /* F1D0 8001E9D0 6A1B010C */  jal        gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
     /* F1D8 8001E9D8 9873000C */  jal        fight_UpdateModeDisplaysAndMatchProgress
     /* F1DC 8001E9DC 00000000 */   nop

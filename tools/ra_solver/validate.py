@@ -14,8 +14,8 @@ CASES = [
     ("_dws", "display"),
     # completed controls
     ("gpu_SetDrawMoveArray", "code6cac_c2"),
-    ("func_8003DBE4", "code6cac_c2"),
-    ("func_8003DA8C", "code6cac_c2"),
+    ("gpu_QueueDepthSpacedMovesAndLinkTerminalPacket", "code6cac_c2"),
+    ("gpu_LatchFogDepthOnTransitionAndQueueMoves", "code6cac_c2"),
 ]
 
 ok = bad = 0

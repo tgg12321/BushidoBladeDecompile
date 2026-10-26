@@ -178,7 +178,7 @@ void func_8003AFFC(void) {
 
     gpu_ResetGraphMode1();
     func_80020D38();
-    func_8004939C();
+    ResetEntrySelectionState();
 
     for (i = 0; i < 2; i++) {
         func_800493E4(D_80101EC8[i].unk_12);
@@ -200,7 +200,7 @@ void func_8003B10C(s32 arg0) {
 
     gpu_ResetGraphMode1();
     func_80020D38();
-    func_8004939C();
+    ResetEntrySelectionState();
 
     func_800493E4(D_80101EC8[arg0].unk_12);
 
@@ -747,7 +747,7 @@ void func_8003C2C0(void) {
     }
 }
 
-void func_8003C42C(void) {
+void fight_TallyMatchResultsAndInitPresentation(void) {
     s32 counts[3];
     s32 i;
     s32 j;
@@ -779,7 +779,7 @@ void func_8003C42C(void) {
     D_800A3834 = 0x15;
 }
 
-void func_8003C560(void) {
+void fight_UpdateMatchTallyPresentation(void) {
 
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A382D == 2) {
@@ -888,8 +888,9 @@ void func_8003C9A4(void) {
     D_800F6608.unk_10.vz = 0;
     D_800F6608.w18 = 0x2710;
     D_800F6608.unk_10.vy = D_800A36AC << 2;
-    func_80046BF4(&D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
-    func_80046DA8(1);
+    gpu_ResetDrawQueueAndPrepareViewAndLighting(
+        &D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
     if (D_800A3929 == 0) {
         g_prim_buf_cursor +=
@@ -970,8 +971,9 @@ void func_8003CD10(void) {
     D_800F6608.unk_10.vz = 0;
     D_800F6608.w18 = 0x2710;
     D_800F6608.unk_10.vy = D_800A36AC << 2;
-    func_80046BF4(&D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
-    func_80046DA8(1);
+    gpu_ResetDrawQueueAndPrepareViewAndLighting(
+        &D_800F6608.unk_00, &D_800F6608.unk_10, 0x2710);
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
     g_prim_buf_cursor += func_800600C8(D_800A391F, (s32)g_prim_buf_cursor, 1);
     D_800A37B8 = D_800A37B8 + 1;
@@ -1378,9 +1380,10 @@ void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
     }
 }
 
-extern void func_8003DBE4(s32, s32, DR_MOVE (*)[2], s32, s32);
+extern void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
+    s32, s32, DR_MOVE (*)[2], s32, s32);
 
-void func_8003DA8C(s32 arg0, s32 arg1) {
+void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
     s16 *rec;
     s32 *ptr;
     s32 dist;
@@ -1427,15 +1430,18 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
                base; element reads are scheduled past the D_80090608 store
                above, ahead of the `sh`: score 8 */
             s32 idx = arg0 * 4;
-            func_8003DBE4(arg1, 0x1F, D_800A3D70, *ptr,
-                          *(s16 *)((u8 *)D_800906A4 + 2 + idx));
-            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr,
-                          *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+            gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
+                arg1, 0x1F, D_800A3D70, *ptr,
+                *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+            gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
+                arg1, 0x13, D_800A4340, *ptr,
+                *(s16 *)((u8 *)D_800906A4 + 2 + idx));
         }
     }
 }
 
-void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
+void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
+    s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
     s32 limit;
     s32 step;
     DR_MOVE *pkt;
@@ -1702,9 +1708,9 @@ void func_8003E2AC(void) {
 
 u32 gpu_GetLastFogOtIndex(void) { return g_gpu_last_fog_ot_index; }
 
-extern void func_8003F388(s16 *arg0);
+extern void gpu_SetCellGateBit(s16 *arg0);
 
-void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void gpu_SetSegmentCellsGateBit(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 sp10[4];
     s16 sp18[4];
     s32 sp20;
@@ -1741,7 +1747,7 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             (var_s0 < 0x20)) {
             sp10[0] = var_s1 - 0x10;
             sp10[2] = var_s0 - 0x10;
-            func_8003F388(sp10);
+            gpu_SetCellGateBit(sp10);
         }
     } else {
         temp_v1 = (var_s1 * 0x7D0) + 0x3E8;
@@ -1789,7 +1795,7 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                 if ((var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
                     sp10[0] = var_s1 - 0x10;
                     sp10[2] = var_s0 - 0x10;
-                    func_8003F388(sp10);
+                    gpu_SetCellGateBit(sp10);
                 }
             }
             temp_s2 %= 2000;
@@ -1813,7 +1819,7 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                     (var_s0 < 0x20)) {
                     sp18[0] = var_s1 - 0x10;
                     sp18[2] = var_s0 - 0x10;
-                    func_8003F388(sp18);
+                    gpu_SetCellGateBit(sp18);
                 }
             }
             if (var_s4 != 0) {
@@ -1832,20 +1838,22 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             (temp_s7 < 0x20)) {
             sp10[0] = temp_fp - 0x10;
             sp10[2] = temp_s7 - 0x10;
-            func_8003F388(sp10);
+            gpu_SetCellGateBit(sp10);
         }
     }
 }
 
-void func_8003E6A0(s32 arg0, s32 arg1) {
-    func_8003E2D8(D_80101DF0.work.t[0], D_80101DF0.work.t[2], arg0, arg1);
+void gpu_SetViewOriginSegmentCellsGateBit(s32 arg0, s32 arg1) {
+    gpu_SetSegmentCellsGateBit(
+        D_80101DF0.work.t[0], D_80101DF0.work.t[2], arg0, arg1);
 }
 
 extern s32 D_800A322C;
 extern s32 D_800927C0[65][32];
 extern s32 D_80090740[65][32];
 extern s32 D_80094840[];
-/* func_8003E6D8's buffer of the queued Unk800A6690Rec */
+/* gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's
+ * buffer of the queued Unk800A6690Rec */
 extern Unk800A6690Rec *D_800A7EF0[];
 extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
 
@@ -1853,7 +1861,8 @@ extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
  * {0,0,0x1000}; ratan2 of the result (D_800A336C) picks one of 64 tables of
  * 32-bit row masks. Each set cell of the 31x31 grid window centred on
  * D_800A3708's cell emits its records, as in func_8003EB84. */
-void func_8003E6D8(s32 arg0) {
+void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
+    s32 arg0) {
     s32 mat[8];
     s16 vec[4];
     s32 res[3];
@@ -1973,8 +1982,8 @@ void func_8003E6D8(s32 arg0) {
         ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
         g_draw_queue_cursor++;
     }
-    if (D_800948BC[func_80046798()].unk4 != 0) {
-        D_800948BC[func_80046798()].unk4();
+    if (D_800948BC[resource_GetLoadedSelector()].unk4 != 0) {
+        D_800948BC[resource_GetLoadedSelector()].unk4();
     }
     pos[0] = -D_80101DF0.xf.rot.vx;
     pos[1] = -D_80101DF0.xf.rot.vy;
@@ -2171,8 +2180,8 @@ extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 D_80094A6C[];
 
 void func_8003F168(void) {
-    if (D_800948BC[func_80046798()].init != 0) {
-        D_800948BC[func_80046798()].init();
+    if (D_800948BC[resource_GetLoadedSelector()].init != 0) {
+        D_800948BC[resource_GetLoadedSelector()].init();
     }
 }
 
@@ -2206,7 +2215,7 @@ void func_8003F218(s32 a0) {
 
 s32 func_8003F268(void) { return D_800A322C; }
 
-void func_8003F274(void) {
+void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     s32 i, j;
     s32 var_2, var_3;
     s32 data;
@@ -2247,7 +2256,7 @@ void func_8003F274(void) {
     }
 }
 
-void func_8003F388(s16 *a0) {
+void gpu_SetCellGateBit(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
@@ -2255,7 +2264,7 @@ void func_8003F388(s16 *a0) {
     }
 }
 
-void func_8003F3D4(s16 *a0) {
+void gpu_SetCellForceBit(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
@@ -2295,7 +2304,7 @@ void func_8003F52C(s32 a0, s32 a1, s32 a2) {
 
 u32 func_8003F54C(s32 a0, s32 a1) { return D_800A8FB0[a1 * 32 + a0]; }
 
-void func_8003F568(void) {
+void ClearSavedWordPairsAndTwoWriteOnlyWords(void) {
     D_800A3374 = 0;
     D_800A3370 = 0;
     D_800A93B0[2] = 0;

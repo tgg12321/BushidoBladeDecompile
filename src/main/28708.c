@@ -1369,7 +1369,7 @@ void replay_PlayFrame(void) {
         idx = g_replay_playback_frame;
         var_8 = (idx << 12) / g_replay_write_frame;
     }
-    D_800A3778 = func_800472B0();
+    D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
     /* The frame record's address is written out at each argument (F3
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */
@@ -1407,16 +1407,19 @@ void replay_PlayFrame(void) {
         rot[2] = 0;
         func_80040D48(i, 1, pos, rot, 0, p->hC);
         if (p->b18 & 1) {
-            func_80049718(var_11->unk_12, i * 2 + 0x8000, 0, 0);
+            node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+                var_11->unk_12, i * 2 + 0x8000, 0, 0);
         }
         if (p->b18 & 4) {
-            func_80049718(D_8008EB80[var_11->unk_14], i * 2 + 0x8001, 0, 0);
+            node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+                D_8008EB80[var_11->unk_14], i * 2 + 0x8001, 0, 0);
         }
         if (p->b18 & 2) {
-            func_80049A2C(var_11->unk_12, i * 2, (p->b18 >> 4) & 1);
+            node_QueueTableEntryNodePairUnderSlotNode(
+                var_11->unk_12, i * 2, (p->b18 >> 4) & 1);
         }
         if (p->b18 & 8) {
-            func_80049A2C(
+            node_QueueTableEntryNodePairUnderSlotNode(
                 D_8008EB80[var_11->unk_14], i * 2 | 1, (p->b18 >> 5) & 1);
         }
         fighter_UpdateBoneWorldData(
@@ -1481,11 +1484,12 @@ void replay_PlayFrame(void) {
             rot[0] = s->unk_A;
             rot[1] = s->unk_C;
             rot[2] = s->unk_E;
-            func_80049718(s->unk_3, 1, pos, rot);
+            node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
+                s->unk_3, 1, pos, rot);
         }
     }
 
-    func_80046DA8(1);
+    gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
     snd_UpdateStageSounds();
     g_replay_playback_frame++;
     if ((g_replay_ring_wrapped != 0

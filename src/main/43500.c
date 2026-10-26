@@ -6,11 +6,12 @@
  * ruling 2026-10-17; Codex seam #72): the statics D_800A33F0, D_800A33F4 and
  * g_collision_hit_tag (0x800A33F0..0x800A33F8) are used only here and open the
  * old 3AB48 .sbss group in address order; calls run from here into 3AB48.c's
- * GTE helpers (gte_SumSquares3, gte_ReadIR1IR2Sra2, func_80052C4C), back only
- * once (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2.
- * A control cut inside this group (before func_80053754) does not byte-match:
- * the shared statics lose gp access. End: before motion_UpdatePlayback (seam
- * #85, moved there from motion_StartPlayback), so motion_StartPlayback's printf
+ * GTE helpers (gte_SumSquares3, gte_ReadIR1IR2Sra2,
+ * gte_TransformPointDifferenceWithInheritedLastRow), back only once
+ * (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2. A
+ * control cut inside this group (before func_80053754) does not byte-match: the
+ * shared statics lose gp access. End: before motion_UpdatePlayback (seam #85,
+ * moved there from motion_StartPlayback), so motion_StartPlayback's printf
  * string D_80015840 is this file's .rodata (0x80015840+0x1C) and 4510C.o's
  * starts with func_80058580's tables at offset 0. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
@@ -247,7 +248,8 @@ s32 collision_GetHit(s32 *arg0, s16 *arg1) {
     return 0;
 }
 
-extern void func_80052C4C(s32, s32, s32, s32);
+extern void gte_TransformPointDifferenceWithInheritedLastRow(
+    s32, s32, s32, s32);
 extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
 
 s32 func_80053754(s32 arg0, s32 arg1) {
@@ -490,8 +492,9 @@ s32 func_80053E9C(s32 arg0, s32 arg1) {
             D_800A33F4->unkB0 = (D_800A33F4->unk58 - D_800A33F4->unk50) *
                                     D_800A33F4->unkE4 / D_800A33F4->unkE0 +
                                 D_800A33F4->unk50;
-            func_80052C4C((s32)data, D_800A33F4->unkA8, D_800A33F4->unkAC,
-                          D_800A33F4->unkB0);
+            gte_TransformPointDifferenceWithInheritedLastRow(
+                (s32)data, D_800A33F4->unkA8, D_800A33F4->unkAC,
+                D_800A33F4->unkB0);
             data += 9;
             var_6 = (u16)*data;
             data++;
@@ -588,8 +591,8 @@ s32 motion_StartPlayback(
     s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
     s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
     s->unk0 = 0;
-    t = func_80046F14();
-    t += func_80046798() * 24 + a1 * 6;
+    t = fight_GetStartPositionPairTable();
+    t += resource_GetLoadedSelector() * 24 + a1 * 6;
     s->unkC = *t++;
     s->unk10 = *t++;
     s->unk14 = *t++;

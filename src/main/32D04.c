@@ -15,7 +15,7 @@ void math_HsvToRgb(s32 *arg0, s32 *arg1) {
     s32 i, f, p, q, t;
     s32 r, g, b;
 
-    if (func_800486FC()) {
+    if (gpu_RefreshGrayscaleMode()) {
         s = 0;
     }
     if (s == 0) {
@@ -986,7 +986,7 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
             *var_3 = dest - (s32)base;
             var_3++;
             size = size - cur_off;
-            func_800520B8((s32)base + cur_off, dest, size);
+            mem_MoveBlockRoundedUpToWords((s32)base + cur_off, dest, size);
             size = (s32)(((u32)size >> 2) * 4);
             dest += size;
         } while (count != -1);
@@ -1026,7 +1026,7 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
             var_1++;
             count++;
             size = size - cur_off;
-            func_800520B8((s32)b + cur_off, (s32)dest, size);
+            mem_MoveBlockRoundedUpToWords((s32)b + cur_off, (s32)dest, size);
             size = (u32)size >> 2;
             size = size << 2;
             dest = (s32 *)((s32)dest + size);
@@ -1091,7 +1091,7 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *arg2) {
                 *dest_arr = data_ptr - (s32)orig_dest;
                 dest_arr++;
                 size = size - start;
-                func_800520B8(src_orig + start, data_ptr, size);
+                mem_MoveBlockRoundedUpToWords(src_orig + start, data_ptr, size);
                 size = (u32)size >> 2;
                 size = size << 2;
                 data_ptr += size;
@@ -1144,13 +1144,13 @@ void func_80044504(u32 *a0) {
     }
     if (func_8003F268() != 0) {
         *(s32 *)0x1F800018 = 0xBE;
-    } else if (func_80046E7C() != 0) {
+    } else if (gpu_GetRaisedOtCutoffRequested() != 0) {
         *(s32 *)0x1F800018 = 0x182;
     } else {
         *(s32 *)0x1F800018 = 0xBE;
     }
     func_8004A4E0();
-    func_80046E54(1);
+    gpu_SetRaisedOtCutoffRequested(1);
     g_draw_queue_cursor = g_draw_queue;
 }
 
@@ -1162,7 +1162,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     D_800A9CF8.unk2 = *a0++;
     D_800A9CF8.unk8 = (s32)a0;
     D_800A9CF8.unkC = a2;
-    v0 = func_80046798();
+    v0 = resource_GetLoadedSelector();
     D_800A9CF8.unk4 = v0;
     switch ((s16)v0) {
     case 7:
@@ -1212,28 +1212,28 @@ void func_8004473C(void) {
  * installs at scratchpad word 0x1F80001C and 3AB48.c's func_8004A4E0 selects
  * from, then gpu_OffsetTexPrimStream's per-type halfword sizes D_80095588.
  * Sizes from the data labels. Defined after every function. */
-void func_8004D244();
-void func_8004D424();
+void gpu_EmitOtCutoffFlatLitTexturedTriangles();
+void gpu_EmitOtCutoffFlatLitTexturedQuads();
 void func_8004D634();
 void func_8004D838();
-void func_8004E574();
-void func_8004E7E4();
-void func_8004EAC8();
-void func_8004ECC8();
-void func_8004EF10();
-void func_8004F0FC();
-void func_8004F314();
-void func_8004F53C();
-void func_8004F798();
-void func_8004F970();
-void func_8004FB74();
-void func_8004FD40();
+void gpu_EmitAveragedTableColorTexturedTriangles();
+void gpu_EmitAveragedTableColorTexturedQuads();
+void gpu_EmitTableColorGouraudTexturedTriangles();
+void gpu_EmitTableColorGouraudTexturedQuads();
+void gpu_EmitOrientationAdjustedFlatLitTexturedTriangles();
+void gpu_EmitOrientationAdjustedFlatLitTexturedQuads();
+void gpu_EmitOrientationAdjustedGouraudTexturedTriangles();
+void gpu_EmitOrientationAdjustedGouraudTexturedQuads();
+void gpu_EmitOtCutoffRawTexturedTriangles();
+void gpu_EmitOtCutoffRawTexturedQuads();
+void gpu_EmitFlatLitTexturedTriangles();
+void gpu_EmitFlatLitTexturedQuads();
 void func_8004FF40();
 void func_80050120();
 void func_80050334();
 void func_80050538();
-void func_80050774();
-void func_80050908();
+void gpu_EmitBlackFlatTriangles();
+void gpu_EmitBlackFlatQuads();
 void func_80050AB8();
 void func_80050C68();
 void func_80050E60();
@@ -1245,15 +1245,48 @@ void func_80051754();
 void func_80051D08();
 void func_80051ED4();
 void (*D_800951D8[42])() = {
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_8004E574, func_8004E7E4,
-    func_8004EAC8, func_8004ECC8,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitAveragedTableColorTexturedTriangles,
+    gpu_EmitAveragedTableColorTexturedQuads,
+    gpu_EmitTableColorGouraudTexturedTriangles,
+    gpu_EmitTableColorGouraudTexturedQuads,
 };
 void (*D_80095280[42])() = {
     func_80044650, func_80044650, func_80044650, func_80044650, func_80051208,
@@ -1267,33 +1300,128 @@ void (*D_80095280[42])() = {
     func_80050E60, func_80051010,
 };
 void (*D_80095328[88])() = {
-    func_80044650, func_80044650, func_80044650, func_80044650, func_8004FB74,
-    func_8004F798, func_8004EF10, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_8004FD40, func_8004F970, func_8004F0FC,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80050334, func_80044650, func_8004F314, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80050538, func_80044650,
-    func_8004F53C, func_80044650, func_80050774, func_80050908, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_8004FF40, func_80050120, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80051208, func_80044650,
-    func_80051208, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_800513B0, func_80044650, func_800513B0, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_800515AC,
-    func_80044650, func_800515AC, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80051754, func_80044650, func_80051754,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitFlatLitTexturedTriangles,
+    gpu_EmitOtCutoffRawTexturedTriangles,
+    gpu_EmitOrientationAdjustedFlatLitTexturedTriangles,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitFlatLitTexturedQuads,
+    gpu_EmitOtCutoffRawTexturedQuads,
+    gpu_EmitOrientationAdjustedFlatLitTexturedQuads,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80050334,
+    func_80044650,
+    gpu_EmitOrientationAdjustedGouraudTexturedTriangles,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80050538,
+    func_80044650,
+    gpu_EmitOrientationAdjustedGouraudTexturedQuads,
+    func_80044650,
+    gpu_EmitBlackFlatTriangles,
+    gpu_EmitBlackFlatQuads,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_8004FF40,
+    func_80050120,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80051208,
+    func_80044650,
+    func_80051208,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_800513B0,
+    func_80044650,
+    func_800513B0,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_800515AC,
+    func_80044650,
+    func_800515AC,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80051754,
+    func_80044650,
+    func_80051754,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
 };
 void (*D_80095488[32])() = {
-    func_80044650, func_80044650, func_80044650, func_80044650, func_8004D244,
-    func_8004F798, func_8004EF10, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_8004D424, func_8004F970, func_8004F0FC,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_8004D634, func_80044650, func_8004F314, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_8004D838, func_80044650,
-    func_8004F53C, func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitOtCutoffFlatLitTexturedTriangles,
+    gpu_EmitOtCutoffRawTexturedTriangles,
+    gpu_EmitOrientationAdjustedFlatLitTexturedTriangles,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitOtCutoffFlatLitTexturedQuads,
+    gpu_EmitOtCutoffRawTexturedQuads,
+    gpu_EmitOrientationAdjustedFlatLitTexturedQuads,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_8004D634,
+    func_80044650,
+    gpu_EmitOrientationAdjustedGouraudTexturedTriangles,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_8004D838,
+    func_80044650,
+    gpu_EmitOrientationAdjustedGouraudTexturedQuads,
+    func_80044650,
 };
 void (*D_80095508[32])() = {
     func_80051D08, func_80044650, func_80044650, func_80044650, func_80044650,

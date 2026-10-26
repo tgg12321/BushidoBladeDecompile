@@ -51,7 +51,7 @@ glabel reloc_KeepListedEntries
     /* 34A2C 8004422C 04007326 */  addiu      $s3, $s3, 0x4
     /* 34A30 80044230 23800402 */  subu       $s0, $s0, $a0
     /* 34A34 80044234 21208402 */  addu       $a0, $s4, $a0
-    /* 34A38 80044238 2E48010C */  jal        func_800520B8
+    /* 34A38 80044238 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 34A3C 8004423C 21300002 */   addu      $a2, $s0, $zero
     /* 34A40 80044240 82801000 */  srl        $s0, $s0, 2
     /* 34A44 80044244 80801000 */  sll        $s0, $s0, 2

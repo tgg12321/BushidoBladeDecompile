@@ -1,0 +1,1 @@
+{"func": "camera_GetViewMatrixWithHalvedMiddleRow", "addr": "800472B0", "verdict": "PASS", "body_hash": "63d549d5b6795ffd", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer-debt3-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T12:43:02Z", "head": "1afa4eb78", "notes": "", "renamed_from": ["func_800472B0"]}

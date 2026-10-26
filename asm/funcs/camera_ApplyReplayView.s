@@ -53,7 +53,7 @@ glabel camera_ApplyReplayView
     /* EFAC 8001E7AC E0F5428C */  lw         $v0, %lo(g_camera_view_offset + 0x18)($v0)
     /* EFB0 8001E7B0 21282002 */  addu       $a1, $s1, $zero
     /* EFB4 8001E7B4 2130C200 */  addu       $a2, $a2, $v0
-    /* EFB8 8001E7B8 FD1A010C */  jal        func_80046BF4
+    /* EFB8 8001E7B8 FD1A010C */  jal        gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* EFBC 8001E7BC 3000A6AF */   sw        $a2, 0x30($sp)
     /* EFC0 8001E7C0 21200002 */  addu       $a0, $s0, $zero
     /* EFC4 8001E7C4 20005026 */  addiu      $s0, $s2, 0x20

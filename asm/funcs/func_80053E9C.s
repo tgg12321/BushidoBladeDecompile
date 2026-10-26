@@ -236,7 +236,7 @@ glabel func_80053E9C
     /* 44A0C 8005420C AC0066AD */  sw         $a2, 0xAC($t3)
     /* 44A10 80054210 AC00668D */  lw         $a2, 0xAC($t3)
     /* 44A14 80054214 2138E800 */  addu       $a3, $a3, $t0
-    /* 44A18 80054218 134B010C */  jal        func_80052C4C
+    /* 44A18 80054218 134B010C */  jal        gte_TransformPointDifferenceWithInheritedLastRow
     /* 44A1C 8005421C B00067AD */   sw        $a3, 0xB0($t3)
     /* 44A20 80054220 00002296 */  lhu        $v0, 0x0($s1)
     /* 44A24 80054224 02003126 */  addiu      $s1, $s1, 0x2

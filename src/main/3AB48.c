@@ -19,43 +19,43 @@ void func_8004A938(void) {}
 
 INCLUDE_ASM("asm/funcs", func_8004A940);
 INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedTriangle);
-INCLUDE_ASM("asm/funcs", func_8004BCC0);
+INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision);
 INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedQuad);
 INCLUDE_ASM("asm/funcs", math_MidpointS16x3U8x2);
 INCLUDE_ASM("asm/funcs", func_8004C404);
-INCLUDE_ASM("asm/funcs", func_8004C994);
-INCLUDE_ASM("asm/funcs", func_8004CB8C);
-INCLUDE_ASM("asm/funcs", func_8004CDB0);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles);
 INCLUDE_ASM("asm/funcs", func_8004CFE0);
-INCLUDE_ASM("asm/funcs", func_8004D244);
-INCLUDE_ASM("asm/funcs", func_8004D424);
+INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffFlatLitTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffFlatLitTexturedQuads);
 INCLUDE_ASM("asm/funcs", func_8004D634);
 INCLUDE_ASM("asm/funcs", func_8004D838);
-INCLUDE_ASM("asm/funcs", func_8004DA74);
+INCLUDE_ASM("asm/funcs", gpu_ProjectStridedNodeVerticesAndDispatchPackets);
 INCLUDE_ASM("asm/funcs", func_8004DDB4);
 
 void func_8004E564(void) {}
 
 void func_8004E56C(void) {}
 
-INCLUDE_ASM("asm/funcs", func_8004E574);
-INCLUDE_ASM("asm/funcs", func_8004E7E4);
-INCLUDE_ASM("asm/funcs", func_8004EAC8);
-INCLUDE_ASM("asm/funcs", func_8004ECC8);
-INCLUDE_ASM("asm/funcs", func_8004EF10);
-INCLUDE_ASM("asm/funcs", func_8004F0FC);
-INCLUDE_ASM("asm/funcs", func_8004F314);
-INCLUDE_ASM("asm/funcs", func_8004F53C);
-INCLUDE_ASM("asm/funcs", func_8004F798);
-INCLUDE_ASM("asm/funcs", func_8004F970);
-INCLUDE_ASM("asm/funcs", func_8004FB74);
-INCLUDE_ASM("asm/funcs", func_8004FD40);
+INCLUDE_ASM("asm/funcs", gpu_EmitAveragedTableColorTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitAveragedTableColorTexturedQuads);
+INCLUDE_ASM("asm/funcs", gpu_EmitTableColorGouraudTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitTableColorGouraudTexturedQuads);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedFlatLitTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedFlatLitTexturedQuads);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedGouraudTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedGouraudTexturedQuads);
+INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffRawTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffRawTexturedQuads);
+INCLUDE_ASM("asm/funcs", gpu_EmitFlatLitTexturedTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitFlatLitTexturedQuads);
 INCLUDE_ASM("asm/funcs", func_8004FF40);
 INCLUDE_ASM("asm/funcs", func_80050120);
 INCLUDE_ASM("asm/funcs", func_80050334);
 INCLUDE_ASM("asm/funcs", func_80050538);
-INCLUDE_ASM("asm/funcs", func_80050774);
-INCLUDE_ASM("asm/funcs", func_80050908);
+INCLUDE_ASM("asm/funcs", gpu_EmitBlackFlatTriangles);
+INCLUDE_ASM("asm/funcs", gpu_EmitBlackFlatQuads);
 INCLUDE_ASM("asm/funcs", func_80050AB8);
 INCLUDE_ASM("asm/funcs", func_80050C68);
 INCLUDE_ASM("asm/funcs", func_80050E60);
@@ -68,8 +68,8 @@ INCLUDE_ASM("asm/funcs", func_80051944);
 INCLUDE_ASM("asm/funcs", func_80051B04);
 INCLUDE_ASM("asm/funcs", func_80051D08);
 INCLUDE_ASM("asm/funcs", func_80051ED4);
-INCLUDE_ASM("asm/funcs", func_800520B8);
-INCLUDE_ASM("asm/funcs", func_800523E0);
+INCLUDE_ASM("asm/funcs", mem_MoveBlockRoundedUpToWords);
+INCLUDE_ASM("asm/funcs", gte_LerpMatrixRowsAndRebuildOrthonormalBasis);
 INCLUDE_ASM("asm/funcs", gte_NormalizeIRVector);
 /* Hand-written asm in the PsyQ source: trapping add/addi/sub ops GCC cannot
  * emit, a dead delay-slot init, three separate jr $ra exits; GTE LZCS/LZCR
@@ -103,5 +103,5 @@ INCLUDE_ASM("asm/funcs", gte_TransformSVectorWithSeparateTranslation);
 INCLUDE_ASM("asm/funcs", gte_ReadFarColor);
 INCLUDE_ASM("asm/funcs", func_80052C10);
 INCLUDE_ASM("asm/funcs", gpu_DepthToOtIndex);
-INCLUDE_ASM("asm/funcs", func_80052C4C);
+INCLUDE_ASM("asm/funcs", gte_TransformPointDifferenceWithInheritedLastRow);
 INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);

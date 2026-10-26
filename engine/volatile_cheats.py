@@ -780,7 +780,7 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # independently of the ledgers (the allowlist affects only the sandbox score,
     # never the real build, so the proof needs no row). Same 2026-08-18 general
     # phantom-frame-slot family as the rows above; no family extension.
-    "func_80049A2C": frozenset({("pre_pad", 2)}),
+    "node_QueueTableEntryNodePairUnderSlotNode": frozenset({("pre_pad", 2)}),
     "func_800481E8": frozenset({("pre_pad", 8)}),
     "func_80041688": frozenset({("pre_pad", 8)}),
     # 2026-09-02 owner ruling (docs/grind/decisions.md, "foreclosed-bucket

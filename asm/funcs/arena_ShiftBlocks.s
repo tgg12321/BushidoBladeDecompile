@@ -36,7 +36,7 @@ glabel arena_ShiftBlocks
     /* 35B14 80045314 21200000 */   addu      $a0, $zero, $zero
     /* 35B18 80045318 21208002 */  addu       $a0, $s4, $zero
     /* 35B1C 8004531C 2128A002 */  addu       $a1, $s5, $zero
-    /* 35B20 80045320 2E48010C */  jal        func_800520B8
+    /* 35B20 80045320 2E48010C */  jal        mem_MoveBlockRoundedUpToWords
     /* 35B24 80045324 21302002 */   addu      $a2, $s1, $zero
     /* 35B28 80045328 E002828F */  lw         $v0, %gp_rel(g_arena_block_count)($gp)
     /* 35B2C 8004532C 21804002 */  addu       $s0, $s2, $zero

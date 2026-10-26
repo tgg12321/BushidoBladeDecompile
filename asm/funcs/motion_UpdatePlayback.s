@@ -242,9 +242,9 @@ glabel motion_UpdatePlayback
     /* 454A4 80054CA4 280063A6 */   sh        $v1, 0x28($s3)
     /* 454A8 80054CA8 4708010C */  jal        light_ApplyPointLightTargets
     /* 454AC 80054CAC 00000000 */   nop
-    /* 454B0 80054CB0 841C010C */  jal        func_80047210
+    /* 454B0 80054CB0 841C010C */  jal        camera_CopyViewMatrixWithHalvedMiddleRow
     /* 454B4 80054CB4 00000000 */   nop
-    /* 454B8 80054CB8 9DFC000C */  jal        func_8003F274
+    /* 454B8 80054CB8 9DFC000C */  jal        gpu_ResetAndStampViewCenteredCellAttributes
     /* 454BC 80054CBC 00000000 */   nop
     /* 454C0 80054CC0 0F80103C */  lui        $s0, %hi(D_800F62E0)
     /* 454C4 80054CC4 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)
@@ -354,18 +354,18 @@ glabel motion_UpdatePlayback
     /* 45660 80054E60 40801100 */   sll       $s0, $s1, 1
     /* 45664 80054E64 00800536 */  ori        $a1, $s0, 0x8000
     /* 45668 80054E68 21300000 */  addu       $a2, $zero, $zero
-    /* 4566C 80054E6C C625010C */  jal        func_80049718
+    /* 4566C 80054E6C C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 45670 80054E70 21380000 */   addu      $a3, $zero, $zero
     /* 45674 80054E74 44004486 */  lh         $a0, 0x44($s2)
     /* 45678 80054E78 21280002 */  addu       $a1, $s0, $zero
-    /* 4567C 80054E7C 8B26010C */  jal        func_80049A2C
+    /* 4567C 80054E7C 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 45680 80054E80 21300000 */   addu      $a2, $zero, $zero
   .L80054E84:
     /* 45684 80054E84 48004486 */  lh         $a0, 0x48($s2)
     /* 45688 80054E88 00000000 */  nop
     /* 4568C 80054E8C 03008004 */  bltz       $a0, .L80054E9C
     /* 45690 80054E90 01000536 */   ori       $a1, $s0, 0x1
-    /* 45694 80054E94 8B26010C */  jal        func_80049A2C
+    /* 45694 80054E94 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 45698 80054E98 01000624 */   addiu     $a2, $zero, 0x1
   .L80054E9C:
     /* 4569C 80054E9C 3C00868E */  lw         $a2, 0x3C($s4)
@@ -396,7 +396,7 @@ glabel motion_UpdatePlayback
     /* 456F8 80054EF8 0200222A */  slti       $v0, $s1, 0x2
     /* 456FC 80054EFC 78FF4014 */  bnez       $v0, .L80054CE0
     /* 45700 80054F00 04009426 */   addiu     $s4, $s4, 0x4
-    /* 45704 80054F04 A81B010C */  jal        func_80046EA0
+    /* 45704 80054F04 A81B010C */  jal        gpu_RunGridDrawPassAndQueueFogMoves
     /* 45708 80054F08 10270424 */   addiu     $a0, $zero, 0x2710
     /* 4570C 80054F0C 00006296 */  lhu        $v0, 0x0($s3)
     /* 45710 80054F10 02006386 */  lh         $v1, 0x2($s3)

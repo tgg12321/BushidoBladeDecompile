@@ -7,7 +7,7 @@ glabel func_800467B8
     /* 36FCC 800467CC 2400BFAF */  sw         $ra, 0x24($sp)
     /* 36FD0 800467D0 1800B2AF */  sw         $s2, 0x18($sp)
     /* 36FD4 800467D4 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 36FD8 800467D8 BF21010C */  jal        func_800486FC
+    /* 36FD8 800467D8 BF21010C */  jal        gpu_RefreshGrayscaleMode
     /* 36FDC 800467DC 1000B0AF */   sw        $s0, 0x10($sp)
     /* 36FE0 800467E0 02004010 */  beqz       $v0, .L800467EC
     /* 36FE4 800467E4 00000000 */   nop

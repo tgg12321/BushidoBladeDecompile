@@ -2384,7 +2384,7 @@ glabel fighter_Update
     /* 169AC 800261AC 0980013C */  lui        $at, %hi(D_8008EB80)
     /* 169B0 800261B0 21082300 */  addu       $at, $at, $v1
     /* 169B4 800261B4 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* 169B8 800261B8 8B26010C */  jal        func_80049A2C
+    /* 169B8 800261B8 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 169BC 800261BC 21300000 */   addu      $a2, $zero, $zero
   .L800261C0:
     /* 169C0 800261C0 62002292 */  lbu        $v0, 0x62($s1)
@@ -2396,7 +2396,7 @@ glabel fighter_Update
     /* 169D8 800261D8 00800534 */  ori        $a1, $zero, 0x8000
     /* 169DC 800261DC 21284500 */  addu       $a1, $v0, $a1
     /* 169E0 800261E0 21300000 */  addu       $a2, $zero, $zero
-    /* 169E4 800261E4 C625010C */  jal        func_80049718
+    /* 169E4 800261E4 C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 169E8 800261E8 21380000 */   addu      $a3, $zero, $zero
   .L800261EC:
     /* 169EC 800261EC 62002292 */  lbu        $v0, 0x62($s1)
@@ -2411,7 +2411,7 @@ glabel fighter_Update
     /* 16A10 80026210 0980013C */  lui        $at, %hi(D_8008EB80)
     /* 16A14 80026214 21082200 */  addu       $at, $at, $v0
     /* 16A18 80026218 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* 16A1C 8002621C C625010C */  jal        func_80049718
+    /* 16A1C 8002621C C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 16A20 80026220 21380000 */   addu      $a3, $zero, $zero
   .L80026224:
     /* 16A24 80026224 62002692 */  lbu        $a2, 0x62($s1)
@@ -2421,7 +2421,7 @@ glabel fighter_Update
     /* 16A34 80026234 40281300 */   sll       $a1, $s3, 1
     /* 16A38 80026238 12002486 */  lh         $a0, 0x12($s1)
     /* 16A3C 8002623C 02310600 */  srl        $a2, $a2, 4
-    /* 16A40 80026240 8B26010C */  jal        func_80049A2C
+    /* 16A40 80026240 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 16A44 80026244 0100C630 */   andi      $a2, $a2, 0x1
     /* 16A48 80026248 62002692 */  lbu        $a2, 0x62($s1)
   .L8002624C:
@@ -2435,7 +2435,7 @@ glabel fighter_Update
     /* 16A68 80026268 0980013C */  lui        $at, %hi(D_8008EB80)
     /* 16A6C 8002626C 21082200 */  addu       $at, $at, $v0
     /* 16A70 80026270 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* 16A74 80026274 8B26010C */  jal        func_80049A2C
+    /* 16A74 80026274 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 16A78 80026278 0100C630 */   andi      $a2, $a2, 0x1
   .L8002627C:
     /* 16A7C 8002627C 90022726 */  addiu      $a3, $s1, 0x290
@@ -2915,7 +2915,7 @@ glabel fighter_Update
     /* 17164 80026964 37006214 */  bne        $v1, $v0, .L80026A44
     /* 17168 80026968 00000000 */   nop
   .L8002696C:
-    /* 1716C 8002696C 7B1B010C */  jal        func_80046DEC
+    /* 1716C 8002696C 7B1B010C */  jal        node_GetSlotMatrixPointerArray
     /* 17170 80026970 21206002 */   addu      $a0, $s3, $zero
     /* 17174 80026974 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* 17178 80026978 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
