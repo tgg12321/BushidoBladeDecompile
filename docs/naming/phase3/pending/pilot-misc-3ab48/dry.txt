@@ -1,0 +1,76 @@
+==============================================================================
+NAMING WAVE — 11 operations (0 RESET, 11 RENAME)
+  11 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — named_syms.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (16) --
+  (root): 2 files, 22 substitutions
+      inline_asm_canonical.txt  (11)
+      known_psyq_stdlib.txt  (11)
+  asm: 11 files, 22 substitutions
+      asm/funcs/func_8004CFE0.s  (2)
+      asm/funcs/func_8004FF40.s  (2)
+      asm/funcs/func_80050120.s  (2)
+      asm/funcs/func_80051208.s  (2)
+      asm/funcs/func_800513B0.s  (2)
+      asm/funcs/func_800515AC.s  (2)
+      ... and 5 more
+  src: 3 files, 49 substitutions
+      src/main/32D04.c  (28)
+      src/main/3AB48.c  (11)
+      src/main/d_5BF0.c  (10)
+
+-- .s file renames (11) --
+  asm/funcs/func_8004CFE0.s -> asm/funcs/gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedQuads.s
+  asm/funcs/func_8004FF40.s -> asm/funcs/gpu_EmitColorScaledFlatLitTexturedTriangles.s
+  asm/funcs/func_80050120.s -> asm/funcs/gpu_EmitColorScaledFlatLitTexturedQuads.s
+  asm/funcs/func_80051208.s -> asm/funcs/gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc.s
+  asm/funcs/func_800513B0.s -> asm/funcs/gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc.s
+  asm/funcs/func_800515AC.s -> asm/funcs/gpu_EmitPatchedColorTriangleOutlinesFromWideRecords.s
+  asm/funcs/func_80051754.s -> asm/funcs/gpu_EmitPatchedColorQuadOutlinesFromWideRecords.s
+  asm/funcs/func_80051944.s -> asm/funcs/gpu_WriteAndLinkEmbeddedNccsLitTrianglePackets.s
+  asm/funcs/func_80051B04.s -> asm/funcs/gpu_WriteAndLinkDepthBiasedEmbeddedQuadsAndAuxiliaryPackets.s
+  asm/funcs/func_80051D08.s -> asm/funcs/gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256.s
+  ... and 1 more
+
+-- ledger directory renames (11) --
+  memory/grind/func_8004CFE0 -> memory/grind/gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedQuads
+  memory/grind/func_8004FF40 -> memory/grind/gpu_EmitColorScaledFlatLitTexturedTriangles
+  memory/grind/func_80050120 -> memory/grind/gpu_EmitColorScaledFlatLitTexturedQuads
+  memory/grind/func_80051208 -> memory/grind/gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc
+  memory/grind/func_800513B0 -> memory/grind/gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc
+  memory/grind/func_800515AC -> memory/grind/gpu_EmitPatchedColorTriangleOutlinesFromWideRecords
+  memory/grind/func_80051754 -> memory/grind/gpu_EmitPatchedColorQuadOutlinesFromWideRecords
+  memory/grind/func_80051944 -> memory/grind/gpu_WriteAndLinkEmbeddedNccsLitTrianglePackets
+  memory/grind/func_80051B04 -> memory/grind/gpu_WriteAndLinkDepthBiasedEmbeddedQuadsAndAuxiliaryPackets
+  memory/grind/func_80051D08 -> memory/grind/gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256
+  ... and 1 more
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (11) --
+  memory/grind/func_8004CFE0/layer2.jsonl: 1 changes
+      line 1: func func_8004CFE0 -> gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedQuads
+  memory/grind/func_8004FF40/layer2.jsonl: 1 changes
+      line 1: func func_8004FF40 -> gpu_EmitColorScaledFlatLitTexturedTriangles
+  memory/grind/func_80050120/layer2.jsonl: 1 changes
+      line 1: func func_80050120 -> gpu_EmitColorScaledFlatLitTexturedQuads
+  memory/grind/func_80051208/layer2.jsonl: 1 changes
+      line 1: func func_80051208 -> gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc
+  memory/grind/func_800513B0/layer2.jsonl: 1 changes
+      line 1: func func_800513B0 -> gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc
+  memory/grind/func_800515AC/layer2.jsonl: 1 changes
+      line 1: func func_800515AC -> gpu_EmitPatchedColorTriangleOutlinesFromWideRecords
+  memory/grind/func_80051754/layer2.jsonl: 1 changes
+      line 1: func func_80051754 -> gpu_EmitPatchedColorQuadOutlinesFromWideRecords
+  memory/grind/func_80051944/layer2.jsonl: 1 changes
+      line 1: func func_80051944 -> gpu_WriteAndLinkEmbeddedNccsLitTrianglePackets
+  memory/grind/func_80051B04/layer2.jsonl: 1 changes
+      line 1: func func_80051B04 -> gpu_WriteAndLinkDepthBiasedEmbeddedQuadsAndAuxiliaryPackets
+  memory/grind/func_80051D08/layer2.jsonl: 1 changes
+      line 1: func func_80051D08 -> gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256
+  memory/grind/func_80051ED4/layer2.jsonl: 1 changes
+      line 1: func func_80051ED4 -> gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256
+
+DRY RUN — nothing written. Re-run with --apply.
