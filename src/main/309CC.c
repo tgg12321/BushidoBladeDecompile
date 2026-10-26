@@ -150,7 +150,7 @@ Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
     softbody_SetupObject(ptr, 1);
     softbody_RequestRebuild(ptr);
     node_BuildProjectedNodeList(ptr);
-    func_8003E120();
+    gpu_BuildFogBlockLevels();
     return ptr;
 }
 

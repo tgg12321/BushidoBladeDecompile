@@ -70,7 +70,9 @@ void motion_SetFixedChannelBlock(MotionFrame *arg0) {
 /* func_8002738C ORs limb bits into `*(&D_800A376A + a0)`; its only caller
  * passes a0 = 0 (fighter_ResolveBoneHit), so D_800A376B (written 0 elsewhere,
  * never read) is not reached from here. FAKE (Q97): two u8 scalars; as u8[2],
- * func_8003B2C8 / func_8003B328 were reported at 12 / 16 (not banked). */
+ * fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState /
+ * fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
+ * were reported at 12 / 16 (not banked). */
 void func_8002738C(s32 a0, s32 a1) {
     if (D_800A38DC != 0) {
         return;

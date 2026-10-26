@@ -17,7 +17,7 @@ glabel func_80046B44
     /* 37380 80046B80 00000000 */   nop
     /* 37384 80046B84 3601010C */  jal        slot_ClearObjectPointersAndTextureRequests
     /* 37388 80046B88 00000000 */   nop
-    /* 3738C 80046B8C FDFD000C */  jal        func_8003F7F4
+    /* 3738C 80046B8C FDFD000C */  jal        softbody_FreeAllAndClearWriteOnlyWords
     /* 37390 80046B90 00000000 */   nop
     /* 37394 80046B94 01000224 */  addiu      $v0, $zero, 0x1
     /* 37398 80046B98 02000324 */  addiu      $v1, $zero, 0x2

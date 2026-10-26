@@ -59,14 +59,15 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
                 s3 = s0[0];
                 {
                     s32 off = ALIGN4(s0[s3 - 1]);
-                    func_8003EDC0((u16 *)PTR_OFF(s0, off), 7);
+                    gpu_UnpackGridRecordsNodesAndCellRuns(
+                        (u16 *)PTR_OFF(s0, off), 7);
                 }
                 break;
             case 34:
                 s7 = 0;
                 break;
             }
-            func_8003F168();
+            resource_InvokeLoadedSelectorInitCallback();
             if (s7 != 0) {
                 return;
             }
@@ -170,14 +171,14 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
 
     reloc_RelocateBlock(s6, 7);
     gpu_LoadTimGroupWithConditionalClutRowAdvance((u32 *)var_7, 0);
-    func_8003EDC0((u16 *)s4, 7);
+    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s4, 7);
     collision_SetGrid((s32)sp10);
     D_800A33B0 = (s32)sp18;
     g_fight_position_records = (s32)sp20;
     DrawSync(0);
     arena_SetBlockEnd(s7, (s32)s1);
     arena_SetMoveCallback(s7, (s32)resource_RebaseLoadedBlockSections);
-    func_8003F168();
+    resource_InvokeLoadedSelectorInitCallback();
     if (D_800A38DC != 0) {
         if (arg0 != 0x22) {
             resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
@@ -209,7 +210,7 @@ void resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks(void) {
         break;
     }
     reloc_RelocateBlock(a0, 7);
-    func_8003EDC0((u16 *)s1, 7);
+    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s1, 7);
     arena_Resize(7, (s32)((u8 *)s1 - (u8 *)s0));
     D_8009947A = 0;
 }
@@ -246,7 +247,7 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
     collision_SetGrid((s32)s3);
     D_800A33B0 = (s32)s4p;
     g_fight_position_records = (s32)s1p;
-    func_8003EDC0((u16 *)s0p, 7);
+    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s0p, 7);
 }
 
 void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
@@ -429,7 +430,7 @@ void func_80046B44(void) {
     light_InitDefaults();
     gpu_InitFogDrawMoves();
     slot_ClearObjectPointersAndTextureRequests();
-    func_8003F7F4();
+    softbody_FreeAllAndClearWriteOnlyWords();
     g_color_mode = 0;
     D_800F6650 = 0;
     g_gpu_raised_ot_cutoff_requested = 1;
@@ -548,7 +549,7 @@ void resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
     s32 a0, s32 a1) {
     resource_LoadOrReuseSelectedBlock(a0, a1);
     ApplyLightPresetRowBackgroundClearAndFarColor(a0);
-    func_8003E0E0();
+    gpu_BuildFogRowLevels();
 }
 
 void *fight_GetStartPositionPairTable(void) {
@@ -1882,7 +1883,7 @@ end:
     if (var_4 == 0) {
         func_80046020();
         func_80045B68(D_800A33EC, i, D_800EF980, arg0);
-        func_8003E120();
+        gpu_BuildFogBlockLevels();
     }
 }
 

@@ -1,0 +1,1 @@
+{"func": "fight_UpdateScrollingSpriteDisplayAndMergeBitFlags", "addr": "8003BEA8", "verdict": "PASS", "body_hash": "af791538eb6f82a4", "body_kind": "c", "file": "main/2B344", "reviewer": "abfeef45afdec8731", "scope": "cheat-cleanup", "date": "2026-10-16T14:58:44Z", "head": "7e2e150f2", "notes": "", "renamed_from": ["func_8003BEA8"]}

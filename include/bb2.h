@@ -290,7 +290,7 @@ extern u8 D_800A31DA;
 extern u8 D_800A3670;
 extern u8 D_800A3671;
 /* Three angles: gpu_PrepareViewAndFlushDrawQueue passes them to
- * math_RotMatrixZXY; func_8003EDC0 zeroes them. */
+ * math_RotMatrixZXY; gpu_UnpackGridRecordsNodesAndCellRuns zeroes them. */
 extern u16 D_800A3678[3];
 extern u8 D_800A3680;
 extern u8 D_800A3690;
@@ -546,7 +546,7 @@ extern void fighter_StartMoveScript(s32, MoveScript *, s32);
 extern void fighter_Init(s32, s32, s32, s32, s32);
 extern s32 cdrom_GetFileIndex(s32, s32);
 extern void comb_ExchangePad(PadState *);
-extern void func_8003AE5C(u8 *);
+extern void fight_ScanCommandStreamAndLoadImage(u8 *);
 extern void gpu_BuildFogImageLevels(RECT *, s32);
 extern void func_8003F1E4(s32);
 extern void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(s32, s32);
@@ -784,11 +784,13 @@ extern void comb_ExchangeEmptyPad(void);
 extern void comb_BeginWait(void);
 extern void comb_EndWait(void);
 extern s32 comb_Connect(void);
-extern void func_8003AF40(s32);
-extern void func_8003AFFC(void);
+extern void fight_FillMissingConfigInitFighterAndLoadObject(s32);
+extern void fight_RequestBothFightersEntriesAndReloadOnChange(void);
 extern void fight_InitCommandStream(s32);
-extern void func_8003B328(void);
-extern s32 func_8003B484(u8 *);
+extern void
+fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
+    void);
+extern s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *);
 extern void func_8003B534(s32);
 extern void func_8003B56C(s32);
 extern void fight_RunCommandStream(void);
@@ -800,8 +802,8 @@ extern s16 *bitstream_AccumulateDeltas(s32);
 extern void gpu_InitFogDrawMoves(void);
 extern void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32, s32);
 extern void func_8003DDF8(u32);
-extern void func_8003E0E0(void);
-extern void func_8003E120(void);
+extern void gpu_BuildFogRowLevels(void);
+extern void gpu_BuildFogBlockLevels(void);
 extern void gpu_MoveObjectClutsToFogBlock(s32);
 extern void gpu_RestoreObjectClutOffsets(void);
 extern s32 gpu_GetFogClutObject(void);
@@ -810,13 +812,13 @@ extern s32 gpu_DepthToOtIndex(s32, s32);
 extern void gpu_SetViewOriginSegmentCellsGateBit(s32, s32);
 extern void
     gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(s32);
-extern void func_8003EDC0(u16 *, s32);
+extern void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *, s32);
 extern void func_8003F218(s32);
 extern s32 func_8003F268(void);
 extern void gpu_SetCellForceBit(s16 *);
-extern void func_8003F52C(s32, s32, s32);
+extern void gpu_ReplaceCellAttributesWithMaskedValue(s32, s32, s32);
 extern void softbody_UpdateObject(Unk80045878Obj *);
-extern void func_8003F7F4(void);
+extern void softbody_FreeAllAndClearWriteOnlyWords(void);
 extern void softbody_SetupObject(Unk80045878Obj *, s32);
 extern void softbody_RequestRebuild(Unk80045878Obj *);
 extern void softbody_RequestSnap(s32);
@@ -930,8 +932,9 @@ extern s16 *gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision(
     s32, s16 *, s16 *, s32);
 extern void gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
     MATRIX *, MATRIX *, s32, MATRIX *);
-/* No prototype: defined with no arguments, but func_8003EDC0 /
- * softbody_CreateForNode pass it one. */
+/* No prototype: defined with no arguments, but
+ * gpu_UnpackGridRecordsNodesAndCellRuns / softbody_CreateForNode pass it one.
+ */
 extern void func_80052C10();
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s16 *, s32);
 extern s32 collision_TestSegment(s32 *, s32 *, s32 *, s16 *);
@@ -1061,7 +1064,7 @@ extern s32 InitScrollingSpriteDisplay(s32);
 extern s32 StepScrollingSpriteDisplay(void);
 extern void eff_StopCommands(void);
 extern void cdrom_WaitIdle(void);
-extern void *func_8003F1D4(void);
+extern void *gpu_GetGridNodeRecordTable(void);
 extern void *node_GetSlotMatrixPointerArray(s32);
 extern void func_80046B44(void);
 extern void resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
@@ -1108,7 +1111,7 @@ extern void snd_VabFakeOpen8And4(s32);
 extern void snd_VabFakeOpen9(s32);
 extern void func_8003F5CC(void);
 extern void ClearSavedWordPairsAndTwoWriteOnlyWords(void);
-extern void func_8003F168(void);
+extern void resource_InvokeLoadedSelectorInitCallback(void);
 extern s32 resource_GetLoadedSelector(void);
 extern void *fight_GetStartPositionPairTable(void);
 extern void gpu_ResetAndStampViewCenteredCellAttributes(void);

@@ -6,7 +6,7 @@ glabel resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels
     /* 376EC 80046EEC 21808000 */   addu      $s0, $a0, $zero
     /* 376F0 80046EF0 7208010C */  jal        ApplyLightPresetRowBackgroundClearAndFarColor
     /* 376F4 80046EF4 21200002 */   addu      $a0, $s0, $zero
-    /* 376F8 80046EF8 38F8000C */  jal        func_8003E0E0
+    /* 376F8 80046EF8 38F8000C */  jal        gpu_BuildFogRowLevels
     /* 376FC 80046EFC 00000000 */   nop
     /* 37700 80046F00 1400BF8F */  lw         $ra, 0x14($sp)
     /* 37704 80046F04 1000B08F */  lw         $s0, 0x10($sp)

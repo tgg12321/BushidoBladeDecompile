@@ -64,9 +64,9 @@ void func_80044800(void) {
             rec->unk58 = var_5;
             if (D_800A9CF8.unk4 == 0x12) {
                 /* FAKE: rec is reused (restored from ent below) for the paired
-                 * func_8003F1D4 entry, an Unk800A6690Rec reached only
-                 * through its node member (both records start with the node); a
-                 * separate Unk80101DF0Record * local scores 70. */
+                 * gpu_GetGridNodeRecordTable entry, an Unk800A6690Rec reached
+                 * only through its node member (both records start with the
+                 * node); a separate Unk80101DF0Record * local scores 70. */
                 ent = rec;
                 rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 +
                                            i);
@@ -126,7 +126,7 @@ void func_80044B30(s32 a0, s32 a1) {
     }
     p->unk5C = a1;
     p->unk58 = 0;
-    /* FAKE: p is reused for the paired func_8003F1D4 entry, an
+    /* FAKE: p is reused for the paired gpu_GetGridNodeRecordTable entry, an
      * Unk800A6690Rec reached only through its node member (both records start
      * with the node); a separate Unk80101DF0Record * local scores 4. */
     p = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 + a0);

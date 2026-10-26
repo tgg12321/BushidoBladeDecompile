@@ -1,1 +1,0 @@
-{"func": "func_8003BFC4", "addr": "8003BFC4", "verdict": "PASS", "body_hash": "631202d10104c546", "body_kind": "c", "file": "main/2B344", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-21T18:28:58Z", "head": "4f2626bff", "notes": "hygiene-w: (s32)arena_GetBase() explicit; whole body clean, oracle match"}

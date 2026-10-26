@@ -247,7 +247,7 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2F268 8003EA68 00240400 */   sll       $a0, $a0, 16
     /* 2F26C 8003EA6C 03240400 */  sra        $a0, $a0, 16
     /* 2F270 8003EA70 002C0500 */  sll        $a1, $a1, 16
-    /* 2F274 8003EA74 E1FA000C */  jal        func_8003EB84
+    /* 2F274 8003EA74 E1FA000C */  jal        gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
     /* 2F278 8003EA78 032C0500 */   sra       $a1, $a1, 16
     /* 2F27C 8003EA7C 21304000 */  addu       $a2, $v0, $zero
   .L8003EA80:

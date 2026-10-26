@@ -263,7 +263,7 @@
   },
   "golden_fixtures": [
     {
-      "name": "func_8003F1C8",
+      "name": "gpu_GetLastGridPassViewYaw",
       "file": "src/main/2B344.c",
       "vram": "0x8003F1C8",
       "size": 12,

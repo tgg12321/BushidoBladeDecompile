@@ -91,7 +91,7 @@ typedef struct {
     s16 unk6; /* entry count */
     s32 unk8;
     s32 unkC;  /* entry table (stride 0x68) */
-    s32 unk10; /* func_8003F1D4() table (stride 0x68) */
+    s32 unk10; /* gpu_GetGridNodeRecordTable() table (stride 0x68) */
     s32 unk14;
 } Unk800A9CF8Rec;
 
@@ -475,9 +475,9 @@ typedef struct {
     u8 unk1;
 } Unk8009BD24Record;
 
-/* One of the three 4-byte records at Unk8009BD24Block.unk21 (func_8003C714 and
-   func_80035280 store them; gpu_DrawIndexedCellsAndDecimalDigitPairs reads
-   them). */
+/* One of the three 4-byte records at Unk8009BD24Block.unk21
+   (fight_PackTimeRecordsAndInitPresentation and func_80035280 store them;
+   gpu_DrawIndexedCellsAndDecimalDigitPairs reads them). */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -723,9 +723,9 @@ typedef struct {
 } Unk800F0C10Record;
 
 /* 0x800948BC (D_800948BC): function-pointer pairs, indexed by
- * resource_GetLoadedSelector(). func_8003F168 calls .init;
- * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards calls
- * .unk4 (e.g. entry 13 holds node_InitViewOffsetNodeWithYXZRotation /
+ * resource_GetLoadedSelector(). resource_InvokeLoadedSelectorInitCallback calls
+ * .init; gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+ * calls .unk4 (e.g. entry 13 holds node_InitViewOffsetNodeWithYXZRotation /
  * node_OrientAndQueueViewOffsetNode). */
 typedef struct {
     void (*init)(void);
@@ -1946,10 +1946,10 @@ typedef struct Unk80101BF0Rec {
 /* The 4-byte record fight_SplitFrameCounterIntoMinutesSecondsHundredths fills
  * from the frame counter D_800A3858 (30 per second): unk_0 = count / 1800,
  * unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30 (99 / 59 / 99 past
- * 0x2BF1F). func_8005D814 draws the three as two-digit numbers; func_8003C714
- * copies them into its save record at +0x2D..+0x2F.
- * fight_UpdateModeDisplaysAndMatchProgress also fills only unk_2 = n / 30 and
- * unk_3 = n % 30
+ * 0x2BF1F). func_8005D814 draws the three as two-digit numbers;
+ * fight_PackTimeRecordsAndInitPresentation copies them into its save record at
+ * +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills only unk_2
+ * = n / 30 and unk_3 = n % 30
  * * 100 / 30 from a frame countdown n, for func_8005F1C8 to draw. */
 typedef struct Unk8001CD68Rec {
     s16 unk_0;
@@ -2016,19 +2016,20 @@ typedef struct {
 /* 0x800F66A0: the rotation-to-matrix handlers a transform node's rotation_order
  * selects (rot -> matrix, PsyQ RotMatrix shape).  math_InitRotMatrixFuncs fills
  * [0] ZYX, [2] ZXY, [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes
- * set rotation_order to 0, 2, 4 and 5, and func_8003EDC0 /
- * node_UpdateWorldMatrix / node_SetMatrixFromNegatedRot / node_InitIdentity
- * index it by rotation_order (4-byte stride).  _svm_vab_vh follows at
- * 0x800F66B8. */
+ * set rotation_order to 0, 2, 4 and 5, and
+ * gpu_UnpackGridRecordsNodesAndCellRuns / node_UpdateWorldMatrix /
+ * node_SetMatrixFromNegatedRot / node_InitIdentity index it by rotation_order
+ * (4-byte stride).  _svm_vab_vh follows at 0x800F66B8. */
 typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 
-/* The 0x68-byte records of the table func_8003F1D4 returns: a transform
- * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
- * fills them from a stream and calls D_800F66A0[rotation_order] on &xf.rot /
- * &xf.mat (the angles as stored, straight into xf.mat; unlike
- * node_SetMatrixFromNegatedRot, no negation and no work);
- * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
- * func_8003EB84 queue each one on g_draw_queue at most once, guarded by unk58.
+/* The 0x68-byte records of the table gpu_GetGridNodeRecordTable returns: a
+ * transform node of the Unk80101DF0Record layout, then a byte flag.
+ * gpu_UnpackGridRecordsNodesAndCellRuns fills them from a stream and calls
+ * D_800F66A0[rotation_order] on &xf.rot / &xf.mat (the angles as stored,
+ * straight into xf.mat; unlike node_SetMatrixFromNegatedRot, no negation and no
+ * work); gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+ * and gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes queue
+ * each one on g_draw_queue at most once, guarded by unk58.
  */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
@@ -2039,11 +2040,11 @@ typedef struct {
 /* The 0x68-byte entries of the D_800A9CF8.unkC table (the buffer
  * node_BindFrameDataAndReserveEntryBuffer is handed; it returns the end, base +
  * count * 104). Each is a transform node of the Unk80101DF0Record layout paired
- * with one func_8003F1D4 entry of the same index (D_800A9CF8.unk10):
- * node_InitFrameEntriesFromWorldTranslations initialises the node and copies
- * the paired entry's xf.mat.t into work.t; func_80044B30 / func_80044800 run
- * the node from the D_800A9CF8.unk8 key frames and queue it on g_draw_queue.
- * unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
+ * with one gpu_GetGridNodeRecordTable entry of the same index
+ * (D_800A9CF8.unk10): node_InitFrameEntriesFromWorldTranslations initialises
+ * the node and copies the paired entry's xf.mat.t into work.t; func_80044B30 /
+ * func_80044800 run the node from the D_800A9CF8.unk8 key frames and queue it
+ * on g_draw_queue. unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
  * func_80044B30, -2 done), unk5C the word Y angle func_80044B30 stores,
  * unk60 an s16 func_80044800 sets to 0x1000 at the last key frame and then
  * lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless D_800A9CF8.unk4 is
@@ -2150,10 +2151,11 @@ typedef struct Unk80045878Obj {
     u8 pad1A86[2];                       /* +0x1A86 */
 } Unk80045878Obj;                        /* 0x1A88 */
 
-/* The 16-byte records func_8003EDC0 fills ahead of those (unk8 / unkC = the
- * grid cell's column / row * 2000 - 32000);
+/* The 16-byte records gpu_UnpackGridRecordsNodesAndCellRuns fills ahead of
+ * those (unk8 / unkC = the grid cell's column / row * 2000 - 32000);
  * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
- * func_8003EB84 set unk6 and the unk7 bits and queue them on g_draw_queue. */
+ * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes set unk6
+ * and the unk7 bits and queue them on g_draw_queue. */
 typedef struct {
     s16 unk0;     /* +0x00 */
     s16 unk2;     /* +0x02 */

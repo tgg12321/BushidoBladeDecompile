@@ -31,9 +31,9 @@ glabel fight_InitCommandStream
     /* 2BA80 8003B280 00000000 */   nop
     /* 2BA84 8003B284 0A80043C */  lui        $a0, %hi(D_800A3844)
     /* 2BA88 8003B288 4438848C */  lw         $a0, %lo(D_800A3844)($a0)
-    /* 2BA8C 8003B28C 97EB000C */  jal        func_8003AE5C
+    /* 2BA8C 8003B28C 97EB000C */  jal        fight_ScanCommandStreamAndLoadImage
     /* 2BA90 8003B290 00000000 */   nop
-    /* 2BA94 8003B294 D0EB000C */  jal        func_8003AF40
+    /* 2BA94 8003B294 D0EB000C */  jal        fight_FillMissingConfigInitFighterAndLoadObject
     /* 2BA98 8003B298 21200000 */   addu      $a0, $zero, $zero
     /* 2BA9C 8003B29C 1080023C */  lui        $v0, %hi(D_80102778 + 0x4)
     /* 2BAA0 8003B2A0 7C274280 */  lb         $v0, %lo(D_80102778 + 0x4)($v0)

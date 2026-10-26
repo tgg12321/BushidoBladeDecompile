@@ -23,7 +23,7 @@ glabel slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* 30D64 80040564 21200002 */   addu      $a0, $s0, $zero
     /* 30D68 80040568 2E03010C */  jal        node_BuildProjectedNodeList
     /* 30D6C 8004056C 21200002 */   addu      $a0, $s0, $zero
-    /* 30D70 80040570 48F8000C */  jal        func_8003E120
+    /* 30D70 80040570 48F8000C */  jal        gpu_BuildFogBlockLevels
     /* 30D74 80040574 00000000 */   nop
     /* 30D78 80040578 21100002 */  addu       $v0, $s0, $zero
     /* 30D7C 8004057C 1800BF8F */  lw         $ra, 0x18($sp)

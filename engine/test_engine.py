@@ -2959,9 +2959,9 @@ def test_canonical_build() -> None:
     if "math_ScaleVectorInDirectionFrame" in tbl:
         eq("classify(math_ScaleVectorInDirectionFrame): reviewed mixed C/GTE -> ASM-PARTIAL",
            canonical.classify("math_ScaleVectorInDirectionFrame")["verdict"], "ASM-PARTIAL")
-    if "func_8003F1C8" in tbl:
-        eq("classify(func_8003F1C8): ordinary C -> C",
-           canonical.classify("func_8003F1C8")["verdict"], "C")
+    if "gpu_GetLastGridPassViewYaw" in tbl:
+        eq("classify(gpu_GetLastGridPassViewYaw): ordinary C -> C",
+           canonical.classify("gpu_GetLastGridPassViewYaw")["verdict"], "C")
     # no function should be NO-TARGET (the motion_Close-class fix)
     no_target = [r["func"] for r in canonical.scan_all() if r["verdict"] == "NO-TARGET"]
     eq("scan_all: zero NO-TARGET", len(no_target), 0)
@@ -10260,7 +10260,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
                               "typedef int Unk1F800000Unk00; struct Rec1C { Unk1F800000Unk00 b18; };",
                               "typedef int X; struct Rec1C { X field; };")
     check("keycheck: mixed aggregate CLI succeeds", result == 0)
-    for fn, old_name, dest in [("func_8003E0E0", "buf", "dst"),
+    for fn, old_name, dest in [("gpu_BuildFogRowLevels", "buf", "dst"),
                                 ("func_800167EC", "rec", "obj"),
                                 ("func_80049C24", "temp_v0", "next"),
                                 ("func_8006ECF4", "i", "j"),

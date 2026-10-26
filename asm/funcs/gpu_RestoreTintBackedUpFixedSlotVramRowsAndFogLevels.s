@@ -125,7 +125,7 @@ glabel gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* 325C8 80041DC8 01000824 */  addiu      $t0, $zero, 0x1
     /* 325CC 80041DCC 03004814 */  bne        $v0, $t0, .L80041DDC
     /* 325D0 80041DD0 00000000 */   nop
-    /* 325D4 80041DD4 48F8000C */  jal        func_8003E120
+    /* 325D4 80041DD4 48F8000C */  jal        gpu_BuildFogBlockLevels
     /* 325D8 80041DD8 00000000 */   nop
   .L80041DDC:
     /* 325DC 80041DDC 5400BF8F */  lw         $ra, 0x54($sp)

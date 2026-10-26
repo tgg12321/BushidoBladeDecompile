@@ -28,14 +28,14 @@ glabel fight_RunCommandStream
   jlabel .L8003B608
     /* 2BE08 8003B608 0A80043C */  lui        $a0, %hi(D_800A3844)
     /* 2BE0C 8003B60C 4438848C */  lw         $a0, %lo(D_800A3844)($a0)
-    /* 2BE10 8003B610 E9EC000C */  jal        func_8003B3A4
+    /* 2BE10 8003B610 E9EC000C */  jal        fight_ConfigureFighter1FromLookupAndOperandsAndLoad
     /* 2BE14 8003B614 00000000 */   nop
     /* 2BE18 8003B618 8CED0008 */  j          .L8003B630
     /* 2BE1C 8003B61C 00000000 */   nop
   jlabel .L8003B620
     /* 2BE20 8003B620 0A80043C */  lui        $a0, %hi(D_800A3844)
     /* 2BE24 8003B624 4438848C */  lw         $a0, %lo(D_800A3844)($a0)
-    /* 2BE28 8003B628 21ED000C */  jal        func_8003B484
+    /* 2BE28 8003B628 21ED000C */  jal        fight_ConfigureFighter1FromOperandsAndLoad
     /* 2BE2C 8003B62C 00000000 */   nop
   .L8003B630:
     /* 2BE30 8003B630 0A80033C */  lui        $v1, %hi(D_800A3844)
@@ -71,9 +71,9 @@ glabel fight_RunCommandStream
     /* 2BEA4 8003B6A4 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* 2BEA8 8003B6A8 01000424 */   addiu     $a0, $zero, 0x1
   .L8003B6AC:
-    /* 2BEAC 8003B6AC D0EB000C */  jal        func_8003AF40
+    /* 2BEAC 8003B6AC D0EB000C */  jal        fight_FillMissingConfigInitFighterAndLoadObject
     /* 2BEB0 8003B6B0 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2BEB4 8003B6B4 FFEB000C */  jal        func_8003AFFC
+    /* 2BEB4 8003B6B4 FFEB000C */  jal        fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2BEB8 8003B6B8 00000000 */   nop
     /* 2BEBC 8003B6BC 14EE0008 */  j          .L8003B850
     /* 2BEC0 8003B6C0 00000000 */   nop
@@ -151,13 +151,13 @@ glabel fight_RunCommandStream
     /* 2BFCC 8003B7CC 1D004224 */  addiu      $v0, $v0, 0x1D
     /* 2BFD0 8003B7D0 0A80013C */  lui        $at, %hi(D_800A3844)
     /* 2BFD4 8003B7D4 443822AC */  sw         $v0, %lo(D_800A3844)($at)
-    /* 2BFD8 8003B7D8 B2EC000C */  jal        func_8003B2C8
+    /* 2BFD8 8003B7D8 B2EC000C */  jal        fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState
     /* 2BFDC 8003B7DC 00000000 */   nop
-    /* 2BFE0 8003B7E0 D0EB000C */  jal        func_8003AF40
+    /* 2BFE0 8003B7E0 D0EB000C */  jal        fight_FillMissingConfigInitFighterAndLoadObject
     /* 2BFE4 8003B7E4 21200000 */   addu      $a0, $zero, $zero
     /* 2BFE8 8003B7E8 0A80043C */  lui        $a0, %hi(D_800A3894)
     /* 2BFEC 8003B7EC 9438848C */  lw         $a0, %lo(D_800A3894)($a0)
-    /* 2BFF0 8003B7F0 E9EC000C */  jal        func_8003B3A4
+    /* 2BFF0 8003B7F0 E9EC000C */  jal        fight_ConfigureFighter1FromLookupAndOperandsAndLoad
     /* 2BFF4 8003B7F4 01008424 */   addiu     $a0, $a0, 0x1
   jlabel .L8003B7F8
     /* 2BFF8 8003B7F8 0A80023C */  lui        $v0, %hi(D_800A3907)
@@ -177,7 +177,7 @@ glabel fight_RunCommandStream
     /* 2C02C 8003B82C 0C004224 */  addiu      $v0, $v0, 0xC
     /* 2C030 8003B830 0A80013C */  lui        $at, %hi(D_800A3844)
     /* 2C034 8003B834 443822AC */  sw         $v0, %lo(D_800A3844)($at)
-    /* 2C038 8003B838 37ED000C */  jal        func_8003B4DC
+    /* 2C038 8003B838 37ED000C */  jal        fight_SetFixedFighterBytesAndLoadBothFighters
     /* 2C03C 8003B83C 01001024 */   addiu     $s0, $zero, 0x1
     /* 2C040 8003B840 5BED000C */  jal        func_8003B56C
     /* 2C044 8003B844 01000424 */   addiu     $a0, $zero, 0x1

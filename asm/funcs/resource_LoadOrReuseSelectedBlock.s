@@ -41,14 +41,14 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 3697C 8004617C 07000524 */  addiu      $a1, $zero, 0x7
     /* 36980 80046180 82200400 */  srl        $a0, $a0, 2
     /* 36984 80046184 80200400 */  sll        $a0, $a0, 2
-    /* 36988 80046188 70FB000C */  jal        func_8003EDC0
+    /* 36988 80046188 70FB000C */  jal        gpu_UnpackGridRecordsNodesAndCellRuns
     /* 3698C 8004618C 21200402 */   addu      $a0, $s0, $a0
     /* 36990 80046190 67180108 */  j          .L8004619C
     /* 36994 80046194 00000000 */   nop
   jlabel .L80046198
     /* 36998 80046198 21B80000 */  addu       $s7, $zero, $zero
   jlabel .L8004619C
-    /* 3699C 8004619C 5AFC000C */  jal        func_8003F168
+    /* 3699C 8004619C 5AFC000C */  jal        resource_InvokeLoadedSelectorInitCallback
     /* 369A0 800461A0 00000000 */   nop
     /* 369A4 800461A4 BA00E016 */  bnez       $s7, .L80046490
     /* 369A8 800461A8 00000000 */   nop
@@ -219,7 +219,7 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36C08 80046408 7A20010C */  jal        gpu_LoadTimGroupWithConditionalClutRowAdvance
     /* 36C0C 8004640C 21280000 */   addu      $a1, $zero, $zero
     /* 36C10 80046410 21208002 */  addu       $a0, $s4, $zero
-    /* 36C14 80046414 70FB000C */  jal        func_8003EDC0
+    /* 36C14 80046414 70FB000C */  jal        gpu_UnpackGridRecordsNodesAndCellRuns
     /* 36C18 80046418 07000524 */   addiu     $a1, $zero, 0x7
     /* 36C1C 8004641C 1000A48F */  lw         $a0, 0x10($sp)
     /* 36C20 80046420 0451010C */  jal        collision_SetGrid
@@ -239,7 +239,7 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36C58 80046458 C066A524 */  addiu      $a1, $a1, %lo(resource_RebaseLoadedBlockSections)
     /* 36C5C 8004645C A515010C */  jal        arena_SetMoveCallback
     /* 36C60 80046460 2120E002 */   addu      $a0, $s7, $zero
-    /* 36C64 80046464 5AFC000C */  jal        func_8003F168
+    /* 36C64 80046464 5AFC000C */  jal        resource_InvokeLoadedSelectorInitCallback
     /* 36C68 80046468 00000000 */   nop
     /* 36C6C 8004646C 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* 36C70 80046470 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)

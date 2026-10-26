@@ -459,7 +459,7 @@ glabel replay_PlayFrame
   .L80039FFC:
     /* 2A7FC 80039FFC 03000012 */  beqz       $s0, .L8003A00C
     /* 2A800 8003A000 00000000 */   nop
-    /* 2A804 8003A004 CAEC000C */  jal        func_8003B328
+    /* 2A804 8003A004 CAEC000C */  jal        fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
     /* 2A808 8003A008 00000000 */   nop
   .L8003A00C:
     /* 2A80C 8003A00C 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
@@ -479,7 +479,7 @@ glabel replay_PlayFrame
     /* 2A844 8003A044 36E80008 */  j          .L8003A0D8
     /* 2A848 8003A048 03000424 */   addiu     $a0, $zero, 0x3
   .L8003A04C:
-    /* 2A84C 8003A04C 21ED000C */  jal        func_8003B484
+    /* 2A84C 8003A04C 21ED000C */  jal        fight_ConfigureFighter1FromOperandsAndLoad
     /* 2A850 8003A050 06008424 */   addiu     $a0, $a0, 0x6
     /* 2A854 8003A054 20000012 */  beqz       $s0, .L8003A0D8
     /* 2A858 8003A058 05000424 */   addiu     $a0, $zero, 0x5
@@ -500,11 +500,11 @@ glabel replay_PlayFrame
     /* 2A88C 8003A08C 0C000224 */   addiu     $v0, $zero, 0xC
     /* 2A890 8003A090 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2A894 8003A094 00000000 */   nop
-    /* 2A898 8003A098 CAEC000C */  jal        func_8003B328
+    /* 2A898 8003A098 CAEC000C */  jal        fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
     /* 2A89C 8003A09C 00000000 */   nop
-    /* 2A8A0 8003A0A0 D0EB000C */  jal        func_8003AF40
+    /* 2A8A0 8003A0A0 D0EB000C */  jal        fight_FillMissingConfigInitFighterAndLoadObject
     /* 2A8A4 8003A0A4 21200000 */   addu      $a0, $zero, $zero
-    /* 2A8A8 8003A0A8 FFEB000C */  jal        func_8003AFFC
+    /* 2A8A8 8003A0A8 FFEB000C */  jal        fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2A8AC 8003A0AC 00000000 */   nop
     /* 2A8B0 8003A0B0 0A80023C */  lui        $v0, %hi(D_800A3712)
     /* 2A8B4 8003A0B4 12374290 */  lbu        $v0, %lo(D_800A3712)($v0)

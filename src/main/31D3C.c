@@ -283,7 +283,7 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
         }
     }
     if (gpu_GetFogClutObject() == slot) {
-        func_8003E120();
+        gpu_BuildFogBlockLevels();
     }
 }
 

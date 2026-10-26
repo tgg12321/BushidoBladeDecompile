@@ -8,12 +8,13 @@
  *    No uninitialized objects.
  * 2. Small objects in .data: D_8008D864 (u8[8]: one point count per
  *    D_8008D86C set), D_8008EB04 .. D_8008EB0C (s16) and D_8008EB10 ..
- *    D_8008EB18 (s32), each with its own reader in func_8003CF84,
- *    D_8008EB38 (u8[8], fighter_Init), D_8008EB6C (u8[6], func_80026DA4,
- *    after D_8008EB54's 6 rows), D_8008EBF4 (u8[6], snd_UpdateStageSounds,
- *    before D_8008EBFC's 6 pairs) and D_8008EC30 (u8[4], 25788.c's
- *    D_800A36CC per setting; the run's end). Under -G8 the original compiler
- * puts them in .sdata, so no -G8 file defined them.
+ *    D_8008EB18 (s32), each with its own reader in
+ * fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams, D_8008EB38
+ * (u8[8], fighter_Init), D_8008EB6C (u8[6], func_80026DA4, after D_8008EB54's 6
+ * rows), D_8008EBF4 (u8[6], snd_UpdateStageSounds, before D_8008EBFC's 6 pairs)
+ * and D_8008EC30 (u8[4], 25788.c's D_800A36CC per setting; the run's end).
+ * Under -G8 the original compiler puts them in .sdata, so no -G8 file defined
+ * them.
  * 3. Neighbours: before it, d_7D870.c's .text (game data words, no small
  *    data, none pointing into the run) and in .data link order 26940.o's
  *    empty .data (26940.c is -G8, gp accesses). After it, cdrom.o, a
@@ -577,7 +578,8 @@ Unk8008EA44Entry D_8008EA44[5] = {
  * D_8008EA50[type - 5]). */
 s32 D_8008EA50[2][4] = {{0, 0, 0, 0}, {190, 0, -10, 0}};
 
-/* [D_800A38A4] (func_8003C040, 2B344.c); 40 pairs from the gap. */
+/* [D_800A38A4] (fight_InitImageAndPlaybackPresentation, 2B344.c); 40 pairs from
+ * the gap. */
 s8 D_8008EA70[40][2] = {
     {33, 4}, {33, 5}, {33, 0}, {33, 1}, {33, 2}, {33, 3}, {-1, 0}, {-1, 0},
     {-1, 0}, {-1, 0}, {-1, 0}, {0, 0},  {1, 7},  {1, 13}, {2, 1},  {1, 2},
@@ -585,12 +587,14 @@ s8 D_8008EA70[40][2] = {
     {1, 0},  {1, 1},  {1, 6},  {1, 12}, {-1, 0}, {1, 9},  {1, 11}, {1, 10},
     {1, 8},  {2, 2},  {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {0, 0}};
 
-/* per-stage s16 table, 34 entries (func_8003CF84) */
+/* per-stage s16 table, 34 entries
+ * (fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams) */
 s16 D_8008EAC0[34] = {130, 130, 130, 130, 130, 130, 130, 130, 130, 130, -1, -1,
                       135, 230, 130, 130, 130, 130, 230, 130, 130, 130, -1, -1,
                       -1,  -1,  -1,  130, -1,  -1,  130, -1,  130, 0};
 
-/* func_8003CF84's parameters, one reader each. */
+/* fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams's parameters, one
+ * reader each. */
 s16 D_8008EB04 = 155;
 
 s16 D_8008EB06 = 159;

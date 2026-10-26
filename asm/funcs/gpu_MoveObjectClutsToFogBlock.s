@@ -43,7 +43,7 @@ glabel gpu_MoveObjectClutsToFogBlock
     /* 2E9FC 8003E1FC 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2EA00 8003E200 CFEC010C */  jal        DrawSync
     /* 2EA04 8003E204 21200000 */   addu      $a0, $zero, $zero
-    /* 2EA08 8003E208 48F8000C */  jal        func_8003E120
+    /* 2EA08 8003E208 48F8000C */  jal        gpu_BuildFogBlockLevels
     /* 2EA0C 8003E20C 00000000 */   nop
   .L8003E210:
     /* 2EA10 8003E210 5C0191AF */  sw         $s1, %gp_rel(g_gpu_fog_clut_object)($gp)

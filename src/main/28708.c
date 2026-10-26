@@ -1506,7 +1506,7 @@ void replay_PlayFrame(void) {
                         D_800A37A4 |= 1 << D_8008D538[(s8)D_80102778.unk_4[0]];
                     }
                     if (var_19) {
-                        func_8003B328();
+                        fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
                     }
                 }
                 snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
@@ -1514,7 +1514,8 @@ void replay_PlayFrame(void) {
                     if (D_800A3712 != 0) {
                         func_8003B534(var_19 ? 3 : 6);
                     } else {
-                        func_8003B484(D_800A3894 + 6);
+                        fight_ConfigureFighter1FromOperandsAndLoad(
+                            D_800A3894 + 6);
                         func_8003B534(var_19 ? 2 : 5);
                     }
                 } else {
@@ -1528,9 +1529,9 @@ void replay_PlayFrame(void) {
                 break;
             }
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-            func_8003B328();
-            func_8003AF40(0);
-            func_8003AFFC();
+            fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
+            fight_FillMissingConfigInitFighterAndLoadObject(0);
+            fight_RequestBothFightersEntriesAndReloadOnChange();
             if (D_800A3712 != 0 && D_80101EC8[1].is_defeated != 0) {
                 func_8003B534(6);
             } else {

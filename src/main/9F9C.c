@@ -1302,7 +1302,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
                     break;
                 }
                 if (D_800A3894 != 0) {
-                    func_8003B484(D_800A3894 + 6);
+                    fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6);
                     if (D_800A3836 != 0xFF) {
                         func_8003B534(2);
                     } else {
