@@ -1,0 +1,330 @@
+==============================================================================
+NAMING WAVE — 54 operations (0 RESET, 54 RENAME)
+  54 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — symbol_addrs.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (133) --
+  (root): 2 files, 3 substitutions
+      inline_asm_canonical.txt  (2)
+      symbol_addrs.txt  (1)
+  asm: 109 files, 246 substitutions
+      asm/funcs/InitScrollingSpriteDisplay.s  (1)
+      asm/funcs/InitTimedSpriteSequence.s  (1)
+      asm/funcs/InitWithCachedValueAndStoredBitsBlackBg.s  (1)
+      asm/funcs/StepThenCloseVab1OnNonzero.s  (1)
+      asm/funcs/fight_ProcessPositionRecordsInQuad.s  (2)
+      asm/funcs/fight_ResetGraphAndReloadResourcesOnCachedKeyChange.s  (1)
+      ... and 103 more
+  engine: 2 files, 2 substitutions
+      engine/test_engine.py  (1)
+      engine/volatile_cheats.py  (1)
+  include: 1 files, 33 substitutions
+      include/bb2.h  (33)
+  src: 17 files, 232 substitutions
+      src/main/175A4.c  (3)
+      src/main/17AFC.c  (94)
+      src/main/24BF0.c  (1)
+      src/main/28708.c  (1)
+      src/main/2B344.c  (11)
+      src/main/309CC.c  (2)
+      ... and 11 more
+  tools: 2 files, 5 substitutions
+      tools/lanes/test_orchestrate.py  (2)
+      tools/test_sweep_variants.py  (3)
+
+-- .s file renames (54) --
+  asm/funcs/func_8002738C.s -> asm/funcs/fighter_AccumulateBoneGroupFlagWhenGameModeZero.s
+  asm/funcs/func_80027640.s -> asm/funcs/fighter_RelocateAndStartEventMove.s
+  asm/funcs/func_8002906C.s -> asm/funcs/fight_ClearPositionRecordUsage.s
+  asm/funcs/func_8002BC68.s -> asm/funcs/fighter_SetBasePositionSeparationCorrectionsAndGetDistance.s
+  asm/funcs/func_8002C0DC.s -> asm/funcs/fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents.s
+  asm/funcs/func_8002FC80.s -> asm/funcs/math_TriangleNormalYawWithPositiveYHalfTurn.s
+  asm/funcs/func_8003032C.s -> asm/funcs/math_ReflectAndDampRecordVector.s
+  asm/funcs/func_80030D04.s -> asm/funcs/object_ClearFixedKindRange.s
+  asm/funcs/func_80032064.s -> asm/funcs/fight_CreateBallisticRecordAndDispatchEvent.s
+  asm/funcs/func_80032854.s -> asm/funcs/fight_RecordReplayEventAndDispatchSoundOrEffect.s
+  ... and 44 more
+
+-- ledger directory renames (64) --
+  memory/grind/func_8002BC68 -> memory/grind/fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+  memory/grind/func_8002FC80 -> memory/grind/math_TriangleNormalYawWithPositiveYHalfTurn
+  memory/grind/func_80032064 -> memory/grind/fight_CreateBallisticRecordAndDispatchEvent
+  memory/grind/func_80044800 -> memory/grind/node_AdvanceFrameAnimatedEntriesAndQueueDraws
+  memory/grind/func_80045AA4 -> memory/grind/slot_RebaseObjectOrAssetBlockAndFakeOpenVab
+  memory/grind/func_80045B68 -> memory/grind/resource_LoadSelectedEntriesTexturesAndSound
+  memory/grind/func_8005D46C -> memory/grind/gpu_DrawFixedSpritePairWithSelectedSheets
+  memory/grind/func_8005D554 -> memory/grind/gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
+  memory/grind/func_8005D814 -> memory/grind/gpu_DrawTimeFieldsAndDecimalCounter
+  memory/grind/func_8005E098 -> memory/grind/gpu_DrawTwoDigitCounterWithOptionalSecondSide
+  ... and 54 more
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:991  func_80046020 = 0x80046020; /* MISNAMED: not ground display; arena_Free(6) then snd_StopAllVoicesAndCloseSelec
+
+-- JSON key/field edits (65) --
+  tools/canonical_asm_regions.json: 2 changes
+      func_8002BC68
+      func_8002FC80
+  memory/grind/func_8002BC68/layer2.jsonl: 2 changes
+      line 1: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+      line 2: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+  memory/grind/func_8002FC80/layer2.jsonl: 1 changes
+      line 1: func func_8002FC80 -> math_TriangleNormalYawWithPositiveYHalfTurn
+  memory/grind/func_80032064/layer2.jsonl: 2 changes
+      line 1: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+      line 2: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+  memory/grind/func_80044800/layer2.jsonl: 1 changes
+      line 1: func func_80044800 -> node_AdvanceFrameAnimatedEntriesAndQueueDraws
+  memory/grind/func_80045AA4/layer2.jsonl: 1 changes
+      line 1: func func_80045AA4 -> slot_RebaseObjectOrAssetBlockAndFakeOpenVab
+  memory/grind/func_80045B68/layer2.jsonl: 1 changes
+      line 1: func func_80045B68 -> resource_LoadSelectedEntriesTexturesAndSound
+  memory/grind/func_8005D46C/layer2.jsonl: 1 changes
+      line 1: func func_8005D46C -> gpu_DrawFixedSpritePairWithSelectedSheets
+  memory/grind/func_8005D554/layer2.jsonl: 1 changes
+      line 1: func func_8005D554 -> gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
+  memory/grind/func_8005D814/layer2.jsonl: 3 changes
+      line 1: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      line 2: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      line 3: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+  memory/grind/func_8005E098/layer2.jsonl: 2 changes
+      line 1: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+      line 2: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+  memory/grind/func_8005E54C/layer2.jsonl: 4 changes
+      line 1: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 2: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 3: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 4: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+  memory/grind/func_8005F1C8/layer2.jsonl: 3 changes
+      line 1: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      line 2: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      line 3: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+  memory/grind/func_8005FA98/layer2.jsonl: 3 changes
+      line 1: func func_8005FA98 -> gpu_DrawSelectedStretchedSpritePair
+      line 2: func func_8005FA98 -> gpu_DrawSelectedStretchedSpritePair
+      line 3: func func_8005FA98 -> gpu_DrawSelectedStretchedSpritePair
+  memory/grind/func_800600C8/layer2.jsonl: 2 changes
+      line 1: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+      line 2: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+  memory/grind/func_80060414/layer2.jsonl: 2 changes
+      line 1: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+      line 2: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+  memory/grind/func_80060544/layer2.jsonl: 2 changes
+      line 1: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+      line 2: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+  memory/grind/func_80060768/layer2.jsonl: 3 changes
+      line 1: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+      line 2: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+      line 3: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+  memory/grind/func_8006EC0C/layer2.jsonl: 1 changes
+      line 1: func func_8006EC0C -> StepSlideProgressCommitPendingStateAndQueueSound
+  memory/grind/func_8006ECF4/layer2.jsonl: 1 changes
+      line 1: func func_8006ECF4 -> gpu_UploadAndDrawSelectedEntryQuads
+  memory/grind/func_8006F100/layer2.jsonl: 1 changes
+      line 1: func func_8006F100 -> DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+  memory/grind/func_8006F528/layer2.jsonl: 1 changes
+      line 1: func func_8006F528 -> gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
+  memory/grind/func_80073200/layer2.jsonl: 1 changes
+      line 1: func func_80073200 -> gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
+  memory/grind/_completed/func_8002738C/layer2.jsonl: 1 changes
+      line 1: func func_8002738C -> fighter_AccumulateBoneGroupFlagWhenGameModeZero
+  memory/grind/_completed/func_80027640/layer2.jsonl: 4 changes
+      line 1: func func_80027640 -> fighter_RelocateAndStartEventMove
+      line 2: func func_80027640 -> fighter_RelocateAndStartEventMove
+      line 3: func func_80027640 -> fighter_RelocateAndStartEventMove
+      line 4: func func_80027640 -> fighter_RelocateAndStartEventMove
+  memory/grind/_completed/func_8002906C/layer2.jsonl: 2 changes
+      line 1: func func_8002906C -> fight_ClearPositionRecordUsage
+      line 2: func func_8002906C -> fight_ClearPositionRecordUsage
+  memory/grind/_completed/func_8002BC68/layer2.jsonl: 8 changes
+      line 1: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+      line 2: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+      line 3: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+      line 4: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+      line 5: func func_8002BC68 -> fighter_SetBasePositionSeparationCorrectionsAndGetDistance
+      ... and 3 more
+  memory/grind/_completed/func_8002C0DC/layer2.jsonl: 4 changes
+      line 1: func func_8002C0DC -> fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
+      line 2: func func_8002C0DC -> fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
+      line 3: func func_8002C0DC -> fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
+      line 4: func func_8002C0DC -> fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
+  memory/grind/_completed/func_8003032C/layer2.jsonl: 9 changes
+      line 1: func func_8003032C -> math_ReflectAndDampRecordVector
+      line 2: func func_8003032C -> math_ReflectAndDampRecordVector
+      line 3: func func_8003032C -> math_ReflectAndDampRecordVector
+      line 4: func func_8003032C -> math_ReflectAndDampRecordVector
+      line 5: func func_8003032C -> math_ReflectAndDampRecordVector
+      ... and 4 more
+  memory/grind/_completed/func_80030D04/layer2.jsonl: 4 changes
+      line 1: func func_80030D04 -> object_ClearFixedKindRange
+      line 2: func func_80030D04 -> object_ClearFixedKindRange
+      line 3: func func_80030D04 -> object_ClearFixedKindRange
+      line 4: func func_80030D04 -> object_ClearFixedKindRange
+  memory/grind/_completed/func_80032064/layer2.jsonl: 12 changes
+      line 1: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+      line 2: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+      line 3: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+      line 4: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+      line 5: func func_80032064 -> fight_CreateBallisticRecordAndDispatchEvent
+      ... and 7 more
+  memory/grind/_completed/func_80032854/layer2.jsonl: 1 changes
+      line 1: func func_80032854 -> fight_RecordReplayEventAndDispatchSoundOrEffect
+  memory/grind/_completed/func_80033FE4/layer2.jsonl: 1 changes
+      line 1: func func_80033FE4 -> fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
+  memory/grind/_completed/func_80044800/layer2.jsonl: 4 changes
+      line 1: func func_80044800 -> node_AdvanceFrameAnimatedEntriesAndQueueDraws
+      line 2: func func_80044800 -> node_AdvanceFrameAnimatedEntriesAndQueueDraws
+      line 3: func func_80044800 -> node_AdvanceFrameAnimatedEntriesAndQueueDraws
+      line 4: func func_80044800 -> node_AdvanceFrameAnimatedEntriesAndQueueDraws
+  memory/grind/_completed/func_80044B30/layer2.jsonl: 1 changes
+      line 1: func func_80044B30 -> node_StartFrameAnimatedEntryAndInitPairedNode
+  memory/grind/_completed/func_80045878/layer2.jsonl: 2 changes
+      line 1: func func_80045878 -> slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock
+      line 2: func func_80045878 -> slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock
+  memory/grind/_completed/func_80045A50/layer2.jsonl: 1 changes
+      line 1: func func_80045A50 -> slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks
+  memory/grind/_completed/func_80045AA4/layer2.jsonl: 2 changes
+      line 1: func func_80045AA4 -> slot_RebaseObjectOrAssetBlockAndFakeOpenVab
+      line 2: func func_80045AA4 -> slot_RebaseObjectOrAssetBlockAndFakeOpenVab
+  memory/grind/_completed/func_80045B68/layer2.jsonl: 1 changes
+      line 1: func func_80045B68 -> resource_LoadSelectedEntriesTexturesAndSound
+  memory/grind/_completed/func_8005C8A8/layer2.jsonl: 8 changes
+      line 1: func func_8005C8A8 -> gpu_DrawModeSizedPanelWithSelectedCellOpaque
+      line 2: func func_8005C8A8 -> gpu_DrawModeSizedPanelWithSelectedCellOpaque
+      line 3: func func_8005C8A8 -> gpu_DrawModeSizedPanelWithSelectedCellOpaque
+      line 4: func func_8005C8A8 -> gpu_DrawModeSizedPanelWithSelectedCellOpaque
+      line 5: func func_8005C8A8 -> gpu_DrawModeSizedPanelWithSelectedCellOpaque
+      ... and 3 more
+  memory/grind/_completed/func_8005D46C/layer2.jsonl: 3 changes
+      line 1: func func_8005D46C -> gpu_DrawFixedSpritePairWithSelectedSheets
+      line 2: func func_8005D46C -> gpu_DrawFixedSpritePairWithSelectedSheets
+      line 3: func func_8005D46C -> gpu_DrawFixedSpritePairWithSelectedSheets
+  memory/grind/_completed/func_8005D554/layer2.jsonl: 3 changes
+      line 1: func func_8005D554 -> gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
+      line 2: func func_8005D554 -> gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
+      line 3: func func_8005D554 -> gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
+  memory/grind/_completed/func_8005D814/layer2.jsonl: 9 changes
+      line 1: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      line 2: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      line 3: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      line 4: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      line 5: func func_8005D814 -> gpu_DrawTimeFieldsAndDecimalCounter
+      ... and 4 more
+  memory/grind/_completed/func_8005E098/layer2.jsonl: 8 changes
+      line 1: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+      line 2: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+      line 3: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+      line 4: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+      line 5: func func_8005E098 -> gpu_DrawTwoDigitCounterWithOptionalSecondSide
+      ... and 3 more
+  memory/grind/_completed/func_8005E54C/layer2.jsonl: 9 changes
+      line 1: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 2: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 3: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 4: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      line 5: func func_8005E54C -> gpu_DrawPackedComparisonRowsAndTotals
+      ... and 4 more
+  memory/grind/_completed/func_8005F1C8/layer2.jsonl: 10 changes
+      line 1: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      line 2: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      line 3: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      line 4: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      line 5: func func_8005F1C8 -> gpu_DrawPairedMarkRowsAndTimeFields
+      ... and 5 more
+  memory/grind/_completed/func_8005FA98/layer2.jsonl: 2 changes
+      line 1: func func_8005FA98 -> gpu_DrawSelectedStretchedSpritePair
+      line 2: func func_8005FA98 -> gpu_DrawSelectedStretchedSpritePair
+  memory/grind/_completed/func_8005FBC8/layer2.jsonl: 1 changes
+      line 1: func func_8005FBC8 -> gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe
+  memory/grind/_completed/func_800600C8/layer2.jsonl: 7 changes
+      line 1: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+      line 2: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+      line 3: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+      line 4: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+      line 5: func func_800600C8 -> gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+      ... and 2 more
+  memory/grind/_completed/func_800602AC/layer2.jsonl: 1 changes
+      line 1: func func_800602AC -> gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions
+  memory/grind/_completed/func_80060414/layer2.jsonl: 8 changes
+      line 1: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+      line 2: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+      line 3: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+      line 4: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+      line 5: func func_80060414 -> gpu_DrawSpriteAtPackedTablePosition
+      ... and 3 more
+  memory/grind/_completed/func_80060544/layer2.jsonl: 6 changes
+      line 1: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+      line 2: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+      line 3: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+      line 4: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+      line 5: func func_80060544 -> gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+      ... and 1 more
+  memory/grind/_completed/func_80060768/layer2.jsonl: 4 changes
+      line 1: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+      line 2: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+      line 3: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+      line 4: func func_80060768 -> gpu_DrawIndexedCellsDigitPairsAndGrowingBars
+  memory/grind/_completed/func_8006E534/layer2.jsonl: 9 changes
+      line 1: func func_8006E534 -> InitDisplayStateLoadPackAndSetEntryFlags
+      line 2: func func_8006E534 -> InitDisplayStateLoadPackAndSetEntryFlags
+      line 3: func func_8006E534 -> InitDisplayStateLoadPackAndSetEntryFlags
+      line 4: func func_8006E534 -> InitDisplayStateLoadPackAndSetEntryFlags
+      line 5: func func_8006E534 -> InitDisplayStateLoadPackAndSetEntryFlags
+      ... and 4 more
+  memory/grind/_completed/func_8006E8AC/layer2.jsonl: 1 changes
+      line 1: func func_8006E8AC -> gpu_GetIndexedPrimBufferRecord
+  memory/grind/_completed/func_8006E950/layer2.jsonl: 3 changes
+      line 1: func func_8006E950 -> gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
+      line 2: func func_8006E950 -> gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
+      line 3: func func_8006E950 -> gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
+  memory/grind/_completed/func_8006EA28/layer2.jsonl: 2 changes
+      line 1: func func_8006EA28 -> resource_RelocateNineOffsetListsAndLoadVabPack
+      line 2: func func_8006EA28 -> resource_RelocateNineOffsetListsAndLoadVabPack
+  memory/grind/_completed/func_8006EACC/layer2.jsonl: 3 changes
+      line 1: func func_8006EACC -> StepSlideBuildFrameRecordAndDispatchStateHandler
+      line 2: func func_8006EACC -> StepSlideBuildFrameRecordAndDispatchStateHandler
+      line 3: func func_8006EACC -> StepSlideBuildFrameRecordAndDispatchStateHandler
+  memory/grind/_completed/func_8006EC0C/layer2.jsonl: 1 changes
+      line 1: func func_8006EC0C -> StepSlideProgressCommitPendingStateAndQueueSound
+  memory/grind/_completed/func_8006ECF4/layer2.jsonl: 7 changes
+      line 1: func func_8006ECF4 -> gpu_UploadAndDrawSelectedEntryQuads
+      line 2: func func_8006ECF4 -> gpu_UploadAndDrawSelectedEntryQuads
+      line 3: func func_8006ECF4 -> gpu_UploadAndDrawSelectedEntryQuads
+      line 4: func func_8006ECF4 -> gpu_UploadAndDrawSelectedEntryQuads
+      line 5: func func_8006ECF4 -> gpu_UploadAndDrawSelectedEntryQuads
+      ... and 2 more
+  memory/grind/_completed/func_8006F100/layer2.jsonl: 5 changes
+      line 1: func func_8006F100 -> DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+      line 2: func func_8006F100 -> DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+      line 3: func func_8006F100 -> DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+      line 4: func func_8006F100 -> DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+      line 5: func func_8006F100 -> DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
+  memory/grind/_completed/func_8006F528/layer2.jsonl: 7 changes
+      line 1: func func_8006F528 -> gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
+      line 2: func func_8006F528 -> gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
+      line 3: func func_8006F528 -> gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
+      line 4: func func_8006F528 -> gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
+      line 5: func func_8006F528 -> gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
+      ... and 2 more
+  memory/grind/_completed/func_80071C4C/layer2.jsonl: 5 changes
+      line 1: func func_80071C4C -> DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
+      line 2: func func_80071C4C -> DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
+      line 3: func func_80071C4C -> DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
+      line 4: func func_80071C4C -> DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
+      line 5: func func_80071C4C -> DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
+  memory/grind/_completed/func_80072FCC/layer2.jsonl: 3 changes
+      line 1: func func_80072FCC -> gpu_AddBrownOrBlackPanelGridTile
+      line 2: func func_80072FCC -> gpu_AddBrownOrBlackPanelGridTile
+      line 3: func func_80072FCC -> gpu_AddBrownOrBlackPanelGridTile
+  memory/grind/_completed/func_80073200/layer2.jsonl: 5 changes
+      line 1: func func_80073200 -> gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
+      line 2: func func_80073200 -> gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
+      line 3: func func_80073200 -> gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
+      line 4: func func_80073200 -> gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
+      line 5: func func_80073200 -> gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ engine/test_engine.py:L8198: ['func_80032854'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
