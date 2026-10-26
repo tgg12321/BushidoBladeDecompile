@@ -1,0 +1,47 @@
+==============================================================================
+DATA WAVE — 5 addresses, 5 identifiers remapped
+  0x80099478: D_80099478 -> g_loaded_resource_selector
+  0x800a33b4: D_800A33B4 -> g_fight_position_records
+  0x8009947c: D_8009947C -> g_fight_start_position_pairs
+  0x800f6654: D_800F6654 -> g_gpu_raised_ot_cutoff_requested
+  0x800a8fb0: D_800A8FB0 -> g_gpu_cell_draw_attributes
+
+-- file edits (25) --
+  asm/data/94000.bss.s  (4)
+  asm/funcs/fight_GetPositionRecordList.s  (1)
+  asm/funcs/fight_GetStartPositionPairTable.s  (2)
+  asm/funcs/func_8003EB84.s  (2)
+  asm/funcs/func_8003F52C.s  (2)
+  asm/funcs/func_8003F54C.s  (2)
+  asm/funcs/func_800460E4.s  (5)
+  asm/funcs/func_800464C4.s  (2)
+  asm/funcs/func_8004659C.s  (1)
+  asm/funcs/func_8004668C.s  (2)
+  asm/funcs/func_800466C0.s  (4)
+  asm/funcs/func_80046B44.s  (2)
+  asm/funcs/func_80046E44.s  (2)
+  asm/funcs/gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards.s  (2)
+  asm/funcs/gpu_GetRaisedOtCutoffRequested.s  (2)
+  asm/funcs/gpu_ResetAndStampViewCenteredCellAttributes.s  (4)
+  asm/funcs/gpu_SetCellForceBit.s  (2)
+  asm/funcs/gpu_SetCellGateBit.s  (2)
+  asm/funcs/gpu_SetRaisedOtCutoffRequested.s  (4)
+  asm/funcs/resource_GetLoadedSelector.s  (2)
+  include/bb2.h  (1)
+  src/main/2B344.c  (9)
+  src/main/368E4.c  (19)
+  src/main/d_89C78.c  (2)
+  symbol_addrs.txt  (9)
+
+-- registry lines --
+  symbol_addrs.txt:132 D_80099478 -> g_loaded_resource_selector
+  symbol_addrs.txt:134 D_8009947C -> g_fight_start_position_pairs
+  symbol_addrs.txt:135 D_800A8FB0 -> g_gpu_cell_draw_attributes
+  symbol_addrs.txt:148 D_800F6654 -> g_gpu_raised_ot_cutoff_requested
+  symbol_addrs.txt:153 D_800A33B4 -> g_fight_position_records
+  symbol_addrs.txt:600 D_8009947C -> g_fight_start_position_pairs
+  symbol_addrs.txt:644 D_80099478 -> g_loaded_resource_selector
+  symbol_addrs.txt:1835 D_800F6654 -> g_gpu_raised_ot_cutoff_requested
+  symbol_addrs.txt:1840 D_800A8FB0 -> g_gpu_cell_draw_attributes
+
+DRY RUN — nothing written. Re-run with --apply.
