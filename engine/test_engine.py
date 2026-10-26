@@ -13606,6 +13606,7 @@ def test_move_tu() -> None:
             "engine/queue.json": json.dumps({"items": [{"func": "f", "file": "comb"}]}, indent=2) + "\n",
             ".claude/rules/r.md": '---\nname: r\npaths: ["src/comb.c", "src/**/*.c"]\n---\nbody src/comb.c\n',
             "tools/other.sh": "case $stem in comb) ;; esac\n",
+            "tools/gpu_refs.sh": "gpu\n" * 45,
             "tools/lanes/lanes.json": (
                 '{\n  "regenerate": [\n'
                 '    {"path": "docs/naming/runtime/evidence/comb.tsv",\n'
@@ -13695,10 +13696,46 @@ def test_move_tu() -> None:
                lane_text, expected)
             eq("move_tu: generated evidence is a planned move", moves, {old_note: new_note})
             check("move_tu: generated evidence is not a leftover",
-                  not any(line.startswith("generated evidence with no regenerate entry:")
+                  old_note in moves
+                  and not any(line.startswith("generated evidence with no regenerate entry:")
                           for line in leftovers))
             check("move_tu: lanes leftovers include unchanged fields on rewritten lines",
                   any('"subject": "comb"' in line for line in leftovers))
+            lane_path = Path(R, "tools/lanes/lanes.json")
+            original_command = '"python3 notes.py build --tu comb --verbose"'
+            for command in ("python3 notes.py build --tu 'comb\" --verbose",
+                            "python3 notes.py build x--tu comb --verbose"):
+                literal = json.dumps(command)
+                variant = files["tools/lanes/lanes.json"].replace(original_command, literal)
+                lane_path.write_bytes(variant.encode())
+                variant_edits, _, _, _ = mt.plan(R, "comb", new)
+                eq("move_tu: mismatched quotes and embedded flags stay unchanged: " + command,
+                   variant_edits["tools/lanes/lanes.json"],
+                   expected.replace(original_command.replace("--tu comb", f"--tu {new}"),
+                                    literal).encode())
+            literal = '"python3 notes.py build --tu comb --label é --path a\\/b"'
+            variant = files["tools/lanes/lanes.json"].replace(original_command, literal)
+            lane_path.write_bytes(variant.encode())
+            variant_edits, _, _, _ = mt.plan(R, "comb", new)
+            eq("move_tu: cmd preserves non-ASCII and escaped slash bytes",
+               variant_edits["tools/lanes/lanes.json"],
+               expected.replace(original_command.replace("--tu comb", f"--tu {new}"),
+                                literal.replace("--tu comb", f"--tu {new}")).encode())
+            lane_path.write_bytes(files["tools/lanes/lanes.json"].replace("\n", "\r\n").encode())
+            variant_edits, _, _, _ = mt.plan(R, "comb", new)
+            eq("move_tu: CRLF lanes remain byte-stable outside replacements",
+               variant_edits["tools/lanes/lanes.json"], expected.replace("\n", "\r\n").encode())
+            for escaped in (r"\u0063omb", r"c\u006fmb"):
+                variant = files["tools/lanes/lanes.json"].replace(
+                    original_command, original_command.replace("comb", escaped))
+                lane_path.write_bytes(variant.encode())
+                try:
+                    mt.plan(R, "comb", new)
+                except mt.MoveError as exc:
+                    check("move_tu: escaped TU argument refuses", "escaped --tu argument" in str(exc))
+                else:
+                    check("move_tu: escaped TU argument refuses", False)
+            lane_path.write_bytes(snapshot["tools/lanes/lanes.json"])
             Path(R, new_note).write_bytes(b"existing target\n")
             try:
                 mt.plan(R, "comb", new)
@@ -13758,12 +13795,20 @@ def test_move_tu() -> None:
                 eq("move_tu: a non-id target refuses", mt.main(["comb", "../x", "--root", td]), 1)
             orphan = "docs/naming/runtime/evidence/gpu.tsv"
             warning = f"generated evidence with no regenerate entry: {orphan}"
+            _, _, _, gpu_leftovers = mt.plan(R, "gpu", "main/gpu")
             for mode in ([], ["--apply"]):
                 out = io.StringIO()
                 with contextlib.redirect_stdout(out):
                     eq(f"move_tu: orphan evidence rename {mode} exits 0",
                        mt.main(["gpu", "main/gpu", "--root", td, *mode]), 0)
                 check(f"move_tu: orphan evidence is reported {mode}", warning in out.getvalue())
+                printed = out.getvalue().split(
+                    "  other tracked references to the old id (review by hand; not rewritten):\n", 1)[-1]
+                eq(f"move_tu: orphan warning prints first {mode}",
+                   printed.splitlines()[0], f"    {warning}")
+                check(f"move_tu: truncated leftovers report omitted count {mode}",
+                      len(gpu_leftovers) > 40
+                      and f"    ... and {len(gpu_leftovers) - 40} more\n" in printed)
                 eq(f"move_tu: orphan evidence stays byte-identical {mode}",
                    Path(R, orphan).read_bytes(), snapshot[orphan])
                 check(f"move_tu: orphan evidence is not moved {mode}",

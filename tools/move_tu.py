@@ -207,7 +207,7 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], dict[str, st
     # retaining whitespace and all unrelated configuration verbatim.
     lp = root / "tools/lanes/lanes.json"
     if lp.exists():
-        t = lp.read_text(encoding="utf-8")
+        t = lp.read_bytes().decode("utf-8")
         m = re.search(r'"regenerate"\s*:\s*(?=\[)', t)
         if m:
             _, end = json.JSONDecoder().raw_decode(t, m.end())
@@ -220,13 +220,30 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], dict[str, st
             def lane_command(m: re.Match) -> str:
                 nonlocal cmds
                 command = json.loads(m[2])
-                command, n = re.subn(
+                raw = m[2][1:-1]
+                # Map decoded character boundaries to the original JSON spelling.
+                offsets = [0]
+                for char in command:
+                    pos = offsets[-1]
+                    size = 1
+                    if raw[pos] == "\\":
+                        size = 6 if raw[pos + 1] == "u" else 2
+                        if size == 6 and ord(char) > 0xFFFF:
+                            size = 12  # a JSON surrogate pair
+                    offsets.append(pos + size)
+                args = list(re.finditer(
                     r"(?<!\S)(--tu(?:\s+|=))(?:(['\"])" + re.escape(old)
                     + r"\2|" + re.escape(old) + r")(?=\s|$)",
-                    lambda arg: arg[1] + (arg[2] or "") + new + (arg[2] or ""),
-                    command)
-                cmds += n
-                return m[1] + json.dumps(command) if n else m[0]
+                    command))
+                for arg in reversed(args):
+                    start = arg.end(1) + bool(arg[2])
+                    end = start + len(old)
+                    if (raw[offsets[start]:offsets[end]] != old
+                            or raw[offsets[arg.start(1)]:offsets[arg.end(1)]] != arg[1]):
+                        raise MoveError("lanes.json cmd: escaped --tu argument; refusing to rewrite")
+                    raw = raw[:offsets[start]] + new + raw[offsets[end]:]
+                cmds += len(args)
+                return m[1] + '"' + raw + '"' if args else m[0]
 
             block = re.sub(r'("cmd"\s*:\s*)("(?:\\.|[^"\\])*")',
                            lane_command, block)
@@ -345,8 +362,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  files rewritten: {', '.join(sorted(edits))}")
     if leftovers:
         print("  other tracked references to the old id (review by hand; not rewritten):")
+        leftovers = sorted(leftovers, key=lambda l: not l.startswith(
+            "generated evidence with no regenerate entry:"))
         for l in leftovers[:40]:
             print(f"    {l[:160]}")
+        if len(leftovers) > 40:
+            print(f"    ... and {len(leftovers) - 40} more")
     if not a.apply:
         print("  (dry run: pass --apply to perform)")
         return 0
