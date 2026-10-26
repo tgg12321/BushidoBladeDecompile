@@ -96,11 +96,21 @@ def verify(path, manifest_rec):
     sha1 = manifest_rec.get("sha1")
     if not isinstance(sha1, str) or len(sha1) != 40 or type(size) is not int or size < 0:
         raise StoreUnverified(f"{path}: outputs record requires SHA1 and byte count")
-    data = Path(path).read_bytes()
-    digest = hashlib.sha1(data).hexdigest()
-    if digest != sha1 or len(data) != size:
+    digest, actual = file_digest(path)
+    if digest != sha1 or actual != size:
         raise StoreMismatch(f"{path}: capture store SHA1/size mismatch "
-                            f"(expected {sha1}/{size}, got {digest}/{len(data)})")
+                            f"(expected {sha1}/{size}, got {digest}/{actual})")
+
+
+def file_digest(path):
+    """SHA1 and byte count, read in 1 MiB chunks (capture.jsonl can be large)."""
+    digest = hashlib.sha1()
+    size = 0
+    with Path(path).open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+            size += len(chunk)
+    return digest.hexdigest(), size
 
 
 def _records(manifest, name):
@@ -191,8 +201,8 @@ def open_capture_file(capture_dir, name, manifest=None, mode="r"):
 
 def file_record(path):
     path = Path(path)
-    data = path.read_bytes()
-    return dict(path=path.name, sha1=hashlib.sha1(data).hexdigest(), size=len(data))
+    sha1, size = file_digest(path)
+    return dict(path=path.name, sha1=sha1, size=size)
 
 
 def store_key(path):

@@ -335,6 +335,20 @@ class StoreTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA1/size mismatch"):
             store.resolve(self.capture, "custom.shot.png")
 
+    def test_verify_streams_multi_chunk_file(self):
+        path = self.external / "capture.jsonl"
+        data = bytes(range(256)) * (10 * 1024 + 7)  # ~2.5 MiB, not chunk aligned
+        path.write_bytes(data)
+        rec = {"path": "capture.jsonl", "sha1": hashlib.sha1(data).hexdigest(), "size": len(data)}
+        self.assertEqual(store.file_digest(path), (rec["sha1"], len(data)))
+        self.assertEqual(store.file_record(path), rec)
+        store.verify(path, rec)
+        with self.assertRaises(store.StoreMismatch):
+            store.verify(path, dict(rec, size=len(data) + 1))
+        path.write_bytes(data[:-1] + b"\x00")
+        with self.assertRaises(store.StoreMismatch):
+            store.verify(path, rec)
+
     def test_manifest_cited_before_and_after_stored_flags(self):
         path = self.capture / "capture.manifest.json"
         manifest = {"outputs": [{"path": "capture.jsonl", "sha1": "0" * 40, "size": 1}]}
