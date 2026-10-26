@@ -3379,6 +3379,65 @@ def test_shared_brace_head_review() -> None:
        inlineasm.definition_names(src.replace("f(void)", "h(void)")), ["g", "h"])
 
 
+def test_delimited_definition_heads() -> None:
+    prefix = "int g(void) { if (a) { b(); } }"
+    src = prefix + "int\nf(void) {}"
+    eq("shared brace: last of two braces bounds split head",
+       inlineasm.func_definition_candidates(src, "f"), [(len(prefix), len(src))])
+    src = "int ff(void) {}\nint f(void) {}"
+    eq("head lookup: f never includes ff span",
+       inlineasm.func_definition_candidates(src, "f"),
+       [(src.index("int f("), len(src))])
+    eq("head lookup: ff keeps its own span",
+       inlineasm.func_definition_candidates(src, "ff"), [(0, src.index("}") + 1)])
+    prefixes = ("int g(void) {} /*c*/ ",
+                "int g(void) {} __attribute__((unused)) ",
+                "int x; ", "struct S { int a; } s; ")
+    for prefix in prefixes:
+        for separator in (" ", "\n"):
+            head = "int" + separator + "f(void) {}"
+            src = prefix + head
+            expected = [(len(prefix), len(src))]
+            eq("delimited head: span begins at return type",
+               inlineasm.func_definition_candidates(src, "f"), expected)
+            check("delimited head: definition census includes f",
+                  "f" in inlineasm.definition_names(src))
+            check("delimited head: head census includes f",
+                  "f" in inlineasm.definition_head_names(src))
+            eq("delimited head: substitution preserves delimiter and gap",
+               inlineasm.substitute_body(src, "f", "int f(void) {}"),
+               prefix + "int f(void) {}")
+            eq("delimited head: duplicate remains ambiguous",
+               len(inlineasm.func_definition_candidates(src + "\nint f(void) {}", "f")), 2)
+            for keyword in ("if", "else", "int", "return", "volatile", "__asm__"):
+                bad = prefix + "int" + separator + keyword + "(void) {}"
+                eq("delimited head: keyword name rejected",
+                   inlineasm.func_definition_candidates(bad, keyword), [])
+                if keyword != "int":
+                    bad = prefix + keyword + separator + "f(void) {}"
+                    eq("delimited head: keyword type tail rejected",
+                       inlineasm.func_definition_candidates(bad, "f"), [])
+            for wrapper in ("int outer(void) {\n%s\n}", "/*\n%s\n*/",
+                            '#if 0\n%s\n#endif',
+                            '#ifdef X\n{\n#endif\n%s'):
+                eq("delimited head: nested, masked or unknown scope excluded",
+                   inlineasm.func_definition_candidates(wrapper % src, "f"), [])
+            # Unknown but balanced arms remain visible: no clean fallback
+            # when one arm supplies another spelling of the same definition.
+            conditional = "#ifdef X\n" + src + "\n#else\nint f(void) {}\n#endif"
+            eq("delimited head: unknown alternatives stay ambiguous",
+               len(inlineasm.func_definition_candidates(conditional, "f")), 2)
+    # A comment or attribute inside the return type: after `}` the raw path
+    # cannot read the head, so the masked path must (as after `;`).
+    for prefix in ("int g(void) {} ", "int x; "):
+        for head in ("static __attribute__((unused)) int f(void) {}",
+                     "int /*c*/ f(void) {}",
+                     "static int __attribute__((x)) f(void) {}"):
+            src = prefix + head
+            eq("delimited head: in-type comment or attribute, span from type",
+               inlineasm.func_definition_candidates(src, "f"), [(len(prefix), len(src))])
+
+
 def test_split_definition_head() -> None:
     split = "static s32\n\nfunc_X(s32 a) { return a; }"
     src = "extern int g;\n" + split + "\nint tail;\n"
@@ -14733,6 +14792,7 @@ def main() -> int:
     test_additional_file_scope_heads()
     test_file_scope_head_review()
     test_shared_brace_head_review()
+    test_delimited_definition_heads()
     test_split_definition_head()
     test_definition_type_line()
     test_definition_names()

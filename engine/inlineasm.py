@@ -706,6 +706,32 @@ def _definition_heads_cached(text: str) -> tuple[tuple[str, int, int], ...]:
                 and _new_definition_head(m.group(2), m.group(1))
                 and start in _file_scope_tokens(text)):
             heads.append((m.group(2), start, m.end()))
+    # Comments and leading GNU attributes may separate a shared brace from
+    # the return type. A completed declaration's semicolon is another head
+    # boundary. Mask only for this extension; preserve the old raw grammar.
+    masked = _code_without_comments_and_strings(text)
+    for attr in reversed(list(_ATTRIBUTE_RE.finditer(masked))):
+        close = _match_paren(masked, attr.end() - 1)
+        if close >= 0:
+            masked = (masked[:attr.start()] +
+                      " " * (close - attr.start()) + masked[close:])
+    seen = {(start, end) for _, start, end in heads}
+    for m in re.finditer(
+            r"([};])[ \t]*([A-Za-z_][\w \t*]*\b)[ \t]*(?:\r?\n)?("
+            + name + r")\s*\(",
+            masked):
+        start = m.start(2)
+        # Plain shared-brace heads already have dedicated one-line/split
+        # handling above. Do not give them a second, weaker reading here;
+        # a head masking changed (a comment or attribute inside it) has no
+        # raw reading, so it is read here.
+        if (m.group(1) == "}" and not text[m.start() + 1:start].strip()
+                and masked[m.start():m.end()] == text[m.start():m.end()]):
+            continue
+        if ((start, m.end()) not in seen
+                and _new_definition_head(m.group(3), m.group(2))
+                and start in _file_scope_tokens(text)):
+            heads.append((m.group(3), start, m.end()))
     return tuple(sorted(heads, key=lambda head: head[1]))
 
 
@@ -755,6 +781,8 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
         heads. Existing column-0 one-line heads retain their raw treatment.
       * Indented one-line heads qualify at lexical brace depth zero, outside
         comments, literals, directives and literal #if 0 arms.
+      * Comments or GNU attributes after a shared `}`, and a completed
+        declaration's same-line `;`, may precede the return type too.
       * `void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;` (368E4.c) — old-style K&R
         parameter declarations sit between `)` and `{`.
     A bare column-0 name also qualifies after a non-blank line containing only
