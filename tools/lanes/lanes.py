@@ -69,6 +69,7 @@ LANE_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}$")
 TRAILER_RE = re.compile(r"^Lane-Replay:\s*(.+?)\s*$", re.MULTILINE)
 LOCK_REL = Path("tmp") / ".main_reintegration.lock"
 LOCK_STALE_SECS = 5400  # keep in sync with tools/reintegrate_lock.ps1
+LOCK_FUTURE_SLACK_SECS = 300  # clock skew slack; keep in sync with reintegrate_lock.ps1
 HEARTBEAT_STALE_SECS = 600  # Expire abandoned gate tickets across Windows/WSL PID namespaces.
 HEARTBEAT_INTERVAL_SECS = 30
 GATE_POLL_SECS = 5  # a waiter's poll period (reads only; writes only on a queue change)
@@ -463,7 +464,8 @@ def is_shared(ctx: Ctx, glob: str) -> bool:
 
 def read_lock(ctx: Ctx):
     try:
-        return json.loads((ctx.main / LOCK_REL).read_text(encoding="utf-8-sig"))
+        lk = json.loads((ctx.main / LOCK_REL).read_text(encoding="utf-8-sig"))
+        return lk if isinstance(lk, dict) else {}
     except Exception:
         return None
 
@@ -501,13 +503,18 @@ def write_lock(ctx: Ctx, label: str):
 
 
 def lock_age(lk: dict) -> float:
-    """Seconds since the lock's ts. A missing, non-numeric or non-finite ts is infinitely old
-    (stale), as reintegrate_lock.ps1's Lock-Age treats it."""
+    """Seconds since ts; unreadable or implausibly future timestamps are stale."""
+    raw_ts = lk.get("ts")
+    if isinstance(raw_ts, bool):
+        return math.inf
     try:
-        ts = float(lk.get("ts"))
+        ts = float(raw_ts)
     except (TypeError, ValueError, OverflowError):
         return math.inf
-    return time.time() - ts if math.isfinite(ts) else math.inf
+    now = time.time()
+    if not math.isfinite(ts) or ts > now + LOCK_FUTURE_SLACK_SECS:
+        return math.inf
+    return now - ts
 
 
 def acquire_lock(ctx: Ctx, label: str):
@@ -517,7 +524,7 @@ def acquire_lock(ctx: Ctx, label: str):
         if _create_lock(ctx, label):
             return
         lk = read_lock(ctx)
-        age = lock_age(lk) if lk else 0
+        age = lock_age(lk) if lk is not None else 0
         if lk and lk.get("session") == ctx.session:
             write_lock(ctx, label)
             return
@@ -526,7 +533,7 @@ def acquire_lock(ctx: Ctx, label: str):
             # O_EXCL create, so two stealers cannot both win.
             time.sleep(1)
             lk2 = read_lock(ctx)
-            if lk2 == lk or (lk2 and lock_age(lk2) > LOCK_STALE_SECS):
+            if lk2 == lk or (lk2 is not None and lock_age(lk2) > LOCK_STALE_SECS):
                 try:
                     (ctx.main / LOCK_REL).unlink()
                 except FileNotFoundError:
@@ -656,11 +663,12 @@ def cmd_status(ctx: Ctx, a):
                           "gate_queue": reg.get("gate_queue", [])}, indent=2))
         return 0
     main_head = git("rev-parse", "--short", "main", cwd=ctx.main)
-    age = lock_age(lk) if lk else 0
+    age = lock_age(lk) if lk is not None else 0
     print(f"main {main_head}   lock: " + (f"HELD by {lk.get('label') or lk.get('session')} "
                                           + (f"({int(age)}s)" if math.isfinite(age)
                                              else "(malformed ts: stale)")
-                                          if lk else "free"))
+                                          + (" STALE" if age > LOCK_STALE_SECS else "")
+                                          if lk is not None else "free"))
     print("full-gate queue:" + (" empty" if not reg.get("gate_queue") else ""))
     for position, ticket in enumerate(reg.get("gate_queue", []), 1):
         since = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ticket["enqueued"]))

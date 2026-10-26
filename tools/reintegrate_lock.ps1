@@ -28,6 +28,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $STALE_SECS = 5400  # keep in sync with main_reintegration_lock.py
+$LOCK_FUTURE_SLACK_SECS = 300  # clock skew slack; keep in sync with tools/lanes/lanes.py
 
 # Resolve the MAIN repo root (first entry of `git worktree list`), cwd-independent.
 $anchor = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -46,7 +47,21 @@ function Read-Lock {
     if (-not (Test-Path $lockPath)) { return $null }
     try { return (Get-Content $lockPath -Raw | ConvertFrom-Json) } catch { return $null }
 }
-function Lock-Age([object]$lk) { try { return ($now - [int64]$lk.ts) } catch { return 999999 } }
+function Lock-Age([object]$lk) {
+    $rawTs = $lk.ts
+    if ($null -eq $rawTs -or $rawTs -is [bool]) { return 999999 }
+    if ($rawTs -isnot [string] -and $rawTs -isnot [ValueType]) { return 999999 }
+    $ts = 0.0
+    if ($rawTs -is [string]) {
+        if (-not [double]::TryParse($rawTs, [Globalization.NumberStyles]::Float,
+                [Globalization.CultureInfo]::InvariantCulture, [ref]$ts)) { return 999999 }
+    } else {
+        try { $ts = [double]$rawTs } catch { return 999999 }
+    }
+    if ([double]::IsNaN($ts) -or [double]::IsInfinity($ts) -or
+            $ts -gt ($now + $LOCK_FUTURE_SLACK_SECS)) { return 999999 }
+    return ($now - $ts)
+}
 function Write-Lock {
     $head = (git -C "$mainRoot" rev-parse --short HEAD 2>$null)
     $obj = [ordered]@{ session = $sid; ts = $now; head = "$head"; label = $Label }

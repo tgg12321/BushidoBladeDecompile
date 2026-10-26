@@ -565,11 +565,62 @@ class GateQueueTest(unittest.TestCase):
 
     def test_lock_age_treats_malformed_timestamp_as_stale(self):
         import math
-        for fields in ({"ts": "invalid"}, {"ts": float("nan")}, {"ts": float("inf")}, {},
-                       {"ts": None}):
-            with self.subTest(fields=fields):
-                self.assertEqual(lanes.lock_age(fields), math.inf)
-        self.assertLess(lanes.lock_age({"ts": time.time()}), 5)
+        from unittest.mock import patch
+        now = 1700000000
+        cases = [({"ts": now - 10}, 10), ({"ts": now - 0.5}, 0.5),
+                 ({"ts": str(now - 10)}, 10), ({"ts": None}, math.inf),
+                 ({}, math.inf), ({"ts": "abc"}, math.inf),
+                 ({"ts": True}, math.inf), ({"ts": False}, math.inf),
+                 ({"ts": float("nan")}, math.inf), ({"ts": float("inf")}, math.inf),
+                 ({"ts": now + 60}, -60), ({"ts": now + 300}, -300),
+                 ({"ts": now + 301}, math.inf), ({"ts": now + 3600}, math.inf),
+                 ({"ts": 1.7e12}, math.inf), ({"ts": 1e300}, math.inf)]
+        with patch.object(lanes.time, "time", return_value=now):
+            for fields, expected in cases:
+                with self.subTest(fields=fields):
+                    self.assertEqual(lanes.lock_age(fields), expected)
+
+    def test_read_lock_non_dict_is_stale_not_absent(self):
+        from unittest.mock import patch
+        for raw in ('[]', '"x"', '3', 'null'):
+            with self.subTest(raw=raw), patch.object(Path, "read_text", return_value=raw):
+                self.assertEqual(lanes.read_lock(self.ctx), {})
+        with patch.object(Path, "read_text", return_value='{'):
+            self.assertIsNone(lanes.read_lock(self.ctx))
+        for error in (FileNotFoundError(), PermissionError()):
+            with self.subTest(error=type(error).__name__), \
+                    patch.object(Path, "read_text", side_effect=error):
+                self.assertIsNone(lanes.read_lock(self.ctx))
+
+    def test_acquire_lock_steals_non_dict_after_recheck(self):
+        from unittest.mock import patch
+        for first in ({}, {"session": "peer", "ts": 0}):
+            with self.subTest(first=first), \
+                    patch.object(lanes, "_create_lock", side_effect=[False, True]), \
+                    patch.object(lanes, "read_lock", side_effect=[first, {}]) as read, \
+                    patch.object(lanes.time, "sleep") as sleep, \
+                    patch.object(Path, "unlink") as unlink:
+                lanes.acquire_lock(self.ctx, "test")
+                self.assertEqual(read.call_count, 2)
+                sleep.assert_called_once_with(1)
+                unlink.assert_called_once_with()
+
+    def test_status_marks_old_and_non_dict_locks_stale(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        now = 1700000000
+        age = lanes.LOCK_STALE_SECS + 1
+        for lock in ({"session": "peer", "ts": now - age}, {}):
+            out = io.StringIO()
+            with self.subTest(lock=lock), \
+                    patch.object(lanes, "read_lock", return_value=lock), \
+                    patch.object(lanes, "git", return_value="abc1234"), \
+                    patch.object(lanes.time, "time", return_value=now), redirect_stdout(out):
+                self.assertEqual(lanes.cmd_status(self.ctx, SimpleNamespace(json=False)), 0)
+            self.assertIn("HELD", out.getvalue())
+            self.assertIn("STALE", out.getvalue())
+            if lock:
+                self.assertIn(f"({age}s)", out.getvalue())
 
     def test_preheld_lock_refreshed_before_gates_with_holder_label(self):
         from unittest.mock import patch
