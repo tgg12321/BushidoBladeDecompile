@@ -49,6 +49,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -57,6 +58,12 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+from lanes import HEARTBEAT_STALE_SECS
+
+# A gate ticket hides a session's stall only this long after it was enqueued: a hung land keeps
+# its heartbeat fresh forever, and the lanes queued behind it would never be reported.
+QUEUED_LAND_MAX_SECS = 4 * 3600
 
 MAIN = Path(__file__).resolve().parents[2]
 # Orchestrator-owned files; BB2_LANES_STATE_DIR moves them (tests). The registry stays lanes.py's.
@@ -444,6 +451,31 @@ def is_codex(slot: dict) -> bool:
     return slot.get("kind") == "codex"
 
 
+def gate_queue_position(reg: dict, lane: str, now: float) -> int | None:
+    """One-based position among fresh, well-formed gate tickets enqueued less than
+    QUEUED_LAND_MAX_SECS ago, or None."""
+    queue = reg.get("gate_queue")
+    if not isinstance(queue, list):
+        return None
+    position = 0
+    for ticket in queue:
+        if not isinstance(ticket, dict):
+            continue
+        beat = ticket.get("beat")
+        if (not isinstance(ticket.get("lane"), str) or not ticket["lane"]
+                or isinstance(beat, bool) or not isinstance(beat, (int, float))
+                or not math.isfinite(beat) or now - beat >= HEARTBEAT_STALE_SECS):
+            continue
+        enqueued = ticket.get("enqueued")
+        if (isinstance(enqueued, (int, float)) and not isinstance(enqueued, bool)
+                and math.isfinite(enqueued) and now - enqueued >= QUEUED_LAND_MAX_SECS):
+            continue
+        position += 1
+        if ticket["lane"] == lane:
+            return position
+    return None
+
+
 def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
     """running | finished | stalled | lost for one tracked session.
 
@@ -451,7 +483,8 @@ def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
     closed after the session started) and no longer owns it. Finished = released and idle (or
     exited). A session idle for NO_OPEN_GRACE_SECS that never opened its lane (it found no
     work) is finished too. An idle session that owns its lane usually just waits on a
-    background `lanes.py land`; it is only reported as stalled after STALL_SECS."""
+    background `lanes.py land`; it is only reported as stalled after STALL_SECS unless
+    its lane has a fresh full-gate queue ticket enqueued under QUEUED_LAND_MAX_SECS ago."""
     e = reg.get("lanes", {}).get(slot["lane"]) or {}
     owns = bool(slot.get("session")) and e.get("owner") == slot["session"]
     released = not owns and (slot.get("seen_open") or float(e.get("closed") or 0) >= slot["started"])
@@ -464,7 +497,7 @@ def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
         if (slot.get("session") and not owns and not slot.get("seen_open")
                 and idle_for >= NO_OPEN_GRACE_SECS):
             return "finished"  # decided there was no work and never opened its lane
-        if idle_for >= STALL_SECS:
+        if idle_for >= STALL_SECS and gate_queue_position(reg, slot["lane"], now) is None:
             return "stalled"
     return "running"
 
@@ -1114,7 +1147,11 @@ def cmd_status(_args):
     now = time.time()
     for sid, slot in sorted(st["sessions"].items(), key=lambda kv: kv[1]["lane"]):
         mins = int((now - slot["started"]) / 60)
-        print(f"  {slot['lane']:<14} {sid}  {session_phase(slot, ag.get(sid), reg, now):<8} "
+        phase = session_phase(slot, ag.get(sid), reg, now)
+        position = gate_queue_position(reg, slot["lane"], now)
+        if phase == "running" and position is not None:
+            phase = f"queued to land (position {position})"
+        print(f"  {slot['lane']:<14} {sid}  {phase:<8} "
               f"{mins} min   claude attach {sid}")
     if cx.get("enabled") and st.get("codex_blocked"):
         print(f"codex lane waiting: {st['codex_blocked']}")

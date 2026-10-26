@@ -8,6 +8,7 @@ import sys
 import time
 from contextlib import redirect_stdout
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -135,6 +136,76 @@ class Phase(unittest.TestCase):
         self.assertEqual(o.session_phase(slot("pins"), None, r, NOW), "lost")
         self.assertEqual(o.session_phase(slot("pins", seen_open=True), {"state": "stopped"},
                                          reg(pins={"owner": None}), NOW), "finished")
+
+
+class GateQueue(unittest.TestCase):
+    def setUp(self):
+        self.slot = slot("pins", idle_since=NOW - o.STALL_SECS - 60)
+        self.agent = {"state": "done", "pid": 1}
+        self.reg = reg(pins={"owner": "S1"})
+
+    def test_fresh_ticket_keeps_idle_session_running(self):
+        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW - 599}]
+        self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
+        state = st({"a1": self.slot})
+        self.assertEqual(o.update_slots(state, {"a1": self.agent}, self.reg, bl(), NOW), [])
+        self.assertNotIn("warned", self.slot)
+        # Once the heartbeat expires, the ordinary stall warning applies.
+        self.assertEqual(o.update_slots(state, {"a1": self.agent}, self.reg, bl(), NOW + 1),
+                         [("stalled", "a1")])
+
+    def test_hung_land_hides_a_stall_only_until_the_queue_cap(self):
+        # a hung head land keeps its beat fresh; past the cap it is reported again
+        cap = o.QUEUED_LAND_MAX_SECS
+        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW, "enqueued": NOW - cap + 60}]
+        self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
+        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW, "enqueued": NOW - cap}]
+        self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
+        self.assertIsNone(o.gate_queue_position(self.reg, "pins", NOW))
+
+    def test_stale_missing_and_other_lane_tickets_do_not_prevent_stall(self):
+        for queue in ([], [{"lane": "pins", "beat": NOW - 600}],
+                      [{"lane": "pins", "beat": NOW - 601}],
+                      [{"lane": "data", "beat": NOW}]):
+            with self.subTest(queue=queue):
+                self.reg["gate_queue"] = queue
+                self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
+        del self.reg["gate_queue"]
+        self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
+
+    def test_malformed_queue_and_entries_are_ignored(self):
+        bad_entries = [None, 1, "ticket", [], {}, {"lane": "pins"},
+                       {"beat": NOW}, {"lane": [], "beat": NOW}, {"lane": "", "beat": NOW}]
+        bad_entries += [{"lane": "pins", "beat": value}
+                        for value in (None, "bad", str(NOW), [], {}, True,
+                                      float("nan"), float("inf"), float("-inf"))]
+        for queue in (None, {}, "bad", 1, bad_entries):
+            with self.subTest(queue=queue):
+                self.reg["gate_queue"] = queue
+                self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
+        self.reg["gate_queue"] = bad_entries + [
+            {"lane": "old", "beat": NOW - 600},
+            {"lane": "data", "beat": NOW}, {"lane": "pins", "beat": NOW}]
+        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW), 2)
+        self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
+
+    def test_status_shows_queue_position(self):
+        self.reg["gate_queue"] = [{"lane": "data", "beat": NOW},
+                                  {"lane": "pins", "beat": NOW - 30}]
+        state = st({"a1": self.slot})
+        state["codex_history"] = []
+        out = io.StringIO()
+        with patch.object(o, "load_state", return_value=state), \
+                patch.object(o, "agents", return_value={"a1": self.agent}), \
+                patch.object(o, "read_json", return_value=self.reg), \
+                patch.object(o, "read_codex", return_value={}), \
+                patch.object(o, "read_max", return_value=1), \
+                patch.object(o, "load_paused", return_value={}), \
+                patch.object(o, "load_attention", return_value=[]), \
+                patch.object(o.time, "time", return_value=NOW), redirect_stdout(out):
+            o.main(["status"])
+        self.assertIn("queued to land (position 2)", out.getvalue())
+        self.assertNotIn("stalled", out.getvalue())
 
 
 class Slots(unittest.TestCase):
