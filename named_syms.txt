@@ -104,7 +104,7 @@
 /* system-restart wrapper around bios_Exec(sp, a0, a1). Sets up GPU, */
 /* interrupts, critical section then EXECs a new PS-X EXE. */
 /* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
-/* gpu_ResetGraphMode1 + gpu_HideResetAndClear + motion_InvalidateMarkedNdataPackAndResetLoadCaches + func_800415C4(0,1) */
+/* gpu_ResetGraphMode1 + gpu_HideResetAndClear + motion_InvalidateMarkedNdataPackAndResetLoadCaches + slot_ReleaseObjectAndResources(0,1) */
 /* + eff_ClearInitFlag ..., D_800A3834 = 0x1B. NOT a position check. */
 /* special_camera_check_pos_outside_ground_80036E34 -- now cdrom_StartReadAt: */
 /* starts a CD read of a file at a sector offset (ndata_StartReadInf, */
