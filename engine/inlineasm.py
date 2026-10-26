@@ -890,24 +890,23 @@ def _head_function(head: str) -> tuple[str, frozenset] | None:
 
 
 @functools.lru_cache(maxsize=256)
-def _project_header_text(path: Path, stamp: tuple[int, int, int]) -> str:
-    return path.read_text(encoding="utf-8", errors="replace")
+def _project_header_text(path: Path, content: bytes) -> str:
+    # Match read_text's replacement decoding and universal newline handling.
+    return content.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
 
 
 def project_header_texts(root: Path) -> tuple[tuple[Path, str], ...]:
     """Project headers, vendored included, without resolving include graphs.
 
-    Stat each live path to invalidate reads on edits; unchanged contents reuse
-    the path/content-keyed macro facts and compiler views below.
-    The read cache is stamp-keyed: a same-size edit within one timestamp tick
-    can be missed in a long-lived process. The CLI and audit are one-shot.
+    Read each live path to detect edits even with identical stat metadata.
+    Exact bytes key cached decoding; unchanged contents also reuse the
+    path/content-keyed macro facts and compiler views below. Callers can share
+    this snapshot to read each header only once per audit.
     """
     out = []
     for pat in ("include/**/*.h", "src/**/*.h", "movovl/include/**/*.h"):
         for p in sorted(root.resolve().glob(pat)):
-            st = p.stat()
-            out.append((p, _project_header_text(
-                p, (st.st_mtime_ns, st.st_ctime_ns, st.st_size))))
+            out.append((p, _project_header_text(p, p.read_bytes())))
     return tuple(out)
 
 

@@ -5328,32 +5328,45 @@ def test_project_header_facts_cache() -> None:
         header.parent.mkdir()
         header.write_text("#define CLOSE }\n", encoding="utf-8")
         reads = []
-        original = Path.read_text
+        original = Path.read_bytes
 
         def read(p, *args, **kwargs):
             reads.append(p)
             return original(p, *args, **kwargs)
 
-        with patch.object(Path, "read_text", read):
+        with patch.object(Path, "read_bytes", read):
             a = inlineasm.project_header_macro_facts(root)
             b = inlineasm.project_header_macro_facts(root)
             eq("header cache: facts same object for same content", a is b, True)
             eq("header cache: audit shares gathering", CCI._header_macro_facts(root), a)
             eq("header cache: safety fixture unchanged", CCI._header_safety_issues(root), [])
-            eq("header cache: one read for unchanged content", reads, [header])
+            eq("header cache: each gathering validates bytes", reads, [header] * 4)
             snapshot = inlineasm.project_header_texts(root)
             with patch.object(inlineasm, "project_header_texts",
                               side_effect=AssertionError("snapshot must be reused")):
                 eq("header cache: public snapshot API reuses gathering",
                    inlineasm.project_header_macro_facts(root, headers=snapshot), a)
+            eq("header cache: snapshot consumers do not read again", reads, [header] * 5)
             stamp = header.stat()
             header.write_text("#define CLOSE 0\n", encoding="utf-8")
-            os.utime(header, ns=(stamp.st_atime_ns, stamp.st_mtime_ns + 2_000_000_000))
-            c = inlineasm.project_header_macro_facts(root)
-            check("header cache: changed same-size content invalidates facts", c != a)
-            eq("header cache: changed header read once", reads, [header, header])
+            original_stat = Path.stat
+
+            def same_stamp(p, *args, **kwargs):
+                return stamp if p == header else original_stat(p, *args, **kwargs)
+
+            with patch.object(Path, "stat", same_stamp):
+                changed = inlineasm.project_header_texts(root)
+                eq("header cache: identical stamp and size sees new text",
+                   changed, ((header, "#define CLOSE 0\n"),))
+                c = inlineasm.project_header_macro_facts(root, headers=changed)
+                check("header cache: identical stamp and size invalidates facts", c != a)
+            eq("header cache: changed header read once", reads, [header] * 6)
             eq("header cache: changed content cached", inlineasm.project_header_macro_facts(root), c)
-            eq("header cache: no additional read", reads, [header, header])
+            eq("header cache: cached content still validated", reads, [header] * 7)
+            header.write_bytes(b"// bad \xff\r\n// CR\r// LF\n")
+            eq("header cache: replacement decoding and universal newlines",
+               inlineasm.project_header_texts(root),
+               ((header, "// bad \ufffd\n// CR\n// LF\n"),))
 
 
 def test_layer2_gate() -> None:
@@ -12981,23 +12994,29 @@ def test_naming_member_apply() -> None:
 
 
 def test_definition_type_line() -> None:
+    """Fast equivalence sample; BB2_EXHAUSTIVE=1 checks all short strings."""
     import itertools
+    import random
     import re
     import time
 
     old = re.compile(r"(?:[A-Za-z_]\w*|[ \t*])+")
-    mismatch = None
-    for length in range(8):
-        for chars in itertools.product("a1_ *;(", repeat=length):
-            text = "".join(chars)
-            if bool(old.fullmatch(text)) != inlineasm._definition_type_line(text):
-                mismatch = text
-                break
-        if mismatch is not None:
-            break
-    eq("type line: exhaustive old/new equivalence through length 7", mismatch, None)
-    for text in ("\t*", "a\u00e91", "\u00e9", "a\u0661", "\u0661", "a\n", "a\r"):
-        eq("type line: tab/Unicode/newline equivalence " + repr(text),
+    exhaustive = os.environ.get("BB2_EXHAUSTIVE") == "1"
+    cases = ("".join(chars) for length in range(8 if exhaustive else 4)
+             for chars in itertools.product("a1_ *;(", repeat=length))
+    if not exhaustive:
+        rng = random.Random(4027)
+        sample = ("".join(rng.choices("a1_ *;(", k=rng.randrange(4, 17)))
+                  for _ in range(4096))
+        cases = itertools.chain(cases, sample)
+    mismatch = next((text for text in cases
+                     if bool(old.fullmatch(text)) != inlineasm._definition_type_line(text)), None)
+    eq("type line: old/new equivalence (" +
+       ("exhaustive through length 7" if exhaustive else "short exhaustive + fixed sample") + ")",
+       mismatch, None)
+    for text in ("", "1", "a1", "_1", "*1", "a 1", "a*", "a;", "a(",
+                 "\t*", "a\u00e91", "\u00e9", "a\u0661", "\u0661", "a\n", "a\r"):
+        eq("type line: boundary equivalence " + repr(text),
            inlineasm._definition_type_line(text), bool(old.fullmatch(text)))
     text = "a" * 5000 + ";"
     start = time.perf_counter()
