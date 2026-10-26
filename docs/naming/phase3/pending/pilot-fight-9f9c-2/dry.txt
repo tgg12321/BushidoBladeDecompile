@@ -1,0 +1,190 @@
+rc=0
+==============================================================================
+NAMING WAVE — 28 operations (0 RESET, 28 RENAME)
+  28 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — symbol_addrs.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (68) --
+  (root): 2 files, 4 substitutions
+      inline_asm_canonical.txt  (3)
+      symbol_addrs.txt  (1)
+  asm: 59 files, 117 substitutions
+      asm/funcs/camera_UpdateTwoFighterView.s  (2)
+      asm/funcs/fight_Init.s  (7)
+      asm/funcs/fight_RunCommandStream.s  (1)
+      asm/funcs/fight_Update.s  (1)
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (2)
+      asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (1)
+      ... and 53 more
+  include: 1 files, 10 substitutions
+      include/bb2.h  (10)
+  src: 6 files, 96 substitutions
+      src/main/17AFC.c  (6)
+      src/main/25C38.c  (2)
+      src/main/28708.c  (3)
+      src/main/2B344.c  (20)
+      src/main/9F9C.c  (61)
+      src/main/d_7D870.c  (4)
+
+-- .s file renames (28) --
+  asm/funcs/func_8001A67C.s -> asm/funcs/math_StoreFloorDiv2000XZOfPointStepTowards.s
+  asm/funcs/func_8001B6F4.s -> asm/funcs/fight_SetViewMode1RestoreNodesClearCameraB1FAndSelectRenderConfig0.s
+  asm/funcs/func_8001C4C0.s -> asm/funcs/fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11.s
+  asm/funcs/func_8001C51C.s -> asm/funcs/fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay.s
+  asm/funcs/func_8001CD68.s -> asm/funcs/fight_SplitFrameCounterIntoMinutesSecondsHundredths.s
+  asm/funcs/func_8001D790.s -> asm/funcs/fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged.s
+  asm/funcs/func_8001D904.s -> asm/funcs/snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9.s
+  asm/funcs/func_8001D998.s -> asm/funcs/snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4.s
+  asm/funcs/func_8001DA2C.s -> asm/funcs/snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode.s
+  asm/funcs/func_8001DB9C.s -> asm/funcs/motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id.s
+  ... and 18 more
+
+-- ledger directory renames (39) --
+  memory/grind/func_8001A67C -> memory/grind/math_StoreFloorDiv2000XZOfPointStepTowards
+  memory/grind/func_8001C4C0 -> memory/grind/fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
+  memory/grind/func_8001C51C -> memory/grind/fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
+  memory/grind/func_8001EA84 -> memory/grind/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+  memory/grind/func_8001EEB4 -> memory/grind/fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+  memory/grind/func_8001EFA0 -> memory/grind/fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+  memory/grind/func_8001FB34 -> memory/grind/fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+  memory/grind/func_800203B4 -> memory/grind/fighter_StoreBoneLocalVectorAndArmEventTrigger
+  memory/grind/func_800204C0 -> memory/grind/fighter_DispatchArmedBoneVectorEventAndDisarm
+  memory/grind/func_80020CDC -> memory/grind/motion_InvalidateMarkedNdataPackAndResetLoadCaches
+  ... and 29 more
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:965  func_800203B4 = 0x800203B4; /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a 
+
+-- JSON key/field edits (40) --
+  tools/canonical_asm_regions.json: 3 changes
+      func_8001A67C
+      func_800203B4
+      func_800204C0
+  memory/grind/func_8001A67C/layer2.jsonl: 2 changes
+      line 1: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+      line 2: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+  memory/grind/func_8001C4C0/layer2.jsonl: 1 changes
+      line 1: func func_8001C4C0 -> fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
+  memory/grind/func_8001C51C/layer2.jsonl: 1 changes
+      line 1: func func_8001C51C -> fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
+  memory/grind/func_8001EA84/layer2.jsonl: 1 changes
+      line 1: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+  memory/grind/func_8001EEB4/layer2.jsonl: 1 changes
+      line 1: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+  memory/grind/func_8001EFA0/layer2.jsonl: 1 changes
+      line 1: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+  memory/grind/func_8001FB34/layer2.jsonl: 1 changes
+      line 1: func func_8001FB34 -> fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+  memory/grind/func_800203B4/layer2.jsonl: 1 changes
+      line 1: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
+  memory/grind/func_800204C0/layer2.jsonl: 1 changes
+      line 1: func func_800204C0 -> fighter_DispatchArmedBoneVectorEventAndDisarm
+  memory/grind/func_80020CDC/layer2.jsonl: 1 changes
+      line 1: func func_80020CDC -> motion_InvalidateMarkedNdataPackAndResetLoadCaches
+  memory/grind/func_80020D38/layer2.jsonl: 1 changes
+      line 1: func func_80020D38 -> motion_InvalidateMarkedNdataPackAndClearSlot1Id
+  memory/grind/func_800219E4/layer2.jsonl: 1 changes
+      line 1: func func_800219E4 -> motion_GetCommonScriptAtFighterBufferOffset
+  memory/grind/func_80021A3C/layer2.jsonl: 1 changes
+      line 1: func func_80021A3C -> motion_GetCommonScriptAtFighterBufferIndexedOffset
+  memory/grind/func_80022224/layer2.jsonl: 1 changes
+      line 1: func func_80022224 -> fight_PickRandomStartPositionExcludingNearestAndFarthest
+  memory/grind/func_800224E0/layer2.jsonl: 1 changes
+      line 1: func func_800224E0 -> motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
+  memory/grind/_completed/func_8001A67C/layer2.jsonl: 7 changes
+      line 1: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+      line 2: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+      line 3: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+      line 4: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+      line 5: func func_8001A67C -> math_StoreFloorDiv2000XZOfPointStepTowards
+      ... and 2 more
+  memory/grind/_completed/func_8001C4C0/layer2.jsonl: 2 changes
+      line 1: func func_8001C4C0 -> fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
+      line 2: func func_8001C4C0 -> fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
+  memory/grind/_completed/func_8001C51C/layer2.jsonl: 2 changes
+      line 1: func func_8001C51C -> fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
+      line 2: func func_8001C51C -> fight_RestartFighter0ReinitFighter1ClearDelayAndSelectionResetObjectsCameraReplay
+  memory/grind/_completed/func_8001CD68/layer2.jsonl: 1 changes
+      line 1: func func_8001CD68 -> fight_SplitFrameCounterIntoMinutesSecondsHundredths
+  memory/grind/_completed/func_8001D790/layer2.jsonl: 1 changes
+      line 1: func func_8001D790 -> fight_ResetGraphAndReloadSelectorResourcesIfSelectionsChanged
+  memory/grind/_completed/func_8001DB9C/layer2.jsonl: 2 changes
+      line 1: func func_8001DB9C -> motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
+      line 2: func func_8001DB9C -> motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
+  memory/grind/_completed/func_8001E800/layer2.jsonl: 3 changes
+      line 1: func func_8001E800 -> fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
+      line 2: func func_8001E800 -> fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
+      line 3: func func_8001E800 -> fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt
+  memory/grind/_completed/func_8001EA04/layer2.jsonl: 2 changes
+      line 1: func func_8001EA04 -> fight_RestoreNodesStopEffectsClearUnk31AAndInitThreeItemMenu
+      line 2: func func_8001EA04 -> fight_RestoreNodesStopEffectsClearUnk31AAndInitThreeItemMenu
+  memory/grind/_completed/func_8001EA84/layer2.jsonl: 10 changes
+      line 1: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+      line 2: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+      line 3: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+      line 4: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+      line 5: func func_8001EA84 -> fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
+      ... and 5 more
+  memory/grind/_completed/func_8001EEB4/layer2.jsonl: 3 changes
+      line 1: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+      line 2: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+      line 3: func func_8001EEB4 -> fight_StartIndexedCommonScriptOnSelectedFighterIfGatedAndEnterInterpolatedViewPhase
+  memory/grind/_completed/func_8001EFA0/layer2.jsonl: 7 changes
+      line 1: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+      line 2: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+      line 3: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+      line 4: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+      line 5: func func_8001EFA0 -> fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
+      ... and 2 more
+  memory/grind/_completed/func_8001FB34/layer2.jsonl: 2 changes
+      line 1: func func_8001FB34 -> fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+      line 2: func func_8001FB34 -> fighter_PassesPairedMoveEntryModeOpponentUnk0CObjectAndUnk26CGates
+  memory/grind/_completed/func_800203B4/layer2.jsonl: 3 changes
+      line 1: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
+      line 2: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
+      line 3: func func_800203B4 -> fighter_StoreBoneLocalVectorAndArmEventTrigger
+  memory/grind/_completed/func_800204C0/layer2.jsonl: 4 changes
+      line 1: func func_800204C0 -> fighter_DispatchArmedBoneVectorEventAndDisarm
+      line 2: func func_800204C0 -> fighter_DispatchArmedBoneVectorEventAndDisarm
+      line 3: func func_800204C0 -> fighter_DispatchArmedBoneVectorEventAndDisarm
+      line 4: func func_800204C0 -> fighter_DispatchArmedBoneVectorEventAndDisarm
+  memory/grind/_completed/func_80020CDC/layer2.jsonl: 1 changes
+      line 1: func func_80020CDC -> motion_InvalidateMarkedNdataPackAndResetLoadCaches
+  memory/grind/_completed/func_80020D38/layer2.jsonl: 1 changes
+      line 1: func func_80020D38 -> motion_InvalidateMarkedNdataPackAndClearSlot1Id
+  memory/grind/_completed/func_800213A0/layer2.jsonl: 3 changes
+      line 1: func func_800213A0 -> motion_AdvanceVariantIfAtNibble4Or5Position
+      line 2: func func_800213A0 -> motion_AdvanceVariantIfAtNibble4Or5Position
+      line 3: func func_800213A0 -> motion_AdvanceVariantIfAtNibble4Or5Position
+  memory/grind/_completed/func_800219E4/layer2.jsonl: 4 changes
+      line 1: func func_800219E4 -> motion_GetCommonScriptAtFighterBufferOffset
+      line 2: func func_800219E4 -> motion_GetCommonScriptAtFighterBufferOffset
+      line 3: func func_800219E4 -> motion_GetCommonScriptAtFighterBufferOffset
+      line 4: func func_800219E4 -> motion_GetCommonScriptAtFighterBufferOffset
+  memory/grind/_completed/func_80021A3C/layer2.jsonl: 4 changes
+      line 1: func func_80021A3C -> motion_GetCommonScriptAtFighterBufferIndexedOffset
+      line 2: func func_80021A3C -> motion_GetCommonScriptAtFighterBufferIndexedOffset
+      line 3: func func_80021A3C -> motion_GetCommonScriptAtFighterBufferIndexedOffset
+      line 4: func func_80021A3C -> motion_GetCommonScriptAtFighterBufferIndexedOffset
+  memory/grind/_completed/func_80021DB0/layer2.jsonl: 11 changes
+      line 1: func func_80021DB0 -> fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
+      line 2: func func_80021DB0 -> fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
+      line 3: func func_80021DB0 -> fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
+      line 4: func func_80021DB0 -> fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
+      line 5: func func_80021DB0 -> fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
+      ... and 6 more
+  memory/grind/_completed/func_80022224/layer2.jsonl: 1 changes
+      line 1: func func_80022224 -> fight_PickRandomStartPositionExcludingNearestAndFarthest
+  memory/grind/_completed/func_800224E0/layer2.jsonl: 2 changes
+      line 1: func func_800224E0 -> motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
+      line 2: func func_800224E0 -> motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
+  memory/grind/_completed/func_80022568/layer2.jsonl: 1 changes
+      line 1: func func_80022568 -> fighter_ResetBoneGroupHitState
+  memory/grind/_completed/func_80023DB8/layer2.jsonl: 4 changes
+      line 1: func func_80023DB8 -> fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface
+      line 2: func func_80023DB8 -> fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface
+      line 3: func func_80023DB8 -> fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface
+      line 4: func func_80023DB8 -> fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface
+
+DRY RUN — nothing written. Re-run with --apply.
