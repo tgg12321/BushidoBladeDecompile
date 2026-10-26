@@ -1,0 +1,222 @@
+==============================================================================
+NAMING WAVE — 44 operations (0 RESET, 44 RENAME)
+  44 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (129) --
+  (root): 2 files, 3 substitutions
+      known_psyq_stdlib.txt  (1)
+      symbol_addrs.txt  (2)
+  asm: 104 files, 203 substitutions
+      asm/funcs/camera_ApplyFightView.s  (4)
+      asm/funcs/cdrom_WaitIdle.s  (1)
+      asm/funcs/fight_Init.s  (7)
+      asm/funcs/fight_RunCommandStream.s  (1)
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (2)
+      asm/funcs/fight_WaitForCounterThenClearAndEnableDisplay.s  (2)
+      ... and 98 more
+  engine: 2 files, 3 substitutions
+      engine/test_engine.py  (2)
+      engine/volatile_cheats.py  (1)
+  include: 1 files, 30 substitutions
+      include/bb2.h  (30)
+  src: 16 files, 167 substitutions
+      src/main/24BF0.c  (2)
+      src/main/25C38.c  (6)
+      src/main/28708.c  (3)
+      src/main/2B344.c  (23)
+      src/main/309CC.c  (24)
+      src/main/31548.c  (2)
+      ... and 10 more
+  tools: 4 files, 13 substitutions
+      tools/grinder/scope_allow.txt  (1)
+      tools/ra_solver/validate.py  (1)
+      tools/test_board_cards.py  (10)
+      tools/test_board_sync.py  (1)
+
+-- .s file renames (44) --
+  asm/funcs/func_800167AC.s -> asm/funcs/gpu_GetSavedGrayscaleFlag.s
+  asm/funcs/func_800167BC.s -> asm/funcs/fighter_GetSavedCpuBehaviorAdjustFlag.s
+  asm/funcs/func_800167D4.s -> asm/funcs/snd_GetSavedCdAudioSuppressFlag.s
+  asm/funcs/func_800167EC.s -> asm/funcs/InitSavedRecordAndResetCameraDistanceOffset.s
+  asm/funcs/func_80016A8C.s -> asm/funcs/gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth.s
+  asm/funcs/func_800174F4.s -> asm/funcs/gpu_DrawDisplayModeOnLocalOtAndSync.s
+  asm/funcs/func_80040304.s -> asm/funcs/gpu_QueueSlotDrawMovesForSelectedSet.s
+  asm/funcs/func_80040400.s -> asm/funcs/node_AppendProjectedNodeToList.s
+  asm/funcs/func_8004046C.s -> asm/funcs/node_GetSlotNodeById.s
+  asm/funcs/func_800404A0.s -> asm/funcs/node_SetWordOnAllListedNodes.s
+  ... and 34 more
+
+-- ledger directory renames (51) --
+  memory/grind/func_800167EC -> memory/grind/InitSavedRecordAndResetCameraDistanceOffset
+  memory/grind/func_80016A8C -> memory/grind/gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
+  memory/grind/func_800174F4 -> memory/grind/gpu_DrawDisplayModeOnLocalOtAndSync
+  memory/grind/func_80040594 -> memory/grind/slot_FinalizeObjectLoadSoundTexturesAndArena
+  memory/grind/func_800408F8 -> memory/grind/node_InitObjectHierarchyFromTemplates
+  memory/grind/func_80040B44 -> memory/grind/node_BuildIdToNodeMapWithDuplicates
+  memory/grind/func_80040CB8 -> memory/grind/node_BuildProjectedNodeList
+  memory/grind/func_80041604 -> memory/grind/slot_RequestTimGroupsAndMarkReloadOnChange
+  memory/grind/func_80041650 -> memory/grind/slot_GetLastLoadTimGroupRequest
+  memory/grind/func_80041688 -> memory/grind/node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
+  ... and 41 more
+
+-- symbol-registry line deletions (2) --
+  symbol_addrs.txt:673  func_800167D4 = 0x800167D4; /* `return (D_80106A73 >> 2) & 1` */
+  symbol_addrs.txt:969  func_80041688 = 0x80041688; /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct
+
+-- JSON key/field edits (52) --
+  engine/deferred.json: 2 changes
+      func_80040B44
+      func_8004473C
+  memory/grind/func_800167EC/layer2.jsonl: 1 changes
+      line 1: func func_800167EC -> InitSavedRecordAndResetCameraDistanceOffset
+  memory/grind/func_80016A8C/layer2.jsonl: 2 changes
+      line 1: func func_80016A8C -> gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
+      line 2: func func_80016A8C -> gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
+  memory/grind/func_800174F4/layer2.jsonl: 1 changes
+      line 1: func func_800174F4 -> gpu_DrawDisplayModeOnLocalOtAndSync
+  memory/grind/func_80040594/layer2.jsonl: 3 changes
+      line 1: func func_80040594 -> slot_FinalizeObjectLoadSoundTexturesAndArena
+      line 2: func func_80040594 -> slot_FinalizeObjectLoadSoundTexturesAndArena
+      line 3: func func_80040594 -> slot_FinalizeObjectLoadSoundTexturesAndArena
+  memory/grind/func_800408F8/layer2.jsonl: 2 changes
+      line 1: func func_800408F8 -> node_InitObjectHierarchyFromTemplates
+      line 2: func func_800408F8 -> node_InitObjectHierarchyFromTemplates
+  memory/grind/func_80040B44/layer2.jsonl: 2 changes
+      line 1: func func_80040B44 -> node_BuildIdToNodeMapWithDuplicates
+      line 2: func func_80040B44 -> node_BuildIdToNodeMapWithDuplicates
+  memory/grind/func_80040CB8/layer2.jsonl: 3 changes
+      line 1: func func_80040CB8 -> node_BuildProjectedNodeList
+      line 2: func func_80040CB8 -> node_BuildProjectedNodeList
+      line 3: func func_80040CB8 -> node_BuildProjectedNodeList
+  memory/grind/func_80041604/layer2.jsonl: 1 changes
+      line 1: func func_80041604 -> slot_RequestTimGroupsAndMarkReloadOnChange
+  memory/grind/func_80041650/layer2.jsonl: 1 changes
+      line 1: func func_80041650 -> slot_GetLastLoadTimGroupRequest
+  memory/grind/func_80041688/layer2.jsonl: 1 changes
+      line 1: func func_80041688 -> node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
+  memory/grind/func_80041988/layer2.jsonl: 2 changes
+      line 1: func func_80041988 -> gpu_LoadRequestedAvailableTimGroupsForSlot
+      line 2: func func_80041988 -> gpu_LoadRequestedAvailableTimGroupsForSlot
+  memory/grind/func_80041AC8/layer2.jsonl: 1 changes
+      line 1: func func_80041AC8 -> gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex
+  memory/grind/func_80041BF4/layer2.jsonl: 2 changes
+      line 1: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+      line 2: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+  memory/grind/func_800422BC/layer2.jsonl: 1 changes
+      line 1: func func_800422BC -> light_SetLightOrBackColorOfSelectedSetups
+  memory/grind/func_80043278/layer2.jsonl: 1 changes
+      line 1: func func_80043278 -> gpu_RemapDepthToOtIndex
+  memory/grind/func_80044670/layer2.jsonl: 1 changes
+      line 1: func func_80044670 -> node_BindFrameDataAndReserveEntryBuffer
+  memory/grind/_completed/func_800167EC/layer2.jsonl: 1 changes
+      line 1: func func_800167EC -> InitSavedRecordAndResetCameraDistanceOffset
+  memory/grind/_completed/func_80016A8C/layer2.jsonl: 3 changes
+      line 1: func func_80016A8C -> gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
+      line 2: func func_80016A8C -> gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
+      line 3: func func_80016A8C -> gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
+  memory/grind/_completed/func_800174F4/layer2.jsonl: 4 changes
+      line 1: func func_800174F4 -> gpu_DrawDisplayModeOnLocalOtAndSync
+      line 2: func func_800174F4 -> gpu_DrawDisplayModeOnLocalOtAndSync
+      line 3: func func_800174F4 -> gpu_DrawDisplayModeOnLocalOtAndSync
+      line 4: func func_800174F4 -> gpu_DrawDisplayModeOnLocalOtAndSync
+  memory/grind/_completed/func_80040304/layer2.jsonl: 3 changes
+      line 1: func func_80040304 -> gpu_QueueSlotDrawMovesForSelectedSet
+      line 2: func func_80040304 -> gpu_QueueSlotDrawMovesForSelectedSet
+      line 3: func func_80040304 -> gpu_QueueSlotDrawMovesForSelectedSet
+  memory/grind/_completed/func_80040400/layer2.jsonl: 1 changes
+      line 1: func func_80040400 -> node_AppendProjectedNodeToList
+  memory/grind/_completed/func_8004046C/layer2.jsonl: 2 changes
+      line 1: func func_8004046C -> node_GetSlotNodeById
+      line 2: func func_8004046C -> node_GetSlotNodeById
+  memory/grind/_completed/func_800404A0/layer2.jsonl: 1 changes
+      line 1: func func_800404A0 -> node_SetWordOnAllListedNodes
+  memory/grind/_completed/func_80040510/layer2.jsonl: 5 changes
+      line 1: func func_80040510 -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels
+      line 2: func func_80040510 -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels
+      line 3: func func_80040510 -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels
+      line 4: func func_80040510 -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels
+      line 5: func func_80040510 -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels
+  memory/grind/_completed/func_80040594/layer2.jsonl: 3 changes
+      line 1: func func_80040594 -> slot_FinalizeObjectLoadSoundTexturesAndArena
+      line 2: func func_80040594 -> slot_FinalizeObjectLoadSoundTexturesAndArena
+      line 3: func func_80040594 -> slot_FinalizeObjectLoadSoundTexturesAndArena
+  memory/grind/_completed/func_800408F8/layer2.jsonl: 2 changes
+      line 1: func func_800408F8 -> node_InitObjectHierarchyFromTemplates
+      line 2: func func_800408F8 -> node_InitObjectHierarchyFromTemplates
+  memory/grind/_completed/func_80040A78/layer2.jsonl: 1 changes
+      line 1: func func_80040A78 -> node_RefreshObjectMatrixPointerTables
+  memory/grind/_completed/func_80040B44/layer2.jsonl: 2 changes
+      line 1: func func_80040B44 -> node_BuildIdToNodeMapWithDuplicates
+      line 2: func func_80040B44 -> node_BuildIdToNodeMapWithDuplicates
+  memory/grind/_completed/func_80040CB8/layer2.jsonl: 2 changes
+      line 1: func func_80040CB8 -> node_BuildProjectedNodeList
+      line 2: func func_80040CB8 -> node_BuildProjectedNodeList
+  memory/grind/_completed/func_8004153C/layer2.jsonl: 2 changes
+      line 1: func func_8004153C -> slot_GetObject
+      line 2: func func_8004153C -> slot_GetObject
+  memory/grind/_completed/func_80041554/layer2.jsonl: 1 changes
+      line 1: func func_80041554 -> slot_GetAssetIndex
+  memory/grind/_completed/func_80041604/layer2.jsonl: 1 changes
+      line 1: func func_80041604 -> slot_RequestTimGroupsAndMarkReloadOnChange
+  memory/grind/_completed/func_80041650/layer2.jsonl: 1 changes
+      line 1: func func_80041650 -> slot_GetLastLoadTimGroupRequest
+  memory/grind/_completed/func_80041688/layer2.jsonl: 2 changes
+      line 1: func func_80041688 -> node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
+      line 2: func func_80041688 -> node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
+  memory/grind/_completed/func_80041AC8/layer2.jsonl: 3 changes
+      line 1: func func_80041AC8 -> gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex
+      line 2: func func_80041AC8 -> gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex
+      line 3: func func_80041AC8 -> gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex
+  memory/grind/_completed/func_80041BF4/layer2.jsonl: 5 changes
+      line 1: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+      line 2: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+      line 3: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+      line 4: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+      line 5: func func_80041BF4 -> gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+  memory/grind/_completed/func_800421C8/layer2.jsonl: 2 changes
+      line 1: func func_800421C8 -> ApplyLightPresetRowBackgroundClearAndFarColor
+      line 2: func func_800421C8 -> ApplyLightPresetRowBackgroundClearAndFarColor
+  memory/grind/_completed/func_800422BC/layer2.jsonl: 2 changes
+      line 1: func func_800422BC -> light_SetLightOrBackColorOfSelectedSetups
+      line 2: func func_800422BC -> light_SetLightOrBackColorOfSelectedSetups
+  memory/grind/_completed/func_80042478/layer2.jsonl: 1 changes
+      line 1: func func_80042478 -> gpu_SetBackgroundClearColorAndFarColor
+  memory/grind/_completed/func_80043278/layer2.jsonl: 1 changes
+      line 1: func func_80043278 -> gpu_RemapDepthToOtIndex
+  memory/grind/_completed/func_80044504/layer2.jsonl: 4 changes
+      line 1: func func_80044504 -> gpu_PrepareViewAndFlushDrawQueue
+      line 2: func func_80044504 -> gpu_PrepareViewAndFlushDrawQueue
+      line 3: func func_80044504 -> gpu_PrepareViewAndFlushDrawQueue
+      line 4: func func_80044504 -> gpu_PrepareViewAndFlushDrawQueue
+  memory/grind/_completed/func_80044670/layer2.jsonl: 1 changes
+      line 1: func func_80044670 -> node_BindFrameDataAndReserveEntryBuffer
+  memory/grind/_completed/func_8004473C/layer2.jsonl: 1 changes
+      line 1: func func_8004473C -> node_InitFrameEntriesFromWorldTranslations
+  memory/grind/_completed/func_8005B644/layer2.jsonl: 1 changes
+      line 1: func func_8005B644 -> snd_StopAllVoicesAndCloseSlotVab
+  memory/grind/_completed/func_8005B6AC/layer2.jsonl: 1 changes
+      line 1: func func_8005B6AC -> snd_StopAllVoicesAndCloseSelectedEntryVabs
+  memory/grind/_completed/func_8005B72C/layer2.jsonl: 1 changes
+      line 1: func func_8005B72C -> snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb
+  memory/grind/_completed/func_8005B868/layer2.jsonl: 1 changes
+      line 1: func func_8005B868 -> snd_StopAllVoicesAndClosePairedFileVabs
+  memory/grind/_completed/func_8005B8B8/layer2.jsonl: 2 changes
+      line 1: func func_8005B8B8 -> snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles
+      line 2: func func_8005B8B8 -> snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles
+  memory/grind/_completed/func_8005B9C4/layer2.jsonl: 1 changes
+      line 1: func func_8005B9C4 -> snd_StopAllVoicesAndCloseSingleFileVab
+  memory/grind/_completed/func_8005B9FC/layer2.jsonl: 3 changes
+      line 1: func func_8005B9FC -> snd_CloseThenReadSingleFileAndLoadVab
+      line 2: func func_8005B9FC -> snd_CloseThenReadSingleFileAndLoadVab
+      line 3: func func_8005B9FC -> snd_CloseThenReadSingleFileAndLoadVab
+  memory/grind/_completed/func_8005BA8C/layer2.jsonl: 3 changes
+      line 1: func func_8005BA8C -> snd_ReloadListedVabsFromFileAndInstallBillboards
+      line 2: func func_8005BA8C -> snd_ReloadListedVabsFromFileAndInstallBillboards
+      line 3: func func_8005BA8C -> snd_ReloadListedVabsFromFileAndInstallBillboards
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ tools/repack_stage.py:L2: ['func_8005BA8C'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
