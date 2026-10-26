@@ -76,6 +76,69 @@ class WindowsArgv(unittest.TestCase):
                 self.assertEqual(cw.research_config(value), ('sandbox_mode', 'read-only'))
 
 
+class FailureOutput(unittest.TestCase):
+    def capture_exit(self, action):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err), \
+                mock.patch.object(out, "flush", wraps=out.flush) as out_flush, \
+                mock.patch.object(err, "flush", wraps=err.flush) as err_flush:
+            with self.assertRaises(SystemExit) as caught:
+                action()
+            return caught.exception.code, out.getvalue(), err.getvalue(), \
+                out_flush.call_count, err_flush.call_count
+
+    def test_refuse_writes_both_streams_and_flushes(self):
+        code, out, err, out_flush, err_flush = self.capture_exit(
+            lambda: cw.refuse("a Codex run is live"))
+        self.assertEqual(code, 2)
+        self.assertEqual(err, "codex_worker: REFUSED -- a Codex run is live\n")
+        self.assertEqual(out, "codex_worker: REFUSED (exit 2): a Codex run is live\n")
+        self.assertGreater(out_flush, 0)
+        self.assertGreater(err_flush, 0)
+
+    def test_fail_writes_both_streams_and_preserves_code(self):
+        code, out, err, out_flush, err_flush = self.capture_exit(
+            lambda: cw.fail("specific failure", 5))
+        self.assertEqual(code, 5)
+        self.assertEqual(err, "codex_worker: specific failure\n")
+        self.assertEqual(out, "codex_worker: FAILED (exit 5): specific failure\n")
+        self.assertGreater(out_flush, 0)
+        self.assertGreater(err_flush, 0)
+
+    def test_runtime_error_uses_fail(self):
+        with mock.patch.object(sys, "argv", ["codex_worker", "land", "item"]), \
+                mock.patch.object(cw, "cmd_land", side_effect=RuntimeError("git failed")):
+            code, out, err, _, _ = self.capture_exit(cw.main)
+        self.assertEqual(code, 2)
+        self.assertEqual(err, "codex_worker: git failed\n")
+        self.assertEqual(out, "codex_worker: FAILED (exit 2): git failed\n")
+
+    def test_child_return_code_passthrough_has_no_failure_label(self):
+        main, scratch, trusted = Path("main"), Path("scratch"), Path("trusted")
+        with mock.patch.object(sys, "argv", ["codex_worker", "shadow", "item", "make"]), \
+                mock.patch.object(cw, "main_checkout", return_value=main), \
+                mock.patch.object(cw, "check_engine_args"), \
+                mock.patch.object(cw, "layout", return_value=(main, scratch, trusted, "branch")), \
+                mock.patch.object(cw, "verify_trusted"), \
+                mock.patch.object(cw, "harvest", return_value=("base", "tree12345", [])), \
+                mock.patch.object(cw, "sync_trusted_to_tree"), \
+                mock.patch.object(cw.subprocess, "run", return_value=SimpleNamespace(returncode=7)):
+            code, out, err, _, _ = self.capture_exit(cw.main)
+        self.assertEqual(code, 7)
+        self.assertIn("building scratch tree", out)
+        self.assertNotIn("REFUSED", out + err)
+        self.assertNotIn("FAILED", out + err)
+
+    def test_success_prints_nothing_new(self):
+        out, err = io.StringIO(), io.StringIO()
+        with mock.patch.object(sys, "argv", ["codex_worker", "land", "item"]), \
+                mock.patch.object(cw, "cmd_land", side_effect=lambda a: print("success")), \
+                redirect_stdout(out), redirect_stderr(err):
+            cw.main()
+        self.assertEqual(out.getvalue(), "success\n")
+        self.assertEqual(err.getvalue(), "")
+
+
 class CodexIdle(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="cw-idle-")
@@ -91,7 +154,10 @@ class CodexIdle(unittest.TestCase):
         self.meta_file.write_text(json.dumps(self.meta), encoding="utf-8")
         self.status = {"bridge_slot": {"busy": True, "holder": {"run_id": "research-1", "codex_pid": 41}},
                        "processes": [{"pid": 41, "kind": "headless-task", "cmd": self.exec_cmd()}]}
-        self.env = mock.patch.dict(os.environ, CODEX_BRIDGE_HOME=str(self.root / "bridge"))
+        self.config = self.root / "codex-home" / "config.toml"
+        self.config.parent.mkdir()
+        self.env = mock.patch.dict(os.environ, CODEX_BRIDGE_HOME=str(self.root / "bridge"),
+                                   CODEX_HOME=str(self.config.parent))
         self.env.start()
         self.addCleanup(self.env.stop)
 
@@ -117,6 +183,73 @@ class CodexIdle(unittest.TestCase):
 
     def test_readonly_research_exec_attributed(self):
         self.check(True)
+
+    def test_research_metadata_environment_overrides_refused(self):
+        for key in ("env", "environment", "env_overrides", "environment_overrides", "CODEX_HOME",
+                    "codex_home"):
+            with self.subTest(key=key):
+                self.meta_file.write_text(json.dumps(dict(self.meta, **{key: {}})), encoding="utf-8")
+                self.check(False)
+
+    def test_research_metadata_must_be_dict(self):
+        # A string-keyed mapping is not necessarily a dict. Use one which
+        # satisfies every old access, so exception handling cannot hide this guard.
+        from collections import UserDict
+        with mock.patch.object(cw.json, "loads", return_value=UserDict(self.meta)):
+            self.assertFalse(cw.readonly_research_running(
+                self.main, self.scratch, self.status, self.status["processes"]))
+
+    def test_research_metadata_keys_must_be_strings(self):
+        class NonStringKey:
+            def lower(self):
+                return "unrelated"
+
+        meta = dict(self.meta)
+        meta[NonStringKey()] = None
+        with mock.patch.object(cw.json, "loads", return_value=meta):
+            self.assertFalse(cw.readonly_research_running(
+                self.main, self.scratch, self.status, self.status["processes"]))
+
+    def test_research_config_missing_safe(self):
+        self.check(True)
+
+    def test_research_config_clean_safe(self):
+        for text in ('', 'model = "gpt"\n', 'sandbox_mode = "read-only"\n',
+                     '[profiles.research]\nmodel = "gpt"\n'):
+            with self.subTest(text=text):
+                self.config.write_text(text, encoding="utf-8")
+                self.check(True)
+
+    def test_research_config_writable_sandbox_refused(self):
+        self.config.write_text('sandbox_mode = "workspace-write"\n', encoding="utf-8")
+        self.check(False)
+
+    def test_research_config_profile_selection_refused(self):
+        self.config.write_text('profile = "full"\n', encoding="utf-8")
+        self.check(False)
+
+    def test_research_config_profile_sandbox_refused(self):
+        for mode in ("workspace-write", "read-only"):
+            with self.subTest(mode=mode):
+                self.config.write_text(f'[profiles.research]\nsandbox_mode = "{mode}"\n',
+                                       encoding="utf-8")
+                self.check(False)
+
+    def test_research_config_unparsable_refused(self):
+        self.config.write_text('model = [', encoding="utf-8")
+        self.check(False)
+
+    def test_research_config_unreadable_refused(self):
+        with mock.patch.object(Path, "read_text", side_effect=PermissionError):
+            self.assertFalse(cw.research_user_config_safe())
+
+    def test_research_config_default_home(self):
+        with mock.patch.dict(os.environ, CODEX_HOME=""), \
+                mock.patch.object(Path, "home", return_value=self.root):
+            config = self.root / ".codex" / "config.toml"
+            config.parent.mkdir()
+            config.write_text('profile = "full"\n', encoding="utf-8")
+            self.check(False)
 
     def test_readonly_research_real_bridge_command_line(self):
         # start_task's argv, serialized as Popen does on Windows (TOML quotes

@@ -55,6 +55,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from pathlib import Path
 
 BRIDGE = Path.home() / ".claude" / "skills" / "codex" / "codex_bridge.py"
@@ -122,8 +123,15 @@ def norm(p) -> str:
 
 
 def refuse(msg):
-    print(f"codex_worker: REFUSED -- {msg}", file=sys.stderr)
+    print(f"codex_worker: REFUSED -- {msg}", file=sys.stderr, flush=True)
+    print(f"codex_worker: REFUSED (exit 2): {msg}", flush=True)
     sys.exit(2)
+
+
+def fail(msg, code):
+    print(f"codex_worker: {msg}", file=sys.stderr, flush=True)
+    print(f"codex_worker: FAILED (exit {code}): {msg}", flush=True)
+    sys.exit(code)
 
 
 def main_checkout() -> Path:
@@ -1438,6 +1446,29 @@ def research_config(value):
     raise ValueError("unclosed config string")
 
 
+def research_user_config_safe():
+    """Reject sandbox/profile overrides that argv alone cannot rule out."""
+    home = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+    try:
+        text = (home / "config.toml").read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return True
+    except (OSError, UnicodeError):
+        return False
+    try:
+        config = tomllib.loads(text)
+    except (ValueError, TypeError):
+        return False
+    if "profile" in config or config.get("sandbox_mode", "read-only") != "read-only":
+        return False
+
+    def sets_sandbox(table):
+        return isinstance(table, dict) and (
+            "sandbox_mode" in table or any(sets_sandbox(v) for v in table.values()))
+
+    return not sets_sandbox(config.get("profiles", {}))
+
+
 def readonly_research_running(main, scratch, st, busy):
     """Only the active bridge run may exempt attributed research processes from land's idle gate.
 
@@ -1455,6 +1486,14 @@ def readonly_research_running(main, scratch, st, busy):
             return False
         home = Path(os.environ.get("CODEX_BRIDGE_HOME") or Path.home() / ".claude" / "codex-bridge")
         meta = json.loads((home / "runs" / run_id / "meta.json").read_text(encoding="utf-8"))
+        if not isinstance(meta, dict) or not all(isinstance(k, str) for k in meta):
+            return False
+        # No recorded environment override can be proven safe from the process argv.
+        if any(k.lower() in ("env", "environment", "codex_home")
+               or k.lower().startswith(("env_", "environment_")) for k in meta):
+            return False
+        if not research_user_config_safe():
+            return False
         if meta["run_id"] != run_id or meta["sandbox"] != "read-only":
             return False
         cwd = meta["cwd"]
@@ -1957,8 +1996,7 @@ def main():
          "rebase": lambda: cmd_rebase(a), "layer2": lambda: cmd_layer2(a), "review": lambda: cmd_review(a), "land": lambda: cmd_land(a),
          "cleanup": lambda: cmd_cleanup(a), "research": lambda: cmd_research(a)}[a.cmd]()
     except RuntimeError as e:
-        print(f"codex_worker: {e}", file=sys.stderr)
-        sys.exit(2)
+        fail(str(e), 2)
 
 
 if __name__ == "__main__":
