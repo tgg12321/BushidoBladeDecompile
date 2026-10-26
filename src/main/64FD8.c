@@ -1085,7 +1085,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     work = (void *)(arg0 + 0x58);
     D_800A35D8 = (Unk8006E49CRec *)arg0;
-    func_80046AA0();
+    resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
     func_8006E950(6, work);
     r = menu_RelocateSelLists(work);
     {

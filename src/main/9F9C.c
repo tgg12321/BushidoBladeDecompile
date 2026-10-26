@@ -1330,15 +1330,15 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         switch (D_800A38E2) {
         case 0x1F:
             D_800A38E0 = 1;
-            func_8004659C(1);
+            resource_SelectRetainedSubblockOrApplyHeaderSections(1);
             break;
         case 0x33:
             D_800A38E0 = 2;
-            func_8004659C(2);
+            resource_SelectRetainedSubblockOrApplyHeaderSections(2);
             break;
         case 0x51:
             D_800A38E0 = 3;
-            func_8004659C(3);
+            resource_SelectRetainedSubblockOrApplyHeaderSections(3);
             break;
         }
         if (D_800A3728 = prev != D_800A38E0) {
@@ -1631,7 +1631,8 @@ void func_8001D790(void) {
         D_8008E5A8[(s8)D_80102778.unk_4[0]] != D_800A30FC ||
         D_8008E5A8[(s8)D_80102778.unk_4[1]] != D_800A30FD) {
         func_80020D38();
-        func_80046EDC(D_800A36A4, s2);
+        resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
+            D_800A36A4, s2);
         func_8002906C();
         snd_CloseListedVabs();
 
@@ -1811,32 +1812,35 @@ void fight_Init(void) {
         for (i = 0; i < 2; i++) {
             if (D_800A38BA != 0 && D_800A36F6 == i) {
                 func_80040510(i, D_8008D578[(s8)D_80102778.unk_4[i]], addr);
-                func_80048AD0(i);
+                node_LoadSlotMappedAssetAndInitRetainedDrawNodes(i);
             } else if (D_800A38DC == 3 && i == 1) {
                 func_80040510(1, D_800A38DE, 0);
             } else {
                 func_80040510(i, D_8008D578[(s8)D_80102778.unk_4[i]], addr);
             }
-            func_800493E4(D_80101EC8[i].unk_12);
+            resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+                D_80101EC8[i].unk_12);
             if (D_800A38DC != 3 || i != 1) {
                 if ((D_800A38DC == 2 && D_800A389A == 0) || D_800A38DC == 5) {
-                    func_800494D4(
+                    resource_SetPairSelectionSlotWithBoundChecks(
                         i,
                         D_8008E6A4[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
                 } else {
-                    func_800494D4(
+                    resource_SetPairSelectionSlotWithBoundChecks(
                         i,
                         D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
                 }
             }
             if (D_80101EC8[i].unk_14 != -1) {
-                func_800493E4(D_8008EB80[D_80101EC8[i].unk_14]);
+                resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+                    D_8008EB80[D_80101EC8[i].unk_14]);
                 if (D_80101EC8[i].unk_14 == 14) {
-                    func_800493E4(D_8008EB80[14] + 3);
+                    resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+                        D_8008EB80[14] + 3);
                 }
             }
         }
-        func_80049584(addr);
+        resource_RankRequestedEntriesAndReloadOnChange(addr);
         func_80041688(0, 0);
         func_80041688(1, 0);
         if (D_800A38DC == 0 && D_800A3712 == 0) {
@@ -2048,7 +2052,8 @@ void func_8001E800(void) {
     }
     {
         u32 flags = ptr->unk_62 & 4;
-        func_80048BA4(D_800F5328.h1C, a1, flags > 0);
+        node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
+            D_800F5328.h1C, a1, flags > 0);
     }
 }
 

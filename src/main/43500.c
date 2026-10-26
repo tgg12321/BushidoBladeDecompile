@@ -582,10 +582,10 @@ s32 motion_StartPlayback(
         s->unk2C = a6;
     } else {
         if (ndata_GetArenaRoomAfter(id) < 0) {
-            func_80046914();
+            resource_FreeNodeAssetBlock();
             printf(D_80015840);
         }
-        s->unk2C = (s32)func_800469C4(id);
+        s->unk2C = (s32)motion_LoadPlaybackBlock(id);
         ret = 0;
     }
     s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
@@ -624,14 +624,16 @@ s32 motion_StartPlayback(
         n = (s->unk4 & 0x3F) - 1;
         if (a6 != 0) {
             a6 += ret;
-            func_80046EDC(n, a6);
+            resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
+                n, a6);
         } else {
             gpu_ResetGraphMode1();
-            func_80046EDC(n, (s32)D_800A3770);
+            resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
+                n, (s32)D_800A3770);
         }
     }
     if (s->unk4 & 0x8000) {
-        func_8004659C(-1);
+        resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     }
     return ret;
 }
@@ -645,7 +647,7 @@ void func_80054884(
 
 void func_800548DC(void) {
     DrawSync(0);
-    func_8004659C(-1);
+    resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     motion_FreePlaybackBlock();
 }
 

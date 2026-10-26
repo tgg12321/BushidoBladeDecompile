@@ -182,7 +182,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D374 8001CB74 E03822A0 */  sb         $v0, %lo(D_800A38E0)($at)
     /* D378 8001CB78 03000424 */  addiu      $a0, $zero, 0x3
   .L8001CB7C:
-    /* D37C 8001CB7C 6719010C */  jal        func_8004659C
+    /* D37C 8001CB7C 6719010C */  jal        resource_SelectRetainedSubblockOrApplyHeaderSections
     /* D380 8001CB80 00000000 */   nop
   .L8001CB84:
     /* D384 8001CB84 0A80023C */  lui        $v0, %hi(D_800A38E0)

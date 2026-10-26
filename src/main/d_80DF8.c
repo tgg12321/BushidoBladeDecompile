@@ -30,7 +30,7 @@ void func_800477CC(void);
 void func_800477D4(void);
 void wave_InitCallback(void);
 void wave_UpdateCallback(void);
-void func_80047570(void);
+void node_InitViewOffsetNodeWithYXZRotation(void);
 void node_OrientAndQueueViewOffsetNode(void);
 void func_80047738(void);
 void func_8004775C(void);
@@ -881,7 +881,7 @@ Unk800948BCEntry D_800948BC[38] = {
     {0, 0},
     {wave_InitCallback, wave_UpdateCallback},
     {0, 0},
-    {func_80047570, node_OrientAndQueueViewOffsetNode},
+    {node_InitViewOffsetNodeWithYXZRotation, node_OrientAndQueueViewOffsetNode},
     {func_80047738, func_8004775C},
     {0, 0},
     {0, 0},

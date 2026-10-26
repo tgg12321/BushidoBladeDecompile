@@ -21,7 +21,7 @@ glabel func_8003AFFC
     /* 2B844 8003B044 1080013C */  lui        $at, %hi(D_80101EC8 + 0x12)
     /* 2B848 8003B048 21083000 */  addu       $at, $at, $s0
     /* 2B84C 8003B04C DA1E2484 */  lh         $a0, %lo(D_80101EC8 + 0x12)($at)
-    /* 2B850 8003B050 F924010C */  jal        func_800493E4
+    /* 2B850 8003B050 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B854 8003B054 00000000 */   nop
     /* 2B858 8003B058 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* 2B85C 8003B05C 21083000 */  addu       $at, $at, $s0
@@ -33,7 +33,7 @@ glabel func_8003AFFC
     /* 2B874 8003B074 21105400 */  addu       $v0, $v0, $s4
     /* 2B878 8003B078 21104300 */  addu       $v0, $v0, $v1
     /* 2B87C 8003B07C 00004590 */  lbu        $a1, 0x0($v0)
-    /* 2B880 8003B080 3525010C */  jal        func_800494D4
+    /* 2B880 8003B080 3525010C */  jal        resource_SetPairSelectionSlotWithBoundChecks
     /* 2B884 8003B084 21204002 */   addu      $a0, $s2, $zero
     /* 2B888 8003B088 00002386 */  lh         $v1, 0x0($s1)
     /* 2B88C 8003B08C FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -42,7 +42,7 @@ glabel func_8003AFFC
     /* 2B898 8003B098 0980013C */  lui        $at, %hi(D_8008EB80)
     /* 2B89C 8003B09C 21082300 */  addu       $at, $at, $v1
     /* 2B8A0 8003B0A0 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* 2B8A4 8003B0A4 F924010C */  jal        func_800493E4
+    /* 2B8A4 8003B0A4 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B8A8 8003B0A8 00000000 */   nop
     /* 2B8AC 8003B0AC 00002386 */  lh         $v1, 0x0($s1)
     /* 2B8B0 8003B0B0 0E000224 */  addiu      $v0, $zero, 0xE
@@ -50,7 +50,7 @@ glabel func_8003AFFC
     /* 2B8B8 8003B0B8 00000000 */   nop
     /* 2B8BC 8003B0BC 0980043C */  lui        $a0, %hi(D_8008EB8E)
     /* 2B8C0 8003B0C0 8EEB8490 */  lbu        $a0, %lo(D_8008EB8E)($a0)
-    /* 2B8C4 8003B0C4 F924010C */  jal        func_800493E4
+    /* 2B8C4 8003B0C4 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B8C8 8003B0C8 03008424 */   addiu     $a0, $a0, 0x3
   .L8003B0CC:
     /* 2B8CC 8003B0CC 4C043126 */  addiu      $s1, $s1, 0x44C
@@ -58,7 +58,7 @@ glabel func_8003AFFC
     /* 2B8D4 8003B0D4 0200422A */  slti       $v0, $s2, 0x2
     /* 2B8D8 8003B0D8 DAFF4014 */  bnez       $v0, .L8003B044
     /* 2B8DC 8003B0DC 4C041026 */   addiu     $s0, $s0, 0x44C
-    /* 2B8E0 8003B0E0 6125010C */  jal        func_80049584
+    /* 2B8E0 8003B0E0 6125010C */  jal        resource_RankRequestedEntriesAndReloadOnChange
     /* 2B8E4 8003B0E4 21206002 */   addu      $a0, $s3, $zero
     /* 2B8E8 8003B0E8 2400BF8F */  lw         $ra, 0x24($sp)
     /* 2B8EC 8003B0EC 2000B48F */  lw         $s4, 0x20($sp)

@@ -181,18 +181,21 @@ void func_8003AFFC(void) {
     ResetEntrySelectionState();
 
     for (i = 0; i < 2; i++) {
-        func_800493E4(D_80101EC8[i].unk_12);
-        func_800494D4(
+        resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+            D_80101EC8[i].unk_12);
+        resource_SetPairSelectionSlotWithBoundChecks(
             i, D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
         if (D_80101EC8[i].unk_14 != -1) {
-            func_800493E4(D_8008EB80[D_80101EC8[i].unk_14]);
+            resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+                D_8008EB80[D_80101EC8[i].unk_14]);
             if (D_80101EC8[i].unk_14 == 14) {
-                func_800493E4(D_8008EB80[14] + 3);
+                resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+                    D_8008EB80[14] + 3);
             }
         }
     }
 
-    func_80049584(addr);
+    resource_RankRequestedEntriesAndReloadOnChange(addr);
 }
 
 void func_8003B10C(s32 arg0) {
@@ -202,16 +205,17 @@ void func_8003B10C(s32 arg0) {
     func_80020D38();
     ResetEntrySelectionState();
 
-    func_800493E4(D_80101EC8[arg0].unk_12);
+    resource_RequestEntryWithLinkedEntriesAndLatchCategory(
+        D_80101EC8[arg0].unk_12);
 
     if (D_800A38DC == 5) {
-        func_800494D4(
+        resource_SetPairSelectionSlotWithBoundChecks(
             arg0, D_8008E6A4[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
     } else {
-        func_800494D4(
+        resource_SetPairSelectionSlotWithBoundChecks(
             arg0, D_8008E5CC[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
     }
-    func_80049584(addr);
+    resource_RankRequestedEntriesAndReloadOnChange(addr);
 }
 
 void fight_InitCommandStream(s32 arg0) {
@@ -526,7 +530,7 @@ void func_8003B9D0(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     if (D_800A3878[3] & 0x40)
-        func_8004659C(-1);
+        resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     if ((s8)D_80102778.unk_4[1] == 0xE || (s8)D_80102778.unk_4[1] == 0x1D) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }

@@ -1,0 +1,1 @@
+{"func": "resource_RequestEntryWithLinkedEntriesAndLatchCategory", "addr": "800493E4", "verdict": "PASS", "body_hash": "8ed8b5c82edbb580", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer-debt2-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T11:24:32Z", "head": "ffca45e7b", "notes": "", "renamed_from": ["func_800493E4"]}

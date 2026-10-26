@@ -11,7 +11,7 @@
     "func_80040D48": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
     "func_80043BD0": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "func_80043D34": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
-    "func_800460E4": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
+    "resource_LoadOrReuseSelectedBlock": "REFUSED: asm references a C-generated jtbl_ symbol (deferred)",
     "func_80043C7C": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "func_80043DE0": "REFUSED: body emits .rodata (string/const/FP literal) \u2014 removal shifts section layout (deferred)",
     "func_8004473C": "FAILED: sha1=6ebfcef51837fcd4c900e8479231e98a0cb69ae7 != oracle \u2014 ROLLED BACK. Build tail:",

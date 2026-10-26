@@ -25,8 +25,8 @@ typedef struct {
     s32 pos[3][3];
 } Unk80099B9CRec;
 
-/* func_800460E4's cached selector of the loaded block (-1: none) and its
- * variant flag. */
+/* resource_LoadOrReuseSelectedBlock's cached selector of the loaded block (-1:
+ * none) and its variant flag. */
 s16 g_loaded_resource_selector = -1;
 s16 D_8009947A = 0;
 
@@ -205,7 +205,8 @@ s16 D_80099C14[16] = {1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1};
 u16 D_80099C34[2][7] = {{0x318, 0x180, 0x8, 0x20, 0x2E8, 0x100, 0x1},
                         {0x2F0, 0x140, 0x10, 0x40, 0x2A0, 0x180, 0x1}};
 
-/* func_80049E1C clears all 58 from the last one down. */
+/* resource_InvalidateEntrySelectionCache clears all 58 from the last one down.
+ */
 s16 D_80099C50[58] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

@@ -328,7 +328,7 @@ void arena_Reset(void) {
     g_arena_free_size = 0x45000;
     g_arena_block_count = 0;
     g_arena_peak = 0;
-    func_80049E1C();
+    resource_InvalidateEntrySelectionCache();
 }
 
 void arena_UpdatePeak(s32 a0) {
@@ -742,7 +742,7 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     if (prev != 0) {
         *p = var_6 - (s32)p;
-        var_6 = func_80049C24(prev, var_6);
+        var_6 = snd_CopySelectedPackSectionsAndLoadVabPacks(prev, var_6);
         arena_UpdatePeak(var_6);
     } else {
         *p = 0;

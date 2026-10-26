@@ -1,1 +1,0 @@
-{"func": "func_8004659C", "addr": "8004659C", "verdict": "PASS", "body_hash": "d1a1918b069cdafd", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T01:49:32Z", "head": "2133e7b25", "notes": "collision_SetGrid((s32)s3) matches its s32 prototype and the line-171 call; byte-neutral"}

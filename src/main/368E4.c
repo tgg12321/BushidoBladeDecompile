@@ -10,8 +10,8 @@
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void wave_SetCellBuffer(s32);
 extern s32 wave_GetCellBufferSize(void);
-extern void func_800481E8(u32 *, s32);
-extern void func_800466C0(s32, s32);
+extern void gpu_LoadTimGroupWithConditionalClutRowAdvance(u32 *, s32);
+extern void resource_RebaseLoadedBlockSections(s32, s32);
 void gpu_LoadTim();
 void gpu_LoadTimClut();
 
@@ -37,7 +37,7 @@ static s32 D_800A33E4;
 static s16 D_800A33E8[2];
 static s32 D_800A33EC;
 
-void func_800460E4(s32 arg0, s32 arg1) {
+void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     s32 *s0;
     s32 s7;
     s32 *s6, *s4, *s2;
@@ -169,23 +169,23 @@ void func_800460E4(s32 arg0, s32 arg1) {
     }
 
     reloc_RelocateBlock(s6, 7);
-    func_800481E8((u32 *)var_7, 0);
+    gpu_LoadTimGroupWithConditionalClutRowAdvance((u32 *)var_7, 0);
     func_8003EDC0((u16 *)s4, 7);
     collision_SetGrid((s32)sp10);
     D_800A33B0 = (s32)sp18;
     g_fight_position_records = (s32)sp20;
     DrawSync(0);
     arena_SetBlockEnd(s7, (s32)s1);
-    arena_SetMoveCallback(s7, (s32)func_800466C0);
+    arena_SetMoveCallback(s7, (s32)resource_RebaseLoadedBlockSections);
     func_8003F168();
     if (D_800A38DC != 0) {
         if (arg0 != 0x22) {
-            func_8004659C(-1);
+            resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
         }
     }
 }
 
-void func_800464C4(void) {
+void resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks(void) {
     s32 *s0;
     s32 *s1;
     s32 *a0;
@@ -214,7 +214,7 @@ void func_800464C4(void) {
     D_8009947A = 0;
 }
 
-void func_8004659C(s32 a0) {
+void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
     s32 *s0;
     s32 *s2;
     s32 *s3;
@@ -223,7 +223,7 @@ void func_8004659C(s32 a0) {
     s32 *s0p;
     s32 v0;
     if (a0 < 0) {
-        func_800464C4();
+        resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks();
         return;
     }
     if (D_8009947A == 0) {
@@ -249,7 +249,7 @@ void func_8004659C(s32 a0) {
     func_8003EDC0((u16 *)s0p, 7);
 }
 
-void func_8004668C(void) {
+void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
     arena_Free(7);
     g_loaded_resource_selector = -1;
     D_8009947A = 0;
@@ -258,7 +258,7 @@ void func_8004668C(void) {
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void wave_MoveCellBuffer(s32);
 
-void func_800466C0(s32 a0, s32 a1) {
+void resource_RebaseLoadedBlockSections(s32 a0, s32 a1) {
     s32 var_0;
     reloc_RebaseBlock(7, a1);
     collision_RebaseGrid(a1);
@@ -292,28 +292,29 @@ extern void gpu_InitVramScroll(s32, s32);
 extern void gpu_QueueVramScroll(s32);
 extern s32 wave_Init(void);
 extern void wave_Update(void);
-extern void func_80048B8C(s32);
-extern void func_800460E4(s32, s32);
-extern void func_8004668C(void);
+extern void node_RebaseRetainedDrawNodeBuffer(s32);
+extern void resource_LoadOrReuseSelectedBlock(s32, s32);
+extern void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void);
 
 extern s16 D_800A324A;
 
 extern MATRIX g_math_light_plane_projection;
 
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
- * D_800EF848, which func_80047E5C's [v1 + 1] reaches at v1 == 17 */
+ * D_800EF848, which wave_SampleLastRowStepsAtCachedIndex's [v1 + 1] reaches at
+ * v1 == 17 */
 extern s32 D_800EF800[18];
 extern u8 g_fight_start_position_pairs;
 extern s16 g_gpu_raised_ot_cutoff_requested;
 extern MATRIX D_800EEDD0;
 
-extern void func_80049E4C(void);
+extern void node_InitRootNodePairWithNegatedRotationMatrices(void);
 extern void light_InitDefaults(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
 extern s16 D_800A3248;
 
-void func_800468DC(s32 a0, s32 a1);
+void resource_RebaseNodeAssetBlock(s32 a0, s32 a1);
 
 s32 func_80046780(void) { return D_800A33B0; }
 
@@ -323,7 +324,7 @@ s32 resource_GetLoadedSelector(void) { return g_loaded_resource_selector; }
 
 s32 resource_HasRetainedSubblocks(void) { return D_8009947A; }
 
-s32 *func_800467B8(s32 a0) {
+s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
     s32 arg = a0;
     s32 var_1 = 8;
     s32 *s2;
@@ -352,21 +353,21 @@ s32 *func_800467B8(s32 a0) {
             D_800A3248 = arg;
         }
     }
-    arena_SetMoveCallback(var_1, (s32)func_800468DC);
+    arena_SetMoveCallback(var_1, (s32)resource_RebaseNodeAssetBlock);
     return s2;
 }
 
-void func_800468B0(s32 a0) {
+void resource_ResizeNodeAssetBlockAndUpdatePeak(s32 a0) {
     arena_Resize(8, a0);
     arena_UpdatePeak(0);
 }
 
-void func_800468DC(s32 a0, s32 a1) {
-    func_80048B8C(a1);
+void resource_RebaseNodeAssetBlock(s32 a0, s32 a1) {
+    node_RebaseRetainedDrawNodeBuffer(a1);
     reloc_RebaseBlock(9, a1);
 }
 
-void func_80046914(void) { arena_Free(8); }
+void resource_FreeNodeAssetBlock(void) { arena_Free(8); }
 
 void func_80046934(void) { arena_OpenBlock(9); }
 
@@ -382,7 +383,7 @@ void func_800469A0(s32 a0) { arena_Resize(9, a0); }
 
 void func_80046A80(s32, s32);
 
-s32 *func_800469C4(s32 a0) {
+s32 *motion_LoadPlaybackBlock(s32 a0) {
     s32 *v0;
     s32 offset;
 
@@ -403,13 +404,13 @@ void motion_FreePlaybackBlock(void) { arena_Free(0xA); }
 
 void func_80046A80(s32 a0, s32 a1) { motion_RebasePlayback(a1); }
 
-void func_80046AA0(void) {
+void resource_FreeSlotsAndBlocksAndInvalidateEntryCache(void) {
     func_800415C4(0);
     func_800415C4(1);
-    func_8004668C();
+    resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks();
     func_80046020();
-    func_80049E1C();
-    func_80046914();
+    resource_InvalidateEntrySelectionCache();
+    resource_FreeNodeAssetBlock();
 }
 
 void rcnt_StartCnt1(void) {
@@ -424,7 +425,7 @@ void func_80046B44(void) {
     arena_Reset();
     math_InitRotMatrixFuncs();
     reloc_ClearCounts();
-    func_80049E4C();
+    node_InitRootNodePairWithNegatedRotationMatrices();
     light_InitDefaults();
     gpu_InitFogDrawMoves();
     func_800404D8();
@@ -509,7 +510,7 @@ void *node_GetSlotMatrixPointerArray(s32 a0) {
     return NULL;
 }
 
-void *func_80046E18(s32 a0) {
+void *node_GetSlotTransformNodes(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
         return v0->transform_nodes;
@@ -517,7 +518,9 @@ void *func_80046E18(s32 a0) {
     return NULL;
 }
 
-void func_80046E44(void) { g_gpu_raised_ot_cutoff_requested = 0; }
+void gpu_ClearRaisedOtCutoffRequest(void) {
+    g_gpu_raised_ot_cutoff_requested = 0;
+}
 
 void gpu_SetRaisedOtCutoffRequested(s32 a0) {
     if (a0) {
@@ -541,8 +544,9 @@ void gpu_RunGridDrawPassAndQueueFogMoves(s32 a0) {
     }
 }
 
-void func_80046EDC(s32 a0, s32 a1) {
-    func_800460E4(a0, a1);
+void resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
+    s32 a0, s32 a1) {
+    resource_LoadOrReuseSelectedBlock(a0, a1);
     func_800421C8(a0);
     func_8003E0E0();
 }
@@ -667,7 +671,7 @@ void wave_InitCallback(void) { wave_Init(); }
 
 void wave_UpdateCallback(void) { wave_Update(); }
 
-void func_80047570(void) {
+void node_InitViewOffsetNodeWithYXZRotation(void) {
     node_InitIdentity(&D_800EEDF0);
     D_800EEDF0.rotation_order = 4;
 }
@@ -977,7 +981,7 @@ void wave_Draw(void) {
     }
 }
 
-s32 func_80047D94(s32 a0) {
+s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
     s32 a1 = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
@@ -996,7 +1000,7 @@ s32 func_80047D94(s32 a0) {
     }
 }
 
-s32 func_80047E5C(void) {
+s32 wave_SampleLastRowStepsAtCachedIndex(void) {
     s32 v1 = D_800A33D4;
     if ((u32)v1 >= 18) {
         return 0;
@@ -1150,7 +1154,7 @@ void gpu_LoadTimGroupSplitOffset(
     }
 }
 
-void func_800481E8(u32 *p, s32 arg1) {
+void gpu_LoadTimGroupWithConditionalClutRowAdvance(u32 *p, s32 arg1) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37), as the FAKE pads of gpu_LoadTimGroup /
      * gpu_LoadTimGroupOffset (phantom-frame pad; without it: score 10). SOTN
@@ -1513,11 +1517,12 @@ void gpu_TintVramRowInPlace(
     gpu_TintVramRow(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
 
-extern s32 *func_800467B8(s32); /* matches the definition above */
-extern void func_800468B0(s32);
+/* matches the definition above */
+extern s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32);
+extern void resource_ResizeNodeAssetBlockAndUpdatePeak(s32);
 extern u8 D_80099BCC;
 
-s32 func_80048AD0(s32 arg0) {
+s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 arg0) {
     Unk80045878Obj *temp_v0;
     s32 var_1;
     u8 *base;
@@ -1532,7 +1537,7 @@ s32 func_80048AD0(s32 arg0) {
     var_1 = (&D_80099BCC)[temp_v0->unk_08];
     if (var_1 == 0xFF)
         return 0;
-    base = (u8 *)func_800467B8(var_1);
+    base = (u8 *)resource_LoadOrReuseGrayscaleAdjustedNodeAsset(var_1);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;
@@ -1544,8 +1549,9 @@ s32 func_80048AD0(s32 arg0) {
      * read back from D_800A33E4 9), delta first with p++ in the body 7 */
     q = p + 0xA;
     /* FAKE: the record counter reuses `var_1` (the slot id, tested and
-       passed to func_800467B8 above), inheriting its $a0 preference; a
-       separate counter swaps $a0/$a2 with delta: score 6 (Q129) */
+       passed to resource_LoadOrReuseGrayscaleAdjustedNodeAsset above),
+       inheriting its $a0 preference; a separate counter swaps $a0/$a2 with
+       delta: score 6 (Q129) */
     /* SOTN: src/dra/692E8.c:693 @db41b28 */
     for (var_1 = 0; var_1 < 0x11; var_1++) {
         *(s16 *)(q - 8 + var_1 * 0x68) = var_1;
@@ -1554,17 +1560,18 @@ s32 func_80048AD0(s32 arg0) {
         *(s8 *)(q - 9 + var_1 * 0x68) = 0;
         *(s16 *)(q + var_1 * 0x68) = (s16)arg0;
     }
-    func_800468B0(delta + 0x6E8);
+    resource_ResizeNodeAssetBlockAndUpdatePeak(delta + 0x6E8);
     return 1;
 }
 
-void func_80048B8C(s32 a0) { D_800A33E4 += a0; }
+void node_RebaseRetainedDrawNodeBuffer(s32 a0) { D_800A33E4 += a0; }
 
 extern u32 *g_gpu_ot256_ptr;
 extern u32 g_gpu_ot256_db[][256];
 extern s16 D_80099C14[];
 
-void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
+void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
+    s32 arg0, s32 arg1, s32 arg2) {
     MATRIX mtx;
     SVECTOR rot;
     s32 index;
@@ -1745,7 +1752,7 @@ void ResetEntrySelectionState(void) {
 
 extern s16 D_800EF980[];
 
-void func_800493E4(s32 arg0) {
+void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 arg0) {
     u8 temp_v1;
 
     D_800EF980[arg0] = 1;
@@ -1770,7 +1777,7 @@ void func_800493E4(s32 arg0) {
     }
 }
 
-void func_800494D4(s32 idx, s32 val) {
+void resource_SetPairSelectionSlotWithBoundChecks(s32 idx, s32 val) {
     s32 cond;
     if (D_800A33EC == 0) {
         cond = val < 16;
@@ -1801,7 +1808,7 @@ extern s16 D_80099C50[];
 extern s32 D_800A324C;
 extern s32 math_UnorderedPairIndex(s32, s32, s32);
 
-void func_80049584(s32 arg0) {
+void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
     s16 *dst;
     s16 *src;
     s16 *p;
@@ -2061,7 +2068,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     g_prim_buf_cursor = (u32 *)(obj + 1);
 }
 
-s32 func_80049C24(s32 arg0, s32 arg1) {
+s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 arg1) {
     s32 count;
     s32 tail_off;
     s32 temp_a2;
@@ -2168,7 +2175,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     return var_s1;
 }
 
-void func_80049E1C(void) {
+void resource_InvalidateEntrySelectionCache(void) {
     s16 val = -1;
     s32 i = 0x39;
     s16 *p = &D_80099C50[0x39];
@@ -2180,7 +2187,7 @@ void func_80049E1C(void) {
     D_800A324C = -1;
 }
 
-void func_80049E4C(void) {
+void node_InitRootNodePairWithNegatedRotationMatrices(void) {
     Unk80101DF0Record *p1 = &D_80101DF0;
     Unk80101DF0Record *p2 = &D_800FF638;
     p1->unk0 = 0x64;

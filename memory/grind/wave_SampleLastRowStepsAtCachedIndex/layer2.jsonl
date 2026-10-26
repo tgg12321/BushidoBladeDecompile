@@ -1,0 +1,1 @@
+{"func": "wave_SampleLastRowStepsAtCachedIndex", "addr": "80047E5C", "verdict": "PASS", "body_hash": "2655e4dc061b4bb8", "body_kind": "c", "file": "main/368E4", "reviewer": "a023555de1ba5120f", "scope": "cheat-cleanup", "date": "2026-10-16T16:51:52Z", "head": "d8b3d6c90", "notes": "", "renamed_from": ["func_80047E5C"]}

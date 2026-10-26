@@ -32,14 +32,14 @@ glabel motion_StartPlayback
     /* 44E78 80054678 21200002 */   addu      $a0, $s0, $zero
     /* 44E7C 8005467C 07004104 */  bgez       $v0, .L8005469C
     /* 44E80 80054680 00000000 */   nop
-    /* 44E84 80054684 451A010C */  jal        func_80046914
+    /* 44E84 80054684 451A010C */  jal        resource_FreeNodeAssetBlock
     /* 44E88 80054688 00000000 */   nop
     /* 44E8C 8005468C 0180043C */  lui        $a0, %hi(D_80015840)
     /* 44E90 80054690 40588424 */  addiu      $a0, $a0, %lo(D_80015840)
     /* 44E94 80054694 82E4010C */  jal        printf
     /* 44E98 80054698 00000000 */   nop
   .L8005469C:
-    /* 44E9C 8005469C 711A010C */  jal        func_800469C4
+    /* 44E9C 8005469C 711A010C */  jal        motion_LoadPlaybackBlock
     /* 44EA0 800546A0 21200002 */   addu      $a0, $s0, $zero
     /* 44EA4 800546A4 0F80013C */  lui        $at, %hi(D_800EFB14)
     /* 44EA8 800546A8 14FB22AC */  sw         $v0, %lo(D_800EFB14)($at)
@@ -145,7 +145,7 @@ glabel motion_StartPlayback
     /* 45020 80054820 0A80053C */  lui        $a1, %hi(D_800A3770)
     /* 45024 80054824 7037A524 */  addiu      $a1, $a1, %lo(D_800A3770)
   .L80054828:
-    /* 45028 80054828 B71B010C */  jal        func_80046EDC
+    /* 45028 80054828 B71B010C */  jal        resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels
     /* 4502C 8005482C 00000000 */   nop
   .L80054830:
     /* 45030 80054830 0400228E */  lw         $v0, 0x4($s1)
@@ -153,7 +153,7 @@ glabel motion_StartPlayback
     /* 45038 80054838 00804230 */  andi       $v0, $v0, 0x8000
     /* 4503C 8005483C 04004010 */  beqz       $v0, .L80054850
     /* 45040 80054840 21108002 */   addu      $v0, $s4, $zero
-    /* 45044 80054844 6719010C */  jal        func_8004659C
+    /* 45044 80054844 6719010C */  jal        resource_SelectRetainedSubblockOrApplyHeaderSections
     /* 45048 80054848 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 4504C 8005484C 21108002 */  addu       $v0, $s4, $zero
   .L80054850:

@@ -21,7 +21,7 @@ glabel func_8003B10C
     /* 2B958 8003B158 1080013C */  lui        $at, %hi(D_80101EC8 + 0x12)
     /* 2B95C 8003B15C 21083000 */  addu       $at, $at, $s0
     /* 2B960 8003B160 DA1E2484 */  lh         $a0, %lo(D_80101EC8 + 0x12)($at)
-    /* 2B964 8003B164 F924010C */  jal        func_800493E4
+    /* 2B964 8003B164 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B968 8003B168 00000000 */   nop
     /* 2B96C 8003B16C 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* 2B970 8003B170 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -54,9 +54,9 @@ glabel func_8003B10C
     /* 2B9D4 8003B1D4 21104400 */  addu       $v0, $v0, $a0
     /* 2B9D8 8003B1D8 21104300 */  addu       $v0, $v0, $v1
     /* 2B9DC 8003B1DC 00004590 */  lbu        $a1, 0x0($v0)
-    /* 2B9E0 8003B1E0 3525010C */  jal        func_800494D4
+    /* 2B9E0 8003B1E0 3525010C */  jal        resource_SetPairSelectionSlotWithBoundChecks
     /* 2B9E4 8003B1E4 21202002 */   addu      $a0, $s1, $zero
-    /* 2B9E8 8003B1E8 6125010C */  jal        func_80049584
+    /* 2B9E8 8003B1E8 6125010C */  jal        resource_RankRequestedEntriesAndReloadOnChange
     /* 2B9EC 8003B1EC 21204002 */   addu      $a0, $s2, $zero
     /* 2B9F0 8003B1F0 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 2B9F4 8003B1F4 1800B28F */  lw         $s2, 0x18($sp)

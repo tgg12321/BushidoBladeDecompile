@@ -112,7 +112,7 @@ glabel fight_Init
     /* E650 8001DE50 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
     /* E654 8001DE54 4401010C */  jal        func_80040510
     /* E658 8001DE58 21304002 */   addu      $a2, $s2, $zero
-    /* E65C 8001DE5C B422010C */  jal        func_80048AD0
+    /* E65C 8001DE5C B422010C */  jal        node_LoadSlotMappedAssetAndInitRetainedDrawNodes
     /* E660 8001DE60 21200002 */   addu      $a0, $s0, $zero
     /* E664 8001DE64 B0770008 */  j          .L8001DEC0
     /* E668 8001DE68 00000000 */   nop
@@ -144,7 +144,7 @@ glabel fight_Init
     /* E6C0 8001DEC0 1080013C */  lui        $at, %hi(D_80101EC8 + 0x12)
     /* E6C4 8001DEC4 21083100 */  addu       $at, $at, $s1
     /* E6C8 8001DEC8 DA1E2484 */  lh         $a0, %lo(D_80101EC8 + 0x12)($at)
-    /* E6CC 8001DECC F924010C */  jal        func_800493E4
+    /* E6CC 8001DECC F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* E6D0 8001DED0 00000000 */   nop
     /* E6D4 8001DED4 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E6D8 8001DED8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
@@ -193,7 +193,7 @@ glabel fight_Init
     /* E770 8001DF70 21104400 */  addu       $v0, $v0, $a0
     /* E774 8001DF74 21104300 */  addu       $v0, $v0, $v1
     /* E778 8001DF78 00004590 */  lbu        $a1, 0x0($v0)
-    /* E77C 8001DF7C 3525010C */  jal        func_800494D4
+    /* E77C 8001DF7C 3525010C */  jal        resource_SetPairSelectionSlotWithBoundChecks
     /* E780 8001DF80 21200002 */   addu      $a0, $s0, $zero
   .L8001DF84:
     /* E784 8001DF84 1080013C */  lui        $at, %hi(D_80101EC8 + 0x14)
@@ -205,7 +205,7 @@ glabel fight_Init
     /* E79C 8001DF9C 0980013C */  lui        $at, %hi(D_8008EB80)
     /* E7A0 8001DFA0 21082300 */  addu       $at, $at, $v1
     /* E7A4 8001DFA4 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
-    /* E7A8 8001DFA8 F924010C */  jal        func_800493E4
+    /* E7A8 8001DFA8 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* E7AC 8001DFAC 00000000 */   nop
     /* E7B0 8001DFB0 1080013C */  lui        $at, %hi(D_80101EC8 + 0x14)
     /* E7B4 8001DFB4 21083100 */  addu       $at, $at, $s1
@@ -215,14 +215,14 @@ glabel fight_Init
     /* E7C4 8001DFC4 00000000 */   nop
     /* E7C8 8001DFC8 0980043C */  lui        $a0, %hi(D_8008EB8E)
     /* E7CC 8001DFCC 8EEB8490 */  lbu        $a0, %lo(D_8008EB8E)($a0)
-    /* E7D0 8001DFD0 F924010C */  jal        func_800493E4
+    /* E7D0 8001DFD0 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* E7D4 8001DFD4 03008424 */   addiu     $a0, $a0, 0x3
   .L8001DFD8:
     /* E7D8 8001DFD8 01001026 */  addiu      $s0, $s0, 0x1
     /* E7DC 8001DFDC 0200022A */  slti       $v0, $s0, 0x2
     /* E7E0 8001DFE0 8CFF4014 */  bnez       $v0, .L8001DE14
     /* E7E4 8001DFE4 4C043126 */   addiu     $s1, $s1, 0x44C
-    /* E7E8 8001DFE8 6125010C */  jal        func_80049584
+    /* E7E8 8001DFE8 6125010C */  jal        resource_RankRequestedEntriesAndReloadOnChange
     /* E7EC 8001DFEC 21204002 */   addu      $a0, $s2, $zero
     /* E7F0 8001DFF0 21200000 */  addu       $a0, $zero, $zero
     /* E7F4 8001DFF4 A205010C */  jal        func_80041688

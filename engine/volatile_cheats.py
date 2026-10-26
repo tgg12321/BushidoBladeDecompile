@@ -783,7 +783,7 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # never the real build, so the proof needs no row). Same 2026-08-18 general
     # phantom-frame-slot family as the rows above; no family extension.
     "node_QueueTableEntryNodePairUnderSlotNode": frozenset({("pre_pad", 2)}),
-    "func_800481E8": frozenset({("pre_pad", 8)}),
+    "gpu_LoadTimGroupWithConditionalClutRowAdvance": frozenset({("pre_pad", 8)}),
     "func_80041688": frozenset({("pre_pad", 8)}),
     # 2026-09-02 owner ruling (docs/grind/decisions.md, "foreclosed-bucket
     # disposition"): byte-proven (operator full build == oracle before the

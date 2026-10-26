@@ -24,7 +24,7 @@ glabel func_8001E800
     /* F054 8001E854 0F80043C */  lui        $a0, %hi(D_800F5344)
     /* F058 8001E858 44538484 */  lh         $a0, %lo(D_800F5344)($a0)
     /* F05C 8001E85C 0400C630 */  andi       $a2, $a2, 0x4
-    /* F060 8001E860 E922010C */  jal        func_80048BA4
+    /* F060 8001E860 E922010C */  jal        node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
     /* F064 8001E864 2B300600 */   sltu      $a2, $zero, $a2
     /* F068 8001E868 1000BF8F */  lw         $ra, 0x10($sp)
     /* F06C 8001E86C 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -64,8 +64,9 @@ extern u8 *D_800A36A0;
 #define SELWORK ((SelWork *)D_800A36A0)
 
 /* One PsyQ MATRIX: func_8004A940 loads it as the GTE rotation, reads t[] and
- * passes it to gte_MulMatrix0ClearTrans; func_80048BA4 writes m[][] and passes
- * t to ApplyMatrix. */
+ * passes it to gte_MulMatrix0ClearTrans;
+ * node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable writes m[][]
+ * and passes t to ApplyMatrix. */
 extern MATRIX D_800FF558;
 
 extern Unk8009BC94Record D_8009BC94[][6];
@@ -546,10 +547,11 @@ extern void func_8003AE5C(u8 *);
 extern void gpu_BuildFogImageLevels(RECT *, s32);
 extern void func_8003F1E4(s32);
 extern void func_80041688(s32, s32);
-extern void func_80048BA4(s32, s32, s32);
-extern void func_800493E4(s32);
-extern void func_800494D4(s32, s32);
-extern void func_80049584(s32);
+extern void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
+    s32, s32, s32);
+extern void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32);
+extern void resource_SetPairSelectionSlotWithBoundChecks(s32, s32);
+extern void resource_RankRequestedEntriesAndReloadOnChange(s32);
 extern s32 func_8005B8B8(s32);
 extern void snd_FlushSoundQueue(void);
 extern s32 func_80038C70(void);
@@ -847,8 +849,8 @@ extern s16 gpu_OffsetTPage(s16, s16, s16);
 extern s16 gpu_OffsetClut(s16, s16, s32);
 extern void reloc_RelocateBlock(s32 *, s16);
 extern void reloc_UnrelocateBlock(s16);
-/* No prototype: defined void (s32, s32), but func_800466C0 calls it as
- * reloc_RebaseBlock(8). */
+/* No prototype: defined void (s32, s32), but resource_RebaseLoadedBlockSections
+ * calls it as reloc_RebaseBlock(8). */
 extern void reloc_RebaseBlock();
 extern s32 reloc_KeepSelectedEntries(s32 *, s16 *);
 extern s32 reloc_CopySelectedEntries(s32, s32 *, s16 *);
@@ -887,10 +889,10 @@ extern void func_80045A28(s32, s32);
 extern void func_80045A50(s32);
 extern void func_80045B68(s32, s32, s16 *, s32);
 extern void func_80046020(void);
-extern void func_8004659C(s32);
+extern void resource_SelectRetainedSubblockOrApplyHeaderSections(s32);
 extern s32 fight_GetPositionRecordList(void);
-extern void func_80046914(void);
-extern s32 *func_800469C4(s32);
+extern void resource_FreeNodeAssetBlock(void);
+extern s32 *motion_LoadPlaybackBlock(s32);
 extern void motion_FreePlaybackBlock(void);
 extern void gpu_ResetDrawQueueAndPrepareViewAndLighting(
     Vec3i32 *, SVECTOR *, s32);
@@ -910,13 +912,13 @@ extern void gpu_LoadTimGroupSplitOffset(u32 *, s32, s16, s16, s16, s16);
 extern s32 gpu_RefreshGrayscaleMode(void);
 extern void math_GrayscaleRgb555(u16 *, s32, u16 *);
 extern void gpu_TintVramRowInPlace(s32, s32, s32, s32, s32, s32);
-extern s32 func_80048AD0(s32);
+extern s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32);
 extern void ResetEntrySelectionState(void);
 extern void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     s32, s32, s32 *, s16 *);
 extern void node_QueueTableEntryNodePairUnderSlotNode(s32, s32, s32);
-extern s32 func_80049C24(s32, s32);
-extern void func_80049E1C(void);
+extern s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32, s32);
+extern void resource_InvalidateEntrySelectionCache(void);
 extern void calc_LightMatrix(Unk800F62E0Rec *);
 extern s16 *gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision(
     s32, s16 *, s16 *, s32);
@@ -1056,7 +1058,8 @@ extern void cdrom_WaitIdle(void);
 extern void *func_8003F1D4(void);
 extern void *node_GetSlotMatrixPointerArray(s32);
 extern void func_80046B44(void);
-extern void func_80046EDC(s32, s32);
+extern void resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
+    s32, s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern s32 gte_SumSquares3(s32, s32, s32);
@@ -1094,7 +1097,7 @@ extern void snd_Init(void);
 extern s32 snd_LoadCommonVab(s32);
 extern void snd_Quit(void);
 extern void snd_SerialMixOn(void);
-extern void func_80046AA0(void);
+extern void resource_FreeSlotsAndBlocksAndInvalidateEntryCache(void);
 extern void snd_VabFakeOpen8And4(s32);
 extern void snd_VabFakeOpen9(s32);
 extern void func_8003F5CC(void);

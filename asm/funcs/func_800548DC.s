@@ -3,7 +3,7 @@ glabel func_800548DC
     /* 450E0 800548E0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 450E4 800548E4 CFEC010C */  jal        DrawSync
     /* 450E8 800548E8 21200000 */   addu      $a0, $zero, $zero
-    /* 450EC 800548EC 6719010C */  jal        func_8004659C
+    /* 450EC 800548EC 6719010C */  jal        resource_SelectRetainedSubblockOrApplyHeaderSections
     /* 450F0 800548F0 FFFF0424 */   addiu     $a0, $zero, -0x1
     /* 450F4 800548F4 981A010C */  jal        motion_FreePlaybackBlock
     /* 450F8 800548F8 00000000 */   nop

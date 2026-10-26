@@ -139,7 +139,7 @@ glabel func_8003B9D0
     /* 2C3CC 8003BBCC 40004230 */  andi       $v0, $v0, 0x40
     /* 2C3D0 8003BBD0 03004010 */  beqz       $v0, .L8003BBE0
     /* 2C3D4 8003BBD4 00000000 */   nop
-    /* 2C3D8 8003BBD8 6719010C */  jal        func_8004659C
+    /* 2C3D8 8003BBD8 6719010C */  jal        resource_SelectRetainedSubblockOrApplyHeaderSections
     /* 2C3DC 8003BBDC FFFF0424 */   addiu     $a0, $zero, -0x1
   .L8003BBE0:
     /* 2C3E0 8003BBE0 1080033C */  lui        $v1, %hi(D_80102778 + 0x5)

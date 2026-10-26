@@ -9,7 +9,7 @@ glabel func_80046B44
     /* 37360 80046B60 00000000 */   nop
     /* 37364 80046B64 2611010C */  jal        reloc_ClearCounts
     /* 37368 80046B68 00000000 */   nop
-    /* 3736C 80046B6C 9327010C */  jal        func_80049E4C
+    /* 3736C 80046B6C 9327010C */  jal        node_InitRootNodePairWithNegatedRotationMatrices
     /* 37370 80046B70 00000000 */   nop
     /* 37374 80046B74 D327010C */  jal        light_InitDefaults
     /* 37378 80046B78 00000000 */   nop

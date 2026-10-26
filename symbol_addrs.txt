@@ -665,7 +665,7 @@ D_800A3044 = 0x800A3044; /* SioRegs *: holds 0x1F801050, the SIO port 1 (link ca
 // RENAME 0x800472B0: retired name 'func_800472B0' — preserved note: returns &D_800EEDD0 (the matrix func_80047210 writes)
 wave_SetCellBuffer = 0x800477DC; /* sets g_wave_cell_buffer, the wave grid's cell buffer (368E4.c:733) */
 wave_GetCellBufferSize = 0x80047EC8; /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
-func_800468B0 = 0x800468B0; /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
+// RENAME 0x800468B0: retired name 'func_800468B0' — preserved note: saSeMain(8, a0) + saTan5TakeGetPos(0)
 rcnt_StartCnt1 = 0x80046AE8; /* SsSet stuff with 0xF2000001 (SS event class) */
 eff_ClearInitFlag = 0x80016C74; /* 3-insn flag-clear setter */
 eff_Init = 0x80016C80; /* calls debug_printf + sys_Panic on failure */
@@ -707,7 +707,7 @@ sin_1 = 0x8007DF5C;
 rcos = 0x8007DFEC;
 SsSetReservedVoice = 0x80087F34;
 SpuInit = 0x800885AC;
-func_800467B8 = 0x800467B8; /* 62-insn loader using saTan2InfoInit + saTan5TakeGetPos */
+// RENAME 0x800467B8: retired name 'func_800467B8' — preserved note: 62-insn loader using saTan2InfoInit + saTan5TakeGetPos
 func_80046B44 = 0x80046B44; /* start-up init (func_80016D78, func_8003BFC4) */
 // RENAME 0x80046DA8: retired name 'func_80046DA8' — preserved note: 15-insn stage init calling game_InitStageSound
 math_SetLightPlaneProjection = 0x80046F24; /* 58-insn writing to D_800EEDB[4-C] matrix fields */
@@ -971,7 +971,7 @@ font_LoadImage = 0x8003D2C4; /* MISNAMED: not katinuki data; 1-line gpu_LoadImag
 func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
 camera_InitTrackedFighterFocus = 0x8001B3C0; /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
 // RENAME 0x8001C820: retired name 'func_8001C820' — preserved note: MISNAMED: not voice data; conditional snd_QueuePositionalSound with sound IDs 0x56..0x58
-func_80048AD0 = 0x80048AD0; /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
+// RENAME 0x80048AD0: retired name 'func_80048AD0' — preserved note: MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68
 snd_SetReverb = 0x8005BE84; /* func_800858D0(0); reverb off, type D_8009AD1C[n][0], SpuClearReverbWorkArea, depth, reverb on; returns the type result or -1 */
 memcard_Format = 0x80037F08; /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
 snd_VabFakeOpen8And4 = 0x8005B98C; /* typed-restatement (Q103): snd_VabFakeOpen(a0, 8) then snd_VabFakeOpen(a0, 4); the old motion-pre-calc reading was wrong */

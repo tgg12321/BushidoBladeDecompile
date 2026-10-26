@@ -306,7 +306,7 @@ glabel func_80045B68
     /* 3679C 80045F9C 23106802 */  subu       $v0, $s3, $t0
     /* 367A0 80045FA0 000002AD */  sw         $v0, 0x0($t0)
     /* 367A4 80045FA4 6801A48F */  lw         $a0, 0x168($sp)
-    /* 367A8 80045FA8 0927010C */  jal        func_80049C24
+    /* 367A8 80045FA8 0927010C */  jal        snd_CopySelectedPackSectionsAndLoadVabPacks
     /* 367AC 80045FAC 21286002 */   addu      $a1, $s3, $zero
     /* 367B0 80045FB0 21984000 */  addu       $s3, $v0, $zero
     /* 367B4 80045FB4 8C14010C */  jal        arena_UpdatePeak

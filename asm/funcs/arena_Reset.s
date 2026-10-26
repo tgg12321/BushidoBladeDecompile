@@ -18,7 +18,7 @@ glabel arena_Reset
     /* 35A0C 8004520C D80283AF */  sw         $v1, %gp_rel(g_arena_free_size)($gp)
     /* 35A10 80045210 E00280AF */  sw         $zero, %gp_rel(g_arena_block_count)($gp)
     /* 35A14 80045214 DC0280AF */  sw         $zero, %gp_rel(g_arena_peak)($gp)
-    /* 35A18 80045218 8727010C */  jal        func_80049E1C
+    /* 35A18 80045218 8727010C */  jal        resource_InvalidateEntrySelectionCache
     /* 35A1C 8004521C 00000000 */   nop
     /* 35A20 80045220 1000BF8F */  lw         $ra, 0x10($sp)
     /* 35A24 80045224 1800BD27 */  addiu      $sp, $sp, 0x18

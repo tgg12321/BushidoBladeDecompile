@@ -643,7 +643,7 @@ typedef struct {
     s16 h;
 } Unk8009B2BCRecord;
 
-/* The stage data a stage loads (func_800469C4, or the buffer
+/* The stage data a stage loads (motion_LoadPlaybackBlock, or the buffer
    motion_StartPlayback is handed; Unk800EFAE8Rec .unk2C): its header holds
    file-relative offsets of the parts motion_StartPlayback /
    motion_UpdatePlayback use. */
@@ -723,7 +723,7 @@ typedef struct {
 /* 0x800948BC (D_800948BC): function-pointer pairs, indexed by
  * resource_GetLoadedSelector(). func_8003F168 calls .init;
  * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards calls
- * .unk4 (e.g. entry 13 holds func_80047570 /
+ * .unk4 (e.g. entry 13 holds node_InitViewOffsetNodeWithYXZRotation /
  * node_OrientAndQueueViewOffsetNode). */
 typedef struct {
     void (*init)(void);
@@ -1950,9 +1950,10 @@ typedef struct Unk8001CD68Rec {
     u8 unk_3;
 } Unk8001CD68Rec;
 
-/* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
- * (unk0 = 0x64, rotation_order = 5; pointer stored to D_800A3708) and
- * 0x800FF638 (unk0 = 0x65, rotation_order = 2; pointer stored to D_800A370C).
+/* Two 0x58-byte records set up side by side by
+ * node_InitRootNodePairWithNegatedRotationMatrices: 0x80101DF0 (unk0 = 0x64,
+ * rotation_order = 5; pointer stored to D_800A3708) and 0x800FF638 (unk0 =
+ * 0x65, rotation_order = 2; pointer stored to D_800A370C).
  * node_SetMatrixFromNegatedRot passes a negated stack copy of xf.rot and &work
  * to D_800F66A0[rotation_order], then copies work to xf.mat;
  * gpu_ResetDrawQueueAndPrepareViewAndLighting writes work.t just before that
