@@ -1,0 +1,171 @@
+==============================================================================
+NAMING WAVE — 37 operations (0 RESET, 37 RENAME)
+  37 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (64) --
+  (root): 1 files, 1 substitutions
+      symbol_addrs.txt  (1)
+  asm: 52 files, 126 substitutions
+      asm/funcs/fight_InitCommandStream.s  (2)
+      asm/funcs/fight_RunCommandStream.s  (8)
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (1)
+      asm/funcs/func_8003AE5C.s  (2)
+      asm/funcs/func_8003AF40.s  (2)
+      asm/funcs/func_8003AFFC.s  (2)
+      ... and 46 more
+  engine: 2 files, 5 substitutions
+      engine/test_engine.py  (4)
+      engine/volatile_cheats.py  (1)
+  include: 1 files, 12 substitutions
+      include/bb2.h  (12)
+  src: 8 files, 117 substitutions
+      src/main/28708.c  (5)
+      src/main/2B344.c  (82)
+      src/main/309CC.c  (1)
+      src/main/31D3C.c  (1)
+      src/main/32D04.c  (1)
+      src/main/368E4.c  (9)
+      ... and 2 more
+
+-- .s file renames (37) --
+  asm/funcs/func_8003AE5C.s -> asm/funcs/fight_ScanCommandStreamAndLoadImage.s
+  asm/funcs/func_8003AF40.s -> asm/funcs/fight_FillMissingConfigInitFighterAndLoadObject.s
+  asm/funcs/func_8003AFFC.s -> asm/funcs/fight_RequestBothFightersEntriesAndReloadOnChange.s
+  asm/funcs/func_8003B10C.s -> asm/funcs/fight_RequestOneFighterEntriesAndReloadOnChange.s
+  asm/funcs/func_8003B2C8.s -> asm/funcs/fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState.s
+  asm/funcs/func_8003B328.s -> asm/funcs/fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields.s
+  asm/funcs/func_8003B3A4.s -> asm/funcs/fight_ConfigureFighter1FromLookupAndOperandsAndLoad.s
+  asm/funcs/func_8003B484.s -> asm/funcs/fight_ConfigureFighter1FromOperandsAndLoad.s
+  asm/funcs/func_8003B4DC.s -> asm/funcs/fight_SetFixedFighterBytesAndLoadBothFighters.s
+  asm/funcs/func_8003B870.s -> asm/funcs/fight_InitCommandStreamImageLoad.s
+  ... and 27 more
+
+-- ledger directory renames (30) --
+  memory/grind/func_8003AE5C -> memory/grind/fight_ScanCommandStreamAndLoadImage
+  memory/grind/func_8003AFFC -> memory/grind/fight_RequestBothFightersEntriesAndReloadOnChange
+  memory/grind/func_8003B3A4 -> memory/grind/fight_ConfigureFighter1FromLookupAndOperandsAndLoad
+  memory/grind/func_8003BCB4 -> memory/grind/fight_HandleDescriptorPlaybackCompletion
+  memory/grind/func_8003BEA8 -> memory/grind/fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
+  memory/grind/func_8003BFC4 -> memory/grind/ExecMovieOverlayAndReinitialize
+  memory/grind/func_8003C040 -> memory/grind/fight_InitImageAndPlaybackPresentation
+  memory/grind/func_8003EDC0 -> memory/grind/gpu_UnpackGridRecordsNodesAndCellRuns
+  memory/grind/_completed/func_8003AE5C -> memory/grind/_completed/fight_ScanCommandStreamAndLoadImage
+  memory/grind/_completed/func_8003AFFC -> memory/grind/_completed/fight_RequestBothFightersEntriesAndReloadOnChange
+  ... and 20 more
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:1197  func_8003F168 = 0x8003F168; /* calls D_800948BC[resource_GetLoadedSelector()].init when non-null */
+
+-- JSON key/field edits (31) --
+  oracle/manifest.json: 1 changes
+      golden_fixtures[0].name: func_8003F1C8 -> gpu_GetLastGridPassViewYaw
+  memory/grind/func_8003AE5C/layer2.jsonl: 1 changes
+      line 1: func func_8003AE5C -> fight_ScanCommandStreamAndLoadImage
+  memory/grind/func_8003AFFC/layer2.jsonl: 1 changes
+      line 1: func func_8003AFFC -> fight_RequestBothFightersEntriesAndReloadOnChange
+  memory/grind/func_8003B3A4/layer2.jsonl: 1 changes
+      line 1: func func_8003B3A4 -> fight_ConfigureFighter1FromLookupAndOperandsAndLoad
+  memory/grind/func_8003BCB4/layer2.jsonl: 1 changes
+      line 1: func func_8003BCB4 -> fight_HandleDescriptorPlaybackCompletion
+  memory/grind/func_8003BEA8/layer2.jsonl: 1 changes
+      line 1: func func_8003BEA8 -> fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
+  memory/grind/func_8003BFC4/layer2.jsonl: 1 changes
+      line 1: func func_8003BFC4 -> ExecMovieOverlayAndReinitialize
+  memory/grind/func_8003C040/layer2.jsonl: 2 changes
+      line 1: func func_8003C040 -> fight_InitImageAndPlaybackPresentation
+      line 2: func func_8003C040 -> fight_InitImageAndPlaybackPresentation
+  memory/grind/func_8003EDC0/layer2.jsonl: 2 changes
+      line 1: func func_8003EDC0 -> gpu_UnpackGridRecordsNodesAndCellRuns
+      line 2: func func_8003EDC0 -> gpu_UnpackGridRecordsNodesAndCellRuns
+  memory/grind/_completed/func_8003AE5C/layer2.jsonl: 3 changes
+      line 1: func func_8003AE5C -> fight_ScanCommandStreamAndLoadImage
+      line 2: func func_8003AE5C -> fight_ScanCommandStreamAndLoadImage
+      line 3: func func_8003AE5C -> fight_ScanCommandStreamAndLoadImage
+  memory/grind/_completed/func_8003AFFC/layer2.jsonl: 2 changes
+      line 1: func func_8003AFFC -> fight_RequestBothFightersEntriesAndReloadOnChange
+      line 2: func func_8003AFFC -> fight_RequestBothFightersEntriesAndReloadOnChange
+  memory/grind/_completed/func_8003B10C/layer2.jsonl: 1 changes
+      line 1: func func_8003B10C -> fight_RequestOneFighterEntriesAndReloadOnChange
+  memory/grind/_completed/func_8003B2C8/layer2.jsonl: 1 changes
+      line 1: func func_8003B2C8 -> fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState
+  memory/grind/_completed/func_8003B328/layer2.jsonl: 4 changes
+      line 1: func func_8003B328 -> fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
+      line 2: func func_8003B328 -> fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
+      line 3: func func_8003B328 -> fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
+      line 4: func func_8003B328 -> fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
+  memory/grind/_completed/func_8003B8E4/layer2.jsonl: 1 changes
+      line 1: func func_8003B8E4 -> fight_UpdateCommandStreamImageLoadAndResume
+  memory/grind/_completed/func_8003B9D0/layer2.jsonl: 3 changes
+      line 1: func func_8003B9D0 -> fight_StartDescriptorPlaybackAndAudio
+      line 2: func func_8003B9D0 -> fight_StartDescriptorPlaybackAndAudio
+      line 3: func func_8003B9D0 -> fight_StartDescriptorPlaybackAndAudio
+  memory/grind/_completed/func_8003BCB4/layer2.jsonl: 1 changes
+      line 1: func func_8003BCB4 -> fight_HandleDescriptorPlaybackCompletion
+  memory/grind/_completed/func_8003BEA8/layer2.jsonl: 1 changes
+      line 1: func func_8003BEA8 -> fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
+  memory/grind/_completed/func_8003C040/layer2.jsonl: 3 changes
+      line 1: func func_8003C040 -> fight_InitImageAndPlaybackPresentation
+      line 2: func func_8003C040 -> fight_InitImageAndPlaybackPresentation
+      line 3: func func_8003C040 -> fight_InitImageAndPlaybackPresentation
+  memory/grind/_completed/func_8003C2C0/layer2.jsonl: 2 changes
+      line 1: func func_8003C2C0 -> fight_UpdateSplitWipeImageAndPlaybackPresentation
+      line 2: func func_8003C2C0 -> fight_UpdateSplitWipeImageAndPlaybackPresentation
+  memory/grind/_completed/func_8003C714/layer2.jsonl: 4 changes
+      line 1: func func_8003C714 -> fight_PackTimeRecordsAndInitPresentation
+      line 2: func func_8003C714 -> fight_PackTimeRecordsAndInitPresentation
+      line 3: func func_8003C714 -> fight_PackTimeRecordsAndInitPresentation
+      line 4: func func_8003C714 -> fight_PackTimeRecordsAndInitPresentation
+  memory/grind/_completed/func_8003C8B4/layer2.jsonl: 2 changes
+      line 1: func func_8003C8B4 -> fight_UpdateTimeRecordPresentation
+      line 2: func func_8003C8B4 -> fight_UpdateTimeRecordPresentation
+  memory/grind/_completed/func_8003C9A4/layer2.jsonl: 11 changes
+      line 1: func func_8003C9A4 -> fight_UpdateRotatingViewThreeOptionChoice
+      line 2: func func_8003C9A4 -> fight_UpdateRotatingViewThreeOptionChoice
+      line 3: func func_8003C9A4 -> fight_UpdateRotatingViewThreeOptionChoice
+      line 4: func func_8003C9A4 -> fight_UpdateRotatingViewThreeOptionChoice
+      line 5: func func_8003C9A4 -> fight_UpdateRotatingViewThreeOptionChoice
+      ... and 6 more
+  memory/grind/_completed/func_8003CD10/layer2.jsonl: 6 changes
+      line 1: func func_8003CD10 -> fight_UpdateRotatingViewDecimalPresentation
+      line 2: func func_8003CD10 -> fight_UpdateRotatingViewDecimalPresentation
+      line 3: func func_8003CD10 -> fight_UpdateRotatingViewDecimalPresentation
+      line 4: func func_8003CD10 -> fight_UpdateRotatingViewDecimalPresentation
+      line 5: func func_8003CD10 -> fight_UpdateRotatingViewDecimalPresentation
+      ... and 1 more
+  memory/grind/_completed/func_8003CE18/layer2.jsonl: 8 changes
+      line 1: func func_8003CE18 -> fight_InitNearestStartPairPlayback
+      line 2: func func_8003CE18 -> fight_InitNearestStartPairPlayback
+      line 3: func func_8003CE18 -> fight_InitNearestStartPairPlayback
+      line 4: func func_8003CE18 -> fight_InitNearestStartPairPlayback
+      line 5: func func_8003CE18 -> fight_InitNearestStartPairPlayback
+      ... and 3 more
+  memory/grind/_completed/func_8003CF84/layer2.jsonl: 8 changes
+      line 1: func func_8003CF84 -> fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
+      line 2: func func_8003CF84 -> fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
+      line 3: func func_8003CF84 -> fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
+      line 4: func func_8003CF84 -> fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
+      line 5: func func_8003CF84 -> fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
+      ... and 3 more
+  memory/grind/_completed/func_8003E0E0/layer2.jsonl: 1 changes
+      line 1: func func_8003E0E0 -> gpu_BuildFogRowLevels
+  memory/grind/_completed/func_8003E120/layer2.jsonl: 1 changes
+      line 1: func func_8003E120 -> gpu_BuildFogBlockLevels
+  memory/grind/_completed/func_8003EB84/layer2.jsonl: 3 changes
+      line 1: func func_8003EB84 -> gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
+      line 2: func func_8003EB84 -> gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
+      line 3: func func_8003EB84 -> gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
+  memory/grind/_completed/func_8003EDC0/layer2.jsonl: 2 changes
+      line 1: func func_8003EDC0 -> gpu_UnpackGridRecordsNodesAndCellRuns
+      line 2: func func_8003EDC0 -> gpu_UnpackGridRecordsNodesAndCellRuns
+  memory/grind/_completed/func_8003F1D4/layer2.jsonl: 1 changes
+      line 1: func func_8003F1D4 -> gpu_GetGridNodeRecordTable
+
+-- OUT OF SCOPE / manual follow-up (4) --
+  ~ tools/desync_audit.py:L2: ['func_8003F1C8'] in prose/docstring — NOT rewritten
+  ~ tools/loop_movables.py:L101: ['func_8003C714'] in prose/docstring — NOT rewritten
+  ~ tools/loop_movables.py:L2: ['func_8003C714'] in prose/docstring — NOT rewritten
+  ~ tools/trace/scan/story_streams.py:L2: ['func_8003AF40', 'func_8003B2C8', 'func_8003B3A4', 'func_8003B484', 'func_8003B4DC'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
