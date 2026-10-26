@@ -80,7 +80,7 @@ ARG_OK = re.compile(r"^[A-Za-z0-9_./:=,+-]+$")
 CHEAT_PATHS = re.compile(r"^(src/|include/|asm/|\.claude/rules/|inline_asm_canonical\.txt$|named_syms\.txt$|"
                          r"undefined_syms|undefined_funcs|[^/]*_auto\.txt$|[^/]*\.ld$|[^/]*_funcs\.txt$|"
                          r"[^/]*_syms\.txt$|[^/]*_files\.txt$)")
-BOTH_PATHS = re.compile(r"^(Makefile$|engine/|tools/)")
+BOTH_PATHS = re.compile(r"^(GNUmakefile$|makefile$|Makefile(?:\.[^/]*)?$|[^/]*\.mk$|engine/|tools/)")
 KINDS = ("cheat-reviewer", "code-reviewer")
 # The engine's layer-2 verdict ledger (owner ruling Q39): written only by `codex_worker.py layer2`
 # from a recorded reviewer verdict, so it is bookkeeping of the review, not reviewed content.
@@ -321,6 +321,9 @@ def canonical_case(path):
         (r"^(src|include|asm|engine|tools)/", str.casefold),
         (r"^\.claude/rules/", str.casefold),
         (r"^Makefile$", lambda s: "Makefile"),
+        (r"^GNUmakefile$", lambda s: "GNUmakefile"),
+        (r"^(Makefile\.)[^/]*$", lambda s: "Makefile."),
+        (r"^[^/]*(\.mk)$", str.casefold),
         (r"^(inline_asm_canonical\.txt|named_syms\.txt)$", str.casefold),
         (r"^(undefined_syms|undefined_funcs)", str.casefold),
         (r"^[^/]*?(_auto\.txt|\.ld|_funcs\.txt|_syms\.txt|_files\.txt)$", str.casefold),
@@ -342,6 +345,8 @@ def canonical_case(path):
         for c in canonical:
             offsets.append(offsets[-1] + len(c.casefold()))
         start, end = m.span(m.lastindex or 0)
+        if start not in offsets or end not in offsets:
+            refuse(f"{path} (casefold match splits a path character)")
         start, end = offsets.index(start), offsets.index(end)
         canonical = canonical[:start] + spelling(canonical[start:end]) + canonical[end:]
     return canonical
@@ -360,6 +365,10 @@ def check_tree(main, item, base, tree):
     for path in git("ls-tree", "-r", "-t", "--name-only", "-z", tree, cwd=main).split("\0"):
         if not path:
             continue
+        if path in ("GNUmakefile", "makefile"):
+            bad.append(f"{path} (shadows Makefile)")
+        if any(re.search(r"~[0-9]", part) for part in path.split("/")):
+            bad.append(f"{path} (Windows 8.3 alias form)")
         folded = path.casefold()
         if folded in seen and seen[folded] != path:
             bad.append(f"{path} (case collision with {seen[folded]})")
@@ -1949,12 +1958,12 @@ def cmd_land(a):
             # at every lock decision it can reach; neither early-lock condition is live.
             quick_paths = land_quick_paths(main, verified, main_tip)
             if full_reverifies >= 2 or quick_paths is not None:
+                if locked_attempts >= LAND_LOCKED_ATTEMPTS:
+                    refuse("main kept moving despite the reintegration lock; gave up after "
+                           f"{LAND_LOCKED_ATTEMPTS} locked attempts -- land again")
                 held_before = acquire_land_lock(main, a.item)
                 acquired = True
                 locked_attempts += 1
-                if locked_attempts > LAND_LOCKED_ATTEMPTS:
-                    refuse("main kept moving despite the reintegration lock; gave up after "
-                           f"{LAND_LOCKED_ATTEMPTS} locked attempts -- land again")
                 print("codex_worker: holding reintegration lock through rebase and gates "
                       + ("for build-only reuse" if quick_paths is not None else
                          "after two full re-verifies caused by main moving"))

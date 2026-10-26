@@ -867,6 +867,43 @@ class HarvestCasePaths(Repo):
             with self.subTest(path=path):
                 self.refused(self.tree_with(path), path, f"canonical spelling: {canonical}")
 
+    def test_casefold_boundary_refused_cleanly(self):
+        path = "undefined_sym\u00df"
+        self.refused(self.tree_with(path), path, "casefold match splits a path character")
+
+    def test_shadow_makefiles_refused(self):
+        for path in ("GNUmakefile", "makefile"):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, "shadows Makefile")
+
+    def test_build_control_paths_require_both_reviewers(self):
+        for path in ("GNUmakefile", "makefile", "Makefile", "flags.mk", "Foo.mk", "Makefile.local"):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "build control")
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(cw.KINDS), [path]))
+
+    def test_build_control_case_variants_refused(self):
+        for path, canonical in (("GNUMAKEFILE", "GNUmakefile"),
+                                ("Foo.MK", "Foo.mk"), ("MAKEFILE.Local", "Makefile.Local")):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, f"canonical spelling: {canonical}")
+
+    def test_short_name_components_refused(self):
+        for path in ("CLAUDE~1/x.md", "INLINE~1.TXT", "UNDEFI~1.TXT",
+                     "docs/SUBDIR~2/x.md", "docs/note~9.md"):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, "Windows 8.3 alias form")
+
+    def test_uppercase_ledger_function_preserves_ledger_rules(self):
+        path = "memory/grind/PlayerUpdate/layer2.jsonl"
+        tree = self.tree_with(path)
+        self.refused(tree, path, "only `layer2` writes it")
+        # An identical ledger already in the item commit is permitted.
+        commit = self.g("commit-tree", tree, "-p", "main", "-m", "recorded ledger")
+        self.g("update-ref", f"refs/heads/{self.branch}", commit)
+        self.assertEqual(self.harvest_tree(tree), (self.g("rev-parse", "main"), tree, [path]))
+
     def test_metadata_case_variants_refused(self):
         for name in sorted(cw.GIT_META):
             for prefix in ("", "docs/"):
@@ -910,6 +947,8 @@ class HarvestCasePaths(Repo):
 
     def test_exact_case_unchanged(self):
         for path, kinds in (("src/main/x.c", ["cheat-reviewer"]),
+                            ("src/main/368E4.c", ["cheat-reviewer"]),
+                            ("tools/grinder/Foo.py", list(cw.KINDS)),
                             ("tools/x.py", list(cw.KINDS)),
                             ("Makefile", list(cw.KINDS)),
                             ("BB2.ld", ["cheat-reviewer"]),
@@ -1120,7 +1159,7 @@ class LandMovingMain(unittest.TestCase):
     def land(self, moved=("docs/peer.md",), item=("src/item.c",), moves=1,
              extra=(), held=False, dry_run=False, failure=None, ancestor=True,
              changed_item=None, initial_behind=False, rebase_race=False,
-             override=None, already=False):
+             override=None, already=False, no_push=False):
         events = []
         state = {"main": "m0", "base": "old" if initial_behind else "m0",
                  "tip": "t0", "acquires": 0, "revision": 0, "rebases": 0,
@@ -1254,7 +1293,7 @@ class LandMovingMain(unittest.TestCase):
             stack.enter_context(redirect_stderr(io.StringIO()))
             code = 0
             try:
-                cw.cmd_land(SimpleNamespace(item="item", dry_run=dry_run, no_push=False))
+                cw.cmd_land(SimpleNamespace(item="item", dry_run=dry_run, no_push=no_push))
             except SystemExit as e:
                 code = e.code
             self.last_output = output.getvalue()
@@ -1459,8 +1498,8 @@ class LandMovingMain(unittest.TestCase):
                     self.assertIn("main kept moving", self.last_output)
                     self.assertIn("reintegration lock", self.last_output)
                     self.assertIn("3 locked attempts", self.last_output)
-                    self.assertEqual(events.count("acquire"), 5)  # one unlocked, three locked, refusal
-                    self.assertEqual(events.count("release"), 0 if held else 5)
+                    self.assertEqual(events.count("acquire"), 4)  # one unlocked, three locked
+                    self.assertEqual(events.count("release"), 0 if held else 4)
                     self.assertNotIn("push", events)
                     self.assertNotIn("landed", events)
 
@@ -1469,6 +1508,24 @@ class LandMovingMain(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("DRY RUN", self.last_output)
         self.assertIn("would push main to origin", self.last_output)
+        for event in ("status", "acquire", "release", "push", "merge", "build"):
+            self.assertNotIn(event, events)
+
+    def test_capped_attempt_never_calls_acquire(self):
+        with mock.patch.object(cw, "LAND_LOCKED_ATTEMPTS", 0), \
+                mock.patch.object(cw, "land_quick_paths", return_value=[]), \
+                mock.patch.object(cw, "acquire_land_lock", side_effect=AssertionError("cap took lock")):
+            code, events = self.land(initial_behind=True)
+        self.assertEqual(code, 2)
+        self.assertIn("0 locked attempts", self.last_output)
+        self.assertNotIn("acquire", events)
+
+    def test_already_landed_dry_run_no_push_requested(self):
+        code, events = self.land(already=True, dry_run=True, no_push=True)
+        self.assertEqual(code, 0)
+        self.assertIn("DRY RUN", self.last_output)
+        self.assertIn("no push requested", self.last_output)
+        self.assertNotIn("would push", self.last_output)
         for event in ("status", "acquire", "release", "push", "merge", "build"):
             self.assertNotIn(event, events)
 
