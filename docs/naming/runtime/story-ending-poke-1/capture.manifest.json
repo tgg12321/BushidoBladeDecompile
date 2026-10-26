@@ -1,0 +1,853 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "2e828ff552e93f4ab7fb5b66c3104147d670b2e9",
+      "size": 110602
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a387e6db3f2613ec9d7bd8dbfb6f16b3029c8a4e",
+      "size": 30208
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "6d048f03bb23d96c39fe221bef0afcbd5a415f81",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "3600.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.map",
+      "sha1": "9373e15702316da97f58c339c2f995d96dc2e5a8",
+      "size": 409077
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.elf",
+      "sha1": "41cf7cedc2e62bc99496a42bf25fb16ec1a71adf",
+      "size": 860172
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\spec.json",
+    "sha1": "065653725e709492cd84c2582f0a56eda3490746",
+    "size": 39479
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Downloads\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.script.lua",
+      "sha1": "97678400f7c39b84219483af6fc25d28f8b90a8a",
+      "size": 35091
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 2023,
+    "ambiguous_stops": 0,
+    "pokes": [
+      {
+        "at": "0x8008F222",
+        "addr": 2148069922,
+        "when": "top_menu",
+        "hex": "111c0000120301ff131624008300",
+        "orig": "100710033324121300190a01010f",
+        "applied": {
+          "frame": 6060,
+          "pc": 2147483776,
+          "ok": true
+        },
+        "at_end": "111c0000120301ff131624008300"
+      }
+    ],
+    "modified_game": "poked memory: hits and screenshots after a stub or poke went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.jsonl",
+      "sha1": "e74607e5f6cf8c7b2c987ee10a09fa5e7aa92396",
+      "size": 603447,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.top_menu.first.png",
+      "sha1": "2607fc28352b684edfa2617119a39a158017a61e",
+      "size": 31576,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.story_text.first.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.char_select.first.png",
+      "sha1": "05c8fcd620261e5646396035747d1e834ab658b3",
+      "size": 19403,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.weapon_select.first.png",
+      "sha1": "8cac00beb32a7a94286a78fe9e4be8f62abf9bf7",
+      "size": 19165,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.stage_card.8200.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.intro.8800.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.intro.9400.png",
+      "sha1": "bfbaf9afed6eb818433ab8a0d0b21c88fcda55e9",
+      "size": 32182,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.10000.png",
+      "sha1": "6b098801db18b9a2bdfc602ad40ff2f8caa9d03c",
+      "size": 38548,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.10600.png",
+      "sha1": "9add6c3fd5b38b3550abf6a7aee76c4634f149d1",
+      "size": 36448,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.11200.png",
+      "sha1": "c4c30b624465157e0c53309be192e5809864798e",
+      "size": 38807,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.11800.png",
+      "sha1": "ff6b22f366bb4c210210aeff6f90a490eeaec55f",
+      "size": 39481,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.12400.png",
+      "sha1": "9b93a06be1bddbefc2954b3d1e23b60bb11cf947",
+      "size": 36568,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.13000.png",
+      "sha1": "d8ab9913dd6a4158d8ee4ab9a4ae92841de5e139",
+      "size": 28574,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.13600.png",
+      "sha1": "a9a92caf312c1e22ce321f46e42adb33bbfa8afb",
+      "size": 25645,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.14200.png",
+      "sha1": "a3921583ccb7e1081cefe74e918f905890ba653a",
+      "size": 31031,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.14800.png",
+      "sha1": "393e0836808a7401be68bbf6075b37a2d7ca0b89",
+      "size": 36603,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.15000.png",
+      "sha1": "8bce9de7dc52c7f678d471ba0a7601f8084ff241",
+      "size": 45496,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.15100.png",
+      "sha1": "9822d22542ae1d617031189efd0e8254c82034f1",
+      "size": 43930,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.fight.15200.png",
+      "sha1": "95d3784b815900cbd18c10ac7a06972b5114bb7a",
+      "size": 37062,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_ko.15300.png",
+      "sha1": "0db90222feec2da1338d7a02e31b151ce30b468a",
+      "size": 26452,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_ko.15400.png",
+      "sha1": "f2203d2e4494f89de730b4474ba64fc5c587b825",
+      "size": 32147,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_ko.15500.png",
+      "sha1": "ad70312f98decb71b00ea014d391c7e2e980a51c",
+      "size": 29017,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_ko.15600.png",
+      "sha1": "ad70312f98decb71b00ea014d391c7e2e980a51c",
+      "size": 29017,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.15700.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.16100.png",
+      "sha1": "1603e77962423ddae5e253f4222d9acee2bcb9dc",
+      "size": 43062,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.16500.png",
+      "sha1": "00bbdb72c1f3919ae47e4efc3becd3201a5213c8",
+      "size": 39930,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.16900.png",
+      "sha1": "506428e5defb278667cf904c298dc8f5f0ba86ec",
+      "size": 42880,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.17300.png",
+      "sha1": "bcdb90ff86826ef598cf251966ab6c270a2ebef0",
+      "size": 44941,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.17700.png",
+      "sha1": "45f662ff932f8e1a0102408633b8282b64c1e32e",
+      "size": 22396,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.18100.png",
+      "sha1": "774d5275ed534557a2581692ccb6d57a86942f08",
+      "size": 32469,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.18500.png",
+      "sha1": "d1d9fc9fb295a5e49f748131d483d3dfd25cf4a4",
+      "size": 42185,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.18900.png",
+      "sha1": "5449873122d319863a96775506054811600ff1c6",
+      "size": 32495,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.19300.png",
+      "sha1": "3338c4359a6759fcc33ad824c98f7fbc03543906",
+      "size": 48573,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.19700.png",
+      "sha1": "716615a41c5254b4cdfefd825bd687b957e8f9f5",
+      "size": 42884,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.20100.png",
+      "sha1": "3421def542c9dadcfd9d8c6e062eaec2fad1cea7",
+      "size": 47758,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.20500.png",
+      "sha1": "30cf4fc1e5f2b642c74232f97024cb03e87376bb",
+      "size": 47606,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.20900.png",
+      "sha1": "388eaacf6c88db45d3bbe3452474a99dabbdeca0",
+      "size": 50261,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.epilogue.21300.png",
+      "sha1": "2f205c67f747ca8b18c1523c42f1bf6b59d8ac11",
+      "size": 50692,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.21450.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.21600.png",
+      "sha1": "f8d0a1973adcfecb15f014308805c51837ad3096",
+      "size": 51631,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.21750.png",
+      "sha1": "9cc5405a45631a6bba7f3e98d0b40828024c29bc",
+      "size": 53067,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.21900.png",
+      "sha1": "f776061877443ae5f7475990f384369b6f853b06",
+      "size": 30983,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22050.png",
+      "sha1": "2580d1079d60f2c4dd919a816a9ef84958265ec5",
+      "size": 21881,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22200.png",
+      "sha1": "9426bdb6cea5480904b3d810b446cb0f3d344fc6",
+      "size": 45097,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22350.png",
+      "sha1": "dd178b6ee23d1d02b2480589424ffde54f6f0b20",
+      "size": 45701,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22500.png",
+      "sha1": "e567155580fc1d17ffb3dd7dcbf6bd2dbcf3ffce",
+      "size": 36889,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22650.png",
+      "sha1": "76485777cad2f1e390a3dd6ef9bb40d38464aaf1",
+      "size": 30325,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22800.png",
+      "sha1": "88a58da53f9392e9b482f58664ed80c954928d8c",
+      "size": 24690,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.dance.22950.png",
+      "sha1": "5ba6044d5d7dff71867d604850e8e6017bc88433",
+      "size": 24702,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_credits.23100.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.23250.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.23300.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.23600.png",
+      "sha1": "ae259ca17a7cd45826818e4a50c547fa61938606",
+      "size": 4838,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.23900.png",
+      "sha1": "ff9c39a4371d0fee5a967b471c796e716fb13be9",
+      "size": 6536,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.24200.png",
+      "sha1": "2f28abd8a135b8d4d10d3ae39a19011abae944c7",
+      "size": 6870,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.24500.png",
+      "sha1": "8f2992672dd7cba4e31fc41582a4d8a268f54364",
+      "size": 9232,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.24800.png",
+      "sha1": "b82a13889a9e98278d259c1e46d5832564af16f3",
+      "size": 8925,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.25100.png",
+      "sha1": "68b87b016f5cb4cc223eae7054b366acc95498f8",
+      "size": 7355,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.25400.png",
+      "sha1": "efb72eb9d5a3af29bc427609015f5990309b51da",
+      "size": 5832,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.25700.png",
+      "sha1": "a115cabf26962ff247215752f40b0e6e3dac3acc",
+      "size": 11163,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.26000.png",
+      "sha1": "c1305363209051eece1e564d04d6d46ec8a0bc6e",
+      "size": 9309,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.26300.png",
+      "sha1": "2d39898b23da349dd9c8bf0ed1bc6bd5b956143b",
+      "size": 11766,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.26600.png",
+      "sha1": "9f3e16a02a0a9b93cb63f4fb4dd86de973560e58",
+      "size": 11365,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.26900.png",
+      "sha1": "58c2bb1d41db7526d9d0c2f19761bfbbb6c4c295",
+      "size": 12439,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.27200.png",
+      "sha1": "e7ab766130f38a6a93039293be3e9d7d201598b5",
+      "size": 10208,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.27500.png",
+      "sha1": "03307f041d5a220336fee60657b4db25b0e3dc2e",
+      "size": 13682,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.27800.png",
+      "sha1": "4ce4163d1652a4954517aee40a279e764acac975",
+      "size": 11143,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.28100.png",
+      "sha1": "ef2be6e4cc0b8eaaf9776e873902abc33e61d779",
+      "size": 12021,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.28400.png",
+      "sha1": "e869e2e2a02d0bde2d68881d4becd53a4bedf03d",
+      "size": 6337,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.28700.png",
+      "sha1": "54cab6708f8121fa18b36b256389279c2ff5c2b4",
+      "size": 4249,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.credits.29000.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.save_prompt.29100.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.save_prompt.29250.png",
+      "sha1": "08fc249e4e30289520384b71ced50f6574eb5441",
+      "size": 4254,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.save_prompt.29400.png",
+      "sha1": "08fc249e4e30289520384b71ced50f6574eb5441",
+      "size": 4254,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.29550.png",
+      "sha1": "646e5e564af94a9eb3215cc858eb101b0c441f82",
+      "size": 4137,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.29700.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.29850.png",
+      "sha1": "7e96e7fdf3997c0203d7d5c3b55ce55f92916547",
+      "size": 31551,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30000.png",
+      "sha1": "b228264315e21ad57de10815e5ac6d980f5c54cc",
+      "size": 31550,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30150.png",
+      "sha1": "d9da6820e71a167d266912e74eac17a1db6eba3e",
+      "size": 31541,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30300.png",
+      "sha1": "97f34cb684ea3605831b4b41a7a0b8eba8e966fc",
+      "size": 31573,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30450.png",
+      "sha1": "416078e2a4fe15d5656e32bb16a165f650e7e947",
+      "size": 31535,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30600.png",
+      "sha1": "94fc0a4769acd5770f368900cae7b46bc9d64786",
+      "size": 31546,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30750.png",
+      "sha1": "9ca51c9bb8869fa050abf7a04edc4d9aa2d33172",
+      "size": 31551,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.30900.png",
+      "sha1": "a475bedacf60e505d018fd1fe3a16f09e519c69a",
+      "size": 31542,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31050.png",
+      "sha1": "2607fc28352b684edfa2617119a39a158017a61e",
+      "size": 31576,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31200.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31350.png",
+      "sha1": "97dfddd738597ae22f77e46dd1b8d0eec499218e",
+      "size": 31556,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31500.png",
+      "sha1": "bd0db5b6223a9c4ff4bce8f0ea5bd005956874c1",
+      "size": 31564,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31650.png",
+      "sha1": "d9dcea15f22e039940bdee88172bfab65052c1eb",
+      "size": 31557,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31800.png",
+      "sha1": "2e126b5b04115719e8656ee1163292cd640cd547",
+      "size": 31557,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.31950.png",
+      "sha1": "b41c2f9c37856deff516dbe0b99849e5efbf3876",
+      "size": 31564,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.t_save.last.png",
+      "sha1": "687ac96fada9d645f99576f5e0ba70f1c6e6d58a",
+      "size": 31562,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.script.log",
+      "sha1": "118f0d29cbc01ae3394ce9b679b736b381f06f52",
+      "size": 15147,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.mc1.mcd",
+      "sha1": "07b79ae499703115154079b802d03a661733ac9d",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-ending-poke-1\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}
