@@ -1,0 +1,92 @@
+{
+  "description": "Vs. CPU Mode on blank cards won with no poke: versus-cpu-first-fight's menu inputs, then P1 (KANNUKI) CROSS every 20 frames from 8360 to 20980 and TRIANGLE / CROSS alternating every 20 frames from 21000 to 23160. fight_AdvanceOpponentOrder stores the counter D_800A3783 1 at the load and 2..5 after the first four kills (9282, 14441, 19202, 20881); fights that end with no kill (three against the second opponent, one against the fifth) go through the post-KO menu's Rematch row (the CROSS presses). After the fifth kill (23354) it finds D_800A3783 == D_800A391F and stores mode 0x20 (17AFC.c:5435), so fight_InitRotatingViewDecimalPresentation / fight_UpdateRotatingViewDecimalPresentation draw 5 Kills Completed! for 151 passes with no input (2B344.c:969-997), then the top menu. The retail route to event:vs_cpu_clear (versus-cpu-clear pokes the counter instead)",
+  "covers": [
+    "mode:vs_cpu",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select",
+    "event:round_start",
+    "event:ko",
+    "event:vs_cpu_clear"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-cpu-clear-retail-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 25000,
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START"
+  ],
+  "repeat": [
+    {
+      "from": 8360,
+      "every": 20,
+      "count": 632,
+      "steps": [
+        "+0:CROSS"
+      ]
+    },
+    {
+      "from": 21000,
+      "every": 20,
+      "count": 109,
+      "steps": [
+        "+0:TRIANGLE|CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "8350:opp1",
+    "9300:opp2",
+    "14460:opp3",
+    "19220:opp4",
+    "20900:opp5",
+    "23355:clear",
+    "23660:t_top",
+    "23900:top_menu_again"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6500:char_select.first",
+    "6900:weapon_select.first",
+    "8000:t_load.mid",
+    "8600:opp1.8600",
+    "9250:opp1.last",
+    "11000:opp2.11000",
+    "12000:opp2.12000",
+    "13000:opp2.13000",
+    "14400:opp2.last",
+    "16000:opp3.16000",
+    "17500:opp3.17500",
+    "19150:opp3.last",
+    "19700:opp4.19700",
+    "20400:opp4.20400",
+    "20850:opp4.last",
+    "21600:opp5.21600",
+    "22500:opp5.22500",
+    "23100:opp5.23100",
+    "23340:opp5.last",
+    "23400:clear.first",
+    "23500:clear.mid",
+    "23640:clear.last",
+    "23700:t_top.mid",
+    "23900:top_menu_again.first",
+    "24999:top_menu_again.last"
+  ]
+}
