@@ -155,7 +155,7 @@
 /* RESET 0x800467A8: retired name 'stage_GetVariant_800467A8' — preserved note: lh getter for D_8009947A (paired with func_80046798 for D_80099478, +0x2 offset) */
 /* RESET 0x80046DE4: retired name 'game_GetDummyFlag_80046DE4' — preserved note: literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
 /* RESET 0x80046E18: retired name 'game_GetPlayerBase_80046E18' — preserved note: func_8004153C(a0) + 0x2C offset (player struct base field) */
-/* RESET 0x80046E44: retired name 'game_DisablePause_80046E44' — preserved note: writes 0 to g_game_pause_flag */
+/* RESET 0x80046E44: retired name 'game_DisablePause_80046E44' — preserved note: writes 0 to g_gpu_raised_ot_cutoff_requested */
 /* RESET 0x80046E8C: retired name 'game_ResetTimer_80046E8C' — preserved note: writes 0x23 (35 frames) to g_round_timer */
 /* RESET 0x800477BC: retired name 'game_Stub1_800477BC' — preserved note: literal `jr ra; nop` -- empty hook slot 1 */
 /* RESET 0x800477C4: retired name 'game_Stub2_800477C4' — preserved note: literal `jr ra; nop` -- empty hook slot 2 */

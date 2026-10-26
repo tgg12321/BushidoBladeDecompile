@@ -172,7 +172,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   `((void (*)(void))(&D_8008D090)[D_800A3834])()` every frame
   (`ings.c:625`).
 - `g_game_mode` (0x800A336C) — coarse game state (set up by `game_Init`).
-- `g_game_pause` (0x800F6654) — pause flag.
+- `g_gpu_raised_ot_cutoff_requested` (0x800F6654) — 0/1 request for the raised OT cutoff.
 - `g_game_timer` (0x800A3790) — global game timer (frames or ticks).
 
 ### Display / frame
@@ -186,14 +186,14 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   drawenv+dispenv+OT structures (one per buffer).
 
 ### Sound
-- `g_snd_bgm_id` (0x800A33B0), `g_snd_se_id` (0x800A33B4),
-  `g_snd_stage_bgm` (0x800A33C0), `g_snd_volume` (0x800A33D0)
+- `g_snd_bgm_id` (0x800A33B0), `g_snd_stage_bgm` (0x800A33C0), `g_snd_volume` (0x800A33D0)
 - `SND_CHANNEL_BGM=8`, `SND_CHANNEL_SE=9`, `SND_CHANNEL_UI=0xA`
   (`bb2_const.h`)
 
-### Stage / character
-- `D_80099478` (id cached by `func_800460E4`), `D_8009947A` (0/1 flag),
-  `D_800A8FB0` — 32x32 cell grid read by the draw walks (no collision use)
+### Loaded resource / model state
+- `g_fight_position_records` (0x800A33B4) — pointer into the loaded block's position-record list
+- `g_loaded_resource_selector` (selector cached by `func_800460E4`), `D_8009947A` (0/1 flag),
+  `g_gpu_cell_draw_attributes` — 32x32 cell grid read by the draw walks (no collision use)
 - `D_800A9A10` — three slots for the model objects `func_80045878` builds
   (`func_80041584` scans i < 3)
 - `D_80094B88` — per-slot 5-bit codes `func_80041604` stores and

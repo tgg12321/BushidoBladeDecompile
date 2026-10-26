@@ -128,8 +128,8 @@ D_800EEDD0 = 0x800EEDD0; // MATRIX: D_80101DF0's matrix with row 1 halved (camer
 D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); func_80047570 / node_OrientAndQueueViewOffsetNode  // data-wave 2026-10-07: was g_cam_bone_data2
 D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: D_800F66A0 index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
 
-// === func_800460E4 state, D_800A8FB0 grid, D_800948BC hooks ===
-g_loaded_resource_selector = 0x80099478; // id func_800460E4 caches (-1 = none); resource_GetLoadedSelector returns it  // data-wave 2026-10-08: was g_stage_id
+// === func_800460E4 state, g_gpu_cell_draw_attributes grid, D_800948BC hooks ===
+g_loaded_resource_selector = 0x80099478; // selector func_800460E4 caches (-1 = none); resource_GetLoadedSelector returns it  // data-wave 2026-10-08: was g_stage_id
 D_8009947A = 0x8009947A; // 0/1: set by func_800460E4, gates func_800464C4 / func_8004659C; resource_HasRetainedSubblocks returns it  // data-wave 2026-10-08: was g_stage_variant
 g_fight_start_position_pairs = 0x8009947C; // block whose address fight_GetStartPositionPairTable returns (u8 is a stand-in)  // data-wave 2026-10-08: was g_stage_data
 g_gpu_cell_draw_attributes = 0x800A8FB0; // 32x32 grid filled by gpu_ResetAndStampViewCenteredCellAttributes and kin, read by the draw walks gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards / func_8003EB84  // data-wave 2026-10-08: was g_stage_collision
@@ -145,12 +145,12 @@ D_800F6656 = 0x800F6656; // P1 controller port  // data-wave 2026-09-25: was g_g
 D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / func_8003F7F4)  // data-wave 2026-10-08: was g_game_flag_a
 D_800A3374 = 0x800A3374; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / func_8003F7F4)  // data-wave 2026-10-08: was g_game_flag_b
-g_gpu_raised_ot_cutoff_requested = 0x800F6654; // pause state flag  // data-wave 2026-09-25: was g_game_pause
+g_gpu_raised_ot_cutoff_requested = 0x800F6654; // 0/1 request for the raised OT cutoff; read by gpu_GetRaisedOtCutoffRequested  // data-wave 2026-09-25: was g_game_pause
 D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
 
 // === Sound Config ===
 D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
-g_fight_position_records = 0x800A33B4; // current SE id  // data-wave 2026-09-25: was g_snd_se_id
+g_fight_position_records = 0x800A33B4; // pointer into the loaded block's 16-byte position-record list; read via fight_GetPositionRecordList  // data-wave 2026-09-25: was g_snd_se_id
 D_800A33C0 = 0x800A33C0; // stage BGM id  // data-wave 2026-09-25: was g_snd_stage_bgm
 g_wave_cell_buffer = 0x800A33D0; // the wave grid's cell buffer (wave_SetCellBuffer, 368E4.c:733)  // data-wave 2026-09-25: was g_snd_volume
 D_800A33D4 = 0x800A33D4; // fade position  // data-wave 2026-09-25: was g_snd_fade_pos
@@ -657,11 +657,11 @@ D_800A3708 = 0x800A3708; /* = &D_80101DF0 (func_80049E4C); +0x4C/+0x54 are work.
 D_800A3748 = 0x800A3748; /* index into D_80101EC8; -1 == none */  /* data-wave 2026-10-03: was g_practice_menu_index */
 D_800A378C = 0x800A378C; /* ordering-table pointer: every store is g_gpu_ot_ptr + 4; every reader links GPU packets (DR_MOVE, OT words) into it */  /* data-wave 2026-10-08: was g_palette_base_ptr */
 D_800A3044 = 0x800A3044; /* SioRegs *: holds 0x1F801050, the SIO port 1 (link cable) register block; libcomb only (comb.c:17, include/psxsdk/libapi.h:23-37) */  /* data-wave 2026-10-09: was g_spu_reg_base_ptr */
-// RENAME 0x8004678C: retired name 'func_8004678C' — preserved note: gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id)
+// RENAME 0x8004678C: retired name 'func_8004678C' — preserved note: gp-rel getter for g_fight_position_records (paired with snd_GetBgmId for g_snd_bgm_id)
 // RENAME 0x80046DEC: retired name 'func_80046DEC' — preserved note: func_8004153C(a0)->node_matrix_ptrs: a MATRIX * table
-// RENAME 0x80046E54: retired name 'func_80046E54' — preserved note: writes (a0 ? 1 : 0) to g_game_pause_flag
-// RENAME 0x80046E7C: retired name 'func_80046E7C' — preserved note: lh getter for g_game_pause_flag
-// RENAME 0x80046F14: retired name 'func_80046F14' — preserved note: returns &D_8009947C (stage-data slot address)
+// RENAME 0x80046E54: retired name 'func_80046E54' — preserved note: writes (a0 ? 1 : 0) to g_gpu_raised_ot_cutoff_requested
+// RENAME 0x80046E7C: retired name 'func_80046E7C' — preserved note: lh getter for g_gpu_raised_ot_cutoff_requested
+// RENAME 0x80046F14: retired name 'func_80046F14' — preserved note: returns &g_fight_start_position_pairs (start-position table address)
 // RENAME 0x800472B0: retired name 'func_800472B0' — preserved note: returns &D_800EEDD0 (the matrix func_80047210 writes)
 wave_SetCellBuffer = 0x800477DC; /* sets g_wave_cell_buffer, the wave grid's cell buffer (368E4.c:733) */
 wave_GetCellBufferSize = 0x80047EC8; /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
@@ -825,7 +825,7 @@ _spu_mem_mode = 0x800A2D00; /* SPU init constant = 2 (paired with g_spu_addr_shi
 _spu_mem_mode_unit = 0x800A2D08; /* SPU init constant = 8 */  /* data-wave 2026-09-29: was g_spu_init_const_c */
 _spu_mem_mode_unitM = 0x800A2D0C; /* SPU init mask = 7 (3 bits); used as `& ~D_800A2D0C` to round-down */  /* data-wave 2026-09-07: was g_spu_init_mask */
 _spu_rev_startaddr = 0x800A2D44; /* default value written to SPU register 0xD1 via spu_WriteReg */  /* data-wave 2026-09-07: was g_spu_init_reg_D1_val */
-D_80094A6C = 0x80094A6C; /* 16 u32 entries; each encodes a 16x16 grid row of 2-bit cell flags applied to the D_800A8FB0 grid */  /* data-wave 2026-10-08: was g_default_collision_pattern */
+D_80094A6C = 0x80094A6C; /* 16 u32 entries; each encodes a 16x16 grid row of 2-bit cell flags applied to the g_gpu_cell_draw_attributes grid */  /* data-wave 2026-10-08: was g_default_collision_pattern */
 D_800A14D4 = 0x800A14D4; /* CdlREAD.buf: CdRead's buffer argument (cdread.c:180); cd_read_retry copies it to p (:146) */  /* data-wave 2026-10-09: was g_cdrom_streaming_arg1 */
 D_800A14D8 = 0x800A14D8; /* CdlREAD.p: the running write pointer, set from buf (cdread.c:146), advanced one sector per transfer (:57, :89) */  /* data-wave 2026-10-09: was g_cdrom_streaming_arg1_copy */
 D_800A14DC = 0x800A14DC; /* CdlREAD.mode: CdRead's CdlSetmode byte; mode & 0x30 picks size, 0x20 is ORed in (cdread.c:167-179); sent by cd_read_retry (:132-136) */  /* data-wave 2026-10-09: was g_cdrom_mode_flags */

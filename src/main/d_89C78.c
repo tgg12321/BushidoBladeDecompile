@@ -1,5 +1,5 @@
 /* Data-only file: .data 0x80099478..0x80099D54 (ROM 0x89C78), 368E4.c's
- * stage state, start positions and lookup tables.
+ * loaded-resource state, start positions and lookup tables.
  * Owner rulings Q122 / Q123 (data-only-no-sdata):
  * 1. One run: 35000.c's D_800993FC ends at 0x80099478 (368E4.o and 3AB48.o
  *    have no .data) and 43500.c's D_80099D54 starts at 0x80099D54. No
@@ -18,19 +18,21 @@
 #include "common.h"
 #include "bb2.h"
 
-/* The unread 48 bytes after g_fight_start_position_pairs's 38 stage rows: six
- * s16, then three (x, y, z) triples; typed from their values. */
+/* The unread 48 bytes after g_fight_start_position_pairs's 38 rows: six s16,
+ * then three (x, y, z) triples; typed from their values. */
 typedef struct {
     s16 unk_00[6];
     s32 pos[3][3];
 } Unk80099B9CRec;
 
-/* func_800460E4's current stage id (-1: none) and its variant flag. */
+/* func_800460E4's cached selector of the loaded block (-1: none) and its
+ * variant flag. */
 s16 g_loaded_resource_selector = -1;
 s16 D_8009947A = 0;
 
-/* fight_GetStartPositionPairTable's block: per stage (D_800A36A4, 38 rows like
- * D_8009A658's navigation sets), four start records of two (x, y, z) points. */
+/* fight_GetStartPositionPairTable's block: 38 rows of four start records of
+ * two (x, y, z) points; 9F9C.c indexes the row by D_800A36A4, 43500.c:595 by
+ * resource_GetLoadedSelector(), 17AFC.c:222 steps D_800A36A4 * 12. */
 s16 g_fight_start_position_pairs[38][4][2][3] = {
     {{{-2000, 0, 0}, {2000, 0, 0}},
      {{2000, 0, 2000}, {2000, 0, -2000}},
