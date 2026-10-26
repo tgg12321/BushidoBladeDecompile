@@ -26,6 +26,21 @@ class TestBodySpan(unittest.TestCase):
                                  ["f"])
                 self.assertEqual(inlineasm.func_definition_candidates(new, "f"), [])
 
+    def test_splice_split_head_replaces_entire_type_line(self):
+        for indent in ("", " \t"):
+            with self.subTest(indent=indent):
+                prefix = "s32 previous(void) {}\n"
+                body = indent + "static s32\nf(void) { return 1; }"
+                tail = "\ns32 next(void) {}\n"
+                text = prefix + body + tail
+                lo, hi = find_body_span(text, "f")
+                self.assertEqual(text[lo:hi], body)
+                new = splice_text(text, lo, hi, 'INCLUDE_ASM("asm/funcs", f);')
+                self.assertEqual(new, prefix + 'INCLUDE_ASM("asm/funcs", f);' + tail)
+                self.assertEqual([s[0] for s in inlineasm.include_asm_spans(new)],
+                                 ["f"])
+                self.assertEqual(inlineasm.func_definition_candidates(new, "f"), [])
+
     def test_splice_rodata_lines_and_tail_newline(self):
         line = ('INCLUDE_RODATA("asm/rodata", jtbl_80010000);\n'
                 'INCLUDE_ASM("asm/funcs", f);')

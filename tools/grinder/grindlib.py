@@ -2226,8 +2226,10 @@ def _module_mates(root, func, proven):
         return []
     src_dir = os.path.join(root, "src")
     try:
-        srcs = {tid + ".c": open(os.path.join(src_dir, tid + ".c"), encoding="utf-8", errors="replace").read()
-                for tid in _src_ids(src_dir)}
+        srcs = {}
+        for tid in _src_ids(src_dir):
+            with open(os.path.join(src_dir, tid + ".c"), encoding="utf-8", errors="replace") as fh:
+                srcs[tid + ".c"] = fh.read()
     except Exception:
         srcs = {}
     definition_candidates = None
@@ -2238,7 +2240,7 @@ def _module_mates(root, func, proven):
         try:
             qs = _queue_status(root, name)
             if qs == "not in queue":
-                # defined as C (not INCLUDE_ASM) somewhere in src/ => matched
+                # Detect definition-shaped C spans in src/, not byte matches.
                 if definition_candidates is None and import_error is None:
                     try:
                         repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -2395,7 +2397,7 @@ def psyq_identity(root, func):
                 "source file, same build, same compiler):"]
         for name, status, where in mates:
             location = (f" — several definition-shaped copies in {where}"
-                        if status == "ambiguous C definition" else f" — matched C in {where}")
+                        if status == "ambiguous C definition" else f" — C definition in {where}")
             out.append(f"  - {name}: {status}" + (location if where else ""))
     if refs:
         out += ["", "Banked reference material from the retired closer campaign "

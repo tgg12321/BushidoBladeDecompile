@@ -2372,7 +2372,7 @@ class TestModuleMates(unittest.TestCase):
                 self.assertEqual(G._module_mates(str(root), "other", {"lib": "LIBCD", "mod": "BIOS"}),
                                  [("joined", "COMPLETED (not in queue)", "src/z.c")])
                 self.assertIn(
-                    "  - joined: COMPLETED (not in queue) — matched C in src/z.c\n",
+                    "  - joined: COMPLETED (not in queue) — C definition in src/z.c\n",
                     G.psyq_identity(str(root), "other"))
                 (root / "src/a.c").write_text(
                     "/*\nint joined(void) { return 0; }\n*/\n" + unique, encoding="utf-8")
@@ -2382,7 +2382,7 @@ class TestModuleMates(unittest.TestCase):
                 self.assertIn(
                     "  - joined: ambiguous C definition — several definition-shaped copies in src/a.c\n",
                     out)
-                self.assertNotIn("matched C in", out)
+                self.assertNotIn("C definition in", out)
 
     def test_row_failures_preserve_other_mates(self):
         from pathlib import Path
@@ -2423,7 +2423,7 @@ class TestModuleMates(unittest.TestCase):
                         out = G.psyq_identity(str(root), "other")
                     self.assertIn("  - broken: status unknown (ValueError)\n", out)
                     self.assertIn(
-                        "  - good: COMPLETED (not in queue) — matched C in src/a.c\n",
+                        "  - good: COMPLETED (not in queue) — C definition in src/a.c\n",
                         out)
 
     def test_helper_import_failure_is_reported_once_for_affected_rows(self):
@@ -2477,7 +2477,7 @@ class TestModuleMates(unittest.TestCase):
         self.assertEqual(dict((n, w) for n, _, w in mates),
                          {"CD_sync": "src/system.c", "CD_other": ""})
         out = G.psyq_identity(root, "CD_cw")
-        self.assertIn("CD_sync: COMPLETED (not in queue) — matched C in src/system.c", out)
+        self.assertIn("CD_sync: COMPLETED (not in queue) — C definition in src/system.c", out)
 
 
 class TestLedgerClose(unittest.TestCase):

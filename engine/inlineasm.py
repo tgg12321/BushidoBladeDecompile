@@ -604,6 +604,8 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
     Callers must refuse ambiguity rather than use an assembly-only fallback.
     Offsets index the original text, starting at the return type (excluding
     any previous function's `}` and following spaces/tabs), with an exclusive end.
+    For a split head, the span starts at the type line's start, including any
+    leading whitespace.
 
     Earlier versions used `text.find('{', m.end())` which silently picked up
     the NEXT function's opening brace when `func` had an extern declaration

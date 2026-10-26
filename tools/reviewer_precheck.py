@@ -116,50 +116,39 @@ def function_body(func: str, file_stem: str | None,
         from sweep_variants import AmbiguousDefinition, find_function_span
     except ImportError:
         return None
-    if commit:
-        if file_stem:
-            paths = [f"src/{file_stem}.c"]
-        else:
-            paths = list_src_files_at_commit(commit)
+
+    def body_from_sources(sources):
         body = None
         errors = []
-        for rel in paths:
-            text = read_text_at_commit(rel, commit)
+        for path, text in sources:
             if text is None:
                 continue
             if re.search(rf"\b{re.escape(func)}\s*\(", text):
                 try:
                     s, e = find_function_span(text, func)
                     if body is None:
-                        body = rel, text[s:e]
+                        body = path, text[s:e]
                 except AmbiguousDefinition as exc:
-                    errors.append(f"{rel}: {exc}")
+                    errors.append(f"{path}: {exc}")
                 except ValueError:
                     continue
         if errors:
             raise AmbiguousBody(*errors)
         return body
+
+    if commit:
+        if file_stem:
+            paths = [f"src/{file_stem}.c"]
+        else:
+            paths = list_src_files_at_commit(commit)
+        return body_from_sources((rel, read_text_at_commit(rel, commit))
+                                 for rel in paths)
     # working-tree path (CLI default; no --commit)
     candidates = ([ROOT / "src" / f"{file_stem}.c"] if file_stem
                   else sorted((ROOT / "src").rglob("*.c")))
-    body = None
-    errors = []
-    for src in candidates:
-        if not src.exists():
-            continue
-        text = src.read_text(encoding="utf-8", errors="replace")
-        if re.search(rf"\b{re.escape(func)}\s*\(", text):
-            try:
-                s, e = find_function_span(text, func)
-                if body is None:
-                    body = str(src.relative_to(ROOT)), text[s:e]
-            except AmbiguousDefinition as exc:
-                errors.append(f"{src.relative_to(ROOT)}: {exc}")
-            except ValueError:
-                continue
-    if errors:
-        raise AmbiguousBody(*errors)
-    return body
+    return body_from_sources(
+        (str(src.relative_to(ROOT)), src.read_text(encoding="utf-8", errors="replace"))
+        for src in candidates if src.exists())
 
 
 def main() -> int:
