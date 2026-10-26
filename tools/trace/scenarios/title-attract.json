@@ -1,0 +1,47 @@
+{
+  "description": "power-on with no input: the intro movie and the title (both inside the movie overlay, func_8003BFC4 -> sys_ExecMovieOverlay at 983, back at 8777), the top menu (func_80035480 8778, mode 9 at 8980) left idle until func_80035828's idle counter D_800A37B8 reaches 0xCA9 (25C38.c:243-249) and stores mode 0xF in D_800A3834 (12300): func_8003BFC4 runs the movie overlay again (12302, the same call arguments), the intro movie and the title, then the top menu again; end 21200",
+  "covers": [
+    "menu:top",
+    "menu:title",
+    "event:attract_loop"
+  ],
+  "evidence": [
+    "docs/naming/runtime/title-attract-1/spec.json"
+  ],
+  "end_frame": 21200,
+  "inputs": [],
+  "phases": [
+    "0:boot_intro",
+    "6700:title",
+    "8500:t_top",
+    "9200:top_menu",
+    "12450:movie_2",
+    "18050:title_2",
+    "19820:t_top_2",
+    "20520:top_menu_2"
+  ],
+  "shots": [
+    "6699:boot_intro.last",
+    "6950:title.first",
+    "8250:title.last",
+    "8750:t_top.black",
+    "9200:top_menu.first",
+    "12250:top_menu.last",
+    "12449:top_menu.timeout",
+    "12900:movie_2.12900",
+    "13400:movie_2.13400",
+    "13900:movie_2.13900",
+    "14400:movie_2.14400",
+    "14900:movie_2.14900",
+    "15400:movie_2.15400",
+    "15900:movie_2.15900",
+    "16400:movie_2.16400",
+    "16900:movie_2.16900",
+    "17400:movie_2.17400",
+    "17900:movie_2.17900",
+    "18250:title_2.first",
+    "19700:title_2.last",
+    "20700:top_menu_2.first",
+    "21199:top_menu_2.last"
+  ]
+}

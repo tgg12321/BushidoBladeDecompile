@@ -33,11 +33,13 @@
         "menu:school_select",
         "menu:team_roster",
         "menu:link_wait",
-        "menu:slash_records"
+        "menu:slash_records",
+        "menu:title"
       ],
       "notes": {
         "menu:link_wait": "Link Mode with no cable: CROSS on the top menu's Link Mode entry, a black load, Waiting for Challenger, then the top menu again (link-no-cable-1)",
-        "menu:slash_records": "Slash Mode's first screen: 100 Kills Time Trial Records (three times and fighters) over Start / Return to Top Menu, the confirm menu (func_80077A60 -> menu_UpdateConfirmMenu) (slash-mode-1)"
+        "menu:slash_records": "Slash Mode's first screen: 100 Kills Time Trial Records (three times and fighters) over Start / Return to Top Menu, the confirm menu (func_80077A60 -> menu_UpdateConfirmMenu) (slash-mode-1)",
+        "menu:title": "the Bushido Blade 2 title after the intro movie, both run inside the movie overlay (func_8003BFC4 -> sys_ExecMovieOverlay; no hit-map function is reached while the movie and the title play); with no input it gives way to the top menu by itself (title-attract-1)"
       }
     },
     "stages": {
@@ -124,7 +126,8 @@
         "event:best_time",
         "event:format",
         "event:options_change",
-        "event:key_config_change"
+        "event:key_config_change",
+        "event:attract_loop"
       ],
       "notes": {
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
@@ -137,7 +140,8 @@
         "event:best_time": "a Slash Mode 100 Kills Time Trial finished and its time entered in the Records (fight_InsertBestTime), shown on the Records screen (slash-mode-clear-1: the opponent number poked to 100, so one kill finishes the trial)",
         "event:format": "an unformatted memory card formatted from the game, after the Memory Card is unformatted / Format? prompt (memory-card-format-1)",
         "event:overwrite": "a save written over earlier save data on the card, after the Overwrite data? / Previous data will be erased prompt (memory-card-overwrite-1)",
-        "event:out_of_bounds": "OUT OF BOUNDS (場外) call"
+        "event:out_of_bounds": "OUT OF BOUNDS (場外) call",
+        "event:attract_loop": "the top menu left with no input: func_80035828 counts its calls (one per main-loop pass) in D_800A37B8 (any held button resets it to 1) and at 0xCA9 stores mode 0xF (25C38.c:243-249), whose handler func_8003BFC4 calls sys_ExecMovieOverlay again with the boot's arguments (the movie and the title), then the top menu (title-attract-1)"
       }
     }
   }

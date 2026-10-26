@@ -1,0 +1,164 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "watch": [
+    {
+      "at": "D_800A3834",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 60
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A37B8",
+      "len": 4
+    },
+    {
+      "at": "D_800A3834",
+      "len": 2
+    },
+    {
+      "at": "D_800A3740",
+      "len": 1
+    }
+  ],
+  "script": {
+    "end_frame": 21200,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 6700,
+        "name": "title"
+      },
+      {
+        "frame": 8500,
+        "name": "t_top"
+      },
+      {
+        "frame": 9200,
+        "name": "top_menu"
+      },
+      {
+        "frame": 12450,
+        "name": "movie_2"
+      },
+      {
+        "frame": 18050,
+        "name": "title_2"
+      },
+      {
+        "frame": 19820,
+        "name": "t_top_2"
+      },
+      {
+        "frame": 20520,
+        "name": "top_menu_2"
+      }
+    ],
+    "inputs": [],
+    "screenshots": [
+      {
+        "frame": 6699,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6950,
+        "name": "title.first"
+      },
+      {
+        "frame": 8250,
+        "name": "title.last"
+      },
+      {
+        "frame": 8750,
+        "name": "t_top.black"
+      },
+      {
+        "frame": 9200,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 12250,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 12449,
+        "name": "top_menu.timeout"
+      },
+      {
+        "frame": 12900,
+        "name": "movie_2.12900"
+      },
+      {
+        "frame": 13400,
+        "name": "movie_2.13400"
+      },
+      {
+        "frame": 13900,
+        "name": "movie_2.13900"
+      },
+      {
+        "frame": 14400,
+        "name": "movie_2.14400"
+      },
+      {
+        "frame": 14900,
+        "name": "movie_2.14900"
+      },
+      {
+        "frame": 15400,
+        "name": "movie_2.15400"
+      },
+      {
+        "frame": 15900,
+        "name": "movie_2.15900"
+      },
+      {
+        "frame": 16400,
+        "name": "movie_2.16400"
+      },
+      {
+        "frame": 16900,
+        "name": "movie_2.16900"
+      },
+      {
+        "frame": 17400,
+        "name": "movie_2.17400"
+      },
+      {
+        "frame": 17900,
+        "name": "movie_2.17900"
+      },
+      {
+        "frame": 18250,
+        "name": "title_2.first"
+      },
+      {
+        "frame": 19700,
+        "name": "title_2.last"
+      },
+      {
+        "frame": 20700,
+        "name": "top_menu_2.first"
+      },
+      {
+        "frame": 21199,
+        "name": "top_menu_2.last"
+      }
+    ]
+  }
+}
