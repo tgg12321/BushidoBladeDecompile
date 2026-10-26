@@ -132,7 +132,8 @@
         "event:movie_skip",
         "event:rematch",
         "event:rematch_sub_menu",
-        "event:rematch_top_menu"
+        "event:rematch_top_menu",
+        "event:pov_view"
       ],
       "notes": {
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
@@ -151,7 +152,8 @@
         "event:movie_skip": "inside the movie overlay, CROSS during the movie or on the title ends the overlay call within 2 frames (sys_Init from sys_Exec+0x9C after it returns; the title not shown when skipped from the movie) and the top menu is rebuilt; START during the movie changes nothing (top-menu-back-1)",
         "event:rematch": "Rematch on the post-KO menu (func_8001EA84, 9F9C.c:2101; row 0): the fight restarts on the same stage with no load (mode 0 at pc 0x8001EE44 and 1 the next frame; a stage load stores mode 0 at pc 0x80035D68 / 0x800346D4 and 1 ~775 frames later), P1's side reading WINS 01; fight_FindNearestStartPair (start pair nearest record D_800A3748's position, into D_800A38DF) and, only when record 1 is CPU, fighter_HalveCpuTally (9F9C.c:2164-2172; versus-2p-rematch-1 is 2P: no HalveCpuTally)",
         "event:rematch_sub_menu": "Return to Sub Menu on the post-KO menu (row 1): cdrom_PauseAndWait, func_8001DA2C (snd_ResetVoicesAndQueue, snd_StopVoicesAndReverb, 9F9C.c:1687-1696), mode 8, then Select Character; on the next Select Battle Stage DOWN, DOWN, RIGHT reaches Bamboo Thicket as from Building Rooftop on the first visit, and the next fight reads WINS 00 / 00 WINS (9F9C.c:2175-2179; versus-2p-rematch-1)",
-        "event:rematch_top_menu": "Return to Top Menu on the post-KO menu (row 2): the same func_8001DA2C and mode 8 store as row 1 without D_800A31DA, then the top menu (9F9C.c:2182-2185; versus-2p-rematch-1)"
+        "event:rematch_top_menu": "Return to Top Menu on the post-KO menu (row 2): the same func_8001DA2C and mode 8 store as row 1 without D_800A31DA, then the top menu (9F9C.c:2182-2185; versus-2p-rematch-1)",
+        "event:pov_view": "a fight seen first-person: RIGHT on the top menu lights POV in its Side View / POV box; at the mode start 0x80102786 (D_80102778.unk_E) and D_800A38BA (func_800343F0, 24BF0.c:12-21) are set to 1, so fight setup calls camera_InitTrackedFighterFocus and each fight update camera_UpdateTrackedFighterView (9F9C.c:1920-1922, 2060-2062); the screen shows a green line figure over the scene (story-pov-rematch-1)"
       }
     }
   }

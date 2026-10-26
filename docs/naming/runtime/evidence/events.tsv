@@ -521,6 +521,35 @@ func_80032854	call	replay_PlayFrame	fight	0x80039E1C	report			6	[[0,4,2149580056
 func_80032854	call	replay_PlayFrame	later	0x80039E1C	report			5	[[0,4,2149580056,2149580072],[0,46,2149580056,2149580072],[1,34,2149580056,2149580072],[1,36,2149580056,2149580072]]	0	story-ninja-cross-1@592828dcce41	0	
 object_SpawnFromFighter	call	object_SpawnScatteredAt	fight	0x80030A44	report			1	[[2148540104,18,2148181280,0]]	0	story-ninja-cross-1@592828dcce41	0	
 object_SpawnFromFighter	call	object_SpawnScatteredAt	later	0x80030A44	report			4	[[2148540104,18,2148181280,0],[2148541204,19,2148283340,0]]	0	story-ninja-cross-1@592828dcce41	0	
+0x80102786	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+0x80102786	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
+0x80102786	write	fight_InitSettings	boot_intro	0x8001C4AC	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	coverage_next_start_bound;group_has_unresolved_site
+0x80102786	write	func_8003504C	t_stage	0x80035148	coverage	0	1	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
+D_800A3817	write	func_8001EA04	t_ko	0x8001EA70	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
+D_800A3834	write	fight_Init	fight	0x8001E398	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	fight_RunCommandStream	stage_card	0x8003B804	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	fight_RunCommandStream	t_stage	0x8003B718	coverage	0	2	1	[22]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko	0x8001CD0C	coverage	0	2	1	[4]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA04	t_ko	0x8001EA5C	coverage	0	2	1	[13]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA84	t_rematch	0x8001EE44	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_stage	0x80035D68	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	func_8003B870	t_stage	0x8003B8C8	coverage	0	2	1	[23]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	story-pov-rematch-1@766b7b5b6104	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	replay_PlayFrame	t_ko	0x8003A13C	coverage	0	2	1	[12]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	replay_Start	t_ko	0x80039838	coverage	0	2	1	[5]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A38BA	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+D_800A38BA	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
+D_800A38BA	write	func_800343F0	t_stage	0x80034448	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A38DF	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+D_800A38DF	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
+D_800A38DF	write	func_8001EA84	t_rematch	0x8001EE2C	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A34F0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
 D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
 D_800A38DC	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
@@ -1468,6 +1497,51 @@ func_80032854	call	func_800204C0	fight	0x80020674	report			1	[[0,4,528482496,214
 func_80032854	call	func_800278C0	fight	0x80027974	report			2	[[0,35,528482760,0],[1,34,528482472,0]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
 func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[0,41,2148559524,0]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
 func_80032854	call	replay_PlayFrame	fight	0x80039E1C	report			6	[[0,4,2149580056,2149580072],[0,41,2149580056,2149580072],[0,46,2149580056,2149580072],[1,34,2149580056,2149580072]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
+D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site;unresolved_function
+D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site
+D_800A3817	write	func_8001EA04	t_ko	0x8001EA70	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3817	write	func_8001EA04	t_ko_2	0x8001EA70	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3817	write	func_8001EA04	t_ko_3	0x8001EA70	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3817	write	func_8001EA84	rematch_menu_2	0x8001EC84	coverage	0	1	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3817	write	func_8001EA84	rematch_menu_3	0x8001EC84	coverage	0	1	2	[1,2]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site
+D_800A3834	write	fight_Init	t_load	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	t_load_2	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko_2	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko_3	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA04	t_ko	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA04	t_ko_2	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA04	t_ko_3	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA84	t_rematch	0x8001EE44	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA84	t_sub_menu	0x8001EE9C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EA84	t_top_menu	0x8001EE9C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EEB4	t_ko	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EEB4	t_ko_2	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EEB4	t_ko_3	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EFA0	t_ko	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EFA0	t_ko_2	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8001EFA0	t_ko_3	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_800344B4	t_load	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_800344B4	t_load_2	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	t_sub_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_80035480	top_menu_2	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_80035828	t_load_2	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-2p-rematch-1@e593ee02ab83	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	replay_PlayFrame	t_ko	0x8003A13C	coverage	0	2	1	[16]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	replay_PlayFrame	t_ko_2	0x8003A13C	coverage	0	2	1	[16]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	replay_PlayFrame	t_ko_3	0x8003A13C	coverage	0	2	1	[16]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	replay_Start	t_ko	0x80039838	coverage	0	2	1	[5]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	replay_Start	t_ko_2	0x80039838	coverage	0	2	1	[5]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	replay_Start	t_ko_3	0x80039838	coverage	0	2	1	[5]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A38DF	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site;unresolved_function
+D_800A38DF	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site
+D_800A38DF	write	func_8001EA84	t_rematch	0x8001EE2C	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	85	[2,21,25,37]	0	versus-2p-wound-moves-1@6528da690f5e	0	

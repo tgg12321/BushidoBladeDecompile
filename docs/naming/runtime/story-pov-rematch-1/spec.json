@@ -1,0 +1,542 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "watch": [
+    {
+      "at": "D_800A3834",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 80
+    },
+    {
+      "at": "D_800A3817",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 80
+    },
+    {
+      "at": "D_800A38DF",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 40
+    },
+    {
+      "at": "D_800A38BA",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 40
+    },
+    {
+      "at": "0x80102786",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 40
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A3834",
+      "len": 2
+    },
+    {
+      "at": "D_800A3817",
+      "len": 1
+    },
+    {
+      "at": "D_800A38BA",
+      "len": 2
+    },
+    {
+      "at": "0x80102786",
+      "len": 1
+    },
+    {
+      "at": "D_800A36F6",
+      "len": 2
+    },
+    {
+      "at": "D_800A38DF",
+      "len": 1
+    },
+    {
+      "at": "D_800A380C",
+      "len": 4
+    },
+    {
+      "at": "D_800A38D4",
+      "len": 1
+    }
+  ],
+  "script": {
+    "end_frame": 14200,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6100,
+        "name": "t_story"
+      },
+      {
+        "frame": 6810,
+        "name": "story_text"
+      },
+      {
+        "frame": 6910,
+        "name": "t_char"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select"
+      },
+      {
+        "frame": 7300,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7900,
+        "name": "t_stage"
+      },
+      {
+        "frame": 8360,
+        "name": "stage_card"
+      },
+      {
+        "frame": 8800,
+        "name": "t_fight"
+      },
+      {
+        "frame": 8900,
+        "name": "fight"
+      },
+      {
+        "frame": 12400,
+        "name": "t_ko"
+      },
+      {
+        "frame": 12850,
+        "name": "rematch_menu"
+      },
+      {
+        "frame": 13000,
+        "name": "t_rematch"
+      },
+      {
+        "frame": 13200,
+        "name": "fight_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6070,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7000,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7600,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9060,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9120,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9180,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9240,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9300,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9360,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9420,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 13000,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6069,
+        "name": "top_menu.side_view"
+      },
+      {
+        "frame": 6095,
+        "name": "top_menu.pov"
+      },
+      {
+        "frame": 6099,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6100,
+        "name": "t_story.first"
+      },
+      {
+        "frame": 6455,
+        "name": "t_story.mid"
+      },
+      {
+        "frame": 6809,
+        "name": "t_story.last"
+      },
+      {
+        "frame": 6810,
+        "name": "story_text.first"
+      },
+      {
+        "frame": 6909,
+        "name": "story_text.last"
+      },
+      {
+        "frame": 6910,
+        "name": "t_char.first"
+      },
+      {
+        "frame": 6949,
+        "name": "t_char.last"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 7125,
+        "name": "char_select.mid"
+      },
+      {
+        "frame": 7299,
+        "name": "char_select.last"
+      },
+      {
+        "frame": 7300,
+        "name": "t_weapon.first"
+      },
+      {
+        "frame": 7359,
+        "name": "t_weapon.last"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 7630,
+        "name": "weapon_select.mid"
+      },
+      {
+        "frame": 7899,
+        "name": "weapon_select.last"
+      },
+      {
+        "frame": 7900,
+        "name": "t_stage.first"
+      },
+      {
+        "frame": 8130,
+        "name": "t_stage.mid"
+      },
+      {
+        "frame": 8359,
+        "name": "t_stage.last"
+      },
+      {
+        "frame": 8360,
+        "name": "stage_card.first"
+      },
+      {
+        "frame": 8580,
+        "name": "stage_card.mid"
+      },
+      {
+        "frame": 8799,
+        "name": "stage_card.last"
+      },
+      {
+        "frame": 8800,
+        "name": "t_fight.first"
+      },
+      {
+        "frame": 8899,
+        "name": "t_fight.last"
+      },
+      {
+        "frame": 8900,
+        "name": "fight.first"
+      },
+      {
+        "frame": 9200,
+        "name": "fight.9200"
+      },
+      {
+        "frame": 9500,
+        "name": "fight.9500"
+      },
+      {
+        "frame": 9800,
+        "name": "fight.9800"
+      },
+      {
+        "frame": 10100,
+        "name": "fight.10100"
+      },
+      {
+        "frame": 10400,
+        "name": "fight.10400"
+      },
+      {
+        "frame": 10700,
+        "name": "fight.10700"
+      },
+      {
+        "frame": 11000,
+        "name": "fight.11000"
+      },
+      {
+        "frame": 11300,
+        "name": "fight.11300"
+      },
+      {
+        "frame": 11600,
+        "name": "fight.11600"
+      },
+      {
+        "frame": 11900,
+        "name": "fight.11900"
+      },
+      {
+        "frame": 12200,
+        "name": "fight.12200"
+      },
+      {
+        "frame": 12399,
+        "name": "fight.last"
+      },
+      {
+        "frame": 12400,
+        "name": "t_ko.first"
+      },
+      {
+        "frame": 12500,
+        "name": "t_ko.12500"
+      },
+      {
+        "frame": 12600,
+        "name": "t_ko.12600"
+      },
+      {
+        "frame": 12625,
+        "name": "t_ko.mid"
+      },
+      {
+        "frame": 12700,
+        "name": "t_ko.12700"
+      },
+      {
+        "frame": 12849,
+        "name": "t_ko.last"
+      },
+      {
+        "frame": 12850,
+        "name": "rematch_menu.first"
+      },
+      {
+        "frame": 12999,
+        "name": "rematch_menu.last"
+      },
+      {
+        "frame": 13000,
+        "name": "t_rematch.first"
+      },
+      {
+        "frame": 13199,
+        "name": "t_rematch.last"
+      },
+      {
+        "frame": 13200,
+        "name": "fight_2.first"
+      },
+      {
+        "frame": 13500,
+        "name": "fight_2.13500"
+      },
+      {
+        "frame": 13800,
+        "name": "fight_2.13800"
+      },
+      {
+        "frame": 14100,
+        "name": "fight_2.14100"
+      },
+      {
+        "frame": 14199,
+        "name": "fight_2.last"
+      }
+    ]
+  }
+}
