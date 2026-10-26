@@ -25,8 +25,9 @@ typedef struct {
     s32 pos[3][3];
 } Unk80099B9CRec;
 
-/* resource_LoadOrReuseSelectedBlock's cached selector of the loaded block (-1:
- * none) and its variant flag. */
+/* The selector resource_LoadOrReuseSelectedBlock last loaded (-1: none;
+ * resource_GetLoadedSelector returns it) and the 0/1 flag it sets for
+ * selectors 3, 13 and 34 (resource_HasRetainedSubblocks returns it). */
 s16 g_loaded_resource_selector = -1;
 s16 D_8009947A = 0;
 

@@ -643,7 +643,7 @@ typedef struct {
     s16 h;
 } Unk8009B2BCRecord;
 
-/* The stage data a stage loads (motion_LoadPlaybackBlock, or the buffer
+/* The playback block (motion_LoadPlaybackBlock loads it, or the buffer
    motion_StartPlayback is handed; Unk800EFAE8Rec .unk2C): its header holds
    file-relative offsets of the parts motion_StartPlayback /
    motion_UpdatePlayback use. */

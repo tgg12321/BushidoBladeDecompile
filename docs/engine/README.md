@@ -117,7 +117,7 @@ address is the stable key.
 | `text1a_post.c` | 0x8004153C-0x80042504 | Slot management (`func_800415C4`, `func_80041604`), effect dispatch |
 | `text1a_c.c` | 0x80042504-0x80044800 | Matrix/colour math (`math_RotMatrix*`, `math_RgbToHsv`), primitive texture-offset helpers (`gpu_OffsetTexPoly*`), prim-buffer slots |
 | `text1a_c_tu2.c` | 0x80044800-0x800460E4 | NDATA pack cache (`ndata_LoadPack` / `ndata_ReadFromPack`) and channel helpers |
-| `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`func_800460E4`, `game_*Init`, `resource_HasRetainedSubblocks`), SE allocation/stop, camera bone setup |
+| `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`resource_LoadOrReuseSelectedBlock`, `game_*Init`, `resource_HasRetainedSubblocks`), SE allocation/stop, camera bone setup |
 | `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `motion_StartPlayback` / `motion_UpdatePlayback` (fill and play back the `D_800EFAE8` camera / motion block) |
 | `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: the 16 `eff_SpawnParticles` particle-bank wrappers (`func_80066EC0`..`func_800671CC`), `motion_ex_*`, animated sprite/object drawing |
 | `text1b_tu1d.c` | 0x8006E534-0x8007352C | HUD/overlay rendering, replay display setup |
@@ -192,7 +192,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Loaded resource / model state
 - `g_fight_position_records` (0x800A33B4) — pointer into the loaded block's position-record list
-- `g_loaded_resource_selector` (selector cached by `func_800460E4`), `D_8009947A` (0/1 flag),
+- `g_loaded_resource_selector` (selector cached by `resource_LoadOrReuseSelectedBlock`), `D_8009947A` (0/1 flag),
   `g_gpu_cell_draw_attributes` — 32x32 cell grid read by the draw walks (no collision use)
 - `D_800A9A10` — three slots for the model objects `func_80045878` builds
   (`func_80041584` scans i < 3)
