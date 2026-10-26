@@ -60,7 +60,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from lanes import HEARTBEAT_STALE_SECS
+from lanes import HEARTBEAT_STALE_SECS, gate_pid_alive, pid_namespace
 
 # A gate ticket hides a session's stall only this long after it was enqueued: a hung land keeps
 # its heartbeat fresh forever, and the lanes queued behind it would never be reported.
@@ -452,28 +452,43 @@ def is_codex(slot: dict) -> bool:
     return slot.get("kind") == "codex"
 
 
-def gate_queue_position(reg: dict, lane: str, now: float) -> int | None:
-    """Registry position of a fresh, valid, under-cap ticket for this lane, or None."""
+def gate_queue_position(reg: dict, lane: str, now: float, session: str | None = None) -> int | None:
+    """Pruned position of a fresh, valid, under-cap ticket for this session, or None."""
     queue = reg.get("gate_queue")
     if not isinstance(queue, list):
         return None
-    # Count every registry entry ahead, as lanes.py status does: only lanes.py prunes
-    # tickets, and the orchestrator's 4 h stall cap never removes a ticket from its queue.
-    for position, ticket in enumerate(queue, 1):
+    # Count only tickets lanes.py would keep after pruning; the orchestrator's 4 h
+    # stall cap applies to the matching ticket, never to tickets ahead of it.
+    position = 0
+    for ticket in queue:
         if not isinstance(ticket, dict):
             continue
-        beat = ticket.get("beat")
+        beat = ticket.get("beat", ticket.get("enqueued"))
+        if (isinstance(beat, bool) or not isinstance(beat, (int, float))
+                or not math.isfinite(beat) or now - beat > HEARTBEAT_STALE_SECS):
+            continue
+        if ticket.get("namespace") == pid_namespace():
+            pid = ticket.get("pid")
+            if isinstance(pid, bool) or not isinstance(pid, int):
+                continue
+            try:
+                alive = gate_pid_alive(pid)
+            except Exception:
+                alive = False
+            if not alive:
+                continue
+        position += 1
         if (not isinstance(ticket.get("lane"), str) or not ticket["lane"]
-                or isinstance(beat, bool) or not isinstance(beat, (int, float))
-                or not math.isfinite(beat) or now - beat >= HEARTBEAT_STALE_SECS):
+                or ticket["lane"] != lane
+                or (isinstance(session, str) and session
+                    and ticket.get("session") != session)):
             continue
         enqueued = ticket.get("enqueued")
         if (isinstance(enqueued, bool) or not isinstance(enqueued, (int, float))
                 or not math.isfinite(enqueued)
                 or now - enqueued >= QUEUED_LAND_MAX_SECS):
             continue
-        if ticket["lane"] == lane:
-            return position
+        return position
     return None
 
 
@@ -498,7 +513,8 @@ def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
         if (slot.get("session") and not owns and not slot.get("seen_open")
                 and idle_for >= NO_OPEN_GRACE_SECS):
             return "finished"  # decided there was no work and never opened its lane
-        if idle_for >= STALL_SECS and gate_queue_position(reg, slot["lane"], now) is None:
+        if (idle_for >= STALL_SECS
+                and gate_queue_position(reg, slot["lane"], now, slot.get("session")) is None):
             return "stalled"
     return "running"
 
@@ -1158,7 +1174,7 @@ def cmd_status(_args):
     for sid, slot in sorted(st["sessions"].items(), key=lambda kv: kv[1]["lane"]):
         mins = int((now - slot["started"]) / 60)
         phase = session_phase(slot, ag.get(sid), reg, now)
-        position = gate_queue_position(reg, slot["lane"], now)
+        position = gate_queue_position(reg, slot["lane"], now, slot.get("session"))
         if phase == "running" and position is not None:
             phase = f"queued to land (position {position})"
         print(f"  {slot['lane']:<14} {sid}  {phase:<8} "

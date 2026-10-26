@@ -140,32 +140,113 @@ class Phase(unittest.TestCase):
 
 class GateQueue(unittest.TestCase):
     def setUp(self):
+        namespace = patch.object(o, "pid_namespace", return_value="local")
+        namespace.start()
+        self.addCleanup(namespace.stop)
+        alive = patch.object(o, "gate_pid_alive", return_value=True)
+        self.pid_alive = alive.start()
+        self.addCleanup(alive.stop)
         self.slot = slot("pins", idle_since=NOW - o.STALL_SECS - 60)
         self.agent = {"state": "done", "pid": 1}
         self.reg = reg(pins={"owner": "S1"})
 
+    def test_other_session_or_manual_ticket_does_not_hide_stall(self):
+        for session in ("S0", "", None):
+            with self.subTest(session=session):
+                self.reg["gate_queue"] = [
+                    {"lane": "pins", "session": session, "beat": NOW, "enqueued": NOW}]
+                if session is None:
+                    del self.reg["gate_queue"][0]["session"]
+                self.assertIsNone(o.gate_queue_position(self.reg, "pins", NOW, "S1"))
+                self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
+                self.assertNotIn("queued to land", self.status_output())
+
+    def test_no_session_keeps_lane_only_match(self):
+        self.reg["gate_queue"] = [
+            {"lane": "pins", "session": "S0", "beat": NOW, "enqueued": NOW}]
+        for session in (None, ""):
+            with self.subTest(session=session):
+                self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW, session), 1)
+
+    def test_dead_or_malformed_local_pid_does_not_hide_stall(self):
+        self.pid_alive.return_value = False
+        for pid in (123, None, True, False, "123", 1.5):
+            with self.subTest(pid=pid):
+                ticket = {"lane": "pins", "session": "S1", "beat": NOW,
+                          "enqueued": NOW, "namespace": "local"}
+                if pid is not None:
+                    ticket["pid"] = pid
+                self.reg["gate_queue"] = [ticket]
+                self.assertIsNone(o.gate_queue_position(self.reg, "pins", NOW, "S1"))
+                self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
+
+    def test_pid_probe_exception_counts_as_dead(self):
+        self.pid_alive.side_effect = OSError("probe failed")
+        self.reg["gate_queue"] = [
+            {"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW,
+             "namespace": "local", "pid": 123}]
+        self.assertIsNone(o.gate_queue_position(self.reg, "pins", NOW, "S1"))
+
+    def test_live_local_pid_keeps_ticket(self):
+        self.reg["gate_queue"] = [
+            {"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW,
+             "namespace": "local", "pid": 123}]
+        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW, "S1"), 1)
+        self.pid_alive.assert_called_once_with(123)
+
+    def test_other_namespace_pid_is_not_probed(self):
+        self.pid_alive.return_value = False
+        self.reg["gate_queue"] = [
+            {"lane": "data", "beat": NOW, "enqueued": NOW, "namespace": "remote", "pid": 123},
+            {"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW,
+             "namespace": "remote", "pid": 456}]
+        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW, "S1"), 2)
+        self.pid_alive.assert_not_called()
+
+    def test_heartbeat_boundary_and_enqueued_fallback_are_fresh(self):
+        for beat in (False, True):
+            with self.subTest(has_beat=beat):
+                ticket = {"lane": "pins", "session": "S1",
+                          "enqueued": NOW - o.HEARTBEAT_STALE_SECS}
+                if beat:
+                    ticket["beat"] = NOW - o.HEARTBEAT_STALE_SECS
+                self.reg["gate_queue"] = [ticket]
+                self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW, "S1"), 1)
+                self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
+
+    def test_stale_tickets_ahead_are_pruned_but_capped_ticket_counts(self):
+        self.pid_alive.return_value = False
+        self.reg["gate_queue"] = [
+            None,
+            {"lane": "old", "beat": NOW - o.HEARTBEAT_STALE_SECS - 1},
+            {"lane": "old", "enqueued": NOW - o.HEARTBEAT_STALE_SECS - 1},
+            {"lane": "dead", "beat": NOW, "namespace": "local", "pid": 123},
+            {"lane": "data", "beat": NOW, "enqueued": NOW - o.QUEUED_LAND_MAX_SECS},
+            {"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW}]
+        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW, "S1"), 2)
+
     def test_fresh_ticket_keeps_idle_session_running(self):
-        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW - 599, "enqueued": NOW - 700}]
+        self.reg["gate_queue"] = [{"lane": "pins", "session": "S1", "beat": NOW - 599, "enqueued": NOW - 700}]
         self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
         state = st({"a1": self.slot})
         self.assertEqual(o.update_slots(state, {"a1": self.agent}, self.reg, bl(), NOW), [])
         self.assertNotIn("warned", self.slot)
         # Once the heartbeat expires, the ordinary stall warning applies.
-        self.assertEqual(o.update_slots(state, {"a1": self.agent}, self.reg, bl(), NOW + 1),
+        self.assertEqual(o.update_slots(state, {"a1": self.agent}, self.reg, bl(), NOW + 2),
                          [("stalled", "a1")])
 
     def test_hung_land_hides_a_stall_only_until_the_queue_cap(self):
         # a hung head land keeps its beat fresh; past the cap it is reported again
         cap = o.QUEUED_LAND_MAX_SECS
-        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW, "enqueued": NOW - cap + 60}]
+        self.reg["gate_queue"] = [{"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW - cap + 60}]
         self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
-        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW, "enqueued": NOW - cap}]
+        self.reg["gate_queue"] = [{"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW - cap}]
         self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
         self.assertIsNone(o.gate_queue_position(self.reg, "pins", NOW))
 
     def test_stale_missing_and_other_lane_tickets_do_not_prevent_stall(self):
-        for queue in ([], [{"lane": "pins", "beat": NOW - 600, "enqueued": NOW - 700}],
-                      [{"lane": "pins", "beat": NOW - 601, "enqueued": NOW - 700}],
+        for queue in ([],
+                      [{"lane": "pins", "session": "S1", "beat": NOW - 601, "enqueued": NOW - 700}],
                       [{"lane": "data", "beat": NOW, "enqueued": NOW - 60}]):
             with self.subTest(queue=queue):
                 self.reg["gate_queue"] = queue
@@ -176,7 +257,7 @@ class GateQueue(unittest.TestCase):
     def test_malformed_queue_and_entries_are_ignored(self):
         bad_entries = [None, 1, "ticket", [], {}, {"lane": "pins"},
                        {"beat": NOW}, {"lane": [], "beat": NOW}, {"lane": "", "beat": NOW}]
-        bad_entries += [{"lane": "pins", "beat": value, "enqueued": NOW - 60}
+        bad_entries += [{"lane": "pins", "session": "S1", "beat": value, "enqueued": NOW - 60}
                         for value in (None, "bad", str(NOW), [], {}, True,
                                       float("nan"), float("inf"), float("-inf"))]
         for queue in (None, {}, "bad", 1, bad_entries):
@@ -186,8 +267,9 @@ class GateQueue(unittest.TestCase):
         self.reg["gate_queue"] = bad_entries + [
             {"lane": "old", "beat": NOW - 600},
             {"lane": "data", "beat": NOW, "enqueued": NOW - 60},
-            {"lane": "pins", "beat": NOW, "enqueued": NOW - 60}]
-        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW), len(bad_entries) + 3)
+            {"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW - 60}]
+        # Three malformed-lane dicts have fresh beats; lanes.py would keep them.
+        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW), 6)
         self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
 
     def status_output(self):
@@ -209,13 +291,13 @@ class GateQueue(unittest.TestCase):
         self.reg["gate_queue"] = [
             {"lane": "data", "beat": NOW, "enqueued": NOW - o.QUEUED_LAND_MAX_SECS - 1},
             {"lane": "old", "beat": NOW - 601, "enqueued": NOW - 700},
-            {"lane": "pins", "beat": NOW - 30, "enqueued": NOW - 60}]
+            {"lane": "pins", "session": "S1", "beat": NOW - 30, "enqueued": NOW - 60}]
         out = self.status_output()
-        self.assertIn("queued to land (position 3)", out)
+        self.assertIn("queued to land (position 2)", out)
         self.assertNotIn("stalled", out)
 
     def test_status_leftover_ticket_does_not_mask_finished_or_lost(self):
-        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW, "enqueued": NOW - 60}]
+        self.reg["gate_queue"] = [{"lane": "pins", "session": "S1", "beat": NOW, "enqueued": NOW - 60}]
         for phase in ("finished", "lost"):
             with self.subTest(phase=phase):
                 self.agent = {"state": "exited"}
@@ -232,7 +314,7 @@ class GateQueue(unittest.TestCase):
         for value in (missing, True, False, float("nan"), float("inf"),
                       float("-inf"), "bad", str(now), None, [], {}):
             with self.subTest(enqueued=value):
-                ticket = {"lane": "pins", "beat": now}
+                ticket = {"lane": "pins", "session": "S1", "beat": now}
                 if value is not missing:
                     ticket["enqueued"] = value
                 self.reg["gate_queue"] = [ticket]
