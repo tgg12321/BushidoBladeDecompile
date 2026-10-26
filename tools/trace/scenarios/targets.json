@@ -134,7 +134,8 @@
         "event:rematch_sub_menu",
         "event:rematch_top_menu",
         "event:pov_view",
-        "event:draw"
+        "event:draw",
+        "event:group_p2_victory"
       ],
       "notes": {
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
@@ -155,7 +156,8 @@
         "event:rematch_sub_menu": "Return to Sub Menu on the post-KO menu (row 1): cdrom_PauseAndWait, func_8001DA2C (snd_ResetVoicesAndQueue, snd_StopVoicesAndReverb, 9F9C.c:1687-1696), mode 8, then Select Character; on the next Select Battle Stage DOWN, DOWN, RIGHT reaches Bamboo Thicket as from Building Rooftop on the first visit, and the next fight reads WINS 00 / 00 WINS (9F9C.c:2175-2179; versus-2p-rematch-1)",
         "event:rematch_top_menu": "Return to Top Menu on the post-KO menu (row 2): the same func_8001DA2C and mode 8 store as row 1 without D_800A31DA, then the top menu (9F9C.c:2182-2185; versus-2p-rematch-1)",
         "event:pov_view": "a fight seen first-person: RIGHT on the top menu lights POV in its Side View / POV box; at the mode start 0x80102786 (D_80102778.unk_E) and D_800A38BA (func_800343F0, 24BF0.c:12-21) are set to 1, so fight setup calls camera_InitTrackedFighterFocus and each fight update camera_UpdateTrackedFighterView (9F9C.c:1920-1922, 2060-2062); the screen shows a green line figure over the scene (story-pov-rematch-1)",
-        "event:draw": "a Group Battle team match tied: with Time Limit 60 sec and no fight input every bout times out with no point (fight_RecordMatchResult result 2, the roster shows a triangle - triangle per row), so func_8003C42C finds equal wins and equal point sums and stores D_800A382D 2 (2B344.c:761-774); the result screen shows no victory text, then the tie's menu (func_8003C958 / func_8003C9A4, modes 0x18 / 0x19: Rematch / Return to Sub Menu / Return to Top Menu), whose Rematch row restarts the match at bout 1 (2B344.c:929-935; group-battle-draw-1)"
+        "event:draw": "a Group Battle team match tied: with Time Limit 60 sec and no fight input every bout times out with no point (fight_RecordMatchResult result 2, the roster shows a triangle - triangle per row), so func_8003C42C finds equal wins and equal point sums and stores D_800A382D 2 (2B344.c:761-774); the result screen shows no victory text, then the tie's menu (func_8003C958 / func_8003C9A4, modes 0x18 / 0x19: Rematch / Return to Sub Menu / Return to Top Menu), whose Rematch row restarts the match at bout 1 (2B344.c:929-935; group-battle-draw-1)",
+        "event:group_p2_victory": "a Group Battle team match won by P2's school: every bout ends with P2 ahead (fight_RecordMatchResult result 1; a bout that times out goes to the side with the IPPON point, bout 1 of group-battle-shainto-wins-1), so fight_TallyMatchResultsAndInitPresentation stores D_800A382D 1 (2B344.c:765-766); after the 0 - 3 roster fight_UpdateMatchTallyPresentation stores D_800A38A4 5 (the winner's school flag: Shainto) and mode 0x12 (2B344.c:810-811), and func_8003C040 loads the winning school's fighter into record 0 (the D_800A38A4 5 / P1 Narukagami arm, 2B344.c:701-707) for Shainto Victorious! and its dance, then the post-match menu (modes 0x18 / 0x19), whose Return to Sub Menu row stores D_800A31DA 1 and mode 8: the Group Battle Mode settings again (2B344.c:949-953; group-battle-shainto-wins-1)"
       }
     }
   }
