@@ -7,10 +7,12 @@
         "mode:training",
         "mode:vs_2p",
         "mode:group_battle",
+        "mode:slash",
         "mode:link"
       ],
       "notes": {
-        "mode:link": "two consoles over a link cable: not reachable with one emulator (one emulator reaches only the no-cable attempt, menu:link_wait)"
+        "mode:link": "two consoles over a link cable: not reachable with one emulator (one emulator reaches only the no-cable attempt, menu:link_wait)",
+        "mode:slash": "Slash Mode (100 Kills Time Trial): the top-menu row after Link Mode, enabled when menu_SetEnabledRows gets 0xFF rather than 0xF7, which its callers pass when D_80106A50.unk_04 is 0x3F: func_80035438 as the top menu is built (25C38.c:24-28) and func_80035828 on leaving the Option Menu (25C38.c:288-292); slash-mode-1 pokes unk_04 before the top menu is built"
       }
     },
     "menus": {
@@ -30,10 +32,12 @@
         "menu:group_settings",
         "menu:school_select",
         "menu:team_roster",
-        "menu:link_wait"
+        "menu:link_wait",
+        "menu:slash_records"
       ],
       "notes": {
-        "menu:link_wait": "Link Mode with no cable: CROSS on the top menu's Link Mode entry, a black load, Waiting for Challenger, then the top menu again (link-no-cable-1)"
+        "menu:link_wait": "Link Mode with no cable: CROSS on the top menu's Link Mode entry, a black load, Waiting for Challenger, then the top menu again (link-no-cable-1)",
+        "menu:slash_records": "Slash Mode's first screen: 100 Kills Time Trial Records (three times and fighters) over Start / Return to Top Menu, the confirm menu (func_80077A60 -> menu_UpdateConfirmMenu) (slash-mode-1)"
       }
     },
     "stages": {

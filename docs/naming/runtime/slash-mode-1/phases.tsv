@@ -1,0 +1,11 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	5599	transition; no screen claim	5500:CROSS	-
+t_title	5600	6049	transition; no screen claim. D_80106A50.unk_04 (0x80106A54) poked 00 -> 3F at 5600; the top menu is built at 5765 (func_80035438 -> menu_SetEnabledRows 0xFF)	5800:START	-
+top_menu	6050	6459	top menu, the usual 7 rows at 6070 (cursor on the first); DOWN x6 stops on a new row after Link Mode, Slash Mode: 100 Kills Time Trial, the list scrolled to show it (6440)	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN,6320:DOWN,6380:DOWN	capture.top_menu.first.png,capture.top_menu.slash.png
+t_slash	6460	6559	transition; no screen claim	6460:CROSS	-
+slash_records	6560	6899	Slash Mode: 100 Kills Time Trial Records (1 15'00"00, 2 and 3 60'00"00, KANNUKI each) over Start / Return to Top Menu, cursor on Start; the CROSS at 6700 shows no change by 6800	6700:CROSS	capture.slash_records.first.png,capture.slash_records.last.png
+t_char	6900	6999	transition; no screen claim	6900:CROSS	-
+char_select	7000	7199	Select Character, the six default fighters, cursor on KANNUKI	7100:CROSS	capture.char_select.first.png
+t_load	7200	8199	load; the Bushido Blade 2 logo over blood spatter (7700)	7300:CROSS,7500:CROSS	capture.t_load.splash.png
+fight	8200	10499	Slash Mode fight on a wooden-floored hall: KANNUKI against a red-clad enemy, timer and kill count top right (00'01"56 0 KILLS at 8300; 1 KILL at 8700; 2 KILLS, a body down, at 9900; 3 KILLS at 10300)	P1 every 40 frames from 8200 (55 presses): CROSS, SQUARE, CROSS+RIGHT in turn	capture.fight.8300.png,capture.fight.8500.png,capture.fight.8700.png,capture.fight.8900.png,capture.fight.9100.png,capture.fight.9300.png,capture.fight.9500.png,capture.fight.9700.png,capture.fight.9900.png,capture.fight.10100.png,capture.fight.10300.png

@@ -1,0 +1,77 @@
+{
+  "description": "Slash Mode (100 Kills Time Trial) with D_80106A50.unk_04 poked to 0x3F before the top menu is built (t_title, 5600): DOWN x6 to the Slash Mode row, CROSS: the Time Trial Records screen (Start / Return to Top Menu); CROSS presses through Start and Select Character (default KANNUKI), the load, then P1 cycles CROSS / SQUARE / CROSS+RIGHT every 40 frames from 8200: kills counted against the timer; end 10500",
+  "covers": [
+    "menu:top",
+    "mode:slash",
+    "menu:slash_records",
+    "menu:char_select",
+    "char:kannuki"
+  ],
+  "evidence": [
+    "docs/naming/runtime/slash-mode-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 10500,
+  "pokes": [
+    {
+      "at": "0x80106A54",
+      "hex": "3F",
+      "phase": "t_title"
+    }
+  ],
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:DOWN",
+    "6320:DOWN",
+    "6380:DOWN",
+    "6460:CROSS",
+    "6700:CROSS",
+    "6900:CROSS",
+    "7100:CROSS",
+    "7300:CROSS",
+    "7500:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8200,
+      "every": 40,
+      "count": 55,
+      "steps": [
+        "+0:CROSS|SQUARE|CROSS+RIGHT"
+      ]
+    }
+  ],
+  "phases": [
+    "5600:t_title",
+    "6050:top_menu",
+    "6460:t_slash",
+    "6560:slash_records",
+    "6900:t_char",
+    "7000:char_select",
+    "7200:t_load",
+    "8200:fight"
+  ],
+  "shots": [
+    "6070:top_menu.first",
+    "6440:top_menu.slash",
+    "6600:slash_records.first",
+    "6800:slash_records.last",
+    "7000:char_select.first",
+    "7700:t_load.splash",
+    "8300:fight.8300",
+    "8500:fight.8500",
+    "8700:fight.8700",
+    "8900:fight.8900",
+    "9100:fight.9100",
+    "9300:fight.9300",
+    "9500:fight.9500",
+    "9700:fight.9700",
+    "9900:fight.9900",
+    "10100:fight.10100",
+    "10300:fight.10300"
+  ]
+}
