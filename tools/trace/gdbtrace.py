@@ -598,6 +598,12 @@ def parse_pokes(spec: dict, syms, phase_names: set, first: str,
     return pokes
 
 
+def poke_key(pk: dict) -> tuple:
+    """A spec poke as (at, hex, phase), hex case-folded: two specs make the
+    same poke when their keys are equal."""
+    return (pk.get("at"), str(pk.get("hex") or "").lower(), pk.get("phase"))
+
+
 def apply_pokes(gdb: Gdb, pokes: list[dict], when: str, regs: list[int],
                 frame, emit) -> None:
     """Write every poke due when phase `when` starts; read back to prove it."""
@@ -2178,16 +2184,27 @@ def compare(args) -> int:
         with open(path, encoding="utf-8") as f:
             specs.append(json.load(f))
     sa, sb = specs
+    # A baseline may carry pokes (a precondition, e.g. an unlock) when the
+    # second run makes every one of them unchanged; only the second run's
+    # other pokes and its stubs are what the comparison observes.
+    shared = [poke_key(pk) for pk in sa.get("pokes") or []]
+    other_keys = [poke_key(pk) for pk in sb.get("pokes") or []]
+    extra = [k for k in other_keys if k not in shared]
     # Names the second run in the note by what it changed.
-    has_stubs, has_pokes = bool(sb.get("stubs")), bool(sb.get("pokes"))
+    has_stubs, has_pokes = bool(sb.get("stubs")), bool(extra)
     other = ("stubbed and poked" if has_stubs and has_pokes else
              "poked" if has_pokes else "stubbed")
     if sa.get("script") != sb.get("script"):
         problems.append("different scripts (inputs, phases or screenshots)")
-    if sa.get("stubs") or sa.get("pokes"):
-        problems.append("the baseline has stubs or pokes")
-    if not sb.get("stubs") and not sb.get("pokes"):
-        problems.append("the second run has no stubs or pokes")
+    if sa.get("stubs"):
+        problems.append("the baseline has stubs")
+    for k in shared:
+        if k not in other_keys:
+            problems.append(f"baseline poke {k[0]} is not made the same way "
+                            "in the second run")
+    if not sb.get("stubs") and not extra:
+        problems.append("the second run has no stubs or pokes beyond the "
+                        "baseline's")
     calls = collections.defaultdict(list)  # stub -> phases it was called in
     try:
         with open(store.capture_path(args.other, mb), encoding="utf-8") as f:
@@ -2255,12 +2272,20 @@ def compare(args) -> int:
         + (", ".join(dict.fromkeys(str(x) for x in calls.get(s["addr"], [])))
            or "no phase") for s in stubs) or "none"))
     pokes = mb.get("result", {}).get("pokes") or []
-    if pokes:
-        w.append("- pokes: " + ", ".join(
-            f"`{p['at']}` (0x{p['addr']:08X}) = {p['hex']} (was "
-            f"{p.get('orig')}) from phase {p['when']} (frame "
-            f"{(p.get('applied') or {}).get('frame')}), {p.get('at_end')} at "
-            "the end" for p in pokes))
+
+    def poke_text(p):
+        return (f"`{p['at']}` (0x{p['addr']:08X}) = {p['hex']} (was "
+                f"{p.get('orig')}) from phase {p['when']} (frame "
+                f"{(p.get('applied') or {}).get('frame')}), {p.get('at_end')} "
+                "at the end")
+    both = [p for p in pokes
+            if (p["at"], str(p["hex"]).lower(), p["when"]) in shared]
+    own = [p for p in pokes if p not in both]
+    if both:
+        w.append("- pokes in both runs (baseline's too, not compared): "
+                 + ", ".join(poke_text(p) for p in both))
+    if own:
+        w.append("- pokes: " + ", ".join(poke_text(p) for p in own))
     w.append("- " + ("same inputs and script" if not problems else
                      "NOT COMPARABLE: " + "; ".join(problems)))
     w += ["", "| screenshot | changed pixels | bounding box (x0,y0-x1,y1) |",

@@ -187,6 +187,64 @@ class CompareTextTest(unittest.TestCase):
                 self.assertEqual("A stub counts only" in text, stubs)
                 self.assertEqual("A poke counts only" in text, pokes)
 
+    def run_shared(self, root, base_pokes, other_pokes, base_stubs=False):
+        """compare over a baseline that has pokes of its own."""
+        import argparse
+        import json
+        caps = []
+        for name, pks, stubs in (("baseline", base_pokes, base_stubs),
+                                 ("other", other_pokes, False)):
+            spec = {"script": {"screenshots": []}, "pokes": pks}
+            if stubs:
+                spec["stubs"] = [{"at": "f"}]
+            result = {"pokes": [{"at": p["at"], "addr": 0x80100000 + i,
+                                 "hex": p["hex"].lower(), "orig": "00",
+                                 "when": p["phase"], "applied": {"frame": 9},
+                                 "at_end": p["hex"].lower()}
+                                for i, p in enumerate(pks)]}
+            d = root / name
+            d.mkdir()
+            (d / "spec.json").write_text(json.dumps(spec), encoding="utf-8")
+            (d / "capture.jsonl").write_text("", encoding="utf-8")
+            manifest = {"q124_complete": True, "result": result, "outputs": [],
+                        "spec": {"path": str(d / "spec.json"),
+                                 "sha1": gdbtrace.runkit.sha1_file(
+                                     str(d / "spec.json"))}}
+            (d / "capture.manifest.json").write_text(json.dumps(manifest),
+                                                    encoding="utf-8")
+            caps.append(str(d / "capture.jsonl"))
+        out = root / "other" / "compare.md"
+        code = gdbtrace.compare(argparse.Namespace(
+            base=caps[0], other=caps[1], base_spec=None, other_spec=None,
+            context=None, out=str(out)))
+        return code, out.read_text(encoding="utf-8")
+
+    def test_baseline_pokes_shared_by_the_second_run(self):
+        import tempfile
+        unlock = {"at": "0x80106A50", "hex": "FFF33F05", "phase": "top_menu"}
+        patch = {"at": "0x80061B08", "hex": "1d00001001000326",
+                 "phase": "t_load"}
+        lower = dict(unlock, hex="fff33f05")
+        moved = dict(unlock, phase="t_load")
+        cases = [
+            # (baseline pokes, second run's, baseline stubs, comparable)
+            ([unlock], [lower, patch], False, True),
+            ([unlock], [patch], False, False),        # unlock missing
+            ([unlock], [moved, patch], False, False),  # unlock in other phase
+            ([unlock], [unlock], False, False),       # nothing beyond it
+            ([unlock], [unlock, patch], True, False),  # baseline stubbed
+        ]
+        for base, other, stubs, ok in cases:
+            with self.subTest(base=base, other=other, stubs=stubs), \
+                    tempfile.TemporaryDirectory() as tmp:
+                code, text = self.run_shared(Path(tmp), base, other, stubs)
+                self.assertEqual("NOT COMPARABLE" not in text, ok, text)
+                if ok:
+                    self.assertTrue(text.startswith("# Set-and-observe:"))
+                    self.assertIn("- pokes in both runs (baseline's too, not "
+                                  "compared): `0x80106A50`", text)
+                    self.assertIn("- pokes: `0x80061B08`", text)
+
 
 if __name__ == "__main__":
     unittest.main()
