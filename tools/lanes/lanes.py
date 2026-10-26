@@ -11,6 +11,11 @@ since the gated base are disjoint from the lane's and at most one side touched b
 (needs_full_gates), that replay gets only the quick checks (lanes.json "quick_gates", then
 regenerate), never when build inputs changed on both sides.
 
+Full lands wait FIFO in tmp/lanes-state/registry.json's gate_queue before reading main.
+Docs-only lands (lanes.json docs_only_paths) bypass it; quick retries keep the existing ticket.
+Owners heartbeat while waiting and landing; waiters prune expired heartbeats across PID
+namespaces, as well as provably dead local PIDs.
+
 Conflicts are handled without hand merges where the file allows it:
   - regenerated files (lanes.json "regenerate", e.g. the naming census) take main's side and are
     rebuilt after the gates, folded into the lane's last landed commit (no separate commit);
@@ -33,14 +38,15 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py drop  <lane> <sha>            # remove one unlanded commit (a bounce)
   python tools/lanes/lanes.py claim <lane> <token>...       # path:src/main/9F9C.c  topic:row:m09
   python tools/lanes/lanes.py unclaim <lane> [<token>...]   # no tokens = all
-  python tools/lanes/lanes.py land  <lane> [--no-push]
+  python tools/lanes/lanes.py land  <lane> [--no-push] [--no-wait]
   python tools/lanes/lanes.py close <lane> [--remove]
   python tools/lanes/lanes.py path  <lane> [--wsl]
   python tools/lanes/lanes.py recover <lane>                # after an interrupted land
   python tools/lanes/lanes.py push                          # retry a failed push (exit 5)
 
 The session identity is $CLAUDE_CODE_SESSION_ID (override with --session for tests).
-Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed, 5 push failed.
+Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed, 5 push failed,
+6 full-gate queue busy (--no-wait).
 """
 from __future__ import annotations
 
@@ -53,12 +59,17 @@ import re
 import subprocess
 import sys
 import time
+import threading
+import uuid
 from pathlib import Path
 
 LANE_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}$")
 TRAILER_RE = re.compile(r"^Lane-Replay:\s*(.+?)\s*$", re.MULTILINE)
 LOCK_REL = Path("tmp") / ".main_reintegration.lock"
 LOCK_STALE_SECS = 5400  # keep in sync with tools/reintegrate_lock.ps1
+HEARTBEAT_STALE_SECS = 600  # Expire abandoned gate tickets across Windows/WSL PID namespaces.
+HEARTBEAT_INTERVAL_SECS = 30
+GATE_POLL_SECS = 5  # a waiter's poll period (reads only; writes only on a queue change)
 
 
 class Refuse(Exception):
@@ -182,6 +193,182 @@ class Ctx:
 
 def is_stale(ctx: Ctx, entry: dict) -> bool:
     return time.time() - float(entry.get("heartbeat", 0)) > ctx.stale_secs()
+
+
+class GateQueue:
+    """FIFO tickets in registry.json, protected by Ctx.update's O_EXCL file mutex.
+
+    Only the short queue edits hold the mutex; the head retains its ticket through landing.
+    A daemon renews the ticket while waiting and throughout long gate subprocesses.
+    Heartbeat expiry works across Windows/WSL namespaces and handles PID reuse.
+    """
+    def __init__(self, ctx, lane):
+        self.ctx = ctx
+        self.ticket = {"id": uuid.uuid4().hex, "lane": lane, "session": ctx.session,
+                       "pid": os.getpid(), "enqueued": time.time(), "beat": time.time(),
+                       "namespace": pid_namespace()}
+        self.enqueued = False
+        self._stop = threading.Event()
+        self._thread = None
+
+    def _refresh(self):
+        def refresh(reg):
+            for ticket in reg.get("gate_queue", []):
+                if ticket["id"] == self.ticket["id"]:
+                    ticket["beat"] = time.time()
+                    return ticket["beat"]
+        beat = self.ctx.update(refresh)
+        if beat is not None:
+            self.ticket["beat"] = beat
+
+    def _heartbeat(self):
+        warned = False
+        while not self._stop.wait(HEARTBEAT_INTERVAL_SECS):
+            try:
+                self._refresh()
+                warned = False
+            except (OSError, Refuse) as error:
+                # Retry transient mutex/I/O failures; never recreate an evicted ticket.
+                if not warned:
+                    print(f"lanes: gate heartbeat failed for {self.ticket['lane']}: {error}",
+                          file=sys.stderr, flush=True)
+                    warned = True
+
+    @staticmethod
+    def _stale(ticket, now):
+        age = now - ticket.get("beat", ticket["enqueued"])
+        return age > HEARTBEAT_STALE_SECS or (ticket.get("namespace") == pid_namespace()
+                                              and not gate_pid_alive(ticket["pid"]))
+
+    def _enqueue_and_prune(self, reg):
+        queue = reg.setdefault("gate_queue", [])
+        now = time.time()
+        for ticket in list(queue):
+            if ticket["id"] != self.ticket["id"] and self._stale(ticket, now):
+                queue.remove(ticket)
+                age = now - ticket.get("beat", ticket["enqueued"])
+                print(f"lanes: dropped stale gate ticket for {ticket['lane']} "
+                      f"session={ticket['session']} (beat age {int(age)}s)", flush=True)
+        if not any(t["id"] == self.ticket["id"] for t in queue):
+            self.ticket["beat"] = time.time()
+            queue.append(self.ticket)
+        return next(i for i, t in enumerate(queue, 1) if t["id"] == self.ticket["id"])
+
+    def _poll(self):
+        """This ticket's queue position. Reads without the mutex; writes (under it) only to
+        enqueue, re-enqueue an evicted ticket, or drop a stale one, so waiters do not rewrite
+        registry.json every poll (on Windows a replace fails while a reader holds the file)."""
+        queue = self.ctx.load().get("gate_queue", [])
+        now = time.time()
+        mine = any(t["id"] == self.ticket["id"] for t in queue)
+        if mine and not any(t["id"] != self.ticket["id"] and self._stale(t, now) for t in queue):
+            return next(i for i, t in enumerate(queue, 1) if t["id"] == self.ticket["id"])
+        # Set before update: even interruption just after its atomic replace must clean up.
+        self.enqueued = True
+        return self.ctx.update(self._enqueue_and_prune)
+
+    def wait(self, no_wait=False):
+        last_print = last_error = None
+        while True:
+            try:
+                position = self._poll()
+            except (OSError, ValueError, Refuse) as error:
+                # transient: a replace racing a reader (Windows), a half-read file, a busy
+                # mutex; keep the place in the queue and poll again
+                now = time.monotonic()
+                if last_error is None or now - last_error >= 60:
+                    print(f"lanes: gate queue poll failed ({error}); retrying", flush=True)
+                    last_error = now
+                time.sleep(GATE_POLL_SECS)
+                continue
+            if self._thread is None:
+                self._stop.clear()
+                self._thread = threading.Thread(target=self._heartbeat, daemon=True,
+                                                name=f"lane-beat-{self.ticket['lane']}")
+                self._thread.start()
+            if position == 1:
+                return
+            if no_wait:
+                raise Refuse(f"full-gate queue busy: {self.ticket['lane']} is position {position}", 6)
+            now = time.monotonic()
+            if last_print is None or now - last_print >= 60:
+                print(f"lanes: waiting for full-gate queue: position {position} "
+                      f"({self.ticket['lane']})", flush=True)
+                last_print = now
+            time.sleep(GATE_POLL_SECS)
+
+    def close(self):
+        """Stop the heartbeat and dequeue. Never raises: a ticket left behind after the retries
+        expires by heartbeat age (or its dead PID)."""
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join()
+            self._thread = None
+        if not self.enqueued:
+            return
+        def remove(reg):
+            reg["gate_queue"] = [t for t in reg.get("gate_queue", [])
+                                 if t["id"] != self.ticket["id"]]
+        last = None
+        for attempt in range(5):
+            try:
+                self.ctx.update(remove)
+                self.enqueued = False
+                return
+            except (OSError, ValueError, Refuse) as error:
+                last = error
+                time.sleep(min(2 ** attempt, 8))
+        print(f"lanes: could not dequeue gate ticket for {self.ticket['lane']} ({last}); it "
+              f"expires after {HEARTBEAT_STALE_SECS}s", file=sys.stderr, flush=True)
+
+
+def pid_namespace():
+    if os.name == "nt":
+        return "windows"
+    try:
+        return Path("/proc/sys/kernel/random/boot_id").read_text().strip() + ":" + os.readlink("/proc/self/ns/pid")
+    except OSError:
+        return sys.platform
+
+
+def gate_pid_alive(pid):
+    """Unlike recovery's historical probe, treat inaccessible processes as live."""
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel.OpenProcess.restype = wintypes.HANDLE
+        kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+        handle = kernel.OpenProcess(0x1000, False, pid)
+        if not handle:
+            return ctypes.get_last_error() != 87  # only INVALID_PARAMETER proves no such PID
+        try:
+            code = wintypes.DWORD()
+            return not kernel.GetExitCodeProcess(handle, ctypes.byref(code)) or code.value == 259
+        finally:
+            kernel.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except OSError:
+        return True  # permission/probe failures do not prove death
+
+
+def is_docs_only(ctx, paths) -> bool:
+    """Every path under lanes.json docs_only_paths: build_candidate runs no full gates."""
+    prefixes = ctx.cfg.get("docs_only_paths", [])
+    return all(any(p.startswith(d) for d in prefixes) for p in paths)
+
+
+def queues_full_gates(ctx, paths):
+    # Queue exactly the lands build_candidate gates in full (one shared predicate, so the two
+    # cannot drift): an inert_paths land outside docs_only_paths (tools/trace/, .claude/) still
+    # runs the full gates, and the queue head landing src/ would invalidate it.
+    return not is_docs_only(ctx, paths)
 
 
 def require_owner(ctx: Ctx, reg: dict, lane: str) -> dict:
@@ -433,12 +620,18 @@ def cmd_status(ctx: Ctx, a):
     reg = ctx.load()
     lk = read_lock(ctx)
     if a.json:
-        print(json.dumps({"lanes": reg["lanes"], "main_lock": lk}, indent=2))
+        print(json.dumps({"lanes": reg["lanes"], "main_lock": lk,
+                          "gate_queue": reg.get("gate_queue", [])}, indent=2))
         return 0
     main_head = git("rev-parse", "--short", "main", cwd=ctx.main)
     print(f"main {main_head}   lock: " + (f"HELD by {lk.get('label') or lk.get('session')} "
                                           f"({int(time.time() - float(lk.get('ts', 0)))}s)"
                                           if lk else "free"))
+    print("full-gate queue:" + (" empty" if not reg.get("gate_queue") else ""))
+    for position, ticket in enumerate(reg.get("gate_queue", []), 1):
+        since = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ticket["enqueued"]))
+        age = int(time.time() - ticket.get("beat", ticket["enqueued"]))
+        print(f"  {position}. {ticket['lane']} waiting since {since}; beat age {age}s")
     if not reg["lanes"]:
         print("no lanes registered")
     for lane, e in sorted(reg["lanes"].items()):
@@ -1009,7 +1202,7 @@ def mergeable_paths(ctx: Ctx) -> set:
 def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
                     quick_paths=None) -> str:
     """Replay the lane's commits onto `base` in the private landing worktree, gate, regenerate.
-    No lock is held: nothing here touches main or the lane worktree. Returns the gated tip
+    No reintegration lock is held: nothing here touches main or the lane worktree. Returns the gated tip
     (equal to `base` if every commit was already in main).
 
     `quick_paths` (the lane's paths from an earlier full pass; cmd_land passes it only when
@@ -1039,7 +1232,7 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
     if not new_paths:
         input_checks(ctx, ld, base, log)
         return git("rev-parse", "HEAD", cwd=ld)
-    docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
+    docs_only = is_docs_only(ctx, new_paths)
     quick = quick_paths is not None and not docs_only
     if quick:
         allowed = {p.lower() for p in quick_paths} | {p.lower() for p in mergeable_paths(ctx)}
@@ -1264,17 +1457,23 @@ def cmd_land(ctx: Ctx, a):
                      "linear commits on fresh main (lanes.py fresh --discard).")
     check_claims(ctx, lane, paths_of(ctx, commits))
     remote = None if a.no_push else ctx.cfg.get("remote")
-    land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
-    ld = ensure_land_tree(ctx, lane)
-
-    logp = ctx.state_dir / "logs" / f"{lane}-{time.strftime('%Y%m%d-%H%M%S')}.log"
-    logp.parent.mkdir(parents=True, exist_ok=True)
-    log = open(logp, "w", encoding="utf-8", newline="\n")
-    lk = read_lock(ctx)
-    held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
     full_pass = None  # (base, commits, lane paths) of the last full gate pass
     full_runs = attempts = 0
+    queue = GateQueue(ctx, lane)
+    ld = log = None
     try:
+        # Refuse --no-wait before bootstrapping a landing tree; refresh main only after waiting.
+        land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
+        # The lane's own paths: build_candidate later decides on the replayed diff, which can
+        # differ; that changes only who waits, never which gates run.
+        if queues_full_gates(ctx, paths_of(ctx, commits)):
+            queue.wait(getattr(a, "no_wait", False))
+        ld = ensure_land_tree(ctx, lane)
+        logp = ctx.state_dir / "logs" / f"{lane}-{time.strftime('%Y%m%d-%H%M%S')}.log"
+        logp.parent.mkdir(parents=True, exist_ok=True)
+        log = open(logp, "w", encoding="utf-8", newline="\n")
+        lk = read_lock(ctx)
+        held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
         for attempt in range(LAND_ATTEMPTS):
             base = git("rev-parse", "main", cwd=ctx.main)
             # against this attempt's base: main may have moved, or been reset, since the last look
@@ -1335,12 +1534,17 @@ def cmd_land(ctx: Ctx, a):
         raise Refuse(f"main kept moving during {attempts} land attempts ({full_runs} full gate "
                      f"runs); try again", 1)
     finally:
-        run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
         try:
-            land_pidfile(ctx, lane).unlink()
-        except FileNotFoundError:
-            pass
-        log.close()
+            if ld is not None:
+                run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
+            try:
+                land_pidfile(ctx, lane).unlink()
+            except FileNotFoundError:
+                pass
+            if log is not None:
+                log.close()
+        finally:
+            queue.close()  # last; it never raises, so the original exception propagates
 
 
 def push_main(ctx: Ctx, remote: str) -> str:
@@ -1385,6 +1589,7 @@ def main(argv=None) -> int:
     s = sub.add_parser("claim"); s.add_argument("lane"); s.add_argument("tokens", nargs="+")
     s = sub.add_parser("unclaim"); s.add_argument("lane"); s.add_argument("tokens", nargs="*")
     s = sub.add_parser("land"); s.add_argument("lane"); s.add_argument("--no-push", action="store_true")
+    s.add_argument("--no-wait", action="store_true", help="refuse with exit 6 if the full-gate queue is busy")
     s = sub.add_parser("close"); s.add_argument("lane"); s.add_argument("--remove", action="store_true")
     s.add_argument("--force", action="store_true")
     s = sub.add_parser("path"); s.add_argument("lane"); s.add_argument("--wsl", action="store_true")

@@ -12,6 +12,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -118,6 +120,277 @@ class InputCheckTest(unittest.TestCase):
         git.assert_not_called()
 
 
+class GateQueueTest(unittest.TestCase):
+    """Queue coverage also runs where the sandbox denies Git fixture creation."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="gate-queue-")
+        self.addCleanup(self.tmp.cleanup)
+        self.ctx = object.__new__(lanes.Ctx)
+        self.ctx.session = "test"
+        self.ctx.state_dir = Path(self.tmp.name)
+        self.ctx.main = self.ctx.state_dir
+        self.ctx.reg_path = self.ctx.state_dir / "registry.json"
+        self.ctx.mutex = self.ctx.state_dir / ".registry.mutex"
+        self.ctx.cfg = CFG
+        self.ctx.wt_root = self.ctx.state_dir / "wts"
+
+    def test_fifo_head_check_and_cleanup(self):
+        from unittest.mock import patch
+        first = lanes.GateQueue(self.ctx, "first")
+        second = lanes.GateQueue(self.ctx, "second")
+        self.addCleanup(first.close)
+        self.addCleanup(second.close)
+        first.wait()
+        with self.assertRaises(lanes.Refuse) as error:
+            second.wait(no_wait=True)
+        self.assertEqual(error.exception.code, 6)
+        self.assertEqual([t["lane"] for t in self.ctx.load()["gate_queue"]], ["first", "second"])
+        sleeps = []
+        def advance(_):
+            sleeps.append(1)
+            first.close()
+        with patch.object(lanes.time, "sleep", side_effect=advance):
+            second.wait()
+        self.assertEqual(sleeps, [1])
+        self.assertEqual(self.ctx.load()["gate_queue"], [second.ticket])
+        second.close()
+        self.assertEqual(self.ctx.load()["gate_queue"], [])
+
+    def test_docs_only_bypass_and_inert_lands_queue(self):
+        # lanes.json's own lists (the fixture CFG has docs/ only)
+        self.ctx.cfg = dict(CFG, docs_only_paths=["docs/", "memory/"],
+                            inert_paths=["docs/", "memory/", ".claude/", "tools/trace/",
+                                         "tools/lanes/"])
+        for paths in (["docs/note.md"], ["memory/note.md"], ["docs/a.md", "memory/b.md"]):
+            self.assertFalse(lanes.queues_full_gates(self.ctx, paths))
+            self.assertTrue(lanes.is_docs_only(self.ctx, paths))
+        # inert_paths outside docs_only_paths still get the full gates, so they queue (a
+        # trace-a land: a scenario, its capture notes and the backlog row)
+        for paths in (["tools/lanes/lanes.py"], [".claude/skills/x.md"],
+                      ["tools/trace/scenarios/x.py", "docs/naming/runtime/x/notes.md",
+                       "docs/foundation/backlog.tsv"],
+                      ["docs/note.md", "src/a.c"]):
+            self.assertTrue(lanes.queues_full_gates(self.ctx, paths))
+            self.assertFalse(lanes.is_docs_only(self.ctx, paths))
+
+    def test_wait_keeps_its_place_through_transient_registry_errors(self):
+        from unittest.mock import patch
+        first = lanes.GateQueue(self.ctx, "first")
+        second = lanes.GateQueue(self.ctx, "second")
+        self.addCleanup(first.close)
+        self.addCleanup(second.close)
+        first.wait()
+        with self.assertRaises(lanes.Refuse):
+            second.wait(no_wait=True)
+        mine = dict(second.ticket)
+        real_load = self.ctx.load
+        failures = [PermissionError("replace raced a reader"), ValueError("half-read"),
+                    lanes.Refuse("registry mutex busy")]
+
+        def flaky_load():
+            if failures:
+                raise failures.pop(0)
+            return real_load()
+
+        def advance(_):
+            if not failures:
+                first.close()
+
+        with patch.object(self.ctx, "load", side_effect=flaky_load), \
+                patch.object(lanes.time, "sleep", side_effect=advance), redirect_stdout(io.StringIO()):
+            second.wait()
+        queue = self.ctx.load()["gate_queue"]
+        self.assertEqual([t["id"] for t in queue], [mine["id"]])
+        self.assertEqual(queue[0]["enqueued"], mine["enqueued"])
+
+    def test_waiting_poll_writes_nothing_when_nothing_changed(self):
+        from unittest.mock import patch
+        first = lanes.GateQueue(self.ctx, "first")
+        second = lanes.GateQueue(self.ctx, "second")
+        self.addCleanup(first.close)
+        self.addCleanup(second.close)
+        first.wait()
+        with self.assertRaises(lanes.Refuse):
+            second.wait(no_wait=True)
+        writes, polls = [], []
+        real_update = self.ctx.update
+
+        def counting(fn):
+            writes.append(fn)
+            return real_update(fn)
+
+        def advance(seconds):
+            polls.append(seconds)
+            if len(polls) == 3:
+                self.assertEqual(writes, [])  # three polls at position 2, no rewrite
+                first.close()
+
+        with patch.object(self.ctx, "update", side_effect=counting), \
+                patch.object(lanes.time, "sleep", side_effect=advance), redirect_stdout(io.StringIO()):
+            second.wait()
+        self.assertEqual(polls, [lanes.GATE_POLL_SECS] * 3)
+
+    def test_close_never_raises(self):
+        from contextlib import redirect_stderr
+        from unittest.mock import patch
+        queue = lanes.GateQueue(self.ctx, "a")
+        self.addCleanup(queue.close)
+        queue.wait()
+        err = io.StringIO()
+        with patch.object(self.ctx, "update", side_effect=PermissionError("held open")), \
+                patch.object(lanes.time, "sleep"), redirect_stderr(err):
+            queue.close()
+        self.assertIn("could not dequeue gate ticket for a", err.getvalue())
+        self.assertTrue(queue.enqueued)
+
+    def test_status_prints_queue_positions_and_enqueue_time(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        ticket = lanes.GateQueue(self.ctx, "waiting").ticket
+        self.ctx.update(lambda reg: reg.update(gate_queue=[ticket]))
+        out = io.StringIO()
+        with patch.object(lanes, "read_lock", return_value=None), \
+                patch.object(lanes, "git", return_value="abc"), redirect_stdout(out):
+            self.assertEqual(lanes.cmd_status(self.ctx, SimpleNamespace(json=False)), 0)
+        self.assertIn("1. waiting waiting since", out.getvalue())
+        self.assertIn("beat age", out.getvalue())
+        out = io.StringIO()
+        with patch.object(lanes, "read_lock", return_value=None), redirect_stdout(out):
+            lanes.cmd_status(self.ctx, SimpleNamespace(json=True))
+        self.assertEqual(json.loads(out.getvalue())["gate_queue"], [ticket])
+
+    def test_dead_removed_but_old_live_preserved(self):
+        dead = lanes.GateQueue(self.ctx, "dead").ticket
+        dead["pid"] = 99999999
+        live = lanes.GateQueue(self.ctx, "live").ticket
+        live["enqueued"] -= lanes.LOCK_STALE_SECS + 1
+        self.ctx.update(lambda reg: reg.update(gate_queue=[dead, live]))
+        waiter = lanes.GateQueue(self.ctx, "waiting")
+        self.addCleanup(waiter.close)
+        out = io.StringIO()
+        with redirect_stdout(out), self.assertRaises(lanes.Refuse):
+            waiter.wait(no_wait=True)
+        self.assertIn("dropped stale gate ticket for dead", out.getvalue())
+        self.assertEqual(self.ctx.load()["gate_queue"], [live, waiter.ticket])
+
+    def test_foreign_fresh_kept_expired_and_reused_pid_dropped(self):
+        from unittest.mock import patch
+        for namespace in ("foreign-runtime", lanes.pid_namespace()):
+            with self.subTest(namespace=namespace):
+                owner = lanes.GateQueue(self.ctx, "owner").ticket
+                owner["namespace"] = namespace
+                self.ctx.update(lambda reg: reg.update(gate_queue=[owner]))
+                waiter = lanes.GateQueue(self.ctx, "waiter")
+                try:
+                    with patch.object(lanes, "gate_pid_alive", return_value=True):
+                        with self.assertRaises(lanes.Refuse):
+                            waiter.wait(no_wait=True)
+                    self.assertEqual(self.ctx.load()["gate_queue"][0], owner)
+                finally:
+                    waiter.close()
+                owner["beat"] = time.time() - lanes.HEARTBEAT_STALE_SECS - 5
+                self.ctx.update(lambda reg: reg.update(gate_queue=[owner]))
+                out = io.StringIO()
+                try:
+                    with patch.object(lanes, "gate_pid_alive", return_value=True), redirect_stdout(out):
+                        waiter.wait(no_wait=True)
+                    self.assertEqual(self.ctx.load()["gate_queue"], [waiter.ticket])
+                    self.assertIn("owner session=test (beat age", out.getvalue())
+                finally:
+                    waiter.close()
+
+    def test_heartbeat_refreshes_during_gate_and_stops_on_exit(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch, DEFAULT
+        real_queue = lanes.GateQueue
+        created = []
+
+        def create(*args):
+            queue = real_queue(*args)
+            created.append(queue)
+            return queue
+
+        for error in (None, RuntimeError("gate failed"), KeyboardInterrupt()):
+            with self.subTest(error=error):
+                self.ctx.update(lambda reg: reg.update(lanes={"a": {"owner": "test"}}))
+                self.ctx.replayed = {}
+                threads = []
+
+                def gate(*args, **kwargs):
+                    thread = created[-1]._thread
+                    threads.append(thread)
+                    self.assertTrue(thread.is_alive())
+                    initial = self.ctx.load()["gate_queue"][0]["beat"]
+                    deadline = time.monotonic() + 2
+                    while time.monotonic() < deadline:
+                        if self.ctx.load()["gate_queue"][0]["beat"] > initial:
+                            break
+                        threading.Event().wait(0.01)
+                    self.assertGreater(self.ctx.load()["gate_queue"][0]["beat"], initial)
+                    if error is not None:
+                        raise error
+                    return "base"
+
+                with patch.object(lanes, "HEARTBEAT_INTERVAL_SECS", 0.01), \
+                        patch.object(lanes, "GateQueue", side_effect=create), \
+                        patch.multiple(lanes, recover_lane=DEFAULT, ensure_land_tree=DEFAULT,
+                                       read_lock=DEFAULT, git=DEFAULT, unlanded=DEFAULT,
+                                       paths_of=DEFAULT, check_claims=DEFAULT, build_candidate=DEFAULT,
+                                       mark_landed=DEFAULT, advance_lane=DEFAULT, run=DEFAULT) as mocks:
+                    mocks["git"].return_value = "base"
+                    mocks["read_lock"].return_value = None
+                    mocks["unlanded"].return_value = ["commit"]
+                    mocks["paths_of"].return_value = ["src/a.c"]
+                    mocks["ensure_land_tree"].return_value = self.ctx.state_dir
+                    mocks["build_candidate"].side_effect = gate
+                    args = SimpleNamespace(lane="a", no_push=True, no_wait=False)
+                    if error is None:
+                        self.assertEqual(lanes.cmd_land(self.ctx, args), 0)
+                    else:
+                        with self.assertRaises(type(error)):
+                            lanes.cmd_land(self.ctx, args)
+                self.assertEqual(len(threads), 1)
+                self.assertFalse(threads[0].is_alive())
+                self.assertEqual(self.ctx.load()["gate_queue"], [])
+                self.assertTrue(created[-1]._stop.is_set())
+
+    def test_heartbeat_refreshes_while_waiting(self):
+        from unittest.mock import patch
+        first = lanes.GateQueue(self.ctx, "first")
+        second = lanes.GateQueue(self.ctx, "second")
+        self.addCleanup(first.close)
+        self.addCleanup(second.close)
+        first.wait()
+        def waiting(_):
+            initial = second.ticket["beat"]
+            deadline = time.monotonic() + 2
+            while second.ticket["beat"] <= initial and time.monotonic() < deadline:
+                threading.Event().wait(0.01)
+            self.assertGreater(second.ticket["beat"], initial)
+            first.close()
+
+        with patch.object(lanes, "HEARTBEAT_INTERVAL_SECS", 0.01), \
+                patch.object(lanes.time, "sleep", side_effect=waiting):
+            second.wait()
+
+    def test_wait_progress_throttled_and_interrupt_cleanup(self):
+        from unittest.mock import patch
+        first = lanes.GateQueue(self.ctx, "first")
+        second = lanes.GateQueue(self.ctx, "second")
+        self.addCleanup(first.close)
+        first.wait()
+        out = io.StringIO()
+        with patch.object(lanes.time, "sleep", side_effect=[None, None, KeyboardInterrupt()]), \
+                patch.object(lanes.time, "monotonic", side_effect=[0, 59, 60]), redirect_stdout(out):
+            try:
+                with self.assertRaises(KeyboardInterrupt):
+                    second.wait()
+            finally:
+                second.close()
+        self.assertEqual(out.getvalue().count("waiting for full-gate queue"), 2)
+        self.assertEqual(self.ctx.load()["gate_queue"], [first.ticket])
+
+
 class LaneTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix="lanes-test-"))
@@ -178,6 +451,106 @@ class LaneTest(unittest.TestCase):
         return (self.main / path).read_text()
 
     # tests
+    def test_full_lands_fifo_and_docs_bypass(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        for lane in ("a", "b", "d"):
+            self.assertEqual(self.L(lane, "open", lane), 0, self.last)
+        self.commit("a", "src/b.c", "int b;\n")
+        self.commit("b", "src/c.c", "int c;\n")
+        self.commit("d", "docs/note.md", "note\n")
+        entered, release, second = threading.Event(), threading.Event(), threading.Event()
+        real = lanes.build_candidate
+        bases = {}
+
+        def gate(ctx, lane, *args, **kw):
+            bases[lane] = args[2]
+            if lane == "a" and not entered.is_set():
+                entered.set()
+                if not release.wait(15):
+                    raise AssertionError("first gate was not released")
+            if lane == "b":
+                second.set()
+            return real(ctx, lane, *args, **kw)
+
+        def land(lane):
+            return lanes.cmd_land(lanes.Ctx(self.main, lane),
+                                  SimpleNamespace(lane=lane, no_push=False, no_wait=False))
+
+        with patch.object(lanes, "build_candidate", side_effect=gate), ThreadPoolExecutor(2) as pool:
+            first = pool.submit(land, "a")
+            try:
+                self.assertTrue(entered.wait(10))
+                later = pool.submit(land, "b")
+                ctx = lanes.Ctx(self.main, "observer")
+                deadline = time.monotonic() + 10
+                while len(ctx.load().get("gate_queue", [])) < 2 and time.monotonic() < deadline:
+                    time.sleep(0.05)
+                self.assertEqual([t["lane"] for t in ctx.load()["gate_queue"]], ["a", "b"])
+                self.assertFalse(second.is_set())
+                # --no-wait makes the docs-queue mutation fail immediately instead of hanging.
+                self.assertEqual(self.L("d", "land", "d", "--no-wait"), 0, self.last)
+                self.assertTrue((self.main / "docs/note.md").exists())
+                self.assertEqual([t["lane"] for t in ctx.load()["gate_queue"]], ["a", "b"])
+            finally:
+                release.set()
+            self.assertEqual(first.result(timeout=30), 0)
+            self.assertEqual(later.result(timeout=30), 0)
+        self.assertTrue(second.is_set())
+        self.assertTrue(sh("show", f"{bases['b']}:src/b.c", cwd=self.main))
+        self.assertEqual(ctx.load()["gate_queue"], [])
+
+    def test_queue_stale_live_no_wait_and_status(self):
+        from unittest.mock import patch
+        ctx = lanes.Ctx(self.main, "s")
+        dead, live = lanes.GateQueue(ctx, "dead"), lanes.GateQueue(ctx, "live")
+        dead.ticket["pid"] = 99999999
+        live.ticket["enqueued"] = time.time() - lanes.LOCK_STALE_SECS - 1
+        ctx.update(lambda reg: reg.update(gate_queue=[dead.ticket, live.ticket]))
+        waiter = lanes.GateQueue(ctx, "waiting")
+        out = io.StringIO()
+        try:
+            with redirect_stdout(out):
+                with self.assertRaises(lanes.Refuse) as refusal:
+                    waiter.wait(no_wait=True)
+            self.assertEqual(refusal.exception.code, 6)
+            self.assertIn("dropped stale gate ticket for dead", out.getvalue())
+            self.assertEqual([t["lane"] for t in ctx.load()["gate_queue"]], ["live", "waiting"])
+            self.assertEqual(self.L("s", "status"), 0)
+            self.assertIn("1. live waiting since", self.last)
+            self.assertIn("2. waiting waiting since", self.last)
+            self.assertEqual(self.L("s", "status", "--json"), 0)
+            self.assertEqual(len(json.loads(self.last)["gate_queue"]), 2)
+        finally:
+            waiter.close()
+        # Unknown PID namespaces are not mistaken for locally dead processes.
+        live.ticket["namespace"] = "foreign"
+        ctx.update(lambda reg: reg.update(gate_queue=[live.ticket]))
+        with patch.object(lanes, "gate_pid_alive", return_value=False), self.assertRaises(lanes.Refuse):
+            try:
+                waiter.wait(no_wait=True)
+            finally:
+                waiter.close()
+        self.assertEqual(ctx.load()["gate_queue"], [live.ticket])
+
+    def test_queue_dequeues_on_gate_refusal_exception_and_interrupt(self):
+        from unittest.mock import patch
+        self.assertEqual(self.L("s", "open", "a"), 0)
+        self.commit("a", "src/b.c", "int b;\n")
+        ctx = lanes.Ctx(self.main, "s")
+        for error in (lanes.Refuse("failed", 4), RuntimeError("broken"), KeyboardInterrupt()):
+            def fail(*args, **kw):
+                self.assertEqual(ctx.load()["gate_queue"][0]["lane"], "a")
+                raise error
+            with patch.object(lanes, "build_candidate", side_effect=fail):
+                if isinstance(error, lanes.Refuse):
+                    self.assertEqual(self.L("s", "land", "a"), 4)
+                else:
+                    with self.assertRaises(type(error)):
+                        self.L("s", "land", "a")
+            self.assertEqual(ctx.load()["gate_queue"], [])
+
     def test_open_ownership(self):
         self.assertEqual(self.L("s1", "open", "naming-a"), 0, self.last)
         self.assertTrue(self.wt("naming-a").exists())
@@ -1009,7 +1382,10 @@ class LaneTest(unittest.TestCase):
             if not calls:  # the other lane lands while our gates run
                 calls.append(1)
                 lanes.build_candidate = real
-                self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+                # Simulate an external full land (e.g. codex_worker) that bypasses the FIFO.
+                from unittest.mock import patch
+                with patch.object(lanes, "queues_full_gates", return_value=False):
+                    self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
                 lanes.build_candidate = racing
             return tip
 
