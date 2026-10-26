@@ -121,6 +121,7 @@
         "event:save",
         "event:load",
         "event:overwrite",
+        "event:best_time",
         "event:format",
         "event:options_change",
         "event:key_config_change"
@@ -133,6 +134,7 @@
         "event:save": "data saved to a memory card",
         "event:load": "data loaded from a memory card",
         "event:key_config_change": "a button moved to a Key Configuration row (taken off its old row) and one pad's rows reset with Default, shown on screen (key-config-edit-1)",
+        "event:best_time": "a Slash Mode 100 Kills Time Trial finished and its time entered in the Records (fight_InsertBestTime), shown on the Records screen (slash-mode-clear-1: the opponent number poked to 100, so one kill finishes the trial)",
         "event:format": "an unformatted memory card formatted from the game, after the Memory Card is unformatted / Format? prompt (memory-card-format-1)",
         "event:overwrite": "a save written over earlier save data on the card, after the Overwrite data? / Previous data will be erased prompt (memory-card-overwrite-1)",
         "event:out_of_bounds": "OUT OF BOUNDS (場外) call"

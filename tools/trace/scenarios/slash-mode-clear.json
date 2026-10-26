@@ -1,0 +1,64 @@
+{
+  "description": "slash-mode with the opponent number D_800A38E2 poked 01 -> 0x64 (100) as the fight starts (8200), so the first kill ends the 100 Kills Time Trial: kill count reads 99, the kill at ~10390 runs func_80033DF4's last-opponent branch (fight_InsertBestTime), the Records screen with the new time, Congratulations!, Checking Memory Card, the top menu again; CROSS every 120 frames from 10600; end 11910",
+  "covers": [
+    "mode:slash",
+    "menu:slash_records",
+    "event:best_time"
+  ],
+  "evidence": [
+    "docs/naming/runtime/slash-mode-clear-1/spec.json"
+  ],
+  "extends": "slash-mode",
+  "end_frame": 11910,
+  "pokes": [
+    {
+      "at": "0x800A38E2",
+      "hex": "64",
+      "phase": "fight"
+    }
+  ],
+  "repeat": [
+    {
+      "from": 10600,
+      "every": 120,
+      "count": 20,
+      "steps": [
+        "+0:CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "10400:clear",
+    "11700:top_menu_2"
+  ],
+  "shots": [
+    "10450:clear.10450",
+    "10500:clear.10500",
+    "10550:clear.10550",
+    "10600:clear.10600",
+    "10650:clear.10650",
+    "10700:clear.10700",
+    "10750:clear.10750",
+    "10800:clear.10800",
+    "10850:clear.10850",
+    "10900:clear.10900",
+    "10950:clear.10950",
+    "11000:clear.11000",
+    "11050:clear.11050",
+    "11100:clear.11100",
+    "11150:clear.11150",
+    "11200:clear.11200",
+    "11250:clear.11250",
+    "11300:clear.11300",
+    "11350:clear.11350",
+    "11400:clear.11400",
+    "11450:clear.11450",
+    "11500:clear.11500",
+    "11550:clear.11550",
+    "11600:clear.11600",
+    "11650:clear.11650",
+    "11750:top_menu_2.first",
+    "11850:top_menu_2.mid",
+    "11909:top_menu_2.last"
+  ]
+}

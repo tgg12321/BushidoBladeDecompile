@@ -1,0 +1,852 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 11910,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 5600,
+        "name": "t_title"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "t_slash"
+      },
+      {
+        "frame": 6560,
+        "name": "slash_records"
+      },
+      {
+        "frame": 6900,
+        "name": "t_char"
+      },
+      {
+        "frame": 7000,
+        "name": "char_select"
+      },
+      {
+        "frame": 7200,
+        "name": "t_load"
+      },
+      {
+        "frame": 8200,
+        "name": "fight"
+      },
+      {
+        "frame": 10400,
+        "name": "clear"
+      },
+      {
+        "frame": 11700,
+        "name": "top_menu_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6380,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8200,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8240,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8280,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8320,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8360,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8400,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8440,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8480,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8520,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8560,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8600,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8640,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8720,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8760,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8840,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8880,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8920,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8960,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9040,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9080,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9120,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9160,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9200,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9240,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9320,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9360,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9400,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9440,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9480,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9520,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9560,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9600,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9640,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9680,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9720,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9760,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9800,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9840,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9880,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9920,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9960,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10000,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10040,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10080,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10120,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10160,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10200,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10240,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10280,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10320,
+        "press": [
+          "CROSS",
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10360,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10720,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10840,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10960,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11200,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11320,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11440,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11560,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11680,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11800,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6070,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6440,
+        "name": "top_menu.slash"
+      },
+      {
+        "frame": 6600,
+        "name": "slash_records.first"
+      },
+      {
+        "frame": 6800,
+        "name": "slash_records.last"
+      },
+      {
+        "frame": 7000,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 7700,
+        "name": "t_load.splash"
+      },
+      {
+        "frame": 8300,
+        "name": "fight.8300"
+      },
+      {
+        "frame": 8500,
+        "name": "fight.8500"
+      },
+      {
+        "frame": 8700,
+        "name": "fight.8700"
+      },
+      {
+        "frame": 8900,
+        "name": "fight.8900"
+      },
+      {
+        "frame": 9100,
+        "name": "fight.9100"
+      },
+      {
+        "frame": 9300,
+        "name": "fight.9300"
+      },
+      {
+        "frame": 9500,
+        "name": "fight.9500"
+      },
+      {
+        "frame": 9700,
+        "name": "fight.9700"
+      },
+      {
+        "frame": 9900,
+        "name": "fight.9900"
+      },
+      {
+        "frame": 10100,
+        "name": "fight.10100"
+      },
+      {
+        "frame": 10300,
+        "name": "fight.10300"
+      },
+      {
+        "frame": 10450,
+        "name": "clear.10450"
+      },
+      {
+        "frame": 10500,
+        "name": "clear.10500"
+      },
+      {
+        "frame": 10550,
+        "name": "clear.10550"
+      },
+      {
+        "frame": 10600,
+        "name": "clear.10600"
+      },
+      {
+        "frame": 10650,
+        "name": "clear.10650"
+      },
+      {
+        "frame": 10700,
+        "name": "clear.10700"
+      },
+      {
+        "frame": 10750,
+        "name": "clear.10750"
+      },
+      {
+        "frame": 10800,
+        "name": "clear.10800"
+      },
+      {
+        "frame": 10850,
+        "name": "clear.10850"
+      },
+      {
+        "frame": 10900,
+        "name": "clear.10900"
+      },
+      {
+        "frame": 10950,
+        "name": "clear.10950"
+      },
+      {
+        "frame": 11000,
+        "name": "clear.11000"
+      },
+      {
+        "frame": 11050,
+        "name": "clear.11050"
+      },
+      {
+        "frame": 11100,
+        "name": "clear.11100"
+      },
+      {
+        "frame": 11150,
+        "name": "clear.11150"
+      },
+      {
+        "frame": 11200,
+        "name": "clear.11200"
+      },
+      {
+        "frame": 11250,
+        "name": "clear.11250"
+      },
+      {
+        "frame": 11300,
+        "name": "clear.11300"
+      },
+      {
+        "frame": 11350,
+        "name": "clear.11350"
+      },
+      {
+        "frame": 11400,
+        "name": "clear.11400"
+      },
+      {
+        "frame": 11450,
+        "name": "clear.11450"
+      },
+      {
+        "frame": 11500,
+        "name": "clear.11500"
+      },
+      {
+        "frame": 11550,
+        "name": "clear.11550"
+      },
+      {
+        "frame": 11600,
+        "name": "clear.11600"
+      },
+      {
+        "frame": 11650,
+        "name": "clear.11650"
+      },
+      {
+        "frame": 11750,
+        "name": "top_menu_2.first"
+      },
+      {
+        "frame": 11850,
+        "name": "top_menu_2.mid"
+      },
+      {
+        "frame": 11909,
+        "name": "top_menu_2.last"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x80106A54",
+      "hex": "3F",
+      "phase": "t_title"
+    },
+    {
+      "at": "0x800A38E2",
+      "hex": "64",
+      "phase": "fight"
+    }
+  ]
+}
