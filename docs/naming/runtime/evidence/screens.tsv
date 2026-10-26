@@ -6802,6 +6802,12 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80022580	fighter_Init	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	t_load	7695	7695	2	t_load.mid@8060#7011db60e54e	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	ground-tag-versus-2p-tunnel-1@69a2954298ca	t_load	7755	7755	2	t_load.mid@8120#2060c3b5e9fe	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	ground-tag-versus-2p-underrail-1@ea88b127e2b5	t_load	7695	7695	2	t_load.mid@8060#7011db60e54e	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	after_katze	129521	151598	33	s.129600@129600#0c97f1fe9f95;s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	boot_intro	8247	8714	4	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	final_fight	153828	157924	8	s.153900@153900#729c7c873193;s.154400@154400#5a01b4b272fb;s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149;s.157950@157950#93bfa0e6de7d	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	katze	127805	127805	1	s.127900@127900#f3de50fc58bd	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	story	9280	122151	118	s.126599@126599#19334832b963	recorded hits only; capture limits apply	0	
+0x80022580	fighter_Init	story-final-fight-retail-1@fbff35093e8e	strat	128290	128290	2	s.128700@128700#8bed85b46a95	recorded hits only; capture limits apply	0	
 0x80022580	fighter_Init	versus-2p-kimigaura-shore-kick-1@509182615398	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	versus-2p-pair-abandoned-station-1@35cceb29cd54	t_load	7875	7875	1	t_load.mid@8200#7ca4e26af107	hitmap:first 1 hits per phase only	0	
 0x80022580	fighter_Init	versus-2p-pair-abandoned-station-2@5fdd6dc95b9d	t_load	7875	7875	1	t_load.mid@8200#7ca4e26af107	hitmap:first 1 hits per phase only	0	
@@ -7817,6 +7823,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80023F08	fighter_Update	versus-2p-pair-underrail-2@f78c66dd6959	fight	8700	8700	1	fight.9000@9000#e6e25bb61121	hitmap:first 1 hits per phase only	0	
 0x80023F08	fighter_Update	versus-2p-pair-underrail-2@f78c66dd6959	fight_tail	10150	10150	1	fight_tail.last@10199#ed1d9bc6c8e5	hitmap:first 1 hits per phase only	0	
 0x80023F08	fighter_Update	versus-2p-pair-underrail-2@f78c66dd6959	t_load	8615	8615	1	t_load.last@8699#0d79e9d1bcc8	hitmap:first 1 hits per phase only	0	
+0x80028188	fighter_ResolveBoneHit+0x6B0	story-final-fight-retail-1@fbff35093e8e	final_fight	154558	157649	12	s.154600@154600#15f6583d7137;s.154700@154700#5387e3ea9450;s.155000@155000#59e647fb92aa;s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149	recorded hits only; capture limits apply	0	
 0x8002872C	fighter_TriggerOpponentResponseOnMoveFrame	versus-2p-pair-abandoned-station-1@35cceb29cd54	fight	8700	8700	1	fight.9000@9000#116b88a2d586	hitmap:first 1 hits per phase only	0	
 0x8002872C	fighter_TriggerOpponentResponseOnMoveFrame	versus-2p-pair-abandoned-station-1@35cceb29cd54	fight_tail	10150	10150	1	fight_tail.last@10199#68bf22be3008	hitmap:first 1 hits per phase only	0	
 0x8002872C	fighter_TriggerOpponentResponseOnMoveFrame	versus-2p-pair-abandoned-station-1@35cceb29cd54	t_load	8621	8621	1	t_load.last@8699#fdb84ef799f0	hitmap:first 1 hits per phase only	0	
@@ -9879,6 +9886,11 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80032854	func_80032854	ground-tag-versus-2p-tunnel-1@69a2954298ca	t_ko	10511	10607	6	t_ko.10550@10550#e88be0aeb7bb;t_ko.10650@10650#ec7cc2fc1266	recorded hits only; capture limits apply	0	
 0x80032854	func_80032854	ground-tag-versus-2p-underrail-1@ea88b127e2b5	fight	10268	10368	6	fight.10300@10300#1c499cbb7661;fight.last@10404#21cb1a21652d	recorded hits only; capture limits apply	0	
 0x80032854	func_80032854	ground-tag-versus-2p-underrail-1@ea88b127e2b5	t_ko	10514	10610	6	t_ko.10555@10555#849325cb2190;t_ko.10655@10655#910266385cb6	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	story-final-fight-retail-1@fbff35093e8e	after_katze	130554	142737	300	s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	breakpoint:first 300 hits per phase only	0	
+0x80032854	func_80032854	story-final-fight-retail-1@fbff35093e8e	final_fight	154497	157903	120	s.154500@154500#31bf9352c528;s.154600@154600#15f6583d7137;s.154700@154700#5387e3ea9450;s.155000@155000#59e647fb92aa;s.156400@156400#87b96380fdf7;s.157650@157650#9dfceab12149;s.157700@157700#6dcefd5242c1;s.157950@157950#93bfa0e6de7d	breakpoint:first 300 hits per phase only	0	
+0x80032854	func_80032854	story-final-fight-retail-1@fbff35093e8e	katze	126606	127386	28	s.127900@127900#f3de50fc58bd	breakpoint:first 300 hits per phase only	0	
+0x80032854	func_80032854	story-final-fight-retail-1@fbff35093e8e	story	9157	42533	300	s.126599@126599#19334832b963	breakpoint:first 300 hits per phase only	0	
+0x80032854	func_80032854	story-final-fight-retail-1@fbff35093e8e	strat	128830	129083	25	s.128900@128900#f0b953860ff2;s.129000@129000#03f5c5a229ee;s.129100@129100#5ed29a416fbf	breakpoint:first 300 hits per phase only	0	
 0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_0	8549	8549	1	kick_0.60@8570#a013104c6b35	recorded hits only; capture limits apply	0	
 0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_1	8749	8749	1	kick_1.60@8770#0f1d73fef466	recorded hits only; capture limits apply	0	
 0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_2	8949	8949	1	kick_2.60@8970#86a986077ce6	recorded hits only; capture limits apply	0	

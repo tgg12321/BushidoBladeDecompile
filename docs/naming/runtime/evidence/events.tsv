@@ -393,6 +393,98 @@ func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,214854144
 func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+fighter_Init	call	fight_Init	after_katze	0x8001DD90	report			18	[[0,0,0,0],[0,0,12,0],[1,1,15,3],[1,1,17,1],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	fight_Init	boot_intro	0x8001DD90	report			2	[[0,0,0,0],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	fight_Init	final_fight	0x8001DD90	report			6	[[0,0,0,0],[1,1,28,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	fight_Init	story	0x8001DD90	report			90	[[0,0,0,0],[0,0,7,0],[1,1,16,0],[1,1,26,2],[1,1,27,5],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	fight_Init	strat	0x8001DD90	report			2	[[0,0,0,0],[1,1,22,7]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8001C51C	after_katze	0x8001C594	report			8	[[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8001C51C	story	0x8001C594	report			19	[[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8003AF40	after_katze	0x8003AFA8	report			7	[[0,0,0,0],[0,0,12,0],[1,1,12,0],[1,1,15,3],[1,1,17,1],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8003AF40	boot_intro	0x8003AFA8	report			2	[[0,0,0,0],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8003AF40	final_fight	0x8003AFA8	report			2	[[1,1,1,0],[1,1,28,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8003AF40	katze	0x8003AFA8	report			1	[[1,1,22,7]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_Init	call	func_8003AF40	story	0x8003AFA8	report			9	[[0,0,0,0],[0,0,7,0],[1,1,7,0],[1,1,16,0],[1,1,26,2],[1,1,27,5],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+fighter_ResolveBoneHit+0x6B0	call	fighter_ProcessWeaponBodyHits	final_fight	0x8002BC10	report			12	[[1,18,528482772,2035],[1,18,528482772,2037],[1,18,528482784,2031],[1,18,528482808,1076],[1,18,528482832,2010],[1,18,528482844,1860],[1,18,528482856,2008],[1,18,528482856,2009]]	4	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_CastWeaponSegment	strat	0x8002A63C	coverage			4	[[1,11,528483200,528483248]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_CastWeaponSegment	strat	0x8002AA98	coverage			1	[[1,10,528483256,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchBoneHitSoundEvent	after_katze	0x80027974	report			34	[[0,35,528482748,0],[0,35,528482760,0],[0,35,528482772,0],[0,35,528482784,0],[0,36,528482856,0],[0,36,528482880,0],[0,36,528482952,0],[0,36,528482964,0]]	4	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_DispatchBoneHitSoundEvent	final_fight	0x80027974	report			5	[[0,35,528482748,0],[0,35,528482772,0],[1,34,528482472,0],[1,35,528482508,0],[1,36,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_DispatchBoneHitSoundEvent	katze	0x80027974	report			2	[[0,34,528482736,0],[1,36,528482592,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_DispatchBoneHitSoundEvent	story	0x80027974	report			33	[[0,34,528482736,0],[0,35,528482748,0],[0,35,528482760,0],[0,35,528482772,0],[0,36,528482820,0],[0,36,528482892,0],[1,34,528482472,0],[1,35,528482484,0]]	6	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_DispatchBoneHitSoundEvent	strat	0x80027974	report			2	[[0,34,528482736,0],[0,36,528482892,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027DA4	report			41	[[1,2,528482736,0],[1,2,528482748,0],[1,2,528482760,0],[1,2,528482772,0],[1,2,528482808,0],[1,2,528482892,0],[1,2,528482952,0],[1,15,528482748,0]]	4	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027DE8	coverage			31	[[0,37,528482736,0],[0,37,528482748,0],[0,37,528482760,0],[0,37,528482772,0],[0,37,528482808,0],[0,37,528482892,0],[0,37,528482952,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027E14	coverage			6	[[0,38,528482748,0],[0,38,528482856,0],[0,38,528482916,0],[0,38,528482976,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027E28	coverage			6	[[1,37,528482748,0],[1,37,528482856,0],[1,37,528482916,0],[1,37,528482976,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027E3C	report			37	[[1,37,528482736,0],[1,37,528482748,0],[1,37,528482760,0],[1,37,528482772,0],[1,37,528482808,0],[1,37,528482892,0],[1,37,528482952,0],[1,45,528482748,0]]	3	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027E60	coverage			4	[[0,38,528482772,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027E74	coverage			4	[[1,38,528482772,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80027E88	coverage			4	[[1,45,528482772,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x800282E4	coverage			1	[[0,3,528482568,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80028338	coverage			7	[[0,3,528482472,0],[0,3,528482628,0],[1,3,528482760,0],[1,3,528482784,0],[1,3,528482856,0],[1,3,528482880,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	after_katze	0x80028388	coverage			13	[[0,3,528482640,0],[1,3,528482952,0],[1,3,528482964,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80027DA4	report			2	[[0,15,528482496,0],[0,15,528482700,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80027E14	coverage			2	[[1,38,528482496,0],[1,38,528482700,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80027E28	coverage			2	[[0,37,528482496,0],[0,37,528482700,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80027E3C	report			2	[[0,45,528482496,0],[0,45,528482700,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80028188	coverage			12	[[1,18,528482772,0],[1,18,528482784,0],[1,18,528482808,0],[1,18,528482832,0],[1,18,528482844,0],[1,18,528482856,0],[1,18,528482868,0],[1,18,528482964,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80028338	coverage			1	[[1,3,528482772,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	final_fight	0x80028388	coverage			1	[[0,3,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	katze	0x80027DA4	report			2	[[0,15,528482700,0],[0,15,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveBoneHit	katze	0x80027E14	coverage			2	[[1,38,528482700,0],[1,38,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	katze	0x80027E28	coverage			2	[[0,37,528482700,0],[0,37,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	katze	0x80027E3C	report			2	[[0,45,528482700,0],[0,45,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveBoneHit	katze	0x80028338	coverage			1	[[0,3,528482592,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027DA4	report			8	[[0,15,528482700,0],[1,15,528482748,0],[1,15,528482772,0],[1,15,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027E14	coverage			3	[[0,38,528482856,0],[1,38,528482700,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027E28	coverage			3	[[0,37,528482700,0],[1,37,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027E3C	report			3	[[0,45,528482700,0],[1,45,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027E60	coverage			5	[[0,38,528482748,0],[0,38,528482772,0],[0,38,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027E74	coverage			5	[[1,38,528482748,0],[1,38,528482772,0],[1,38,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80027E88	coverage			5	[[1,45,528482748,0],[1,45,528482772,0],[1,45,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x800280F4	coverage			1	[[0,3,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x800282E4	coverage			4	[[0,3,528482580,0],[1,3,528482820,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80028338	coverage			3	[[0,3,528482484,0],[1,3,528482760,0],[1,3,528482892,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	story	0x80028388	coverage			5	[[0,3,528482700,0],[0,3,528482712,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveBoneHit	strat	0x80027DA4	report			4	[[0,2,528482484,0],[0,2,528482520,0],[1,2,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveBoneHit	strat	0x80027DE8	coverage			4	[[0,37,528482856,0],[1,37,528482484,0],[1,37,528482520,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	strat	0x80027E3C	report			4	[[0,37,528482484,0],[0,37,528482520,0],[1,37,528482856,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	after_katze	0x8002852C	report			20	[[0,1,528483316,0],[1,1,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	after_katze	0x80028540	report			20	[[0,37,528483316,0],[1,37,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	after_katze	0x80028628	report			8	[[0,38,528483316,0],[1,38,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	after_katze	0x8002863C	report			8	[[0,45,528483316,0],[1,45,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	final_fight	0x8002852C	report			19	[[0,1,528483316,0],[1,1,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	final_fight	0x80028540	report			19	[[0,37,528483316,0],[1,37,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	final_fight	0x80028628	report			19	[[0,38,528483316,0],[1,38,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	final_fight	0x8002863C	report			19	[[0,45,528483316,0],[1,45,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	katze	0x8002852C	report			3	[[0,1,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	katze	0x80028540	report			3	[[0,37,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	katze	0x80028628	report			3	[[1,38,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	katze	0x8002863C	report			3	[[1,45,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fighter_ResolveWeaponContact	story	0x8002852C	report			10	[[0,1,528483316,0],[1,1,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	story	0x80028540	report			10	[[0,37,528483316,0],[1,37,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	story	0x80028570	coverage			6	[[0,1,528483316,0],[1,1,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	story	0x80028584	coverage			6	[[0,37,528483316,0],[1,37,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	story	0x80028628	report			6	[[0,38,528483316,0],[1,38,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_ResolveWeaponContact	story	0x8002863C	report			6	[[0,45,528483316,0],[1,45,528483316,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	fighter_Update	after_katze	0x800269D0	coverage			9	[[0,46,2148540348,0],[1,46,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_Update	final_fight	0x800269D0	coverage			3	[[0,46,2148540348,0],[1,46,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	katze	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	story	0x800269D0	coverage			18	[[0,46,2148540348,0],[1,46,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	fighter_Update	strat	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	after_katze	0x80020674	report			13	[[0,4,528482496,2149579872],[1,4,528482748,2149579872],[1,4,528482868,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	func_800204C0	final_fight	0x80020674	report			3	[[0,4,528482484,2149579872],[0,4,528482496,2149579872],[1,4,528482748,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	func_800204C0	katze	0x80020674	report			1	[[1,4,528482760,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	func_800204C0	story	0x80020674	report			20	[[0,4,528482484,2149579872],[0,4,528482496,2149579872],[0,4,528482604,2149579872],[0,4,528482664,2149579872],[1,4,528482748,2149579872],[1,4,528482760,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	func_800204C0	strat	0x80020674	report			2	[[1,4,528482760,2149579872],[1,4,528482796,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	func_80026DA4	story	0x80027064	coverage			9	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
+func_80032854	call	func_80026DA4	story	0x800272C0	report			72	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	object_UpdatePool	after_katze	0x800315A0	report			34	[[0,41,2148559524,0],[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	object_UpdatePool	final_fight	0x800315A0	report			11	[[0,41,2148559524,0],[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	object_UpdatePool	katze	0x800315A0	report			3	[[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	object_UpdatePool	story	0x800315A0	report			59	[[0,41,2148559524,0],[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
+func_80032854	call	object_UpdatePool	strat	0x800315A0	report			3	[[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	story-ninja-cross-1@592828dcce41	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	story-ninja-cross-1@592828dcce41	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	35	[3,4,6,20,21]	0	story-ninja-cross-1@592828dcce41	0	
