@@ -51,7 +51,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 
 ## The shuffled ID list `D_801077B0`
 
-`func_800344B4` case 1 (src/main/24BF0.c:54) calls `fight_BuildOpponentOrder` and then
+`ApplyPendingConfigAndInitializeMode` case 1 (src/main/24BF0.c:54) calls `fight_BuildOpponentOrder` and then
 `fight_AdvanceOpponentOrder`.
 
 `fight_BuildOpponentOrder` (src/main/17AFC.c:5279):

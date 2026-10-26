@@ -87,15 +87,15 @@ expired.
 Q76 and Q82 are instances of [[completion-bar]] item 3 (labelled FAKEs); Q77 is
 re-opened by Q91 clause D.
 
-- **Q76 — fixed-point rescale, func_80058580 only.** At its two `lh; sra 4` sites (target 0x8005AB34 and 0x8005ACCC),
+- **Q76 — fixed-point rescale, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput only.** At its two `lh; sra 4` sites (0x8005AB34, 0x8005ACCC),
   `0x200 - ((x * 0x100) >> 12)` (4.12 multiply by 1/16, the function's own `* k >> 12` idiom on
   that field) is admitted for `0x200 - (x >> 4)`, with a comment at each site naming the 4.12
   factor and the measured cse shift fold. Nothing cancels; not a precedent elsewhere.
-- **Q77 — Q45 stands for func_8005C8A8** (re-opened by Q91 clause D). Neither the sibling end-pointer form
+- **Q77 — Q45 stands for func_8005C8A8.** Neither the sibling end-pointer form
   (`end_off = arg2 + 0x4F0; size = end_off - arg2;`) nor end-of-chunk minus start through a
   layout struct (`(u8 *)((T *)arg2 + 1) - (u8 *)arg2`) is admitted: both compute a constant by
   cancellation. The function stays open for a new mechanism.
-- **Q82 — one s16 compare, func_80058580 only.** `(s16)work2 < score` at the target's
+- **Q82 — one s16 compare, Q76's function only.** `(s16)work2 < score` at
   `sll; sra 16; slt` (0x8005A338), work2 holding the Q75 best-score value, is admitted despite the
   redundant-width-cast refusal, with a comment citing the sign-extend pair, the Q75 value and the measured
   alternatives. No other cast or site.

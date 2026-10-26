@@ -93,13 +93,13 @@ assigns to `D_800A3834` itself.
 | 0 | `fight_Init` (src/main/9F9C.c:1757) | 1 | sets up the fight (fighters through `fighter_Init`, the object pool, the view) |
 | 1 | `fight_Update` (src/main/9F9C.c:2028) | | per-frame fight: `fighter_BuildCpuOrMappedPadState` / `fighter_Update` per fighter, `fight_UpdateFighterInteractionsAndPointCaches`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
 | 2 | `func_80033898` (src/main/17AFC.c:5273) | 3 | resets graphics, clears `D_800A37B8` |
-| 3 | `func_80034708` (src/main/24F08.c:28) | | prints the `D_80102778` settings with `font_Printf` and steps the two cursors `D_800A3174`; calls `func_800344B4` |
+| 3 | `menu_PrintEditAndApplyConfigWithPerPadCursors` (src/main/24F08.c:28) | | prints the `D_80102778` settings with `font_Printf` and steps the two cursors `D_800A3174`; calls `ApplyPendingConfigAndInitializeMode` |
 | 4 | `replay_Start` (src/main/28708.c:1287) | 5 | view and fighter setup |
 | 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
 | 6 | `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
 | 7 | `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550) | 0 | waits, then the next script step |
-| 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
-| 9 | `func_80035828` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
+| 8 | `menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
+| 9 | `menu_UpdateRowMenuAndSubflows` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
 | 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
 | 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `D_80106A50` |
 | 12 | `func_8001EA04` (src/main/9F9C.c:2060) | 0xD | |
@@ -109,15 +109,15 @@ assigns to `D_800A3834` itself.
 | 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | when gated, starts an indexed common script on fighter `D_800A3748` (`fighter_StartMoveScript`) and sets its `unk_26C` |
 | 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `fight_AdvanceOpponentOrder` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
 | 18 | `fight_InitImageAndPlaybackPresentation` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
-| 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
+| 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush`, then picks the next mode |
 | 20 | `fight_TallyMatchResultsAndInitPresentation` (src/main/2B344.c:754) | 0x15 | |
 | 21 | `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
 | 22 | `fight_InitCommandStreamImageLoad` (src/main/2B344.c:421) | 0x17 | |
 | 23 | `fight_UpdateCommandStreamImageLoadAndResume` (src/main/2B344.c:432) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
 | 24 | `fight_InitRotatingViewThreeOptionChoice` (src/main/2B344.c:877) | 0x19 | |
 | 25 | `fight_UpdateRotatingViewThreeOptionChoice` (src/main/2B344.c:886) | 0, 8 | view (`gpu_ResetDrawQueueAndPrepareViewAndLighting`) and its own per-frame work |
-| 26 | `func_80035DC8` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
-| 27 | `func_80035E38` (src/main/25C38.c:407) | 8 | screen gradient and the memory-card flow `func_80038C70` |
+| 26 | `menu_ReleaseResourcesCloseVabsAndInitRowMenu` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
+| 27 | `DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit` (src/main/25C38.c:407) | 8 | screen gradient and the memory-card flow `memcard_StepSaveOverwriteAndFormatPrompts` |
 | 28 | `fight_InitNearestStartPairPlayback` (src/main/2B344.c:990) | 0x1D | view and scene setup |
 | 29 | `fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams` (src/main/2B344.c:1039) | 0x18 | frame-threshold cues on `D_800A37B8` |
 | 30 | `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822) | 0x1F | stores the three clock records |

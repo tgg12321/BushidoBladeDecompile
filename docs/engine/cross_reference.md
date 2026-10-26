@@ -15,10 +15,10 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `6CF8.c` | 0x800164F8 | boot and frame loop: `main`, `sys_Init`, `disp_Init`, `func_80016D78`, `sys_Panic`, `eff_Init`, `snd_InitAndLoadCommonVab`, `pcdrv_*`, `rng_*`, `scratchpad_*`, `math_FovToScreenDist`, `math_Distance3D*`; [main_loop.md](main_loop.md), [gpu_pipeline.md](gpu_pipeline.md) |
 | `87A0.c` | 0x80017FA0 | 12 functions: `pad_ResetState`, `pad_ResetStateMarkValid`, `pad_Update`, `softbody_PrepareStep`, `softbody_SolveSprings` ([replay.md](replay.md)) |
 | `9F9C.c` | 0x8001979C | 93 functions, among them `camera_CalcEye`, `math_RotMatrixZYXAngles`, `pad_ClearStateBits`, `fighter_Update` |
-| `175A4.c` | 0x80026DA4 | `func_80026DA4` |
+| `175A4.c` | 0x80026DA4 | `fight_UpdatePairedInputTotalsEventsAndMidpointEffects` |
 | `17AFC.c` | 0x800272FC | 80 functions, the collision code among them (`box_overlap`, `math_LerpAngle`; the scratchpad record at 0x1F8002B8, include/game.h:1180) |
-| `24BF0.c`, `24F08.c`, `25788.c` | 0x800343F0.. | `func_800343F0`, `func_800344B4`, `func_80034708`, and four more |
-| `25C38.c` | 0x80035438 | 10 functions: `bits_ExtractMask3F83F8`, `bits_DepositMask3F83F8`, `gpu_AddScreenGradient`, `func_80035618` |
+| `24BF0.c`, `24F08.c`, `25788.c` | 0x800343F0.. | `ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests`, `ApplyPendingConfigAndInitializeMode`, `menu_PrintEditAndApplyConfigWithPerPadCursors`, and four more |
+| `25C38.c` | 0x80035438 | 10 functions: `bits_ExtractMask3F83F8`, `bits_DepositMask3F83F8`, `gpu_AddScreenGradient`, `menu_InitSubflowForMode` |
 | `26730.c`, `267A8.c`, `26940.c`, `cdrom.c` | 0x80035F30.. | the CD module: `cdrom_*`, `snd_SerialMixOn`, `sys_Exec`; [file_io.md](file_io.md) |
 | `memcard.c`, `28514.c` | 0x800375EC.. | memory card: `memcard_*`, `func_80037D14`; [file_io.md](file_io.md) |
 | `28708.c` | 0x80037F08 | `memcard_Format`, the save flow (`memcard_StepRequest`, `memcard_PollFileCompletion`), the link-cable session layer `comb_*`, `math_Popcount32` |
@@ -29,7 +29,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `gpu_ResetDrawQueueAndPrepareViewAndLighting` ([replay.md](replay.md)), `math_SetLightPlaneProjection` / `math_ApplyLightPlaneProjection` ([gpu_pipeline.md](gpu_pipeline.md)) |
 | `3AB48.c` | 0x8004A348 | 72 functions: GTE and math helpers (`gte_*`, `math_*`) and the renderers `gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles` .. `func_80051ED4` |
 | `43500.c` | 0x80052D00 | 16 functions: the stage-collision grid walk `collision_WalkSegmentGrid` and its tests and accessors (`collision_TestSegmentWithWork`), then the motion-sequence loader `motion_StartPlayback` ([motion.md](motion.md)) |
-| `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`motion_UpdatePlayback`, `func_80058580`) ([motion.md](motion.md)) |
+| `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`motion_UpdatePlayback`) and CPU navigation (`fighter_UpdateCpuNavigationChooseScriptsAndHeldInput`) ([motion.md](motion.md)) |
 | `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `snd_QueueSound` / `snd_FlushSoundQueue` ([sound.md](sound.md)) |
 | `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`func_8005C8A8` .. `func_80060768`) |
 | `51268.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |

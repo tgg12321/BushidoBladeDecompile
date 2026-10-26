@@ -13,7 +13,7 @@ src/main/9F9C.c:2044, :2088 and :2197, each followed by `object_UpdatePool` (the
 object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 `move_kind`:
 
-- 0xF, 0x1C..0x21: `func_80026DA4` (src/main/175A4.c:21) only.
+- 0xF, 0x1C..0x21: `fight_UpdatePairedInputTotalsEventsAndMidpointEffects` (src/main/175A4.c:21) only.
 - 0x11: `func_8002C0DC` (src/main/17AFC.c:2061) only.
 - otherwise, in order:
   1. `fighter_TriggerOpponentResponseOnMoveFrame` (src/main/17AFC.c:736): per-fighter checks of

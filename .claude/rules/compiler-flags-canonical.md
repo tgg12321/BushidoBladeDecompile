@@ -82,7 +82,7 @@ the `-G8` part; the extern screening); (iv); (v); (vi) incl. manual path only. O
 [[per-file-gp-model]] A7) is restored verbatim as its own `.rodata`-only `-G0` file linked between Q89's head
 and tail. Evidence: under `-G8` cc1 emits every file-scope data object before every function's jump tables, so
 inside the head the block lands ahead of `.L10/.L26/.L55`; at the tail's top the tail starts at phase 0, not
-func_80058580's table phase 4 (`faa2ebb06^:memory/grind/camera_CalcAngles/q89split/`). A7 does not apply to this block.
+fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's table phase 4 (`faa2ebb06^:memory/grind/camera_CalcAngles/q89split/`). A7 does not apply to this block.
 Q89's other conditions are unchanged; split and `-G8` opt-in each land oracle-green with a layer-2.
 
 ## Related

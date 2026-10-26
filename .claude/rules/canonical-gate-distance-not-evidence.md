@@ -27,4 +27,4 @@ Before reaching for canonical asm:
 3. "It's a hard function" is not a no-C-form case ([[no-new-park-categories]]); the matching C exists and the
    toolchain is frozen ([[no-compiler-divergence]]).
 
-Multi-session is not canonical-asm (e.g. `fighter_Update`, `func_80058580`).
+Multi-session is not canonical-asm (e.g. `fighter_Update`, `fighter_UpdateCpuNavigationChooseScriptsAndHeldInput`).

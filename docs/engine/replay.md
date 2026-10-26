@@ -114,13 +114,13 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
    (`calc_LightMatrix`) and runs `light_ResetPointLight`, `ClearSavedWordPairsAndTwoWriteOnlyWords`,
    `func_8003F5CC`.
 
-The two other "rob back" names sit on unrelated code: `func_80035618`
+The two other "rob back" names sit on unrelated code: `menu_InitSubflowForMode`
 (src/main/25C38.c:96, once `replay_camera_rob_back_loose2`) is a switch on its
 argument (0..7) that sets the state `D_800A3740` and, by case, calls
 `InitTimedSpriteSequence`, `InitWithCachedValueAndStoredBitsBlackBg` and `menu_InitSelWithStoredBits` (each with the buffer
 address 0x80118800), `snd_SerialMixOn`, `cdrom_StartAudioEntry`,
 `menu_ResetFlowBackgroundAndConfirmCursor`, `comb_Connect`, `StoreCompactedBits`, `snd_QueueSound` and
-`func_800355E8`;
+`cdrom_EnableSerialMixAndStartRepeatingAudio`;
 `math_RotMatrixYXZ` (src/main/32D04.c:268, once
 `replay_camera_rob_back_loose3`) builds a rotation matrix from three angles.
 

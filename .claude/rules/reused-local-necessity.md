@@ -63,7 +63,7 @@ For a fresh multi-write local none of Rulings 5-10 admits (a Q51-cited SOTN reus
 - **(G)** A fresh layer-2 PASS walking (A)-(H); a Judge PASS is not enough (manual path).
 - **(H)** Everything else judged normally.
 
-**Owner ruling Q74 (2026-10-01) — func_80058580 only: an original read-before-write.** The
+**Owner ruling Q74 (2026-10-01) — fighter_UpdateCpuNavigationChooseScriptsAndHeldInput only: an original read-before-write.** The
 target's 0x394-slot switch reads $s3 (`sltiu` 0x80059D70, `sll` 0x80059DB4) with no write on
 the path p[0x39C] == 1, opponent state neither 0x19 nor 0x1A (0x80059D18 -> 0x80059D6C ->
 0x80059DB0): the stale value of earlier, unrelated work. The one shared work variable

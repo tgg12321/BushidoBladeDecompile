@@ -4,7 +4,7 @@
 A capture whose spec "values" holds {"at": "0x800A33F0", "ptr_off": 0, ...}
 reads the grid collision_SetGrid stored (43500.c:557) as raw bytes. This
 restates every face of it as grid_tags.tsv in the capture directory, the
-layout func_80053E9C / func_80053754 walk (43500.c):
+layout collision_TestCellKeepingNearestHitGteProjection / collision_TestCellKeepingNearestHitScalarProjection walk (43500.c):
   32x32 u16 byte offsets from the grid base, row-major (index cz*32 + cx;
   0xFFFF = empty cell); cell (cx, cz) spans world x cx*2000-32000 and z
   cz*2000-32000, 2000 units each;

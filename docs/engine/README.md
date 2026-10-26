@@ -97,10 +97,10 @@ address is the stable key.
 | `ings.c` | 0x800164F8-0x80017FA0 | Boot/init: `main`, `func_80016D78`, `disp_Init`, PC-drv file loaders, RNG, object-position math, scratchpad save/restore |
 | `code6cac.c` | 0x80017FA0-0x8001979C | mixed / unclear (11 functions, mostly unnamed) |
 | `code6cac_tu2.c` | 0x8001979C-0x80026DA4 | Game-mode handlers and match flow (`D_8008D090` slots 1/12/17: `fight_Update`, `func_8001EA04`, `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress`), practice-menu code (motion_ResolveMoveData), CPU move-pattern helpers; mixed |
-| `code6cac_b.c` | 0x80026DA4-0x800272FC | func_80026DA4 only (CPU/AI helper per its alias) |
+| `code6cac_b.c` | 0x80026DA4-0x800272FC | fight_UpdatePairedInputTotalsEventsAndMidpointEffects only |
 | `code6cac_b_tu2.c` | 0x800272FC-0x800343F0 | Fighter combat and CPU/AI: distance/separation, dodge checks, `cpu_set_move_command_and_dir`, `cpu_check_same_dir_timer`, GTE transforms |
 | `code6cac_b_tu3.c` | 0x800343F0-0x80034708 | 2 functions; mixed / unclear |
-| `code6cac_b3.c` | 0x80034708-0x80034F88 | func_80034708 alone (`-G8` unit); mixed / unclear |
+| `code6cac_b3.c` | 0x80034708-0x80034F88 | menu_PrintEditAndApplyConfigWithPerPadCursors alone (`-G8` unit); mixed / unclear |
 | `code6cac_b3_post.c` | 0x80034F88-0x80035438 | Mode handlers (`mode_handler_14`, mode helpers) |
 | `code6cac_b2_post.c` | 0x80035438-0x80035F30 | Mode helpers, scene teardown, bit-mask pack helpers; mixed |
 | `code6cac_b4.c` | 0x80035F30-0x80035FA8 | CD-audio mix setters (`cdrom_SetMix`) |

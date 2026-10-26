@@ -49,10 +49,10 @@ until an opcode ends the step. The opcodes and what they do:
 Handlers that the script's modes reach:
 
 - `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478, mode 6) loads the scene the
-  `D_800A3878` block describes (`func_80054884` with its byte 0 and the
+  `D_800A3878` block describes (`motion_StartPlaybackAtIndexedBasePlusOffset` with its byte 0 and the
   fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, D_800A3878[1])`) and sets mode 7.
 - `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550, mode 7) counts `D_800A37B8`; while
-  `func_80054F68()` is nonzero it waits for Cross. It then pauses the CD and,
+  `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
 - `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595, mode 10) resets the scene state
@@ -69,7 +69,7 @@ Handlers that the script's modes reach:
 - `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786, mode 21) plays sounds at frames
   0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
 - `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822, mode 30) copies the three clock
-  records `D_80106A50.times` into the record `func_80077D00()` returns, as
+  records `D_80106A50.times` into the record `GetWorkingRecord()` returns, as
   minutes, seconds and hundredths (its comment, src/main/2B344.c:817).
 
 ## The row menu (src/main/596CC.c)

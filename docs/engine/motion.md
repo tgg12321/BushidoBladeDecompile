@@ -91,12 +91,12 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
 4. integrates the velocities `unk_104` / `unk_134`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
-   `func_80041188(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:4898) and
+   `slot_BlendTwoPosesIntoNodeMatrices(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:4898) and
    `func_80040D48` (src/main/9F9C.c:4901).
 
 ## Building the pose
 
-- `func_80041188(i, f0, f1, w, m)` (src/main/31548.c:194): for joints 1..17
+- `slot_BlendTwoPosesIntoNodeMatrices(i, f0, f1, w, m)` (src/main/31548.c:194): for joints 1..17
   it builds a rotation matrix from each frame's angle triple (the joint's
   offset into the frame comes from `D_80094CFC`) and blends the pair by `w`
   with `gte_LerpMatrixRowsAndRebuildOrthonormalBasis` into the model object's node `work` matrices
@@ -112,7 +112,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 - `replay_PlayFrame` (src/main/28708.c:1338) rebuilds both fighters from the
   per-frame records `g_replay_fighter_frames` (`Rec1C`, include/game.h:1807, written by
   `replay_RecordFighter` from `cur_move`, `world_pos`, `unk_64`, `unk_66`, `pose_interp_weight` and others): it
-  decodes the two stored frame keys and calls `func_80041188` /
+  decodes the two stored frame keys and calls `slot_BlendTwoPosesIntoNodeMatrices` /
   `func_80040D48` as the live path does.
 - `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera
   stream plus per-object motion streams it registers with `motion_InitStream`
