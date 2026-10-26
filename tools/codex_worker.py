@@ -60,6 +60,15 @@ from pathlib import Path
 BRIDGE = Path.home() / ".claude" / "skills" / "codex" / "codex_bridge.py"
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]{1,47}$")
 ORACLE_SHA1 = "62efab4f73f992798c43e8c730aa43baa10bb4fa"
+# Build-only exemption, NOT a gate exemption. Makefile clean-check reads src/,
+# include/, asm/, bb2.ld, symbol/maspsx *.txt lists, bb2.sha1, compiler/tools,
+# prologue_config.json and tools/{delay_slot_ra,frame_fix}_funcs.txt. Its Python
+# chain is prologue_fix, maspsx (+ maspsx/__init__), multu_pad, make_psexe (+
+# elf32), engine.tus/buildconfig and buildstamp (CONFIGS + inputs() globs).
+# None reads these prefixes; docs/naming DOES feed integrity, tests and layer2.
+# Narrower than lanes.json: all other paths conservatively require a full build.
+BUILD_INERT_PREFIXES = ("docs/", "tools/trace/")
+LAND_UNLOCKED_ATTEMPTS = 5
 DATA_ONLY = re.compile(r"^(src|include|asm)/")      # what Codex may build through `shadow`
 ENGINE_READONLY = ("sandbox", "canonical", "diagnose", "dossier", "verify-oracle", "tus-check", "test",
                    "fixtures-verify", "layer2", "queue")
@@ -1738,14 +1747,13 @@ def wsl_path(p):
     return f"/mnt/{m.group(1).lower()}/{m.group(2)}" if m else s
 
 
-def verify_tip(main, trusted, tip, paths):
-    """Clean build of the exact commit that becomes main, in the trusted tree; SHA1 computed here."""
+def trusted_at_tip(trusted, tip):
     if git("rev-parse", "HEAD", cwd=trusted) != tip or git("status", "--porcelain", cwd=trusted):
         refuse("the trusted worktree is not clean at the branch tip")
-    marker = main / "tmp" / "codex" / "built" / f"{tip}.ok"
-    if marker.exists():
-        print(f"codex_worker: {tip[:9]} already built and verified")
-        return
+
+
+def verify_build(main, trusted, tip):
+    """Clean rebuild and independently hash the exact candidate executable."""
     wteng = str(main / "tools" / "wteng.ps1")
     run_checked(["pwsh", "-NoProfile", "-File", wteng, str(trusted), "make", "clean-check"],
                 f"clean full build of {tip[:9]}", must_contain="OK: bb2 matches!")
@@ -1754,12 +1762,32 @@ def verify_tip(main, trusted, tip, paths):
     if got != ORACLE_SHA1:
         refuse(f"{exe} SHA1 {got} != oracle {ORACLE_SHA1}")
     print(f"codex_worker: build/bb2.exe SHA1 {got} == oracle")
-    if any(not CHEAT_PATHS.match(p) and not p.startswith("docs/") for p in paths):
+
+
+def verify_gates(main, trusted, tip, paths, moved=()):
+    """Gates on the exact clean tip, including build-inert naming/trace inputs; no build receipt."""
+    trusted_at_tip(trusted, tip)
+    wteng = str(main / "tools" / "wteng.ps1")
+    if (any(not CHEAT_PATHS.match(p.casefold()) and not p.casefold().startswith("docs/")
+            for p in paths)
+            or any(p.casefold().startswith("docs/naming/") or p.casefold().endswith(".py")
+                   for p in moved)):
         run_checked(["pwsh", "-NoProfile", "-File", wteng, str(trusted), "test"], "engine test suite")
     run_checked(["wsl", "bash", "-c", f"cd '{wsl_path(trusted)}' && source .venv/bin/activate && "
                  "python3 tools/check_completion_integrity.py"], "completion-integrity audit")
     if git("status", "--porcelain", cwd=trusted):
         refuse("the build/test left the trusted tree dirty: " + git("status", "--porcelain", cwd=trusted))
+
+
+def verify_tip(main, trusted, tip, paths):
+    """Full build, SHA1 and gates; only this path may write a full-verification receipt."""
+    trusted_at_tip(trusted, tip)
+    marker = main / "tmp" / "codex" / "built" / f"{tip}.ok"
+    if marker.exists():
+        print(f"codex_worker: {tip[:9]} already built and verified")
+        return
+    verify_build(main, trusted, tip)
+    verify_gates(main, trusted, tip, paths)
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text("ok")
 
@@ -1798,6 +1826,36 @@ def push(main):
     print("codex_worker: PUSHED")
 
 
+def acquire_land_lock(main, item):
+    _, st = lock(main, "status", item)
+    held_before = "(yours)" in st
+    ok, _ = lock(main, "acquire", item)
+    if not ok:
+        print("codex_worker: the main-reintegration lock is held by another live session; land again "
+              "later (never steal a fresh lock)")
+        sys.exit(5)
+    return held_before
+
+
+def land_quick_paths(main, verified, base):
+    """Main's build-inert, disjoint delta since the full pass, or None for a full build."""
+    if verified is None or verified[0] == base:
+        return None
+    old_base, _, _, paths = verified
+    r = subprocess.run(["git", "merge-base", "--is-ancestor", old_base, base],
+                       cwd=str(main), env=clean_env())
+    if r.returncode != 0:
+        return None
+    # The pipeline's optional environment overrides can redirect its config reads.
+    if any(os.environ.get(k) for k in ("PROLOGUE_CONFIG", "DELAY_SLOT_RA_FUNCS", "FRAME_FIX_FUNCS")):
+        return None
+    moved = {p.casefold() for p in git("diff", "--name-only", "-z", "--no-renames", old_base, base,
+                            cwd=main).split("\0") if p}
+    if moved & {p.casefold() for p in paths} or any(not p.startswith(BUILD_INERT_PREFIXES) for p in moved):
+        return None
+    return moved
+
+
 def cmd_land(a):
     main, scratch, trusted, branch = layout(a.item)
     if pin_file(main).exists():
@@ -1812,85 +1870,115 @@ def cmd_land(a):
         refuse(f"{branch} has no commit of its own to land (run `commit` first)")
     if not already:
         scratch_committed(main, a.item, scratch, branch)
-    for attempt in range(1, 6):
-        if not already:
-            reset_trusted(main, trusted)
-            base, tip = single_commit(main, branch)
-            main_tip = git("rev-parse", "main", cwd=main)
-            if base != main_tip:
-                codex_idle(main, scratch)  # before the branch moves: after_rebase re-creates scratch
-                print(f"codex_worker: main moved; rebasing {branch} onto {main_tip[:9]}")
-                r = subprocess.run(["git", "rebase", "main"], cwd=str(trusted), capture_output=True, text=True,
-                                   env=clean_env(GIT_EDITOR="true"))
-                if r.returncode != 0:
-                    subprocess.run(["git", "rebase", "--abort"], cwd=str(trusted), capture_output=True, env=clean_env())
-                    print((r.stdout + r.stderr).strip()[-1500:])
-                    print(f"codex_worker: CONFLICT rebasing onto main (aborted, trees clean). Run\n"
-                          f"  python tools/codex_worker.py rebase {a.item}  -> edit the conflicted files in {trusted}\n"
-                          f"  python tools/codex_worker.py rebase {a.item} --continue\n"
-                          f"then land again (its review gate says whether the resolved diff needs new reviews).")
-                    sys.exit(6)
-                after_rebase(main, a.item, scratch, trusted, branch)
-                continue
-            kinds, paths, problems = review_gate(main, a.item, tip)
-            ledgers = ledger_changes(main, tip)
-            bodies = changed_layer2_bodies(main, tip) if kinds else set()
-            problems += [f"{f}: this commit changes its body, which has a layer-2 ledger, but records no "
-                         "verdict on it: a fresh cheat-reviewer on the new body, then `layer2` its verdict"
-                         for f in sorted(bodies - set(ledgers))]
-            problems += ledger_problems(ledgers, bool(kinds), bodies)
-            problems += copy_problems(verdict_copies(main, tip), ledgers)
-            if problems:
-                print("codex_worker: review gate: required " + (", ".join(kinds) or "nothing (ledger-only)"))
-                for p in problems:
-                    print("  ! " + p)
-                sys.exit(9)
-            print(f"codex_worker: reviews OK ({', '.join(kinds) or 'ledger-only'}; layer-2 records: "
-                  f"{', '.join(sorted(ledgers)) or 'none'}) on {tip[:9]}")
-            # The amend below re-stages nothing, so format_guard cannot see this commit's C; check
-            # it here (a hand-resolved rebase conflict is the one way unformatted C gets in).
-            tree0 = git("rev-parse", f"{tip}^{{tree}}", cwd=main)
-            if format_tree(main, a.item, tree0, paths) != tree0:
-                refuse("the commit's C is not formatted (a hand-resolved rebase conflict?): re-run "
-                       "`commit` (it formats), then review the new key")
-            # The repo hooks (commit-msg chain, pre-commit) run now, on the REVIEWED content, in the
-            # trusted tree: re-commit the same tree and message.
-            key0 = diff_key(main, tip)
-            r = subprocess.run(["git", "commit", "--amend", "--no-edit", "-q"], cwd=str(trusted),
-                               capture_output=True, text=True, env=clean_env())
-            print((r.stdout + r.stderr).strip())
-            if r.returncode != 0:
-                refuse("the repo hooks rejected the reviewed commit (output above)")
-            tip = git("rev-parse", "HEAD", cwd=trusted)
-            if diff_key(main, tip) != key0:
-                refuse("the hook re-commit changed the diff -- investigate")
-            verify_tip(main, trusted, tip, paths)
-            if kinds:
-                for func in sorted(ledgers):
-                    engine_layer2_check(main, trusted, func)
-            if a.dry_run:
-                print(f"codex_worker: DRY RUN -- {tip[:9]} is ready to fast-forward main; stopping here")
-                return
-        else:
-            tip, paths = tip0, []
-            print(f"codex_worker: {tip[:9]} is already on main; pushing only")
-        _, st = lock(main, "status", a.item)
-        held_before = "(yours)" in st
-        ok, _ = lock(main, "acquire", a.item)
-        if not ok:
-            print("codex_worker: the main-reintegration lock is held by another live session; land again "
-                  "later (never steal a fresh lock)")
-            sys.exit(5)
+    verified = None  # last full pass: (base, tip, tree, item paths)
+    full_reverifies = attempt = 0
+    while True:
+        attempt += 1
+        acquired = held_before = False
         try:
+            main_tip = git("rev-parse", "main", cwd=main)
+            # A dry run returns after its first verification, so verified remains None
+            # at every lock decision it can reach; neither early-lock condition is live.
+            quick_paths = land_quick_paths(main, verified, main_tip)
+            if full_reverifies >= 2 or quick_paths is not None:
+                held_before = acquire_land_lock(main, a.item)
+                acquired = True
+                print("codex_worker: holding reintegration lock through rebase and gates "
+                      + ("for build-only reuse" if quick_paths is not None else
+                         "after two full re-verifies caused by main moving"))
+                main_tip = git("rev-parse", "main", cwd=main)
+            # Locked attempts always get to finish, even after the unlocked budget.
+            if attempt > LAND_UNLOCKED_ATTEMPTS and not acquired:
+                refuse("main kept moving; gave up after 5 attempts -- land again")
+            if not already:
+                reset_trusted(main, trusted)
+                base, tip = single_commit(main, branch)
+                if base != main_tip:
+                    codex_idle(main, scratch)  # before the branch moves: after_rebase re-creates scratch
+                    print(f"codex_worker: main moved; rebasing {branch} onto {main_tip[:9]}")
+                    r = subprocess.run(["git", "rebase", "main"], cwd=str(trusted), capture_output=True, text=True,
+                                       env=clean_env(GIT_EDITOR="true"))
+                    if r.returncode != 0:
+                        subprocess.run(["git", "rebase", "--abort"], cwd=str(trusted), capture_output=True, env=clean_env())
+                        print((r.stdout + r.stderr).strip()[-1500:])
+                        print(f"codex_worker: CONFLICT rebasing onto main (aborted, trees clean). Run\n"
+                              f"  python tools/codex_worker.py rebase {a.item}  -> edit the conflicted files in {trusted}\n"
+                              f"  python tools/codex_worker.py rebase {a.item} --continue\n"
+                              f"then land again (its review gate says whether the resolved diff needs new reviews).")
+                        sys.exit(6)
+                    after_rebase(main, a.item, scratch, trusted, branch)
+                    base, tip = single_commit(main, branch)
+                # Rebase resolves main itself: it may have advanced after our earlier read.
+                main_tip = base
+                quick_paths = land_quick_paths(main, verified, base) if acquired else None
+                kinds, paths, problems = review_gate(main, a.item, tip)
+                ledgers = ledger_changes(main, tip)
+                bodies = changed_layer2_bodies(main, tip) if kinds else set()
+                problems += [f"{f}: this commit changes its body, which has a layer-2 ledger, but records no "
+                             "verdict on it: a fresh cheat-reviewer on the new body, then `layer2` its verdict"
+                             for f in sorted(bodies - set(ledgers))]
+                problems += ledger_problems(ledgers, bool(kinds), bodies)
+                problems += copy_problems(verdict_copies(main, tip), ledgers)
+                if problems:
+                    print("codex_worker: review gate: required " + (", ".join(kinds) or "nothing (ledger-only)"))
+                    for p in problems:
+                        print("  ! " + p)
+                    sys.exit(9)
+                print(f"codex_worker: reviews OK ({', '.join(kinds) or 'ledger-only'}; layer-2 records: "
+                      f"{', '.join(sorted(ledgers)) or 'none'}) on {tip[:9]}")
+                # The amend below re-stages nothing, so format_guard cannot see this commit's C; check
+                # it here (a hand-resolved rebase conflict is the one way unformatted C gets in).
+                tree0 = git("rev-parse", f"{tip}^{{tree}}", cwd=main)
+                if format_tree(main, a.item, tree0, paths) != tree0:
+                    refuse("the commit's C is not formatted (a hand-resolved rebase conflict?): re-run "
+                           "`commit` (it formats), then review the new key")
+                # The repo hooks (commit-msg chain, pre-commit) run now, on the REVIEWED content, in the
+                # trusted tree: re-commit the same tree and message.
+                key0 = diff_key(main, tip)
+                r = subprocess.run(["git", "commit", "--amend", "--no-edit", "-q"], cwd=str(trusted),
+                                   capture_output=True, text=True, env=clean_env())
+                print((r.stdout + r.stderr).strip())
+                if r.returncode != 0:
+                    refuse("the repo hooks rejected the reviewed commit (output above)")
+                tip = git("rev-parse", "HEAD", cwd=trusted)
+                if diff_key(main, tip) != key0:
+                    refuse("the hook re-commit changed the diff -- investigate")
+                tree = git("rev-parse", f"{tip}^{{tree}}", cwd=main)
+                if quick_paths is not None:
+                    changed = {p.casefold() for p in git("diff", "--name-only", "-z", "--no-renames",
+                                             verified[2], tree, cwd=main).split("\0") if p}
+                    if changed != quick_paths or {p.casefold() for p in paths} != verified[3]:
+                        print("codex_worker: rebased tree changed beyond main's inert delta; full verify")
+                        quick_paths = None
+                if quick_paths is None:
+                    verify_tip(main, trusted, tip, paths)
+                    if verified is not None and base != verified[0]:
+                        full_reverifies += 1
+                    verified = (base, tip, tree, {p.casefold() for p in paths})
+                else:
+                    verify_gates(main, trusted, tip, paths, moved=quick_paths)
+                    print("codex_worker: quick revalidation OK (build reused; gates rerun)")
+                if kinds:
+                    for func in sorted(ledgers):
+                        engine_layer2_check(main, trusted, func)
+                if a.dry_run:
+                    print(f"codex_worker: DRY RUN -- {tip[:9]} is ready to fast-forward main; stopping here")
+                    return
+            else:
+                tip, paths = tip0, []
+                print(f"codex_worker: {tip[:9]} is already on main; pushing only")
+            if not acquired:
+                held_before = acquire_land_lock(main, a.item)
+                acquired = True
             if git("symbolic-ref", "-q", "--short", "HEAD", cwd=main, check=False) != "main":
                 refuse("the main checkout is not on branch main")
             if not already:
                 if git("rev-parse", "main", cwd=main) != main_tip:
                     print("codex_worker: main moved while taking the lock; retrying")
                     continue
-                names = {n for n in git("diff", "--name-only", "-z", "--no-renames", main_tip, tip,
+                names = {n.casefold() for n in git("diff", "--name-only", "-z", "--no-renames", main_tip, tip,
                                         cwd=main).split("\0") if n}
-                overlap = sorted(peer_paths(main) & names)
+                overlap = sorted({p.casefold() for p in peer_paths(main)} & names)
                 if overlap:
                     print("codex_worker: a peer session has uncommitted work on paths this commit changes "
                           "in the main checkout: " + ", ".join(overlap) + ". Land again once they commit.")
@@ -1910,9 +1998,8 @@ def cmd_land(a):
                 push(main)
             return
         finally:
-            if not held_before:
+            if acquired and not held_before:
                 lock(main, "release", a.item)
-    refuse("main kept moving; gave up after 5 attempts -- land again")
 
 
 def cmd_cleanup(a):

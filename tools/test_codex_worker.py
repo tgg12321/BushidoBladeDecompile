@@ -17,7 +17,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import ExitStack, redirect_stderr, redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -977,6 +977,327 @@ class LandGate(Repo):
         self.assertEqual(code, 9, out)
         self.assertIn("latest layer-2 record is FAIL", out)
         self.assertEqual(checks, [])
+
+
+class LandMovingMain(unittest.TestCase):
+    """Mock commands, but compute tree deltas from independent file-content snapshots."""
+
+    def land(self, moved=("docs/peer.md",), item=("src/item.c",), moves=1,
+             extra=(), held=False, dry_run=False, failure=None, ancestor=True,
+             changed_item=None, initial_behind=False, rebase_race=False):
+        events = []
+        state = {"main": "m0", "base": "old" if initial_behind else "m0",
+                 "tip": "t0", "acquires": 0, "revision": 0, "rebases": 0,
+                 "merges": 0}
+        trees = {"old": {}, "m0": {}}
+        trees["t0"] = {p: "item" for p in item}
+        main, scratch, trusted = Path("main"), Path("scratch"), Path("trusted")
+
+        def advance():
+            state["revision"] += 1
+            tree = dict(trees[state["main"]])
+            for path in moved:
+                tree[path] = "main revision " + str(state["revision"])
+            state["main"] = "m" + str(state["revision"])
+            trees[state["main"]] = tree
+
+        def git(*args, **kwargs):
+            if args == ("rev-parse", "codex/item"):
+                return state["tip"]
+            if args == ("rev-parse", "main"):
+                return state["main"]
+            if args == ("rev-parse", "HEAD"):
+                return state["tip"] if kwargs["cwd"] == trusted else state["main"]
+            if args == ("status", "--porcelain"):
+                events.append("clean:" + state["tip"])
+                return " M dirty" if failure == "dirty" and state["rebases"] else ""
+            if args[0] == "rev-parse" and args[1].endswith("^{tree}"):
+                return "tree-" + args[1].split("^")[0]
+            if args[0] == "symbolic-ref":
+                return "main"
+            if args[0] == "diff":
+                left, right = (trees[p.removeprefix("tree-")] for p in args[-2:])
+                return "\0".join(sorted(p for p in left.keys() | right.keys()
+                                        if left.get(p) != right.get(p)))
+            if args[0] == "log":
+                return "item commit"
+            self.fail(f"unexpected git call: {args}")
+
+        def run(cmd, **kwargs):
+            if cmd[1] == "merge-base":
+                return SimpleNamespace(returncode=int(cmd[-1] == "main" or not ancestor))
+            events.append(cmd[1])
+            if cmd[1] == "rebase":
+                state["rebases"] += 1
+                if rebase_race and state["rebases"] == 1:
+                    advance()
+                state["base"] = state["main"]
+                state["tip"] = "t" + str(state["revision"])
+                tree = dict(trees[state["base"]])
+                tree.update({p: "item" for p in item})
+                tree.update({p: "unexpected" for p in extra})
+                trees[state["tip"]] = tree
+            if cmd[1] == "merge":
+                state["merges"] += 1
+                if failure == "merge":
+                    return SimpleNamespace(returncode=1, stdout="", stderr="failed")
+                if failure == "merge-move" and state["merges"] == 1:
+                    advance()
+                    return SimpleNamespace(returncode=1, stdout="", stderr="main moved")
+                state["main"] = state["tip"]
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+        def lock(_main, action, _item):
+            events.append(action)
+            if action == "acquire":
+                state["acquires"] += 1
+                # A peer lands just before acquisition succeeds, never while we hold it.
+                if state["acquires"] <= moves:
+                    advance()
+            return True, "(yours)" if held else ""
+
+        def build(*args):
+            events.append("build")
+            if failure == "verify" and state["acquires"] >= 4:
+                raise SystemExit(2)
+
+        def checked(cmd, what, **kwargs):
+            events.append(what)
+            if failure == "audit" and state["rebases"] and what == "completion-integrity audit":
+                raise SystemExit(2)
+
+        def review(*args):
+            events.append("review")
+            paths = changed_item if changed_item is not None and state["rebases"] else item
+            return ["code-reviewer"], list(paths), []
+
+        def write_marker(path, *args, **kwargs):
+            events.append("marker:" + path.name)
+
+        patches = {
+            "layout": lambda _: (main, scratch, trusted, "codex/item"),
+            "pin_file": lambda _: SimpleNamespace(exists=lambda: False),
+            "verify_trusted": lambda *a: None,
+            "scratch_committed": lambda *a: None,
+            "reset_trusted": lambda *a: None,
+            "single_commit": lambda *a: (state["base"], state["tip"]),
+            "codex_idle": lambda *a: None,
+            "after_rebase": lambda *a: None,
+            "review_gate": review,
+            "ledger_changes": lambda *a: {FUNC: {}},
+            "changed_layer2_bodies": lambda *a: {FUNC},
+            "ledger_problems": lambda *a: [],
+            "verdict_copies": lambda *a: {},
+            "copy_problems": lambda *a: [],
+            "format_tree": lambda m, i, tree, p: tree,
+            "diff_key": lambda *a: "key",
+            "verify_build": build,
+            "run_checked": checked,
+            "engine_layer2_check": lambda *a: events.append("layer2"),
+            "lock": lock,
+            "peer_paths": lambda *a: set(),
+            "save_state": lambda *a, **k: events.append("landed"),
+            "push": lambda *a: events.append("push"),
+            "git": git,
+        }
+        with ExitStack() as stack:
+            stack.enter_context(mock.patch.dict(os.environ, {"CLAUDE_CODE_SESSION_ID": "test"}))
+            for key in ("PROLOGUE_CONFIG", "DELAY_SLOT_RA_FUNCS", "FRAME_FIX_FUNCS"):
+                stack.enter_context(mock.patch.dict(os.environ, {key: ""}))
+            for name, replacement in patches.items():
+                stack.enter_context(mock.patch.object(cw, name, replacement))
+            stack.enter_context(mock.patch.object(cw.subprocess, "run", side_effect=run))
+            stack.enter_context(mock.patch.object(Path, "exists", return_value=False))
+            stack.enter_context(mock.patch.object(Path, "mkdir"))
+            stack.enter_context(mock.patch.object(Path, "write_text", autospec=True, side_effect=write_marker))
+            stack.enter_context(redirect_stdout(io.StringIO()))
+            stack.enter_context(redirect_stderr(io.StringIO()))
+            code = 0
+            try:
+                cw.cmd_land(SimpleNamespace(item="item", dry_run=dry_run, no_push=False))
+            except SystemExit as e:
+                code = e.code
+        return code, events
+
+    def assert_locked_rebase(self, events, acquire_number=2):
+        acquire = [i for i, e in enumerate(events) if e == "acquire"][acquire_number - 1]
+        rebase = next(i for i in range(acquire, len(events)) if events[i] == "rebase")
+        self.assertLess(acquire, rebase)
+        self.assertNotIn("release", events[acquire:events.index("push")])
+        self.assertEqual(events[-1], "release")
+
+    def test_docs_move_reuses_build_but_reruns_gates(self):
+        code, events = self.land()
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 1)
+        self.assertEqual(events.count("completion-integrity audit"), 2)
+        self.assertEqual(events.count("layer2"), 2)
+        self.assertEqual(events.count("review"), 2)
+        self.assertEqual(events.count("commit"), 2)
+        self.assertEqual([e for e in events if e.startswith("marker:")], ["marker:t0.ok"])
+        self.assertIn("clean:t1", events)
+        self.assert_locked_rebase(events)
+
+    def test_naming_census_move_runs_suite_audit_layer2_without_build_or_marker(self):
+        code, events = self.land(moved=("docs/naming/census_manifests.py",), item=("docs/item.md",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 1)
+        self.assertEqual(events.count("completion-integrity audit"), 2)
+        self.assertEqual(events.count("engine test suite"), 1)
+        self.assertEqual(events.count("layer2"), 2)
+        self.assertEqual([e for e in events if e.startswith("marker:")], ["marker:t0.ok"])
+        self.assert_locked_rebase(events)
+
+    def test_quick_suite_triggers(self):
+        for path in ("tools/trace/peer.PY", "DOCS/NAMING/function-names.csv"):
+            with self.subTest(path=path):
+                code, events = self.land(moved=(path,), item=("docs/item.md",))
+                self.assertEqual(code, 0)
+                self.assertEqual(events.count("build"), 1)
+                self.assertEqual(events.count("engine test suite"), 1)
+
+    def test_item_paths_still_trigger_suite_on_quick_path(self):
+        code, events = self.land(item=("tools/item.py",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("engine test suite"), 2)
+
+    def test_shared_docs_path_requires_full_verify_case_insensitively(self):
+        code, events = self.land(moved=("DOCS/peer.md",), item=("docs/PEER.md",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 2)
+
+    def test_build_read_and_other_nonexempt_paths_require_full_verify(self):
+        for path in ("src/peer.c", "include/game.h", "asm/peer.s", "Makefile",
+                     "tools/prologue_config.json", "tools/maspsx/maspsx.py", "bb2.ld",
+                     "named_syms.txt", "engine/buildstamp.py", "memory/grind/f/layer2.jsonl"):
+            with self.subTest(path=path):
+                code, events = self.land(moved=(path,))
+                self.assertEqual(code, 0)
+                self.assertEqual(events.count("build"), 2)
+                self.assertEqual(events.count("layer2"), 2)
+
+    def test_unexpected_tree_delta_requires_full_verify_before_merge(self):
+        code, events = self.land(extra=("src/unexpected.c",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 2)
+        self.assertLess(max(i for i, e in enumerate(events) if e == "build"), events.index("merge"))
+
+    def test_missing_main_delta_requires_full_verify(self):
+        # Same-case item write masks main's changed path: the independently computed
+        # tip-tree delta is empty, even if a bug bypasses the disjointness check.
+        real = cw.land_quick_paths
+        def bypass_overlap(main, verified, base):
+            if verified:
+                verified = (*verified[:3], set())
+            return real(main, verified, base)
+        with mock.patch.object(cw, "land_quick_paths", side_effect=bypass_overlap):
+            code, events = self.land(moved=("docs/peer.md",), item=("docs/peer.md",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 2)
+
+    def test_item_path_set_change_requires_full_verify(self):
+        code, events = self.land(changed_item=("src/different.c",))
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 2)
+
+    def test_rewound_main_requires_full_verify(self):
+        code, events = self.land(ancestor=False)
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 2)
+
+    def test_two_full_reverifies_lock_next_attempt_through_push(self):
+        code, events = self.land(moved=("src/peer.c",), moves=3)
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 4)
+        acquires = [i for i, e in enumerate(events) if e == "acquire"]
+        rebases = [i for i, e in enumerate(events) if e == "rebase"]
+        # First two re-verifies run unlocked; the next attempt locks before rebase.
+        self.assertLess(rebases[1], acquires[2])
+        self.assertLess(acquires[3], rebases[2])
+        self.assert_locked_rebase(events, acquire_number=4)
+
+    def test_stream_of_quick_moves_finishes_under_lock(self):
+        code, events = self.land(moves=20)
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("acquire"), 2)
+        self.assertEqual(events.count("build"), 1)
+        self.assert_locked_rebase(events)
+
+    def test_locked_attempt_can_finish_after_unlocked_budget(self):
+        # Shrink the unlocked budget so the quick retry crosses it deterministically.
+        with mock.patch.object(cw, "LAND_UNLOCKED_ATTEMPTS", 1):
+            code, events = self.land()
+        self.assertEqual(code, 0)
+        self.assertIn("landed", events)
+        self.assert_locked_rebase(events)
+
+    def test_move_between_read_and_rebase_uses_actual_base(self):
+        code, events = self.land(initial_behind=True, rebase_race=True, moves=0)
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("build"), 1)
+        self.assertEqual(events.count("acquire"), 1)
+        self.assertEqual(events.count("rebase"), 1)
+
+    def test_preheld_lock_is_never_released(self):
+        for moved, moves in ((("docs/peer.md",), 1), (("src/peer.c",), 3)):
+            with self.subTest(moved=moved):
+                code, events = self.land(moved=moved, moves=moves, held=True)
+                self.assertEqual(code, 0)
+                self.assertNotIn("release", events)
+                self.assertIn("landed", events)
+
+    def test_early_lock_released_on_verify_refusal(self):
+        code, events = self.land(moved=("src/peer.c",), moves=3, failure="verify")
+        self.assertEqual(code, 2)
+        self.assertEqual(events[-1], "release")
+        self.assertNotIn("merge", events)
+
+    def test_quick_tip_cleanliness_is_checked_after_hook(self):
+        code, events = self.land(failure="dirty")
+        self.assertEqual(code, 2)
+        # Refuse before executing quick gates, not merely at their final dirty check.
+        self.assertEqual(events.count("completion-integrity audit"), 1)
+        self.assertEqual(events[-1], "release")
+        self.assertNotIn("merge", events)
+
+    def test_quick_audit_failure_refuses_and_releases_lock(self):
+        code, events = self.land(failure="audit")
+        self.assertEqual(code, 2)
+        self.assertNotIn("merge", events)
+        self.assertEqual(events[-1], "release")
+
+    def test_merge_failure_without_main_move_refuses(self):
+        code, events = self.land(moves=0, failure="merge")
+        self.assertEqual(code, 2)
+        self.assertEqual(events.count("merge"), 1)
+        self.assertNotIn("landed", events)
+        self.assertEqual(events[-1], "release")
+
+    def test_main_move_during_merge_retries_and_runs_quick_gates(self):
+        code, events = self.land(moves=0, failure="merge-move")
+        self.assertEqual(code, 0)
+        self.assertEqual(events.count("merge"), 2)
+        self.assertEqual(events.count("build"), 1)
+        self.assertEqual(events.count("completion-integrity audit"), 2)
+        self.assertEqual(events.count("layer2"), 2)
+        # The failing merge happened before this retry's locked rebase.
+        acquires = [i for i, e in enumerate(events) if e == "acquire"]
+        self.assertLess(events.index("merge"), acquires[1])
+        self.assert_locked_rebase(events)
+
+    def test_dry_run_never_takes_lock(self):
+        code, events = self.land(initial_behind=True, dry_run=True)
+        self.assertEqual(code, 0)
+        self.assertIn("rebase", events)
+        self.assertIn("build", events)
+        self.assertNotIn("acquire", events)
+        self.assertNotIn("merge", events)
+
+    def test_disjointness_helper_casefolds_both_sides(self):
+        verified = ("m0", "t0", "tree-t0", {"docs/PEER.md"})
+        with mock.patch.object(cw.subprocess, "run", return_value=SimpleNamespace(returncode=0)), \
+                mock.patch.object(cw, "git", return_value="DOCS/peer.md"):
+            self.assertIsNone(cw.land_quick_paths(Path("main"), verified, "m1"))
 
 
 if __name__ == "__main__":
