@@ -1,0 +1,663 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "f97c1e7aa046759f09f41712c237e3082889c087",
+      "size": 109458
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a387e6db3f2613ec9d7bd8dbfb6f16b3029c8a4e",
+      "size": 30208
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "43f95cbc253beefdec171dee6bafe55100241835",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "tools/trace/gdbtrace.py",
+    "run",
+    "--spec",
+    "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/spec.json",
+    "--out",
+    "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/pcsx-redux/pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "d047dc167ea76ac72f4bdf7e2f1cb8e39f998708",
+      "size": 404677
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "eba13969e01dc330b5a09e4ce3fbbdfc7333d4ad",
+      "size": 855772
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/spec.json",
+    "sha1": "ed53f469a433b85c4b403b639af0d8e34f1ca247",
+    "size": 22580
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-rose-slot2-poke-1\\baseline\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-rose-slot2-poke-1\\baseline\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-rose-slot2-poke-1\\baseline\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.script.lua",
+      "sha1": "365024d22cfaa7a98c1502a440b9b13a18c87d8f",
+      "size": 27740
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 16,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.jsonl",
+      "sha1": "5a5dbfb0bf14bebc5114136aeab2aacef6548715",
+      "size": 20200,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.char_select.first.png",
+      "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
+      "size": 23135,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.char_select.last.png",
+      "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
+      "size": 22155,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.weapon_select.first.png",
+      "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
+      "size": 22616,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.weapon_select.last.png",
+      "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
+      "size": 4459,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.t_stage.mid.png",
+      "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
+      "size": 5188,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.stage_select.first.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.stage_select.7299.png",
+      "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
+      "size": 21972,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.stage_select.7325.png",
+      "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
+      "size": 18207,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.stage_select.7355.png",
+      "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
+      "size": 22809,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.stage_select.last.png",
+      "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
+      "size": 22781,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.t_load.mid.png",
+      "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
+      "size": 9489,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.t_load.last.png",
+      "sha1": "2cffc4b4614f621d4a63100d706f3020964a4a0a",
+      "size": 55445,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.first.png",
+      "sha1": "aa4cda7bc1ec0ce22348b12572dde5308c90ee9a",
+      "size": 54529,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8330.png",
+      "sha1": "a507f1381f38d428bb5138709dd4dbc0f0027f8e",
+      "size": 51221,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8430.png",
+      "sha1": "ad145dd09ca9f3acbf1cfc7aab3067fd1bb87445",
+      "size": 51237,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8530.png",
+      "sha1": "05c0c67a4d703230ba15a610a733e7f404f290ae",
+      "size": 53035,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8630.png",
+      "sha1": "412e9200fe7dec798184d10b2626fb83f3abecad",
+      "size": 55678,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8730.png",
+      "sha1": "7492e27dae0e334cd78270220ef020a066661cb4",
+      "size": 57199,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8830.png",
+      "sha1": "35e5c8b89422ce652406664d6037d8b8ebd90d6a",
+      "size": 56005,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.8930.png",
+      "sha1": "1e83236a8151634a0ad2f3df7b84f629c25ca7fb",
+      "size": 56381,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9030.png",
+      "sha1": "3a7e6ab2a8c06f939f80967d51a6b32b740be903",
+      "size": 55813,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9130.png",
+      "sha1": "929ac2b8fd9e73953a79acd8ebba62751c64db4a",
+      "size": 55847,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9230.png",
+      "sha1": "fed84e4684d9f6c0935222b9b2bb6b6527a98efd",
+      "size": 56959,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9330.png",
+      "sha1": "0791e8c22de94d90d2686e3c5fe9f3ee17c888c8",
+      "size": 53931,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9430.png",
+      "sha1": "efe917c94e929078723cdfe147bc7972680ff066",
+      "size": 52962,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9530.png",
+      "sha1": "f2902657e22888a8ee31fe45119d81c1b4d24085",
+      "size": 52147,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9630.png",
+      "sha1": "6fa3773e30f2424e211b9160733a8d37ac6ed2ab",
+      "size": 52054,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9730.png",
+      "sha1": "14ca3eebf7fd2a8083d00954191516d39da4a691",
+      "size": 50453,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9830.png",
+      "sha1": "c1909f25dc6126406d341d0d80e0b825305b5add",
+      "size": 50536,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9882.png",
+      "sha1": "a04e4bd08b2422aa57b257e311303c41345ad0b3",
+      "size": 50837,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9884.png",
+      "sha1": "9117f50bab5f639391fb403ffcf772ee9776da1d",
+      "size": 51150,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9886.png",
+      "sha1": "9f6b1fbc5d2d53ed91795d16e4227d3cf7781c5d",
+      "size": 50957,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9888.png",
+      "sha1": "48be202f33a84f62fcbba4e1043f2cfcd7e70714",
+      "size": 51258,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9890.png",
+      "sha1": "e0614f4c37d8a3e983b60b540af9eccf26c48d8f",
+      "size": 51719,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9892.png",
+      "sha1": "94ab846a5f2306871ab494af783b103897e718dc",
+      "size": 53499,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9894.png",
+      "sha1": "7f842c3e6130a809746694f6914ed1c9cfee0bf2",
+      "size": 54095,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9898.png",
+      "sha1": "47b3ca23820968debc5e8ebab2a9d9556ece1478",
+      "size": 55728,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9904.png",
+      "sha1": "ef3f8e441d4266653dded87fee3dce38e17192ad",
+      "size": 54064,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.9930.png",
+      "sha1": "ed4bc3a35aec243382ffbdc6f4b79bd23186cbb0",
+      "size": 49600,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10030.png",
+      "sha1": "bb8d9b2bf042e018df96cac872ff1a6f92ce78fc",
+      "size": 50730,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10130.png",
+      "sha1": "615a4ae92123d5e25915b73fbb568691511543dc",
+      "size": 53660,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10230.png",
+      "sha1": "ceb455fc95fb03af75bf9fe9b42305a3c5c6fe9e",
+      "size": 55580,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10330.png",
+      "sha1": "9751d25e5904794ee2d5cad8a54d8c28979fcb23",
+      "size": 55328,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10430.png",
+      "sha1": "a0bfa967d9feab9db547745d9afca5f7c854d2e3",
+      "size": 55049,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10530.png",
+      "sha1": "dff89b76faa8dfcde5da53071f86ecdb5d339c65",
+      "size": 52204,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10630.png",
+      "sha1": "6cc6fcf831de9dd3b77d00d0aafd207384604a2b",
+      "size": 52941,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10730.png",
+      "sha1": "94445874f556399b7afe40eae506d2e6806e6846",
+      "size": 51116,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10830.png",
+      "sha1": "ca670e7591498dfc98e4294a204cfdb77e1f288c",
+      "size": 52336,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.10930.png",
+      "sha1": "b234665d44dee9dd5416e17623c723af0a6c8c7c",
+      "size": 43497,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11030.png",
+      "sha1": "edb64f983a347718613ab70b58dd76820364bb87",
+      "size": 36699,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11130.png",
+      "sha1": "a9b27dfe3384bb7209f2fdaf75419be6bbaabc3c",
+      "size": 41445,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11141.png",
+      "sha1": "e10c8176044cb3230982040725418539832c29d1",
+      "size": 41821,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11143.png",
+      "sha1": "599ff3b09a08d12d3c87d98134c433937f6b27f6",
+      "size": 41539,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11145.png",
+      "sha1": "b511d1fd6dfaa9d2ead7d3d4d85dd14d083fc4c6",
+      "size": 41870,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11147.png",
+      "sha1": "695b555391cb62d13a27c6a57e564636cd950315",
+      "size": 41358,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11149.png",
+      "sha1": "1b96e944d5e35629d4d2b95f113a13762177b446",
+      "size": 41655,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11151.png",
+      "sha1": "50281f0f843a594cbf4cd0e92e86c07927f5ded1",
+      "size": 40563,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11153.png",
+      "sha1": "e4f4724b0da9a2275356dd1996ccfcb2ff8fe6c1",
+      "size": 39680,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11157.png",
+      "sha1": "984c5c29877e52a0c5c7630d9cf8ff7dd4c051af",
+      "size": 39720,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11163.png",
+      "sha1": "0493799b9b3e867aae07fde8620d37c38dd943c4",
+      "size": 37328,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.fight.11230.png",
+      "sha1": "aa7772a73363f76f635db2eeb5a4f697de95bac1",
+      "size": 37552,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.script.log",
+      "sha1": "689cd7f27242ed8c7533c8fb63ed9279892157d6",
+      "size": 11959,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}
