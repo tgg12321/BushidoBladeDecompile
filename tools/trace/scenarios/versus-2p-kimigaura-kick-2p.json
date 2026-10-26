@@ -1,0 +1,87 @@
+{
+  "description": "versus-2p-kimigaura-shore-kick's flow to the fight (KANNUKI vs GENGORO, Kimigaura Coast); walks 0-3 with both pads holding DOWN 60 frames then R2 and CROSS on the same frames (kick2p_0-3), walks 4-7 with P1 only, R2+CROSS at +80 and +180 (kick_4-7): the second-slot sand-kick effect commands 0x17 / 0x19 (9d31de409)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:kimigaura_coast",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-kick-2p-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 10330,
+  "inputs": [
+    "7300:LEFT",
+    "7450:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8430,
+      "every": 200,
+      "count": 4,
+      "steps": [
+        "+0:DOWN/60",
+        "+0:DOWN/60@2",
+        "+80:R2/4",
+        "+80:R2/4@2",
+        "+83:CROSS/4",
+        "+83:CROSS/4@2"
+      ]
+    },
+    {
+      "from": 9230,
+      "every": 260,
+      "count": 4,
+      "steps": [
+        "+0:DOWN/60",
+        "+80:R2/4",
+        "+83:CROSS/4",
+        "+180:R2/4",
+        "+183:CROSS/4"
+      ]
+    }
+  ],
+  "phases": [
+    "7450:t_load",
+    "8230:fight",
+    "8430:walk_0",
+    "8510:kick2p_0",
+    "8630:walk_1",
+    "8710:kick2p_1",
+    "8830:walk_2",
+    "8910:kick2p_2",
+    "9030:walk_3",
+    "9110:kick2p_3",
+    "9230:walk_4",
+    "9310:kick_4",
+    "9490:walk_5",
+    "9570:kick_5",
+    "9750:walk_6",
+    "9830:kick_6",
+    "10010:walk_7",
+    "10090:kick_7"
+  ],
+  "shots": [
+    "8229:t_load.last",
+    "8230:fight.first",
+    "8555:kick2p_0.45",
+    "8755:kick2p_1.45",
+    "8955:kick2p_2.45",
+    "9155:kick2p_3.45",
+    "9355:kick_4.a45",
+    "9455:kick_4.b45",
+    "9615:kick_5.a45",
+    "9715:kick_5.b45",
+    "9875:kick_6.a45",
+    "9975:kick_6.b45",
+    "10135:kick_7.a45",
+    "10235:kick_7.b45",
+    "10329:last"
+  ]
+}

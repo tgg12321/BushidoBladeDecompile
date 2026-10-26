@@ -1,0 +1,30 @@
+{
+  "description": "versus-2p-hidden-suminagashi's run cut at 9450, screenshots over the first two R2 throws' effects (8948-9050, 9184-9290); the baseline and poked captures differ only in poked's instrument poke at t_load (the pale-red starter's second slot, bd629c940)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/spec.json"
+  ],
+  "extends": "versus-2p-hidden-suminagashi",
+  "end_frame": 9450,
+  "shots": [
+    "8948:fight.8948",
+    "8952:fight.8952",
+    "8958:fight.8958",
+    "8970:fight.8970",
+    "8985:fight.8985",
+    "9000:fight.9000",
+    "9020:fight.9020",
+    "9040:fight.9040",
+    "9050:fight.9050",
+    "9184:fight.9184",
+    "9188:fight.9188",
+    "9194:fight.9194",
+    "9206:fight.9206",
+    "9221:fight.9221",
+    "9240:fight.9240",
+    "9260:fight.9260",
+    "9280:fight.9280",
+    "9290:fight.9290"
+  ]
+}

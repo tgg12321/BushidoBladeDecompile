@@ -1,0 +1,30 @@
+{
+  "description": "versus-2p-kimigaura-effects's run cut at 11300, screenshots over two wound effects (9882-9904, 11141-11163); the baseline and poked captures differ only in poked's instrument poke at t_load (the rose-light starter's second slot, 610007ed8)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-rose-slot2-poke-1/poked/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-effects",
+  "end_frame": 11300,
+  "shots": [
+    "9882:fight.9882",
+    "9884:fight.9884",
+    "9886:fight.9886",
+    "9888:fight.9888",
+    "9890:fight.9890",
+    "9892:fight.9892",
+    "9894:fight.9894",
+    "9898:fight.9898",
+    "9904:fight.9904",
+    "11141:fight.11141",
+    "11143:fight.11143",
+    "11145:fight.11145",
+    "11147:fight.11147",
+    "11149:fight.11149",
+    "11151:fight.11151",
+    "11153:fight.11153",
+    "11157:fight.11157",
+    "11163:fight.11163"
+  ]
+}

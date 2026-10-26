@@ -9,7 +9,8 @@
     "event:round_start"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-kimigaura-events-1/spec.json"
+    "docs/naming/runtime/versus-2p-kimigaura-events-1/spec.json",
+    "docs/naming/runtime/lib-versus-2p-kimigaura-effects-1/spec.json"
   ],
   "use": [
     "boot",

@@ -1,0 +1,24 @@
+{
+  "description": "group-battle-3-0's run cut at 10500, screenshots every 2-4 frames over bout 1's IPPON effect at 10368-10396 and 10450; the baseline and slot17 captures differ only in slot17's instrument poke at t_bout1 (the IPPON starter's second slot, bc3f1927e)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/group-battle-orange-slot2-poke-1/baseline/spec.json",
+    "docs/naming/runtime/group-battle-orange-slot2-poke-1/slot17/spec.json"
+  ],
+  "extends": "group-battle-3-0",
+  "end_frame": 10500,
+  "shots": [
+    "10368:bout1.10368",
+    "10370:bout1.10370",
+    "10372:bout1.10372",
+    "10374:bout1.10374",
+    "10376:bout1.10376",
+    "10378:bout1.10378",
+    "10380:bout1.10380",
+    "10384:bout1.10384",
+    "10388:bout1.10388",
+    "10392:bout1.10392",
+    "10396:bout1.10396",
+    "10450:bout1.10450"
+  ]
+}

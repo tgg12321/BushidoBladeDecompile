@@ -1,0 +1,12 @@
+{
+  "description": "versus-2p-kimigaura-kick-2p cut at 9180, after the four two-pad kicks (the hit map capture, 9d31de409)",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/lib-versus-2p-kimigaura-kick-2p-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-kick-2p",
+  "end_frame": 9180,
+  "shots": [
+    "9179:last"
+  ]
+}

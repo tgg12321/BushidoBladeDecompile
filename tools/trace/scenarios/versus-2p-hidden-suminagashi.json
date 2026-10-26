@@ -13,7 +13,8 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-hidden-suminagashi-1/spec.json"
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-1/spec.json",
+    "docs/naming/runtime/lib-versus-2p-hidden-suminagashi-1/spec.json"
   ],
   "use": [
     "boot"

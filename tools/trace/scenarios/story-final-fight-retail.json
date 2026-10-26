@@ -1,0 +1,106 @@
+{
+  "description": "Story Mode with no pokes (KANNUKI, stream D_8008F220 unmodified): story-ninja-cross's menu presses to 8800; from 8900 every 50 frames RIGHT 12, TRIANGLE +12, CROSS +30; from 126600 every 60 frames DOWN+RIGHT 40, TRIANGLE +42, CROSS +52 (KATZE, Lighthouse); from 127900 RIGHT held, CROSS every 15 frames (KATZE down by 129100); from 129300 every 60 frames RIGHT 57, CROSS +2/+17/+32, R2+CIRCLE +47, through op 17 0x1C (stage card Shainto HQ, 153828) and its fight to op 3 0x01 (157924) (e0059f937)",
+  "covers": [
+    "mode:story",
+    "menu:stage_card"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-final-fight-retail-1/spec.json",
+    "docs/naming/runtime/lib-story-final-fight-retail-1/spec.json"
+  ],
+  "end_frame": 158000,
+  "inputs": [
+    "8800:START",
+    "127900:RIGHT/1300",
+    "157982:CROSS/4"
+  ],
+  "repeat": [
+    {
+      "from": 5200,
+      "every": 600,
+      "count": 6,
+      "steps": [
+        "+0:START",
+        "+300:CROSS"
+      ]
+    },
+    {
+      "from": 8900,
+      "every": 50,
+      "count": 2354,
+      "steps": [
+        "+0:RIGHT/12",
+        "+12:TRIANGLE",
+        "+30:CROSS"
+      ]
+    },
+    {
+      "from": 126600,
+      "every": 60,
+      "count": 21,
+      "steps": [
+        "+0:DOWN+RIGHT/40",
+        "+42:TRIANGLE",
+        "+52:CROSS/4"
+      ]
+    },
+    {
+      "from": 127910,
+      "every": 15,
+      "count": 92,
+      "steps": [
+        "+0:CROSS/4"
+      ]
+    },
+    {
+      "from": 129300,
+      "every": 60,
+      "count": 478,
+      "steps": [
+        "+0:RIGHT/57",
+        "+2:CROSS/4",
+        "+17:CROSS/4",
+        "+32:CROSS/4",
+        "+47:R2+CIRCLE/4"
+      ]
+    }
+  ],
+  "phases": [
+    "0:boot_intro",
+    "8900:story",
+    "126600:katze",
+    "127900:strat",
+    "129300:after_katze",
+    "153700:final_fight"
+  ],
+  "shots": [
+    "5489:s.5489",
+    "8899:s.8899",
+    "126599:s.126599",
+    "127900:s.127900",
+    "128000:s.128000",
+    "128700:s.128700",
+    "128800:s.128800",
+    "128900:s.128900",
+    "129000:s.129000",
+    "129100:s.129100",
+    "129200:s.129200",
+    "129600:s.129600",
+    "141700:s.141700",
+    "151400:s.151400",
+    "153900:s.153900",
+    "154000:s.154000",
+    "154100:s.154100",
+    "154200:s.154200",
+    "154300:s.154300",
+    "154400:s.154400",
+    "154500:s.154500",
+    "154600:s.154600",
+    "154700:s.154700",
+    "155000:s.155000",
+    "156400:s.156400",
+    "157650:s.157650",
+    "157700:s.157700",
+    "157950:s.157950"
+  ]
+}
