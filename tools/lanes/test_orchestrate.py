@@ -85,7 +85,9 @@ class Candidates(unittest.TestCase):
     def test_skips_running_owned_and_no_progress(self):
         r = reg(pins={"owner": "other", "heartbeat": NOW}, **{"naming-a": {"owner": "z", "heartbeat": NOW}})
         self.assertEqual(o.candidates(bl(), r, st(), NOW, None), ["naming-b", "data"])
-        self.assertEqual(o.candidates(bl(), reg(), st({"x": slot("data")}, ["naming"]), NOW, None),
+        s = st({"x": slot("data")})
+        s["no_progress_naming"] = o.naming_hold(bl())
+        self.assertEqual(o.candidates(bl(), reg(), s, NOW, None),
                          ["pins"])
 
     def test_stale_owner_does_not_block(self):
@@ -144,7 +146,82 @@ class Slots(unittest.TestCase):
         ev = o.update_slots(s, {"a1": {"state": "done", "pid": 1}, "b2": {"state": "done", "pid": 1}}, r, b, NOW)
         self.assertEqual(sorted(ev), [("finished", "a1"), ("no-progress", "b2")])
         self.assertEqual(s["sessions"], {})
-        self.assertEqual(s["no_progress"], ["naming"])
+        self.assertEqual(s["no_progress"], [])
+        self.assertEqual(s["no_progress_naming"], o.naming_hold(b))
+        self.assertEqual(s["no_progress_naming"]["workable"], ["m0", "m1"])
+
+    def naming_no_progress(self, b):
+        s = st({"a1": slot("naming-a", progress_at_start=o.progress_key(b, "naming-a"))})
+        r = reg(**{"naming-a": {"owner": None, "closed": NOW}})
+        self.assertEqual(o.update_slots(s, {"a1": {"state": "done", "pid": 1}}, r, b, NOW),
+                         [("no-progress", "a1")])
+        return s
+
+    def test_naming_unchanged_backlog_stays_skipped(self):
+        b = bl(naming_stages=("idea", "landed", "reviewed"))
+        s = self.naming_no_progress(b)
+        b["naming"].reverse()  # row order is not progress
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), [])
+        self.assertEqual(s["no_progress_naming"]["workable"], ["m0", "m2"])
+
+    def test_stage_move_inside_workable_set_reopens_naming(self):
+        b = bl(naming_stages=("idea", "landed", "researched"))
+        s = self.naming_no_progress(b)
+        b["naming"][2]["stage"] = "reviewed"  # still workable, same ids
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
+        self.assertNotIn("no_progress_naming", s)
+
+    def test_note_only_edit_reopens_naming(self):
+        b = bl(naming_stages=("idea", "landed", "idea"))
+        s = self.naming_no_progress(b)
+        b["naming"][2]["note"] = "PROMPT READY"  # stays stage idea
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
+        self.assertNotIn("no_progress_naming", s)
+
+    def test_new_workable_row_reopens_naming_and_clears_record(self):
+        b = bl(naming_stages=("idea", "landed"))
+        s = self.naming_no_progress(b)
+        b["naming"][1]["stage"] = "reviewed"
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
+        self.assertNotIn("no_progress_naming", s)
+        # Returning to the old set must not resurrect the hold.
+        b["naming"][1]["stage"] = "landed"
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a"])
+
+    def test_row_leaving_workable_set_reopens_naming(self):
+        b = bl()
+        s = self.naming_no_progress(b)
+        b["naming"][0]["stage"] = "landed"
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a"])
+        self.assertNotIn("no_progress_naming", s)
+
+    def test_replaced_workable_id_with_same_count_reopens_naming(self):
+        b = bl()
+        s = self.naming_no_progress(b)
+        b["naming"][0]["id"] = "pilot-tail-a"
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
+        self.assertNotIn("no_progress_naming", s)
+
+    def test_foundation_no_progress_still_holds_for_run(self):
+        b = bl()
+        s = st({"a1": slot("pins", progress_at_start=o.progress_key(b, "pins"))})
+        self.assertEqual(o.update_slots(s, {"a1": {"state": "done", "pid": 1}},
+                                        reg(pins={"owner": None, "closed": NOW}), b, NOW),
+                         [("no-progress", "a1")])
+        self.assertEqual(s["no_progress"], ["pins"])
+        b["foundation"][0]["stage"] = "active"
+        b["naming"][0]["id"] = "new"
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "foundation"), ["data"])
+
+    def test_codex_naming_session_is_exempt_from_no_progress(self):
+        b = bl()
+        s = st({"a1": slot("naming-a", kind="codex",
+                           progress_at_start=o.progress_key(b, "naming-a"))})
+        r = reg(**{"naming-a": {"owner": None, "closed": NOW}})
+        self.assertEqual(o.update_slots(s, {"a1": {"state": "done", "pid": 1}}, r, b, NOW),
+                         [("finished", "a1")])
+        self.assertNotIn("no_progress_naming", s)
+        self.assertEqual(s["no_progress"], [])
 
     def test_seen_open_then_closed(self):
         s = st({"a1": slot("pins", started=NOW - 99999)})
@@ -284,6 +361,23 @@ class Tick(unittest.TestCase):
         for f in self.d.iterdir():
             f.unlink()
         self.d.rmdir()
+
+    def test_load_migrates_legacy_naming_no_progress(self):
+        b = bl(naming_stages=("reviewed", "landed", "idea"))
+        o.backlogs = lambda: b
+        o.write_state(st(no_progress=("naming", "pins")))
+        s = o.load_state()
+        self.assertEqual(s["no_progress"], ["pins"])
+        self.assertEqual(s["no_progress_naming"], o.naming_hold(b))
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), [])
+        o.write_state(s)
+        b["naming"][1]["stage"] = "idea"
+        s = o.load_state()  # migrated snapshot must survive subsequent loads
+        self.assertEqual(s["no_progress_naming"]["workable"], ["m0", "m2"])
+        self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"),
+                         ["naming-a", "naming-b", "naming-c"])
+        self.assertNotIn("no_progress_naming", s)
+        self.assertEqual(s["no_progress"], ["pins"])
 
     def test_disk_low_starts_nothing_but_drains(self):
         o.write_max(1)

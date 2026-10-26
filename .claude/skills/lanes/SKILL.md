@@ -54,7 +54,9 @@ When the background run exits, read the tail of its output and report: lanes fin
 - Ctrl-C / killing the orchestrator leaves the sessions running; starting it again adopts them.
 - A session idle 90 min with its lane open is reported, never killed: usually it is waiting on a
   `lanes.py land`. Look with `claude attach <id>`.
-- A lane whose session changed nothing in its backlog is not restarted in that run.
+- A foundation lane whose session changed nothing in its backlog is not restarted in that run;
+  naming lanes wait until the naming backlog changes (a row's id, stage or note, or which rows
+  are workable).
   Rows at stage `blocked` (waiting on an owner ruling) count as done, so their lanes don't start.
 - Attention: when a session finishes with no backlog progress, stalls, is lost, or (codex) lands
   nothing, its last message is saved to `tmp/lanes-state/attention/<lane>-<id>.md`, logged as

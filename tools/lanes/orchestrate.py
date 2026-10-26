@@ -21,7 +21,8 @@ has closed its lane (`lanes.py close`) and gone idle, or has sat idle 5 minutes 
 opening it (it found no work); the orchestrator then stops it (the
 conversation is kept: `claude attach <id>` reopens it) and starts the next lane with work, until the backlogs run
 dry. A session idle for 90 minutes with its lane still open is reported as needing attention and keeps
-its slot. A lane whose session finished without changing its backlog is not started again this run.
+its slot. A foundation lane whose session changed nothing is not restarted this run; naming
+waits until the naming backlog changes (a row's id, stage or note, or its workable set).
 For a no-progress, stalled or lost session the session's last message (usually its question) is
 saved under tmp/lanes-state/attention/ and listed by `status` until `ack`.
 
@@ -520,6 +521,23 @@ def naming_row_workable(r: dict) -> bool:
     return found
 
 
+def workable_naming_ids(bl: dict) -> list[str]:
+    """Stable snapshot of row identities, independent of backlog order."""
+    return sorted({r["id"] for r in bl["naming"] if naming_row_workable(r)})
+
+
+def naming_hold(bl: dict) -> dict:
+    """What a naming no-progress hold waits on: the workable row ids (a Codex run finishing
+    changes them without a backlog edit) and a digest of every naming row's id / stage / note,
+    row order ignored, so a note-only edit (PROMPT READY) or a stage move between workable
+    stages lifts it too."""
+    rows = sorted((str(r.get("id")), str(r.get("stage")), str(r.get("note")))
+                  for r in bl["naming"])
+    blob = "\n".join("\t".join(t) for t in rows)
+    return {"key": hashlib.sha1(blob.encode()).hexdigest(),
+            "workable": workable_naming_ids(bl)}
+
+
 def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
                paused: dict | None = None, away: bool = False,
                live: set | frozenset = frozenset()) -> list[str]:
@@ -528,9 +546,14 @@ def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
     paused = paused or {}
     busy = {s["lane"] for s in st["sessions"].values()} | set(live)
     skip = set(st["no_progress"])
+    hold = naming_hold(bl)
+    workable_ids = hold["workable"]
+    if ("no_progress_naming" in st
+            and st["no_progress_naming"] != hold):
+        del st["no_progress_naming"]
     naming: list[str] = []
-    if only in (None, "naming") and "naming" not in skip:
-        workable = sum(1 for r in bl["naming"] if naming_row_workable(r))
+    if only in (None, "naming") and "no_progress_naming" not in st:
+        workable = len(workable_ids)
         owned = {l for l in reg.get("lanes", {}) if lane_owned(reg, l, now)}
         active = sum(1 for lane in busy | owned if lane.startswith("naming"))
         free = [f"naming-{c}" for c in "abcdefghijklmnopqrstuvwxyz"
@@ -578,7 +601,10 @@ def update_slots(st: dict, ag: dict, reg: dict, bl: dict, now: float) -> list[tu
             group = "naming" if slot["lane"].startswith("naming") else slot["lane"]
             if (phase == "finished" and not is_codex(slot)
                     and progress_key(bl, slot["lane"]) == slot.get("progress_at_start")):
-                st["no_progress"] = sorted(set(st["no_progress"]) | {group})
+                if group == "naming":
+                    st["no_progress_naming"] = naming_hold(bl)
+                else:
+                    st["no_progress"] = sorted(set(st["no_progress"]) | {group})
                 phase = "no-progress"
             events.append((phase, sid))
         elif phase == "stalled" and not slot.get("warned"):
@@ -738,6 +764,9 @@ def load_state() -> dict:
         raise StateCorrupt(f"{STATE}: not a JSON object")
     st.setdefault("sessions", {})
     st.setdefault("no_progress", [])
+    if "naming" in st["no_progress"]:
+        st["no_progress_naming"] = naming_hold(backlogs())
+        st["no_progress"] = [lane for lane in st["no_progress"] if lane != "naming"]
     st.setdefault("codex_history", [])
     st.pop("attention", None)  # lives in attention/index.json now
     return st
@@ -1001,7 +1030,9 @@ def handle_event(st: dict, ev: str, sid: str, slot: dict, ag: dict, now: float):
         stopped = "stopped" if is_ended(ag.get(sid)) or stop_session(sid) else "NOT stopped"
         log(f"{lane} finished; session {sid} {stopped} (claude attach {sid} reopens it)")
         if ev == "no-progress":
-            log(f"{lane} changed nothing in its backlog; not starting it again this run")
+            wait = ("again unless the naming backlog changes" if lane.startswith("naming")
+                    else "again this run")
+            log(f"{lane} changed nothing in its backlog; not starting it {wait}")
     elif ev == "lost":
         log(f"{lane}: session {sid} ended without closing its lane; see "
             f"`python tools/lanes/lanes.py status` and `claude logs {sid}`")
@@ -1027,6 +1058,7 @@ def cmd_run(args):
                  f"change the count with: python tools/lanes/orchestrate.py max {args.n}")
     st["runner_pid"] = os.getpid()
     st["no_progress"] = []
+    st.pop("no_progress_naming", None)
     write_state(st)
     write_max(args.n)
     if args.codex:
@@ -1072,10 +1104,13 @@ def cmd_status(_args):
     reg = read_json(REGISTRY, {"lanes": {}})
     runner = st.get("runner_pid")
     cx = read_codex()
+    no_progress = list(st["no_progress"])
+    if "no_progress_naming" in st:
+        no_progress.append("naming (until the naming backlog changes)")
     print(f"orchestrator {'running (pid %d)' % runner if runner and pid_alive(runner) else 'not running'}"
           f", max {read_max()}, sessions {len(st['sessions'])}"
           + f", codex lane {'on' if cx.get('enabled') else 'off'}"
-          + (f", not restarting: {', '.join(st['no_progress'])}" if st["no_progress"] else ""))
+          + (f", not restarting: {', '.join(no_progress)}" if no_progress else ""))
     now = time.time()
     for sid, slot in sorted(st["sessions"].items(), key=lambda kv: kv[1]["lane"]):
         mins = int((now - slot["started"]) / 60)
