@@ -1,0 +1,77 @@
+{
+  "description": "Vs. CPU Mode as versus-cpu-first-fight up to the fight, then the opponent counter D_800A3783 poked 01 -> 05 (the order's length D_800A391F, 5 on blank cards) at the fight start (a modified game) and P1 CROSS every 20 frames: P1 cuts the first opponent down, fight_AdvanceOpponentOrder finds the order finished with a count other than 0x14 and stores mode 0x20 (17AFC.c:5435): func_8003CCCC / func_8003CD10 (modes 0x20 / 0x21) draw 5 Kills Completed!, then mode 8 and the top menu",
+  "covers": [
+    "mode:vs_cpu",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select",
+    "event:round_start",
+    "event:ko",
+    "event:vs_cpu_clear"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-cpu-clear-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 10200,
+  "pokes": [
+    {
+      "at": "0x800A3783",
+      "hex": "05",
+      "phase": "fight"
+    }
+  ],
+  "inputs": [
+    "6080:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START"
+  ],
+  "repeat": [
+    {
+      "from": 8360,
+      "every": 20,
+      "count": 47,
+      "steps": [
+        "+0:CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_char",
+    "6500:char_select",
+    "6800:t_weapon",
+    "6900:weapon_select",
+    "7400:t_load",
+    "8350:fight",
+    "9254:t_clear",
+    "9285:clear",
+    "9800:top_menu_again"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6500:char_select.first",
+    "6900:weapon_select.first",
+    "8000:t_load.mid",
+    "8350:fight.first",
+    "8600:fight.8600",
+    "8900:fight.8900",
+    "9100:fight.9100",
+    "9250:fight.last",
+    "9270:t_clear.mid",
+    "9300:clear.first",
+    "9400:clear.mid",
+    "9590:clear.results_last",
+    "9700:clear.leaving",
+    "9800:top_menu_again.first",
+    "10199:top_menu_again.last"
+  ]
+}
