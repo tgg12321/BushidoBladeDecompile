@@ -26,7 +26,7 @@
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
 
-/* === VAB sound-pack buffer (func_8001D904 / func_8001D998 copy packs here) === */
+/* === VAB sound-pack buffer (snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9 / snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4 copy packs here) === */
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
 /* NOTE: the entries below were retained as aliases by the Kengo */
@@ -104,7 +104,7 @@
 /* system-restart wrapper around bios_Exec(sp, a0, a1). Sets up GPU, */
 /* interrupts, critical section then EXECs a new PS-X EXE. */
 /* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
-/* gpu_ResetGraphMode1 + gpu_HideResetAndClear + func_80020CDC + func_800415C4(0,1) */
+/* gpu_ResetGraphMode1 + gpu_HideResetAndClear + motion_InvalidateMarkedNdataPackAndResetLoadCaches + func_800415C4(0,1) */
 /* + eff_ClearInitFlag ..., D_800A3834 = 0x1B. NOT a position check. */
 /* special_camera_check_pos_outside_ground_80036E34 -- now cdrom_StartReadAt: */
 /* starts a CD read of a file at a sector offset (ndata_StartReadInf, */
@@ -424,7 +424,7 @@
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2104-2108) */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
-/* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, func_800213A0, motion_ResolveMoveData) */
+/* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, motion_AdvanceVariantIfAtNibble4Or5Position, motion_ResolveMoveData) */
 
 /* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h; */
 /* base _svm_voice 0x800F4E18, 0x36-byte records, 24 voices). The per-word rows */
@@ -754,7 +754,7 @@
 /* === D_8008D090 handler decode (cont'd) -- 1 high === */
 /* Mode 18 confirmed from asm at pre-restructure-2026-10-03:asm/6CAC.s:41135: */
 /*   - gpu_HideResetAndClear + gpu_ResetGraphMode1 */
-/*   - func_80020CDC */
+/*   - motion_InvalidateMarkedNdataPackAndResetLoadCaches */
 /*   - Reads D_800A38A4: cases 6, 7, 8, 9 */
 /*   - Each case sets g_practice_lesson_char_id + slot for the */
 /*     specific unlock-animation character/move combo */

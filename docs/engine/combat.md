@@ -88,7 +88,7 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
   or 0x19) and returns 0.
 - `rec->unk_0C == 0xD` (outside state 0x2E): `func_80027640`, see
   [ai.md](ai.md).
-- `move_kind` 4 or 0x14, or `unk_0C == 0x1F`: `func_800203B4`
+- `move_kind` 4 or 0x14, or `unk_0C == 0x1F`: `fighter_StoreBoneLocalVectorAndArmEventTrigger`
   (src/main/9F9C.c:2779) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:238); the
   latter case also sets `pending_move_event = 7`.
 - The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < unk_A0`:

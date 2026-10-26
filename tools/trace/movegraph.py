@@ -403,7 +403,7 @@ class Fight:
                 b = extra.to_bytes(4, "little")
                 lab = (f"paired move (fight_UpdatePairedMoves, not input): "
                        f"distance {b[0] * 20}..{b[1] * 20}, height gap < 100, "
-                       f"other in kind 0x15/0x2C/0xE/0x19, func_8001FB34 "
+                       f"other in kind 0x15/0x2C/0xE/0x19, fighter_PassesPairedMoveEntryGates "
                        f"(not modes 2/3/5, nor mode 0 with D_800A385C; the "
                        f"other's unk_0C not 0xD/0x1C; unk_0A 0xE needs a "
                        f"carried kind-0xA object"

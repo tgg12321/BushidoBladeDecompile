@@ -116,7 +116,7 @@ checking.
 void special_camera_check_pos_outside_ground_80035DC8(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
-    func_80020CDC();
+    motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     player_Destroy(0);                       // teardown player 0
     player_Destroy(1);                       // teardown player 1
     file_ResetDmaFlag();

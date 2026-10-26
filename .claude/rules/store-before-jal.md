@@ -38,7 +38,7 @@ src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->unk_352];
 
 The same applies to any value computed pre-call, stored, and reloaded after (constants, pointers). m2c often
 shows the call nested inside the surrounding expression — strong evidence for this shape. Example:
-func_800203B4 (9F9C.c).
+fighter_StoreBoneLocalVectorAndArmEventTrigger (9F9C.c).
 
 ## Related
 

@@ -121,7 +121,7 @@ e->world_pos.z = z;
 `base_pos` + `root_offset` = `world_pos`: fighter_Init and fighter_Update
 (9F9C.c:4060, :5286) sum them. `collision_pos` (+0xB8) is the collision-space
 position. `base_pos` is also passed by address to fight_GetStartPosition /
-func_80021DB0 / func_80022224 (9F9C.c:1201, :4029-4051), stepped by `unk_104`
+fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1201, :4029-4051), stepped by `unk_104`
 and `unk_134` (:5228-5230, :5264-5266) and differenced between records 0 and 1
 (17AFC.c:2104-2105, :2227-2228).
 

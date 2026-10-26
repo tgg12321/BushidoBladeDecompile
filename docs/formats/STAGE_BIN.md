@@ -138,7 +138,7 @@ python tools/repack_stage.py --roundtrip disc/LOADSE1              # exit 1 unle
 ```
 
 All 38 files round-trip byte-identically; both directions check the
-billboard list's shape. Size limits: `func_8001D790` (`src/main/9F9C.c`)
+billboard list's shape. Size limits: `fight_ResetGraphAndReloadResourcesOnCachedKeyChange` (`src/main/9F9C.c`)
 panics when the compacted size `func_8005BA8C` returns reaches 0x2519. That
 size is the bytes ahead of the VB in the three loaded packs
 (`snd_LoadVabPack` returns the VB offset), so it grows with the event table

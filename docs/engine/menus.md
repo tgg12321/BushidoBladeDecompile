@@ -56,7 +56,7 @@ Handlers that the script's modes reach:
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
 - `func_8003BE10` (src/main/2B344.c:595, mode 10) resets the scene state
-  (`func_80020CDC`, `func_800415C4`, `eff_ClearInitFlag`, `func_8005B72C`,
+  (`motion_InvalidateMarkedNdataPackAndResetLoadCaches`, `func_800415C4`, `eff_ClearInitFlag`, `func_8005B72C`,
   `InitScrollingSpriteDisplay(0x80118800)`), starts CD audio
   (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
   display on.

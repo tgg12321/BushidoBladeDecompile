@@ -27,15 +27,15 @@ with positive `beq` tests and cross-jumps the sibling case bodies — the target
 switch (D_800A38DC) {
 case 4:  var_v0 = 0xC; break;
 case 1:
-    if (D_800A3748 == 0) { func_8001DA2C(); D_800A3768 = 2; mottest_disp(); return; }
+    if (D_800A3748 == 0) { snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); D_800A3768 = 2; mottest_disp(); return; }
     var_v0 = 0xC; break;
 case 6:  var_v0 = 0xC; break;
-default: func_8001DA2C(); var_v0 = 2; break;
+default: snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); var_v0 = 2; break;
 }
 D_800A3834 = var_v0;   /* was `set_val:` */
 ```
 
-The merge label becomes the post-switch statement; each `goto set_val` becomes `break`. func_8001EFA0: 1 → 0.
+The merge label becomes the post-switch statement; each `goto set_val` becomes `break`. fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress: 1 → 0.
 
 Not this rule: a register-rename diff ([[register-alloc-pure-c]]); a real jump table (`lw/addu/jr`);
 function-pointer calls that over/under-merge ([[cross-jump-call-merge]]).

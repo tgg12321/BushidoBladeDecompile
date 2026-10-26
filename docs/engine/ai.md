@@ -104,5 +104,5 @@ an opponent order; the code does not name it.
   cue 0x30.
 - `camera_SetFighterFocusView(rec, a1)` (src/main/9F9C.c:980) sets the view target
   `D_800F6608.unk_00` to `rec->unk_174`, its rotation to `(0x120, a1, 0)` and
-  its distance `w18` to 0x1162. Its caller is `func_8001EA84`
+  its distance `w18` to 0x1162. Its caller is `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange`
   (src/main/9F9C.c:2081).
