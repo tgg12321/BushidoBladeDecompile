@@ -54,7 +54,7 @@ pseudo **is** the wall. `.greg`: `"N regs to allocate: ..."` — a pseudo absent
 if the reused temp is the only entry, you are in this class. cc1psx emits the same wall on the same
 C, so the original source was not this C shape.
 
-Examples: func_800611A4, eff_StartArgSelectedCommandWithCyanLight, func_80061710, func_80057CC8 (text1b.c; ledgers in
+Examples: eff_StartRotatedQuadClusterWithNearWhiteLight, eff_StartArgSelectedCommandWithCyanLight, eff_StartArgSelectedCommandWithGreenLight, func_80057CC8 (text1b.c; ledgers in
 `memory/grind/<func>/evidence.md`); likely siblings eff_StartRecycledCommandWithOrangeLight, eff_StartRecycledVectorCommandWithRedLight, eff_StartCosineScaledQuadWithPaleBlueLight.
 
 Related: [[register-alloc-pure-c]] · `pre-slim-2026-10-01:memory/project/register-alloc-deep-dive.md` (the global.c

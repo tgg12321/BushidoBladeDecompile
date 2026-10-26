@@ -73,7 +73,7 @@ blocker, apply A/C by hand. 4. Verify with the full SHA1 gate — isolated score
 relocation-heavy functions.
 
 Known measured walls (read the deep dive before re-testing any lever): `cpu_side_move_dir_4`,
-`marionation_Exec` (global.c:624 class); `func_800611A4` / `eff_StartArgSelectedCommandWithCyanLight` / `func_80061710` /
+`marionation_Exec` (global.c:624 class); `eff_StartRotatedQuadClusterWithNearWhiteLight` / `eff_StartArgSelectedCommandWithCyanLight` / `eff_StartArgSelectedCommandWithGreenLight` /
 `func_80057CC8` (local-alloc class).
 
 ## Related

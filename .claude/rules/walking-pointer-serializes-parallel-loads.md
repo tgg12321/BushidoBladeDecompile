@@ -52,7 +52,7 @@ and GCC folds constant offsets into the displacement) — the lever cannot apply
   store is a real, always-required instruction — the load-delay analog of
   [[defer-store-past-later-compute-into-jal-delay]].
 - **Constant store materialized too early:** move the independent constant store after the last `*ap++` load so
-  its `lui/ori` fills the freed delay slots (func_800613C8).
+  its `lui/ori` fills the freed delay slots (eff_StartSlowRateCosineScaledQuadWithPaleBlueLight).
 
 Not this rule: a loop whose barrier blocks a delay-slot steal off a loop exit ([[loop-note-fixes-delay-slot-steal]]).
 
