@@ -64,6 +64,177 @@ def sh(*args, cwd):
     return r.stdout.strip()
 
 
+class RegistryRetryTest(unittest.TestCase):
+    """Registry retry contracts without disk contention or real backoff delays."""
+
+    def context(self):
+        from unittest.mock import Mock
+        ctx = object.__new__(lanes.Ctx)
+        ctx.reg_path = Mock()
+        ctx.mutex = Mock()
+        ctx._acquire_mutex = Mock()
+        return ctx
+
+    def test_update_retries_only_replace_with_mutex_held(self):
+        from unittest.mock import Mock, patch
+        ctx = self.context()
+        ctx.load = Mock(return_value={"lanes": {}})
+        change = Mock(side_effect=lambda reg: reg.update(saved=True) or "result")
+        real_path = ctx.reg_path
+        attempts = []
+
+        def replace(src, dst):
+            ctx._acquire_mutex.assert_called_once_with()
+            ctx.mutex.unlink.assert_not_called()
+            self.assertIs(src, real_path.with_suffix.return_value)
+            self.assertIs(dst, real_path)
+            attempts.append(1)
+            if len(attempts) <= 3:
+                raise PermissionError("reader holds registry")
+
+        with patch.object(lanes.os, "replace", side_effect=replace), \
+                patch.object(lanes.time, "sleep") as sleep:
+            self.assertEqual(ctx.update(change), "result")
+        self.assertEqual(len(attempts), 4)
+        self.assertEqual(sleep.call_count, 3)
+        ctx.load.assert_called_once_with()
+        change.assert_called_once()
+        real_path.with_suffix.return_value.write_text.assert_called_once()
+        self.assertTrue(json.loads(real_path.with_suffix.return_value.write_text.call_args.args[0])["saved"])
+        ctx.mutex.unlink.assert_called_once_with()
+
+    def test_update_replace_budget_raises_and_releases_mutex(self):
+        from unittest.mock import Mock, patch
+        ctx = self.context()
+        ctx.load = Mock(return_value={"lanes": {}})
+        change = Mock()
+        elapsed = [0.0]
+
+        def sleep(delay):
+            self.assertGreater(delay, 0)
+            self.assertLessEqual(delay, 0.05)
+            ctx.mutex.unlink.assert_not_called()
+            elapsed[0] += delay
+
+        with patch.object(lanes.os, "replace", side_effect=PermissionError("busy")) as replace, \
+                patch.object(lanes.time, "monotonic", side_effect=lambda: elapsed[0]), \
+                patch.object(lanes.time, "sleep", side_effect=sleep):
+            with self.assertRaisesRegex(PermissionError, "busy"):
+                ctx.update(change)
+        self.assertAlmostEqual(elapsed[0], 5)
+        self.assertGreater(replace.call_count, 1)
+        ctx.load.assert_called_once_with()
+        change.assert_called_once()
+        ctx.reg_path.with_suffix.return_value.write_text.assert_called_once()
+        ctx.mutex.unlink.assert_called_once_with()
+
+    def test_update_does_not_retry_other_replace_errors(self):
+        from unittest.mock import Mock, patch
+        ctx = self.context()
+        ctx.load = Mock(return_value={"lanes": {}})
+        with patch.object(lanes.os, "replace", side_effect=OSError("disk full")) as replace, \
+                patch.object(lanes.time, "sleep") as sleep:
+            with self.assertRaisesRegex(OSError, "disk full"):
+                ctx.update(Mock())
+        replace.assert_called_once()
+        sleep.assert_not_called()
+        ctx.mutex.unlink.assert_called_once_with()
+
+    def test_load_retries_permission_error_and_half_read(self):
+        from unittest.mock import patch
+        ctx = self.context()
+        ctx.reg_path.read_text.side_effect = [PermissionError("busy"), '{"lanes":',
+                                             '{"lanes": {"a": {}}, "saved": true}']
+        with patch.object(lanes.time, "sleep") as sleep:
+            self.assertEqual(ctx.load(), {"lanes": {"a": {}}, "saved": True})
+        self.assertEqual(ctx.reg_path.read_text.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_load_exhaustion_preserves_error(self):
+        from unittest.mock import patch
+        for error in (PermissionError("busy"), json.JSONDecodeError("half-read", "{", 1)):
+            with self.subTest(error=type(error).__name__):
+                ctx = self.context()
+                ctx.reg_path.read_text.side_effect = error
+                with patch.object(lanes.time, "sleep") as sleep:
+                    with self.assertRaises(type(error)) as raised:
+                        ctx.load()
+                self.assertIs(raised.exception, error)
+                self.assertEqual(ctx.reg_path.read_text.call_count, 5)
+                self.assertEqual(sleep.call_count, 4)
+
+    def test_load_missing_registry_still_returns_empty_lanes(self):
+        from unittest.mock import patch
+        ctx = self.context()
+        ctx.reg_path.read_text.side_effect = FileNotFoundError()
+        with patch.object(lanes.time, "sleep") as sleep:
+            self.assertEqual(ctx.load(), {"lanes": {}})
+        sleep.assert_not_called()
+
+
+class HeartbeatRetryTest(unittest.TestCase):
+    def test_heartbeat_survives_value_error_and_warns_once_per_streak(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock, patch
+        ctx = SimpleNamespace(session="test")
+        queue = lanes.GateQueue(ctx, "head")
+        stored = dict(queue.ticket, beat=0)
+        reg = {"gate_queue": [stored]}
+        attempts, refreshed, errors = [], [], []
+
+        def update(fn):
+            attempts.append(1)
+            if len(attempts) in (1, 2, 4, 5):
+                raise ValueError("half-read registry")
+            result = fn(reg)
+            refreshed.append(stored["beat"])
+            return result
+
+        ctx.update = update
+        queue._stop = Mock()
+        queue._stop.wait.side_effect = [False] * 6 + [True]
+
+        def heartbeat():
+            try:
+                queue._heartbeat()
+            except Exception as error:
+                errors.append(error)
+
+        log = io.StringIO()
+        with patch.object(lanes.time, "time", side_effect=[100, 200]), redirect_stderr(log):
+            thread = threading.Thread(target=heartbeat)
+            thread.start()
+            thread.join(timeout=2)
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(errors, [])
+        self.assertEqual(len(attempts), 6)
+        self.assertEqual(refreshed, [100, 200])
+        self.assertEqual(queue.ticket["beat"], 200)
+        self.assertEqual(log.getvalue().count("gate heartbeat failed for head"), 2)
+
+
+class RegeneratePrefixTest(unittest.TestCase):
+    def test_regenerate_matches_input_prefix_case_insensitively(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        entry = {"path": "docs/runtime/output.tsv", "inputs": ["Docs/Runtime/"],
+                 "cmd": "regenerate-runtime"}
+        cases = [("dOCS/rUNTIME/capture.jsonl", True), ("docs/runtime-other/x", False),
+                 ("DOCS/RUNTIME/OUTPUT.TSV", True)]
+        for path, expected in cases:
+            with self.subTest(path=path):
+                ctx = SimpleNamespace(cfg={"regenerate": [entry]}, cand_paths=[path])
+                with patch.object(lanes, "run_shell", return_value=0) as run, \
+                        patch.object(lanes, "git"), patch.object(lanes, "git_ok", return_value=True), \
+                        patch.object(lanes, "matches_input_prefix",
+                                     wraps=lanes.matches_input_prefix) as matches:
+                    self.assertEqual(lanes.regenerate(ctx, "a", Path("candidate"),
+                                                      io.StringIO(), docs_only=True), [])
+                self.assertEqual(run.call_count, int(expected))
+                if expected:
+                    matches.assert_called_once_with(path, entry["inputs"])
+
+
 class InputCheckTest(unittest.TestCase):
     """Dispatch tests independent of shell transport and lane fixture setup."""
 

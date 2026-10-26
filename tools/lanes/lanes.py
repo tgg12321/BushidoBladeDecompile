@@ -167,10 +167,17 @@ class Ctx:
                 time.sleep(0.2)
 
     def load(self) -> dict:
-        try:
-            reg = json.loads(self.reg_path.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            reg = {}
+        for attempt in range(5):
+            try:
+                reg = json.loads(self.reg_path.read_text(encoding="utf-8"))
+                break
+            except FileNotFoundError:
+                reg = {}
+                break
+            except (PermissionError, json.JSONDecodeError):
+                if attempt == 4:
+                    raise
+                time.sleep(0.05)
         reg.setdefault("lanes", {})
         return reg
 
@@ -183,7 +190,20 @@ class Ctx:
             tmp = self.reg_path.with_suffix(".tmp")
             tmp.write_text(json.dumps(reg, indent=2, sort_keys=True) + "\n", encoding="utf-8",
                            newline="\n")
-            os.replace(tmp, self.reg_path)
+            deadline = None
+            while True:
+                try:
+                    os.replace(tmp, self.reg_path)
+                    break
+                except PermissionError:
+                    now = time.monotonic()
+                    if deadline is None:
+                        deadline = now + 5
+                    remaining = deadline - now
+                    if remaining <= 0:
+                        raise
+                    # Keep the mutex and the same staged write throughout the retry.
+                    time.sleep(min(0.05, remaining))
             return out
         finally:
             try:
@@ -228,8 +248,8 @@ class GateQueue:
             try:
                 self._refresh()
                 warned = False
-            except (OSError, Refuse) as error:
-                # Retry transient mutex/I/O failures; never recreate an evicted ticket.
+            except Exception as error:
+                # Keep beating after any refresh failure; never recreate an evicted ticket.
                 if not warned:
                     print(f"lanes: gate heartbeat failed for {self.ticket['lane']}: {error}",
                           file=sys.stderr, flush=True)
@@ -1273,12 +1293,16 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
     return git("rev-parse", "HEAD", cwd=ld)
 
 
+def matches_input_prefix(path, prefixes):
+    """Match configured input prefixes with Windows' case-insensitive spelling."""
+    return any(path.casefold().startswith(prefix.casefold()) for prefix in prefixes)
+
+
 def tip_checks(ctx: Ctx, ld: Path, log, regenerated):
     """Check HEAD once for inputs touched by the candidate or regenerated outputs."""
     paths = set(ctx.cand_paths) | set(regenerated)
     for check in ctx.cfg.get("tip_checks", []):
-        if not any(p.casefold().startswith(prefix.casefold())
-                   for p in paths for prefix in check["inputs"]):
+        if not any(matches_input_prefix(p, check["inputs"]) for p in paths):
             continue
         cmd = check["cmd"]
         if run_shell(ctx, ld, cmd, log) != 0:
@@ -1299,8 +1323,7 @@ def input_checks(ctx: Ctx, ld: Path, base: str, log):
         paths = git("diff-tree", "--no-commit-id", "--name-only", "-z", "-r",
                     "--no-renames", commit, cwd=ld).split("\0")
         for check in checks:
-            if not any(p.casefold().startswith(prefix.casefold())
-                       for p in paths for prefix in check["inputs"]):
+            if not any(matches_input_prefix(p, check["inputs"]) for p in paths):
                 continue
             cmd = check["cmd"] + " --rev " + commit
             if run_shell(ctx, ld, cmd, log) != 0:
@@ -1321,7 +1344,10 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
     changed = []
     for g in ctx.cfg.get("regenerate", []):
         if "inputs" in g:
-            if not any(p != g["path"] and any(p.startswith(i) for i in g["inputs"])
+            # the output itself is excluded exactly (as before); only the input prefix test
+            # casefolds, so the step can only run more often
+            if not any(p != g["path"]
+                       and matches_input_prefix(p, g["inputs"])
                        for p in ctx.cand_paths):
                 continue
         elif docs_only:
