@@ -13,7 +13,7 @@
 /* data-wave 2026-09-07: g_cd_ready_flag = 0x800A11D4 retired; CD_mode is now object-defined */
 /* data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined */
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
-/* RETIRED 0x800EF7BC (lane-fake-a 2026-10-16): D_800EF59C[8][0], row 8 of the s32[9][17] table (368E4.c func_80047A90 / func_80047D94); C reads it as D_800EF59C[8][...]; was g_snd_config_tbl */
+/* RETIRED 0x800EF7BC (lane-fake-a 2026-10-16): D_800EF59C[8][0], row 8 of the s32[9][17] table (368E4.c func_80047A90 / wave_SampleLastRowCachingIndexAndRemainderParity); C reads it as D_800EF59C[8][...]; was g_snd_config_tbl */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
 /* RENAME 0x800A3710: retired name 'D_800A3710' — preserved note: data-wave 2026-09-25: was g_file_vram_timer */
 
@@ -613,7 +613,7 @@
 /* eff_StartCommand stores the handler's return to the byte unk14 names. */
 
 /* === D_800A33EC / D_800EF980 cluster (2026-05-17) -- 2 highs === */
-/* From func_800493E4 (368E4.c:1835-1860).  D_800A33EC is -1 until */
+/* From resource_RequestEntryWithLinkedEntriesAndLatchCategory (368E4.c:1835-1860).  D_800A33EC is -1 until */
 /* its first call, then 0 for arg0 < 0x33, 1 for arg0 >= 0x33; */
 /* later calls from the other side of 0x33 call func_80052C10. */
 
@@ -965,7 +965,7 @@
 /* === Effect RNG state + text render cursors (2026-05-17) -- 3 highs === */
 
 /* === Panel sibling-activation lookup (2026-05-17) -- 2 highs === */
-/* From text1b.c func_800493E4: when a panel/slot is activated, also */
+/* From text1b.c resource_RequestEntryWithLinkedEntriesAndLatchCategory: when a panel/slot is activated, also */
 /* activate its sibling pair from these tables.  Indexed by arg0 * 2 */
 /* (so each arg0 entry is 2 bytes: sibling_a, sibling_b; 0xFF = none). */
 /* 2026-10-16: D_80099CC9 retired -- D_80099CC8[i][1] (u8 D_80099CC8[58][2], include/bb2.h); the asm/data dlabel remains. */
@@ -976,7 +976,7 @@
 
 /* === Replay target A/B struct bases (2026-05-17) -- 4 highs === */
 /* 2026-09-23: g_replay_target_a/b_init_val (2 of the 4) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
-/* From text1b.c func_80049E4C: 2 parallel transform records */
+/* From text1b.c node_InitRootNodePairWithNegatedRotationMatrices: 2 parallel transform records */
 /* initialized together.  D_80101DF0 is "target A" (type 0x64); */
 /* D_800FF638 is "target B" (type 0x65).  After init, pointers are */
 /* stored to D_800A3708 (A) and D_800A370C (B), and */

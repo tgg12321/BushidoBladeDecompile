@@ -125,12 +125,12 @@ D_80094B88 = 0x80094B88; // per-slot 5-bit codes [3] (func_80041604)  // data-wa
 // === Camera ===
 g_math_light_plane_projection = 0x800EEDB0;  // data-wave 2026-09-29: was g_cam_matrix
 D_800EEDD0 = 0x800EEDD0; // MATRIX: D_80101DF0's matrix with row 1 halved (camera_CopyViewMatrixWithHalvedMiddleRow)  // data-wave 2026-10-07: was g_cam_bone_data
-D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); func_80047570 / node_OrientAndQueueViewOffsetNode  // data-wave 2026-10-07: was g_cam_bone_data2
+D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); node_InitViewOffsetNodeWithYXZRotation / node_OrientAndQueueViewOffsetNode  // data-wave 2026-10-07: was g_cam_bone_data2
 D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: D_800F66A0 index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
 
-// === func_800460E4 state, g_gpu_cell_draw_attributes grid, D_800948BC hooks ===
-g_loaded_resource_selector = 0x80099478; // selector func_800460E4 caches (-1 = none); resource_GetLoadedSelector returns it  // data-wave 2026-10-08: was g_stage_id
-D_8009947A = 0x8009947A; // 0/1: set by func_800460E4, gates func_800464C4 / func_8004659C; resource_HasRetainedSubblocks returns it  // data-wave 2026-10-08: was g_stage_variant
+// === resource_LoadOrReuseSelectedBlock state, g_gpu_cell_draw_attributes grid, D_800948BC hooks ===
+g_loaded_resource_selector = 0x80099478; // selector resource_LoadOrReuseSelectedBlock caches (-1 = none); resource_GetLoadedSelector returns it  // data-wave 2026-10-08: was g_stage_id
+D_8009947A = 0x8009947A; // 0/1: set by resource_LoadOrReuseSelectedBlock, gates resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks / resource_SelectRetainedSubblockOrApplyHeaderSections; resource_HasRetainedSubblocks returns it  // data-wave 2026-10-08: was g_stage_variant
 g_fight_start_position_pairs = 0x8009947C; // block whose address fight_GetStartPositionPairTable returns (u8 is a stand-in)  // data-wave 2026-10-08: was g_stage_data
 g_gpu_cell_draw_attributes = 0x800A8FB0; // 32x32 grid filled by gpu_ResetAndStampViewCenteredCellAttributes and kin, read by the draw walks gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards / func_8003EB84  // data-wave 2026-10-08: was g_stage_collision
 D_800A93B0 = 0x800A93B0; // [3]: zeroed by ClearSavedWordPairsAndTwoWriteOnlyWords, set by func_8003F5A8, passed by func_8003F5CC to the empty func_80017F98  // data-wave 2026-10-08: was g_stage_light_pos
@@ -653,7 +653,7 @@ D_8008F13C = 0x8008F13C; /* data-wave 2026-10-08: was g_special_cam_command_tabl
 D_8009BD24 = 0x8009BD24; /* data-wave 2026-10-08: was g_disp_config */
 // RENAME 0x80046798: retired name 'func_80046798' — preserved note: 4-insn lh-based signed getter for D_80099478 */  /* naming wave07 2026-10-08: was stage_GetId
 D_800A36AC = 0x800A36AC; /* presented-frame count: zeroed by main, ++ after each DrawOTag; most readers take `& 1` as the double-buffer index, func_8003C9A4 / func_8003CD10 use the whole value */  /* data-wave 2026-10-08: was g_frame_parity */
-D_800A3708 = 0x800A3708; /* = &D_80101DF0 (func_80049E4C); +0x4C/+0x54 are work.t[0]/[2], mapped to a 32x32 cell */  /* data-wave 2026-10-08: was g_stage_data_ptr */
+D_800A3708 = 0x800A3708; /* = &D_80101DF0 (node_InitRootNodePairWithNegatedRotationMatrices); +0x4C/+0x54 are work.t[0]/[2], mapped to a 32x32 cell */  /* data-wave 2026-10-08: was g_stage_data_ptr */
 D_800A3748 = 0x800A3748; /* index into D_80101EC8; -1 == none */  /* data-wave 2026-10-03: was g_practice_menu_index */
 D_800A378C = 0x800A378C; /* ordering-table pointer: every store is g_gpu_ot_ptr + 4; every reader links GPU packets (DR_MOVE, OT words) into it */  /* data-wave 2026-10-08: was g_palette_base_ptr */
 D_800A3044 = 0x800A3044; /* SioRegs *: holds 0x1F801050, the SIO port 1 (link cable) register block; libcomb only (comb.c:17, include/psxsdk/libapi.h:23-37) */  /* data-wave 2026-10-09: was g_spu_reg_base_ptr */
@@ -746,7 +746,7 @@ D_800A31DA = 0x800A31DA; /* ref: func_80035480 */  /* data-wave 2026-10-08: was 
 D_800A31FC = 0x800A31FC; /* 0/1 flag of the memory-card status flow (func_80038988 / func_80038C70) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
 D_800A3203 = 0x800A3203; /* one-shot latch that re-arms the memory-card status poll through memcard_RequestLoad (28708.c:457-462) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
 D_800A3678 = 0x800A3678; /* ref: func_80042874 */  /* data-wave 2026-10-08: was g_leaf_muki_buffer */
-D_800A370C = 0x800A370C; /* = &D_800FF638 (func_80049E4C); read by func_80044504 */  /* data-wave 2026-10-08: was g_replay_camera_target_ptr_b */
+D_800A370C = 0x800A370C; /* = &D_800FF638 (node_InitRootNodePairWithNegatedRotationMatrices); read by func_80044504 */  /* data-wave 2026-10-08: was g_replay_camera_target_ptr_b */
 g_gpu_ot_ptr = 0x800A374C; /* ref: tslDrTex1Init2 */  /* data-wave 2026-09-24: was g_dma_buf_base */
 D_800A376A = 0x800A376A; /* refs: func_8002738C, func_800343F0, func_8003B2C8, func_8003B328, func_8003B870 */  /* data-wave 2026-10-08: was g_tslTm_loaded_flags */
 D_800A37A8 = 0x800A37A8; /* command-1 operand bytes of the running script (count D_800A37A0), shown one by one by func_800174F4 (6CF8.c:566-590) */  /* data-wave 2026-10-08: was g_mental_bar_packet_buf */
@@ -761,7 +761,7 @@ D_80094DF0 = 0x80094DF0; /* 6 ptrs to (x, y) s16 lists, picked via D_80094E08; f
 D_8008EB28 = 0x8008EB28; /* u8[8][2] (include/bb2.h:216): {0..9, 8, 9, 0x2E, 0x2F, 0x2E, 0x2F} */  /* data-wave 2026-10-09: was g_byte_index_map_8008EB28 */
 D_8008EBCC = 0x8008EBCC; /* 5 entries: {0, 0x33, 0x3A, 0x41, 0x48}, indexed by D_800A384C; each read is an offset added to a slot base */  /* data-wave 2026-10-08: was g_step_lookup_5_8008EBCC */
 D_8008EB80 = 0x8008EB80; /* byte lookup {0x0A..0x17}; index 14 (0x18, via D_8008EB8E) is also read */  /* data-wave 2026-10-08: was g_lookup_14entries_8008EB80 */
-D_80099C14 = 0x80099C14; /* -1-terminated list of 15 s16 player-matrix indices (16 halfwords), read by func_80048BA4 */  /* data-wave 2026-10-08: was g_lookup_8entries_80099C14 */
+D_80099C14 = 0x80099C14; /* -1-terminated list of 15 s16 player-matrix indices (16 halfwords), read by node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable */  /* data-wave 2026-10-08: was g_lookup_8entries_80099C14 */
 D_800A127C = 0x800A127C; /* 0/1 flags indexed by CD_com in getintr (bios.c:71, :140) */  /* data-wave 2026-10-09: was g_palette_32_800A127C */
 D_800A12FC = 0x800A12FC; /* per-command flags read by CD_cw (bios.c:319-320, :347, :356) */  /* data-wave 2026-10-09: was g_palette_32_800A12FC */
 D_800A137C = 0x800A137C; /* per-command flags indexed by CD_com in getintr (bios.c:72, :117) */  /* data-wave 2026-10-09: was g_palette_32_800A137C */
@@ -909,7 +909,7 @@ D_80094C68 = 0x80094C68; /* u16 table; stored into the fighter record's +0x1A (9
 D_80094B96 = 0x80094B96; /* D_80094B96[0].unk_00: s16 parent-node index, -1 for none (func_800408F8) */  /* data-wave 2026-10-08: was g_attack_scale_x */
 D_80094B98 = 0x80094B98; /* D_80094B96[0].unk_02[0]: s16, times a0->position_scale >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
 D_80094B9A = 0x80094B9A; /* D_80094B96[0].unk_02[1]: s16, times a0->position_scale >> 12 it becomes node work.t[1] */  /* data-wave 2026-10-08: was g_attack_scale_z */
-D_800A324C = 0x800A324C; /* last i seen by func_80049584; a change forces the func_80045B68 reload; init -1, reset to -1 by func_80049E1C */  /* data-wave 2026-10-08: was g_text1b_last_frame_id */
+D_800A324C = 0x800A324C; /* last i seen by resource_RankRequestedEntriesAndReloadOnChange; a change forces the func_80045B68 reload; init -1, reset to -1 by resource_InvalidateEntrySelectionCache */  /* data-wave 2026-10-08: was g_text1b_last_frame_id */
 D_800A3783 = 0x800A3783; /* read position in the D_801077B0 list fight_BuildOpponentOrder builds; fight_AdvanceOpponentOrder advances it until it equals the count D_800A391F (17AFC.c:6479-6499) */  /* data-wave 2026-10-08: was g_mottest_current_idx */
 D_800A37BC = 0x800A37BC; /* index into D_8008E748; zeroed by fight_BuildOpponentOrder with D_800A3783, advanced by fight_AdvanceOpponentOrder when the list entry is neither 5 nor 0x10 (17AFC.c:6505-6509) */  /* data-wave 2026-10-08: was g_mottest_secondary_idx */
 D_800A376B = 0x800A376B; /* reset to 0 alongside indices */  /* data-wave 2026-10-08: was g_mottest_substate */
@@ -934,7 +934,7 @@ D_800A3618 = 0x800A3618; /* _patch_pad's own $ra save slot (libapi/patch.c:14) *
 D_800A3628 = 0x800A3628; /* _send_pad's own $ra save slot (libapi/sendpad.c:10) */  /* data-wave 2026-10-09: was g_kernel_intr_ra_save_b */
 D_800A326C = 0x800A326C; /* rising cyclic count: wrapped to 0..3 (% 4) on entry and incremented on exit; the call draws (it + 1) * 2 randomly placed sprite pairs (4D0A8.c:376-447) */  /* data-wave 2026-10-08: was g_eff_particle_remaining */
 D_8009B2E0 = 0x8009B2E0; /* one 12-byte sprite-sheet header handed to the sprite drawer (0x3C is the containing array's row stride) */  /* data-wave 2026-10-08: was g_eff_particle_template_table */
-D_8008E5CC = 0x8008E5CC; /* u8[27][8]: [D_80101EC8[i].unk_0A][.unk_0E] goes to func_800494D4 (9F9C.c:1916-1918, 2B344.c:189-190, :215-216) */  /* data-wave 2026-10-09: was g_char_lookup_table_b */
+D_8008E5CC = 0x8008E5CC; /* u8[27][8]: [D_80101EC8[i].unk_0A][.unk_0E] goes to resource_SetPairSelectionSlotWithBoundChecks (9F9C.c:1916-1918, 2B344.c:189-190, :215-216) */  /* data-wave 2026-10-09: was g_char_lookup_table_b */
 D_8008E6A4 = 0x8008E6A4; /* u8[27][6]: read instead of D_8008E5CC in some D_800A38DC modes (9F9C.c:1910-1914, 2B344.c:211-213) */  /* data-wave 2026-10-09: was g_char_lookup_table_c */
 D_800A36C8 = 0x800A36C8; /* func_8003B2C8 saves D_800A376A here; func_8003B328 restores it and passes it to func_80041604 */  /* data-wave 2026-10-08: was g_char_id_saved_d */
 D_800A31F8 = 0x800A31F8; /* func_80037D14's return D_800A3890: 0 while the card machine runs, then status 1/2/-1/-2/-3 */  /* data-wave 2026-10-08: was g_memcard_op_alt_handle */
@@ -968,7 +968,7 @@ gpu_MoveObjectClutsToFogBlock = 0x8003E164; /* when arg0 is not the selected obj
 // RENAME 0x8004939C: retired name 'func_8004939C' — preserved note: MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells
 func_80041688 = 0x80041688; /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
 font_LoadImage = 0x8003D2C4; /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */
-func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
+func_800548DC = 0x800548DC; /* MISNAMED: not katinuki data; gpu_DrawSync(0)+resource_SelectRetainedSubblockOrApplyHeaderSections(-1)+snd_StopSelection() */
 camera_InitTrackedFighterFocus = 0x8001B3C0; /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
 // RENAME 0x8001C820: retired name 'func_8001C820' — preserved note: MISNAMED: not voice data; conditional snd_QueuePositionalSound with sound IDs 0x56..0x58
 // RENAME 0x80048AD0: retired name 'func_80048AD0' — preserved note: MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68
@@ -1376,7 +1376,7 @@ D_800A334C = 0x800A334C; /* u8 90-frame display countdown of a memory-card messa
 D_800A3468 = 0x800A3468; /* pointer to the current command block (g_eff_command_block, or the scratchpad block in eff_BindScratchpad); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
 D_800A347C = 0x800A347C; /* = D_800A3468->unk20 (eff_StartCommand), the command block's three-word copy of unk0C; every consumer reads words [0..2] through it */  /* data-wave 2026-10-08: was g_text1b_render_buf_ptr */
 D_800A34E8 = 0x800A34E8; /* primitive-tag pointer: seeded with 0x1F8000A4 (never dereferenced), set to &prim->tag before each use and linked into the OT entry D_800A34E4 */  /* data-wave 2026-10-08: was g_scratchpad_ptr_a4 */
-D_800A33E8 = 0x800A33E8; /* s16 pair of small values, -1 = unset: stored by func_800494D4, taken as lo / hi by func_80049584, ranked by func_80049C24 (368E4.c:1822-2282) */  /* data-wave 2026-10-08: was g_gnd_target_id_array */
+D_800A33E8 = 0x800A33E8; /* s16 pair of small values, -1 = unset: stored by resource_SetPairSelectionSlotWithBoundChecks, taken as lo / hi by resource_RankRequestedEntriesAndReloadOnChange, ranked by snd_CopySelectedPackSectionsAndLoadVabPacks (368E4.c:1822-2282) */  /* data-wave 2026-10-08: was g_gnd_target_id_array */
 D_800A3478 = 0x800A3478; /* = D_800A3468->unk18 (eff_StartCommand), the command block's s16-triple copy of unk10; read by eff_SpawnRotatedQuadCluster, eff_AllocateOrRecycleYawedQuadSlot, eff_SpawnParticles */  /* data-wave 2026-10-08: was g_text1b_render_dst_ptr */
 g_arena_free_size = 0x800A33A4; /* remaining arena capacity (init 0x45000), reduced as blocks grow; arena_GetFreeSize returns it */  /* data-wave 2026-10-08: was g_text1a_size_remaining */
 g_arena_peak = 0x800A33A8; /* high-water mark of arena use, an offset from g_arena (arena_UpdatePeak) */  /* data-wave 2026-10-08: was g_text1a_size_cursor */
