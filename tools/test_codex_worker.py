@@ -794,6 +794,141 @@ class Repo(unittest.TestCase):
         return m
 
 
+class HarvestCasePaths(Repo):
+    def tree_with(self, *paths):
+        """Build Git objects only: Windows cannot represent these collisions on disk."""
+        idx = self.tmp / "casepaths.idx"
+        idx.unlink(missing_ok=True)
+        env = cw.clean_env(GIT_INDEX_FILE=str(idx))
+        cw.git("read-tree", "main", cwd=self.repo, env=env)
+        blob = self.g("rev-parse", "main:src/a.c")
+        for path in paths:
+            cw.git("update-index", "--add", "--cacheinfo", f"100644,{blob},{path}",
+                   cwd=self.repo, env=env)
+        return cw.git("write-tree", cwd=self.repo, env=env)
+
+    def harvest_tree(self, tree):
+        """Exercise harvest's real validation with an already snapshotted tree."""
+        real_git = cw.git
+
+        def snapshot(*args, **kwargs):
+            if list(args[:len(cw.HARVEST_CFG)]) == cw.HARVEST_CFG:
+                return tree if args[len(cw.HARVEST_CFG)] == "write-tree" else ""
+            return real_git(*args, **kwargs)
+
+        base = self.g("rev-parse", "main")
+        with mock.patch.object(cw, "verify_scratch", return_value=self.repo / ".git"), \
+                mock.patch.object(cw, "reparse_points", return_value=[]), \
+                mock.patch.object(cw, "load_state", return_value={"base": base}), \
+                mock.patch.object(cw, "git", side_effect=snapshot):
+            return cw.harvest(self.repo, self.ITEM, self.repo)
+
+    def refused(self, tree, *messages):
+        out = io.StringIO()
+        with redirect_stdout(out), redirect_stderr(out), self.assertRaises(SystemExit) as e:
+            self.harvest_tree(tree)
+        self.assertEqual(e.exception.code, 2)
+        for message in messages:
+            self.assertIn(message, out.getvalue())
+
+    def test_reviewed_case_variants_refused(self):
+        cases = (
+            ("SRC/main/x.c", "src/main/x.c"),
+            ("Include/game.h", "include/game.h"),
+            ("ASM/x.s", "asm/x.s"),
+            ("Engine/cli.py", "engine/cli.py"),
+            ("TOOLS/x.py", "tools/x.py"),
+            ("makefile", "Makefile"),
+            ("BB2.LD", "BB2.ld"),
+            (".CLAUDE/Rules/x.md", ".claude/rules/x.md"),
+            ("INLINE_ASM_CANONICAL.TXT", "inline_asm_canonical.txt"),
+            ("NAMED_SYMS.TXT", "named_syms.txt"),
+            ("UNDEFINED_SYMS.more", "undefined_syms.more"),
+            ("UNDEFINED_FUNCS.more", "undefined_funcs.more"),
+            ("Foo_AUTO.TXT", "Foo_auto.txt"),
+            ("Foo_FUNCS.TXT", "Foo_funcs.txt"),
+            ("Foo_SYMS.TXT", "Foo_syms.txt"),
+            ("Foo_FILES.TXT", "Foo_files.txt"),
+            ("src/x.C", "src/x.c"),
+            ("include/x.H", "include/x.h"),
+        )
+        for path, canonical in cases:
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, f"canonical spelling: {canonical}")
+
+    def test_ledger_case_variants_refused(self):
+        for path, canonical in (
+            ("Memory/Grind/Foo/layer2.jsonl", "memory/grind/Foo/layer2.jsonl"),
+            ("memory/grind/Foo/Layer2.JSONL", "memory/grind/Foo/layer2.jsonl"),
+            ("memory/grind/_completed/Foo/Layer2.other", "memory/grind/_completed/Foo/layer2.other"),
+            ("memory/grind/Foo/Layer2_VERDICTS/" + "A" * 40 + ".JSON",
+             "memory/grind/Foo/layer2_verdicts/" + "a" * 40 + ".json"),
+        ):
+            with self.subTest(path=path):
+                self.refused(self.tree_with(path), path, f"canonical spelling: {canonical}")
+
+    def test_metadata_case_variants_refused(self):
+        for name in sorted(cw.GIT_META):
+            for prefix in ("", "docs/"):
+                path = prefix + name.upper()
+                with self.subTest(path=path):
+                    self.refused(self.tree_with(path), path, f"canonical spelling: {prefix + name}")
+
+    def test_ignored_case_variants_refused(self):
+        # Trusted ignore patterns, independent of the repo's core.ignorecase setting.
+        (self.repo / ".gitignore").write_text("tmp/\nbuild/\n*.bin\n", encoding="utf-8", newline="\n")
+        for ignorecase in ("false", "true"):
+            self.g("config", "core.ignorecase", ignorecase)
+            for path, pattern in (("TMP/x", "tmp/"), ("Build/x", "build/"), ("docs/X.BIN", "*.bin")):
+                with self.subTest(path=path, ignorecase=ignorecase):
+                    self.refused(self.tree_with(path), path,
+                                 f"canonical spelling matches ignored pattern: {pattern}")
+
+    def test_tree_case_collisions_refused(self):
+        for paths, entries in (
+            (("Readme", "README"), ("Readme", "README")),
+            (("docs/Note", "docs/NOTE"), ("docs/Note", "docs/NOTE")),
+            (("Docs/a", "docs/b"), ("Docs", "docs")),
+            (("docs/Sub/a", "docs/sub/b"), ("docs/Sub", "docs/sub")),
+            (("docs/Node", "docs/node/x"), ("docs/Node", "docs/node")),
+            (("docs/stra\u00dfe", "docs/STRASSE"), ("docs/stra\u00dfe", "docs/STRASSE")),
+        ):
+            with self.subTest(paths=paths):
+                self.refused(self.tree_with(*paths), "case collision", *entries)
+
+    def test_ignore_check_error_refused(self):
+        tree = self.tree_with("docs/src/x.md")
+        real_run = subprocess.run
+
+        def fail_ignore(args, **kwargs):
+            if "check-ignore" in args and "core.ignorecase=true" in args:
+                return SimpleNamespace(returncode=128, stdout="", stderr="ignore check failed")
+            return real_run(args, **kwargs)
+
+        with mock.patch.object(cw.subprocess, "run", side_effect=fail_ignore):
+            self.refused(tree, "cannot check harvested path case", "ignore check failed")
+
+    def test_exact_case_unchanged(self):
+        for path, kinds in (("src/main/x.c", ["cheat-reviewer"]),
+                            ("tools/x.py", list(cw.KINDS)),
+                            ("Makefile", list(cw.KINDS)),
+                            ("BB2.ld", ["cheat-reviewer"]),
+                            ("docs/src/x.md", ["code-reviewer"]),
+                            ("docs/tools/x.md", ["code-reviewer"]),
+                            ("memory/grind/Foo/readme.md", ["code-reviewer"])):
+            with self.subTest(path=path):
+                tree = self.tree_with(path)
+                commit = self.g("commit-tree", tree, "-p", "main", "-m", "candidate")
+                key = cw.diff_key(self.repo, commit)
+                base, result, paths = self.harvest_tree(tree)
+                self.assertEqual(base, self.g("rev-parse", "main"))
+                self.assertEqual(result, tree)
+                self.assertEqual(paths, [path])
+                self.assertEqual(self.g("rev-parse", f"{commit}^{{tree}}"), result)
+                self.assertEqual(cw.diff_key(self.repo, commit), key)
+                self.assertEqual(cw.required_kinds(self.repo, commit), (sorted(kinds), [path]))
+
+
 class Layer2Record(Repo):
     def test_fail_without_item_commit_makes_ledger_only_commit(self):
         code, err = self.layer2("FAIL", msg=self.msg())

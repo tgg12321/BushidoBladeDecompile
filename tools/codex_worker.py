@@ -311,6 +311,42 @@ HARVEST_CFG = ["-c", "filter.lfs.clean=", "-c", "filter.lfs.smudge=", "-c", "fil
                "-c", "filter.lfs.required=false", "-c", "core.fsmonitor=false"]
 
 
+def canonical_case(path):
+    """Correct only the literal portions of the harvest/review/format path rules.
+
+    Wildcard portions (including function names) retain their spelling. Check each rule,
+    even when another rule already matches: src/x.C must not evade format_tree either.
+    """
+    rules = (
+        (r"^(src|include|asm|engine|tools)/", str.casefold),
+        (r"^\.claude/rules/", str.casefold),
+        (r"^Makefile$", lambda s: "Makefile"),
+        (r"^(inline_asm_canonical\.txt|named_syms\.txt)$", str.casefold),
+        (r"^(undefined_syms|undefined_funcs)", str.casefold),
+        (r"^[^/]*?(_auto\.txt|\.ld|_funcs\.txt|_syms\.txt|_files\.txt)$", str.casefold),
+        (r"^(memory/grind/)(?=(?:[^/]+/)*layer2)", str.casefold),
+        (r"^memory/grind/(?:[^/]+/)*(layer2)", str.casefold),
+        (r"^memory/grind/[^/]+/(layer2\.jsonl|layer2_verdicts/[0-9a-f]{40}\.json)$", str.casefold),
+        (r"^(?:src|include)/.*(\.[ch])$", str.casefold),
+        (r"^(?:.*/)?(\.gitignore|\.gitattributes|\.lfsconfig|\.gitmodules)$", str.casefold),
+    )
+    canonical = path
+    for pattern, spelling in rules:
+        # Python IGNORECASE also accepts a few non-ASCII characters that do not
+        # casefold to the ASCII literals. Match the folded path instead.
+        m = re.match(pattern.casefold(), canonical.casefold())
+        if not m:
+            continue
+        # Casefold can expand Unicode characters; map folded offsets back to the path.
+        offsets = [0]
+        for c in canonical:
+            offsets.append(offsets[-1] + len(c.casefold()))
+        start, end = m.span(m.lastindex or 0)
+        start, end = offsets.index(start), offsets.index(end)
+        canonical = canonical[:start] + spelling(canonical[start:end]) + canonical[end:]
+    return canonical
+
+
 def check_tree(main, item, base, tree):
     """A harvested tree may only add/modify/delete ordinary files at ordinary paths: no symlinks or
     submodules, no git metadata files (they steer harvest and checkout), nothing at a path main's
@@ -318,6 +354,16 @@ def check_tree(main, item, base, tree):
     whose parent is a reparse point in the trusted tree. Checked BEFORE any checkout into trusted."""
     trusted = layout(item)[2]
     bad = []
+    # Include tree entries themselves: Foo/a and foo/b collide on their directories,
+    # and a file Foo also collides with a directory foo. Never consult the checkout.
+    seen = {}
+    for path in git("ls-tree", "-r", "-t", "--name-only", "-z", tree, cwd=main).split("\0"):
+        if not path:
+            continue
+        folded = path.casefold()
+        if folded in seen and seen[folded] != path:
+            bad.append(f"{path} (case collision with {seen[folded]})")
+        seen[folded] = path
     raw = git("diff-tree", "-r", "--no-renames", "-z", base, tree, cwd=main).split("\0")
     i, paths = 0, []
     while i + 1 < len(raw):
@@ -327,6 +373,9 @@ def check_tree(main, item, base, tree):
             continue
         om, nm = meta[1:].split()[:2]
         paths.append(path)
+        canonical = canonical_case(path)
+        if canonical != path:
+            bad.append(f"{path} (canonical spelling: {canonical})")
         if nm in ("120000", "160000") or om in ("120000", "160000"):
             bad.append(f"{path} (symlink/submodule entry)")
         if path.rsplit("/", 1)[-1] in GIT_META:
@@ -341,6 +390,23 @@ def check_tree(main, item, base, tree):
             if q and LEDGERISH.match(q):
                 bad.append(f"{q} (layer-2 ledger differs from the item commit's; only `layer2` writes it)")
     if paths:
+        # Ask Git to apply the trusted ignore rules with Windows case semantics too;
+        # -v supplies the canonical pattern without reimplementing gitignore syntax.
+        ignored = {}
+        for ignorecase in ("false", "true"):
+            r = subprocess.run(["git", "-c", f"core.ignorecase={ignorecase}", "check-ignore",
+                                "--no-index", "-v", "--stdin", "-z"], cwd=str(main),
+                               input="\0".join(paths) + "\0", capture_output=True, text=True,
+                               env=clean_env(), check=False)
+            if r.returncode not in (0, 1):
+                refuse(f"cannot check harvested path case against trusted ignore rules: {r.stderr.strip()}")
+            fields = r.stdout.split("\0")
+            ignored[ignorecase] = {fields[i + 3]: fields[i + 2]
+                                  for i in range(0, len(fields) - 3, 4)
+                                  if not fields[i + 2].startswith("!")}
+        for p, pattern in ignored["true"].items():
+            if p not in ignored["false"]:
+                bad.append(f"{p} (canonical spelling matches ignored pattern: {pattern})")
         r = subprocess.run(["git", "check-ignore", "--no-index", "--stdin", "-z"], cwd=str(main),
                            input="\0".join(paths) + "\0", capture_output=True, text=True, env=clean_env())
         bad += [f"{p} (ignored path)" for p in r.stdout.split("\0") if p]
