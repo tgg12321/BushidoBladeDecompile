@@ -46,7 +46,7 @@ RA = WORK / "ra"
 
 # The parked queue items whose park reason names a register exchange.
 TARGETS = [
-    ("func_800611A4", "text1b", "v0<->v1 RA swap (local-alloc.c:472 + find_free_reg)"),
+    ("eff_StartRotatedQuadClusterWithNearWhiteLight", "text1b", "v0<->v1 RA swap (local-alloc.c:472 + find_free_reg)"),
     ("memcard_CountFiles", "code6cac_c", "s0<->s1 allocno-priority swap + cse REG_WAS_0 fold"),
     ("func_80056FE8", "text1b", "a1<->a2 find_reg swap, no copy-preference anchor"),
     ("snd_QueuePositionSequence", "code6cac_b", "RA $a1-vs-$a3 (asm pin)"),

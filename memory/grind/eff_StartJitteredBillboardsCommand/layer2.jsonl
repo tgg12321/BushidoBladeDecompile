@@ -1,0 +1,1 @@
+{"func": "eff_StartJitteredBillboardsCommand", "addr": "800619F0", "verdict": "PASS", "body_hash": "061487cb8e7a74bf", "body_kind": "c", "file": "main/51268", "reviewer": "ab970f1cdedaf1269", "scope": "cheat-cleanup", "date": "2026-10-16T14:01:10Z", "head": "e45b9e340", "notes": "", "renamed_from": ["func_800619F0"]}

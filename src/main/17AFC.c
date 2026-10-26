@@ -24,12 +24,13 @@ extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
-/* replay_RecordEvent (28708.c: u8, u8, s32 *, u16 *) and func_80061C00
- * (51268.c: s32 *, s32, s32) are called without a prototype: the
- * u8 prototype narrows func_80032854's arguments, and func_80061C00 is
- * called with two of its three arguments. */
+/* replay_RecordEvent (28708.c: u8, u8, s32 *, u16 *) and
+ * eff_StartRecycledYawedParticlesWithTextureSelection (51268.c: s32 *, s32,
+ * s32) are called without a prototype: the u8 prototype narrows func_80032854's
+ * arguments, and eff_StartRecycledYawedParticlesWithTextureSelection is called
+ * with two of its three arguments. */
 extern void replay_RecordEvent();
-extern void func_80061C00();
+extern void eff_StartRecycledYawedParticlesWithTextureSelection();
 
 const char D_80010478[] = "ILLEGAL GUN MOTION : %d\n";
 const char D_80010494[] = "";
@@ -4707,7 +4708,7 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         eff_StartArgSelectedCommandWithCyanLight(arg2, arg0);
         break;
     case 15:
-        func_80061710(arg2, arg0);
+        eff_StartArgSelectedCommandWithGreenLight(arg2, arg0);
         break;
     case 1:
         eff_StartRecycledCommandWithPaleRedLight(arg2);
@@ -4720,45 +4721,46 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     case 6:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = func_800613C8(arg2);
+        D_800A3910 = eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 7:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = func_80061454(arg2);
+        D_800A3910 = eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 8:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = func_800614E0(arg2);
+        D_800A3910 = eff_StartFastRateCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 9:
-        func_800619A4(arg2);
+        eff_StartBillboardPairCommand(arg2);
         break;
     case 10:
-        func_800619F0(arg2);
+        eff_StartJitteredBillboardsCommand(arg2);
         break;
     case 11:
         snd_QueuePositionalSound(s0 + 0x31, arg2);
-        func_800611A4(arg2, arg3);
+        eff_StartRotatedQuadClusterWithNearWhiteLight(arg2, arg3);
         break;
     case 12:
         snd_QueuePositionalSound(0x78, arg2);
-        func_80061C00(arg2, arg3[1]);
+        eff_StartRecycledYawedParticlesWithTextureSelection(arg2, arg3[1]);
         break;
     case 13:
         snd_QueuePositionalSound(0x79, arg2);
-        func_80061D74(arg2, arg3[1]);
+        eff_StartRecycledYawedParticles(arg2, arg3[1]);
         break;
     case 14:
         snd_QueuePositionalSound(s0 + 0x22, arg2);
-        func_80061ACC(arg2, arg3);
+        eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
+            arg2, arg3);
         break;
     case 17:
         snd_QueuePositionalSound(s0 + 0x39, arg2);
         break;
     case 18:
-        func_80061EC0(arg2);
+        eff_StartRecycledCommandWithMagentaLight(arg2);
         snd_QueuePositionalSound(s0 + 0x22, arg2);
         break;
     case 33:

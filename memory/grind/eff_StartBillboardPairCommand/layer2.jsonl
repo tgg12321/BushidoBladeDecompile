@@ -1,0 +1,1 @@
+{"func": "eff_StartBillboardPairCommand", "addr": "800619A4", "verdict": "PASS", "body_hash": "4d8f43cec5b3a48a", "body_kind": "c", "file": "main/51268", "reviewer": "ab970f1cdedaf1269", "scope": "cheat-cleanup", "date": "2026-10-16T14:00:51Z", "head": "e45b9e340", "notes": "", "renamed_from": ["func_800619A4"]}

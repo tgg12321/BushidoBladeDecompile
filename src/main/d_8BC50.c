@@ -141,8 +141,8 @@ u16 D_8009B850[32] = {
 
 /* 51268.c's: the effect texture records (TexRec runs), D_8009BA60 and the
  * handler table D_8009BA7C (eff_StartCommand / eff_StepCommand), D_8009BB74
- * (eff_SetRotMatrix), D_8009BB84 (func_8006295C) and D_8009BBE4 .. D_8009BBFC
- * (eff_DrawYawedSlotQuads). */
+ * (eff_SetRotMatrix), D_8009BB84 (eff_DrawAndAdvanceRotatedQuadClusters) and
+ * D_8009BBE4 .. D_8009BBFC (eff_DrawYawedSlotQuads). */
 TexRec D_8009B890[4] = {{0x380, 0xFF, 0xA0, 0xE0},
                         {0x380, 0xFF, 0xA0, 0xE8},
                         {0x380, 0xFF, 0xA0, 0xE8},
@@ -213,9 +213,9 @@ u8 func_80065344(void);
 void func_80064F20(void);
 u8 func_80065394(void);
 s32 eff_SpawnJitteredBillboards(void);
-s32 func_800646E8(void);
+s32 eff_DrawAndAdvanceJitteredBillboards(void);
 s32 eff_SpawnBillboardPair(void);
-s32 func_80063084(void);
+s32 eff_DrawAndAdvanceBillboardPairs(void);
 s32 func_80064F68(void);
 u8 func_800653E4(void);
 s32 func_80064FB4(void);
@@ -231,9 +231,9 @@ u8 func_800655E0(void);
 void func_80065134(void);
 u8 func_80065630(void);
 void func_8006517C(void);
-s32 func_80065680(void);
+s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires(void);
 void func_800651F0(void);
-s32 func_800656EC(void);
+s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void);
 void func_80065264(void);
 u8 func_80065760(void);
 void func_800652AC(void);
@@ -256,8 +256,8 @@ u8 func_80067830(void);
 u8 func_80067198(void);
 u8 func_800671CC(void);
 u8 func_8006786C(void);
-s32 func_8006288C(void);
-s32 func_8006295C(void);
+s32 eff_SpawnRotatedQuadCluster(void);
+s32 eff_DrawAndAdvanceRotatedQuadClusters(void);
 
 s32 D_8009BA7C[62] = {
     (s32)func_80063AF0,
@@ -277,9 +277,9 @@ s32 D_8009BA7C[62] = {
     (s32)func_80064F20,
     (s32)func_80065394,
     (s32)eff_SpawnJitteredBillboards,
-    (s32)func_800646E8,
+    (s32)eff_DrawAndAdvanceJitteredBillboards,
     (s32)eff_SpawnBillboardPair,
-    (s32)func_80063084,
+    (s32)eff_DrawAndAdvanceBillboardPairs,
     (s32)func_80064F68,
     (s32)func_800653E4,
     (s32)func_80064FB4,
@@ -295,9 +295,9 @@ s32 D_8009BA7C[62] = {
     (s32)func_80065134,
     (s32)func_80065630,
     (s32)func_8006517C,
-    (s32)func_80065680,
+    (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires,
     (s32)func_800651F0,
-    (s32)func_800656EC,
+    (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires,
     (s32)func_80065264,
     (s32)func_80065760,
     (s32)func_800652AC,
@@ -320,8 +320,8 @@ s32 D_8009BA7C[62] = {
     (s32)func_80067198,
     (s32)func_800671CC,
     (s32)func_8006786C,
-    (s32)func_8006288C,
-    (s32)func_8006295C};
+    (s32)eff_SpawnRotatedQuadCluster,
+    (s32)eff_DrawAndAdvanceRotatedQuadClusters};
 VECTOR D_8009BB74 = {0x1000, 0x800, 0x1000, 0x0};
 s16 D_8009BB84[48] = {
     -125, -125, 0, 0, 125,  -125, 0,   0, -125, 125, 0, 0, 125, 125, 0,   0,

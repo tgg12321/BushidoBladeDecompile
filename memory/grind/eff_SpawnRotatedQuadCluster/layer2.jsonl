@@ -1,0 +1,1 @@
+{"func": "eff_SpawnRotatedQuadCluster", "addr": "8006288C", "verdict": "PASS", "body_hash": "e5dfdba295132b41", "body_kind": "c", "file": "main/51268", "reviewer": "cheat-reviewer-fakea-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T09:37:16Z", "head": "8ccce0b12", "notes": "", "renamed_from": ["func_8006288C"]}

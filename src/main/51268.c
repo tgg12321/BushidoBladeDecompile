@@ -284,7 +284,7 @@ void eff_StopCommands(void) {
 
 extern Unk1F800000Unk00 g_eff_command_block;
 
-void func_800611A4(s32 *arg0, s16 *arg1) {
+void eff_StartRotatedQuadClusterWithNearWhiteLight(s32 *arg0, s16 *arg1) {
     s16 svec[3];
     s32 *p;
     s16 *q = arg1;
@@ -341,7 +341,7 @@ s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     return 1;
 }
 
-s32 func_800613C8(s32 *a0) {
+s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     s32 *var_0 = a0;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = a0;
@@ -355,7 +355,7 @@ s32 func_800613C8(s32 *a0) {
     return 16;
 }
 
-s32 func_80061454(s32 *a0) {
+s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = a0;
@@ -369,7 +369,7 @@ s32 func_80061454(s32 *a0) {
     return 8;
 }
 
-s32 func_800614E0(s32 *a0) {
+s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = a0;
@@ -431,7 +431,7 @@ void eff_StartArgSelectedCommandWithCyanLight(s32 *arg0, s32 arg1) {
     D_800A3464 = 0x10FFFF;
 }
 
-void func_80061710(s32 *arg0, s32 arg1) {
+void eff_StartArgSelectedCommandWithGreenLight(s32 *arg0, s32 arg1) {
     s32 *p;
 
     D_800A3468 = &g_eff_command_block;
@@ -503,7 +503,7 @@ void eff_StartRecycledVectorCommandWithRedLight(s32 *arg0, s16 *arg1) {
     D_800A3464 = 0xFF0000;
 }
 
-void func_800619A4(s32 *a0) {
+void eff_StartBillboardPairCommand(s32 *a0) {
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = a0;
     g_eff_command_block.unk14 = &g_eff_command_status[8];
@@ -511,7 +511,7 @@ void func_800619A4(s32 *a0) {
     eff_StartCommand();
 }
 
-void func_800619F0(s32 *a0) {
+void eff_StartJitteredBillboardsCommand(s32 *a0) {
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = a0;
     g_eff_command_block.unk14 = &g_eff_command_status[7];
@@ -538,7 +538,8 @@ void eff_StartYawedQuadSlotCommand(s32 *a0, s16 a1, s32 a2, s32 a3) {
     eff_StartCommand();
 }
 
-void func_80061ACC(s32 *arg0, s16 *arg1) {
+void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
+    s32 *arg0, s16 *arg1) {
     s32 *p;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = arg0;
@@ -568,7 +569,8 @@ void func_80061ACC(s32 *arg0, s16 *arg1) {
     D_800A3464 = 0xFF8080;
 }
 
-void func_80061C00(s32 *arg0, s32 arg1, s32 arg2) {
+void eff_StartRecycledYawedParticlesWithTextureSelection(
+    s32 *arg0, s32 arg1, s32 arg2) {
     SVECTOR sp10;
     SVECTOR sp18;
     VECTOR sp20;
@@ -616,7 +618,7 @@ void func_80061C00(s32 *arg0, s32 arg1, s32 arg2) {
     eff_StartCommand();
 }
 
-void func_80061D74(s32 *arg0, s16 arg1) {
+void eff_StartRecycledYawedParticles(s32 *arg0, s16 arg1) {
     SVECTOR sp10;
     SVECTOR sp18;
     VECTOR sp20;
@@ -659,7 +661,7 @@ void func_80061D74(s32 *arg0, s16 arg1) {
     eff_StartCommand();
 }
 
-void func_80061EC0(s32 *arg0) {
+void eff_StartRecycledCommandWithMagentaLight(s32 *arg0) {
     s32 *p;
     D_800A3468 = &g_eff_command_block;
     g_eff_command_block.unk0C = arg0;
@@ -868,7 +870,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
     g_eff_quad_cursor = prim;
 }
 
-s32 func_8006288C(void) {
+s32 eff_SpawnRotatedQuadCluster(void) {
     s32 *pos;
     s16 *rot;
     s32 i;
@@ -894,11 +896,11 @@ s32 func_8006288C(void) {
     return 1;
 }
 
-/* Draw the up-to-6 slots func_8006288C spawns: per active slot, scale/rotate/
-   translate its matrix, then emit three textured POLY_FT4 quads, and finally
-   link the new quads into the OT. Returns 1 when quads were added, else the
-   live-slot mask (0 once every slot has expired). */
-s32 func_8006295C(void) {
+/* Draw the up-to-6 slots eff_SpawnRotatedQuadCluster spawns: per active slot,
+   scale/rotate/ translate its matrix, then emit three textured POLY_FT4 quads,
+   and finally link the new quads into the OT. Returns 1 when quads were added,
+   else the live-slot mask (0 once every slot has expired). */
+s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
     extern s16 D_8009BB84[];
     s32 count;
     MATRIX *var_1;
@@ -1067,7 +1069,7 @@ s32 eff_SpawnBillboardPair(void) {
    depth and animated by its age, then linked into the OT at its depth. A slot
    whose age reaches 16 clears its bit. Returns nonzero while any slot is still
    live. */
-s32 func_80063084(void) {
+s32 eff_DrawAndAdvanceBillboardPairs(void) {
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     Unk1F8000B8_80063084 *base;
@@ -1478,7 +1480,7 @@ s32 eff_SpawnJitteredBillboards(void) {
    sized by the screen depth and step the counter again; once counter / 4
    reaches 7 the slot is retired. Finally link every new quad into the OT at its
    depth. Returns 1 when any slot is still live, else 0. */
-s32 func_800646E8(void) {
+s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     Unk1F8000B8_800646E8 *base;
     u32 *var_1;
     s16 *w;
@@ -1868,7 +1870,7 @@ u8 func_80065630(void) {
     return 0;
 }
 
-s32 func_80065680(void) {
+s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires(void) {
     s16 *v1;
     s32 v0;
     eff_DrawAnimatedQuads(0xC);
@@ -1883,7 +1885,7 @@ s32 func_80065680(void) {
     return v0;
 }
 
-s32 func_800656EC(void) {
+s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void) {
     s16 *s0 = &D_800F0BA8[13];
     s32 v0;
     eff_DrawAnimatedQuads(0xD);

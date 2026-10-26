@@ -142,8 +142,9 @@ extern s16 D_8008EB40[3][3];
  * (cos(a) = Judge[(a + 0x400) & 0xFFF]). */
 extern s16 Judge[0x1000];
 
-/* The 16 slots eff_SpawnJitteredBillboards spawns and func_800646E8 draws (bit
- * i of D_800A3444 live): slot i's position. */
+/* The 16 slots eff_SpawnJitteredBillboards spawns and
+ * eff_DrawAndAdvanceJitteredBillboards draws (bit i of D_800A3444 live): slot
+ * i's position. */
 extern Vec3i32 D_800F0D78[16];
 
 extern Unk800EED10Entry g_arena_blocks[10];
@@ -155,8 +156,9 @@ extern BoneHitRec D_800F5F68[2][22];
 
 extern BoneHitRec D_8008D59C[22];
 
-/* The 6 slots func_8006288C spawns and func_8006295C draws (bit i of D_800A3460
- * live): slot i's position and its RotMatrixZYX angles. */
+/* The 6 slots eff_SpawnRotatedQuadCluster spawns and
+ * eff_DrawAndAdvanceRotatedQuadClusters draws (bit i of D_800A3460 live): slot
+ * i's position and its RotMatrixZYX angles. */
 extern Vec3i32 D_800F0FB8[6];
 
 extern SVec4i16 D_800F10A0[6];
@@ -972,23 +974,24 @@ extern s32 func_80060768(s32, s32, s32);
 extern s32 eff_LoadImagesAndSetup(s32, s32);
 extern void eff_SelectQuadBuffer(s32);
 extern void func_80061064(s16 *, s32 *);
-extern void func_800611A4(s32 *, s16 *);
+extern void eff_StartRotatedQuadClusterWithNearWhiteLight(s32 *, s16 *);
 extern void eff_StartRecycledCommandWithRoseLight(s32 *);
 extern s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *);
-extern s32 func_800613C8(s32 *);
-extern s32 func_80061454(s32 *);
-extern s32 func_800614E0(s32 *);
+extern s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *);
+extern s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *);
+extern s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *);
 extern void eff_StartRecycledCommandWithPaleRedLight(s32 *);
 extern void eff_StartArgSelectedCommandWithCyanLight(s32 *, s32);
-extern void func_80061710(s32 *, s32);
+extern void eff_StartArgSelectedCommandWithGreenLight(s32 *, s32);
 extern void eff_StartRecycledCommandWithOrangeLight(s32 *);
 extern void eff_StartRecycledVectorCommandWithRedLight(s32 *, s16 *);
-extern void func_800619A4(s32 *);
-extern void func_800619F0(s32 *);
+extern void eff_StartBillboardPairCommand(s32 *);
+extern void eff_StartJitteredBillboardsCommand(s32 *);
 extern void eff_StartYawedQuadSlotCommand(s32 *, s16, s32, s32);
-extern void func_80061ACC(s32 *, s16 *);
-extern void func_80061D74(s32 *, s16);
-extern void func_80061EC0(s32 *);
+extern void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
+    s32 *, s16 *);
+extern void eff_StartRecycledYawedParticles(s32 *, s16);
+extern void eff_StartRecycledCommandWithMagentaLight(s32 *);
 extern void eff_SetRotMatrix(s16 *, s32 *, MATRIX *);
 extern void eff_DrawBillboardList(s16 *, s32 *);
 extern void menu_SetEnabledRows(s32);

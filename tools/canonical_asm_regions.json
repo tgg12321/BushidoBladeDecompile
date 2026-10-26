@@ -194,7 +194,7 @@
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
       ]
     },
-    "func_8006295C": {
+    "eff_DrawAndAdvanceRotatedQuadClusters": {
       "file": "main/51268",
       "sha256": [
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
@@ -215,7 +215,7 @@
         "9b3d4a9a694891fffb67b6b1c2c2144db0b3630dcc593bb7f562436d9d8b3863"
       ]
     },
-    "func_800646E8": {
+    "eff_DrawAndAdvanceJitteredBillboards": {
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
@@ -286,7 +286,7 @@
         "aef5ff169d71e7f5bc9faa675aaf1e2f6d3a514c8409e1357a969415d3406fbe"
       ]
     },
-    "func_80063084": {
+    "eff_DrawAndAdvanceBillboardPairs": {
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",

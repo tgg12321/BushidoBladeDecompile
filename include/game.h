@@ -105,8 +105,9 @@ typedef struct {
 
 /* Effect-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
- * eff_SpawnBillboardPair spawns into it, func_80063084 draws from it. The slot
- * bitmask D_800A3448 and the age table D_800F0BEC[slot] index the same slot. */
+ * eff_SpawnBillboardPair spawns into it, eff_DrawAndAdvanceBillboardPairs draws
+ * from it. The slot bitmask D_800A3448 and the age table D_800F0BEC[slot] index
+ * the same slot. */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -897,10 +898,11 @@ typedef struct {
 } TexRec;
 
 /* The 0x2C-byte block D_800A3468 points at (51268): Unk1F800000Rec.unk00
- * (eff_BindScratchpad's seed) or g_eff_command_block, where func_800611A4 ..
- * func_80061EC0 point it before calling eff_StartCommand. g_eff_billboards
- * follows g_eff_command_block, so that copy ends at +0x2C. Each copy sets one
- * pointer pair:
+ * (eff_BindScratchpad's seed) or g_eff_command_block, where
+ * eff_StartRotatedQuadClusterWithNearWhiteLight ..
+ * eff_StartRecycledCommandWithMagentaLight point it before calling
+ * eff_StartCommand. g_eff_billboards follows g_eff_command_block, so that copy
+ * ends at +0x2C. Each copy sets one pointer pair:
  * - unk00: one word, stored whole and read whole (bit 21 in eff_StartCommand,
  * bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
  * eff_InitRateSelectedCosineScaledQuad); eff_StartCommand / eff_StepCommand
@@ -918,8 +920,9 @@ typedef struct {
  * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad
  * block's, D_800A3478 / D_800A347C at the g_eff_command_block block's
  * (eff_StartCommand). unk18 is s16 like its sources (unk04 / unk10) and every
- * consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix, func_8006288C,
- * eff_AllocateOrRecycleYawedQuadSlot, eff_SpawnParticles).
+ * consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix,
+ * eff_SpawnRotatedQuadCluster, eff_AllocateOrRecycleYawedQuadSlot,
+ * eff_SpawnParticles).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -969,9 +972,9 @@ typedef struct {
     u32 unk44;      /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_800620B8;
 
-/* func_80063084's layout (Unk1F8000B8Union.v80063084). SetTransMatrix is handed
- * the address 0x14 below unk14 (the area's base), so unk14 is read as a
- * MATRIX's t[]. */
+/* eff_DrawAndAdvanceBillboardPairs's layout (Unk1F8000B8Union.v80063084).
+ * SetTransMatrix is handed the address 0x14 below unk14 (the area's base), so
+ * unk14 is read as a MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x14]; /* no access */
     VECTOR unk14;   /* ApplyRotMatrix out */
@@ -982,8 +985,9 @@ typedef struct {
     s32 unk3C;      /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_80063084;
 
-/* func_800646E8's layout (Unk1F8000B8Union.v800646E8). SetTransMatrix is handed
- * the address 0x14 below unk18, so unk18 is read as a MATRIX's t[]. */
+/* eff_DrawAndAdvanceJitteredBillboards's layout (Unk1F8000B8Union.v800646E8).
+ * SetTransMatrix is handed the address 0x14 below unk18, so unk18 is read as a
+ * MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x10];  /* no access */
     s16 unk10;       /* w */
@@ -1065,9 +1069,9 @@ typedef struct {
 /* Unk1F800000Rec.unkB8, the 51268 work area D_800A34EC points at (0x1F8000B8 to
  * the end of the scratchpad). Each user lays it out for one call (or, for the
  * eff_PrepareParticles trio, one wrapper call); raw sizes the union.
- * eff_SetRotMatrix's is one SVECTOR. func_8006295C and eff_DrawYawedSlotQuads
- * still convert D_800A34EC (their work-area base is staged through a POLY_FT4 *
- * local). */
+ * eff_SetRotMatrix's is one SVECTOR. eff_DrawAndAdvanceRotatedQuadClusters and
+ * eff_DrawYawedSlotQuads still convert D_800A34EC (their work-area base is
+ * staged through a POLY_FT4 * local). */
 typedef union {
     u8 raw[0x400 - 0xB8];
     SVECTOR v80061FAC;
