@@ -1,0 +1,581 @@
+{
+ "max_events": 20000,
+ "duration_s": 3600,
+ "breakpoints": [
+  {
+   "at": "eff_StartRecycledCommandWithOrangeLight",
+   "max_hits": 200
+  },
+  {
+   "at": "func_8006517C",
+   "max_hits": 200
+  },
+  {
+   "at": "func_800651F0",
+   "max_hits": 200
+  },
+  {
+   "at": "eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires",
+   "max_hits": 200
+  },
+  {
+   "at": "eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires",
+   "max_hits": 200
+  }
+ ],
+ "script": {
+  "end_frame": 10500,
+  "phases": [
+   {
+    "frame": 0,
+    "name": "boot_intro"
+   },
+   {
+    "frame": 5490,
+    "name": "t_menu"
+   },
+   {
+    "frame": 6050,
+    "name": "top_menu"
+   },
+   {
+    "frame": 6320,
+    "name": "t_group"
+   },
+   {
+    "frame": 6550,
+    "name": "group_settings"
+   },
+   {
+    "frame": 6620,
+    "name": "school_select"
+   },
+   {
+    "frame": 6950,
+    "name": "t_char"
+   },
+   {
+    "frame": 7000,
+    "name": "char_select"
+   },
+   {
+    "frame": 7650,
+    "name": "t_weapon"
+   },
+   {
+    "frame": 7700,
+    "name": "weapon_select"
+   },
+   {
+    "frame": 8550,
+    "name": "t_roster"
+   },
+   {
+    "frame": 8700,
+    "name": "roster"
+   },
+   {
+    "frame": 9350,
+    "name": "t_bout1"
+   },
+   {
+    "frame": 9400,
+    "name": "bout1"
+   }
+  ],
+  "inputs": [
+   {
+    "frame": 5200,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 5500,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 5800,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6080,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6140,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6200,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6260,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6320,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6600,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6640,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 6900,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6940,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7200,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7240,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7300,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7340,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7400,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7440,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7500,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7540,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7600,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7640,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7900,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7940,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 8200,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8240,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 8500,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8540,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 8800,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8840,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 9100,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9140,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 9400,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9440,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 9600,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 9650,
+    "press": [
+     "TRIANGLE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9700,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 9750,
+    "press": [
+     "CIRCLE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9800,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 9850,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9900,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 9950,
+    "press": [
+     "TRIANGLE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 10000,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 10050,
+    "press": [
+     "CIRCLE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 10100,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 10150,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 10200,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 10250,
+    "press": [
+     "TRIANGLE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 10300,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 10350,
+    "press": [
+     "CIRCLE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 10400,
+    "press": [
+     "RIGHT"
+    ],
+    "hold": 40
+   },
+   {
+    "frame": 10450,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   }
+  ],
+  "screenshots": [
+   {
+    "frame": 5489,
+    "name": "boot_intro.last"
+   },
+   {
+    "frame": 6300,
+    "name": "top_menu.last"
+   },
+   {
+    "frame": 6600,
+    "name": "group_settings.first"
+   },
+   {
+    "frame": 6700,
+    "name": "school_select.first"
+   },
+   {
+    "frame": 6800,
+    "name": "school_select.mid"
+   },
+   {
+    "frame": 7000,
+    "name": "char_select.first"
+   },
+   {
+    "frame": 7300,
+    "name": "char_select.pick1"
+   },
+   {
+    "frame": 7500,
+    "name": "char_select.pick2"
+   },
+   {
+    "frame": 7700,
+    "name": "weapon_select.first"
+   },
+   {
+    "frame": 8000,
+    "name": "weapon_select.8000"
+   },
+   {
+    "frame": 8300,
+    "name": "weapon_select.8300"
+   },
+   {
+    "frame": 8500,
+    "name": "weapon_select.last"
+   },
+   {
+    "frame": 8700,
+    "name": "roster.first"
+   },
+   {
+    "frame": 9000,
+    "name": "roster.mid"
+   },
+   {
+    "frame": 9400,
+    "name": "bout1.first"
+   },
+   {
+    "frame": 10368,
+    "name": "bout1.10368"
+   },
+   {
+    "frame": 10370,
+    "name": "bout1.10370"
+   },
+   {
+    "frame": 10372,
+    "name": "bout1.10372"
+   },
+   {
+    "frame": 10374,
+    "name": "bout1.10374"
+   },
+   {
+    "frame": 10376,
+    "name": "bout1.10376"
+   },
+   {
+    "frame": 10378,
+    "name": "bout1.10378"
+   },
+   {
+    "frame": 10380,
+    "name": "bout1.10380"
+   },
+   {
+    "frame": 10384,
+    "name": "bout1.10384"
+   },
+   {
+    "frame": 10388,
+    "name": "bout1.10388"
+   },
+   {
+    "frame": 10392,
+    "name": "bout1.10392"
+   },
+   {
+    "frame": 10396,
+    "name": "bout1.10396"
+   },
+   {
+    "frame": 10400,
+    "name": "bout1.ippon"
+   },
+   {
+    "frame": 10450,
+    "name": "bout1.10450"
+   }
+  ]
+ },
+ "description": "Group Battle 3 entries (group-battle-hitmap-1 script: P1 RIGHT + TRIANGLE/CIRCLE/SQUARE every 100 frames from 9600, P2 idle) cut at frame 10500"
+}
