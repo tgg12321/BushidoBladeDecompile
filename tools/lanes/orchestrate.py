@@ -42,7 +42,7 @@ under 90% (5 h) / 80% (week), the bridge is not BLOCKED, and its last two sessio
 land nothing (a main commit whose body has a line starting `Codex run:`); `codex on` re-arms
 that. An untracked `lane-<x>` session (from before a restart) is adopted, and keeps lane x busy,
 only while it works or, idle, still owns lane x in the registry. With nothing running it keeps polling only while work
-waits for the owner to be away or the codex lane waits on usage; attention: attention/index.json.
+waits for the owner to be away, naming waits on a backlog change, or the codex lane waits on usage; attention: attention/index.json.
 """
 from __future__ import annotations
 
@@ -452,13 +452,13 @@ def is_codex(slot: dict) -> bool:
 
 
 def gate_queue_position(reg: dict, lane: str, now: float) -> int | None:
-    """One-based position among fresh, well-formed gate tickets enqueued less than
-    QUEUED_LAND_MAX_SECS ago, or None."""
+    """Registry position of a fresh, valid, under-cap ticket for this lane, or None."""
     queue = reg.get("gate_queue")
     if not isinstance(queue, list):
         return None
-    position = 0
-    for ticket in queue:
+    # Count every registry entry ahead, as lanes.py status does: only lanes.py prunes
+    # tickets, and the orchestrator's 4 h stall cap never removes a ticket from its queue.
+    for position, ticket in enumerate(queue, 1):
         if not isinstance(ticket, dict):
             continue
         beat = ticket.get("beat")
@@ -467,10 +467,10 @@ def gate_queue_position(reg: dict, lane: str, now: float) -> int | None:
                 or not math.isfinite(beat) or now - beat >= HEARTBEAT_STALE_SECS):
             continue
         enqueued = ticket.get("enqueued")
-        if (isinstance(enqueued, (int, float)) and not isinstance(enqueued, bool)
-                and math.isfinite(enqueued) and now - enqueued >= QUEUED_LAND_MAX_SECS):
+        if (isinstance(enqueued, bool) or not isinstance(enqueued, (int, float))
+                or not math.isfinite(enqueued)
+                or now - enqueued >= QUEUED_LAND_MAX_SECS):
             continue
-        position += 1
         if ticket["lane"] == lane:
             return position
     return None
@@ -1018,6 +1018,12 @@ def tick(args) -> bool:
     cx = read_codex()
     wait = waiting_reason(st, cands, cands if away else
                           candidates(bl, reg, st, now, args.only, paused, True, live), cx)
+    if "no_progress_naming" in st:
+        unheld = dict(st)
+        del unheld["no_progress_naming"]
+        if candidates(bl, reg, unheld, now, args.only, paused, away, live):
+            naming_wait = "naming waits for the naming backlog to change"
+            wait = f"{wait}; {naming_wait}" if wait else naming_wait
     if wait:
         if wait != st.get("waiting"):
             log(f"waiting: {wait}")

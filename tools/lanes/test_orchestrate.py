@@ -145,7 +145,7 @@ class GateQueue(unittest.TestCase):
         self.reg = reg(pins={"owner": "S1"})
 
     def test_fresh_ticket_keeps_idle_session_running(self):
-        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW - 599}]
+        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW - 599, "enqueued": NOW - 700}]
         self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
         state = st({"a1": self.slot})
         self.assertEqual(o.update_slots(state, {"a1": self.agent}, self.reg, bl(), NOW), [])
@@ -164,9 +164,9 @@ class GateQueue(unittest.TestCase):
         self.assertIsNone(o.gate_queue_position(self.reg, "pins", NOW))
 
     def test_stale_missing_and_other_lane_tickets_do_not_prevent_stall(self):
-        for queue in ([], [{"lane": "pins", "beat": NOW - 600}],
-                      [{"lane": "pins", "beat": NOW - 601}],
-                      [{"lane": "data", "beat": NOW}]):
+        for queue in ([], [{"lane": "pins", "beat": NOW - 600, "enqueued": NOW - 700}],
+                      [{"lane": "pins", "beat": NOW - 601, "enqueued": NOW - 700}],
+                      [{"lane": "data", "beat": NOW, "enqueued": NOW - 60}]):
             with self.subTest(queue=queue):
                 self.reg["gate_queue"] = queue
                 self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
@@ -176,7 +176,7 @@ class GateQueue(unittest.TestCase):
     def test_malformed_queue_and_entries_are_ignored(self):
         bad_entries = [None, 1, "ticket", [], {}, {"lane": "pins"},
                        {"beat": NOW}, {"lane": [], "beat": NOW}, {"lane": "", "beat": NOW}]
-        bad_entries += [{"lane": "pins", "beat": value}
+        bad_entries += [{"lane": "pins", "beat": value, "enqueued": NOW - 60}
                         for value in (None, "bad", str(NOW), [], {}, True,
                                       float("nan"), float("inf"), float("-inf"))]
         for queue in (None, {}, "bad", 1, bad_entries):
@@ -185,13 +185,12 @@ class GateQueue(unittest.TestCase):
                 self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "stalled")
         self.reg["gate_queue"] = bad_entries + [
             {"lane": "old", "beat": NOW - 600},
-            {"lane": "data", "beat": NOW}, {"lane": "pins", "beat": NOW}]
-        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW), 2)
+            {"lane": "data", "beat": NOW, "enqueued": NOW - 60},
+            {"lane": "pins", "beat": NOW, "enqueued": NOW - 60}]
+        self.assertEqual(o.gate_queue_position(self.reg, "pins", NOW), len(bad_entries) + 3)
         self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, NOW), "running")
 
-    def test_status_shows_queue_position(self):
-        self.reg["gate_queue"] = [{"lane": "data", "beat": NOW},
-                                  {"lane": "pins", "beat": NOW - 30}]
+    def status_output(self):
         state = st({"a1": self.slot})
         state["codex_history"] = []
         out = io.StringIO()
@@ -204,8 +203,41 @@ class GateQueue(unittest.TestCase):
                 patch.object(o, "load_attention", return_value=[]), \
                 patch.object(o.time, "time", return_value=NOW), redirect_stdout(out):
             o.main(["status"])
-        self.assertIn("queued to land (position 2)", out.getvalue())
-        self.assertNotIn("stalled", out.getvalue())
+        return out.getvalue()
+
+    def test_status_shows_queue_position(self):
+        self.reg["gate_queue"] = [
+            {"lane": "data", "beat": NOW, "enqueued": NOW - o.QUEUED_LAND_MAX_SECS - 1},
+            {"lane": "old", "beat": NOW - 601, "enqueued": NOW - 700},
+            {"lane": "pins", "beat": NOW - 30, "enqueued": NOW - 60}]
+        out = self.status_output()
+        self.assertIn("queued to land (position 3)", out)
+        self.assertNotIn("stalled", out)
+
+    def test_status_leftover_ticket_does_not_mask_finished_or_lost(self):
+        self.reg["gate_queue"] = [{"lane": "pins", "beat": NOW, "enqueued": NOW - 60}]
+        for phase in ("finished", "lost"):
+            with self.subTest(phase=phase):
+                self.agent = {"state": "exited"}
+                self.slot["seen_open"] = phase == "finished"
+                self.reg["lanes"] = {}
+                out = self.status_output()
+                self.assertIn(phase, out)
+                self.assertNotIn("queued to land", out)
+
+    def test_malformed_enqueued_never_exempts_a_stall(self):
+        missing = object()
+        now = 100.0  # bools must be rejected even when 0/1 would be under the age cap.
+        self.slot["idle_since"] = now - o.STALL_SECS - 60
+        for value in (missing, True, False, float("nan"), float("inf"),
+                      float("-inf"), "bad", str(now), None, [], {}):
+            with self.subTest(enqueued=value):
+                ticket = {"lane": "pins", "beat": now}
+                if value is not missing:
+                    ticket["enqueued"] = value
+                self.reg["gate_queue"] = [ticket]
+                self.assertEqual(o.session_phase(self.slot, self.agent, self.reg, now), "stalled")
+                self.assertIsNone(o.gate_queue_position(self.reg, "pins", now))
 
 
 class Slots(unittest.TestCase):
@@ -272,6 +304,24 @@ class Slots(unittest.TestCase):
         b["naming"][0]["id"] = "pilot-tail-a"
         self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
         self.assertNotIn("no_progress_naming", s)
+
+    def test_codex_finishing_alone_lifts_naming_hold(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "CODEX_RUNS", Path(d)):
+            run = Path(d) / "20261024-080000-research-w79"
+            run.mkdir()
+            o.write_json(run / "meta.json", {"status": "running"})
+            b = bl(naming_stages=("idea", "researching"))
+            b["naming"][1]["note"] = run.name
+            s = self.naming_no_progress(b)
+            before = o.naming_hold(b)
+            self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), [])
+            o.write_json(run / "meta.json", {"status": "ok", "finished": "now"})
+            after = o.naming_hold(b)
+            self.assertEqual(before["key"], after["key"])
+            self.assertNotEqual(before["workable"], after["workable"])
+            self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
+            self.assertNotIn("no_progress_naming", s)
 
     def test_foundation_no_progress_still_holds_for_run(self):
         b = bl()
@@ -432,6 +482,76 @@ class Tick(unittest.TestCase):
         for f in self.d.iterdir():
             f.unlink()
         self.d.rmdir()
+
+    def test_cmd_run_resets_naming_hold(self):
+        state = st(no_progress=("pins",))
+        state["no_progress_naming"] = o.naming_hold(o.backlogs())
+        o.write_state(state)
+        seen = []
+
+        def one_tick(args):
+            seen.append(o.load_state())
+            return False
+        with patch.object(o, "tick", side_effect=one_tick), redirect_stdout(io.StringIO()):
+            o.main(["1"])
+        self.assertEqual(len(seen), 1)
+        self.assertNotIn("no_progress_naming", seen[0])
+        self.assertEqual(seen[0]["no_progress"], [])
+
+    def test_status_reports_naming_hold(self):
+        state = st()
+        state["no_progress_naming"] = o.naming_hold(o.backlogs())
+        o.write_state(state)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            o.main(["status"])
+        self.assertIn("not restarting: naming (until the naming backlog changes)", out.getvalue())
+
+    def test_held_naming_waits_then_reopens_in_same_run(self):
+        b = bl(foundation=())
+        o.backlogs = lambda: b
+        state = st()
+        state["no_progress_naming"] = o.naming_hold(b)
+        o.write_state(state)
+        o.write_max(1)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertTrue(o.tick(self.args))
+            self.assertTrue(o.tick(self.args))
+        self.assertEqual(self.started, [])
+        self.assertIn("naming waits for the naming backlog to change", out.getvalue())
+        self.assertIn("naming backlog", o.load_state()["waiting"])
+        b["naming"][0]["note"] = "PROMPT READY"
+        self.assertTrue(o.tick(self.args))
+        self.assertEqual(self.started, ["/naming-session naming-a"])
+        self.assertNotIn("no_progress_naming", o.load_state())
+        self.assertNotIn("waiting", o.load_state())
+
+    def test_naming_hold_without_work_still_ends(self):
+        for only, stages in ((None, ()), (None, ("landed",)), ("foundation", ("idea",))):
+            with self.subTest(only=only, stages=stages):
+                b = bl(naming_stages=stages, foundation=())
+                o.backlogs = lambda: b
+                state = st()
+                state["no_progress_naming"] = o.naming_hold(b)
+                o.write_state(state)
+                o.write_max(1)
+                with patch.object(self.args, "only", only):
+                    self.assertFalse(o.tick(self.args))
+        self.assertEqual(self.started, [])
+
+    def test_naming_hold_preserves_drain_and_plain_pause(self):
+        b = bl(foundation=())
+        o.backlogs = lambda: b
+        state = st()
+        state["no_progress_naming"] = o.naming_hold(b)
+        o.write_state(state)
+        o.write_max(0)
+        self.assertFalse(o.tick(self.args))
+        o.write_max(1)
+        o.main(["pause", "naming"])
+        self.assertFalse(o.tick(self.args))
+        self.assertEqual(self.started, [])
 
     def test_load_migrates_legacy_naming_no_progress(self):
         b = bl(naming_stages=("reviewed", "landed", "idea"))
