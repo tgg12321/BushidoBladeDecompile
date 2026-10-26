@@ -1,0 +1,534 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "f97c1e7aa046759f09f41712c237e3082889c087",
+      "size": 109458
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a387e6db3f2613ec9d7bd8dbfb6f16b3029c8a4e",
+      "size": 30208
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "2ce6c11b874f5999c04fb725522b5c846a1ae500",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "tools/trace/gdbtrace.py",
+    "run",
+    "--spec",
+    "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/spec.json",
+    "--out",
+    "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/pcsx-redux/pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "d047dc167ea76ac72f4bdf7e2f1cb8e39f998708",
+      "size": 404677
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "eba13969e01dc330b5a09e4ce3fbbdfc7333d4ad",
+      "size": 855772
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/spec.json",
+    "sha1": "09e2a63b768776350bc80fd868b1f708cb1abd7f",
+    "size": 5488
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-suminagashi-palered-slot2-poke-1\\poked\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-suminagashi-palered-slot2-poke-1\\poked\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-hidden-suminagashi-palered-slot2-poke-1\\poked\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile/Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.script.lua",
+      "sha1": "ef4d89ebe4aa83dfbf769980c0c1624482985749",
+      "size": 7765
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 94,
+    "ambiguous_stops": 0,
+    "pokes": [
+      {
+        "at": "0x80106A50",
+        "addr": 2148559440,
+        "when": "top_menu",
+        "hex": "fff33f05",
+        "orig": "07700000",
+        "applied": {
+          "frame": 6050,
+          "pc": 2147483776,
+          "ok": true
+        },
+        "at_end": "fff33f05"
+      },
+      {
+        "at": "0x80061B08",
+        "addr": 2147883784,
+        "when": "t_load",
+        "hex": "1d00001001000326",
+        "orig": "0b00401000000000",
+        "applied": {
+          "frame": 8040,
+          "pc": 2147483776,
+          "ok": true
+        },
+        "at_end": "1d00001001000326"
+      }
+    ],
+    "modified_game": "poked memory: hits and screenshots after a stub or poke went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1",
+      "0x80061B08+1",
+      "0x80061B0A+1",
+      "0x80061B0C+1",
+      "0x80061B0E+2"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.jsonl",
+      "sha1": "ea9d648b42e0517cd270bfa260f89a2ff0e2832c",
+      "size": 30632,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.char_select.first.png",
+      "sha1": "8bd1be6ce4bd6089b038163a2166c8c0d06c787d",
+      "size": 26567,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.char_select.pick.png",
+      "sha1": "3f304b08d8dcbefaa51d8119cfaaadded16457e0",
+      "size": 26679,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.char_select.last.png",
+      "sha1": "fb70c2ff4ac4f3cbd2587a5e15d0003832762637",
+      "size": 22519,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.weapon_select.first.png",
+      "sha1": "b23661af586c99bf6860cc2a70ce1c939488b54c",
+      "size": 19696,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.weapon_select.7650.png",
+      "sha1": "c9b32e6c443c4b054109d3fac330fd5e1539cdae",
+      "size": 22806,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.weapon_select.last.png",
+      "sha1": "3d0b65d3c86bd9283431ee542de678c2298493c6",
+      "size": 15567,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.t_stage.mid.png",
+      "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
+      "size": 5188,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.stage_select.first.png",
+      "sha1": "c390d94acb6c8f45aae5a21e75ba2f49555d3ec6",
+      "size": 13166,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.stage_select.last.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.t_load.mid.png",
+      "sha1": "02d78a6a2654bd5e19ef0d8550b858d01d42ba8b",
+      "size": 9003,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.t_load.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.first.png",
+      "sha1": "37275b6176bb003833bf0c55fc972ffa93e7a90b",
+      "size": 28350,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.8948.png",
+      "sha1": "88b1b9f12c5441fec24f8c4968c00f48471eafd6",
+      "size": 30351,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.8950.png",
+      "sha1": "1412f14fbb4014365d8d4c6abf6c1e214433c842",
+      "size": 30493,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.8952.png",
+      "sha1": "4f2cbdcbce89ba6ad8fbe95ba4741382e3432536",
+      "size": 30277,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.8958.png",
+      "sha1": "49653f73f44327e91d58d72c67a6bf95921454b4",
+      "size": 29631,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.8970.png",
+      "sha1": "603f2ebd77f52f8b4e28849c48d0ca7352c89498",
+      "size": 31192,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.8985.png",
+      "sha1": "71c8793ccdcd49d68bd2c03c5b19ba33a32670f5",
+      "size": 30450,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9000.png",
+      "sha1": "8d6b74d3f1738feae2d8e38a8d2c8a87b432055b",
+      "size": 29585,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9020.png",
+      "sha1": "d693dca70ff74a267e74a9a2a19af00f253b14c9",
+      "size": 30169,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9040.png",
+      "sha1": "9379bf6b479472b25a6e9f7875abbfd2b696658e",
+      "size": 29160,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9050.png",
+      "sha1": "ab26567d2c3ad6591f448189ca8828dce86ecd49",
+      "size": 28746,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9070.png",
+      "sha1": "68ad1ec3226a3a572e9bc88fe8aa6549dde1ce1d",
+      "size": 30024,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9100.png",
+      "sha1": "1e4546471dfc22165790952bef2083d92f187cc1",
+      "size": 30051,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9184.png",
+      "sha1": "9454b19029686682b5677ec6297e6b1cdbf75aab",
+      "size": 29893,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9188.png",
+      "sha1": "f873367af4705b5716c2dddb02871a14e626e8e3",
+      "size": 29698,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9194.png",
+      "sha1": "c553b1ea0041c2515c76057d3a32f2821ce686f9",
+      "size": 28002,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9206.png",
+      "sha1": "8754534e2c4cbb4b46f8f473113997955b52e85f",
+      "size": 30752,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9221.png",
+      "sha1": "77e8f4df52b2d1898776fab01a7a428c2fa96627",
+      "size": 30098,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9240.png",
+      "sha1": "8a029032bd388c9e665ae9711491d4de945f6bca",
+      "size": 29059,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9260.png",
+      "sha1": "cbb652bb3ebd634ba20f6412ab2549ed4721fc97",
+      "size": 30423,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9280.png",
+      "sha1": "034a46ef73852055a4082e379ea02293dd7a67ee",
+      "size": 30511,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9290.png",
+      "sha1": "4ce4f4ac6bfc452c07c6082371578b54ec007084",
+      "size": 30355,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.fight.9400.png",
+      "sha1": "1b2d429fde174cfcb640843dcd1ba8cc0fd16c6c",
+      "size": 27351,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.script.log",
+      "sha1": "98f2387fde5e98764db2981f9a1c2fe5cf857082",
+      "size": 2527,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:/Users/Trenton/Desktop/bb2-worktrees/ln-trace/docs/naming/runtime/versus-2p-hidden-suminagashi-palered-slot2-poke-1/poked/capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}
