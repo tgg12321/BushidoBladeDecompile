@@ -97,7 +97,7 @@ an opponent order; the code does not name it.
   point (0x2EE0 or -0x2710, 0x1770 or -0x1770), picked by the other fighter's
   position, with a weight that shrinks from 60 to 10 as the counter `unk_34C`
   (capped at 0x40) grows; otherwise the entry
-  `func_80046F14()[D_800A36A4 * 12 + index * 3]`. It then zeroes `unk_104` /
+  `fight_GetStartPositionPairTable()[D_800A36A4 * 12 + index * 3]`. It then zeroes `unk_104` /
   `unk_134`, switches its move (the script `motion_ResolveMoveData` resolves from
   `cur_move->event_move_table_id` and that record's halfword 0x1D, made current by
   `fighter_StartMoveScript`) and plays

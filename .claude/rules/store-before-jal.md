@@ -14,7 +14,7 @@ Target:
 
 ```mips
 lhu  $v0, %lo(D_8008D59E)($at)    # lookup
-jal  func_80046DEC
+jal  node_GetSlotMatrixPointerArray
 sh   $v0, 0x352($s0)              # delay slot: store BEFORE $v0 is overwritten
 lh   $v1, 0x352($s0)              # reload after the call
 sll  $v1, $v1, 2
@@ -28,7 +28,7 @@ Ours keeps the lookup in a callee-save across the call: an extra `$sN` save/rest
 
 ```c
 rec->unk_352 = D_8008D59C[arg1].bone;
-src = ((MATRIX **)func_80046DEC(rec->index))[rec->unk_352];
+src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->unk_352];
 ```
 
 1. Store the value in its own statement BEFORE the call statement.

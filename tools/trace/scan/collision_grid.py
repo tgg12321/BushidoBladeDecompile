@@ -9,7 +9,7 @@ layout func_80053E9C / func_80053754 walk (43500.c):
   0xFFFF = empty cell); cell (cx, cz) spans world x cx*2000-32000 and z
   cz*2000-32000, 2000 units each;
   a cell: s16 face count, then per face 5 s16 (plane nx, ny, nz, then the
-  u16 low / s16 high halves of d), 9 s16 (read by func_80052C4C), one u16
+  u16 low / s16 high halves of d), 9 s16 (read by gte_TransformPointDifferenceWithInheritedLastRow), one u16
   (tag << 8 | n), then n + 1 two-s16 points.
 The tag is what collision_GetHit stores to g_collision_hit_tag (43500.c:244)
 when the face is hit. Rows are in grid order; nothing is inferred about what

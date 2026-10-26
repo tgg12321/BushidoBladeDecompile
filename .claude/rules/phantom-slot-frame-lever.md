@@ -21,7 +21,7 @@ costs zero instructions; `get_frame_size()` counts it. Measured producers:
 
 1. **Folded loop-guard compare** — a guard comparison pseudo whose compare/jump fold into a bare branch, leaving
    it ref'd but dead. Ordinary C: `s2 = a1 - 1; if (s2 != -1)` (func_8003D9A0), or a rotated-while guard
-   `if (i < limit)` reusing the loop's own exit test (func_8003DBE4). A constant-folding guard produces nothing;
+   `if (i < limit)` reusing the loop's own exit test (gpu_QueueDepthSpacedMovesAndLinkTerminalPacket). A constant-folding guard produces nothing;
    the comparison must involve a real variable.
 2. **combine orphan-USE** (`combine.c:10836-10841`, `distribute_notes` REG_DEAD) — a death note with no home
    whose backward scan hits a CODE_LABEL/JUMP_INSN emits a bare `(use (reg))`. Classic shape: an HImode

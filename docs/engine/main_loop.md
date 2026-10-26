@@ -110,12 +110,12 @@ assigns to `D_800A3834` itself.
 | 17 | `func_8001EFA0` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `fight_AdvanceOpponentOrder` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
 | 18 | `func_8003C040` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
 | 19 | `func_8003C2C0` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
-| 20 | `func_8003C42C` (src/main/2B344.c:754) | 0x15 | |
-| 21 | `func_8003C560` (src/main/2B344.c:786) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
+| 20 | `fight_TallyMatchResultsAndInitPresentation` (src/main/2B344.c:754) | 0x15 | |
+| 21 | `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
 | 22 | `func_8003B870` (src/main/2B344.c:421) | 0x17 | |
 | 23 | `func_8003B8E4` (src/main/2B344.c:432) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
 | 24 | `func_8003C958` (src/main/2B344.c:877) | 0x19 | |
-| 25 | `func_8003C9A4` (src/main/2B344.c:886) | 0, 8 | view (`func_80046BF4`) and its own per-frame work |
+| 25 | `func_8003C9A4` (src/main/2B344.c:886) | 0, 8 | view (`gpu_ResetDrawQueueAndPrepareViewAndLighting`) and its own per-frame work |
 | 26 | `func_80035DC8` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 27 | `func_80035E38` (src/main/25C38.c:407) | 8 | screen gradient and the memory-card flow `func_80038C70` |
 | 28 | `func_8003CE18` (src/main/2B344.c:990) | 0x1D | view and scene setup |

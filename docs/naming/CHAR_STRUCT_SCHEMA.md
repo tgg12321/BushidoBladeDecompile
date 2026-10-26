@@ -56,8 +56,8 @@ which only has record-2 references).
 | +0x0B1 | s8  | 0,1   | 4  | (asm-only refs) | -- |
 | +0x0D8 | s32 | 0,1   | 6  | `temp_a3 = t2_base->base_pos.x - t3_base->base_pos.x` (17AFC.c:2104) | `base_pos.x`, differenced between records 0 and 1 |
 | +0x0E0 | s32 | 0,1   | 7  | `temp_t1 = t2_base->base_pos.z - t3_base->base_pos.z` (17AFC.c:2105) | `base_pos.z`, differenced between records 0 and 1 |
-| **+0x0F4** | s32 | 0,1   | 36 | `e->world_pos.x = x;` (9F9C.c:1305); `func_8003E6A0(D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z)` (:2174) | `world_pos.x` of the Vec3i32 `world_pos` (include/game.h:1474): base_pos + root_offset |
-| **+0x0FC** | s32 | 0,1   | 21 | `e->world_pos.z = z;` (9F9C.c:1307); the same `func_8003E6A0` call (:2174) | `world_pos.z`; one read of many (9F9C.c:2580, 175A4.c:171, 17AFC.c:2169) |
+| **+0x0F4** | s32 | 0,1   | 36 | `e->world_pos.x = x;` (9F9C.c:1305); `gpu_SetViewOriginSegmentCellsGateBit(D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z)` (:2174) | `world_pos.x` of the Vec3i32 `world_pos` (include/game.h:1474): base_pos + root_offset |
+| **+0x0FC** | s32 | 0,1   | 21 | `e->world_pos.z = z;` (9F9C.c:1307); the same `gpu_SetViewOriginSegmentCellsGateBit` call (:2174) | `world_pos.z`; one read of many (9F9C.c:2580, 175A4.c:171, 17AFC.c:2169) |
 | +0x134 | s32 | 0,1   | 7  | `D_80101FFC = 0;` | cleared cell |
 | +0x13C | s32 | 0,1   | 9  | `D_80102004 = 0;` | cleared cell |
 | +0x14E | s16 | 0,1   | 5  | `D_80102016 = 0;` | cleared cell |

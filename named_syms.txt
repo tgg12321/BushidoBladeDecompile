@@ -664,7 +664,7 @@
 
 /* === D_800F5328 (Rec44) record fields (2026-05-17) -- 9 highs === */
 /* camera_InitTrackedFighterFocus (9F9C.c:808-823) copies a fighter's unk_180 position */
-/* into D_800F5328 and sets h30[2][4] to 0x64 / 0 pairs; func_8003F3D4 */
+/* into D_800F5328 and sets h30[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
 /* reads h30[i][0] / h30[i][2] as 32x32 grid cell coordinates. */
 
 /* === Ground/arena init cluster (2026-05-17) -- 14 highs === */
@@ -790,7 +790,7 @@
 /* components (naming sweep 2026-09-29, docs/naming/sweep-2026-09-29/verify/data_cam.csv). */
 
 /* === D_800EEDD0 matrix halves (2026-05-17) -- 3 highs === */
-/* From func_80047210 (368E4.c): copies 32-byte */
+/* From camera_CopyViewMatrixWithHalvedMiddleRow (368E4.c): copies 32-byte */
 /* D_800EEDD0 from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
 /* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 

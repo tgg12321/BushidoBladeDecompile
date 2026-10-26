@@ -10,7 +10,7 @@ Usage (WSL, from the repo root):
   python3 tools/rtl_track/find.py <tag> <func> <regex> [--limit N]
 
 Example:
-  python3 tools/rtl_track/find.py cfg func_8003F388 'set .*reg.*mult'
+  python3 tools/rtl_track/find.py cfg gpu_SetCellGateBit 'set .*reg.*mult'
 """
 from __future__ import annotations
 

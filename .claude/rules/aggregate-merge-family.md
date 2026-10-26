@@ -89,8 +89,8 @@ extended, once a one-object spelling matches.
   as reported by the cheat-sweep lane, scores not banked). No struct form was measured: open debt
   (docs/grind/handoff-2026-09-30.md); a one-object form that matches retires Q97.
 - **D_800906A4 / D_8009060C (Q98, item 4):** declared `s16 D_800906A4[39][2]`,
-  `s32 D_8009060C[38]` (StatusUpBuf retires). func_8003DA8C only: the pair's [1] read (used twice) as
-  a byte offset off the declared array and its [0] through a row pointer, both
+  `s32 D_8009060C[38]` (StatusUpBuf retires). gpu_LatchFogDepthOnTransitionAndQueueMoves only: the pair's [1] read (twice) as
+  a byte offset and its [0] through a row pointer, both
   `/* FAKE */`-annotated (element reads schedule above the scalar stores: 8 / 9).
   followups/func_8003DA8C.stagetables.*.
 - **CdlREAD D_800A14D0 (Q99, item 4):** one `extern volatile CdlREAD D_800A14D0` in libcd.h,

@@ -26,8 +26,8 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `309CC.c`, `31548.c`, `31CFC.c`, `31D3C.c` | 0x800401CC.. | 12 + 4 + 1 + 21 functions (`gpu_AddDrawMove`) |
 | `32D04.c` | 0x80042504 | rotation-matrix and colour math (`math_RotMatrix*`, `math_RgbToHsv`) and the primitive texture-offset helpers `gpu_OffsetTex*` |
 | `35000.c` | 0x80044800 | 44 functions: the `arena_*` allocator and the `ndata_*` NDATA reader / pack cache ([NDATA.md](../formats/NDATA.md)) |
-| `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `func_80046BF4` ([replay.md](replay.md)), `math_SetLightPlaneProjection` / `math_ApplyLightPlaneProjection` ([gpu_pipeline.md](gpu_pipeline.md)) |
-| `3AB48.c` | 0x8004A348 | 72 functions: GTE and math helpers (`gte_*`, `math_*`) and the renderers `func_8004C994` .. `func_80051ED4` |
+| `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `gpu_ResetDrawQueueAndPrepareViewAndLighting` ([replay.md](replay.md)), `math_SetLightPlaneProjection` / `math_ApplyLightPlaneProjection` ([gpu_pipeline.md](gpu_pipeline.md)) |
+| `3AB48.c` | 0x8004A348 | 72 functions: GTE and math helpers (`gte_*`, `math_*`) and the renderers `gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles` .. `func_80051ED4` |
 | `43500.c` | 0x80052D00 | 16 functions: the stage-collision grid walk `collision_WalkSegmentGrid` and its tests and accessors (`collision_TestSegmentWithWork`), then the motion-sequence loader `motion_StartPlayback` ([motion.md](motion.md)) |
 | `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`motion_UpdatePlayback`, `func_80058580`) ([motion.md](motion.md)) |
 | `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `snd_QueueSound` / `snd_FlushSoundQueue` ([sound.md](sound.md)) |

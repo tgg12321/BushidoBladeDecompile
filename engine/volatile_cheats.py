@@ -485,7 +485,9 @@ def find_empty_do_while_zero(text: str, body_lo: int, body_hi: int) -> list[tupl
 #
 # Identified by the 2026-06-02 cheat-by-spelling audit on 3 affected
 # COMPLETED-C functions (gpu_AddGradientPanel with 4× `if (D_800A3580) {}`,
-# bitstream_AccumulateDeltas (then func_8003D7B4) with `if (!val) {}`, func_80049A2C with `if (a1_val) {}`).
+# bitstream_AccumulateDeltas (then func_8003D7B4) with `if (!val) {}`,
+# node_QueueTableEntryNodePairUnderSlotNode (then func_80049A2C) with
+# `if (a1_val) {}`).
 # Same intent as the dead-conditional-store / Lever D / dead-vars-local-
 # array family: a code construct with no semantic purpose, written
 # purely to influence GCC's pre-DCE analysis.

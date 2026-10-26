@@ -4,7 +4,7 @@ At nearly every address once named `replay_camera_*`, `special_camera_*` or
 `marionation_camera_*` (Kengo name-matching; the naming waves retired those
 names) the code is the CD reader, a menu, the save flow or geometry helpers, not
 a camera. This page describes what each one does today, read from `src/` (path:line cites the
-definition). The one view-transform routine among them is `func_80046BF4`
+definition). The one view-transform routine among them is `gpu_ResetDrawQueueAndPrepareViewAndLighting`
 (below). The game's actual replay (a 120-frame ring of fighter frames, events and
 model draws, played back in modes 4 / 5) is the `replay_*` code in
 `src/main/28708.c`.
@@ -44,7 +44,7 @@ member is `Unk80101E60Rec`):
 `cdrom_IsIdle` (src/main/cdrom.c:11) is `rec.unk02 == 0`. The old table of
 "replay state" variables at `0x80101E60..0x80101EA4` is this record's members.
 
-## `menu_UpdateEntryGridCursors` and `func_8003E2D8` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
+## `menu_UpdateEntryGridCursors` and `gpu_SetSegmentCellsGateBit` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
 
 `menu_UpdateEntryGridCursors(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
 its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
@@ -53,10 +53,10 @@ over a 5-row table
 (`D_8009BC7C` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
 choice, and draws the cells with `gpu_AddSpriteCells`.
 
-`func_8003E2D8(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
+`gpu_SetSegmentCellsGateBit(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
 of a 32 x 32 grid of 2000-unit squares crossed by the line from (arg0, arg1)
 to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
-`func_8003F388` (src/main/2B344.c:2257) for each cell inside the grid.
+`gpu_SetCellGateBit` (src/main/2B344.c:2257) for each cell inside the grid.
 
 ## CD and system routines once named `special_camera_*` / `marionation_camera_*`
 
@@ -99,9 +99,9 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
 It is not a camera runner. The function once named `cpu_check_run_attack`
 is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 
-## `func_80046BF4`: the view transform (once `replay_camera_rob_back_win_near`)
+## `gpu_ResetDrawQueueAndPrepareViewAndLighting`: the view transform (once `replay_camera_rob_back_win_near`)
 
-`func_80046BF4(a0, a1, a2)` (src/main/368E4.c:448) sets up the frame's view and draw state:
+`gpu_ResetDrawQueueAndPrepareViewAndLighting(a0, a1, a2)` (src/main/368E4.c:448) sets up the frame's view and draw state:
 
 1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
    `D_800A378C`) and increments `D_800A38D6`.
@@ -109,9 +109,9 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
    `D_80101DF0`, builds its matrix through `D_800F66A0[0]`, and sets the
    record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
    from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&D_80101DF0)`,
-   `func_80047210()`, `func_8003F274()`, and keeps `a2` in `D_800A33C0`.
+   `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `a2` in `D_800A33C0`.
 3. Recomputes the light matrices of `D_800F62E0[0]`, `[1]`, `[4]`
-   (`calc_LightMatrix`) and runs `light_ResetPointLight`, `func_8003F568`,
+   (`calc_LightMatrix`) and runs `light_ResetPointLight`, `ClearSavedWordPairsAndTwoWriteOnlyWords`,
    `func_8003F5CC`.
 
 The two other "rob back" names sit on unrelated code: `func_80035618`

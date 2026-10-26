@@ -37,7 +37,7 @@ faked with `asm volatile("" ::: "memory")` barriers or per-load register pins �
 
 The post-increment threads a dependence through the pointer, so element i+1's load can't be hoisted above
 element i's store. Idiomatic parallel-array C, no coercion. A per-element temp block or operand swap does NOT
-serialize (measured). Example: func_80046BF4, 10 → 0.
+serialize (measured). Example: gpu_ResetDrawQueueAndPrepareViewAndLighting, 10 → 0.
 
 **PRECONDITION (measured 2026-08-06):** the serialization comes from the intervening memory WRITES between the
 loads. Read-only parallel loads feeding one expression get no edge from this (reads don't anti-depend on reads,

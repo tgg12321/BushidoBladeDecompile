@@ -21,7 +21,7 @@ on stdout.
 
 Example:
   python3 tools/rtl_track/dump.py cfg --stem config
-  python3 tools/rtl_track/find.py cfg func_8003F388 'mult'
+  python3 tools/rtl_track/find.py cfg gpu_SetCellGateBit 'mult'
 """
 from __future__ import annotations
 

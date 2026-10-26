@@ -66,7 +66,7 @@ Handlers that the script's modes reach:
   0x1A when either changed, else 8.
 - `func_8003BFC4` (src/main/2B344.c:651, mode 15) runs the FMV overlay
   through `sys_ExecMovieOverlay` and sets mode 8.
-- `func_8003C560` (src/main/2B344.c:786, mode 21) plays sounds at frames
+- `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786, mode 21) plays sounds at frames
   0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
 - `func_8003C714` (src/main/2B344.c:822, mode 30) copies the three clock
   records `D_80106A50.times` into the record `func_80077D00()` returns, as

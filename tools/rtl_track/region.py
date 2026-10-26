@@ -11,7 +11,7 @@ Usage (WSL, from the repo root):
   dump   a pass file inside tmp/rtl/<tag>, e.g. in.i.combine
 
 Example:
-  python3 tools/rtl_track/region.py cfg in.i.combine func_8003F388 'mult' -B 6 -A 14
+  python3 tools/rtl_track/region.py cfg in.i.combine gpu_SetCellGateBit 'mult' -B 6 -A 14
 """
 from __future__ import annotations
 
