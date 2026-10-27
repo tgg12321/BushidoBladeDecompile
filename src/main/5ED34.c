@@ -228,37 +228,43 @@ s32 resource_RelocateNineOffsetListsAndLoadVabPack(Unk8006EA28Rec *a0) {
 void StepSlideProgressCommitPendingStateAndQueueSound(void);
 void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *);
 
-s32 StepSlideBuildFrameRecordAndDispatchStateHandler(s32 arg0, s32 arg1) {
-    Unk8006EACCRec sp10;
-    Unk8006E49CRec *temp_v0;
+s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
+    s32 arg0, s32 pad_buttons) {
+    Unk8006EACCRec draw_context;
+    Unk8006E49CRec *prim_buffer_record;
     s32 temp_v1;
 
     D_800A35C0 = &g_gpu_db[g_gpu_presented_frame_count & 1];
     D_800A3548 = arg0;
-    g_entry_menu_pressed_buttons = arg1;
+    g_entry_menu_pressed_buttons = pad_buttons;
     if (g_entry_menu_fight_mode == 2) {
-        g_entry_menu_pressed_buttons = arg1 & 0xFFFF;
+        g_entry_menu_pressed_buttons = pad_buttons & 0xFFFF;
     }
     StepSlideProgressCommitPendingStateAndQueueSound();
     temp_v1 = g_entry_menu_work_block->prim_buffer_counter + 1;
     g_entry_menu_work_block->animation_frame_counter =
         g_entry_menu_work_block->animation_frame_counter + 1;
     g_entry_menu_work_block->prim_buffer_counter = temp_v1;
-    temp_v0 = gpu_GetIndexedPrimBufferRecord(temp_v1 & 1);
-    sp10.resource_root.v8006EA28 = g_entry_menu_resources;
-    sp10.primitive_cursors.textured_quad_prims = temp_v0->textured_quad_prims;
-    sp10.primitive_cursors.gradient_quad_prims = temp_v0->gradient_quad_prims;
-    sp10.primitive_cursors.sprite_prims = temp_v0->sprite_prims;
-    sp10.primitive_cursors.tile_prims = temp_v0->tile_prims;
-    sp10.primitive_cursors.unk_14 = temp_v0->unk_14;
-    sp10.primitive_cursors.draw_area_prims = temp_v0->draw_area_prims;
-    D_800A35A4 = temp_v0;
-    sp10.primitive_cursors.draw_offset_prims = temp_v0->draw_offset_prims;
-    sp10.unk_24 = temp_v0->unk_20;
+    prim_buffer_record = gpu_GetIndexedPrimBufferRecord(temp_v1 & 1);
+    draw_context.resource_root.v8006EA28 = g_entry_menu_resources;
+    draw_context.primitive_cursors.textured_quad_prims =
+        prim_buffer_record->textured_quad_prims;
+    draw_context.primitive_cursors.gradient_quad_prims =
+        prim_buffer_record->gradient_quad_prims;
+    draw_context.primitive_cursors.sprite_prims =
+        prim_buffer_record->sprite_prims;
+    draw_context.primitive_cursors.tile_prims = prim_buffer_record->tile_prims;
+    draw_context.primitive_cursors.unk_14 = prim_buffer_record->unk_14;
+    draw_context.primitive_cursors.draw_area_prims =
+        prim_buffer_record->draw_area_prims;
+    D_800A35A4 = prim_buffer_record;
+    draw_context.primitive_cursors.draw_offset_prims =
+        prim_buffer_record->draw_offset_prims;
+    draw_context.unk_24 = prim_buffer_record->unk_20;
     if ((u16)(g_entry_menu_handler_index - 2) >= 2U) {
-        gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(&sp10);
+        gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(&draw_context);
     }
-    D_8009BC1C[g_entry_menu_handler_index](&sp10);
+    D_8009BC1C[g_entry_menu_handler_index](&draw_context);
     return D_800A35A0;
 }
 
@@ -386,31 +392,31 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
     }
 }
 
-void gpu_AddScreenDarken(Unk8006EACCRec *arg0) {
-    TILE *temp_s0;
+void gpu_AddScreenDarken(Unk8006EACCRec *draw_context) {
+    TILE *tile_cursor;
     s16 v1;
     s16 v2;
     s16 v3;
 
-    temp_s0 = arg0->primitive_cursors.tile_prims;
-    SetTile(temp_s0);
+    tile_cursor = draw_context->primitive_cursors.tile_prims;
+    SetTile(tile_cursor);
     v1 = D_800A3550;
-    temp_s0->x0 = 0;
-    temp_s0->y0 = 0;
-    temp_s0->r0 = v1;
+    tile_cursor->x0 = 0;
+    tile_cursor->y0 = 0;
+    tile_cursor->r0 = v1;
     v2 = D_800A3550;
-    temp_s0->w = 0x280;
-    temp_s0->g0 = v2;
+    tile_cursor->w = 0x280;
+    tile_cursor->g0 = v2;
     v3 = D_800A3550;
-    temp_s0->h = 0xF0;
-    temp_s0->b0 = v3;
-    SetSemiTrans(temp_s0, 1);
-    AddPrim(g_gpu_ot_ptr, temp_s0);
-    temp_s0++;
-    arg0->primitive_cursors.tile_prims = temp_s0;
-    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, 0x40, 0);
-    AddPrim(g_gpu_ot_ptr, arg0->primitive_cursors.unk_14);
-    arg0->primitive_cursors.unk_14++;
+    tile_cursor->h = 0xF0;
+    tile_cursor->b0 = v3;
+    SetSemiTrans(tile_cursor, 1);
+    AddPrim(g_gpu_ot_ptr, tile_cursor);
+    tile_cursor++;
+    draw_context->primitive_cursors.tile_prims = tile_cursor;
+    SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0, 0x40, 0);
+    AddPrim(g_gpu_ot_ptr, draw_context->primitive_cursors.unk_14);
+    draw_context->primitive_cursors.unk_14++;
 }
 
 extern void gpu_AddGradientPanel(Unk8006EACCRec *);

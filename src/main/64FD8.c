@@ -150,19 +150,19 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
     return result;
 }
 
-void menu_DrawSelRowTiles(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
+void menu_DrawSelRowTiles(Unk8006EACCRec *draw_context, s32 arg1, s32 arg2) {
     TILE *p;
     Rec_8006C21C *t;
     s16 i;
     s16 j;
     s16 n;
-    s32 var_5;
+    s32 ot_index;
 
     n = 5;
     if (arg2 != 0) {
         n = 8;
     }
-    p = arg0->primitive_cursors.tile_prims;
+    p = draw_context->primitive_cursors.tile_prims;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         t = SELWORK->f04->unk_3C;
         for (j = 0; j < n; j++) {
@@ -180,39 +180,40 @@ void menu_DrawSelRowTiles(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
                 p->x0 = t->x + arg1 * 240;
                 p->y0 = t->y + i * 17 + 0x7C;
             }
-            var_5 = 0xB;
+            ot_index = 0xB;
             if (arg1 != 0) {
-                var_5 = 0x15;
+                ot_index = 0x15;
             }
-            AddPrim(g_gpu_ot_ptr + var_5, p);
+            AddPrim(g_gpu_ot_ptr + ot_index, p);
             p++;
             t++;
         }
     }
-    arg0->primitive_cursors.tile_prims = p;
+    draw_context->primitive_cursors.tile_prims = p;
 }
 
-void menu_DrawSelPhaseSheet(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
+void menu_DrawSelPhaseSheet(
+    Unk8006EACCRec *draw_context, s32 arg1, s32 sheet_index) {
     Unk8007352CRec s;
-    s32 var_1;
+    s32 ot_index;
 
-    var_1 = 0xC;
+    ot_index = 0xC;
     s.semi = 0;
     s.has_color = 0;
-    s.header = arg0->resource_root.v80076FF8->unk_1C[(s16)arg2];
+    s.header = draw_context->resource_root.v80076FF8->unk_1C[(s16)sheet_index];
     s.x = arg1 * 0xF0;
     s.y = 0;
     s.table = s.header->cells;
     if (arg1 != 0) {
-        var_1 = 0x16;
+        ot_index = 0x16;
     }
-    s.ot_idx = var_1;
-    s.sprt_out = arg0->primitive_cursors.sprite_prims;
-    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
-    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+    s.ot_idx = ot_index;
+    s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+    draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+    SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + var_1, arg0->primitive_cursors.unk_14);
-    arg0->primitive_cursors.unk_14++;
+    AddPrim(g_gpu_ot_ptr + ot_index, draw_context->primitive_cursors.unk_14);
+    draw_context->primitive_cursors.unk_14++;
 }
 
 void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {

@@ -152,7 +152,7 @@ void eff_ResetCommands(void) {
     D_800A3448 = 0;
 }
 
-s32 eff_LoadImagesAndSetup(s32 arg0, s32 arg1) {
+s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     /* FAKE: single forward-order param alias; flips the s2/s1 save+copy pair
      * order to the target's (param-local-alias-prologue-pair-flip); arg0
      * throughout: score 4 */
@@ -189,8 +189,8 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 arg1) {
     DrawSync(0);
     eff_ResetCommands();
     srand(rand());
-    ret = arg1 + 0x4650;
-    D_800A3420 = (POLY_FT4 *)arg1;
+    ret = quad_storage + 0x4650;
+    D_800A3420 = (POLY_FT4 *)quad_storage;
     D_800A3424 = (POLY_FT4 *)ret;
     return ret + 0x4650;
 }
@@ -702,14 +702,14 @@ void eff_SetRotMatrix(s16 *a0, s32 *a1, MATRIX *a2) {
 
 extern s32 g_eff_billboard_draw_count;
 
-void eff_SetBillboardList(Unk800F1198Record *arg0) {
+void eff_SetBillboardList(Unk800F1198Record *src_billboards) {
     s32 i;
 
     g_eff_billboard_draw_count = 0;
-    for (i = 0; arg0[i].unk0 & 1; i++) {
-        g_eff_billboards[i].unk0 = arg0[i].unk0;
-        g_eff_billboards[i].unk4 = arg0[i].unk4;
-        g_eff_billboards[i].unk8 = arg0[i].unk8;
+    for (i = 0; src_billboards[i].unk0 & 1; i++) {
+        g_eff_billboards[i].unk0 = src_billboards[i].unk0;
+        g_eff_billboards[i].unk4 = src_billboards[i].unk4;
+        g_eff_billboards[i].unk8 = src_billboards[i].unk8;
     }
     g_eff_billboards[i].unk0 = g_eff_billboards[i].unk4 =
         g_eff_billboards[i].unk8 = 0;
