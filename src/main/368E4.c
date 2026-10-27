@@ -1522,10 +1522,11 @@ void gpu_TintVramRow(
     DrawSync(0);
 }
 
-void gpu_TintVramRowInPlace(s32 row_x, s32 row_y, s32 row_width, s32 arg3,
-                            s32 green_multiplier, s32 blue_multiplier) {
-    gpu_TintVramRow(0, row_x, row_y, row_width, arg3, green_multiplier,
-                    blue_multiplier, row_x, row_y);
+void gpu_TintVramRowInPlace(
+    s32 row_x, s32 row_y, s32 row_width, s32 red_multiplier,
+    s32 green_multiplier, s32 blue_multiplier) {
+    gpu_TintVramRow(0, row_x, row_y, row_width, red_multiplier,
+                    green_multiplier, blue_multiplier, row_x, row_y);
 }
 
 /* matches the definition above */
@@ -2091,48 +2092,48 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     g_prim_buf_cursor = (u32 *)(obj + 1);
 }
 
-s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 arg1) {
+s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
     s32 count;
     s32 tail_off;
-    s32 temp_a2;
+    s32 first_section_end_offset;
     s32 var_s7;
-    s32 v0;
-    s32 var_fp;
-    s32 var_s5;
-    s32 var_s6;
-    s32 var_s4;
+    s32 first_section_offset;
+    s32 first_section_addr;
+    s32 first_section_size;
+    s32 second_section_addr;
+    s32 second_section_size;
     s32 var_s0;
     s32 var_s2;
-    s32 var_s1;
-    s32 var_s3;
+    s32 pack_cursor_addr;
+    s32 header_cursor_addr;
     s32 *count_slot;
     u32 var_14;
-    s32 a0_arg;
+    s32 copy_end_addr;
     s32 *tbl = (s32 *)arg0;
 
     count = tbl[0];
-    var_s3 = arg1;
+    header_cursor_addr = output_addr;
     tail_off = tbl[count + 1];
-    temp_a2 = tbl[2];
+    first_section_end_offset = tbl[2];
     /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + tail_off` swaps
      * s7 / s8: score 6 (Q129) */
     var_s7 = arg0;
     var_s7 += tail_off;
-    v0 = tbl[1];
-    var_fp = arg0 + v0;
-    var_s5 = temp_a2 - v0;
+    first_section_offset = tbl[1];
+    first_section_addr = arg0 + first_section_offset;
+    first_section_size = first_section_end_offset - first_section_offset;
 
     if (count >= 2) {
-        var_s6 = arg0 + temp_a2;
-        var_s4 = tbl[3] - temp_a2;
+        second_section_addr = arg0 + first_section_end_offset;
+        second_section_size = tbl[3] - first_section_end_offset;
     } else {
-        var_s6 = 0;
-        var_s4 = 0;
+        second_section_addr = 0;
+        second_section_size = 0;
     }
 
     var_s0 = D_800A33E8[0];
     var_s2 = D_800A33E8[1];
-    var_s1 = var_s3 + 0xC;
+    pack_cursor_addr = header_cursor_addr + 0xC;
 
     if (var_s0 == -1) {
         if (var_s2 == var_s0) {
@@ -2161,8 +2162,8 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 arg1) {
      * written; the count is (var_s0 >= 0) + (var_s2 >= 0), its first term
      * built as ~var_s0 >> 31 (Ruling 4 split; one expression: score 2) */
     var_14 = ~var_s0;
-    count_slot = (s32 *)var_s3;
-    var_s3 += 4;
+    count_slot = (s32 *)header_cursor_addr;
+    header_cursor_addr += 4;
     var_14 >>= 31;
     if (var_s2 >= 0) {
         var_14 += 1;
@@ -2170,32 +2171,38 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 arg1) {
     *count_slot = var_14;
 
     if (var_s0 >= 0) {
-        *(s32 *)var_s3 = 2;
-        var_s3 += 4;
+        *(s32 *)header_cursor_addr = 2;
+        header_cursor_addr += 4;
         if (var_s0 == 0) {
-            mem_MoveBlockRoundedUpToWords(var_fp, var_s1, var_s5);
-            a0_arg = var_s1 + var_s5;
+            mem_MoveBlockRoundedUpToWords(
+                first_section_addr, pack_cursor_addr, first_section_size);
+            copy_end_addr = pack_cursor_addr + first_section_size;
         } else {
-            mem_MoveBlockRoundedUpToWords(var_s6, var_s1, var_s4);
-            a0_arg = var_s1 + var_s4;
+            mem_MoveBlockRoundedUpToWords(
+                second_section_addr, pack_cursor_addr, second_section_size);
+            copy_end_addr = pack_cursor_addr + second_section_size;
         }
-        arena_UpdatePeak(a0_arg);
-        var_s1 += snd_LoadVabPack((Unk8005C2A8Pack *)var_s1, 2, var_s7);
+        arena_UpdatePeak(copy_end_addr);
+        pack_cursor_addr +=
+            snd_LoadVabPack((Unk8005C2A8Pack *)pack_cursor_addr, 2, var_s7);
     }
 
     if (var_s2 >= 0) {
-        *(s32 *)var_s3 = 5;
+        *(s32 *)header_cursor_addr = 5;
         if (var_s2 == 0) {
-            mem_MoveBlockRoundedUpToWords(var_fp, var_s1, var_s5);
-            a0_arg = var_s1 + var_s5;
+            mem_MoveBlockRoundedUpToWords(
+                first_section_addr, pack_cursor_addr, first_section_size);
+            copy_end_addr = pack_cursor_addr + first_section_size;
         } else {
-            mem_MoveBlockRoundedUpToWords(var_s6, var_s1, var_s4);
-            a0_arg = var_s1 + var_s4;
+            mem_MoveBlockRoundedUpToWords(
+                second_section_addr, pack_cursor_addr, second_section_size);
+            copy_end_addr = pack_cursor_addr + second_section_size;
         }
-        arena_UpdatePeak(a0_arg);
-        var_s1 += snd_LoadVabPack((Unk8005C2A8Pack *)var_s1, 5, var_s7);
+        arena_UpdatePeak(copy_end_addr);
+        pack_cursor_addr +=
+            snd_LoadVabPack((Unk8005C2A8Pack *)pack_cursor_addr, 5, var_s7);
     }
-    return var_s1;
+    return pack_cursor_addr;
 }
 
 void resource_InvalidateEntrySelectionCache(void) {
@@ -2211,9 +2218,9 @@ void resource_InvalidateEntrySelectionCache(void) {
 }
 
 void node_InitRootNodePairWithNegatedRotationMatrices(void) {
-    Unk80101DF0Record *p1 = &g_view_camera_root_node;
-    Unk80101DF0Record *p2 = &g_view_identity_root_node;
-    p1->unk0 = 0x64;
+    Unk80101DF0Record *camera_root = &g_view_camera_root_node;
+    Unk80101DF0Record *identity_root = &g_view_identity_root_node;
+    camera_root->unk0 = 0x64;
     g_view_camera_root_node.unk1 = 0;
     g_view_camera_root_node.xf.rot.vx = 0;
     g_view_camera_root_node.xf.rot.vy = 0;
@@ -2223,8 +2230,8 @@ void node_InitRootNodePairWithNegatedRotationMatrices(void) {
     g_view_camera_root_node.work.t[2] = 0;
     g_view_camera_root_node.parent_node = 0;
     g_view_camera_root_node.rotation_order = 5;
-    node_SetMatrixFromNegatedRot(p1);
-    p2->unk0 = 0x65;
+    node_SetMatrixFromNegatedRot(camera_root);
+    identity_root->unk0 = 0x65;
     g_view_identity_root_node.unk1 = 0;
     g_view_identity_root_node.xf.rot.vx = 0;
     g_view_identity_root_node.xf.rot.vy = 0;
@@ -2234,9 +2241,9 @@ void node_InitRootNodePairWithNegatedRotationMatrices(void) {
     g_view_identity_root_node.work.t[2] = 0;
     g_view_identity_root_node.parent_node = 0;
     g_view_identity_root_node.rotation_order = 2;
-    node_SetMatrixFromNegatedRot(p2);
-    g_view_camera_root_ptr = p1;
-    g_view_identity_root_ptr = p2;
+    node_SetMatrixFromNegatedRot(identity_root);
+    g_view_camera_root_ptr = camera_root;
+    g_view_identity_root_ptr = identity_root;
 }
 
 /* 0x800153F0: the 22-halfword record light_Unpack unpacks. */
@@ -2245,10 +2252,11 @@ extern void light_Unpack(Unk800F62E0Rec *, u16 *);
 
 void light_InitDefaults(void) {
     Unk800153F0Record default_template_copy;
-    s32 i;
+    s32 light_setup_index;
     default_template_copy = g_light_default_template;
-    for (i = 0; i < 8; i++) {
-        light_Unpack(&g_light_setups[i], default_template_copy.v);
+    for (light_setup_index = 0; light_setup_index < 8; light_setup_index++) {
+        light_Unpack(
+            &g_light_setups[light_setup_index], default_template_copy.v);
     }
     SetColorMatrix(&g_light_setups[0].cmat);
     SetBackColor(g_light_setups[0].back[0], g_light_setups[0].back[1],

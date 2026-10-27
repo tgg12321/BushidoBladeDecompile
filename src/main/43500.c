@@ -46,7 +46,7 @@ extern s32 collision_GetHit(s32 *, s16 *);
 s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
     s32 x_direction;
     s32 z_direction;
-    s32 var_2;
+    s32 axes_swapped;
 
     g_collision_segment_work->unk60 = g_collision_segment_work->unk8.vx + 32000;
     g_collision_segment_work->unk64 = g_collision_segment_work->unk8.vz + 32000;
@@ -103,7 +103,7 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
             z_direction = 1;
         }
         if (g_collision_segment_work->unk74 > g_collision_segment_work->unk70) {
-            var_2 = 1;
+            axes_swapped = 1;
             g_collision_segment_work->unk80 = g_collision_segment_work->unk70;
             g_collision_segment_work->unk70 = g_collision_segment_work->unk74;
             g_collision_segment_work->unk74 = g_collision_segment_work->unk80;
@@ -114,7 +114,7 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
             g_collision_segment_work->unk68 = g_collision_segment_work->unk6C;
             g_collision_segment_work->unk6C = g_collision_segment_work->unk80;
         } else {
-            var_2 = 0;
+            axes_swapped = 0;
         }
         g_collision_segment_work->unk68 += 1000;
         g_collision_segment_work->unk60 += 1000;
@@ -144,7 +144,7 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
                 break;
             }
             if (g_collision_segment_work->unk64 > 2000) {
-                if (var_2) {
+                if (axes_swapped) {
                     if (x_direction < 0) {
                         g_collision_segment_work->unk88.x--;
                     } else {
@@ -164,7 +164,7 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
                     break;
                 }
             }
-            if (var_2) {
+            if (axes_swapped) {
                 if (z_direction < 0) {
                     g_collision_segment_work->unk88.z--;
                 } else {
@@ -197,8 +197,8 @@ extern Work_80053E9C D_800EF9F8;
 
 void collision_TestSegmentExtendingShortStart(
     s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal) {
-    s32 a, b, c;
-    s32 hi0, hi1, hi2;
+    s32 start_x, start_y, start_z;
+    s32 end_x, end_y, end_z;
     g_collision_segment_work = &D_800EF9F8;
     D_800EF9F8.unk8 = *(VECTOR *)segment_start;
     g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
@@ -208,17 +208,17 @@ void collision_TestSegmentExtendingShortStart(
                             g_collision_segment_work->unk8.vy,
                         g_collision_segment_work->unk18.vz -
                             g_collision_segment_work->unk8.vz) <= 0x9C3F) {
-        hi0 = g_collision_segment_work->unk18.vx;
-        a = g_collision_segment_work->unk8.vx;
-        hi1 = g_collision_segment_work->unk18.vy;
-        b = g_collision_segment_work->unk8.vy;
+        end_x = g_collision_segment_work->unk18.vx;
+        start_x = g_collision_segment_work->unk8.vx;
+        end_y = g_collision_segment_work->unk18.vy;
+        start_y = g_collision_segment_work->unk8.vy;
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitScalarProjection;
-        hi2 = g_collision_segment_work->unk18.vz;
-        g_collision_segment_work->unk8.vx = a - ((hi0 - a) << 1);
-        g_collision_segment_work->unk8.vy = b - ((hi1 - b) << 1);
-        c = g_collision_segment_work->unk8.vz;
-        g_collision_segment_work->unk8.vz = c - ((hi2 - c) << 1);
+        end_z = g_collision_segment_work->unk18.vz;
+        g_collision_segment_work->unk8.vx = start_x - ((end_x - start_x) << 1);
+        g_collision_segment_work->unk8.vy = start_y - ((end_y - start_y) << 1);
+        start_z = g_collision_segment_work->unk8.vz;
+        g_collision_segment_work->unk8.vz = start_z - ((end_z - start_z) << 1);
     } else {
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitGteProjection;
@@ -229,8 +229,8 @@ void collision_TestSegmentExtendingShortStart(
 s32 collision_TestSegmentExtendingShortStartWithWork(
     s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal,
     s32 segment_work_addr) {
-    s32 a, b, c;
-    s32 hi0, hi1, hi2;
+    s32 start_x, start_y, start_z;
+    s32 end_x, end_y, end_z;
     g_collision_segment_work = (Work_80053E9C *)segment_work_addr;
     g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
     g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
@@ -240,17 +240,17 @@ s32 collision_TestSegmentExtendingShortStartWithWork(
                             g_collision_segment_work->unk8.vy,
                         g_collision_segment_work->unk18.vz -
                             g_collision_segment_work->unk8.vz) <= 0x9C3F) {
-        hi0 = g_collision_segment_work->unk18.vx;
-        a = g_collision_segment_work->unk8.vx;
-        hi1 = g_collision_segment_work->unk18.vy;
-        b = g_collision_segment_work->unk8.vy;
+        end_x = g_collision_segment_work->unk18.vx;
+        start_x = g_collision_segment_work->unk8.vx;
+        end_y = g_collision_segment_work->unk18.vy;
+        start_y = g_collision_segment_work->unk8.vy;
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitScalarProjection;
-        hi2 = g_collision_segment_work->unk18.vz;
-        g_collision_segment_work->unk8.vx = a - ((hi0 - a) << 1);
-        g_collision_segment_work->unk8.vy = b - ((hi1 - b) << 1);
-        c = g_collision_segment_work->unk8.vz;
-        g_collision_segment_work->unk8.vz = c - ((hi2 - c) << 1);
+        end_z = g_collision_segment_work->unk18.vz;
+        g_collision_segment_work->unk8.vx = start_x - ((end_x - start_x) << 1);
+        g_collision_segment_work->unk8.vy = start_y - ((end_y - start_y) << 1);
+        start_z = g_collision_segment_work->unk8.vz;
+        g_collision_segment_work->unk8.vz = start_z - ((end_z - start_z) << 1);
     } else {
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitGteProjection;
@@ -696,9 +696,9 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
     return g_collision_segment_work->unk0 != 0x7FFFFFFF;
 }
 
-void collision_SetGrid(s32 a0) { D_800A33F0 = a0; }
+void collision_SetGrid(s32 grid_addr) { D_800A33F0 = grid_addr; }
 
-void collision_RebaseGrid(s32 a0) { D_800A33F0 += a0; }
+void collision_RebaseGrid(s32 rebase_delta) { D_800A33F0 += rebase_delta; }
 
 s16 collision_GetHitTag(void) { return g_collision_hit_tag; }
 
@@ -710,31 +710,31 @@ const char D_80015840[28] = "Destruction tiny model.\n";
 s32 motion_StartPlayback(
     s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     Unk800EFAE8Rec *s = &D_800EFAE8;
-    s32 id = a0 + 0x131;
+    s32 playback_file_id = a0 + 0x131;
     s32 ret;
-    s16 *t;
-    Unk80045878Obj *v;
+    s16 *start_position_cursor;
+    Unk80045878Obj *slot_object;
     s32 n;
 
     if (a6 != 0) {
-        ret = ndata_ReadChecked(id, a6);
+        ret = ndata_ReadChecked(playback_file_id, a6);
         s->unk2C = a6;
     } else {
-        if (ndata_GetArenaRoomAfter(id) < 0) {
+        if (ndata_GetArenaRoomAfter(playback_file_id) < 0) {
             resource_FreeNodeAssetBlock();
             printf(D_80015840);
         }
-        s->unk2C = (s32)motion_LoadPlaybackBlock(id);
+        s->unk2C = (s32)motion_LoadPlaybackBlock(playback_file_id);
         ret = 0;
     }
     s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
     s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
     s->unk0 = 0;
-    t = fight_GetStartPositionPairTable();
-    t += resource_GetLoadedSelector() * 24 + a1 * 6;
-    s->unkC = *t++;
-    s->unk10 = *t++;
-    s->unk14 = *t++;
+    start_position_cursor = fight_GetStartPositionPairTable();
+    start_position_cursor += resource_GetLoadedSelector() * 24 + a1 * 6;
+    s->unkC = *start_position_cursor++;
+    s->unk10 = *start_position_cursor++;
+    s->unk14 = *start_position_cursor++;
     s->unk1C = 0;
     s->unk20 = 0;
     s->unk44[0] = a2;
@@ -748,13 +748,13 @@ s32 motion_StartPlayback(
     if (!(s->unk4 & 0x40000000)) {
         s->unk44[1] = -1;
     }
-    v = slot_GetObject(0);
-    if (v != 0) {
-        softbody_RequestRebuild(v);
+    slot_object = slot_GetObject(0);
+    if (slot_object != 0) {
+        softbody_RequestRebuild(slot_object);
     }
-    v = slot_GetObject(1);
-    if (v != 0) {
-        softbody_RequestRebuild(v);
+    slot_object = slot_GetObject(1);
+    if (slot_object != 0) {
+        softbody_RequestRebuild(slot_object);
     }
     s->unk8 = a1;
     func_8003F218(0);
