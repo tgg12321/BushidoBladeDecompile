@@ -1287,18 +1287,19 @@ extern RECT D_800A327C;
 extern RECT D_800A3284;
 extern s32 D_800A3278;
 
-void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(s32 arg0, u8 *arg1) {
+void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
+    s32 arg0, u8 *file_buffer) {
     RECT r1, r2;
     s32 s0;
     s0 = cdrom_GetFileIndex(2, arg0 + 0x33);
-    cdrom_StartRead(s0, (s32)arg1);
+    cdrom_StartRead(s0, (s32)file_buffer);
     cdrom_WaitIdle();
     cdrom_GetFileSize(s0);
     r1 = D_800A327C;
     r2 = D_800A3284;
-    LoadImage(&r1, (u32 *)(arg1 + 0x40));
+    LoadImage(&r1, (u32 *)(file_buffer + 0x40));
     DrawSync(0);
-    LoadImage(&r2, (u32 *)(arg1 + 0x14));
+    LoadImage(&r2, (u32 *)(file_buffer + 0x14));
     DrawSync(0);
     D_800A3278 = 0;
 }
@@ -1476,27 +1477,28 @@ extern RECT D_800A329C;
 extern RECT D_800A32A4;
 extern RECT D_800A32AC;
 
-void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(s32 arg0, s32 *arg1) {
+void gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(
+    s32 arg0, s32 *file_buffer) {
     RECT r1, r2, r3, r4;
     s32 s1;
     u8 *p;
     u8 *q;
     s1 = cdrom_GetFileIndex(2, arg0 + 0x3D);
-    cdrom_StartRead(s1, (s32)arg1);
+    cdrom_StartRead(s1, (s32)file_buffer);
     cdrom_WaitIdle();
     cdrom_GetFileSize(s1);
-    arg1[0] = arg1[0] + (s32)arg1;
-    arg1[1] = arg1[1] + (s32)arg1;
+    file_buffer[0] = file_buffer[0] + (s32)file_buffer;
+    file_buffer[1] = file_buffer[1] + (s32)file_buffer;
     r1 = D_800A3294;
     r2 = D_800A329C;
-    p = (u8 *)arg1[0];
+    p = (u8 *)file_buffer[0];
     LoadImage(&r1, (u32 *)(p + 0x40));
     DrawSync(0);
     LoadImage(&r2, (u32 *)(p + 0x14));
     DrawSync(0);
     r3 = D_800A32A4;
     r4 = D_800A32AC;
-    q = (u8 *)arg1[1];
+    q = (u8 *)file_buffer[1];
     LoadImage(&r3, (u32 *)(q + 0x60));
     DrawSync(0);
     LoadImage(&r4, (u32 *)(q + 0x14));
@@ -1507,19 +1509,19 @@ extern Unk8009B0E0Record D_8009B7AC[3];
 /* packed screen positions: x = (v >> 7) + 0x37, y = (v & 0x7F) + 0x2A */
 extern u16 D_8009B850[];
 
-s32 gpu_DrawSpriteAtPackedTablePosition(s16 arg0, s32 arg1, s32 arg2) {
+s32 gpu_DrawSpriteAtPackedTablePosition(s16 arg0, s32 arg1, s32 ot_index) {
     Unk8007352CRec s;
-    Unk80060414Rec *var_1 = (Unk80060414Rec *)arg1;
+    Unk80060414Rec *sprite_chunk = (Unk80060414Rec *)arg1;
     DR_MODE *mode_off;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk80060414Rec) directly:
      * score 22 (Q129). */
     s32 end_off;
-    mode_off = &var_1->unk_14;
+    mode_off = &sprite_chunk->unk_14;
     end_off = arg1 + sizeof(Unk80060414Rec);
     s.has_color = 0;
     s.semi = 0;
-    s.ot_idx = arg2;
+    s.ot_idx = ot_index;
     s.x = (D_8009B850[arg0 & 0x7FFF] >> 7) + 0x37;
     s.y = (D_8009B850[arg0 & 0x7FFF] & 0x7F) + 0x2A;
     if (arg0 & 0x8000) {
@@ -1530,10 +1532,10 @@ s32 gpu_DrawSpriteAtPackedTablePosition(s16 arg0, s32 arg1, s32 arg2) {
         s.header = &D_8009B7AC[2];
     }
     s.table = &D_800A328C;
-    s.sprt_out = (s32)&var_1->unk_00;
+    s.sprt_out = (s32)&sprite_chunk->unk_00;
     gpu_AddSpriteCells(&s);
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + arg2, mode_off);
+    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
     return end_off - arg1;
 }
 

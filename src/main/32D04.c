@@ -8,10 +8,10 @@
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
 
-void math_HsvToRgb(s32 *arg0, s32 *arg1) {
-    s32 h = arg0[0];
-    s32 s = arg0[1];
-    s32 v = arg0[2];
+void math_HsvToRgb(s32 *hsv_input, s32 *rgb_output) {
+    s32 h = hsv_input[0];
+    s32 s = hsv_input[1];
+    s32 v = hsv_input[2];
     s32 i, f, p, q, t;
     s32 r, g, b;
 
@@ -72,9 +72,9 @@ void math_HsvToRgb(s32 *arg0, s32 *arg1) {
         goto out;
     }
 out:
-    arg1[0] = r;
-    arg1[1] = g;
-    arg1[2] = b;
+    rgb_output[0] = r;
+    rgb_output[1] = g;
+    rgb_output[2] = b;
 }
 
 /* RGB -> HSV (4.12 fixed point). Inverse of math_HsvToRgb above.
@@ -84,9 +84,9 @@ out:
 void math_RgbToHsv(s32 *a0, s32 *a1) {
     s32 r, g, b;
     s32 max_val, min_val;
-    s32 var_5;
-    s32 var_6;
-    s32 var_7;
+    s32 chroma;
+    s32 saturation;
+    s32 hue;
     s32 dR, dG, dB;
     s32 val;
 
@@ -124,42 +124,42 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
         }
     }
 
-    var_5 = max_val - min_val;
+    chroma = max_val - min_val;
     /* V = max(r,g,b): the value channel, third HSV output */
     val = max_val;
 
     if (val != 0) {
-        var_6 = (var_5 << 12) / val;
+        saturation = (chroma << 12) / val;
     } else {
-        var_6 = 0;
+        saturation = 0;
     }
 
-    if (var_6 != 0) {
-        dR = ((max_val - r) << 12) / var_5;
-        dG = ((max_val - g) << 12) / var_5;
-        dB = ((max_val - b) << 12) / var_5;
+    if (saturation != 0) {
+        dR = ((max_val - r) << 12) / chroma;
+        dG = ((max_val - g) << 12) / chroma;
+        dB = ((max_val - b) << 12) / chroma;
 
         if (r == max_val) {
-            var_7 = dB - dG;
+            hue = dB - dG;
         } else if (g == max_val) {
             s32 tmp = dB - 0x2000;
-            var_7 = dR - tmp;
+            hue = dR - tmp;
         } else if (b == max_val) {
             s32 tmp = dR - 0x4000;
-            var_7 = dG - tmp;
+            hue = dG - tmp;
         }
 
-        var_7 /= 6;
+        hue /= 6;
 
-        if (var_7 < 0) {
-            var_7 += 0x1000;
+        if (hue < 0) {
+            hue += 0x1000;
         }
     } else {
-        var_7 = 0;
+        hue = 0;
     }
 
-    a1[0] = var_7;
-    a1[1] = var_6;
+    a1[0] = hue;
+    a1[1] = saturation;
     a1[2] = val;
 }
 
@@ -483,7 +483,7 @@ extern void (*D_80095280[])();
 extern void (*D_80095328[])();
 extern Unk800F62E0Rec *D_800A3828;
 
-void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
+void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
     MATRIX *dst = (MATRIX *)0x1F8003A0;
     s32 t0;
 
@@ -492,7 +492,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
 
     *dst = D_800FF610;
 
-    D_800A3828 = &g_light_setups[arg2];
+    D_800A3828 = &g_light_setups[light_setup_index];
 
     dst->m[1][0] >>= 1;
     dst->m[1][1] >>= 1;
@@ -893,17 +893,17 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
  * block's base. reloc_UnrelocateBlock is the inverse. */
 void reloc_RelocateBlock(s32 *p, s16 arg1) {
     s32 *base = p;
-    s32 var_1;
+    s32 block_header;
     s32 i;
     u16 n;
 
-    var_1 = *p;
-    *p = (var_1 | 0x8000) & 0xFFFF;
+    block_header = *p;
+    *p = (block_header | 0x8000) & 0xFFFF;
     p++;
     D_80103608[arg1] = p;
-    D_80103658[arg1] = var_1 & 0x7FFF;
-    if (!(var_1 & 0x8000)) {
-        n = var_1;
+    D_80103658[arg1] = block_header & 0x7FFF;
+    if (!(block_header & 0x8000)) {
+        n = block_header;
         for (i = 0; i < n; i++) {
             *p++ += (s32)base;
         }
@@ -1045,9 +1045,9 @@ done:
     return ret;
 }
 
-s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *arg2) {
-    s16 *var_0;
-    s16 *var_1;
+s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *select_flags) {
+    s16 *select_cursor;
+    s16 *count_pass_cursor;
     s32 *orig_dest;
     s32 val;
     s32 data_ptr;
@@ -1058,20 +1058,20 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *arg2) {
     s32 start;
     s32 size;
 
-    var_0 = arg2;
+    select_cursor = select_flags;
     count = 0;
-    var_1 = var_0 + 1;
+    count_pass_cursor = select_cursor + 1;
     src_orig = src_base;
     orig_dest = dest_arr;
 
-    val = *var_0;
+    val = *select_cursor;
     if (val != -2) {
         do {
             if (val >= 0) {
                 count++;
             }
-            val = *var_1;
-            var_1++;
+            val = *count_pass_cursor;
+            count_pass_cursor++;
         } while (val != -2);
     }
 
@@ -1080,8 +1080,8 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *arg2) {
     src_base += 4;
     data_ptr = (s32)orig_dest + (count + 2) * 4;
 
-    val = *var_0;
-    var_0++;
+    val = *select_cursor;
+    select_cursor++;
     if (val != -2) {
         var_6 = -2;
         src_ptr = (s32 *)src_base;
@@ -1098,8 +1098,8 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *arg2) {
                 data_ptr += size;
             }
             src_ptr++;
-            val = *var_0;
-            var_0++;
+            val = *select_cursor;
+            select_cursor++;
         } while (val != var_6);
     }
 

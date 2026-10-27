@@ -455,8 +455,8 @@ void gpu_AddThreeGreyTilesStackedUp(s32 *arg0, u16 *arg1, s32 arg2) {
     arg0[6] = (s32)p;
 }
 
-void gpu_SetTileRgbFromBlockFlag(void *arg0) {
-    TILE *a0 = arg0;
+void gpu_SetTileRgbFromBlockFlag(void *tile_prim) {
+    TILE *a0 = tile_prim;
     Unk8009BD24Block *p = GetWorkingRecord();
     s32 v0;
     if (p->unk20_0) {
@@ -472,8 +472,8 @@ void gpu_SetTileRgbFromBlockFlag(void *arg0) {
     a0->b0 = v0;
 }
 
-void gpu_SetPolyF4RgbFromBlockFlag(void *arg0) {
-    POLY_F4 *a0 = arg0;
+void gpu_SetPolyF4RgbFromBlockFlag(void *flat_quad_prim) {
+    POLY_F4 *a0 = flat_quad_prim;
     Unk8009BD24Block *p = GetWorkingRecord();
     s32 v0;
     if (p->unk20_0) {
@@ -2622,37 +2622,37 @@ void reloc_RelocateSelfOffsets(s32 *a0) {
     }
 }
 
-s32 gpu_GetSheetTPage(Unk8009B0E0Record *arg0, s32 a1) {
-    return (arg0->tp0 & 0xFE1F) + (arg0->tp1 << 7) + a1;
+s32 gpu_GetSheetTPage(Unk8009B0E0Record *sheet_header, s32 a1) {
+    return (sheet_header->tp0 & 0xFE1F) + (sheet_header->tp1 << 7) + a1;
 }
 
-s32 gpu_InitPrimBufferPair(s32 arg0, Unk8006E49CRec *arg1) {
+s32 gpu_InitPrimBufferPair(s32 prim_storage, Unk8006E49CRec *prim_buffer_pair) {
     u8 *base1;
     u8 *base2;
     u8 *base3;
     u8 *base4;
-    arg1[0].textured_quad_prims = arg0;
-    base1 = (u8 *)arg1[0].textured_quad_prims + 0x9C40;
-    arg1[0].gradient_quad_prims = base1 + 0x5DC0;
-    arg1[0].flat_quad_prims = base1;
+    prim_buffer_pair[0].textured_quad_prims = prim_storage;
+    base1 = (u8 *)prim_buffer_pair[0].textured_quad_prims + 0x9C40;
+    prim_buffer_pair[0].gradient_quad_prims = base1 + 0x5DC0;
+    prim_buffer_pair[0].flat_quad_prims = base1;
     base2 = base1 + 0x6838;
-    arg1[0].tile_prims = base1 + 0x61F8;
-    arg1[0].unk_14 = base2 + 0x1B58;
-    arg1[0].draw_area_prims = base2 + 0x1DB0;
-    arg1[0].draw_offset_prims = base2 + 0x1E28;
-    arg1[0].unk_20 = base2 + 0x1EA0;
-    arg1[0].sprite_prims = (s32)base2;
-    arg1[1].textured_quad_prims = (s32)(base2 + 0x1FB0);
-    base3 = (u8 *)arg1[1].textured_quad_prims + 0x9C40;
-    arg1[1].gradient_quad_prims = base3 + 0x5DC0;
-    arg1[1].flat_quad_prims = base3;
+    prim_buffer_pair[0].tile_prims = base1 + 0x61F8;
+    prim_buffer_pair[0].unk_14 = base2 + 0x1B58;
+    prim_buffer_pair[0].draw_area_prims = base2 + 0x1DB0;
+    prim_buffer_pair[0].draw_offset_prims = base2 + 0x1E28;
+    prim_buffer_pair[0].unk_20 = base2 + 0x1EA0;
+    prim_buffer_pair[0].sprite_prims = (s32)base2;
+    prim_buffer_pair[1].textured_quad_prims = (s32)(base2 + 0x1FB0);
+    base3 = (u8 *)prim_buffer_pair[1].textured_quad_prims + 0x9C40;
+    prim_buffer_pair[1].gradient_quad_prims = base3 + 0x5DC0;
+    prim_buffer_pair[1].flat_quad_prims = base3;
     base4 = base3 + 0x6838;
-    arg1[1].tile_prims = base3 + 0x61F8;
-    arg1[1].unk_14 = base4 + 0x1B58;
-    arg1[1].draw_area_prims = base4 + 0x1DB0;
-    arg1[1].draw_offset_prims = base4 + 0x1E28;
-    arg1[1].unk_20 = base4 + 0x1EA0;
-    arg1[1].sprite_prims = (s32)base4;
+    prim_buffer_pair[1].tile_prims = base3 + 0x61F8;
+    prim_buffer_pair[1].unk_14 = base4 + 0x1B58;
+    prim_buffer_pair[1].draw_area_prims = base4 + 0x1DB0;
+    prim_buffer_pair[1].draw_offset_prims = base4 + 0x1E28;
+    prim_buffer_pair[1].unk_20 = base4 + 0x1EA0;
+    prim_buffer_pair[1].sprite_prims = (s32)base4;
     return (s32)(base4 + 0x1FB0);
 }
 
