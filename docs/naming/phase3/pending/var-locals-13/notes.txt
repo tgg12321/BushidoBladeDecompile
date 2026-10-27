@@ -78,3 +78,13 @@ REVIEW (naming-reviewer pre-apply 2026-10-27): 35 PASS, 1 FAIL -> replaced by su
   means a g_object_pool entry (pool_object, this wave). Replaced by the reviewer's suggestion probe_origin_fighter
   (marked suggested; R6 judges it fresh).
 - Optional, not adopted: opponent_start_dx/dz -> opponent_script_start_dx/dz (reviewer: current names true).
+
+APPLY (naming-a 2026-10-27, commit 8f92e3772): 29/36 applied; pairs.txt now lists the applied 29. Reverted for
+naming_keycheck limits (old names kept; revive when the tool supports them):
+- motion_UpdatePlayback:j=stream_index (two block-scoped j bindings, like c/sn).
+- fighter_StepCpuPadScript:dy=opponent_start_dz, :dz=script_radius (keycheck: ambiguous type/value in `dy * dy`).
+- fighter_BuildCpuPad:pad=cpu_pad, :bits=pad_bit_table, :hi=opponent_hit_end_frame (names occur in #define bodies,
+  libgpu.h / 9F9C.c).
+- fighter_UpdateCpuProbes:x=probe_x (x occurs in a #define in 4510C.c, CPU_SQ).
+R6 (naming-reviewer 2026-10-27): 29/29 PASS, probe_origin_fighter judged fresh at all uses; no blocking fixes; no
+comment edits; partial apply leaves no misleading mix.
