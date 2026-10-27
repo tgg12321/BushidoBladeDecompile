@@ -1,0 +1,9 @@
+Unk8006EACCRec.unk_00=resource_root
+Unk8006EACCRec.unk_04=primitive_cursors
+Unk8006E49CRec.unk_04=flat_quad_prims
+Unk800788B0Rec.unk_04=flat_quad_prims
+Unk800A35C4Rec.unk_00=entry_countdowns
+Unk800A35C4Rec.unk_04=row_countdowns
+Unk800A35C4Rec.unk_08=animation_frame_counter
+Unk800A35C4Rec.unk_0C=prim_buffer_counter
+Unk800A35C4Rec.unk_10=draw_offset

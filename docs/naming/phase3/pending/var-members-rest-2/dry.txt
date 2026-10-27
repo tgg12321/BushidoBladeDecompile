@@ -1,0 +1,1416 @@
+PASS Unk8006EACCRec.unk_00=resource_root, Unk8006EACCRec.unk_04=primitive_cursors, Unk800A35C4Rec.unk_08=animation_frame_counter, Unk800A35C4Rec.unk_0C=prim_buffer_counter, Unk800A35C4Rec.unk_10=draw_offset
+decl Unk8006EACCRec.unk_00 -> resource_root  include/game.h:398
+decl Unk8006EACCRec.unk_04 -> primitive_cursors  include/game.h:400
+decl Unk800A35C4Rec.unk_08 -> animation_frame_counter  include/game.h:2496
+decl Unk800A35C4Rec.unk_0C -> prim_buffer_counter  include/game.h:2497
+decl Unk800A35C4Rec.unk_10 -> draw_offset  include/game.h:2498
+  round 0: 357 member error line(s)
+    src/main/5ED34.c:157 unk_08 x1
+    src/main/5ED34.c:158 unk_0C x1
+    src/main/5ED34.c:243 unk_0C x1
+    src/main/5ED34.c:244 unk_08 x2
+    src/main/5ED34.c:245 unk_0C x1
+    src/main/5ED34.c:247 unk_00 x1
+    src/main/5ED34.c:248 unk_04 x1
+    src/main/5ED34.c:249 unk_04 x1
+    src/main/5ED34.c:250 unk_04 x1
+    src/main/5ED34.c:251 unk_04 x1
+    src/main/5ED34.c:252 unk_04 x1
+    src/main/5ED34.c:253 unk_04 x1
+    src/main/5ED34.c:255 unk_04 x1
+    src/main/5ED34.c:310 unk_00 x1
+    src/main/5ED34.c:317 unk_08 x1
+    src/main/5ED34.c:377 unk_04 x1
+    src/main/5ED34.c:379 unk_04 x1
+    src/main/5ED34.c:381 unk_04 x1
+    src/main/5ED34.c:392 unk_04 x1
+    src/main/5ED34.c:407 unk_04 x1
+    src/main/5ED34.c:408 unk_04 x1
+    src/main/5ED34.c:409 unk_04 x1
+    src/main/5ED34.c:410 unk_04 x1
+    src/main/5ED34.c:493 unk_04 x1
+    src/main/5ED34.c:495 unk_04 x1
+    src/main/5ED34.c:498 unk_04 x1
+    src/main/5ED34.c:542 unk_04 x1
+    src/main/5ED34.c:543 unk_04 x1
+    src/main/5ED34.c:547 unk_04 x1
+    src/main/5ED34.c:548 unk_04 x1
+    src/main/5ED34.c:554 unk_04 x1
+    src/main/5ED34.c:555 unk_04 x1
+    src/main/5ED34.c:565 unk_04 x1
+    src/main/5ED34.c:566 unk_04 x1
+    src/main/5ED34.c:570 unk_04 x1
+    src/main/5ED34.c:571 unk_04 x1
+    src/main/5ED34.c:577 unk_04 x1
+    src/main/5ED34.c:578 unk_04 x1
+    src/main/5ED34.c:588 unk_04 x1
+    src/main/5ED34.c:589 unk_04 x1
+    src/main/5ED34.c:590 unk_04 x1
+    src/main/5ED34.c:596 unk_04 x1
+    src/main/5ED34.c:597 unk_04 x1
+    src/main/5ED34.c:598 unk_04 x1
+    src/main/5ED34.c:603 unk_10 x1
+    src/main/5ED34.c:605 unk_10 x1
+    src/main/5ED34.c:607 unk_04 x1
+    src/main/5ED34.c:607 unk_10 x1
+    src/main/5ED34.c:608 unk_04 x1
+    src/main/5ED34.c:609 unk_04 x1
+    src/main/5ED34.c:611 unk_10 x1
+    src/main/5ED34.c:612 unk_10 x1
+    src/main/5ED34.c:614 unk_04 x1
+    src/main/5ED34.c:614 unk_10 x1
+    src/main/5ED34.c:615 unk_04 x1
+    src/main/5ED34.c:616 unk_04 x1
+    src/main/5ED34.c:620 unk_04 x1
+    src/main/5ED34.c:638 unk_04 x1
+    src/main/5ED34.c:646 unk_04 x1
+    src/main/5ED34.c:647 unk_04 x1
+    src/main/5ED34.c:650 unk_04 x1
+    src/main/5ED34.c:651 unk_04 x1
+    src/main/5ED34.c:679 unk_04 x1
+    src/main/5ED34.c:680 unk_04 x1
+    src/main/5ED34.c:681 unk_04 x1
+    src/main/5ED34.c:693 unk_08 x1
+    src/main/5ED34.c:696 unk_08 x1
+    src/main/5ED34.c:705 unk_08 x1
+    src/main/5ED34.c:712 unk_04 x1
+    src/main/5ED34.c:713 unk_04 x1
+    src/main/5ED34.c:723 unk_08 x1
+    src/main/5ED34.c:726 unk_08 x1
+    src/main/5ED34.c:735 unk_08 x1
+    src/main/5ED34.c:742 unk_04 x1
+    src/main/5ED34.c:743 unk_04 x1
+    src/main/5ED34.c:749 unk_04 x1
+    src/main/5ED34.c:750 unk_04 x1
+    src/main/5ED34.c:751 unk_04 x1
+    src/main/5ED34.c:779 unk_08 x1
+    src/main/5ED34.c:791 unk_04 x1
+    src/main/5ED34.c:793 unk_04 x1
+    src/main/5ED34.c:801 unk_04 x1
+    src/main/5ED34.c:803 unk_04 x1
+    src/main/5ED34.c:814 unk_04 x1
+    src/main/5ED34.c:816 unk_04 x1
+    src/main/5ED34.c:818 unk_04 x1
+    src/main/5ED34.c:819 unk_04 x1
+    src/main/5ED34.c:820 unk_04 x1
+    src/main/5ED34.c:853 unk_04 x1
+    src/main/5ED34.c:854 unk_04 x1
+    src/main/5ED34.c:855 unk_04 x1
+    src/main/5ED34.c:945 unk_04 x1
+    src/main/5ED34.c:946 unk_04 x1
+    src/main/5ED34.c:1014 unk_08 x1
+    src/main/5ED34.c:1022 unk_04 x1
+    src/main/5ED34.c:1023 unk_04 x1
+    src/main/5ED34.c:1089 unk_04 x1
+    src/main/5ED34.c:1091 unk_04 x1
+    src/main/5ED34.c:1093 unk_04 x1
+    src/main/5ED34.c:1094 unk_04 x1
+    src/main/5ED34.c:1095 unk_04 x1
+    src/main/5ED34.c:1109 unk_04 x1
+    src/main/5ED34.c:1111 unk_04 x1
+    src/main/5ED34.c:1116 unk_04 x1
+    src/main/5ED34.c:1117 unk_04 x1
+    src/main/5ED34.c:1118 unk_04 x1
+    src/main/5ED34.c:1135 unk_04 x1
+    src/main/5ED34.c:1137 unk_04 x1
+    src/main/5ED34.c:1141 unk_04 x1
+    src/main/5ED34.c:1142 unk_04 x1
+    src/main/5ED34.c:1143 unk_04 x1
+    src/main/5ED34.c:1171 unk_04 x1
+    src/main/5ED34.c:1172 unk_04 x1
+    src/main/5ED34.c:1173 unk_04 x1
+    src/main/5ED34.c:1349 unk_04 x1
+    src/main/5ED34.c:1350 unk_04 x1
+    src/main/5ED34.c:1368 unk_08 x1
+    src/main/5ED34.c:1376 unk_04 x1
+    src/main/5ED34.c:1378 unk_04 x1
+    src/main/5ED34.c:1458 unk_04 x1
+    src/main/5ED34.c:1459 unk_04 x1
+    src/main/5ED34.c:1543 unk_04 x1
+    src/main/5ED34.c:1545 unk_04 x1
+    src/main/5ED34.c:1548 unk_04 x1
+    src/main/5ED34.c:1627 unk_04 x1
+    src/main/5ED34.c:1628 unk_04 x1
+    src/main/5ED34.c:1629 unk_04 x1
+    src/main/5ED34.c:1630 unk_10 x1
+    src/main/5ED34.c:1631 unk_10 x1
+    src/main/5ED34.c:1633 unk_04 x1
+    src/main/5ED34.c:1633 unk_10 x1
+    src/main/5ED34.c:1634 unk_04 x1
+    src/main/5ED34.c:1635 unk_04 x1
+    src/main/5ED34.c:1647 unk_04 x1
+    src/main/5ED34.c:1648 unk_04 x1
+    src/main/5ED34.c:1655 unk_04 x1
+    src/main/5ED34.c:1656 unk_04 x1
+    src/main/5ED34.c:1661 unk_04 x1
+    src/main/5ED34.c:1662 unk_04 x1
+    src/main/5ED34.c:1663 unk_04 x1
+    src/main/5ED34.c:1671 unk_04 x1
+    src/main/5ED34.c:1672 unk_04 x1
+    src/main/5ED34.c:1673 unk_10 x1
+    src/main/5ED34.c:1675 unk_10 x1
+    src/main/5ED34.c:1691 unk_10 x1
+    src/main/5ED34.c:1698 unk_04 x1
+    src/main/5ED34.c:1698 unk_10 x1
+    src/main/5ED34.c:1699 unk_04 x1
+    src/main/5ED34.c:1700 unk_04 x1
+    src/main/5ED34.c:1705 unk_04 x1
+    src/main/5ED34.c:1706 unk_04 x1
+    src/main/5ED34.c:1707 unk_04 x1
+    src/main/5ED34.c:1708 unk_04 x1
+    src/main/5ED34.c:1709 unk_04 x1
+    src/main/5ED34.c:1710 unk_04 x1
+    src/main/5ED34.c:1722 unk_04 x1
+    src/main/5ED34.c:1723 unk_04 x1
+    src/main/5ED34.c:1725 unk_04 x1
+    src/main/5ED34.c:1726 unk_04 x1
+    src/main/5ED34.c:1760 unk_08 x1
+    src/main/5ED34.c:1771 unk_04 x1
+    src/main/5ED34.c:1772 unk_04 x1
+    src/main/5ED34.c:1797 unk_04 x1
+    src/main/5ED34.c:1798 unk_04 x1
+    src/main/5ED34.c:1805 unk_04 x1
+    src/main/5ED34.c:1806 unk_04 x1
+    src/main/5ED34.c:1861 unk_08 x1
+    src/main/5ED34.c:1896 unk_08 x1
+    src/main/5ED34.c:1938 unk_04 x1
+    src/main/5ED34.c:1975 unk_04 x1
+    src/main/5ED34.c:2015 unk_04 x1
+    src/main/5ED34.c:2052 unk_04 x1
+    src/main/5ED34.c:2076 unk_04 x1
+    src/main/5ED34.c:2077 unk_04 x1
+    src/main/5ED34.c:2078 unk_04 x1
+    src/main/5ED34.c:2084 unk_08 x1
+    src/main/5ED34.c:2095 unk_04 x1
+    src/main/5ED34.c:2096 unk_04 x1
+    src/main/5ED34.c:2098 unk_04 x1
+    src/main/5ED34.c:2099 unk_04 x1
+    src/main/5ED34.c:2101 unk_04 x1
+    src/main/5ED34.c:2102 unk_04 x1
+    src/main/5ED34.c:2104 unk_04 x1
+    src/main/5ED34.c:2105 unk_04 x1
+    src/main/5ED34.c:2106 unk_04 x1
+    src/main/5ED34.c:2107 unk_04 x1
+    src/main/5ED34.c:2108 unk_04 x1
+    src/main/5ED34.c:2121 unk_04 x1
+    src/main/5ED34.c:2122 unk_04 x1
+    src/main/5ED34.c:2124 unk_04 x1
+    src/main/5ED34.c:2125 unk_04 x1
+    src/main/5ED34.c:2126 unk_04 x1
+    src/main/5ED34.c:2130 unk_08 x1
+    src/main/5ED34.c:2133 unk_04 x1
+    src/main/5ED34.c:2134 unk_04 x1
+    src/main/5ED34.c:2136 unk_04 x1
+    src/main/5ED34.c:2137 unk_04 x1
+    src/main/5ED34.c:2138 unk_04 x1
+    src/main/63D2C.c:288 unk_04 x1
+    src/main/63D2C.c:298 unk_04 x1
+    src/main/63D2C.c:303 unk_00 x1
+    src/main/63D2C.c:309 unk_04 x1
+    src/main/63D2C.c:310 unk_04 x1
+    src/main/63D2C.c:314 unk_04 x1
+    src/main/63D2C.c:315 unk_04 x1
+    src/main/63D2C.c:316 unk_04 x2
+    src/main/63D2C.c:317 unk_04 x1
+    src/main/63D2C.c:360 unk_04 x2
+    src/main/63D2C.c:375 unk_00 x1
+    src/main/63D2C.c:440 unk_04 x1
+    src/main/63D2C.c:441 unk_04 x1
+    src/main/63D2C.c:447 unk_04 x1
+    src/main/63D2C.c:448 unk_04 x1
+    src/main/63D2C.c:449 unk_04 x1
+    src/main/64FD8.c:165 unk_04 x1
+    src/main/64FD8.c:192 unk_04 x1
+    src/main/64FD8.c:202 unk_00 x1
+    src/main/64FD8.c:210 unk_04 x1
+    src/main/64FD8.c:211 unk_04 x1
+    src/main/64FD8.c:212 unk_04 x1
+    src/main/64FD8.c:213 unk_04 x1
+    src/main/64FD8.c:214 unk_04 x1
+    src/main/64FD8.c:231 unk_04 x1
+    src/main/64FD8.c:248 unk_04 x1
+    src/main/64FD8.c:250 unk_00 x1
+    src/main/64FD8.c:261 unk_04 x1
+    src/main/64FD8.c:262 unk_04 x1
+    src/main/64FD8.c:266 unk_04 x1
+    src/main/64FD8.c:267 unk_04 x1
+    src/main/64FD8.c:271 unk_04 x1
+    src/main/64FD8.c:272 unk_04 x1
+    src/main/64FD8.c:286 unk_04 x1
+    src/main/64FD8.c:287 unk_04 x1
+    src/main/64FD8.c:291 unk_04 x1
+    src/main/64FD8.c:292 unk_04 x1
+    src/main/64FD8.c:293 unk_04 x1
+    src/main/64FD8.c:294 unk_04 x1
+    src/main/64FD8.c:295 unk_04 x1
+    src/main/64FD8.c:310 unk_04 x1
+    src/main/64FD8.c:311 unk_04 x1
+    src/main/64FD8.c:312 unk_04 x1
+    src/main/64FD8.c:318 unk_04 x1
+    src/main/64FD8.c:319 unk_04 x1
+    src/main/64FD8.c:320 unk_04 x1
+    src/main/64FD8.c:324 unk_04 x1
+    src/main/64FD8.c:325 unk_04 x1
+    src/main/64FD8.c:326 unk_04 x1
+    src/main/64FD8.c:330 unk_04 x1
+    src/main/64FD8.c:331 unk_04 x1
+    src/main/64FD8.c:332 unk_04 x1
+    src/main/64FD8.c:415 unk_00 x1
+    src/main/64FD8.c:424 unk_04 x1
+    src/main/64FD8.c:425 unk_04 x1
+    src/main/64FD8.c:427 unk_00 x1
+    src/main/64FD8.c:434 unk_04 x1
+    src/main/64FD8.c:435 unk_04 x1
+    src/main/64FD8.c:438 unk_04 x1
+    src/main/64FD8.c:439 unk_04 x1
+    src/main/64FD8.c:441 unk_04 x1
+    src/main/64FD8.c:442 unk_04 x1
+    src/main/64FD8.c:443 unk_04 x1
+    src/main/64FD8.c:444 unk_00 x1
+    src/main/64FD8.c:456 unk_04 x1
+    src/main/64FD8.c:457 unk_04 x1
+    src/main/64FD8.c:459 unk_04 x1
+    src/main/64FD8.c:460 unk_04 x1
+    src/main/64FD8.c:462 unk_04 x1
+    src/main/64FD8.c:517 unk_00 x1
+    src/main/64FD8.c:539 unk_04 x1
+    src/main/64FD8.c:540 unk_04 x1
+    src/main/64FD8.c:571 unk_00 x1
+    src/main/64FD8.c:585 unk_04 x1
+    src/main/64FD8.c:586 unk_04 x1
+    src/main/64FD8.c:588 unk_04 x1
+    src/main/64FD8.c:589 unk_04 x1
+    src/main/64FD8.c:590 unk_04 x1
+    src/main/64FD8.c:626 unk_04 x1
+    src/main/64FD8.c:627 unk_04 x1
+    src/main/64FD8.c:650 unk_04 x1
+    src/main/64FD8.c:651 unk_04 x1
+    src/main/64FD8.c:657 unk_00 x1
+    src/main/64FD8.c:671 unk_04 x1
+    src/main/64FD8.c:672 unk_04 x1
+    src/main/64FD8.c:675 unk_00 x1
+    src/main/64FD8.c:678 unk_04 x1
+    src/main/64FD8.c:679 unk_04 x1
+    src/main/64FD8.c:680 unk_04 x1
+    src/main/64FD8.c:682 unk_04 x1
+    src/main/64FD8.c:683 unk_04 x1
+    src/main/64FD8.c:684 unk_04 x1
+    src/main/64FD8.c:831 unk_00 x1
+    src/main/64FD8.c:840 unk_04 x1
+    src/main/64FD8.c:841 unk_04 x1
+    src/main/64FD8.c:843 unk_04 x1
+    src/main/64FD8.c:844 unk_04 x1
+    src/main/64FD8.c:845 unk_04 x1
+    src/main/64FD8.c:851 unk_00 x1
+    src/main/64FD8.c:864 unk_04 x1
+    src/main/64FD8.c:865 unk_04 x1
+    src/main/64FD8.c:868 unk_00 x1
+    src/main/64FD8.c:886 unk_04 x1
+    src/main/64FD8.c:887 unk_04 x1
+    src/main/64FD8.c:892 unk_04 x1
+    src/main/64FD8.c:893 unk_04 x1
+    src/main/64FD8.c:896 unk_00 x1
+    src/main/64FD8.c:908 unk_04 x1
+    src/main/64FD8.c:909 unk_04 x1
+    src/main/64FD8.c:912 unk_00 x1
+    src/main/64FD8.c:915 unk_04 x1
+    src/main/64FD8.c:916 unk_04 x1
+    src/main/64FD8.c:917 unk_04 x1
+    src/main/64FD8.c:1039 unk_04 x1
+    src/main/64FD8.c:1051 unk_04 x1
+    src/main/64FD8.c:1052 unk_04 x1
+    src/main/64FD8.c:1053 unk_04 x1
+    src/main/64FD8.c:1054 unk_04 x1
+    src/main/64FD8.c:1248 unk_00 x1
+    src/main/64FD8.c:1249 unk_04 x1
+    src/main/64FD8.c:1250 unk_04 x3
+    src/main/64FD8.c:1251 unk_04 x1
+    src/main/64FD8.c:1252 unk_04 x1
+    src/main/64FD8.c:1253 unk_04 x1
+    src/main/64FD8.c:1254 unk_04 x1
+    src/main/64FD8.c:1255 unk_04 x1
+    src/main/64FD8.c:1256 unk_04 x1
+    src/main/64FD8.c:1484 unk_04 x1
+    src/main/64FD8.c:1485 unk_04 x1
+    src/main/64FD8.c:1486 unk_04 x1
+    src/main/64FD8.c:1488 unk_04 x1
+    src/main/64FD8.c:1489 unk_04 x1
+    src/main/64FD8.c:1506 unk_04 x1
+    src/main/64FD8.c:1507 unk_04 x1
+    src/main/64FD8.c:1508 unk_04 x1
+    src/main/64FD8.c:1510 unk_04 x1
+    src/main/64FD8.c:1511 unk_04 x1
+    src/main/64FD8.c:1528 unk_04 x1
+    src/main/64FD8.c:1529 unk_04 x1
+    src/main/64FD8.c:1530 unk_04 x1
+    src/main/64FD8.c:1532 unk_04 x1
+    src/main/64FD8.c:1533 unk_04 x1
+    src/main/64FD8.c:1555 unk_04 x1
+    src/main/64FD8.c:1556 unk_04 x1
+    src/main/64FD8.c:1557 unk_04 x1
+    src/main/64FD8.c:1559 unk_04 x1
+    src/main/64FD8.c:1560 unk_04 x1
+    src/main/64FD8.c:1598 unk_04 x1
+    src/main/64FD8.c:1599 unk_04 x1
+    src/main/64FD8.c:1600 unk_04 x1
+    src/main/64FD8.c:1602 unk_04 x1
+    src/main/64FD8.c:1603 unk_04 x1
+    src/main/64FD8.c:1634 unk_04 x1
+    src/main/64FD8.c:1635 unk_04 x1
+    src/main/64FD8.c:1636 unk_04 x1
+    src/main/64FD8.c:1637 unk_04 x1
+    src/main/64FD8.c:1638 unk_04 x1
+    src/main/64FD8.c:1639 unk_04 x1
+    src/main/64FD8.c:1640 unk_04 x1
+  round 1: 3 member error line(s)
+  round 2: 0 member error line(s)
+PASS Unk8006E49CRec.unk_04=flat_quad_prims, Unk800788B0Rec.unk_04=flat_quad_prims, Unk800A35C4Rec.unk_00=entry_countdowns
+decl Unk8006E49CRec.unk_04 -> flat_quad_prims  include/game.h:169
+decl Unk800788B0Rec.unk_04 -> flat_quad_prims  include/game.h:190
+decl Unk800A35C4Rec.unk_00 -> entry_countdowns  include/game.h:2494
+  round 0: 17 member error line(s)
+    src/main/596CC.c:2601 unk_04 x1
+    src/main/596CC.c:2634 unk_04 x1
+    src/main/596CC.c:2645 unk_04 x1
+    src/main/5ED34.c:692 unk_00 x1
+    src/main/5ED34.c:702 unk_00 x1
+    src/main/5ED34.c:704 unk_00 x1
+    src/main/5ED34.c:722 unk_00 x1
+    src/main/5ED34.c:732 unk_00 x1
+    src/main/5ED34.c:734 unk_00 x1
+    src/main/5ED34.c:776 unk_00 x1
+    src/main/5ED34.c:867 unk_00 x1
+    src/main/5ED34.c:932 unk_00 x1
+    src/main/5ED34.c:933 unk_00 x1
+    src/main/5ED34.c:970 unk_00 x1
+    src/main/5ED34.c:1002 unk_00 x1
+    src/main/5ED34.c:1027 unk_00 x1
+    src/main/5ED34.c:1033 unk_00 x1
+  round 1: 0 member error line(s)
+PASS Unk800A35C4Rec.unk_04=row_countdowns
+decl Unk800A35C4Rec.unk_04 -> row_countdowns  include/game.h:2495
+  round 0: 12 member error line(s)
+    src/main/5ED34.c:1184 unk_04 x1
+    src/main/5ED34.c:1188 unk_04 x1
+    src/main/5ED34.c:1235 unk_04 x1
+    src/main/5ED34.c:1331 unk_04 x1
+    src/main/5ED34.c:1332 unk_04 x1
+    src/main/5ED34.c:1355 unk_04 x1
+    src/main/5ED34.c:1385 unk_04 x1
+    src/main/5ED34.c:1425 unk_04 x1
+    src/main/5ED34.c:1463 unk_04 x1
+    src/main/5ED34.c:1468 unk_04 x1
+    src/main/5ED34.c:1825 unk_04 x1
+    src/main/5ED34.c:1826 unk_04 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -169 +169 @@
+-    void *unk_04;
++    void *flat_quad_prims;
+@@ -190 +190 @@
+-    POLY_F4 *unk_04;
++    POLY_F4 *flat_quad_prims;
+@@ -398,3 +398,3 @@
+-    } unk_00;
+-
+-    Unk800788B0Rec unk_04;
++    } resource_root;
++
++    Unk800788B0Rec primitive_cursors;
+@@ -2494,5 +2494,5 @@
+-    s16 unk_00[2];
+-    s16 unk_04[2];
+-    s32 unk_08;
+-    s32 unk_0C;
+-    u16 unk_10[2];
++    s16 entry_countdowns[2];
++    s16 row_countdowns[2];
++    s32 animation_frame_counter;
++    s32 prim_buffer_counter;
++    u16 draw_offset[2];
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -2601 +2601 @@
+-    s0[3] = (s32)v0->unk_04;
++    s0[3] = (s32)v0->flat_quad_prims;
+@@ -2634 +2634 @@
+-    arg1[0].unk_04 = base1;
++    arg1[0].flat_quad_prims = base1;
+@@ -2645 +2645 @@
+-    arg1[1].unk_04 = base3;
++    arg1[1].flat_quad_prims = base3;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -157,2 +157,2 @@
+-    g_entry_menu_work_block->unk_08 = 0;
+-    g_entry_menu_work_block->unk_0C = 0;
++    g_entry_menu_work_block->animation_frame_counter = 0;
++    g_entry_menu_work_block->prim_buffer_counter = 0;
+@@ -243,3 +243,3 @@
+-    temp_v1 = g_entry_menu_work_block->unk_0C + 1;
+-    g_entry_menu_work_block->unk_08 = g_entry_menu_work_block->unk_08 + 1;
+-    g_entry_menu_work_block->unk_0C = temp_v1;
++    temp_v1 = g_entry_menu_work_block->prim_buffer_counter + 1;
++    g_entry_menu_work_block->animation_frame_counter = g_entry_menu_work_block->animation_frame_counter + 1;
++    g_entry_menu_work_block->prim_buffer_counter = temp_v1;
+@@ -247,7 +247,7 @@
+-    sp10.unk_00.v8006EA28 = g_entry_menu_resources;
+-    sp10.unk_04.textured_quad_prims = temp_v0->textured_quad_prims;
+-    sp10.unk_04.gradient_quad_prims = temp_v0->gradient_quad_prims;
+-    sp10.unk_04.sprite_prims = temp_v0->sprite_prims;
+-    sp10.unk_04.tile_prims = temp_v0->tile_prims;
+-    sp10.unk_04.unk_14 = temp_v0->unk_14;
+-    sp10.unk_04.draw_area_prims = temp_v0->draw_area_prims;
++    sp10.resource_root.v8006EA28 = g_entry_menu_resources;
++    sp10.primitive_cursors.textured_quad_prims = temp_v0->textured_quad_prims;
++    sp10.primitive_cursors.gradient_quad_prims = temp_v0->gradient_quad_prims;
++    sp10.primitive_cursors.sprite_prims = temp_v0->sprite_prims;
++    sp10.primitive_cursors.tile_prims = temp_v0->tile_prims;
++    sp10.primitive_cursors.unk_14 = temp_v0->unk_14;
++    sp10.primitive_cursors.draw_area_prims = temp_v0->draw_area_prims;
+@@ -255 +255 @@
+-    sp10.unk_04.draw_offset_prims = temp_v0->draw_offset_prims;
++    sp10.primitive_cursors.draw_offset_prims = temp_v0->draw_offset_prims;
+@@ -310 +310 @@
+-    s3 = arg0->unk_00.v8006EA28->unk_54;
++    s3 = arg0->resource_root.v8006EA28->unk_54;
+@@ -317 +317 @@
+-            if (g_entry_menu_work_block->unk_08 & 4) {
++            if (g_entry_menu_work_block->animation_frame_counter & 4) {
+@@ -377 +377 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+@@ -379 +379 @@
+-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
++            arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -381 +381 @@
+-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++            arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -392 +392 @@
+-    temp_s0 = arg0->unk_04.tile_prims;
++    temp_s0 = arg0->primitive_cursors.tile_prims;
+@@ -407,4 +407,4 @@
+-    arg0->unk_04.tile_prims = temp_s0;
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, 0x40, 0);
+-    AddPrim(g_gpu_ot_ptr, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    arg0->primitive_cursors.tile_prims = temp_s0;
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, 0x40, 0);
++    AddPrim(g_gpu_ot_ptr, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -493 +493 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+@@ -495 +495 @@
+-            arg0->unk_04.textured_quad_prims =
++            arg0->primitive_cursors.textured_quad_prims =
+@@ -498 +498 @@
+-            arg0->unk_04.textured_quad_prims =
++            arg0->primitive_cursors.textured_quad_prims =
+@@ -542,2 +542,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -547,2 +547,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -554,2 +554,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -565,2 +565,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -570,2 +570,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -577,2 +577,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -588,3 +588,3 @@
+-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
+-    AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.draw_area_prims);
+-    arg0->unk_04.draw_area_prims++;
++    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + 0xF, arg0->primitive_cursors.draw_area_prims);
++    arg0->primitive_cursors.draw_area_prims++;
+@@ -596,3 +596,3 @@
+-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
+-    AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.draw_area_prims);
+-    arg0->unk_04.draw_area_prims++;
++    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + 6, arg0->primitive_cursors.draw_area_prims);
++    arg0->primitive_cursors.draw_area_prims++;
+@@ -603 +603 @@
+-        g_entry_menu_work_block->unk_10[0] =
++        g_entry_menu_work_block->draw_offset[0] =
+@@ -605 +605 @@
+-        g_entry_menu_work_block->unk_10[1] = D_800A35C0->draw.ofs[1];
++        g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+@@ -607,6 +607,6 @@
+-            arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
+-        AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.draw_offset_prims);
+-        arg0->unk_04.draw_offset_prims++;
+-
+-        g_entry_menu_work_block->unk_10[0] = D_800A35C0->draw.ofs[0];
+-        g_entry_menu_work_block->unk_10[1] = D_800A35C0->draw.ofs[1];
++            arg0->primitive_cursors.draw_offset_prims, g_entry_menu_work_block->draw_offset);
++        AddPrim(g_gpu_ot_ptr + 0xF, arg0->primitive_cursors.draw_offset_prims);
++        arg0->primitive_cursors.draw_offset_prims++;
++
++        g_entry_menu_work_block->draw_offset[0] = D_800A35C0->draw.ofs[0];
++        g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+@@ -614,3 +614,3 @@
+-            arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
+-        AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.draw_offset_prims);
+-        arg0->unk_04.draw_offset_prims++;
++            arg0->primitive_cursors.draw_offset_prims, g_entry_menu_work_block->draw_offset);
++        AddPrim(g_gpu_ot_ptr + 6, arg0->primitive_cursors.draw_offset_prims);
++        arg0->primitive_cursors.draw_offset_prims++;
+@@ -620 +620 @@
+-    prim = arg0->unk_04.tile_prims;
++    prim = arg0->primitive_cursors.tile_prims;
+@@ -638 +638 @@
+-    arg0->unk_04.tile_prims = prim;
++    arg0->primitive_cursors.tile_prims = prim;
+@@ -646,2 +646,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -650,2 +650,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
+@@ -679,3 +679,3 @@
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + 0xD, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + 0xD, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -692,2 +692,2 @@
+-            if (g_entry_menu_work_block->unk_00[i] != 0) {
+-                s.x += (rsin((g_entry_menu_work_block->unk_08 * 192) & 0xFC0) *
++            if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
++                s.x += (rsin((g_entry_menu_work_block->animation_frame_counter * 192) & 0xFC0) *
+@@ -696 +696 @@
+-                s.y += (rcos((g_entry_menu_work_block->unk_08 << 7) & 0xF80) *
++                s.y += (rcos((g_entry_menu_work_block->animation_frame_counter << 7) & 0xF80) *
+@@ -702 +702 @@
+-            if (g_entry_menu_work_block->unk_00[i] != 0x1E) {
++            if (g_entry_menu_work_block->entry_countdowns[i] != 0x1E) {
+@@ -704,2 +704,2 @@
+-                    (g_entry_menu_work_block->unk_00[i] *
+-                     rsin((g_entry_menu_work_block->unk_08 * 288) & 0xFE0)) >>
++                    (g_entry_menu_work_block->entry_countdowns[i] *
++                     rsin((g_entry_menu_work_block->animation_frame_counter * 288) & 0xFE0)) >>
+@@ -712,2 +712,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -722,2 +722,2 @@
+-            if (g_entry_menu_work_block->unk_00[i] != 0) {
+-                s.x += (rsin((g_entry_menu_work_block->unk_08 * 192) & 0xFC0) *
++            if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
++                s.x += (rsin((g_entry_menu_work_block->animation_frame_counter * 192) & 0xFC0) *
+@@ -726 +726 @@
+-                s.y += (rcos((g_entry_menu_work_block->unk_08 << 7) & 0xF80) *
++                s.y += (rcos((g_entry_menu_work_block->animation_frame_counter << 7) & 0xF80) *
+@@ -732 +732 @@
+-            if (g_entry_menu_work_block->unk_00[i] != 0x1E) {
++            if (g_entry_menu_work_block->entry_countdowns[i] != 0x1E) {
+@@ -734,2 +734,2 @@
+-                    (g_entry_menu_work_block->unk_00[i] *
+-                     rsin((g_entry_menu_work_block->unk_08 * 288) & 0xFE0)) >>
++                    (g_entry_menu_work_block->entry_countdowns[i] *
++                     rsin((g_entry_menu_work_block->animation_frame_counter * 288) & 0xFE0)) >>
+@@ -742,2 +742,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -749,3 +749,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
+-    AddPrim(g_gpu_ot_ptr + 0xB, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
++    AddPrim(g_gpu_ot_ptr + 0xB, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -776 +776 @@
+-                        g_entry_menu_work_block->unk_00[i] != 0) {
++                        g_entry_menu_work_block->entry_countdowns[i] != 0) {
+@@ -779 +779 @@
+-                            ((rsin(((g_entry_menu_work_block->unk_08 & 0x1F)
++                            ((rsin(((g_entry_menu_work_block->animation_frame_counter & 0x1F)
+@@ -791 +791 @@
+-                s.sprt_out = arg0->unk_04.sprite_prims;
++                s.sprt_out = arg0->primitive_cursors.sprite_prims;
+@@ -793 +793 @@
+-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -801 +801 @@
+-                s.sprt_out = arg0->unk_04.sprite_prims;
++                s.sprt_out = arg0->primitive_cursors.sprite_prims;
+@@ -803 +803 @@
+-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -814 +814 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
+@@ -816 +816 @@
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -818,3 +818,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
+-    AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
++    AddPrim(g_gpu_ot_ptr + 1, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -853,3 +853,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
+-    AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
++    AddPrim(g_gpu_ot_ptr + 8, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -867 +867 @@
+-            g_entry_menu_work_block->unk_00[i] = 0x1E;
++            g_entry_menu_work_block->entry_countdowns[i] = 0x1E;
+@@ -932,2 +932,2 @@
+-            if (g_entry_menu_work_block->unk_00[i] != 0) {
+-                g_entry_menu_work_block->unk_00[i]--;
++            if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
++                g_entry_menu_work_block->entry_countdowns[i]--;
+@@ -945,2 +945,2 @@
+-            s.sprt_out = arg0->unk_04.sprite_prims;
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->primitive_cursors.sprite_prims;
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -970 +970 @@
+-                    if (g_entry_menu_work_block->unk_00[0] == 0) {
++                    if (g_entry_menu_work_block->entry_countdowns[0] == 0) {
+@@ -1002 +1002 @@
+-        if (g_entry_menu_work_block->unk_00[i] != 0) {
++        if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
+@@ -1014 +1014 @@
+-            ((rsin(((g_entry_menu_work_block->unk_08 & 0x1F) << D_800A3530[i]) +
++            ((rsin(((g_entry_menu_work_block->animation_frame_counter & 0x1F) << D_800A3530[i]) +
+@@ -1022,2 +1022,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1027 +1027 @@
+-        g_entry_menu_work_block->unk_00[0] == 0) {
++        g_entry_menu_work_block->entry_countdowns[0] == 0) {
+@@ -1033 +1033 @@
+-             g_entry_menu_work_block->unk_00[1] == 0) ||
++             g_entry_menu_work_block->entry_countdowns[1] == 0) ||
+@@ -1089 +1089 @@
+-    var_1.sprt_out = arg0->unk_04.sprite_prims;
++    var_1.sprt_out = arg0->primitive_cursors.sprite_prims;
+@@ -1091 +1091 @@
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&var_1);
+@@ -1093,3 +1093,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
+-    AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
++    AddPrim(g_gpu_ot_ptr + 1, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1109 +1109 @@
+-        var_1.sprt_out = arg0->unk_04.sprite_prims;
++        var_1.sprt_out = arg0->primitive_cursors.sprite_prims;
+@@ -1111 +1111 @@
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&var_1);
+@@ -1116,3 +1116,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
+-    AddPrim(g_gpu_ot_ptr + 0xA, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
++    AddPrim(g_gpu_ot_ptr + 0xA, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1135 +1135 @@
+-            var_1.sprt_out = arg0->unk_04.sprite_prims;
++            var_1.sprt_out = arg0->primitive_cursors.sprite_prims;
+@@ -1137 +1137 @@
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&var_1);
+@@ -1141,3 +1141,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
+-    AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
++    AddPrim(g_gpu_ot_ptr + 1, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1171,3 +1171,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s->header, 0x60), 0);
+-    AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s->header, 0x60), 0);
++    AddPrim(g_gpu_ot_ptr + 8, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1184 +1184 @@
+-                g_entry_menu_work_block->unk_04[i] = 0;
++                g_entry_menu_work_block->row_countdowns[i] = 0;
+@@ -1188 +1188 @@
+-                g_entry_menu_work_block->unk_04[i] = 0;
++                g_entry_menu_work_block->row_countdowns[i] = 0;
+@@ -1235 +1235 @@
+-                g_entry_menu_work_block->unk_04[i] = 0x1E;
++                g_entry_menu_work_block->row_countdowns[i] = 0x1E;
+@@ -1331,2 +1331,2 @@
+-                if (g_entry_menu_work_block->unk_04[i] != 0) {
+-                    g_entry_menu_work_block->unk_04[i]--;
++                if (g_entry_menu_work_block->row_countdowns[i] != 0) {
++                    g_entry_menu_work_block->row_countdowns[i]--;
+@@ -1349,2 +1349,2 @@
+-                s->sprt_out = arg0->unk_04.sprite_prims;
+-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(s);
++                s->sprt_out = arg0->primitive_cursors.sprite_prims;
++                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(s);
+@@ -1355 +1355 @@
+-                if (g_entry_menu_work_block->unk_04[i] != 0) {
++                if (g_entry_menu_work_block->row_countdowns[i] != 0) {
+@@ -1368 +1368 @@
+-                    ((rsin(((g_entry_menu_work_block->unk_08 & 0x1F)
++                    ((rsin(((g_entry_menu_work_block->animation_frame_counter & 0x1F)
+@@ -1376 +1376 @@
+-                s->ft4_out = arg0->unk_04.textured_quad_prims;
++                s->ft4_out = arg0->primitive_cursors.textured_quad_prims;
+@@ -1378 +1378 @@
+-                arg0->unk_04.textured_quad_prims =
++                arg0->primitive_cursors.textured_quad_prims =
+@@ -1385 +1385 @@
+-                    g_entry_menu_work_block->unk_04[i == 0 ? 1 : 0] == 0) {
++                    g_entry_menu_work_block->row_countdowns[i == 0 ? 1 : 0] == 0) {
+@@ -1425 +1425 @@
+-                g_entry_menu_work_block->unk_04[i] = 0x1E;
++                g_entry_menu_work_block->row_countdowns[i] = 0x1E;
+@@ -1458,2 +1458,2 @@
+-            s->ft4_out = arg0->unk_04.textured_quad_prims;
+-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(s, 0);
++            s->ft4_out = arg0->primitive_cursors.textured_quad_prims;
++            arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(s, 0);
+@@ -1463 +1463 @@
+-        g_entry_menu_work_block->unk_04[0] == 0) {
++        g_entry_menu_work_block->row_countdowns[0] == 0) {
+@@ -1468 +1468 @@
+-              g_entry_menu_work_block->unk_04[1] == 0) ||
++              g_entry_menu_work_block->row_countdowns[1] == 0) ||
+@@ -1543 +1543 @@
+-            s.ft4_out = arg0->unk_04.textured_quad_prims;
++            s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+@@ -1545 +1545 @@
+-                arg0->unk_04.textured_quad_prims =
++                arg0->primitive_cursors.textured_quad_prims =
+@@ -1548 +1548 @@
+-                arg0->unk_04.textured_quad_prims =
++                arg0->primitive_cursors.textured_quad_prims =
+@@ -1627,5 +1627,5 @@
+-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_area_prims);
+-    arg0->unk_04.draw_area_prims++;
+-    g_entry_menu_work_block->unk_10[0] = D_800A35C0->draw.ofs[0];
+-    g_entry_menu_work_block->unk_10[1] = D_800A35C0->draw.ofs[1];
++    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_area_prims);
++    arg0->primitive_cursors.draw_area_prims++;
++    g_entry_menu_work_block->draw_offset[0] = D_800A35C0->draw.ofs[0];
++    g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+@@ -1633,3 +1633,3 @@
+-        arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_offset_prims);
+-    arg0->unk_04.draw_offset_prims++;
++        arg0->primitive_cursors.draw_offset_prims, g_entry_menu_work_block->draw_offset);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_offset_prims);
++    arg0->primitive_cursors.draw_offset_prims++;
+@@ -1647,2 +1647,2 @@
+-            s.sprt_out = arg0->unk_04.sprite_prims;
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->primitive_cursors.sprite_prims;
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1655,2 +1655,2 @@
+-                s.sprt_out = arg0->unk_04.sprite_prims;
+-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++                s.sprt_out = arg0->primitive_cursors.sprite_prims;
++                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1661,3 +1661,3 @@
+-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-        arg0->unk_04.unk_14++;
++            arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++        arg0->primitive_cursors.unk_14++;
+@@ -1671,3 +1671,3 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    g_entry_menu_work_block->unk_10[0] =
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    g_entry_menu_work_block->draw_offset[0] =
+@@ -1675 +1675 @@
+-    g_entry_menu_work_block->unk_10[1] =
++    g_entry_menu_work_block->draw_offset[1] =
+@@ -1691 +1691 @@
+-            g_entry_menu_work_block->unk_10[i] -= D_8009BCD0[i] / 30;
++            g_entry_menu_work_block->draw_offset[i] -= D_8009BCD0[i] / 30;
+@@ -1698,3 +1698,3 @@
+-        arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_offset_prims);
+-    arg0->unk_04.draw_offset_prims++;
++        arg0->primitive_cursors.draw_offset_prims, g_entry_menu_work_block->draw_offset);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_offset_prims);
++    arg0->primitive_cursors.draw_offset_prims++;
+@@ -1705,6 +1705,6 @@
+-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_area_prims);
+-    arg0->unk_04.draw_area_prims++;
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_area_prims);
++    arg0->primitive_cursors.draw_area_prims++;
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1722,2 +1722,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1725,2 +1725,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -1760 +1760 @@
+-        ((rsin((g_entry_menu_work_block->unk_08 & 0x1F) * 128 + 0x1FF) * 63) >>
++        ((rsin((g_entry_menu_work_block->animation_frame_counter & 0x1F) * 128 + 0x1FF) * 63) >>
+@@ -1771,2 +1771,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1797,2 +1797,2 @@
+-            s.ft4_out = arg0->unk_04.textured_quad_prims;
+-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++            s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++            arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1805,2 +1805,2 @@
+-    s.ft4_out = arg0->unk_04.textured_quad_prims;
+-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++    arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1825,2 +1825,2 @@
+-                g_entry_menu_work_block->unk_04[1] = 0;
+-                g_entry_menu_work_block->unk_04[0] = 0;
++                g_entry_menu_work_block->row_countdowns[1] = 0;
++                g_entry_menu_work_block->row_countdowns[0] = 0;
+@@ -1861 +1861 @@
+-        if (g_entry_menu_work_block->unk_08 & 4) {
++        if (g_entry_menu_work_block->animation_frame_counter & 4) {
+@@ -1896 +1896 @@
+-        if (g_entry_menu_work_block->unk_08 & 4) {
++        if (g_entry_menu_work_block->animation_frame_counter & 4) {
+@@ -1938 +1938 @@
+-    p = arg0->unk_04.gradient_quad_prims;
++    p = arg0->primitive_cursors.gradient_quad_prims;
+@@ -1975 +1975 @@
+-    arg0->unk_04.gradient_quad_prims = p;
++    arg0->primitive_cursors.gradient_quad_prims = p;
+@@ -2015 +2015 @@
+-    p = arg0->unk_04.tile_prims;
++    p = arg0->primitive_cursors.tile_prims;
+@@ -2052 +2052 @@
+-    arg0->unk_04.tile_prims = p;
++    arg0->primitive_cursors.tile_prims = p;
+@@ -2076,3 +2076,3 @@
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + 0x1C, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + 0x1C, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -2084 +2084 @@
+-        if (g_entry_menu_work_block->unk_08 & 4) {
++        if (g_entry_menu_work_block->animation_frame_counter & 4) {
+@@ -2095,2 +2095,2 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++        arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -2098,2 +2098,2 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++        arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -2101,2 +2101,2 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++        arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
+@@ -2104,5 +2104,5 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 3);
+-        SetDrawMode(arg0->unk_04.unk_14, 1, 0, 0x60, 0);
+-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-        arg0->unk_04.unk_14++;
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++        arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 3);
++        SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, 0x60, 0);
++        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++        arg0->primitive_cursors.unk_14++;
+@@ -2121,2 +2121,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -2124,3 +2124,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -2130 +2130 @@
+-        s.header = var_1[10 + g_entry_menu_work_block->unk_08 % 4];
++        s.header = var_1[10 + g_entry_menu_work_block->animation_frame_counter % 4];
+@@ -2133,2 +2133,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -2136,3 +2136,3 @@
+-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x20), 0);
+-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-        arg0->unk_04.unk_14++;
++            arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x20), 0);
++        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++        arg0->primitive_cursors.unk_14++;
+--- a/src/main/63D2C.c
++++ b/src/main/63D2C.c
+@@ -288 +288 @@
+-        t = arg0->unk_04.tile_prims;
++        t = arg0->primitive_cursors.tile_prims;
+@@ -298 +298 @@
+-        arg0->unk_04.tile_prims = t;
++        arg0->primitive_cursors.tile_prims = t;
+@@ -303 +303 @@
+-    temp_s2 = arg0->unk_00.v80076FF8->unk_38;
++    temp_s2 = arg0->resource_root.v80076FF8->unk_38;
+@@ -309,2 +309,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -314,2 +314,2 @@
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + 0x1F, arg0->unk_04.unk_14);
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + 0x1F, arg0->primitive_cursors.unk_14);
+@@ -317 +317 @@
+-    arg0->unk_04.unk_14++;
++    arg0->primitive_cursors.unk_14++;
+@@ -375 +375 @@
+-    table = arg0->unk_00.v80076FF8->unk_34;
++    table = arg0->resource_root.v80076FF8->unk_34;
+@@ -440,2 +440,2 @@
+-            s.sprt_out = arg0->unk_04.sprite_prims;
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->primitive_cursors.sprite_prims;
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -447,3 +447,3 @@
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + 2, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + 2, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -165 +165 @@
+-    p = arg0->unk_04.tile_prims;
++    p = arg0->primitive_cursors.tile_prims;
+@@ -192 +192 @@
+-    arg0->unk_04.tile_prims = p;
++    arg0->primitive_cursors.tile_prims = p;
+@@ -202 +202 @@
+-    s.header = arg0->unk_00.v80076FF8->unk_1C[(s16)arg2];
++    s.header = arg0->resource_root.v80076FF8->unk_1C[(s16)arg2];
+@@ -210,5 +210,5 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + var_1, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -231 +231 @@
+-    prim = arg0->unk_04.tile_prims;
++    prim = arg0->primitive_cursors.tile_prims;
+@@ -248,3 +248,3 @@
+-    arg0->unk_04.tile_prims = prim;
+-
+-    records = arg0->unk_00.v80076FF8->unk_18;
++    arg0->primitive_cursors.tile_prims = prim;
++
++    records = arg0->resource_root.v80076FF8->unk_18;
+@@ -261,2 +261,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -266,2 +266,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -271,2 +271,2 @@
+-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
++        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
++        arg0->primitive_cursors.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -286,2 +286,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -291,5 +291,5 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -310,3 +310,3 @@
+-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
+-    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->unk_04.draw_area_prims);
+-    arg0->unk_04.draw_area_prims++;
++    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->primitive_cursors.draw_area_prims);
++    arg0->primitive_cursors.draw_area_prims++;
+@@ -318,3 +318,3 @@
+-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
+-    AddPrim(g_gpu_ot_ptr + var_5, arg0->unk_04.draw_area_prims);
+-    arg0->unk_04.draw_area_prims++;
++    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + var_5, arg0->primitive_cursors.draw_area_prims);
++    arg0->primitive_cursors.draw_area_prims++;
+@@ -324,3 +324,3 @@
+-    SetDrawOffset(arg0->unk_04.draw_offset_prims, offset);
+-    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->unk_04.draw_offset_prims);
+-    arg0->unk_04.draw_offset_prims++;
++    SetDrawOffset(arg0->primitive_cursors.draw_offset_prims, offset);
++    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->primitive_cursors.draw_offset_prims);
++    arg0->primitive_cursors.draw_offset_prims++;
+@@ -330,3 +330,3 @@
+-    SetDrawOffset(arg0->unk_04.draw_offset_prims, offset);
+-    AddPrim(g_gpu_ot_ptr + var_5, arg0->unk_04.draw_offset_prims);
+-    arg0->unk_04.draw_offset_prims++;
++    SetDrawOffset(arg0->primitive_cursors.draw_offset_prims, offset);
++    AddPrim(g_gpu_ot_ptr + var_5, arg0->primitive_cursors.draw_offset_prims);
++    arg0->primitive_cursors.draw_offset_prims++;
+@@ -415 +415 @@
+-    tbl = arg0->unk_00.v80076FF8->unk_2C;
++    tbl = arg0->resource_root.v80076FF8->unk_2C;
+@@ -424,2 +424,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -427 +427 @@
+-    tbl = arg0->unk_00.v80076FF8->unk_14;
++    tbl = arg0->resource_root.v80076FF8->unk_14;
+@@ -434,2 +434,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -438,2 +438,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -441,4 +441,4 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
+-    tbl = arg0->unk_00.v80076FF8->unk_2C;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
++    tbl = arg0->resource_root.v80076FF8->unk_2C;
+@@ -456,2 +456,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -459,2 +459,2 @@
+-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
++            arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
++        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
+@@ -462 +462 @@
+-        arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14++;
+@@ -517 +517 @@
+-    s.header = arg0->unk_00.v80076FF8->unk_14[21];
++    s.header = arg0->resource_root.v80076FF8->unk_14[21];
+@@ -539,2 +539,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -571 +571 @@
+-    table = arg0->unk_00.v80076FF8->unk_14;
++    table = arg0->resource_root.v80076FF8->unk_14;
+@@ -585,2 +585,2 @@
+-    s.sprt_out = arg0->unk_04.sprite_prims;
+-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -588,3 +588,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -626,2 +626,2 @@
+-            s.sprt_out = arg0->unk_04.sprite_prims;
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->primitive_cursors.sprite_prims;
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -650,2 +650,2 @@
+-            s.sprt_out = arg0->unk_04.sprite_prims;
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->primitive_cursors.sprite_prims;
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -657 +657 @@
+-        table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
++        table = arg0->resource_root.v80076FF8->unk_20[SELWORK->f65];
+@@ -671,5 +671,5 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    }
+-
+-    table = arg0->unk_00.v80076FF8->unk_14;
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    }
++
++    table = arg0->resource_root.v80076FF8->unk_14;
+@@ -678,3 +678,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -682,3 +682,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx - 1, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx - 1, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -831 +831 @@
+-    table = arg0->unk_00.v80076FF8->unk_30;
++    table = arg0->resource_root.v80076FF8->unk_30;
+@@ -840,2 +840,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -843,3 +843,3 @@
+-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_5), 0);
+-        AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
+-        arg0->unk_04.unk_14++;
++            arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_5), 0);
++        AddPrim(g_gpu_ot_ptr + var_1, arg0->primitive_cursors.unk_14);
++        arg0->primitive_cursors.unk_14++;
+@@ -851 +851 @@
+-    table = arg0->unk_00.v80076FF8->unk_14;
++    table = arg0->resource_root.v80076FF8->unk_14;
+@@ -864,5 +864,5 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    }
+-
+-    table = arg0->unk_00.v80076FF8->unk_30;
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    }
++
++    table = arg0->resource_root.v80076FF8->unk_30;
+@@ -886,2 +886,2 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -892,5 +892,5 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    }
+-
+-    table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    }
++
++    table = arg0->resource_root.v80076FF8->unk_20[SELWORK->f65];
+@@ -908,5 +908,5 @@
+-        s.sprt_out = arg0->unk_04.sprite_prims;
+-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-    }
+-
+-    table = arg0->unk_00.v80076FF8->unk_14;
++        s.sprt_out = arg0->primitive_cursors.sprite_prims;
++        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++    }
++
++    table = arg0->resource_root.v80076FF8->unk_14;
+@@ -915,3 +915,3 @@
+-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_5), 0);
+-    AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++        arg0->primitive_cursors.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_5), 0);
++    AddPrim(g_gpu_ot_ptr + var_1, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1039 +1039 @@
+-    p = arg0->unk_04.tile_prims;
++    p = arg0->primitive_cursors.tile_prims;
+@@ -1051,4 +1051,4 @@
+-    arg0->unk_04.tile_prims = p;
+-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, 0x40, 0);
+-    AddPrim(g_gpu_ot_ptr, arg0->unk_04.unk_14);
+-    arg0->unk_04.unk_14++;
++    arg0->primitive_cursors.tile_prims = p;
++    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, 0x40, 0);
++    AddPrim(g_gpu_ot_ptr, arg0->primitive_cursors.unk_14);
++    arg0->primitive_cursors.unk_14++;
+@@ -1248,2 +1248,2 @@
+-    s.unk_00.v80076FF8 = SELWORK->f04;
+-    s.unk_04.textured_quad_prims = p->textured_quad_prims;
++    s.resource_root.v80076FF8 = SELWORK->f04;
++    s.primitive_cursors.textured_quad_prims = p->textured_quad_prims;
+@@ -1251,6 +1251,6 @@
+-    s.unk_04.gradient_quad_prims = p->gradient_quad_prims;
+-    s.unk_04.sprite_prims = p->sprite_prims;
+-    s.unk_04.tile_prims = p->tile_prims;
+-    s.unk_04.unk_14 = p->unk_14;
+-    s.unk_04.draw_area_prims = p->draw_area_prims;
+-    s.unk_04.draw_offset_prims = p->draw_offset_prims;
++    s.primitive_cursors.gradient_quad_prims = p->gradient_quad_prims;
++    s.primitive_cursors.sprite_prims = p->sprite_prims;
++    s.primitive_cursors.tile_prims = p->tile_prims;
++    s.primitive_cursors.unk_14 = p->unk_14;
++    s.primitive_cursors.draw_area_prims = p->draw_area_prims;
++    s.primitive_cursors.draw_offset_prims = p->draw_offset_prims;
+@@ -1484,3 +1484,3 @@
+-                    s.sprt_out = arg0->unk_04.sprite_prims;
+-                    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-                    SetDrawMode(arg0->unk_04.unk_14, 1, 0,
++                    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++                    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++                    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+@@ -1488,2 +1488,2 @@
+-                    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-                    arg0->unk_04.unk_14++;
++                    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++                    arg0->primitive_cursors.unk_14++;
+@@ -1506,3 +1506,3 @@
+-                s.sprt_out = arg0->unk_04.sprite_prims;
+-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-                SetDrawMode(arg0->unk_04.unk_14, 1, 0,
++                s.sprt_out = arg0->primitive_cursors.sprite_prims;
++                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++                SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+@@ -1510,2 +1510,2 @@
+-                AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-                arg0->unk_04.unk_14++;
++                AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++                arg0->primitive_cursors.unk_14++;
+@@ -1528,3 +1528,3 @@
+-                s.sprt_out = arg0->unk_04.sprite_prims;
+-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-                SetDrawMode(arg0->unk_04.unk_14, 1, 0,
++                s.sprt_out = arg0->primitive_cursors.sprite_prims;
++                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++                SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+@@ -1532,2 +1532,2 @@
+-                AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-                arg0->unk_04.unk_14++;
++                AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++                arg0->primitive_cursors.unk_14++;
+@@ -1555,3 +1555,3 @@
+-                    s.sprt_out = arg0->unk_04.sprite_prims;
+-                    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-                    SetDrawMode(arg0->unk_04.unk_14, 1, 0,
++                    s.sprt_out = arg0->primitive_cursors.sprite_prims;
++                    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++                    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+@@ -1559,2 +1559,2 @@
+-                    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-                    arg0->unk_04.unk_14++;
++                    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++                    arg0->primitive_cursors.unk_14++;
+@@ -1598,3 +1598,3 @@
+-            s.sprt_out = arg0->unk_04.sprite_prims;
+-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+-            SetDrawMode(arg0->unk_04.unk_14, 1, 0,
++            s.sprt_out = arg0->primitive_cursors.sprite_prims;
++            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
++            SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+@@ -1602,2 +1602,2 @@
+-            AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
+-            arg0->unk_04.unk_14++;
++            AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
++            arg0->primitive_cursors.unk_14++;
+@@ -1634,7 +1634,7 @@
+-    s.unk_04.textured_quad_prims = p->textured_quad_prims;
+-    s.unk_04.gradient_quad_prims = p->gradient_quad_prims;
+-    s.unk_04.sprite_prims = p->sprite_prims;
+-    s.unk_04.tile_prims = p->tile_prims;
+-    s.unk_04.unk_14 = p->unk_14;
+-    s.unk_04.draw_area_prims = p->draw_area_prims;
+-    s.unk_04.draw_offset_prims = p->draw_offset_prims;
++    s.primitive_cursors.textured_quad_prims = p->textured_quad_prims;
++    s.primitive_cursors.gradient_quad_prims = p->gradient_quad_prims;
++    s.primitive_cursors.sprite_prims = p->sprite_prims;
++    s.primitive_cursors.tile_prims = p->tile_prims;
++    s.primitive_cursors.unk_14 = p->unk_14;
++    s.primitive_cursors.draw_area_prims = p->draw_area_prims;
++    s.primitive_cursors.draw_offset_prims = p->draw_offset_prims;
+DRY RUN: 5 file(s) would change; nothing written
+UNRESOLVED (3): edit by hand, then re-run the keycheck
+  src/main/63D2C.c:316: also reaches `unk_04` through another type
+  src/main/63D2C.c:360: also reaches `unk_04` through another type
+  src/main/64FD8.c:1250: also reaches `unk_04` through another type
+exit=1

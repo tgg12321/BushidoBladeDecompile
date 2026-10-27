@@ -1,0 +1,74 @@
+var-members-rest-2 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Surviving: 9 member rows (pairs.txt). Wave-1 (var-members-rest) deferred the three unk_04 rows
+below because of nested `x->unk_04.unk_04` spellings; they land here together with
+Unk8006EACCRec.unk_04, as wave-1 notes required.
+  Unk8006EACCRec.unk_00   = resource_root          (union: v8006EA28 / v80076FF8 root pointers)
+  Unk8006EACCRec.unk_04   = primitive_cursors      (embedded Unk800788B0Rec)
+  Unk8006E49CRec.unk_04   = flat_quad_prims        (pool word; shared name with the cursor, as wave 1)
+  Unk800788B0Rec.unk_04   = flat_quad_prims
+  Unk800A35C4Rec.unk_00   = entry_countdowns       (s16[2], menu_UpdateEntryGrid*)
+  Unk800A35C4Rec.unk_04   = row_countdowns         (s16[2], menu_UpdateRow* / menu_UpdateChoiceGrid)
+  Unk800A35C4Rec.unk_08   = animation_frame_counter
+  Unk800A35C4Rec.unk_0C   = prim_buffer_counter
+  Unk800A35C4Rec.unk_10   = draw_offset            (u16[2], the pair handed to SetDrawOffset)
+No candidate of the research's 9 RENAMEs was dropped. Every access was re-derived from the
+dry-run compile pass (which lists each resolved line) and read in the source.
+
+NO_NAME (kept neutral, N2):
+- Unk8006EACCRec.unk_24 (5ED34.c:256 W, 64FD8.c:1257 W; no C reader): only copies pool.unk_20;
+  no consumer shows the role or prim kind.
+- Unk8006E49CRec.unk_20 (596CC.c:2640,2651 W; read only to feed EACC.unk_24 at 5ED34.c:256,
+  64FD8.c:1257): same, region geometry only.
+- (carried from wave 1) unk_14 of both prim types: DR_MODE cursor aliased by TILEs via
+  gpu_AddThreeGreyTilesStackedUp (EACC +0x18 = embedded unk_14), mixed use.
+
+Judgement calls for the reviewer
+- resource_root: StepTimedSpriteSequenceWithSkip leaves the member unset (neither written nor
+  read in that path); every access that exists is a write of, or a read through, a loaded
+  resource-file root, in either union arm. Name makes no file-identity or universal-init claim.
+- primitive_cursors: embedded type's own members are already *_prims; the container uses the
+  existing game.h wording (`the eight primitive cursors of a draw context`). unk_14 (mixed
+  DR_MODE/TILE) is still a cursor, so the block name holds.
+- draw_offset vs the existing draw_offset_prims: different owner type, type and role (u16[2]
+  value vs DR_OFFSET * storage); readers see both on the same SetDrawOffset lines
+  (5ED34.c:607, 614, 1633, 1698). Fallback if the reviewer dislikes the near-collision:
+  draw_offset_xy. Verified the member is the exact pair passed to SetDrawOffset on all 13 lines.
+- animation_frame_counter: all 18 consumer tokens are animation phases / masks (sin/cos phases,
+  `& 0x1F` pulse, `& 4` tint, `% 4` sheet cycle); the only writes are the init (:157) and the
+  per-frame increment (:244). prim_buffer_counter: only consumer is `temp_v1 & 1` at :246
+  (buffer-pair parity); same shape as 596CC's a1[0]++ / (a1[0] & 1).
+- entry_countdowns / row_countdowns: both are per-slot, counted down from 0x1E; `entry` / `row`
+  only echo the owning function families (menu_UpdateEntryGrid* vs menu_UpdateRow*).
+
+Tool limits / dry run (docs/naming/phase3/pending/var-members-rest-2/dry.txt, exit=1)
+Three passes (pairs sharing an old member name run separately), then a diff of 5 files:
+  pass 1: EACC.unk_00 (19 lines), EACC.unk_04 (305 lines, 302 resolved), A35C4.unk_08 (17),
+          A35C4.unk_0C (3), A35C4.unk_10 (13)
+  pass 2: E49C.unk_04 + 788B.unk_04 (flat_quad_prims; 3 lines resolved: 596CC.c:2601,2634,2645),
+          A35C4.unk_00 (14)
+  pass 3: A35C4.unk_04 (12)
+UNRESOLVED (3) -- the tool CANNOT resolve the nested accesses in one run: the EACC.unk_04 pass
+renames every `.unk_04` token on the line, which breaks the inner token, so these three lines
+are restored and left for a hand edit (all tokens are right in the lines below):
+  src/main/63D2C.c:316    q = arg0->unk_04.unk_04;        -> q = arg0->primitive_cursors.flat_quad_prims;
+  src/main/63D2C.c:360    arg0->unk_04.unk_04 = q;        -> arg0->primitive_cursors.flat_quad_prims = q;
+  src/main/64FD8.c:1250   s.unk_04.unk_04 = p->unk_04;    -> s.primitive_cursors.flat_quad_prims = p->flat_quad_prims;
+  (63D2C.c:316/360: outer = Unk8006EACCRec.unk_04, inner = Unk800788B0Rec.unk_04;
+   64FD8.c:1250: s is Unk8006EACCRec, `.unk_04` second = Unk800788B0Rec, p = Unk8006E49CRec.)
+No other line in the dry run is unresolved; the dry-run diff is otherwise only the pair tokens
+(plus lines that exceed 80 columns after the longer names: format with tools/format.py at apply).
+
+Comments to hand-fix at apply time (the tool does not edit comments)
+- include/game.h:154-171 (Unk8006E49CRec comment): add flat_quad_prims (pool +0x04) to the
+  shared *_prims list; region list (+0x04 0x5DC0) already there.
+- include/game.h:178-187 (Unk800788B0Rec comment): mention flat_quad_prims; `Unk8006EACCRec
+  embeds it` -> primitive_cursors.
+- include/game.h:314 and :346: `Unk8006EACCRec.unk_00` -> `Unk8006EACCRec.resource_root`.
+- include/game.h:386-393 (Unk8006EACCRec comment): `unk_00 the resource root` -> resource_root,
+  `the cursors` -> primitive_cursors (unk_24 stays).
+- include/game.h:2483-2492 (Unk800A35C4Rec comment): `unk_00 / unk_04`, `unk_08: the frame
+  counter`, `unk_0C: its buffer counter`, `unk_10: the draw offset` -> the new names.
+- src/main/5ED34.c:827, 1102, 1779: `the DR_MODE cursor unk_04.unk_14` -> primitive_cursors.unk_14.
+- src/main/5ED34.c:2059: `g_entry_menu_work_block->unk_08` -> ->animation_frame_counter.
+- No change needed: 63D2C.c:455-456, 5ED34.c:1889 (`work_block's flag 4`, no member named).
