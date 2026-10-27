@@ -149,21 +149,21 @@ void snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb(void) {
 const char D_800158B4[24] = "common_vab start:%08x\n";
 
 s32 snd_LoadCommonVab(s32 arg0) {
-    s32 temp_v0;
-    u32 temp_s0;
+    s32 file_index;
+    u32 file_size;
     s32 ret;
 
     func_800858D0(0);
     printf(&D_800158B4, arg0);
     cdrom_WaitIdle();
-    temp_v0 = cdrom_GetFileIndex(2, 1);
-    cdrom_StartRead(temp_v0, arg0);
-    temp_s0 = cdrom_GetFileSize(temp_v0);
+    file_index = cdrom_GetFileIndex(2, 1);
+    cdrom_StartRead(file_index, arg0);
+    file_size = cdrom_GetFileSize(file_index);
     cdrom_WaitIdle();
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
-    ret = snd_LoadVabPack((Unk8005C2A8Pack *)arg0, 0, arg0 + temp_s0);
+    ret = snd_LoadVabPack((Unk8005C2A8Pack *)arg0, 0, arg0 + file_size);
     D_800A340C = g_vab_sticky_sbaddr;
     return ret;
 }
@@ -216,13 +216,13 @@ void snd_StopAllVoicesAndCloseSingleFileVab(void) {
 }
 
 s32 snd_CloseThenReadSingleFileAndLoadVab(s32 a0) {
-    s32 var_0;
+    s32 file_index;
     s32 size;
     snd_StopAllVoicesAndCloseSingleFileVab();
-    var_0 = cdrom_GetFileIndex(2, 8);
+    file_index = cdrom_GetFileIndex(2, 8);
     cdrom_WaitIdle();
-    cdrom_StartRead(var_0, a0);
-    size = cdrom_GetFileSize(var_0);
+    cdrom_StartRead(file_index, a0);
+    size = cdrom_GetFileSize(file_index);
     cdrom_WaitIdle();
     return snd_LoadVabPack((Unk8005C2A8Pack *)a0, 9, a0 + size);
 }
@@ -246,7 +246,7 @@ s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
     VabLoad var_0;
     u8 *p;
     s32 base;
-    s32 var_3;
+    s32 file_index;
     s32 size;
     u8 count;
     s32 i;
@@ -259,10 +259,10 @@ s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
         g_vab_rec_ptr[g_vab_id_list[i]] = 0;
         g_vab_vb_sbaddr[g_vab_id_list[i]] = 0;
     }
-    var_3 = cdrom_GetFileIndex(2, arg1 + 9);
+    file_index = cdrom_GetFileIndex(2, arg1 + 9);
     cdrom_WaitIdle();
-    cdrom_StartRead(var_3, (s32)p);
-    size = cdrom_GetFileSize(var_3);
+    cdrom_StartRead(file_index, (s32)p);
+    size = cdrom_GetFileSize(file_index);
     cdrom_WaitIdle();
     ((s32 *)p)[12] += (s32)p;
     eff_SetBillboardList(((s32 *)p)[12]);

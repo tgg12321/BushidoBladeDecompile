@@ -624,7 +624,7 @@ void pad_Update(s32 arg0) {
     s32 var_1[4];
     s32 i;
     s32 var_3;
-    s32 var_4;
+    s32 previous_held;
 
     var_3 = 0;
     i = 0;
@@ -702,9 +702,9 @@ void pad_Update(s32 arg0) {
         i++;
     } while (i < 2);
 
-    var_4 = g_pad_state.held;
+    previous_held = g_pad_state.held;
     g_pad_state.held = pad.held;
-    g_pad_state.pressed = pad.held & ~var_4;
+    g_pad_state.pressed = pad.held & ~previous_held;
     g_pad_state.unheld = ~pad.held;
-    g_pad_state.released = ~pad.held & var_4;
+    g_pad_state.released = ~pad.held & previous_held;
 }

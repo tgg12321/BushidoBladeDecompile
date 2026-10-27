@@ -479,11 +479,11 @@ void arena_ClearMoveCallback(s32 a0) {
     }
 }
 
-s32 *arena_FindBlock(s32 arg0) {
+s32 *arena_FindBlock(s32 block_id) {
     s32 i;
     s32 count = g_arena_block_count;
     for (i = 0; i < count; i++) {
-        if (g_arena_blocks[i].id == arg0) {
+        if (g_arena_blocks[i].id == block_id) {
             return (s32 *)&g_arena_blocks[i];
         }
     }

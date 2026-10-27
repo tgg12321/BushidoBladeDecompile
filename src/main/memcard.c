@@ -133,27 +133,27 @@ void memcard_AckHwEvents(void) {
 }
 
 s32 memcard_CountFiles(s32 arg0, s32 arg1) {
-    struct DIRENTRY *var_s0;
-    s32 var_s1;
-    char sp10[32];
+    struct DIRENTRY *file_entry_cursor;
+    s32 file_count;
+    char path_pattern[32];
 
-    var_s0 = g_memcard_file_list;
-    sprintf(sp10, (char *)g_str_memcard_fmt, arg0, arg1);
-    var_s1 = 0;
-    if (firstfile(sp10, var_s0) != 0) {
+    file_entry_cursor = g_memcard_file_list;
+    sprintf(path_pattern, (char *)g_str_memcard_fmt, arg0, arg1);
+    file_count = 0;
+    if (firstfile(path_pattern, file_entry_cursor) != 0) {
         do {
-            var_s1++;
-            var_s0++;
-        } while (nextfile(var_s0) != 0);
+            file_count++;
+            file_entry_cursor++;
+        } while (nextfile(file_entry_cursor) != 0);
     }
-    g_memcard_file_count = var_s1;
-    return var_s1;
+    g_memcard_file_count = file_count;
+    return file_count;
 }
 
 s32 memcard_CountFreeBlocks(void) {
-    struct DIRENTRY *var_v1;
-    s32 var_a1;
-    s32 var_a2;
+    struct DIRENTRY *file_entry_cursor;
+    s32 files_scanned;
+    s32 file_count;
     /* `var_a0` sums the entries' byte sizes, then holds the block count
      * derived from that total (total / 8192), the way SOTN's cloaked knight
      * takes `distance = SquareRoot0(distance)` (Q51); returning
@@ -168,15 +168,15 @@ s32 memcard_CountFreeBlocks(void) {
     s32 var_5;
 
     var_5 = 0xD;
-    var_a1 = 0;
+    files_scanned = 0;
     var_a0 = 0;
-    var_a2 = g_memcard_file_count;
-    if (var_a1 < var_a2) {
-        var_v1 = g_memcard_file_list;
+    file_count = g_memcard_file_count;
+    if (files_scanned < file_count) {
+        file_entry_cursor = g_memcard_file_list;
         do {
-            var_a0 += var_v1++->size;
-            var_a1 += 1;
-        } while (var_a1 < var_a2);
+            var_a0 += file_entry_cursor++->size;
+            files_scanned += 1;
+        } while (files_scanned < file_count);
     }
     var_v0 = var_a0;
     if (var_a0 < 0) {
@@ -186,98 +186,99 @@ s32 memcard_CountFreeBlocks(void) {
     return 0xF - var_a0;
 }
 
-s32 memcard_HasFile(u8 *arg0) {
-    s32 var_t1;
-    s32 var_t2;
-    struct DIRENTRY *var_a3;
-    s8 *var_a1;
-    s8 *var_a2;
-    s8 *var_t0;
-    s32 var_v1;
-    s32 var_v0;
-    s32 var_t3;
+s32 memcard_HasFile(u8 *requested_name) {
+    s32 files_checked;
+    s32 name_mismatch;
+    struct DIRENTRY *file_entry_cursor;
+    s8 *entry_name_cursor;
+    s8 *requested_name_cursor;
+    s8 *compare_end;
+    s32 requested_byte;
+    s32 entry_byte;
+    s32 file_count;
 
-    var_t1 = 0;
-    if (var_t1 < g_memcard_file_count) {
-        var_t3 = g_memcard_file_count;
-        var_a3 = g_memcard_file_list;
-        while (var_t1 < var_t3) {
-            var_t2 = 0;
-            var_a1 = var_a3->name;
-            var_a2 = (s8 *)arg0;
+    files_checked = 0;
+    if (files_checked < g_memcard_file_count) {
+        file_count = g_memcard_file_count;
+        file_entry_cursor = g_memcard_file_list;
+        while (files_checked < file_count) {
+            name_mismatch = 0;
+            entry_name_cursor = file_entry_cursor->name;
+            requested_name_cursor = (s8 *)requested_name;
             /* the bound is 21 bytes: the compare runs one byte past name[20]
              * into attr, as the target does */
-            var_t0 = var_a3->name + 0x15;
+            compare_end = file_entry_cursor->name + 0x15;
             while (1) {
-                var_v1 = (u8)*var_a2;
-                if (var_v1 == 0) {
+                requested_byte = (u8)*requested_name_cursor;
+                if (requested_byte == 0) {
                     break;
                 }
-                var_v0 = (u8)*var_a1;
-                if (var_v1 != var_v0) {
+                entry_byte = (u8)*entry_name_cursor;
+                if (requested_byte != entry_byte) {
                     goto block_6c;
                 }
-                var_a1 += 1;
-                var_a2 += 1;
-                if ((s32)var_a1 >= (s32)var_t0) {
+                entry_name_cursor += 1;
+                requested_name_cursor += 1;
+                if ((s32)entry_name_cursor >= (s32)compare_end) {
                     break;
                 }
             }
         block_5c:
-            var_t1 += 1;
-            if (var_t2 != 0) {
+            files_checked += 1;
+            if (name_mismatch != 0) {
                 goto block_74;
             }
             return 1;
         block_6c:
-            var_t2 = 1;
+            name_mismatch = 1;
             goto block_5c;
         block_74:
-            var_a3++;
+            file_entry_cursor++;
         }
     }
     return 0;
 }
 
-s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4) {
-    char sp18[32];
-    s32 temp_v0;
+s32 memcard_ReadFile(
+    s32 arg0, s32 arg1, s32 filename, void *read_dest, s32 byte_count) {
+    char file_path[32];
+    s32 fd;
 
-    sprintf(sp18, (char *)D_800109BC, arg0, arg1, arg2);
-    temp_v0 = open(sp18, 0x8001);
-    if (temp_v0 == -1) {
+    sprintf(file_path, (char *)D_800109BC, arg0, arg1, filename);
+    fd = open(file_path, 0x8001);
+    if (fd == -1) {
         return -1;
     }
-    g_memcard_fd = temp_v0;
+    g_memcard_fd = fd;
     memcard_AckSwEvents();
     memcard_AckHwEvents();
-    read(temp_v0, arg3, arg4);
+    read(fd, read_dest, byte_count);
     return -(memcard_WaitHwEvent() != 1);
 }
 
 extern s32 write(s32, void *, s32); /* PsyQ: long write(long, void *, long) */
 
-s32 memcard_WriteFile(
-    s32 arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4, s32 arg5, s32 arg6) {
-    char sp18[32];
-    s32 temp_v0;
+s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 filename, void *write_src,
+                      s32 arg4, s32 byte_count, s32 arg6) {
+    char file_path[32];
+    s32 fd;
 
-    sprintf(sp18, (char *)D_800109BC, arg0, arg1, arg2);
+    sprintf(file_path, (char *)D_800109BC, arg0, arg1, filename);
     if (arg6 != 0) {
-        temp_v0 = open(sp18, (arg4 << 16) | 0x200);
-        if (temp_v0 == -1) {
+        fd = open(file_path, (arg4 << 16) | 0x200);
+        if (fd == -1) {
             return -1;
         }
-        close(temp_v0);
+        close(fd);
     }
-    temp_v0 = open(sp18, 0x8002);
-    if (temp_v0 == -1) {
+    fd = open(file_path, 0x8002);
+    if (fd == -1) {
         return -1;
     }
-    g_memcard_fd = temp_v0;
+    g_memcard_fd = fd;
     memcard_AckSwEvents();
     memcard_AckHwEvents();
-    write(temp_v0, arg3, arg5);
+    write(fd, write_src, byte_count);
     return -(memcard_WaitHwEvent() != 1);
 }
 
