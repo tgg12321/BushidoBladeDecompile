@@ -1245,8 +1245,9 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
 }
 
 /* gpu_DrawSelectedStretchedSpritePair's sheets: three headers at 0x8009B610
- * (the second draw, header arg0, its one cell at 0x8009B634) and three at
- * 0x8009B63C (counts 2 / 1 / 4) whose cells follow at 0x8009B660 (0-1, 2, 3-6).
+ * (the second draw, header sheet_index, its one cell at 0x8009B634) and
+ * three at 0x8009B63C (counts 2 / 1 / 4) whose cells follow at 0x8009B660
+ * (0-1, 2, 3-6).
  */
 extern Unk8009B0E0Record D_8009B610[3];
 extern Unk8009B400Record D_8009B634;

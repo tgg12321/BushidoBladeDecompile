@@ -31,3 +31,16 @@ COMMENTS TO UPDATE (scoped pair substitution)
 FRESHNESS (all 23 distinct final spellings)
 Whole-word search of src/** and include/** (C, headers, .inc; #define names, parameters and bodies included, comments included): no hit at all for counter_value, draw_chunk_addr, packed_row_values, totals_y, packed_mark_counts, packed_side_mark_counts, mark_slot_count, mark_group_index, side_index, file_index_offset, draw_clip, gpu_db, gradient_quad_cursor, displayed_value, digit_index, src_second_image, flagged_position_index, tinted_draw_count. Hits NOT in the target function and none a file-scope name, enum constant, macro, type or member: ot_index (parameters / locals of other functions in 4D0A8.c, 64FD8.c), draw_chunk (locals of other 4D0A8.c functions), ft4_out_addr (parameters of 4D0A8.c:332, 363; the member is the different token ft4_out), sheet_index (64FD8.c:196, 203 parameter), file_index (locals in 4BC3C.c, cdrom.c:53-82 parameter). "value", the research's choice, was dropped for displayed_value because value is a member and a common local name.
 naming_keycheck.scoped_plan (read-only, working tree incl. Makefile) accepts all 40 pairs (273 token substitutions); this is a drafting aid, not the gate (cc1 differential, oracle build and staged keycheck are the apply gates).
+
+APPLY (naming-a 2026-10-27, commit 42a8eb506): 40/40 applied, none reverted; pairs.txt unchanged. Locals applied by
+naming_keycheck.scoped_plan (whole-word, code-only, comments and strings skipped, tokens after `.` or `->` skipped; 216 token
+substitutions in 4D0A8.c); format.py reflowed the longer lines. Comment pass: gpu_DrawPairedMarkRowsAndTimeFields "i/row count the
+first phase's two loops" -> "mark_group_index/side_index count ..." (the DebugCaptureScreen i and the prose "row" stay). A layout-only
+commit ahead of the wave (6c0cbbdb4) re-wrapped that paragraph (same words, short lines) so the edit is the character-exact pair
+substitution. Must-stay comments unchanged (all FAKE comments, the Packed i/j/k comment). R6 fix: the data-table comment above
+D_8009B610 (4D0A8.c ~1247, scoped to gpu_DrawSelectedStretchedSpritePair by name) said "header arg0"; now "header sheet_index"
+(paragraph re-wrapped to 80 columns).
+Gates: verify-oracle --rebuild build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true, artifact_matches true);
+tus-check "OK: bb2.ld links all 245 TUs, one object order across sections"; engine test "5516 passed, 0 failed, 2 skipped";
+check_completion_integrity OK (exit 0); naming_keycheck --base 6c0cbbdb4 --new 42a8eb506 --pairs-file pairs.txt:
+"OK: every change is explained by the pairs" (moved layer-2 keys only in the touched functions).
