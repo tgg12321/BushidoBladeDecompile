@@ -74,3 +74,17 @@ rebase_delta (locals/parameters of other functions in 368E4.c, 43500.c, 4510C.c 
 
 PRE-APPLY REVIEW (naming-reviewer 2026-10-27): 38/39 PASS. FAIL snd_CompactVabBodies:minidx -> min_vab_id (R4/N1: it is the id of the slot with the lowest sbaddr, not the minimum id); replaced by the reviewer-suggested lowest_sbaddr_vab_id, marked suggested in the manifest. Volume order confirmed from code (a1 -> .volr -> SsUtKeyOnV volr); the 17AFC.c:4676 comment "(arg0, L, R)" is wrong and gets a separate comment-only fix ("(arg0, R, L)"). Comment edits at apply: 4BC3C.c:390 count, 437/439 arg1, 556 next, 4D0A8.c:323 "row idx". Must NOT change: 4BC3C.c:388 arg0; 4D0A8.c:322-327 count; 4D0A8.c:1735 row idx; 4D0A8.c:53,58,415,439,470,635,791,1076,1660,1810.
 VERDICT CONFIRM.
+
+APPLY (naming-a 2026-10-27, commit 32b837ca5): 39/39 applied, none reverted; pairs.txt unchanged. Applied by a whole-word,
+code-only scoped script (comments and strings skipped, tokens after `.` or `->` skipped); function definitions were located
+by their body (snd_VabFakeOpen and snd_VabOpen also have prototypes earlier in 4BC3C.c, which a first-match search hits).
+format.py reflowed both files. Comment pass: 4BC3C.c count->vab_count (snd_CompactVabBodies), arg1->vab_id x2 (snd_LoadVabPack),
+next->next_voice_index (snd_FlushSoundQueue); 4D0A8.c "row idx"->"row sheet_row_index". A layout-only commit ahead of the wave
+(335a86ebf) re-wraps the LoadVabPack, FlushSoundQueue and D_8009B2C8 comments (same words, short lines) so the wave's edits are
+the character-exact pair substitutions. Must-stay comments unchanged.
+Gates: verify-oracle --rebuild build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true, artifact_matches true);
+tus-check "OK: bb2.ld links all 245 TUs, one object order across sections"; engine test "5515 passed, 0 failed, 3 skipped";
+check_completion_integrity OK (exit 0); naming_keycheck --base 335a86ebf --new 32b837ca5 --pairs-file pairs.txt:
+"OK: every change is explained by the pairs" (moved layer-2 keys only in the touched functions).
+Volume order: the 17AFC.c:4676 comment "snd_QueueSound(arg0, L, R)" was wrong (a1 -> .volr, a2 -> .voll); fixed to "(arg0, R, L)" in the
+docs commit that carries these notes (comment only).

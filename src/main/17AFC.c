@@ -4673,7 +4673,7 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
 /* 3D positional sound pan/volume: listener-relative delta of *arg1,
  * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (gte_Lzc
  * for >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to
- * 0x7F, sent to snd_QueueSound(arg0, L, R). */
+ * 0x7F, sent to snd_QueueSound(arg0, R, L). */
 void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
     s32 dx, dy, dz;
