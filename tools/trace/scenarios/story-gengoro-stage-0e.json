@@ -1,0 +1,98 @@
+{
+  "description": "Story Mode with GENGORO (LEFT x2 on Select Character: character id 15, command stream D_800900EC[D_8008D538[15] = 12]) on blank cards, no poke: P1 TRIANGLE / CROSS alternating every 20 frames from 8900, then CIRCLE / CROSS from 54400, and D_800A36A4 steps through 2, 0x16, 0x15, 0x11, 0x01, 0x0D to the stream's seventh op 1, 0x0E at 0x8008F9D0 (85233), a stone courtyard fight; g_loaded_resource_selector reads 14 at the end, so D_800948BC[14] = func_80047738 / func_8004775C run",
+  "covers": [
+    "mode:story",
+    "menu:top",
+    "menu:story_text",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_card",
+    "menu:rematch",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-gengoro-stage-0e-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 91000,
+  "inputs": [
+    "6100:CROSS",
+    "6400:START",
+    "6700:CROSS",
+    "6960:LEFT",
+    "6980:LEFT",
+    "7000:START",
+    "7300:CROSS",
+    "7600:START",
+    "7900:CROSS",
+    "8200:START",
+    "8500:CROSS",
+    "8800:START"
+  ],
+  "repeat": [
+    {
+      "from": 9000,
+      "every": 60,
+      "count": 8,
+      "steps": [
+        "+0:SQUARE"
+      ]
+    },
+    {
+      "from": 8900,
+      "every": 20,
+      "count": 2275,
+      "steps": [
+        "+0:TRIANGLE|CROSS"
+      ]
+    },
+    {
+      "from": 54400,
+      "every": 20,
+      "count": 1830,
+      "steps": [
+        "+0:CIRCLE|CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6060:top_menu",
+    "6100:t_story",
+    "6810:story_text",
+    "6910:t_char",
+    "6950:char_select",
+    "7300:t_weapon",
+    "7360:weapon_select",
+    "7900:t_stage",
+    "8320:stage_02",
+    "26474:stage_16",
+    "34554:stage_15",
+    "54275:stage_11",
+    "70454:stage_01",
+    "78654:stage_0d",
+    "85233:stage_0e"
+  ],
+  "shots": [
+    "6060:top_menu.first",
+    "6950:char_select.first",
+    "7299:char_select.last",
+    "7360:weapon_select.first",
+    "8360:stage_02.card",
+    "10000:stage_02.10000",
+    "27500:stage_16.27500",
+    "35500:stage_15.35500",
+    "55000:stage_11.55000",
+    "71500:stage_01.71500",
+    "80000:stage_0d.80000",
+    "85000:stage_0d.85000",
+    "86000:stage_0e.86000",
+    "86500:stage_0e.86500",
+    "87500:stage_0e.87500",
+    "88500:stage_0e.88500",
+    "90000:stage_0e.90000",
+    "90999:stage_0e.last"
+  ]
+}
