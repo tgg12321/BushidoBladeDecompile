@@ -1605,7 +1605,7 @@ extern u8 *D_800A36E4;
 void gpu_DrawIndexedSheetPair(
     s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
-       MOD.BIN root (g_row_menu_work_block->unk_24) */
+       MOD.BIN root (g_row_menu_work_block->menu_resource_root) */
     Unk8009B0E0Record **var_0;
     /* the sheet's 8-byte cells, just past its 12-byte header */
     Unk8009B400Record *cells;
@@ -1752,9 +1752,9 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     s32 var_8;
     /* `var_9` counts the phase-2 option-bit, phase-4 sprite and phase-6
      * rectangle loops, then holds each player's menu row cursor
-     * (unk_28.half[j], tested against 5 and used as the recs subscript),
-     * the way SOTN's AluInit reuses its loop counter i for the weapon id
-     * (Q51); one local per role: score 90 */
+     * (row_bit_cursors.half[j], tested against 5 and used as the recs
+     * subscript), the way SOTN's AluInit reuses its loop counter i for the
+     * weapon id (Q51); one local per role: score 90 */
     /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 var_9;
     /* FAKE: per-branch constant holder (named-local-fake-exception, Q27 (B)) --

@@ -17,7 +17,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 - 0x11: `fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents` (src/main/17AFC.c:2061) only.
 - otherwise, in order:
   1. `fighter_TriggerOpponentResponseOnMoveFrame` (src/main/17AFC.c:736): per-fighter checks of
-     `unk_0C == 0x1B` records against the opponent's state.
+     `character_roster_index == 0x1B` records against the opponent's state.
   2. `fighter_ResolveBodyOverlap` (src/main/17AFC.c:773): the body-overlap push (its
      comment at :766): two points per fighter tested pairwise against the
      radii `D_800A3144[0..1]`, an overlap pushing both apart along x/z
@@ -29,7 +29,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
      `fighter_ResolveWeaponContact` (src/main/17AFC.c:574) for each fighter when either has
      `unk_AD` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
   5. When both fighters have `update_count >= 3`, `D_800A38A8` is set, both
-     `pending_move_event` are -1, neither `unk_0C` is 0x1F and their heights `world_pos.y`
+     `pending_move_event` are -1, neither `character_roster_index` is 0x1F and their heights `world_pos.y`
      differ by less than 1000, both get `pending_move_event = 0xA`.
 - Then for every state: a fighter whose `move_kind` is 5 ends the round
   (`g_main_loop_handler_index = 0x1C`, with `g_fight_followup_fighter_index` the other fighter's index); the
@@ -48,13 +48,13 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 target, with the opponent as the attacker:
 
 1. It decides how many blade quads to test (`var_10`): one when the
-   attacker's `is_defeated == 0`, `unk_92 != 0`, `update_count != 0` and `unk_0C != 0x1F`,
+   attacker's `is_defeated == 0`, `unk_92 != 0`, `update_count != 0` and `character_roster_index != 0x1F`,
    one more with `unk_8C` set, and one more when `weapon_id` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `g_fight_paired_move_initiator` is skipped as a target.)
    Attackers with `weapon_id` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
    `move_frame == weapon_hit_start_frames[0]`, also sweep a segment with `fighter_CastWeaponSegment`
    (src/main/17AFC.c:1423, comment at :1399) while the counter `weapon_ammo`
-   lasts (once it is spent they play cue 0x32 and test no quads); `unk_0C`
+   lasts (once it is spent they play cue 0x32 and test no quads); `character_roster_index`
    0x1D / 0xE (with `unk_26C` set) do the same with the second blade
    (`weapon_hit_start_frames[1]`).
 2. Each blade quad (this frame's points from the scratchpad and last frame's
@@ -67,7 +67,7 @@ target, with the opponent as the attacker:
    (src/main/17AFC.c:1806-1822). With `mode == 1` it only plays cue 4 there
    and returns.
 4. Unless the struck limb is in the sweep / second-blade mask and the
-   attacker has `weapon_id` 6 or 7 or `unk_0C` 0x1D / 0xE, or the attacker is in an attack
+   attacker has `weapon_id` 6 or 7 or `character_roster_index` 0x1D / 0xE, or the attacker is in an attack
    state (2, 0x1B, 0x28, 0x26) within three frames before a window start, it
    pushes the target along x/z through
    `unk_134` when the facing difference is under 0x400.
@@ -82,13 +82,13 @@ target, with the opponent as the attacker:
 `src == 1` and a `Tbl8008E194` record from `object_ResolveFighterHits` (the comment at
 src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
 
-- `rec->unk_0C == 0x1C`: when the limb is not 1..3, or the dot product of
+- `rec->character_roster_index == 0x1C`: when the limb is not 1..3, or the dot product of
   `unk_1EC` with the vector `D_800A37E8` is under 0x400, it plays cue 0x12,
   sets `pending_move_event = 0x1E` (and, with `src == 0`, the attacker's `pending_move_event` to 0xB
   or 0x19) and returns 0.
-- `rec->unk_0C == 0xD` (outside state 0x2E): `fighter_RelocateAndStartEventMove`, see
+- `rec->character_roster_index == 0xD` (outside state 0x2E): `fighter_RelocateAndStartEventMove`, see
   [ai.md](ai.md).
-- `move_kind` 4 or 0x14, or `unk_0C == 0x1F`: `fighter_StoreBoneLocalVectorAndArmEventTrigger`
+- `move_kind` 4 or 0x14, or `character_roster_index == 0x1F`: `fighter_StoreBoneLocalVectorAndArmEventTrigger`
   (src/main/9F9C.c:2779) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:238); the
   latter case also sets `pending_move_event = 7`.
 - The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < unk_A0`:

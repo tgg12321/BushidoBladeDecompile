@@ -91,11 +91,11 @@ an opponent order; the code does not name it.
   into that angle's frame (`>> 12`), negates the second component, rotates back
   with `>> 15` (an eighth of the magnitude), and divides `a0[0x12]` by four. No direct caller appears in `src/`.
 - `fighter_RelocateAndStartEventMove(rec)` (src/main/17AFC.c:178), called from `fighter_ResolveBoneHit`
-  (src/main/17AFC.c:370) when `rec->unk_0C == 0xD`, moves the fighter's
+  (src/main/17AFC.c:370) when `rec->character_roster_index == 0xD`, moves the fighter's
   positions (`world_pos`, `base_pos`, `collision_pos`) to a target: with
   `g_fight_stage_index == 3` a percentage blend from the fighter's position toward the
   point (0x2EE0 or -0x2710, 0x1770 or -0x1770), picked by the other fighter's
-  position, with a weight that shrinks from 60 to 10 as the counter `unk_34C`
+  position, with a weight that shrinks from 60 to 10 as the counter `reposition_count`
   (capped at 0x40) grows; otherwise the entry
   `fight_GetStartPositionPairTable()[g_fight_stage_index * 12 + index * 3]`. It then zeroes `unk_104` /
   `unk_134`, switches its move (the script `motion_ResolveMoveData` resolves from

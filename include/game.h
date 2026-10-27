@@ -2428,7 +2428,7 @@ typedef struct {
 
 /* MOD.BIN (resource file 2), the root 596CC's
  * menu_LoadResourcesInitStateSelectFirstEnabledRow loads at its work area +
- * 0x58; it keeps it in g_row_menu_work_block's word 9, and
+ * 0x58; it keeps it in g_row_menu_work_block's word 9 (menu_resource_root), and
  * gpu_AdvanceBufferCounterAndBuildDrawContext copies that into word 1 of the
  * draw context. After the head:
  * - unk_14..cursor_row_sheets (+0x14..+0x40): the twelve lists
@@ -2504,13 +2504,15 @@ typedef struct {
  * menu_LoadResourcesInitStateSelectFirstEnabledRow keeps at the start of
  * gpu_InitPrimBufferPair's returned space (g_row_menu_work_block; its arena
  * cursor D_800A3500 moves past the block).
- * menu_LoadResourcesInitStateSelectFirstEnabledRow zeroes unk_0C / unk_10 /
- * unk_12, sets both unk_28 halves to 5 and unk_30 to bit 0 of
- * g_row_menu_working_record_ptr's word 8 (gpu_GetPrimBufferAndRefreshStrip
- * compares and refreshes it), and stores the MOD.BIN root in unk_24.
- * - unk_0C: the s16 pair pad_StepOffsetsGetDirectionEvents steps (its arg2);
- * the draw functions use unk_0C[0] / [1] as x / y offsets.
- * - unk_28: one s16 per player
+ * menu_LoadResourcesInitStateSelectFirstEnabledRow zeroes menu_draw_offsets /
+ * unk_10 / unk_12, sets both row_bit_cursors halves to 5 and
+ * strip_refresh_snapshot to bit 0 of g_row_menu_working_record_ptr's word 8
+ * (gpu_GetPrimBufferAndRefreshStrip compares and refreshes it), and stores the
+ * MOD.BIN root in menu_resource_root.
+ * - menu_draw_offsets: the s16 pair pad_StepOffsetsGetDirectionEvents steps
+ * (its arg2); the draw functions use menu_draw_offsets[0] / [1] as x / y
+ * offsets.
+ * - row_bit_cursors: one s16 per player
  * (menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads,
  * menu_SetExclusiveRowBit, menu_HandleRowBitInput); menu_HandleRowBitInput and
  * menu_DrawKeyConfigRowBitsGetEmptyRowSides also test the pair as one word (==
