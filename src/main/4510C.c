@@ -39,7 +39,7 @@ s32 motion_UpdatePlayback(void) {
      * load signed (lh), and the array goes to func_80040D48's s16 * parameter.
      */
     s16 decoded_motion_frame[0x42];
-    s16 *v;
+    s16 *camera_pose;
     s32 i;
     /* the slot_GetObject object being handled: objects 0 and 1 on the first
      * frame, object i in the loop, as SOTN's secret-room wall reuses
@@ -86,10 +86,10 @@ s32 motion_UpdatePlayback(void) {
             softbody_RequestRebuild(slot_object);
         }
     }
-    v = bitstream_AccumulateDeltas(0);
-    vec.vx = -v[0];
-    vec.vy = v[1];
-    vec.vz = -v[2];
+    camera_pose = bitstream_AccumulateDeltas(0);
+    vec.vx = -camera_pose[0];
+    vec.vy = camera_pose[1];
+    vec.vz = -camera_pose[2];
     {
         s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
         s32 sn = Judge[s->unk1E & 0xFFF];
@@ -100,19 +100,20 @@ s32 motion_UpdatePlayback(void) {
     g_view_camera_root_node.work.t[0] = vec.vx + s->unkC;
     g_view_camera_root_node.work.t[1] = vec.vy + s->unk10;
     g_view_camera_root_node.work.t[2] = vec.vz + s->unk14;
-    g_view_camera_root_node.xf.rot.vx = v[3];
-    g_view_camera_root_node.xf.rot.vy = v[4] + 0x800;
-    g_view_camera_root_node.xf.rot.vz = v[5];
+    g_view_camera_root_node.xf.rot.vx = camera_pose[3];
+    g_view_camera_root_node.xf.rot.vy = camera_pose[4] + 0x800;
+    g_view_camera_root_node.xf.rot.vz = camera_pose[5];
     if (s->unk1E != 0) {
-        MATRIX m;
-        SVECTOR rot;
-        rot.vx = 0;
-        rot.vz = 0;
-        rot.vy = s->unk1E;
-        g_math_rot_matrix_funcs[0](&rot, &m);
+        MATRIX playback_rotation_matrix;
+        SVECTOR playback_rotation;
+        playback_rotation.vx = 0;
+        playback_rotation.vz = 0;
+        playback_rotation.vy = s->unk1E;
+        g_math_rot_matrix_funcs[0](
+            &playback_rotation, &playback_rotation_matrix);
         g_math_rot_matrix_funcs[0](
             &g_view_camera_root_node.xf.rot, &g_view_camera_root_node.work);
-        MulMatrix2(&m, &g_view_camera_root_node.work);
+        MulMatrix2(&playback_rotation_matrix, &g_view_camera_root_node.work);
         math_MatrixToAnglesYXZ(
             &g_view_camera_root_node.work, &g_view_camera_root_node.xf.rot);
         math_TransposeMatrixInPlace(&g_view_camera_root_node.work);
@@ -132,17 +133,19 @@ s32 motion_UpdatePlayback(void) {
     calc_LightMatrix(&g_light_setups[4]);
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
-            s32 ang;
+            s32 motion_angle;
             slot_object = slot_GetObject(i);
             motion_DecodeFrame(i, s->unk0, (MotionFrame *)decoded_motion_frame,
                                (u16 *)0x1F800000);
             vec.vy = decoded_motion_frame[0];
             vec.vy *= slot_object->position_scale;
             vec.vy >>= 12;
-            ang = decoded_motion_frame[1];
-            vec.vx = (Judge[ang & 0xFFF] * decoded_motion_frame[2]) >> 12;
-            vec.vz =
-                (Judge[(ang + 0x400) & 0xFFF] * decoded_motion_frame[2]) >> 12;
+            motion_angle = decoded_motion_frame[1];
+            vec.vx =
+                (Judge[motion_angle & 0xFFF] * decoded_motion_frame[2]) >> 12;
+            vec.vz = (Judge[(motion_angle + 0x400) & 0xFFF] *
+                      decoded_motion_frame[2]) >>
+                     12;
             vec.vy = -vec.vy;
             vec.vz = -vec.vz;
             {
@@ -186,31 +189,31 @@ s32 motion_UpdatePlayback(void) {
 extern s32 motion_UpdatePlayback(void);
 
 s32 motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush(void) {
-    s32 s0;
+    s32 playback_updated;
     g_draw_queue_cursor = g_draw_queue;
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = g_gpu_ot_ptr;
     D_800A378C = g_gpu_ot_ptr + 4;
-    s0 = motion_UpdatePlayback();
+    playback_updated = motion_UpdatePlayback();
     func_800444E0();
-    return s0;
+    return playback_updated;
 }
 
-void motion_RebasePlayback(s32 a0) {
+void motion_RebasePlayback(s32 rebase_delta) {
     s32 *p = &D_800EFAE8.unk2C;
-    *p = a0 + *p;
-    D_800EFAE8.unk30 = a0 + D_800EFAE8.unk30;
+    *p = rebase_delta + *p;
+    D_800EFAE8.unk30 = rebase_delta + D_800EFAE8.unk30;
     if (D_800EFAE8.unk34[0]) {
-        D_800EFAE8.unk34[0] = a0 + D_800EFAE8.unk34[0];
+        D_800EFAE8.unk34[0] = rebase_delta + D_800EFAE8.unk34[0];
     }
     if (D_800EFAE8.unk34[1]) {
-        D_800EFAE8.unk34[1] = a0 + D_800EFAE8.unk34[1];
+        D_800EFAE8.unk34[1] = rebase_delta + D_800EFAE8.unk34[1];
     }
     if (D_800EFAE8.unk3C[0]) {
-        D_800EFAE8.unk3C[0] = a0 + D_800EFAE8.unk3C[0];
+        D_800EFAE8.unk3C[0] = rebase_delta + D_800EFAE8.unk3C[0];
     }
     if (D_800EFAE8.unk3C[1]) {
-        D_800EFAE8.unk3C[1] = a0 + D_800EFAE8.unk3C[1];
+        D_800EFAE8.unk3C[1] = rebase_delta + D_800EFAE8.unk3C[1];
     }
 }
 
@@ -221,22 +224,23 @@ s32 *node_GetRootNodeMatrixTranslation(void) {
 }
 
 void fighter_ClearCpuTally(s32 fighter_index) {
-    s32 i;
-    Unk80101EC8Record *p = &D_80101EC8[fighter_index];
-    i = 0;
+    s32 tally_index;
+    Unk80101EC8Record *fighter_record = &D_80101EC8[fighter_index];
+    tally_index = 0;
     do {
-        p->unk_414[i][1] = 0;
-        p->unk_414[i][0] = 0;
-    } while ((++i) < 8);
+        fighter_record->unk_414[tally_index][1] = 0;
+        fighter_record->unk_414[tally_index][0] = 0;
+    } while ((++tally_index) < 8);
 }
 
 void fighter_HalveCpuTally(s32 fighter_index) {
-    s32 i;
-    Unk80101EC8Record *p = &D_80101EC8[fighter_index];
-    i = 0;
+    s32 tally_index;
+    Unk80101EC8Record *fighter_record = &D_80101EC8[fighter_index];
+    tally_index = 0;
     do {
-        p->unk_414[i][1] = p->unk_414[i][1] >> 1;
-    } while (++i < 8);
+        fighter_record->unk_414[tally_index][1] =
+            fighter_record->unk_414[tally_index][1] >> 1;
+    } while (++tally_index < 8);
 }
 
 void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
@@ -452,14 +456,14 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
 }
 
 s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
-    u8 *p;
+    u8 *script_cursor;
     u8 script_delay_left;
-    s32 t;
-    s32 mask;
-    s32 dx, dy, dz;
+    s32 script_byte;
+    s32 pad_button_mask;
+    s32 opponent_start_dx, dy, dz;
 
     script_delay_left = arg0->cpu_pad_script_delay_left;
-    p = arg0->cpu_pad_script_cursor;
+    script_cursor = arg0->cpu_pad_script_cursor;
     if (script_delay_left != 0) {
         if (arg0->unk_46 == 0) {
             arg0->cpu_pad_script_delay_left = script_delay_left - 1;
@@ -470,10 +474,10 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
         goto check_loop;
     }
     {
-        u8 idx = arg0->cpu_profile;
-        if (idx == 22)
+        u8 cpu_profile_index = arg0->cpu_profile;
+        if (cpu_profile_index == 22)
             goto check_loop;
-        if ((g_cpu_profiles[idx].flags & 0xBF00) != 0)
+        if ((g_cpu_profiles[cpu_profile_index].flags & 0xBF00) != 0)
             goto check_loop;
         {
             s32 angle_in_range;
@@ -497,10 +501,12 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
             Unk80101EC8Record *other_record = arg0->other;
             if (other_record->move_kind == 0x2D)
                 goto reset_ret_neg1;
-            dx = other_record->world_pos.x - arg0->chosen_script_start_x;
+            opponent_start_dx =
+                other_record->world_pos.x - arg0->chosen_script_start_x;
             dy = other_record->world_pos.z - arg0->chosen_script_start_z;
             dz = arg0->chosen_script_radius;
-            if ((dz * dz) >= ((dx * dx) + (dy * dy)))
+            if ((dz * dz) >=
+                ((opponent_start_dx * opponent_start_dx) + (dy * dy)))
                 goto loop;
         }
     }
@@ -519,32 +525,34 @@ sentinel_reset:
     goto ret_3c8;
 loop:
     while (1) {
-        t = *p;
-        p += 1;
-        if (t & 0x80) {
-            if (t == 0x80)
+        script_byte = *script_cursor;
+        script_cursor += 1;
+        if (script_byte & 0x80) {
+            if (script_byte == 0x80)
                 goto sentinel_reset;
-            arg0->cpu_pad_script_cursor = p;
-            arg0->cpu_pad_script_delay_left = (t & 0x7F) - 1;
+            arg0->cpu_pad_script_cursor = script_cursor;
+            arg0->cpu_pad_script_delay_left = (script_byte & 0x7F) - 1;
             goto ret_3c8;
         }
-        mask = 1 << (t & 0xF);
-        if (t & 0x10) {
-            arg0->cpu_pad_script_held &= ~mask;
+        pad_button_mask = 1 << (script_byte & 0xF);
+        if (script_byte & 0x10) {
+            arg0->cpu_pad_script_held &= ~pad_button_mask;
         } else {
-            arg0->cpu_pad_script_held |= mask;
+            arg0->cpu_pad_script_held |= pad_button_mask;
         }
     }
 ret_3c8:
     return arg0->cpu_pad_script_held;
 }
 
-void fighter_StartCpuPadScript(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
-    a0->cpu_pad_script_cursor = a1;
-    a0->unk_3BC = a2;
-    a0->cpu_pad_script_delay_left = a3;
-    a0->cpu_pad_script_held = 0;
-    a0->unk_3CC = -1;
+void fighter_StartCpuPadScript(
+    Unk80101EC8Record *fighter_record, u8 *script_cursor, s32 a2,
+    s32 script_delay_left) {
+    fighter_record->cpu_pad_script_cursor = script_cursor;
+    fighter_record->unk_3BC = a2;
+    fighter_record->cpu_pad_script_delay_left = script_delay_left;
+    fighter_record->cpu_pad_script_held = 0;
+    fighter_record->unk_3CC = -1;
 }
 
 /* Four pad-bit numbers; fighter_BuildCpuPad copies the table whole (align 1:
@@ -566,7 +574,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     Unk80101EC8Record *var_2;
     PadState pad;
     PadBitTable bits;
-    s32 lo, hi;
+    s32 opponent_hit_start_frame, hi;
     /* work holds two values: g_fighter_horizontal_separation - unk_43E, then
      * its sign (work >> 31) (Ruling 11, ordinary-c-judge-decidable). */
     s32 work;
@@ -709,16 +717,18 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     }
 
     if (rec->unk_430 & 0x80) {
-        lo = rec->other->weapon_hit_start_frames[0] != 0xFF
-                 ? rec->other->weapon_hit_start_frames[0]
-                 : rec->other->weapon_hit_start_frames[1];
+        opponent_hit_start_frame =
+            rec->other->weapon_hit_start_frames[0] != 0xFF
+                ? rec->other->weapon_hit_start_frames[0]
+                : rec->other->weapon_hit_start_frames[1];
         hi = rec->other->weapon_hit_end_frames[0] != 0xFF
                  ? rec->other->weapon_hit_end_frames[0]
                  : rec->other->weapon_hit_end_frames[1];
     }
     if (!(rec->unk_430 & 0x80) ||
         (rec->move_kind != 0x11
-             ? (hi < rec->other->move_frame || lo - rec->other->move_frame >= 9)
+             ? (hi < rec->other->move_frame ||
+                opponent_hit_start_frame - rec->other->move_frame >= 9)
              : rec->cur_move->last_command_frame < rec->move_frame)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
@@ -772,7 +782,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
                                 rec->other->prev_move_kind != 0x2C)
                                    ? rec->other->motion_entry_index
                                    : 0xFE;
-                rec->unk_427 = lo;
+                rec->unk_427 = opponent_hit_start_frame;
                 temp2 = fighter_CalcOpponentDistanceThresholdFromTables(rec);
                 temp3 = temp2 + 800;
                 if (rec->unk_442 != 0 ||
@@ -823,26 +833,28 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     } else {
         rec->unk_425 = 0;
         for (i = 0; i < 12; i++) {
-            Obj80106A78 *obj = &g_object_pool[i];
+            Obj80106A78 *pool_object = &g_object_pool[i];
 
-            temp2 = SquareRoot0((rec->world_pos.x - obj->pos.x) *
-                                    (rec->world_pos.x - obj->pos.x) +
-                                (rec->world_pos.z - obj->pos.z) *
-                                    (rec->world_pos.z - obj->pos.z));
-            if (obj->kind != -1 && obj->unk_04 != 0 &&
-                obj->owner != rec->index) {
-                temp = (ratan2(rec->world_pos.x - obj->pos.x,
-                               rec->world_pos.z - obj->pos.z) -
-                        ratan2(obj->pos.x - obj->prev_pos.x,
-                               obj->pos.z - obj->prev_pos.z)) &
+            temp2 = SquareRoot0((rec->world_pos.x - pool_object->pos.x) *
+                                    (rec->world_pos.x - pool_object->pos.x) +
+                                (rec->world_pos.z - pool_object->pos.z) *
+                                    (rec->world_pos.z - pool_object->pos.z));
+            if (pool_object->kind != -1 && pool_object->unk_04 != 0 &&
+                pool_object->owner != rec->index) {
+                temp = (ratan2(rec->world_pos.x - pool_object->pos.x,
+                               rec->world_pos.z - pool_object->pos.z) -
+                        ratan2(pool_object->pos.x - pool_object->prev_pos.x,
+                               pool_object->pos.z - pool_object->prev_pos.z)) &
                        0xFFF;
                 if (temp > 0x800) {
                     temp -= 0x1000;
                 }
                 if ((temp < 0 ? -temp : temp) < 0x80) {
-                    if ((rec->collision_pos.vy - obj->pos.y >= 0)
-                            ? (rec->collision_pos.vy - obj->pos.y < 2000)
-                            : (obj->pos.y - rec->collision_pos.vy < 2000)) {
+                    if ((rec->collision_pos.vy - pool_object->pos.y >= 0)
+                            ? (rec->collision_pos.vy - pool_object->pos.y <
+                               2000)
+                            : (pool_object->pos.y - rec->collision_pos.vy <
+                               2000)) {
                         rec->unk_425 = temp2 < 3000 ? 2 : 1;
                     }
                 }
@@ -856,7 +868,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
         rec->unk_425 != 2 &&
         (((rec->unk_430 & 0x80) &&
           ((rec->other->queued_move == 0 && hi < rec->other->move_frame) ||
-           lo - rec->other->move_frame >= 9)) ||
+           opponent_hit_start_frame - rec->other->move_frame >= 9)) ||
          rec->other->move_kind == 0x10 || rec->other->move_kind == 3 ||
          rec->other->move_kind == 7 || rec->other->move_kind == 0x2C ||
          rec->other->move_kind == 0x24 ||
@@ -932,77 +944,85 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
     s32 var_2[4];
     s32 var_3[4];
     s16 work[4];
-    s32 start;
-    s32 i;
+    s32 first_probe_index;
+    s32 probe_index;
 
-    start = (arg0->cpu_pad_build_count & 3) * 2;
-    for (i = start; i < start + 2; i++) {
-        Unk80101EC8Record *obj;
+    first_probe_index = (arg0->cpu_pad_build_count & 3) * 2;
+    for (probe_index = first_probe_index; probe_index < first_probe_index + 2;
+         probe_index++) {
+        Unk80101EC8Record *probe_origin_fighter;
         s32 flags;
-        s32 scale;
-        s16 *sin_p;
-        s16 *cos_p;
+        s32 probe_distance;
+        s16 *probe_sine_ptr;
+        s16 *probe_cosine_ptr;
         s32 x;
-        s32 z;
+        s32 probe_z;
 
-        obj = arg0;
-        flags = g_fighter_cpu_probes[i][1] << 8;
+        probe_origin_fighter = arg0;
+        flags = g_fighter_cpu_probes[probe_index][1] << 8;
         if ((flags & 0x1000) != 0) {
-            obj = arg0->other;
+            probe_origin_fighter = arg0->other;
         }
 
         if (arg0->move_kind == 0x13 || arg0->move_kind == 6) {
-            flags += obj->orientation.vy;
+            flags += probe_origin_fighter->orientation.vy;
         } else {
-            flags += ratan2(
-                g_camera_default_view_record.unk_00.x - obj->world_pos.x,
-                g_camera_default_view_record.unk_00.z - obj->world_pos.z);
+            flags += ratan2(g_camera_default_view_record.unk_00.x -
+                                probe_origin_fighter->world_pos.x,
+                            g_camera_default_view_record.unk_00.z -
+                                probe_origin_fighter->world_pos.z);
         }
 
-        sin_p = &Judge[flags & 0xFFF];
-        scale = g_fighter_cpu_probes[i][0] << 8;
-        x = obj->collision_pos.vx + ((scale * *sin_p) >> 12);
-        cos_p = &Judge[(flags + 0x400) & 0xFFF];
-        z = obj->collision_pos.vz + ((scale * *cos_p) >> 12);
-        segment_start[0] = obj->collision_pos.vx;
-        segment_start[1] = obj->collision_pos.vy - 0x320;
-        segment_start[2] = obj->collision_pos.vz;
+        probe_sine_ptr = &Judge[flags & 0xFFF];
+        probe_distance = g_fighter_cpu_probes[probe_index][0] << 8;
+        x = probe_origin_fighter->collision_pos.vx +
+            ((probe_distance * *probe_sine_ptr) >> 12);
+        probe_cosine_ptr = &Judge[(flags + 0x400) & 0xFFF];
+        probe_z = probe_origin_fighter->collision_pos.vz +
+                  ((probe_distance * *probe_cosine_ptr) >> 12);
+        segment_start[0] = probe_origin_fighter->collision_pos.vx;
+        segment_start[1] = probe_origin_fighter->collision_pos.vy - 0x320;
+        segment_start[2] = probe_origin_fighter->collision_pos.vz;
         segment_end[0] = x;
-        segment_end[1] = obj->collision_pos.vy - 0x320;
-        segment_end[2] = z;
+        segment_end[1] = probe_origin_fighter->collision_pos.vy - 0x320;
+        segment_end[2] = probe_z;
 
         flags = collision_TestSegmentWithWork(
             segment_start, segment_end, var_2, work, 0x1F8002B8);
         if (flags != 0) {
-            x += (*sin_p * 0x7D) >> 8;
-            z += (*cos_p * 0x7D) >> 8;
+            x += (*probe_sine_ptr * 0x7D) >> 8;
+            probe_z += (*probe_cosine_ptr * 0x7D) >> 8;
         }
 
         segment_start[0] = x;
-        segment_start[1] = obj->collision_pos.vy - 0x834;
-        segment_start[2] = z;
+        segment_start[1] = probe_origin_fighter->collision_pos.vy - 0x834;
+        segment_start[2] = probe_z;
         segment_end[0] = x;
-        segment_end[1] = obj->collision_pos.vy + 0x1004;
-        segment_end[2] = z;
+        segment_end[1] = probe_origin_fighter->collision_pos.vy + 0x1004;
+        segment_end[2] = probe_z;
 
         flags |= collision_TestSegmentWithWork(
                      segment_start, segment_end, var_3, work, 0x1F8002B8)
                  << 1;
         flags += 1;
-        if (flags == 3 && var_3[1] - obj->collision_pos.vy < 5) {
+        if (flags == 3 &&
+            var_3[1] - probe_origin_fighter->collision_pos.vy < 5) {
             flags = 0;
         } else if (flags == 4) {
-            s32 dx = var_2[0] - obj->collision_pos.vx;
-            s32 dz = var_2[2] - obj->collision_pos.vz;
-            if (0x3D0900 < dx * dx + dz * dz) {
-                s32 y = obj->collision_pos.vy;
+            s32 horizontal_hit_dx =
+                var_2[0] - probe_origin_fighter->collision_pos.vx;
+            s32 horizontal_hit_dz =
+                var_2[2] - probe_origin_fighter->collision_pos.vz;
+            if (0x3D0900 < horizontal_hit_dx * horizontal_hit_dx +
+                               horizontal_hit_dz * horizontal_hit_dz) {
+                s32 y = probe_origin_fighter->collision_pos.vy;
                 if ((y - var_3[1] >= 0 ? y - var_3[1] : var_3[1] - y) >=
                     0x3E9) {
                     flags = 5;
                 }
             }
         }
-        arg0->cpu_probes[i] = flags;
+        arg0->cpu_probes[probe_index] = flags;
     }
 }
 
