@@ -1,0 +1,151 @@
+DROPPED
+softbody_AddSpring:arg1=spring_group_id  DROPPED (pre-apply FAIL, N2/N3): the only basis for 'id' is the
+  unreviewed phase-2 member name group_id; the code shows a per-group header word copied into every edge
+  (6CF8.c:667) and never read in C; wave32 already reset this param away from group_id. Keeps arg1.
+(none of the 34 research rows dropped: each was re-derived against the worktree source at 15e2a833f; every use of the binding enumerated,
+ no FAKE comment touches any of them, none appears in an __asm__ string, every new name is fresh in its TU and include/**.)
+memcard_CountFreeBlocks:var_v1/var_a1/var_a2 kept: the FAKE comments in that function's declarations sit on var_a0 and var_5 only; reviewers to confirm.
+
+CHANGED (drafter-substituted, kept)
+memcard_HasFile:var_t1: file_index -> files_checked (counter of entries compared; it does not subscript an array, entries are reached through the var_a3 cursor)
+memcard_ReadFile:arg3: buffer -> read_dest (buffer is generic; it is the destination of read())
+memcard_WriteFile:arg3: buffer -> write_src (buffer is generic; it is the source of write())
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at 818a14b44)
+collision_WalkSegmentGrid:arg0: Full semantic proof for the forwarded output buffer was not collected.
+collision_WalkSegmentGrid:arg1: Full semantic proof for the forwarded output buffer was not collected.
+collision_WalkSegmentGrid:var_0: Axis-sign interpretation through the exchanged grid traversal was not verified at every use.
+collision_WalkSegmentGrid:var_1: Axis-sign interpretation through the exchanged grid traversal was not verified at every use.
+collision_WalkSegmentGrid:var_2: Axis-exchange state was not verified through every traversal branch.
+collision_TestSegmentExtendingShortStart:arg0: Full proof across endpoint copying and extension arithmetic was not collected.
+collision_TestSegmentExtendingShortStart:arg1: Full proof across endpoint copying and extension arithmetic was not collected.
+collision_TestSegmentExtendingShortStart:arg2: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentExtendingShortStart:arg3: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentExtendingShortStartWithWork:arg0: Full proof across endpoint copying and extension arithmetic was not collected.
+collision_TestSegmentExtendingShortStartWithWork:arg1: Full proof across endpoint copying and extension arithmetic was not collected.
+collision_TestSegmentExtendingShortStartWithWork:arg2: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentExtendingShortStartWithWork:arg3: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentExtendingShortStartWithWork:arg4: Caller-supplied work-storage role was screened without a complete use proof.
+collision_TestSegment:arg0: Endpoint role was screened without collecting a complete semantic use proof.
+collision_TestSegment:arg1: Endpoint role was screened without collecting a complete semantic use proof.
+collision_TestSegment:arg2: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegment:arg3: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentWithWork:arg0: Endpoint role was screened without collecting a complete semantic use proof.
+collision_TestSegmentWithWork:arg1: Endpoint role was screened without collecting a complete semantic use proof.
+collision_TestSegmentWithWork:arg2: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentWithWork:arg3: Forwarded output buffer semantics were not verified through collision_GetHit.
+collision_TestSegmentWithWork:arg4: Caller-supplied work-storage role was screened without a complete use proof.
+collision_GetHit:arg0: Output components derived from opaque work fields were not independently verified.
+collision_GetHit:arg1: Output components derived from opaque work fields were not independently verified.
+collision_TestCellKeepingNearestHitScalarProjection:arg0: Full grid-coordinate proof across the projection body was not collected.
+collision_TestCellKeepingNearestHitScalarProjection:arg1: Full grid-coordinate proof across the projection body was not collected.
+collision_TestCellKeepingNearestHitScalarProjection:var_6: Packed data word role was not verified through the complete decoding branch.
+collision_TestCellKeepingNearestHitGteProjection:arg0: Full grid-coordinate proof across the projection body was not collected.
+collision_TestCellKeepingNearestHitGteProjection:arg1: Full grid-coordinate proof across the projection body was not collected.
+collision_TestCellKeepingNearestHitGteProjection:var_6: Packed data word role was not verified through the complete decoding branch.
+softbody_LoadColliders:var_4: Biased scratchpad pointer traversal lacks a complete semantic naming proof.
+softbody_LoadColliders:var_8: Scratchpad address use belongs to the FAKE loop-shaping region.
+softbody_LoadColliders:var_9: Loads belong to the FAKE loop-shaping region.
+softbody_PrepareStep:arg0: Full aggregate role across matrix and collider operations was not verified.
+softbody_PrepareStep:arg1: Full aggregate role across matrix and spring operations was not verified.
+softbody_SolveSprings:arg0: Full aggregate use proof across the spring solver was not collected.
+softbody_SolveSprings:var_5: Edge-distance lifetime through the pipelined solver was not verified at every use.
+softbody_Step:arg0: Full aggregate role across preparation and collision handling was not verified.
+softbody_Step:arg1: Full aggregate role across node integration and point access was not verified.
+softbody_Step:var_11: Scaled collision-correction numerator lacks a complete arithmetic proof.
+softbody_Step:var_14: Reused for a_edge_count and b_edge_count; no single specific role proposed.
+softbody_UpdateList:arg0: List aggregate role was screened without a complete naming proof.
+softbody_UpdateList:arg1: List bound was screened without a complete naming proof.
+softbody_SnapToPoints:arg0: Matrix-source aggregate role was screened without a complete naming proof.
+softbody_SnapToPoints:arg1: Node-output aggregate role was screened without a complete naming proof.
+pad_UnpackButtonMappingNibblesToCells:arg0: Packed mapping semantics beyond nibble extraction were not verified.
+pad_Update:arg0: Main-loop gating meaning was not verified across the complete input branch.
+pad_Update:var_1: Packet-copy layout was not verified through every packet interpretation.
+pad_Update:var_3: Accumulated held-bit packing was not verified across every mapping branch.
+InitSavedRecordAndResetCameraDistanceOffset:var_1: FAKE second handle to g_saved_record at src/main/6CF8.c:126-130.
+gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth:arg0: Full input-file layout and offset roles were not verified.
+gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth:arg1: Unused parameter has no demonstrated purpose.
+gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth:arg2: Unused parameter has no demonstrated purpose.
+gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth:var_2: Pixel-storage cursor role was screened without a complete layout proof.
+menu_RunPauseMenu:arg0: Full displayed-buffer role was not verified through the complete menu loop.
+menu_RunPauseMenu:arg1: Parameter purpose was not established in this pass.
+menu_RunPauseMenu:var_0: Local ordering-table role was screened without a complete use proof.
+menu_RunPauseMenu:var_1: FAKE do-while region explicitly shapes this binding's allocation.
+menu_RunPauseMenu:var_2: FAKE do-while commentary explicitly includes this binding's allocation.
+menu_RunPauseMenu:var_3: Mode-dependent menu gate lacks a complete semantic proof.
+menu_RunPauseMenu:var_5: Primitive storage base role was screened without a complete use proof.
+menu_RunPauseMenu:var_7: Saved display-buffer pointer role was screened without a complete use proof.
+rng_Next:var_0: Holds incoming RNG state and then the newly mixed state; retained conservatively under the reuse rule.
+main:var_1: Passed uninitialized to the image helper before later becoming a selected GpuDb pointer.
+main:var_2: Ordering-table alias purpose was not verified beyond its short forwarding sequence.
+main:var_3: First pad_Update use precedes assignment; no single valid held-value interpretation established.
+main:var_4: FAKE second handle to D_800A3770 at src/main/6CF8.c:433-435.
+gpu_DrawDisplayModeOnLocalOtAndSync:var_0: Local ordering-table role was screened without a complete use proof.
+gpu_DrawDisplayModeOnLocalOtAndSync:var_3: Primitive address evolution through every drawing mode was not verified.
+softbody_Build:var_1: Changes from accumulated position sum to averaged position.
+softbody_Build:var_4: Walks group headers and node-index lists; no all-use cursor name proved.
+softbody_Build:var_5: Counted population and division use were screened without a complete use proof.
+softbody_Build:var_8: Group-length role was screened without verifying every parser use.
+softbody_Build:var_9: Group identity forwarding was screened without a complete parser proof.
+func_80017F98:arg0: Empty function provides no parameter purpose.
+func_80017F98:arg1: Empty function provides no parameter purpose.
+func_80017F98:arg2: Empty function provides no parameter purpose.
+node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_0: Reused first as rotation angles and then as translation components.
+node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_5: Animation progression and alternate frame lookup were not fully verified.
+node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_7: Walks translation and rotation components; no complete cursor proof collected.
+node_AdvanceFrameAnimatedEntriesAndQueueDraws:var_15: Meaning of the decremented and clamped unk60 value was not established.
+math_BlendCylindricalPositionsWithNegatedYZ:sp18: Partially transformed intermediate vector lacks an all-stage naming proof.
+math_BlendCylindricalPositionsWithNegatedYZ:sp28: Partially transformed intermediate vector lacks an all-stage naming proof.
+math_BlendCylindricalPositionsWithNegatedYZ:var_3: Reassigned from separate input records; retained conservatively under the reuse rule.
+math_LerpShortVectorsNegateYZ:sp18: Intermediate vector construction was screened without an all-stage naming proof.
+math_LerpShortVectorsNegateYZ:sp28: Intermediate vector construction was screened without an all-stage naming proof.
+resource_LoadSelectedEntriesTexturesAndSound:arg0: Selection role across resource loading branches was not completely verified.
+resource_LoadSelectedEntriesTexturesAndSound:arg1: Input selection role was not completely verified.
+resource_LoadSelectedEntriesTexturesAndSound:arg2: Full selection-list layout and alternate offset interpretation were not verified.
+resource_LoadSelectedEntriesTexturesAndSound:arg3: Optional source-buffer role was screened without a complete use proof.
+resource_LoadSelectedEntriesTexturesAndSound:sp18: Scratch selection-list construction and later consumers were not fully verified.
+resource_LoadSelectedEntriesTexturesAndSound:sp108: Declaration purpose was not established in this pass.
+resource_LoadSelectedEntriesTexturesAndSound:var_3: Loaded resource block interpretation was not fully verified.
+resource_LoadSelectedEntriesTexturesAndSound:var_6: Output address lifetime across relocation and sound packing was not fully verified.
+resource_LoadSelectedEntriesTexturesAndSound:var_7: Texture section address role was screened without a complete layout proof.
+snd_LoadCommonVab:arg0: Loaded-pack destination and scratch-space arithmetic were screened without a complete parameter proof.
+snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles:arg0: Multiple packed-file destination roles were screened without a complete parameter proof.
+snd_ReloadListedVabsFromFileAndInstallBillboards:arg0: Buffer compaction and billboard relocation roles were not fully verified.
+snd_ReloadListedVabsFromFileAndInstallBillboards:arg1: Source-selection arithmetic lacks a complete semantic proof.
+snd_ReloadListedVabsFromFileAndInstallBillboards:arg2: Pack-entry selection meaning was not independently verified.
+snd_ReloadListedVabsFromFileAndInstallBillboards:arg3: Pack-entry selection meaning was not independently verified.
+snd_ReloadListedVabsFromFileAndInstallBillboards:var_0: Mutable descriptor offsets and lengths need a complete lifetime proof.
+snd_RebaseListedVabs:arg0: Relocation-delta forwarding was screened without a complete callee proof.
+snd_SetReverb:arg0: Table selection and arithmetic depth derivation were not fully verified.
+snd_SetReverb:temp_a0: Arithmetic depth carrier may be register shaping; semantic necessity not demonstrated.
+snd_SetReverb:var_4: Shifted selector intermediate lacks a demonstrated independent semantic purpose.
+snd_MoveVabBody:arg0: SPU transfer buffer role was screened without a complete callee signature audit.
+snd_MoveVabBody:arg1: VAB slot role across all sound calls was screened without a complete proof.
+snd_MoveVabBody:arg2: Destination SPU address role was screened without a complete callee signature audit.
+snd_MoveVabBody:arg3: Source SPU address role was screened without a complete callee signature audit.
+snd_CompactVabBodies:arg0: Unused parameter has no demonstrated purpose.
+snd_CompactVabBodies:var_0: Sorted VAB slot array was screened without a complete ordering and consumer proof.
+snd_LoadVabPack:arg0: In-place offset relocation and pack lifetime were not fully verified.
+snd_LoadVabPack:arg1: VAB slot role across all conditions and API calls was not fully verified.
+snd_LoadVabPack:arg2: Compaction buffer forwarding was screened without a complete callee proof.
+snd_VabFakeOpen:arg0: Relocation delta across pointer and embedded-address updates was not fully verified.
+snd_VabFakeOpen:arg1: VAB slot forwarding through idx was screened without a complete proof.
+snd_QueueSound:var_1: Request descriptor layout and its downstream meaning were not fully verified.
+snd_FlushSoundQueue:var_0: API output array has no subsequent reads; independent local purpose not established.
+snd_FlushSoundQueue:var_2: Voice search and key-on argument role were screened without a complete API audit.
+snd_FlushSoundQueue:var_4: Remapped VAB identity role was screened without a complete API audit.
+snd_FlushSoundQueue:var_6: Packed note fields were not verified against every SsUtKeyOnV argument.
+memcard_CountFiles:arg0: First device-format digit's exact semantic identity was not established.
+memcard_CountFiles:arg1: Second device-format digit's exact semantic identity was not established.
+memcard_CountFreeBlocks:var_a0: Changes from byte total to block count and is mentioned by the FAKE allocation annotation.
+memcard_CountFreeBlocks:var_v0: Signed-division bias carrier; independent semantic purpose not established.
+memcard_CountFreeBlocks:var_5: FAKE constant holder at src/main/memcard.c:165-168.
+memcard_ReadFile:arg0: First device-format digit's exact semantic identity was not established.
+memcard_ReadFile:arg1: Second device-format digit's exact semantic identity was not established.
+memcard_WriteFile:arg0: First device-format digit's exact semantic identity was not established.
+memcard_WriteFile:arg1: Second device-format digit's exact semantic identity was not established.
+memcard_WriteFile:arg4: Allocation quantity encoded in open mode needs an independently verified unit.
+memcard_WriteFile:arg6: Optional creation gate was screened without an independently verified open-mode interpretation.
+
+R6 HAZARD: memcard_CountFreeBlocks keeps its own var_v0 (comment memcard.c:160 '0xF - (var_v0 >> var_5)');
+the comment pass must not rewrite it to entry_byte (that rename is memcard_HasFile's var_v0 only).
