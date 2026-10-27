@@ -988,7 +988,7 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     s32 bit;
     s32 i;
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->row_sheets;
     row_mask = D_8009BC04.unk4;
     bit = 0;
     s.header = var_3[0];
@@ -1062,7 +1062,7 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
         menu_DrawRowThreeThinTilesAndTwoSheets(arg0, &s, i);
     }
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_40;
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->cursor_row_sheets;
     s.ot_idx = 0xA;
     s.has_color = 0;
     s.semi = 0;
@@ -1078,7 +1078,7 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->row_sheets;
     rect.x = arg1[0];
     rect.y = arg1[1];
     rect.w = arg1[2];
@@ -1670,7 +1670,7 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32 arg0, s32 arg1) {
     g_sheet_pair_panel_tile_cursor = D_800F1498 + var_1 * 4;
     gpu_DrawIndexedSheetPair(arg0, 0, &sp10, 0);
     h = 0;
-    var_2 = g_row_menu_work_block->unk_24->unk_48;
+    var_2 = g_row_menu_work_block->unk_24->sheet_pair_box_sizes;
     var_2 += arg0;
     if (arg1 != -1) {
         w = arg1 ? 0x1F : 0x28;
@@ -1861,7 +1861,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
-    recs = g_row_menu_work_block->unk_24->unk_44;
+    recs = g_row_menu_work_block->unk_24->rect_rows;
     tile = (TILE *)arg0[6];
     for (var_9 = 0; var_9 < 11; var_9++) {
         var_5 = &recs[var_9];
@@ -2599,14 +2599,14 @@ void gpu_AdvanceBufferCounterAndBuildDrawContext(s32 *a0, s32 *a1) {
     v0 = gpu_GetPrimBufferAndRefreshStrip(a1[0] & 1);
     s0[1] = (s32)g_row_menu_work_block->unk_24;
     s0[3] = (s32)v0->unk_04;
-    s0[2] = v0->unk_00;
-    s0[4] = (s32)v0->unk_08;
-    s0[5] = v0->unk_10;
-    s0[6] = (s32)v0->unk_0C;
+    s0[2] = v0->textured_quad_prims;
+    s0[4] = (s32)v0->gradient_quad_prims;
+    s0[5] = v0->sprite_prims;
+    s0[6] = (s32)v0->tile_prims;
     s0[7] = (s32)v0->unk_14;
-    s0[8] = (s32)v0->unk_18;
+    s0[8] = (s32)v0->draw_area_prims;
     D_800A3520 = v0;
-    s0[9] = (s32)v0->unk_1C;
+    s0[9] = (s32)v0->draw_offset_prims;
 }
 
 void reloc_RelocateSelfOffsets(s32 *a0) {
@@ -2628,28 +2628,28 @@ s32 gpu_InitPrimBufferPair(s32 arg0, Unk8006E49CRec *arg1) {
     u8 *base2;
     u8 *base3;
     u8 *base4;
-    arg1[0].unk_00 = arg0;
-    base1 = (u8 *)arg1[0].unk_00 + 0x9C40;
-    arg1[0].unk_08 = base1 + 0x5DC0;
+    arg1[0].textured_quad_prims = arg0;
+    base1 = (u8 *)arg1[0].textured_quad_prims + 0x9C40;
+    arg1[0].gradient_quad_prims = base1 + 0x5DC0;
     arg1[0].unk_04 = base1;
     base2 = base1 + 0x6838;
-    arg1[0].unk_0C = base1 + 0x61F8;
+    arg1[0].tile_prims = base1 + 0x61F8;
     arg1[0].unk_14 = base2 + 0x1B58;
-    arg1[0].unk_18 = base2 + 0x1DB0;
-    arg1[0].unk_1C = base2 + 0x1E28;
+    arg1[0].draw_area_prims = base2 + 0x1DB0;
+    arg1[0].draw_offset_prims = base2 + 0x1E28;
     arg1[0].unk_20 = base2 + 0x1EA0;
-    arg1[0].unk_10 = (s32)base2;
-    arg1[1].unk_00 = (s32)(base2 + 0x1FB0);
-    base3 = (u8 *)arg1[1].unk_00 + 0x9C40;
-    arg1[1].unk_08 = base3 + 0x5DC0;
+    arg1[0].sprite_prims = (s32)base2;
+    arg1[1].textured_quad_prims = (s32)(base2 + 0x1FB0);
+    base3 = (u8 *)arg1[1].textured_quad_prims + 0x9C40;
+    arg1[1].gradient_quad_prims = base3 + 0x5DC0;
     arg1[1].unk_04 = base3;
     base4 = base3 + 0x6838;
-    arg1[1].unk_0C = base3 + 0x61F8;
+    arg1[1].tile_prims = base3 + 0x61F8;
     arg1[1].unk_14 = base4 + 0x1B58;
-    arg1[1].unk_18 = base4 + 0x1DB0;
-    arg1[1].unk_1C = base4 + 0x1E28;
+    arg1[1].draw_area_prims = base4 + 0x1DB0;
+    arg1[1].draw_offset_prims = base4 + 0x1E28;
     arg1[1].unk_20 = base4 + 0x1EA0;
-    arg1[1].unk_10 = (s32)base4;
+    arg1[1].sprite_prims = (s32)base4;
     return (s32)(base4 + 0x1FB0);
 }
 

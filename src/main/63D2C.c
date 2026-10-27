@@ -285,7 +285,7 @@ void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
     POLY_F4 *q;
 
     if (arg1 == 0) {
-        t = arg0->unk_04.unk_10;
+        t = arg0->unk_04.tile_prims;
         SetTile(t);
         gpu_SetTileRgbFromBlockFlag(t);
         t->x0 = 0x3F;
@@ -295,7 +295,7 @@ void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
         SetSemiTrans(t, 1);
         AddPrim(g_gpu_ot_ptr + 0x1E, t);
         t++;
-        arg0->unk_04.unk_10 = t;
+        arg0->unk_04.tile_prims = t;
     }
     s.ot_idx = 0x1F;
     s.has_color = 0;
@@ -306,8 +306,8 @@ void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
     for (i = 0; i < 3; i++) {
         s.header = temp_s2[i];
         s.table = s.header->cells;
-        s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
+        s.sprt_out = arg0->unk_04.sprite_prims;
+        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
     }
 
     s.header = *temp_s2;
@@ -437,8 +437,8 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
             D_8009BD20[SELWORK->f67][1] + 9 == i) {
             s.header = table[i];
             s.table = s.header->cells;
-            s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
+            s.sprt_out = arg0->unk_04.sprite_prims;
+            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
         }
         i++;
     } while (i < 15);

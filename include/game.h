@@ -158,14 +158,14 @@ typedef struct {
  * gpu_AdvanceBufferCounterAndBuildDrawContext copies them into the s32 words of
  * its context array. */
 typedef struct {
-    s32 unk_00;
+    s32 textured_quad_prims;
     void *unk_04;
-    void *unk_08;
-    void *unk_0C;
-    s32 unk_10;
+    void *gradient_quad_prims;
+    void *tile_prims;
+    s32 sprite_prims;
     void *unk_14;
-    void *unk_18;
-    void *unk_1C;
+    void *draw_area_prims;
+    void *draw_offset_prims;
     void *unk_20;
     s32 unk_24;
     s32 unk_28;
@@ -177,14 +177,14 @@ typedef struct {
  * gpu_AddScaledSpriteQuads / gpu_AddRotatedSpriteQuads and gpu_AddSpriteCells
  * return. */
 typedef struct {
-    s32 unk_00;
+    s32 textured_quad_prims;
     POLY_F4 *unk_04;
-    POLY_G4 *unk_08;
-    s32 unk_0C;
-    TILE *unk_10;
+    POLY_G4 *gradient_quad_prims;
+    s32 sprite_prims;
+    TILE *tile_prims;
     DR_MODE *unk_14;
-    DR_AREA *unk_18;
-    DR_OFFSET *unk_1C;
+    DR_AREA *draw_area_prims;
+    DR_OFFSET *draw_offset_prims;
 } Unk800788B0Rec;
 
 /* The VAB pack snd_LoadVabPack loads (MOD.BIN's head unk_00 points at one;
@@ -2436,7 +2436,7 @@ typedef struct {
 typedef struct {
     Unk8006E950Head unk_00;
     Unk8009B0E0Record **unk_14;
-    Unk8009B0E0Record **unk_18;
+    Unk8009B0E0Record **row_sheets;
     Unk8009B0E0Record **unk_1C;
     Unk8009B0E0Record **unk_20;
     Unk8009B0E0Record **unk_24;
@@ -2446,9 +2446,9 @@ typedef struct {
     Unk8009B0E0Record **unk_34;
     Unk8009B0E0Record **unk_38;
     Unk8006DD94List *unk_3C;
-    Unk8009B0E0Record **unk_40;
-    Rec_8006C21C *unk_44;
-    Size2s16 *unk_48;
+    Unk8009B0E0Record **cursor_row_sheets;
+    Rec_8006C21C *rect_rows;
+    Size2s16 *sheet_pair_box_sizes;
 } Unk8006919CRec;
 
 /* The bit stream bitstream_ReadBits reads, most significant bit first: the next
