@@ -1,11 +1,11 @@
 glabel fight_HandleDescriptorPlaybackCompletion
-    /* 2C4B4 8003BCB4 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2C4B8 8003BCB8 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2C4B4 8003BCB4 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2C4B8 8003BCB8 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2C4BC 8003BCBC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2C4C0 8003BCC0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2C4C4 8003BCC4 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2C4C8 8003BCC8 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2C4CC 8003BCCC B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2C4C8 8003BCC8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2C4CC 8003BCCC B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 2C4D0 8003BCD0 DA53010C */  jal        motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
     /* 2C4D4 8003BCD4 00000000 */   nop
     /* 2C4D8 8003BCD8 07004010 */  beqz       $v0, .L8003BCF8
@@ -21,8 +21,8 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C4FC 8003BCFC 00000000 */   nop
     /* 2C500 8003BD00 3752010C */  jal        motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock
     /* 2C504 8003BD04 00000000 */   nop
-    /* 2C508 8003BD08 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* 2C50C 8003BD0C DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* 2C508 8003BD08 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* 2C50C 8003BD0C DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* 2C510 8003BD10 00000000 */  nop
     /* 2C514 8003BD14 3A004014 */  bnez       $v0, .L8003BE00
     /* 2C518 8003BD18 00000000 */   nop
@@ -33,8 +33,8 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C52C 8003BD2C 00000000 */   nop
     /* 2C530 8003BD30 0A80023C */  lui        $v0, %hi(D_800A37B0)
     /* 2C534 8003BD34 B0374290 */  lbu        $v0, %lo(D_800A37B0)($v0)
-    /* 2C538 8003BD38 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C53C 8003BD3C 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* 2C538 8003BD38 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C53C 8003BD3C 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 2C540 8003BD40 FFFF4324 */  addiu      $v1, $v0, -0x1
     /* 2C544 8003BD44 0600622C */  sltiu      $v0, $v1, 0x6
     /* 2C548 8003BD48 2D004010 */  beqz       $v0, .L8003BE00
@@ -75,8 +75,8 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C5C4 8003BDC4 00000000 */  nop
     /* 2C5C8 8003BDC8 05006214 */  bne        $v1, $v0, .L8003BDE0
     /* 2C5CC 8003BDCC 00000000 */   nop
-    /* 2C5D0 8003BDD0 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C5D4 8003BDD4 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* 2C5D0 8003BDD0 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C5D4 8003BDD4 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 2C5D8 8003BDD8 80EF0008 */  j          .L8003BE00
     /* 2C5DC 8003BDDC 00000000 */   nop
   .L8003BDE0:

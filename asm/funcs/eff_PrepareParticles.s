@@ -19,7 +19,7 @@ glabel eff_PrepareParticles
     /* 580EC 800678EC 6C00C924 */   addiu     $t1, $a2, 0x6C
     /* 580F0 800678F0 0A80023C */  lui        $v0, %hi(D_8009B890)
     /* 580F4 800678F4 90B84224 */  addiu      $v0, $v0, %lo(D_8009B890)
-    /* 580F8 800678F8 BC0382AF */  sw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 580F8 800678F8 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 580FC 800678FC 07000224 */  addiu      $v0, $zero, 0x7
     /* 58100 80067900 0200C2A4 */  sh         $v0, 0x2($a2)
     /* 58104 80067904 0000C2A4 */  sh         $v0, 0x0($a2)
@@ -38,7 +38,7 @@ glabel eff_PrepareParticles
     /* 58134 80067934 00000000 */   nop
     /* 58138 80067938 0A80023C */  lui        $v0, %hi(D_8009B890)
     /* 5813C 8006793C 90B84224 */  addiu      $v0, $v0, %lo(D_8009B890)
-    /* 58140 80067940 BC0382AF */  sw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 58140 80067940 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 58144 80067944 07000224 */  addiu      $v0, $zero, 0x7
     /* 58148 80067948 0200C2A4 */  sh         $v0, 0x2($a2)
     /* 5814C 8006794C 0000C2A4 */  sh         $v0, 0x0($a2)
@@ -89,7 +89,7 @@ glabel eff_PrepareParticles
     /* 581F4 800679F4 C0100200 */  sll        $v0, $v0, 3
   .L800679F8:
     /* 581F8 800679F8 21104300 */  addu       $v0, $v0, $v1
-    /* 581FC 800679FC BC0382AF */  sw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 581FC 800679FC BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 58200 80067A00 1F000224 */  addiu      $v0, $zero, 0x1F
     /* 58204 80067A04 0000C2A4 */  sh         $v0, 0x0($a2)
     /* 58208 80067A08 20000224 */  addiu      $v0, $zero, 0x20
@@ -115,7 +115,7 @@ glabel eff_PrepareParticles
     /* 58254 80067A54 000043AC */  sw         $v1, 0x0($v0)
     /* 58258 80067A58 0A80023C */  lui        $v0, %hi(D_8009B8B0)
     /* 5825C 80067A5C B0B84224 */  addiu      $v0, $v0, %lo(D_8009B8B0)
-    /* 58260 80067A60 BC0382AF */  sw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 58260 80067A60 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 58264 80067A64 0F000224 */  addiu      $v0, $zero, 0xF
     /* 58268 80067A68 0200C2A4 */  sh         $v0, 0x2($a2)
     /* 5826C 80067A6C 0000C2A4 */  sh         $v0, 0x0($a2)
@@ -132,7 +132,7 @@ glabel eff_PrepareParticles
     /* 58294 80067A94 21082300 */  addu       $at, $at, $v1
     /* 58298 80067A98 980B22A4 */  sh         $v0, %lo(D_800F0B98)($at)
   .L80067A9C:
-    /* 5829C 80067A9C BC03838F */  lw         $v1, %gp_rel(D_800A3488)($gp)
+    /* 5829C 80067A9C BC03838F */  lw         $v1, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 582A0 80067AA0 00000000 */  nop
     /* 582A4 80067AA4 00006294 */  lhu        $v0, 0x0($v1)
     /* 582A8 80067AA8 02006394 */  lhu        $v1, 0x2($v1)
@@ -149,23 +149,23 @@ glabel eff_PrepareParticles
     /* 582D4 80067AD4 00000000 */  nop
     /* 582D8 80067AD8 00140200 */  sll        $v0, $v0, 16
     /* 582DC 80067ADC 000062AC */  sw         $v0, 0x0($v1)
-    /* 582E0 80067AE0 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 582E0 80067AE0 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 582E4 80067AE4 CC03838F */  lw         $v1, %gp_rel(D_800A3498)($gp)
     /* 582E8 80067AE8 04004294 */  lhu        $v0, 0x4($v0)
     /* 582EC 80067AEC 00000000 */  nop
     /* 582F0 80067AF0 000062A4 */  sh         $v0, 0x0($v1)
-    /* 582F4 80067AF4 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 582F4 80067AF4 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 582F8 80067AF8 D403838F */  lw         $v1, %gp_rel(D_800A34A0)($gp)
     /* 582FC 80067AFC 06004294 */  lhu        $v0, 0x6($v0)
     /* 58300 80067B00 00000000 */  nop
     /* 58304 80067B04 000062A4 */  sh         $v0, 0x0($v1)
-    /* 58308 80067B08 BC03838F */  lw         $v1, %gp_rel(D_800A3488)($gp)
+    /* 58308 80067B08 BC03838F */  lw         $v1, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 5830C 80067B0C 0000C294 */  lhu        $v0, 0x0($a2)
     /* 58310 80067B10 04006394 */  lhu        $v1, 0x4($v1)
     /* 58314 80067B14 D003848F */  lw         $a0, %gp_rel(D_800A349C)($gp)
     /* 58318 80067B18 21104300 */  addu       $v0, $v0, $v1
     /* 5831C 80067B1C 000082A4 */  sh         $v0, 0x0($a0)
-    /* 58320 80067B20 BC03838F */  lw         $v1, %gp_rel(D_800A3488)($gp)
+    /* 58320 80067B20 BC03838F */  lw         $v1, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 58324 80067B24 00000295 */  lhu        $v0, 0x0($t0)
     /* 58328 80067B28 06006394 */  lhu        $v1, 0x6($v1)
     /* 5832C 80067B2C D803848F */  lw         $a0, %gp_rel(D_800A34A4)($gp)

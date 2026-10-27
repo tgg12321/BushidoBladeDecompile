@@ -1,11 +1,11 @@
 glabel fight_UpdateCommandStreamImageLoadAndResume
-    /* 2C0E4 8003B8E4 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2C0E8 8003B8E8 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2C0E4 8003B8E4 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2C0E8 8003B8E8 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2C0EC 8003B8EC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2C0F0 8003B8F0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2C0F4 8003B8F4 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2C0F8 8003B8F8 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2C0FC 8003B8FC B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2C0F8 8003B8F8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2C0FC 8003B8FC B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 2C100 8003B900 03004228 */  slti       $v0, $v0, 0x3
     /* 2C104 8003B904 0F004010 */  beqz       $v0, .L8003B944
     /* 2C108 8003B908 00000000 */   nop
@@ -25,15 +25,15 @@ glabel fight_UpdateCommandStreamImageLoadAndResume
     /* 2C13C 8003B93C 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
     /* 2C140 8003B940 B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
   .L8003B944:
-    /* 2C144 8003B944 0A80033C */  lui        $v1, %hi(D_800A37B8)
-    /* 2C148 8003B948 B837638C */  lw         $v1, %lo(D_800A37B8)($v1)
+    /* 2C144 8003B944 0A80033C */  lui        $v1, %hi(g_handler_frame_counter)
+    /* 2C148 8003B948 B837638C */  lw         $v1, %lo(g_handler_frame_counter)($v1)
     /* 2C14C 8003B94C 03000224 */  addiu      $v0, $zero, 0x3
     /* 2C150 8003B950 1B006214 */  bne        $v1, $v0, .L8003B9C0
     /* 2C154 8003B954 00000000 */   nop
     /* 2C158 8003B958 CFEC010C */  jal        DrawSync
     /* 2C15C 8003B95C 21200000 */   addu      $a0, $zero, $zero
-    /* 2C160 8003B960 0A80043C */  lui        $a0, %hi(D_800A3844)
-    /* 2C164 8003B964 4438848C */  lw         $a0, %lo(D_800A3844)($a0)
+    /* 2C160 8003B960 0A80043C */  lui        $a0, %hi(g_fight_command_stream_cursor)
+    /* 2C164 8003B964 4438848C */  lw         $a0, %lo(g_fight_command_stream_cursor)($a0)
     /* 2C168 8003B968 97EB000C */  jal        fight_ScanCommandStreamAndLoadImage
     /* 2C16C 8003B96C 00000000 */   nop
     /* 2C170 8003B970 F4010224 */  addiu      $v0, $zero, 0x1F4

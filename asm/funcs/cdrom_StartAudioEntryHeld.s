@@ -8,8 +8,8 @@ glabel cdrom_StartAudioEntryHeld
     /* 279C4 800371C4 76DC0008 */  j          .L800371D8
     /* 279C8 800371C8 21100000 */   addu      $v0, $zero, $zero
   .L800371CC:
-    /* 279CC 800371CC 1080013C */  lui        $at, %hi(D_80101E58 + 0xC)
-    /* 279D0 800371D0 641E22A4 */  sh         $v0, %lo(D_80101E58 + 0xC)($at)
+    /* 279CC 800371CC 1080013C */  lui        $at, %hi(g_cdrom_state + 0xC)
+    /* 279D0 800371D0 641E22A4 */  sh         $v0, %lo(g_cdrom_state + 0xC)($at)
     /* 279D4 800371D4 01000224 */  addiu      $v0, $zero, 0x1
   .L800371D8:
     /* 279D8 800371D8 1000BF8F */  lw         $ra, 0x10($sp)

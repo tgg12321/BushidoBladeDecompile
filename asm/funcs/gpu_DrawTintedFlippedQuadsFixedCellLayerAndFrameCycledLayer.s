@@ -40,7 +40,7 @@ glabel gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
     /* 63A98 80073298 04004228 */  slti       $v0, $v0, 0x4
     /* 63A9C 8007329C 45004010 */  beqz       $v0, .L800733B4
     /* 63AA0 800732A0 1800A3AF */   sw        $v1, 0x18($sp)
-    /* 63AA4 800732A4 F804838F */  lw         $v1, %gp_rel(D_800A35C4)($gp)
+    /* 63AA4 800732A4 F804838F */  lw         $v1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 63AA8 800732A8 01000224 */  addiu      $v0, $zero, 0x1
     /* 63AAC 800732AC 2800A2AF */  sw         $v0, 0x28($sp)
     /* 63AB0 800732B0 0800628C */  lw         $v0, 0x8($v1)
@@ -154,7 +154,7 @@ glabel gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer
     /* 63C50 80073450 02006328 */  slti       $v1, $v1, 0x2
     /* 63C54 80073454 2D006010 */  beqz       $v1, .L8007350C
     /* 63C58 80073458 180002AE */   sw        $v0, 0x18($s0)
-    /* 63C5C 8007345C F804838F */  lw         $v1, %gp_rel(D_800A35C4)($gp)
+    /* 63C5C 8007345C F804838F */  lw         $v1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 63C60 80073460 01000224 */  addiu      $v0, $zero, 0x1
     /* 63C64 80073464 2C00B3AF */  sw         $s3, 0x2C($sp)
     /* 63C68 80073468 2800A2AF */  sw         $v0, 0x28($sp)

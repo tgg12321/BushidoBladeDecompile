@@ -125,9 +125,9 @@ s32 motion_UpdatePlayback(void) {
     light_ApplyPointLightTargets();
     camera_CopyViewMatrixWithHalvedMiddleRow();
     gpu_ResetAndStampViewCenteredCellAttributes();
-    calc_LightMatrix(&D_800F62E0[0]);
-    calc_LightMatrix(&D_800F62E0[1]);
-    calc_LightMatrix(&D_800F62E0[4]);
+    calc_LightMatrix(&g_light_setups[0]);
+    calc_LightMatrix(&g_light_setups[1]);
+    calc_LightMatrix(&g_light_setups[4]);
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
             s32 ang;
@@ -261,7 +261,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
 
     p->cpu_profile = p->unk_0A;
     p->unk_438 = p->unk_08;
-    switch (D_800A38DC) {
+    switch (g_fight_mode_selector) {
     case 1:
         p->unk_438 = (D_800A3783 - 1) / 5 * 0x300 + 0x400;
         if (p->unk_438 > 0xD00) {
@@ -272,7 +272,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
         if (D_800A3680 == D_800A3671) {
             fighter_ClearCpuTally(p->index);
         }
-        if (D_80099D88[p->cpu_profile].flags & 0x300) {
+        if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
             src = &D_8009A8C8[p->unk_86][D_800A37A0 - 1];
             p->unk_424 = src->unk0;
             p->unk_3F6 = src->unk1;
@@ -305,10 +305,10 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
         p->cpu_profile = D_8008E778[D_800A38E2 - 1][0] + 0x1B;
         base = D_800A38E2 / 10;
         p->unk_438 = base * 16 + 0x80;
-        if (D_80099D88[p->cpu_profile].flags & 0x3000) {
+        if (g_cpu_profiles[p->cpu_profile].flags & 0x3000) {
             p->unk_438 = base * 16 + 0x180;
         }
-        if (D_80099D88[p->cpu_profile].flags & 0x4000) {
+        if (g_cpu_profiles[p->cpu_profile].flags & 0x4000) {
             p->unk_438 += 0x200;
         }
         if ((D_800A38E2 - 1) % 10 == 0) {
@@ -323,16 +323,16 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
         p->unk_3F6 = var_2[1];
         break;
     }
-    if (fighter_GetSavedCpuBehaviorAdjustFlag() && D_800A38DC != 3) {
+    if (fighter_GetSavedCpuBehaviorAdjustFlag() && g_fight_mode_selector != 3) {
         p->unk_438 = p->unk_438 * 11 >> 4;
     }
-    if (!(D_80099D88[p->cpu_profile].flags & 0xFF00)) {
+    if (!(g_cpu_profiles[p->cpu_profile].flags & 0xFF00)) {
         p->unk_424 = 0x11 - (p->unk_438 >> 8);
     }
     p->unk_39A = 0x8000 / p->base_move_frame_step;
     p->unk_3BD = 0x10 - (p->unk_438 >> 8);
-    if (D_80099D88[p->cpu_profile].flags & 0x100) {
-        D_80099D88[p->cpu_profile].unk3 = (rand() & 3) + 1;
+    if (g_cpu_profiles[p->cpu_profile].flags & 0x100) {
+        g_cpu_profiles[p->cpu_profile].unk3 = (rand() & 3) + 1;
     }
     for (idx = 0; idx < sizeof(p->cpu_probes); idx++) {
         p->cpu_probes[idx] = 0;
@@ -467,7 +467,7 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
         u8 idx = arg0->cpu_profile;
         if (idx == 22)
             goto check_loop;
-        if ((D_80099D88[idx].flags & 0xBF00) != 0)
+        if ((g_cpu_profiles[idx].flags & 0xBF00) != 0)
             goto check_loop;
         {
             s32 var_8;
@@ -559,8 +559,8 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     PadState pad;
     PadBitTable bits;
     s32 lo, hi;
-    /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31)
-     * (Ruling 11, ordinary-c-judge-decidable). */
+    /* work holds two values: g_fighter_horizontal_separation - unk_43E, then
+     * its sign (work >> 31) (Ruling 11, ordinary-c-judge-decidable). */
     s32 work;
     /* temp holds six values: the ground_y distance, a slot count minus one
      * (clamped at 0), the slot increment (4 or 8, then plus the old count,
@@ -611,7 +611,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         (rec->unk_430 & 0x40060) |
         ((rand() & 0xFFF) < (rec->unk_438 >> 3) &&
          rec->cpu_pad_build_count >= 0x3D) |
-        ((D_80099D88[rec->cpu_profile].flags & 0xFF00)
+        ((g_cpu_profiles[rec->cpu_profile].flags & 0xFF00)
              ? (rec->unk_3F6 < rec->unk_3F5) << 2
              : ((rand() & 0xFFF) < (rec->unk_438 >> 3) &&
                 rec->cpu_pad_build_count >= 0x3D)
@@ -658,7 +658,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     if (((D_8009A088[rec->other->unk_0E] >> rec->other->unk_440) & 1) &&
         rec->other->opponent_angle_from_orientation_abs < (rec->unk_438 >> 4) &&
         rec->unk_0E < 6 && (rec->unk_430 & 0x2000) &&
-        !(D_80099D88[rec->cpu_profile].flags & 0xBF00)) {
+        !(g_cpu_profiles[rec->cpu_profile].flags & 0xBF00)) {
         rec->unk_430 |= 0x20000;
     } else {
         rec->unk_430 &= ~0x20000;
@@ -666,10 +666,10 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 
     rec->unk_43E = rec->unk_3F8[rec->unk_86] +
                    (((rec->unk_404[rec->unk_86] - rec->unk_3F8[rec->unk_86]) *
-                     D_80099D88[rec->cpu_profile].unk5) >>
+                     g_cpu_profiles[rec->cpu_profile].unk5) >>
                     8);
-    temp2 = (D_80099D88[rec->cpu_profile].unk7 * 25u) >> 3;
-    work = D_800A387C - rec->unk_43E;
+    temp2 = (g_cpu_profiles[rec->cpu_profile].unk7 * 25u) >> 3;
+    work = g_fighter_horizontal_separation - rec->unk_43E;
     if (temp2 < (work >= 0 ? work : -work)) {
         work >>= 31;
         if (work != (rec->unk_3F0 >> 15)) {
@@ -715,7 +715,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
                 (fighter_GetSavedCpuBehaviorAdjustFlag() == 0 ||
-                 D_800A38DC == 3)) {
+                 g_fight_mode_selector == 3)) {
                 s32 var_12;
                 s32 var_13;
 
@@ -770,17 +770,17 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
                 if (rec->unk_442 != 0 ||
                     ((rec->unk_430 & 0x100) &&
                      rec->opponent_angle_from_orientation_abs > 0x400)) {
-                    if (temp2 / 2 >= D_800A387C) {
+                    if (temp2 / 2 >= g_fighter_horizontal_separation) {
                         rec->unk_426 = 1;
-                    } else if (temp2 >= D_800A387C) {
+                    } else if (temp2 >= g_fighter_horizontal_separation) {
                         rec->unk_426 = 2;
                     } else {
                         rec->unk_426 = 3;
                     }
                 } else {
-                    if (temp2 >= D_800A387C) {
+                    if (temp2 >= g_fighter_horizontal_separation) {
                         rec->unk_426 = 1;
-                    } else if (temp3 >= D_800A387C) {
+                    } else if (temp3 >= g_fighter_horizontal_separation) {
                         rec->unk_426 = 2;
                     } else {
                         rec->unk_426 = 3;
@@ -810,7 +810,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 
     if (rec->other->move_kind == 0x12 &&
         rec->other->opponent_angle_from_orientation_abs < 0x80 &&
-        D_800A387C < 0x1194) {
+        g_fighter_horizontal_separation < 0x1194) {
         rec->unk_425 = 1;
     } else {
         rec->unk_425 = 0;
@@ -842,7 +842,8 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         }
     }
 
-    if ((rec->unk_430 & 1) && !(D_80099D88[rec->cpu_profile].flags & 0xFF00) &&
+    if ((rec->unk_430 & 1) &&
+        !(g_cpu_profiles[rec->cpu_profile].flags & 0xFF00) &&
         rec->unk_426 != 1 && rec->unk_426 != 2 && rec->unk_425 != 1 &&
         rec->unk_425 != 2 &&
         (((rec->unk_430 & 0x80) &&
@@ -851,7 +852,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
          rec->other->move_kind == 0x10 || rec->other->move_kind == 3 ||
          rec->other->move_kind == 7 || rec->other->move_kind == 0x2C ||
          rec->other->move_kind == 0x24 ||
-         (!(D_80099D88[rec->cpu_profile].flags & 0x20) &&
+         (!(g_cpu_profiles[rec->cpu_profile].flags & 0x20) &&
           (((rec->unk_430 & 0x80) && rec->unk_426 == 3) ||
            (rec->other->move_kind == 0x2A && rec->other->unk_26C == 0) ||
            (rec->other->move_kind == 0x12 &&
@@ -861,7 +862,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
             ((rec->other->carried_object_count == 0 && rec->unk_425 != 1 &&
               rec->unk_425 != 2) ||
              rec->other->unk_26C == 0)))) ||
-         ((D_80099D88[rec->cpu_profile].flags & 0x20) &&
+         ((g_cpu_profiles[rec->cpu_profile].flags & 0x20) &&
           (rec->other->move_kind == 0x25 || rec->other->move_kind == 9 ||
            rec->other->move_kind == 0x16 || rec->other->move_kind == 0x17 ||
            rec->other->move_kind == 0xA ||
@@ -872,7 +873,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         rec->unk_430 &= ~2;
     }
 
-    if (D_80099D88[rec->cpu_profile].flags & 0x8000) {
+    if (g_cpu_profiles[rec->cpu_profile].flags & 0x8000) {
         rec->unk_430 &= ~0x78;
         if (rec->move_kind != 0x25 && (g_pad_state.held & 0x100)) {
             rec->unk_430 |= 0x40000;
@@ -1116,7 +1117,7 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
     ret = 0;
     left.x = obj->collision_pos.vx;
     left.y = obj->collision_pos.vy - 5;
-    var_12 = D_800A387C + 800;
+    var_12 = g_fighter_horizontal_separation + 800;
     left.z = obj->collision_pos.vz;
     var_3 = left;
     for (ang = 0x200; ang <= 0x800; ang += 0x200) {
@@ -1193,10 +1194,12 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
             }
             obj->cpu_route.node[var_7].x =
                 obj->other->collision_pos.vx +
-                ((D_800A387C * Judge[a & 0xFFF]) >> 12);
+                ((g_fighter_horizontal_separation * Judge[a & 0xFFF]) >> 12);
             obj->cpu_route.node[var_7].z =
                 obj->other->collision_pos.vz +
-                ((D_800A387C * Judge[(a + 0x400) & 0xFFF]) >> 12);
+                ((g_fighter_horizontal_separation *
+                  Judge[(a + 0x400) & 0xFFF]) >>
+                 12);
             obj->cpu_route.node[var_7].kind = 2;
         }
         obj->unk_398 = 0;
@@ -1687,10 +1690,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 if (!(((f & 0x20) ||
                        ((f & 0x10) && p->unk_3F3 % ((p->unk_438 >> 8) + 2) !=
                                           (p->unk_438 >> 8) + 1)) &&
-                      (!(D_80099D88[p->cpu_profile].flags & 0xFF00) ||
+                      (!(g_cpu_profiles[p->cpu_profile].flags & 0xFF00) ||
                        (f & 0x40))) ||
                     (fighter_GetSavedCpuBehaviorAdjustFlag() &&
-                     D_800A38DC != 3)) {
+                     g_fight_mode_selector != 3)) {
                     work3 = !work3;
                 }
                 var_7 = tbl[work3];
@@ -1717,8 +1720,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     p->unk_425 = 4;
                     p->unk_3F3++;
                 } else if (work3 && (p->unk_430 & 8) &&
-                           (!(D_80099D88[p->cpu_profile].flags & 0x8F00) ||
-                            ((D_80099D88[p->cpu_profile].flags & 0x300) &&
+                           (!(g_cpu_profiles[p->cpu_profile].flags & 0x8F00) ||
+                            ((g_cpu_profiles[p->cpu_profile].flags & 0x300) &&
                              D_800A37A0 >= 6))) {
                     var_7 = D_8009A890;
                 }
@@ -1728,8 +1731,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                  p->unk_427 - p->other->move_frame >= 6) ||
                 (p->unk_426 == 2 && var_7 == 0)) {
                 if ((p->unk_430 & 8) &&
-                    (!(D_80099D88[p->cpu_profile].flags & 0xBF00) ||
-                     ((D_80099D88[p->cpu_profile].flags & 0x300) &&
+                    (!(g_cpu_profiles[p->cpu_profile].flags & 0xBF00) ||
+                     ((g_cpu_profiles[p->cpu_profile].flags & 0x300) &&
                       D_800A37A0 >= 7))) {
                     if (p->other->opponent_angle_from_orientation > 0) {
                         if (work1) {
@@ -1762,7 +1765,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     }
 
     if ((p->unk_430 & 0x400) && p->unk_441 != 2) {
-        if (D_80099D88[p->cpu_profile].flags & 0x8000) {
+        if (g_cpu_profiles[p->cpu_profile].flags & 0x8000) {
             p->unk_3CC = 0x2000;
         } else if (p->unk_430 & 8) {
             work3 = p->opponent_angle_from_orientation;
@@ -1772,7 +1775,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     work3 -= 0x1000;
                 }
             }
-            if (!(D_80099D88[p->cpu_profile].flags & 0xF00)) {
+            if (!(g_cpu_profiles[p->cpu_profile].flags & 0xF00)) {
                 if (work3 < 0) {
                     if (p->cpu_probes[1] == 0 || p->cpu_probes[1] == 3) {
                         p->unk_3CC = 0x4000;
@@ -1787,7 +1790,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 (p->unk_3CC == 0 || p->unk_442 != 0 ||
                  p->other->move_kind == 2 || p->other->move_kind == 0x29 ||
                  p->other->move_kind == 0x13 || p->other->move_kind == 6 ||
-                 p->other->unk_404[p->other->unk_86] < D_800A387C)) {
+                 p->other->unk_404[p->other->unk_86] <
+                     g_fighter_horizontal_separation)) {
                 if (p->opponent_angle_from_orientation_abs < 0x400 &&
                     p->cpu_probes[3] == 0) {
                     p->unk_3CC = 0x8000;
@@ -1803,7 +1807,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
         if (state == 0xF || state == 0x1C || state == 0x1D || state == 0x1E ||
             state == 0x1F || state == 0x20 || state == 0x21) {
             if (p->move_kind == 0x1D &&
-                (rand() & 0xFF) < D_80099D88[p->cpu_profile].unk4 &&
+                (rand() & 0xFF) < g_cpu_profiles[p->cpu_profile].unk4 &&
                 p->cpu_probes[3] == 0) {
                 p->unk_3CC = 0x8000;
             } else {
@@ -1843,10 +1847,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             if ((p->ground_y - p->collision_pos.vy >= 0
                      ? p->ground_y - p->collision_pos.vy
                      : p->collision_pos.vy - p->ground_y) < 200 &&
-                !(D_80099D88[p->cpu_profile].flags & 0x8C00) &&
+                !(g_cpu_profiles[p->cpu_profile].flags & 0x8C00) &&
                 ((!fighter_GetSavedCpuBehaviorAdjustFlag() &&
-                  D_800A38DC != 3) ||
-                 D_800A38DC == 3)) {
+                  g_fight_mode_selector != 3) ||
+                 g_fight_mode_selector == 3)) {
                 work3 = 0;
                 if ((p->unk_426 == 1 || p->unk_425 == 2) && (p->unk_430 & 8)) {
                     work3 = 1;
@@ -1868,7 +1872,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         work3) {
                         work2 = D_8009A850[work4][2] * 16 + work1 +
                                 p->scale_distance_offset;
-                        if ((D_800A387C < work2 &&
+                        if ((g_fighter_horizontal_separation < work2 &&
                              (!(D_8009A850[work4][3] & 8) ||
                               p->opponent_angle_from_orientation_abs < 0x100) &&
                              (var_41 || (D_8009A850[work4][3] & 4))) ||
@@ -1883,7 +1887,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                     }
                                     p->unk_3CC = var_21;
                                 } else if (
-                                    (D_80099D88[p->cpu_profile].flags & 0x20) &&
+                                    (g_cpu_profiles[p->cpu_profile].flags &
+                                     0x20) &&
                                     !(p->unk_440 == 3 || p->unk_440 == 4)) {
                                     p->unk_3CC =
                                         (p->cpu_pad_build_count & 1) * 8;
@@ -1915,7 +1920,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     }
 
     if (p->unk_430 & 0x5100) {
-        var_25 = &D_8009A658[D_800A36A4];
+        var_25 = &D_8009A658[g_fight_stage_index];
         if (p->unk_39D == 0) {
             tx = p->other->world_pos.x;
             tz = p->other->world_pos.z;
@@ -1940,12 +1945,13 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             }
             if (var_38 == 1) {
                 work1 = p->cpu_probes[6];
-                if (!(p->unk_430 & 0x800) || D_800A387C < 4000) {
+                if (!(p->unk_430 & 0x800) ||
+                    g_fighter_horizontal_separation < 4000) {
                     if (p->unk_442 == 2 && !(work1 == 1 || work1 == 2)) {
                         lim = p->other->unk_3F8[p->other->unk_86];
                     } else if ((p->unk_442 == 1 || p->unk_442 == 2) ||
                                p->unk_442 == 3) {
-                        if (!(D_80099D88[p->cpu_profile].flags & 0x4000)) {
+                        if (!(g_cpu_profiles[p->cpu_profile].flags & 0x4000)) {
                             lim = p->other->unk_3FE[p->other->unk_86];
                         } else {
                             lim = p->other->unk_404[p->other->unk_86];
@@ -1984,7 +1990,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             if (var_38 == 1) {
                 if (p->cpu_route.count < 2 &&
                     (p->nearest_nav_crossing_distance != 100000 ||
-                     D_800A387C >= lim)) {
+                     g_fighter_horizontal_separation >= lim)) {
                     goto record;
                 }
             } else if (p->cpu_route.count == 0) {
@@ -2005,7 +2011,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             if (p->cpu_route.count != 0) {
                 if (p->cpu_route.node[0].kind == 1
                         ? (p->nearest_nav_crossing_distance == 100000 &&
-                           D_800A387C < lim)
+                           g_fighter_horizontal_separation < lim)
                         : SquareRoot0(CPU_SQ(p->world_pos.x - tx) +
                                       CPU_SQ(p->world_pos.z - tz)) < 2000) {
                     p->cpu_route.count = 0;
@@ -2024,7 +2030,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         var_8 = 0;
                         if (p->cpu_route.node[var_53].kind == 1) {
                             if (work2 == 3 &&
-                                D_800A387C <
+                                g_fighter_horizontal_separation <
                                     p->other->unk_404[p->other->unk_86]) {
                                 goto pick2;
                             }
@@ -2038,8 +2044,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                              * work2 == 5 arm: score 20 */
                             if (work2 == 5 &&
                                 p->other->unk_404[p->other->unk_86] <
-                                    D_800A387C) {
-                                if (D_800A387C <
+                                    g_fighter_horizontal_separation) {
+                                if (g_fighter_horizontal_separation <
                                     p->other->unk_404[p->other->unk_86]) {
                                 pick2:
                                     if (p->move_kind == 0x13) {
@@ -2131,29 +2137,32 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
         }
 
         if ((!(p->unk_430 & 0x80) &&
-             D_800A387C < p->other->unk_404[p->other->unk_86] &&
+             g_fighter_horizontal_separation <
+                 p->other->unk_404[p->other->unk_86] &&
              ((p->cpu_probes[3] >= 2 &&
                (p->cpu_probes[5] >= 2 || p->cpu_probes[1] >= 2)) ||
               p->cpu_probes[3] == 1 || p->cpu_probes[4] == 1 ||
               p->cpu_probes[2] == 1)) ||
-            ((D_80099D88[p->cpu_profile].flags & 0x4000 ||
+            ((g_cpu_profiles[p->cpu_profile].flags & 0x4000 ||
               p->cpu_profile == 0x18 || p->cpu_profile == 0x1A) &&
-             D_800A387C < p->other->unk_404[p->other->unk_86] &&
+             g_fighter_horizontal_separation <
+                 p->other->unk_404[p->other->unk_86] &&
              p->other->opponent_angle_from_orientation_abs < 0x10) ||
             (p->unk_0E >= 7 &&
-             D_800A387C < p->other->unk_404[p->other->unk_86] &&
+             g_fighter_horizontal_separation <
+                 p->other->unk_404[p->other->unk_86] &&
              p->other->opponent_angle_from_orientation_abs < 0x10 &&
              p->unk_34A != 0)) {
-            if (!(D_80099D88[p->cpu_profile].flags & 0x8F00)) {
+            if (!(g_cpu_profiles[p->cpu_profile].flags & 0x8F00)) {
                 if ((p->cpu_route.count = fighter_BuildCpuOrbitRoute(p)) != 0) {
                     p->unk_39D = 2;
                     return -1;
                 }
             }
-            if (!(D_80099D88[p->cpu_profile].flags & 0x8C00)) {
+            if (!(g_cpu_profiles[p->cpu_profile].flags & 0x8C00)) {
                 cnt = 0;
-                work3 =
-                    D_80099D88[p->cpu_profile].pick_weight[4] < (rand() & 0xFF);
+                work3 = g_cpu_profiles[p->cpu_profile].pick_weight[4] <
+                        (rand() & 0xFF);
                 var_29 = -1;
                 work1 = p->cpu_probes[1] == 0;
                 work2 = p->cpu_probes[5] == 0;
@@ -2175,8 +2184,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         if (var_29 != -1) {
                             break;
                         }
-                    } else if (p->unk_440 != 4 && D_800A387C > 3000 &&
-                               D_800A387C < 5000) {
+                    } else if (p->unk_440 != 4 &&
+                               g_fighter_horizontal_separation > 3000 &&
+                               g_fighter_horizontal_separation < 5000) {
                         var_29 = 8;
                         break;
                     }
@@ -2225,31 +2235,32 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 break;
             case 4:
                 if (p->cpu_probes[3] == 0 &&
-                    D_800A387C < p->unk_3FE[p->unk_86]) {
+                    g_fighter_horizontal_separation < p->unk_3FE[p->unk_86]) {
                     var_9 = D_8009A890;
                 }
                 break;
             case 5:
                 if (p->cpu_probes[0] == 0 &&
-                    p->unk_3F8[p->unk_86] < D_800A387C) {
+                    p->unk_3F8[p->unk_86] < g_fighter_horizontal_separation) {
                     var_9 = D_8009A888;
                 }
                 break;
             case 6:
                 if (p->cpu_probes[1] == 0 &&
-                    D_800A387C < p->unk_3FE[p->unk_86]) {
+                    g_fighter_horizontal_separation < p->unk_3FE[p->unk_86]) {
                     var_9 = D_8009A878;
                 }
                 break;
             case 7:
                 if (p->cpu_probes[5] == 0 &&
-                    D_800A387C < p->unk_3FE[p->unk_86]) {
+                    g_fighter_horizontal_separation < p->unk_3FE[p->unk_86]) {
                     var_9 = D_8009A880;
                 }
                 break;
             case 8:
                 if (!(p->cpu_probes[6] == 1 || p->cpu_probes[6] == 2) &&
-                    D_800A387C > 3000 && D_800A387C < 5000 &&
+                    g_fighter_horizontal_separation > 3000 &&
+                    g_fighter_horizontal_separation < 5000 &&
                     p->opponent_angle_from_orientation_abs < 0x200) {
                     var_9 = D_8009A89C;
                 }
@@ -2265,7 +2276,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 }
             } else if ((p->unk_430 & 0x800) || p->unk_442 != 0 ||
                        (p->unk_3CC == 0x2000 &&
-                        D_800A387C < p->other->unk_3F8[p->other->unk_86])) {
+                        g_fighter_horizontal_separation <
+                            p->other->unk_3F8[p->other->unk_86])) {
                 var_9 = 0;
                 p->unk_398 = 0;
                 p->unk_3CC = 0;
@@ -2277,7 +2289,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 }
             }
         } else if (p->unk_398 == 0) {
-            s32 var_56 = D_80099D88[p->cpu_profile].unk6;
+            s32 var_56 = g_cpu_profiles[p->cpu_profile].unk6;
             r = rand() & 0xFF;
             if (p->unk_440 == 4 ? r < (var_56 >> 2) : r < var_56) {
                 work2 = -1;
@@ -2285,7 +2297,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 var_16 = 0;
             pick_loop: {
                 var_44 = ((rand() & 0xFFF) *
-                          D_80099D88[p->cpu_profile].pick_weight[var_16]) >>
+                          g_cpu_profiles[p->cpu_profile].pick_weight[var_16]) >>
                          12;
                 if (var_44 != 0) {
                     var_37 = 0;
@@ -2298,7 +2310,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             goto pick_next;
                         }
                         var_23 = p->unk_3F0;
-                        if (D_80099D88[p->cpu_profile].unk7 <
+                        if (g_cpu_profiles[p->cpu_profile].unk7 <
                             (var_23 >= 0 ? var_23 : -var_23)) {
                             var_44 += 0x80;
                             var_37 = var_23 > 0;
@@ -2329,7 +2341,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         break;
                     case 4:
                         if ((p->cpu_probes[6] == 1 || p->cpu_probes[6] == 2) ||
-                            !(D_800A387C >= 3000 && D_800A387C <= 5000) ||
+                            !(g_fighter_horizontal_separation >= 3000 &&
+                              g_fighter_horizontal_separation <= 5000) ||
                             p->opponent_angle_from_orientation_abs >= 0x201 ||
                             p->unk_440 == 4 || p->other->move_kind == 0x18 ||
                             p->other->move_kind == 0x2A) {
@@ -2357,7 +2370,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     p->unk_39C = 0;
                     p->unk_398 =
                         (((((rand() & 0xFFF) *
-                            D_80099D88[p->cpu_profile].unk6) >>
+                            g_cpu_profiles[p->cpu_profile].unk6) >>
                            12) +
                           0x17)
                          << 12) /
@@ -2456,8 +2469,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                          * (var_32 reads) */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = var_32;
-                        if (D_80099D88[p->cpu_profile].flags & 0xFF00) {
-                            switch (D_800A38DC) {
+                        if (g_cpu_profiles[p->cpu_profile].flags & 0xFF00) {
+                            switch (g_fight_mode_selector) {
                             case 3:
                                 if (D_800A38E2 < 0x5B) {
                                     work3 = D_800A38E2 / 10 * 2;
@@ -2509,7 +2522,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 goto next;
                             }
                         }
-                        if (!(D_80099D88[p->cpu_profile].flags & 0x80) &&
+                        if (!(g_cpu_profiles[p->cpu_profile].flags & 0x80) &&
                             p->last_chosen_script_list_index == p->unk_86 &&
                             p->last_chosen_script_index == work4) {
                             goto next;
@@ -2539,7 +2552,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         } while (0);
                         work3 = 0;
                         if (var_18 == 0) {
-                            if (work1 < D_800A387C && D_800A387C < hi) {
+                            if (work1 < g_fighter_horizontal_separation &&
+                                g_fighter_horizontal_separation < hi) {
                                 if (p->other->move_kind == 0x15 ||
                                     p->other->move_kind == 0x2C ||
                                     p->other->move_kind == 0xE ||
@@ -2548,7 +2562,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 }
                             }
                         } else {
-                            if ((D_80099D88[p->cpu_profile].flags & 0xFC00) ||
+                            if ((g_cpu_profiles[p->cpu_profile].flags &
+                                 0xFC00) ||
                                 p->unk_0E >= 6) {
                                 work1 = var_18 < 5 ? 100000 : 0;
                                 hi = 100000;
@@ -2559,7 +2574,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             }
                             work5 = var_18;
                             if (work5 < 5) {
-                                if (D_800A387C < work1 &&
+                                if (g_fighter_horizontal_separation < work1 &&
                                     !(p->unk_430 & 0x20000)) {
                                     if ((p->unk_430 & 0x200)
                                             ? p->opponent_angle_from_orientation_abs <
@@ -2572,7 +2587,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                     }
                                 }
                             } else if (
-                                work1 < D_800A387C && D_800A387C < hi &&
+                                work1 < g_fighter_horizontal_separation &&
+                                g_fighter_horizontal_separation < hi &&
                                 p->opponent_angle_from_orientation_abs <
                                     0x200 - ((p->unk_438 * 0x100) >> 12) &&
                                 /* Q76: unk_438 / 16 as the 4.12 multiply by
@@ -2601,7 +2617,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         if (work3) {
                             var_24 =
                                 ((rand() & 0xFFF) *
-                                 D_80099D88[p->cpu_profile].unkF[var_18]) >>
+                                 g_cpu_profiles[p->cpu_profile].unkF[var_18]) >>
                                 12;
                             if (var_24 != 0 && var_35 < var_24) {
                                 var_35 = var_24;
@@ -2625,18 +2641,20 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         p->chosen_script_radius = var_5;
                     }
                 }
-            } else if (state == 0x15 && p->unk_26C != 0 && p->unk_440 != 4 &&
-                       /* Q76: as above, 4.12 factor 0x100; target lh; sra 4 at
-                          0x8005ACCC. */
-                       p->opponent_angle_from_orientation_abs <
-                           0x200 - ((p->unk_438 * 0x100) >> 12) &&
-                       !(D_800A38DC == 2 || D_800A38DC == 3)) {
+            } else if (
+                state == 0x15 && p->unk_26C != 0 && p->unk_440 != 4 &&
+                /* Q76: as above, 4.12 factor 0x100; target lh; sra 4 at
+                   0x8005ACCC. */
+                p->opponent_angle_from_orientation_abs <
+                    0x200 - ((p->unk_438 * 0x100) >> 12) &&
+                !(g_fight_mode_selector == 2 || g_fight_mode_selector == 3)) {
                 var_10 = 0;
                 if ((rand() & 0xFF) <
-                        (D_80099D88[p->cpu_profile].unkF[5] >> 2) &&
+                        (g_cpu_profiles[p->cpu_profile].unkF[5] >> 2) &&
                     ((0x78 >> p->unk_B1) & 1) && p->unk_442 == 0 &&
-                    p->other->unk_404[p->other->unk_86] < D_800A387C &&
-                    D_800A387C < 4500) {
+                    p->other->unk_404[p->other->unk_86] <
+                        g_fighter_horizontal_separation &&
+                    g_fighter_horizontal_separation < 4500) {
                     var_10 = D_8009A8C0;
                 } else {
                     s32 var_60;
@@ -2646,7 +2664,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         work1 = p->other->unk_3F8[p->other->unk_86];
                     } else {
                         work1 = p->other->unk_404[p->other->unk_86] + 300;
-                        if (D_80099D88[p->cpu_profile].flags & 0x300) {
+                        if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
                             var_60 = 0;
                             if (D_800A37A0 >= 6) {
                                 var_60 = p->unk_34A;
@@ -2657,16 +2675,18 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     }
                     var_40 = 0;
                     if ((rand() & 0xFF) <
-                            (D_80099D88[p->cpu_profile].unkF[6] >> 2) &&
-                        var_60 != 0 && work1 < D_800A387C &&
+                            (g_cpu_profiles[p->cpu_profile].unkF[6] >> 2) &&
+                        var_60 != 0 &&
+                        work1 < g_fighter_horizontal_separation &&
                         p->nearest_nav_crossing_distance == 100000 &&
                         p->unk_442 == 0 && (p->unk_430 & 0xA002) &&
-                        (p->cpu_profile != 0x15 || D_800A387C < 3000) &&
+                        (p->cpu_profile != 0x15 ||
+                         g_fighter_horizontal_separation < 3000) &&
                         (p->unk_8A == 0 || var_60 >= 2)) {
                         var_40 = 1;
                     }
                     if (var_40) {
-                        if ((D_80099D88[p->cpu_profile].flags & 0x10) &&
+                        if ((g_cpu_profiles[p->cpu_profile].flags & 0x10) &&
                             var_60 >= 2 && (rand() & 1)) {
                             var_10 = D_8009A8B4;
                         } else {
@@ -2701,30 +2721,34 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             }
         } else if (p->unk_0E >= 6) {
             if (p->unk_34A == 0 && p->unk_34B != 0 && p->unk_26C != 0 &&
-                p->other->unk_404[p->other->unk_86] < D_800A387C) {
+                p->other->unk_404[p->other->unk_86] <
+                    g_fighter_horizontal_separation) {
                 p->unk_3CC = 0x80;
             }
-        } else if (
-            (p->unk_430 & 0x800) && (D_80099D88[p->cpu_profile].flags & 1) &&
-            D_800A387C < 4000 && p->unk_440 != 4 &&
-            (p->unk_442 == 0 || p->unk_442 == 2)) {
+        } else if ((p->unk_430 & 0x800) &&
+                   (g_cpu_profiles[p->cpu_profile].flags & 1) &&
+                   g_fighter_horizontal_separation < 4000 && p->unk_440 != 4 &&
+                   (p->unk_442 == 0 || p->unk_442 == 2)) {
             fighter_StartCpuPadScript(p, D_8009A898, 1, p->unk_3BD);
             p->unk_3F2++;
         } else if ((p->unk_430 & 0xA801) || p->other->move_kind == 0x18 ||
                    p->other->move_kind == 0x25 || p->other->move_kind == 8 ||
                    p->other->move_kind == 0xA ||
                    (p->other->move_kind == 0x1A && p->unk_441 == 1)) {
-            if (D_80099D88[p->cpu_profile].unk3 != 0 &&
-                ((!(D_80099D88[p->cpu_profile].flags & 0xFF00) &&
-                  p->other->unk_404[p->other->unk_86] < D_800A387C &&
-                  p->unk_3F4 >= D_80099D88[p->cpu_profile].unk3) ||
-                 ((D_80099D88[p->cpu_profile].flags & 0x100) &&
-                  p->other->unk_3F8[p->other->unk_86] < D_800A387C &&
-                  p->unk_3F4 >= D_80099D88[p->cpu_profile].unk3 &&
+            if (g_cpu_profiles[p->cpu_profile].unk3 != 0 &&
+                ((!(g_cpu_profiles[p->cpu_profile].flags & 0xFF00) &&
+                  p->other->unk_404[p->other->unk_86] <
+                      g_fighter_horizontal_separation &&
+                  p->unk_3F4 >= g_cpu_profiles[p->cpu_profile].unk3) ||
+                 ((g_cpu_profiles[p->cpu_profile].flags & 0x100) &&
+                  p->other->unk_3F8[p->other->unk_86] <
+                      g_fighter_horizontal_separation &&
+                  p->unk_3F4 >= g_cpu_profiles[p->cpu_profile].unk3 &&
                   p->unk_440 != 2) ||
-                 ((D_80099D88[p->cpu_profile].flags & 0x7C00) &&
-                  p->other->unk_3F8[p->other->unk_86] < D_800A387C &&
-                  p->unk_3F4 >= D_80099D88[p->cpu_profile].unk3 &&
+                 ((g_cpu_profiles[p->cpu_profile].flags & 0x7C00) &&
+                  p->other->unk_3F8[p->other->unk_86] <
+                      g_fighter_horizontal_separation &&
+                  p->unk_3F4 >= g_cpu_profiles[p->cpu_profile].unk3 &&
                   D_800A38E2 >= 0x5B) ||
                  (p->unk_430 & 0x40000))) {
                 p->unk_3F4 = 0;
@@ -2743,7 +2767,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
  * CPU profiles, indexed by cpu_profile.
  * Defined after every function, so no body sees a definition where it saw
  * an extern. */
-Unk80099D88Rec D_80099D88[32] = {
+Unk80099D88Rec g_cpu_profiles[32] = {
     {0x0000,
      0x0,
      0x4,

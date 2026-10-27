@@ -7,7 +7,7 @@ glabel eff_StartRecycledYawedParticlesWithTextureSelection
     /* 52414 80061C14 2188C000 */  addu       $s1, $a2, $zero
     /* 52418 80061C18 0F80023C */  lui        $v0, %hi(g_eff_command_block)
     /* 5241C 80061C1C 6C114224 */  addiu      $v0, $v0, %lo(g_eff_command_block)
-    /* 52420 80061C20 9C0382AF */  sw         $v0, %gp_rel(D_800A3468)($gp)
+    /* 52420 80061C20 9C0382AF */  sw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 52424 80061C24 01000224 */  addiu      $v0, $zero, 0x1
     /* 52428 80061C28 6400BFAF */  sw         $ra, 0x64($sp)
     /* 5242C 80061C2C 02002212 */  beq        $s1, $v0, .L80061C38
@@ -43,7 +43,7 @@ glabel eff_StartRecycledYawedParticlesWithTextureSelection
     /* 524A0 80061CA0 2000A28F */  lw         $v0, 0x20($sp)
     /* 524A4 80061CA4 2400A38F */  lw         $v1, 0x24($sp)
     /* 524A8 80061CA8 2800A48F */  lw         $a0, 0x28($sp)
-    /* 524AC 80061CAC 9C03858F */  lw         $a1, %gp_rel(D_800A3468)($gp)
+    /* 524AC 80061CAC 9C03858F */  lw         $a1, %gp_rel(g_eff_active_command_block)($gp)
     /* 524B0 80061CB0 1000A2A7 */  sh         $v0, 0x10($sp)
     /* 524B4 80061CB4 1000A227 */  addiu      $v0, $sp, 0x10
     /* 524B8 80061CB8 1200A3A7 */  sh         $v1, 0x12($sp)
@@ -70,7 +70,7 @@ glabel eff_StartRecycledYawedParticlesWithTextureSelection
   .L80061D08:
     /* 52508 80061D08 0100043C */  lui        $a0, (0x10016 >> 16)
     /* 5250C 80061D0C 16008434 */  ori        $a0, $a0, (0x10016 & 0xFFFF)
-    /* 52510 80061D10 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 52510 80061D10 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 52514 80061D14 0F80023C */  lui        $v0, %hi(D_800F1164 + 0x2)
     /* 52518 80061D18 66114224 */  addiu      $v0, $v0, %lo(D_800F1164 + 0x2)
     /* 5251C 80061D1C 140062AC */  sw         $v0, 0x14($v1)

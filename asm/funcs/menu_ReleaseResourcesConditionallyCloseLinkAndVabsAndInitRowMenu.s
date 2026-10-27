@@ -38,10 +38,10 @@ glabel menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu
     /* 25D08 80035508 08DE010C */  jal        InitRowMenuBlackBgResetFlow
     /* 25D0C 8003550C 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25D10 80035510 09000224 */  addiu      $v0, $zero, 0x9
-    /* 25D14 80035514 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 25D18 80035518 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 25D1C 8003551C 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 25D20 80035520 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 25D14 80035514 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 25D18 80035518 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 25D1C 8003551C 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 25D20 80035520 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 25D24 80035524 345A000C */  jal        gpu_SetDispMaskOn
     /* 25D28 80035528 00000000 */   nop
     /* 25D2C 8003552C 1000BF8F */  lw         $ra, 0x10($sp)

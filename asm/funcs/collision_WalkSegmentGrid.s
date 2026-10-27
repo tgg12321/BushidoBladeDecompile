@@ -1,5 +1,5 @@
 glabel collision_WalkSegmentGrid
-    /* 43500 80052D00 2803898F */  lw         $t1, %gp_rel(D_800A33F4)($gp)
+    /* 43500 80052D00 2803898F */  lw         $t1, %gp_rel(g_collision_segment_work)($gp)
     /* 43504 80052D04 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 43508 80052D08 2400BFAF */  sw         $ra, 0x24($sp)
     /* 4350C 80052D0C 2000B4AF */  sw         $s4, 0x20($sp)
@@ -83,7 +83,7 @@ glabel collision_WalkSegmentGrid
     /* 43644 80052E44 26016210 */  beq        $v1, $v0, .L800532E0
     /* 43648 80052E48 21100000 */   addu      $v0, $zero, $zero
   .L80052E4C:
-    /* 4364C 80052E4C 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 4364C 80052E4C 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43650 80052E50 00000000 */  nop
     /* 43654 80052E54 88004484 */  lh         $a0, 0x88($v0)
     /* 43658 80052E58 8A004584 */  lh         $a1, 0x8A($v0)
@@ -139,7 +139,7 @@ glabel collision_WalkSegmentGrid
   .L80052F1C:
     /* 4371C 80052F1C 01001224 */  addiu      $s2, $zero, 0x1
   .L80052F20:
-    /* 43720 80052F20 2803848F */  lw         $a0, %gp_rel(D_800A33F4)($gp)
+    /* 43720 80052F20 2803848F */  lw         $a0, %gp_rel(g_collision_segment_work)($gp)
     /* 43724 80052F24 00000000 */  nop
     /* 43728 80052F28 7400828C */  lw         $v0, 0x74($a0)
     /* 4372C 80052F2C 00000000 */  nop
@@ -155,7 +155,7 @@ glabel collision_WalkSegmentGrid
     /* 43754 80052F54 640082AC */  sw         $v0, 0x64($a0)
     /* 43758 80052F58 6C0083AC */  sw         $v1, 0x6C($a0)
   .L80052F5C:
-    /* 4375C 80052F5C 2803888F */  lw         $t0, %gp_rel(D_800A33F4)($gp)
+    /* 4375C 80052F5C 2803888F */  lw         $t0, %gp_rel(g_collision_segment_work)($gp)
     /* 43760 80052F60 00000000 */  nop
     /* 43764 80052F64 7400028D */  lw         $v0, 0x74($t0)
     /* 43768 80052F68 7000038D */  lw         $v1, 0x70($t0)
@@ -184,7 +184,7 @@ glabel collision_WalkSegmentGrid
   .L80052FC4:
     /* 437C4 80052FC4 21800000 */  addu       $s0, $zero, $zero
   .L80052FC8:
-    /* 437C8 80052FC8 2803848F */  lw         $a0, %gp_rel(D_800A33F4)($gp)
+    /* 437C8 80052FC8 2803848F */  lw         $a0, %gp_rel(g_collision_segment_work)($gp)
     /* 437CC 80052FCC 00000000 */  nop
     /* 437D0 80052FD0 7400868C */  lw         $a2, 0x74($a0)
     /* 437D4 80052FD4 7000828C */  lw         $v0, 0x70($a0)
@@ -255,7 +255,7 @@ glabel collision_WalkSegmentGrid
     /* 438D0 800530D0 6F00A210 */  beq        $a1, $v0, .L80053290
     /* 438D4 800530D4 00000000 */   nop
   .L800530D8:
-    /* 438D8 800530D8 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 438D8 800530D8 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 438DC 800530DC 00000000 */  nop
     /* 438E0 800530E0 88004484 */  lh         $a0, 0x88($v0)
     /* 438E4 800530E4 8A004584 */  lh         $a1, 0x8A($v0)
@@ -263,7 +263,7 @@ glabel collision_WalkSegmentGrid
     /* 438EC 800530EC 00000000 */  nop
     /* 438F0 800530F0 09F84000 */  jalr       $v0
     /* 438F4 800530F4 00000000 */   nop
-    /* 438F8 800530F8 2803858F */  lw         $a1, %gp_rel(D_800A33F4)($gp)
+    /* 438F8 800530F8 2803858F */  lw         $a1, %gp_rel(g_collision_segment_work)($gp)
     /* 438FC 800530FC 64004014 */  bnez       $v0, .L80053290
     /* 43900 80053100 8000A2AC */   sw        $v0, 0x80($a1)
     /* 43904 80053104 6210023C */  lui        $v0, (0x10624DD3 >> 16)
@@ -317,7 +317,7 @@ glabel collision_WalkSegmentGrid
   .L800531B8:
     /* 439B8 800531B8 8A00A2A4 */  sh         $v0, 0x8A($a1)
   .L800531BC:
-    /* 439BC 800531BC 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 439BC 800531BC 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 439C0 800531C0 00000000 */  nop
     /* 439C4 800531C4 88004484 */  lh         $a0, 0x88($v0)
     /* 439C8 800531C8 8A004584 */  lh         $a1, 0x8A($v0)
@@ -325,7 +325,7 @@ glabel collision_WalkSegmentGrid
     /* 439D0 800531D0 00000000 */  nop
     /* 439D4 800531D4 09F84000 */  jalr       $v0
     /* 439D8 800531D8 00000000 */   nop
-    /* 439DC 800531DC 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 439DC 800531DC 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 439E0 800531E0 2B004014 */  bnez       $v0, .L80053290
     /* 439E4 800531E4 800062AC */   sw        $v0, 0x80($v1)
   .L800531E8:
@@ -333,7 +333,7 @@ glabel collision_WalkSegmentGrid
     /* 439EC 800531EC 00000000 */   nop
     /* 439F0 800531F0 08002106 */  bgez       $s1, .L80053214
     /* 439F4 800531F4 00000000 */   nop
-    /* 439F8 800531F8 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 439F8 800531F8 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 439FC 800531FC 00000000 */  nop
     /* 43A00 80053200 8A006294 */  lhu        $v0, 0x8A($v1)
     /* 43A04 80053204 00000000 */  nop
@@ -341,7 +341,7 @@ glabel collision_WalkSegmentGrid
     /* 43A0C 8005320C 994C0108 */  j          .L80053264
     /* 43A10 80053210 8A0062A4 */   sh        $v0, 0x8A($v1)
   .L80053214:
-    /* 43A14 80053214 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 43A14 80053214 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 43A18 80053218 00000000 */  nop
     /* 43A1C 8005321C 8A006294 */  lhu        $v0, 0x8A($v1)
     /* 43A20 80053220 00000000 */  nop
@@ -351,13 +351,13 @@ glabel collision_WalkSegmentGrid
   .L80053230:
     /* 43A30 80053230 06004106 */  bgez       $s2, .L8005324C
     /* 43A34 80053234 00000000 */   nop
-    /* 43A38 80053238 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 43A38 80053238 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 43A3C 8005323C 00000000 */  nop
     /* 43A40 80053240 88006294 */  lhu        $v0, 0x88($v1)
     /* 43A44 80053244 984C0108 */  j          .L80053260
     /* 43A48 80053248 FFFF4224 */   addiu     $v0, $v0, -0x1
   .L8005324C:
-    /* 43A4C 8005324C 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 43A4C 8005324C 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 43A50 80053250 00000000 */  nop
     /* 43A54 80053254 88006294 */  lhu        $v0, 0x88($v1)
     /* 43A58 80053258 00000000 */  nop
@@ -365,7 +365,7 @@ glabel collision_WalkSegmentGrid
   .L80053260:
     /* 43A60 80053260 880062A4 */  sh         $v0, 0x88($v1)
   .L80053264:
-    /* 43A64 80053264 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 43A64 80053264 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43A68 80053268 00000000 */  nop
     /* 43A6C 8005326C 90004394 */  lhu        $v1, 0x90($v0)
     /* 43A70 80053270 00000000 */  nop
@@ -377,7 +377,7 @@ glabel collision_WalkSegmentGrid
     /* 43A88 80053288 93FF6214 */  bne        $v1, $v0, .L800530D8
     /* 43A8C 8005328C 00000000 */   nop
   .L80053290:
-    /* 43A90 80053290 2803868F */  lw         $a2, %gp_rel(D_800A33F4)($gp)
+    /* 43A90 80053290 2803868F */  lw         $a2, %gp_rel(g_collision_segment_work)($gp)
     /* 43A94 80053294 00000000 */  nop
     /* 43A98 80053298 8000C28C */  lw         $v0, 0x80($a2)
     /* 43A9C 8005329C 00000000 */  nop

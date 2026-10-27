@@ -1,5 +1,5 @@
 glabel eff_StepCommand
-    /* 51370 80060B70 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 51370 80060B70 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 51374 80060B74 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 51378 80060B78 1000BFAF */  sw         $ra, 0x10($sp)
     /* 5137C 80060B7C 0400628C */  lw         $v0, 0x4($v1)
@@ -32,7 +32,7 @@ glabel eff_StepCommand
     /* 513E8 80060BE8 0800428C */  lw         $v0, 0x8($v0)
     /* 513EC 80060BEC EB87010C */  jal        eff_SetRotMatrix
     /* 513F0 80060BF0 0800A2AC */   sw        $v0, 0x8($a1)
-    /* 513F4 80060BF4 9C03828F */  lw         $v0, %gp_rel(D_800A3468)($gp)
+    /* 513F4 80060BF4 9C03828F */  lw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 513F8 80060BF8 00000000 */  nop
     /* 513FC 80060BFC 00004294 */  lhu        $v0, 0x0($v0)
     /* 51400 80060C00 00000000 */  nop
@@ -52,7 +52,7 @@ glabel eff_StepCommand
     /* 51438 80060C38 00000000 */  nop
     /* 5143C 80060C3C 09F84000 */  jalr       $v0
     /* 51440 80060C40 00000000 */   nop
-    /* 51444 80060C44 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 51444 80060C44 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 51448 80060C48 00000000 */  nop
     /* 5144C 80060C4C 1400638C */  lw         $v1, 0x14($v1)
     /* 51450 80060C50 1000BF8F */  lw         $ra, 0x10($sp)

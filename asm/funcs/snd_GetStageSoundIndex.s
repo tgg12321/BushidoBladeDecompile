@@ -1,6 +1,6 @@
 glabel snd_GetStageSoundIndex
-    /* 23C98 80033498 0A80023C */  lui        $v0, %hi(D_800A36A4)
-    /* 23C9C 8003349C A4364294 */  lhu        $v0, %lo(D_800A36A4)($v0)
+    /* 23C98 80033498 0A80023C */  lui        $v0, %hi(g_fight_stage_index)
+    /* 23C9C 8003349C A4364294 */  lhu        $v0, %lo(g_fight_stage_index)($v0)
     /* 23CA0 800334A0 00000000 */  nop
     /* 23CA4 800334A4 FEFF4224 */  addiu      $v0, $v0, -0x2
     /* 23CA8 800334A8 00140200 */  sll        $v0, $v0, 16

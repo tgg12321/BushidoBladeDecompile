@@ -1,5 +1,5 @@
 glabel collision_GetHit
-    /* 43E94 80053694 2803868F */  lw         $a2, %gp_rel(D_800A33F4)($gp)
+    /* 43E94 80053694 2803868F */  lw         $a2, %gp_rel(g_collision_segment_work)($gp)
     /* 43E98 80053698 FF7F033C */  lui        $v1, (0x7FFFFFFF >> 16)
     /* 43E9C 8005369C 0000C28C */  lw         $v0, 0x0($a2)
     /* 43EA0 800536A0 FFFF6334 */  ori        $v1, $v1, (0x7FFFFFFF & 0xFFFF)

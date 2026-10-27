@@ -2,8 +2,8 @@
  * fighter tables (the stage navigation sets and their polygons, the probe,
  * distance and pad-script tables), then 4BC3C.c's sound tables.
  * Owner ruling Q122 (data-only-no-sdata):
- * 1. One run: 4510C.c's D_80099D88 ends at 0x8009A088 and 4BC3C.c's D_8009AD1C
- *    starts at 0x8009AD1C. No uninitialized objects.
+ * 1. One run: 4510C.c's g_cpu_profiles ends at 0x8009A088 and 4BC3C.c's
+ * D_8009AD1C starts at 0x8009AD1C. No uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or by the pointer
  *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
  *    D_8009A384 / D_8009A3E0 / D_8009A3F4 / D_8009A598 (their D_8009A658

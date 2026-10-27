@@ -19,8 +19,8 @@ glabel menu_ReleaseResourcesCloseVabsAndInitRowMenu
     /* 2660C 80035E0C 08DE010C */  jal        InitRowMenuBlackBgResetFlow
     /* 26610 80035E10 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 26614 80035E14 1B000224 */  addiu      $v0, $zero, 0x1B
-    /* 26618 80035E18 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2661C 80035E1C 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 26618 80035E18 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2661C 80035E1C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 26620 80035E20 345A000C */  jal        gpu_SetDispMaskOn
     /* 26624 80035E24 00000000 */   nop
     /* 26628 80035E28 1000BF8F */  lw         $ra, 0x10($sp)

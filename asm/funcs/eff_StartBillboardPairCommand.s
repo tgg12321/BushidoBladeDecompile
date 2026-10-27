@@ -7,7 +7,7 @@ glabel eff_StartBillboardPairCommand
     /* 521B8 800619B8 0F80023C */  lui        $v0, %hi(D_800F1158)
     /* 521BC 800619BC 58114224 */  addiu      $v0, $v0, %lo(D_800F1158)
     /* 521C0 800619C0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 521C4 800619C4 9C0383AF */  sw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 521C4 800619C4 9C0383AF */  sw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 521C8 800619C8 0F80013C */  lui        $at, %hi(D_800F1178)
     /* 521CC 800619CC 781124AC */  sw         $a0, %lo(D_800F1178)($at)
     /* 521D0 800619D0 0F80013C */  lui        $at, %hi(g_eff_command_block + 0x14)

@@ -1,15 +1,15 @@
 glabel fight_UpdateTimeRecordPresentation
     /* 2D0B4 8003C8B4 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 2D0B8 8003C8B8 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D0BC 8003C8BC B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D0B8 8003C8B8 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D0BC 8003C8BC B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D0C0 8003C8C0 0A80043C */  lui        $a0, %hi(g_prim_buf_cursor)
     /* 2D0C4 8003C8C4 B438848C */  lw         $a0, %lo(g_prim_buf_cursor)($a0)
     /* 2D0C8 8003C8C8 0A80063C */  lui        $a2, %hi(D_800A38E9)
     /* 2D0CC 8003C8CC E938C690 */  lbu        $a2, %lo(D_800A38E9)($a2)
     /* 2D0D0 8003C8D0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2D0D4 8003C8D4 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2D0D8 8003C8D8 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2D0DC 8003C8DC B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2D0D8 8003C8D8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2D0DC 8003C8DC B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 2D0E0 8003C8E0 DA81010C */  jal        gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 2D0E4 8003C8E4 01000524 */   addiu     $a1, $zero, 0x1
     /* 2D0E8 8003C8E8 02004104 */  bgez       $v0, .L8003C8F4
@@ -29,8 +29,8 @@ glabel fight_UpdateTimeRecordPresentation
     /* 2D11C 8003C91C B43822AC */  sw         $v0, %lo(g_prim_buf_cursor)($at)
     /* 2D120 8003C920 07008014 */  bnez       $a0, .L8003C940
     /* 2D124 8003C924 00000000 */   nop
-    /* 2D128 8003C928 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D12C 8003C92C B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D128 8003C928 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D12C 8003C92C B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D130 8003C930 00000000 */  nop
     /* 2D134 8003C934 F1004228 */  slti       $v0, $v0, 0xF1
     /* 2D138 8003C938 03004014 */  bnez       $v0, .L8003C948

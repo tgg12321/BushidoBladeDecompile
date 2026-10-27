@@ -600,8 +600,8 @@ glabel object_UpdatePool
     /* 21E34 80031634 00000000 */   nop
     /* 21E38 80031638 11008012 */  beqz       $s4, .L80031680
     /* 21E3C 8003163C 03000224 */   addiu     $v0, $zero, 0x3
-    /* 21E40 80031640 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 21E44 80031644 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 21E40 80031640 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 21E44 80031644 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 21E48 80031648 00000000 */  nop
     /* 21E4C 8003164C 04006214 */  bne        $v1, $v0, .L80031660
     /* 21E50 80031650 01000224 */   addiu     $v0, $zero, 0x1

@@ -3,8 +3,8 @@ glabel func_8003B56C
     /* 2BD70 8003B570 0A80013C */  lui        $at, %hi(D_800A390C)
     /* 2BD74 8003B574 0C3924A0 */  sb         $a0, %lo(D_800A390C)($at)
     /* 2BD78 8003B578 80200400 */  sll        $a0, $a0, 2
-    /* 2BD7C 8003B57C 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2BD80 8003B580 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2BD7C 8003B57C 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2BD80 8003B580 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2BD84 8003B584 0A80023C */  lui        $v0, %hi(D_800A385C)
     /* 2BD88 8003B588 5C38428C */  lw         $v0, %lo(D_800A385C)($v0)
     /* 2BD8C 8003B58C FCFF8424 */  addiu      $a0, $a0, -0x4

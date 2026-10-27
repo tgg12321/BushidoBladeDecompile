@@ -27,8 +27,8 @@ glabel fighter_BuildCpuOrbitRoute
     /* 47A24 80057224 B802F736 */  ori        $s7, $s7, (0x1F8002B8 & 0xFFFF)
     /* 47A28 80057228 FBFF4224 */  addiu      $v0, $v0, -0x5
     /* 47A2C 8005722C 3C00A2AF */  sw         $v0, 0x3C($sp)
-    /* 47A30 80057230 0A80023C */  lui        $v0, %hi(D_800A387C)
-    /* 47A34 80057234 7C38428C */  lw         $v0, %lo(D_800A387C)($v0)
+    /* 47A30 80057230 0A80023C */  lui        $v0, %hi(g_fighter_horizontal_separation)
+    /* 47A34 80057234 7C38428C */  lw         $v0, %lo(g_fighter_horizontal_separation)($v0)
     /* 47A38 80057238 C000038E */  lw         $v1, 0xC0($s0)
     /* 47A3C 8005723C 20035524 */  addiu      $s5, $v0, 0x320
     /* 47A40 80057240 4000A3AF */  sw         $v1, 0x40($sp)
@@ -243,8 +243,8 @@ glabel fighter_BuildCpuOrbitRoute
     /* 47D4C 8005754C 40100200 */  sll        $v0, $v0, 1
     /* 47D50 80057550 21104700 */  addu       $v0, $v0, $a3
     /* 47D54 80057554 00004284 */  lh         $v0, 0x0($v0)
-    /* 47D58 80057558 0A80053C */  lui        $a1, %hi(D_800A387C)
-    /* 47D5C 8005755C 7C38A58C */  lw         $a1, %lo(D_800A387C)($a1)
+    /* 47D58 80057558 0A80053C */  lui        $a1, %hi(g_fighter_horizontal_separation)
+    /* 47D5C 8005755C 7C38A58C */  lw         $a1, %lo(g_fighter_horizontal_separation)($a1)
     /* 47D60 80057560 00000000 */  nop
     /* 47D64 80057564 1800A200 */  mult       $a1, $v0
     /* 47D68 80057568 00161200 */  sll        $v0, $s2, 24

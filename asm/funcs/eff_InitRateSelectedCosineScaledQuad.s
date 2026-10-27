@@ -1,6 +1,6 @@
 glabel eff_InitRateSelectedCosineScaledQuad
-    /* 55800 80065000 B003838F */  lw         $v1, %gp_rel(D_800A347C)($gp)
-    /* 55804 80065004 9C03848F */  lw         $a0, %gp_rel(D_800A3468)($gp)
+    /* 55800 80065000 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
+    /* 55804 80065004 9C03848F */  lw         $a0, %gp_rel(g_eff_active_command_block)($gp)
     /* 55808 80065008 0000628C */  lw         $v0, 0x0($v1)
     /* 5580C 8006500C 0F80013C */  lui        $at, %hi(D_800F0CDC)
     /* 55810 80065010 DC0C22AC */  sw         $v0, %lo(D_800F0CDC)($at)

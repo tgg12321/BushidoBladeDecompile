@@ -7,8 +7,8 @@ glabel snd_StartFightCdAudio
     /* E2A0 8001DAA0 00000000 */   nop
     /* E2A4 8001DAA4 28004014 */  bnez       $v0, .L8001DB48
     /* E2A8 8001DAA8 00000000 */   nop
-    /* E2AC 8001DAAC 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E2B0 8001DAB0 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E2AC 8001DAAC 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E2B0 8001DAB0 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E2B4 8001DAB4 00000000 */  nop
     /* E2B8 8001DAB8 0600622C */  sltiu      $v0, $v1, 0x6
     /* E2BC 8001DABC 20004010 */  beqz       $v0, .L8001DB40
@@ -20,8 +20,8 @@ glabel snd_StartFightCdAudio
     /* E2D4 8001DAD4 08004000 */  jr         $v0
     /* E2D8 8001DAD8 00000000 */   nop
   jlabel .L8001DADC
-    /* E2DC 8001DADC 0A80023C */  lui        $v0, %hi(D_800A36A4)
-    /* E2E0 8001DAE0 A4364284 */  lh         $v0, %lo(D_800A36A4)($v0)
+    /* E2DC 8001DADC 0A80023C */  lui        $v0, %hi(g_fight_stage_index)
+    /* E2E0 8001DAE0 A4364284 */  lh         $v0, %lo(g_fight_stage_index)($v0)
     /* E2E4 8001DAE4 0980013C */  lui        $at, %hi(D_8008D518)
     /* E2E8 8001DAE8 21082200 */  addu       $at, $at, $v0
     /* E2EC 8001DAEC 18D52490 */  lbu        $a0, %lo(D_8008D518)($at)
@@ -30,9 +30,9 @@ glabel snd_StartFightCdAudio
   jlabel .L8001DAF8
     /* E2F8 8001DAF8 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
     /* E2FC 8001DAFC D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
-    /* E300 8001DB00 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* E300 8001DB00 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* E304 8001DB04 21082200 */  addu       $at, $at, $v0
-    /* E308 8001DB08 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* E308 8001DB08 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* E30C 8001DB0C 00000000 */  nop
     /* E310 8001DB10 09004010 */  beqz       $v0, .L8001DB38
     /* E314 8001DB14 08000424 */   addiu     $a0, $zero, 0x8

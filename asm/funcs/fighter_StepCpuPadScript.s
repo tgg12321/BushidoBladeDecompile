@@ -20,9 +20,9 @@ glabel fighter_StepCpuPadScript
     /* 4618C 8005598C 40100300 */   sll       $v0, $v1, 1
     /* 46190 80055990 21104300 */  addu       $v0, $v0, $v1
     /* 46194 80055994 C0100200 */  sll        $v0, $v0, 3
-    /* 46198 80055998 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 46198 80055998 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 4619C 8005599C 21082200 */  addu       $at, $at, $v0
-    /* 461A0 800559A0 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 461A0 800559A0 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 461A4 800559A4 00000000 */  nop
     /* 461A8 800559A8 00BF4230 */  andi       $v0, $v0, 0xBF00
     /* 461AC 800559AC 39004014 */  bnez       $v0, .L80055A94

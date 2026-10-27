@@ -180,8 +180,8 @@ glabel motion_AdjustFighterPose
     /* FD60 8001F560 0000028E */  lw         $v0, 0x0($s0)
     /* FD64 8001F564 F800058E */  lw         $a1, 0xF8($s0)
     /* FD68 8001F568 F800428C */  lw         $v0, 0xF8($v0)
-    /* FD6C 8001F56C 0A80043C */  lui        $a0, %hi(D_800A387C)
-    /* FD70 8001F570 7C38848C */  lw         $a0, %lo(D_800A387C)($a0)
+    /* FD6C 8001F56C 0A80043C */  lui        $a0, %hi(g_fighter_horizontal_separation)
+    /* FD70 8001F570 7C38848C */  lw         $a0, %lo(g_fighter_horizontal_separation)($a0)
     /* FD74 8001F574 57FF010C */  jal        ratan2
     /* FD78 8001F578 23284500 */   subu      $a1, $v0, $a1
     /* FD7C 8001F57C 00FC4224 */  addiu      $v0, $v0, -0x400

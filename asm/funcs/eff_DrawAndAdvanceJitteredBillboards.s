@@ -132,7 +132,7 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 550E8 800648E8 C0100200 */  sll        $v0, $v0, 3
     /* 550EC 800648EC 21104300 */  addu       $v0, $v0, $v1
     /* 550F0 800648F0 00004394 */  lhu        $v1, 0x0($v0)
-    /* 550F4 800648F4 BC0382AF */  sw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 550F4 800648F4 BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 550F8 800648F8 02004294 */  lhu        $v0, 0x2($v0)
     /* 550FC 800648FC 02190300 */  srl        $v1, $v1, 4
     /* 55100 80064900 3F006330 */  andi       $v1, $v1, 0x3F
@@ -141,23 +141,23 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 5510C 8006490C C803828F */  lw         $v0, %gp_rel(D_800A3494)($gp)
     /* 55110 80064910 FFFF6330 */  andi       $v1, $v1, 0xFFFF
     /* 55114 80064914 000043AC */  sw         $v1, 0x0($v0)
-    /* 55118 80064918 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 55118 80064918 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 5511C 8006491C CC03838F */  lw         $v1, %gp_rel(D_800A3498)($gp)
     /* 55120 80064920 04004294 */  lhu        $v0, 0x4($v0)
     /* 55124 80064924 00000000 */  nop
     /* 55128 80064928 000062A4 */  sh         $v0, 0x0($v1)
-    /* 5512C 8006492C BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 5512C 8006492C BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 55130 80064930 D403838F */  lw         $v1, %gp_rel(D_800A34A0)($gp)
     /* 55134 80064934 06004294 */  lhu        $v0, 0x6($v0)
     /* 55138 80064938 00000000 */  nop
     /* 5513C 8006493C 000062A4 */  sh         $v0, 0x0($v1)
-    /* 55140 80064940 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 55140 80064940 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 55144 80064944 00000000 */  nop
     /* 55148 80064948 04004294 */  lhu        $v0, 0x4($v0)
     /* 5514C 8006494C D003838F */  lw         $v1, %gp_rel(D_800A349C)($gp)
     /* 55150 80064950 3F004224 */  addiu      $v0, $v0, 0x3F
     /* 55154 80064954 000062A4 */  sh         $v0, 0x0($v1)
-    /* 55158 80064958 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 55158 80064958 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 5515C 8006495C 00000000 */  nop
     /* 55160 80064960 06004294 */  lhu        $v0, 0x6($v0)
     /* 55164 80064964 D803838F */  lw         $v1, %gp_rel(D_800A34A4)($gp)

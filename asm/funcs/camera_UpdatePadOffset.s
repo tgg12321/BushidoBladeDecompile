@@ -17,8 +17,8 @@ glabel camera_UpdatePadOffset
     /* B974 8001B174 E0F520AC */  sw         $zero, %lo(g_camera_view_offset + 0x18)($at)
     /* B978 8001B178 40004010 */  beqz       $v0, .L8001B27C
     /* B97C 8001B17C 01000224 */   addiu     $v0, $zero, 0x1
-    /* B980 8001B180 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* B984 8001B184 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* B980 8001B180 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* B984 8001B184 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* B988 8001B188 00000000 */  nop
     /* B98C 8001B18C 3B006214 */  bne        $v1, $v0, .L8001B27C
     /* B990 8001B190 00000000 */   nop

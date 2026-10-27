@@ -23,8 +23,8 @@ glabel fight_RequestOneFighterEntriesAndReloadOnChange
     /* 2B960 8003B160 DA1E2484 */  lh         $a0, %lo(D_80101EC8 + 0x12)($at)
     /* 2B964 8003B164 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B968 8003B168 00000000 */   nop
-    /* 2B96C 8003B16C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 2B970 8003B170 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 2B96C 8003B16C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 2B970 8003B170 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 2B974 8003B174 05000224 */  addiu      $v0, $zero, 0x5
     /* 2B978 8003B178 0D006214 */  bne        $v1, $v0, .L8003B1B0
     /* 2B97C 8003B17C 00000000 */   nop

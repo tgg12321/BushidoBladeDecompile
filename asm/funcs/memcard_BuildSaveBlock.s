@@ -1,7 +1,7 @@
 glabel memcard_BuildSaveBlock
     /* 28740 80037F40 21600000 */  addu       $t4, $zero, $zero
-    /* 28744 80037F44 1080033C */  lui        $v1, %hi(D_80106A50)
-    /* 28748 80037F48 506A6324 */  addiu      $v1, $v1, %lo(D_80106A50)
+    /* 28744 80037F44 1080033C */  lui        $v1, %hi(g_saved_record)
+    /* 28748 80037F48 506A6324 */  addiu      $v1, $v1, %lo(g_saved_record)
     /* 2874C 80037F4C 21400000 */  addu       $t0, $zero, $zero
   .L80037F50:
     /* 28750 80037F50 00006290 */  lbu        $v0, 0x0($v1)
@@ -11,15 +11,15 @@ glabel memcard_BuildSaveBlock
     /* 28760 80037F60 FBFF4014 */  bnez       $v0, .L80037F50
     /* 28764 80037F64 01006324 */   addiu     $v1, $v1, 0x1
     /* 28768 80037F68 21400000 */  addu       $t0, $zero, $zero
-    /* 2876C 80037F6C 10800D3C */  lui        $t5, %hi(D_80106A50 + 0x20)
-    /* 28770 80037F70 706AAD25 */  addiu      $t5, $t5, %lo(D_80106A50 + 0x20)
+    /* 2876C 80037F6C 10800D3C */  lui        $t5, %hi(g_saved_record + 0x20)
+    /* 28770 80037F70 706AAD25 */  addiu      $t5, $t5, %lo(g_saved_record + 0x20)
     /* 28774 80037F74 21488000 */  addu       $t1, $a0, $zero
     /* 28778 80037F78 21582001 */  addu       $t3, $t1, $zero
     /* 2877C 80037F7C 21500000 */  addu       $t2, $zero, $zero
   .L80037F80:
     /* 28780 80037F80 21384901 */  addu       $a3, $t2, $t1
-    /* 28784 80037F84 1080063C */  lui        $a2, %hi(D_80106A50)
-    /* 28788 80037F88 506AC624 */  addiu      $a2, $a2, %lo(D_80106A50)
+    /* 28784 80037F84 1080063C */  lui        $a2, %hi(g_saved_record)
+    /* 28788 80037F88 506AC624 */  addiu      $a2, $a2, %lo(g_saved_record)
   .L80037F8C:
     /* 2878C 80037F8C 0000C28C */  lw         $v0, 0x0($a2)
     /* 28790 80037F90 0400C38C */  lw         $v1, 0x4($a2)

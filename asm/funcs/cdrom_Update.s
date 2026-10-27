@@ -1,6 +1,6 @@
 glabel cdrom_Update
-    /* 27140 80036940 1080033C */  lui        $v1, %hi(D_80101E58 + 0xA)
-    /* 27144 80036944 621E6384 */  lh         $v1, %lo(D_80101E58 + 0xA)($v1)
+    /* 27140 80036940 1080033C */  lui        $v1, %hi(g_cdrom_state + 0xA)
+    /* 27144 80036944 621E6384 */  lh         $v1, %lo(g_cdrom_state + 0xA)($v1)
     /* 27148 80036948 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2714C 8003694C 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 27150 80036950 10006228 */  slti       $v0, $v1, 0x10
@@ -21,14 +21,14 @@ glabel cdrom_Update
     /* 27188 80036988 08004000 */  jr         $v0
     /* 2718C 8003698C 00000000 */   nop
   jlabel .L80036990
-    /* 27190 80036990 1080023C */  lui        $v0, %hi(D_80101E58 + 0x10)
-    /* 27194 80036994 681E4284 */  lh         $v0, %lo(D_80101E58 + 0x10)($v0)
+    /* 27190 80036990 1080023C */  lui        $v0, %hi(g_cdrom_state + 0x10)
+    /* 27194 80036994 681E4284 */  lh         $v0, %lo(g_cdrom_state + 0x10)($v0)
     /* 27198 80036998 00000000 */  nop
     /* 2719C 8003699C 05004010 */  beqz       $v0, .L800369B4
     /* 271A0 800369A0 0E000424 */   addiu     $a0, $zero, 0xE
   jlabel .L800369A4
-    /* 271A4 800369A4 1080013C */  lui        $at, %hi(D_80101E58 + 0xA)
-    /* 271A8 800369A8 621E20A4 */  sh         $zero, %lo(D_80101E58 + 0xA)($at)
+    /* 271A4 800369A4 1080013C */  lui        $at, %hi(g_cdrom_state + 0xA)
+    /* 271A8 800369A8 621E20A4 */  sh         $zero, %lo(g_cdrom_state + 0xA)($at)
     /* 271AC 800369AC 5DDB0008 */  j          .L80036D74
     /* 271B0 800369B0 00000000 */   nop
   .L800369B4:
@@ -36,10 +36,10 @@ glabel cdrom_Update
     /* 271B8 800369B8 A0000224 */  addiu      $v0, $zero, 0xA0
     /* 271BC 800369BC E400020C */  jal        CdControlF
     /* 271C0 800369C0 1000A2A3 */   sb        $v0, 0x10($sp)
-    /* 271C4 800369C4 1080013C */  lui        $at, %hi(D_80101E58 + 0xE)
-    /* 271C8 800369C8 661E20A4 */  sh         $zero, %lo(D_80101E58 + 0xE)($at)
-    /* 271CC 800369CC 1080013C */  lui        $at, %hi(D_80101E58 + 0x40)
-    /* 271D0 800369D0 981E20A4 */  sh         $zero, %lo(D_80101E58 + 0x40)($at)
+    /* 271C4 800369C4 1080013C */  lui        $at, %hi(g_cdrom_state + 0xE)
+    /* 271C8 800369C8 661E20A4 */  sh         $zero, %lo(g_cdrom_state + 0xE)($at)
+    /* 271CC 800369CC 1080013C */  lui        $at, %hi(g_cdrom_state + 0x40)
+    /* 271D0 800369D0 981E20A4 */  sh         $zero, %lo(g_cdrom_state + 0x40)($at)
     /* 271D4 800369D4 5BDB0008 */  j          .L80036D6C
     /* 271D8 800369D8 03000224 */   addiu     $v0, $zero, 0x3
   jlabel .L800369DC
@@ -52,17 +52,17 @@ glabel cdrom_Update
     /* 271F4 800369F4 08006214 */  bne        $v1, $v0, .L80036A18
     /* 271F8 800369F8 05000224 */   addiu     $v0, $zero, 0x5
     /* 271FC 800369FC 04000224 */  addiu      $v0, $zero, 0x4
-    /* 27200 80036A00 1080013C */  lui        $at, %hi(D_80101E58 + 0xA)
-    /* 27204 80036A04 621E22A4 */  sh         $v0, %lo(D_80101E58 + 0xA)($at)
-    /* 27208 80036A08 1080013C */  lui        $at, %hi(D_80101E58 + 0x34)
-    /* 2720C 80036A0C 8C1E20AC */  sw         $zero, %lo(D_80101E58 + 0x34)($at)
+    /* 27200 80036A00 1080013C */  lui        $at, %hi(g_cdrom_state + 0xA)
+    /* 27204 80036A04 621E22A4 */  sh         $v0, %lo(g_cdrom_state + 0xA)($at)
+    /* 27208 80036A08 1080013C */  lui        $at, %hi(g_cdrom_state + 0x34)
+    /* 2720C 80036A0C 8C1E20AC */  sw         $zero, %lo(g_cdrom_state + 0x34)($at)
     /* 27210 80036A10 5DDB0008 */  j          .L80036D74
     /* 27214 80036A14 00000000 */   nop
   .L80036A18:
     /* 27218 80036A18 D4006210 */  beq        $v1, $v0, .L80036D6C
     /* 2721C 80036A1C 09000224 */   addiu     $v0, $zero, 0x9
-    /* 27220 80036A20 1080033C */  lui        $v1, %hi(D_80101E58 + 0x40)
-    /* 27224 80036A24 981E6324 */  addiu      $v1, $v1, %lo(D_80101E58 + 0x40)
+    /* 27220 80036A20 1080033C */  lui        $v1, %hi(g_cdrom_state + 0x40)
+    /* 27224 80036A24 981E6324 */  addiu      $v1, $v1, %lo(g_cdrom_state + 0x40)
     /* 27228 80036A28 00006294 */  lhu        $v0, 0x0($v1)
     /* 2722C 80036A2C 00000000 */  nop
     /* 27230 80036A30 01004224 */  addiu      $v0, $v0, 0x1
@@ -75,8 +75,8 @@ glabel cdrom_Update
     /* 2724C 80036A4C 5BDB0008 */  j          .L80036D6C
     /* 27250 80036A50 00000000 */   nop
   jlabel .L80036A54
-    /* 27254 80036A54 1080103C */  lui        $s0, %hi(D_80101E58 + 0x34)
-    /* 27258 80036A58 8C1E1026 */  addiu      $s0, $s0, %lo(D_80101E58 + 0x34)
+    /* 27254 80036A54 1080103C */  lui        $s0, %hi(g_cdrom_state + 0x34)
+    /* 27258 80036A58 8C1E1026 */  addiu      $s0, $s0, %lo(g_cdrom_state + 0x34)
     /* 2725C 80036A5C 0000028E */  lw         $v0, 0x0($s0)
     /* 27260 80036A60 00000000 */  nop
     /* 27264 80036A64 01004224 */  addiu      $v0, $v0, 0x1
@@ -84,24 +84,24 @@ glabel cdrom_Update
     /* 2726C 80036A6C 03004228 */  slti       $v0, $v0, 0x3
     /* 27270 80036A70 C0004014 */  bnez       $v0, .L80036D74
     /* 27274 80036A74 E0FF1026 */   addiu     $s0, $s0, -0x20
-    /* 27278 80036A78 1080023C */  lui        $v0, %hi(D_80101E58 + 0x24)
-    /* 2727C 80036A7C 7C1E428C */  lw         $v0, %lo(D_80101E58 + 0x24)($v0)
-    /* 27280 80036A80 1080033C */  lui        $v1, %hi(D_80101E58 + 0x20)
-    /* 27284 80036A84 781E638C */  lw         $v1, %lo(D_80101E58 + 0x20)($v1)
-    /* 27288 80036A88 1080013C */  lui        $at, %hi(D_80101E58 + 0x2C)
-    /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(D_80101E58 + 0x2C)($at)
-    /* 27290 80036A90 1080013C */  lui        $at, %hi(D_80101E58 + 0x28)
-    /* 27294 80036A94 801E23AC */  sw         $v1, %lo(D_80101E58 + 0x28)($at)
+    /* 27278 80036A78 1080023C */  lui        $v0, %hi(g_cdrom_state + 0x24)
+    /* 2727C 80036A7C 7C1E428C */  lw         $v0, %lo(g_cdrom_state + 0x24)($v0)
+    /* 27280 80036A80 1080033C */  lui        $v1, %hi(g_cdrom_state + 0x20)
+    /* 27284 80036A84 781E638C */  lw         $v1, %lo(g_cdrom_state + 0x20)($v1)
+    /* 27288 80036A88 1080013C */  lui        $at, %hi(g_cdrom_state + 0x2C)
+    /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(g_cdrom_state + 0x2C)($at)
+    /* 27290 80036A90 1080013C */  lui        $at, %hi(g_cdrom_state + 0x28)
+    /* 27294 80036A94 801E23AC */  sw         $v1, %lo(g_cdrom_state + 0x28)($at)
     /* 27298 80036A98 EA01020C */  jal        CdPosToInt
     /* 2729C 80036A9C 21200002 */   addu      $a0, $s0, $zero
     /* 272A0 80036AA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
-    /* 272A8 80036AA8 1080013C */  lui        $at, %hi(D_80101E58 + 0x48)
-    /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(D_80101E58 + 0x48)($at)
+    /* 272A8 80036AA8 1080013C */  lui        $at, %hi(g_cdrom_state + 0x48)
+    /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(g_cdrom_state + 0x48)($at)
     /* 272B0 80036AB0 9600020C */  jal        CdControl
     /* 272B4 80036AB4 21300000 */   addu      $a2, $zero, $zero
-    /* 272B8 80036AB8 1080013C */  lui        $at, %hi(D_80101E58 + 0x40)
-    /* 272BC 80036ABC 981E20A4 */  sh         $zero, %lo(D_80101E58 + 0x40)($at)
+    /* 272B8 80036AB8 1080013C */  lui        $at, %hi(g_cdrom_state + 0x40)
+    /* 272BC 80036ABC 981E20A4 */  sh         $zero, %lo(g_cdrom_state + 0x40)($at)
     /* 272C0 80036AC0 5BDB0008 */  j          .L80036D6C
     /* 272C4 80036AC4 05000224 */   addiu     $v0, $zero, 0x5
   jlabel .L80036AC8
@@ -115,8 +115,8 @@ glabel cdrom_Update
     /* 272E4 80036AE4 05000224 */   addiu     $v0, $zero, 0x5
     /* 272E8 80036AE8 0380043C */  lui        $a0, %hi(cdrom_ReadyCallback)
     /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(cdrom_ReadyCallback)
-    /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(D_80101E58 + 0x40)
-    /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(D_80101E58 + 0x40)
+    /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(g_cdrom_state + 0x40)
+    /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(g_cdrom_state + 0x40)
     /* 272F8 80036AF8 9000020C */  jal        CdReadyCallback
     /* 272FC 80036AFC 000000A6 */   sh        $zero, 0x0($s0)
     /* 27300 80036B00 06000424 */  addiu      $a0, $zero, 0x6
@@ -127,8 +127,8 @@ glabel cdrom_Update
   .L80036B14:
     /* 27314 80036B14 95006210 */  beq        $v1, $v0, .L80036D6C
     /* 27318 80036B18 09000224 */   addiu     $v0, $zero, 0x9
-    /* 2731C 80036B1C 1080033C */  lui        $v1, %hi(D_80101E58 + 0x40)
-    /* 27320 80036B20 981E6324 */  addiu      $v1, $v1, %lo(D_80101E58 + 0x40)
+    /* 2731C 80036B1C 1080033C */  lui        $v1, %hi(g_cdrom_state + 0x40)
+    /* 27320 80036B20 981E6324 */  addiu      $v1, $v1, %lo(g_cdrom_state + 0x40)
     /* 27324 80036B24 00006294 */  lhu        $v0, 0x0($v1)
     /* 27328 80036B28 00000000 */  nop
     /* 2732C 80036B2C 01004224 */  addiu      $v0, $v0, 0x1
@@ -149,8 +149,8 @@ glabel cdrom_Update
     /* 27364 80036B64 02000224 */  addiu      $v0, $zero, 0x2
     /* 27368 80036B68 19006214 */  bne        $v1, $v0, .L80036BD0
     /* 2736C 80036B6C 05000224 */   addiu     $v0, $zero, 0x5
-    /* 27370 80036B70 1080023C */  lui        $v0, %hi(D_80101E58 + 0x28)
-    /* 27374 80036B74 801E428C */  lw         $v0, %lo(D_80101E58 + 0x28)($v0)
+    /* 27370 80036B70 1080023C */  lui        $v0, %hi(g_cdrom_state + 0x28)
+    /* 27374 80036B74 801E428C */  lw         $v0, %lo(g_cdrom_state + 0x28)($v0)
     /* 27378 80036B78 00000000 */  nop
     /* 2737C 80036B7C 03004014 */  bnez       $v0, .L80036B8C
     /* 27380 80036B80 00000000 */   nop
@@ -159,12 +159,12 @@ glabel cdrom_Update
   .L80036B8C:
     /* 2738C 80036B8C 77004004 */  bltz       $v0, .L80036D6C
     /* 27390 80036B90 09000224 */   addiu     $v0, $zero, 0x9
-    /* 27394 80036B94 1080023C */  lui        $v0, %hi(D_80101E58 + 0x40)
-    /* 27398 80036B98 981E4294 */  lhu        $v0, %lo(D_80101E58 + 0x40)($v0)
+    /* 27394 80036B94 1080023C */  lui        $v0, %hi(g_cdrom_state + 0x40)
+    /* 27398 80036B98 981E4294 */  lhu        $v0, %lo(g_cdrom_state + 0x40)($v0)
     /* 2739C 80036B9C 00000000 */  nop
     /* 273A0 80036BA0 01004224 */  addiu      $v0, $v0, 0x1
-    /* 273A4 80036BA4 1080013C */  lui        $at, %hi(D_80101E58 + 0x40)
-    /* 273A8 80036BA8 981E22A4 */  sh         $v0, %lo(D_80101E58 + 0x40)($at)
+    /* 273A4 80036BA4 1080013C */  lui        $at, %hi(g_cdrom_state + 0x40)
+    /* 273A8 80036BA8 981E22A4 */  sh         $v0, %lo(g_cdrom_state + 0x40)($at)
     /* 273AC 80036BAC 00140200 */  sll        $v0, $v0, 16
     /* 273B0 80036BB0 03140200 */  sra        $v0, $v0, 16
     /* 273B4 80036BB4 3D004228 */  slti       $v0, $v0, 0x3D
@@ -182,8 +182,8 @@ glabel cdrom_Update
     /* 273E0 80036BE0 5BDB0008 */  j          .L80036D6C
     /* 273E4 80036BE4 09000224 */   addiu     $v0, $zero, 0x9
   .L80036BE8:
-    /* 273E8 80036BE8 1080033C */  lui        $v1, %hi(D_80101E58 + 0x40)
-    /* 273EC 80036BEC 981E6324 */  addiu      $v1, $v1, %lo(D_80101E58 + 0x40)
+    /* 273E8 80036BE8 1080033C */  lui        $v1, %hi(g_cdrom_state + 0x40)
+    /* 273EC 80036BEC 981E6324 */  addiu      $v1, $v1, %lo(g_cdrom_state + 0x40)
     /* 273F0 80036BF0 00006294 */  lhu        $v0, 0x0($v1)
     /* 273F4 80036BF4 00000000 */  nop
     /* 273F8 80036BF8 01004224 */  addiu      $v0, $v0, 0x1
@@ -230,8 +230,8 @@ glabel cdrom_Update
   .L80036C90:
     /* 27490 80036C90 35006210 */  beq        $v1, $v0, .L80036D68
     /* 27494 80036C94 00000000 */   nop
-    /* 27498 80036C98 1080033C */  lui        $v1, %hi(D_80101E58 + 0x4)
-    /* 2749C 80036C9C 5C1E6324 */  addiu      $v1, $v1, %lo(D_80101E58 + 0x4)
+    /* 27498 80036C98 1080033C */  lui        $v1, %hi(g_cdrom_state + 0x4)
+    /* 2749C 80036C9C 5C1E6324 */  addiu      $v1, $v1, %lo(g_cdrom_state + 0x4)
     /* 274A0 80036CA0 0000628C */  lw         $v0, 0x0($v1)
     /* 274A4 80036CA4 00000000 */  nop
     /* 274A8 80036CA8 01004224 */  addiu      $v0, $v0, 0x1
@@ -244,10 +244,10 @@ glabel cdrom_Update
     /* 274C0 80036CC0 21280000 */   addu      $a1, $zero, $zero
     /* 274C4 80036CC4 0D000224 */  addiu      $v0, $zero, 0xD
   .L80036CC8:
-    /* 274C8 80036CC8 1080013C */  lui        $at, %hi(D_80101E58 + 0xA)
-    /* 274CC 80036CCC 621E22A4 */  sh         $v0, %lo(D_80101E58 + 0xA)($at)
-    /* 274D0 80036CD0 1080013C */  lui        $at, %hi(D_80101E58 + 0x4)
-    /* 274D4 80036CD4 5C1E20AC */  sw         $zero, %lo(D_80101E58 + 0x4)($at)
+    /* 274C8 80036CC8 1080013C */  lui        $at, %hi(g_cdrom_state + 0xA)
+    /* 274CC 80036CCC 621E22A4 */  sh         $v0, %lo(g_cdrom_state + 0xA)($at)
+    /* 274D0 80036CD0 1080013C */  lui        $at, %hi(g_cdrom_state + 0x4)
+    /* 274D4 80036CD4 5C1E20AC */  sw         $zero, %lo(g_cdrom_state + 0x4)($at)
     /* 274D8 80036CD8 5DDB0008 */  j          .L80036D74
     /* 274DC 80036CDC 00000000 */   nop
   jlabel .L80036CE0
@@ -260,8 +260,8 @@ glabel cdrom_Update
     /* 274F8 80036CF8 0E006214 */  bne        $v1, $v0, .L80036D34
     /* 274FC 80036CFC 05000224 */   addiu     $v0, $zero, 0x5
     /* 27500 80036D00 02000224 */  addiu      $v0, $zero, 0x2
-    /* 27504 80036D04 1080013C */  lui        $at, %hi(D_80101E58 + 0xA)
-    /* 27508 80036D08 621E22A4 */  sh         $v0, %lo(D_80101E58 + 0xA)($at)
+    /* 27504 80036D04 1080013C */  lui        $at, %hi(g_cdrom_state + 0xA)
+    /* 27508 80036D08 621E22A4 */  sh         $v0, %lo(g_cdrom_state + 0xA)($at)
     /* 2750C 80036D0C 330A020C */  jal        VSync
     /* 27510 80036D10 04000424 */   addiu     $a0, $zero, 0x4
     /* 27514 80036D14 330A020C */  jal        VSync
@@ -275,8 +275,8 @@ glabel cdrom_Update
   .L80036D34:
     /* 27534 80036D34 0D006210 */  beq        $v1, $v0, .L80036D6C
     /* 27538 80036D38 09000224 */   addiu     $v0, $zero, 0x9
-    /* 2753C 80036D3C 1080033C */  lui        $v1, %hi(D_80101E58 + 0x4)
-    /* 27540 80036D40 5C1E6324 */  addiu      $v1, $v1, %lo(D_80101E58 + 0x4)
+    /* 2753C 80036D3C 1080033C */  lui        $v1, %hi(g_cdrom_state + 0x4)
+    /* 27540 80036D40 5C1E6324 */  addiu      $v1, $v1, %lo(g_cdrom_state + 0x4)
     /* 27544 80036D44 0000628C */  lw         $v0, 0x0($v1)
     /* 27548 80036D48 00000000 */  nop
     /* 2754C 80036D4C 01004224 */  addiu      $v0, $v0, 0x1
@@ -290,8 +290,8 @@ glabel cdrom_Update
   .L80036D68:
     /* 27568 80036D68 0A000224 */  addiu      $v0, $zero, 0xA
   .L80036D6C:
-    /* 2756C 80036D6C 1080013C */  lui        $at, %hi(D_80101E58 + 0xA)
-    /* 27570 80036D70 621E22A4 */  sh         $v0, %lo(D_80101E58 + 0xA)($at)
+    /* 2756C 80036D6C 1080013C */  lui        $at, %hi(g_cdrom_state + 0xA)
+    /* 27570 80036D70 621E22A4 */  sh         $v0, %lo(g_cdrom_state + 0xA)($at)
   jlabel .L80036D74
     /* 27574 80036D74 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 27578 80036D78 1800B08F */  lw         $s0, 0x18($sp)

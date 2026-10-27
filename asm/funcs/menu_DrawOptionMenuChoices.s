@@ -47,7 +47,7 @@ glabel menu_DrawOptionMenuChoices
     /* 5B9D4 8006B1D4 1C0022AE */  sw         $v0, 0x1C($s1)
     /* 5B9D8 8006B1D8 3000A0AF */  sw         $zero, 0x30($sp)
   .L8006B1DC:
-    /* 5B9DC 8006B1DC 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5B9DC 8006B1DC 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5B9E0 8006B1E0 0400438E */  lw         $v1, 0x4($s2)
     /* 5B9E4 8006B1E4 82120200 */  srl        $v0, $v0, 10
     /* 5B9E8 8006B1E8 07004230 */  andi       $v0, $v0, 0x7
@@ -106,7 +106,7 @@ glabel menu_DrawOptionMenuChoices
     /* 5BAB0 8006B2B0 01004230 */  andi       $v0, $v0, 0x1
     /* 5BAB4 8006B2B4 16005014 */  bne        $v0, $s0, .L8006B310
     /* 5BAB8 8006B2B8 00000000 */   nop
-    /* 5BABC 8006B2BC 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5BABC 8006B2BC 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5BAC0 8006B2C0 00000000 */  nop
     /* 5BAC4 8006B2C4 001C4230 */  andi       $v0, $v0, 0x1C00
     /* 5BAC8 8006B2C8 12004014 */  bnez       $v0, .L8006B314
@@ -158,7 +158,7 @@ glabel menu_DrawOptionMenuChoices
     /* 5BB74 8006B374 01004230 */  andi       $v0, $v0, 0x1
     /* 5BB78 8006B378 16005014 */  bne        $v0, $s0, .L8006B3D4
     /* 5BB7C 8006B37C 00040224 */   addiu     $v0, $zero, 0x400
-    /* 5BB80 8006B380 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 5BB80 8006B380 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5BB84 8006B384 00000000 */  nop
     /* 5BB88 8006B388 001C6330 */  andi       $v1, $v1, 0x1C00
     /* 5BB8C 8006B38C 12006214 */  bne        $v1, $v0, .L8006B3D8
@@ -210,7 +210,7 @@ glabel menu_DrawOptionMenuChoices
     /* 5BC38 8006B438 01004230 */  andi       $v0, $v0, 0x1
     /* 5BC3C 8006B43C 16005014 */  bne        $v0, $s0, .L8006B498
     /* 5BC40 8006B440 00080224 */   addiu     $v0, $zero, 0x800
-    /* 5BC44 8006B444 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 5BC44 8006B444 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5BC48 8006B448 00000000 */  nop
     /* 5BC4C 8006B44C 001C6330 */  andi       $v1, $v1, 0x1C00
     /* 5BC50 8006B450 12006214 */  bne        $v1, $v0, .L8006B49C

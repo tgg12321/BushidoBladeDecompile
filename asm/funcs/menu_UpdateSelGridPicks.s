@@ -1,7 +1,7 @@
 glabel menu_UpdateSelGridPicks
     /* 66780 80075F80 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 66784 80075F84 4800A4AF */  sw         $a0, 0x48($sp)
-    /* 66788 80075F88 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 66788 80075F88 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 6678C 80075F8C 3C00B5AF */  sw         $s5, 0x3C($sp)
     /* 66790 80075F90 21A8A000 */  addu       $s5, $a1, $zero
     /* 66794 80075F94 2800B0AF */  sw         $s0, 0x28($sp)
@@ -26,7 +26,7 @@ glabel menu_UpdateSelGridPicks
     /* 667E0 80075FE0 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 667E4 80075FE4 9471010C */  jal        snd_QueueSound
     /* 667E8 80075FE8 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 667EC 80075FEC D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 667EC 80075FEC D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 667F0 80075FF0 00000000 */  nop
     /* 667F4 80075FF4 21282402 */  addu       $a1, $s1, $a0
     /* 667F8 80075FF8 3C00A284 */  lh         $v0, 0x3C($a1)
@@ -101,7 +101,7 @@ glabel menu_UpdateSelGridPicks
     /* 668FC 800760FC 00000000 */   nop
     /* 66900 80076100 0A006010 */  beqz       $v1, .L8007612C
     /* 66904 80076104 031C1300 */   sra       $v1, $s3, 16
-    /* 66908 80076108 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 66908 80076108 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 6690C 8007610C 00000000 */  nop
     /* 66910 80076110 21182302 */  addu       $v1, $s1, $v1
     /* 66914 80076114 1C006294 */  lhu        $v0, 0x1C($v1)
@@ -121,7 +121,7 @@ glabel menu_UpdateSelGridPicks
     /* 66944 80076144 00000000 */   nop
   .L80076148:
     /* 66948 80076148 40101000 */  sll        $v0, $s0, 1
-    /* 6694C 8007614C D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 6694C 8007614C D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 66950 80076150 00000000 */  nop
     /* 66954 80076154 21204300 */  addu       $a0, $v0, $v1
     /* 66958 80076158 20008384 */  lh         $v1, 0x20($a0)
@@ -135,7 +135,7 @@ glabel menu_UpdateSelGridPicks
     /* 66974 80076174 6AD80108 */  j          .L800761A8
     /* 66978 80076178 200082A4 */   sh        $v0, 0x20($a0)
   .L8007617C:
-    /* 6697C 8007617C D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 6697C 8007617C D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 66980 80076180 00000000 */  nop
     /* 66984 80076184 21186200 */  addu       $v1, $v1, $v0
     /* 66988 80076188 20006284 */  lh         $v0, 0x20($v1)
@@ -149,7 +149,7 @@ glabel menu_UpdateSelGridPicks
   .L800761A4:
     /* 669A4 800761A4 200062A4 */  sh         $v0, 0x20($v1)
   .L800761A8:
-    /* 669A8 800761A8 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 669A8 800761A8 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 669AC 800761AC 40981000 */  sll        $s3, $s0, 1
     /* 669B0 800761B0 21286202 */  addu       $a1, $s3, $v0
     /* 669B4 800761B4 1C00A284 */  lh         $v0, 0x1C($a1)
@@ -196,7 +196,7 @@ glabel menu_UpdateSelGridPicks
     /* 66A58 80076258 00000000 */  nop
     /* 66A5C 8007625C 25105200 */  or         $v0, $v0, $s2
     /* 66A60 80076260 000022A2 */  sb         $v0, 0x0($s1)
-    /* 66A64 80076264 D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 66A64 80076264 D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 66A68 80076268 00000000 */  nop
     /* 66A6C 8007626C 21286602 */  addu       $a1, $s3, $a2
     /* 66A70 80076270 3C00A794 */  lhu        $a3, 0x3C($a1)
@@ -233,7 +233,7 @@ glabel menu_UpdateSelGridPicks
     /* 66AE4 800762E4 1700A012 */  beqz       $s5, .L80076344
     /* 66AE8 800762E8 80101000 */   sll       $v0, $s0, 2
     /* 66AEC 800762EC 21105000 */  addu       $v0, $v0, $s0
-    /* 66AF0 800762F0 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 66AF0 800762F0 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 66AF4 800762F4 40100200 */  sll        $v0, $v0, 1
     /* 66AF8 800762F8 21186200 */  addu       $v1, $v1, $v0
     /* 66AFC 800762FC 05000224 */  addiu      $v0, $zero, 0x5

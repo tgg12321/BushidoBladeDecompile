@@ -29,8 +29,8 @@ glabel fight_InitScrollingSpriteDisplayAndAudio
     /* 2C67C 8003BE7C 98DC000C */  jal        cdrom_WaitAudioStarted
     /* 2C680 8003BE80 00000000 */   nop
     /* 2C684 8003BE84 0B000224 */  addiu      $v0, $zero, 0xB
-    /* 2C688 8003BE88 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C68C 8003BE8C 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2C688 8003BE88 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C68C 8003BE8C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2C690 8003BE90 345A000C */  jal        gpu_SetDispMaskOn
     /* 2C694 8003BE94 00000000 */   nop
     /* 2C698 8003BE98 1000BF8F */  lw         $ra, 0x10($sp)

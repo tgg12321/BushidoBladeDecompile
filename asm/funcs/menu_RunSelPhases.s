@@ -5,7 +5,7 @@ glabel menu_RunSelPhases
     /* 67B80 80077380 1800B2AF */  sw         $s2, 0x18($sp)
     /* 67B84 80077384 2190A000 */  addu       $s2, $a1, $zero
     /* 67B88 80077388 2400B5AF */  sw         $s5, 0x24($sp)
-    /* 67B8C 8007738C D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 67B8C 8007738C D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 67B90 80077390 0400033C */  lui        $v1, (0x40004 >> 16)
     /* 67B94 80077394 2800BFAF */  sw         $ra, 0x28($sp)
     /* 67B98 80077398 1C00B3AF */  sw         $s3, 0x1C($sp)
@@ -20,12 +20,12 @@ glabel menu_RunSelPhases
     /* 67BBC 800773BC 140082A4 */  sh         $v0, 0x14($a0)
     /* 67BC0 800773C0 360080A4 */  sh         $zero, 0x36($a0)
   .L800773C4:
-    /* 67BC4 800773C4 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 67BC4 800773C4 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67BC8 800773C8 00000000 */  nop
     /* 67BCC 800773CC 14004584 */  lh         $a1, 0x14($v0)
     /* 67BD0 800773D0 88D0010C */  jal        gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads
     /* 67BD4 800773D4 21204002 */   addu      $a0, $s2, $zero
-    /* 67BD8 800773D8 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 67BD8 800773D8 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67BDC 800773DC 00000000 */  nop
     /* 67BE0 800773E0 14004384 */  lh         $v1, 0x14($v0)
     /* 67BE4 800773E4 05000224 */  addiu      $v0, $zero, 0x5
@@ -36,7 +36,7 @@ glabel menu_RunSelPhases
   .L800773F8:
     /* 67BF8 800773F8 00141300 */  sll        $v0, $s3, 16
   .L800773FC:
-    /* 67BFC 800773FC D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67BFC 800773FC D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67C00 80077400 C3130200 */  sra        $v0, $v0, 15
     /* 67C04 80077404 21104300 */  addu       $v0, $v0, $v1
     /* 67C08 80077408 14004384 */  lh         $v1, 0x14($v0)
@@ -69,7 +69,7 @@ glabel menu_RunSelPhases
     /* 67C6C 8007746C 9CD5010C */  jal        menu_HandleSelOpposedChoice
     /* 67C70 80077470 21280002 */   addu      $a1, $s0, $zero
     /* 67C74 80077474 21204002 */  addu       $a0, $s2, $zero
-    /* 67C78 80077478 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67C78 80077478 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67C7C 8007747C 40101000 */  sll        $v0, $s0, 1
     /* 67C80 80077480 21104300 */  addu       $v0, $v0, $v1
     /* 67C84 80077484 14004694 */  lhu        $a2, 0x14($v0)
@@ -91,14 +91,14 @@ glabel menu_RunSelPhases
     /* 67CC0 800774C0 80881000 */  sll        $s1, $s0, 2
     /* 67CC4 800774C4 21883002 */  addu       $s1, $s1, $s0
     /* 67CC8 800774C8 40881100 */  sll        $s1, $s1, 1
-    /* 67CCC 800774CC D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 67CCC 800774CC D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 67CD0 800774D0 6A003126 */  addiu      $s1, $s1, 0x6A
     /* 67CD4 800774D4 2110D000 */  addu       $v0, $a2, $s0
     /* 67CD8 800774D8 68004590 */  lbu        $a1, 0x68($v0)
     /* 67CDC 800774DC E0D7010C */  jal        menu_UpdateSelGridPicks
     /* 67CE0 800774E0 2130D100 */   addu      $a2, $a2, $s1
     /* 67CE4 800774E4 21204002 */  addu       $a0, $s2, $zero
-    /* 67CE8 800774E8 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67CE8 800774E8 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67CEC 800774EC 40101000 */  sll        $v0, $s0, 1
     /* 67CF0 800774F0 21104300 */  addu       $v0, $v0, $v1
     /* 67CF4 800774F4 14004694 */  lhu        $a2, 0x14($v0)
@@ -112,7 +112,7 @@ glabel menu_RunSelPhases
     /* 67D14 80077514 C6D2010C */  jal        menu_DrawSelRowTiles
     /* 67D18 80077518 21300000 */   addu      $a2, $zero, $zero
     /* 67D1C 8007751C 21204002 */  addu       $a0, $s2, $zero
-    /* 67D20 80077520 D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 67D20 80077520 D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 67D24 80077524 21380002 */  addu       $a3, $s0, $zero
     /* 67D28 80077528 2110D000 */  addu       $v0, $a2, $s0
     /* 67D2C 8007752C 68004590 */  lbu        $a1, 0x68($v0)
@@ -128,14 +128,14 @@ glabel menu_RunSelPhases
     /* 67D50 80077550 80881000 */  sll        $s1, $s0, 2
     /* 67D54 80077554 21883002 */  addu       $s1, $s1, $s0
     /* 67D58 80077558 40881100 */  sll        $s1, $s1, 1
-    /* 67D5C 8007755C D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 67D5C 8007755C D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 67D60 80077560 6A003126 */  addiu      $s1, $s1, 0x6A
     /* 67D64 80077564 2110D000 */  addu       $v0, $a2, $s0
     /* 67D68 80077568 68004590 */  lbu        $a1, 0x68($v0)
     /* 67D6C 8007756C 37DA010C */  jal        menu_UpdateSelListPicks
     /* 67D70 80077570 2130D100 */   addu      $a2, $a2, $s1
     /* 67D74 80077574 21204002 */  addu       $a0, $s2, $zero
-    /* 67D78 80077578 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67D78 80077578 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67D7C 8007757C 40101000 */  sll        $v0, $s0, 1
     /* 67D80 80077580 21104300 */  addu       $v0, $v0, $v1
     /* 67D84 80077584 14004694 */  lhu        $a2, 0x14($v0)
@@ -149,7 +149,7 @@ glabel menu_RunSelPhases
     /* 67DA4 800775A4 C6D2010C */  jal        menu_DrawSelRowTiles
     /* 67DA8 800775A8 01000624 */   addiu     $a2, $zero, 0x1
     /* 67DAC 800775AC 21204002 */  addu       $a0, $s2, $zero
-    /* 67DB0 800775B0 D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 67DB0 800775B0 D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 67DB4 800775B4 21380002 */  addu       $a3, $s0, $zero
     /* 67DB8 800775B8 2110D000 */  addu       $v0, $a2, $s0
     /* 67DBC 800775BC 68004590 */  lbu        $a1, 0x68($v0)
@@ -173,7 +173,7 @@ glabel menu_RunSelPhases
     /* 67E00 80077600 80301000 */  sll        $a2, $s0, 2
     /* 67E04 80077604 2130D000 */  addu       $a2, $a2, $s0
     /* 67E08 80077608 40300600 */  sll        $a2, $a2, 1
-    /* 67E0C 8007760C D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67E0C 8007760C D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67E10 80077610 6A00C624 */  addiu      $a2, $a2, 0x6A
     /* 67E14 80077614 21107000 */  addu       $v0, $v1, $s0
     /* 67E18 80077618 68004590 */  lbu        $a1, 0x68($v0)
@@ -192,7 +192,7 @@ glabel menu_RunSelPhases
     /* 67E4C 8007764C 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 67E50 80077650 9471010C */  jal        snd_QueueSound
     /* 67E54 80077654 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 67E58 80077658 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 67E58 80077658 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67E5C 8007765C 40181000 */  sll        $v1, $s0, 1
     /* 67E60 80077660 21186200 */  addu       $v1, $v1, $v0
     /* 67E64 80077664 03000224 */  addiu      $v0, $zero, 0x3
@@ -214,7 +214,7 @@ glabel menu_RunSelPhases
     /* 67EA0 800776A0 80301000 */  sll        $a2, $s0, 2
     /* 67EA4 800776A4 2130D000 */  addu       $a2, $a2, $s0
     /* 67EA8 800776A8 40300600 */  sll        $a2, $a2, 1
-    /* 67EAC 800776AC D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67EAC 800776AC D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67EB0 800776B0 6A00C624 */  addiu      $a2, $a2, 0x6A
     /* 67EB4 800776B4 21107000 */  addu       $v0, $v1, $s0
     /* 67EB8 800776B8 68004590 */  lbu        $a1, 0x68($v0)

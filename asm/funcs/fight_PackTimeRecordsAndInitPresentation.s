@@ -12,8 +12,8 @@ glabel fight_PackTimeRecordsAndInitPresentation
     /* 2CF3C 8003C73C 21400000 */  addu       $t0, $zero, $zero
     /* 2CF40 8003C740 8888073C */  lui        $a3, (0x88888889 >> 16)
     /* 2CF44 8003C744 8988E734 */  ori        $a3, $a3, (0x88888889 & 0xFFFF)
-    /* 2CF48 8003C748 1080063C */  lui        $a2, %hi(D_80106A50 + 0x8)
-    /* 2CF4C 8003C74C 586AC624 */  addiu      $a2, $a2, %lo(D_80106A50 + 0x8)
+    /* 2CF48 8003C748 1080063C */  lui        $a2, %hi(g_saved_record + 0x8)
+    /* 2CF4C 8003C74C 586AC624 */  addiu      $a2, $a2, %lo(g_saved_record + 0x8)
     /* 2CF50 8003C750 21280002 */  addu       $a1, $s0, $zero
   .L8003C754:
     /* 2CF54 8003C754 A291023C */  lui        $v0, (0x91A2B3C5 >> 16)
@@ -93,10 +93,10 @@ glabel fight_PackTimeRecordsAndInitPresentation
     /* 2D07C 8003C87C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2D080 8003C880 300002A2 */   sb        $v0, 0x30($s0)
     /* 2D084 8003C884 1F000224 */  addiu      $v0, $zero, 0x1F
-    /* 2D088 8003C888 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2D08C 8003C88C B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2D090 8003C890 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2D094 8003C894 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2D088 8003C888 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2D08C 8003C88C B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 2D090 8003C890 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2D094 8003C894 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2D098 8003C898 345A000C */  jal        gpu_SetDispMaskOn
     /* 2D09C 8003C89C 00000000 */   nop
     /* 2D0A0 8003C8A0 1C00BF8F */  lw         $ra, 0x1C($sp)

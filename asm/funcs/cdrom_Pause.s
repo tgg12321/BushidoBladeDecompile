@@ -14,13 +14,13 @@ glabel cdrom_Pause
     /* 276F0 80036EF0 E400020C */  jal        CdControlF
     /* 276F4 80036EF4 21280000 */   addu      $a1, $zero, $zero
     /* 276F8 80036EF8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 276FC 80036EFC 1080013C */  lui        $at, %hi(D_80101E58 + 0x10)
-    /* 27700 80036F00 681E22A4 */  sh         $v0, %lo(D_80101E58 + 0x10)($at)
+    /* 276FC 80036EFC 1080013C */  lui        $at, %hi(g_cdrom_state + 0x10)
+    /* 27700 80036F00 681E22A4 */  sh         $v0, %lo(g_cdrom_state + 0x10)($at)
     /* 27704 80036F04 0B000224 */  addiu      $v0, $zero, 0xB
-    /* 27708 80036F08 1080013C */  lui        $at, %hi(D_80101E58 + 0xA)
-    /* 2770C 80036F0C 621E22A4 */  sh         $v0, %lo(D_80101E58 + 0xA)($at)
-    /* 27710 80036F10 1080013C */  lui        $at, %hi(D_80101E58 + 0x4)
-    /* 27714 80036F14 5C1E20AC */  sw         $zero, %lo(D_80101E58 + 0x4)($at)
+    /* 27708 80036F08 1080013C */  lui        $at, %hi(g_cdrom_state + 0xA)
+    /* 2770C 80036F0C 621E22A4 */  sh         $v0, %lo(g_cdrom_state + 0xA)($at)
+    /* 27710 80036F10 1080013C */  lui        $at, %hi(g_cdrom_state + 0x4)
+    /* 27714 80036F14 5C1E20AC */  sw         $zero, %lo(g_cdrom_state + 0x4)($at)
     /* 27718 80036F18 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2771C 80036F1C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 27720 80036F20 0800E003 */  jr         $ra

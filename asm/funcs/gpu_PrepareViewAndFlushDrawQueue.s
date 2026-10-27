@@ -27,8 +27,8 @@ glabel gpu_PrepareViewAndFlushDrawQueue
     /* 34D68 80044568 18008424 */  addiu      $a0, $a0, 0x18
     /* 34D6C 8004456C 37F9010C */  jal        MulMatrix0
     /* 34D70 80044570 1800A524 */   addiu     $a1, $a1, 0x18
-    /* 34D74 80044574 0A80023C */  lui        $v0, %hi(D_800A36AC)
-    /* 34D78 80044578 AC36428C */  lw         $v0, %lo(D_800A36AC)($v0)
+    /* 34D74 80044574 0A80023C */  lui        $v0, %hi(g_gpu_presented_frame_count)
+    /* 34D78 80044578 AC36428C */  lw         $v0, %lo(g_gpu_presented_frame_count)($v0)
     /* 34D7C 8004457C 00000000 */  nop
     /* 34D80 80044580 01004230 */  andi       $v0, $v0, 0x1
     /* 34D84 80044584 05004010 */  beqz       $v0, .L8004459C

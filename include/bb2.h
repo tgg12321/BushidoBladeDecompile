@@ -6,7 +6,7 @@
 
 #include "game.h"
 
-extern FileRecord D_80106A50;
+extern FileRecord g_saved_record;
 extern s16 g_camera_distance_offset;
 extern GpuDb g_gpu_db[2];
 /* The current frame's ordering table (OT entry n is g_gpu_ot_ptr + n). */
@@ -62,8 +62,8 @@ extern Unk8009BCF8Record D_8009BCF8[2][10];
  * menu_InitSelScreen. */
 extern u8 D_8009BD20[2][2];
 
-extern u8 *D_800A36A0;
-#define SELWORK ((SelWork *)D_800A36A0)
+extern u8 *g_sel_screen_work;
+#define SELWORK ((SelWork *)g_sel_screen_work)
 
 /* One PsyQ MATRIX: func_8004A940 loads it as the GTE rotation, reads t[] and
  * passes it to gte_MulMatrix0ClearTrans;
@@ -78,7 +78,7 @@ extern Unk8009BC94Record D_8009BC94[][6];
 extern void (*D_8009BC1C[7])(Unk8006EACCRec *);
 extern u8 D_8009BC38[];
 extern SelectEntryE534 D_8009BC40[][6];
-extern u8 D_8009BC7C[];
+extern u8 g_entry_menu_entry_flags[];
 /* Table of 4 sprite-sheet headers, 12 bytes each
  * (gpu_DrawTwoDigitCounterWithOptionalSecondSide,
  * gpu_DrawPackedComparisonRowsAndTotals). */
@@ -119,7 +119,7 @@ extern Unk8009B400Record D_8009B184[2];
  * descriptor. */
 extern Unk8009B400Record D_800A328C;
 
-extern Unk8009B2BCRecord D_8009B2BC[3];
+extern Unk8009B2BCRecord g_panel_frame_sizes[3];
 extern Unk800EFAE8Rec D_800EFAE8;
 extern Unk800F0C10Record D_800F0C10[4][3];
 
@@ -127,12 +127,12 @@ extern Unk800F0C10Record D_800F0C10[4][3];
  * and the position records in D_800F0CA0. The init functions
  * eff_InitCosineScaledQuad.. func_800652AC fill them; the step functions
  * eff_DrawAndAdvanceCosineScaledQuad..func_800657B0 advance the timers. */
-extern s16 D_800F0BA8[18];
+extern s16 g_eff_animated_quad_counters[18];
 
 extern Unk800F0C10Record D_800F0CA0[18];
 extern Unk800948BCEntry D_800948BC[];
 
-/* The per-mode main-loop handlers, indexed by D_800A3834. */
+/* The per-mode main-loop handlers, indexed by g_main_loop_handler_index. */
 extern void (*D_8008D090[])(void);
 
 extern u8 D_8008E778[][4];
@@ -190,7 +190,7 @@ extern SVec4i16 *D_8008D86C[8];
 extern SVec4i16 *D_8008D88C[32];
 extern SVec4i16 D_8008D774[2];
 extern SVec4i16 D_800A3138;
-extern u8 D_8008D9EC[];
+extern u8 g_fighter_group_flags[];
 extern u8 D_8008DA08[0x48];
 extern s16 D_8008DA50[]; /* [unk_0A] (fighter_Update) */
 extern s16 D_8008DA94[]; /* [unk_0A] (fighter_Update) */
@@ -208,7 +208,7 @@ extern Tbl8008E194 D_8008E194[];
 
 /* 8 byte pairs ({0,0} {1,0} {2,0} {3,0} {4,1} {5,1} {6,1} {7,0});
  * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in D_800A35E0,
- * n = D_8009BD24.unk14_0. */
+ * n = g_working_record.unk14_0. */
 extern u8 D_8009BD58[8][2];
 
 extern Obj80106A78 g_object_pool[12];
@@ -285,10 +285,10 @@ extern s32 D_8009060C[38];
 
 extern s16 D_800906A4[39][2];
 extern u16 D_80094C68[];
-extern Unk80099D88Rec D_80099D88[];
+extern Unk80099D88Rec g_cpu_profiles[];
 extern Unk8009A8C8Entry D_8009A8C8[][8];
 extern u8 D_8009A9B4[][2]; /* byte pairs (fighter_InitCpuControl) */
-/* [D_8008D9EC flag] -> 3 bytes
+/* [g_fighter_group_flags flag] -> 3 bytes
  * (gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels args), stride 4 */
 extern u8 D_800A3100[][4];
 extern s16 D_800A310C[4];
@@ -306,8 +306,8 @@ extern u8 D_800A3690;
  * g_comb_send_buf s32[2] makes cc1 keep its address live through
  * comb_ExchangePad (35 words differ) */
 extern s32 g_comb_send_buf_plus_0x4;
-extern s16 D_800A36A4;
-extern s32 D_800A36AC;
+extern s16 g_fight_stage_index;
+extern s32 g_gpu_presented_frame_count;
 /* the Rec44 view record camera_ApplyFightView / camera_ApplyReplayView last
  * placed (read by snd_QueuePositionalSound as the listener) */
 extern Rec44 *g_listener_cam;
@@ -373,7 +373,8 @@ extern MATRIX *D_800A3778;
 extern u8 g_fight_match_results[];
 
 /* Two buffer addresses selected by frame parity: func_80016D78 sets 0x801D8800
- * / 0x801EBC00, menu_RunPauseMenu and main read [D_800A36AC & 1]. */
+ * / 0x801EBC00, menu_RunPauseMenu and main read [g_gpu_presented_frame_count &
+ * 1]. */
 extern u32 D_800A3770[2];
 
 extern u8 D_800A3781;
@@ -387,7 +388,7 @@ extern u8 D_800A37B0;
 extern u8 D_800A37B4;
 extern u8 D_800A37B5;
 extern u8 D_800A37B6;
-extern s32 D_800A37B8;
+extern s32 g_handler_frame_counter;
 extern u8 D_800A37BC;
 extern s32 D_800A37C0;
 extern u8 D_800A37C6;
@@ -402,7 +403,7 @@ extern u8 g_fight_win_target;
 extern u8 D_800A3804;
 extern s32 D_800A380C;
 extern u8 D_800A3816;
-extern u8 D_800A3817;
+extern u8 g_fight_choice_menu_cursor;
 extern s16 D_800A381C;
 extern u8 D_800A381E;
 /* the draw queue cursor (into g_draw_queue) */
@@ -411,16 +412,16 @@ extern s16 D_800A3824;
 extern u8 D_800A382D;
 extern s16 D_800A382E;
 extern s32 g_motion_common_buffer;
-extern s16 D_800A3834;
+extern s16 g_main_loop_handler_index;
 extern u8 D_800A3836;
-extern u8 *D_800A3844;
+extern u8 *g_fight_command_stream_cursor;
 extern s32 D_800A3858;
 extern u8 *D_800A385C;
 extern Tbl800A3860Entry *g_motion_fighter_buffers[];
 extern u8 g_fight_match_cursor;
 extern s16 D_800A3876;
 extern u8 *D_800A3878;
-extern s32 D_800A387C;
+extern s32 g_fighter_horizontal_separation;
 extern u8 g_motion_common_loaded;
 /* per player: preset motion frames (motion_InitBuffers, fighter_Update) */
 extern MotionFrame *g_motion_frame_buffers[2];
@@ -445,7 +446,7 @@ extern u8 g_motion_frame_set_ids[2];
  * for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
-extern s16 D_800A38DC;
+extern s16 g_fight_mode_selector;
 extern u8 D_800A38DE;
 extern u8 D_800A38DF;
 extern u8 D_800A38E0;
@@ -512,20 +513,20 @@ extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record D_800EEDF0;
 extern Unk80101DF0Record D_800EF070;
-extern Unk800F62E0Rec D_800F62E0[8];
+extern Unk800F62E0Rec g_light_setups[8];
 extern RotMatrixFunc D_800F66A0[6];
 
 /* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by
  * the file numbers cdrom_GetFileIndex forms. `loc` is sought (cdrom_StartRead
- * copies the record into D_80101E58.rec.pair, whose position is sought;
+ * copies the record into g_cdrom_state.rec.pair, whose position is sought;
  * cdrom_LoadExec seeks to it directly); `size` is cdrom_StartRead's sector
  * count, cdrom_GetFileSize's result and cdrom_StartAudio's end position. */
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
-extern CdState D_80101E58;
+extern CdState g_cdrom_state;
 /* the common file's section pointers */
 extern Unk801027B0Rec g_motion_common_sections;
-extern Unk80102778Rec D_80102778;
+extern Unk80102778Rec g_fight_config;
 extern PadState g_pad_state;
 extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
 /* [i] points to block i's slots, the words after its header word
@@ -542,8 +543,8 @@ extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
 extern s32 D_80104F38;
 
-/* fight_BuildOpponentOrder's list: the set bit numbers of D_80106A50.unk_00 &
- * mask, shuffled, plus up to three appended values (D_800A391F entries;
+/* fight_BuildOpponentOrder's list: the set bit numbers of g_saved_record.unk_00
+ * & mask, shuffled, plus up to three appended values (D_800A391F entries;
  * fight_AdvanceOpponentOrder reads entry D_800A3783, then advances it). */
 extern u8 D_801077B0[24];
 
@@ -602,10 +603,10 @@ extern TexRec D_8009B9E0[1];
 extern TexRec D_8009B9E8[1];
 extern TexRec D_8009B9F0[2];
 /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]
- * their D_8009BD24.unk20_0 CLUT substitutes (eff_DrawBillboardList) */
+ * their g_working_record.unk20_0 CLUT substitutes (eff_DrawBillboardList) */
 extern TexRec D_8009BA00[12];
 extern u8 D_8009BA60[];
-extern Unk8009BD24Block D_8009BD24;
+extern Unk8009BD24Block g_working_record;
 extern s32 g_ndata_pack_loaded;
 extern s32 D_800A326C;
 extern s32 D_800A32BC;
@@ -634,7 +635,7 @@ extern s16 D_800F0BEC[];
 extern s32 g_eff_command_phase[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
  * it to light_SetPointLight, which copies all 16 bytes to D_800A9B28. */
-extern VECTOR D_800F1140;
+extern VECTOR g_eff_point_light_position;
 extern Unk800F1B18Rec g_motion_decoders[];
 extern u8 D_800F33D8[];
 extern s16 D_800F6650;

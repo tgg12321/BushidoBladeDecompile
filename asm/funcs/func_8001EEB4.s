@@ -49,10 +49,10 @@ glabel func_8001EEB4
     /* F76C 8001EF6C 5E84010C */  jal        eff_StopCommands
     /* F770 8001EF70 00000000 */   nop
     /* F774 8001EF74 11000224 */  addiu      $v0, $zero, 0x11
-    /* F778 8001EF78 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* F77C 8001EF7C B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* F780 8001EF80 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* F784 8001EF84 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* F778 8001EF78 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* F77C 8001EF7C B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* F780 8001EF80 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* F784 8001EF84 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* F788 8001EF88 1800BF8F */  lw         $ra, 0x18($sp)
     /* F78C 8001EF8C 1400B18F */  lw         $s1, 0x14($sp)
     /* F790 8001EF90 1000B08F */  lw         $s0, 0x10($sp)

@@ -16,8 +16,8 @@ glabel fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
     /* 2C6DC 8003BEDC 00000000 */   nop
     /* 2C6E0 8003BEE0 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2C6E4 8003BEE4 00000000 */   nop
-    /* 2C6E8 8003BEE8 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 2C6EC 8003BEEC 506A8424 */  addiu      $a0, $a0, %lo(D_80106A50)
+    /* 2C6E8 8003BEE8 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 2C6EC 8003BEEC 506A8424 */  addiu      $a0, $a0, %lo(g_saved_record)
     /* 2C6F0 8003BEF0 0000838C */  lw         $v1, 0x0($a0)
     /* 2C6F4 8003BEF4 0A80023C */  lui        $v0, %hi(D_800A37A4)
     /* 2C6F8 8003BEF8 A437428C */  lw         $v0, %lo(D_800A37A4)($v0)
@@ -52,8 +52,8 @@ glabel fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
     /* 2C764 8003BF64 00000000 */   nop
     /* 2C768 8003BF68 F7FF6324 */  addiu      $v1, $v1, -0x9
   .L8003BF6C:
-    /* 2C76C 8003BF6C 1080053C */  lui        $a1, %hi(D_80106A50 + 0x4)
-    /* 2C770 8003BF70 546AA524 */  addiu      $a1, $a1, %lo(D_80106A50 + 0x4)
+    /* 2C76C 8003BF6C 1080053C */  lui        $a1, %hi(g_saved_record + 0x4)
+    /* 2C770 8003BF70 546AA524 */  addiu      $a1, $a1, %lo(g_saved_record + 0x4)
     /* 2C774 8003BF74 0000A490 */  lbu        $a0, 0x0($a1)
     /* 2C778 8003BF78 00000000 */  nop
     /* 2C77C 8003BF7C 07106400 */  srav       $v0, $a0, $v1
@@ -69,8 +69,8 @@ glabel fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
     /* 2C7A0 8003BFA0 1A000224 */   addiu     $v0, $zero, 0x1A
     /* 2C7A4 8003BFA4 08000224 */  addiu      $v0, $zero, 0x8
   .L8003BFA8:
-    /* 2C7A8 8003BFA8 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C7AC 8003BFAC 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2C7A8 8003BFA8 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C7AC 8003BFAC 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8003BFB0:
     /* 2C7B0 8003BFB0 1400BF8F */  lw         $ra, 0x14($sp)
     /* 2C7B4 8003BFB4 1000B08F */  lw         $s0, 0x10($sp)

@@ -72,8 +72,8 @@ glabel func_8004C404
     /* 3CD1C 8004C51C B8016AAE */  sw         $t2, (0x1F8001B8 & 0xFFFF)($s3)
     /* 3CD20 8004C520 BC016BAE */  sw         $t3, (0x1F8001BC & 0xFFFF)($s3)
     /* 3CD24 8004C524 04000824 */  addiu      $t0, $zero, 0x4
-    /* 3CD28 8004C528 0F800A3C */  lui        $t2, %hi(D_800F62E0)
-    /* 3CD2C 8004C52C E0624A25 */  addiu      $t2, $t2, %lo(D_800F62E0)
+    /* 3CD28 8004C528 0F800A3C */  lui        $t2, %hi(g_light_setups)
+    /* 3CD2C 8004C52C E0624A25 */  addiu      $t2, $t2, %lo(g_light_setups)
     /* 3CD30 8004C530 40480800 */  sll        $t1, $t0, 1
     /* 3CD34 8004C534 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3CD38 8004C538 40490900 */  sll        $t1, $t1, 5

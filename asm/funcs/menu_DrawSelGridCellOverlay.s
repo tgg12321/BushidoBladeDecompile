@@ -1,5 +1,5 @@
 glabel menu_DrawSelGridCellOverlay
-    /* 66030 80075830 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 66030 80075830 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 66034 80075834 B0FFBD27 */  addiu      $sp, $sp, -0x50
     /* 66038 80075838 4800B2AF */  sw         $s2, 0x48($sp)
     /* 6603C 8007583C 21908000 */  addu       $s2, $a0, $zero
@@ -58,7 +58,7 @@ glabel menu_DrawSelGridCellOverlay
     /* 6610C 8007590C 21104300 */  addu       $v0, $v0, $v1
     /* 66110 80075910 23308200 */  subu       $a2, $a0, $v0
   .L80075914:
-    /* 66114 80075914 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 66114 80075914 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 66118 80075918 40101100 */  sll        $v0, $s1, 1
     /* 6611C 8007591C 21204300 */  addu       $a0, $v0, $v1
     /* 66120 80075920 00140500 */  sll        $v0, $a1, 16

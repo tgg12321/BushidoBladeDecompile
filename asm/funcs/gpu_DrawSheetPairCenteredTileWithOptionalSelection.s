@@ -6,8 +6,8 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C6D4 8006BED4 2198A000 */  addu       $s3, $a1, $zero
     /* 5C6D8 8006BED8 21280000 */  addu       $a1, $zero, $zero
     /* 5C6DC 8006BEDC 1000A627 */  addiu      $a2, $sp, 0x10
-    /* 5C6E0 8006BEE0 0A80083C */  lui        $t0, %hi(D_800A36AC)
-    /* 5C6E4 8006BEE4 AC36088D */  lw         $t0, %lo(D_800A36AC)($t0)
+    /* 5C6E0 8006BEE0 0A80083C */  lui        $t0, %hi(g_gpu_presented_frame_count)
+    /* 5C6E4 8006BEE4 AC36088D */  lw         $t0, %lo(g_gpu_presented_frame_count)($t0)
     /* 5C6E8 8006BEE8 5800BFAF */  sw         $ra, 0x58($sp)
     /* 5C6EC 8006BEEC 5400B5AF */  sw         $s5, 0x54($sp)
     /* 5C6F0 8006BEF0 5000B4AF */  sw         $s4, 0x50($sp)

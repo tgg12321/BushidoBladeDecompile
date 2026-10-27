@@ -43,14 +43,14 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F594 8006ED94 0A80013C */  lui        $at, %hi(D_8009BC40)
     /* 5F598 8006ED98 21082300 */  addu       $at, $at, $v1
     /* 5F59C 8006ED9C 40BC2390 */  lbu        $v1, %lo(D_8009BC40)($at)
-    /* 5F5A0 8006EDA0 0A80013C */  lui        $at, %hi(D_8009BC7C)
+    /* 5F5A0 8006EDA0 0A80013C */  lui        $at, %hi(g_entry_menu_entry_flags)
     /* 5F5A4 8006EDA4 21082300 */  addu       $at, $at, $v1
-    /* 5F5A8 8006EDA8 7CBC2290 */  lbu        $v0, %lo(D_8009BC7C)($at)
+    /* 5F5A8 8006EDA8 7CBC2290 */  lbu        $v0, %lo(g_entry_menu_entry_flags)($at)
     /* 5F5AC 8006EDAC 00000000 */  nop
     /* 5F5B0 8006EDB0 01004230 */  andi       $v0, $v0, 0x1
     /* 5F5B4 8006EDB4 12004010 */  beqz       $v0, .L8006EE00
     /* 5F5B8 8006EDB8 01000224 */   addiu     $v0, $zero, 0x1
-    /* 5F5BC 8006EDBC F804828F */  lw         $v0, %gp_rel(D_800A35C4)($gp)
+    /* 5F5BC 8006EDBC F804828F */  lw         $v0, %gp_rel(g_entry_menu_work_block)($gp)
     /* 5F5C0 8006EDC0 2000A0AF */  sw         $zero, 0x20($sp)
     /* 5F5C4 8006EDC4 0800428C */  lw         $v0, 0x8($v0)
     /* 5F5C8 8006EDC8 00000000 */  nop
@@ -162,12 +162,12 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F738 8006EF38 031C0300 */  sra        $v1, $v1, 16
     /* 5F73C 8006EF3C 40100300 */  sll        $v0, $v1, 1
     /* 5F740 8006EF40 21104300 */  addu       $v0, $v0, $v1
-    /* 5F744 8006EF44 0A80013C */  lui        $at, %hi(D_800A3560 + 0x1)
+    /* 5F744 8006EF44 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records + 0x1)
     /* 5F748 8006EF48 21082200 */  addu       $at, $at, $v0
-    /* 5F74C 8006EF4C 61352290 */  lbu        $v0, %lo(D_800A3560 + 0x1)($at)
-    /* 5F750 8006EF50 0A80013C */  lui        $at, %hi(D_8009BC7C)
+    /* 5F74C 8006EF4C 61352290 */  lbu        $v0, %lo(g_entry_menu_slot_records + 0x1)($at)
+    /* 5F750 8006EF50 0A80013C */  lui        $at, %hi(g_entry_menu_entry_flags)
     /* 5F754 8006EF54 21082200 */  addu       $at, $at, $v0
-    /* 5F758 8006EF58 7CBC2290 */  lbu        $v0, %lo(D_8009BC7C)($at)
+    /* 5F758 8006EF58 7CBC2290 */  lbu        $v0, %lo(g_entry_menu_entry_flags)($at)
     /* 5F75C 8006EF5C 00000000 */  nop
     /* 5F760 8006EF60 02004230 */  andi       $v0, $v0, 0x2
     /* 5F764 8006EF64 0F004014 */  bnez       $v0, .L8006EFA4

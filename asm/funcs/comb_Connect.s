@@ -5,8 +5,8 @@ glabel comb_Connect
     /* 2B4C4 8003ACC4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2B4C8 8003ACC8 A8EC010C */  jal        SetDispMask
     /* 2B4CC 8003ACCC 21200000 */   addu      $a0, $zero, $zero
-    /* 2B4D0 8003ACD0 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2B4D4 8003ACD4 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
+    /* 2B4D0 8003ACD0 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2B4D4 8003ACD4 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 2B4D8 8003ACD8 E00780A3 */  sb         $zero, %gp_rel(g_comb_handshake_step)($gp)
     /* 2B4DC 8003ACDC 040880AF */  sw         $zero, %gp_rel(D_800A38D0)($gp)
     /* 2B4E0 8003ACE0 3C0880AF */  sw         $zero, %gp_rel(D_800A3908)($gp)
@@ -29,8 +29,8 @@ glabel comb_Connect
     /* 2B520 8003AD20 00000000 */   nop
     /* 2B524 8003AD24 3D65000C */  jal        pad_ResetState
     /* 2B528 8003AD28 00000000 */   nop
-    /* 2B52C 8003AD2C 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 2B530 8003AD30 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
+    /* 2B52C 8003AD2C 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 2B530 8003AD30 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 2B534 8003AD34 A2D7000C */  jal        bits_ExtractMask3F83F8
     /* 2B538 8003AD38 00000000 */   nop
     /* 2B53C 8003AD3C F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)

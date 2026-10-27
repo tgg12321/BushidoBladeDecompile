@@ -1,7 +1,7 @@
 glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D660 8001CE60 E0FFBD27 */  addiu      $sp, $sp, -0x20
-    /* D664 8001CE64 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* D668 8001CE68 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* D664 8001CE64 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* D668 8001CE68 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* D66C 8001CE6C 01000424 */  addiu      $a0, $zero, 0x1
     /* D670 8001CE70 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* D674 8001CE74 09006414 */  bne        $v1, $a0, .L8001CE9C
@@ -300,8 +300,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
   .L8001D2B8:
     /* DAB8 8001D2B8 0A80013C */  lui        $at, %hi(D_800A3670)
     /* DABC 8001D2BC 703622A0 */  sb         $v0, %lo(D_800A3670)($at)
-    /* DAC0 8001D2C0 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* DAC4 8001D2C4 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* DAC0 8001D2C0 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* DAC4 8001D2C4 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* DAC8 8001D2C8 9F750008 */  j          .L8001D67C
     /* DACC 8001D2CC 00000000 */   nop
   .L8001D2D0:
@@ -371,9 +371,9 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DBBC 8001D3BC 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* DBC0 8001D3C0 21082200 */  addu       $at, $at, $v0
     /* DBC4 8001D3C4 D21E2284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($at)
-    /* DBC8 8001D3C8 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* DBC8 8001D3C8 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* DBCC 8001D3CC 21082200 */  addu       $at, $at, $v0
-    /* DBD0 8001D3D0 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* DBD0 8001D3D0 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* DBD4 8001D3D4 00000000 */  nop
     /* DBD8 8001D3D8 02004010 */  beqz       $v0, .L8001D3E4
     /* DBDC 8001D3DC A7000424 */   addiu     $a0, $zero, 0xA7

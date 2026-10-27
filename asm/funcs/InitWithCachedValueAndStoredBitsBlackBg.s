@@ -2,8 +2,8 @@ glabel InitWithCachedValueAndStoredBitsBlackBg
     /* 68184 80077984 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 68188 80077988 1405858F */  lw         $a1, %gp_rel(D_800A35E0)($gp)
     /* 6818C 8007798C 1C05878F */  lw         $a3, %gp_rel(D_800A35E8)($gp)
-    /* 68190 80077990 0A80063C */  lui        $a2, %hi(D_8009BD24)
-    /* 68194 80077994 24BDC624 */  addiu      $a2, $a2, %lo(D_8009BD24)
+    /* 68190 80077990 0A80063C */  lui        $a2, %hi(g_working_record)
+    /* 68194 80077994 24BDC624 */  addiu      $a2, $a2, %lo(g_working_record)
     /* 68198 80077998 1000BFAF */  sw         $ra, 0x10($sp)
     /* 6819C 8007799C 4DB9010C */  jal        InitDisplayStateLoadPackAndSetEntryFlags
     /* 681A0 800779A0 00000000 */   nop

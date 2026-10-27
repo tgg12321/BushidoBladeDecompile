@@ -2,9 +2,9 @@ glabel menu_StepSelScreen
     /* 67F24 80077724 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 67F28 80077728 3800B0AF */  sw         $s0, 0x38($sp)
     /* 67F2C 8007772C 2180A000 */  addu       $s0, $a1, $zero
-    /* 67F30 80077730 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 67F34 80077734 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
-    /* 67F38 80077738 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 67F30 80077730 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 67F34 80077734 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
+    /* 67F38 80077738 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 67F3C 8007773C 0F80043C */  lui        $a0, %hi(g_gpu_db)
     /* 67F40 80077740 38748424 */  addiu      $a0, $a0, %lo(g_gpu_db)
     /* 67F44 80077744 3C00BFAF */  sw         $ra, 0x3C($sp)
@@ -24,7 +24,7 @@ glabel menu_StepSelScreen
     /* 67F7C 8007777C 3400A2A4 */  sh         $v0, 0x34($a1)
     /* 67F80 80077780 26DC010C */  jal        menu_GetSelPrimBuffer
     /* 67F84 80077784 3000A3AC */   sw        $v1, 0x30($a1)
-    /* 67F88 80077788 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67F88 80077788 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67F8C 8007778C 00000000 */  nop
     /* 67F90 80077790 0400648C */  lw         $a0, 0x4($v1)
     /* 67F94 80077794 2C0062AC */  sw         $v0, 0x2C($v1)

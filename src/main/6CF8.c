@@ -111,22 +111,23 @@ void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     }
 }
 
-u32 gpu_GetSavedGrayscaleFlag(void) { return D_80106A50.flags & 1; }
+u32 gpu_GetSavedGrayscaleFlag(void) { return g_saved_record.flags & 1; }
 
 u32 fighter_GetSavedCpuBehaviorAdjustFlag(void) {
-    return (D_80106A50.flags >> 1) & 1;
+    return (g_saved_record.flags >> 1) & 1;
 }
 
 u32 snd_GetSavedCdAudioSuppressFlag(void) {
-    return (D_80106A50.flags >> 2) & 1;
+    return (g_saved_record.flags >> 2) & 1;
 }
 
 void InitSavedRecordAndResetCameraDistanceOffset(void) {
     s32 i;
-    /* FAKE: second handle to D_80106A50; using the global directly
+    /* FAKE: second handle to g_saved_record; using the global directly
      * everywhere: score 19; final times[0].unk_4 store through var_1: score 10
      */
-    FileRecord *var_1 = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
+    /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
+    FileRecord *var_1 = &g_saved_record;
 
     g_camera_distance_offset = 0;
     var_1->flags = 0;
@@ -137,7 +138,7 @@ void InitSavedRecordAndResetCameraDistanceOffset(void) {
         var_1->times[i].unk_1 = 0;
         var_1->times[i].unk_4 = 0x1A5E0;
     }
-    D_80106A50.times[0].unk_4 = 0x6978;
+    g_saved_record.times[0].unk_4 = 0x6978;
     pad_SetDefaultSavedButtonMappings();
 }
 
@@ -321,7 +322,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
        score 4; removed with the do-while wrapper: score 25
        (pointer-alias-fake-exception) */
     var_7 = arg0;
-    if (D_800A38DC == 2) {
+    if (g_fight_mode_selector == 2) {
         var_3 = D_800A389A < 1;
     }
     limit = 3;
@@ -331,10 +332,10 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
 
     D_800A36B0 = 1;
     snd_QueueSound(3, 0x7F, 0x7F);
-    var_5 = D_800A3770[D_800A36AC & 1];
+    var_5 = D_800A3770[g_gpu_presented_frame_count & 1];
 
     while (1) {
-        idx = D_800A36AC & 1;
+        idx = g_gpu_presented_frame_count & 1;
         g_prim_buf_cursor = (u32 *)(var_5 + (idx * 0x9A00));
         g_gpu_ot_ptr = &var_0[idx];
         var_1 = &g_gpu_db[idx];
@@ -366,7 +367,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         } while (0);
         DrawOTag(&var_7->ot[0x1007]);
         DrawOTag(g_gpu_ot_ptr);
-        D_800A36AC++;
+        g_gpu_presented_frame_count++;
 
         if (g_pad_state.pressed & 0x100010) {
             snd_QueueSound(1, 0x7F, 0x7F);
@@ -399,10 +400,10 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
     if (var_2 != 0) {
         if (var_2 == 1) {
             D_800A31DA = 1;
-            D_800A3834 = 8;
+            g_main_loop_handler_index = 8;
             cdrom_PauseAndWait();
         } else if (var_2 == 2) {
-            D_800A3834 = 8;
+            g_main_loop_handler_index = 8;
             cdrom_PauseAndWait();
         }
     }
@@ -443,12 +444,12 @@ void main(void) {
         (u8 *)0x80118800, var_1, idx);
 
     var_4 = D_800A3770;
-    D_800A3834 = 0xF;
+    g_main_loop_handler_index = 0xF;
     D_800A390D = 0;
-    D_800A36AC = 0;
+    g_gpu_presented_frame_count = 0;
 
 loop:
-    idx = D_800A36AC & 1;
+    idx = g_gpu_presented_frame_count & 1;
     var_1 = &g_gpu_db[idx];
     var_2 = var_1->ot;
     ClearOTagR(var_2, 0x1008);
@@ -465,10 +466,10 @@ loop:
         D_800A3768 = DISP_DISABLED;
         g_comb_abort_request = 0;
         D_800A31DA = 0;
-        D_800A3834 = 8;
+        g_main_loop_handler_index = 8;
     }
 
-    D_8008D090[D_800A3834]();
+    D_8008D090[g_main_loop_handler_index]();
     font_AddTpage();
 
     do {
@@ -505,16 +506,16 @@ loop:
         D_800A390D--;
     } else {
         DrawOTag(&var_1->ot[0x1007]);
-        D_800A36AC++;
+        g_gpu_presented_frame_count++;
     }
 
-    if (D_800A3834 != 1)
+    if (g_main_loop_handler_index != 1)
         goto loop;
     if (var_3 != 0)
         goto loop;
     if (g_pad_state.pressed & 0x08000800u)
         goto call_func;
-    if (D_800A38DC != 2)
+    if (g_fight_mode_selector != 2)
         goto loop;
     if (D_800A3713 == 0)
         goto loop;
@@ -542,7 +543,8 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     if (D_800A3768 == DISP_DISABLED) {
         return;
     }
-    SetDefDrawEnv(&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
+    SetDefDrawEnv(
+        &env, 0, (g_gpu_presented_frame_count & 1) ? 0xF0 : 0, 0x280, 0xF0);
     env.isbg = 0;
     PutDrawEnv(&env);
     g_gpu_ot_ptr = var_0;
@@ -819,7 +821,7 @@ u8 g_softbody_slot_high_water = 0;
  * gp-relative. */
 u8 D_800A3690;
 u8 D_800A36A8;
-s32 D_800A36AC;
+s32 g_gpu_presented_frame_count;
 u8 D_800A36B0;
 u8 D_800A36F1;
 u8 D_800A36F9;
@@ -835,11 +837,11 @@ u8 D_800A3788;
 u32 D_800A3798;
 u8 D_800A37A0;
 s32 D_800A37C0;
-s16 D_800A3834;
+s16 g_main_loop_handler_index;
 u8 D_800A389A;
 u32 *g_prim_buf_cursor;
 s32 g_rng_state;
-s16 D_800A38DC;
+s16 g_fight_mode_selector;
 u8 D_800A38F8;
 u8 D_800A3906;
 u8 D_800A390D;

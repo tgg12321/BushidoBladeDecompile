@@ -66,8 +66,8 @@ glabel gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
   .L8003DCC4:
     /* 2E4C4 8003DCC4 12900000 */  mflo       $s2
   .L8003DCC8:
-    /* 2E4C8 8003DCC8 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 2E4CC 8003DCCC AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 2E4C8 8003DCC8 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 2E4CC 8003DCCC AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 2E4D0 8003DCD0 21880000 */  addu       $s1, $zero, $zero
     /* 2E4D4 8003DCD4 01006330 */  andi       $v1, $v1, 0x1
     /* 2E4D8 8003DCD8 40100300 */  sll        $v0, $v1, 1

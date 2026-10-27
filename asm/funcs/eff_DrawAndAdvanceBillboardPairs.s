@@ -181,8 +181,8 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53B34 80063334 0A80023C */  lui        $v0, %hi(D_8009B950)
     /* 53B38 80063338 50B94224 */  addiu      $v0, $v0, %lo(D_8009B950)
   .L8006333C:
-    /* 53B3C 8006333C BC0382AF */  sw         $v0, %gp_rel(D_800A3488)($gp)
-    /* 53B40 80063340 BC03838F */  lw         $v1, %gp_rel(D_800A3488)($gp)
+    /* 53B3C 8006333C BC0382AF */  sw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
+    /* 53B40 80063340 BC03838F */  lw         $v1, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 53B44 80063344 00000000 */  nop
     /* 53B48 80063348 00006294 */  lhu        $v0, 0x0($v1)
     /* 53B4C 8006334C 02006394 */  lhu        $v1, 0x2($v1)
@@ -193,23 +193,23 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53B60 80063360 C803838F */  lw         $v1, %gp_rel(D_800A3494)($gp)
     /* 53B64 80063364 00140200 */  sll        $v0, $v0, 16
     /* 53B68 80063368 000062AC */  sw         $v0, 0x0($v1)
-    /* 53B6C 8006336C BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 53B6C 8006336C BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 53B70 80063370 CC03838F */  lw         $v1, %gp_rel(D_800A3498)($gp)
     /* 53B74 80063374 04004294 */  lhu        $v0, 0x4($v0)
     /* 53B78 80063378 00000000 */  nop
     /* 53B7C 8006337C 000062A4 */  sh         $v0, 0x0($v1)
-    /* 53B80 80063380 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 53B80 80063380 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 53B84 80063384 D403838F */  lw         $v1, %gp_rel(D_800A34A0)($gp)
     /* 53B88 80063388 06004294 */  lhu        $v0, 0x6($v0)
     /* 53B8C 8006338C 00000000 */  nop
     /* 53B90 80063390 000062A4 */  sh         $v0, 0x0($v1)
-    /* 53B94 80063394 BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 53B94 80063394 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 53B98 80063398 00000000 */  nop
     /* 53B9C 8006339C 04004294 */  lhu        $v0, 0x4($v0)
     /* 53BA0 800633A0 D003838F */  lw         $v1, %gp_rel(D_800A349C)($gp)
     /* 53BA4 800633A4 3F004224 */  addiu      $v0, $v0, 0x3F
     /* 53BA8 800633A8 000062A4 */  sh         $v0, 0x0($v1)
-    /* 53BAC 800633AC BC03828F */  lw         $v0, %gp_rel(D_800A3488)($gp)
+    /* 53BAC 800633AC BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 53BB0 800633B0 00000000 */  nop
     /* 53BB4 800633B4 06004294 */  lhu        $v0, 0x6($v0)
     /* 53BB8 800633B8 D803838F */  lw         $v1, %gp_rel(D_800A34A4)($gp)

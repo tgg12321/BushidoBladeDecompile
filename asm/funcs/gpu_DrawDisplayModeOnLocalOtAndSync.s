@@ -13,7 +13,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7D20 80017520 21200002 */  addu       $a0, $s0, $zero
     /* 7D24 80017524 21280000 */  addu       $a1, $zero, $zero
     /* 7D28 80017528 F0001124 */  addiu      $s1, $zero, 0xF0
-    /* 7D2C 8001752C E005868F */  lw         $a2, %gp_rel(D_800A36AC)($gp)
+    /* 7D2C 8001752C E005868F */  lw         $a2, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 7D30 80017530 80020724 */  addiu      $a3, $zero, 0x280
     /* 7D34 80017534 1000B1AF */  sw         $s1, 0x10($sp)
     /* 7D38 80017538 0100C630 */  andi       $a2, $a2, 0x1

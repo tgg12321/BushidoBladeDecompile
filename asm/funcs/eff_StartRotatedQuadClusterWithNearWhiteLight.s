@@ -10,7 +10,7 @@ glabel eff_StartRotatedQuadClusterWithNearWhiteLight
     /* 519C4 800611C4 0200A294 */  lhu        $v0, 0x2($a1)
     /* 519C8 800611C8 0F80033C */  lui        $v1, %hi(g_eff_command_block)
     /* 519CC 800611CC 6C116324 */  addiu      $v1, $v1, %lo(g_eff_command_block)
-    /* 519D0 800611D0 9C0383AF */  sw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 519D0 800611D0 9C0383AF */  sw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 519D4 800611D4 1200A2A7 */  sh         $v0, 0x12($sp)
     /* 519D8 800611D8 0400A494 */  lhu        $a0, 0x4($a1)
     /* 519DC 800611DC 1000A227 */  addiu      $v0, $sp, 0x10
@@ -26,8 +26,8 @@ glabel eff_StartRotatedQuadClusterWithNearWhiteLight
     /* 51A04 80061204 9A82010C */  jal        eff_StartCommand
     /* 51A08 80061208 1400A4A7 */   sh        $a0, 0x14($sp)
     /* 51A0C 8006120C 0000028E */  lw         $v0, 0x0($s0)
-    /* 51A10 80061210 0F80013C */  lui        $at, %hi(D_800F1140)
-    /* 51A14 80061214 401122AC */  sw         $v0, %lo(D_800F1140)($at)
+    /* 51A10 80061210 0F80013C */  lui        $at, %hi(g_eff_point_light_position)
+    /* 51A14 80061214 401122AC */  sw         $v0, %lo(g_eff_point_light_position)($at)
     /* 51A18 80061218 0400028E */  lw         $v0, 0x4($s0)
     /* 51A1C 8006121C FF00033C */  lui        $v1, (0xFFFFEF >> 16)
     /* 51A20 80061220 0F80013C */  lui        $at, %hi(D_800F1144)

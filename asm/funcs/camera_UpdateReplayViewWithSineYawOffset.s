@@ -1,6 +1,6 @@
 glabel camera_UpdateReplayViewWithSineYawOffset
-    /* C2E4 8001BAE4 0A80023C */  lui        $v0, %hi(D_800A387C)
-    /* C2E8 8001BAE8 7C38428C */  lw         $v0, %lo(D_800A387C)($v0)
+    /* C2E4 8001BAE4 0A80023C */  lui        $v0, %hi(g_fighter_horizontal_separation)
+    /* C2E8 8001BAE8 7C38428C */  lw         $v0, %lo(g_fighter_horizontal_separation)($v0)
     /* C2EC 8001BAEC D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* C2F0 8001BAF0 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* C2F4 8001BAF4 21888000 */  addu       $s1, $a0, $zero

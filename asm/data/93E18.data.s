@@ -142,18 +142,18 @@ dlabel g_comb_send_buf_plus_0x4
     /* 93E9C 800A369C 00000000 */ .word 0x00000000
 enddlabel g_comb_send_buf_plus_0x4
 
-nonmatching D_800A36A0
+nonmatching g_sel_screen_work
 
-dlabel D_800A36A0
+dlabel g_sel_screen_work
     /* 93EA0 800A36A0 00000000 */ .word 0x00000000
-enddlabel D_800A36A0
+enddlabel g_sel_screen_work
 
-nonmatching D_800A36A4
+nonmatching g_fight_stage_index
 
-dlabel D_800A36A4
+dlabel g_fight_stage_index
     /* 93EA4 800A36A4 */ .short 0x0000
     /* 93EA6 800A36A6 */ .short 0x0000
-enddlabel D_800A36A4
+enddlabel g_fight_stage_index
 
 nonmatching D_800A36A8
 
@@ -164,11 +164,11 @@ dlabel D_800A36A8
     /* 93EAB 800A36AB */ .byte 0x00
 enddlabel D_800A36A8
 
-nonmatching D_800A36AC
+nonmatching g_gpu_presented_frame_count
 
-dlabel D_800A36AC
+dlabel g_gpu_presented_frame_count
     /* 93EAC 800A36AC 00000000 */ .word 0x00000000
-enddlabel D_800A36AC
+enddlabel g_gpu_presented_frame_count
 
 nonmatching D_800A36B0
 
@@ -745,11 +745,11 @@ dlabel D_800A37B6
     /* 93FB7 800A37B7 */ .byte 0x00
 enddlabel D_800A37B6
 
-nonmatching D_800A37B8
+nonmatching g_handler_frame_counter
 
-dlabel D_800A37B8
+dlabel g_handler_frame_counter
     /* 93FB8 800A37B8 00000000 */ .word 0x00000000
-enddlabel D_800A37B8
+enddlabel g_handler_frame_counter
 
 nonmatching D_800A37BC
 

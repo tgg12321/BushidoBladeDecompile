@@ -3,8 +3,8 @@ glabel eff_DrawAndAdvanceCosineScaledQuad
     /* 55AF8 800652F8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 55AFC 800652FC 0096010C */  jal        eff_DrawAnimatedQuads
     /* 55B00 80065300 21200000 */   addu      $a0, $zero, $zero
-    /* 55B04 80065304 0F80043C */  lui        $a0, %hi(D_800F0BA8)
-    /* 55B08 80065308 A80B8424 */  addiu      $a0, $a0, %lo(D_800F0BA8)
+    /* 55B04 80065304 0F80043C */  lui        $a0, %hi(g_eff_animated_quad_counters)
+    /* 55B08 80065308 A80B8424 */  addiu      $a0, $a0, %lo(g_eff_animated_quad_counters)
     /* 55B0C 8006530C 00008394 */  lhu        $v1, 0x0($a0)
     /* 55B10 80065310 00000000 */  nop
     /* 55B14 80065314 FF016324 */  addiu      $v1, $v1, 0x1FF

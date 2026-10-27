@@ -9,7 +9,7 @@ glabel eff_StartRecycledYawedParticles
     /* 52590 80061D90 21280002 */  addu       $a1, $s0, $zero
     /* 52594 80061D94 0F80023C */  lui        $v0, %hi(g_eff_command_block)
     /* 52598 80061D98 6C114224 */  addiu      $v0, $v0, %lo(g_eff_command_block)
-    /* 5259C 80061D9C 9C0382AF */  sw         $v0, %gp_rel(D_800A3468)($gp)
+    /* 5259C 80061D9C 9C0382AF */  sw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 525A0 80061DA0 00F60224 */  addiu      $v0, $zero, -0xA00
     /* 525A4 80061DA4 1200A2A7 */  sh         $v0, 0x12($sp)
     /* 525A8 80061DA8 000A0224 */  addiu      $v0, $zero, 0xA00
@@ -36,7 +36,7 @@ glabel eff_StartRecycledYawedParticles
     /* 525FC 80061DFC 2000A28F */  lw         $v0, 0x20($sp)
     /* 52600 80061E00 2400A38F */  lw         $v1, 0x24($sp)
     /* 52604 80061E04 2800A48F */  lw         $a0, 0x28($sp)
-    /* 52608 80061E08 9C03858F */  lw         $a1, %gp_rel(D_800A3468)($gp)
+    /* 52608 80061E08 9C03858F */  lw         $a1, %gp_rel(g_eff_active_command_block)($gp)
     /* 5260C 80061E0C 1000A2A7 */  sh         $v0, 0x10($sp)
     /* 52610 80061E10 1000A227 */  addiu      $v0, $sp, 0x10
     /* 52614 80061E14 1200A3A7 */  sh         $v1, 0x12($sp)
@@ -63,7 +63,7 @@ glabel eff_StartRecycledYawedParticles
   .L80061E64:
     /* 52664 80061E64 0100043C */  lui        $a0, (0x10018 >> 16)
     /* 52668 80061E68 18008434 */  ori        $a0, $a0, (0x10018 & 0xFFFF)
-    /* 5266C 80061E6C 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 5266C 80061E6C 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 52670 80061E70 0F80023C */  lui        $v0, %hi(D_800F1168)
     /* 52674 80061E74 68114224 */  addiu      $v0, $v0, %lo(D_800F1168)
     /* 52678 80061E78 140062AC */  sw         $v0, 0x14($v1)

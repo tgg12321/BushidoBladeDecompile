@@ -142,8 +142,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C3D8 8003BBD8 6719010C */  jal        resource_SelectRetainedSubblockOrApplyHeaderSections
     /* 2C3DC 8003BBDC FFFF0424 */   addiu     $a0, $zero, -0x1
   .L8003BBE0:
-    /* 2C3E0 8003BBE0 1080033C */  lui        $v1, %hi(D_80102778 + 0x5)
-    /* 2C3E4 8003BBE4 7D276380 */  lb         $v1, %lo(D_80102778 + 0x5)($v1)
+    /* 2C3E0 8003BBE0 1080033C */  lui        $v1, %hi(g_fight_config + 0x5)
+    /* 2C3E4 8003BBE4 7D276380 */  lb         $v1, %lo(g_fight_config + 0x5)($v1)
     /* 2C3E8 8003BBE8 0E000224 */  addiu      $v0, $zero, 0xE
     /* 2C3EC 8003BBEC 03006210 */  beq        $v1, $v0, .L8003BBFC
     /* 2C3F0 8003BBF0 1D000224 */   addiu     $v0, $zero, 0x1D
@@ -183,10 +183,10 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C470 8003BC70 98DC000C */  jal        cdrom_WaitAudioStarted
     /* 2C474 8003BC74 00000000 */   nop
     /* 2C478 8003BC78 07000224 */  addiu      $v0, $zero, 0x7
-    /* 2C47C 8003BC7C 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2C480 8003BC80 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2C484 8003BC84 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C488 8003BC88 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2C47C 8003BC7C 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2C480 8003BC80 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 2C484 8003BC84 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C488 8003BC88 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2C48C 8003BC8C 345A000C */  jal        gpu_SetDispMaskOn
     /* 2C490 8003BC90 00000000 */   nop
     /* 2C494 8003BC94 3000BF8F */  lw         $ra, 0x30($sp)

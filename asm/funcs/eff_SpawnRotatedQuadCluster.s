@@ -5,7 +5,7 @@ glabel eff_SpawnRotatedQuadCluster
     /* 53098 80062898 040C4A25 */  addiu      $t2, $t2, %lo(D_800F0C04)
     /* 5309C 8006289C 21280000 */  addu       $a1, $zero, $zero
     /* 530A0 800628A0 21180000 */  addu       $v1, $zero, $zero
-    /* 530A4 800628A4 B003888F */  lw         $t0, %gp_rel(D_800A347C)($gp)
+    /* 530A4 800628A4 B003888F */  lw         $t0, %gp_rel(g_eff_command_position)($gp)
     /* 530A8 800628A8 AC03898F */  lw         $t1, %gp_rel(D_800A3478)($gp)
     /* 530AC 800628AC 01000224 */  addiu      $v0, $zero, 0x1
     /* 530B0 800628B0 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x68)

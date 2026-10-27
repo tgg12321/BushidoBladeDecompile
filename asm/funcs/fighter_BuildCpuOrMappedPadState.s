@@ -8,8 +8,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* C638 8001BE38 0100222E */  sltiu      $v0, $s1, 0x1
     /* C63C 8001BE3C 23100200 */  negu       $v0, $v0
     /* C640 8001BE40 4C044530 */  andi       $a1, $v0, 0x44C
-    /* C644 8001BE44 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* C648 8001BE48 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* C644 8001BE44 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* C648 8001BE48 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* C64C 8001BE4C 02000224 */  addiu      $v0, $zero, 0x2
     /* C650 8001BE50 0C006214 */  bne        $v1, $v0, .L8001BE84
     /* C654 8001BE54 2800BFAF */   sw        $ra, 0x28($sp)
@@ -78,8 +78,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* C740 8001BF40 9C27428C */  lw         $v0, %lo(g_pad_state + 0x14)($v0)
     /* C744 8001BF44 0620E400 */  srlv       $a0, $a0, $a3
     /* C748 8001BF48 1400A3AF */  sw         $v1, 0x14($sp)
-    /* C74C 8001BF4C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* C750 8001BF50 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* C74C 8001BF4C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* C750 8001BF50 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* C754 8001BF54 FFFF8430 */  andi       $a0, $a0, 0xFFFF
     /* C758 8001BF58 1800A4AF */  sw         $a0, 0x18($sp)
     /* C75C 8001BF5C 0610E200 */  srlv       $v0, $v0, $a3
@@ -93,8 +93,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* C778 8001BF78 1000A627 */  addiu      $a2, $sp, 0x10
     /* C77C 8001BF7C 2140C000 */  addu       $t0, $a2, $zero
   .L8001BF80:
-    /* C780 8001BF80 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* C784 8001BF84 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* C780 8001BF80 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* C784 8001BF84 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* C788 8001BF88 06000224 */  addiu      $v0, $zero, 0x6
     /* C78C 8001BF8C 44006214 */  bne        $v1, $v0, .L8001C0A0
     /* C790 8001BF90 00000000 */   nop
@@ -178,8 +178,8 @@ glabel fighter_BuildCpuOrMappedPadState
   .L8001C0A0:
     /* C8A0 8001C0A0 0FFF0324 */  addiu      $v1, $zero, -0xF1
     /* C8A4 8001C0A4 0000C48C */  lw         $a0, 0x0($a2)
-    /* C8A8 8001C0A8 1080023C */  lui        $v0, %hi(D_80106A50 + 0x20)
-    /* C8AC 8001C0AC 706A4290 */  lbu        $v0, %lo(D_80106A50 + 0x20)($v0)
+    /* C8A8 8001C0A8 1080023C */  lui        $v0, %hi(g_saved_record + 0x20)
+    /* C8AC 8001C0AC 706A4290 */  lbu        $v0, %lo(g_saved_record + 0x20)($v0)
     /* C8B0 8001C0B0 24288300 */  and        $a1, $a0, $v1
     /* C8B4 8001C0B4 0718E200 */  srav       $v1, $v0, $a3
     /* C8B8 8001C0B8 01006230 */  andi       $v0, $v1, 0x1
@@ -306,8 +306,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* CA54 8001C254 4AFF4014 */  bnez       $v0, .L8001BF80
     /* CA58 8001C258 00000000 */   nop
     /* CA5C 8001C25C 1000A28F */  lw         $v0, 0x10($sp)
-    /* CA60 8001C260 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* CA64 8001C264 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* CA60 8001C260 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* CA64 8001C264 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* CA68 8001C268 080002AE */  sw         $v0, 0x8($s0)
     /* CA6C 8001C26C 1400A28F */  lw         $v0, 0x14($sp)
     /* CA70 8001C270 00000000 */  nop
@@ -358,8 +358,8 @@ glabel fighter_BuildCpuOrMappedPadState
   .L8001C320:
     /* CB20 8001C320 42002216 */  bne        $s1, $v0, .L8001C42C
     /* CB24 8001C324 06000224 */   addiu     $v0, $zero, 0x6
-    /* CB28 8001C328 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* CB2C 8001C32C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* CB28 8001C328 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* CB2C 8001C32C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* CB30 8001C330 00000000 */  nop
     /* CB34 8001C334 3D006210 */  beq        $v1, $v0, .L8001C42C
     /* CB38 8001C338 00000000 */   nop

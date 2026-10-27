@@ -4,8 +4,8 @@ glabel menu_UpdateOptionMenuChoices
     /* 5C0A0 8006B8A0 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5C0A4 8006B8A4 4400A5AF */  sw         $a1, 0x44($sp)
     /* 5C0A8 8006B8A8 4804828F */  lw         $v0, %gp_rel(D_800A3514)($gp)
-    /* 5C0AC 8006B8AC 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 5C0B0 8006B8B0 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 5C0AC 8006B8AC 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 5C0B0 8006B8B0 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 5C0B4 8006B8B4 0A80053C */  lui        $a1, %hi(D_800A3518)
     /* 5C0B8 8006B8B8 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
     /* 5C0BC 8006B8BC 3C00BFAF */  sw         $ra, 0x3C($sp)

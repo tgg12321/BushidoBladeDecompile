@@ -24,8 +24,8 @@ glabel ExecMovieOverlayAndReinitialize
     /* 2C81C 8003C01C D11A010C */  jal        func_80046B44
     /* 2C820 8003C020 00000000 */   nop
     /* 2C824 8003C024 08000224 */  addiu      $v0, $zero, 0x8
-    /* 2C828 8003C028 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C82C 8003C02C 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2C828 8003C028 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C82C 8003C02C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2C830 8003C030 1800BF8F */  lw         $ra, 0x18($sp)
     /* 2C834 8003C034 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2C838 8003C038 0800E003 */  jr         $ra

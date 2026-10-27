@@ -19,7 +19,7 @@ glabel menu_DrawSelListPicks
     /* 66BB0 800763B0 14001624 */  addiu      $s6, $zero, 0x14
   .L800763B4:
     /* 66BB4 800763B4 40801300 */  sll        $s0, $s3, 1
-    /* 66BB8 800763B8 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 66BB8 800763B8 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 66BBC 800763BC 0000238E */  lw         $v1, 0x0($s1)
     /* 66BC0 800763C0 21200202 */  addu       $a0, $s0, $v0
     /* 66BC4 800763C4 14008284 */  lh         $v0, 0x14($a0)
@@ -66,7 +66,7 @@ glabel menu_DrawSelListPicks
     /* 66C68 80076468 0C004224 */  addiu      $v0, $v0, 0xC
     /* 66C6C 8007646C 180022AE */  sw         $v0, 0x18($s1)
   .L80076470:
-    /* 66C70 80076470 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 66C70 80076470 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 66C74 80076474 4000A0A3 */  sb         $zero, 0x40($sp)
     /* 66C78 80076478 34004494 */  lhu        $a0, 0x34($v0)
     /* 66C7C 8007647C 21900000 */  addu       $s2, $zero, $zero
@@ -77,7 +77,7 @@ glabel menu_DrawSelListPicks
     /* 66C90 80076490 40110200 */  sll        $v0, $v0, 5
     /* 66C94 80076494 03130200 */  sra        $v0, $v0, 12
     /* 66C98 80076498 B0FF4224 */  addiu      $v0, $v0, -0x50
-    /* 66C9C 8007649C D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 66C9C 8007649C D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 66CA0 800764A0 21400000 */  addu       $t0, $zero, $zero
     /* 66CA4 800764A4 4300A2A3 */  sb         $v0, 0x43($sp)
     /* 66CA8 800764A8 4200A2A3 */  sb         $v0, 0x42($sp)
@@ -140,7 +140,7 @@ glabel menu_DrawSelListPicks
     /* 66D80 80076580 2000A2AF */   sw        $v0, 0x20($sp)
     /* 66D84 80076584 01004326 */  addiu      $v1, $s2, 0x1
     /* 66D88 80076588 21906000 */  addu       $s2, $v1, $zero
-    /* 66D8C 8007658C D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 66D8C 8007658C D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 66D90 80076590 001C0300 */  sll        $v1, $v1, 16
     /* 66D94 80076594 100022AE */  sw         $v0, 0x10($s1)
     /* 66D98 80076598 6500A290 */  lbu        $v0, 0x65($a1)
@@ -151,7 +151,7 @@ glabel menu_DrawSelListPicks
     /* 66DAC 800765AC 001C1200 */   sll       $v1, $s2, 16
   .L800765B0:
     /* 66DB0 800765B0 40201300 */  sll        $a0, $s3, 1
-    /* 66DB4 800765B4 D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 66DB4 800765B4 D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 66DB8 800765B8 0000238E */  lw         $v1, 0x0($s1)
     /* 66DBC 800765BC 21108600 */  addu       $v0, $a0, $a2
     /* 66DC0 800765C0 3C004284 */  lh         $v0, 0x3C($v0)
@@ -198,7 +198,7 @@ glabel menu_DrawSelListPicks
     /* 66E54 80076654 43130200 */  sra        $v0, $v0, 13
     /* 66E58 80076658 21105400 */  addu       $v0, $v0, $s4
     /* 66E5C 8007665C 0000458C */  lw         $a1, 0x0($v0)
-    /* 66E60 80076660 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 66E60 80076660 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 66E64 80076664 00000000 */  nop
     /* 66E68 80076668 2120C203 */  addu       $a0, $fp, $v0
     /* 66E6C 8007666C 00141200 */  sll        $v0, $s2, 16
@@ -248,7 +248,7 @@ glabel menu_DrawSelListPicks
     /* 66F14 80076714 01004326 */  addiu      $v1, $s2, 0x1
     /* 66F18 80076718 21906000 */  addu       $s2, $v1, $zero
     /* 66F1C 8007671C 40201300 */  sll        $a0, $s3, 1
-    /* 66F20 80076720 D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 66F20 80076720 D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 66F24 80076724 001C0300 */  sll        $v1, $v1, 16
     /* 66F28 80076728 100022AE */  sw         $v0, 0x10($s1)
     /* 66F2C 8007672C 21108600 */  addu       $v0, $a0, $a2
@@ -259,7 +259,7 @@ glabel menu_DrawSelListPicks
     /* 66F40 80076740 ACFF6014 */  bnez       $v1, .L800765F4
     /* 66F44 80076744 21208600 */   addu      $a0, $a0, $a2
   .L80076748:
-    /* 66F48 80076748 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 66F48 80076748 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 66F4C 8007674C 00000000 */  nop
     /* 66F50 80076750 6500A290 */  lbu        $v0, 0x65($a1)
     /* 66F54 80076754 0000248E */  lw         $a0, 0x0($s1)
@@ -317,7 +317,7 @@ glabel menu_DrawSelListPicks
     /* 67018 80076818 2000A2AF */   sw        $v0, 0x20($sp)
     /* 6701C 8007681C 01004326 */  addiu      $v1, $s2, 0x1
     /* 67020 80076820 21906000 */  addu       $s2, $v1, $zero
-    /* 67024 80076824 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 67024 80076824 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 67028 80076828 001C0300 */  sll        $v1, $v1, 16
     /* 6702C 8007682C 100022AE */  sw         $v0, 0x10($s1)
     /* 67030 80076830 6500A290 */  lbu        $v0, 0x65($a1)

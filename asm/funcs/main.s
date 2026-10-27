@@ -26,13 +26,13 @@ glabel main
     /* 7A60 80017260 0A80143C */  lui        $s4, %hi(D_800A3770)
     /* 7A64 80017264 70379426 */  addiu      $s4, $s4, %lo(D_800A3770)
     /* 7A68 80017268 0F000224 */  addiu      $v0, $zero, 0xF
-    /* 7A6C 8001726C 680782A7 */  sh         $v0, %gp_rel(D_800A3834)($gp)
+    /* 7A6C 8001726C 680782A7 */  sh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
     /* 7A70 80017270 410880A3 */  sb         $zero, %gp_rel(D_800A390D)($gp)
-    /* 7A74 80017274 E00580AF */  sw         $zero, %gp_rel(D_800A36AC)($gp)
+    /* 7A74 80017274 E00580AF */  sw         $zero, %gp_rel(g_gpu_presented_frame_count)($gp)
   .L80017278:
     /* 7A78 80017278 08100524 */  addiu      $a1, $zero, 0x1008
   .L8001727C:
-    /* 7A7C 8001727C E005828F */  lw         $v0, %gp_rel(D_800A36AC)($gp)
+    /* 7A7C 8001727C E005828F */  lw         $v0, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 7A80 80017280 0F80033C */  lui        $v1, %hi(g_gpu_db)
     /* 7A84 80017284 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
     /* 7A88 80017288 01005130 */  andi       $s1, $v0, 0x1
@@ -72,9 +72,9 @@ glabel main
     /* 7B10 80017310 5C0880A3 */  sb         $zero, %gp_rel(g_comb_abort_request)($gp)
     /* 7B14 80017314 0A80013C */  lui        $at, %hi(D_800A31DA)
     /* 7B18 80017318 DA3120A0 */  sb         $zero, %lo(D_800A31DA)($at)
-    /* 7B1C 8001731C 680782A7 */  sh         $v0, %gp_rel(D_800A3834)($gp)
+    /* 7B1C 8001731C 680782A7 */  sh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
   .L80017320:
-    /* 7B20 80017320 68078287 */  lh         $v0, %gp_rel(D_800A3834)($gp)
+    /* 7B20 80017320 68078287 */  lh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
     /* 7B24 80017324 00000000 */  nop
     /* 7B28 80017328 80100200 */  sll        $v0, $v0, 2
     /* 7B2C 8001732C 0980013C */  lui        $at, %hi(D_8008D090)
@@ -156,12 +156,12 @@ glabel main
   .L80017444:
     /* 7C44 80017444 4FEE010C */  jal        DrawOTag
     /* 7C48 80017448 8C404426 */   addiu     $a0, $s2, 0x408C
-    /* 7C4C 8001744C E005828F */  lw         $v0, %gp_rel(D_800A36AC)($gp)
+    /* 7C4C 8001744C E005828F */  lw         $v0, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 7C50 80017450 00000000 */  nop
     /* 7C54 80017454 01004224 */  addiu      $v0, $v0, 0x1
-    /* 7C58 80017458 E00582AF */  sw         $v0, %gp_rel(D_800A36AC)($gp)
+    /* 7C58 80017458 E00582AF */  sw         $v0, %gp_rel(g_gpu_presented_frame_count)($gp)
   .L8001745C:
-    /* 7C5C 8001745C 68078387 */  lh         $v1, %gp_rel(D_800A3834)($gp)
+    /* 7C5C 8001745C 68078387 */  lh         $v1, %gp_rel(g_main_loop_handler_index)($gp)
     /* 7C60 80017460 01000224 */  addiu      $v0, $zero, 0x1
     /* 7C64 80017464 85FF6214 */  bne        $v1, $v0, .L8001727C
     /* 7C68 80017468 08100524 */   addiu     $a1, $zero, 0x1008
@@ -173,7 +173,7 @@ glabel main
     /* 7C80 80017480 24104300 */  and        $v0, $v0, $v1
     /* 7C84 80017484 0D004014 */  bnez       $v0, .L800174BC
     /* 7C88 80017488 02000224 */   addiu     $v0, $zero, 0x2
-    /* 7C8C 8001748C 10088387 */  lh         $v1, %gp_rel(D_800A38DC)($gp)
+    /* 7C8C 8001748C 10088387 */  lh         $v1, %gp_rel(g_fight_mode_selector)($gp)
     /* 7C90 80017490 00000000 */  nop
     /* 7C94 80017494 78FF6214 */  bne        $v1, $v0, .L80017278
     /* 7C98 80017498 00000000 */   nop

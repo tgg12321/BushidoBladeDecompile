@@ -22,8 +22,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D7D4 8003CFD4 0980013C */  lui        $at, %hi(D_8008EAC0)
     /* 2D7D8 8003CFD8 21082200 */  addu       $at, $at, $v0
     /* 2D7DC 8003CFDC C0EA2384 */  lh         $v1, %lo(D_8008EAC0)($at)
-    /* 2D7E0 8003CFE0 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D7E4 8003CFE4 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D7E0 8003CFE0 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D7E4 8003CFE4 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D7E8 8003CFE8 00000000 */  nop
     /* 2D7EC 8003CFEC 08004314 */  bne        $v0, $v1, .L8003D010
     /* 2D7F0 8003CFF0 21880000 */   addu      $s1, $zero, $zero
@@ -37,8 +37,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D010:
     /* 2D810 8003D010 0980033C */  lui        $v1, %hi(D_8008EB04)
     /* 2D814 8003D014 04EB6384 */  lh         $v1, %lo(D_8008EB04)($v1)
-    /* 2D818 8003D018 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D81C 8003D01C B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D818 8003D018 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D81C 8003D01C B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D820 8003D020 00000000 */  nop
     /* 2D824 8003D024 09004314 */  bne        $v0, $v1, .L8003D04C
     /* 2D828 8003D028 7F000524 */   addiu     $a1, $zero, 0x7F
@@ -53,8 +53,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D04C:
     /* 2D84C 8003D04C 0980033C */  lui        $v1, %hi(D_8008EB06)
     /* 2D850 8003D050 06EB6384 */  lh         $v1, %lo(D_8008EB06)($v1)
-    /* 2D854 8003D054 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D858 8003D058 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D854 8003D054 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D858 8003D058 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D85C 8003D05C 00000000 */  nop
     /* 2D860 8003D060 09004314 */  bne        $v0, $v1, .L8003D088
     /* 2D864 8003D064 7F000524 */   addiu     $a1, $zero, 0x7F
@@ -69,8 +69,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D088:
     /* 2D888 8003D088 0980033C */  lui        $v1, %hi(D_8008EB08)
     /* 2D88C 8003D08C 08EB6384 */  lh         $v1, %lo(D_8008EB08)($v1)
-    /* 2D890 8003D090 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D894 8003D094 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D890 8003D090 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D894 8003D094 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D898 8003D098 00000000 */  nop
     /* 2D89C 8003D09C 0A004314 */  bne        $v0, $v1, .L8003D0C8
     /* 2D8A0 8003D0A0 00000000 */   nop
@@ -87,8 +87,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D0C8:
     /* 2D8C8 8003D0C8 0980033C */  lui        $v1, %hi(D_8008EB0A)
     /* 2D8CC 8003D0CC 0AEB6384 */  lh         $v1, %lo(D_8008EB0A)($v1)
-    /* 2D8D0 8003D0D0 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D8D4 8003D0D4 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D8D0 8003D0D0 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D8D4 8003D0D4 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D8D8 8003D0D8 00000000 */  nop
     /* 2D8DC 8003D0DC 04004314 */  bne        $v0, $v1, .L8003D0F0
     /* 2D8E0 8003D0E0 71000424 */   addiu     $a0, $zero, 0x71
@@ -98,8 +98,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D0F0:
     /* 2D8F0 8003D0F0 0980033C */  lui        $v1, %hi(D_8008EB0C)
     /* 2D8F4 8003D0F4 0CEB6384 */  lh         $v1, %lo(D_8008EB0C)($v1)
-    /* 2D8F8 8003D0F8 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2D8FC 8003D0FC B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2D8F8 8003D0F8 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2D8FC 8003D0FC B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D900 8003D100 00000000 */  nop
     /* 2D904 8003D104 18004314 */  bne        $v0, $v1, .L8003D168
     /* 2D908 8003D108 21200000 */   addu      $a0, $zero, $zero
@@ -151,8 +151,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
   .L8003D1B8:
     /* 2D9B8 8003D1B8 3752010C */  jal        motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock
     /* 2D9BC 8003D1BC 00000000 */   nop
-    /* 2D9C0 8003D1C0 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 2D9C4 8003D1C4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 2D9C0 8003D1C0 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 2D9C4 8003D1C4 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 2D9C8 8003D1C8 04000224 */  addiu      $v0, $zero, 0x4
     /* 2D9CC 8003D1CC 03006210 */  beq        $v1, $v0, .L8003D1DC
     /* 2D9D0 8003D1D0 06000224 */   addiu     $v0, $zero, 0x6
@@ -182,8 +182,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2DA28 8003D228 D427A58C */  lw         $a1, %lo(D_801027D4)($a1)
     /* 2DA2C 8003D22C E765000C */  jal        motion_InitStream
     /* 2DA30 8003D230 02000424 */   addiu     $a0, $zero, 0x2
-    /* 2DA34 8003D234 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* 2DA38 8003D238 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* 2DA34 8003D234 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* 2DA38 8003D238 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* 2DA3C 8003D23C 00000000 */  nop
     /* 2DA40 8003D240 12004014 */  bnez       $v0, .L8003D28C
     /* 2DA44 8003D244 18000224 */   addiu     $v0, $zero, 0x18
@@ -205,15 +205,15 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2DA84 8003D284 A5F40008 */  j          .L8003D294
     /* 2DA88 8003D288 00000000 */   nop
   .L8003D28C:
-    /* 2DA8C 8003D28C 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2DA90 8003D290 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2DA8C 8003D28C 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2DA90 8003D290 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8003D294:
-    /* 2DA94 8003D294 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2DA98 8003D298 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2DA94 8003D294 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2DA98 8003D298 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2DA9C 8003D29C 00000000 */  nop
     /* 2DAA0 8003D2A0 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2DAA4 8003D2A4 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2DAA8 8003D2A8 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2DAA4 8003D2A4 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2DAA8 8003D2A8 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 2DAAC 8003D2AC 4000BF8F */  lw         $ra, 0x40($sp)
     /* 2DAB0 8003D2B0 3C00B18F */  lw         $s1, 0x3C($sp)
     /* 2DAB4 8003D2B4 3800B08F */  lw         $s0, 0x38($sp)

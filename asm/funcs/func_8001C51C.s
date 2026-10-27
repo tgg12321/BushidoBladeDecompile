@@ -3,8 +3,8 @@ glabel func_8001C51C
     /* CD20 8001C520 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* CD24 8001C524 3071000C */  jal        fight_StartFighter0DefaultVariantScriptIfMoveKind0x32Or0x11
     /* CD28 8001C528 1800B0AF */   sw        $s0, 0x18($sp)
-    /* CD2C 8001C52C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* CD30 8001C530 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* CD2C 8001C52C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* CD30 8001C530 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* CD34 8001C534 03000224 */  addiu      $v0, $zero, 0x3
     /* CD38 8001C538 0E006214 */  bne        $v1, $v0, .L8001C574
     /* CD3C 8001C53C 01000424 */   addiu     $a0, $zero, 0x1
@@ -13,21 +13,21 @@ glabel func_8001C51C
     /* CD48 8001C548 00000000 */  nop
     /* CD4C 8001C54C 09004010 */  beqz       $v0, .L8001C574
     /* CD50 8001C550 00000000 */   nop
-    /* CD54 8001C554 1080053C */  lui        $a1, %hi(D_80102778 + 0x9)
-    /* CD58 8001C558 8127A580 */  lb         $a1, %lo(D_80102778 + 0x9)($a1)
-    /* CD5C 8001C55C 1080063C */  lui        $a2, %hi(D_80102778 + 0x5)
-    /* CD60 8001C560 7D27C680 */  lb         $a2, %lo(D_80102778 + 0x5)($a2)
-    /* CD64 8001C564 1080073C */  lui        $a3, %hi(D_80102778 + 0x7)
-    /* CD68 8001C568 7F27E780 */  lb         $a3, %lo(D_80102778 + 0x7)($a3)
+    /* CD54 8001C554 1080053C */  lui        $a1, %hi(g_fight_config + 0x9)
+    /* CD58 8001C558 8127A580 */  lb         $a1, %lo(g_fight_config + 0x9)($a1)
+    /* CD5C 8001C55C 1080063C */  lui        $a2, %hi(g_fight_config + 0x5)
+    /* CD60 8001C560 7D27C680 */  lb         $a2, %lo(g_fight_config + 0x5)($a2)
+    /* CD64 8001C564 1080073C */  lui        $a3, %hi(g_fight_config + 0x7)
+    /* CD68 8001C568 7F27E780 */  lb         $a3, %lo(g_fight_config + 0x7)($a3)
     /* CD6C 8001C56C 65710008 */  j          .L8001C594
     /* CD70 8001C570 1000A0AF */   sw        $zero, 0x10($sp)
   .L8001C574:
-    /* CD74 8001C574 1080053C */  lui        $a1, %hi(D_80102778 + 0x9)
-    /* CD78 8001C578 8127A580 */  lb         $a1, %lo(D_80102778 + 0x9)($a1)
-    /* CD7C 8001C57C 1080063C */  lui        $a2, %hi(D_80102778 + 0x5)
-    /* CD80 8001C580 7D27C680 */  lb         $a2, %lo(D_80102778 + 0x5)($a2)
-    /* CD84 8001C584 1080073C */  lui        $a3, %hi(D_80102778 + 0x7)
-    /* CD88 8001C588 7F27E780 */  lb         $a3, %lo(D_80102778 + 0x7)($a3)
+    /* CD74 8001C574 1080053C */  lui        $a1, %hi(g_fight_config + 0x9)
+    /* CD78 8001C578 8127A580 */  lb         $a1, %lo(g_fight_config + 0x9)($a1)
+    /* CD7C 8001C57C 1080063C */  lui        $a2, %hi(g_fight_config + 0x5)
+    /* CD80 8001C580 7D27C680 */  lb         $a2, %lo(g_fight_config + 0x5)($a2)
+    /* CD84 8001C584 1080073C */  lui        $a3, %hi(g_fight_config + 0x7)
+    /* CD88 8001C588 7F27E780 */  lb         $a3, %lo(g_fight_config + 0x7)($a3)
     /* CD8C 8001C58C 01000224 */  addiu      $v0, $zero, 0x1
     /* CD90 8001C590 1000A2AF */  sw         $v0, 0x10($sp)
   .L8001C594:

@@ -5,14 +5,14 @@
  *    empty, and LIBAPI COUNTER's .data starts at 0x8009BD68 (the libapi
  *    modules between have none). No uninitialized objects.
  * 2. Small object in .data: D_8009BD20 (u8[2][2]; D_8009BCF8 before it ends
- *    at 0x8009BD20 by its [2][10] shape, D_8009BD24 after it is another
+ *    at 0x8009BD20 by its [2][10] shape, g_working_record after it is another
  *    type with other readers). Under -G8 the original compiler puts it in
  *    .sdata, so no -G8 file defined it.
  * 3. Neighbours in .data link order: 63D2C.c (gp accesses) and 64FD8.c (its
  *    own .sdata / .sbss, gp accesses), both -G8 code modules with adjacent
  *    .text, then Sony's LIBAPI; so no code module owns D_8009BD20.
  * Readers: D_8009BCE4 / D_8009BCF8 / D_8009BD58 (64FD8.c), D_8009BD20
- * (63D2C.c, 64FD8.c), D_8009BD24 (4D0A8.c, 51268.c, 64FD8.c). */
+ * (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, 51268.c, 64FD8.c). */
 #include "common.h"
 #include "bb2.h"
 
@@ -44,7 +44,7 @@ Unk8009BCF8Record D_8009BCF8[2][10] = {
 
 u8 D_8009BD20[2][2] = {{1, 2}, {3, 4}};
 
-Unk8009BD24Block D_8009BD24 = {
+Unk8009BD24Block g_working_record = {
     {{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
      {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}},
     0,

@@ -8,8 +8,8 @@ glabel fight_GetStartPosition
     /* 12528 80021D28 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 1252C 80021D2C C51B010C */  jal        fight_GetStartPositionPairTable
     /* 12530 80021D30 2180C000 */   addu      $s0, $a2, $zero
-    /* 12534 80021D34 0A80033C */  lui        $v1, %hi(D_800A36A4)
-    /* 12538 80021D38 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)
+    /* 12534 80021D34 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
+    /* 12538 80021D38 A4366384 */  lh         $v1, %lo(g_fight_stage_index)($v1)
     /* 1253C 80021D3C 00000000 */  nop
     /* 12540 80021D40 40200300 */  sll        $a0, $v1, 1
     /* 12544 80021D44 21208300 */  addu       $a0, $a0, $v1

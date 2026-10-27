@@ -23,7 +23,7 @@ glabel menu_DrawSelOpposedChoice
     /* 65C24 80075424 0000228E */  lw         $v0, 0x0($s1)
     /* 65C28 80075428 23801302 */  subu       $s0, $s0, $s3
     /* 65C2C 8007542C 2C00528C */  lw         $s2, 0x2C($v0)
-    /* 65C30 80075430 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 65C30 80075430 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 65C34 80075434 21109200 */  addu       $v0, $a0, $s2
     /* 65C38 80075438 0800428C */  lw         $v0, 0x8($v0)
     /* 65C3C 8007543C 00811000 */  sll        $s0, $s0, 4

@@ -82,10 +82,10 @@ glabel fight_InitNearestStartPairPlayback
     /* 2D74C 8003CF4C 5E84010C */  jal        eff_StopCommands
     /* 2D750 8003CF50 00000000 */   nop
     /* 2D754 8003CF54 1D000224 */  addiu      $v0, $zero, 0x1D
-    /* 2D758 8003CF58 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2D75C 8003CF5C B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2D760 8003CF60 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2D764 8003CF64 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2D758 8003CF58 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2D75C 8003CF5C B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 2D760 8003CF60 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2D764 8003CF64 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2D768 8003CF68 345A000C */  jal        gpu_SetDispMaskOn
     /* 2D76C 8003CF6C 00000000 */   nop
     /* 2D770 8003CF70 2400BF8F */  lw         $ra, 0x24($sp)

@@ -1,6 +1,6 @@
 glabel menu_PrintEditAndApplyConfigWithPerPadCursors
-    /* 24F08 80034708 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 24F0C 8003470C B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 24F08 80034708 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 24F0C 8003470C B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 24F10 80034710 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 24F14 80034714 3C00BFAF */  sw         $ra, 0x3C($sp)
     /* 24F18 80034718 3800BEAF */  sw         $fp, 0x38($sp)
@@ -13,8 +13,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24F34 80034734 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 24F38 80034738 1800B0AF */  sw         $s0, 0x18($sp)
     /* 24F3C 8003473C 01004224 */  addiu      $v0, $v0, 0x1
-    /* 24F40 80034740 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 24F44 80034744 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 24F40 80034740 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 24F44 80034744 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 24F48 80034748 55E4010C */  jal        rand
     /* 24F4C 8003474C 00000000 */   nop
     /* 24F50 80034750 0A80103C */  lui        $s0, %hi(D_800A3178)
@@ -28,8 +28,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24F70 80034770 21280002 */   addu      $a1, $s0, $zero
     /* 24F74 80034774 21282002 */  addu       $a1, $s1, $zero
   .L80034778:
-    /* 24F78 80034778 1080153C */  lui        $s5, %hi(D_80102778 + 0x4)
-    /* 24F7C 8003477C 7C27B526 */  addiu      $s5, $s5, %lo(D_80102778 + 0x4)
+    /* 24F78 80034778 1080153C */  lui        $s5, %hi(g_fight_config + 0x4)
+    /* 24F7C 8003477C 7C27B526 */  addiu      $s5, $s5, %lo(g_fight_config + 0x4)
     /* 24F80 80034780 0000A682 */  lb         $a2, 0x0($s5)
     /* 24F84 80034784 4BF5000C */  jal        font_Printf
     /* 24F88 80034788 21208002 */   addu      $a0, $s4, $zero
@@ -40,8 +40,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24F9C 8003479C 21280002 */   addu      $a1, $s0, $zero
     /* 24FA0 800347A0 21282002 */  addu       $a1, $s1, $zero
   .L800347A4:
-    /* 24FA4 800347A4 1080063C */  lui        $a2, %hi(D_80102778 + 0x5)
-    /* 24FA8 800347A8 7D27C680 */  lb         $a2, %lo(D_80102778 + 0x5)($a2)
+    /* 24FA4 800347A4 1080063C */  lui        $a2, %hi(g_fight_config + 0x5)
+    /* 24FA8 800347A8 7D27C680 */  lb         $a2, %lo(g_fight_config + 0x5)($a2)
     /* 24FAC 800347AC 4BF5000C */  jal        font_Printf
     /* 24FB0 800347B0 21206002 */   addu      $a0, $s3, $zero
     /* 24FB4 800347B4 A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
@@ -50,8 +50,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24FC0 800347C0 21280002 */   addu      $a1, $s0, $zero
     /* 24FC4 800347C4 21282002 */  addu       $a1, $s1, $zero
   .L800347C8:
-    /* 24FC8 800347C8 1080063C */  lui        $a2, %hi(D_80102778 + 0x6)
-    /* 24FCC 800347CC 7E27C680 */  lb         $a2, %lo(D_80102778 + 0x6)($a2)
+    /* 24FC8 800347C8 1080063C */  lui        $a2, %hi(g_fight_config + 0x6)
+    /* 24FCC 800347CC 7E27C680 */  lb         $a2, %lo(g_fight_config + 0x6)($a2)
     /* 24FD0 800347D0 4BF5000C */  jal        font_Printf
     /* 24FD4 800347D4 21208002 */   addu      $a0, $s4, $zero
     /* 24FD8 800347D8 AA008287 */  lh         $v0, %gp_rel(D_800A3176)($gp)
@@ -60,8 +60,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24FE4 800347E4 21280002 */   addu      $a1, $s0, $zero
     /* 24FE8 800347E8 21282002 */  addu       $a1, $s1, $zero
   .L800347EC:
-    /* 24FEC 800347EC 1080063C */  lui        $a2, %hi(D_80102778 + 0x7)
-    /* 24FF0 800347F0 7F27C680 */  lb         $a2, %lo(D_80102778 + 0x7)($a2)
+    /* 24FEC 800347EC 1080063C */  lui        $a2, %hi(g_fight_config + 0x7)
+    /* 24FF0 800347F0 7F27C680 */  lb         $a2, %lo(g_fight_config + 0x7)($a2)
     /* 24FF4 800347F4 4BF5000C */  jal        font_Printf
     /* 24FF8 800347F8 21206002 */   addu      $a0, $s3, $zero
     /* 24FFC 800347FC A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
@@ -70,8 +70,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25008 80034808 21280002 */   addu      $a1, $s0, $zero
     /* 2500C 8003480C 21282002 */  addu       $a1, $s1, $zero
   .L80034810:
-    /* 25010 80034810 1080063C */  lui        $a2, %hi(D_80102778 + 0x8)
-    /* 25014 80034814 8027C680 */  lb         $a2, %lo(D_80102778 + 0x8)($a2)
+    /* 25010 80034810 1080063C */  lui        $a2, %hi(g_fight_config + 0x8)
+    /* 25014 80034814 8027C680 */  lb         $a2, %lo(g_fight_config + 0x8)($a2)
     /* 25018 80034818 0A80043C */  lui        $a0, %hi(D_800A3198)
     /* 2501C 8003481C 98318424 */  addiu      $a0, $a0, %lo(D_800A3198)
     /* 25020 80034820 4BF5000C */  jal        font_Printf
@@ -82,8 +82,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25034 80034834 21280002 */   addu      $a1, $s0, $zero
     /* 25038 80034838 21282002 */  addu       $a1, $s1, $zero
   .L8003483C:
-    /* 2503C 8003483C 1080063C */  lui        $a2, %hi(D_80102778 + 0x9)
-    /* 25040 80034840 8127C680 */  lb         $a2, %lo(D_80102778 + 0x9)($a2)
+    /* 2503C 8003483C 1080063C */  lui        $a2, %hi(g_fight_config + 0x9)
+    /* 25040 80034840 8127C680 */  lb         $a2, %lo(g_fight_config + 0x9)($a2)
     /* 25044 80034844 4BF5000C */  jal        font_Printf
     /* 25048 80034848 21206002 */   addu      $a0, $s3, $zero
     /* 2504C 8003484C A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
@@ -92,8 +92,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25058 80034858 21280002 */   addu      $a1, $s0, $zero
     /* 2505C 8003485C 21282002 */  addu       $a1, $s1, $zero
   .L80034860:
-    /* 25060 80034860 1080063C */  lui        $a2, %hi(D_80102778)
-    /* 25064 80034864 7827C694 */  lhu        $a2, %lo(D_80102778)($a2)
+    /* 25060 80034860 1080063C */  lui        $a2, %hi(g_fight_config)
+    /* 25064 80034864 7827C694 */  lhu        $a2, %lo(g_fight_config)($a2)
     /* 25068 80034868 0A80043C */  lui        $a0, %hi(D_800A31A0)
     /* 2506C 8003486C A0318424 */  addiu      $a0, $a0, %lo(D_800A31A0)
     /* 25070 80034870 4BF5000C */  jal        font_Printf
@@ -104,8 +104,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25084 80034884 21280002 */   addu      $a1, $s0, $zero
     /* 25088 80034888 21282002 */  addu       $a1, $s1, $zero
   .L8003488C:
-    /* 2508C 8003488C 1080063C */  lui        $a2, %hi(D_80102778 + 0x2)
-    /* 25090 80034890 7A27C694 */  lhu        $a2, %lo(D_80102778 + 0x2)($a2)
+    /* 2508C 8003488C 1080063C */  lui        $a2, %hi(g_fight_config + 0x2)
+    /* 25090 80034890 7A27C694 */  lhu        $a2, %lo(g_fight_config + 0x2)($a2)
     /* 25094 80034894 0A80043C */  lui        $a0, %hi(D_800A31A8)
     /* 25098 80034898 A8318424 */  addiu      $a0, $a0, %lo(D_800A31A8)
     /* 2509C 8003489C 4BF5000C */  jal        font_Printf
@@ -118,8 +118,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 250B8 800348B8 21280002 */   addu      $a1, $s0, $zero
     /* 250BC 800348BC 21282002 */  addu       $a1, $s1, $zero
   .L800348C0:
-    /* 250C0 800348C0 1080063C */  lui        $a2, %hi(D_80102778 + 0xC)
-    /* 250C4 800348C4 8427C680 */  lb         $a2, %lo(D_80102778 + 0xC)($a2)
+    /* 250C0 800348C0 1080063C */  lui        $a2, %hi(g_fight_config + 0xC)
+    /* 250C4 800348C4 8427C680 */  lb         $a2, %lo(g_fight_config + 0xC)($a2)
     /* 250C8 800348C8 4BF5000C */  jal        font_Printf
     /* 250CC 800348CC 21204002 */   addu      $a0, $s2, $zero
     /* 250D0 800348D0 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
@@ -128,8 +128,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 250DC 800348DC 21280002 */   addu      $a1, $s0, $zero
     /* 250E0 800348E0 21282002 */  addu       $a1, $s1, $zero
   .L800348E4:
-    /* 250E4 800348E4 1080063C */  lui        $a2, %hi(D_80102778 + 0xD)
-    /* 250E8 800348E8 8527C680 */  lb         $a2, %lo(D_80102778 + 0xD)($a2)
+    /* 250E4 800348E4 1080063C */  lui        $a2, %hi(g_fight_config + 0xD)
+    /* 250E8 800348E8 8527C680 */  lb         $a2, %lo(g_fight_config + 0xD)($a2)
     /* 250EC 800348EC 4BF5000C */  jal        font_Printf
     /* 250F0 800348F0 21204002 */   addu      $a0, $s2, $zero
     /* 250F4 800348F4 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
@@ -160,8 +160,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25150 80034950 21280002 */   addu      $a1, $s0, $zero
     /* 25154 80034954 21282002 */  addu       $a1, $s1, $zero
   .L80034958:
-    /* 25158 80034958 1080123C */  lui        $s2, %hi(D_80106A50 + 0x23)
-    /* 2515C 8003495C 736A5226 */  addiu      $s2, $s2, %lo(D_80106A50 + 0x23)
+    /* 25158 80034958 1080123C */  lui        $s2, %hi(g_saved_record + 0x23)
+    /* 2515C 8003495C 736A5226 */  addiu      $s2, $s2, %lo(g_saved_record + 0x23)
     /* 25160 80034960 00004692 */  lbu        $a2, 0x0($s2)
     /* 25164 80034964 0180043C */  lui        $a0, %hi(D_80010840)
     /* 25168 80034968 40088424 */  addiu      $a0, $a0, %lo(D_80010840)
@@ -202,8 +202,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 251E8 800349E8 0A80063C */  lui        $a2, %hi(D_800A3690)
     /* 251EC 800349EC 9036C690 */  lbu        $a2, %lo(D_800A3690)($a2)
     /* 251F0 800349F0 21A00000 */  addu       $s4, $zero, $zero
-    /* 251F4 800349F4 1080173C */  lui        $s7, %hi(D_80102778 + 0xC)
-    /* 251F8 800349F8 8427F726 */  addiu      $s7, $s7, %lo(D_80102778 + 0xC)
+    /* 251F4 800349F4 1080173C */  lui        $s7, %hi(g_fight_config + 0xC)
+    /* 251F8 800349F8 8427F726 */  addiu      $s7, $s7, %lo(g_fight_config + 0xC)
     /* 251FC 800349FC 0200FE26 */  addiu      $fp, $s7, 0x2
     /* 25200 80034A00 21A84002 */  addu       $s5, $s2, $zero
     /* 25204 80034A04 FCFFF326 */  addiu      $s3, $s7, -0x4
@@ -311,8 +311,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25370 80034B70 67D30008 */  j          .L80034D9C
     /* 25374 80034B74 000062A2 */   sb        $v0, 0x0($s3)
   jlabel .L80034B78
-    /* 25378 80034B78 1080033C */  lui        $v1, %hi(D_80102778)
-    /* 2537C 80034B7C 78276324 */  addiu      $v1, $v1, %lo(D_80102778)
+    /* 25378 80034B78 1080033C */  lui        $v1, %hi(g_fight_config)
+    /* 2537C 80034B7C 78276324 */  addiu      $v1, $v1, %lo(g_fight_config)
     /* 25380 80034B80 2118C302 */  addu       $v1, $s6, $v1
     /* 25384 80034B84 00006294 */  lhu        $v0, 0x0($v1)
     /* 25388 80034B88 00000000 */  nop
@@ -326,12 +326,12 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 253A4 80034BA4 67D30008 */  j          .L80034D9C
     /* 253A8 80034BA8 0000E2A2 */   sb        $v0, 0x0($s7)
   jlabel .L80034BAC
-    /* 253AC 80034BAC 1080023C */  lui        $v0, %hi(D_80102778 + 0xD)
-    /* 253B0 80034BB0 85274290 */  lbu        $v0, %lo(D_80102778 + 0xD)($v0)
+    /* 253AC 80034BAC 1080023C */  lui        $v0, %hi(g_fight_config + 0xD)
+    /* 253B0 80034BB0 85274290 */  lbu        $v0, %lo(g_fight_config + 0xD)($v0)
     /* 253B4 80034BB4 00000000 */  nop
     /* 253B8 80034BB8 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 253BC 80034BBC 1080013C */  lui        $at, %hi(D_80102778 + 0xD)
-    /* 253C0 80034BC0 852722A0 */  sb         $v0, %lo(D_80102778 + 0xD)($at)
+    /* 253BC 80034BBC 1080013C */  lui        $at, %hi(g_fight_config + 0xD)
+    /* 253C0 80034BC0 852722A0 */  sb         $v0, %lo(g_fight_config + 0xD)($at)
     /* 253C4 80034BC4 68D30008 */  j          .L80034DA0
     /* 253C8 80034BC8 0F3E023C */   lui       $v0, (0x3E0F83E1 >> 16)
   jlabel .L80034BCC
@@ -341,8 +341,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 253D8 80034BD8 67D30008 */  j          .L80034D9C
     /* 253DC 80034BDC 0000C2A3 */   sb        $v0, 0x0($fp)
   jlabel .L80034BE0
-    /* 253E0 80034BE0 1080033C */  lui        $v1, %hi(D_80102778 + 0xF)
-    /* 253E4 80034BE4 87276324 */  addiu      $v1, $v1, %lo(D_80102778 + 0xF)
+    /* 253E0 80034BE0 1080033C */  lui        $v1, %hi(g_fight_config + 0xF)
+    /* 253E4 80034BE4 87276324 */  addiu      $v1, $v1, %lo(g_fight_config + 0xF)
     /* 253E8 80034BE8 00006290 */  lbu        $v0, 0x0($v1)
     /* 253EC 80034BEC 00000000 */  nop
     /* 253F0 80034BF0 FFFF4224 */  addiu      $v0, $v0, -0x1
@@ -402,8 +402,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 254B0 80034CB0 67D30008 */  j          .L80034D9C
     /* 254B4 80034CB4 000062A2 */   sb        $v0, 0x0($s3)
   jlabel .L80034CB8
-    /* 254B8 80034CB8 1080033C */  lui        $v1, %hi(D_80102778)
-    /* 254BC 80034CBC 78276324 */  addiu      $v1, $v1, %lo(D_80102778)
+    /* 254B8 80034CB8 1080033C */  lui        $v1, %hi(g_fight_config)
+    /* 254BC 80034CBC 78276324 */  addiu      $v1, $v1, %lo(g_fight_config)
     /* 254C0 80034CC0 2118C302 */  addu       $v1, $s6, $v1
     /* 254C4 80034CC4 00006294 */  lhu        $v0, 0x0($v1)
     /* 254C8 80034CC8 00000000 */  nop
@@ -417,12 +417,12 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 254E4 80034CE4 67D30008 */  j          .L80034D9C
     /* 254E8 80034CE8 0000E2A2 */   sb        $v0, 0x0($s7)
   jlabel .L80034CEC
-    /* 254EC 80034CEC 1080023C */  lui        $v0, %hi(D_80102778 + 0xD)
-    /* 254F0 80034CF0 85274290 */  lbu        $v0, %lo(D_80102778 + 0xD)($v0)
+    /* 254EC 80034CEC 1080023C */  lui        $v0, %hi(g_fight_config + 0xD)
+    /* 254F0 80034CF0 85274290 */  lbu        $v0, %lo(g_fight_config + 0xD)($v0)
     /* 254F4 80034CF4 00000000 */  nop
     /* 254F8 80034CF8 01004224 */  addiu      $v0, $v0, 0x1
-    /* 254FC 80034CFC 1080013C */  lui        $at, %hi(D_80102778 + 0xD)
-    /* 25500 80034D00 852722A0 */  sb         $v0, %lo(D_80102778 + 0xD)($at)
+    /* 254FC 80034CFC 1080013C */  lui        $at, %hi(g_fight_config + 0xD)
+    /* 25500 80034D00 852722A0 */  sb         $v0, %lo(g_fight_config + 0xD)($at)
     /* 25504 80034D04 68D30008 */  j          .L80034DA0
     /* 25508 80034D08 0F3E023C */   lui       $v0, (0x3E0F83E1 >> 16)
   jlabel .L80034D0C
@@ -432,8 +432,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25518 80034D18 67D30008 */  j          .L80034D9C
     /* 2551C 80034D1C 0000C2A3 */   sb        $v0, 0x0($fp)
   jlabel .L80034D20
-    /* 25520 80034D20 1080033C */  lui        $v1, %hi(D_80102778 + 0xF)
-    /* 25524 80034D24 87276324 */  addiu      $v1, $v1, %lo(D_80102778 + 0xF)
+    /* 25520 80034D20 1080033C */  lui        $v1, %hi(g_fight_config + 0xF)
+    /* 25524 80034D24 87276324 */  addiu      $v1, $v1, %lo(g_fight_config + 0xF)
     /* 25528 80034D28 00006290 */  lbu        $v0, 0x0($v1)
     /* 2552C 80034D2C 00000000 */  nop
     /* 25530 80034D30 01004224 */  addiu      $v0, $v0, 0x1
@@ -511,8 +511,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25630 80034E30 FBFE4014 */  bnez       $v0, .L80034A20
     /* 25634 80034E34 01007326 */   addiu     $s3, $s3, 0x1
     /* 25638 80034E38 CA6B023C */  lui        $v0, (0x6BCA1AF3 >> 16)
-    /* 2563C 80034E3C 1080063C */  lui        $a2, %hi(D_80102778 + 0xC)
-    /* 25640 80034E40 8427C624 */  addiu      $a2, $a2, %lo(D_80102778 + 0xC)
+    /* 2563C 80034E3C 1080063C */  lui        $a2, %hi(g_fight_config + 0xC)
+    /* 25640 80034E40 8427C624 */  addiu      $a2, $a2, %lo(g_fight_config + 0xC)
     /* 25644 80034E44 0000C580 */  lb         $a1, 0x0($a2)
     /* 25648 80034E48 F31A4234 */  ori        $v0, $v0, (0x6BCA1AF3 & 0xFFFF)
     /* 2564C 80034E4C 2600A524 */  addiu      $a1, $a1, 0x26
@@ -521,21 +521,21 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25658 80034E58 93246334 */  ori        $v1, $v1, (0x92492493 & 0xFFFF)
     /* 2565C 80034E5C 0A800A3C */  lui        $t2, %hi(D_800A36F9)
     /* 25660 80034E60 F9364A91 */  lbu        $t2, %lo(D_800A36F9)($t2)
-    /* 25664 80034E64 1080043C */  lui        $a0, %hi(D_80102778 + 0xD)
-    /* 25668 80034E68 85278480 */  lb         $a0, %lo(D_80102778 + 0xD)($a0)
+    /* 25664 80034E64 1080043C */  lui        $a0, %hi(g_fight_config + 0xD)
+    /* 25668 80034E68 85278480 */  lb         $a0, %lo(g_fight_config + 0xD)($a0)
     /* 2566C 80034E6C 04004725 */  addiu      $a3, $t2, 0x4
-    /* 25670 80034E70 1080023C */  lui        $v0, %hi(D_80102778 + 0xE)
-    /* 25674 80034E74 86274290 */  lbu        $v0, %lo(D_80102778 + 0xE)($v0)
+    /* 25670 80034E70 1080023C */  lui        $v0, %hi(g_fight_config + 0xE)
+    /* 25674 80034E74 86274290 */  lbu        $v0, %lo(g_fight_config + 0xE)($v0)
     /* 25678 80034E78 07008424 */  addiu      $a0, $a0, 0x7
     /* 2567C 80034E7C 01004230 */  andi       $v0, $v0, 0x1
-    /* 25680 80034E80 1080013C */  lui        $at, %hi(D_80102778 + 0xE)
-    /* 25684 80034E84 862722A0 */  sb         $v0, %lo(D_80102778 + 0xE)($at)
-    /* 25688 80034E88 1080023C */  lui        $v0, %hi(D_80102778 + 0xF)
-    /* 2568C 80034E8C 87274290 */  lbu        $v0, %lo(D_80102778 + 0xF)($v0)
+    /* 25680 80034E80 1080013C */  lui        $at, %hi(g_fight_config + 0xE)
+    /* 25684 80034E84 862722A0 */  sb         $v0, %lo(g_fight_config + 0xE)($at)
+    /* 25688 80034E88 1080023C */  lui        $v0, %hi(g_fight_config + 0xF)
+    /* 2568C 80034E8C 87274290 */  lbu        $v0, %lo(g_fight_config + 0xF)($v0)
     /* 25690 80034E90 10400000 */  mfhi       $t0
     /* 25694 80034E94 01004230 */  andi       $v0, $v0, 0x1
-    /* 25698 80034E98 1080013C */  lui        $at, %hi(D_80102778 + 0xF)
-    /* 2569C 80034E9C 872722A0 */  sb         $v0, %lo(D_80102778 + 0xF)($at)
+    /* 25698 80034E98 1080013C */  lui        $at, %hi(g_fight_config + 0xF)
+    /* 2569C 80034E9C 872722A0 */  sb         $v0, %lo(g_fight_config + 0xF)($at)
     /* 256A0 80034EA0 18008300 */  mult       $a0, $v1
     /* 256A4 80034EA4 C3170500 */  sra        $v0, $a1, 31
     /* 256A8 80034EA8 03190800 */  sra        $v1, $t0, 4
@@ -555,8 +555,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 256E0 80034EE0 C0100300 */  sll        $v0, $v1, 3
     /* 256E4 80034EE4 23104300 */  subu       $v0, $v0, $v1
     /* 256E8 80034EE8 23208200 */  subu       $a0, $a0, $v0
-    /* 256EC 80034EEC 1080013C */  lui        $at, %hi(D_80102778 + 0xD)
-    /* 256F0 80034EF0 852724A0 */  sb         $a0, %lo(D_80102778 + 0xD)($at)
+    /* 256EC 80034EEC 1080013C */  lui        $at, %hi(g_fight_config + 0xD)
+    /* 256F0 80034EF0 852724A0 */  sb         $a0, %lo(g_fight_config + 0xD)($at)
     /* 256F4 80034EF4 0200E104 */  bgez       $a3, .L80034F00
     /* 256F8 80034EF8 2148E000 */   addu      $t1, $a3, $zero
     /* 256FC 80034EFC 07004925 */  addiu      $t1, $t2, 0x7

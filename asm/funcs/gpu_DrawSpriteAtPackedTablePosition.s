@@ -33,8 +33,8 @@ glabel gpu_DrawSpriteAtPackedTablePosition
     /* 50C90 80060490 33810108 */  j          .L800604CC
     /* 50C94 80060494 1800A2AF */   sw        $v0, 0x18($sp)
   .L80060498:
-    /* 50C98 80060498 0A80023C */  lui        $v0, %hi(D_8009BD24)
-    /* 50C9C 8006049C 24BD4290 */  lbu        $v0, %lo(D_8009BD24)($v0)
+    /* 50C98 80060498 0A80023C */  lui        $v0, %hi(g_working_record)
+    /* 50C9C 8006049C 24BD4290 */  lbu        $v0, %lo(g_working_record)($v0)
     /* 50CA0 800604A0 00000000 */  nop
     /* 50CA4 800604A4 0C00422C */  sltiu      $v0, $v0, 0xC
     /* 50CA8 800604A8 05004010 */  beqz       $v0, .L800604C0

@@ -1,13 +1,13 @@
 glabel fight_UpdateSplitWipeImageAndPlaybackPresentation
     /* 2CAC0 8003C2C0 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 2CAC4 8003C2C4 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2CAC8 8003C2C8 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2CAC4 8003C2C4 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2CAC8 8003C2C8 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2CACC 8003C2CC 0A80043C */  lui        $a0, %hi(g_prim_buf_cursor)
     /* 2CAD0 8003C2D0 B438848C */  lw         $a0, %lo(g_prim_buf_cursor)($a0)
     /* 2CAD4 8003C2D4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2CAD8 8003C2D8 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2CADC 8003C2DC 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2CAE0 8003C2E0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2CADC 8003C2DC 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2CAE0 8003C2E0 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 2CAE4 8003C2E4 277F010C */  jal        gpu_DrawImageAndAdvanceSplitWipe
     /* 2CAE8 8003C2E8 01000524 */   addiu     $a1, $zero, 0x1
     /* 2CAEC 8003C2EC 0A80033C */  lui        $v1, %hi(g_prim_buf_cursor)
@@ -41,9 +41,9 @@ glabel fight_UpdateSplitWipeImageAndPlaybackPresentation
     /* 2CB58 8003C358 00000000 */   nop
     /* 2CB5C 8003C35C 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
     /* 2CB60 8003C360 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
-    /* 2CB64 8003C364 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 2CB64 8003C364 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2CB68 8003C368 21082200 */  addu       $at, $at, $v0
-    /* 2CB6C 8003C36C ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 2CB6C 8003C36C ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 2CB70 8003C370 00000000 */  nop
     /* 2CB74 8003C374 02004010 */  beqz       $v0, .L8003C380
     /* 2CB78 8003C378 08000324 */   addiu     $v1, $zero, 0x8
@@ -74,18 +74,18 @@ glabel fight_UpdateSplitWipeImageAndPlaybackPresentation
     /* 2CBD4 8003C3D4 0A000224 */   addiu     $v0, $zero, 0xA
     /* 2CBD8 8003C3D8 08000224 */  addiu      $v0, $zero, 0x8
   .L8003C3DC:
-    /* 2CBDC 8003C3DC 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2CBE0 8003C3E0 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2CBDC 8003C3DC 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2CBE0 8003C3E0 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8003C3E4:
-    /* 2CBE4 8003C3E4 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* 2CBE8 8003C3E8 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* 2CBE4 8003C3E4 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* 2CBE8 8003C3E8 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* 2CBEC 8003C3EC 13000224 */  addiu      $v0, $zero, 0x13
     /* 2CBF0 8003C3F0 0A006210 */  beq        $v1, $v0, .L8003C41C
     /* 2CBF4 8003C3F4 00000000 */   nop
     /* 2CBF8 8003C3F8 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2CBFC 8003C3FC 00000000 */   nop
-    /* 2CC00 8003C400 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* 2CC04 8003C404 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* 2CC00 8003C400 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* 2CC04 8003C404 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* 2CC08 8003C408 12000224 */  addiu      $v0, $zero, 0x12
     /* 2CC0C 8003C40C 03006210 */  beq        $v1, $v0, .L8003C41C
     /* 2CC10 8003C410 00000000 */   nop

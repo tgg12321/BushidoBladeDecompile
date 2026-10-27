@@ -208,8 +208,8 @@ glabel node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
     /* 396CC 80048ECC 203822AC */  sw         $v0, %lo(g_draw_queue_cursor)($at)
     /* 396D0 80048ED0 000072AC */  sw         $s2, 0x0($v1)
   .L80048ED4:
-    /* 396D4 80048ED4 0A80043C */  lui        $a0, %hi(D_800A36AC)
-    /* 396D8 80048ED8 AC36848C */  lw         $a0, %lo(D_800A36AC)($a0)
+    /* 396D4 80048ED4 0A80043C */  lui        $a0, %hi(g_gpu_presented_frame_count)
+    /* 396D8 80048ED8 AC36848C */  lw         $a0, %lo(g_gpu_presented_frame_count)($a0)
     /* 396DC 80048EDC 0F80023C */  lui        $v0, %hi(g_gpu_ot256_db)
     /* 396E0 80048EE0 68574224 */  addiu      $v0, $v0, %lo(g_gpu_ot256_db)
     /* 396E4 80048EE4 01008430 */  andi       $a0, $a0, 0x1

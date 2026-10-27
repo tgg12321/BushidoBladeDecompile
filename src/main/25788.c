@@ -7,20 +7,20 @@
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
-/* Copies the record at GetWorkingRecord() into the FileRecord D_80106A50:
+/* Copies the record at GetWorkingRecord() into the FileRecord g_saved_record:
  * flags bits 0-2 are cleared and re-set from p->unk20_0..2, then the three
- * bytes at p->unk17 are copied to D_80106A50.frec20. */
+ * bytes at p->unk17 are copied to g_saved_record.frec20. */
 void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
     Unk8009BD24Block *p;
     s32 i;
 
     p = GetWorkingRecord();
-    D_80106A50.flags &= ~7;
-    D_80106A50.flags |= p->unk20_0 ? 1 : 0;
-    D_80106A50.flags |= p->unk20_1 ? 2 : 0;
-    D_80106A50.flags |= p->unk20_2 ? 4 : 0;
+    g_saved_record.flags &= ~7;
+    g_saved_record.flags |= p->unk20_0 ? 1 : 0;
+    g_saved_record.flags |= p->unk20_1 ? 2 : 0;
+    g_saved_record.flags |= p->unk20_2 ? 4 : 0;
     for (i = 0; i < 3; i++) {
-        D_80106A50.frec20[i] = p->unk17[i];
+        g_saved_record.frec20[i] = p->unk17[i];
     }
 }
 
@@ -44,24 +44,24 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
 
     do {
         s32 var_7 = (&D_8008D55C)[s[0]];
-        D_80102778.unk_4[i] = var_7;
+        g_fight_config.unk_4[i] = var_7;
         if ((u32)(var_7 - 3) < 2 || (s8)var_7 == new_var ||
             (u32)(var_7 - 18) < 2 || (s8)var_7 == new_var2) {
-            if ((s8)D_80102778.unk_D == 0) {
-                D_80102778.unk_4[i] = D_80102778.unk_4[i] - 3;
+            if ((s8)g_fight_config.unk_D == 0) {
+                g_fight_config.unk_4[i] = g_fight_config.unk_4[i] - 3;
             }
         }
         tmp = s[1];
         s += 10;
-        D_80102778.unk_4[4 + i] = 0;
-        D_80102778.unk_4[2 + i] = tmp;
+        g_fight_config.unk_4[4 + i] = 0;
+        g_fight_config.unk_4[2 + i] = tmp;
         i++;
     } while (i < 2);
 
-    D_80102778.unk_C = p->unk14_4;
-    D_80102778.unk_E = p->unk20_3;
+    g_fight_config.unk_C = p->unk14_4;
+    g_fight_config.unk_E = p->unk20_3;
     D_800A36F6 = 0;
-    val = D_80102778.unk_D;
+    val = g_fight_config.unk_D;
 
     if (val == 2) {
         D_800A389A = p->unk14_17;
@@ -117,16 +117,16 @@ void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
 
     p = GetWorkingRecord();
     i = 0;
-    p->unk20_0 = D_80106A50.flags & 1;
-    p->unk20_1 = (D_80106A50.flags >> 1) & 1;
-    p->unk20_2 = (D_80106A50.flags >> 2) & 1;
-    src = D_80106A50.frec20;
+    p->unk20_0 = g_saved_record.flags & 1;
+    p->unk20_1 = (g_saved_record.flags >> 1) & 1;
+    p->unk20_2 = (g_saved_record.flags >> 2) & 1;
+    src = g_saved_record.frec20;
     for (; i < 3; i++) {
         p->unk17[i] = *src;
         p->unk1D[i] = *src;
         src++;
     }
-    times = D_80106A50.times;
+    times = g_saved_record.times;
     for (i = 0; i < 3; i++) {
         /* FAKE: the clock fields and the raw record byte are each staged
          * through a named intermediate (var_4 / var_5 / var_6 / t); they raise

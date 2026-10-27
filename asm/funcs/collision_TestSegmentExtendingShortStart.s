@@ -1,8 +1,8 @@
 glabel collision_TestSegmentExtendingShortStart
     /* 43B04 80053304 0F80023C */  lui        $v0, %hi(D_800EF9F8)
     /* 43B08 80053308 F8F94224 */  addiu      $v0, $v0, %lo(D_800EF9F8)
-    /* 43B0C 8005330C 280382AF */  sw         $v0, %gp_rel(D_800A33F4)($gp)
-    /* 43B10 80053310 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 43B0C 8005330C 280382AF */  sw         $v0, %gp_rel(g_collision_segment_work)($gp)
+    /* 43B10 80053310 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43B14 80053314 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 43B18 80053318 1000B0AF */  sw         $s0, 0x10($sp)
     /* 43B1C 8005331C 2180C000 */  addu       $s0, $a2, $zero
@@ -28,7 +28,7 @@ glabel collision_TestSegmentExtendingShortStart
     /* 43B6C 8005336C 1C0044AC */  sw         $a0, 0x1C($v0)
     /* 43B70 80053370 200046AC */  sw         $a2, 0x20($v0)
     /* 43B74 80053374 240047AC */  sw         $a3, 0x24($v0)
-    /* 43B78 80053378 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 43B78 80053378 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43B7C 8005337C 00000000 */  nop
     /* 43B80 80053380 1800438C */  lw         $v1, 0x18($v0)
     /* 43B84 80053384 0800448C */  lw         $a0, 0x8($v0)
@@ -44,7 +44,7 @@ glabel collision_TestSegmentExtendingShortStart
     /* 43BAC 800533AC 2A186200 */  slt        $v1, $v1, $v0
     /* 43BB0 800533B0 19006014 */  bnez       $v1, .L80053418
     /* 43BB4 800533B4 00000000 */   nop
-    /* 43BB8 800533B8 2803848F */  lw         $a0, %gp_rel(D_800A33F4)($gp)
+    /* 43BB8 800533B8 2803848F */  lw         $a0, %gp_rel(g_collision_segment_work)($gp)
     /* 43BBC 800533BC 00000000 */  nop
     /* 43BC0 800533C0 1800838C */  lw         $v1, 0x18($a0)
     /* 43BC4 800533C4 0800868C */  lw         $a2, 0x8($a0)
@@ -69,7 +69,7 @@ glabel collision_TestSegmentExtendingShortStart
     /* 43C10 80053410 0A4D0108 */  j          .L80053428
     /* 43C14 80053414 100083AC */   sw        $v1, 0x10($a0)
   .L80053418:
-    /* 43C18 80053418 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 43C18 80053418 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 43C1C 8005341C 0580023C */  lui        $v0, %hi(collision_TestCellKeepingNearestHitGteProjection)
     /* 43C20 80053420 9C3E4224 */  addiu      $v0, $v0, %lo(collision_TestCellKeepingNearestHitGteProjection)
     /* 43C24 80053424 5C0062AC */  sw         $v0, 0x5C($v1)

@@ -17,7 +17,7 @@ void cdrom_Init(void) {
     CdInit();
     CdSetDebug(0);
     cdrom_SetMix(0, 0, 0, 0);
-    D_80101E58.rec.unk02 = 0;
+    g_cdrom_state.rec.unk02 = 0;
     if (D_800A31E4 == 0) {
         D_800A31E4 = 1;
     }
@@ -33,24 +33,24 @@ void cdrom_ReadyCallback(u8 arg0, u8 *result) {
     s32 sp[4];
 
     if (arg0 == 1) {
-        D_80101E58.rec.unk38 = 0;
-        if (D_80101E58.rec.cd20 <= 0) {
+        g_cdrom_state.rec.unk38 = 0;
+        if (g_cdrom_state.rec.cd20 <= 0) {
             return;
         }
         CdGetSector((s32)sp, 3);
-        if (CdPosToInt((CdlLOC *)sp) != D_80101E58.rec.expected_pos) {
-            D_80101E58.rec.cd20 = -2;
+        if (CdPosToInt((CdlLOC *)sp) != g_cdrom_state.rec.expected_pos) {
+            g_cdrom_state.rec.cd20 = -2;
         } else {
-            CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
-            D_80101E58.rec.dest_buffer += 0x800;
-            D_80101E58.rec.cd20--;
-            D_80101E58.rec.expected_pos++;
-            if (D_80101E58.rec.cd20 != 0) {
+            CdGetSector(g_cdrom_state.rec.dest_buffer, 0x200);
+            g_cdrom_state.rec.dest_buffer += 0x800;
+            g_cdrom_state.rec.cd20--;
+            g_cdrom_state.rec.expected_pos++;
+            if (g_cdrom_state.rec.cd20 != 0) {
                 return;
             }
         }
     } else {
-        D_80101E58.rec.cd20 = -1;
+        g_cdrom_state.rec.cd20 = -1;
     }
     CdReadyCallback(0);
     CdControlF(9, 0);

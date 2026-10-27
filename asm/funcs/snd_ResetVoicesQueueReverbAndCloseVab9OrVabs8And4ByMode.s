@@ -5,15 +5,15 @@ glabel snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* E238 8001DA38 00000000 */   nop
     /* E23C 8001DA3C CF6F010C */  jal        snd_StopVoicesAndReverb
     /* E240 8001DA40 00000000 */   nop
-    /* E244 8001DA44 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E248 8001DA48 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E244 8001DA44 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E248 8001DA48 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E24C 8001DA4C 05000224 */  addiu      $v0, $zero, 0x5
     /* E250 8001DA50 06006214 */  bne        $v1, $v0, .L8001DA6C
     /* E254 8001DA54 03000224 */   addiu     $v0, $zero, 0x3
     /* E258 8001DA58 716E010C */  jal        snd_StopAllVoicesAndCloseSingleFileVab
     /* E25C 8001DA5C 00000000 */   nop
-    /* E260 8001DA60 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E264 8001DA64 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E260 8001DA60 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E264 8001DA64 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E268 8001DA68 03000224 */  addiu      $v0, $zero, 0x3
   .L8001DA6C:
     /* E26C 8001DA6C 03006214 */  bne        $v1, $v0, .L8001DA7C

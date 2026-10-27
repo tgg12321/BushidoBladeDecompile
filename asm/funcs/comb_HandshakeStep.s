@@ -1,12 +1,12 @@
 glabel comb_HandshakeStep
-    /* 2B344 8003AB44 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2B348 8003AB48 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2B344 8003AB44 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2B348 8003AB48 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2B34C 8003AB4C E0078393 */  lbu        $v1, %gp_rel(g_comb_handshake_step)($gp)
     /* 2B350 8003AB50 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2B354 8003AB54 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2B358 8003AB58 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2B35C 8003AB5C 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2B360 8003AB60 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2B35C 8003AB5C 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2B360 8003AB60 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 2B364 8003AB64 0800622C */  sltiu      $v0, $v1, 0x8
     /* 2B368 8003AB68 4E004010 */  beqz       $v0, .L8003ACA4
     /* 2B36C 8003AB6C 80100300 */   sll       $v0, $v1, 2

@@ -50,33 +50,33 @@ glabel light_SetLightOrBackColorOfSelectedSetups
     /* 32B78 80042378 C32F0500 */  sra        $a1, $a1, 31
     /* 32B7C 8004237C 14008016 */  bnez       $s4, .L800423D0
     /* 32B80 80042380 23884500 */   subu      $s1, $v0, $a1
-    /* 32B84 80042384 0F80103C */  lui        $s0, %hi(D_800F62E0 + 0x38)
-    /* 32B88 80042388 18631026 */  addiu      $s0, $s0, %lo(D_800F62E0 + 0x38)
+    /* 32B84 80042384 0F80103C */  lui        $s0, %hi(g_light_setups + 0x38)
+    /* 32B88 80042388 18631026 */  addiu      $s0, $s0, %lo(g_light_setups + 0x38)
     /* 32B8C 8004238C 000013A6 */  sh         $s3, 0x0($s0)
-    /* 32B90 80042390 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x3E)
-    /* 32B94 80042394 1E6332A4 */  sh         $s2, %lo(D_800F62E0 + 0x3E)($at)
-    /* 32B98 80042398 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x44)
-    /* 32B9C 8004239C 246331A4 */  sh         $s1, %lo(D_800F62E0 + 0x44)($at)
+    /* 32B90 80042390 0F80013C */  lui        $at, %hi(g_light_setups + 0x3E)
+    /* 32B94 80042394 1E6332A4 */  sh         $s2, %lo(g_light_setups + 0x3E)($at)
+    /* 32B98 80042398 0F80013C */  lui        $at, %hi(g_light_setups + 0x44)
+    /* 32B9C 8004239C 246331A4 */  sh         $s1, %lo(g_light_setups + 0x44)($at)
     /* 32BA0 800423A0 7F28010C */  jal        calc_LightMatrix
     /* 32BA4 800423A4 C8FF0426 */   addiu     $a0, $s0, -0x38
-    /* 32BA8 800423A8 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x98)
-    /* 32BAC 800423AC 786333A4 */  sh         $s3, %lo(D_800F62E0 + 0x98)($at)
-    /* 32BB0 800423B0 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x9E)
-    /* 32BB4 800423B4 7E6332A4 */  sh         $s2, %lo(D_800F62E0 + 0x9E)($at)
-    /* 32BB8 800423B8 0F80013C */  lui        $at, %hi(D_800F62E0 + 0xA4)
-    /* 32BBC 800423BC 846331A4 */  sh         $s1, %lo(D_800F62E0 + 0xA4)($at)
+    /* 32BA8 800423A8 0F80013C */  lui        $at, %hi(g_light_setups + 0x98)
+    /* 32BAC 800423AC 786333A4 */  sh         $s3, %lo(g_light_setups + 0x98)($at)
+    /* 32BB0 800423B0 0F80013C */  lui        $at, %hi(g_light_setups + 0x9E)
+    /* 32BB4 800423B4 7E6332A4 */  sh         $s2, %lo(g_light_setups + 0x9E)($at)
+    /* 32BB8 800423B8 0F80013C */  lui        $at, %hi(g_light_setups + 0xA4)
+    /* 32BBC 800423BC 846331A4 */  sh         $s1, %lo(g_light_setups + 0xA4)($at)
     /* 32BC0 800423C0 7F28010C */  jal        calc_LightMatrix
     /* 32BC4 800423C4 28000426 */   addiu     $a0, $s0, 0x28
     /* 32BC8 800423C8 15090108 */  j          .L80042454
     /* 32BCC 800423CC 00000000 */   nop
   .L800423D0:
-    /* 32BD0 800423D0 0F80023C */  lui        $v0, %hi(D_800F62E0 + 0x1B8)
-    /* 32BD4 800423D4 98644224 */  addiu      $v0, $v0, %lo(D_800F62E0 + 0x1B8)
+    /* 32BD0 800423D0 0F80023C */  lui        $v0, %hi(g_light_setups + 0x1B8)
+    /* 32BD4 800423D4 98644224 */  addiu      $v0, $v0, %lo(g_light_setups + 0x1B8)
     /* 32BD8 800423D8 000053A4 */  sh         $s3, 0x0($v0)
-    /* 32BDC 800423DC 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x1BE)
-    /* 32BE0 800423E0 9E6432A4 */  sh         $s2, %lo(D_800F62E0 + 0x1BE)($at)
-    /* 32BE4 800423E4 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x1C4)
-    /* 32BE8 800423E8 A46431A4 */  sh         $s1, %lo(D_800F62E0 + 0x1C4)($at)
+    /* 32BDC 800423DC 0F80013C */  lui        $at, %hi(g_light_setups + 0x1BE)
+    /* 32BE0 800423E0 9E6432A4 */  sh         $s2, %lo(g_light_setups + 0x1BE)($at)
+    /* 32BE4 800423E4 0F80013C */  lui        $at, %hi(g_light_setups + 0x1C4)
+    /* 32BE8 800423E8 A46431A4 */  sh         $s1, %lo(g_light_setups + 0x1C4)($at)
     /* 32BEC 800423EC 7F28010C */  jal        calc_LightMatrix
     /* 32BF0 800423F0 C8FF4424 */   addiu     $a0, $v0, -0x38
     /* 32BF4 800423F4 15090108 */  j          .L80042454
@@ -84,27 +84,27 @@ glabel light_SetLightOrBackColorOfSelectedSetups
   .L800423FC:
     /* 32BFC 800423FC 0F008016 */  bnez       $s4, .L8004243C
     /* 32C00 80042400 00000000 */   nop
-    /* 32C04 80042404 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x58)
-    /* 32C08 80042408 386331A0 */  sb         $s1, %lo(D_800F62E0 + 0x58)($at)
-    /* 32C0C 8004240C 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x59)
-    /* 32C10 80042410 396332A0 */  sb         $s2, %lo(D_800F62E0 + 0x59)($at)
-    /* 32C14 80042414 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x5A)
-    /* 32C18 80042418 3A6330A0 */  sb         $s0, %lo(D_800F62E0 + 0x5A)($at)
-    /* 32C1C 8004241C 0F80013C */  lui        $at, %hi(D_800F62E0 + 0xB8)
-    /* 32C20 80042420 986331A0 */  sb         $s1, %lo(D_800F62E0 + 0xB8)($at)
-    /* 32C24 80042424 0F80013C */  lui        $at, %hi(D_800F62E0 + 0xB9)
-    /* 32C28 80042428 996332A0 */  sb         $s2, %lo(D_800F62E0 + 0xB9)($at)
-    /* 32C2C 8004242C 0F80013C */  lui        $at, %hi(D_800F62E0 + 0xBA)
-    /* 32C30 80042430 9A6330A0 */  sb         $s0, %lo(D_800F62E0 + 0xBA)($at)
+    /* 32C04 80042404 0F80013C */  lui        $at, %hi(g_light_setups + 0x58)
+    /* 32C08 80042408 386331A0 */  sb         $s1, %lo(g_light_setups + 0x58)($at)
+    /* 32C0C 8004240C 0F80013C */  lui        $at, %hi(g_light_setups + 0x59)
+    /* 32C10 80042410 396332A0 */  sb         $s2, %lo(g_light_setups + 0x59)($at)
+    /* 32C14 80042414 0F80013C */  lui        $at, %hi(g_light_setups + 0x5A)
+    /* 32C18 80042418 3A6330A0 */  sb         $s0, %lo(g_light_setups + 0x5A)($at)
+    /* 32C1C 8004241C 0F80013C */  lui        $at, %hi(g_light_setups + 0xB8)
+    /* 32C20 80042420 986331A0 */  sb         $s1, %lo(g_light_setups + 0xB8)($at)
+    /* 32C24 80042424 0F80013C */  lui        $at, %hi(g_light_setups + 0xB9)
+    /* 32C28 80042428 996332A0 */  sb         $s2, %lo(g_light_setups + 0xB9)($at)
+    /* 32C2C 8004242C 0F80013C */  lui        $at, %hi(g_light_setups + 0xBA)
+    /* 32C30 80042430 9A6330A0 */  sb         $s0, %lo(g_light_setups + 0xBA)($at)
     /* 32C34 80042434 15090108 */  j          .L80042454
     /* 32C38 80042438 00000000 */   nop
   .L8004243C:
-    /* 32C3C 8004243C 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x1D8)
-    /* 32C40 80042440 B86431A0 */  sb         $s1, %lo(D_800F62E0 + 0x1D8)($at)
-    /* 32C44 80042444 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x1D9)
-    /* 32C48 80042448 B96432A0 */  sb         $s2, %lo(D_800F62E0 + 0x1D9)($at)
-    /* 32C4C 8004244C 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x1DA)
-    /* 32C50 80042450 BA6430A0 */  sb         $s0, %lo(D_800F62E0 + 0x1DA)($at)
+    /* 32C3C 8004243C 0F80013C */  lui        $at, %hi(g_light_setups + 0x1D8)
+    /* 32C40 80042440 B86431A0 */  sb         $s1, %lo(g_light_setups + 0x1D8)($at)
+    /* 32C44 80042444 0F80013C */  lui        $at, %hi(g_light_setups + 0x1D9)
+    /* 32C48 80042448 B96432A0 */  sb         $s2, %lo(g_light_setups + 0x1D9)($at)
+    /* 32C4C 8004244C 0F80013C */  lui        $at, %hi(g_light_setups + 0x1DA)
+    /* 32C50 80042450 BA6430A0 */  sb         $s0, %lo(g_light_setups + 0x1DA)($at)
   .L80042454:
     /* 32C54 80042454 2400BF8F */  lw         $ra, 0x24($sp)
     /* 32C58 80042458 2000B48F */  lw         $s4, 0x20($sp)

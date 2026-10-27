@@ -83,8 +83,8 @@ glabel fighter_Update
     /* 14848 80024048 25208300 */  or         $a0, $a0, $v1
     /* 1484C 8002404C 380024AE */  sw         $a0, 0x38($s1)
   .L80024050:
-    /* 14850 80024050 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 14854 80024054 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 14850 80024050 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 14854 80024054 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 14858 80024058 02000224 */  addiu      $v0, $zero, 0x2
     /* 1485C 8002405C 0C006210 */  beq        $v1, $v0, .L80024090
     /* 14860 80024060 05000224 */   addiu     $v0, $zero, 0x5
@@ -1056,9 +1056,9 @@ glabel fighter_Update
     /* 15644 80024E44 0D006214 */  bne        $v1, $v0, .L80024E7C
     /* 15648 80024E48 00000000 */   nop
     /* 1564C 80024E4C 0A002286 */  lh         $v0, 0xA($s1)
-    /* 15650 80024E50 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 15650 80024E50 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 15654 80024E54 21082200 */  addu       $at, $at, $v0
-    /* 15658 80024E58 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 15658 80024E58 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 1565C 80024E5C 00000000 */  nop
     /* 15660 80024E60 07004010 */  beqz       $v0, .L80024E80
     /* 15664 80024E64 21180000 */   addu      $v1, $zero, $zero
@@ -2096,8 +2096,8 @@ glabel fighter_Update
     /* 16588 80025D88 01000224 */   addiu     $v0, $zero, 0x1
     /* 1658C 80025D8C 620022A2 */  sb         $v0, 0x62($s1)
   .L80025D90:
-    /* 16590 80025D90 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 16594 80025D94 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 16590 80025D90 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 16594 80025D94 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 16598 80025D98 03000224 */  addiu      $v0, $zero, 0x3
     /* 1659C 80025D9C 08006214 */  bne        $v1, $v0, .L80025DC0
     /* 165A0 80025DA0 01000224 */   addiu     $v0, $zero, 0x1
@@ -2114,8 +2114,8 @@ glabel fighter_Update
     /* 165C8 80025DC8 0200422C */  sltiu      $v0, $v0, 0x2
     /* 165CC 80025DCC 11004010 */  beqz       $v0, .L80025E14
     /* 165D0 80025DD0 02000224 */   addiu     $v0, $zero, 0x2
-    /* 165D4 80025DD4 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 165D8 80025DD8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 165D4 80025DD4 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 165D8 80025DD8 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 165DC 80025DDC 00000000 */  nop
     /* 165E0 80025DE0 06006214 */  bne        $v1, $v0, .L80025DFC
     /* 165E4 80025DE4 05000224 */   addiu     $v0, $zero, 0x5
@@ -2226,8 +2226,8 @@ glabel fighter_Update
   .L80025F68:
     /* 16768 80025F68 8C0020A6 */  sh         $zero, 0x8C($s1)
   .L80025F6C:
-    /* 1676C 80025F6C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 16770 80025F70 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 1676C 80025F6C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 16770 80025F70 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 16774 80025F74 03000224 */  addiu      $v0, $zero, 0x3
     /* 16778 80025F78 1F006214 */  bne        $v1, $v0, .L80025FF8
     /* 1677C 80025F7C 01000424 */   addiu     $a0, $zero, 0x1
@@ -2260,8 +2260,8 @@ glabel fighter_Update
     /* 167E8 80025FE8 19980008 */  j          .L80026064
     /* 167EC 80025FEC 00000000 */   nop
   .L80025FF0:
-    /* 167F0 80025FF0 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 167F4 80025FF4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 167F0 80025FF0 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 167F4 80025FF4 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
   .L80025FF8:
     /* 167F8 80025FF8 02000224 */  addiu      $v0, $zero, 0x2
   .L80025FFC:
@@ -2327,8 +2327,8 @@ glabel fighter_Update
     /* 168D8 800260D8 20004234 */  ori        $v0, $v0, 0x20
     /* 168DC 800260DC 620022A2 */  sb         $v0, 0x62($s1)
   .L800260E0:
-    /* 168E0 800260E0 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 168E4 800260E4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 168E0 800260E0 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 168E4 800260E4 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 168E8 800260E8 02000224 */  addiu      $v0, $zero, 0x2
     /* 168EC 800260EC 06006214 */  bne        $v1, $v0, .L80026108
     /* 168F0 800260F0 05000224 */   addiu     $v0, $zero, 0x5
@@ -2917,16 +2917,16 @@ glabel fighter_Update
   .L8002696C:
     /* 1716C 8002696C 7B1B010C */  jal        node_GetSlotMatrixPointerArray
     /* 17170 80026970 21206002 */   addu      $a0, $s3, $zero
-    /* 17174 80026974 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 17178 80026978 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 17174 80026974 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 17178 80026978 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 1717C 8002697C 00000000 */  nop
     /* 17180 80026980 10006014 */  bnez       $v1, .L800269C4
     /* 17184 80026984 21804000 */   addu      $s0, $v0, $zero
     /* 17188 80026988 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
     /* 1718C 8002698C D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
-    /* 17190 80026990 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 17190 80026990 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 17194 80026994 21082200 */  addu       $at, $at, $v0
-    /* 17198 80026998 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 17198 80026998 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 1719C 8002699C 00000000 */  nop
     /* 171A0 800269A0 08004010 */  beqz       $v0, .L800269C4
     /* 171A4 800269A4 01000224 */   addiu     $v0, $zero, 0x1
@@ -2952,9 +2952,9 @@ glabel fighter_Update
     /* 171EC 800269EC 0CD9A524 */  addiu      $a1, $a1, %lo(D_8008D90C)
     /* 171F0 800269F0 0A002286 */  lh         $v0, 0xA($s1)
     /* 171F4 800269F4 0E002386 */  lh         $v1, 0xE($s1)
-    /* 171F8 800269F8 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 171F8 800269F8 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 171FC 800269FC 21082200 */  addu       $at, $at, $v0
-    /* 17200 80026A00 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 17200 80026A00 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 17204 80026A04 4800068E */  lw         $a2, 0x48($s0)
     /* 17208 80026A08 C0100200 */  sll        $v0, $v0, 3
     /* 1720C 80026A0C 21104500 */  addu       $v0, $v0, $a1
@@ -2995,8 +2995,8 @@ glabel fighter_Update
     /* 1728C 80026A8C 00000000 */  nop
     /* 17290 80026A90 97004014 */  bnez       $v0, .L80026CF0
     /* 17294 80026A94 05000224 */   addiu     $v0, $zero, 0x5
-    /* 17298 80026A98 0A80043C */  lui        $a0, %hi(D_800A38DC)
-    /* 1729C 80026A9C DC388484 */  lh         $a0, %lo(D_800A38DC)($a0)
+    /* 17298 80026A98 0A80043C */  lui        $a0, %hi(g_fight_mode_selector)
+    /* 1729C 80026A9C DC388484 */  lh         $a0, %lo(g_fight_mode_selector)($a0)
     /* 172A0 80026AA0 00000000 */  nop
     /* 172A4 80026AA4 2B008210 */  beq        $a0, $v0, .L80026B54
     /* 172A8 80026AA8 21188000 */   addu      $v1, $a0, $zero
@@ -3171,8 +3171,8 @@ glabel fighter_Update
     /* 17514 80026D14 00000000 */  nop
     /* 17518 80026D18 08004010 */  beqz       $v0, .L80026D3C
     /* 1751C 80026D1C 0D000224 */   addiu     $v0, $zero, 0xD
-    /* 17520 80026D20 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* 17524 80026D24 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* 17520 80026D20 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* 17524 80026D24 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* 17528 80026D28 00000000 */  nop
     /* 1752C 80026D2C 04006210 */  beq        $v1, $v0, .L80026D40
     /* 17530 80026D30 04000224 */   addiu     $v0, $zero, 0x4

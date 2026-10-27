@@ -57,7 +57,7 @@ glabel eff_AllocateOrRecycleYawedQuadSlot
     /* 544A4 80063CA4 021024A4 */  sh         $a0, %lo(D_800F1002)($at)
     /* 544A8 80063CA8 40180700 */  sll        $v1, $a3, 1
     /* 544AC 80063CAC 21186700 */  addu       $v1, $v1, $a3
-    /* 544B0 80063CB0 B003848F */  lw         $a0, %gp_rel(D_800A347C)($gp)
+    /* 544B0 80063CB0 B003848F */  lw         $a0, %gp_rel(g_eff_command_position)($gp)
     /* 544B4 80063CB4 80180300 */  sll        $v1, $v1, 2
     /* 544B8 80063CB8 0000858C */  lw         $a1, 0x0($a0)
     /* 544BC 80063CBC 21186200 */  addu       $v1, $v1, $v0
@@ -97,7 +97,7 @@ glabel eff_AllocateOrRecycleYawedQuadSlot
     /* 54540 80063D40 21082300 */  addu       $at, $at, $v1
     /* 54544 80063D44 021022A4 */  sh         $v0, %lo(D_800F1002)($at)
     /* 54548 80063D48 0000C28C */  lw         $v0, 0x0($a2)
-    /* 5454C 80063D4C B003858F */  lw         $a1, %gp_rel(D_800A347C)($gp)
+    /* 5454C 80063D4C B003858F */  lw         $a1, %gp_rel(g_eff_command_position)($gp)
     /* 54550 80063D50 F6FF4224 */  addiu      $v0, $v0, -0xA
     /* 54554 80063D54 C0100200 */  sll        $v0, $v0, 3
     /* 54558 80063D58 21104400 */  addu       $v0, $v0, $a0

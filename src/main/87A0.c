@@ -587,14 +587,15 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
 }
 
 void pad_SetDefaultSavedButtonMappings(void) {
-    D_80106A50.frec20[0] = 0x11;
-    D_80106A50.frec20[1] = 0x44;
-    D_80106A50.frec20[2] = 0x88;
+    g_saved_record.frec20[0] = 0x11;
+    g_saved_record.frec20[1] = 0x44;
+    g_saved_record.frec20[2] = 0x88;
 }
 
 s32 pad_PackSavedButtonMappingLowNibbles(void) {
-    return (D_80106A50.frec20[0] & 0xF) | ((D_80106A50.frec20[1] & 0xF) << 4) |
-           ((D_80106A50.frec20[2] & 0xF) << 8);
+    return (g_saved_record.frec20[0] & 0xF) |
+           ((g_saved_record.frec20[1] & 0xF) << 4) |
+           ((g_saved_record.frec20[2] & 0xF) << 8);
 }
 
 void pad_UnpackButtonMappingNibblesToCells(s32 arg0) {
@@ -672,9 +673,9 @@ void pad_Update(s32 arg0) {
     pad.held = var_3;
     camera_UpdatePadOffset(&pad.held);
 
-    if (D_800A3834 == 1 && arg0 == 0) {
+    if (g_main_loop_handler_index == 1 && arg0 == 0) {
 
-        switch (D_800A38DC) {
+        switch (g_fight_mode_selector) {
         case 4:
         case 5:
             if (g_pad_state.valid[1] == 0) {

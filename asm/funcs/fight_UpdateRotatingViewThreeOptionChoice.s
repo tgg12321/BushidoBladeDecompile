@@ -14,8 +14,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D1D4 8003C9D4 0F80013C */  lui        $at, %hi(D_800F6610)
     /* 2D1D8 8003C9D8 106620AC */  sw         $zero, %lo(D_800F6610)($at)
     /* 2D1DC 8003C9DC 100082A4 */  sh         $v0, 0x10($a0)
-    /* 2D1E0 8003C9E0 0A80023C */  lui        $v0, %hi(D_800A36AC)
-    /* 2D1E4 8003C9E4 AC36428C */  lw         $v0, %lo(D_800A36AC)($v0)
+    /* 2D1E0 8003C9E0 0A80023C */  lui        $v0, %hi(g_gpu_presented_frame_count)
+    /* 2D1E4 8003C9E4 AC36428C */  lw         $v0, %lo(g_gpu_presented_frame_count)($v0)
     /* 2D1E8 8003C9E8 10270324 */  addiu      $v1, $zero, 0x2710
     /* 2D1EC 8003C9EC 0F80013C */  lui        $at, %hi(D_800F661C)
     /* 2D1F0 8003C9F0 1C6620A4 */  sh         $zero, %lo(D_800F661C)($at)
@@ -33,8 +33,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D220 8003CA20 00000000 */  nop
     /* 2D224 8003CA24 48004014 */  bnez       $v0, .L8003CB48
     /* 2D228 8003CA28 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2D22C 8003CA2C 0A80053C */  lui        $a1, %hi(D_800A3817)
-    /* 2D230 8003CA30 1738A590 */  lbu        $a1, %lo(D_800A3817)($a1)
+    /* 2D22C 8003CA2C 0A80053C */  lui        $a1, %hi(g_fight_choice_menu_cursor)
+    /* 2D230 8003CA30 1738A590 */  lbu        $a1, %lo(g_fight_choice_menu_cursor)($a1)
     /* 2D234 8003CA34 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* 2D238 8003CA38 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
     /* 2D23C 8003CA3C 2A72010C */  jal        gpu_DrawModeSizedPanelWithSelectedCellOpaque
@@ -59,8 +59,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D284 8003CA84 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 2D288 8003CA88 9471010C */  jal        snd_QueueSound
     /* 2D28C 8003CA8C 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 2D290 8003CA90 0A80023C */  lui        $v0, %hi(D_800A3817)
-    /* 2D294 8003CA94 17384290 */  lbu        $v0, %lo(D_800A3817)($v0)
+    /* 2D290 8003CA90 0A80023C */  lui        $v0, %hi(g_fight_choice_menu_cursor)
+    /* 2D294 8003CA94 17384290 */  lbu        $v0, %lo(g_fight_choice_menu_cursor)($v0)
     /* 2D298 8003CA98 00000000 */  nop
     /* 2D29C 8003CA9C 14004014 */  bnez       $v0, .L8003CAF0
     /* 2D2A0 8003CAA0 FFFF4224 */   addiu     $v0, $v0, -0x1
@@ -74,19 +74,19 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D2BC 8003CABC 7F000524 */   addiu     $a1, $zero, 0x7F
     /* 2D2C0 8003CAC0 9471010C */  jal        snd_QueueSound
     /* 2D2C4 8003CAC4 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 2D2C8 8003CAC8 0A80043C */  lui        $a0, %hi(D_800A3817)
-    /* 2D2CC 8003CACC 17388490 */  lbu        $a0, %lo(D_800A3817)($a0)
+    /* 2D2C8 8003CAC8 0A80043C */  lui        $a0, %hi(g_fight_choice_menu_cursor)
+    /* 2D2CC 8003CACC 17388490 */  lbu        $a0, %lo(g_fight_choice_menu_cursor)($a0)
     /* 2D2D0 8003CAD0 02000224 */  addiu      $v0, $zero, 0x2
     /* 2D2D4 8003CAD4 FF008330 */  andi       $v1, $a0, 0xFF
     /* 2D2D8 8003CAD8 05006214 */  bne        $v1, $v0, .L8003CAF0
     /* 2D2DC 8003CADC 01008224 */   addiu     $v0, $a0, 0x1
-    /* 2D2E0 8003CAE0 0A80013C */  lui        $at, %hi(D_800A3817)
-    /* 2D2E4 8003CAE4 173820A0 */  sb         $zero, %lo(D_800A3817)($at)
+    /* 2D2E0 8003CAE0 0A80013C */  lui        $at, %hi(g_fight_choice_menu_cursor)
+    /* 2D2E4 8003CAE4 173820A0 */  sb         $zero, %lo(g_fight_choice_menu_cursor)($at)
     /* 2D2E8 8003CAE8 BFF20008 */  j          .L8003CAFC
     /* 2D2EC 8003CAEC 4000033C */   lui       $v1, (0x400040 >> 16)
   .L8003CAF0:
-    /* 2D2F0 8003CAF0 0A80013C */  lui        $at, %hi(D_800A3817)
-    /* 2D2F4 8003CAF4 173822A0 */  sb         $v0, %lo(D_800A3817)($at)
+    /* 2D2F0 8003CAF0 0A80013C */  lui        $at, %hi(g_fight_choice_menu_cursor)
+    /* 2D2F4 8003CAF4 173822A0 */  sb         $v0, %lo(g_fight_choice_menu_cursor)($at)
   .L8003CAF8:
     /* 2D2F8 8003CAF8 4000033C */  lui        $v1, (0x400040 >> 16)
   .L8003CAFC:
@@ -99,8 +99,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D314 8003CB14 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 2D318 8003CB18 9471010C */  jal        snd_QueueSound
     /* 2D31C 8003CB1C 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 2D320 8003CB20 0A80023C */  lui        $v0, %hi(D_800A3817)
-    /* 2D324 8003CB24 17384290 */  lbu        $v0, %lo(D_800A3817)($v0)
+    /* 2D320 8003CB20 0A80023C */  lui        $v0, %hi(g_fight_choice_menu_cursor)
+    /* 2D324 8003CB24 17384290 */  lbu        $v0, %lo(g_fight_choice_menu_cursor)($v0)
     /* 2D328 8003CB28 00000000 */  nop
     /* 2D32C 8003CB2C 02004014 */  bnez       $v0, .L8003CB38
     /* 2D330 8003CB30 3C000324 */   addiu     $v1, $zero, 0x3C
@@ -111,8 +111,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D340 8003CB40 2FF30008 */  j          .L8003CCBC
     /* 2D344 8003CB44 00000000 */   nop
   .L8003CB48:
-    /* 2D348 8003CB48 0A80023C */  lui        $v0, %hi(D_800A3817)
-    /* 2D34C 8003CB4C 17384290 */  lbu        $v0, %lo(D_800A3817)($v0)
+    /* 2D348 8003CB48 0A80023C */  lui        $v0, %hi(g_fight_choice_menu_cursor)
+    /* 2D34C 8003CB4C 17384290 */  lbu        $v0, %lo(g_fight_choice_menu_cursor)($v0)
     /* 2D350 8003CB50 00000000 */  nop
     /* 2D354 8003CB54 0F004014 */  bnez       $v0, .L8003CB94
     /* 2D358 8003CB58 21200000 */   addu      $a0, $zero, $zero
@@ -144,13 +144,13 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D3B8 8003CBB8 00000000 */   nop
     /* 2D3BC 8003CBBC B0DC000C */  jal        cdrom_PauseAndWait
     /* 2D3C0 8003CBC0 00000000 */   nop
-    /* 2D3C4 8003CBC4 0A80033C */  lui        $v1, %hi(D_800A3817)
-    /* 2D3C8 8003CBC8 17386390 */  lbu        $v1, %lo(D_800A3817)($v1)
+    /* 2D3C4 8003CBC4 0A80033C */  lui        $v1, %hi(g_fight_choice_menu_cursor)
+    /* 2D3C8 8003CBC8 17386390 */  lbu        $v1, %lo(g_fight_choice_menu_cursor)($v1)
     /* 2D3CC 8003CBCC 00000000 */  nop
     /* 2D3D0 8003CBD0 2A006014 */  bnez       $v1, .L8003CC7C
     /* 2D3D4 8003CBD4 01000224 */   addiu     $v0, $zero, 0x1
-    /* 2D3D8 8003CBD8 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 2D3DC 8003CBDC DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 2D3D8 8003CBD8 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 2D3DC 8003CBDC DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 2D3E0 8003CBE0 05000224 */  addiu      $v0, $zero, 0x5
     /* 2D3E4 8003CBE4 0B006214 */  bne        $v1, $v0, .L8003CC14
     /* 2D3E8 8003CBE8 01000224 */   addiu     $v0, $zero, 0x1
@@ -187,8 +187,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D460 8003CC60 21208300 */   addu      $a0, $a0, $v1
     /* 2D464 8003CC64 0A80013C */  lui        $at, %hi(D_800A38DF)
     /* 2D468 8003CC68 DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)
-    /* 2D46C 8003CC6C 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2D470 8003CC70 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* 2D46C 8003CC6C 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2D470 8003CC70 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 2D474 8003CC74 2FF30008 */  j          .L8003CCBC
     /* 2D478 8003CC78 00000000 */   nop
   .L8003CC7C:
@@ -208,8 +208,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D4AC 8003CCAC 00000000 */   nop
     /* 2D4B0 8003CCB0 08000224 */  addiu      $v0, $zero, 0x8
   .L8003CCB4:
-    /* 2D4B4 8003CCB4 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2D4B8 8003CCB8 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2D4B4 8003CCB4 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2D4B8 8003CCB8 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8003CCBC:
     /* 2D4BC 8003CCBC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2D4C0 8003CCC0 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -87,8 +87,8 @@ glabel gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* 37548 80046D48 00000000 */   nop
     /* 3754C 80046D4C F40293AF */  sw         $s3, %gp_rel(D_800A33C0)($gp)
   .L80046D50:
-    /* 37550 80046D50 0F80103C */  lui        $s0, %hi(D_800F62E0)
-    /* 37554 80046D54 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)
+    /* 37550 80046D50 0F80103C */  lui        $s0, %hi(g_light_setups)
+    /* 37554 80046D54 E0621026 */  addiu      $s0, $s0, %lo(g_light_setups)
     /* 37558 80046D58 7F28010C */  jal        calc_LightMatrix
     /* 3755C 80046D5C 21200002 */   addu      $a0, $s0, $zero
     /* 37560 80046D60 7F28010C */  jal        calc_LightMatrix

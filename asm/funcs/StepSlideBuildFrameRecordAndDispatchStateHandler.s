@@ -1,6 +1,6 @@
 glabel StepSlideBuildFrameRecordAndDispatchStateHandler
-    /* 5F2CC 8006EACC 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 5F2D0 8006EAD0 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 5F2CC 8006EACC 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 5F2D0 8006EAD0 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 5F2D4 8006EAD4 00000000 */  nop
     /* 5F2D8 8006EAD8 01006330 */  andi       $v1, $v1, 0x1
     /* 5F2DC 8006EADC C0110300 */  sll        $v0, $v1, 7
@@ -24,7 +24,7 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
   .L8006EB24:
     /* 5F324 8006EB24 03BB010C */  jal        StepSlideProgressCommitPendingStateAndQueueSound
     /* 5F328 8006EB28 00000000 */   nop
-    /* 5F32C 8006EB2C F804858F */  lw         $a1, %gp_rel(D_800A35C4)($gp)
+    /* 5F32C 8006EB2C F804858F */  lw         $a1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 5F330 8006EB30 00000000 */  nop
     /* 5F334 8006EB34 0C00A38C */  lw         $v1, 0xC($a1)
     /* 5F338 8006EB38 0800A28C */  lw         $v0, 0x8($a1)

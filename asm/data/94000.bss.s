@@ -42,9 +42,9 @@ dlabel D_800A3816
 enddlabel D_800A3816
 
 /* 800A3817 */
-dlabel D_800A3817
+dlabel g_fight_choice_menu_cursor
     .space 0x1
-enddlabel D_800A3817
+enddlabel g_fight_choice_menu_cursor
 
 /* 800A3818 */
 dlabel D_800A3818
@@ -97,9 +97,9 @@ dlabel g_motion_common_buffer
 enddlabel g_motion_common_buffer
 
 /* 800A3834 */
-dlabel D_800A3834
+dlabel g_main_loop_handler_index
     .space 0x2
-enddlabel D_800A3834
+enddlabel g_main_loop_handler_index
 
 /* 800A3836 */
 dlabel D_800A3836
@@ -122,9 +122,9 @@ dlabel g_cd_fade_step
 enddlabel g_cd_fade_step
 
 /* 800A3844 */
-dlabel D_800A3844
+dlabel g_fight_command_stream_cursor
     .space 0x4
-enddlabel D_800A3844
+enddlabel g_fight_command_stream_cursor
 
 /* 800A3848 */
 dlabel g_memcard_hw_event_timeout
@@ -187,9 +187,9 @@ dlabel D_800A3878
 enddlabel D_800A3878
 
 /* 800A387C */
-dlabel D_800A387C
+dlabel g_fighter_horizontal_separation
     .space 0x4
-enddlabel D_800A387C
+enddlabel g_fighter_horizontal_separation
 
 /* 800A3880 */
 dlabel g_motion_common_loaded
@@ -344,9 +344,9 @@ dlabel g_gpu_ot256_ptr
 enddlabel g_gpu_ot256_ptr
 
 /* 800A38DC */
-dlabel D_800A38DC
+dlabel g_fight_mode_selector
     .space 0x2
-enddlabel D_800A38DC
+enddlabel g_fight_mode_selector
 
 /* 800A38DE */
 dlabel D_800A38DE
@@ -1014,9 +1014,9 @@ dlabel D_800F0BA4
 enddlabel D_800F0BA4
 
 /* 800F0BA8 */
-dlabel D_800F0BA8
+dlabel g_eff_animated_quad_counters
     .space 0x24
-enddlabel D_800F0BA8
+enddlabel g_eff_animated_quad_counters
 
 /* 800F0BCC */
 dlabel D_800F0BCC
@@ -1144,9 +1144,9 @@ dlabel g_eff_command_phase
 enddlabel g_eff_command_phase
 
 /* 800F1140 */
-dlabel D_800F1140
+dlabel g_eff_point_light_position
     .space 0x10
-enddlabel D_800F1140
+enddlabel g_eff_point_light_position
 
 /* 800F1150 */
 dlabel g_eff_command_status
@@ -1521,9 +1521,9 @@ dlabel D_800F5F6C
 enddlabel D_800F5F6C
 
 /* 800F62E0 */
-dlabel D_800F62E0
+dlabel g_light_setups
     .space 0x2
-enddlabel D_800F62E0
+enddlabel g_light_setups
 
 /* 800F62E2 */
 dlabel D_800F62E2
@@ -1813,9 +1813,9 @@ dlabel D_80101DF0
 enddlabel D_80101DF0
 
 /* 80101E58 */
-dlabel D_80101E58
+dlabel g_cdrom_state
     .space 0x70
-enddlabel D_80101E58
+enddlabel g_cdrom_state
 
 /* 80101EC8 */
 dlabel D_80101EC8
@@ -2123,9 +2123,9 @@ dlabel g_motion_common_sections
 enddlabel g_motion_common_sections
 
 /* 80102778 */
-dlabel D_80102778
+dlabel g_fight_config
     .space 0x10
-enddlabel D_80102778
+enddlabel g_fight_config
 
 /* 80102788 */
 dlabel g_pad_state
@@ -2423,9 +2423,9 @@ dlabel D_80104F38
 enddlabel D_80104F38
 
 /* 80106A50 */
-dlabel D_80106A50
+dlabel g_saved_record
     .space 0x28
-enddlabel D_80106A50
+enddlabel g_saved_record
 
 /* 80106A78 */
 dlabel g_object_pool

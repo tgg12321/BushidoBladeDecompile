@@ -1,6 +1,6 @@
 glabel snd_ShouldUpdateStageSoundSlots
-    /* E358 8001DB58 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E35C 8001DB5C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E358 8001DB58 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E35C 8001DB5C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E360 8001DB60 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* E364 8001DB64 05006228 */  slti       $v0, $v1, 0x5
     /* E368 8001DB68 04004010 */  beqz       $v0, .L8001DB7C

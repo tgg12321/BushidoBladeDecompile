@@ -3,8 +3,8 @@ glabel fighter_DispatchFrameEvent
     /* 23454 80032C54 2000B0AF */  sw         $s0, 0x20($sp)
     /* 23458 80032C58 21808000 */  addu       $s0, $a0, $zero
     /* 2345C 80032C5C 2140A000 */  addu       $t0, $a1, $zero
-    /* 23460 80032C60 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 23464 80032C64 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 23460 80032C60 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 23464 80032C64 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 23468 80032C68 03000224 */  addiu      $v0, $zero, 0x3
     /* 2346C 80032C6C 1A006214 */  bne        $v1, $v0, .L80032CD8
     /* 23470 80032C70 2400BFAF */   sw        $ra, 0x24($sp)
@@ -46,8 +46,8 @@ glabel fighter_DispatchFrameEvent
     /* 234F4 80032CF4 21104300 */  addu       $v0, $v0, $v1
     /* 234F8 80032CF8 C0380200 */  sll        $a3, $v0, 3
   .L80032CFC:
-    /* 234FC 80032CFC 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 23500 80032D00 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 234FC 80032CFC 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 23500 80032D00 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 23504 80032D04 03000224 */  addiu      $v0, $zero, 0x3
     /* 23508 80032D08 2D006214 */  bne        $v1, $v0, .L80032DC0
     /* 2350C 80032D0C EBFF0225 */   addiu     $v0, $t0, -0x15
@@ -120,8 +120,8 @@ glabel fighter_DispatchFrameEvent
     /* 2360C 80032E0C 08004000 */  jr         $v0
     /* 23610 80032E10 00000000 */   nop
   jlabel .L80032E14
-    /* 23614 80032E14 0A80033C */  lui        $v1, %hi(D_800A36A4)
-    /* 23618 80032E18 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)
+    /* 23614 80032E14 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
+    /* 23618 80032E18 A4366384 */  lh         $v1, %lo(g_fight_stage_index)($v1)
     /* 2361C 80032E1C 0B000224 */  addiu      $v0, $zero, 0xB
     /* 23620 80032E20 25006214 */  bne        $v1, $v0, .L80032EB8
     /* 23624 80032E24 0E000224 */   addiu     $v0, $zero, 0xE
@@ -189,8 +189,8 @@ glabel fighter_DispatchFrameEvent
     /* 23718 80032F18 16CC0008 */  j          .L80033058
     /* 2371C 80032F1C 1000A627 */   addiu     $a2, $sp, 0x10
   jlabel .L80032F20
-    /* 23720 80032F20 0A80033C */  lui        $v1, %hi(D_800A36A4)
-    /* 23724 80032F24 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)
+    /* 23720 80032F20 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
+    /* 23724 80032F24 A4366384 */  lh         $v1, %lo(g_fight_stage_index)($v1)
     /* 23728 80032F28 0B000224 */  addiu      $v0, $zero, 0xB
     /* 2372C 80032F2C 25006214 */  bne        $v1, $v0, .L80032FC4
     /* 23730 80032F30 0E000224 */   addiu     $v0, $zero, 0xE

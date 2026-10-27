@@ -104,8 +104,8 @@ glabel camera_ApplyFightView
     /* ED74 8001E574 0F80123C */  lui        $s2, %hi(D_800F6608)
     /* ED78 8001E578 08665226 */  addiu      $s2, $s2, %lo(D_800F6608)
   .L8001E57C:
-    /* ED7C 8001E57C 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* ED80 8001E580 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* ED7C 8001E57C 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* ED80 8001E580 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* ED84 8001E584 01000224 */  addiu      $v0, $zero, 0x1
     /* ED88 8001E588 2C006214 */  bne        $v1, $v0, .L8001E63C
     /* ED8C 8001E58C 1800A727 */   addiu     $a3, $sp, 0x18

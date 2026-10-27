@@ -71,15 +71,15 @@ glabel pad_Update
     /* 9E64 80019664 1800A427 */  addiu      $a0, $sp, 0x18
     /* 9E68 80019668 4E6C000C */  jal        camera_UpdatePadOffset
     /* 9E6C 8001966C 1800A9AF */   sw        $t1, 0x18($sp)
-    /* 9E70 80019670 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* 9E74 80019674 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* 9E70 80019670 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* 9E74 80019674 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* 9E78 80019678 01000224 */  addiu      $v0, $zero, 0x1
     /* 9E7C 8001967C 21006214 */  bne        $v1, $v0, .L80019704
     /* 9E80 80019680 00000000 */   nop
     /* 9E84 80019684 1F000016 */  bnez       $s0, .L80019704
     /* 9E88 80019688 00000000 */   nop
-    /* 9E8C 8001968C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 9E90 80019690 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 9E8C 8001968C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 9E90 80019690 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 9E94 80019694 00000000 */  nop
     /* 9E98 80019698 0700622C */  sltiu      $v0, $v1, 0x7
     /* 9E9C 8001969C 19004010 */  beqz       $v0, .L80019704

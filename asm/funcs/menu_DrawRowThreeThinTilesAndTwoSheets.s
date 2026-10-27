@@ -12,7 +12,7 @@ glabel menu_DrawRowThreeThinTilesAndTwoSheets
     /* 5AD8C 8006A58C 2198C000 */  addu       $s3, $a2, $zero
     /* 5AD90 8006A590 B4EA010C */  jal        SetTile
     /* 5AD94 8006A594 21200002 */   addu      $a0, $s0, $zero
-    /* 5AD98 8006A598 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5AD98 8006A598 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5AD9C 8006A59C 00000000 */  nop
     /* 5ADA0 8006A5A0 0F004230 */  andi       $v0, $v0, 0xF
     /* 5ADA4 8006A5A4 07005314 */  bne        $v0, $s3, .L8006A5C4
@@ -53,7 +53,7 @@ glabel menu_DrawRowThreeThinTilesAndTwoSheets
     /* 5AE28 8006A628 21204400 */   addu      $a0, $v0, $a0
     /* 5AE2C 8006A62C B4EA010C */  jal        SetTile
     /* 5AE30 8006A630 21200002 */   addu      $a0, $s0, $zero
-    /* 5AE34 8006A634 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5AE34 8006A634 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5AE38 8006A638 00000000 */  nop
     /* 5AE3C 8006A63C 0F004230 */  andi       $v0, $v0, 0xF
     /* 5AE40 8006A640 07005314 */  bne        $v0, $s3, .L8006A660
@@ -91,7 +91,7 @@ glabel menu_DrawRowThreeThinTilesAndTwoSheets
     /* 5AEB8 8006A6B8 21204400 */   addu      $a0, $v0, $a0
     /* 5AEBC 8006A6BC B4EA010C */  jal        SetTile
     /* 5AEC0 8006A6C0 21200002 */   addu      $a0, $s0, $zero
-    /* 5AEC4 8006A6C4 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5AEC4 8006A6C4 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5AEC8 8006A6C8 00000000 */  nop
     /* 5AECC 8006A6CC 0F004230 */  andi       $v0, $v0, 0xF
     /* 5AED0 8006A6D0 08005314 */  bne        $v0, $s3, .L8006A6F4
@@ -137,7 +137,7 @@ glabel menu_DrawRowThreeThinTilesAndTwoSheets
     /* 5AF68 8006A768 2800028E */  lw         $v0, 0x28($s0)
     /* 5AF6C 8006A76C 00000000 */  nop
     /* 5AF70 8006A770 000022AE */  sw         $v0, 0x0($s1)
-    /* 5AF74 8006A774 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5AF74 8006A774 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5AF78 8006A778 00000000 */  nop
     /* 5AF7C 8006A77C 0F004230 */  andi       $v0, $v0, 0xF
     /* 5AF80 8006A780 09005314 */  bne        $v0, $s3, .L8006A7A8

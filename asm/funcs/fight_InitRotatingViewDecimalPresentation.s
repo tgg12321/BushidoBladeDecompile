@@ -6,10 +6,10 @@ glabel fight_InitRotatingViewDecimalPresentation
     /* 2D4DC 8003CCDC 5E84010C */  jal        eff_StopCommands
     /* 2D4E0 8003CCE0 00000000 */   nop
     /* 2D4E4 8003CCE4 21000224 */  addiu      $v0, $zero, 0x21
-    /* 2D4E8 8003CCE8 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2D4EC 8003CCEC B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2D4F0 8003CCF0 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2D4F4 8003CCF4 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2D4E8 8003CCE8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2D4EC 8003CCEC B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 2D4F0 8003CCF0 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2D4F4 8003CCF4 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2D4F8 8003CCF8 345A000C */  jal        gpu_SetDispMaskOn
     /* 2D4FC 8003CCFC 00000000 */   nop
     /* 2D500 8003CD00 1000BF8F */  lw         $ra, 0x10($sp)

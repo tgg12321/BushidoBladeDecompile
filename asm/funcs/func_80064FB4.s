@@ -1,5 +1,5 @@
 glabel func_80064FB4
-    /* 557B4 80064FB4 B003838F */  lw         $v1, %gp_rel(D_800A347C)($gp)
+    /* 557B4 80064FB4 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 557B8 80064FB8 00000000 */  nop
     /* 557BC 80064FBC 0000628C */  lw         $v0, 0x0($v1)
     /* 557C0 80064FC0 0F80013C */  lui        $at, %hi(D_800F0CD0)

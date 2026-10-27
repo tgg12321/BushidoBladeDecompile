@@ -1,15 +1,15 @@
 glabel fight_UpdateSeparationAndPairedMoves
     /* 1086C 8002006C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 10870 80020070 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 10874 80020074 0A80103C */  lui        $s0, %hi(D_800A387C)
-    /* 10878 80020078 7C38108E */  lw         $s0, %lo(D_800A387C)($s0)
+    /* 10874 80020074 0A80103C */  lui        $s0, %hi(g_fighter_horizontal_separation)
+    /* 10878 80020078 7C38108E */  lw         $s0, %lo(g_fighter_horizontal_separation)($s0)
     /* 1087C 8002007C 1400BFAF */  sw         $ra, 0x14($sp)
     /* 10880 80020080 227E000C */  jal        fighter_CalcHorizontalSeparation
     /* 10884 80020084 00000000 */   nop
-    /* 10888 80020088 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 1088C 8002008C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
-    /* 10890 80020090 0A80013C */  lui        $at, %hi(D_800A387C)
-    /* 10894 80020094 7C3822AC */  sw         $v0, %lo(D_800A387C)($at)
+    /* 10888 80020088 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 1088C 8002008C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
+    /* 10890 80020090 0A80013C */  lui        $at, %hi(g_fighter_horizontal_separation)
+    /* 10894 80020094 7C3822AC */  sw         $v0, %lo(g_fighter_horizontal_separation)($at)
     /* 10898 80020098 23105000 */  subu       $v0, $v0, $s0
     /* 1089C 8002009C 0A80013C */  lui        $at, %hi(D_800A38F0)
     /* 108A0 800200A0 F03822AC */  sw         $v0, %lo(D_800A38F0)($at)

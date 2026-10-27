@@ -2,7 +2,7 @@ glabel collision_TestSegmentWithWork
     /* 43E14 80053614 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 43E18 80053618 2800A28F */  lw         $v0, 0x28($sp)
     /* 43E1C 8005361C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 43E20 80053620 280382AF */  sw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 43E20 80053620 280382AF */  sw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43E24 80053624 0000838C */  lw         $v1, 0x0($a0)
     /* 43E28 80053628 0400888C */  lw         $t0, 0x4($a0)
     /* 43E2C 8005362C 0800898C */  lw         $t1, 0x8($a0)
@@ -11,7 +11,7 @@ glabel collision_TestSegmentWithWork
     /* 43E38 80053638 0C0048AC */  sw         $t0, 0xC($v0)
     /* 43E3C 8005363C 100049AC */  sw         $t1, 0x10($v0)
     /* 43E40 80053640 14004AAC */  sw         $t2, 0x14($v0)
-    /* 43E44 80053644 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 43E44 80053644 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43E48 80053648 0000A38C */  lw         $v1, 0x0($a1)
     /* 43E4C 8005364C 0400A48C */  lw         $a0, 0x4($a1)
     /* 43E50 80053650 0800A88C */  lw         $t0, 0x8($a1)
@@ -23,7 +23,7 @@ glabel collision_TestSegmentWithWork
     /* 43E68 80053668 0580023C */  lui        $v0, %hi(collision_TestCellKeepingNearestHitGteProjection)
     /* 43E6C 8005366C 9C3E4224 */  addiu      $v0, $v0, %lo(collision_TestCellKeepingNearestHitGteProjection)
     /* 43E70 80053670 2120C000 */  addu       $a0, $a2, $zero
-    /* 43E74 80053674 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 43E74 80053674 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 43E78 80053678 2128E000 */  addu       $a1, $a3, $zero
     /* 43E7C 8005367C 404B010C */  jal        collision_WalkSegmentGrid
     /* 43E80 80053680 5C0062AC */   sw        $v0, 0x5C($v1)

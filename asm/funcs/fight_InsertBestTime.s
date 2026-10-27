@@ -1,6 +1,6 @@
 glabel fight_InsertBestTime
-    /* 24538 80033D38 1080093C */  lui        $t1, %hi(D_80106A50)
-    /* 2453C 80033D3C 506A2925 */  addiu      $t1, $t1, %lo(D_80106A50)
+    /* 24538 80033D38 1080093C */  lui        $t1, %hi(g_saved_record)
+    /* 2453C 80033D3C 506A2925 */  addiu      $t1, $t1, %lo(g_saved_record)
     /* 24540 80033D40 03000724 */  addiu      $a3, $zero, 0x3
     /* 24544 80033D44 0A80043C */  lui        $a0, %hi(D_800A3858)
     /* 24548 80033D48 5838848C */  lw         $a0, %lo(D_800A3858)($a0)

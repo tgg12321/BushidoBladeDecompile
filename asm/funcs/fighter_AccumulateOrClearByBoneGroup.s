@@ -1,6 +1,6 @@
 glabel fighter_AccumulateOrClearByBoneGroup
-    /* 17C38 80027438 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 17C3C 8002743C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 17C38 80027438 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 17C3C 8002743C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 17C40 80027440 05000224 */  addiu      $v0, $zero, 0x5
     /* 17C44 80027444 1B006210 */  beq        $v1, $v0, .L800274B4
     /* 17C48 80027448 1600A22C */   sltiu     $v0, $a1, 0x16

@@ -9,8 +9,8 @@ glabel fight_FindNearestStartPair
     /* 12C24 80022424 FFFFE734 */  ori        $a3, $a3, (0x7FFFFFFF & 0xFFFF)
     /* 12C28 80022428 21280000 */  addu       $a1, $zero, $zero
     /* 12C2C 8002242C 0000098E */  lw         $t1, 0x0($s0)
-    /* 12C30 80022430 0A80043C */  lui        $a0, %hi(D_800A36A4)
-    /* 12C34 80022434 A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
+    /* 12C30 80022430 0A80043C */  lui        $a0, %hi(g_fight_stage_index)
+    /* 12C34 80022434 A4368484 */  lh         $a0, %lo(g_fight_stage_index)($a0)
     /* 12C38 80022438 0800088E */  lw         $t0, 0x8($s0)
     /* 12C3C 8002243C 40180400 */  sll        $v1, $a0, 1
     /* 12C40 80022440 21186400 */  addu       $v1, $v1, $a0

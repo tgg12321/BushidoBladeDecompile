@@ -41,23 +41,23 @@ glabel fight_Init
     /* E544 8001DD44 FFFB010C */  jal        SetGeomScreen
     /* E548 8001DD48 21204000 */   addu      $a0, $v0, $zero
   .L8001DD4C:
-    /* E54C 8001DD4C 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* E550 8001DD50 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* E54C 8001DD4C 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* E550 8001DD50 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* E554 8001DD54 00000000 */  nop
     /* E558 8001DD58 03004010 */  beqz       $v0, .L8001DD68
     /* E55C 8001DD5C 21200000 */   addu      $a0, $zero, $zero
     /* E560 8001DD60 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* E564 8001DD64 21280000 */   addu      $a1, $zero, $zero
   .L8001DD68:
-    /* E568 8001DD68 1080013C */  lui        $at, %hi(D_80102778 + 0x8)
+    /* E568 8001DD68 1080013C */  lui        $at, %hi(g_fight_config + 0x8)
     /* E56C 8001DD6C 21083000 */  addu       $at, $at, $s0
-    /* E570 8001DD70 80272580 */  lb         $a1, %lo(D_80102778 + 0x8)($at)
-    /* E574 8001DD74 1080013C */  lui        $at, %hi(D_80102778 + 0x4)
+    /* E570 8001DD70 80272580 */  lb         $a1, %lo(g_fight_config + 0x8)($at)
+    /* E574 8001DD74 1080013C */  lui        $at, %hi(g_fight_config + 0x4)
     /* E578 8001DD78 21083000 */  addu       $at, $at, $s0
-    /* E57C 8001DD7C 7C272680 */  lb         $a2, %lo(D_80102778 + 0x4)($at)
-    /* E580 8001DD80 1080013C */  lui        $at, %hi(D_80102778 + 0x6)
+    /* E57C 8001DD7C 7C272680 */  lb         $a2, %lo(g_fight_config + 0x4)($at)
+    /* E580 8001DD80 1080013C */  lui        $at, %hi(g_fight_config + 0x6)
     /* E584 8001DD84 21083000 */  addu       $at, $at, $s0
-    /* E588 8001DD88 7E272780 */  lb         $a3, %lo(D_80102778 + 0x6)($at)
+    /* E588 8001DD88 7E272780 */  lb         $a3, %lo(g_fight_config + 0x6)($at)
     /* E58C 8001DD8C 21200002 */  addu       $a0, $s0, $zero
     /* E590 8001DD90 6089000C */  jal        fighter_Init
     /* E594 8001DD94 1000A0AF */   sw        $zero, 0x10($sp)
@@ -104,9 +104,9 @@ glabel fight_Init
     /* E630 8001DE30 00000000 */  nop
     /* E634 8001DE34 0D005014 */  bne        $v0, $s0, .L8001DE6C
     /* E638 8001DE38 21200002 */   addu      $a0, $s0, $zero
-    /* E63C 8001DE3C 1080013C */  lui        $at, %hi(D_80102778 + 0x4)
+    /* E63C 8001DE3C 1080013C */  lui        $at, %hi(g_fight_config + 0x4)
     /* E640 8001DE40 21083000 */  addu       $at, $at, $s0
-    /* E644 8001DE44 7C272280 */  lb         $v0, %lo(D_80102778 + 0x4)($at)
+    /* E644 8001DE44 7C272280 */  lb         $v0, %lo(g_fight_config + 0x4)($at)
     /* E648 8001DE48 0980013C */  lui        $at, %hi(D_8008D578)
     /* E64C 8001DE4C 21082200 */  addu       $at, $at, $v0
     /* E650 8001DE50 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
@@ -117,8 +117,8 @@ glabel fight_Init
     /* E664 8001DE64 B0770008 */  j          .L8001DEC0
     /* E668 8001DE68 00000000 */   nop
   .L8001DE6C:
-    /* E66C 8001DE6C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E670 8001DE70 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E66C 8001DE6C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E670 8001DE70 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E674 8001DE74 03000224 */  addiu      $v0, $zero, 0x3
     /* E678 8001DE78 07006214 */  bne        $v1, $v0, .L8001DE98
     /* E67C 8001DE7C 01000224 */   addiu     $v0, $zero, 0x1
@@ -129,9 +129,9 @@ glabel fight_Init
     /* E690 8001DE90 AE770008 */  j          .L8001DEB8
     /* E694 8001DE94 21300000 */   addu      $a2, $zero, $zero
   .L8001DE98:
-    /* E698 8001DE98 1080013C */  lui        $at, %hi(D_80102778 + 0x4)
+    /* E698 8001DE98 1080013C */  lui        $at, %hi(g_fight_config + 0x4)
     /* E69C 8001DE9C 21083000 */  addu       $at, $at, $s0
-    /* E6A0 8001DEA0 7C272280 */  lb         $v0, %lo(D_80102778 + 0x4)($at)
+    /* E6A0 8001DEA0 7C272280 */  lb         $v0, %lo(g_fight_config + 0x4)($at)
     /* E6A4 8001DEA4 21200002 */  addu       $a0, $s0, $zero
     /* E6A8 8001DEA8 0980013C */  lui        $at, %hi(D_8008D578)
     /* E6AC 8001DEAC 21082200 */  addu       $at, $at, $v0
@@ -146,8 +146,8 @@ glabel fight_Init
     /* E6C8 8001DEC8 DA1E2484 */  lh         $a0, %lo(D_80101EC8 + 0x12)($at)
     /* E6CC 8001DECC F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* E6D0 8001DED0 00000000 */   nop
-    /* E6D4 8001DED4 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E6D8 8001DED8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E6D4 8001DED4 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E6D8 8001DED8 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E6DC 8001DEDC 03000224 */  addiu      $v0, $zero, 0x3
     /* E6E0 8001DEE0 04006214 */  bne        $v1, $v0, .L8001DEF4
     /* E6E4 8001DEE4 02000224 */   addiu     $v0, $zero, 0x2
@@ -230,8 +230,8 @@ glabel fight_Init
     /* E7FC 8001DFFC 01000424 */  addiu      $a0, $zero, 0x1
     /* E800 8001E000 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* E804 8001E004 21280000 */   addu      $a1, $zero, $zero
-    /* E808 8001E008 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* E80C 8001E00C DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* E808 8001E008 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* E80C 8001E00C DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* E810 8001E010 00000000 */  nop
     /* E814 8001E014 0E004014 */  bnez       $v0, .L8001E050
     /* E818 8001E018 00000000 */   nop
@@ -249,8 +249,8 @@ glabel fight_Init
     /* E848 8001E048 32780008 */  j          .L8001E0C8
     /* E84C 8001E04C 00000000 */   nop
   .L8001E050:
-    /* E850 8001E050 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E854 8001E054 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E850 8001E050 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E854 8001E054 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E858 8001E058 03000224 */  addiu      $v0, $zero, 0x3
     /* E85C 8001E05C 09006214 */  bne        $v1, $v0, .L8001E084
     /* E860 8001E060 02000224 */   addiu     $v0, $zero, 0x2
@@ -269,9 +269,9 @@ glabel fight_Init
     /* E890 8001E090 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
     /* E894 8001E094 0A80033C */  lui        $v1, %hi(D_800A3100)
     /* E898 8001E098 00316324 */  addiu      $v1, $v1, %lo(D_800A3100)
-    /* E89C 8001E09C 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* E89C 8001E09C 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* E8A0 8001E0A0 21082200 */  addu       $at, $at, $v0
-    /* E8A4 8001E0A4 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* E8A4 8001E0A4 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* E8A8 8001E0A8 0A80043C */  lui        $a0, %hi(D_800A389A)
     /* E8AC 8001E0AC 9A388490 */  lbu        $a0, %lo(D_800A389A)($a0)
     /* E8B0 8001E0B0 80100200 */  sll        $v0, $v0, 2
@@ -286,15 +286,15 @@ glabel fight_Init
   .L8001E0D0:
     /* E8D0 8001E0D0 E475000C */  jal        fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E8D4 8001E0D4 00000000 */   nop
-    /* E8D8 8001E0D8 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E8DC 8001E0DC DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E8D8 8001E0D8 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E8DC 8001E0DC DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E8E0 8001E0E0 05000224 */  addiu      $v0, $zero, 0x5
     /* E8E4 8001E0E4 06006214 */  bne        $v1, $v0, .L8001E100
     /* E8E8 8001E0E8 03000224 */   addiu     $v0, $zero, 0x3
     /* E8EC 8001E0EC 4176000C */  jal        snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9
     /* E8F0 8001E0F0 00000000 */   nop
-    /* E8F4 8001E0F4 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E8F8 8001E0F8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E8F4 8001E0F4 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E8F8 8001E0F8 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E8FC 8001E0FC 03000224 */  addiu      $v0, $zero, 0x3
   .L8001E100:
     /* E900 8001E100 05006214 */  bne        $v1, $v0, .L8001E118
@@ -304,14 +304,14 @@ glabel fight_Init
     /* E910 8001E110 E776000C */  jal        motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
     /* E914 8001E114 00000000 */   nop
   .L8001E118:
-    /* E918 8001E118 1080053C */  lui        $a1, %hi(D_80102778 + 0x6)
-    /* E91C 8001E11C 7E27A580 */  lb         $a1, %lo(D_80102778 + 0x6)($a1)
-    /* E920 8001E120 1080073C */  lui        $a3, %hi(D_80102778 + 0x7)
-    /* E924 8001E124 7F27E780 */  lb         $a3, %lo(D_80102778 + 0x7)($a3)
-    /* E928 8001E128 1080023C */  lui        $v0, %hi(D_80102778 + 0x4)
-    /* E92C 8001E12C 7C274280 */  lb         $v0, %lo(D_80102778 + 0x4)($v0)
-    /* E930 8001E130 1080033C */  lui        $v1, %hi(D_80102778 + 0x5)
-    /* E934 8001E134 7D276380 */  lb         $v1, %lo(D_80102778 + 0x5)($v1)
+    /* E918 8001E118 1080053C */  lui        $a1, %hi(g_fight_config + 0x6)
+    /* E91C 8001E11C 7E27A580 */  lb         $a1, %lo(g_fight_config + 0x6)($a1)
+    /* E920 8001E120 1080073C */  lui        $a3, %hi(g_fight_config + 0x7)
+    /* E924 8001E124 7F27E780 */  lb         $a3, %lo(g_fight_config + 0x7)($a3)
+    /* E928 8001E128 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
+    /* E92C 8001E12C 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
+    /* E930 8001E130 1080033C */  lui        $v1, %hi(g_fight_config + 0x5)
+    /* E934 8001E134 7D276380 */  lb         $v1, %lo(g_fight_config + 0x5)($v1)
     /* E938 8001E138 0980013C */  lui        $at, %hi(D_8008D538)
     /* E93C 8001E13C 21082200 */  addu       $at, $at, $v0
     /* E940 8001E140 38D52490 */  lbu        $a0, %lo(D_8008D538)($at)
@@ -323,8 +323,8 @@ glabel fight_Init
     /* E958 8001E158 5F780008 */  j          .L8001E17C
     /* E95C 8001E15C 00000000 */   nop
   .L8001E160:
-    /* E960 8001E160 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E964 8001E164 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E960 8001E160 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E964 8001E164 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E968 8001E168 00000000 */  nop
     /* E96C 8001E16C 03006214 */  bne        $v1, $v0, .L8001E17C
     /* E970 8001E170 01000224 */   addiu     $v0, $zero, 0x1
@@ -339,8 +339,8 @@ glabel fight_Init
     /* E990 8001E190 01000424 */   addiu     $a0, $zero, 0x1
     /* E994 8001E194 CD8B000C */  jal        fighter_ConfigureCpuControl
     /* E998 8001E198 00000000 */   nop
-    /* E99C 8001E19C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* E9A0 8001E1A0 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* E99C 8001E19C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* E9A0 8001E1A0 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* E9A4 8001E1A4 00000000 */  nop
     /* E9A8 8001E1A8 03007010 */  beq        $v1, $s0, .L8001E1B8
     /* E9AC 8001E1AC 05000224 */   addiu     $v0, $zero, 0x5
@@ -362,8 +362,8 @@ glabel fight_Init
     /* E9E8 8001E1E8 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)
     /* E9EC 8001E1EC A686000C */  jal        fighter_StartMoveScript
     /* E9F0 8001E1F0 21300000 */   addu      $a2, $zero, $zero
-    /* E9F4 8001E1F4 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* E9F8 8001E1F8 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* E9F4 8001E1F4 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* E9F8 8001E1F8 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* E9FC 8001E1FC 00000000 */  nop
     /* EA00 8001E200 0E005014 */  bne        $v0, $s0, .L8001E23C
     /* EA04 8001E204 00000000 */   nop
@@ -471,20 +471,20 @@ glabel fight_Init
     /* EB88 8001E388 01000224 */  addiu      $v0, $zero, 0x1
     /* EB8C 8001E38C 0A80013C */  lui        $at, %hi(D_800A3670)
     /* EB90 8001E390 703620A0 */  sb         $zero, %lo(D_800A3670)($at)
-    /* EB94 8001E394 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* EB98 8001E398 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* EB94 8001E394 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* EB98 8001E398 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* EB9C 8001E39C 0872000C */  jal        fight_QueuePositionalSoundWithRandomAlternate
     /* EBA0 8001E3A0 00000000 */   nop
     /* EBA4 8001E3A4 A376000C */  jal        snd_StartFightCdAudio
     /* EBA8 8001E3A8 00000000 */   nop
     /* EBAC 8001E3AC 44CD000C */  jal        snd_ResetStageSoundState
     /* EBB0 8001E3B0 00000000 */   nop
-    /* EBB4 8001E3B4 0A80043C */  lui        $a0, %hi(D_800A36A4)
-    /* EBB8 8001E3B8 A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
+    /* EBB4 8001E3B4 0A80043C */  lui        $a0, %hi(g_fight_stage_index)
+    /* EBB8 8001E3B8 A4368484 */  lh         $a0, %lo(g_fight_stage_index)($a0)
     /* EBBC 8001E3BC A16F010C */  jal        snd_SetReverb
     /* EBC0 8001E3C0 00000000 */   nop
-    /* EBC4 8001E3C4 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* EBC8 8001E3C8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* EBC4 8001E3C4 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* EBC8 8001E3C8 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* EBCC 8001E3CC 06000224 */  addiu      $v0, $zero, 0x6
     /* EBD0 8001E3D0 05006214 */  bne        $v1, $v0, .L8001E3E8
     /* EBD4 8001E3D4 00000000 */   nop

@@ -492,7 +492,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
 
     *dst = D_800FF610;
 
-    D_800A3828 = &D_800F62E0[arg2];
+    D_800A3828 = &g_light_setups[arg2];
 
     dst->m[1][0] >>= 1;
     dst->m[1][1] >>= 1;
@@ -1130,7 +1130,7 @@ void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
     MulMatrix(&D_80101BD0, &D_800A3708->xf.mat);
     MulMatrix2(&D_800A370C->xf.mat, &D_80101BD0);
     MulMatrix0(&D_800A370C->xf.mat, &D_800A3708->xf.mat, &D_800FF610);
-    if (D_800A36AC & 1) {
+    if (g_gpu_presented_frame_count & 1) {
         *(s32 *)0x1F800014 = -1;
     } else {
         *(s32 *)0x1F800014 = 0;

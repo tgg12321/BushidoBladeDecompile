@@ -74,10 +74,10 @@ glabel fight_TallyMatchResultsAndInitPresentation
     /* 2CD34 8003C534 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2CD38 8003C538 21380000 */   addu      $a3, $zero, $zero
     /* 2CD3C 8003C53C 15000224 */  addiu      $v0, $zero, 0x15
-    /* 2CD40 8003C540 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2CD44 8003C544 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2CD48 8003C548 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2CD4C 8003C54C 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2CD40 8003C540 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2CD44 8003C544 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 2CD48 8003C548 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2CD4C 8003C54C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2CD50 8003C550 3000BF8F */  lw         $ra, 0x30($sp)
     /* 2CD54 8003C554 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 2CD58 8003C558 0800E003 */  jr         $ra

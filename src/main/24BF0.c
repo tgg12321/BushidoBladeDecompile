@@ -13,16 +13,16 @@
  * because the file boundary follows the per-file gp evidence (owner ruling
  * Q65). */
 void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
-    s8 val_85 = (s8)D_80102778.unk_D;
-    s8 val_86 = (s8)D_80102778.unk_E;
-    s8 val_84 = (s8)D_80102778.unk_C;
-    s32 val_87 = (s8)D_80102778.unk_F;
+    s8 val_85 = (s8)g_fight_config.unk_D;
+    s8 val_86 = (s8)g_fight_config.unk_E;
+    s8 val_84 = (s8)g_fight_config.unk_C;
+    s32 val_87 = (s8)g_fight_config.unk_F;
 
     D_800A36F6 = 0;
-    D_800A38DC = val_85;
+    g_fight_mode_selector = val_85;
     D_800A38BA = val_86;
     D_800A3140 = val_87;
-    D_800A36A4 = val_84;
+    g_fight_stage_index = val_84;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
     slot_RequestTimGroupsAndMarkReloadOnChange(1, 0);
     D_800A376A = 0;
@@ -43,40 +43,40 @@ const char D_80010840[] = "%sCO%3d\n";
 void ApplyPendingConfigAndInitializeMode(void) {
     ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests();
 
-    switch (D_800A38DC) {
+    switch (g_fight_mode_selector) {
     case 6:
-        D_80102778.unk_E = 1;
+        g_fight_config.unk_E = 1;
         D_800A3768 = 1;
-        D_800A3834 = 0;
+        g_main_loop_handler_index = 0;
         D_800A36F6 = (D_800A38A0 != 0);
         break;
     case 0:
-        fight_InitCommandStream(D_8008D538[(s8)D_80102778.unk_4[0]]);
-        D_80102778.unk_4[1] = 0;
+        fight_InitCommandStream(D_8008D538[(s8)g_fight_config.unk_4[0]]);
+        g_fight_config.unk_4[1] = 0;
         fight_RunCommandStream();
         fighter_ClearCpuTally(1);
         break;
     case 1:
-        D_80102778.unk_4[5] = 1;
+        g_fight_config.unk_4[5] = 1;
         fight_BuildOpponentOrder();
         D_800A3768 = 1;
         fight_AdvanceOpponentOrder();
         break;
     case 3:
-        D_80102778.unk_4[5] = 1;
-        D_80102778.unk_4[3] = 0;
-        D_80102778.unk_4[2] = 0;
+        g_fight_config.unk_4[5] = 1;
+        g_fight_config.unk_4[3] = 0;
+        g_fight_config.unk_4[2] = 0;
         D_800A38E2 = 0;
         D_800A38E0 = 0;
         D_800A3858 = 0;
         D_800A3728 = 0;
-        D_800A36A4 = 0x22;
+        g_fight_stage_index = 0x22;
         fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags();
         D_800A3768 = 1;
-        D_800A3834 = 0;
+        g_main_loop_handler_index = 0;
         break;
     case 5:
-        D_800A36A4 = (D_800A38E1 & 1) ? 0x21 : 0x20;
+        g_fight_stage_index = (D_800A38E1 & 1) ? 0x21 : 0x20;
         g_fight_match_cursor = 0;
         gpu_ResetGraphMode1();
         eff_Init();
@@ -84,23 +84,25 @@ void ApplyPendingConfigAndInitializeMode(void) {
         break;
     case 2:
         D_800A3713 = (D_800A389A == 0) << 1;
-        D_800A36A4 = (D_800A389A != 0) ? 0x24 : 0x23;
-        D_80102778.unk_4[5] = 1;
+        g_fight_stage_index = (D_800A389A != 0) ? 0x24 : 0x23;
+        g_fight_config.unk_4[5] = 1;
         if (D_800A389A == 0) {
-            D_80102778.unk_4[1] =
-                D_8008D9EC[D_8008D538[(s8)D_80102778.unk_4[0]]] ? 0xE : 0x1D;
+            g_fight_config.unk_4[1] =
+                g_fighter_group_flags[D_8008D538[(s8)g_fight_config.unk_4[0]]]
+                    ? 0xE
+                    : 0x1D;
         }
-        D_800A3834 = 0;
+        g_main_loop_handler_index = 0;
         break;
     case 4:
         D_800A3768 = 1;
-        D_800A3834 = 0;
+        g_main_loop_handler_index = 0;
         break;
     default:
-        D_800A3834 = 0;
+        g_main_loop_handler_index = 0;
         break;
     }
-    if ((s8)D_80102778.unk_4[5] != 0) {
+    if ((s8)g_fight_config.unk_4[5] != 0) {
         fighter_ClearCpuTally(1);
     }
 }

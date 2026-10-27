@@ -15,21 +15,21 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24628 80033E28 79694228 */  slti       $v0, $v0, 0x6979
     /* 2462C 80033E2C 17004010 */  beqz       $v0, .L80033E8C
     /* 24630 80033E30 00000000 */   nop
-    /* 24634 80033E34 1080023C */  lui        $v0, %hi(D_80102778 + 0x4)
-    /* 24638 80033E38 7C274280 */  lb         $v0, %lo(D_80102778 + 0x4)($v0)
+    /* 24634 80033E34 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
+    /* 24638 80033E38 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
     /* 2463C 80033E3C 0980013C */  lui        $at, %hi(D_8008D538)
     /* 24640 80033E40 21082200 */  addu       $at, $at, $v0
     /* 24644 80033E44 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
-    /* 24648 80033E48 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 24648 80033E48 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2464C 80033E4C 21082200 */  addu       $at, $at, $v0
-    /* 24650 80033E50 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 24650 80033E50 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 24654 80033E54 00000000 */  nop
     /* 24658 80033E58 02004010 */  beqz       $v0, .L80033E64
     /* 2465C 80033E5C 20000524 */   addiu     $a1, $zero, 0x20
     /* 24660 80033E60 0100053C */  lui        $a1, (0x10000 >> 16)
   .L80033E64:
-    /* 24664 80033E64 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 24668 80033E68 506A8424 */  addiu      $a0, $a0, %lo(D_80106A50)
+    /* 24664 80033E64 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 24668 80033E68 506A8424 */  addiu      $a0, $a0, %lo(g_saved_record)
     /* 2466C 80033E6C 0000838C */  lw         $v1, 0x0($a0)
     /* 24670 80033E70 00000000 */  nop
     /* 24674 80033E74 24106500 */  and        $v0, $v1, $a1
@@ -44,21 +44,21 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24694 80033E94 00000000 */  nop
     /* 24698 80033E98 17004014 */  bnez       $v0, .L80033EF8
     /* 2469C 80033E9C 00000000 */   nop
-    /* 246A0 80033EA0 1080023C */  lui        $v0, %hi(D_80102778 + 0x4)
-    /* 246A4 80033EA4 7C274280 */  lb         $v0, %lo(D_80102778 + 0x4)($v0)
+    /* 246A0 80033EA0 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
+    /* 246A4 80033EA4 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
     /* 246A8 80033EA8 0980013C */  lui        $at, %hi(D_8008D538)
     /* 246AC 80033EAC 21082200 */  addu       $at, $at, $v0
     /* 246B0 80033EB0 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
-    /* 246B4 80033EB4 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 246B4 80033EB4 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 246B8 80033EB8 21082200 */  addu       $at, $at, $v0
-    /* 246BC 80033EBC ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 246BC 80033EBC ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 246C0 80033EC0 00000000 */  nop
     /* 246C4 80033EC4 02004010 */  beqz       $v0, .L80033ED0
     /* 246C8 80033EC8 0001053C */   lui       $a1, (0x1000000 >> 16)
     /* 246CC 80033ECC 0004053C */  lui        $a1, (0x4000000 >> 16)
   .L80033ED0:
-    /* 246D0 80033ED0 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 246D4 80033ED4 506A8424 */  addiu      $a0, $a0, %lo(D_80106A50)
+    /* 246D0 80033ED0 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 246D4 80033ED4 506A8424 */  addiu      $a0, $a0, %lo(g_saved_record)
     /* 246D8 80033ED8 0000838C */  lw         $v1, 0x0($a0)
     /* 246DC 80033EDC 00000000 */  nop
     /* 246E0 80033EE0 24106500 */  and        $v0, $v1, $a1
@@ -71,8 +71,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 246F8 80033EF8 4ECF000C */  jal        fight_InsertBestTime
     /* 246FC 80033EFC 00000000 */   nop
     /* 24700 80033F00 04000224 */  addiu      $v0, $zero, 0x4
-    /* 24704 80033F04 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 24708 80033F08 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 24704 80033F04 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 24708 80033F08 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2470C 80033F0C F5CF0008 */  j          .L80033FD4
     /* 24710 80033F10 21100000 */   addu      $v0, $zero, $zero
   .L80033F14:
@@ -86,8 +86,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24730 80033F30 0A80013C */  lui        $at, %hi(D_800A376B)
     /* 24734 80033F34 6B3720A0 */  sb         $zero, %lo(D_800A376B)($at)
     /* 24738 80033F38 0000A690 */  lbu        $a2, 0x0($a1)
-    /* 2473C 80033F3C 1080023C */  lui        $v0, %hi(D_80102778 + 0x4)
-    /* 24740 80033F40 7C274280 */  lb         $v0, %lo(D_80102778 + 0x4)($v0)
+    /* 2473C 80033F3C 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
+    /* 24740 80033F40 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
     /* 24744 80033F44 0A80013C */  lui        $at, %hi(D_800A384C)
     /* 24748 80033F48 4C3826A0 */  sb         $a2, %lo(D_800A384C)($at)
     /* 2474C 80033F4C 0980013C */  lui        $at, %hi(D_8008D538)
@@ -95,9 +95,9 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24754 80033F54 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
     /* 24758 80033F58 0980033C */  lui        $v1, %hi(D_8008EC24)
     /* 2475C 80033F5C 24EC6324 */  addiu      $v1, $v1, %lo(D_8008EC24)
-    /* 24760 80033F60 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 24760 80033F60 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 24764 80033F64 21082200 */  addu       $at, $at, $v0
-    /* 24768 80033F68 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 24768 80033F68 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 2476C 80033F6C FF00C630 */  andi       $a2, $a2, 0xFF
     /* 24770 80033F70 0100422C */  sltiu      $v0, $v0, 0x1
     /* 24774 80033F74 80200200 */  sll        $a0, $v0, 2
@@ -122,8 +122,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 247C0 80033FC0 21208600 */  addu       $a0, $a0, $a2
     /* 247C4 80033FC4 00008390 */  lbu        $v1, 0x0($a0)
     /* 247C8 80033FC8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 247CC 80033FCC 1080013C */  lui        $at, %hi(D_80102778 + 0x5)
-    /* 247D0 80033FD0 7D2723A0 */  sb         $v1, %lo(D_80102778 + 0x5)($at)
+    /* 247CC 80033FCC 1080013C */  lui        $at, %hi(g_fight_config + 0x5)
+    /* 247D0 80033FD0 7D2723A0 */  sb         $v1, %lo(g_fight_config + 0x5)($at)
   .L80033FD4:
     /* 247D4 80033FD4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 247D8 80033FD8 1800BD27 */  addiu      $sp, $sp, 0x18

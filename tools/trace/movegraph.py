@@ -129,7 +129,7 @@ SPEC_VALUES = [
     {"at": "g_motion_common_sections", "len": FIGHTER_SECTIONS + 2 * SECTIONS_SIZE
      - COMMON_SECTIONS},
     {"at": "0x80106A70", "len": 4},
-    {"at": "D_800A38DC", "len": 2},
+    {"at": "g_fight_mode_selector", "len": 2},
     {"at": "D_800A38A0", "len": 4},
     {"at": "D_800A3912", "len": 3},
     {"at": "D_800A38AE", "len": 2},
@@ -233,7 +233,7 @@ class Fight:
             self.mode = m.s16(MODE)
         else:
             self.mode = None
-            self.notes.append("D_800A38DC not read: mode assumed not 6")
+            self.notes.append("g_fight_mode_selector not read: mode assumed not 6")
         if m.covered(PAIRED_STARTER, 2):
             self.ae = m.s16(PAIRED_STARTER)
         else:

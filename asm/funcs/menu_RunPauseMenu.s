@@ -6,7 +6,7 @@ glabel menu_RunPauseMenu
     /* 7670 80016E70 21900000 */  addu       $s2, $zero, $zero
     /* 7674 80016E74 2C00B5AF */  sw         $s5, 0x2C($sp)
     /* 7678 80016E78 21A88000 */  addu       $s5, $a0, $zero
-    /* 767C 80016E7C 10088387 */  lh         $v1, %gp_rel(D_800A38DC)($gp)
+    /* 767C 80016E7C 10088387 */  lh         $v1, %gp_rel(g_fight_mode_selector)($gp)
     /* 7680 80016E80 02000224 */  addiu      $v0, $zero, 0x2
     /* 7684 80016E84 3000BFAF */  sw         $ra, 0x30($sp)
     /* 7688 80016E88 2800B4AF */  sw         $s4, 0x28($sp)
@@ -27,7 +27,7 @@ glabel menu_RunPauseMenu
     /* 76BC 80016EBC E40582A3 */  sb         $v0, %gp_rel(D_800A36B0)($gp)
     /* 76C0 80016EC0 9471010C */  jal        snd_QueueSound
     /* 76C4 80016EC4 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 76C8 80016EC8 E005828F */  lw         $v0, %gp_rel(D_800A36AC)($gp)
+    /* 76C8 80016EC8 E005828F */  lw         $v0, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 76CC 80016ECC 00000000 */  nop
     /* 76D0 80016ED0 01004230 */  andi       $v0, $v0, 0x1
     /* 76D4 80016ED4 80100200 */  sll        $v0, $v0, 2
@@ -36,7 +36,7 @@ glabel menu_RunPauseMenu
     /* 76E0 80016EE0 7037348C */  lw         $s4, %lo(D_800A3770)($at)
     /* 76E4 80016EE4 01000524 */  addiu      $a1, $zero, 0x1
   .L80016EE8:
-    /* 76E8 80016EE8 E005838F */  lw         $v1, %gp_rel(D_800A36AC)($gp)
+    /* 76E8 80016EE8 E005838F */  lw         $v1, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 76EC 80016EEC 1000A427 */  addiu      $a0, $sp, 0x10
     /* 76F0 80016EF0 01006330 */  andi       $v1, $v1, 0x1
     /* 76F4 80016EF4 80100300 */  sll        $v0, $v1, 2
@@ -95,12 +95,12 @@ glabel menu_RunPauseMenu
     /* 77C0 80016FC0 00000000 */   nop
     /* 77C4 80016FC4 1000033C */  lui        $v1, (0x100010 >> 16)
     /* 77C8 80016FC8 10006334 */  ori        $v1, $v1, (0x100010 & 0xFFFF)
-    /* 77CC 80016FCC E005828F */  lw         $v0, %gp_rel(D_800A36AC)($gp)
+    /* 77CC 80016FCC E005828F */  lw         $v0, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 77D0 80016FD0 1080043C */  lui        $a0, %hi(g_pad_state + 0xC)
     /* 77D4 80016FD4 9427848C */  lw         $a0, %lo(g_pad_state + 0xC)($a0)
     /* 77D8 80016FD8 01004224 */  addiu      $v0, $v0, 0x1
     /* 77DC 80016FDC 24188300 */  and        $v1, $a0, $v1
-    /* 77E0 80016FE0 E00582AF */  sw         $v0, %gp_rel(D_800A36AC)($gp)
+    /* 77E0 80016FE0 E00582AF */  sw         $v0, %gp_rel(g_gpu_presented_frame_count)($gp)
     /* 77E4 80016FE4 55006014 */  bnez       $v1, .L8001713C
     /* 77E8 80016FE8 4000023C */   lui       $v0, (0x400040 >> 16)
     /* 77EC 80016FEC 40004234 */  ori        $v0, $v0, (0x400040 & 0xFFFF)
@@ -205,7 +205,7 @@ glabel menu_RunPauseMenu
     /* 7954 80017154 04002216 */  bne        $s1, $v0, .L80017168
     /* 7958 80017158 08000224 */   addiu     $v0, $zero, 0x8
   .L8001715C:
-    /* 795C 8001715C 680782A7 */  sh         $v0, %gp_rel(D_800A3834)($gp)
+    /* 795C 8001715C 680782A7 */  sh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
     /* 7960 80017160 B0DC000C */  jal        cdrom_PauseAndWait
     /* 7964 80017164 00000000 */   nop
   .L80017168:

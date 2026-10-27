@@ -23,8 +23,8 @@ glabel replay_Start
     /* 2A028 80039828 00000000 */   nop
     /* 2A02C 8003982C 05000224 */  addiu      $v0, $zero, 0x5
     /* 2A030 80039830 040780A3 */  sb         $zero, %gp_rel(g_replay_playback_frame)($gp)
-    /* 2A034 80039834 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2A038 80039838 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2A034 80039834 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2A038 80039838 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2A03C 8003983C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2A040 80039840 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2A044 80039844 0800E003 */  jr         $ra

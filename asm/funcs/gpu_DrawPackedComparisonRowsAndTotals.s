@@ -540,9 +540,9 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4F50C 8005ED0C 21286200 */  addu       $a1, $v1, $v0
     /* 4F510 8005ED10 40100500 */  sll        $v0, $a1, 1
     /* 4F514 8005ED14 21106202 */  addu       $v0, $s3, $v0
-    /* 4F518 8005ED18 0A80013C */  lui        $at, %hi(D_8009BD24)
+    /* 4F518 8005ED18 0A80013C */  lui        $at, %hi(g_working_record)
     /* 4F51C 8005ED1C 21082200 */  addu       $at, $at, $v0
-    /* 4F520 8005ED20 24BD2490 */  lbu        $a0, %lo(D_8009BD24)($at)
+    /* 4F520 8005ED20 24BD2490 */  lbu        $a0, %lo(g_working_record)($at)
     /* 4F524 8005ED24 00000000 */  nop
     /* 4F528 8005ED28 0C008228 */  slti       $v0, $a0, 0xC
     /* 4F52C 8005ED2C 02004014 */  bnez       $v0, .L8005ED38
@@ -593,9 +593,9 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
     /* 4F5D0 8005EDD0 21104300 */  addu       $v0, $v0, $v1
     /* 4F5D4 8005EDD4 40100200 */  sll        $v0, $v0, 1
     /* 4F5D8 8005EDD8 21106202 */  addu       $v0, $s3, $v0
-    /* 4F5DC 8005EDDC 0A80013C */  lui        $at, %hi(D_8009BD24)
+    /* 4F5DC 8005EDDC 0A80013C */  lui        $at, %hi(g_working_record)
     /* 4F5E0 8005EDE0 21082200 */  addu       $at, $at, $v0
-    /* 4F5E4 8005EDE4 24BD2390 */  lbu        $v1, %lo(D_8009BD24)($at)
+    /* 4F5E4 8005EDE4 24BD2390 */  lbu        $v1, %lo(g_working_record)($at)
     /* 4F5E8 8005EDE8 08000224 */  addiu      $v0, $zero, 0x8
     /* 4F5EC 8005EDEC 09006214 */  bne        $v1, $v0, .L8005EE14
     /* 4F5F0 8005EDF0 01002226 */   addiu     $v0, $s1, 0x1

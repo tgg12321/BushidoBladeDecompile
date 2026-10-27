@@ -5,9 +5,9 @@ glabel fight_QueuePositionalSoundWithRandomAlternate
     /* D02C 8001C82C D21E1026 */  addiu      $s0, $s0, %lo(D_80101EC8 + 0xA)
     /* D030 8001C830 1400BFAF */  sw         $ra, 0x14($sp)
     /* D034 8001C834 00000286 */  lh         $v0, 0x0($s0)
-    /* D038 8001C838 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* D038 8001C838 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* D03C 8001C83C 21082200 */  addu       $at, $at, $v0
-    /* D040 8001C840 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* D040 8001C840 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* D044 8001C844 00000000 */  nop
     /* D048 8001C848 06004010 */  beqz       $v0, .L8001C864
     /* D04C 8001C84C 01000224 */   addiu     $v0, $zero, 0x1
@@ -17,8 +17,8 @@ glabel fight_QueuePositionalSoundWithRandomAlternate
     /* D05C 8001C85C 1A006210 */  beq        $v1, $v0, .L8001C8C8
     /* D060 8001C860 00000000 */   nop
   .L8001C864:
-    /* D064 8001C864 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* D068 8001C868 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* D064 8001C864 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* D068 8001C868 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* D06C 8001C86C 00000000 */  nop
     /* D070 8001C870 15004014 */  bnez       $v0, .L8001C8C8
     /* D074 8001C874 00000000 */   nop

@@ -366,8 +366,8 @@ glabel fighter_ResolveBoneHit
     /* 18828 80028028 E7A00008 */  j          .L8002839C
     /* 1882C 8002802C 000014AD */   sw        $s4, 0x0($t0)
   .L80028030:
-    /* 18830 80028030 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* 18834 80028034 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* 18830 80028030 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* 18834 80028034 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* 18838 80028038 00000000 */  nop
     /* 1883C 8002803C 07004014 */  bnez       $v0, .L8002805C
     /* 18840 80028040 21208002 */   addu      $a0, $s4, $zero
@@ -518,8 +518,8 @@ glabel fighter_ResolveBoneHit
     /* 18A44 80028244 01004224 */  addiu      $v0, $v0, 0x1
     /* 18A48 80028248 720222A6 */  sh         $v0, 0x272($s1)
   .L8002824C:
-    /* 18A4C 8002824C 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 18A50 80028250 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 18A4C 8002824C 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 18A50 80028250 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 18A54 80028254 05000224 */  addiu      $v0, $zero, 0x5
     /* 18A58 80028258 33006210 */  beq        $v1, $v0, .L80028328
     /* 18A5C 8002825C 05000224 */   addiu     $v0, $zero, 0x5
@@ -549,8 +549,8 @@ glabel fighter_ResolveBoneHit
     /* 18AB0 800282B0 E7A00008 */  j          .L8002839C
     /* 18AB4 800282B4 01000224 */   addiu     $v0, $zero, 0x1
   jlabel .L800282B8
-    /* 18AB8 800282B8 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 18ABC 800282BC DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 18AB8 800282B8 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 18ABC 800282BC DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 18AC0 800282C0 05000224 */  addiu      $v0, $zero, 0x5
     /* 18AC4 800282C4 02006210 */  beq        $v1, $v0, .L800282D0
     /* 18AC8 800282C8 21204002 */   addu      $a0, $s2, $zero
@@ -569,8 +569,8 @@ glabel fighter_ResolveBoneHit
     /* 18AF8 800282F8 E7A00008 */  j          .L8002839C
     /* 18AFC 800282FC 8A0020A6 */   sh        $zero, 0x8A($s1)
   jlabel .L80028300
-    /* 18B00 80028300 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 18B04 80028304 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 18B00 80028300 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 18B04 80028304 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 18B08 80028308 05000224 */  addiu      $v0, $zero, 0x5
     /* 18B0C 8002830C 06006210 */  beq        $v1, $v0, .L80028328
     /* 18B10 80028310 05000224 */   addiu     $v0, $zero, 0x5
@@ -592,8 +592,8 @@ glabel fighter_ResolveBoneHit
     /* 18B48 80028348 E7A00008 */  j          .L8002839C
     /* 18B4C 8002834C 21100000 */   addu      $v0, $zero, $zero
   jlabel .L80028350
-    /* 18B50 80028350 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 18B54 80028354 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 18B50 80028350 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 18B54 80028354 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 18B58 80028358 05000224 */  addiu      $v0, $zero, 0x5
     /* 18B5C 8002835C 06006210 */  beq        $v1, $v0, .L80028378
     /* 18B60 80028360 03000224 */   addiu     $v0, $zero, 0x3

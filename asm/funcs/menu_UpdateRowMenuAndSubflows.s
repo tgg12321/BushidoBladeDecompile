@@ -21,8 +21,8 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26070 80035870 00000000 */  nop
     /* 26074 80035874 06004010 */  beqz       $v0, .L80035890
     /* 26078 80035878 00000000 */   nop
-    /* 2607C 8003587C 0A80043C */  lui        $a0, %hi(D_800A38DC)
-    /* 26080 80035880 DC388484 */  lh         $a0, %lo(D_800A38DC)($a0)
+    /* 2607C 8003587C 0A80043C */  lui        $a0, %hi(g_fight_mode_selector)
+    /* 26080 80035880 DC388484 */  lh         $a0, %lo(g_fight_mode_selector)($a0)
     /* 26084 80035884 86D5000C */  jal        menu_InitSubflowForMode
     /* 26088 80035888 00000000 */   nop
     /* 2608C 8003588C 0E0180A3 */  sb         $zero, %gp_rel(D_800A31DA)($gp)
@@ -83,8 +83,8 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26154 80035954 67D70008 */  j          .L80035D9C
     /* 26158 80035958 00000000 */   nop
   jlabel .L8003595C
-    /* 2615C 8003595C 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 26160 80035960 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2615C 8003595C 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 26160 80035960 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 26164 80035964 00000000 */  nop
     /* 26168 80035968 09004014 */  bnez       $v0, .L80035990
     /* 2616C 8003596C 00000000 */   nop
@@ -94,27 +94,27 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 2617C 8003597C 07000424 */   addiu     $a0, $zero, 0x7
     /* 26180 80035980 7ADC000C */  jal        cdrom_SetAudioRepeat
     /* 26184 80035984 01000424 */   addiu     $a0, $zero, 0x1
-    /* 26188 80035988 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 2618C 8003598C B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 26188 80035988 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 2618C 8003598C B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
   .L80035990:
     /* 26190 80035990 1080043C */  lui        $a0, %hi(g_pad_state + 0x8)
     /* 26194 80035994 9027848C */  lw         $a0, %lo(g_pad_state + 0x8)($a0)
     /* 26198 80035998 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2619C 8003599C 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 261A0 800359A0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 2619C 8003599C 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 261A0 800359A0 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 261A4 800359A4 03008010 */  beqz       $a0, .L800359B4
     /* 261A8 800359A8 01000224 */   addiu     $v0, $zero, 0x1
-    /* 261AC 800359AC 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 261B0 800359B0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 261AC 800359AC 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 261B0 800359B0 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
   .L800359B4:
-    /* 261B4 800359B4 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 261B8 800359B8 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 261B4 800359B4 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 261B8 800359B8 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 261BC 800359BC 00000000 */  nop
     /* 261C0 800359C0 A90C4228 */  slti       $v0, $v0, 0xCA9
     /* 261C4 800359C4 03004014 */  bnez       $v0, .L800359D4
     /* 261C8 800359C8 0F000224 */   addiu     $v0, $zero, 0xF
-    /* 261CC 800359CC 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 261D0 800359D0 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 261CC 800359CC 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 261D0 800359D0 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L800359D4:
     /* 261D4 800359D4 1080053C */  lui        $a1, %hi(g_pad_state + 0xC)
     /* 261D8 800359D8 9427A58C */  lw         $a1, %lo(g_pad_state + 0xC)($a1)
@@ -145,44 +145,44 @@ glabel menu_UpdateRowMenuAndSubflows
   .L80035A38:
     /* 26238 80035A38 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
     /* 2623C 80035A3C 3C000224 */  addiu      $v0, $zero, 0x3C
-    /* 26240 80035A40 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 26244 80035A44 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 26240 80035A40 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 26244 80035A44 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 26248 80035A48 67D70008 */  j          .L80035D9C
     /* 2624C 80035A4C 00000000 */   nop
   jlabel .L80035A50
-    /* 26250 80035A50 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 26254 80035A54 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 26250 80035A50 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 26254 80035A54 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 26258 80035A58 00000000 */  nop
     /* 2625C 80035A5C FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 26260 80035A60 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 26264 80035A64 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 26260 80035A60 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 26264 80035A64 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 26268 80035A68 CC004014 */  bnez       $v0, .L80035D9C
     /* 2626C 80035A6C 00000000 */   nop
     /* 26270 80035A70 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26274 80035A74 00000000 */   nop
     /* 26278 80035A78 41DE010C */  jal        ResetFlowAndFetchRowTablePair
     /* 2627C 80035A7C 00000000 */   nop
-    /* 26280 80035A80 1080013C */  lui        $at, %hi(D_80102778 + 0xD)
-    /* 26284 80035A84 852722A0 */  sb         $v0, %lo(D_80102778 + 0xD)($at)
+    /* 26280 80035A80 1080013C */  lui        $at, %hi(g_fight_config + 0xD)
+    /* 26284 80035A84 852722A0 */  sb         $v0, %lo(g_fight_config + 0xD)($at)
     /* 26288 80035A88 00160200 */  sll        $v0, $v0, 24
     /* 2628C 80035A8C 86D5000C */  jal        menu_InitSubflowForMode
     /* 26290 80035A90 03260200 */   sra       $a0, $v0, 24
     /* 26294 80035A94 67D70008 */  j          .L80035D9C
     /* 26298 80035A98 00000000 */   nop
   jlabel .L80035A9C
-    /* 2629C 80035A9C 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* 262A0 80035AA0 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* 2629C 80035A9C 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* 262A0 80035AA0 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 262A4 80035AA4 00000000 */  nop
     /* 262A8 80035AA8 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 262AC 80035AAC 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 262B0 80035AB0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* 262AC 80035AAC 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 262B0 80035AB0 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* 262B4 80035AB4 B9004014 */  bnez       $v0, .L80035D9C
     /* 262B8 80035AB8 00000000 */   nop
     /* 262BC 80035ABC B0DC000C */  jal        cdrom_PauseAndWait
     /* 262C0 80035AC0 00000000 */   nop
     /* 262C4 80035AC4 0F000224 */  addiu      $v0, $zero, 0xF
-    /* 262C8 80035AC8 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 262CC 80035ACC 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 262C8 80035AC8 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 262CC 80035ACC 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 262D0 80035AD0 67D70008 */  j          .L80035D9C
     /* 262D4 80035AD4 00000000 */   nop
   jlabel .L80035AD8
@@ -209,11 +209,11 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26324 80035B24 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
     /* 26328 80035B28 E2D3000C */  jal        CopyWorkingFlagsAndButtonMappingsToSavedRecord
     /* 2632C 80035B2C 00000000 */   nop
-    /* 26330 80035B30 1080033C */  lui        $v1, %hi(D_80106A50 + 0x4)
-    /* 26334 80035B34 546A6390 */  lbu        $v1, %lo(D_80106A50 + 0x4)($v1)
+    /* 26330 80035B30 1080033C */  lui        $v1, %hi(g_saved_record + 0x4)
+    /* 26334 80035B34 546A6390 */  lbu        $v1, %lo(g_saved_record + 0x4)($v1)
     /* 26338 80035B38 3F000224 */  addiu      $v0, $zero, 0x3F
-    /* 2633C 80035B3C 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 26340 80035B40 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
+    /* 2633C 80035B3C 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 26340 80035B40 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 26344 80035B44 05006214 */  bne        $v1, $v0, .L80035B5C
     /* 26348 80035B48 00000000 */   nop
     /* 2634C 80035B4C B3A3010C */  jal        menu_SetEnabledRows
@@ -324,8 +324,8 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 264C4 80035CC4 B0DC000C */  jal        cdrom_PauseAndWait
     /* 264C8 80035CC8 00000000 */   nop
     /* 264CC 80035CCC 3E00023C */  lui        $v0, (0x3EF3DF >> 16)
-    /* 264D0 80035CD0 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 264D4 80035CD4 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
+    /* 264D0 80035CD0 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 264D4 80035CD4 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 264D8 80035CD8 DFF34234 */  ori        $v0, $v0, (0x3EF3DF & 0xFFFF)
     /* 264DC 80035CDC 50DE010C */  jal        StoreCompactedBits
     /* 264E0 80035CE0 24208200 */   and       $a0, $a0, $v0
@@ -345,8 +345,8 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26514 80035D14 00000000 */   nop
     /* 26518 80035D18 01000224 */  addiu      $v0, $zero, 0x1
     /* 2651C 80035D1C 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
-    /* 26520 80035D20 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 26524 80035D24 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
+    /* 26520 80035D20 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 26524 80035D24 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 26528 80035D28 67D70008 */  j          .L80035D9C
     /* 2652C 80035D2C 00000000 */   nop
   jlabel .L80035D30
@@ -364,8 +364,8 @@ glabel menu_UpdateRowMenuAndSubflows
   .L80035D5C:
     /* 2655C 80035D5C B0DC000C */  jal        cdrom_PauseAndWait
     /* 26560 80035D60 00000000 */   nop
-    /* 26564 80035D64 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 26568 80035D68 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* 26564 80035D64 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 26568 80035D68 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 2656C 80035D6C 13D4000C */  jal        ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 26570 80035D70 00000000 */   nop
     /* 26574 80035D74 67D70008 */  j          .L80035D9C
@@ -376,12 +376,12 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26584 80035D84 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26588 80035D88 00000000 */   nop
     /* 2658C 80035D8C 08000224 */  addiu      $v0, $zero, 0x8
-    /* 26590 80035D90 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 26594 80035D94 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 26590 80035D90 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 26594 80035D94 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 26598 80035D98 0C0180A3 */  sb         $zero, %gp_rel(D_800A31D8)($gp)
   jlabel .L80035D9C
-    /* 2659C 80035D9C 0A80033C */  lui        $v1, %hi(D_800A3834)
-    /* 265A0 80035DA0 34386384 */  lh         $v1, %lo(D_800A3834)($v1)
+    /* 2659C 80035D9C 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
+    /* 265A0 80035DA0 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)
     /* 265A4 80035DA4 09000224 */  addiu      $v0, $zero, 0x9
     /* 265A8 80035DA8 03006210 */  beq        $v1, $v0, .L80035DB8
     /* 265AC 80035DAC 02000224 */   addiu     $v0, $zero, 0x2

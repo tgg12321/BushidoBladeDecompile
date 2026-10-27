@@ -1091,7 +1091,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     {
         Unk80076FF8Rec *list = work;
         work = (void *)gpu_InitPrimBufferPair(r, D_800A35D8);
-        D_800A36A0 = work;
+        g_sel_screen_work = work;
         SELWORK->f04 = list;
         /* FAKE: dead store (never read) takes work out of the call result's
            cse class so the 0x30/0x34 clears use $v0, not $s1
@@ -1239,7 +1239,7 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
     Unk8006EACCRec s;
     Unk8006E49CRec *p;
     s32 temp_v1;
-    SELWORK->f24 = &g_gpu_db[D_800A36AC & 1];
+    SELWORK->f24 = &g_gpu_db[g_gpu_presented_frame_count & 1];
     temp_v1 = SELWORK->f30 + 1;
     SELWORK->f34 = SELWORK->f34 + 1;
     SELWORK->f30 = temp_v1;
@@ -1259,7 +1259,7 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
 }
 
 s32 InitRowMenuBlackBgResetFlow(s32 a0) {
-    menu_LoadResourcesInitStateSelectFirstEnabledRow(a0, &D_8009BD24);
+    menu_LoadResourcesInitStateSelectFirstEnabledRow(a0, &g_working_record);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A35E4 = 0;
     return 1;
@@ -1282,7 +1282,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
     if (result >= 0) {
         ret = 1;
         D_800A35E4 = 0;
-        D_8009BD24.unk14_0 = result;
+        g_working_record.unk14_0 = result;
     } else if (result == -2) {
         ret = -1;
     }
@@ -1291,8 +1291,8 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
 
 s32 ResetFlowAndFetchRowTablePair(void) {
     D_800A35E4 = 0;
-    D_800A35E0 = D_8009BD58[D_8009BD24.unk14_0][1];
-    return D_8009BD58[D_8009BD24.unk14_0][0];
+    D_800A35E0 = D_8009BD58[g_working_record.unk14_0][1];
+    return D_8009BD58[g_working_record.unk14_0][0];
 }
 
 void StoreCompactedBits(s32 arg0) {
@@ -1303,7 +1303,7 @@ void StoreCompactedBits(s32 arg0) {
 
 s32 InitWithCachedValueAndStoredBitsBlackBg(s32 a0) {
     InitDisplayStateLoadPackAndSetEntryFlags(
-        a0, D_800A35E0, &D_8009BD24, D_800A35E8);
+        a0, D_800A35E0, &g_working_record, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
@@ -1334,7 +1334,7 @@ s32 func_80077A60(s32 arg0, s32 arg1) {
 s32 menu_InitSelScreen(s32, Unk8009BD24Block *, s32);
 
 s32 menu_InitSelWithStoredBits(s32 a0) {
-    menu_InitSelScreen(a0, &D_8009BD24, D_800A35E8);
+    menu_InitSelScreen(a0, &g_working_record, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
@@ -1368,9 +1368,9 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
             D_800A35E4 = 1;
             break;
         case 3:
-            D_8009BD24.unk17[0] = D_8009BD24.unk1D[0];
-            D_8009BD24.unk17[1] = D_8009BD24.unk1D[1];
-            D_8009BD24.unk17[2] = D_8009BD24.unk1D[2];
+            g_working_record.unk17[0] = g_working_record.unk1D[0];
+            g_working_record.unk17[1] = g_working_record.unk1D[1];
+            g_working_record.unk17[2] = g_working_record.unk1D[2];
             D_800A35E4 = 4;
             break;
         }
@@ -1401,9 +1401,9 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         result = menu_UpdateRowBitMenu(arg0, arg1);
         if (result == 1) {
             D_800A35E4 = 0;
-            D_8009BD24.unk1D[0] = D_8009BD24.unk17[0];
-            D_8009BD24.unk1D[1] = D_8009BD24.unk17[1];
-            D_8009BD24.unk1D[2] = D_8009BD24.unk17[2];
+            g_working_record.unk1D[0] = g_working_record.unk17[0];
+            g_working_record.unk1D[1] = g_working_record.unk17[1];
+            g_working_record.unk1D[2] = g_working_record.unk17[2];
         } else if (result == -1) {
             D_800A35E4 = 0;
         }
@@ -1412,7 +1412,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
     return s2;
 }
 
-Unk8009BD24Block *GetWorkingRecord(void) { return &D_8009BD24; }
+Unk8009BD24Block *GetWorkingRecord(void) { return &g_working_record; }
 
 s32 reloc_RelocateFiveOffsetListsAndGetWord1(s32 *a0) {
     reloc_RelocateOffsetList(a0, a0[6]);
@@ -1738,4 +1738,4 @@ RECT D_800A32FC = {640, 0, 64, 184};
 s32 D_800A3304 = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-u8 *D_800A36A0;
+u8 *g_sel_screen_work;

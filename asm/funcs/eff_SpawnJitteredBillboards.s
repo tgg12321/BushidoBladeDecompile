@@ -22,7 +22,7 @@ glabel eff_SpawnJitteredBillboards
     /* 54DF8 800645F8 55E4010C */  jal        rand
     /* 54DFC 800645FC 40881000 */   sll       $s1, $s0, 1
     /* 54E00 80064600 21803002 */  addu       $s0, $s1, $s0
-    /* 54E04 80064604 B003838F */  lw         $v1, %gp_rel(D_800A347C)($gp)
+    /* 54E04 80064604 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 54E08 80064608 80801000 */  sll        $s0, $s0, 2
     /* 54E0C 8006460C 0000638C */  lw         $v1, 0x0($v1)
     /* 54E10 80064610 FF004230 */  andi       $v0, $v0, 0xFF
@@ -33,7 +33,7 @@ glabel eff_SpawnJitteredBillboards
     /* 54E24 80064624 780D23AC */  sw         $v1, %lo(D_800F0D78)($at)
     /* 54E28 80064628 55E4010C */  jal        rand
     /* 54E2C 8006462C 04007326 */   addiu     $s3, $s3, 0x4
-    /* 54E30 80064630 B003838F */  lw         $v1, %gp_rel(D_800A347C)($gp)
+    /* 54E30 80064630 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 54E34 80064634 00000000 */  nop
     /* 54E38 80064638 0400638C */  lw         $v1, 0x4($v1)
     /* 54E3C 8006463C FF004230 */  andi       $v0, $v0, 0xFF
@@ -44,7 +44,7 @@ glabel eff_SpawnJitteredBillboards
     /* 54E50 80064650 7C0D23AC */  sw         $v1, %lo(D_800F0D7C)($at)
     /* 54E54 80064654 55E4010C */  jal        rand
     /* 54E58 80064658 00000000 */   nop
-    /* 54E5C 8006465C B003838F */  lw         $v1, %gp_rel(D_800A347C)($gp)
+    /* 54E5C 8006465C B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 54E60 80064660 00000000 */  nop
     /* 54E64 80064664 0800638C */  lw         $v1, 0x8($v1)
     /* 54E68 80064668 FF004230 */  andi       $v0, $v0, 0xFF

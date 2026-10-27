@@ -6,8 +6,8 @@ glabel menu_UpdateConfirmMenu
     /* 5E878 8006E078 2190A000 */  addu       $s2, $a1, $zero
     /* 5E87C 8006E07C 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5E880 8006E080 4804828F */  lw         $v0, %gp_rel(D_800A3514)($gp)
-    /* 5E884 8006E084 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 5E888 8006E088 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 5E884 8006E084 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 5E888 8006E088 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 5E88C 8006E08C 0A80053C */  lui        $a1, %hi(D_800A3518)
     /* 5E890 8006E090 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
     /* 5E894 8006E094 7400BFAF */  sw         $ra, 0x74($sp)

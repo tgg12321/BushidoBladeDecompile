@@ -17,7 +17,7 @@ glabel menu_DrawSelRowTiles
     /* 65354 80074B54 2000A6AF */   sw        $a2, 0x20($sp)
     /* 65358 80074B58 08000324 */  addiu      $v1, $zero, 0x8
   .L80074B5C:
-    /* 6535C 80074B5C D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 6535C 80074B5C D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 65360 80074B60 1000A78F */  lw         $a3, 0x10($sp)
     /* 65364 80074B64 65008290 */  lbu        $v0, 0x65($a0)
     /* 65368 80074B68 1400F38C */  lw         $s3, 0x14($a3)
@@ -115,7 +115,7 @@ glabel menu_DrawSelRowTiles
   .L80074CC4:
     /* 654C4 80074CC4 0100C227 */  addiu      $v0, $fp, 0x1
     /* 654C8 80074CC8 21F04000 */  addu       $fp, $v0, $zero
-    /* 654CC 80074CCC D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 654CC 80074CCC D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 654D0 80074CD0 00140200 */  sll        $v0, $v0, 16
     /* 654D4 80074CD4 65008390 */  lbu        $v1, 0x65($a0)
     /* 654D8 80074CD8 03140200 */  sra        $v0, $v0, 16

@@ -18,10 +18,10 @@ glabel fight_InitCommandStreamImageLoad
     /* 2C0B0 8003B8B0 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2C0B4 8003B8B4 21380000 */   addu      $a3, $zero, $zero
     /* 2C0B8 8003B8B8 17000224 */  addiu      $v0, $zero, 0x17
-    /* 2C0BC 8003B8BC 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2C0C0 8003B8C0 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2C0C4 8003B8C4 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2C0C8 8003B8C8 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2C0BC 8003B8BC 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2C0C0 8003B8C0 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
+    /* 2C0C4 8003B8C4 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2C0C8 8003B8C8 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2C0CC 8003B8CC 345A000C */  jal        gpu_SetDispMaskOn
     /* 2C0D0 8003B8D0 00000000 */   nop
     /* 2C0D4 8003B8D4 1000BF8F */  lw         $ra, 0x10($sp)

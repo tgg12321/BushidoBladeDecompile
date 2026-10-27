@@ -1,8 +1,8 @@
 glabel func_80071C20
     /* 62420 80071C20 95048293 */  lbu        $v0, %gp_rel(D_800A3561)($gp)
-    /* 62424 80071C24 0A80013C */  lui        $at, %hi(D_8009BC7C)
+    /* 62424 80071C24 0A80013C */  lui        $at, %hi(g_entry_menu_entry_flags)
     /* 62428 80071C28 21082200 */  addu       $at, $at, $v0
-    /* 6242C 80071C2C 7CBC2290 */  lbu        $v0, %lo(D_8009BC7C)($at)
+    /* 6242C 80071C2C 7CBC2290 */  lbu        $v0, %lo(g_entry_menu_entry_flags)($at)
     /* 62430 80071C30 00000000 */  nop
     /* 62434 80071C34 02004230 */  andi       $v0, $v0, 0x2
     /* 62438 80071C38 02004010 */  beqz       $v0, .L80071C44

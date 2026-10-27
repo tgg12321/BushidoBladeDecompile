@@ -8410,9 +8410,9 @@ def test_naming_keycheck_scoped_pairs() -> None:
               not ok and "macro expansion produces or captures" in why)
     # Real-tree failures were unrelated macro expansion on the edited line.
     for func, body, macro, expanded in [
-            ("func_8007636C", "s.y = SELWORK->f3C[arg3] * 34;", "SELWORK", "((SelWork *)D_800A36A0)"),
+            ("func_8007636C", "s.y = SELWORK->f3C[arg3] * 34;", "SELWORK", "((SelWork *)g_sel_screen_work)"),
             ("math_MatrixToAngles", "m = &SPAD->unk2B8.rec.unkD8;", "SPAD", "((ScrPad *)0x1F800000)"),
-            ("menu_StepSelScreen", "s.unk_00.v80076FF8 = SELWORK->f04;", "SELWORK", "((SelWork *)D_800A36A0)")]:
+            ("menu_StepSelScreen", "s.unk_00.v80076FF8 = SELWORK->f04;", "SELWORK", "((SelWork *)g_sel_screen_work)")]:
         old = "m" if func == "math_MatrixToAngles" else "s"
         text = f"typedef int Matrix;\n#define {macro} {expanded}\nint {func}(int arg3){{\nMatrix {old};\n{body}\nreturn 0;\n}}\n"
         after = re.sub(r"\b" + old + r"\b", "renamed", text)

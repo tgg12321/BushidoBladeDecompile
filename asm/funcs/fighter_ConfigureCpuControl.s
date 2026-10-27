@@ -3,8 +3,8 @@ glabel fighter_ConfigureCpuControl
     /* 13738 80022F38 1000B0AF */  sw         $s0, 0x10($sp)
     /* 1373C 80022F3C 21800000 */  addu       $s0, $zero, $zero
     /* 13740 80022F40 1800B2AF */  sw         $s2, 0x18($sp)
-    /* 13744 80022F44 1080123C */  lui        $s2, %hi(D_80102778)
-    /* 13748 80022F48 78275226 */  addiu      $s2, $s2, %lo(D_80102778)
+    /* 13744 80022F44 1080123C */  lui        $s2, %hi(g_fight_config)
+    /* 13748 80022F48 78275226 */  addiu      $s2, $s2, %lo(g_fight_config)
     /* 1374C 80022F4C 1400B1AF */  sw         $s1, 0x14($sp)
     /* 13750 80022F50 21880000 */  addu       $s1, $zero, $zero
     /* 13754 80022F54 1C00BFAF */  sw         $ra, 0x1C($sp)
@@ -16,8 +16,8 @@ glabel fighter_ConfigureCpuControl
     /* 13768 80022F68 00000000 */  nop
     /* 1376C 80022F6C 2B004010 */  beqz       $v0, .L8002301C
     /* 13770 80022F70 00000000 */   nop
-    /* 13774 80022F74 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 13778 80022F78 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 13774 80022F74 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 13778 80022F78 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 1377C 80022F7C 00000000 */  nop
     /* 13780 80022F80 03006228 */  slti       $v0, $v1, 0x3
     /* 13784 80022F84 07004010 */  beqz       $v0, .L80022FA4
@@ -35,9 +35,9 @@ glabel fighter_ConfigureCpuControl
     /* 137B0 80022FB0 F38B0008 */  j          .L80022FCC
     /* 137B4 80022FB4 00000000 */   nop
   .L80022FB8:
-    /* 137B8 80022FB8 1080013C */  lui        $at, %hi(D_80102778 + 0xA)
+    /* 137B8 80022FB8 1080013C */  lui        $at, %hi(g_fight_config + 0xA)
     /* 137BC 80022FBC 21083000 */  addu       $at, $at, $s0
-    /* 137C0 80022FC0 82272290 */  lbu        $v0, %lo(D_80102778 + 0xA)($at)
+    /* 137C0 80022FC0 82272290 */  lbu        $v0, %lo(g_fight_config + 0xA)($at)
     /* 137C4 80022FC4 F48B0008 */  j          .L80022FD0
     /* 137C8 80022FC8 00110200 */   sll       $v0, $v0, 4
   .L80022FCC:

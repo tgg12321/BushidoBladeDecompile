@@ -6,7 +6,7 @@
  * motion_StartPlaybackAtIndexedBasePlusOffset /
  * motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock. .text 0x80052D00 (ROM
  * 0x43500). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #72): the
- * statics D_800A33F0, D_800A33F4 and g_collision_hit_tag
+ * statics D_800A33F0, g_collision_segment_work and g_collision_hit_tag
  * (0x800A33F0..0x800A33F8) are used only here and open the old 3AB48 .sbss
  * group in address order; calls run from here into 3AB48.c's GTE helpers
  * (gte_SumSquares3, gte_ReadIR1IR2Sra2,
@@ -28,7 +28,7 @@
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
 static s32 D_800A33F0;
-static Work_80053E9C *D_800A33F4;
+static Work_80053E9C *g_collision_segment_work;
 static u16 g_collision_hit_tag;
 static s32 D_800A33FC; /* not named by any code or data: size from the gap */
 
@@ -48,117 +48,143 @@ s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
     s32 var_1;
     s32 var_2;
 
-    D_800A33F4->unk60 = D_800A33F4->unk8.vx + 32000;
-    D_800A33F4->unk64 = D_800A33F4->unk8.vz + 32000;
-    D_800A33F4->unk68 = D_800A33F4->unk18.vx + 32000;
-    D_800A33F4->unk0 = 0x7FFFFFFF;
-    D_800A33F4->unk6C = D_800A33F4->unk18.vz + 32000;
-    D_800A33F4->unk70 = D_800A33F4->unk68 - D_800A33F4->unk60;
-    D_800A33F4->unk88.x = D_800A33F4->unk60 / 2000;
-    D_800A33F4->unk88.z = D_800A33F4->unk64 / 2000;
-    D_800A33F4->unk8C.x = D_800A33F4->unk68 / 2000;
-    D_800A33F4->unk8C.z = D_800A33F4->unk6C / 2000;
-    D_800A33F4->unk74 = D_800A33F4->unk6C - D_800A33F4->unk64;
-    if (D_800A33F4->unk88.x == D_800A33F4->unk8C.x &&
-        D_800A33F4->unk88.z == D_800A33F4->unk8C.z) {
-        if (D_800A33F4->unk8.vx == D_800A33F4->unk18.vx &&
-            D_800A33F4->unk8.vy == D_800A33F4->unk18.vy &&
-            D_800A33F4->unk8.vz == D_800A33F4->unk18.vz) {
+    g_collision_segment_work->unk60 = g_collision_segment_work->unk8.vx + 32000;
+    g_collision_segment_work->unk64 = g_collision_segment_work->unk8.vz + 32000;
+    g_collision_segment_work->unk68 =
+        g_collision_segment_work->unk18.vx + 32000;
+    g_collision_segment_work->unk0 = 0x7FFFFFFF;
+    g_collision_segment_work->unk6C =
+        g_collision_segment_work->unk18.vz + 32000;
+    g_collision_segment_work->unk70 =
+        g_collision_segment_work->unk68 - g_collision_segment_work->unk60;
+    g_collision_segment_work->unk88.x = g_collision_segment_work->unk60 / 2000;
+    g_collision_segment_work->unk88.z = g_collision_segment_work->unk64 / 2000;
+    g_collision_segment_work->unk8C.x = g_collision_segment_work->unk68 / 2000;
+    g_collision_segment_work->unk8C.z = g_collision_segment_work->unk6C / 2000;
+    g_collision_segment_work->unk74 =
+        g_collision_segment_work->unk6C - g_collision_segment_work->unk64;
+    if (g_collision_segment_work->unk88.x ==
+            g_collision_segment_work->unk8C.x &&
+        g_collision_segment_work->unk88.z ==
+            g_collision_segment_work->unk8C.z) {
+        if (g_collision_segment_work->unk8.vx ==
+                g_collision_segment_work->unk18.vx &&
+            g_collision_segment_work->unk8.vy ==
+                g_collision_segment_work->unk18.vy &&
+            g_collision_segment_work->unk8.vz ==
+                g_collision_segment_work->unk18.vz) {
             return 0;
         }
-        D_800A33F4->unk5C(D_800A33F4->unk88.x, D_800A33F4->unk88.z);
+        g_collision_segment_work->unk5C(g_collision_segment_work->unk88.x,
+                                        g_collision_segment_work->unk88.z);
     } else {
-        D_800A33F4->unk80 = D_800A33F4->unk88.x * 2000 + 1000;
-        D_800A33F4->unk84 = D_800A33F4->unk88.z * 2000 + 1000;
-        D_800A33F4->unk60 -= D_800A33F4->unk80;
-        D_800A33F4->unk64 -= D_800A33F4->unk84;
-        D_800A33F4->unk68 -= D_800A33F4->unk80;
-        D_800A33F4->unk6C -= D_800A33F4->unk84;
-        if (D_800A33F4->unk70 < 0) {
+        g_collision_segment_work->unk80 =
+            g_collision_segment_work->unk88.x * 2000 + 1000;
+        g_collision_segment_work->unk84 =
+            g_collision_segment_work->unk88.z * 2000 + 1000;
+        g_collision_segment_work->unk60 -= g_collision_segment_work->unk80;
+        g_collision_segment_work->unk64 -= g_collision_segment_work->unk84;
+        g_collision_segment_work->unk68 -= g_collision_segment_work->unk80;
+        g_collision_segment_work->unk6C -= g_collision_segment_work->unk84;
+        if (g_collision_segment_work->unk70 < 0) {
             var_0 = -1;
-            D_800A33F4->unk70 = -D_800A33F4->unk70;
-            D_800A33F4->unk60 = -D_800A33F4->unk60;
-            D_800A33F4->unk68 = -D_800A33F4->unk68;
+            g_collision_segment_work->unk70 = -g_collision_segment_work->unk70;
+            g_collision_segment_work->unk60 = -g_collision_segment_work->unk60;
+            g_collision_segment_work->unk68 = -g_collision_segment_work->unk68;
         } else {
             var_0 = 1;
         }
-        if (D_800A33F4->unk74 < 0) {
+        if (g_collision_segment_work->unk74 < 0) {
             var_1 = -1;
-            D_800A33F4->unk74 = -D_800A33F4->unk74;
-            D_800A33F4->unk64 = -D_800A33F4->unk64;
-            D_800A33F4->unk6C = -D_800A33F4->unk6C;
+            g_collision_segment_work->unk74 = -g_collision_segment_work->unk74;
+            g_collision_segment_work->unk64 = -g_collision_segment_work->unk64;
+            g_collision_segment_work->unk6C = -g_collision_segment_work->unk6C;
         } else {
             var_1 = 1;
         }
-        if (D_800A33F4->unk74 > D_800A33F4->unk70) {
+        if (g_collision_segment_work->unk74 > g_collision_segment_work->unk70) {
             var_2 = 1;
-            D_800A33F4->unk80 = D_800A33F4->unk70;
-            D_800A33F4->unk70 = D_800A33F4->unk74;
-            D_800A33F4->unk74 = D_800A33F4->unk80;
-            D_800A33F4->unk80 = D_800A33F4->unk60;
-            D_800A33F4->unk60 = D_800A33F4->unk64;
-            D_800A33F4->unk64 = D_800A33F4->unk80;
-            D_800A33F4->unk80 = D_800A33F4->unk68;
-            D_800A33F4->unk68 = D_800A33F4->unk6C;
-            D_800A33F4->unk6C = D_800A33F4->unk80;
+            g_collision_segment_work->unk80 = g_collision_segment_work->unk70;
+            g_collision_segment_work->unk70 = g_collision_segment_work->unk74;
+            g_collision_segment_work->unk74 = g_collision_segment_work->unk80;
+            g_collision_segment_work->unk80 = g_collision_segment_work->unk60;
+            g_collision_segment_work->unk60 = g_collision_segment_work->unk64;
+            g_collision_segment_work->unk64 = g_collision_segment_work->unk80;
+            g_collision_segment_work->unk80 = g_collision_segment_work->unk68;
+            g_collision_segment_work->unk68 = g_collision_segment_work->unk6C;
+            g_collision_segment_work->unk6C = g_collision_segment_work->unk80;
         } else {
             var_2 = 0;
         }
-        D_800A33F4->unk68 += 1000;
-        D_800A33F4->unk60 += 1000;
-        D_800A33F4->unk64 += 1000;
-        D_800A33F4->unk90 =
-            D_800A33F4->unk68 / 2000 - D_800A33F4->unk60 / 2000 + 1;
-        D_800A33F4->unk7C = (D_800A33F4->unk74 << 12) / D_800A33F4->unk70;
-        D_800A33F4->unk64 -= (D_800A33F4->unk60 * D_800A33F4->unk7C) >> 12;
-        D_800A33F4->unk78 = (D_800A33F4->unk7C * 2000) >> 12;
-        while (--D_800A33F4->unk90 != -1) {
-            if ((D_800A33F4->unk80 = D_800A33F4->unk5C(
-                     D_800A33F4->unk88.x, D_800A33F4->unk88.z)) != 0) {
+        g_collision_segment_work->unk68 += 1000;
+        g_collision_segment_work->unk60 += 1000;
+        g_collision_segment_work->unk64 += 1000;
+        g_collision_segment_work->unk90 =
+            g_collision_segment_work->unk68 / 2000 -
+            g_collision_segment_work->unk60 / 2000 + 1;
+        g_collision_segment_work->unk7C =
+            (g_collision_segment_work->unk74 << 12) /
+            g_collision_segment_work->unk70;
+        g_collision_segment_work->unk64 -=
+            (g_collision_segment_work->unk60 *
+             g_collision_segment_work->unk7C) >>
+            12;
+        g_collision_segment_work->unk78 =
+            (g_collision_segment_work->unk7C * 2000) >> 12;
+        while (--g_collision_segment_work->unk90 != -1) {
+            if ((g_collision_segment_work->unk80 =
+                     g_collision_segment_work->unk5C(
+                         g_collision_segment_work->unk88.x,
+                         g_collision_segment_work->unk88.z)) != 0) {
                 break;
             }
-            D_800A33F4->unk64 %= 2000;
-            D_800A33F4->unk64 += D_800A33F4->unk78;
-            if (D_800A33F4->unk90 == 0) {
+            g_collision_segment_work->unk64 %= 2000;
+            g_collision_segment_work->unk64 += g_collision_segment_work->unk78;
+            if (g_collision_segment_work->unk90 == 0) {
                 break;
             }
-            if (D_800A33F4->unk64 > 2000) {
+            if (g_collision_segment_work->unk64 > 2000) {
                 if (var_2) {
                     if (var_0 < 0) {
-                        D_800A33F4->unk88.x--;
+                        g_collision_segment_work->unk88.x--;
                     } else {
-                        D_800A33F4->unk88.x++;
+                        g_collision_segment_work->unk88.x++;
                     }
                 } else {
                     if (var_1 < 0) {
-                        D_800A33F4->unk88.z--;
+                        g_collision_segment_work->unk88.z--;
                     } else {
-                        D_800A33F4->unk88.z++;
+                        g_collision_segment_work->unk88.z++;
                     }
                 }
-                if ((D_800A33F4->unk80 = D_800A33F4->unk5C(
-                         D_800A33F4->unk88.x, D_800A33F4->unk88.z)) != 0) {
+                if ((g_collision_segment_work->unk80 =
+                         g_collision_segment_work->unk5C(
+                             g_collision_segment_work->unk88.x,
+                             g_collision_segment_work->unk88.z)) != 0) {
                     break;
                 }
             }
             if (var_2) {
                 if (var_1 < 0) {
-                    D_800A33F4->unk88.z--;
+                    g_collision_segment_work->unk88.z--;
                 } else {
-                    D_800A33F4->unk88.z++;
+                    g_collision_segment_work->unk88.z++;
                 }
             } else {
                 if (var_0 < 0) {
-                    D_800A33F4->unk88.x--;
+                    g_collision_segment_work->unk88.x--;
                 } else {
-                    D_800A33F4->unk88.x++;
+                    g_collision_segment_work->unk88.x++;
                 }
             }
         }
-        if (D_800A33F4->unk80 == 0 &&
-            (D_800A33F4->unk88.x != D_800A33F4->unk8C.x ||
-             D_800A33F4->unk88.z != D_800A33F4->unk8C.z)) {
-            D_800A33F4->unk5C(D_800A33F4->unk8C.x, D_800A33F4->unk8C.z);
+        if (g_collision_segment_work->unk80 == 0 &&
+            (g_collision_segment_work->unk88.x !=
+                 g_collision_segment_work->unk8C.x ||
+             g_collision_segment_work->unk88.z !=
+                 g_collision_segment_work->unk8C.z)) {
+            g_collision_segment_work->unk5C(g_collision_segment_work->unk8C.x,
+                                            g_collision_segment_work->unk8C.z);
         }
     }
     return collision_GetHit(arg0, arg1);
@@ -173,24 +199,29 @@ void collision_TestSegmentExtendingShortStart(
     s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     s32 a, b, c;
     s32 hi0, hi1, hi2;
-    D_800A33F4 = &D_800EF9F8;
+    g_collision_segment_work = &D_800EF9F8;
     D_800EF9F8.unk8 = *(VECTOR *)arg0;
-    D_800A33F4->unk18 = *(VECTOR *)arg1;
-    if (gte_SumSquares3(D_800A33F4->unk18.vx - D_800A33F4->unk8.vx,
-                        D_800A33F4->unk18.vy - D_800A33F4->unk8.vy,
-                        D_800A33F4->unk18.vz - D_800A33F4->unk8.vz) <= 0x9C3F) {
-        hi0 = D_800A33F4->unk18.vx;
-        a = D_800A33F4->unk8.vx;
-        hi1 = D_800A33F4->unk18.vy;
-        b = D_800A33F4->unk8.vy;
-        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitScalarProjection;
-        hi2 = D_800A33F4->unk18.vz;
-        D_800A33F4->unk8.vx = a - ((hi0 - a) << 1);
-        D_800A33F4->unk8.vy = b - ((hi1 - b) << 1);
-        c = D_800A33F4->unk8.vz;
-        D_800A33F4->unk8.vz = c - ((hi2 - c) << 1);
+    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
+                            g_collision_segment_work->unk8.vx,
+                        g_collision_segment_work->unk18.vy -
+                            g_collision_segment_work->unk8.vy,
+                        g_collision_segment_work->unk18.vz -
+                            g_collision_segment_work->unk8.vz) <= 0x9C3F) {
+        hi0 = g_collision_segment_work->unk18.vx;
+        a = g_collision_segment_work->unk8.vx;
+        hi1 = g_collision_segment_work->unk18.vy;
+        b = g_collision_segment_work->unk8.vy;
+        g_collision_segment_work->unk5C =
+            collision_TestCellKeepingNearestHitScalarProjection;
+        hi2 = g_collision_segment_work->unk18.vz;
+        g_collision_segment_work->unk8.vx = a - ((hi0 - a) << 1);
+        g_collision_segment_work->unk8.vy = b - ((hi1 - b) << 1);
+        c = g_collision_segment_work->unk8.vz;
+        g_collision_segment_work->unk8.vz = c - ((hi2 - c) << 1);
     } else {
-        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
+        g_collision_segment_work->unk5C =
+            collision_TestCellKeepingNearestHitGteProjection;
     }
     collision_WalkSegmentGrid(arg2, arg3);
 }
@@ -199,47 +230,54 @@ s32 collision_TestSegmentExtendingShortStartWithWork(
     s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
     s32 a, b, c;
     s32 hi0, hi1, hi2;
-    D_800A33F4 = (Work_80053E9C *)arg4;
-    D_800A33F4->unk8 = *(VECTOR *)arg0;
-    D_800A33F4->unk18 = *(VECTOR *)arg1;
-    if (gte_SumSquares3(D_800A33F4->unk18.vx - D_800A33F4->unk8.vx,
-                        D_800A33F4->unk18.vy - D_800A33F4->unk8.vy,
-                        D_800A33F4->unk18.vz - D_800A33F4->unk8.vz) <= 0x9C3F) {
-        hi0 = D_800A33F4->unk18.vx;
-        a = D_800A33F4->unk8.vx;
-        hi1 = D_800A33F4->unk18.vy;
-        b = D_800A33F4->unk8.vy;
-        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitScalarProjection;
-        hi2 = D_800A33F4->unk18.vz;
-        D_800A33F4->unk8.vx = a - ((hi0 - a) << 1);
-        D_800A33F4->unk8.vy = b - ((hi1 - b) << 1);
-        c = D_800A33F4->unk8.vz;
-        D_800A33F4->unk8.vz = c - ((hi2 - c) << 1);
+    g_collision_segment_work = (Work_80053E9C *)arg4;
+    g_collision_segment_work->unk8 = *(VECTOR *)arg0;
+    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
+                            g_collision_segment_work->unk8.vx,
+                        g_collision_segment_work->unk18.vy -
+                            g_collision_segment_work->unk8.vy,
+                        g_collision_segment_work->unk18.vz -
+                            g_collision_segment_work->unk8.vz) <= 0x9C3F) {
+        hi0 = g_collision_segment_work->unk18.vx;
+        a = g_collision_segment_work->unk8.vx;
+        hi1 = g_collision_segment_work->unk18.vy;
+        b = g_collision_segment_work->unk8.vy;
+        g_collision_segment_work->unk5C =
+            collision_TestCellKeepingNearestHitScalarProjection;
+        hi2 = g_collision_segment_work->unk18.vz;
+        g_collision_segment_work->unk8.vx = a - ((hi0 - a) << 1);
+        g_collision_segment_work->unk8.vy = b - ((hi1 - b) << 1);
+        c = g_collision_segment_work->unk8.vz;
+        g_collision_segment_work->unk8.vz = c - ((hi2 - c) << 1);
     } else {
-        D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
+        g_collision_segment_work->unk5C =
+            collision_TestCellKeepingNearestHitGteProjection;
     }
     return collision_WalkSegmentGrid(arg2, arg3);
 }
 
 s32 collision_TestSegment(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
-    D_800A33F4 = &D_800EF9F8;
+    g_collision_segment_work = &D_800EF9F8;
     D_800EF9F8.unk8 = *(VECTOR *)arg0;
-    D_800A33F4->unk18 = *(VECTOR *)arg1;
-    D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
+    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    g_collision_segment_work->unk5C =
+        collision_TestCellKeepingNearestHitGteProjection;
     return collision_WalkSegmentGrid(arg2, arg3);
 }
 
 s32 collision_TestSegmentWithWork(
     s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
-    D_800A33F4 = (Work_80053E9C *)arg4;
-    D_800A33F4->unk8 = *(VECTOR *)arg0;
-    D_800A33F4->unk18 = *(VECTOR *)arg1;
-    D_800A33F4->unk5C = collision_TestCellKeepingNearestHitGteProjection;
+    g_collision_segment_work = (Work_80053E9C *)arg4;
+    g_collision_segment_work->unk8 = *(VECTOR *)arg0;
+    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    g_collision_segment_work->unk5C =
+        collision_TestCellKeepingNearestHitGteProjection;
     return collision_WalkSegmentGrid(arg2, arg3);
 }
 
 s32 collision_GetHit(s32 *arg0, s16 *arg1) {
-    Work_80053E9C *p = D_800A33F4;
+    Work_80053E9C *p = g_collision_segment_work;
     s32 t;
     if (p->unk0 != 0x7FFFFFFF) {
         t = (p->unk48 * 0x7D0) - 0x7D00;
@@ -272,153 +310,204 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
     if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
         return 0;
     }
-    D_800A33F4->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
-    if (D_800A33F4->unkE0 == 0xFFFF) {
+    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    if (g_collision_segment_work->unkE0 == 0xFFFF) {
         return 0;
     }
-    data = (s16 *)(D_800A33F0 + D_800A33F4->unkE0);
+    data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
     x = arg0 * 2000 - 32000;
     z = arg1 * 2000 - 32000;
-    D_800A33F4->unk4C = D_800A33F4->unk8.vx - x;
-    D_800A33F4->unk4E = D_800A33F4->unk8.vy;
-    D_800A33F4->unk50 = D_800A33F4->unk8.vz - z;
-    D_800A33F4->unk54 = D_800A33F4->unk18.vx - x;
-    D_800A33F4->unk56 = D_800A33F4->unk18.vy;
-    D_800A33F4->unk58 = D_800A33F4->unk18.vz - z;
+    g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
+    g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
+    g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
+    g_collision_segment_work->unk54 = g_collision_segment_work->unk18.vx - x;
+    g_collision_segment_work->unk56 = g_collision_segment_work->unk18.vy;
+    g_collision_segment_work->unk58 = g_collision_segment_work->unk18.vz - z;
 
     count = *data;
     data++;
     while (--count != -1) {
-        D_800A33F4->unkD0 = *data;
+        g_collision_segment_work->unkD0 = *data;
         data++;
-        D_800A33F4->unkD4 = *data;
+        g_collision_segment_work->unkD4 = *data;
         data++;
-        D_800A33F4->unkD8 = *data;
+        g_collision_segment_work->unkD8 = *data;
         data++;
-        D_800A33F4->unkDC = (u16)*data;
+        g_collision_segment_work->unkDC = (u16)*data;
         data++;
-        D_800A33F4->unkDC = (*data << 16) | D_800A33F4->unkDC;
+        g_collision_segment_work->unkDC =
+            (*data << 16) | g_collision_segment_work->unkDC;
         data++;
-        D_800A33F4->unkE4 =
-            D_800A33F4->unkD0 * D_800A33F4->unk4C +
-            D_800A33F4->unkD4 * D_800A33F4->unk4E +
-            D_800A33F4->unkD8 * D_800A33F4->unk50 + D_800A33F4->unkDC;
-        D_800A33F4->unkE8 =
-            D_800A33F4->unkD0 * D_800A33F4->unk54 +
-            D_800A33F4->unkD4 * D_800A33F4->unk56 +
-            D_800A33F4->unkD8 * D_800A33F4->unk58 + D_800A33F4->unkDC;
+        g_collision_segment_work->unkE4 =
+            g_collision_segment_work->unkD0 * g_collision_segment_work->unk4C +
+            g_collision_segment_work->unkD4 * g_collision_segment_work->unk4E +
+            g_collision_segment_work->unkD8 * g_collision_segment_work->unk50 +
+            g_collision_segment_work->unkDC;
+        g_collision_segment_work->unkE8 =
+            g_collision_segment_work->unkD0 * g_collision_segment_work->unk54 +
+            g_collision_segment_work->unkD4 * g_collision_segment_work->unk56 +
+            g_collision_segment_work->unkD8 * g_collision_segment_work->unk58 +
+            g_collision_segment_work->unkDC;
 
-        D_800A33F4->unkE4 =
-            (D_800A33F4->unkE4 < 0 ? -1 : 1) *
-            ((D_800A33F4->unkE4 < 0 ? -D_800A33F4->unkE4 : D_800A33F4->unkE4) >>
+        g_collision_segment_work->unkE4 =
+            (g_collision_segment_work->unkE4 < 0 ? -1 : 1) *
+            ((g_collision_segment_work->unkE4 < 0
+                  ? -g_collision_segment_work->unkE4
+                  : g_collision_segment_work->unkE4) >>
              10);
-        D_800A33F4->unkE8 =
-            (D_800A33F4->unkE8 < 0 ? -1 : 1) *
-            ((D_800A33F4->unkE8 < 0 ? -D_800A33F4->unkE8 : D_800A33F4->unkE8) >>
+        g_collision_segment_work->unkE8 =
+            (g_collision_segment_work->unkE8 < 0 ? -1 : 1) *
+            ((g_collision_segment_work->unkE8 < 0
+                  ? -g_collision_segment_work->unkE8
+                  : g_collision_segment_work->unkE8) >>
              10);
 
-        if (D_800A33F4->unkE4 >= 0 && D_800A33F4->unkE8 < 0) {
-            D_800A33F4->unkE0 = D_800A33F4->unkE4 - D_800A33F4->unkE8;
-            D_800A33F4->unkE4 *= 2;
-            D_800A33F4->unkA8 = (D_800A33F4->unk54 - D_800A33F4->unk4C) *
-                                D_800A33F4->unkE4 / D_800A33F4->unkE0;
-            D_800A33F4->unkAC = (D_800A33F4->unk56 - D_800A33F4->unk4E) *
-                                D_800A33F4->unkE4 / D_800A33F4->unkE0;
-            D_800A33F4->unkB0 = (D_800A33F4->unk58 - D_800A33F4->unk50) *
-                                D_800A33F4->unkE4 / D_800A33F4->unkE0;
-            D_800A33F4->unkA8 =
-                (D_800A33F4->unkA8 < 0 ? -1 : 1) *
-                ((D_800A33F4->unkA8 >= 0 ? D_800A33F4->unkA8 + 1
-                                         : -D_800A33F4->unkA8 + 1) >>
+        if (g_collision_segment_work->unkE4 >= 0 &&
+            g_collision_segment_work->unkE8 < 0) {
+            g_collision_segment_work->unkE0 = g_collision_segment_work->unkE4 -
+                                              g_collision_segment_work->unkE8;
+            g_collision_segment_work->unkE4 *= 2;
+            g_collision_segment_work->unkA8 =
+                (g_collision_segment_work->unk54 -
+                 g_collision_segment_work->unk4C) *
+                g_collision_segment_work->unkE4 /
+                g_collision_segment_work->unkE0;
+            g_collision_segment_work->unkAC =
+                (g_collision_segment_work->unk56 -
+                 g_collision_segment_work->unk4E) *
+                g_collision_segment_work->unkE4 /
+                g_collision_segment_work->unkE0;
+            g_collision_segment_work->unkB0 =
+                (g_collision_segment_work->unk58 -
+                 g_collision_segment_work->unk50) *
+                g_collision_segment_work->unkE4 /
+                g_collision_segment_work->unkE0;
+            g_collision_segment_work->unkA8 =
+                (g_collision_segment_work->unkA8 < 0 ? -1 : 1) *
+                ((g_collision_segment_work->unkA8 >= 0
+                      ? g_collision_segment_work->unkA8 + 1
+                      : -g_collision_segment_work->unkA8 + 1) >>
                  1);
-            D_800A33F4->unkAC =
-                (D_800A33F4->unkAC < 0 ? -1 : 1) *
-                ((D_800A33F4->unkAC >= 0 ? D_800A33F4->unkAC + 1
-                                         : -D_800A33F4->unkAC + 1) >>
+            g_collision_segment_work->unkAC =
+                (g_collision_segment_work->unkAC < 0 ? -1 : 1) *
+                ((g_collision_segment_work->unkAC >= 0
+                      ? g_collision_segment_work->unkAC + 1
+                      : -g_collision_segment_work->unkAC + 1) >>
                  1);
-            D_800A33F4->unkB0 =
-                (D_800A33F4->unkB0 < 0 ? -1 : 1) *
-                ((D_800A33F4->unkB0 >= 0 ? D_800A33F4->unkB0 + 1
-                                         : -D_800A33F4->unkB0 + 1) >>
+            g_collision_segment_work->unkB0 =
+                (g_collision_segment_work->unkB0 < 0 ? -1 : 1) *
+                ((g_collision_segment_work->unkB0 >= 0
+                      ? g_collision_segment_work->unkB0 + 1
+                      : -g_collision_segment_work->unkB0 + 1) >>
                  1);
-            D_800A33F4->unkA8 += D_800A33F4->unk4C;
-            D_800A33F4->unkAC += D_800A33F4->unk4E;
-            D_800A33F4->unkB0 += D_800A33F4->unk50;
-            D_800A33F4->unkE0 = *data;
+            g_collision_segment_work->unkA8 += g_collision_segment_work->unk4C;
+            g_collision_segment_work->unkAC += g_collision_segment_work->unk4E;
+            g_collision_segment_work->unkB0 += g_collision_segment_work->unk50;
+            g_collision_segment_work->unkE0 = *data;
             data++;
-            D_800A33F4->unkE4 = *data;
+            g_collision_segment_work->unkE4 = *data;
             data++;
-            D_800A33F4->unkE8 = *data;
+            g_collision_segment_work->unkE8 = *data;
             data++;
-            D_800A33F4->unk9C = *data;
+            g_collision_segment_work->unk9C = *data;
             data++;
-            D_800A33F4->unkA0 = *data;
+            g_collision_segment_work->unkA0 = *data;
             data++;
-            D_800A33F4->unkA4 = *data;
+            g_collision_segment_work->unkA4 = *data;
             data++;
-            D_800A33F4->unkC4 =
-                ((D_800A33F4->unkA8 - D_800A33F4->unkE0) * D_800A33F4->unk9C +
-                 (D_800A33F4->unkAC - D_800A33F4->unkE4) * D_800A33F4->unkA0 +
-                 (D_800A33F4->unkB0 - D_800A33F4->unkE8) * D_800A33F4->unkA4) >>
+            g_collision_segment_work->unkC4 =
+                ((g_collision_segment_work->unkA8 -
+                  g_collision_segment_work->unkE0) *
+                     g_collision_segment_work->unk9C +
+                 (g_collision_segment_work->unkAC -
+                  g_collision_segment_work->unkE4) *
+                     g_collision_segment_work->unkA0 +
+                 (g_collision_segment_work->unkB0 -
+                  g_collision_segment_work->unkE8) *
+                     g_collision_segment_work->unkA4) >>
                 14;
-            D_800A33F4->unk9C = *data;
+            g_collision_segment_work->unk9C = *data;
             data++;
-            D_800A33F4->unkA0 = *data;
+            g_collision_segment_work->unkA0 = *data;
             data++;
-            D_800A33F4->unkA4 = *data;
+            g_collision_segment_work->unkA4 = *data;
             data++;
-            D_800A33F4->unkC8 =
-                ((D_800A33F4->unkA8 - D_800A33F4->unkE0) * D_800A33F4->unk9C +
-                 (D_800A33F4->unkAC - D_800A33F4->unkE4) * D_800A33F4->unkA0 +
-                 (D_800A33F4->unkB0 - D_800A33F4->unkE8) * D_800A33F4->unkA4) >>
+            g_collision_segment_work->unkC8 =
+                ((g_collision_segment_work->unkA8 -
+                  g_collision_segment_work->unkE0) *
+                     g_collision_segment_work->unk9C +
+                 (g_collision_segment_work->unkAC -
+                  g_collision_segment_work->unkE4) *
+                     g_collision_segment_work->unkA0 +
+                 (g_collision_segment_work->unkB0 -
+                  g_collision_segment_work->unkE8) *
+                     g_collision_segment_work->unkA4) >>
                 14;
             var_6 = (u16)*data;
             data++;
             n = var_6;
-            D_800A33F4->unkCC = n >> 8;
+            g_collision_segment_work->unkCC = n >> 8;
             n &= 0xFF;
-            D_800A33F4->unkB4 = *data;
+            g_collision_segment_work->unkB4 = *data;
             data++;
             y = *data;
             data++;
-            D_800A33F4->unkE0 = 1;
-            D_800A33F4->unkB8 = y;
+            g_collision_segment_work->unkE0 = 1;
+            g_collision_segment_work->unkB8 = y;
             while (--n != -1) {
-                D_800A33F4->unkBC = *data;
+                g_collision_segment_work->unkBC = *data;
                 data++;
-                D_800A33F4->unkC0 = *data;
+                g_collision_segment_work->unkC0 = *data;
                 data++;
-                if ((D_800A33F4->unkC4 - D_800A33F4->unkB4) *
-                            (D_800A33F4->unkC0 - D_800A33F4->unkB8) -
-                        (D_800A33F4->unkC8 - D_800A33F4->unkB8) *
-                            (D_800A33F4->unkBC - D_800A33F4->unkB4) >
+                if ((g_collision_segment_work->unkC4 -
+                     g_collision_segment_work->unkB4) *
+                            (g_collision_segment_work->unkC0 -
+                             g_collision_segment_work->unkB8) -
+                        (g_collision_segment_work->unkC8 -
+                         g_collision_segment_work->unkB8) *
+                            (g_collision_segment_work->unkBC -
+                             g_collision_segment_work->unkB4) >
                     0) {
-                    D_800A33F4->unkE0 = 0;
+                    g_collision_segment_work->unkE0 = 0;
                     break;
                 }
-                D_800A33F4->unkB4 = D_800A33F4->unkBC;
-                D_800A33F4->unkB8 = D_800A33F4->unkC0;
+                g_collision_segment_work->unkB4 =
+                    g_collision_segment_work->unkBC;
+                g_collision_segment_work->unkB8 =
+                    g_collision_segment_work->unkC0;
             }
             if (n > 0) {
                 data += n * 2;
             }
-            if (D_800A33F4->unkE0 != 0) {
-                if ((D_800A33F4->unkE0 = gte_SumSquares3(
-                         D_800A33F4->unkA8 - D_800A33F4->unk4C,
-                         D_800A33F4->unkAC - D_800A33F4->unk4E,
-                         D_800A33F4->unkB0 - D_800A33F4->unk50)) <
-                    D_800A33F4->unk0) {
-                    D_800A33F4->unk48 = arg0;
-                    D_800A33F4->unk4A = arg1;
-                    D_800A33F4->unk38 = D_800A33F4->unkA8;
-                    D_800A33F4->unk3C = D_800A33F4->unkAC;
-                    D_800A33F4->unk40 = D_800A33F4->unkB0;
-                    D_800A33F4->unk28 = D_800A33F4->unkD0;
-                    D_800A33F4->unk2C = D_800A33F4->unkD4;
-                    D_800A33F4->unk30 = D_800A33F4->unkD8;
-                    D_800A33F4->unk34 = D_800A33F4->unkDC;
-                    D_800A33F4->unk0 = D_800A33F4->unkE0;
-                    D_800A33F4->unk4 = D_800A33F4->unkCC;
+            if (g_collision_segment_work->unkE0 != 0) {
+                if ((g_collision_segment_work->unkE0 = gte_SumSquares3(
+                         g_collision_segment_work->unkA8 -
+                             g_collision_segment_work->unk4C,
+                         g_collision_segment_work->unkAC -
+                             g_collision_segment_work->unk4E,
+                         g_collision_segment_work->unkB0 -
+                             g_collision_segment_work->unk50)) <
+                    g_collision_segment_work->unk0) {
+                    g_collision_segment_work->unk48 = arg0;
+                    g_collision_segment_work->unk4A = arg1;
+                    g_collision_segment_work->unk38 =
+                        g_collision_segment_work->unkA8;
+                    g_collision_segment_work->unk3C =
+                        g_collision_segment_work->unkAC;
+                    g_collision_segment_work->unk40 =
+                        g_collision_segment_work->unkB0;
+                    g_collision_segment_work->unk28 =
+                        g_collision_segment_work->unkD0;
+                    g_collision_segment_work->unk2C =
+                        g_collision_segment_work->unkD4;
+                    g_collision_segment_work->unk30 =
+                        g_collision_segment_work->unkD8;
+                    g_collision_segment_work->unk34 =
+                        g_collision_segment_work->unkDC;
+                    g_collision_segment_work->unk0 =
+                        g_collision_segment_work->unkE0;
+                    g_collision_segment_work->unk4 =
+                        g_collision_segment_work->unkCC;
                 }
             }
         } else {
@@ -429,7 +518,7 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
             data += (n + 1) * 2;
         }
     }
-    return D_800A33F4->unk0 != 0x7FFFFFFF;
+    return g_collision_segment_work->unk0 != 0x7FFFFFFF;
 }
 
 s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
@@ -444,114 +533,152 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
     if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
         return 0;
     }
-    D_800A33F4->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
-    if (D_800A33F4->unkE0 == 0xFFFF) {
+    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    if (g_collision_segment_work->unkE0 == 0xFFFF) {
         return 0;
     }
-    data = (s16 *)(D_800A33F0 + D_800A33F4->unkE0);
+    data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
     x = arg0 * 2000 - 32000;
     z = arg1 * 2000 - 32000;
-    D_800A33F4->unk4C = D_800A33F4->unk8.vx - x;
-    D_800A33F4->unk4E = D_800A33F4->unk8.vy;
-    D_800A33F4->unk50 = D_800A33F4->unk8.vz - z;
-    D_800A33F4->unk54 = D_800A33F4->unk18.vx - x;
-    D_800A33F4->unk56 = D_800A33F4->unk18.vy;
-    D_800A33F4->unk58 = D_800A33F4->unk18.vz - z;
+    g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
+    g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
+    g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
+    g_collision_segment_work->unk54 = g_collision_segment_work->unk18.vx - x;
+    g_collision_segment_work->unk56 = g_collision_segment_work->unk18.vy;
+    g_collision_segment_work->unk58 = g_collision_segment_work->unk18.vz - z;
 
     count = *data;
     data++;
     while (--count != -1) {
-        D_800A33F4->unkD0 = *data;
+        g_collision_segment_work->unkD0 = *data;
         data++;
-        D_800A33F4->unkD4 = *data;
+        g_collision_segment_work->unkD4 = *data;
         data++;
-        D_800A33F4->unkD8 = *data;
+        g_collision_segment_work->unkD8 = *data;
         data++;
-        D_800A33F4->unkDC = (u16)*data;
+        g_collision_segment_work->unkDC = (u16)*data;
         data++;
-        D_800A33F4->unkDC = (*data << 16) | D_800A33F4->unkDC;
+        g_collision_segment_work->unkDC =
+            (*data << 16) | g_collision_segment_work->unkDC;
         data++;
-        D_800A33F4->unkE4 =
-            D_800A33F4->unkD0 * D_800A33F4->unk4C +
-            D_800A33F4->unkD4 * D_800A33F4->unk4E +
-            D_800A33F4->unkD8 * D_800A33F4->unk50 + D_800A33F4->unkDC;
-        D_800A33F4->unkE8 =
-            D_800A33F4->unkD0 * D_800A33F4->unk54 +
-            D_800A33F4->unkD4 * D_800A33F4->unk56 +
-            D_800A33F4->unkD8 * D_800A33F4->unk58 + D_800A33F4->unkDC;
+        g_collision_segment_work->unkE4 =
+            g_collision_segment_work->unkD0 * g_collision_segment_work->unk4C +
+            g_collision_segment_work->unkD4 * g_collision_segment_work->unk4E +
+            g_collision_segment_work->unkD8 * g_collision_segment_work->unk50 +
+            g_collision_segment_work->unkDC;
+        g_collision_segment_work->unkE8 =
+            g_collision_segment_work->unkD0 * g_collision_segment_work->unk54 +
+            g_collision_segment_work->unkD4 * g_collision_segment_work->unk56 +
+            g_collision_segment_work->unkD8 * g_collision_segment_work->unk58 +
+            g_collision_segment_work->unkDC;
 
-        D_800A33F4->unkE4 =
-            (D_800A33F4->unkE4 < 0 ? -1 : 1) *
-            ((D_800A33F4->unkE4 < 0 ? -D_800A33F4->unkE4 : D_800A33F4->unkE4) >>
+        g_collision_segment_work->unkE4 =
+            (g_collision_segment_work->unkE4 < 0 ? -1 : 1) *
+            ((g_collision_segment_work->unkE4 < 0
+                  ? -g_collision_segment_work->unkE4
+                  : g_collision_segment_work->unkE4) >>
              14);
-        D_800A33F4->unkE8 =
-            (D_800A33F4->unkE8 < 0 ? -1 : 1) *
-            ((D_800A33F4->unkE8 < 0 ? -D_800A33F4->unkE8 : D_800A33F4->unkE8) >>
+        g_collision_segment_work->unkE8 =
+            (g_collision_segment_work->unkE8 < 0 ? -1 : 1) *
+            ((g_collision_segment_work->unkE8 < 0
+                  ? -g_collision_segment_work->unkE8
+                  : g_collision_segment_work->unkE8) >>
              14);
 
-        if (D_800A33F4->unkE4 >= 0 && D_800A33F4->unkE8 < 0) {
-            D_800A33F4->unkE0 = D_800A33F4->unkE4 - D_800A33F4->unkE8;
-            D_800A33F4->unkA8 = (D_800A33F4->unk54 - D_800A33F4->unk4C) *
-                                    D_800A33F4->unkE4 / D_800A33F4->unkE0 +
-                                D_800A33F4->unk4C;
-            D_800A33F4->unkAC = (D_800A33F4->unk56 - D_800A33F4->unk4E) *
-                                    D_800A33F4->unkE4 / D_800A33F4->unkE0 +
-                                D_800A33F4->unk4E;
-            D_800A33F4->unkB0 = (D_800A33F4->unk58 - D_800A33F4->unk50) *
-                                    D_800A33F4->unkE4 / D_800A33F4->unkE0 +
-                                D_800A33F4->unk50;
+        if (g_collision_segment_work->unkE4 >= 0 &&
+            g_collision_segment_work->unkE8 < 0) {
+            g_collision_segment_work->unkE0 = g_collision_segment_work->unkE4 -
+                                              g_collision_segment_work->unkE8;
+            g_collision_segment_work->unkA8 =
+                (g_collision_segment_work->unk54 -
+                 g_collision_segment_work->unk4C) *
+                    g_collision_segment_work->unkE4 /
+                    g_collision_segment_work->unkE0 +
+                g_collision_segment_work->unk4C;
+            g_collision_segment_work->unkAC =
+                (g_collision_segment_work->unk56 -
+                 g_collision_segment_work->unk4E) *
+                    g_collision_segment_work->unkE4 /
+                    g_collision_segment_work->unkE0 +
+                g_collision_segment_work->unk4E;
+            g_collision_segment_work->unkB0 =
+                (g_collision_segment_work->unk58 -
+                 g_collision_segment_work->unk50) *
+                    g_collision_segment_work->unkE4 /
+                    g_collision_segment_work->unkE0 +
+                g_collision_segment_work->unk50;
             gte_TransformPointDifferenceWithInheritedLastRow(
-                (s32)data, D_800A33F4->unkA8, D_800A33F4->unkAC,
-                D_800A33F4->unkB0);
+                (s32)data, g_collision_segment_work->unkA8,
+                g_collision_segment_work->unkAC,
+                g_collision_segment_work->unkB0);
             data += 9;
             var_6 = (u16)*data;
             data++;
             n = var_6;
-            D_800A33F4->unkCC = n >> 8;
+            g_collision_segment_work->unkCC = n >> 8;
             n &= 0xFF;
-            D_800A33F4->unkB4 = *data;
+            g_collision_segment_work->unkB4 = *data;
             data++;
             y = *data;
             data++;
-            D_800A33F4->unkE0 = 1;
-            D_800A33F4->unkB8 = y;
-            gte_ReadIR1IR2Sra2(&D_800A33F4->unkC4, &D_800A33F4->unkC8);
+            g_collision_segment_work->unkE0 = 1;
+            g_collision_segment_work->unkB8 = y;
+            gte_ReadIR1IR2Sra2(&g_collision_segment_work->unkC4,
+                               &g_collision_segment_work->unkC8);
             while (--n != -1) {
-                D_800A33F4->unkBC = *data;
+                g_collision_segment_work->unkBC = *data;
                 data++;
-                D_800A33F4->unkC0 = *data;
+                g_collision_segment_work->unkC0 = *data;
                 data++;
-                if ((D_800A33F4->unkC4 - D_800A33F4->unkB4) *
-                            (D_800A33F4->unkC0 - D_800A33F4->unkB8) -
-                        (D_800A33F4->unkC8 - D_800A33F4->unkB8) *
-                            (D_800A33F4->unkBC - D_800A33F4->unkB4) >
+                if ((g_collision_segment_work->unkC4 -
+                     g_collision_segment_work->unkB4) *
+                            (g_collision_segment_work->unkC0 -
+                             g_collision_segment_work->unkB8) -
+                        (g_collision_segment_work->unkC8 -
+                         g_collision_segment_work->unkB8) *
+                            (g_collision_segment_work->unkBC -
+                             g_collision_segment_work->unkB4) >
                     0) {
-                    D_800A33F4->unkE0 = 0;
+                    g_collision_segment_work->unkE0 = 0;
                     break;
                 }
-                D_800A33F4->unkB4 = D_800A33F4->unkBC;
-                D_800A33F4->unkB8 = D_800A33F4->unkC0;
+                g_collision_segment_work->unkB4 =
+                    g_collision_segment_work->unkBC;
+                g_collision_segment_work->unkB8 =
+                    g_collision_segment_work->unkC0;
             }
             if (n > 0) {
                 data += n * 2;
             }
-            if (D_800A33F4->unkE0 != 0) {
-                if ((D_800A33F4->unkE0 = gte_SumSquares3(
-                         D_800A33F4->unkA8 - D_800A33F4->unk4C,
-                         D_800A33F4->unkAC - D_800A33F4->unk4E,
-                         D_800A33F4->unkB0 - D_800A33F4->unk50)) <
-                    D_800A33F4->unk0) {
-                    D_800A33F4->unk48 = arg0;
-                    D_800A33F4->unk4A = arg1;
-                    D_800A33F4->unk38 = D_800A33F4->unkA8;
-                    D_800A33F4->unk3C = D_800A33F4->unkAC;
-                    D_800A33F4->unk40 = D_800A33F4->unkB0;
-                    D_800A33F4->unk28 = D_800A33F4->unkD0;
-                    D_800A33F4->unk2C = D_800A33F4->unkD4;
-                    D_800A33F4->unk30 = D_800A33F4->unkD8;
-                    D_800A33F4->unk34 = D_800A33F4->unkDC;
-                    D_800A33F4->unk0 = D_800A33F4->unkE0;
-                    D_800A33F4->unk4 = D_800A33F4->unkCC;
+            if (g_collision_segment_work->unkE0 != 0) {
+                if ((g_collision_segment_work->unkE0 = gte_SumSquares3(
+                         g_collision_segment_work->unkA8 -
+                             g_collision_segment_work->unk4C,
+                         g_collision_segment_work->unkAC -
+                             g_collision_segment_work->unk4E,
+                         g_collision_segment_work->unkB0 -
+                             g_collision_segment_work->unk50)) <
+                    g_collision_segment_work->unk0) {
+                    g_collision_segment_work->unk48 = arg0;
+                    g_collision_segment_work->unk4A = arg1;
+                    g_collision_segment_work->unk38 =
+                        g_collision_segment_work->unkA8;
+                    g_collision_segment_work->unk3C =
+                        g_collision_segment_work->unkAC;
+                    g_collision_segment_work->unk40 =
+                        g_collision_segment_work->unkB0;
+                    g_collision_segment_work->unk28 =
+                        g_collision_segment_work->unkD0;
+                    g_collision_segment_work->unk2C =
+                        g_collision_segment_work->unkD4;
+                    g_collision_segment_work->unk30 =
+                        g_collision_segment_work->unkD8;
+                    g_collision_segment_work->unk34 =
+                        g_collision_segment_work->unkDC;
+                    g_collision_segment_work->unk0 =
+                        g_collision_segment_work->unkE0;
+                    g_collision_segment_work->unk4 =
+                        g_collision_segment_work->unkCC;
                 }
             }
         } else {
@@ -562,7 +689,7 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
             data += (n + 1) * 2;
         }
     }
-    return D_800A33F4->unk0 != 0x7FFFFFFF;
+    return g_collision_segment_work->unk0 != 0x7FFFFFFF;
 }
 
 void collision_SetGrid(s32 a0) { D_800A33F0 = a0; }
@@ -660,10 +787,10 @@ void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void) {
 }
 
 /* .data 0x80099D54..0x80099D88, this file's whole .data (d_89C78.c's
- * D_80099D3C ends at 0x80099D54; 4510C.c's D_80099D88 follows):
+ * D_80099D3C ends at 0x80099D54; 4510C.c's g_cpu_profiles follows):
  * per-entry base sequence ids (-1: none);
  * motion_StartPlaybackAtIndexedBasePlusOffset starts sequence D_80099D54[a0] +
- * a1 - 0x131. The final 0 fills the 0x34 bytes to D_80099D88. Defined after
+ * a1 - 0x131. The final 0 fills the 0x34 bytes to g_cpu_profiles. Defined after
  * every function, so no body sees a definition where it saw an extern. */
 s16 D_80099D54[26] = {
     0x131, 0x151, 0x171, 0x192, 0x1AD, -1,    0x1CB, 0x1E6, 0x204,

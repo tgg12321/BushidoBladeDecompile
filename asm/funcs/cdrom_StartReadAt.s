@@ -9,15 +9,15 @@ glabel cdrom_StartReadAt
     /* 27650 80036E50 1000B0AF */   sw        $s0, 0x10($sp)
     /* 27654 80036E54 0C004010 */  beqz       $v0, .L80036E88
     /* 27658 80036E58 00000000 */   nop
-    /* 2765C 80036E5C 1080103C */  lui        $s0, %hi(D_80101E58 + 0x14)
-    /* 27660 80036E60 6C1E1026 */  addiu      $s0, $s0, %lo(D_80101E58 + 0x14)
+    /* 2765C 80036E5C 1080103C */  lui        $s0, %hi(g_cdrom_state + 0x14)
+    /* 27660 80036E60 6C1E1026 */  addiu      $s0, $s0, %lo(g_cdrom_state + 0x14)
     /* 27664 80036E64 EA01020C */  jal        CdPosToInt
     /* 27668 80036E68 21200002 */   addu      $a0, $s0, $zero
     /* 2766C 80036E6C 21205100 */  addu       $a0, $v0, $s1
     /* 27670 80036E70 A901020C */  jal        CdIntToPos
     /* 27674 80036E74 21280002 */   addu      $a1, $s0, $zero
-    /* 27678 80036E78 1080013C */  lui        $at, %hi(D_80101E58 + 0x20)
-    /* 2767C 80036E7C 781E32AC */  sw         $s2, %lo(D_80101E58 + 0x20)($at)
+    /* 27678 80036E78 1080013C */  lui        $at, %hi(g_cdrom_state + 0x20)
+    /* 2767C 80036E7C 781E32AC */  sw         $s2, %lo(g_cdrom_state + 0x20)($at)
     /* 27680 80036E80 A3DB0008 */  j          .L80036E8C
     /* 27684 80036E84 01000224 */   addiu     $v0, $zero, 0x1
   .L80036E88:

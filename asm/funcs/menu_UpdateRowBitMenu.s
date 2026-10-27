@@ -4,8 +4,8 @@ glabel menu_UpdateRowBitMenu
     /* 5DB40 8006D340 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5DB44 8006D344 7400A5AF */  sw         $a1, 0x74($sp)
     /* 5DB48 8006D348 4804828F */  lw         $v0, %gp_rel(D_800A3514)($gp)
-    /* 5DB4C 8006D34C 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 5DB50 8006D350 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 5DB4C 8006D34C 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 5DB50 8006D350 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 5DB54 8006D354 0A80053C */  lui        $a1, %hi(D_800A3518)
     /* 5DB58 8006D358 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
     /* 5DB5C 8006D35C 6C00BFAF */  sw         $ra, 0x6C($sp)

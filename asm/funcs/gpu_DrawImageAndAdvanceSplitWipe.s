@@ -11,8 +11,8 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 504C0 8005FCC0 D402D426 */  addiu      $s4, $s6, 0x2D4
     /* 504C4 8005FCC4 5800A8AF */  sw         $t0, 0x58($sp)
     /* 504C8 8005FCC8 F802C826 */  addiu      $t0, $s6, 0x2F8
-    /* 504CC 8005FCCC 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 504D0 8005FCD0 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 504CC 8005FCCC 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 504D0 8005FCD0 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 504D4 8005FCD4 21208002 */  addu       $a0, $s4, $zero
     /* 504D8 8005FCD8 A400BFAF */  sw         $ra, 0xA4($sp)
     /* 504DC 8005FCDC A000BEAF */  sw         $fp, 0xA0($sp)

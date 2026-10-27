@@ -246,8 +246,8 @@ glabel motion_UpdatePlayback
     /* 454B4 80054CB4 00000000 */   nop
     /* 454B8 80054CB8 9DFC000C */  jal        gpu_ResetAndStampViewCenteredCellAttributes
     /* 454BC 80054CBC 00000000 */   nop
-    /* 454C0 80054CC0 0F80103C */  lui        $s0, %hi(D_800F62E0)
-    /* 454C4 80054CC4 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)
+    /* 454C0 80054CC0 0F80103C */  lui        $s0, %hi(g_light_setups)
+    /* 454C4 80054CC4 E0621026 */  addiu      $s0, $s0, %lo(g_light_setups)
     /* 454C8 80054CC8 7F28010C */  jal        calc_LightMatrix
     /* 454CC 80054CCC 21200002 */   addu      $a0, $s0, $zero
     /* 454D0 80054CD0 7F28010C */  jal        calc_LightMatrix

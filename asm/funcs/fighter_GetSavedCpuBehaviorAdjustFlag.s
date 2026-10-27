@@ -1,6 +1,6 @@
 glabel fighter_GetSavedCpuBehaviorAdjustFlag
-    /* 6FBC 800167BC 1080023C */  lui        $v0, %hi(D_80106A50 + 0x23)
-    /* 6FC0 800167C0 736A4290 */  lbu        $v0, %lo(D_80106A50 + 0x23)($v0)
+    /* 6FBC 800167BC 1080023C */  lui        $v0, %hi(g_saved_record + 0x23)
+    /* 6FC0 800167C0 736A4290 */  lbu        $v0, %lo(g_saved_record + 0x23)($v0)
     /* 6FC4 800167C4 00000000 */  nop
     /* 6FC8 800167C8 42100200 */  srl        $v0, $v0, 1
     /* 6FCC 800167CC 0800E003 */  jr         $ra

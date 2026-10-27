@@ -113,11 +113,12 @@ u8 g_sqrt_table_u8[0x400] = {
     253, 253, 253, 253, 254, 254, 254, 254, 254, 254, 254, 254, 255, 255, 255,
     255, 255, 255, 255};
 
-/* [D_800A36A4] -> cdrom_StartAudioEntry (9F9C.c); size from the gap. */
+/* [g_fight_stage_index] -> cdrom_StartAudioEntry (9F9C.c); size from the gap.
+ */
 u8 D_8008D518[32] = {0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
                      4, 0, 2, 0, 0, 0, 2, 2, 3, 3, 4, 4, 0, 3, 3, 2};
 
-/* [D_80102778.unk_4[i] / fighter_Init's arg2] -> Unk80101EC8Record.unk_0A;
+/* [g_fight_config.unk_4[i] / fighter_Init's arg2] -> Unk80101EC8Record.unk_0A;
  * size from the gap. */
 u8 D_8008D538[36] = {
     0,  1,  2,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
@@ -127,7 +128,7 @@ u8 D_8008D538[36] = {
 u8 D_8008D55C[28] = {3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 18, 19,
                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0};
 
-/* [D_80102778.unk_4[i]] -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels's
+/* [g_fight_config.unk_4[i]] -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels's
  * arg1; [unk_0C] -> D_80094C68's index (fighter_Init); size from the gap. */
 u8 D_8008D578[36] = {
     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
@@ -208,8 +209,9 @@ SVec4i16 *D_8008D88C[32] = {
     NULL,       NULL,       NULL, NULL,       NULL,       NULL,
     D_8008D844, D_8008D854};
 
-/* [D_8008D9EC[unk_0A]][unk_0E]: the move command fighter_Update hands
- * object_SpawnScatteredAt; D_8008D9EC holds only 0 and 1, so two rows. */
+/* [g_fighter_group_flags[unk_0A]][unk_0E]: the move command fighter_Update
+ * hands object_SpawnScatteredAt; g_fighter_group_flags holds only 0 and 1, so
+ * two rows. */
 u8 D_8008D90C[2][8] = {{0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
                        {0x13, 0x15, 0x17, 0x19, 0x1B, 0x1B, 0x1D, 0x1D}};
 
@@ -231,8 +233,8 @@ const char *D_8008D91C[52] = {
     D_800100FC[3],  D_800100FC[2],  D_800100FC[1],  D_800100FC[0]};
 
 /* Unk80101EC8Record.unk_0A -> row of D_8008D90C (0 / 1). */
-u8 D_8008D9EC[28] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
-                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0};
+u8 g_fighter_group_flags[28] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0};
 
 /* fighter_UpdateInputSteeredForwardMotion's table. */
 u8 D_8008DA08[72] = {
@@ -454,7 +456,7 @@ u16 D_8008E4D0[27][4] = {
     {0x1000, 0xFF0, 0xFE0, 0xFD0}, {0x1000, 0xFF0, 0xFE0, 0xFD0},
     {0x1000, 0xFF0, 0xFE0, 0xFD0}};
 
-/* [D_80102778.unk_4[i]] (9F9C.c: D_800A30FC / D_800A30FD,
+/* [g_fight_config.unk_4[i]] (9F9C.c: D_800A30FC / D_800A30FD,
  * snd_ReloadListedVabsFromFileAndInstallBillboards; 17AFC.c); size from the
  * gap. */
 u8 D_8008E5A8[36] = {0, 0, 0, 1, 3, 1, 2, 2, 0, 3, 2, 2, 2, 4, 2, 0, 0, 0,
@@ -531,8 +533,8 @@ u8 D_8008E778[100][4] = {
  * D_8008EC24's rank rows). */
 u8 D_8008E908[2][5] = {{7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
 
-/* 38 rows indexed by D_800A36A4 (g_fight_start_position_pairs also has 38
- * rows): the four (type, value) sound pairs snd_UpdateStageSounds walks. */
+/* 38 rows indexed by g_fight_stage_index (g_fight_start_position_pairs also has
+ * 38 rows): the four (type, value) sound pairs snd_UpdateStageSounds walks. */
 u8 D_8008E914[38][8] = {
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},

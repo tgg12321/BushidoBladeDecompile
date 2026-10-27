@@ -150,8 +150,8 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1D048 8002C848 0A80013C */  lui        $at, %hi(D_800A3748)
     /* 1D04C 8002C84C 483720A0 */  sb         $zero, %lo(D_800A3748)($at)
   .L8002C850:
-    /* 1D050 8002C850 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 1D054 8002C854 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 1D050 8002C850 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 1D054 8002C854 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 1D058 8002C858 21480000 */  addu       $t1, $zero, $zero
   .L8002C85C:
     /* 1D05C 8002C85C 1080023C */  lui        $v0, %hi(D_80101EC8 + 0x210)

@@ -14,8 +14,8 @@ glabel comb_ResetClose
     /* 2ABCC 8003A3CC 99E8000C */  jal        comb_Close
     /* 2ABD0 8003A3D0 00000000 */   nop
     /* 2ABD4 8003A3D4 08000224 */  addiu      $v0, $zero, 0x8
-    /* 2ABD8 8003A3D8 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2ABDC 8003A3DC 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2ABD8 8003A3D8 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2ABDC 8003A3DC 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2ABE0 8003A3E0 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2ABE4 8003A3E4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2ABE8 8003A3E8 0800E003 */  jr         $ra

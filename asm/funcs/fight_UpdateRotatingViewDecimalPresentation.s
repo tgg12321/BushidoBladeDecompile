@@ -14,8 +14,8 @@ glabel fight_UpdateRotatingViewDecimalPresentation
     /* 2D540 8003CD40 0F80013C */  lui        $at, %hi(D_800F6610)
     /* 2D544 8003CD44 106620AC */  sw         $zero, %lo(D_800F6610)($at)
     /* 2D548 8003CD48 100082A4 */  sh         $v0, 0x10($a0)
-    /* 2D54C 8003CD4C 0A80023C */  lui        $v0, %hi(D_800A36AC)
-    /* 2D550 8003CD50 AC36428C */  lw         $v0, %lo(D_800A36AC)($v0)
+    /* 2D54C 8003CD4C 0A80023C */  lui        $v0, %hi(g_gpu_presented_frame_count)
+    /* 2D550 8003CD50 AC36428C */  lw         $v0, %lo(g_gpu_presented_frame_count)($v0)
     /* 2D554 8003CD54 10270324 */  addiu      $v1, $zero, 0x2710
     /* 2D558 8003CD58 0F80013C */  lui        $at, %hi(D_800F661C)
     /* 2D55C 8003CD5C 1C6620A4 */  sh         $zero, %lo(D_800F661C)($at)
@@ -37,12 +37,12 @@ glabel fight_UpdateRotatingViewDecimalPresentation
     /* 2D59C 8003CD9C 80100200 */  sll        $v0, $v0, 2
     /* 2D5A0 8003CDA0 0A80033C */  lui        $v1, %hi(g_prim_buf_cursor)
     /* 2D5A4 8003CDA4 B438638C */  lw         $v1, %lo(g_prim_buf_cursor)($v1)
-    /* 2D5A8 8003CDA8 0A80043C */  lui        $a0, %hi(D_800A37B8)
-    /* 2D5AC 8003CDAC B837848C */  lw         $a0, %lo(D_800A37B8)($a0)
+    /* 2D5A8 8003CDA8 0A80043C */  lui        $a0, %hi(g_handler_frame_counter)
+    /* 2D5AC 8003CDAC B837848C */  lw         $a0, %lo(g_handler_frame_counter)($a0)
     /* 2D5B0 8003CDB0 21186200 */  addu       $v1, $v1, $v0
     /* 2D5B4 8003CDB4 01008424 */  addiu      $a0, $a0, 0x1
-    /* 2D5B8 8003CDB8 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 2D5BC 8003CDBC B83724AC */  sw         $a0, %lo(D_800A37B8)($at)
+    /* 2D5B8 8003CDB8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 2D5BC 8003CDBC B83724AC */  sw         $a0, %lo(g_handler_frame_counter)($at)
     /* 2D5C0 8003CDC0 97008428 */  slti       $a0, $a0, 0x97
     /* 2D5C4 8003CDC4 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
     /* 2D5C8 8003CDC8 B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
@@ -60,8 +60,8 @@ glabel fight_UpdateRotatingViewDecimalPresentation
     /* 2D5F4 8003CDF4 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2D5F8 8003CDF8 00000000 */   nop
     /* 2D5FC 8003CDFC 08000224 */  addiu      $v0, $zero, 0x8
-    /* 2D600 8003CE00 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 2D604 8003CE04 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 2D600 8003CE00 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 2D604 8003CE04 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8003CE08:
     /* 2D608 8003CE08 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2D60C 8003CE0C 1800BD27 */  addiu      $sp, $sp, 0x18

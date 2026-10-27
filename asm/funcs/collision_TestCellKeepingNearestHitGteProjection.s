@@ -18,7 +18,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 446DC 80053EDC 2110B300 */  addu       $v0, $a1, $s3
     /* 446E0 80053EE0 40100200 */  sll        $v0, $v0, 1
     /* 446E4 80053EE4 2403838F */  lw         $v1, %gp_rel(D_800A33F0)($gp)
-    /* 446E8 80053EE8 2803878F */  lw         $a3, %gp_rel(D_800A33F4)($gp)
+    /* 446E8 80053EE8 2803878F */  lw         $a3, %gp_rel(g_collision_segment_work)($gp)
     /* 446EC 80053EEC 21104300 */  addu       $v0, $v0, $v1
     /* 446F0 80053EF0 00004494 */  lhu        $a0, 0x0($v0)
     /* 446F4 80053EF4 FFFF0234 */  ori        $v0, $zero, 0xFFFF
@@ -62,7 +62,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44784 80053F84 13014212 */  beq        $s2, $v0, .L800543D4
     /* 44788 80053F88 02003126 */   addiu     $s1, $s1, 0x2
   .L80053F8C:
-    /* 4478C 80053F8C 2803848F */  lw         $a0, %gp_rel(D_800A33F4)($gp)
+    /* 4478C 80053F8C 2803848F */  lw         $a0, %gp_rel(g_collision_segment_work)($gp)
     /* 44790 80053F90 00002286 */  lh         $v0, 0x0($s1)
     /* 44794 80053F94 4C008384 */  lh         $v1, 0x4C($a0)
     /* 44798 80053F98 D00082AC */  sw         $v0, 0xD0($a0)
@@ -131,7 +131,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44890 80054090 12600000 */  mflo       $t4
     /* 44894 80054094 1000ACAF */  sw         $t4, 0x10($sp)
     /* 44898 80054098 1000AC8F */  lw         $t4, 0x10($sp)
-    /* 4489C 8005409C 2803858F */  lw         $a1, %gp_rel(D_800A33F4)($gp)
+    /* 4489C 8005409C 2803858F */  lw         $a1, %gp_rel(g_collision_segment_work)($gp)
     /* 448A0 800540A0 E4008CAC */  sw         $t4, 0xE4($a0)
     /* 448A4 800540A4 E800A28C */  lw         $v0, 0xE8($a1)
     /* 448A8 800540A8 00000000 */  nop
@@ -153,7 +153,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 448D8 800540D8 12600000 */  mflo       $t4
     /* 448DC 800540DC 1000ACAF */  sw         $t4, 0x10($sp)
     /* 448E0 800540E0 1000AC8F */  lw         $t4, 0x10($sp)
-    /* 448E4 800540E4 28038B8F */  lw         $t3, %gp_rel(D_800A33F4)($gp)
+    /* 448E4 800540E4 28038B8F */  lw         $t3, %gp_rel(g_collision_segment_work)($gp)
     /* 448E8 800540E8 E800ACAC */  sw         $t4, 0xE8($a1)
     /* 448EC 800540EC E400648D */  lw         $a0, 0xE4($t3)
     /* 448F0 800540F0 00000000 */  nop
@@ -240,7 +240,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44A1C 8005421C B00067AD */   sw        $a3, 0xB0($t3)
     /* 44A20 80054220 00002296 */  lhu        $v0, 0x0($s1)
     /* 44A24 80054224 02003126 */  addiu      $s1, $s1, 0x2
-    /* 44A28 80054228 2803838F */  lw         $v1, %gp_rel(D_800A33F4)($gp)
+    /* 44A28 80054228 2803838F */  lw         $v1, %gp_rel(g_collision_segment_work)($gp)
     /* 44A2C 8005422C 00140200 */  sll        $v0, $v0, 16
     /* 44A30 80054230 03840200 */  sra        $s0, $v0, 16
     /* 44A34 80054234 FF001032 */  andi       $s0, $s0, 0xFF
@@ -261,7 +261,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44A70 80054270 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 44A74 80054274 1D000212 */  beq        $s0, $v0, .L800542EC
     /* 44A78 80054278 00000000 */   nop
-    /* 44A7C 8005427C 2803878F */  lw         $a3, %gp_rel(D_800A33F4)($gp)
+    /* 44A7C 8005427C 2803878F */  lw         $a3, %gp_rel(g_collision_segment_work)($gp)
     /* 44A80 80054280 FFFF0A24 */  addiu      $t2, $zero, -0x1
     /* 44A84 80054284 C400E98C */  lw         $t1, 0xC4($a3)
     /* 44A88 80054288 C800E88C */  lw         $t0, 0xC8($a3)
@@ -295,7 +295,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44AF0 800542F0 80101000 */   sll       $v0, $s0, 2
     /* 44AF4 800542F4 21882202 */  addu       $s1, $s1, $v0
   .L800542F8:
-    /* 44AF8 800542F8 2803868F */  lw         $a2, %gp_rel(D_800A33F4)($gp)
+    /* 44AF8 800542F8 2803868F */  lw         $a2, %gp_rel(g_collision_segment_work)($gp)
     /* 44AFC 800542FC 00000000 */  nop
     /* 44B00 80054300 E000C28C */  lw         $v0, 0xE0($a2)
     /* 44B04 80054304 00000000 */  nop
@@ -311,7 +311,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44B2C 8005432C 2328A300 */  subu       $a1, $a1, $v1
     /* 44B30 80054330 D549010C */  jal        gte_SumSquares3
     /* 44B34 80054334 2330C200 */   subu      $a2, $a2, $v0
-    /* 44B38 80054338 28038B8F */  lw         $t3, %gp_rel(D_800A33F4)($gp)
+    /* 44B38 80054338 28038B8F */  lw         $t3, %gp_rel(g_collision_segment_work)($gp)
     /* 44B3C 8005433C 00000000 */  nop
     /* 44B40 80054340 0000638D */  lw         $v1, 0x0($t3)
     /* 44B44 80054344 E00062AD */  sw         $v0, 0xE0($t3)
@@ -353,7 +353,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 44BCC 800543CC EFFE4216 */  bne        $s2, $v0, .L80053F8C
     /* 44BD0 800543D0 00000000 */   nop
   .L800543D4:
-    /* 44BD4 800543D4 2803828F */  lw         $v0, %gp_rel(D_800A33F4)($gp)
+    /* 44BD4 800543D4 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 44BD8 800543D8 FF7F033C */  lui        $v1, (0x7FFFFFFF >> 16)
     /* 44BDC 800543DC 0000428C */  lw         $v0, 0x0($v0)
     /* 44BE0 800543E0 FFFF6334 */  ori        $v1, $v1, (0x7FFFFFFF & 0xFFFF)

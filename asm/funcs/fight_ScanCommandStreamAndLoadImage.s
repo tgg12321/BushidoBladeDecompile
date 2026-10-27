@@ -47,8 +47,8 @@ glabel fight_ScanCommandStreamAndLoadImage
     /* 2B6EC 8003AEEC 00000000 */   nop
     /* 2B6F0 8003AEF0 0A80033C */  lui        $v1, %hi(D_800A37A0)
     /* 2B6F4 8003AEF4 A0376390 */  lbu        $v1, %lo(D_800A37A0)($v1)
-    /* 2B6F8 8003AEF8 0A80023C */  lui        $v0, %hi(D_800A36A4)
-    /* 2B6FC 8003AEFC A4364294 */  lhu        $v0, %lo(D_800A36A4)($v0)
+    /* 2B6F8 8003AEF8 0A80023C */  lui        $v0, %hi(g_fight_stage_index)
+    /* 2B6FC 8003AEFC A4364294 */  lhu        $v0, %lo(g_fight_stage_index)($v0)
     /* 2B700 8003AF00 0A80013C */  lui        $at, %hi(D_800A37A8)
     /* 2B704 8003AF04 21082300 */  addu       $at, $at, $v1
     /* 2B708 8003AF08 A83722A0 */  sb         $v0, %lo(D_800A37A8)($at)

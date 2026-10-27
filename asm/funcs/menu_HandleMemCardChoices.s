@@ -26,7 +26,7 @@ glabel menu_HandleMemCardChoices
     /* 5C18C 8006B98C 8FAE0108 */  j          .L8006BA3C
     /* 5C190 8006B990 00000000 */   nop
   .L8006B994:
-    /* 5C194 8006B994 2C04848F */  lw         $a0, %gp_rel(D_800A34F8)($gp)
+    /* 5C194 8006B994 2C04848F */  lw         $a0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C198 8006B998 00400224 */  addiu      $v0, $zero, 0x4000
     /* 5C19C 8006B99C 00E08330 */  andi       $v1, $a0, 0xE000
     /* 5C1A0 8006B9A0 07006214 */  bne        $v1, $v0, .L8006B9C0
@@ -34,7 +34,7 @@ glabel menu_HandleMemCardChoices
     /* 5C1A8 8006B9A8 FFFF023C */  lui        $v0, (0xFFFF1FFF >> 16)
     /* 5C1AC 8006B9AC FF1F4234 */  ori        $v0, $v0, (0xFFFF1FFF & 0xFFFF)
     /* 5C1B0 8006B9B0 24108200 */  and        $v0, $a0, $v0
-    /* 5C1B4 8006B9B4 2C0482AF */  sw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5C1B4 8006B9B4 2C0482AF */  sw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C1B8 8006B9B8 8CAE0108 */  j          .L8006BA30
     /* 5C1BC 8006B9BC 21200000 */   addu      $a0, $zero, $zero
   .L8006B9C0:
@@ -45,7 +45,7 @@ glabel menu_HandleMemCardChoices
     /* 5C1D0 8006B9D0 87AE0108 */  j          .L8006BA1C
     /* 5C1D4 8006B9D4 01004224 */   addiu     $v0, $v0, 0x1
   .L8006B9D8:
-    /* 5C1D8 8006B9D8 2C04848F */  lw         $a0, %gp_rel(D_800A34F8)($gp)
+    /* 5C1D8 8006B9D8 2C04848F */  lw         $a0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C1DC 8006B9DC 00000000 */  nop
     /* 5C1E0 8006B9E0 00E08230 */  andi       $v0, $a0, 0xE000
     /* 5C1E4 8006B9E4 08004014 */  bnez       $v0, .L8006BA08
@@ -54,7 +54,7 @@ glabel menu_HandleMemCardChoices
     /* 5C1F0 8006B9F0 FF1F4234 */  ori        $v0, $v0, (0xFFFF1FFF & 0xFFFF)
     /* 5C1F4 8006B9F4 24108200 */  and        $v0, $a0, $v0
     /* 5C1F8 8006B9F8 00404234 */  ori        $v0, $v0, 0x4000
-    /* 5C1FC 8006B9FC 2C0482AF */  sw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5C1FC 8006B9FC 2C0482AF */  sw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C200 8006BA00 8CAE0108 */  j          .L8006BA30
     /* 5C204 8006BA04 21200000 */   addu      $a0, $zero, $zero
   .L8006BA08:
@@ -67,14 +67,14 @@ glabel menu_HandleMemCardChoices
     /* 5C21C 8006BA1C 07004230 */  andi       $v0, $v0, 0x7
     /* 5C220 8006BA20 40130200 */  sll        $v0, $v0, 13
     /* 5C224 8006BA24 25186200 */  or         $v1, $v1, $v0
-    /* 5C228 8006BA28 2C0483AF */  sw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 5C228 8006BA28 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C22C 8006BA2C 21200000 */  addu       $a0, $zero, $zero
   .L8006BA30:
     /* 5C230 8006BA30 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 5C234 8006BA34 9471010C */  jal        snd_QueueSound
     /* 5C238 8006BA38 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006BA3C:
-    /* 5C23C 8006BA3C 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5C23C 8006BA3C 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C240 8006BA40 00000000 */  nop
     /* 5C244 8006BA44 42130200 */  srl        $v0, $v0, 13
     /* 5C248 8006BA48 07004330 */  andi       $v1, $v0, 0x7
@@ -126,7 +126,7 @@ glabel menu_HandleMemCardChoices
     /* 5C2F0 8006BAF0 9471010C */  jal        snd_QueueSound
     /* 5C2F4 8006BAF4 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5C2F8 8006BAF8 01001024 */  addiu      $s0, $zero, 0x1
-    /* 5C2FC 8006BAFC 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5C2FC 8006BAFC 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C300 8006BB00 FFE30324 */  addiu      $v1, $zero, -0x1C01
     /* 5C304 8006BB04 24184300 */  and        $v1, $v0, $v1
     /* 5C308 8006BB08 82120200 */  srl        $v0, $v0, 10
@@ -135,7 +135,7 @@ glabel menu_HandleMemCardChoices
     /* 5C314 8006BB14 07004230 */  andi       $v0, $v0, 0x7
     /* 5C318 8006BB18 80120200 */  sll        $v0, $v0, 10
     /* 5C31C 8006BB1C 25186200 */  or         $v1, $v1, $v0
-    /* 5C320 8006BB20 2C0483AF */  sw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 5C320 8006BB20 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
   .L8006BB24:
     /* 5C324 8006BB24 1000033C */  lui        $v1, (0x100010 >> 16)
   .L8006BB28:

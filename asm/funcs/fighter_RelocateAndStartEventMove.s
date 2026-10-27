@@ -25,8 +25,8 @@ glabel fighter_RelocateAndStartEventMove
     /* 17E98 80027698 00000000 */   nop
     /* 17E9C 8002769C 0A000724 */  addiu      $a3, $zero, 0xA
   .L800276A0:
-    /* 17EA0 800276A0 0A80033C */  lui        $v1, %hi(D_800A36A4)
-    /* 17EA4 800276A4 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)
+    /* 17EA0 800276A0 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
+    /* 17EA4 800276A4 A4366384 */  lh         $v1, %lo(g_fight_stage_index)($v1)
     /* 17EA8 800276A8 03000224 */  addiu      $v0, $zero, 0x3
     /* 17EAC 800276AC 32006214 */  bne        $v1, $v0, .L80027778
     /* 17EB0 800276B0 40100300 */   sll       $v0, $v1, 1

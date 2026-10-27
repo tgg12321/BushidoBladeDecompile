@@ -15,7 +15,8 @@ extern u8 D_80094B48[];
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
-/* Cursor in the 10-packet bank g_gpu_draw_move_packets[D_800A36AC & 1]. */
+/* Cursor in the 10-packet bank
+ * g_gpu_draw_move_packets[g_gpu_presented_frame_count & 1]. */
 static DR_MOVE *g_gpu_draw_move_cursor;
 
 void gpu_AddDrawMove(s32 a0, s32 a1) {
@@ -24,7 +25,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
     u16 *tbl;
     s16 u, v;
 
-    var_0 = D_800A36AC & 1;
+    var_0 = g_gpu_presented_frame_count & 1;
     if (var_0 != g_gpu_draw_move_bank) {
         g_gpu_draw_move_cursor = g_gpu_draw_move_packets[var_0];
         g_gpu_draw_move_bank = var_0;

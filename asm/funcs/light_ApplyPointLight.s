@@ -1,8 +1,8 @@
 glabel light_ApplyPointLight
     /* 326B0 80041EB0 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 326B4 80041EB4 4000BEAF */  sw         $fp, 0x40($sp)
-    /* 326B8 80041EB8 0F801E3C */  lui        $fp, %hi(D_800F62E0)
-    /* 326BC 80041EBC E062DE27 */  addiu      $fp, $fp, %lo(D_800F62E0)
+    /* 326B8 80041EB8 0F801E3C */  lui        $fp, %hi(g_light_setups)
+    /* 326BC 80041EBC E062DE27 */  addiu      $fp, $fp, %lo(g_light_setups)
     /* 326C0 80041EC0 3800B6AF */  sw         $s6, 0x38($sp)
     /* 326C4 80041EC4 21B00000 */  addu       $s6, $zero, $zero
     /* 326C8 80041EC8 3C00B7AF */  sw         $s7, 0x3C($sp)

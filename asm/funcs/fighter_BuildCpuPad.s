@@ -213,9 +213,9 @@ glabel fighter_BuildCpuPad
     /* 46658 80055E58 40180200 */  sll        $v1, $v0, 1
     /* 4665C 80055E5C 21186200 */  addu       $v1, $v1, $v0
     /* 46660 80055E60 C0180300 */  sll        $v1, $v1, 3
-    /* 46664 80055E64 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 46664 80055E64 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 46668 80055E68 21082300 */  addu       $at, $at, $v1
-    /* 4666C 80055E6C 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 4666C 80055E6C 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 46670 80055E70 00000000 */  nop
     /* 46674 80055E74 00FF4230 */  andi       $v0, $v0, 0xFF00
     /* 46678 80055E78 0D004010 */  beqz       $v0, .L80055EB0
@@ -352,9 +352,9 @@ glabel fighter_BuildCpuPad
     /* 46858 80056058 40180200 */  sll        $v1, $v0, 1
     /* 4685C 8005605C 21186200 */  addu       $v1, $v1, $v0
     /* 46860 80056060 C0180300 */  sll        $v1, $v1, 3
-    /* 46864 80056064 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 46864 80056064 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 46868 80056068 21082300 */  addu       $at, $at, $v1
-    /* 4686C 8005606C 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 4686C 8005606C 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 46870 80056070 00000000 */  nop
     /* 46874 80056074 00BF4230 */  andi       $v0, $v0, 0xBF00
     /* 46878 80056078 05004014 */  bnez       $v0, .L80056090
@@ -384,8 +384,8 @@ glabel fighter_BuildCpuPad
     /* 468CC 800560CC 8D9D2290 */  lbu        $v0, %lo(D_80099D8D)($at)
     /* 468D0 800560D0 23186400 */  subu       $v1, $v1, $a0
     /* 468D4 800560D4 18006200 */  mult       $v1, $v0
-    /* 468D8 800560D8 0A80053C */  lui        $a1, %hi(D_800A387C)
-    /* 468DC 800560DC 7C38A58C */  lw         $a1, %lo(D_800A387C)($a1)
+    /* 468D8 800560D8 0A80053C */  lui        $a1, %hi(g_fighter_horizontal_separation)
+    /* 468DC 800560DC 7C38A58C */  lw         $a1, %lo(g_fighter_horizontal_separation)($a1)
     /* 468E0 800560E0 43044392 */  lbu        $v1, 0x443($s2)
     /* 468E4 800560E4 12400000 */  mflo       $t0
     /* 468E8 800560E8 03120800 */  sra        $v0, $t0, 8
@@ -569,8 +569,8 @@ glabel fighter_BuildCpuPad
     /* 46B68 80056368 00000000 */   nop
     /* 46B6C 8005636C 06004010 */  beqz       $v0, .L80056388
     /* 46B70 80056370 03000224 */   addiu     $v0, $zero, 0x3
-    /* 46B74 80056374 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 46B78 80056378 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 46B74 80056374 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 46B78 80056378 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 46B7C 8005637C 00000000 */  nop
     /* 46B80 80056380 34006214 */  bne        $v1, $v0, .L80056454
     /* 46B84 80056384 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -690,8 +690,8 @@ glabel fighter_BuildCpuPad
   .L80056510:
     /* 46D10 80056510 C2171400 */  srl        $v0, $s4, 31
     /* 46D14 80056514 21108202 */  addu       $v0, $s4, $v0
-    /* 46D18 80056518 0A80033C */  lui        $v1, %hi(D_800A387C)
-    /* 46D1C 8005651C 7C38638C */  lw         $v1, %lo(D_800A387C)($v1)
+    /* 46D18 80056518 0A80033C */  lui        $v1, %hi(g_fighter_horizontal_separation)
+    /* 46D1C 8005651C 7C38638C */  lw         $v1, %lo(g_fighter_horizontal_separation)($v1)
     /* 46D20 80056520 43100200 */  sra        $v0, $v0, 1
     /* 46D24 80056524 2A104300 */  slt        $v0, $v0, $v1
     /* 46D28 80056528 03004014 */  bnez       $v0, .L80056538
@@ -704,8 +704,8 @@ glabel fighter_BuildCpuPad
     /* 46D40 80056540 5D590108 */  j          .L80056574
     /* 46D44 80056544 02000224 */   addiu     $v0, $zero, 0x2
   .L80056548:
-    /* 46D48 80056548 0A80033C */  lui        $v1, %hi(D_800A387C)
-    /* 46D4C 8005654C 7C38638C */  lw         $v1, %lo(D_800A387C)($v1)
+    /* 46D48 80056548 0A80033C */  lui        $v1, %hi(g_fighter_horizontal_separation)
+    /* 46D4C 8005654C 7C38638C */  lw         $v1, %lo(g_fighter_horizontal_separation)($v1)
     /* 46D50 80056550 00000000 */  nop
     /* 46D54 80056554 2A108302 */  slt        $v0, $s4, $v1
     /* 46D58 80056558 03004014 */  bnez       $v0, .L80056568
@@ -779,8 +779,8 @@ glabel fighter_BuildCpuPad
     /* 46E44 80056644 80004228 */  slti       $v0, $v0, 0x80
     /* 46E48 80056648 09004010 */  beqz       $v0, .L80056670
     /* 46E4C 8005664C 00000000 */   nop
-    /* 46E50 80056650 0A80023C */  lui        $v0, %hi(D_800A387C)
-    /* 46E54 80056654 7C38428C */  lw         $v0, %lo(D_800A387C)($v0)
+    /* 46E50 80056650 0A80023C */  lui        $v0, %hi(g_fighter_horizontal_separation)
+    /* 46E54 80056654 7C38428C */  lw         $v0, %lo(g_fighter_horizontal_separation)($v0)
     /* 46E58 80056658 00000000 */  nop
     /* 46E5C 8005665C 94114228 */  slti       $v0, $v0, 0x1194
     /* 46E60 80056660 03004010 */  beqz       $v0, .L80056670
@@ -890,9 +890,9 @@ glabel fighter_BuildCpuPad
     /* 46FD8 800567D8 40180200 */  sll        $v1, $v0, 1
     /* 46FDC 800567DC 21186200 */  addu       $v1, $v1, $v0
     /* 46FE0 800567E0 C0180300 */  sll        $v1, $v1, 3
-    /* 46FE4 800567E4 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 46FE4 800567E4 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 46FE8 800567E8 21082300 */  addu       $at, $at, $v1
-    /* 46FEC 800567EC 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 46FEC 800567EC 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 46FF0 800567F0 00000000 */  nop
     /* 46FF4 800567F4 00FF4230 */  andi       $v0, $v0, 0xFF00
     /* 46FF8 800567F8 99004014 */  bnez       $v0, .L80056A60
@@ -954,9 +954,9 @@ glabel fighter_BuildCpuPad
     /* 470D0 800568D0 40180200 */  sll        $v1, $v0, 1
     /* 470D4 800568D4 21186200 */  addu       $v1, $v1, $v0
     /* 470D8 800568D8 C0180300 */  sll        $v1, $v1, 3
-    /* 470DC 800568DC 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 470DC 800568DC 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 470E0 800568E0 21082300 */  addu       $at, $at, $v1
-    /* 470E4 800568E4 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 470E4 800568E4 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 470E8 800568E8 00000000 */  nop
     /* 470EC 800568EC 20004230 */  andi       $v0, $v0, 0x20
     /* 470F0 800568F0 3C004014 */  bnez       $v0, .L800569E4
@@ -1017,9 +1017,9 @@ glabel fighter_BuildCpuPad
     /* 471B8 800569B8 40180200 */  sll        $v1, $v0, 1
     /* 471BC 800569BC 21186200 */  addu       $v1, $v1, $v0
     /* 471C0 800569C0 C0180300 */  sll        $v1, $v1, 3
-    /* 471C4 800569C4 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 471C4 800569C4 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 471C8 800569C8 21082300 */  addu       $at, $at, $v1
-    /* 471CC 800569CC 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 471CC 800569CC 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 471D0 800569D0 00000000 */  nop
     /* 471D4 800569D4 20004230 */  andi       $v0, $v0, 0x20
     /* 471D8 800569D8 21004010 */  beqz       $v0, .L80056A60
@@ -1070,9 +1070,9 @@ glabel fighter_BuildCpuPad
     /* 47278 80056A78 40180200 */  sll        $v1, $v0, 1
     /* 4727C 80056A7C 21186200 */  addu       $v1, $v1, $v0
     /* 47280 80056A80 C0180300 */  sll        $v1, $v1, 3
-    /* 47284 80056A84 0A80013C */  lui        $at, %hi(D_80099D88)
+    /* 47284 80056A84 0A80013C */  lui        $at, %hi(g_cpu_profiles)
     /* 47288 80056A88 21082300 */  addu       $at, $at, $v1
-    /* 4728C 80056A8C 889D2294 */  lhu        $v0, %lo(D_80099D88)($at)
+    /* 4728C 80056A8C 889D2294 */  lhu        $v0, %lo(g_cpu_profiles)($at)
     /* 47290 80056A90 00000000 */  nop
     /* 47294 80056A94 00804230 */  andi       $v0, $v0, 0x8000
     /* 47298 80056A98 11004010 */  beqz       $v0, .L80056AE0

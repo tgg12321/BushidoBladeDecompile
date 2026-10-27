@@ -46,7 +46,7 @@ glabel menu_DrawMemCardChoices
     /* 5C418 8006BC18 1C0002AE */  sw         $v0, 0x1C($s0)
   .L8006BC1C:
     /* 5C41C 8006BC1C 0400438E */  lw         $v1, 0x4($s2)
-    /* 5C420 8006BC20 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5C420 8006BC20 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5C424 8006BC24 0C006524 */  addiu      $a1, $v1, 0xC
     /* 5C428 8006BC28 42130200 */  srl        $v0, $v0, 13
     /* 5C42C 8006BC2C 07004230 */  andi       $v0, $v0, 0x7

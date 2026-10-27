@@ -178,8 +178,8 @@ glabel gpu_DrawIndexedCellsAndDecimalDigitPairs
     /* 5E2A8 8006DAA8 00141300 */  sll        $v0, $s3, 16
     /* 5E2AC 8006DAAC 03840200 */  sra        $s0, $v0, 16
   .L8006DAB0:
-    /* 5E2B0 8006DAB0 0A80023C */  lui        $v0, %hi(D_800A36AC)
-    /* 5E2B4 8006DAB4 AC36428C */  lw         $v0, %lo(D_800A36AC)($v0)
+    /* 5E2B0 8006DAB0 0A80023C */  lui        $v0, %hi(g_gpu_presented_frame_count)
+    /* 5E2B4 8006DAB4 AC36428C */  lw         $v0, %lo(g_gpu_presented_frame_count)($v0)
     /* 5E2B8 8006DAB8 00000000 */  nop
     /* 5E2BC 8006DABC 01004230 */  andi       $v0, $v0, 0x1
     /* 5E2C0 8006DAC0 0D004010 */  beqz       $v0, .L8006DAF8

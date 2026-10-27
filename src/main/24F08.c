@@ -31,38 +31,38 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     u8 *var_1;
     u8 *var_2;
 
-    D_800A37B8++;
+    g_handler_frame_counter++;
     rand();
     var_1 = D_800A3178;
     var_2 = D_800A3180;
     font_Printf(D_800A3188, (s32)(D_800A3174[0] == 0 ? var_2 : var_1),
-                (s8)D_80102778.unk_4[0]);
+                (s8)g_fight_config.unk_4[0]);
     font_Printf(D_800A3190, (s32)(D_800A3174[1] == 0 ? var_2 : var_1),
-                (s8)D_80102778.unk_4[1]);
+                (s8)g_fight_config.unk_4[1]);
     font_Printf(D_800A3188, (s32)(D_800A3174[0] == 1 ? var_2 : var_1),
-                (s8)D_80102778.unk_4[2]);
+                (s8)g_fight_config.unk_4[2]);
     font_Printf(D_800A3190, (s32)(D_800A3174[1] == 1 ? var_2 : var_1),
-                (s8)D_80102778.unk_4[3]);
+                (s8)g_fight_config.unk_4[3]);
     font_Printf(D_800A3198, (s32)(D_800A3174[0] == 2 ? var_2 : var_1),
-                (s8)D_80102778.unk_4[4]);
+                (s8)g_fight_config.unk_4[4]);
     font_Printf(D_800A3190, (s32)(D_800A3174[1] == 2 ? var_2 : var_1),
-                (s8)D_80102778.unk_4[5]);
+                (s8)g_fight_config.unk_4[5]);
     font_Printf(D_800A31A0, (s32)(D_800A3174[0] == 3 ? var_2 : var_1),
-                D_80102778.unk_0[0] >> 8);
+                g_fight_config.unk_0[0] >> 8);
     font_Printf(D_800A31A8, (s32)(D_800A3174[1] == 3 ? var_2 : var_1),
-                D_80102778.unk_0[1] >> 8);
+                g_fight_config.unk_0[1] >> 8);
     font_Printf(D_800A31B0, (s32)(D_800A3174[0] == 4 ? var_2 : var_1),
-                (s8)D_80102778.unk_C);
+                (s8)g_fight_config.unk_C);
     font_Printf(D_800A31B0, (s32)(D_800A3174[0] == 5 ? var_2 : var_1),
-                (s8)D_80102778.unk_D);
+                (s8)g_fight_config.unk_D);
     font_Printf(D_800A31B8, (s32)(D_800A3174[0] == 6 ? var_2 : var_1),
-                (s8)D_80102778.unk_E);
+                (s8)g_fight_config.unk_E);
     font_Printf((u8 *)D_80010834, (s32)(D_800A3174[0] == 7 ? var_2 : var_1),
-                (s8)D_80102778.unk_F);
+                (s8)g_fight_config.unk_F);
     font_Printf((u8 *)D_80010840, (s32)(D_800A3174[0] == 8 ? var_2 : var_1),
-                D_80106A50.flags & 1);
+                g_saved_record.flags & 1);
     font_Printf(D_800A31C0, (s32)(D_800A3174[0] == 9 ? var_2 : var_1),
-                (D_80106A50.flags >> 1) & 1);
+                (g_saved_record.flags >> 1) & 1);
     font_Printf(
         D_800A31C8, (s32)(D_800A3174[0] == 10 ? var_2 : var_1), D_800A36F9);
     font_Printf(
@@ -87,34 +87,34 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
             snd_QueueSound(4, 0x3F, 0x3F);
             switch (D_800A3174[i]) {
             case 0:
-                D_80102778.unk_4[i]--;
+                g_fight_config.unk_4[i]--;
                 break;
             case 1:
-                D_80102778.unk_4[2 + i]--;
+                g_fight_config.unk_4[2 + i]--;
                 break;
             case 2:
-                D_80102778.unk_4[4 + i]--;
+                g_fight_config.unk_4[4 + i]--;
                 break;
             case 3:
-                D_80102778.unk_0[i] -= 0x80;
+                g_fight_config.unk_0[i] -= 0x80;
                 break;
             case 4:
-                D_80102778.unk_C--;
+                g_fight_config.unk_C--;
                 break;
             case 5:
-                D_80102778.unk_D--;
+                g_fight_config.unk_D--;
                 break;
             case 6:
-                D_80102778.unk_E--;
+                g_fight_config.unk_E--;
                 break;
             case 7:
-                D_80102778.unk_F--;
+                g_fight_config.unk_F--;
                 break;
             case 8:
-                D_80106A50.flags ^= 1;
+                g_saved_record.flags ^= 1;
                 break;
             case 9:
-                D_80106A50.flags ^= 2;
+                g_saved_record.flags ^= 2;
                 break;
             case 10:
                 D_800A36F9--;
@@ -127,34 +127,34 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
             snd_QueueSound(4, 0x3F, 0x3F);
             switch (D_800A3174[i]) {
             case 0:
-                D_80102778.unk_4[i]++;
+                g_fight_config.unk_4[i]++;
                 break;
             case 1:
-                D_80102778.unk_4[2 + i]++;
+                g_fight_config.unk_4[2 + i]++;
                 break;
             case 2:
-                D_80102778.unk_4[4 + i]++;
+                g_fight_config.unk_4[4 + i]++;
                 break;
             case 3:
-                D_80102778.unk_0[i] += 0x80;
+                g_fight_config.unk_0[i] += 0x80;
                 break;
             case 4:
-                D_80102778.unk_C++;
+                g_fight_config.unk_C++;
                 break;
             case 5:
-                D_80102778.unk_D++;
+                g_fight_config.unk_D++;
                 break;
             case 6:
-                D_80102778.unk_E++;
+                g_fight_config.unk_E++;
                 break;
             case 7:
-                D_80102778.unk_F++;
+                g_fight_config.unk_F++;
                 break;
             case 8:
-                D_80106A50.flags ^= 1;
+                g_saved_record.flags ^= 1;
                 break;
             case 9:
-                D_80106A50.flags ^= 2;
+                g_saved_record.flags ^= 2;
                 break;
             case 10:
                 D_800A36F9++;
@@ -164,14 +164,14 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 break;
             }
         }
-        D_80102778.unk_4[i] = ((s8)D_80102778.unk_4[i] + 33) % 33;
-        D_80102778.unk_4[2 + i] = ((s8)D_80102778.unk_4[2 + i] + 8) % 8;
-        D_80102778.unk_4[4 + i] = ((s8)D_80102778.unk_4[4 + i] + 2) % 2;
+        g_fight_config.unk_4[i] = ((s8)g_fight_config.unk_4[i] + 33) % 33;
+        g_fight_config.unk_4[2 + i] = ((s8)g_fight_config.unk_4[2 + i] + 8) % 8;
+        g_fight_config.unk_4[4 + i] = ((s8)g_fight_config.unk_4[4 + i] + 2) % 2;
     }
-    D_80102778.unk_C = ((s8)D_80102778.unk_C + 38) % 38;
-    D_80102778.unk_D = ((s8)D_80102778.unk_D + 7) % 7;
-    D_80102778.unk_E &= 1;
-    D_80102778.unk_F &= 1;
+    g_fight_config.unk_C = ((s8)g_fight_config.unk_C + 38) % 38;
+    g_fight_config.unk_D = ((s8)g_fight_config.unk_D + 7) % 7;
+    g_fight_config.unk_E &= 1;
+    g_fight_config.unk_F &= 1;
     D_800A36F9 = (D_800A36F9 + 4) % 4;
     D_800A3690 &= 1;
     if (g_pad_state.pressed & 0x08000800) {

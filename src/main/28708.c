@@ -53,7 +53,7 @@ void memcard_BuildSaveBlock(u8 *a0) {
     s32 i;
 
     var_0 = 0;
-    p = (u8 *)&D_80106A50;
+    p = (u8 *)&g_saved_record;
     i = 0;
     do {
         var_0 += *p++;
@@ -66,7 +66,7 @@ void memcard_BuildSaveBlock(u8 *a0) {
         Unk800F34D8Save *var_3 = (Unk800F34D8Save *)a0;
         i = 0;
         do {
-            var_3->rec[i] = D_80106A50;
+            var_3->rec[i] = g_saved_record;
             var_3->sum[i] = var_0;
             {
                 s32 j = 0;
@@ -120,7 +120,7 @@ s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
         FileRecord *src = &arg0->rec[i];
 
         if (!(src->flags & 0x80)) {
-            D_80106A50 = *src;
+            g_saved_record = *src;
         }
 
         j = 0;
@@ -184,7 +184,7 @@ void memcard_BuildFileHeader(u8 *out) {
     s3 = 0;
     s2 = 0;
     s1 = 0;
-    mask = D_80106A50.unk_00;
+    mask = g_saved_record.unk_00;
 
     for (i = 0; i < 0x1B; i++) {
         bit = 1 << i;
@@ -1297,7 +1297,7 @@ void replay_Start(void) {
     func_8001B6F4();
     eff_StopCommands();
     g_replay_playback_frame = 0;
-    D_800A3834 = 5;
+    g_main_loop_handler_index = 5;
 }
 
 extern s32 collision_GetHitTag(void);
@@ -1500,14 +1500,15 @@ void replay_PlayFrame(void) {
              ? g_replay_playback_frame == 0x78
              : g_replay_playback_frame == g_replay_write_frame) ||
         (g_pad_state.pressed & 0x400040)) {
-        switch (D_800A38DC) {
+        switch (g_fight_mode_selector) {
         case 0:
             if (D_80101EC8[0].is_defeated == 0) {
                 s32 var_19 = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
                     if (D_800A3836 != 0xFF) {
-                        D_800A37A4 |= 1 << D_8008D538[(s8)D_80102778.unk_4[0]];
+                        D_800A37A4 |=
+                            1 << D_8008D538[(s8)g_fight_config.unk_4[0]];
                     }
                     if (var_19) {
                         fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
@@ -1529,7 +1530,7 @@ void replay_PlayFrame(void) {
             }
             D_800A3748 = 1;
             if (D_800A3836 == 0xFF) {
-                D_800A3834 = 0xC;
+                g_main_loop_handler_index = 0xC;
                 break;
             }
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
@@ -1544,17 +1545,17 @@ void replay_PlayFrame(void) {
             return;
         case 3:
             if (D_80101EC8[0].is_defeated == 0) {
-                D_800A3834 = 0x1E;
+                g_main_loop_handler_index = 0x1E;
             } else {
-                D_800A3834 = 0xC;
+                g_main_loop_handler_index = 0xC;
             }
             break;
         default:
             if (D_80101EC8[0].is_defeated == 0 ||
                 D_80101EC8[1].is_defeated == 0) {
-                D_800A3834 = 0x10;
+                g_main_loop_handler_index = 0x10;
             } else {
-                D_800A3834 = 0xC;
+                g_main_loop_handler_index = 0xC;
             }
             break;
         }
@@ -1624,7 +1625,7 @@ void comb_ResetClose(void) {
     _comb_control(2, 0, 0);
     _comb_control(1, 1, 0);
     comb_Close();
-    D_800A3834 = 8;
+    g_main_loop_handler_index = 8;
 }
 
 void comb_Abort(void) {

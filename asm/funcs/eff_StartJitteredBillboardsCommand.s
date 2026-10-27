@@ -7,7 +7,7 @@ glabel eff_StartJitteredBillboardsCommand
     /* 52204 80061A04 0F80023C */  lui        $v0, %hi(D_800F1154 + 0x3)
     /* 52208 80061A08 57114224 */  addiu      $v0, $v0, %lo(D_800F1154 + 0x3)
     /* 5220C 80061A0C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 52210 80061A10 9C0383AF */  sw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 52210 80061A10 9C0383AF */  sw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 52214 80061A14 0F80013C */  lui        $at, %hi(D_800F1178)
     /* 52218 80061A18 781124AC */  sw         $a0, %lo(D_800F1178)($at)
     /* 5221C 80061A1C 0F80013C */  lui        $at, %hi(g_eff_command_block + 0x14)

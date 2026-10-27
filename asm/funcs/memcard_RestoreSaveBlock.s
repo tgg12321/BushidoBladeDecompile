@@ -40,8 +40,8 @@ glabel memcard_RestoreSaveBlock
     /* 28898 80038098 80004230 */  andi       $v0, $v0, 0x80
     /* 2889C 8003809C 14004014 */  bnez       $v0, .L800380F0
     /* 288A0 800380A0 21280000 */   addu      $a1, $zero, $zero
-    /* 288A4 800380A4 1080073C */  lui        $a3, %hi(D_80106A50)
-    /* 288A8 800380A8 506AE724 */  addiu      $a3, $a3, %lo(D_80106A50)
+    /* 288A4 800380A4 1080073C */  lui        $a3, %hi(g_saved_record)
+    /* 288A8 800380A8 506AE724 */  addiu      $a3, $a3, %lo(g_saved_record)
     /* 288AC 800380AC 21306000 */  addu       $a2, $v1, $zero
     /* 288B0 800380B0 2000C824 */  addiu      $t0, $a2, 0x20
   .L800380B4:

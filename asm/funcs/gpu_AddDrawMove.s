@@ -1,7 +1,7 @@
 glabel gpu_AddDrawMove
     /* 309CC 800401CC E0FFBD27 */  addiu      $sp, $sp, -0x20
-    /* 309D0 800401D0 0A80023C */  lui        $v0, %hi(D_800A36AC)
-    /* 309D4 800401D4 AC36428C */  lw         $v0, %lo(D_800A36AC)($v0)
+    /* 309D0 800401D0 0A80023C */  lui        $v0, %hi(g_gpu_presented_frame_count)
+    /* 309D4 800401D4 AC36428C */  lw         $v0, %lo(g_gpu_presented_frame_count)($v0)
     /* 309D8 800401D8 6801838F */  lw         $v1, %gp_rel(g_gpu_draw_move_bank)($gp)
     /* 309DC 800401DC 21408000 */  addu       $t0, $a0, $zero
     /* 309E0 800401E0 01004630 */  andi       $a2, $v0, 0x1

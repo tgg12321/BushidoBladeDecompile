@@ -21,7 +21,7 @@ void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
     s32 a0;
     D_800A3740 = 1;
     CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
-    if (D_80106A50.unk_04 == 0x3F) {
+    if (g_saved_record.unk_04 == 0x3F) {
         a0 = 0xFF;
     } else {
         a0 = 0xF7;
@@ -48,8 +48,8 @@ void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     D_800A31D8 = 1;
     menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
-    D_800A37B8 = 0;
-    D_800A3834 = 9;
+    g_handler_frame_counter = 0;
+    g_main_loop_handler_index = 9;
     gpu_SetDispMaskOn();
 }
 
@@ -142,7 +142,7 @@ void menu_InitSubflowForMode(s32 arg0) {
         temp = comb_Connect();
         if (temp == 1) {
             StoreCompactedBits(
-                (D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
+                (g_saved_record.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -151,28 +151,28 @@ void menu_InitSubflowForMode(s32 arg0) {
 
         if (temp == -1) {
             snd_QueueSound(2, 0x7F, 0x7F);
-            D_800A3834 = 9;
-            D_800A37B8 = 0;
+            g_main_loop_handler_index = 9;
+            g_handler_frame_counter = 0;
             D_800A3740 = 1;
         }
         return;
 
     case 1:
-        StoreCompactedBits(D_80106A50.unk_00 & 0x003EF3DF);
+        StoreCompactedBits(g_saved_record.unk_00 & 0x003EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 5:
-        StoreCompactedBits(D_80106A50.unk_00 & 0x003FF3FF);
+        StoreCompactedBits(g_saved_record.unk_00 & 0x003FF3FF);
         menu_InitSelWithStoredBits(0x80118800);
         D_800A3740 = 0xA;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 4:
-        StoreCompactedBits(D_80106A50.unk_00 & 0x053FF3FF);
+        StoreCompactedBits(g_saved_record.unk_00 & 0x053FF3FF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -202,7 +202,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         D_800A3740 = 7;
     }
     if (D_800A31DA != 0) {
-        menu_InitSubflowForMode(D_800A38DC);
+        menu_InitSubflowForMode(g_fight_mode_selector);
         D_800A31DA = 0;
     }
     switch (D_800A3740) {
@@ -235,17 +235,17 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
         break;
     case 1:
-        if (D_800A37B8 == 0) {
+        if (g_handler_frame_counter == 0) {
             snd_SerialMixOn();
             cdrom_StartAudioEntry(7);
             cdrom_SetAudioRepeat(1);
         }
-        D_800A37B8++;
+        g_handler_frame_counter++;
         if (g_pad_state.held != 0) {
-            D_800A37B8 = 1;
+            g_handler_frame_counter = 1;
         }
-        if (D_800A37B8 >= 0xCA9) {
-            D_800A3834 = 0xF;
+        if (g_handler_frame_counter >= 0xCA9) {
+            g_main_loop_handler_index = 0xF;
         }
         ret = menu_UpdateRowMenuStoreResult(
             g_pad_state.held, g_pad_state.pressed);
@@ -261,19 +261,19 @@ void menu_UpdateRowMenuAndSubflows(void) {
         } else {
             break;
         }
-        D_800A37B8 = 0x3C;
+        g_handler_frame_counter = 0x3C;
         break;
     case 11:
-        if (--D_800A37B8 == 0) {
+        if (--g_handler_frame_counter == 0) {
             cdrom_PauseAndWait();
-            D_80102778.unk_D = ResetFlowAndFetchRowTablePair();
-            menu_InitSubflowForMode((s8)D_80102778.unk_D);
+            g_fight_config.unk_D = ResetFlowAndFetchRowTablePair();
+            menu_InitSubflowForMode((s8)g_fight_config.unk_D);
         }
         break;
     case 12:
-        if (--D_800A37B8 == 0) {
+        if (--g_handler_frame_counter == 0) {
             cdrom_PauseAndWait();
-            D_800A3834 = 0xF;
+            g_main_loop_handler_index = 0xF;
         }
         break;
     case 2:
@@ -284,8 +284,8 @@ void menu_UpdateRowMenuAndSubflows(void) {
             cdrom_PauseAndWait();
             D_800A3740 = 1;
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
-            D_800A37B8 = 0;
-            if (D_80106A50.unk_04 == 0x3F) {
+            g_handler_frame_counter = 0;
+            if (g_saved_record.unk_04 == 0x3F) {
                 menu_SetEnabledRows(0xFF);
             } else {
                 menu_SetEnabledRows(0xF7);
@@ -356,7 +356,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
     load:
         cdrom_PauseAndWait();
-        StoreCompactedBits(D_80106A50.unk_00 & 0x3EF3DF);
+        StoreCompactedBits(g_saved_record.unk_00 & 0x3EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -365,7 +365,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         if (ret == -1) {
             cdrom_PauseAndWait();
             D_800A3740 = 1;
-            D_800A37B8 = 0;
+            g_handler_frame_counter = 0;
         }
         break;
     case 10:
@@ -378,18 +378,18 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
     reset_mode:
         cdrom_PauseAndWait();
-        D_800A3834 = 0;
+        g_main_loop_handler_index = 0;
         ApplyWorkingRecordToPendingConfigAndInitializeMode();
         break;
     check_quit:
         if (ret == -1) {
             cdrom_PauseAndWait();
-            D_800A3834 = 8;
+            g_main_loop_handler_index = 8;
             D_800A31D8 = 0;
         }
         break;
     }
-    if (D_800A3834 != 9) {
+    if (g_main_loop_handler_index != 9) {
         D_800A36F1 = 2;
     }
 }
@@ -403,7 +403,7 @@ void menu_ReleaseResourcesCloseVabsAndInitRowMenu(void) {
     eff_ClearInitFlag();
     snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
-    D_800A3834 = 0x1B;
+    g_main_loop_handler_index = 0x1B;
     gpu_SetDispMaskOn();
 }
 
@@ -411,7 +411,7 @@ void DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit(void) {
     D_800A36F1 = 1;
     gpu_AddScreenGradient();
     if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
-        D_800A3834 = 8;
+        g_main_loop_handler_index = 8;
         D_800A36F1 = 2;
     }
 }

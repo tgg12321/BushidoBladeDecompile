@@ -209,9 +209,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D3BC 8005CBBC 21206002 */  addu       $a0, $s3, $zero
     /* 4D3C0 8005CBC0 21280000 */  addu       $a1, $zero, $zero
     /* 4D3C4 8005CBC4 73004226 */  addiu      $v0, $s2, 0x73
-    /* 4D3C8 8005CBC8 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D3C8 8005CBC8 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D3CC 8005CBCC 21083100 */  addu       $at, $at, $s1
-    /* 4D3D0 8005CBD0 BCB22384 */  lh         $v1, %lo(D_8009B2BC)($at)
+    /* 4D3D0 8005CBD0 BCB22384 */  lh         $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D3D4 8005CBD4 2110E202 */  addu       $v0, $s7, $v0
     /* 4D3D8 8005CBD8 FCFF02A6 */  sh         $v0, -0x4($s0)
     /* 4D3DC 8005CBDC 80020224 */  addiu      $v0, $zero, 0x280
@@ -220,9 +220,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D3E8 8005CBE8 21104300 */  addu       $v0, $v0, $v1
     /* 4D3EC 8005CBEC 43100200 */  sra        $v0, $v0, 1
     /* 4D3F0 8005CBF0 FAFF02A6 */  sh         $v0, -0x6($s0)
-    /* 4D3F4 8005CBF4 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D3F4 8005CBF4 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D3F8 8005CBF8 21083100 */  addu       $at, $at, $s1
-    /* 4D3FC 8005CBFC BCB22394 */  lhu        $v1, %lo(D_8009B2BC)($at)
+    /* 4D3FC 8005CBFC BCB22394 */  lhu        $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D400 8005CC00 01000224 */  addiu      $v0, $zero, 0x1
     /* 4D404 8005CC04 000002A6 */  sh         $v0, 0x0($s0)
     /* 4D408 8005CC08 5AEA010C */  jal        SetSemiTrans
@@ -306,18 +306,18 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D534 8005CD34 5000A88F */  lw         $t0, 0x50($sp)
     /* 4D538 8005CD38 21A06000 */  addu       $s4, $v1, $zero
     /* 4D53C 8005CD3C 2C00A8AF */  sw         $t0, 0x2C($sp)
-    /* 4D540 8005CD40 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D540 8005CD40 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D544 8005CD44 21083400 */  addu       $at, $at, $s4
-    /* 4D548 8005CD48 BCB22384 */  lh         $v1, %lo(D_8009B2BC)($at)
+    /* 4D548 8005CD48 BCB22384 */  lh         $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D54C 8005CD4C 80020224 */  addiu      $v0, $zero, 0x280
     /* 4D550 8005CD50 23104300 */  subu       $v0, $v0, $v1
     /* 4D554 8005CD54 C21F0200 */  srl        $v1, $v0, 31
     /* 4D558 8005CD58 21104300 */  addu       $v0, $v0, $v1
     /* 4D55C 8005CD5C 43100200 */  sra        $v0, $v0, 1
     /* 4D560 8005CD60 0000C2A4 */  sh         $v0, 0x0($a2)
-    /* 4D564 8005CD64 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D564 8005CD64 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D568 8005CD68 21083400 */  addu       $at, $at, $s4
-    /* 4D56C 8005CD6C BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4D56C 8005CD6C BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4D570 8005CD70 00000000 */  nop
     /* 4D574 8005CD74 80024224 */  addiu      $v0, $v0, 0x280
     /* 4D578 8005CD78 C21F0200 */  srl        $v1, $v0, 31
@@ -346,9 +346,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
   .L8005CDCC:
     /* 4D5CC 8005CDCC 21206002 */  addu       $a0, $s3, $zero
     /* 4D5D0 8005CDD0 21280000 */  addu       $a1, $zero, $zero
-    /* 4D5D4 8005CDD4 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D5D4 8005CDD4 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D5D8 8005CDD8 21083400 */  addu       $at, $at, $s4
-    /* 4D5DC 8005CDDC BCB22384 */  lh         $v1, %lo(D_8009B2BC)($at)
+    /* 4D5DC 8005CDDC BCB22384 */  lh         $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D5E0 8005CDE0 2110F202 */  addu       $v0, $s7, $s2
     /* 4D5E4 8005CDE4 FCFF02A6 */  sh         $v0, -0x4($s0)
     /* 4D5E8 8005CDE8 80020224 */  addiu      $v0, $zero, 0x280
@@ -357,9 +357,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D5F4 8005CDF4 21104300 */  addu       $v0, $v0, $v1
     /* 4D5F8 8005CDF8 43100200 */  sra        $v0, $v0, 1
     /* 4D5FC 8005CDFC FAFF02A6 */  sh         $v0, -0x6($s0)
-    /* 4D600 8005CE00 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D600 8005CE00 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D604 8005CE04 21083400 */  addu       $at, $at, $s4
-    /* 4D608 8005CE08 BCB22394 */  lhu        $v1, %lo(D_8009B2BC)($at)
+    /* 4D608 8005CE08 BCB22394 */  lhu        $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D60C 8005CE0C 01000224 */  addiu      $v0, $zero, 0x1
     /* 4D610 8005CE10 000002A6 */  sh         $v0, 0x0($s0)
     /* 4D614 8005CE14 5AEA010C */  jal        SetSemiTrans
@@ -486,18 +486,18 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D7DC 8005CFDC 43100200 */  sra        $v0, $v0, 1
     /* 4D7E0 8005CFE0 2C00A8AF */  sw         $t0, 0x2C($sp)
     /* 4D7E4 8005CFE4 3400A2AF */  sw         $v0, 0x34($sp)
-    /* 4D7E8 8005CFE8 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D7E8 8005CFE8 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D7EC 8005CFEC 21083400 */  addu       $at, $at, $s4
-    /* 4D7F0 8005CFF0 BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4D7F0 8005CFF0 BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4D7F4 8005CFF4 80021024 */  addiu      $s0, $zero, 0x280
     /* 4D7F8 8005CFF8 23100202 */  subu       $v0, $s0, $v0
     /* 4D7FC 8005CFFC C21F0200 */  srl        $v1, $v0, 31
     /* 4D800 8005D000 21104300 */  addu       $v0, $v0, $v1
     /* 4D804 8005D004 43100200 */  sra        $v0, $v0, 1
     /* 4D808 8005D008 000022A6 */  sh         $v0, 0x0($s1)
-    /* 4D80C 8005D00C 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D80C 8005D00C 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D810 8005D010 21083400 */  addu       $at, $at, $s4
-    /* 4D814 8005D014 BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4D814 8005D014 BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4D818 8005D018 00000000 */  nop
     /* 4D81C 8005D01C 80024224 */  addiu      $v0, $v0, 0x280
     /* 4D820 8005D020 C21F0200 */  srl        $v1, $v0, 31
@@ -523,9 +523,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D870 8005D070 21186200 */  addu       $v1, $v1, $v0
     /* 4D874 8005D074 43180300 */  sra        $v1, $v1, 1
     /* 4D878 8005D078 3400A3AF */  sw         $v1, 0x34($sp)
-    /* 4D87C 8005D07C 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D87C 8005D07C 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D880 8005D080 21083400 */  addu       $at, $at, $s4
-    /* 4D884 8005D084 BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4D884 8005D084 BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4D888 8005D088 80400800 */  sll        $t0, $t0, 2
     /* 4D88C 8005D08C 8000A8AF */  sw         $t0, 0x80($sp)
     /* 4D890 8005D090 23800202 */  subu       $s0, $s0, $v0
@@ -533,9 +533,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D898 8005D098 21800202 */  addu       $s0, $s0, $v0
     /* 4D89C 8005D09C 43801000 */  sra        $s0, $s0, 1
     /* 4D8A0 8005D0A0 100030A6 */  sh         $s0, 0x10($s1)
-    /* 4D8A4 8005D0A4 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D8A4 8005D0A4 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D8A8 8005D0A8 21083400 */  addu       $at, $at, $s4
-    /* 4D8AC 8005D0AC BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4D8AC 8005D0AC BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4D8B0 8005D0B0 00000000 */  nop
     /* 4D8B4 8005D0B4 80024224 */  addiu      $v0, $v0, 0x280
     /* 4D8B8 8005D0B8 C21F0200 */  srl        $v1, $v0, 31
@@ -547,9 +547,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D8D0 8005D0D0 4BCD010C */  jal        gpu_AddSpriteCells
     /* 4D8D4 8005D0D4 1800A427 */   addiu     $a0, $sp, 0x18
   .L8005D0D8:
-    /* 4D8D8 8005D0D8 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D8D8 8005D0D8 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D8DC 8005D0DC 21083400 */  addu       $at, $at, $s4
-    /* 4D8E0 8005D0E0 BCB22384 */  lh         $v1, %lo(D_8009B2BC)($at)
+    /* 4D8E0 8005D0E0 BCB22384 */  lh         $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D8E4 8005D0E4 80020224 */  addiu      $v0, $zero, 0x280
     /* 4D8E8 8005D0E8 23104300 */  subu       $v0, $v0, $v1
     /* 4D8EC 8005D0EC C21F0200 */  srl        $v1, $v0, 31
@@ -599,9 +599,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D988 8005D188 21103202 */  addu       $v0, $s1, $s2
     /* 4D98C 8005D18C FAFF1EA6 */  sh         $fp, -0x6($s0)
     /* 4D990 8005D190 FCFF02A6 */  sh         $v0, -0x4($s0)
-    /* 4D994 8005D194 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D994 8005D194 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D998 8005D198 21083400 */  addu       $at, $at, $s4
-    /* 4D99C 8005D19C BCB22394 */  lhu        $v1, %lo(D_8009B2BC)($at)
+    /* 4D99C 8005D19C BCB22394 */  lhu        $v1, %lo(g_panel_frame_sizes)($at)
     /* 4D9A0 8005D1A0 01000224 */  addiu      $v0, $zero, 0x1
     /* 4D9A4 8005D1A4 000002A6 */  sh         $v0, 0x0($s0)
     /* 4D9A8 8005D1A8 5AEA010C */  jal        SetSemiTrans
@@ -623,9 +623,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4D9E8 8005D1E8 00141600 */   sll       $v0, $s6, 16
     /* 4D9EC 8005D1EC 0A004010 */  beqz       $v0, .L8005D218
     /* 4D9F0 8005D1F0 80020324 */   addiu     $v1, $zero, 0x280
-    /* 4D9F4 8005D1F4 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4D9F4 8005D1F4 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4D9F8 8005D1F8 21083400 */  addu       $at, $at, $s4
-    /* 4D9FC 8005D1FC BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4D9FC 8005D1FC BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4DA00 8005D200 00000000 */  nop
     /* 4DA04 8005D204 23186200 */  subu       $v1, $v1, $v0
     /* 4DA08 8005D208 C2170300 */  srl        $v0, $v1, 31
@@ -633,9 +633,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4DA10 8005D210 8E740108 */  j          .L8005D238
     /* 4DA14 8005D214 42F00300 */   srl       $fp, $v1, 1
   .L8005D218:
-    /* 4DA18 8005D218 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4DA18 8005D218 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4DA1C 8005D21C 21083400 */  addu       $at, $at, $s4
-    /* 4DA20 8005D220 BCB22284 */  lh         $v0, %lo(D_8009B2BC)($at)
+    /* 4DA20 8005D220 BCB22284 */  lh         $v0, %lo(g_panel_frame_sizes)($at)
     /* 4DA24 8005D224 00000000 */  nop
     /* 4DA28 8005D228 80024224 */  addiu      $v0, $v0, 0x280
     /* 4DA2C 8005D22C C21F0200 */  srl        $v1, $v0, 31
@@ -723,9 +723,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4DB5C 8005D35C 4800A88F */  lw         $t0, 0x48($sp)
     /* 4DB60 8005D360 00000000 */  nop
     /* 4DB64 8005D364 80280800 */  sll        $a1, $t0, 2
-    /* 4DB68 8005D368 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4DB68 8005D368 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4DB6C 8005D36C 21082500 */  addu       $at, $at, $a1
-    /* 4DB70 8005D370 BCB22384 */  lh         $v1, %lo(D_8009B2BC)($at)
+    /* 4DB70 8005D370 BCB22384 */  lh         $v1, %lo(g_panel_frame_sizes)($at)
     /* 4DB74 8005D374 80020224 */  addiu      $v0, $zero, 0x280
     /* 4DB78 8005D378 23104300 */  subu       $v0, $v0, $v1
     /* 4DB7C 8005D37C C21F0200 */  srl        $v1, $v0, 31
@@ -741,9 +741,9 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4DBA4 8005D3A4 21104300 */  addu       $v0, $v0, $v1
     /* 4DBA8 8005D3A8 43100200 */  sra        $v0, $v0, 1
     /* 4DBAC 8005D3AC 0A0062A6 */  sh         $v0, 0xA($s3)
-    /* 4DBB0 8005D3B0 0A80013C */  lui        $at, %hi(D_8009B2BC)
+    /* 4DBB0 8005D3B0 0A80013C */  lui        $at, %hi(g_panel_frame_sizes)
     /* 4DBB4 8005D3B4 21082500 */  addu       $at, $at, $a1
-    /* 4DBB8 8005D3B8 BCB22294 */  lhu        $v0, %lo(D_8009B2BC)($at)
+    /* 4DBB8 8005D3B8 BCB22294 */  lhu        $v0, %lo(g_panel_frame_sizes)($at)
     /* 4DBBC 8005D3BC 21206002 */  addu       $a0, $s3, $zero
     /* 4DBC0 8005D3C0 0C0062A6 */  sh         $v0, 0xC($s3)
     /* 4DBC4 8005D3C4 0A80013C */  lui        $at, %hi(D_8009B2BE)

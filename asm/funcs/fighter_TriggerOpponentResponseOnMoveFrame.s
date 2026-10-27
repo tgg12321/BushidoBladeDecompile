@@ -70,8 +70,8 @@ glabel fighter_TriggerOpponentResponseOnMoveFrame
     /* 19038 80028838 18006214 */  bne        $v1, $v0, .L8002889C
     /* 1903C 8002883C 00000000 */   nop
   .L80028840:
-    /* 19040 80028840 0A80023C */  lui        $v0, %hi(D_800A387C)
-    /* 19044 80028844 7C38428C */  lw         $v0, %lo(D_800A387C)($v0)
+    /* 19040 80028840 0A80023C */  lui        $v0, %hi(g_fighter_horizontal_separation)
+    /* 19044 80028844 7C38428C */  lw         $v0, %lo(g_fighter_horizontal_separation)($v0)
     /* 19048 80028848 0A80033C */  lui        $v1, %hi(D_800A3134)
     /* 1904C 8002884C 3431638C */  lw         $v1, %lo(D_800A3134)($v1)
     /* 19050 80028850 00000000 */  nop

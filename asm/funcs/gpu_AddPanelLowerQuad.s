@@ -13,7 +13,7 @@ glabel gpu_AddPanelLowerQuad
     /* 63500 80072D00 0400102A */  slti       $s0, $s0, 0x4
     /* 63504 80072D04 26000012 */  beqz       $s0, .L80072DA0
     /* 63508 80072D08 10000224 */   addiu     $v0, $zero, 0x10
-    /* 6350C 80072D0C F804828F */  lw         $v0, %gp_rel(D_800A35C4)($gp)
+    /* 6350C 80072D0C F804828F */  lw         $v0, %gp_rel(g_entry_menu_work_block)($gp)
     /* 63510 80072D10 00000000 */  nop
     /* 63514 80072D14 0800428C */  lw         $v0, 0x8($v0)
     /* 63518 80072D18 00000000 */  nop

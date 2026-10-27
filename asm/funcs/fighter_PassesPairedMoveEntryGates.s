@@ -1,6 +1,6 @@
 glabel fighter_PassesPairedMoveEntryGates
-    /* 10334 8001FB34 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 10338 8001FB38 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 10334 8001FB34 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 10338 8001FB38 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 1033C 8001FB3C 02000224 */  addiu      $v0, $zero, 0x2
     /* 10340 8001FB40 20006210 */  beq        $v1, $v0, .L8001FBC4
     /* 10344 8001FB44 05000224 */   addiu     $v0, $zero, 0x5

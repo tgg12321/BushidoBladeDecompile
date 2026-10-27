@@ -10,8 +10,8 @@ glabel memcard_BuildFileHeader
     /* 28990 80038190 21880000 */  addu       $s1, $zero, $zero
     /* 28994 80038194 21380000 */  addu       $a3, $zero, $zero
     /* 28998 80038198 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2899C 8003819C 1080053C */  lui        $a1, %hi(D_80106A50)
-    /* 289A0 800381A0 506AA58C */  lw         $a1, %lo(D_80106A50)($a1)
+    /* 2899C 8003819C 1080053C */  lui        $a1, %hi(g_saved_record)
+    /* 289A0 800381A0 506AA58C */  lw         $a1, %lo(g_saved_record)($a1)
     /* 289A4 800381A4 02000624 */  addiu      $a2, $zero, 0x2
     /* 289A8 800381A8 3000BFAF */  sw         $ra, 0x30($sp)
     /* 289AC 800381AC 0410E400 */  sllv       $v0, $a0, $a3

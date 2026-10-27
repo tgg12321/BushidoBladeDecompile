@@ -21,8 +21,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D124 8001C924 5C720008 */  j          .L8001C970
     /* D128 8001C928 00000000 */   nop
   .L8001C92C:
-    /* D12C 8001C92C 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* D130 8001C930 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* D12C 8001C92C 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* D130 8001C930 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* D134 8001C934 00000000 */  nop
     /* D138 8001C938 0D004014 */  bnez       $v0, .L8001C970
     /* D13C 8001C93C 00000000 */   nop
@@ -45,8 +45,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D17C 8001C97C 3D004228 */  slti       $v0, $v0, 0x3D
     /* D180 8001C980 E3004014 */  bnez       $v0, .L8001CD10
     /* D184 8001C984 00000000 */   nop
-    /* D188 8001C988 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* D18C 8001C98C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* D188 8001C988 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* D18C 8001C98C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* D190 8001C990 00000000 */  nop
     /* D194 8001C994 0700622C */  sltiu      $v0, $v1, 0x7
     /* D198 8001C998 DA004010 */  beqz       $v0, .L8001CD04
@@ -263,8 +263,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D4A0 8001CCA0 21208200 */   addu      $a0, $a0, $v0
     /* D4A4 8001CCA4 0A80013C */  lui        $at, %hi(D_800A38DF)
     /* D4A8 8001CCA8 DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)
-    /* D4AC 8001CCAC 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* D4B0 8001CCB0 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* D4AC 8001CCAC 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* D4B0 8001CCB0 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* D4B4 8001CCB4 44730008 */  j          .L8001CD10
     /* D4B8 8001CCB8 00000000 */   nop
   jlabel .L8001CCBC
@@ -290,8 +290,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
   jlabel .L8001CD04
     /* D504 8001CD04 04000224 */  addiu      $v0, $zero, 0x4
   .L8001CD08:
-    /* D508 8001CD08 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* D50C 8001CD0C 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* D508 8001CD08 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* D50C 8001CD0C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   jlabel .L8001CD10
     /* D510 8001CD10 0A80023C */  lui        $v0, %hi(D_800A37D2)
     /* D514 8001CD14 D2374290 */  lbu        $v0, %lo(D_800A37D2)($v0)

@@ -1,7 +1,7 @@
 glabel menu_UpdateSelListPicks
     /* 670DC 800768DC C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 670E0 800768E0 3800A4AF */  sw         $a0, 0x38($sp)
-    /* 670E4 800768E4 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 670E4 800768E4 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 670E8 800768E8 2C00B3AF */  sw         $s3, 0x2C($sp)
     /* 670EC 800768EC 2198A000 */  addu       $s3, $a1, $zero
     /* 670F0 800768F0 2000B0AF */  sw         $s0, 0x20($sp)
@@ -28,7 +28,7 @@ glabel menu_UpdateSelListPicks
     /* 67140 80076940 3800A427 */  addiu      $a0, $sp, 0x38
     /* 67144 80076944 21280002 */  addu       $a1, $s0, $zero
     /* 67148 80076948 80181000 */  sll        $v1, $s0, 2
-    /* 6714C 8007694C D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 6714C 8007694C D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67150 80076950 40006624 */  addiu      $a2, $v1, 0x40
     /* 67154 80076954 0A80073C */  lui        $a3, %hi(D_800A35D0)
     /* 67158 80076958 D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
@@ -44,7 +44,7 @@ glabel menu_UpdateSelListPicks
     /* 67180 80076980 7FDA0108 */  j          .L800769FC
     /* 67184 80076984 00000000 */   nop
   .L80076988:
-    /* 67188 80076988 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 67188 80076988 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 6718C 8007698C 00000000 */  nop
     /* 67190 80076990 21202202 */  addu       $a0, $s1, $v0
     /* 67194 80076994 5C008294 */  lhu        $v0, 0x5C($a0)
@@ -59,7 +59,7 @@ glabel menu_UpdateSelListPicks
     /* 671B8 800769B8 7EDA0108 */  j          .L800769F8
     /* 671BC 800769BC 5C0080A4 */   sh        $zero, 0x5C($a0)
   .L800769C0:
-    /* 671C0 800769C0 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 671C0 800769C0 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 671C4 800769C4 00000000 */  nop
     /* 671C8 800769C8 21182202 */  addu       $v1, $s1, $v0
     /* 671CC 800769CC 5C006294 */  lhu        $v0, 0x5C($v1)
@@ -82,7 +82,7 @@ glabel menu_UpdateSelListPicks
     /* 67208 80076A08 24886200 */  and        $s1, $v1, $v0
     /* 6720C 80076A0C 44002012 */  beqz       $s1, .L80076B20
     /* 67210 80076A10 10000224 */   addiu     $v0, $zero, 0x10
-    /* 67214 80076A14 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 67214 80076A14 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67218 80076A18 40881000 */  sll        $s1, $s0, 1
     /* 6721C 80076A1C 21182202 */  addu       $v1, $s1, $v0
     /* 67220 80076A20 65004290 */  lbu        $v0, 0x65($v0)
@@ -96,7 +96,7 @@ glabel menu_UpdateSelListPicks
     /* 67240 80076A40 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 67244 80076A44 80181000 */  sll        $v1, $s0, 2
     /* 67248 80076A48 21187000 */  addu       $v1, $v1, $s0
-    /* 6724C 80076A4C D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 6724C 80076A4C D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 67250 80076A50 40180300 */  sll        $v1, $v1, 1
     /* 67254 80076A54 21186500 */  addu       $v1, $v1, $a1
     /* 67258 80076A58 21402502 */  addu       $t0, $s1, $a1
@@ -144,7 +144,7 @@ glabel menu_UpdateSelListPicks
     /* 672F8 80076AF8 F5FF4014 */  bnez       $v0, .L80076AD0
     /* 672FC 80076AFC 001C0700 */   sll       $v1, $a3, 16
   .L80076B00:
-    /* 67300 80076B00 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 67300 80076B00 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67304 80076B04 40181000 */  sll        $v1, $s0, 1
     /* 67308 80076B08 21186200 */  addu       $v1, $v1, $v0
     /* 6730C 80076B0C 3C006294 */  lhu        $v0, 0x3C($v1)
@@ -160,7 +160,7 @@ glabel menu_UpdateSelListPicks
     /* 67330 80076B30 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 67334 80076B34 9471010C */  jal        snd_QueueSound
     /* 67338 80076B38 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 6733C 80076B3C D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 6733C 80076B3C D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 67340 80076B40 40301000 */  sll        $a2, $s0, 1
     /* 67344 80076B44 2118C400 */  addu       $v1, $a2, $a0
     /* 67348 80076B48 3C006284 */  lh         $v0, 0x3C($v1)
@@ -189,7 +189,7 @@ glabel menu_UpdateSelListPicks
     /* 673A4 80076BA4 E4BC22A0 */  sb         $v0, %lo(D_8009BCE4)($at)
     /* 673A8 80076BA8 80101000 */  sll        $v0, $s0, 2
     /* 673AC 80076BAC 21105000 */  addu       $v0, $v0, $s0
-    /* 673B0 80076BB0 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 673B0 80076BB0 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 673B4 80076BB4 40100200 */  sll        $v0, $v0, 1
     /* 673B8 80076BB8 21104300 */  addu       $v0, $v0, $v1
     /* 673BC 80076BBC 48004524 */  addiu      $a1, $v0, 0x48
@@ -213,7 +213,7 @@ glabel menu_UpdateSelListPicks
     /* 67400 80076C00 54006012 */  beqz       $s3, .L80076D54
     /* 67404 80076C04 80101000 */   sll       $v0, $s0, 2
     /* 67408 80076C08 21105000 */  addu       $v0, $v0, $s0
-    /* 6740C 80076C0C D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 6740C 80076C0C D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67410 80076C10 40100200 */  sll        $v0, $v0, 1
     /* 67414 80076C14 21186200 */  addu       $v1, $v1, $v0
     /* 67418 80076C18 05000224 */  addiu      $v0, $zero, 0x5
@@ -293,7 +293,7 @@ glabel menu_UpdateSelListPicks
     /* 67528 80076D28 CBFF4014 */  bnez       $v0, .L80076C58
     /* 6752C 80076D2C 00140700 */   sll       $v0, $a3, 16
   .L80076D30:
-    /* 67530 80076D30 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 67530 80076D30 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 67534 80076D34 40101000 */  sll        $v0, $s0, 1
     /* 67538 80076D38 21104300 */  addu       $v0, $v0, $v1
     /* 6753C 80076D3C 60004394 */  lhu        $v1, 0x60($v0)

@@ -11,8 +11,8 @@ glabel camera_UpdateReplayViewWithConstantYawOffset
     /* C3FC 8001BBFC 04004286 */  lh         $v0, 0x4($s2)
     /* C400 8001BC00 04002486 */  lh         $a0, 0x4($s1)
     /* C404 8001BC04 08002586 */  lh         $a1, 0x8($s1)
-    /* C408 8001BC08 0A80103C */  lui        $s0, %hi(D_800A387C)
-    /* C40C 8001BC0C 7C38108E */  lw         $s0, %lo(D_800A387C)($s0)
+    /* C408 8001BC08 0A80103C */  lui        $s0, %hi(g_fighter_horizontal_separation)
+    /* C40C 8001BC0C 7C38108E */  lw         $s0, %lo(g_fighter_horizontal_separation)($s0)
     /* C410 8001BC10 23204400 */  subu       $a0, $v0, $a0
     /* C414 8001BC14 1127102A */  slti       $s0, $s0, 0x2711
     /* C418 8001BC18 08004286 */  lh         $v0, 0x8($s2)

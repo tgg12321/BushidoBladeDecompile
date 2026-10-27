@@ -215,8 +215,8 @@ glabel fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
     /* 128E4 800220E4 0800A22A */  slti       $v0, $s5, 0x8
     /* 128E8 800220E8 5BFF4014 */  bnez       $v0, .L80021E58
     /* 128EC 800220EC 40101500 */   sll       $v0, $s5, 1
-    /* 128F0 800220F0 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 128F4 800220F4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 128F0 800220F0 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 128F4 800220F4 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 128F8 800220F8 03000224 */  addiu      $v0, $zero, 0x3
     /* 128FC 800220FC 08006214 */  bne        $v1, $v0, .L80022120
     /* 12900 80022100 FF7F053C */   lui       $a1, (0x7FFFFFFF >> 16)
@@ -232,8 +232,8 @@ glabel fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
     /* 12920 80022120 FFFFA534 */  ori        $a1, $a1, (0x7FFFFFFF & 0xFFFF)
     /* 12924 80022124 21A80000 */  addu       $s5, $zero, $zero
     /* 12928 80022128 21880000 */  addu       $s1, $zero, $zero
-    /* 1292C 8002212C 0A80033C */  lui        $v1, %hi(D_800A36A4)
-    /* 12930 80022130 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)
+    /* 1292C 8002212C 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
+    /* 12930 80022130 A4366384 */  lh         $v1, %lo(g_fight_stage_index)($v1)
     /* 12934 80022134 6000AA8F */  lw         $t2, 0x60($sp)
     /* 12938 80022138 40100300 */  sll        $v0, $v1, 1
     /* 1293C 8002213C 21104300 */  addu       $v0, $v0, $v1

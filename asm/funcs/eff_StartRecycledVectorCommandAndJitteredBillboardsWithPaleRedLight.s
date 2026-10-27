@@ -9,7 +9,7 @@ glabel eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
     /* 522E8 80061AE8 00000292 */  lbu        $v0, 0x0($s0)
     /* 522EC 80061AEC 0F80043C */  lui        $a0, %hi(g_eff_command_block)
     /* 522F0 80061AF0 6C118424 */  addiu      $a0, $a0, %lo(g_eff_command_block)
-    /* 522F4 80061AF4 9C0384AF */  sw         $a0, %gp_rel(D_800A3468)($gp)
+    /* 522F4 80061AF4 9C0384AF */  sw         $a0, %gp_rel(g_eff_active_command_block)($gp)
     /* 522F8 80061AF8 0F80013C */  lui        $at, %hi(D_800F1178)
     /* 522FC 80061AFC 781131AC */  sw         $s1, %lo(D_800F1178)($at)
     /* 52300 80061B00 0F80013C */  lui        $at, %hi(D_800F117C)
@@ -30,7 +30,7 @@ glabel eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
   .L80061B38:
     /* 52338 80061B38 2100033C */  lui        $v1, (0x210014 >> 16)
     /* 5233C 80061B3C 14006334 */  ori        $v1, $v1, (0x210014 & 0xFFFF)
-    /* 52340 80061B40 9C03828F */  lw         $v0, %gp_rel(D_800A3468)($gp)
+    /* 52340 80061B40 9C03828F */  lw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 52344 80061B44 0F80103C */  lui        $s0, %hi(D_800F1164)
     /* 52348 80061B48 64111026 */  addiu      $s0, $s0, %lo(D_800F1164)
     /* 5234C 80061B4C 140050AC */  sw         $s0, 0x14($v0)
@@ -38,7 +38,7 @@ glabel eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
     /* 52354 80061B54 000043AC */   sw        $v1, 0x0($v0)
     /* 52358 80061B58 0100033C */  lui        $v1, (0x10007 >> 16)
     /* 5235C 80061B5C 07006334 */  ori        $v1, $v1, (0x10007 & 0xFFFF)
-    /* 52360 80061B60 9C03828F */  lw         $v0, %gp_rel(D_800A3468)($gp)
+    /* 52360 80061B60 9C03828F */  lw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 52364 80061B64 F3FF1026 */  addiu      $s0, $s0, -0xD
     /* 52368 80061B68 140050AC */  sw         $s0, 0x14($v0)
     /* 5236C 80061B6C EC860108 */  j          .L80061BB0
@@ -55,7 +55,7 @@ glabel eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
     /* 52394 80061B94 000082AC */   sw        $v0, 0x0($a0)
     /* 52398 80061B98 0100043C */  lui        $a0, (0x10007 >> 16)
     /* 5239C 80061B9C 07008434 */  ori        $a0, $a0, (0x10007 & 0xFFFF)
-    /* 523A0 80061BA0 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 523A0 80061BA0 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 523A4 80061BA4 F3FF0226 */  addiu      $v0, $s0, -0xD
     /* 523A8 80061BA8 140062AC */  sw         $v0, 0x14($v1)
     /* 523AC 80061BAC 000064AC */  sw         $a0, 0x0($v1)
@@ -63,8 +63,8 @@ glabel eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
     /* 523B0 80061BB0 9A82010C */  jal        eff_StartCommand
     /* 523B4 80061BB4 00000000 */   nop
     /* 523B8 80061BB8 0000228E */  lw         $v0, 0x0($s1)
-    /* 523BC 80061BBC 0F80013C */  lui        $at, %hi(D_800F1140)
-    /* 523C0 80061BC0 401122AC */  sw         $v0, %lo(D_800F1140)($at)
+    /* 523BC 80061BBC 0F80013C */  lui        $at, %hi(g_eff_point_light_position)
+    /* 523C0 80061BC0 401122AC */  sw         $v0, %lo(g_eff_point_light_position)($at)
     /* 523C4 80061BC4 0400228E */  lw         $v0, 0x4($s1)
     /* 523C8 80061BC8 FF00033C */  lui        $v1, (0xFF8080 >> 16)
     /* 523CC 80061BCC 0F80013C */  lui        $at, %hi(D_800F1144)

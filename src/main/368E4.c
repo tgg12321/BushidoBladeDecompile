@@ -179,7 +179,7 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     arena_SetBlockEnd(s7, (s32)s1);
     arena_SetMoveCallback(s7, (s32)resource_RebaseLoadedBlockSections);
     resource_InvokeLoadedSelectorInitCallback();
-    if (D_800A38DC != 0) {
+    if (g_fight_mode_selector != 0) {
         if (arg0 != 0x22) {
             resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
         }
@@ -484,9 +484,9 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
         D_800A33C0 = a2;
     }
 
-    calc_LightMatrix(&D_800F62E0[0]);
-    calc_LightMatrix(&D_800F62E0[1]);
-    calc_LightMatrix(&D_800F62E0[4]);
+    calc_LightMatrix(&g_light_setups[0]);
+    calc_LightMatrix(&g_light_setups[1]);
+    calc_LightMatrix(&g_light_setups[4]);
     light_ResetPointLight();
     ClearSavedWordPairsAndTwoWriteOnlyWords();
     func_8003F5CC();
@@ -557,10 +557,10 @@ void *fight_GetStartPositionPairTable(void) {
 }
 
 void math_SetLightPlaneProjection(void) {
-    s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;
-    s32 div = D_800F62E0[0].lmat.m[0][1];
+    s32 num = (s32)g_light_setups[0].lmat.m[0][0] << 12;
+    s32 div = g_light_setups[0].lmat.m[0][1];
     s32 v0 = num / div;
-    s32 v1 = ((s32)D_800F62E0[0].lmat.m[0][2] << 12) / div;
+    s32 v1 = ((s32)g_light_setups[0].lmat.m[0][2] << 12) / div;
     g_math_light_plane_projection.m[0][2] = 0;
     g_math_light_plane_projection.m[1][0] = 0;
     v1 = -(s16)v1;
@@ -589,15 +589,15 @@ void math_LightPlaneProject(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {
     MATRIX sp10;
 
     sp10.m[0][0] = 0x1000;
-    sp10.m[0][1] = (s16) - ((s32)(D_800F62E0[arg0].lmat.m[0][0] << 12) /
-                            D_800F62E0[arg0].lmat.m[0][1]);
+    sp10.m[0][1] = (s16) - ((s32)(g_light_setups[arg0].lmat.m[0][0] << 12) /
+                            g_light_setups[arg0].lmat.m[0][1]);
     sp10.m[0][2] = 0;
     sp10.m[1][0] = 0;
     sp10.m[1][1] = 0;
     sp10.m[1][2] = 0;
     sp10.m[2][0] = 0;
-    sp10.m[2][1] = (s16) - ((s32)(D_800F62E0[arg0].lmat.m[0][2] << 12) /
-                            D_800F62E0[arg0].lmat.m[0][1]);
+    sp10.m[2][1] = (s16) - ((s32)(g_light_setups[arg0].lmat.m[0][2] << 12) /
+                            g_light_setups[arg0].lmat.m[0][1]);
     sp10.m[2][2] = 0x1000;
     gte_MulMatrix0ClearTrans(&sp10, arg1, arg2);
     arg2->t[0] = arg1->t[0] + (((arg1->t[1] - arg3) * sp10.m[0][1]) >> 12);
@@ -1638,7 +1638,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
         *list = node;
     }
 
-    g_gpu_ot256_ptr = g_gpu_ot256_db[D_800A36AC & 1];
+    g_gpu_ot256_ptr = g_gpu_ot256_db[g_gpu_presented_frame_count & 1];
     ClearOTagR(g_gpu_ot256_ptr, 0x100);
     old = D_800A378C[0];
     D_800A378C[0] = (u32)(g_gpu_ot256_ptr + 0xFF) & 0xFFFFFF;
@@ -1687,7 +1687,7 @@ void gpu_QueueVramScroll(s32 arg0) {
     var_13 = &D_800EF848[arg0];
     var_15 = var_13->phase;
     var_1 = var_13->ctl;
-    p = var_13->move[D_800A36AC & 1];
+    p = var_13->move[g_gpu_presented_frame_count & 1];
     x = var_1[0] & ~0x3F;
     y = var_1[1] & ~0xFF;
     var_4 = var_1[0] % 64;
@@ -2227,11 +2227,11 @@ void light_InitDefaults(void) {
     s32 i;
     sp10 = g_light_default_template;
     for (i = 0; i < 8; i++) {
-        light_Unpack(&D_800F62E0[i], sp10.v);
+        light_Unpack(&g_light_setups[i], sp10.v);
     }
-    SetColorMatrix(&D_800F62E0[0].cmat);
-    SetBackColor(
-        D_800F62E0[0].back[0], D_800F62E0[0].back[1], D_800F62E0[0].back[2]);
+    SetColorMatrix(&g_light_setups[0].cmat);
+    SetBackColor(g_light_setups[0].back[0], g_light_setups[0].back[1],
+                 g_light_setups[0].back[2]);
 }
 
 void light_Unpack(Unk800F62E0Rec *arg0, u16 *arg1) {

@@ -8,8 +8,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 2306C 8003286C 2188C000 */  addu       $s1, $a2, $zero
     /* 23070 80032870 2400B5AF */  sw         $s5, 0x24($sp)
     /* 23074 80032874 21A8E000 */  addu       $s5, $a3, $zero
-    /* 23078 80032878 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 2307C 8003287C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 23078 80032878 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 2307C 8003287C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 23080 80032880 03000224 */  addiu      $v0, $zero, 0x3
     /* 23084 80032884 2800BFAF */  sw         $ra, 0x28($sp)
     /* 23088 80032888 2000B4AF */  sw         $s4, 0x20($sp)
@@ -43,8 +43,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 230EC 800328EC C0800200 */  sll        $s0, $v0, 3
     /* 230F0 800328F0 28001424 */  addiu      $s4, $zero, 0x28
   .L800328F4:
-    /* 230F4 800328F4 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 230F8 800328F8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 230F4 800328F4 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 230F8 800328F8 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 230FC 800328FC 03000224 */  addiu      $v0, $zero, 0x3
     /* 23100 80032900 12006214 */  bne        $v1, $v0, .L8003294C
     /* 23104 80032904 21206002 */   addu      $a0, $s3, $zero
@@ -83,8 +83,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 2317C 8003297C 08004000 */  jr         $v0
     /* 23180 80032980 00000000 */   nop
   jlabel .L80032984
-    /* 23184 80032984 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 23188 80032988 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 23184 80032984 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 23188 80032988 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 2318C 8003298C 02000224 */  addiu      $v0, $zero, 0x2
     /* 23190 80032990 06006214 */  bne        $v1, $v0, .L800329AC
     /* 23194 80032994 05000224 */   addiu     $v0, $zero, 0x5

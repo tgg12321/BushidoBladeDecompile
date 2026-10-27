@@ -16,7 +16,7 @@
  * D_8009BC38 (menu_UpdateRowCursors), D_8009BC40
  * (InitDisplayStateLoadPackAndSetEntryFlags,
  * gpu_UploadAndDrawSelectedEntryQuads, menu_UpdateEntryGrid,
- * menu_UpdateEntryGridCursors), D_8009BC7C (those,
+ * menu_UpdateEntryGridCursors), g_entry_menu_entry_flags (those,
  * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
  * menu_UpdateRowCursors, func_80071C20,
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
@@ -82,8 +82,8 @@ SelectEntryE534 D_8009BC40[5][6] = {
      {0x14, 0x18}},
 };
 
-u8 D_8009BC7C[24] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
-                     0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0};
+u8 g_entry_menu_entry_flags[24] = {
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0};
 
 Unk8009BC94Record D_8009BC94[2][6] = {
     {{-0x38, -0x1F},

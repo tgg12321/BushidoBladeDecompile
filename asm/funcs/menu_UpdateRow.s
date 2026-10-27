@@ -111,9 +111,9 @@ glabel menu_UpdateRow
     /* 61620 80070E20 50001324 */  addiu      $s3, $zero, 0x50
     /* 61624 80070E24 21900000 */  addu       $s2, $zero, $zero
   .L80070E28:
-    /* 61628 80070E28 0A80013C */  lui        $at, %hi(D_800A3560)
+    /* 61628 80070E28 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records)
     /* 6162C 80070E2C 21083200 */  addu       $at, $at, $s2
-    /* 61630 80070E30 60352390 */  lbu        $v1, %lo(D_800A3560)($at)
+    /* 61630 80070E30 60352390 */  lbu        $v1, %lo(g_entry_menu_slot_records)($at)
     /* 61634 80070E34 05000224 */  addiu      $v0, $zero, 0x5
     /* 61638 80070E38 22006210 */  beq        $v1, $v0, .L80070EC4
     /* 6163C 80070E3C 40201000 */   sll       $a0, $s0, 1

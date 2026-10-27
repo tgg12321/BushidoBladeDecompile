@@ -1,5 +1,5 @@
 glabel eff_StartCommand
-    /* 51268 80060A68 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 51268 80060A68 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 5126C 80060A6C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 51270 80060A70 1800BFAF */  sw         $ra, 0x18($sp)
     /* 51274 80060A74 00006294 */  lhu        $v0, 0x0($v1)
@@ -30,7 +30,7 @@ glabel eff_StartCommand
     /* 512D8 80060AD8 0400A594 */  lhu        $a1, 0x4($a1)
     /* 512DC 80060ADC 00006494 */  lhu        $a0, 0x0($v1)
     /* 512E0 80060AE0 20006224 */  addiu      $v0, $v1, 0x20
-    /* 512E4 80060AE4 B00382AF */  sw         $v0, %gp_rel(D_800A347C)($gp)
+    /* 512E4 80060AE4 B00382AF */  sw         $v0, %gp_rel(g_eff_command_position)($gp)
     /* 512E8 80060AE8 1C0065A4 */  sh         $a1, 0x1C($v1)
     /* 512EC 80060AEC 80180400 */  sll        $v1, $a0, 2
     /* 512F0 80060AF0 0A80013C */  lui        $at, %hi(D_8009BA60)
@@ -48,12 +48,12 @@ glabel eff_StartCommand
     /* 51320 80060B20 00000000 */  nop
     /* 51324 80060B24 09F84000 */  jalr       $v0
     /* 51328 80060B28 00000000 */   nop
-    /* 5132C 80060B2C 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 5132C 80060B2C 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 51330 80060B30 00000000 */  nop
     /* 51334 80060B34 1400638C */  lw         $v1, 0x14($v1)
     /* 51338 80060B38 00000000 */  nop
     /* 5133C 80060B3C 000062A0 */  sb         $v0, 0x0($v1)
-    /* 51340 80060B40 9C03828F */  lw         $v0, %gp_rel(D_800A3468)($gp)
+    /* 51340 80060B40 9C03828F */  lw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 51344 80060B44 00000000 */  nop
     /* 51348 80060B48 0000428C */  lw         $v0, 0x0($v0)
     /* 5134C 80060B4C 2000033C */  lui        $v1, (0x200000 >> 16)

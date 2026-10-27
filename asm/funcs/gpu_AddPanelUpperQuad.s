@@ -23,7 +23,7 @@ glabel gpu_AddPanelUpperQuad
     /* 63418 80072C18 140023A2 */  sb         $v1, 0x14($s1)
     /* 6341C 80072C1C 150022A2 */  sb         $v0, 0x15($s1)
     /* 63420 80072C20 160020A2 */  sb         $zero, 0x16($s1)
-    /* 63424 80072C24 F804828F */  lw         $v0, %gp_rel(D_800A35C4)($gp)
+    /* 63424 80072C24 F804828F */  lw         $v0, %gp_rel(g_entry_menu_work_block)($gp)
     /* 63428 80072C28 00000000 */  nop
     /* 6342C 80072C2C 0800428C */  lw         $v0, 0x8($v0)
     /* 63430 80072C30 00000000 */  nop

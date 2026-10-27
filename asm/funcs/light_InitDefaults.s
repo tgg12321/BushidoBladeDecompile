@@ -60,8 +60,8 @@ glabel light_InitDefaults
     /* 3A824 8004A024 0B00E4A8 */  swl        $a0, 0xB($a3)
     /* 3A828 8004A028 0800E4B8 */  swr        $a0, 0x8($a3)
     /* 3A82C 8004A02C 21880000 */  addu       $s1, $zero, $zero
-    /* 3A830 8004A030 0F80103C */  lui        $s0, %hi(D_800F62E0)
-    /* 3A834 8004A034 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)
+    /* 3A830 8004A030 0F80103C */  lui        $s0, %hi(g_light_setups)
+    /* 3A834 8004A034 E0621026 */  addiu      $s0, $s0, %lo(g_light_setups)
   .L8004A038:
     /* 3A838 8004A038 21200002 */  addu       $a0, $s0, $zero
     /* 3A83C 8004A03C 2728010C */  jal        light_Unpack

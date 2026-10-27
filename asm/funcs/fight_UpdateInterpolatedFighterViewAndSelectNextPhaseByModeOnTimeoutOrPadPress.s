@@ -1,16 +1,16 @@
 glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress
-    /* F7A0 8001EFA0 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* F7A4 8001EFA4 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* F7A0 8001EFA0 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* F7A4 8001EFA4 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* F7A8 8001EFA8 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* F7AC 8001EFAC 2800BFAF */  sw         $ra, 0x28($sp)
     /* F7B0 8001EFB0 01004224 */  addiu      $v0, $v0, 0x1
-    /* F7B4 8001EFB4 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* F7B8 8001EFB8 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* F7B4 8001EFB4 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* F7B8 8001EFB8 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* F7BC 8001EFBC AC1C010C */  jal        camera_GetViewMatrixWithHalvedMiddleRow
     /* F7C0 8001EFC0 00000000 */   nop
     /* F7C4 8001EFC4 099C033C */  lui        $v1, (0x9C09C09D >> 16)
-    /* F7C8 8001EFC8 0A80063C */  lui        $a2, %hi(D_800A37B8)
-    /* F7CC 8001EFCC B837C68C */  lw         $a2, %lo(D_800A37B8)($a2)
+    /* F7C8 8001EFC8 0A80063C */  lui        $a2, %hi(g_handler_frame_counter)
+    /* F7CC 8001EFCC B837C68C */  lw         $a2, %lo(g_handler_frame_counter)($a2)
     /* F7D0 8001EFD0 9DC06334 */  ori        $v1, $v1, (0x9C09C09D & 0xFFFF)
     /* F7D4 8001EFD4 00330600 */  sll        $a2, $a2, 12
     /* F7D8 8001EFD8 1800C300 */  mult       $a2, $v1
@@ -76,16 +76,16 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F8C8 8001F0C8 00000000 */  nop
     /* F8CC 8001F0CC 08004010 */  beqz       $v0, .L8001F0F0
     /* F8D0 8001F0D0 01000224 */   addiu     $v0, $zero, 0x1
-    /* F8D4 8001F0D4 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* F8D8 8001F0D8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* F8D4 8001F0D4 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* F8D8 8001F0D8 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* F8DC 8001F0DC 00000000 */  nop
     /* F8E0 8001F0E0 03006214 */  bne        $v1, $v0, .L8001F0F0
     /* F8E4 8001F0E4 69000224 */   addiu     $v0, $zero, 0x69
-    /* F8E8 8001F0E8 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* F8EC 8001F0EC B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* F8E8 8001F0E8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* F8EC 8001F0EC B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
   .L8001F0F0:
-    /* F8F0 8001F0F0 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* F8F4 8001F0F4 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* F8F0 8001F0F0 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* F8F4 8001F0F4 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* F8F8 8001F0F8 00000000 */  nop
     /* F8FC 8001F0FC 69004228 */  slti       $v0, $v0, 0x69
     /* F900 8001F100 07004010 */  beqz       $v0, .L8001F120
@@ -97,8 +97,8 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F918 8001F118 26004010 */  beqz       $v0, .L8001F1B4
     /* F91C 8001F11C 00000000 */   nop
   .L8001F120:
-    /* F920 8001F120 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* F924 8001F124 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* F920 8001F120 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* F924 8001F124 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* F928 8001F128 04000224 */  addiu      $v0, $zero, 0x4
     /* F92C 8001F12C 1A006210 */  beq        $v1, $v0, .L8001F198
     /* F930 8001F130 05006228 */   slti      $v0, $v1, 0x5
@@ -137,8 +137,8 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F9A4 8001F1A4 00000000 */   nop
     /* F9A8 8001F1A8 02000224 */  addiu      $v0, $zero, 0x2
   .L8001F1AC:
-    /* F9AC 8001F1AC 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* F9B0 8001F1B0 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* F9AC 8001F1AC 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* F9B0 8001F1B0 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8001F1B4:
     /* F9B4 8001F1B4 2800BF8F */  lw         $ra, 0x28($sp)
     /* F9B8 8001F1B8 3000BD27 */  addiu      $sp, $sp, 0x30

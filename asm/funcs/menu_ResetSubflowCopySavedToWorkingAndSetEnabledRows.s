@@ -5,8 +5,8 @@ glabel menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows
     /* 25C44 80035444 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
     /* 25C48 80035448 A0D4000C */  jal        CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
     /* 25C4C 8003544C 00000000 */   nop
-    /* 25C50 80035450 1080033C */  lui        $v1, %hi(D_80106A50 + 0x4)
-    /* 25C54 80035454 546A6390 */  lbu        $v1, %lo(D_80106A50 + 0x4)($v1)
+    /* 25C50 80035450 1080033C */  lui        $v1, %hi(g_saved_record + 0x4)
+    /* 25C54 80035454 546A6390 */  lbu        $v1, %lo(g_saved_record + 0x4)($v1)
     /* 25C58 80035458 3F000224 */  addiu      $v0, $zero, 0x3F
     /* 25C5C 8003545C 02006214 */  bne        $v1, $v0, .L80035468
     /* 25C60 80035460 F7000424 */   addiu     $a0, $zero, 0xF7

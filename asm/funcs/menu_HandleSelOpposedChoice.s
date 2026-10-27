@@ -1,5 +1,5 @@
 glabel menu_HandleSelOpposedChoice
-    /* 65E70 80075670 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65E70 80075670 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65E74 80075674 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 65E78 80075678 1400BFAF */  sw         $ra, 0x14($sp)
     /* 65E7C 8007567C 1000B0AF */  sw         $s0, 0x10($sp)
@@ -19,7 +19,7 @@ glabel menu_HandleSelOpposedChoice
     /* 65EB4 800756B4 03140200 */  sra        $v0, $v0, 16
     /* 65EB8 800756B8 11004010 */  beqz       $v0, .L80075700
     /* 65EBC 800756BC 21200000 */   addu      $a0, $zero, $zero
-    /* 65EC0 800756C0 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65EC0 800756C0 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65EC4 800756C4 00000000 */  nop
     /* 65EC8 800756C8 340060A4 */  sh         $zero, 0x34($v1)
     /* 65ECC 800756CC 21187000 */  addu       $v1, $v1, $s0
@@ -27,7 +27,7 @@ glabel menu_HandleSelOpposedChoice
     /* 65ED4 800756D4 00000000 */  nop
     /* 65ED8 800756D8 01004224 */  addiu      $v0, $v0, 0x1
     /* 65EDC 800756DC 680062A0 */  sb         $v0, 0x68($v1)
-    /* 65EE0 800756E0 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65EE0 800756E0 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65EE4 800756E4 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 65EE8 800756E8 21187000 */  addu       $v1, $v1, $s0
     /* 65EEC 800756EC 68006290 */  lbu        $v0, 0x68($v1)
@@ -37,7 +37,7 @@ glabel menu_HandleSelOpposedChoice
     /* 65EFC 800756FC 680062A0 */   sb        $v0, 0x68($v1)
   .L80075700:
     /* 65F00 80075700 40101000 */  sll        $v0, $s0, 1
-    /* 65F04 80075704 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 65F04 80075704 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 65F08 80075708 00211000 */  sll        $a0, $s0, 4
     /* 65F0C 8007570C 2118B000 */  addu       $v1, $a1, $s0
     /* 65F10 80075710 68006390 */  lbu        $v1, 0x68($v1)
@@ -68,7 +68,7 @@ glabel menu_HandleSelOpposedChoice
     /* 65F70 80075770 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 65F74 80075774 7F000624 */  addiu      $a2, $zero, 0x7F
     /* 65F78 80075778 01000326 */  addiu      $v1, $s0, 0x1
-    /* 65F7C 8007577C D405878F */  lw         $a3, %gp_rel(D_800A36A0)($gp)
+    /* 65F7C 8007577C D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
     /* 65F80 80075780 01006330 */  andi       $v1, $v1, 0x1
     /* 65F84 80075784 2110F000 */  addu       $v0, $a3, $s0
     /* 65F88 80075788 68004290 */  lbu        $v0, 0x68($v0)

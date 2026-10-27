@@ -94,7 +94,7 @@ glabel menu_DrawMaskedRowList
     /* 5B1E8 8006A9E8 0B000224 */  addiu      $v0, $zero, 0xB
     /* 5B1EC 8006A9EC 2C00A2AF */  sw         $v0, 0x2C($sp)
   .L8006A9F0:
-    /* 5B1F0 8006A9F0 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 5B1F0 8006A9F0 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5B1F4 8006A9F4 76000224 */  addiu      $v0, $zero, 0x76
     /* 5B1F8 8006A9F8 3000A2AF */  sw         $v0, 0x30($sp)
     /* 5B1FC 8006A9FC 0F006330 */  andi       $v1, $v1, 0xF
@@ -203,7 +203,7 @@ glabel menu_DrawMaskedRowList
     /* 5B38C 8006AB8C 4000528C */  lw         $s2, 0x40($v0)
     /* 5B390 8006AB90 0A000224 */  addiu      $v0, $zero, 0xA
     /* 5B394 8006AB94 2C00A2AF */  sw         $v0, 0x2C($sp)
-    /* 5B398 8006AB98 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5B398 8006AB98 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5B39C 8006AB9C 4000A0A3 */  sb         $zero, 0x40($sp)
     /* 5B3A0 8006ABA0 2800A0AF */  sw         $zero, 0x28($sp)
     /* 5B3A4 8006ABA4 3000A0AF */  sw         $zero, 0x30($sp)
@@ -283,7 +283,7 @@ glabel menu_DrawMaskedRowList
     /* 5B4CC 8006ACCC 00000000 */  nop
     /* 5B4D0 8006ACD0 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B4D4 8006ACD4 240002AE */  sw         $v0, 0x24($s0)
-    /* 5B4D8 8006ACD8 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 5B4D8 8006ACD8 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5B4DC 8006ACDC 76000224 */  addiu      $v0, $zero, 0x76
     /* 5B4E0 8006ACE0 3000A2AF */  sw         $v0, 0x30($sp)
     /* 5B4E4 8006ACE4 07000224 */  addiu      $v0, $zero, 0x7
@@ -433,7 +433,7 @@ glabel menu_DrawMaskedRowList
     /* 5B714 8006AF14 0400038E */  lw         $v1, 0x4($s0)
     /* 5B718 8006AF18 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B71C 8006AF1C 1C0002AE */  sw         $v0, 0x1C($s0)
-    /* 5B720 8006AF20 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5B720 8006AF20 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5B724 8006AF24 2400728C */  lw         $s2, 0x24($v1)
     /* 5B728 8006AF28 0F004230 */  andi       $v0, $v0, 0xF
     /* 5B72C 8006AF2C 80100200 */  sll        $v0, $v0, 2
@@ -472,7 +472,7 @@ glabel menu_DrawMaskedRowList
     /* 5B7B0 8006AFB0 0400038E */  lw         $v1, 0x4($s0)
     /* 5B7B4 8006AFB4 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B7B8 8006AFB8 1C0002AE */  sw         $v0, 0x1C($s0)
-    /* 5B7BC 8006AFBC 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5B7BC 8006AFBC 2C04828F */  lw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 5B7C0 8006AFC0 2400728C */  lw         $s2, 0x24($v1)
     /* 5B7C4 8006AFC4 0F004230 */  andi       $v0, $v0, 0xF
     /* 5B7C8 8006AFC8 80100200 */  sll        $v0, $v0, 2

@@ -1,14 +1,14 @@
 glabel ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests
     /* 24BF0 800343F0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 24BF4 800343F4 21200000 */  addu       $a0, $zero, $zero
-    /* 24BF8 800343F8 1080063C */  lui        $a2, %hi(D_80102778 + 0xD)
-    /* 24BFC 800343FC 8527C690 */  lbu        $a2, %lo(D_80102778 + 0xD)($a2)
-    /* 24C00 80034400 1080033C */  lui        $v1, %hi(D_80102778 + 0xE)
-    /* 24C04 80034404 86276390 */  lbu        $v1, %lo(D_80102778 + 0xE)($v1)
-    /* 24C08 80034408 1080023C */  lui        $v0, %hi(D_80102778 + 0xC)
-    /* 24C0C 8003440C 84274290 */  lbu        $v0, %lo(D_80102778 + 0xC)($v0)
-    /* 24C10 80034410 1080073C */  lui        $a3, %hi(D_80102778 + 0xF)
-    /* 24C14 80034414 8727E780 */  lb         $a3, %lo(D_80102778 + 0xF)($a3)
+    /* 24BF8 800343F8 1080063C */  lui        $a2, %hi(g_fight_config + 0xD)
+    /* 24BFC 800343FC 8527C690 */  lbu        $a2, %lo(g_fight_config + 0xD)($a2)
+    /* 24C00 80034400 1080033C */  lui        $v1, %hi(g_fight_config + 0xE)
+    /* 24C04 80034404 86276390 */  lbu        $v1, %lo(g_fight_config + 0xE)($v1)
+    /* 24C08 80034408 1080023C */  lui        $v0, %hi(g_fight_config + 0xC)
+    /* 24C0C 8003440C 84274290 */  lbu        $v0, %lo(g_fight_config + 0xC)($v0)
+    /* 24C10 80034410 1080073C */  lui        $a3, %hi(g_fight_config + 0xF)
+    /* 24C14 80034414 8727E780 */  lb         $a3, %lo(g_fight_config + 0xF)($a3)
     /* 24C18 80034418 1000BFAF */  sw         $ra, 0x10($sp)
     /* 24C1C 8003441C 0A80013C */  lui        $at, %hi(D_800A36F6)
     /* 24C20 80034420 F63620A4 */  sh         $zero, %lo(D_800A36F6)($at)
@@ -18,14 +18,14 @@ glabel ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests
     /* 24C30 80034430 031E0300 */  sra        $v1, $v1, 24
     /* 24C34 80034434 00160200 */  sll        $v0, $v0, 24
     /* 24C38 80034438 03160200 */  sra        $v0, $v0, 24
-    /* 24C3C 8003443C 0A80013C */  lui        $at, %hi(D_800A38DC)
-    /* 24C40 80034440 DC3826A4 */  sh         $a2, %lo(D_800A38DC)($at)
+    /* 24C3C 8003443C 0A80013C */  lui        $at, %hi(g_fight_mode_selector)
+    /* 24C40 80034440 DC3826A4 */  sh         $a2, %lo(g_fight_mode_selector)($at)
     /* 24C44 80034444 0A80013C */  lui        $at, %hi(D_800A38BA)
     /* 24C48 80034448 BA3823A4 */  sh         $v1, %lo(D_800A38BA)($at)
     /* 24C4C 8003444C 0A80013C */  lui        $at, %hi(D_800A3140)
     /* 24C50 80034450 403127AC */  sw         $a3, %lo(D_800A3140)($at)
-    /* 24C54 80034454 0A80013C */  lui        $at, %hi(D_800A36A4)
-    /* 24C58 80034458 A43622A4 */  sh         $v0, %lo(D_800A36A4)($at)
+    /* 24C54 80034454 0A80013C */  lui        $at, %hi(g_fight_stage_index)
+    /* 24C58 80034458 A43622A4 */  sh         $v0, %lo(g_fight_stage_index)($at)
     /* 24C5C 8003445C 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* 24C60 80034460 21280000 */   addu      $a1, $zero, $zero
     /* 24C64 80034464 01000424 */  addiu      $a0, $zero, 0x1

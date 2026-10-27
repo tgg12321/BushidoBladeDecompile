@@ -4,7 +4,7 @@ glabel eff_StartYawedQuadSlotCommand
     /* 52244 80061A44 6C110825 */  addiu      $t0, $t0, %lo(g_eff_command_block)
     /* 52248 80061A48 1000A227 */  addiu      $v0, $sp, 0x10
     /* 5224C 80061A4C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 52250 80061A50 9C0388AF */  sw         $t0, %gp_rel(D_800A3468)($gp)
+    /* 52250 80061A50 9C0388AF */  sw         $t0, %gp_rel(g_eff_active_command_block)($gp)
     /* 52254 80061A54 1400A0A7 */  sh         $zero, 0x14($sp)
     /* 52258 80061A58 1000A0A7 */  sh         $zero, 0x10($sp)
     /* 5225C 80061A5C 1200A5A7 */  sh         $a1, 0x12($sp)

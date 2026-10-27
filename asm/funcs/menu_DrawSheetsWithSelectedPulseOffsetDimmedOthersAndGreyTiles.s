@@ -1,5 +1,5 @@
 glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
-    /* 64C88 80074488 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 64C88 80074488 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 64C8C 8007448C 90FFBD27 */  addiu      $sp, $sp, -0x70
     /* 64C90 80074490 5400B1AF */  sw         $s1, 0x54($sp)
     /* 64C94 80074494 21888000 */  addu       $s1, $a0, $zero
@@ -45,7 +45,7 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
     /* 64D30 80074530 05006228 */  slti       $v0, $v1, 0x5
     /* 64D34 80074534 0F004010 */  beqz       $v0, .L80074574
     /* 64D38 80074538 08006228 */   slti      $v0, $v1, 0x8
-    /* 64D3C 8007453C D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 64D3C 8007453C D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 64D40 80074540 00000000 */  nop
     /* 64D44 80074544 34004494 */  lhu        $a0, 0x34($v0)
     /* 64D48 80074548 00000000 */  nop
@@ -55,14 +55,14 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
     /* 64D58 80074558 FF018424 */   addiu     $a0, $a0, 0x1FF
     /* 64D5C 8007455C 40110200 */  sll        $v0, $v0, 5
     /* 64D60 80074560 03130200 */  sra        $v0, $v0, 12
-    /* 64D64 80074564 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 64D64 80074564 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 64D68 80074568 80FF4224 */  addiu      $v0, $v0, -0x80
     /* 64D6C 8007456C 89D10108 */  j          .L80074624
     /* 64D70 80074570 4300A2A3 */   sb        $v0, 0x43($sp)
   .L80074574:
     /* 64D74 80074574 0A004010 */  beqz       $v0, .L800745A0
     /* 64D78 80074578 0A006228 */   slti      $v0, $v1, 0xA
-    /* 64D7C 8007457C D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 64D7C 8007457C D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 64D80 80074580 00000000 */  nop
     /* 64D84 80074584 3C006284 */  lh         $v0, 0x3C($v1)
     /* 64D88 80074588 00000000 */  nop
@@ -74,7 +74,7 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
   .L800745A0:
     /* 64DA0 800745A0 0A004010 */  beqz       $v0, .L800745CC
     /* 64DA4 800745A4 0E006228 */   slti      $v0, $v1, 0xE
-    /* 64DA8 800745A8 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 64DA8 800745A8 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 64DAC 800745AC 00000000 */  nop
     /* 64DB0 800745B0 3C006284 */  lh         $v0, 0x3C($v1)
     /* 64DB4 800745B4 00000000 */  nop
@@ -86,7 +86,7 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
   .L800745CC:
     /* 64DCC 800745CC 19004010 */  beqz       $v0, .L80074634
     /* 64DD0 800745D0 02000224 */   addiu     $v0, $zero, 0x2
-    /* 64DD4 800745D4 D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 64DD4 800745D4 D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 64DD8 800745D8 00000000 */  nop
     /* 64DDC 800745DC 3C008384 */  lh         $v1, 0x3C($a0)
     /* 64DE0 800745E0 00000000 */  nop
@@ -101,7 +101,7 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
     /* 64E00 80074600 FF018424 */   addiu     $a0, $a0, 0x1FF
     /* 64E04 80074604 40110200 */  sll        $v0, $v0, 5
     /* 64E08 80074608 03130200 */  sra        $v0, $v0, 12
-    /* 64E0C 8007460C D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 64E0C 8007460C D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 64E10 80074610 80FF4224 */  addiu      $v0, $v0, -0x80
     /* 64E14 80074614 4300A2A3 */  sb         $v0, 0x43($sp)
     /* 64E18 80074618 40006284 */  lh         $v0, 0x40($v1)
@@ -143,7 +143,7 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
     /* 64E8C 8007468C 0400422C */  sltiu      $v0, $v0, 0x4
     /* 64E90 80074690 16004010 */  beqz       $v0, .L800746EC
     /* 64E94 80074694 00141000 */   sll       $v0, $s0, 16
-    /* 64E98 80074698 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 64E98 80074698 D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 64E9C 8007469C 00000000 */  nop
     /* 64EA0 800746A0 67004290 */  lbu        $v0, 0x67($v0)
     /* 64EA4 800746A4 00000000 */  nop

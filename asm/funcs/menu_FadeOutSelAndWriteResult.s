@@ -1,5 +1,5 @@
 glabel menu_FadeOutSelAndWriteResult
-    /* 67574 80076D74 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 67574 80076D74 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 67578 80076D78 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 6757C 80076D7C 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 67580 80076D80 21888000 */  addu       $s1, $a0, $zero
@@ -44,7 +44,7 @@ glabel menu_FadeOutSelAndWriteResult
     /* 67614 80076E14 21480000 */  addu       $t1, $zero, $zero
     /* 67618 80076E18 FFCF0224 */  addiu      $v0, $zero, -0x3001
     /* 6761C 80076E1C 1400E38C */  lw         $v1, 0x14($a3)
-    /* 67620 80076E20 D405858F */  lw         $a1, %gp_rel(D_800A36A0)($gp)
+    /* 67620 80076E20 D405858F */  lw         $a1, %gp_rel(g_sel_screen_work)($gp)
     /* 67624 80076E24 24186200 */  and        $v1, $v1, $v0
     /* 67628 80076E28 03008230 */  andi       $v0, $a0, 0x3
     /* 6762C 80076E2C 00130200 */  sll        $v0, $v0, 12
@@ -67,7 +67,7 @@ glabel menu_FadeOutSelAndWriteResult
     /* 67670 80076E70 2530C200 */  or         $a2, $a2, $v0
     /* 67674 80076E74 1400E6AC */  sw         $a2, 0x14($a3)
   .L80076E78:
-    /* 67678 80076E78 D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 67678 80076E78 D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 6767C 80076E7C 00000000 */  nop
     /* 67680 80076E80 65008290 */  lbu        $v0, 0x65($a0)
     /* 67684 80076E84 00000000 */  nop
@@ -93,7 +93,7 @@ glabel menu_FadeOutSelAndWriteResult
     /* 676D0 80076ED0 F9BC2290 */  lbu        $v0, %lo(D_8009BCF9)($at)
     /* 676D4 80076ED4 2120E400 */  addu       $a0, $a3, $a0
     /* 676D8 80076ED8 000082A0 */  sb         $v0, 0x0($a0)
-    /* 676DC 80076EDC D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 676DC 80076EDC D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 676E0 80076EE0 00000000 */  nop
     /* 676E4 80076EE4 2110A200 */  addu       $v0, $a1, $v0
     /* 676E8 80076EE8 21104300 */  addu       $v0, $v0, $v1
@@ -101,7 +101,7 @@ glabel menu_FadeOutSelAndWriteResult
     /* 676F0 80076EF0 7E004294 */  lhu        $v0, 0x7E($v0)
     /* 676F4 80076EF4 21306000 */  addu       $a2, $v1, $zero
     /* 676F8 80076EF8 010082A0 */  sb         $v0, 0x1($a0)
-    /* 676FC 80076EFC D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 676FC 80076EFC D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
     /* 67700 80076F00 001C0300 */  sll        $v1, $v1, 16
     /* 67704 80076F04 65008290 */  lbu        $v0, 0x65($a0)
     /* 67708 80076F08 031C0300 */  sra        $v1, $v1, 16

@@ -1,6 +1,6 @@
 glabel func_80063B34
     /* 54334 80063B34 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 54338 80063B38 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
+    /* 54338 80063B38 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 5433C 80063B3C 01000224 */  addiu      $v0, $zero, 0x1
     /* 54340 80063B40 1000BFAF */  sw         $ra, 0x10($sp)
     /* 54344 80063B44 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x4)

@@ -1,7 +1,7 @@
 glabel fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
     /* 2BB28 8003B328 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 2BB2C 8003B32C 1080033C */  lui        $v1, %hi(D_80102778 + 0x4)
-    /* 2BB30 8003B330 7C276324 */  addiu      $v1, $v1, %lo(D_80102778 + 0x4)
+    /* 2BB2C 8003B32C 1080033C */  lui        $v1, %hi(g_fight_config + 0x4)
+    /* 2BB30 8003B330 7C276324 */  addiu      $v1, $v1, %lo(g_fight_config + 0x4)
     /* 2BB34 8003B334 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2BB38 8003B338 00006690 */  lbu        $a2, 0x0($v1)
     /* 2BB3C 8003B33C 0A80073C */  lui        $a3, %hi(D_800A376A)

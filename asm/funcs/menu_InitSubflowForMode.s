@@ -68,8 +68,8 @@ glabel menu_InitSubflowForMode
     /* 25F04 80035704 10006214 */  bne        $v1, $v0, .L80035748
     /* 25F08 80035708 00000000 */   nop
     /* 25F0C 8003570C 3F00033C */  lui        $v1, (0x3FF3FF >> 16)
-    /* 25F10 80035710 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 25F14 80035714 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
+    /* 25F10 80035710 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 25F14 80035714 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 25F18 80035718 0A80023C */  lui        $v0, %hi(D_800A38E4)
     /* 25F1C 8003571C E438428C */  lw         $v0, %lo(D_800A38E4)($v0)
     /* 25F20 80035720 FFF36334 */  ori        $v1, $v1, (0x3FF3FF & 0xFFFF)
@@ -90,18 +90,18 @@ glabel menu_InitSubflowForMode
     /* 25F58 80035758 9471010C */  jal        snd_QueueSound
     /* 25F5C 8003575C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 25F60 80035760 09000224 */  addiu      $v0, $zero, 0x9
-    /* 25F64 80035764 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 25F68 80035768 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 25F64 80035764 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 25F68 80035768 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 25F6C 8003576C 01000224 */  addiu      $v0, $zero, 0x1
-    /* 25F70 80035770 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* 25F74 80035774 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
+    /* 25F70 80035770 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* 25F74 80035774 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 25F78 80035778 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
     /* 25F7C 8003577C 06D60008 */  j          .L80035818
     /* 25F80 80035780 00000000 */   nop
   jlabel .L80035784
     /* 25F84 80035784 3E00023C */  lui        $v0, (0x3EF3DF >> 16)
-    /* 25F88 80035788 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 25F8C 8003578C 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
+    /* 25F88 80035788 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 25F8C 8003578C 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 25F90 80035790 DFF34234 */  ori        $v0, $v0, (0x3EF3DF & 0xFFFF)
     /* 25F94 80035794 50DE010C */  jal        StoreCompactedBits
     /* 25F98 80035798 24208200 */   and       $a0, $a0, $v0
@@ -112,8 +112,8 @@ glabel menu_InitSubflowForMode
     /* 25FAC 800357AC 03000224 */   addiu     $v0, $zero, 0x3
   jlabel .L800357B0
     /* 25FB0 800357B0 3F00023C */  lui        $v0, (0x3FF3FF >> 16)
-    /* 25FB4 800357B4 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 25FB8 800357B8 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
+    /* 25FB4 800357B4 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 25FB8 800357B8 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 25FBC 800357BC FFF34234 */  ori        $v0, $v0, (0x3FF3FF & 0xFFFF)
     /* 25FC0 800357C0 50DE010C */  jal        StoreCompactedBits
     /* 25FC4 800357C4 24208200 */   and       $a0, $a0, $v0
@@ -124,8 +124,8 @@ glabel menu_InitSubflowForMode
     /* 25FD8 800357D8 0A000224 */   addiu     $v0, $zero, 0xA
   jlabel .L800357DC
     /* 25FDC 800357DC 3F05023C */  lui        $v0, (0x53FF3FF >> 16)
-    /* 25FE0 800357E0 1080043C */  lui        $a0, %hi(D_80106A50)
-    /* 25FE4 800357E4 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
+    /* 25FE0 800357E0 1080043C */  lui        $a0, %hi(g_saved_record)
+    /* 25FE4 800357E4 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 25FE8 800357E8 FFF34234 */  ori        $v0, $v0, (0x53FF3FF & 0xFFFF)
     /* 25FEC 800357EC 50DE010C */  jal        StoreCompactedBits
     /* 25FF0 800357F0 24208200 */   and       $a0, $a0, $v0

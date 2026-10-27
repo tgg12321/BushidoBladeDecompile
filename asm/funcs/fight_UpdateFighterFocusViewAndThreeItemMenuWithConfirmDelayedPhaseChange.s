@@ -1,12 +1,12 @@
 glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
-    /* F284 8001EA84 0A80023C */  lui        $v0, %hi(D_800A37B8)
-    /* F288 8001EA88 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
+    /* F284 8001EA84 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
+    /* F288 8001EA88 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* F28C 8001EA8C C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* F290 8001EA90 3400BFAF */  sw         $ra, 0x34($sp)
     /* F294 8001EA94 3000B0AF */  sw         $s0, 0x30($sp)
     /* F298 8001EA98 01004224 */  addiu      $v0, $v0, 0x1
-    /* F29C 8001EA9C 0A80013C */  lui        $at, %hi(D_800A37B8)
-    /* F2A0 8001EAA0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
+    /* F29C 8001EA9C 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
+    /* F2A0 8001EAA0 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* F2A4 8001EAA4 AC1C010C */  jal        camera_GetViewMatrixWithHalvedMiddleRow
     /* F2A8 8001EAA8 00000000 */   nop
     /* F2AC 8001EAAC 0A80033C */  lui        $v1, %hi(D_800A3748)
@@ -19,8 +19,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F2C8 8001EAC8 00000000 */   nop
     /* F2CC 8001EACC 4C048424 */  addiu      $a0, $a0, 0x44C
   .L8001EAD0:
-    /* F2D0 8001EAD0 0A80053C */  lui        $a1, %hi(D_800A37B8)
-    /* F2D4 8001EAD4 B837A58C */  lw         $a1, %lo(D_800A37B8)($a1)
+    /* F2D0 8001EAD0 0A80053C */  lui        $a1, %hi(g_handler_frame_counter)
+    /* F2D4 8001EAD4 B837A58C */  lw         $a1, %lo(g_handler_frame_counter)($a1)
     /* F2D8 8001EAD8 1C6F000C */  jal        camera_SetFighterFocusView
     /* F2DC 8001EADC C0280500 */   sll       $a1, $a1, 3
     /* F2E0 8001EAE0 0179000C */  jal        camera_ApplyFightView
@@ -49,8 +49,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F33C 8001EB3C 01000424 */   addiu     $a0, $zero, 0x1
     /* F340 8001EB40 76CD000C */  jal        snd_UpdateStageSounds
     /* F344 8001EB44 00000000 */   nop
-    /* F348 8001EB48 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* F34C 8001EB4C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* F348 8001EB48 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* F34C 8001EB4C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* F350 8001EB50 03000224 */  addiu      $v0, $zero, 0x3
     /* F354 8001EB54 14006214 */  bne        $v1, $v0, .L8001EBA8
     /* F358 8001EB58 2800B027 */   addiu     $s0, $sp, 0x28
@@ -80,8 +80,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F3B0 8001EBB0 00000000 */  nop
     /* F3B4 8001EBB4 63004014 */  bnez       $v0, .L8001ED44
     /* F3B8 8001EBB8 01000424 */   addiu     $a0, $zero, 0x1
-    /* F3BC 8001EBBC 0A80053C */  lui        $a1, %hi(D_800A3817)
-    /* F3C0 8001EBC0 1738A590 */  lbu        $a1, %lo(D_800A3817)($a1)
+    /* F3BC 8001EBBC 0A80053C */  lui        $a1, %hi(g_fight_choice_menu_cursor)
+    /* F3C0 8001EBC0 1738A590 */  lbu        $a1, %lo(g_fight_choice_menu_cursor)($a1)
     /* F3C4 8001EBC4 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* F3C8 8001EBC8 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
     /* F3CC 8001EBCC 2A72010C */  jal        gpu_DrawModeSizedPanelWithSelectedCellOpaque
@@ -106,8 +106,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F414 8001EC14 7F000524 */  addiu      $a1, $zero, 0x7F
     /* F418 8001EC18 9471010C */  jal        snd_QueueSound
     /* F41C 8001EC1C 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* F420 8001EC20 0A80033C */  lui        $v1, %hi(D_800A3817)
-    /* F424 8001EC24 17386390 */  lbu        $v1, %lo(D_800A3817)($v1)
+    /* F420 8001EC20 0A80033C */  lui        $v1, %hi(g_fight_choice_menu_cursor)
+    /* F424 8001EC24 17386390 */  lbu        $v1, %lo(g_fight_choice_menu_cursor)($v1)
     /* F428 8001EC28 0A80023C */  lui        $v0, %hi(D_800A3804)
     /* F42C 8001EC2C 04384290 */  lbu        $v0, %lo(D_800A3804)($v0)
     /* F430 8001EC30 00000000 */  nop
@@ -123,8 +123,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F454 8001EC54 7F000524 */   addiu     $a1, $zero, 0x7F
     /* F458 8001EC58 9471010C */  jal        snd_QueueSound
     /* F45C 8001EC5C 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* F460 8001EC60 0A80043C */  lui        $a0, %hi(D_800A3817)
-    /* F464 8001EC64 17388490 */  lbu        $a0, %lo(D_800A3817)($a0)
+    /* F460 8001EC60 0A80043C */  lui        $a0, %hi(g_fight_choice_menu_cursor)
+    /* F464 8001EC64 17388490 */  lbu        $a0, %lo(g_fight_choice_menu_cursor)($a0)
     /* F468 8001EC68 02000224 */  addiu      $v0, $zero, 0x2
     /* F46C 8001EC6C FF008330 */  andi       $v1, $a0, 0xFF
     /* F470 8001EC70 03006214 */  bne        $v1, $v0, .L8001EC80
@@ -132,8 +132,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F478 8001EC78 0A80023C */  lui        $v0, %hi(D_800A3804)
     /* F47C 8001EC7C 04384290 */  lbu        $v0, %lo(D_800A3804)($v0)
   .L8001EC80:
-    /* F480 8001EC80 0A80013C */  lui        $at, %hi(D_800A3817)
-    /* F484 8001EC84 173822A0 */  sb         $v0, %lo(D_800A3817)($at)
+    /* F480 8001EC80 0A80013C */  lui        $at, %hi(g_fight_choice_menu_cursor)
+    /* F484 8001EC84 173822A0 */  sb         $v0, %lo(g_fight_choice_menu_cursor)($at)
   .L8001EC88:
     /* F488 8001EC88 4000033C */  lui        $v1, (0x400040 >> 16)
     /* F48C 8001EC8C 1080023C */  lui        $v0, %hi(g_pad_state + 0xC)
@@ -145,8 +145,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F4A4 8001ECA4 7F000524 */  addiu      $a1, $zero, 0x7F
     /* F4A8 8001ECA8 9471010C */  jal        snd_QueueSound
     /* F4AC 8001ECAC 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* F4B0 8001ECB0 0A80033C */  lui        $v1, %hi(D_800A3817)
-    /* F4B4 8001ECB4 17386390 */  lbu        $v1, %lo(D_800A3817)($v1)
+    /* F4B0 8001ECB0 0A80033C */  lui        $v1, %hi(g_fight_choice_menu_cursor)
+    /* F4B4 8001ECB4 17386390 */  lbu        $v1, %lo(g_fight_choice_menu_cursor)($v1)
     /* F4B8 8001ECB8 00000000 */  nop
     /* F4BC 8001ECBC 02006014 */  bnez       $v1, .L8001ECC8
     /* F4C0 8001ECC0 3C000224 */   addiu     $v0, $zero, 0x3C
@@ -165,8 +165,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F4F0 8001ECF0 1080013C */  lui        $at, %hi(D_80101F7B)
     /* F4F4 8001ECF4 21082200 */  addu       $at, $at, $v0
     /* F4F8 8001ECF8 7B1F20A0 */  sb         $zero, %lo(D_80101F7B)($at)
-    /* F4FC 8001ECFC 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* F500 8001ED00 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* F4FC 8001ECFC 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* F500 8001ED00 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* F504 8001ED04 03000224 */  addiu      $v0, $zero, 0x3
     /* F508 8001ED08 65006214 */  bne        $v1, $v0, .L8001EEA0
     /* F50C 8001ED0C 0200033C */   lui       $v1, (0x2BF20 >> 16)
@@ -184,8 +184,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F53C 8001ED3C A87B0008 */  j          .L8001EEA0
     /* F540 8001ED40 00000000 */   nop
   .L8001ED44:
-    /* F544 8001ED44 0A80023C */  lui        $v0, %hi(D_800A3817)
-    /* F548 8001ED48 17384290 */  lbu        $v0, %lo(D_800A3817)($v0)
+    /* F544 8001ED44 0A80023C */  lui        $v0, %hi(g_fight_choice_menu_cursor)
+    /* F548 8001ED48 17384290 */  lbu        $v0, %lo(g_fight_choice_menu_cursor)($v0)
     /* F54C 8001ED4C 00000000 */  nop
     /* F550 8001ED50 0F004014 */  bnez       $v0, .L8001ED90
     /* F554 8001ED54 21200000 */   addu      $a0, $zero, $zero
@@ -215,8 +215,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F5AC 8001EDAC 3C00422C */  sltiu      $v0, $v0, 0x3C
     /* F5B0 8001EDB0 3B004014 */  bnez       $v0, .L8001EEA0
     /* F5B4 8001EDB4 00000000 */   nop
-    /* F5B8 8001EDB8 0A80033C */  lui        $v1, %hi(D_800A3817)
-    /* F5BC 8001EDBC 17386390 */  lbu        $v1, %lo(D_800A3817)($v1)
+    /* F5B8 8001EDB8 0A80033C */  lui        $v1, %hi(g_fight_choice_menu_cursor)
+    /* F5BC 8001EDBC 17386390 */  lbu        $v1, %lo(g_fight_choice_menu_cursor)($v1)
     /* F5C0 8001EDC0 00000000 */  nop
     /* F5C4 8001EDC4 22006014 */  bnez       $v1, .L8001EE50
     /* F5C8 8001EDC8 01000224 */   addiu     $v0, $zero, 0x1
@@ -250,8 +250,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F638 8001EE38 3A54010C */  jal        fighter_HalveCpuTally
     /* F63C 8001EE3C 01000424 */   addiu     $a0, $zero, 0x1
   .L8001EE40:
-    /* F640 8001EE40 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* F644 8001EE44 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* F640 8001EE40 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* F644 8001EE44 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* F648 8001EE48 A87B0008 */  j          .L8001EEA0
     /* F64C 8001EE4C 00000000 */   nop
   .L8001EE50:
@@ -275,8 +275,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F690 8001EE90 00000000 */   nop
     /* F694 8001EE94 08000224 */  addiu      $v0, $zero, 0x8
   .L8001EE98:
-    /* F698 8001EE98 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* F69C 8001EE9C 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* F698 8001EE98 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* F69C 8001EE9C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
   .L8001EEA0:
     /* F6A0 8001EEA0 3400BF8F */  lw         $ra, 0x34($sp)
     /* F6A4 8001EEA4 3000B08F */  lw         $s0, 0x30($sp)

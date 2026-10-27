@@ -16,8 +16,8 @@ glabel fight_AdvanceMatch
     /* 24AD8 800342D8 14000224 */  addiu      $v0, $zero, 0x14
     /* 24ADC 800342DC 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* 24AE0 800342E0 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
-    /* 24AE4 800342E4 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 24AE8 800342E8 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 24AE4 800342E4 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 24AE8 800342E8 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 24AEC 800342EC F8D00008 */  j          .L800343E0
     /* 24AF0 800342F0 00000000 */   nop
   .L800342F4:
@@ -58,9 +58,9 @@ glabel fight_AdvanceMatch
     /* 24B78 80034378 21104500 */  addu       $v0, $v0, $a1
     /* 24B7C 8003437C 21104300 */  addu       $v0, $v0, $v1
     /* 24B80 80034380 00004290 */  lbu        $v0, 0x0($v0)
-    /* 24B84 80034384 1080013C */  lui        $at, %hi(D_80102778 + 0x4)
+    /* 24B84 80034384 1080013C */  lui        $at, %hi(g_fight_config + 0x4)
     /* 24B88 80034388 21082300 */  addu       $at, $at, $v1
-    /* 24B8C 8003438C 7C2722A0 */  sb         $v0, %lo(D_80102778 + 0x4)($at)
+    /* 24B8C 8003438C 7C2722A0 */  sb         $v0, %lo(g_fight_config + 0x4)($at)
     /* 24B90 80034390 0A80023C */  lui        $v0, %hi(g_fight_match_cursor)
     /* 24B94 80034394 74384290 */  lbu        $v0, %lo(g_fight_match_cursor)($v0)
     /* 24B98 80034398 00000000 */  nop
@@ -68,9 +68,9 @@ glabel fight_AdvanceMatch
     /* 24BA0 800343A0 21104400 */  addu       $v0, $v0, $a0
     /* 24BA4 800343A4 21104300 */  addu       $v0, $v0, $v1
     /* 24BA8 800343A8 00004290 */  lbu        $v0, 0x0($v0)
-    /* 24BAC 800343AC 1080013C */  lui        $at, %hi(D_80102778 + 0x6)
+    /* 24BAC 800343AC 1080013C */  lui        $at, %hi(g_fight_config + 0x6)
     /* 24BB0 800343B0 21082300 */  addu       $at, $at, $v1
-    /* 24BB4 800343B4 7E2722A0 */  sb         $v0, %lo(D_80102778 + 0x6)($at)
+    /* 24BB4 800343B4 7E2722A0 */  sb         $v0, %lo(g_fight_config + 0x6)($at)
     /* 24BB8 800343B8 01006324 */  addiu      $v1, $v1, 0x1
     /* 24BBC 800343BC 02006228 */  slti       $v0, $v1, 0x2
     /* 24BC0 800343C0 E9FF4014 */  bnez       $v0, .L80034368
@@ -79,8 +79,8 @@ glabel fight_AdvanceMatch
     /* 24BCC 800343CC 00000000 */   nop
     /* 24BD0 800343D0 B0DC000C */  jal        cdrom_PauseAndWait
     /* 24BD4 800343D4 00000000 */   nop
-    /* 24BD8 800343D8 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 24BDC 800343DC 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
+    /* 24BD8 800343D8 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 24BDC 800343DC 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
   .L800343E0:
     /* 24BE0 800343E0 1000BF8F */  lw         $ra, 0x10($sp)
     /* 24BE4 800343E4 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -1,6 +1,6 @@
 glabel fighter_AccumulateBoneGroupFlagWhenGameModeZero
-    /* 17B8C 8002738C 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* 17B90 80027390 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* 17B8C 8002738C 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* 17B90 80027390 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* 17B94 80027394 00000000 */  nop
     /* 17B98 80027398 25004014 */  bnez       $v0, .L80027430
     /* 17B9C 8002739C 1600A22C */   sltiu     $v0, $a1, 0x16

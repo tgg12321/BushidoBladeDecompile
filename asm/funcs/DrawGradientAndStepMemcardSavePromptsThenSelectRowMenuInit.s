@@ -10,8 +10,8 @@ glabel DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit
     /* 26658 80035E58 00000000 */   nop
     /* 2665C 80035E5C 06004010 */  beqz       $v0, .L80035E78
     /* 26660 80035E60 08000224 */   addiu     $v0, $zero, 0x8
-    /* 26664 80035E64 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 26668 80035E68 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 26664 80035E64 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 26668 80035E68 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2666C 80035E6C 02000224 */  addiu      $v0, $zero, 0x2
     /* 26670 80035E70 0A80013C */  lui        $at, %hi(D_800A36F1)
     /* 26674 80035E74 F13622A0 */  sb         $v0, %lo(D_800A36F1)($at)

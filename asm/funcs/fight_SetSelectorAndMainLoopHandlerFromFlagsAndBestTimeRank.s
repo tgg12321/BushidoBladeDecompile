@@ -6,9 +6,9 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 247F4 80033FF4 00000000 */   nop
     /* 247F8 80033FF8 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
     /* 247FC 80033FFC D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
-    /* 24800 80034000 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 24800 80034000 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 24804 80034004 21082200 */  addu       $at, $at, $v0
-    /* 24808 80034008 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 24808 80034008 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 2480C 8003400C 00000000 */  nop
     /* 24810 80034010 02004010 */  beqz       $v0, .L8003401C
     /* 24814 80034014 06000324 */   addiu     $v1, $zero, 0x6
@@ -26,9 +26,9 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 2483C 8003403C 00000000 */   nop
     /* 24840 80034040 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
     /* 24844 80034044 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
-    /* 24848 80034048 0980013C */  lui        $at, %hi(D_8008D9EC)
+    /* 24848 80034048 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2484C 8003404C 21082200 */  addu       $at, $at, $v0
-    /* 24850 80034050 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)
+    /* 24850 80034050 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
     /* 24854 80034054 00000000 */  nop
     /* 24858 80034058 02004010 */  beqz       $v0, .L80034064
     /* 2485C 8003405C 08000324 */   addiu     $v1, $zero, 0x8
@@ -47,8 +47,8 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 24888 80034088 1A000224 */   addiu     $v0, $zero, 0x1A
     /* 2488C 8003408C 08000224 */  addiu      $v0, $zero, 0x8
   .L80034090:
-    /* 24890 80034090 0A80013C */  lui        $at, %hi(D_800A3834)
-    /* 24894 80034094 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
+    /* 24890 80034090 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
+    /* 24894 80034094 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 24898 80034098 0800E003 */  jr         $ra
     /* 2489C 8003409C 00000000 */   nop
 endlabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank

@@ -19,8 +19,8 @@ glabel motion_LoadFighterData
     /* 116B8 80020EB8 7783000C */  jal        motion_LoadCommonData
     /* 116BC 80020EBC 00000000 */   nop
   .L80020EC0:
-    /* 116C0 80020EC0 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 116C4 80020EC4 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 116C0 80020EC0 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 116C4 80020EC4 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 116C8 80020EC8 01000224 */  addiu      $v0, $zero, 0x1
     /* 116CC 80020ECC 05006210 */  beq        $v1, $v0, .L80020EE4
     /* 116D0 80020ED0 04000224 */   addiu     $v0, $zero, 0x4
@@ -72,8 +72,8 @@ glabel motion_LoadFighterData
     /* 11774 80020F74 00004394 */  lhu        $v1, 0x0($v0)
     /* 11778 80020F78 00131600 */  sll        $v0, $s6, 12
     /* 1177C 80020F7C 25306200 */  or         $a2, $v1, $v0
-    /* 11780 80020F80 0A80033C */  lui        $v1, %hi(D_800A38DC)
-    /* 11784 80020F84 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
+    /* 11780 80020F80 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
+    /* 11784 80020F84 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 11788 80020F88 03000224 */  addiu      $v0, $zero, 0x3
     /* 1178C 80020F8C 03006214 */  bne        $v1, $v0, .L80020F9C
     /* 11790 80020F90 00191500 */   sll       $v1, $s5, 4

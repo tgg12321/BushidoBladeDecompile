@@ -459,7 +459,7 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
 
 /* Tentative definitions (COMMON) of the small data this file reaches
  * gp-relative (Q65). */
-u8 *D_800A36A0;
+u8 *g_sel_screen_work;
 
 /* .data 0x8009BCD4..0x8009BCE4, this file's whole .data (its one reader is
  * gpu_AddRotatedSpriteQuads; d_8C41C.c's D_8009BCD0 ends at 0x8009BCD4,

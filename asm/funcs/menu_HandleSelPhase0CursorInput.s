@@ -1,5 +1,5 @@
 glabel menu_HandleSelPhase0CursorInput
-    /* 64FD8 800747D8 D405868F */  lw         $a2, %gp_rel(D_800A36A0)($gp)
+    /* 64FD8 800747D8 D405868F */  lw         $a2, %gp_rel(g_sel_screen_work)($gp)
     /* 64FDC 800747DC D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 64FE0 800747E0 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 64FE4 800747E4 21888000 */  addu       $s1, $a0, $zero
@@ -30,7 +30,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 65048 80074848 2FD20108 */  j          .L800748BC
     /* 6504C 8007484C 00000000 */   nop
   .L80074850:
-    /* 65050 80074850 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65050 80074850 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65054 80074854 00000000 */  nop
     /* 65058 80074858 3C006294 */  lhu        $v0, 0x3C($v1)
     /* 6505C 8007485C 340060A4 */  sh         $zero, 0x34($v1)
@@ -44,7 +44,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 6507C 8007487C 2CD20108 */  j          .L800748B0
     /* 65080 80074880 3C0060A4 */   sh        $zero, 0x3C($v1)
   .L80074884:
-    /* 65084 80074884 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65084 80074884 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65088 80074888 00000000 */  nop
     /* 6508C 8007488C 3C006294 */  lhu        $v0, 0x3C($v1)
     /* 65090 80074890 340060A4 */  sh         $zero, 0x34($v1)
@@ -60,7 +60,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 650B4 800748B4 9471010C */  jal        snd_QueueSound
     /* 650B8 800748B8 7F000624 */   addiu     $a2, $zero, 0x7F
   .L800748BC:
-    /* 650BC 800748BC D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 650BC 800748BC D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 650C0 800748C0 00000000 */  nop
     /* 650C4 800748C4 3C004384 */  lh         $v1, 0x3C($v0)
     /* 650C8 800748C8 00000000 */  nop
@@ -83,7 +83,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 65108 80074908 8BD20108 */  j          .L80074A2C
     /* 6510C 8007490C 00000000 */   nop
   .L80074910:
-    /* 65110 80074910 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65110 80074910 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65114 80074914 00000000 */  nop
     /* 65118 80074918 65006490 */  lbu        $a0, 0x65($v1)
     /* 6511C 8007491C 64006290 */  lbu        $v0, 0x64($v1)
@@ -93,7 +93,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 6512C 8007492C 57D20108 */  j          .L8007495C
     /* 65130 80074930 650060A0 */   sb        $zero, 0x65($v1)
   .L80074934:
-    /* 65134 80074934 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65134 80074934 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65138 80074938 00000000 */  nop
     /* 6513C 8007493C 65006290 */  lbu        $v0, 0x65($v1)
     /* 65140 80074940 00000000 */  nop
@@ -105,7 +105,7 @@ glabel menu_HandleSelPhase0CursorInput
   .L80074958:
     /* 65158 80074958 650062A0 */  sb         $v0, 0x65($v1)
   .L8007495C:
-    /* 6515C 8007495C D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
+    /* 6515C 8007495C D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 65160 80074960 00000000 */  nop
     /* 65164 80074964 64004290 */  lbu        $v0, 0x64($v0)
     /* 65168 80074968 00000000 */  nop
@@ -120,20 +120,20 @@ glabel menu_HandleSelPhase0CursorInput
     /* 65184 80074984 FF000232 */  andi       $v0, $s0, 0xFF
     /* 65188 80074988 27004010 */  beqz       $v0, .L80074A28
     /* 6518C 8007498C 21200000 */   addu      $a0, $zero, $zero
-    /* 65190 80074990 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65190 80074990 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 65194 80074994 00000000 */  nop
     /* 65198 80074998 67006290 */  lbu        $v0, 0x67($v1)
     /* 6519C 8007499C 00000000 */  nop
     /* 651A0 800749A0 01004224 */  addiu      $v0, $v0, 0x1
     /* 651A4 800749A4 670062A0 */  sb         $v0, 0x67($v1)
-    /* 651A8 800749A8 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 651A8 800749A8 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 651AC 800749AC 00000000 */  nop
     /* 651B0 800749B0 67006290 */  lbu        $v0, 0x67($v1)
     /* 651B4 800749B4 0A80063C */  lui        $a2, %hi(D_8009BD20)
     /* 651B8 800749B8 20BDC624 */  addiu      $a2, $a2, %lo(D_8009BD20)
     /* 651BC 800749BC 01004230 */  andi       $v0, $v0, 0x1
     /* 651C0 800749C0 670062A0 */  sb         $v0, 0x67($v1)
-    /* 651C4 800749C4 D405878F */  lw         $a3, %gp_rel(D_800A36A0)($gp)
+    /* 651C4 800749C4 D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
     /* 651C8 800749C8 10058393 */  lbu        $v1, %gp_rel(D_800A35DC)($gp)
     /* 651CC 800749CC 6700E290 */  lbu        $v0, 0x67($a3)
     /* 651D0 800749D0 81D20108 */  j          .L80074A04
@@ -145,7 +145,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 651E4 800749E4 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 651E8 800749E8 0A80063C */  lui        $a2, %hi(D_8009BD20)
     /* 651EC 800749EC 20BDC624 */  addiu      $a2, $a2, %lo(D_8009BD20)
-    /* 651F0 800749F0 D405878F */  lw         $a3, %gp_rel(D_800A36A0)($gp)
+    /* 651F0 800749F0 D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
     /* 651F4 800749F4 10058393 */  lbu        $v1, %gp_rel(D_800A35DC)($gp)
     /* 651F8 800749F8 6700E290 */  lbu        $v0, 0x67($a3)
     /* 651FC 800749FC 01006324 */  addiu      $v1, $v1, 0x1
@@ -171,7 +171,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 6523C 80074A3C 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 65240 80074A40 9471010C */  jal        snd_QueueSound
     /* 65244 80074A44 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 65248 80074A48 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65248 80074A48 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 6524C 80074A4C 03000224 */  addiu      $v0, $zero, 0x3
     /* 65250 80074A50 B5D20108 */  j          .L80074AD4
     /* 65254 80074A54 3C0062A4 */   sh        $v0, 0x3C($v1)
@@ -187,7 +187,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 65278 80074A78 21200000 */  addu       $a0, $zero, $zero
     /* 6527C 80074A7C 03000624 */  addiu      $a2, $zero, 0x3
     /* 65280 80074A80 01000524 */  addiu      $a1, $zero, 0x1
-    /* 65284 80074A84 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
+    /* 65284 80074A84 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
   .L80074A88:
     /* 65288 80074A88 00000000 */  nop
     /* 6528C 80074A8C 100066A4 */  sh         $a2, 0x10($v1)

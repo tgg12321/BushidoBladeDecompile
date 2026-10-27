@@ -61,8 +61,8 @@ glabel func_8004A940
     /* 3B220 8004AA20 0750AA02 */  srav       $t2, $t2, $s5
     /* 3B224 8004AA24 24002AA6 */  sh         $t2, 0x24($s1)
     /* 3B228 8004AA28 0A004886 */  lh         $t0, 0xA($s2)
-    /* 3B22C 8004AA2C 0F800A3C */  lui        $t2, %hi(D_800F62E0)
-    /* 3B230 8004AA30 E0624A25 */  addiu      $t2, $t2, %lo(D_800F62E0)
+    /* 3B22C 8004AA2C 0F800A3C */  lui        $t2, %hi(g_light_setups)
+    /* 3B230 8004AA30 E0624A25 */  addiu      $t2, $t2, %lo(g_light_setups)
     /* 3B234 8004AA34 40480800 */  sll        $t1, $t0, 1
     /* 3B238 8004AA38 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3B23C 8004AA3C 40490900 */  sll        $t1, $t1, 5
@@ -230,8 +230,8 @@ glabel func_8004A940
     /* 3B4C0 8004ACC0 40480800 */  sll        $t1, $t0, 1
     /* 3B4C4 8004ACC4 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3B4C8 8004ACC8 40490900 */  sll        $t1, $t1, 5
-    /* 3B4CC 8004ACCC 0F80083C */  lui        $t0, %hi(D_800F62E0)
-    /* 3B4D0 8004ACD0 E0620825 */  addiu      $t0, $t0, %lo(D_800F62E0)
+    /* 3B4CC 8004ACCC 0F80083C */  lui        $t0, %hi(g_light_setups)
+    /* 3B4D0 8004ACD0 E0620825 */  addiu      $t0, $t0, %lo(g_light_setups)
     /* 3B4D4 8004ACD4 21982801 */  addu       $s3, $t1, $t0
     /* 3B4D8 8004ACD8 00480848 */  mfc2       $t0, $9 /* handwritten instruction */
     /* 3B4DC 8004ACDC 00500948 */  mfc2       $t1, $10 /* handwritten instruction */
@@ -443,8 +443,8 @@ glabel func_8004A940
     /* 3B80C 8004B00C 40480800 */  sll        $t1, $t0, 1
     /* 3B810 8004B010 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3B814 8004B014 40490900 */  sll        $t1, $t1, 5
-    /* 3B818 8004B018 0F80083C */  lui        $t0, %hi(D_800F62E0)
-    /* 3B81C 8004B01C E0620825 */  addiu      $t0, $t0, %lo(D_800F62E0)
+    /* 3B818 8004B018 0F80083C */  lui        $t0, %hi(g_light_setups)
+    /* 3B81C 8004B01C E0620825 */  addiu      $t0, $t0, %lo(g_light_setups)
     /* 3B820 8004B020 21982801 */  addu       $s3, $t1, $t0
     /* 3B824 8004B024 3800688E */  lw         $t0, 0x38($s3)
     /* 3B828 8004B028 3C00698E */  lw         $t1, 0x3C($s3)
@@ -529,8 +529,8 @@ glabel func_8004A940
     /* 3B95C 8004B15C 22A8AD02 */  sub        $s5, $s5, $t5 /* handwritten instruction */
     /* 3B960 8004B160 00000000 */  nop
     /* 3B964 8004B164 0A004886 */  lh         $t0, 0xA($s2)
-    /* 3B968 8004B168 0F800A3C */  lui        $t2, %hi(D_800F62E0)
-    /* 3B96C 8004B16C E0624A25 */  addiu      $t2, $t2, %lo(D_800F62E0)
+    /* 3B968 8004B168 0F800A3C */  lui        $t2, %hi(g_light_setups)
+    /* 3B96C 8004B16C E0624A25 */  addiu      $t2, $t2, %lo(g_light_setups)
     /* 3B970 8004B170 40480800 */  sll        $t1, $t0, 1
     /* 3B974 8004B174 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3B978 8004B178 40490900 */  sll        $t1, $t1, 5
@@ -639,8 +639,8 @@ glabel func_8004A940
     /* 3BB10 8004B310 0750AA02 */  srav       $t2, $t2, $s5
     /* 3BB14 8004B314 24002AA6 */  sh         $t2, 0x24($s1)
     /* 3BB18 8004B318 0A004886 */  lh         $t0, 0xA($s2)
-    /* 3BB1C 8004B31C 0F800A3C */  lui        $t2, %hi(D_800F62E0)
-    /* 3BB20 8004B320 E0624A25 */  addiu      $t2, $t2, %lo(D_800F62E0)
+    /* 3BB1C 8004B31C 0F800A3C */  lui        $t2, %hi(g_light_setups)
+    /* 3BB20 8004B320 E0624A25 */  addiu      $t2, $t2, %lo(g_light_setups)
     /* 3BB24 8004B324 40480800 */  sll        $t1, $t0, 1
     /* 3BB28 8004B328 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3BB2C 8004B32C 40490900 */  sll        $t1, $t1, 5
@@ -792,8 +792,8 @@ glabel func_8004A940
     /* 3BD70 8004B570 40480800 */  sll        $t1, $t0, 1
     /* 3BD74 8004B574 20482801 */  add        $t1, $t1, $t0 /* handwritten instruction */
     /* 3BD78 8004B578 40490900 */  sll        $t1, $t1, 5
-    /* 3BD7C 8004B57C 0F800A3C */  lui        $t2, %hi(D_800F62E0)
-    /* 3BD80 8004B580 E0624A25 */  addiu      $t2, $t2, %lo(D_800F62E0)
+    /* 3BD7C 8004B57C 0F800A3C */  lui        $t2, %hi(g_light_setups)
+    /* 3BD80 8004B580 E0624A25 */  addiu      $t2, $t2, %lo(g_light_setups)
     /* 3BD84 8004B584 21982A01 */  addu       $s3, $t1, $t2
     /* 3BD88 8004B588 00480848 */  mfc2       $t0, $9 /* handwritten instruction */
     /* 3BD8C 8004B58C 00500948 */  mfc2       $t1, $10 /* handwritten instruction */

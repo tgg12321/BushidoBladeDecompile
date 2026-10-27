@@ -5,7 +5,7 @@ glabel eff_StartArgSelectedCommandWithCyanLight
     /* 51E64 80061664 0F80043C */  lui        $a0, %hi(g_eff_command_block)
     /* 51E68 80061668 6C118424 */  addiu      $a0, $a0, %lo(g_eff_command_block)
     /* 51E6C 8006166C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 51E70 80061670 9C0384AF */  sw         $a0, %gp_rel(D_800A3468)($gp)
+    /* 51E70 80061670 9C0384AF */  sw         $a0, %gp_rel(g_eff_active_command_block)($gp)
     /* 51E74 80061674 0F80013C */  lui        $at, %hi(D_800F1178)
     /* 51E78 80061678 781130AC */  sw         $s0, %lo(D_800F1178)($at)
     /* 51E7C 8006167C 0500A010 */  beqz       $a1, .L80061694
@@ -33,8 +33,8 @@ glabel eff_StartArgSelectedCommandWithCyanLight
     /* 51EC4 800616C4 9A82010C */  jal        eff_StartCommand
     /* 51EC8 800616C8 00000000 */   nop
     /* 51ECC 800616CC 0000028E */  lw         $v0, 0x0($s0)
-    /* 51ED0 800616D0 0F80013C */  lui        $at, %hi(D_800F1140)
-    /* 51ED4 800616D4 401122AC */  sw         $v0, %lo(D_800F1140)($at)
+    /* 51ED0 800616D0 0F80013C */  lui        $at, %hi(g_eff_point_light_position)
+    /* 51ED4 800616D4 401122AC */  sw         $v0, %lo(g_eff_point_light_position)($at)
     /* 51ED8 800616D8 0400028E */  lw         $v0, 0x4($s0)
     /* 51EDC 800616DC 1000033C */  lui        $v1, (0x10FFFF >> 16)
     /* 51EE0 800616E0 0F80013C */  lui        $at, %hi(D_800F1144)

@@ -1,7 +1,7 @@
 glabel menu_StepSelPanelSlides
     /* 65A6C 8007526C 21300000 */  addu       $a2, $zero, $zero
     /* 65A70 80075270 C8000724 */  addiu      $a3, $zero, 0xC8
-    /* 65A74 80075274 D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
+    /* 65A74 80075274 D405848F */  lw         $a0, %gp_rel(g_sel_screen_work)($gp)
   .L80075278:
     /* 65A78 80075278 00000000 */  nop
     /* 65A7C 8007527C 10008390 */  lbu        $v1, 0x10($a0)

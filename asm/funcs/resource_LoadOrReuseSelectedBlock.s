@@ -241,8 +241,8 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36C60 80046460 2120E002 */   addu      $a0, $s7, $zero
     /* 36C64 80046464 5AFC000C */  jal        resource_InvokeLoadedSelectorInitCallback
     /* 36C68 80046468 00000000 */   nop
-    /* 36C6C 8004646C 0A80023C */  lui        $v0, %hi(D_800A38DC)
-    /* 36C70 80046470 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)
+    /* 36C6C 8004646C 0A80023C */  lui        $v0, %hi(g_fight_mode_selector)
+    /* 36C70 80046470 DC384284 */  lh         $v0, %lo(g_fight_mode_selector)($v0)
     /* 36C74 80046474 00000000 */  nop
     /* 36C78 80046478 05004010 */  beqz       $v0, .L80046490
     /* 36C7C 8004647C 22000224 */   addiu     $v0, $zero, 0x22

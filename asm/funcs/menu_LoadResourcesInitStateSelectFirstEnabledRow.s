@@ -29,32 +29,32 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 597DC 80068FDC 34004224 */  addiu      $v0, $v0, 0x34
     /* 597E0 80068FE0 340482AF */  sw         $v0, %gp_rel(D_800A3500)($gp)
     /* 597E4 80068FE4 F0FF0224 */  addiu      $v0, $zero, -0x10
-    /* 597E8 80068FE8 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 597E8 80068FE8 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 597EC 80068FEC 0A80043C */  lui        $a0, %hi(D_8009BC04)
     /* 597F0 80068FF0 04BC848C */  lw         $a0, %lo(D_8009BC04)($a0)
     /* 597F4 80068FF4 24186200 */  and        $v1, $v1, $v0
     /* 597F8 80068FF8 01008230 */  andi       $v0, $a0, 0x1
-    /* 597FC 80068FFC 2C0483AF */  sw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 597FC 80068FFC 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 59800 80069000 16004014 */  bnez       $v0, .L8006905C
     /* 59804 80069004 05000224 */   addiu     $v0, $zero, 0x5
     /* 59808 80069008 F0FF0524 */  addiu      $a1, $zero, -0x10
     /* 5980C 8006900C 21308000 */  addu       $a2, $a0, $zero
   .L80069010:
-    /* 59810 80069010 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 59810 80069010 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 59814 80069014 00000000 */  nop
     /* 59818 80069018 0F006430 */  andi       $a0, $v1, 0xF
     /* 5981C 8006901C 07008228 */  slti       $v0, $a0, 0x7
     /* 59820 80069020 05004014 */  bnez       $v0, .L80069038
     /* 59824 80069024 01008224 */   addiu     $v0, $a0, 0x1
     /* 59828 80069028 24106500 */  and        $v0, $v1, $a1
-    /* 5982C 8006902C 2C0482AF */  sw         $v0, %gp_rel(D_800A34F8)($gp)
+    /* 5982C 8006902C 2C0482AF */  sw         $v0, %gp_rel(g_menu_packed_cursors)($gp)
     /* 59830 80069030 17A40108 */  j          .L8006905C
     /* 59834 80069034 05000224 */   addiu     $v0, $zero, 0x5
   .L80069038:
     /* 59838 80069038 24186500 */  and        $v1, $v1, $a1
     /* 5983C 8006903C 0F004230 */  andi       $v0, $v0, 0xF
     /* 59840 80069040 25186200 */  or         $v1, $v1, $v0
-    /* 59844 80069044 2C0483AF */  sw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 59844 80069044 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 59848 80069048 0F006330 */  andi       $v1, $v1, 0xF
     /* 5984C 8006904C 06186600 */  srlv       $v1, $a2, $v1
     /* 59850 80069050 01006330 */  andi       $v1, $v1, 0x1
@@ -67,7 +67,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 59868 80069068 5C0480A7 */  sh         $zero, %gp_rel(D_800A3528)($gp)
     /* 5986C 8006906C 2A00A2A4 */  sh         $v0, 0x2A($a1)
     /* 59870 80069070 2800A2A4 */  sh         $v0, 0x28($a1)
-    /* 59874 80069074 2C04838F */  lw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 59874 80069074 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 59878 80069078 FFE30224 */  addiu      $v0, $zero, -0x1C01
     /* 5987C 8006907C 460480A7 */  sh         $zero, %gp_rel(D_800A3512)($gp)
     /* 59880 80069080 440480A7 */  sh         $zero, %gp_rel(D_800A3510)($gp)
@@ -75,7 +75,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 59888 80069088 400480A7 */  sh         $zero, %gp_rel(D_800A350C)($gp)
     /* 5988C 8006908C 24186200 */  and        $v1, $v1, $v0
     /* 59890 80069090 00106334 */  ori        $v1, $v1, 0x1000
-    /* 59894 80069094 2C0483AF */  sw         $v1, %gp_rel(D_800A34F8)($gp)
+    /* 59894 80069094 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 59898 80069098 1200A0A4 */  sh         $zero, 0x12($a1)
     /* 5989C 8006909C 1000A0A4 */  sh         $zero, 0x10($a1)
     /* 598A0 800690A0 0E00A0A4 */  sh         $zero, 0xE($a1)

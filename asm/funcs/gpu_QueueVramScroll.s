@@ -13,8 +13,8 @@ glabel gpu_QueueVramScroll
     /* 39828 80049028 21B04300 */  addu       $s6, $v0, $v1
     /* 3982C 8004902C 2401CA26 */  addiu      $t2, $s6, 0x124
     /* 39830 80049030 C0FF0624 */  addiu      $a2, $zero, -0x40
-    /* 39834 80049034 0A80033C */  lui        $v1, %hi(D_800A36AC)
-    /* 39838 80049038 AC36638C */  lw         $v1, %lo(D_800A36AC)($v1)
+    /* 39834 80049034 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
+    /* 39838 80049038 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 3983C 8004903C 00FF0724 */  addiu      $a3, $zero, -0x100
     /* 39840 80049040 9C00BFAF */  sw         $ra, 0x9C($sp)
     /* 39844 80049044 9800BEAF */  sw         $fp, 0x98($sp)

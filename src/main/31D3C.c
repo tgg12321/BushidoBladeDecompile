@@ -308,17 +308,17 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
     s32 angle;
     s32 *ptr;
 
-    /* FAKE: var_0 holds D_800F62E0 for the loop and the first calc_LightMatrix
-     * call; naming D_800F62E0 directly re-forms the address and the registers
-     * rotate (score 45). */
-    var_0 = D_800F62E0;
+    /* FAKE: var_0 holds g_light_setups for the loop and the first
+     * calc_LightMatrix call; naming g_light_setups directly re-forms the
+     * address and the registers rotate (score 45). */
+    var_0 = g_light_setups;
     for (var_1 = 0; var_1 < 2; var_1++) {
         tbl = var_0;
         if (var_1 == 0) {
             ptr = (s32 *)a0;
         } else {
             ptr = (s32 *)a1;
-            tbl = &D_800F62E0[1];
+            tbl = &g_light_setups[1];
         }
 
         if (ptr == 0) {
@@ -380,7 +380,7 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
     }
 
     calc_LightMatrix(var_0);
-    calc_LightMatrix(&D_800F62E0[1]);
+    calc_LightMatrix(&g_light_setups[1]);
 }
 
 extern s16 D_800A3238[3];
@@ -436,13 +436,13 @@ void ApplyLightPresetRowBackgroundClearAndFarColor(s32 a0) {
     light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 1, 0);
     light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 1, 1);
     var_1 = *p;
-    D_800F62E0[4].light[0].yaw = var_1 & 0xFFF;
-    D_800F62E0[1].light[0].yaw = var_1 & 0xFFF;
-    D_800F62E0[0].light[0].yaw = var_1 & 0xFFF;
+    g_light_setups[4].light[0].yaw = var_1 & 0xFFF;
+    g_light_setups[1].light[0].yaw = var_1 & 0xFFF;
+    g_light_setups[0].light[0].yaw = var_1 & 0xFFF;
     var_2 = *p >> 16;
-    D_800F62E0[4].light[0].pitch = var_2 & 0xFFF;
-    D_800F62E0[1].light[0].pitch = var_2 & 0xFFF;
-    D_800F62E0[0].light[0].pitch = var_2 & 0xFFF;
+    g_light_setups[4].light[0].pitch = var_2 & 0xFFF;
+    g_light_setups[1].light[0].pitch = var_2 & 0xFFF;
+    g_light_setups[0].light[0].pitch = var_2 & 0xFFF;
     gpu_SetBackgroundClearColorAndFarColor(p[1]);
 }
 
@@ -463,31 +463,31 @@ void light_SetLightOrBackColorOfSelectedSetups(
         g2 = (g << 12) / 255;
         b2 = (b << 12) / 255;
         if (a2 == 0) {
-            D_800F62E0[0].cmat.m[0][0] = r2;
-            D_800F62E0[0].cmat.m[1][0] = g2;
-            D_800F62E0[0].cmat.m[2][0] = b2;
-            calc_LightMatrix(&D_800F62E0[0]);
-            D_800F62E0[1].cmat.m[0][0] = r2;
-            D_800F62E0[1].cmat.m[1][0] = g2;
-            D_800F62E0[1].cmat.m[2][0] = b2;
-            calc_LightMatrix(&D_800F62E0[1]);
+            g_light_setups[0].cmat.m[0][0] = r2;
+            g_light_setups[0].cmat.m[1][0] = g2;
+            g_light_setups[0].cmat.m[2][0] = b2;
+            calc_LightMatrix(&g_light_setups[0]);
+            g_light_setups[1].cmat.m[0][0] = r2;
+            g_light_setups[1].cmat.m[1][0] = g2;
+            g_light_setups[1].cmat.m[2][0] = b2;
+            calc_LightMatrix(&g_light_setups[1]);
         } else {
-            D_800F62E0[4].cmat.m[0][0] = r2;
-            D_800F62E0[4].cmat.m[1][0] = g2;
-            D_800F62E0[4].cmat.m[2][0] = b2;
-            calc_LightMatrix(&D_800F62E0[4]);
+            g_light_setups[4].cmat.m[0][0] = r2;
+            g_light_setups[4].cmat.m[1][0] = g2;
+            g_light_setups[4].cmat.m[2][0] = b2;
+            calc_LightMatrix(&g_light_setups[4]);
         }
     } else if (a2 == 0) {
-        D_800F62E0[0].back[0] = r;
-        D_800F62E0[0].back[1] = g;
-        D_800F62E0[0].back[2] = b;
-        D_800F62E0[1].back[0] = r;
-        D_800F62E0[1].back[1] = g;
-        D_800F62E0[1].back[2] = b;
+        g_light_setups[0].back[0] = r;
+        g_light_setups[0].back[1] = g;
+        g_light_setups[0].back[2] = b;
+        g_light_setups[1].back[0] = r;
+        g_light_setups[1].back[1] = g;
+        g_light_setups[1].back[2] = b;
     } else {
-        D_800F62E0[4].back[0] = r;
-        D_800F62E0[4].back[1] = g;
-        D_800F62E0[4].back[2] = b;
+        g_light_setups[4].back[0] = r;
+        g_light_setups[4].back[1] = g;
+        g_light_setups[4].back[2] = b;
     }
 }
 

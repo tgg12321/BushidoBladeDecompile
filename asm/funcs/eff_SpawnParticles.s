@@ -41,7 +41,7 @@ glabel eff_SpawnParticles
     /* 57A94 80067294 00000000 */  nop
     /* 57A98 80067298 1D00E015 */  bnez       $t7, .L80067310
     /* 57A9C 8006729C C0281400 */   sll       $a1, $s4, 3
-    /* 57AA0 800672A0 B003848F */  lw         $a0, %gp_rel(D_800A347C)($gp)
+    /* 57AA0 800672A0 B003848F */  lw         $a0, %gp_rel(g_eff_command_position)($gp)
     /* 57AA4 800672A4 2118B400 */  addu       $v1, $a1, $s4
     /* 57AA8 800672A8 0000828C */  lw         $v0, 0x0($a0)
     /* 57AAC 800672AC 80180300 */  sll        $v1, $v1, 2

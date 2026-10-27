@@ -45,12 +45,12 @@ glabel ApplyLightPresetRowBackgroundClearAndFarColor
     /* 32A74 80042274 02000286 */  lh         $v0, 0x2($s0)
     /* 32A78 80042278 00000000 */  nop
     /* 32A7C 8004227C FF0F4230 */  andi       $v0, $v0, 0xFFF
-    /* 32A80 80042280 0F80013C */  lui        $at, %hi(D_800F62E0 + 0x180)
-    /* 32A84 80042284 606422A4 */  sh         $v0, %lo(D_800F62E0 + 0x180)($at)
+    /* 32A80 80042280 0F80013C */  lui        $at, %hi(g_light_setups + 0x180)
+    /* 32A84 80042284 606422A4 */  sh         $v0, %lo(g_light_setups + 0x180)($at)
     /* 32A88 80042288 0F80013C */  lui        $at, %hi(D_800F6340)
     /* 32A8C 8004228C 406322A4 */  sh         $v0, %lo(D_800F6340)($at)
-    /* 32A90 80042290 0F80013C */  lui        $at, %hi(D_800F62E0)
-    /* 32A94 80042294 E06222A4 */  sh         $v0, %lo(D_800F62E0)($at)
+    /* 32A90 80042290 0F80013C */  lui        $at, %hi(g_light_setups)
+    /* 32A94 80042294 E06222A4 */  sh         $v0, %lo(g_light_setups)($at)
     /* 32A98 80042298 0400048E */  lw         $a0, 0x4($s0)
     /* 32A9C 8004229C 1E09010C */  jal        gpu_SetBackgroundClearColorAndFarColor
     /* 32AA0 800422A0 00000000 */   nop

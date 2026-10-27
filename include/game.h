@@ -40,10 +40,10 @@ typedef struct {
 
 /* The 0x100-byte save block after the memory-card header (D_800F34D8 = the
  * 0x200-byte card buffer + 0x100): memcard_BuildSaveBlock writes three copies
- * of D_80106A50 with their byte checksums and clears the pointer / value table;
- * memcard_RestoreSaveBlock restores the first copy whose checksum holds (unless
- * its flags bit 7 is set) and writes each val[j] through ptr[j] when ptr[j] is
- * a KSEG0 RAM address. */
+ * of g_saved_record with their byte checksums and clears the pointer / value
+ * table; memcard_RestoreSaveBlock restores the first copy whose checksum holds
+ * (unless its flags bit 7 is set) and writes each val[j] through ptr[j] when
+ * ptr[j] is a KSEG0 RAM address. */
 typedef struct Unk800F34D8Save {
     FileRecord rec[3]; /* +0x00 */
     s32 sum[3];        /* +0x6C byte sums of rec[] */
@@ -53,7 +53,7 @@ typedef struct Unk800F34D8Save {
 } Unk800F34D8Save; /* sizeof == 0x100 */
 
 /* The game's display double buffer at 0x800F7438: two 0x4090-byte records, one
- * per frame parity (D_800A36AC & 1). disp_Init /
+ * per frame parity (g_gpu_presented_frame_count & 1). disp_Init /
  * gpu_BeginFullscreenImageDisplay pass +0x00 to SetDefDrawEnv and +0x5C to
  * SetDefDispEnv for each record; main clears +0x70 with ClearOTagR(ot, 0x1008)
  * (0x1008 words = 0x4020 bytes, which ends the record) and draws it from its
@@ -119,8 +119,9 @@ typedef struct {
 
 /* 0x8009BC0C: the eight option rows of the list menu menu_UpdateRowMenu drives,
  * one {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B), indexed by
- * D_800A34F8 & 0xF. state: accept / reject / return value; mode: passed to the
- * three render calls, 1/2/3 select the D_800A3524 bit-3 action. */
+ * g_menu_packed_cursors & 0xF. state: accept / reject / return value; mode:
+ * passed to the three render calls, 1/2/3 select the D_800A3524 bit-3 action.
+ */
 typedef struct {
     u8 state;
     u8 mode;
@@ -544,16 +545,16 @@ typedef struct {
     u8 unk30;
 } Unk8009BD24Block;
 
-/* The select-screen work area D_800A36A0 points at (menu_InitSelScreen places
- * it at the end of the buffers gpu_InitPrimBufferPair lays out). Two-element
- * arrays are per player. Per player, f48 is a list of f60 entries with cursor
- * f5C; confirming moves the entry under the cursor to f7E[f3C++], cancelling
- * moves f7E[--f3C] back into f48 in sorted order; f6A holds the picked entries
- * menu_FadeOutSelAndWriteResult reports. f00 is the result record
- * menu_FadeOutSelAndWriteResult writes; f04 is the resource table the select
- * draw functions receive as arg0[0] (menu_StepSelScreen passes it as the first
- * word of that context). f10, f14, f1C and f20 are per-player s16 pairs the
- * code also accesses as one word (union word views, Q33/Q46):
+/* The select-screen work area g_sel_screen_work points at (menu_InitSelScreen
+ * places it at the end of the buffers gpu_InitPrimBufferPair lays out).
+ * Two-element arrays are per player. Per player, f48 is a list of f60 entries
+ * with cursor f5C; confirming moves the entry under the cursor to f7E[f3C++],
+ * cancelling moves f7E[--f3C] back into f48 in sorted order; f6A holds the
+ * picked entries menu_FadeOutSelAndWriteResult reports. f00 is the result
+ * record menu_FadeOutSelAndWriteResult writes; f04 is the resource table the
+ * select draw functions receive as arg0[0] (menu_StepSelScreen passes it as the
+ * first word of that context). f10, f14, f1C and f20 are per-player s16 pairs
+ * the code also accesses as one word (union word views, Q33/Q46):
  * menu_HandleSelPhase0CursorInput and menu_HandleSelOpposedChoice read f10
  * whole, menu_RunSelPhases reads f14 whole, menu_InitSelScreen clears f1C / f20
  * whole (menu_UpdateSelGridPicks reads and writes their halves). The s32
@@ -617,8 +618,8 @@ typedef struct {
     s16 y;
 } Unk8009BC94Record;
 
-/* 0x8009BC40: one select-grid entry; value indexes D_8009BC7C's flags and
- * picks the entry's sprite and sound. */
+/* 0x8009BC40: one select-grid entry; value indexes g_entry_menu_entry_flags's
+ * flags and picks the entry's sprite and sound. */
 typedef struct SelectEntryE534 {
     u8 value;
     u8 unk1;
@@ -919,8 +920,8 @@ typedef struct {
 } Unk800EFB78Entry;
 
 /* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) = (y << 6) |
- * ((x >> 4) & 0x3F)) and the texture u/v origin. 51268's D_800A3488 /
- * D_800A348C point at one; the D_8009B890 .. D_8009BA58 tables are runs of
+ * ((x >> 4) & 0x3F)) and the texture u/v origin. 51268's g_eff_current_tex_rec
+ * / D_800A348C point at one; the D_8009B890 .. D_8009BA58 tables are runs of
  * them. */
 typedef struct {
     u16 clut_x;
@@ -929,9 +930,9 @@ typedef struct {
     u16 v;
 } TexRec;
 
-/* The 0x2C-byte block D_800A3468 points at (51268): Unk1F800000Rec.unk00
- * (eff_BindScratchpad's seed) or g_eff_command_block, where
- * eff_StartRotatedQuadClusterWithNearWhiteLight ..
+/* The 0x2C-byte block g_eff_active_command_block points at (51268):
+ * Unk1F800000Rec.unk00 (eff_BindScratchpad's seed) or g_eff_command_block,
+ * where eff_StartRotatedQuadClusterWithNearWhiteLight ..
  * eff_StartRecycledCommandWithMagentaLight point it before calling
  * eff_StartCommand. g_eff_billboards follows g_eff_command_block, so that copy
  * ends at +0x2C. Each copy sets one pointer pair:
@@ -946,13 +947,13 @@ typedef struct {
  * eff_BindScratchpad stores its two arguments there.
  * - unk0C / unk10: the three words / three halfwords eff_StartCommand copies
  * into unk20 / unk18. Set only in the g_eff_command_block block (through
- * D_800A3468 or g_eff_command_block directly).
+ * g_eff_active_command_block or g_eff_command_block directly).
  * - unk14: the byte eff_StartCommand / eff_StepCommand store the called
  * function's result to (`sb`).
  * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad
- * block's, D_800A3478 / D_800A347C at the g_eff_command_block block's
- * (eff_StartCommand). unk18 is s16 like its sources (unk04 / unk10) and every
- * consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix,
+ * block's, D_800A3478 / g_eff_command_position at the g_eff_command_block
+ * block's (eff_StartCommand). unk18 is s16 like its sources (unk04 / unk10) and
+ * every consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix,
  * eff_SpawnRotatedQuadCluster, eff_AllocateOrRecycleYawedQuadSlot,
  * eff_SpawnParticles).
  * - unk1E: no access. */
@@ -1119,13 +1120,13 @@ typedef union {
  * eff_BindScratchpad points 51268's D_800A34xx globals at these members; apart
  * from its own two stores to unk00.unk04 / unk08, the code reaches them only
  * through those globals:
- * - unk00: the command block D_800A3468 points at until a function retargets
- * it; D_800A346C / D_800A3470 point at its unk18 / unk20.
+ * - unk00: the command block g_eff_active_command_block points at until a
+ * function retargets it; D_800A346C / D_800A3470 point at its unk18 / unk20.
  * - unk2C: no access.
- * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C (TexRec).
- * eff_DrawBillboardList retargets them only in its switch cases 0-3 (unk4 & 7),
- * so its later reads go through these seeded values when no earlier record took
- * one of those cases.
+ * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec / D_800A348C
+ * (TexRec). eff_DrawBillboardList retargets them only in its switch cases 0-3
+ * (unk4 & 7), so its later reads go through these seeded values when no earlier
+ * record took one of those cases.
  * - unkA0 / unkA4: the initial targets of D_800A34E4 (u32 *) / D_800A34E8 (u32
  * *), which every user retargets before use.
  * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out
@@ -1174,8 +1175,8 @@ typedef struct {
 } Cell_80052D00;
 
 /* The 0xEC-byte work area of 43500's stage-collision cast
- * (collision_WalkSegmentGrid and its helpers, through D_800A33F4).
- * collision_TestSegmentExtendingShortStartWithWork /
+ * (collision_WalkSegmentGrid and its helpers, through
+ * g_collision_segment_work). collision_TestSegmentExtendingShortStartWithWork /
  * collision_TestSegmentWithWork place it at their last argument;
  * collision_TestSegmentExtendingShortStart / collision_TestSegment at
  * D_800EF9F8. 17AFC object_UpdatePool / fight_UpdateBallisticRecords pass
@@ -1269,8 +1270,8 @@ typedef union {
  * - 43500 collision_TestSegmentWithWork /
  * collision_TestSegmentExtendingShortStartWithWork keep their work area
  * (Work_80053E9C, 0xEC bytes) at the address of their last argument
- * (D_800A33F4); callers pass 0x1F8002B8 (the area spans record +0x00..+0xEB) or
- * 0x1F8002F0 (+0x38..+0x123, over unk60 up into unk118).
+ * (g_collision_segment_work); callers pass 0x1F8002B8 (the area spans record
+ * +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123, over unk60 up into unk118).
  * - 9F9C fighter_UpdateBoneWorldData keeps collision_TestSegmentWithWork's
  * whole argument record at 0x1F8002B8: from, to, hit, normal, then that work
  * area.
@@ -1504,7 +1505,7 @@ typedef struct Unk80101EC8Record {
      * fighter_BuildCpuPad */
     s16 cpu_controlled;
     s16 unk_08;
-    /* row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
+    /* row of D_8008E5CC / D_8008E6A4, index of g_fighter_group_flags */
     s16 unk_0A;
     s16 unk_0C;
     s16 unk_0E; /* column of D_8008E5CC / D_8008E6A4 */
@@ -2229,10 +2230,10 @@ typedef struct {
 } CdFileEntry;
 
 /* The CD read / CD audio words at 0x80101E60..0x80101EA7: the tail of the
- * CD state block D_80101E58 (CdState below). Member widths follow the original
- * accesses; 0x80101E91..93 is alignment padding. unk3C..unk44 belong to the
- * object because cdrom_UpdateAudio (compiled -G8) keeps the address of its
- * accesses to unk3C / unk44 in a register only for a variable larger than 8
+ * CD state block g_cdrom_state (CdState below). Member widths follow the
+ * original accesses; 0x80101E91..93 is alignment padding. unk3C..unk44 belong
+ * to the object because cdrom_UpdateAudio (compiled -G8) keeps the address of
+ * its accesses to unk3C / unk44 in a register only for a variable larger than 8
  * bytes. unk3E (u16) and expected_pos (s32; no access reveals its signedness)
  * lie in that span but cdrom_UpdateAudio never touches them; they are typed by
  * their other users' accesses (Q13/Q14). `pair` holds a copy of a
@@ -2461,8 +2462,9 @@ typedef struct {
 } Unk800A3D40Rec;
 
 /* 5ED34's work block: the 0x14 bytes InitDisplayStateLoadPackAndSetEntryFlags
- * keeps at the start of gpu_InitPrimBufferPair's returned space (D_800A35C4;
- * the arena cursor D_800A356C moves past it), as 596CC's Unk800A34FCRec.
+ * keeps at the start of gpu_InitPrimBufferPair's returned space
+ * (g_entry_menu_work_block; the arena cursor D_800A356C moves past it), as
+ * 596CC's Unk800A34FCRec.
  * - unk_00 / unk_04: one s16 per player each (counted down from 0x1E by the
  * draw handlers).
  * - unk_08: the frame counter StepSlideBuildFrameRecordAndDispatchStateHandler
