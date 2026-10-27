@@ -1,0 +1,37 @@
+DROPPED
+(none of the 19 research RENAME rows dropped (the research text says 20, its list holds 19): each re-derived against the worktree source at 91b14281c; every use enumerated, no FAKE comment touches any binding
+ (FAKE comments at 32D04.c:928 and :1000 belong to reloc_UnrelocateBlock / reloc_KeepSelectedEntries; 4D0A8.c:1514-1517 names end_off and arg1 only), none appears in an __asm__ string, every new name is fresh
+ in include/** and src/** (no local/param/global/enum/macro/typedef or macro body of that name; sheet_header, ot_index hit only as locals of other functions, light_setup_index only as a struct member) and unique within its function.)
+Rows most worth a hard look: gpu_GetSheetTPage:arg0 (sheet_header: record family shown by .header callers, the landed 63D2C.c sheet_header locals and game.h:216), func_800430E4:arg2 (light_setup_index equals a struct member name, the function never accesses that member), gpu_DrawSpriteAtPackedTablePosition:var_1 (sprite_chunk aliases arg1, which a FAKE comment touches, var_1 itself is outside it), reloc_CopySelectedEntries:var_0 (select_cursor read at its start in the count setup), math_RgbToHsv:var_7 (hue changes scale from sextants to turns), gpu_InitPrimBufferPair:arg1 (prim_buffer_pair).
+
+CHANGED (drafter-substituted, kept)
+reloc_CopySelectedEntries:arg2: choices_start -> select_flags (entries are used only by sign and the -2 terminator, never as choices/indices; the one caller, 35000.c:700-720, builds +1/-1 flags)
+reloc_CopySelectedEntries:var_0: copy_choices_cursor -> select_cursor (var_0 is also read in the count setup at 1063/1067, so 'copy' contradicted those uses)
+reloc_CopySelectedEntries:var_1: count_choices_cursor -> count_pass_cursor (consistency with select_flags)
+gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe:arg1: read_dest -> file_buffer (only one use is a destination; two read the loaded data)
+gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:arg1: image_file_data -> file_buffer (the code does not show the buffer is an image file; leading words are file-relative offsets)
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at 5d8d0e1df, line cites there not re-derived)
+func_800430E4:arg0: NO_NAME forwarded to unnamed func_8004DDB4; its meaning was not established by this body (src/main/32D04.c:508).
+func_800430E4:arg1: NO_NAME forwarded to unnamed func_8004DDB4; its meaning was not established by this body (src/main/32D04.c:508).
+func_800430E4:arg3: NO_NAME only byte 1 is tested; record identity and a sufficiently specific whole-pointer role remain unproved (src/main/32D04.c:502).
+reloc_RelocateBlock:arg1: NO_NAME indexes two unnamed parallel registries; their shared domain was not established (src/main/32D04.c:903-904).
+reloc_CopySelectedEntries:var_6: NO_NAME local merely stages the fixed termination value; no independent semantic-purpose evidence beyond literal staging (src/main/32D04.c:1086,1103).
+gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe:arg0: NO_NAME offset input to cdrom_GetFileIndex; identity of the indexed image family remains unproved (src/main/4D0A8.c:1293).
+gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:arg0: NO_NAME offset input to cdrom_GetFileIndex; identity of the indexed image family remains unproved (src/main/4D0A8.c:1484).
+gpu_DrawSpriteAtPackedTablePosition:arg0: NO_NAME combines a position-table index and independent sheet-choice bit; avoid assigning one component's meaning to the whole value (src/main/4D0A8.c:1523-1525).
+gpu_DrawSpriteAtPackedTablePosition:arg1: NO_NAME explicitly referenced by FAKE return-size construction comment (src/main/4D0A8.c:1514-1519,1537).
+menu_SetEnabledRows:arg0: NO_NAME input remaps several bit positions into rows_on; no concise source-domain name established beyond the destination mask (src/main/596CC.c:43-62).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:arg0: NO_NAME allocation address serves both descriptor storage and resource-region derivation; complete allocation contract was not established (src/main/596CC.c:75-85).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:arg1: NO_NAME store occurs in explicitly FAKE-shaped holder/fence region; leave neutral under conservative FAKE-touch rule (src/main/596CC.c:119-154).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:temp_s0: NO_NAME resource-region lifetime through both loading callees was not independently established (src/main/596CC.c:77-86).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:var_2: NO_NAME returned allocation address feeds primitive initialization; complete relocation-callee return contract was not independently established (src/main/596CC.c:83-85).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:var_4: NO_NAME fixed mask staged in a local; independent semantic purpose of staging not established (src/main/596CC.c:91-96).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:var_5: NO_NAME snapshot only supplies initial bit test; independent purpose of this separate snapshot binding not established (src/main/596CC.c:92-98).
+menu_LoadResourcesInitStateSelectFirstEnabledRow:var_8: NO_NAME duplicate rows_on snapshot; independent purpose versus direct reads was not established (src/main/596CC.c:100-117).
+gpu_DrawIndexedCellsDigitPairsAndGrowingBars:arg0: NO_NAME referenced by explicit FAKE end-minus-start construction (src/main/4D0A8.c:1638-1645,1722).
+gpu_DrawIndexedCellsDigitPairsAndGrowingBars:arg1: NO_NAME AddPrim proves an ordering-table index at direct uses, but forwarded callee use was not independently checked (src/main/4D0A8.c:1648-1649,1672,1693,1705,1717,1720).
+gpu_DrawIndexedCellsDigitPairsAndGrowingBars:arg2: NO_NAME forwarded value also selects optional bar and computes its y; whole binding's shared role was not independently established (src/main/4D0A8.c:1648-1656).
+gpu_DrawIndexedCellsDigitPairsAndGrowingBars:sp18: NO_NAME passed by address to unchecked callee; all mutations and resulting pointer role were not established (src/main/4D0A8.c:1646-1649).
+gpu_DrawIndexedCellsDigitPairsAndGrowingBars:sp1C: NO_NAME later draw-mode use is visible, but earlier by-address callee mutations were not established (src/main/4D0A8.c:1647-1649,1719-1721).
+gpu_DrawIndexedCellsDigitPairsAndGrowingBars:var_7: NO_NAME used as moving tile address, but also in FAKE size-computation region; conservative exclusion pending targeted review of annotation reach (src/main/4D0A8.c:1638-1645,1651-1717).
