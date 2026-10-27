@@ -2598,7 +2598,7 @@ void gpu_AdvanceBufferCounterAndBuildDrawContext(s32 *a0, s32 *a1) {
     a1[0]++;
     v0 = gpu_GetPrimBufferAndRefreshStrip(a1[0] & 1);
     s0[1] = (s32)g_row_menu_work_block->unk_24;
-    s0[3] = (s32)v0->unk_04;
+    s0[3] = (s32)v0->flat_quad_prims;
     s0[2] = v0->textured_quad_prims;
     s0[4] = (s32)v0->gradient_quad_prims;
     s0[5] = v0->sprite_prims;
@@ -2631,7 +2631,7 @@ s32 gpu_InitPrimBufferPair(s32 arg0, Unk8006E49CRec *arg1) {
     arg1[0].textured_quad_prims = arg0;
     base1 = (u8 *)arg1[0].textured_quad_prims + 0x9C40;
     arg1[0].gradient_quad_prims = base1 + 0x5DC0;
-    arg1[0].unk_04 = base1;
+    arg1[0].flat_quad_prims = base1;
     base2 = base1 + 0x6838;
     arg1[0].tile_prims = base1 + 0x61F8;
     arg1[0].unk_14 = base2 + 0x1B58;
@@ -2642,7 +2642,7 @@ s32 gpu_InitPrimBufferPair(s32 arg0, Unk8006E49CRec *arg1) {
     arg1[1].textured_quad_prims = (s32)(base2 + 0x1FB0);
     base3 = (u8 *)arg1[1].textured_quad_prims + 0x9C40;
     arg1[1].gradient_quad_prims = base3 + 0x5DC0;
-    arg1[1].unk_04 = base3;
+    arg1[1].flat_quad_prims = base3;
     base4 = base3 + 0x6838;
     arg1[1].tile_prims = base3 + 0x61F8;
     arg1[1].unk_14 = base4 + 0x1B58;

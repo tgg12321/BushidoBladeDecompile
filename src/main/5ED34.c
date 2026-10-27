@@ -154,8 +154,8 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     DrawSync(0);
     g_entry_menu_work_block = (Unk800A35C4Rec *)D_800A356C;
     D_800A356C += 0x14;
-    g_entry_menu_work_block->unk_08 = 0;
-    g_entry_menu_work_block->unk_0C = 0;
+    g_entry_menu_work_block->animation_frame_counter = 0;
+    g_entry_menu_work_block->prim_buffer_counter = 0;
     return 1;
 }
 
@@ -240,19 +240,20 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(s32 arg0, s32 arg1) {
         g_entry_menu_pressed_buttons = arg1 & 0xFFFF;
     }
     StepSlideProgressCommitPendingStateAndQueueSound();
-    temp_v1 = g_entry_menu_work_block->unk_0C + 1;
-    g_entry_menu_work_block->unk_08 = g_entry_menu_work_block->unk_08 + 1;
-    g_entry_menu_work_block->unk_0C = temp_v1;
+    temp_v1 = g_entry_menu_work_block->prim_buffer_counter + 1;
+    g_entry_menu_work_block->animation_frame_counter =
+        g_entry_menu_work_block->animation_frame_counter + 1;
+    g_entry_menu_work_block->prim_buffer_counter = temp_v1;
     temp_v0 = gpu_GetIndexedPrimBufferRecord(temp_v1 & 1);
-    sp10.unk_00.v8006EA28 = g_entry_menu_resources;
-    sp10.unk_04.textured_quad_prims = temp_v0->textured_quad_prims;
-    sp10.unk_04.gradient_quad_prims = temp_v0->gradient_quad_prims;
-    sp10.unk_04.sprite_prims = temp_v0->sprite_prims;
-    sp10.unk_04.tile_prims = temp_v0->tile_prims;
-    sp10.unk_04.unk_14 = temp_v0->unk_14;
-    sp10.unk_04.draw_area_prims = temp_v0->draw_area_prims;
+    sp10.resource_root.v8006EA28 = g_entry_menu_resources;
+    sp10.primitive_cursors.textured_quad_prims = temp_v0->textured_quad_prims;
+    sp10.primitive_cursors.gradient_quad_prims = temp_v0->gradient_quad_prims;
+    sp10.primitive_cursors.sprite_prims = temp_v0->sprite_prims;
+    sp10.primitive_cursors.tile_prims = temp_v0->tile_prims;
+    sp10.primitive_cursors.unk_14 = temp_v0->unk_14;
+    sp10.primitive_cursors.draw_area_prims = temp_v0->draw_area_prims;
     D_800A35A4 = temp_v0;
-    sp10.unk_04.draw_offset_prims = temp_v0->draw_offset_prims;
+    sp10.primitive_cursors.draw_offset_prims = temp_v0->draw_offset_prims;
     sp10.unk_24 = temp_v0->unk_20;
     if ((u16)(g_entry_menu_handler_index - 2) >= 2U) {
         gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(&sp10);
@@ -307,14 +308,14 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
     s.y = 0;
     s.scale_y = 0x100;
 
-    s3 = arg0->unk_00.v8006EA28->unk_54;
+    s3 = arg0->resource_root.v8006EA28->unk_54;
     s0 = s3->unk_0C;
 
     for (i = 0; i < g_entry_menu_init_extra_slot_count + 1 + D_800A3554; i++) {
         var_3 = g_entry_menu_grid_entries[D_800A358C[i]][D_800A3588[i]].value;
         if (g_entry_menu_entry_flags[var_3] & 1) {
             s.semi = 0;
-            if (g_entry_menu_work_block->unk_08 & 4) {
+            if (g_entry_menu_work_block->animation_frame_counter & 4) {
                 s.has_color = 1;
             } else {
                 s.has_color = 0;
@@ -374,11 +375,13 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
         } else {
             s.table = s3->unk_00[i];
         }
-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
         if (i != 0) {
-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+            arg0->primitive_cursors.textured_quad_prims =
+                gpu_AddScaledSpriteQuads(&s, 1);
         } else {
-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+            arg0->primitive_cursors.textured_quad_prims =
+                gpu_AddScaledSpriteQuads(&s, 0);
         }
     }
 }
@@ -389,7 +392,7 @@ void gpu_AddScreenDarken(Unk8006EACCRec *arg0) {
     s16 v2;
     s16 v3;
 
-    temp_s0 = arg0->unk_04.tile_prims;
+    temp_s0 = arg0->primitive_cursors.tile_prims;
     SetTile(temp_s0);
     v1 = D_800A3550;
     temp_s0->x0 = 0;
@@ -404,10 +407,10 @@ void gpu_AddScreenDarken(Unk8006EACCRec *arg0) {
     SetSemiTrans(temp_s0, 1);
     AddPrim(g_gpu_ot_ptr, temp_s0);
     temp_s0++;
-    arg0->unk_04.tile_prims = temp_s0;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, 0x40, 0);
-    AddPrim(g_gpu_ot_ptr, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    arg0->primitive_cursors.tile_prims = temp_s0;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, 0x40, 0);
+    AddPrim(g_gpu_ot_ptr, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
 }
 
 extern void gpu_AddGradientPanel(Unk8006EACCRec *);
@@ -490,12 +493,12 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
               ((dx * s.scale_x >> 8) / 2);
         s.y = (D_8009BC94[i][D_800A3590[i]].y + 0x9D) + t2 -
               ((dy * s.scale_y >> 8) / 2);
-        s.ft4_out = arg0->unk_04.textured_quad_prims;
+        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
         if (i != 0) {
-            arg0->unk_04.textured_quad_prims =
+            arg0->primitive_cursors.textured_quad_prims =
                 gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
         } else {
-            arg0->unk_04.textured_quad_prims =
+            arg0->primitive_cursors.textured_quad_prims =
                 gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
         }
         if (D_800A35C8[i] > 0) {
@@ -539,20 +542,23 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
         s.x = 0;
     }
     s.table = p1;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
 
     s.table++;
     s.scale_y = 0x4C00;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
 
     s.scale_y = 0x100;
     s.header = var_2[1];
     p1 = s.header->cells;
     s.table = p1;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
 
     s.header = var_2[0];
     p1 = s.header->cells;
@@ -562,20 +568,23 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
         s.x = 0x200;
     }
     s.table = p1;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 1);
 
     s.table++;
     s.scale_y = 0x4C00;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
 
     s.scale_y = 0x100;
     s.header = var_2[1];
     p1 = s.header->cells;
     s.table = p1;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 1);
 
     if (state >= 3) {
         rect.x = D_800A3570 + 0x4C;
@@ -585,39 +594,39 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     rect.y = D_800A35C0->draw.clip.y + 0x7C;
     rect.w = 0x1E8 - D_800A3570;
     rect.h = 0x54;
-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
-    AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.draw_area_prims);
-    arg0->unk_04.draw_area_prims++;
+    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
+    AddPrim(g_gpu_ot_ptr + 0xF, arg0->primitive_cursors.draw_area_prims);
+    arg0->primitive_cursors.draw_area_prims++;
 
     rect.x = D_800A35C0->draw.clip.x;
     rect.y = D_800A35C0->draw.clip.y;
     rect.w = D_800A35C0->draw.clip.w;
     rect.h = D_800A35C0->draw.clip.h;
-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
-    AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.draw_area_prims);
-    arg0->unk_04.draw_area_prims++;
+    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
+    AddPrim(g_gpu_ot_ptr + 6, arg0->primitive_cursors.draw_area_prims);
+    arg0->primitive_cursors.draw_area_prims++;
 
     switch (state) {
     case 2:
     case 4:
-        g_entry_menu_work_block->unk_10[0] =
+        g_entry_menu_work_block->draw_offset[0] =
             D_800A35C0->draw.ofs[0] + (state == 2 ? -D_800A3570 : D_800A3570);
-        g_entry_menu_work_block->unk_10[1] = D_800A35C0->draw.ofs[1];
-        SetDrawOffset(
-            arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
-        AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.draw_offset_prims);
-        arg0->unk_04.draw_offset_prims++;
+        g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+        SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
+                      g_entry_menu_work_block->draw_offset);
+        AddPrim(g_gpu_ot_ptr + 0xF, arg0->primitive_cursors.draw_offset_prims);
+        arg0->primitive_cursors.draw_offset_prims++;
 
-        g_entry_menu_work_block->unk_10[0] = D_800A35C0->draw.ofs[0];
-        g_entry_menu_work_block->unk_10[1] = D_800A35C0->draw.ofs[1];
-        SetDrawOffset(
-            arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
-        AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.draw_offset_prims);
-        arg0->unk_04.draw_offset_prims++;
+        g_entry_menu_work_block->draw_offset[0] = D_800A35C0->draw.ofs[0];
+        g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+        SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
+                      g_entry_menu_work_block->draw_offset);
+        AddPrim(g_gpu_ot_ptr + 6, arg0->primitive_cursors.draw_offset_prims);
+        arg0->primitive_cursors.draw_offset_prims++;
         break;
     }
 
-    prim = arg0->unk_04.tile_prims;
+    prim = arg0->primitive_cursors.tile_prims;
     SetTile(prim);
     SetSemiTrans(prim, 0);
     if (g_entry_menu_working_record_ptr->unk20_0) {
@@ -635,7 +644,7 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     prim->h = 0x4C;
     AddPrim(g_gpu_ot_ptr + 0xE, prim);
     prim++;
-    arg0->unk_04.tile_prims = prim;
+    arg0->primitive_cursors.tile_prims = prim;
 
     s.header = var_2[2];
     p1 = s.header->cells;
@@ -643,12 +652,14 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     s.scale_y = 0x100;
     s.x = 0;
     s.ot_idx = 0xE;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
 
     s.y = 0x50;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 2);
 }
 
 extern void menu_UpdateEntryGridCursors(Unk8006EACCRec *);
@@ -676,9 +687,10 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.col_r = s.col_g = s.col_b = 0x70;
     var_3 = g_entry_menu_resources->unk_60;
     s.header = var_3[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0xD, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + 0xD, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
 
     s.ot_idx = 0xC;
     s.x = 0x82;
@@ -689,28 +701,33 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count + D_800A3554; i++) {
         if (D_800A3588[i] == 5) {
             s.header += 1 + i;
-            if (g_entry_menu_work_block->unk_00[i] != 0) {
-                s.x += (rsin((g_entry_menu_work_block->unk_08 * 192) & 0xFC0) *
+            if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
+                s.x += (rsin((g_entry_menu_work_block->animation_frame_counter *
+                              192) &
+                             0xFC0) *
                         5) >>
                        12;
-                s.y += (rcos((g_entry_menu_work_block->unk_08 << 7) & 0xF80) *
+                s.y += (rcos((g_entry_menu_work_block->animation_frame_counter
+                              << 7) &
+                             0xF80) *
                         3) >>
                        12;
             } else {
                 s.has_color = 1;
             }
-            if (g_entry_menu_work_block->unk_00[i] != 0x1E) {
-                s.y +=
-                    (g_entry_menu_work_block->unk_00[i] *
-                     rsin((g_entry_menu_work_block->unk_08 * 288) & 0xFE0)) >>
-                    12;
+            if (g_entry_menu_work_block->entry_countdowns[i] != 0x1E) {
+                s.y += (g_entry_menu_work_block->entry_countdowns[i] *
+                        rsin((g_entry_menu_work_block->animation_frame_counter *
+                              288) &
+                             0xFE0)) >>
+                       12;
             }
             break;
         }
     }
     s.table = var_4;
-    s.sprt_out = arg0->unk_04.sprite_prims;
-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+    s.sprt_out = arg0->primitive_cursors.sprite_prims;
+    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
 
     s.x = 0x17E;
     s.y = 0x86;
@@ -719,36 +736,41 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count + D_800A3554; i++) {
         if (D_800A3588[i] == 4) {
             s.header += 1 + i;
-            if (g_entry_menu_work_block->unk_00[i] != 0) {
-                s.x += (rsin((g_entry_menu_work_block->unk_08 * 192) & 0xFC0) *
+            if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
+                s.x += (rsin((g_entry_menu_work_block->animation_frame_counter *
+                              192) &
+                             0xFC0) *
                         5) >>
                        12;
-                s.y += (rcos((g_entry_menu_work_block->unk_08 << 7) & 0xF80) *
+                s.y += (rcos((g_entry_menu_work_block->animation_frame_counter
+                              << 7) &
+                             0xF80) *
                         3) >>
                        12;
             } else {
                 s.has_color = 1;
             }
-            if (g_entry_menu_work_block->unk_00[i] != 0x1E) {
-                s.y +=
-                    (g_entry_menu_work_block->unk_00[i] *
-                     rsin((g_entry_menu_work_block->unk_08 * 288) & 0xFE0)) >>
-                    12;
+            if (g_entry_menu_work_block->entry_countdowns[i] != 0x1E) {
+                s.y += (g_entry_menu_work_block->entry_countdowns[i] *
+                        rsin((g_entry_menu_work_block->animation_frame_counter *
+                              288) &
+                             0xFE0)) >>
+                       12;
             }
             break;
         }
     }
     s.table += s.header->count;
-    s.sprt_out = arg0->unk_04.sprite_prims;
-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+    s.sprt_out = arg0->primitive_cursors.sprite_prims;
+    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
 
     s.x = 0;
     s.y = 0;
     s.header = var_3[1];
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
-    AddPrim(g_gpu_ot_ptr + 0xB, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0x60), 0);
+    AddPrim(g_gpu_ot_ptr + 0xB, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
 
     for (row = 0; row < 4; row++) {
         for (col = 0; col < 5; col++) {
@@ -773,10 +795,12 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                         shift[i] = 9;
                     }
                     if (col == D_800A358C[i] && row == D_800A3588[i] &&
-                        g_entry_menu_work_block->unk_00[i] != 0) {
+                        g_entry_menu_work_block->entry_countdowns[i] != 0) {
                         s.has_color = 1;
                         s.col_r = s.col_g = s.col_b =
-                            ((rsin(((g_entry_menu_work_block->unk_08 & 0x1F)
+                            ((rsin(((g_entry_menu_work_block
+                                         ->animation_frame_counter &
+                                     0x1F)
                                     << shift[i]) +
                                    i * 511) *
                               63) >>
@@ -788,9 +812,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                 s.header = var_3[g_entry_menu_grid_entries[col][row].value + 1];
                 var_4 = s.header->cells;
                 s.table = var_4;
-                s.sprt_out = arg0->unk_04.sprite_prims;
+                s.sprt_out = arg0->primitive_cursors.sprite_prims;
                 s.ot_idx = 0xA;
-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
             } else {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
@@ -798,9 +822,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                 s.header = var_3[21];
                 var_4 = s.header->cells;
                 s.table = var_4;
-                s.sprt_out = arg0->unk_04.sprite_prims;
+                s.sprt_out = arg0->primitive_cursors.sprite_prims;
                 s.ot_idx = 0xA;
-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
             }
         }
     }
@@ -811,13 +835,13 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.header = var_3[22];
     var_4 = s.header->cells;
     s.table = var_4;
-    s.sprt_out = arg0->unk_04.sprite_prims;
+    s.sprt_out = arg0->primitive_cursors.sprite_prims;
     s.ot_idx = 1;
-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
-    AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0x60), 0);
+    AddPrim(g_gpu_ot_ptr + 1, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     var_2[2] = 0xF3;
     var_2[0] = 0xC6;
     var_2[1] = 0x25;
@@ -849,10 +873,10 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
     s.scale_y = 0x100;
     var_1 = g_entry_menu_resources->unk_74;
     s.header = var_1[0];
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
-    AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0x60), 0);
+    AddPrim(g_gpu_ot_ptr + 8, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     for (i = 0;
          i < 1 + g_entry_menu_init_extra_slot_count + (var_7 = D_800A3554);
          i++) {
@@ -864,7 +888,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             g_entry_menu_grid_entries[*row][*col].value;
         var_6 = i - var_7;
         if (g_entry_menu_slot_records.rec[i].unk0 == 0xFF) {
-            g_entry_menu_work_block->unk_00[i] = 0x1E;
+            g_entry_menu_work_block->entry_countdowns[i] = 0x1E;
             if (g_entry_menu_pressed_buttons & (0x4000 << (var_6 * 16))) {
                 snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
@@ -929,8 +953,8 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             D_800A3534[i] = 0;
         } else {
             D_800A3530[i] = 9;
-            if (g_entry_menu_work_block->unk_00[i] != 0) {
-                g_entry_menu_work_block->unk_00[i]--;
+            if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
+                g_entry_menu_work_block->entry_countdowns[i]--;
             }
             if (D_800A3534[i] < 12) {
                 D_800A3534[i]++;
@@ -942,8 +966,8 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             s.x = *col * 116 + 0x6E + (*col >> 1) * 20;
             s.y = *row * 16 + 0x80;
             s.ot_idx = 7;
-            s.sprt_out = arg0->unk_04.sprite_prims;
-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+            s.sprt_out = arg0->primitive_cursors.sprite_prims;
+            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
         }
         if ((g_entry_menu_pressed_buttons & (0x40 << (var_6 * 16))) &&
             g_entry_menu_slot_records.rec[i].unk0 == 0xFF) {
@@ -967,7 +991,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                         D_800A3588[1] = 0;
                     }
                     D_800A358C[1] = 0;
-                    if (g_entry_menu_work_block->unk_00[0] == 0) {
+                    if (g_entry_menu_work_block->entry_countdowns[0] == 0) {
                         g_entry_menu_slot_records.rec[1].unk1 =
                             g_entry_menu_grid_entries[0][D_800A3588[1]].value;
                         g_entry_menu_entry_flags
@@ -999,7 +1023,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 }
             }
         }
-        if (g_entry_menu_work_block->unk_00[i] != 0) {
+        if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
             s.has_color = 1;
         } else {
             s.has_color = 0;
@@ -1011,7 +1035,8 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
         }
         s.table = s.header->cells;
         s.col_r = s.col_g = s.col_b =
-            ((rsin(((g_entry_menu_work_block->unk_08 & 0x1F) << D_800A3530[i]) +
+            ((rsin(((g_entry_menu_work_block->animation_frame_counter & 0x1F)
+                    << D_800A3530[i]) +
                    i * 511) *
               63) >>
              12) -
@@ -1019,18 +1044,18 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
         s.x = *col * 116 + 0x4E + (*col >> 1) * 20;
         s.y = *row * 16 + 0x80;
         s.ot_idx = 7;
-        s.sprt_out = arg0->unk_04.sprite_prims;
-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+        s.sprt_out = arg0->primitive_cursors.sprite_prims;
+        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     }
     if (g_entry_menu_handler_index == 0 &&
         g_entry_menu_slot_records.rec[0].unk0 != 0xFF &&
-        g_entry_menu_work_block->unk_00[0] == 0) {
+        g_entry_menu_work_block->entry_countdowns[0] == 0) {
         if (g_entry_menu_fight_mode == 2 &&
             (g_entry_menu_working_record_ptr->unk14_17)) {
             D_800A3554 = 1;
         }
         if ((g_entry_menu_slot_records.rec[1].unk0 != 0xFF &&
-             g_entry_menu_work_block->unk_00[1] == 0) ||
+             g_entry_menu_work_block->entry_countdowns[1] == 0) ||
             g_entry_menu_init_extra_slot_count + D_800A3554 == 0) {
             g_entry_menu_slide_phase = 1;
             g_entry_menu_row_phase_extra_slot_count = 0;
@@ -1086,13 +1111,13 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     var_1.header = var_3[1];
     t = var_1.header->cells;
     var_1.table = t;
-    var_1.sprt_out = arg0->unk_04.sprite_prims;
+    var_1.sprt_out = arg0->primitive_cursors.sprite_prims;
     var_1.ot_idx = 1;
-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
-    AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&var_1);
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(var_1.header, c60), 0);
+    AddPrim(g_gpu_ot_ptr + 1, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     var_2[2] = 0xE7;
     var_2[0] = 0xCC;
     var_2[1] = 0x25;
@@ -1106,16 +1131,16 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     var_1.table = t;
     for (var_s0 = 0; var_s0 < 6; var_s0++) {
         var_1.x = var_s0 << 6;
-        var_1.sprt_out = arg0->unk_04.sprite_prims;
+        var_1.sprt_out = arg0->primitive_cursors.sprite_prims;
         var_1.ot_idx = 0xA;
-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
+        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&var_1);
         var_1.header++;
     }
     var_1.header = var_3[0];
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
-    AddPrim(g_gpu_ot_ptr + 0xA, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(var_1.header, c60), 0);
+    AddPrim(g_gpu_ot_ptr + 0xA, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     var_1.header = var_3[2];
     for (var_s0 = 0; var_s0 < 1 + g_entry_menu_init_extra_slot_count +
                                   g_entry_menu_row_phase_extra_slot_count;
@@ -1132,15 +1157,15 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
             } else {
                 var_1.x = 0x105;
             }
-            var_1.sprt_out = arg0->unk_04.sprite_prims;
+            var_1.sprt_out = arg0->primitive_cursors.sprite_prims;
             var_1.ot_idx = 1;
-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
+            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&var_1);
         }
     }
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
-    AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(var_1.header, c60), 0);
+    AddPrim(g_gpu_ot_ptr + 1, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     menu_UpdateRowCursors(arg0, &var_1);
     gpu_UploadAndDrawSelectedEntryQuads(arg0);
     gpu_AddGradientPanel(arg0);
@@ -1167,10 +1192,10 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     flag = 0;
     var_0 = g_entry_menu_resources->unk_74;
     s->header = var_0[0];
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s->header, 0x60), 0);
-    AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s->header, 0x60), 0);
+    AddPrim(g_gpu_ot_ptr + 8, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     s->has_color = 1;
     s->scale_x = 0x100;
     s->scale_y = 0x100;
@@ -1181,11 +1206,11 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
             if (g_entry_menu_slot_records.rec[i].unk0 == 5) {
                 g_entry_menu_slot_records.rec[i].unk2 = 6;
                 flag = 1;
-                g_entry_menu_work_block->unk_04[i] = 0;
+                g_entry_menu_work_block->row_countdowns[i] = 0;
             } else if (g_entry_menu_slot_records.rec[i].unk0 == 0x10) {
                 g_entry_menu_slot_records.rec[i].unk2 = 7;
                 flag = 1;
-                g_entry_menu_work_block->unk_04[i] = 0;
+                g_entry_menu_work_block->row_countdowns[i] = 0;
             }
         }
     }
@@ -1232,7 +1257,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
             if (g_entry_menu_slot_records.rec[i].unk2 == 0xFF) {
                 D_800A3544[i] = 7;
                 D_800A3540[i] = 0;
-                g_entry_menu_work_block->unk_04[i] = 0x1E;
+                g_entry_menu_work_block->row_countdowns[i] = 0x1E;
                 if ((g_entry_menu_pressed_buttons & (0x2000 << (var_4 * 16))) &&
                     D_800A3590[i] < max) {
                     snd_QueueSound(0, 0x7F, 0x7F);
@@ -1328,8 +1353,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     g_entry_menu_slot_records.rec[i].unk2 = 0xFF;
                 }
                 D_800A3544[i] = 9;
-                if (g_entry_menu_work_block->unk_04[i] != 0) {
-                    g_entry_menu_work_block->unk_04[i]--;
+                if (g_entry_menu_work_block->row_countdowns[i] != 0) {
+                    g_entry_menu_work_block->row_countdowns[i]--;
                 }
                 /* FAKE: reused: re-stores the unk_74 table var_0 already
                  * holds; dropped: score 4; read in place, or a second local:
@@ -1346,13 +1371,13 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 s->x = (D_800A3590[i] << 6) + 0x85;
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;
-                s->sprt_out = arg0->unk_04.sprite_prims;
-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(s);
+                s->sprt_out = arg0->primitive_cursors.sprite_prims;
+                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(s);
             }
             if (g_entry_menu_slide_phase != 3) {
                 s->scale_x = 0x100;
                 s->scale_y = 0x100;
-                if (g_entry_menu_work_block->unk_04[i] != 0) {
+                if (g_entry_menu_work_block->row_countdowns[i] != 0) {
                     s->has_color = 1;
                 } else {
                     s->has_color = 0;
@@ -1365,7 +1390,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 cells = s->header->cells;
                 s->table = cells;
                 s->col_r = s->col_g = s->col_b =
-                    ((rsin(((g_entry_menu_work_block->unk_08 & 0x1F)
+                    ((rsin(((g_entry_menu_work_block->animation_frame_counter &
+                             0x1F)
                             << D_800A3544[i]) +
                            i * 511) *
                       63) >>
@@ -1373,16 +1399,17 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     0x40;
                 s->x = (D_800A3590[i] << 6) + 0x80;
                 s->y = 0xAC - (D_800A3594[i] << 5);
-                s->ft4_out = arg0->unk_04.textured_quad_prims;
+                s->ft4_out = arg0->primitive_cursors.textured_quad_prims;
                 s->ot_idx = 7;
-                arg0->unk_04.textured_quad_prims =
+                arg0->primitive_cursors.textured_quad_prims =
                     gpu_AddScaledSpriteQuads(s, 0);
             }
         } else {
             if (g_entry_menu_slide_phase == 0) {
                 if (g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].unk2 !=
                         0xFF &&
-                    g_entry_menu_work_block->unk_04[i == 0 ? 1 : 0] == 0) {
+                    g_entry_menu_work_block->row_countdowns[i == 0 ? 1 : 0] ==
+                        0) {
                     s32 sel;
                     s32 id;
                     /* FAKE: image pointer address, mechanism and score at the
@@ -1422,7 +1449,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 } else {
                     g_entry_menu_slot_records.rec[i].unk0 = 0xFF;
                 }
-                g_entry_menu_work_block->unk_04[i] = 0x1E;
+                g_entry_menu_work_block->row_countdowns[i] = 0x1E;
             }
         }
     }
@@ -1455,17 +1482,18 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                   2)) {
                 s->table += s->header->count;
             }
-            s->ft4_out = arg0->unk_04.textured_quad_prims;
-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(s, 0);
+            s->ft4_out = arg0->primitive_cursors.textured_quad_prims;
+            arg0->primitive_cursors.textured_quad_prims =
+                gpu_AddScaledSpriteQuads(s, 0);
         }
     }
     if (g_entry_menu_slot_records.rec[0].unk2 != 0xFF &&
-        g_entry_menu_work_block->unk_04[0] == 0) {
+        g_entry_menu_work_block->row_countdowns[0] == 0) {
         if (g_entry_menu_fight_mode == 2) {
             g_entry_menu_row_phase_extra_slot_count = 1;
         }
         if (((g_entry_menu_slot_records.rec[1].unk2 != 0xFF &&
-              g_entry_menu_work_block->unk_04[1] == 0) ||
+              g_entry_menu_work_block->row_countdowns[1] == 0) ||
              g_entry_menu_init_extra_slot_count +
                      g_entry_menu_row_phase_extra_slot_count ==
                  0) &&
@@ -1540,12 +1568,12 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
                   ((dx * s.scale_x >> 8) / 2);
             s.y = D_8009BC94[i][D_800A3590[i]].y + 0x9D -
                   ((dy * s.scale_y >> 8) / 2);
-            s.ft4_out = arg0->unk_04.textured_quad_prims;
+            s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
             if (i != 0) {
-                arg0->unk_04.textured_quad_prims =
+                arg0->primitive_cursors.textured_quad_prims =
                     gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
             } else {
-                arg0->unk_04.textured_quad_prims =
+                arg0->primitive_cursors.textured_quad_prims =
                     gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
             }
         }
@@ -1624,15 +1652,15 @@ void menu_UpdateChoiceGrid(
     rect.y = D_800A35C0->draw.clip.y;
     rect.w = D_800A35C0->draw.clip.w;
     rect.h = D_800A35C0->draw.clip.h;
-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_area_prims);
-    arg0->unk_04.draw_area_prims++;
-    g_entry_menu_work_block->unk_10[0] = D_800A35C0->draw.ofs[0];
-    g_entry_menu_work_block->unk_10[1] = D_800A35C0->draw.ofs[1];
-    SetDrawOffset(
-        arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_offset_prims);
-    arg0->unk_04.draw_offset_prims++;
+    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_area_prims);
+    arg0->primitive_cursors.draw_area_prims++;
+    g_entry_menu_work_block->draw_offset[0] = D_800A35C0->draw.ofs[0];
+    g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+    SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
+                  g_entry_menu_work_block->draw_offset);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_offset_prims);
+    arg0->primitive_cursors.draw_offset_prims++;
 
     if ((g_entry_menu_slide_phase & 0xFF) == 0) {
         s.x = -10;
@@ -1644,23 +1672,23 @@ void menu_UpdateChoiceGrid(
               g_entry_menu_fight_mode == 6 && mode == 2)) {
             s.table = cells;
             s.table += (D_800A359C + mode * 3) * 2 + D_800A3598;
-            s.sprt_out = arg0->unk_04.sprite_prims;
-            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+            s.sprt_out = arg0->primitive_cursors.sprite_prims;
+            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
         }
         s.header++;
         for (i = 0; i < 6; i++) {
             if (!(i == 3 && g_entry_menu_fight_mode == 6 && mode == 2) &&
                 D_800A359C * 2 + D_800A3598 != i) {
                 s.table = cells + (mode * 6 + i);
-                s.sprt_out = arg0->unk_04.sprite_prims;
-                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+                s.sprt_out = arg0->primitive_cursors.sprite_prims;
+                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
             }
         }
         s.header = var_4[4];
-        SetDrawMode(
-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
-        arg0->unk_04.unk_14++;
+        SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                    gpu_GetSheetTPage(s.header, 0), 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
+        arg0->primitive_cursors.unk_14++;
     }
 
     s.x = 0x90;
@@ -1668,11 +1696,11 @@ void menu_UpdateChoiceGrid(
     s.header = arg1[0];
     cells = s.header->cells;
     s.table = cells;
-    s.sprt_out = arg0->unk_04.sprite_prims;
-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
-    g_entry_menu_work_block->unk_10[0] =
+    s.sprt_out = arg0->primitive_cursors.sprite_prims;
+    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+    g_entry_menu_work_block->draw_offset[0] =
         D_800A35C0->draw.ofs[0] - D_8009BCC4[mode][0];
-    g_entry_menu_work_block->unk_10[1] =
+    g_entry_menu_work_block->draw_offset[1] =
         D_800A35C0->draw.ofs[1] - D_8009BCC4[mode][1];
     if (((g_entry_menu_slide_phase & 0xFF) == 1 ||
          (g_entry_menu_slide_phase & 0xFF) == 3) &&
@@ -1688,26 +1716,27 @@ void menu_UpdateChoiceGrid(
             } else {
                 D_8009BCD0[i] = d;
             }
-            g_entry_menu_work_block->unk_10[i] -= D_8009BCD0[i] / 30;
+            g_entry_menu_work_block->draw_offset[i] -= D_8009BCD0[i] / 30;
         }
     } else {
         D_8009BCD0[1] = 0;
         D_8009BCD0[0] = 0;
     }
-    SetDrawOffset(
-        arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_offset_prims);
-    arg0->unk_04.draw_offset_prims++;
+    SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
+                  g_entry_menu_work_block->draw_offset);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_offset_prims);
+    arg0->primitive_cursors.draw_offset_prims++;
     rect.x = s.x;
     rect.y = D_800A35C0->draw.clip.y + s.y;
     rect.w = 0x160;
     rect.h = 0x4A;
-    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_area_prims);
-    arg0->unk_04.draw_area_prims++;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_area_prims);
+    arg0->primitive_cursors.draw_area_prims++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
 
     s.scale_x = 0x100;
     s.scale_y = 0x100;
@@ -1719,11 +1748,13 @@ void menu_UpdateChoiceGrid(
     s.scale_y += 0x20;
     cells = s.header->cells;
     s.table = cells;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
     s.table += s.header->count;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 1);
 
     if (g_entry_menu_pressed_buttons & 0xA000A000) {
         if ((g_entry_menu_slide_phase & 0xFF) == 0) {
@@ -1757,7 +1788,9 @@ void menu_UpdateChoiceGrid(
     }
 
     s.col_r = s.col_g = s.col_b =
-        ((rsin((g_entry_menu_work_block->unk_08 & 0x1F) * 128 + 0x1FF) * 63) >>
+        ((rsin((g_entry_menu_work_block->animation_frame_counter & 0x1F) * 128 +
+               0x1FF) *
+          63) >>
          12) -
         0x40;
     s.scale_x = 0x100;
@@ -1768,8 +1801,9 @@ void menu_UpdateChoiceGrid(
     s.header = arg1[2];
     cells = s.header->cells;
     s.table = cells;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
     var_1[2] = 0x111;
     var_1[0] = 0xB7;
     var_1[1] = 0x25;
@@ -1794,16 +1828,18 @@ void menu_UpdateChoiceGrid(
             }
             cells = s.header->cells;
             s.table = cells;
-            s.ft4_out = arg0->unk_04.textured_quad_prims;
-            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+            s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+            arg0->primitive_cursors.textured_quad_prims =
+                gpu_AddScaledSpriteQuads(&s, 0);
         }
     }
     s.has_color = 0;
     s.header = arg1[11];
     cells = s.header->cells;
     s.table = cells;
-    s.ft4_out = arg0->unk_04.textured_quad_prims;
-    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+    arg0->primitive_cursors.textured_quad_prims =
+        gpu_AddScaledSpriteQuads(&s, 0);
 
     if (g_entry_menu_slide_phase == 0) {
         for (i = 0; i < g_entry_menu_init_extra_slot_count + 1; i++) {
@@ -1822,8 +1858,8 @@ void menu_UpdateChoiceGrid(
                 }
                 D_800A35C8[0] = 0xF;
                 D_800A35C8[1] = 0x14;
-                g_entry_menu_work_block->unk_04[1] = 0;
-                g_entry_menu_work_block->unk_04[0] = 0;
+                g_entry_menu_work_block->row_countdowns[1] = 0;
+                g_entry_menu_work_block->row_countdowns[0] = 0;
                 goto end;
             }
         }
@@ -1858,7 +1894,7 @@ POLY_G4 *gpu_AddPanelUpperQuad(s32 arg0, POLY_G4 *arg1) {
         arg1->r2 = 0xFC;
         arg1->g2 = 0x82;
         arg1->b2 = 0;
-        if (g_entry_menu_work_block->unk_08 & 4) {
+        if (g_entry_menu_work_block->animation_frame_counter & 4) {
             arg1->r3 = 0xFC;
             arg1->g3 = 0xC3;
             arg1->b3 = 0x1E;
@@ -1893,7 +1929,7 @@ POLY_G4 *gpu_AddPanelLowerQuad(s32 arg0, POLY_G4 *arg1) {
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
     if (arg0 < 4) {
-        if (g_entry_menu_work_block->unk_08 & 4) {
+        if (g_entry_menu_work_block->animation_frame_counter & 4) {
             arg1->r0 = 0xFC;
             arg1->g0 = 0xC3;
             arg1->b0 = 0x1E;
@@ -1935,7 +1971,7 @@ POLY_G4 *gpu_AddPanelLowerQuad(s32 arg0, POLY_G4 *arg1) {
 void gpu_AddGradientPanel(Unk8006EACCRec *arg0) {
     POLY_G4 *p;
     gpu_AddPanelGrid(arg0);
-    p = arg0->unk_04.gradient_quad_prims;
+    p = arg0->primitive_cursors.gradient_quad_prims;
     p->x0 = 0x50;
     p->y0 = 0x32;
     p->x1 = 0x50;
@@ -1972,7 +2008,7 @@ void gpu_AddGradientPanel(Unk8006EACCRec *arg0) {
     p->x3 = 0x231;
     p->y3 = 0x71;
     p = gpu_AddPanelLowerQuad(g_entry_menu_handler_index, p);
-    arg0->unk_04.gradient_quad_prims = p;
+    arg0->primitive_cursors.gradient_quad_prims = p;
 }
 
 TILE *gpu_AddPanelGridTile(s32 a0, TILE *a1) {
@@ -2012,7 +2048,7 @@ TILE *gpu_AddBrownOrBlackPanelGridTile(s32 arg0, TILE *a1) {
 void gpu_AddPanelGrid(Unk8006EACCRec *arg0) {
     TILE *p;
     s32 i;
-    p = arg0->unk_04.tile_prims;
+    p = arg0->primitive_cursors.tile_prims;
     for (i = 0x6F; i < 0x210; i += 0x20) {
         p->x0 = i;
         p->y0 = 0x32;
@@ -2049,7 +2085,7 @@ void gpu_AddPanelGrid(Unk8006EACCRec *arg0) {
         p->h = 0x3F;
         p = gpu_AddBrownOrBlackPanelGridTile(g_entry_menu_handler_index, p);
     }
-    arg0->unk_04.tile_prims = p;
+    arg0->primitive_cursors.tile_prims = p;
 }
 
 /* gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer - draws three
@@ -2073,15 +2109,16 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     s.scale_y = 0x100;
     var_1 = g_entry_menu_resources->unk_5C;
     s.header = var_1[3];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x1C, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + 0x1C, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     s.has_color = 1;
     s.header = var_1[4];
     s1 = s.header->cells;
     if (g_entry_menu_handler_index < 4) {
         s.semi = 1;
-        if (g_entry_menu_work_block->unk_08 & 4) {
+        if (g_entry_menu_work_block->animation_frame_counter & 4) {
             s.col_r = 0xBC;
             s.col_g = 0x78;
             s.col_b = 0x14;
@@ -2092,20 +2129,24 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
         }
         s.ot_idx = 0x14;
         s.table = s1;
-        s.ft4_out = arg0->unk_04.textured_quad_prims;
-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+        arg0->primitive_cursors.textured_quad_prims =
+            gpu_AddScaledSpriteQuads(&s, 0);
         s.table = s1 + 1;
-        s.ft4_out = arg0->unk_04.textured_quad_prims;
-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+        arg0->primitive_cursors.textured_quad_prims =
+            gpu_AddScaledSpriteQuads(&s, 1);
         s.table = s1 + 2;
-        s.ft4_out = arg0->unk_04.textured_quad_prims;
-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
+        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+        arg0->primitive_cursors.textured_quad_prims =
+            gpu_AddScaledSpriteQuads(&s, 2);
         s.table = s1 + 3;
-        s.ft4_out = arg0->unk_04.textured_quad_prims;
-        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 3);
-        SetDrawMode(arg0->unk_04.unk_14, 1, 0, 0x60, 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
-        arg0->unk_04.unk_14++;
+        s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
+        arg0->primitive_cursors.textured_quad_prims =
+            gpu_AddScaledSpriteQuads(&s, 3);
+        SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0, 0x60, 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
+        arg0->primitive_cursors.unk_14++;
     } else {
         s.col_r = 0x32;
         s.col_g = 0x32;
@@ -2118,24 +2159,25 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     s.header = var_1[5];
     s1 = s.header->cells;
     s.table = s1;
-    s.sprt_out = arg0->unk_04.sprite_prims;
-    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
-    SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
-    arg0->unk_04.unk_14++;
+    s.sprt_out = arg0->primitive_cursors.sprite_prims;
+    arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                gpu_GetSheetTPage(s.header, 0x60), 0);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
+    arg0->primitive_cursors.unk_14++;
     if (g_entry_menu_handler_index < 2) {
         s.ot_idx = 0x12;
         s.semi = 1;
-        s.header = var_1[10 + g_entry_menu_work_block->unk_08 % 4];
+        s.header =
+            var_1[10 + g_entry_menu_work_block->animation_frame_counter % 4];
         s1 = s.header->cells;
         s.table = s1;
-        s.sprt_out = arg0->unk_04.sprite_prims;
-        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
-        SetDrawMode(
-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x20), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
-        arg0->unk_04.unk_14++;
+        s.sprt_out = arg0->primitive_cursors.sprite_prims;
+        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+        SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                    gpu_GetSheetTPage(s.header, 0x20), 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
+        arg0->primitive_cursors.unk_14++;
     }
 }
 

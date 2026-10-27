@@ -166,7 +166,7 @@ typedef struct {
  * receives three TILEs per call. */
 typedef struct {
     s32 textured_quad_prims;
-    void *unk_04;
+    void *flat_quad_prims;
     void *gradient_quad_prims;
     void *tile_prims;
     s32 sprite_prims;
@@ -187,7 +187,7 @@ typedef struct {
  * Unk8006EACCRec) also build TILEs at it, so it is not a single-kind cursor. */
 typedef struct {
     s32 textured_quad_prims;
-    POLY_F4 *unk_04;
+    POLY_F4 *flat_quad_prims;
     POLY_G4 *gradient_quad_prims;
     s32 sprite_prims;
     TILE *tile_prims;
@@ -395,9 +395,9 @@ typedef struct {
     union {
         Unk8006EA28Rec *v8006EA28;
         Unk80076FF8Rec *v80076FF8;
-    } unk_00;
+    } resource_root;
 
-    Unk800788B0Rec unk_04;
+    Unk800788B0Rec primitive_cursors;
     void *unk_24;
 } Unk8006EACCRec;
 
@@ -2491,11 +2491,11 @@ typedef struct {
  * Unk8006E49CRec pair).
  * - unk_10: the draw offset the handlers hand to SetDrawOffset. */
 typedef struct {
-    s16 unk_00[2];
-    s16 unk_04[2];
-    s32 unk_08;
-    s32 unk_0C;
-    u16 unk_10[2];
+    s16 entry_countdowns[2];
+    s16 row_countdowns[2];
+    s32 animation_frame_counter;
+    s32 prim_buffer_counter;
+    u16 draw_offset[2];
 } Unk800A35C4Rec;
 
 /* 596CC's work block: the 0x34 bytes
