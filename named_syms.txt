@@ -1085,7 +1085,7 @@
 /* a signed budget counter that gets decremented (rounded down by 4) */
 /* per call.  Uses D_800A3418 (^= rand()) for random offsets. */
 
-/* === Byte tables indexed by unk_0A / unk_0E + a save byte (2026-05-17) -- 4 highs === */
+/* === Byte tables indexed by character_data_index / weapon_id + a save byte (2026-05-17) -- 4 highs === */
 
 /* === Misc state cells in code6cac_c_mid.c (2026-05-17) -- 5 highs === */
 

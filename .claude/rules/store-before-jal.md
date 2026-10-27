@@ -27,8 +27,8 @@ Ours keeps the lookup in a callee-save across the call: an extra `$sN` save/rest
 ## The C shape that produces it
 
 ```c
-rec->unk_352 = D_8008D59C[arg1].bone;
-src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->unk_352];
+rec->bone_event_bone_index = D_8008D59C[arg1].bone;
+src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->bone_event_bone_index];
 ```
 
 1. Store the value in its own statement BEFORE the call statement.

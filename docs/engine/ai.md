@@ -15,7 +15,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 (include/game.h:1695); a free slot has `kind == -1` and `slot == 0xFF`.
 
 - `object_InitKindQueue(rec)` (src/main/17AFC.c:3728) seeds the queue: it copies the five entries of
-  `D_8008E338[rec->unk_0A]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
+  `D_8008E338[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
   src/main/9F9C.c:3783.
 - `object_QueueKind(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it

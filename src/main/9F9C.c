@@ -1272,9 +1272,9 @@ void fight_QueuePositionalSoundWithRandomAlternate(void) {
             a0 = 0x58;
         }
     }
-    /* FAKE: player 1's world_pos reached from s0 (player 0's unk_0A) so the
-       call reuses s0's register; &D_80101EC8[1].world_pos.x rematerialises the
-       address (score 11). */
+    /* FAKE: player 1's world_pos reached from s0 (player 0's
+       character_data_index) so the call reuses s0's register;
+       &D_80101EC8[1].world_pos.x rematerialises the address (score 11). */
     snd_QueuePositionalSound(a0, (s32 *)((u8 *)s0 + 0x536));
 }
 
@@ -2862,10 +2862,10 @@ void math_ComputeBallisticVelocityXZ(
     }
 }
 
-/* Starts the rec->unk_350 frame counter, records bone index
- * D_8008D59C[arg1].bone at rec->unk_352, and rotates the vector arg2 by that
- * bone's matrix of node_GetSlotMatrixPointerArray(rec->index) into
- * rec->unk_354. */
+/* Starts the rec->bone_event_counter frame counter, records bone index
+ * D_8008D59C[arg1].bone at rec->bone_event_bone_index, and rotates the vector
+ * arg2 by that bone's matrix of node_GetSlotMatrixPointerArray(rec->index) into
+ * rec->bone_event_local_vector. */
 void fighter_StoreBoneLocalVectorAndArmEventTrigger(
     Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     s32 mat[8];
@@ -2886,16 +2886,16 @@ void fighter_StoreBoneLocalVectorAndArmEventTrigger(
     gte_stlvnl(&rec->bone_event_local_vector);
 }
 
-/* rec->unk_350 is a frame counter
+/* rec->bone_event_counter is a frame counter
  * fighter_StoreBoneLocalVectorAndArmEventTrigger starts at 1. On the tick where
  * (counter & 7) == 2, the vector fighter_StoreBoneLocalVectorAndArmEventTrigger
- * stored at rec->unk_354 is rotated by matrix rec->unk_352 of
- * node_GetSlotMatrixPointerArray(var_2) (GTE MVMVA), scaled by (150 - counter)
- * / 150, negated when its y exceeds 0x800, and handed to
- * fight_RecordReplayEventAndDispatchSoundOrEffect with scratchpad point
- * SPAD->unkA8[var_2][rec->unk_352]. The counter is cleared on every call that
- * finds it running (the original stores 0 under `>= 150` and then again
- * unconditionally). */
+ * stored at rec->bone_event_local_vector is rotated by matrix
+ * rec->bone_event_bone_index of node_GetSlotMatrixPointerArray(var_2) (GTE
+ * MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds 0x800,
+ * and handed to fight_RecordReplayEventAndDispatchSoundOrEffect with scratchpad
+ * point SPAD->unkA8[var_2][rec->bone_event_bone_index]. The counter is cleared
+ * on every call that finds it running (the original stores 0 under `>= 150` and
+ * then again unconditionally). */
 void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
     s32 mac[3];
     s16 out[3];
@@ -2953,9 +2953,9 @@ void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
 /* Places character rec->index's points in world space with its bone
  * matrices (node_GetSlotMatrixPointerArray()): each of the 22 hit records'
  * offsets through its bone into arg1 (the callers pass SPAD->unkA8[i]); the
- * point set D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18
- * into arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
- * arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
+ * point set D_8008D86C[weapon_id] (D_8008D774 when unk_12 == 50) through bone
+ * 18 into arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19
+ * into arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
  * matrix translation. Then: bone 11's y axis into rec->unk_1EC, arg1[0]
  * into rec->unk_180, the translations of bones 17 and 14 (y raised by
  * (size_scale * 71) >> 11) into rec->unk_198[], the floor height under each
@@ -4395,11 +4395,12 @@ void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *arg0) {
     }
 }
 
-/* [unk_0A][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20 (fighter_Update).
+/* [character_data_index][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20
+ * (fighter_Update).
  */
 extern s16 D_8008E0BC[27][4];
-/* [g_fighter_group_flags[unk_0A]][unk_0E]: the move command fighter_Update
- * hands object_SpawnScatteredAt. */
+/* [g_fighter_group_flags[character_data_index]][weapon_id]: the move command
+ * fighter_Update hands object_SpawnScatteredAt. */
 extern u8 D_8008D90C[2][8];
 extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);
 

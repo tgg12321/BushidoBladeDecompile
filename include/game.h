@@ -774,12 +774,12 @@ typedef struct {
  * g_motion_fighter_sections[slot].unk_00, as motion_ResolveMoveData reads them:
  * f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4), f54[rec+0x86][t]
  * (id 0x7FF3), and f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16
- * (motion_GetCommonScriptAtFighterBufferOffset) and f18[unk_0A]
+ * (motion_GetCommonScriptAtFighterBufferOffset) and f18[character_data_index]
  * (motion_GetCommonScriptAtFighterBufferIndexedOffset;
- * Unk80101EC8Record.unk_0A, 0..26 as D_8008D538 holds and as the [27][6] tables
- * D_8008DE34 / D_8008DF78 are sized; 27 halfwords end exactly at f4E) are
- * indices into g_motion_common_sections.unk_00; both readers load them with
- * lhu. */
+ * Unk80101EC8Record.character_data_index, 0..26 as D_8008D538 holds and as the
+ * [27][6] tables D_8008DE34 / D_8008DF78 are sized; 27 halfwords end exactly at
+ * f4E) are indices into g_motion_common_sections.unk_00; both readers load them
+ * with lhu. */
 typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].unk_00 =

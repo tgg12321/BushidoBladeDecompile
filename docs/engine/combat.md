@@ -49,11 +49,11 @@ target, with the opponent as the attacker:
 
 1. It decides how many blade quads to test (`var_10`): one when the
    attacker's `is_defeated == 0`, `unk_92 != 0`, `update_count != 0` and `unk_0C != 0x1F`,
-   one more with `unk_8C` set, and one more when `unk_0E` is 4 or 5 and any is
+   one more with `unk_8C` set, and one more when `weapon_id` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
-   Attackers with `unk_0E` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
+   Attackers with `weapon_id` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
    `move_frame == weapon_hit_start_frames[0]`, also sweep a segment with `fighter_CastWeaponSegment`
-   (src/main/17AFC.c:1423, comment at :1399) while the counter `unk_34A`
+   (src/main/17AFC.c:1423, comment at :1399) while the counter `weapon_ammo`
    lasts (once it is spent they play cue 0x32 and test no quads); `unk_0C`
    0x1D / 0xE (with `unk_26C` set) do the same with the second blade
    (`weapon_hit_start_frames[1]`).
@@ -67,7 +67,7 @@ target, with the opponent as the attacker:
    (src/main/17AFC.c:1806-1822). With `mode == 1` it only plays cue 4 there
    and returns.
 4. Unless the struck limb is in the sweep / second-blade mask and the
-   attacker has `unk_0E` 6 or 7 or `unk_0C` 0x1D / 0xE, or the attacker is in an attack
+   attacker has `weapon_id` 6 or 7 or `unk_0C` 0x1D / 0xE, or the attacker is in an attack
    state (2, 0x1B, 0x28, 0x26) within three frames before a window start, it
    pushes the target along x/z through
    `unk_134` when the facing difference is under 0x400.
@@ -100,7 +100,7 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
   or 1.
 - Otherwise `fighter_DispatchBoneHitSoundEvent` runs and the code is chosen by the target's state
   (6 / 9: codes 3, 4, 6 or 7), or is 0x1B when `src == 1`, `tbl->unk0 == 4`
-  and the target's `unk_0A` is 2, 4, 0xE or 0xF; else a `switch` on the struck
+  and the target's `character_data_index` is 2, 4, 0xE or 0xF; else a `switch` on the struck
   limb picks it.
 
 ## Frame windows: `fighter_ReadFrameMetadata` and `fighter_ProcessFrameEvents`
@@ -117,7 +117,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
   `weapon_hit_end_frames[k]` are the frame windows the contact tests compare `move_frame` with.
 - `fighter_ProcessFrameEvents` (src/main/17AFC.c:5100; called at src/main/9F9C.c:5148 and
   src/main/28708.c:1434) reads the same stream: 0xFF tests a 32-bit mask
-  against `1 << rec->unk_0A` and skips 4 or 6 bytes; a byte `c` below 0x80
+  against `1 << rec->character_data_index` and skips 4 or 6 bytes; a byte `c` below 0x80
   is followed by a frame number, and when that equals `move_frame` it calls
   `fighter_DispatchFrameEvent(rec, c - 1)` (src/main/17AFC.c:4807); it stops at the first
   frame number above `move_frame`.

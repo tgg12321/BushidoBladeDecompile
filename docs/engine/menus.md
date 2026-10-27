@@ -31,7 +31,7 @@ With the standard digital-pad bit order, the masks the handlers use are:
 `fight_RunCommandStream` (src/main/2B344.c:321) steps a byte script at `g_fight_command_stream_cursor`
 until an opcode ends the step. The opcodes and what they do:
 
-- 0: mode 18 (with `D_800A38A4` from `g_fighter_group_flags[fighter 0's unk_0A]`), or
+- 0: mode 18 (with `D_800A38A4` from `g_fighter_group_flags[fighter 0's character_data_index]`), or
   mode 10 when `D_800A380C` is set.
 - 1: one operand byte into `g_fight_stage_index` and the history `D_800A37A8[]`;
   mode 22.

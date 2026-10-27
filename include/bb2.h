@@ -181,9 +181,9 @@ extern u8 D_8008D55C;
 extern u8 D_8008D578[];
 
 /* Attachment point sets fighter_UpdateBoneWorldData rotates by a character's
- * bone matrices: D_8008D86C[unk_0E] (D_8008D864[unk_0E] points; D_8008D774 when
- * unk_12 == 50) and D_8008D88C[unk_14] (two points, when unk_8C != 0).
- * D_800A3138 is the unit y vector (0, 0x1000, 0). */
+ * bone matrices: D_8008D86C[weapon_id] (D_8008D864[weapon_id] points;
+ * D_8008D774 when unk_12 == 50) and D_8008D88C[unk_14] (two points, when unk_8C
+ * != 0). D_800A3138 is the unit y vector (0, 0x1000, 0). */
 extern u8 D_8008D864[8];
 
 extern SVec4i16 *D_8008D86C[8];
@@ -192,17 +192,18 @@ extern SVec4i16 D_8008D774[2];
 extern SVec4i16 D_800A3138;
 extern u8 g_fighter_group_flags[];
 extern u8 D_8008DA08[0x48];
-extern s16 D_8008DA50[]; /* [unk_0A] (fighter_Update) */
-extern s16 D_8008DA94[]; /* [unk_0A] (fighter_Update) */
-extern s16 D_8008DAD8[]; /* [unk_0A] (fighter_Update) */
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.motion_data_id
+extern s16 D_8008DA50[]; /* [character_data_index] (fighter_Update) */
+extern s16 D_8008DA94[]; /* [character_data_index] (fighter_Update) */
+extern s16 D_8008DAD8[]; /* [character_data_index] (fighter_Update) */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.motion_data_id
  * (motion_LoadFighterData) */
 extern u16 D_8008DB1C[27][8];
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_84 */
 extern u8 D_8008DD5C[27][8];
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.base_move_frame_step */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.base_move_frame_step
+ */
 extern u16 D_8008DE34[27][6];
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1E / unk_20 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_1E / unk_20 */
 extern u16 D_8008DF78[27][6];
 extern Tbl8008E194 D_8008E194[];
 
@@ -212,17 +213,18 @@ extern Tbl8008E194 D_8008E194[];
 extern u8 D_8009BD58[8][2];
 
 extern Obj80106A78 g_object_pool[12];
-/* [unk_0A][i] -> Unk80101EC8Record.carried_object_kinds[i]
+/* [character_data_index][i] -> Unk80101EC8Record.carried_object_kinds[i]
  * (object_InitKindQueue) */
 extern s8 D_8008E338[27][5];
-extern u16 D_8008E3C0[28]; /* [unk_0A] -> Unk80101EC8Record.unk_274 */
-/* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
+/* [character_data_index] -> Unk80101EC8Record.unk_274 */
+extern u16 D_8008E3C0[28];
+/* [character_data_index][i] -> Unk80101EC8Record.unk_276[i] */
 extern u16 D_8008E3F8[27][4];
-/* [unk_0A][i] -> Unk80101EC8Record.unk_27E[i] */
+/* [character_data_index][i] -> Unk80101EC8Record.unk_27E[i] */
 extern u16 D_8008E4D0[27][4];
 extern u8 D_8008E5A8[];
-extern u8 D_8008E5CC[][8]; /* [unk_0A][unk_0E] of D_80101EC8 */
-extern u8 D_8008E6A4[][6]; /* [unk_0A][unk_0E] of D_80101EC8 */
+extern u8 D_8008E5CC[][8]; /* [character_data_index][weapon_id] of D_80101EC8 */
+extern u8 D_8008E6A4[][6]; /* [character_data_index][weapon_id] of D_80101EC8 */
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
 extern Unk8008EA44Entry D_8008EA44[5];
@@ -239,9 +241,9 @@ extern s32 D_8008EB10;
 extern s32 D_8008EB14;
 extern s32 D_8008EB18;
 extern u8 D_8008EB1C[][2];
-/* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */
+/* [weapon_id][flag] -> Unk80101EC8Record.unk_12 */
 extern u8 D_8008EB28[8][2];
-extern u8 D_8008EB38[8]; /* [unk_0E] -> Unk80101EC8Record.unk_12 */
+extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.unk_12 */
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
 extern u8 D_8008EB80[];

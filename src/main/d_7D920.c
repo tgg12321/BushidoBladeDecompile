@@ -118,8 +118,8 @@ u8 g_sqrt_table_u8[0x400] = {
 u8 D_8008D518[32] = {0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
                      4, 0, 2, 0, 0, 0, 2, 2, 3, 3, 4, 4, 0, 3, 3, 2};
 
-/* [g_fight_config.unk_4[i] / fighter_Init's arg2] -> Unk80101EC8Record.unk_0A;
- * size from the gap. */
+/* [g_fight_config.unk_4[i] / fighter_Init's arg2] ->
+ * Unk80101EC8Record.character_data_index; size from the gap. */
 u8 D_8008D538[36] = {
     0,  1,  2,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 0,  0,  0};
@@ -209,9 +209,9 @@ SVec4i16 *D_8008D88C[32] = {
     NULL,       NULL,       NULL, NULL,       NULL,       NULL,
     D_8008D844, D_8008D854};
 
-/* [g_fighter_group_flags[unk_0A]][unk_0E]: the move command fighter_Update
- * hands object_SpawnScatteredAt; g_fighter_group_flags holds only 0 and 1, so
- * two rows. */
+/* [g_fighter_group_flags[character_data_index]][weapon_id]: the move command
+ * fighter_Update hands object_SpawnScatteredAt; g_fighter_group_flags holds
+ * only 0 and 1, so two rows. */
 u8 D_8008D90C[2][8] = {{0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
                        {0x13, 0x15, 0x17, 0x19, 0x1B, 0x1B, 0x1D, 0x1D}};
 
@@ -232,7 +232,7 @@ const char *D_8008D91C[52] = {
     D_800100FC[7],  D_800100FC[6],  D_800100FC[5],  D_800100FC[4],
     D_800100FC[3],  D_800100FC[2],  D_800100FC[1],  D_800100FC[0]};
 
-/* Unk80101EC8Record.unk_0A -> row of D_8008D90C (0 / 1). */
+/* Unk80101EC8Record.character_data_index -> row of D_8008D90C (0 / 1). */
 u8 g_fighter_group_flags[28] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0};
 
@@ -242,7 +242,8 @@ u8 D_8008DA08[72] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 2, 1, 1, 2,
     0, 1, 2, 0, 1, 1, 2, 0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-/* [unk_0A] (fighter_Update); D_8008DA50 .. D_8008DAD8 sized from the gaps. */
+/* [character_data_index] (fighter_Update); D_8008DA50 .. D_8008DAD8 sized from
+ * the gaps. */
 s16 D_8008DA50[34] = {
     -330, -350, -365, -330, -370, -350, -330, -330, -365, -350, -350, -365,
     -330, -350, -365, -330, -350, -350, -365, -330, -365, -350, -350, -365,
@@ -258,7 +259,7 @@ s16 D_8008DAD8[34] = {
     -320, -330, -340, -320, -330, -330, -340, -320, -340, -330, -330, -340,
     -340, -320, -320, -320, -320, -320, -320, -320, -320, 0};
 
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.motion_data_id
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.motion_data_id
  * (motion_LoadFighterData). */
 u16 D_8008DB1C[27][8] = {
     {0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321},
@@ -301,7 +302,7 @@ Unk8008DCCCEntry D_8008DCCC[18] = {
     {0x6321, D_800A3124},     {0x7321, D_800A311C},
     {0x666, D_800A3114},      {0x0, NULL}};
 
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_84 */
 u8 D_8008DD5C[27][8] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 1, 0, 0, 0},
     {2, 2, 2, 2, 2, 0, 0, 0}, {1, 1, 0, 2, 1, 0, 0, 0},
@@ -318,7 +319,8 @@ u8 D_8008DD5C[27][8] = {
     {1, 0, 0, 2, 0, 2, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 2, 0, 1, 0, 0}};
 
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.base_move_frame_step */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.base_move_frame_step
+ */
 u16 D_8008DE34[27][6] = {
     {3568, 3536, 3760, 3926, 3392, 4096}, {3640, 3872, 3566, 3392, 3584, 4096},
     {3808, 4064, 3392, 3248, 3936, 4096}, {3632, 4027, 3944, 3600, 3776, 4096},
@@ -335,7 +337,7 @@ u16 D_8008DE34[27][6] = {
     {4096, 4096, 4096, 4096, 4096, 4096}, {4096, 4096, 4096, 4096, 4096, 4096},
     {4096, 4096, 4096, 4096, 4096, 4096}};
 
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1E / unk_20 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_1E / unk_20 */
 u16 D_8008DF78[27][6] = {
     {4864, 4096, 5712, 5744, 4864, 4096}, {4208, 3296, 4720, 4656, 4096, 4096},
     {3274, 2768, 3973, 4014, 5632, 4096}, {5664, 4096, 5728, 4096, 4096, 4096},
@@ -352,7 +354,7 @@ u16 D_8008DF78[27][6] = {
     {5888, 5888, 5888, 5888, 5888, 5888}, {5888, 5888, 5888, 5888, 5888, 5888},
     {5888, 5888, 5888, 5888, 5888, 5888}};
 
-/* [unk_0A][i] (fighter_Update) */
+/* [character_data_index][i] (fighter_Update) */
 s16 D_8008E0BC[27][4] = {
     {4096, 3520, 3280, 2496}, {4096, 3520, 3200, 2368},
     {4096, 3424, 3144, 2359}, {4096, 3520, 3264, 2464},
@@ -403,7 +405,7 @@ Tbl8008E194 D_8008E194[30] = {
     {2, 100, 1000, 0, 0, 1536, 0, 0},
     {2, 100, 1000, 0, 0, 1536, 0, 0}};
 
-/* [unk_0A][i] -> Unk80101EC8Record.carried_object_kinds[i]
+/* [character_data_index][i] -> Unk80101EC8Record.carried_object_kinds[i]
  * (object_InitKindQueue; -1: none). */
 s8 D_8008E338[27][5] = {
     {0, -1, -1, -1, -1},  {1, -1, -1, -1, -1},  {2, 2, -1, -1, -1},
@@ -416,13 +418,13 @@ s8 D_8008E338[27][5] = {
     {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1},
     {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1}};
 
-/* [unk_0A] -> Unk80101EC8Record.unk_274 */
+/* [character_data_index] -> Unk80101EC8Record.unk_274 */
 u16 D_8008E3C0[28] = {
     0xFE0, 0xFB0, 0xFA0, 0xFE0, 0xF98, 0xFB0, 0xFE0, 0xFB0, 0xFA0, 0xFA0,
     0xFE0, 0xF40, 0xFE0, 0xFB0, 0xFA0, 0xFA0, 0xFB0, 0xFB0, 0xFA0, 0xFA0,
     0xFE0, 0xFB0, 0xFE0, 0xF40, 0xFE0, 0xFE0, 0xFE0, 0x0};
 
-/* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
+/* [character_data_index][i] -> Unk80101EC8Record.unk_276[i] */
 u16 D_8008E3F8[27][4] = {
     {0x1000, 0xFE0, 0xFC0, 0xFA0}, {0x1000, 0xFC0, 0xF80, 0xF40},
     {0x1000, 0xFA0, 0xF60, 0xF20}, {0x1000, 0xFE0, 0xFC0, 0xFA0},
@@ -439,7 +441,7 @@ u16 D_8008E3F8[27][4] = {
     {0x1000, 0xFF0, 0xFE0, 0xFD0}, {0x1000, 0xFF0, 0xFE0, 0xFD0},
     {0x1000, 0xFF0, 0xFE0, 0xFD0}};
 
-/* [unk_0A][i] -> Unk80101EC8Record.unk_27E[i] */
+/* [character_data_index][i] -> Unk80101EC8Record.unk_27E[i] */
 u16 D_8008E4D0[27][4] = {
     {0x1000, 0xFE0, 0xFC0, 0xFA0}, {0x1000, 0xFC0, 0xF80, 0xF40},
     {0x1000, 0xF80, 0xF50, 0xF20}, {0x1000, 0xFE0, 0xFC0, 0xFA0},
@@ -462,7 +464,7 @@ u16 D_8008E4D0[27][4] = {
 u8 D_8008E5A8[36] = {0, 0, 0, 1, 3, 1, 2, 2, 0, 3, 2, 2, 2, 4, 2, 0, 0, 0,
                      2, 2, 2, 1, 0, 3, 1, 0, 0, 0, 2, 0, 2, 0, 2, 0, 0, 0};
 
-/* [unk_0A][unk_0E] of D_80101EC8 */
+/* [character_data_index][weapon_id] of D_80101EC8 */
 u8 D_8008E5CC[27][8] = {
     {0, 3, 7, 9, 10, 12, 14, 15},     {2, 5, 6, 8, 10, 12, 14, 15},
     {0, 3, 6, 8, 11, 12, 14, 15},     {2, 5, 7, 8, 10, 12, 14, 15},
@@ -479,7 +481,7 @@ u8 D_8008E5CC[27][8] = {
     {1, 4, 7, 9, 11, 13, 14, 15},     {1, 1, 1, 1, 1, 1, 14, 15},
     {1, 4, 7, 9, 11, 13, 14, 15}};
 
-/* [unk_0A][unk_0E] of D_80101EC8 */
+/* [character_data_index][weapon_id] of D_80101EC8 */
 u8 D_8008E6A4[27][6] = {
     {0, 2, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7},
     {1, 3, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 7}, {1, 2, 4, 5, 6, 7},
@@ -621,11 +623,11 @@ s32 D_8008EB18 = 0;
  * pairs from the gap. */
 u8 D_8008EB1C[6][2] = {{1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
 
-/* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */
+/* [weapon_id][flag] -> Unk80101EC8Record.unk_12 */
 u8 D_8008EB28[8][2] = {
     {0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}, {8, 9}, {46, 47}, {46, 47}};
 
-/* [unk_0E] -> Unk80101EC8Record.unk_12 */
+/* [weapon_id] -> Unk80101EC8Record.unk_12 */
 u8 D_8008EB38[8] = {51, 52, 53, 54, 55, 56, 51, 51};
 
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits
