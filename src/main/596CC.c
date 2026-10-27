@@ -971,9 +971,9 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     s16 ofs[2];
     /* Ruling 11 (ordinary-c-judge-decidable): holds five values, each a
      * sprite-sheet list of the MOD.BIN
-     * root: unk_18 (option rows; first sheet, the row loop and row 7), unk_40
-     * (counter frames), unk_24 twice (icon frames at [8 + frame], then FT4
-     * frames at [frame]). */
+     * root: row_sheets (option rows; first sheet, the row loop and row 7),
+     * cursor_row_sheets (a sheet list indexed by the menu cursor row), unk_24
+     * twice (icon frames at [8 + frame], then FT4 frames at [frame]). */
     Unk8009B0E0Record **var_3;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        D_8009BC04.unk4 (scanned for the first row drawn) and .rows_on (rows

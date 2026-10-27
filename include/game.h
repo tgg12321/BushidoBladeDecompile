@@ -154,9 +154,16 @@ typedef struct {
  * from its buffer: +0x00 0x9C40 bytes, +0x04 0x5DC0, +0x08 0x438, +0x0C 0x640,
  * +0x10 0x1B58, +0x14 0x258, +0x18 0x78, +0x1C 0x78, +0x20 0x110; +0x24 / +0x28
  * it leaves alone. The 5ED34 / 64FD8 draw contexts copy them into
- * Unk800788B0Rec, whose members name the primitive types; 596CC's
- * gpu_AdvanceBufferCounterAndBuildDrawContext copies them into the s32 words of
- * its context array. */
+ * Unk800788B0Rec; 596CC's gpu_AdvanceBufferCounterAndBuildDrawContext copies
+ * them into the s32 words of its context array. A pool member and the cursor
+ * member of the same primitive kind share one *_prims name
+ * (textured_quad_prims, gradient_quad_prims, tile_prims, sprite_prims,
+ * draw_area_prims, draw_offset_prims), but tile and sprite swap places: the
+ * pool has tile_prims at +0x0C and sprite_prims at +0x10, the cursor
+ * sprite_prims at +0x0C and tile_prims at +0x10. unk_14 stays unnamed: the
+ * cursor's is a DR_MODE *, but 5ED34's two gpu_AddThreeGreyTilesStackedUp
+ * calls pass the Unk8006EACCRec, whose +0x18 is that word, so there it also
+ * receives three TILEs per call. */
 typedef struct {
     s32 textured_quad_prims;
     void *unk_04;
@@ -173,9 +180,11 @@ typedef struct {
 
 /* The eight primitive cursors of a draw context (StepScrollingSpriteDisplay
  * fills one bare; Unk8006EACCRec embeds it). The draw functions build
- * primitives at a cursor and advance it. unk_00 / unk_0C hold the s32 cursors
- * gpu_AddScaledSpriteQuads / gpu_AddRotatedSpriteQuads and gpu_AddSpriteCells
- * return. */
+ * primitives at a cursor and advance it. textured_quad_prims / sprite_prims
+ * hold the s32 cursors gpu_AddScaledSpriteQuads / gpu_AddRotatedSpriteQuads and
+ * gpu_AddSpriteCells return. unk_14 is typed DR_MODE *, but 5ED34's two
+ * gpu_AddThreeGreyTilesStackedUp calls (which read +0x18 of the
+ * Unk8006EACCRec) also build TILEs at it, so it is not a single-kind cursor. */
 typedef struct {
     s32 textured_quad_prims;
     POLY_F4 *unk_04;
@@ -280,7 +289,7 @@ typedef struct {
     Unk8009B0E0Record *unk_14[0];
 } Unk80078824Rec;
 
-/* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's unk_44
+/* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's rect_rows
  * (menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws them) and
  * D_SEL.BIN's unk_3C (menu_DrawSelRowTiles). */
 typedef struct {
@@ -2421,15 +2430,16 @@ typedef struct {
  * 0x58; it keeps it in g_row_menu_work_block's word 9, and
  * gpu_AdvanceBufferCounterAndBuildDrawContext copies that into word 1 of the
  * draw context. After the head:
- * - unk_14..unk_40: the twelve lists reloc_RelocateTwelveListsAndLoadVabPack
+ * - unk_14..cursor_row_sheets (+0x14..+0x40): the twelve lists
+ * reloc_RelocateTwelveListsAndLoadVabPack
  * relocates (reloc_RelocateOffsetList: entries up to a 0 word, -1 entries
  * skipped). Their entries are sprite sheets (unk_20 pairs each sheet with a
  * -1), except unk_3C, menu_DrawConfirmSheetsAndDigitPairs's list
  * (Unk8006DD94List); reloc_RelocateTwelveListsAndLoadVabPack walks the twelve
  * slots as one run of list pointers.
- * - unk_44: the Rec_8006C21C rows
- * menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws; unk_48: the
- * Size2s16 box sizes (x = width, y = height)
+ * - rect_rows: the Rec_8006C21C rows
+ * menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws;
+ * sheet_pair_box_sizes: the Size2s16 box sizes (x = width, y = height)
  * gpu_DrawSheetPairCenteredTileWithOptionalSelection reads. The -1 ending
  * reloc_RelocateSelfOffsets's offset list follows at +0x4C; no reader touches
  * it. */
