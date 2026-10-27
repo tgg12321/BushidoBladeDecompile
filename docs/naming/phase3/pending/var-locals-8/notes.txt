@@ -1,0 +1,47 @@
+DROPPED
+(none of the 17 research RENAME rows dropped; each re-derived against the worktree source at a825669ab: every use of each binding enumerated by whole-word search inside the function and cited at current lines, no FAKE comment touches any of the bindings (the FAKE at src/main/4510C.c:49 is var_6 of motion_UpdatePlayback; the FAKE comments in resource_LoadOrReuseSelectedBlock at src/main/368E4.c:78/130/137 are s7/s1/hp), none is used in an __asm__ string (no __asm__ in any of the six functions). Research line cites matched the worktree; no drift.)
+
+CHANGED (drafter-substituted, kept)
+motion_UpdatePlayback:var_2: motion_frame_values -> decoded_motion_frame (the buffer is what motion_DecodeFrame decodes into, read for height/angle/radius and forwarded to func_80040D48; "frame values" does not say where they come from; s16 array representation retained, no field identities claimed)
+fighter_BuildCpuRoutePadWithSurfaceProbe:temp_s0: camera_bearing -> focus_bearing (naming-reviewer pre-apply FAIL and suggestion: the ratan2 target g_camera_default_view_record.unk_00 is the camera look-at point, camera_CalcEye src/main/9F9C.c:353-370; marked suggested, R6 judges it fresh)
+
+FRESHNESS (all 17 final names)
+Whole-word search of every file in src/** and include/** (C, headers, asm; #define bodies included): no hit for angle_in_range, angle_sector, focus_bearing, collision_grid, decoded_motion_frame, pad_out, rebase_delta, route_target_x, route_target_z, script_delay_left, sector_index, tim_group. Hits only as locals/parameters of OTHER functions (fine, scope differs): fighter_index (fighter_ClearCpuTally / fighter_HalveCpuTally / fighter_InitCpuControl parameters), other_record (local of fighter_InitCpuControl, 4510C.c:264-428), slot_object (local in src/main/31D3C.c:65-120), segment_start / segment_end (parameters of the collision_TestSegment* functions in src/main/43500.c). None is a file-scope symbol, type, enum constant or macro, and none is present in its own function.
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at 8e70365cf, line cites there not re-derived)
+motion_UpdatePlayback:var_6: NO_NAME declaration carries FAKE; shared camera/object rotation temporary.
+fighter_InitCpuControl:arg1: NO_NAME script-list parameter naming deferred; raw entry interpretation not independently traced sufficiently.
+fighter_InitCpuControl:arg2: NO_NAME script-list parameter naming deferred; raw entry interpretation not independently traced sufficiently.
+fighter_InitCpuControl:var_2: NO_NAME reads two unnamed table fields; their common semantic role is not established.
+fighter_InitCpuControl:var_5: NO_NAME indexes several unnamed record arrays; array-specific purpose not established.
+fighter_InitCpuControl:var_9: NO_NAME alternates other record character_data_index and this record cpu_profile.
+fighter_InitCpuControl:var_15: NO_NAME masked entry classification; semantic identity of classification not established.
+fighter_StepCpuPadScript:arg0: NO_NAME record parameter not selected; consistent per-access parameter naming across related functions remains unaudited.
+fighter_BuildCpuPad:var_1: NO_NAME alternates this record and other record; no sufficiently plain role name established for the updated record.
+fighter_BuildCpuPad:var_2: NO_NAME alternates this record and other record; no sufficiently plain role name established for the reference record.
+fighter_BuildCpuPad:var_12: NO_NAME unnamed tally array replacement index; defer purpose wording until tally entry semantics are independently established.
+fighter_BuildCpuPad:var_13: NO_NAME unnamed tally array matching index; defer purpose wording until compared entry semantics are independently established.
+fighter_UpdateCpuProbes:arg0: NO_NAME record parameter not selected; consistent per-access parameter naming across related functions remains unaudited.
+fighter_UpdateCpuProbes:var_2: NO_NAME first probe hit-point storage; not selected pending complete output-validity audit on every branch.
+fighter_UpdateCpuProbes:var_3: NO_NAME second probe hit-point storage; not selected pending complete output-validity audit on every branch.
+fighter_CalcOpponentDistanceThresholdFromTables:arg0: NO_NAME record parameter not selected; consistent per-access parameter naming across related functions remains unaudited.
+fighter_BuildCpuRoutePadWithSurfaceProbe:arg0: NO_NAME record parameter not selected; nested surface-probe accesses not audited for a consistent parameter name.
+fighter_BuildCpuRoutePadWithSurfaceProbe:arg3: NO_NAME controls both sector adjustment and a pad bit; common semantic mode not established.
+fighter_BuildCpuRoutePadWithSurfaceProbe:sp10: NO_NAME sector index passed by mutable pointer to surface-probe callee; post-call role not audited.
+fighter_BuildCpuRoutePadWithSurfaceProbe:var_v0: NO_NAME reused for angular difference and returned pad bitmask.
+fighter_BuildCpuOrbitRoute:var_0: NO_NAME candidate endpoint struct copied wholesale with unassigned fourth component; complete binding-purpose audit deferred.
+fighter_BuildCpuOrbitRoute:var_3: NO_NAME retained endpoint struct copied wholesale with unassigned fourth component; complete binding-purpose audit deferred.
+fighter_BuildCpuOrbitRoute:var_4: NO_NAME collision output storage never subsequently consumed; avoid inventing an application purpose.
+fighter_BuildCpuOrbitRoute:var_7: NO_NAME reused as positive-side accepted count, selected-side count, and decrementing route-node index.
+fighter_BuildCpuOrbitRoute:var_9: NO_NAME positive-angle scan continuation state; not selected pending wording that covers initialization and both collision tests.
+fighter_BuildCpuOrbitRoute:var_10: NO_NAME negative-angle scan continuation state; not selected pending wording that covers initialization and both collision tests.
+fighter_BuildCpuOrbitRoute:var_12: NO_NAME separation-derived probe radius; not selected pending distinction from final route radius.
+resource_LoadOrReuseSelectedBlock:arg0: NO_NAME selector parameter not selected; all selector-dependent branches require a separate complete semantic audit.
+resource_LoadOrReuseSelectedBlock:arg1: NO_NAME supplied address has multiple loader/copy/section-source uses; common contract not independently established.
+resource_LoadOrReuseSelectedBlock:sp18: NO_NAME copied only to neutral D_800A33B0; consumer purpose not established.
+resource_LoadOrReuseSelectedBlock:sp20: NO_NAME copied only to g_fight_position_records; downstream record computation not inspected for independent evidence.
+
+Rows most worth a hard look: motion_UpdatePlayback:var_5 (slot_object: shared across slots 0, 1 and i, same role at each use), fighter_BuildCpuRoutePadWithSurfaceProbe:temp_s0 / temp_v0 / temp_v1 (camera_bearing / angle_sector / sector_index: temp_* spellings but each holds a computed value used at every read; angle_sector is the unwrapped quotient, sector_index the wrapped & 7 value), resource_RebaseLoadedBlockSections:var_0 (rebase_delta: a1 rounded toward zero to a multiple of 4), fighter_UpdateCpuProbes:var_0/var_1 (segment_start/segment_end: word [3] never assigned), fighter_StepCpuPadScript:var_9 (other_record: reads arg0->other only).
+
+VERDICT
+CONFIRM 17/17: naming-reviewer pre-apply 2026-10-27 PASS 16/17; temp_s0 camera_bearing FAILED and replaced by the reviewer-suggested focus_bearing (suggested).
