@@ -327,7 +327,7 @@ s32 resource_HasRetainedSubblocks(void) { return D_8009947A; }
 
 s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
     s32 arg = a0;
-    s32 var_1 = 8;
+    s32 arena_block_id = 8;
     s32 *s2;
 
     if (gpu_RefreshGrayscaleMode()) {
@@ -340,7 +340,7 @@ s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
         } else {
             s32 *s1;
             s32 *s0;
-            s2 = arena_OpenBlock(var_1);
+            s2 = arena_OpenBlock(arena_block_id);
             func_80044F80(arg, (s32)s2);
             {
                 s32 off1 = (u32)s2[2] >> 2 << 2;
@@ -350,11 +350,11 @@ s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
             }
             arena_UpdatePeak((s32)s1);
             reloc_RelocateBlock(s0, 9);
-            arena_SetBlockEnd(var_1, (s32)s1);
+            arena_SetBlockEnd(arena_block_id, (s32)s1);
             D_800A3248 = arg;
         }
     }
-    arena_SetMoveCallback(var_1, (s32)resource_RebaseNodeAssetBlock);
+    arena_SetMoveCallback(arena_block_id, (s32)resource_RebaseNodeAssetBlock);
     return s2;
 }
 
@@ -445,7 +445,7 @@ void func_80046B44(void) {
 void gpu_ResetDrawQueueAndPrepareViewAndLighting(
     Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     s32 result[3];
-    s32 var_2[3];
+    s32 view_offset[3];
     SVECTOR rot;
     MATRIX matrix_buf;
 
@@ -459,9 +459,9 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
         g_view_camera_root_node.xf.rot.vy = -a1->vy;
         g_view_camera_root_node.xf.rot.vz = -a1->vz;
 
-        var_2[0] = 0;
-        var_2[1] = 0;
-        var_2[2] = -a2;
+        view_offset[0] = 0;
+        view_offset[1] = 0;
+        view_offset[2] = -a2;
 
         rot.vx = -a1->vx;
         rot.vy = -a1->vy;
@@ -469,7 +469,7 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
 
         g_math_rot_matrix_funcs[0](&rot, &matrix_buf);
 
-        ApplyMatrixLV(&matrix_buf, var_2, result);
+        ApplyMatrixLV(&matrix_buf, view_offset, result);
 
         {
             g_view_camera_root_node.work.t[0] = result[0] + a0->x;

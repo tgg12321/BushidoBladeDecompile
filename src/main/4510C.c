@@ -1220,80 +1220,99 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
     return ret;
 }
 
-s32 math_IntersectSegments(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
-                           s32 arg5, s32 arg6, s32 arg7, s32 *arg8, s32 *arg9) {
-    s32 var_0;
+s32 math_IntersectSegments(
+    s32 first_start_x, s32 first_start_z, s32 first_end_x, s32 first_end_z,
+    s32 second_start_x, s32 second_start_z, s32 second_end_x, s32 second_end_z,
+    s32 *intersection_x_out, s32 *intersection_z_out) {
+    s32 first_slope;
     s32 x1;
     s32 dx1;
     s32 dy1;
     s32 dx2;
     s32 dy2;
-    s32 var_6;
-    s32 var_7;
-    s32 var_8;
+    s32 second_slope;
+    s32 first_intercept;
+    s32 intersection_x;
     s32 y;
 
-    x1 = arg0;
+    x1 = first_start_x;
     x1 >>= 3;
-    arg2 >>= 3;
-    arg1 >>= 3;
-    arg3 >>= 3;
-    dx1 = arg2 - x1;
-    dy1 = arg3 - arg1;
-    arg4 >>= 3;
-    arg6 >>= 3;
-    arg5 >>= 3;
-    arg7 >>= 3;
-    dx2 = arg6 - arg4;
-    dy2 = arg7 - arg5;
-    if ((arg4 == arg6) && (arg1 == arg3)) {
-        *arg8 = arg6;
-        *arg9 = arg3;
-    } else if ((x1 == arg2) && (arg5 == arg7)) {
-        *arg8 = arg2;
-        *arg9 = arg7;
-    } else if ((arg4 == arg6) && (x1 != arg2)) {
-        *arg8 = arg6;
-        *arg9 = arg1 + (dy1 * (arg6 - x1)) / dx1;
-    } else if ((x1 == arg2) && (arg4 != arg6)) {
-        *arg8 = x1;
-        *arg9 = arg5 + (dy2 * (x1 - arg4)) / dx2;
-    } else if ((arg1 == arg3) && (arg5 != arg7)) {
-        *arg9 = arg3;
-        *arg8 = arg4 + (dx2 * (arg3 - arg5)) / dy2;
-    } else if ((arg5 == arg7) && (arg1 != arg3)) {
-        *arg9 = arg5;
-        *arg8 = x1 + (dx1 * (arg5 - arg1)) / dy1;
+    first_end_x >>= 3;
+    first_start_z >>= 3;
+    first_end_z >>= 3;
+    dx1 = first_end_x - x1;
+    dy1 = first_end_z - first_start_z;
+    second_start_x >>= 3;
+    second_end_x >>= 3;
+    second_start_z >>= 3;
+    second_end_z >>= 3;
+    dx2 = second_end_x - second_start_x;
+    dy2 = second_end_z - second_start_z;
+    if ((second_start_x == second_end_x) && (first_start_z == first_end_z)) {
+        *intersection_x_out = second_end_x;
+        *intersection_z_out = first_end_z;
+    } else if ((x1 == first_end_x) && (second_start_z == second_end_z)) {
+        *intersection_x_out = first_end_x;
+        *intersection_z_out = second_end_z;
+    } else if ((second_start_x == second_end_x) && (x1 != first_end_x)) {
+        *intersection_x_out = second_end_x;
+        *intersection_z_out = first_start_z + (dy1 * (second_end_x - x1)) / dx1;
+    } else if ((x1 == first_end_x) && (second_start_x != second_end_x)) {
+        *intersection_x_out = x1;
+        *intersection_z_out =
+            second_start_z + (dy2 * (x1 - second_start_x)) / dx2;
+    } else if (
+        (first_start_z == first_end_z) && (second_start_z != second_end_z)) {
+        *intersection_z_out = first_end_z;
+        *intersection_x_out =
+            second_start_x + (dx2 * (first_end_z - second_start_z)) / dy2;
+    } else if (
+        (second_start_z == second_end_z) && (first_start_z != first_end_z)) {
+        *intersection_z_out = second_start_z;
+        *intersection_x_out =
+            x1 + (dx1 * (second_start_z - first_start_z)) / dy1;
     } else {
-        if (arg2 == x1) {
+        if (first_end_x == x1) {
             return 0;
         }
-        if (arg6 == arg4) {
+        if (second_end_x == second_start_x) {
             return 0;
         }
-        var_0 = (dy1 << 7) / dx1;
-        var_6 = (dy2 << 7) / dx2;
-        if (var_0 == var_6) {
+        first_slope = (dy1 << 7) / dx1;
+        second_slope = (dy2 << 7) / dx2;
+        if (first_slope == second_slope) {
             return 0;
         }
-        var_7 = (((arg1 * arg2) - (arg3 * x1)) << 7) / dx1;
-        var_8 = (((((arg5 * arg6) - (arg7 * arg4)) << 7) / dx2) - var_7) /
-                (var_0 - var_6);
-        *arg8 = var_8;
-        *arg9 = ((var_8 * var_0) + var_7) >> 7;
+        first_intercept =
+            (((first_start_z * first_end_x) - (first_end_z * x1)) << 7) / dx1;
+        intersection_x =
+            (((((second_start_z * second_end_x) -
+                (second_end_z * second_start_x))
+               << 7) /
+              dx2) -
+             first_intercept) /
+            (first_slope - second_slope);
+        *intersection_x_out = intersection_x;
+        *intersection_z_out =
+            ((intersection_x * first_slope) + first_intercept) >> 7;
     }
-    if (!((((*arg8 - x1) >= -50) || ((*arg8 - arg2) >= -50)) &&
-          (((x1 - *arg8) >= -50) || ((arg2 - *arg8) >= -50)) &&
-          ((y = *arg9, ((arg1 - y) >= -50)) || ((arg3 - y) >= -50)) &&
-          (((y - arg1) >= -50) || ((y - arg3) >= -50)) &&
-          (((*arg8 - arg4) >= -50) || ((*arg8 - arg6) >= -50)) &&
-          (((arg4 - *arg8) >= -50) || ((arg6 - *arg8) >= -50)) &&
-          (((arg5 - y) >= -50) || ((arg7 - y) >= -50)) &&
-          (((y - arg5) >= -50) || ((y - arg7) >= -50)))) {
+    if (!((((*intersection_x_out - x1) >= -50) ||
+           ((*intersection_x_out - first_end_x) >= -50)) &&
+          (((x1 - *intersection_x_out) >= -50) ||
+           ((first_end_x - *intersection_x_out) >= -50)) &&
+          ((y = *intersection_z_out, ((first_start_z - y) >= -50)) ||
+           ((first_end_z - y) >= -50)) &&
+          (((y - first_start_z) >= -50) || ((y - first_end_z) >= -50)) &&
+          (((*intersection_x_out - second_start_x) >= -50) ||
+           ((*intersection_x_out - second_end_x) >= -50)) &&
+          (((second_start_x - *intersection_x_out) >= -50) ||
+           ((second_end_x - *intersection_x_out) >= -50)) &&
+          (((second_start_z - y) >= -50) || ((second_end_z - y) >= -50)) &&
+          (((y - second_start_z) >= -50) || ((y - second_end_z) >= -50)))) {
         return 0;
     }
-    *arg8 = *arg8 << 3;
-    *arg9 = *arg9 << 3;
+    *intersection_x_out = *intersection_x_out << 3;
+    *intersection_z_out = *intersection_z_out << 3;
     return 1;
 }
 
@@ -1301,9 +1320,9 @@ extern s32 math_IntersectSegments(
     s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
 
 s32 fighter_FindNearestNavCrossing(
-    Unk80101EC8Record *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
-    s32 sp28;
-    s32 sp2C;
+    Unk80101EC8Record *arg0, NavPolySet *nav_set, s32 target_x, s32 target_z) {
+    s32 crossing_x;
+    s32 crossing_z;
     s32 best;
     s16 i;
     s16 j;
@@ -1315,8 +1334,8 @@ s32 fighter_FindNearestNavCrossing(
     s32 d;
 
     best = 100000;
-    for (i = 0; i < arg1->npolys; i++) {
-        poly = &arg1->polys[i];
+    for (i = 0; i < nav_set->npolys; i++) {
+        poly = &nav_set->polys[i];
         n = poly->nvtx;
         if (poly->flags & 0x80) {
             n = poly->nvtx - 1;
@@ -1327,11 +1346,11 @@ s32 fighter_FindNearestNavCrossing(
                 k = 0;
             }
             if (math_IntersectSegments(
-                    arg0->world_pos.x, arg0->world_pos.z, arg2, arg3,
+                    arg0->world_pos.x, arg0->world_pos.z, target_x, target_z,
                     poly->vtx[j][0], poly->vtx[j][1], poly->vtx[k][0],
-                    poly->vtx[k][1], &sp28, &sp2C) != 0) {
-                dx = sp28 - arg0->world_pos.x;
-                dy = sp2C - arg0->world_pos.z;
+                    poly->vtx[k][1], &crossing_x, &crossing_z) != 0) {
+                dx = crossing_x - arg0->world_pos.x;
+                dy = crossing_z - arg0->world_pos.z;
                 d = SquareRoot0(dx * dx + dy * dy);
                 if (d < best) {
                     best = d;
@@ -1347,34 +1366,39 @@ s32 fighter_FindNearestNavCrossing(
 /* Per-vertex neighbour-angle midpoint: computes the bisector direction
  * at vertex arg1 of polygon arg0 and writes the offset point into *arg2 /
  * *arg3. */
-void fighter_GetNavCornerPoint(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+void fighter_GetNavCornerPoint(
+    NavPoly *nav_poly, s32 vertex_index, s16 *corner_x_out, s16 *corner_z_out) {
     s16 prev;
     s16 next;
     s16 cx, cy;
     s32 ang_prev, ang_next, scale;
     s16 ang_mid;
 
-    prev = arg1 - 1;
-    cx = arg0->vtx[arg1][0];
-    cy = arg0->vtx[arg1][1];
+    prev = vertex_index - 1;
+    cx = nav_poly->vtx[vertex_index][0];
+    cy = nav_poly->vtx[vertex_index][1];
     if (prev < 0) {
-        prev = arg0->nvtx - 1;
+        prev = nav_poly->nvtx - 1;
     }
-    next = arg1 + 1;
-    if (next >= arg0->nvtx) {
+    next = vertex_index + 1;
+    if (next >= nav_poly->nvtx) {
         next = 0;
     }
-    ang_prev = ratan2(arg0->vtx[prev][0] - cx, arg0->vtx[prev][1] - cy) & 0xFFF;
-    ang_next = ratan2(arg0->vtx[next][0] - cx, arg0->vtx[next][1] - cy) & 0xFFF;
+    ang_prev =
+        ratan2(nav_poly->vtx[prev][0] - cx, nav_poly->vtx[prev][1] - cy) &
+        0xFFF;
+    ang_next =
+        ratan2(nav_poly->vtx[next][0] - cx, nav_poly->vtx[next][1] - cy) &
+        0xFFF;
     if (ang_next < ang_prev) {
         s32 antipode = ang_prev + 0x800;
         ang_mid = antipode - (ang_prev - ang_next) / 2;
     } else {
         ang_mid = (ang_next - ang_prev) / 2 + ang_prev;
     }
-    scale = arg0->margin * 40;
-    *arg2 = cx + ((scale * Judge[ang_mid & 0xFFF]) >> 12);
-    *arg3 = cy + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
+    scale = nav_poly->margin * 40;
+    *corner_x_out = cx + ((scale * Judge[ang_mid & 0xFFF]) >> 12);
+    *corner_z_out = cy + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
 /* Walks the vertex ring of arg0's polygon arg1->polys[arg0->cpu_route.poly]
@@ -1386,8 +1410,8 @@ void fighter_GetNavCornerPoint(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
  * adds that segment's length and ends the way. The way with the smaller sum is
  * appended, last point first, to arg0->cpu_route. */
 void fighter_AppendNavDetour(
-    Unk80101EC8Record *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
-    CpuRoute var_0[2];
+    Unk80101EC8Record *arg0, NavPolySet *nav_set, s32 target_x, s32 target_z) {
+    CpuRoute detour_routes[2];
     s16 ofs0_x;
     s16 ofs0_z;
     s16 ofs1_x;
@@ -1402,7 +1426,7 @@ void fighter_AppendNavDetour(
     s8 var_12;
     s8 var_13;
     s16 iter;
-    s16 var_15;
+    s16 polygon_edge_count;
     s32 var_16;
     s32 var_17;
     u8 var_18;
@@ -1425,11 +1449,11 @@ void fighter_AppendNavDetour(
 
     var_11 = 1;
     var_18 = 1;
-    poly = &arg1->polys[arg0->cpu_route.poly];
+    poly = &nav_set->polys[arg0->cpu_route.poly];
     var_7 = var_9 = arg0->world_pos.x;
     var_8 = var_10 = arg0->world_pos.z;
-    var_0[1].count = 0;
-    var_0[0].count = 0;
+    detour_routes[1].count = 0;
+    detour_routes[0].count = 0;
     var_17 = 0;
     var_16 = 0;
     var_12 = arg0->cpu_route.vtx;
@@ -1441,11 +1465,11 @@ void fighter_AppendNavDetour(
             var_13 = 0;
         }
     }
-    var_15 = poly->nvtx;
+    polygon_edge_count = poly->nvtx;
     if (poly->flags & 0x80) {
-        var_15--;
+        polygon_edge_count--;
     }
-    for (iter = 0; iter < var_15; iter++) {
+    for (iter = 0; iter < polygon_edge_count; iter++) {
         /* var_29 holds four values, each the address of an x/z pair: the
          * edge's start (i) and end (next) in the edge scan, then the corners
          * at var_12 and var_13 (Ruling 11,
@@ -1458,7 +1482,7 @@ void fighter_AppendNavDetour(
 
         var_20 = 0;
         var_19 = 0;
-        for (i = 0; i < var_15; i++) {
+        for (i = 0; i < polygon_edge_count; i++) {
             next = i + 1;
             if (!(next < poly->nvtx)) {
                 next = 0;
@@ -1474,8 +1498,9 @@ void fighter_AppendNavDetour(
             if (var_11 && !var_19) {
                 if ((var_7 != ofs0_x || var_8 != ofs0_z) &&
                     (var_7 != ofs1_x || var_8 != ofs1_z)) {
-                    if (math_IntersectSegments(var_7, var_8, arg2, arg3, ax, az,
-                                               bx, bz, &var_5, &var_6)) {
+                    if (math_IntersectSegments(
+                            var_7, var_8, target_x, target_z, ax, az, bx, bz,
+                            &var_5, &var_6)) {
                         var_19 = 1;
                     }
                 }
@@ -1483,8 +1508,9 @@ void fighter_AppendNavDetour(
             if (var_18 && !var_20) {
                 if ((var_9 != ofs0_x || var_10 != ofs0_z) &&
                     (var_9 != ofs1_x || var_10 != ofs1_z)) {
-                    if (math_IntersectSegments(var_9, var_10, arg2, arg3, ax,
-                                               az, bx, bz, &var_5, &var_6)) {
+                    if (math_IntersectSegments(
+                            var_9, var_10, target_x, target_z, ax, az, bx, bz,
+                            &var_5, &var_6)) {
                         var_20 = 1;
                     }
                 }
@@ -1502,7 +1528,7 @@ void fighter_AppendNavDetour(
                     SquareRoot0((var_29[0] - var_7) * (var_29[0] - var_7) +
                                 (var_29[1] - var_8) * (var_29[1] - var_8));
                 fighter_GetNavCornerPoint(poly, var_12, &var_7, &var_8);
-                route = &var_0[0];
+                route = &detour_routes[0];
                 c = route->count;
                 route->count = c + 1;
                 if (c >= 7) {
@@ -1521,8 +1547,8 @@ void fighter_AppendNavDetour(
                     }
                 }
             } else {
-                var_16 += SquareRoot0((arg2 - var_7) * (arg2 - var_7) +
-                                      (arg3 - var_8) * (arg3 - var_8));
+                var_16 += SquareRoot0((target_x - var_7) * (target_x - var_7) +
+                                      (target_z - var_8) * (target_z - var_8));
                 var_11 = 0;
             }
         }
@@ -1535,7 +1561,7 @@ void fighter_AppendNavDetour(
                     SquareRoot0((var_29[0] - var_9) * (var_29[0] - var_9) +
                                 (var_29[1] - var_10) * (var_29[1] - var_10));
                 fighter_GetNavCornerPoint(poly, var_13, &var_9, &var_10);
-                route = &var_0[1];
+                route = &detour_routes[1];
                 c = route->count;
                 route->count = c + 1;
                 if (c >= 7) {
@@ -1554,8 +1580,9 @@ void fighter_AppendNavDetour(
                     }
                 }
             } else {
-                var_17 += SquareRoot0((arg2 - var_9) * (arg2 - var_9) +
-                                      (arg3 - var_10) * (arg3 - var_10));
+                var_17 +=
+                    SquareRoot0((target_x - var_9) * (target_x - var_9) +
+                                (target_z - var_10) * (target_z - var_10));
                 var_18 = 0;
             }
         }
@@ -1564,9 +1591,9 @@ void fighter_AppendNavDetour(
         }
     }
     if (var_16 < var_17) {
-        route = &var_0[0];
+        route = &detour_routes[0];
     } else {
-        route = &var_0[1];
+        route = &detour_routes[1];
     }
     for (i = route->count - 1; i >= 0; i--) {
         arg0->cpu_route.node[arg0->cpu_route.count] = route->node[i];
