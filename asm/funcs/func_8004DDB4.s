@@ -24,8 +24,8 @@ glabel func_8004DDB4
     /* 3E60C 8004DE0C 2128C003 */   addu      $a1, $fp, $zero
     /* 3E610 8004DE10 FEFF5020 */  addi       $s0, $v0, -0x2 /* handwritten instruction */
   .L8004DE14:
-    /* 3E614 8004DE14 0A80043C */  lui        $a0, %hi(D_800A3708)
-    /* 3E618 8004DE18 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
+    /* 3E614 8004DE14 0A80043C */  lui        $a0, %hi(g_view_camera_root_ptr)
+    /* 3E618 8004DE18 0837848C */  lw         $a0, %lo(g_view_camera_root_ptr)($a0)
     /* 3E61C 8004DE1C 0000D28F */  lw         $s2, 0x0($fp)
     /* 3E620 8004DE20 2C00888C */  lw         $t0, 0x2C($a0)
     /* 3E624 8004DE24 3000898C */  lw         $t1, 0x30($a0)

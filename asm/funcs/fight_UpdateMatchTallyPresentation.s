@@ -108,8 +108,8 @@ glabel fight_UpdateMatchTallyPresentation
     /* 2CEEC 8003C6EC 05000324 */  addiu      $v1, $zero, 0x5
   .L8003C6F0:
     /* 2CEF0 8003C6F0 12000224 */  addiu      $v0, $zero, 0x12
-    /* 2CEF4 8003C6F4 0A80013C */  lui        $at, %hi(D_800A38A4)
-    /* 2CEF8 8003C6F8 A43823A0 */  sb         $v1, %lo(D_800A38A4)($at)
+    /* 2CEF4 8003C6F4 0A80013C */  lui        $at, %hi(g_fight_presentation_index)
+    /* 2CEF8 8003C6F8 A43823A0 */  sb         $v1, %lo(g_fight_presentation_index)($at)
   .L8003C6FC:
     /* 2CEFC 8003C6FC 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 2CF00 8003C700 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)

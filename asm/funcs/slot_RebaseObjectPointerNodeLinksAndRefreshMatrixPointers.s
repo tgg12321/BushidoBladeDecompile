@@ -4,8 +4,8 @@ glabel slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
     /* 31C38 80041438 2188A000 */  addu       $s1, $a1, $zero
     /* 31C3C 8004143C 80100400 */  sll        $v0, $a0, 2
     /* 31C40 80041440 21202002 */  addu       $a0, $s1, $zero
-    /* 31C44 80041444 0B80033C */  lui        $v1, %hi(D_800A9A10)
-    /* 31C48 80041448 109A6324 */  addiu      $v1, $v1, %lo(D_800A9A10)
+    /* 31C44 80041444 0B80033C */  lui        $v1, %hi(g_slot_objects)
+    /* 31C48 80041448 109A6324 */  addiu      $v1, $v1, %lo(g_slot_objects)
     /* 31C4C 8004144C 21104300 */  addu       $v0, $v0, $v1
     /* 31C50 80041450 1800BFAF */  sw         $ra, 0x18($sp)
     /* 31C54 80041454 1000B0AF */  sw         $s0, 0x10($sp)

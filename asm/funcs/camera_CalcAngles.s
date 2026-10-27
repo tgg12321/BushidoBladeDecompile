@@ -2,8 +2,8 @@ glabel camera_CalcAngles
     /* 37B84 80047384 A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 37B88 80047388 5000B0AF */  sw         $s0, 0x50($sp)
     /* 37B8C 8004738C 2800B027 */  addiu      $s0, $sp, 0x28
-    /* 37B90 80047390 0A80043C */  lui        $a0, %hi(D_800A3708)
-    /* 37B94 80047394 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
+    /* 37B90 80047390 0A80043C */  lui        $a0, %hi(g_view_camera_root_ptr)
+    /* 37B94 80047394 0837848C */  lw         $a0, %lo(g_view_camera_root_ptr)($a0)
     /* 37B98 80047398 21280002 */  addu       $a1, $s0, $zero
     /* 37B9C 8004739C 5400BFAF */  sw         $ra, 0x54($sp)
     /* 37BA0 800473A0 A20A010C */  jal        math_RotMatrixYXZ

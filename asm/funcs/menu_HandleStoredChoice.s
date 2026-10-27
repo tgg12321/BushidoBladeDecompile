@@ -9,7 +9,7 @@ glabel menu_HandleStoredChoice
     /* 5DDF0 8006D5F0 FFFF0232 */  andi       $v0, $s0, 0xFFFF
     /* 5DDF4 8006D5F4 021C1000 */  srl        $v1, $s0, 16
     /* 5DDF8 8006D5F8 25104300 */  or         $v0, $v0, $v1
-    /* 5DDFC 8006D5FC 3004868F */  lw         $a2, %gp_rel(D_800A34FC)($gp)
+    /* 5DDFC 8006D5FC 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
     /* 5DE00 8006D600 0A80073C */  lui        $a3, %hi(D_800A350C)
     /* 5DE04 8006D604 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
     /* 5DE08 8006D608 2000BFAF */  sw         $ra, 0x20($sp)
@@ -83,7 +83,7 @@ glabel menu_HandleStoredChoice
     /* 5DF04 8006D704 CCB50108 */  j          .L8006D730
     /* 5DF08 8006D708 FFFF1124 */   addiu     $s1, $zero, -0x1
   .L8006D70C:
-    /* 5DF0C 8006D70C 5804848F */  lw         $a0, %gp_rel(D_800A3524)($gp)
+    /* 5DF0C 8006D70C 5804848F */  lw         $a0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5DF10 8006D710 FFFF4234 */  ori        $v0, $v0, (0xFFFDFFFF & 0xFFFF)
     /* 5DF14 8006D714 1400838C */  lw         $v1, 0x14($a0)
     /* 5DF18 8006D718 01001124 */  addiu      $s1, $zero, 0x1

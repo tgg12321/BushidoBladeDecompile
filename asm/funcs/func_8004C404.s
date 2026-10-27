@@ -62,8 +62,8 @@ glabel func_8004C404
     /* 3CCF4 8004C4F4 A80178A6 */  sh         $t8, (0x1F8001A8 & 0xFFFF)($s3)
     /* 3CCF8 8004C4F8 AA016BA6 */  sh         $t3, (0x1F8001AA & 0xFFFF)($s3)
     /* 3CCFC 8004C4FC AC016CA6 */  sh         $t4, (0x1F8001AC & 0xFFFF)($s3)
-    /* 3CD00 8004C500 0A80083C */  lui        $t0, %hi(D_800A3708)
-    /* 3CD04 8004C504 0837088D */  lw         $t0, %lo(D_800A3708)($t0)
+    /* 3CD00 8004C500 0A80083C */  lui        $t0, %hi(g_view_camera_root_ptr)
+    /* 3CD04 8004C504 0837088D */  lw         $t0, %lo(g_view_camera_root_ptr)($t0)
     /* 3CD08 8004C508 00000000 */  nop
     /* 3CD0C 8004C50C 2C00098D */  lw         $t1, 0x2C($t0)
     /* 3CD10 8004C510 30000A8D */  lw         $t2, 0x30($t0)

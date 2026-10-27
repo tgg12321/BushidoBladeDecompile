@@ -17,7 +17,7 @@ glabel gpu_AddPanelGrid
     /* 6389C 8007309C 2000B4AF */  sw         $s4, 0x20($sp)
     /* 638A0 800730A0 1400A58E */  lw         $a1, 0x14($s5)
   .L800730A4:
-    /* 638A4 800730A4 B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 638A4 800730A4 B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 638A8 800730A8 0800B3A4 */  sh         $s3, 0x8($a1)
     /* 638AC 800730AC 20007326 */  addiu      $s3, $s3, 0x20
     /* 638B0 800730B0 0A00B2A4 */  sh         $s2, 0xA($a1)
@@ -35,7 +35,7 @@ glabel gpu_AddPanelGrid
     /* 638E0 800730E0 51001124 */  addiu      $s1, $zero, 0x51
     /* 638E4 800730E4 41000224 */  addiu      $v0, $zero, 0x41
     /* 638E8 800730E8 E0011024 */  addiu      $s0, $zero, 0x1E0
-    /* 638EC 800730EC B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 638EC 800730EC B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 638F0 800730F0 01001224 */  addiu      $s2, $zero, 0x1
     /* 638F4 800730F4 0800B1A4 */  sh         $s1, 0x8($a1)
     /* 638F8 800730F8 0A00A2A4 */  sh         $v0, 0xA($a1)
@@ -43,7 +43,7 @@ glabel gpu_AddPanelGrid
     /* 63900 80073100 CCCB010C */  jal        gpu_AddPanelGridTile
     /* 63904 80073104 0E00B2A4 */   sh        $s2, 0xE($a1)
     /* 63908 80073108 21284000 */  addu       $a1, $v0, $zero
-    /* 6390C 8007310C B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 6390C 8007310C B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 63910 80073110 61000224 */  addiu      $v0, $zero, 0x61
     /* 63914 80073114 0800B1A4 */  sh         $s1, 0x8($a1)
     /* 63918 80073118 0A00A2A4 */  sh         $v0, 0xA($a1)
@@ -51,7 +51,7 @@ glabel gpu_AddPanelGrid
     /* 63920 80073120 CCCB010C */  jal        gpu_AddPanelGridTile
     /* 63924 80073124 0E00B2A4 */   sh        $s2, 0xE($a1)
     /* 63928 80073128 21284000 */  addu       $a1, $v0, $zero
-    /* 6392C 8007312C B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 6392C 8007312C B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 63930 80073130 50000224 */  addiu      $v0, $zero, 0x50
     /* 63934 80073134 0A00A2A4 */  sh         $v0, 0xA($a1)
     /* 63938 80073138 02000224 */  addiu      $v0, $zero, 0x2
@@ -64,7 +64,7 @@ glabel gpu_AddPanelGrid
     /* 63950 80073150 0800B4A4 */  sh         $s4, 0x8($a1)
     /* 63954 80073154 21009426 */  addiu      $s4, $s4, 0x21
     /* 63958 80073158 2310F302 */  subu       $v0, $s7, $s3
-    /* 6395C 8007315C B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 6395C 8007315C B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 63960 80073160 01007326 */  addiu      $s3, $s3, 0x1
     /* 63964 80073164 0A00BEA4 */  sh         $fp, 0xA($a1)
     /* 63968 80073168 0C00A2A4 */  sh         $v0, 0xC($a1)
@@ -81,7 +81,7 @@ glabel gpu_AddPanelGrid
     /* 63990 80073190 0800B0A4 */  sh         $s0, 0x8($a1)
     /* 63994 80073194 E0FF1026 */  addiu      $s0, $s0, -0x20
     /* 63998 80073198 23103302 */  subu       $v0, $s1, $s3
-    /* 6399C 8007319C B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 6399C 8007319C B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 639A0 800731A0 01007326 */  addiu      $s3, $s3, 0x1
     /* 639A4 800731A4 0C00A2A4 */  sh         $v0, 0xC($a1)
     /* 639A8 800731A8 3F000224 */  addiu      $v0, $zero, 0x3F

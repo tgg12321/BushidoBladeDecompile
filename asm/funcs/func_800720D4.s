@@ -1,5 +1,5 @@
 glabel func_800720D4
-    /* 628D4 800720D4 DC04828F */  lw         $v0, %gp_rel(D_800A35A8)($gp)
+    /* 628D4 800720D4 DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 628D8 800720D8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 628DC 800720DC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 628E0 800720E0 7000458C */  lw         $a1, 0x70($v0)

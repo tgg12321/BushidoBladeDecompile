@@ -120,7 +120,7 @@ u8 D_8008D518[32] = {0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
 
 /* [g_fight_config.unk_4[i] / fighter_Init's arg2] ->
  * Unk80101EC8Record.character_data_index; size from the gap. */
-u8 D_8008D538[36] = {
+u8 g_fight_config_id_data_rows[36] = {
     0,  1,  2,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 0,  0,  0};
 
@@ -501,7 +501,8 @@ u8 D_8008E748[20] = {0, 4, 3, 1, 2, 0, 4, 3, 1, 2,
 u8 D_8008E75C[28] = {4,  5,  3,  1,  24, 9,  23, 6, 8, 22, 0, 0, 26, 12,
                      19, 13, 29, 31, 27, 28, 17, 2, 0, 0,  0, 0, 0,  0};
 
-/* [D_800A38E2 - 1][0] + 0x1B -> cpu_profile (fighter_InitCpuControl); also
+/* [g_fight_step_table_next_row - 1][0] + 0x1B -> cpu_profile
+ * (fighter_InitCpuControl); also
  * fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags; 100 rows from the gap.
  */
 u8 D_8008E778[100][4] = {
@@ -585,8 +586,8 @@ Unk8008EA44Entry D_8008EA44[5] = {
  * D_8008EA50[type - 5]). */
 s32 D_8008EA50[2][4] = {{0, 0, 0, 0}, {190, 0, -10, 0}};
 
-/* [D_800A38A4] (fight_InitImageAndPlaybackPresentation, 2B344.c); 40 pairs from
- * the gap. */
+/* [g_fight_presentation_index] (fight_InitImageAndPlaybackPresentation,
+ * 2B344.c); 40 pairs from the gap. */
 s8 D_8008EA70[40][2] = {
     {33, 4}, {33, 5}, {33, 0}, {33, 1}, {33, 2}, {33, 3}, {-1, 0}, {-1, 0},
     {-1, 0}, {-1, 0}, {-1, 0}, {0, 0},  {1, 7},  {1, 13}, {2, 1},  {1, 2},

@@ -29,7 +29,7 @@ glabel menu_DrawModeBit0Sheets
     /* 5AA08 8006A208 3000A2AF */  sw         $v0, 0x30($sp)
     /* 5AA0C 8006A20C 4000A0A3 */  sb         $zero, 0x40($sp)
   .L8006A210:
-    /* 5AA10 8006A210 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
+    /* 5AA10 8006A210 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5AA14 8006A214 00000000 */  nop
     /* 5AA18 8006A218 2000428C */  lw         $v0, 0x20($v0)
     /* 5AA1C 8006A21C 3000B18F */  lw         $s1, 0x30($sp)
@@ -39,8 +39,8 @@ glabel menu_DrawModeBit0Sheets
     /* 5AA2C 8006A22C 02004232 */  andi       $v0, $s2, 0x2
     /* 5AA30 8006A230 13004010 */  beqz       $v0, .L8006A280
     /* 5AA34 8006A234 00010224 */   addiu     $v0, $zero, 0x100
-    /* 5AA38 8006A238 4804848F */  lw         $a0, %gp_rel(D_800A3514)($gp)
-    /* 5AA3C 8006A23C 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5AA38 8006A238 4804848F */  lw         $a0, %gp_rel(g_row_menu_pulse_counter)($gp)
+    /* 5AA3C 8006A23C 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5AA40 8006A240 1F008430 */  andi       $a0, $a0, 0x1F
     /* 5AA44 8006A244 0C004284 */  lh         $v0, 0xC($v0)
     /* 5AA48 8006A248 C0210400 */  sll        $a0, $a0, 7

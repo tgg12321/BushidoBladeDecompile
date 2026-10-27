@@ -18,9 +18,9 @@ glabel node_SetMatrixFromNegatedRot
     /* 32110 80041910 08000286 */  lh         $v0, 0x8($s0)
     /* 32114 80041914 1000A427 */  addiu      $a0, $sp, 0x10
     /* 32118 80041918 80100200 */  sll        $v0, $v0, 2
-    /* 3211C 8004191C 0F80013C */  lui        $at, %hi(D_800F66A0)
+    /* 3211C 8004191C 0F80013C */  lui        $at, %hi(g_math_rot_matrix_funcs)
     /* 32120 80041920 21082200 */  addu       $at, $at, $v0
-    /* 32124 80041924 A066228C */  lw         $v0, %lo(D_800F66A0)($at)
+    /* 32124 80041924 A066228C */  lw         $v0, %lo(g_math_rot_matrix_funcs)($at)
     /* 32128 80041928 00000000 */  nop
     /* 3212C 8004192C 09F84000 */  jalr       $v0
     /* 32130 80041930 38000526 */   addiu     $a1, $s0, 0x38

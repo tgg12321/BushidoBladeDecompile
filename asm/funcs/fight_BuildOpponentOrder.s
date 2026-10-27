@@ -13,9 +13,9 @@ glabel fight_BuildOpponentOrder
     /* 240F8 800338F8 B077A524 */  addiu      $a1, $a1, %lo(D_801077B0)
     /* 240FC 800338FC 2400BFAF */  sw         $ra, 0x24($sp)
     /* 24100 80033900 1800B0AF */  sw         $s0, 0x18($sp)
-    /* 24104 80033904 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 24104 80033904 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24108 80033908 21082200 */  addu       $at, $at, $v0
-    /* 2410C 8003390C 38D52390 */  lbu        $v1, %lo(D_8008D538)($at)
+    /* 2410C 8003390C 38D52390 */  lbu        $v1, %lo(g_fight_config_id_data_rows)($at)
     /* 24110 80033910 01000224 */  addiu      $v0, $zero, 0x1
     /* 24114 80033914 04106200 */  sllv       $v0, $v0, $v1
     /* 24118 80033918 27100200 */  nor        $v0, $zero, $v0
@@ -165,9 +165,9 @@ glabel fight_BuildOpponentOrder
   .L80033B18:
     /* 24318 80033B18 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* 2431C 80033B1C 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* 24320 80033B20 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 24320 80033B20 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24324 80033B24 21082200 */  addu       $at, $at, $v0
-    /* 24328 80033B28 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 24328 80033B28 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 2432C 80033B2C 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 24330 80033B30 21082200 */  addu       $at, $at, $v0
     /* 24334 80033B34 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)

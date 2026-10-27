@@ -2,8 +2,8 @@ glabel eff_InitCosineScaledQuad
     /* 55690 80064E90 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 55694 80064E94 00000000 */  nop
     /* 55698 80064E98 0000628C */  lw         $v0, 0x0($v1)
-    /* 5569C 80064E9C 0F80013C */  lui        $at, %hi(D_800F0CA0)
-    /* 556A0 80064EA0 A00C22AC */  sw         $v0, %lo(D_800F0CA0)($at)
+    /* 5569C 80064E9C 0F80013C */  lui        $at, %hi(g_eff_animated_quad_positions)
+    /* 556A0 80064EA0 A00C22AC */  sw         $v0, %lo(g_eff_animated_quad_positions)($at)
     /* 556A4 80064EA4 0400628C */  lw         $v0, 0x4($v1)
     /* 556A8 80064EA8 0F80013C */  lui        $at, %hi(D_800F0CA4)
     /* 556AC 80064EAC A40C22AC */  sw         $v0, %lo(D_800F0CA4)($at)

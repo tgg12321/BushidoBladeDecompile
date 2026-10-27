@@ -132,7 +132,7 @@ SPEC_VALUES = [
     {"at": "g_fight_mode_selector", "len": 2},
     {"at": "D_800A38A0", "len": 4},
     {"at": "D_800A3912", "len": 3},
-    {"at": "D_800A38AE", "len": 2},
+    {"at": "g_fight_paired_move_initiator", "len": 2},
     {"at": "0x80120000", "len": 0x801D8800 - 0x80120000},
 ]
 
@@ -238,7 +238,7 @@ class Fight:
             self.ae = m.s16(PAIRED_STARTER)
         else:
             self.ae = 0
-            self.notes.append("D_800A38AE not read: assumed 0 (BSS; only "
+            self.notes.append("g_fight_paired_move_initiator not read: assumed 0 (BSS; only "
                               "fight_UpdatePairedMoves writes it)")
         self.buttons = [self._buttons(i) for i in (0, 1)]
         self.dropped = []  # edges whose target does not read as a script
@@ -467,7 +467,7 @@ class Fight:
                             lab + " (paired hand-off, both records)"))
                 # D_800A38AE's unk_86 is not reset (only the other's, 2720)
                 out.append(((na, ns, ae, ae, False),
-                            lab + " (paired hand-off, run by D_800A38AE)"))
+                            lab + " (paired hand-off, run by g_fight_paired_move_initiator)"))
                 continue
             add(mid, lab, bool(f & 0x1000))
         tc0 = m.u16(a + 10)

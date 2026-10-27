@@ -26,8 +26,8 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1B364 8002AB64 01000C24 */  addiu      $t4, $zero, 0x1
     /* 1B368 8002AB68 06006C15 */  bne        $t3, $t4, .L8002AB84
     /* 1B36C 8002AB6C 00000000 */   nop
-    /* 1B370 8002AB70 0A80023C */  lui        $v0, %hi(D_800A38AE)
-    /* 1B374 8002AB74 AE384284 */  lh         $v0, %lo(D_800A38AE)($v0)
+    /* 1B370 8002AB70 0A80023C */  lui        $v0, %hi(g_fight_paired_move_initiator)
+    /* 1B374 8002AB74 AE384284 */  lh         $v0, %lo(g_fight_paired_move_initiator)($v0)
     /* 1B378 8002AB78 00000000 */  nop
     /* 1B37C 8002AB7C 27045610 */  beq        $v0, $s6, .L8002BC1C
     /* 1B380 8002AB80 00000000 */   nop

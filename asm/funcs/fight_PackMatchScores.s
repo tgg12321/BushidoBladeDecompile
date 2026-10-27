@@ -5,8 +5,8 @@ glabel fight_PackMatchScores
     /* 24A0C 8003420C 0A80033C */  lui        $v1, %hi(g_fight_match_count)
     /* 24A10 80034210 9B386390 */  lbu        $v1, %lo(g_fight_match_count)($v1)
     /* 24A14 80034214 0A000224 */  addiu      $v0, $zero, 0xA
-    /* 24A18 80034218 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 24A1C 8003421C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* 24A18 80034218 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 24A1C 8003421C 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 24A20 80034220 1A006018 */  blez       $v1, .L8003428C
     /* 24A24 80034224 21200000 */   addu      $a0, $zero, $zero
     /* 24A28 80034228 0A800B3C */  lui        $t3, %hi(g_fight_match_cursor)

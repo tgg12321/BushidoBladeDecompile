@@ -1,7 +1,7 @@
 glabel fight_WaitForCounterThenClearAndEnableDisplay
     /* E3E4 8001DBE4 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* E3E8 8001DBE8 0A80033C */  lui        $v1, %hi(D_800A3768)
-    /* E3EC 8001DBEC 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
+    /* E3E8 8001DBE8 0A80033C */  lui        $v1, %hi(g_local_ot_draw_mode)
+    /* E3EC 8001DBEC 68376390 */  lbu        $v1, %lo(g_local_ot_draw_mode)($v1)
     /* E3F0 8001DBF0 14000224 */  addiu      $v0, $zero, 0x14
     /* E3F4 8001DBF4 1400BFAF */  sw         $ra, 0x14($sp)
     /* E3F8 8001DBF8 28006214 */  bne        $v1, $v0, .L8001DC9C
@@ -10,8 +10,8 @@ glabel fight_WaitForCounterThenClearAndEnableDisplay
     /* E404 8001DC04 00000000 */   nop
     /* E408 8001DC08 0A80033C */  lui        $v1, %hi(D_800A38F8)
     /* E40C 8001DC0C F8386390 */  lbu        $v1, %lo(D_800A38F8)($v1)
-    /* E410 8001DC10 0A80023C */  lui        $v0, %hi(D_800A37A0)
-    /* E414 8001DC14 A0374290 */  lbu        $v0, %lo(D_800A37A0)($v0)
+    /* E410 8001DC10 0A80023C */  lui        $v0, %hi(g_fight_stage_command_count)
+    /* E414 8001DC14 A0374290 */  lbu        $v0, %lo(g_fight_stage_command_count)($v0)
     /* E418 8001DC18 00000000 */  nop
     /* E41C 8001DC1C 2B104300 */  sltu       $v0, $v0, $v1
     /* E420 8001DC20 18004014 */  bnez       $v0, .L8001DC84
@@ -25,8 +25,8 @@ glabel fight_WaitForCounterThenClearAndEnableDisplay
     /* E43C 8001DC3C 02000424 */   addiu     $a0, $zero, 0x2
     /* E440 8001DC40 0A80033C */  lui        $v1, %hi(D_800A38F8)
     /* E444 8001DC44 F8386390 */  lbu        $v1, %lo(D_800A38F8)($v1)
-    /* E448 8001DC48 0A80023C */  lui        $v0, %hi(D_800A37A0)
-    /* E44C 8001DC4C A0374290 */  lbu        $v0, %lo(D_800A37A0)($v0)
+    /* E448 8001DC48 0A80023C */  lui        $v0, %hi(g_fight_stage_command_count)
+    /* E44C 8001DC4C A0374290 */  lbu        $v0, %lo(g_fight_stage_command_count)($v0)
     /* E450 8001DC50 00000000 */  nop
     /* E454 8001DC54 2B104300 */  sltu       $v0, $v0, $v1
     /* E458 8001DC58 F3FF4010 */  beqz       $v0, .L8001DC28

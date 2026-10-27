@@ -1,8 +1,8 @@
 glabel slot_GetAssetIndex
     /* 31D54 80041554 80200400 */  sll        $a0, $a0, 2
-    /* 31D58 80041558 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 31D58 80041558 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 31D5C 8004155C 21082400 */  addu       $at, $at, $a0
-    /* 31D60 80041560 109A228C */  lw         $v0, %lo(D_800A9A10)($at)
+    /* 31D60 80041560 109A228C */  lw         $v0, %lo(g_slot_objects)($at)
     /* 31D64 80041564 00000000 */  nop
     /* 31D68 80041568 03004014 */  bnez       $v0, .L80041578
     /* 31D6C 8004156C 00000000 */   nop

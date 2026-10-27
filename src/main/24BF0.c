@@ -20,7 +20,7 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
 
     D_800A36F6 = 0;
     g_fight_mode_selector = val_85;
-    D_800A38BA = val_86;
+    g_fight_tracked_view_setting = val_86;
     D_800A3140 = val_87;
     g_fight_stage_index = val_84;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
@@ -46,12 +46,13 @@ void ApplyPendingConfigAndInitializeMode(void) {
     switch (g_fight_mode_selector) {
     case 6:
         g_fight_config.unk_E = 1;
-        D_800A3768 = 1;
+        g_local_ot_draw_mode = 1;
         g_main_loop_handler_index = 0;
         D_800A36F6 = (D_800A38A0 != 0);
         break;
     case 0:
-        fight_InitCommandStream(D_8008D538[(s8)g_fight_config.unk_4[0]]);
+        fight_InitCommandStream(
+            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]);
         g_fight_config.unk_4[1] = 0;
         fight_RunCommandStream();
         fighter_ClearCpuTally(1);
@@ -59,20 +60,20 @@ void ApplyPendingConfigAndInitializeMode(void) {
     case 1:
         g_fight_config.unk_4[5] = 1;
         fight_BuildOpponentOrder();
-        D_800A3768 = 1;
+        g_local_ot_draw_mode = 1;
         fight_AdvanceOpponentOrder();
         break;
     case 3:
         g_fight_config.unk_4[5] = 1;
         g_fight_config.unk_4[3] = 0;
         g_fight_config.unk_4[2] = 0;
-        D_800A38E2 = 0;
+        g_fight_step_table_next_row = 0;
         D_800A38E0 = 0;
-        D_800A3858 = 0;
+        g_fight_timer_frames = 0;
         D_800A3728 = 0;
         g_fight_stage_index = 0x22;
         fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags();
-        D_800A3768 = 1;
+        g_local_ot_draw_mode = 1;
         g_main_loop_handler_index = 0;
         break;
     case 5:
@@ -88,14 +89,15 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_fight_config.unk_4[5] = 1;
         if (D_800A389A == 0) {
             g_fight_config.unk_4[1] =
-                g_fighter_group_flags[D_8008D538[(s8)g_fight_config.unk_4[0]]]
+                g_fighter_group_flags[g_fight_config_id_data_rows
+                                          [(s8)g_fight_config.unk_4[0]]]
                     ? 0xE
                     : 0x1D;
         }
         g_main_loop_handler_index = 0;
         break;
     case 4:
-        D_800A3768 = 1;
+        g_local_ot_draw_mode = 1;
         g_main_loop_handler_index = 0;
         break;
     default:

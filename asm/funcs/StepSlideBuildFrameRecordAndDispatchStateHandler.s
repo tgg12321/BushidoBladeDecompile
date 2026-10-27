@@ -11,16 +11,16 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F2F0 8006EAF0 0F80033C */  lui        $v1, %hi(g_gpu_db)
     /* 5F2F4 8006EAF4 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
     /* 5F2F8 8006EAF8 21104300 */  addu       $v0, $v0, $v1
-    /* 5F2FC 8006EAFC F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
+    /* 5F2FC 8006EAFC F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 5F300 8006EB00 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 5F304 8006EB04 3800BFAF */  sw         $ra, 0x38($sp)
     /* 5F308 8006EB08 7C0484AF */  sw         $a0, %gp_rel(D_800A3548)($gp)
-    /* 5F30C 8006EB0C 800485AF */  sw         $a1, %gp_rel(D_800A354C)($gp)
+    /* 5F30C 8006EB0C 800485AF */  sw         $a1, %gp_rel(g_entry_menu_pressed_buttons)($gp)
     /* 5F310 8006EB10 F40482AF */  sw         $v0, %gp_rel(D_800A35C0)($gp)
     /* 5F314 8006EB14 02000224 */  addiu      $v0, $zero, 0x2
     /* 5F318 8006EB18 02006214 */  bne        $v1, $v0, .L8006EB24
     /* 5F31C 8006EB1C FFFFA230 */   andi      $v0, $a1, 0xFFFF
-    /* 5F320 8006EB20 800482AF */  sw         $v0, %gp_rel(D_800A354C)($gp)
+    /* 5F320 8006EB20 800482AF */  sw         $v0, %gp_rel(g_entry_menu_pressed_buttons)($gp)
   .L8006EB24:
     /* 5F324 8006EB24 03BB010C */  jal        StepSlideProgressCommitPendingStateAndQueueSound
     /* 5F328 8006EB28 00000000 */   nop
@@ -34,7 +34,7 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F348 8006EB48 0800A2AC */  sw         $v0, 0x8($a1)
     /* 5F34C 8006EB4C 2BBA010C */  jal        gpu_GetIndexedPrimBufferRecord
     /* 5F350 8006EB50 0C00A3AC */   sw        $v1, 0xC($a1)
-    /* 5F354 8006EB54 DC04838F */  lw         $v1, %gp_rel(D_800A35A8)($gp)
+    /* 5F354 8006EB54 DC04838F */  lw         $v1, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F358 8006EB58 00000000 */  nop
     /* 5F35C 8006EB5C 1000A3AF */  sw         $v1, 0x10($sp)
     /* 5F360 8006EB60 0000438C */  lw         $v1, 0x0($v0)
@@ -58,7 +58,7 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F3A8 8006EBA8 1C00438C */  lw         $v1, 0x1C($v0)
     /* 5F3AC 8006EBAC D80482AF */  sw         $v0, %gp_rel(D_800A35A4)($gp)
     /* 5F3B0 8006EBB0 3000A3AF */  sw         $v1, 0x30($sp)
-    /* 5F3B4 8006EBB4 B4048397 */  lhu        $v1, %gp_rel(D_800A3580)($gp)
+    /* 5F3B4 8006EBB4 B4048397 */  lhu        $v1, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 5F3B8 8006EBB8 2000448C */  lw         $a0, 0x20($v0)
     /* 5F3BC 8006EBBC FEFF6324 */  addiu      $v1, $v1, -0x2
     /* 5F3C0 8006EBC0 0200632C */  sltiu      $v1, $v1, 0x2
@@ -67,7 +67,7 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F3CC 8006EBCC 4ABD010C */  jal        gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5F3D0 8006EBD0 1000A427 */   addiu     $a0, $sp, 0x10
   .L8006EBD4:
-    /* 5F3D4 8006EBD4 B4048287 */  lh         $v0, %gp_rel(D_800A3580)($gp)
+    /* 5F3D4 8006EBD4 B4048287 */  lh         $v0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 5F3D8 8006EBD8 00000000 */  nop
     /* 5F3DC 8006EBDC 80100200 */  sll        $v0, $v0, 2
     /* 5F3E0 8006EBE0 0A80013C */  lui        $at, %hi(D_8009BC1C)

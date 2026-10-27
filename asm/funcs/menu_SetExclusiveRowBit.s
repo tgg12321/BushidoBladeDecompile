@@ -37,21 +37,21 @@ glabel menu_SetExclusiveRowBit
     /* 5D44C 8006CC4C 04306200 */  sllv       $a2, $v0, $v1
     /* 5D450 8006CC50 27380600 */  nor        $a3, $zero, $a2
   .L8006CC54:
-    /* 5D454 8006CC54 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5D454 8006CC54 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5D458 8006CC58 001C0500 */  sll        $v1, $a1, 16
     /* 5D45C 8006CC5C 21100201 */  addu       $v0, $t0, $v0
     /* 5D460 8006CC60 28004284 */  lh         $v0, 0x28($v0)
     /* 5D464 8006CC64 03240300 */  sra        $a0, $v1, 16
     /* 5D468 8006CC68 07008214 */  bne        $a0, $v0, .L8006CC88
     /* 5D46C 8006CC6C 00000000 */   nop
-    /* 5D470 8006CC70 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 5D470 8006CC70 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5D474 8006CC74 00000000 */  nop
     /* 5D478 8006CC78 21186400 */  addu       $v1, $v1, $a0
     /* 5D47C 8006CC7C 17006290 */  lbu        $v0, 0x17($v1)
     /* 5D480 8006CC80 28B30108 */  j          .L8006CCA0
     /* 5D484 8006CC84 25104600 */   or        $v0, $v0, $a2
   .L8006CC88:
-    /* 5D488 8006CC88 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 5D488 8006CC88 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5D48C 8006CC8C 00000000 */  nop
     /* 5D490 8006CC90 21186400 */  addu       $v1, $v1, $a0
     /* 5D494 8006CC94 17006290 */  lbu        $v0, 0x17($v1)

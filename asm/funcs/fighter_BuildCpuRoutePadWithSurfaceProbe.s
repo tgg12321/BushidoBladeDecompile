@@ -1,6 +1,6 @@
 glabel fighter_BuildCpuRoutePadWithSurfaceProbe
-    /* 47894 80057094 0F80033C */  lui        $v1, %hi(D_800F6608)
-    /* 47898 80057098 0866638C */  lw         $v1, %lo(D_800F6608)($v1)
+    /* 47894 80057094 0F80033C */  lui        $v1, %hi(g_camera_default_view_record)
+    /* 47898 80057098 0866638C */  lw         $v1, %lo(g_camera_default_view_record)($v1)
     /* 4789C 8005709C D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 478A0 800570A0 2000B2AF */  sw         $s2, 0x20($sp)
     /* 478A4 800570A4 21908000 */  addu       $s2, $a0, $zero

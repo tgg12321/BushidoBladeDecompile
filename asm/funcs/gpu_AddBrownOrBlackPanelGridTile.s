@@ -5,7 +5,7 @@ glabel gpu_AddBrownOrBlackPanelGridTile
     /* 637D8 80072FD8 1400BFAF */  sw         $ra, 0x14($sp)
     /* 637DC 80072FDC B4EA010C */  jal        SetTile
     /* 637E0 80072FE0 21200002 */   addu      $a0, $s0, $zero
-    /* 637E4 80072FE4 B4048287 */  lh         $v0, %gp_rel(D_800A3580)($gp)
+    /* 637E4 80072FE4 B4048287 */  lh         $v0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 637E8 80072FE8 00000000 */  nop
     /* 637EC 80072FEC 04004228 */  slti       $v0, $v0, 0x4
     /* 637F0 80072FF0 09004010 */  beqz       $v0, .L80073018

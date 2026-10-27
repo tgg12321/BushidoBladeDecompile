@@ -15,11 +15,11 @@
 
 extern void AddPrim(void *, void *);
 
-extern u8 D_800A3740;
+extern u8 g_row_menu_subflow_state;
 
 void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
     s32 a0;
-    D_800A3740 = 1;
+    g_row_menu_subflow_state = 1;
     CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
     if (g_saved_record.unk_04 == 0x3F) {
         a0 = 0xFF;
@@ -106,26 +106,26 @@ void menu_InitSubflowForMode(s32 arg0) {
             InitTimedSpriteSequence(0x80118800);
             snd_SerialMixOn();
             cdrom_StartAudioEntry(0);
-            D_800A3740 = 4;
+            g_row_menu_subflow_state = 4;
             return;
         }
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        D_800A3740 = 3;
+        g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 2:
-        D_800A3740 = 5;
+        g_row_menu_subflow_state = 5;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 3:
         if (D_800A31DA == 0) {
             menu_ResetFlowBackgroundAndConfirmCursor();
-            D_800A3740 = 6;
+            g_row_menu_subflow_state = 6;
         } else {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-            D_800A3740 = 3;
+            g_row_menu_subflow_state = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
         }
         cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -134,7 +134,7 @@ void menu_InitSubflowForMode(s32 arg0) {
     case 6:
         if (D_800A31DA != 0) {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-            D_800A3740 = 3;
+            g_row_menu_subflow_state = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
             return;
         }
@@ -144,7 +144,7 @@ void menu_InitSubflowForMode(s32 arg0) {
             StoreCompactedBits(
                 (g_saved_record.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-            D_800A3740 = 3;
+            g_row_menu_subflow_state = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
             return;
         }
@@ -153,33 +153,33 @@ void menu_InitSubflowForMode(s32 arg0) {
             snd_QueueSound(2, 0x7F, 0x7F);
             g_main_loop_handler_index = 9;
             g_handler_frame_counter = 0;
-            D_800A3740 = 1;
+            g_row_menu_subflow_state = 1;
         }
         return;
 
     case 1:
         StoreCompactedBits(g_saved_record.unk_00 & 0x003EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        D_800A3740 = 3;
+        g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 5:
         StoreCompactedBits(g_saved_record.unk_00 & 0x003FF3FF);
         menu_InitSelWithStoredBits(0x80118800);
-        D_800A3740 = 0xA;
+        g_row_menu_subflow_state = 0xA;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 4:
         StoreCompactedBits(g_saved_record.unk_00 & 0x053FF3FF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        D_800A3740 = 3;
+        g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 7:
-        D_800A3740 = 2;
+        g_row_menu_subflow_state = 2;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
     }
@@ -197,35 +197,35 @@ void menu_UpdateRowMenuAndSubflows(void) {
 
     D_800A36F1 = 1;
     rand();
-    if (D_800A3740 == 1 && D_800A31D9 != 0) {
+    if (g_row_menu_subflow_state == 1 && D_800A31D9 != 0) {
         D_800A31D9 = 0;
-        D_800A3740 = 7;
+        g_row_menu_subflow_state = 7;
     }
     if (D_800A31DA != 0) {
         menu_InitSubflowForMode(g_fight_mode_selector);
         D_800A31DA = 0;
     }
-    switch (D_800A3740) {
+    switch (g_row_menu_subflow_state) {
     case 7:
         gpu_AddScreenGradient();
         ret = memcard_StartLoadOnceStepAndDrawSheetPair();
         if (ret == 1) {
-            D_800A3740 = 8;
+            g_row_menu_subflow_state = 8;
             break;
         }
         if (ret == -1) {
-            D_800A3740 = 1;
+            g_row_menu_subflow_state = 1;
         }
         break;
     case 8:
         gpu_AddScreenGradient();
         ret = menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult();
         if (ret == 1) {
-            D_800A3740 = 9;
+            g_row_menu_subflow_state = 9;
             break;
         }
         if (ret == -1) {
-            D_800A3740 = 1;
+            g_row_menu_subflow_state = 1;
         }
         break;
     case 9:
@@ -254,10 +254,10 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
         if (ret == 1) {
             cdrom_StartMixFade(0x1E, 0, 0, 0, 0);
-            D_800A3740 = 0xB;
+            g_row_menu_subflow_state = 0xB;
         } else if (ret == -1) {
             cdrom_StartMixFade(0x1E, 0, 0, 0, 0);
-            D_800A3740 = 0xC;
+            g_row_menu_subflow_state = 0xC;
         } else {
             break;
         }
@@ -282,7 +282,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         case -1:
         case 1:
             cdrom_PauseAndWait();
-            D_800A3740 = 1;
+            g_row_menu_subflow_state = 1;
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
             g_handler_frame_counter = 0;
             if (g_saved_record.unk_04 == 0x3F) {
@@ -295,11 +295,11 @@ void menu_UpdateRowMenuAndSubflows(void) {
             break;
         case 2:
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
-            D_800A3740 = 0xD;
+            g_row_menu_subflow_state = 0xD;
             break;
         case 3:
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
-            D_800A3740 = 0xE;
+            g_row_menu_subflow_state = 0xE;
             break;
         }
         break;
@@ -308,14 +308,14 @@ void menu_UpdateRowMenuAndSubflows(void) {
         if (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress() != 0) {
             SetFlowStateOne();
             CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
-            D_800A3740 = 2;
+            g_row_menu_subflow_state = 2;
         }
         break;
     case 14:
         func_8006C1FC(0, 0);
         if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
             SetFlowStateOne();
-            D_800A3740 = 2;
+            g_row_menu_subflow_state = 2;
         }
         break;
     case 3:
@@ -358,13 +358,13 @@ void menu_UpdateRowMenuAndSubflows(void) {
         cdrom_PauseAndWait();
         StoreCompactedBits(g_saved_record.unk_00 & 0x3EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
-        D_800A3740 = 3;
+        g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         break;
     check_cancel:
         if (ret == -1) {
             cdrom_PauseAndWait();
-            D_800A3740 = 1;
+            g_row_menu_subflow_state = 1;
             g_handler_frame_counter = 0;
         }
         break;
@@ -457,4 +457,4 @@ u8 D_800A31D8 = 1;
 u8 D_800A31D9 = 1;
 u8 D_800A31DA = 0;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
-u8 D_800A3740;
+u8 g_row_menu_subflow_state;

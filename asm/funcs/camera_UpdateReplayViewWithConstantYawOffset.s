@@ -19,8 +19,8 @@ glabel camera_UpdateReplayViewWithConstantYawOffset
     /* C41C 8001BC1C C0821000 */  sll        $s0, $s0, 11
     /* C420 8001BC20 57FF010C */  jal        ratan2
     /* C424 8001BC24 23284500 */   subu      $a1, $v0, $a1
-    /* C428 8001BC28 0F80043C */  lui        $a0, %hi(D_800F5328)
-    /* C42C 8001BC2C 28538424 */  addiu      $a0, $a0, %lo(D_800F5328)
+    /* C428 8001BC28 0F80043C */  lui        $a0, %hi(g_camera_alternate_view_record)
+    /* C42C 8001BC2C 28538424 */  addiu      $a0, $a0, %lo(g_camera_alternate_view_record)
     /* C430 8001BC30 21282002 */  addu       $a1, $s1, $zero
     /* C434 8001BC34 00FE0324 */  addiu      $v1, $zero, -0x200
     /* C438 8001BC38 23186200 */  subu       $v1, $v1, $v0

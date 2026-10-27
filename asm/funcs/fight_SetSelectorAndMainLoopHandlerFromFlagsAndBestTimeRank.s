@@ -14,8 +14,8 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 24814 80034014 06000324 */   addiu     $v1, $zero, 0x6
     /* 24818 80034018 07000324 */  addiu      $v1, $zero, 0x7
   .L8003401C:
-    /* 2481C 8003401C 0A80013C */  lui        $at, %hi(D_800A38A4)
-    /* 24820 80034020 A43823A0 */  sb         $v1, %lo(D_800A38A4)($at)
+    /* 2481C 8003401C 0A80013C */  lui        $at, %hi(g_fight_presentation_index)
+    /* 24820 80034020 A43823A0 */  sb         $v1, %lo(g_fight_presentation_index)($at)
     /* 24824 80034024 24D00008 */  j          .L80034090
     /* 24828 80034028 12000224 */   addiu     $v0, $zero, 0x12
   .L8003402C:
@@ -34,8 +34,8 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 2485C 8003405C 08000324 */   addiu     $v1, $zero, 0x8
     /* 24860 80034060 09000324 */  addiu      $v1, $zero, 0x9
   .L80034064:
-    /* 24864 80034064 0A80013C */  lui        $at, %hi(D_800A38A4)
-    /* 24868 80034068 A43823A0 */  sb         $v1, %lo(D_800A38A4)($at)
+    /* 24864 80034064 0A80013C */  lui        $at, %hi(g_fight_presentation_index)
+    /* 24868 80034068 A43823A0 */  sb         $v1, %lo(g_fight_presentation_index)($at)
     /* 2486C 8003406C 24D00008 */  j          .L80034090
     /* 24870 80034070 12000224 */   addiu     $v0, $zero, 0x12
   .L80034074:

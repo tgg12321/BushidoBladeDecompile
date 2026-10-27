@@ -45,7 +45,7 @@ glabel menu_DrawKeyConfigRowBitsGetEmptyRowSides
     /* 5D85C 8006D05C 03840200 */  sra        $s0, $v0, 16
     /* 5D860 8006D060 80181000 */  sll        $v1, $s0, 2
     /* 5D864 8006D064 01000224 */  addiu      $v0, $zero, 0x1
-    /* 5D868 8006D068 5804848F */  lw         $a0, %gp_rel(D_800A3524)($gp)
+    /* 5D868 8006D068 5804848F */  lw         $a0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5D86C 8006D06C 04106200 */  sllv       $v0, $v0, $v1
     /* 5D870 8006D070 21209500 */  addu       $a0, $a0, $s5
     /* 5D874 8006D074 17008390 */  lbu        $v1, 0x17($a0)
@@ -138,7 +138,7 @@ glabel menu_DrawKeyConfigRowBitsGetEmptyRowSides
     /* 5D9C4 8006D1C4 00141E00 */  sll        $v0, $fp, 16
     /* 5D9C8 8006D1C8 03840200 */  sra        $s0, $v0, 16
   .L8006D1CC:
-    /* 5D9CC 8006D1CC 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5D9CC 8006D1CC 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5D9D0 8006D1D0 0500033C */  lui        $v1, (0x50005 >> 16)
     /* 5D9D4 8006D1D4 2800428C */  lw         $v0, 0x28($v0)
     /* 5D9D8 8006D1D8 05006334 */  ori        $v1, $v1, (0x50005 & 0xFFFF)

@@ -6,7 +6,7 @@ glabel menu_HandleMemCardChoices
     /* 5C13C 8006B93C 21800000 */  addu       $s0, $zero, $zero
     /* 5C140 8006B940 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5C144 8006B944 21280000 */  addu       $a1, $zero, $zero
-    /* 5C148 8006B948 3004868F */  lw         $a2, %gp_rel(D_800A34FC)($gp)
+    /* 5C148 8006B948 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
     /* 5C14C 8006B94C 0A80073C */  lui        $a3, %hi(D_800A350C)
     /* 5C150 8006B950 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
     /* 5C154 8006B954 2000BFAF */  sw         $ra, 0x20($sp)

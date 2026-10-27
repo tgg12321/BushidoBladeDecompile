@@ -136,8 +136,8 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1D014 8002C814 05000324 */  addiu      $v1, $zero, 0x5
     /* 1D018 8002C818 05004314 */  bne        $v0, $v1, .L8002C830
     /* 1D01C 8002C81C 01000224 */   addiu     $v0, $zero, 0x1
-    /* 1D020 8002C820 0A80013C */  lui        $at, %hi(D_800A3748)
-    /* 1D024 8002C824 483722A0 */  sb         $v0, %lo(D_800A3748)($at)
+    /* 1D020 8002C820 0A80013C */  lui        $at, %hi(g_fight_followup_fighter_index)
+    /* 1D024 8002C824 483722A0 */  sb         $v0, %lo(g_fight_followup_fighter_index)($at)
     /* 1D028 8002C828 14B20008 */  j          .L8002C850
     /* 1D02C 8002C82C 1C000224 */   addiu     $v0, $zero, 0x1C
   .L8002C830:
@@ -147,8 +147,8 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1D03C 8002C83C 07004314 */  bne        $v0, $v1, .L8002C85C
     /* 1D040 8002C840 21480000 */   addu      $t1, $zero, $zero
     /* 1D044 8002C844 1C000224 */  addiu      $v0, $zero, 0x1C
-    /* 1D048 8002C848 0A80013C */  lui        $at, %hi(D_800A3748)
-    /* 1D04C 8002C84C 483720A0 */  sb         $zero, %lo(D_800A3748)($at)
+    /* 1D048 8002C848 0A80013C */  lui        $at, %hi(g_fight_followup_fighter_index)
+    /* 1D04C 8002C84C 483720A0 */  sb         $zero, %lo(g_fight_followup_fighter_index)($at)
   .L8002C850:
     /* 1D050 8002C850 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 1D054 8002C854 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)

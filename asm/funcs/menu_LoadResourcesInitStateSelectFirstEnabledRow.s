@@ -25,7 +25,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 597CC 80068FCC 00000000 */   nop
     /* 597D0 80068FD0 240050AC */  sw         $s0, 0x24($v0)
     /* 597D4 80068FD4 340482AF */  sw         $v0, %gp_rel(D_800A3500)($gp)
-    /* 597D8 80068FD8 300482AF */  sw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 597D8 80068FD8 300482AF */  sw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 597DC 80068FDC 34004224 */  addiu      $v0, $v0, 0x34
     /* 597E0 80068FE0 340482AF */  sw         $v0, %gp_rel(D_800A3500)($gp)
     /* 597E4 80068FE4 F0FF0224 */  addiu      $v0, $zero, -0x10
@@ -61,8 +61,8 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 59854 80069054 EEFF6010 */  beqz       $v1, .L80069010
     /* 59858 80069058 05000224 */   addiu     $v0, $zero, 0x5
   .L8006905C:
-    /* 5985C 8006905C 3004858F */  lw         $a1, %gp_rel(D_800A34FC)($gp)
-    /* 59860 80069060 580491AF */  sw         $s1, %gp_rel(D_800A3524)($gp)
+    /* 5985C 8006905C 3004858F */  lw         $a1, %gp_rel(g_row_menu_work_block)($gp)
+    /* 59860 80069060 580491AF */  sw         $s1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 59864 80069064 4C0480AF */  sw         $zero, %gp_rel(D_800A3518)($gp)
     /* 59868 80069068 5C0480A7 */  sh         $zero, %gp_rel(D_800A3528)($gp)
     /* 5986C 8006906C 2A00A2A4 */  sh         $v0, 0x2A($a1)
@@ -98,10 +98,10 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 598E4 800690E4 FE010624 */   addiu     $a2, $zero, 0x1FE
     /* 598E8 800690E8 CFEC010C */  jal        DrawSync
     /* 598EC 800690EC 21200000 */   addu      $a0, $zero, $zero
-    /* 598F0 800690F0 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 598F0 800690F0 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 598F4 800690F4 01000224 */  addiu      $v0, $zero, 0x1
     /* 598F8 800690F8 2000638C */  lw         $v1, 0x20($v1)
-    /* 598FC 800690FC 3004848F */  lw         $a0, %gp_rel(D_800A34FC)($gp)
+    /* 598FC 800690FC 3004848F */  lw         $a0, %gp_rel(g_row_menu_work_block)($gp)
     /* 59900 80069100 01006330 */  andi       $v1, $v1, 0x1
     /* 59904 80069104 300083A0 */  sb         $v1, 0x30($a0)
     /* 59908 80069108 2000BF8F */  lw         $ra, 0x20($sp)

@@ -9,8 +9,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F2A0 8001EAA0 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
     /* F2A4 8001EAA4 AC1C010C */  jal        camera_GetViewMatrixWithHalvedMiddleRow
     /* F2A8 8001EAA8 00000000 */   nop
-    /* F2AC 8001EAAC 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* F2B0 8001EAB0 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* F2AC 8001EAAC 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* F2B0 8001EAB0 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F2B4 8001EAB4 1080043C */  lui        $a0, %hi(D_80101EC8)
     /* F2B8 8001EAB8 C81E8424 */  addiu      $a0, $a0, %lo(D_80101EC8)
     /* F2BC 8001EABC 0A80013C */  lui        $at, %hi(D_800A3778)
@@ -57,8 +57,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F35C 8001EB5C 5A73000C */  jal        fight_SplitFrameCounterIntoMinutesSecondsHundredths
     /* F360 8001EB60 21200002 */   addu      $a0, $s0, $zero
     /* F364 8001EB64 21200002 */  addu       $a0, $s0, $zero
-    /* F368 8001EB68 0A80053C */  lui        $a1, %hi(D_800A38E2)
-    /* F36C 8001EB6C E238A590 */  lbu        $a1, %lo(D_800A38E2)($a1)
+    /* F368 8001EB68 0A80053C */  lui        $a1, %hi(g_fight_step_table_next_row)
+    /* F36C 8001EB6C E238A590 */  lbu        $a1, %lo(g_fight_step_table_next_row)($a1)
     /* F370 8001EB70 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* F374 8001EB74 B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
     /* F378 8001EB78 0576010C */  jal        gpu_DrawTimeFieldsAndDecimalCounter
@@ -156,8 +156,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F4CC 8001ECCC 293922A0 */  sb         $v0, %lo(D_800A3929)($at)
     /* F4D0 8001ECD0 73006014 */  bnez       $v1, .L8001EEA0
     /* F4D4 8001ECD4 00000000 */   nop
-    /* F4D8 8001ECD8 0A80023C */  lui        $v0, %hi(D_800A3748)
-    /* F4DC 8001ECDC 48374280 */  lb         $v0, %lo(D_800A3748)($v0)
+    /* F4D8 8001ECD8 0A80023C */  lui        $v0, %hi(g_fight_followup_fighter_index)
+    /* F4DC 8001ECDC 48374280 */  lb         $v0, %lo(g_fight_followup_fighter_index)($v0)
     /* F4E0 8001ECE0 00000000 */  nop
     /* F4E4 8001ECE4 0100422C */  sltiu      $v0, $v0, 0x1
     /* F4E8 8001ECE8 23100200 */  negu       $v0, $v0
@@ -170,17 +170,17 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F504 8001ED04 03000224 */  addiu      $v0, $zero, 0x3
     /* F508 8001ED08 65006214 */  bne        $v1, $v0, .L8001EEA0
     /* F50C 8001ED0C 0200033C */   lui       $v1, (0x2BF20 >> 16)
-    /* F510 8001ED10 0A80023C */  lui        $v0, %hi(D_800A3858)
-    /* F514 8001ED14 5838428C */  lw         $v0, %lo(D_800A3858)($v0)
+    /* F510 8001ED10 0A80023C */  lui        $v0, %hi(g_fight_timer_frames)
+    /* F514 8001ED14 5838428C */  lw         $v0, %lo(g_fight_timer_frames)($v0)
     /* F518 8001ED18 20BF6334 */  ori        $v1, $v1, (0x2BF20 & 0xFFFF)
     /* F51C 8001ED1C 84034224 */  addiu      $v0, $v0, 0x384
-    /* F520 8001ED20 0A80013C */  lui        $at, %hi(D_800A3858)
-    /* F524 8001ED24 583822AC */  sw         $v0, %lo(D_800A3858)($at)
+    /* F520 8001ED20 0A80013C */  lui        $at, %hi(g_fight_timer_frames)
+    /* F524 8001ED24 583822AC */  sw         $v0, %lo(g_fight_timer_frames)($at)
     /* F528 8001ED28 2A106200 */  slt        $v0, $v1, $v0
     /* F52C 8001ED2C 5C004010 */  beqz       $v0, .L8001EEA0
     /* F530 8001ED30 00000000 */   nop
-    /* F534 8001ED34 0A80013C */  lui        $at, %hi(D_800A3858)
-    /* F538 8001ED38 583823AC */  sw         $v1, %lo(D_800A3858)($at)
+    /* F534 8001ED34 0A80013C */  lui        $at, %hi(g_fight_timer_frames)
+    /* F538 8001ED38 583823AC */  sw         $v1, %lo(g_fight_timer_frames)($at)
     /* F53C 8001ED3C A87B0008 */  j          .L8001EEA0
     /* F540 8001ED40 00000000 */   nop
   .L8001ED44:
@@ -220,8 +220,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F5C0 8001EDC0 00000000 */  nop
     /* F5C4 8001EDC4 22006014 */  bnez       $v1, .L8001EE50
     /* F5C8 8001EDC8 01000224 */   addiu     $v0, $zero, 0x1
-    /* F5CC 8001EDCC 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* F5D0 8001EDD0 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* F5CC 8001EDCC 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* F5D0 8001EDD0 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F5D4 8001EDD4 01000224 */  addiu      $v0, $zero, 0x1
     /* F5D8 8001EDD8 0A80013C */  lui        $at, %hi(D_800A3670)
     /* F5DC 8001EDDC 703622A0 */  sb         $v0, %lo(D_800A3670)($at)

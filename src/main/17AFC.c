@@ -1689,7 +1689,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         s32 flag;
         s32 var_31;
 
-        if (mode == 1 && D_800A38AE == i) {
+        if (mode == 1 && g_fight_paired_move_initiator == i) {
             continue;
         }
         var_4 = &D_80101EC8[i];
@@ -2152,7 +2152,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
     {
         s32 idx;
         s32 chk;
-        idx = D_800A38AE;
+        idx = g_fight_paired_move_initiator;
         chk = D_800A376E;
         var_s0 = &D_80101EC8[idx];
 
@@ -2322,10 +2322,10 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
     }
 
     if (D_80101EC8[0].move_kind == 5) {
-        D_800A3748 = 1;
+        g_fight_followup_fighter_index = 1;
         g_main_loop_handler_index = 0x1C;
     } else if (D_80101EC8[1].move_kind == 5) {
-        D_800A3748 = 0;
+        g_fight_followup_fighter_index = 0;
         g_main_loop_handler_index = 0x1C;
     }
 
@@ -5388,7 +5388,9 @@ void fight_BuildOpponentOrder(void) {
     s32 var_5;
 
     {
-        s32 mask = ~(1 << D_8008D538[(s8)g_fight_config.unk_4[0]]) & 0x3EF3DF;
+        s32 mask =
+            ~(1 << g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]) &
+            0x3EF3DF;
         s32 bits;
         count = 0;
         i = 0;
@@ -5473,8 +5475,8 @@ void fight_BuildOpponentOrder(void) {
         }
     }
     {
-        u8 lookup =
-            g_fighter_group_flags[D_8008D538[(s8)g_fight_config.unk_4[0]]];
+        u8 lookup = g_fighter_group_flags
+            [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]];
         s32 val;
         if (lookup != 0) {
             if (g_saved_record.unk_00 & 0x04000000) {
@@ -5503,14 +5505,14 @@ void fight_AdvanceOpponentOrder(void) {
     u8 b = D_800A391F;
 
     if (a0 == b) {
-        D_800A3768 = DISP_DISABLED;
+        g_local_ot_draw_mode = DISP_DISABLED;
         D_800A36A8 = 0;
         if (a0 == 0x14) {
             u8 z = g_fighter_group_flags[D_80101EC8[0].character_data_index];
             s32 val = 2;
             if (z != 0)
                 val = 3;
-            D_800A38A4 = val;
+            g_fight_presentation_index = val;
             g_main_loop_handler_index = 0x12;
         } else {
             g_main_loop_handler_index = 0x20;
@@ -5560,7 +5562,7 @@ void fight_InsertBestTime(void) {
 
     while (1) {
         j = n - 1;
-        if (record->times[j].unk_4 < D_800A3858) {
+        if (record->times[j].unk_4 < g_fight_timer_frames) {
             break;
         }
         n = j;
@@ -5575,7 +5577,7 @@ void fight_InsertBestTime(void) {
         }
         record->times[n].unk_0 = (u8)D_80101EC8[0].character_data_index;
         record->times[n].unk_1 = (u8)D_80101EC8[0].weapon_id;
-        record->times[n].unk_4 = D_800A3858;
+        record->times[n].unk_4 = g_fight_timer_frames;
     }
 }
 
@@ -5583,20 +5585,20 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
     u8 state;
     s32 tableIndex;
 
-    state = D_800A38E2;
+    state = g_fight_step_table_next_row;
     tableIndex = state & 0xFF;
     if (tableIndex == 0x64) {
         D_800A36F0 = 0;
         D_800A3781 = 0;
 
-        if (D_800A3858 < 0x6979) {
+        if (g_fight_timer_frames < 0x6979) {
             s32 *flags;
             s32 word;
             s32 mask;
 
             mask = 0x20;
-            if (g_fighter_group_flags
-                    [D_8008D538[(s8)g_fight_config.unk_4[0]]] != 0) {
+            if (g_fighter_group_flags[g_fight_config_id_data_rows
+                                          [(s8)g_fight_config.unk_4[0]]] != 0) {
                 mask = 0x10000;
             }
             flags = &g_saved_record.unk_00;
@@ -5611,8 +5613,8 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
             s32 mask;
 
             mask = 0x1000000;
-            if (g_fighter_group_flags
-                    [D_8008D538[(s8)g_fight_config.unk_4[0]]] != 0) {
+            if (g_fighter_group_flags[g_fight_config_id_data_rows
+                                          [(s8)g_fight_config.unk_4[0]]] != 0) {
                 mask = 0x4000000;
             }
             flags = &g_saved_record.unk_00;
@@ -5631,12 +5633,13 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
         s32 entry;
         s32 row;
 
-        D_800A38E2 = state + 1;
+        g_fight_step_table_next_row = state + 1;
         D_800A376B = 0;
         entry = table[0];
         D_800A384C = entry;
-        row =
-            g_fighter_group_flags[D_8008D538[(s8)g_fight_config.unk_4[0]]] == 0;
+        row = g_fighter_group_flags
+                  [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]] ==
+              0;
         entry &= 0xFF;
         D_800A38DE = ranks[row][entry];
         D_800A38EC = table[1];
@@ -5654,7 +5657,7 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
             v1 = 7;
         }
-        D_800A38A4 = v1;
+        g_fight_presentation_index = v1;
         g_main_loop_handler_index = 0x12;
         return;
     }
@@ -5663,7 +5666,7 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
             v1 = 9;
         }
-        D_800A38A4 = v1;
+        g_fight_presentation_index = v1;
         g_main_loop_handler_index = 0x12;
         return;
     }
@@ -5720,7 +5723,7 @@ void fight_PackMatchScores(void) {
     s32 var_4;
     u8 *base;
 
-    D_800A3768 = DISP_LOADING;
+    g_local_ot_draw_mode = DISP_LOADING;
     n = g_fight_match_count;
     if (i < n) {
         var_4 = g_fight_match_cursor;
@@ -5752,7 +5755,7 @@ extern void fight_PackMatchScores(void);
 void fight_AdvanceMatch(void) {
     fight_PackMatchScores();
     if (g_fight_match_cursor == g_fight_match_count) {
-        D_800A3768 = DISP_DISABLED;
+        g_local_ot_draw_mode = DISP_DISABLED;
         D_800A36A8 = 0;
         g_main_loop_handler_index = 0x14;
     } else {

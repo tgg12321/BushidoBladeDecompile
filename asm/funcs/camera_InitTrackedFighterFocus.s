@@ -30,8 +30,8 @@ glabel camera_InitTrackedFighterFocus
     /* BC30 8001B430 21802002 */  addu       $s0, $s1, $zero
   .L8001B434:
     /* BC34 8001B434 8001028E */  lw         $v0, 0x180($s0)
-    /* BC38 8001B438 0F80013C */  lui        $at, %hi(D_800F5328)
-    /* BC3C 8001B43C 285322AC */  sw         $v0, %lo(D_800F5328)($at)
+    /* BC38 8001B438 0F80013C */  lui        $at, %hi(g_camera_alternate_view_record)
+    /* BC3C 8001B43C 285322AC */  sw         $v0, %lo(g_camera_alternate_view_record)($at)
     /* BC40 8001B440 8801028E */  lw         $v0, 0x188($s0)
     /* BC44 8001B444 0F80013C */  lui        $at, %hi(D_800F5330)
     /* BC48 8001B448 305322AC */  sw         $v0, %lo(D_800F5330)($at)

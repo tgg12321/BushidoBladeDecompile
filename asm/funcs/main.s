@@ -67,7 +67,7 @@ glabel main
     /* 7AFC 800172FC B0DC000C */  jal        cdrom_PauseAndWait
     /* 7B00 80017300 00000000 */   nop
     /* 7B04 80017304 FF000224 */  addiu      $v0, $zero, 0xFF
-    /* 7B08 80017308 9C0682A3 */  sb         $v0, %gp_rel(D_800A3768)($gp)
+    /* 7B08 80017308 9C0682A3 */  sb         $v0, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7B0C 8001730C 08000224 */  addiu      $v0, $zero, 0x8
     /* 7B10 80017310 5C0880A3 */  sb         $zero, %gp_rel(g_comb_abort_request)($gp)
     /* 7B14 80017314 0A80013C */  lui        $at, %hi(D_800A31DA)

@@ -396,11 +396,11 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
 extern void math_RotMatrixXYZ();
 
 void math_InitRotMatrixFuncs(void) {
-    D_800F66A0[0] = math_RotMatrixZYX;
+    g_math_rot_matrix_funcs[0] = math_RotMatrixZYX;
     /* the three below take their angles as u16 *, not SVECTOR * */
-    D_800F66A0[2] = (RotMatrixFunc)math_RotMatrixZXY;
-    D_800F66A0[4] = (RotMatrixFunc)math_RotMatrixYXZ;
-    D_800F66A0[5] = (RotMatrixFunc)math_RotMatrixXYZ;
+    g_math_rot_matrix_funcs[2] = (RotMatrixFunc)math_RotMatrixZXY;
+    g_math_rot_matrix_funcs[4] = (RotMatrixFunc)math_RotMatrixYXZ;
+    g_math_rot_matrix_funcs[5] = (RotMatrixFunc)math_RotMatrixXYZ;
 }
 
 void math_TransposeMatrixInPlace(MATRIX *a0) {
@@ -1127,9 +1127,10 @@ extern void func_8004A4E0(void);
 
 void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
     math_RotMatrixZXY(D_800A3678, &D_80101BD0);
-    MulMatrix(&D_80101BD0, &D_800A3708->xf.mat);
-    MulMatrix2(&D_800A370C->xf.mat, &D_80101BD0);
-    MulMatrix0(&D_800A370C->xf.mat, &D_800A3708->xf.mat, &D_800FF610);
+    MulMatrix(&D_80101BD0, &g_view_camera_root_ptr->xf.mat);
+    MulMatrix2(&g_view_identity_root_ptr->xf.mat, &D_80101BD0);
+    MulMatrix0(&g_view_identity_root_ptr->xf.mat,
+               &g_view_camera_root_ptr->xf.mat, &D_800FF610);
     if (g_gpu_presented_frame_count & 1) {
         *(s32 *)0x1F800014 = -1;
     } else {
@@ -1159,24 +1160,24 @@ void func_80044650(void) { func_80052C10(); }
 
 s32 node_BindFrameDataAndReserveEntryBuffer(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
-    D_800A9CF8.unk0 = a1;
-    D_800A9CF8.unk2 = *a0++;
-    D_800A9CF8.unk8 = (s32)a0;
-    D_800A9CF8.unkC = a2;
+    g_node_frame_animation_context.unk0 = a1;
+    g_node_frame_animation_context.unk2 = *a0++;
+    g_node_frame_animation_context.unk8 = (s32)a0;
+    g_node_frame_animation_context.unkC = a2;
     v0 = resource_GetLoadedSelector();
-    D_800A9CF8.unk4 = v0;
+    g_node_frame_animation_context.unk4 = v0;
     switch ((s16)v0) {
     case 7:
-        D_800A9CF8.unk6 = 0x11;
+        g_node_frame_animation_context.unk6 = 0x11;
         break;
     case 4:
-        D_800A9CF8.unk6 = 2;
+        g_node_frame_animation_context.unk6 = 2;
         break;
     case 0x12:
-        D_800A9CF8.unk6 = 0xA;
+        g_node_frame_animation_context.unk6 = 0xA;
         break;
     }
-    a2 += D_800A9CF8.unk6 * 104;
+    a2 += g_node_frame_animation_context.unk6 * 104;
     return a2;
 }
 
@@ -1185,13 +1186,14 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
     Unk800A9CF8Entry *dst;
     s32 i;
 
-    D_800A9CF8.unk10 = (s32)(src = gpu_GetGridNodeRecordTable());
-    dst = (Unk800A9CF8Entry *)D_800A9CF8.unkC;
-    for (i = 0; i < D_800A9CF8.unk6; dst++, src++, i++) {
+    g_node_frame_animation_context.unk10 =
+        (s32)(src = gpu_GetGridNodeRecordTable());
+    dst = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC;
+    for (i = 0; i < g_node_frame_animation_context.unk6; dst++, src++, i++) {
         dst->node.unk0 = 0;
         dst->node.unk1 = 0;
         dst->node.unk2 = 0;
-        dst->node.unk4 = D_800A9CF8.unk0;
+        dst->node.unk4 = g_node_frame_animation_context.unk0;
         dst->node.rotation_order = 0;
         dst->node.parent_node = 0;
         dst->node.light_setup_index = 4;
@@ -1499,7 +1501,7 @@ s16 D_80095588[44] = {
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-Unk80101DF0Record *D_800A3708;
+Unk80101DF0Record *g_view_camera_root_ptr;
 u32 *D_800A378C;
 s32 D_800A3790;
 void **g_draw_queue_cursor;

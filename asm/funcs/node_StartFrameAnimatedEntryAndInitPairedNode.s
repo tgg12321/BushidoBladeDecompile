@@ -49,8 +49,8 @@ glabel node_StartFrameAnimatedEntryAndInitPairedNode
     /* 353DC 80044BDC 21806200 */  addu       $s0, $v1, $v0
     /* 353E0 80044BE0 01000324 */  addiu      $v1, $zero, 0x1
     /* 353E4 80044BE4 020003A6 */  sh         $v1, 0x2($s0)
-    /* 353E8 80044BE8 0B80043C */  lui        $a0, %hi(D_800A9CF8)
-    /* 353EC 80044BEC F89C8494 */  lhu        $a0, %lo(D_800A9CF8)($a0)
+    /* 353E8 80044BE8 0B80043C */  lui        $a0, %hi(g_node_frame_animation_context)
+    /* 353EC 80044BEC F89C8494 */  lhu        $a0, %lo(g_node_frame_animation_context)($a0)
     /* 353F0 80044BF0 08000286 */  lh         $v0, 0x8($s0)
     /* 353F4 80044BF4 120005A6 */  sh         $a1, 0x12($s0)
     /* 353F8 80044BF8 18000526 */  addiu      $a1, $s0, 0x18
@@ -61,9 +61,9 @@ glabel node_StartFrameAnimatedEntryAndInitPairedNode
     /* 3540C 80044C0C 060003A6 */  sh         $v1, 0x6($s0)
     /* 35410 80044C10 80100200 */  sll        $v0, $v0, 2
     /* 35414 80044C14 040004A6 */  sh         $a0, 0x4($s0)
-    /* 35418 80044C18 0F80013C */  lui        $at, %hi(D_800F66A0)
+    /* 35418 80044C18 0F80013C */  lui        $at, %hi(g_math_rot_matrix_funcs)
     /* 3541C 80044C1C 21082200 */  addu       $at, $at, $v0
-    /* 35420 80044C20 A066228C */  lw         $v0, %lo(D_800F66A0)($at)
+    /* 35420 80044C20 A066228C */  lw         $v0, %lo(g_math_rot_matrix_funcs)($at)
     /* 35424 80044C24 00000000 */  nop
     /* 35428 80044C28 09F84000 */  jalr       $v0
     /* 3542C 80044C2C 10000426 */   addiu     $a0, $s0, 0x10

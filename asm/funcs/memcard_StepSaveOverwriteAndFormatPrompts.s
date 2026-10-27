@@ -15,7 +15,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 294A4 80038CA4 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
     /* 294A8 80038CA8 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
     /* 294AC 80038CAC 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
-    /* 294B0 80038CB0 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
+    /* 294B0 80038CB0 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
   .L80038CB4:
     /* 294B4 80038CB4 CDE1000C */  jal        memcard_Update
     /* 294B8 80038CB8 00000000 */   nop
@@ -50,7 +50,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29528 80038D28 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
     /* 2952C 80038D2C 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
     /* 29530 80038D30 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
-    /* 29534 80038D34 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
+    /* 29534 80038D34 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29538 80038D38 A2E40008 */  j          .L80039288
     /* 2953C 80038D3C 00000000 */   nop
   .L80038D40:
@@ -69,7 +69,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 2956C 80038D6C 00000000 */   nop
     /* 29570 80038D70 11001124 */  addiu      $s1, $zero, 0x11
   .L80038D74:
-    /* 29574 80038D74 30018293 */  lbu        $v0, %gp_rel(D_800A31FC)($gp)
+    /* 29574 80038D74 30018293 */  lbu        $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29578 80038D78 00000000 */  nop
     /* 2957C 80038D7C 57004014 */  bnez       $v0, .L80038EDC
     /* 29580 80038D80 21800000 */   addu      $s0, $zero, $zero
@@ -181,7 +181,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 296E4 80038EE4 B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 296E8 80038EE8 21284002 */   addu      $a1, $s2, $zero
   .L80038EEC:
-    /* 296EC 80038EEC 30018293 */  lbu        $v0, %gp_rel(D_800A31FC)($gp)
+    /* 296EC 80038EEC 30018293 */  lbu        $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 296F0 80038EF0 00000000 */  nop
     /* 296F4 80038EF4 31004010 */  beqz       $v0, .L80038FBC
     /* 296F8 80038EF8 FCFF2326 */   addiu     $v1, $s1, -0x4
@@ -215,7 +215,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29760 80038F60 0500422C */  sltiu      $v0, $v0, 0x5
     /* 29764 80038F64 11004014 */  bnez       $v0, .L80038FAC
     /* 29768 80038F68 00000000 */   nop
-    /* 2976C 80038F6C 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
+    /* 2976C 80038F6C 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29770 80038F70 E7E1000C */  jal        memcard_RequestSave
     /* 29774 80038F74 00000000 */   nop
     /* 29778 80038F78 90E40008 */  j          .L80039240
@@ -229,7 +229,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29794 80038F94 0500422C */  sltiu      $v0, $v0, 0x5
     /* 29798 80038F98 04004014 */  bnez       $v0, .L80038FAC
     /* 2979C 80038F9C 0B00222A */   slti      $v0, $s1, 0xB
-    /* 297A0 80038FA0 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
+    /* 297A0 80038FA0 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 297A4 80038FA4 90E40008 */  j          .L80039240
     /* 297A8 80038FA8 00000000 */   nop
   .L80038FAC:
@@ -320,12 +320,12 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 298D8 800390D8 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
     /* 298DC 800390DC 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
     /* 298E0 800390E0 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
-    /* 298E4 800390E4 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
+    /* 298E4 800390E4 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 298E8 800390E8 90E40008 */  j          .L80039240
     /* 298EC 800390EC 0B00222A */   slti      $v0, $s1, 0xB
   jlabel .L800390F0
     /* 298F0 800390F0 01000224 */  addiu      $v0, $zero, 0x1
-    /* 298F4 800390F4 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
+    /* 298F4 800390F4 300182A3 */  sb         $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 298F8 800390F8 DFE1000C */  jal        memcard_RequestLoad
     /* 298FC 800390FC 00000000 */   nop
     /* 29900 80039100 03000224 */  addiu      $v0, $zero, 0x3
@@ -368,7 +368,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29980 80039180 7C0280A3 */  sb         $zero, %gp_rel(D_800A3348)($gp)
     /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(D_800A3340)($gp)
     /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(D_800A3344)($gp)
-    /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
+    /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29990 80039190 DFE1000C */  jal        memcard_RequestLoad
     /* 29994 80039194 00000000 */   nop
     /* 29998 80039198 6FE40008 */  j          .L800391BC
@@ -445,7 +445,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29A88 80039288 03006012 */  beqz       $s3, .L80039298
     /* 29A8C 8003928C 21106002 */   addu      $v0, $s3, $zero
     /* 29A90 80039290 3B0180A3 */  sb         $zero, %gp_rel(D_800A3204 + 0x3)($gp)
-    /* 29A94 80039294 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
+    /* 29A94 80039294 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
   .L80039298:
     /* 29A98 80039298 2000BF8F */  lw         $ra, 0x20($sp)
     /* 29A9C 8003929C 1C00B38F */  lw         $s3, 0x1C($sp)

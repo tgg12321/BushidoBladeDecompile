@@ -7,9 +7,9 @@ glabel slot_ReleaseObjectAndResources
     /* 31DD8 800415D8 9416010C */  jal        slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks
     /* 31DDC 800415DC 21200002 */   addu      $a0, $s0, $zero
     /* 31DE0 800415E0 80801000 */  sll        $s0, $s0, 2
-    /* 31DE4 800415E4 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 31DE4 800415E4 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 31DE8 800415E8 21083000 */  addu       $at, $at, $s0
-    /* 31DEC 800415EC 109A20AC */  sw         $zero, %lo(D_800A9A10)($at)
+    /* 31DEC 800415EC 109A20AC */  sw         $zero, %lo(g_slot_objects)($at)
     /* 31DF0 800415F0 1400BF8F */  lw         $ra, 0x14($sp)
     /* 31DF4 800415F4 1000B08F */  lw         $s0, 0x10($sp)
     /* 31DF8 800415F8 1800BD27 */  addiu      $sp, $sp, 0x18

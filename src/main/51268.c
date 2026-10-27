@@ -1613,51 +1613,51 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
 }
 
 void eff_InitCosineScaledQuad(void) {
-    D_800F0CA0[0].unk0 = g_eff_command_position[0];
-    D_800F0CA0[0].unk4 = g_eff_command_position[1];
-    D_800F0CA0[0].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[0].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[0].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[0].unk8 = g_eff_command_position[2];
     g_eff_command_phase[4] = 1;
     g_eff_animated_quad_counters[0] = 0;
 }
 
 void func_80064ED8(void) {
-    D_800F0CA0[1].unk0 = g_eff_command_position[0];
-    D_800F0CA0[1].unk4 = g_eff_command_position[1];
-    D_800F0CA0[1].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[1].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[1].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[1].unk8 = g_eff_command_position[2];
     g_eff_command_phase[5] = 1;
     g_eff_animated_quad_counters[1] = 0;
 }
 
 void func_80064F20(void) {
-    D_800F0CA0[2].unk0 = g_eff_command_position[0];
-    D_800F0CA0[2].unk4 = g_eff_command_position[1];
-    D_800F0CA0[2].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[2].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[2].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[2].unk8 = g_eff_command_position[2];
     g_eff_command_phase[6] = 1;
     g_eff_animated_quad_counters[2] = 0;
 }
 
 s32 func_80064F68(void) {
-    D_800F0CA0[3].unk0 = g_eff_command_position[0];
-    D_800F0CA0[3].unk4 = g_eff_command_position[1];
-    D_800F0CA0[3].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[3].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[3].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[3].unk8 = g_eff_command_position[2];
     g_eff_command_phase[9] = 1;
     g_eff_animated_quad_counters[3] = 0x40;
     return 1;
 }
 
 s32 func_80064FB4(void) {
-    D_800F0CA0[4].unk0 = g_eff_command_position[0];
-    D_800F0CA0[4].unk4 = g_eff_command_position[1];
-    D_800F0CA0[4].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[4].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[4].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[4].unk8 = g_eff_command_position[2];
     g_eff_command_phase[10] = 1;
     g_eff_animated_quad_counters[4] = 0x40;
     return 1;
 }
 
 s32 eff_InitRateSelectedCosineScaledQuad(void) {
-    D_800F0CA0[5].unk0 = g_eff_command_position[0];
-    D_800F0CA0[5].unk4 = g_eff_command_position[1];
-    D_800F0CA0[5].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[5].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[5].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[5].unk8 = g_eff_command_position[2];
     g_eff_command_phase[11] = 1;
     g_eff_animated_quad_counters[5] = 0;
     D_800A3440 = (g_eff_active_command_block->unk00.w >> 19) & 3;
@@ -1665,73 +1665,73 @@ s32 eff_InitRateSelectedCosineScaledQuad(void) {
 }
 
 void func_8006505C(void) {
-    D_800F0CA0[6].unk0 = g_eff_command_position[0];
-    D_800F0CA0[6].unk4 = g_eff_command_position[1];
-    D_800F0CA0[6].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[6].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[6].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[6].unk8 = g_eff_command_position[2];
     g_eff_command_phase[12] = 1;
     g_eff_animated_quad_counters[6] = 0;
 }
 
 void func_800650A4(void) {
-    D_800F0CA0[7].unk0 = g_eff_command_position[0];
-    D_800F0CA0[7].unk4 = g_eff_command_position[1];
-    D_800F0CA0[7].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[7].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[7].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[7].unk8 = g_eff_command_position[2];
     g_eff_command_phase[13] = 1;
     g_eff_animated_quad_counters[7] = 0;
 }
 
 void func_800650EC(void) {
-    D_800F0CA0[10].unk0 = g_eff_command_position[0];
-    D_800F0CA0[10].unk4 = g_eff_command_position[1];
-    D_800F0CA0[10].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[10].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[10].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[10].unk8 = g_eff_command_position[2];
     g_eff_command_phase[14] = 1;
     g_eff_animated_quad_counters[10] = 0;
 }
 
 void func_80065134(void) {
-    D_800F0CA0[11].unk0 = g_eff_command_position[0];
-    D_800F0CA0[11].unk4 = g_eff_command_position[1];
-    D_800F0CA0[11].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[11].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[11].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[11].unk8 = g_eff_command_position[2];
     g_eff_command_phase[15] = 1;
     g_eff_animated_quad_counters[11] = 0;
 }
 
 void func_8006517C(void) {
-    D_800F0CA0[12].unk0 = g_eff_command_position[0];
-    D_800F0CA0[12].unk4 = g_eff_command_position[1];
-    D_800F0CA0[12].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[12].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[12].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[12].unk8 = g_eff_command_position[2];
     g_eff_animated_quad_counters[12] = 0;
-    D_800F0CA0[14].unk0 = g_eff_command_position[0];
-    D_800F0CA0[14].unk4 = g_eff_command_position[1];
-    D_800F0CA0[14].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[14].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[14].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[14].unk8 = g_eff_command_position[2];
     g_eff_command_phase[16] = 1;
     g_eff_animated_quad_counters[14] = 0;
 }
 
 void func_800651F0(void) {
-    D_800F0CA0[13].unk0 = g_eff_command_position[0];
-    D_800F0CA0[13].unk4 = g_eff_command_position[1];
-    D_800F0CA0[13].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[13].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[13].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[13].unk8 = g_eff_command_position[2];
     g_eff_animated_quad_counters[13] = 0;
-    D_800F0CA0[15].unk0 = g_eff_command_position[0];
-    D_800F0CA0[15].unk4 = g_eff_command_position[1];
-    D_800F0CA0[15].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[15].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[15].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[15].unk8 = g_eff_command_position[2];
     g_eff_command_phase[17] = 1;
     g_eff_animated_quad_counters[15] = 0;
 }
 
 void func_80065264(void) {
-    D_800F0CA0[16].unk0 = g_eff_command_position[0];
-    D_800F0CA0[16].unk4 = g_eff_command_position[1];
-    D_800F0CA0[16].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[16].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[16].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[16].unk8 = g_eff_command_position[2];
     g_eff_command_phase[18] = 1;
     g_eff_animated_quad_counters[16] = 0;
 }
 
 void func_800652AC(void) {
-    D_800F0CA0[17].unk0 = g_eff_command_position[0];
-    D_800F0CA0[17].unk4 = g_eff_command_position[1];
-    D_800F0CA0[17].unk8 = g_eff_command_position[2];
+    g_eff_animated_quad_positions[17].unk0 = g_eff_command_position[0];
+    g_eff_animated_quad_positions[17].unk4 = g_eff_command_position[1];
+    g_eff_animated_quad_positions[17].unk8 = g_eff_command_position[2];
     g_eff_command_phase[19] = 1;
     g_eff_animated_quad_counters[17] = 0;
 }
@@ -1929,8 +1929,8 @@ u8 func_800657B0(void) {
 
 /* Shared draw routine of the per-mode effect wrappers
  * (eff_DrawAndAdvanceCosineScaledQuad..func_800657B0, mode 0..0x11): projects
- * this mode's D_800F0CA0 position record through the current camera, picks the
- * texture/colour and quad size from the mode and its
+ * this mode's g_eff_animated_quad_positions position record through the current
+ * camera, picks the texture/colour and quad size from the mode and its
  * g_eff_animated_quad_counters timer, shapes the four corners (switch 2) and
  * links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the paired mode
  * (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by `arg0 < 9`,
@@ -1974,9 +1974,9 @@ u8 eff_DrawAnimatedQuads(s32 arg0) {
     var_10 = &var_0->unk96;
 
     gte_SetRotMatrix(D_800A3474);
-    p_in->vx = D_800F0CA0[arg0].unk0 - D_800A3470[0];
-    p_in->vy = D_800F0CA0[arg0].unk4 - D_800A3470[1];
-    p_in->vz = D_800F0CA0[arg0].unk8 - D_800A3470[2];
+    p_in->vx = g_eff_animated_quad_positions[arg0].unk0 - D_800A3470[0];
+    p_in->vy = g_eff_animated_quad_positions[arg0].unk4 - D_800A3470[1];
+    p_in->vz = g_eff_animated_quad_positions[arg0].unk8 - D_800A3470[2];
     ApplyRotMatrixLV(p_in, p_t);
     gte_SetTransMatrix((MATRIX *)var_0);
     p_v->vz = 0;

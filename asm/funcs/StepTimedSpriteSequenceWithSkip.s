@@ -27,7 +27,7 @@ glabel StepTimedSpriteSequenceWithSkip
     /* 68DC0 800785C0 00000000 */  nop
     /* 68DC4 800785C4 2C00A3AF */  sw         $v1, 0x2C($sp)
     /* 68DC8 800785C8 1C00428C */  lw         $v0, 0x1C($v0)
-    /* 68DCC 800785CC 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 68DCC 800785CC 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68DD0 800785D0 00000000 */  nop
     /* 68DD4 800785D4 04006018 */  blez       $v1, .L800785E8
     /* 68DD8 800785D8 3000A2AF */   sw        $v0, 0x30($sp)
@@ -40,10 +40,10 @@ glabel StepTimedSpriteSequenceWithSkip
     /* 68DF0 800785F0 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
     /* 68DF4 800785F4 00000000 */  nop
     /* 68DF8 800785F8 3400438C */  lw         $v1, 0x34($v0)
-    /* 68DFC 800785FC 2405828F */  lw         $v0, %gp_rel(D_800A35F0)($gp)
+    /* 68DFC 800785FC 2405828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68E00 80078600 0A006384 */  lh         $v1, 0xA($v1)
     /* 68E04 80078604 01004224 */  addiu      $v0, $v0, 0x1
-    /* 68E08 80078608 240582AF */  sw         $v0, %gp_rel(D_800A35F0)($gp)
+    /* 68E08 80078608 240582AF */  sw         $v0, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68E0C 8007860C 2A104300 */  slt        $v0, $v0, $v1
     /* 68E10 80078610 01004238 */  xori       $v0, $v0, 0x1
   .L80078614:

@@ -5,8 +5,8 @@ glabel camera_UpdateReplayView
     /* BF54 8001B754 1400B1AF */  sw         $s1, 0x14($sp)
     /* BF58 8001B758 2188E000 */  addu       $s1, $a3, $zero
     /* BF5C 8001B75C 3800A88F */  lw         $t0, 0x38($sp)
-    /* BF60 8001B760 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* BF64 8001B764 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* BF60 8001B760 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* BF64 8001B764 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* BF68 8001B768 00100224 */  addiu      $v0, $zero, 0x1000
     /* BF6C 8001B76C 1800B2AF */  sw         $s2, 0x18($sp)
     /* BF70 8001B770 23905100 */  subu       $s2, $v0, $s1

@@ -10,20 +10,20 @@ glabel gpu_PrepareViewAndFlushDrawQueue
     /* 34D24 80044524 1800BFAF */  sw         $ra, 0x18($sp)
     /* 34D28 80044528 1D0A010C */  jal        math_RotMatrixZXY
     /* 34D2C 8004452C 21280002 */   addu      $a1, $s0, $zero
-    /* 34D30 80044530 3C06858F */  lw         $a1, %gp_rel(D_800A3708)($gp)
+    /* 34D30 80044530 3C06858F */  lw         $a1, %gp_rel(g_view_camera_root_ptr)($gp)
     /* 34D34 80044534 21200002 */  addu       $a0, $s0, $zero
     /* 34D38 80044538 D3FA010C */  jal        MulMatrix
     /* 34D3C 8004453C 1800A524 */   addiu     $a1, $a1, 0x18
-    /* 34D40 80044540 0A80043C */  lui        $a0, %hi(D_800A370C)
-    /* 34D44 80044544 0C37848C */  lw         $a0, %lo(D_800A370C)($a0)
+    /* 34D40 80044540 0A80043C */  lui        $a0, %hi(g_view_identity_root_ptr)
+    /* 34D44 80044544 0C37848C */  lw         $a0, %lo(g_view_identity_root_ptr)($a0)
     /* 34D48 80044548 21280002 */  addu       $a1, $s0, $zero
     /* 34D4C 8004454C 17FB010C */  jal        MulMatrix2
     /* 34D50 80044550 18008424 */   addiu     $a0, $a0, 0x18
     /* 34D54 80044554 1080063C */  lui        $a2, %hi(D_800FF610)
     /* 34D58 80044558 10F6C624 */  addiu      $a2, $a2, %lo(D_800FF610)
-    /* 34D5C 8004455C 0A80043C */  lui        $a0, %hi(D_800A370C)
-    /* 34D60 80044560 0C37848C */  lw         $a0, %lo(D_800A370C)($a0)
-    /* 34D64 80044564 3C06858F */  lw         $a1, %gp_rel(D_800A3708)($gp)
+    /* 34D5C 8004455C 0A80043C */  lui        $a0, %hi(g_view_identity_root_ptr)
+    /* 34D60 80044560 0C37848C */  lw         $a0, %lo(g_view_identity_root_ptr)($a0)
+    /* 34D64 80044564 3C06858F */  lw         $a1, %gp_rel(g_view_camera_root_ptr)($gp)
     /* 34D68 80044568 18008424 */  addiu      $a0, $a0, 0x18
     /* 34D6C 8004456C 37F9010C */  jal        MulMatrix0
     /* 34D70 80044570 1800A524 */   addiu     $a1, $a1, 0x18

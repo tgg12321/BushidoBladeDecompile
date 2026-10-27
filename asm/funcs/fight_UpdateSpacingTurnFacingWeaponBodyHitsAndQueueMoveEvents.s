@@ -27,8 +27,8 @@ glabel fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
     /* 1C93C 8002C13C 0200222A */  slti       $v0, $s1, 0x2
     /* 1C940 8002C140 F2FF4014 */  bnez       $v0, .L8002C10C
     /* 1C944 8002C144 4C041026 */   addiu     $s0, $s0, 0x44C
-    /* 1C948 8002C148 0A80033C */  lui        $v1, %hi(D_800A38AE)
-    /* 1C94C 8002C14C AE386384 */  lh         $v1, %lo(D_800A38AE)($v1)
+    /* 1C948 8002C148 0A80033C */  lui        $v1, %hi(g_fight_paired_move_initiator)
+    /* 1C94C 8002C14C AE386384 */  lh         $v1, %lo(g_fight_paired_move_initiator)($v1)
     /* 1C950 8002C150 0A80043C */  lui        $a0, %hi(D_800A376E)
     /* 1C954 8002C154 6E378484 */  lh         $a0, %lo(D_800A376E)($a0)
     /* 1C958 8002C158 00110300 */  sll        $v0, $v1, 4

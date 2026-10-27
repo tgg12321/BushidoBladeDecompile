@@ -92,8 +92,8 @@ glabel fighter_InitCpuControl
     /* 45A90 80055290 0A80043C */  lui        $a0, %hi(D_8009A8C4)
     /* 45A94 80055294 C4A88424 */  addiu      $a0, $a0, %lo(D_8009A8C4)
     /* 45A98 80055298 86000286 */  lh         $v0, 0x86($s0)
-    /* 45A9C 8005529C 0A80033C */  lui        $v1, %hi(D_800A37A0)
-    /* 45AA0 800552A0 A0376390 */  lbu        $v1, %lo(D_800A37A0)($v1)
+    /* 45A9C 8005529C 0A80033C */  lui        $v1, %hi(g_fight_stage_command_count)
+    /* 45AA0 800552A0 A0376390 */  lbu        $v1, %lo(g_fight_stage_command_count)($v1)
     /* 45AA4 800552A4 40110200 */  sll        $v0, $v0, 5
     /* 45AA8 800552A8 21104400 */  addu       $v0, $v0, $a0
     /* 45AAC 800552AC 45550108 */  j          .L80055514
@@ -169,8 +169,8 @@ glabel fighter_InitCpuControl
     /* 45BB4 800553B4 4A550108 */  j          .L80055528
     /* 45BB8 800553B8 240400A2 */   sb        $zero, 0x424($s0)
   .L800553BC:
-    /* 45BBC 800553BC 0A80023C */  lui        $v0, %hi(D_800A38E2)
-    /* 45BC0 800553C0 E2384290 */  lbu        $v0, %lo(D_800A38E2)($v0)
+    /* 45BBC 800553BC 0A80023C */  lui        $v0, %hi(g_fight_step_table_next_row)
+    /* 45BC0 800553C0 E2384290 */  lbu        $v0, %lo(g_fight_step_table_next_row)($v0)
     /* 45BC4 800553C4 00000000 */  nop
     /* 45BC8 800553C8 FFFF4224 */  addiu      $v0, $v0, -0x1
     /* 45BCC 800553CC 80100200 */  sll        $v0, $v0, 2
@@ -180,8 +180,8 @@ glabel fighter_InitCpuControl
     /* 45BDC 800553DC 00000000 */  nop
     /* 45BE0 800553E0 1B004224 */  addiu      $v0, $v0, 0x1B
     /* 45BE4 800553E4 430402A2 */  sb         $v0, 0x443($s0)
-    /* 45BE8 800553E8 0A80023C */  lui        $v0, %hi(D_800A38E2)
-    /* 45BEC 800553EC E2384290 */  lbu        $v0, %lo(D_800A38E2)($v0)
+    /* 45BE8 800553E8 0A80023C */  lui        $v0, %hi(g_fight_step_table_next_row)
+    /* 45BEC 800553EC E2384290 */  lbu        $v0, %lo(g_fight_step_table_next_row)($v0)
     /* 45BF0 800553F0 CCCC113C */  lui        $s1, (0xCCCCCCCD >> 16)
     /* 45BF4 800553F4 CDCC3136 */  ori        $s1, $s1, (0xCCCCCCCD & 0xFFFF)
     /* 45BF8 800553F8 19005100 */  multu      $v0, $s1
@@ -221,8 +221,8 @@ glabel fighter_InitCpuControl
     /* 45C7C 8005547C 380402A6 */  sh         $v0, 0x438($s0)
     /* 45C80 80055480 6666023C */  lui        $v0, (0x66666667 >> 16)
   .L80055484:
-    /* 45C84 80055484 0A80043C */  lui        $a0, %hi(D_800A38E2)
-    /* 45C88 80055488 E2388490 */  lbu        $a0, %lo(D_800A38E2)($a0)
+    /* 45C84 80055484 0A80043C */  lui        $a0, %hi(g_fight_step_table_next_row)
+    /* 45C88 80055488 E2388490 */  lbu        $a0, %lo(g_fight_step_table_next_row)($a0)
     /* 45C8C 8005548C 67664234 */  ori        $v0, $v0, (0x66666667 & 0xFFFF)
     /* 45C90 80055490 FFFF8424 */  addiu      $a0, $a0, -0x1
     /* 45C94 80055494 18008200 */  mult       $a0, $v0
@@ -239,8 +239,8 @@ glabel fighter_InitCpuControl
     /* 45CC0 800554C0 2754010C */  jal        fighter_ClearCpuTally
     /* 45CC4 800554C4 00000000 */   nop
   .L800554C8:
-    /* 45CC8 800554C8 0A80043C */  lui        $a0, %hi(D_800A38E2)
-    /* 45CCC 800554CC E2388490 */  lbu        $a0, %lo(D_800A38E2)($a0)
+    /* 45CC8 800554C8 0A80043C */  lui        $a0, %hi(g_fight_step_table_next_row)
+    /* 45CCC 800554CC E2388490 */  lbu        $a0, %lo(g_fight_step_table_next_row)($a0)
     /* 45CD0 800554D0 00000000 */  nop
     /* 45CD4 800554D4 19009100 */  multu      $a0, $s1
     /* 45CD8 800554D8 10A80000 */  mfhi       $s5

@@ -5,15 +5,15 @@
  *    the next .data is 63D2C.c's D_8009BCD4. No uninitialized objects.
  * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by D_800A3590[i],
  *    0..5 like D_8009BC94[i]; the 2 zero bytes after it are the word
- *    alignment of D_8009BC40, another type with other readers) and
- *    D_8009BCD0 (s16[2], scroll state menu_UpdateChoiceGrid writes; the
- *    run's end). Under -G8 the original compiler puts both in .sdata, so no -G8
- *    file defined them.
+ *    alignment of g_entry_menu_grid_entries, another type with other readers)
+ * and D_8009BCD0 (s16[2], scroll state menu_UpdateChoiceGrid writes; the run's
+ * end). Under -G8 the original compiler puts both in .sdata, so no -G8 file
+ * defined them.
  * 3. Neighbours in .data link order: 596CC.c (its own .sdata, gp accesses)
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.
  * Readers: D_8009BC1C (StepSlideBuildFrameRecordAndDispatchStateHandler),
- * D_8009BC38 (menu_UpdateRowCursors), D_8009BC40
+ * D_8009BC38 (menu_UpdateRowCursors), g_entry_menu_grid_entries
  * (InitDisplayStateLoadPackAndSetEntryFlags,
  * gpu_UploadAndDrawSelectedEntryQuads, menu_UpdateEntryGrid,
  * menu_UpdateEntryGridCursors), g_entry_menu_entry_flags (those,
@@ -36,7 +36,8 @@ void func_80072084(Unk8006EACCRec *);
 void func_800720AC(Unk8006EACCRec *);
 void func_800720D4(Unk8006EACCRec *);
 
-/* the SEL.BIN menu's per-mode update handlers, indexed by D_800A3580 */
+/* the SEL.BIN menu's per-mode update handlers, indexed by
+ * g_entry_menu_handler_index */
 void (*D_8009BC1C[7])(Unk8006EACCRec *) = {
     menu_UpdateEntryGrid,
     menu_UpdateRow,
@@ -49,7 +50,7 @@ void (*D_8009BC1C[7])(Unk8006EACCRec *) = {
 
 u8 D_8009BC38[6] = {4, 3, 0, 2, 1, 5};
 
-SelectEntryE534 D_8009BC40[5][6] = {
+SelectEntryE534 g_entry_menu_grid_entries[5][6] = {
     {{0x00, 0x00},
      {0x09, 0x09},
      {0x0A, 0x0C},

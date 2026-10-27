@@ -1,7 +1,7 @@
 glabel motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 114DC 80020CDC E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 114E0 80020CE0 0A80033C */  lui        $v1, %hi(D_800A38C4 + 0x2)
-    /* 114E4 80020CE4 C6386394 */  lhu        $v1, %lo(D_800A38C4 + 0x2)($v1)
+    /* 114E0 80020CE0 0A80033C */  lui        $v1, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 114E4 80020CE4 C6386394 */  lhu        $v1, %lo(g_motion_fighter_loaded_data_ids + 0x2)($v1)
     /* 114E8 80020CE8 FFFF0234 */  ori        $v0, $zero, 0xFFFF
     /* 114EC 80020CEC 03006214 */  bne        $v1, $v0, .L80020CFC
     /* 114F0 80020CF0 1000BFAF */   sw        $ra, 0x10($sp)
@@ -11,10 +11,10 @@ glabel motion_InvalidateMarkedNdataPackAndResetLoadCaches
     /* 114FC 80020CFC FF000224 */  addiu      $v0, $zero, 0xFF
     /* 11500 80020D00 0A80013C */  lui        $at, %hi(g_motion_common_loaded)
     /* 11504 80020D04 803820A0 */  sb         $zero, %lo(g_motion_common_loaded)($at)
-    /* 11508 80020D08 0A80013C */  lui        $at, %hi(D_800A38C4 + 0x2)
-    /* 1150C 80020D0C C63820A4 */  sh         $zero, %lo(D_800A38C4 + 0x2)($at)
-    /* 11510 80020D10 0A80013C */  lui        $at, %hi(D_800A38C4)
-    /* 11514 80020D14 C43820A4 */  sh         $zero, %lo(D_800A38C4)($at)
+    /* 11508 80020D08 0A80013C */  lui        $at, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 1150C 80020D0C C63820A4 */  sh         $zero, %lo(g_motion_fighter_loaded_data_ids + 0x2)($at)
+    /* 11510 80020D10 0A80013C */  lui        $at, %hi(g_motion_fighter_loaded_data_ids)
+    /* 11514 80020D14 C43820A4 */  sh         $zero, %lo(g_motion_fighter_loaded_data_ids)($at)
     /* 11518 80020D18 0A80013C */  lui        $at, %hi(g_motion_frame_set_ids + 0x1)
     /* 1151C 80020D1C C13822A0 */  sb         $v0, %lo(g_motion_frame_set_ids + 0x1)($at)
     /* 11520 80020D20 0A80013C */  lui        $at, %hi(g_motion_frame_set_ids)

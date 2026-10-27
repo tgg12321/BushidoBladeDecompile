@@ -7,9 +7,9 @@ glabel slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* 30D24 80040524 1000B0AF */   sw        $s0, 0x10($sp)
     /* 30D28 80040528 21804000 */  addu       $s0, $v0, $zero
     /* 30D2C 8004052C 80881100 */  sll        $s1, $s1, 2
-    /* 30D30 80040530 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 30D30 80040530 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 30D34 80040534 21083100 */  addu       $at, $at, $s1
-    /* 30D38 80040538 109A30AC */  sw         $s0, %lo(D_800A9A10)($at)
+    /* 30D38 80040538 109A30AC */  sw         $s0, %lo(g_slot_objects)($at)
     /* 30D3C 8004053C 6501010C */  jal        slot_FinalizeObjectLoadSoundTexturesAndArena
     /* 30D40 80040540 21200002 */   addu      $a0, $s0, $zero
     /* 30D44 80040544 3E02010C */  jal        node_InitObjectHierarchyFromTemplates

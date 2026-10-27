@@ -128,7 +128,7 @@ void node_SetWordOnAllListedNodes(Unk80045878Node *a0, s32 a1) {
 void slot_ClearObjectPointersAndTextureRequests(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        D_800A9A10[i] = 0;
+        g_slot_objects[i] = 0;
         D_80094B88[i] = 0;
     }
 }
@@ -144,7 +144,7 @@ Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
     s32 a0, s32 a1, s32 a2) {
     Unk80045878Obj *ptr;
     ptr = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(a0, a1, a2);
-    D_800A9A10[a0] = ptr;
+    g_slot_objects[a0] = ptr;
     slot_FinalizeObjectLoadSoundTexturesAndArena(ptr);
     node_InitObjectHierarchyFromTemplates(ptr);
     node_BuildIdToNodeMapWithDuplicates(ptr);

@@ -42,8 +42,8 @@ glabel fight_UpdateCommandStreamImageLoadAndResume
     /* 2C17C 8003B97C 14000224 */  addiu      $v0, $zero, 0x14
     /* 2C180 8003B980 0A80013C */  lui        $at, %hi(D_800A38F8)
     /* 2C184 8003B984 F83820A0 */  sb         $zero, %lo(D_800A38F8)($at)
-    /* 2C188 8003B988 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 2C18C 8003B98C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* 2C188 8003B988 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 2C18C 8003B98C 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 2C190 8003B990 E475000C */  jal        fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* 2C194 8003B994 00000000 */   nop
     /* 2C198 8003B998 69ED000C */  jal        fight_RunCommandStream

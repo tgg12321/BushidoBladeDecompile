@@ -3,8 +3,8 @@ glabel fight_UpdateRotatingViewDecimalPresentation
     /* 2D514 8003CD14 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2D518 8003CD18 79FC000C */  jal        func_8003F1E4
     /* 2D51C 8003CD1C 21200000 */   addu      $a0, $zero, $zero
-    /* 2D520 8003CD20 0F80043C */  lui        $a0, %hi(D_800F6608)
-    /* 2D524 8003CD24 08668424 */  addiu      $a0, $a0, %lo(D_800F6608)
+    /* 2D520 8003CD20 0F80043C */  lui        $a0, %hi(g_camera_default_view_record)
+    /* 2D524 8003CD24 08668424 */  addiu      $a0, $a0, %lo(g_camera_default_view_record)
     /* 2D528 8003CD28 10008524 */  addiu      $a1, $a0, 0x10
     /* 2D52C 8003CD2C 48F40224 */  addiu      $v0, $zero, -0xBB8
     /* 2D530 8003CD30 000080AC */  sw         $zero, 0x0($a0)

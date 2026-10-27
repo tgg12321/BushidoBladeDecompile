@@ -1,7 +1,7 @@
 glabel fight_SplitFrameCounterIntoMinutesSecondsHundredths
     /* D568 8001CD68 0200023C */  lui        $v0, (0x2BF1F >> 16)
-    /* D56C 8001CD6C 0A80033C */  lui        $v1, %hi(D_800A3858)
-    /* D570 8001CD70 5838638C */  lw         $v1, %lo(D_800A3858)($v1)
+    /* D56C 8001CD6C 0A80033C */  lui        $v1, %hi(g_fight_timer_frames)
+    /* D570 8001CD70 5838638C */  lw         $v1, %lo(g_fight_timer_frames)($v1)
     /* D574 8001CD74 1FBF4234 */  ori        $v0, $v0, (0x2BF1F & 0xFFFF)
     /* D578 8001CD78 2A104300 */  slt        $v0, $v0, $v1
     /* D57C 8001CD7C 08004010 */  beqz       $v0, .L8001CDA0
@@ -34,8 +34,8 @@ glabel fight_SplitFrameCounterIntoMinutesSecondsHundredths
     /* D5E4 8001CDE4 80100200 */  sll        $v0, $v0, 2
     /* D5E8 8001CDE8 23186200 */  subu       $v1, $v1, $v0
     /* D5EC 8001CDEC 0200E3A0 */  sb         $v1, 0x2($a3)
-    /* D5F0 8001CDF0 0A80043C */  lui        $a0, %hi(D_800A3858)
-    /* D5F4 8001CDF4 5838848C */  lw         $a0, %lo(D_800A3858)($a0)
+    /* D5F0 8001CDF0 0A80043C */  lui        $a0, %hi(g_fight_timer_frames)
+    /* D5F4 8001CDF4 5838848C */  lw         $a0, %lo(g_fight_timer_frames)($a0)
     /* D5F8 8001CDF8 00000000 */  nop
     /* D5FC 8001CDFC 18008600 */  mult       $a0, $a2
     /* D600 8001CE00 10100000 */  mfhi       $v0

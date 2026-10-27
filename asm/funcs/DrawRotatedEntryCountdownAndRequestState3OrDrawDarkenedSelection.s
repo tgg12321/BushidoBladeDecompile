@@ -46,14 +46,14 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5F9A4 8006F1A4 03000224 */   addiu     $v0, $zero, 0x3
     /* 5F9A8 8006F1A8 B80482A7 */  sh         $v0, %gp_rel(D_800A3584)($gp)
   .L8006F1AC:
-    /* 5F9AC 8006F1AC 8C048387 */  lh         $v1, %gp_rel(D_800A3558)($gp)
+    /* 5F9AC 8006F1AC 8C048387 */  lh         $v1, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
     /* 5F9B0 8006F1B0 00010224 */  addiu      $v0, $zero, 0x100
     /* 5F9B4 8006F1B4 3000A2AF */  sw         $v0, 0x30($sp)
     /* 5F9B8 8006F1B8 3400A2AF */  sw         $v0, 0x34($sp)
     /* 5F9BC 8006F1BC 13000224 */  addiu      $v0, $zero, 0x13
     /* 5F9C0 8006F1C0 2400A2AF */  sw         $v0, 0x24($sp)
-    /* 5F9C4 8006F1C4 E404828F */  lw         $v0, %gp_rel(D_800A35B0)($gp)
-    /* 5F9C8 8006F1C8 DC04848F */  lw         $a0, %gp_rel(D_800A35A8)($gp)
+    /* 5F9C4 8006F1C4 E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
+    /* 5F9C8 8006F1C8 DC04848F */  lw         $a0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F9CC 8006F1CC 2000A0AF */  sw         $zero, 0x20($sp)
     /* 5F9D0 8006F1D0 3800A0A3 */  sb         $zero, 0x38($sp)
     /* 5F9D4 8006F1D4 01006324 */  addiu      $v1, $v1, 0x1
@@ -73,13 +73,13 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5FA08 8006F208 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records + 0x2)
     /* 5FA0C 8006F20C 21083300 */  addu       $at, $at, $s3
     /* 5FA10 8006F210 62352290 */  lbu        $v0, %lo(g_entry_menu_slot_records + 0x2)($at)
-    /* 5FA14 8006F214 F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
+    /* 5FA14 8006F214 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 5FA18 8006F218 80100200 */  sll        $v0, $v0, 2
     /* 5FA1C 8006F21C 21105700 */  addu       $v0, $v0, $s7
     /* 5FA20 8006F220 0000478C */  lw         $a3, 0x0($v0)
     /* 5FA24 8006F224 12006414 */  bne        $v1, $a0, .L8006F270
     /* 5FA28 8006F228 01000524 */   addiu     $a1, $zero, 0x1
-    /* 5FA2C 8006F22C 9C04828F */  lw         $v0, %gp_rel(D_800A3568)($gp)
+    /* 5FA2C 8006F22C 9C04828F */  lw         $v0, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 5FA30 8006F230 00000000 */  nop
     /* 5FA34 8006F234 1400428C */  lw         $v0, 0x14($v0)
     /* 5FA38 8006F238 0200033C */  lui        $v1, (0x20000 >> 16)
@@ -258,8 +258,8 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5FCC0 8006F4C0 0200B526 */  addiu      $s5, $s5, 0x2
     /* 5FCC4 8006F4C4 18009426 */  addiu      $s4, $s4, 0x18
     /* 5FCC8 8006F4C8 01003126 */  addiu      $s1, $s1, 0x1
-    /* 5FCCC 8006F4CC 8C048387 */  lh         $v1, %gp_rel(D_800A3558)($gp)
-    /* 5FCD0 8006F4D0 E404828F */  lw         $v0, %gp_rel(D_800A35B0)($gp)
+    /* 5FCCC 8006F4CC 8C048387 */  lh         $v1, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 5FCD0 8006F4D0 E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 5FCD4 8006F4D4 01006324 */  addiu      $v1, $v1, 0x1
     /* 5FCD8 8006F4D8 21104300 */  addu       $v0, $v0, $v1
     /* 5FCDC 8006F4DC 2A102202 */  slt        $v0, $s1, $v0

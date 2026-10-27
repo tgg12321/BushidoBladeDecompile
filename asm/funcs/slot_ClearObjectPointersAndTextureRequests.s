@@ -2,8 +2,8 @@ glabel slot_ClearObjectPointersAndTextureRequests
     /* 30CD8 800404D8 21280000 */  addu       $a1, $zero, $zero
     /* 30CDC 800404DC 0980043C */  lui        $a0, %hi(D_80094B88)
     /* 30CE0 800404E0 884B8424 */  addiu      $a0, $a0, %lo(D_80094B88)
-    /* 30CE4 800404E4 0B80033C */  lui        $v1, %hi(D_800A9A10)
-    /* 30CE8 800404E8 109A6324 */  addiu      $v1, $v1, %lo(D_800A9A10)
+    /* 30CE4 800404E4 0B80033C */  lui        $v1, %hi(g_slot_objects)
+    /* 30CE8 800404E8 109A6324 */  addiu      $v1, $v1, %lo(g_slot_objects)
   .L800404EC:
     /* 30CEC 800404EC 000060AC */  sw         $zero, 0x0($v1)
     /* 30CF0 800404F0 000080AC */  sw         $zero, 0x0($a0)

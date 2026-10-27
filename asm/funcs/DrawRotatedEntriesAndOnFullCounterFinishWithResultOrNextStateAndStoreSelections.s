@@ -2,9 +2,9 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 6244C 80071C4C 88FFBD27 */  addiu      $sp, $sp, -0x78
     /* 62450 80071C50 6800B4AF */  sw         $s4, 0x68($sp)
     /* 62454 80071C54 21A08000 */  addu       $s4, $a0, $zero
-    /* 62458 80071C58 8C048287 */  lh         $v0, %gp_rel(D_800A3558)($gp)
-    /* 6245C 80071C5C E404838F */  lw         $v1, %gp_rel(D_800A35B0)($gp)
-    /* 62460 80071C60 DC04848F */  lw         $a0, %gp_rel(D_800A35A8)($gp)
+    /* 62458 80071C58 8C048287 */  lh         $v0, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 6245C 80071C5C E404838F */  lw         $v1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
+    /* 62460 80071C60 DC04848F */  lw         $a0, %gp_rel(g_entry_menu_resources)($gp)
     /* 62464 80071C64 5800B0AF */  sw         $s0, 0x58($sp)
     /* 62468 80071C68 7000BFAF */  sw         $ra, 0x70($sp)
     /* 6246C 80071C6C 6C00B5AF */  sw         $s5, 0x6C($sp)
@@ -38,13 +38,13 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 624D8 80071CD8 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records + 0x2)
     /* 624DC 80071CDC 21083100 */  addu       $at, $at, $s1
     /* 624E0 80071CE0 62352290 */  lbu        $v0, %lo(g_entry_menu_slot_records + 0x2)($at)
-    /* 624E4 80071CE4 F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
+    /* 624E4 80071CE4 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 624E8 80071CE8 80100200 */  sll        $v0, $v0, 2
     /* 624EC 80071CEC 21105500 */  addu       $v0, $v0, $s5
     /* 624F0 80071CF0 0000468C */  lw         $a2, 0x0($v0)
     /* 624F4 80071CF4 12006414 */  bne        $v1, $a0, .L80071D40
     /* 624F8 80071CF8 01000524 */   addiu     $a1, $zero, 0x1
-    /* 624FC 80071CFC 9C04828F */  lw         $v0, %gp_rel(D_800A3568)($gp)
+    /* 624FC 80071CFC 9C04828F */  lw         $v0, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 62500 80071D00 00000000 */  nop
     /* 62504 80071D04 1400428C */  lw         $v0, 0x14($v0)
     /* 62508 80071D08 0200033C */  lui        $v1, (0x20000 >> 16)
@@ -163,8 +163,8 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 626AC 80071EAC 18005226 */  addiu      $s2, $s2, 0x18
     /* 626B0 80071EB0 03003126 */  addiu      $s1, $s1, 0x3
     /* 626B4 80071EB4 01001026 */  addiu      $s0, $s0, 0x1
-    /* 626B8 80071EB8 8C048387 */  lh         $v1, %gp_rel(D_800A3558)($gp)
-    /* 626BC 80071EBC E404828F */  lw         $v0, %gp_rel(D_800A35B0)($gp)
+    /* 626B8 80071EB8 8C048387 */  lh         $v1, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 626BC 80071EBC E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 626C0 80071EC0 01006324 */  addiu      $v1, $v1, 0x1
     /* 626C4 80071EC4 21104300 */  addu       $v0, $v0, $v1
     /* 626C8 80071EC8 2A100202 */  slt        $v0, $s0, $v0
@@ -184,10 +184,10 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 626FC 80071EFC FF000224 */  addiu      $v0, $zero, 0xFF
     /* 62700 80071F00 01001024 */  addiu      $s0, $zero, 0x1
     /* 62704 80071F04 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
-    /* 62708 80071F08 AC0490A7 */  sh         $s0, %gp_rel(D_800A3578)($gp)
+    /* 62708 80071F08 AC0490A7 */  sh         $s0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 6270C 80071F0C 9471010C */  jal        snd_QueueSound
     /* 62710 80071F10 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 62714 80071F14 F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
+    /* 62714 80071F14 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 62718 80071F18 00000000 */  nop
     /* 6271C 80071F1C 0200622C */  sltiu      $v0, $v1, 0x2
     /* 62720 80071F20 0E004010 */  beqz       $v0, .L80071F5C
@@ -196,7 +196,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 6272C 80071F2C 21800000 */   addu      $s0, $zero, $zero
     /* 62730 80071F30 01000324 */  addiu      $v1, $zero, 0x1
     /* 62734 80071F34 0FFC0424 */  addiu      $a0, $zero, -0x3F1
-    /* 62738 80071F38 9C04858F */  lw         $a1, %gp_rel(D_800A3568)($gp)
+    /* 62738 80071F38 9C04858F */  lw         $a1, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 6273C 80071F3C 3F004230 */  andi       $v0, $v0, 0x3F
     /* 62740 80071F40 D40483AF */  sw         $v1, %gp_rel(D_800A35A0)($gp)
     /* 62744 80071F44 1400A38C */  lw         $v1, 0x14($a1)
@@ -226,7 +226,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 62798 80071F98 21800000 */  addu       $s0, $zero, $zero
   .L80071F9C:
     /* 6279C 80071F9C 88048287 */  lh         $v0, %gp_rel(D_800A3554)($gp)
-    /* 627A0 80071FA0 E404838F */  lw         $v1, %gp_rel(D_800A35B0)($gp)
+    /* 627A0 80071FA0 E404838F */  lw         $v1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 627A4 80071FA4 01004224 */  addiu      $v0, $v0, 0x1
     /* 627A8 80071FA8 21186200 */  addu       $v1, $v1, $v0
     /* 627AC 80071FAC 12006018 */  blez       $v1, .L80071FF8
@@ -238,20 +238,20 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 627C0 80071FC0 21082500 */  addu       $at, $at, $a1
     /* 627C4 80071FC4 60352390 */  lbu        $v1, %lo(g_entry_menu_slot_records)($at)
     /* 627C8 80071FC8 0300A524 */  addiu      $a1, $a1, 0x3
-    /* 627CC 80071FCC 9C04828F */  lw         $v0, %gp_rel(D_800A3568)($gp)
+    /* 627CC 80071FCC 9C04828F */  lw         $v0, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 627D0 80071FD0 01001026 */  addiu      $s0, $s0, 0x1
     /* 627D4 80071FD4 21104400 */  addu       $v0, $v0, $a0
     /* 627D8 80071FD8 000043A0 */  sb         $v1, 0x0($v0)
     /* 627DC 80071FDC 88048387 */  lh         $v1, %gp_rel(D_800A3554)($gp)
-    /* 627E0 80071FE0 E404828F */  lw         $v0, %gp_rel(D_800A35B0)($gp)
+    /* 627E0 80071FE0 E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 627E4 80071FE4 01006324 */  addiu      $v1, $v1, 0x1
     /* 627E8 80071FE8 21104300 */  addu       $v0, $v0, $v1
     /* 627EC 80071FEC 2A100202 */  slt        $v0, $s0, $v0
     /* 627F0 80071FF0 F2FF4014 */  bnez       $v0, .L80071FBC
     /* 627F4 80071FF4 0A008424 */   addiu     $a0, $a0, 0xA
   .L80071FF8:
-    /* 627F8 80071FF8 8C048287 */  lh         $v0, %gp_rel(D_800A3558)($gp)
-    /* 627FC 80071FFC E404838F */  lw         $v1, %gp_rel(D_800A35B0)($gp)
+    /* 627F8 80071FF8 8C048287 */  lh         $v0, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 627FC 80071FFC E404838F */  lw         $v1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 62800 80072000 01004224 */  addiu      $v0, $v0, 0x1
     /* 62804 80072004 21186200 */  addu       $v1, $v1, $v0
     /* 62808 80072008 12006018 */  blez       $v1, .L80072054
@@ -263,12 +263,12 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 6281C 8007201C 21082500 */  addu       $at, $at, $a1
     /* 62820 80072020 62352390 */  lbu        $v1, %lo(g_entry_menu_slot_records + 0x2)($at)
     /* 62824 80072024 0300A524 */  addiu      $a1, $a1, 0x3
-    /* 62828 80072028 9C04828F */  lw         $v0, %gp_rel(D_800A3568)($gp)
+    /* 62828 80072028 9C04828F */  lw         $v0, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 6282C 8007202C 01001026 */  addiu      $s0, $s0, 0x1
     /* 62830 80072030 21104400 */  addu       $v0, $v0, $a0
     /* 62834 80072034 010043A0 */  sb         $v1, 0x1($v0)
-    /* 62838 80072038 8C048387 */  lh         $v1, %gp_rel(D_800A3558)($gp)
-    /* 6283C 8007203C E404828F */  lw         $v0, %gp_rel(D_800A35B0)($gp)
+    /* 62838 80072038 8C048387 */  lh         $v1, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 6283C 8007203C E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 62840 80072040 01006324 */  addiu      $v1, $v1, 0x1
     /* 62844 80072044 21104300 */  addu       $v0, $v0, $v1
     /* 62848 80072048 2A100202 */  slt        $v0, $s0, $v0

@@ -5,7 +5,7 @@ glabel menu_HandleRowBitInput
     /* 5D4D4 8006CCD4 4000BEAF */  sw         $fp, 0x40($sp)
     /* 5D4D8 8006CCD8 21F00000 */  addu       $fp, $zero, $zero
     /* 5D4DC 8006CCDC 0500023C */  lui        $v0, (0x50005 >> 16)
-    /* 5D4E0 8006CCE0 3004838F */  lw         $v1, %gp_rel(D_800A34FC)($gp)
+    /* 5D4E0 8006CCE0 3004838F */  lw         $v1, %gp_rel(g_row_menu_work_block)($gp)
     /* 5D4E4 8006CCE4 05004234 */  ori        $v0, $v0, (0x50005 & 0xFFFF)
     /* 5D4E8 8006CCE8 4400BFAF */  sw         $ra, 0x44($sp)
     /* 5D4EC 8006CCEC 3C00B7AF */  sw         $s7, 0x3C($sp)
@@ -53,7 +53,7 @@ glabel menu_HandleRowBitInput
     /* 5D588 8006CD88 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 5D58C 8006CD8C 9471010C */  jal        snd_QueueSound
     /* 5D590 8006CD90 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 5D594 8006CD94 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5D594 8006CD94 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5D598 8006CD98 00000000 */  nop
     /* 5D59C 8006CD9C 21206202 */  addu       $a0, $s3, $v0
     /* 5D5A0 8006CDA0 28008284 */  lh         $v0, 0x28($a0)
@@ -74,7 +74,7 @@ glabel menu_HandleRowBitInput
     /* 5D5D4 8006CDD4 7F000524 */   addiu     $a1, $zero, 0x7F
     /* 5D5D8 8006CDD8 9471010C */  jal        snd_QueueSound
     /* 5D5DC 8006CDDC 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 5D5E0 8006CDE0 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5D5E0 8006CDE0 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5D5E4 8006CDE4 00000000 */  nop
     /* 5D5E8 8006CDE8 21186202 */  addu       $v1, $s3, $v0
     /* 5D5EC 8006CDEC 28006284 */  lh         $v0, 0x28($v1)
@@ -88,7 +88,7 @@ glabel menu_HandleRowBitInput
   .L8006CE0C:
     /* 5D60C 8006CE0C 280062A4 */  sh         $v0, 0x28($v1)
   .L8006CE10:
-    /* 5D610 8006CE10 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5D610 8006CE10 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5D614 8006CE14 00000000 */  nop
     /* 5D618 8006CE18 21106202 */  addu       $v0, $s3, $v0
     /* 5D61C 8006CE1C 28004384 */  lh         $v1, 0x28($v0)
@@ -130,7 +130,7 @@ glabel menu_HandleRowBitInput
     /* 5D6A4 8006CEA4 21280000 */  addu       $a1, $zero, $zero
     /* 5D6A8 8006CEA8 0430B602 */  sllv       $a2, $s6, $s5
   .L8006CEAC:
-    /* 5D6AC 8006CEAC 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
+    /* 5D6AC 8006CEAC 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5D6B0 8006CEB0 00000000 */  nop
     /* 5D6B4 8006CEB4 21184500 */  addu       $v1, $v0, $a1
     /* 5D6B8 8006CEB8 1A006290 */  lbu        $v0, 0x1A($v1)
@@ -164,7 +164,7 @@ glabel menu_HandleRowBitInput
     /* 5D71C 8006CF1C 21280000 */  addu       $a1, $zero, $zero
     /* 5D720 8006CF20 0430B602 */  sllv       $a2, $s6, $s5
   .L8006CF24:
-    /* 5D724 8006CF24 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
+    /* 5D724 8006CF24 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5D728 8006CF28 00000000 */  nop
     /* 5D72C 8006CF2C 21184500 */  addu       $v1, $v0, $a1
     /* 5D730 8006CF30 1D006290 */  lbu        $v0, 0x1D($v1)

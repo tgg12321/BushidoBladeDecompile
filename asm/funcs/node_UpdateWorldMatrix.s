@@ -12,9 +12,9 @@ glabel node_UpdateWorldMatrix
     /* 31FF8 800417F8 08000286 */  lh         $v0, 0x8($s0)
     /* 31FFC 800417FC 00000000 */  nop
     /* 32000 80041800 80100200 */  sll        $v0, $v0, 2
-    /* 32004 80041804 0F80013C */  lui        $at, %hi(D_800F66A0)
+    /* 32004 80041804 0F80013C */  lui        $at, %hi(g_math_rot_matrix_funcs)
     /* 32008 80041808 21082200 */  addu       $at, $at, $v0
-    /* 3200C 8004180C A066228C */  lw         $v0, %lo(D_800F66A0)($at)
+    /* 3200C 8004180C A066228C */  lw         $v0, %lo(g_math_rot_matrix_funcs)($at)
     /* 32010 80041810 00000000 */  nop
     /* 32014 80041814 09F84000 */  jalr       $v0
     /* 32018 80041818 38000526 */   addiu     $a1, $s0, 0x38

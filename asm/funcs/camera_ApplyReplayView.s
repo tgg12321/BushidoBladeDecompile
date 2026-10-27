@@ -1,16 +1,16 @@
 glabel camera_ApplyReplayView
     /* EEE4 8001E6E4 90FFBD27 */  addiu      $sp, $sp, -0x70
     /* EEE8 8001E6E8 6800B2AF */  sw         $s2, 0x68($sp)
-    /* EEEC 8001E6EC 0F80123C */  lui        $s2, %hi(D_800F5328)
-    /* EEF0 8001E6F0 28535226 */  addiu      $s2, $s2, %lo(D_800F5328)
+    /* EEEC 8001E6EC 0F80123C */  lui        $s2, %hi(g_camera_alternate_view_record)
+    /* EEF0 8001E6F0 28535226 */  addiu      $s2, $s2, %lo(g_camera_alternate_view_record)
     /* EEF4 8001E6F4 ABFA8424 */  addiu      $a0, $a0, -0x555
     /* EEF8 8001E6F8 5605842C */  sltiu      $a0, $a0, 0x556
     /* EEFC 8001E6FC 6C00BFAF */  sw         $ra, 0x6C($sp)
     /* EF00 8001E700 6400B1AF */  sw         $s1, 0x64($sp)
     /* EF04 8001E704 03008014 */  bnez       $a0, .L8001E714
     /* EF08 8001E708 6000B0AF */   sw        $s0, 0x60($sp)
-    /* EF0C 8001E70C 0F80123C */  lui        $s2, %hi(D_800F6608)
-    /* EF10 8001E710 08665226 */  addiu      $s2, $s2, %lo(D_800F6608)
+    /* EF0C 8001E70C 0F80123C */  lui        $s2, %hi(g_camera_default_view_record)
+    /* EF10 8001E710 08665226 */  addiu      $s2, $s2, %lo(g_camera_default_view_record)
   .L8001E714:
     /* EF14 8001E714 0000428E */  lw         $v0, 0x0($s2)
     /* EF18 8001E718 1080033C */  lui        $v1, %hi(g_camera_view_offset)

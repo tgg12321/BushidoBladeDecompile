@@ -16,17 +16,17 @@
 
 /* Q65: this file's statics (.sbss), in address order. */
 static s32 g_menu_packed_cursors;
-static Unk800A34FCRec *D_800A34FC;
+static Unk800A34FCRec *g_row_menu_work_block;
 static s32 D_800A3500;
 /* not named by any code or data: size from the gap */
 static s32 D_800A3504[2];
 static s16 D_800A350C[2];
 static s16 D_800A3510[2];
-static s32 D_800A3514;
+static s32 g_row_menu_pulse_counter;
 static s32 D_800A3518;
 static Unk8006E49CRec *D_800A351C;
 static Unk8006E49CRec *D_800A3520;
-static Unk8009BD24Block *D_800A3524;
+static Unk8009BD24Block *g_row_menu_working_record_ptr;
 static s16 D_800A3528;
 static s32 D_800A352C;
 
@@ -85,7 +85,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     v0_e49c = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
     v0_e49c->unk_24 = (Unk8006919CRec *)temp_s0;
     D_800A3500 = (s32)v0_e49c;
-    D_800A34FC = v0_e49c;
+    g_row_menu_work_block = v0_e49c;
     D_800A3500 = (s32)(v0_e49c + 1);
     {
         s32 var_4 = -0x10;
@@ -120,9 +120,10 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
         }
         {
             /* FAKE: one s16 * holder per stored work-block field, set before
-             * the D_800A3524 store; plain `*p` stores keep the D_800A3528 and
-             * g_menu_packed_cursors stores in place. Member stores through a
-             * holder: score 28; straight through D_800A34FC: 39. */
+             * the g_row_menu_working_record_ptr store; plain `*p` stores keep
+             * the D_800A3528 and g_menu_packed_cursors stores in place. Member
+             * stores through a holder: score 28; straight through
+             * g_row_menu_work_block: 39. */
             s16 *p_2A;
             s16 *p_28;
             s16 *p_0E;
@@ -137,16 +138,16 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
                it: score 4 */
             do {
             } while (0);
-            p_2A = &D_800A34FC->unk_28.half[1];
-            p_28 = &D_800A34FC->unk_28.half[0];
-            p_0E = &D_800A34FC->unk_0C[1];
-            p_0C = &D_800A34FC->unk_0C[0];
-            p_10 = &D_800A34FC->unk_10;
-            p_12 = &D_800A34FC->unk_12;
-            D_800A3524 = arg1;
-            /* FAKE: sched fence keeps the D_800A3524 store adjacent to the
-               D_800A34FC load instead of sinking below the zero-stores; without
-               it: score 2 */
+            p_2A = &g_row_menu_work_block->unk_28.half[1];
+            p_28 = &g_row_menu_work_block->unk_28.half[0];
+            p_0E = &g_row_menu_work_block->unk_0C[1];
+            p_0C = &g_row_menu_work_block->unk_0C[0];
+            p_10 = &g_row_menu_work_block->unk_10;
+            p_12 = &g_row_menu_work_block->unk_12;
+            g_row_menu_working_record_ptr = arg1;
+            /* FAKE: sched fence keeps the g_row_menu_working_record_ptr store
+               adjacent to the g_row_menu_work_block load instead of sinking
+               below the zero-stores; without it: score 2 */
             do {
             } while (0);
             D_800A3518 = 0;
@@ -170,18 +171,18 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             DrawSync(0);
         }
     }
-    D_800A34FC->unk_30 = D_800A3524->unk20_0;
+    g_row_menu_work_block->unk_30 = g_row_menu_working_record_ptr->unk20_0;
     return 1;
 }
 
 Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 a0) {
-    Unk8009BD24Block *v0 = D_800A3524;
-    Unk800A34FCRec *v1 = D_800A34FC;
+    Unk8009BD24Block *v0 = g_row_menu_working_record_ptr;
+    Unk800A34FCRec *v1 = g_row_menu_work_block;
     if (v1->unk_30 != v0->unk20_0) {
         gpu_LoadVramBottomStrip(D_800A372C);
     }
-    v0 = D_800A3524;
-    v1 = D_800A34FC;
+    v0 = g_row_menu_working_record_ptr;
+    v1 = g_row_menu_work_block;
     v1->unk_30 = v0->unk20_0;
     return &D_800A351C[a0];
 }
@@ -214,7 +215,7 @@ extern void gpu_AdvanceBufferCounterAndBuildDrawContext();
 
 s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32 arg0, s32 arg1) {
     s32 sp10[10];
-    D_800A3514 = 0;
+    g_row_menu_pulse_counter = 0;
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     func_80069E18(sp10, 0);
     if ((arg1 & 0x400040) != 0) {
@@ -306,7 +307,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     gpu_AdvanceBufferCounterAndBuildDrawContext(var_0, &D_800A3518);
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
     result = pad_StepOffsetsGetDirectionEvents(
-        (u32 *)&var_0[12], 0, D_800A34FC->unk_0C, D_800A350C);
+        (u32 *)&var_0[12], 0, g_row_menu_work_block->unk_0C, D_800A350C);
     switch (result >> 16) {
     case 1:
         do {
@@ -319,8 +320,8 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
             }
         } while (
             !(((u32)D_8009BC04.rows_on >> (g_menu_packed_cursors & 0xF)) & 1));
-        D_800A3514 = 0;
-        D_800A3524->unk20_3 = 0;
+        g_row_menu_pulse_counter = 0;
+        g_row_menu_working_record_ptr->unk20_3 = 0;
         break;
     case 2:
         do {
@@ -333,19 +334,19 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
             }
         } while (
             !(((u32)D_8009BC04.rows_on >> (g_menu_packed_cursors & 0xF)) & 1));
-        D_800A3514 = 0;
-        D_800A3524->unk20_3 = 0;
+        g_row_menu_pulse_counter = 0;
+        g_row_menu_working_record_ptr->unk20_3 = 0;
         break;
     }
     if (((result & 0xFF) < 3) && ((result & 0xFF) != 0) &&
         (D_8009BC04.opt[g_menu_packed_cursors & 0xF].mode == 3)) {
-        D_800A3524->unk20_3 ^= 1;
+        g_row_menu_working_record_ptr->unk20_3 ^= 1;
         snd_QueueSound(0, 0x7F, 0x7F);
     }
     if (D_8009BC04.opt[g_menu_packed_cursors & 0xF].mode == 2) {
-        D_800A3524->unk20_3 = 1;
+        g_row_menu_working_record_ptr->unk20_3 = 1;
     } else if (D_8009BC04.opt[g_menu_packed_cursors & 0xF].mode == 1) {
-        D_800A3524->unk20_3 = 0;
+        g_row_menu_working_record_ptr->unk20_3 = 0;
     }
     if ((g_menu_packed_cursors & 0xF) != 7) {
         if (((g_menu_packed_cursors & 0xF) - 6) >= 0) {
@@ -694,10 +695,12 @@ void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
             s.fr00.has_color = 0;
         }
         x0 = s.fr00.x;
-        if (D_800A3524->unk20_3) {
+        if (g_row_menu_working_record_ptr->unk20_3) {
             if (arg1 & 1) {
-                s.fr00.x = x0 + D_800A34FC->unk_0C[0];
-                c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
+                s.fr00.x = x0 + g_row_menu_work_block->unk_0C[0];
+                c = ((rsin((g_row_menu_pulse_counter & 0x1F) << 7) * 47) >>
+                     12) -
+                    0x80;
                 s.fr00.col_b = c;
                 s.fr00.col_g = c;
                 s.fr00.col_r = c;
@@ -770,10 +773,12 @@ void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
             s.fr00.has_color = 0;
         }
         x0 = s.fr00.x;
-        if (!(D_800A3524->unk20_3)) {
+        if (!(g_row_menu_working_record_ptr->unk20_3)) {
             if (arg1 & 2) {
-                s.fr00.x = x0 + D_800A34FC->unk_0C[0];
-                c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
+                s.fr00.x = x0 + g_row_menu_work_block->unk_0C[0];
+                c = ((rsin((g_row_menu_pulse_counter & 0x1F) << 7) * 47) >>
+                     12) -
+                    0x80;
                 s.fr00.col_b = c;
                 s.fr00.col_g = c;
                 s.fr00.col_r = c;
@@ -1017,20 +1022,24 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
         s.has_color = 1;
         if ((g_menu_packed_cursors & 0xF) == i) {
             s.semi = 0;
-            s.col_r =
-                ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 63) >> 12) - 0x61;
-            s.col_g =
-                ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 45) >> 12) - 0x7D;
+            s.col_r = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
+                        63) >>
+                       12) -
+                      0x61;
+            s.col_g = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
+                        45) >>
+                       12) -
+                      0x7D;
             s.col_b = 0x30;
-            s.y = D_800A34FC->unk_0C[1] + y;
-            D_800A3514++;
+            s.y = g_row_menu_work_block->unk_0C[1] + y;
+            g_row_menu_pulse_counter++;
         } else if ((row_mask >> i) & 1) {
             s.col_r = 0x80;
             s.col_g = 0x6C;
             s.col_b = 0x30;
             s.semi = 1;
             s.y = y;
-            if (D_800A3524->unk20_0) {
+            if (g_row_menu_working_record_ptr->unk20_0) {
                 s.has_color = 0;
             }
         } else {
@@ -1088,19 +1097,23 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     if ((g_menu_packed_cursors & 0xF) == 7) {
         s.semi = 0;
         s.col_r =
-            ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 63) >> 12) - 0x61;
+            ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) * 63) >>
+             12) -
+            0x61;
         s.col_g =
-            ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 45) >> 12) - 0x7D;
+            ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) * 45) >>
+             12) -
+            0x7D;
         s.col_b = 0x30;
-        s.y = D_800A34FC->unk_0C[1] + 0xCF;
-        D_800A3514++;
+        s.y = g_row_menu_work_block->unk_0C[1] + 0xCF;
+        g_row_menu_pulse_counter++;
     } else if ((row_mask >> 7) & 1) {
         s.col_r = 0x80;
         s.col_g = 0x6C;
         s.col_b = 0x30;
         s.semi = 1;
         s.y = 0xCF;
-        if (D_800A3524->unk20_0) {
+        if (g_row_menu_working_record_ptr->unk20_0) {
             s.has_color = 0;
         }
     } else {
@@ -1219,10 +1232,13 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
         s.header = tbl[i + 1];
         if ((((u32)g_menu_packed_cursors >> 10) & 7) == i) {
             s.has_color = 1;
-            s.y = D_800A34FC->unk_0C[1];
+            s.y = g_row_menu_work_block->unk_0C[1];
             s.semi = 0;
             s.col_r = s.col_g = s.col_b =
-                ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 47) >> 12) - 0x80;
+                ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
+                  47) >>
+                 12) -
+                0x80;
         } else {
             s.has_color = 0;
             s.y = 0;
@@ -1241,14 +1257,16 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
         s.header = tbl[i + 7];
         s.x = 0;
         s.has_color = 0;
-        if (D_800A3524->unk20_0 == i) {
+        if (g_row_menu_working_record_ptr->unk20_0 == i) {
             s.semi = 0;
             if (!(g_menu_packed_cursors & 0x1C00)) {
                 s32 c;
 
                 s.has_color = 1;
-                s.x = D_800A34FC->unk_0C[0];
-                c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) -
+                s.x = g_row_menu_work_block->unk_0C[0];
+                c = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
+                      32) >>
+                     12) -
                     0x80;
                 s.col_b = c;
                 s.col_g = c;
@@ -1269,14 +1287,16 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
         s.header = tbl[i + 9];
         s.x = 0;
         s.has_color = 0;
-        if (D_800A3524->unk20_1 == i) {
+        if (g_row_menu_working_record_ptr->unk20_1 == i) {
             s.semi = 0;
             if ((g_menu_packed_cursors & 0x1C00) == 0x400) {
                 s32 c;
 
                 s.has_color = 1;
-                s.x = D_800A34FC->unk_0C[0];
-                c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) -
+                s.x = g_row_menu_work_block->unk_0C[0];
+                c = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
+                      32) >>
+                     12) -
                     0x80;
                 s.col_b = c;
                 s.col_g = c;
@@ -1297,14 +1317,16 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
         s.header = tbl[i + 11];
         s.x = 0;
         s.has_color = 0;
-        if (D_800A3524->unk20_2 == i) {
+        if (g_row_menu_working_record_ptr->unk20_2 == i) {
             s.semi = 0;
             if ((g_menu_packed_cursors & 0x1C00) == 0x800) {
                 s32 c;
 
                 s.has_color = 1;
-                s.x = D_800A34FC->unk_0C[0];
-                c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) * 32) >> 12) -
+                s.x = g_row_menu_work_block->unk_0C[0];
+                c = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
+                      32) >>
+                     12) -
                     0x80;
                 s.col_b = c;
                 s.col_g = c;
@@ -1346,7 +1368,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        (u32 *)&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+        (u32 *)&sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
     switch (ret >> 16) {
     case 1:
         if ((g_menu_packed_cursors & 0x1C00) == 0x1400) {
@@ -1357,7 +1379,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
                 (((((u32)g_menu_packed_cursors >> 10) & 7) + 1) & 7) << 10;
         }
         snd_QueueSound(0, 0x7F, 0x7F);
-        D_800A3514 = 0;
+        g_row_menu_pulse_counter = 0;
         break;
     case 2:
         if ((g_menu_packed_cursors & 0x1C00) == 0) {
@@ -1368,14 +1390,14 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
                 (((((u32)g_menu_packed_cursors >> 10) & 7) - 1) & 7) << 10;
         }
         snd_QueueSound(0, 0x7F, 0x7F);
-        D_800A3514 = 0;
+        g_row_menu_pulse_counter = 0;
         break;
     }
 
     switch ((u32)g_menu_packed_cursors >> 10 & 7) {
     case 0:
         if ((ret & 0xFF) != 0) {
-            D_800A3524->unk20_0 ^= 1;
+            g_row_menu_working_record_ptr->unk20_0 ^= 1;
             snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*arg1 & 0x400040) {
@@ -1387,7 +1409,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
         break;
     case 1:
         if ((ret & 0xFF) != 0) {
-            D_800A3524->unk20_1 ^= 1;
+            g_row_menu_working_record_ptr->unk20_1 ^= 1;
             snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*arg1 & 0x400040) {
@@ -1399,7 +1421,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
         break;
     case 2:
         if ((ret & 0xFF) != 0) {
-            D_800A3524->unk20_2 ^= 1;
+            g_row_menu_working_record_ptr->unk20_2 ^= 1;
             snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*arg1 & 0x400040) {
@@ -1445,7 +1467,7 @@ const u8 D_800159A0[16] = "warning\n";
 s32 menu_UpdateOptionMenuChoices(s32 arg0, u32 arg1) {
     s32 sp10[10];
     GpuDb *t;
-    D_800A3514 += 1;
+    g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
@@ -1463,7 +1485,7 @@ s32 menu_HandleMemCardChoices(s32 *arg0, u32 *arg1) {
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
     switch (ret >> 16) {
     case 1:
         if ((g_menu_packed_cursors & 0xE000) == 0x4000) {
@@ -1551,7 +1573,7 @@ void menu_DrawMemCardChoices(s32 *arg0) {
         p1 = s.header->cells;
         s.table = p1;
         if ((((u32)g_menu_packed_cursors >> 13) & 7) == i) {
-            s.y = D_800A34FC->unk_0C[1];
+            s.y = g_row_menu_work_block->unk_0C[1];
             s.semi = 0;
         } else {
             s.y = 0;
@@ -1581,13 +1603,13 @@ extern u8 *D_800A36E4;
 void gpu_DrawIndexedSheetPair(
     s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
-       MOD.BIN root (D_800A34FC->unk_24) */
+       MOD.BIN root (g_row_menu_work_block->unk_24) */
     Unk8009B0E0Record **var_0;
     /* the sheet's 8-byte cells, just past its 12-byte header */
     Unk8009B400Record *cells;
     s32 i, j, n;
 
-    var_0 = D_800A34FC->unk_24->unk_20;
+    var_0 = g_row_menu_work_block->unk_24->unk_20;
 
     arg2->col_b = 0x30;
     arg2->col_g = 0x30;
@@ -1626,7 +1648,7 @@ void gpu_DrawIndexedSheetPair(
 }
 
 extern s32 D_800A3900;
-extern TILE *D_800A36DC;
+extern TILE *g_sheet_pair_panel_tile_cursor;
 extern u8 D_800F11E0[];
 extern DR_MODE D_800F1438[];
 extern TILE D_800F1498[];
@@ -1645,10 +1667,10 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32 arg0, s32 arg1) {
     var_1 = g_gpu_presented_frame_count & 1;
     D_800A36E4 = D_800F11E0 + var_1 * 0x12C;
     D_800A36E0 = D_800F1438 + var_1 * 4;
-    D_800A36DC = D_800F1498 + var_1 * 4;
+    g_sheet_pair_panel_tile_cursor = D_800F1498 + var_1 * 4;
     gpu_DrawIndexedSheetPair(arg0, 0, &sp10, 0);
     h = 0;
-    var_2 = D_800A34FC->unk_24->unk_48;
+    var_2 = g_row_menu_work_block->unk_24->unk_48;
     var_2 += arg0;
     if (arg1 != -1) {
         w = arg1 ? 0x1F : 0x28;
@@ -1657,36 +1679,36 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32 arg0, s32 arg1) {
         gpu_DrawIndexedSheetPair(0x12, D_800A3900, &sp10, arg1);
         x0 = (arg1 & 1) * 0x3A + 0x113;
         for (i = 0; i < 3; i++) {
-            SetTile(D_800A36DC);
+            SetTile(g_sheet_pair_panel_tile_cursor);
             if (i == 0) {
                 r = 0xFF;
-                SetSemiTrans(D_800A36DC, 0);
+                SetSemiTrans(g_sheet_pair_panel_tile_cursor, 0);
             } else {
                 r = 0xFF - ((i - 1) << 7);
-                SetSemiTrans(D_800A36DC, 1);
+                SetSemiTrans(g_sheet_pair_panel_tile_cursor, 1);
             }
-            D_800A36DC->r0 = r;
-            D_800A36DC->g0 = 0;
-            D_800A36DC->b0 = 0;
-            D_800A36DC->y0 = D_800A3900 + 0x7C - i;
-            D_800A36DC->x0 = x0;
-            D_800A36DC->w = w;
-            D_800A36DC->h = 1;
-            AddPrim(g_gpu_ot_ptr + 8, D_800A36DC);
-            D_800A36DC++;
+            g_sheet_pair_panel_tile_cursor->r0 = r;
+            g_sheet_pair_panel_tile_cursor->g0 = 0;
+            g_sheet_pair_panel_tile_cursor->b0 = 0;
+            g_sheet_pair_panel_tile_cursor->y0 = D_800A3900 + 0x7C - i;
+            g_sheet_pair_panel_tile_cursor->x0 = x0;
+            g_sheet_pair_panel_tile_cursor->w = w;
+            g_sheet_pair_panel_tile_cursor->h = 1;
+            AddPrim(g_gpu_ot_ptr + 8, g_sheet_pair_panel_tile_cursor);
+            g_sheet_pair_panel_tile_cursor++;
         }
     }
-    SetTile(D_800A36DC);
-    D_800A36DC->r0 = 0;
-    D_800A36DC->g0 = 0;
-    D_800A36DC->b0 = 0;
-    D_800A36DC->x0 = 0x140 - (var_2->x >> 1);
-    D_800A36DC->y0 = 0x78 - (var_2->y >> 1);
-    D_800A36DC->w = var_2->x;
-    D_800A36DC->h = var_2->y + h;
-    SetSemiTrans(D_800A36DC, 1);
-    AddPrim(g_gpu_ot_ptr + 8, D_800A36DC);
-    D_800A36DC++;
+    SetTile(g_sheet_pair_panel_tile_cursor);
+    g_sheet_pair_panel_tile_cursor->r0 = 0;
+    g_sheet_pair_panel_tile_cursor->g0 = 0;
+    g_sheet_pair_panel_tile_cursor->b0 = 0;
+    g_sheet_pair_panel_tile_cursor->x0 = 0x140 - (var_2->x >> 1);
+    g_sheet_pair_panel_tile_cursor->y0 = 0x78 - (var_2->y >> 1);
+    g_sheet_pair_panel_tile_cursor->w = var_2->x;
+    g_sheet_pair_panel_tile_cursor->h = var_2->y + h;
+    SetSemiTrans(g_sheet_pair_panel_tile_cursor, 1);
+    AddPrim(g_gpu_ot_ptr + 8, g_sheet_pair_panel_tile_cursor);
+    g_sheet_pair_panel_tile_cursor++;
 }
 
 extern s32 menu_HandleMemCardChoices();
@@ -1694,7 +1716,7 @@ extern s32 menu_HandleMemCardChoices();
 s32 menu_UpdateMemCardChoices(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
-    D_800A3514 += 1;
+    g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
@@ -1786,9 +1808,10 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     s.y = ypos;
     for (var_15 = 0; var_15 < 2; var_15++) {
         s.x = var_15 * 280;
-        if (D_800A34FC->unk_28.half[var_15] < 3) {
+        if (g_row_menu_work_block->unk_28.half[var_15] < 3) {
             for (var_9 = 0; var_9 < 4; var_9++) {
-                if (D_800A3524->unk17[D_800A34FC->unk_28.half[var_15]] &
+                if (g_row_menu_working_record_ptr
+                        ->unk17[g_row_menu_work_block->unk_28.half[var_15]] &
                     ((1 << var_9) << (var_15 * 4))) {
                     s.header = table[var_9 + 13];
                     s.semi = 0;
@@ -1838,7 +1861,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
-    recs = D_800A34FC->unk_24->unk_44;
+    recs = g_row_menu_work_block->unk_24->unk_44;
     tile = (TILE *)arg0[6];
     for (var_9 = 0; var_9 < 11; var_9++) {
         var_5 = &recs[var_9];
@@ -1862,7 +1885,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
-        var_9 = D_800A34FC->unk_28.half[j];
+        var_9 = g_row_menu_work_block->unk_28.half[j];
         rec = &recs[var_9 + 1];
         for (row = 0; row < 2; row++) {
             SetPolyG4(poly);
@@ -1980,10 +2003,10 @@ void menu_SetExclusiveRowBit(s32 arg0, s32 arg1) {
     mask = (1 << code) << (arg0 * 4);
 
     for (i = 0; i < 3; i++) {
-        if (i == D_800A34FC->unk_28.half[arg0]) {
-            D_800A3524->unk17[i] |= mask;
+        if (i == g_row_menu_work_block->unk_28.half[arg0]) {
+            g_row_menu_working_record_ptr->unk17[i] |= mask;
         } else {
-            D_800A3524->unk17[i] &= ~mask;
+            g_row_menu_working_record_ptr->unk17[i] &= ~mask;
         }
     }
 }
@@ -2001,7 +2024,7 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
     s16 var_9;
 
     ret = 0;
-    if ((D_800A34FC->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
+    if ((g_row_menu_work_block->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
         snd_QueueSound(1, 0x7F, 0x7F);
         ret = 1;
     }
@@ -2015,21 +2038,23 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
 
         if (*arg1 & (0x1000 << shift)) {
             snd_QueueSound(0, 0x7F, 0x7F);
-            if (D_800A34FC->unk_28.half[i] <= 0) {
-                D_800A34FC->unk_28.half[i] = lim;
+            if (g_row_menu_work_block->unk_28.half[i] <= 0) {
+                g_row_menu_work_block->unk_28.half[i] = lim;
             } else {
-                D_800A34FC->unk_28.half[i] = D_800A34FC->unk_28.half[i] - 1;
+                g_row_menu_work_block->unk_28.half[i] =
+                    g_row_menu_work_block->unk_28.half[i] - 1;
             }
         } else if (*arg1 & (0x4000 << shift)) {
             snd_QueueSound(0, 0x7F, 0x7F);
-            if (D_800A34FC->unk_28.half[i] >= lim) {
-                D_800A34FC->unk_28.half[i] = 0;
+            if (g_row_menu_work_block->unk_28.half[i] >= lim) {
+                g_row_menu_work_block->unk_28.half[i] = 0;
             } else {
-                D_800A34FC->unk_28.half[i] = D_800A34FC->unk_28.half[i] + 1;
+                g_row_menu_work_block->unk_28.half[i] =
+                    g_row_menu_work_block->unk_28.half[i] + 1;
             }
         }
 
-        var_9 = D_800A34FC->unk_28.half[i];
+        var_9 = g_row_menu_work_block->unk_28.half[i];
         switch (var_9) {
         case 0:
         case 1:
@@ -2043,7 +2068,7 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
             if (*arg1 & (0x40 << shift)) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (j = 0; j < 3; j++) {
-                    rec = (u8 *)D_800A3524 + j;
+                    rec = (u8 *)g_row_menu_working_record_ptr + j;
                     var_8 = *(rec + 0x1A) & (nib << var_4);
                     *(rec + 0x17) =
                         (u8)((*(rec + 0x17) & ((i == 0) ? 0xF0 : 0xF)) + var_8);
@@ -2054,7 +2079,7 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
             if (*arg1 & (0x40 << shift)) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (j = 0; j < 3; j++) {
-                    rec = (u8 *)D_800A3524 + j;
+                    rec = (u8 *)g_row_menu_working_record_ptr + j;
                     var_8 = *(rec + 0x1D) & (nib << var_4);
                     *(rec + 0x17) =
                         (u8)((*(rec + 0x17) & ((i == 0) ? 0xF0 : 0xF)) + var_8);
@@ -2106,7 +2131,8 @@ s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *arg0) {
             cells = s.header->cells;
             s.table = cells;
             for (row = 0; row < 2; row++) {
-                if (D_800A3524->unk17[var_3] & ((1 << (row * 4)) << column)) {
+                if (g_row_menu_working_record_ptr->unk17[var_3] &
+                    ((1 << (row * 4)) << column)) {
                     s.x = row * 280 + counts.count[row] * 23;
                     s.sprt_out = arg0[5];
                     arg0[5] = gpu_AddSpriteCells(&s);
@@ -2134,7 +2160,7 @@ s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *arg0) {
 
     row = 0;
     do {
-        if (D_800A34FC->unk_28.word == 0x50005) {
+        if (g_row_menu_work_block->unk_28.word == 0x50005) {
             s.header = table[17];
         } else if ((result >> row) & 1) {
             s.header = table[19];
@@ -2167,8 +2193,8 @@ s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *arg0) {
 }
 
 void menu_ResetRowBitCursors(void) {
-    D_800A34FC->unk_28.half[1] = 5;
-    D_800A34FC->unk_28.half[0] = 5;
+    g_row_menu_work_block->unk_28.half[1] = 5;
+    g_row_menu_work_block->unk_28.half[0] = 5;
 }
 
 extern void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *);
@@ -2178,7 +2204,7 @@ s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
     s32 r;
-    D_800A3514 += 1;
+    g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 2, t);
@@ -2209,9 +2235,12 @@ void menu_DrawStoredChoice(s32 *arg0) {
             s.has_color = 0;
             s.semi = 0;
         } else if (i == D_800A3528 + 1) {
-            s.y = D_800A34FC->unk_0C[1];
+            s.y = g_row_menu_work_block->unk_0C[1];
             s.col_r = s.col_g = s.col_b =
-                ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF)
+                  << 5) >>
+                 12) -
+                0x80;
             s.semi = 0;
         } else if (i != 1 && i != 2 && i != 3 && i == D_800A3528 + 4) {
             s.col_r = s.col_g = s.col_b = 0x80;
@@ -2247,7 +2276,7 @@ s32 menu_HandleStoredChoice(s32 arg0, u32 arg1) {
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
     if ((ret >> 16) == 1) {
         D_800A3528 = D_800A3528 + 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -2268,7 +2297,7 @@ s32 menu_HandleStoredChoice(s32 arg0, u32 arg1) {
         if (sval == 2) {
             result = -1;
         } else {
-            D_800A3524->unk14_17 = sval;
+            g_row_menu_working_record_ptr->unk14_17 = sval;
             result = 1;
         }
     }
@@ -2281,7 +2310,7 @@ s32 menu_UpdateStoredChoice(s32 arg0, s32 arg1) {
     s32 sp_buf[22];
     s32 result;
     GpuDb *db;
-    D_800A3514 += 1;
+    g_row_menu_pulse_counter += 1;
     db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(
         (s32)&sp_buf[0], (s32)&D_800A3518);
@@ -2332,7 +2361,7 @@ void gpu_DrawIndexedCellsAndDecimalDigitPairs(
         n = 3;
     }
     for (i = 0; i < n; i++) {
-        idx = D_800A3524->unk21[i].unk3;
+        idx = g_row_menu_working_record_ptr->unk21[i].unk3;
         if (idx >= 12 && idx < 22) {
             idx -= 2;
         }
@@ -2368,13 +2397,13 @@ void gpu_DrawIndexedCellsAndDecimalDigitPairs(
             }
             switch (i) {
             case 0:
-                d[0] = d[1] = D_800A3524->unk21[k].unk0;
+                d[0] = d[1] = g_row_menu_working_record_ptr->unk21[k].unk0;
                 break;
             case 1:
-                d[0] = d[1] = D_800A3524->unk21[k].unk1;
+                d[0] = d[1] = g_row_menu_working_record_ptr->unk21[k].unk1;
                 break;
             case 2:
-                d[0] = d[1] = D_800A3524->unk21[k].unk2;
+                d[0] = d[1] = g_row_menu_working_record_ptr->unk21[k].unk2;
                 break;
             }
             d[0] = d[0] % 10;
@@ -2432,9 +2461,12 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *arg0) {
     for (i = 0; i < 3; i++) {
         s.dd94_00.has_color = 1;
         if (i == D_800A352C + 1) {
-            s.dd94_00.y = D_800A34FC->unk_0C[1];
+            s.dd94_00.y = g_row_menu_work_block->unk_0C[1];
             s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b =
-                ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF)
+                  << 5) >>
+                 12) -
+                0x80;
         } else {
             if (i == 0) {
                 s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b = 0x80;
@@ -2470,7 +2502,7 @@ s32 menu_HandleConfirmInput(s32 arg0, u32 arg1) {
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
     if (((ret >> 16) & 0xFF) != 0) {
         D_800A352C += 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -2496,7 +2528,7 @@ extern s32 menu_HandleConfirmInput();
 s32 menu_UpdateConfirmMenu(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
-    D_800A3514 += 1;
+    g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
@@ -2514,7 +2546,7 @@ s32 gpu_BeginFullscreenImageDisplay(void) {
     s32 v0;
 
     rect = D_800A32D8;
-    if (D_800A3524->unk20_0) {
+    if (g_row_menu_working_record_ptr->unk20_0) {
         v0 = cdrom_GetFileIndex(2, 0x60);
     } else {
         v0 = cdrom_GetFileIndex(2, 7);
@@ -2565,7 +2597,7 @@ void gpu_AdvanceBufferCounterAndBuildDrawContext(s32 *a0, s32 *a1) {
     Unk8006E49CRec *v0;
     a1[0]++;
     v0 = gpu_GetPrimBufferAndRefreshStrip(a1[0] & 1);
-    s0[1] = (s32)D_800A34FC->unk_24;
+    s0[1] = (s32)g_row_menu_work_block->unk_24;
     s0[3] = (s32)v0->unk_04;
     s0[2] = v0->unk_00;
     s0[4] = (s32)v0->unk_08;
@@ -2632,7 +2664,7 @@ RECT D_800A32E0 = {0, 0, 640, 480};
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-TILE *D_800A36DC;
+TILE *g_sheet_pair_panel_tile_cursor;
 DR_MODE *D_800A36E0;
 u8 *D_800A36E4;
 s32 D_800A372C;

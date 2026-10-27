@@ -3,7 +3,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7CF8 800174F8 9000B2AF */  sw         $s2, 0x90($sp)
     /* 7CFC 800174FC 0F80123C */  lui        $s2, %hi(D_800F33D8)
     /* 7D00 80017500 D8335226 */  addiu      $s2, $s2, %lo(D_800F33D8)
-    /* 7D04 80017504 9C068393 */  lbu        $v1, %gp_rel(D_800A3768)($gp)
+    /* 7D04 80017504 9C068393 */  lbu        $v1, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7D08 80017508 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 7D0C 8001750C 9400BFAF */  sw         $ra, 0x94($sp)
     /* 7D10 80017510 8C00B1AF */  sw         $s1, 0x8C($sp)
@@ -27,7 +27,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7D58 80017558 800684AF */  sw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 7D5C 8001755C 11EE010C */  jal        ClearOTagR
     /* 7D60 80017560 02000524 */   addiu     $a1, $zero, 0x2
-    /* 7D64 80017564 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
+    /* 7D64 80017564 9C068593 */  lbu        $a1, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7D68 80017568 0A000224 */  addiu      $v0, $zero, 0xA
     /* 7D6C 8001756C 2C00A210 */  beq        $a1, $v0, .L80017620
     /* 7D70 80017570 0B00A228 */   slti      $v0, $a1, 0xB
@@ -57,7 +57,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7DCC 800175CC 00000000 */   nop
     /* 7DD0 800175D0 21204002 */  addu       $a0, $s2, $zero
   .L800175D4:
-    /* 7DD4 800175D4 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
+    /* 7DD4 800175D4 9C068593 */  lbu        $a1, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7DD8 800175D8 5575010C */  jal        gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 7DDC 800175DC 01001026 */   addiu     $s0, $s0, 0x1
     /* 7DE0 800175E0 21904000 */  addu       $s2, $v0, $zero
@@ -72,7 +72,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E00 80017600 07004230 */  andi       $v0, $v0, 0x7
     /* 7E04 80017604 37004014 */  bnez       $v0, .L800176E4
     /* 7E08 80017608 00000000 */   nop
-    /* 7E0C 8001760C 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
+    /* 7E0C 8001760C 9C068593 */  lbu        $a1, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7E10 80017610 5575010C */  jal        gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 7E14 80017614 21204002 */   addu      $a0, $s2, $zero
     /* 7E18 80017618 B95D0008 */  j          .L800176E4
@@ -86,7 +86,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E34 80017634 00000000 */   nop
   .L80017638:
     /* 7E38 80017638 2C088693 */  lbu        $a2, %gp_rel(D_800A38F8)($gp)
-    /* 7E3C 8001763C D4068593 */  lbu        $a1, %gp_rel(D_800A37A0)($gp)
+    /* 7E3C 8001763C D4068593 */  lbu        $a1, %gp_rel(g_fight_stage_command_count)($gp)
     /* 7E40 80017640 FF00C430 */  andi       $a0, $a2, 0xFF
     /* 7E44 80017644 2B10A400 */  sltu       $v0, $a1, $a0
     /* 7E48 80017648 26004014 */  bnez       $v0, .L800176E4

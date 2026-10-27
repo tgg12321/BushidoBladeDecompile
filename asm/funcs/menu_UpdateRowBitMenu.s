@@ -3,7 +3,7 @@ glabel menu_UpdateRowBitMenu
     /* 5DB3C 8006D33C 7000A4AF */  sw         $a0, 0x70($sp)
     /* 5DB40 8006D340 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5DB44 8006D344 7400A5AF */  sw         $a1, 0x74($sp)
-    /* 5DB48 8006D348 4804828F */  lw         $v0, %gp_rel(D_800A3514)($gp)
+    /* 5DB48 8006D348 4804828F */  lw         $v0, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 5DB4C 8006D34C 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
     /* 5DB50 8006D350 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 5DB54 8006D354 0A80053C */  lui        $a1, %hi(D_800A3518)
@@ -17,7 +17,7 @@ glabel menu_UpdateRowBitMenu
     /* 5DB74 8006D374 C0801000 */  sll        $s0, $s0, 3
     /* 5DB78 8006D378 21800302 */  addu       $s0, $s0, $v1
     /* 5DB7C 8006D37C 00811000 */  sll        $s0, $s0, 4
-    /* 5DB80 8006D380 480482AF */  sw         $v0, %gp_rel(D_800A3514)($gp)
+    /* 5DB80 8006D380 480482AF */  sw         $v0, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 5DB84 8006D384 0F80023C */  lui        $v0, %hi(g_gpu_db)
     /* 5DB88 8006D388 38744224 */  addiu      $v0, $v0, %lo(g_gpu_db)
     /* 5DB8C 8006D38C E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext

@@ -16,8 +16,8 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F7D8 8001EFD8 1800C300 */  mult       $a2, $v1
     /* F7DC 8001EFDC 0A80013C */  lui        $at, %hi(D_800A3778)
     /* F7E0 8001EFE0 783722AC */  sw         $v0, %lo(D_800A3778)($at)
-    /* F7E4 8001EFE4 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* F7E8 8001EFE8 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* F7E4 8001EFE4 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* F7E8 8001EFE8 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F7EC 8001EFEC 1080023C */  lui        $v0, %hi(D_80101EC8)
     /* F7F0 8001EFF0 C81E4224 */  addiu      $v0, $v0, %lo(D_80101EC8)
     /* F7F4 8001EFF4 00210300 */  sll        $a0, $v1, 4
@@ -60,8 +60,8 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F888 8001F088 01000424 */   addiu     $a0, $zero, 0x1
     /* F88C 8001F08C 76CD000C */  jal        snd_UpdateStageSounds
     /* F890 8001F090 00000000 */   nop
-    /* F894 8001F094 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* F898 8001F098 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* F894 8001F094 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* F898 8001F098 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F89C 8001F09C 00000000 */  nop
     /* F8A0 8001F0A0 00110300 */  sll        $v0, $v1, 4
     /* F8A4 8001F0A4 21104300 */  addu       $v0, $v0, $v1
@@ -115,16 +115,16 @@ glabel fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPad
     /* F958 8001F158 687C0008 */  j          .L8001F1A0
     /* F95C 8001F15C 00000000 */   nop
   .L8001F160:
-    /* F960 8001F160 0A80023C */  lui        $v0, %hi(D_800A3748)
-    /* F964 8001F164 48374280 */  lb         $v0, %lo(D_800A3748)($v0)
+    /* F960 8001F160 0A80023C */  lui        $v0, %hi(g_fight_followup_fighter_index)
+    /* F964 8001F164 48374280 */  lb         $v0, %lo(g_fight_followup_fighter_index)($v0)
     /* F968 8001F168 00000000 */  nop
     /* F96C 8001F16C 0F004014 */  bnez       $v0, .L8001F1AC
     /* F970 8001F170 0C000224 */   addiu     $v0, $zero, 0xC
     /* F974 8001F174 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* F978 8001F178 00000000 */   nop
     /* F97C 8001F17C 02000224 */  addiu      $v0, $zero, 0x2
-    /* F980 8001F180 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* F984 8001F184 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* F980 8001F180 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* F984 8001F184 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* F988 8001F188 F0CE000C */  jal        fight_AdvanceOpponentOrder
     /* F98C 8001F18C 00000000 */   nop
     /* F990 8001F190 6D7C0008 */  j          .L8001F1B4

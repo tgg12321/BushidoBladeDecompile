@@ -7,8 +7,8 @@ glabel camera_SetFighterFocusView
     /* C484 8001BC84 1800BFAF */  sw         $ra, 0x18($sp)
     /* C488 8001BC88 79FC000C */  jal        func_8003F1E4
     /* C48C 8001BC8C 21200000 */   addu      $a0, $zero, $zero
-    /* C490 8001BC90 0F80053C */  lui        $a1, %hi(D_800F6608)
-    /* C494 8001BC94 0866A524 */  addiu      $a1, $a1, %lo(D_800F6608)
+    /* C490 8001BC90 0F80053C */  lui        $a1, %hi(g_camera_default_view_record)
+    /* C494 8001BC94 0866A524 */  addiu      $a1, $a1, %lo(g_camera_default_view_record)
     /* C498 8001BC98 7401028E */  lw         $v0, 0x174($s0)
     /* C49C 8001BC9C 7801038E */  lw         $v1, 0x178($s0)
     /* C4A0 8001BCA0 7C01048E */  lw         $a0, 0x17C($s0)

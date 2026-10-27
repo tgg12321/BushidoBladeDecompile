@@ -34,8 +34,8 @@ glabel menu_DrawStoredChoice
     /* 5DC54 8006D454 01008224 */  addiu      $v0, $a0, 0x1
     /* 5DC58 8006D458 11006214 */  bne        $v1, $v0, .L8006D4A0
     /* 5DC5C 8006D45C FFFF2226 */   addiu     $v0, $s1, -0x1
-    /* 5DC60 8006D460 4804848F */  lw         $a0, %gp_rel(D_800A3514)($gp)
-    /* 5DC64 8006D464 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5DC60 8006D460 4804848F */  lw         $a0, %gp_rel(g_row_menu_pulse_counter)($gp)
+    /* 5DC64 8006D464 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5DC68 8006D468 1F008430 */  andi       $a0, $a0, 0x1F
     /* 5DC6C 8006D46C C0210400 */  sll        $a0, $a0, 7
     /* 5DC70 8006D470 0E004284 */  lh         $v0, 0xE($v0)

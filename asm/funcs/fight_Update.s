@@ -12,8 +12,8 @@ glabel fight_Update
     /* F0A0 8001E8A0 783722AC */  sw         $v0, %lo(D_800A3778)($at)
     /* F0A4 8001E8A4 086A000C */  jal        camera_UpdateTwoFighterView
     /* F0A8 8001E8A8 E4028724 */   addiu     $a3, $a0, 0x2E4
-    /* F0AC 8001E8AC 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* F0B0 8001E8B0 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* F0AC 8001E8AC 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* F0B0 8001E8B0 BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* F0B4 8001E8B4 00000000 */  nop
     /* F0B8 8001E8B8 0D004010 */  beqz       $v0, .L8001E8F0
     /* F0BC 8001E8BC 00000000 */   nop
@@ -56,8 +56,8 @@ glabel fight_Update
     /* F14C 8001E94C 00000000 */   nop
     /* F150 8001E950 E8E5000C */  jal        replay_AdvanceFrame
     /* F154 8001E954 00000000 */   nop
-    /* F158 8001E958 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* F15C 8001E95C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* F158 8001E958 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* F15C 8001E95C BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* F160 8001E960 00000000 */  nop
     /* F164 8001E964 0A004010 */  beqz       $v0, .L8001E990
     /* F168 8001E968 00000000 */   nop

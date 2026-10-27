@@ -11,8 +11,8 @@ glabel gpu_ResetAndStampViewCenteredCellAttributes
     /* 2FA94 8003F294 04004224 */   addiu     $v0, $v0, 0x4
     /* 2FA98 8003F298 9AFC000C */  jal        func_8003F268
     /* 2FA9C 8003F29C 00000000 */   nop
-    /* 2FAA0 8003F2A0 0A80023C */  lui        $v0, %hi(D_800A3708)
-    /* 2FAA4 8003F2A4 0837428C */  lw         $v0, %lo(D_800A3708)($v0)
+    /* 2FAA0 8003F2A0 0A80023C */  lui        $v0, %hi(g_view_camera_root_ptr)
+    /* 2FAA4 8003F2A4 0837428C */  lw         $v0, %lo(g_view_camera_root_ptr)($v0)
     /* 2FAA8 8003F2A8 6210043C */  lui        $a0, (0x10624DD3 >> 16)
     /* 2FAAC 8003F2AC 4C00438C */  lw         $v1, 0x4C($v0)
     /* 2FAB0 8003F2B0 D34D8434 */  ori        $a0, $a0, (0x10624DD3 & 0xFFFF)

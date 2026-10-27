@@ -183,7 +183,7 @@ void sys_Init(void) {
     StartPAD();
     ChangeClearPAD(0);
     disp_Init();
-    D_800A3768 = DISP_DISABLED;
+    g_local_ot_draw_mode = DISP_DISABLED;
     D_800A36A8 = 0;
     cdrom_Init();
     memcard_Init();
@@ -298,7 +298,7 @@ void func_80016D78(void) {
     D_800A3746 = 0;
     func_80046B44();
     D_800A36F1 = 2;
-    D_800A38C4[1] = 0;
+    g_motion_fighter_loaded_data_ids[1] = 0;
     D_800A36B0 = 0;
     g_comb_abort_request = 0;
 }
@@ -463,7 +463,7 @@ loop:
 
     if (g_comb_abort_request != 0) {
         cdrom_PauseAndWait();
-        D_800A3768 = DISP_DISABLED;
+        g_local_ot_draw_mode = DISP_DISABLED;
         g_comb_abort_request = 0;
         D_800A31DA = 0;
         g_main_loop_handler_index = 8;
@@ -535,12 +535,12 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
      * (owner ruling 11) */
     s32 temp;
     s32 var_3;
-    /* holds two values: the D_800A3768 switch selector, then the case-20
-     * D_800A37A0 limit (owner ruling 11) */
+    /* holds two values: the g_local_ot_draw_mode switch selector, then the
+     * case-20 g_fight_stage_command_count limit (owner ruling 11) */
     s32 temp2;
 
     var_3 = (s32)D_800F33D8;
-    if (D_800A3768 == DISP_DISABLED) {
+    if (g_local_ot_draw_mode == DISP_DISABLED) {
         return;
     }
     SetDefDrawEnv(
@@ -549,7 +549,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     PutDrawEnv(&env);
     g_gpu_ot_ptr = var_0;
     ClearOTagR(var_0, 2);
-    temp2 = D_800A3768;
+    temp2 = g_local_ot_draw_mode;
     switch (temp2) {
     case 1:
     case 2:
@@ -559,10 +559,11 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
             temp = (rand() & 3) + 4;
             for (i = 0; i < temp; i++) {
                 var_3 = gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(
-                    var_3, D_800A3768);
+                    var_3, g_local_ot_draw_mode);
             }
         } else if ((rand() & 7) == 0) {
-            gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(var_3, D_800A3768);
+            gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(
+                var_3, g_local_ot_draw_mode);
         }
         break;
     case 10:
@@ -571,7 +572,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     case 20: {
         u8 cur;
 
-        temp2 = D_800A37A0;
+        temp2 = g_fight_stage_command_count;
         cur = D_800A38F8;
         if ((u32)temp2 < cur) {
             break;
@@ -830,12 +831,12 @@ u8 D_800A3713;
 u8 D_800A3716;
 u8 D_800A3744;
 u32 *g_gpu_ot_ptr;
-u8 D_800A3768;
+u8 g_local_ot_draw_mode;
 u32 D_800A3770[2];
 s32 D_800A3784;
 u8 D_800A3788;
 u32 D_800A3798;
-u8 D_800A37A0;
+u8 g_fight_stage_command_count;
 s32 D_800A37C0;
 s16 g_main_loop_handler_index;
 u8 D_800A389A;

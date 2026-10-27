@@ -9,7 +9,7 @@ glabel menu_HandleConfirmInput
     /* 5E784 8006DF84 FFFF0232 */  andi       $v0, $s0, 0xFFFF
     /* 5E788 8006DF88 021C1000 */  srl        $v1, $s0, 16
     /* 5E78C 8006DF8C 25104300 */  or         $v0, $v0, $v1
-    /* 5E790 8006DF90 3004868F */  lw         $a2, %gp_rel(D_800A34FC)($gp)
+    /* 5E790 8006DF90 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
     /* 5E794 8006DF94 0A80073C */  lui        $a3, %hi(D_800A350C)
     /* 5E798 8006DF98 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
     /* 5E79C 8006DF9C 2000BFAF */  sw         $ra, 0x20($sp)

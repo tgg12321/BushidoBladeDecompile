@@ -2,8 +2,8 @@ glabel resource_RebaseFrameAnimatedEntryBlockAndPointers
     /* 35470 80044C70 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 35474 80044C74 1000B0AF */  sw         $s0, 0x10($sp)
     /* 35478 80044C78 21808000 */  addu       $s0, $a0, $zero
-    /* 3547C 80044C7C 0B80043C */  lui        $a0, %hi(D_800A9CF8)
-    /* 35480 80044C80 F89C8484 */  lh         $a0, %lo(D_800A9CF8)($a0)
+    /* 3547C 80044C7C 0B80043C */  lui        $a0, %hi(g_node_frame_animation_context)
+    /* 35480 80044C80 F89C8484 */  lh         $a0, %lo(g_node_frame_animation_context)($a0)
     /* 35484 80044C84 1400BFAF */  sw         $ra, 0x14($sp)
     /* 35488 80044C88 4010010C */  jal        reloc_RebaseBlock
     /* 3548C 80044C8C 21280002 */   addu      $a1, $s0, $zero

@@ -28,30 +28,30 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D6C4 8001CEC4 00000000 */  nop
     /* D6C8 8001CEC8 06004010 */  beqz       $v0, .L8001CEE4
     /* D6CC 8001CECC 64000224 */   addiu     $v0, $zero, 0x64
-    /* D6D0 8001CED0 0A80033C */  lui        $v1, %hi(D_800A38E2)
-    /* D6D4 8001CED4 E2386390 */  lbu        $v1, %lo(D_800A38E2)($v1)
+    /* D6D0 8001CED0 0A80033C */  lui        $v1, %hi(g_fight_step_table_next_row)
+    /* D6D4 8001CED4 E2386390 */  lbu        $v1, %lo(g_fight_step_table_next_row)($v1)
     /* D6D8 8001CED8 00000000 */  nop
     /* D6DC 8001CEDC 0D006210 */  beq        $v1, $v0, .L8001CF14
     /* D6E0 8001CEE0 00000000 */   nop
   .L8001CEE4:
     /* D6E4 8001CEE4 0200033C */  lui        $v1, (0x2BF20 >> 16)
-    /* D6E8 8001CEE8 0A80023C */  lui        $v0, %hi(D_800A3858)
-    /* D6EC 8001CEEC 5838428C */  lw         $v0, %lo(D_800A3858)($v0)
+    /* D6E8 8001CEE8 0A80023C */  lui        $v0, %hi(g_fight_timer_frames)
+    /* D6EC 8001CEEC 5838428C */  lw         $v0, %lo(g_fight_timer_frames)($v0)
     /* D6F0 8001CEF0 20BF6334 */  ori        $v1, $v1, (0x2BF20 & 0xFFFF)
     /* D6F4 8001CEF4 01004224 */  addiu      $v0, $v0, 0x1
-    /* D6F8 8001CEF8 0A80013C */  lui        $at, %hi(D_800A3858)
-    /* D6FC 8001CEFC 583822AC */  sw         $v0, %lo(D_800A3858)($at)
+    /* D6F8 8001CEF8 0A80013C */  lui        $at, %hi(g_fight_timer_frames)
+    /* D6FC 8001CEFC 583822AC */  sw         $v0, %lo(g_fight_timer_frames)($at)
     /* D700 8001CF00 2A106200 */  slt        $v0, $v1, $v0
     /* D704 8001CF04 03004010 */  beqz       $v0, .L8001CF14
     /* D708 8001CF08 00000000 */   nop
-    /* D70C 8001CF0C 0A80013C */  lui        $at, %hi(D_800A3858)
-    /* D710 8001CF10 583823AC */  sw         $v1, %lo(D_800A3858)($at)
+    /* D70C 8001CF0C 0A80013C */  lui        $at, %hi(g_fight_timer_frames)
+    /* D710 8001CF10 583823AC */  sw         $v1, %lo(g_fight_timer_frames)($at)
   .L8001CF14:
     /* D714 8001CF14 5A73000C */  jal        fight_SplitFrameCounterIntoMinutesSecondsHundredths
     /* D718 8001CF18 1000A427 */   addiu     $a0, $sp, 0x10
     /* D71C 8001CF1C 1000A427 */  addiu      $a0, $sp, 0x10
-    /* D720 8001CF20 0A80053C */  lui        $a1, %hi(D_800A38E2)
-    /* D724 8001CF24 E238A590 */  lbu        $a1, %lo(D_800A38E2)($a1)
+    /* D720 8001CF20 0A80053C */  lui        $a1, %hi(g_fight_step_table_next_row)
+    /* D724 8001CF24 E238A590 */  lbu        $a1, %lo(g_fight_step_table_next_row)($a1)
     /* D728 8001CF28 0A80063C */  lui        $a2, %hi(g_prim_buf_cursor)
     /* D72C 8001CF2C B438C68C */  lw         $a2, %lo(g_prim_buf_cursor)($a2)
     /* D730 8001CF30 0576010C */  jal        gpu_DrawTimeFieldsAndDecimalCounter

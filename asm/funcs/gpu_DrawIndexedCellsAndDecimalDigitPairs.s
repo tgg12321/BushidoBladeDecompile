@@ -79,7 +79,7 @@ glabel gpu_DrawIndexedCellsAndDecimalDigitPairs
     /* 5E134 8006D934 00141300 */  sll        $v0, $s3, 16
   .L8006D938:
     /* 5E138 8006D938 032C0200 */  sra        $a1, $v0, 16
-    /* 5E13C 8006D93C 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
+    /* 5E13C 8006D93C 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5E140 8006D940 80180500 */  sll        $v1, $a1, 2
     /* 5E144 8006D944 21104300 */  addu       $v0, $v0, $v1
     /* 5E148 8006D948 24004390 */  lbu        $v1, 0x24($v0)
@@ -217,7 +217,7 @@ glabel gpu_DrawIndexedCellsAndDecimalDigitPairs
     /* 5E32C 8006DB2C E1B60108 */  j          .L8006DB84
     /* 5E330 8006DB30 00000000 */   nop
   .L8006DB34:
-    /* 5E334 8006DB34 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 5E334 8006DB34 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5E338 8006DB38 83130200 */  sra        $v0, $v0, 14
     /* 5E33C 8006DB3C 21186200 */  addu       $v1, $v1, $v0
     /* 5E340 8006DB40 21006290 */  lbu        $v0, 0x21($v1)
@@ -225,14 +225,14 @@ glabel gpu_DrawIndexedCellsAndDecimalDigitPairs
     /* 5E348 8006DB48 4A00A2A7 */   sh        $v0, 0x4A($sp)
   .L8006DB4C:
     /* 5E34C 8006DB4C 00141100 */  sll        $v0, $s1, 16
-    /* 5E350 8006DB50 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 5E350 8006DB50 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5E354 8006DB54 83130200 */  sra        $v0, $v0, 14
     /* 5E358 8006DB58 21186200 */  addu       $v1, $v1, $v0
     /* 5E35C 8006DB5C 22006290 */  lbu        $v0, 0x22($v1)
     /* 5E360 8006DB60 E0B60108 */  j          .L8006DB80
     /* 5E364 8006DB64 4A00A2A7 */   sh        $v0, 0x4A($sp)
   .L8006DB68:
-    /* 5E368 8006DB68 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 5E368 8006DB68 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5E36C 8006DB6C 83130200 */  sra        $v0, $v0, 14
     /* 5E370 8006DB70 21186200 */  addu       $v1, $v1, $v0
     /* 5E374 8006DB74 23006290 */  lbu        $v0, 0x23($v1)

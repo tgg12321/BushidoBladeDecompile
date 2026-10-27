@@ -3,8 +3,8 @@ glabel node_BindFrameDataAndReserveEntryBuffer
     /* 34E74 80044674 1000B0AF */  sw         $s0, 0x10($sp)
     /* 34E78 80044678 2180C000 */  addu       $s0, $a2, $zero
     /* 34E7C 8004467C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 34E80 80044680 0B80013C */  lui        $at, %hi(D_800A9CF8)
-    /* 34E84 80044684 F89C25A4 */  sh         $a1, %lo(D_800A9CF8)($at)
+    /* 34E80 80044680 0B80013C */  lui        $at, %hi(g_node_frame_animation_context)
+    /* 34E84 80044684 F89C25A4 */  sh         $a1, %lo(g_node_frame_animation_context)($at)
     /* 34E88 80044688 00008294 */  lhu        $v0, 0x0($a0)
     /* 34E8C 8004468C 02008424 */  addiu      $a0, $a0, 0x2
     /* 34E90 80044690 0B80013C */  lui        $at, %hi(D_800A9D00)

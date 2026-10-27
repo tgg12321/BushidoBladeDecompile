@@ -95,13 +95,13 @@ glabel motion_LoadFighterData
     /* 117C8 80020FC8 5C2323A4 */  sh         $v1, %lo(D_80101EC8 + 0x494)($at)
     /* 117CC 80020FCC 0D00A414 */  bne        $a1, $a0, .L80021004
     /* 117D0 80020FD0 00000000 */   nop
-    /* 117D4 80020FD4 0A80023C */  lui        $v0, %hi(D_800A38C4)
-    /* 117D8 80020FD8 C4384294 */  lhu        $v0, %lo(D_800A38C4)($v0)
+    /* 117D4 80020FD4 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids)
+    /* 117D8 80020FD8 C4384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids)($v0)
     /* 117DC 80020FDC 00000000 */  nop
     /* 117E0 80020FE0 7F004410 */  beq        $v0, $a0, .L800211E0
     /* 117E4 80020FE4 00000000 */   nop
-    /* 117E8 80020FE8 0A80023C */  lui        $v0, %hi(D_800A38C4 + 0x2)
-    /* 117EC 80020FEC C6384294 */  lhu        $v0, %lo(D_800A38C4 + 0x2)($v0)
+    /* 117E8 80020FE8 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 117EC 80020FEC C6384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids + 0x2)($v0)
     /* 117F0 80020FF0 00000000 */  nop
     /* 117F4 80020FF4 7A004410 */  beq        $v0, $a0, .L800211E0
     /* 117F8 80020FF8 00000000 */   nop
@@ -109,13 +109,13 @@ glabel motion_LoadFighterData
     /* 117FC 80020FFC 1D840008 */  j          .L80021074
     /* 11800 80021000 1000A6A7 */   sh        $a2, 0x10($sp)
   .L80021004:
-    /* 11804 80021004 0A80023C */  lui        $v0, %hi(D_800A38C4)
-    /* 11808 80021008 C4384294 */  lhu        $v0, %lo(D_800A38C4)($v0)
+    /* 11804 80021004 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids)
+    /* 11808 80021008 C4384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids)($v0)
     /* 1180C 8002100C 00000000 */  nop
     /* 11810 80021010 08004514 */  bne        $v0, $a1, .L80021034
     /* 11814 80021014 00000000 */   nop
-    /* 11818 80021018 0A80023C */  lui        $v0, %hi(D_800A38C4 + 0x2)
-    /* 1181C 8002101C C6384294 */  lhu        $v0, %lo(D_800A38C4 + 0x2)($v0)
+    /* 11818 80021018 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 1181C 8002101C C6384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids + 0x2)($v0)
     /* 11820 80021020 00000000 */  nop
     /* 11824 80021024 6E004410 */  beq        $v0, $a0, .L800211E0
     /* 11828 80021028 00000000 */   nop
@@ -124,16 +124,16 @@ glabel motion_LoadFighterData
   .L80021034:
     /* 11834 80021034 08004414 */  bne        $v0, $a0, .L80021058
     /* 11838 80021038 00000000 */   nop
-    /* 1183C 8002103C 0A80023C */  lui        $v0, %hi(D_800A38C4 + 0x2)
-    /* 11840 80021040 C6384294 */  lhu        $v0, %lo(D_800A38C4 + 0x2)($v0)
+    /* 1183C 8002103C 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 11840 80021040 C6384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids + 0x2)($v0)
     /* 11844 80021044 00000000 */  nop
     /* 11848 80021048 65004510 */  beq        $v0, $a1, .L800211E0
     /* 1184C 8002104C 00000000 */   nop
     /* 11850 80021050 1D840008 */  j          .L80021074
     /* 11854 80021054 1200A6A7 */   sh        $a2, 0x12($sp)
   .L80021058:
-    /* 11858 80021058 0A80023C */  lui        $v0, %hi(D_800A38C4 + 0x2)
-    /* 1185C 8002105C C6384294 */  lhu        $v0, %lo(D_800A38C4 + 0x2)($v0)
+    /* 11858 80021058 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 1185C 8002105C C6384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids + 0x2)($v0)
     /* 11860 80021060 00000000 */  nop
     /* 11864 80021064 E5FF4410 */  beq        $v0, $a0, .L80020FFC
     /* 11868 80021068 00000000 */   nop
@@ -225,9 +225,9 @@ glabel motion_LoadFighterData
     /* 119B0 800211B0 21083100 */  addu       $at, $at, $s1
     /* 119B4 800211B4 C02722AC */  sw         $v0, %lo(D_801027C0)($at)
     /* 119B8 800211B8 00006296 */  lhu        $v0, 0x0($s3)
-    /* 119BC 800211BC 0A80013C */  lui        $at, %hi(D_800A38C4)
+    /* 119BC 800211BC 0A80013C */  lui        $at, %hi(g_motion_fighter_loaded_data_ids)
     /* 119C0 800211C0 21083400 */  addu       $at, $at, $s4
-    /* 119C4 800211C4 C43822A4 */  sh         $v0, %lo(D_800A38C4)($at)
+    /* 119C4 800211C4 C43822A4 */  sh         $v0, %lo(g_motion_fighter_loaded_data_ids)($at)
   .L800211C8:
     /* 119C8 800211C8 02007326 */  addiu      $s3, $s3, 0x2
     /* 119CC 800211CC 02009426 */  addiu      $s4, $s4, 0x2

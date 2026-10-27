@@ -48,8 +48,8 @@ glabel fighter_UpdateCpuProbes
     /* 47564 80056D64 655B0108 */  j          .L80056D94
     /* 47568 80056D68 21800202 */   addu      $s0, $s0, $v0
   .L80056D6C:
-    /* 4756C 80056D6C 0F80033C */  lui        $v1, %hi(D_800F6608)
-    /* 47570 80056D70 0866638C */  lw         $v1, %lo(D_800F6608)($v1)
+    /* 4756C 80056D6C 0F80033C */  lui        $v1, %hi(g_camera_default_view_record)
+    /* 47570 80056D70 0866638C */  lw         $v1, %lo(g_camera_default_view_record)($v1)
     /* 47574 80056D74 F400248E */  lw         $a0, 0xF4($s1)
     /* 47578 80056D78 0F80023C */  lui        $v0, %hi(D_800F6610)
     /* 4757C 80056D7C 1066428C */  lw         $v0, %lo(D_800F6610)($v0)

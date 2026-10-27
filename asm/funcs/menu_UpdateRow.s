@@ -4,7 +4,7 @@ glabel menu_UpdateRow
     /* 61478 80070C78 21888000 */  addu       $s1, $a0, $zero
     /* 6147C 80070C7C 7800B4AF */  sw         $s4, 0x78($sp)
     /* 61480 80070C80 60001424 */  addiu      $s4, $zero, 0x60
-    /* 61484 80070C84 DC04838F */  lw         $v1, %gp_rel(D_800A35A8)($gp)
+    /* 61484 80070C84 DC04838F */  lw         $v1, %gp_rel(g_entry_menu_resources)($gp)
     /* 61488 80070C88 00010224 */  addiu      $v0, $zero, 0x100
     /* 6148C 80070C8C 7C00BFAF */  sw         $ra, 0x7C($sp)
     /* 61490 80070C90 7400B3AF */  sw         $s3, 0x74($sp)
@@ -97,12 +97,12 @@ glabel menu_UpdateRow
     /* 615E8 80070DE8 2DEA010C */  jal        AddPrim
     /* 615EC 80070DEC 28008424 */   addiu     $a0, $a0, 0x28
     /* 615F0 80070DF0 21800000 */  addu       $s0, $zero, $zero
-    /* 615F4 80070DF4 8C048697 */  lhu        $a2, %gp_rel(D_800A3558)($gp)
+    /* 615F4 80070DF4 8C048697 */  lhu        $a2, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
     /* 615F8 80070DF8 1800228E */  lw         $v0, 0x18($s1)
-    /* 615FC 80070DFC E404858F */  lw         $a1, %gp_rel(D_800A35B0)($gp)
+    /* 615FC 80070DFC E404858F */  lw         $a1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 61600 80070E00 0C004224 */  addiu      $v0, $v0, 0xC
     /* 61604 80070E04 180022AE */  sw         $v0, 0x18($s1)
-    /* 61608 80070E08 8C048287 */  lh         $v0, %gp_rel(D_800A3558)($gp)
+    /* 61608 80070E08 8C048287 */  lh         $v0, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
     /* 6160C 80070E0C 0800438E */  lw         $v1, 0x8($s2)
     /* 61610 80070E10 01004224 */  addiu      $v0, $v0, 0x1
     /* 61614 80070E14 2110A200 */  addu       $v0, $a1, $v0
@@ -136,7 +136,7 @@ glabel menu_UpdateRow
     /* 61680 80070E80 2110A200 */  addu       $v0, $a1, $v0
     /* 61684 80070E84 05004014 */  bnez       $v0, .L80070E9C
     /* 61688 80070E88 02000224 */   addiu     $v0, $zero, 0x2
-    /* 6168C 80070E8C F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
+    /* 6168C 80070E8C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 61690 80070E90 00000000 */  nop
     /* 61694 80070E94 03006214 */  bne        $v1, $v0, .L80070EA4
     /* 61698 80070E98 05010224 */   addiu     $v0, $zero, 0x105
@@ -156,9 +156,9 @@ glabel menu_UpdateRow
   .L80070EC4:
     /* 616C4 80070EC4 6C017326 */  addiu      $s3, $s3, 0x16C
     /* 616C8 80070EC8 01001026 */  addiu      $s0, $s0, 0x1
-    /* 616CC 80070ECC 8C048697 */  lhu        $a2, %gp_rel(D_800A3558)($gp)
-    /* 616D0 80070ED0 8C048287 */  lh         $v0, %gp_rel(D_800A3558)($gp)
-    /* 616D4 80070ED4 E404858F */  lw         $a1, %gp_rel(D_800A35B0)($gp)
+    /* 616CC 80070ECC 8C048697 */  lhu        $a2, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 616D0 80070ED0 8C048287 */  lh         $v0, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
+    /* 616D4 80070ED4 E404858F */  lw         $a1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 616D8 80070ED8 01004224 */  addiu      $v0, $v0, 0x1
     /* 616DC 80070EDC 2110A200 */  addu       $v0, $a1, $v0
     /* 616E0 80070EE0 2A100202 */  slt        $v0, $s0, $v0

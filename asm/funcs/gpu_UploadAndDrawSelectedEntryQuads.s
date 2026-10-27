@@ -17,7 +17,7 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F530 8006ED30 2C00A0AF */  sw         $zero, 0x2C($sp)
     /* 5F534 8006ED34 3400A2AF */  sw         $v0, 0x34($sp)
     /* 5F538 8006ED38 0000428E */  lw         $v0, 0x0($s2)
-    /* 5F53C 8006ED3C E404838F */  lw         $v1, %gp_rel(D_800A35B0)($gp)
+    /* 5F53C 8006ED3C E404838F */  lw         $v1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 5F540 8006ED40 5400538C */  lw         $s3, 0x54($v0)
     /* 5F544 8006ED44 88048287 */  lh         $v0, %gp_rel(D_800A3554)($gp)
     /* 5F548 8006ED48 00000000 */  nop
@@ -40,9 +40,9 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F588 8006ED88 21104400 */  addu       $v0, $v0, $a0
     /* 5F58C 8006ED8C 80100200 */  sll        $v0, $v0, 2
     /* 5F590 8006ED90 21186200 */  addu       $v1, $v1, $v0
-    /* 5F594 8006ED94 0A80013C */  lui        $at, %hi(D_8009BC40)
+    /* 5F594 8006ED94 0A80013C */  lui        $at, %hi(g_entry_menu_grid_entries)
     /* 5F598 8006ED98 21082300 */  addu       $at, $at, $v1
-    /* 5F59C 8006ED9C 40BC2390 */  lbu        $v1, %lo(D_8009BC40)($at)
+    /* 5F59C 8006ED9C 40BC2390 */  lbu        $v1, %lo(g_entry_menu_grid_entries)($at)
     /* 5F5A0 8006EDA0 0A80013C */  lui        $at, %hi(g_entry_menu_entry_flags)
     /* 5F5A4 8006EDA4 21082300 */  addu       $at, $at, $v1
     /* 5F5A8 8006EDA8 7CBC2290 */  lbu        $v0, %lo(g_entry_menu_entry_flags)($at)
@@ -86,31 +86,31 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F630 8006EE30 08004000 */  jr         $v0
     /* 5F634 8006EE34 00000000 */   nop
   jlabel .L8006EE38
-    /* 5F638 8006EE38 DC04828F */  lw         $v0, %gp_rel(D_800A35A8)($gp)
+    /* 5F638 8006EE38 DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F63C 8006EE3C 00000000 */  nop
     /* 5F640 8006EE40 8400468C */  lw         $a2, 0x84($v0)
     /* 5F644 8006EE44 A6BB0108 */  j          .L8006EE98
     /* 5F648 8006EE48 08010226 */   addiu     $v0, $s0, 0x108
   jlabel .L8006EE4C
-    /* 5F64C 8006EE4C DC04828F */  lw         $v0, %gp_rel(D_800A35A8)($gp)
+    /* 5F64C 8006EE4C DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F650 8006EE50 00000000 */  nop
     /* 5F654 8006EE54 8800468C */  lw         $a2, 0x88($v0)
     /* 5F658 8006EE58 A6BB0108 */  j          .L8006EE98
     /* 5F65C 8006EE5C 14010226 */   addiu     $v0, $s0, 0x114
   jlabel .L8006EE60
-    /* 5F660 8006EE60 DC04828F */  lw         $v0, %gp_rel(D_800A35A8)($gp)
+    /* 5F660 8006EE60 DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F664 8006EE64 00000000 */  nop
     /* 5F668 8006EE68 8C00468C */  lw         $a2, 0x8C($v0)
     /* 5F66C 8006EE6C A6BB0108 */  j          .L8006EE98
     /* 5F670 8006EE70 20010226 */   addiu     $v0, $s0, 0x120
   jlabel .L8006EE74
-    /* 5F674 8006EE74 DC04828F */  lw         $v0, %gp_rel(D_800A35A8)($gp)
+    /* 5F674 8006EE74 DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F678 8006EE78 00000000 */  nop
     /* 5F67C 8006EE7C 9000468C */  lw         $a2, 0x90($v0)
     /* 5F680 8006EE80 A6BB0108 */  j          .L8006EE98
     /* 5F684 8006EE84 2C010226 */   addiu     $v0, $s0, 0x12C
   jlabel .L8006EE88
-    /* 5F688 8006EE88 DC04828F */  lw         $v0, %gp_rel(D_800A35A8)($gp)
+    /* 5F688 8006EE88 DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5F68C 8006EE8C 00000000 */  nop
     /* 5F690 8006EE90 9400468C */  lw         $a2, 0x94($v0)
     /* 5F694 8006EE94 38010226 */  addiu      $v0, $s0, 0x138
@@ -154,7 +154,7 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F71C 8006EF1C 21100202 */  addu       $v0, $s0, $v0
     /* 5F720 8006EF20 1000A2AF */  sw         $v0, 0x10($sp)
   .L8006EF24:
-    /* 5F724 8006EF24 E404828F */  lw         $v0, %gp_rel(D_800A35B0)($gp)
+    /* 5F724 8006EF24 E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 5F728 8006EF28 00000000 */  nop
     /* 5F72C 8006EF2C 1D004014 */  bnez       $v0, .L8006EFA4
     /* 5F730 8006EF30 00141100 */   sll       $v0, $s1, 16
@@ -172,11 +172,11 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F760 8006EF60 02004230 */  andi       $v0, $v0, 0x2
     /* 5F764 8006EF64 0F004014 */  bnez       $v0, .L8006EFA4
     /* 5F768 8006EF68 00141100 */   sll       $v0, $s1, 16
-    /* 5F76C 8006EF6C F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
+    /* 5F76C 8006EF6C F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 5F770 8006EF70 02000224 */  addiu      $v0, $zero, 0x2
     /* 5F774 8006EF74 08006214 */  bne        $v1, $v0, .L8006EF98
     /* 5F778 8006EF78 0200033C */   lui       $v1, (0x20000 >> 16)
-    /* 5F77C 8006EF7C 9C04828F */  lw         $v0, %gp_rel(D_800A3568)($gp)
+    /* 5F77C 8006EF7C 9C04828F */  lw         $v0, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 5F780 8006EF80 00000000 */  nop
     /* 5F784 8006EF84 1400428C */  lw         $v0, 0x14($v0)
     /* 5F788 8006EF88 00000000 */  nop
@@ -213,7 +213,7 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F7F0 8006EFF0 00140200 */  sll        $v0, $v0, 16
     /* 5F7F4 8006EFF4 03140200 */  sra        $v0, $v0, 16
     /* 5F7F8 8006EFF8 88048387 */  lh         $v1, %gp_rel(D_800A3554)($gp)
-    /* 5F7FC 8006EFFC E404848F */  lw         $a0, %gp_rel(D_800A35B0)($gp)
+    /* 5F7FC 8006EFFC E404848F */  lw         $a0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 5F800 8006F000 01006324 */  addiu      $v1, $v1, 0x1
     /* 5F804 8006F004 21208300 */  addu       $a0, $a0, $v1
     /* 5F808 8006F008 2A104400 */  slt        $v0, $v0, $a0

@@ -5,8 +5,8 @@ glabel fight_Init
     /* E4BC 8001DCBC 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* E4C0 8001DCC0 6B6D010C */  jal        snd_ResetVoicesAndQueue
     /* E4C4 8001DCC4 1800B0AF */   sw        $s0, 0x18($sp)
-    /* E4C8 8001DCC8 0A80033C */  lui        $v1, %hi(D_800A3768)
-    /* E4CC 8001DCCC 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
+    /* E4C8 8001DCC8 0A80033C */  lui        $v1, %hi(g_local_ot_draw_mode)
+    /* E4CC 8001DCCC 68376390 */  lbu        $v1, %lo(g_local_ot_draw_mode)($v1)
     /* E4D0 8001DCD0 14000224 */  addiu      $v0, $zero, 0x14
     /* E4D4 8001DCD4 05006210 */  beq        $v1, $v0, .L8001DCEC
     /* E4D8 8001DCD8 00000000 */   nop
@@ -25,12 +25,12 @@ glabel fight_Init
     /* E508 8001DD08 00000000 */   nop
     /* E50C 8001DD0C 10C8000C */  jal        fight_ClearBallisticRecords
     /* E510 8001DD10 00000000 */   nop
-    /* E514 8001DD14 0A80043C */  lui        $a0, %hi(D_800A38BA)
-    /* E518 8001DD18 BA388484 */  lh         $a0, %lo(D_800A38BA)($a0)
+    /* E514 8001DD14 0A80043C */  lui        $a0, %hi(g_fight_tracked_view_setting)
+    /* E518 8001DD18 BA388484 */  lh         $a0, %lo(g_fight_tracked_view_setting)($a0)
     /* E51C 8001DD1C 86FC000C */  jal        func_8003F218
     /* E520 8001DD20 00000000 */   nop
-    /* E524 8001DD24 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* E528 8001DD28 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* E524 8001DD24 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* E528 8001DD28 BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* E52C 8001DD2C 00000000 */  nop
     /* E530 8001DD30 02004010 */  beqz       $v0, .L8001DD3C
     /* E534 8001DD34 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -61,8 +61,8 @@ glabel fight_Init
     /* E58C 8001DD8C 21200002 */  addu       $a0, $s0, $zero
     /* E590 8001DD90 6089000C */  jal        fighter_Init
     /* E594 8001DD94 1000A0AF */   sw        $zero, 0x10($sp)
-    /* E598 8001DD98 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* E59C 8001DD9C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* E598 8001DD98 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* E59C 8001DD9C BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* E5A0 8001DDA0 00000000 */  nop
     /* E5A4 8001DDA4 08004010 */  beqz       $v0, .L8001DDC8
     /* E5A8 8001DDA8 00000000 */   nop
@@ -94,8 +94,8 @@ glabel fight_Init
     /* E60C 8001DE0C 21800000 */  addu       $s0, $zero, $zero
     /* E610 8001DE10 21880000 */  addu       $s1, $zero, $zero
   .L8001DE14:
-    /* E614 8001DE14 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* E618 8001DE18 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* E614 8001DE14 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* E618 8001DE18 BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* E61C 8001DE1C 00000000 */  nop
     /* E620 8001DE20 12004010 */  beqz       $v0, .L8001DE6C
     /* E624 8001DE24 00000000 */   nop
@@ -312,12 +312,12 @@ glabel fight_Init
     /* E92C 8001E12C 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
     /* E930 8001E130 1080033C */  lui        $v1, %hi(g_fight_config + 0x5)
     /* E934 8001E134 7D276380 */  lb         $v1, %lo(g_fight_config + 0x5)($v1)
-    /* E938 8001E138 0980013C */  lui        $at, %hi(D_8008D538)
+    /* E938 8001E138 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* E93C 8001E13C 21082200 */  addu       $at, $at, $v0
-    /* E940 8001E140 38D52490 */  lbu        $a0, %lo(D_8008D538)($at)
-    /* E944 8001E144 0980013C */  lui        $at, %hi(D_8008D538)
+    /* E940 8001E140 38D52490 */  lbu        $a0, %lo(g_fight_config_id_data_rows)($at)
+    /* E944 8001E144 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* E948 8001E148 21082300 */  addu       $at, $at, $v1
-    /* E94C 8001E14C 38D52690 */  lbu        $a2, %lo(D_8008D538)($at)
+    /* E94C 8001E14C 38D52690 */  lbu        $a2, %lo(g_fight_config_id_data_rows)($at)
     /* E950 8001E150 9D83000C */  jal        motion_LoadFighterData
     /* E954 8001E154 00000000 */   nop
     /* E958 8001E158 5F780008 */  j          .L8001E17C
@@ -443,12 +443,12 @@ glabel fight_Init
     /* EB1C 8001E31C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* EB20 8001E320 0A80013C */  lui        $at, %hi(D_800A382E)
     /* EB24 8001E324 2E3820A4 */  sh         $zero, %lo(D_800A382E)($at)
-    /* EB28 8001E328 0A80013C */  lui        $at, %hi(D_800A3748)
-    /* EB2C 8001E32C 483722A0 */  sb         $v0, %lo(D_800A3748)($at)
+    /* EB28 8001E328 0A80013C */  lui        $at, %hi(g_fight_followup_fighter_index)
+    /* EB2C 8001E32C 483722A0 */  sb         $v0, %lo(g_fight_followup_fighter_index)($at)
     /* EB30 8001E330 A56C000C */  jal        camera_InitTwoFighterView
     /* EB34 8001E334 21282002 */   addu      $a1, $s1, $zero
-    /* EB38 8001E338 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* EB3C 8001E33C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* EB38 8001E338 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* EB3C 8001E33C BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* EB40 8001E340 00000000 */  nop
     /* EB44 8001E344 03004010 */  beqz       $v0, .L8001E354
     /* EB48 8001E348 21200002 */   addu      $a0, $s0, $zero
@@ -462,8 +462,8 @@ glabel fight_Init
     /* EB64 8001E364 F976000C */  jal        fight_WaitForCounterThenClearAndEnableDisplay
     /* EB68 8001E368 00000000 */   nop
     /* EB6C 8001E36C FF000224 */  addiu      $v0, $zero, 0xFF
-    /* EB70 8001E370 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* EB74 8001E374 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* EB70 8001E370 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* EB74 8001E374 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* EB78 8001E378 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* EB7C 8001E37C A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
     /* EB80 8001E380 205B000C */  jal        eff_Init

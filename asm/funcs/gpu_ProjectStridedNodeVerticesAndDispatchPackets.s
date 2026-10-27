@@ -35,8 +35,8 @@ glabel gpu_ProjectStridedNodeVerticesAndDispatchPackets
     /* 3E2F8 8004DAF8 03000832 */  andi       $t0, $s0, 0x3
     /* 3E2FC 8004DAFC 20800802 */  add        $s0, $s0, $t0 /* handwritten instruction */
     /* 3E300 8004DB00 6000328E */  lw         $s2, 0x60($s1)
-    /* 3E304 8004DB04 0A80023C */  lui        $v0, %hi(D_800A3708)
-    /* 3E308 8004DB08 0837428C */  lw         $v0, %lo(D_800A3708)($v0)
+    /* 3E304 8004DB04 0A80023C */  lui        $v0, %hi(g_view_camera_root_ptr)
+    /* 3E308 8004DB08 0837428C */  lw         $v0, %lo(g_view_camera_root_ptr)($v0)
     /* 3E30C 8004DB0C FFFF8424 */  addiu      $a0, $a0, -0x1
     /* 3E310 8004DB10 2C004B8C */  lw         $t3, 0x2C($v0)
     /* 3E314 8004DB14 30004C8C */  lw         $t4, 0x30($v0)

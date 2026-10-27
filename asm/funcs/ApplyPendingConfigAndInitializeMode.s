@@ -21,8 +21,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24CFC 800344FC 01000224 */  addiu      $v0, $zero, 0x1
     /* 24D00 80034500 1080013C */  lui        $at, %hi(g_fight_config + 0xE)
     /* 24D04 80034504 862722A0 */  sb         $v0, %lo(g_fight_config + 0xE)($at)
-    /* 24D08 80034508 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 24D0C 8003450C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* 24D08 80034508 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 24D0C 8003450C 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 24D10 80034510 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 24D14 80034514 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 24D18 80034518 2B180300 */  sltu       $v1, $zero, $v1
@@ -33,9 +33,9 @@ glabel ApplyPendingConfigAndInitializeMode
   jlabel .L8003452C
     /* 24D2C 8003452C 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* 24D30 80034530 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* 24D34 80034534 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 24D34 80034534 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24D38 80034538 21082200 */  addu       $at, $at, $v0
-    /* 24D3C 8003453C 38D52490 */  lbu        $a0, %lo(D_8008D538)($at)
+    /* 24D3C 8003453C 38D52490 */  lbu        $a0, %lo(g_fight_config_id_data_rows)($at)
     /* 24D40 80034540 83EC000C */  jal        fight_InitCommandStream
     /* 24D44 80034544 00000000 */   nop
     /* 24D48 80034548 1080013C */  lui        $at, %hi(g_fight_config + 0x5)
@@ -52,8 +52,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24D70 80034570 812730A0 */  sb         $s0, %lo(g_fight_config + 0x9)($at)
     /* 24D74 80034574 33CE000C */  jal        fight_BuildOpponentOrder
     /* 24D78 80034578 00000000 */   nop
-    /* 24D7C 8003457C 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 24D80 80034580 683730A0 */  sb         $s0, %lo(D_800A3768)($at)
+    /* 24D7C 8003457C 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 24D80 80034580 683730A0 */  sb         $s0, %lo(g_local_ot_draw_mode)($at)
     /* 24D84 80034584 F0CE000C */  jal        fight_AdvanceOpponentOrder
     /* 24D88 80034588 00000000 */   nop
     /* 24D8C 8003458C B6D10008 */  j          .L800346D8
@@ -67,20 +67,20 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24DA8 800345A8 7F2720A0 */  sb         $zero, %lo(g_fight_config + 0x7)($at)
     /* 24DAC 800345AC 1080013C */  lui        $at, %hi(g_fight_config + 0x6)
     /* 24DB0 800345B0 7E2720A0 */  sb         $zero, %lo(g_fight_config + 0x6)($at)
-    /* 24DB4 800345B4 0A80013C */  lui        $at, %hi(D_800A38E2)
-    /* 24DB8 800345B8 E23820A0 */  sb         $zero, %lo(D_800A38E2)($at)
+    /* 24DB4 800345B4 0A80013C */  lui        $at, %hi(g_fight_step_table_next_row)
+    /* 24DB8 800345B8 E23820A0 */  sb         $zero, %lo(g_fight_step_table_next_row)($at)
     /* 24DBC 800345BC 0A80013C */  lui        $at, %hi(D_800A38E0)
     /* 24DC0 800345C0 E03820A0 */  sb         $zero, %lo(D_800A38E0)($at)
-    /* 24DC4 800345C4 0A80013C */  lui        $at, %hi(D_800A3858)
-    /* 24DC8 800345C8 583820AC */  sw         $zero, %lo(D_800A3858)($at)
+    /* 24DC4 800345C4 0A80013C */  lui        $at, %hi(g_fight_timer_frames)
+    /* 24DC8 800345C8 583820AC */  sw         $zero, %lo(g_fight_timer_frames)($at)
     /* 24DCC 800345CC 0A80013C */  lui        $at, %hi(D_800A3728)
     /* 24DD0 800345D0 283720A0 */  sb         $zero, %lo(D_800A3728)($at)
     /* 24DD4 800345D4 0A80013C */  lui        $at, %hi(g_fight_stage_index)
     /* 24DD8 800345D8 A43622A4 */  sh         $v0, %lo(g_fight_stage_index)($at)
     /* 24DDC 800345DC 7DCF000C */  jal        fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24DE0 800345E0 00000000 */   nop
-    /* 24DE4 800345E4 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 24DE8 800345E8 683730A0 */  sb         $s0, %lo(D_800A3768)($at)
+    /* 24DE4 800345E4 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 24DE8 800345E8 683730A0 */  sb         $s0, %lo(g_local_ot_draw_mode)($at)
     /* 24DEC 800345EC B4D10008 */  j          .L800346D0
     /* 24DF0 800345F0 00000000 */   nop
   jlabel .L800345F4
@@ -125,9 +125,9 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24E80 80034680 00000000 */   nop
     /* 24E84 80034684 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* 24E88 80034688 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* 24E8C 8003468C 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 24E8C 8003468C 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24E90 80034690 21082200 */  addu       $at, $at, $v0
-    /* 24E94 80034694 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 24E94 80034694 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 24E98 80034698 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 24E9C 8003469C 21082200 */  addu       $at, $at, $v0
     /* 24EA0 800346A0 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
@@ -142,8 +142,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24EC0 800346C0 00000000 */   nop
   jlabel .L800346C4
     /* 24EC4 800346C4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 24EC8 800346C8 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 24ECC 800346CC 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* 24EC8 800346C8 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 24ECC 800346CC 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
   .L800346D0:
     /* 24ED0 800346D0 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 24ED4 800346D4 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)

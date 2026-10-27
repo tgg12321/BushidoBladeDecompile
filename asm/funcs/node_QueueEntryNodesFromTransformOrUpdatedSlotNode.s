@@ -49,8 +49,8 @@ glabel node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 39FD0 800497D0 04002296 */  lhu        $v0, 0x4($s1)
     /* 39FD4 800497D4 10004426 */  addiu      $a0, $s2, 0x10
     /* 39FD8 800497D8 140042A6 */  sh         $v0, 0x14($s2)
-    /* 39FDC 800497DC 0F80023C */  lui        $v0, %hi(D_800F66A0)
-    /* 39FE0 800497E0 A066428C */  lw         $v0, %lo(D_800F66A0)($v0)
+    /* 39FDC 800497DC 0F80023C */  lui        $v0, %hi(g_math_rot_matrix_funcs)
+    /* 39FE0 800497E0 A066428C */  lw         $v0, %lo(g_math_rot_matrix_funcs)($v0)
     /* 39FE4 800497E4 00000000 */  nop
     /* 39FE8 800497E8 09F84000 */  jalr       $v0
     /* 39FEC 800497EC 18004526 */   addiu     $a1, $s2, 0x18

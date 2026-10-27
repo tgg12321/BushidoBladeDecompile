@@ -9,8 +9,8 @@ glabel camera_UpdateTrackedFighterView
     /* BC94 8001B494 2800B0AF */   sw        $s0, 0x28($sp)
     /* BC98 8001B498 9C01228E */  lw         $v0, 0x19C($s1)
     /* BC9C 8001B49C A801238E */  lw         $v1, 0x1A8($s1)
-    /* BCA0 8001B4A0 0F80123C */  lui        $s2, %hi(D_800F5328)
-    /* BCA4 8001B4A4 28535226 */  addiu      $s2, $s2, %lo(D_800F5328)
+    /* BCA0 8001B4A0 0F80123C */  lui        $s2, %hi(g_camera_alternate_view_record)
+    /* BCA4 8001B4A4 28535226 */  addiu      $s2, $s2, %lo(g_camera_alternate_view_record)
     /* BCA8 8001B4A8 21104300 */  addu       $v0, $v0, $v1
     /* BCAC 8001B4AC C21F0200 */  srl        $v1, $v0, 31
     /* BCB0 8001B4B0 21104300 */  addu       $v0, $v0, $v1

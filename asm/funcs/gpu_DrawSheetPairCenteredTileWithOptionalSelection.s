@@ -35,10 +35,10 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C748 8006BF48 0F80023C */  lui        $v0, %hi(D_800F1498)
     /* 5C74C 8006BF4C 98144224 */  addiu      $v0, $v0, %lo(D_800F1498)
     /* 5C750 8006BF50 21400201 */  addu       $t0, $t0, $v0
-    /* 5C754 8006BF54 100688AF */  sw         $t0, %gp_rel(D_800A36DC)($gp)
+    /* 5C754 8006BF54 100688AF */  sw         $t0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C758 8006BF58 4AAF010C */  jal        gpu_DrawIndexedSheetPair
     /* 5C75C 8006BF5C 21380000 */   addu      $a3, $zero, $zero
-    /* 5C760 8006BF60 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5C760 8006BF60 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5C764 8006BF64 21A80000 */  addu       $s5, $zero, $zero
     /* 5C768 8006BF68 2400428C */  lw         $v0, 0x24($v0)
     /* 5C76C 8006BF6C 80801000 */  sll        $s0, $s0, 2
@@ -69,7 +69,7 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C7CC 8006BFCC 40100200 */  sll        $v0, $v0, 1
     /* 5C7D0 8006BFD0 13015324 */  addiu      $s3, $v0, 0x113
   .L8006BFD4:
-    /* 5C7D4 8006BFD4 1006848F */  lw         $a0, %gp_rel(D_800A36DC)($gp)
+    /* 5C7D4 8006BFD4 1006848F */  lw         $a0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C7D8 8006BFD8 B4EA010C */  jal        SetTile
     /* 5C7DC 8006BFDC 00000000 */   nop
     /* 5C7E0 8006BFE0 00141100 */  sll        $v0, $s1, 16
@@ -77,30 +77,30 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C7E8 8006BFE8 05004014 */  bnez       $v0, .L8006C000
     /* 5C7EC 8006BFEC FFFF4224 */   addiu     $v0, $v0, -0x1
     /* 5C7F0 8006BFF0 FF001024 */  addiu      $s0, $zero, 0xFF
-    /* 5C7F4 8006BFF4 1006848F */  lw         $a0, %gp_rel(D_800A36DC)($gp)
+    /* 5C7F4 8006BFF4 1006848F */  lw         $a0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C7F8 8006BFF8 05B00108 */  j          .L8006C014
     /* 5C7FC 8006BFFC 21280000 */   addu      $a1, $zero, $zero
   .L8006C000:
     /* 5C800 8006C000 C0110200 */  sll        $v0, $v0, 7
     /* 5C804 8006C004 FF000324 */  addiu      $v1, $zero, 0xFF
     /* 5C808 8006C008 23806200 */  subu       $s0, $v1, $v0
-    /* 5C80C 8006C00C 1006848F */  lw         $a0, %gp_rel(D_800A36DC)($gp)
+    /* 5C80C 8006C00C 1006848F */  lw         $a0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C810 8006C010 01000524 */  addiu      $a1, $zero, 0x1
   .L8006C014:
     /* 5C814 8006C014 5AEA010C */  jal        SetSemiTrans
     /* 5C818 8006C018 00000000 */   nop
-    /* 5C81C 8006C01C 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C81C 8006C01C 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C820 8006C020 00000000 */  nop
     /* 5C824 8006C024 040050A0 */  sb         $s0, 0x4($v0)
-    /* 5C828 8006C028 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C828 8006C028 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C82C 8006C02C 00000000 */  nop
     /* 5C830 8006C030 050040A0 */  sb         $zero, 0x5($v0)
-    /* 5C834 8006C034 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C834 8006C034 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C838 8006C038 84FF2326 */  addiu      $v1, $s1, -0x7C
     /* 5C83C 8006C03C 060040A0 */  sb         $zero, 0x6($v0)
     /* 5C840 8006C040 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
     /* 5C844 8006C044 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
-    /* 5C848 8006C048 1006858F */  lw         $a1, %gp_rel(D_800A36DC)($gp)
+    /* 5C848 8006C048 1006858F */  lw         $a1, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C84C 8006C04C 3408828F */  lw         $v0, %gp_rel(D_800A3900)($gp)
     /* 5C850 8006C050 20008424 */  addiu      $a0, $a0, 0x20
     /* 5C854 8006C054 23104300 */  subu       $v0, $v0, $v1
@@ -114,28 +114,28 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C874 8006C074 21884000 */  addu       $s1, $v0, $zero
     /* 5C878 8006C078 00140200 */  sll        $v0, $v0, 16
     /* 5C87C 8006C07C 03140200 */  sra        $v0, $v0, 16
-    /* 5C880 8006C080 1006838F */  lw         $v1, %gp_rel(D_800A36DC)($gp)
+    /* 5C880 8006C080 1006838F */  lw         $v1, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C884 8006C084 03004228 */  slti       $v0, $v0, 0x3
     /* 5C888 8006C088 10006324 */  addiu      $v1, $v1, 0x10
-    /* 5C88C 8006C08C 100683AF */  sw         $v1, %gp_rel(D_800A36DC)($gp)
+    /* 5C88C 8006C08C 100683AF */  sw         $v1, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C890 8006C090 D0FF4014 */  bnez       $v0, .L8006BFD4
     /* 5C894 8006C094 00000000 */   nop
   .L8006C098:
-    /* 5C898 8006C098 1006848F */  lw         $a0, %gp_rel(D_800A36DC)($gp)
+    /* 5C898 8006C098 1006848F */  lw         $a0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C89C 8006C09C B4EA010C */  jal        SetTile
     /* 5C8A0 8006C0A0 00000000 */   nop
-    /* 5C8A4 8006C0A4 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C8A4 8006C0A4 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C8A8 8006C0A8 00000000 */  nop
     /* 5C8AC 8006C0AC 040040A0 */  sb         $zero, 0x4($v0)
-    /* 5C8B0 8006C0B0 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C8B0 8006C0B0 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C8B4 8006C0B4 00000000 */  nop
     /* 5C8B8 8006C0B8 050040A0 */  sb         $zero, 0x5($v0)
-    /* 5C8BC 8006C0BC 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C8BC 8006C0BC 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C8C0 8006C0C0 00000000 */  nop
     /* 5C8C4 8006C0C4 060040A0 */  sb         $zero, 0x6($v0)
     /* 5C8C8 8006C0C8 40010224 */  addiu      $v0, $zero, 0x140
     /* 5C8CC 8006C0CC 00004396 */  lhu        $v1, 0x0($s2)
-    /* 5C8D0 8006C0D0 1006848F */  lw         $a0, %gp_rel(D_800A36DC)($gp)
+    /* 5C8D0 8006C0D0 1006848F */  lw         $a0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C8D4 8006C0D4 001C0300 */  sll        $v1, $v1, 16
     /* 5C8D8 8006C0D8 431C0300 */  sra        $v1, $v1, 17
     /* 5C8DC 8006C0DC 23104300 */  subu       $v0, $v0, $v1
@@ -156,13 +156,13 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C918 8006C118 0E0082A4 */   sh        $v0, 0xE($a0)
     /* 5C91C 8006C11C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
     /* 5C920 8006C120 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
-    /* 5C924 8006C124 1006858F */  lw         $a1, %gp_rel(D_800A36DC)($gp)
+    /* 5C924 8006C124 1006858F */  lw         $a1, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C928 8006C128 2DEA010C */  jal        AddPrim
     /* 5C92C 8006C12C 20008424 */   addiu     $a0, $a0, 0x20
-    /* 5C930 8006C130 1006828F */  lw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C930 8006C130 1006828F */  lw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C934 8006C134 00000000 */  nop
     /* 5C938 8006C138 10004224 */  addiu      $v0, $v0, 0x10
-    /* 5C93C 8006C13C 100682AF */  sw         $v0, %gp_rel(D_800A36DC)($gp)
+    /* 5C93C 8006C13C 100682AF */  sw         $v0, %gp_rel(g_sheet_pair_panel_tile_cursor)($gp)
     /* 5C940 8006C140 5800BF8F */  lw         $ra, 0x58($sp)
     /* 5C944 8006C144 5400B58F */  lw         $s5, 0x54($sp)
     /* 5C948 8006C148 5000B48F */  lw         $s4, 0x50($sp)

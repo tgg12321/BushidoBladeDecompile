@@ -1,13 +1,13 @@
 glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 245F4 80033DF4 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 245F8 80033DF8 0A80033C */  lui        $v1, %hi(D_800A38E2)
-    /* 245FC 80033DFC E2386390 */  lbu        $v1, %lo(D_800A38E2)($v1)
+    /* 245F8 80033DF8 0A80033C */  lui        $v1, %hi(g_fight_step_table_next_row)
+    /* 245FC 80033DFC E2386390 */  lbu        $v1, %lo(g_fight_step_table_next_row)($v1)
     /* 24600 80033E00 64000224 */  addiu      $v0, $zero, 0x64
     /* 24604 80033E04 FF006530 */  andi       $a1, $v1, 0xFF
     /* 24608 80033E08 4200A214 */  bne        $a1, $v0, .L80033F14
     /* 2460C 80033E0C 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 24610 80033E10 0A80023C */  lui        $v0, %hi(D_800A3858)
-    /* 24614 80033E14 5838428C */  lw         $v0, %lo(D_800A3858)($v0)
+    /* 24610 80033E10 0A80023C */  lui        $v0, %hi(g_fight_timer_frames)
+    /* 24614 80033E14 5838428C */  lw         $v0, %lo(g_fight_timer_frames)($v0)
     /* 24618 80033E18 0A80013C */  lui        $at, %hi(D_800A36F0)
     /* 2461C 80033E1C F03620A0 */  sb         $zero, %lo(D_800A36F0)($at)
     /* 24620 80033E20 0A80013C */  lui        $at, %hi(D_800A3781)
@@ -17,9 +17,9 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24630 80033E30 00000000 */   nop
     /* 24634 80033E34 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* 24638 80033E38 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* 2463C 80033E3C 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 2463C 80033E3C 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24640 80033E40 21082200 */  addu       $at, $at, $v0
-    /* 24644 80033E44 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 24644 80033E44 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 24648 80033E48 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2464C 80033E4C 21082200 */  addu       $at, $at, $v0
     /* 24650 80033E50 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
@@ -46,9 +46,9 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 2469C 80033E9C 00000000 */   nop
     /* 246A0 80033EA0 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* 246A4 80033EA4 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* 246A8 80033EA8 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 246A8 80033EA8 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 246AC 80033EAC 21082200 */  addu       $at, $at, $v0
-    /* 246B0 80033EB0 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 246B0 80033EB0 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 246B4 80033EB4 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 246B8 80033EB8 21082200 */  addu       $at, $at, $v0
     /* 246BC 80033EBC ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
@@ -78,8 +78,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
   .L80033F14:
     /* 24714 80033F14 01006224 */  addiu      $v0, $v1, 0x1
     /* 24718 80033F18 80280500 */  sll        $a1, $a1, 2
-    /* 2471C 80033F1C 0A80013C */  lui        $at, %hi(D_800A38E2)
-    /* 24720 80033F20 E23822A0 */  sb         $v0, %lo(D_800A38E2)($at)
+    /* 2471C 80033F1C 0A80013C */  lui        $at, %hi(g_fight_step_table_next_row)
+    /* 24720 80033F20 E23822A0 */  sb         $v0, %lo(g_fight_step_table_next_row)($at)
     /* 24724 80033F24 0980023C */  lui        $v0, %hi(D_8008E778)
     /* 24728 80033F28 78E74224 */  addiu      $v0, $v0, %lo(D_8008E778)
     /* 2472C 80033F2C 2128A200 */  addu       $a1, $a1, $v0
@@ -90,9 +90,9 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24740 80033F40 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
     /* 24744 80033F44 0A80013C */  lui        $at, %hi(D_800A384C)
     /* 24748 80033F48 4C3826A0 */  sb         $a2, %lo(D_800A384C)($at)
-    /* 2474C 80033F4C 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 2474C 80033F4C 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24750 80033F50 21082200 */  addu       $at, $at, $v0
-    /* 24754 80033F54 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 24754 80033F54 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 24758 80033F58 0980033C */  lui        $v1, %hi(D_8008EC24)
     /* 2475C 80033F5C 24EC6324 */  addiu      $v1, $v1, %lo(D_8008EC24)
     /* 24760 80033F60 0980013C */  lui        $at, %hi(g_fighter_group_flags)

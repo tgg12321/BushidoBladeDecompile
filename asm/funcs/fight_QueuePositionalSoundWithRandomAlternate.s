@@ -11,8 +11,8 @@ glabel fight_QueuePositionalSoundWithRandomAlternate
     /* D044 8001C844 00000000 */  nop
     /* D048 8001C848 06004010 */  beqz       $v0, .L8001C864
     /* D04C 8001C84C 01000224 */   addiu     $v0, $zero, 0x1
-    /* D050 8001C850 0A80033C */  lui        $v1, %hi(D_800A37A0)
-    /* D054 8001C854 A0376390 */  lbu        $v1, %lo(D_800A37A0)($v1)
+    /* D050 8001C850 0A80033C */  lui        $v1, %hi(g_fight_stage_command_count)
+    /* D054 8001C854 A0376390 */  lbu        $v1, %lo(g_fight_stage_command_count)($v1)
     /* D058 8001C858 00000000 */  nop
     /* D05C 8001C85C 1A006210 */  beq        $v1, $v0, .L8001C8C8
     /* D060 8001C860 00000000 */   nop

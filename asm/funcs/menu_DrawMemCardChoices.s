@@ -53,7 +53,7 @@ glabel menu_DrawMemCardChoices
     /* 5C430 8006BC30 1800A3AF */  sw         $v1, 0x18($sp)
     /* 5C434 8006BC34 07005114 */  bne        $v0, $s1, .L8006BC54
     /* 5C438 8006BC38 1C00A5AF */   sw        $a1, 0x1C($sp)
-    /* 5C43C 8006BC3C 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5C43C 8006BC3C 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5C440 8006BC40 00000000 */  nop
     /* 5C444 8006BC44 0E004284 */  lh         $v0, 0xE($v0)
     /* 5C448 8006BC48 2800A0AF */  sw         $zero, 0x28($sp)

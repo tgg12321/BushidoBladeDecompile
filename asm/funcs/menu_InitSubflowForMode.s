@@ -22,7 +22,7 @@ glabel menu_InitSubflowForMode
     /* 25E64 80035664 44DC000C */  jal        cdrom_StartAudioEntry
     /* 25E68 80035668 21200000 */   addu      $a0, $zero, $zero
     /* 25E6C 8003566C 04000224 */  addiu      $v0, $zero, 0x4
-    /* 25E70 80035670 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 25E70 80035670 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 25E74 80035674 06D60008 */  j          .L80035818
     /* 25E78 80035678 00000000 */   nop
   .L8003567C:
@@ -46,7 +46,7 @@ glabel menu_InitSubflowForMode
     /* 25EB4 800356B4 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25EB8 800356B8 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25EBC 800356BC 03000224 */  addiu      $v0, $zero, 0x3
-    /* 25EC0 800356C0 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 25EC0 800356C0 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 25EC4 800356C4 7AD5000C */  jal        cdrom_EnableSerialMixAndStartRepeatingAudio
     /* 25EC8 800356C8 00000000 */   nop
     /* 25ECC 800356CC 04D60008 */  j          .L80035810
@@ -95,7 +95,7 @@ glabel menu_InitSubflowForMode
     /* 25F6C 8003576C 01000224 */  addiu      $v0, $zero, 0x1
     /* 25F70 80035770 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
     /* 25F74 80035774 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
-    /* 25F78 80035778 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 25F78 80035778 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 25F7C 8003577C 06D60008 */  j          .L80035818
     /* 25F80 80035780 00000000 */   nop
   jlabel .L80035784
@@ -137,7 +137,7 @@ glabel menu_InitSubflowForMode
   jlabel .L80035808
     /* 26008 80035808 02000224 */  addiu      $v0, $zero, 0x2
   .L8003580C:
-    /* 2600C 8003580C 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 2600C 8003580C 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
   .L80035810:
     /* 26010 80035810 7AD5000C */  jal        cdrom_EnableSerialMixAndStartRepeatingAudio
     /* 26014 80035814 00000000 */   nop

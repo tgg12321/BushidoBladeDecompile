@@ -29,8 +29,8 @@ glabel camera_InitTwoFighterView
     /* BB00 8001B300 C21F0200 */  srl        $v1, $v0, 31
     /* BB04 8001B304 21104300 */  addu       $v0, $v0, $v1
     /* BB08 8001B308 43100200 */  sra        $v0, $v0, 1
-    /* BB0C 8001B30C 0F80013C */  lui        $at, %hi(D_800F6608)
-    /* BB10 8001B310 086622AC */  sw         $v0, %lo(D_800F6608)($at)
+    /* BB0C 8001B30C 0F80013C */  lui        $at, %hi(g_camera_default_view_record)
+    /* BB10 8001B310 086622AC */  sw         $v0, %lo(g_camera_default_view_record)($at)
     /* BB14 8001B314 F800228E */  lw         $v0, 0xF8($s1)
     /* BB18 8001B318 F800038E */  lw         $v1, 0xF8($s0)
     /* BB1C 8001B31C 00000000 */  nop

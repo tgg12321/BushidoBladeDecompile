@@ -7,10 +7,10 @@
 
 extern u8 D_80094D40[];
 
-Unk80045878Obj *slot_GetObject(s32 a0) { return D_800A9A10[a0]; }
+Unk80045878Obj *slot_GetObject(s32 a0) { return g_slot_objects[a0]; }
 
 s32 slot_GetAssetIndex(s32 a0) {
-    Unk80045878Obj *ptr = D_800A9A10[a0];
+    Unk80045878Obj *ptr = g_slot_objects[a0];
     if (ptr) {
         return ptr->unk_08;
     }
@@ -21,7 +21,7 @@ s32 slot_FindEmpty(void) {
     s32 i;
     s32 ret = -1;
     for (i = 0; i < 3; i++) {
-        if (D_800A9A10[i] == 0) {
+        if (g_slot_objects[i] == 0) {
             ret = i;
             break;
         }
@@ -32,11 +32,11 @@ s32 slot_FindEmpty(void) {
 void slot_ReleaseObjectAndResources(s32 a0) {
     softbody_FreeObjectById(a0);
     slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(a0);
-    D_800A9A10[a0] = 0;
+    g_slot_objects[a0] = 0;
 }
 
 void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
-    Unk80045878Obj *ptr = D_800A9A10[a0];
+    Unk80045878Obj *ptr = g_slot_objects[a0];
     if (ptr) {
         if (((ptr->unk_00.word >> 16) & 0x1F) != a1) {
             ptr->load_status = -2;
@@ -46,7 +46,7 @@ void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
 }
 
 s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
-    Unk80045878Obj *ptr = D_800A9A10[a0];
+    Unk80045878Obj *ptr = g_slot_objects[a0];
     if (ptr) {
         return (ptr->unk_00.word >> 16) & 0x1F;
     }
@@ -54,7 +54,7 @@ s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
 }
 
 /* Sets or clears bit 0 of the flag byte in every bone record of
- * D_800A9A10[arg0], then pushes its colour (greyscaled when
+ * g_slot_objects[arg0], then pushes its colour (greyscaled when
  * gpu_RefreshGrayscaleMode() is set) through
  * PatchColorImmediatesAtListedCodeSites. */
 void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
@@ -68,7 +68,7 @@ void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
     u8 *q;
     s32 b, r, g, v;
 
-    var_1 = D_800A9A10[arg0];
+    var_1 = g_slot_objects[arg0];
     if (var_1 == NULL)
         return;
 
@@ -130,7 +130,7 @@ void node_UpdateWorldMatrix(Unk80101DF0Record *a0) {
         return;
     }
     if (a0->matrix_state != 2) {
-        func = D_800F66A0[a0->rotation_order];
+        func = g_math_rot_matrix_funcs[a0->rotation_order];
         func(&a0->xf.rot, &a0->work);
     }
     if (a0->parent_node != 0) {
@@ -152,7 +152,7 @@ void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
     sp10.vx = -(u16)a0->xf.rot.vx;
     sp10.vy = -(u16)a0->xf.rot.vy;
     sp10.vz = -(u16)a0->xf.rot.vz;
-    D_800F66A0[a0->rotation_order](&sp10, &a0->work);
+    g_math_rot_matrix_funcs[a0->rotation_order](&sp10, &a0->work);
     a0->xf.mat = a0->work;
 }
 

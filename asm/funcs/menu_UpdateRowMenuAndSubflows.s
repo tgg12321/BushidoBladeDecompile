@@ -6,7 +6,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26038 80035838 F13622A0 */  sb         $v0, %lo(D_800A36F1)($at)
     /* 2603C 8003583C 55E4010C */  jal        rand
     /* 26040 80035840 00000000 */   nop
-    /* 26044 80035844 74068393 */  lbu        $v1, %gp_rel(D_800A3740)($gp)
+    /* 26044 80035844 74068393 */  lbu        $v1, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26048 80035848 01000224 */  addiu      $v0, $zero, 0x1
     /* 2604C 8003584C 07006214 */  bne        $v1, $v0, .L8003586C
     /* 26050 80035850 00000000 */   nop
@@ -15,7 +15,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 2605C 8003585C 03004010 */  beqz       $v0, .L8003586C
     /* 26060 80035860 07000224 */   addiu     $v0, $zero, 0x7
     /* 26064 80035864 0D0180A3 */  sb         $zero, %gp_rel(D_800A31D9)($gp)
-    /* 26068 80035868 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26068 80035868 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
   .L8003586C:
     /* 2606C 8003586C 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
     /* 26070 80035870 00000000 */  nop
@@ -27,7 +27,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26088 80035888 00000000 */   nop
     /* 2608C 8003588C 0E0180A3 */  sb         $zero, %gp_rel(D_800A31DA)($gp)
   .L80035890:
-    /* 26090 80035890 74068293 */  lbu        $v0, %gp_rel(D_800A3740)($gp)
+    /* 26090 80035890 74068293 */  lbu        $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26094 80035894 00000000 */  nop
     /* 26098 80035898 FFFF4324 */  addiu      $v1, $v0, -0x1
     /* 2609C 8003589C 0E00622C */  sltiu      $v0, $v1, 0xE
@@ -49,7 +49,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 260D8 800358D8 11006214 */  bne        $v1, $v0, .L80035920
     /* 260DC 800358DC FFFF0224 */   addiu     $v0, $zero, -0x1
     /* 260E0 800358E0 08000224 */  addiu      $v0, $zero, 0x8
-    /* 260E4 800358E4 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 260E4 800358E4 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 260E8 800358E8 67D70008 */  j          .L80035D9C
     /* 260EC 800358EC 00000000 */   nop
   jlabel .L800358F0
@@ -62,13 +62,13 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26108 80035908 05006214 */  bne        $v1, $v0, .L80035920
     /* 2610C 8003590C FFFF0224 */   addiu     $v0, $zero, -0x1
     /* 26110 80035910 09000224 */  addiu      $v0, $zero, 0x9
-    /* 26114 80035914 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26114 80035914 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26118 80035918 67D70008 */  j          .L80035D9C
     /* 2611C 8003591C 00000000 */   nop
   .L80035920:
     /* 26120 80035920 1E016214 */  bne        $v1, $v0, .L80035D9C
     /* 26124 80035924 01000224 */   addiu     $v0, $zero, 0x1
-    /* 26128 80035928 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26128 80035928 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 2612C 8003592C 67D70008 */  j          .L80035D9C
     /* 26130 80035930 00000000 */   nop
   jlabel .L80035934
@@ -143,7 +143,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26230 80035A30 1000A0AF */   sw        $zero, 0x10($sp)
     /* 26234 80035A34 0C000224 */  addiu      $v0, $zero, 0xC
   .L80035A38:
-    /* 26238 80035A38 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26238 80035A38 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 2623C 80035A3C 3C000224 */  addiu      $v0, $zero, 0x3C
     /* 26240 80035A40 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
     /* 26244 80035A44 B83722AC */  sw         $v0, %lo(g_handler_frame_counter)($at)
@@ -206,7 +206,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26318 80035B18 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2631C 80035B1C 00000000 */   nop
     /* 26320 80035B20 01000224 */  addiu      $v0, $zero, 0x1
-    /* 26324 80035B24 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26324 80035B24 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26328 80035B28 E2D3000C */  jal        CopyWorkingFlagsAndButtonMappingsToSavedRecord
     /* 2632C 80035B2C 00000000 */   nop
     /* 26330 80035B30 1080033C */  lui        $v1, %hi(g_saved_record + 0x4)
@@ -229,14 +229,14 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 2636C 80035B6C E2D3000C */  jal        CopyWorkingFlagsAndButtonMappingsToSavedRecord
     /* 26370 80035B70 00000000 */   nop
     /* 26374 80035B74 0D000224 */  addiu      $v0, $zero, 0xD
-    /* 26378 80035B78 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26378 80035B78 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 2637C 80035B7C 67D70008 */  j          .L80035D9C
     /* 26380 80035B80 00000000 */   nop
   jlabel .L80035B84
     /* 26384 80035B84 E2D3000C */  jal        CopyWorkingFlagsAndButtonMappingsToSavedRecord
     /* 26388 80035B88 00000000 */   nop
     /* 2638C 80035B8C 0E000224 */  addiu      $v0, $zero, 0xE
-    /* 26390 80035B90 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 26390 80035B90 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26394 80035B94 67D70008 */  j          .L80035D9C
     /* 26398 80035B98 00000000 */   nop
   jlabel .L80035B9C
@@ -265,7 +265,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 263F0 80035BF0 00000000 */   nop
     /* 263F4 80035BF4 02000224 */  addiu      $v0, $zero, 0x2
   .L80035BF8:
-    /* 263F8 80035BF8 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 263F8 80035BF8 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 263FC 80035BFC 67D70008 */  j          .L80035D9C
     /* 26400 80035C00 00000000 */   nop
   jlabel .L80035C04
@@ -333,7 +333,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 264E8 80035CE8 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 264EC 80035CEC 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 264F0 80035CF0 03000224 */  addiu      $v0, $zero, 0x3
-    /* 264F4 80035CF4 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 264F4 80035CF4 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 264F8 80035CF8 7AD5000C */  jal        cdrom_EnableSerialMixAndStartRepeatingAudio
     /* 264FC 80035CFC 00000000 */   nop
     /* 26500 80035D00 67D70008 */  j          .L80035D9C
@@ -344,7 +344,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26510 80035D10 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26514 80035D14 00000000 */   nop
     /* 26518 80035D18 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2651C 80035D1C 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 2651C 80035D1C 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26520 80035D20 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
     /* 26524 80035D24 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 26528 80035D28 67D70008 */  j          .L80035D9C

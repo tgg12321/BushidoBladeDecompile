@@ -147,9 +147,9 @@ dlabel g_cd_fade_len
 enddlabel g_cd_fade_len
 
 /* 800A3858 */
-dlabel D_800A3858
+dlabel g_fight_timer_frames
     .space 0x4
-enddlabel D_800A3858
+enddlabel g_fight_timer_frames
 
 /* 800A385C */
 dlabel D_800A385C
@@ -249,9 +249,9 @@ dlabel D_800A38A0
 enddlabel D_800A38A0
 
 /* 800A38A4 */
-dlabel D_800A38A4
+dlabel g_fight_presentation_index
     .space 0x4
-enddlabel D_800A38A4
+enddlabel g_fight_presentation_index
 
 /* 800A38A8 */
 dlabel D_800A38A8
@@ -274,9 +274,9 @@ dlabel g_comb_handshake_step
 enddlabel g_comb_handshake_step
 
 /* 800A38AE */
-dlabel D_800A38AE
+dlabel g_fight_paired_move_initiator
     .space 0x2
-enddlabel D_800A38AE
+enddlabel g_fight_paired_move_initiator
 
 /* 800A38B0 */
 dlabel D_800A38B0
@@ -294,9 +294,9 @@ dlabel D_800A38B8
 enddlabel D_800A38B8
 
 /* 800A38BA */
-dlabel D_800A38BA
+dlabel g_fight_tracked_view_setting
     .space 0x2
-enddlabel D_800A38BA
+enddlabel g_fight_tracked_view_setting
 
 /* 800A38BC */
 dlabel g_rng_state
@@ -309,9 +309,9 @@ dlabel g_motion_frame_set_ids
 enddlabel g_motion_frame_set_ids
 
 /* 800A38C4 */
-dlabel D_800A38C4
+dlabel g_motion_fighter_loaded_data_ids
     .space 0x4
-enddlabel D_800A38C4
+enddlabel g_motion_fighter_loaded_data_ids
 
 /* 800A38C8 */
 dlabel g_memcard_file_count
@@ -369,9 +369,9 @@ dlabel D_800A38E1
 enddlabel D_800A38E1
 
 /* 800A38E2 */
-dlabel D_800A38E2
+dlabel g_fight_step_table_next_row
     .space 0x2
-enddlabel D_800A38E2
+enddlabel g_fight_step_table_next_row
 
 /* 800A38E4 */
 dlabel D_800A38E4
@@ -609,9 +609,9 @@ dlabel D_800A9920
 enddlabel D_800A9920
 
 /* 800A9A10 */
-dlabel D_800A9A10
+dlabel g_slot_objects
     .space 0x10
-enddlabel D_800A9A10
+enddlabel g_slot_objects
 
 /* 800A9A20 */
 dlabel D_800A9A20
@@ -629,9 +629,9 @@ dlabel D_800A9B28
 enddlabel D_800A9B28
 
 /* 800A9CF8 */
-dlabel D_800A9CF8
+dlabel g_node_frame_animation_context
     .space 0x2
-enddlabel D_800A9CF8
+enddlabel g_node_frame_animation_context
 
 /* 800A9CFA */
 dlabel D_800A9CFA
@@ -1049,9 +1049,9 @@ dlabel D_800F0C18
 enddlabel D_800F0C18
 
 /* 800F0CA0 */
-dlabel D_800F0CA0
+dlabel g_eff_animated_quad_positions
     .space 0xD8
-enddlabel D_800F0CA0
+enddlabel g_eff_animated_quad_positions
 
 /* 800F0D78 */
 dlabel D_800F0D78
@@ -1436,9 +1436,9 @@ dlabel D_800F4E42
 enddlabel D_800F4E42
 
 /* 800F5328 */
-dlabel D_800F5328
+dlabel g_camera_alternate_view_record
     .space 0x4
-enddlabel D_800F5328
+enddlabel g_camera_alternate_view_record
 
 /* 800F532C */
 dlabel D_800F532C
@@ -1556,9 +1556,9 @@ dlabel g_fight_match_scores
 enddlabel g_fight_match_scores
 
 /* 800F6608 */
-dlabel D_800F6608
+dlabel g_camera_default_view_record
     .space 0x4
-enddlabel D_800F6608
+enddlabel g_camera_default_view_record
 
 /* 800F660C */
 dlabel D_800F660C
@@ -1673,9 +1673,9 @@ dlabel _svm_vab_pg
 enddlabel _svm_vab_pg
 
 /* 800F66A0 */
-dlabel D_800F66A0
+dlabel g_math_rot_matrix_funcs
     .space 0x18
-enddlabel D_800F66A0
+enddlabel g_math_rot_matrix_funcs
 
 /* 800F66B8 */
 dlabel _svm_vab_vh
@@ -1768,9 +1768,9 @@ dlabel kMaxPrograms
 enddlabel kMaxPrograms
 
 /* 800FF638 */
-dlabel D_800FF638
+dlabel g_view_identity_root_node
     .space 0x68
-enddlabel D_800FF638
+enddlabel g_view_identity_root_node
 
 /* 800FF6A0 */
 dlabel _svm_pg
@@ -1808,9 +1808,9 @@ dlabel g_replay_events
 enddlabel g_replay_events
 
 /* 80101DF0 */
-dlabel D_80101DF0
+dlabel g_view_camera_root_node
     .space 0x68
-enddlabel D_80101DF0
+enddlabel g_view_camera_root_node
 
 /* 80101E58 */
 dlabel g_cdrom_state

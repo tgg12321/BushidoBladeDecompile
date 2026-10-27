@@ -1,8 +1,8 @@
 glabel slot_FindEmpty
     /* 31D84 80041584 FFFF0524 */  addiu      $a1, $zero, -0x1
     /* 31D88 80041588 21180000 */  addu       $v1, $zero, $zero
-    /* 31D8C 8004158C 0B80043C */  lui        $a0, %hi(D_800A9A10)
-    /* 31D90 80041590 109A8424 */  addiu      $a0, $a0, %lo(D_800A9A10)
+    /* 31D8C 8004158C 0B80043C */  lui        $a0, %hi(g_slot_objects)
+    /* 31D90 80041590 109A8424 */  addiu      $a0, $a0, %lo(g_slot_objects)
   .L80041594:
     /* 31D94 80041594 0000828C */  lw         $v0, 0x0($a0)
     /* 31D98 80041598 00000000 */  nop

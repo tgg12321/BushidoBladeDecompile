@@ -3,8 +3,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D1A8 8003C9A8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2D1AC 8003C9AC 79FC000C */  jal        func_8003F1E4
     /* 2D1B0 8003C9B0 21200000 */   addu      $a0, $zero, $zero
-    /* 2D1B4 8003C9B4 0F80043C */  lui        $a0, %hi(D_800F6608)
-    /* 2D1B8 8003C9B8 08668424 */  addiu      $a0, $a0, %lo(D_800F6608)
+    /* 2D1B4 8003C9B4 0F80043C */  lui        $a0, %hi(g_camera_default_view_record)
+    /* 2D1B8 8003C9B8 08668424 */  addiu      $a0, $a0, %lo(g_camera_default_view_record)
     /* 2D1BC 8003C9BC 10008524 */  addiu      $a1, $a0, 0x10
     /* 2D1C0 8003C9C0 48F40224 */  addiu      $v0, $zero, -0xBB8
     /* 2D1C4 8003C9C4 000080AC */  sw         $zero, 0x0($a0)
@@ -165,8 +165,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D40C 8003CC0C 2FF30008 */  j          .L8003CCBC
     /* 2D410 8003CC10 00000000 */   nop
   .L8003CC14:
-    /* 2D414 8003CC14 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* 2D418 8003CC18 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* 2D414 8003CC14 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* 2D418 8003CC18 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* 2D41C 8003CC1C 0A80013C */  lui        $at, %hi(D_800A3670)
     /* 2D420 8003CC20 703622A0 */  sb         $v0, %lo(D_800A3670)($at)
     /* 2D424 8003CC24 0A80023C */  lui        $v0, %hi(D_800A380C)

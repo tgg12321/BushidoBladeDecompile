@@ -419,12 +419,12 @@ extern s32 D_800A30F4[];
 typedef VECTOR CamVec;
 
 /* Scratchpad work area (0x1F800000) used by camera_UpdateTwoFighterView: the
- * target yaw and vz angle that D_800F6608's unk_10.vy / vz ease toward, the
- * camera focus, the eye position camera_CalcEye computes, a fighter record's
- * collision_pos less 0xC8 in vy (the collision segment's start), and the hit
- * position, surface normal and work area collision_TestSegmentWithWork is given
- * (its 3rd/4th/5th arguments; its other callers pass a VECTOR hit and an s16[4]
- * normal). */
+ * target yaw and vz angle that g_camera_default_view_record's unk_10.vy / vz
+ * ease toward, the camera focus, the eye position camera_CalcEye computes, a
+ * fighter record's collision_pos less 0xC8 in vy (the collision segment's
+ * start), and the hit position, surface normal and work area
+ * collision_TestSegmentWithWork is given (its 3rd/4th/5th arguments; its other
+ * callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
     s16 unk0;     /* 0x00 */
     s16 yaw;      /* 0x02 */
@@ -438,18 +438,19 @@ typedef struct {
     s32 unk60;    /* 0x60 */
 } CamScratch;
 
-/* Two-fighter camera for D_800F6608 (arg0/arg1 = the fighters' positions,
- * arg2/arg3 = the fighter records; caller fight_Update). Eases the focus
- * toward the fighters' midpoint (or arg0's position when D_800A3690 is set);
- * turns their separation (byte-LUT square root, GTE leading-zero count for
- * large inputs) into the value D_800F6608.w18 eases 1/12 toward (0xBB8 in
- * some arg2->move_kind states), clamps w18,
- * and sets a hysteresis flag for func_8003F1E4; eases unk_10.vy / vz toward
- * the facing yaw and zero; then per fighter bisects unk_10.vx (rot_x) so
- * the segment from its collision_pos less 0xC8 in vy to the eye passes
- * collision_TestSegmentWithWork's camera-collision test (step in D_800A30F4[],
- * blocked flag in D_800A30F0[]), and eases unk_10.vx toward the larger result,
- * clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
+/* Two-fighter camera for g_camera_default_view_record (arg0/arg1 = the
+ * fighters' positions, arg2/arg3 = the fighter records; caller fight_Update).
+ * Eases the focus toward the fighters' midpoint (or arg0's position when
+ * D_800A3690 is set); turns their separation (byte-LUT square root, GTE
+ * leading-zero count for large inputs) into the value
+ * g_camera_default_view_record.w18 eases 1/12 toward (0xBB8 in some
+ * arg2->move_kind states), clamps w18, and sets a hysteresis flag for
+ * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero; then per
+ * fighter bisects unk_10.vx (rot_x) so the segment from its collision_pos less
+ * 0xC8 in vy to the eye passes collision_TestSegmentWithWork's camera-collision
+ * test (step in D_800A30F4[], blocked flag in D_800A30F0[]), and eases
+ * unk_10.vx toward the larger result, clamped to 0x80..0x1C0. GTE: gte_Lzc
+ * (gte_ldlzc, gte_nop x2, gte_stlzc). */
 void camera_UpdateTwoFighterView(
     Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     Unk80101EC8Record *arg3) {
@@ -474,7 +475,7 @@ void camera_UpdateTwoFighterView(
     s32 i, j;
 
     scr = (CamScratch *)0x1F800000;
-    var_2 = &D_800F6608;
+    var_2 = &g_camera_default_view_record;
     var_2->h30[0][0] = 0x64;
     var_2->h30[0][1] = 0;
     var_2->h30[0][2] = 0x64;
@@ -676,7 +677,7 @@ void camera_UpdatePadOffset(s32 *arg0) {
     g_camera_view_offset.unk_10.vy = 0;
     g_camera_view_offset.unk_10.vz = 0;
     g_camera_view_offset.w18 = 0;
-    if (D_800A38BA != 0 && g_main_loop_handler_index == 1) {
+    if (g_fight_tracked_view_setting != 0 && g_main_loop_handler_index == 1) {
         if (*arg0 & 1) {
             D_800A37E0 = 1;
             if (*arg0 & 8) {
@@ -707,43 +708,47 @@ void camera_UpdatePadOffset(s32 *arg0) {
 
 void camera_InitTwoFighterView(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     g_camera_fight_view_mode = 0;
-    D_800F6608.h30[0][0] = 0x64;
-    D_800F6608.h30[0][1] = 0;
-    D_800F6608.h30[0][2] = 0x64;
-    D_800F6608.h30[1][0] = 0x64;
-    D_800F6608.h30[1][1] = 0;
-    D_800F6608.h30[1][2] = 0x64;
+    g_camera_default_view_record.h30[0][0] = 0x64;
+    g_camera_default_view_record.h30[0][1] = 0;
+    g_camera_default_view_record.h30[0][2] = 0x64;
+    g_camera_default_view_record.h30[1][0] = 0x64;
+    g_camera_default_view_record.h30[1][1] = 0;
+    g_camera_default_view_record.h30[1][2] = 0x64;
     func_8003F1E4(0);
-    D_800F6608.unk_00.x = (a0->world_pos.x + a1->world_pos.x) / 2;
-    D_800F6608.unk_00.y = (a0->world_pos.y + a1->world_pos.y) / 2;
-    D_800F6608.unk_00.z = (a0->world_pos.z + a1->world_pos.z) / 2;
-    D_800F6608.unk_10.vx = 0;
-    D_800F6608.unk_10.vy = 0x400 - ratan2(a1->world_pos.x - a0->world_pos.x,
-                                          a1->world_pos.z - a0->world_pos.z);
-    D_800F6608.unk_10.vz = 0;
-    D_800F6608.w18 = 0x1388;
-    D_800F6608.b1E = 0;
+    g_camera_default_view_record.unk_00.x =
+        (a0->world_pos.x + a1->world_pos.x) / 2;
+    g_camera_default_view_record.unk_00.y =
+        (a0->world_pos.y + a1->world_pos.y) / 2;
+    g_camera_default_view_record.unk_00.z =
+        (a0->world_pos.z + a1->world_pos.z) / 2;
+    g_camera_default_view_record.unk_10.vx = 0;
+    g_camera_default_view_record.unk_10.vy =
+        0x400 - ratan2(a1->world_pos.x - a0->world_pos.x,
+                       a1->world_pos.z - a0->world_pos.z);
+    g_camera_default_view_record.unk_10.vz = 0;
+    g_camera_default_view_record.w18 = 0x1388;
+    g_camera_default_view_record.b1E = 0;
 }
 
 void camera_InitTrackedFighterFocus(
     Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     g_camera_fight_view_mode = 0;
-    D_800F5328.h30[0][0] = 0x64;
-    D_800F5328.h30[0][1] = 0;
-    D_800F5328.h30[0][2] = 0x64;
-    D_800F5328.h30[1][0] = 0x64;
-    D_800F5328.h30[1][1] = 0;
-    D_800F5328.h30[1][2] = 0x64;
+    g_camera_alternate_view_record.h30[0][0] = 0x64;
+    g_camera_alternate_view_record.h30[0][1] = 0;
+    g_camera_alternate_view_record.h30[0][2] = 0x64;
+    g_camera_alternate_view_record.h30[1][0] = 0x64;
+    g_camera_alternate_view_record.h30[1][1] = 0;
+    g_camera_alternate_view_record.h30[1][2] = 0x64;
     func_8003F1E4(0);
     if (D_800A36F6 != 0) {
         a0 = a1;
     }
-    D_800F5328.unk_00.x = a0->unk_180.x;
-    D_800F5328.unk_00.z = a0->unk_180.z;
+    g_camera_alternate_view_record.unk_00.x = a0->unk_180.x;
+    g_camera_alternate_view_record.unk_00.z = a0->unk_180.z;
     {
         s32 v = a0->unk_180.y;
-        D_800F5328.b40 = 0;
-        D_800F5328.unk_00.y = v;
+        g_camera_alternate_view_record.b40 = 0;
+        g_camera_alternate_view_record.unk_00.y = v;
     }
 }
 
@@ -753,7 +758,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
      * the fighter and stored back through cam, and h1C is read, decayed by
      * 3/4 and stored back; through the symbol each access re-forms the
      * address (score 34). */
-    Rec44 *cam = &D_800F5328;
+    Rec44 *cam = &g_camera_alternate_view_record;
     s32 a2;
     s32 val;
     s32 var_3;
@@ -849,7 +854,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
 }
 
 void camera_StartTurnEasingOnLargeHeadingChange(s32 arg0, s32 arg1) {
-    if (D_800A38BA == 0) {
+    if (g_fight_tracked_view_setting == 0) {
         return;
     }
     if (D_800A36F6 != arg0) {
@@ -861,7 +866,7 @@ void camera_StartTurnEasingOnLargeHeadingChange(s32 arg0, s32 arg1) {
     }
     if (arg1 >= 0x401) {
         D_800A36FC = 0x19;
-        D_800F5328.h1C = 0x800;
+        g_camera_alternate_view_record.h1C = 0x800;
     }
 }
 
@@ -869,8 +874,8 @@ void func_8001B6F4(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     g_camera_fight_view_mode = 1;
-    D_800F6608.b1F = 0;
-    D_800F5328.b1F = 0;
+    g_camera_default_view_record.b1F = 0;
+    g_camera_alternate_view_record.b1F = 0;
     func_8003F1E4(0);
 }
 
@@ -881,7 +886,7 @@ void camera_UpdateReplayView(
     Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
-    Unk80101EC8Record *base = &D_80101EC8[D_800A3748];
+    Unk80101EC8Record *base = &D_80101EC8[g_fight_followup_fighter_index];
     s32 dx;
     s32 dy;
     s32 dz;
@@ -982,8 +987,8 @@ void camera_UpdateReplayViewWithSineYawOffset(
     if (var_v0 < 0) {
         var_v0 += 3;
     }
-    camera_UpdateReplayView(&D_800F6608, arg0, arg1, arg2, var_s3,
-                            (0x500 - temp_a2) - (var_v0 >> 2));
+    camera_UpdateReplayView(&g_camera_default_view_record, arg0, arg1, arg2,
+                            var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
 }
 
 void camera_UpdateReplayViewWithConstantYawOffset(
@@ -991,17 +996,17 @@ void camera_UpdateReplayViewWithConstantYawOffset(
     s32 temp_s0;
     temp_s0 = (g_fighter_horizontal_separation < 0x2711) << 0xB;
     camera_UpdateReplayView(
-        &D_800F5328, arg0, arg1, arg2, temp_s0,
+        &g_camera_alternate_view_record, arg0, arg1, arg2, temp_s0,
         -0x200 - ratan2(arg1->h4 - arg0->h4, arg1->h8 - arg0->h8));
 }
 
 void camera_SetFighterFocusView(Unk80101EC8Record *arg0, s32 arg1) {
     func_8003F1E4(0);
-    D_800F6608.unk_00 = arg0->unk_174;
-    D_800F6608.unk_10.vx = 0x120;
-    D_800F6608.unk_10.vy = arg1;
-    D_800F6608.unk_10.vz = 0;
-    D_800F6608.w18 = 0x1162;
+    g_camera_default_view_record.unk_00 = arg0->unk_174;
+    g_camera_default_view_record.unk_10.vx = 0x120;
+    g_camera_default_view_record.unk_10.vy = arg1;
+    g_camera_default_view_record.unk_10.vz = 0;
+    g_camera_default_view_record.w18 = 0x1162;
 }
 
 void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
@@ -1012,11 +1017,11 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
     /* FAKE: block copy of collision_pos's x / y / z (three lw, then three sw
        through one base); the three member assignments interleave the loads and
        stores (score 27). */
-    D_800F6608.unk_00 = *(Vec3i32 *)&arg0->collision_pos;
+    g_camera_default_view_record.unk_00 = *(Vec3i32 *)&arg0->collision_pos;
 
-    D_800F6608.unk_00.y -= 0x44C;
+    g_camera_default_view_record.unk_00.y -= 0x44C;
 
-    D_800F6608.unk_10.vx = 0x100 - (arg1 * 288) / 4096;
+    g_camera_default_view_record.unk_10.vx = 0x100 - (arg1 * 288) / 4096;
 
     {
         /* FAKE: div4 taken first; written at its use the multiply chain is
@@ -1024,10 +1029,10 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
         s32 div4 = arg1 / 4;
         u16 rot_y = arg0->orientation.vy;
         s32 val;
-        D_800F6608.w18 = (arg1 * 3000 + diff * 8000) >> 12;
+        g_camera_default_view_record.w18 = (arg1 * 3000 + diff * 8000) >> 12;
         val = 0xB00 - div4;
-        D_800F6608.unk_10.vz = 0;
-        D_800F6608.unk_10.vy = val - rot_y;
+        g_camera_default_view_record.unk_10.vz = 0;
+        g_camera_default_view_record.unk_10.vy = val - rot_y;
     }
 }
 
@@ -1198,7 +1203,7 @@ void func_8001C51C(void) {
     D_80101EC8[1].move_is_common = 0;
     fighter_StartMoveScript(1, v0, 0);
     D_800A382E = 0;
-    D_800A3748 = -1;
+    g_fight_followup_fighter_index = -1;
     object_FreeAttachedObjects();
     object_ClearFixedKindRange();
     camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
@@ -1257,7 +1262,7 @@ void fight_QueuePositionalSoundWithRandomAlternate(void) {
     s16 *s0 = &D_80101EC8[0].character_data_index;
     s32 a0;
     if (g_fighter_group_flags[*s0] != 0) {
-        if (D_800A37A0 == 1)
+        if (g_fight_stage_command_count == 1)
             return;
     }
     if (g_fight_mode_selector != 0)
@@ -1333,7 +1338,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         gpu_ResetGraphMode1();
         slot_LoadObjectBuildNodesSoftbodyAndFogLevels(1, D_800A38DE, 0);
         prev = D_800A38E0;
-        switch (D_800A38E2) {
+        switch (g_fight_step_table_next_row) {
         case 0x1F:
             D_800A38E0 = 1;
             resource_SelectRetainedSubblockOrApplyHeaderSections(1);
@@ -1377,8 +1382,8 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         }
     }
         D_800A3670 = 1;
-        D_800A38DF =
-            fight_FindNearestStartPair(&D_80101EC8[D_800A3748].world_pos);
+        D_800A38DF = fight_FindNearestStartPair(
+            &D_80101EC8[g_fight_followup_fighter_index].world_pos);
         g_main_loop_handler_index = 0;
         goto end;
     case 4:
@@ -1409,7 +1414,7 @@ end:
 }
 
 void fight_SplitFrameCounterIntoMinutesSecondsHundredths(Unk8001CD68Rec *arg0) {
-    s32 val = D_800A3858;
+    s32 val = g_fight_timer_frames;
 
     if (val > 0x2BF1F) {
         arg0->unk_0 = 99;
@@ -1422,7 +1427,7 @@ void fight_SplitFrameCounterIntoMinutesSecondsHundredths(Unk8001CD68Rec *arg0) {
         s32 var_2 = val / 30 - var_1 * 60;
         arg0->unk_2 = var_2;
         {
-            s32 var_3 = (D_800A3858 % 30) * 100 / 30;
+            s32 var_3 = (g_fight_timer_frames % 30) * 100 / 30;
             arg0->unk_0 = var_1;
             arg0->unk_3 = var_3;
         }
@@ -1455,16 +1460,18 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                              4;
     } else if (g_fight_mode_selector == 3) {
         if (D_80101EC8[0].is_defeated == 0 &&
-            (D_80101EC8[1].is_defeated == 0 || D_800A38E2 != 100)) {
-            D_800A3858++;
-            if (D_800A3858 > 0x2BF20) {
-                D_800A3858 = 0x2BF20;
+            (D_80101EC8[1].is_defeated == 0 ||
+             g_fight_step_table_next_row != 100)) {
+            g_fight_timer_frames++;
+            if (g_fight_timer_frames > 0x2BF20) {
+                g_fight_timer_frames = 0x2BF20;
             }
         }
         fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-        g_prim_buf_cursor += gpu_DrawTimeFieldsAndDecimalCounter(
-                                 &buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) /
-                             4;
+        g_prim_buf_cursor +=
+            gpu_DrawTimeFieldsAndDecimalCounter(
+                &buf, g_fight_step_table_next_row, (s32)g_prim_buf_cursor, 1) /
+            4;
     } else if ((g_fight_mode_selector == 2 && D_800A389A == 1) ||
                g_fight_mode_selector == 4) {
         g_prim_buf_cursor +=
@@ -1760,22 +1767,22 @@ void motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id(void) {
     ndata_LoadPack(
         g_fighter_group_flags[D_80101EC8[0].character_data_index] < 1,
         (s32)0x80190800);
-    D_800A38C4[1] = 0xFFFF;
+    g_motion_fighter_loaded_data_ids[1] = 0xFFFF;
 }
 
 void fight_WaitForCounterThenClearAndEnableDisplay(void) {
     s32 i;
 
-    if (D_800A3768 != DISP_ACTIVE) {
+    if (g_local_ot_draw_mode != DISP_ACTIVE) {
         return;
     }
     comb_BeginWait();
-    if (!(D_800A38F8 > D_800A37A0)) {
+    if (!(D_800A38F8 > g_fight_stage_command_count)) {
         do {
             comb_ExchangeEmptyPad();
             gpu_DrawDisplayModeOnLocalOtAndSync();
             VSync(2);
-        } while (!(D_800A38F8 > D_800A37A0));
+        } while (!(D_800A38F8 > g_fight_stage_command_count));
         i = 0;
         do {
             comb_ExchangeEmptyPad();
@@ -1800,7 +1807,7 @@ void fight_Init(void) {
     s32 addr;
 
     snd_ResetVoicesAndQueue();
-    if (D_800A3768 != DISP_ACTIVE) {
+    if (g_local_ot_draw_mode != DISP_ACTIVE) {
         gpu_HideResetAndClear();
         gpu_SetDispMaskOn();
     }
@@ -1809,8 +1816,9 @@ void fight_Init(void) {
     gpu_RestoreObjectClutOffsets();
     object_ResetPool();
     fight_ClearBallisticRecords();
-    func_8003F218(D_800A38BA);
-    SetGeomScreen(math_FovToScreenDist(D_800A38BA != 0 ? 0x50 : 0x2D));
+    func_8003F218(g_fight_tracked_view_setting);
+    SetGeomScreen(
+        math_FovToScreenDist(g_fight_tracked_view_setting != 0 ? 0x50 : 0x2D));
     for (i = 0; i < 2; i++) {
         if (g_fight_mode_selector != 0) {
             slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
@@ -1818,7 +1826,7 @@ void fight_Init(void) {
         fighter_Init(
             i, (s8)g_fight_config.unk_4[4 + i], (s8)g_fight_config.unk_4[i],
             (s8)g_fight_config.unk_4[2 + i], 0);
-        if (D_800A38BA != 0 && D_800A36F6 == i) {
+        if (g_fight_tracked_view_setting != 0 && D_800A36F6 == i) {
             gpu_MoveObjectClutsToFogBlock(i == 0);
         }
     }
@@ -1829,7 +1837,7 @@ void fight_Init(void) {
         addr = (s32)0x80190800;
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         for (i = 0; i < 2; i++) {
-            if (D_800A38BA != 0 && D_800A36F6 == i) {
+            if (g_fight_tracked_view_setting != 0 && D_800A36F6 == i) {
                 slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
                     i, D_8008D578[(s8)g_fight_config.unk_4[i]], addr);
                 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(i);
@@ -1887,10 +1895,11 @@ void fight_Init(void) {
             snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4();
             motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id();
         }
-        motion_LoadFighterData(D_8008D538[(s8)g_fight_config.unk_4[0]],
-                               (s8)g_fight_config.unk_4[2],
-                               D_8008D538[(s8)g_fight_config.unk_4[1]],
-                               (s8)g_fight_config.unk_4[3]);
+        motion_LoadFighterData(
+            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]],
+            (s8)g_fight_config.unk_4[2],
+            g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[1]],
+            (s8)g_fight_config.unk_4[3]);
     } else if (g_fight_mode_selector == 5) {
         D_800A391E = 1;
     }
@@ -1946,15 +1955,15 @@ void fight_Init(void) {
         }
     }
     D_800A382E = 0;
-    D_800A3748 = -1;
+    g_fight_followup_fighter_index = -1;
     camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
-    if (D_800A38BA != 0) {
+    if (g_fight_tracked_view_setting != 0) {
         camera_InitTrackedFighterFocus(&D_80101EC8[0], &D_80101EC8[1]);
     }
     replay_Reset();
     eff_StopCommands();
     fight_WaitForCounterThenClearAndEnableDisplay();
-    D_800A3768 = DISP_DISABLED;
+    g_local_ot_draw_mode = DISP_DISABLED;
     D_800A36A8 = 0;
     eff_Init();
     D_800A3670 = 0;
@@ -1977,7 +1986,7 @@ void camera_ApplyFightView(void) {
     Rec44 local;
     Rec44 *s2;
 
-    if (D_800A38BA != 0) {
+    if (g_fight_tracked_view_setting != 0) {
         if (g_camera_fight_view_mode == 1) {
             if (D_80101EC8[0].is_defeated != 0 ||
                 D_80101EC8[1].is_defeated != 0) {
@@ -1987,14 +1996,14 @@ void camera_ApplyFightView(void) {
         if (g_camera_fight_view_mode != 2) {
             if (D_80101EC8[0].move_kind == 0x11 ||
                 D_80101EC8[1].move_kind == 0x11) {
-                s2 = &D_800F6608;
+                s2 = &g_camera_default_view_record;
                 g_camera_fight_view_mode = 1;
             } else {
-                s2 = &D_800F5328;
+                s2 = &g_camera_alternate_view_record;
                 g_camera_fight_view_mode = 0;
             }
         } else {
-            s2 = &D_800F6608;
+            s2 = &g_camera_default_view_record;
         }
         func_8003F218(g_camera_fight_view_mode < 1);
 
@@ -2011,7 +2020,7 @@ void camera_ApplyFightView(void) {
             node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
         }
     } else {
-        s2 = &D_800F6608;
+        s2 = &g_camera_default_view_record;
     }
 
     if (g_main_loop_handler_index == 1) {
@@ -2046,9 +2055,9 @@ void camera_ApplyReplayView(s32 arg0) {
     Rec44 local;
     Rec44 *s2;
 
-    s2 = &D_800F5328;
+    s2 = &g_camera_alternate_view_record;
     if ((u32)(arg0 - 0x555) >= 0x556U) {
-        s2 = &D_800F6608;
+        s2 = &g_camera_default_view_record;
     }
 
     local.unk_00.x = s2->unk_00.x + g_camera_view_offset.unk_00.x;
@@ -2082,7 +2091,7 @@ void fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt(void) {
     {
         u32 flags = ptr->unk_62 & 4;
         node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
-            D_800F5328.h1C, a1, flags > 0);
+            g_camera_alternate_view_record.h1C, a1, flags > 0);
     }
 }
 
@@ -2093,7 +2102,7 @@ void fight_Update(void) {
     camera_UpdateTwoFighterView(
         &D_80101EC8[0].camera_fighter_point,
         &D_80101EC8[1].camera_fighter_point, &D_80101EC8[0], &D_80101EC8[1]);
-    if (D_800A38BA != 0) {
+    if (g_fight_tracked_view_setting != 0) {
         camera_UpdateTrackedFighterView(&D_80101EC8[D_800A36F6]);
     }
     camera_ApplyFightView();
@@ -2107,7 +2116,7 @@ void fight_Update(void) {
     object_UpdatePool();
     fight_UpdateBallisticRecords();
     replay_AdvanceFrame();
-    if (D_800A38BA != 0 && g_camera_fight_view_mode == 0) {
+    if (g_fight_tracked_view_setting != 0 && g_camera_fight_view_mode == 0) {
         fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt();
     } else {
         gpu_SetViewOriginSegmentCellsGateBit(
@@ -2144,8 +2153,8 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
 
     g_handler_frame_counter += 1;
     D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
-    camera_SetFighterFocusView(
-        &D_80101EC8[D_800A3748 == 0], g_handler_frame_counter << 3);
+    camera_SetFighterFocusView(&D_80101EC8[g_fight_followup_fighter_index == 0],
+                               g_handler_frame_counter << 3);
     camera_ApplyFightView();
     replay_BeginFrame();
     fight_UpdateSeparationAndPairedMoves();
@@ -2160,9 +2169,10 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     snd_UpdateStageSounds();
     if (g_fight_mode_selector == 3) {
         fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-        g_prim_buf_cursor += gpu_DrawTimeFieldsAndDecimalCounter(
-                                 &buf, D_800A38E2, (s32)g_prim_buf_cursor, 1) /
-                             4;
+        g_prim_buf_cursor +=
+            gpu_DrawTimeFieldsAndDecimalCounter(
+                &buf, g_fight_step_table_next_row, (s32)g_prim_buf_cursor, 1) /
+            4;
     }
     if (D_800A3929 == 0) {
         g_prim_buf_cursor +=
@@ -2189,11 +2199,11 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
             D_800A3929 = (g_fight_choice_menu_cursor == 0) ? 1 : 0x3C;
             if (g_fight_choice_menu_cursor != 0)
                 return;
-            D_80101EC8[D_800A3748 == 0].unk_B3 = 0;
+            D_80101EC8[g_fight_followup_fighter_index == 0].unk_B3 = 0;
             if (g_fight_mode_selector == 3) {
-                D_800A3858 = D_800A3858 + 0x384;
-                if (D_800A3858 > 0x2BF20) {
-                    D_800A3858 = 0x2BF20;
+                g_fight_timer_frames = g_fight_timer_frames + 0x384;
+                if (g_fight_timer_frames > 0x2BF20) {
+                    g_fight_timer_frames = 0x2BF20;
                 }
             }
         }
@@ -2210,8 +2220,8 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     if (g_fight_choice_menu_cursor == 0) {
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF =
-            fight_FindNearestStartPair(&D_80101EC8[D_800A3748].world_pos);
+        D_800A38DF = fight_FindNearestStartPair(
+            &D_80101EC8[g_fight_followup_fighter_index].world_pos);
         if (D_80101EC8[1].cpu_controlled != 0) {
             fighter_HalveCpuTally(1);
         }
@@ -2233,18 +2243,19 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
 }
 
 void func_8001EEB4(void) {
-    s8 idx = D_800A3748;
+    s8 idx = g_fight_followup_fighter_index;
     Unk80101EC8Record *entry = &D_80101EC8[idx];
     u16 a1 = entry->move_kind;
 
     if (a1 != 0xA && entry->unk_72 == 0 && a1 != 0x17 && a1 != 0x18 &&
         entry->is_defeated == 0) {
-        motion_ResetVariantIndex(D_800A3748);
+        motion_ResetVariantIndex(g_fight_followup_fighter_index);
         {
             MoveScript *ret =
                 motion_GetCommonScriptAtFighterBufferIndexedOffset(
-                    D_800A3748, entry->character_data_index);
-            s32 idx2 = D_800A3748;
+                    g_fight_followup_fighter_index,
+                    entry->character_data_index);
+            s32 idx2 = g_fight_followup_fighter_index;
             entry->move_is_common = 1;
             fighter_StartMoveScript(idx2, ret, 1);
         }
@@ -2264,7 +2275,8 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
     g_handler_frame_counter += 1;
     D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
     camera_SetInterpolatedFighterView(
-        &D_80101EC8[D_800A3748], (g_handler_frame_counter << 12) / 105);
+        &D_80101EC8[g_fight_followup_fighter_index],
+        (g_handler_frame_counter << 12) / 105);
     camera_ApplyFightView();
     replay_BeginFrame();
     fight_UpdateSeparationAndPairedMoves();
@@ -2278,7 +2290,8 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
     snd_UpdateStageSounds();
 
-    if (D_80101EC8[D_800A3748].is_defeated != 0 && g_fight_mode_selector == 1) {
+    if (D_80101EC8[g_fight_followup_fighter_index].is_defeated != 0 &&
+        g_fight_mode_selector == 1) {
         g_handler_frame_counter = 0x69;
     }
 
@@ -2288,9 +2301,9 @@ void fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPr
             var_v0 = 0xC;
             break;
         case 1:
-            if (D_800A3748 == 0) {
+            if (g_fight_followup_fighter_index == 0) {
                 snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-                D_800A3768 = 2;
+                g_local_ot_draw_mode = 2;
                 fight_AdvanceOpponentOrder();
                 return;
             }
@@ -2700,11 +2713,14 @@ void fight_UpdatePairedMoves(void) {
         if (D_80101EC8[1].is_defeated != 0) {
             return;
         }
-        fighter_StartMoveScript(D_800A38AE, D_800A36D8, D_800A381C);
+        fighter_StartMoveScript(
+            g_fight_paired_move_initiator, D_800A36D8, D_800A381C);
         if (D_800A36CA & 0x1000) {
-            D_80101EC8[D_800A38AE == 0].borrow_other_motion = 1;
+            D_80101EC8[g_fight_paired_move_initiator == 0].borrow_other_motion =
+                1;
         }
-        fighter_StartMoveScript(D_800A38AE == 0, D_800A36D8, D_800A381C);
+        fighter_StartMoveScript(
+            g_fight_paired_move_initiator == 0, D_800A36D8, D_800A381C);
         D_80101EC8[1].move_started = 2;
         D_80101EC8[0].move_started = 2;
         return;
@@ -2766,7 +2782,7 @@ void fight_UpdatePairedMoves(void) {
         if (kind != 0x15 && kind != 0x2C && kind != 0xE && kind != 0x19) {
             continue;
         }
-        D_800A38AE = i;
+        g_fight_paired_move_initiator = i;
         D_800A376E = 0;
         D_800A3758 = 0xFF;
         D_800A371C = data[2] * 20;
@@ -3049,15 +3065,15 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
     rec->unk_1C2 = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
 }
 
-/* D_800A38C4[i] is the fighter motion id loaded into slot i; 0xFFFF in slot 1
- * marks an ndata pack there
+/* g_motion_fighter_loaded_data_ids[i] is the fighter motion id loaded into slot
+ * i; 0xFFFF in slot 1 marks an ndata pack there
  * (motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id). Both functions read slot
  * 1's id through `ids`, invalidate the pack if it holds one and store the slot
  * back (pointer read-modify-write, pointer-alias-fake-exception; the direct
- * D_800A38C4[1] form keeps the address live across ndata_InvalidatePack:
- * score 10 / 9). */
+ * g_motion_fighter_loaded_data_ids[1] form keeps the address live across
+ * ndata_InvalidatePack: score 10 / 9). */
 void motion_InvalidateMarkedNdataPackAndResetLoadCaches(void) {
-    u16 *ids = D_800A38C4;
+    u16 *ids = g_motion_fighter_loaded_data_ids;
 
     if (ids[1] == 0xFFFF) {
         ndata_InvalidatePack();
@@ -3070,7 +3086,7 @@ void motion_InvalidateMarkedNdataPackAndResetLoadCaches(void) {
 }
 
 void motion_InvalidateMarkedNdataPackAndClearSlot1Id(void) {
-    u16 *ids = D_800A38C4;
+    u16 *ids = g_motion_fighter_loaded_data_ids;
 
     if (ids[1] == 0xFFFF) {
         ndata_InvalidatePack();
@@ -3105,14 +3121,16 @@ void motion_LoadCommonData(void) {
  * 7). Then sets D_80101EC8[0].motion_data_id to D_8008DB1C[arg0][arg1] | arg1
  * << 12 and D_80101EC8[1].motion_data_id to the same of arg2 and arg3 (a copy
  * of the first when g_fight_mode_selector is 3). It then fills var_0[0..1] from
- * D_800A38C4[0..1]: it returns when every id is already there; equal ids give
- * var_0[0] = id0; an id found in D_800A38C4[0] stays and the other id goes to
- * var_0[1]; id1 found only in D_800A38C4[1] gives var_0[0] = id0; otherwise
- * (also when id0 is only in D_800A38C4[1]) var_0[0] = id0 and var_0[1] = id1.
- * For each nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j +
- * 2), g_motion_fighter_buffers[i]), j the id's D_8008DCCC index, points
- * g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and stores the
- * id in D_800A38C4[i]. */
+ * g_motion_fighter_loaded_data_ids[0..1]: it returns when every id is already
+ * there; equal ids give var_0[0] = id0; an id found in
+ * g_motion_fighter_loaded_data_ids[0] stays and the other id goes to var_0[1];
+ * id1 found only in g_motion_fighter_loaded_data_ids[1] gives var_0[0] = id0;
+ * otherwise (also when id0 is only in g_motion_fighter_loaded_data_ids[1])
+ * var_0[0] = id0 and var_0[1] = id1. For each nonzero var_0[i] it calls
+ * cdrom_StartRead(cdrom_GetFileIndex(1, j + 2), g_motion_fighter_buffers[i]), j
+ * the id's D_8008DCCC index, points g_motion_fighter_sections[i] into
+ * g_motion_fighter_buffers[i] and stores the id in
+ * g_motion_fighter_loaded_data_ids[i]. */
 void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
      * reserves 0x100 untouched bytes after them (N = 129..132; var_0[2] gives
@@ -3159,21 +3177,22 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         D_80101EC8[1].motion_data_id = id1;
 
         if (id0 == id1) {
-            if (D_800A38C4[0] == id1 || D_800A38C4[1] == id1) {
+            if (g_motion_fighter_loaded_data_ids[0] == id1 ||
+                g_motion_fighter_loaded_data_ids[1] == id1) {
                 return;
             }
             var_0[0] = id0;
-        } else if (D_800A38C4[0] == id0) {
-            if (D_800A38C4[1] == id1) {
+        } else if (g_motion_fighter_loaded_data_ids[0] == id0) {
+            if (g_motion_fighter_loaded_data_ids[1] == id1) {
                 return;
             }
             var_0[1] = id1;
-        } else if (D_800A38C4[0] == id1) {
-            if (D_800A38C4[1] == id0) {
+        } else if (g_motion_fighter_loaded_data_ids[0] == id1) {
+            if (g_motion_fighter_loaded_data_ids[1] == id0) {
                 return;
             }
             var_0[1] = id0;
-        } else if (D_800A38C4[1] == id1) {
+        } else if (g_motion_fighter_loaded_data_ids[1] == id1) {
             var_0[0] = id0;
         } else {
             var_0[0] = id0;
@@ -3206,30 +3225,30 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             g_motion_fighter_sections[i].unk_10 =
                 (u32 *)((s32)g_motion_fighter_buffers[i] +
                         g_motion_fighter_buffers[i]->unk_04[3]);
-            D_800A38C4[i] = var_0[i];
+            g_motion_fighter_loaded_data_ids[i] = var_0[i];
         }
     }
 }
 
 void motion_InitStreams(void) {
     motion_InitStream(0, g_motion_common_sections.unk_10);
-    if (D_800A38C4[0]) {
+    if (g_motion_fighter_loaded_data_ids[0]) {
         motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
     }
-    if (D_800A38C4[1]) {
+    if (g_motion_fighter_loaded_data_ids[1]) {
         motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
     }
 }
 
-/* The record's motion_data_id -> its slot in D_800A38C4 (motion_slot); for
- * ids below 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E),
- * copying unk_26C into unk_8A / unk_90 under conditions on
+/* The record's motion_data_id -> its slot in g_motion_fighter_loaded_data_ids
+ * (motion_slot); for ids below 0x2000, the nibble positions of 4 and 5 (unk_88
+ * / unk_8E), copying unk_26C into unk_8A / unk_90 under conditions on
  * g_fight_mode_selector. */
 void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 a0) {
     s32 i = 0;
     Unk80101EC8Record *rec = &D_80101EC8[a0];
     s32 id = rec->motion_data_id;
-    u16 *p = D_800A38C4;
+    u16 *p = g_motion_fighter_loaded_data_ids;
 
     for (; i < 2; i++, p++) {
         if (id == *p) {
@@ -3701,7 +3720,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->index = idx;
     p->cpu_controlled = arg1;
     p->unk_0C = arg2;
-    p->character_data_index = D_8008D538[arg2];
+    p->character_data_index = g_fight_config_id_data_rows[arg2];
     p->weapon_id = arg3;
 
     if (g_fight_mode_selector == 5 ||
@@ -3733,7 +3752,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         p->unk_84 =
             motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
                 p);
-        var_2 = (D_800A38E2 - 1) / 10 + 1;
+        var_2 = (g_fight_step_table_next_row - 1) / 10 + 1;
         p->base_move_frame_step = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
         if (var_2 == 9) {
             p->unk_20 = 0x1080;
@@ -4131,13 +4150,15 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
 
             a2 = D_8008EB40[a0][a1];
 
-            if (D_800A38BA != 0 && arg0->cpu_controlled == 0) {
+            if (g_fight_tracked_view_setting != 0 &&
+                arg0->cpu_controlled == 0) {
                 fighter_SetTurnDelta(arg0, arg0->orientation.vy + a2 / 4);
             } else {
                 fighter_SetTurnDelta(arg0, arg0->opponent_bearing + a2);
             }
         } else {
-            if (D_800A38BA != 0 && arg0->cpu_controlled == 0) {
+            if (g_fight_tracked_view_setting != 0 &&
+                arg0->cpu_controlled == 0) {
                 arg0->remaining_turn = 0;
             }
         }
@@ -4452,7 +4473,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec = &D_80101EC8[arg0];
     rec->update_count++;
     rec->pad_input = *pad;
-    if (D_800A38BA != 0 &&
+    if (g_fight_tracked_view_setting != 0 &&
         (arg0 == 0 || (arg0 == 1 && rec->cpu_controlled == 0))) {
         rec->pad_input.held = (rec->pad_input.held & 0xFFF) |
                               ((rec->pad_input.held & 0x8000) >> 3) |
@@ -4547,7 +4568,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 arg0, rec->queued_move, rec->queued_move_is_common);
         } else {
             if ((rec->cur_move->transition_commands[0] & 0x2000) &&
-                D_800A38AE != arg0) {
+                g_fight_paired_move_initiator != arg0) {
                 if (rec->cur_move->transition_commands[0] & 0x1000) {
                     rec->borrow_other_motion = 1;
                 }
@@ -4607,7 +4628,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 if (var_7 & 0x2000) {
                     var_8 = 0;
                 }
-                if (rec->move_kind == 0x11 && D_800A38AE == arg0) {
+                if (rec->move_kind == 0x11 &&
+                    g_fight_paired_move_initiator == arg0) {
                     var_8 = 0;
                 }
                 if ((var_7 & 0xF) == 9) {
@@ -4806,9 +4828,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     if (rec->cur_move->unk_09 & 0x40) {
         var_18 = rec->move_is_common == 0
-                     ? D_80101EC8[D_800A38AE].motion_slot + 1
+                     ? D_80101EC8[g_fight_paired_move_initiator].motion_slot + 1
                      : 0;
-        if (rec->move_kind == 0x11 && D_800A38AE != arg0) {
+        if (rec->move_kind == 0x11 && g_fight_paired_move_initiator != arg0) {
             var_19 = rec->motion_metadata[1];
         } else {
             var_19 = 0;
@@ -5067,8 +5089,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
          rec->weapon_hit_start_frames[1] < 0xFF && rec->unk_26C != 0 &&
          rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
         (rec->character_data_index == 0xE && rec->move_kind == 0x11 &&
-         D_800A38AE == arg0 && rec->move_frame >= rec->unk_A5 &&
-         rec->unk_A6 >= rec->move_frame)) {
+         g_fight_paired_move_initiator == arg0 &&
+         rec->move_frame >= rec->unk_A5 && rec->unk_A6 >= rec->move_frame)) {
         rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
         rec->unk_62 |= 4;
     } else {
@@ -5238,12 +5260,13 @@ skip_62:
         ((rec->move_started != 0 && rec->prev_move_kind != 4 &&
           rec->prev_move_kind != 0x14 &&
           (rec->move_kind == 4 || rec->move_kind == 0x14)) ||
-         (rec->move_kind == 0x11 && arg0 != D_800A38AE &&
+         (rec->move_kind == 0x11 && arg0 != g_fight_paired_move_initiator &&
           rec->unk_AA == rec->move_frame))) {
         MATRIX **var_37 = node_GetSlotMatrixPointerArray(arg0);
         if (g_fight_mode_selector != 0 ||
             g_fighter_group_flags[D_80101EC8[0].character_data_index] == 0 ||
-            D_800A37A0 != 1 || arg0 != D_800A37A0) {
+            g_fight_stage_command_count != 1 ||
+            arg0 != g_fight_stage_command_count) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 arg0, 0x2E, &rec->world_pos.x, 0);
         }
@@ -5255,8 +5278,8 @@ skip_62:
                 (Vec3i32 *)var_37[0x12]->t);
         }
         rec->is_defeated = 1;
-        if (D_800A3748 == -1) {
-            D_800A3748 = arg0 == 0;
+        if (g_fight_followup_fighter_index == -1) {
+            g_fight_followup_fighter_index = arg0 == 0;
         }
     }
     if (rec->move_started != 0 && rec->unk_0C == 0x1B &&
@@ -5301,7 +5324,7 @@ skip_62:
                 arg0, 0x31, &rec->world_pos.x, 0);
         }
         if (rec->unk_46 == 0 &&
-            (rec->move_kind != 0x11 || arg0 == D_800A38AE)) {
+            (rec->move_kind != 0x11 || arg0 == g_fight_paired_move_initiator)) {
             rec->unk_62 |= 0x40;
             fighter_ProcessFrameEvents(rec);
         }

@@ -2,7 +2,7 @@ glabel menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows
     /* 25C38 80035438 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25C3C 8003543C 01000224 */  addiu      $v0, $zero, 0x1
     /* 25C40 80035440 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 25C44 80035444 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
+    /* 25C44 80035444 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 25C48 80035448 A0D4000C */  jal        CopySavedFlagsButtonMappingsAndTimesToWorkingRecord
     /* 25C4C 8003544C 00000000 */   nop
     /* 25C50 80035450 1080033C */  lui        $v1, %hi(g_saved_record + 0x4)

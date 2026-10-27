@@ -22,8 +22,8 @@ glabel fight_InitNearestStartPairPlayback
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D
     /* 2D66C 8003CE6C FFFB010C */  jal        SetGeomScreen
     /* 2D670 8003CE70 21204000 */   addu      $a0, $v0, $zero
-    /* 2D674 8003CE74 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* 2D678 8003CE78 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* 2D674 8003CE74 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* 2D678 8003CE78 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* 2D67C 8003CE7C 00000000 */  nop
     /* 2D680 8003CE80 00110300 */  sll        $v0, $v1, 4
     /* 2D684 8003CE84 21104300 */  addu       $v0, $v0, $v1
@@ -49,8 +49,8 @@ glabel fight_InitNearestStartPairPlayback
     /* 2D6D0 8003CED0 06001024 */   addiu     $s0, $zero, 0x6
     /* 2D6D4 8003CED4 07001024 */  addiu      $s0, $zero, 0x7
   .L8003CED8:
-    /* 2D6D8 8003CED8 0A80023C */  lui        $v0, %hi(D_800A3748)
-    /* 2D6DC 8003CEDC 48374280 */  lb         $v0, %lo(D_800A3748)($v0)
+    /* 2D6D8 8003CED8 0A80023C */  lui        $v0, %hi(g_fight_followup_fighter_index)
+    /* 2D6DC 8003CEDC 48374280 */  lb         $v0, %lo(g_fight_followup_fighter_index)($v0)
     /* 2D6E0 8003CEE0 1080043C */  lui        $a0, %hi(D_80101FBC)
     /* 2D6E4 8003CEE4 BC1F8424 */  addiu      $a0, $a0, %lo(D_80101FBC)
     /* 2D6E8 8003CEE8 02004014 */  bnez       $v0, .L8003CEF4

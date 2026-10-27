@@ -1,8 +1,8 @@
 glabel slot_RequestTimGroupsAndMarkReloadOnChange
     /* 31E04 80041604 80100400 */  sll        $v0, $a0, 2
-    /* 31E08 80041608 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 31E08 80041608 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 31E0C 8004160C 21082200 */  addu       $at, $at, $v0
-    /* 31E10 80041610 109A238C */  lw         $v1, %lo(D_800A9A10)($at)
+    /* 31E10 80041610 109A238C */  lw         $v1, %lo(g_slot_objects)($at)
     /* 31E14 80041614 00000000 */  nop
     /* 31E18 80041618 08006010 */  beqz       $v1, .L8004163C
     /* 31E1C 8004161C 00000000 */   nop

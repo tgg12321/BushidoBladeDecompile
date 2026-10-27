@@ -27,7 +27,7 @@ glabel memcard_RestoreSaveBlock
   .L80038068:
     /* 28868 80038068 3500C210 */  beq        $a2, $v0, .L80038140
     /* 2886C 8003806C 21100000 */   addu      $v0, $zero, $zero
-    /* 28870 80038070 30018293 */  lbu        $v0, %gp_rel(D_800A31FC)($gp)
+    /* 28870 80038070 30018293 */  lbu        $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 28874 80038074 00000000 */  nop
     /* 28878 80038078 31004014 */  bnez       $v0, .L80038140
     /* 2887C 8003807C 01000224 */   addiu     $v0, $zero, 0x1

@@ -1,8 +1,8 @@
 glabel slot_GetObject
     /* 31D3C 8004153C 80200400 */  sll        $a0, $a0, 2
-    /* 31D40 80041540 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 31D40 80041540 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 31D44 80041544 21082400 */  addu       $at, $at, $a0
-    /* 31D48 80041548 109A228C */  lw         $v0, %lo(D_800A9A10)($at)
+    /* 31D48 80041548 109A228C */  lw         $v0, %lo(g_slot_objects)($at)
     /* 31D4C 8004154C 0800E003 */  jr         $ra
     /* 31D50 80041550 00000000 */   nop
 endlabel slot_GetObject

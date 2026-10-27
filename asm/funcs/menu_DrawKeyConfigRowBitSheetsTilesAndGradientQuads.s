@@ -63,7 +63,7 @@ glabel menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
     /* 5CB10 8006C310 21A00000 */  addu       $s4, $zero, $zero
     /* 5CB14 8006C314 3400A0AF */  sw         $zero, 0x34($sp)
   .L8006C318:
-    /* 5CB18 8006C318 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5CB18 8006C318 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5CB1C 8006C31C 3000B4AF */  sw         $s4, 0x30($sp)
     /* 5CB20 8006C320 21102202 */  addu       $v0, $s1, $v0
     /* 5CB24 8006C324 28004284 */  lh         $v0, 0x28($v0)
@@ -74,8 +74,8 @@ glabel menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
     /* 5CB38 8006C338 21F00000 */  addu       $fp, $zero, $zero
     /* 5CB3C 8006C33C 21806002 */  addu       $s0, $s3, $zero
   .L8006C340:
-    /* 5CB40 8006C340 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
-    /* 5CB44 8006C344 5804838F */  lw         $v1, %gp_rel(D_800A3524)($gp)
+    /* 5CB40 8006C340 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
+    /* 5CB44 8006C344 5804838F */  lw         $v1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5CB48 8006C348 21102202 */  addu       $v0, $s1, $v0
     /* 5CB4C 8006C34C 28004284 */  lh         $v0, 0x28($v0)
     /* 5CB50 8006C350 80201200 */  sll        $a0, $s2, 2
@@ -223,7 +223,7 @@ glabel menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
     /* 5CD70 8006C570 4800A88F */  lw         $t0, 0x48($sp)
     /* 5CD74 8006C574 00000000 */  nop
     /* 5CD78 8006C578 1C00028D */  lw         $v0, 0x1C($t0)
-    /* 5CD7C 8006C57C 3004838F */  lw         $v1, %gp_rel(D_800A34FC)($gp)
+    /* 5CD7C 8006C57C 3004838F */  lw         $v1, %gp_rel(g_row_menu_work_block)($gp)
     /* 5CD80 8006C580 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5CD84 8006C584 1C0002AD */  sw         $v0, 0x1C($t0)
     /* 5CD88 8006C588 2400628C */  lw         $v0, 0x24($v1)
@@ -296,7 +296,7 @@ glabel menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
   .L8006C68C:
     /* 5CE8C 8006C68C 21B00000 */  addu       $s6, $zero, $zero
     /* 5CE90 8006C690 FFFF1724 */  addiu      $s7, $zero, -0x1
-    /* 5CE94 8006C694 3004838F */  lw         $v1, %gp_rel(D_800A34FC)($gp)
+    /* 5CE94 8006C694 3004838F */  lw         $v1, %gp_rel(g_row_menu_work_block)($gp)
     /* 5CE98 8006C698 5000A88F */  lw         $t0, 0x50($sp)
     /* 5CE9C 8006C69C 2200B026 */  addiu      $s0, $s5, 0x22
     /* 5CEA0 8006C6A0 8000A0AF */  sw         $zero, 0x80($sp)

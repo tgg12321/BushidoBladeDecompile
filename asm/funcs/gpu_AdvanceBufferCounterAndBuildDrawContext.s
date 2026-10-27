@@ -9,7 +9,7 @@ glabel gpu_AdvanceBufferCounterAndBuildDrawContext
     /* 5EBAC 8006E3AC 0000A4AC */  sw         $a0, 0x0($a1)
     /* 5EBB0 8006E3B0 48A4010C */  jal        gpu_GetPrimBufferAndRefreshStrip
     /* 5EBB4 8006E3B4 01008430 */   andi      $a0, $a0, 0x1
-    /* 5EBB8 8006E3B8 3004838F */  lw         $v1, %gp_rel(D_800A34FC)($gp)
+    /* 5EBB8 8006E3B8 3004838F */  lw         $v1, %gp_rel(g_row_menu_work_block)($gp)
     /* 5EBBC 8006E3BC 00000000 */  nop
     /* 5EBC0 8006E3C0 2400638C */  lw         $v1, 0x24($v1)
     /* 5EBC4 8006E3C4 00000000 */  nop

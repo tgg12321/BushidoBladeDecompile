@@ -1,6 +1,6 @@
 glabel camera_StartTurnEasingOnLargeHeadingChange
-    /* BE90 8001B690 0A80023C */  lui        $v0, %hi(D_800A38BA)
-    /* BE94 8001B694 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
+    /* BE90 8001B690 0A80023C */  lui        $v0, %hi(g_fight_tracked_view_setting)
+    /* BE94 8001B694 BA384284 */  lh         $v0, %lo(g_fight_tracked_view_setting)($v0)
     /* BE98 8001B698 00000000 */  nop
     /* BE9C 8001B69C 13004010 */  beqz       $v0, .L8001B6EC
     /* BEA0 8001B6A0 00000000 */   nop

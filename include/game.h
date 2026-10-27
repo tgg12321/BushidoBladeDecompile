@@ -120,7 +120,8 @@ typedef struct {
 /* 0x8009BC0C: the eight option rows of the list menu menu_UpdateRowMenu drives,
  * one {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B), indexed by
  * g_menu_packed_cursors & 0xF. state: accept / reject / return value; mode:
- * passed to the three render calls, 1/2/3 select the D_800A3524 bit-3 action.
+ * passed to the three render calls, 1/2/3 select the
+ * g_row_menu_working_record_ptr bit-3 action.
  */
 typedef struct {
     u8 state;
@@ -289,9 +290,9 @@ typedef struct {
 
 /* SEL.BIN's unk_54 block, gpu_UploadAndDrawSelectedEntryQuads's: two cell
  * tables (unk_00[i], one per player), a 0 word, then the 12-byte sheet headers
- * the cells are drawn with (unk_0C[v] for the D_8009BC40 entry value v it
- * reads; after its first iteration the values 12, 13, 14, 0 and 3 take
- * unk_0C[22..26]). */
+ * the cells are drawn with (unk_0C[v] for the g_entry_menu_grid_entries entry
+ * value v it reads; after its first iteration the values 12, 13, 14, 0 and 3
+ * take unk_0C[22..26]). */
 typedef struct {
     Unk8009B400Record *unk_00[2];
     s32 unk_08;
@@ -300,8 +301,8 @@ typedef struct {
 
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's
  * InitDisplayStateLoadPackAndSetEntryFlags loads at its work area + 0x58
- * (D_800A35A8; StepSlideBuildFrameRecordAndDispatchStateHandler hands it to the
- * handlers as Unk8006EACCRec.unk_00). After the head:
+ * (g_entry_menu_resources; StepSlideBuildFrameRecordAndDispatchStateHandler
+ * hands it to the handlers as Unk8006EACCRec.unk_00). After the head:
  * - unk_14: per entry id two TIM pixel addresses, one per column,
  * menu_UpdateRowCursors loads (LoadImage).
  * - unk_54..unk_74: the nine lists
@@ -510,8 +511,9 @@ typedef struct {
 /* 0x8009BD24..0x8009BD57: the settings record GetWorkingRecord returns and
    64FD8 hands to menu_LoadResourcesInitStateSelectFirstEnabledRow /
    InitDisplayStateLoadPackAndSetEntryFlags / menu_InitSelScreen, whose callees
-   reach every field off that one base (596CC D_800A3524, 5ED34 D_800A3568,
-   SelWork.f00). Bit fields are named by bit offset.
+   reach every field off that one base (596CC g_row_menu_working_record_ptr,
+   5ED34 g_entry_menu_working_record_ptr, SelWork.f00). Bit fields are named by
+   bit offset.
    - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; menu_UpdateRowMenuStoreResult
    stores it), unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
    results-screen layout), unk14_12 (`== 2` tests), unk14_14, unk14_15 (one bit
@@ -718,9 +720,10 @@ typedef struct {
 } Unk800EFAE8Rec;
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
- * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object-model
- * evidence: DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
- * and menu_UpdateRow step one offset register by 3 per slot;
+ * 0x800A3560 + i * 3; 0x800A3566/7 pad before g_entry_menu_working_record_ptr).
+ * Object-model evidence:
+ * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection and
+ * menu_UpdateRow step one offset register by 3 per slot;
  * menu_UpdateEntryGridCursors reaches +0 / +1 / +2 through i * 3;
  * InitDisplayStateLoadPackAndSetEntryFlags stores byte +1 of both. `word` (Q33
  * union word view) is InitDisplayStateLoadPackAndSetEntryFlags's one word store
@@ -738,10 +741,11 @@ typedef union {
     s32 word;
 } Unk800A3560Slots;
 
-/* Record table at 0x800F0C10 (0x90 bytes, ends at D_800F0CA0): 4 rows of 3
- * records of 3 s32 words. eff_PrepareParticles indexes it [arg1][idx] (arg1
- * 0..3 from the callers func_800676C8..func_8006786C); eff_SpawnParticles and
- * eff_UpdateParticles use it too. */
+/* Record table at 0x800F0C10 (0x90 bytes, ends at
+ * g_eff_animated_quad_positions): 4 rows of 3 records of 3 s32 words.
+ * eff_PrepareParticles indexes it [arg1][idx] (arg1 0..3 from the callers
+ * func_800676C8..func_8006786C); eff_SpawnParticles and eff_UpdateParticles use
+ * it too. */
 typedef struct {
     /* 0x0 */ s32 unk0;
     /* 0x4 */ s32 unk4;
@@ -776,10 +780,10 @@ typedef struct {
  * (id 0x7FF3), and f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16
  * (motion_GetCommonScriptAtFighterBufferOffset) and f18[character_data_index]
  * (motion_GetCommonScriptAtFighterBufferIndexedOffset;
- * Unk80101EC8Record.character_data_index, 0..26 as D_8008D538 holds and as the
- * [27][6] tables D_8008DE34 / D_8008DF78 are sized; 27 halfwords end exactly at
- * f4E) are indices into g_motion_common_sections.unk_00; both readers load them
- * with lhu. */
+ * Unk80101EC8Record.character_data_index, 0..26 as g_fight_config_id_data_rows
+ * holds and as the [27][6] tables D_8008DE34 / D_8008DF78 are sized; 27
+ * halfwords end exactly at f4E) are indices into
+ * g_motion_common_sections.unk_00; both readers load them with lhu. */
 typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].unk_00 =
@@ -1527,7 +1531,8 @@ typedef struct Unk80101EC8Record {
     s16 move_frame_step; /* frame-fraction step */
     s16 unk_46;
     /* motion data id (motion_LoadFighterData);
-     * fighter_AssignMotionSlotAndScanDataIdNibbles finds it in D_800A38C4 */
+     * fighter_AssignMotionSlotAndScanDataIdNibbles finds it in
+     * g_motion_fighter_loaded_data_ids */
     u16 motion_data_id;
     s16 motion_slot;
     s16 borrow_other_motion;
@@ -1874,9 +1879,9 @@ typedef struct Unk80099D88Rec {
 
 /* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends
  * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924). Both readers index
- * the column 1-based, [row][D_800A37A0 - 1]: fighter_InitCpuControl reads
- * unk0/unk1, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput the mask
- * halfword. */
+ * the column 1-based, [row][g_fight_stage_command_count - 1]:
+ * fighter_InitCpuControl reads unk0/unk1,
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput the mask halfword. */
 typedef struct Unk8009A8C8Entry {
     u8 unk0;
     u8 unk1;
@@ -1989,12 +1994,12 @@ typedef struct Unk80101BF0Rec {
 } Unk80101BF0Rec;
 
 /* The 4-byte record fight_SplitFrameCounterIntoMinutesSecondsHundredths fills
- * from the frame counter D_800A3858 (30 per second): unk_0 = count / 1800,
- * unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30 (99 / 59 / 99 past
- * 0x2BF1F). gpu_DrawTimeFieldsAndDecimalCounter draws the three as two-digit
- * numbers; fight_PackTimeRecordsAndInitPresentation copies them into its save
- * record at +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills
- * only unk_2 = n / 30 and unk_3 = n % 30
+ * from the frame counter g_fight_timer_frames (30 per second): unk_0 = count /
+ * 1800, unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30 (99 / 59 / 99
+ * past 0x2BF1F). gpu_DrawTimeFieldsAndDecimalCounter draws the three as
+ * two-digit numbers; fight_PackTimeRecordsAndInitPresentation copies them into
+ * its save record at +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress
+ * also fills only unk_2 = n / 30 and unk_3 = n % 30
  * * 100 / 30 from a frame countdown n, for gpu_DrawPairedMarkRowsAndTimeFields
  * to draw. */
 typedef struct Unk8001CD68Rec {
@@ -2005,29 +2010,31 @@ typedef struct Unk8001CD68Rec {
 
 /* Two 0x58-byte records set up side by side by
  * node_InitRootNodePairWithNegatedRotationMatrices: 0x80101DF0 (unk0 = 0x64,
- * rotation_order = 5; pointer stored to D_800A3708) and 0x800FF638 (unk0 =
- * 0x65, rotation_order = 2; pointer stored to D_800A370C).
- * node_SetMatrixFromNegatedRot passes a negated stack copy of xf.rot and &work
- * to D_800F66A0[rotation_order], then copies work to xf.mat;
- * gpu_ResetDrawQueueAndPrepareViewAndLighting writes work.t just before that
- * call. node_OrientAndQueueViewOffsetNode passes &xf.rot to D_800F66A0[0] and
- * &xf.mat to ApplyMatrix. D_800EEDF0 and D_800EF070 are two more records of
- * this layout: node_InitIdentity initialises the first, wave_Init sets up the
- * second and passes it to node_UpdateWorldMatrix, which reads matrix_state. rot
- * is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and work
- * are libgte MATRIXes. */
+ * rotation_order = 5; pointer stored to g_view_camera_root_ptr) and 0x800FF638
+ * (unk0 = 0x65, rotation_order = 2; pointer stored to
+ * g_view_identity_root_ptr). node_SetMatrixFromNegatedRot passes a negated
+ * stack copy of xf.rot and &work to g_math_rot_matrix_funcs[rotation_order],
+ * then copies work to xf.mat; gpu_ResetDrawQueueAndPrepareViewAndLighting
+ * writes work.t just before that call. node_OrientAndQueueViewOffsetNode passes
+ * &xf.rot to g_math_rot_matrix_funcs[0] and &xf.mat to ApplyMatrix. D_800EEDF0
+ * and D_800EF070 are two more records of this layout: node_InitIdentity
+ * initialises the first, wave_Init sets up the second and passes it to
+ * node_UpdateWorldMatrix, which reads matrix_state. rot is the RotMatrix-style
+ * angle SVECTOR the rotation handlers take; mat and work are libgte MATRIXes.
+ */
 typedef struct {
     SVECTOR rot; /* +0x00 */
     MATRIX mat;  /* +0x08 */
 } Unk80101DF0Xform;
 
 typedef struct Unk80101DF0Record {
-    u8 unk0;                               /* +0x00 */
-    s8 unk1;                               /* +0x01 */
-    s16 unk2;                              /* +0x02 */
-    s16 unk4;                              /* +0x04 */
-    s16 matrix_state;                      /* +0x06 */
-    s16 rotation_order;                    /* +0x08 D_800F66A0 index */
+    u8 unk0;          /* +0x00 */
+    s8 unk1;          /* +0x01 */
+    s16 unk2;         /* +0x02 */
+    s16 unk4;         /* +0x04 */
+    s16 matrix_state; /* +0x06 */
+    /* +0x08 g_math_rot_matrix_funcs index */
+    s16 rotation_order;
     s16 light_setup_index;                 /* +0x0A */
     struct Unk80101DF0Record *parent_node; /* +0x0C */
     Unk80101DF0Xform xf;                   /* +0x10 */
@@ -2071,11 +2078,12 @@ typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 /* The 0x68-byte records of the table gpu_GetGridNodeRecordTable returns: a
  * transform node of the Unk80101DF0Record layout, then a byte flag.
  * gpu_UnpackGridRecordsNodesAndCellRuns fills them from a stream and calls
- * D_800F66A0[rotation_order] on &xf.rot / &xf.mat (the angles as stored,
- * straight into xf.mat; unlike node_SetMatrixFromNegatedRot, no negation and no
- * work); gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
- * and gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes queue
- * each one on g_draw_queue at most once, guarded by unk58.
+ * g_math_rot_matrix_funcs[rotation_order] on &xf.rot / &xf.mat (the angles as
+ * stored, straight into xf.mat; unlike node_SetMatrixFromNegatedRot, no
+ * negation and no work);
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
+ * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes queue each
+ * one on g_draw_queue at most once, guarded by unk58.
  */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
@@ -2083,22 +2091,23 @@ typedef struct {
     u8 unk59[0xF];          /* +0x59 */
 } Unk800A6690Rec;           /* 0x68 */
 
-/* The 0x68-byte entries of the D_800A9CF8.unkC table (the buffer
- * node_BindFrameDataAndReserveEntryBuffer is handed; it returns the end, base +
- * count * 104). Each is a transform node of the Unk80101DF0Record layout paired
- * with one gpu_GetGridNodeRecordTable entry of the same index
- * (D_800A9CF8.unk10): node_InitFrameEntriesFromWorldTranslations initialises
- * the node and copies the paired entry's xf.mat.t into work.t;
+/* The 0x68-byte entries of the g_node_frame_animation_context.unkC table (the
+ * buffer node_BindFrameDataAndReserveEntryBuffer is handed; it returns the end,
+ * base + count * 104). Each is a transform node of the Unk80101DF0Record layout
+ * paired with one gpu_GetGridNodeRecordTable entry of the same index
+ * (g_node_frame_animation_context.unk10):
+ * node_InitFrameEntriesFromWorldTranslations initialises the node and copies
+ * the paired entry's xf.mat.t into work.t;
  * node_StartFrameAnimatedEntryAndInitPairedNode /
  * node_AdvanceFrameAnimatedEntriesAndQueueDraws run the node from the
- * D_800A9CF8.unk8 key frames and queue it on g_draw_queue. unk58 is a word
- * frame counter (lw/sw: -1 idle, 0 started by
+ * g_node_frame_animation_context.unk8 key frames and queue it on g_draw_queue.
+ * unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
  * node_StartFrameAnimatedEntryAndInitPairedNode, -2 done), unk5C the word Y
  * angle node_StartFrameAnimatedEntryAndInitPairedNode stores, unk60 an s16
  * node_AdvanceFrameAnimatedEntriesAndQueueDraws sets to 0x1000 at the last key
  * frame and then lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless
- * D_800A9CF8.unk4 is 4); +0x62..0x67 are not accessed. Not the Unk800A6690Rec
- * layout: that table's +0x58 is a byte. */
+ * g_node_frame_animation_context.unk4 is 4); +0x62..0x67 are not accessed. Not
+ * the Unk800A6690Rec layout: that table's +0x58 is a byte. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
@@ -2121,8 +2130,8 @@ typedef struct {
 
 /* The per-slot model object
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock builds (0x1A88
- * bytes, its arena_SetBlockEnd block) and D_800A9A10[] / slot_GetObject hand
- * out. The header (0x00..0x2B) is followed by three arrays of 0x68-byte
+ * bytes, its arena_SetBlockEnd block) and g_slot_objects[] / slot_GetObject
+ * hand out. The header (0x00..0x2B) is followed by three arrays of 0x68-byte
  * transform nodes (slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers
  * rebases them as 0x15, 0x14 and 0x14 records), then three 20-entry pointer
  * tables.
@@ -2132,9 +2141,9 @@ typedef struct {
  * slot_GetLastLoadTimGroupRequest read as (word >> 16) & 0x1F; no code reads it
  * through half[].
  * - arena_id: slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0,
- * the arena_OpenBlock id and the D_800A9A10 index; load_status: 0, 1 after a
- * fresh load (slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock), -2 to
- * request a reload (slot_RequestTimGroupsAndMarkReloadOnChange);
+ * the arena_OpenBlock id and the g_slot_objects index; load_status: 0, 1 after
+ * a fresh load (slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock), -2
+ * to request a reload (slot_RequestTimGroupsAndMarkReloadOnChange);
  * slot_FinalizeObjectLoadSoundTexturesAndArena returns at once when it is 0,
  * else clears it and runs its setup; unk_08:
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a1, indexing the
@@ -2409,7 +2418,7 @@ typedef struct {
 
 /* MOD.BIN (resource file 2), the root 596CC's
  * menu_LoadResourcesInitStateSelectFirstEnabledRow loads at its work area +
- * 0x58; it keeps it in D_800A34FC's word 9, and
+ * 0x58; it keeps it in g_row_menu_work_block's word 9, and
  * gpu_AdvanceBufferCounterAndBuildDrawContext copies that into word 1 of the
  * draw context. After the head:
  * - unk_14..unk_40: the twelve lists reloc_RelocateTwelveListsAndLoadVabPack
@@ -2481,12 +2490,12 @@ typedef struct {
 
 /* 596CC's work block: the 0x34 bytes
  * menu_LoadResourcesInitStateSelectFirstEnabledRow keeps at the start of
- * gpu_InitPrimBufferPair's returned space (D_800A34FC; its arena cursor
- * D_800A3500 moves past the block).
+ * gpu_InitPrimBufferPair's returned space (g_row_menu_work_block; its arena
+ * cursor D_800A3500 moves past the block).
  * menu_LoadResourcesInitStateSelectFirstEnabledRow zeroes unk_0C / unk_10 /
- * unk_12, sets both unk_28 halves to 5 and unk_30 to bit 0 of D_800A3524's word
- * 8 (gpu_GetPrimBufferAndRefreshStrip compares and refreshes it), and stores
- * the MOD.BIN root in unk_24.
+ * unk_12, sets both unk_28 halves to 5 and unk_30 to bit 0 of
+ * g_row_menu_working_record_ptr's word 8 (gpu_GetPrimBufferAndRefreshStrip
+ * compares and refreshes it), and stores the MOD.BIN root in unk_24.
  * - unk_0C: the s16 pair pad_StepOffsetsGetDirectionEvents steps (its arg2);
  * the draw functions use unk_0C[0] / [1] as x / y offsets.
  * - unk_28: one s16 per player

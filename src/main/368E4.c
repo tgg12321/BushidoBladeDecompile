@@ -455,9 +455,9 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
     D_800A378C = g_gpu_ot_ptr + 4;
 
     if (a0 != 0) {
-        D_80101DF0.xf.rot.vx = -a1->vx;
-        D_80101DF0.xf.rot.vy = -a1->vy;
-        D_80101DF0.xf.rot.vz = -a1->vz;
+        g_view_camera_root_node.xf.rot.vx = -a1->vx;
+        g_view_camera_root_node.xf.rot.vy = -a1->vy;
+        g_view_camera_root_node.xf.rot.vz = -a1->vz;
 
         var_2[0] = 0;
         var_2[1] = 0;
@@ -467,17 +467,17 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
         rot.vy = -a1->vy;
         rot.vz = -a1->vz;
 
-        D_800F66A0[0](&rot, &matrix_buf);
+        g_math_rot_matrix_funcs[0](&rot, &matrix_buf);
 
         ApplyMatrixLV(&matrix_buf, var_2, result);
 
         {
-            D_80101DF0.work.t[0] = result[0] + a0->x;
-            D_80101DF0.work.t[1] = result[1] + a0->y;
-            D_80101DF0.work.t[2] = result[2] + a0->z;
+            g_view_camera_root_node.work.t[0] = result[0] + a0->x;
+            g_view_camera_root_node.work.t[1] = result[1] + a0->y;
+            g_view_camera_root_node.work.t[2] = result[2] + a0->z;
         }
 
-        node_SetMatrixFromNegatedRot(&D_80101DF0);
+        node_SetMatrixFromNegatedRot(&g_view_camera_root_node);
         camera_CopyViewMatrixWithHalvedMiddleRow();
         gpu_ResetAndStampViewCenteredCellAttributes();
 
@@ -610,7 +610,7 @@ typedef struct {
 } Block32;
 
 void camera_CopyViewMatrixWithHalvedMiddleRow(void) {
-    D_800EEDD0 = D_80101DF0.xf.mat;
+    D_800EEDD0 = g_view_camera_root_node.xf.mat;
     D_800EEDD0.m[1][0] >>= 1;
     D_800EEDD0.m[1][1] >>= 1;
     D_800EEDD0.m[1][2] >>= 1;
@@ -629,7 +629,7 @@ void node_InitIdentity(Unk80101DF0Record *node) {
     node->xf.rot.vx = 0;
     node->xf.rot.vy = 0;
     node->xf.rot.vz = 0;
-    D_800F66A0[node->rotation_order](&node->xf.rot, &node->work);
+    g_math_rot_matrix_funcs[node->rotation_order](&node->xf.rot, &node->work);
     node->work.t[2] = 0;
     node->work.t[1] = 0;
     node->work.t[0] = 0;
@@ -642,7 +642,7 @@ s16 *camera_CalcAngles(void) {
     MATRIX mtx;
     s16 var_3;
 
-    math_RotMatrixYXZ((u16 *)&D_800A3708->xf.rot, &mtx);
+    math_RotMatrixYXZ((u16 *)&g_view_camera_root_ptr->xf.rot, &mtx);
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x1000;
@@ -693,7 +693,7 @@ void node_OrientAndQueueViewOffsetNode(void) {
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x6590;
-    ApplyMatrix(&D_80101DF0.xf.mat, &rot, &result);
+    ApplyMatrix(&g_view_camera_root_node.xf.mat, &rot, &result);
 
     angle = ratan2(result.vx, result.vz);
 
@@ -711,11 +711,11 @@ void node_OrientAndQueueViewOffsetNode(void) {
         base->xf.rot.vx = neg;
     }
     base->xf.rot.vy = angle;
-    base->xf.mat.t[0] = D_80101DF0.xf.mat.t[0];
-    base->xf.mat.t[1] = D_80101DF0.xf.mat.t[1];
-    base->xf.mat.t[2] = D_80101DF0.xf.mat.t[2] + 0x6590;
-    D_800F66A0[4](&base->xf.rot, &buf1);
-    D_800F66A0[0](&D_80101DF0.xf.rot, &buf2);
+    base->xf.mat.t[0] = g_view_camera_root_node.xf.mat.t[0];
+    base->xf.mat.t[1] = g_view_camera_root_node.xf.mat.t[1];
+    base->xf.mat.t[2] = g_view_camera_root_node.xf.mat.t[2] + 0x6590;
+    g_math_rot_matrix_funcs[4](&base->xf.rot, &buf1);
+    g_math_rot_matrix_funcs[0](&g_view_camera_root_node.xf.rot, &buf2);
     MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
@@ -1893,7 +1893,7 @@ void func_80049710(void) {}
 /* Appends one or two 0x68-byte draw nodes at g_prim_buf_cursor for animation
  * entry arg0 and queues each on g_draw_queue. The first
  * node (type 0) takes its rotation and position from rot_in / pos (flags == 1)
- * or from node 19 + (flags & 1) of the object in D_800A9A10 slot flags >> 1
+ * or from node 19 + (flags & 1) of the object in g_slot_objects slot flags >> 1
  * (slot_GetObject), whose offset it scales in place by the object's
  * position_scale and into which it copies the new matrix back; the second (type
  * 3, parent = the first) follows unless flags is still 1. */
@@ -1925,7 +1925,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             obj->node.xf.rot.vx = rot_in[0];
             obj->node.xf.rot.vy = rot_in[1];
             obj->node.xf.rot.vz = rot_in[2];
-            D_800F66A0[0](&obj->node.xf.rot, &obj->node.xf.mat);
+            g_math_rot_matrix_funcs[0](&obj->node.xf.rot, &obj->node.xf.mat);
             obj->node.xf.mat.t[0] = pos[0];
             obj->node.xf.mat.t[1] = pos[1];
             obj->node.xf.mat.t[2] = pos[2];
@@ -2190,32 +2190,32 @@ void resource_InvalidateEntrySelectionCache(void) {
 }
 
 void node_InitRootNodePairWithNegatedRotationMatrices(void) {
-    Unk80101DF0Record *p1 = &D_80101DF0;
-    Unk80101DF0Record *p2 = &D_800FF638;
+    Unk80101DF0Record *p1 = &g_view_camera_root_node;
+    Unk80101DF0Record *p2 = &g_view_identity_root_node;
     p1->unk0 = 0x64;
-    D_80101DF0.unk1 = 0;
-    D_80101DF0.xf.rot.vx = 0;
-    D_80101DF0.xf.rot.vy = 0;
-    D_80101DF0.xf.rot.vz = 0;
-    D_80101DF0.work.t[0] = 0;
-    D_80101DF0.work.t[1] = 0;
-    D_80101DF0.work.t[2] = 0;
-    D_80101DF0.parent_node = 0;
-    D_80101DF0.rotation_order = 5;
+    g_view_camera_root_node.unk1 = 0;
+    g_view_camera_root_node.xf.rot.vx = 0;
+    g_view_camera_root_node.xf.rot.vy = 0;
+    g_view_camera_root_node.xf.rot.vz = 0;
+    g_view_camera_root_node.work.t[0] = 0;
+    g_view_camera_root_node.work.t[1] = 0;
+    g_view_camera_root_node.work.t[2] = 0;
+    g_view_camera_root_node.parent_node = 0;
+    g_view_camera_root_node.rotation_order = 5;
     node_SetMatrixFromNegatedRot(p1);
     p2->unk0 = 0x65;
-    D_800FF638.unk1 = 0;
-    D_800FF638.xf.rot.vx = 0;
-    D_800FF638.xf.rot.vy = 0;
-    D_800FF638.xf.rot.vz = 0;
-    D_800FF638.work.t[0] = 0;
-    D_800FF638.work.t[1] = 0;
-    D_800FF638.work.t[2] = 0;
-    D_800FF638.parent_node = 0;
-    D_800FF638.rotation_order = 2;
+    g_view_identity_root_node.unk1 = 0;
+    g_view_identity_root_node.xf.rot.vx = 0;
+    g_view_identity_root_node.xf.rot.vy = 0;
+    g_view_identity_root_node.xf.rot.vz = 0;
+    g_view_identity_root_node.work.t[0] = 0;
+    g_view_identity_root_node.work.t[1] = 0;
+    g_view_identity_root_node.work.t[2] = 0;
+    g_view_identity_root_node.parent_node = 0;
+    g_view_identity_root_node.rotation_order = 2;
     node_SetMatrixFromNegatedRot(p2);
-    D_800A3708 = p1;
-    D_800A370C = p2;
+    g_view_camera_root_ptr = p1;
+    g_view_identity_root_ptr = p2;
 }
 
 /* 0x800153F0: the 22-halfword record light_Unpack unpacks. */

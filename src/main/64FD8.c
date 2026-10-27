@@ -22,7 +22,7 @@ static s32 D_800A35E0;
 static s32 D_800A35E4;
 static s32 D_800A35E8;
 static s32 D_800A35EC; /* unreferenced: size from the gap */
-static s32 D_800A35F0;
+static s32 g_gpu_timed_sprite_elapsed_frames;
 static Unk8006E49CRec *D_800A35F4;
 static Ctx77D94 *D_800A35F8;
 static s32 D_800A35FC;
@@ -1451,27 +1451,31 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
     table = D_800A35F8->table;
     out = D_800A35F8->out34;
     var_5 = 0x20;
-    if (D_800A35F0 < in[D_800A3600] + 60 && D_800A35F0 >= in[D_800A3600]) {
-        v = ((D_800A35F0 - in[D_800A3600]) << 7) / 60;
+    if (g_gpu_timed_sprite_elapsed_frames < in[D_800A3600] + 60 &&
+        g_gpu_timed_sprite_elapsed_frames >= in[D_800A3600]) {
+        v = ((g_gpu_timed_sprite_elapsed_frames - in[D_800A3600]) << 7) / 60;
         s.has_color = 1;
         s.col_r = s.col_g = s.col_b = v;
-    } else if (
-        D_800A35F0 >= out[D_800A3600] && D_800A35F0 < out[D_800A3600] + 60) {
-        v = ((60 - (D_800A35F0 - out[D_800A3600])) << 7) / 60;
+    } else if (g_gpu_timed_sprite_elapsed_frames >= out[D_800A3600] &&
+               g_gpu_timed_sprite_elapsed_frames < out[D_800A3600] + 60) {
+        v = ((60 - (g_gpu_timed_sprite_elapsed_frames - out[D_800A3600]))
+             << 7) /
+            60;
         s.has_color = 1;
         s.col_r = s.col_g = s.col_b = v;
     } else {
         s.has_color = 0;
     }
 
-    if (D_800A35F0 < out[5] + 60) {
+    if (g_gpu_timed_sprite_elapsed_frames < out[5] + 60) {
         switch (D_800A3600) {
         case 0:
-            if (D_800A35F0 + 1 >= out[D_800A3600] + 60) {
-                if (D_800A35F0 + 1 >= in[D_800A3600 + 1]) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 >= out[D_800A3600] + 60) {
+                if (g_gpu_timed_sprite_elapsed_frames + 1 >=
+                    in[D_800A3600 + 1]) {
                     D_800A3600 = D_800A3600 + 1;
                 }
-            } else if (D_800A35F0 >= in[D_800A3600]) {
+            } else if (g_gpu_timed_sprite_elapsed_frames >= in[D_800A3600]) {
                 var_6 = D_800A35F8->hdr18;
                 for (i = 0; i < 5; var_6++, i++) {
                     s.header = *var_6;
@@ -1487,8 +1491,9 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             }
             break;
         case 2:
-            if (D_800A35F0 + 1 >= out[D_800A3600] + 60) {
-                if (D_800A35F0 + 1 >= in[D_800A3600 + 1]) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 >= out[D_800A3600] + 60) {
+                if (g_gpu_timed_sprite_elapsed_frames + 1 >=
+                    in[D_800A3600 + 1]) {
                     D_800A3600 = D_800A3600 + 1;
                 }
                 break;
@@ -1507,10 +1512,12 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             }
             /* fall through */
         case 1:
-            if (D_800A35F0 + 1 >= in[D_800A3600 + 1] && D_800A3600 == 1) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 >= in[D_800A3600 + 1] &&
+                D_800A3600 == 1) {
                 D_800A3600 = 2;
             }
-            if (D_800A35F0 < out[2] && D_800A35F0 >= in[2]) {
+            if (g_gpu_timed_sprite_elapsed_frames < out[2] &&
+                g_gpu_timed_sprite_elapsed_frames >= in[2]) {
                 s.has_color = 0;
             }
             var_6 = D_800A35F8->hdr20;
@@ -1539,7 +1546,7 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             D_800A3600 = D_800A3600 + 1;
             break;
         case 4:
-            if (D_800A35F0 + 1 < out[D_800A3600] + 60) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 < out[D_800A3600] + 60) {
                 var_6 = D_800A35F8->hdr1C;
                 for (i = 0; i < 5; var_6++, i++) {
                     s.header = *var_6;
@@ -1565,16 +1572,18 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
         /* FAKE: integer-sum address gives the target's addu operand order;
            `&D_800A35F8->nar2C[i]`: score 1; `w = nar2C; w += i`: 2 */
         w = (Unk80077D94Entry *)(i * 4 + (s32)D_800A35F8->nar2C);
-        if (D_800A35F0 < w->off + 60 && D_800A35F0 >= w->on) {
-            if (D_800A35F0 < w->on + 60) {
+        if (g_gpu_timed_sprite_elapsed_frames < w->off + 60 &&
+            g_gpu_timed_sprite_elapsed_frames >= w->on) {
+            if (g_gpu_timed_sprite_elapsed_frames < w->on + 60) {
                 s.has_color = 1;
-                v = ((D_800A35F0 - w->on) * 112) / 60;
+                v = ((g_gpu_timed_sprite_elapsed_frames - w->on) * 112) / 60;
                 s.semi = 1;
                 s.col_r = s.col_g = s.col_b = v;
-            } else if (D_800A35F0 >= w->off && D_800A35F0 < w->off + 60) {
+            } else if (g_gpu_timed_sprite_elapsed_frames >= w->off &&
+                       g_gpu_timed_sprite_elapsed_frames < w->off + 60) {
                 /* FAKE: named intermediate keeps cnt - 60 computed first (fold
                  * reassociates it inline: score 16) (Q129). */
-                s32 cnt_60ago = D_800A35F0 - 60;
+                s32 cnt_60ago = g_gpu_timed_sprite_elapsed_frames - 60;
                 s.has_color = 1;
                 v = ((w->off - cnt_60ago) * 112) / 60;
                 s.semi = 1;
@@ -1608,7 +1617,7 @@ s32 InitTimedSpriteSequence(s32 arg0) {
     r = reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)s0);
     gpu_InitPrimBufferPair(r, D_800A35F4);
     D_800A35FC = 0;
-    D_800A35F0 = 0;
+    g_gpu_timed_sprite_elapsed_frames = 0;
     D_800A3600 = 0;
     return 1;
 }
@@ -1629,15 +1638,15 @@ s32 StepTimedSpriteSequenceWithSkip(s32 arg0) {
     s.unk_04.unk_14 = p->unk_14;
     s.unk_04.unk_18 = p->unk_18;
     s.unk_04.unk_1C = p->unk_1C;
-    if (D_800A35F0 > 0 && (arg0 & 0x40)) {
+    if (g_gpu_timed_sprite_elapsed_frames > 0 && (arg0 & 0x40)) {
         return 1;
     }
     gpu_DrawAndAdvanceTimedSpriteSequence(&s);
     {
         s16 *out = D_800A35F8->out34;
-        s32 new_val = D_800A35F0 + 1;
+        s32 new_val = g_gpu_timed_sprite_elapsed_frames + 1;
         int cond = new_val < out[5];
-        D_800A35F0 = new_val;
+        g_gpu_timed_sprite_elapsed_frames = new_val;
         return cond ? 0 : 1;
     }
 }

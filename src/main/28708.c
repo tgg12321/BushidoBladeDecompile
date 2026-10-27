@@ -30,7 +30,7 @@ extern u8 g_replay_write_frame;
 extern Rec1C (*g_replay_fighter_frames)[2];
 extern u8 g_replay_ring_wrapped;
 
-extern u8 D_800A31FC;
+extern u8 g_memcard_validation_load_active;
 
 extern s32 g_comb_wait_state;
 extern s32 g_comb_recv_buf[2];
@@ -112,7 +112,7 @@ s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
         return 0;
     }
 
-    if (D_800A31FC != 0) {
+    if (g_memcard_validation_load_active != 0) {
         return 1;
     }
 
@@ -495,7 +495,7 @@ void memcard_RequestFormat(void) {
 }
 
 extern u8 D_800A3203;
-extern u8 D_800A31FC;
+extern u8 g_memcard_validation_load_active;
 extern void memcard_RequestLoad(void);
 extern s32 memcard_Update(void);
 
@@ -506,7 +506,7 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
     s0 = 0;
     if (D_800A3203) {
         D_800A3203 = 0;
-        D_800A31FC = 1;
+        g_memcard_validation_load_active = 1;
         memcard_RequestLoad();
     }
     v0 = memcard_Update();
@@ -553,7 +553,7 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
     gpu_DrawSheetPairCenteredTileWithOptionalSelection(0, -1);
     if (s0) {
         D_800A3203 = 1;
-        D_800A31FC = 0;
+        g_memcard_validation_load_active = 0;
     }
     return s0;
 }
@@ -618,7 +618,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         D_800A3324 = 0;
         D_800A3328 = 0;
         D_800A332C = 0;
-        D_800A31FC = 1;
+        g_memcard_validation_load_active = 1;
         memcard_RequestLoad();
         D_800A3205 = 0;
         D_800A3330 = 0x5A;
@@ -635,7 +635,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     }
 
     var_2 = 0;
-    if (D_800A31FC == 0) {
+    if (g_memcard_validation_load_active == 0) {
         if (D_800A3338 == 1) {
             switch (v0 - 4) {
             case 0:
@@ -691,7 +691,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         gpu_DrawSheetPairCenteredTileWithOptionalSelection(var_2, -1);
     }
 
-    if (D_800A31FC != 0) {
+    if (g_memcard_validation_load_active != 0) {
         switch (v0 - 4) {
         case 0:
             break;
@@ -707,7 +707,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         case 11:
             D_800A332C++;
             if ((u8)D_800A332C >= 5) {
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
                 break;
             }
             memcard_RequestLoad();
@@ -715,7 +715,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         case 6:
             D_800A3328++;
             if ((u8)D_800A3328 >= 5) {
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
                 break;
             }
             memcard_RequestLoad();
@@ -723,18 +723,18 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         case 10:
             D_800A3324++;
             if ((u8)D_800A3324 >= 5) {
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
                 break;
             }
             memcard_RequestLoad();
             break;
         case 2:
-            D_800A31FC = 0;
+            g_memcard_validation_load_active = 0;
             break;
         case 1:
             D_800A3320++;
             if ((u8)D_800A3320 >= 5) {
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
                 D_800A3338 = 1;
             }
             memcard_RequestLoad();
@@ -792,7 +792,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         D_800A334C = 0x5A;
         D_800A3350 = 0;
         D_800A3354 = 0;
-        D_800A31FC = 0;
+        g_memcard_validation_load_active = 0;
     }
 
     v0 = memcard_Update();
@@ -806,7 +806,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
             D_800A334C = 0x5A;
             D_800A3350 = 0;
             D_800A3354 = 0;
-            D_800A31FC = 0;
+            g_memcard_validation_load_active = 0;
         }
         goto end;
     }
@@ -825,7 +825,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     }
 
     var_3 = 0;
-    if (D_800A31FC != 0) {
+    if (g_memcard_validation_load_active != 0) {
         goto sel_dispatch;
     }
 
@@ -913,7 +913,7 @@ sel_dispatch:
         gpu_DrawSheetPairCenteredTileWithOptionalSelection(var_3, var_1);
     }
 
-    if (D_800A31FC != 0) {
+    if (g_memcard_validation_load_active != 0) {
         switch (v0 - 4) {
         case 0:
             break;
@@ -934,7 +934,7 @@ sel_dispatch:
         case 11:
             D_800A3340++;
             if (((u8)D_800A3340) >= 5) {
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
                 memcard_RequestSave();
                 break;
             }
@@ -943,7 +943,7 @@ sel_dispatch:
         case 6:
             D_800A3344++;
             if (((u8)D_800A3344) >= 5) {
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
                 break;
             }
             memcard_RequestLoad();
@@ -1003,11 +1003,11 @@ sel_dispatch:
                 D_800A334C = 0x5A;
                 D_800A3350 = 0;
                 D_800A3354 = 0;
-                D_800A31FC = 0;
+                g_memcard_validation_load_active = 0;
             }
             break;
         case 11:
-            D_800A31FC = 1;
+            g_memcard_validation_load_active = 1;
             memcard_RequestLoad();
             D_800A3207 = 3;
             D_800A334C = 0x5A;
@@ -1035,7 +1035,7 @@ sel_dispatch:
                     D_800A3348 = 0;
                     D_800A3340 = 0;
                     D_800A3344 = 0;
-                    D_800A31FC = 1;
+                    g_memcard_validation_load_active = 1;
                     memcard_RequestLoad();
                 } else {
                     if (D_800A3350 != 0)
@@ -1090,7 +1090,7 @@ d_check:
 end:
     if (result != 0) {
         D_800A3207 = 0;
-        D_800A31FC = 0;
+        g_memcard_validation_load_active = 0;
     }
     return result;
 }
@@ -1376,14 +1376,14 @@ void replay_PlayFrame(void) {
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */
     camera_UpdateReplayViewWithSineYawOffset(
-        &g_replay_fighter_frames[idx][D_800A3748],
-        D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
-                        : &g_replay_fighter_frames[idx][0],
+        &g_replay_fighter_frames[idx][g_fight_followup_fighter_index],
+        g_fight_followup_fighter_index == 0 ? &g_replay_fighter_frames[idx][1]
+                                            : &g_replay_fighter_frames[idx][0],
         var_8);
     camera_UpdateReplayViewWithConstantYawOffset(
-        &g_replay_fighter_frames[idx][D_800A3748],
-        D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
-                        : &g_replay_fighter_frames[idx][0],
+        &g_replay_fighter_frames[idx][g_fight_followup_fighter_index],
+        g_fight_followup_fighter_index == 0 ? &g_replay_fighter_frames[idx][1]
+                                            : &g_replay_fighter_frames[idx][0],
         var_8);
     camera_ApplyReplayView(var_8);
 
@@ -1508,7 +1508,8 @@ void replay_PlayFrame(void) {
                     D_800A38D4 = 2;
                     if (D_800A3836 != 0xFF) {
                         D_800A37A4 |=
-                            1 << D_8008D538[(s8)g_fight_config.unk_4[0]];
+                            1 << g_fight_config_id_data_rows[(s8)g_fight_config
+                                                                 .unk_4[0]];
                     }
                     if (var_19) {
                         fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
@@ -1528,7 +1529,7 @@ void replay_PlayFrame(void) {
                 }
                 return;
             }
-            D_800A3748 = 1;
+            g_fight_followup_fighter_index = 1;
             if (D_800A3836 == 0xFF) {
                 g_main_loop_handler_index = 0xC;
                 break;
@@ -1951,7 +1952,7 @@ u8 D_8008F204[28] = {
 s32 D_800A31F0 = (s32)D_80010AAC;
 s32 g_memcard_request_state = 0;
 s32 D_800A31F8 = 0;
-u8 D_800A31FC = 0;
+u8 g_memcard_validation_load_active = 0;
 u8 D_800A31FD = 0;  /* not named by any code or data: size from the gap */
 s16 D_800A31FE = 0; /* not named by any code or data: size from the gap */
 u8 D_800A3200 = 0x81;

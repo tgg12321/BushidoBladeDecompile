@@ -15,10 +15,10 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s32 s0;
     s16 *s1;
 
-    if (D_800A9A10[a0] == 0) {
+    if (g_slot_objects[a0] == 0) {
         return;
     }
-    s4 = D_800A9A10[a0];
+    s4 = g_slot_objects[a0];
 
     s4->transform_nodes[0].node.xf.rot.vx = a3[0];
     s4->transform_nodes[0].node.xf.rot.vy = a3[1];
@@ -78,7 +78,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s2->node.xf.rot.vy = -s1[0x3A];
         s2->node.xf.rot.vz = -s1[0x3B];
 
-        D_800F66A0[0](&s2->node.xf.rot, &s2->node.work);
+        g_math_rot_matrix_funcs[0](&s2->node.xf.rot, &s2->node.work);
 
         s2[1].node.work.t[0] = s1[0x3C];
         s2[1].node.work.t[1] = -s1[0x3D];
@@ -87,7 +87,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s2[1].node.xf.rot.vy = -s1[0x40];
         s2[1].node.xf.rot.vz = -s1[0x41];
 
-        D_800F66A0[0](&s2[1].node.xf.rot, &s2[1].node.work);
+        g_math_rot_matrix_funcs[0](&s2[1].node.xf.rot, &s2[1].node.work);
         break;
     }
     case 1:
@@ -193,7 +193,7 @@ void slot_BlendTwoPosesIntoNodeMatrices(
     s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
-    Unk80045878Obj *base = D_800A9A10[a0];
+    Unk80045878Obj *base = g_slot_objects[a0];
     SVECTOR buf;
     Unk80045878Node *ents;
     MATRIX *out2;
@@ -294,7 +294,7 @@ void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32 a0, s32 a1) {
     Unk80045878Obj **base;
     Unk80045878Obj *s0;
     s32 i;
-    base = &D_800A9A10[a0];
+    base = &g_slot_objects[a0];
     s0 = (Unk80045878Obj *)((u8 *)*base + a1);
     *base = s0;
     node_RebaseParents(a1, s0->transform_nodes, 0x15);

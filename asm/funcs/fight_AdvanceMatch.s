@@ -11,8 +11,8 @@ glabel fight_AdvanceMatch
     /* 24AC4 800342C4 0B006214 */  bne        $v1, $v0, .L800342F4
     /* 24AC8 800342C8 21180000 */   addu      $v1, $zero, $zero
     /* 24ACC 800342CC FF000224 */  addiu      $v0, $zero, 0xFF
-    /* 24AD0 800342D0 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 24AD4 800342D4 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* 24AD0 800342D0 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 24AD4 800342D4 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 24AD8 800342D8 14000224 */  addiu      $v0, $zero, 0x14
     /* 24ADC 800342DC 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* 24AE0 800342E0 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)

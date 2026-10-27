@@ -14,7 +14,7 @@ glabel gpu_AddGradientPanel
     /* 63640 80072E40 52001124 */  addiu      $s1, $zero, 0x52
     /* 63644 80072E44 40011024 */  addiu      $s0, $zero, 0x140
     /* 63648 80072E48 0C00A28E */  lw         $v0, 0xC($s5)
-    /* 6364C 80072E4C B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 6364C 80072E4C B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 63650 80072E50 21284000 */  addu       $a1, $v0, $zero
     /* 63654 80072E54 0800B4A4 */  sh         $s4, 0x8($a1)
     /* 63658 80072E58 0A00B2A4 */  sh         $s2, 0xA($a1)
@@ -26,7 +26,7 @@ glabel gpu_AddGradientPanel
     /* 63670 80072E70 F1CA010C */  jal        gpu_AddPanelUpperQuad
     /* 63674 80072E74 2200B1A4 */   sh        $s1, 0x22($a1)
     /* 63678 80072E78 21284000 */  addu       $a1, $v0, $zero
-    /* 6367C 80072E7C B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 6367C 80072E7C B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 63680 80072E80 31021324 */  addiu      $s3, $zero, 0x231
     /* 63684 80072E84 0800B3A4 */  sh         $s3, 0x8($a1)
     /* 63688 80072E88 0A00B2A4 */  sh         $s2, 0xA($a1)
@@ -38,7 +38,7 @@ glabel gpu_AddGradientPanel
     /* 636A0 80072EA0 F1CA010C */  jal        gpu_AddPanelUpperQuad
     /* 636A4 80072EA4 2200B1A4 */   sh        $s1, 0x22($a1)
     /* 636A8 80072EA8 21284000 */  addu       $a1, $v0, $zero
-    /* 636AC 80072EAC B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 636AC 80072EAC B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 636B0 80072EB0 71001224 */  addiu      $s2, $zero, 0x71
     /* 636B4 80072EB4 0800B0A4 */  sh         $s0, 0x8($a1)
     /* 636B8 80072EB8 0A00B1A4 */  sh         $s1, 0xA($a1)
@@ -49,7 +49,7 @@ glabel gpu_AddGradientPanel
     /* 636CC 80072ECC 2000B4A4 */  sh         $s4, 0x20($a1)
     /* 636D0 80072ED0 35CB010C */  jal        gpu_AddPanelLowerQuad
     /* 636D4 80072ED4 2200B2A4 */   sh        $s2, 0x22($a1)
-    /* 636D8 80072ED8 B4048487 */  lh         $a0, %gp_rel(D_800A3580)($gp)
+    /* 636D8 80072ED8 B4048487 */  lh         $a0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 636DC 80072EDC 21284000 */  addu       $a1, $v0, $zero
     /* 636E0 80072EE0 0800B0A4 */  sh         $s0, 0x8($a1)
     /* 636E4 80072EE4 0A00B1A4 */  sh         $s1, 0xA($a1)

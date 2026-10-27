@@ -31,9 +31,9 @@ glabel fighter_Init
     /* 12DF0 800225F0 040012A6 */  sh         $s2, 0x4($s0)
     /* 12DF4 800225F4 060005A6 */  sh         $a1, 0x6($s0)
     /* 12DF8 800225F8 0C0006A6 */  sh         $a2, 0xC($s0)
-    /* 12DFC 800225FC 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 12DFC 800225FC 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 12E00 80022600 21082600 */  addu       $at, $at, $a2
-    /* 12E04 80022604 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 12E04 80022604 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 12E08 80022608 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
     /* 12E0C 8002260C DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)
     /* 12E10 80022610 0E0007A6 */  sh         $a3, 0xE($s0)
@@ -168,8 +168,8 @@ glabel fighter_Init
     /* 12FF0 800227F0 3889000C */  jal        motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
     /* 12FF4 800227F4 21200002 */   addu      $a0, $s0, $zero
     /* 12FF8 800227F8 6666043C */  lui        $a0, (0x66666667 >> 16)
-    /* 12FFC 800227FC 0A80033C */  lui        $v1, %hi(D_800A38E2)
-    /* 13000 80022800 E2386390 */  lbu        $v1, %lo(D_800A38E2)($v1)
+    /* 12FFC 800227FC 0A80033C */  lui        $v1, %hi(g_fight_step_table_next_row)
+    /* 13000 80022800 E2386390 */  lbu        $v1, %lo(g_fight_step_table_next_row)($v1)
     /* 13004 80022804 67668434 */  ori        $a0, $a0, (0x66666667 & 0xFFFF)
     /* 13008 80022808 FFFF6324 */  addiu      $v1, $v1, -0x1
     /* 1300C 8002280C 18006400 */  mult       $v1, $a0

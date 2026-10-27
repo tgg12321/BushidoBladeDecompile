@@ -1,8 +1,8 @@
 glabel slot_GetLastLoadTimGroupRequest
     /* 31E50 80041650 80200400 */  sll        $a0, $a0, 2
-    /* 31E54 80041654 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 31E54 80041654 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 31E58 80041658 21082400 */  addu       $at, $at, $a0
-    /* 31E5C 8004165C 109A228C */  lw         $v0, %lo(D_800A9A10)($at)
+    /* 31E5C 8004165C 109A228C */  lw         $v0, %lo(g_slot_objects)($at)
     /* 31E60 80041660 00000000 */  nop
     /* 31E64 80041664 03004014 */  bnez       $v0, .L80041674
     /* 31E68 80041668 00000000 */   nop

@@ -1,6 +1,6 @@
 glabel StepSlideProgressCommitPendingStateAndQueueSound
     /* 5F40C 8006EC0C E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 5F410 8006EC10 AC048393 */  lbu        $v1, %gp_rel(D_800A3578)($gp)
+    /* 5F410 8006EC10 AC048393 */  lbu        $v1, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 5F414 8006EC14 02000224 */  addiu      $v0, $zero, 0x2
     /* 5F418 8006EC18 22006210 */  beq        $v1, $v0, .L8006ECA4
     /* 5F41C 8006EC1C 1000BFAF */   sw        $ra, 0x10($sp)
@@ -30,13 +30,13 @@ glabel StepSlideProgressCommitPendingStateAndQueueSound
     /* 5F474 8006EC74 1B004014 */  bnez       $v0, .L8006ECE4
     /* 5F478 8006EC78 E8010324 */   addiu     $v1, $zero, 0x1E8
     /* 5F47C 8006EC7C B8048297 */  lhu        $v0, %gp_rel(D_800A3584)($gp)
-    /* 5F480 8006EC80 AC048497 */  lhu        $a0, %gp_rel(D_800A3578)($gp)
+    /* 5F480 8006EC80 AC048497 */  lhu        $a0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 5F484 8006EC84 A40483A7 */  sh         $v1, %gp_rel(D_800A3570)($gp)
-    /* 5F488 8006EC88 B40482A7 */  sh         $v0, %gp_rel(D_800A3580)($gp)
+    /* 5F488 8006EC88 B40482A7 */  sh         $v0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 5F48C 8006EC8C 02120400 */  srl        $v0, $a0, 8
     /* 5F490 8006EC90 14004014 */  bnez       $v0, .L8006ECE4
     /* 5F494 8006EC94 01008224 */   addiu     $v0, $a0, 0x1
-    /* 5F498 8006EC98 AC0482A7 */  sh         $v0, %gp_rel(D_800A3578)($gp)
+    /* 5F498 8006EC98 AC0482A7 */  sh         $v0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 5F49C 8006EC9C 39BB0108 */  j          .L8006ECE4
     /* 5F4A0 8006ECA0 00000000 */   nop
   .L8006ECA4:
@@ -56,7 +56,7 @@ glabel StepSlideProgressCommitPendingStateAndQueueSound
     /* 5F4D4 8006ECD4 0300401C */  bgtz       $v0, .L8006ECE4
     /* 5F4D8 8006ECD8 00000000 */   nop
     /* 5F4DC 8006ECDC A40480A7 */  sh         $zero, %gp_rel(D_800A3570)($gp)
-    /* 5F4E0 8006ECE0 AC0480A7 */  sh         $zero, %gp_rel(D_800A3578)($gp)
+    /* 5F4E0 8006ECE0 AC0480A7 */  sh         $zero, %gp_rel(g_entry_menu_slide_phase)($gp)
   .L8006ECE4:
     /* 5F4E4 8006ECE4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 5F4E8 8006ECE8 1800BD27 */  addiu      $sp, $sp, 0x18

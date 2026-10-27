@@ -1,8 +1,8 @@
 glabel node_InitRootNodePairWithNegatedRotationMatrices
     /* 3A64C 80049E4C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 3A650 80049E50 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 3A654 80049E54 1080113C */  lui        $s1, %hi(D_80101DF0)
-    /* 3A658 80049E58 F01D3126 */  addiu      $s1, $s1, %lo(D_80101DF0)
+    /* 3A654 80049E54 1080113C */  lui        $s1, %hi(g_view_camera_root_node)
+    /* 3A658 80049E58 F01D3126 */  addiu      $s1, $s1, %lo(g_view_camera_root_node)
     /* 3A65C 80049E5C 64000224 */  addiu      $v0, $zero, 0x64
     /* 3A660 80049E60 1800BFAF */  sw         $ra, 0x18($sp)
     /* 3A664 80049E64 1000B0AF */  sw         $s0, 0x10($sp)
@@ -28,8 +28,8 @@ glabel node_InitRootNodePairWithNegatedRotationMatrices
     /* 3A6B4 80049EB4 F81D22A4 */  sh         $v0, %lo(D_80101DF8)($at)
     /* 3A6B8 80049EB8 3406010C */  jal        node_SetMatrixFromNegatedRot
     /* 3A6BC 80049EBC 21202002 */   addu      $a0, $s1, $zero
-    /* 3A6C0 80049EC0 1080103C */  lui        $s0, %hi(D_800FF638)
-    /* 3A6C4 80049EC4 38F61026 */  addiu      $s0, $s0, %lo(D_800FF638)
+    /* 3A6C0 80049EC0 1080103C */  lui        $s0, %hi(g_view_identity_root_node)
+    /* 3A6C4 80049EC4 38F61026 */  addiu      $s0, $s0, %lo(g_view_identity_root_node)
     /* 3A6C8 80049EC8 65000224 */  addiu      $v0, $zero, 0x65
     /* 3A6CC 80049ECC 000002A2 */  sb         $v0, 0x0($s0)
     /* 3A6D0 80049ED0 02000224 */  addiu      $v0, $zero, 0x2
@@ -53,10 +53,10 @@ glabel node_InitRootNodePairWithNegatedRotationMatrices
     /* 3A718 80049F18 40F622A4 */  sh         $v0, %lo(D_800FF640)($at)
     /* 3A71C 80049F1C 3406010C */  jal        node_SetMatrixFromNegatedRot
     /* 3A720 80049F20 21200002 */   addu      $a0, $s0, $zero
-    /* 3A724 80049F24 0A80013C */  lui        $at, %hi(D_800A3708)
-    /* 3A728 80049F28 083731AC */  sw         $s1, %lo(D_800A3708)($at)
-    /* 3A72C 80049F2C 0A80013C */  lui        $at, %hi(D_800A370C)
-    /* 3A730 80049F30 0C3730AC */  sw         $s0, %lo(D_800A370C)($at)
+    /* 3A724 80049F24 0A80013C */  lui        $at, %hi(g_view_camera_root_ptr)
+    /* 3A728 80049F28 083731AC */  sw         $s1, %lo(g_view_camera_root_ptr)($at)
+    /* 3A72C 80049F2C 0A80013C */  lui        $at, %hi(g_view_identity_root_ptr)
+    /* 3A730 80049F30 0C3730AC */  sw         $s0, %lo(g_view_identity_root_ptr)($at)
     /* 3A734 80049F34 1800BF8F */  lw         $ra, 0x18($sp)
     /* 3A738 80049F38 1400B18F */  lw         $s1, 0x14($sp)
     /* 3A73C 80049F3C 1000B08F */  lw         $s0, 0x10($sp)

@@ -8,7 +8,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 685AC 80077DAC 1E000224 */  addiu      $v0, $zero, 0x1E
     /* 685B0 80077DB0 3400A2AF */  sw         $v0, 0x34($sp)
     /* 685B4 80077DB4 3405828F */  lw         $v0, %gp_rel(D_800A3600)($gp)
-    /* 685B8 80077DB8 2405848F */  lw         $a0, %gp_rel(D_800A35F0)($gp)
+    /* 685B8 80077DB8 2405848F */  lw         $a0, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 685BC 80077DBC 6C00B7AF */  sw         $s7, 0x6C($sp)
     /* 685C0 80077DC0 7000BFAF */  sw         $ra, 0x70($sp)
     /* 685C4 80077DC4 6800B6AF */  sw         $s6, 0x68($sp)
@@ -38,7 +38,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68624 80077E24 18006200 */   mult      $v1, $v0
   .L80077E28:
     /* 68628 80077E28 3405828F */  lw         $v0, %gp_rel(D_800A3600)($gp)
-    /* 6862C 80077E2C 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 6862C 80077E2C 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68630 80077E30 40100200 */  sll        $v0, $v0, 1
     /* 68634 80077E34 21105400 */  addu       $v0, $v0, $s4
     /* 68638 80077E38 00004584 */  lh         $a1, 0x0($v0)
@@ -71,7 +71,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 6869C 80077E9C 4000A0A3 */  sb         $zero, 0x40($sp)
   .L80077EA0:
     /* 686A0 80077EA0 0A008286 */  lh         $v0, 0xA($s4)
-    /* 686A4 80077EA4 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 686A4 80077EA4 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 686A8 80077EA8 3C004224 */  addiu      $v0, $v0, 0x3C
     /* 686AC 80077EAC 2A186200 */  slt        $v1, $v1, $v0
     /* 686B0 80077EB0 17016010 */  beqz       $v1, .L80078310
@@ -89,7 +89,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 686E0 80077EE0 00000000 */   nop
   jlabel .L80077EE4
     /* 686E4 80077EE4 3405868F */  lw         $a2, %gp_rel(D_800A3600)($gp)
-    /* 686E8 80077EE8 2405858F */  lw         $a1, %gp_rel(D_800A35F0)($gp)
+    /* 686E8 80077EE8 2405858F */  lw         $a1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 686EC 80077EEC 40180600 */  sll        $v1, $a2, 1
     /* 686F0 80077EF0 21107400 */  addu       $v0, $v1, $s4
     /* 686F4 80077EF4 00004284 */  lh         $v0, 0x0($v0)
@@ -155,7 +155,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 687DC 80077FDC 8888143C */   lui       $s4, (0x88888889 >> 16)
   jlabel .L80077FE0
     /* 687E0 80077FE0 3405858F */  lw         $a1, %gp_rel(D_800A3600)($gp)
-    /* 687E4 80077FE4 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 687E4 80077FE4 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 687E8 80077FE8 40200500 */  sll        $a0, $a1, 1
     /* 687EC 80077FEC 21109400 */  addu       $v0, $a0, $s4
     /* 687F0 80077FF0 00004284 */  lh         $v0, 0x0($v0)
@@ -216,7 +216,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 688C4 800780C4 00000000 */   nop
   jlabel .L800780C8
     /* 688C8 800780C8 3405848F */  lw         $a0, %gp_rel(D_800A3600)($gp)
-    /* 688CC 800780CC 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 688CC 800780CC 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 688D0 800780D0 40100400 */  sll        $v0, $a0, 1
     /* 688D4 800780D4 21105600 */  addu       $v0, $v0, $s6
     /* 688D8 800780D8 02004284 */  lh         $v0, 0x2($v0)
@@ -229,7 +229,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 688F4 800780F4 340582AF */  sw         $v0, %gp_rel(D_800A3600)($gp)
   .L800780F8:
     /* 688F8 800780F8 04008286 */  lh         $v0, 0x4($s4)
-    /* 688FC 800780FC 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 688FC 800780FC 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68900 80078100 00000000 */  nop
     /* 68904 80078104 2A106200 */  slt        $v0, $v1, $v0
     /* 68908 80078108 07004010 */  beqz       $v0, .L80078128
@@ -322,7 +322,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68A50 80078250 8888143C */   lui       $s4, (0x88888889 >> 16)
   jlabel .L80078254
     /* 68A54 80078254 3405828F */  lw         $v0, %gp_rel(D_800A3600)($gp)
-    /* 68A58 80078258 2405838F */  lw         $v1, %gp_rel(D_800A35F0)($gp)
+    /* 68A58 80078258 2405838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68A5C 8007825C 40100200 */  sll        $v0, $v0, 1
     /* 68A60 80078260 21105400 */  addu       $v0, $v0, $s4
     /* 68A64 80078264 00004284 */  lh         $v0, 0x0($v0)
@@ -389,7 +389,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68B44 80078344 00000000 */  nop
     /* 68B48 80078348 21200202 */  addu       $a0, $s0, $v0
     /* 68B4C 8007834C 02008784 */  lh         $a3, 0x2($a0)
-    /* 68B50 80078350 2405858F */  lw         $a1, %gp_rel(D_800A35F0)($gp)
+    /* 68B50 80078350 2405858F */  lw         $a1, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68B54 80078354 3C00E224 */  addiu      $v0, $a3, 0x3C
     /* 68B58 80078358 2A30A200 */  slt        $a2, $a1, $v0
     /* 68B5C 8007835C 5100C010 */  beqz       $a2, .L800784A4

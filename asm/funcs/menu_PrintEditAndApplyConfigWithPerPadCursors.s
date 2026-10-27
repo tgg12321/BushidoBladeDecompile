@@ -21,7 +21,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24F54 80034754 78311026 */  addiu      $s0, $s0, %lo(D_800A3178)
     /* 24F58 80034758 0A80113C */  lui        $s1, %hi(D_800A3180)
     /* 24F5C 8003475C 80313126 */  addiu      $s1, $s1, %lo(D_800A3180)
-    /* 24F60 80034760 A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
+    /* 24F60 80034760 A8008287 */  lh         $v0, %gp_rel(g_config_menu_cursors)($gp)
     /* 24F64 80034764 0A80143C */  lui        $s4, %hi(D_800A3188)
     /* 24F68 80034768 88319426 */  addiu      $s4, $s4, %lo(D_800A3188)
     /* 24F6C 8003476C 02004014 */  bnez       $v0, .L80034778
@@ -44,7 +44,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24FA8 800347A8 7D27C680 */  lb         $a2, %lo(g_fight_config + 0x5)($a2)
     /* 24FAC 800347AC 4BF5000C */  jal        font_Printf
     /* 24FB0 800347B0 21206002 */   addu      $a0, $s3, $zero
-    /* 24FB4 800347B4 A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
+    /* 24FB4 800347B4 A8008287 */  lh         $v0, %gp_rel(g_config_menu_cursors)($gp)
     /* 24FB8 800347B8 01001224 */  addiu      $s2, $zero, 0x1
     /* 24FBC 800347BC 02005214 */  bne        $v0, $s2, .L800347C8
     /* 24FC0 800347C0 21280002 */   addu      $a1, $s0, $zero
@@ -64,7 +64,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 24FF0 800347F0 7F27C680 */  lb         $a2, %lo(g_fight_config + 0x7)($a2)
     /* 24FF4 800347F4 4BF5000C */  jal        font_Printf
     /* 24FF8 800347F8 21206002 */   addu      $a0, $s3, $zero
-    /* 24FFC 800347FC A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
+    /* 24FFC 800347FC A8008287 */  lh         $v0, %gp_rel(g_config_menu_cursors)($gp)
     /* 25000 80034800 02001224 */  addiu      $s2, $zero, 0x2
     /* 25004 80034804 02005214 */  bne        $v0, $s2, .L80034810
     /* 25008 80034808 21280002 */   addu      $a1, $s0, $zero
@@ -86,7 +86,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25040 80034840 8127C680 */  lb         $a2, %lo(g_fight_config + 0x9)($a2)
     /* 25044 80034844 4BF5000C */  jal        font_Printf
     /* 25048 80034848 21206002 */   addu      $a0, $s3, $zero
-    /* 2504C 8003484C A8008287 */  lh         $v0, %gp_rel(D_800A3174)($gp)
+    /* 2504C 8003484C A8008287 */  lh         $v0, %gp_rel(g_config_menu_cursors)($gp)
     /* 25050 80034850 03001224 */  addiu      $s2, $zero, 0x3
     /* 25054 80034854 02005214 */  bne        $v0, $s2, .L80034860
     /* 25058 80034858 21280002 */   addu      $a1, $s0, $zero
@@ -112,7 +112,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 250A0 800348A0 02320600 */   srl       $a2, $a2, 8
     /* 250A4 800348A4 0A80123C */  lui        $s2, %hi(D_800A31B0)
     /* 250A8 800348A8 B0315226 */  addiu      $s2, $s2, %lo(D_800A31B0)
-    /* 250AC 800348AC A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 250AC 800348AC A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 250B0 800348B0 04000224 */  addiu      $v0, $zero, 0x4
     /* 250B4 800348B4 02006214 */  bne        $v1, $v0, .L800348C0
     /* 250B8 800348B8 21280002 */   addu      $a1, $s0, $zero
@@ -122,7 +122,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 250C4 800348C4 8427C680 */  lb         $a2, %lo(g_fight_config + 0xC)($a2)
     /* 250C8 800348C8 4BF5000C */  jal        font_Printf
     /* 250CC 800348CC 21204002 */   addu      $a0, $s2, $zero
-    /* 250D0 800348D0 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 250D0 800348D0 A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 250D4 800348D4 05000224 */  addiu      $v0, $zero, 0x5
     /* 250D8 800348D8 02006214 */  bne        $v1, $v0, .L800348E4
     /* 250DC 800348DC 21280002 */   addu      $a1, $s0, $zero
@@ -132,7 +132,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 250E8 800348E8 8527C680 */  lb         $a2, %lo(g_fight_config + 0xD)($a2)
     /* 250EC 800348EC 4BF5000C */  jal        font_Printf
     /* 250F0 800348F0 21204002 */   addu      $a0, $s2, $zero
-    /* 250F4 800348F4 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 250F4 800348F4 A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 250F8 800348F8 06000224 */  addiu      $v0, $zero, 0x6
     /* 250FC 800348FC 02006214 */  bne        $v1, $v0, .L80034908
     /* 25100 80034900 21280002 */   addu      $a1, $s0, $zero
@@ -143,7 +143,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25110 80034910 B8318424 */  addiu      $a0, $a0, %lo(D_800A31B8)
     /* 25114 80034914 4BF5000C */  jal        font_Printf
     /* 25118 80034918 00000000 */   nop
-    /* 2511C 8003491C A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 2511C 8003491C A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 25120 80034920 07000224 */  addiu      $v0, $zero, 0x7
     /* 25124 80034924 02006214 */  bne        $v1, $v0, .L80034930
     /* 25128 80034928 21280002 */   addu      $a1, $s0, $zero
@@ -154,7 +154,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25138 80034938 34088424 */  addiu      $a0, $a0, %lo(D_80010834)
     /* 2513C 8003493C 4BF5000C */  jal        font_Printf
     /* 25140 80034940 00000000 */   nop
-    /* 25144 80034944 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 25144 80034944 A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 25148 80034948 08000224 */  addiu      $v0, $zero, 0x8
     /* 2514C 8003494C 02006214 */  bne        $v1, $v0, .L80034958
     /* 25150 80034950 21280002 */   addu      $a1, $s0, $zero
@@ -167,7 +167,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25168 80034968 40088424 */  addiu      $a0, $a0, %lo(D_80010840)
     /* 2516C 8003496C 4BF5000C */  jal        font_Printf
     /* 25170 80034970 0100C630 */   andi      $a2, $a2, 0x1
-    /* 25174 80034974 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 25174 80034974 A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 25178 80034978 09000224 */  addiu      $v0, $zero, 0x9
     /* 2517C 8003497C 02006214 */  bne        $v1, $v0, .L80034988
     /* 25180 80034980 21280002 */   addu      $a1, $s0, $zero
@@ -179,7 +179,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25194 80034994 42300600 */  srl        $a2, $a2, 1
     /* 25198 80034998 4BF5000C */  jal        font_Printf
     /* 2519C 8003499C 0100C630 */   andi      $a2, $a2, 0x1
-    /* 251A0 800349A0 A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 251A0 800349A0 A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 251A4 800349A4 0A000224 */  addiu      $v0, $zero, 0xA
     /* 251A8 800349A8 02006214 */  bne        $v1, $v0, .L800349B4
     /* 251AC 800349AC 21280002 */   addu      $a1, $s0, $zero
@@ -191,7 +191,7 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 251C0 800349C0 C8318424 */  addiu      $a0, $a0, %lo(D_800A31C8)
     /* 251C4 800349C4 4BF5000C */  jal        font_Printf
     /* 251C8 800349C8 00000000 */   nop
-    /* 251CC 800349CC A8008387 */  lh         $v1, %gp_rel(D_800A3174)($gp)
+    /* 251CC 800349CC A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)
     /* 251D0 800349D0 0B000224 */  addiu      $v0, $zero, 0xB
     /* 251D4 800349D4 02006214 */  bne        $v1, $v0, .L800349E0
     /* 251D8 800349D8 21280002 */   addu      $a1, $s0, $zero
@@ -209,8 +209,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 25204 80034A04 FCFFF326 */  addiu      $s3, $s7, -0x4
     /* 25208 80034A08 FAFFF226 */  addiu      $s2, $s7, -0x6
     /* 2520C 80034A0C F8FFF126 */  addiu      $s1, $s7, -0x8
-    /* 25210 80034A10 0A80103C */  lui        $s0, %hi(D_800A3174)
-    /* 25214 80034A14 74311026 */  addiu      $s0, $s0, %lo(D_800A3174)
+    /* 25210 80034A10 0A80103C */  lui        $s0, %hi(g_config_menu_cursors)
+    /* 25214 80034A14 74311026 */  addiu      $s0, $s0, %lo(g_config_menu_cursors)
     /* 25218 80034A18 4BF5000C */  jal        font_Printf
     /* 2521C 80034A1C 21B00000 */   addu      $s6, $zero, $zero
   .L80034A20:

@@ -1,6 +1,6 @@
 glabel gpu_GetPrimBufferAndRefreshStrip
-    /* 59920 80069120 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
-    /* 59924 80069124 3004838F */  lw         $v1, %gp_rel(D_800A34FC)($gp)
+    /* 59920 80069120 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
+    /* 59924 80069124 3004838F */  lw         $v1, %gp_rel(g_row_menu_work_block)($gp)
     /* 59928 80069128 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 5992C 8006912C 1000B0AF */  sw         $s0, 0x10($sp)
     /* 59930 80069130 1400BFAF */  sw         $ra, 0x14($sp)
@@ -13,10 +13,10 @@ glabel gpu_GetPrimBufferAndRefreshStrip
     /* 5994C 8006914C 33BA010C */  jal        gpu_LoadVramBottomStrip
     /* 59950 80069150 00000000 */   nop
   .L80069154:
-    /* 59954 80069154 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
+    /* 59954 80069154 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 59958 80069158 00000000 */  nop
     /* 5995C 8006915C 2000428C */  lw         $v0, 0x20($v0)
-    /* 59960 80069160 3004838F */  lw         $v1, %gp_rel(D_800A34FC)($gp)
+    /* 59960 80069160 3004838F */  lw         $v1, %gp_rel(g_row_menu_work_block)($gp)
     /* 59964 80069164 01004230 */  andi       $v0, $v0, 0x1
     /* 59968 80069168 300062A0 */  sb         $v0, 0x30($v1)
     /* 5996C 8006916C 40101000 */  sll        $v0, $s0, 1

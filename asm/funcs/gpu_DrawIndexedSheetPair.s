@@ -10,7 +10,7 @@ glabel gpu_DrawIndexedSheetPair
     /* 5C548 8006BD48 21B0E000 */  addu       $s6, $a3, $zero
     /* 5C54C 8006BD4C 3C00B3AF */  sw         $s3, 0x3C($sp)
     /* 5C550 8006BD50 21980000 */  addu       $s3, $zero, $zero
-    /* 5C554 8006BD54 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
+    /* 5C554 8006BD54 3004828F */  lw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 5C558 8006BD58 C0401400 */  sll        $t0, $s4, 3
     /* 5C55C 8006BD5C 5400BFAF */  sw         $ra, 0x54($sp)
     /* 5C560 8006BD60 5000BEAF */  sw         $fp, 0x50($sp)

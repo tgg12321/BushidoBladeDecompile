@@ -148,8 +148,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D2FC 8001CAFC 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* D300 8001CB00 21300000 */   addu      $a2, $zero, $zero
     /* D304 8001CB04 33000224 */  addiu      $v0, $zero, 0x33
-    /* D308 8001CB08 0A80033C */  lui        $v1, %hi(D_800A38E2)
-    /* D30C 8001CB0C E2386390 */  lbu        $v1, %lo(D_800A38E2)($v1)
+    /* D308 8001CB08 0A80033C */  lui        $v1, %hi(g_fight_step_table_next_row)
+    /* D30C 8001CB0C E2386390 */  lbu        $v1, %lo(g_fight_step_table_next_row)($v1)
     /* D310 8001CB10 0A80113C */  lui        $s1, %hi(D_800A38E0)
     /* D314 8001CB14 E0383192 */  lbu        $s1, %lo(D_800A38E0)($s1)
     /* D318 8001CB18 10006210 */  beq        $v1, $v0, .L8001CB5C
@@ -245,8 +245,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D45C 8001CC5C 01004224 */  addiu      $v0, $v0, 0x1
     /* D460 8001CC60 000062A0 */  sb         $v0, 0x0($v1)
   .L8001CC64:
-    /* D464 8001CC64 0A80033C */  lui        $v1, %hi(D_800A3748)
-    /* D468 8001CC68 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
+    /* D464 8001CC64 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
+    /* D468 8001CC68 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* D46C 8001CC6C 01000224 */  addiu      $v0, $zero, 0x1
     /* D470 8001CC70 0A80013C */  lui        $at, %hi(D_800A3670)
     /* D474 8001CC74 703622A0 */  sb         $v0, %lo(D_800A3670)($at)

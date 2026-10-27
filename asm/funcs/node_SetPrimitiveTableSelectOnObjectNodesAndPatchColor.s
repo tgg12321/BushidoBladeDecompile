@@ -3,9 +3,9 @@ glabel node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* 31E8C 8004168C 80200400 */  sll        $a0, $a0, 2
     /* 31E90 80041690 3400BFAF */  sw         $ra, 0x34($sp)
     /* 31E94 80041694 3000B0AF */  sw         $s0, 0x30($sp)
-    /* 31E98 80041698 0B80013C */  lui        $at, %hi(D_800A9A10)
+    /* 31E98 80041698 0B80013C */  lui        $at, %hi(g_slot_objects)
     /* 31E9C 8004169C 21082400 */  addu       $at, $at, $a0
-    /* 31EA0 800416A0 109A308C */  lw         $s0, %lo(D_800A9A10)($at)
+    /* 31EA0 800416A0 109A308C */  lw         $s0, %lo(g_slot_objects)($at)
     /* 31EA4 800416A4 00000000 */  nop
     /* 31EA8 800416A8 44000012 */  beqz       $s0, .L800417BC
     /* 31EAC 800416AC 00000000 */   nop

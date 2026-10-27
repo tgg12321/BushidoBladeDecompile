@@ -40,9 +40,9 @@ glabel eff_DrawAnimatedQuads
     /* 56098 80065898 2128B300 */  addu       $a1, $a1, $s3
     /* 5609C 8006589C 80280500 */  sll        $a1, $a1, 2
     /* 560A0 800658A0 A403868F */  lw         $a2, %gp_rel(D_800A3470)($gp)
-    /* 560A4 800658A4 0F80013C */  lui        $at, %hi(D_800F0CA0)
+    /* 560A4 800658A4 0F80013C */  lui        $at, %hi(g_eff_animated_quad_positions)
     /* 560A8 800658A8 21082500 */  addu       $at, $at, $a1
-    /* 560AC 800658AC A00C228C */  lw         $v0, %lo(D_800F0CA0)($at)
+    /* 560AC 800658AC A00C228C */  lw         $v0, %lo(g_eff_animated_quad_positions)($at)
     /* 560B0 800658B0 0000C38C */  lw         $v1, 0x0($a2)
     /* 560B4 800658B4 00000000 */  nop
     /* 560B8 800658B8 23104300 */  subu       $v0, $v0, $v1

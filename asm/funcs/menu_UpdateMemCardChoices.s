@@ -3,7 +3,7 @@ glabel menu_UpdateMemCardChoices
     /* 5C96C 8006C16C 7000A4AF */  sw         $a0, 0x70($sp)
     /* 5C970 8006C170 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5C974 8006C174 7400A5AF */  sw         $a1, 0x74($sp)
-    /* 5C978 8006C178 4804828F */  lw         $v0, %gp_rel(D_800A3514)($gp)
+    /* 5C978 8006C178 4804828F */  lw         $v0, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 5C97C 8006C17C 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
     /* 5C980 8006C180 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
     /* 5C984 8006C184 0A80053C */  lui        $a1, %hi(D_800A3518)
@@ -17,7 +17,7 @@ glabel menu_UpdateMemCardChoices
     /* 5C9A4 8006C1A4 C0801000 */  sll        $s0, $s0, 3
     /* 5C9A8 8006C1A8 21800302 */  addu       $s0, $s0, $v1
     /* 5C9AC 8006C1AC 00811000 */  sll        $s0, $s0, 4
-    /* 5C9B0 8006C1B0 480482AF */  sw         $v0, %gp_rel(D_800A3514)($gp)
+    /* 5C9B0 8006C1B0 480482AF */  sw         $v0, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 5C9B4 8006C1B4 0F80023C */  lui        $v0, %hi(g_gpu_db)
     /* 5C9B8 8006C1B8 38744224 */  addiu      $v0, $v0, %lo(g_gpu_db)
     /* 5C9BC 8006C1BC E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext

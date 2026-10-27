@@ -2302,7 +2302,7 @@ void f(void) {
     body_lo = text.index("{")
     body_hi = text.rindex("}") + 1
     hits = volatile_cheats.find_empty_if_dead_reads(text, body_lo, body_hi)
-    eq("empty-if: catches `if (D_800A3580) {}`", len(hits), 1)
+    eq("empty-if: catches `if (g_entry_menu_handler_index) {}`", len(hits), 1)
 
     # Positive — multiple instances
     text2 = """\

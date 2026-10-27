@@ -1,7 +1,7 @@
 glabel func_8001EEB4
     /* F6B4 8001EEB4 E0FFBD27 */  addiu      $sp, $sp, -0x20
-    /* F6B8 8001EEB8 0A80043C */  lui        $a0, %hi(D_800A3748)
-    /* F6BC 8001EEBC 48378480 */  lb         $a0, %lo(D_800A3748)($a0)
+    /* F6B8 8001EEB8 0A80043C */  lui        $a0, %hi(g_fight_followup_fighter_index)
+    /* F6BC 8001EEBC 48378480 */  lb         $a0, %lo(g_fight_followup_fighter_index)($a0)
     /* F6C0 8001EEC0 1080033C */  lui        $v1, %hi(D_80101EC8)
     /* F6C4 8001EEC4 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
     /* F6C8 8001EEC8 1800BFAF */  sw         $ra, 0x18($sp)
@@ -33,14 +33,14 @@ glabel func_8001EEB4
     /* F730 8001EF30 00000000 */   nop
     /* F734 8001EF34 3286000C */  jal        motion_ResetVariantIndex
     /* F738 8001EF38 01001024 */   addiu     $s0, $zero, 0x1
-    /* F73C 8001EF3C 0A80043C */  lui        $a0, %hi(D_800A3748)
-    /* F740 8001EF40 48378480 */  lb         $a0, %lo(D_800A3748)($a0)
+    /* F73C 8001EF3C 0A80043C */  lui        $a0, %hi(g_fight_followup_fighter_index)
+    /* F740 8001EF40 48378480 */  lb         $a0, %lo(g_fight_followup_fighter_index)($a0)
     /* F744 8001EF44 0A002586 */  lh         $a1, 0xA($s1)
     /* F748 8001EF48 8F86000C */  jal        motion_GetCommonScriptAtFighterBufferIndexedOffset
     /* F74C 8001EF4C 00000000 */   nop
     /* F750 8001EF50 21284000 */  addu       $a1, $v0, $zero
-    /* F754 8001EF54 0A80043C */  lui        $a0, %hi(D_800A3748)
-    /* F758 8001EF58 48378480 */  lb         $a0, %lo(D_800A3748)($a0)
+    /* F754 8001EF54 0A80043C */  lui        $a0, %hi(g_fight_followup_fighter_index)
+    /* F758 8001EF58 48378480 */  lb         $a0, %lo(g_fight_followup_fighter_index)($a0)
     /* F75C 8001EF5C 01000624 */  addiu      $a2, $zero, 0x1
     /* F760 8001EF60 A686000C */  jal        fighter_StartMoveScript
     /* F764 8001EF64 5E0030A6 */   sh        $s0, 0x5E($s1)

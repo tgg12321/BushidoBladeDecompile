@@ -11,8 +11,8 @@ glabel motion_LoadNdataPackIntoSlot1BufferAndMarkSlot1Id
     /* E3C0 8001DBC0 2F14010C */  jal        ndata_LoadPack
     /* E3C4 8001DBC4 0100842C */   sltiu     $a0, $a0, 0x1
     /* E3C8 8001DBC8 FFFF0234 */  ori        $v0, $zero, 0xFFFF
-    /* E3CC 8001DBCC 0A80013C */  lui        $at, %hi(D_800A38C4 + 0x2)
-    /* E3D0 8001DBD0 C63822A4 */  sh         $v0, %lo(D_800A38C4 + 0x2)($at)
+    /* E3CC 8001DBCC 0A80013C */  lui        $at, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* E3D0 8001DBD0 C63822A4 */  sh         $v0, %lo(g_motion_fighter_loaded_data_ids + 0x2)($at)
     /* E3D4 8001DBD4 1000BF8F */  lw         $ra, 0x10($sp)
     /* E3D8 8001DBD8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* E3DC 8001DBDC 0800E003 */  jr         $ra

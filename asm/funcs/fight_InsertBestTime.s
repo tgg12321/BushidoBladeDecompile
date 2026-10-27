@@ -2,8 +2,8 @@ glabel fight_InsertBestTime
     /* 24538 80033D38 1080093C */  lui        $t1, %hi(g_saved_record)
     /* 2453C 80033D3C 506A2925 */  addiu      $t1, $t1, %lo(g_saved_record)
     /* 24540 80033D40 03000724 */  addiu      $a3, $zero, 0x3
-    /* 24544 80033D44 0A80043C */  lui        $a0, %hi(D_800A3858)
-    /* 24548 80033D48 5838848C */  lw         $a0, %lo(D_800A3858)($a0)
+    /* 24544 80033D44 0A80043C */  lui        $a0, %hi(g_fight_timer_frames)
+    /* 24548 80033D48 5838848C */  lw         $a0, %lo(g_fight_timer_frames)($a0)
     /* 2454C 80033D4C FFFFE324 */  addiu      $v1, $a3, -0x1
   .L80033D50:
     /* 24550 80033D50 C0100300 */  sll        $v0, $v1, 3
@@ -44,8 +44,8 @@ glabel fight_InsertBestTime
     /* 245D0 80033DD0 D61E4294 */  lhu        $v0, %lo(D_80101EC8 + 0xE)($v0)
     /* 245D4 80033DD4 00000000 */  nop
     /* 245D8 80033DD8 090062A0 */  sb         $v0, 0x9($v1)
-    /* 245DC 80033DDC 0A80023C */  lui        $v0, %hi(D_800A3858)
-    /* 245E0 80033DE0 5838428C */  lw         $v0, %lo(D_800A3858)($v0)
+    /* 245DC 80033DDC 0A80023C */  lui        $v0, %hi(g_fight_timer_frames)
+    /* 245E0 80033DE0 5838428C */  lw         $v0, %lo(g_fight_timer_frames)($v0)
     /* 245E4 80033DE4 00000000 */  nop
     /* 245E8 80033DE8 0C0062AC */  sw         $v0, 0xC($v1)
   .L80033DEC:

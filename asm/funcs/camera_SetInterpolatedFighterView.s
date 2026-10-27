@@ -10,8 +10,8 @@ glabel camera_SetInterpolatedFighterView
     /* C510 8001BD10 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* C514 8001BD14 79FC000C */  jal        func_8003F1E4
     /* C518 8001BD18 21200000 */   addu      $a0, $zero, $zero
-    /* C51C 8001BD1C 0F80053C */  lui        $a1, %hi(D_800F6608)
-    /* C520 8001BD20 0866A524 */  addiu      $a1, $a1, %lo(D_800F6608)
+    /* C51C 8001BD1C 0F80053C */  lui        $a1, %hi(g_camera_default_view_record)
+    /* C520 8001BD20 0866A524 */  addiu      $a1, $a1, %lo(g_camera_default_view_record)
     /* C524 8001BD24 B800428E */  lw         $v0, 0xB8($s2)
     /* C528 8001BD28 BC00438E */  lw         $v1, 0xBC($s2)
     /* C52C 8001BD2C C000448E */  lw         $a0, 0xC0($s2)

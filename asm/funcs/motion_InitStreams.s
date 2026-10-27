@@ -5,8 +5,8 @@ glabel motion_InitStreams
     /* 11A1C 8002121C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 11A20 80021220 E765000C */  jal        motion_InitStream
     /* 11A24 80021224 21200000 */   addu      $a0, $zero, $zero
-    /* 11A28 80021228 0A80023C */  lui        $v0, %hi(D_800A38C4)
-    /* 11A2C 8002122C C4384294 */  lhu        $v0, %lo(D_800A38C4)($v0)
+    /* 11A28 80021228 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids)
+    /* 11A2C 8002122C C4384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids)($v0)
     /* 11A30 80021230 00000000 */  nop
     /* 11A34 80021234 05004010 */  beqz       $v0, .L8002124C
     /* 11A38 80021238 00000000 */   nop
@@ -15,8 +15,8 @@ glabel motion_InitStreams
     /* 11A44 80021244 E765000C */  jal        motion_InitStream
     /* 11A48 80021248 01000424 */   addiu     $a0, $zero, 0x1
   .L8002124C:
-    /* 11A4C 8002124C 0A80023C */  lui        $v0, %hi(D_800A38C4 + 0x2)
-    /* 11A50 80021250 C6384294 */  lhu        $v0, %lo(D_800A38C4 + 0x2)($v0)
+    /* 11A4C 8002124C 0A80023C */  lui        $v0, %hi(g_motion_fighter_loaded_data_ids + 0x2)
+    /* 11A50 80021250 C6384294 */  lhu        $v0, %lo(g_motion_fighter_loaded_data_ids + 0x2)($v0)
     /* 11A54 80021254 00000000 */  nop
     /* 11A58 80021258 05004010 */  beqz       $v0, .L80021270
     /* 11A5C 8002125C 00000000 */   nop

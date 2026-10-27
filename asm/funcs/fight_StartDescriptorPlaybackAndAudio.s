@@ -10,15 +10,15 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C1F0 8003B9F0 2000B0AF */   sw        $s0, 0x20($sp)
     /* 2C1F4 8003B9F4 5E84010C */  jal        eff_StopCommands
     /* 2C1F8 8003B9F8 00000000 */   nop
-    /* 2C1FC 8003B9FC 0A80033C */  lui        $v1, %hi(D_800A3768)
-    /* 2C200 8003BA00 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
+    /* 2C1FC 8003B9FC 0A80033C */  lui        $v1, %hi(g_local_ot_draw_mode)
+    /* 2C200 8003BA00 68376390 */  lbu        $v1, %lo(g_local_ot_draw_mode)($v1)
     /* 2C204 8003BA04 14000224 */  addiu      $v0, $zero, 0x14
     /* 2C208 8003BA08 06006210 */  beq        $v1, $v0, .L8003BA24
     /* 2C20C 8003BA0C FF000224 */   addiu     $v0, $zero, 0xFF
     /* 2C210 8003BA10 225A000C */  jal        gpu_HideResetAndClear
     /* 2C214 8003BA14 00000000 */   nop
-    /* 2C218 8003BA18 0A80033C */  lui        $v1, %hi(D_800A3768)
-    /* 2C21C 8003BA1C 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
+    /* 2C218 8003BA18 0A80033C */  lui        $v1, %hi(g_local_ot_draw_mode)
+    /* 2C21C 8003BA1C 68376390 */  lbu        $v1, %lo(g_local_ot_draw_mode)($v1)
     /* 2C220 8003BA20 FF000224 */  addiu      $v0, $zero, 0xFF
   .L8003BA24:
     /* 2C224 8003BA24 03006210 */  beq        $v1, $v0, .L8003BA34
@@ -162,8 +162,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C41C 8003BC1C F976000C */  jal        fight_WaitForCounterThenClearAndEnableDisplay
     /* 2C420 8003BC20 00000000 */   nop
     /* 2C424 8003BC24 FF000224 */  addiu      $v0, $zero, 0xFF
-    /* 2C428 8003BC28 0A80013C */  lui        $at, %hi(D_800A3768)
-    /* 2C42C 8003BC2C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
+    /* 2C428 8003BC28 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
+    /* 2C42C 8003BC2C 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 2C430 8003BC30 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* 2C434 8003BC34 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
     /* 2C438 8003BC38 EAD7000C */  jal        snd_SerialMixOn

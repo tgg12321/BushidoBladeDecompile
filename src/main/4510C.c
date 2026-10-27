@@ -97,30 +97,32 @@ s32 motion_UpdatePlayback(void) {
         vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
         vec.vz = var_6;
     }
-    D_80101DF0.work.t[0] = vec.vx + s->unkC;
-    D_80101DF0.work.t[1] = vec.vy + s->unk10;
-    D_80101DF0.work.t[2] = vec.vz + s->unk14;
-    D_80101DF0.xf.rot.vx = v[3];
-    D_80101DF0.xf.rot.vy = v[4] + 0x800;
-    D_80101DF0.xf.rot.vz = v[5];
+    g_view_camera_root_node.work.t[0] = vec.vx + s->unkC;
+    g_view_camera_root_node.work.t[1] = vec.vy + s->unk10;
+    g_view_camera_root_node.work.t[2] = vec.vz + s->unk14;
+    g_view_camera_root_node.xf.rot.vx = v[3];
+    g_view_camera_root_node.xf.rot.vy = v[4] + 0x800;
+    g_view_camera_root_node.xf.rot.vz = v[5];
     if (s->unk1E != 0) {
         MATRIX m;
         SVECTOR rot;
         rot.vx = 0;
         rot.vz = 0;
         rot.vy = s->unk1E;
-        D_800F66A0[0](&rot, &m);
-        D_800F66A0[0](&D_80101DF0.xf.rot, &D_80101DF0.work);
-        MulMatrix2(&m, &D_80101DF0.work);
-        math_MatrixToAnglesYXZ(&D_80101DF0.work, &D_80101DF0.xf.rot);
-        math_TransposeMatrixInPlace(&D_80101DF0.work);
-        D_80101DF0.xf.mat = D_80101DF0.work;
+        g_math_rot_matrix_funcs[0](&rot, &m);
+        g_math_rot_matrix_funcs[0](
+            &g_view_camera_root_node.xf.rot, &g_view_camera_root_node.work);
+        MulMatrix2(&m, &g_view_camera_root_node.work);
+        math_MatrixToAnglesYXZ(
+            &g_view_camera_root_node.work, &g_view_camera_root_node.xf.rot);
+        math_TransposeMatrixInPlace(&g_view_camera_root_node.work);
+        g_view_camera_root_node.xf.mat = g_view_camera_root_node.work;
     } else {
-        node_SetMatrixFromNegatedRot(&D_80101DF0);
+        node_SetMatrixFromNegatedRot(&g_view_camera_root_node);
     }
-    s->unk24[0] = -D_80101DF0.xf.rot.vx;
-    s->unk24[1] = -D_80101DF0.xf.rot.vy;
-    s->unk24[2] = -D_80101DF0.xf.rot.vz;
+    s->unk24[0] = -g_view_camera_root_node.xf.rot.vx;
+    s->unk24[1] = -g_view_camera_root_node.xf.rot.vy;
+    s->unk24[2] = -g_view_camera_root_node.xf.rot.vz;
     light_ResetPointLight();
     light_ApplyPointLightTargets();
     camera_CopyViewMatrixWithHalvedMiddleRow();
@@ -212,7 +214,9 @@ void motion_RebasePlayback(s32 a0) {
 
 s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.unk24; }
 
-s32 *node_GetRootNodeMatrixTranslation(void) { return D_80101DF0.xf.mat.t; }
+s32 *node_GetRootNodeMatrixTranslation(void) {
+    return g_view_camera_root_node.xf.mat.t;
+}
 
 void fighter_ClearCpuTally(s32 arg0) {
     s32 i;
@@ -273,7 +277,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
             fighter_ClearCpuTally(p->index);
         }
         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
-            src = &D_8009A8C8[p->unk_86][D_800A37A0 - 1];
+            src = &D_8009A8C8[p->unk_86][g_fight_stage_command_count - 1];
             p->unk_424 = src->unk0;
             p->unk_3F6 = src->unk1;
         }
@@ -302,8 +306,8 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
         }
         break;
     case 3:
-        p->cpu_profile = D_8008E778[D_800A38E2 - 1][0] + 0x1B;
-        base = D_800A38E2 / 10;
+        p->cpu_profile = D_8008E778[g_fight_step_table_next_row - 1][0] + 0x1B;
+        base = g_fight_step_table_next_row / 10;
         p->unk_438 = base * 16 + 0x80;
         if (g_cpu_profiles[p->cpu_profile].flags & 0x3000) {
             p->unk_438 = base * 16 + 0x180;
@@ -311,11 +315,11 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
         if (g_cpu_profiles[p->cpu_profile].flags & 0x4000) {
             p->unk_438 += 0x200;
         }
-        if ((D_800A38E2 - 1) % 10 == 0) {
+        if ((g_fight_step_table_next_row - 1) % 10 == 0) {
             fighter_ClearCpuTally(p->index);
         }
-        temp = D_800A38E2 / 10 * 2;
-        if (D_800A38E2 % 10 == 0) {
+        temp = g_fight_step_table_next_row / 10 * 2;
+        if (g_fight_step_table_next_row % 10 == 0) {
             temp--;
         }
         var_2 = D_8009A9B4[temp];
@@ -946,8 +950,9 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         if (arg0->move_kind == 0x13 || arg0->move_kind == 6) {
             flags += obj->orientation.vy;
         } else {
-            flags += ratan2(D_800F6608.unk_00.x - obj->world_pos.x,
-                            D_800F6608.unk_00.z - obj->world_pos.z);
+            flags += ratan2(
+                g_camera_default_view_record.unk_00.x - obj->world_pos.x,
+                g_camera_default_view_record.unk_00.z - obj->world_pos.z);
         }
 
         sin_p = &Judge[flags & 0xFFF];
@@ -1048,8 +1053,8 @@ s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = ratan2(D_800F6608.unk_00.x - arg0->world_pos.x,
-                     D_800F6608.unk_00.z - arg0->world_pos.z);
+    temp_s0 = ratan2(g_camera_default_view_record.unk_00.x - arg0->world_pos.x,
+                     g_camera_default_view_record.unk_00.z - arg0->world_pos.z);
     var_v0 =
         temp_s0 - ratan2(arg1 - arg0->world_pos.x, arg2 - arg0->world_pos.z);
     var_v0 -= 0x100;
@@ -1722,7 +1727,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 } else if (work3 && (p->unk_430 & 8) &&
                            (!(g_cpu_profiles[p->cpu_profile].flags & 0x8F00) ||
                             ((g_cpu_profiles[p->cpu_profile].flags & 0x300) &&
-                             D_800A37A0 >= 6))) {
+                             g_fight_stage_command_count >= 6))) {
                     var_7 = D_8009A890;
                 }
             }
@@ -1733,7 +1738,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 if ((p->unk_430 & 8) &&
                     (!(g_cpu_profiles[p->cpu_profile].flags & 0xBF00) ||
                      ((g_cpu_profiles[p->cpu_profile].flags & 0x300) &&
-                      D_800A37A0 >= 7))) {
+                      g_fight_stage_command_count >= 7))) {
                     if (p->other->opponent_angle_from_orientation > 0) {
                         if (work1) {
                             var_7 = D_8009A880;
@@ -1827,7 +1832,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                                       : var_20 | 0x4000;
                 }
             }
-        } else if (state == 0x11 && p->index != D_800A38AE &&
+        } else if (state == 0x11 && p->index != g_fight_paired_move_initiator &&
                    p->move_frame == p->cur_move->last_command_frame - 1) {
             {
                 s32 a, b, c;
@@ -2473,18 +2478,19 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         if (g_cpu_profiles[p->cpu_profile].flags & 0xFF00) {
                             switch (g_fight_mode_selector) {
                             case 3:
-                                if (D_800A38E2 < 0x5B) {
-                                    work3 = D_800A38E2 / 10 * 2;
-                                    if (D_800A38E2 % 10 == 0) {
+                                if (g_fight_step_table_next_row < 0x5B) {
+                                    work3 =
+                                        g_fight_step_table_next_row / 10 * 2;
+                                    if (g_fight_step_table_next_row % 10 == 0) {
                                         work3--;
                                     }
-                                } else if (D_800A38E2 < 0x5E) {
+                                } else if (g_fight_step_table_next_row < 0x5E) {
                                     work3 = 0x12;
-                                } else if (D_800A38E2 < 0x60) {
+                                } else if (g_fight_step_table_next_row < 0x60) {
                                     work3 = 0x13;
-                                } else if (D_800A38E2 < 0x62) {
+                                } else if (g_fight_step_table_next_row < 0x62) {
                                     work3 = 0x14;
-                                } else if (D_800A38E2 < 0x64) {
+                                } else if (g_fight_step_table_next_row < 0x64) {
                                     work3 = 0x15;
                                 } else {
                                     work3 = 0x16;
@@ -2515,7 +2521,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 break;
                             default:
                                 work3 =
-                                    D_8009A8C8[p->unk_440][D_800A37A0 - 1].mask;
+                                    D_8009A8C8[p->unk_440]
+                                              [g_fight_stage_command_count - 1]
+                                                  .mask;
                                 break;
                             }
                             if ((e[3] >> 4) == 0 ||
@@ -2667,7 +2675,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         work1 = p->other->unk_404[p->other->unk_86] + 300;
                         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
                             var_60 = 0;
-                            if (D_800A37A0 >= 6) {
+                            if (g_fight_stage_command_count >= 6) {
                                 var_60 = p->weapon_ammo;
                             }
                         } else {
@@ -2751,7 +2759,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                   p->other->unk_3F8[p->other->unk_86] <
                       g_fighter_horizontal_separation &&
                   p->unk_3F4 >= g_cpu_profiles[p->cpu_profile].unk3 &&
-                  D_800A38E2 >= 0x5B) ||
+                  g_fight_step_table_next_row >= 0x5B) ||
                  (p->unk_430 & 0x40000))) {
                 p->unk_3F4 = 0;
                 p->unk_3CC = 0x80;

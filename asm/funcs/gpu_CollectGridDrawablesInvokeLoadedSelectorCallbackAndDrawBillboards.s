@@ -1,7 +1,7 @@
 glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2EED8 8003E6D8 98FFBD27 */  addiu      $sp, $sp, -0x68
-    /* 2EEDC 8003E6DC 0A80023C */  lui        $v0, %hi(D_800A3708)
-    /* 2EEE0 8003E6E0 0837428C */  lw         $v0, %lo(D_800A3708)($v0)
+    /* 2EEDC 8003E6DC 0A80023C */  lui        $v0, %hi(g_view_camera_root_ptr)
+    /* 2EEE0 8003E6E0 0837428C */  lw         $v0, %lo(g_view_camera_root_ptr)($v0)
     /* 2EEE4 8003E6E4 6210043C */  lui        $a0, (0x10624DD3 >> 16)
     /* 2EEE8 8003E6E8 6400BFAF */  sw         $ra, 0x64($sp)
     /* 2EEEC 8003E6EC 6000B2AF */  sw         $s2, 0x60($sp)
@@ -24,8 +24,8 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2EF30 8003E730 C3810400 */  sra        $s0, $a0, 7
     /* 2EF34 8003E734 E11C010C */  jal        camera_CalcAngles
     /* 2EF38 8003E738 23800202 */   subu      $s0, $s0, $v0
-    /* 2EF3C 8003E73C 0A80043C */  lui        $a0, %hi(D_800A3708)
-    /* 2EF40 8003E740 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
+    /* 2EF3C 8003E73C 0A80043C */  lui        $a0, %hi(g_view_camera_root_ptr)
+    /* 2EF40 8003E740 0837848C */  lw         $a0, %lo(g_view_camera_root_ptr)($a0)
     /* 2EF44 8003E744 1000A527 */  addiu      $a1, $sp, 0x10
     /* 2EF48 8003E748 A20A010C */  jal        math_RotMatrixYXZ
     /* 2EF4C 8003E74C 10008424 */   addiu     $a0, $a0, 0x10
@@ -297,16 +297,16 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2F324 8003EB24 00000000 */   nop
     /* 2F328 8003EB28 4800A427 */  addiu      $a0, $sp, 0x48
   .L8003EB2C:
-    /* 2F32C 8003EB2C 1080053C */  lui        $a1, %hi(D_80101DF0 + 0x10)
-    /* 2F330 8003EB30 001EA524 */  addiu      $a1, $a1, %lo(D_80101DF0 + 0x10)
+    /* 2F32C 8003EB2C 1080053C */  lui        $a1, %hi(g_view_camera_root_node + 0x10)
+    /* 2F330 8003EB30 001EA524 */  addiu      $a1, $a1, %lo(g_view_camera_root_node + 0x10)
     /* 2F334 8003EB34 0000A294 */  lhu        $v0, 0x0($a1)
     /* 2F338 8003EB38 1C00A524 */  addiu      $a1, $a1, 0x1C
-    /* 2F33C 8003EB3C 1080033C */  lui        $v1, %hi(D_80101DF0 + 0x14)
-    /* 2F340 8003EB40 041E6394 */  lhu        $v1, %lo(D_80101DF0 + 0x14)($v1)
+    /* 2F33C 8003EB3C 1080033C */  lui        $v1, %hi(g_view_camera_root_node + 0x14)
+    /* 2F340 8003EB40 041E6394 */  lhu        $v1, %lo(g_view_camera_root_node + 0x14)($v1)
     /* 2F344 8003EB44 23100200 */  negu       $v0, $v0
     /* 2F348 8003EB48 4800A2A7 */  sh         $v0, 0x48($sp)
-    /* 2F34C 8003EB4C 1080023C */  lui        $v0, %hi(D_80101DF0 + 0x12)
-    /* 2F350 8003EB50 021E4294 */  lhu        $v0, %lo(D_80101DF0 + 0x12)($v0)
+    /* 2F34C 8003EB4C 1080023C */  lui        $v0, %hi(g_view_camera_root_node + 0x12)
+    /* 2F350 8003EB50 021E4294 */  lhu        $v0, %lo(g_view_camera_root_node + 0x12)($v0)
     /* 2F354 8003EB54 23180300 */  negu       $v1, $v1
     /* 2F358 8003EB58 4C00A3A7 */  sh         $v1, 0x4C($sp)
     /* 2F35C 8003EB5C 23100200 */  negu       $v0, $v0

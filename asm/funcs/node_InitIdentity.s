@@ -18,9 +18,9 @@ glabel node_InitIdentity
     /* 37B00 80047300 120000A6 */  sh         $zero, 0x12($s0)
     /* 37B04 80047304 140000A6 */  sh         $zero, 0x14($s0)
     /* 37B08 80047308 80180300 */  sll        $v1, $v1, 2
-    /* 37B0C 8004730C 0F80013C */  lui        $at, %hi(D_800F66A0)
+    /* 37B0C 8004730C 0F80013C */  lui        $at, %hi(g_math_rot_matrix_funcs)
     /* 37B10 80047310 21082300 */  addu       $at, $at, $v1
-    /* 37B14 80047314 A066228C */  lw         $v0, %lo(D_800F66A0)($at)
+    /* 37B14 80047314 A066228C */  lw         $v0, %lo(g_math_rot_matrix_funcs)($at)
     /* 37B18 80047318 00000000 */  nop
     /* 37B1C 8004731C 09F84000 */  jalr       $v0
     /* 37B20 80047320 38000526 */   addiu     $a1, $s0, 0x38

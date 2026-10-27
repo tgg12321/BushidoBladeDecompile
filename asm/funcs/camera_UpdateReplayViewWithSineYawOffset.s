@@ -44,8 +44,8 @@ glabel camera_UpdateReplayViewWithSineYawOffset
     /* C380 8001BB80 00000000 */   nop
     /* C384 8001BB84 03004224 */  addiu      $v0, $v0, 0x3
   .L8001BB88:
-    /* C388 8001BB88 0F80043C */  lui        $a0, %hi(D_800F6608)
-    /* C38C 8001BB8C 08668424 */  addiu      $a0, $a0, %lo(D_800F6608)
+    /* C388 8001BB88 0F80043C */  lui        $a0, %hi(g_camera_default_view_record)
+    /* C38C 8001BB8C 08668424 */  addiu      $a0, $a0, %lo(g_camera_default_view_record)
     /* C390 8001BB90 21282002 */  addu       $a1, $s1, $zero
     /* C394 8001BB94 83180200 */  sra        $v1, $v0, 2
     /* C398 8001BB98 00050224 */  addiu      $v0, $zero, 0x500

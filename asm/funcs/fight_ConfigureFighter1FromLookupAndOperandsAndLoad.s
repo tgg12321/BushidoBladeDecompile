@@ -5,17 +5,17 @@ glabel fight_ConfigureFighter1FromLookupAndOperandsAndLoad
     /* 2BBB0 8003B3B0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2BBB4 8003B3B4 0A80013C */  lui        $at, %hi(D_800A3712)
     /* 2BBB8 8003B3B8 123720A0 */  sb         $zero, %lo(D_800A3712)($at)
-    /* 2BBBC 8003B3BC 0980013C */  lui        $at, %hi(D_8008D538)
+    /* 2BBBC 8003B3BC 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 2BBC0 8003B3C0 21082200 */  addu       $at, $at, $v0
-    /* 2BBC4 8003B3C4 38D52290 */  lbu        $v0, %lo(D_8008D538)($at)
+    /* 2BBC4 8003B3C4 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
     /* 2BBC8 8003B3C8 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* 2BBCC 8003B3CC 21082200 */  addu       $at, $at, $v0
     /* 2BBD0 8003B3D0 ECD92590 */  lbu        $a1, %lo(g_fighter_group_flags)($at)
     /* 2BBD4 8003B3D4 00000000 */  nop
     /* 2BBD8 8003B3D8 0700A010 */  beqz       $a1, .L8003B3F8
     /* 2BBDC 8003B3DC 01000224 */   addiu     $v0, $zero, 0x1
-    /* 2BBE0 8003B3E0 0A80033C */  lui        $v1, %hi(D_800A37A0)
-    /* 2BBE4 8003B3E4 A0376390 */  lbu        $v1, %lo(D_800A37A0)($v1)
+    /* 2BBE0 8003B3E0 0A80033C */  lui        $v1, %hi(g_fight_stage_command_count)
+    /* 2BBE4 8003B3E4 A0376390 */  lbu        $v1, %lo(g_fight_stage_command_count)($v1)
     /* 2BBE8 8003B3E8 00000000 */  nop
     /* 2BBEC 8003B3EC 02006214 */  bne        $v1, $v0, .L8003B3F8
     /* 2BBF0 8003B3F0 00000000 */   nop

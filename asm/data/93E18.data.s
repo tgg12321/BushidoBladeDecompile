@@ -268,11 +268,11 @@ dlabel D_800A36D8
     /* 93ED8 800A36D8 00000000 */ .word 0x00000000
 enddlabel D_800A36D8
 
-nonmatching D_800A36DC
+nonmatching g_sheet_pair_panel_tile_cursor
 
-dlabel D_800A36DC
+dlabel g_sheet_pair_panel_tile_cursor
     /* 93EDC 800A36DC 00000000 */ .word 0x00000000
-enddlabel D_800A36DC
+enddlabel g_sheet_pair_panel_tile_cursor
 
 nonmatching D_800A36E0
 
@@ -365,17 +365,17 @@ dlabel g_cam_transition_timer
     /* 93F06 800A3706 */ .short 0x0000
 enddlabel D_800A36FC
 
-nonmatching D_800A3708
+nonmatching g_view_camera_root_ptr
 
-dlabel D_800A3708
+dlabel g_view_camera_root_ptr
     /* 93F08 800A3708 00000000 */ .word 0x00000000
-enddlabel D_800A3708
+enddlabel g_view_camera_root_ptr
 
-nonmatching D_800A370C
+nonmatching g_view_identity_root_ptr
 
-dlabel D_800A370C
+dlabel g_view_identity_root_ptr
     /* 93F0C 800A370C 00000000 */ .word 0x00000000
-enddlabel D_800A370C
+enddlabel g_view_identity_root_ptr
 
 nonmatching g_camera_distance_offset
 
@@ -474,14 +474,14 @@ dlabel g_comb_write_fd
     /* 93F3C 800A373C 00000000 */ .word 0x00000000
 enddlabel g_comb_write_fd
 
-nonmatching D_800A3740
+nonmatching g_row_menu_subflow_state
 
-dlabel D_800A3740
+dlabel g_row_menu_subflow_state
     /* 93F40 800A3740 */ .byte 0x00
     /* 93F41 800A3741 */ .byte 0x00
     /* 93F42 800A3742 */ .byte 0x00
     /* 93F43 800A3743 */ .byte 0x00
-enddlabel D_800A3740
+enddlabel g_row_menu_subflow_state
 
 nonmatching D_800A3744
 
@@ -502,14 +502,14 @@ dlabel D_800A3746
     /* 93F47 800A3747 */ .byte 0x00
 enddlabel D_800A3746
 
-nonmatching D_800A3748
+nonmatching g_fight_followup_fighter_index
 
-dlabel D_800A3748
+dlabel g_fight_followup_fighter_index
     /* 93F48 800A3748 */ .byte 0x00
     /* 93F49 800A3749 */ .byte 0x00
     /* 93F4A 800A374A */ .byte 0x00
     /* 93F4B 800A374B */ .byte 0x00
-enddlabel D_800A3748
+enddlabel g_fight_followup_fighter_index
 
 nonmatching g_gpu_ot_ptr
 
@@ -556,11 +556,11 @@ dlabel g_cd_result
     /* 93F67 800A3767 */ .byte 0x00
 enddlabel g_cd_result
 
-nonmatching D_800A3768
+nonmatching g_local_ot_draw_mode
 
-dlabel D_800A3768
+dlabel g_local_ot_draw_mode
     /* 93F68 800A3768 */ .byte 0x00
-enddlabel D_800A3768
+enddlabel g_local_ot_draw_mode
 
 nonmatching D_800A3769
 
@@ -689,14 +689,14 @@ dlabel g_memcard_request_status
     /* 93F9E 800A379E */ .short 0x0000
 enddlabel g_memcard_request_status
 
-nonmatching D_800A37A0
+nonmatching g_fight_stage_command_count
 
-dlabel D_800A37A0
+dlabel g_fight_stage_command_count
     /* 93FA0 800A37A0 */ .byte 0x00
     /* 93FA1 800A37A1 */ .byte 0x00
     /* 93FA2 800A37A2 */ .byte 0x00
     /* 93FA3 800A37A3 */ .byte 0x00
-enddlabel D_800A37A0
+enddlabel g_fight_stage_command_count
 
 nonmatching D_800A37A4
 

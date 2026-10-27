@@ -1,5 +1,5 @@
 glabel gpu_BeginFullscreenImageDisplay
-    /* 5E90C 8006E10C 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
+    /* 5E90C 8006E10C 5804828F */  lw         $v0, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 5E910 8006E110 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 5E914 8006E114 3000BFAF */  sw         $ra, 0x30($sp)
     /* 5E918 8006E118 2C00B3AF */  sw         $s3, 0x2C($sp)
