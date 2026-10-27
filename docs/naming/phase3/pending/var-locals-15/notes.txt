@@ -87,4 +87,4 @@ tus-check "OK: bb2.ld links all 245 TUs, one object order across sections"; engi
 check_completion_integrity OK (exit 0); naming_keycheck --base 335a86ebf --new 32b837ca5 --pairs-file pairs.txt:
 "OK: every change is explained by the pairs" (moved layer-2 keys only in the touched functions).
 Volume order: the 17AFC.c:4676 comment "snd_QueueSound(arg0, L, R)" was wrong (a1 -> .volr, a2 -> .voll); fixed to "(arg0, R, L)" in the
-docs commit that carries these notes (comment only).
+docs commit that carries these notes (comment only).R6 (naming-reviewer 2026-10-27): PASS, no blocking fixes. 335a86ebf token-identical (line breaks only); 32b837ca5 applies exactly the 39 scoped pairs plus 4 true comment substitutions, 0 stale old names; keycheck re-run in WSL OK, 14 moved layer-2 keys (one per target function); 17AFC.c '(arg0, R, L)' matches the stores; suggested lowest_sbaddr_vab_id true at all 6 uses.
