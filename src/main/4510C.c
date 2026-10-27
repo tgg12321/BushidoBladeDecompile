@@ -259,7 +259,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     s32 lo_val, hi1_val, hi2_val;
     Unk80101EC8Record *var_19;
 
-    p->cpu_profile = p->unk_0A;
+    p->cpu_profile = p->character_data_index;
     p->unk_438 = p->unk_08;
     switch (g_fight_mode_selector) {
     case 1:
@@ -343,7 +343,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
             rec = p->other;
             cursor = arg2;
             list = arg2;
-            var_9 = rec->unk_0A;
+            var_9 = rec->character_data_index;
         } else {
             rec = p;
             cursor = arg1;
@@ -385,7 +385,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
                     }
                 }
             }
-            if (rec->unk_0E >= 6) {
+            if (rec->weapon_id >= 6) {
                 lo_val = 0;
                 hi2_val = 0x7530;
                 hi1_val = 0x7530;
@@ -655,9 +655,9 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         rec->unk_3F5 = 0;
     }
 
-    if (((D_8009A088[rec->other->unk_0E] >> rec->other->unk_440) & 1) &&
+    if (((D_8009A088[rec->other->weapon_id] >> rec->other->unk_440) & 1) &&
         rec->other->opponent_angle_from_orientation_abs < (rec->unk_438 >> 4) &&
-        rec->unk_0E < 6 && (rec->unk_430 & 0x2000) &&
+        rec->weapon_id < 6 && (rec->unk_430 & 0x2000) &&
         !(g_cpu_profiles[rec->cpu_profile].flags & 0xBF00)) {
         rec->unk_430 |= 0x20000;
     } else {
@@ -856,7 +856,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
           (((rec->unk_430 & 0x80) && rec->unk_426 == 3) ||
            (rec->other->move_kind == 0x2A && rec->other->unk_26C == 0) ||
            (rec->other->move_kind == 0x12 &&
-            (!((0x78 >> rec->other->unk_B1) & 1) ||
+            (!((0x78 >> rec->other->collision_hit_tag) & 1) ||
              rec->other->unk_26C == 0)) ||
            (rec->other->move_kind == 0xB &&
             ((rec->other->carried_object_count == 0 && rec->unk_425 != 1 &&
@@ -880,7 +880,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
             rec->unk_3F2 = 0;
         }
     }
-    if (rec->unk_0E >= 6) {
+    if (rec->weapon_id >= 6) {
         rec->unk_430 |= 0x78;
     }
 
@@ -1032,8 +1032,8 @@ s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *arg0) {
     s32 base = a2->motion_metadata[3] * 40;
 
     base += a2->weapon_hit_end_frames[0] != 0xFF
-                ? (arg0->move_is_common == 0 ? D_8009A830[a2->unk_0E] * 2
-                                             : D_8009A838[a2->unk_0E] * 8)
+                ? (arg0->move_is_common == 0 ? D_8009A830[a2->weapon_id] * 2
+                                             : D_8009A838[a2->weapon_id] * 8)
                 : D_8009A840[a2->unk_14] * 2;
     return base + arg0->other->scale_distance_offset + 0x12C;
 }
@@ -1859,10 +1859,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 if ((rand() & 0xFFF) < (p->unk_438 >> 3)) {
                     var_41 = p->cpu_pad_build_count > 0x3C;
                 }
-                if (p->unk_0E >= 6) {
+                if (p->weapon_id >= 6) {
                     work1 = 100000;
                 } else {
-                    work1 = D_8009A838[p->unk_0E] * 8;
+                    work1 = D_8009A838[p->weapon_id] * 8;
                 }
                 for (work4 = 0;
                      work4 < sizeof(D_8009A850) / sizeof(D_8009A850[0]);
@@ -1937,7 +1937,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
          * our reconstruction */
         if (!(var_38 == 1 &&
               (p->other->move_kind == 0xA || p->cpu_profile == 0xA ||
-               (p->unk_0E >= 6 && p->unk_34A == 0)) &&
+               (p->weapon_id >= 6 && p->weapon_ammo == 0)) &&
               var_38 == 1)) {
             if (!(p->cpu_pad_build_count & 7)) {
                 p->nearest_nav_crossing_distance =
@@ -2148,11 +2148,11 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
              g_fighter_horizontal_separation <
                  p->other->unk_404[p->other->unk_86] &&
              p->other->opponent_angle_from_orientation_abs < 0x10) ||
-            (p->unk_0E >= 7 &&
+            (p->weapon_id >= 7 &&
              g_fighter_horizontal_separation <
                  p->other->unk_404[p->other->unk_86] &&
              p->other->opponent_angle_from_orientation_abs < 0x10 &&
-             p->unk_34A != 0)) {
+             p->weapon_ammo != 0)) {
             if (!(g_cpu_profiles[p->cpu_profile].flags & 0x8F00)) {
                 if ((p->cpu_route.count = fighter_BuildCpuOrbitRoute(p)) != 0) {
                     p->unk_39D = 2;
@@ -2315,7 +2315,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             var_44 += 0x80;
                             var_37 = var_23 > 0;
                         }
-                        if (p->unk_0E >= 6 && p->unk_34A == 0 && var_16 == 2) {
+                        if (p->weapon_id >= 6 && p->weapon_ammo == 0 &&
+                            var_16 == 2) {
                             var_44 += 0x100;
                             var_37 = 0;
                         }
@@ -2423,9 +2424,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
 
         state = p->move_kind;
         if (state == 0x15 || (state == 0x19 && p->unk_441 >= 2)) {
-            if ((p->cpu_pad_build_count & 1) || p->unk_0E >= 6) {
+            if ((p->cpu_pad_build_count & 1) || p->weapon_id >= 6) {
                 if (p->unk_442 == 0 && p->cpu_probes[3] != 1 &&
-                    (p->unk_0E < 6 || p->unk_34A != 0)) {
+                    (p->weapon_id < 6 || p->weapon_ammo != 0)) {
                     var_35 = -1;
                     if (p->unk_3F2 % ((p->unk_438 >> 8) + 2) ==
                         (p->unk_438 >> 8) + 1) {
@@ -2491,7 +2492,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 work3 = D_8009A928[p->unk_440][work3];
                                 break;
                             case 2:
-                                work1 = D_8009A9F0[D_8009A9DC[p->unk_0E]
+                                work1 = D_8009A9F0[D_8009A9DC[p->weapon_id]
                                                              [p->unk_440]]
                                                   [D_800A3788];
                                 work3 = 0;
@@ -2564,7 +2565,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         } else {
                             if ((g_cpu_profiles[p->cpu_profile].flags &
                                  0xFC00) ||
-                                p->unk_0E >= 6) {
+                                p->weapon_id >= 6) {
                                 work1 = var_18 < 5 ? 100000 : 0;
                                 hi = 100000;
                             } else {
@@ -2582,7 +2583,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                             : p->opponent_angle_from_orientation_abs <
                                                   0x400) {
                                         work3 = 1;
-                                    } else if (p->unk_0E >= 6) {
+                                    } else if (p->weapon_id >= 6) {
                                         work3 = 1;
                                     }
                                 }
@@ -2598,7 +2599,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 (p->unk_430 & 0x280) != 0x280) {
                                 switch (work5) {
                                 case 5:
-                                    if ((0x78 >> p->unk_B1) & 1) {
+                                    if ((0x78 >> p->collision_hit_tag) & 1) {
                                         work3 = 1;
                                     }
                                     break;
@@ -2651,7 +2652,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 var_10 = 0;
                 if ((rand() & 0xFF) <
                         (g_cpu_profiles[p->cpu_profile].unkF[5] >> 2) &&
-                    ((0x78 >> p->unk_B1) & 1) && p->unk_442 == 0 &&
+                    ((0x78 >> p->collision_hit_tag) & 1) && p->unk_442 == 0 &&
                     p->other->unk_404[p->other->unk_86] <
                         g_fighter_horizontal_separation &&
                     g_fighter_horizontal_separation < 4500) {
@@ -2667,7 +2668,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
                             var_60 = 0;
                             if (D_800A37A0 >= 6) {
-                                var_60 = p->unk_34A;
+                                var_60 = p->weapon_ammo;
                             }
                         } else {
                             var_60 = p->carried_object_count;
@@ -2707,7 +2708,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     if (p->move_kind == 0x15) {
         if (p->opponent_angle_from_orientation_abs > 0x100 &&
             !(p->prev_move_kind == 0x19 || p->prev_move_kind == 0x1A) &&
-            p->unk_0E < 7 && p->cpu_profile != 0x16) {
+            p->weapon_id < 7 && p->cpu_profile != 0x16) {
             p->unk_39C = 0;
             p->unk_398 = 0x17000 / p->base_move_frame_step;
             if (p->cpu_probes[5] == 0) {
@@ -2719,8 +2720,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             } else {
                 p->unk_394 = 0;
             }
-        } else if (p->unk_0E >= 6) {
-            if (p->unk_34A == 0 && p->unk_34B != 0 && p->unk_26C != 0 &&
+        } else if (p->weapon_id >= 6) {
+            if (p->weapon_ammo == 0 && p->weapon_refills_left != 0 &&
+                p->unk_26C != 0 &&
                 p->other->unk_404[p->other->unk_86] <
                     g_fighter_horizontal_separation) {
                 p->unk_3CC = 0x80;

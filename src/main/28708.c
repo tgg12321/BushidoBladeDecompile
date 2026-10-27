@@ -1429,7 +1429,7 @@ void replay_PlayFrame(void) {
         fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
             var_11, &out_b1, &out_b2);
         if (out_b1 != 1) {
-            var_11->unk_B1 = out_b1;
+            var_11->collision_hit_tag = out_b1;
             if (out_b2 != -1) {
                 var_11->unk_B2 = out_b2;
             }

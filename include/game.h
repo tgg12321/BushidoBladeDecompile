@@ -1506,9 +1506,9 @@ typedef struct Unk80101EC8Record {
     s16 cpu_controlled;
     s16 unk_08;
     /* row of D_8008E5CC / D_8008E6A4, index of g_fighter_group_flags */
-    s16 unk_0A;
+    s16 character_data_index;
     s16 unk_0C;
-    s16 unk_0E; /* column of D_8008E5CC / D_8008E6A4 */
+    s16 weapon_id; /* column of D_8008E5CC / D_8008E6A4 */
     u8 unk_10[0x12 - 0x10];
     s16 unk_12;
     s16 unk_14; /* -1 == none, else index of D_8008EB80 */
@@ -1593,7 +1593,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_AE;
     u8 unk_AF;
     u8 unk_B0;
-    u8 unk_B1;
+    u8 collision_hit_tag;
     u8 unk_B2;
     u8 unk_B3;
     u8 unk_B4;
@@ -1693,20 +1693,20 @@ typedef struct Unk80101EC8Record {
      * object_QueueKind)
      */
     s16 carried_object_kinds[12];
-    u8 unk_34A;
-    u8 unk_34B;
+    u8 weapon_ammo;
+    u8 weapon_refills_left;
     u8 unk_34C;
     u8 unk_34D;
     /* written by fighter_BuildCpuOrMappedPadState for the OTHER record */
     u8 unk_34E;
     u8 unk_34F[0x350 - 0x34F];
-    s16 unk_350;
+    s16 bone_event_counter;
     /* index into node_GetSlotMatrixPointerArray()'s MATRIX * table and
      * SPAD->unkA8[] (fighter_DispatchArmedBoneVectorEventAndDisarm) */
-    s16 unk_352;
+    s16 bone_event_bone_index;
     /* fighter_StoreBoneLocalVectorAndArmEventTrigger's gte_stlvnl output;
      * fighter_DispatchArmedBoneVectorEventAndDisarm's gte_ldlv0 input */
-    Vec3i32 unk_354;
+    Vec3i32 bone_event_local_vector;
     CpuRoute cpu_route; /* 0x360 */
     s32 unk_394;
     s16 unk_398;
