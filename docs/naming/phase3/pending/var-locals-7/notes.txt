@@ -1,0 +1,179 @@
+DROPPED
+(none of the 40 research RENAME rows dropped; each re-derived against the worktree source at ac8f34678: every use enumerated at current lines, no FAKE comment in 43500.c or 24F08.c and none within the 17AFC.c ranges 3163-3201 / 5688-5759, none in an __asm__ string; every final name has no whole-word hit anywhere in src/** or include/** (so no #define body, local, param, global, enum or typedef carries it) and is unique in its function.)
+
+CHANGED (drafter-substituted, kept)
+collision_WalkSegmentGrid:var_0: x_step -> x_direction (only ever tested < 0 to pick unk88.x-- or ++, never added; it is a -1/+1 sign, not a step size)
+collision_WalkSegmentGrid:var_1: z_step -> z_direction (same, for unk88.z)
+collision_TestSegmentExtendingShortStartWithWork:arg4: collision_work -> segment_work_addr (s32 whose only use is the cast into g_collision_segment_work; the struct is Work_80053E9C, the global is the segment work; the s32 is an address)
+collision_TestSegmentWithWork:arg4: collision_work -> segment_work_addr (same)
+menu_PrintEditAndApplyConfigWithPerPadCursors:var_1: unselected_style -> unselected_prefix (the code shows a %s prefix string chosen by cursor == row; nothing in the code shows style or colour)
+menu_PrintEditAndApplyConfigWithPerPadCursors:var_2: selected_style -> selected_prefix (same)
+fight_PackMatchScores:var_4: completed_matches -> recorded_match_count (a count of recorded results: g_fight_match_cursor is zeroed at set start and bumped once per fight_RecordMatchResult; names the callee, not the vaguer completed)
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at ac8f34678, line cites there not re-derived)
+collision_WalkSegmentGrid:var_2: NO_NAME axis-swap marker omitted to prioritize stronger bindings within the 40-row cap.
+collision_TestCellKeepingNearestHitScalarProjection:var_6: NO_NAME packed stream word copied before bit extraction; sufficiently specific whole-word role not established.
+collision_TestCellKeepingNearestHitGteProjection:var_6: NO_NAME packed stream word copied before bit extraction; sufficiently specific whole-word role not established.
+fighter_RelocateAndStartEventMove:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_RelocateAndStartEventMove:var_0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_RelocateAndStartEventMove:var_1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_RelocateAndStartEventMove:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_DispatchBoneHitSoundEvent:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHitTail:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHitTail:var_0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHitTail:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHitTail:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:arg6: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:var_0: NO_NAME FAKE annotation identifies a parameter copy retained for codegen.
+fighter_ResolveBoneHit:var_1: NO_NAME FAKE annotation identifies a parameter copy retained for codegen.
+fighter_ResolveBoneHit:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:var_7: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:var_8: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:var_10: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBoneHit:var_12: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:temp_s4: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:var_s1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:var_v0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:temp_v0: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_a1_2: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_s5: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_v1_2: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_v1_3: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_v0_3: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:var_v0_2: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:var_v0_4: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:temp_v1_4: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_v1_5: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:temp_a0_2: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_ResolveWeaponContact:var_a1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveWeaponContact:var_v0_3: NO_NAME inventoried; every-use evidence not established in this pass.
+math_SqrtLut:var_20: NO_NAME nearby FAKE annotation identifies a codegen-retained copy.
+fighter_ResolveBodyOverlap:var_1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_6: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_7: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_8: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_12: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_13: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_15: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_16: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ResolveBodyOverlap:var_19: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponContacts:var_1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CastWeaponSegment:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CastWeaponSegment:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CastWeaponSegment:arg3: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CastWeaponSegment:var_2: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CastWeaponSegment:var_14: NO_NAME FAKE annotation explicitly describes reuse for two different values.
+fighter_ProcessWeaponBodyHits:var_1: NO_NAME FAKE annotation identifies a second address handle retained for codegen.
+fighter_ProcessWeaponBodyHits:var_3: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_6: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_10: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_11: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_12: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_15: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_24: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_25: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_31: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessWeaponBodyHits:var_32: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_a3: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_t1: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:var_a0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_a0: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:var_t0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_v0: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_v1_3: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_CalcSeparationErrorAndOpposedOffsets:temp_a3: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_CalcSeparationErrorAndOpposedOffsets:temp_t1: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_CalcSeparationErrorAndOpposedOffsets:var_a0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CalcSeparationErrorAndOpposedOffsets:temp_a0: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_CalcSeparationErrorAndOpposedOffsets:var_t0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_CalcSeparationErrorAndOpposedOffsets:temp_v0: NO_NAME inventoried; semantic purpose across every use not established.
+fighter_CalcSeparationErrorAndOpposedOffsets:temp_v1_3: NO_NAME inventoried; semantic purpose across every use not established.
+fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:var_s0: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:temp_s2: NO_NAME inventoried; semantic purpose across every use not established.
+fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_TestTriangleBoneHits:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_TestTriangleBoneHits:var_11: NO_NAME FAKE annotation identifies staged AABB rejection state.
+math_TestSegmentCircle2D:var_18: NO_NAME inventoried; every-use evidence not established in this pass.
+math_TestSegmentCircle2D:var_22: NO_NAME FAKE annotation identifies a same-value re-store.
+math_TestPreparedTriangleSphere:var_9: NO_NAME FAKE annotation touches the per-side temporary.
+math_TestPreparedTriangleSphere:var_10: NO_NAME FAKE annotation touches the per-side temporary.
+math_ScaleVectorInDirectionFrame:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+math_InvertMatrix3x3:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+math_InvertMatrix3x3:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+math_InvertMatrix3x3:temp_a3: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_t0: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_t1: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_t2: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_v0: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_v1: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_a2: NO_NAME inventoried; semantic purpose across every use not established.
+math_InvertMatrix3x3:temp_v1_2: NO_NAME inventoried; semantic purpose across every use not established.
+math_MatrixToAngles:var_7: NO_NAME FAKE annotation explicitly describes reuse for different values.
+math_ComposeAxisRotationsAndRewriteAngles:var_7: NO_NAME FAKE annotation explicitly describes reuse for different values.
+fighter_IsBoneTriangleCrossYPositive:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_IsBoneTriangleCrossYPositive:var_0: NO_NAME inventoried; every-use evidence not established in this pass.
+object_AttachToOpponentBone:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+object_AttachToOpponentBone:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+object_SubmitAttachedTransform:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+object_SubmitAttachedTransform:var_1: NO_NAME inventoried; every-use evidence not established in this pass.
+object_SpawnFromFighter:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+object_SpawnFromFighter:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+object_DropQueuedHeadAt:var_1: NO_NAME inventoried; every-use evidence not established in this pass.
+object_SpawnScatteredAt:var_1: NO_NAME inventoried; every-use evidence not established in this pass.
+object_QueueKind:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+object_QueueKind:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+object_PickUpNearby:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+object_PickUpNearby:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+func_80030D48:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+func_80030D48:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+func_80030D48:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+math_LerpAngle:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+math_LerpAngle:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+math_LerpAngle:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+object_UpdatePool:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+object_UpdatePool:var_7: NO_NAME inventoried; every-use evidence not established in this pass.
+object_DeflectFromFighterHit:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+object_DeflectFromFighterHit:var_8: NO_NAME inventoried; every-use evidence not established in this pass.
+object_ResolveFighterHits:var_2: NO_NAME inventoried; every-use evidence not established in this pass.
+object_ResolveFighterHits:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+object_ResolveFighterHits:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+object_ResolveFighterHits:var_6: NO_NAME inventoried; every-use evidence not established in this pass.
+object_ResolveFighterHits:var_7: NO_NAME inventoried; every-use evidence not established in this pass.
+object_ResolveFighterHits:var_10: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_CreateBallisticRecordAndDispatchEvent:var_1: NO_NAME FAKE annotation identifies a constant holder retained for codegen.
+fight_CreateBallisticRecordAndDispatchEvent:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:var_4: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:var_6: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:var_7: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:var_8: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:var_9: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionalSound:var_10: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_RecordReplayEventAndDispatchSoundOrEffect:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_RecordReplayEventAndDispatchSoundOrEffect:arg1: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_RecordReplayEventAndDispatchSoundOrEffect:arg2: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_RecordReplayEventAndDispatchSoundOrEffect:arg3: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_DispatchFrameEvent:var_5: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_DispatchFrameEvent:var_6: NO_NAME inventoried; every-use evidence not established in this pass.
+fighter_ProcessFrameEvents:var_11: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_QueuePositionSequence:arg0: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_UpdateStageSounds:var_2: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_UpdateStageSounds:var_7: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_UpdateStageSounds:var_9: NO_NAME inventoried; every-use evidence not established in this pass.
+snd_UpdateStageSounds:var_10: NO_NAME inventoried; every-use evidence not established in this pass.
+fight_BuildOpponentOrder:var_5: NO_NAME FAKE annotation identifies a constant holder retained for codegen.
+fight_PackMatchScores:var_6: NO_NAME comparison-result temporary omitted under the 40-row cap.
+
+Rows most worth a hard look: collision_GetHit:arg1 / every hit_normal (the s16 triple is the raw plane coefficient vector >> 2, scaled not unit, written only on a hit; the whole hit_point/hit_normal family is conditional output), fight_RecordMatchResult:var_2 (match_result_index: a redundant per-branch copy of the cursor; 17AFC.c:12-19 comment discusses the index spelling of this function, not a FAKE marker), math_PointInTriangleXZ:var_2/var_3 (centroid_cross/point_cross: cross product up to a fixed sign) and var_0/var_1 (centroid_x/z: integer-truncated three-vertex mean), collision_TestCellKeeping*:arg0/arg1 (cell_x/cell_z grid cell indices, world origin is the separate local x/z), segment_work_addr (s32 holding an address), collision_TestSegmentExtendingShortStart*:arg0 (segment_start: the work copy is extended, the parameter is not), fight_PackMatchScores:var_4.
