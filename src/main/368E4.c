@@ -43,8 +43,8 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     s32 *s6, *s4, *s2;
     s32 s3;
     s32 *s1;
-    s32 *var_7;
-    s32 *sp10, *sp18, *sp20;
+    s32 *tim_group;
+    s32 *collision_grid, *sp18, *sp20;
 
     s0 = (s32 *)arena_GetBlockAddr(7);
     if (s0 != NULL) {
@@ -105,7 +105,7 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
         {
             s32 *a0_ptr = (s32 *)((s3 << 2) + (s32)s0);
             s4 = (s32 *)((u8 *)s0 + ALIGN4(a0_ptr[-1]));
-            sp10 = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
+            collision_grid = (s32 *)((u8 *)s0 + ALIGN4(s0[2]));
             sp18 = (s32 *)((u8 *)s0 + ALIGN4(s0[3]));
             sp20 = (s32 *)((u8 *)s0 + ALIGN4(s0[4]));
 
@@ -115,9 +115,9 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
             }
 
             if (arg1 != 0) {
-                var_7 = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
+                tim_group = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
             } else {
-                var_7 = s2;
+                tim_group = s2;
                 {
                     s32 off3 = ALIGN4(a0_ptr[1]);
                     arena_UpdatePeak(PTR_OFF(s0, off3));
@@ -170,9 +170,9 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     }
 
     reloc_RelocateBlock(s6, 7);
-    gpu_LoadTimGroupWithConditionalClutRowAdvance((u32 *)var_7, 0);
+    gpu_LoadTimGroupWithConditionalClutRowAdvance((u32 *)tim_group, 0);
     gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s4, 7);
-    collision_SetGrid((s32)sp10);
+    collision_SetGrid((s32)collision_grid);
     D_800A33B0 = (s32)sp18;
     g_fight_position_records = (s32)sp20;
     DrawSync(0);
@@ -260,12 +260,12 @@ void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
 extern void wave_MoveCellBuffer(s32);
 
 void resource_RebaseLoadedBlockSections(s32 a0, s32 a1) {
-    s32 var_0;
+    s32 rebase_delta;
     reloc_RebaseBlock(7, a1);
     collision_RebaseGrid(a1);
-    var_0 = (a1 / 4) * 4;
-    D_800A33B0 += var_0;
-    g_fight_position_records += var_0;
+    rebase_delta = (a1 / 4) * 4;
+    D_800A33B0 += rebase_delta;
+    g_fight_position_records += rebase_delta;
     switch (g_loaded_resource_selector) {
     case 4:
     case 7:

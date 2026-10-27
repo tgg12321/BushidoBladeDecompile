@@ -38,14 +38,14 @@ s32 motion_UpdatePlayback(void) {
     /* The 0x84 bytes motion_DecodeFrame decodes, as s16: three of its fields
      * load signed (lh), and the array goes to func_80040D48's s16 * parameter.
      */
-    s16 var_2[0x42];
+    s16 decoded_motion_frame[0x42];
     s16 *v;
     s32 i;
     /* the slot_GetObject object being handled: objects 0 and 1 on the first
      * frame, object i in the loop, as SOTN's secret-room wall reuses
      * newEntity for each AllocEntity result, once and then in a loop (Q51) */
     /* SOTN: src/st/nz0/e_left_secret_room_wall.c:74 @db41b28 */
-    Unk80045878Obj *var_5;
+    Unk80045878Obj *slot_object;
     /* FAKE: one variable for the camera-rotated z of the camera and of object
      * i's offset: read in two blocks it is not tied to the subtraction and
      * takes $t0; one local per block: score 41 */
@@ -77,13 +77,13 @@ s32 motion_UpdatePlayback(void) {
         if (s->unk4 & 0x40) {
             s->unk3C[1] = ((Unk800469C4Hdr *)s->unk2C)->unk18[1] + s->unk2C;
         }
-        var_5 = slot_GetObject(0);
-        if (var_5 != 0) {
-            softbody_RequestRebuild(var_5);
+        slot_object = slot_GetObject(0);
+        if (slot_object != 0) {
+            softbody_RequestRebuild(slot_object);
         }
-        var_5 = slot_GetObject(1);
-        if (var_5 != 0) {
-            softbody_RequestRebuild(var_5);
+        slot_object = slot_GetObject(1);
+        if (slot_object != 0) {
+            softbody_RequestRebuild(slot_object);
         }
     }
     v = bitstream_AccumulateDeltas(0);
@@ -133,15 +133,16 @@ s32 motion_UpdatePlayback(void) {
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
             s32 ang;
-            var_5 = slot_GetObject(i);
-            motion_DecodeFrame(
-                i, s->unk0, (MotionFrame *)var_2, (u16 *)0x1F800000);
-            vec.vy = var_2[0];
-            vec.vy *= var_5->position_scale;
+            slot_object = slot_GetObject(i);
+            motion_DecodeFrame(i, s->unk0, (MotionFrame *)decoded_motion_frame,
+                               (u16 *)0x1F800000);
+            vec.vy = decoded_motion_frame[0];
+            vec.vy *= slot_object->position_scale;
             vec.vy >>= 12;
-            ang = var_2[1];
-            vec.vx = (Judge[ang & 0xFFF] * var_2[2]) >> 12;
-            vec.vz = (Judge[(ang + 0x400) & 0xFFF] * var_2[2]) >> 12;
+            ang = decoded_motion_frame[1];
+            vec.vx = (Judge[ang & 0xFFF] * decoded_motion_frame[2]) >> 12;
+            vec.vz =
+                (Judge[(ang + 0x400) & 0xFFF] * decoded_motion_frame[2]) >> 12;
             vec.vy = -vec.vy;
             vec.vz = -vec.vz;
             {
@@ -154,7 +155,8 @@ s32 motion_UpdatePlayback(void) {
             vec.vy += s->unk10;
             vec.vx += s->unkC;
             vec.vz += s->unk14;
-            func_80040D48(i, 0, &vec.vx, &s->unk1C, var_2, s->unk10);
+            func_80040D48(
+                i, 0, &vec.vx, &s->unk1C, decoded_motion_frame, s->unk10);
             if (s->unk44[i] >= 0) {
                 node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
                     s->unk44[i], (i * 2) | 0x8000, 0, 0);
@@ -451,16 +453,16 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
 
 s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
     u8 *p;
-    u8 var_1;
+    u8 script_delay_left;
     s32 t;
     s32 mask;
     s32 dx, dy, dz;
 
-    var_1 = arg0->cpu_pad_script_delay_left;
+    script_delay_left = arg0->cpu_pad_script_delay_left;
     p = arg0->cpu_pad_script_cursor;
-    if (var_1 != 0) {
+    if (script_delay_left != 0) {
         if (arg0->unk_46 == 0) {
-            arg0->cpu_pad_script_delay_left = var_1 - 1;
+            arg0->cpu_pad_script_delay_left = script_delay_left - 1;
         }
         goto ret_3c8;
     }
@@ -474,13 +476,15 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
         if ((g_cpu_profiles[idx].flags & 0xBF00) != 0)
             goto check_loop;
         {
-            s32 var_8;
+            s32 angle_in_range;
             if (arg0->unk_430 & 0x200) {
-                var_8 = (arg0->opponent_angle_from_orientation_abs < 0x801);
+                angle_in_range =
+                    (arg0->opponent_angle_from_orientation_abs < 0x801);
             } else {
-                var_8 = (arg0->opponent_angle_from_orientation_abs < 0x401);
+                angle_in_range =
+                    (arg0->opponent_angle_from_orientation_abs < 0x401);
             }
-            if (var_8 == 0)
+            if (angle_in_range == 0)
                 goto reset_ret_neg1;
         }
         if (arg0->unk_430 & 0x800)
@@ -490,11 +494,11 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
         if (arg0->unk_442 != 0)
             goto reset_ret_neg1;
         {
-            Unk80101EC8Record *var_9 = arg0->other;
-            if (var_9->move_kind == 0x2D)
+            Unk80101EC8Record *other_record = arg0->other;
+            if (other_record->move_kind == 0x2D)
                 goto reset_ret_neg1;
-            dx = var_9->world_pos.x - arg0->chosen_script_start_x;
-            dy = var_9->world_pos.z - arg0->chosen_script_start_z;
+            dx = other_record->world_pos.x - arg0->chosen_script_start_x;
+            dy = other_record->world_pos.z - arg0->chosen_script_start_z;
             dz = arg0->chosen_script_radius;
             if ((dz * dz) >= ((dx * dx) + (dy * dy)))
                 goto loop;
@@ -556,7 +560,7 @@ extern s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(
 extern void fighter_UpdateCpuProbes(Unk80101EC8Record *);
 extern s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *);
 
-void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
+void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     Unk80101EC8Record *rec;
     Unk80101EC8Record *var_1;
     Unk80101EC8Record *var_2;
@@ -585,7 +589,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
        SOTN's AddToInventory reuses i for its two loops (Q51) */
     s32 i; /* SOTN: src/dra/5D5BC.c:173 @aa53500 */
 
-    rec = &D_80101EC8[arg0];
+    rec = &D_80101EC8[fighter_index];
     rec->unk_3CC = 0;
     if (rec->cpu_pad_build_count & 1) {
         var_2 = rec->other;
@@ -914,17 +918,17 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     pad.pressed = pad.held & ~rec->last_cpu_pad.held;
     pad.unheld = ~pad.held & 0xFFFF;
     pad.released = ~pad.held & rec->last_cpu_pad.held;
-    pad.type[arg0] = 4;
+    pad.type[fighter_index] = 4;
     rec->last_cpu_pad = pad;
-    *arg1 = rec->last_cpu_pad;
+    *pad_out = rec->last_cpu_pad;
 }
 
 /* 8 {distance, direction} byte pairs (fighter_UpdateCpuProbes) */
 extern u8 g_fighter_cpu_probes[8][2];
 
 void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
-    s32 var_0[4];
-    s32 var_1[4];
+    s32 segment_start[4];
+    s32 segment_end[4];
     s32 var_2[4];
     s32 var_3[4];
     s16 work[4];
@@ -960,30 +964,30 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         x = obj->collision_pos.vx + ((scale * *sin_p) >> 12);
         cos_p = &Judge[(flags + 0x400) & 0xFFF];
         z = obj->collision_pos.vz + ((scale * *cos_p) >> 12);
-        var_0[0] = obj->collision_pos.vx;
-        var_0[1] = obj->collision_pos.vy - 0x320;
-        var_0[2] = obj->collision_pos.vz;
-        var_1[0] = x;
-        var_1[1] = obj->collision_pos.vy - 0x320;
-        var_1[2] = z;
+        segment_start[0] = obj->collision_pos.vx;
+        segment_start[1] = obj->collision_pos.vy - 0x320;
+        segment_start[2] = obj->collision_pos.vz;
+        segment_end[0] = x;
+        segment_end[1] = obj->collision_pos.vy - 0x320;
+        segment_end[2] = z;
 
         flags = collision_TestSegmentWithWork(
-            var_0, var_1, var_2, work, 0x1F8002B8);
+            segment_start, segment_end, var_2, work, 0x1F8002B8);
         if (flags != 0) {
             x += (*sin_p * 0x7D) >> 8;
             z += (*cos_p * 0x7D) >> 8;
         }
 
-        var_0[0] = x;
-        var_0[1] = obj->collision_pos.vy - 0x834;
-        var_0[2] = z;
-        var_1[0] = x;
-        var_1[1] = obj->collision_pos.vy + 0x1004;
-        var_1[2] = z;
+        segment_start[0] = x;
+        segment_start[1] = obj->collision_pos.vy - 0x834;
+        segment_start[2] = z;
+        segment_end[0] = x;
+        segment_end[1] = obj->collision_pos.vy + 0x1004;
+        segment_end[2] = z;
 
-        flags |=
-            collision_TestSegmentWithWork(var_0, var_1, var_3, work, 0x1F8002B8)
-            << 1;
+        flags |= collision_TestSegmentWithWork(
+                     segment_start, segment_end, var_3, work, 0x1F8002B8)
+                 << 1;
         flags += 1;
         if (flags == 3 && var_3[1] - obj->collision_pos.vy < 5) {
             flags = 0;
@@ -1046,29 +1050,30 @@ s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *arg0) {
 extern s32 D_8009AA50[];
 
 s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
-    Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Unk80101EC8Record *arg0, s32 route_target_x, s32 route_target_z, s32 arg3) {
     s32 sp10;
-    s32 temp_s0;
-    s32 temp_v0;
-    s32 temp_v1;
+    s32 focus_bearing;
+    s32 angle_sector;
+    s32 sector_index;
     s32 var_v0;
 
-    temp_s0 = ratan2(g_camera_default_view_record.unk_00.x - arg0->world_pos.x,
-                     g_camera_default_view_record.unk_00.z - arg0->world_pos.z);
-    var_v0 =
-        temp_s0 - ratan2(arg1 - arg0->world_pos.x, arg2 - arg0->world_pos.z);
+    focus_bearing =
+        ratan2(g_camera_default_view_record.unk_00.x - arg0->world_pos.x,
+               g_camera_default_view_record.unk_00.z - arg0->world_pos.z);
+    var_v0 = focus_bearing - ratan2(route_target_x - arg0->world_pos.x,
+                                    route_target_z - arg0->world_pos.z);
     var_v0 -= 0x100;
-    temp_v0 = (s32)var_v0 >> 9;
-    temp_v1 = temp_v0 & 7;
-    sp10 = temp_v1;
-    if ((arg3 == 0) && !(temp_v0 & 1)) {
+    angle_sector = (s32)var_v0 >> 9;
+    sector_index = angle_sector & 7;
+    sp10 = sector_index;
+    if ((arg3 == 0) && !(angle_sector & 1)) {
         if (arg0->cpu_pad_build_count & 0x10) {
-            sp10 = temp_v1 + 1;
+            sp10 = sector_index + 1;
             if (sp10 >= 8) {
                 sp10 = 0;
             }
         } else {
-            sp10 = temp_v1 - 1;
+            sp10 = sector_index - 1;
             if (sp10 < 0) {
                 sp10 = 7;
             }
