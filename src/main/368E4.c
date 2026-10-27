@@ -1522,9 +1522,10 @@ void gpu_TintVramRow(
     DrawSync(0);
 }
 
-void gpu_TintVramRowInPlace(
-    s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    gpu_TintVramRow(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
+void gpu_TintVramRowInPlace(s32 row_x, s32 row_y, s32 row_width, s32 arg3,
+                            s32 green_multiplier, s32 blue_multiplier) {
+    gpu_TintVramRow(0, row_x, row_y, row_width, arg3, green_multiplier,
+                    blue_multiplier, row_x, row_y);
 }
 
 /* matches the definition above */
@@ -1532,19 +1533,19 @@ extern s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32);
 extern void resource_ResizeNodeAssetBlockAndUpdatePeak(s32);
 extern u8 D_80099BCC;
 
-s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 arg0) {
-    Unk80045878Obj *temp_v0;
+s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
+    Unk80045878Obj *slot_object;
     s32 var_1;
     u8 *base;
     s32 delta;
     u8 *p;
     u8 *q;
 
-    temp_v0 = slot_GetObject(arg0);
-    if (temp_v0 == 0)
+    slot_object = slot_GetObject(slot_index);
+    if (slot_object == 0)
         return 0;
-    D_800A33E0 = arg0;
-    var_1 = (&D_80099BCC)[temp_v0->unk_08];
+    D_800A33E0 = slot_index;
+    var_1 = (&D_80099BCC)[slot_object->unk_08];
     if (var_1 == 0xFF)
         return 0;
     base = (u8 *)resource_LoadOrReuseGrayscaleAdjustedNodeAsset(var_1);
@@ -1568,13 +1569,15 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 arg0) {
         *(s16 *)(q - 6 + var_1 * 0x68) = 9;
         p[var_1 * 0x68] = 0xF;
         *(s8 *)(q - 9 + var_1 * 0x68) = 0;
-        *(s16 *)(q + var_1 * 0x68) = (s16)arg0;
+        *(s16 *)(q + var_1 * 0x68) = (s16)slot_index;
     }
     resource_ResizeNodeAssetBlockAndUpdatePeak(delta + 0x6E8);
     return 1;
 }
 
-void node_RebaseRetainedDrawNodeBuffer(s32 a0) { D_800A33E4 += a0; }
+void node_RebaseRetainedDrawNodeBuffer(s32 rebase_delta) {
+    D_800A33E4 += rebase_delta;
+}
 
 extern u32 *g_gpu_ot256_ptr;
 extern u32 g_gpu_ot256_db[][256];
@@ -1654,17 +1657,17 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     *g_gpu_ot256_ptr = old;
 }
 
-void gpu_InitVramScroll(s32 a0, s32 a1) {
+void gpu_InitVramScroll(s32 scroll_preset_index, s32 scroll_index) {
     s32 i;
     u16 *src;
     s16 *dst;
     Unk800EF848Rec *base;
-    if (a1 > 0) {
+    if (scroll_index > 0) {
         func_80052C10();
     }
-    base = &D_800EF848[a1];
+    base = &D_800EF848[scroll_index];
     base->phase = 0;
-    src = D_80099C34[a0];
+    src = D_80099C34[scroll_preset_index];
     dst = base->ctl;
     i = 0;
     do {
@@ -1675,70 +1678,70 @@ void gpu_InitVramScroll(s32 a0, s32 a1) {
     } while (i < 7);
 }
 
-void gpu_QueueVramScroll(s32 arg0) {
+void gpu_QueueVramScroll(s32 scroll_index) {
     RECT rect;
-    s16 *var_1;
+    s16 *scroll_controls;
     s32 x;
     s32 y;
-    s32 var_4;
-    s32 var_5;
+    s32 source_x_offset;
+    s32 source_y_offset;
     s32 dx;
     s32 dy;
-    s32 var_8;
-    s32 var_9;
+    s32 dest_x_offset;
+    s32 dest_y_offset;
     s32 w;
-    s32 var_11;
+    s32 scroll_height;
     s32 i;
-    Unk800EF848Rec *var_13;
+    Unk800EF848Rec *scroll_record;
     DR_MOVE *p;
     s32 var_15;
 
-    var_13 = &D_800EF848[arg0];
-    var_15 = var_13->phase;
-    var_1 = var_13->ctl;
-    p = var_13->move[g_gpu_presented_frame_count & 1];
-    x = var_1[0] & ~0x3F;
-    y = var_1[1] & ~0xFF;
-    var_4 = var_1[0] % 64;
-    var_5 = var_1[1] % 256;
-    w = var_1[2];
-    var_11 = var_1[3];
-    dx = var_1[4] & ~0x3F;
-    dy = var_1[5] & ~0xFF;
-    var_8 = var_1[4] % 64;
-    var_9 = var_1[5] % 256;
+    scroll_record = &D_800EF848[scroll_index];
+    var_15 = scroll_record->phase;
+    scroll_controls = scroll_record->ctl;
+    p = scroll_record->move[g_gpu_presented_frame_count & 1];
+    x = scroll_controls[0] & ~0x3F;
+    y = scroll_controls[1] & ~0xFF;
+    source_x_offset = scroll_controls[0] % 64;
+    source_y_offset = scroll_controls[1] % 256;
+    w = scroll_controls[2];
+    scroll_height = scroll_controls[3];
+    dx = scroll_controls[4] & ~0x3F;
+    dy = scroll_controls[5] & ~0xFF;
+    dest_x_offset = scroll_controls[4] % 64;
+    dest_y_offset = scroll_controls[5] % 256;
     for (i = 0; i < 3; i++) {
-        s32 var_16 = dx + var_8;
-        s32 var_17 = dy + var_9;
-        s32 sy = y + var_5;
-        s32 h1 = var_11 - var_15;
+        s32 dest_x = dx + dest_x_offset;
+        s32 dest_y = dy + dest_y_offset;
+        s32 sy = y + source_y_offset;
+        s32 h1 = scroll_height - var_15;
         /* FAKE: strip two's height taken as an s16 at the top of the level;
          * rect.h = var_15 directly, an s32 copy or a (s16) cast drops the t1
          * copy: score 57 */
         s16 h2 = var_15;
-        rect.x = x + var_4;
+        rect.x = x + source_x_offset;
         rect.y = sy;
         rect.w = w;
         rect.h = h1;
-        SetDrawMove(p, &rect, var_16, var_17 + var_15);
+        SetDrawMove(p, &rect, dest_x, dest_y + var_15);
         addPrim(&D_800A378C[0xFFF], p);
         p++;
         rect.y = sy + h1;
         rect.h = h2;
-        SetDrawMove(p, &rect, var_16, var_17);
+        SetDrawMove(p, &rect, dest_x, dest_y);
         addPrim(&D_800A378C[0xFFF], p);
         p++;
-        var_4 >>= 1;
-        var_5 >>= 1;
-        var_8 >>= 1;
-        var_9 >>= 1;
+        source_x_offset >>= 1;
+        source_y_offset >>= 1;
+        dest_x_offset >>= 1;
+        dest_y_offset >>= 1;
         w >>= 1;
-        var_11 >>= 1;
+        scroll_height >>= 1;
         var_15 >>= 1;
     }
-    var_13->phase += var_1[6];
-    if (var_13->phase >= var_1[3]) {
-        var_13->phase %= var_1[3];
+    scroll_record->phase += scroll_controls[6];
+    if (scroll_record->phase >= scroll_controls[3]) {
+        scroll_record->phase %= scroll_controls[3];
     }
 }
 
@@ -1762,28 +1765,28 @@ void ResetEntrySelectionState(void) {
 
 extern s16 D_800EF980[];
 
-void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 arg0) {
-    u8 temp_v1;
+void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
+    u8 first_linked_entry_index;
 
-    D_800EF980[arg0] = 1;
+    D_800EF980[entry_index] = 1;
     if (D_800A33EC == -1) {
-        if (arg0 >= 0x33) {
+        if (entry_index >= 0x33) {
             D_800A33EC = 1;
         } else {
             D_800A33EC = 0;
         }
     } else {
-        if (D_800A33EC == 0 && !(arg0 < 0x33)) {
+        if (D_800A33EC == 0 && !(entry_index < 0x33)) {
             func_80052C10();
         }
-        if (D_800A33EC == 1 && arg0 < 0x33) {
+        if (D_800A33EC == 1 && entry_index < 0x33) {
             func_80052C10();
         }
     }
-    temp_v1 = D_80099CC8[arg0][0];
-    if (temp_v1 != 0xFF) {
-        D_800EF980[temp_v1] = 1;
-        D_800EF980[D_80099CC8[arg0][1]] = 1;
+    first_linked_entry_index = D_80099CC8[entry_index][0];
+    if (first_linked_entry_index != 0xFF) {
+        D_800EF980[first_linked_entry_index] = 1;
+        D_800EF980[D_80099CC8[entry_index][1]] = 1;
     }
 }
 
@@ -1827,33 +1830,33 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
        as in the target; a separate `total`: score 12 (Q129) */
     /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 i;
-    s32 var_4;
-    s32 var_5;
+    s32 inputs_unchanged;
+    s32 next_rank;
     s32 step;
     s32 lo;
     s32 hi;
 
-    var_4 = 1;
+    inputs_unchanged = 1;
     i = 0;
     dst = D_80099C50;
     src = D_800EF980;
     do {
         s16 v = *src;
         if ((v >= 0) != ((*dst) >= 0)) {
-            var_4 = 0;
+            inputs_unchanged = 0;
         }
         *dst = v;
         dst++;
         i++;
         src++;
     } while (i < 0x3A);
-    var_5 = 0;
+    next_rank = 0;
     i = 0;
     p = D_800EF980;
     do {
         if ((*p) >= 0) {
-            *p = (s16)var_5;
-            var_5++;
+            *p = (s16)next_rank;
+            next_rank++;
         }
         i++;
         p++;
@@ -1887,9 +1890,9 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
 end:
     if (D_800A324C != i) {
         D_800A324C = i;
-        var_4 = 0;
+        inputs_unchanged = 0;
     }
-    if (var_4 == 0) {
+    if (inputs_unchanged == 0) {
         resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
         resource_LoadSelectedEntriesTexturesAndSound(
             D_800A33EC, i, D_800EF980, arg0);
@@ -1900,21 +1903,21 @@ end:
 void func_80049710(void) {}
 
 /* Appends one or two 0x68-byte draw nodes at g_prim_buf_cursor for animation
- * entry arg0 and queues each on g_draw_queue. The first
+ * entry entry_index and queues each on g_draw_queue. The first
  * node (type 0) takes its rotation and position from rot_in / pos (flags == 1)
  * or from node 19 + (flags & 1) of the object in g_slot_objects slot flags >> 1
  * (slot_GetObject), whose offset it scales in place by the object's
  * position_scale and into which it copies the new matrix back; the second (type
  * 3, parent = the first) follows unless flags is still 1. */
 void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-    s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
+    s32 entry_index, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
     Unk80045878Obj *slot_obj;
     Unk80045878Node *obj;
-    Unk80045878Node *var_4;
+    Unk80045878Node *slot_transform_node;
     s32 node_bit;
-    if (D_800EF980[arg0] < 0) {
+    if (D_800EF980[entry_index] < 0) {
         func_80052C10();
     }
     obj = (Unk80045878Node *)g_prim_buf_cursor;
@@ -1924,7 +1927,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     val58 = 0;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
-    obj->node.unk2 = D_800EF980[arg0] * 2;
+    obj->node.unk2 = D_800EF980[entry_index] * 2;
     obj->node.unk4 = 6;
     obj->node.rotation_order = 0;
     obj->node.parent_node = 0;
@@ -1946,29 +1949,38 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             flags &= 0x7FFF;
             node_bit = flags & 1;
             slot_obj = slot_GetObject(flags >> 1);
-            var_4 = &slot_obj->transform_nodes[19 + node_bit];
-            var_4->node.work.t[0] =
-                (var_4->node.work.t[0] * slot_obj->position_scale) >> 12;
-            var_4->node.work.t[1] =
-                (var_4->node.work.t[1] * slot_obj->position_scale) >> 12;
-            var_4->node.work.t[2] =
-                (var_4->node.work.t[2] * slot_obj->position_scale) >> 12;
+            slot_transform_node = &slot_obj->transform_nodes[19 + node_bit];
+            slot_transform_node->node.work.t[0] =
+                (slot_transform_node->node.work.t[0] *
+                 slot_obj->position_scale) >>
+                12;
+            slot_transform_node->node.work.t[1] =
+                (slot_transform_node->node.work.t[1] *
+                 slot_obj->position_scale) >>
+                12;
+            slot_transform_node->node.work.t[2] =
+                (slot_transform_node->node.work.t[2] *
+                 slot_obj->position_scale) >>
+                12;
             MulMatrix0(&slot_obj->transform_nodes[0].node.xf.mat,
-                       &var_4->node.work, &obj->node.xf.mat);
-            ofs.vx = var_4->node.work.t[0];
-            ofs.vy = var_4->node.work.t[1];
-            ofs.vz = var_4->node.work.t[2];
-            ApplyMatrix(&var_4->node.parent_node->xf.mat, &ofs,
+                       &slot_transform_node->node.work, &obj->node.xf.mat);
+            ofs.vx = slot_transform_node->node.work.t[0];
+            ofs.vy = slot_transform_node->node.work.t[1];
+            ofs.vz = slot_transform_node->node.work.t[2];
+            ApplyMatrix(&slot_transform_node->node.parent_node->xf.mat, &ofs,
                         (VECTOR *)obj->node.xf.mat.t);
             obj->node.xf.mat.t[0] =
-                obj->node.xf.mat.t[0] + var_4->node.parent_node->xf.mat.t[0];
+                obj->node.xf.mat.t[0] +
+                slot_transform_node->node.parent_node->xf.mat.t[0];
             obj->node.xf.mat.t[1] =
-                obj->node.xf.mat.t[1] + var_4->node.parent_node->xf.mat.t[1];
+                obj->node.xf.mat.t[1] +
+                slot_transform_node->node.parent_node->xf.mat.t[1];
             obj->node.xf.mat.t[2] =
-                obj->node.xf.mat.t[2] + var_4->node.parent_node->xf.mat.t[2];
+                obj->node.xf.mat.t[2] +
+                slot_transform_node->node.parent_node->xf.mat.t[2];
             /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
-            var_4->node.xf.mat = obj->node.xf.mat;
+            slot_transform_node->node.xf.mat = obj->node.xf.mat;
             val58 = slot_obj->unk_1A84;
         }
         {
@@ -1978,7 +1990,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
         }
         obj++;
         if (flags != 1) {
-            s32 entry = D_800EF980[arg0];
+            s32 entry = D_800EF980[entry_index];
             void **list;
             obj->node.unk0 = 3;
             obj->node.unk1 = 0;
@@ -2016,25 +2028,25 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     // (no-new-park-categories): target reserves 8 locals bytes at
     // sp+0x10..sp+0x17 that no instruction touches
     volatile u32 pre_pad[2];
-    u8 temp_v1;
+    u8 linked_entry_index;
     s16 rot_z;
     s16 *src;
     Unk80045878Node *obj;
     Unk80045878Obj *slot_obj;
     void **list;
 
-    temp_v1 = D_80099CC8[arg0][arg2];
-    if (temp_v1 == 0xFF) {
+    linked_entry_index = D_80099CC8[arg0][arg2];
+    if (linked_entry_index == 0xFF) {
         return;
     }
-    if (D_800EF980[temp_v1] < 0) {
+    if (D_800EF980[linked_entry_index] < 0) {
         func_80052C10();
     }
     slot_obj = slot_GetObject(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
-    obj->node.unk2 = D_800EF980[temp_v1] * 2;
+    obj->node.unk2 = D_800EF980[linked_entry_index] * 2;
     obj->node.unk4 = 6;
     obj->node.rotation_order = 0;
     obj->node.light_setup_index = 4;
@@ -2059,7 +2071,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     g_draw_queue_cursor = list + 1;
     *list = obj;
     obj++;
-    obj->node.unk2 = D_800EF980[temp_v1] * 2 + 1;
+    obj->node.unk2 = D_800EF980[linked_entry_index] * 2 + 1;
     obj->node.unk0 = 3;
     obj->node.parent_node = &obj[-1].node;
     obj->node.unk1 = 0;
