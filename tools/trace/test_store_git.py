@@ -374,6 +374,26 @@ class PublicationGitTest(unittest.TestCase):
         self.assertIn("REMOVED ", output)
         self.assertIn("full removal", output)
 
+    def test_record_removal_refuses_any_stored_generation(self):
+        manifest = self.seal()
+        store.offload(self.capture, manifest)
+        self.commit_manifest()
+        store.write_manifest(self.manifest_path, dict(outputs=[]))
+        self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+        # The record's own target is gone, but another generation is still stored.
+        other = self.stored_trace.with_name("capture.jsonl.sha1-" + "1" * 40)
+        self.stored_trace.rename(other)
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("still indexed or stored", output)
+        other.unlink()
+        self.trace.write_bytes(b"leftover working file")
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.trace.unlink()
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 0, output)
+        self.assertIn("full removal", output)
+
     def test_rerecord_updates_existing_path_with_verified_generation(self):
         manifest = self.seal()
         store.offload(self.capture, manifest)

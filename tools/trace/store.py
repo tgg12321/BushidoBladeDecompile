@@ -892,6 +892,17 @@ def after_migration(parent):
     return result.returncode == 0
 
 
+def any_generation_exists(logical, name, bulk_key, indexed, old_records, external, local):
+    """Indexed, local, plain store key, any .sha1- sibling, or a parent generation."""
+    plain = external / bulk_key
+    old_targets = [store_target(logical, [r], Path(bulk_key), external)
+                   for r in old_records if PureWindowsPath(r["path"]).name == name]
+    return (bulk_key in indexed or (local and logical.exists()) or plain.exists() or
+            any(candidate.name.casefold().startswith((name + ".sha1-").casefold())
+                for candidate in plain.parent.glob("*")) or
+            any(target.exists() for target in old_targets))
+
+
 def check_commit(root, revision=None):
     """Judge index vs HEAD, or a commit's immutable tree vs its first parent."""
     count = failed = legacy = 0
@@ -942,8 +953,8 @@ def check_commit(root, revision=None):
                     continue
                 logical = path.parent / name
                 bulk_key = (Path(key).parent / name).as_posix()
-                present = (bulk_key in indexed or
-                           store_target(logical, [rec], Path(bulk_key), external).exists())
+                present = any_generation_exists(logical, name, bulk_key, indexed,
+                                                old.get("outputs", []), external, revision is None)
                 print(f"{'REFUSE' if present else 'REMOVED'} {path}: removed output record {name}"
                       + (" still indexed or stored" if present else " (full removal)"))
                 if present:
@@ -959,15 +970,8 @@ def check_commit(root, revision=None):
                 if rec.get("missing") is True:
                     if "store_name" in rec:
                         raise StoreUnverified(f"{name}: missing record cannot have store_name")
-                    plain = external / bulk_key
-                    old_targets = [store_target(logical, [r], Path(bulk_key), external)
-                                   for r in old.get("outputs", [])
-                                   if PureWindowsPath(r["path"]).name == name]
-                    if (bulk_key in indexed or (revision is None and logical.exists()) or
-                            plain.exists() or any(candidate.name.casefold().startswith(
-                                (name + ".sha1-").casefold())
-                                for candidate in plain.parent.glob("*")) or
-                            any(target.exists() for target in old_targets)):
+                    if any_generation_exists(logical, name, bulk_key, indexed,
+                                             old.get("outputs", []), external, revision is None):
                         raise StoreUnverified(f"{name}: missing record has existing bulk file")
                     if recorded_absence(rec):
                         continue
