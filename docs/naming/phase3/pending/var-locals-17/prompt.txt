@@ -1,0 +1,24 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 17 (row var-locals-17)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15 lessons in
+`docs/naming/phase3/pending/var-locals-16/prompt.txt`, with these changes:
+
+- Output files: `tmp/codex/vl17_local_manifest.csv` and `tmp/codex/vl17_notes.md` (both full contents
+  also in your final message; the filesystem may be read-only). Print HEAD and cite file:line at it.
+- Scope, in this order (stop at 40 RENAMEs): 1. src/main/4D0A8.c functions from
+  gpu_ResetGrowingBarProgress onward, in file order (C definitions only). 2. Then the next
+  src/main/*.c game TUs in ROM-offset order after 4D0A8.c that still have auto-named bindings.
+- Do not re-propose wave 8-16 NO_NAME / dropped / reverted bindings (pending/var-locals-{8,...,16}/notes.txt)
+  without new evidence, said in the row.
+- Wave 16 lessons: the forwarded chunk start a wrapper passes to a draw callee is `draw_chunk_addr`
+  (not `output_addr`, wave 12's spelling for another role); a name from a comment word is not evidence
+  (`packed_round_values` became `packed_row_values`: the code shows rows); a loop over two mirrored
+  halves (only x mirrored, y fixed) is `side_index`, not `row`; an index whose top bit is a flag is
+  `flagged_<thing>_index`; a count of calls is `<what>_draw_count`, not `*_cells_drawn` when one call can
+  draw several cells; a bare `value` is too weak (also a struct member): say its use (`displayed_value`);
+  a GetFileIndex offset argument is `file_index_offset` and its result `file_index`; renaming a true but
+  generic name (`cursor`, `poly`) to a more specific true one is allowed. A data-table comment that names
+  a function's parameter (e.g. "header arg0") must be listed in notes so the apply updates it.
+- Left neutral by wave 16, may be proposed with evidence: gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions:p
+  (sibling q is now src_second_image; check the macro-body concern first).
