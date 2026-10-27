@@ -65,3 +65,16 @@ REVIEW (naming-reviewer pre-apply 2026-10-27): 40/40 PASS, no keycheck refusals 
 - Required comment edit at apply: 4510C.c:1127-1129 (temp comment in fighter_BuildCpuOrbitRoute), ang -> orbit_angle_offset x4.
 - Comments with an old bare word that are NOT about a renamed binding and must stay unchanged: 4510C.c:51 ($t0),
   406 (v1), 581/592/1684 (count), 1682/2426 (best), 2003 ($s2); 4BC3C.c:382 (count, another function).
+
+APPLY (naming-a 2026-10-27, commit 6c629406e): 40/40 applied, none reverted; pairs.txt unchanged. Applied by a whole-word,
+code-only scoped script (comments and strings skipped, and tokens after `.` or `->` skipped: probe_z and nav_poly collide
+with member names, so struct accesses `.z` / `->poly` keep the member spelling). format.py reflowed both files.
+Comment pass: 4510C.c fighter_BuildCpuOrbitRoute temp comment, ang -> orbit_angle_offset x4. A layout-only commit ahead of
+the wave (45ab977bb) re-wraps that comment into short lines (same words), so the wave's edit is the character-exact pair
+substitution naming_keycheck's scoped comment check accepts (on the old wrapping the longer name forced a re-flow it rejects).
+Gates: verify-oracle --rebuild SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true); tus-check OK (245 TUs);
+engine test 5516 passed, 0 failed, 2 skipped; check_completion_integrity OK; naming_keycheck --base 45ab977bb --new 6c629406e
+--pairs-file pairs.txt: "OK: every change is explained by the pairs"; moved layer-2 keys 14 (all in the touched functions).
+The comments listed under REVIEW as must-stay-unchanged are unchanged.
+R6 (naming-reviewer 2026-10-27): 40/40 PASS; re-wrap commit 45ab977bb moves line breaks only; token diff shows only the
+40 pairs inside their functions; member accesses keep their spelling; no stale old names; no blocking fixes.
