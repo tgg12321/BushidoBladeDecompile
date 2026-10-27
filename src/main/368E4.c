@@ -1415,35 +1415,36 @@ void func_80048744(s32 a0) {
     }
 }
 
-void math_GrayscaleRgb555(u16 *arg0, s32 arg1, u16 *arg2) {
+void math_GrayscaleRgb555(u16 *src_pixels, s32 pixel_count, u16 *write_cursor) {
     s32 temp_a3;
     s32 temp_v1;
     s32 var_t0;
-    u16 *var_t1;
-    s32 temp_a1;
-    var_t1 = arg0;
-    var_t0 = arg1 - 1;
+    u16 *read_cursor;
+    s32 source_pixel;
+    read_cursor = src_pixels;
+    var_t0 = pixel_count - 1;
     if (var_t0 != -1) {
         do {
-            temp_a1 = *var_t1;
-            var_t1 += 1;
+            source_pixel = *read_cursor;
+            read_cursor += 1;
             var_t0 -= 1;
-            temp_v1 = temp_a1 << 0x10;
+            temp_v1 = source_pixel << 0x10;
             {
                 s32 b;
                 s32 g;
-                s32 var_7;
-                temp_a3 = temp_a1 & 0x1F;
+                s32 weighted_blue;
+                temp_a3 = source_pixel & 0x1F;
                 temp_a3 = temp_a3 * 0x547;
                 b = (temp_v1 >> 0x1A) & 0x1F;
                 g = (temp_v1 >> 0xA) & 0xF800;
-                var_7 = b * 0x2B8;
-                temp_a3 = ((temp_a3 + g + var_7) >> 0xC) & 0x1F;
+                weighted_blue = b * 0x2B8;
+                temp_a3 = ((temp_a3 + g + weighted_blue) >> 0xC) & 0x1F;
             }
-            *arg2 = (u16)((((temp_a1 & (~0x7FFF)) + (temp_a3 << 0xA)) +
-                           (temp_a3 << 5)) +
-                          temp_a3);
-            arg2 += 1;
+            *write_cursor =
+                (u16)((((source_pixel & (~0x7FFF)) + (temp_a3 << 0xA)) +
+                       (temp_a3 << 5)) +
+                      temp_a3);
+            write_cursor += 1;
         } while (var_t0 != (-1));
     }
 }
@@ -2223,53 +2224,53 @@ extern const Unk800153F0Record g_light_default_template;
 extern void light_Unpack(Unk800F62E0Rec *, u16 *);
 
 void light_InitDefaults(void) {
-    Unk800153F0Record sp10;
+    Unk800153F0Record default_template_copy;
     s32 i;
-    sp10 = g_light_default_template;
+    default_template_copy = g_light_default_template;
     for (i = 0; i < 8; i++) {
-        light_Unpack(&g_light_setups[i], sp10.v);
+        light_Unpack(&g_light_setups[i], default_template_copy.v);
     }
     SetColorMatrix(&g_light_setups[0].cmat);
     SetBackColor(g_light_setups[0].back[0], g_light_setups[0].back[1],
                  g_light_setups[0].back[2]);
 }
 
-void light_Unpack(Unk800F62E0Rec *arg0, u16 *arg1) {
-    arg0->cmat.m[0][0] = *arg1++;
-    arg0->cmat.m[1][0] = *arg1++;
-    arg0->cmat.m[2][0] = *arg1++;
-    arg0->cmat.m[0][1] = *arg1++;
-    arg0->cmat.m[1][1] = *arg1++;
-    arg0->cmat.m[2][1] = *arg1++;
-    arg0->cmat.m[0][2] = *arg1++;
-    arg0->cmat.m[1][2] = *arg1++;
+void light_Unpack(Unk800F62E0Rec *light_setup, u16 *packed_cursor) {
+    light_setup->cmat.m[0][0] = *packed_cursor++;
+    light_setup->cmat.m[1][0] = *packed_cursor++;
+    light_setup->cmat.m[2][0] = *packed_cursor++;
+    light_setup->cmat.m[0][1] = *packed_cursor++;
+    light_setup->cmat.m[1][1] = *packed_cursor++;
+    light_setup->cmat.m[2][1] = *packed_cursor++;
+    light_setup->cmat.m[0][2] = *packed_cursor++;
+    light_setup->cmat.m[1][2] = *packed_cursor++;
     {
-        s16 v48 = *arg1++;
-        arg0->lmat.m[0][0] = 0;
-        arg0->lmat.m[0][1] = 0;
-        arg0->lmat.m[0][2] = 0;
-        arg0->lmat.m[1][0] = 0;
-        arg0->lmat.m[1][1] = 0;
-        arg0->lmat.m[1][2] = 0;
-        arg0->lmat.m[2][0] = 0;
-        arg0->lmat.m[2][1] = 0;
-        arg0->lmat.m[2][2] = 0;
-        arg0->cmat.m[2][2] = v48;
+        s16 v48 = *packed_cursor++;
+        light_setup->lmat.m[0][0] = 0;
+        light_setup->lmat.m[0][1] = 0;
+        light_setup->lmat.m[0][2] = 0;
+        light_setup->lmat.m[1][0] = 0;
+        light_setup->lmat.m[1][1] = 0;
+        light_setup->lmat.m[1][2] = 0;
+        light_setup->lmat.m[2][0] = 0;
+        light_setup->lmat.m[2][1] = 0;
+        light_setup->lmat.m[2][2] = 0;
+        light_setup->cmat.m[2][2] = v48;
     }
-    arg0->light[0].pitch = *arg1++;
-    arg0->light[0].yaw = *arg1++;
-    arg0->light[0].on = *arg1++;
-    arg0->light[1].pitch = *arg1++;
-    arg0->light[1].yaw = *arg1++;
-    arg0->light[1].on = *arg1++;
-    arg0->light[2].pitch = *arg1++;
-    arg0->light[2].yaw = *arg1++;
-    arg0->light[2].on = *arg1++;
-    calc_LightMatrix(arg0);
-    arg0->back[0] = *arg1++;
-    arg0->back[1] = *arg1++;
-    arg0->back[2] = *arg1;
-    arg0->unk5C = *(arg1 + 1);
+    light_setup->light[0].pitch = *packed_cursor++;
+    light_setup->light[0].yaw = *packed_cursor++;
+    light_setup->light[0].on = *packed_cursor++;
+    light_setup->light[1].pitch = *packed_cursor++;
+    light_setup->light[1].yaw = *packed_cursor++;
+    light_setup->light[1].on = *packed_cursor++;
+    light_setup->light[2].pitch = *packed_cursor++;
+    light_setup->light[2].yaw = *packed_cursor++;
+    light_setup->light[2].on = *packed_cursor++;
+    calc_LightMatrix(light_setup);
+    light_setup->back[0] = *packed_cursor++;
+    light_setup->back[1] = *packed_cursor++;
+    light_setup->back[2] = *packed_cursor;
+    light_setup->unk5C = *(packed_cursor + 1);
 }
 
 void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;

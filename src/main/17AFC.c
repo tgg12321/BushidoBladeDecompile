@@ -53,19 +53,19 @@ s32 math_ClassifyAbsMagnitude(s32 a0) {
     return v1;
 }
 
-void motion_SetFixedChannelBlock(MotionFrame *arg0) {
-    arg0->unk_0C[0x18] = 0x3F5;
-    arg0->unk_0C[0x19] = 0x2B6;
-    arg0->unk_0C[0x1A] = 0x77A;
-    arg0->unk_0C[0x1B] = 0xBEE;
-    arg0->unk_0C[0x1C] = 0x8C;
-    arg0->unk_0C[0x1D] = 0x227;
-    arg0->unk_0C[0x21] = 0x8A0;
-    arg0->unk_0C[0x22] = 0xF0E;
-    arg0->unk_0C[0x1E] = 0;
-    arg0->unk_0C[0x1F] = 0;
-    arg0->unk_0C[0x20] = 0;
-    arg0->unk_0C[0x23] = 0xBCD;
+void motion_SetFixedChannelBlock(MotionFrame *motion_frame) {
+    motion_frame->unk_0C[0x18] = 0x3F5;
+    motion_frame->unk_0C[0x19] = 0x2B6;
+    motion_frame->unk_0C[0x1A] = 0x77A;
+    motion_frame->unk_0C[0x1B] = 0xBEE;
+    motion_frame->unk_0C[0x1C] = 0x8C;
+    motion_frame->unk_0C[0x1D] = 0x227;
+    motion_frame->unk_0C[0x21] = 0x8A0;
+    motion_frame->unk_0C[0x22] = 0xF0E;
+    motion_frame->unk_0C[0x1E] = 0;
+    motion_frame->unk_0C[0x1F] = 0;
+    motion_frame->unk_0C[0x20] = 0;
+    motion_frame->unk_0C[0x23] = 0xBCD;
 }
 
 /* fighter_AccumulateBoneGroupFlagWhenGameModeZero ORs limb bits into
@@ -161,12 +161,13 @@ void fighter_AccumulateOrClearByBoneGroup(
     }
 }
 
-void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
-    u32 dist_sq =
-        (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
-    u32 var_1;
+void math_NegNormalize3D(s32 *input_vector, s16 *output_vector) {
+    u32 dist_sq = (u32)((input_vector[0] * input_vector[0]) +
+                        (input_vector[1] * input_vector[1]) +
+                        (input_vector[2] * input_vector[2]));
+    u32 vector_length;
     if (dist_sq < 0x400) {
-        var_1 = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
+        vector_length = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
     } else {
         s32 sp_tmp;
         gte_Lzc(dist_sq, &sp_tmp);
@@ -180,12 +181,12 @@ void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
             idx = dist_sq >> v1_m;
             v1_m = v1_m >> 1;
             hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-            var_1 = (hi << 16) >> (0x13 - v1_m);
+            vector_length = (hi << 16) >> (0x13 - v1_m);
         }
     }
-    arg1[0] = (s16)(((-arg0[0]) << 12) / ((s32)var_1));
-    arg1[1] = (s16)(((-arg0[1]) << 12) / ((s32)var_1));
-    arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)var_1));
+    output_vector[0] = (s16)(((-input_vector[0]) << 12) / ((s32)vector_length));
+    output_vector[1] = (s16)(((-input_vector[1]) << 12) / ((s32)vector_length));
+    output_vector[2] = (s16)(((-input_vector[2]) << 12) / ((s32)vector_length));
 }
 
 void fighter_RelocateAndStartEventMove(Unk80101EC8Record *arg0) {

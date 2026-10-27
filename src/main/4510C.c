@@ -218,9 +218,9 @@ s32 *node_GetRootNodeMatrixTranslation(void) {
     return g_view_camera_root_node.xf.mat.t;
 }
 
-void fighter_ClearCpuTally(s32 arg0) {
+void fighter_ClearCpuTally(s32 fighter_index) {
     s32 i;
-    Unk80101EC8Record *p = &D_80101EC8[arg0];
+    Unk80101EC8Record *p = &D_80101EC8[fighter_index];
     i = 0;
     do {
         p->unk_414[i][1] = 0;
@@ -228,17 +228,17 @@ void fighter_ClearCpuTally(s32 arg0) {
     } while ((++i) < 8);
 }
 
-void fighter_HalveCpuTally(s32 arg0) {
+void fighter_HalveCpuTally(s32 fighter_index) {
     s32 i;
-    Unk80101EC8Record *p = &D_80101EC8[arg0];
+    Unk80101EC8Record *p = &D_80101EC8[fighter_index];
     i = 0;
     do {
         p->unk_414[i][1] = p->unk_414[i][1] >> 1;
     } while (++i < 8);
 }
 
-void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
-    Unk80101EC8Record *p = &D_80101EC8[arg0];
+void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
+    Unk80101EC8Record *p = &D_80101EC8[fighter_index];
     Unk8009A8C8Entry *src;
     u8 *var_2;
     u8 base;
@@ -261,7 +261,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     s32 temp;
     u32 var_15;
     s32 lo_val, hi1_val, hi2_val;
-    Unk80101EC8Record *var_19;
+    Unk80101EC8Record *other_record;
 
     p->cpu_profile = p->character_data_index;
     p->unk_438 = p->unk_08;
@@ -410,7 +410,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
             rec->unk_404[var_5] = hi2_val;
         }
     }
-    var_19 = p->other;
+    other_record = p->other;
     p->last_chosen_script_list_index = -1;
     p->last_chosen_script_index = -1;
     p->unk_428 = -1;
@@ -420,12 +420,12 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     p->last_cpu_pad.released = 0;
     p->last_cpu_pad.pressed = 0;
     p->last_cpu_pad.held = 0;
-    var_19->unk_440 = 0;
+    other_record->unk_440 = 0;
     p->unk_440 = 0;
-    var_19->unk_441 = 0;
+    other_record->unk_441 = 0;
     p->unk_441 = 0;
-    var_19->opponent_angle_from_orientation_abs = 0;
-    var_19->opponent_angle_from_orientation = 0;
+    other_record->opponent_angle_from_orientation_abs = 0;
+    other_record->opponent_angle_from_orientation = 0;
     p->opponent_angle_from_orientation_abs = 0;
     p->opponent_angle_from_orientation = 0;
     p->cpu_route.count = 0;
