@@ -120,37 +120,37 @@ s32 comb_Connect(void) {
     return temp_s0;
 }
 
-void fight_ScanCommandStreamAndLoadImage(u8 *arg0) {
+void fight_ScanCommandStreamAndLoadImage(u8 *command_cursor) {
     s32 *addr = (s32 *)0x80190800;
     s32 result = -1;
-    s32 var_2 = 0;
+    s32 scan_done = 0;
 
     do {
-        s32 var_3 = *arg0++;
-        switch (var_3) {
+        s32 command_byte = *command_cursor++;
+        switch (command_byte) {
         case 1:
-            result = *arg0;
+            result = *command_cursor;
         case 0:
         case 20:
-            var_2 = 1;
+            scan_done = 1;
             break;
         case 16:
-            arg0 += 5;
+            command_cursor += 5;
             break;
         case 17:
-            arg0 += 3;
+            command_cursor += 3;
             break;
         case 3:
-            arg0 += 2;
+            command_cursor += 2;
             break;
         case 19:
-            arg0 += 4;
+            command_cursor += 4;
             break;
         case 2:
-            arg0 += 0x1D;
+            command_cursor += 0x1D;
             break;
         }
-    } while (!var_2);
+    } while (!scan_done);
 
     if (result >= 0) {
         D_800A37A8[g_fight_stage_command_count] = g_fight_stage_index;
@@ -1209,7 +1209,7 @@ void font_AddTpage(void) {
 
 extern SPRT_8 g_font_sprites[2][32];
 
-void font_DrawChar(s32 x, s32 y, s32 arg2, s32 arg3) {
+void font_DrawChar(s32 x, s32 y, s32 character, s32 color) {
     s32 n = g_font_sprite_count;
     SPRT_8 *p;
     OTag *ot;
@@ -1222,16 +1222,16 @@ void font_DrawChar(s32 x, s32 y, s32 arg2, s32 arg3) {
     p->code = 0x74;
     p->x0 = x;
     p->y0 = y;
-    p->u0 = (arg2 & 7) * 8 - 0x40;
-    p->v0 = (arg2 >> 5) * 8 - 0x20;
-    p->clut = ((arg2 >> 3) & 3) << 6 | 0x773F;
-    *(u32 *)&p->r0 = (arg3 >> 1) | 0x74000000;
+    p->u0 = (character & 7) * 8 - 0x40;
+    p->v0 = (character >> 5) * 8 - 0x20;
+    p->clut = ((character >> 3) & 3) << 6 | 0x773F;
+    *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
     ot = (OTag *)g_gpu_ot_ptr;
     setaddr(p, ot->addr);
     ot->addr = (u32)p;
 }
 
-void font_DrawString(s32 x, s32 y, u8 *str, s32 arg3) {
+void font_DrawString(s32 x, s32 y, u8 *str, s32 color) {
     s32 c;
     s32 start_x = x;
 
@@ -1242,7 +1242,7 @@ void font_DrawString(s32 x, s32 y, u8 *str, s32 arg3) {
             x = start_x;
             y += 8;
         } else {
-            font_DrawChar(x, y, c, arg3);
+            font_DrawChar(x, y, c, color);
             x += 8;
         }
     }
@@ -1252,9 +1252,9 @@ typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
-void font_Printf(u8 *arg0, s32 first_arg, ...) {
+void font_Printf(u8 *format_cursor, s32 first_arg, ...) {
     char buf[0x400];
-    char var_1[0x100];
+    char format_chunk[0x100];
     va_list ap;
     s32 cur_arg;
     s32 var_4;
@@ -1263,18 +1263,18 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
 
     cur_arg = first_arg;
     var_4 = 0;
-    p = var_1;
+    p = format_chunk;
     va_start(ap, first_arg);
     buf[0] = 0;
 
-    while ((var_6 = *arg0++) != 0) {
+    while ((var_6 = *format_cursor++) != 0) {
         if (var_6 == '%') {
             if (var_4 == 0) {
                 var_4 = 1;
             } else {
                 *p = 0;
-                sprintf(buf + strlen(buf), var_1, cur_arg);
-                p = var_1;
+                sprintf(buf + strlen(buf), format_chunk, cur_arg);
+                p = format_chunk;
                 cur_arg = va_arg(ap, s32);
             }
         }
@@ -1282,7 +1282,7 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
     }
 
     *p = 0;
-    sprintf(buf + strlen(buf), var_1, cur_arg);
+    sprintf(buf + strlen(buf), format_chunk, cur_arg);
 
     p = buf;
     while ((var_6 = *p++) != 0) {
@@ -1325,9 +1325,9 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
     }
 }
 
-void bitstream_InitDeltaAccumulator(s32 arg0, s32 arg1) {
-    Unk800A3D40Rec *ptr = &g_bitstream_delta_accumulators[arg1];
-    ptr->bits.next = (u32 *)arg0;
+void bitstream_InitDeltaAccumulator(s32 stream_address, s32 accumulator_index) {
+    Unk800A3D40Rec *ptr = &g_bitstream_delta_accumulators[accumulator_index];
+    ptr->bits.next = (u32 *)stream_address;
     ptr->bits.word = 0;
     ptr->bits.avail = 0;
     ptr->unkC[5] = 0;
@@ -1340,9 +1340,9 @@ void bitstream_InitDeltaAccumulator(s32 arg0, s32 arg1) {
 
 extern s32 bitstream_ReadBits(BitStream *, s32);
 
-s16 *bitstream_AccumulateDeltas(s32 arg0) {
+s16 *bitstream_AccumulateDeltas(s32 accumulator_index) {
     s32 i = 0;
-    Unk800A3D40Rec *base = &g_bitstream_delta_accumulators[arg0];
+    Unk800A3D40Rec *base = &g_bitstream_delta_accumulators[accumulator_index];
     do {
         s32 nbits;
         s16 val;

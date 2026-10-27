@@ -48,15 +48,15 @@ s32 memcard_Format(s32 a0, s32 a1) {
 }
 
 void memcard_BuildSaveBlock(u8 *a0) {
-    s32 var_0;
+    s32 record_byte_sum;
     u8 *p;
     s32 i;
 
-    var_0 = 0;
+    record_byte_sum = 0;
     p = (u8 *)&g_saved_record;
     i = 0;
     do {
-        var_0 += *p++;
+        record_byte_sum += *p++;
         i++;
     } while ((u32)i < 0x24);
 
@@ -67,7 +67,7 @@ void memcard_BuildSaveBlock(u8 *a0) {
         i = 0;
         do {
             var_3->rec[i] = g_saved_record;
-            var_3->sum[i] = var_0;
+            var_3->sum[i] = record_byte_sum;
             {
                 s32 j = 0;
                 do {
@@ -92,14 +92,14 @@ s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
     i = 0;
     do {
         s32 sum;
-        u8 *var_3;
+        u8 *record_byte_cursor;
 
         sum = 0;
-        var_3 = (u8 *)&arg0->rec[i];
+        record_byte_cursor = (u8 *)&arg0->rec[i];
         j = 0;
         do {
-            sum += *var_3;
-            var_3++;
+            sum += *record_byte_cursor;
+            record_byte_cursor++;
             j++;
         } while (j < 0x24U);
         if (sum == arg0->sum[i]) {

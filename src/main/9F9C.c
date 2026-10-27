@@ -329,25 +329,25 @@ decode:
     }
 }
 
-void font_PrintU16Triples(u16 *arg0) {
+void font_PrintU16Triples(u16 *triple_cursor) {
     s32 i;
     u16 *p;
     i = 0;
-    p = arg0 + 2;
+    p = triple_cursor + 2;
     do {
         i++;
-        font_Printf((u8 *)D_800100A4, arg0[0], p[-1], p[0]);
+        font_Printf((u8 *)D_800100A4, triple_cursor[0], p[-1], p[0]);
         p += 3;
-        arg0 += 3;
+        triple_cursor += 3;
     } while (i < 0x16);
 }
 
-s32 math_SignExt12Div(s32 arg0, s32 arg1) {
-    s32 v = arg0 & 0xFFF;
+s32 math_SignExt12Div(s32 value_bits, s32 divisor) {
+    s32 v = value_bits & 0xFFF;
     if (v >= 0x800) {
         v -= 0x1000;
     }
-    return v / arg1;
+    return v / divisor;
 }
 
 void camera_CalcEye(Rec44 *arg0, s32 *arg1) {
@@ -1423,13 +1423,13 @@ void fight_SplitFrameCounterIntoMinutesSecondsHundredths(Unk8001CD68Rec *arg0) {
         return;
     }
     {
-        s32 var_1 = val / 1800;
-        s32 var_2 = val / 30 - var_1 * 60;
-        arg0->unk_2 = var_2;
+        s32 minutes = val / 1800;
+        s32 seconds = val / 30 - minutes * 60;
+        arg0->unk_2 = seconds;
         {
-            s32 var_3 = (g_fight_timer_frames % 30) * 100 / 30;
-            arg0->unk_0 = var_1;
-            arg0->unk_3 = var_3;
+            s32 hundredths = (g_fight_timer_frames % 30) * 100 / 30;
+            arg0->unk_0 = minutes;
+            arg0->unk_3 = hundredths;
         }
     }
 }

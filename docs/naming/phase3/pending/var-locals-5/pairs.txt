@@ -5,7 +5,6 @@ memcard_BuildSaveBlock:var_0=record_byte_sum
 memcard_RestoreSaveBlock:var_3=record_byte_cursor
 math_SignExt12Div:arg0=value_bits
 math_SignExt12Div:arg1=divisor
-math_Popcount32:arg0=bits
 fight_ScanCommandStreamAndLoadImage:arg0=command_cursor
 fight_ScanCommandStreamAndLoadImage:var_2=scan_done
 fight_ScanCommandStreamAndLoadImage:var_3=command_byte
