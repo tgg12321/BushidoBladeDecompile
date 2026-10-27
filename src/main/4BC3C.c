@@ -324,17 +324,17 @@ void snd_RebaseListedVabs(s32 rebase_delta) {
 }
 
 void snd_CloseListedVabs(void) {
-    s32 i;
-    for (i = 0; i < 3; i++) {
-        SsVabClose(g_vab_id_list[i]);
-        g_vab_rec_ptr[g_vab_id_list[i]] = 0;
-        g_vab_vb_sbaddr[g_vab_id_list[i]] = 0;
+    s32 vab_list_index;
+    for (vab_list_index = 0; vab_list_index < 3; vab_list_index++) {
+        SsVabClose(g_vab_id_list[vab_list_index]);
+        g_vab_rec_ptr[g_vab_id_list[vab_list_index]] = 0;
+        g_vab_vb_sbaddr[g_vab_id_list[vab_list_index]] = 0;
     }
 }
 
 extern s16 D_8009AD1C[][2];
 
-s32 snd_SetReverb(s32 arg0) {
+s32 snd_SetReverb(s32 reverb_index) {
     s32 result;
     s16 *p;
     s16 temp_a0;
@@ -342,8 +342,8 @@ s32 snd_SetReverb(s32 arg0) {
     s32 var_4;
     func_800858D0(0);
     base = &D_8009AD1C[0][0];
-    p = base + arg0 * 2;
-    var_4 = arg0 << 1;
+    p = base + reverb_index * 2;
+    var_4 = reverb_index << 1;
     if (*p >= 0) {
         SsUtReverbOff();
         SsUtSetReverbType(0);
@@ -368,65 +368,66 @@ void snd_StopVoicesAndReverb(void) {
 
 extern s32 SsVabFakeHead();
 
-s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 snd_MoveVabBody(
+    s32 ram_buffer_addr, s32 vab_id, s32 dest_sbaddr, s32 src_sbaddr) {
     func_800858D0(0);
-    SsVabClose((s16)arg1);
-    SpuSetTransferStartAddr(arg3);
-    SpuRead(arg0, g_vab_rec_ptr[arg1]->unk_0C);
+    SsVabClose((s16)vab_id);
+    SpuSetTransferStartAddr(src_sbaddr);
+    SpuRead(ram_buffer_addr, g_vab_rec_ptr[vab_id]->unk_0C);
     SpuIsTransferCompleted(1);
-    SpuSetTransferStartAddr(arg2);
-    SpuWrite(arg0, g_vab_rec_ptr[arg1]->unk_0C);
+    SpuSetTransferStartAddr(dest_sbaddr);
+    SpuWrite(ram_buffer_addr, g_vab_rec_ptr[vab_id]->unk_0C);
     SpuIsTransferCompleted(1);
-    SsVabFakeHead(g_vab_rec_ptr[arg1]->unk_04, (s16)arg1, arg2);
-    SsVabFakeBody((s16)arg1);
-    g_vab_vb_sbaddr[arg1] = arg2;
-    return arg2 + g_vab_rec_ptr[arg1]->unk_0C;
+    SsVabFakeHead(g_vab_rec_ptr[vab_id]->unk_04, (s16)vab_id, dest_sbaddr);
+    SsVabFakeBody((s16)vab_id);
+    g_vab_vb_sbaddr[vab_id] = dest_sbaddr;
+    return dest_sbaddr + g_vab_rec_ptr[vab_id]->unk_0C;
 }
 
 /* SPU VAB compaction: sorts the resident VAB slots 1..15 by SPU address, then
  * walks them from the end of slot 0, moving down (snd_MoveVabBody) the first
  * slot that is not already contiguous and every slot after it. `arg0` is never
  * read. `addr` is assigned inside the first (otherwise empty) loop: the target
- * computes it after the loop's `count > 0` guard. */
+ * computes it after the loop's `vab_count > 0` guard. */
 s32 snd_CompactVabBodies(s16 arg0, s32 base) {
-    s16 var_0[16];
-    s16 count;
+    s16 sorted_vab_ids[16];
+    s16 vab_count;
     u16 mask;
-    u32 min;
-    s16 minidx;
-    s16 i;
+    u32 min_sbaddr;
+    s16 lowest_sbaddr_vab_id;
+    s16 vab_id;
     s16 j;
     s16 k;
     s32 addr;
 
-    count = 0;
+    vab_count = 0;
     mask = 0;
     for (;;) {
-        min = 0x7FFFF;
-        minidx = -1;
-        for (i = 1; i < 16; i++) {
-            if (!((mask >> i) & 1) && g_vab_vb_sbaddr[i] != 0 &&
-                g_vab_vb_sbaddr[i] < min) {
-                min = g_vab_vb_sbaddr[i];
-                minidx = i;
+        min_sbaddr = 0x7FFFF;
+        lowest_sbaddr_vab_id = -1;
+        for (vab_id = 1; vab_id < 16; vab_id++) {
+            if (!((mask >> vab_id) & 1) && g_vab_vb_sbaddr[vab_id] != 0 &&
+                g_vab_vb_sbaddr[vab_id] < min_sbaddr) {
+                min_sbaddr = g_vab_vb_sbaddr[vab_id];
+                lowest_sbaddr_vab_id = vab_id;
             }
         }
-        if (minidx == -1) {
+        if (lowest_sbaddr_vab_id == -1) {
             break;
         }
-        var_0[count++] = minidx;
-        mask += 1 << minidx;
+        sorted_vab_ids[vab_count++] = lowest_sbaddr_vab_id;
+        mask += 1 << lowest_sbaddr_vab_id;
     }
-    for (j = 0; j < count; j++) {
+    for (j = 0; j < vab_count; j++) {
         addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0]->unk_0C;
     }
-    for (j = 0; j < count; j++) {
-        if (g_vab_vb_sbaddr[var_0[j]] == addr) {
-            addr += g_vab_rec_ptr[var_0[j]]->unk_0C;
+    for (j = 0; j < vab_count; j++) {
+        if (g_vab_vb_sbaddr[sorted_vab_ids[j]] == addr) {
+            addr += g_vab_rec_ptr[sorted_vab_ids[j]]->unk_0C;
         } else {
-            for (k = j; k < count; k++) {
-                addr = snd_MoveVabBody(
-                    base, var_0[k], addr, g_vab_vb_sbaddr[var_0[k]]);
+            for (k = j; k < vab_count; k++) {
+                addr = snd_MoveVabBody(base, sorted_vab_ids[k], addr,
+                                       g_vab_vb_sbaddr[sorted_vab_ids[k]]);
             }
             return 0;
         }
@@ -434,9 +435,9 @@ s32 snd_CompactVabBodies(s16 arg0, s32 base) {
     return 0;
 }
 
-/* snd_LoadVabPack - load a VAB: close whatever occupies slot `arg1`,
+/* snd_LoadVabPack - load a VAB: close whatever occupies slot `vab_id`,
  * recompute the sticky SPU address from the resident banks (compacting them
- * with snd_CompactVabBodies for arg1 != 0), turn the pack's first three
+ * with snd_CompactVabBodies for vab_id != 0), turn the pack's first three
  * offsets (Unk8005C2A8Pack unk_00..unk_08) into addresses, open it with
  * snd_VabOpen and record its slot and SPU address. Returns unk_08 less the
  * pack's address (the third offset, unrelocated), or 0 on failure. snd_VabOpen
@@ -447,44 +448,45 @@ extern s32 snd_VabOpen(Unk8005C2A8Pack *, s16);
 
 const char D_800158CC[20] = "vab id:%d mistake\n";
 
-s32 snd_LoadVabPack(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
-    s16 i;
+s32 snd_LoadVabPack(
+    Unk8005C2A8Pack *vab_pack, s16 vab_id, s32 ram_buffer_addr) {
+    s16 vab_index;
     s16 id;
 
-    if (GetWorkingRecord()->unk14_0 == 3 && arg1 == 5) {
+    if (GetWorkingRecord()->unk14_0 == 3 && vab_id == 5) {
         return 0;
     }
     func_800858D0(0);
-    if (g_vab_rec_ptr[arg1] != 0) {
-        SsVabClose(arg1);
-        g_vab_rec_ptr[arg1] = 0;
-        g_vab_vb_sbaddr[arg1] = 0;
+    if (g_vab_rec_ptr[vab_id] != 0) {
+        SsVabClose(vab_id);
+        g_vab_rec_ptr[vab_id] = 0;
+        g_vab_vb_sbaddr[vab_id] = 0;
     }
-    if (arg1 != 0) {
+    if (vab_id != 0) {
         g_vab_sticky_sbaddr = g_vab_vb_sbaddr[0];
-        for (i = 0; i < 16; i++) {
-            if (g_vab_rec_ptr[i] != 0) {
-                g_vab_sticky_sbaddr += g_vab_rec_ptr[i]->unk_0C;
+        for (vab_index = 0; vab_index < 16; vab_index++) {
+            if (g_vab_rec_ptr[vab_index] != 0) {
+                g_vab_sticky_sbaddr += g_vab_rec_ptr[vab_index]->unk_0C;
             }
         }
     }
     D_800A3408 = g_vab_sticky_sbaddr - D_800A340C;
-    if (arg1 != 0) {
-        snd_CompactVabBodies(arg1, arg2);
+    if (vab_id != 0) {
+        snd_CompactVabBodies(vab_id, ram_buffer_addr);
     }
-    arg0->unk_00 += (s32)arg0;
-    arg0->unk_04 += (s32)arg0;
-    arg0->unk_08 += (s32)arg0;
-    id = snd_VabOpen(arg0, arg1);
+    vab_pack->unk_00 += (s32)vab_pack;
+    vab_pack->unk_04 += (s32)vab_pack;
+    vab_pack->unk_08 += (s32)vab_pack;
+    id = snd_VabOpen(vab_pack, vab_id);
     SsVabTransCompleted(1);
     if (id != -1) {
-        g_vab_rec_ptr[id] = arg0;
-        D_800A3408 += arg0->unk_0C;
+        g_vab_rec_ptr[id] = vab_pack;
+        D_800A3408 += vab_pack->unk_0C;
         g_vab_sticky_sbaddr = D_800A340C + D_800A3408;
-        g_vab_vb_sbaddr[arg1] = SsUtGetVBaddrInSB(arg1);
-        return arg0->unk_08 - (s32)arg0;
+        g_vab_vb_sbaddr[vab_id] = SsUtGetVBaddrInSB(vab_id);
+        return vab_pack->unk_08 - (s32)vab_pack;
     }
-    printf(D_800158CC, arg1);
+    printf(D_800158CC, vab_id);
     return 0;
 }
 
@@ -492,16 +494,16 @@ s32 snd_LoadVabPack(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
  * the target's CFG (li -1 in its own block, shared sign-extend join); a direct
  * return or an s32 carrier does not match
  * (proven-spelling-class-reconstruction). */
-s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
+s32 snd_VabFakeOpen(s32 rebase_delta, s16 vab_id) {
     s32 idx;
     s16 ret;
     func_800858D0(0);
-    idx = arg1;
+    idx = vab_id;
     if (g_vab_rec_ptr[idx] != 0) {
         g_vab_rec_ptr[idx] =
-            (Unk8005C2A8Pack *)((u8 *)g_vab_rec_ptr[idx] + arg0);
-        g_vab_rec_ptr[idx]->unk_00 += arg0;
-        g_vab_rec_ptr[idx]->unk_04 += arg0;
+            (Unk8005C2A8Pack *)((u8 *)g_vab_rec_ptr[idx] + rebase_delta);
+        g_vab_rec_ptr[idx]->unk_00 += rebase_delta;
+        g_vab_rec_ptr[idx]->unk_04 += rebase_delta;
         SsVabClose(idx);
         ret = SsVabFakeHead(
             g_vab_rec_ptr[idx]->unk_04, idx, g_vab_vb_sbaddr[idx]);
@@ -518,11 +520,11 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
 void SsVabOpenHeadSticky(s32, s16, s32);
 s32 SsVabTransBody(s32, s16);
 
-s32 snd_VabOpen(Unk8005C2A8Pack *a0, s16 a1) {
-    SsVabClose(a1);
-    SsVabOpenHeadSticky(a0->unk_04, a1, g_vab_sticky_sbaddr);
-    ((VabHdr *)a0->unk_04)->id = a1;
-    return (s16)SsVabTransBody(a0->unk_08, a1);
+s32 snd_VabOpen(Unk8005C2A8Pack *vab_pack, s16 vab_id) {
+    SsVabClose(vab_id);
+    SsVabOpenHeadSticky(vab_pack->unk_04, vab_id, g_vab_sticky_sbaddr);
+    ((VabHdr *)vab_pack->unk_04)->id = vab_id;
+    return (s16)SsVabTransBody(vab_pack->unk_08, vab_id);
 }
 
 void snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode(void) {
@@ -537,59 +539,62 @@ extern u16 D_8009AA70[][2];
 /* FAKE: declared int though no value is returned (plausibly an implicit-int
  * function in the original): with void, its call in snd_QueuePositionalSound
  * sets no $v0, so reload re-places the var_7 product in $v0 there (score 2). */
-s32 snd_QueueSound(s32 a0, s32 a1, s32 a2) {
-    s16 i = 0;
-    u16 *var_1 = D_8009AA70[a0];
+s32 snd_QueueSound(s32 sound_index, s32 right_volume, s32 left_volume) {
+    s16 queue_index = 0;
+    u16 *var_1 = D_8009AA70[sound_index];
     do {
-        if (g_snd_queue[i].req == 0) {
-            g_snd_queue[i].req = var_1;
-            g_snd_queue[i].volr = a1;
-            g_snd_queue[i].voll = a2;
+        if (g_snd_queue[queue_index].req == 0) {
+            g_snd_queue[queue_index].req = var_1;
+            g_snd_queue[queue_index].volr = right_volume;
+            g_snd_queue[queue_index].voll = left_volume;
             return;
         }
-        i++;
-    } while (i < 0x18);
+        queue_index++;
+    } while (queue_index < 0x18);
 }
 
 /* Per-frame sound-request flush: walk the 24-entry pending-sound pool, and for
  * every entry whose VAB is loaded, find the first free SPU voice at or after
- * the running `next` cursor and key the note on with the entry's
+ * the running `next_voice_index` cursor and key the note on with the entry's
  * stored volumes. Each pool slot is cleared as it is visited.
  */
 void snd_FlushSoundQueue(void) {
 
     u8 var_0[24];
-    s16 i;
-    s16 var_2;
-    s16 next;
-    u16 var_4;
+    s16 queue_index;
+    s16 voice_index;
+    s16 next_voice_index;
+    u16 vab_id;
     u16 *p;
-    u32 *var_6;
+    u32 *key_on_entry;
 
     SpuGetAllKeysStatus(var_0);
-    next = 0;
-    for (i = 0; i < 0x18; i++) {
-        p = g_snd_queue[i].req;
+    next_voice_index = 0;
+    for (queue_index = 0; queue_index < 0x18; queue_index++) {
+        p = g_snd_queue[queue_index].req;
         if (p != 0 && (s32)g_vab_rec_ptr[*p] < 0) {
-            var_2 = next;
-            for (; var_2 < 0x18; var_2++) {
-                if (SpuGetKeyStatus(1 << var_2) != 1) {
-                    var_4 = *p;
-                    if (var_4 == 6 && g_vab_rec_ptr[6] == g_vab_rec_ptr[3]) {
-                        var_4 = 3;
+            voice_index = next_voice_index;
+            for (; voice_index < 0x18; voice_index++) {
+                if (SpuGetKeyStatus(1 << voice_index) != 1) {
+                    vab_id = *p;
+                    if (vab_id == 6 && g_vab_rec_ptr[6] == g_vab_rec_ptr[3]) {
+                        vab_id = 3;
                     }
-                    var_6 = &((u32 *)g_vab_rec_ptr[var_4]->unk_00)[p[1]];
-                    SsUtKeyOnV((s16)var_2, (s16)var_4, (s16)(*var_6 & 0x7F),
-                               (s16)((*var_6 >> 7) & 0xF),
-                               (s16)((*var_6 >> 11) & 0x7F),
-                               (s16)((*var_6 >> 18) & 0x7F),
-                               g_snd_queue[i].voll, g_snd_queue[i].volr);
-                    next = var_2 + 1;
+                    key_on_entry =
+                        &((u32 *)g_vab_rec_ptr[vab_id]->unk_00)[p[1]];
+                    SsUtKeyOnV((s16)voice_index, (s16)vab_id,
+                               (s16)(*key_on_entry & 0x7F),
+                               (s16)((*key_on_entry >> 7) & 0xF),
+                               (s16)((*key_on_entry >> 11) & 0x7F),
+                               (s16)((*key_on_entry >> 18) & 0x7F),
+                               g_snd_queue[queue_index].voll,
+                               g_snd_queue[queue_index].volr);
+                    next_voice_index = voice_index + 1;
                     break;
                 }
             }
         }
-        g_snd_queue[i].req = 0;
+        g_snd_queue[queue_index].req = 0;
     }
 }
 
