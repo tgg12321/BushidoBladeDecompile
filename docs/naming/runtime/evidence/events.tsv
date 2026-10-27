@@ -463,6 +463,27 @@ g_fight_match_cursor	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-bat
 g_fight_match_cursor	write	fight_RecordMatchResult	t_bout2	0x800341F4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	t_bout3	0x800341F4	coverage	0	1	1	[2]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	t_result	0x800341F4	coverage	0	1	1	[3]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3748	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	story-concede-1@40003b32c8bd	1	group_has_unresolved_site;unresolved_function
+D_800A3748	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-concede-1@40003b32c8bd	1	group_has_unresolved_site
+D_800A3748	write	fight_Init	t_fight	0x8001E32C	coverage	0	1	1	[255]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3748	write	fight_UpdateFighterInteractionsAndPointCaches	concede	0x8002C824	coverage	0	1	1	[1]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A37B0	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	story-concede-1@40003b32c8bd	1	group_has_unresolved_site;unresolved_function
+D_800A37B0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-concede-1@40003b32c8bd	1	group_has_unresolved_site
+D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	story-concede-1@40003b32c8bd	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-concede-1@40003b32c8bd	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_Init	t_fight	0x8001E398	coverage	0	2	1	[1]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_InitCommandStreamImageLoad	t_stage	0x8003B8C8	coverage	0	2	1	[23]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_InitNearestStartPairPlayback	concede	0x8003CF64	coverage	0	2	1	[29]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_InitRotatingViewThreeOptionChoice	after	0x8003C988	coverage	0	2	1	[25]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_RunCommandStream	stage_card	0x8003B804	coverage	0	2	1	[0]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_RunCommandStream	t_stage	0x8003B718	coverage	0	2	1	[22]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterInteractionsAndPointCaches	concede	0x8002C854	coverage	0	2	1	[28]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams	after	0x8003D290	coverage	0	2	1	[24]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	story-concede-1@40003b32c8bd	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_stage	0x80035D68	coverage	0	2	1	[0]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
+D_800A3836	write	fight_InitCommandStream	t_stage	0x8003B250	coverage	0	1	1	[255]	0	story-concede-1@40003b32c8bd	0	coverage_next_start_bound
 fighter_Init	call	fight_Init	after_katze	0x8001DD90	report			18	[[0,0,0,0],[0,0,12,0],[1,1,15,3],[1,1,17,1],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	fight_Init	boot_intro	0x8001DD90	report			2	[[0,0,0,0],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	fight_Init	final_fight	0x8001DD90	report			6	[[0,0,0,0],[1,1,28,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	

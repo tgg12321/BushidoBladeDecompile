@@ -1,0 +1,385 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "watch": [
+    {
+      "at": "D_800A3834",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 200
+    },
+    {
+      "at": "D_800A37B0",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 20
+    },
+    {
+      "at": "D_800A3748",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 20
+    },
+    {
+      "at": "D_800A3836",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 20
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A3834",
+      "len": 2
+    },
+    {
+      "at": "D_800A3836",
+      "len": 1
+    },
+    {
+      "at": "D_800A38DC",
+      "len": 1
+    },
+    {
+      "at": "D_800A37B0",
+      "len": 1
+    }
+  ],
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 12000,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6100,
+        "name": "t_story"
+      },
+      {
+        "frame": 6810,
+        "name": "story_text"
+      },
+      {
+        "frame": 6910,
+        "name": "t_char"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select"
+      },
+      {
+        "frame": 7300,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7900,
+        "name": "t_stage"
+      },
+      {
+        "frame": 8360,
+        "name": "stage_card"
+      },
+      {
+        "frame": 8800,
+        "name": "t_fight"
+      },
+      {
+        "frame": 8900,
+        "name": "fight"
+      },
+      {
+        "frame": 9000,
+        "name": "concede"
+      },
+      {
+        "frame": 9350,
+        "name": "after"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7000,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7600,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "SELECT"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 8360,
+        "name": "stage_card.first"
+      },
+      {
+        "frame": 8900,
+        "name": "fight.first"
+      },
+      {
+        "frame": 8999,
+        "name": "fight.last"
+      },
+      {
+        "frame": 9050,
+        "name": "concede.9050"
+      },
+      {
+        "frame": 9100,
+        "name": "concede.9100"
+      },
+      {
+        "frame": 9150,
+        "name": "concede.9150"
+      },
+      {
+        "frame": 9200,
+        "name": "concede.9200"
+      },
+      {
+        "frame": 9250,
+        "name": "concede.9250"
+      },
+      {
+        "frame": 9300,
+        "name": "concede.9300"
+      },
+      {
+        "frame": 9350,
+        "name": "after.9350"
+      },
+      {
+        "frame": 9450,
+        "name": "after.9450"
+      },
+      {
+        "frame": 9550,
+        "name": "after.9550"
+      },
+      {
+        "frame": 9650,
+        "name": "after.9650"
+      },
+      {
+        "frame": 9750,
+        "name": "after.9750"
+      },
+      {
+        "frame": 9850,
+        "name": "after.9850"
+      },
+      {
+        "frame": 9950,
+        "name": "after.9950"
+      },
+      {
+        "frame": 10050,
+        "name": "after.10050"
+      },
+      {
+        "frame": 10150,
+        "name": "after.10150"
+      },
+      {
+        "frame": 10250,
+        "name": "after.10250"
+      },
+      {
+        "frame": 10350,
+        "name": "after.10350"
+      },
+      {
+        "frame": 10450,
+        "name": "after.10450"
+      },
+      {
+        "frame": 10550,
+        "name": "after.10550"
+      },
+      {
+        "frame": 10650,
+        "name": "after.10650"
+      },
+      {
+        "frame": 10750,
+        "name": "after.10750"
+      },
+      {
+        "frame": 10850,
+        "name": "after.10850"
+      },
+      {
+        "frame": 10950,
+        "name": "after.10950"
+      },
+      {
+        "frame": 11050,
+        "name": "after.11050"
+      },
+      {
+        "frame": 11150,
+        "name": "after.11150"
+      },
+      {
+        "frame": 11250,
+        "name": "after.11250"
+      },
+      {
+        "frame": 11350,
+        "name": "after.11350"
+      },
+      {
+        "frame": 11450,
+        "name": "after.11450"
+      },
+      {
+        "frame": 11550,
+        "name": "after.11550"
+      },
+      {
+        "frame": 11650,
+        "name": "after.11650"
+      },
+      {
+        "frame": 11750,
+        "name": "after.11750"
+      },
+      {
+        "frame": 11850,
+        "name": "after.11850"
+      },
+      {
+        "frame": 11950,
+        "name": "after.11950"
+      },
+      {
+        "frame": 11999,
+        "name": "last"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6059	transition; no screen claim; mode 8 at 5764 (pc 0x8003C02C), 9 at 5967 (pc 0x80035520)	5500:CROSS,5800:START	-
+top_menu	6060	6099	the top menu with Story Mode lit (Battle of the Two Schools, Side View / POV)	-	capture.top_menu.first.png
+t_story	6100	6809	transition; no screen claim	6100:CROSS,6400:START,6700:CROSS	-
+story_text	6810	6909	no screenshot in this phase; no screen claim	-	-
+t_char	6910	6949	transition; no screen claim	-	-
+char_select	6950	7299	Select Character, the cursor on KANNUKI (first shot only)	7000:START	capture.char_select.first.png
+t_weapon	7300	7359	transition; no screen claim	7300:CROSS	-
+weapon_select	7360	7899	no screenshot in this phase; no screen claim	7600:START	-
+t_stage	7900	8359	transition; no screen claim; D_800A3836 <- 0xFF at 8149 (fight_InitCommandStream, pc 0x8003B250), mode 0x16 8322, 0x17 8323	7900:CROSS,8200:START	-
+stage_card	8360	8799	Next Battle Stage: Outside the Meikyokan	8500:CROSS	capture.stage_card.first.png
+t_fight	8800	8899	transition; D_800A3748 <- 0xFF at 8855 (pc 0x8001E32C), mode 1 at 8865	8800:START	-
+fight	8900	8999	the first fight: KANNUKI vs a ninja, P1 idle (8900, 8999)	-	capture.fight.first.png,capture.fight.last.png
+concede	9000	9349	P1 SELECT at 9000: KANNUKI standing (9050), going down (9100) and kneeling with the sword on the ground (9150, 9200), 9250 black; D_800A3748 <- 1 (pc 0x8002C824) and mode 0x1C (pc 0x8002C854) at 9209, mode 0x1D at 9267 (pc 0x8003CF64); 9300 a close view of KANNUKI	9000:SELECT	capture.concede.9050.png,capture.concede.9100.png,capture.concede.9150.png,capture.concede.9200.png,capture.concede.9250.png,capture.concede.9300.png
+after	9350	11999	the cutscene: a close view of KANNUKI, the ninja at the left edge (9350), the ninja behind the kneeling KANNUKI with the sword raised (9450, 9550), then KANNUKI collapsing face down (9650), then lying on the floor (9750, 9850), the ninja crouched beside him with the sword low; mode 0x18 at 9868 (pc 0x8003D290), 0x19 at 9870 (pc 0x8003C988); from 9950 to the end the Rematch / Return to Sub Menu / Return to Top Menu menu with Rematch lit, no input	-	capture.after.9350.png,capture.after.9450.png,capture.after.9550.png,capture.after.9650.png,capture.after.9750.png,capture.after.9850.png,capture.after.9950.png,capture.after.10050.png,capture.after.10150.png,capture.after.10250.png,capture.after.10350.png,capture.after.10450.png,capture.after.10550.png,capture.after.10650.png,capture.after.10750.png,capture.after.10850.png,capture.after.10950.png,capture.after.11050.png,capture.after.11150.png,capture.after.11250.png,capture.after.11350.png,capture.after.11450.png,capture.after.11550.png,capture.after.11650.png,capture.after.11750.png,capture.after.11850.png,capture.after.11950.png,capture.last.png

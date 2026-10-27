@@ -1,0 +1,521 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "2e828ff552e93f4ab7fb5b66c3104147d670b2e9",
+      "size": 110602
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a387e6db3f2613ec9d7bd8dbfb6f16b3029c8a4e",
+      "size": 30208
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "f2d1d60610f5d3014820fef5fb172bc89bc0cdc7",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.map",
+      "sha1": "9373e15702316da97f58c339c2f995d96dc2e5a8",
+      "size": 409077
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.elf",
+      "sha1": "41cf7cedc2e62bc99496a42bf25fb16ec1a71adf",
+      "size": 860172
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\spec.json",
+    "sha1": "cb85aa6080d539b3c1bb918f123b720d3fe2d494",
+    "size": 6264
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Downloads\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.script.lua",
+      "sha1": "bac27ffc102e3d0ccfd67603f02740c841d312c3",
+      "size": 6781
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 1538,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.jsonl",
+      "sha1": "40003b32c8bdcd99c5c55a8a2af8f7fe89fb7472",
+      "size": 460039,
+      "store_name": "capture.jsonl.sha1-40003b32c8bdcd99c5c55a8a2af8f7fe89fb7472",
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.top_menu.first.png",
+      "sha1": "2607fc28352b684edfa2617119a39a158017a61e",
+      "size": 31576,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.char_select.first.png",
+      "sha1": "05c8fcd620261e5646396035747d1e834ab658b3",
+      "size": 19403,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.stage_card.first.png",
+      "sha1": "bdb8c6a866f4f40fd3d5ceedd46a617117dba60a",
+      "size": 23905,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.fight.first.png",
+      "sha1": "d3e996a99ed9299fb7e0b0da9bb1aae1e0b1c230",
+      "size": 30582,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.fight.last.png",
+      "sha1": "2ceb2005e12ef592ba323bca7f3bd634848e91fd",
+      "size": 35055,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.concede.9050.png",
+      "sha1": "27b4809cb01675e637cadbbdb448afd579316f72",
+      "size": 36357,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.concede.9100.png",
+      "sha1": "9bb2ce2938b6f8ca81616dff932376620680173c",
+      "size": 35404,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.concede.9150.png",
+      "sha1": "a6c22cb7872cd6d6dfb6da1b0f8f618e73ff4ccc",
+      "size": 36290,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.concede.9200.png",
+      "sha1": "276c560005f104b4bb31b2be04ea2cc83c12a3f4",
+      "size": 36563,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.concede.9250.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.concede.9300.png",
+      "sha1": "06a509990c62c3745e32c55accf1b9005213106d",
+      "size": 35272,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9350.png",
+      "sha1": "86e73db92b4aa7d607d0386ca67a26b338478cd2",
+      "size": 42019,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9450.png",
+      "sha1": "18824f9364c8b93ec3010e5788d4a9f1330b2ee4",
+      "size": 42134,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9550.png",
+      "sha1": "6442bc308a7f2cc8f26c81d505ef7da3102f0ad8",
+      "size": 39267,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9650.png",
+      "sha1": "e405fd205e41f2694ec0e4cbe41077a10a9bcb25",
+      "size": 39373,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9750.png",
+      "sha1": "ba002b383d983eded0e8366ec10d61579b7086f2",
+      "size": 39658,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9850.png",
+      "sha1": "c164cd69797661d21325507d7e1a779aa9e30496",
+      "size": 39241,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.9950.png",
+      "sha1": "6ce62dcba2853c72acae19ac99e0e13d1ddcceeb",
+      "size": 20815,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10050.png",
+      "sha1": "781b5f8894feb2d8e3e56559814cd7a53afba44c",
+      "size": 15638,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10150.png",
+      "sha1": "7cc8c547b450efea7a7b66aaf24c94439253a422",
+      "size": 22442,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10250.png",
+      "sha1": "5cb921ec8f351f2ddb38d6e27e6bd5b46e9de4f9",
+      "size": 23448,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10350.png",
+      "sha1": "d01c4e63a12e20de73ef0e4c5df08661ea2816b7",
+      "size": 23988,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10450.png",
+      "sha1": "0412904f1bdbe75c2deca11fb8fb93618629d3e6",
+      "size": 22139,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10550.png",
+      "sha1": "caea27800c95819f1f508eb78f7fdfda3656468b",
+      "size": 19339,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10650.png",
+      "sha1": "6c289bf09d286640fd99cf04aedf2382fa3bdbc5",
+      "size": 21540,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10750.png",
+      "sha1": "076f8da9616271ce23e7fad5b372ad4d907b0791",
+      "size": 24523,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10850.png",
+      "sha1": "212dc419a244b81bcbdb72a3443c55aa9171019d",
+      "size": 26516,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.10950.png",
+      "sha1": "af08cae7d5ea1b340c0783b491360033c27be8ef",
+      "size": 26196,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11050.png",
+      "sha1": "f217737493c667d0cfc6c55f41a1c1acfe4a23e7",
+      "size": 21812,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11150.png",
+      "sha1": "9e6c724ecb2684ce49f724c7dcda34c73735de2a",
+      "size": 22347,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11250.png",
+      "sha1": "c27ccf28e94ccd7f2ef3f4909b8746cc8a0e00ce",
+      "size": 23937,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11350.png",
+      "sha1": "907f7b5a9a9202cb971baaf93c819c82ad21d875",
+      "size": 23424,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11450.png",
+      "sha1": "6dce418cee7f426ff6f40d7e928972de06b3f030",
+      "size": 20227,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11550.png",
+      "sha1": "544c432d2cd9cd3a852caa3db564392f358e62aa",
+      "size": 19397,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11650.png",
+      "sha1": "4c9dff84785f66c0f288ff75ae55827cc03677aa",
+      "size": 19452,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11750.png",
+      "sha1": "24f8e0b6b69ca5c23d216c7db013b746711d4bd9",
+      "size": 19765,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11850.png",
+      "sha1": "40884ea15ae40a624024948f70937af40e7ebc08",
+      "size": 19030,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.after.11950.png",
+      "sha1": "c491ca0305ca0654fb8b48aa08f85cc210b26f01",
+      "size": 20522,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.last.png",
+      "sha1": "3c0664bd14fdcecab4b2f8bcb043d202da46bbae",
+      "size": 20697,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.script.log",
+      "sha1": "88bedbc18fadc6133c28a12a346fba9ec334d0ea",
+      "size": 2252,
+      "store_name": "capture.script.log.sha1-88bedbc18fadc6133c28a12a346fba9ec334d0ea",
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-concede-1\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}
