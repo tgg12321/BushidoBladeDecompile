@@ -1681,9 +1681,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
      * above) (Ruling 11, reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
-     * D_8009A850 scan index; a copy of var_53 taken in the walk branch
-     * (Q34), counted down; the script-list entry index (Ruling 11,
-     * reused-local-necessity). */
+     * D_8009A850 scan index; a copy of last_route_node_index taken in the
+     * walk branch (Q34), counted down; the script-list entry index (Ruling
+     * 11, reused-local-necessity). */
     s32 work4;
     s32 pick_weight_index;
     s32 hi;
@@ -2403,7 +2403,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     }
                     /* Q82: work2 (the Q75 value) is compared as an s16, as
                      * the target does (sll 16; sra 16; slt). No cast,
-                     * an s16 best or var_44 local, or work2 as s16 all differ.
+                     * an s16 best or pick_score local, or work2 as s16 all
+                     * differ.
                      */
                     if ((s16)work2 < pick_score) {
                         best_pick_weight_index = pick_weight_index;
