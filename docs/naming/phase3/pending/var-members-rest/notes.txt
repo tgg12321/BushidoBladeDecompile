@@ -1,0 +1,60 @@
+var-members-rest -- draft notes (Codex candidates re-derived; Codex was untrusted)
+
+Surviving: 16 member rows (pairs.txt). Pool (Unk8006E49CRec) and draw-context cursor
+(Unk800788B0Rec) members of the same prim kind share ONE name on purpose:
+  textured_quad_prims  pool.unk_00 / cursor.unk_00
+  gradient_quad_prims  pool.unk_08 / cursor.unk_08
+  tile_prims           pool.unk_0C / cursor.unk_10   (permuted: pool +0x0C -> cursor +0x10)
+  sprite_prims         pool.unk_10 / cursor.unk_0C   (permuted: pool +0x10 -> cursor +0x0C)
+  draw_area_prims      pool.unk_18 / cursor.unk_18
+  draw_offset_prims    pool.unk_1C / cursor.unk_1C
+plus Unk8006919CRec: unk_18=row_sheets, unk_40=cursor_row_sheets, unk_44=rect_rows,
+unk_48=sheet_pair_box_sizes.
+
+Why shared names (differs from Codex's *_buffer / *_cursor split): naming_member_apply.py cannot
+rename same-spelled members of two types when a source line holds both
+(`s.unk_04.unk_08 = p->unk_08;` 5ED34.c:243-250, 64FD8.c:1249-1256, 1625-1631, 1724-1730): with
+distinct names the dry run exits 1 with 19 UNRESOLVED lines. The code shows the pair alike (the
+cursor is the pool member copied verbatim, then advanced), so "prims" names the prim storage
+without claiming base vs cursor lifetime. Reviewer may prefer the Codex split
+(textured_quad_buffer/_cursor, ... tile_buffer / sprite_buffer, tile_cursor / sprite_cursor); that
+needs a hand edit of those 19 lines (tool reports exit 1) -- not done here.
+
+DROPPED
+- Unk8006E49CRec.unk_04 / Unk800788B0Rec.unk_04 (flat_quad_*): role is sound (POLY_F4, 63D2C.c:316-360,
+  596CC.c:564-608 raw word 3), but the tool cannot do it: `arg0->unk_04.unk_04` (63D2C.c:316, 360) and
+  `s.unk_04.unk_04 = p->unk_04;` (64FD8.c:1250) also hold the embedding member Unk8006EACCRec.unk_04,
+  so the token rename hits the wrong `unk_04` (dry run UNRESOLVED, 3 lines). Re-propose after
+  Unk8006EACCRec.unk_04 is renamed, or as a hand-edit wave.
+- Unk8006E49CRec.unk_14 / Unk800788B0Rec.unk_14: NO_NAME. The cursor is a DR_MODE* but
+  gpu_AddThreeGreyTilesStackedUp(s32 *arg0, ...) reads/writes arg0[6]; the 4 typed callers pass the
+  EACC unadjusted (5ED34.c:810, 1073, 1711; 63D2C.c:457), so arg0[6] = EACC +0x18 = embedded unk_14 and
+  it builds 3 TILEs per call there (596CC.c:410-452). A DR_MODE-only name fails; pool.unk_14 feeds both.
+  Header comment on the cursor type (game.h:173-179) says "primitive cursors"; unk_14 is mixed use.
+- Unk8006E49CRec.unk_20, .unk_24, .unk_28: NO_NAME. unk_20 (copied to Unk8006EACCRec.unk_24 5ED34.c:251,
+  64FD8.c:1257; written 596CC.c:2608, 2619) has no consumer, so the prim kind is unproven; unk_24 /
+  unk_28 are never accessed through this type (596CC.c:86 `v0_e49c->unk_24` is Unk800A34FCRec).
+- Unk8006919CRec NO_NAME: unk_14, unk_1C, unk_20, unk_24, unk_28, unk_2C, unk_30, unk_34, unk_38,
+  unk_3C (heterogeneous or purely mechanical readers; element identity not shown).
+- Codex's row_label_sheets (unk_18) / row_detail_sheets (unk_40) / row_panel_rectangles (unk_44):
+  re-worded to row_sheets / cursor_row_sheets / rect_rows -- "label", "detail" and "panel" are guesses;
+  the code shows per-row sheets, a cursor-row-indexed sheet, and 12-byte rectangle rows.
+  Also: unk_40's existing comment says "counter frames", which the code does not show.
+- Cursor-side names with lifetime claims (*_cursor) / pool-side *_buffer: replaced by the shared names above.
+
+RAW-INDEX CHECK: only gpu_AddThreeGreyTilesStackedUp is reached with a typed (EACC) context; the other
+s32 / u8* context functions (menu_Draw*, gpu_DrawList1CEntry4..., gpu_DrawModeTiles...) are called only
+from 596CC.c with 596CC's own raw context. Byte-offset readers of the raw context (menu_DrawMaskedRowList
+596CC.c:963-1180, etc.) agree: +0x14 SPRT, +0x18 TILE, +0x1C DR_MODE, +0x20 DR_AREA, +0x24 DR_OFFSET.
+No counterexample to the 12 surviving pool/cursor names. No INCLUDE_ASM body (137 checked) touches these
+types, the pool globals or the MOD.BIN root.
+
+HEADER COMMENTS TO UPDATE AT APPLY (hand edit in the wave; none edited here)
+- include/game.h:154-158 (pool): "Unk800788B0Rec, whose members name the primitive types" -> say the
+  shared names, and note the +0x0C/+0x10 permutation and unk_14 (DR_MODE + aliased TILEs).
+- include/game.h:173-179 (cursor): "unk_00 / unk_0C hold the s32 cursors ..." names two renamed members;
+  "eight primitive cursors" is incomplete for unk_14.
+- include/game.h:282-283: "MOD.BIN's unk_44" -> rect_rows.
+- include/game.h:2410-2428: "unk_14..unk_40" range end (unk_40 renamed), "unk_44", "unk_48".
+- src/main/596CC.c:967-973: names unk_18 and unk_40 (and "counter frames").
+- No change needed: 5ED34.c:807/1070/1708 ("DR_MODE cursor unk_04.unk_14", unk_14 stays), 63D2C.c:455-456.

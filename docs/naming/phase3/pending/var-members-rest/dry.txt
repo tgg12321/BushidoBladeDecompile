@@ -1,0 +1,930 @@
+PASS Unk8006E49CRec.unk_00=textured_quad_prims, Unk8006E49CRec.unk_08=gradient_quad_prims, Unk8006E49CRec.unk_0C=tile_prims, Unk8006E49CRec.unk_10=sprite_prims, Unk8006E49CRec.unk_18=draw_area_prims, Unk8006E49CRec.unk_1C=draw_offset_prims, Unk800788B0Rec.unk_00=textured_quad_prims, Unk800788B0Rec.unk_08=gradient_quad_prims, Unk800788B0Rec.unk_18=draw_area_prims, Unk800788B0Rec.unk_1C=draw_offset_prims, Unk8006919CRec.unk_40=cursor_row_sheets, Unk8006919CRec.unk_44=rect_rows, Unk8006919CRec.unk_48=sheet_pair_box_sizes
+decl Unk8006E49CRec.unk_00 -> textured_quad_prims  include/game.h:160
+decl Unk8006E49CRec.unk_08 -> gradient_quad_prims  include/game.h:162
+decl Unk8006E49CRec.unk_0C -> tile_prims  include/game.h:163
+decl Unk8006E49CRec.unk_10 -> sprite_prims  include/game.h:164
+decl Unk8006E49CRec.unk_18 -> draw_area_prims  include/game.h:166
+decl Unk8006E49CRec.unk_1C -> draw_offset_prims  include/game.h:167
+decl Unk800788B0Rec.unk_00 -> textured_quad_prims  include/game.h:179
+decl Unk800788B0Rec.unk_08 -> gradient_quad_prims  include/game.h:181
+decl Unk800788B0Rec.unk_18 -> draw_area_prims  include/game.h:185
+decl Unk800788B0Rec.unk_1C -> draw_offset_prims  include/game.h:186
+decl Unk8006919CRec.unk_40 -> cursor_row_sheets  include/game.h:2440
+decl Unk8006919CRec.unk_44 -> rect_rows  include/game.h:2441
+decl Unk8006919CRec.unk_48 -> sheet_pair_box_sizes  include/game.h:2442
+  round 0: 134 member error line(s)
+    src/main/596CC.c:1056 unk_40 x1
+    src/main/596CC.c:1651 unk_48 x1
+    src/main/596CC.c:1841 unk_44 x1
+    src/main/596CC.c:2570 unk_00 x1
+    src/main/596CC.c:2571 unk_08 x1
+    src/main/596CC.c:2572 unk_10 x1
+    src/main/596CC.c:2573 unk_0C x1
+    src/main/596CC.c:2575 unk_18 x1
+    src/main/596CC.c:2577 unk_1C x1
+    src/main/596CC.c:2599 unk_00 x1
+    src/main/596CC.c:2600 unk_00 x1
+    src/main/596CC.c:2601 unk_08 x1
+    src/main/596CC.c:2604 unk_0C x1
+    src/main/596CC.c:2606 unk_18 x1
+    src/main/596CC.c:2607 unk_1C x1
+    src/main/596CC.c:2609 unk_10 x1
+    src/main/596CC.c:2610 unk_00 x1
+    src/main/596CC.c:2611 unk_00 x1
+    src/main/596CC.c:2612 unk_08 x1
+    src/main/596CC.c:2615 unk_0C x1
+    src/main/596CC.c:2617 unk_18 x1
+    src/main/596CC.c:2618 unk_1C x1
+    src/main/596CC.c:2620 unk_10 x1
+    src/main/5ED34.c:243 unk_00 x2
+    src/main/5ED34.c:244 unk_08 x2
+    src/main/5ED34.c:245 unk_10 x1
+    src/main/5ED34.c:246 unk_0C x1
+    src/main/5ED34.c:248 unk_18 x2
+    src/main/5ED34.c:250 unk_1C x2
+    src/main/5ED34.c:371 unk_00 x1
+    src/main/5ED34.c:373 unk_00 x1
+    src/main/5ED34.c:375 unk_00 x1
+    src/main/5ED34.c:484 unk_00 x1
+    src/main/5ED34.c:486 unk_00 x1
+    src/main/5ED34.c:488 unk_00 x1
+    src/main/5ED34.c:531 unk_00 x1
+    src/main/5ED34.c:532 unk_00 x1
+    src/main/5ED34.c:536 unk_00 x1
+    src/main/5ED34.c:537 unk_00 x1
+    src/main/5ED34.c:543 unk_00 x1
+    src/main/5ED34.c:544 unk_00 x1
+    src/main/5ED34.c:554 unk_00 x1
+    src/main/5ED34.c:555 unk_00 x1
+    src/main/5ED34.c:559 unk_00 x1
+    src/main/5ED34.c:560 unk_00 x1
+    src/main/5ED34.c:566 unk_00 x1
+    src/main/5ED34.c:567 unk_00 x1
+    src/main/5ED34.c:577 unk_18 x1
+    src/main/5ED34.c:578 unk_18 x1
+    src/main/5ED34.c:579 unk_18 x1
+    src/main/5ED34.c:585 unk_18 x1
+    src/main/5ED34.c:586 unk_18 x1
+    src/main/5ED34.c:587 unk_18 x1
+    src/main/5ED34.c:595 unk_1C x1
+    src/main/5ED34.c:596 unk_1C x1
+    src/main/5ED34.c:597 unk_1C x1
+    src/main/5ED34.c:601 unk_1C x1
+    src/main/5ED34.c:602 unk_1C x1
+    src/main/5ED34.c:603 unk_1C x1
+    src/main/5ED34.c:633 unk_00 x1
+    src/main/5ED34.c:634 unk_00 x1
+    src/main/5ED34.c:637 unk_00 x1
+    src/main/5ED34.c:638 unk_00 x1
+    src/main/5ED34.c:1330 unk_00 x1
+    src/main/5ED34.c:1332 unk_00 x1
+    src/main/5ED34.c:1407 unk_00 x1
+    src/main/5ED34.c:1408 unk_00 x1
+    src/main/5ED34.c:1487 unk_00 x1
+    src/main/5ED34.c:1489 unk_00 x1
+    src/main/5ED34.c:1491 unk_00 x1
+    src/main/5ED34.c:1565 unk_18 x1
+    src/main/5ED34.c:1566 unk_18 x1
+    src/main/5ED34.c:1567 unk_18 x1
+    src/main/5ED34.c:1570 unk_1C x1
+    src/main/5ED34.c:1571 unk_1C x1
+    src/main/5ED34.c:1572 unk_1C x1
+    src/main/5ED34.c:1632 unk_1C x1
+    src/main/5ED34.c:1633 unk_1C x1
+    src/main/5ED34.c:1634 unk_1C x1
+    src/main/5ED34.c:1639 unk_18 x1
+    src/main/5ED34.c:1640 unk_18 x1
+    src/main/5ED34.c:1641 unk_18 x1
+    src/main/5ED34.c:1656 unk_00 x1
+    src/main/5ED34.c:1657 unk_00 x1
+    src/main/5ED34.c:1659 unk_00 x1
+    src/main/5ED34.c:1660 unk_00 x1
+    src/main/5ED34.c:1702 unk_00 x1
+    src/main/5ED34.c:1703 unk_00 x1
+    src/main/5ED34.c:1728 unk_00 x1
+    src/main/5ED34.c:1729 unk_00 x1
+    src/main/5ED34.c:1736 unk_00 x1
+    src/main/5ED34.c:1737 unk_00 x1
+    src/main/5ED34.c:1868 unk_08 x1
+    src/main/5ED34.c:1905 unk_08 x1
+    src/main/5ED34.c:2025 unk_00 x1
+    src/main/5ED34.c:2026 unk_00 x1
+    src/main/5ED34.c:2028 unk_00 x1
+    src/main/5ED34.c:2029 unk_00 x1
+    src/main/5ED34.c:2031 unk_00 x1
+    src/main/5ED34.c:2032 unk_00 x1
+    src/main/5ED34.c:2034 unk_00 x1
+    src/main/5ED34.c:2035 unk_00 x1
+    src/main/64FD8.c:271 unk_00 x1
+    src/main/64FD8.c:272 unk_00 x1
+    src/main/64FD8.c:310 unk_18 x1
+    src/main/64FD8.c:311 unk_18 x1
+    src/main/64FD8.c:312 unk_18 x1
+    src/main/64FD8.c:318 unk_18 x1
+    src/main/64FD8.c:319 unk_18 x1
+    src/main/64FD8.c:320 unk_18 x1
+    src/main/64FD8.c:324 unk_1C x1
+    src/main/64FD8.c:325 unk_1C x1
+    src/main/64FD8.c:326 unk_1C x1
+    src/main/64FD8.c:330 unk_1C x1
+    src/main/64FD8.c:331 unk_1C x1
+    src/main/64FD8.c:332 unk_1C x1
+    src/main/64FD8.c:1249 unk_00 x2
+    src/main/64FD8.c:1251 unk_08 x2
+    src/main/64FD8.c:1252 unk_10 x1
+    src/main/64FD8.c:1253 unk_0C x1
+    src/main/64FD8.c:1255 unk_18 x2
+    src/main/64FD8.c:1256 unk_1C x2
+    src/main/64FD8.c:1625 unk_00 x2
+    src/main/64FD8.c:1626 unk_08 x2
+    src/main/64FD8.c:1627 unk_10 x1
+    src/main/64FD8.c:1628 unk_0C x1
+    src/main/64FD8.c:1630 unk_18 x2
+    src/main/64FD8.c:1631 unk_1C x2
+    src/main/64FD8.c:1724 unk_00 x2
+    src/main/64FD8.c:1725 unk_08 x2
+    src/main/64FD8.c:1726 unk_10 x1
+    src/main/64FD8.c:1727 unk_0C x1
+    src/main/64FD8.c:1729 unk_18 x2
+    src/main/64FD8.c:1730 unk_1C x2
+  round 1: 0 member error line(s)
+PASS Unk800788B0Rec.unk_0C=sprite_prims, Unk800788B0Rec.unk_10=tile_prims, Unk8006919CRec.unk_18=row_sheets
+decl Unk800788B0Rec.unk_0C -> sprite_prims  include/game.h:182
+decl Unk800788B0Rec.unk_10 -> tile_prims  include/game.h:183
+decl Unk8006919CRec.unk_18 -> row_sheets  include/game.h:2430
+  round 0: 112 member error line(s)
+    src/main/596CC.c:986 unk_18 x1
+    src/main/596CC.c:1072 unk_18 x1
+    src/main/5ED34.c:245 unk_0C x1
+    src/main/5ED34.c:246 unk_10 x1
+    src/main/5ED34.c:386 unk_10 x1
+    src/main/5ED34.c:401 unk_10 x1
+    src/main/5ED34.c:607 unk_10 x1
+    src/main/5ED34.c:625 unk_10 x1
+    src/main/5ED34.c:699 unk_0C x1
+    src/main/5ED34.c:700 unk_0C x1
+    src/main/5ED34.c:729 unk_0C x1
+    src/main/5ED34.c:730 unk_0C x1
+    src/main/5ED34.c:773 unk_0C x1
+    src/main/5ED34.c:775 unk_0C x1
+    src/main/5ED34.c:783 unk_0C x1
+    src/main/5ED34.c:785 unk_0C x1
+    src/main/5ED34.c:796 unk_0C x1
+    src/main/5ED34.c:798 unk_0C x1
+    src/main/5ED34.c:921 unk_0C x1
+    src/main/5ED34.c:922 unk_0C x1
+    src/main/5ED34.c:994 unk_0C x1
+    src/main/5ED34.c:995 unk_0C x1
+    src/main/5ED34.c:1059 unk_0C x1
+    src/main/5ED34.c:1061 unk_0C x1
+    src/main/5ED34.c:1079 unk_0C x1
+    src/main/5ED34.c:1081 unk_0C x1
+    src/main/5ED34.c:1101 unk_0C x1
+    src/main/5ED34.c:1103 unk_0C x1
+    src/main/5ED34.c:1303 unk_0C x1
+    src/main/5ED34.c:1304 unk_0C x1
+    src/main/5ED34.c:1584 unk_0C x1
+    src/main/5ED34.c:1585 unk_0C x1
+    src/main/5ED34.c:1592 unk_0C x1
+    src/main/5ED34.c:1593 unk_0C x1
+    src/main/5ED34.c:1608 unk_0C x1
+    src/main/5ED34.c:1609 unk_0C x1
+    src/main/5ED34.c:1945 unk_10 x1
+    src/main/5ED34.c:1982 unk_10 x1
+    src/main/5ED34.c:2051 unk_0C x1
+    src/main/5ED34.c:2052 unk_0C x1
+    src/main/5ED34.c:2063 unk_0C x1
+    src/main/5ED34.c:2064 unk_0C x1
+    src/main/63D2C.c:288 unk_10 x1
+    src/main/63D2C.c:298 unk_10 x1
+    src/main/63D2C.c:309 unk_0C x1
+    src/main/63D2C.c:310 unk_0C x1
+    src/main/63D2C.c:440 unk_0C x1
+    src/main/63D2C.c:441 unk_0C x1
+    src/main/64FD8.c:165 unk_10 x1
+    src/main/64FD8.c:192 unk_10 x1
+    src/main/64FD8.c:210 unk_0C x1
+    src/main/64FD8.c:211 unk_0C x1
+    src/main/64FD8.c:231 unk_10 x1
+    src/main/64FD8.c:248 unk_10 x1
+    src/main/64FD8.c:261 unk_0C x1
+    src/main/64FD8.c:262 unk_0C x1
+    src/main/64FD8.c:266 unk_0C x1
+    src/main/64FD8.c:267 unk_0C x1
+    src/main/64FD8.c:286 unk_0C x1
+    src/main/64FD8.c:287 unk_0C x1
+    src/main/64FD8.c:291 unk_0C x1
+    src/main/64FD8.c:292 unk_0C x1
+    src/main/64FD8.c:424 unk_0C x1
+    src/main/64FD8.c:425 unk_0C x1
+    src/main/64FD8.c:434 unk_0C x1
+    src/main/64FD8.c:435 unk_0C x1
+    src/main/64FD8.c:438 unk_0C x1
+    src/main/64FD8.c:439 unk_0C x1
+    src/main/64FD8.c:456 unk_0C x1
+    src/main/64FD8.c:457 unk_0C x1
+    src/main/64FD8.c:539 unk_0C x1
+    src/main/64FD8.c:540 unk_0C x1
+    src/main/64FD8.c:585 unk_0C x1
+    src/main/64FD8.c:586 unk_0C x1
+    src/main/64FD8.c:626 unk_0C x1
+    src/main/64FD8.c:627 unk_0C x1
+    src/main/64FD8.c:650 unk_0C x1
+    src/main/64FD8.c:651 unk_0C x1
+    src/main/64FD8.c:671 unk_0C x1
+    src/main/64FD8.c:672 unk_0C x1
+    src/main/64FD8.c:840 unk_0C x1
+    src/main/64FD8.c:841 unk_0C x1
+    src/main/64FD8.c:864 unk_0C x1
+    src/main/64FD8.c:865 unk_0C x1
+    src/main/64FD8.c:886 unk_0C x1
+    src/main/64FD8.c:887 unk_0C x1
+    src/main/64FD8.c:892 unk_0C x1
+    src/main/64FD8.c:893 unk_0C x1
+    src/main/64FD8.c:908 unk_0C x1
+    src/main/64FD8.c:909 unk_0C x1
+    src/main/64FD8.c:1039 unk_10 x1
+    src/main/64FD8.c:1051 unk_10 x1
+    src/main/64FD8.c:1252 unk_0C x1
+    src/main/64FD8.c:1253 unk_10 x1
+    src/main/64FD8.c:1480 unk_0C x1
+    src/main/64FD8.c:1481 unk_0C x1
+    src/main/64FD8.c:1501 unk_0C x1
+    src/main/64FD8.c:1502 unk_0C x1
+    src/main/64FD8.c:1521 unk_0C x1
+    src/main/64FD8.c:1522 unk_0C x1
+    src/main/64FD8.c:1548 unk_0C x1
+    src/main/64FD8.c:1549 unk_0C x1
+    src/main/64FD8.c:1589 unk_0C x1
+    src/main/64FD8.c:1590 unk_0C x1
+    src/main/64FD8.c:1627 unk_0C x1
+    src/main/64FD8.c:1628 unk_10 x1
+    src/main/64FD8.c:1680 unk_0C x1
+    src/main/64FD8.c:1681 unk_0C x1
+    src/main/64FD8.c:1691 unk_0C x1
+    src/main/64FD8.c:1692 unk_0C x1
+    src/main/64FD8.c:1726 unk_0C x1
+    src/main/64FD8.c:1727 unk_10 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -160 +160 @@
+-    s32 unk_00;
++    s32 textured_quad_prims;
+@@ -162,3 +162,3 @@
+-    void *unk_08;
+-    void *unk_0C;
+-    s32 unk_10;
++    void *gradient_quad_prims;
++    void *tile_prims;
++    s32 sprite_prims;
+@@ -166,2 +166,2 @@
+-    void *unk_18;
+-    void *unk_1C;
++    void *draw_area_prims;
++    void *draw_offset_prims;
+@@ -179 +179 @@
+-    s32 unk_00;
++    s32 textured_quad_prims;
+@@ -181,3 +181,3 @@
+-    POLY_G4 *unk_08;
+-    s32 unk_0C;
+-    TILE *unk_10;
++    POLY_G4 *gradient_quad_prims;
++    s32 sprite_prims;
++    TILE *tile_prims;
+@@ -185,2 +185,2 @@
+-    DR_AREA *unk_18;
+-    DR_OFFSET *unk_1C;
++    DR_AREA *draw_area_prims;
++    DR_OFFSET *draw_offset_prims;
+@@ -2430 +2430 @@
+-    Unk8009B0E0Record **unk_18;
++    Unk8009B0E0Record **row_sheets;
+@@ -2440,3 +2440,3 @@
+-    Unk8009B0E0Record **unk_40;
+-    Rec_8006C21C *unk_44;
+-    Size2s16 *unk_48;
++    Unk8009B0E0Record **cursor_row_sheets;
++    Rec_8006C21C *rect_rows;
++    Size2s16 *sheet_pair_box_sizes;
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -986 +986 @@
+-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
++    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->row_sheets;
+@@ -1056 +1056 @@
+-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_40;
++    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->cursor_row_sheets;
+@@ -1072 +1072 @@
+-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
++    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->row_sheets;
+@@ -1651 +1651 @@
+-    var_2 = D_800A34FC->unk_24->unk_48;
++    var_2 = D_800A34FC->unk_24->sheet_pair_box_sizes;
+@@ -1841 +1841 @@
+-    recs = D_800A34FC->unk_24->unk_44;
++    recs = D_800A34FC->unk_24->rect_rows;
+@@ -2570,4 +2570,4 @@
+-    s0[2] = v0->unk_00;
+-    s0[4] = (s32)v0->unk_08;
+-    s0[5] = v0->unk_10;
+-    s0[6] = (s32)v0->unk_0C;
++    s0[2] = v0->textured_quad_prims;
++    s0[4] = (s32)v0->gradient_quad_prims;
++    s0[5] = v0->sprite_prims;
++    s0[6] = (s32)v0->tile_prims;
+@@ -2575 +2575 @@
+-    s0[8] = (s32)v0->unk_18;
++    s0[8] = (s32)v0->draw_area_prims;
+@@ -2577 +2577 @@
+-    s0[9] = (s32)v0->unk_1C;
++    s0[9] = (s32)v0->draw_offset_prims;
+@@ -2599,3 +2599,3 @@
+-    arg1[0].unk_00 = arg0;
+-    base1 = (u8 *)arg1[0].unk_00 + 0x9C40;
+-    arg1[0].unk_08 = base1 + 0x5DC0;
++    arg1[0].textured_quad_prims = arg0;
++    base1 = (u8 *)arg1[0].textured_quad_prims + 0x9C40;
++    arg1[0].gradient_quad_prims = base1 + 0x5DC0;
+@@ -2604 +2604 @@
+-    arg1[0].unk_0C = base1 + 0x61F8;
++    arg1[0].tile_prims = base1 + 0x61F8;
+@@ -2606,2 +2606,2 @@
+-    arg1[0].unk_18 = base2 + 0x1DB0;
+-    arg1[0].unk_1C = base2 + 0x1E28;
++    arg1[0].draw_area_prims = base2 + 0x1DB0;
++    arg1[0].draw_offset_prims = base2 + 0x1E28;
+@@ -2609,4 +2609,4 @@
+-    arg1[0].unk_10 = (s32)base2;
+-    arg1[1].unk_00 = (s32)(base2 + 0x1FB0);
+-    base3 = (u8 *)arg1[1].unk_00 + 0x9C40;
+-    arg1[1].unk_08 = base3 + 0x5DC0;
++    arg1[0].sprite_prims = (s32)base2;
++    arg1[1].textured_quad_prims = (s32)(base2 + 0x1FB0);
++    base3 = (u8 *)arg1[1].textured_quad_prims + 0x9C40;
++    arg1[1].gradient_quad_prims = base3 + 0x5DC0;
+@@ -2615 +2615 @@
+-    arg1[1].unk_0C = base3 + 0x61F8;
++    arg1[1].tile_prims = base3 + 0x61F8;
+@@ -2617,2 +2617,2 @@
+-    arg1[1].unk_18 = base4 + 0x1DB0;
+-    arg1[1].unk_1C = base4 + 0x1E28;
++    arg1[1].draw_area_prims = base4 + 0x1DB0;
++    arg1[1].draw_offset_prims = base4 + 0x1E28;
+@@ -2620 +2620 @@
+-    arg1[1].unk_10 = (s32)base4;
++    arg1[1].sprite_prims = (s32)base4;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -243,4 +243,4 @@
+-    sp10.unk_04.unk_00 = temp_v0->unk_00;
+-    sp10.unk_04.unk_08 = temp_v0->unk_08;
+-    sp10.unk_04.unk_0C = temp_v0->unk_10;
+-    sp10.unk_04.unk_10 = temp_v0->unk_0C;
++    sp10.unk_04.textured_quad_prims = temp_v0->textured_quad_prims;
++    sp10.unk_04.gradient_quad_prims = temp_v0->gradient_quad_prims;
++    sp10.unk_04.sprite_prims = temp_v0->sprite_prims;
++    sp10.unk_04.tile_prims = temp_v0->tile_prims;
+@@ -248 +248 @@
+-    sp10.unk_04.unk_18 = temp_v0->unk_18;
++    sp10.unk_04.draw_area_prims = temp_v0->draw_area_prims;
+@@ -250 +250 @@
+-    sp10.unk_04.unk_1C = temp_v0->unk_1C;
++    sp10.unk_04.draw_offset_prims = temp_v0->draw_offset_prims;
+@@ -371 +371 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
+@@ -373 +373 @@
+-            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
++            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -375 +375 @@
+-            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -386 +386 @@
+-    temp_s0 = arg0->unk_04.unk_10;
++    temp_s0 = arg0->unk_04.tile_prims;
+@@ -401 +401 @@
+-    arg0->unk_04.unk_10 = temp_s0;
++    arg0->unk_04.tile_prims = temp_s0;
+@@ -484 +484 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
+@@ -486 +486 @@
+-            arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
++            arg0->unk_04.textured_quad_prims = gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
+@@ -488 +488 @@
+-            arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
++            arg0->unk_04.textured_quad_prims = gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
+@@ -531,2 +531,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -536,2 +536,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -543,2 +543,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -554,2 +554,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -559,2 +559,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -566,2 +566,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -577,3 +577,3 @@
+-    SetDrawArea(arg0->unk_04.unk_18, &rect);
+-    AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.unk_18);
+-    arg0->unk_04.unk_18++;
++    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.draw_area_prims);
++    arg0->unk_04.draw_area_prims++;
+@@ -585,3 +585,3 @@
+-    SetDrawArea(arg0->unk_04.unk_18, &rect);
+-    AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.unk_18);
+-    arg0->unk_04.unk_18++;
++    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.draw_area_prims);
++    arg0->unk_04.draw_area_prims++;
+@@ -595,3 +595,3 @@
+-        SetDrawOffset(arg0->unk_04.unk_1C, g_entry_menu_work_block->unk_10);
+-        AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.unk_1C);
+-        arg0->unk_04.unk_1C++;
++        SetDrawOffset(arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
++        AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.draw_offset_prims);
++        arg0->unk_04.draw_offset_prims++;
+@@ -601,3 +601,3 @@
+-        SetDrawOffset(arg0->unk_04.unk_1C, g_entry_menu_work_block->unk_10);
+-        AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.unk_1C);
+-        arg0->unk_04.unk_1C++;
++        SetDrawOffset(arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
++        AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.draw_offset_prims);
++        arg0->unk_04.draw_offset_prims++;
+@@ -607 +607 @@
+-    prim = arg0->unk_04.unk_10;
++    prim = arg0->unk_04.tile_prims;
+@@ -625 +625 @@
+-    arg0->unk_04.unk_10 = prim;
++    arg0->unk_04.tile_prims = prim;
+@@ -633,2 +633,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -637,2 +637,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 2);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
+@@ -699,2 +699,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -729,2 +729,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -773 +773 @@
+-                s.sprt_out = arg0->unk_04.unk_0C;
++                s.sprt_out = arg0->unk_04.sprite_prims;
+@@ -775 +775 @@
+-                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -783 +783 @@
+-                s.sprt_out = arg0->unk_04.unk_0C;
++                s.sprt_out = arg0->unk_04.sprite_prims;
+@@ -785 +785 @@
+-                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -796 +796 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
++    s.sprt_out = arg0->unk_04.sprite_prims;
+@@ -798 +798 @@
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -921,2 +921,2 @@
+-            s.sprt_out = arg0->unk_04.unk_0C;
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->unk_04.sprite_prims;
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -994,2 +994,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1059 +1059 @@
+-    var_1.sprt_out = arg0->unk_04.unk_0C;
++    var_1.sprt_out = arg0->unk_04.sprite_prims;
+@@ -1061 +1061 @@
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&var_1);
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
+@@ -1079 +1079 @@
+-        var_1.sprt_out = arg0->unk_04.unk_0C;
++        var_1.sprt_out = arg0->unk_04.sprite_prims;
+@@ -1081 +1081 @@
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&var_1);
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
+@@ -1101 +1101 @@
+-            var_1.sprt_out = arg0->unk_04.unk_0C;
++            var_1.sprt_out = arg0->unk_04.sprite_prims;
+@@ -1103 +1103 @@
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&var_1);
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&var_1);
+@@ -1303,2 +1303,2 @@
+-                s->sprt_out = arg0->unk_04.unk_0C;
+-                arg0->unk_04.unk_0C = gpu_AddSpriteCells(s);
++                s->sprt_out = arg0->unk_04.sprite_prims;
++                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(s);
+@@ -1330 +1330 @@
+-                s->ft4_out = arg0->unk_04.unk_00;
++                s->ft4_out = arg0->unk_04.textured_quad_prims;
+@@ -1332 +1332 @@
+-                arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(s, 0);
++                arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(s, 0);
+@@ -1407,2 +1407,2 @@
+-            s->ft4_out = arg0->unk_04.unk_00;
+-            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(s, 0);
++            s->ft4_out = arg0->unk_04.textured_quad_prims;
++            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(s, 0);
+@@ -1487 +1487 @@
+-            s.ft4_out = arg0->unk_04.unk_00;
++            s.ft4_out = arg0->unk_04.textured_quad_prims;
+@@ -1489 +1489 @@
+-                arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
++                arg0->unk_04.textured_quad_prims = gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
+@@ -1491 +1491 @@
+-                arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
++                arg0->unk_04.textured_quad_prims = gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
+@@ -1565,3 +1565,3 @@
+-    SetDrawArea(arg0->unk_04.unk_18, &rect);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_18);
+-    arg0->unk_04.unk_18++;
++    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_area_prims);
++    arg0->unk_04.draw_area_prims++;
+@@ -1570,3 +1570,3 @@
+-    SetDrawOffset(arg0->unk_04.unk_1C, g_entry_menu_work_block->unk_10);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_1C);
+-    arg0->unk_04.unk_1C++;
++    SetDrawOffset(arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_offset_prims);
++    arg0->unk_04.draw_offset_prims++;
+@@ -1584,2 +1584,2 @@
+-            s.sprt_out = arg0->unk_04.unk_0C;
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->unk_04.sprite_prims;
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1592,2 +1592,2 @@
+-                s.sprt_out = arg0->unk_04.unk_0C;
+-                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                s.sprt_out = arg0->unk_04.sprite_prims;
++                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1608,2 +1608,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1632,3 +1632,3 @@
+-    SetDrawOffset(arg0->unk_04.unk_1C, g_entry_menu_work_block->unk_10);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_1C);
+-    arg0->unk_04.unk_1C++;
++    SetDrawOffset(arg0->unk_04.draw_offset_prims, g_entry_menu_work_block->unk_10);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_offset_prims);
++    arg0->unk_04.draw_offset_prims++;
+@@ -1639,3 +1639,3 @@
+-    SetDrawArea(arg0->unk_04.unk_18, &rect);
+-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_18);
+-    arg0->unk_04.unk_18++;
++    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.draw_area_prims);
++    arg0->unk_04.draw_area_prims++;
+@@ -1656,2 +1656,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1659,2 +1659,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -1702,2 +1702,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1728,2 +1728,2 @@
+-            s.ft4_out = arg0->unk_04.unk_00;
+-            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++            s.ft4_out = arg0->unk_04.textured_quad_prims;
++            arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1736,2 +1736,2 @@
+-    s.ft4_out = arg0->unk_04.unk_00;
+-    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++    s.ft4_out = arg0->unk_04.textured_quad_prims;
++    arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -1868 +1868 @@
+-    p = arg0->unk_04.unk_08;
++    p = arg0->unk_04.gradient_quad_prims;
+@@ -1905 +1905 @@
+-    arg0->unk_04.unk_08 = p;
++    arg0->unk_04.gradient_quad_prims = p;
+@@ -1945 +1945 @@
+-    p = arg0->unk_04.unk_10;
++    p = arg0->unk_04.tile_prims;
+@@ -1982 +1982 @@
+-    arg0->unk_04.unk_10 = p;
++    arg0->unk_04.tile_prims = p;
+@@ -2025,2 +2025,2 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
+-        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -2028,2 +2028,2 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
+-        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 1);
+@@ -2031,2 +2031,2 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
+-        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 2);
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 2);
+@@ -2034,2 +2034,2 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
+-        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 3);
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 3);
+@@ -2051,2 +2051,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -2063,2 +2063,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+--- a/src/main/63D2C.c
++++ b/src/main/63D2C.c
+@@ -288 +288 @@
+-        t = arg0->unk_04.unk_10;
++        t = arg0->unk_04.tile_prims;
+@@ -298 +298 @@
+-        arg0->unk_04.unk_10 = t;
++        arg0->unk_04.tile_prims = t;
+@@ -309,2 +309,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -440,2 +440,2 @@
+-            s.sprt_out = arg0->unk_04.unk_0C;
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->unk_04.sprite_prims;
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -165 +165 @@
+-    p = arg0->unk_04.unk_10;
++    p = arg0->unk_04.tile_prims;
+@@ -192 +192 @@
+-    arg0->unk_04.unk_10 = p;
++    arg0->unk_04.tile_prims = p;
+@@ -210,2 +210,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -231 +231 @@
+-    prim = arg0->unk_04.unk_10;
++    prim = arg0->unk_04.tile_prims;
+@@ -248 +248 @@
+-    arg0->unk_04.unk_10 = prim;
++    arg0->unk_04.tile_prims = prim;
+@@ -261,2 +261,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -266,2 +266,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -271,2 +271,2 @@
+-        s.ft4_out = arg0->unk_04.unk_00;
+-        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
++        s.ft4_out = arg0->unk_04.textured_quad_prims;
++        arg0->unk_04.textured_quad_prims = gpu_AddScaledSpriteQuads(&s, 0);
+@@ -286,2 +286,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -291,2 +291,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -310,3 +310,3 @@
+-    SetDrawArea(arg0->unk_04.unk_18, &rect);
+-    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->unk_04.unk_18);
+-    arg0->unk_04.unk_18++;
++    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->unk_04.draw_area_prims);
++    arg0->unk_04.draw_area_prims++;
+@@ -318,3 +318,3 @@
+-    SetDrawArea(arg0->unk_04.unk_18, &rect);
+-    AddPrim(g_gpu_ot_ptr + var_5, arg0->unk_04.unk_18);
+-    arg0->unk_04.unk_18++;
++    SetDrawArea(arg0->unk_04.draw_area_prims, &rect);
++    AddPrim(g_gpu_ot_ptr + var_5, arg0->unk_04.draw_area_prims);
++    arg0->unk_04.draw_area_prims++;
+@@ -324,3 +324,3 @@
+-    SetDrawOffset(arg0->unk_04.unk_1C, offset);
+-    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->unk_04.unk_1C);
+-    arg0->unk_04.unk_1C++;
++    SetDrawOffset(arg0->unk_04.draw_offset_prims, offset);
++    AddPrim(g_gpu_ot_ptr + var_5 + 9, arg0->unk_04.draw_offset_prims);
++    arg0->unk_04.draw_offset_prims++;
+@@ -330,3 +330,3 @@
+-    SetDrawOffset(arg0->unk_04.unk_1C, offset);
+-    AddPrim(g_gpu_ot_ptr + var_5, arg0->unk_04.unk_1C);
+-    arg0->unk_04.unk_1C++;
++    SetDrawOffset(arg0->unk_04.draw_offset_prims, offset);
++    AddPrim(g_gpu_ot_ptr + var_5, arg0->unk_04.draw_offset_prims);
++    arg0->unk_04.draw_offset_prims++;
+@@ -424,2 +424,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -434,2 +434,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -438,2 +438,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -456,2 +456,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -539,2 +539,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -585,2 +585,2 @@
+-    s.sprt_out = arg0->unk_04.unk_0C;
+-    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++    s.sprt_out = arg0->unk_04.sprite_prims;
++    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -626,2 +626,2 @@
+-            s.sprt_out = arg0->unk_04.unk_0C;
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->unk_04.sprite_prims;
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -650,2 +650,2 @@
+-            s.sprt_out = arg0->unk_04.unk_0C;
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->unk_04.sprite_prims;
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -671,2 +671,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -840,2 +840,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -864,2 +864,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -886,2 +886,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -892,2 +892,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -908,2 +908,2 @@
+-        s.sprt_out = arg0->unk_04.unk_0C;
+-        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->unk_04.sprite_prims;
++        arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1039 +1039 @@
+-    p = arg0->unk_04.unk_10;
++    p = arg0->unk_04.tile_prims;
+@@ -1051 +1051 @@
+-    arg0->unk_04.unk_10 = p;
++    arg0->unk_04.tile_prims = p;
+@@ -1249 +1249 @@
+-    s.unk_04.unk_00 = p->unk_00;
++    s.unk_04.textured_quad_prims = p->textured_quad_prims;
+@@ -1251,3 +1251,3 @@
+-    s.unk_04.unk_08 = p->unk_08;
+-    s.unk_04.unk_0C = p->unk_10;
+-    s.unk_04.unk_10 = p->unk_0C;
++    s.unk_04.gradient_quad_prims = p->gradient_quad_prims;
++    s.unk_04.sprite_prims = p->sprite_prims;
++    s.unk_04.tile_prims = p->tile_prims;
+@@ -1255,2 +1255,2 @@
+-    s.unk_04.unk_18 = p->unk_18;
+-    s.unk_04.unk_1C = p->unk_1C;
++    s.unk_04.draw_area_prims = p->draw_area_prims;
++    s.unk_04.draw_offset_prims = p->draw_offset_prims;
+@@ -1480,2 +1480,2 @@
+-                    s.sprt_out = arg0->unk_04.unk_0C;
+-                    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                    s.sprt_out = arg0->unk_04.sprite_prims;
++                    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1501,2 +1501,2 @@
+-                s.sprt_out = arg0->unk_04.unk_0C;
+-                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                s.sprt_out = arg0->unk_04.sprite_prims;
++                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1521,2 +1521,2 @@
+-                s.sprt_out = arg0->unk_04.unk_0C;
+-                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                s.sprt_out = arg0->unk_04.sprite_prims;
++                arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1548,2 +1548,2 @@
+-                    s.sprt_out = arg0->unk_04.unk_0C;
+-                    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++                    s.sprt_out = arg0->unk_04.sprite_prims;
++                    arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1589,2 +1589,2 @@
+-            s.sprt_out = arg0->unk_04.unk_0C;
+-            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
++            s.sprt_out = arg0->unk_04.sprite_prims;
++            arg0->unk_04.sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1625,4 +1625,4 @@
+-    s.unk_04.unk_00 = p->unk_00;
+-    s.unk_04.unk_08 = p->unk_08;
+-    s.unk_04.unk_0C = p->unk_10;
+-    s.unk_04.unk_10 = p->unk_0C;
++    s.unk_04.textured_quad_prims = p->textured_quad_prims;
++    s.unk_04.gradient_quad_prims = p->gradient_quad_prims;
++    s.unk_04.sprite_prims = p->sprite_prims;
++    s.unk_04.tile_prims = p->tile_prims;
+@@ -1630,2 +1630,2 @@
+-    s.unk_04.unk_18 = p->unk_18;
+-    s.unk_04.unk_1C = p->unk_1C;
++    s.unk_04.draw_area_prims = p->draw_area_prims;
++    s.unk_04.draw_offset_prims = p->draw_offset_prims;
+@@ -1680,2 +1680,2 @@
+-        s.sprt_out = arg0->unk_0C;
+-        arg0->unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->sprite_prims;
++        arg0->sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1691,2 +1691,2 @@
+-        s.sprt_out = arg0->unk_0C;
+-        arg0->unk_0C = gpu_AddSpriteCells(&s);
++        s.sprt_out = arg0->sprite_prims;
++        arg0->sprite_prims = gpu_AddSpriteCells(&s);
+@@ -1724,4 +1724,4 @@
+-    buf.unk_00 = v0->unk_00;
+-    buf.unk_08 = v0->unk_08;
+-    buf.unk_0C = v0->unk_10;
+-    buf.unk_10 = v0->unk_0C;
++    buf.textured_quad_prims = v0->textured_quad_prims;
++    buf.gradient_quad_prims = v0->gradient_quad_prims;
++    buf.sprite_prims = v0->sprite_prims;
++    buf.tile_prims = v0->tile_prims;
+@@ -1729,2 +1729,2 @@
+-    buf.unk_18 = v0->unk_18;
+-    buf.unk_1C = v0->unk_1C;
++    buf.draw_area_prims = v0->draw_area_prims;
++    buf.draw_offset_prims = v0->draw_offset_prims;
+DRY RUN: 5 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

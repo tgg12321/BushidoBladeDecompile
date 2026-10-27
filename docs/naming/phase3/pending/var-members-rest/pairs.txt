@@ -1,0 +1,16 @@
+Unk8006E49CRec.unk_00=textured_quad_prims
+Unk8006E49CRec.unk_08=gradient_quad_prims
+Unk8006E49CRec.unk_0C=tile_prims
+Unk8006E49CRec.unk_10=sprite_prims
+Unk8006E49CRec.unk_18=draw_area_prims
+Unk8006E49CRec.unk_1C=draw_offset_prims
+Unk800788B0Rec.unk_00=textured_quad_prims
+Unk800788B0Rec.unk_08=gradient_quad_prims
+Unk800788B0Rec.unk_0C=sprite_prims
+Unk800788B0Rec.unk_10=tile_prims
+Unk800788B0Rec.unk_18=draw_area_prims
+Unk800788B0Rec.unk_1C=draw_offset_prims
+Unk8006919CRec.unk_18=row_sheets
+Unk8006919CRec.unk_40=cursor_row_sheets
+Unk8006919CRec.unk_44=rect_rows
+Unk8006919CRec.unk_48=sheet_pair_box_sizes
