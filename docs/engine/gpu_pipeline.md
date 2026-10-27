@@ -41,7 +41,7 @@ are 640 x 240.
 Two small extra lists use a local 1- or 2-entry OT:
 
 - `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526) draws a full-screen overlay into the
-  buffer at `D_800F33D8`, chosen by `D_800A3768`. It uses `ClearOTagR(ot, 2)`
+  buffer at `D_800F33D8`, chosen by `g_local_ot_draw_mode`. It uses `ClearOTagR(ot, 2)`
   and `DrawOTag(ot + 1)`.
 - `menu_RunPauseMenu` (src/main/6CF8.c:312), the pause menu loop, uses
   `ClearOTagR(ot, 1)`.

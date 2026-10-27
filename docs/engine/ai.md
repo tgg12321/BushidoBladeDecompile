@@ -58,7 +58,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 
 1. Collects the IDs `i` in 0..26 whose bit is set in
    `g_saved_record.unk_00 & 0x3EF3DF`, minus the bit
-   `D_8008D538[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5288), into
+   `g_fight_config_id_data_rows[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5288), into
    `D_801077B0`.
 2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5309).
 3. If bit 0x20 or 0x10000 of `g_saved_record.unk_00` is set, adds ID 5 (bit 0x20)
@@ -103,6 +103,6 @@ an opponent order; the code does not name it.
   `fighter_StartMoveScript`) and plays
   cue 0x30.
 - `camera_SetFighterFocusView(rec, a1)` (src/main/9F9C.c:980) sets the view target
-  `D_800F6608.unk_00` to `rec->unk_174`, its rotation to `(0x120, a1, 0)` and
+  `g_camera_default_view_record.unk_00` to `rec->unk_174`, its rotation to `(0x120, a1, 0)` and
   its distance `w18` to 0x1162. Its caller is `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange`
   (src/main/9F9C.c:2081).

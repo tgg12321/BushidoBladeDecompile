@@ -66,9 +66,9 @@ Interim labels for the named functions only (owner 2026-10-03), retired, not ext
 one-object spelling matches.
 
 - **D_800A37D2 / D_800A37D3 (Q63):** only after the one-array and two-member-struct whole-tree
-  forms are banked failing (scratch SHA1 + differing words). Then two adjacent `u8` scalars,
+  forms are failing (SHA1 + diff words). Then two adjacent `u8` scalars,
   indexed via the first's address (`p = &D_800A37D2; p[t != 0]++`,
-  `(&D_800A37D2)[D_800A3748]`), each indexed use and `p`'s assignment `/* FAKE */`-annotated,
+  `(&D_800A37D2)[g_fight_followup_fighter_index]`), each indexed use and `p`'s assignment `/* FAKE */`-annotated,
   `p` meeting [[pointer-alias-fake-exception]]. For fight_UpdateDefeatDelayAndModeProgress and func_8003CF84 only.
 - **D_80101EC8 per-word reads (Q73):** `D_80101FA0`, `D_80101FA8`, `D_801023EC`,
   `D_801023F4`, `D_80101FBC`, `D_80101FC4`, `D_80102408`, `D_80102410`, read by name only in

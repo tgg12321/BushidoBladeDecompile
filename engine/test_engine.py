@@ -2295,7 +2295,7 @@ def test_empty_if_dead_reads() -> None:
     text = """\
 void f(void) {
     do_thing();
-    if (D_800A3580) {}
+    if (g_entry_menu_handler_index) {}
     other_thing();
 }
 """

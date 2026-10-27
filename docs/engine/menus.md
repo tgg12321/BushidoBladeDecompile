@@ -31,7 +31,7 @@ With the standard digital-pad bit order, the masks the handlers use are:
 `fight_RunCommandStream` (src/main/2B344.c:321) steps a byte script at `g_fight_command_stream_cursor`
 until an opcode ends the step. The opcodes and what they do:
 
-- 0: mode 18 (with `D_800A38A4` from `g_fighter_group_flags[fighter 0's character_data_index]`), or
+- 0: mode 18 (with `g_fight_presentation_index` from `g_fighter_group_flags[fighter 0's character_data_index]`), or
   mode 10 when `D_800A380C` is set.
 - 1: one operand byte into `g_fight_stage_index` and the history `D_800A37A8[]`;
   mode 22.
@@ -76,7 +76,7 @@ Handlers that the script's modes reach:
 
 Cited by function name.
 
-- `menu_LoadResourcesInitStateSelectFirstEnabledRow` sets up the menu block `D_800A34FC`, clears the row index,
+- `menu_LoadResourcesInitStateSelectFirstEnabledRow` sets up the menu block `g_row_menu_work_block`, clears the row index,
   steps it to the first enabled row, and sets the cursor field to 4 (its
   caller is `InitRowMenuBlackBgResetFlow`, src/main/64FD8.c:1258).
 - `g_menu_packed_cursors` packs three cursors: bits 0-3 the row index 0..7, which skips
@@ -86,10 +86,10 @@ Cited by function name.
   for a step one way or the other.
 - `menu_UpdateRowMenu` (called from `menu_UpdateRowMenuStoreResult`, src/main/64FD8.c:1273) moves
   the row index with that result, applies the row's `opt[].mode` to
-  `D_800A3524->unk20_3`, and on Cross (with per-player conditions on the
+  `g_row_menu_working_record_ptr->unk20_3`, and on Cross (with per-player conditions on the
   row's `state`) returns that `state`; Triangle returns -2, otherwise -1.
 - `menu_HandleOptionMenuChoices` steps the bits 10-12 cursor; in positions 0..2 the
-  low-half result toggles `D_800A3524->unk20_0..2`, and Cross advances the
+  low-half result toggles `g_row_menu_working_record_ptr->unk20_0..2`, and Cross advances the
   cursor; positions 3, 4, 5 return 2, 3, 1 on Cross, and Triangle returns 1.
 - `menu_HandleMemCardChoices` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
   (position 2 also advances the bits 10-12 cursor); Triangle returns 1.
@@ -97,13 +97,13 @@ Cited by function name.
 ## The selection screen (src/main/5ED34.c)
 
 - `StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pad)` (src/main/5ED34.c:216) keeps the pad word in
-  `D_800A354C`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
+  `g_entry_menu_pressed_buttons`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
   (src/main/5ED34.c:503) unless the screen mode
-  `D_800A3580` is 2 or 3, and calls `D_8009BC1C[D_800A3580]`; it returns
+  `g_entry_menu_handler_index` is 2 or 3, and calls `D_8009BC1C[g_entry_menu_handler_index]`; it returns
   `D_800A35A0`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1307).
 - `StepSlideProgressCommitPendingStateAndQueueSound` (src/main/5ED34.c:249) slides `D_800A3570` by 0x20 a frame:
-  states 1 / 3 (low byte of `D_800A3578`) slide in to 0x1E8 and then switch
-  `D_800A3580` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5
+  states 1 / 3 (low byte of `g_entry_menu_slide_phase`) slide in to 0x1E8 and then switch
+  `g_entry_menu_handler_index` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5
   as they start.
 - `menu_UpdateEntryGridCursors` (src/main/5ED34.c:826) is the grid cursor of that screen
   (see [replay.md](replay.md)).

@@ -17,10 +17,10 @@ halfword (e.g. `(word >> 8)` plus a `word + 1` write-back).
 ## Fix
 
 ```c
-extern u16 D_800A3578;
-s32 state = *(u8 *)&D_800A3578;   /* lbu %gp_rel(D_800A3578) — low byte */
+extern u16 g_entry_menu_slide_phase;
+s32 state = *(u8 *)&g_entry_menu_slide_phase;   /* lbu %gp_rel(g_entry_menu_slide_phase) — low byte */
 ...
-u16 word = D_800A3578;            /* lhu — sibling still needs the halfword */
+u16 word = g_entry_menu_slide_phase;            /* lhu — sibling still needs the halfword */
 ```
 
 Little-endian: offset 0 is the low byte; GCC keeps gp-rel addressing through the cast. Use `*(s8 *)&G` for

@@ -304,7 +304,7 @@
 /* SPU register / state cluster */
 /* Scratchpad pointer cache (text1b) */
 /* Counters / state */
-/* 2026-10-16: D_800A38C6 retired -- D_800A38C4[1] (u16 [2], include/bb2.h). */
+/* 2026-10-16: D_800A38C6 retired -- g_motion_fighter_loaded_data_ids[1] (u16 [2], include/bb2.h). */
 
 /* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
 /* 2026-09-23: g_replay_attack_pos_y retired -- per-word piece of Unk80101DF0Record (include/game.h). */
@@ -445,7 +445,7 @@
 
 /* === Per-id state arrays (2026-05-17) === */
 /* Init pattern (51268.c, func_80064ED8..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
-/* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and g_eff_animated_quad_counters[18]
+/* The per-id 12-byte state records and 2-byte counters are the arrays g_eff_animated_quad_positions[18] and g_eff_animated_quad_counters[18]
  * (include/game.h; merged 2026-09-30 with eff_DrawAnimatedQuads, which retired their per-word alias names). */
 /* 2026-10-16: D_800F10E0 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
 
@@ -467,10 +467,10 @@
 /*   - g_menu_packed_cursors packs three cursors (a static, 596CC.c:16): */
 /*     (bits 0-3 = 0..7, :303-326; bits 10-12 = 0..5, :1325-1339; */
 /*      bits 13-15 = 0..2, :1435-1448) */
-/*   - D_800A34FC is a struct pointer assigned from gpu_InitPrimBufferPair */
+/*   - g_row_menu_work_block is a struct pointer assigned from gpu_InitPrimBufferPair */
 /*     (596CC.c:71-74), accessed at offsets 0x12/0x10/0xE/ */
 /*     0xC/0x28/0x2A/0x30 */
-/*   - D_800A3514 is a counter (only += 1 or = 0; see its line) */
+/*   - g_row_menu_pulse_counter is a counter (only += 1 or = 0; see its line) */
 /*   - menu_HandleMemCardChoices is a menu input handler: parses pad input, */
 /*     decodes direction (1=down, 2=up), navigates cursor, */
 /*     calls snd_QueueSound for menu sound effects */
@@ -486,13 +486,13 @@
 /* === fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags / fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank cluster (2026-05-17) -- 7 highs === */
 /* Source: code6cac_b.c:3709 (fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags) and 3787 (fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank). */
 /* */
-/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags steps D_800A38E2 through a table; at 0x64 it sets */
+/* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags steps g_fight_step_table_next_row through a table; at 0x64 it sets */
 /* D_800A36F0 / D_800A3781 to whether a chosen bit of the bitmap at */
 /* &g_saved_record */
 /* (g_file_disc_size -- MISNOMER, see MISNOMERS.md) was still clear, */
 /* then sets that bit. */
 /* */
-/* fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank then sets D_800A38A4 = 6/7 (D_800A36F0) or 8/9 */
+/* fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank then sets g_fight_presentation_index = 6/7 (D_800A36F0) or 8/9 */
 /* (D_800A3781) and g_main_loop_handler_index = 0x12. */
 
 /* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
@@ -592,16 +592,16 @@
 /* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
 /* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
 /* gpu_InitPrimBufferPair and stores the result in g_sel_screen_work (64FD8.c:1076-1083), */
-/* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with D_800A351C / D_800A34FC */
+/* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with D_800A351C / g_row_menu_work_block */
 /* (596CC.c:56-74). */
 /* See each line. */
 
 /* === Fade/transition state machine (2026-05-17) -- 4 highs === */
 /* From text1b.c StepSlideProgressCommitPendingStateAndQueueSound (line 16108): fade-in/out state machine */
 /* with ramp value (D_800A3570: 0..0x1E8 in 0x20 steps), state */
-/* (D_800A3578: 1-4), dispatch table index (D_800A3580), deferred next */
+/* (g_entry_menu_slide_phase: 1-4), dispatch table index (g_entry_menu_handler_index), deferred next */
 /* index (D_800A3584). */
-/* Note: D_800A3578 and D_800A35A0 are 5ED34.c statics: D_800A3578's */
+/* Note: g_entry_menu_slide_phase and D_800A35A0 are 5ED34.c statics: g_entry_menu_slide_phase's */
 /* whole halfword is also the file's selection-screen state, and */
 /* D_800A35A0 is StepSlideBuildFrameRecordAndDispatchStateHandler's result. */
 
@@ -633,8 +633,8 @@
 /* globals discovered through usage-pattern analysis. */
 /* RENAME 0x800A36FA: retired name 'D_800A36FA' — preserved note: three values (0 / 1 / 2): camera_ApplyFightView picks its view record (D_800F6608 or D_800F5328), FOV and func_8003F218 argument by it (9F9C.c:2038-2066) */  /* data-wave 2026-10-08: was g_gnd_init_flag */
 
-/* === Byte tables D_8008D538 / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
-/* D_8008D538 is indexed by g_fight_config.unk_4[0] (17AFC.c:6372, 2B344.c:235) */
+/* === Byte tables g_fight_config_id_data_rows / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
+/* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:6372, 2B344.c:235) */
 /* or fighter_Init's arg2 (9F9C.c:3978); D_8008D55C maps a table index */
 /* into the g_fight_config.unk_4 id space.  g_listener_cam, D_800A3824 and */
 /* D_801077B0: see their lines. */
@@ -662,9 +662,9 @@
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
 
-/* === D_800F5328 (Rec44) record fields (2026-05-17) -- 9 highs === */
+/* === g_camera_alternate_view_record (Rec44) record fields (2026-05-17) -- 9 highs === */
 /* camera_InitTrackedFighterFocus (9F9C.c:808-823) copies a fighter's unk_180 position */
-/* into D_800F5328 and sets h30[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
+/* into g_camera_alternate_view_record and sets h30[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
 /* reads h30[i][0] / h30[i][2] as 32x32 grid cell coordinates. */
 
 /* === Ground/arena init cluster (2026-05-17) -- 14 highs === */
@@ -755,7 +755,7 @@
 /* Mode 18 confirmed from asm at pre-restructure-2026-10-03:asm/6CAC.s:41135: */
 /*   - gpu_HideResetAndClear + gpu_ResetGraphMode1 */
 /*   - motion_InvalidateMarkedNdataPackAndResetLoadCaches */
-/*   - Reads D_800A38A4: cases 6, 7, 8, 9 */
+/*   - Reads g_fight_presentation_index: cases 6, 7, 8, 9 */
 /*   - Each case sets g_practice_lesson_char_id + slot for the */
 /*     specific unlock-animation character/move combo */
 /* RESET 0x8003C040: retired name 'mode_handler_18_UnlockAnimDispatch' — preserved note: dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */
@@ -791,7 +791,7 @@
 
 /* === D_800EEDD0 matrix halves (2026-05-17) -- 3 highs === */
 /* From camera_CopyViewMatrixWithHalvedMiddleRow (368E4.c): copies 32-byte */
-/* D_800EEDD0 from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
+/* D_800EEDD0 from g_view_camera_root_node.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
 /* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 
 /* === 3D sound positioning result pair (2026-05-17) -- 2 highs === */
@@ -837,7 +837,7 @@
 /* + arena_ShiftBlocks (compaction).  A fixed 0x45000-byte arena at */
 /* g_arena with a cursor and high-water mark, plus the block table */
 /* g_arena_blocks (id, address, byte amount, relocation callback). */
-/* D_800A9CFE / D_800A9D04 are fields of the D_800A9CF8 header. */
+/* D_800A9CFE / D_800A9D04 are fields of the g_node_frame_animation_context header. */
 
 /* === Match-round scoring cluster (2026-05-17) -- 6 highs === */
 /* fight_RecordMatchResult (0x800340A0): the match result computation. */
@@ -930,7 +930,7 @@
 
 /* === Dispatch surrounding state + gnd target sibling (2026-05-17) -- 4 highs === */
 /* From text1b.c around line 16080-16103: the dispatch table */
-/* call site needs args populated via D_800A35A8 / g_entry_menu_work_block + */
+/* call site needs args populated via g_entry_menu_resources / g_entry_menu_work_block + */
 /* per-frame counters. */
 
 /* === D_800F1159 status bytes (2026-05-17) -- 1 high === */
@@ -974,14 +974,14 @@
 /* 43500.c statics beside g_collision_segment_work, the pointer to the cast work */
 /* area (Work_80053E9C) in use. */
 
-/* === Replay target A/B struct bases (2026-05-17) -- 4 highs === */
+/* === Camera and identity root nodes (2026-05-17) -- 4 highs === */
 /* 2026-09-23: g_replay_target_a/b_init_val (2 of the 4) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 /* From text1b.c node_InitRootNodePairWithNegatedRotationMatrices: 2 parallel transform records */
-/* initialized together.  D_80101DF0 is "target A" (type 0x64); */
-/* D_800FF638 is "target B" (type 0x65).  After init, pointers are */
-/* stored to D_800A3708 (A) and D_800A370C (B), and */
+/* initialized together.  g_view_camera_root_node is the camera root node (type 0x64; per-frame camera angles/eye); */
+/* g_view_identity_root_node is the identity root node (type 0x65; zeroed at init).  After init, pointers are */
+/* stored to g_view_camera_root_ptr and g_view_identity_root_ptr, and */
 /* g_replay_camera_state etc.  0x80101E3C/40/44 are */
-/* D_80101DF0.work.t[0..2] (+0x4C/50/54; Unk80101DF0Record, */
+/* g_view_camera_root_node.work.t[0..2] (+0x4C/50/54; Unk80101DF0Record, */
 /* include/game.h, 0x58 bytes -- the "~0x60" below is the */
 /* census estimate); per-word names retired 2026-09-23. */
 
@@ -1052,7 +1052,7 @@
 /* From main.c around line 2871-2924: a single-slot SPU transfer */
 /* queue with callback, busy flag, saved args, and status snapshot. */
 
-/* === D_800A9CF8 header + misc (2026-05-17) -- 6 highs === */
+/* === g_node_frame_animation_context header + misc (2026-05-17) -- 6 highs === */
 
 /* === Effect vertex buffer (2026-05-17) -- 1 high === */
 
@@ -1091,7 +1091,7 @@
 
 /* === D_80101EC8[1].unk_F4 words (2026-05-17) -- 2 highs === */
 
-/* === D_800A38A4-indexed byte tables + misc state (2026-05-17) -- 4 highs === */
+/* === g_fight_presentation_index-indexed byte tables + misc state (2026-05-17) -- 4 highs === */
 
 /* === Packed-nibble color values + components (2026-05-17) -- 6 highs === */
 /* From code6cac.c pad_SetDefaultSavedButtonMappings / pad_PackSavedButtonMappingLowNibbles / pad_UnpackButtonMappingNibblesToCells: */
@@ -1106,7 +1106,7 @@
 /* Fields within g_snd_voice_init_block (0x800EF070), accessed by */
 /* offsets +1, +6, +8, +A, +C.  Plus a generic snd callback fn ptr. */
 
-/* === D_800A9CF8 header fields + camera sector data (2026-05-17) -- 5 highs === */
+/* === g_node_frame_animation_context header fields + camera sector data (2026-05-17) -- 5 highs === */
 /* RENAME 0x800963EC: retired name 'D_800963EC' — preserved note: (start sector, sector count) per file id, loaded from NDATA.INF; starts and sizes CD reads */  /* data-wave 2026-10-08: was g_camera_sector_data_table */
 
 /* === SPU DMA control registers + transfer state (2026-05-17) -- 5 highs === */

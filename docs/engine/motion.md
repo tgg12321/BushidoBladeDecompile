@@ -100,7 +100,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
   it builds a rotation matrix from each frame's angle triple (the joint's
   offset into the frame comes from `D_80094CFC`) and blends the pair by `w`
   with `gte_LerpMatrixRowsAndRebuildOrthonormalBasis` into the model object's node `work` matrices
-  (`D_800A9A10[i]`); joints 18 and 19 also blend a translation
+  (`g_slot_objects[i]`); joints 18 and 19 also blend a translation
   (`math_LerpShortVectorsNegateYZ`).
 - `func_80040D48(i, mode, pos, rot, ...)` (src/main/31548.c:10) sets the root
   node's position and rotation, completes the joint nodes (mode 0 takes the

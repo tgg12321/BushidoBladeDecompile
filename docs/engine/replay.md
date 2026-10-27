@@ -47,9 +47,9 @@ member is `Unk80101E60Rec`):
 ## `menu_UpdateEntryGridCursors` and `gpu_SetSegmentCellsGateBit` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
 
 `menu_UpdateEntryGridCursors(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
-its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
+its 1 + `g_entry_menu_init_extra_slot_count` + `D_800A3554` cursors it moves a (row, column) position
 over a 5-row table
-(`D_8009BC40`) on the pad bits in `D_800A354C`, skipping cells already taken
+(`g_entry_menu_grid_entries`) on the pad bits in `g_entry_menu_pressed_buttons`, skipping cells already taken
 (`g_entry_menu_entry_flags` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
 choice, and draws the cells with `gpu_AddSpriteCells`.
 
@@ -106,9 +106,9 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
    `D_800A378C`) and increments `D_800A38D6`.
 2. If `a0` is given: stores `-a1` as the rotation of the view record
-   `D_80101DF0`, builds its matrix through `D_800F66A0[0]`, and sets the
+   `g_view_camera_root_node`, builds its matrix through `g_math_rot_matrix_funcs[0]`, and sets the
    record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
-   from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&D_80101DF0)`,
+   from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&g_view_camera_root_node)`,
    `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `a2` in `D_800A33C0`.
 3. Recomputes the light matrices of `g_light_setups[0]`, `[1]`, `[4]`
    (`calc_LightMatrix`) and runs `light_ResetPointLight`, `ClearSavedWordPairsAndTwoWriteOnlyWords`,
@@ -116,7 +116,7 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 
 The two other "rob back" names sit on unrelated code: `menu_InitSubflowForMode`
 (src/main/25C38.c:96, once `replay_camera_rob_back_loose2`) is a switch on its
-argument (0..7) that sets the state `D_800A3740` and, by case, calls
+argument (0..7) that sets the state `g_row_menu_subflow_state` and, by case, calls
 `InitTimedSpriteSequence`, `InitWithCachedValueAndStoredBitsBlackBg` and `menu_InitSelWithStoredBits` (each with the buffer
 address 0x80118800), `snd_SerialMixOn`, `cdrom_StartAudioEntry`,
 `menu_ResetFlowBackgroundAndConfirmCursor`, `comb_Connect`, `StoreCompactedBits`, `snd_QueueSound` and

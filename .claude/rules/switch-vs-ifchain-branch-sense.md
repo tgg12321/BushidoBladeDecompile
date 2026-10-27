@@ -27,7 +27,7 @@ with positive `beq` tests and cross-jumps the sibling case bodies — the target
 switch (g_fight_mode_selector) {
 case 4:  var_v0 = 0xC; break;
 case 1:
-    if (D_800A3748 == 0) { snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); D_800A3768 = 2; mottest_disp(); return; }
+    if (g_fight_followup_fighter_index == 0) { snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); g_local_ot_draw_mode = 2; mottest_disp(); return; }
     var_v0 = 0xC; break;
 case 6:  var_v0 = 0xC; break;
 default: snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); var_v0 = 2; break;

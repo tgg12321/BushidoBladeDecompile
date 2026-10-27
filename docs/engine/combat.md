@@ -32,7 +32,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
      `pending_move_event` are -1, neither `unk_0C` is 0x1F and their heights `world_pos.y`
      differ by less than 1000, both get `pending_move_event = 0xA`.
 - Then for every state: a fighter whose `move_kind` is 5 ends the round
-  (`g_main_loop_handler_index = 0x1C`, with `D_800A3748` the other fighter's index); the
+  (`g_main_loop_handler_index = 0x1C`, with `g_fight_followup_fighter_index` the other fighter's index); the
   scratchpad body points are copied into `unk_210` / `unk_234`, `unk_18C`
   (the centroid of points 1..3) and `unk_174` (the midpoint of points 4..5)
   (src/main/17AFC.c:2252-2278); and while fighter 0's `pending_move_event` is -1,
@@ -50,7 +50,7 @@ target, with the opponent as the attacker:
 1. It decides how many blade quads to test (`var_10`): one when the
    attacker's `is_defeated == 0`, `unk_92 != 0`, `update_count != 0` and `unk_0C != 0x1F`,
    one more with `unk_8C` set, and one more when `weapon_id` is 4 or 5 and any is
-   tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
+   tested. (With `mode == 1` the fighter `g_fight_paired_move_initiator` is skipped as a target.)
    Attackers with `weapon_id` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
    `move_frame == weapon_hit_start_frames[0]`, also sweep a segment with `fighter_CastWeaponSegment`
    (src/main/17AFC.c:1423, comment at :1399) while the counter `weapon_ammo`
