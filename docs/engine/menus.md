@@ -42,15 +42,15 @@ until an opcode ends the step. The opcodes and what they do:
 - 16 / 17: `fight_ConfigureFighter1FromLookupAndOperandsAndLoad` / `fight_ConfigureFighter1FromOperandsAndLoad` on the operands, which return
   how many bytes they used.
 - 18: mode 0.
-- 19: keeps a 4-byte block in `D_800A3878`; mode 6.
+- 19: keeps a 4-byte block in `g_fight_active_playback_descriptor`; mode 6.
 - 20: keeps a 12-byte block in `D_800A385C` (`fight_SetFixedFighterBytesAndLoadBothFighters`,
   `func_8003B56C(1)`).
 
 Handlers that the script's modes reach:
 
 - `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478, mode 6) loads the scene the
-  `D_800A3878` block describes (`motion_StartPlaybackAtIndexedBasePlusOffset` with its byte 0 and the
-  fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, D_800A3878[1])`) and sets mode 7.
+  `g_fight_active_playback_descriptor` block describes (`motion_StartPlaybackAtIndexedBasePlusOffset` with its byte 0 and the
+  fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1])`) and sets mode 7.
 - `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550, mode 7) counts `g_handler_frame_counter`; while
   `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
@@ -80,7 +80,7 @@ Cited by function name.
   steps it to the first enabled row, and sets the cursor field to 4 (its
   caller is `InitRowMenuBlackBgResetFlow`, src/main/64FD8.c:1258).
 - `g_menu_packed_cursors` packs three cursors: bits 0-3 the row index 0..7, which skips
-  rows whose bit in `D_8009BC04.rows_on` is clear; bits 10-12 a cursor
+  rows whose bit in `g_row_menu_row_state.rows_on` is clear; bits 10-12 a cursor
   0..5; bits 13-15 a cursor 0..2.
 - `pad_StepOffsetsGetDirectionEvents` reads the pad word and returns, in its high half, 1 or 2
   for a step one way or the other.

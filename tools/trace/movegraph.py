@@ -74,7 +74,7 @@ fires, ending the loop; bit 4 is cleared in all four words by
 fighter_BuildCpuOrMappedPadState, so no entry on it fires),
 1 R2, 2 L1, 3 R1, 5/6/7 the attack
 buttons of the key config (D_80106A50.frec20, a nibble per player; in mode
-D_800A38DC 6 the record that is not D_800A38A0 uses D_800A3912..14), 8
+D_800A38DC 6 the record that is not g_comb_local_side uses D_800A3912..14), 8
 SELECT, 11 START, 12..15 UP RIGHT DOWN LEFT; for record 1 outside mode 6 the
 directions are mirrored (game UP/RIGHT/DOWN/LEFT = pad DOWN/LEFT/UP/RIGHT).
 L3 / R3 fold into bits 3 / 5 per word, after pressed / released are
@@ -117,7 +117,7 @@ RECORDS, REC_SIZE = 0x80101EC8, 0x44C  # D_80101EC8[2]
 SECTIONS_SIZE = 0x14
 KEY_CONFIG = 0x80106A70  # D_80106A50.frec20[3]
 MODE = 0x800A38DC  # D_800A38DC (s16)
-MODE6_PLAYER = 0x800A38A0  # D_800A38A0 (s32)
+MODE6_PLAYER = 0x800A38A0  # g_comb_local_side (s32)
 MODE6_CONFIG = 0x800A3912  # D_800A3912..14
 PAIRED_STARTER = 0x800A38AE  # D_800A38AE (s16)
 

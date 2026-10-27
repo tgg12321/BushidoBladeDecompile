@@ -47,7 +47,7 @@ member is `Unk80101E60Rec`):
 ## `menu_UpdateEntryGridCursors` and `gpu_SetSegmentCellsGateBit` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
 
 `menu_UpdateEntryGridCursors(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
-its 1 + `g_entry_menu_init_extra_slot_count` + `D_800A3554` cursors it moves a (row, column) position
+its 1 + `g_entry_menu_init_extra_slot_count` + `g_entry_menu_grid_phase_extra_slot_count` cursors it moves a (row, column) position
 over a 5-row table
 (`g_entry_menu_grid_entries`) on the pad bits in `g_entry_menu_pressed_buttons`, skipping cells already taken
 (`g_entry_menu_entry_flags` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
@@ -104,7 +104,7 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 `gpu_ResetDrawQueueAndPrepareViewAndLighting(a0, a1, a2)` (src/main/368E4.c:448) sets up the frame's view and draw state:
 
 1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
-   `D_800A378C`) and increments `D_800A38D6`.
+   `g_gpu_ot_offset_ptr`) and increments `D_800A38D6`.
 2. If `a0` is given: stores `-a1` as the rotation of the view record
    `g_view_camera_root_node`, builds its matrix through `g_math_rot_matrix_funcs[0]`, and sets the
    record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back

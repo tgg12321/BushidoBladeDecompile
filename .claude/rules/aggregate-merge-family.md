@@ -83,10 +83,10 @@ one-object spelling matches.
   assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]
   address to `vec`'s register; cc1psx identical),
   memory/grind/judge-decl-cleanup/followups/fighter_ResolveBoneHit.vec-investigation.md.
-- **D_800A376A / D_800A376B (Q97):** fighter_AccumulateBoneGroupFlagWhenGameModeZero only: the per-player byte indexed as
-  `*(&D_800A376A + a0)`, `/* FAKE */`-annotated. Basis: the `u8 D_800A376A[2]` form only
+- **g_fight_bone_group_tim_requests / D_800A376B (Q97):** fighter_AccumulateBoneGroupFlagWhenGameModeZero only: per-player byte
+  `*(&g_fight_bone_group_tim_requests + a0)`, FAKE-annotated; basis the u8[2] form only
   (source in followups/func_8002738C.c12-merge-variant.diff; func_8003B2C8 12 / func_8003B328 16
-  per the cheat-sweep lane, not banked). No struct form was measured: open debt
+  per cheat-sweep lane, not banked). No struct form was measured: open debt
   (docs/grind/handoff-2026-09-30.md); a one-object form that matches retires Q97.
 - **D_800906A4 / D_8009060C (Q98, item 4):** declared `s16 D_800906A4[39][2]`,
   `s32 D_8009060C[38]` (StatusUpBuf retires). gpu_LatchFogDepthOnTransitionAndQueueMoves only: the pair's [1] read (twice) as

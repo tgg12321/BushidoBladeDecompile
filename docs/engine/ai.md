@@ -49,7 +49,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   (src/main/17AFC.c:3967) frees kinds 0x12..0x1D (both called at
   src/main/9F9C.c:1180-1181).
 
-## The shuffled ID list `D_801077B0`
+## The shuffled ID list `g_fight_opponent_order`
 
 `ApplyPendingConfigAndInitializeMode` case 1 (src/main/24BF0.c:54) calls `fight_BuildOpponentOrder` and then
 `fight_AdvanceOpponentOrder`.
@@ -59,7 +59,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 1. Collects the IDs `i` in 0..26 whose bit is set in
    `g_saved_record.unk_00 & 0x3EF3DF`, minus the bit
    `g_fight_config_id_data_rows[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5288), into
-   `D_801077B0`.
+   `g_fight_opponent_order`.
 2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5309).
 3. If bit 0x20 or 0x10000 of `g_saved_record.unk_00` is set, adds ID 5 (bit 0x20)
    and / or ID 0x10 (bit 0x10000), in random order when both are set: the first
@@ -70,7 +70,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
    clears the cursor `D_800A3783`.
 
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5397) steps the cursor: it sets
-`g_fight_config.unk_4[1] = D_8008D55C[D_801077B0[cursor]]`, or, once the cursor
+`g_fight_config.unk_4[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor
 reaches the count, sets the mode `g_main_loop_handler_index` to 0x12 (count 20) or 0x20.
 The 27 IDs match the row count of the per-character tables (`D_8008E338`,
 `D_8008DE34`, include/bb2.h:181-193), which is consistent with the list being

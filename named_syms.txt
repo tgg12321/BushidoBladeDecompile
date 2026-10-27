@@ -612,7 +612,7 @@
 /* bytes of g_eff_command_status[], tested and cleared in pairs before a command; */
 /* eff_StartCommand stores the handler's return to the byte unk14 names. */
 
-/* === D_800A33EC / D_800EF980 cluster (2026-05-17) -- 2 highs === */
+/* === D_800A33EC / g_resource_entry_request_state cluster (2026-05-17) -- 2 highs === */
 /* From resource_RequestEntryWithLinkedEntriesAndLatchCategory (368E4.c:1835-1860).  D_800A33EC is -1 until */
 /* its first call, then 0 for arg0 < 0x33, 1 for arg0 >= 0x33; */
 /* later calls from the other side of 0x33 call func_80052C10. */
@@ -637,7 +637,7 @@
 /* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:6372, 2B344.c:235) */
 /* or fighter_Init's arg2 (9F9C.c:3978); D_8008D55C maps a table index */
 /* into the g_fight_config.unk_4 id space.  g_listener_cam, D_800A3824 and */
-/* D_801077B0: see their lines. */
+/* g_fight_opponent_order: see their lines. */
 
 /* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
 /* From text1a.c around lines 55, 1093, 1201, 1235 etc.  D_80094E08 */
@@ -823,11 +823,16 @@
 /* with font_DrawChar at (col*8+0x10, row*8+0x10); g_font_col is the */
 /* column.  g_font_sprite_count counts the SPRT_8 glyph primitives used. */
 
-/* === Menu-control player select + char-struct field 0x12 (2026-05-17) -- 3 highs === */
-/* From code6cac_c2.c around line 200-232: a menu function reads */
-/* D_800A3878 as a pointer to a state struct, then tests bits at +3 */
-/* (0x10/0x20/0x80/0x1/0x2) to decide which char-struct fields to */
-/* override.  D_80101EDA / D_80102326 are the same field at offset */
+/* === Playback descriptor flags + char-struct field 0x12 (2026-05-17) -- 3 highs === */
+/* fight_StartDescriptorPlaybackAndAudio (2B344.c:511-561) reads */
+/* g_fight_active_playback_descriptor[3] flag bits (0x80/0x30/0x1/0x2/0x40); 0x10/0x20 */
+/* select which char-struct fields to override: 0x10 / 0x20 force field 0x12 of */
+/* fighter 0 / 1 to 0x32 for the entry request and the playback start, while 0x1 / 0x2 */
+/* pass field 0x12 of fighter 0 / 1 to the playback start (else -1).  0x80 invalidates */
+/* the marked ndata pack, resets the load caches and passes base 0x80118800 to the */
+/* playback start; 0x40 calls resource_SelectRetainedSubblockOrApplyHeaderSections(-1), */
+/* whose a0 < 0 path applies the header sections and clears the retained subblocks. */
+/* D_80101EDA / D_80102326 are the same field at offset */
 /* +0x12 in P1/P2 entries of D_80101EC8 (stride 0x44C). */
 
 /* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
@@ -913,7 +918,7 @@
 /* RENAME 0x8007997C: retired name 'bb2_putchar_stdout' — preserved note: fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
 
 /* === g_working_record unk17 / unk1D byte triples (2026-05-17) -- 6 highs === */
-/* menu_RunOptionModeFlowStateWithRowBitEdit (64FD8.c:1352-1410), switching on D_800A35E4: on */
+/* menu_RunOptionModeFlowStateWithRowBitEdit (64FD8.c:1352-1410), switching on g_option_mode_flow_state: on */
 /* entering state 4 it copies unk1D[] into unk17[]; when menu_UpdateRowBitMenu */
 /* returns 1 it copies unk17[] back into unk1D[].  The code that edits */
 /* the bytes works on unk17[] (596CC.c:1939-1941). */
@@ -1181,7 +1186,7 @@ D_1F800110                                       = 0x1F800110;  /* data-wave 202
 /* data-wave 2026-09-29: g_text1b_addr_800154A0 = 0x800154A0 retired; g_rsqrt_table is now object-defined */
 /* RENAME 0x8009A820: retired name 'D_8009A820' — preserved note: data-wave 2026-10-08: was g_text1b_addr_8009A820 */
 /* 2026-10-16: D_8009A821 retired -- D_8009A820[i][1] (u8 D_8009A820[8][2], src/main/4510C.c:884); its dlabel is folded into D_8009A820's. */
-/* 2026-10-16: D_8009BC08, D_8009BC0C, D_8009BC0D retired -- MenuState D_8009BC04's unk4 / opt[0].state / opt[0].mode (include/game.h, 1f0af23f2); the asm/data dlabels remain. */
+/* 2026-10-16: D_8009BC08, D_8009BC0C, D_8009BC0D retired -- MenuState g_row_menu_row_state's unk4 / opt[0].state / opt[0].mode (include/game.h, 1f0af23f2); the asm/data dlabels remain. */
 /* 2026-10-16: D_8009BCC6, D_8009BCD2, D_8009BD21, D_8009BD59 retired -- elements of D_8009BCC4 (s16 [3][2]), D_8009BCD0 (s16 [2]), D_8009BD20 (u8 [2][2]), D_8009BD58 (u8 [8][2]) (include/bb2.h); the asm/data dlabels of the first three remain. */
 /* 2026-10-16: D_800F10F8, D_800F1110, D_800F1114 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
 

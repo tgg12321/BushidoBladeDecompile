@@ -24,7 +24,7 @@ fighter_Init's arg2 for fighter 1, 9F9C.c:1796):
   op 20 (12): D_800A385C = the operands, fight_SetFixedFighterBytesAndLoadBothFighters: unk_4[1] = 0x1F,
         func_8003B56C(1): D_800A3834 = 6, ends the call
   op 1  (1): D_800A36A4 = op0, D_800A3834 = 22, ends the call
-  op 19 (4): D_800A3878 = the operands, D_800A3834 = 6, ends the call
+  op 19 (4): g_fight_active_playback_descriptor = the operands, D_800A3834 = 6, ends the call
   op 0, op 18 (0): end the call (op 18: D_800A3834 = 0)
 Any other byte is consumed with no operands (the switch has no default).
 Nothing is inferred about what the commands mean.
