@@ -1,0 +1,8 @@
+Unk80101EC8Record.unk_0A=character_data_index
+Unk80101EC8Record.unk_0E=weapon_id
+Unk80101EC8Record.unk_B1=collision_hit_tag
+Unk80101EC8Record.unk_34A=weapon_ammo
+Unk80101EC8Record.unk_34B=weapon_refills_left
+Unk80101EC8Record.unk_350=bone_event_counter
+Unk80101EC8Record.unk_352=bone_event_bone_index
+Unk80101EC8Record.unk_354=bone_event_local_vector

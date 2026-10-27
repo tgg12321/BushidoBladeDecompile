@@ -1,0 +1,661 @@
+PASS Unk80101EC8Record.unk_0A=character_data_index, Unk80101EC8Record.unk_0E=weapon_id, Unk80101EC8Record.unk_B1=collision_hit_tag, Unk80101EC8Record.unk_34A=weapon_ammo, Unk80101EC8Record.unk_34B=weapon_refills_left, Unk80101EC8Record.unk_350=bone_event_counter, Unk80101EC8Record.unk_352=bone_event_bone_index, Unk80101EC8Record.unk_354=bone_event_local_vector
+decl Unk80101EC8Record.unk_0A -> character_data_index  include/game.h:1508
+decl Unk80101EC8Record.unk_0E -> weapon_id  include/game.h:1510
+decl Unk80101EC8Record.unk_B1 -> collision_hit_tag  include/game.h:1595
+decl Unk80101EC8Record.unk_34A -> weapon_ammo  include/game.h:1695
+decl Unk80101EC8Record.unk_34B -> weapon_refills_left  include/game.h:1696
+decl Unk80101EC8Record.unk_350 -> bone_event_counter  include/game.h:1702
+decl Unk80101EC8Record.unk_352 -> bone_event_bone_index  include/game.h:1705
+decl Unk80101EC8Record.unk_354 -> bone_event_local_vector  include/game.h:1708
+  round 0: 172 member error line(s)
+    src/main/17AFC.c:512 unk_0A x1
+    src/main/17AFC.c:679 unk_0E x2
+    src/main/17AFC.c:680 unk_0E x2
+    src/main/17AFC.c:935 unk_0E x2
+    src/main/17AFC.c:936 unk_0E x2
+    src/main/17AFC.c:954 unk_0E x2
+    src/main/17AFC.c:955 unk_0E x2
+    src/main/17AFC.c:1153 unk_0E x2
+    src/main/17AFC.c:1160 unk_0E x2
+    src/main/17AFC.c:1184 unk_0E x2
+    src/main/17AFC.c:1710 unk_0E x2
+    src/main/17AFC.c:1713 unk_0E x2
+    src/main/17AFC.c:1717 unk_34A x1
+    src/main/17AFC.c:1718 unk_34A x1
+    src/main/17AFC.c:1735 unk_34A x1
+    src/main/17AFC.c:1736 unk_34A x1
+    src/main/17AFC.c:1762 unk_0E x2
+    src/main/17AFC.c:1901 unk_0E x2
+    src/main/17AFC.c:1975 unk_0E x2
+    src/main/17AFC.c:1976 unk_0E x2
+    src/main/17AFC.c:2009 unk_0E x2
+    src/main/17AFC.c:3822 unk_0A x1
+    src/main/17AFC.c:3829 unk_0A x1
+    src/main/17AFC.c:4938 unk_B1 x1
+    src/main/17AFC.c:4944 unk_B1 x1
+    src/main/17AFC.c:4963 unk_B1 x1
+    src/main/17AFC.c:4969 unk_B1 x1
+    src/main/17AFC.c:5202 unk_0A x1
+    src/main/17AFC.c:5505 unk_0A x1
+    src/main/17AFC.c:5571 unk_0A x1
+    src/main/17AFC.c:5572 unk_0E x1
+    src/main/17AFC.c:5646 unk_0A x1
+    src/main/17AFC.c:5655 unk_0A x1
+    src/main/28708.c:1432 unk_B1 x1
+    src/main/2B344.c:187 unk_0A x1
+    src/main/2B344.c:187 unk_0E x1
+    src/main/2B344.c:213 unk_0A x1
+    src/main/2B344.c:213 unk_0E x1
+    src/main/2B344.c:216 unk_0A x1
+    src/main/2B344.c:216 unk_0E x1
+    src/main/2B344.c:386 unk_0A x1
+    src/main/2B344.c:639 unk_0A x2
+    src/main/2B344.c:640 unk_0A x2
+    src/main/2B344.c:641 unk_0A x2
+    src/main/2B344.c:642 unk_0A x1
+    src/main/2B344.c:710 unk_0A x1
+    src/main/2B344.c:711 unk_0A x1
+    src/main/2B344.c:741 unk_0A x1
+    src/main/2B344.c:807 unk_0A x1
+    src/main/2B344.c:822 unk_0A x1
+    src/main/2B344.c:874 unk_0A x1
+    src/main/2B344.c:1025 unk_0E x1
+    src/main/2B344.c:1083 unk_0A x1
+    src/main/4510C.c:262 unk_0A x1
+    src/main/4510C.c:346 unk_0A x1
+    src/main/4510C.c:388 unk_0E x1
+    src/main/4510C.c:658 unk_0E x1
+    src/main/4510C.c:660 unk_0E x1
+    src/main/4510C.c:858 unk_B1 x1
+    src/main/4510C.c:882 unk_0E x1
+    src/main/4510C.c:1034 unk_0E x1
+    src/main/4510C.c:1035 unk_0E x1
+    src/main/4510C.c:1858 unk_0E x1
+    src/main/4510C.c:1861 unk_0E x1
+    src/main/4510C.c:1935 unk_0E x1
+    src/main/4510C.c:1935 unk_34A x1
+    src/main/4510C.c:2143 unk_0E x1
+    src/main/4510C.c:2146 unk_34A x1
+    src/main/4510C.c:2306 unk_0E x1
+    src/main/4510C.c:2306 unk_34A x1
+    src/main/4510C.c:2413 unk_0E x1
+    src/main/4510C.c:2415 unk_0E x1
+    src/main/4510C.c:2415 unk_34A x1
+    src/main/4510C.c:2481 unk_0E x1
+    src/main/4510C.c:2552 unk_0E x1
+    src/main/4510C.c:2570 unk_0E x1
+    src/main/4510C.c:2585 unk_B1 x1
+    src/main/4510C.c:2637 unk_B1 x1
+    src/main/4510C.c:2652 unk_34A x1
+    src/main/4510C.c:2690 unk_0E x1
+    src/main/4510C.c:2702 unk_0E x1
+    src/main/4510C.c:2703 unk_34A x1
+    src/main/4510C.c:2703 unk_34B x1
+    src/main/9F9C.c:1254 unk_0A x1
+    src/main/9F9C.c:1558 unk_0A x1
+    src/main/9F9C.c:1583 unk_B1 x1
+    src/main/9F9C.c:1595 unk_B1 x1
+    src/main/9F9C.c:1724 unk_0A x1
+    src/main/9F9C.c:1755 unk_0A x1
+    src/main/9F9C.c:1840 unk_0A x1
+    src/main/9F9C.c:1840 unk_0E x1
+    src/main/9F9C.c:1844 unk_0A x1
+    src/main/9F9C.c:1844 unk_0E x1
+    src/main/9F9C.c:1866 unk_0A x1
+    src/main/9F9C.c:2067 unk_0E x1
+    src/main/9F9C.c:2233 unk_0A x1
+    src/main/9F9C.c:2314 unk_0E x1
+    src/main/9F9C.c:2445 unk_0E x1
+    src/main/9F9C.c:2654 unk_0A x1
+    src/main/9F9C.c:2859 unk_350 x1
+    src/main/9F9C.c:2860 unk_352 x1
+    src/main/9F9C.c:2861 unk_352 x1
+    src/main/9F9C.c:2869 unk_354 x1
+    src/main/9F9C.c:2890 unk_350 x1
+    src/main/9F9C.c:2891 unk_350 x1
+    src/main/9F9C.c:2892 unk_350 x1
+    src/main/9F9C.c:2894 unk_352 x1
+    src/main/9F9C.c:2895 unk_354 x1
+    src/main/9F9C.c:2897 unk_350 x1
+    src/main/9F9C.c:2908 unk_352 x1
+    src/main/9F9C.c:2910 unk_350 x1
+    src/main/9F9C.c:2911 unk_350 x1
+    src/main/9F9C.c:2913 unk_350 x1
+    src/main/9F9C.c:2976 unk_0E x1
+    src/main/9F9C.c:2979 unk_0E x1
+    src/main/9F9C.c:3647 unk_0A x1
+    src/main/9F9C.c:3647 unk_0E x1
+    src/main/9F9C.c:3681 unk_0A x1
+    src/main/9F9C.c:3682 unk_0E x1
+    src/main/9F9C.c:3685 unk_0E x1
+    src/main/9F9C.c:3687 unk_0A x1
+    src/main/9F9C.c:3687 unk_0E x1
+    src/main/9F9C.c:3691 unk_0A x1
+    src/main/9F9C.c:3691 unk_0E x1
+    src/main/9F9C.c:3699 unk_0A x1
+    src/main/9F9C.c:3699 unk_0E x1
+    src/main/9F9C.c:3700 unk_0A x1
+    src/main/9F9C.c:3700 unk_0E x1
+    src/main/9F9C.c:3721 unk_0A x1
+    src/main/9F9C.c:3721 unk_0E x1
+    src/main/9F9C.c:3818 unk_0A x1
+    src/main/9F9C.c:3820 unk_0A x1
+    src/main/9F9C.c:3821 unk_0A x1
+    src/main/9F9C.c:3830 unk_B1 x1
+    src/main/9F9C.c:3836 unk_0A x3
+    src/main/9F9C.c:3837 unk_0A x2
+    src/main/9F9C.c:3847 unk_0A x2
+    src/main/9F9C.c:3848 unk_0A x2
+    src/main/9F9C.c:3849 unk_0A x1
+    src/main/9F9C.c:3856 unk_34A x1
+    src/main/9F9C.c:3859 unk_34A x1
+    src/main/9F9C.c:3861 unk_34A x1
+    src/main/9F9C.c:3863 unk_34B x1
+    src/main/9F9C.c:3871 unk_350 x1
+    src/main/9F9C.c:3941 unk_B1 x1
+    src/main/9F9C.c:4141 unk_0A x1
+    src/main/9F9C.c:4448 unk_0A x1
+    src/main/9F9C.c:4556 unk_0A x1
+    src/main/9F9C.c:4681 unk_0A x1
+    src/main/9F9C.c:4684 unk_0A x1
+    src/main/9F9C.c:4686 unk_0A x1
+    src/main/9F9C.c:4691 unk_0A x1
+    src/main/9F9C.c:4782 unk_0A x1
+    src/main/9F9C.c:4976 unk_B1 x2
+    src/main/9F9C.c:4977 unk_B1 x1
+    src/main/9F9C.c:5014 unk_0E x2
+    src/main/9F9C.c:5031 unk_0A x1
+    src/main/9F9C.c:5040 unk_0A x2
+    src/main/9F9C.c:5041 unk_0A x2
+    src/main/9F9C.c:5042 unk_0A x1
+    src/main/9F9C.c:5046 unk_0A x3
+    src/main/9F9C.c:5047 unk_0A x2
+    src/main/9F9C.c:5063 unk_0E x2
+    src/main/9F9C.c:5125 unk_0E x2
+    src/main/9F9C.c:5198 unk_0A x1
+    src/main/9F9C.c:5205 unk_0A x1
+    src/main/9F9C.c:5205 unk_0E x1
+    src/main/9F9C.c:5242 unk_B1 x1
+    src/main/9F9C.c:5244 unk_B1 x1
+    src/main/9F9C.c:5247 unk_34B x1
+    src/main/9F9C.c:5248 unk_34A x1
+    src/main/9F9C.c:5249 unk_34B x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1508 +1508 @@
+-    s16 unk_0A;
++    s16 character_data_index;
+@@ -1510 +1510 @@
+-    s16 unk_0E; /* column of D_8008E5CC / D_8008E6A4 */
++    s16 weapon_id; /* column of D_8008E5CC / D_8008E6A4 */
+@@ -1595 +1595 @@
+-    u8 unk_B1;
++    u8 collision_hit_tag;
+@@ -1695,2 +1695,2 @@
+-    u8 unk_34A;
+-    u8 unk_34B;
++    u8 weapon_ammo;
++    u8 weapon_refills_left;
+@@ -1702 +1702 @@
+-    s16 unk_350;
++    s16 bone_event_counter;
+@@ -1705 +1705 @@
+-    s16 unk_352;
++    s16 bone_event_bone_index;
+@@ -1708 +1708 @@
+-    Vec3i32 unk_354;
++    Vec3i32 bone_event_local_vector;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -512 +512 @@
+-        s16 kind = arg1->unk_0A;
++        s16 kind = arg1->character_data_index;
+@@ -679,2 +679,2 @@
+-                        if (arg0->unk_0E == 6 || arg0->unk_0E == 7 ||
+-                            temp_s4->unk_0E == 6 || temp_s4->unk_0E == 7) {
++                        if (arg0->weapon_id == 6 || arg0->weapon_id == 7 ||
++                            temp_s4->weapon_id == 6 || temp_s4->weapon_id == 7) {
+@@ -935,2 +935,2 @@
+-                if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
+-                    D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
++                if (D_80101EC8[0].weapon_id == 6 || D_80101EC8[0].weapon_id == 7 ||
++                    D_80101EC8[1].weapon_id == 6 || D_80101EC8[1].weapon_id == 7) {
+@@ -954,2 +954,2 @@
+-            if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
+-                D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
++            if (D_80101EC8[0].weapon_id == 6 || D_80101EC8[0].weapon_id == 7 ||
++                D_80101EC8[1].weapon_id == 6 || D_80101EC8[1].weapon_id == 7) {
+@@ -1153 +1153 @@
+-        if (rec->unk_0E == 6 || rec->unk_0E == 7) {
++        if (rec->weapon_id == 6 || rec->weapon_id == 7) {
+@@ -1160 +1160 @@
+-        if (rec->unk_0E == 4 || rec->unk_0E == 5) {
++        if (rec->weapon_id == 4 || rec->weapon_id == 5) {
+@@ -1184 +1184 @@
+-                0, rec->unk_0E == 4 || rec->unk_0E == 5, var_1) != 0) {
++                0, rec->weapon_id == 4 || rec->weapon_id == 5, var_1) != 0) {
+@@ -1710 +1710 @@
+-        if (var_10 != 0 && (var_3->unk_0E == 4 || var_3->unk_0E == 5)) {
++        if (var_10 != 0 && (var_3->weapon_id == 4 || var_3->weapon_id == 5)) {
+@@ -1713 +1713 @@
+-        if ((var_3->unk_0E == 6 || var_3->unk_0E == 7) &&
++        if ((var_3->weapon_id == 6 || var_3->weapon_id == 7) &&
+@@ -1717,2 +1717,2 @@
+-            if (var_3->unk_34A != 0) {
+-                var_3->unk_34A -= 1;
++            if (var_3->weapon_ammo != 0) {
++                var_3->weapon_ammo -= 1;
+@@ -1735,2 +1735,2 @@
+-            var_3->unk_34A != 0) {
+-            var_3->unk_34A -= 1;
++            var_3->weapon_ammo != 0) {
++            var_3->weapon_ammo -= 1;
+@@ -1762 +1762 @@
+-            } else if (var_3->unk_0E == 4 || var_3->unk_0E == 5) {
++            } else if (var_3->weapon_id == 4 || var_3->weapon_id == 5) {
+@@ -1901 +1901 @@
+-        if ((var_3->unk_0E == 6 || var_3->unk_0E == 7 ||
++        if ((var_3->weapon_id == 6 || var_3->weapon_id == 7 ||
+@@ -1975,2 +1975,2 @@
+-                    if (var_4->unk_0E == 6 || var_4->unk_0E == 7 ||
+-                        var_3->unk_0E == 6 || var_3->unk_0E == 7) {
++                    if (var_4->weapon_id == 6 || var_4->weapon_id == 7 ||
++                        var_3->weapon_id == 6 || var_3->weapon_id == 7) {
+@@ -2009 +2009 @@
+-        if (!(var_3->unk_0E == 6 || var_3->unk_0E == 7)) {
++        if (!(var_3->weapon_id == 6 || var_3->weapon_id == 7)) {
+@@ -3822 +3822 @@
+-        val = D_8008E338[a0->unk_0A][i];
++        val = D_8008E338[a0->character_data_index][i];
+@@ -3829 +3829 @@
+-    D_800A36F2[a0->index] = D_8008E338[a0->unk_0A][0];
++    D_800A36F2[a0->index] = D_8008E338[a0->character_data_index][0];
+@@ -4938 +4938 @@
+-                if ((0x60 >> obj->unk_B1) & 1) {
++                if ((0x60 >> obj->collision_hit_tag) & 1) {
+@@ -4944 +4944 @@
+-            if (((0x60 >> obj->unk_B1) & 1) &&
++            if (((0x60 >> obj->collision_hit_tag) & 1) &&
+@@ -4963 +4963 @@
+-                if ((0x60 >> obj->unk_B1) & 1) {
++                if ((0x60 >> obj->collision_hit_tag) & 1) {
+@@ -4969 +4969 @@
+-            if (((0x60 >> obj->unk_B1) & 1) &&
++            if (((0x60 >> obj->collision_hit_tag) & 1) &&
+@@ -5202 +5202 @@
+-            if (bits & (1 << base->unk_0A)) {
++            if (bits & (1 << base->character_data_index)) {
+@@ -5505 +5505 @@
+-            u8 z = D_8008D9EC[D_80101EC8[0].unk_0A];
++            u8 z = D_8008D9EC[D_80101EC8[0].character_data_index];
+@@ -5571,2 +5571,2 @@
+-        record->times[n].unk_0 = (u8)D_80101EC8[0].unk_0A;
+-        record->times[n].unk_1 = (u8)D_80101EC8[0].unk_0E;
++        record->times[n].unk_0 = (u8)D_80101EC8[0].character_data_index;
++        record->times[n].unk_1 = (u8)D_80101EC8[0].weapon_id;
+@@ -5646 +5646 @@
+-        if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
++        if (D_8008D9EC[D_80101EC8[0].character_data_index] != 0) {
+@@ -5655 +5655 @@
+-        if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
++        if (D_8008D9EC[D_80101EC8[0].character_data_index] != 0) {
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1432 +1432 @@
+-            var_11->unk_B1 = out_b1;
++            var_11->collision_hit_tag = out_b1;
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -187 +187 @@
+-            i, D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
++            i, D_8008E5CC[D_80101EC8[i].character_data_index][D_80101EC8[i].weapon_id]);
+@@ -213 +213 @@
+-            arg0, D_8008E6A4[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
++            arg0, D_8008E6A4[D_80101EC8[arg0].character_data_index][D_80101EC8[arg0].weapon_id]);
+@@ -216 +216 @@
+-            arg0, D_8008E5CC[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
++            arg0, D_8008E5CC[D_80101EC8[arg0].character_data_index][D_80101EC8[arg0].weapon_id]);
+@@ -386 +386 @@
+-                D_800A38A4 = (D_8008D9EC[D_80101EC8[0].unk_0A] != 0);
++                D_800A38A4 = (D_8008D9EC[D_80101EC8[0].character_data_index] != 0);
+@@ -639,4 +639,4 @@
+-        if (D_80101EC8[0].unk_0A == 0 || D_80101EC8[0].unk_0A == 1 ||
+-            D_80101EC8[0].unk_0A == 2 || D_80101EC8[0].unk_0A == 0xC ||
+-            D_80101EC8[0].unk_0A == 0xD || D_80101EC8[0].unk_0A == 0xE) {
+-            bit = D_80101EC8[0].unk_0A;
++        if (D_80101EC8[0].character_data_index == 0 || D_80101EC8[0].character_data_index == 1 ||
++            D_80101EC8[0].character_data_index == 2 || D_80101EC8[0].character_data_index == 0xC ||
++            D_80101EC8[0].character_data_index == 0xD || D_80101EC8[0].character_data_index == 0xE) {
++            bit = D_80101EC8[0].character_data_index;
+@@ -710,2 +710,2 @@
+-    if ((D_800A38A4 == 4 && D_8008D9EC[D_80101EC8[0].unk_0A] != 0) ||
+-        (D_800A38A4 == 5 && D_8008D9EC[D_80101EC8[0].unk_0A] == 0)) {
++    if ((D_800A38A4 == 4 && D_8008D9EC[D_80101EC8[0].character_data_index] != 0) ||
++        (D_800A38A4 == 5 && D_8008D9EC[D_80101EC8[0].character_data_index] == 0)) {
+@@ -741 +741 @@
+-            D_800A38A4 = D_8008D9EC[D_80101EC8[0].unk_0A] != 0 ? 9 : 8;
++            D_800A38A4 = D_8008D9EC[D_80101EC8[0].character_data_index] != 0 ? 9 : 8;
+@@ -807 +807 @@
+-                D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 0xA8 : 0xA7,
++                D_8008D9EC[D_80101EC8[D_800A382D].character_data_index] != 0 ? 0xA8 : 0xA7,
+@@ -822 +822 @@
+-            D_800A38A4 = D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 5 : 4;
++            D_800A38A4 = D_8008D9EC[D_80101EC8[D_800A382D].character_data_index] != 0 ? 5 : 4;
+@@ -874 +874 @@
+-    s0->unk30 = D_80101EC8[0].unk_0A;
++    s0->unk30 = D_80101EC8[0].character_data_index;
+@@ -1025 +1025 @@
+-        if ((u16)(D_80101EC8[var_1].unk_0E - 6) < 2) {
++        if ((u16)(D_80101EC8[var_1].weapon_id - 6) < 2) {
+@@ -1083 +1083 @@
+-    var_7 = D_80101EC8[p].unk_0A;
++    var_7 = D_80101EC8[p].character_data_index;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -262 +262 @@
+-    p->cpu_profile = p->unk_0A;
++    p->cpu_profile = p->character_data_index;
+@@ -346 +346 @@
+-            var_9 = rec->unk_0A;
++            var_9 = rec->character_data_index;
+@@ -388 +388 @@
+-            if (rec->unk_0E >= 6) {
++            if (rec->weapon_id >= 6) {
+@@ -658 +658 @@
+-    if (((D_8009A088[rec->other->unk_0E] >> rec->other->unk_440) & 1) &&
++    if (((D_8009A088[rec->other->weapon_id] >> rec->other->unk_440) & 1) &&
+@@ -660 +660 @@
+-        rec->unk_0E < 6 && (rec->unk_430 & 0x2000) &&
++        rec->weapon_id < 6 && (rec->unk_430 & 0x2000) &&
+@@ -858 +858 @@
+-            (!((0x78 >> rec->other->unk_B1) & 1) ||
++            (!((0x78 >> rec->other->collision_hit_tag) & 1) ||
+@@ -882 +882 @@
+-    if (rec->unk_0E >= 6) {
++    if (rec->weapon_id >= 6) {
+@@ -1034,2 +1034,2 @@
+-                ? (arg0->move_is_common == 0 ? D_8009A830[a2->unk_0E] * 2
+-                                             : D_8009A838[a2->unk_0E] * 8)
++                ? (arg0->move_is_common == 0 ? D_8009A830[a2->weapon_id] * 2
++                                             : D_8009A838[a2->weapon_id] * 8)
+@@ -1858 +1858 @@
+-                if (p->unk_0E >= 6) {
++                if (p->weapon_id >= 6) {
+@@ -1861 +1861 @@
+-                    work1 = D_8009A838[p->unk_0E] * 8;
++                    work1 = D_8009A838[p->weapon_id] * 8;
+@@ -1935 +1935 @@
+-               (p->unk_0E >= 6 && p->unk_34A == 0)) &&
++               (p->weapon_id >= 6 && p->weapon_ammo == 0)) &&
+@@ -2143 +2143 @@
+-            (p->unk_0E >= 7 &&
++            (p->weapon_id >= 7 &&
+@@ -2146 +2146 @@
+-             p->unk_34A != 0)) {
++             p->weapon_ammo != 0)) {
+@@ -2306 +2306 @@
+-                        if (p->unk_0E >= 6 && p->unk_34A == 0 && var_16 == 2) {
++                        if (p->weapon_id >= 6 && p->weapon_ammo == 0 && var_16 == 2) {
+@@ -2413 +2413 @@
+-            if ((p->cpu_pad_build_count & 1) || p->unk_0E >= 6) {
++            if ((p->cpu_pad_build_count & 1) || p->weapon_id >= 6) {
+@@ -2415 +2415 @@
+-                    (p->unk_0E < 6 || p->unk_34A != 0)) {
++                    (p->weapon_id < 6 || p->weapon_ammo != 0)) {
+@@ -2481 +2481 @@
+-                                work1 = D_8009A9F0[D_8009A9DC[p->unk_0E]
++                                work1 = D_8009A9F0[D_8009A9DC[p->weapon_id]
+@@ -2552 +2552 @@
+-                                p->unk_0E >= 6) {
++                                p->weapon_id >= 6) {
+@@ -2570 +2570 @@
+-                                    } else if (p->unk_0E >= 6) {
++                                    } else if (p->weapon_id >= 6) {
+@@ -2585 +2585 @@
+-                                    if ((0x78 >> p->unk_B1) & 1) {
++                                    if ((0x78 >> p->collision_hit_tag) & 1) {
+@@ -2637 +2637 @@
+-                    ((0x78 >> p->unk_B1) & 1) && p->unk_442 == 0 &&
++                    ((0x78 >> p->collision_hit_tag) & 1) && p->unk_442 == 0 &&
+@@ -2652 +2652 @@
+-                                var_60 = p->unk_34A;
++                                var_60 = p->weapon_ammo;
+@@ -2690 +2690 @@
+-            p->unk_0E < 7 && p->cpu_profile != 0x16) {
++            p->weapon_id < 7 && p->cpu_profile != 0x16) {
+@@ -2702,2 +2702,2 @@
+-        } else if (p->unk_0E >= 6) {
+-            if (p->unk_34A == 0 && p->unk_34B != 0 && p->unk_26C != 0 &&
++        } else if (p->weapon_id >= 6) {
++            if (p->weapon_ammo == 0 && p->weapon_refills_left != 0 && p->unk_26C != 0 &&
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -1254 +1254 @@
+-    s16 *s0 = &D_80101EC8[0].unk_0A;
++    s16 *s0 = &D_80101EC8[0].character_data_index;
+@@ -1558 +1558 @@
+-                                       .unk_0A]
++                                       .character_data_index]
+@@ -1583 +1583 @@
+-        } else if (D_80101EC8[0].unk_B1 == 2) {
++        } else if (D_80101EC8[0].collision_hit_tag == 2) {
+@@ -1595 +1595 @@
+-        } else if (D_80101EC8[1].unk_B1 == 2) {
++        } else if (D_80101EC8[1].collision_hit_tag == 2) {
+@@ -1724 +1724 @@
+-        if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
++        if (D_8008D9EC[D_80101EC8[0].character_data_index] != 0) {
+@@ -1755 +1755 @@
+-    ndata_LoadPack(D_8008D9EC[D_80101EC8[0].unk_0A] < 1, (s32)0x80190800);
++    ndata_LoadPack(D_8008D9EC[D_80101EC8[0].character_data_index] < 1, (s32)0x80190800);
+@@ -1840 +1840 @@
+-                        D_8008E6A4[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
++                        D_8008E6A4[D_80101EC8[i].character_data_index][D_80101EC8[i].weapon_id]);
+@@ -1844 +1844 @@
+-                        D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
++                        D_8008E5CC[D_80101EC8[i].character_data_index][D_80101EC8[i].weapon_id]);
+@@ -1866 +1866 @@
+-            u8 *p = D_800A3100[D_8008D9EC[D_80101EC8[0].unk_0A]];
++            u8 *p = D_800A3100[D_8008D9EC[D_80101EC8[0].character_data_index]];
+@@ -2067 +2067 @@
+-        a1 = ptr->unk_0E;
++        a1 = ptr->weapon_id;
+@@ -2233 +2233 @@
+-                    D_800A3748, entry->unk_0A);
++                    D_800A3748, entry->character_data_index);
+@@ -2314 +2314 @@
+-    if ((u32)((u16)arg0->unk_0E - 6) < 2U) {
++    if ((u32)((u16)arg0->weapon_id - 6) < 2U) {
+@@ -2445 +2445 @@
+-    if ((u32)((u16)obj->unk_0E - 6) < 2U && obj->move_kind == 2) {
++    if ((u32)((u16)obj->weapon_id - 6) < 2U && obj->move_kind == 2) {
+@@ -2654 +2654 @@
+-    if (arg0->unk_0A == 0xE && (arg0->carried_object_count == 0 ||
++    if (arg0->character_data_index == 0xE && (arg0->carried_object_count == 0 ||
+@@ -2859,3 +2859,3 @@
+-    rec->unk_350 = 1;
+-    rec->unk_352 = D_8008D59C[arg1].bone;
+-    src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->unk_352];
++    rec->bone_event_counter = 1;
++    rec->bone_event_bone_index = D_8008D59C[arg1].bone;
++    src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->bone_event_bone_index];
+@@ -2869 +2869 @@
+-    gte_stlvnl(&rec->unk_354);
++    gte_stlvnl(&rec->bone_event_local_vector);
+@@ -2890,3 +2890,3 @@
+-    if (rec->unk_350 != 0) {
+-        rec->unk_350 += 1;
+-        if ((rec->unk_350 & 7) == 2) {
++    if (rec->bone_event_counter != 0) {
++        rec->bone_event_counter += 1;
++        if ((rec->bone_event_counter & 7) == 2) {
+@@ -2894,2 +2894,2 @@
+-            gte_SetRotMatrix(var_4[rec->unk_352]);
+-            gte_ldlv0(&rec->unk_354);
++            gte_SetRotMatrix(var_4[rec->bone_event_bone_index]);
++            gte_ldlv0(&rec->bone_event_local_vector);
+@@ -2897 +2897 @@
+-            mul = ((0x96 - rec->unk_350) << 12) / 150;
++            mul = ((0x96 - rec->bone_event_counter) << 12) / 150;
+@@ -2908,6 +2908,6 @@
+-                var_2, 4, &SPAD->unkA8[var_2][rec->unk_352].x, out);
+-        }
+-        if (rec->unk_350 >= 0x96) {
+-            rec->unk_350 = 0;
+-        }
+-        rec->unk_350 = 0;
++                var_2, 4, &SPAD->unkA8[var_2][rec->bone_event_bone_index].x, out);
++        }
++        if (rec->bone_event_counter >= 0x96) {
++            rec->bone_event_counter = 0;
++        }
++        rec->bone_event_counter = 0;
+@@ -2976 +2976 @@
+-        v = D_8008D86C[rec->unk_0E];
++        v = D_8008D86C[rec->weapon_id];
+@@ -2979 +2979 @@
+-    for (i = 0; i < D_8008D864[rec->unk_0E]; i++, v++, o++) {
++    for (i = 0; i < D_8008D864[rec->weapon_id]; i++, v++, o++) {
+@@ -3647 +3647 @@
+-    val = D_8008DB1C[arg0->other->unk_0A][arg0->other->unk_0E];
++    val = D_8008DB1C[arg0->other->character_data_index][arg0->other->weapon_id];
+@@ -3681,2 +3681,2 @@
+-    p->unk_0A = D_8008D538[arg2];
+-    p->unk_0E = arg3;
++    p->character_data_index = D_8008D538[arg2];
++    p->weapon_id = arg3;
+@@ -3685 +3685 @@
+-        p->unk_12 = D_8008EB38[p->unk_0E];
++        p->unk_12 = D_8008EB38[p->weapon_id];
+@@ -3687 +3687 @@
+-        p->unk_12 = D_8008EB28[p->unk_0E][D_8008D9EC[p->other->unk_0A] == 0];
++        p->unk_12 = D_8008EB28[p->weapon_id][D_8008D9EC[p->other->character_data_index] == 0];
+@@ -3691 +3691 @@
+-        p->unk_12 = D_8008EB28[p->unk_0E][D_8008D9EC[p->unk_0A]];
++        p->unk_12 = D_8008EB28[p->weapon_id][D_8008D9EC[p->character_data_index]];
+@@ -3699,2 +3699,2 @@
+-    p->base_move_frame_step = D_8008DE34[p->unk_0A][p->unk_0E];
+-    p->unk_1E = D_8008DF78[p->unk_0A][p->unk_0E];
++    p->base_move_frame_step = D_8008DE34[p->character_data_index][p->weapon_id];
++    p->unk_1E = D_8008DF78[p->character_data_index][p->weapon_id];
+@@ -3721 +3721 @@
+-        p->unk_84 = D_8008DD5C[p->unk_0A][p->unk_0E];
++        p->unk_84 = D_8008DD5C[p->character_data_index][p->weapon_id];
+@@ -3818 +3818 @@
+-    p->unk_274 = D_8008E3C0[p->unk_0A];
++    p->unk_274 = D_8008E3C0[p->character_data_index];
+@@ -3820,2 +3820,2 @@
+-        p->unk_276[i] = D_8008E3F8[p->unk_0A][i];
+-        p->unk_27E[i] = D_8008E4D0[p->unk_0A][i];
++        p->unk_276[i] = D_8008E3F8[p->character_data_index][i];
++        p->unk_27E[i] = D_8008E4D0[p->character_data_index][i];
+@@ -3830 +3830 @@
+-    p->unk_B1 = 7;
++    p->collision_hit_tag = 7;
+@@ -3836,2 +3836,2 @@
+-        if (p->unk_0A == 1 || p->unk_0A == 3 || p->unk_0A == 4 ||
+-            p->unk_0A == 9 || p->unk_0A == 0x11) {
++        if (p->character_data_index == 1 || p->character_data_index == 3 || p->character_data_index == 4 ||
++            p->character_data_index == 9 || p->character_data_index == 0x11) {
+@@ -3847,3 +3847,3 @@
+-        if (p->other->unk_0A == 1 || p->other->unk_0A == 3 ||
+-            p->other->unk_0A == 4 || p->other->unk_0A == 9 ||
+-            p->other->unk_0A == 0x11) {
++        if (p->other->character_data_index == 1 || p->other->character_data_index == 3 ||
++            p->other->character_data_index == 4 || p->other->character_data_index == 9 ||
++            p->other->character_data_index == 0x11) {
+@@ -3856 +3856 @@
+-            p->unk_34A = 2;
++            p->weapon_ammo = 2;
+@@ -3859 +3859 @@
+-            p->unk_34A = 2;
++            p->weapon_ammo = 2;
+@@ -3861,3 +3861,3 @@
+-            p->unk_34A = 0xA;
+-        }
+-        p->unk_34B = 9;
++            p->weapon_ammo = 0xA;
++        }
++        p->weapon_refills_left = 9;
+@@ -3871 +3871 @@
+-    p->unk_350 = 0;
++    p->bone_event_counter = 0;
+@@ -3941 +3941 @@
+-        obj->unk_B1 = collision_GetHitTag();
++        obj->collision_hit_tag = collision_GetHitTag();
+@@ -4141 +4141 @@
+-                tbl_val = D_800A310C[D_8008DA08[arg0->unk_0A]];
++                tbl_val = D_800A310C[D_8008DA08[arg0->character_data_index]];
+@@ -4448 +4448 @@
+-         D_8008E0BC[rec->unk_0A][rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
++         D_8008E0BC[rec->character_data_index][rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
+@@ -4556 +4556 @@
+-                ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->unk_0A))) {
++                ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->character_data_index))) {
+@@ -4681 +4681 @@
+-            (Judge[rec->orientation.vy & 0xFFF] * D_8008DA94[rec->unk_0A]) >>
++            (Judge[rec->orientation.vy & 0xFFF] * D_8008DA94[rec->character_data_index]) >>
+@@ -4684 +4684 @@
+-                            D_8008DA94[rec->unk_0A]) >>
++                            D_8008DA94[rec->character_data_index]) >>
+@@ -4686 +4686 @@
+-        rec->unk_104.vy += D_8008DA50[rec->unk_0A];
++        rec->unk_104.vy += D_8008DA50[rec->character_data_index];
+@@ -4691 +4691 @@
+-        rec->unk_104.vy += D_8008DAD8[rec->unk_0A];
++        rec->unk_104.vy += D_8008DAD8[rec->character_data_index];
+@@ -4782 +4782 @@
+-        if (rec->move_kind == 0x15 && D_8008D9EC[rec->unk_0A] != 0) {
++        if (rec->move_kind == 0x15 && D_8008D9EC[rec->character_data_index] != 0) {
+@@ -4976,2 +4976,2 @@
+-    if (rec->unk_B1 != 7 && rec->unk_B1 != 0) {
+-        rec->unk_B2 = ((0x2A >> rec->unk_B1) ^ 1) & 1;
++    if (rec->collision_hit_tag != 7 && rec->collision_hit_tag != 0) {
++        rec->unk_B2 = ((0x2A >> rec->collision_hit_tag) ^ 1) & 1;
+@@ -5014 +5014 @@
+-        (rec->unk_0E == 0 || rec->unk_0E == 1) &&
++        (rec->weapon_id == 0 || rec->weapon_id == 1) &&
+@@ -5031 +5031 @@
+-        (rec->unk_0A == 0xE && rec->move_kind == 0x11 && D_800A38AE == arg0 &&
++        (rec->character_data_index == 0xE && rec->move_kind == 0x11 && D_800A38AE == arg0 &&
+@@ -5040,3 +5040,3 @@
+-            if (rec->other->unk_0A == 1 || rec->other->unk_0A == 3 ||
+-                rec->other->unk_0A == 4 || rec->other->unk_0A == 9 ||
+-                rec->other->unk_0A == 0x11) {
++            if (rec->other->character_data_index == 1 || rec->other->character_data_index == 3 ||
++                rec->other->character_data_index == 4 || rec->other->character_data_index == 9 ||
++                rec->other->character_data_index == 0x11) {
+@@ -5046,2 +5046,2 @@
+-            if (rec->unk_0A == 1 || rec->unk_0A == 3 || rec->unk_0A == 4 ||
+-                rec->unk_0A == 9 || rec->unk_0A == 0x11) {
++            if (rec->character_data_index == 1 || rec->character_data_index == 3 || rec->character_data_index == 4 ||
++                rec->character_data_index == 9 || rec->character_data_index == 0x11) {
+@@ -5063 +5063 @@
+-        if ((rec->unk_0E == 0 || rec->unk_0E == 1) && rec->move_kind != 4 &&
++        if ((rec->weapon_id == 0 || rec->weapon_id == 1) && rec->move_kind != 4 &&
+@@ -5125 +5125 @@
+-    if ((rec->unk_0E == 6 || rec->unk_0E == 7) && (rec->unk_62 & 1)) {
++    if ((rec->weapon_id == 6 || rec->weapon_id == 7) && (rec->unk_62 & 1)) {
+@@ -5198 +5198 @@
+-        if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 ||
++        if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].character_data_index] == 0 ||
+@@ -5205 +5205 @@
+-                rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E],
++                rec, D_8008D90C[D_8008D9EC[rec->character_data_index]][rec->weapon_id],
+@@ -5242 +5242 @@
+-            ((0x78 >> rec->unk_B1) & 1) && rec->unk_26C != 0) {
++            ((0x78 >> rec->collision_hit_tag) & 1) && rec->unk_26C != 0) {
+@@ -5244 +5244 @@
+-                rec, ((0x18 >> rec->unk_B1) & 1) ? 1 : 2);
++                rec, ((0x18 >> rec->collision_hit_tag) & 1) ? 1 : 2);
+@@ -5247,3 +5247,3 @@
+-            rec->unk_26C != 0 && rec->unk_34B != 0) {
+-            rec->unk_34A = 0xA;
+-            rec->unk_34B--;
++            rec->unk_26C != 0 && rec->weapon_refills_left != 0) {
++            rec->weapon_ammo = 0xA;
++            rec->weapon_refills_left--;
+DRY RUN: 6 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
