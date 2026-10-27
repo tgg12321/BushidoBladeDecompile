@@ -67,15 +67,15 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         D_800A389A = p->unk14_17;
         D_800A3788 = p->unk14_18;
     } else if (val == 5) {
-        s32 var_8;
+        s32 win_target;
 
         g_fight_match_count = p->unk14_10 + 3;
         D_800A36CC = D_8008EC30[p->unk14_12];
-        var_8 = 1;
+        win_target = 1;
         if (p->unk14_14) {
-            var_8 = 2;
+            win_target = 2;
         }
-        g_fight_win_target = var_8;
+        g_fight_win_target = win_target;
         s = D_801027D8[0];
         D_800A38E1 = p->unk14_15;
         {

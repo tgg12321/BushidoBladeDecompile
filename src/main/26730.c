@@ -21,11 +21,12 @@ void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 
 CdlATV g_cd_atv_target;
 
-void cdrom_StartMixFade(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+void cdrom_StartMixFade(
+    s16 fade_length, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_cd_atv_target.val0 = (u8)arg1;
     g_cd_atv_target.val1 = (u8)arg2;
     g_cd_atv_target.val2 = (u8)arg3;
-    g_cd_fade_len = arg0;
+    g_cd_fade_len = fade_length;
     g_cd_fade_step = 0;
     g_cd_atv_target.val3 = (u8)arg4;
 }

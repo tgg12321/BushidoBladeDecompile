@@ -341,10 +341,10 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
 }
 
 void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *arg0) {
-    s32 var_a1;
+    s32 matrix_ptr_index;
     Unk80045878Node *n;
 
-    var_a1 = 0;
+    matrix_ptr_index = 0;
     arg0->unk_18F4[0] = &arg0->transform_nodes[6].node.xf.mat;
     arg0->unk_18F4[1] = &arg0->transform_nodes[5].node.xf.mat;
     arg0->unk_18F4[2] = &arg0->transform_nodes[4].node.xf.mat;
@@ -367,14 +367,14 @@ void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *arg0) {
     arg0->unk_18F4[19] = &arg0->transform_nodes[20].node.xf.mat;
     n = &arg0->transform_nodes[1];
     do {
-        arg0->node_matrix_ptrs[var_a1] = &n->node.xf.mat;
+        arg0->node_matrix_ptrs[matrix_ptr_index] = &n->node.xf.mat;
         n++;
-        var_a1 += 1;
-    } while (var_a1 < 0x14);
+        matrix_ptr_index += 1;
+    } while (matrix_ptr_index < 0x14);
 }
 
 void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
-    s32 var_0[18];
+    s32 node_used[18];
     Unk80045878Node *t5;
     Unk80045878Node *t7;
     s32 *v1;
@@ -388,7 +388,7 @@ void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
 
     i = 0x11;
     do {
-        var_0[i] = 0;
+        node_used[i] = 0;
         i--;
     } while (i >= 0);
     i = 0x13;
@@ -401,9 +401,9 @@ void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
         s32 id = *t3++;
         s32 a3 = *t3++;
 
-        if (var_0[a3] == 0) {
+        if (node_used[a3] == 0) {
             t7[a3].node.unk2 = id;
-            var_0[a3] = 1;
+            node_used[a3] = 1;
             arg0->node_by_id[id] = &t7[a3];
         } else {
             *t5 = t7[a3];

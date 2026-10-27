@@ -62,17 +62,17 @@ void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
        untouched (phantom-frame pad); without it: score 6 */
     volatile u32 pre_pad[8];
-    Unk80045878Obj *var_1;
+    Unk80045878Obj *slot_object;
     s32 i;
     Unk80045878Node *p;
     u8 *q;
     s32 b, r, g, v;
 
-    var_1 = g_slot_objects[arg0];
-    if (var_1 == NULL)
+    slot_object = g_slot_objects[arg0];
+    if (slot_object == NULL)
         return;
 
-    p = &var_1->transform_nodes[1];
+    p = &slot_object->transform_nodes[1];
     if (arg1) {
         p->node.unk1 |= 1;
     } else {
@@ -97,7 +97,7 @@ loop1:
     if (i < 18)
         goto loop1;
 
-    q = (u8 *)var_1 + 0x10D5;
+    q = (u8 *)slot_object + 0x10D5;
 loop2:
     if (*(s32 *)(q + 0x57) == 0)
         goto after2;
@@ -110,13 +110,14 @@ loop2:
 after2:
 
     if (gpu_RefreshGrayscaleMode()) {
-        v = math_Grayscale3(var_1->unk_18.byte[2], var_1->unk_18.byte[1],
-                            var_1->unk_18.byte[0]);
+        v = math_Grayscale3(
+            slot_object->unk_18.byte[2], slot_object->unk_18.byte[1],
+            slot_object->unk_18.byte[0]);
         PatchColorImmediatesAtListedCodeSites((v << 16) | (v << 8) | v);
     } else {
-        r = var_1->unk_18.byte[0];
-        g = var_1->unk_18.byte[1];
-        b = var_1->unk_18.byte[2];
+        r = slot_object->unk_18.byte[0];
+        g = slot_object->unk_18.byte[1];
+        b = slot_object->unk_18.byte[2];
         PatchColorImmediatesAtListedCodeSites(b | ((r << 16) | (g << 8)));
     }
 }
@@ -148,11 +149,11 @@ void node_UpdateWorldMatrix(Unk80101DF0Record *a0) {
 }
 
 void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
-    SVECTOR sp10;
-    sp10.vx = -(u16)a0->xf.rot.vx;
-    sp10.vy = -(u16)a0->xf.rot.vy;
-    sp10.vz = -(u16)a0->xf.rot.vz;
-    g_math_rot_matrix_funcs[a0->rotation_order](&sp10, &a0->work);
+    SVECTOR neg_rot;
+    neg_rot.vx = -(u16)a0->xf.rot.vx;
+    neg_rot.vy = -(u16)a0->xf.rot.vy;
+    neg_rot.vz = -(u16)a0->xf.rot.vz;
+    g_math_rot_matrix_funcs[a0->rotation_order](&neg_rot, &a0->work);
     a0->xf.mat = a0->work;
 }
 

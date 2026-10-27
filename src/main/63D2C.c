@@ -9,15 +9,15 @@ extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 
 s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
-    Unk8009B0E0Record *var_0 = arg0->header;
+    Unk8009B0E0Record *sheet_header = arg0->header;
     SPRT *sp = (SPRT *)arg0->sprt_out;
     Unk8009B400Record *e;
     s32 clut;
     s16 i;
     s32 x0, y0, x1, y1;
 
-    clut = GetClut(var_0->cx, var_0->cy);
-    for (i = var_0->count - 1; i >= 0; i--) {
+    clut = GetClut(sheet_header->cx, sheet_header->cy);
+    for (i = sheet_header->count - 1; i >= 0; i--) {
         e = arg0->table + i;
         x0 = e->x + arg0->x;
         y0 = e->y + arg0->y;
@@ -28,8 +28,8 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
             sp->clut = clut;
             sp->x0 = x0;
             sp->y0 = y0;
-            sp->u0 = e->u + var_0->ubase;
-            sp->v0 = e->v + var_0->vbase;
+            sp->u0 = e->u + sheet_header->ubase;
+            sp->v0 = e->v + sheet_header->vbase;
             sp->w = e->w;
             sp->h = e->h;
             if (arg0->has_color) {
@@ -54,29 +54,29 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
 
 s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
     Unk8009B400Record *e = arg0->table;
-    Unk8009B0E0Record *var_1 = arg0->header;
+    Unk8009B0E0Record *sheet_header = arg0->header;
     POLY_FT4 *p;
     s16 i;
     u32 tpage;
     u32 clut;
     s16 du0, du1, dv0, dv1;
-    u16 var_10, var_11;
+    u16 u_base, v_base;
     s16 ox = e->x, oy = e->y;
     s32 sx, sy;
     s32 u, v;
 
     if (mode == 4) {
-        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7) + 0x20;
+        tpage = (sheet_header->tp0 & 0xFE1F) + (sheet_header->tp1 << 7) + 0x20;
     } else if (mode == 5) {
-        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7) + 0x40;
+        tpage = (sheet_header->tp0 & 0xFE1F) + (sheet_header->tp1 << 7) + 0x40;
     } else if (mode == 6) {
-        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7) + 0x60;
+        tpage = (sheet_header->tp0 & 0xFE1F) + (sheet_header->tp1 << 7) + 0x60;
     } else {
-        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7);
+        tpage = (sheet_header->tp0 & 0xFE1F) + (sheet_header->tp1 << 7);
     }
-    clut = GetClut(var_1->cx, var_1->cy);
-    var_10 = var_1->ubase;
-    var_11 = var_1->vbase;
+    clut = GetClut(sheet_header->cx, sheet_header->cy);
+    u_base = sheet_header->ubase;
+    v_base = sheet_header->vbase;
     if (mode == 1) {
         du1 = 1;
         dv0 = 0;
@@ -91,7 +91,7 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
         dv0 = 0;
     }
     p = (POLY_FT4 *)arg0->ft4_out;
-    for (i = 0; i < var_1->count; i++) {
+    for (i = 0; i < sheet_header->count; i++) {
         if (mode == 1) {
             du0 = e->w - 1;
             dv1 = e->h;
@@ -121,8 +121,8 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
         p->y2 = oy + arg0->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
         p->x3 = ox + arg0->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
         p->y3 = oy + arg0->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
-        u = var_10 + e->u;
-        v = var_11 + e->v;
+        u = u_base + e->u;
+        v = v_base + e->v;
         p->u0 = u + du0;
         p->v0 = v + dv0;
         p->u1 = u + du1;

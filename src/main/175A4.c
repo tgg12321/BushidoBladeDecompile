@@ -24,14 +24,14 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
     Unk80101EC8Record *record;
     Unk80101EC8Record *var_1;
     Unk80101EC8Record *current;
-    s32 var_3;
+    s32 separation_error;
     s32 i;
     s32 idx;
     s32 var_6;
     s32 kind;
     s32 pos[3];
 
-    var_3 = fighter_CalcSeparationErrorAndOpposedOffsets();
+    separation_error = fighter_CalcSeparationErrorAndOpposedOffsets();
     record = D_80101EC8;
     D_800A3824 = -1;
     if ((u16)D_80101EC8[0].move_kind == 0x1C) {
@@ -108,7 +108,7 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
             record->unk_28C = 0;
             D_800A389C = 0;
         }
-        if (var_3 > 200) {
+        if (separation_error > 200) {
             record->pending_move_event = 2;
             var_1->pending_move_event = 2;
         } else {
