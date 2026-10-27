@@ -434,14 +434,14 @@ s32 snd_CompactVabBodies(s16 arg0, s32 base) {
     return 0;
 }
 
-/* snd_LoadVabPack - load a VAB: close whatever occupies slot `arg1`, recompute
- * the sticky SPU address from the resident banks (compacting them with
- * snd_CompactVabBodies for arg1 != 0), turn the pack's first three offsets
- * (Unk8005C2A8Pack unk_00..unk_08) into addresses, open it with snd_VabOpen
- * and record its slot and SPU address. Returns unk_08 less the pack's
- * address (the third offset, unrelocated), or 0 on failure. snd_VabOpen returns
- * s32, as this call site's bytes say (the sll/sra in its body comes from an
- * explicit cast). */
+/* snd_LoadVabPack - load a VAB: close whatever occupies slot `arg1`,
+ * recompute the sticky SPU address from the resident banks (compacting them
+ * with snd_CompactVabBodies for arg1 != 0), turn the pack's first three
+ * offsets (Unk8005C2A8Pack unk_00..unk_08) into addresses, open it with
+ * snd_VabOpen and record its slot and SPU address. Returns unk_08 less the
+ * pack's address (the third offset, unrelocated), or 0 on failure. snd_VabOpen
+ * returns s32, as this call site's bytes say (the sll/sra in its body comes
+ * from an explicit cast). */
 
 extern s32 snd_VabOpen(Unk8005C2A8Pack *, s16);
 
@@ -553,8 +553,8 @@ s32 snd_QueueSound(s32 a0, s32 a1, s32 a2) {
 
 /* Per-frame sound-request flush: walk the 24-entry pending-sound pool, and for
  * every entry whose VAB is loaded, find the first free SPU voice at or after
- * the running `next` cursor and key the note on with the entry's stored
- * volumes. Each pool slot is cleared as it is visited.
+ * the running `next` cursor and key the note on with the entry's
+ * stored volumes. Each pool slot is cleared as it is visited.
  */
 void snd_FlushSoundQueue(void) {
 

@@ -320,8 +320,8 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
 }
 
 /* 0x8009B2C8: two rows of five sprite-sheet headers
- * (gpu_DrawFixedSpritePairWithSelectedSheets draws headers 0 / 1 of row idx
- * with the cells at D_8009B340 / D_8009B358;
+ * (gpu_DrawFixedSpritePairWithSelectedSheets draws headers 0 / 1 of
+ * row idx with the cells at D_8009B340 / D_8009B358;
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle headers 2 and 3 / 4 with
  * D_8009B388's), then the cells: three under header 0 (count 3), six under
  * header 1 (count 6). */
