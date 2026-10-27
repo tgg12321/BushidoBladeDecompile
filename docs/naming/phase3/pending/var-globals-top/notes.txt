@@ -1,0 +1,43 @@
+# g1 notes (HEAD bb350f519; worktree ln-naming-b)
+D_80102778: RENAME g_fight_config (whole Unk80102778Rec object only, members unnamed). Retired: only per-word names merged into the aggregate (named_syms.txt:677-678). Confidence medium-high.
+D_800A38DC: RENAME g_fight_mode_selector. Retired: g_voice_play_state, g_voice_state_code (voice role contradicted); g_game_mode is retired at D_800A336C (symbol_addrs.txt:141) so avoided. Confidence medium-high.
+D_800A3834: RENAME g_main_loop_handler_index (main calls D_8008D090[it]() at 6CF8.c:471). Retired: g_practice_mode_dispatch_idx, g_game_mode_code. Confidence high.
+D_800A37B8: RENAME g_handler_frame_counter. Retired: g_practice_loop_frame. Weakest access: 25C38.c:264-274 sixty-count countdown. Confidence medium.
+D_800A387C: RENAME g_fighter_horizontal_separation (sole writer 9F9C.c:2779). Retired: g_round_total_score. Confidence high.
+D_80106A50: RENAME g_saved_record (FileRecord object only, memcard-persisted). Retired: none for the object. Confidence medium-high.
+D_80099D88: RENAME g_cpu_profiles (Unk80099D88Rec[32], all reads indexed by cpu_profile; the registry 12-byte stride comment is stale, stride is 0x18). Retired: g_status_flag_record_table_80099D88. Confidence high.
+D_800A3748: RENAME g_post_defeat_fighter_index (winner/survivor deliberately not claimed: 28708.c:1530 and 9F9C.c:2268 conflict). Retired: g_practice_menu_index. Confidence medium-low.
+D_800F6608: NO_NAME. Rec44 camera view record written by camera_InitTwoFighterView/UpdateTwoFighterView, FighterFocusView, SetInterpolatedFighterView, rotating-view menus (2B344.c:902,988) and replay; its twin D_800F5328 is selected against it in camera_ApplyFightView (9F9C.c:1979-2040) and camera_ApplyReplayView, and no access shows what makes one differ from the other beyond which camera function writes it. D_800F5328 must be named first or together (candidate if both are named: g_fight_camera_view for D_800F6608). Retired: g_grid_pos_vec3 (symbol_addrs.txt:1899), g_gnd_* member names, RESET notes named_syms.txt:387,634,748.
+D_8008D9EC: RENAME g_fighter_group_flags (u8[28] read-only 0/1 per fighter index; group identity not claimed). Retired: g_seq_start_buffer_8008D9EC. Confidence medium.
+D_800A36A4: RENAME g_fight_stage_index (row index of per-stage tables; runtime story-gengoro-stage-0e-1 events.tsv:582-588 corroborates). Retired: g_stage_id_current, g_se_active_set_id. Confidence medium-high.
+# group 2 notes (HEAD bb350f519; all 11 targets RENAME, none NO_NAME)
+D_800A33F4: RENAME g_collision_segment_work. Retired: g_effect_active_ptr (wave07), g_text1b_glyph_state_ptr. High confidence.
+D_80101E58: RENAME g_cdrom_state. Retired: none for the whole object (per-word rows folded by Q43). High confidence.
+D_800A3488: RENAME g_eff_current_tex_rec. Retired: g_scratchpad_ptr_50 (seed only). Medium-high.
+D_800A3468: RENAME g_eff_active_command_block. Retired: g_text1b_render_state_ptr. High.
+D_800A347C: RENAME g_eff_command_position. Retired: g_text1b_render_buf_ptr. Medium-high (role read from copies into position records).
+D_800F0BA8: RENAME g_eff_animated_quad_counters. Retired: none as data names (motion_ex_* function names only). Medium-high.
+D_800F62E0: RENAME g_light_setups. Retired: g_mdec_fp_buf (wave13); folded g_effect_slot_a/b/c_field_2 belong to it. High.
+D_800F1140: RENAME g_eff_point_light_position. Retired: g_text_render_v3_0. Medium-high.
+D_800A36AC: RENAME g_presented_frame_count. Retired: g_frame_parity (wave12). Medium-high.
+D_800A3844: RENAME g_fight_command_stream_cursor. Retired: g_file_overlay_arg_saved, g_mental_bar_cursor. Name appears only as an unlanded suggestion in docs/naming/phase3/pending/pilot-misc-2b344/rows.py:25. High.
+D_80101DF0: RENAME g_view_node (LOWER confidence, about 55 percent). Retired: per-word g_replay_pos_*, g_cam_bone_data_template, g_replay_target_a/b_init_val, g_sound_3d_pos_*_src. Twin D_800FF638 (+ pointers D_800A3708 = &D_80101DF0, D_800A370C) is the same type; distinguished by position/angle accesses; reviewer may prefer holding it for the trio.
+# g3 notes (cites at bb350f519)
+D_800A3560: RENAME g_entry_menu_slot_records. Retired: g_replay_motion_shared_state_e (no replay code touches it).
+D_800A34F8: RENAME g_menu_packed_cursors. Retired: g_menuctl_state_bitfield (fields are cursors, not a state).
+D_800A36A0: RENAME g_sel_screen_work. Retired: g_mode_state_ptr_alt (nothing is a mode; it is the SelWork base).
+D_800A35C4: RENAME g_entry_menu_frame_state. Retired: g_fade_dispatch_state_ptr (dispatch index is D_800A3580, nothing fades).
+D_8009BC7C: RENAME g_entry_menu_entry_flags. Retired: g_player_byte_flags_table (index is an entry value, not a player).
+D_800A34FC: RENAME g_menu_work_block. Retired: g_menuctl_mode_state_ptr (block holds offsets, resource root, cursor pair; no mode).
+D_8009BD24: RENAME g_working_record. Retired: g_disp_config (no display setting is touched; GetWorkingRecord returns it).
+D_800A3817: RENAME g_fight_choice_menu_cursor. Retired: g_cpu_attack_idx (only pad-driven menu code reads it).
+D_800A3524: RENAME g_menu_working_record_ptr (pointer to D_8009BD24 via one call site; a pointer and its object, both named). Retired: g_text1b_arg1_struct_ptr (TU name, not object).
+D_8009B2BC: RENAME g_panel_frame_sizes. Retired: g_text1b_addr_8009B2BC (TU name and address only).
+Notes: interior bytes D_800A3561 and D_8009BD3B/3D/41/44 are members, not named. No folded-offset aliases of any target found in asm. All names grep-fresh (src/, include/, three registries).
+
+## Pre-apply review (naming-reviewer, 3 reviewers, round 1)
+25 PASS, 2 under reviewer-suggested names (0x800A36AC g_gpu_presented_frame_count, 0x800A35C4 g_entry_menu_work_block), 4 FAIL dropped:
+- 0x800A3748 g_post_defeat_fighter_index: 17AFC.c:2321-2326 sets it on move_kind == 5 with no defeat shown; the name also reads as the defeated fighter while every writer stores the other one. Re-mine with an end-of-fight wording or keep neutral.
+- 0x80101DF0 g_view_node: does not separate it from the twin D_800FF638 (both compose the view at 32D04.c:1130-1132); manifest omitted nine asm users through D_800A3708 / folded D_80101E08+. Re-mine with D_800FF638, D_800A3708, D_800A370C (candidate g_view_origin_node).
+- 0x800A3524 g_menu_working_record_ptr and 0x800A34FC g_menu_work_block: "menu" does not tell 596CC's objects from D_800A3568 (5ED34's pointer to the same record) and the other menu work blocks (D_800A35C4, SelWork). Re-mine with a 596CC qualifier, alongside D_800A3568.
+- 0x800F6608: NO_NAME at drafting (twin of D_800F5328; name both together, candidate g_fight_camera_view).
