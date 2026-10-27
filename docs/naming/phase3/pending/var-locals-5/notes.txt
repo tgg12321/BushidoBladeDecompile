@@ -1,0 +1,23 @@
+DROPPED
+(none of the 20 research rows dropped: each re-derived against the worktree source at 914c6bc5a; every use enumerated, no FAKE comment touches any binding,
+ none appears in an __asm__ string, every new name is fresh in include/** and src/** (no local/param/global/enum/macro/typedef of that name; the
+ generic words bits, color, character, divisor, minutes, seconds, hundredths hit only comments, unrelated-function locals, or struct members) and unique within its function.)
+Rows most worth a hard look: font_DrawChar:arg2 (character: bits 3-4 of the value also pick the CLUT), memcard_BuildSaveBlock:var_0 (its read at 28708.c:70 sits inside the FAKE var_3 block, but the FAKE comment describes only the var_3 alias), math_SignExt12Div:arg0 (value_bits claims only the input bit pattern).
+
+CHANGED (drafter-substituted, kept)
+(none: all 20 research names kept as drafted)
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at de8344440)
+fight_SplitFrameCounterIntoMinutesSecondsHundredths:arg0: output aggregate naming deferred; this draft names only the independently computed scalar components.
+memcard_BuildSaveBlock:var_3: FAKE save-block alias at src/main/28708.c:64-66.
+memcard_RestoreSaveBlock:arg0: aggregate naming deferred; it supplies both redundant saved records and address/value restoration entries.
+font_Printf:var_4: percent-delimiter state; a sufficiently clear short name was not established for its precise behavior.
+font_Printf:var_6: reused for input format bytes and formatted output/control bytes.
+camera_CalcEye:arg0: input-record naming deferred; neutral members do not independently establish a concise record identity.
+camera_CalcEye:arg1: output-position naming deferred; no row drafted beyond this body's coordinate calculation.
+comb_ExchangePad:var_1: first holds the outgoing packed word and then a checksum intermediate.
+comb_ExchangePad:var_4: snapshot of D_800A38A0 used for packing and transfer branching; no independently established role name.
+comb_ExchangePad:var_7: FAKE constant-holder at src/main/28708.c:1785-1787.
+comb_ExchangePad:var_8: FAKE member-pointer store alias at src/main/28708.c:1847-1850.
+comb_Connect:temp_s0: not fully adjudicated after initial inspection; no rename row drafted.
+comb_Connect:var_v0: alternative values from neutral communication globals; their common semantic role was not established.
