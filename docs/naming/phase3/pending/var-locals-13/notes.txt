@@ -1,0 +1,80 @@
+DRAFT (not yet reviewed): 36 rows from 40 research rows (4 dropped, 3 names changed). All in src/main/4510C.c.
+
+DROPPED (4 of 40 research rows)
+- motion_UpdatePlayback:c -> camera_rotation_cosine (decl 94) and -> object_rotation_cosine (decl 149)
+- motion_UpdatePlayback:sn -> camera_rotation_sine (decl 95) and -> object_rotation_sine (decl 150)
+  Reason: the function has two separate block-scoped bindings named c and two named sn, and the
+  f:l=n pair format cannot tell them apart. tools/naming_keycheck.py replaces "the one simple
+  parameter/local binding" of f:l (header text at 110) and fails with "expected one simple binding,
+  found N (shadowing/unsupported declaration)" (naming_keycheck.py:3431) when a name has two
+  declarations in the function; a pairs file also keys one spec per f:l, so
+  motion_UpdatePlayback:c cannot carry two different new names, and naming the two bindings alike
+  would still hit the same count check. Tool support does not exist; all four dropped. (Renaming the
+  four needs either a tool extension for per-block bindings or a source edit in a later wave.)
+
+CHANGED (drafter-substituted names, kept; 3 of 36)
+- motion_UpdatePlayback:v: src_camera_frame -> camera_pose. The values are accumulated deltas used
+  only to place g_view_camera_root_node (translation v[0..2], rotation v[3..5]); "src_" names
+  nothing the code shows and "frame" is easily read as decoded_motion_frame (a different binding).
+- fighter_StepCpuPadScript:dx/dy: opponent_dx/opponent_dz -> opponent_start_dx/opponent_start_dz.
+  The reference point is chosen_script_start_x/z, not the fighter's position, so the bare
+  opponent_dx reads as the opponent-to-fighter offset. dz -> script_radius is kept as researched.
+- fighter_UpdateCpuProbes:dx/dz: hit_dx/hit_dz -> horizontal_hit_dx/horizontal_hit_dz. var_2 is the
+  hit point of the FIRST collision test (the horizontal segment, y equal at both ends, 968/971); the
+  second test has its own hit point var_3, so a bare hit_ does not say which hit.
+
+JUDGMENT POINTS FOR THE REVIEWER
+- Pair-order hazard (applier note): fighter_StepCpuPadScript renames dy->opponent_start_dz and
+  dz->script_radius in one function; letters are swapped in meaning but no NEW name equals any OLD
+  name in the function (old: p,t,mask,dx,dy,dz,idx,script_delay_left,angle_in_range,other_record,
+  arg0), so a sequential or batched whole-word apply cannot collide, in any order. The keycheck
+  cc1 differential applies the pairs in a batched variant; nothing special is needed.
+- Comma declarators: dx/dy/dz (459) and lo/hi (569) are lists after the plain type s32, which the
+  tool supports (later declarators bind as `name`). All are s32.
+- K&R: none. Every function in the wave has an ANSI prototype-style definition (checked at
+  4510C.c:35, 188, 199, 223, 233, 454, 542, 563, 929).
+- Judge table (35000.c:1296) re-verified here: 4096 s16 entries, [0]=0, [0x400]=4096, [0x800]=0,
+  [0xC00]=-4096, max |Judge[k] - 4096*sin(k*pi/2048)| = 0.998. So Judge[a & 0xFFF] is sine and
+  Judge[(a + 0x400) & 0xFFF] is cosine; probe_sine_ptr/probe_cosine_ptr and motion_angle's uses rest
+  on this. (The camera/object sine/cosine pairs that also used it are the dropped rows.)
+- fighter_record / script_cursor / tally_index / script_delay_left recur in separate functions
+  (allowed: local destinations may be shared across distinct functions). Same-function clash
+  checked: StepCpuPadScript gains script_cursor, script_byte, pad_button_mask, opponent_start_dx,
+  opponent_start_dz, script_radius, cpu_profile_index (existing script_delay_left unchanged);
+  StartCpuPadScript gains fighter_record, script_cursor, script_delay_left (a2 stays). The
+  script_delay_left hit is fighter_StepCpuPadScript's own local (456-465), another function.
+- fighter_ClearCpuTally/HalveCpuTally:i tally_index and :p fighter_record: the "tally" claim rests on
+  the established function names plus the unk_414[i][pair] shape (eight entries, column [1] counts,
+  column [0] identity); the reviewer may judge the entries' meaning beyond the function names thin.
+- fighter_BuildCpuPad:lo/hi opponent_hit_start_frame/_end_frame: each read is on a path where
+  unk_430 & 0x80 held, so the selected frames are valid reads of rec->other->weapon_hit_*_frames;
+  the selection can still yield 0xFF from both slots, the name claims no valid hit.
+- motion_ResetDrawQueue...:s0 playback_updated and motion_UpdatePlayback's v/j/m/rot/ang are
+  independent of the FAKE at 4510C.c:49 (it names var_6, which is not renamed).
+- Research NO_NAME decisions (var_6, c/sn pair surviving, motion_UpdatePlayback i/s/vec, fighter_
+  InitCpuControl, BuildCpuPad temps) are left as researched; not re-derived.
+
+COMMENTS TO UPDATE
+(none) No comment in 4510C.c:35-215, 223-240 or 454-1007 names an old spelling of a renamed binding:
+the comments there are the var_6 FAKE (49-51), the slot_object/SOTN notes (44-47), decoded_motion_frame
+(38-40), the work/temp/temp2/temp3/i notes in fighter_BuildCpuPad (570-590, none renamed), the pad-bit
+table note at 550 (describes the table, not bits) and the probe table note at 926.
+
+FRESHNESS (all 33 distinct final spellings)
+Whole-word search of src/**, include/**, asm/**, movovl/**, tools/** (C, headers, asm; #define bodies
+included): no hit at all for camera_pose, stream_index, playback_rotation_matrix, playback_rotation,
+motion_angle, playback_updated, tally_index, fighter_record, script_cursor, script_byte,
+pad_button_mask, opponent_start_dx, opponent_start_dz, script_radius, cpu_profile_index, cpu_pad,
+pad_bit_table, opponent_hit_start_frame, opponent_hit_end_frame, pool_object, first_probe_index,
+probe_index, probe_object, probe_distance, probe_sine_ptr, probe_cosine_ptr, probe_x, probe_z,
+horizontal_hit_dx, horizontal_hit_dz (the research's unfinished hit_dz search is moot: replaced and
+searched). Hits NOT in the target function: rebase_delta (local of resource_RebaseLoadedBlockSections
+368E4.c:263-268; parameter of node_RebaseRetainedDrawNodeBuffer 368E4.c:1579-1580), script_delay_left
+(fighter_StepCpuPadScript's local, 4510C.c:456-465). None is a file-scope name, enum constant, macro
+or type, and none equals another binding of its function.
+
+REVIEW (naming-reviewer pre-apply 2026-10-27): 35 PASS, 1 FAIL -> replaced by suggested name.
+- fighter_UpdateCpuProbes:obj probe_object FAIL (R4): always a fighter record (arg0 / arg0->other), and 'object' in 4510C.c
+  means a g_object_pool entry (pool_object, this wave). Replaced by the reviewer's suggestion probe_origin_fighter
+  (marked suggested; R6 judges it fresh).
+- Optional, not adopted: opponent_start_dx/dz -> opponent_script_start_dx/dz (reviewer: current names true).
