@@ -1057,13 +1057,14 @@ extern u8 D_8009A840[];
  * weapon_hit_end_frames[0] is 0xFF) term, plus its scale_distance_offset and
  * 300. */
 s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *arg0) {
-    Unk80101EC8Record *a2 = arg0->other;
-    s32 base = a2->motion_metadata[3] * 40;
+    Unk80101EC8Record *other_record = arg0->other;
+    s32 base = other_record->motion_metadata[3] * 40;
 
-    base += a2->weapon_hit_end_frames[0] != 0xFF
-                ? (arg0->move_is_common == 0 ? D_8009A830[a2->weapon_id] * 2
-                                             : D_8009A838[a2->weapon_id] * 8)
-                : D_8009A840[a2->unk_14] * 2;
+    base += other_record->weapon_hit_end_frames[0] != 0xFF
+                ? (arg0->move_is_common == 0
+                       ? D_8009A830[other_record->weapon_id] * 2
+                       : D_8009A838[other_record->weapon_id] * 8)
+                : D_8009A840[other_record->unk_14] * 2;
     return base + arg0->other->scale_distance_offset + 0x12C;
 }
 
@@ -1114,59 +1115,60 @@ typedef struct {
     s32 x, y, z, w;
 } Vec4_571C0;
 
-s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
+s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
     Vec4_571C0 var_0;
     Vec4_571C0 top;
     Vec4_571C0 left;
     Vec4_571C0 var_3;
     s32 var_4[4];
     s16 work[4];
-    s32 ret;
+    s32 route_node_count;
     s8 var_7;
     /* temp holds two values: the count of probes accepted at angle
-     * opponent_bearing - ang
-     * (var_7 counts those at opponent_bearing + ang),
+     * opponent_bearing - orbit_angle_offset
+     * (var_7 counts those at opponent_bearing + orbit_angle_offset),
      * then which count the waypoint loop takes
-     * (0: temp's, stepping by -ang;
-     * 1: var_7's, by +ang; per-branch constants, Q20)
+     * (0: temp's, stepping by -orbit_angle_offset;
+     * 1: var_7's, by +orbit_angle_offset; per-branch constants, Q20)
      * (Ruling 11, ordinary-c-judge-decidable). */
     s8 temp;
     u8 var_9;
     u8 var_10;
-    s32 ang;
+    s32 orbit_angle_offset;
     s32 var_12;
     s32 a;
     Unk80101EC8Record *p;
-    s32 dx;
-    s32 dz;
+    s32 probe_dx_scaled;
+    s32 probe_dz_scaled;
     s32 x;
-    s32 z;
+    s32 probe_z;
 
     temp = 0;
     var_7 = 0;
     var_10 = 1;
     var_9 = 1;
-    ret = 0;
-    left.x = obj->collision_pos.vx;
-    left.y = obj->collision_pos.vy - 5;
+    route_node_count = 0;
+    left.x = fighter_record->collision_pos.vx;
+    left.y = fighter_record->collision_pos.vy - 5;
     var_12 = g_fighter_horizontal_separation + 800;
-    left.z = obj->collision_pos.vz;
+    left.z = fighter_record->collision_pos.vz;
     var_3 = left;
-    for (ang = 0x200; ang <= 0x800; ang += 0x200) {
+    for (orbit_angle_offset = 0x200; orbit_angle_offset <= 0x800;
+         orbit_angle_offset += 0x200) {
         if (var_9) {
-            p = obj->other;
-            a = p->opponent_bearing + ang;
+            p = fighter_record->other;
+            a = p->opponent_bearing + orbit_angle_offset;
             var_9 = 0;
-            dx = var_12 * Judge[a & 0xFFF];
-            dz = var_12 * Judge[(a + 0x400) & 0xFFF];
-            x = p->collision_pos.vx + (dx >> 12);
-            z = p->collision_pos.vz + (dz >> 12);
+            probe_dx_scaled = var_12 * Judge[a & 0xFFF];
+            probe_dz_scaled = var_12 * Judge[(a + 0x400) & 0xFFF];
+            x = p->collision_pos.vx + (probe_dx_scaled >> 12);
+            probe_z = p->collision_pos.vz + (probe_dz_scaled >> 12);
             var_0.x = x;
-            var_0.y = obj->collision_pos.vy - 5;
-            var_0.z = z;
+            var_0.y = fighter_record->collision_pos.vy - 5;
+            var_0.z = probe_z;
             top.x = x;
-            top.y = obj->collision_pos.vy + 5;
-            top.z = z;
+            top.y = fighter_record->collision_pos.vy + 5;
+            top.z = probe_z;
             if (collision_TestSegmentWithWork(
                     &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
                 var_9 = collision_TestSegmentWithWork(
@@ -1178,19 +1180,19 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
             }
         }
         if (var_10) {
-            p = obj->other;
-            a = p->opponent_bearing - ang;
+            p = fighter_record->other;
+            a = p->opponent_bearing - orbit_angle_offset;
             var_10 = 0;
-            dx = var_12 * Judge[a & 0xFFF];
-            dz = var_12 * Judge[(a + 0x400) & 0xFFF];
-            x = p->collision_pos.vx + (dx >> 12);
-            z = p->collision_pos.vz + (dz >> 12);
+            probe_dx_scaled = var_12 * Judge[a & 0xFFF];
+            probe_dz_scaled = var_12 * Judge[(a + 0x400) & 0xFFF];
+            x = p->collision_pos.vx + (probe_dx_scaled >> 12);
+            probe_z = p->collision_pos.vz + (probe_dz_scaled >> 12);
             var_0.x = x;
-            var_0.y = obj->collision_pos.vy - 5;
-            var_0.z = z;
+            var_0.y = fighter_record->collision_pos.vy - 5;
+            var_0.z = probe_z;
             top.x = x;
-            top.y = obj->collision_pos.vy + 5;
-            top.z = z;
+            top.y = fighter_record->collision_pos.vy + 5;
+            top.z = probe_z;
             if (collision_TestSegmentWithWork(
                     &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
                 var_10 = collision_TestSegmentWithWork(
@@ -1216,30 +1218,31 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
         } else {
             temp = 1;
         }
-        ret = var_7--;
-        for (ang = 0x200; var_7 >= 0; var_7--, ang += 0x200) {
-            s32 base = obj->other->opponent_bearing;
+        route_node_count = var_7--;
+        for (orbit_angle_offset = 0x200; var_7 >= 0; var_7--,
+            orbit_angle_offset += 0x200) {
+            s32 base = fighter_record->other->opponent_bearing;
             if (temp != 0) {
-                a = base + ang;
+                a = base + orbit_angle_offset;
             } else {
-                a = base - ang;
+                a = base - orbit_angle_offset;
             }
-            obj->cpu_route.node[var_7].x =
-                obj->other->collision_pos.vx +
+            fighter_record->cpu_route.node[var_7].x =
+                fighter_record->other->collision_pos.vx +
                 ((g_fighter_horizontal_separation * Judge[a & 0xFFF]) >> 12);
-            obj->cpu_route.node[var_7].z =
-                obj->other->collision_pos.vz +
+            fighter_record->cpu_route.node[var_7].z =
+                fighter_record->other->collision_pos.vz +
                 ((g_fighter_horizontal_separation *
                   Judge[(a + 0x400) & 0xFFF]) >>
                  12);
-            obj->cpu_route.node[var_7].kind = 2;
+            fighter_record->cpu_route.node[var_7].kind = 2;
         }
-        obj->unk_398 = 0;
-        obj->unk_3A0 = obj->cpu_route.node[0].x;
-        obj->unk_3A2 = obj->cpu_route.node[0].z;
-        obj->unk_39E = obj->cpu_route.node[0].kind;
+        fighter_record->unk_398 = 0;
+        fighter_record->unk_3A0 = fighter_record->cpu_route.node[0].x;
+        fighter_record->unk_3A2 = fighter_record->cpu_route.node[0].z;
+        fighter_record->unk_39E = fighter_record->cpu_route.node[0].kind;
     }
-    return ret;
+    return route_node_count;
 }
 
 s32 math_IntersectSegments(
@@ -1352,44 +1355,46 @@ s32 fighter_FindNearestNavCrossing(
     Unk80101EC8Record *arg0, NavPolySet *nav_set, s32 target_x, s32 target_z) {
     s32 crossing_x;
     s32 crossing_z;
-    s32 best;
-    s16 i;
-    s16 j;
+    s32 nearest_crossing_distance;
+    s16 polygon_index;
+    s16 edge_vertex_index;
     s16 k;
     s16 n;
-    NavPoly *poly;
+    NavPoly *nav_poly;
     s32 dx;
     s32 dy;
     s32 d;
 
-    best = 100000;
-    for (i = 0; i < nav_set->npolys; i++) {
-        poly = &nav_set->polys[i];
-        n = poly->nvtx;
-        if (poly->flags & 0x80) {
-            n = poly->nvtx - 1;
+    nearest_crossing_distance = 100000;
+    for (polygon_index = 0; polygon_index < nav_set->npolys; polygon_index++) {
+        nav_poly = &nav_set->polys[polygon_index];
+        n = nav_poly->nvtx;
+        if (nav_poly->flags & 0x80) {
+            n = nav_poly->nvtx - 1;
         }
-        for (j = 0; j < n; j++) {
-            k = j + 1;
-            if (!(k < poly->nvtx)) {
+        for (edge_vertex_index = 0; edge_vertex_index < n;
+             edge_vertex_index++) {
+            k = edge_vertex_index + 1;
+            if (!(k < nav_poly->nvtx)) {
                 k = 0;
             }
             if (math_IntersectSegments(
                     arg0->world_pos.x, arg0->world_pos.z, target_x, target_z,
-                    poly->vtx[j][0], poly->vtx[j][1], poly->vtx[k][0],
-                    poly->vtx[k][1], &crossing_x, &crossing_z) != 0) {
+                    nav_poly->vtx[edge_vertex_index][0],
+                    nav_poly->vtx[edge_vertex_index][1], nav_poly->vtx[k][0],
+                    nav_poly->vtx[k][1], &crossing_x, &crossing_z) != 0) {
                 dx = crossing_x - arg0->world_pos.x;
                 dy = crossing_z - arg0->world_pos.z;
                 d = SquareRoot0(dx * dx + dy * dy);
-                if (d < best) {
-                    best = d;
-                    arg0->cpu_route.poly = i;
-                    arg0->cpu_route.vtx = j;
+                if (d < nearest_crossing_distance) {
+                    nearest_crossing_distance = d;
+                    arg0->cpu_route.poly = polygon_index;
+                    arg0->cpu_route.vtx = edge_vertex_index;
                 }
             }
         }
     }
-    return best;
+    return nearest_crossing_distance;
 }
 
 /* Per-vertex neighbour-angle midpoint: computes the bisector direction
@@ -1399,13 +1404,13 @@ void fighter_GetNavCornerPoint(
     NavPoly *nav_poly, s32 vertex_index, s16 *corner_x_out, s16 *corner_z_out) {
     s16 prev;
     s16 next;
-    s16 cx, cy;
+    s16 vertex_x, vertex_z;
     s32 ang_prev, ang_next, scale;
     s16 ang_mid;
 
     prev = vertex_index - 1;
-    cx = nav_poly->vtx[vertex_index][0];
-    cy = nav_poly->vtx[vertex_index][1];
+    vertex_x = nav_poly->vtx[vertex_index][0];
+    vertex_z = nav_poly->vtx[vertex_index][1];
     if (prev < 0) {
         prev = nav_poly->nvtx - 1;
     }
@@ -1413,12 +1418,12 @@ void fighter_GetNavCornerPoint(
     if (next >= nav_poly->nvtx) {
         next = 0;
     }
-    ang_prev =
-        ratan2(nav_poly->vtx[prev][0] - cx, nav_poly->vtx[prev][1] - cy) &
-        0xFFF;
-    ang_next =
-        ratan2(nav_poly->vtx[next][0] - cx, nav_poly->vtx[next][1] - cy) &
-        0xFFF;
+    ang_prev = ratan2(nav_poly->vtx[prev][0] - vertex_x,
+                      nav_poly->vtx[prev][1] - vertex_z) &
+               0xFFF;
+    ang_next = ratan2(nav_poly->vtx[next][0] - vertex_x,
+                      nav_poly->vtx[next][1] - vertex_z) &
+               0xFFF;
     if (ang_next < ang_prev) {
         s32 antipode = ang_prev + 0x800;
         ang_mid = antipode - (ang_prev - ang_next) / 2;
@@ -1426,8 +1431,9 @@ void fighter_GetNavCornerPoint(
         ang_mid = (ang_next - ang_prev) / 2 + ang_prev;
     }
     scale = nav_poly->margin * 40;
-    *corner_x_out = cx + ((scale * Judge[ang_mid & 0xFFF]) >> 12);
-    *corner_z_out = cy + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
+    *corner_x_out = vertex_x + ((scale * Judge[ang_mid & 0xFFF]) >> 12);
+    *corner_z_out =
+        vertex_z + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
 /* Walks the vertex ring of arg0's polygon nav_set->polys[arg0->cpu_route.poly]
