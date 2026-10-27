@@ -585,24 +585,32 @@ void math_ApplyLightPlaneProjection(MATRIX *a0, MATRIX *a1, s32 a2) {
         (((a0->t[1] - a2) * g_math_light_plane_projection.m[2][1]) >> 12);
 }
 
-void math_LightPlaneProject(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {
-    MATRIX sp10;
+void math_LightPlaneProject(s32 light_setup_index, MATRIX *src_matrix,
+                            MATRIX *projected_matrix_out, s32 plane_y) {
+    MATRIX light_projection;
 
-    sp10.m[0][0] = 0x1000;
-    sp10.m[0][1] = (s16) - ((s32)(g_light_setups[arg0].lmat.m[0][0] << 12) /
-                            g_light_setups[arg0].lmat.m[0][1]);
-    sp10.m[0][2] = 0;
-    sp10.m[1][0] = 0;
-    sp10.m[1][1] = 0;
-    sp10.m[1][2] = 0;
-    sp10.m[2][0] = 0;
-    sp10.m[2][1] = (s16) - ((s32)(g_light_setups[arg0].lmat.m[0][2] << 12) /
-                            g_light_setups[arg0].lmat.m[0][1]);
-    sp10.m[2][2] = 0x1000;
-    gte_MulMatrix0ClearTrans(&sp10, arg1, arg2);
-    arg2->t[0] = arg1->t[0] + (((arg1->t[1] - arg3) * sp10.m[0][1]) >> 12);
-    arg2->t[1] = arg3;
-    arg2->t[2] = arg1->t[2] + (((arg1->t[1] - arg3) * sp10.m[2][1]) >> 12);
+    light_projection.m[0][0] = 0x1000;
+    light_projection.m[0][1] =
+        (s16) - ((s32)(g_light_setups[light_setup_index].lmat.m[0][0] << 12) /
+                 g_light_setups[light_setup_index].lmat.m[0][1]);
+    light_projection.m[0][2] = 0;
+    light_projection.m[1][0] = 0;
+    light_projection.m[1][1] = 0;
+    light_projection.m[1][2] = 0;
+    light_projection.m[2][0] = 0;
+    light_projection.m[2][1] =
+        (s16) - ((s32)(g_light_setups[light_setup_index].lmat.m[0][2] << 12) /
+                 g_light_setups[light_setup_index].lmat.m[0][1]);
+    light_projection.m[2][2] = 0x1000;
+    gte_MulMatrix0ClearTrans(
+        &light_projection, src_matrix, projected_matrix_out);
+    projected_matrix_out->t[0] =
+        src_matrix->t[0] +
+        (((src_matrix->t[1] - plane_y) * light_projection.m[0][1]) >> 12);
+    projected_matrix_out->t[1] = plane_y;
+    projected_matrix_out->t[2] =
+        src_matrix->t[2] +
+        (((src_matrix->t[1] - plane_y) * light_projection.m[2][1]) >> 12);
 }
 
 typedef struct {

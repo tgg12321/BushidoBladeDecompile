@@ -1226,28 +1226,28 @@ s32 math_IntersectSegments(
     s32 *intersection_x_out, s32 *intersection_z_out) {
     s32 first_slope;
     s32 x1;
-    s32 dx1;
-    s32 dy1;
-    s32 dx2;
-    s32 dy2;
+    s32 first_dx;
+    s32 first_dz;
+    s32 second_dx;
+    s32 second_dz;
     s32 second_slope;
     s32 first_intercept;
     s32 intersection_x;
-    s32 y;
+    s32 intersection_z;
 
     x1 = first_start_x;
     x1 >>= 3;
     first_end_x >>= 3;
     first_start_z >>= 3;
     first_end_z >>= 3;
-    dx1 = first_end_x - x1;
-    dy1 = first_end_z - first_start_z;
+    first_dx = first_end_x - x1;
+    first_dz = first_end_z - first_start_z;
     second_start_x >>= 3;
     second_end_x >>= 3;
     second_start_z >>= 3;
     second_end_z >>= 3;
-    dx2 = second_end_x - second_start_x;
-    dy2 = second_end_z - second_start_z;
+    second_dx = second_end_x - second_start_x;
+    second_dz = second_end_z - second_start_z;
     if ((second_start_x == second_end_x) && (first_start_z == first_end_z)) {
         *intersection_x_out = second_end_x;
         *intersection_z_out = first_end_z;
@@ -1256,21 +1256,23 @@ s32 math_IntersectSegments(
         *intersection_z_out = second_end_z;
     } else if ((second_start_x == second_end_x) && (x1 != first_end_x)) {
         *intersection_x_out = second_end_x;
-        *intersection_z_out = first_start_z + (dy1 * (second_end_x - x1)) / dx1;
+        *intersection_z_out =
+            first_start_z + (first_dz * (second_end_x - x1)) / first_dx;
     } else if ((x1 == first_end_x) && (second_start_x != second_end_x)) {
         *intersection_x_out = x1;
         *intersection_z_out =
-            second_start_z + (dy2 * (x1 - second_start_x)) / dx2;
+            second_start_z + (second_dz * (x1 - second_start_x)) / second_dx;
     } else if (
         (first_start_z == first_end_z) && (second_start_z != second_end_z)) {
         *intersection_z_out = first_end_z;
         *intersection_x_out =
-            second_start_x + (dx2 * (first_end_z - second_start_z)) / dy2;
+            second_start_x +
+            (second_dx * (first_end_z - second_start_z)) / second_dz;
     } else if (
         (second_start_z == second_end_z) && (first_start_z != first_end_z)) {
         *intersection_z_out = second_start_z;
         *intersection_x_out =
-            x1 + (dx1 * (second_start_z - first_start_z)) / dy1;
+            x1 + (first_dx * (second_start_z - first_start_z)) / first_dz;
     } else {
         if (first_end_x == x1) {
             return 0;
@@ -1278,18 +1280,19 @@ s32 math_IntersectSegments(
         if (second_end_x == second_start_x) {
             return 0;
         }
-        first_slope = (dy1 << 7) / dx1;
-        second_slope = (dy2 << 7) / dx2;
+        first_slope = (first_dz << 7) / first_dx;
+        second_slope = (second_dz << 7) / second_dx;
         if (first_slope == second_slope) {
             return 0;
         }
         first_intercept =
-            (((first_start_z * first_end_x) - (first_end_z * x1)) << 7) / dx1;
+            (((first_start_z * first_end_x) - (first_end_z * x1)) << 7) /
+            first_dx;
         intersection_x =
             (((((second_start_z * second_end_x) -
                 (second_end_z * second_start_x))
                << 7) /
-              dx2) -
+              second_dx) -
              first_intercept) /
             (first_slope - second_slope);
         *intersection_x_out = intersection_x;
@@ -1300,15 +1303,19 @@ s32 math_IntersectSegments(
            ((*intersection_x_out - first_end_x) >= -50)) &&
           (((x1 - *intersection_x_out) >= -50) ||
            ((first_end_x - *intersection_x_out) >= -50)) &&
-          ((y = *intersection_z_out, ((first_start_z - y) >= -50)) ||
-           ((first_end_z - y) >= -50)) &&
-          (((y - first_start_z) >= -50) || ((y - first_end_z) >= -50)) &&
+          ((intersection_z = *intersection_z_out,
+            ((first_start_z - intersection_z) >= -50)) ||
+           ((first_end_z - intersection_z) >= -50)) &&
+          (((intersection_z - first_start_z) >= -50) ||
+           ((intersection_z - first_end_z) >= -50)) &&
           (((*intersection_x_out - second_start_x) >= -50) ||
            ((*intersection_x_out - second_end_x) >= -50)) &&
           (((second_start_x - *intersection_x_out) >= -50) ||
            ((second_end_x - *intersection_x_out) >= -50)) &&
-          (((second_start_z - y) >= -50) || ((second_end_z - y) >= -50)) &&
-          (((y - second_start_z) >= -50) || ((y - second_end_z) >= -50)))) {
+          (((second_start_z - intersection_z) >= -50) ||
+           ((second_end_z - intersection_z) >= -50)) &&
+          (((intersection_z - second_start_z) >= -50) ||
+           ((intersection_z - second_end_z) >= -50)))) {
         return 0;
     }
     *intersection_x_out = *intersection_x_out << 3;
@@ -1687,7 +1694,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 var_22;
     s32 var_23;
     s16 var_24;
-    NavPolySet *var_25;
+    NavPolySet *nav_set;
     s32 tx, tz;
     s32 r;
     s32 var_29;
@@ -1958,7 +1965,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     }
 
     if (p->unk_430 & 0x5100) {
-        var_25 = &D_8009A658[g_fight_stage_index];
+        nav_set = &D_8009A658[g_fight_stage_index];
         if (p->unk_39D == 0) {
             tx = p->other->world_pos.x;
             tz = p->other->world_pos.z;
@@ -1979,7 +1986,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
               var_38 == 1)) {
             if (!(p->cpu_pad_build_count & 7)) {
                 p->nearest_nav_crossing_distance =
-                    fighter_FindNearestNavCrossing(p, var_25, tx, tz);
+                    fighter_FindNearestNavCrossing(p, nav_set, tx, tz);
             }
             if (var_38 == 1) {
                 work1 = p->cpu_probes[6];
@@ -2042,7 +2049,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     p->cpu_route.count = 1;
                     if (p->nearest_nav_crossing_distance != 100000 &&
                         !(p->cpu_pad_build_count & 7)) {
-                        fighter_AppendNavDetour(p, var_25, tx, tz);
+                        fighter_AppendNavDetour(p, nav_set, tx, tz);
                     }
                 }
             }
