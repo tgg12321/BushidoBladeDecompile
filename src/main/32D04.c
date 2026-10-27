@@ -1229,8 +1229,8 @@ void gpu_EmitOtCutoffRawTexturedTriangles();
 void gpu_EmitOtCutoffRawTexturedQuads();
 void gpu_EmitFlatLitTexturedTriangles();
 void gpu_EmitFlatLitTexturedQuads();
-void func_8004FF40();
-void func_80050120();
+void gpu_EmitColorScaledFlatLitTexturedTriangles();
+void gpu_EmitColorScaledFlatLitTexturedQuads();
 void func_80050334();
 void func_80050538();
 void gpu_EmitBlackFlatTriangles();
@@ -1239,12 +1239,12 @@ void func_80050AB8();
 void func_80050C68();
 void func_80050E60();
 void func_80051010();
-void func_80051208();
-void func_800513B0();
-void func_800515AC();
-void func_80051754();
-void func_80051D08();
-void func_80051ED4();
+void gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc();
+void gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc();
+void gpu_EmitPatchedColorTriangleOutlinesFromWideRecords();
+void gpu_EmitPatchedColorQuadOutlinesFromWideRecords();
+void gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256();
+void gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256();
 void (*D_800951D8[42])() = {
     func_80044650,
     func_80044650,
@@ -1290,15 +1290,48 @@ void (*D_800951D8[42])() = {
     gpu_EmitTableColorGouraudTexturedQuads,
 };
 void (*D_80095280[42])() = {
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80051208,
-    func_80044650, func_80051208, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_800513B0, func_80044650, func_800513B0,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_800515AC, func_80044650, func_800515AC, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80051754, func_80044650,
-    func_80051754, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80050AB8, func_80050C68,
-    func_80050E60, func_80051010,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc,
+    func_80044650,
+    gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc,
+    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitPatchedColorTriangleOutlinesFromWideRecords,
+    func_80044650,
+    gpu_EmitPatchedColorTriangleOutlinesFromWideRecords,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesFromWideRecords,
+    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesFromWideRecords,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80050AB8,
+    func_80050C68,
+    func_80050E60,
+    func_80051010,
 };
 void (*D_80095328[88])() = {
     func_80044650,
@@ -1343,39 +1376,39 @@ void (*D_80095328[88])() = {
     func_80044650,
     func_80044650,
     func_80044650,
-    func_8004FF40,
-    func_80050120,
+    gpu_EmitColorScaledFlatLitTexturedTriangles,
+    gpu_EmitColorScaledFlatLitTexturedQuads,
     func_80044650,
     func_80044650,
     func_80044650,
     func_80044650,
-    func_80051208,
+    gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc,
     func_80044650,
-    func_80051208,
-    func_80044650,
-    func_80044650,
-    func_80044650,
-    func_80044650,
-    func_80044650,
-    func_800513B0,
-    func_80044650,
-    func_800513B0,
+    gpu_EmitPatchedColorTriangleOutlinesAndLoadRecordRgbc,
     func_80044650,
     func_80044650,
     func_80044650,
     func_80044650,
     func_80044650,
-    func_800515AC,
+    gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc,
     func_80044650,
-    func_800515AC,
-    func_80044650,
-    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesAndLoadRecordRgbc,
     func_80044650,
     func_80044650,
     func_80044650,
-    func_80051754,
     func_80044650,
-    func_80051754,
+    func_80044650,
+    gpu_EmitPatchedColorTriangleOutlinesFromWideRecords,
+    func_80044650,
+    gpu_EmitPatchedColorTriangleOutlinesFromWideRecords,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesFromWideRecords,
+    func_80044650,
+    gpu_EmitPatchedColorQuadOutlinesFromWideRecords,
     func_80044650,
     func_80044650,
     func_80044650,
@@ -1425,13 +1458,38 @@ void (*D_80095488[32])() = {
     func_80044650,
 };
 void (*D_80095508[32])() = {
-    func_80051D08, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80051ED4, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
-    func_80044650, func_80044650,
+    gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
+    func_80044650,
 };
 s16 D_80095588[44] = {
     28, 22, 28, 22, 38, 34, 38, 0,  32, 26, 0,  0,  46, 42, 46,

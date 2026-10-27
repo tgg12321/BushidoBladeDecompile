@@ -1277,10 +1277,10 @@ typedef union {
  * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
  * - 3AB48 gpu_ProjectStridedNodeVerticesAndDispatchPackets fills, and the
  * renderers gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles ..
- * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
- * into the record for i >= 2.
- * In 17AFC, the collision code takes the record's address (`scr`) and passes it
- * on, or addresses it directly (object_UpdatePool /
+ * gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedQuadPacketsToOt256 read, an s16
+ * per-vertex table at 0x1F8002B4 + 2 * i, which runs into the record for i
+ * >= 2. In 17AFC, the collision code takes the record's address (`scr`) and
+ * passes it on, or addresses it directly (object_UpdatePool /
  * fight_UpdateBallisticRecords use Unk1F8002B8_8005344C instead). unk60 / unk6C
  * hold point pointers (fighter_ProcessWeaponContacts reads unk60[0..2]); unkB4
  * / unkC4 are fighter_TestTriangleBoneHits's two hit masks
