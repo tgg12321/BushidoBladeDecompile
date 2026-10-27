@@ -1,0 +1,206 @@
+==============================================================================
+DATA WAVE — 35 addresses, 50 identifiers remapped
+  0x800a3470: D_800A3470, g_scratchpad_ptr_20 -> g_eff_view_origin
+  0x800a3490: D_800A3490, g_scratchpad_ptr_58 -> g_eff_tpage_word
+  0x800a3494: D_800A3494, g_scratchpad_ptr_5c -> g_eff_clut_word
+  0x800a3498: D_800A3498, g_scratchpad_ptr_60 -> g_eff_tex_left_u
+  0x800a349c: D_800A349C, g_scratchpad_ptr_62 -> g_eff_tex_right_u
+  0x800a34a0: D_800A34A0, g_scratchpad_ptr_64 -> g_eff_tex_top_v
+  0x800a34a4: D_800A34A4, g_scratchpad_ptr_66 -> g_eff_tex_bottom_v
+  0x800a34a8: D_800A34A8, g_scratchpad_ptr_68 -> g_eff_base_width
+  0x800a34ac: D_800A34AC, g_scratchpad_ptr_6a -> g_eff_base_height
+  0x800a34b0: D_800A34B0, g_scratchpad_ptr_6c -> g_eff_geom_screen_work
+  0x800a34b4: D_800A34B4, g_scratchpad_ptr_70 -> g_eff_perspective_scale
+  0x800a34b8: D_800A34B8, g_scratchpad_ptr_74 -> g_eff_screen_xy
+  0x800a34c0: D_800A34C0, g_scratchpad_ptr_82 -> g_eff_right_x_offset
+  0x800a34c8: D_800A34C8, g_scratchpad_ptr_88 -> g_eff_lower_y_offset_word
+  0x800a34d0: D_800A34D0, g_scratchpad_ptr_90 -> g_eff_depth_work
+  0x800a34e4: D_800A34E4 -> g_eff_current_ot_entry
+  0x800a34e8: D_800A34E8 -> g_eff_current_prim_tag
+  0x801077b0: D_801077B0 -> g_fight_opponent_order
+  0x800a38a0: D_800A38A0 -> g_comb_local_side
+  0x800a3878: D_800A3878 -> g_fight_active_playback_descriptor
+  0x800a36f6: D_800A36F6 -> g_fight_tracked_fighter_index
+  0x800a3929: D_800A3929 -> g_fight_choice_confirm_delay
+  0x800a376a: D_800A376A -> g_fight_bone_group_tim_requests
+  0x800a3920: D_800A3920 -> g_fight_point_award_phase_timer
+  0x800a38b0: D_800A38B0 -> g_fight_result_subject_index
+  0x800a384c: D_800A384C -> g_fight_step_row_column
+  0x800a378c: D_800A378C -> g_gpu_ot_offset_ptr
+  0x800ef980: D_800EF980 -> g_resource_entry_request_state
+  0x8008eb80: D_8008EB80 -> g_resource_kind_entry_ids
+  0x8009bce4: D_8009BCE4 -> g_sel_entry_availability_and_claims
+  0x800a3600: D_800A3600 -> g_gpu_timed_sprite_sequence_phase
+  0x800a3554: D_800A3554 -> g_entry_menu_grid_phase_extra_slot_count
+  0x800a3590: D_800A3590 -> g_entry_menu_row_phase_choice_cursors
+  0x800a35e4: D_800A35E4 -> g_option_mode_flow_state
+  0x8009bc04: D_8009BC04 -> g_row_menu_row_state
+
+-- file edits (113) --
+  asm/data/93E18.data.s  (9)
+  asm/data/94000.bss.s  (16)
+  asm/funcs/ApplyPendingConfigAndInitializeMode.s  (4)
+  asm/funcs/ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests.s  (4)
+  asm/funcs/ApplyWorkingRecordToPendingConfigAndInitializeMode.s  (2)
+  asm/funcs/DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections.s  (4)
+  asm/funcs/DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection.s  (2)
+  asm/funcs/DrawWhiteTileAndSheetsAndResetFlowOnPadMatch.s  (1)
+  asm/funcs/InitDisplayStateLoadPackAndSetEntryFlags.s  (1)
+  asm/funcs/InitRowMenuBlackBgResetFlow.s  (1)
+  asm/funcs/InitTimedSpriteSequence.s  (1)
+  asm/funcs/ResetFlowAndFetchRowTablePair.s  (1)
+  asm/funcs/SetFlowStateOne.s  (1)
+  asm/funcs/camera_ApplyFightView.s  (4)
+  asm/funcs/camera_InitTrackedFighterFocus.s  (2)
+  asm/funcs/camera_StartTurnEasingOnLargeHeadingChange.s  (2)
+  asm/funcs/comb_Connect.s  (2)
+  asm/funcs/comb_ExchangePad.s  (10)
+  asm/funcs/comb_HandshakeStep.s  (2)
+  asm/funcs/comb_ReadCtsSetRts.s  (4)
+  asm/funcs/eff_BindScratchpad.s  (17)
+  asm/funcs/eff_DrawAndAdvanceBillboardPairs.s  (51)
+  asm/funcs/eff_DrawAndAdvanceJitteredBillboards.s  (35)
+  asm/funcs/eff_DrawAndAdvanceRotatedQuadClusters.s  (24)
+  asm/funcs/eff_DrawAnimatedQuads.s  (49)
+  asm/funcs/eff_DrawBillboardList.s  (46)
+  asm/funcs/eff_DrawYawedSlotQuads.s  (29)
+  asm/funcs/eff_LinkParticleQuads.s  (4)
+  asm/funcs/eff_PrepareParticles.s  (28)
+  asm/funcs/eff_StepCommand.s  (1)
+  asm/funcs/eff_UpdateParticles.s  (60)
+  asm/funcs/fight_AdvanceMatch.s  (2)
+  asm/funcs/fight_AdvanceOpponentOrder.s  (2)
+  asm/funcs/fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags.s  (2)
+  asm/funcs/fight_BuildOpponentOrder.s  (22)
+  asm/funcs/fight_Init.s  (6)
+  asm/funcs/fight_InitCommandStreamImageLoad.s  (2)
+  asm/funcs/fight_InitRotatingViewThreeOptionChoice.s  (2)
+  asm/funcs/fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt.s  (2)
+  asm/funcs/fight_RecordReplayEventAndDispatchSoundOrEffect.s  (2)
+  asm/funcs/fight_RequestBothFightersEntriesAndReloadOnChange.s  (2)
+  asm/funcs/fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields.s  (4)
+  asm/funcs/fight_RunCommandStream.s  (2)
+  asm/funcs/fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState.s  (4)
+  asm/funcs/fight_StartDescriptorPlaybackAndAudio.s  (16)
+  asm/funcs/fight_Update.s  (2)
+  asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (2)
+  asm/funcs/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s  (8)
+  asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (38)
+  asm/funcs/fight_UpdateRotatingViewThreeOptionChoice.s  (8)
+  asm/funcs/fighter_AccumulateBoneGroupFlagWhenGameModeZero.s  (12)
+  asm/funcs/fighter_AssignMotionSlotAndScanDataIdNibbles.s  (2)
+  asm/funcs/fighter_BuildCpuOrMappedPadState.s  (4)
+  asm/funcs/fighter_DispatchFrameEvent.s  (4)
+  asm/funcs/fighter_Init.s  (4)
+  asm/funcs/fighter_Update.s  (10)
+  asm/funcs/func_8001EA04.s  (2)
+  asm/funcs/func_8003B534.s  (2)
+  asm/funcs/func_8003B56C.s  (2)
+  asm/funcs/func_8003DDF8.s  (2)
+  asm/funcs/func_800444BC.s  (1)
+  asm/funcs/func_800444E0.s  (1)
+  asm/funcs/gpu_AddDrawMove.s  (2)
+  asm/funcs/gpu_DrawAndAdvanceTimedSpriteSequence.s  (12)
+  asm/funcs/gpu_QueueDepthSpacedMovesAndLinkTerminalPacket.s  (4)
+  asm/funcs/gpu_QueueVramScroll.s  (4)
+  asm/funcs/gpu_ResetDrawQueueAndPrepareViewAndLighting.s  (2)
+  asm/funcs/gpu_UploadAndDrawSelectedEntryQuads.s  (3)
+  asm/funcs/menu_DrawMaskedRowList.s  (2)
+  asm/funcs/menu_DrawSelGrid.s  (4)
+  asm/funcs/menu_InitSelScreen.s  (6)
+  asm/funcs/menu_LoadResourcesInitStateSelectFirstEnabledRow.s  (2)
+  asm/funcs/menu_ResetFlowBackgroundAndConfirmCursor.s  (1)
+  asm/funcs/menu_ResetFlowThenRunUpdate.s  (1)
+  asm/funcs/menu_RunOptionModeFlowStateWithRowBitEdit.s  (8)
+  asm/funcs/menu_SetEnabledRows.s  (2)
+  asm/funcs/menu_UpdateEntryGrid.s  (6)
+  asm/funcs/menu_UpdateEntryGridCursors.s  (12)
+  asm/funcs/menu_UpdateRow.s  (2)
+  asm/funcs/menu_UpdateRowCursors.s  (13)
+  asm/funcs/menu_UpdateRowMenu.s  (4)
+  asm/funcs/menu_UpdateRowMenuStoreResult.s  (1)
+  asm/funcs/menu_UpdateSelGridPicks.s  (6)
+  asm/funcs/menu_UpdateSelListPicks.s  (4)
+  asm/funcs/motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush.s  (2)
+  asm/funcs/motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue.s  (2)
+  asm/funcs/node_QueueEntryNodesFromTransformOrUpdatedSlotNode.s  (4)
+  asm/funcs/node_QueueTableEntryNodePairUnderSlotNode.s  (2)
+  asm/funcs/node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable.s  (2)
+  asm/funcs/object_SubmitAttachedTransform.s  (2)
+  asm/funcs/object_SubmitPoolTransforms.s  (2)
+  asm/funcs/replay_PlayFrame.s  (4)
+  asm/funcs/resource_RankRequestedEntriesAndReloadOnChange.s  (6)
+  asm/funcs/resource_RequestEntryWithLinkedEntriesAndLatchCategory.s  (6)
+  include/bb2.h  (13)
+  src/main/17AFC.c  (24)
+  src/main/24BF0.c  (4)
+  src/main/25788.c  (1)
+  src/main/28708.c  (9)
+  src/main/2B344.c  (31)
+  src/main/309CC.c  (1)
+  src/main/32D04.c  (3)
+  src/main/368E4.c  (18)
+  src/main/4510C.c  (1)
+  src/main/51268.c  (528)
+  src/main/596CC.c  (21)
+  src/main/5ED34.c  (33)
+  src/main/64FD8.c  (50)
+  src/main/9F9C.c  (52)
+  src/main/d_7D920.c  (1)
+  src/main/d_8C4E4.c  (1)
+  symbol_addrs.txt  (47)
+  tools/trace/movegraph.py  (3)
+
+-- registry lines --
+  symbol_addrs.txt:278 D_800A36F6 -> g_fight_tracked_fighter_index
+  symbol_addrs.txt:285 D_800A376A -> g_fight_bone_group_tim_requests
+  symbol_addrs.txt:364 D_800A378C -> g_gpu_ot_offset_ptr
+  symbol_addrs.txt:485 D_8009BC04 -> g_row_menu_row_state
+  symbol_addrs.txt:494 D_8009BCE4 -> g_sel_entry_availability_and_claims
+  symbol_addrs.txt:658 D_800A378C -> g_gpu_ot_offset_ptr
+  symbol_addrs.txt:751 D_800A376A -> g_fight_bone_group_tim_requests
+  symbol_addrs.txt:763 D_8008EB80 -> g_resource_kind_entry_ids
+  symbol_addrs.txt:859 D_800A36F6 -> g_fight_tracked_fighter_index
+  symbol_addrs.txt:931 D_8009BCE4 -> g_sel_entry_availability_and_claims
+  symbol_addrs.txt:997 D_8009BC04 -> g_row_menu_row_state
+  symbol_addrs.txt:1247 g_scratchpad_ptr_20 -> g_eff_view_origin
+  symbol_addrs.txt:1331 g_scratchpad_ptr_58 -> g_eff_tpage_word
+  symbol_addrs.txt:1332 g_scratchpad_ptr_5c -> g_eff_clut_word
+  symbol_addrs.txt:1333 g_scratchpad_ptr_60 -> g_eff_tex_left_u
+  symbol_addrs.txt:1334 g_scratchpad_ptr_62 -> g_eff_tex_right_u
+  symbol_addrs.txt:1335 g_scratchpad_ptr_64 -> g_eff_tex_top_v
+  symbol_addrs.txt:1336 g_scratchpad_ptr_66 -> g_eff_tex_bottom_v
+  symbol_addrs.txt:1337 g_scratchpad_ptr_68 -> g_eff_base_width
+  symbol_addrs.txt:1338 g_scratchpad_ptr_6a -> g_eff_base_height
+  symbol_addrs.txt:1339 g_scratchpad_ptr_6c -> g_eff_geom_screen_work
+  symbol_addrs.txt:1340 g_scratchpad_ptr_70 -> g_eff_perspective_scale
+  symbol_addrs.txt:1341 g_scratchpad_ptr_74 -> g_eff_screen_xy
+  symbol_addrs.txt:1343 g_scratchpad_ptr_82 -> g_eff_right_x_offset
+  symbol_addrs.txt:1345 g_scratchpad_ptr_88 -> g_eff_lower_y_offset_word
+  symbol_addrs.txt:1347 g_scratchpad_ptr_90 -> g_eff_depth_work
+  symbol_addrs.txt:1378 D_800A34E8 -> g_eff_current_prim_tag
+  symbol_addrs.txt:1421 D_800A35E4 -> g_option_mode_flow_state
+  symbol_addrs.txt:1427 D_800A3600 -> g_gpu_timed_sprite_sequence_phase
+  symbol_addrs.txt:1445 D_800A34E4 -> g_eff_current_ot_entry
+  symbol_addrs.txt:1465 D_800A3590 -> g_entry_menu_row_phase_choice_cursors
+  symbol_addrs.txt:1509 D_800A384C -> g_fight_step_row_column
+  symbol_addrs.txt:1514 D_800A3878 -> g_fight_active_playback_descriptor
+  symbol_addrs.txt:1522 D_800A38A0 -> g_comb_local_side
+  symbol_addrs.txt:1528 D_800A38B0 -> g_fight_result_subject_index
+  symbol_addrs.txt:1573 D_800A3920 -> g_fight_point_award_phase_timer
+  symbol_addrs.txt:1574 D_800A3929 -> g_fight_choice_confirm_delay
+  symbol_addrs.txt:1624 D_800EF980 -> g_resource_entry_request_state
+  symbol_addrs.txt:1822 D_801077B0 -> g_fight_opponent_order
+  symbol_addrs.txt:1889 D_800A384C -> g_fight_step_row_column
+  symbol_addrs.txt:1895 D_800A3929 -> g_fight_choice_confirm_delay
+  symbol_addrs.txt:1932 D_800A38A0 -> g_comb_local_side
+  symbol_addrs.txt:1956 D_800EF980 -> g_resource_entry_request_state
+  symbol_addrs.txt:1963 D_801077B0 -> g_fight_opponent_order
+  symbol_addrs.txt:2015 D_800A3878 -> g_fight_active_playback_descriptor
+  symbol_addrs.txt:2140 D_800A3920 -> g_fight_point_award_phase_timer
+  symbol_addrs.txt:2275 D_800A38B0 -> g_fight_result_subject_index
+
+-- python long strings NOT rewritten --
+  tools/trace/scan/story_streams.py: L2: ['D_800A3878'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
