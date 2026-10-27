@@ -43,9 +43,9 @@ extern s32 collision_GetHit(s32 *, s16 *);
  * test at +0x5C (collision_TestCellKeepingNearestHitGteProjection or
  * collision_TestCellKeepingNearestHitScalarProjection) until one reports a hit;
  * collision_GetHit then reads the result back out. */
-s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
-    s32 var_0;
-    s32 var_1;
+s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
+    s32 x_direction;
+    s32 z_direction;
     s32 var_2;
 
     g_collision_segment_work->unk60 = g_collision_segment_work->unk8.vx + 32000;
@@ -87,20 +87,20 @@ s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
         g_collision_segment_work->unk68 -= g_collision_segment_work->unk80;
         g_collision_segment_work->unk6C -= g_collision_segment_work->unk84;
         if (g_collision_segment_work->unk70 < 0) {
-            var_0 = -1;
+            x_direction = -1;
             g_collision_segment_work->unk70 = -g_collision_segment_work->unk70;
             g_collision_segment_work->unk60 = -g_collision_segment_work->unk60;
             g_collision_segment_work->unk68 = -g_collision_segment_work->unk68;
         } else {
-            var_0 = 1;
+            x_direction = 1;
         }
         if (g_collision_segment_work->unk74 < 0) {
-            var_1 = -1;
+            z_direction = -1;
             g_collision_segment_work->unk74 = -g_collision_segment_work->unk74;
             g_collision_segment_work->unk64 = -g_collision_segment_work->unk64;
             g_collision_segment_work->unk6C = -g_collision_segment_work->unk6C;
         } else {
-            var_1 = 1;
+            z_direction = 1;
         }
         if (g_collision_segment_work->unk74 > g_collision_segment_work->unk70) {
             var_2 = 1;
@@ -145,13 +145,13 @@ s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
             }
             if (g_collision_segment_work->unk64 > 2000) {
                 if (var_2) {
-                    if (var_0 < 0) {
+                    if (x_direction < 0) {
                         g_collision_segment_work->unk88.x--;
                     } else {
                         g_collision_segment_work->unk88.x++;
                     }
                 } else {
-                    if (var_1 < 0) {
+                    if (z_direction < 0) {
                         g_collision_segment_work->unk88.z--;
                     } else {
                         g_collision_segment_work->unk88.z++;
@@ -165,13 +165,13 @@ s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
                 }
             }
             if (var_2) {
-                if (var_1 < 0) {
+                if (z_direction < 0) {
                     g_collision_segment_work->unk88.z--;
                 } else {
                     g_collision_segment_work->unk88.z++;
                 }
             } else {
-                if (var_0 < 0) {
+                if (x_direction < 0) {
                     g_collision_segment_work->unk88.x--;
                 } else {
                     g_collision_segment_work->unk88.x++;
@@ -187,7 +187,7 @@ s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
                                             g_collision_segment_work->unk8C.z);
         }
     }
-    return collision_GetHit(arg0, arg1);
+    return collision_GetHit(hit_point, hit_normal);
 }
 
 extern s32 collision_WalkSegmentGrid(s32 *, s16 *);
@@ -196,12 +196,12 @@ extern s32 collision_TestCellKeepingNearestHitGteProjection();
 extern Work_80053E9C D_800EF9F8;
 
 void collision_TestSegmentExtendingShortStart(
-    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
+    s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal) {
     s32 a, b, c;
     s32 hi0, hi1, hi2;
     g_collision_segment_work = &D_800EF9F8;
-    D_800EF9F8.unk8 = *(VECTOR *)arg0;
-    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    D_800EF9F8.unk8 = *(VECTOR *)segment_start;
+    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
     if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
                             g_collision_segment_work->unk8.vx,
                         g_collision_segment_work->unk18.vy -
@@ -223,16 +223,17 @@ void collision_TestSegmentExtendingShortStart(
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitGteProjection;
     }
-    collision_WalkSegmentGrid(arg2, arg3);
+    collision_WalkSegmentGrid(hit_point, hit_normal);
 }
 
 s32 collision_TestSegmentExtendingShortStartWithWork(
-    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
+    s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal,
+    s32 segment_work_addr) {
     s32 a, b, c;
     s32 hi0, hi1, hi2;
-    g_collision_segment_work = (Work_80053E9C *)arg4;
-    g_collision_segment_work->unk8 = *(VECTOR *)arg0;
-    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    g_collision_segment_work = (Work_80053E9C *)segment_work_addr;
+    g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
+    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
     if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
                             g_collision_segment_work->unk8.vx,
                         g_collision_segment_work->unk18.vy -
@@ -254,40 +255,42 @@ s32 collision_TestSegmentExtendingShortStartWithWork(
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitGteProjection;
     }
-    return collision_WalkSegmentGrid(arg2, arg3);
+    return collision_WalkSegmentGrid(hit_point, hit_normal);
 }
 
-s32 collision_TestSegment(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
+s32 collision_TestSegment(
+    s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal) {
     g_collision_segment_work = &D_800EF9F8;
-    D_800EF9F8.unk8 = *(VECTOR *)arg0;
-    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    D_800EF9F8.unk8 = *(VECTOR *)segment_start;
+    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
     g_collision_segment_work->unk5C =
         collision_TestCellKeepingNearestHitGteProjection;
-    return collision_WalkSegmentGrid(arg2, arg3);
+    return collision_WalkSegmentGrid(hit_point, hit_normal);
 }
 
 s32 collision_TestSegmentWithWork(
-    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
-    g_collision_segment_work = (Work_80053E9C *)arg4;
-    g_collision_segment_work->unk8 = *(VECTOR *)arg0;
-    g_collision_segment_work->unk18 = *(VECTOR *)arg1;
+    s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal,
+    s32 segment_work_addr) {
+    g_collision_segment_work = (Work_80053E9C *)segment_work_addr;
+    g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
+    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
     g_collision_segment_work->unk5C =
         collision_TestCellKeepingNearestHitGteProjection;
-    return collision_WalkSegmentGrid(arg2, arg3);
+    return collision_WalkSegmentGrid(hit_point, hit_normal);
 }
 
-s32 collision_GetHit(s32 *arg0, s16 *arg1) {
+s32 collision_GetHit(s32 *hit_point, s16 *hit_normal) {
     Work_80053E9C *p = g_collision_segment_work;
     s32 t;
     if (p->unk0 != 0x7FFFFFFF) {
         t = (p->unk48 * 0x7D0) - 0x7D00;
-        arg0[0] = p->unk38 + t;
-        arg0[1] = p->unk3C;
+        hit_point[0] = p->unk38 + t;
+        hit_point[1] = p->unk3C;
         t = (p->unk4A * 0x7D0) - 0x7D00;
-        arg0[2] = p->unk40 + t;
-        arg1[0] = p->unk28 >> 2;
-        arg1[1] = p->unk2C >> 2;
-        arg1[2] = p->unk30 >> 2;
+        hit_point[2] = p->unk40 + t;
+        hit_normal[0] = p->unk28 >> 2;
+        hit_normal[1] = p->unk2C >> 2;
+        hit_normal[2] = p->unk30 >> 2;
         g_collision_hit_tag = p->unk4;
         return 1;
     }
@@ -298,7 +301,8 @@ extern void gte_TransformPointDifferenceWithInheritedLastRow(
     s32, s32, s32, s32);
 extern void gte_ReadIR1IR2Sra2(s32 *, s32 *);
 
-s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
+s32 collision_TestCellKeepingNearestHitScalarProjection(
+    s32 cell_x, s32 cell_z) {
     s32 n;
     s16 *data;
     s32 count;
@@ -307,16 +311,16 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
     s32 y;
     s16 var_6;
 
-    if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
+    if (cell_x < 0 || cell_z < 0 || cell_x >= 32 || cell_z >= 32) {
         return 0;
     }
-    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[cell_z * 32 + cell_x];
     if (g_collision_segment_work->unkE0 == 0xFFFF) {
         return 0;
     }
     data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
-    x = arg0 * 2000 - 32000;
-    z = arg1 * 2000 - 32000;
+    x = cell_x * 2000 - 32000;
+    z = cell_z * 2000 - 32000;
     g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
     g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
     g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
@@ -488,8 +492,8 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
                          g_collision_segment_work->unkB0 -
                              g_collision_segment_work->unk50)) <
                     g_collision_segment_work->unk0) {
-                    g_collision_segment_work->unk48 = arg0;
-                    g_collision_segment_work->unk4A = arg1;
+                    g_collision_segment_work->unk48 = cell_x;
+                    g_collision_segment_work->unk4A = cell_z;
                     g_collision_segment_work->unk38 =
                         g_collision_segment_work->unkA8;
                     g_collision_segment_work->unk3C =
@@ -521,7 +525,7 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(s32 arg0, s32 arg1) {
     return g_collision_segment_work->unk0 != 0x7FFFFFFF;
 }
 
-s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
+s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
     s32 n;
     s16 *data;
     s32 count;
@@ -530,16 +534,16 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
     s32 y;
     s16 var_6;
 
-    if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
+    if (cell_x < 0 || cell_z < 0 || cell_x >= 32 || cell_z >= 32) {
         return 0;
     }
-    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[cell_z * 32 + cell_x];
     if (g_collision_segment_work->unkE0 == 0xFFFF) {
         return 0;
     }
     data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
-    x = arg0 * 2000 - 32000;
-    z = arg1 * 2000 - 32000;
+    x = cell_x * 2000 - 32000;
+    z = cell_z * 2000 - 32000;
     g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
     g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
     g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
@@ -659,8 +663,8 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 arg0, s32 arg1) {
                          g_collision_segment_work->unkB0 -
                              g_collision_segment_work->unk50)) <
                     g_collision_segment_work->unk0) {
-                    g_collision_segment_work->unk48 = arg0;
-                    g_collision_segment_work->unk4A = arg1;
+                    g_collision_segment_work->unk48 = cell_x;
+                    g_collision_segment_work->unk4A = cell_z;
                     g_collision_segment_work->unk38 =
                         g_collision_segment_work->unkA8;
                     g_collision_segment_work->unk3C =

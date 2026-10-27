@@ -28,61 +28,77 @@ extern const char D_80010840[];
 
 void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     s32 i;
-    u8 *var_1;
-    u8 *var_2;
+    u8 *unselected_prefix;
+    u8 *selected_prefix;
 
     g_handler_frame_counter++;
     rand();
-    var_1 = D_800A3178;
-    var_2 = D_800A3180;
-    font_Printf(
-        D_800A3188, (s32)(g_config_menu_cursors[0] == 0 ? var_2 : var_1),
-        (s8)g_fight_config.unk_4[0]);
-    font_Printf(
-        D_800A3190, (s32)(g_config_menu_cursors[1] == 0 ? var_2 : var_1),
-        (s8)g_fight_config.unk_4[1]);
-    font_Printf(
-        D_800A3188, (s32)(g_config_menu_cursors[0] == 1 ? var_2 : var_1),
-        (s8)g_fight_config.unk_4[2]);
-    font_Printf(
-        D_800A3190, (s32)(g_config_menu_cursors[1] == 1 ? var_2 : var_1),
-        (s8)g_fight_config.unk_4[3]);
-    font_Printf(
-        D_800A3198, (s32)(g_config_menu_cursors[0] == 2 ? var_2 : var_1),
-        (s8)g_fight_config.unk_4[4]);
-    font_Printf(
-        D_800A3190, (s32)(g_config_menu_cursors[1] == 2 ? var_2 : var_1),
-        (s8)g_fight_config.unk_4[5]);
-    font_Printf(
-        D_800A31A0, (s32)(g_config_menu_cursors[0] == 3 ? var_2 : var_1),
-        g_fight_config.unk_0[0] >> 8);
-    font_Printf(
-        D_800A31A8, (s32)(g_config_menu_cursors[1] == 3 ? var_2 : var_1),
-        g_fight_config.unk_0[1] >> 8);
-    font_Printf(
-        D_800A31B0, (s32)(g_config_menu_cursors[0] == 4 ? var_2 : var_1),
-        (s8)g_fight_config.unk_C);
-    font_Printf(
-        D_800A31B0, (s32)(g_config_menu_cursors[0] == 5 ? var_2 : var_1),
-        (s8)g_fight_config.unk_D);
-    font_Printf(
-        D_800A31B8, (s32)(g_config_menu_cursors[0] == 6 ? var_2 : var_1),
-        (s8)g_fight_config.unk_E);
-    font_Printf(
-        (u8 *)D_80010834, (s32)(g_config_menu_cursors[0] == 7 ? var_2 : var_1),
-        (s8)g_fight_config.unk_F);
-    font_Printf(
-        (u8 *)D_80010840, (s32)(g_config_menu_cursors[0] == 8 ? var_2 : var_1),
-        g_saved_record.flags & 1);
-    font_Printf(
-        D_800A31C0, (s32)(g_config_menu_cursors[0] == 9 ? var_2 : var_1),
-        (g_saved_record.flags >> 1) & 1);
-    font_Printf(
-        D_800A31C8, (s32)(g_config_menu_cursors[0] == 10 ? var_2 : var_1),
-        D_800A36F9);
-    font_Printf(
-        D_800A31D0, (s32)(g_config_menu_cursors[0] == 11 ? var_2 : var_1),
-        D_800A3690);
+    unselected_prefix = D_800A3178;
+    selected_prefix = D_800A3180;
+    font_Printf(D_800A3188,
+                (s32)(g_config_menu_cursors[0] == 0 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_4[0]);
+    font_Printf(D_800A3190,
+                (s32)(g_config_menu_cursors[1] == 0 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_4[1]);
+    font_Printf(D_800A3188,
+                (s32)(g_config_menu_cursors[0] == 1 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_4[2]);
+    font_Printf(D_800A3190,
+                (s32)(g_config_menu_cursors[1] == 1 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_4[3]);
+    font_Printf(D_800A3198,
+                (s32)(g_config_menu_cursors[0] == 2 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_4[4]);
+    font_Printf(D_800A3190,
+                (s32)(g_config_menu_cursors[1] == 2 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_4[5]);
+    font_Printf(D_800A31A0,
+                (s32)(g_config_menu_cursors[0] == 3 ? selected_prefix
+                                                    : unselected_prefix),
+                g_fight_config.unk_0[0] >> 8);
+    font_Printf(D_800A31A8,
+                (s32)(g_config_menu_cursors[1] == 3 ? selected_prefix
+                                                    : unselected_prefix),
+                g_fight_config.unk_0[1] >> 8);
+    font_Printf(D_800A31B0,
+                (s32)(g_config_menu_cursors[0] == 4 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_C);
+    font_Printf(D_800A31B0,
+                (s32)(g_config_menu_cursors[0] == 5 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_D);
+    font_Printf(D_800A31B8,
+                (s32)(g_config_menu_cursors[0] == 6 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_E);
+    font_Printf((u8 *)D_80010834,
+                (s32)(g_config_menu_cursors[0] == 7 ? selected_prefix
+                                                    : unselected_prefix),
+                (s8)g_fight_config.unk_F);
+    font_Printf((u8 *)D_80010840,
+                (s32)(g_config_menu_cursors[0] == 8 ? selected_prefix
+                                                    : unselected_prefix),
+                g_saved_record.flags & 1);
+    font_Printf(D_800A31C0,
+                (s32)(g_config_menu_cursors[0] == 9 ? selected_prefix
+                                                    : unselected_prefix),
+                (g_saved_record.flags >> 1) & 1);
+    font_Printf(D_800A31C8,
+                (s32)(g_config_menu_cursors[0] == 10 ? selected_prefix
+                                                     : unselected_prefix),
+                D_800A36F9);
+    font_Printf(D_800A31D0,
+                (s32)(g_config_menu_cursors[0] == 11 ? selected_prefix
+                                                     : unselected_prefix),
+                D_800A3690);
 
     for (i = 0; i < 2; i++) {
         if (g_pad_state.pressed & (0x1000 << (i * 16))) {

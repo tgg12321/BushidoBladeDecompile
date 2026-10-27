@@ -3166,33 +3166,40 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
  * offset and with the query-point offset must have the same sign; the sign
  * agreement is tested as `(cc ^ cp) >= 0`. Same idiom as the triangle test
  * inside math_TestPreparedTriangleSphere in this file. */
-s32 math_PointInTriangleXZ(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
-    s32 var_0 = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
-    s32 var_1 = ((arg0[2] + arg1[2]) + arg2[2]) / 3;
-    s32 var_2;
-    s32 var_3;
+s32 math_PointInTriangleXZ(
+    s32 *vertex_a, s32 *vertex_b, s32 *vertex_c, s32 *test_point) {
+    s32 centroid_x = ((vertex_a[0] + vertex_b[0]) + vertex_c[0]) / 3;
+    s32 centroid_z = ((vertex_a[2] + vertex_b[2]) + vertex_c[2]) / 3;
+    s32 centroid_cross;
+    s32 point_cross;
 
     {
-        s32 dz = arg1[2] - arg0[2];
-        s32 dx = arg1[0] - arg0[0];
-        var_2 = (dz * (var_0 - arg0[0])) - (dx * (var_1 - arg0[2]));
-        var_3 = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+        s32 dz = vertex_b[2] - vertex_a[2];
+        s32 dx = vertex_b[0] - vertex_a[0];
+        centroid_cross = (dz * (centroid_x - vertex_a[0])) -
+                         (dx * (centroid_z - vertex_a[2]));
+        point_cross = (dz * (test_point[0] - vertex_a[0])) -
+                      (dx * (test_point[2] - vertex_a[2]));
     }
-    if ((var_2 ^ var_3) >= 0) {
+    if ((centroid_cross ^ point_cross) >= 0) {
         {
-            s32 dz = arg2[2] - arg0[2];
-            s32 dx = arg2[0] - arg0[0];
-            var_2 = (dz * (var_0 - arg0[0])) - (dx * (var_1 - arg0[2]));
-            var_3 = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+            s32 dz = vertex_c[2] - vertex_a[2];
+            s32 dx = vertex_c[0] - vertex_a[0];
+            centroid_cross = (dz * (centroid_x - vertex_a[0])) -
+                             (dx * (centroid_z - vertex_a[2]));
+            point_cross = (dz * (test_point[0] - vertex_a[0])) -
+                          (dx * (test_point[2] - vertex_a[2]));
         }
-        if ((var_2 ^ var_3) >= 0) {
+        if ((centroid_cross ^ point_cross) >= 0) {
             {
-                s32 dz = arg2[2] - arg1[2];
-                s32 dx = arg2[0] - arg1[0];
-                var_2 = (dz * (var_0 - arg1[0])) - (dx * (var_1 - arg1[2]));
-                var_3 = (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
+                s32 dz = vertex_c[2] - vertex_b[2];
+                s32 dx = vertex_c[0] - vertex_b[0];
+                centroid_cross = (dz * (centroid_x - vertex_b[0])) -
+                                 (dx * (centroid_z - vertex_b[2]));
+                point_cross = (dz * (test_point[0] - vertex_b[0])) -
+                              (dx * (test_point[2] - vertex_b[2]));
             }
-            if ((var_2 ^ var_3) >= 0) {
+            if ((centroid_cross ^ point_cross) >= 0) {
                 return 1;
             }
         }
@@ -5686,35 +5693,35 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
 }
 
 void fight_RecordMatchResult(void) {
-    u8 p1, p2, var_2;
+    u8 p1, p2, match_result_index;
 
     p1 = D_800A3898;
     if ((u8)p1 == g_fight_win_target) {
-        var_2 = g_fight_match_cursor;
-        g_fight_match_results[var_2] = 0;
+        match_result_index = g_fight_match_cursor;
+        g_fight_match_results[match_result_index] = 0;
     } else {
         p2 = D_800A3899;
         if ((u8)p2 == g_fight_win_target) {
-            var_2 = g_fight_match_cursor;
-            g_fight_match_results[var_2] = 1;
+            match_result_index = g_fight_match_cursor;
+            g_fight_match_results[match_result_index] = 1;
         } else if ((u8)p2 < (u8)p1) {
-            var_2 = g_fight_match_cursor;
-            g_fight_match_results[var_2] = 0;
+            match_result_index = g_fight_match_cursor;
+            g_fight_match_results[match_result_index] = 0;
         } else if ((u8)p1 < (u8)p2) {
-            var_2 = g_fight_match_cursor;
-            g_fight_match_results[var_2] = 1;
+            match_result_index = g_fight_match_cursor;
+            g_fight_match_results[match_result_index] = 1;
         } else {
             if ((u8)D_800A38AA < (u8)D_800A38AB) {
                 D_800A3898 = p1 + 1;
-                var_2 = g_fight_match_cursor;
-                g_fight_match_results[var_2] = 0;
+                match_result_index = g_fight_match_cursor;
+                g_fight_match_results[match_result_index] = 0;
             } else if ((u8)D_800A38AB < (u8)D_800A38AA) {
                 D_800A3899 = p2 + 1;
-                var_2 = g_fight_match_cursor;
-                g_fight_match_results[var_2] = 1;
+                match_result_index = g_fight_match_cursor;
+                g_fight_match_results[match_result_index] = 1;
             } else {
-                var_2 = g_fight_match_cursor;
-                g_fight_match_results[var_2] = 2;
+                match_result_index = g_fight_match_cursor;
+                g_fight_match_results[match_result_index] = 2;
             }
         }
     }
@@ -5728,18 +5735,18 @@ void fight_PackMatchScores(void) {
     s32 i = 0;
     s32 acc = 0;
     u8 n;
-    s32 var_4;
+    s32 recorded_match_count;
     u8 *base;
 
     g_local_ot_draw_mode = DISP_LOADING;
     n = g_fight_match_count;
     if (i < n) {
-        var_4 = g_fight_match_cursor;
+        recorded_match_count = g_fight_match_cursor;
         do {
             s32 var_6;
             s32 j;
             base = g_fight_match_scores[i];
-            var_6 = (i < var_4);
+            var_6 = (i < recorded_match_count);
             j = 0;
             do {
                 if (var_6) {
