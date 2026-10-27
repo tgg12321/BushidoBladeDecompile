@@ -1,0 +1,46 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 10 (row var-locals-10)
+
+Goal: draft evidence for a LOCAL naming wave (`f:l=n` pairs, .claude/rules/naming-bar.md step 4 and
+the `f:l=n` gate). Do NOT edit any tracked file. Write only `tmp/codex/vl10_local_manifest.csv` and
+`tmp/codex/vl10_notes.md`, and put BOTH full contents in your final message (your worktree is discarded;
+if the filesystem is read-only, the final message alone is fine).
+Print the HEAD commit hash and cite file:line at it.
+
+Rules: `.claude/rules/naming-bar.md` (N1-N6; "local / parameter: every use in its function bears it
+out; a /* FAKE */ or no-purpose local keeps a neutral name"), `.claude/rules/completion-bar.md` item 3
+("A no-purpose local may not wear a name that claims a purpose"). Names are snake_case C locals, short
+and plain (`count`, `cursor_x`, `pad_pressed`), naming what the variable HOLDS at every use in
+its function. Use the now-named globals, members, types and callee names as the main evidence.
+Leave neutral (NO_NAME): any local whose declaration or use carries a FAKE comment, any local reused
+for two different meanings in one function, register-shaping temps (`temp_*` whose only purpose is
+codegen), and anything you can't show at every use. No numbers / flags / selector values in names.
+
+Lessons from waves 1-7 (pending/var-locals{,-2..-7}/notes.txt): a pointer walking records is `*_cursor`; say the source (`slot_object`); an index says which array it indexes; counters vs indices (`files_checked`); no generic `buffer`; no name resting only on an unreviewed member name, another rename or a comment; say only what the code shows (`pad_buttons`, not `pad_pressed`); one consistent name per struct-typed param across functions; read-only copied pointer is `src_<things>`; an s32 only cast to a struct pointer is `<thing>_addr`; a -1/+1 only sign-tested is `x_direction`; with a separate forward prototype name only the definition. naming_keycheck refuses a name that appears in ANY #define body (grep them all).
+Lessons from wave 8 (docs/naming/phase3/pending/var-locals-8/, landed): name the thing a computed angle points AT from the code that defines it, not the struct's owner (`camera_bearing` failed: g_camera_default_view_record.unk_00 is the camera look-at point per camera_CalcEye, so `focus_bearing`); the output buffer of a decoder is `decoded_<thing>` (`decoded_motion_frame`), not `<thing>_values`; an output-only struct pointer param written once is `<thing>_out` (`pad_out`).
+Lessons from wave 9 (docs/naming/phase3/pending/var-locals-9/, landed): name a coordinate by the axis its callers actually feed, not by the callee's own math spelling (math_IntersectSegments `*_y` params FAILED because every caller passes world z -- world_pos.z, NavPoly vtx[][1] which holds x/z pairs -- and `y` is the vertical axis here; they landed as `*_z`); for a function symmetric in two argument groups, `first_*`/`second_*` (argument order) beat `segment_*`/`other_*` (`other` reads as the opponent); an index into `->vtx` is `vertex_index`, not `corner_index`. naming_keycheck counts comment text as tokens, so do not plan comment edits as part of the rename.
+Freshness (`f:l=n`): `n` must not be another local/param in `f`, a file-scope identifier of that TU
+(functions, globals, statics), an enum constant, a macro (grep include/ and the TU), a typedef/struct
+tag, or a keyword. Each row names ONE binding in the unique definition of `f`; if one auto name (e.g.
+`var_s0`) is declared twice in `f` (separate scopes), say which declaration (line) the row means.
+
+Scope: auto-style bindings (`var_*`, `spXX`, `argN`, `temp_*`) in C function definitions (not
+INCLUDE_ASM bodies) of src/main/4510C.c AFTER fighter_AppendNavDetour (wave 9 audited math_IntersectSegments through
+fighter_AppendNavDetour), then src/main/368E4.c from gpu_RunGridDrawPassAndQueueFogMoves onward (wave 9 audited through
+gpu_GetRaisedOtCutoffRequested). Earlier waves named some bindings in both files; leave those names alone. Do not re-propose
+wave 8 or wave 9 NO_NAME bindings (pending/var-locals-8/notes.txt and pending/var-locals-9/notes.txt RESEARCH NO_NAME LIST)
+without new evidence, said in the row.
+# revive: math_IntersectSegments locals `y`, `dy1`, `dy2` (and `x1`/`dx1`/`dx2` only if needed for a consistent set):
+wave 9 R6 noted they still say y for the world-z axis now that the params are first_start_z/.../intersection_z_out.
+These are non-auto names; you may propose renames for exactly these bindings (e.g. z-axis spellings), with the same
+evidence standard, and check freshness against the now-landed parameter names.
+Skip src/main/psxsdk/** (Sony code) and d_*.c data files. Propose at most 40 RENAMEs; list every
+other binding you looked at as NO_NAME with a one-line reason.
+
+Output CSV columns (header row): addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+- addr = the function name; current_names = `<func>:<local>` ; proposed_name = new local name;
+  kind = local ; verdict and verifier_note empty.
+- evidence (one quoted cell): DECL (file:line), USES (every file:line, R/W), WHY (what it holds at each
+  use, tied to named callees/globals/members), COUNTER-EVIDENCE, FAKE CHECK (no FAKE comment touches it),
+  FRESH (what you grepped).
+vl10_notes.md: one line per binding looked at: `<func>:<local>: RENAME n` or `NO_NAME reason`.
+Quality over count; strongest rows first.
