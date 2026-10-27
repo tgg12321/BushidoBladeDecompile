@@ -1,0 +1,11 @@
+math_IntersectSegments:y=intersection_z
+math_IntersectSegments:dy1=first_dz
+math_IntersectSegments:dy2=second_dz
+math_IntersectSegments:dx1=first_dx
+math_IntersectSegments:dx2=second_dx
+fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_25=nav_set
+math_LightPlaneProject:arg0=light_setup_index
+math_LightPlaneProject:arg1=src_matrix
+math_LightPlaneProject:arg2=projected_matrix_out
+math_LightPlaneProject:arg3=plane_y
+math_LightPlaneProject:sp10=light_projection
