@@ -203,11 +203,11 @@ void fighter_RelocateAndStartEventMove(Unk80101EC8Record *arg0) {
 
     idx = arg0->index;
     tbl = fight_GetStartPositionPairTable();
-    cnt = arg0->unk_34C;
+    cnt = arg0->reposition_count;
     if (cnt < 0x40) {
-        arg0->unk_34C = cnt + 1;
+        arg0->reposition_count = cnt + 1;
     }
-    var_4 = 0x3C - ((arg0->unk_34C - 1) * 4);
+    var_4 = 0x3C - ((arg0->reposition_count - 1) * 4);
     if (var_4 < 10) {
         var_4 = 10;
     }
@@ -387,7 +387,7 @@ s32 fighter_ResolveBoneHit(
     var_1 = rec;
     scr = &SPAD->unkA8[var_4][arg2].x;
     *out = 0;
-    if (arg1->unk_0C == 0x1C) {
+    if (arg1->character_roster_index == 0x1C) {
         dot = (arg1->unk_1EC.x * D_800A37E8 + arg1->unk_1EC.y * D_800A37EA +
                arg1->unk_1EC.z * D_800A37EC) >>
               12;
@@ -408,7 +408,7 @@ s32 fighter_ResolveBoneHit(
             return 0;
         }
     }
-    if (arg1->unk_0C == 0xD && arg1->is_defeated == 0 &&
+    if (arg1->character_roster_index == 0xD && arg1->is_defeated == 0 &&
         arg1->move_kind != 0x2E) {
         fighter_RelocateAndStartEventMove(arg1);
         return 2;
@@ -419,7 +419,7 @@ s32 fighter_ResolveBoneHit(
         fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
         return 1;
     }
-    if (arg1->unk_0C == 0x1F) {
+    if (arg1->character_roster_index == 0x1F) {
         fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
         fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
         arg1->pending_move_event = 7;
@@ -634,7 +634,7 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                 var_s1 = temp_a1_2 == 0;
             }
             if (var_s1 != 0) {
-                s16 temp_v1_2 = arg0->unk_0C;
+                s16 temp_v1_2 = arg0->character_roster_index;
                 if (temp_v1_2 != 0x1D) {
                     if (temp_v1_2 != 0xE) {
                         goto block_20;
@@ -769,7 +769,7 @@ void fighter_TriggerOpponentResponseOnMoveFrame(void) {
 
     for (i = 0; i < 2; i++) {
         base = &D_80101EC8[i];
-        if (base->unk_0C != 0x1B || base->unk_46 != 0 ||
+        if (base->character_roster_index != 0x1B || base->unk_46 != 0 ||
             base->move_kind != 0xB || base->move_frame != base->unk_A7) {
             continue;
         }
@@ -1217,7 +1217,8 @@ s32 fighter_ProcessWeaponContacts(void) {
         dst[2] = rec->unk_210[0];
         dst[3] = rec->unk_210[1];
         count[i] = 2;
-        if (rec->is_defeated != 0 || rec->unk_92 == 0 || rec->unk_0C == 0x1F) {
+        if (rec->is_defeated != 0 || rec->unk_92 == 0 ||
+            rec->character_roster_index == 0x1F) {
             dst[0].y = 100000;
             dst[1].y = 100000;
             dst[2].y = 100000;
@@ -1706,7 +1707,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         var_6 = 0;
         if (var_3->is_defeated == 0 && var_3->unk_92 != 0 &&
             var_3->update_count != 0) {
-            var_10 = var_3->unk_0C != 0x1F;
+            var_10 = var_3->character_roster_index != 0x1F;
         }
         if (var_3->unk_8C != 0) {
             var_10++;
@@ -1731,7 +1732,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 var_10 = 0;
             }
         }
-        if ((var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
+        if ((var_3->character_roster_index == 0x1D ||
+             var_3->character_roster_index == 0xE) &&
             var_3->unk_26C != 0 &&
             (var_3->move_kind == 2 || var_3->move_kind == 0x1B ||
              var_3->move_kind == 0x28 || var_3->move_kind == 0x26) &&
@@ -1741,7 +1743,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
             scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
             fighter_CastWeaponSegment(
-                var_4, &var_5, &var_6, var_3->unk_0C == 0xE);
+                var_4, &var_5, &var_6, var_3->character_roster_index == 0xE);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i == 0, 0x2A,
                 i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
@@ -1903,7 +1905,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         var_25 = 0;
         if ((var_3->weapon_id == 6 || var_3->weapon_id == 7 ||
-             var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
+             var_3->character_roster_index == 0x1D ||
+             var_3->character_roster_index == 0xE) &&
             (mask_a & (1 << idx))) {
             var_25 = 1;
         }
@@ -2011,7 +2014,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         flag = 0;
         if (!(var_3->weapon_id == 6 || var_3->weapon_id == 7)) {
-            if ((var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
+            if ((var_3->character_roster_index == 0x1D ||
+                 var_3->character_roster_index == 0xE) &&
                 var_12 != 0) {
                 flag = 1;
             } else {
@@ -2307,7 +2311,8 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
         if (firstPlayer->update_count >= 3 && secondPlayer->update_count >= 3 &&
             D_800A38A8 != 0 && firstPlayer->pending_move_event == -1 &&
             secondPlayer->pending_move_event == -1 &&
-            firstPlayer->unk_0C != 0x1F && secondPlayer->unk_0C != 0x1F) {
+            firstPlayer->character_roster_index != 0x1F &&
+            secondPlayer->character_roster_index != 0x1F) {
             s32 diff = firstPlayer->world_pos.y - secondPlayer->world_pos.y;
             if (diff < 0)
                 diff = -diff;
@@ -4937,7 +4942,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[1] = obj->unk_1B0[0];
                 pos[2] = obj->unk_198[0].z;
                 eff_StartYawedQuadSlotCommand(
-                    pos, obj->unk_1BA, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
+                    pos, obj->unk_1BA,
+                    D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
                     obj->index);
                 if ((0x60 >> obj->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -4962,7 +4968,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[1] = obj->unk_1B0[1];
                 pos[2] = obj->unk_198[1].z;
                 eff_StartYawedQuadSlotCommand(
-                    pos, obj->unk_1C2, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
+                    pos, obj->unk_1C2,
+                    D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
                     obj->index);
                 if ((0x60 >> obj->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(

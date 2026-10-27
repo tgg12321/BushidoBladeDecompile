@@ -83,7 +83,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     var_2 = reloc_RelocateTwelveListsAndLoadVabPack(D_800A3500);
     D_800A3500 = var_2;
     v0_e49c = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
-    v0_e49c->unk_24 = (Unk8006919CRec *)temp_s0;
+    v0_e49c->menu_resource_root = (Unk8006919CRec *)temp_s0;
     D_800A3500 = (s32)v0_e49c;
     g_row_menu_work_block = v0_e49c;
     D_800A3500 = (s32)(v0_e49c + 1);
@@ -138,10 +138,10 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
                it: score 4 */
             do {
             } while (0);
-            p_2A = &g_row_menu_work_block->unk_28.half[1];
-            p_28 = &g_row_menu_work_block->unk_28.half[0];
-            p_0E = &g_row_menu_work_block->unk_0C[1];
-            p_0C = &g_row_menu_work_block->unk_0C[0];
+            p_2A = &g_row_menu_work_block->row_bit_cursors.half[1];
+            p_28 = &g_row_menu_work_block->row_bit_cursors.half[0];
+            p_0E = &g_row_menu_work_block->menu_draw_offsets[1];
+            p_0C = &g_row_menu_work_block->menu_draw_offsets[0];
             p_10 = &g_row_menu_work_block->unk_10;
             p_12 = &g_row_menu_work_block->unk_12;
             g_row_menu_working_record_ptr = arg1;
@@ -171,19 +171,20 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             DrawSync(0);
         }
     }
-    g_row_menu_work_block->unk_30 = g_row_menu_working_record_ptr->unk20_0;
+    g_row_menu_work_block->strip_refresh_snapshot =
+        g_row_menu_working_record_ptr->unk20_0;
     return 1;
 }
 
 Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 a0) {
     Unk8009BD24Block *v0 = g_row_menu_working_record_ptr;
     Unk800A34FCRec *v1 = g_row_menu_work_block;
-    if (v1->unk_30 != v0->unk20_0) {
+    if (v1->strip_refresh_snapshot != v0->unk20_0) {
         gpu_LoadVramBottomStrip(D_800A372C);
     }
     v0 = g_row_menu_working_record_ptr;
     v1 = g_row_menu_work_block;
-    v1->unk_30 = v0->unk20_0;
+    v1->strip_refresh_snapshot = v0->unk20_0;
     return &D_800A351C[a0];
 }
 
@@ -307,7 +308,8 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     gpu_AdvanceBufferCounterAndBuildDrawContext(var_0, &D_800A3518);
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
     result = pad_StepOffsetsGetDirectionEvents(
-        (u32 *)&var_0[12], 0, g_row_menu_work_block->unk_0C, D_800A350C);
+        (u32 *)&var_0[12], 0, g_row_menu_work_block->menu_draw_offsets,
+        D_800A350C);
     switch (result >> 16) {
     case 1:
         do {
@@ -697,7 +699,7 @@ void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
         x0 = s.fr00.x;
         if (g_row_menu_working_record_ptr->unk20_3) {
             if (arg1 & 1) {
-                s.fr00.x = x0 + g_row_menu_work_block->unk_0C[0];
+                s.fr00.x = x0 + g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin((g_row_menu_pulse_counter & 0x1F) << 7) * 47) >>
                      12) -
                     0x80;
@@ -775,7 +777,7 @@ void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
         x0 = s.fr00.x;
         if (!(g_row_menu_working_record_ptr->unk20_3)) {
             if (arg1 & 2) {
-                s.fr00.x = x0 + g_row_menu_work_block->unk_0C[0];
+                s.fr00.x = x0 + g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin((g_row_menu_pulse_counter & 0x1F) << 7) * 47) >>
                      12) -
                     0x80;
@@ -1031,7 +1033,7 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
                        12) -
                       0x7D;
             s.col_b = 0x30;
-            s.y = g_row_menu_work_block->unk_0C[1] + y;
+            s.y = g_row_menu_work_block->menu_draw_offsets[1] + y;
             g_row_menu_pulse_counter++;
         } else if ((row_mask >> i) & 1) {
             s.col_r = 0x80;
@@ -1105,7 +1107,7 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
              12) -
             0x7D;
         s.col_b = 0x30;
-        s.y = g_row_menu_work_block->unk_0C[1] + 0xCF;
+        s.y = g_row_menu_work_block->menu_draw_offsets[1] + 0xCF;
         g_row_menu_pulse_counter++;
     } else if ((row_mask >> 7) & 1) {
         s.col_r = 0x80;
@@ -1232,7 +1234,7 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
         s.header = tbl[i + 1];
         if ((((u32)g_menu_packed_cursors >> 10) & 7) == i) {
             s.has_color = 1;
-            s.y = g_row_menu_work_block->unk_0C[1];
+            s.y = g_row_menu_work_block->menu_draw_offsets[1];
             s.semi = 0;
             s.col_r = s.col_g = s.col_b =
                 ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
@@ -1263,7 +1265,7 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
                 s32 c;
 
                 s.has_color = 1;
-                s.x = g_row_menu_work_block->unk_0C[0];
+                s.x = g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
                       32) >>
                      12) -
@@ -1293,7 +1295,7 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
                 s32 c;
 
                 s.has_color = 1;
-                s.x = g_row_menu_work_block->unk_0C[0];
+                s.x = g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
                       32) >>
                      12) -
@@ -1323,7 +1325,7 @@ void menu_DrawOptionMenuChoices(s32 *arg0) {
                 s32 c;
 
                 s.has_color = 1;
-                s.x = g_row_menu_work_block->unk_0C[0];
+                s.x = g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
                       32) >>
                      12) -
@@ -1368,7 +1370,7 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        (u32 *)&sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
+        (u32 *)&sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
     switch (ret >> 16) {
     case 1:
         if ((g_menu_packed_cursors & 0x1C00) == 0x1400) {
@@ -1485,7 +1487,7 @@ s32 menu_HandleMemCardChoices(s32 *arg0, u32 *arg1) {
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
     switch (ret >> 16) {
     case 1:
         if ((g_menu_packed_cursors & 0xE000) == 0x4000) {
@@ -1573,7 +1575,7 @@ void menu_DrawMemCardChoices(s32 *arg0) {
         p1 = s.header->cells;
         s.table = p1;
         if ((((u32)g_menu_packed_cursors >> 13) & 7) == i) {
-            s.y = g_row_menu_work_block->unk_0C[1];
+            s.y = g_row_menu_work_block->menu_draw_offsets[1];
             s.semi = 0;
         } else {
             s.y = 0;
@@ -1609,7 +1611,7 @@ void gpu_DrawIndexedSheetPair(
     Unk8009B400Record *cells;
     s32 i, j, n;
 
-    var_0 = g_row_menu_work_block->unk_24->unk_20;
+    var_0 = g_row_menu_work_block->menu_resource_root->unk_20;
 
     arg2->col_b = 0x30;
     arg2->col_g = 0x30;
@@ -1670,7 +1672,7 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32 arg0, s32 arg1) {
     g_sheet_pair_panel_tile_cursor = D_800F1498 + var_1 * 4;
     gpu_DrawIndexedSheetPair(arg0, 0, &sp10, 0);
     h = 0;
-    var_2 = g_row_menu_work_block->unk_24->sheet_pair_box_sizes;
+    var_2 = g_row_menu_work_block->menu_resource_root->sheet_pair_box_sizes;
     var_2 += arg0;
     if (arg1 != -1) {
         w = arg1 ? 0x1F : 0x28;
@@ -1808,10 +1810,10 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     s.y = ypos;
     for (var_15 = 0; var_15 < 2; var_15++) {
         s.x = var_15 * 280;
-        if (g_row_menu_work_block->unk_28.half[var_15] < 3) {
+        if (g_row_menu_work_block->row_bit_cursors.half[var_15] < 3) {
             for (var_9 = 0; var_9 < 4; var_9++) {
-                if (g_row_menu_working_record_ptr
-                        ->unk17[g_row_menu_work_block->unk_28.half[var_15]] &
+                if (g_row_menu_working_record_ptr->unk17
+                        [g_row_menu_work_block->row_bit_cursors.half[var_15]] &
                     ((1 << var_9) << (var_15 * 4))) {
                     s.header = table[var_9 + 13];
                     s.semi = 0;
@@ -1861,7 +1863,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
-    recs = g_row_menu_work_block->unk_24->rect_rows;
+    recs = g_row_menu_work_block->menu_resource_root->rect_rows;
     tile = (TILE *)arg0[6];
     for (var_9 = 0; var_9 < 11; var_9++) {
         var_5 = &recs[var_9];
@@ -1885,7 +1887,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
-        var_9 = g_row_menu_work_block->unk_28.half[j];
+        var_9 = g_row_menu_work_block->row_bit_cursors.half[j];
         rec = &recs[var_9 + 1];
         for (row = 0; row < 2; row++) {
             SetPolyG4(poly);
@@ -2003,7 +2005,7 @@ void menu_SetExclusiveRowBit(s32 arg0, s32 arg1) {
     mask = (1 << code) << (arg0 * 4);
 
     for (i = 0; i < 3; i++) {
-        if (i == g_row_menu_work_block->unk_28.half[arg0]) {
+        if (i == g_row_menu_work_block->row_bit_cursors.half[arg0]) {
             g_row_menu_working_record_ptr->unk17[i] |= mask;
         } else {
             g_row_menu_working_record_ptr->unk17[i] &= ~mask;
@@ -2024,7 +2026,8 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
     s16 var_9;
 
     ret = 0;
-    if ((g_row_menu_work_block->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
+    if ((g_row_menu_work_block->row_bit_cursors.word == 0x50005) &&
+        (*arg1 & 0x400040)) {
         snd_QueueSound(1, 0x7F, 0x7F);
         ret = 1;
     }
@@ -2038,23 +2041,23 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
 
         if (*arg1 & (0x1000 << shift)) {
             snd_QueueSound(0, 0x7F, 0x7F);
-            if (g_row_menu_work_block->unk_28.half[i] <= 0) {
-                g_row_menu_work_block->unk_28.half[i] = lim;
+            if (g_row_menu_work_block->row_bit_cursors.half[i] <= 0) {
+                g_row_menu_work_block->row_bit_cursors.half[i] = lim;
             } else {
-                g_row_menu_work_block->unk_28.half[i] =
-                    g_row_menu_work_block->unk_28.half[i] - 1;
+                g_row_menu_work_block->row_bit_cursors.half[i] =
+                    g_row_menu_work_block->row_bit_cursors.half[i] - 1;
             }
         } else if (*arg1 & (0x4000 << shift)) {
             snd_QueueSound(0, 0x7F, 0x7F);
-            if (g_row_menu_work_block->unk_28.half[i] >= lim) {
-                g_row_menu_work_block->unk_28.half[i] = 0;
+            if (g_row_menu_work_block->row_bit_cursors.half[i] >= lim) {
+                g_row_menu_work_block->row_bit_cursors.half[i] = 0;
             } else {
-                g_row_menu_work_block->unk_28.half[i] =
-                    g_row_menu_work_block->unk_28.half[i] + 1;
+                g_row_menu_work_block->row_bit_cursors.half[i] =
+                    g_row_menu_work_block->row_bit_cursors.half[i] + 1;
             }
         }
 
-        var_9 = g_row_menu_work_block->unk_28.half[i];
+        var_9 = g_row_menu_work_block->row_bit_cursors.half[i];
         switch (var_9) {
         case 0:
         case 1:
@@ -2160,7 +2163,7 @@ s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *arg0) {
 
     row = 0;
     do {
-        if (g_row_menu_work_block->unk_28.word == 0x50005) {
+        if (g_row_menu_work_block->row_bit_cursors.word == 0x50005) {
             s.header = table[17];
         } else if ((result >> row) & 1) {
             s.header = table[19];
@@ -2193,8 +2196,8 @@ s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *arg0) {
 }
 
 void menu_ResetRowBitCursors(void) {
-    g_row_menu_work_block->unk_28.half[1] = 5;
-    g_row_menu_work_block->unk_28.half[0] = 5;
+    g_row_menu_work_block->row_bit_cursors.half[1] = 5;
+    g_row_menu_work_block->row_bit_cursors.half[0] = 5;
 }
 
 extern void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *);
@@ -2235,7 +2238,7 @@ void menu_DrawStoredChoice(s32 *arg0) {
             s.has_color = 0;
             s.semi = 0;
         } else if (i == D_800A3528 + 1) {
-            s.y = g_row_menu_work_block->unk_0C[1];
+            s.y = g_row_menu_work_block->menu_draw_offsets[1];
             s.col_r = s.col_g = s.col_b =
                 ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF)
                   << 5) >>
@@ -2276,7 +2279,7 @@ s32 menu_HandleStoredChoice(s32 arg0, u32 arg1) {
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
     if ((ret >> 16) == 1) {
         D_800A3528 = D_800A3528 + 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -2461,7 +2464,7 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *arg0) {
     for (i = 0; i < 3; i++) {
         s.dd94_00.has_color = 1;
         if (i == D_800A352C + 1) {
-            s.dd94_00.y = g_row_menu_work_block->unk_0C[1];
+            s.dd94_00.y = g_row_menu_work_block->menu_draw_offsets[1];
             s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b =
                 ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF)
                   << 5) >>
@@ -2502,7 +2505,7 @@ s32 menu_HandleConfirmInput(s32 arg0, u32 arg1) {
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
     if (((ret >> 16) & 0xFF) != 0) {
         D_800A352C += 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -2597,7 +2600,7 @@ void gpu_AdvanceBufferCounterAndBuildDrawContext(s32 *a0, s32 *a1) {
     Unk8006E49CRec *v0;
     a1[0]++;
     v0 = gpu_GetPrimBufferAndRefreshStrip(a1[0] & 1);
-    s0[1] = (s32)g_row_menu_work_block->unk_24;
+    s0[1] = (s32)g_row_menu_work_block->menu_resource_root;
     s0[3] = (s32)v0->flat_quad_prims;
     s0[2] = v0->textured_quad_prims;
     s0[4] = (s32)v0->gradient_quad_prims;

@@ -1521,7 +1521,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_08;
     /* row of D_8008E5CC / D_8008E6A4, index of g_fighter_group_flags */
     s16 character_data_index;
-    s16 unk_0C;
+    s16 character_roster_index;
     s16 weapon_id; /* column of D_8008E5CC / D_8008E6A4 */
     u8 unk_10[0x12 - 0x10];
     s16 unk_12;
@@ -1710,7 +1710,7 @@ typedef struct Unk80101EC8Record {
     s16 carried_object_kinds[12];
     u8 weapon_ammo;
     u8 weapon_refills_left;
-    u8 unk_34C;
+    u8 reposition_count;
     u8 unk_34D;
     /* written by fighter_BuildCpuOrMappedPadState for the OTHER record */
     u8 unk_34E;
@@ -2517,19 +2517,19 @@ typedef struct {
  * 0x50005: both 5), as SelWork's f1C / f20. No code touches the other bytes. */
 typedef struct {
     u8 pad00[0xC];
-    s16 unk_0C[2];
+    s16 menu_draw_offsets[2];
     s16 unk_10;
     s16 unk_12;
     u8 pad14[0x10];
-    Unk8006919CRec *unk_24;
+    Unk8006919CRec *menu_resource_root;
 
     union {
         s16 half[2];
         s32 word;
-    } unk_28;
+    } row_bit_cursors;
 
     u8 pad2C[4];
-    u8 unk_30;
+    u8 strip_refresh_snapshot;
     u8 pad31[3];
 } Unk800A34FCRec;
 

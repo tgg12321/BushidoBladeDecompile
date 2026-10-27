@@ -2332,7 +2332,7 @@ void motion_ApplyRecordedPoseAdjustments(Unk80101EC8Record *arg0, Rec1C *arg1,
         &arg2->unk_0C[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
     math_ComposeAxisRotationsAndRewriteAngles(
         &arg3->unk_0C[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
-    temp_v1 = arg0->unk_0C;
+    temp_v1 = arg0->character_roster_index;
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
         arg2->unk_0C[0x39] += arg1->b16 * 4;
         arg3->unk_0C[0x39] += arg1->b16 * 4;
@@ -2386,7 +2386,7 @@ void motion_AdjustFighterPose(
         motion_SetFixedChannelBlock(b);
     }
     if (obj->move_kind == 0x15 || obj->move_kind == 0x25) {
-        if (obj->unk_0C == 0x1F) {
+        if (obj->character_roster_index == 0x1F) {
             temp2 = 0x100;
             var_4 = 0;
             var_2 = 0;
@@ -2450,7 +2450,7 @@ void motion_AdjustFighterPose(
     math_ComposeAxisRotationsAndRewriteAngles(
         &b->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
 
-    t = obj->unk_0C;
+    t = obj->character_roster_index;
     if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
         temp = (ratan2(g_fighter_horizontal_separation,
                        obj->other->world_pos.y - obj->world_pos.y) -
@@ -2676,7 +2676,8 @@ s32 fighter_PassesPairedMoveEntryGates(Unk80101EC8Record *arg0, s32 arg1) {
     if (g_fight_mode_selector == 0 && D_800A385C != 0) {
         return 0;
     }
-    if (arg0->other->unk_0C == 0xD || arg0->other->unk_0C == 0x1C) {
+    if (arg0->other->character_roster_index == 0xD ||
+        arg0->other->character_roster_index == 0x1C) {
         return 0;
     }
     if (arg0->character_data_index == 0xE &&
@@ -3719,7 +3720,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->other = (idx != 0) ? &D_80101EC8[0] : &D_80101EC8[1];
     p->index = idx;
     p->cpu_controlled = arg1;
-    p->unk_0C = arg2;
+    p->character_roster_index = arg2;
     p->character_data_index = g_fight_config_id_data_rows[arg2];
     p->weapon_id = arg3;
 
@@ -3741,7 +3742,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     if (idx == 1 && g_fight_mode_selector == 3) {
         p->size_scale = D_80094C68[D_800A38DE];
     } else {
-        p->size_scale = D_80094C68[D_8008D578[p->unk_0C]];
+        p->size_scale = D_80094C68[D_8008D578[p->character_roster_index]];
     }
     p->base_move_frame_step = D_8008DE34[p->character_data_index][p->weapon_id];
     p->unk_1E = D_8008DF78[p->character_data_index][p->weapon_id];
@@ -3854,7 +3855,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->orientation.vz = 0;
     ang = ratan2(var_1.x - p->world_pos.x, var_1.z - p->world_pos.z);
     p->orientation.vy = p->opponent_bearing = ang;
-    if (p->unk_0C == 0x1F) {
+    if (p->character_roster_index == 0x1F) {
         p->orientation.vy = ang + 0x800;
     }
     p->unk_1D0 = p->orientation;
@@ -3877,7 +3878,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->is_defeated = 0;
     p->collision_hit_tag = 7;
     p->unk_B2 = 0;
-    p->unk_34C = 0;
+    p->reposition_count = 0;
     object_InitKindQueue(p);
     p->unk_14 = p->carried_object_kinds[0];
     if (g_fight_mode_selector == 5 ||
@@ -3903,10 +3904,10 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             p->carried_object_count = 1;
         }
     } else {
-        if (p->unk_0C == 0x1D) {
+        if (p->character_roster_index == 0x1D) {
             p->unk_14 = 0x1F;
             p->weapon_ammo = 2;
-        } else if (p->unk_0C == 0xE) {
+        } else if (p->character_roster_index == 0xE) {
             p->unk_14 = 0x1E;
             p->weapon_ammo = 2;
         } else {
@@ -5015,7 +5016,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
     if (rec->unk_134.vz >= -3 && rec->unk_134.vz <= 3) {
         rec->unk_134.vz = 0;
     }
-    if (rec->move_kind == 4 || rec->move_kind == 0x14 || rec->unk_0C == 0x1F) {
+    if (rec->move_kind == 4 || rec->move_kind == 0x14 ||
+        rec->character_roster_index == 0x1F) {
         rec->unk_134.vx = 0;
         rec->unk_134.vy = 0;
         rec->unk_134.vz = 0;
@@ -5066,7 +5068,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_92 = rec->unk_92 != 0 ? 1 : 2;
     }
     rec->unk_62 = 0;
-    if (rec->unk_0C != 0x1F && rec->is_defeated == 0 && rec->unk_92 != 0) {
+    if (rec->character_roster_index != 0x1F && rec->is_defeated == 0 &&
+        rec->unk_92 != 0) {
         rec->unk_62 = 1;
     }
     if ((g_fight_mode_selector != 3 || arg0 != 1 || D_800A384C == 4) &&
@@ -5083,7 +5086,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_8C = 0;
         }
     } else if (
-        ((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
+        ((rec->character_roster_index == 0x1D ||
+          rec->character_roster_index == 0xE) &&
          (rec->move_kind == 2 || rec->move_kind == 0x1B ||
           rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
          rec->weapon_hit_start_frames[1] < 0xFF && rec->unk_26C != 0 &&
@@ -5270,7 +5274,7 @@ skip_62:
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 arg0, 0x2E, &rec->world_pos.x, 0);
         }
-        if (rec->unk_0C != 0x1F) {
+        if (rec->character_roster_index != 0x1F) {
             object_SpawnScatteredAt(
                 rec,
                 D_8008D90C[g_fighter_group_flags[rec->character_data_index]]
@@ -5282,7 +5286,7 @@ skip_62:
             g_fight_followup_fighter_index = arg0 == 0;
         }
     }
-    if (rec->move_started != 0 && rec->unk_0C == 0x1B &&
+    if (rec->move_started != 0 && rec->character_roster_index == 0x1B &&
         rec->move_kind == 0xB && rec->unk_34D == 0) {
         rec->pending_move_event = 0x1F;
     }
@@ -5291,7 +5295,7 @@ skip_62:
             g_fight_mode_selector != 3 &&
             (g_fight_mode_selector != 0 || D_800A385C == 0)) {
             if (rec->move_kind == 0xB && rec->move_frame == rec->unk_A7) {
-                if (rec->unk_0C == 0x1B) {
+                if (rec->character_roster_index == 0x1B) {
                     if (rec->unk_34D != 0) {
                         rec->unk_34D--;
                     }
@@ -5339,7 +5343,7 @@ skip_62:
     } else {
         rec->unk_B3 = 0;
     }
-    if (rec->unk_0C == 0x1F) {
+    if (rec->character_roster_index == 0x1F) {
         rec->unk_B3 = 4;
     }
     gpu_QueueSlotDrawMovesForSelectedSet(arg0, rec->unk_B3);
