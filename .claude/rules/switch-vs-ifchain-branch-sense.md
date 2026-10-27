@@ -24,7 +24,7 @@ with positive `beq` tests and cross-jumps the sibling case bodies — the target
 ## Fix
 
 ```c
-switch (D_800A38DC) {
+switch (g_fight_mode_selector) {
 case 4:  var_v0 = 0xC; break;
 case 1:
     if (D_800A3748 == 0) { snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); D_800A3768 = 2; mottest_disp(); return; }
@@ -32,7 +32,7 @@ case 1:
 case 6:  var_v0 = 0xC; break;
 default: snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode(); var_v0 = 2; break;
 }
-D_800A3834 = var_v0;   /* was `set_val:` */
+g_main_loop_handler_index = var_v0;   /* was `set_val:` */
 ```
 
 The merge label becomes the post-switch statement; each `goto set_val` becomes `break`. fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress: 1 → 0.

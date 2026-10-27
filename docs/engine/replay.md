@@ -30,7 +30,7 @@ Its only caller is `sys_Exec` (below).
 ## `cdrom_StartRead` (once `replay_camera_Init`)
 
 `cdrom_StartRead(a0, a1)` (src/main/cdrom.c:13) queues a read of file `a0`
-into the CD state block `D_80101E58` (`CdState`, include/game.h:2079; its `rec`
+into the CD state block `g_cdrom_state` (`CdState`, include/game.h:2079; its `rec`
 member is `Unk80101E60Rec`):
 
 1. If a request is pending (`rec.unk02 != 0`), return 0.
@@ -50,7 +50,7 @@ member is `Unk80101E60Rec`):
 its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
 over a 5-row table
 (`D_8009BC40`) on the pad bits in `D_800A354C`, skipping cells already taken
-(`D_8009BC7C` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
+(`g_entry_menu_entry_flags` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
 choice, and draws the cells with `gpu_AddSpriteCells`.
 
 `gpu_SetSegmentCellsGateBit(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
@@ -110,7 +110,7 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
    record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
    from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&D_80101DF0)`,
    `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `a2` in `D_800A33C0`.
-3. Recomputes the light matrices of `D_800F62E0[0]`, `[1]`, `[4]`
+3. Recomputes the light matrices of `g_light_setups[0]`, `[1]`, `[4]`
    (`calc_LightMatrix`) and runs `light_ResetPointLight`, `ClearSavedWordPairsAndTwoWriteOnlyWords`,
    `func_8003F5CC`.
 
@@ -145,7 +145,7 @@ while (1) {
     cdrom_Update();
     if (D_800A3906 != 0) snd_FlushSoundQueue();
     gpu_DrawDisplayModeOnLocalOtAndSync();
-    *p = *p + 2;                          // D_80101E58.rec.unk3E
+    *p = *p + 2;                          // g_cdrom_state.rec.unk3E
     VSync(2);
 }
 comb_EndWait();

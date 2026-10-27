@@ -20,7 +20,7 @@ The header's `$gp` and `.bss` fields are 0. `bb2.ld` links one output section
 | Range | Content | Linker symbols |
 | --- | --- | --- |
 | 0x80010000..0x800164F8 | `.rodata` of every TU | `main_RODATA_START` / `_END` (bb2.ld:89) |
-| 0x800164F8..0x8008D120 | `.text`. The last 0xB0 bytes (0x8008D070..) are game data emitted from `src/main/d_7D870.c`: `g_data_start`, the 34-entry handler table `D_8008D090` that `main` calls through `D_800A3834` (src/main/6CF8.c:468), and the start of `g_sqrt_table_u8` | `main_TEXT_START` / `_END` (bb2.ld:91, :317) |
+| 0x800164F8..0x8008D120 | `.text`. The last 0xB0 bytes (0x8008D070..) are game data emitted from `src/main/d_7D870.c`: `g_data_start`, the 34-entry handler table `D_8008D090` that `main` calls through `g_main_loop_handler_index` (src/main/6CF8.c:468), and the start of `g_sqrt_table_u8` | `main_TEXT_START` / `_END` (bb2.ld:91, :317) |
 | 0x8008D120..0x800A3800 | `.data`, with each -G8 TU's `.sdata` / `.sbss` in link order | `main_DATA_START` / `_END` (bb2.ld:319, :594) |
 
 The linked objects' `.bss` is empty (`main_BSS_START == main_BSS_END ==
@@ -67,7 +67,7 @@ Large objects named elsewhere in these pages:
 
 - `GpuDb g_gpu_db[2]` at 0x800F7438: two 0x4090-byte records holding
   DRAWENV, DISPENV and OT (include/game.h:54-63).
-- `CdState D_80101E58`: the CD state block (include/game.h:2084).
+- `CdState g_cdrom_state`: the CD state block (include/game.h:2084).
   `g_cd_file_table` (0x8008EC34, include/bb2.h:474) holds the disc file
   records. See [file_io.md](file_io.md).
 - `D_800F33D8`: the 0x200-byte memory-card image. Its second half is
@@ -95,7 +95,7 @@ The 1 KB scratchpad is shared work space. Different code puts different
 records there at different times. `include/game.h` holds the per-file views:
 
 - `Unk1F800000Rec`, the 51268.c view from 0x1F800000. `eff_BindScratchpad` caches
-  pointers into it in `D_800A3468..`.
+  pointers into it in `g_eff_active_command_block..`.
 - the 17AFC.c collision record at 0x1F8002B8..0x1F8003FF.
 
 The comment above the 17AFC.c record (include/game.h:1180-1196) lists the

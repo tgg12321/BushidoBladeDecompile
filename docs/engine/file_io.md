@@ -35,7 +35,7 @@ plus an offset. The groups that appear in calls:
 
 ## The CD state block and its two steppers
 
-All game CD work runs through one object, `CdState D_80101E58`
+All game CD work runs through one object, `CdState g_cdrom_state`
 (include/game.h:2084-2089; its `rec` member is `Unk80101E60Rec`,
 include/game.h:2054-2077). `rec.unk02` is the state. 0 means idle.
 States 2..0xD are the data read. States 0x10..0x1E are CD audio.
@@ -54,7 +54,7 @@ Requests:
   - `chan < 0` selects mode 5 (CdlModeDA | CdlModeRept).
   - Otherwise it selects mode 0xC8 (CdlModeSpeed | CdlModeRT | CdlModeSF),
     after `CdControlB(0xD /* CdlSetfilter */, &file)` with
-    `D_80101E58.file = 1` and `.chan = chan`.
+    `g_cdrom_state.file = 1` and `.chan = chan`.
   - It enters state 0x10.
 - `cdrom_StartAudioEntry(n)` (src/main/cdrom.c:107) starts row `n` of
   `D_8008F13C`: file `cdrom_GetFileIndex(5, row.unk_0)`, channel `row.unk_1`
@@ -133,7 +133,7 @@ are described in [replay.md](replay.md).
 ## Callers that load data
 
 - `eff_LoadImagesAndSetup(dest, prim_buf)` (51268.c) picks a group-2 file by
-  `D_8009BD24.unk14_0` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
+  `g_working_record.unk14_0` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
   `dest` and uploads two VRAM rectangles from it: (0x380, 0, 0x80, 0x1DC),
   then (0x380, 0x1DC, 0x70, 0x24) from `dest + 0x1DC00`. It then splits
   `prim_buf` into two 0x4650-byte `POLY_FT4` buffers

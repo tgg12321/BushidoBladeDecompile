@@ -81,7 +81,7 @@ dead restore store `p_old = prev;` placed after the +4 store (`sw` 0x80077140) a
 0x30/0x34 clears (0x80077144/48), although (B)(1) and Ruling 4 ban a dead write. Conditions:
 the store is `/* FAKE: */`-annotated with every [[dead-store-fake-exception]] prerequisite and
 names the cse mechanism (cse make_regs_eqv puts p_old and the call's $v0 in one class with
-p_old canonical, so the D_800A36A0 reloads become p_old); `.cse` dumps for the body with and
+p_old canonical, so the g_sel_screen_work reloads become p_old); `.cse` dumps for the body with and
 without the store are banked with command lines; the full Ruling 11 package covers the two
 real values; fresh layer-2. Q78 admits only this store: any other dead write in the function
 is judged under its own rule, neither banned nor admitted by Q78. Not a precedent elsewhere.

@@ -67,15 +67,15 @@ Unnamed functions keep `func_<addr>`.
 
 | Object | Type / declaration | Page |
 | --- | --- | --- |
-| `D_8008D090` | the 34 mode handlers `main` calls through `D_800A3834` | [main_loop.md](main_loop.md) |
+| `D_8008D090` | the 34 mode handlers `main` calls through `g_main_loop_handler_index` | [main_loop.md](main_loop.md) |
 | `g_gpu_db[2]` | `GpuDb`, include/game.h:54-63 | [gpu_pipeline.md](gpu_pipeline.md) |
 | `D_800A3770[2]` | the two 0x13400-byte primitive buffers | [memory_layout.md](memory_layout.md) |
 | `g_cd_file_table` | `CdFileEntry[159]`, include/bb2.h:474 | [file_io.md](file_io.md) |
-| `D_80101E58` | `CdState`, include/game.h:2084 | [file_io.md](file_io.md), [replay.md](replay.md) |
+| `g_cdrom_state` | `CdState`, include/game.h:2084 | [file_io.md](file_io.md), [replay.md](replay.md) |
 | `D_800F33D8` / `D_800F34D8` | memory-card image / `Unk800F34D8Save` | [file_io.md](file_io.md) |
 | `g_vab_rec_ptr[16]`, `g_vab_vb_sbaddr[16]` | VAB slots, `Unk8005C2A8Pack` | [sound.md](sound.md) |
 | `g_snd_queue[24]` | `Unk800EFB78Entry` sound request pool | [sound.md](sound.md) |
-| `D_80106A50` | `FileRecord`; `flags` bits read by `gpu_GetSavedGrayscaleFlag` / `fighter_GetSavedCpuBehaviorAdjustFlag` / `snd_GetSavedCdAudioSuppressFlag` (src/main/6CF8.c:115-119) | |
+| `g_saved_record` | `FileRecord`; `flags` bits read by `gpu_GetSavedGrayscaleFlag` / `fighter_GetSavedCpuBehaviorAdjustFlag` / `snd_GetSavedCdAudioSuppressFlag` (src/main/6CF8.c:115-119) | |
 | `g_rng_state` | `rng_Next`'s state (src/main/6CF8.c:415) | |
 
 ## Finding a name

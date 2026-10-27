@@ -57,21 +57,21 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 `fight_BuildOpponentOrder` (src/main/17AFC.c:5279):
 
 1. Collects the IDs `i` in 0..26 whose bit is set in
-   `D_80106A50.unk_00 & 0x3EF3DF`, minus the bit
-   `D_8008D538[D_80102778.unk_4[0]]` (src/main/17AFC.c:5288), into
+   `g_saved_record.unk_00 & 0x3EF3DF`, minus the bit
+   `D_8008D538[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5288), into
    `D_801077B0`.
 2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5309).
-3. If bit 0x20 or 0x10000 of `D_80106A50.unk_00` is set, adds ID 5 (bit 0x20)
+3. If bit 0x20 or 0x10000 of `g_saved_record.unk_00` is set, adds ID 5 (bit 0x20)
    and / or ID 0x10 (bit 0x10000), in random order when both are set: the first
    goes to position 10, shifting the rest up (or at the end of a shorter list),
    and the second is appended.
 4. Appends 0x1A or 0x18 when bit 0x04000000 or 0x01000000 is set (which one
-   is tested depends on `D_8008D9EC`), stores the count in `D_800A391F`, and
+   is tested depends on `g_fighter_group_flags`), stores the count in `D_800A391F`, and
    clears the cursor `D_800A3783`.
 
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5397) steps the cursor: it sets
-`D_80102778.unk_4[1] = D_8008D55C[D_801077B0[cursor]]`, or, once the cursor
-reaches the count, sets the mode `D_800A3834` to 0x12 (count 20) or 0x20.
+`g_fight_config.unk_4[1] = D_8008D55C[D_801077B0[cursor]]`, or, once the cursor
+reaches the count, sets the mode `g_main_loop_handler_index` to 0x12 (count 20) or 0x20.
 The 27 IDs match the row count of the per-character tables (`D_8008E338`,
 `D_8008DE34`, include/bb2.h:181-193), which is consistent with the list being
 an opponent order; the code does not name it.
@@ -93,11 +93,11 @@ an opponent order; the code does not name it.
 - `fighter_RelocateAndStartEventMove(rec)` (src/main/17AFC.c:178), called from `fighter_ResolveBoneHit`
   (src/main/17AFC.c:370) when `rec->unk_0C == 0xD`, moves the fighter's
   positions (`world_pos`, `base_pos`, `collision_pos`) to a target: with
-  `D_800A36A4 == 3` a percentage blend from the fighter's position toward the
+  `g_fight_stage_index == 3` a percentage blend from the fighter's position toward the
   point (0x2EE0 or -0x2710, 0x1770 or -0x1770), picked by the other fighter's
   position, with a weight that shrinks from 60 to 10 as the counter `unk_34C`
   (capped at 0x40) grows; otherwise the entry
-  `fight_GetStartPositionPairTable()[D_800A36A4 * 12 + index * 3]`. It then zeroes `unk_104` /
+  `fight_GetStartPositionPairTable()[g_fight_stage_index * 12 + index * 3]`. It then zeroes `unk_104` /
   `unk_134`, switches its move (the script `motion_ResolveMoveData` resolves from
   `cur_move->event_move_table_id` and that record's halfword 0x1D, made current by
   `fighter_StartMoveScript`) and plays

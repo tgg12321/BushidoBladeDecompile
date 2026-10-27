@@ -18,7 +18,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   into `g_motion_fighter_buffers[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
   `g_motion_fighter_sections[i]` (include/bb2.h:482) at their sections, as the comment on
   `Unk801027B0Rec` describes (include/game.h:736). In modes 1, 4 and 6
-  (`D_800A38DC`) it also reads seven sectors per fighter from
+  (`g_fight_mode_selector`) it also reads seven sectors per fighter from
   `cdrom_GetFileIndex(1, 0)` into `g_motion_frame_buffers[i]`, a table of ready
   `MotionFrame`s.
 - `motion_InitStreams` (src/main/9F9C.c:3138) hands each loaded file's bitstream

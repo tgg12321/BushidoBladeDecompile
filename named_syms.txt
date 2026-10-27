@@ -105,7 +105,7 @@
 /* interrupts, critical section then EXECs a new PS-X EXE. */
 /* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
 /* gpu_ResetGraphMode1 + gpu_HideResetAndClear + motion_InvalidateMarkedNdataPackAndResetLoadCaches + slot_ReleaseObjectAndResources(0,1) */
-/* + eff_ClearInitFlag ..., D_800A3834 = 0x1B. NOT a position check. */
+/* + eff_ClearInitFlag ..., g_main_loop_handler_index = 0x1B. NOT a position check. */
 /* special_camera_check_pos_outside_ground_80036E34 -- now cdrom_StartReadAt: */
 /* starts a CD read of a file at a sector offset (ndata_StartReadInf, */
 /* ndata_Read, and non-NDATA reads such as 9F9C.c's). */
@@ -311,7 +311,7 @@
 /* Scratchpad pointer cache (extending the A4/AC/B8 set from batch 9-11) */
 /* IRQ alarm callback state */
 /* CDROM callback buffers */
-/* command-block copy pointer (sibling of D_800A347C at block +0x20) */
+/* command-block copy pointer (sibling of g_eff_command_position at block +0x20) */
 /* SPU state additions */
 /* LIBGPU SYS DPCR pointer + arena size cells */
 /* Misc state */
@@ -445,7 +445,7 @@
 
 /* === Per-id state arrays (2026-05-17) === */
 /* Init pattern (51268.c, func_80064ED8..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
-/* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and D_800F0BA8[18]
+/* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and g_eff_animated_quad_counters[18]
  * (include/game.h; merged 2026-09-30 with eff_DrawAnimatedQuads, which retired their per-word alias names). */
 /* 2026-10-16: D_800F10E0 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
 
@@ -461,10 +461,10 @@
 /* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
 
 /* === Cluster at 0x800A34F8-3514 (2026-05-17) -- 4 highs === */
-/* Discovered via cluster-consumer analysis: D_800A34F8/350C/3514 are */
+/* Discovered via cluster-consumer analysis: g_menu_packed_cursors/350C/3514 are */
 /* the top "naming multiplier" cluster -- 6+ consumer functions all */
 /* reference these together.  src/main/596CC.c shows the pattern: */
-/*   - D_800A34F8 packs three cursors (a static, 596CC.c:16): */
+/*   - g_menu_packed_cursors packs three cursors (a static, 596CC.c:16): */
 /*     (bits 0-3 = 0..7, :303-326; bits 10-12 = 0..5, :1325-1339; */
 /*      bits 13-15 = 0..2, :1435-1448) */
 /*   - D_800A34FC is a struct pointer assigned from gpu_InitPrimBufferPair */
@@ -488,12 +488,12 @@
 /* */
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags steps D_800A38E2 through a table; at 0x64 it sets */
 /* D_800A36F0 / D_800A3781 to whether a chosen bit of the bitmap at */
-/* &D_80106A50 */
+/* &g_saved_record */
 /* (g_file_disc_size -- MISNOMER, see MISNOMERS.md) was still clear, */
 /* then sets that bit. */
 /* */
 /* fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank then sets D_800A38A4 = 6/7 (D_800A36F0) or 8/9 */
-/* (D_800A3781) and D_800A3834 = 0x12. */
+/* (D_800A3781) and g_main_loop_handler_index = 0x12. */
 
 /* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
 /* Functions whose debug_printf strings reveal their purpose. */
@@ -570,7 +570,7 @@
 /* === Primitive-buffer bases + render state (2026-05-17) -- 6 highs === */
 /* From 6CF8.c: func_80016D78 (:291-292) stores two main-RAM primitive-buffer */
 /* bases in D_800A3770[0] / [1]; main (:455) and menu_RunPauseMenu (:340-344) */
-/* base g_prim_buf_cursor on D_800A3770[D_800A36AC & 1]. */
+/* base g_prim_buf_cursor on D_800A3770[g_gpu_presented_frame_count & 1]. */
 
 /* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
 /* From libgpu sys.c (_addque2, _exeque, set_alarm / get_alarm). */
@@ -580,7 +580,7 @@
 
 /* === Effect/physics object cluster (2026-05-17) -- 4 highs === */
 /* From text1b.c collision_TestSegmentExtendingShortStart (line 11052) + collision_TestSegmentExtendingShortStartWithWork (11082): */
-/* D_800A33F4 is the active effect-state pointer; the struct it points */
+/* g_collision_segment_work points at the Work_80053E9C cast work area; the struct it points */
 /* to has a 96-byte layout with: */
 /*   +0x8/+0xC/+0x10 = vx/vy/vz (current position) */
 /*   +0x18/+0x1C/+0x20 = bx/by/bz (target/base position) */
@@ -591,7 +591,7 @@
 
 /* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
 /* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
-/* gpu_InitPrimBufferPair and stores the result in D_800A36A0 (64FD8.c:1076-1083), */
+/* gpu_InitPrimBufferPair and stores the result in g_sel_screen_work (64FD8.c:1076-1083), */
 /* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with D_800A351C / D_800A34FC */
 /* (596CC.c:56-74). */
 /* See each line. */
@@ -634,9 +634,9 @@
 /* RENAME 0x800A36FA: retired name 'D_800A36FA' — preserved note: three values (0 / 1 / 2): camera_ApplyFightView picks its view record (D_800F6608 or D_800F5328), FOV and func_8003F218 argument by it (9F9C.c:2038-2066) */  /* data-wave 2026-10-08: was g_gnd_init_flag */
 
 /* === Byte tables D_8008D538 / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
-/* D_8008D538 is indexed by D_80102778.unk_4[0] (17AFC.c:6372, 2B344.c:235) */
+/* D_8008D538 is indexed by g_fight_config.unk_4[0] (17AFC.c:6372, 2B344.c:235) */
 /* or fighter_Init's arg2 (9F9C.c:3978); D_8008D55C maps a table index */
-/* into the D_80102778.unk_4 id space.  g_listener_cam, D_800A3824 and */
+/* into the g_fight_config.unk_4 id space.  g_listener_cam, D_800A3824 and */
 /* D_801077B0: see their lines. */
 
 /* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
@@ -675,7 +675,7 @@
 /* === fight_InitSettings init cluster (2026-05-17) -- 11 highs === */
 /* From code6cac.c:1345 fight_InitSettings (init): sets up the parameter */
 /* block at 0x80102778-80102787, declared in C as the one aggregate */
-/* Unk80102778Rec D_80102778 (include/bb2.h:484, merged 2026-09-26 with */
+/* Unk80102778Rec g_fight_config (include/bb2.h:484, merged 2026-09-26 with */
 /* menu_PrintEditAndApplyConfigWithPerPadCursors); its per-word names are retired. */
 
 
@@ -686,7 +686,7 @@
 
 /* === Motion-ex per-id init functions + counter cells (2026-05-17) -- 10 highs === */
 /* Each motion ID has its own init function in text1b.c:14220-14298 family. */
-/* Init pattern: read 3 words through D_800A347C, */
+/* Init pattern: read 3 words through g_eff_command_position, */
 /* write to state struct, set flag, reset counter. */
 /* RESET 0x80064ED8: retired name 'motion_ex_Init_id1' — preserved note: init id1 (state @ D_800F0CA0[1], flag @ D_800F10E4, counter @ D_800F0BA8[1]) */
 /* RESET 0x80064F20: retired name 'motion_ex_Init_id2' — preserved note: init id2 (state @ D_800F0CA0[2], flag @ D_800F10E8, counter @ D_800F0BA8[2]) */
@@ -719,7 +719,7 @@
 /* === Dispatch-offset table base (2026-05-17) -- 1 high === */
 /* D_800F10E0 is entry [4] of the 28-entry s32 table at 0x800F10D0. */
 /* From text1b.c:13148: `*(s32 *)((s32)&D_800F10D0 + idx * 4) = 0;` */
-/* clears entries indexed by *(u16*)D_800A3468 (the current command block). */
+/* clears entries indexed by *(u16*)g_eff_active_command_block (the current command block). */
 
 /* === GPU MoveImage wrapper (2026-05-17) -- 1 high === */
 /* MoveImage (0x8007B6C8): calls checkRECT with the literal string */
@@ -730,7 +730,7 @@
 
 /* === D_8008D090 handler decode (2026-05-17) -- 15 highs === */
 /* The 34-entry mode-dispatch table at 0x8008D090 holds per-state update */
-/* functions indexed by D_800A3834. */
+/* functions indexed by g_main_loop_handler_index. */
 /* Decoded by reading each handler's first 5-10 lines to infer role. */
 /* */
 /* Already named (existing): mode 2/8/13/16/19/26/27/30. */
@@ -853,15 +853,15 @@
 /* RENAME 0x800A36F8: retired name 'D_800A36F8' — preserved note: byte value compared against array entries at D_80101BF0 to find/clear matching slots */  /* data-wave 2026-10-08: was g_result_screen_active_marker */
 
 /* === Save / restore bytes of fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState / fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields (2026-05-17) -- 4 highs === */
-/* fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState saves D_80102778.unk_4[0] in D_800A3836 before overwriting */
+/* fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState saves g_fight_config.unk_4[0] in D_800A3836 before overwriting */
 /* it; fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields writes it back and sets D_800A3836 = 0xFF (empty) */
-/* (2B344.c:238-262).  D_800A37D8 / D_800A3844: see their lines. */
+/* (2B344.c:238-262).  D_800A37D8 / g_fight_command_stream_cursor: see their lines. */
 
 /* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
 /* playback state.  D_80101E6C is the current BCD frame position; */
 /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
-/* 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 (include/game.h, */
+/* 0x80101E58..0x80101EA7 is ONE object, CdState g_cdrom_state (include/game.h, */
 /* owner ruling Q43, 2026-09-30); the per-word rows in that span are retired. */
 
 /* === Memcard file-list state (2026-05-17) -- 3 highs === */
@@ -895,7 +895,7 @@
 
 /* === 2nd menu screen state cluster at 0x800A35F0-3600 (2026-05-17) -- 5 highs === */
 /* Statics of src/main/64FD8.c (:24-28), the counterpart of the */
-/* D_800A34F8 cluster (0x800A34F8-3528) for a second menu screen. */
+/* g_menu_packed_cursors cluster (0x800A34F8-3528) for a second menu screen. */
 
 /* === InitScrollingSpriteDisplay work-area state (2026-05-17) -- 4 highs === */
 /* InitScrollingSpriteDisplay (64FD8.c:1697-1711) stores its work-area argument, */
@@ -912,7 +912,7 @@
 /* RENAME 0x8007992C: retired name 'bb2_memchr' — preserved note: memchr(buf, ch, len): linear search; returns buf-1 on found, 0 on not found / null buf / nonpositive len */
 /* RENAME 0x8007997C: retired name 'bb2_putchar_stdout' — preserved note: fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
 
-/* === D_8009BD24 unk17 / unk1D byte triples (2026-05-17) -- 6 highs === */
+/* === g_working_record unk17 / unk1D byte triples (2026-05-17) -- 6 highs === */
 /* menu_RunOptionModeFlowStateWithRowBitEdit (64FD8.c:1352-1410), switching on D_800A35E4: on */
 /* entering state 4 it copies unk1D[] into unk17[]; when menu_UpdateRowBitMenu */
 /* returns 1 it copies unk17[] back into unk1D[].  The code that edits */
@@ -928,9 +928,9 @@
 /* RENAME 0x80078B70: retired name 'irq_event_slot_disable' — preserved note: func_80078B70(slot): AND-NOT slot's mask from bitmask */
 /* RENAME 0x80078BA8: retired name 'irq_event_slot_clear' — preserved note: func_80078BA8(slot): zero u16 at slot offset */
 
-/* === Fade dispatch surrounding state + gnd target sibling (2026-05-17) -- 4 highs === */
-/* From text1b.c around line 16080-16103: the fade-dispatch table */
-/* call site needs args populated via D_800A35A8 / D_800A35C4 + */
+/* === Dispatch surrounding state + gnd target sibling (2026-05-17) -- 4 highs === */
+/* From text1b.c around line 16080-16103: the dispatch table */
+/* call site needs args populated via D_800A35A8 / g_entry_menu_work_block + */
 /* per-frame counters. */
 
 /* === D_800F1159 status bytes (2026-05-17) -- 1 high === */
@@ -971,7 +971,7 @@
 /* 2026-10-16: D_80099CC9 retired -- D_80099CC8[i][1] (u8 D_80099CC8[58][2], include/bb2.h); the asm/data dlabel remains. */
 
 /* === Line-cast cached values (2026-05-17) -- 2 highs === */
-/* 43500.c statics beside D_800A33F4, the pointer to the cast work */
+/* 43500.c statics beside g_collision_segment_work, the pointer to the cast work */
 /* area (Work_80053E9C) in use. */
 
 /* === Replay target A/B struct bases (2026-05-17) -- 4 highs === */

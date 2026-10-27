@@ -1,7 +1,7 @@
 # Menus, mode handlers and the scene script
 
 The game's top level is the mode handler table `D_8008D090` (34 entries,
-src/main/d_7D870.c:24), called with the mode value `D_800A3834`; see
+src/main/d_7D870.c:24), called with the mode value `g_main_loop_handler_index`; see
 [main_loop.md](main_loop.md) for the table and the loop. This page covers the
 pad masks the handlers test, the handlers in src/main/2B344.c that run the
 scene script, and the two menu modules (src/main/596CC.c and
@@ -28,16 +28,16 @@ With the standard digital-pad bit order, the masks the handlers use are:
 
 ## Mode handlers and the scene script (src/main/2B344.c)
 
-`fight_RunCommandStream` (src/main/2B344.c:321) steps a byte script at `D_800A3844`
+`fight_RunCommandStream` (src/main/2B344.c:321) steps a byte script at `g_fight_command_stream_cursor`
 until an opcode ends the step. The opcodes and what they do:
 
-- 0: mode 18 (with `D_800A38A4` from `D_8008D9EC[fighter 0's unk_0A]`), or
+- 0: mode 18 (with `D_800A38A4` from `g_fighter_group_flags[fighter 0's unk_0A]`), or
   mode 10 when `D_800A380C` is set.
-- 1: one operand byte into `D_800A36A4` and the history `D_800A37A8[]`;
+- 1: one operand byte into `g_fight_stage_index` and the history `D_800A37A8[]`;
   mode 22.
 - 2: keeps a 0x1D-byte block in `D_800A3894`, sets up fighter 0
   (`fight_FillMissingConfigInitFighterAndLoadObject(0)`), then as 18.
-- 3: two operand bytes into `D_80102778.unk_4[1]` / `[3]`; sets up fighter 1
+- 3: two operand bytes into `g_fight_config.unk_4[1]` / `[3]`; sets up fighter 1
   (`fight_FillMissingConfigInitFighterAndLoadObject(1)`, `fight_RequestBothFightersEntriesAndReloadOnChange`).
 - 16 / 17: `fight_ConfigureFighter1FromLookupAndOperandsAndLoad` / `fight_ConfigureFighter1FromOperandsAndLoad` on the operands, which return
   how many bytes they used.
@@ -51,7 +51,7 @@ Handlers that the script's modes reach:
 - `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478, mode 6) loads the scene the
   `D_800A3878` block describes (`motion_StartPlaybackAtIndexedBasePlusOffset` with its byte 0 and the
   fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, D_800A3878[1])`) and sets mode 7.
-- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550, mode 7) counts `D_800A37B8`; while
+- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550, mode 7) counts `g_handler_frame_counter`; while
   `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
@@ -62,14 +62,14 @@ Handlers that the script's modes reach:
   display on.
 - `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
   player 0) or `StepScrollingSpriteDisplay()`, merges `D_800A37A4` into
-  `D_80106A50.unk_00` and a per-character bit into `unk_04`, and sets mode
+  `g_saved_record.unk_00` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
 - `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651, mode 15) runs the FMV overlay
   through `sys_ExecMovieOverlay` and sets mode 8.
 - `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786, mode 21) plays sounds at frames
   0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
 - `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822, mode 30) copies the three clock
-  records `D_80106A50.times` into the record `GetWorkingRecord()` returns, as
+  records `g_saved_record.times` into the record `GetWorkingRecord()` returns, as
   minutes, seconds and hundredths (its comment, src/main/2B344.c:817).
 
 ## The row menu (src/main/596CC.c)
@@ -79,7 +79,7 @@ Cited by function name.
 - `menu_LoadResourcesInitStateSelectFirstEnabledRow` sets up the menu block `D_800A34FC`, clears the row index,
   steps it to the first enabled row, and sets the cursor field to 4 (its
   caller is `InitRowMenuBlackBgResetFlow`, src/main/64FD8.c:1258).
-- `D_800A34F8` packs three cursors: bits 0-3 the row index 0..7, which skips
+- `g_menu_packed_cursors` packs three cursors: bits 0-3 the row index 0..7, which skips
   rows whose bit in `D_8009BC04.rows_on` is clear; bits 10-12 a cursor
   0..5; bits 13-15 a cursor 0..2.
 - `pad_StepOffsetsGetDirectionEvents` reads the pad word and returns, in its high half, 1 or 2

@@ -51,14 +51,14 @@ Companion documents:
                                            |
                   per frame                v
    +------------------------------------------------------------+
-   |  D_800A3834 = current game mode/state                      |
+   |  g_main_loop_handler_index = current handler               |
    |    0  -> title FMV / mode select                           |
    |    1  -> game gameplay (saRobDraw / motion_SetMotion)      |
    |    3  -> mode reset                                        |
    |    7..0x20+ -> menus, options, character select, replay,   |
    |               training (cpu_practice_*), katinuki, etc.    |
    |                                                            |
-   |  Dispatch: D_8008D090[D_800A3834]()                        |
+   |  Dispatch: D_8008D090[g_main_loop_handler_index]()                        |
    |  Camera:   special_camera_Exec(), special_camera_get_*()   |
    |  GPU:      change_shadow_tex_reg, gnd_get_fog              |
    |  Render:   gnd_disp_loop_ctrl() (per-mode draw)            |
@@ -166,10 +166,10 @@ These are the load-bearing globals; if you understand them, the engine starts
 to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Game-state dispatch
-- `D_800A3834` — **the** main game-mode register (0..0x20+). Each value is an
+- `g_main_loop_handler_index` — the main loop's handler index (0..0x21). Each value is an
   index into `D_8008D090` (0x8008D090, an array of 34 handler function
   pointers). The main loop calls
-  `((void (*)(void))(&D_8008D090)[D_800A3834])()` every frame
+  `((void (*)(void))(&D_8008D090)[g_main_loop_handler_index])()` every frame
   (`ings.c:625`).
 - `g_game_mode` (0x800A336C) — coarse game state (set up by `game_Init`).
 - `g_gpu_raised_ot_cutoff_requested` (0x800F6654) — 0/1 request for the raised OT cutoff.
@@ -180,7 +180,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590); `bb2_const.h` names
   three of the values.
 - `D_800A36A8` — a 0/1 switch that multiplies the `gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle` sprite passes.
-- `D_800A36AC` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
+- `g_gpu_presented_frame_count` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
   double-buffer index, `fight_UpdateRotatingViewThreeOptionChoice` / `fight_UpdateRotatingViewDecimalPresentation` use the whole value.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
   drawenv+dispenv+OT structures (one per buffer).
