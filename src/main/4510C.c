@@ -1124,10 +1124,12 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
     s32 ret;
     s8 var_7;
     /* temp holds two values: the count of probes accepted at angle
-     * opponent_bearing - ang (var_7 counts those at opponent_bearing + ang),
-     * then which count the waypoint loop takes (0: temp's, stepping by -ang; 1:
-     * var_7's, by +ang; per-branch constants, Q20) (Ruling 11,
-     * ordinary-c-judge-decidable). */
+     * opponent_bearing - ang
+     * (var_7 counts those at opponent_bearing + ang),
+     * then which count the waypoint loop takes
+     * (0: temp's, stepping by -ang;
+     * 1: var_7's, by +ang; per-branch constants, Q20)
+     * (Ruling 11, ordinary-c-judge-decidable). */
     s8 temp;
     u8 var_9;
     u8 var_10;
