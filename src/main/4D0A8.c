@@ -27,8 +27,8 @@ extern Unk8009B400Record *D_8009B2AC[4];
 /* AddPrim has no prototype here: this TU called it as an implicit-int function.
  * With PsyQ's void AddPrim(void *, void *),
  * gpu_DrawIndexedCellsDigitPairsAndGrowingBars's return value is computed after
- * its last AddPrim's dead sp1C bump and a load-delay nop is added (192 -> 193
- * insns). */
+ * its last AddPrim's dead dr_mode_out_addr bump and a load-delay nop is added
+ * (192 -> 193 insns). */
 extern int AddPrim();
 
 s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(

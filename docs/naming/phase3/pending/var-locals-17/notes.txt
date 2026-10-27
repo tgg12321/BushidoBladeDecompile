@@ -36,3 +36,12 @@ COMMENTS TO UPDATE (scoped pair substitution)
 FRESHNESS (all 20 distinct final spellings)
 Whole-word search of src/** and include/** (C, headers, .inc; every #define name, parameter and body, comments included): no hit at all for highlighted_row_index, sprt_out_addr, dr_mode_out_addr, tile_out_addr, src_command_block, rotation_out, position_out, command_index, second_quad_buffer_addr, select_second_buffer, src_rotation, src_position, quad_count, src_command_vector, command_vector, src_command_vector_cursor, src_position_cursor, command_variant, command_vector_y. Hits NOT in the target function and none a file-scope name, enum constant, macro, type or member: ot_index (parameters / locals of other functions in 4D0A8.c and 64FD8.c:159-215). Every old token (arg0 .. arg2, a0, a1, i, q, ret, svec, sp18, sp1C, temp_a1, var_0, var_7, dst16, dst_s32, idx) were searched across every #define record with continuation lines joined: none occurs in a macro name or body (p, s, v do, and are left alone).
 naming_keycheck.scoped_plan (read-only, working tree incl. Makefile) accepts all 40 pairs (173 token substitutions: 58 in 4D0A8.c, 115 in 51268.c); this is a drafting aid, not the gate (cc1 differential, oracle build and staged keycheck are the apply gates).
+
+APPLY (naming-a 2026-10-27, commit 1dba16c20): 40/40 applied, none reverted; pairs.txt unchanged. Locals applied by
+naming_keycheck.scoped_plan (whole-word, code-only, comments and strings skipped, tokens after `.` or `->` skipped; 173 token
+substitutions: 58 in 4D0A8.c, 115 in 51268.c); format.py reflowed the longer lines. The forward declaration at 51268.c:249
+(eff_BindScratchpad(s16 *arg0, s32 *arg1);) was verified untouched. Comment pass: 4D0A8.c:27-30 "dead sp1C bump" -> "dead
+dr_mode_out_addr bump" (paragraph re-wrapped to 80 columns, same words otherwise). The 51268.c:72-80 "idx" is prose for
+eff_StartCommand and stays; the FAKE comments name no renamed binding; no other comment in the touched functions names an old token as
+a binding (51268.c:761 "angles at arg0" is in a function outside the wave).
+Gates: verify-oracle --rebuild build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true, artifact_matches true); tus-check "OK: bb2.ld links all 245 TUs, one object order across sections"; engine test "5516 passed, 0 failed, 2 skipped"; check_completion_integrity exit 0; naming_keycheck --base 3d1153592 --new 1dba16c20 --pairs-file pairs.txt: "OK: every change is explained by the pairs".
