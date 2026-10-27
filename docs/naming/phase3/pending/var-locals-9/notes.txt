@@ -1,0 +1,46 @@
+DROPPED
+(none of the 30 research RENAME rows dropped; each re-derived against the worktree source at de9782f51: every use of each binding enumerated by whole-word search inside its function and cited at current lines, no FAKE comment and no __asm__ appears anywhere in src/main/4510C.c:1223-1575 or the cited src/main/368E4.c ranges, so none touches any binding. Research line cites matched the worktree; no drift.)
+
+CHANGED (drafter-substituted, kept)
+math_IntersectSegments:arg0..arg3: segment_start_x/segment_start_y/segment_end_x/segment_end_y -> first_start_x/first_start_y/first_end_x/first_end_y; arg4..arg7: other_start_x/other_start_y/other_end_x/other_end_y -> second_start_x/second_start_y/second_end_x/second_end_y (the function is symmetric in its two segments and 'other' reads as an opponent/foreign object; first/second state only argument order, which is all the code shows)
+math_IntersectSegments:var_0: segment_slope -> first_slope; var_6: other_slope -> second_slope; var_7: segment_intercept -> first_intercept (same reason, paired with the arg names)
+fighter_GetNavCornerPoint:arg1: corner_index -> vertex_index (the index selects an entry of nav_poly->vtx; 'an index name says which array it indexes'; callers pass vertex indices i/next/var_12/var_13)
+
+JUDGMENT POINTS FOR THE REVIEWER (kept, evidence in the rows)
+- math_IntersectSegments second-axis names use y (first_start_y ... intersection_y_out) because the function's own locals are dy1/dy2/y; both callers feed world z. Row COUNTER-EVIDENCE says so; rename to z-spelling would contradict the function body, y claims no world axis.
+- target_x/target_z fit both fighter_FindNearestNavCrossing and fighter_AppendNavDetour: the single call site (4510C.c:1954, :2017) passes the same tx,tz (the other fighter's world_pos or p->unk_3A0/3A2) to both.
+- arena_block_id: the value 8 is the id stored/matched as g_arena_blocks[].id by arena_OpenBlock/SetBlockEnd/SetMoveCallback (35000.c:425-470); arena_FindBlock's parameter is already named block_id.
+- view_offset claims only 'the (0,0,-a2) vector rotated then added to a0'; no distance or eye claim.
+- intersection_x_out/intersection_y_out may hold candidate values after a failed return; callers read them only on success.
+
+COMMENT USES (comment pass, scoped to the function; not C tokens)
+src/main/4510C.c:1348-1349 fighter_GetNavCornerPoint doc comment: arg1, arg0, arg2, arg3 -> vertex_index, nav_poly, corner_x_out, corner_z_out
+src/main/4510C.c:1380 fighter_AppendNavDetour doc comment: arg1 -> nav_set (arg0 unchanged)
+src/main/4510C.c:1383 same comment: (arg2, arg3) -> (target_x, target_z)
+src/main/4510C.c:1421 route comment: &var_0[0], &var_0[1] -> &detour_routes[0], &detour_routes[1]
+src/main/4510C.c:1454-1455 node comment: &var_0[0], &var_0[1] -> &detour_routes[0], &detour_routes[1]
+(math_IntersectSegments, fighter_FindNearestNavCrossing and the two 368E4.c functions have no comments naming a renamed binding.)
+
+FRESHNESS (all 30 final names, 27 distinct)
+Whole-word search of every file in src/** and include/** (C, headers, asm; #define bodies included): no hit at all for arena_block_id, corner_x_out, corner_z_out, crossing_x, crossing_z, detour_routes, first_end_x, first_end_y, first_intercept, first_slope, first_start_x, first_start_y, intersection_x, intersection_x_out, intersection_y_out, nav_poly, nav_set, polygon_edge_count, second_end_x, second_end_y, second_slope, second_start_x, second_start_y, target_x, target_z, vertex_index, view_offset. Shared by design (different function scopes, no file-scope or macro clash): nav_set (FindNearestNavCrossing:arg1 and AppendNavDetour:arg1), target_x/target_z (same two functions). No name is another local, parameter, enum constant, macro or type in its own function.
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at 850f6ab93, not re-derived)
+fighter_FindNearestNavCrossing:arg0: NO_NAME record parameter; consistent per-access record naming across related functions remains unaudited.
+fighter_AppendNavDetour:arg0: NO_NAME record parameter; consistent per-access record naming across related functions remains unaudited.
+fighter_AppendNavDetour:var_5: NO_NAME intersection output never consumed; no application-purpose name established.
+fighter_AppendNavDetour:var_6: NO_NAME intersection output never consumed; no application-purpose name established.
+fighter_AppendNavDetour:var_7: NO_NAME backward traversal's evolving x position; direction-specific wording and complete alias/output audit deferred.
+fighter_AppendNavDetour:var_8: NO_NAME backward traversal's evolving z position; direction-specific wording and complete alias/output audit deferred.
+fighter_AppendNavDetour:var_9: NO_NAME forward traversal's evolving x position; direction-specific wording and complete alias/output audit deferred.
+fighter_AppendNavDetour:var_10: NO_NAME forward traversal's evolving z position; direction-specific wording and complete alias/output audit deferred.
+fighter_AppendNavDetour:var_11: NO_NAME continuation state cleared for node limit, open boundary and clear segment; no concise name audited across all causes.
+fighter_AppendNavDetour:var_12: NO_NAME backward traversal vertex index; full boundary/decrement naming audit deferred.
+fighter_AppendNavDetour:var_13: NO_NAME forward traversal vertex index; full boundary/increment naming audit deferred.
+fighter_AppendNavDetour:var_16: NO_NAME accumulated route distance also assigned failure sentinel; complete cost-versus-distance naming audit deferred.
+fighter_AppendNavDetour:var_17: NO_NAME accumulated route distance also assigned failure sentinel; complete cost-versus-distance naming audit deferred.
+fighter_AppendNavDetour:var_18: NO_NAME continuation state cleared for node limit, open boundary and clear segment; no concise name audited across all causes.
+fighter_AppendNavDetour:var_19: NO_NAME backward route segment-crossing state with endpoint exclusions; complete predicate naming audit deferred.
+fighter_AppendNavDetour:var_20: NO_NAME forward route segment-crossing state with endpoint exclusions; complete predicate naming audit deferred.
+fighter_AppendNavDetour:var_29: NO_NAME reused for scanned edge endpoints and both traversal corners; multiple roles in one binding.
+
+PRE-APPLY REVIEW (naming-reviewer 2026-10-27, naming-a): 25 PASS, 5 FAIL. The five FAILs are the math_IntersectSegments second-axis names (arg1/arg3/arg5/arg7/arg9 as *_y): every caller passes world z (world_pos.z, NavPoly vtx[][1], tz) and 'y' is the vertical axis here. Replaced by the reviewer-suggested first_start_z, first_end_z, second_start_z, second_end_z, intersection_z_out (marked suggested; fresh in src/** and include/**; R6 judges them fresh).
