@@ -98,6 +98,27 @@ def alias_name(name):
             re.fullmatch(r"[^.]{1,6}~[0-9]+(\.[^.]{0,3})?", name) is not None)
 
 
+def case_variants(names):
+    """Groups of names that differ only in case. Windows and /mnt/c see one
+    file, git and an ext4 store see two: refused, never folded together."""
+    groups = {}
+    for name in names:
+        groups.setdefault(name.casefold(), set()).add(name)
+    return [sorted(group) for _, group in sorted(groups.items()) if len(group) > 1]
+
+
+def exists_folded(path):
+    """path, or a case variant of its name in the same directory."""
+    path = Path(path)
+    if path.exists():
+        return True
+    try:
+        with os.scandir(path.parent) as entries:
+            return any(entry.name.casefold() == path.name.casefold() for entry in entries)
+    except OSError:
+        return False
+
+
 def verify(path, manifest_rec):
     """Require and check SHA1 plus runkit.file_rec's size (or bytes)."""
     size = manifest_rec.get("size", manifest_rec.get("bytes"))
@@ -892,15 +913,17 @@ def after_migration(parent):
     return result.returncode == 0
 
 
-def any_generation_exists(logical, name, bulk_key, indexed, old_records, external, local):
-    """Indexed, local, plain store key, any .sha1- sibling, or a parent generation."""
+def any_generation_exists(logical, name, bulk_key, folded_index, old_records, external, local):
+    """Indexed, local, plain store key, any .sha1- sibling, or a parent
+    generation, each also under any case variant of its name."""
     plain = external / bulk_key
     old_targets = [store_target(logical, [r], Path(bulk_key), external)
                    for r in old_records if PureWindowsPath(r["path"]).name == name]
-    return (bulk_key in indexed or (local and logical.exists()) or plain.exists() or
+    return (bulk_key.casefold() in folded_index or (local and exists_folded(logical)) or
+            exists_folded(plain) or
             any(candidate.name.casefold().startswith((name + ".sha1-").casefold())
                 for candidate in plain.parent.glob("*")) or
-            any(target.exists() for target in old_targets))
+            any(exists_folded(target) for target in old_targets))
 
 
 def check_commit(root, revision=None):
@@ -919,6 +942,9 @@ def check_commit(root, revision=None):
     external = store_root()
     indexed = tree_entries(root, proposed)
     previous = tree_entries(root, parent) if parent else {}
+    folded_index = {}
+    for key in indexed:
+        folded_index.setdefault(key.casefold(), []).append(key)
     manifest_keys = {key for key in indexed.keys() | previous.keys()
                      if key.endswith(".manifest.json")}
     blobs = git_blobs([entries[key] for entries in (indexed, previous)
@@ -947,13 +973,22 @@ def check_commit(root, revision=None):
             # A re-record updates the same output path; its replacement bytes
             # are verified below. Disappearing paths require full removal.
             output_paths = {PureWindowsPath(rec["path"]).name for rec in new_records}
+            for group in case_variants(output_paths):
+                raise StoreUnverified("output names differ only in case: " + ", ".join(group))
+            folded_paths = {name.casefold() for name in output_paths}
             for rec in old.get("outputs", []):
                 name = PureWindowsPath(rec["path"]).name
                 if not is_bulk(name) or name in output_paths:
                     continue
+                if name.casefold() in folded_paths:
+                    # Old and new spelling name one file on a case-insensitive
+                    # host and two in git or an ext4 store.
+                    print(f"REFUSE {path}: output record {name} renamed by case only")
+                    failed += 1
+                    continue
                 logical = path.parent / name
                 bulk_key = (Path(key).parent / name).as_posix()
-                present = any_generation_exists(logical, name, bulk_key, indexed,
+                present = any_generation_exists(logical, name, bulk_key, folded_index,
                                                 old.get("outputs", []), external, revision is None)
                 print(f"{'REFUSE' if present else 'REMOVED'} {path}: removed output record {name}"
                       + (" still indexed or stored" if present else " (full removal)"))
@@ -970,11 +1005,14 @@ def check_commit(root, revision=None):
                 if rec.get("missing") is True:
                     if "store_name" in rec:
                         raise StoreUnverified(f"{name}: missing record cannot have store_name")
-                    if any_generation_exists(logical, name, bulk_key, indexed,
+                    if any_generation_exists(logical, name, bulk_key, folded_index,
                                              old.get("outputs", []), external, revision is None):
                         raise StoreUnverified(f"{name}: missing record has existing bulk file")
                     if recorded_absence(rec):
                         continue
+                variants = [k for k in folded_index.get(bulk_key.casefold(), []) if k != bulk_key]
+                if variants:
+                    raise StoreUnverified(f"{name}: indexed case variant {', '.join(variants)}")
                 count += 1
                 if bulk_key in indexed:
                     digest, size = digests[indexed[bulk_key]]
@@ -1007,6 +1045,9 @@ def verify_tree(root):
         print(f"FAIL {error}")
         failed += 1
     tracked = {REPO_ROOT / key for key in entries if key.endswith(".manifest.json")}
+    folded_entries = {}
+    for key in entries:
+        folded_entries.setdefault(key.casefold(), []).append(key)
     blobs = git_blobs(entries[repo_key(path)] for path in tracked)
     for path in sorted(set(Path(root).rglob("*.manifest.json")) | tracked):
         try:
@@ -1026,6 +1067,14 @@ def verify_tree(root):
             print(f"MALFORMED {path}: outputs must be a list")
             failed += 1
             continue
+        groups = case_variants({PureWindowsPath(rec["path"]).name
+                                for rec in manifest.get("outputs", [])
+                                if isinstance(rec, dict) and isinstance(rec.get("path"), str)})
+        for group in groups:
+            print(f"MALFORMED {path}: output names differ only in case: {', '.join(group)}")
+        if groups:
+            failed += 1
+            continue
         for rec in manifest.get("outputs", []):
             if not isinstance(rec, dict) or not isinstance(rec.get("path"), str):
                 print(f"MALFORMED {path}: invalid output record")
@@ -1038,6 +1087,13 @@ def verify_tree(root):
                 continue
             if not is_bulk(name) or recorded_absence(rec):
                 continue
+            if path in tracked:
+                key = (Path(repo_key(path)).parent / name).as_posix()
+                variants = [k for k in folded_entries.get(key.casefold(), []) if k != key]
+                if variants:
+                    print(f"FAIL {path.parent / name}: tracked case variant {', '.join(variants)}")
+                    failed += 1
+                    continue
             try:
                 if not rec.get("missing"):
                     # Validate metadata before classifying an absent output.

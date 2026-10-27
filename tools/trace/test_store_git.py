@@ -568,6 +568,58 @@ class PublicationGitTest(unittest.TestCase):
                 self.assertIn("MALFORMED", output)
                 self.assertIn("Windows alias output name", output)
 
+    def test_output_names_differing_only_in_case_are_refused(self):
+        manifest = self.seal()
+        rec = manifest["outputs"][0]
+        store.write_manifest(self.manifest_path,
+                             dict(outputs=[rec, dict(rec, path="Capture.jsonl")]))
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("output names differ only in case: Capture.jsonl, capture.jsonl", output)
+        self.git("commit", "-m", "Case pair fixture")
+        code, output = self.command("verify")
+        self.assertEqual(code, 1, output)
+        self.assertIn("MALFORMED", output)
+        self.assertIn("differ only in case", output)
+
+    def test_case_only_rename_of_output_record_is_refused(self):
+        manifest = self.seal()
+        store.offload(self.capture, manifest)
+        self.commit_manifest()
+        store.write_manifest(self.manifest_path,
+                             dict(outputs=[dict(manifest["outputs"][0], path="Capture.jsonl")]))
+        self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("output record capture.jsonl renamed by case only", output)
+
+    def test_indexed_case_variant_of_output_is_refused(self):
+        self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Local capture")
+        self.assertEqual(self.command("check-commit", "--rev", "HEAD")[0], 0)
+        blob = self.git("hash-object", "-w", str(self.trace)).strip()
+        key = self.capture.relative_to(self.repo).as_posix() + "/Capture.jsonl"
+        self.git("update-index", "--add", "--cacheinfo", "100644," + blob + "," + key)
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("indexed case variant " + key, output)
+        self.git("commit", "-m", "Case variant blob fixture")
+        code, output = self.command("verify")
+        self.assertEqual(code, 1, output)
+        self.assertIn("tracked case variant " + key, output)
+
+    def test_generation_lookup_sees_case_variant_store_file(self):
+        directory = self.root / "fold"
+        directory.mkdir()
+        (directory / "Shot.PNG").write_bytes(b"x")
+        self.assertTrue(store.exists_folded(directory / "shot.png"))
+        self.assertFalse(store.exists_folded(directory / "other.png"))
+        self.assertFalse(store.exists_folded(self.root / "absent" / "shot.png"))
+        with patch.object(Path, "exists", return_value=False):
+            self.assertTrue(store.exists_folded(directory / "shot.png"))
+
     def test_verify_reports_nonregular_entry_and_continues(self):
         self.seal()
         self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
