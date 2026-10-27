@@ -13,10 +13,10 @@ target	kind	site_function	phase	site	attrib	store_offset	store_width	count	value
 0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	1	group_has_unresolved_site;unresolved_function
@@ -35,9 +35,9 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,21495800
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	152	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	20	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	120	[3,255]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	1	group_has_unresolved_site;unresolved_function
@@ -55,9 +55,9 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			3	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	1	group_has_unresolved_site;unresolved_function
 0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	1	group_has_unresolved_site
@@ -74,10 +74,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			3	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	1	group_has_unresolved_site;unresolved_function
@@ -94,10 +94,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	1	group_has_unresolved_site;unresolved_function
@@ -118,10 +118,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	5	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	115	[3,255]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	1	group_has_unresolved_site;unresolved_function
@@ -142,10 +142,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	2	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	118	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	1	group_has_unresolved_site;unresolved_function
@@ -166,10 +166,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	1	group_has_unresolved_site;unresolved_function
@@ -186,10 +186,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,21495800
 0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482772,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	1	group_has_unresolved_site;unresolved_function
@@ -207,10 +207,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,21495800
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-railway-1@2ea26514010e	1	group_has_unresolved_site;unresolved_function
@@ -228,9 +228,9 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	152	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	13	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			1	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	t_ko	0x800315A0	coverage			2	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
@@ -248,10 +248,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	750	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	117	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	19	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	fight	0x80039E1C	coverage			4	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			2	[[1,41,2149580056,2149580072]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
@@ -273,9 +273,9 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			2	[[1,41,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	2	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	118	[3,255]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	1	group_has_unresolved_site;unresolved_function
@@ -293,9 +293,9 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	7	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	1	group_has_unresolved_site;unresolved_function
@@ -316,10 +316,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	5	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	115	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	1	group_has_unresolved_site;unresolved_function
@@ -340,10 +340,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	3	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[3,255]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	1	group_has_unresolved_site;unresolved_function
@@ -364,10 +364,10 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[4,255]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	1	group_has_unresolved_site;unresolved_function
@@ -388,19 +388,20 @@ func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,21495800
 0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	4	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	116	[4,255]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site;unresolved_function
 D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site
-D_800A3817	write	func_8003C958	rematch_menu	0x8003C970	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A3817	write	fight_InitRotatingViewThreeOptionChoice	rematch_menu	0x8003C970	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A382D	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site;unresolved_function
 D_800A382D	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site
-D_800A382D	write	func_8003C42C	result	0x8003C524	coverage	0	1	1	[2]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A382D	write	fight_TallyMatchResultsAndInitPresentation	result	0x8003C524	coverage	0	1	1	[2]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceMatch	t_bout1_again	0x800343DC	coverage	0	2	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceMatch	t_bout2	0x800343DC	coverage	0	2	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceMatch	t_bout3	0x800343DC	coverage	0	2	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
@@ -410,29 +411,29 @@ D_800A3834	write	fight_Init	bout1	0x8001E398	coverage	0	2	1	[1]	0	group-battle-d
 D_800A3834	write	fight_Init	bout1_again	0x8001E398	coverage	0	2	1	[1]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	bout2	0x8001E398	coverage	0	2	1	[1]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	bout3	0x8001E398	coverage	0	2	1	[1]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_roster	0x80035D68	coverage	0	2	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-D_800A3834	write	func_8003C42C	result	0x8003C54C	coverage	0	2	1	[21]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-D_800A3834	write	func_8003C560	result	0x8003C700	coverage	0	2	1	[24]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-D_800A3834	write	func_8003C958	rematch_menu	0x8003C988	coverage	0	2	1	[25]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A3834	write	fight_InitRotatingViewThreeOptionChoice	rematch_menu	0x8003C988	coverage	0	2	1	[25]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A3834	write	fight_TallyMatchResultsAndInitPresentation	result	0x8003C54C	coverage	0	2	1	[21]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateMatchTallyPresentation	result	0x8003C700	coverage	0	2	1	[24]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	group-battle-draw-1@2004f4b160e6	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_roster	0x80035D68	coverage	0	2	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 g_fight_match_cursor	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site;unresolved_function
+g_fight_match_cursor	write	ApplyPendingConfigAndInitializeMode	t_roster	0x8003461C	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 g_fight_match_cursor	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-draw-1@2004f4b160e6	1	group_has_unresolved_site
 g_fight_match_cursor	write	fight_RecordMatchResult	bout1	0x800341F4	coverage	0	1	1	[1]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	bout2	0x800341F4	coverage	0	1	1	[2]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	bout3	0x800341F4	coverage	0	1	1	[3]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-g_fight_match_cursor	write	func_800344B4	t_roster	0x8003461C	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
-g_fight_match_cursor	write	func_8003C9A4	t_rematch	0x8003CC00	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
+g_fight_match_cursor	write	fight_UpdateRotatingViewThreeOptionChoice	t_rematch	0x8003CC00	coverage	0	1	1	[0]	0	group-battle-draw-1@2004f4b160e6	0	coverage_next_start_bound
 D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
 D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
-D_800A3817	write	func_8003C958	victory	0x8003C970	coverage	0	1	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3817	write	func_8003C9A4	post_menu	0x8003CAF4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3817	write	fight_InitRotatingViewThreeOptionChoice	victory	0x8003C970	coverage	0	1	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3817	write	fight_UpdateRotatingViewThreeOptionChoice	post_menu	0x8003CAF4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A382D	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
 D_800A382D	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
-D_800A382D	write	func_8003C42C	result	0x8003C524	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A382D	write	fight_TallyMatchResultsAndInitPresentation	result	0x8003C524	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceMatch	t_bout2	0x800343DC	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceMatch	t_bout3	0x800343DC	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceMatch	t_result	0x800342E8	coverage	0	2	1	[20]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
@@ -440,29 +441,28 @@ D_800A3834	write	fight_AdvanceMatch	t_roster	0x800343DC	coverage	0	2	1	[0]	0	gro
 D_800A3834	write	fight_Init	bout1	0x8001E398	coverage	0	2	7	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	bout2	0x8001E398	coverage	0	2	2	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	bout3	0x8001E398	coverage	0	2	3	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_InitImageAndPlaybackPresentation	result	0x8003C2A0	coverage	0	2	1	[19]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_InitRotatingViewThreeOptionChoice	victory	0x8003C988	coverage	0	2	1	[25]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_TallyMatchResultsAndInitPresentation	result	0x8003C54C	coverage	0	2	1	[21]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateMatchTallyPresentation	result	0x8003C700	coverage	0	2	1	[18]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateModeDisplaysAndMatchProgress	bout1	0x8001D2C4	coverage	0	2	6	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateModeDisplaysAndMatchProgress	bout2	0x8001D2C4	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateModeDisplaysAndMatchProgress	bout3	0x8001D2C4	coverage	0	2	2	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	sub_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_roster	0x80035D68	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003C040	result	0x8003C2A0	coverage	0	2	1	[19]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003C2C0	victory	0x8003C3E0	coverage	0	2	1	[24]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003C42C	result	0x8003C54C	coverage	0	2	1	[21]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003C560	result	0x8003C700	coverage	0	2	1	[18]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003C958	victory	0x8003C988	coverage	0	2	1	[25]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-D_800A3834	write	func_8003C9A4	sub_menu	0x8003CCB8	coverage	0	2	1	[8]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateRotatingViewThreeOptionChoice	sub_menu	0x8003CCB8	coverage	0	2	1	[8]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateSplitWipeImageAndPlaybackPresentation	victory	0x8003C3E0	coverage	0	2	1	[24]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	group-battle-shainto-wins-1@27428197ed01	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	sub_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_roster	0x80035D68	coverage	0	2	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 D_800A38A4	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
 D_800A38A4	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
-D_800A38A4	write	func_8003C560	result	0x8003C6F8	coverage	0	1	1	[5]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
+D_800A38A4	write	fight_UpdateMatchTallyPresentation	result	0x8003C6F8	coverage	0	1	1	[5]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site;unresolved_function
+g_fight_match_cursor	write	ApplyPendingConfigAndInitializeMode	t_roster	0x8003461C	coverage	0	1	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	1	group_has_unresolved_site
 g_fight_match_cursor	write	fight_RecordMatchResult	t_bout2	0x800341F4	coverage	0	1	1	[1]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	t_bout3	0x800341F4	coverage	0	1	1	[2]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 g_fight_match_cursor	write	fight_RecordMatchResult	t_result	0x800341F4	coverage	0	1	1	[3]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
-g_fight_match_cursor	write	func_800344B4	t_roster	0x8003461C	coverage	0	1	1	[0]	0	group-battle-shainto-wins-1@27428197ed01	0	coverage_next_start_bound
 fighter_Init	call	fight_Init	after_katze	0x8001DD90	report			18	[[0,0,0,0],[0,0,12,0],[1,1,15,3],[1,1,17,1],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	fight_Init	boot_intro	0x8001DD90	report			2	[[0,0,0,0],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	fight_Init	final_fight	0x8001DD90	report			6	[[0,0,0,0],[1,1,28,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
@@ -476,6 +476,7 @@ fighter_Init	call	func_8003AF40	final_fight	0x8003AFA8	report			2	[[1,1,1,0],[1,
 fighter_Init	call	func_8003AF40	katze	0x8003AFA8	report			1	[[1,1,22,7]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_Init	call	func_8003AF40	story	0x8003AFA8	report			9	[[0,0,0,0],[0,0,7,0],[1,1,7,0],[1,1,16,0],[1,1,26,2],[1,1,27,5],[1,1,29,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 fighter_ResolveBoneHit+0x6B0	call	fighter_ProcessWeaponBodyHits	final_fight	0x8002BC10	report			12	[[1,18,528482772,2035],[1,18,528482772,2037],[1,18,528482784,2031],[1,18,528482808,1076],[1,18,528482832,2010],[1,18,528482844,1860],[1,18,528482856,2008],[1,18,528482856,2009]]	4	story-final-fight-retail-1@fbff35093e8e	0	
+func_80032854	call	fight_UpdatePairedInputTotalsEventsAndMidpointEffects	story	0x80027064	coverage			9	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
 func_80032854	call	fighter_CastWeaponSegment	strat	0x8002A63C	coverage			4	[[1,11,528483200,528483248]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
 func_80032854	call	fighter_CastWeaponSegment	strat	0x8002AA98	coverage			1	[[1,10,528483256,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	coverage_next_start_bound
 func_80032854	call	fighter_DispatchBoneHitSoundEvent	after_katze	0x80027974	report			34	[[0,35,528482748,0],[0,35,528482760,0],[0,35,528482772,0],[0,35,528482784,0],[0,36,528482856,0],[0,36,528482880,0],[0,36,528482952,0],[0,36,528482964,0]]	4	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
@@ -548,7 +549,6 @@ func_80032854	call	func_800204C0	final_fight	0x80020674	report			3	[[0,4,5284824
 func_80032854	call	func_800204C0	katze	0x80020674	report			1	[[1,4,528482760,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	0	
 func_80032854	call	func_800204C0	story	0x80020674	report			20	[[0,4,528482484,2149579872],[0,4,528482496,2149579872],[0,4,528482604,2149579872],[0,4,528482664,2149579872],[1,4,528482748,2149579872],[1,4,528482760,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
 func_80032854	call	func_800204C0	strat	0x80020674	report			2	[[1,4,528482760,2149579872],[1,4,528482796,2149579872]]	0	story-final-fight-retail-1@fbff35093e8e	0	
-func_80032854	call	func_80026DA4	story	0x80027064	coverage			9	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	coverage_next_start_bound;per_phase_reached:300
 func_80032854	call	func_80026DA4	story	0x800272C0	report			72	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
 func_80032854	call	object_UpdatePool	after_katze	0x800315A0	report			34	[[0,41,2148559524,0],[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	1	per_phase_reached:300
 func_80032854	call	object_UpdatePool	final_fight	0x800315A0	report			11	[[0,41,2148559524,0],[1,41,2148559524,0]]	0	story-final-fight-retail-1@fbff35093e8e	0	
@@ -592,34 +592,34 @@ func_80032854	call	replay_PlayFrame	later	0x80039E1C	report			5	[[0,4,2149580056
 object_SpawnFromFighter	call	object_SpawnScatteredAt	fight	0x80030A44	report			1	[[2148540104,18,2148181280,0]]	0	story-ninja-cross-1@592828dcce41	0	
 object_SpawnFromFighter	call	object_SpawnScatteredAt	later	0x80030A44	report			4	[[2148540104,18,2148181280,0],[2148541204,19,2148283340,0]]	0	story-ninja-cross-1@592828dcce41	0	
 0x80102786	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+0x80102786	write	ApplyWorkingRecordToPendingConfigAndInitializeMode	t_stage	0x80035148	coverage	0	1	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 0x80102786	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
 0x80102786	write	fight_InitSettings	boot_intro	0x8001C4AC	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	coverage_next_start_bound;group_has_unresolved_site
-0x80102786	write	func_8003504C	t_stage	0x80035148	coverage	0	1	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
 D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
 D_800A3817	write	func_8001EA04	t_ko	0x8001EA70	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	fight	0x8001E398	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	fight_InitCommandStreamImageLoad	t_stage	0x8003B8C8	coverage	0	2	1	[23]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	fight_RunCommandStream	stage_card	0x8003B804	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	fight_RunCommandStream	t_stage	0x8003B718	coverage	0	2	1	[22]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko	0x8001CD0C	coverage	0	2	1	[4]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_rematch	0x8001EE44	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	func_8001EA04	t_ko	0x8001EA5C	coverage	0	2	1	[13]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
-D_800A3834	write	func_8001EA84	t_rematch	0x8001EE44	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_stage	0x80035D68	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
-D_800A3834	write	func_8003B870	t_stage	0x8003B8C8	coverage	0	2	1	[23]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	story-pov-rematch-1@766b7b5b6104	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_stage	0x80035D68	coverage	0	2	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	t_ko	0x8003A13C	coverage	0	2	1	[12]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A3834	write	replay_Start	t_ko	0x80039838	coverage	0	2	1	[5]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A38BA	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
+D_800A38BA	write	ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests	t_stage	0x80034448	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A38BA	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
-D_800A38BA	write	func_800343F0	t_stage	0x80034448	coverage	0	2	1	[1]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A38DF	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site;unresolved_function
 D_800A38DF	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	story-pov-rematch-1@766b7b5b6104	1	group_has_unresolved_site
-D_800A38DF	write	func_8001EA84	t_rematch	0x8001EE2C	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
+D_800A38DF	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_rematch	0x8001EE2C	coverage	0	1	1	[0]	0	story-pov-rematch-1@766b7b5b6104	0	coverage_next_start_bound
 D_800A34F0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
 D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
 D_800A38DC	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
@@ -629,23 +629,23 @@ D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4
 D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	title-attract-1@4668a6f759c2	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	title-attract-1@4668a6f759c2	1	group_has_unresolved_site
-D_800A3834	write	func_80035480	t_top	0x80035520	coverage	0	2	1	[9]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_top_2	0x80035520	coverage	0	2	1	[9]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	top_menu	0x800359D0	coverage	0	2	1	[15]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_top	0x8003C02C	coverage	0	2	1	[8]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_top_2	0x8003C02C	coverage	0	2	1	[8]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_top	0x8003C02C	coverage	0	2	1	[8]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_top_2	0x8003C02C	coverage	0	2	1	[8]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	title-attract-1@4668a6f759c2	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_top	0x80035520	coverage	0	2	1	[9]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_top_2	0x80035520	coverage	0	2	1	[9]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	top_menu	0x800359D0	coverage	0	2	1	[15]	0	title-attract-1@4668a6f759c2	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	top-menu-back-1@dbfc6b65c7ee	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	top-menu-back-1@dbfc6b65c7ee	1	group_has_unresolved_site
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_skip	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_skip_2	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_back	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_back_2	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_skip	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_skip_2	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_skip	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_skip_2	0x8003C02C	coverage	0	2	1	[8]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_skip	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_skip_2	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_back	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_back_2	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	181	[2,3,15,19,21,25,26,28]	10	versus-2p-blade-contact-1@1e1cfebac1a9	0	
@@ -670,6 +670,7 @@ func_80021A98	call	fighter_Update	rematch_menu	0x8002439C	report			208	[[0,21486
 func_80021A98	call	fighter_Update	t_ko	0x8002439C	report			23	[[0,2148663592,1,138],[1,2148665640,1,1162]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80021A98	call	func_8001EEB4	t_ko	0x8001EF60	report			1	[[0,2148663604,1,1]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_8002C61C+0x10C	call	func_8002C61C	fight	0x8002C720	report			3	[[2148117496,127,127,2]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482856,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	coverage			1	[[0,37,528482856,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482856,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
@@ -680,7 +681,6 @@ func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			3	[[1,
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
 func_80032854	call	func_80026DA4	fight	0x80027064	report			12	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	func_80026DA4	fight	0x800272C0	report			84	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,35,528482760,0],[1,36,528482544,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
@@ -693,29 +693,29 @@ D_800A3748	write	fight_Init	t_rematch	0x8001E32C	coverage	0	1	1	[255]	0	versus-2
 D_800A3748	write	fight_UpdateFighterInteractionsAndPointCaches	concede	0x8002C824	coverage	0	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3748	write	fight_UpdateFighterInteractionsAndPointCaches	concede_2	0x8002C84C	coverage	0	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A37D2	write	?	boot_intro	0x800836FC	none	-2	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site;unresolved_function
+D_800A37D2	write	ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests	t_load	0x80034498	coverage	1	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A37D2	write	ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests	t_load	0x800344A0	coverage	0	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
 D_800A37D2	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site
-D_800A37D2	write	func_800343F0	t_load	0x80034498	coverage	1	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
-D_800A37D2	write	func_800343F0	t_load	0x800344A0	coverage	0	1	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
-D_800A37D2	write	func_8003CF84	cutscene	0x8003D200	coverage	1	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
-D_800A37D2	write	func_8003CF84	cutscene_2	0x8003D200	coverage	0	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A37D2	write	fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams	cutscene	0x8003D200	coverage	1	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
+D_800A37D2	write	fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams	cutscene_2	0x8003D200	coverage	0	1	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound;partial_store
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	ApplyPendingConfigAndInitializeMode	t_load	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-concede-1@7566d1d1621b	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_load	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_InitNearestStartPairPlayback	concede	0x8003CF64	coverage	0	2	1	[29]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_InitNearestStartPairPlayback	concede_2	0x8003CF64	coverage	0	2	1	[29]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_InitRotatingViewThreeOptionChoice	cutscene	0x8003C988	coverage	0	2	1	[25]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_InitRotatingViewThreeOptionChoice	cutscene_2	0x8003C988	coverage	0	2	1	[25]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateFighterInteractionsAndPointCaches	concede	0x8002C854	coverage	0	2	1	[28]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateFighterInteractionsAndPointCaches	concede_2	0x8002C854	coverage	0	2	1	[28]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_800344B4	t_load	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003C958	cutscene	0x8003C988	coverage	0	2	1	[25]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003C958	cutscene_2	0x8003C988	coverage	0	2	1	[25]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003C9A4	t_rematch	0x8003CC70	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003CE18	concede	0x8003CF64	coverage	0	2	1	[29]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003CE18	concede_2	0x8003CF64	coverage	0	2	1	[29]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003CF84	cutscene	0x8003D290	coverage	0	2	1	[24]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
-D_800A3834	write	func_8003CF84	cutscene_2	0x8003D290	coverage	0	2	1	[24]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams	cutscene	0x8003D290	coverage	0	2	1	[24]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams	cutscene_2	0x8003D290	coverage	0	2	1	[24]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateRotatingViewThreeOptionChoice	t_rematch	0x8003CC70	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-2p-concede-1@7566d1d1621b	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-concede-1@7566d1d1621b	0	coverage_next_start_bound
 D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
 D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
 D_800A3910	write	func_80026DA4	fight	0x800272D8	report	0	2	620	[0,1,2,3,4,5,6,7]	8	versus-2p-effects-events-1@2fa05558de81	0	partial_store
@@ -724,6 +724,7 @@ D_800A3910	write	func_80032854	fight	0x80032A40	report	0	2	6	[1]	0	versus-2p-eff
 D_800A3910	write	func_80032854	fight	0x80032A70	report	0	2	9	[16]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
 D_800A3910	write	func_80032854	fight	0x80032AA0	report	0	2	45	[8]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
 D_800A3910	write	func_80032854	fight	0x80032AD0	report	0	2	24	[5]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482856,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	coverage			1	[[0,37,528482856,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482856,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
@@ -734,7 +735,6 @@ func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			3	[[1,
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
 func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
 func_80032854	call	func_80026DA4	fight	0x80027064	report			12	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
 func_80032854	call	func_80026DA4	fight	0x800272C0	report			84	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
 func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,35,528482760,0],[1,36,528482544,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
@@ -1548,6 +1548,7 @@ object_UpdatePool	call	func_8001EFA0	in_04_r2_circle_7	0x8001F06C	report			3	[[4
 0x801023B5	write	fighter_ReadFrameMetadata	t_load	0x800324E0	report	1	1	1	[255]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	partial_store
 fighter_ProcessWeaponBodyHits	call	func_8002C61C	fight	0x8002C740	report			2	[[0,192,528482496,16]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	1	per_phase_reached:2
 fighter_ProcessWeaponBodyHits	call	func_8002C61C	t_load	0x8002C740	report			2	[[0,740,49,4278190080]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	1	per_phase_reached:2
+func_80032854	call	fighter_DispatchArmedBoneVectorEventAndDisarm	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	coverage_next_start_bound
 func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	report			1	[[1,3,528482844,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
 func_80032854	call	fighter_ResolveBoneHit	fight	0x80028338	report			1	[[0,3,528482592,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002852C	report			1	[[0,1,528483316,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
@@ -1555,7 +1556,6 @@ func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			1	[[0,
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			1	[[1,38,528483316,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
 func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			1	[[1,45,528483316,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
 func_80032854	call	fighter_Update	fight	0x800269D0	report			1	[[1,46,2148541448,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	coverage_next_start_bound
 func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,36,528482844,0],[1,36,528482592,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
 func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[1,41,2148559524,0]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
 func_80032854	call	replay_PlayFrame	fight	0x80039E1C	report			7	[[0,1,2149580056,2149580072],[0,34,2149580056,2149580072],[0,37,2149580056,2149580072],[1,4,2149580056,2149580072],[1,38,2149580056,2149580072],[1,45,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	versus-2p-kimigaura-weapon-broadsword-longsword-1@ac5de431bba4	0	
@@ -1627,40 +1627,40 @@ func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[0,41,21485595
 func_80032854	call	replay_PlayFrame	fight	0x80039E1C	report			6	[[0,4,2149580056,2149580072],[0,41,2149580056,2149580072],[0,46,2149580056,2149580072],[1,34,2149580056,2149580072]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
 D_800A3817	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site;unresolved_function
 D_800A3817	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site
+D_800A3817	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	rematch_menu_2	0x8001EC84	coverage	0	1	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3817	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	rematch_menu_3	0x8001EC84	coverage	0	1	2	[1,2]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3817	write	func_8001EA04	t_ko	0x8001EA70	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3817	write	func_8001EA04	t_ko_2	0x8001EA70	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3817	write	func_8001EA04	t_ko_3	0x8001EA70	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3817	write	func_8001EA84	rematch_menu_2	0x8001EC84	coverage	0	1	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3817	write	func_8001EA84	rematch_menu_3	0x8001EC84	coverage	0	1	2	[1,2]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site;unresolved_function
+D_800A3834	write	ApplyPendingConfigAndInitializeMode	t_load	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	ApplyPendingConfigAndInitializeMode	t_load_2	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_load	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_load_2	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_rematch	0x8001E398	coverage	0	2	1	[1]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko_2	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	t_ko_3	0x8001CD0C	coverage	0	2	1	[4]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_rematch	0x8001EE44	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_sub_menu	0x8001EE9C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_top_menu	0x8001EE9C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	t_ko	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	t_ko_2	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	t_ko_3	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	func_8001EA04	t_ko	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	func_8001EA04	t_ko_2	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	func_8001EA04	t_ko_3	0x8001EA5C	coverage	0	2	1	[13]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EA84	t_rematch	0x8001EE44	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EA84	t_sub_menu	0x8001EE9C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EA84	t_top_menu	0x8001EE9C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	t_ko	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	t_ko_2	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	t_ko_3	0x8001EF84	coverage	0	2	1	[17]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EFA0	t_ko	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EFA0	t_ko_2	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8001EFA0	t_ko_3	0x8001F1B0	coverage	0	2	1	[12]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_800344B4	t_load	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_800344B4	t_load_2	0x800346D4	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_sub_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	top_menu_2	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_load_2	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-2p-rematch-1@e593ee02ab83	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_sub_menu	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	top_menu_2	0x80035520	coverage	0	2	1	[9]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_load_2	0x80035D68	coverage	0	2	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	t_ko	0x8003A13C	coverage	0	2	1	[16]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	t_ko_2	0x8003A13C	coverage	0	2	1	[16]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	t_ko_3	0x8003A13C	coverage	0	2	1	[16]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
@@ -1669,7 +1669,7 @@ D_800A3834	write	replay_Start	t_ko_2	0x80039838	coverage	0	2	1	[5]	0	versus-2p-r
 D_800A3834	write	replay_Start	t_ko_3	0x80039838	coverage	0	2	1	[5]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 D_800A38DF	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site;unresolved_function
 D_800A38DF	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	1	group_has_unresolved_site
-D_800A38DF	write	func_8001EA84	t_rematch	0x8001EE2C	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
+D_800A38DF	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	t_rematch	0x8001EE2C	coverage	0	1	1	[0]	0	versus-2p-rematch-1@e593ee02ab83	0	coverage_next_start_bound
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	85	[2,21,25,37]	0	versus-2p-wound-moves-1@6528da690f5e	0	
@@ -1709,6 +1709,7 @@ D_800A3783	write	fight_AdvanceOpponentOrder	t_load	0x80033C58	coverage	0	1	1	[1]
 D_800A3783	write	fight_BuildOpponentOrder	t_load	0x80033B98	coverage	0	1	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceOpponentOrder	opp1	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceOpponentOrder	opp2	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceOpponentOrder	opp3	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
@@ -1720,29 +1721,28 @@ D_800A3834	write	fight_Init	opp3	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-clea
 D_800A3834	write	fight_Init	opp4	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	opp5	0x8001E398	coverage	0	2	2	[1]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_Init	t_load	0x8001E398	coverage	0	2	1	[1]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_InitRotatingViewDecimalPresentation	clear	0x8003CCF4	coverage	0	2	1	[33]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp1	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp2	0x8001CD0C	coverage	0	2	4	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp3	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp4	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp5	0x8001CD0C	coverage	0	2	2	[4]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	opp2	0x8001EE44	coverage	0	2	3	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	opp5	0x8001EE44	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	opp2	0x8001F1B0	coverage	0	2	3	[12]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	opp5	0x8001F1B0	coverage	0	2	1	[12]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	fight_UpdateRotatingViewDecimalPresentation	t_top	0x8003CE04	coverage	0	2	1	[8]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EA04	opp2	0x8001EA5C	coverage	0	2	3	[13]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EA04	opp5	0x8001EA5C	coverage	0	2	1	[13]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EA84	opp2	0x8001EE44	coverage	0	2	3	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EA84	opp5	0x8001EE44	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp2	0x8001EF84	coverage	0	2	4	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp3	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp4	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp5	0x8001EF84	coverage	0	2	2	[17]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EFA0	opp2	0x8001F1B0	coverage	0	2	3	[12]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8001EFA0	opp5	0x8001F1B0	coverage	0	2	1	[12]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_top	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8003CCCC	clear	0x8003CCF4	coverage	0	2	1	[33]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
-D_800A3834	write	func_8003CD10	t_top	0x8003CE04	coverage	0	2	1	[8]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_top	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	opp1	0x8003A13C	coverage	0	2	1	[16]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	opp2	0x8003A13C	coverage	0	2	4	[16]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	opp3	0x8003A13C	coverage	0	2	1	[16]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
@@ -1759,11 +1759,11 @@ D_800A391F	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-cpu-clear-reta
 D_800A391F	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	1	group_has_unresolved_site
 D_800A391F	write	fight_BuildOpponentOrder	t_load	0x80033B90	coverage	0	1	1	[5]	0	versus-cpu-clear-retail-1@d1b76e2e5d49	0	coverage_next_start_bound
 D_800A36A4	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site;unresolved_function
+D_800A36A4	write	ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests	t_load	0x80034458	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A36A4	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site
 D_800A36A4	write	fight_AdvanceOpponentOrder	opp1	0x80033D2C	coverage	0	2	1	[3]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A36A4	write	fight_AdvanceOpponentOrder	opp2	0x80033D2C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A36A4	write	fight_AdvanceOpponentOrder	t_load	0x80033D2C	coverage	0	2	1	[26]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
-D_800A36A4	write	func_800343F0	t_load	0x80034458	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3783	write	?	boot_intro	0x800836FC	none	-3	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site;unresolved_function
 D_800A3783	write	BIOS	boot_intro	0x9FC0D864	bios	-3	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site
 D_800A3783	write	fight_AdvanceOpponentOrder	opp1	0x80033C58	coverage	0	1	1	[2]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
@@ -1772,6 +1772,7 @@ D_800A3783	write	fight_AdvanceOpponentOrder	t_load	0x80033C58	coverage	0	1	1	[1]
 D_800A3783	write	fight_BuildOpponentOrder	t_load	0x80033B98	coverage	0	1	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site;unresolved_function
 D_800A3834	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	group_has_unresolved_site
+D_800A3834	write	ExecMovieOverlayAndReinitialize	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceOpponentOrder	opp1	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceOpponentOrder	opp2	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	fight_AdvanceOpponentOrder	t_load	0x80033D24	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
@@ -1782,10 +1783,9 @@ D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp1	0x8001CD0C	coverage
 D_800A3834	write	fight_UpdateDefeatDelayAndModeProgress	opp2	0x8001CD0C	coverage	0	2	1	[4]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp1	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	func_8001EEB4	opp2	0x8001EF84	coverage	0	2	1	[17]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
-D_800A3834	write	func_80035480	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
-D_800A3834	write	func_80035828	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
-D_800A3834	write	func_8003BFC4	t_menu	0x8003C02C	coverage	0	2	1	[8]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	main	boot_intro	0x8001726C	coverage	0	2	1	[15]	0	versus-cpu-tatsumi-1@016e75c2a56c	1	coverage_next_start_bound;group_has_unresolved_site
+D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_menu	0x80035520	coverage	0	2	1	[9]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
+D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_load	0x80035D68	coverage	0	2	1	[0]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	opp1	0x8003A13C	coverage	0	2	1	[16]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	replay_PlayFrame	opp2	0x8003A13C	coverage	0	2	1	[16]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
 D_800A3834	write	replay_Start	opp1	0x80039838	coverage	0	2	1	[5]	0	versus-cpu-tatsumi-1@016e75c2a56c	0	coverage_next_start_bound
