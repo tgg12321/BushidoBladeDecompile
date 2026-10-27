@@ -158,7 +158,7 @@
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
-        "f99e18ffafa00134b93215c8b335005be08ef00f76902c5a186529f87d56f431"
+        "25f25a477ff7ee4fe7489fedace4d6d16bfe05d391e78cf2a29f929ac958b02a"
       ]
     },
     "eff_SpawnParticles": {
@@ -191,13 +191,13 @@
     "eff_DrawBillboardList": {
       "file": "main/51268",
       "sha256": [
-        "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
+        "ed9abf22c5306d8c36352bfbc8e0c7a0eae8155e83240a762433c551c730acc8"
       ]
     },
     "eff_DrawAndAdvanceRotatedQuadClusters": {
       "file": "main/51268",
       "sha256": [
-        "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
+        "ed9abf22c5306d8c36352bfbc8e0c7a0eae8155e83240a762433c551c730acc8"
       ]
     },
     "eff_DrawYawedSlotQuads": {
@@ -209,7 +209,7 @@
         "ec6bd7ecdef6480556348c1adec2a4b3faf8bcaa9829eb79c53cd971f716b254",
         "01822b1018776c9b989c14e138a0125a9f3f3e4931d65bda8cbf20a3cbfdadcf",
         "18cf8dbbbd90125b841e18cca7065c3d1b89e5d294ff055e32b49f67ba8efdb2",
-        "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860",
+        "ed9abf22c5306d8c36352bfbc8e0c7a0eae8155e83240a762433c551c730acc8",
         "31013fec09011cdcc96bab3f0145d92ffd89b7cc8611757158ede541e17602a1",
         "4f93f1ee8f3fc102e85ef6fe7ccdb12db61136a85205b40c478148e9e944f2dc",
         "9b3d4a9a694891fffb67b6b1c2c2144db0b3630dcc593bb7f562436d9d8b3863"
@@ -219,7 +219,7 @@
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
-        "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
+        "ed9abf22c5306d8c36352bfbc8e0c7a0eae8155e83240a762433c551c730acc8"
       ]
     },
     "math_TryPrepareTriangleNormalFrame": {
@@ -290,7 +290,7 @@
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
-        "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
+        "ed9abf22c5306d8c36352bfbc8e0c7a0eae8155e83240a762433c551c730acc8"
       ]
     },
     "eff_UpdateParticles": {
@@ -301,8 +301,8 @@
         "0bc9d72845323fa280088ef7dc109c734e3dd14866d04a2147833adbf70f68c2",
         "7f1d3081f1b233f15ec7e4b47578902d6f3d0ad44fdf79c26631d37f65748ec3",
         "01822b1018776c9b989c14e138a0125a9f3f3e4931d65bda8cbf20a3cbfdadcf",
-        "1d8e913192e68f5f2acbdcbd9d64c64e9a2123b641201d2cd08ee4a69cb93bcd",
-        "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
+        "b2bf77c733736973d6489ed708aabbcefdc58ea459cfc4b30c07fa0a25db43ab",
+        "ed9abf22c5306d8c36352bfbc8e0c7a0eae8155e83240a762433c551c730acc8"
       ]
     },
     "math_ScaleVectorInDirectionFrame": {
@@ -324,7 +324,7 @@
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
         "8663cddf4353c703327b42c9338455ee667a28d6216568f222f09e64ee0baf95",
-        "d2e2ea5d619185285653fcfc5bc46516318a5756fd141b91a244e281d17f08ea"
+        "1b8b4b8095265ec89d3db0c67a2920439e6019ea1f505c6c21002d08adfc9624"
       ]
     },
     "math_TestPreparedTriangleSphere": {
