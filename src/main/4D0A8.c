@@ -1640,9 +1640,10 @@ void gpu_ResetGrowingBarProgress(void) {
 
 extern Unk8006D808Rec D_8009B0C0;
 
-s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(s32 arg0, s32 arg1, s32 arg2) {
-    s32 sp18;
-    s32 sp1C;
+s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
+    s32 arg0, s32 ot_index, s32 highlighted_row_index) {
+    s32 sprt_out_addr;
+    s32 dr_mode_out_addr;
     s32 t1;
     s32 t2;
     u16 cur1;
@@ -1651,21 +1652,22 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(s32 arg0, s32 arg1, s32 arg2) {
      * (end_off - arg0); returning 0xAC8 directly:
      * score 26 (Q129). */
     s32 end_off;
-    s32 var_7;
+    s32 tile_out_addr;
 
-    var_7 = arg0 + 0x7D0;
+    tile_out_addr = arg0 + 0x7D0;
     end_off = arg0 + 0xAC8;
-    sp18 = arg0;
-    sp1C = arg0 + 0x870;
+    sprt_out_addr = arg0;
+    dr_mode_out_addr = arg0 + 0x870;
     gpu_DrawIndexedCellsAndDecimalDigitPairs(
-        &sp18, &sp1C, &D_8009B0C0, arg1, arg2);
-    if ((u32)arg2 < 3U) {
-        SetTile((TILE *)var_7);
+        &sprt_out_addr, &dr_mode_out_addr, &D_8009B0C0, ot_index,
+        highlighted_row_index);
+    if ((u32)highlighted_row_index < 3U) {
+        SetTile((TILE *)tile_out_addr);
         *(u8 *)(arg0 + 0x7D4) = 0xFF;
         *(s16 *)(arg0 + 0x7D8) = 0x6A;
         *(u8 *)(arg0 + 0x7D5) = 0;
         *(u8 *)(arg0 + 0x7D6) = 0;
-        *(s16 *)(arg0 + 0x7DA) = (s16)(arg2 * 0x1A + 0x5B);
+        *(s16 *)(arg0 + 0x7DA) = (s16)(highlighted_row_index * 0x1A + 0x5B);
         cur1 = D_800A32B4;
         /* FAKE: increment staged through t1 (stored next line, then reused for
          * the product): the reassignment breaks cse's mem==reg equivalence, so
@@ -1680,57 +1682,57 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(s32 arg0, s32 arg1, s32 arg2) {
         if ((s16)D_800A32B4 >= 0x1F) {
             D_800A32B4 = 0x1E;
         }
-        SetSemiTrans((TILE *)var_7, 0);
-        AddPrim(g_gpu_ot_ptr + arg1, (void *)var_7);
-        var_7 = arg0 + 0x7E0;
+        SetSemiTrans((TILE *)tile_out_addr, 0);
+        AddPrim(g_gpu_ot_ptr + ot_index, (void *)tile_out_addr);
+        tile_out_addr = arg0 + 0x7E0;
     }
-    SetTile((TILE *)var_7);
-    *(u8 *)(var_7 + 4) = 0xFF;
-    *(s16 *)(var_7 + 8) = 0x9E;
-    *(u8 *)(var_7 + 5) = 0;
-    *(u8 *)(var_7 + 6) = 0;
-    *(s16 *)(var_7 + 0xA) = 0xBD;
+    SetTile((TILE *)tile_out_addr);
+    *(u8 *)(tile_out_addr + 4) = 0xFF;
+    *(s16 *)(tile_out_addr + 8) = 0x9E;
+    *(u8 *)(tile_out_addr + 5) = 0;
+    *(u8 *)(tile_out_addr + 6) = 0;
+    *(s16 *)(tile_out_addr + 0xA) = 0xBD;
     cur2 = D_800A32B6;
     /* FAKE: increment staged through t2, as t1 above: the clamp re-read emits
      * lh (staged-value-reused-variable); direct increment: score 8 */
     t2 = cur2 + 1;
     D_800A32B6 = t2;
     t2 = (s32)((s16)cur2) * 0x144;
-    *(s16 *)(var_7 + 0xE) = 2;
-    *(s16 *)(var_7 + 0xC) = (s16)(t2 / 0x1E);
+    *(s16 *)(tile_out_addr + 0xE) = 2;
+    *(s16 *)(tile_out_addr + 0xC) = (s16)(t2 / 0x1E);
     if ((s16)D_800A32B6 >= 0x1F) {
         D_800A32B6 = 0x1E;
     }
-    SetSemiTrans((TILE *)var_7, 0);
-    AddPrim(g_gpu_ot_ptr + arg1, (void *)var_7);
-    var_7 += 0x10;
+    SetSemiTrans((TILE *)tile_out_addr, 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, (void *)tile_out_addr);
+    tile_out_addr += 0x10;
 
-    SetTile((TILE *)var_7);
-    *(s16 *)(var_7 + 8) = 0x3F;
-    *(s16 *)(var_7 + 0xA) = 0x2D;
-    *(s16 *)(var_7 + 0xC) = 0x202;
-    *(u8 *)(var_7 + 4) = 0;
-    *(u8 *)(var_7 + 5) = 0;
-    *(u8 *)(var_7 + 6) = 0;
-    *(s16 *)(var_7 + 0xE) = 0x6C;
-    SetSemiTrans((TILE *)var_7, 1);
-    AddPrim(g_gpu_ot_ptr + arg1, (void *)var_7);
-    var_7 += 0x10;
+    SetTile((TILE *)tile_out_addr);
+    *(s16 *)(tile_out_addr + 8) = 0x3F;
+    *(s16 *)(tile_out_addr + 0xA) = 0x2D;
+    *(s16 *)(tile_out_addr + 0xC) = 0x202;
+    *(u8 *)(tile_out_addr + 4) = 0;
+    *(u8 *)(tile_out_addr + 5) = 0;
+    *(u8 *)(tile_out_addr + 6) = 0;
+    *(s16 *)(tile_out_addr + 0xE) = 0x6C;
+    SetSemiTrans((TILE *)tile_out_addr, 1);
+    AddPrim(g_gpu_ot_ptr + ot_index, (void *)tile_out_addr);
+    tile_out_addr += 0x10;
 
-    SetTile((TILE *)var_7);
-    *(s16 *)(var_7 + 8) = 0x92;
-    *(s16 *)(var_7 + 0xA) = 0xAA;
-    *(s16 *)(var_7 + 0xC) = 0x15C;
-    *(u8 *)(var_7 + 4) = 0;
-    *(u8 *)(var_7 + 5) = 0;
-    *(u8 *)(var_7 + 6) = 0;
-    *(s16 *)(var_7 + 0xE) = 0x1A;
-    SetSemiTrans((TILE *)var_7, 1);
-    AddPrim(g_gpu_ot_ptr + arg1, (void *)var_7);
+    SetTile((TILE *)tile_out_addr);
+    *(s16 *)(tile_out_addr + 8) = 0x92;
+    *(s16 *)(tile_out_addr + 0xA) = 0xAA;
+    *(s16 *)(tile_out_addr + 0xC) = 0x15C;
+    *(u8 *)(tile_out_addr + 4) = 0;
+    *(u8 *)(tile_out_addr + 5) = 0;
+    *(u8 *)(tile_out_addr + 6) = 0;
+    *(s16 *)(tile_out_addr + 0xE) = 0x1A;
+    SetSemiTrans((TILE *)tile_out_addr, 1);
+    AddPrim(g_gpu_ot_ptr + ot_index, (void *)tile_out_addr);
 
-    SetDrawMode((void *)sp1C, 1, 0, 0, 0);
-    AddPrim(g_gpu_ot_ptr + arg1, (void *)sp1C);
-    sp1C += 0xC;
+    SetDrawMode((void *)dr_mode_out_addr, 1, 0, 0, 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, (void *)dr_mode_out_addr);
+    dr_mode_out_addr += 0xC;
     return end_off - arg0;
 }
 

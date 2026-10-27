@@ -105,27 +105,27 @@ void eff_StartCommand(void) {
 
 void eff_StepCommand(void) {
 
-    Unk1F800000Unk00 *var_0;
-    s16 *dst16;
-    s32 *dst_s32;
-    u16 idx;
+    Unk1F800000Unk00 *src_command_block;
+    s16 *rotation_out;
+    s32 *position_out;
+    u16 command_index;
     s32 result;
 
-    var_0 = g_eff_active_command_block;
-    dst16 = D_800A346C;
-    dst16[0] = var_0->unk04[0];
-    dst16[1] = var_0->unk04[1];
-    dst16[2] = var_0->unk04[2];
+    src_command_block = g_eff_active_command_block;
+    rotation_out = D_800A346C;
+    rotation_out[0] = src_command_block->unk04[0];
+    rotation_out[1] = src_command_block->unk04[1];
+    rotation_out[2] = src_command_block->unk04[2];
 
-    dst_s32 = D_800A3470;
-    dst_s32[0] = var_0->unk08[0];
-    dst_s32[1] = var_0->unk08[1];
-    dst_s32[2] = var_0->unk08[2];
-    eff_SetRotMatrix(dst16, dst_s32, D_800A3474);
+    position_out = D_800A3470;
+    position_out[0] = src_command_block->unk08[0];
+    position_out[1] = src_command_block->unk08[1];
+    position_out[2] = src_command_block->unk08[2];
+    eff_SetRotMatrix(rotation_out, position_out, D_800A3474);
 
-    idx = g_eff_active_command_block->unk00.h;
-    result = ((
-        s32(*)(void))D_8009BA7C[D_8009BA60[idx] + g_eff_command_phase[idx]])();
+    command_index = g_eff_active_command_block->unk00.h;
+    result = ((s32(*)(void))D_8009BA7C[D_8009BA60[command_index] +
+                                       g_eff_command_phase[command_index]])();
 
     *g_eff_active_command_block->unk14 = result;
 }
@@ -133,14 +133,14 @@ void eff_StepCommand(void) {
 extern u8 g_eff_command_status[0x1C];
 
 void eff_ResetCommands(void) {
-    s32 i = 0;
+    s32 command_index = 0;
     s32 *p = g_eff_command_phase;
     do {
         *p = 0;
-        g_eff_command_status[i] = 0;
-        i++;
+        g_eff_command_status[command_index] = 0;
+        command_index++;
         p++;
-    } while (i < 0x1C);
+    } while (command_index < 0x1C);
     D_800A345C[1] = 0;
     D_800A345C[0] = 0;
     D_800A3454[1] = 0;
@@ -159,7 +159,7 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     unsigned int new_var;
     RECT s;
     s32 v;
-    s32 ret;
+    s32 second_quad_buffer_addr;
     new_var = arg0;
     cdrom_WaitIdle();
     v = g_working_record.unk14_0;
@@ -189,22 +189,22 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     DrawSync(0);
     eff_ResetCommands();
     srand(rand());
-    ret = quad_storage + 0x4650;
+    second_quad_buffer_addr = quad_storage + 0x4650;
     D_800A3420 = (POLY_FT4 *)quad_storage;
-    D_800A3424 = (POLY_FT4 *)ret;
-    return ret + 0x4650;
+    D_800A3424 = (POLY_FT4 *)second_quad_buffer_addr;
+    return second_quad_buffer_addr + 0x4650;
 }
 
 extern POLY_FT4 *g_eff_quad_buffer_base;
 
-void eff_SelectQuadBuffer(s32 arg0) {
-    g_eff_quad_cursor = arg0 != 0 ? D_800A3424 : D_800A3420;
+void eff_SelectQuadBuffer(s32 select_second_buffer) {
+    g_eff_quad_cursor = select_second_buffer != 0 ? D_800A3424 : D_800A3420;
     g_eff_quad_buffer_base = g_eff_quad_cursor;
 }
 
 #define SPAD51268 ((Unk1F800000Rec *)0x1F800000)
 
-void eff_BindScratchpad(s16 *arg0, s32 *arg1) {
+void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_active_command_block = &SPAD51268->unk00;
     D_800A346C = SPAD51268->unk00.unk18;
     D_800A3470 = SPAD51268->unk00.unk20;
@@ -237,8 +237,8 @@ void eff_BindScratchpad(s16 *arg0, s32 *arg1) {
     D_800A3484 = &SPAD51268->unkAC;
     D_800A348C = &SPAD51268->unkB0;
     D_800A34EC = &SPAD51268->unkB8;
-    SPAD51268->unk00.unk04 = arg0;
-    SPAD51268->unk00.unk08 = arg1;
+    SPAD51268->unk00.unk04 = src_rotation;
+    SPAD51268->unk00.unk08 = src_position;
 }
 
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
@@ -251,19 +251,20 @@ void eff_BindScratchpad(s16 *arg0, s32 *arg1);
 /* the message, alignment and an empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
 
-void func_80061064(s16 *a0, s32 *a1) {
-    s32 temp_a1;
-    s32 i;
-    eff_BindScratchpad(a0, a1);
-    i = 0;
+void func_80061064(s16 *src_rotation, s32 *src_position) {
+    s32 quad_count;
+    s32 command_index;
+    eff_BindScratchpad(src_rotation, src_position);
+    command_index = 0;
     do {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[i];
-        if (g_eff_command_status[i] != 0) {
-            g_eff_active_command_block->unk00.w = i;
+        g_eff_active_command_block->unk14 =
+            &g_eff_command_status[command_index];
+        if (g_eff_command_status[command_index] != 0) {
+            g_eff_active_command_block->unk00.w = command_index;
             eff_StepCommand();
         }
-        i += 1;
-    } while (i < 0x1C);
+        command_index += 1;
+    } while (command_index < 0x1C);
     if (D_800A32BC >= 2) {
         D_800A32BC -= 1;
         light_SetPointLight(&g_eff_point_light_position, D_800A3464);
@@ -271,9 +272,9 @@ void func_80061064(s16 *a0, s32 *a1) {
         light_DisablePointLight();
         D_800A32BC = 0;
     }
-    temp_a1 = g_eff_quad_cursor - g_eff_quad_buffer_base;
-    if (temp_a1 >= 0x1C2) {
-        printf(&D_800158E0, temp_a1 - 0x1C2);
+    quad_count = g_eff_quad_cursor - g_eff_quad_buffer_base;
+    if (quad_count >= 0x1C2) {
+        printf(&D_800158E0, quad_count - 0x1C2);
     }
 }
 
@@ -285,30 +286,31 @@ void eff_StopCommands(void) {
 
 extern Unk1F800000Unk00 g_eff_command_block;
 
-void eff_StartRotatedQuadClusterWithNearWhiteLight(s32 *arg0, s16 *arg1) {
-    s16 svec[3];
+void eff_StartRotatedQuadClusterWithNearWhiteLight(
+    s32 *src_position, s16 *src_command_vector) {
+    s16 command_vector[3];
     s32 *p;
-    s16 *q = arg1;
-    svec[0] = *q++;
-    svec[1] = *q++;
+    s16 *src_command_vector_cursor = src_command_vector;
+    command_vector[0] = *src_command_vector_cursor++;
+    command_vector[1] = *src_command_vector_cursor++;
     g_eff_active_command_block = &g_eff_command_block;
-    svec[2] = *q;
-    g_eff_command_block.unk10 = svec;
-    g_eff_command_block.unk0C = arg0;
+    command_vector[2] = *src_command_vector_cursor;
+    g_eff_command_block.unk10 = command_vector;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[26];
     g_eff_command_block.unk00.w = 0x21001A;
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0xFFFFEF;
 }
 
-void eff_StartRecycledCommandWithRoseLight(s32 *arg0) {
+void eff_StartRecycledCommandWithRoseLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk0C = src_position;
     if (g_eff_command_status[9] != 0 && g_eff_command_status[10] != 0) {
         g_eff_command_status[10] = 0;
         g_eff_command_status[9] = 0;
@@ -321,17 +323,17 @@ void eff_StartRecycledCommandWithRoseLight(s32 *arg0) {
         g_eff_command_block.unk00.w = 0x21000A;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0xFF0060;
 }
 
-s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *a0) {
-    s32 *p = a0;
+s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
+    s32 *p = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[4];
     g_eff_command_block.unk00.w = 0x210004;
     eff_StartCommand();
@@ -342,24 +344,24 @@ s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     return 1;
 }
 
-s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
-    s32 *var_0 = a0;
+s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
+    s32 *src_position_cursor = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[11];
     g_eff_command_block.unk00.w = 0x21000B;
     eff_StartCommand();
-    g_eff_point_light_position.vx = *var_0++;
-    g_eff_point_light_position.vy = *var_0++;
-    g_eff_point_light_position.vz = *var_0++;
+    g_eff_point_light_position.vx = *src_position_cursor++;
+    g_eff_point_light_position.vy = *src_position_cursor++;
+    g_eff_point_light_position.vz = *src_position_cursor++;
     D_800A3464 = 0x8080FF;
     return 16;
 }
 
-s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
-    s32 *p = a0;
+s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
+    s32 *p = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[11];
     g_eff_command_block.unk00.w = 0x29000B;
     eff_StartCommand();
@@ -370,10 +372,10 @@ s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     return 8;
 }
 
-s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
-    s32 *p = a0;
+s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
+    s32 *p = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[11];
     g_eff_command_block.unk00.w = 0x31000B;
     eff_StartCommand();
@@ -384,10 +386,10 @@ s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *a0) {
     return 5;
 }
 
-void eff_StartRecycledCommandWithPaleRedLight(s32 *arg0) {
+void eff_StartRecycledCommandWithPaleRedLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk0C = src_position;
     if (g_eff_command_status[5] != 0 && g_eff_command_status[6] != 0) {
         g_eff_command_status[6] = 0;
         g_eff_command_status[5] = 0;
@@ -400,19 +402,20 @@ void eff_StartRecycledCommandWithPaleRedLight(s32 *arg0) {
         g_eff_command_block.unk00.w = 0x210006;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0xFF8080;
 }
 
-void eff_StartArgSelectedCommandWithCyanLight(s32 *arg0, s32 arg1) {
+void eff_StartArgSelectedCommandWithCyanLight(
+    s32 *src_position, s32 command_variant) {
     s32 *p;
 
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
-    switch (arg1) {
+    g_eff_command_block.unk0C = src_position;
+    switch (command_variant) {
     case 0:
         g_eff_command_status[12] = 0;
         g_eff_command_block.unk14 = &g_eff_command_status[12];
@@ -425,19 +428,20 @@ void eff_StartArgSelectedCommandWithCyanLight(s32 *arg0, s32 arg1) {
         break;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0x10FFFF;
 }
 
-void eff_StartArgSelectedCommandWithGreenLight(s32 *arg0, s32 arg1) {
+void eff_StartArgSelectedCommandWithGreenLight(
+    s32 *src_position, s32 command_variant) {
     s32 *p;
 
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
-    switch (arg1) {
+    g_eff_command_block.unk0C = src_position;
+    switch (command_variant) {
     case 0:
         g_eff_command_status[14] = 0;
         g_eff_command_block.unk14 = &g_eff_command_status[14];
@@ -450,17 +454,17 @@ void eff_StartArgSelectedCommandWithGreenLight(s32 *arg0, s32 arg1) {
         break;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0x10FF10;
 }
 
-void eff_StartRecycledCommandWithOrangeLight(s32 *arg0) {
+void eff_StartRecycledCommandWithOrangeLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk0C = src_position;
     if (g_eff_command_status[16] != 0 && g_eff_command_status[17] != 0) {
         g_eff_command_status[17] = 0;
         g_eff_command_status[16] = 0;
@@ -473,18 +477,19 @@ void eff_StartRecycledCommandWithOrangeLight(s32 *arg0) {
         g_eff_command_block.unk00.w = 0x210011;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0xC06013;
 }
 
-void eff_StartRecycledVectorCommandWithRedLight(s32 *arg0, s16 *arg1) {
+void eff_StartRecycledVectorCommandWithRedLight(
+    s32 *src_position, s16 *src_command_vector) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
-    g_eff_command_block.unk10 = arg1;
+    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.unk10 = src_command_vector;
     if (g_eff_command_status[2] != 0 && g_eff_command_status[3] != 0) {
         g_eff_command_status[3] = 0;
         g_eff_command_status[2] = 0;
@@ -497,37 +502,38 @@ void eff_StartRecycledVectorCommandWithRedLight(s32 *arg0, s16 *arg1) {
         g_eff_command_block.unk00.w = 0x210003;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
     D_800A3464 = 0xFF0000;
 }
 
-void eff_StartBillboardPairCommand(s32 *a0) {
+void eff_StartBillboardPairCommand(s32 *src_position) {
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[8];
     g_eff_command_block.unk00.w = 0x10008;
     eff_StartCommand();
 }
 
-void eff_StartJitteredBillboardsCommand(s32 *a0) {
+void eff_StartJitteredBillboardsCommand(s32 *src_position) {
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk14 = &g_eff_command_status[7];
     g_eff_command_block.unk00.w = 0x10007;
     eff_StartCommand();
 }
 
-void eff_StartYawedQuadSlotCommand(s32 *a0, s16 a1, s32 a2, s32 a3) {
+void eff_StartYawedQuadSlotCommand(
+    s32 *src_position, s16 command_vector_y, s32 a2, s32 a3) {
     s16 sp[4];
 
     g_eff_active_command_block = &g_eff_command_block;
     sp[2] = 0;
     sp[0] = 0;
-    sp[1] = a1;
-    g_eff_command_block.unk0C = a0;
+    sp[1] = command_vector_y;
+    g_eff_command_block.unk0C = src_position;
     g_eff_command_block.unk10 = sp;
     if (a3 == 0) {
         g_eff_command_block.unk14 = &g_eff_command_status[0];
