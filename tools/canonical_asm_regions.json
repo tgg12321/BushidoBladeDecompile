@@ -43,7 +43,7 @@
         "0c26ac8afc328f78cfc769104332e86da4d944b1e277dd08b8db4815c8fd0d28",
         "22f8ea4465204b8f1a76f72753c2f794e1cb7d1d39d4af7afabfa25f06790fcf",
         "bc0b178a4f53dacee35a19526ee47a2f6ea686043c87a24706c3450ecd48a5fb",
-        "ce70e03cac6e28e3da3f2d42f3b9ae9968b5ecb0527b8c47237e6d4d9785be6a"
+        "64c7c0222815aeb631a0d2ee6e5b23c04dc007683de707cecef633335dafeb14"
       ]
     },
     "math_NegNormalize3D": {
@@ -395,8 +395,8 @@
     "fighter_DispatchArmedBoneVectorEventAndDisarm": {
       "file": "main/9F9C",
       "sha256": [
-        "49b02fc605e20ed131355ffd97f37bce1695e1875ac230abc6efe1ab7168e3c9",
-        "00eec39fa6122464f6a24eac016532d3472bb6b313abcaad42647bdf840b6100",
+        "538f51e765ff30b20acb58a9f5c31a9bf76abc52a46e04e6e997a0b8fdc1331f",
+        "ff7b334a1ae8ce9b459ceae06e8b396bb59b75e3af051afe566538961f3412f2",
         "bc0b178a4f53dacee35a19526ee47a2f6ea686043c87a24706c3450ecd48a5fb",
         "beb580c9cc9dda60c1ed7e10f87b84c288c81f2a2ab31eebf5d429944ebc341e"
       ]
