@@ -1,0 +1,17 @@
+fighter_ClearCpuTally:arg0=fighter_index
+fighter_HalveCpuTally:arg0=fighter_index
+fighter_InitCpuControl:arg0=fighter_index
+motion_SetFixedChannelBlock:arg0=motion_frame
+math_NegNormalize3D:arg0=input_vector
+math_NegNormalize3D:arg1=output_vector
+math_NegNormalize3D:var_1=vector_length
+math_GrayscaleRgb555:arg0=src_pixels
+math_GrayscaleRgb555:arg1=pixel_count
+math_GrayscaleRgb555:arg2=write_cursor
+math_GrayscaleRgb555:var_t1=read_cursor
+math_GrayscaleRgb555:temp_a1=source_pixel
+math_GrayscaleRgb555:var_7=weighted_blue
+fighter_InitCpuControl:var_19=other_record
+light_Unpack:arg0=light_setup
+light_Unpack:arg1=packed_cursor
+light_InitDefaults:sp10=default_template_copy

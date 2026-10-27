@@ -1,0 +1,24 @@
+DROPPED
+(none of the 17 research rows dropped: each was re-derived against the worktree source at 915de2ff4; every use of the binding enumerated,
+ no FAKE comment touches any of them, none appears in an __asm__ string, every new name is fresh in include/** and src/** and unique within its function.)
+math_GrayscaleRgb555:temp_a1 and fighter_InitCpuControl:var_19 are the rows most worth a hard look (temp_ spelling; p->other identity).
+
+CHANGED (drafter-substituted, kept)
+math_GrayscaleRgb555:arg0: read_src -> src_pixels (read_src is a verb-ish pointer-sounding name; arg0 is the fixed start of the pixel array, the walking pointer is var_t1/read_cursor)
+math_GrayscaleRgb555:arg2: write_dest -> write_cursor (arg2 advances by one pixel per iteration at 1446, so it is a cursor like read_cursor, per the wave-1 lesson on walking pointers)
+fighter_InitCpuControl:var_19: opponent_record -> other_record (the code shows only the p->other binding; "opponent" would rest on the member name opponent_angle_from_orientation / a comment, both unreviewed)
+light_InitDefaults:sp10: default_light_record -> default_template_copy (it is a copy of g_light_default_template; "light record" collides in meaning with the Unk800F62E0Rec g_light_setups entries)
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at e933c2d5c)
+fighter_InitCpuControl:arg1: retained pointer and list base; precise list identity not established sufficiently for a proposal.
+fighter_InitCpuControl:arg2: opponent list base; precise list identity not established sufficiently for a proposal.
+fighter_InitCpuControl:var_2: table-row bytes feed unknown fields; no sufficiently specific semantic name established.
+fighter_InitCpuControl:var_5: indexes several parallel unknown-field arrays and traverses list groups; precise array role remains unresolved.
+fighter_InitCpuControl:var_9: alternates between character_data_index and cpu_profile; avoid conflating their domains.
+fighter_InitCpuControl:var_15: masked move-entry bits used in classification tests; no supported semantic identity for that classification.
+math_GrayscaleRgb555:temp_a3: reused for raw red, weighted red and final grayscale channel.
+math_GrayscaleRgb555:temp_v1: shifted staging copy used solely for bit extraction; retain neutral spelling conservatively.
+math_GrayscaleRgb555:var_t0: decrementing count-minus-one sentinel; avoid a remaining-count name that misstates its value.
+math_Grayscale3:arg0: overwritten from input component to weighted contribution.
+math_Grayscale3:arg1: overwritten from input component to weighted contribution.
+math_Grayscale3:arg2: overwritten from input component to weighted contribution.
