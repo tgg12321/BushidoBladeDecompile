@@ -1,0 +1,46 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 3 (row var-locals-3)
+
+Goal: draft evidence for a LOCAL naming wave (`f:l=n` pairs, .claude/rules/naming-bar.md step 4 and
+the `f:l=n` gate). Do NOT edit any tracked file. Write only `tmp/codex/vl3_local_manifest.csv` and
+`tmp/codex/vl3_notes.md`, and put BOTH full contents in your final message (your worktree is discarded;
+if the filesystem is read-only, the final message alone is fine).
+Print the HEAD commit hash and cite file:line at it.
+
+Rules: `.claude/rules/naming-bar.md` (N1-N6; "local / parameter: every use in its function bears it
+out; a /* FAKE */ or no-purpose local keeps a neutral name"), `.claude/rules/completion-bar.md` item 3
+("A no-purpose local may not wear a name that claims a purpose"). Names are snake_case C locals, short
+and plain (`count`, `cursor_x`, `pad_pressed`), naming what the variable HOLDS at every use in
+its function. Use the now-named globals, members, types and callee names as the main evidence.
+Leave neutral (NO_NAME): any local whose declaration or use carries a FAKE comment, any local reused
+for two different meanings in one function, register-shaping temps (`temp_*` whose only purpose is
+codegen), and anything you can't show at every use. No numbers / flags / selector values in names.
+
+Lessons from wave 1 (docs/naming/phase3/pending/var-locals/, landed): reviewers rejected a name for a
+pointer that walks several records (`node` for a cursor over many nodes) and a generic name where the
+source is specific (`object` -> `slot_object` for a value from g_slot_objects[]); an index name must
+say which array it indexes (`matrix_ptr_index`, not `node_index`, when it subscripts node_matrix_ptrs).
+Do not reuse a name that is also a member name the same function accesses (`x->node` with a local `node`).
+Lessons from wave 2 (docs/naming/phase3/pending/var-locals-2/, landed): a name may not rest on an
+unreviewed member name alone (softbody_AddSpring arg1 `spring_group_id` was rejected because the only
+basis was the member `group_id` and the value is never read in C); show what the code does with it.
+Counters vs indices: a value that only counts compared entries is `files_checked`, not `file_index`.
+Avoid generic `buffer`; say direction (`read_dest`, `write_src`).
+
+Freshness (`f:l=n`): `n` must not be another local/param in `f`, a file-scope identifier of that TU
+(functions, globals, statics), an enum constant, a macro (grep include/ and the TU), a typedef/struct
+tag, or a keyword. Each row names ONE binding in the unique definition of `f`; if one auto name (e.g.
+`var_s0`) is declared twice in `f` (separate scopes), say which declaration (line) the row means.
+
+Scope: auto-style bindings (`var_*`, `spXX`, `argN`, `temp_*`) in C function definitions (not
+INCLUDE_ASM bodies) of these TUs: src/main/4510C.c, 17AFC.c, 368E4.c.
+Skip src/main/psxsdk/** (Sony code) and d_*.c data files. Propose at most 40 RENAMEs; list every
+other binding you looked at as NO_NAME with a one-line reason.
+
+Output CSV columns (header row): addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+- addr = the function name; current_names = `<func>:<local>` ; proposed_name = new local name;
+  kind = local ; verdict and verifier_note empty.
+- evidence (one quoted cell): DECL (file:line), USES (every file:line, R/W), WHY (what it holds at each
+  use, tied to named callees/globals/members), COUNTER-EVIDENCE, FAKE CHECK (no FAKE comment touches it),
+  FRESH (what you grepped).
+vl3_notes.md: one line per binding looked at: `<func>:<local>: RENAME n` or `NO_NAME reason`.
+Quality over count; strongest rows first.
