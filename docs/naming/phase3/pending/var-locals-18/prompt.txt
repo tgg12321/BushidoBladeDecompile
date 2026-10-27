@@ -1,0 +1,26 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 18 (row var-locals-18)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15 lessons in
+`docs/naming/phase3/pending/var-locals-16/prompt.txt` and the wave-16 lessons in
+`docs/naming/phase3/pending/var-locals-17/prompt.txt`, with these changes:
+
+- Output files: `tmp/codex/vl18_local_manifest.csv` and `tmp/codex/vl18_notes.md` (both full contents
+  also in your final message; the filesystem may be read-only). Print HEAD and cite file:line at it.
+- Scope, in this order (stop at 40 RENAMEs): 1. src/main/51268.c, the remaining auto-named bindings of
+  eff_StartYawedQuadSlotCommand (a2, a3, sp), then the functions after it in file order (C definitions
+  only). 2. Then the next src/main/*.c game TUs in ROM-offset order after 51268.c that still have
+  auto-named bindings.
+- Do not re-propose wave 8-17 NO_NAME / dropped / reverted bindings (pending/var-locals-{8,...,17}/notes.txt)
+  without new evidence, said in the row.
+- Wave 17 lessons: output addresses a callee writes and advances are `<prim>_out_addr` (`sprt_out_addr`,
+  `dr_mode_out_addr`, `tile_out_addr`, `ft4_out_addr`), not `<prim>_addr` or `draw_mode_addr`; a pointer
+  that walks a source argument is `src_<thing>_cursor` (the copy it fills is `<thing>`); an index the
+  callee only tints or flashes is `highlighted_<thing>_index`, not `selected_` (no selection is shown);
+  `<thing>_variant` only when the switch cases start commands whose handlers are shown identical apart
+  from their slot; a position source passed on to a command block is `src_position`, the command's own
+  three-halfword vector `command_vector`; check what a callee does with an argument before naming it
+  from the callee's parameter (eff_SetRotMatrix ignores its a1).
+- Left neutral by wave 17, do not propose: the 51268.c:249 forward declaration's arg0/arg1 (not the
+  definition). May be proposed with evidence: dst16 in eff_DrawBillboardList (51268.c:744-768), if the
+  wave-17 rotation_out reading holds there too.
