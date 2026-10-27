@@ -157,11 +157,11 @@ typedef struct {
  * Unk800788B0Rec; 596CC's gpu_AdvanceBufferCounterAndBuildDrawContext copies
  * them into the s32 words of its context array. A pool member and the cursor
  * member of the same primitive kind share one *_prims name
- * (textured_quad_prims, gradient_quad_prims, tile_prims, sprite_prims,
- * draw_area_prims, draw_offset_prims), but tile and sprite swap places: the
- * pool has tile_prims at +0x0C and sprite_prims at +0x10, the cursor
- * sprite_prims at +0x0C and tile_prims at +0x10. unk_14 stays unnamed: the
- * cursor's is a DR_MODE *, but 5ED34's two gpu_AddThreeGreyTilesStackedUp
+ * (textured_quad_prims, flat_quad_prims, gradient_quad_prims, tile_prims,
+ * sprite_prims, draw_area_prims, draw_offset_prims), but tile and sprite swap
+ * places: the pool has tile_prims at +0x0C and sprite_prims at +0x10, the
+ * cursor sprite_prims at +0x0C and tile_prims at +0x10. unk_14 stays unnamed:
+ * the cursor's is a DR_MODE *, but 5ED34's two gpu_AddThreeGreyTilesStackedUp
  * calls pass the Unk8006EACCRec, whose +0x18 is that word, so there it also
  * receives three TILEs per call. */
 typedef struct {
@@ -179,12 +179,13 @@ typedef struct {
 } Unk8006E49CRec;
 
 /* The eight primitive cursors of a draw context (StepScrollingSpriteDisplay
- * fills one bare; Unk8006EACCRec embeds it). The draw functions build
- * primitives at a cursor and advance it. textured_quad_prims / sprite_prims
- * hold the s32 cursors gpu_AddScaledSpriteQuads / gpu_AddRotatedSpriteQuads and
- * gpu_AddSpriteCells return. unk_14 is typed DR_MODE *, but 5ED34's two
- * gpu_AddThreeGreyTilesStackedUp calls (which read +0x18 of the
- * Unk8006EACCRec) also build TILEs at it, so it is not a single-kind cursor. */
+ * fills one bare; Unk8006EACCRec embeds it as primitive_cursors). The draw
+ * functions build primitives at a cursor and advance it. textured_quad_prims /
+ * sprite_prims hold the s32 cursors gpu_AddScaledSpriteQuads /
+ * gpu_AddRotatedSpriteQuads and gpu_AddSpriteCells return. unk_14 is typed
+ * DR_MODE *, but 5ED34's two gpu_AddThreeGreyTilesStackedUp calls (which read
+ * +0x18 of the Unk8006EACCRec) also build TILEs at it, so it is not a
+ * single-kind cursor. */
 typedef struct {
     s32 textured_quad_prims;
     POLY_F4 *flat_quad_prims;
@@ -311,7 +312,7 @@ typedef struct {
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's
  * InitDisplayStateLoadPackAndSetEntryFlags loads at its work area + 0x58
  * (g_entry_menu_resources; StepSlideBuildFrameRecordAndDispatchStateHandler
- * hands it to the handlers as Unk8006EACCRec.unk_00). After the head:
+ * hands it to the handlers as Unk8006EACCRec.resource_root). After the head:
  * - unk_14: per entry id two TIM pixel addresses, one per column,
  * menu_UpdateRowCursors loads (LoadImage).
  * - unk_54..unk_74: the nine lists
@@ -343,10 +344,10 @@ typedef struct {
 
 /* D_SEL.BIN (resource file 6), the root 64FD8's menu_InitSelScreen loads at its
  * work area + 0x58 and keeps in SelWork.f04 (menu_StepSelScreen hands it to the
- * handlers as Unk8006EACCRec.unk_00). After the head: unk_14..unk_38, the ten
- * lists menu_RelocateSelLists relocates, each a list of sprite sheets (unk_20
- * is indexed by the round count SelWork.f65); unk_3C, the rectangle rows
- * menu_DrawSelRowTiles draws.
+ * handlers as Unk8006EACCRec.resource_root). After the head: unk_14..unk_38,
+ * the ten lists menu_RelocateSelLists relocates, each a list of sprite sheets
+ * (unk_20 is indexed by the round count SelWork.f65); unk_3C, the rectangle
+ * rows menu_DrawSelRowTiles draws.
  */
 typedef struct {
     Unk8006E950Head unk_00;
@@ -386,10 +387,10 @@ typedef struct {
 } Ctx77D94;
 
 /* Draw context filled by 5ED34 StepSlideBuildFrameRecordAndDispatchStateHandler
- * and 64FD8 menu_StepSelScreen / StepTimedSpriteSequenceWithSkip: unk_00 the
- * resource root (SEL for StepSlideBuildFrameRecordAndDispatchStateHandler's
+ * and 64FD8 menu_StepSelScreen / StepTimedSpriteSequenceWithSkip: resource_root
+ * (SEL for StepSlideBuildFrameRecordAndDispatchStateHandler's
  * handlers, D_SEL for menu_StepSelScreen's; StepTimedSpriteSequenceWithSkip
- * leaves it unset), then the cursors; unk_24 (pool word +0x20) only
+ * leaves it unset), then primitive_cursors; unk_24 (pool word +0x20) only
  * StepSlideBuildFrameRecordAndDispatchStateHandler / menu_StepSelScreen set. */
 typedef struct {
     union {
@@ -2484,12 +2485,13 @@ typedef struct {
  * keeps at the start of gpu_InitPrimBufferPair's returned space
  * (g_entry_menu_work_block; the arena cursor D_800A356C moves past it), as
  * 596CC's Unk800A34FCRec.
- * - unk_00 / unk_04: one s16 per player each (counted down from 0x1E by the
- * draw handlers).
- * - unk_08: the frame counter StepSlideBuildFrameRecordAndDispatchStateHandler
- * advances; unk_0C: its buffer counter (bit 0 picks the half of the
+ * - entry_countdowns / row_countdowns: one s16 per player each (counted down
+ * from 0x1E by the draw handlers).
+ * - animation_frame_counter: the frame counter
+ * StepSlideBuildFrameRecordAndDispatchStateHandler advances;
+ * prim_buffer_counter: its buffer counter (bit 0 picks the half of the
  * Unk8006E49CRec pair).
- * - unk_10: the draw offset the handlers hand to SetDrawOffset. */
+ * - draw_offset: the draw offset the handlers hand to SetDrawOffset. */
 typedef struct {
     s16 entry_countdowns[2];
     s16 row_countdowns[2];

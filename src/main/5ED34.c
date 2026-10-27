@@ -848,7 +848,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     var_2[3] = 1;
     /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
      * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
-     * +0x18 is the DR_MODE cursor unk_04.unk_14. */
+     * +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_2, 1);
     menu_UpdateEntryGridCursors(arg0);
     gpu_UploadAndDrawSelectedEntryQuads(arg0);
@@ -1124,7 +1124,7 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     var_2[3] = 1;
     /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
      * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
-     * +0x18 is the DR_MODE cursor unk_04.unk_14. */
+     * +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_2, 1);
     var_1.header = var_3[0];
     t = var_1.header[5].cells;
@@ -1810,7 +1810,7 @@ void menu_UpdateChoiceGrid(
     var_1[3] = 1;
     /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
      * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
-     * +0x18 is the DR_MODE cursor unk_04.unk_14. */
+     * +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_1, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
@@ -2092,9 +2092,9 @@ void gpu_AddPanelGrid(Unk8006EACCRec *arg0) {
  * sprite-sheet layers: in modes g_entry_menu_handler_index < 4, four cells of
  * var_1[4]'s sheet through gpu_AddScaledSpriteQuads; then var_1[5]'s sheet and,
  * for g_entry_menu_handler_index < 2, the var_1[10..13] sheet picked by the
- * frame counter at g_entry_menu_work_block->unk_08 (incremented in
- * StepSlideBuildFrameRecordAndDispatchStateHandler), each through
- * gpu_AddSpriteCells, with a draw-mode primitive per layer. */
+ * frame counter at g_entry_menu_work_block->animation_frame_counter
+ * (incremented in StepSlideBuildFrameRecordAndDispatchStateHandler), each
+ * through gpu_AddSpriteCells, with a draw-mode primitive per layer. */
 void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
