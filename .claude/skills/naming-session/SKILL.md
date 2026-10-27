@@ -154,6 +154,9 @@ reviewed`.
      (it also prunes rows named since; commits stay `-` until the wave is on main, and the next
      `add` or `prune` fills them). Commit `docs/naming/phase3/no_name.tsv` together with the
      backlog row set to `landed`, in one commit.
+   - If the track still has unnamed targets and no open row (`idea` .. `reviewed`), add its next
+     batch as an `idea` row in that same commit (`var-globals-c`, `var-members-rest-4`, ...): the
+     note says what is left and what this wave left neutral on purpose.
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
      stopping point.
