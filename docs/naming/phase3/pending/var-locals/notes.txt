@@ -1,0 +1,36 @@
+DROPPED
+slot_BlendTwoPosesIntoNodeMatrices:var_9=node  DROPPED: var_9 is a walking pointer (ents[18], then ++ through two nodes,
+  src/main/31548.c:228-254) so it is not "the" node; the type Unk80045878Node has a member .node, so uses read
+  node->node.work / node->node.matrix_state; generic. No better precise name evidenced; keeps neutral var_9.
+CHANGED (drafter-substituted, kept)
+node_RefreshObjectMatrixPointerTables:var_a1: node_index -> matrix_ptr_index (indexes node_matrix_ptrs, zero-based, while transform_nodes starts at 1)
+node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor:var_1: object -> slot_object (object is generic; value comes from g_slot_objects[arg0])
+
+RESEARCH NO_NAME LIST (unchanged, none renamed)
+menu_InitSubflowForMode:arg0: mode selector; branch meanings not established.
+cdrom_ReadyCallback:arg0: callback event code; comparison with one alone does not establish a name.
+menu_PrintEditAndApplyConfigWithPerPadCursors:var_1, var_2: pointers to unnamed formatting/color data.
+func_80037D14:arg0, arg1: high/low components of packed card argument; meaning not established.
+fight_UpdatePairedInputTotalsEventsAndMidpointEffects:var_1: FAKE restoration at 175A4.c:145-150 touches it; roles differ.
+fight_UpdatePairedInputTotalsEventsAndMidpointEffects:var_6: signed multiplier selected by pad bits applied to unnamed unk_134.
+func_80040D48:arg4: FAKE comment at 31548.c:46 touches it. arg5: dual role (listed-node word and object ground input).
+gpu_AddDrawMove:var_0: packet-bank selector (selector naming excluded).
+slot_FinalizeObjectLoadSoundTexturesAndArena:var_0, var_1: dual roles (buffers / relocation base; TIM input / pack boundary).
+node_RefreshObjectMatrixPointerTables:arg0: FAKE-related comments in the TU mention this spelling.
+node_BuildIdToNodeMapWithDuplicates:arg0: broad ownership role.
+node_BuildProjectedNodeList:arg0: parent-intermediate comment at 309CC.c:422-424 mentions its use.
+cdrom_SetMix:arg0-arg3: copied to val0..val3; channel routing not established.
+cdrom_StartMixFade:arg1-arg4: copied to target val0..val3; routing not established.
+node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor:arg0 (slot selector), arg1 (boolean controlling flag mutations).
+gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex:arg0: FAKE id_ptr comment at 31D3C.c:213-215.
+light_ApplyPointLight:var_0: explicit FAKE pointer hold at 31D3C.c:311-314. var_1: selector.
+ApplyLightPresetRowBackgroundClearAndFarColor:var_1, var_2: packed words only partly consumed; yaw/pitch names would overstate.
+light_SetLightOrBackColorOfSelectedSetups:arg1: packed color, deferred.
+cdrom_StartReadAt:arg0, arg1, arg3: forwarded file arg / unnamed destination semantics / transfer count not shown.
+cdrom_GetFileIndex:arg0, arg1: unnamed base table D_8008F12C; group identity unestablished.
+cdrom_SetAudioRepeat:arg0: repeat-control flag (excluded).
+gpu_AddSpriteCells:arg0, gpu_AddScaledSpriteQuads:arg0: broad rendering context.
+gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads:arg0, arg1, temp_s2: unnamed nested members / flag / unnamed source.
+menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles:arg0, var_4: unnamed nested members / aggregate bundle.
+ApplyWorkingRecordToPendingConfigAndInitializeMode:var_7, var_13, var_14, var_16: unnamed lookups/cursors into unnamed tables.
+CopySavedFlagsButtonMappingsAndTimesToWorkingRecord:var_4, var_5, var_6: explicit FAKE staged intermediates (25788.c:131-147).
