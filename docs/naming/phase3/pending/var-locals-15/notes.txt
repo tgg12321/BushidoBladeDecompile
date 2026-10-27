@@ -1,0 +1,76 @@
+DRAFT (not yet reviewed): 39 rows from 40 research rows (1 dropped, 12 names changed). TUs: src/main/4BC3C.c (28 rows), src/main/4D0A8.c (11 rows).
+Base: ef7cedcf4 (lanes/naming-a == main; research cited af2872c69, lines re-cited here). Every use of every binding re-derived from this source.
+
+DROPPED (1 of 40 research rows)
+- snd_VabFakeOpen:idx -> vab_index. idx is a widened copy of arg1 (idx = arg1, 4BC3C.c:499) and is the same slot id; naming arg1 vab_id and its copy
+  vab_index gives one value two names in a 17-line function and reads as two different things. The pair would be sound mechanically (no collision), but
+  misleading, so the row is dropped and idx keeps its existing name; arg1 -> vab_id stays (its only use is the copy). The s16/s32 split is a
+  spelling class the leading comment (491-494) says matters, so the copy is not merged away either.
+- Everything else was re-checked and none is hit by a keycheck hazard. Scanned all src/** and include/** (C and headers, #define records with continued
+  lines joined): no old name (i, arg0, arg1, arg2, arg3, a0, a1, a2, count, min, minidx, next, idx, var_0, var_2, var_4, var_6, var_9) occurs as a macro
+  name, macro parameter or macro body token; no old name has a second declaration in its function (nested block or comma list); no `old * old`;
+  no function-like macro is invoked in any of the 14 target functions; no K&R definition (all ANSI prototype style: 4BC3C.c:326, 337, 371, 391, 450, 495,
+  521, 540, 559; 4D0A8.c:34-35, 332, 363, 462-463, 627-628). Bindings the research left out stay out (s, cur, top, x, y, d, size, i/j reused with different
+  meanings, FAKE carriers and the arg1/arg2 touched by FAKE comments in the gpu_ functions).
+
+CHANGED (drafter-substituted names, kept; 12 of 39)
+- snd_MoveVabBody:arg0 and snd_LoadVabPack:arg2: transfer_addr -> ram_buffer_addr (2 rows). "transfer" does not say whose address: the SPU-side
+  start addresses are the other two arguments (dest_sbaddr, src_sbaddr). arg0 is the argument of both SpuRead and SpuWrite (4BC3C.c:375, 378), i.e. the main-RAM
+  buffer; LoadVabPack's arg2 only forwards to CompactVabBodies' base -> snd_MoveVabBody arg0 (473, 428-429), and the 4BC3C.c callers pass load_addr + file size
+  (167, 196, 230). One spelling for the chain.
+- snd_CompactVabBodies:i: vab_index -> vab_id. i = 1..15 is the candidate slot id and is assigned unchanged to minidx (-> lowest_sbaddr_vab_id) at 411, so it is the id,
+  not an ordinal; same role and spelling as the 1..15 loop variable of wave 14 (snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb:s0 = vab_id). In
+  snd_LoadVabPack the scan variable i keeps vab_index (arg1 there is vab_id, so vab_id would collide; i scans slots 0..15 summing sizes, not an id).
+- snd_FlushSoundQueue:var_6: packed_key_event -> key_on_entry. var_6 is a u32 * to entry p[1] of the pack's first table (581); its bit fields are the
+  prog/tone/note/fine arguments of SsUtKeyOnV (582-585). It is a pointer to a table entry, not an event.
+- gpu_*:arg3 (ModeSized 35, Time 463, TwoDigit 628): ordering_table_index -> ot_index (3 rows).
+  Same role is already ot_index in gpu_DrawSpriteAtPackedTablePosition (4D0A8.c:1512, landed) and in 64FD8.c locals; the descriptor member is ot_idx (stays).
+- gpu_*:var_0 (ModeSized 36, Time 464, TwoDigit 629): draw_primitives -> draw_chunk (3 rows). Plural/collection claim; var_0 is a typed view of the output
+  chunk (cast of arg2), and game.h:405 / 417 call exactly this record "the draw chunk" the function builds at the address its caller passes.
+- gpu_DrawFixedSpritePairWithSelectedSheets:arg0 (quad_cursor_addr) and gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle:arg0 (output_addr): both ->
+  ft4_out_addr (2 rows). Same role (initial address copied into the descriptor's ft4_out, the POLY_FT4 output cursor), so one spelling; ft4 is the file's own
+  member vocabulary (game.h:651).
+
+KEPT AFTER A CHECK (judgment points for the reviewer)
+- snd_QueueSound:a1/a2 -> right_volume/left_volume. Order re-derived: a1 -> .volr (546), a2 -> .voll (547); snd_FlushSoundQueue passes .voll then .volr as
+  the last two arguments of SsUtKeyOnV (586), whose Sony signature is (vc, vabId, prog, tone, note, fine, voll, volr). The comment above
+  snd_QueuePositionalSound (17AFC.c:4676, "snd_QueueSound(arg0, L, R)") reads the other way. A comment is never evidence (naming-bar N3) and that
+  comment is outside this wave; the reviewer should confirm the order (and may prefer to drop both rows if it reads the 17AFC.c comment as a conflict).
+- snd_SetReverb:arg0 -> reverb_index: row index of D_8009AD1C; also feeds 2 * arg0 + 1 as the depth. The caller passes g_fight_stage_index (9F9C.c:1974) but
+  the body does not establish a stage, so no stage in the name. Neutral about the depth arithmetic.
+- sound_index (snd_QueueSound:a0): only use is D_8009AA70[a0]; callers pass sound ids. index = its role in the body.
+- vab_count in snd_CompactVabBodies: count of resident VABs (slots 1..15 with a non-zero sbaddr); in the wave-14 functions it is 3 or 2. Same unit
+  (distinct VABs), allowed across functions.
+- voice_index / next_voice_index (snd_FlushSoundQueue:var_2 / next): var_2 is the SsUtKeyOnV voice and the SpuGetKeyStatus(1 << var_2) bit; next is the lower
+  bound for the next voice search (574, 587). The pool size and the voice count are both 24 (0x18), but each index is only used as what its name says.
+- quad_pairs_drawn (Jittered:i): counts completed iterations, each issuing two gpu_AddScaledSpriteQuads calls (428, 450); 0 at the first test (396).
+- digits_started (Time:var_9): set once a digit is drawn (580), gates only leading-zero suppression (577); the last digit (j == 2) is drawn regardless.
+- The same new name in several functions (vab_id, vab_pack, ram_buffer_addr, queue_index, ot_index, draw_chunk, ft4_out_addr) is allowed: local
+  destinations may be shared across distinct functions; no function gets the same new name twice (checked per function: snd_LoadVabPack vab_pack /
+  vab_id / ram_buffer_addr / vab_index; snd_CompactVabBodies sorted_vab_ids / vab_count / min_sbaddr / lowest_sbaddr_vab_id / vab_id; snd_FlushSoundQueue queue_index /
+  voice_index / next_voice_index / vab_id / key_on_entry) and no new name equals an old name in its own function.
+- FAKE: snd_QueueSound's FAKE comment is about its s32 return type; the gpu_ FAKE comments concern arg1 / arg2 / mode_off / size / end_off (ModeSized, Time,
+  TwoDigit) and tmp1 / tmp2 / var_10 / var_11 / var_12 / row_off / var_4 (Jittered). No renamed binding is named in a FAKE comment and none is a FAKE carrier
+  (Jittered arg0 is read once, at the plain `var_4 = arg0`, 386).
+
+COMMENTS TO UPDATE (scoped pair substitution)
+- src/main/4BC3C.c:390 (snd_CompactVabBodies leading comment): `count` -> vab_count ("the loop's `count > 0` guard"). Comment will re-wrap.
+- src/main/4BC3C.c:437 and 439 (snd_LoadVabPack leading comment): `arg1` -> vab_id twice ("slot `arg1`", "for arg1 != 0"). Comment will re-wrap.
+- src/main/4BC3C.c:556 (snd_FlushSoundQueue leading comment): `next` -> next_voice_index ("the running `next` cursor"). Comment will re-wrap.
+- src/main/4D0A8.c:323 (comment above D_8009B2C8): "row idx" -> sheet_row_index. Comment will re-wrap.
+  As in wave 14, a layout-only commit ahead of the apply (same words, short lines) lets the wave's edit be the character-exact pair substitution.
+- Comments with an old bare word that are NOT about a renamed binding and must stay unchanged: 4BC3C.c:388 (`arg0`, snd_CompactVabBodies' own arg0, not
+  renamed), 539 (var_7, another function), 4D0A8.c:53 (arg1, not renamed), 376-377 / 415 (var_10, var_11, var_4: Jittered, not renamed),
+  17AFC.c:4676 (L, R; outside the wave, see right_volume).
+
+FRESHNESS (all 26 distinct final spellings)
+Whole-word search of src/** and include/** (C and headers, #define names, parameters and bodies included): no hit at all for reverb_index, ram_buffer_addr,
+dest_sbaddr, src_sbaddr, sorted_vab_ids, min_sbaddr, lowest_sbaddr_vab_id, vab_pack, vab_index, sound_index, right_volume, left_volume, voice_index, next_voice_index,
+key_on_entry, draw_chunk, ft4_out_addr, sheet_row_index, quad_pairs_drawn, digits_started. Hits NOT in the target function and none a file-scope name,
+enum constant, macro, type or member (no `.`/`->` hit for any new name): vab_id (locals of snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb, 4BC3C.c:129-139),
+vab_count and vab_list_index (locals of snd_ReloadListed... / snd_RebaseListedVabs, 4BC3C.c:254-321), queue_index (snd_Init locals, 4BC3C.c:36, 55-57),
+rebase_delta (locals/parameters of other functions in 368E4.c, 43500.c, 4510C.c and 4BC3C.c), ot_index (gpu_DrawSpriteAtPackedTablePosition parameter 4D0A8.c:1512-1538,
+64FD8.c locals). Each new name is absent from its own function's tokens, from macros and from keywords.
+
+PRE-APPLY REVIEW (naming-reviewer 2026-10-27): 38/39 PASS. FAIL snd_CompactVabBodies:minidx -> min_vab_id (R4/N1: it is the id of the slot with the lowest sbaddr, not the minimum id); replaced by the reviewer-suggested lowest_sbaddr_vab_id, marked suggested in the manifest. Volume order confirmed from code (a1 -> .volr -> SsUtKeyOnV volr); the 17AFC.c:4676 comment "(arg0, L, R)" is wrong and gets a separate comment-only fix ("(arg0, R, L)"). Comment edits at apply: 4BC3C.c:390 count, 437/439 arg1, 556 next, 4D0A8.c:323 "row idx". Must NOT change: 4BC3C.c:388 arg0; 4D0A8.c:322-327 count; 4D0A8.c:1735 row idx; 4D0A8.c:53,58,415,439,470,635,791,1076,1660,1810.
+VERDICT CONFIRM.
