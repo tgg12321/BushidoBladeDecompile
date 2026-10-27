@@ -1073,10 +1073,10 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 97 (Q129). */
     s32 end_off;
-    /* i/row count the first phase's two loops; k and j are reused loop to
-     * loop as plain indices by the later phases (tile strip k/j, timer j/k),
-     * the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
-     * and its row countdown (Q51) */
+    /* i/row count the first phase's two loops;
+     * k and j are reused loop to loop as plain indices by the later phases
+     * (tile strip k/j, timer j/k), the way SOTN's DebugCaptureScreen reuses
+     * its i for its file-search loop and its row countdown (Q51) */
     /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 i;
     s16 j;
