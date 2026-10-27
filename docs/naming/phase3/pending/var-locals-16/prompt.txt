@@ -1,0 +1,19 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 16 (row var-locals-16)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), with these changes:
+
+- Output files: `tmp/codex/vl16_local_manifest.csv` and `tmp/codex/vl16_notes.md` (both full contents
+  also in your final message; the filesystem may be read-only). Print HEAD and cite file:line at it.
+- Scope, in this order (stop at 40 RENAMEs): 1. src/main/4D0A8.c functions from
+  gpu_DrawDecrementedSingleSideCounter onward, in file order (C definitions only). 2. Then the next
+  src/main/*.c game TUs in ROM-offset order after 4D0A8.c that still have auto-named bindings.
+- Do not re-propose wave 8-15 NO_NAME / dropped / reverted bindings (pending/var-locals-{8,...,15}/notes.txt)
+  without new evidence, said in the row.
+- Wave 15 lessons: a local that is only a copy of a named param stays neutral (one value, one name:
+  snd_VabFakeOpen idx); a running best holding the id of the entry with the least KEY is
+  `lowest_<key>_<thing>` (`lowest_sbaddr_vab_id`), not `min_<thing>` (reads as the smallest id); the
+  main-RAM side of a SpuRead/SpuWrite bounce is `ram_buffer_addr`, not `transfer_addr`; reuse 4D0A8.c
+  spellings: OT slot param `ot_index`, typed output record `draw_chunk`, address copied into a
+  descriptor's ft4_out `ft4_out_addr`; a pointer to one table entry is `<use>_entry` (`key_on_entry`),
+  not `*_event`. A comment is never evidence (17AFC.c had L/R swapped).
