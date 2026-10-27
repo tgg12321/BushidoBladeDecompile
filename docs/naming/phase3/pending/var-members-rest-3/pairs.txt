@@ -1,0 +1,6 @@
+Unk800A34FCRec.unk_0C=menu_draw_offsets
+Unk800A34FCRec.unk_24=menu_resource_root
+Unk800A34FCRec.unk_28=row_bit_cursors
+Unk800A34FCRec.unk_30=strip_refresh_snapshot
+Unk80101EC8Record.unk_0C=character_roster_index
+Unk80101EC8Record.unk_34C=reposition_count

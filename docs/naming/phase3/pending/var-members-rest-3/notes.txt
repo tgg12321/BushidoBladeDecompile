@@ -1,0 +1,90 @@
+var-members-rest-3 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Surviving: 6 member rows (pairs.txt). No candidate dropped, no name changed; the six research names
+stand as proposed. Every access was re-derived from the dry-run compile pass (which lists each
+resolved line) plus a read of the source; the line lists in member_manifest.csv match the dry-run
+diff exactly (596CC.c: unk_0C 18, unk_24 5, unk_28 19, unk_30 3; 9F9C.c/17AFC.c: unk_0C 30, unk_34C 4).
+  Unk800A34FCRec.unk_0C    = menu_draw_offsets       (s16[2] stepped by pad_StepOffsetsGetDirectionEvents, added to x / y)
+  Unk800A34FCRec.unk_24    = menu_resource_root      (loaded resource root; also copied into draw-context word 1)
+  Unk800A34FCRec.unk_28    = row_bit_cursors         (union half[2] / word: per-player row cursors, 5 = final row)
+  Unk800A34FCRec.unk_30    = strip_refresh_snapshot  (cached Unk8009BD24Block.unk20_0, compared before gpu_LoadVramBottomStrip)
+  Unk80101EC8Record.unk_0C   = character_roster_index  (fighter_Init arg2 = g_fight_config.unk_4[] entry; maps to character_data_index)
+  Unk80101EC8Record.unk_34C  = reposition_count        (fighter_RelocateAndStartEventMove's saturating (0x40) call count)
+Both fighter names are the ones the var-fighter-members reviewer suggested when that wave dropped
+character_id / relocation_count (backlog.tsv:36); these are the "fresh rows" it asked for.
+
+NO_NAME (kept neutral, N2; not in pairs.txt)
+- Unk800A34FCRec.unk_10 / unk_12 (596CC.c:145,146 address-taking W, stores `*p_10 = 0; *p_12 = 0` at
+  :164-165; no reader anywhere): zero-initialised only, no consumer shows a role.
+- Unk8006919CRec.unk_14 / unk_1C / unk_20 / unk_24 / unk_28 / unk_2C / unk_30 / unk_34 / unk_38 / unk_3C
+  (ten sheet-list members): consumers show drawing mechanics or mixed uses, no distinctive identity
+  (unk_1C: mode drawers + row decoration; unk_28: option menu + memory-card drawer; unk_30: several
+  row-bit groups; unk_3C: a composite Unk8006DD94List, not a plain sheet list; the rest are single-consumer
+  mechanical lists whose content identity is a guess).
+
+Judgement calls for the reviewer
+- menu_draw_offsets vs Unk800A35C4Rec.draw_offset: different owner type and role (descriptor x/y
+  displacement vs the pair handed to SetDrawOffset). Both are "offsets"; the `menu_` prefix is the owning
+  menu family (596CC.c is the menu drawer TU), not a claim about SetDrawOffset. Fallback if disliked:
+  menu_xy_offsets.
+- menu_resource_root vs Unk8006EACCRec.resource_root: same role (root of the resource the draw handlers walk),
+  different owner type, distinct spelling, no shared-name exception requested. The name makes no MOD.BIN
+  claim (game.h:2431 comment's file identity is not needed by any access).
+- row_bit_cursors: value 5 is the final row; rows 0-2 are the bit rows (unk17[row]), 3-5 are action rows
+  (menu_HandleRowBitInput switch); the name follows the owning menu family.
+- strip_refresh_snapshot: stores a copy of one bit; the name says what it is for, not what the setting means.
+- character_roster_index: claims only "index into the configuration space that fighter_Init maps through
+  g_fight_config_id_data_rows"; it does not claim a character-name table (36 entries map onto 27 data rows).
+- reposition_count: counted once per fighter_RelocateAndStartEventMove call whether or not stage 3's
+  percentage uses it; the routine does reposition (world_pos, base_pos, collision_pos) on every call.
+
+Tool limits / dry run (docs/naming/phase3/pending/var-members-rest-3/dry.txt, exit=0)
+Two passes (the two unk_0C pairs share an old member name and run separately), then a diff of 4 files
+(include/game.h, 17AFC.c, 596CC.c, 9F9C.c): "OK: every member access renamed", 0 UNRESOLVED lines.
+  pass 1: Unk800A34FCRec unk_0C / unk_24 / unk_28 / unk_30, Unk80101EC8Record unk_34C
+  pass 2: Unk80101EC8Record unk_0C
+No hand edit of code lines is needed. No line holds two renamed members (nested 596CC.c:1612 / :1673 / :1864
+rename only the outer unk_24; the inner members are Unk8006919CRec's). Lines that grow past 80 columns with
+the longer names must be re-wrapped by `python tools/format.py` at apply (post-edit lines over 80 columns:
+596CC.c:174, :310, :1814, :2027; 17AFC.c:1219, :1733, :1905, :2013, :2309, :4939, :4964; 9F9C.c:2679, :5018,
+:5069, :5086); the formatter is token-preserving.
+
+Same-spelled members that must NOT be renamed (the tool resolves by type; do not text-substitute)
+- unk_0C: MotionFrame.unk_0C[] (9F9C.c ~2335-2460 `arg2->unk_0C[..]`, `b->unk_0C[..]`; 9F9C.c:2962), BoneHitRec
+  (17AFC.c:1464 comment, :2397, :4399; game.h:889), Unk8009B0E0Record / others in game.h (267, 303, 818-827,
+  1434, 1935, 2408-2415), 596CC.c:2368 / :2385 `arg2->unk_0C`.
+- unk_24 / unk_28 / unk_30 in 596CC.c outside g_row_menu_work_block: Unk8006919CRec members
+  (:975, :1150, :1166, :1168 comments/code, :1216, :1348, :1587, :1791-:2119 `((Unk8006919CRec *)arg0[1])->`).
+
+Comments to hand-fix at apply time (the tool does not edit comments)
+- include/game.h:2501-2517 (Unk800A34FCRec comment): `zeroes unk_0C / unk_10 / unk_12` -> menu_draw_offsets /
+  unk_10 / unk_12; `both unk_28 halves to 5` -> row_bit_cursors halves; `unk_30 to bit 0 of ... word 8
+  (gpu_GetPrimBufferAndRefreshStrip compares and refreshes it)` -> strip_refresh_snapshot; `stores the MOD.BIN
+  root in unk_24` -> menu_resource_root; bullet `- unk_0C: the s16 pair ... the draw functions use unk_0C[0] / [1]
+  as x / y offsets` -> menu_draw_offsets; bullet `- unk_28: one s16 per player ...` -> row_bit_cursors (and
+  its `as SelWork's f1C / f20` clause stays). unk_10 / unk_12 stay.
+- include/game.h:2428-2433 (Unk8006E950Head comment, `it keeps it in g_row_menu_work_block's word 9`): optional,
+  add `(menu_resource_root)`; word 9 is correct as is.
+- src/main/596CC.c:1606 `MOD.BIN root (g_row_menu_work_block->unk_24)` -> `->menu_resource_root`.
+- src/main/596CC.c:1753 `(unk_28.half[j], tested against 5 ...)` -> `row_bit_cursors.half[j]`.
+- NOT to change: 596CC.c:975 and :1166 (`unk_24` there is Unk8006919CRec's list member), 596CC.c comment at
+  :126 / :149 (no member named).
+- src/main/d_7D920.c:132 `[unk_0C] -> D_80094C68's index (fighter_Init)` -> `[character_roster_index]`.
+- include/bb2.h:198-246 comments name other Unk80101EC8Record members only; no change for these pairs.
+- symbol_addrs.txt:1397 (D_800A350C comment: `added to g_row_menu_work_block->unk_0C[i]`) is a registry comment,
+  not a C token: update to ->menu_draw_offsets[i] if keycheck treats it as a pair surface, else leave
+  (previous waves did their docs/registry follow in a separate `docs: ... names in comments` commit).
+- Engine docs that cite the old member (follow-up docs commit, as for var-fighter-members b019f02d4):
+  docs/engine/ai.md:94 (`rec->unk_0C == 0xD`), :98 (`unk_34C`); docs/engine/combat.md:20,32,51,57,70,85,89,91
+  (`unk_0C`); docs/naming/function-names.csv:156 (`unk_34C` in a census evidence string; regenerated, not hand-edited).
+  memory/ ledgers and layer2 records are never touched.
+
+R6 watch list (post-apply reviewer)
+- 596CC.c: grep `g_row_menu_work_block->unk_` must leave only unk_10 / unk_12 (the two NO_NAME halves, address-taken
+  at :145-146) and no surviving unk_0C / unk_24 / unk_28 / unk_30 on that handle or on v0_e49c / v1.
+- 9F9C.c / 17AFC.c: surviving `unk_0C` hits must all be MotionFrame / BoneHitRec / other types (compare against
+  the 30 lines in the manifest); no `unk_34C` remains.
+- layer-2 keys moved by the pairs (fighter_Init, fighter_RelocateAndStartEventMove, 596CC.c completed bodies)
+  are checked by naming_keycheck.
+- format.py re-wrap of the long lines listed above; game.h:2501-2517 and the 596CC.c:1606 / :1753 /
+  d_7D920.c:132 comments updated.

@@ -1,0 +1,350 @@
+PASS Unk800A34FCRec.unk_0C=menu_draw_offsets, Unk800A34FCRec.unk_24=menu_resource_root, Unk800A34FCRec.unk_28=row_bit_cursors, Unk800A34FCRec.unk_30=strip_refresh_snapshot, Unk80101EC8Record.unk_34C=reposition_count
+decl Unk800A34FCRec.unk_0C -> menu_draw_offsets  include/game.h:2520
+decl Unk800A34FCRec.unk_24 -> menu_resource_root  include/game.h:2524
+decl Unk800A34FCRec.unk_28 -> row_bit_cursors  include/game.h:2529
+decl Unk800A34FCRec.unk_30 -> strip_refresh_snapshot  include/game.h:2532
+decl Unk80101EC8Record.unk_34C -> reposition_count  include/game.h:1713
+  round 0: 49 member error line(s)
+    src/main/17AFC.c:205 unk_34C x1
+    src/main/17AFC.c:207 unk_34C x1
+    src/main/17AFC.c:209 unk_34C x1
+    src/main/596CC.c:86 unk_24 x1
+    src/main/596CC.c:141 unk_28 x1
+    src/main/596CC.c:142 unk_28 x1
+    src/main/596CC.c:143 unk_0C x1
+    src/main/596CC.c:144 unk_0C x1
+    src/main/596CC.c:174 unk_30 x1
+    src/main/596CC.c:181 unk_30 x1
+    src/main/596CC.c:186 unk_30 x1
+    src/main/596CC.c:310 unk_0C x1
+    src/main/596CC.c:700 unk_0C x1
+    src/main/596CC.c:778 unk_0C x1
+    src/main/596CC.c:1034 unk_0C x1
+    src/main/596CC.c:1108 unk_0C x1
+    src/main/596CC.c:1235 unk_0C x1
+    src/main/596CC.c:1266 unk_0C x1
+    src/main/596CC.c:1296 unk_0C x1
+    src/main/596CC.c:1326 unk_0C x1
+    src/main/596CC.c:1371 unk_0C x1
+    src/main/596CC.c:1488 unk_0C x1
+    src/main/596CC.c:1576 unk_0C x1
+    src/main/596CC.c:1612 unk_24 x1
+    src/main/596CC.c:1673 unk_24 x1
+    src/main/596CC.c:1811 unk_28 x1
+    src/main/596CC.c:1814 unk_28 x1
+    src/main/596CC.c:1864 unk_24 x1
+    src/main/596CC.c:1888 unk_28 x1
+    src/main/596CC.c:2006 unk_28 x1
+    src/main/596CC.c:2027 unk_28 x1
+    src/main/596CC.c:2041 unk_28 x1
+    src/main/596CC.c:2042 unk_28 x1
+    src/main/596CC.c:2044 unk_28 x1
+    src/main/596CC.c:2045 unk_28 x1
+    src/main/596CC.c:2049 unk_28 x1
+    src/main/596CC.c:2050 unk_28 x1
+    src/main/596CC.c:2052 unk_28 x1
+    src/main/596CC.c:2053 unk_28 x1
+    src/main/596CC.c:2057 unk_28 x1
+    src/main/596CC.c:2163 unk_28 x1
+    src/main/596CC.c:2196 unk_28 x1
+    src/main/596CC.c:2197 unk_28 x1
+    src/main/596CC.c:2238 unk_0C x1
+    src/main/596CC.c:2279 unk_0C x1
+    src/main/596CC.c:2464 unk_0C x1
+    src/main/596CC.c:2505 unk_0C x1
+    src/main/596CC.c:2600 unk_24 x1
+    src/main/9F9C.c:3880 unk_34C x1
+  round 1: 0 member error line(s)
+PASS Unk80101EC8Record.unk_0C=character_roster_index
+decl Unk80101EC8Record.unk_0C -> character_roster_index  include/game.h:1524
+  round 0: 30 member error line(s)
+    src/main/17AFC.c:389 unk_0C x1
+    src/main/17AFC.c:410 unk_0C x1
+    src/main/17AFC.c:421 unk_0C x1
+    src/main/17AFC.c:636 unk_0C x1
+    src/main/17AFC.c:771 unk_0C x1
+    src/main/17AFC.c:1219 unk_0C x1
+    src/main/17AFC.c:1708 unk_0C x1
+    src/main/17AFC.c:1733 unk_0C x2
+    src/main/17AFC.c:1743 unk_0C x1
+    src/main/17AFC.c:1905 unk_0C x2
+    src/main/17AFC.c:2013 unk_0C x2
+    src/main/17AFC.c:2309 unk_0C x2
+    src/main/17AFC.c:4939 unk_0C x1
+    src/main/17AFC.c:4964 unk_0C x1
+    src/main/9F9C.c:2335 unk_0C x1
+    src/main/9F9C.c:2389 unk_0C x1
+    src/main/9F9C.c:2453 unk_0C x1
+    src/main/9F9C.c:2679 unk_0C x2
+    src/main/9F9C.c:3722 unk_0C x1
+    src/main/9F9C.c:3744 unk_0C x1
+    src/main/9F9C.c:3857 unk_0C x1
+    src/main/9F9C.c:3906 unk_0C x1
+    src/main/9F9C.c:3909 unk_0C x1
+    src/main/9F9C.c:5018 unk_0C x1
+    src/main/9F9C.c:5069 unk_0C x1
+    src/main/9F9C.c:5086 unk_0C x2
+    src/main/9F9C.c:5273 unk_0C x1
+    src/main/9F9C.c:5285 unk_0C x1
+    src/main/9F9C.c:5294 unk_0C x1
+    src/main/9F9C.c:5342 unk_0C x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1524 +1524 @@
+-    s16 unk_0C;
++    s16 character_roster_index;
+@@ -1713 +1713 @@
+-    u8 unk_34C;
++    u8 reposition_count;
+@@ -2520 +2520 @@
+-    s16 unk_0C[2];
++    s16 menu_draw_offsets[2];
+@@ -2524 +2524 @@
+-    Unk8006919CRec *unk_24;
++    Unk8006919CRec *menu_resource_root;
+@@ -2529 +2529 @@
+-    } unk_28;
++    } row_bit_cursors;
+@@ -2532 +2532 @@
+-    u8 unk_30;
++    u8 strip_refresh_snapshot;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -205 +205 @@
+-    cnt = arg0->unk_34C;
++    cnt = arg0->reposition_count;
+@@ -207,3 +207,3 @@
+-        arg0->unk_34C = cnt + 1;
+-    }
+-    var_4 = 0x3C - ((arg0->unk_34C - 1) * 4);
++        arg0->reposition_count = cnt + 1;
++    }
++    var_4 = 0x3C - ((arg0->reposition_count - 1) * 4);
+@@ -389 +389 @@
+-    if (arg1->unk_0C == 0x1C) {
++    if (arg1->character_roster_index == 0x1C) {
+@@ -410 +410 @@
+-    if (arg1->unk_0C == 0xD && arg1->is_defeated == 0 &&
++    if (arg1->character_roster_index == 0xD && arg1->is_defeated == 0 &&
+@@ -421 +421 @@
+-    if (arg1->unk_0C == 0x1F) {
++    if (arg1->character_roster_index == 0x1F) {
+@@ -636 +636 @@
+-                s16 temp_v1_2 = arg0->unk_0C;
++                s16 temp_v1_2 = arg0->character_roster_index;
+@@ -771 +771 @@
+-        if (base->unk_0C != 0x1B || base->unk_46 != 0 ||
++        if (base->character_roster_index != 0x1B || base->unk_46 != 0 ||
+@@ -1219 +1219 @@
+-        if (rec->is_defeated != 0 || rec->unk_92 == 0 || rec->unk_0C == 0x1F) {
++        if (rec->is_defeated != 0 || rec->unk_92 == 0 || rec->character_roster_index == 0x1F) {
+@@ -1708 +1708 @@
+-            var_10 = var_3->unk_0C != 0x1F;
++            var_10 = var_3->character_roster_index != 0x1F;
+@@ -1733 +1733 @@
+-        if ((var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
++        if ((var_3->character_roster_index == 0x1D || var_3->character_roster_index == 0xE) &&
+@@ -1743 +1743 @@
+-                var_4, &var_5, &var_6, var_3->unk_0C == 0xE);
++                var_4, &var_5, &var_6, var_3->character_roster_index == 0xE);
+@@ -1905 +1905 @@
+-             var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
++             var_3->character_roster_index == 0x1D || var_3->character_roster_index == 0xE) &&
+@@ -2013 +2013 @@
+-            if ((var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
++            if ((var_3->character_roster_index == 0x1D || var_3->character_roster_index == 0xE) &&
+@@ -2309 +2309 @@
+-            firstPlayer->unk_0C != 0x1F && secondPlayer->unk_0C != 0x1F) {
++            firstPlayer->character_roster_index != 0x1F && secondPlayer->character_roster_index != 0x1F) {
+@@ -4939 +4939 @@
+-                    pos, obj->unk_1BA, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
++                    pos, obj->unk_1BA, D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
+@@ -4964 +4964 @@
+-                    pos, obj->unk_1C2, D_8008EBE0[D_8008E5A8[obj->unk_0C]],
++                    pos, obj->unk_1C2, D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -86 +86 @@
+-    v0_e49c->unk_24 = (Unk8006919CRec *)temp_s0;
++    v0_e49c->menu_resource_root = (Unk8006919CRec *)temp_s0;
+@@ -141,4 +141,4 @@
+-            p_2A = &g_row_menu_work_block->unk_28.half[1];
+-            p_28 = &g_row_menu_work_block->unk_28.half[0];
+-            p_0E = &g_row_menu_work_block->unk_0C[1];
+-            p_0C = &g_row_menu_work_block->unk_0C[0];
++            p_2A = &g_row_menu_work_block->row_bit_cursors.half[1];
++            p_28 = &g_row_menu_work_block->row_bit_cursors.half[0];
++            p_0E = &g_row_menu_work_block->menu_draw_offsets[1];
++            p_0C = &g_row_menu_work_block->menu_draw_offsets[0];
+@@ -174 +174 @@
+-    g_row_menu_work_block->unk_30 = g_row_menu_working_record_ptr->unk20_0;
++    g_row_menu_work_block->strip_refresh_snapshot = g_row_menu_working_record_ptr->unk20_0;
+@@ -181 +181 @@
+-    if (v1->unk_30 != v0->unk20_0) {
++    if (v1->strip_refresh_snapshot != v0->unk20_0) {
+@@ -186 +186 @@
+-    v1->unk_30 = v0->unk20_0;
++    v1->strip_refresh_snapshot = v0->unk20_0;
+@@ -310 +310 @@
+-        (u32 *)&var_0[12], 0, g_row_menu_work_block->unk_0C, D_800A350C);
++        (u32 *)&var_0[12], 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+@@ -700 +700 @@
+-                s.fr00.x = x0 + g_row_menu_work_block->unk_0C[0];
++                s.fr00.x = x0 + g_row_menu_work_block->menu_draw_offsets[0];
+@@ -778 +778 @@
+-                s.fr00.x = x0 + g_row_menu_work_block->unk_0C[0];
++                s.fr00.x = x0 + g_row_menu_work_block->menu_draw_offsets[0];
+@@ -1034 +1034 @@
+-            s.y = g_row_menu_work_block->unk_0C[1] + y;
++            s.y = g_row_menu_work_block->menu_draw_offsets[1] + y;
+@@ -1108 +1108 @@
+-        s.y = g_row_menu_work_block->unk_0C[1] + 0xCF;
++        s.y = g_row_menu_work_block->menu_draw_offsets[1] + 0xCF;
+@@ -1235 +1235 @@
+-            s.y = g_row_menu_work_block->unk_0C[1];
++            s.y = g_row_menu_work_block->menu_draw_offsets[1];
+@@ -1266 +1266 @@
+-                s.x = g_row_menu_work_block->unk_0C[0];
++                s.x = g_row_menu_work_block->menu_draw_offsets[0];
+@@ -1296 +1296 @@
+-                s.x = g_row_menu_work_block->unk_0C[0];
++                s.x = g_row_menu_work_block->menu_draw_offsets[0];
+@@ -1326 +1326 @@
+-                s.x = g_row_menu_work_block->unk_0C[0];
++                s.x = g_row_menu_work_block->menu_draw_offsets[0];
+@@ -1371 +1371 @@
+-        (u32 *)&sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
++        (u32 *)&sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+@@ -1488 +1488 @@
+-        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
++        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+@@ -1576 +1576 @@
+-            s.y = g_row_menu_work_block->unk_0C[1];
++            s.y = g_row_menu_work_block->menu_draw_offsets[1];
+@@ -1612 +1612 @@
+-    var_0 = g_row_menu_work_block->unk_24->unk_20;
++    var_0 = g_row_menu_work_block->menu_resource_root->unk_20;
+@@ -1673 +1673 @@
+-    var_2 = g_row_menu_work_block->unk_24->sheet_pair_box_sizes;
++    var_2 = g_row_menu_work_block->menu_resource_root->sheet_pair_box_sizes;
+@@ -1811 +1811 @@
+-        if (g_row_menu_work_block->unk_28.half[var_15] < 3) {
++        if (g_row_menu_work_block->row_bit_cursors.half[var_15] < 3) {
+@@ -1814 +1814 @@
+-                        ->unk17[g_row_menu_work_block->unk_28.half[var_15]] &
++                        ->unk17[g_row_menu_work_block->row_bit_cursors.half[var_15]] &
+@@ -1864 +1864 @@
+-    recs = g_row_menu_work_block->unk_24->rect_rows;
++    recs = g_row_menu_work_block->menu_resource_root->rect_rows;
+@@ -1888 +1888 @@
+-        var_9 = g_row_menu_work_block->unk_28.half[j];
++        var_9 = g_row_menu_work_block->row_bit_cursors.half[j];
+@@ -2006 +2006 @@
+-        if (i == g_row_menu_work_block->unk_28.half[arg0]) {
++        if (i == g_row_menu_work_block->row_bit_cursors.half[arg0]) {
+@@ -2027 +2027 @@
+-    if ((g_row_menu_work_block->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
++    if ((g_row_menu_work_block->row_bit_cursors.word == 0x50005) && (*arg1 & 0x400040)) {
+@@ -2041,2 +2041,2 @@
+-            if (g_row_menu_work_block->unk_28.half[i] <= 0) {
+-                g_row_menu_work_block->unk_28.half[i] = lim;
++            if (g_row_menu_work_block->row_bit_cursors.half[i] <= 0) {
++                g_row_menu_work_block->row_bit_cursors.half[i] = lim;
+@@ -2044,2 +2044,2 @@
+-                g_row_menu_work_block->unk_28.half[i] =
+-                    g_row_menu_work_block->unk_28.half[i] - 1;
++                g_row_menu_work_block->row_bit_cursors.half[i] =
++                    g_row_menu_work_block->row_bit_cursors.half[i] - 1;
+@@ -2049,2 +2049,2 @@
+-            if (g_row_menu_work_block->unk_28.half[i] >= lim) {
+-                g_row_menu_work_block->unk_28.half[i] = 0;
++            if (g_row_menu_work_block->row_bit_cursors.half[i] >= lim) {
++                g_row_menu_work_block->row_bit_cursors.half[i] = 0;
+@@ -2052,2 +2052,2 @@
+-                g_row_menu_work_block->unk_28.half[i] =
+-                    g_row_menu_work_block->unk_28.half[i] + 1;
++                g_row_menu_work_block->row_bit_cursors.half[i] =
++                    g_row_menu_work_block->row_bit_cursors.half[i] + 1;
+@@ -2057 +2057 @@
+-        var_9 = g_row_menu_work_block->unk_28.half[i];
++        var_9 = g_row_menu_work_block->row_bit_cursors.half[i];
+@@ -2163 +2163 @@
+-        if (g_row_menu_work_block->unk_28.word == 0x50005) {
++        if (g_row_menu_work_block->row_bit_cursors.word == 0x50005) {
+@@ -2196,2 +2196,2 @@
+-    g_row_menu_work_block->unk_28.half[1] = 5;
+-    g_row_menu_work_block->unk_28.half[0] = 5;
++    g_row_menu_work_block->row_bit_cursors.half[1] = 5;
++    g_row_menu_work_block->row_bit_cursors.half[0] = 5;
+@@ -2238 +2238 @@
+-            s.y = g_row_menu_work_block->unk_0C[1];
++            s.y = g_row_menu_work_block->menu_draw_offsets[1];
+@@ -2279 +2279 @@
+-        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
++        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+@@ -2464 +2464 @@
+-            s.dd94_00.y = g_row_menu_work_block->unk_0C[1];
++            s.dd94_00.y = g_row_menu_work_block->menu_draw_offsets[1];
+@@ -2505 +2505 @@
+-        &sp10, 0, g_row_menu_work_block->unk_0C, D_800A350C);
++        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+@@ -2600 +2600 @@
+-    s0[1] = (s32)g_row_menu_work_block->unk_24;
++    s0[1] = (s32)g_row_menu_work_block->menu_resource_root;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -2335 +2335 @@
+-    temp_v1 = arg0->unk_0C;
++    temp_v1 = arg0->character_roster_index;
+@@ -2389 +2389 @@
+-        if (obj->unk_0C == 0x1F) {
++        if (obj->character_roster_index == 0x1F) {
+@@ -2453 +2453 @@
+-    t = obj->unk_0C;
++    t = obj->character_roster_index;
+@@ -2679 +2679 @@
+-    if (arg0->other->unk_0C == 0xD || arg0->other->unk_0C == 0x1C) {
++    if (arg0->other->character_roster_index == 0xD || arg0->other->character_roster_index == 0x1C) {
+@@ -3722 +3722 @@
+-    p->unk_0C = arg2;
++    p->character_roster_index = arg2;
+@@ -3744 +3744 @@
+-        p->size_scale = D_80094C68[D_8008D578[p->unk_0C]];
++        p->size_scale = D_80094C68[D_8008D578[p->character_roster_index]];
+@@ -3857 +3857 @@
+-    if (p->unk_0C == 0x1F) {
++    if (p->character_roster_index == 0x1F) {
+@@ -3880 +3880 @@
+-    p->unk_34C = 0;
++    p->reposition_count = 0;
+@@ -3906 +3906 @@
+-        if (p->unk_0C == 0x1D) {
++        if (p->character_roster_index == 0x1D) {
+@@ -3909 +3909 @@
+-        } else if (p->unk_0C == 0xE) {
++        } else if (p->character_roster_index == 0xE) {
+@@ -5018 +5018 @@
+-    if (rec->move_kind == 4 || rec->move_kind == 0x14 || rec->unk_0C == 0x1F) {
++    if (rec->move_kind == 4 || rec->move_kind == 0x14 || rec->character_roster_index == 0x1F) {
+@@ -5069 +5069 @@
+-    if (rec->unk_0C != 0x1F && rec->is_defeated == 0 && rec->unk_92 != 0) {
++    if (rec->character_roster_index != 0x1F && rec->is_defeated == 0 && rec->unk_92 != 0) {
+@@ -5086 +5086 @@
+-        ((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
++        ((rec->character_roster_index == 0x1D || rec->character_roster_index == 0xE) &&
+@@ -5273 +5273 @@
+-        if (rec->unk_0C != 0x1F) {
++        if (rec->character_roster_index != 0x1F) {
+@@ -5285 +5285 @@
+-    if (rec->move_started != 0 && rec->unk_0C == 0x1B &&
++    if (rec->move_started != 0 && rec->character_roster_index == 0x1B &&
+@@ -5294 +5294 @@
+-                if (rec->unk_0C == 0x1B) {
++                if (rec->character_roster_index == 0x1B) {
+@@ -5342 +5342 @@
+-    if (rec->unk_0C == 0x1F) {
++    if (rec->character_roster_index == 0x1F) {
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
