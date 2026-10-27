@@ -1364,8 +1364,8 @@ s32 fighter_FindNearestNavCrossing(
 }
 
 /* Per-vertex neighbour-angle midpoint: computes the bisector direction
- * at vertex arg1 of polygon arg0 and writes the offset point into *arg2 /
- * *arg3. */
+ * at vertex vertex_index of polygon nav_poly and writes the offset point into
+ * *corner_x_out / *corner_z_out. */
 void fighter_GetNavCornerPoint(
     NavPoly *nav_poly, s32 vertex_index, s16 *corner_x_out, s16 *corner_z_out) {
     s16 prev;
@@ -1401,11 +1401,11 @@ void fighter_GetNavCornerPoint(
     *corner_z_out = cy + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
-/* Walks the vertex ring of arg0's polygon arg1->polys[arg0->cpu_route.poly]
+/* Walks the vertex ring of arg0's polygon nav_set->polys[arg0->cpu_route.poly]
  * both ways from vertex cpu_route.vtx, each way starting at arg0->world_pos.
  * While math_IntersectSegments reports that the segment from the way's current
- * point to (arg2, arg3) crosses a polygon edge, the way steps to the next
- * vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its
+ * point to (target_x, target_z) crosses a polygon edge, the way steps to the
+ * next vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its
  * CpuRoute and adds the step's SquareRoot0 length to its sum; a clear segment
  * adds that segment's length and ends the way. The way with the smaller sum is
  * appended, last point first, to arg0->cpu_route. */
@@ -1442,9 +1442,9 @@ void fighter_AppendNavDetour(
     s16 bx;
     s16 bz;
     NavPoly *poly;
-    /* route holds three values: &var_0[0] in the first corner block, &var_0[1]
-     * in the second corner block, and the cheaper of the two for the copy loop
-     * (Ruling 11, reused-local-necessity). */
+    /* route holds three values: &detour_routes[0] in the first corner block,
+     * &detour_routes[1] in the second corner block, and the cheaper of the two
+     * for the copy loop (Ruling 11, reused-local-necessity). */
     CpuRoute *route;
 
     var_11 = 1;
@@ -1475,8 +1475,9 @@ void fighter_AppendNavDetour(
          * at var_12 and var_13 (Ruling 11,
          * reused-local-necessity). */
         s16 *var_29;
-        /* node holds two values: the waypoint appended to &var_0[0], then
-         * the one appended to &var_0[1] (Ruling 11, reused-local-necessity).
+        /* node holds two values: the waypoint appended to &detour_routes[0],
+         * then the one appended to &detour_routes[1] (Ruling 11,
+         * reused-local-necessity).
          */
         CpuWaypoint *node;
 
