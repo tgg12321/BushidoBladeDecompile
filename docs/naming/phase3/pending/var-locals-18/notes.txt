@@ -1,0 +1,35 @@
+DRAFT (not yet reviewed): 40 rows from 40 research rows (0 dropped, 5 names changed; judgment points listed below). TU: src/main/51268.c (40 rows, 9 functions).
+Source: Codex research run 20261027-184342-research-research-vl18 (tmp/codex/var-locals-18-research.md, HEAD 83cdcb368).
+Base: 884b7ed7b (lanes/naming-a == main; only docs commits since the research). Every binding was re-derived from this source: declaration and every use with its line, the callees and callers read where a role depended on them (asm/funcs/RotTrans.s, RotTransPers.s, 17AFC.c:4951-4980, d_7D920.c:670, d_8BC50.c:325).
+
+DROPPED (0 of 40 research rows)
+- none. The five names that did not survive were changed (below), not dropped.
+- Bindings the research left out stay out: eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight p and eff_StartRecycledCommandWithMagentaLight p (the token occurs in libgpu macro bodies, wave-16 rule); eff_SetRotMatrix a1 (unused in the body; a position role would rest on an ignored input); eff_DrawBillboardList base and var_3 (named in the FAKE comment at 51268.c:821-824), v (setVector macro body), prim, width, height (already descriptive); eff_SpawnRotatedQuadCluster pos, rot, mask (already descriptive); eff_StartYawedQuadSlotCommand src_position, command_vector_y (wave 17); the 51268.c:249 forward declaration (wave 17 left it); the functions after eff_SpawnRotatedQuadCluster (the research hit its 40-row cap).
+
+CHANGED (drafter-substituted names, kept; 5 of 40)
+- eff_StartYawedQuadSlotCommand:a2: command_code -> command_word_bits. Both callers pass D_8008EBE0[..] whose entries are 0 / 0x40000 / 0x20000 / 0x60000 / 0 (d_7D920.c:670): field values at bit 17 of unk00.w (read as (unk00.w >> 17) & 3 at 51268.c:1256, 1262), not a command code; the command index is the low halfword set by the 0x10000 / 0x10001 constant. The body only adds the value to the command word, which is all the name claims.
+- eff_StartRecycledYawedParticlesWithTextureSelection:sp50 and eff_StartRecycledYawedParticles:sp50: transform_flags -> gte_flag_out. RotTrans stores cfc2 $31 (the GTE FLAG register) to its third argument (asm/funcs/RotTrans.s:9-11); the caller never reads it. The name states the register and the output role; "transform flags" invented a meaning.
+- eff_DrawBillboardList:var_5: projection_origin -> local_origin. The vector is the all-zero local-space input of RotTransPers; "projection origin" reads as the projection centre.
+- eff_DrawBillboardList:rot: rotation_matrix -> scaled_rotation_matrix. eff_SetRotMatrix scales the matrix with ScaleMatrixL by D_8009BB74 = (0x1000, 0x800, 0x1000) (d_8BC50.c:325), so it is not a pure rotation matrix.
+
+KEPT AFTER A CHECK (judgment points for the reviewer)
+- use_second_slot (eff_StartYawedQuadSlotCommand:a3): the body only tests a3 == 0 (538); zero picks g_eff_command_status[0] / command word + 0, non-zero picks [1] / + 1. Callers pass obj->index (17AFC.c:4954, 4980); the name states the test, not an index.
+- depth_cue_out (eff_DrawBillboardList:var_6): third argument of RotTransPers; asm/funcs/RotTransPers.s:7 is swc2 $8 (IR0) to 0($a2); SXY2 goes to a1 and FLAG to a3. Never read, so the name claims only the slot's role.
+- half_width / billboard_height (eff_DrawBillboardList:w, h): the asymmetry is real. The quad is centred on the projected x (x0 = sxy - *w, x1 = sxy + *w; *w = width / 2), but its bottom edge sits at the projected y and the top is *h above it (y0 = (sxy >> 16) - *h, y2 = sxy >> 16); *h is the full randomised height (840-841). Both are pointers to scratchpad slots, named for the quantity they hold.
+- rotation_out / position_out (eff_DrawBillboardList:dst16, dst32): the research asked whether wave 17's reading holds here. Same globals (D_800A346C / D_800A3470), same unk04 / unk08 sources of src_command_block, same call to eff_SetRotMatrix. dst32 rests on the 817-819 subtraction and the BindScratchpad source, not on eff_SetRotMatrix, which ignores its a1.
+- rotation (eff_SetRotMatrix:dest): a real scratch copy, not an alias of a0. It points at &D_800A34EC->v80061FAC, separate scratchpad storage, receives member stores of a0[0..2] (698-700) and is the RotMatrix input (701). It follows the src_rotation / rotation source-and-copy pairing of wave 17.
+- matrix_out (eff_SetRotMatrix:a2): RotMatrix output, then t cleared, scaled in place and loaded; "_out" is the result destination, not write-once.
+- command_vector (sp / sp10): the three-halfword vector eff_StartCommand copies from unk10 (51268.c:90-93); sp10 holds the input of RotTrans and then its result, so the name claims the vector the command receives. sp in eff_StartYawedQuadSlotCommand is s16[4] with three used.
+- rotated_vector (sp20): RotTrans output under the yaw matrix with translation cleared; its zero initialisation is dead.
+- use_alternate_texture (TextureSelection:arg2): normalised to 0 / 1, stored in D_800A34F0[0 or 1]; the particle handler uses it for the texture-record table (2621-2624) and the quad colour word (2896-2901).
+- scaled_width / scaled_height (var_14, var_15): the unshifted product of the size and the perspective scale; computed values, not staging copies.
+- src_position / src_rotation / src_command_block / src_command_vector / ot_index / billboard_index (two functions): same spellings as wave 17; each is per-function fresh. The new names occur elsewhere only as parameters, locals or comments of other functions, never as a file-scope name, enum constant, macro or type.
+
+COMMENTS TO UPDATE (scoped pair substitution skips comments)
+- src/main/51268.c:761 (eff_DrawBillboardList): "the matrix eff_SetRotMatrix builds from the angles at arg0" -> src_rotation; hand edit in the wave.
+- The FAKE comment at 821-824 names var_3 and base only (both neutral); unchanged.
+- Other comments in the nine functions (the leading comment above eff_DrawBillboardList, the one above eff_DrawAndAdvanceRotatedQuadClusters) name no renamed binding.
+
+FRESHNESS
+All 27 distinct final spellings were searched whole-word in src/** and include/**. No code hit inside the target function and none a file-scope name, enum constant, macro or type; the pre-existing hits are parameters, locals or comments of other functions (rotation: comments only; slot_index: a parameter in 368E4.c; ot_index: parameters in 4D0A8.c, 64FD8.c). The old tokens occur in no #define body (p and v do and are left alone).
+naming_keycheck.scoped_plan (read-only, working tree incl. Makefile) accepts all 40 pairs (206 token substitutions, all in 51268.c); this is a drafting aid, not the gate (cc1 differential, oracle build and staged keycheck are the apply gates).
