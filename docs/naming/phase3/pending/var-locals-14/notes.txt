@@ -1,0 +1,67 @@
+DRAFT (not yet reviewed): 40 rows from 40 research rows (0 dropped, 6 names changed). TUs: src/main/4510C.c (13 rows), src/main/4BC3C.c (27 rows).
+Base: f8290fa8e (lanes/naming-a == main). Every use of every binding re-derived from this source.
+
+DROPPED (0 of 40 research rows)
+- None. The research had already left out every binding blocked by keycheck (old names a, p, x, base, size, k, n, d, hi in #define bodies; dx/dy `dx * dx` in
+  fighter_FindNearestNavCrossing; two-declaration c and state in the later functions; K&R none). Re-checked here for all 40 rows with a scan of all
+  src/** and include/** (C and headers, 729 #define records, continued lines joined): no old name occurs as a macro name, parameter or body token;
+  no old name has a second declaration in its function (nested block or comma list); no `old * old` (the dx/dz of fighter_BuildCpuOrbitRoute are never
+  multiplied by themselves; dx/dy `dx * dx` stays out of this wave); no function-like macro is invoked in any of the 14 target functions; no
+  old name sits next to an object-like macro token; no K&R definition (all are ANSI prototype style: 4510C.c:1059, 1117, 1349, 1396; 4BC3C.c:32, 66,
+  128, 151, 181, 206, 218, 230, 244, 301). snd_Init/snd_Quit/snd_CloseNonCommon... are `void f(void)` with plain locals.
+
+CHANGED (drafter-substituted names, kept; 6 of 40)
+- fighter_CalcOpponentDistanceThresholdFromTables:a2: other_fighter -> other_record. The same arg0->other copy is already named other_record in
+  fighter_StepCpuPadScript (4510C.c:501); one spelling per concept. "fighter" would also be correct but
+  splits the vocabulary.
+- snd_Init:p1, snd_Quit:a0, snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb:s2: vab_address_cursor -> vab_sbaddr_cursor (3 rows). The table is
+  g_vab_vb_sbaddr (entries come from SsUtGetVBaddrInSB, 4BC3C.c:476); "vab_address" reads as a memory address of the VAB (cf. load_addr in the same file).
+- snd_LoadCommonVab:ret: pack_size -> body_offset, and snd_ClosePairedFileVabsThenLoadFromConsecutiveFiles:ret: first_pack_size -> first_body_offset.
+  snd_LoadVabPack returns arg0->unk_08 - (s32)arg0 (4BC3C.c:477), or 0 on failure; unk_08 is the address handed to SsVabTransBody (517), i.e. the VB body, so
+  the result is the offset of the body in the loaded pack (the part transferred to SPU and then overwritten), not the pack's size; the callers use
+  it exactly so (the second file is read at load_addr + ret; snd_ReloadListed... copies len[i] bytes). "pack_size" would over-claim.
+
+JUDGMENT POINTS FOR THE REVIEWER
+- fighter_BuildCpuOrbitRoute:z=probe_z with x left as x (x occurs in the CPU_SQ #define body, 4510C.c:1654); the pair is asymmetric, same as
+  fighter_UpdateCpuProbes (x/probe_z) in wave 13. dx/dz -> probe_dx_scaled/probe_dz_scaled: the 4096-scaled radial displacement (Judge is sine), shifted
+  right 12 before use; "probe" matches the collision-probe segments built from the point.
+- orbit_angle_offset: ang is also the offset in the route-writing loop (a = base +/- ang), restarting at 0x200; the sign is chosen elsewhere (temp), so the
+  offset is always positive. Its three comment lines (1127-1129) need the scoped pair substitution.
+- nearest_crossing_distance (best): keeps the 100000 no-crossing sentinel; the caller compares it with 100000 (4510C.c:2027, 2060), so the name is the
+  distance result including its sentinel. edge_vertex_index (j): first vertex of the edge (second is k = j + 1, wrapping); vtx is the array, hence "vertex".
+- vertex_x / vertex_z (cx, cy): vtx[v][1] is z, not y: fighter_FindNearestNavCrossing feeds vtx[][0], vtx[][1] as the x/z arguments of math_IntersectSegments
+  (1377-1378), and corner_z_out = cy + ... . `s16 cx, cy;` is a comma list after a plain type, which keycheck supports.
+- load_addr (s32 parameter used arithmetically and cast to a pack pointer) in snd_LoadCommonVab, snd_ClosePaired..., snd_CloseThenReadSingleFile...,
+  snd_ReloadListed...; in the second it is the base for both files (the second at load_addr + first_body_offset); the name claims the base only.
+- vab_count: 3, or 2 when the listed entries alias (arg2 == arg3 / g_vab_rec_ptr[6] == g_vab_rec_ptr[3]); it counts distinct VABs, no numbers in the name.
+  vab_list_index (i) in snd_ReloadListed...: the first loop closes all three listed entries regardless of vab_count, later loops stop at vab_count; it is
+  the same ordinal into g_vab_id_list throughout.
+- snd_Init:j=queue_index and vabs_cleared (i): j only indexes g_snd_queue here. The i of snd_ResetVoicesAndQueue (also passed to func_80086130) is not renamed.
+  vabs_cleared is a count (incremented after each paired clear), never an index.
+- rebase_delta (3 definitions + snd_RebaseListedVabs): each is passed unchanged to snd_VabFakeOpen, which adds it to g_vab_rec_ptr[idx] and the pack's unk_00/
+  unk_04 (4BC3C.c:494-496); callers pass (s32)s0 - s2 (9F9C.c:1675, 1692, 1708). Same spelling as motion_RebasePlayback (wave 13) etc. Hits of rebase_delta
+  elsewhere are other functions' locals/parameters (368E4.c, 43500.c, 4510C.c:202).
+- The same new name in several functions (vab_sbaddr_cursor, vab_record_cursor, vabs_cleared, load_addr, rebase_delta, vab_count, vab_list_index) is
+  allowed: local destinations may be shared across distinct functions; no function receives the same new name twice, and no new name equals any old name
+  in its own function (checked per function: e.g. snd_Quit olds i/a0/v1, snd_ClosePaired olds arg0/t0/t0_2/ret).
+- No FAKE comment and no __asm__ in any of the 14 functions or their leading comment blocks (FAKE sits elsewhere in 4510C.c, none in 4BC3C.c's range).
+- "object" appears in no name; fighter records are fighter_record / other_record.
+
+COMMENTS TO UPDATE
+- src/main/4510C.c:1127-1129 (inside fighter_BuildCpuOrbitRoute, the `temp` comment): names `ang` four times ("opponent_bearing - ang", "opponent_bearing + ang",
+  "stepping by -ang", "by +ang"); fighter_BuildCpuOrbitRoute:ang=orbit_angle_offset needs those tokens substituted (scoped pair only; the comment will re-wrap).
+- Nothing else: no comment in or directly above the other 13 functions names an old spelling of a renamed binding (scanned with whole-word match).
+
+FRESHNESS (all 28 distinct final spellings)
+Whole-word search of src/** and include/** (C and headers, #define names, parameters and bodies included): no hit at all for orbit_angle_offset,
+probe_dx_scaled, probe_dz_scaled, route_node_count, nearest_crossing_distance, polygon_index, edge_vertex_index, vertex_x, vertex_z, vab_sbaddr_cursor,
+vab_record_cursor, vabs_cleared, queue_index, vab_id, load_addr, body_offset, first_file_index, second_file_index, first_body_offset, vab_load,
+vab_list_index, copy_byte_index, vab_count. Hits NOT in the target function and none a file-scope name, enum constant, macro or type:
+other_record (locals of fighter_StepCpuPadScript and an earlier function, 4510C.c:270-433, 501-506), fighter_record (locals/params of other functions,
+4510C.c:228-242, 549-555), probe_z (fighter_UpdateCpuProbes local, 4510C.c:959-1002), nav_poly (fighter_GetNavCornerPoint parameter and the comment above it,
+4510C.c:1394-1426), rebase_delta (see above). Every new name is absent from its own function's tokens, from macros and from keywords.
+
+REVIEW (naming-reviewer pre-apply 2026-10-27): 40/40 PASS, no keycheck refusals expected.
+- Required comment edit at apply: 4510C.c:1127-1129 (temp comment in fighter_BuildCpuOrbitRoute), ang -> orbit_angle_offset x4.
+- Comments with an old bare word that are NOT about a renamed binding and must stay unchanged: 4510C.c:51 ($t0),
+  406 (v1), 581/592/1684 (count), 1682/2426 (best), 2003 ($s2); 4BC3C.c:382 (count, another function).
