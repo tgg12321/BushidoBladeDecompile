@@ -1,0 +1,29 @@
+DROPPED
+(none of the 12 research rows dropped: each re-derived against the worktree source at 61edf01b5; every use enumerated, no FAKE comment touches any binding,
+ none appears in an __asm__ string, every new name is fresh in include/** and src/** and unique within its function.)
+Rows most worth a hard look: eff_SetBillboardList:arg0 (the billboard word rests on g_eff_billboards' consumer at 51268.c:776-813), eff_LoadImagesAndSetup:arg1 (function carries a FAKE alias comment, but it names arg0/new_var only).
+
+CHANGED (drafter-substituted, kept)
+StepSlideBuildFrameRecordAndDispatchStateHandler:arg1: pad_pressed -> pad_buttons (the code shows a packed two-player 16-bit pad word tested against button masks; "pressed" (edge) vs held rests only on the global name g_entry_menu_pressed_buttons and the caller just forwards arg1)
+
+RESEARCH NO_NAME LIST (unchanged, none renamed; from research at 5ca58ddd4)
+menu_HandleSelPhase0CursorInput:arg0: packed input role is visible, but precise held-versus-pressed semantics were not established.
+menu_HandleSelPhase0CursorInput:sp10: address is passed through a u32 cast to pad_StepOffsetsGetDirectionEvents; complete mutation semantics were not established.
+menu_HandleSelPhase0CursorInput:var_7: FAKE comments explicitly cover assignments at src/main/64FD8.c:81-85 and :93-97.
+menu_DrawSelRowTiles:arg1: drives both horizontal placement and ordering-table choice; precise domain was not established.
+menu_DrawSelRowTiles:arg2: controls row geometry and tile count; a purpose beyond branch selection was not established.
+menu_DrawSelPhaseSheet:arg1: drives horizontal placement and ordering-table choice; precise domain was not established.
+menu_DrawSelPanel:arg0: deferred complete per-use audit of this larger function in this bounded pass.
+menu_DrawSelPanel:arg1: affects layout, ordering-table entries and per-entry state; precise domain was not established.
+menu_DrawSelPanel:var_5: FAKE comment explicitly covers repeated assignments at src/main/64FD8.c:300-301.
+menu_DrawSelPanel:var_6: FAKE comment names this binding beside var_5 at src/main/64FD8.c:300.
+menu_DrawSelOpposedChoice:arg0: deferred complete per-use audit of this larger function in this bounded pass.
+menu_DrawSelOpposedChoice:arg1: precise domain across resource selection, placement and state indexing was not established.
+menu_DrawSelOpposedChoice:var_3: declaration carries FAKE holder comment at src/main/64FD8.c:403-405.
+StoreCompactedBits:arg0: bit compaction is visible at src/main/64FD8.c:1304-1305, but the input's semantic contents remain unknown.
+eff_LoadImagesAndSetup:arg0: FAKE parameter-alias comment explicitly names arg0 at src/main/51268.c:156-158.
+eff_SelectQuadBuffer:arg0: only zero-versus-nonzero buffer selection is shown at src/main/51268.c:201; no stronger input purpose established.
+eff_BindScratchpad:arg0: only stored into unk00.unk04 at src/main/51268.c:240; downstream purpose not established.
+eff_BindScratchpad:arg1: only stored into unk00.unk08 at src/main/51268.c:241; downstream purpose not established.
+StepSlideBuildFrameRecordAndDispatchStateHandler:arg0: only copied to neutral global D_800A3548 at src/main/5ED34.c:237.
+StepSlideBuildFrameRecordAndDispatchStateHandler:temp_v1: intermediate alias of the incremented primitive-buffer counter at src/main/5ED34.c:243-247; independent semantic purpose not established.

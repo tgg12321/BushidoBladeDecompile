@@ -1,0 +1,12 @@
+menu_DrawSelRowTiles:var_5=ot_index
+menu_DrawSelPhaseSheet:var_1=ot_index
+menu_DrawSelPhaseSheet:arg2=sheet_index
+menu_DrawSelRowTiles:arg0=draw_context
+menu_DrawSelPhaseSheet:arg0=draw_context
+eff_SetBillboardList:arg0=src_billboards
+StepSlideBuildFrameRecordAndDispatchStateHandler:arg1=pad_buttons
+StepSlideBuildFrameRecordAndDispatchStateHandler:temp_v0=prim_buffer_record
+eff_LoadImagesAndSetup:arg1=quad_storage
+StepSlideBuildFrameRecordAndDispatchStateHandler:sp10=draw_context
+gpu_AddScreenDarken:temp_s0=tile_cursor
+gpu_AddScreenDarken:arg0=draw_context
