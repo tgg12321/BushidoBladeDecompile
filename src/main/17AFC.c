@@ -3160,12 +3160,12 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     return 0;
 }
 
-/* Point-in-triangle test: is arg3 on the same side of each triangle edge as
- * the centroid? For each of the three edges (arg0->arg1, arg0->arg2,
- * arg1->arg2) the 2D cross product of the edge vector with the centroid
- * offset and with the query-point offset must have the same sign; the sign
- * agreement is tested as `(cc ^ cp) >= 0`. Same idiom as the triangle test
- * inside math_TestPreparedTriangleSphere in this file. */
+/* Point-in-triangle test: is test_point on the same side of each triangle edge
+ * as the centroid? For each of the three edges (vertex_a->vertex_b,
+ * vertex_a->vertex_c, vertex_b->vertex_c) the 2D cross product of the edge
+ * vector with the centroid offset and with the query-point offset must have the
+ * same sign; the sign agreement is tested as `(cc ^ cp) >= 0`. Same idiom as
+ * the triangle test inside math_TestPreparedTriangleSphere in this file. */
 s32 math_PointInTriangleXZ(
     s32 *vertex_a, s32 *vertex_b, s32 *vertex_c, s32 *test_point) {
     s32 centroid_x = ((vertex_a[0] + vertex_b[0]) + vertex_c[0]) / 3;
