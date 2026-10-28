@@ -13,7 +13,7 @@ third, separate path. Disc contents and file formats are in
 file a `CdlLOC` start position and a byte size (include/game.h:2039-2042).
 Code names a file by group and index:
 `cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:42) returns
-`(&D_8008F12C)[group] + i`, a group base from the s16 table `D_8008F12C`
+`(&g_cdrom_file_group_bases)[group] + i`, a group base from the s16 table `g_cdrom_file_group_bases`
 plus an offset. The groups that appear in calls:
 
 - group 1: `motion_LoadCommonData` reads `cdrom_GetFileIndex(1, 1)` into the buffer
@@ -57,7 +57,7 @@ Requests:
     `g_cdrom_state.file = 1` and `.chan = chan`.
   - It enters state 0x10.
 - `cdrom_StartAudioEntry(n)` (src/main/cdrom.c:110) starts row `n` of
-  `D_8008F13C`: file `cdrom_GetFileIndex(5, row.unk_0)`, channel `row.unk_1`
+  `g_cdrom_audio_entries`: file `cdrom_GetFileIndex(5, row.unk_0)`, channel `row.unk_1`
   and, when `row.unk_4 != -1`, a stop position of the file start plus
   `row.unk_4`.
 - `cdrom_Pause` (src/main/cdrom.c:45) clears the ready callback, mutes the CD
@@ -114,7 +114,7 @@ Waits:
 
 - `cdrom_WaitIdle` (src/main/cdrom.c:60) loops until state 0. Each pass calls
   `comb_ExchangeEmptyPad`, `cdrom_Update`, `snd_FlushSoundQueue` (while
-  `D_800A3906` is set), `gpu_DrawDisplayModeOnLocalOtAndSync`, and `VSync(2)`. The loop sits
+  `g_snd_initialized` is set), `gpu_DrawDisplayModeOnLocalOtAndSync`, and `VSync(2)`. The loop sits
   between `comb_BeginWait` and `comb_EndWait`.
 - `cdrom_WaitAudioStarted` (src/main/cdrom.c:150) loops until state 0x16.
 - `cdrom_PauseAndWait` (:154) pauses a busy drive, then waits.
@@ -137,7 +137,7 @@ are described in [replay.md](replay.md).
   `dest` and uploads two VRAM rectangles from it: (0x380, 0, 0x80, 0x1DC),
   then (0x380, 0x1DC, 0x70, 0x24) from `dest + 0x1DC00`. It then splits
   `prim_buf` into two 0x4650-byte `POLY_FT4` buffers
-  (`D_800A3420` / `D_800A3424`) and returns the end of the second.
+  (`g_eff_first_quad_buffer` / `g_eff_second_quad_buffer`) and returns the end of the second.
 - `eff_Init` (src/main/6CF8.c:248) calls
   `eff_LoadImagesAndSetup(0x801D8800, 0x8010E800)` once (flag `g_eff_initialized`, cleared by
   `eff_ClearInitFlag`). It prints the base 0x8010E800 and `eff_LoadImagesAndSetup`'s
@@ -148,7 +148,7 @@ are described in [replay.md](replay.md).
   `snd_LoadCommonVab(0x801D8800)`, and calls `sys_Panic` when the bank's
   main-RAM part (sound table + VabHdr, everything before the body) is 0xD01
   bytes or more. It copies that part to 0x8010DB00, opens it with
-  `snd_VabFakeOpen(0xFFF35300, 0)` and sets `D_800A3906`. See
+  `snd_VabFakeOpen(0xFFF35300, 0)` and sets `g_snd_initialized`. See
   [sound.md](sound.md).
 - `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth` (src/main/6CF8.c:188) reads group-2 file 0x61 to 0x80118800
   (`main`, src/main/6CF8.c:440) and shows it as a 15-bit image. From frame

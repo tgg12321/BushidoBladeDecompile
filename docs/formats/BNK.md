@@ -63,7 +63,7 @@ block statistics, which do not apply.
 * `eff_LoadImagesAndSetup` (`src/main/51268.c`): the five `cdrom_GetFileIndex`
   reads and the two `LoadImage` rects; 128 x 476 x 2 + 112 x 36 x 2 =
   129,920, the file size.
-* The CD-table entries (`g_cd_file_table`, group base `D_8008F12C[2]` = 21)
+* The CD-table entries (`g_cd_file_table`, group base `g_cdrom_file_group_bases[2]` = 21)
   hold size 129,920 at those five indices; reading each entry's start
   sector from `Bushido Blade 2 (USA).bin` gives the file named in the table
   above, byte for byte.

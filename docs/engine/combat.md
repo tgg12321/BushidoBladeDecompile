@@ -20,7 +20,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
      `character_roster_index == 0x1B` records against the opponent's state.
   2. `fighter_ResolveBodyOverlap` (src/main/17AFC.c:773): the body-overlap push (its
      comment at :766): two points per fighter tested pairwise against the
-     radii `D_800A3144[0..1]`, an overlap pushing both apart along x/z
+     radii `g_fighter_body_overlap_radii[0..1]`, an overlap pushing both apart along x/z
      through `decaying_xz_velocity`.
   3. `g_fight_weapon_contact_result = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1077): the blade
      contact test between the two fighters (comment at :1065); it returns

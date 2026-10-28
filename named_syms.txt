@@ -517,7 +517,7 @@
 
 /* === fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags row-fetch globals (2026-05-17) -- 5 highs === */
 /* From src/main/17AFC.c fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags (:6605-6620): each row */
-/* of D_8008E778 is 4 bytes (table[0..3]).  The */
+/* of g_fight_step_table is 4 bytes (table[0..3]).  The */
 /* fetcher copies them into the globals below. */
 
 /* === bios_TestEvent wrapper functions (2026-05-17) -- 8 highs === */
@@ -590,9 +590,9 @@
 /* otherwise set handler = collision_TestCellKeepingNearestHitGteProjection. */
 
 /* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
-/* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
+/* menu_InitSelScreen saves its arg0 in g_sel_prim_buffers, passes it to */
 /* gpu_InitPrimBufferPair and stores the result in g_sel_screen_work (64FD8.c:1076-1083), */
-/* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with D_800A351C / g_row_menu_work_block */
+/* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with g_row_menu_prim_buffers / g_row_menu_work_block */
 /* (596CC.c:56-74). */
 /* See each line. */
 
@@ -641,7 +641,7 @@
 
 /* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
 /* From text1a.c around lines 55, 1093, 1201, 1235 etc.  g_gpu_clut_row_list_map */
-/* (the index into D_80094DF0's VRAM rect lists) */
+/* (the index into g_gpu_clut_row_lists's VRAM rect lists) */
 /* plus the DR_MOVE packet cursor g_gpu_draw_move_cursor and color conversion. */
 /* RENAME 0x800A3234: retired name 'D_800A3234' — preserved note: frame-parity bank last selected (D_800A36AC & 1), index into D_800A9830; init -1 (gpu_AddDrawMove) */  /* data-wave 2026-10-08: was g_text1a_record_idx */
 
@@ -714,7 +714,7 @@
 /* From code6cac_b.c mk_leaf_newpos (line 3388): places 6 leaves per */
 /* stage, with per-cat action lookup tables and random placement. */
 /* "leaf" likely refers to foliage/falling-leaves stage effect. */
-/* RENAME 0x800A3750: retired name 'D_800A3750' — preserved note: 4 s16 counters / latches, one per D_8008E914 row snd_UpdateStageSounds walks (0x7B is the sound-slot id base, not a size) */  /* data-wave 2026-10-08: was g_leaf_random_buffer */
+/* RENAME 0x800A3750: retired name 'D_800A3750' — preserved note: 4 s16 counters / latches, one per g_snd_stage_sound_slot_specs row snd_UpdateStageSounds walks (0x7B is the sound-slot id base, not a size) */  /* data-wave 2026-10-08: was g_leaf_random_buffer */
 
 /* === Dispatch-offset table base (2026-05-17) -- 1 high === */
 /* D_800F10E0 is entry [4] of the 28-entry s32 table at 0x800F10D0. */
@@ -728,7 +728,7 @@
 /* Signature (RECT*, s16 x, s16 y) matches PSX libgpu's MoveImage. */
 /* RENAME 0x8007B6C8: retired name 'gpu_MoveImage' — preserved note: PSX libgpu MoveImage(RECT *rect, int x, int y) -- VRAM rect-copy primitive */
 
-/* === D_8008D090 handler decode (2026-05-17) -- 15 highs === */
+/* === g_main_loop_handlers handler decode (2026-05-17) -- 15 highs === */
 /* The 34-entry mode-dispatch table at 0x8008D090 holds per-state update */
 /* functions indexed by g_main_loop_handler_index. */
 /* Decoded by reading each handler's first 5-10 lines to infer role. */
@@ -751,7 +751,7 @@
 /* RESET 0x8003CCCC: retired name 'mode_handler_32_RebootDispatch' — preserved note: gpu_InitDisplay + func_80061178 + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
 /* RESET 0x8003CD10: retired name 'mode_handler_33_RebootBegin' — preserved note: mirrors mode_25 setup; final teardown state */
 
-/* === D_8008D090 handler decode (cont'd) -- 1 high === */
+/* === g_main_loop_handlers handler decode (cont'd) -- 1 high === */
 /* Mode 18 confirmed from asm at pre-restructure-2026-10-03:asm/6CAC.s:41135: */
 /*   - gpu_HideResetAndClear + gpu_ResetGraphMode1 */
 /*   - motion_InvalidateMarkedNdataPackAndResetLoadCaches */
@@ -760,7 +760,7 @@
 /*     specific unlock-animation character/move combo */
 /* RESET 0x8003C040: retired name 'mode_handler_18_UnlockAnimDispatch' — preserved note: dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */
 
-/* === D_8008D090 handler decode (cont'd 2) -- 8 highs === */
+/* === g_main_loop_handlers handler decode (cont'd 2) -- 8 highs === */
 /* Additional handlers identified from body analysis. */
 /* 4 of these are EMPTY functions (no-op placeholders for state transitions */
 /* where no actual work is done -- the dispatch happens elsewhere). */
@@ -777,7 +777,7 @@
 /* RESET 0x8001DCB0: retired name 'mode_handler_00_GameInit' — preserved note: main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */
 /* RESET 0x8003BCB4: retired name 'mode_handler_07_SubModeTransition' — preserved note: increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */
 
-/* D_8008D090: 34 slots; only slots 10 and 14 keep a mode_handler_* name, the rest are func_<addr> */
+/* g_main_loop_handlers: 34 slots; only slots 10 and 14 keep a mode_handler_* name, the rest are func_<addr> */
 
 /* === Doc reconciliation: names proposed in recent_naming_findings.md but not yet in named_syms.txt (2026-05-17) -- 5 highs === */
 /* These names appear in pre-slim-2026-10-01:docs/engine/recent_naming_findings.md but */
@@ -797,7 +797,7 @@
 /* === 3D sound positioning result pair (2026-05-17) -- 2 highs === */
 /* From sound.c around line 542: a helper computes 3D-sound-positioning */
 /* angles using single_game_getEnemyCharId and stores them as a paired */
-/* {s16, s16} returned via &D_800A33C8 to the caller. */
+/* {s16, s16} returned via &g_camera_calculated_angles to the caller. */
 
 /* === ings.c main-loop state names (2026-05-17) -- 8 highs === */
 /* These were referenced in main_loop.md but not yet bound to names. */
@@ -860,7 +860,7 @@
 /* === Save / restore bytes of fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState / fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields (2026-05-17) -- 4 highs === */
 /* fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState saves g_fight_config.unk_4[0] in g_fight_saved_first_fighter_selection before overwriting */
 /* it; fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields writes it back and sets g_fight_saved_first_fighter_selection = 0xFF (empty) */
-/* (2B344.c:238-262).  D_800A37D8 / g_fight_command_stream_cursor: see their lines. */
+/* (2B344.c:238-262).  g_comb_handshake_retry_count / g_fight_command_stream_cursor: see their lines. */
 
 /* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
@@ -973,7 +973,7 @@
 /* From text1b.c resource_RequestEntryWithLinkedEntriesAndLatchCategory: when a panel/slot is activated, also */
 /* activate its sibling pair from these tables.  Indexed by arg0 * 2 */
 /* (so each arg0 entry is 2 bytes: sibling_a, sibling_b; 0xFF = none). */
-/* 2026-10-16: D_80099CC9 retired -- D_80099CC8[i][1] (u8 D_80099CC8[58][2], include/bb2.h); the asm/data dlabel remains. */
+/* 2026-10-16: D_80099CC9 retired -- g_resource_entry_linked_entries[i][1] (u8 g_resource_entry_linked_entries[58][2], include/bb2.h); the asm/data dlabel remains. */
 
 /* === Line-cast cached values (2026-05-17) -- 2 highs === */
 /* 43500.c statics beside g_collision_segment_work, the pointer to the cast work */
@@ -1014,7 +1014,7 @@
 /* From text1a.c around lines 317, 347, 353-354: fixed-point scale */
 /* factors and dispatch tables for attack/animation. */
 
-/* === StoreCompactedBits packed value, D_8009BD58 byte, D_800A324C cache (2026-05-17) -- 3 highs === */
+/* === StoreCompactedBits packed value, D_8009BD58 byte, g_resource_last_selection_index cache (2026-05-17) -- 3 highs === */
 
 /* === GPU MoveImage packet buffer + ordering-table slot cache (2026-05-17) -- 3 highs === */
 /* RENAME 0x800905F8: retired name 'D_800905F8' — preserved note: 0xFFFF (func_8003DA8C) or the ordering-table slot of the last DR_MOVE packet func_8003DBE4 inserted; read by gpu_GetLastFogOtIndex */  /* data-wave 2026-10-08: was g_status_up_cached_idx */
@@ -1074,7 +1074,7 @@
 /* === Ground fog state pair (2026-05-17) -- 4 highs === */
 /* From text1b.c gnd_get_fog (line 13286): selects fog value per */
 /* framebuffer parity. */
-/* RENAME 0x800A37D4: retired name 'D_800A37D4' — preserved note: POLY_FT4 * output cursor of the selected buffer (D_800A3420 / D_800A3424, chosen by eff_SelectQuadBuffer); the prim writers advance it and store it back */  /* data-wave 2026-10-08: was g_gnd_fog_active */
+/* RENAME 0x800A37D4: retired name 'D_800A37D4' — preserved note: POLY_FT4 * output cursor of the selected buffer (g_eff_first_quad_buffer / g_eff_second_quad_buffer, chosen by eff_SelectQuadBuffer); the prim writers advance it and store it back */  /* data-wave 2026-10-08: was g_gnd_fog_active */
 /* RENAME 0x800A3720: retired name 'D_800A3720' — preserved note: snapshot of the POLY_FT4 cursor at 0x800A37D4 taken by eff_SelectQuadBuffer; later reads measure the cursor's advance from it */  /* data-wave 2026-10-08: was g_gnd_fog_prev */
 
 /* === Per-player slot active flag array (2026-05-17) -- 1 high === */
@@ -1187,7 +1187,7 @@ D_1F800110                                       = 0x1F800110;  /* data-wave 202
 /* RENAME 0x8009A820: retired name 'D_8009A820' — preserved note: data-wave 2026-10-08: was g_text1b_addr_8009A820 */
 /* 2026-10-16: D_8009A821 retired -- D_8009A820[i][1] (u8 D_8009A820[8][2], src/main/4510C.c:884); its dlabel is folded into D_8009A820's. */
 /* 2026-10-16: D_8009BC08, D_8009BC0C, D_8009BC0D retired -- MenuState g_row_menu_row_state's unk4 / opt[0].state / opt[0].mode (include/game.h, 1f0af23f2); the asm/data dlabels remain. */
-/* 2026-10-16: D_8009BCC6, D_8009BCD2, D_8009BD21, D_8009BD59 retired -- elements of D_8009BCC4 (s16 [3][2]), g_entry_menu_transition_offsets (s16 [2]), g_sel_sheet_code_pairs (u8 [2][2]), D_8009BD58 (u8 [8][2]) (include/bb2.h); the asm/data dlabels of the first three remain. */
+/* 2026-10-16: D_8009BCC6, D_8009BCD2, D_8009BD21, D_8009BD59 retired -- elements of g_entry_menu_choice_grid_draw_offsets (s16 [3][2]), g_entry_menu_transition_offsets (s16 [2]), g_sel_sheet_code_pairs (u8 [2][2]), D_8009BD58 (u8 [8][2]) (include/bb2.h); the asm/data dlabels of the first three remain. */
 /* 2026-10-16: D_800F10F8, D_800F1110, D_800F1114 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */

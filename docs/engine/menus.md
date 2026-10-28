@@ -1,6 +1,6 @@
 # Menus, mode handlers and the scene script
 
-The game's top level is the mode handler table `D_8008D090` (34 entries,
+The game's top level is the mode handler table `g_main_loop_handlers` (34 entries,
 src/main/d_7D870.c:24), called with the mode value `g_main_loop_handler_index`; see
 [main_loop.md](main_loop.md) for the table and the loop. This page covers the
 pad masks the handlers test, the handlers in src/main/2B344.c that run the
@@ -99,7 +99,7 @@ Cited by function name.
 - `StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pad)` (src/main/5ED34.c:216) keeps the pad word in
   `g_entry_menu_pressed_buttons`, runs `StepSlideProgressCommitPendingStateAndQueueSound`, calls `gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset`
   (src/main/5ED34.c:503) unless the screen mode
-  `g_entry_menu_handler_index` is 2 or 3, and calls `D_8009BC1C[g_entry_menu_handler_index]`; it returns
+  `g_entry_menu_handler_index` is 2 or 3, and calls `g_entry_menu_handlers[g_entry_menu_handler_index]`; it returns
   `g_entry_menu_exit_result`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1307).
 - `StepSlideProgressCommitPendingStateAndQueueSound` (src/main/5ED34.c:249) slides `g_entry_menu_slide_displacement` by 0x20 a frame:
   states 1 / 3 (low byte of `g_entry_menu_slide_phase`) slide in to 0x1E8 and then switch

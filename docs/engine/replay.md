@@ -146,7 +146,7 @@ while (1) {
     if (cdrom_IsIdle() != 0) break;
     comb_ExchangeEmptyPad();
     cdrom_Update();
-    if (D_800A3906 != 0) snd_FlushSoundQueue();
+    if (g_snd_initialized != 0) snd_FlushSoundQueue();
     gpu_DrawDisplayModeOnLocalOtAndSync();
     *p = *p + 2;                          // g_cdrom_state.rec.unk3E
     VSync(2);

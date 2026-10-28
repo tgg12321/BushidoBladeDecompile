@@ -2,7 +2,7 @@
 """Decode the fight command streams fight_RunCommandStream walks.
 
 fight_InitCommandStream (2B344.c:217) points D_800A3844 at
-D_800900EC[D_8008D538[P1's character id]], one of 32 pointers to the byte
+g_fight_command_streams[D_8008D538[P1's character id]], one of 32 pointers to the byte
 streams D_8008F220 .. D_8009000C (2B344.c:2763-3118; the table is at
 2B344.c:3119); fight_RunCommandStream (2B344.c:318) then reads one opcode
 byte and its operands per command, until

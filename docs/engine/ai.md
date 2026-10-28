@@ -15,7 +15,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 (include/game.h:1695); a free slot has `kind == -1` and `slot == 0xFF`.
 
 - `object_InitKindQueue(rec)` (src/main/17AFC.c:3728) seeds the queue: it copies the five entries of
-  `D_8008E338[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
+  `g_fighter_initial_carried_object_kinds[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
   src/main/9F9C.c:3783.
 - `object_QueueKind(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it
@@ -72,8 +72,8 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5397) steps the cursor: it sets
 `g_fight_config.unk_4[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor
 reaches the count, sets the mode `g_main_loop_handler_index` to 0x12 (count 20) or 0x20.
-The 27 IDs match the row count of the per-character tables (`D_8008E338`,
-`D_8008DE34`, include/bb2.h:181-193), which is consistent with the list being
+The 27 IDs match the row count of the per-character tables (`g_fighter_initial_carried_object_kinds`,
+`g_fighter_base_move_frame_steps`, include/bb2.h:181-193), which is consistent with the list being
 an opponent order; the code does not name it.
 
 ## Random numbers

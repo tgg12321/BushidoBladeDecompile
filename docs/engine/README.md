@@ -58,7 +58,7 @@ Companion documents:
    |    7..0x20+ -> menus, options, character select, replay,   |
    |               training (cpu_practice_*), katinuki, etc.    |
    |                                                            |
-   |  Dispatch: D_8008D090[g_main_loop_handler_index]()                        |
+   |  Dispatch: g_main_loop_handlers[g_main_loop_handler_index]()                        |
    |  Camera:   special_camera_Exec(), special_camera_get_*()   |
    |  GPU:      change_shadow_tex_reg, gnd_get_fog              |
    |  Render:   gnd_disp_loop_ctrl() (per-mode draw)            |
@@ -96,7 +96,7 @@ address is the stable key.
 | --- | --- | --- |
 | `ings.c` | 0x800164F8-0x80017FA0 | Boot/init: `main`, `func_80016D78`, `disp_Init`, PC-drv file loaders, RNG, object-position math, scratchpad save/restore |
 | `code6cac.c` | 0x80017FA0-0x8001979C | mixed / unclear (11 functions, mostly unnamed) |
-| `code6cac_tu2.c` | 0x8001979C-0x80026DA4 | Game-mode handlers and match flow (`D_8008D090` slots 1/12/17: `fight_Update`, `func_8001EA04`, `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress`), practice-menu code (motion_ResolveMoveData), CPU move-pattern helpers; mixed |
+| `code6cac_tu2.c` | 0x8001979C-0x80026DA4 | Game-mode handlers and match flow (`g_main_loop_handlers` slots 1/12/17: `fight_Update`, `func_8001EA04`, `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress`), practice-menu code (motion_ResolveMoveData), CPU move-pattern helpers; mixed |
 | `code6cac_b.c` | 0x80026DA4-0x800272FC | fight_UpdatePairedInputTotalsEventsAndMidpointEffects only |
 | `code6cac_b_tu2.c` | 0x800272FC-0x800343F0 | Fighter combat and CPU/AI: distance/separation, dodge checks, `cpu_set_move_command_and_dir`, `cpu_check_same_dir_timer`, GTE transforms |
 | `code6cac_b_tu3.c` | 0x800343F0-0x80034708 | 2 functions; mixed / unclear |
@@ -167,9 +167,9 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Game-state dispatch
 - `g_main_loop_handler_index` — the main loop's handler index (0..0x21). Each value is an
-  index into `D_8008D090` (0x8008D090, an array of 34 handler function
+  index into `g_main_loop_handlers` (0x8008D090, an array of 34 handler function
   pointers). The main loop calls
-  `((void (*)(void))(&D_8008D090)[g_main_loop_handler_index])()` every frame
+  `((void (*)(void))(&g_main_loop_handlers)[g_main_loop_handler_index])()` every frame
   (`ings.c:625`).
 - `g_game_mode` (0x800A336C) — coarse game state (set up by `game_Init`).
 - `g_gpu_raised_ot_cutoff_requested` (0x800F6654) — 0/1 request for the raised OT cutoff.

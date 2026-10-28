@@ -40,7 +40,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 
 Data-only files: `d_1068.c`, `d_15EC.c` (the asset path table, see
 NDATA.md), `d_5BF0.c` and `d_7D870.c` (`g_data_start`, the mode table
-`D_8008D090`; [memory_layout.md](memory_layout.md)).
+`g_main_loop_handlers`; [memory_layout.md](memory_layout.md)).
 
 ## Name prefixes in use
 
@@ -67,7 +67,7 @@ Unnamed functions keep `func_<addr>`.
 
 | Object | Type / declaration | Page |
 | --- | --- | --- |
-| `D_8008D090` | the 34 mode handlers `main` calls through `g_main_loop_handler_index` | [main_loop.md](main_loop.md) |
+| `g_main_loop_handlers` | the 34 mode handlers `main` calls through `g_main_loop_handler_index` | [main_loop.md](main_loop.md) |
 | `g_gpu_db[2]` | `GpuDb`, include/game.h:54-63 | [gpu_pipeline.md](gpu_pipeline.md) |
 | `D_800A3770[2]` | the two 0x13400-byte primitive buffers | [memory_layout.md](memory_layout.md) |
 | `g_cd_file_table` | `CdFileEntry[159]`, include/bb2.h:474 | [file_io.md](file_io.md) |

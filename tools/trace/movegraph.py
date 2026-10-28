@@ -74,7 +74,7 @@ fires, ending the loop; bit 4 is cleared in all four words by
 fighter_BuildCpuOrMappedPadState, so no entry on it fires),
 1 R2, 2 L1, 3 R1, 5/6/7 the attack
 buttons of the key config (D_80106A50.frec20, a nibble per player; in mode
-D_800A38DC 6 the record that is not g_comb_local_side uses D_800A3912..14), 8
+D_800A38DC 6 the record that is not g_comb_local_side uses g_pad_remote_button_mapping_20/_40/_80), 8
 SELECT, 11 START, 12..15 UP RIGHT DOWN LEFT; for record 1 outside mode 6 the
 directions are mirrored (game UP/RIGHT/DOWN/LEFT = pad DOWN/LEFT/UP/RIGHT).
 L3 / R3 fold into bits 3 / 5 per word, after pressed / released are
@@ -118,7 +118,7 @@ SECTIONS_SIZE = 0x14
 KEY_CONFIG = 0x80106A70  # D_80106A50.frec20[3]
 MODE = 0x800A38DC  # D_800A38DC (s16)
 MODE6_PLAYER = 0x800A38A0  # g_comb_local_side (s32)
-MODE6_CONFIG = 0x800A3912  # D_800A3912..14
+MODE6_CONFIG = 0x800A3912  # g_pad_remote_button_mapping_20/_40/_80
 PAIRED_STARTER = 0x800A38AE  # D_800A38AE (s16)
 
 # motion_InitBuffers (9F9C.c): common file at 0x80120000, fighter files at
@@ -250,7 +250,7 @@ class Fight:
         if mode == 6 and (not m.covered(MODE6_PLAYER, 4)
                           or not m.covered(MODE6_CONFIG, 3)):
             raise SystemExit("movegraph: mode 6 needs g_comb_local_side and "
-                             "g_pad_remote_button_mapping_20..14 read")
+                             "g_pad_remote_button_mapping_20/_40/_80 read")
         if mode == 6 and idx != m.u32(MODE6_PLAYER):
             nib = [m.u8(MODE6_CONFIG + i) & 0xF for i in range(3)]
         else:

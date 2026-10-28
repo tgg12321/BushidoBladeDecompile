@@ -68,7 +68,7 @@ class Decode(unittest.TestCase):
             e.write_bytes(exe())
             m = Path(d) / "map"
             m.write_text(f"                0x{TABLE:08x}"
-                         f"                        D_800900EC = "
+                         f"                        g_fight_command_streams = "
                          f"0x{TABLE:08x}\n", encoding="utf-8")
             import io
             import contextlib

@@ -25,7 +25,7 @@ are described in [docs/formats/](../formats/README.md).
    `snd_VabFakeOpen(0xFFF35300, 0)` (0x8010DB00 - 0x801D8800).
 4. `snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode`, which sets `SsSetMVol(0x7F, 0x7F)`, stereo and auto
    key-off mode 0.
-5. Sets `D_800A3906 = 1`. That flag lets `cdrom_WaitIdle` call
+5. Sets `g_snd_initialized = 1`. That flag lets `cdrom_WaitIdle` call
    `snd_FlushSoundQueue` on each pass (`main` calls it every frame regardless,
    src/main/6CF8.c:458).
 
@@ -57,7 +57,7 @@ fourth is the body size in SPU RAM.
 ## One-shot sounds
 
 `snd_QueueSound(id, volr, voll)` (4BC3C.c) queues sound `id`. It puts
-`&D_8009AA70[id]`, a pair (slot, index), into the first free entry of the
+`&g_snd_sound_vab_entries[id]`, a pair (slot, index), into the first free entry of the
 24-entry pool `g_snd_queue` (`Unk800EFB78Entry`, include/game.h:840-849).
 
 `snd_FlushSoundQueue` (4BC3C.c) flushes the pool once per frame. For each

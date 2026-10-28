@@ -41,7 +41,7 @@ start-up code, in order:
      `comb_Abort`, src/main/28708.c:1605): `cdrom_PauseAndWait()`, display off
      (`g_local_ot_draw_mode = DISP_DISABLED`), clears the request and `D_800A31DA`, and
      sets mode 8;
-   - calls the mode handler `D_8008D090[g_main_loop_handler_index]()` (src/main/6CF8.c:468),
+   - calls the mode handler `g_main_loop_handlers[g_main_loop_handler_index]()` (src/main/6CF8.c:468),
      then `font_AddTpage()` (src/main/2B344.c:1146);
    - waits until root counter 2 (`GetRCnt(0xF2000001)`) reaches
      `((g_main_frame_period - 1) << 8) + 0x80`, calling `rand()` while it waits; then
@@ -50,7 +50,7 @@ start-up code, in order:
      `PutDrawEnv` for the buffer;
    - checks the primitive buffer: the space left
      (`D_800A3770[idx] + 0x13400 - g_prim_buf_cursor`) updates the low-water
-     mark `D_800A30DC`; below 0 it prints `g_str_prim_overflow` and stops in
+     mark `g_main_prim_buffer_min_remaining`; below 0 it prints `g_str_prim_overflow` and stops in
      `func_800164F8` (src/main/6CF8.c:488-499);
    - decrements `g_main_present_skip_frames`, or else submits the OT (`DrawOTag`) and
      increments `g_gpu_presented_frame_count`;
@@ -82,9 +82,9 @@ the choice, Left / Right toggle bits of `g_fight_toggle_option_bits` on choices 
 confirms and Triangle cancels. Choice 1 sets `D_800A31DA = 1` and mode 8;
 choice 2 sets mode 8.
 
-## The mode table `D_8008D090`
+## The mode table `g_main_loop_handlers`
 
-`D_8008D090` is a 34-entry table of handlers, defined in the inline
+`g_main_loop_handlers` is a 34-entry table of handlers, defined in the inline
 assembly of src/main/d_7D870.c:24. "Sets" lists the modes each handler
 assigns to `g_main_loop_handler_index` itself.
 

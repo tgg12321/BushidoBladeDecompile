@@ -27,7 +27,7 @@ Ours keeps the lookup in a callee-save across the call: an extra `$sN` save/rest
 ## The C shape that produces it
 
 ```c
-rec->bone_event_bone_index = D_8008D59C[arg1].bone;
+rec->bone_event_bone_index = g_fighter_bone_hit_record_templates[arg1].bone;
 src = ((MATRIX **)node_GetSlotMatrixPointerArray(rec->index))[rec->bone_event_bone_index];
 ```
 

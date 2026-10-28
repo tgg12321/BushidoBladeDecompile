@@ -20,7 +20,7 @@ The header's `$gp` and `.bss` fields are 0. `bb2.ld` links one output section
 | Range | Content | Linker symbols |
 | --- | --- | --- |
 | 0x80010000..0x800164F8 | `.rodata` of every TU | `main_RODATA_START` / `_END` (bb2.ld:89) |
-| 0x800164F8..0x8008D120 | `.text`. The last 0xB0 bytes (0x8008D070..) are game data emitted from `src/main/d_7D870.c`: `g_data_start`, the 34-entry handler table `D_8008D090` that `main` calls through `g_main_loop_handler_index` (src/main/6CF8.c:468), and the start of `g_sqrt_table_u8` | `main_TEXT_START` / `_END` (bb2.ld:91, :317) |
+| 0x800164F8..0x8008D120 | `.text`. The last 0xB0 bytes (0x8008D070..) are game data emitted from `src/main/d_7D870.c`: `g_data_start`, the 34-entry handler table `g_main_loop_handlers` that `main` calls through `g_main_loop_handler_index` (src/main/6CF8.c:468), and the start of `g_sqrt_table_u8` | `main_TEXT_START` / `_END` (bb2.ld:91, :317) |
 | 0x8008D120..0x800A3800 | `.data`, with each -G8 TU's `.sdata` / `.sbss` in link order | `main_DATA_START` / `_END` (bb2.ld:319, :594) |
 
 The linked objects' `.bss` is empty (`main_BSS_START == main_BSS_END ==
@@ -55,7 +55,7 @@ These addresses are set in code:
 | 0x801EBC00 | 0x13400 | primitive buffer 1 (`D_800A3770[1]`); ends at 0x801FF000 | src/main/6CF8.c:290 |
 | 0x801D8800 | | also load scratch: `eff_Init`'s `eff_LoadImagesAndSetup(0x801D8800, ...)` (called from mode handlers) and `snd_LoadCommonVab(0x801D8800)` (at boot and again after `sys_Exec` returns) | src/main/6CF8.c:254, :269 |
 | 0x8010DB00 | <= 0xD00 | the common VAB's main-RAM part (sound table + VabHdr), copied from 0x801D8800 | src/main/6CF8.c:273 |
-| 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `D_800A3420` / `D_800A3424` set by `eff_LoadImagesAndSetup` | 51268.c, `eff_LoadImagesAndSetup` |
+| 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `g_eff_first_quad_buffer` / `g_eff_second_quad_buffer` set by `eff_LoadImagesAndSetup` | 51268.c, `eff_LoadImagesAndSetup` |
 | 0x80118800 | | `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`'s image buffer at boot | src/main/6CF8.c:440 |
 | 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
 
