@@ -103,6 +103,6 @@ an opponent order; the code does not name it.
   `fighter_StartMoveScript`) and plays
   cue 0x30.
 - `camera_SetFighterFocusView(rec, a1)` (src/main/9F9C.c:980) sets the view target
-  `g_camera_default_view_record.unk_00` to `rec->bone_hit_points_4_5_midpoint`, its rotation to `(0x120, a1, 0)` and
+  `g_camera_default_view_record.focus_point` to `rec->bone_hit_points_4_5_midpoint`, its rotation to `(0x120, a1, 0)` and
   its distance `w18` to 0x1162. Its caller is `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange`
   (src/main/9F9C.c:2081).

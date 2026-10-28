@@ -1133,9 +1133,9 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
 /* Blade contact test between the two D_80101EC8 records (called by
  * fight_UpdateFighterInteractionsAndPointCaches; the result goes to
  * g_fight_weapon_contact_result). Returns -1 unless both records' +0x3C are at
- * least 4. Borrows the first 16 SPAD->unkA8 points as two 2x2 grids per record
- * (fight_ProcessPositionRecordsInQuad's layout). A record whose +0xE is not 6
- * or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid
+ * least 4. Borrows the first 16 SPAD->bone_hit_points points as two 2x2 grids
+ * per record (fight_ProcessPositionRecordsInQuad's layout). A record whose +0xE
+ * is not 6 or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid
  * fight_ProcessPositionRecordsInQuad hits plays effects 1, 0x26 and 0x2D and
  * sets +0x286 to 0x19 or 0xB; the hit counts only when +0x40 lies within
  * +0xA1..+0xA3 (+0xA2..+0xA4 for grid 1, which is tested only with +0x8C set).
@@ -1675,11 +1675,12 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         u32 mask_c;
         s32 var_10;
         s32 var_11;
-        /* var_12: the iteration's blade (0: the unk00 / prev_weapon_points
-         * points, 1: the unk48 / prev_second_weapon_points points; the
-         * knockback reads the last iteration's), then whether the nearest hit
-         * came from that blade. The 4/5 arm's `var_12 = 0;` re-stores the held
-         * 0 (Q85; Ruling 11, reused-local-necessity)
+        /* var_12: the iteration's blade (0: the weapon_points /
+         * prev_weapon_points points, 1: the second_weapon_points /
+         * prev_second_weapon_points points; the knockback reads the last
+         * iteration's), then whether the nearest hit came from that blade. The
+         * 4/5 arm's `var_12 = 0;` re-stores the held 0 (Q85; Ruling 11,
+         * reused-local-necessity)
          */
         s32 var_12;
         /* temp1 / temp2: the indices of the iteration's two points (per-branch
@@ -2238,11 +2239,12 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
 }
 
 /* Accumulates a character's shadow vectors in the scratchpad record at
- * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points (unk48[k]
- * when bit k of g_fight_weapon_contact_result is set, else unk00[k]); unkB8
- * sums the matching pair fight_UpdateFighterInteractionsAndPointCaches copied
- * into D_80101EC8[k] (prev_second_weapon_points / prev_weapon_points); the
- * result goes to contact_point. */
+ * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points
+ * (second_weapon_points[k] when bit k of g_fight_weapon_contact_result is set,
+ * else weapon_points[k]); unkB8 sums the matching pair
+ * fight_UpdateFighterInteractionsAndPointCaches copied into D_80101EC8[k]
+ * (prev_second_weapon_points / prev_weapon_points); the result goes to
+ * contact_point. */
 void fighter_BlendCurrentAndPreviousContactPoints(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80101EC8Record *rec0 = &D_80101EC8[0];
@@ -2315,11 +2317,12 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
 }
 
 /* Per-frame update of the two D_80101EC8 records.  The three
- * scratchpad points per character at SPAD->unk00 and the two at SPAD->unk48
- * are copied into each record's prev_weapon_points / prev_second_weapon_points
- * (fighter_BlendCurrentAndPreviousContactPoints reads them back);
- * bone_hit_points_1_3_centroid is the centroid of SPAD->unkA8[k][1..3] and
- * bone_hit_points_4_5_midpoint the midpoint of SPAD->unkA8[k][4..5]. */
+ * scratchpad points per character at SPAD->weapon_points and the two at
+ * SPAD->second_weapon_points are copied into each record's prev_weapon_points /
+ * prev_second_weapon_points (fighter_BlendCurrentAndPreviousContactPoints reads
+ * them back); bone_hit_points_1_3_centroid is the centroid of
+ * SPAD->bone_hit_points[k][1..3] and bone_hit_points_4_5_midpoint the midpoint
+ * of SPAD->bone_hit_points[k][4..5]. */
 void fight_UpdateFighterInteractionsAndPointCaches(void) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
      * both players' pending_move_event values are tested before the clash

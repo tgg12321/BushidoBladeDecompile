@@ -851,8 +851,8 @@ typedef struct {
 
 /* A position (g_snd_sequence_positions: 12-byte stride, 6 entries, one per
    g_snd_sequence_ticks slot): the same s32 x/y/z triple as Vec3i32;
-   fighter_UpdateBoneWorldData copies a scratchpad point (SPAD->unkA8) into
-   Unk80101EC8Record.bone_hit_point_0 as one 12-byte object. */
+   fighter_UpdateBoneWorldData copies a scratchpad point (SPAD->bone_hit_points)
+   into Unk80101EC8Record.bone_hit_point_0 as one 12-byte object. */
 typedef Vec3i32 Unk80107850Rec;
 
 /* The PsyQ SVECTOR layout under a local name. */
@@ -896,8 +896,8 @@ typedef struct {
 } Unk800EED10Entry;
 
 /* A hit record: one of the 22 test points of a character.
- * fighter_UpdateBoneWorldData places point i at SPAD->unkA8[ch][i] (`ofs`
- * rotated by node_GetSlotMatrixPointerArray()'s matrix `bone`, plus that
+ * fighter_UpdateBoneWorldData places point i at SPAD->bone_hit_points[ch][i]
+ * (`ofs` rotated by node_GetSlotMatrixPointerArray()'s matrix `bone`, plus that
  * matrix's translation); the hit tests (fighter_CastWeaponSegment,
  * fighter_TestTriangleBoneHits, object_ResolveFighterHits) take unk_0C / unk_0E
  * as the first test's limits and, when unk_00 != 0, unk_10 / unk_12 as a second
@@ -963,26 +963,29 @@ typedef struct {
  * eff_StartRecycledCommandWithMagentaLight point it before calling
  * eff_StartCommand. g_eff_billboards follows g_eff_command_block, so that copy
  * ends at +0x2C. Each copy sets one pointer pair:
- * - unk00: one word, stored whole and read whole (bit 21 in eff_StartCommand,
- * bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
+ * - command_word: one word, stored whole and read whole (bit 21 in
+ * eff_StartCommand, bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
  * eff_InitRateSelectedCosineScaledQuad); eff_StartCommand / eff_StepCommand
  * also read its low halfword (`lhu`), their g_eff_command_phase /
  * g_eff_command_handler_bases index.
- * - unk04 / unk08: the three halfwords / three words eff_StepCommand and
- * eff_DrawBillboardList copy into the scratchpad block's unk18 / unk20 (through
- * D_800A346C / g_eff_view_origin). Only the scratchpad block's are set:
- * eff_BindScratchpad stores its two arguments there.
- * - unk0C / unk10: the three words / three halfwords eff_StartCommand copies
- * into unk20 / unk18. Set only in the g_eff_command_block block (through
- * g_eff_active_command_block or g_eff_command_block directly).
- * - unk14: the byte eff_StartCommand / eff_StepCommand store the called
+ * - bound_rotation_src / bound_position_src: the three halfwords / three words
+ * eff_StepCommand and eff_DrawBillboardList copy into the scratchpad block's
+ * vector_copy / position_copy (through D_800A346C / g_eff_view_origin). Only
+ * the scratchpad block's are set: eff_BindScratchpad stores its two arguments
+ * there.
+ * - start_position_src / start_vector_src: the three words / three halfwords
+ * eff_StartCommand copies into position_copy / vector_copy. Set only in the
+ * g_eff_command_block block (through g_eff_active_command_block or
+ * g_eff_command_block directly).
+ * - status_dest: the byte eff_StartCommand / eff_StepCommand store the called
  * function's result to (`sb`).
- * - unk18 / unk20: the copies. D_800A346C / g_eff_view_origin point at the
- * scratchpad block's, g_eff_command_vector / g_eff_command_position at the
- * g_eff_command_block block's (eff_StartCommand). unk18 is s16 like its sources
- * (unk04 / unk10) and every consumer (SVECTOR / SVec4i16 fields:
- * eff_SetRotMatrix, eff_SpawnRotatedQuadCluster,
- * eff_AllocateOrRecycleYawedQuadSlot, eff_SpawnParticles).
+ * - vector_copy / position_copy: the copies. D_800A346C / g_eff_view_origin
+ * point at the scratchpad block's, g_eff_command_vector /
+ * g_eff_command_position at the g_eff_command_block block's (eff_StartCommand).
+ * vector_copy is s16 like its sources (bound_rotation_src / start_vector_src)
+ * and every consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix,
+ * eff_SpawnRotatedQuadCluster, eff_AllocateOrRecycleYawedQuadSlot,
+ * eff_SpawnParticles).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -1151,11 +1154,11 @@ typedef union {
 /* 51268's view of the scratchpad from 0x1F800000 (SPAD51268).
  * 17AFC's view of the same memory, used at other times, is ScrPad.
  * eff_BindScratchpad points 51268's D_800A34xx globals at these members; apart
- * from its own two stores to default_command_block.unk04 / unk08, the code
- * reaches them only through those globals:
+ * from its own two stores to default_command_block.bound_rotation_src /
+ * bound_position_src, the code reaches them only through those globals:
  * - default_command_block: the command block g_eff_active_command_block points
  * at until a function retargets it; D_800A346C / g_eff_view_origin point at its
- * unk18 / unk20.
+ * vector_copy / position_copy.
  * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec /
  * g_eff_clut_tex_rec (TexRec). eff_DrawBillboardList retargets them only in its
@@ -1287,14 +1290,15 @@ typedef struct {
  * (fighter_ProcessWeaponBodyHits writes them before each call), and
  * object_ResolveFighterHits's g_object_pool object step, prev_pos then pos.
  * fighter_ProcessWeaponBodyHits uses all six: [0] / [1] are two of the other
- * character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3] the same two
- * from its record (prev_weapon_points or prev_second_weapon_points), [4] / [5]
- * the midpoints of [0] / [2] and [1] / [3]; for each triangle it hands
- * math_PrepareTriangleCollisionFrame it aims shape_points[0..2] at three of
- * them. object_UpdatePool / fight_UpdateBallisticRecords lay the bytes out
- * differently (collision_TestSegmentExtendingShortStartWithWork's argument
- * block, its work area from +0x38 through +0x123): Unk1F8002B8_8005344C, the
- * other member of Unk1F8002B8Union. raw sizes the union to 0x60. */
+ * character's scratchpad points (ScrPad.weapon_points or second_weapon_points),
+ * [2] / [3] the same two from its record (prev_weapon_points or
+ * prev_second_weapon_points), [4] / [5] the midpoints of [0] / [2] and [1] /
+ * [3]; for each triangle it hands math_PrepareTriangleCollisionFrame it aims
+ * shape_points[0..2] at three of them. object_UpdatePool /
+ * fight_UpdateBallisticRecords lay the bytes out differently
+ * (collision_TestSegmentExtendingShortStartWithWork's argument block, its work
+ * area from +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
+ * Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
     Unk80107850Rec unk00[6];
@@ -1387,16 +1391,18 @@ typedef union {
     Unk1F8002B8_8005344C v8005344C;
 } Unk1F8002B8Union;
 
-/* Scratchpad point tables at 0x1F800000.  unk00: three points per character
- * (fight_UpdateFighterInteractionsAndPointCaches copies [0][0..2] and [1][0..2]
- * to the two records' +0x210); unk48: two more per character (copied to
- * +0x234); unk78: two body points per character (fighter_ResolveBodyOverlap
- * builds them from unkA8 joint 1 and the midpoint of joints 15 and 19); unkA8:
- * 22 points per character (fighter_CastWeaponSegment reads 0x1F8000A8 + id *
- * 0x108 + i * 0xC, i < 22). fighter_Update hands fighter_UpdateBoneWorldData
- * its character's unkA8 / unk00 / unk48. unk2B8: the area at 0x1F8002B8
- * (Unk1F8002B8Union), to the end of the scratchpad; the scratchpad is shared
- * scratch that other code also uses with its own views (see Unk1F8002B8Rec). */
+/* Scratchpad point tables at 0x1F800000.  weapon_points: three points per
+ * character (fight_UpdateFighterInteractionsAndPointCaches copies [0][0..2] and
+ * [1][0..2] to the two records' +0x210); second_weapon_points: two more per
+ * character (copied to +0x234); body_overlap_points: two body points per
+ * character (fighter_ResolveBodyOverlap builds them from bone_hit_points joint
+ * 1 and the midpoint of joints 15 and 19); bone_hit_points: 22 points per
+ * character (fighter_CastWeaponSegment reads 0x1F8000A8 + id * 0x108 + i * 0xC,
+ * i < 22). fighter_Update hands fighter_UpdateBoneWorldData its character's
+ * bone_hit_points / weapon_points / second_weapon_points. unk2B8: the area at
+ * 0x1F8002B8 (Unk1F8002B8Union), to the end of the scratchpad; the scratchpad
+ * is shared scratch that other code also uses with its own views (see
+ * Unk1F8002B8Rec). */
 typedef struct {
     Unk80107850Rec weapon_points[2][3];
     Unk80107850Rec second_weapon_points[2][2];
@@ -1610,8 +1616,8 @@ typedef struct Unk80101EC8Record {
     s16 variant_index;
     s16 object_variant_index;
     s16 object_variant_enabled;
-    /* != 0: the second blade (prev_second_weapon_points / SPAD unk48 points) is
-     * live */
+    /* != 0: the second blade (prev_second_weapon_points / SPAD
+     * second_weapon_points points) is live */
     s16 wielded_object_live_state;
     s16 unk_8E;
     s16 unk_90;
@@ -1707,7 +1713,7 @@ typedef struct Unk80101EC8Record {
      * 0x1F800048 + idx * 0x18 */
     Unk80107850Rec prev_second_weapon_points[2];
     VECTOR unk_24C;
-    /* fighter_Update: copy of scratchpad point unk00[idx][0] */
+    /* fighter_Update: copy of scratchpad point weapon_points[idx][0] */
     Unk80107850Rec opponent_elevation_origin;
     s32 elevation_origin_from_weapon;
     s16 unk_26C;
@@ -1746,7 +1752,8 @@ typedef struct Unk80101EC8Record {
     u8 unk_34F[0x350 - 0x34F];
     s16 bone_event_counter;
     /* index into node_GetSlotMatrixPointerArray()'s MATRIX * table and
-     * SPAD->unkA8[] (fighter_DispatchArmedBoneVectorEventAndDisarm) */
+     * SPAD->bone_hit_points[] (fighter_DispatchArmedBoneVectorEventAndDisarm)
+     */
     s16 bone_event_bone_index;
     /* fighter_StoreBoneLocalVectorAndArmEventTrigger's gte_stlvnl output;
      * fighter_DispatchArmedBoneVectorEventAndDisarm's gte_ldlv0 input */
@@ -1957,9 +1964,9 @@ typedef struct Rec44 {
 } Rec44;
 
 /* The camera-target offset at 0x800FF5C8: camera_ApplyFightView /
- * camera_ApplyReplayView add its fields to a Rec44's unk_00, unk_10 and w18,
- * and camera_UpdatePadOffset zeroes them. The fields sit at Rec44's offsets;
- * +0x0C and the SVECTOR pad are never accessed. */
+ * camera_ApplyReplayView add its fields to a Rec44's focus_point, camera_angles
+ * and w18, and camera_UpdatePadOffset zeroes them. The fields sit at Rec44's
+ * offsets; +0x0C and the SVECTOR pad are never accessed. */
 typedef struct Unk800FF5C8Rec {
     Vec3i32 unk_00;
     u8 unk_0C[4];
@@ -2281,14 +2288,14 @@ typedef struct {
 
 /* The CD read / CD audio words at 0x80101E60..0x80101EA7: the tail of the
  * CD state block g_cdrom_state (CdState below). Member widths follow the
- * original accesses; 0x80101E91..93 is alignment padding. unk3C..unk44 belong
- * to the object because cdrom_UpdateAudio (compiled -G8) keeps the address of
- * its accesses to unk3C / unk44 in a register only for a variable larger than 8
- * bytes. unk3E (u16) and expected_pos (s32; no access reveals its signedness)
- * lie in that span but cdrom_UpdateAudio never touches them; they are typed by
- * their other users' accesses (Q13/Q14). `pair` holds a copy of a
- * g_cd_file_table element (a CdFileEntry), copied whole by cdrom_StartRead /
- * cdrom_StartAudio. */
+ * original accesses; 0x80101E91..93 is alignment padding.
+ * report_timeout..end_countdown belong to the object because cdrom_UpdateAudio
+ * (compiled -G8) keeps the address of its accesses to report_timeout /
+ * end_countdown in a register only for a variable larger than 8 bytes. unk3E
+ * (u16) and expected_pos (s32; no access reveals its signedness) lie in that
+ * span but cdrom_UpdateAudio never touches them; they are typed by their other
+ * users' accesses (Q13/Q14). `pair` holds a copy of a g_cd_file_table element
+ * (a CdFileEntry), copied whole by cdrom_StartRead / cdrom_StartAudio. */
 typedef struct {
     s16 file_index;          /* 0x80101E60 */
     s16 io_state;            /* 0x80101E62 */
@@ -2316,8 +2323,8 @@ typedef struct {
 
 /* The CD module's state block, one 0x50-byte object at 0x80101E58 (span
  * bounded by owner ruling Q43). cdrom_StartAudio forms the CdlSetfilter
- * parameter (file, chan) as &rec.unk02 - 0xA and reloads rec.unk00 only after
- * its CdFileEntry copy into rec.pair (one object for the scheduler);
+ * parameter (file, chan) as &rec.io_state - 0xA and reloads rec.file_index only
+ * after its CdFileEntry copy into rec.pair (one object for the scheduler);
  * cdrom_Update forms &rec.pair off later members. */
 typedef struct {
     u8 file;             /* 0x80101E58 */
@@ -2329,10 +2336,10 @@ typedef struct {
 /* The parameter block 0x80102778..0x80102787 (fight_InitSettings sets
  * every byte of it except 0x82/0x83): two u16 values, three per-player byte
  * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
- * fourth per-player pair only other functions touch (unk_A, indexed by player
- * in fighter_ConfigureCpuControl) and four single bytes. One object:
- * menu_PrintEditAndApplyConfigWithPerPadCursors reaches unk_4 and unk_E as
- * offsets from the address of unk_C.
+ * fourth per-player pair only other functions touch (operand_cpu_base_levels,
+ * indexed by player in fighter_ConfigureCpuControl) and four single bytes. One
+ * object: menu_PrintEditAndApplyConfigWithPerPadCursors reaches unk_4 and
+ * pending_view_setting as offsets from the address of pending_stage_index.
  */
 typedef struct {
     u16 cpu_base_levels[2];

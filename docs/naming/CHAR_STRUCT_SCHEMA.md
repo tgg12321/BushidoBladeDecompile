@@ -179,15 +179,15 @@ scratchpad points (17AFC.c:2428-2442) and func_80022580 sets to `unk_F4`
 
 | Offset | Member (rec[0] address) | fight_UpdateFighterInteractionsAndPointCaches computation (record i) |
 |---|---|---|
-| +0x174 | `bone_hit_points_4_5_midpoint.x` (`D_8010203C`) | `(SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2` |
+| +0x174 | `bone_hit_points_4_5_midpoint.x` (`D_8010203C`) | `(SPAD->bone_hit_points[i][4].x + SPAD->bone_hit_points[i][5].x) / 2` |
 | +0x178 | `bone_hit_points_4_5_midpoint.y` (`D_80102040`) | same, `.y` |
 | +0x17C | `bone_hit_points_4_5_midpoint.z` (`D_80102044`) | same, `.z` |
-| +0x18C | `bone_hit_points_1_3_centroid.x` (`D_80102054`) | `(SPAD->unkA8[i][1].x + [2].x + [3].x) / 3` |
+| +0x18C | `bone_hit_points_1_3_centroid.x` (`D_80102054`) | `(SPAD->bone_hit_points[i][1].x + [2].x + [3].x) / 3` |
 | +0x190 | `bone_hit_points_1_3_centroid.y` (`D_80102058`) | same, `.y` |
 | +0x194 | `bone_hit_points_1_3_centroid.z` (`D_8010205C`) | same, `.z` |
 
-What the scratchpad points `SPAD->unkA8[i][k]` hold is not shown by
-these uses; wave15 reset the old registry names of these words.
+The source points are the scratchpad table `SPAD->bone_hit_points[i][k]`
+(ScrPad, include/game.h); wave15 reset the old registry names of these words.
 
 ### Reset block (+0x104..+0x14F)
 

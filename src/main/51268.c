@@ -70,13 +70,14 @@ static s16 D_800A34F0[2];
 static s32 D_800A34F4; /* not named by any code or data: size from the gap */
 
 /* Runs the command in the block g_eff_active_command_block points at (idx = the
- * block's low halfword, unk00.h): copies the three words at unk0C and the three
- * halfwords at unk10 into unk20 / unk18, points g_eff_command_position /
+ * block's low halfword, command_word.h): copies the three words at
+ * start_position_src and the three halfwords at start_vector_src into
+ * position_copy / vector_copy, points g_eff_command_position /
  * g_eff_command_vector at the copies, clears g_eff_command_phase[idx], calls
  * the g_eff_command_handlers entry g_eff_command_handler_bases[idx] +
- * g_eff_command_phase[idx], stores the result through unk14, and sets
- * g_eff_point_light_countdown to 0xA when bit 21 of unk00.w is set. Member
- * reads (not
+ * g_eff_command_phase[idx], stores the result through status_dest, and sets
+ * g_eff_point_light_countdown to 0xA when bit 21 of command_word.w is set.
+ * Member reads (not
  * *(u16 *)g_eff_active_command_block) let the second idx read (the
  * g_eff_command_handler_bases index) rise above the g_eff_command_position
  * store, as in the target. */

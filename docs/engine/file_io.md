@@ -37,20 +37,20 @@ plus an offset. The groups that appear in calls:
 
 All game CD work runs through one object, `CdState g_cdrom_state`
 (include/game.h:2084-2089; its `rec` member is `Unk80101E60Rec`,
-include/game.h:2054-2077). `rec.unk02` is the state. 0 means idle.
+include/game.h:2054-2077). `rec.io_state` is the state. 0 means idle.
 States 2..0xD are the data read. States 0x10..0x1E are CD audio.
 
 Requests:
 
 - `cdrom_StartRead(file, dest)` (src/main/cdrom.c:13) returns 0 if a request
   is pending. Otherwise it copies the file's entry into `rec.pair` and stores
-  `dest` in `rec.unk1C`. It sets `rec.unk18` to the sector count
+  `dest` in `rec.read_dest_addr`. It sets `rec.read_sector_count` to the sector count
   `(size + 0x7FF) >> 11`, enters state 2 and returns 1.
 - `cdrom_StartReadAt(file, dest, sector, count)` (src/main/cdrom.c:31) does
   the same, then moves the start position `sector` sectors on
   (`CdPosToInt` / `CdIntToPos`) and reads `count` sectors.
 - `cdrom_StartAudio(file, chan)` (src/main/cdrom.c:80) sets up CD audio.
-  `rec.unk14` is the stop position, 0x96 sectors before the file's end.
+  `rec.audio_end_pos` is the stop position, 0x96 sectors before the file's end.
   - `chan < 0` selects mode 5 (CdlModeDA | CdlModeRept).
   - Otherwise it selects mode 0xC8 (CdlModeSpeed | CdlModeRT | CdlModeSF),
     after `CdControlB(0xD /* CdlSetfilter */, &file)` with
@@ -62,9 +62,9 @@ Requests:
   `row.unk_4`.
 - `cdrom_Pause` (src/main/cdrom.c:45) clears the ready callback, mutes the CD
   mix, and issues `CdFlush` and `CdControlF(9 /* CdlPause */, 0)`. It then
-  sets the stop request `rec.unk08` and state 0xB.
-- `cdrom_RequestStop` (src/main/cdrom.c:143) sets `rec.unk08 = 1`.
-  `cdrom_SetAudioRepeat` (:129) sets `rec.unk0A`, which sends a finished
+  sets the stop request `rec.stop_request` and state 0xB.
+- `cdrom_RequestStop` (src/main/cdrom.c:143) sets `rec.stop_request = 1`.
+  `cdrom_SetAudioRepeat` (:129) sets `rec.audio_repeat`, which sends a finished
   track back to state 0x10.
 
 Steppers:
@@ -96,14 +96,14 @@ Steppers:
 - `cdrom_UpdateAudio` (src/main/26940.c:14) first steps a CD-mix fade.
   `g_cd_atv` moves toward `g_cd_atv_target` over `g_cd_fade_len` calls,
   through `CdMix`. Then it runs the audio states:
-  1. 0x10: mutes the mix and issues Setmode `rec.unk30`.
+  1. 0x10: mutes the mix and issues Setmode `rec.audio_mode`.
   2. 0x11: on sync, Setloc.
   3. 0x12: after 3 calls and a sync, `CdControlF(0x16 /* CdlSeekP */)`.
-  4. 0x13: on sync, once the hold flag `rec.unk04` is clear, `CdlReadS`
+  4. 0x13: on sync, once the hold flag `rec.audio_hold` is clear, `CdlReadS`
      (0x1B) for XA or `CdlPlay` (3) for CD-DA.
   5. 0x15 / 0x16: playing. It turns the mix on at the second call and stops
-     at `rec.unk14`. For XA, once the position is within 0x96 sectors of
-     `rec.unk14` it loads the remaining sector count into `rec.unk44` and
+     at `rec.audio_end_pos`. For XA, once the position is within 0x96 sectors of
+     `rec.audio_end_pos` it loads the remaining sector count into `rec.end_countdown` and
      counts it down by 4 per call; at 0 it mutes the mix and stops (or
      repeats). The volume is not ramped.
   6. 0x1C..0x1E: pause and back to idle.

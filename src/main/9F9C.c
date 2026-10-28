@@ -419,9 +419,9 @@ extern s32 g_camera_pitch_search_steps[];
 typedef VECTOR CamVec;
 
 /* Scratchpad work area (0x1F800000) used by camera_UpdateTwoFighterView: the
- * target yaw and vz angle that g_camera_default_view_record's unk_10.vy / vz
- * ease toward, the camera focus, the eye position camera_CalcEye computes, a
- * fighter record's collision_pos less 0xC8 in vy (the collision segment's
+ * target yaw and vz angle that g_camera_default_view_record's camera_angles.vy
+ * / vz ease toward, the camera focus, the eye position camera_CalcEye computes,
+ * a fighter record's collision_pos less 0xC8 in vy (the collision segment's
  * start), and the hit position, surface normal and work area
  * collision_TestSegmentWithWork is given (its 3rd/4th/5th arguments; its other
  * callers pass a VECTOR hit and an s16[4] normal). */
@@ -445,12 +445,13 @@ typedef struct {
  * GTE leading-zero count for large inputs) into the value
  * g_camera_default_view_record.w18 eases 1/12 toward (0xBB8 in some
  * arg2->move_kind states), clamps w18, and sets a hysteresis flag for
- * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero; then per
- * fighter bisects unk_10.vx (rot_x) so the segment from its collision_pos less
- * 0xC8 in vy to the eye passes collision_TestSegmentWithWork's camera-collision
- * test (step in g_camera_pitch_search_steps[], blocked flag in
- * g_camera_eye_blocked_flags[]), and eases unk_10.vx toward the larger result,
- * clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
+ * func_8003F1E4; eases camera_angles.vy / vz toward the facing yaw and zero;
+ * then per fighter bisects camera_angles.vx (rot_x) so the segment from its
+ * collision_pos less 0xC8 in vy to the eye passes
+ * collision_TestSegmentWithWork's camera-collision test (step in
+ * g_camera_pitch_search_steps[], blocked flag in g_camera_eye_blocked_flags[]),
+ * and eases camera_angles.vx toward the larger result, clamped to 0x80..0x1C0.
+ * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
 void camera_UpdateTwoFighterView(
     Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     Unk80101EC8Record *arg3) {
@@ -467,7 +468,7 @@ void camera_UpdateTwoFighterView(
     s32 var_14, var_15;
     s32 var_16;
     s32 p;
-    /* work holds three values, all unk_10.vx (rot_x) quantities: the
+    /* work holds three values, all camera_angles.vx (rot_x) quantities: the
      * per-fighter bisection angle (loop), the target angle max(var_14, var_15)
      * clamped to 0x80..0x1C0, and the final eased step (Ruling 11,
      * ordinary-c-judge-decidable). */
@@ -2955,9 +2956,9 @@ void fighter_StoreBoneLocalVectorAndArmEventTrigger(
  * rec->bone_event_bone_index of node_GetSlotMatrixPointerArray(var_2) (GTE
  * MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds 0x800,
  * and handed to fight_RecordReplayEventAndDispatchSoundOrEffect with scratchpad
- * point SPAD->unkA8[var_2][rec->bone_event_bone_index]. The counter is cleared
- * on every call that finds it running (the original stores 0 under `>= 150` and
- * then again unconditionally). */
+ * point SPAD->bone_hit_points[var_2][rec->bone_event_bone_index]. The counter
+ * is cleared on every call that finds it running (the original stores 0 under
+ * `>= 150` and then again unconditionally). */
 void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
     s32 mac[3];
     s16 out[3];
@@ -3015,18 +3016,18 @@ void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
 
 /* Places character rec->index's points in world space with its bone
  * matrices (node_GetSlotMatrixPointerArray()): each of the 22 hit records'
- * offsets through its bone into arg1 (the callers pass SPAD->unkA8[i]); the
- * point set D_8008D86C[weapon_id] (D_8008D774 when weapon_entry_id == 50)
- * through bone 18 into arg2; when wielded_object_live_state != 0, the pair
- * D_8008D88C[wielded_object_kind] through bone 19
- * into arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
- * matrix translation. Then: bone 11's y axis into rec->bone_y_axis, arg1[0]
- * into rec->bone_hit_point_0, the translations of bones 17 and 14 (y raised by
- * (size_scale * 71) >> 11) into rec->ground_probe_points[], the floor height
- * under each (collision_TestSegmentWithWork down a segment from y - 100 to y +
- * 2000; the segment's lower end when it finds nothing) into
- * rec->ground_probe_floor_ys[], and the two bones' headings into unk_1BA /
- * unk_1C2. */
+ * offsets through its bone into arg1 (the callers pass
+ * SPAD->bone_hit_points[i]); the point set D_8008D86C[weapon_id] (D_8008D774
+ * when weapon_entry_id == 50) through bone 18 into arg2; when
+ * wielded_object_live_state != 0, the pair D_8008D88C[wielded_object_kind]
+ * through bone 19 into arg3. A point is the GTE MVMVA rotation (sf=1) of the
+ * SVECTOR plus the matrix translation. Then: bone 11's y axis into
+ * rec->bone_y_axis, arg1[0] into rec->bone_hit_point_0, the translations of
+ * bones 17 and 14 (y raised by (size_scale * 71) >> 11) into
+ * rec->ground_probe_points[], the floor height under each
+ * (collision_TestSegmentWithWork down a segment from y - 100 to y + 2000; the
+ * segment's lower end when it finds nothing) into rec->ground_probe_floor_ys[],
+ * and the two bones' headings into unk_1BA / unk_1C2. */
 void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
                                  Unk80107850Rec *arg2, Unk80107850Rec *arg3) {
     /* collision_TestSegmentWithWork's arguments in scratchpad: from (words

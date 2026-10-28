@@ -293,7 +293,7 @@
 
 /* === Data-symbol batch 7 (2026-05-17) -- highest-ref unproposed === */
 /* 8 high-confidence names landed; 18 more proposals in data_evidence/. */
-/* 2026-10-16: D_800F1180 retired -- g_eff_command_block.unk14 (Unk1F800000Unk00, include/game.h); the address of the g_eff_command_status status byte that receives the dispatched handler's return. */
+/* 2026-10-16: D_800F1180 retired -- g_eff_command_block.status_dest (Unk1F800000Unk00, include/game.h); the address of the g_eff_command_status status byte that receives the dispatched handler's return. */
 /* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 
 /* === Data-symbol batch 8 (2026-05-17) -- 8 highs + 18 mediums === */

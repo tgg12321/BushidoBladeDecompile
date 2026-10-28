@@ -34,15 +34,15 @@ file `file_index`
 into the CD state block `g_cdrom_state` (`CdState`, include/game.h:2079; its `rec`
 member is `Unk80101E60Rec`):
 
-1. If a request is pending (`rec.unk02 != 0`), return 0.
-2. `rec.unk00 = file_index`; `rec.pair = g_cd_file_table[(s16)file_index]`
-   (position and size); `rec.unk1C = dest_addr`; `rec.unk08 = 0`.
-3. `rec.unk02 = 2`; `rec.unk3E = 0`; `rec.unk18 = (size + 0x7FF) >> 11`, the
+1. If a request is pending (`rec.io_state != 0`), return 0.
+2. `rec.file_index = file_index`; `rec.pair = g_cd_file_table[(s16)file_index]`
+   (position and size); `rec.read_dest_addr = dest_addr`; `rec.stop_request = 0`.
+3. `rec.io_state = 2`; `rec.unk3E = 0`; `rec.read_sector_count = (size + 0x7FF) >> 11`, the
    sector count.
 4. Return 1.
 
 `cdrom_Update` (src/main/26940.c:222) then steps the request once per call;
-`cdrom_IsIdle` (src/main/cdrom.c:11) is `rec.unk02 == 0`. The old table of
+`cdrom_IsIdle` (src/main/cdrom.c:11) is `rec.io_state == 0`. The old table of
 "replay state" variables at `0x80101E60..0x80101EA4` is this record's members.
 
 ## `menu_UpdateEntryGridCursors` and `gpu_SetSegmentCellsGateBit` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
