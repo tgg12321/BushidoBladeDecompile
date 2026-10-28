@@ -437,9 +437,10 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
      * &arg0->transform_nodes[i + 1].node in place: score 3. */
     Unk80045878Node *parents;
     /* Once-written per iteration named intermediate (entry 6): id points at
-     * record i's unk_08, tested for -1 and stored into
-     * p->node.reloc_entry_index. g_node_hierarchy_templates.recs[i].unk_08 read
-     * in place: score 5. */
+     * record i's projected_entry_index, tested for -1 and stored into
+     * p->node.reloc_entry_index.
+     * g_node_hierarchy_templates.recs[i].projected_entry_index read in place:
+     * score 5. */
     s16 *id;
 
     p = arg0->projected_nodes;

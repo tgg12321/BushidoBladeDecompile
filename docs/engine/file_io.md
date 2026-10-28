@@ -57,9 +57,9 @@ Requests:
     `g_cdrom_state.file = 1` and `.chan = chan`.
   - It enters state 0x10.
 - `cdrom_StartAudioEntry(n)` (src/main/cdrom.c:110) starts row `n` of
-  `g_cdrom_audio_entries`: file `cdrom_GetFileIndex(5, row.unk_0)`, channel `row.unk_1`
-  and, when `row.unk_4 != -1`, a stop position of the file start plus
-  `row.unk_4`.
+  `g_cdrom_audio_entries`: file `cdrom_GetFileIndex(5, row.audio_file_index_offset)`, channel `row.xa_channel`
+  and, when `row.audio_end_offset != -1`, a stop position of the file start plus
+  `row.audio_end_offset`.
 - `cdrom_Pause` (src/main/cdrom.c:45) clears the ready callback, mutes the CD
   mix, and issues `CdFlush` and `CdControlF(9 /* CdlPause */, 0)`. It then
   sets the stop request `rec.stop_request` and state 0xB.

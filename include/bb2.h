@@ -259,9 +259,10 @@ extern Unk8008EA44Entry g_snd_stage_sequence_cue_ticks[6];
 extern u8 g_fight_time_limit_choices[4];
 extern s16 g_cdrom_file_group_bases[8];
 
-/* Twelve rows cdrom_StartAudioEntry reads by index: unk_0, the group-5 file
- * cdrom_GetFileIndex resolves; unk_1, cdrom_StartAudio's second argument;
- * unk_4, an offset added to the file's start sector (-1: none). */
+/* Twelve rows cdrom_StartAudioEntry reads by index: audio_file_index_offset,
+ * the group-5 file cdrom_GetFileIndex resolves; xa_channel, cdrom_StartAudio's
+ * second argument; audio_end_offset, an offset added to the file's start
+ * sector (-1: none). */
 typedef struct {
     u8 audio_file_index_offset;
     u8 xa_channel;

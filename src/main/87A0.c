@@ -33,11 +33,11 @@ typedef struct {
 #define SCR ((Scr1F800000 *)0x1F800000)
 
 /* softbody_LoadColliders - copies the Unk80017FA0Rec's collision volumes
- * (step_desc->colliders) into scratchpad RAM (0x1F800000). unk00 is written
- * scaled by 128 (the ground word); count is the volume count, and each volume
- * writes its two foci (three words each, scaled by 4) at a 0x18 stride plus its
- * bound from unk68. Nothing happens when step_desc->colliders is null. The
- * outer guard tests the live counter
+ * (step_desc->colliders) into scratchpad RAM (0x1F800000). ground_height is
+ * written scaled by 128 (the ground word); count is the volume count, and each
+ * volume writes its two foci (three words each, scaled by 4) at a 0x18 stride
+ * plus its bound from volume_bounds. Nothing happens when step_desc->colliders
+ * is null. The outer guard tests the live counter
  * (`i < ptr->count`) for the target's empty 8-byte leaf frame
  * (phantom-slot-frame-lever). */
 void softbody_LoadColliders(Unk80017FA0Rec *step_desc) {

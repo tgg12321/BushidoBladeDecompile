@@ -306,10 +306,10 @@ typedef struct {
 } Rec_8006C21C;
 
 /* SEL.BIN's selected_entry_header_block, gpu_UploadAndDrawSelectedEntryQuads's:
- * two cell tables (unk_00[slot_index], one per player), a 0 word, then the
- * 12-byte sheet headers the cells are drawn with (unk_0C[v] for the
- * g_entry_menu_grid_entries entry value v it reads; after its first iteration
- * the values 12, 13, 14, 0 and 3 take unk_0C[22..26]). */
+ * two cell tables (slot_cell_tables[slot_index], one per player), a 0 word,
+ * then the 12-byte sheet headers the cells are drawn with (entry_headers[v] for
+ * the g_entry_menu_grid_entries entry value v it reads; after its first
+ * iteration the values 12, 13, 14, 0 and 3 take entry_headers[22..26]). */
 typedef struct {
     Unk8009B400Record *slot_cell_tables[2];
     s32 unk_08;
@@ -820,7 +820,7 @@ typedef struct {
      * record + 0x6C + (unk_03 - 1) * 6 */
     u8 unk_03;
     /* g_motion_fighter_sections[slot].motion_entries .. motion_bitstream =
-     * record + unk_04[k] (motion_LoadFighterData) */
+     * record + section_offsets[k] (motion_LoadFighterData) */
     s32 section_offsets[4];
     s16 f14;
     u16 f16;
@@ -896,8 +896,9 @@ typedef struct Unk80104E88Rec {
 /* The 10-entry block table over the 0x45000-byte buffer at g_arena
  * (arena_Reset .. arena_FindBlock; g_arena_block_count live entries).
  * arena_Reset clears id in all 10. arena_ShiftBlocks(a0, a1) hands
- * mem_MoveBlockRoundedUpToWords entry a0's unk4, unk4 + a1 and the summed amt
- * of entries a0.., then adds a1 to their unk4 and calls each fn(id, a1). */
+ * mem_MoveBlockRoundedUpToWords entry a0's block_start, block_start + a1 and
+ * the summed amt of entries a0.., then adds a1 to their block_start and calls
+ * each fn(id, a1). */
 typedef struct {
     s16 id;
     s16 unk2;
@@ -1524,7 +1525,7 @@ typedef struct Unk800F1B18Rec {
  * fallback_move_id the move installed when nothing more specific applies (past
  * last_move_frame with no queued move or 0x2000 entry, and on landing),
  * last_move_frame / last_command_frame frame bounds against
- * Unk80101EC8Record.move_frame, unk_09 flag bits (fighter_Update,
+ * Unk80101EC8Record.move_frame, move_bitfield bits (fighter_Update,
  * fighter_BuildCpuPad, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput);
  * transition_commands starts the command list fighter_Update walks: (flags,
  * move id) entries of 2 halfwords, or 4 when flags has a 0xC000 bit, ended by a
@@ -1909,8 +1910,9 @@ typedef struct {
 } Unk8008EA44Entry;
 
 /* 6-row tables fight_UpdatePairedInputTotalsEventsAndMidpointEffects selects by
- * D_80101EC8[0].move_kind mode (row 0..5): unk0 scales the Judge sin/cos
- * offset, unk2 is added to y; g_fight_midpoint_effect_event_ids[row] is passed
+ * D_80101EC8[0].move_kind mode (row 0..5): bearing_distance scales the Judge
+ * sin/cos offset, height_offset is added to y;
+ * g_fight_midpoint_effect_event_ids[row] is passed
  * as fight_RecordReplayEventAndDispatchSoundOrEffect's arg1. */
 typedef struct {
     s16 bearing_distance;
@@ -1943,7 +1945,8 @@ typedef struct Unk80099D88Rec {
 /* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends
  * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924). Both readers index
  * the column 1-based, [row][g_fight_stage_command_count - 1]:
- * fighter_InitCpuControl reads unk0/unk1,
+ * fighter_InitCpuControl reads tracked_move_tally_threshold and
+ * script_wait_limit,
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput the mask halfword. */
 typedef struct Unk8009A8C8Entry {
     u8 tracked_move_tally_threshold;
@@ -2149,7 +2152,7 @@ typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
  * negation and no work);
  * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
  * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes queue each
- * one on g_draw_queue at most once, guarded by unk58.
+ * one on g_draw_queue at most once, guarded by is_collected.
  */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
@@ -2184,9 +2187,10 @@ typedef struct {
 
 /* The 21 ten-byte node-template records at 0x80094B96 (up to
  * g_object_scale_factors): node_InitObjectHierarchyFromTemplates builds
- * Unk80045878Obj.transform_nodes[i] from record i (unk_00: the parent node
- * index, -1 for none; unk_02: the position, scaled by position_scale),
- * node_BuildProjectedNodeList copies unk_08 (-1: no node) into
+ * Unk80045878Obj.transform_nodes[i] from record i (parent_index: the parent
+ * node index, -1 for none; node_translation: the position, scaled by
+ * position_scale), node_BuildProjectedNodeList copies projected_entry_index
+ * (-1: no node) into
  * projected_nodes[]. */
 typedef struct {
     s16 parent_index;
@@ -2432,10 +2436,11 @@ typedef struct {
 } Unk80017FA0Rec;
 
 /* The collision volumes of one Unk8003F824Rec (2B344 Func8003F6D8Inner +0x10;
- * Unk80017FA0Rec.colliders points here): unk00 (softbody_SetObjectGround sets
- * it; 87A0 softbody_LoadColliders scales it into the scratchpad's ground word),
- * the volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each
- * as three words) and its bound (unk68). */
+ * Unk80017FA0Rec.colliders points here): ground_height
+ * (softbody_SetObjectGround sets it; 87A0 softbody_LoadColliders scales it into
+ * the scratchpad's ground word), the volume count, each volume's two foci
+ * (gte_SetMatrixRotTransIR writes each as three words) and its bound
+ * (volume_bounds). */
 typedef struct Unk8003F6D8Coll {
     /* 0x00 */ s32 ground_height;
     /* 0x04 */ s32 count;

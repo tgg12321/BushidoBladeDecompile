@@ -990,8 +990,8 @@ void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
      * twice (icon frames at [8 + frame], then FT4 frames at [frame]). */
     Unk8009B0E0Record **var_3;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
-       g_row_menu_row_state.unk4 (scanned for the first row drawn) and .rows_on
-       (rows switched on). */
+       g_row_menu_row_state.scroll_row_mask (scanned for the first row drawn)
+       and .rows_on (rows switched on). */
     u32 row_mask;
     /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 9:
      * one meaning (s.header + 0xC) at five writes. FAKE: single-use holder of

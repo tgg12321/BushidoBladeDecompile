@@ -616,11 +616,13 @@ void menu_DrawSelGrid(
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
         /* The flat read through the element pointer (the target adds i * 2
          * to the hoisted table base). Subscripted instead:
-         * g_sel_grid_page_cells[0][i].unk0 at all three reads -> score 44
-         * (Q53); g_sel_grid_page_cells[arg1][i - arg1 * 10].unk0 -> score 51;
+         * g_sel_grid_page_cells[0][i].cell_entry at all three reads -> score 44
+         * (Q53); g_sel_grid_page_cells[arg1][i - arg1 * 10].cell_entry ->
+         * score 51;
          * same row read once into entry, reused -> score 58.
          * Column loop (i = 0; i < 10; i++), passing arg1 * 10 + i:
-         * g_sel_grid_page_cells[arg1][i].unk0 at all three reads -> score 53;
+         * g_sel_grid_page_cells[arg1][i].cell_entry at all three reads ->
+         * score 53;
          * same column read once into entry, reused -> score 69. */
         u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry;
 
