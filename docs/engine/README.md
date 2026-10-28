@@ -192,7 +192,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Loaded resource / model state
 - `g_fight_position_records` (0x800A33B4) — pointer into the loaded block's position-record list
-- `g_loaded_resource_selector` (selector cached by `resource_LoadOrReuseSelectedBlock`), `D_8009947A` (0/1 flag),
+- `g_loaded_resource_selector` (selector cached by `resource_LoadOrReuseSelectedBlock`), `g_resource_has_retained_subblocks` (0/1 flag),
   `g_gpu_cell_draw_attributes` — 32x32 cell grid read by the draw walks (no collision use)
 - `g_slot_objects` — three slots for the model objects `slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock` builds
   (`slot_FindEmpty` scans i < 3)

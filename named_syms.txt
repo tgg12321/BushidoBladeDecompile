@@ -152,7 +152,7 @@
 /* SHA1-invariance: same construction (symbol-only adds at known addresses). */
 /* Address-suffixed to avoid colliding with any same-named function elsewhere. */
 /* Getters / setters / stubs (15) */
-/* RESET 0x800467A8: retired name 'stage_GetVariant_800467A8' — preserved note: lh getter for D_8009947A (paired with func_80046798 for D_80099478, +0x2 offset) */
+/* RESET 0x800467A8: retired name 'stage_GetVariant_800467A8' — preserved note: lh getter for g_resource_has_retained_subblocks (paired with func_80046798 for D_80099478, +0x2 offset) */
 /* RESET 0x80046DE4: retired name 'game_GetDummyFlag_80046DE4' — preserved note: literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
 /* RESET 0x80046E18: retired name 'game_GetPlayerBase_80046E18' — preserved note: func_8004153C(a0) + 0x2C offset (player struct base field) */
 /* RESET 0x80046E44: retired name 'game_DisablePause_80046E44' — preserved note: writes 0 to g_gpu_raised_ot_cutoff_requested */
@@ -338,8 +338,8 @@
 
 /* Tier 1 -- 2+ newly-named refs (function + data) */
 /* RESET 0x80037110: retired name 'special_cam_lookup_table_entry_80037110' — preserved note: [func] refs: D_8008F13C, mottest_rob_init */
-/* RESET 0x80044010: retired name 'prim_buffer_open_slot_80044010' — preserved note: [func] refs: D_80103608, D_80103658 */
-/* RESET 0x80044100: retired name 'prim_buffer_relocate_slot_80044100' — preserved note: [func] refs: D_80103608, D_80103658 */
+/* RESET 0x80044010: retired name 'prim_buffer_open_slot_80044010' — preserved note: [func] refs: g_reloc_block_entry_tables, D_80103658 */
+/* RESET 0x80044100: retired name 'prim_buffer_relocate_slot_80044100' — preserved note: [func] refs: g_reloc_block_entry_tables, D_80103658 */
 /* RESET 0x80061250: retired name 'anim_emit_210009_with_setup_80061250' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80061454: retired name 'anim_emit_29000B_80061454' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80065000: retired name 'motion_ex_init_state_80065000' — preserved note: [func] refs: D_800A3468, D_800A347C */
@@ -370,7 +370,7 @@
 /* Effect / particle subsystem (5) */
 /* RESET 0x80049718: retired name 'efc_anim_vehicle_setup_80049718' — preserved note: 197-insn: emits per-effect OT entries; handles free vs vehicle-mounted */
 /* RESET 0x80049584: retired name 'efc_rob_type_dispatch_80049584' — preserved note: diffs D_80099C50 vs D_800EF980, dispatches efc_rob_set_type_particle on change */
-/* RESET 0x80067200: retired name 'efc_gte_setup_and_draw_80067200' — preserved note: GTE rotation matrix loaded from g_scratchpad_ptr_30, textured-quad render */
+/* RESET 0x80067200: retired name 'efc_gte_setup_and_draw_80067200' — preserved note: GTE rotation matrix loaded from g_eff_view_rotation_matrix, textured-quad render */
 /* RESET 0x800678A8: retired name 'efc_init_phase1_setup_buffer_800678A8' — preserved note: effect-init phase 1: type code + texture dims + per-mode defaults */
 /* RESET 0x80067D14: retired name 'efc_init_phase2_randomize_80067D14' — preserved note: effect-init phase 2: per-particle randomisation via bb2_rand + GTE transforms */
 /* SEQ / SPU channel control (3) -- D_80106F28 = g_seq_bank_table */
@@ -598,7 +598,7 @@
 
 /* === Fade/transition state machine (2026-05-17) -- 4 highs === */
 /* From text1b.c StepSlideProgressCommitPendingStateAndQueueSound (line 16108): fade-in/out state machine */
-/* with ramp value (D_800A3570: 0..0x1E8 in 0x20 steps), state */
+/* with ramp value (g_entry_menu_slide_displacement: 0..0x1E8 in 0x20 steps), state */
 /* (g_entry_menu_slide_phase: 1-4), dispatch table index (g_entry_menu_handler_index), deferred next */
 /* index (D_800A3584). */
 /* Note: g_entry_menu_slide_phase and D_800A35A0 are 5ED34.c statics: g_entry_menu_slide_phase's */
@@ -617,7 +617,7 @@
 /* its first call, then 0 for arg0 < 0x33, 1 for arg0 >= 0x33; */
 /* later calls from the other side of 0x33 call func_80052C10. */
 
-/* === D_800A3464 colour word (2026-05-17) -- 1 high === */
+/* === g_eff_point_light_color colour word (2026-05-17) -- 1 high === */
 /* Passed to light_SetPointLight by func_80061064.  Set per command to 24-bit */
 /* values like 0xFFFFEF, 0xC06013, etc; light_SetPointLight scales its bytes */
 /* into D_800A3238[0..2], column 1 of a light colour matrix. */
@@ -1088,7 +1088,7 @@
 /* === Effect particle generator state (2026-05-17) -- 2 highs === */
 /* From text1b.c around line 12605: particle generation function with */
 /* a signed budget counter that gets decremented (rounded down by 4) */
-/* per call.  Uses D_800A3418 (^= rand()) for random offsets. */
+/* per call.  Uses g_gpu_jitter_random_state (^= rand()) for random offsets. */
 
 /* === Byte tables indexed by character_data_index / weapon_id + a save byte (2026-05-17) -- 4 highs === */
 
@@ -1155,7 +1155,7 @@
 /* named address.  Almost certainly struct sibling fields. */
 /* Names use _plus_<offset> convention; future cleanup can refine. */
 /* data-wave 2026-09-24: g_alarm_pending_priority_flag = 0x800A26E0 retired; _snd_seq_tick_env_plus_0x14 is now object-defined */
-/* RENAME 0x800A3208: retired name 'D_800A3208' — preserved note: +4 from D_800A3204 (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_4 */
+/* RENAME 0x800A3208: retired name 'D_800A3208' — preserved note: +4 from g_menu_prompt_rearm (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_4 */
 /* RENAME 0x800A32B8: retired name 'D_800A32B8' — preserved note: +2 from D_800A32B6 */  /* data-wave 2026-10-08: was g_text_render_cursor_b_plus_2 */
 /* g_comb_recv_buf_plus_0x4 (0x800A368C) retired: word 1 of s32 g_comb_recv_buf[2] (28708.c) */
 /* RENAME 0x800A3782: retired name 'D_800A3782' — preserved note: 0/1: cleared by replay_Reset, set by replay_AdvanceFrame, read by replay_PlayFrame */  /* data-wave 2026-10-08: was g_practice_p2_move_unlock_pending_plus_1 */
@@ -1765,7 +1765,7 @@ D_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset
 /* RESET 0x8004A4E0: retired name 'exec_loc_mat_list_8004A4E0' — preserved note: walks g_draw_queue (set by func_80044504), per-node opcode dispatch (jtbl_8001541C), GTE color reg ctc2 setup + calc_loc_mat_fw */
 /* RESET 0x8001A484: retired name 'DispSleepMenuTexAll_8001A484' — preserved note: loops 22x calling func_8003D52C(&D_800100A4, three halfwords of a 6-byte row) (9F9C.c:395-406); D_800100A4 is the format '%04x %04x %04x\n', so it prints a hex dump, no texture */
 /* RESET 0x800460E4: retired name 'md_game_ExecMode_800460E4' — preserved note: md_game mode dispatcher: dual jumptable (jtbl_800152B4/80015334) on mode id (s5-3), sets D_80099478, per-mode init+update+draw(func_800481E8)+md_game_check_mode+saSeMain+gpu_DrawSync */
-/* RESET 0x800464C4: retired name 'md_game_FlushDeferred_800464C4' — preserved note: if deferred flag D_8009947A set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
+/* RESET 0x800464C4: retired name 'md_game_FlushDeferred_800464C4' — preserved note: if deferred flag g_resource_has_retained_subblocks set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
 /* RESET 0x8005490C: retired name 'game_StageMain_8005490C' — note: per-frame playback of the record D_800EFAE8 (filled by func_80054604); returns 0 while [+0] < 0; on [+0] == 0 resolves the camera stream and the two per-player motion streams; ends itself after unk2 frames */
 /* Kengo rename map apply-batch 2026-07-13 (docs/naming/kengo-rename-audit-2026-07-13.md):
    registry lines for glabel-applied names from 2971df5e that never got symbol-file

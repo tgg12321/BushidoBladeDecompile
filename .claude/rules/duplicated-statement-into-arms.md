@@ -56,7 +56,7 @@ reproduces the target's allocation pin-free, that is evidence the original was d
 
 ## Example (motion_SetMotion)
 
-`sel2 = D_800A3350;` duplicated into case 0, label moved to case 13/17's copy → sel2 reg_n_refs 3→4
+`sel2 = g_memcard_prompt_choice;` duplicated into case 0, label moved to case 13/17's copy → sel2 reg_n_refs 3→4
 → RA seats sel2→`$s2` / result→`$s3` as the target; cross-jump re-merges the tails (byte-diff
 empty). Label placement was load-bearing: the mirror labeling flipped the layout.
 
