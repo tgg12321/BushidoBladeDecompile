@@ -1,0 +1,38 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 23 (row var-locals-23, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15..22 lessons in
+`docs/naming/phase3/pending/var-locals-{16,17,18,19,20,21,22}/prompt.txt` and
+`pending/var-locals-22/notes.txt`, with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD 0bbae6211 (read-only; wave 22's renames are applied there and are landing on main now).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-23-research.md`
+  (overrides any output file the earlier prompts name): HEAD first, then the proposed
+  `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with reasons,
+  comments citing old tokens with file:line, INCLUDING symbol_addrs.txt and include/*.h comments).
+  Cite file:line at HEAD. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. src/main/5ED34.c, every C definition in file
+  order (gpu_GetIndexedPrimBufferRecord at ~5ED34.c:166 onward; 51268.c and 596CC.c are finished).
+  2. Then the next src/main/*.c game TUs in ROM-offset order after 5ED34.c that still have
+  auto-named bindings (argN, var_N, a0..a3, v0_xxxx, spNN, temp_*, s, p, ...).
+- Do not re-propose wave 8-22 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,22}/notes.txt) without new evidence, said in the row.
+- Lessons: every old name a rename retires may be cited in symbol_addrs.txt comments and
+  include/*.h comments; list each such citation in the notes with file:line (comment survival is a
+  grep: naming_keycheck --sub-comments takes global pairs only). Arguments of function-like macros
+  (gte_* etc.) are rejected by scoped_plan: do not propose them. A FAKE-comment-cited binding stays
+  neutral. A binding with two roles in one body (reused for unrelated values) stays neutral.
+  Draw-context words accessed by byte offset are `draw_context` (`draw_context_addr` when the
+  parameter is an s32 address); a u16 * view of the DRAWENV at GpuDb start is `draw_env`.
+  Unk8006EACCRec * parameters: 5ED34.c:405 gpu_AddScreenDarken already names one `draw_context`;
+  check that the record really is the draw context at every use before reusing that name.
+- Names already used for the same roles in 596CC.c (reuse per function only with the same
+  meaning): draw_context, tile_rect, pressed_buttons, merged_pressed_buttons, direction_events,
+  result, gpu_db, choice_index, y_offset, draw_desc, cell_index, cell_count, sheet_pair_index,
+  buffer_index, tile_index, player_index, bit_row_index, row_bit_cursor, sheet_headers, sheet_index,
+  sprt_out_addr, dr_mode_out_addr, ot_index, row_count, file_index, prim_buffer,
+  draw_buffer_counter, offset_list, row_index, draw_env, pad_buttons.
+- Left neutral, do not propose: parameter names in forward declarations/prototypes; the bindings
+  listed as left neutral in pending/var-locals-22/notes.txt.
