@@ -8,9 +8,9 @@
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 
-s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
-    Unk8009B0E0Record *sheet_header = arg0->header;
-    SPRT *sp = (SPRT *)arg0->sprt_out;
+s32 gpu_AddSpriteCells(Unk8007352CRec *draw_desc) {
+    Unk8009B0E0Record *sheet_header = draw_desc->header;
+    SPRT *sprt_cursor = (SPRT *)draw_desc->sprt_out;
     Unk8009B400Record *e;
     s32 clut;
     s16 i;
@@ -18,43 +18,43 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
 
     clut = GetClut(sheet_header->cx, sheet_header->cy);
     for (i = sheet_header->count - 1; i >= 0; i--) {
-        e = arg0->table + i;
-        x0 = e->x + arg0->x;
-        y0 = e->y + arg0->y;
+        e = draw_desc->table + i;
+        x0 = e->x + draw_desc->x;
+        y0 = e->y + draw_desc->y;
         x1 = x0 + e->w;
         y1 = y0 + e->h;
         if (x1 > 0 && x0 < 0x280 && y0 < 0xF0 && y1 > 0) {
-            SetSprt(sp);
-            sp->clut = clut;
-            sp->x0 = x0;
-            sp->y0 = y0;
-            sp->u0 = e->u + sheet_header->ubase;
-            sp->v0 = e->v + sheet_header->vbase;
-            sp->w = e->w;
-            sp->h = e->h;
-            if (arg0->has_color) {
-                SetShadeTex(sp, 0);
-                sp->r0 = arg0->col_r;
-                sp->g0 = arg0->col_g;
-                sp->b0 = arg0->col_b;
+            SetSprt(sprt_cursor);
+            sprt_cursor->clut = clut;
+            sprt_cursor->x0 = x0;
+            sprt_cursor->y0 = y0;
+            sprt_cursor->u0 = e->u + sheet_header->ubase;
+            sprt_cursor->v0 = e->v + sheet_header->vbase;
+            sprt_cursor->w = e->w;
+            sprt_cursor->h = e->h;
+            if (draw_desc->has_color) {
+                SetShadeTex(sprt_cursor, 0);
+                sprt_cursor->r0 = draw_desc->col_r;
+                sprt_cursor->g0 = draw_desc->col_g;
+                sprt_cursor->b0 = draw_desc->col_b;
             } else {
-                SetShadeTex(sp, 1);
+                SetShadeTex(sprt_cursor, 1);
             }
-            SetSemiTrans(sp, arg0->semi);
-            if (arg0->ot_idx >= 0x1006) {
-                arg0->ot_idx = 1;
+            SetSemiTrans(sprt_cursor, draw_desc->semi);
+            if (draw_desc->ot_idx >= 0x1006) {
+                draw_desc->ot_idx = 1;
                 ((void (*)())font_Printf)(D_800159A0);
             }
-            AddPrim(g_gpu_ot_ptr + arg0->ot_idx, sp);
-            sp++;
+            AddPrim(g_gpu_ot_ptr + draw_desc->ot_idx, sprt_cursor);
+            sprt_cursor++;
         }
     }
-    return (s32)sp;
+    return (s32)sprt_cursor;
 }
 
-s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
-    Unk8009B400Record *e = arg0->table;
-    Unk8009B0E0Record *sheet_header = arg0->header;
+s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *draw_desc, s32 mode) {
+    Unk8009B400Record *e = draw_desc->table;
+    Unk8009B0E0Record *sheet_header = draw_desc->header;
     POLY_FT4 *p;
     s16 i;
     u32 tpage;
@@ -90,7 +90,7 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
         du0 = 0;
         dv0 = 0;
     }
-    p = (POLY_FT4 *)arg0->ft4_out;
+    p = (POLY_FT4 *)draw_desc->ft4_out;
     for (i = 0; i < sheet_header->count; i++) {
         if (mode == 1) {
             du0 = e->w - 1;
@@ -111,16 +111,20 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
         SetPolyFT4(p);
         p->tpage = tpage;
         p->clut = clut;
-        sx = arg0->scale_x;
-        sy = arg0->scale_y;
-        p->x0 = ox + arg0->x + (((e->x - ox) * sx) >> 8);
-        p->y0 = oy + arg0->y + (((e->y - oy) * sy) >> 8);
-        p->x1 = ox + arg0->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
-        p->y1 = oy + arg0->y + (((e->y - oy) * sy) >> 8);
-        p->x2 = ox + arg0->x + (((e->x - ox) * sx) >> 8);
-        p->y2 = oy + arg0->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
-        p->x3 = ox + arg0->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
-        p->y3 = oy + arg0->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
+        sx = draw_desc->scale_x;
+        sy = draw_desc->scale_y;
+        p->x0 = ox + draw_desc->x + (((e->x - ox) * sx) >> 8);
+        p->y0 = oy + draw_desc->y + (((e->y - oy) * sy) >> 8);
+        p->x1 =
+            ox + draw_desc->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
+        p->y1 = oy + draw_desc->y + (((e->y - oy) * sy) >> 8);
+        p->x2 = ox + draw_desc->x + (((e->x - ox) * sx) >> 8);
+        p->y2 =
+            oy + draw_desc->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
+        p->x3 =
+            ox + draw_desc->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
+        p->y3 =
+            oy + draw_desc->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
         u = u_base + e->u;
         v = v_base + e->v;
         p->u0 = u + du0;
@@ -131,23 +135,23 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
         p->v2 = v + dv1;
         p->u3 = u + du1;
         p->v3 = v + dv1;
-        if (arg0->has_color) {
+        if (draw_desc->has_color) {
             SetShadeTex(p, 0);
-            p->r0 = arg0->col_r;
-            p->g0 = arg0->col_g;
-            p->b0 = arg0->col_b;
+            p->r0 = draw_desc->col_r;
+            p->g0 = draw_desc->col_g;
+            p->b0 = draw_desc->col_b;
         } else {
             SetShadeTex(p, 1);
         }
-        SetSemiTrans(p, arg0->semi);
-        if (arg0->ot_idx >= 0x1006) {
-            arg0->ot_idx = 1;
+        SetSemiTrans(p, draw_desc->semi);
+        if (draw_desc->ot_idx >= 0x1006) {
+            draw_desc->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + arg0->ot_idx, p);
+        AddPrim(g_gpu_ot_ptr + draw_desc->ot_idx, p);
         p++;
         e++;
     }
-    arg0->ft4_out = (s32)p;
+    draw_desc->ft4_out = (s32)p;
     return (s32)p;
 }
 
@@ -277,114 +281,114 @@ s32 mode;
 }
 
 void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
-    Unk8006EACCRec *arg0, s32 arg1) {
+    Unk8006EACCRec *draw_context, s32 arg1) {
     Unk8007352CRec s;
-    s32 i;
-    Unk8009B0E0Record **temp_s2;
-    TILE *t;
-    POLY_F4 *q;
+    s32 sheet_index;
+    Unk8009B0E0Record **sheet_headers;
+    TILE *tile_cursor;
+    POLY_F4 *flat_quad_cursor;
 
     if (arg1 == 0) {
-        t = arg0->primitive_cursors.tile_prims;
-        SetTile(t);
-        gpu_SetTileRgbFromBlockFlag(t);
-        t->x0 = 0x3F;
-        t->y0 = 0x30;
-        t->w = 0x202;
-        t->h = 0xB0;
-        SetSemiTrans(t, 1);
-        AddPrim(g_gpu_ot_ptr + 0x1E, t);
-        t++;
-        arg0->primitive_cursors.tile_prims = t;
+        tile_cursor = draw_context->primitive_cursors.tile_prims;
+        SetTile(tile_cursor);
+        gpu_SetTileRgbFromBlockFlag(tile_cursor);
+        tile_cursor->x0 = 0x3F;
+        tile_cursor->y0 = 0x30;
+        tile_cursor->w = 0x202;
+        tile_cursor->h = 0xB0;
+        SetSemiTrans(tile_cursor, 1);
+        AddPrim(g_gpu_ot_ptr + 0x1E, tile_cursor);
+        tile_cursor++;
+        draw_context->primitive_cursors.tile_prims = tile_cursor;
     }
     s.ot_idx = 0x1F;
     s.has_color = 0;
     s.semi = 0;
-    temp_s2 = arg0->resource_root.v80076FF8->unk_38;
+    sheet_headers = draw_context->resource_root.v80076FF8->unk_38;
     s.x = 0;
     s.y = 0;
-    for (i = 0; i < 3; i++) {
-        s.header = temp_s2[i];
+    for (sheet_index = 0; sheet_index < 3; sheet_index++) {
+        s.header = sheet_headers[sheet_index];
         s.table = s.header->cells;
-        s.sprt_out = arg0->primitive_cursors.sprite_prims;
-        arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+        s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+        draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     }
 
-    s.header = *temp_s2;
-    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+    s.header = *sheet_headers;
+    SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x1F, arg0->primitive_cursors.unk_14);
-    q = arg0->primitive_cursors.flat_quad_prims;
-    arg0->primitive_cursors.unk_14++;
-    SetPolyF4(q);
-    gpu_SetPolyF4RgbFromBlockFlag(q);
-    q->x0 = 0;
-    q->y0 = 0xB9;
-    q->x1 = 0x122;
-    q->y1 = 0;
-    q->x2 = 0;
-    q->y2 = 0xEF;
-    q->x3 = 0x122;
-    q->y3 = 0xEF;
-    SetSemiTrans(q, 0);
-    AddPrim(g_gpu_ot_ptr + 0x20, q);
-    q++;
+    AddPrim(g_gpu_ot_ptr + 0x1F, draw_context->primitive_cursors.unk_14);
+    flat_quad_cursor = draw_context->primitive_cursors.flat_quad_prims;
+    draw_context->primitive_cursors.unk_14++;
+    SetPolyF4(flat_quad_cursor);
+    gpu_SetPolyF4RgbFromBlockFlag(flat_quad_cursor);
+    flat_quad_cursor->x0 = 0;
+    flat_quad_cursor->y0 = 0xB9;
+    flat_quad_cursor->x1 = 0x122;
+    flat_quad_cursor->y1 = 0;
+    flat_quad_cursor->x2 = 0;
+    flat_quad_cursor->y2 = 0xEF;
+    flat_quad_cursor->x3 = 0x122;
+    flat_quad_cursor->y3 = 0xEF;
+    SetSemiTrans(flat_quad_cursor, 0);
+    AddPrim(g_gpu_ot_ptr + 0x20, flat_quad_cursor);
+    flat_quad_cursor++;
 
-    SetPolyF4(q);
-    gpu_SetPolyF4RgbFromBlockFlag(q);
-    q->x0 = 0x15E;
-    q->y0 = 0;
-    q->x1 = 0x27F;
-    q->y1 = 0;
-    q->x2 = 0x15E;
-    q->y2 = 0xEF;
-    q->x3 = 0x27F;
-    q->y3 = 0x36;
-    SetSemiTrans(q, 0);
-    AddPrim(g_gpu_ot_ptr + 0x20, q);
-    q++;
+    SetPolyF4(flat_quad_cursor);
+    gpu_SetPolyF4RgbFromBlockFlag(flat_quad_cursor);
+    flat_quad_cursor->x0 = 0x15E;
+    flat_quad_cursor->y0 = 0;
+    flat_quad_cursor->x1 = 0x27F;
+    flat_quad_cursor->y1 = 0;
+    flat_quad_cursor->x2 = 0x15E;
+    flat_quad_cursor->y2 = 0xEF;
+    flat_quad_cursor->x3 = 0x27F;
+    flat_quad_cursor->y3 = 0x36;
+    SetSemiTrans(flat_quad_cursor, 0);
+    AddPrim(g_gpu_ot_ptr + 0x20, flat_quad_cursor);
+    flat_quad_cursor++;
 
-    SetPolyF4(q);
-    gpu_SetPolyF4RgbFromBlockFlag(q);
-    q->x0 = 0x122;
-    q->y0 = 0;
-    q->x1 = 0x15E;
-    q->y1 = 0;
-    q->x2 = 0x122;
-    q->y2 = 0xEF;
-    q->x3 = 0x15E;
-    q->y3 = 0xEF;
-    SetSemiTrans(q, 0);
-    AddPrim(g_gpu_ot_ptr + 0x20, q);
-    q++;
+    SetPolyF4(flat_quad_cursor);
+    gpu_SetPolyF4RgbFromBlockFlag(flat_quad_cursor);
+    flat_quad_cursor->x0 = 0x122;
+    flat_quad_cursor->y0 = 0;
+    flat_quad_cursor->x1 = 0x15E;
+    flat_quad_cursor->y1 = 0;
+    flat_quad_cursor->x2 = 0x122;
+    flat_quad_cursor->y2 = 0xEF;
+    flat_quad_cursor->x3 = 0x15E;
+    flat_quad_cursor->y3 = 0xEF;
+    SetSemiTrans(flat_quad_cursor, 0);
+    AddPrim(g_gpu_ot_ptr + 0x20, flat_quad_cursor);
+    flat_quad_cursor++;
 
-    arg0->primitive_cursors.flat_quad_prims = q;
+    draw_context->primitive_cursors.flat_quad_prims = flat_quad_cursor;
 }
 
 void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
-    Unk8006EACCRec *arg0) {
+    Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;
     s16 mask;
-    s16 i;
+    s16 sheet_index;
     Unk8009B0E0Record **table;
-    s16 var_4[4];
+    s16 tile_rect[4];
 
-    i = 0;
+    sheet_index = 0;
     mask = (1 << SELWORK->f3C[0]) + (1 << (SELWORK->f65 + 5)) +
            (1 << (SELWORK->f67 + 8)) + (1 << (SELWORK->f66 + 9));
     s.ot_idx = 2;
-    table = arg0->resource_root.v80076FF8->unk_34;
+    table = draw_context->resource_root.v80076FF8->unk_34;
     do {
         s.x = 0;
         s.y = 0;
         s.semi = 0;
-        if ((mask >> i) & 1) {
-            if (i < 5) {
+        if ((mask >> sheet_index) & 1) {
+            if (sheet_index < 5) {
                 s.col_b =
                     ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) -
                     0x80;
                 s.y = SELWORK->f40[0][1];
-            } else if (i < 8) {
+            } else if (sheet_index < 8) {
                 if (SELWORK->f3C[0] == 0) {
                     s.col_b =
                         ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
@@ -395,7 +399,7 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
                 } else {
                     s.col_b = 0x80;
                 }
-            } else if (i < 10) {
+            } else if (sheet_index < 10) {
                 if (SELWORK->f3C[0] == 1) {
                     s.col_b =
                         ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
@@ -406,7 +410,7 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
                 } else {
                     s.col_b = 0x80;
                 }
-            } else if (i < 14) {
+            } else if (sheet_index < 14) {
                 if (SELWORK->f3C[0] == 2) {
                     s.col_b =
                         ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
@@ -425,39 +429,40 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
             s.col_b = 0x40;
             s.col_g = 0x40;
             s.col_r = 0x40;
-            if (i < 5) {
+            if (sheet_index < 5) {
                 s.has_color = 0;
                 s.semi = 1;
-            } else if (i < 14) {
+            } else if (sheet_index < 14) {
                 s.has_color = 1;
             } else {
                 s.has_color = 0;
             }
         }
-        if ((u16)(i - 10) >= 4 ||
-            g_sel_sheet_code_pairs[SELWORK->f67][0] + 9 == i ||
-            g_sel_sheet_code_pairs[SELWORK->f67][1] + 9 == i) {
-            s.header = table[i];
+        if ((u16)(sheet_index - 10) >= 4 ||
+            g_sel_sheet_code_pairs[SELWORK->f67][0] + 9 == sheet_index ||
+            g_sel_sheet_code_pairs[SELWORK->f67][1] + 9 == sheet_index) {
+            s.header = table[sheet_index];
             s.table = s.header->cells;
-            s.sprt_out = arg0->primitive_cursors.sprite_prims;
-            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
+            s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+            draw_context->primitive_cursors.sprite_prims =
+                gpu_AddSpriteCells(&s);
         }
-        i++;
-    } while (i < 15);
+        sheet_index++;
+    } while (sheet_index < 15);
 
     s.header = table[0];
-    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+    SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 2, arg0->primitive_cursors.unk_14);
-    arg0->primitive_cursors.unk_14++;
-    var_4[2] = 0x108;
-    var_4[0] = 0xBC;
-    var_4[1] = 0x25;
-    var_4[3] = 1;
+    AddPrim(g_gpu_ot_ptr + 2, draw_context->primitive_cursors.unk_14);
+    draw_context->primitive_cursors.unk_14++;
+    tile_rect[2] = 0x108;
+    tile_rect[0] = 0xBC;
+    tile_rect[1] = 0x25;
+    tile_rect[3] = 1;
     /* The original passes its own context base here, unadjusted:
      * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, which in
      * this context is the DR_MODE cursor. */
-    gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, (u16 *)var_4, 2);
+    gpu_AddThreeGreyTilesStackedUp((s32 *)draw_context, (u16 *)tile_rect, 2);
 }
 
 /* Tentative definitions (COMMON) of the small data this file reaches
