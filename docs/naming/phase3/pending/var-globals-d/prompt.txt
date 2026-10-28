@@ -1,0 +1,70 @@
+# Research (read-only): names for the next auto-named globals (D_) in game code, batch D (row var-globals-d)
+
+Goal: draft evidence for naming row var-globals-d (docs/naming/phase3/backlog.tsv).
+Do NOT edit tracked files. Put BOTH full file contents in your final message (your worktree is
+discarded).
+
+Manifest: copy the columns and evidence shape of docs/naming/phase3/pending/var-globals-c/
+data_manifest.csv exactly: addr,current_names,proposed_name,kind,evidence,verdict,verifier_note with
+kind=rename, verdict and verifier_note left empty. The evidence cell lists C SITES (path:line),
+COMMENTS naming it, ASM LISTINGS (asm/funcs/*.s), ASM DATA, REGISTRY DEFINITIONS (named_syms.txt /
+symbol_addrs.txt / undefined_syms_auto.txt lines), TYPE, WHY (writers, readers, what one meaning
+holds at every one), COUNTER-EVIDENCE, FRESH.
+
+Rules: .claude/rules/naming-bar.md (N1-N6), .claude/rules/naming-runtime-evidence.md.
+- A data name is `g_<subsystem>_<what>` snake_case. It names the OBJECT: what the value or record
+  holds, derived from every writer and reader. It must hold at EVERY access, in C and asm.
+- Owner ruling Q132 (N4): an unknown identity is no ground for neutral. Name what the accesses show
+  mechanically (a pointer to the active effect block, the index of the current row), claiming no
+  character, stage or mode identity the code does not show. NO_NAME only when the accesses cannot
+  be told apart from a neighbour or disagree in role.
+- Many of these addresses had g_ names reset to D_ in the 2026-10-08 data waves: registry comments
+  say "data-wave 2026-10-08: was g_...", and RESET/RENAME notes keep retired names. For each
+  target, find any retired name (grep named_syms.txt, symbol_addrs.txt and docs/naming/ for the
+  address) and say why it was retired; never propose a retired name unless the accesses now prove
+  it, and say so. The name must not occur anywhere in src/, include/ or the three registries yet
+  (live or retired).
+- Struct-typed globals: name the object only, never members (unk_XX). Do not use member names of
+  the fighter record type Unk80101EC8Record as evidence.
+- No numbers, flags or selector values in names. Don't revisit Kengo symbols. Two targets that are
+  one object (one base plus a folded offset of the other): say so and name only the base.
+- Runtime evidence: docs/foundation/backlog.tsv (trace rows) and the Q124 trace scenarios under
+  tools/ record value watches; use a capture only as naming-runtime-evidence.md allows.
+- Notes file: one line per target with the verdict (RENAME name / NO_NAME reason), the retired names
+  found, and for NO_NAME which neighbour or member must be named first. Strongest rows first in the
+  CSV.
+
+Changes for this batch:
+
+- Output files: `tmp/codex/vgt-d_data_manifest.csv` and `tmp/codex/vgt-d_notes.md` (both full
+  contents also in your final message; the filesystem may be read-only). Print HEAD and cite
+  file:line at it.
+- Precedent and vocabulary: docs/naming/phase3/pending/var-globals-top/, var-globals-b/ and
+  var-globals-c/ (batch C: 35 names landed, e.g. g_eff_view_origin, g_eff_current_prim_tag,
+  g_fight_opponent_order, g_resource_entry_request_state; its notes.txt lists the pre-apply FAILs
+  and drops and why). None of the batch A-C names may be reused.
+- Scope, the next 22 game globals by references over src/ + asm/ (Sony code and its data
+  excluded: D_800A3044, D_800F1AFC (libcomb), D_8009BE6C, D_8009BE76 (libgpu), D_800A1494 (libcd),
+  D_800A14E4 (cd_read_retry / puts); the fighter record array D_80101EC8 and its interiors
+  D_80101F5E / D_80101F32 belong to another lane):
+  D_8009B398 D_800A38E0 D_800A334C D_800A3670 D_800A3418 D_800A3350 D_80103608 D_8009947A
+  D_800A3518 D_800A35C0 D_800F6656 D_800A3464 D_800A3570 D_800A37E8 D_800A3204 D_8009B400
+  D_800A3474 D_800A34EC D_800A36E8 D_800A3690 D_800F0BEC D_800A359C.
+- D_800A3474 and D_800A34EC are the two effect-scratchpad pointers batch C did not cover; they
+  still carry the live aliases g_scratchpad_ptr_30 / g_scratchpad_ptr_b8 (symbol_addrs.txt). Name
+  them in the batch-C g_eff_ family by what the pointed-to scratchpad area holds (read
+  eff_BindScratchpad and every eff_Draw* use, and the Unk1F8000B8 type in include/game.h), and say
+  which alias lines a RENAME replaces, as batch C did.
+- D_8009B398 was deferred by batch C (Codex idea then: g_gpu_counter_and_mark_sheet_headers, with
+  the interior D_8009B3B0); D_8009B400 is read by the same four gpu_Draw* functions: decide whether
+  it is a separate object or an interior of the D_8009B398 block (if interior, name only the base).
+- Several pairs are siblings in one subsystem (D_800A334C / D_800A3350 / D_800A3204 in 28708.c
+  memcard prompts; D_800A35C0 / D_800A3570 / D_800A359C / D_800A3598 in 5ED34.c slide/choice grid;
+  D_800A3464 with the eff_Start* commands next to g_eff_command_block): names must separate siblings
+  by role, never by number. NO_NAME a sibling the accesses cannot separate.
+- Left neutral on purpose by batch C (do not propose without new evidence, said in the row):
+  D_800A3894 + D_800A385C, D_800A3898 + D_800A3899, D_800A37D2 / D_800A37D3, D_800F1178 (interior
+  of g_eff_command_block); from batch B: 0x800A389A, 0x8009BD38.
+- Function names around each global (docs/naming/function-names.csv, waves 78-91 and the
+  var-locals waves' locals in the same functions) are the main new evidence; comments and docs are
+  leads only.
