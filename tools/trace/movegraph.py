@@ -16,16 +16,16 @@ The walk follows fighter_Update / fight_UpdatePairedMoves /
 motion_ResolveMoveData / fighter_StartMoveScript (src/main/9F9C.c). A node is a move
 script, the file it was read from, the record executing it, D_800A38AE (the
 record that started the last paired move: read, else 0) and whether a
-paired start reset that record's unk_86 to unk_84:
+paired start reset that record's variant_index to default_variant_index:
   * move_kind is byte 0 of the move's motion metadata (fighter_StartMoveScript);
   * ids: < 0x8000 the common file; 0x8000 | n entry n of the executing
     record's file, or of the other record's file while borrow_other_motion
     is set: by a command with flag 0x1000, a tc[0] end transition with
     0x1000, a fallback of a move with unk_09 & 0x20 (fighter_StartMoveScript clears
     it on every install); 0x7FF0..0x7FFF the executing record's variant
-    roots (unk_84 / unk_86 as read, or unk_84 after a paired start; 0x7FF1
-    first advances unk_86). Not modelled: the variant skip on unk_88/8A/8E/90
-    and the mode-3 CPU branch, 0x7FF0's lasting unk_86 = unk_84, unk_86
+    roots (default_variant_index / variant_index as read, or default_variant_index after a paired start; 0x7FF1
+    first advances variant_index). Not modelled: the variant skip on object_variant_index/object_variant_enabled/unk_8E/unk_90
+    and the mode-3 CPU branch, 0x7FF0's lasting variant_index = default_variant_index, variant_index
     changes along a path; move_kind is read from the script's file, while
     fighter_StartMoveScript reads the borrow-selected one (they differ only for a
     variant id under borrow or a hand-off without 0x1000);
@@ -45,7 +45,7 @@ paired start reset that record's unk_86 to unk_84:
     starts by distance (its extra bytes are distance data; the label lists
     its gates): both records install it from the starter's file,
     D_800A38AE becomes the starter, the other runs it with
-    borrow_other_motion and unk_86 = unk_84. The input loop also tests every
+    borrow_other_motion and variant_index = default_variant_index. The input loop also tests every
     0x4000 entry as an ordinary entry (with 0x8000, its bytes as the mask);
     those edges are labelled. Modes 2 / 5 never run fight_UpdatePairedMoves,
     so there neither paired starts nor kind-0x11 hand-offs happen;
@@ -54,7 +54,7 @@ paired start reset that record's unk_86 to unk_84:
     fallback (no borrow);
   * event-table edges only where fighter_Update takes them: 0xD (turn) from
     kinds 0x15/0x19/0x1A/0x13/0x30/0x31 with R1 and a direction held; 0x17 /
-    0x18 on landing from kind 0xA. Not walked: landing with unk_72 set or
+    0x18 on landing from kind 0xA. Not walked: landing with airborne_until_landing set or
     after a 0x17/0x18 move, and pending_move_event codes set elsewhere;
   * the walk of record i follows the other record only while it runs the
     paired script (a node in record i's file; when both records share a
@@ -276,7 +276,7 @@ class Fight:
         (addr, file slot or None for common, note)"""
         m, r = self.m, self.recs[ex]
         buf, f00 = r.buf, self.sections(r.slot)[0]
-        u86 = r.u84 if reset else r.u86  # paired start: other's unk_86 = unk_84
+        u86 = r.u84 if reset else r.u86  # paired start: other's variant_index = default_variant_index
         if 0x7FF5 <= mid <= 0x7FFF:
             i = m.u16(buf + 0x66 + ((mid - 0x7FF5) * 3 + u86) * 2)
             return f00 + 2 * i, r.slot, f"f66[{mid - 0x7FF5}][{u86}]"
@@ -285,9 +285,9 @@ class Fight:
             k = r.u84 if mid == 0x7FF0 else \
                 (u86 + 1) % f14 if mid == 0x7FF1 else u86
             return f00 + 2 * m.u16(buf + 0x4E + 2 * k), r.slot, \
-                f"variant f4E[{k}] (" + ("unk_84" if mid == 0x7FF0 else
-                                         "unk_86 + 1" if mid == 0x7FF1 else
-                                         "unk_86") + ")"
+                f"variant f4E[{k}] (" + ("default_variant_index" if mid == 0x7FF0 else
+                                         "variant_index + 1" if mid == 0x7FF1 else
+                                         "variant_index") + ")"
         if mid == 0x7FF3:
             t = (u86 + 1) % f14
             return f00 + 2 * m.u16(buf + 0x54 + (u86 * 3 + t) * 2), \
@@ -348,7 +348,7 @@ class Fight:
         bit, cond = f & 0xF, []
         if bit == 9:
             bit = 3
-            cond.append("other fighter in kind 6 or at/after its unk_AB frame")
+            cond.append("other fighter in kind 6 or at/after its opponent_transition_start_frame")
         elif bit == 0xA:
             bit = 5
             cond.append("needs unk_26C")
@@ -367,7 +367,7 @@ class Fight:
 
     def edges(self, node):
         """-> [(node, label)] for node (addr, file slot, executing record,
-        D_800A38AE, unk_86 reset to unk_84 by a paired start)"""
+        D_800A38AE, variant_index reset to default_variant_index by a paired start)"""
         a, _, ex, ae, reset = node
         r, m = self.recs[ex], self.m
         h = self.header(a)
@@ -416,7 +416,7 @@ class Fight:
                 else:
                     na, ns, _ = t
                     # both install it from the starter's file; D_800A38AE =
-                    # ex; the other gets borrow_other_motion, unk_86 = unk_84
+                    # ex; the other gets borrow_other_motion, variant_index = default_variant_index
                     out.append(((na, ns, ex, ex, reset),
                                 f"{lab} -> id {mid:#06x}"))
                     out.append(((na, ns, 1 - ex, ex, True),
@@ -465,7 +465,7 @@ class Fight:
                 lab += f" -> id {mid:#06x}" + (f" ({note})" if note else "")
                 out.append(((na, ns, ex, ae, reset),
                             lab + " (paired hand-off, both records)"))
-                # D_800A38AE's unk_86 is not reset (only the other's, 2720)
+                # D_800A38AE's variant_index is not reset (only the other's, 2720)
                 out.append(((na, ns, ae, ae, False),
                             lab + " (paired hand-off, run by g_fight_paired_move_initiator)"))
                 continue
@@ -488,7 +488,7 @@ class Fight:
             if kind == 0xA:
                 for code in (0x17, 0x18):
                     add(m.u16(tbl + 2 * code), f"landing after a fall of more "
-                        f"than 0xFA0 (event {code:#x}, unk_94 "
+                        f"than 0xFA0 (event {code:#x}, falling_backward "
                         f"{'set' if code == 0x17 else 'clear'})")
         return out
 
@@ -519,7 +519,7 @@ class Fight:
         return (f"{a:#010x} kind {self.move_kind(a, s):#04x} "
                 f"({'common' if s is None else f'file slot {s}'}, run by "
                 f"record {ex}, D_800A38AE {ae}"
-                f"{', unk_86 = unk_84' if reset else ''}; frames "
+                f"{', variant_index = default_variant_index' if reset else ''}; frames "
                 f"{h['first']}..{h['last']}, input to {h['last_cmd']}"
                 f"{', queued' if h['unk_09'] & 0x80 else ''})")
 

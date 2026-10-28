@@ -576,7 +576,7 @@ void fighter_StartCpuPadScript(
 }
 
 /* Four pad-bit numbers; fighter_BuildCpuPad copies the table whole (align 1:
-   lwl/lwr) and indexes the copy by Unk80101EC8Record.unk_441. */
+   lwl/lwr) and indexes the copy by Unk80101EC8Record.motion_metadata_nibble. */
 typedef struct {
     u8 bit[4];
 } PadBitTable;
@@ -1717,8 +1717,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
      * cpu_probes[1] == 0 flag of the 0x394 choice; case 2's D_8009A9F0 pattern
      * word, shifted in place; a script entry's low distance bound (e[1] * 40,
      * then adjusted); the state-0x15 script's near bound (the opponent's
-     * unk_3F8 entry, or its unk_404 entry + 300) (Ruling 11,
-     * reused-local-necessity). */
+     * script_min_distances entry, or its filtered_script_max_distances entry +
+     * 300) (Ruling 11, reused-local-necessity). */
     s32 work1;
     /* work2 holds seven values in turn, each read before the next write: the
      * cpu_probes[1] == 0 flag of the state-0x15 script choice; a
@@ -1731,19 +1731,19 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     /* work3 holds thirteen values in turn, each read before the next write: the
      * script side bit (opponent unk_AF & 1, possibly inverted); cpu_probes[3]
      * == 0; the opponent_angle_from_orientation, wrapped to +-0x800; the
-     * state-0x11 threshold (0x1000 - (stance sum << 8)), scaled by unk_438 >>
+     * state-0x11 threshold (0x1000 - (stance sum << 8)), scaled by cpu_level >>
      * 12; the forced-scan flag of the g_cpu_move_range_rules scan; the "longer
      * than lim" flag; the bearing to the next waypoint, wrapped; the 0x394
-     * choice's coin bit, stepped per try; the 0x394 slot (unk_394, or a
-     * D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
+     * choice's coin bit, stepped per try; the 0x394 slot (cpu_action_index, or
+     * a D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
      * entry-type mask; a script entry's character mask; the entry's accept
      * flag. Read-before-write kept from the original (Q74): the 0x394 slot
-     * switch below reads work3 with no write on the path unk_39C == 1, opponent
-     * state neither 0x19 nor 0x1A (target 0x80059D18 -> 0x80059D6C ->
-     * 0x80059DB0; $s3 read by the sltiu at 0x80059D70 and the sll at
-     * 0x80059DB4), switching on whatever earlier work left there (that read is
-     * excluded from the value grouping above) (Ruling 11,
-     * reused-local-necessity). */
+     * switch below reads work3 with no write on the path
+     * cpu_action_from_opponent == 1, opponent state neither 0x19 nor 0x1A
+     * (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by the sltiu at
+     * 0x80059D70 and the sll at 0x80059DB4), switching on whatever earlier work
+     * left there (that read is excluded from the value grouping above) (Ruling
+     * 11, reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
      * g_cpu_move_range_rules scan index; a copy of last_route_node_index taken
@@ -2767,7 +2767,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                                 g_fighter_horizontal_separation < hi &&
                                 p->opponent_angle_from_orientation_abs <
                                     0x200 - ((p->cpu_level * 0x100) >> 12) &&
-                                /* Q76: unk_438 / 16 as the 4.12 multiply by
+                                /* Q76: cpu_level / 16 as the 4.12 multiply by
                                  * 0x100 (1/16); `>> 4` merges the shift into
                                  * the sign extension (lhu; sll 16; sra 20), the
                                  * target has lh; sra 4. */

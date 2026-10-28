@@ -121,8 +121,8 @@ e->world_pos.z = z;
 `base_pos` + `root_offset` = `world_pos`: fighter_Init and fighter_Update
 (9F9C.c:4060, :5286) sum them. `collision_pos` (+0xB8) is the collision-space
 position. `base_pos` is also passed by address to fight_GetStartPosition /
-fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1201, :4029-4051), stepped by `unk_104`
-and `unk_134` (:5228-5230, :5264-5266) and differenced between records 0 and 1
+fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1201, :4029-4051), stepped by `base_velocity`
+and `decaying_xz_velocity` (:5228-5230, :5264-5266) and differenced between records 0 and 1
 (17AFC.c:2104-2105, :2227-2228).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
@@ -179,12 +179,12 @@ scratchpad points (17AFC.c:2428-2442) and func_80022580 sets to `unk_F4`
 
 | Offset | Member (rec[0] address) | fight_UpdateFighterInteractionsAndPointCaches computation (record i) |
 |---|---|---|
-| +0x174 | `unk_174.x` (`D_8010203C`) | `(SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2` |
-| +0x178 | `unk_174.y` (`D_80102040`) | same, `.y` |
-| +0x17C | `unk_174.z` (`D_80102044`) | same, `.z` |
-| +0x18C | `unk_18C.x` (`D_80102054`) | `(SPAD->unkA8[i][1].x + [2].x + [3].x) / 3` |
-| +0x190 | `unk_18C.y` (`D_80102058`) | same, `.y` |
-| +0x194 | `unk_18C.z` (`D_8010205C`) | same, `.z` |
+| +0x174 | `bone_hit_points_4_5_midpoint.x` (`D_8010203C`) | `(SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2` |
+| +0x178 | `bone_hit_points_4_5_midpoint.y` (`D_80102040`) | same, `.y` |
+| +0x17C | `bone_hit_points_4_5_midpoint.z` (`D_80102044`) | same, `.z` |
+| +0x18C | `bone_hit_points_1_3_centroid.x` (`D_80102054`) | `(SPAD->unkA8[i][1].x + [2].x + [3].x) / 3` |
+| +0x190 | `bone_hit_points_1_3_centroid.y` (`D_80102058`) | same, `.y` |
+| +0x194 | `bone_hit_points_1_3_centroid.z` (`D_8010205C`) | same, `.z` |
 
 What the scratchpad points `SPAD->unkA8[i][k]` hold is not shown by
 these uses; wave15 reset the old registry names of these words.

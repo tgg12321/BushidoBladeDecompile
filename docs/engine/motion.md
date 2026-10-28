@@ -31,8 +31,8 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 
 - ids 0x7FF0..0x7FFF select through the character file's tables (`f4E`,
   `f54`, `f66` of `g_motion_fighter_buffers[rec->motion_slot]`) using the record's cycling index
-  `unk_86` (wrapped by `f14`; for some ids it skips the entries `unk_88` /
-  `unk_8E` while their flags `unk_8A` / `unk_90` are clear);
+  `variant_index` (wrapped by `f14`; for some ids it skips the entries `object_variant_index` /
+  `unk_8E` while their flags `object_variant_enabled` / `unk_90` are clear);
 - other ids with bit 15 set index the character file's streams (the
   opponent's when `borrow_other_motion` is set);
 - the rest index the common file's streams, and `*out` is set to 1.
@@ -84,12 +84,12 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
    `fighter_StartMoveScript`;
 2. decodes the frames at `move_frame` and the next one with `motion_DecodeFrame`
    (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][move_frame]` in state
-   0x33; the frame keys go to `unk_64` / `unk_66` as `(slot << 14) | frame`
+   0x33; the frame keys go to `blend_src_frame_code` / `blend_dst_frame_code` as `(slot << 14) | frame`
    (src/main/9F9C.c:4698);
 3. turns the two root offsets into a position delta (heading and distance
    through `Judge`, scaled by `size_scale`), blended by `move_frame_frac` or by
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
-4. integrates the velocities `unk_104` / `unk_134`, resolves the position
+4. integrates the velocities `base_velocity` / `decaying_xz_velocity`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
    `slot_BlendTwoPosesIntoNodeMatrices(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:4898) and
    `func_80040D48` (src/main/9F9C.c:4901).
@@ -111,7 +111,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 
 - `replay_PlayFrame` (src/main/28708.c:1338) rebuilds both fighters from the
   per-frame records `g_replay_fighter_frames` (`Rec1C`, include/game.h:1807, written by
-  `replay_RecordFighter` from `cur_move`, `world_pos`, `unk_64`, `unk_66`, `pose_interp_weight` and others): it
+  `replay_RecordFighter` from `cur_move`, `world_pos`, `blend_src_frame_code`, `blend_dst_frame_code`, `pose_interp_weight` and others): it
   decodes the two stored frame keys and calls `slot_BlendTwoPosesIntoNodeMatrices` /
   `func_80040D48` as the live path does.
 - `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera

@@ -19,7 +19,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
   src/main/9F9C.c:3783.
 - `object_QueueKind(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it
-  first when `rec->unk_88 != -1` and `kind == rec->unk_14`; it returns 0 when
+  first when `rec->object_variant_index != -1` and `kind == rec->wielded_object_kind`; it returns 0 when
   the queue already holds 12.
 - `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
   pool slot and places the object at the fighter (`world_pos`, raised by
@@ -29,7 +29,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   `unk8` about Y or X by `unk0`.
 - `object_ThrowQueuedKind(rec)` (src/main/17AFC.c:3819) takes an entry off the queue
   (index 1 instead of 0 when it holds two or more, the head equals
-  `rec->unk_14` and `rec->unk_88 != -1`), spawns it through `object_SpawnFromFighter`, and plays a cue
+  `rec->wielded_object_kind` and `rec->object_variant_index != -1`), spawns it through `object_SpawnFromFighter`, and plays a cue
   through `fight_RecordReplayEventAndDispatchSoundOrEffect`. `object_DropQueuedHeadAt(rec, pos)` (src/main/17AFC.c:3853)
   spawns the head entry at `pos`, and `object_SpawnScatteredAt(rec, kind, pos)`
   (src/main/17AFC.c:3879) spawns `kind` at `pos`; both give the object a
@@ -97,12 +97,12 @@ an opponent order; the code does not name it.
   point (0x2EE0 or -0x2710, 0x1770 or -0x1770), picked by the other fighter's
   position, with a weight that shrinks from 60 to 10 as the counter `reposition_count`
   (capped at 0x40) grows; otherwise the entry
-  `fight_GetStartPositionPairTable()[g_fight_stage_index * 12 + index * 3]`. It then zeroes `unk_104` /
-  `unk_134`, switches its move (the script `motion_ResolveMoveData` resolves from
+  `fight_GetStartPositionPairTable()[g_fight_stage_index * 12 + index * 3]`. It then zeroes `base_velocity` /
+  `decaying_xz_velocity`, switches its move (the script `motion_ResolveMoveData` resolves from
   `cur_move->event_move_table_id` and that record's halfword 0x1D, made current by
   `fighter_StartMoveScript`) and plays
   cue 0x30.
 - `camera_SetFighterFocusView(rec, a1)` (src/main/9F9C.c:980) sets the view target
-  `g_camera_default_view_record.unk_00` to `rec->unk_174`, its rotation to `(0x120, a1, 0)` and
+  `g_camera_default_view_record.unk_00` to `rec->bone_hit_points_4_5_midpoint`, its rotation to `(0x120, a1, 0)` and
   its distance `w18` to 0x1162. Its caller is `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange`
   (src/main/9F9C.c:2081).

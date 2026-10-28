@@ -420,7 +420,7 @@
 /* member; see also docs/naming/CHAR_STRUCT_SCHEMA.md. */
 
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
-/* +0x210 / +0x234 are Unk80101EC8Record.unk_210 / unk_234 (include/game.h). */
+/* +0x210 / +0x234 are Unk80101EC8Record.prev_weapon_points / prev_second_weapon_points (include/game.h). */
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2104-2108) */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
@@ -663,7 +663,7 @@
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
 
 /* === g_camera_alternate_view_record (Rec44) record fields (2026-05-17) -- 9 highs === */
-/* camera_InitTrackedFighterFocus (9F9C.c:808-823) copies a fighter's unk_180 position */
+/* camera_InitTrackedFighterFocus (9F9C.c:746-749) copies a fighter's bone_hit_point_0 position */
 /* into g_camera_alternate_view_record and sets h30[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
 /* reads h30[i][0] / h30[i][2] as 32x32 grid cell coordinates. */
 
@@ -1103,9 +1103,9 @@
 /* RGB-like triple stored as 3 separate bytes (low nibble of each) */
 /* combined into a 12-bit packed value (R | G<<4 | B<<8). */
 
-/* === D_80101EC8[0] unk_B8 / unk_C8 / unk_1F8 words (2026-05-17) -- 4 highs === */
+/* === D_80101EC8[0] unk_B8 / unk_C8 / prev_root_offset words (2026-05-17) -- 4 highs === */
 /* func_8001C624 sets unk_B8 from unk_D8, then copies unk_C8 = unk_B8 */
-/* and unk_1F8 = unk_E8 (9F9C.c:1308-1312; also :4068-4069, :5274, :5288). */
+/* and prev_root_offset = unk_E8 (9F9C.c:1308-1312; also :4068-4069, :5274, :5288). */
 
 /* === Sound voice-init block byte fields + callback ptr (2026-05-17) -- 6 highs === */
 /* Fields within g_snd_voice_init_block (0x800EF070), accessed by */

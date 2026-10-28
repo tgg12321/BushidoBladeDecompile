@@ -2990,15 +2990,17 @@ void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
 /* Places character rec->index's points in world space with its bone
  * matrices (node_GetSlotMatrixPointerArray()): each of the 22 hit records'
  * offsets through its bone into arg1 (the callers pass SPAD->unkA8[i]); the
- * point set D_8008D86C[weapon_id] (D_8008D774 when unk_12 == 50) through bone
- * 18 into arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19
+ * point set D_8008D86C[weapon_id] (D_8008D774 when weapon_entry_id == 50)
+ * through bone 18 into arg2; when wielded_object_live_state != 0, the pair
+ * D_8008D88C[wielded_object_kind] through bone 19
  * into arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
- * matrix translation. Then: bone 11's y axis into rec->unk_1EC, arg1[0]
- * into rec->unk_180, the translations of bones 17 and 14 (y raised by
- * (size_scale * 71) >> 11) into rec->unk_198[], the floor height under each
- * (collision_TestSegmentWithWork down a segment from y - 100 to y + 2000; the
- * segment's lower end when it finds nothing) into rec->unk_1B0[], and the two
- * bones' headings into unk_1BA / unk_1C2. */
+ * matrix translation. Then: bone 11's y axis into rec->bone_y_axis, arg1[0]
+ * into rec->bone_hit_point_0, the translations of bones 17 and 14 (y raised by
+ * (size_scale * 71) >> 11) into rec->ground_probe_points[], the floor height
+ * under each (collision_TestSegmentWithWork down a segment from y - 100 to y +
+ * 2000; the segment's lower end when it finds nothing) into
+ * rec->ground_probe_floor_ys[], and the two bones' headings into unk_1BA /
+ * unk_1C2. */
 void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
                                  Unk80107850Rec *arg2, Unk80107850Rec *arg3) {
     /* collision_TestSegmentWithWork's arguments in scratchpad: from (words
@@ -3262,9 +3264,9 @@ void motion_InitStreams(void) {
 }
 
 /* The record's motion_data_id -> its slot in g_motion_fighter_loaded_data_ids
- * (motion_slot); for ids below 0x2000, the nibble positions of 4 and 5 (unk_88
- * / unk_8E), copying unk_26C into unk_8A / unk_90 under conditions on
- * g_fight_mode_selector. */
+ * (motion_slot); for ids below 0x2000, the nibble positions of 4 and 5
+ * (object_variant_index / unk_8E), copying unk_26C into object_variant_enabled
+ * / unk_90 under conditions on g_fight_mode_selector. */
 void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 a0) {
     s32 i = 0;
     Unk80101EC8Record *rec = &D_80101EC8[a0];
@@ -4444,7 +4446,7 @@ void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *arg0) {
     }
 }
 
-/* [character_data_index][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20
+/* [character_data_index][min(unk_272, 3)]: 4.12 scale of base_power into power
  * (fighter_Update).
  */
 extern s16 D_8008E0BC[27][4];
@@ -4460,13 +4462,14 @@ extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);
  * (at move_frame and at move_frame + 1, capped at motion_metadata[1] - 1, each
  * offset by *motion_entry, and by motion_metadata[1] in some states; state
  * move_kind 0x33 instead copies g_motion_frame_buffers[arg0][move_frame] into
- * both); when unk_31A is 0 it mixes their root offsets into root_offset by
- * the 4.12 weight move_frame_frac, otherwise the first one's (by the weight
- * pose_blend_progress) with saved_motion_frame's less pose_blend_base_shift
- * (by 0x1000 - pose_blend_progress), integrates the velocities
- * (unk_104 / unk_134) into the position, resolves it (fighter_ResolveMovement),
- * then refreshes the bone points, the flags unk_62, unk_AE and unk_288, the
- * damping and the per-frame side effects. */
+ * both); when pose_blend_requests is 0 it mixes their root offsets into
+ * root_offset by the 4.12 weight move_frame_frac, otherwise the first one's (by
+ * the weight pose_blend_progress) with saved_motion_frame's less
+ * pose_blend_base_shift (by 0x1000 - pose_blend_progress), integrates the
+ * velocities (base_velocity / decaying_xz_velocity) into the position, resolves
+ * it (fighter_ResolveMovement), then refreshes the bone points, the flags
+ * frame_flags, unk_AE and weapon_hit_phases, the damping and the per-frame side
+ * effects. */
 void fighter_Update(s32 arg0, PadState *pad) {
     MotionFrame var_0[2];
     Vec3i32 v[2];

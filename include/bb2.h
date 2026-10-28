@@ -183,7 +183,8 @@ extern u8 D_8008D578[];
 
 /* Attachment point sets fighter_UpdateBoneWorldData rotates by a character's
  * bone matrices: D_8008D86C[weapon_id] (D_8008D864[weapon_id] points;
- * D_8008D774 when unk_12 == 50) and D_8008D88C[unk_14] (two points, when unk_8C
+ * D_8008D774 when weapon_entry_id == 50) and D_8008D88C[wielded_object_kind]
+ * (two points, when wielded_object_live_state
  * != 0). D_800A3138 is the unit y vector (0, 0x1000, 0). */
 extern u8 D_8008D864[8];
 
@@ -199,12 +200,13 @@ extern s16 D_8008DAD8[]; /* [character_data_index] (fighter_Update) */
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.motion_data_id
  * (motion_LoadFighterData) */
 extern u16 D_8008DB1C[27][8];
-/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_84 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.default_variant_index
+ */
 extern u8 D_8008DD5C[27][8];
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.base_move_frame_step
  */
 extern u16 D_8008DE34[27][6];
-/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_1E / unk_20 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.base_power / power */
 extern u16 D_8008DF78[27][6];
 extern Tbl8008E194 D_8008E194[];
 
@@ -242,9 +244,9 @@ extern s32 D_8008EB10;
 extern s32 D_8008EB14;
 extern s32 D_8008EB18;
 extern u8 D_8008EB1C[][2];
-/* [weapon_id][flag] -> Unk80101EC8Record.unk_12 */
+/* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
 extern u8 D_8008EB28[8][2];
-extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.unk_12 */
+extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.weapon_entry_id */
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
 extern u8 g_resource_kind_entry_ids[];

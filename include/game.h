@@ -851,7 +851,7 @@ typedef struct {
 /* A position (g_snd_sequence_positions: 12-byte stride, 6 entries, one per
    g_snd_sequence_ticks slot): the same s32 x/y/z triple as Vec3i32;
    fighter_UpdateBoneWorldData copies a scratchpad point (SPAD->unkA8) into
-   Unk80101EC8Record.unk_180 as one 12-byte object. */
+   Unk80101EC8Record.bone_hit_point_0 as one 12-byte object. */
 typedef Vec3i32 Unk80107850Rec;
 
 /* The PsyQ SVECTOR layout under a local name. */
@@ -1283,13 +1283,13 @@ typedef struct {
  * object_ResolveFighterHits's g_object_pool object step, prev_pos then pos.
  * fighter_ProcessWeaponBodyHits uses all six: [0] / [1] are two of the other
  * character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3] the same two
- * from its record (unk_210 or unk_234), [4] / [5] the midpoints of [0] / [2]
- * and [1] / [3]; for each triangle it hands math_PrepareTriangleCollisionFrame
- * it aims shape_points[0..2] at three of them. object_UpdatePool /
- * fight_UpdateBallisticRecords lay the bytes out differently
- * (collision_TestSegmentExtendingShortStartWithWork's argument block, its work
- * area from +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
- * Unk1F8002B8Union. raw sizes the union to 0x60. */
+ * from its record (prev_weapon_points or prev_second_weapon_points), [4] / [5]
+ * the midpoints of [0] / [2] and [1] / [3]; for each triangle it hands
+ * math_PrepareTriangleCollisionFrame it aims shape_points[0..2] at three of
+ * them. object_UpdatePool / fight_UpdateBallisticRecords lay the bytes out
+ * differently (collision_TestSegmentExtendingShortStartWithWork's argument
+ * block, its work area from +0x38 through +0x123): Unk1F8002B8_8005344C, the
+ * other member of Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
     Unk80107850Rec unk00[6];
@@ -1600,11 +1600,13 @@ typedef struct Unk80101EC8Record {
     s16 queued_move_is_common;
     u16 queued_move_command;
     s16 default_variant_index;
-    /* row of unk_3A8 / unk_3F8 / unk_3FE / unk_404 */
+    /* row of unk_3A8 / script_min_distances / script_max_distances /
+     * filtered_script_max_distances */
     s16 variant_index;
     s16 object_variant_index;
     s16 object_variant_enabled;
-    /* != 0: the second blade (unk_234 / SPAD unk48 points) is live */
+    /* != 0: the second blade (prev_second_weapon_points / SPAD unk48 points) is
+     * live */
     s16 wielded_object_live_state;
     s16 unk_8E;
     s16 unk_90;
@@ -1669,7 +1671,7 @@ typedef struct Unk80101EC8Record {
     /* fighter_UpdateBoneWorldData: bone 17 / 14 translations,
      * y + ((size_scale * 71) >> 11) */
     Vec3i32 ground_probe_points[2];
-    /* fighter_UpdateBoneWorldData: floor y under unk_198[i]
+    /* fighter_UpdateBoneWorldData: floor y under ground_probe_points[i]
      * (collision_TestSegmentWithWork segment test) */
     s32 ground_probe_floor_ys[2];
     u8 unk_1B8[0x1BA - 0x1B8];
@@ -1783,7 +1785,7 @@ typedef struct Unk80101EC8Record {
     u8 cpu_script_wait_frames;
     u8 cpu_script_wait_limit;
     u8 unk_3F7;
-    /* [unk_86] distance bounds (fighter_InitCpuControl) */
+    /* [variant_index] distance bounds (fighter_InitCpuControl) */
     s16 script_min_distances[3];
     s16 script_max_distances[3];
     s16 filtered_script_max_distances[3];
@@ -1793,7 +1795,7 @@ typedef struct Unk80101EC8Record {
     s16 chosen_script_start_x;
     s16 chosen_script_start_z;
     s16 chosen_script_radius;
-    /* fighter_BuildCpuPad: 8 (target id, count) pairs */
+    /* fighter_BuildCpuPad: 8 (move key, count) pairs */
     u8 cpu_tracked_move_tallies[8][2];
     u8 cpu_tracked_move_tally_threshold;
     u8 incoming_projectile_state;
@@ -1968,11 +1970,12 @@ typedef struct Unk800FF5C8Rec {
  * motion_ApplyRecordedPoseAdjustments reads b14..b16 / b18).
  * - w0: the character's current move (Unk80101EC8Record.cur_move);
  * replay_PlayFrame reads its motion_bank_entry_index.
- * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with unk_B3
- * in the top four bits; hC: ground_y; hE / h10 / h12: unk_64 / unk_66 /
- * pose_interp_weight.
- * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 =
- * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: unk_62; b19:
+ * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with
+ * draw_move_set in the top four bits; hC: ground_y; hE / h10 / h12:
+ * blend_src_frame_code / blend_dst_frame_code / pose_interp_weight.
+ * - b14..b16: eased_pose_bearing_offset / eased_pose_elevation_offset /
+ * opponent_elevation_offset >> 2, read back signed; b17: bit 0 =
+ * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: frame_flags; b19:
  * move_frame. */
 typedef struct Rec1C {
     MoveScript *w0;

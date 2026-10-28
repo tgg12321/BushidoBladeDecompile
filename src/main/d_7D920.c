@@ -202,7 +202,8 @@ u8 D_8008D864[8] = {2, 2, 2, 2, 3, 3, 2, 2};
 SVec4i16 *D_8008D86C[8] = {D_8008D754, D_8008D764, D_8008D774, D_8008D784,
                            D_8008D794, D_8008D7AC, D_8008D7C4, D_8008D7D4};
 
-/* Indexed by Unk80101EC8Record.unk_14 when unk_8C != 0. */
+/* Indexed by Unk80101EC8Record.wielded_object_kind when
+ * wielded_object_live_state != 0. */
 SVec4i16 *D_8008D88C[32] = {
     NULL,       D_8008D7E4, NULL, D_8008D7F4, D_8008D804, NULL,
     NULL,       D_8008D814, NULL, NULL,       NULL,       NULL,
@@ -304,7 +305,8 @@ Unk8008DCCCEntry D_8008DCCC[18] = {
     {0x6321, D_800A3124},     {0x7321, D_800A311C},
     {0x666, D_800A3114},      {0x0, NULL}};
 
-/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_84 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.default_variant_index
+ */
 u8 D_8008DD5C[27][8] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 1, 0, 0, 0},
     {2, 2, 2, 2, 2, 0, 0, 0}, {1, 1, 0, 2, 1, 0, 0, 0},
@@ -339,7 +341,7 @@ u16 D_8008DE34[27][6] = {
     {4096, 4096, 4096, 4096, 4096, 4096}, {4096, 4096, 4096, 4096, 4096, 4096},
     {4096, 4096, 4096, 4096, 4096, 4096}};
 
-/* [character_data_index][weapon_id] -> Unk80101EC8Record.unk_1E / unk_20 */
+/* [character_data_index][weapon_id] -> Unk80101EC8Record.base_power / power */
 u16 D_8008DF78[27][6] = {
     {4864, 4096, 5712, 5744, 4864, 4096}, {4208, 3296, 4720, 4656, 4096, 4096},
     {3274, 2768, 3973, 4014, 5632, 4096}, {5664, 4096, 5728, 4096, 4096, 4096},
@@ -626,11 +628,11 @@ s32 D_8008EB18 = 0;
  * pairs from the gap. */
 u8 D_8008EB1C[6][2] = {{1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
 
-/* [weapon_id][flag] -> Unk80101EC8Record.unk_12 */
+/* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
 u8 D_8008EB28[8][2] = {
     {0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}, {8, 9}, {46, 47}, {46, 47}};
 
-/* [weapon_id] -> Unk80101EC8Record.unk_12 */
+/* [weapon_id] -> Unk80101EC8Record.weapon_entry_id */
 u8 D_8008EB38[8] = {51, 52, 53, 54, 55, 56, 51, 51};
 
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits
@@ -649,7 +651,7 @@ u8 D_8008EB6C[6] = {5, 8, 7, 6, 7, 8};
 /* fighter_ResolveBoneHit's table */
 u8 D_8008EB74[3][2][2] = {{{1, 2}, {0, 0}}, {{0, 1}, {0, 1}}, {{0, 2}, {0, 1}}};
 
-/* [Unk80101EC8Record.unk_14] and [object kind]: the id handed to
+/* [Unk80101EC8Record.wielded_object_kind] and [object kind]: the id handed to
  * resource_RequestEntryWithLinkedEntriesAndLatchCategory /
  * node_QueueEntryNodesFromTransformOrUpdatedSlotNode /
  * node_QueueTableEntryNodePairUnderSlotNode; 32 from the gap. */

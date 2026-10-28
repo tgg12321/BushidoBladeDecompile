@@ -832,7 +832,7 @@ static inline s32 math_SqrtLut(s32 x) {
  * x/z, scaled by the distance. After an overlap, the move_kind states and the
  * orientation.vy difference (folded to 0..0x800) pick the reaction
  * (pending_move_event, D_800A38A8 / D_800A3876). The push is added to
- * unk_134.vx / .vz. */
+ * decaying_xz_velocity.vx / .vz. */
 void fighter_ResolveBodyOverlap(void) {
     s32 var_1;
     s32 i;
@@ -1666,17 +1666,17 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         u32 mask_c;
         s32 var_10;
         s32 var_11;
-        /* var_12: the iteration's blade (0: the unk00 / unk_210 points, 1: the
-         * unk48 / unk_234 points; the knockback reads the last iteration's),
-         * then whether the nearest hit came from that blade. The 4/5 arm's
-         * `var_12 = 0;` re-stores the held 0 (Q85; Ruling 11,
-         * reused-local-necessity)
+        /* var_12: the iteration's blade (0: the unk00 / prev_weapon_points
+         * points, 1: the unk48 / prev_second_weapon_points points; the
+         * knockback reads the last iteration's), then whether the nearest hit
+         * came from that blade. The 4/5 arm's `var_12 = 0;` re-stores the held
+         * 0 (Q85; Ruling 11, reused-local-necessity)
          */
         s32 var_12;
         /* temp1 / temp2: the indices of the iteration's two points (per-branch
          * constants, Q20), then the opponent's squared distance to the blade's
-         * first / second point. The unk_8C arm re-stores the held values (Q85,
-         * Ruling 11) */
+         * first / second point. The wielded_object_live_state arm re-stores the
+         * held values (Q85, Ruling 11) */
         s32 temp1;
         s32 temp2;
         s32 var_15;
@@ -1768,8 +1768,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         for (var_11 = 0; var_11 < var_10; var_11++) {
             /* var_32: fighter_TestTriangleBoneHits's third argument, per-branch
-             * constants 1 / 1 / 0 (Q20); the unk_8C arm's store is shared with
-             * the first iteration (Q85, Ruling 11) */
+             * constants 1 / 1 / 0 (Q20); the wielded_object_live_state arm's
+             * store is shared with the first iteration (Q85, Ruling 11) */
             s32 var_32;
 
             if (var_11 == 0) {
@@ -2214,7 +2214,8 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
  * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points (unk48[k]
  * when bit k of g_fight_weapon_contact_result is set, else unk00[k]); unkB8
  * sums the matching pair fight_UpdateFighterInteractionsAndPointCaches copied
- * into D_80101EC8[k] (unk_234 / unk_210); the result goes to contact_point. */
+ * into D_80101EC8[k] (prev_second_weapon_points / prev_weapon_points); the
+ * result goes to contact_point. */
 void fighter_BlendCurrentAndPreviousContactPoints(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80101EC8Record *rec0 = &D_80101EC8[0];
@@ -2288,15 +2289,15 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
 
 /* Per-frame update of the two D_80101EC8 records.  The three
  * scratchpad points per character at SPAD->unk00 and the two at SPAD->unk48
- * are copied into each record's unk_210 / unk_234
- * (fighter_BlendCurrentAndPreviousContactPoints reads them back); unk_18C is
- * the centroid of SPAD->unkA8[k][1..3] and unk_174 the midpoint of
- * SPAD->unkA8[k][4..5]. */
+ * are copied into each record's prev_weapon_points / prev_second_weapon_points
+ * (fighter_BlendCurrentAndPreviousContactPoints reads them back);
+ * bone_hit_points_1_3_centroid is the centroid of SPAD->unkA8[k][1..3] and
+ * bone_hit_points_4_5_midpoint the midpoint of SPAD->unkA8[k][4..5]. */
 void fight_UpdateFighterInteractionsAndPointCaches(void) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
      * both players' pending_move_event values are tested before the clash
      * checks select event 0xA; contact resolution also reads and clears
-     * unk_AD. */
+     * attack_hit_armed. */
     Unk80101EC8Record *firstPlayer = &D_80101EC8[0];
     Unk80101EC8Record *secondPlayer = &D_80101EC8[1];
     s32 i;
