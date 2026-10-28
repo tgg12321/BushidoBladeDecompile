@@ -93,7 +93,7 @@ glabel comb_HandshakeStep
     /* 2B488 8003AC88 21100000 */   addu      $v0, $zero, $zero
   jlabel .L8003AC8C
     /* 2B48C 8003AC8C 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2B490 8003AC90 4A0882A3 */  sb         $v0, %gp_rel(D_800A3916)($gp)
+    /* 2B490 8003AC90 4A0882A3 */  sb         $v0, %gp_rel(g_comb_initial_pad_exchange_pending)($gp)
     /* 2B494 8003AC94 D8E8000C */  jal        comb_EnableEvents
     /* 2B498 8003AC98 00000000 */   nop
     /* 2B49C 8003AC9C 2AEB0008 */  j          .L8003ACA8

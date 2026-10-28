@@ -1435,7 +1435,7 @@ void (*D_80095328[88])() = {
     func_80044650,
     func_80044650,
 };
-void (*D_80095488[32])() = {
+void (*g_gpu_packed_vertex_textured_primitive_handlers[32])() = {
     func_80044650,
     func_80044650,
     func_80044650,
@@ -1469,7 +1469,7 @@ void (*D_80095488[32])() = {
     gpu_EmitOrientationAdjustedGouraudTexturedQuads,
     func_80044650,
 };
-void (*D_80095508[32])() = {
+void (*g_gpu_embedded_lit_packet_handlers[32])() = {
     gpu_WriteAndLinkEmbeddedNccsLitDepthBiasedTrianglePacketsToOt256,
     func_80044650,
     func_80044650,

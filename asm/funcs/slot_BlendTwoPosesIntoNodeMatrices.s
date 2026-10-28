@@ -9,8 +9,8 @@ glabel slot_BlendTwoPosesIntoNodeMatrices
     /* 319A4 800411A4 3000B4AF */  sw         $s4, 0x30($sp)
     /* 319A8 800411A8 01001424 */  addiu      $s4, $zero, 0x1
     /* 319AC 800411AC 3400B5AF */  sw         $s5, 0x34($sp)
-    /* 319B0 800411B0 0980153C */  lui        $s5, %hi(D_80094CFC)
-    /* 319B4 800411B4 FC4CB526 */  addiu      $s5, $s5, %lo(D_80094CFC)
+    /* 319B0 800411B0 0980153C */  lui        $s5, %hi(g_node_pose_rotation_indices)
+    /* 319B4 800411B4 FC4CB526 */  addiu      $s5, $s5, %lo(g_node_pose_rotation_indices)
     /* 319B8 800411B8 80200400 */  sll        $a0, $a0, 2
     /* 319BC 800411BC 4400BFAF */  sw         $ra, 0x44($sp)
     /* 319C0 800411C0 3C00B7AF */  sw         $s7, 0x3C($sp)

@@ -571,7 +571,7 @@ static u8 g_memcard_status_wait_countdown;
 static u8 D_800A3334;
 static u8 g_memcard_status5_retries_exhausted;
 static u8 g_memcard_retry_load_status8_latched;
-static u8 D_800A3340;
+static u8 g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count;
 static u8 g_memcard_save_prompt_status10_retry_count;
 static u8 g_memcard_save_prompt_status8_retry_count;
 static u8 g_memcard_message_countdown;
@@ -937,8 +937,9 @@ sel_dispatch:
         case 9:
         case 10:
         case 11:
-            D_800A3340++;
-            if (((u8)D_800A3340) >= 5) {
+            g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count++;
+            if (((u8)g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count) >=
+                5) {
                 g_memcard_validation_load_active = 0;
                 memcard_RequestSave();
                 break;
@@ -1040,7 +1041,8 @@ sel_dispatch:
                         break;
                     }
                     g_memcard_save_prompt_status8_retry_count = 0;
-                    D_800A3340 = 0;
+                    g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count =
+                        0;
                     g_memcard_save_prompt_status10_retry_count = 0;
                     g_memcard_validation_load_active = 1;
                     memcard_RequestLoad();
@@ -1782,10 +1784,11 @@ extern s32 g_comb_prev_send_word;
  * bits of g_comb_local_side, g_comb_close_request and g_comb_wait_state,
  * a0->type[0] and the low half of a0->held into g_comb_send_buf, puts
  * g_comb_send_payload and a 16-bit xor check in g_comb_send_buf_plus_0x4, and
- * calls comb_Write8, comb_Read8 or comb_WaitRead8 as D_800A3916 and
- * g_comb_local_side select, returning early when a transfer fails or after
- * comb_ResetClose. If D_800A3916 is then 0, it stores new values to a0->held
- * and a0->type. */
+ * calls comb_Write8, comb_Read8 or comb_WaitRead8 as
+ * g_comb_initial_pad_exchange_pending and g_comb_local_side select, returning
+ * early when a transfer fails or after comb_ResetClose. If
+ * g_comb_initial_pad_exchange_pending is then 0, it stores new values to
+ * a0->held and a0->type. */
 void comb_ExchangePad(PadState *a0) {
     /* buttons holds the input pad button word, then an outgoing button
      * halfword (this exchange's, or the previous one's from
@@ -1818,7 +1821,7 @@ void comb_ExchangePad(PadState *a0) {
         var_1 = var_1 & 0xFFFF;
         hi16 = hi16 | var_1;
         g_comb_send_buf_plus_0x4 = hi16;
-        flag = D_800A3916;
+        flag = g_comb_initial_pad_exchange_pending;
 
         if (flag != 0) {
             if (var_4 == 0) {
@@ -1861,7 +1864,7 @@ void comb_ExchangePad(PadState *a0) {
             }
         }
 
-        if (D_800A3916 == 0) {
+        if (g_comb_initial_pad_exchange_pending == 0) {
             /* FAKE: the record's held / type stores go through pointers; stored
                as members (in-struct memory) sched moves the D_800A36C2 /
                D_800A36D2 loads above them (score 22). */
@@ -1895,7 +1898,7 @@ void comb_ExchangePad(PadState *a0) {
                 }
             }
         }
-        D_800A3916 = 0;
+        g_comb_initial_pad_exchange_pending = 0;
         g_comb_prev_send_word = g_comb_send_buf;
         D_800A36D4 = g_comb_send_buf_plus_0x4;
     } else {
@@ -2015,4 +2018,4 @@ u8 D_800A38CC;
 s32 D_800A38D0;
 s32 D_800A38FC;
 s32 D_800A3908;
-u8 D_800A3916;
+u8 g_comb_initial_pad_exchange_pending;

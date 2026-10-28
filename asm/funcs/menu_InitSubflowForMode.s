@@ -11,7 +11,7 @@ glabel menu_InitSubflowForMode
     /* 25E3C 8003563C 08004000 */  jr         $v0
     /* 25E40 80035640 00000000 */   nop
   jlabel .L80035644
-    /* 25E44 80035644 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
+    /* 25E44 80035644 0E018293 */  lbu        $v0, %gp_rel(g_menu_mode_subflow_init_pending)($gp)
     /* 25E48 80035648 00000000 */  nop
     /* 25E4C 8003564C 0B004014 */  bnez       $v0, .L8003567C
     /* 25E50 80035650 1180043C */   lui       $a0, (0x80118800 >> 16)
@@ -34,7 +34,7 @@ glabel menu_InitSubflowForMode
     /* 25E8C 8003568C 03D60008 */  j          .L8003580C
     /* 25E90 80035690 05000224 */   addiu     $v0, $zero, 0x5
   jlabel .L80035694
-    /* 25E94 80035694 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
+    /* 25E94 80035694 0E018293 */  lbu        $v0, %gp_rel(g_menu_mode_subflow_init_pending)($gp)
     /* 25E98 80035698 00000000 */  nop
     /* 25E9C 8003569C 05004014 */  bnez       $v0, .L800356B4
     /* 25EA0 800356A0 1180043C */   lui       $a0, (0x80118800 >> 16)
@@ -52,7 +52,7 @@ glabel menu_InitSubflowForMode
     /* 25ECC 800356CC 04D60008 */  j          .L80035810
     /* 25ED0 800356D0 00000000 */   nop
   jlabel .L800356D4
-    /* 25ED4 800356D4 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
+    /* 25ED4 800356D4 0E018293 */  lbu        $v0, %gp_rel(g_menu_mode_subflow_init_pending)($gp)
     /* 25ED8 800356D8 00000000 */  nop
     /* 25EDC 800356DC 05004010 */  beqz       $v0, .L800356F4
     /* 25EE0 800356E0 1180043C */   lui       $a0, (0x80118800 >> 16)

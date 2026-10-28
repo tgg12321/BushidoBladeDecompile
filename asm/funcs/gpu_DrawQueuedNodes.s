@@ -133,8 +133,8 @@ glabel gpu_DrawQueuedNodes
     /* 3AEC8 8004A6C8 7800093C */  lui        $t1, (0x780000 >> 16)
     /* 3AECC 8004A6CC 00C0C848 */  ctc2       $t0, $24 /* handwritten instruction */
     /* 3AED0 8004A6D0 00C8C948 */  ctc2       $t1, $25 /* handwritten instruction */
-    /* 3AED4 8004A6D4 0980143C */  lui        $s4, %hi(D_80095508)
-    /* 3AED8 8004A6D8 08559426 */  addiu      $s4, $s4, %lo(D_80095508)
+    /* 3AED4 8004A6D4 0980143C */  lui        $s4, %hi(g_gpu_embedded_lit_packet_handlers)
+    /* 3AED8 8004A6D8 08559426 */  addiu      $s4, $s4, %lo(g_gpu_embedded_lit_packet_handlers)
     /* 3AEDC 8004A6DC 502A010C */  jal        func_8004A940
     /* 3AEE0 8004A6E0 00000000 */   nop
     /* 3AEE4 8004A6E4 1C00348E */  lw         $s4, 0x1C($s1)
@@ -166,8 +166,8 @@ glabel gpu_DrawQueuedNodes
     /* 3AF44 8004A744 B4022626 */  addiu      $a2, $s1, 0x2B4
     /* 3AF48 8004A748 022A010C */  jal        gte_ProjectPackedVertices
     /* 3AF4C 8004A74C 00000000 */   nop
-    /* 3AF50 8004A750 0980143C */  lui        $s4, %hi(D_80095488)
-    /* 3AF54 8004A754 88549426 */  addiu      $s4, $s4, %lo(D_80095488)
+    /* 3AF50 8004A750 0980143C */  lui        $s4, %hi(g_gpu_packed_vertex_textured_primitive_handlers)
+    /* 3AF54 8004A754 88549426 */  addiu      $s4, $s4, %lo(g_gpu_packed_vertex_textured_primitive_handlers)
     /* 3AF58 8004A758 502A010C */  jal        func_8004A940
     /* 3AF5C 8004A75C 00000000 */   nop
     /* 3AF60 8004A760 1C00348E */  lw         $s4, 0x1C($s1)

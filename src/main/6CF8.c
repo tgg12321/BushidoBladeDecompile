@@ -401,7 +401,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
 
     if (var_2 != 0) {
         if (var_2 == 1) {
-            D_800A31DA = 1;
+            g_menu_mode_subflow_init_pending = 1;
             g_main_loop_handler_index = 8;
             cdrom_PauseAndWait();
         } else if (var_2 == 2) {
@@ -463,7 +463,7 @@ void main(void) {
             cdrom_PauseAndWait();
             g_local_ot_draw_mode = DISP_DISABLED;
             g_comb_abort_request = 0;
-            D_800A31DA = 0;
+            g_menu_mode_subflow_init_pending = 0;
             g_main_loop_handler_index = 8;
         }
 

@@ -5,7 +5,7 @@ glabel menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu
     /* 25C8C 8003548C 00000000 */   nop
     /* 25C90 80035490 225A000C */  jal        gpu_HideResetAndClear
     /* 25C94 80035494 00000000 */   nop
-    /* 25C98 80035498 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
+    /* 25C98 80035498 0E018293 */  lbu        $v0, %gp_rel(g_menu_mode_subflow_init_pending)($gp)
     /* 25C9C 8003549C 00000000 */  nop
     /* 25CA0 800354A0 03004014 */  bnez       $v0, .L800354B0
     /* 25CA4 800354A4 00000000 */   nop

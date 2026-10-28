@@ -197,8 +197,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D484 8003CC84 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* 2D488 8003CC88 00000000 */   nop
     /* 2D48C 8003CC8C 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2D490 8003CC90 0A80013C */  lui        $at, %hi(D_800A31DA)
-    /* 2D494 8003CC94 DA3122A0 */  sb         $v0, %lo(D_800A31DA)($at)
+    /* 2D490 8003CC90 0A80013C */  lui        $at, %hi(g_menu_mode_subflow_init_pending)
+    /* 2D494 8003CC94 DA3122A0 */  sb         $v0, %lo(g_menu_mode_subflow_init_pending)($at)
     /* 2D498 8003CC98 2DF30008 */  j          .L8003CCB4
     /* 2D49C 8003CC9C 08000224 */   addiu     $v0, $zero, 0x8
   .L8003CCA0:

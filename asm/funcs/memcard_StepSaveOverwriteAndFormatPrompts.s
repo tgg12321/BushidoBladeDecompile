@@ -207,10 +207,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29744 80038F44 43E40008 */  j          .L8003910C
     /* 29748 80038F48 5A000224 */   addiu     $v0, $zero, 0x5A
   jlabel .L80038F4C
-    /* 2974C 80038F4C 74028293 */  lbu        $v0, %gp_rel(D_800A3340)($gp)
+    /* 2974C 80038F4C 74028293 */  lbu        $v0, %gp_rel(g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count)($gp)
     /* 29750 80038F50 00000000 */  nop
     /* 29754 80038F54 01004224 */  addiu      $v0, $v0, 0x1
-    /* 29758 80038F58 740282A3 */  sb         $v0, %gp_rel(D_800A3340)($gp)
+    /* 29758 80038F58 740282A3 */  sb         $v0, %gp_rel(g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count)($gp)
     /* 2975C 80038F5C FF004230 */  andi       $v0, $v0, 0xFF
     /* 29760 80038F60 0500422C */  sltiu      $v0, $v0, 0x5
     /* 29764 80038F64 11004014 */  bnez       $v0, .L80038FAC
@@ -366,7 +366,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29978 80039178 B3FF4014 */  bnez       $v0, .L80039048
     /* 2997C 8003917C 01000224 */   addiu     $v0, $zero, 0x1
     /* 29980 80039180 7C0280A3 */  sb         $zero, %gp_rel(g_memcard_save_prompt_status8_retry_count)($gp)
-    /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(D_800A3340)($gp)
+    /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count)($gp)
     /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(g_memcard_save_prompt_status10_retry_count)($gp)
     /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29990 80039190 DFE1000C */  jal        memcard_RequestLoad

@@ -494,9 +494,9 @@ dlabel D_800A3915
 enddlabel D_800A3915
 
 /* 800A3916 */
-dlabel D_800A3916
+dlabel g_comb_initial_pad_exchange_pending
     .space 0x2
-enddlabel D_800A3916
+enddlabel g_comb_initial_pad_exchange_pending
 
 /* 800A3918 */
 dlabel g_snd_sequence_ticks

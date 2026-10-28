@@ -5,7 +5,7 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern s32 D_80094CFC[];
+extern s32 g_node_pose_rotation_indices[];
 
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     Unk80045878Obj *s4;
@@ -42,7 +42,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
          * to loop the way SOTN's DebugCaptureScreen reuses its i (Q51) */
         /* SOTN: src/dra/42398.c:75 @aa53500 */
         s0 = 1;
-        tbl = D_80094CFC;
+        tbl = g_node_pose_rotation_indices;
         /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
         s1 = arg4;
 
@@ -187,12 +187,12 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     light_SetPointLightTarget(a0, (s32)s3->node.xf.mat.t);
 }
 
-extern s32 D_80094CFC[];
+extern s32 g_node_pose_rotation_indices[];
 
 void slot_BlendTwoPosesIntoNodeMatrices(
     s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     s32 i = 1;
-    s32 *tbl = D_80094CFC;
+    s32 *tbl = g_node_pose_rotation_indices;
     Unk80045878Obj *base = g_slot_objects[a0];
     SVECTOR buf;
     Unk80045878Node *ents;
@@ -329,5 +329,5 @@ void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32 a0, s32 a1) {
  * func_80040D48 and slot_BlendTwoPosesIntoNodeMatrices step through to index
  * per-node rotation triples. Defined after every function, so no body sees a
  * definition where it saw an extern. */
-s32 D_80094CFC[17] = {8,  9, 14, 15, 16, 17, 10, 11, 12,
-                      13, 1, 2,  3,  4,  5,  6,  7};
+s32 g_node_pose_rotation_indices[17] = {
+    8, 9, 14, 15, 16, 17, 10, 11, 12, 13, 1, 2, 3, 4, 5, 6, 7};

@@ -34,7 +34,7 @@ extern u8 D_800A31D8;
 void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     gpu_ResetGraphMode1();
     gpu_HideResetAndClear();
-    if (D_800A31DA == 0) {
+    if (g_menu_mode_subflow_init_pending == 0) {
         comb_RequestClose();
     }
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
@@ -102,7 +102,7 @@ void menu_InitSubflowForMode(s32 arg0) {
 
     switch (arg0) {
     case 0:
-        if (D_800A31DA == 0) {
+        if (g_menu_mode_subflow_init_pending == 0) {
             InitTimedSpriteSequence(0x80118800);
             snd_SerialMixOn();
             cdrom_StartAudioEntry(0);
@@ -120,7 +120,7 @@ void menu_InitSubflowForMode(s32 arg0) {
         return;
 
     case 3:
-        if (D_800A31DA == 0) {
+        if (g_menu_mode_subflow_init_pending == 0) {
             menu_ResetFlowBackgroundAndConfirmCursor();
             g_row_menu_subflow_state = 6;
         } else {
@@ -132,7 +132,7 @@ void menu_InitSubflowForMode(s32 arg0) {
         return;
 
     case 6:
-        if (D_800A31DA != 0) {
+        if (g_menu_mode_subflow_init_pending != 0) {
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             g_row_menu_subflow_state = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -202,9 +202,9 @@ void menu_UpdateRowMenuAndSubflows(void) {
         D_800A31D9 = 0;
         g_row_menu_subflow_state = 7;
     }
-    if (D_800A31DA != 0) {
+    if (g_menu_mode_subflow_init_pending != 0) {
         menu_InitSubflowForMode(g_fight_mode_selector);
-        D_800A31DA = 0;
+        g_menu_mode_subflow_init_pending = 0;
     }
     switch (g_row_menu_subflow_state) {
     case 7:
@@ -457,6 +457,6 @@ s32 bits_DepositMask3F83F8(s32 a0) {
 /* Q65: this file's initialized small data (.sdata), in address order. */
 u8 D_800A31D8 = 1;
 u8 D_800A31D9 = 1;
-u8 D_800A31DA = 0;
+u8 g_menu_mode_subflow_init_pending = 0;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u8 g_row_menu_subflow_state;

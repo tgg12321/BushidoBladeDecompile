@@ -48,9 +48,9 @@ glabel gpu_QueueSlotDrawMovesForSelectedSet
   .L800403A0:
     /* 30BA0 800403A0 08006286 */  lh         $v0, 0x8($s3)
     /* 30BA4 800403A4 21800000 */  addu       $s0, $zero, $zero
-    /* 30BA8 800403A8 0980013C */  lui        $at, %hi(D_80094B48)
+    /* 30BA8 800403A8 0980013C */  lui        $at, %hi(g_gpu_asset_draw_move_masks)
     /* 30BAC 800403AC 21082200 */  addu       $at, $at, $v0
-    /* 30BB0 800403B0 484B2290 */  lbu        $v0, %lo(D_80094B48)($at)
+    /* 30BB0 800403B0 484B2290 */  lbu        $v0, %lo(g_gpu_asset_draw_move_masks)($at)
     /* 30BB4 800403B4 04001324 */  addiu      $s3, $zero, 0x4
     /* 30BB8 800403B8 24882202 */  and        $s1, $s1, $v0
   .L800403BC:

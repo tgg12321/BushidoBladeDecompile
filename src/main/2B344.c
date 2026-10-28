@@ -59,7 +59,7 @@ s32 comb_HandshakeStep(void) {
         g_comb_handshake_step++;
         break;
     case 7:
-        D_800A3916 = 1;
+        g_comb_initial_pad_exchange_pending = 1;
         comb_EnableEvents();
         return 1;
     }
@@ -472,7 +472,7 @@ u8 g_comb_handshake_step;
 s32 D_800A38D0;
 s32 D_800A38FC;
 s32 D_800A3908;
-u8 D_800A3916;
+u8 g_comb_initial_pad_exchange_pending;
 
 /* Merged section (Q65: one original file). */
 extern DR_TPAGE g_font_tpage[2]; /* one per frame parity (g_font_buf_index) */
@@ -1005,7 +1005,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
     }
     if (g_fight_choice_menu_cursor == 1) {
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-        D_800A31DA = 1;
+        g_menu_mode_subflow_init_pending = 1;
         g_main_loop_handler_index = 8;
         return;
     }
@@ -1461,9 +1461,9 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
 
     g_gpu_last_fog_ot_index = 0xFFFF;
     /* FAKE: the pair read through a pointer local; a direct
-       `D_800906A4[arg0][0]` read is scheduled above the g_gpu_last_fog_ot_index
-       store: score 9 (Q129) */
-    rec = D_800906A4[arg0];
+       `g_gpu_fog_move_settings[arg0][0]` read is scheduled above the
+       g_gpu_last_fog_ot_index store: score 9 (Q129) */
+    rec = g_gpu_fog_move_settings[arg0];
     if (rec[0] != 0) {
         {
             s32 base = func_8003F268();
@@ -1482,30 +1482,32 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
         }
         {
             s16 v1 = g_gpu_grid_and_fog_control;
-            s16 mask = D_80090608;
+            s16 mask = g_gpu_fog_latch_last_grid_and_fog_control;
             if ((v1 & ~mask) & 1) {
-                D_80090600 = dist;
-                D_80090604 = offset;
+                g_gpu_latched_fog_depth_span = dist;
+                g_gpu_latched_fog_depth_offset = offset;
             }
             if (v1 & 1) {
-                arg1 -= D_80090604;
+                arg1 -= g_gpu_latched_fog_depth_offset;
             } else {
                 arg1 -= offset;
             }
         }
-        D_80090608 = (u16)g_gpu_grid_and_fog_control;
-        ptr = &D_8009060C[arg0];
+        g_gpu_fog_latch_last_grid_and_fog_control =
+            (u16)g_gpu_grid_and_fog_control;
+        ptr = &g_gpu_fog_depth_span_limits[arg0];
         {
-            /* FAKE: D_800906A4[arg0][1] read as a byte offset off the array
-               base; element reads are scheduled past the D_80090608 store
-               above, ahead of the `sh`: score 8 */
+            /* FAKE: g_gpu_fog_move_settings[arg0][1] read as a byte offset off
+               the array base; element reads are scheduled past the
+               g_gpu_fog_latch_last_grid_and_fog_control store above, ahead of
+               the `sh`: score 8 */
             s32 idx = arg0 * 4;
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
                 arg1, 0x1F, g_gpu_fog_row_moves, *ptr,
-                *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+                *(s16 *)((u8 *)g_gpu_fog_move_settings + 2 + idx));
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
                 arg1, 0x13, g_gpu_fog_block_moves, *ptr,
-                *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+                *(s16 *)((u8 *)g_gpu_fog_move_settings + 2 + idx));
         }
     }
 }
@@ -1526,7 +1528,7 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     }
 
     if (g_gpu_grid_and_fog_control & 1) {
-        step = D_80090600;
+        step = g_gpu_latched_fog_depth_span;
     } else {
         if (func_8003F268() == 0) {
             step = 0x6590 - arg0;

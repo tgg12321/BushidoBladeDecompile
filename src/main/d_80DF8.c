@@ -6,9 +6,11 @@
  *    uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or the next one's:
  *    g_gpu_last_fog_ot_index (u32, gpu_GetLastFogOtIndex) and the unread
- *    word after it (D_80090600 is read on its own); D_80090600 / D_80090604
- *    (s32) and D_80090608 (s16, word-padded before D_8009060C), each read
- *    on its own by gpu_LatchFogDepthOnTransitionAndQueueMoves /
+ *    word after it (g_gpu_latched_fog_depth_span is read on its own);
+ * g_gpu_latched_fog_depth_span / g_gpu_latched_fog_depth_offset (s32) and
+ * g_gpu_fog_latch_last_grid_and_fog_control (s16, word-padded before
+ * g_gpu_fog_depth_span_limits), each read on its own by
+ * gpu_LatchFogDepthOnTransitionAndQueueMoves /
  * gpu_QueueDepthSpacedMovesAndLinkTerminalPacket;
  * g_softbody_face_record_strides (s16[4], the run's end,
  * softbody_CreateForNode's per-mode strides 12, 12, 18, 22). Under -G8 the
@@ -41,20 +43,20 @@ void func_800477BC(void);
 void func_800477C4(void);
 
 u32 g_gpu_last_fog_ot_index = 0x00000000;
-/* No reader; one word from the gap to D_80090600. */
+/* No reader; one word from the gap to g_gpu_latched_fog_depth_span. */
 u32 D_800905FC = 0x00000000;
-s32 D_80090600 = 0;
-s32 D_80090604 = 0;
-s16 D_80090608 = 0;
+s32 g_gpu_latched_fog_depth_span = 0;
+s32 g_gpu_latched_fog_depth_offset = 0;
+s16 g_gpu_fog_latch_last_grid_and_fog_control = 0;
 
-s32 D_8009060C[38] = {
+s32 g_gpu_fog_depth_span_limits[38] = {
     0x7900, 0x5924, 0x5069, 0x5069, 0x5069, 0x5069, 0x4E20, 0x5069,
     0x5069, 0x7D00, 0x4E20, 0x5069, 0x4C6A, 0x7D00, 0x5069, 0x7D00,
     0x4E20, 0x5069, 0x5069, 0x7D00, 0x33BA, 0x5069, 0x5069, 0x5069,
     0x5069, 0x7D00, 0x5069, 0x7D00, 0x5069, 0x552C, 0x6EA8, 0x5069,
     0x5069, 0x703E, 0x5069, 0x5069, 0x5924, 0x7900,
 };
-s16 D_800906A4[39][2] = {
+s16 g_gpu_fog_move_settings[39][2] = {
     {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0},
     {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0},
     {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0},
@@ -864,8 +866,8 @@ s32 D_80094840[31] = {
     0x00000000,
 };
 
-/* One {init, unk4} pair per stage (38, as D_8009060C), indexed by
- * resource_GetLoadedSelector(); the label D_800948C0 was
+/* One {init, unk4} pair per stage (38, as g_gpu_fog_depth_span_limits), indexed
+ * by resource_GetLoadedSelector(); the label D_800948C0 was
  * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's
  * folded &g_resource_selector_callbacks[0].unk4. */
 Unk800948BCEntry g_resource_selector_callbacks[38] = {

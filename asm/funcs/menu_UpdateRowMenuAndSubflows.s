@@ -17,7 +17,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26064 80035864 0D0180A3 */  sb         $zero, %gp_rel(D_800A31D9)($gp)
     /* 26068 80035868 740682A3 */  sb         $v0, %gp_rel(g_row_menu_subflow_state)($gp)
   .L8003586C:
-    /* 2606C 8003586C 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
+    /* 2606C 8003586C 0E018293 */  lbu        $v0, %gp_rel(g_menu_mode_subflow_init_pending)($gp)
     /* 26070 80035870 00000000 */  nop
     /* 26074 80035874 06004010 */  beqz       $v0, .L80035890
     /* 26078 80035878 00000000 */   nop
@@ -25,7 +25,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26080 80035880 DC388484 */  lh         $a0, %lo(g_fight_mode_selector)($a0)
     /* 26084 80035884 86D5000C */  jal        menu_InitSubflowForMode
     /* 26088 80035888 00000000 */   nop
-    /* 2608C 8003588C 0E0180A3 */  sb         $zero, %gp_rel(D_800A31DA)($gp)
+    /* 2608C 8003588C 0E0180A3 */  sb         $zero, %gp_rel(g_menu_mode_subflow_init_pending)($gp)
   .L80035890:
     /* 26090 80035890 74068293 */  lbu        $v0, %gp_rel(g_row_menu_subflow_state)($gp)
     /* 26094 80035894 00000000 */  nop

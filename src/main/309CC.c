@@ -11,7 +11,7 @@
 extern s32 snd_LoadVabPack();
 extern s32 g_gpu_draw_move_bank;
 extern u16 g_gpu_draw_move_table[];
-extern u8 D_80094B48[];
+extern u8 g_gpu_asset_draw_move_masks[];
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
@@ -81,7 +81,7 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
             mask = 0;
             break;
         }
-        mask = mask & D_80094B48[ptr->asset_index];
+        mask = mask & g_gpu_asset_draw_move_masks[ptr->asset_index];
         i = 0;
         do {
             if (mask & 1) {
@@ -283,13 +283,14 @@ done_cases:
 /* The 21 node-template records at 0x80094B96 follow an s16 -1 at 0x80094B94
  * that no code reads. gcc word-aligns every top-level array and struct, so no
  * object of this file can start at 0x80094B96: the -1 and the records are one
- * word-aligned table, D_80094B94 (it ends at g_object_scale_factors). */
+ * word-aligned table, g_node_hierarchy_templates (it ends at
+ * g_object_scale_factors). */
 typedef struct {
     s16 unk_00;
     Unk80094B96Rec recs[21];
 } Unk80094B94Table;
 
-extern Unk80094B94Table D_80094B94;
+extern Unk80094B94Table g_node_hierarchy_templates;
 
 void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
     s16 *tbl;
@@ -320,18 +321,21 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
             p->node.primitive_table_select = 0;
             p->node.rotation_order = 0;
             p->node.reloc_entry_index = -1;
-            v1 = D_80094B94.recs[i].unk_00;
+            v1 = g_node_hierarchy_templates.recs[i].unk_00;
             if (v1 != -1) {
                 p->node.parent_node = &nodes[v1].node;
             } else {
                 p->node.parent_node = 0;
             }
-            p->node.work.t[0] =
-                (D_80094B94.recs[i].unk_02[0] * a0->position_scale) >> 12;
-            p->node.work.t[1] =
-                (D_80094B94.recs[i].unk_02[1] * a0->position_scale) >> 12;
-            p->node.work.t[2] =
-                (D_80094B94.recs[i].unk_02[2] * a0->position_scale) >> 12;
+            p->node.work.t[0] = (g_node_hierarchy_templates.recs[i].unk_02[0] *
+                                 a0->position_scale) >>
+                                12;
+            p->node.work.t[1] = (g_node_hierarchy_templates.recs[i].unk_02[1] *
+                                 a0->position_scale) >>
+                                12;
+            p->node.work.t[2] = (g_node_hierarchy_templates.recs[i].unk_02[2] *
+                                 a0->position_scale) >>
+                                12;
             p->node.xf.rot.vx = 0;
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
@@ -431,14 +435,14 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
     Unk80045878Node *parents;
     /* Once-written per iteration named intermediate (entry 6): id points at
      * record i's unk_08, tested for -1 and stored into
-     * p->node.reloc_entry_index. D_80094B94.recs[i].unk_08 read in place:
-     * score 5. */
+     * p->node.reloc_entry_index. g_node_hierarchy_templates.recs[i].unk_08 read
+     * in place: score 5. */
     s16 *id;
 
     p = arg0->projected_nodes;
     parents = &arg0->transform_nodes[1];
     for (i = 0; i < 18; i++) {
-        id = &D_80094B94.recs[i].unk_08;
+        id = &g_node_hierarchy_templates.recs[i].unk_08;
         if (*id != -1) {
             p->node.reloc_entry_index = *id;
             p->node.node_kind = 3;
@@ -456,10 +460,10 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
 }
 
 /* .data 0x80094AF4..0x80094CFC, this file's whole .data (d_80DF8.c's
- * g_softbody_face_record_strides precedes it, 31548.c's D_80094CFC follows), in
- * address order. Defined after every function, so no body sees a definition
- * where it saw an extern. g_gpu_draw_move_table: gpu_AddDrawMove's seven
- * 6-entry rows. */
+ * g_softbody_face_record_strides precedes it, 31548.c's
+ * g_node_pose_rotation_indices follows), in address order. Defined after every
+ * function, so no body sees a definition where it saw an extern.
+ * g_gpu_draw_move_table: gpu_AddDrawMove's seven 6-entry rows. */
 u16 g_gpu_draw_move_table[42] = {
     0x0290, 0x0000, 0x0010, 0x0020, 0x0280, 0x0000, 0x02A0, 0x0000, 0x0010,
     0x0020, 0x0280, 0x0000, 0x02B0, 0x0000, 0x0010, 0x0020, 0x0280, 0x0000,
@@ -470,7 +474,7 @@ u16 g_gpu_draw_move_table[42] = {
 
 /* gpu_QueueSlotDrawMovesForSelectedSet's per-model masks, indexed by
  * asset_index. */
-u8 D_80094B48[64] = {
+u8 g_gpu_asset_draw_move_masks[64] = {
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1C, 0x1F, 0x1F, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x00, 0x1F, 0x00, 0x00,
@@ -483,7 +487,7 @@ u8 D_80094B48[64] = {
  * slots. */
 s32 g_slot_tim_group_requests[3] = {-1, -1, -1};
 
-Unk80094B94Table D_80094B94 = {
+Unk80094B94Table g_node_hierarchy_templates = {
     -1,
     {
         {-1, {0, 0, 0}, -1},   {0, {0, 0, 0}, 0},        {1, {0, 10, 0}, 1},

@@ -262,8 +262,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F660 8001EE60 8B76000C */  jal        snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode
     /* F664 8001EE64 00000000 */   nop
     /* F668 8001EE68 01000224 */  addiu      $v0, $zero, 0x1
-    /* F66C 8001EE6C 0A80013C */  lui        $at, %hi(D_800A31DA)
-    /* F670 8001EE70 DA3122A0 */  sb         $v0, %lo(D_800A31DA)($at)
+    /* F66C 8001EE6C 0A80013C */  lui        $at, %hi(g_menu_mode_subflow_init_pending)
+    /* F670 8001EE70 DA3122A0 */  sb         $v0, %lo(g_menu_mode_subflow_init_pending)($at)
     /* F674 8001EE74 A67B0008 */  j          .L8001EE98
     /* F678 8001EE78 08000224 */   addiu     $v0, $zero, 0x8
   .L8001EE7C:

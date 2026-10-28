@@ -70,8 +70,8 @@ glabel main
     /* 7B08 80017308 9C0682A3 */  sb         $v0, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7B0C 8001730C 08000224 */  addiu      $v0, $zero, 0x8
     /* 7B10 80017310 5C0880A3 */  sb         $zero, %gp_rel(g_comb_abort_request)($gp)
-    /* 7B14 80017314 0A80013C */  lui        $at, %hi(D_800A31DA)
-    /* 7B18 80017318 DA3120A0 */  sb         $zero, %lo(D_800A31DA)($at)
+    /* 7B14 80017314 0A80013C */  lui        $at, %hi(g_menu_mode_subflow_init_pending)
+    /* 7B18 80017318 DA3120A0 */  sb         $zero, %lo(g_menu_mode_subflow_init_pending)($at)
     /* 7B1C 8001731C 680782A7 */  sh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
   .L80017320:
     /* 7B20 80017320 68078287 */  lh         $v0, %gp_rel(g_main_loop_handler_index)($gp)

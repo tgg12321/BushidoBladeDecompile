@@ -297,7 +297,7 @@ u16 g_fighter_motion_data_ids[27][8] = {
     {0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321}};
 
 /* Model id -> BBM file name, ended by a zero id. */
-Unk8008DCCCEntry D_8008DCCC[18] = {
+Unk8008DCCCEntry g_motion_fighter_data_files[18] = {
     {0x321, D_800100FC[65]},  {0x421, D_800100FC[64]},
     {0x521, D_800100FC[63]},  {0x431, D_800100FC[62]},
     {0x531, D_800100FC[61]},  {0x532, D_800100FC[60]},

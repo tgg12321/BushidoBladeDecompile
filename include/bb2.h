@@ -140,7 +140,7 @@ extern u8 g_fight_step_table[][4];
 /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF (d_7D920.c). */
 extern u8 g_sqrt_table_u8[0x400];
 
-extern Unk8008DCCCEntry D_8008DCCC[18];
+extern Unk8008DCCCEntry g_motion_fighter_data_files[18];
 
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits
  * (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow,
@@ -277,18 +277,18 @@ extern u8 *g_fight_command_streams[];
 extern u8 g_fight_presentation_playback_file_id_offsets[];
 extern u32 g_font_image[];
 extern u32 g_gpu_last_fog_ot_index;
-extern s32 D_80090600;
-extern s32 D_80090604;
-extern s16 D_80090608;
+extern s32 g_gpu_latched_fog_depth_span;
+extern s32 g_gpu_latched_fog_depth_offset;
+extern s16 g_gpu_fog_latch_last_grid_and_fog_control;
 
 /* Two per-stage tables, indexed by the stage id
  * gpu_RunGridDrawPassAndQueueFogMoves passes to
  * gpu_LatchFogDepthOnTransitionAndQueueMoves: 38 s32, then s16 pairs ([0]
  * tested, [1] passed to gpu_QueueDepthSpacedMovesAndLinkTerminalPacket; the
  * last pair is zero). */
-extern s32 D_8009060C[38];
+extern s32 g_gpu_fog_depth_span_limits[38];
 
-extern s16 D_800906A4[39][2];
+extern s16 g_gpu_fog_move_settings[39][2];
 extern u16 g_object_scale_factors[];
 extern Unk80099D88Rec g_cpu_profiles[];
 extern Unk8009A8C8Entry D_8009A8C8[][8];
@@ -299,7 +299,7 @@ extern u8 g_fight_group_tint_colors[][4];
 extern s16 g_fighter_forward_move_rate_limits[4];
 extern s32 g_fighter_opponent_response_max_separation;
 extern s32 D_800A3140;
-extern u8 D_800A31DA;
+extern u8 g_menu_mode_subflow_init_pending;
 extern u8 g_fight_reinit_reuses_assets;
 extern u8 g_fight_second_fighter_initial_defeats_left;
 /* Three angles: gpu_PrepareViewAndFlushDrawQueue passes them to
@@ -637,7 +637,7 @@ extern s32 D_800A38D0;
 extern u16 D_800A38D6;
 extern s32 D_800A38FC;
 extern s32 D_800A3908;
-extern u8 D_800A3916;
+extern u8 g_comb_initial_pad_exchange_pending;
 extern u8 g_arena;
 extern s16 g_eff_jittered_billboard_ages[];
 extern s16 g_eff_billboard_pair_ages[];

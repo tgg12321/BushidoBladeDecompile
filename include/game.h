@@ -789,7 +789,7 @@ typedef struct {
     void (*unk4)(void);
 } Unk800948BCEntry;
 
-/* D_8008DCCC: model id -> BBM file name, ended by a zero id
+/* g_motion_fighter_data_files: model id -> BBM file name, ended by a zero id
  * (0x8008DCCC..0x8008DD5B). motion_LoadFighterData loads the model of entry n
  * from CD file n + 2. */
 typedef struct {
@@ -2210,7 +2210,7 @@ typedef struct {
  * slot_FinalizeObjectLoadSoundTexturesAndArena returns at once when it is 0,
  * else clears it and runs its setup; asset_index:
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a1, indexing the
- * g_object_scale_factors / D_80094B48 tables.
+ * g_object_scale_factors / g_gpu_asset_draw_move_masks tables.
  * - node_light_setup_index / transform_block_id / projected_block_id:
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0 / a0 / a0 + 3
  * (transform_block_id / projected_block_id are the reloc_RelocateBlock /

@@ -47,8 +47,8 @@ glabel func_80040D48
     /* 315FC 80040DFC 00000000 */   nop
   jlabel .L80040E00
     /* 31600 80040E00 01001024 */  addiu      $s0, $zero, 0x1
-    /* 31604 80040E04 0980053C */  lui        $a1, %hi(D_80094CFC)
-    /* 31608 80040E08 FC4CA524 */  addiu      $a1, $a1, %lo(D_80094CFC)
+    /* 31604 80040E04 0980053C */  lui        $a1, %hi(g_node_pose_rotation_indices)
+    /* 31608 80040E08 FC4CA524 */  addiu      $a1, $a1, %lo(g_node_pose_rotation_indices)
     /* 3160C 80040E0C 4800B18F */  lw         $s1, 0x48($sp)
     /* 31610 80040E10 68006426 */  addiu      $a0, $s3, 0x68
     /* 31614 80040E14 4C0060AE */  sw         $zero, 0x4C($s3)

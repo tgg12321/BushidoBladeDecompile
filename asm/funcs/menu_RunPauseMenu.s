@@ -183,8 +183,8 @@ glabel menu_RunPauseMenu
     /* 7908 80017108 12002216 */  bne        $s1, $v0, .L80017154
     /* 790C 8001710C 02000224 */   addiu     $v0, $zero, 0x2
     /* 7910 80017110 01000224 */  addiu      $v0, $zero, 0x1
-    /* 7914 80017114 0A80013C */  lui        $at, %hi(D_800A31DA)
-    /* 7918 80017118 DA3122A0 */  sb         $v0, %lo(D_800A31DA)($at)
+    /* 7914 80017114 0A80013C */  lui        $at, %hi(g_menu_mode_subflow_init_pending)
+    /* 7918 80017118 DA3122A0 */  sb         $v0, %lo(g_menu_mode_subflow_init_pending)($at)
     /* 791C 8001711C 575C0008 */  j          .L8001715C
     /* 7920 80017120 08000224 */   addiu     $v0, $zero, 0x8
   .L80017124:

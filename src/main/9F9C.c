@@ -2326,7 +2326,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     if (g_fight_choice_menu_cursor == 1) {
         cdrom_PauseAndWait();
         snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
-        D_800A31DA = 1;
+        g_menu_mode_subflow_init_pending = 1;
         g_main_loop_handler_index = 8;
         return;
     }
@@ -3252,9 +3252,9 @@ void motion_LoadCommonData(void) {
  * var_0[0] = id0; otherwise (also when id0 is only in
  * g_motion_fighter_loaded_data_ids[1]) var_0[0] = id0 and var_0[1] = id1. For
  * each nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j + 2),
- * g_motion_fighter_buffers[i]), j the id's D_8008DCCC index, points
- * g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and stores the
- * id in g_motion_fighter_loaded_data_ids[i]. */
+ * g_motion_fighter_buffers[i]), j the id's g_motion_fighter_data_files index,
+ * points g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and
+ * stores the id in g_motion_fighter_loaded_data_ids[i]. */
 void motion_LoadFighterData(
     s32 arg0, s32 fighter0_weapon_id, s32 arg2, s32 fighter1_weapon_id) {
     /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
@@ -3262,9 +3262,9 @@ void motion_LoadFighterData(
      * the wrong frame); without it: score 20. */
     u16 var_0[130];
     s32 i;
-    /* FAKE: one local for loop 1's arg0 / arg2 and loop 2's D_8008DCCC index;
-     * separate locals seat the index in $a1, the target keeps both in $s0
-     * (score 3) (Q129). */
+    /* FAKE: one local for loop 1's arg0 / arg2 and loop 2's
+     * g_motion_fighter_data_files index; separate locals seat the index in $a1,
+     * the target keeps both in $s0 (score 3) (Q129). */
     s32 j;
 
     if (g_motion_common_loaded == 0) {
@@ -3329,8 +3329,8 @@ void motion_LoadFighterData(
 
     for (i = 0; i < 2; i++) {
         if (var_0[i] != 0) {
-            for (j = 0; D_8008DCCC[j].id != 0; j++) {
-                if (D_8008DCCC[j].id == var_0[i]) {
+            for (j = 0; g_motion_fighter_data_files[j].id != 0; j++) {
+                if (g_motion_fighter_data_files[j].id == var_0[i]) {
                     break;
                 }
             }
