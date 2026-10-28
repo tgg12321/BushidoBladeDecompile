@@ -1,0 +1,91 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-26); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_working_tree() with NAMING_KEYCHECK_ROOT = cwd = the lane worktree ln-naming-a, HEAD 9490c1c92 = main; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 80 pairs
+(1434 token substitutions: src/main/9F9C.c 1036, src/main/17AFC.c 339, src/main/175A4.c 59; no include/ file touched; the comment edits listed in notes.txt
+COMMENT LIST are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 1434. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch. The run modified no file in the worktree.
+Per-pair substitutions (function:old=new count):
+  fighter_CacheDownwardProbeHit:arg0=fighter_record 8
+  fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface:arg0=fighter_record 5
+  fighter_UpdateGroundYByMoveKind:arg0=fighter_record 9
+  fighter_Update:arg0=fighter_index 53
+  fighter_Update:var_0=pose_frames 33
+  fighter_Update:pos=proposed_collision_pos 6
+  fighter_Update:ang=root_offset_headings 9
+  fighter_Update:var_4=clearance_heading 3
+  fighter_Update:var_5=is_common 6
+  fighter_Update:rec=fighter_record 756
+  fighter_Update:var_7=transition_command 17
+  fighter_Update:var_8=transition_pad_buttons 10
+  fighter_Update:ent=transition_cursor 8
+  fighter_Update:move=move_script 5
+  fighter_Update:var_12=root_heading 5
+  fighter_Update:var_13=root_heading_plus_quarter 6
+  fighter_Update:var_14=interpolation_weight 11
+  fighter_Update:var_15=source_frame_index 4
+  fighter_Update:next=next_move_frame 5
+  fighter_Update:var_17=dest_frame_index 4
+  fighter_Update:var_18=decoder_index 7
+  fighter_Update:var_19=frame_index_offset 7
+  fighter_Update:var_20=weapon_hit_window_active 4
+  fighter_Update:frac=frame_fraction_sum 5
+  fighter_Update:var_22=complementary_weight 8
+  fighter_Update:ang_q=saved_root_heading_plus_quarter 4
+  fighter_Update:dv=horizontal_velocity 4
+  fighter_Update:var_30=target_point 5
+  fighter_Update:m1=saved_pose_matrix 4
+  fighter_Update:m2=current_pose_matrix 4
+  fighter_Update:var_34=heading_delta 4
+  fighter_Update:var_35=adjusted_saved_root_offset 15
+  fighter_Update:var_37=bone_matrices 2
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:current=fighter_record 17
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:i=fighter_index 5
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:idx=selected_fighter_index 5
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:var_6=drift_sign 6
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:diff=vertical_separation 5
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:kind=midpoint_effect_index 13
+  fight_UpdatePairedInputTotalsEventsAndMidpointEffects:pos=effect_position 8
+  math_ClassifyAbsMagnitude:a0=input_value 6
+  math_ClassifyAbsMagnitude:v1=magnitude_class 5
+  fighter_AccumulateBoneGroupFlagWhenGameModeZero:a1=hit_record_index 2
+  fighter_AccumulateOrClearByBoneGroup:a0=fighter_record 7
+  fighter_AccumulateOrClearByBoneGroup:a1=hit_record_index 3
+  fighter_AccumulateOrClearByBoneGroup:a2=increment 4
+  fighter_AccumulateOrClearByBoneGroup:v1=fight_mode 3
+  math_NegNormalize3D:idx=sqrt_table_index 3
+  fighter_RelocateAndStartEventMove:arg0=fighter_record 31
+  fighter_RelocateAndStartEventMove:idx=fighter_index 4
+  fighter_RelocateAndStartEventMove:tbl=start_position_cursor 5
+  fighter_RelocateAndStartEventMove:var_4=reposition_percent 8
+  fighter_RelocateAndStartEventMove:cnt=previous_reposition_count 4
+  fighter_RelocateAndStartEventMove:var_1=target_position 5
+  fighter_RelocateAndStartEventMove:r2=move_script 3
+  fighter_DispatchBoneHitSoundEvent:arg2=hit_record_index 3
+  fighter_DispatchBoneHitSoundEvent:stack_a2=hit_point 7
+  fighter_DispatchBoneHitSoundEvent:chk_obj=other_record 7
+  fighter_DispatchBoneHitSoundEvent:f86=current_variant 3
+  fighter_DispatchBoneHitSoundEvent:f88=object_variant 2
+  fighter_TestMoveFrameWindowOrObjectVariantKind:a0=fighter_record 12
+  fighter_TestMoveFrameWindowOrObjectVariantKind:ret=result 4
+  fighter_TestMoveFrameWindowOrObjectVariantKind:state=current_move_kind 9
+  fighter_TryDropQueuedHeadAtBone:a0=fighter_record 10
+  fighter_TryDropQueuedHeadAtBone:v1=current_variant 2
+  fighter_TryDropQueuedHeadAtBone:v0=bone_matrices 2
+  fighter_ResolveBoneHitTail:arg1=fighter_record 5
+  fighter_ResolveBoneHitTail:var_4=fighter_index 2
+  fighter_ResolveBoneHitTail:scr=hit_point 2
+  fighter_ResolveBoneHit:arg1=fighter_record 70
+  fighter_ResolveBoneHit:arg2=hit_record_index 16
+  fighter_ResolveBoneHit:scr=hit_point 27
+  fighter_ResolveBoneHit:var_4=fighter_index 26
+  fighter_ResolveBoneHit:var_5=other_record 7
+  fighter_ResolveBoneHit:dot=bone_axis_dot 6
+  fighter_ResolveBoneHit:var_7=axis_dot_below_limit 3
+  fighter_ResolveBoneHit:var_8=current_move_kind 11
+  fighter_ResolveBoneHit:diff=power_difference 4
+  fighter_ResolveBoneHit:var_10=power_difference_class 3
+  fighter_ResolveBoneHit:sign=power_difference_negative 3
