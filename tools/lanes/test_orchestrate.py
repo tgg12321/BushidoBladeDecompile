@@ -387,6 +387,17 @@ class Slots(unittest.TestCase):
         self.assertEqual(o.candidates(b, reg(), s, NOW, "naming"), ["naming-a", "naming-b"])
         self.assertNotIn("no_progress_naming", s)
 
+    def test_audit_row_note_edit_is_not_naming_progress(self):
+        b = bl()
+        b["naming"].append({"id": "name-audit", "kind": "audit", "stage": "active", "note": "a"})
+        before_hold, before_key = o.naming_hold(b), o.progress_key(b, "naming-a")
+        b["naming"][-1]["note"] = "covered: wave 90"
+        self.assertEqual(o.naming_hold(b), before_hold)
+        self.assertEqual(o.progress_key(b, "naming-a"), before_key)
+        b["naming"][0]["note"] = "x"  # a real naming row still counts
+        self.assertNotEqual(o.naming_hold(b)["key"], before_hold["key"])
+        self.assertNotEqual(o.progress_key(b, "naming-a"), before_key)
+
     def test_codex_finishing_alone_lifts_naming_hold(self):
         import tempfile
         with tempfile.TemporaryDirectory() as d, patch.object(o, "CODEX_RUNS", Path(d)):

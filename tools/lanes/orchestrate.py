@@ -183,9 +183,15 @@ def backlogs() -> dict:
     return {"naming": tsv_rows(NAMING_BACKLOG), "foundation": tsv_rows(FOUNDATION_BACKLOG)}
 
 
+def naming_track_rows(bl: dict) -> list[dict]:
+    """Naming rows a naming lane can work: the Codex lane's audit index (kind `audit`) is not one,
+    so its note edits neither lift a no-progress hold nor count as a session's progress."""
+    return [r for r in bl["naming"] if r.get("kind") != "audit"]
+
+
 def progress_key(bl: dict, lane: str) -> str:
     """A digest of the backlog rows a lane works from; unchanged after a session = no progress."""
-    rows = bl["naming"] if lane.startswith("naming") else \
+    rows = naming_track_rows(bl) if lane.startswith("naming") else \
         [r for r in bl["foundation"] if r.get("lane") == lane]
     blob = "\n".join(f"{r.get('id')}\t{r.get('stage')}\t{r.get('note')}" for r in rows)
     return hashlib.sha1(blob.encode()).hexdigest()
@@ -582,7 +588,7 @@ def naming_hold(bl: dict) -> dict:
     row order ignored, so a note-only edit (PROMPT READY) or a stage move between workable
     stages lifts it too."""
     rows = sorted((str(r.get("id")), str(r.get("stage")), str(r.get("note")))
-                  for r in bl["naming"])
+                  for r in naming_track_rows(bl))
     blob = "\n".join("\t".join(t) for t in rows)
     return {"key": hashlib.sha1(blob.encode()).hexdigest(),
             "workable": workable_naming_ids(bl)}
