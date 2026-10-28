@@ -1236,14 +1236,14 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         (var_5 = g_entry_menu_row_phase_extra_slot_count);
          i++) {
         /* several values of one kind: player i's VRAM rect row,
-         * g_entry_menu_resources->unk_7C + i * 8, computed at the top of the
-         * loop and again in the locked-slot arm (Ruling 11, proof at tag
-         * pre-slim-2026-10-01). */
+         * g_entry_menu_resources->row_choice_upload_rects + i * 8, computed at
+         * the top of the loop and again in the locked-slot arm (Ruling 11,
+         * proof at tag pre-slim-2026-10-01). */
         RECT *var_6;
 
         /* FAKE: base and step as two statements, here and in the locked-slot
-         * arm; `var_6 = g_entry_menu_resources->unk_7C + i * 8`: score 28
-         * (Q129) */
+         * arm; `var_6 = g_entry_menu_resources->row_choice_upload_rects + i *
+         * 8`: score 28 (Q129) */
         var_6 = g_entry_menu_resources->row_choice_upload_rects;
         var_6 += i * 8;
         var_4 = i - var_5;

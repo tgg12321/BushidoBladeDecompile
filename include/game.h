@@ -197,7 +197,7 @@ typedef struct {
     DR_OFFSET *draw_offset_prims;
 } Unk800788B0Rec;
 
-/* The VAB pack snd_LoadVabPack loads (MOD.BIN's head unk_00 points at one;
+/* The VAB pack snd_LoadVabPack loads (MOD.BIN's head sound_pack points at one;
    g_vab_rec_ptr keeps the loaded ones): four words, the first three
    file-relative offsets snd_LoadVabPack turns into addresses in place. unk_00:
    the u32 key-event table snd_FlushSoundQueue reads; unk_04: the VabHdr
@@ -259,18 +259,21 @@ typedef struct {
  * with a list of file-relative offsets ending in -1, which
  * reloc_RelocateSelfOffsets turns into addresses. The first five mean the same
  * in every file: reloc_RelocateTwelveListsAndLoadVabPack /
- * resource_RelocateNineOffsetListsAndLoadVabPack pass unk_00 and unk_04 to the
- * VAB loader snd_LoadVabPack (menu_RelocateSelLists /
+ * resource_RelocateNineOffsetListsAndLoadVabPack pass sound_pack and
+ * free_ram_start to the VAB loader snd_LoadVabPack (the pack exists only in
+ * MOD and SEL / SEL1 / SEL2; menu_RelocateSelLists /
  * reloc_RelocateFiveOffsetListsAndGetWord1, for D_SEL / NAR, make no such call,
- * and those files' unk_00..unk_08 are equal),
- * gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip loads the image at unk_08
- * into VRAM, and gpu_LoadVramBottomStrip loads the 640x32 strip at unk_0C or
- * unk_10. The four per-file relocators
+ * and in D_SEL, NAR and STAFF the words unk_00 (sound_pack), unk_04
+ * (free_ram_start) and unk_08 (vram_image_pixels) are equal, so the pack range
+ * is empty),
+ * gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip loads the image at
+ * vram_image_pixels into VRAM, and gpu_LoadVramBottomStrip loads the 640x32
+ * strip at unk_0C or unk_10. The four per-file relocators
  * (reloc_RelocateTwelveListsAndLoadVabPack,
  * resource_RelocateNineOffsetListsAndLoadVabPack, menu_RelocateSelLists,
- * reloc_RelocateFiveOffsetListsAndGetWord1) return unk_04, where the caller's
- * gpu_InitPrimBufferPair buffer starts. The words after the head differ per
- * file. */
+ * reloc_RelocateFiveOffsetListsAndGetWord1) return free_ram_start, where the
+ * caller's gpu_InitPrimBufferPair buffer starts: it equals the image start, RAM
+ * reused after the VRAM upload. The words after the head differ per file. */
 typedef struct {
     Unk8005C2A8Pack *sound_pack;
     s32 free_ram_start;
@@ -292,17 +295,17 @@ typedef struct {
 
 /* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's rect_rows
  * (menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws them) and
- * D_SEL.BIN's unk_3C (menu_DrawSelRowTiles). */
+ * D_SEL.BIN's row_tile_rects (menu_DrawSelRowTiles). */
 typedef struct {
     s16 x, y, w, h;
     u8 r, g, b, pad;
 } Rec_8006C21C;
 
-/* SEL.BIN's unk_54 block, gpu_UploadAndDrawSelectedEntryQuads's: two cell
- * tables (unk_00[i], one per player), a 0 word, then the 12-byte sheet headers
- * the cells are drawn with (unk_0C[v] for the g_entry_menu_grid_entries entry
- * value v it reads; after its first iteration the values 12, 13, 14, 0 and 3
- * take unk_0C[22..26]). */
+/* SEL.BIN's selected_entry_header_block, gpu_UploadAndDrawSelectedEntryQuads's:
+ * two cell tables (unk_00[i], one per player), a 0 word, then the 12-byte sheet
+ * headers the cells are drawn with (unk_0C[v] for the g_entry_menu_grid_entries
+ * entry value v it reads; after its first iteration the values 12, 13, 14, 0
+ * and 3 take unk_0C[22..26]). */
 typedef struct {
     Unk8009B400Record *unk_00[2];
     s32 unk_08;
@@ -313,17 +316,19 @@ typedef struct {
  * InitDisplayStateLoadPackAndSetEntryFlags loads at its work area + 0x58
  * (g_entry_menu_resources; StepSlideBuildFrameRecordAndDispatchStateHandler
  * hands it to the handlers as Unk8006EACCRec.resource_root). After the head:
- * - unk_14: per entry id two TIM pixel addresses, one per column,
- * menu_UpdateRowCursors loads (LoadImage).
- * - unk_54..unk_74: the nine lists
+ * - row_choice_pixels: indexed by the row-choice value (rec.unk2) that
+ * menu_UpdateRowCursors stores, two pixel-run addresses (headerless, not TIM),
+ * one per column, loaded with LoadImage.
+ * - selected_entry_header_block..unk_74: the nine lists
  * resource_RelocateNineOffsetListsAndLoadVabPack relocates
- * (reloc_RelocateOffsetList): unk_54, the header block
+ * (reloc_RelocateOffsetList): selected_entry_header_block, the header block
  * gpu_UploadAndDrawSelectedEntryQuads draws (Unk8006ECF4Rec); unk_58..unk_74,
  * sprite-sheet lists. unk_78 is a further offset no code reads.
- * - unk_7C: per player a row of eight VRAM RECTs menu_UpdateRowCursors hands
- * LoadImage as the destination; unk_80: the bytes menu_UpdateChoiceGrid reads.
- * - unk_84: TIM pixel addresses gpu_UploadAndDrawSelectedEntryQuads loads per
- * character case. */
+ * - row_choice_upload_rects: per player a row of eight VRAM RECTs
+ * menu_UpdateRowCursors hands LoadImage as the destination; unk_80: the bytes
+ * menu_UpdateChoiceGrid reads.
+ * - entry_upload_pixels: five pixel-run addresses (headerless, not TIM)
+ * gpu_UploadAndDrawSelectedEntryQuads loads with LoadImage. */
 typedef struct {
     Unk8006E950Head resource_head;
     s32 row_choice_pixels[8][2];
@@ -346,7 +351,7 @@ typedef struct {
  * work area + 0x58 and keeps in SelWork.f04 (menu_StepSelScreen hands it to the
  * handlers as Unk8006EACCRec.resource_root). After the head: unk_14..unk_38,
  * the ten lists menu_RelocateSelLists relocates, each a list of sprite sheets
- * (unk_20 is indexed by the round count SelWork.f65); unk_3C, the rectangle
+ * (pick_slot_sheets is indexed by SelWork.f65); row_tile_rects, the rectangle
  * rows menu_DrawSelRowTiles draws.
  */
 typedef struct {
