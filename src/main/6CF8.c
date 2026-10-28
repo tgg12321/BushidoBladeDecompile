@@ -430,9 +430,6 @@ void main(void) {
     /* D_800A390D (frames left to skip presenting) as read this frame; the next
      * frame passes it to pad_Update. */
     s32 var_3;
-    /* FAKE: second handle on D_800A3770 keeps its address in $s4 for the
-     * whole loop; D_800A3770[idx] at both uses: score 14 */
-    u32 *var_4;
 
     __main();
     SetSp(0x801FFF00);
@@ -443,88 +440,86 @@ void main(void) {
     gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
         (u8 *)0x80118800, var_1, idx);
 
-    var_4 = D_800A3770;
     g_main_loop_handler_index = 0xF;
     D_800A390D = 0;
     g_gpu_presented_frame_count = 0;
 
-loop:
-    idx = g_gpu_presented_frame_count & 1;
-    var_1 = &g_gpu_db[idx];
-    var_2 = var_1->ot;
-    ClearOTagR(var_2, 0x1008);
-    g_gpu_ot_ptr = var_2;
-    g_prim_buf_cursor = (u32 *)var_4[idx];
-    eff_SelectQuadBuffer(idx);
-    font_BeginFrame();
-    pad_Update(var_3);
-    cdrom_Update();
-    snd_FlushSoundQueue();
+    for (;;) {
+        idx = g_gpu_presented_frame_count & 1;
+        var_1 = &g_gpu_db[idx];
+        var_2 = var_1->ot;
+        ClearOTagR(var_2, 0x1008);
+        g_gpu_ot_ptr = var_2;
+        g_prim_buf_cursor = (u32 *)D_800A3770[idx];
+        eff_SelectQuadBuffer(idx);
+        font_BeginFrame();
+        pad_Update(var_3);
+        cdrom_Update();
+        snd_FlushSoundQueue();
 
-    if (g_comb_abort_request != 0) {
-        cdrom_PauseAndWait();
-        g_local_ot_draw_mode = DISP_DISABLED;
-        g_comb_abort_request = 0;
-        D_800A31DA = 0;
-        g_main_loop_handler_index = 8;
-    }
-
-    D_8008D090[g_main_loop_handler_index]();
-    font_AddTpage();
-
-    do {
-        if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80)
-            break;
-        rand();
-    } while (1);
-
-    VSync(1);
-    DrawSync(0);
-    VSync(0);
-    ResetRCnt(0xF2000001u);
-
-    var_3 = D_800A390D;
-    if (var_3 == 0) {
-        PutDispEnv(&var_1->disp);
-        PutDrawEnv(&var_1->draw);
-    }
-
-    {
-        s32 remaining = var_4[idx] + 0x13400 - (s32)g_prim_buf_cursor;
-        if (remaining < D_800A30DC) {
-            D_800A30DC = remaining;
+        if (g_comb_abort_request != 0) {
+            cdrom_PauseAndWait();
+            g_local_ot_draw_mode = DISP_DISABLED;
+            g_comb_abort_request = 0;
+            D_800A31DA = 0;
+            g_main_loop_handler_index = 8;
         }
-        if (remaining < 0) {
-            printf(g_str_prim_overflow);
-            while (1) {
-                func_800164F8();
+
+        D_8008D090[g_main_loop_handler_index]();
+        font_AddTpage();
+
+        do {
+            if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80)
+                break;
+            rand();
+        } while (1);
+
+        VSync(1);
+        DrawSync(0);
+        VSync(0);
+        ResetRCnt(0xF2000001u);
+
+        var_3 = D_800A390D;
+        if (var_3 == 0) {
+            PutDispEnv(&var_1->disp);
+            PutDrawEnv(&var_1->draw);
+        }
+
+        {
+            s32 remaining = D_800A3770[idx] + 0x13400 - (s32)g_prim_buf_cursor;
+            if (remaining < D_800A30DC) {
+                D_800A30DC = remaining;
+            }
+            if (remaining < 0) {
+                printf(g_str_prim_overflow);
+                while (1) {
+                    func_800164F8();
+                }
             }
         }
-    }
 
-    if (D_800A390D != 0) {
-        D_800A390D--;
-    } else {
-        DrawOTag(&var_1->ot[0x1007]);
-        g_gpu_presented_frame_count++;
-    }
+        if (D_800A390D != 0) {
+            D_800A390D--;
+        } else {
+            DrawOTag(&var_1->ot[0x1007]);
+            g_gpu_presented_frame_count++;
+        }
 
-    if (g_main_loop_handler_index != 1)
-        goto loop;
-    if (var_3 != 0)
-        goto loop;
-    if (g_pad_state.pressed & 0x08000800u)
-        goto call_func;
-    if (g_fight_mode_selector != 2)
-        goto loop;
-    if (D_800A3713 == 0)
-        goto loop;
-    D_800A3713--;
-    if (D_800A3713 != 0)
-        goto loop;
-call_func:
-    menu_RunPauseMenu(var_1, idx);
-    goto loop;
+        if (g_main_loop_handler_index != 1)
+            continue;
+        if (var_3 != 0)
+            continue;
+        if (!(g_pad_state.pressed & 0x08000800u)) {
+            if (g_fight_mode_selector != 2)
+                continue;
+            if (D_800A3713 == 0)
+                continue;
+            D_800A3713--;
+            if (D_800A3713 != 0)
+                continue;
+        }
+        menu_RunPauseMenu(var_1, idx);
+    }
 }
 
 void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
