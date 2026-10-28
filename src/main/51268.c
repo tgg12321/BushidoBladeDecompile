@@ -2876,7 +2876,7 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
 /* Per-frame update + draw of the g_eff_particles[particle_row_index] records,
  * the middle of the eff_PrepareParticles / eff_UpdateParticles /
  * eff_LinkParticleQuads trio. For each live record of
- * g_eff_particles[particle_row_index] (state 1): step its unk12 and derive
+ * g_eff_particles[particle_row_index] (state 1): step its frame_age and derive
  * r/g/b from it, take its g_eff_particle_group_positions[particle_row_index]
  * entry less g_eff_view_origin through the GTE rotation, set state 3 (and skip
  * it) once r and g are both low or once the squared length p_out[0..2] passes

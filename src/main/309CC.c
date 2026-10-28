@@ -430,8 +430,9 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
      * &arg0->transform_nodes[i + 1].node in place: score 3. */
     Unk80045878Node *parents;
     /* Once-written per iteration named intermediate (entry 6): id points at
-     * record i's unk_08, tested for -1 and stored into p->node.unk2.
-     * D_80094B94.recs[i].unk_08 read in place: score 5. */
+     * record i's unk_08, tested for -1 and stored into
+     * p->node.reloc_entry_index. D_80094B94.recs[i].unk_08 read in place:
+     * score 5. */
     s16 *id;
 
     p = arg0->projected_nodes;
@@ -467,7 +468,8 @@ u16 g_gpu_draw_move_table[42] = {
     0x02D0, 0x0040, 0x0010, 0x0028, 0x0280, 0x0020,
 };
 
-/* gpu_QueueSlotDrawMovesForSelectedSet's per-model masks, indexed by unk_08. */
+/* gpu_QueueSlotDrawMovesForSelectedSet's per-model masks, indexed by
+ * asset_index. */
 u8 D_80094B48[64] = {
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1C, 0x1F, 0x1F, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,

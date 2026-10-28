@@ -1560,8 +1560,9 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
     delta = (s32)(p - base);
     g_node_retained_draw_node_buffer = (s32)p;
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
-     * -8 / -6 / -9 / 0 from it). As Unk80045878Node stores (unk0 / unk1 /
-     * unk2 / unk4 / light_setup_index), no q: p[var_1] subscripts 11 (delta
+     * -8 / -6 / -9 / 0 from it). As Unk80045878Node stores (node_kind /
+     * primitive_table_select / reloc_entry_index / reloc_block_id /
+     * light_setup_index), no q: p[var_1] subscripts 11 (delta
      * taken as the byte offset first 14, g_node_retained_draw_node_buffer
      * stored first 11), p++ walk in the for header 12 (delta first 9, field
      * order 0/1/2/4/A 12, p read back from g_node_retained_draw_node_buffer 9),

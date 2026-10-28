@@ -211,10 +211,11 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     if (g_gpu_clut_row_list_map[arg0->asset_index] == 0xFF) {
         return;
     }
-    /* FAKE: id_ptr spelling: the reload of arg0->unk_08 for the table
+    /* FAKE: id_ptr spelling: the reload of arg0->asset_index for the table
      * index stays after the g_gpu_vram_row_backup_asset_index store only when
-     * it is not plain struct indexing; g_gpu_clut_row_list_map[arg0->unk_08]:
-     * score 2 (proven-spelling-class-reconstruction) */
+     * it is not plain struct indexing;
+     * g_gpu_clut_row_list_map[arg0->asset_index]: score 2
+     * (proven-spelling-class-reconstruction) */
     id_ptr = &arg0->asset_index;
     g_gpu_vram_row_backup_asset_index = arg0->asset_index;
     tbl = g_gpu_clut_row_lists[g_gpu_clut_row_list_map[*id_ptr]];

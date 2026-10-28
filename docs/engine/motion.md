@@ -17,7 +17,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   (`cdrom_GetFileIndex(1, j + 2)`, `j` the model id's index in `D_8008DCCC`)
   into `g_motion_fighter_buffers[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
   `g_motion_fighter_sections[i]` (include/bb2.h:482) at their sections, as the comment on
-  `Unk801027B0Rec` describes (include/game.h:736). In modes 1, 4 and 6
+  `Unk801027B0Rec` describes (include/game.h:831). In modes 1, 4 and 6
   (`g_fight_mode_selector`) it also reads seven sectors per fighter from
   `cdrom_GetFileIndex(1, 0)` into `g_motion_frame_buffers[i]`, a table of ready
   `MotionFrame`s.
@@ -59,7 +59,7 @@ loaded bitstream.
   12-bit channel values and their 2-bit channel codes and empties the four
   cache slots (`frame = -2`).
 - `motion_DecodeFrame(decoder_index, frame_index, out, work)` (src/main/9F9C.c:101) decodes frame `frame_index`
-  into a 0x84-byte `MotionFrame` (include/game.h:1327). Frames come in groups
+  into a 0x84-byte `MotionFrame` (include/game.h:1481). Frames come in groups
   of eight: a 24-bit table at stream + 0x70 gives each group's bit offset;
   the group start holds three optional 16-bit root values and the 63
   channels, and each later frame applies per-channel deltas coded by the
@@ -68,9 +68,9 @@ loaded bitstream.
   one is decoded from it instead of from the group start (the comment above the function,
   src/main/9F9C.c:89, details it).
 
-`MotionFrame.unk_00` is the root offset, `unk_02` / `unk_04` the root heading
-and distance, `unk_06..unk_0A` the root rotation angles, and `unk_0C[]` the
-per-joint channels (the comment at include/game.h:1317).
+`MotionFrame.root_height` is the root offset, `root_offset_angle` /
+`root_distance` the root heading and distance, `unk_06..unk_0A` the root rotation angles, and `node_channels[]` the
+per-joint channels (the comment at include/game.h:1469).
 
 ## Per-frame update: `fighter_Update`
 

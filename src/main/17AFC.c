@@ -4572,7 +4572,7 @@ void fight_ClearBallisticRecords(void) {
 Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
     Unk80101EC8Record *src, s32 type) {
     s32 speed = 0x50;
-    /* FAKE: constant holder for -0xC8 (stored to unk_1C.y); the literal
+    /* FAKE: constant holder for -0xC8 (to ballistic_velocity.y); the literal
      * reorders the li pair: score 7 (y store moved after .z: 8, before .x:
      * 10). */
     s32 var_1 = -0xC8;
@@ -4660,7 +4660,7 @@ void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
         if (rec->ballistic_kind == 0)
             continue;
         {
-            /* the other player's index (unk_03 is the owner) */
+            /* the other player's index (owner_index is the owner) */
             s32 other = (rec->owner_index == 0);
             ent = &D_80101EC8[other];
         }
