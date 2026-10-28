@@ -1,0 +1,27 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 19 (row var-locals-19)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15 lessons in
+`docs/naming/phase3/pending/var-locals-16/prompt.txt`, the wave-16 lessons in
+`docs/naming/phase3/pending/var-locals-17/prompt.txt` and the wave-17 lessons in
+`docs/naming/phase3/pending/var-locals-18/prompt.txt`, with these changes:
+
+- Output files: `tmp/codex/vl19_local_manifest.csv` and `tmp/codex/vl19_notes.md` (both full contents
+  also in your final message; the filesystem may be read-only). Print HEAD and cite file:line at it.
+- Scope, in this order (stop at 40 RENAMEs): 1. src/main/51268.c, the functions after
+  eff_SpawnRotatedQuadCluster in file order (C definitions only; eff_SpawnRotatedQuadCluster:i is
+  done). 2. Then the next src/main/*.c game TUs in ROM-offset order after 51268.c that still have
+  auto-named bindings.
+- Do not re-propose wave 8-18 NO_NAME / dropped / reverted bindings (pending/var-locals-{8,...,18}/notes.txt)
+  without new evidence, said in the row.
+- Wave 18 lessons: a value that only supplies bits of a packed word is `<thing>_word_bits`, not a
+  code or index (check the table callers pass and how the bits are read back); a GTE output argument
+  is named for the register it receives (`gte_flag_out` for RotTrans's FLAG, `depth_cue_out` for
+  RotTransPers's IR0), not for a role the caller never reads; a matrix that went through ScaleMatrixL
+  is `scaled_<x>_matrix`; an all-zero RotTrans/RotTransPers input is `local_origin`; when renaming a
+  local, check include/game.h member comments that cite it (game.h:1012-1013 cited eff_DrawBillboardList's
+  w/h) and list those comments in the notes.
+- Left neutral by wave 18, do not propose: eff_SetRotMatrix:a1 (unused), `p` / `v` (libgpu macro
+  bodies), var_3 / base in eff_DrawBillboardList (FAKE), the 51268.c:249 forward declaration. The w/h
+  locals at 51268.c:~1503 may be proposed only together with an edit of their game.h:1040-1041 member
+  comments, listed in the notes.
