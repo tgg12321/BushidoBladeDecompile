@@ -1167,24 +1167,24 @@ void func_80044650(void) { func_80052C10(); }
 
 s32 node_BindFrameDataAndReserveEntryBuffer(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
-    g_node_frame_animation_context.unk0 = a1;
-    g_node_frame_animation_context.unk2 = *a0++;
-    g_node_frame_animation_context.unk8 = (s32)a0;
-    g_node_frame_animation_context.unkC = a2;
+    g_node_frame_animation_context.reloc_block_id = a1;
+    g_node_frame_animation_context.anim_frame_count = *a0++;
+    g_node_frame_animation_context.frame_data = (s32)a0;
+    g_node_frame_animation_context.frame_entries = a2;
     v0 = resource_GetLoadedSelector();
-    g_node_frame_animation_context.unk4 = v0;
+    g_node_frame_animation_context.resource_selector = v0;
     switch ((s16)v0) {
     case 7:
-        g_node_frame_animation_context.unk6 = 0x11;
+        g_node_frame_animation_context.frame_entry_count = 0x11;
         break;
     case 4:
-        g_node_frame_animation_context.unk6 = 2;
+        g_node_frame_animation_context.frame_entry_count = 2;
         break;
     case 0x12:
-        g_node_frame_animation_context.unk6 = 0xA;
+        g_node_frame_animation_context.frame_entry_count = 0xA;
         break;
     }
-    a2 += g_node_frame_animation_context.unk6 * 104;
+    a2 += g_node_frame_animation_context.frame_entry_count * 104;
     return a2;
 }
 
@@ -1193,14 +1193,16 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
     Unk800A9CF8Entry *dst;
     s32 i;
 
-    g_node_frame_animation_context.unk10 =
+    g_node_frame_animation_context.paired_grid_nodes =
         (s32)(src = gpu_GetGridNodeRecordTable());
-    dst = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC;
-    for (i = 0; i < g_node_frame_animation_context.unk6; dst++, src++, i++) {
-        dst->node.unk0 = 0;
-        dst->node.unk1 = 0;
-        dst->node.unk2 = 0;
-        dst->node.unk4 = g_node_frame_animation_context.unk0;
+    dst = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries;
+    for (i = 0; i < g_node_frame_animation_context.frame_entry_count; dst++,
+        src++, i++) {
+        dst->node.node_kind = 0;
+        dst->node.primitive_table_select = 0;
+        dst->node.reloc_entry_index = 0;
+        dst->node.reloc_block_id =
+            g_node_frame_animation_context.reloc_block_id;
         dst->node.rotation_order = 0;
         dst->node.parent_node = 0;
         dst->node.light_setup_index = 4;

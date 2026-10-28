@@ -12,7 +12,7 @@ Unk80045878Obj *slot_GetObject(s32 a0) { return g_slot_objects[a0]; }
 s32 slot_GetAssetIndex(s32 a0) {
     Unk80045878Obj *ptr = g_slot_objects[a0];
     if (ptr) {
-        return ptr->unk_08;
+        return ptr->asset_index;
     }
     return -1;
 }
@@ -38,7 +38,7 @@ void slot_ReleaseObjectAndResources(s32 a0) {
 void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
     Unk80045878Obj *ptr = g_slot_objects[a0];
     if (ptr) {
-        if (((ptr->unk_00.word >> 16) & 0x1F) != a1) {
+        if (((ptr->load_flags.word >> 16) & 0x1F) != a1) {
             ptr->load_status = -2;
         }
     }
@@ -48,7 +48,7 @@ void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
 s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
     Unk80045878Obj *ptr = g_slot_objects[a0];
     if (ptr) {
-        return (ptr->unk_00.word >> 16) & 0x1F;
+        return (ptr->load_flags.word >> 16) & 0x1F;
     }
     return -1;
 }
@@ -74,9 +74,9 @@ void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
 
     p = &slot_object->transform_nodes[1];
     if (arg1) {
-        p->node.unk1 |= 1;
+        p->node.primitive_table_select |= 1;
     } else {
-        p->node.unk1 &= ~1;
+        p->node.primitive_table_select &= ~1;
     }
 
     i = 1;
@@ -86,12 +86,12 @@ loop1:
        colour use); the second set of b changes the scheduler's load order
        to the target's [b,r,g]; without it: score 2
        (staged-value-reused-variable) */
-    b = p->node.unk2 >= 0;
+    b = p->node.reloc_entry_index >= 0;
     if (b) {
         if (arg1)
-            p->node.unk1 |= 1;
+            p->node.primitive_table_select |= 1;
         else
-            p->node.unk1 &= ~1;
+            p->node.primitive_table_select &= ~1;
     }
     i++;
     if (i < 18)
@@ -111,13 +111,13 @@ after2:
 
     if (gpu_RefreshGrayscaleMode()) {
         v = math_Grayscale3(
-            slot_object->unk_18.byte[2], slot_object->unk_18.byte[1],
-            slot_object->unk_18.byte[0]);
+            slot_object->patch_color.byte[2], slot_object->patch_color.byte[1],
+            slot_object->patch_color.byte[0]);
         PatchColorImmediatesAtListedCodeSites((v << 16) | (v << 8) | v);
     } else {
-        r = slot_object->unk_18.byte[0];
-        g = slot_object->unk_18.byte[1];
-        b = slot_object->unk_18.byte[2];
+        r = slot_object->patch_color.byte[0];
+        g = slot_object->patch_color.byte[1];
+        b = slot_object->patch_color.byte[2];
         PatchColorImmediatesAtListedCodeSites(b | ((r << 16) | (g << 8)));
     }
 }
@@ -208,15 +208,15 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     if (arg0->arena_id != 1) {
         return;
     }
-    if (g_gpu_clut_row_list_map[arg0->unk_08] == 0xFF) {
+    if (g_gpu_clut_row_list_map[arg0->asset_index] == 0xFF) {
         return;
     }
     /* FAKE: id_ptr spelling: the reload of arg0->unk_08 for the table
      * index stays after the g_gpu_vram_row_backup_asset_index store only when
      * it is not plain struct indexing; g_gpu_clut_row_list_map[arg0->unk_08]:
      * score 2 (proven-spelling-class-reconstruction) */
-    id_ptr = &arg0->unk_08;
-    g_gpu_vram_row_backup_asset_index = arg0->unk_08;
+    id_ptr = &arg0->asset_index;
+    g_gpu_vram_row_backup_asset_index = arg0->asset_index;
     tbl = g_gpu_clut_row_lists[g_gpu_clut_row_list_map[*id_ptr]];
     if (gpu_GetFogClutObject() == 1) {
         xoff = -0x140;
@@ -253,10 +253,10 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
     if (obj == 0) {
         return;
     }
-    if (obj->unk_08 != g_gpu_vram_row_backup_asset_index) {
+    if (obj->asset_index != g_gpu_vram_row_backup_asset_index) {
         return;
     }
-    if (g_gpu_clut_row_list_map[obj->unk_08] == 0xFF) {
+    if (g_gpu_clut_row_list_map[obj->asset_index] == 0xFF) {
         return;
     }
     r = (a0 << 12) / 255;
@@ -273,7 +273,7 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
             xoff = 0x80;
             yoff = 0;
         }
-        tbl = g_gpu_clut_row_lists[g_gpu_clut_row_list_map[obj->unk_08]];
+        tbl = g_gpu_clut_row_lists[g_gpu_clut_row_list_map[obj->asset_index]];
         for (idx = 0; tbl[0] >= 0; tbl += 2) {
             rect.x = tbl[0] + xoff;
             rect.y = tbl[1] + yoff;

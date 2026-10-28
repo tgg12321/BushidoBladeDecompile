@@ -631,11 +631,11 @@ MATRIX *camera_GetViewMatrixWithHalvedMiddleRow(void) {
 }
 
 void node_InitIdentity(Unk80101DF0Record *node) {
-    node->unk4 = 8;
+    node->reloc_block_id = 8;
     node->rotation_order = 0;
-    node->unk2 = 0;
-    node->unk0 = 0;
-    node->unk1 = 0;
+    node->reloc_entry_index = 0;
+    node->node_kind = 0;
+    node->primitive_table_select = 0;
     node->parent_node = 0;
     node->light_setup_index = 4;
     node->xf.rot.vx = 0;
@@ -862,10 +862,10 @@ s32 wave_Init(void) {
 
     {
         Unk80101DF0Record *node = &g_wave_draw_node;
-        node->unk0 = 0xE;
+        node->node_kind = 0xE;
         node->light_setup_index = 4;
         node->work.t[0] = -0x2EE0;
-        node->unk1 = 0;
+        node->primitive_table_select = 0;
         node->work.t[1] = 0;
         node->work.t[2] = -0xFA0;
         node->xf.rot.vx = 0;
@@ -1552,7 +1552,7 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
     if (slot_object == 0)
         return 0;
     g_node_retained_draw_slot_index = slot_index;
-    var_1 = (&D_80099BCC)[slot_object->unk_08];
+    var_1 = (&D_80099BCC)[slot_object->asset_index];
     if (var_1 == 0xFF)
         return 0;
     base = (u8 *)resource_LoadOrReuseGrayscaleAdjustedNodeAsset(var_1);
@@ -1645,7 +1645,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     if (arg1 >= 0) {
         node->node.xf.mat = *mat_tbl[18];
         list = g_draw_queue_cursor;
-        node->node.unk2 = arg1 + 0xF;
+        node->node.reloc_entry_index = arg1 + 0xF;
         g_draw_queue_cursor = list + 1;
         *list = node;
         node++;
@@ -1653,7 +1653,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     if (arg2 != 0) {
         node->node.xf.mat = *mat_tbl[19];
         list = g_draw_queue_cursor;
-        node->node.unk2 = 0x15;
+        node->node.reloc_entry_index = 0x15;
         g_draw_queue_cursor = list + 1;
         *list = node;
     }
@@ -1935,10 +1935,11 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
      * node) but gives the target's `move s5,zero`: score 1
      * (dead-store-fake-exception) */
     val58 = 0;
-    obj->node.unk0 = 0;
-    obj->node.unk1 = 0;
-    obj->node.unk2 = g_resource_entry_request_state[entry_index] * 2;
-    obj->node.unk4 = 6;
+    obj->node.node_kind = 0;
+    obj->node.primitive_table_select = 0;
+    obj->node.reloc_entry_index =
+        g_resource_entry_request_state[entry_index] * 2;
+    obj->node.reloc_block_id = 6;
     obj->node.rotation_order = 0;
     obj->node.parent_node = 0;
     obj->node.light_setup_index = 4;
@@ -2002,8 +2003,8 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
         if (flags != 1) {
             s32 entry = g_resource_entry_request_state[entry_index];
             void **list;
-            obj->node.unk0 = 3;
-            obj->node.unk1 = 0;
+            obj->node.node_kind = 3;
+            obj->node.primitive_table_select = 0;
             /* FAKE: unk58 stored through a pointer; the member store lets sched
              * sink it below the g_draw_queue_cursor load (score 2). */
             {
@@ -2015,8 +2016,8 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             obj->node.matrix_state = 1;
             obj->node.rotation_order = 0;
             obj->node.light_setup_index = 0;
-            obj->node.unk4 = 6;
-            obj->node.unk2 = entry * 2 + 1;
+            obj->node.reloc_block_id = 6;
+            obj->node.reloc_entry_index = entry * 2 + 1;
             g_draw_queue_cursor = list + 1;
             *list = obj;
             obj++;
@@ -2054,10 +2055,11 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     }
     slot_obj = slot_GetObject(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
-    obj->node.unk0 = 0;
-    obj->node.unk1 = 0;
-    obj->node.unk2 = g_resource_entry_request_state[linked_entry_index] * 2;
-    obj->node.unk4 = 6;
+    obj->node.node_kind = 0;
+    obj->node.primitive_table_select = 0;
+    obj->node.reloc_entry_index =
+        g_resource_entry_request_state[linked_entry_index] * 2;
+    obj->node.reloc_block_id = 6;
     obj->node.rotation_order = 0;
     obj->node.light_setup_index = 4;
     src = &D_80099D3C[(arg1 & 1) * 6];
@@ -2081,14 +2083,15 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     g_draw_queue_cursor = list + 1;
     *list = obj;
     obj++;
-    obj->node.unk2 = g_resource_entry_request_state[linked_entry_index] * 2 + 1;
-    obj->node.unk0 = 3;
+    obj->node.reloc_entry_index =
+        g_resource_entry_request_state[linked_entry_index] * 2 + 1;
+    obj->node.node_kind = 3;
     obj->node.parent_node = &obj[-1].node;
-    obj->node.unk1 = 0;
+    obj->node.primitive_table_select = 0;
     obj->node.rotation_order = 0;
     obj->node.matrix_state = 1;
     obj->node.light_setup_index = 0;
-    obj->node.unk4 = 6;
+    obj->node.reloc_block_id = 6;
     /* FAKE: unk58 stored through a pointer; the member store lets sched lift
        the g_draw_queue_cursor reload above the node's stores (score 17). */
     {
@@ -2229,8 +2232,8 @@ void resource_InvalidateEntrySelectionCache(void) {
 void node_InitRootNodePairWithNegatedRotationMatrices(void) {
     Unk80101DF0Record *camera_root = &g_view_camera_root_node;
     Unk80101DF0Record *identity_root = &g_view_identity_root_node;
-    camera_root->unk0 = 0x64;
-    g_view_camera_root_node.unk1 = 0;
+    camera_root->node_kind = 0x64;
+    g_view_camera_root_node.primitive_table_select = 0;
     g_view_camera_root_node.xf.rot.vx = 0;
     g_view_camera_root_node.xf.rot.vy = 0;
     g_view_camera_root_node.xf.rot.vz = 0;
@@ -2240,8 +2243,8 @@ void node_InitRootNodePairWithNegatedRotationMatrices(void) {
     g_view_camera_root_node.parent_node = 0;
     g_view_camera_root_node.rotation_order = 5;
     node_SetMatrixFromNegatedRot(camera_root);
-    identity_root->unk0 = 0x65;
-    g_view_identity_root_node.unk1 = 0;
+    identity_root->node_kind = 0x65;
+    g_view_identity_root_node.primitive_table_select = 0;
     g_view_identity_root_node.xf.rot.vx = 0;
     g_view_identity_root_node.xf.rot.vy = 0;
     g_view_identity_root_node.xf.rot.vz = 0;

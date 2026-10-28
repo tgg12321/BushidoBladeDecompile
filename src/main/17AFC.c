@@ -54,18 +54,18 @@ s32 math_ClassifyAbsMagnitude(s32 a0) {
 }
 
 void motion_SetFixedChannelBlock(MotionFrame *motion_frame) {
-    motion_frame->unk_0C[0x18] = 0x3F5;
-    motion_frame->unk_0C[0x19] = 0x2B6;
-    motion_frame->unk_0C[0x1A] = 0x77A;
-    motion_frame->unk_0C[0x1B] = 0xBEE;
-    motion_frame->unk_0C[0x1C] = 0x8C;
-    motion_frame->unk_0C[0x1D] = 0x227;
-    motion_frame->unk_0C[0x21] = 0x8A0;
-    motion_frame->unk_0C[0x22] = 0xF0E;
-    motion_frame->unk_0C[0x1E] = 0;
-    motion_frame->unk_0C[0x1F] = 0;
-    motion_frame->unk_0C[0x20] = 0;
-    motion_frame->unk_0C[0x23] = 0xBCD;
+    motion_frame->node_channels[0x18] = 0x3F5;
+    motion_frame->node_channels[0x19] = 0x2B6;
+    motion_frame->node_channels[0x1A] = 0x77A;
+    motion_frame->node_channels[0x1B] = 0xBEE;
+    motion_frame->node_channels[0x1C] = 0x8C;
+    motion_frame->node_channels[0x1D] = 0x227;
+    motion_frame->node_channels[0x21] = 0x8A0;
+    motion_frame->node_channels[0x22] = 0xF0E;
+    motion_frame->node_channels[0x1E] = 0;
+    motion_frame->node_channels[0x1F] = 0;
+    motion_frame->node_channels[0x20] = 0;
+    motion_frame->node_channels[0x23] = 0xBCD;
 }
 
 /* fighter_AccumulateBoneGroupFlagWhenGameModeZero ORs limb bits into
@@ -1537,9 +1537,9 @@ void fighter_CastWeaponSegment(
     BoneHitRec *rec;
     s32 i;
 
-    scr->shape_points[0] = &scr->point_slots.unk00[0];
-    scr->shape_points[1] = &scr->point_slots.unk00[1];
-    scr->unkC8 = scr->point_slots.unk00[1];
+    scr->shape_points[0] = &scr->point_slots.slot_points[0];
+    scr->shape_points[1] = &scr->point_slots.slot_points[1];
+    scr->unkC8 = scr->point_slots.slot_points[1];
     dx = scr->shape_points[1]->x - scr->shape_points[0]->x;
     dy = scr->shape_points[1]->y - scr->shape_points[0]->y;
     dz = scr->shape_points[1]->z - scr->shape_points[0]->z;
@@ -1749,8 +1749,10 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             var_3->move_frame == var_3->weapon_hit_start_frames[0]) {
             if (var_3->weapon_ammo != 0) {
                 var_3->weapon_ammo -= 1;
-                scr->point_slots.unk00[0] = SPAD->weapon_points[i == 0][1];
-                scr->point_slots.unk00[1] = SPAD->weapon_points[i == 0][0];
+                scr->point_slots.slot_points[0] =
+                    SPAD->weapon_points[i == 0][1];
+                scr->point_slots.slot_points[1] =
+                    SPAD->weapon_points[i == 0][0];
                 fighter_CastWeaponSegment(var_4, &var_5, &var_6, 0);
                 mask_a |= var_5;
             } else {
@@ -1770,8 +1772,10 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             var_3->move_frame == var_3->weapon_hit_start_frames[1] &&
             var_3->weapon_ammo != 0) {
             var_3->weapon_ammo -= 1;
-            scr->point_slots.unk00[0] = SPAD->second_weapon_points[i == 0][1];
-            scr->point_slots.unk00[1] = SPAD->second_weapon_points[i == 0][0];
+            scr->point_slots.slot_points[0] =
+                SPAD->second_weapon_points[i == 0][1];
+            scr->point_slots.slot_points[1] =
+                SPAD->second_weapon_points[i == 0][0];
             fighter_CastWeaponSegment(
                 var_4, &var_5, &var_6, var_3->character_roster_index == 0xE);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -1804,35 +1808,54 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 var_32 = 0;
             }
             if (var_12 == 0) {
-                scr->point_slots.unk00[0] = SPAD->weapon_points[i == 0][temp1];
-                scr->point_slots.unk00[1] = SPAD->weapon_points[i == 0][temp2];
-                scr->point_slots.unk00[2] = var_3->prev_weapon_points[temp1];
-                scr->point_slots.unk00[3] = var_3->prev_weapon_points[temp2];
+                scr->point_slots.slot_points[0] =
+                    SPAD->weapon_points[i == 0][temp1];
+                scr->point_slots.slot_points[1] =
+                    SPAD->weapon_points[i == 0][temp2];
+                scr->point_slots.slot_points[2] =
+                    var_3->prev_weapon_points[temp1];
+                scr->point_slots.slot_points[3] =
+                    var_3->prev_weapon_points[temp2];
             } else {
-                scr->point_slots.unk00[0] =
+                scr->point_slots.slot_points[0] =
                     SPAD->second_weapon_points[i == 0][temp1];
-                scr->point_slots.unk00[1] =
+                scr->point_slots.slot_points[1] =
                     SPAD->second_weapon_points[i == 0][temp2];
-                scr->point_slots.unk00[2] =
+                scr->point_slots.slot_points[2] =
                     var_3->prev_second_weapon_points[temp1];
-                scr->point_slots.unk00[3] =
+                scr->point_slots.slot_points[3] =
                     var_3->prev_second_weapon_points[temp2];
             }
-            scr->point_slots.unk00[4].x =
-                (scr->point_slots.unk00[0].x + scr->point_slots.unk00[2].x) / 2;
-            scr->point_slots.unk00[4].y =
-                (scr->point_slots.unk00[0].y + scr->point_slots.unk00[2].y) / 2;
-            scr->point_slots.unk00[4].z =
-                (scr->point_slots.unk00[0].z + scr->point_slots.unk00[2].z) / 2;
-            scr->point_slots.unk00[5].x =
-                (scr->point_slots.unk00[1].x + scr->point_slots.unk00[3].x) / 2;
-            scr->point_slots.unk00[5].y =
-                (scr->point_slots.unk00[1].y + scr->point_slots.unk00[3].y) / 2;
-            scr->point_slots.unk00[5].z =
-                (scr->point_slots.unk00[1].z + scr->point_slots.unk00[3].z) / 2;
-            dx = scr->point_slots.unk00[1].x - scr->point_slots.unk00[3].x;
-            dy = scr->point_slots.unk00[1].y - scr->point_slots.unk00[3].y;
-            dz = scr->point_slots.unk00[1].z - scr->point_slots.unk00[3].z;
+            scr->point_slots.slot_points[4].x =
+                (scr->point_slots.slot_points[0].x +
+                 scr->point_slots.slot_points[2].x) /
+                2;
+            scr->point_slots.slot_points[4].y =
+                (scr->point_slots.slot_points[0].y +
+                 scr->point_slots.slot_points[2].y) /
+                2;
+            scr->point_slots.slot_points[4].z =
+                (scr->point_slots.slot_points[0].z +
+                 scr->point_slots.slot_points[2].z) /
+                2;
+            scr->point_slots.slot_points[5].x =
+                (scr->point_slots.slot_points[1].x +
+                 scr->point_slots.slot_points[3].x) /
+                2;
+            scr->point_slots.slot_points[5].y =
+                (scr->point_slots.slot_points[1].y +
+                 scr->point_slots.slot_points[3].y) /
+                2;
+            scr->point_slots.slot_points[5].z =
+                (scr->point_slots.slot_points[1].z +
+                 scr->point_slots.slot_points[3].z) /
+                2;
+            dx = scr->point_slots.slot_points[1].x -
+                 scr->point_slots.slot_points[3].x;
+            dy = scr->point_slots.slot_points[1].y -
+                 scr->point_slots.slot_points[3].y;
+            dz = scr->point_slots.slot_points[1].z -
+                 scr->point_slots.slot_points[3].z;
             work = dx * dx + dy * dy + dz * dz;
             var_15 = 2;
             if (work > 6249999) {
@@ -1841,35 +1864,35 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             for (idx = 0; idx < var_15; idx++) {
                 if (var_15 == 2) {
                     if (idx == 0) {
-                        scr->shape_points[0] = &scr->point_slots.unk00[2];
-                        scr->shape_points[1] = &scr->point_slots.unk00[3];
-                        scr->shape_points[2] = &scr->point_slots.unk00[1];
+                        scr->shape_points[0] = &scr->point_slots.slot_points[2];
+                        scr->shape_points[1] = &scr->point_slots.slot_points[3];
+                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
                     } else {
-                        scr->shape_points[0] = &scr->point_slots.unk00[0];
-                        scr->shape_points[1] = &scr->point_slots.unk00[1];
-                        scr->shape_points[2] = &scr->point_slots.unk00[2];
+                        scr->shape_points[0] = &scr->point_slots.slot_points[0];
+                        scr->shape_points[1] = &scr->point_slots.slot_points[1];
+                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
                     }
                 } else {
                     switch (idx) {
                     case 0:
-                        scr->shape_points[0] = &scr->point_slots.unk00[3];
-                        scr->shape_points[1] = &scr->point_slots.unk00[2];
-                        scr->shape_points[2] = &scr->point_slots.unk00[5];
+                        scr->shape_points[0] = &scr->point_slots.slot_points[3];
+                        scr->shape_points[1] = &scr->point_slots.slot_points[2];
+                        scr->shape_points[2] = &scr->point_slots.slot_points[5];
                         break;
                     case 1:
-                        scr->shape_points[0] = &scr->point_slots.unk00[5];
-                        scr->shape_points[1] = &scr->point_slots.unk00[4];
-                        scr->shape_points[2] = &scr->point_slots.unk00[2];
+                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
+                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
+                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
                         break;
                     case 2:
-                        scr->shape_points[0] = &scr->point_slots.unk00[5];
-                        scr->shape_points[1] = &scr->point_slots.unk00[4];
-                        scr->shape_points[2] = &scr->point_slots.unk00[1];
+                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
+                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
+                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
                         break;
                     case 3:
-                        scr->shape_points[0] = &scr->point_slots.unk00[1];
-                        scr->shape_points[1] = &scr->point_slots.unk00[0];
-                        scr->shape_points[2] = &scr->point_slots.unk00[4];
+                        scr->shape_points[0] = &scr->point_slots.slot_points[1];
+                        scr->shape_points[1] = &scr->point_slots.slot_points[0];
+                        scr->shape_points[2] = &scr->point_slots.slot_points[4];
                         break;
                     }
                 }
@@ -4429,7 +4452,7 @@ void object_ResolveFighterHits(void) {
     s32 i;
     s32 var_2;
     Obj80106A78 *obj;
-    Vec3i32 *var_4 = scr->point_slots.unk00;
+    Vec3i32 *var_4 = scr->point_slots.slot_points;
     Unk80101EC8Record *var_5;
     s32 var_6;
     u16 var_7;
@@ -4542,7 +4565,7 @@ void object_ResolveFighterHits(void) {
 void fight_ClearBallisticRecords(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
-        g_fight_ballistic_records[i].unk_00 = 0;
+        g_fight_ballistic_records[i].ballistic_kind = 0;
     }
 }
 
@@ -4560,34 +4583,36 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
 
     for (; i < 4; i++) {
         s0 = ptr;
-        if (s0->unk_00 == 0)
+        if (s0->ballistic_kind == 0)
             break;
         ptr = s0 + 1;
     }
     if (i == 4)
         return 0;
 
-    s0->unk_00 = type;
+    s0->ballistic_kind = type;
     s0->unk_01 = 1;
-    s0->unk_02 = 0;
-    s0->unk_03 = src->index;
-    s0->unk_04.x = src->world_pos.x;
+    s0->flight_frames = 0;
+    s0->owner_index = src->index;
+    s0->ballistic_pos.x = src->world_pos.x;
     {
         s32 v1 = src->size_scale;
         if (v1 < 0)
             v1 += 0x1F;
-        s0->unk_04.y = src->collision_pos.vy - (v1 >> 5);
+        s0->ballistic_pos.y = src->collision_pos.vy - (v1 >> 5);
     }
-    s0->unk_04.z = src->world_pos.z;
-    s0->unk_1C.x = ((s32)Judge[src->orientation.vy & 0xFFF] * speed) >> 12;
-    s0->unk_1C.y = var_1;
-    s0->unk_1C.z =
+    s0->ballistic_pos.z = src->world_pos.z;
+    s0->ballistic_velocity.x =
+        ((s32)Judge[src->orientation.vy & 0xFFF] * speed) >> 12;
+    s0->ballistic_velocity.y = var_1;
+    s0->ballistic_velocity.z =
         ((s32)Judge[(src->orientation.vy + 0x400) & 0xFFF] * speed) >> 12;
-    s0->unk_10 = s0->unk_04;
-    s0->unk_28 = src->collision_pos.vy;
+    s0->prev_ballistic_pos = s0->ballistic_pos;
+    s0->launcher_collision_y = src->collision_pos.vy;
     var_5[1] = src->orientation.vy;
     fight_RecordReplayEventAndDispatchSoundOrEffect(
-        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
+        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->ballistic_pos.x,
+        var_5);
     return s0;
 }
 
@@ -4598,20 +4623,23 @@ void fight_UpdateBallisticRecords(void) {
 
     i = 0;
     do {
-        if (base->unk_00 != 0) {
-            base->unk_02 += 1;
-            base->unk_10 = base->unk_04;
-            base->unk_1C.y += 0xD;
-            scr->cast_end.x = base->unk_04.x + base->unk_1C.x;
-            scr->cast_end.y = base->unk_04.y + base->unk_1C.y;
-            scr->cast_end.z = base->unk_04.z + base->unk_1C.z;
+        if (base->ballistic_kind != 0) {
+            base->flight_frames += 1;
+            base->prev_ballistic_pos = base->ballistic_pos;
+            base->ballistic_velocity.y += 0xD;
+            scr->cast_end.x =
+                base->ballistic_pos.x + base->ballistic_velocity.x;
+            scr->cast_end.y =
+                base->ballistic_pos.y + base->ballistic_velocity.y;
+            scr->cast_end.z =
+                base->ballistic_pos.z + base->ballistic_velocity.z;
             if (collision_TestSegmentExtendingShortStartWithWork(
-                    &base->unk_04.x, &scr->cast_end.x, &scr->unk10.x,
+                    &base->ballistic_pos.x, &scr->cast_end.x, &scr->unk10.x,
                     scr->cast_normal, (s32)&scr->cast_work) != 0 ||
-                base->unk_04.y > base->unk_28) {
-                base->unk_00 = 0;
+                base->ballistic_pos.y > base->launcher_collision_y) {
+                base->ballistic_kind = 0;
             } else {
-                base->unk_04 = scr->cast_end;
+                base->ballistic_pos = scr->cast_end;
             }
         }
         i++;
@@ -4629,11 +4657,11 @@ void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
         u32 dist_sq;
         u32 dist;
 
-        if (rec->unk_00 == 0)
+        if (rec->ballistic_kind == 0)
             continue;
         {
             /* the other player's index (unk_03 is the owner) */
-            s32 other = (rec->unk_03 == 0);
+            s32 other = (rec->owner_index == 0);
             ent = &D_80101EC8[other];
         }
         state = ent->move_kind;
@@ -4642,9 +4670,9 @@ void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
             state == 0x21 || state == 0x11)
             continue;
 
-        dx = ent->world_pos.x - rec->unk_04.x;
-        dy = ent->world_pos.y - rec->unk_04.y;
-        dz = ent->world_pos.z - rec->unk_04.z;
+        dx = ent->world_pos.x - rec->ballistic_pos.x;
+        dy = ent->world_pos.y - rec->ballistic_pos.y;
+        dz = ent->world_pos.z - rec->ballistic_pos.z;
         dist_sq = dx * dx + dy * dy + dz * dz;
         if (dist_sq < 0x400) {
             dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -4661,9 +4689,9 @@ void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
                        (0x13 - (shift >> 1));
             }
         }
-        if (dist < (u32)(rec->unk_02 * 30 + 0x1F4)) {
+        if (dist < (u32)(rec->flight_frames * 30 + 0x1F4)) {
             ent->pending_move_event = 5;
-            rec->unk_00 = 0;
+            rec->ballistic_kind = 0;
         }
     }
 }

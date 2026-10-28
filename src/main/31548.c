@@ -124,7 +124,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     }
 
     s0 = 1;
-    s3->node.unk0 = 0xA;
+    s3->node.node_kind = 0xA;
     /* FAKE: unk58 stored through a pointer; the member store lets sched sink it
        below the g_draw_queue_cursor load (score 5). */
     {
@@ -136,12 +136,12 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         Unk80045878Node *a4p;
         list = g_draw_queue_cursor;
         a4p = &s3[1];
-        s3->node.unk2 = 0;
+        s3->node.reloc_entry_index = 0;
         g_draw_queue_cursor = list + 1;
         *list = s3;
 
         do {
-            if (a4p->node.unk2 >= 0) {
+            if (a4p->node.reloc_entry_index >= 0) {
                 void **list2;
                 list2 = g_draw_queue_cursor;
                 g_draw_queue_cursor = list2 + 1;
@@ -169,14 +169,14 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         }
 
         a2p = s4->projected_nodes;
-        if (s4->projected_nodes[0].node.unk2 != -1) {
+        if (s4->projected_nodes[0].node.reloc_entry_index != -1) {
             do {
                 void **list4;
                 list4 = g_draw_queue_cursor;
                 g_draw_queue_cursor = list4 + 1;
                 *list4 = a2p;
                 a2p++;
-            } while (a2p->node.unk2 != -1);
+            } while (a2p->node.reloc_entry_index != -1);
         }
     }
 

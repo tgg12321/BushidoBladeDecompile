@@ -1163,9 +1163,9 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
             (&D_800A37D2)[g_fight_followup_fighter_index] =
                 (&D_800A37D2)[g_fight_followup_fighter_index] + 1;
         }
-        motion_InitStream(0, g_motion_common_sections.unk_10);
-        motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
-        motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
+        motion_InitStream(0, g_motion_common_sections.motion_bitstream);
+        motion_InitStream(1, g_motion_fighter_sections[0].motion_bitstream);
+        motion_InitStream(2, g_motion_fighter_sections[1].motion_bitstream);
         if (g_fight_mode_selector == 0 &&
             (u8)g_fight_saved_first_fighter_selection != 0xFF) {
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
@@ -1738,9 +1738,11 @@ void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
             buf.h = 6;
             MoveImage(&buf, 0x140, 0x1E8);
             if (arg0 == 0) {
-                gpu_OffsetBlockTexPrimStreams(obj->unk_14, 0, 0, -0x140, 0xE8);
+                gpu_OffsetBlockTexPrimStreams(
+                    obj->transform_block_id, 0, 0, -0x140, 0xE8);
             } else {
-                gpu_OffsetBlockTexPrimStreams(obj->unk_14, 0, 0, -0x1C0, 0xE8);
+                gpu_OffsetBlockTexPrimStreams(
+                    obj->transform_block_id, 0, 0, -0x1C0, 0xE8);
             }
             DrawSync(0);
             gpu_BuildFogBlockLevels();
@@ -1756,9 +1758,11 @@ void gpu_RestoreObjectClutOffsets(void) {
         v1 = slot_GetObject(g_gpu_fog_clut_object);
         if (v1 != 0) {
             if (g_gpu_fog_clut_object == 0) {
-                gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x140, -0xE8);
+                gpu_OffsetBlockTexPrimStreams(
+                    v1->transform_block_id, 0, 0, 0x140, -0xE8);
             } else {
-                gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x1C0, -0xE8);
+                gpu_OffsetBlockTexPrimStreams(
+                    v1->transform_block_id, 0, 0, 0x1C0, -0xE8);
             }
         }
         g_gpu_fog_clut_object = -1;
@@ -2192,12 +2196,12 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
     n = 0;
     while ((w = *p++) != -1) {
         c = &g_gpu_grid_node_records[n++];
-        c->node.unk1 = 0;
+        c->node.primitive_table_select = 0;
         c->node.parent_node = 0;
         c->node.rotation_order = 0;
         c->node.light_setup_index = 4;
-        c->node.unk2 = w;
-        c->node.unk4 = arg1;
+        c->node.reloc_entry_index = w;
+        c->node.reloc_block_id = arg1;
         c->node.xf.mat.t[0] = *p++;
         c->node.xf.mat.t[0] |= *p++ << 16;
         c->node.xf.mat.t[1] = *p++;
@@ -2208,9 +2212,9 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
         c->node.xf.rot.vy = *p++;
         c->node.xf.rot.vz = *p++;
         if (c->node.xf.rot.vz != (c->node.xf.rot.vx == c->node.xf.rot.vy)) {
-            c->node.unk0 = 1;
+            c->node.node_kind = 1;
         } else {
-            c->node.unk0 = 0;
+            c->node.node_kind = 0;
         }
         g_math_rot_matrix_funcs[c->node.rotation_order](
             &c->node.xf.rot, &c->node.xf.mat);
@@ -2442,7 +2446,7 @@ extern void softbody_ClearObjectSnap(Unk8003F62CRec *);
 
 void softbody_UpdateObject(Unk80045878Obj *a0) {
     Unk8003F62CRec *s0;
-    s0 = a0->unk_24;
+    s0 = a0->softbody_block;
     if (s0 == 0)
         return;
     if (s0->rebuild_request) {
@@ -2492,13 +2496,13 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
     Unk80045878Node *obj;
     s32 i;
 
-    var_0 = arg0->unk_24;
+    var_0 = arg0->softbody_block;
     if (var_0 == 0)
         return;
     var_1 = (s16 *)arg0->softbody_params;
     cur = var_0->data;
     if (*var_1 == -3) {
-        arg0->unk_24 = 0;
+        arg0->softbody_block = 0;
         return;
     }
     var_0->count = 0;
@@ -2516,7 +2520,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
             rec->obj = obj;
             cur = softbody_CreateForNode(rec, var_1, cur);
             var_0->step_descs[var_0->count] = rec->step_desc;
-            obj->node.unk0 = 0xD;
+            obj->node.node_kind = 0xD;
             var_0->count++;
             if (*var_1 >= 0) {
                 var_1++;
@@ -2534,7 +2538,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
     }
     if (arg1) {
         slot_ResizeAssetBlockAndUpdatePeak(
-            arg0->arena_id, cur - (u8 *)arg0->unk_1C);
+            arg0->arena_id, cur - (u8 *)arg0->asset_block);
     }
 }
 
@@ -2599,7 +2603,8 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
 
     obj = rec->obj;
     dst = (u16 *)cur;
-    src = (u16 *)g_reloc_block_entry_tables[obj->node.unk4][obj->node.unk2];
+    src = (u16 *)g_reloc_block_entry_tables[obj->node.reloc_block_id]
+                                           [obj->node.reloc_entry_index];
     count = *src;
     init.in.count = count;
     init.in.points = (SVECTOR *)cur;
@@ -2776,7 +2781,7 @@ s32 math_AlignUp4(s32 a0) {
 }
 
 void softbody_RequestRebuild(Unk80045878Obj *a0) {
-    Unk8003F62CRec *v1 = a0->unk_24;
+    Unk8003F62CRec *v1 = a0->softbody_block;
     if (v1) {
         v1->rebuild_request = 1;
     }
@@ -2785,7 +2790,7 @@ void softbody_RequestRebuild(Unk80045878Obj *a0) {
 void softbody_RequestSnap(s32 a0) {
     Unk80045878Obj *v0 = slot_GetObject(a0);
     if (v0) {
-        Unk8003F62CRec *v1 = v0->unk_24;
+        Unk8003F62CRec *v1 = v0->softbody_block;
         if (v1) {
             v1->snap_request = 1;
         }
@@ -2809,7 +2814,7 @@ void softbody_ClearObjectSnap(Unk8003F62CRec *a0) {
 }
 
 void softbody_SetObjectGround(Unk80045878Obj *a0, s32 a1) {
-    Unk8003F62CRec *v1 = a0->unk_24;
+    Unk8003F62CRec *v1 = a0->softbody_block;
     if (v1) {
         s32 i;
         for (i = 0; i < v1->count; i++) {
@@ -2821,7 +2826,7 @@ void softbody_SetObjectGround(Unk80045878Obj *a0, s32 a1) {
 void softbody_FreeObject(Unk80045878Obj *a0) {
     Unk8003F62CRec *s2;
     s32 s0;
-    s2 = a0->unk_24;
+    s2 = a0->softbody_block;
     if (s2 != 0) {
         for (s0 = 0; s0 < s2->count; s0++) {
             softbody_Free(s2->recs[s0].slot_index);
@@ -2837,10 +2842,10 @@ void softbody_FreeObjectById(s32 a0) {
 }
 
 void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
-    Unk8003F62CRec *v1 = a0->unk_24;
+    Unk8003F62CRec *v1 = a0->softbody_block;
     if (v1) {
         v1 = (Unk8003F62CRec *)((u8 *)v1 + a1);
-        a0->unk_24 = v1;
+        a0->softbody_block = v1;
         a0->softbody_params = a0->softbody_params + a1;
         v1->rebuild_request = 1;
     }

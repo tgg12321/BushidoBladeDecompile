@@ -27,16 +27,18 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     s32 var_15;
     void **list;
 
-    rec = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC;
-    for (i = 0; i < g_node_frame_animation_context.unk6; rec++, i++) {
+    rec = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries;
+    for (i = 0; i < g_node_frame_animation_context.frame_entry_count; rec++,
+        i++) {
         var_5 = rec->unk58;
         if (var_5 < 0)
             continue;
-        if (var_5 < g_node_frame_animation_context.unk2) {
+        if (var_5 < g_node_frame_animation_context.anim_frame_count) {
             var_0.vx = 0;
             angle = rec->unk5C;
             var_0.vz = 0;
-            var_7 = (s16 *)(g_node_frame_animation_context.unk8 + var_5 * 12);
+            var_7 =
+                (s16 *)(g_node_frame_animation_context.frame_data + var_5 * 12);
             var_0.vy = angle;
             math_RotMatrixZYX(&var_0, &mat);
             var_0.vx = *var_7++;
@@ -58,11 +60,11 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             rec->node.xf.mat.t[1] += var_0.vy;
             rec->node.xf.mat.t[2] += (cz - sx) >> 12;
             var_5++;
-            if (var_5 >= g_node_frame_animation_context.unk2) {
+            if (var_5 >= g_node_frame_animation_context.anim_frame_count) {
                 rec->unk60 = 0x1000;
             }
             rec->unk58 = var_5;
-            if (g_node_frame_animation_context.unk4 == 0x12) {
+            if (g_node_frame_animation_context.resource_selector == 0x12) {
                 /* FAKE: rec is reused (restored from ent below) for the paired
                  * gpu_GetGridNodeRecordTable entry, an Unk800A6690Rec reached
                  * only through its node member (both records start with the
@@ -70,10 +72,10 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
                 ent = rec;
                 rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)
                                                g_node_frame_animation_context
-                                                   .unk10 +
+                                                   .paired_grid_nodes +
                                            i);
-                last = g_node_frame_animation_context.unk2 - 1;
-                var_7 = (s16 *)(g_node_frame_animation_context.unk8 +
+                last = g_node_frame_animation_context.anim_frame_count - 1;
+                var_7 = (s16 *)(g_node_frame_animation_context.frame_data +
                                 (var_5 + last) * 12);
                 var_0.vx = *var_7++;
                 var_0.vy = *var_7++;
@@ -93,7 +95,8 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             if (var_15 < 0) {
                 var_15 = 0;
             }
-            if (var_15 == 0 && g_node_frame_animation_context.unk4 != 4) {
+            if (var_15 == 0 &&
+                g_node_frame_animation_context.resource_selector != 4) {
                 rec->unk58 = -2;
             }
             rec->unk60 = var_15;
@@ -107,14 +110,14 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
 void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
     Unk800A9CF8Entry *p;
 
-    if (a0 >= g_node_frame_animation_context.unk6)
+    if (a0 >= g_node_frame_animation_context.frame_entry_count)
         return;
 
-    p = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC + a0;
+    p = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries + a0;
     if (p->unk58 != -1)
         return;
 
-    switch (g_node_frame_animation_context.unk4) {
+    switch (g_node_frame_animation_context.resource_selector) {
     case 4:
         if (a0 == 0) {
             a1 = 0x800;
@@ -132,19 +135,20 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
     /* FAKE: p is reused for the paired gpu_GetGridNodeRecordTable entry, an
      * Unk800A6690Rec reached only through its node member (both records start
      * with the node); a separate Unk80101DF0Record * local scores 4. */
-    p = (Unk800A9CF8Entry
-             *)((Unk800A6690Rec *)g_node_frame_animation_context.unk10 + a0);
-    p->node.unk2 = 1;
-    p->node.unk4 = g_node_frame_animation_context.unk0;
+    p = (Unk800A9CF8Entry *)((Unk800A6690Rec *)g_node_frame_animation_context
+                                 .paired_grid_nodes +
+                             a0);
+    p->node.reloc_entry_index = 1;
+    p->node.reloc_block_id = g_node_frame_animation_context.reloc_block_id;
     p->node.xf.rot.vy = a1;
-    p->node.unk0 = 0;
+    p->node.node_kind = 0;
     p->node.parent_node = 0;
     p->node.xf.rot.vx = 0;
     p->node.xf.rot.vz = 0;
     p->node.matrix_state = 1;
     g_math_rot_matrix_funcs[p->node.rotation_order](
         &p->node.xf.rot, &p->node.xf.mat);
-    if (g_node_frame_animation_context.unk4 == 0x12) {
+    if (g_node_frame_animation_context.resource_selector == 0x12) {
         p->node.work.t[0] = p->node.xf.mat.t[0];
         p->node.work.t[1] = p->node.xf.mat.t[1];
         p->node.work.t[2] = p->node.xf.mat.t[2];
@@ -152,9 +156,9 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
 }
 
 void resource_RebaseFrameAnimatedEntryBlockAndPointers(s32 a0) {
-    reloc_RebaseBlock((s32)g_node_frame_animation_context.unk0, a0);
-    g_node_frame_animation_context.unkC += a0;
-    g_node_frame_animation_context.unk8 += a0;
+    reloc_RebaseBlock((s32)g_node_frame_animation_context.reloc_block_id, a0);
+    g_node_frame_animation_context.frame_entries += a0;
+    g_node_frame_animation_context.frame_data += a0;
 }
 
 void math_BlendCylindricalPositionsWithNegatedYZ(
@@ -533,20 +537,20 @@ Unk80045878Obj *slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
         arena_UpdatePeak(0);
         arena_SetMoveCallback(
             a0, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
-        s1->unk_08 = -1;
+        s1->asset_index = -1;
         s1->load_status = 0;
     }
     s3 = a0 + 3;
     if (arena_FindBlock(s3) != 0) {
         softbody_FreeObject(s1);
     }
-    if (((arena_FindBlock(s3) != 0) && (s1->unk_08 == a1)) &&
+    if (((arena_FindBlock(s3) != 0) && (s1->asset_index == a1)) &&
         (s1->load_status != (-2))) {
         s1->load_status = 0;
     } else {
-        s1->unk_20 = a2;
+        s1->staging_buffer = a2;
         s0 = (s32)arena_OpenBlock(s3);
-        s1->unk_1C = s0;
+        s1->asset_block = s0;
         if (a2 != 0) {
             ndata_ReadRemappedIndexPackFirstElseRead(a1, a2);
         } else {
@@ -558,15 +562,15 @@ Unk80045878Obj *slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
         arena_SetMoveCallback(
             s3, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
         s1->load_status = 1;
-        s1->unk_24 = 0;
-        s1->unk_00.word = 0;
+        s1->softbody_block = 0;
+        s1->load_flags.word = 0;
     }
     s1->arena_id = a0;
-    s1->unk_08 = a1;
-    s1->unk_14 = a0;
-    s1->unk_10 = a0;
-    s1->unk_16 = a0 + 3;
-    s1->unk_18.word = 0x8000;
+    s1->asset_index = a1;
+    s1->transform_block_id = a0;
+    s1->node_light_setup_index = a0;
+    s1->projected_block_id = a0 + 3;
+    s1->patch_color.word = 0x8000;
     return s1;
 }
 
@@ -605,9 +609,9 @@ void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 a1) {
     ptr = (Unk80045878Obj *)arena_GetBlockAddr(idx);
     if (ptr == 0)
         return;
-    ptr->unk_1C = ptr->unk_1C + a1;
+    ptr->asset_block = ptr->asset_block + a1;
     softbody_RebaseObject(ptr, a1);
-    if ((ptr->unk_00.word >> 1) & 1) {
+    if ((ptr->load_flags.word >> 1) & 1) {
         /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
          * the s0 / s1 seats (score 8) (Q129) */
         idx = 3 * ptr->arena_id + 1;

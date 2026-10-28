@@ -689,12 +689,12 @@ void camera_UpdateTwoFighterView(
 }
 
 void camera_UpdatePadOffset(s32 *held_bits) {
-    g_camera_view_offset.unk_00.x = 0;
-    g_camera_view_offset.unk_00.y = 0;
-    g_camera_view_offset.unk_00.z = 0;
-    g_camera_view_offset.unk_10.vx = 0;
-    g_camera_view_offset.unk_10.vy = 0;
-    g_camera_view_offset.unk_10.vz = 0;
+    g_camera_view_offset.focus_point_offset.x = 0;
+    g_camera_view_offset.focus_point_offset.y = 0;
+    g_camera_view_offset.focus_point_offset.z = 0;
+    g_camera_view_offset.camera_angles_offset.vx = 0;
+    g_camera_view_offset.camera_angles_offset.vy = 0;
+    g_camera_view_offset.camera_angles_offset.vz = 0;
     g_camera_view_offset.w18 = 0;
     if (g_fight_tracked_view_setting != 0 && g_main_loop_handler_index == 1) {
         if (*held_bits & 1) {
@@ -2103,18 +2103,18 @@ void camera_ApplyFightView(void) {
     }
 
     if (g_main_loop_handler_index == 1) {
-        local.focus_point.x =
-            view_record->focus_point.x + g_camera_view_offset.unk_00.x;
-        local.focus_point.y =
-            view_record->focus_point.y + g_camera_view_offset.unk_00.y;
-        local.focus_point.z =
-            view_record->focus_point.z + g_camera_view_offset.unk_00.z;
-        local.camera_angles.vx =
-            view_record->camera_angles.vx + g_camera_view_offset.unk_10.vx;
-        local.camera_angles.vy =
-            view_record->camera_angles.vy + g_camera_view_offset.unk_10.vy;
-        local.camera_angles.vz =
-            view_record->camera_angles.vz + g_camera_view_offset.unk_10.vz;
+        local.focus_point.x = view_record->focus_point.x +
+                              g_camera_view_offset.focus_point_offset.x;
+        local.focus_point.y = view_record->focus_point.y +
+                              g_camera_view_offset.focus_point_offset.y;
+        local.focus_point.z = view_record->focus_point.z +
+                              g_camera_view_offset.focus_point_offset.z;
+        local.camera_angles.vx = view_record->camera_angles.vx +
+                                 g_camera_view_offset.camera_angles_offset.vx;
+        local.camera_angles.vy = view_record->camera_angles.vy +
+                                 g_camera_view_offset.camera_angles_offset.vy;
+        local.camera_angles.vz = view_record->camera_angles.vz +
+                                 g_camera_view_offset.camera_angles_offset.vz;
         local.w18 = view_record->w18 + g_camera_view_offset.w18;
     } else {
         local = *view_record;
@@ -2146,17 +2146,17 @@ void camera_ApplyReplayView(s32 playback_fraction) {
     }
 
     local.focus_point.x =
-        view_record->focus_point.x + g_camera_view_offset.unk_00.x;
+        view_record->focus_point.x + g_camera_view_offset.focus_point_offset.x;
     local.focus_point.y =
-        view_record->focus_point.y + g_camera_view_offset.unk_00.y;
+        view_record->focus_point.y + g_camera_view_offset.focus_point_offset.y;
     local.focus_point.z =
-        view_record->focus_point.z + g_camera_view_offset.unk_00.z;
-    local.camera_angles.vx =
-        view_record->camera_angles.vx + g_camera_view_offset.unk_10.vx;
-    local.camera_angles.vy =
-        view_record->camera_angles.vy + g_camera_view_offset.unk_10.vy;
-    local.camera_angles.vz =
-        view_record->camera_angles.vz + g_camera_view_offset.unk_10.vz;
+        view_record->focus_point.z + g_camera_view_offset.focus_point_offset.z;
+    local.camera_angles.vx = view_record->camera_angles.vx +
+                             g_camera_view_offset.camera_angles_offset.vx;
+    local.camera_angles.vy = view_record->camera_angles.vy +
+                             g_camera_view_offset.camera_angles_offset.vy;
+    local.camera_angles.vz = view_record->camera_angles.vz +
+                             g_camera_view_offset.camera_angles_offset.vz;
 
     local.w18 = view_record->w18 + g_camera_view_offset.w18;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
@@ -2425,19 +2425,19 @@ void motion_ApplyRecordedPoseAdjustments(
         motion_SetFixedChannelBlock(second_frame);
     }
     math_ComposeAxisRotationsAndRewriteAngles(
-        &first_frame->unk_0C[0x15], replay_frame->b14 * 4,
+        &first_frame->node_channels[0x15], replay_frame->b14 * 4,
         replay_frame->b15 * 4, 0);
     math_ComposeAxisRotationsAndRewriteAngles(
-        &second_frame->unk_0C[0x15], replay_frame->b14 * 4,
+        &second_frame->node_channels[0x15], replay_frame->b14 * 4,
         replay_frame->b15 * 4, 0);
     temp_v1 = fighter_record->character_roster_index;
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
-        first_frame->unk_0C[0x39] += replay_frame->b16 * 4;
-        second_frame->unk_0C[0x39] += replay_frame->b16 * 4;
+        first_frame->node_channels[0x39] += replay_frame->b16 * 4;
+        second_frame->node_channels[0x39] += replay_frame->b16 * 4;
     }
     if ((u32)((u16)fighter_record->weapon_id - 6) < 2U) {
-        first_frame->unk_0C[0x33] += replay_frame->b16 * 4;
-        second_frame->unk_0C[0x33] += replay_frame->b16 * 4;
+        first_frame->node_channels[0x33] += replay_frame->b16 * 4;
+        second_frame->node_channels[0x33] += replay_frame->b16 * 4;
     }
 }
 
@@ -2546,10 +2546,10 @@ void motion_AdjustFighterPose(
     obj->eased_pose_elevation_offset =
         obj->eased_pose_elevation_offset + temp / 8;
     math_ComposeAxisRotationsAndRewriteAngles(
-        &a->unk_0C[0x15], obj->eased_pose_bearing_offset,
+        &a->node_channels[0x15], obj->eased_pose_bearing_offset,
         obj->eased_pose_elevation_offset, var_4);
     math_ComposeAxisRotationsAndRewriteAngles(
-        &b->unk_0C[0x15], obj->eased_pose_bearing_offset,
+        &b->node_channels[0x15], obj->eased_pose_bearing_offset,
         obj->eased_pose_elevation_offset, var_4);
 
     t = obj->character_roster_index;
@@ -2567,8 +2567,8 @@ void motion_AdjustFighterPose(
             temp = -0x1FF;
         }
         obj->opponent_elevation_offset = temp;
-        a->unk_0C[0x39] += temp;
-        b->unk_0C[0x39] += temp;
+        a->node_channels[0x39] += temp;
+        b->node_channels[0x39] += temp;
     }
 
     if ((u32)((u16)obj->weapon_id - 6) < 2U && obj->move_kind == 2) {
@@ -2615,21 +2615,21 @@ void motion_AdjustFighterPose(
         }
         obj->opponent_elevation_offset =
             obj->opponent_elevation_offset + temp / 8;
-        a->unk_0C[0x33] += obj->opponent_elevation_offset;
-        b->unk_0C[0x33] += obj->opponent_elevation_offset;
+        a->node_channels[0x33] += obj->opponent_elevation_offset;
+        b->node_channels[0x33] += obj->opponent_elevation_offset;
     }
 
     if (obj->unk_26E != 0 && obj->is_defeated == 0) {
         temp = (rng_Next() & 0x3F) - 0x20;
-        a->unk_0C[0] += temp;
-        b->unk_0C[0] += temp;
-        a->unk_0C[4] -= temp;
-        b->unk_0C[4] -= temp;
+        a->node_channels[0] += temp;
+        b->node_channels[0] += temp;
+        a->node_channels[4] -= temp;
+        b->node_channels[4] -= temp;
         temp = (rng_Next() & 0x3F) - 0x20;
-        a->unk_0C[9] += temp;
-        b->unk_0C[9] += temp;
-        a->unk_0C[0xD] -= temp;
-        b->unk_0C[0xD] -= temp;
+        a->node_channels[9] += temp;
+        b->node_channels[9] += temp;
+        a->node_channels[0xD] -= temp;
+        b->node_channels[0xD] -= temp;
     }
 }
 
@@ -3217,10 +3217,12 @@ void motion_LoadCommonData(void) {
     cdrom_StartRead(cdrom_GetFileIndex(1, 1), g_motion_common_buffer);
     cdrom_WaitIdle();
     v1 = g_motion_common_buffer;
-    g_motion_common_sections.unk_00 = (u16 *)(v1 + 0x14);
-    g_motion_common_sections.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
-    g_motion_common_sections.unk_08 = (u8 *)(v1 + *(s32 *)(v1 + 8));
-    g_motion_common_sections.unk_10 = (u32 *)(v1 + *(s32 *)(v1 + 0x10));
+    g_motion_common_sections.move_scripts = (u16 *)(v1 + 0x14);
+    g_motion_common_sections.motion_entries = (u16 *)(v1 + *(s32 *)(v1 + 4));
+    g_motion_common_sections.motion_metadata_base =
+        (u8 *)(v1 + *(s32 *)(v1 + 8));
+    g_motion_common_sections.motion_bitstream =
+        (u32 *)(v1 + *(s32 *)(v1 + 0x10));
     g_motion_common_loaded = 1;
 }
 
@@ -3320,19 +3322,19 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             cdrom_StartRead(
                 cdrom_GetFileIndex(1, j + 2), (s32)g_motion_fighter_buffers[i]);
             cdrom_WaitIdle();
-            g_motion_fighter_sections[i].unk_00 =
+            g_motion_fighter_sections[i].move_scripts =
                 (u16 *)((s32)g_motion_fighter_buffers[i] + 0x6C +
                         (g_motion_fighter_buffers[i]->unk_03 - 1) * 6);
-            g_motion_fighter_sections[i].unk_04 =
+            g_motion_fighter_sections[i].motion_entries =
                 (u16 *)((s32)g_motion_fighter_buffers[i] +
                         g_motion_fighter_buffers[i]->unk_04[0]);
-            g_motion_fighter_sections[i].unk_08 =
+            g_motion_fighter_sections[i].motion_metadata_base =
                 (u8 *)((s32)g_motion_fighter_buffers[i] +
                        g_motion_fighter_buffers[i]->unk_04[1]);
-            g_motion_fighter_sections[i].unk_0C =
+            g_motion_fighter_sections[i].cpu_script_table =
                 (u16 *)((s32)g_motion_fighter_buffers[i] +
                         g_motion_fighter_buffers[i]->unk_04[2]);
-            g_motion_fighter_sections[i].unk_10 =
+            g_motion_fighter_sections[i].motion_bitstream =
                 (u32 *)((s32)g_motion_fighter_buffers[i] +
                         g_motion_fighter_buffers[i]->unk_04[3]);
             g_motion_fighter_loaded_data_ids[i] = var_0[i];
@@ -3341,12 +3343,12 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 
 void motion_InitStreams(void) {
-    motion_InitStream(0, g_motion_common_sections.unk_10);
+    motion_InitStream(0, g_motion_common_sections.motion_bitstream);
     if (g_motion_fighter_loaded_data_ids[0]) {
-        motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
+        motion_InitStream(1, g_motion_fighter_sections[0].motion_bitstream);
     }
     if (g_motion_fighter_loaded_data_ids[1]) {
-        motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
+        motion_InitStream(2, g_motion_fighter_sections[1].motion_bitstream);
     }
 }
 
@@ -3423,16 +3425,16 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
     *out = 0;
     if ((u32)(id - 0x7FF5) < 11) {
         return &g_motion_fighter_sections[rec->motion_slot]
-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f66[id - 0x7FF5][rec->variant_index]];
+                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+                                      ->f66[id - 0x7FF5][rec->variant_index]];
     }
     switch (id) {
     case 0x7FF0:
         rec->blend_into_move = 1;
         rec->variant_index = rec->default_variant_index;
         return &g_motion_fighter_sections[rec->motion_slot]
-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f4E[rec->default_variant_index]];
+                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+                                      ->f4E[rec->default_variant_index]];
     case 0x7FF1:
         rec->variant_index = (rec->variant_index + 1) %
                              g_motion_fighter_buffers[rec->motion_slot]->f14;
@@ -3452,8 +3454,8 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
             motion_AdvanceVariantIfAtNibble4Or5Position(rec);
         }
         return &g_motion_fighter_sections[rec->motion_slot]
-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f4E[rec->variant_index]];
+                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+                                      ->f4E[rec->variant_index]];
     case 0x7FF3:
         t = (rec->variant_index + 1) %
             g_motion_fighter_buffers[rec->motion_slot]->f14;
@@ -3466,8 +3468,8 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
             t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         }
         return &g_motion_fighter_sections[rec->motion_slot]
-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f54[rec->variant_index][t]];
+                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+                                      ->f54[rec->variant_index][t]];
     }
     if (id & 0x8000) {
         if (rec->borrow_other_motion != 0) {
@@ -3475,10 +3477,10 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
         } else {
             var_1 = rec->motion_slot;
         }
-        return &g_motion_fighter_sections[var_1].unk_00[id & 0x7FFF];
+        return &g_motion_fighter_sections[var_1].move_scripts[id & 0x7FFF];
     }
     *out = 1;
-    return &g_motion_common_sections.unk_00[id];
+    return &g_motion_common_sections.move_scripts[id];
 }
 
 void motion_ResetVariantIndex(s32 a0) {
@@ -3489,24 +3491,24 @@ MoveScript *motion_GetCurrentVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].motion_slot;
     s16 v0 = D_80101EC8[a0].variant_index;
     return (MoveScript *)&g_motion_fighter_sections[v1]
-        .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
+        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
 
 MoveScript *motion_GetDefaultVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].motion_slot;
     s16 v0 = D_80101EC8[a0].default_variant_index;
     return (MoveScript *)&g_motion_fighter_sections[v1]
-        .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
+        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
 
 MoveScript *motion_GetCommonScriptAtFighterBufferOffset(s32 a0) {
-    return (MoveScript *)&g_motion_common_sections
-        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f16];
+    return (MoveScript *)&g_motion_common_sections.move_scripts
+        [g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f16];
 }
 
 MoveScript *motion_GetCommonScriptAtFighterBufferIndexedOffset(s32 a0, s32 a1) {
-    return (MoveScript *)&g_motion_common_sections
-        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f18[a1]];
+    return (MoveScript *)&g_motion_common_sections.move_scripts
+        [g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f18[a1]];
 }
 
 void fighter_StartMoveScript(s32 arg0, MoveScript *arg1, s32 arg2) {
@@ -3523,13 +3525,15 @@ void fighter_StartMoveScript(s32 arg0, MoveScript *arg1, s32 arg2) {
         u16 v1 = arg1->motion_bank_entry_index;
         s0->motion_entry_index = v1;
         if (arg2 != 0) {
-            u16 *v0 = &g_motion_common_sections.unk_04[v1 * 2];
+            u16 *v0 = &g_motion_common_sections.motion_entries[v1 * 2];
             s0->motion_entry = v0;
-            s0->motion_metadata = g_motion_common_sections.unk_08 + v0[1];
+            s0->motion_metadata =
+                g_motion_common_sections.motion_metadata_base + v0[1];
         } else {
-            u16 *v0 = &g_motion_fighter_sections[a3].unk_04[v1 * 2];
+            u16 *v0 = &g_motion_fighter_sections[a3].motion_entries[v1 * 2];
             s0->motion_entry = v0;
-            s0->motion_metadata = g_motion_fighter_sections[a3].unk_08 + v0[1];
+            s0->motion_metadata =
+                g_motion_fighter_sections[a3].motion_metadata_base + v0[1];
         }
     }
     {
@@ -4080,9 +4084,11 @@ void fighter_ConfigureCpuControl(void) {
             {
                 {
                     fighter_InitCpuControl(
-                        i, g_motion_fighter_sections[rec->motion_slot].unk_0C,
+                        i,
+                        g_motion_fighter_sections[rec->motion_slot]
+                            .cpu_script_table,
                         g_motion_fighter_sections[rec->other->motion_slot]
-                            .unk_0C);
+                            .cpu_script_table);
                 }
             }
         }
@@ -5014,18 +5020,20 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     ang[0] = ang[1] = var_12;
     var_13 = var_12 + 0x400;
-    v[0].x =
-        (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_13 + 0x400) & 0xFFF]) >>
-        12;
-    v[0].y = -var_0[0].unk_00;
-    v[0].z =
-        (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_13) & 0xFFF]) >> 12;
-    v[1].x =
-        (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13 + 0x400) & 0xFFF]) >>
-        12;
-    v[1].y = -var_0[1].unk_00;
-    v[1].z =
-        (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13) & 0xFFF]) >> 12;
+    v[0].x = (var_0[0].root_distance *
+              Judge[(var_0[0].root_offset_angle - var_13 + 0x400) & 0xFFF]) >>
+             12;
+    v[0].y = -var_0[0].root_height;
+    v[0].z = (var_0[0].root_distance *
+              Judge[(var_0[0].root_offset_angle - var_13) & 0xFFF]) >>
+             12;
+    v[1].x = (var_0[1].root_distance *
+              Judge[(var_0[1].root_offset_angle - var_13 + 0x400) & 0xFFF]) >>
+             12;
+    v[1].y = -var_0[1].root_height;
+    v[1].z = (var_0[1].root_distance *
+              Judge[(var_0[1].root_offset_angle - var_13) & 0xFFF]) >>
+             12;
     v[0].x = (v[0].x * rec->size_scale) >> 12;
     v[0].z = (v[0].z * rec->size_scale) >> 12;
     v[1].x = (v[1].x * rec->size_scale) >> 12;
@@ -5057,12 +5065,14 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->pose_blend_base_shift.z += rec->prev_root_offset.z - v[0].z;
         }
         ang_q = ang[0] + 0x400;
-        var_35.x = (var_0[0].unk_04 *
-                    Judge[(var_0[0].unk_02 - ang_q + 0x400) & 0xFFF]) >>
+        var_35.x =
+            (var_0[0].root_distance *
+             Judge[(var_0[0].root_offset_angle - ang_q + 0x400) & 0xFFF]) >>
+            12;
+        var_35.y = -var_0[0].root_height;
+        var_35.z = (var_0[0].root_distance *
+                    Judge[(var_0[0].root_offset_angle - ang_q) & 0xFFF]) >>
                    12;
-        var_35.y = -var_0[0].unk_00;
-        var_35.z =
-            (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - ang_q) & 0xFFF]) >> 12;
         var_35.x = (var_35.x * rec->size_scale) >> 12;
         var_35.y = (var_35.y * rec->size_scale) >> 12;
         var_35.z = (var_35.z * rec->size_scale) >> 12;

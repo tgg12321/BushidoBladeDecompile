@@ -87,13 +87,15 @@ typedef struct {
  * pointers together.
  */
 typedef struct {
-    s16 unk0;
-    s16 unk2;
-    s16 unk4; /* = resource_GetLoadedSelector() (g_loaded_resource_selector) */
-    s16 unk6; /* entry count */
-    s32 unk8;
-    s32 unkC;  /* entry table (stride 0x68) */
-    s32 unk10; /* gpu_GetGridNodeRecordTable() table (stride 0x68) */
+    s16 reloc_block_id;
+    s16 anim_frame_count;
+    /* = resource_GetLoadedSelector() (g_loaded_resource_selector) */
+    s16 resource_selector;
+    s16 frame_entry_count; /* entry count */
+    s32 frame_data;
+    s32 frame_entries; /* entry table (stride 0x68) */
+    /* gpu_GetGridNodeRecordTable() table (stride 0x68) */
+    s32 paired_grid_nodes;
     s32 unk14;
 } Unk800A9CF8Rec;
 
@@ -754,9 +756,9 @@ typedef struct {
  * is in the -G8 file src/main/5ED34.c (Q44/Q54).
  */
 typedef struct {
-    u8 unk0;
-    u8 unk1;
-    u8 unk2;
+    u8 grid_pick;
+    u8 cursor_entry_value;
+    u8 row_pick;
 } Unk800A3560Record;
 
 typedef union {
@@ -770,9 +772,9 @@ typedef union {
  * (particle_row_index 0..3 from the callers func_800676C8..func_8006786C);
  * eff_SpawnParticles and eff_UpdateParticles use it too. */
 typedef struct {
-    /* 0x0 */ s32 unk0;
-    /* 0x4 */ s32 unk4;
-    /* 0x8 */ s32 unk8;
+    /* 0x0 */ s32 world_x;
+    /* 0x4 */ s32 world_y;
+    /* 0x8 */ s32 world_z;
 } Unk800F0C10Record;
 
 /* 0x800948BC (g_resource_selector_callbacks): function-pointer pairs, indexed
@@ -835,11 +837,11 @@ typedef struct {
  * (fighter_StartMoveScript, replay_PlayFrame); unk_0C: fighter_InitCpuControl's
  * table; unk_10: motion_InitStream's motion bitstream. */
 typedef struct Unk801027B0Rec {
-    u16 *unk_00;
-    u16 *unk_04;
-    u8 *unk_08;
-    u16 *unk_0C;
-    u32 *unk_10;
+    u16 *move_scripts;
+    u16 *motion_entries;
+    u8 *motion_metadata_base;
+    u16 *cpu_script_table;
+    u32 *motion_bitstream;
 } Unk801027B0Rec; /* sizeof == 0x14 */
 
 /* s32 x/y/z triple.  Unk80101EC8Record's position-like triples are copied as
@@ -873,14 +875,14 @@ typedef struct {
  * the owner). fight_ClearBallisticRecords clears unk_00 of all four. */
 typedef struct Unk80104E88Rec {
     /* 0 = free; fight_CreateBallisticRecordAndDispatchEvent's type (1 / 2) */
-    u8 unk_00;
+    u8 ballistic_kind;
     u8 unk_01;
-    u8 unk_02;
-    u8 unk_03; /* player index (Unk80101EC8Record.index) */
-    Vec3i32 unk_04;
-    Vec3i32 unk_10;
-    Vec3i32 unk_1C;
-    s32 unk_28;
+    u8 flight_frames;
+    u8 owner_index; /* player index (Unk80101EC8Record.index) */
+    Vec3i32 ballistic_pos;
+    Vec3i32 prev_ballistic_pos;
+    Vec3i32 ballistic_velocity;
+    s32 launcher_collision_y;
 } Unk80104E88Rec; /* sizeof == 0x2C */
 
 /* The 10-entry block table over the 0x45000-byte buffer at g_arena
@@ -1008,16 +1010,16 @@ typedef struct {
  * of 48 records, filled by eff_SpawnParticles (which leaves +0xE
  * untouched). */
 typedef struct {
-    s16 unk0;
-    s16 unk2;
-    s16 unk4;
-    s16 unk6;
-    s16 unk8;
-    s16 unkA;
-    s16 unkC;
+    s16 offset_x;
+    s16 offset_y;
+    s16 offset_z;
+    s16 group_position_index;
+    s16 velocity_x;
+    s16 velocity_y;
+    s16 velocity_z;
     s16 unkE;
-    s16 unk10;
-    s16 unk12;
+    s16 life_state;
+    s16 frame_age;
 } Unk800EFC78Record;
 
 /* eff_DrawBillboardList's layout of the 51268 work area
@@ -1302,7 +1304,7 @@ typedef struct {
  * Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
-    Unk80107850Rec unk00[6];
+    Unk80107850Rec slot_points[6];
 } Unk1F8002B8Unk00;
 
 /* 17AFC's view of the last 0x148 bytes of the scratchpad,
@@ -1470,13 +1472,13 @@ typedef struct NavPolySet {
  * +0x78..+0x7C.
  */
 typedef struct MotionFrame {
-    s16 unk_00;
-    u16 unk_02;
-    u16 unk_04;
+    s16 root_height;
+    u16 root_offset_angle;
+    u16 root_distance;
     u16 unk_06;
     u16 unk_08;
     u16 unk_0A;
-    s16 unk_0C[0x3C];
+    s16 node_channels[0x3C];
 } MotionFrame; /* sizeof == 0x84 */
 
 /* One cached decoded frame of a character's motion stream (motion_DecodeFrame):
@@ -1970,9 +1972,9 @@ typedef struct Rec44 {
  * and w18, and camera_UpdatePadOffset zeroes them. The fields sit at Rec44's
  * offsets; +0x0C and the SVECTOR pad are never accessed. */
 typedef struct Unk800FF5C8Rec {
-    Vec3i32 unk_00;
+    Vec3i32 focus_point_offset;
     u8 unk_0C[4];
-    SVECTOR unk_10;
+    SVECTOR camera_angles_offset;
     s32 w18;
 } Unk800FF5C8Rec;
 
@@ -2019,13 +2021,13 @@ typedef struct Rec1C {
  * arg3[0] & 0xFFF with arg0 in the top four bits; unk_C / unk_E: arg3[1] /
  * arg3[2]. */
 typedef struct Unk800F68E0Rec {
-    s16 unk_0;
-    u8 unk_2;
-    u8 unk_3;
-    s16 unk_4[3];
-    u16 unk_A;
-    s16 unk_C;
-    s16 unk_E;
+    s16 draw_age;
+    u8 draw_span;
+    u8 model_entry_index;
+    s16 draw_pos[3];
+    u16 slot_rot_x;
+    s16 draw_rot_y;
+    s16 draw_rot_z;
 } Unk800F68E0Rec;
 
 /* The 0x20 0x10-byte records of the event table g_replay_events (replay_Reset
@@ -2079,11 +2081,11 @@ typedef struct {
 } Unk80101DF0Xform;
 
 typedef struct Unk80101DF0Record {
-    u8 unk0;          /* +0x00 */
-    s8 unk1;          /* +0x01 */
-    s16 unk2;         /* +0x02 */
-    s16 unk4;         /* +0x04 */
-    s16 matrix_state; /* +0x06 */
+    u8 node_kind;              /* +0x00 */
+    s8 primitive_table_select; /* +0x01 */
+    s16 reloc_entry_index;     /* +0x02 */
+    s16 reloc_block_id;        /* +0x04 */
+    s16 matrix_state;          /* +0x06 */
     /* +0x08 g_math_rot_matrix_funcs index */
     s16 rotation_order;
     s16 light_setup_index;                 /* +0x0A */
@@ -2235,25 +2237,25 @@ typedef struct Unk80045878Obj {
     union {
         s32 word;
         s16 half[2];
-    } unk_00; /* +0x0000 */
+    } load_flags; /* +0x0000 */
 
-    s16 arena_id;       /* +0x0004 */
-    s16 load_status;    /* +0x0006 */
-    s16 unk_08;         /* +0x0008 */
-    u8 pad0A[6];        /* +0x000A */
-    u16 unk_10;         /* +0x0010 */
-    s16 position_scale; /* +0x0012 */
-    s16 unk_14;         /* +0x0014 */
-    s16 unk_16;         /* +0x0016 */
+    s16 arena_id;               /* +0x0004 */
+    s16 load_status;            /* +0x0006 */
+    s16 asset_index;            /* +0x0008 */
+    u8 pad0A[6];                /* +0x000A */
+    u16 node_light_setup_index; /* +0x0010 */
+    s16 position_scale;         /* +0x0012 */
+    s16 transform_block_id;     /* +0x0014 */
+    s16 projected_block_id;     /* +0x0016 */
 
     union {
         s32 word;
         u8 byte[4];
-    } unk_18; /* +0x0018 */
+    } patch_color; /* +0x0018 */
 
-    s32 unk_1C;                          /* +0x001C */
-    s32 unk_20;                          /* +0x0020 */
-    void *unk_24;                        /* +0x0024 */
+    s32 asset_block;                     /* +0x001C */
+    s32 staging_buffer;                  /* +0x0020 */
+    void *softbody_block;                /* +0x0024 */
     s32 softbody_params;                 /* +0x0028 */
     Unk80045878Node transform_nodes[21]; /* +0x002C */
     Unk80045878Node projected_nodes[20]; /* +0x08B4 */

@@ -1115,7 +1115,7 @@ void replay_Reset(void) {
         g_replay_events[i].unk_0 = 0xFF;
     }
     for (j = 0xB3; j >= 0; j--) {
-        g_replay_model_draws[j].unk_0 = -1;
+        g_replay_model_draws[j].draw_age = -1;
     }
 }
 
@@ -1135,12 +1135,12 @@ void replay_BeginFrame(void) {
     q = g_replay_model_draws;
     i = 0;
     do {
-        val = q->unk_0;
+        val = q->draw_age;
         if (val != -1) {
             newval = val + 1;
-            q->unk_0 = newval;
-            if (newval - q->unk_2 >= 0x101) {
-                q->unk_0 = -1;
+            q->draw_age = newval;
+            if (newval - q->draw_span >= 0x101) {
+                q->draw_age = -1;
             }
         }
         i++;
@@ -1166,19 +1166,20 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     var_0 = g_replay_model_draws;
     i = 0;
     do {
-        state = var_0->unk_0;
+        state = var_0->draw_age;
         if (state != -1) {
-            seen = var_0->unk_2;
+            seen = var_0->draw_span;
             if (seen == state - 1 && seen < 0xFF) {
-                raw = var_0->unk_A << 16;
+                raw = var_0->slot_rot_x << 16;
                 rot = raw >> 16;
                 if ((s32)((u32)raw >> 28) == arg0 &&
-                    var_0->unk_4[0] == arg2[0] && var_0->unk_4[1] == arg2[1] &&
-                    var_0->unk_4[2] == arg2[2] &&
+                    var_0->draw_pos[0] == arg2[0] &&
+                    var_0->draw_pos[1] == arg2[1] &&
+                    var_0->draw_pos[2] == arg2[2] &&
                     ((rot - arg3[0]) & 0xFFF) == 0 &&
-                    ((var_0->unk_C - arg3[1]) & 0xFFF) == 0 &&
-                    ((var_0->unk_E - arg3[2]) & 0xFFF) == 0) {
-                    var_0->unk_2 = seen + 1;
+                    ((var_0->draw_rot_y - arg3[1]) & 0xFFF) == 0 &&
+                    ((var_0->draw_rot_z - arg3[2]) & 0xFFF) == 0) {
+                    var_0->draw_span = seen + 1;
                     return;
                 }
             }
@@ -1190,7 +1191,7 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     idx = g_replay_model_draw_search_cursor;
     var_0 = &g_replay_model_draws[idx];
     while (idx < 0xB4) {
-        if (var_0->unk_0 == -1) {
+        if (var_0->draw_age == -1) {
             break;
         }
         cur = idx + 1;
@@ -1204,15 +1205,15 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         return;
     }
 
-    var_0->unk_0 = 0;
-    var_0->unk_3 = arg1;
-    var_0->unk_2 = 0;
-    var_0->unk_4[0] = arg2[0];
-    var_0->unk_4[1] = arg2[1];
-    var_0->unk_4[2] = arg2[2];
-    var_0->unk_A = (arg3[0] & 0xFFF) | (arg0 << 12);
-    var_0->unk_C = arg3[1];
-    var_0->unk_E = arg3[2];
+    var_0->draw_age = 0;
+    var_0->model_entry_index = arg1;
+    var_0->draw_span = 0;
+    var_0->draw_pos[0] = arg2[0];
+    var_0->draw_pos[1] = arg2[1];
+    var_0->draw_pos[2] = arg2[2];
+    var_0->slot_rot_x = (arg3[0] & 0xFFF) | (arg0 << 12);
+    var_0->draw_rot_y = arg3[1];
+    var_0->draw_rot_z = arg3[2];
 }
 
 void replay_RecordEvent(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
@@ -1455,15 +1456,15 @@ void replay_PlayFrame(void) {
         var_16 = var_11->motion_metadata;
         if (p->b17 & 1) {
             entry = &g_motion_common_sections
-                         .unk_04[p->w0->motion_bank_entry_index * 2];
+                         .motion_entries[p->w0->motion_bank_entry_index * 2];
             var_11->motion_metadata =
-                g_motion_common_sections.unk_08 + entry[1];
+                g_motion_common_sections.motion_metadata_base + entry[1];
         } else {
             temp = (p->b17 >> 1) & 1;
             entry = &g_motion_fighter_sections[temp]
-                         .unk_04[p->w0->motion_bank_entry_index * 2];
+                         .motion_entries[p->w0->motion_bank_entry_index * 2];
             var_11->motion_metadata =
-                g_motion_fighter_sections[temp].unk_08 + entry[1];
+                g_motion_fighter_sections[temp].motion_metadata_base + entry[1];
         }
         if (p->b18 & 0x40) {
             fighter_ProcessFrameEvents(var_11);
@@ -1497,15 +1498,15 @@ void replay_PlayFrame(void) {
     }
     s = g_replay_model_draws;
     for (i = 0; i < 0xB4; i++, s++) {
-        if (s->unk_0 >= temp && s->unk_0 - s->unk_2 <= temp) {
-            pos[0] = s->unk_4[0];
-            pos[1] = s->unk_4[1];
-            pos[2] = s->unk_4[2];
-            rot[0] = s->unk_A;
-            rot[1] = s->unk_C;
-            rot[2] = s->unk_E;
+        if (s->draw_age >= temp && s->draw_age - s->draw_span <= temp) {
+            pos[0] = s->draw_pos[0];
+            pos[1] = s->draw_pos[1];
+            pos[2] = s->draw_pos[2];
+            rot[0] = s->slot_rot_x;
+            rot[1] = s->draw_rot_y;
+            rot[2] = s->draw_rot_z;
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                s->unk_3, 1, pos, rot);
+                s->model_entry_index, 1, pos, rot);
         }
     }
 

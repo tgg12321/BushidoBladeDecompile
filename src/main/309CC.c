@@ -81,7 +81,7 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
             mask = 0;
             break;
         }
-        mask = mask & D_80094B48[ptr->unk_08];
+        mask = mask & D_80094B48[ptr->asset_index];
         i = 0;
         do {
             if (mask & 1) {
@@ -95,19 +95,19 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
 
 void node_AppendProjectedNodeToList(
     Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
-    while (a1->node.unk2 != -1) {
+    while (a1->node.reloc_entry_index != -1) {
         a1++;
     }
-    a1->node.unk2 = 2;
-    a1->node.unk0 = 3;
-    a1->node.unk1 = 0;
+    a1->node.reloc_entry_index = 2;
+    a1->node.node_kind = 3;
+    a1->node.primitive_table_select = 0;
     a1->node.parent_node = &a0[6].node;
     a1->node.matrix_state = 1;
     a1->node.rotation_order = 0;
     a1->node.light_setup_index = 0;
-    a1->node.unk4 = a2;
+    a1->node.reloc_block_id = a2;
     a1->unk58 = 0;
-    a1[1].node.unk2 = -1;
+    a1[1].node.reloc_entry_index = -1;
 }
 
 Unk80045878Node *node_GetSlotNodeById(s32 a0, s32 a1) {
@@ -116,13 +116,13 @@ Unk80045878Node *node_GetSlotNodeById(s32 a0, s32 a1) {
 }
 
 void node_SetWordOnAllListedNodes(Unk80045878Node *a0, s32 a1) {
-    if (a0->node.unk2 == -1) {
+    if (a0->node.reloc_entry_index == -1) {
         return;
     }
     do {
         a0->unk58 = a1;
         a0++;
-    } while (a0->node.unk2 != -1);
+    } while (a0->node.reloc_entry_index != -1);
 }
 
 void slot_ClearObjectPointersAndTextureRequests(void) {
@@ -168,10 +168,10 @@ void slot_FinalizeObjectLoadSoundTexturesAndArena(Unk80045878Obj *a0) {
 
     a0->load_status = 0;
 
-    if (a0->unk_20 != 0) {
-        var_0 = (s32 *)a0->unk_20;
+    if (a0->staging_buffer != 0) {
+        var_0 = (s32 *)a0->staging_buffer;
     } else {
-        var_0 = (s32 *)a0->unk_1C;
+        var_0 = (s32 *)a0->asset_block;
     }
 
     count = var_0[0];
@@ -201,7 +201,7 @@ after_b644:
             func_80052C10();
         }
 
-        a0->unk_00.word |= 2;
+        a0->load_flags.word |= 2;
         goto after_select;
     }
 
@@ -211,11 +211,12 @@ simple:
 after_select:
     off = (s32)ptr - (s32)var_0;
 
-    if (a0->unk_20 != 0) {
-        mem_MoveBlockRoundedUpToWords(a0->unk_20, a0->unk_1C, off);
-        var_0 = (s32 *)a0->unk_1C;
-        if ((a0->unk_00.word >> 1) & 1) {
-            snd_VabFakeOpen((s32)var_0 - a0->unk_20, a0->arena_id * 3 + 1);
+    if (a0->staging_buffer != 0) {
+        mem_MoveBlockRoundedUpToWords(a0->staging_buffer, a0->asset_block, off);
+        var_0 = (s32 *)a0->asset_block;
+        if ((a0->load_flags.word >> 1) & 1) {
+            snd_VabFakeOpen(
+                (s32)var_0 - a0->staging_buffer, a0->arena_id * 3 + 1);
         }
     }
 
@@ -224,8 +225,8 @@ after_select:
         s32 *block_4;
         block_4 = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
         a0->softbody_params = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
-        reloc_RelocateBlock(block_1, a0->unk_14);
-        reloc_RelocateBlock(block_4, a0->unk_16);
+        reloc_RelocateBlock(block_1, a0->transform_block_id);
+        reloc_RelocateBlock(block_4, a0->projected_block_id);
     }
 
     {
@@ -239,7 +240,8 @@ after_select:
         gpu_LoadTimGroup((u32 *)var_1, 0);
         if (gpu_GetFogClutObject() != 0)
             goto done_cases;
-        gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0, 0, -0x140, 0xE8);
+        gpu_OffsetBlockTexPrimStreams(
+            a0->transform_block_id, 0, 0, -0x140, 0xE8);
         gpu_LoadTimGroupSplitOffset((u32 *)var_1, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
@@ -247,12 +249,14 @@ after_select:
         gpu_LoadTimGroupOffset((u32 *)var_1, 0, 0x80, 0);
         if (gpu_GetFogClutObject() != 1)
             goto case_1_else;
-        gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0x80, 0, -0x140, 0xE8);
+        gpu_OffsetBlockTexPrimStreams(
+            a0->transform_block_id, 0x80, 0, -0x140, 0xE8);
         gpu_LoadTimGroupSplitOffset((u32 *)var_1, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
-        gpu_OffsetBlockTexPrimStreamsByPages(a0->unk_14, 2, 0, 2, 0);
+        gpu_OffsetBlockTexPrimStreamsByPages(
+            a0->transform_block_id, 2, 0, 2, 0);
 
     case_1_done:
         gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(a0);
@@ -261,18 +265,18 @@ after_select:
 done_cases:
     DrawSync(0);
     gpu_LoadRequestedAvailableTimGroupsForSlot(
-        a0->arena_id, a0->unk_08, g_slot_tim_group_requests[a0->arena_id],
+        a0->arena_id, a0->asset_index, g_slot_tim_group_requests[a0->arena_id],
         (s32)var_1);
 
     {
-        a0->unk_00.word =
-            (a0->unk_00.word & 0xFFE0FFFF) |
+        a0->load_flags.word =
+            (a0->load_flags.word & 0xFFE0FFFF) |
             ((g_slot_tim_group_requests[a0->arena_id] & 0x1F) << 16);
         g_slot_tim_group_requests[a0->arena_id] = 0;
     }
 
     DrawSync(0);
-    a0->unk_24 = (void *)(a0->unk_1C + off);
+    a0->softbody_block = (void *)(a0->asset_block + off);
     slot_ResizeAssetBlockAndUpdatePeak(a0->arena_id, off);
 }
 
@@ -298,7 +302,7 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
         count++;
     }
 
-    idx = a0->unk_08;
+    idx = a0->asset_index;
     if (idx < count) {
         a0->position_scale = g_object_scale_factors[idx];
     } else {
@@ -312,10 +316,10 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
 
         do {
             s16 v1;
-            p->node.unk0 = 0;
-            p->node.unk1 = 0;
+            p->node.node_kind = 0;
+            p->node.primitive_table_select = 0;
             p->node.rotation_order = 0;
-            p->node.unk2 = -1;
+            p->node.reloc_entry_index = -1;
             v1 = D_80094B94.recs[i].unk_00;
             if (v1 != -1) {
                 p->node.parent_node = &nodes[v1].node;
@@ -332,8 +336,8 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
             p->node.matrix_state = 0;
-            p->node.light_setup_index = a0->unk_10;
-            p->node.unk4 = a0->unk_14;
+            p->node.light_setup_index = a0->node_light_setup_index;
+            p->node.reloc_block_id = a0->transform_block_id;
             p++;
             i++;
         } while (i < 21);
@@ -385,7 +389,7 @@ void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
 
     t5 = arg0->duplicate_nodes;
     t7 = &arg0->transform_nodes[1];
-    v1 = (s32 *)arg0->unk_1C;
+    v1 = (s32 *)arg0->asset_block;
     t3 = (u16 *)((u8 *)v1 + v1[2]);
 
     i = 0x11;
@@ -404,12 +408,12 @@ void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
         s32 a3 = *t3++;
 
         if (node_used[a3] == 0) {
-            t7[a3].node.unk2 = id;
+            t7[a3].node.reloc_entry_index = id;
             node_used[a3] = 1;
             arg0->node_by_id[id] = &t7[a3];
         } else {
             *t5 = t7[a3];
-            t5->node.unk2 = id;
+            t5->node.reloc_entry_index = id;
             t5->unk58 = (s32)&t7[a3];
             arg0->node_by_id[id] = t5;
             t5++;
@@ -435,19 +439,19 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
     for (i = 0; i < 18; i++) {
         id = &D_80094B94.recs[i].unk_08;
         if (*id != -1) {
-            p->node.unk2 = *id;
-            p->node.unk0 = 3;
-            p->node.unk1 = 0;
+            p->node.reloc_entry_index = *id;
+            p->node.node_kind = 3;
+            p->node.primitive_table_select = 0;
             p->node.rotation_order = 0;
             p->node.parent_node = &parents[i].node;
             p->node.matrix_state = 1;
             p->node.light_setup_index = 0;
-            p->node.unk4 = arg0->unk_16;
+            p->node.reloc_block_id = arg0->projected_block_id;
             p->unk58 = 0;
             p++;
         }
     }
-    p->node.unk2 = -1;
+    p->node.reloc_entry_index = -1;
 }
 
 /* .data 0x80094AF4..0x80094CFC, this file's whole .data (d_80DF8.c's
