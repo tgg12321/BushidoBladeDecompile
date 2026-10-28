@@ -705,6 +705,8 @@ D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMen
 D_800A3834	write	menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu	t_skip_2	0x80035520	coverage	0	2	1	[9]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
 D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_back	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
 D_800A3834	write	menu_UpdateRowMenuAndSubflows	t_back_2	0x80035ACC	coverage	0	2	1	[15]	0	top-menu-back-1@dbfc6b65c7ee	0	coverage_next_start_bound
+0x80021908	call	fight_Init	f12000	0x8001E21C	coverage			1	[[1,0,0,0]]	0	training-practice-ko-1@3fd1732eee2d	0	coverage_next_start_bound
+0x80021908	call	fight_Init	f14000	0x8001E21C	coverage			1	[[1,0,0,0]]	0	training-practice-ko-1@3fd1732eee2d	0	coverage_next_start_bound
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	181	[2,3,15,19,21,25,26,28]	10	versus-2p-blade-contact-1@1e1cfebac1a9	0	

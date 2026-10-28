@@ -1,0 +1,19 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	not viewed	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6199	not viewed	6080:DOWN,6140:DOWN	capture.top_menu.first.png
+t_training	6200	6299	transition; no screen claim	6200:CROSS	-
+training_menu	6300	6999	training_menu.first viewed: Training Mode, Practice lit (Train with the Ninja), Practice Round and Return to Top Menu dim	6500:START,6800:CROSS	capture.training_menu.first.png
+t_char	7000	7049	transition; no screen claim	-	-
+char_select	7050	7399	not viewed	7100:START	capture.char_select.first.png
+t_weapon	7400	7449	transition; no screen claim	7400:CROSS	-
+weapon_select	7450	8499	not viewed	7700:START,8000:CROSS,8300:START	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_load	8500	9299	transition; no screen claim	8500:CROSS,8800:CROSS,9100:CROSS	-
+pause_menu	9300	9559	pause_menu.on viewed: the Pause Menu over the plank-floored stage, Frontal Attack on (cursor on that row), Reverse Attack off, Dash off	9340:UP,9370:UP,9400:UP,9430:LEFT,9460:DOWN,9490:DOWN,9520:DOWN	capture.pause_menu.first.png,capture.pause_menu.on.png,capture.pause_menu.last.png
+t_fight	9560	9599	transition; no screen claim	9560:CROSS	-
+fight	9600	10999	not viewed	-	capture.fight.first.png,capture.fight.10000.png,capture.fight.10400.png,capture.fight.10800.png
+f11000	11000	11999	f11000.11600 viewed: the white-and-orange fighter (left) and the Ninja (right) on the plank floor, both standing, weapons raised	-	capture.f11000.11200.png,capture.f11000.11600.png
+f12000	12000	12999	f12000.first viewed: the same two standing apart, weapons raised; motion_GetCurrentVariantScript hit at 12432 (a0 1, return into fight_Init)	-	capture.f12000.first.png,capture.f12000.12500.png
+f13000	13000	13999	f13000.13500 viewed: the two close, the left fighter's weapon extended toward the Ninja, the Ninja's weapon low, a bright flash above the Ninja	-	capture.f13000.first.png,capture.f13000.13500.png
+f14000	14000	14999	f14000.first viewed: the two standing apart again, weapons raised; motion_GetCurrentVariantScript hit at 14710 (a0 1, return into fight_Init)	-	capture.f14000.first.png,capture.f14000.14500.png
+f15000	15000	15999	f15000.last viewed: the Ninja low with its weapon forward, the left fighter standing	-	capture.f15000.first.png,capture.f15000.last.png

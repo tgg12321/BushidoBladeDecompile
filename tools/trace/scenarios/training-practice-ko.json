@@ -1,0 +1,80 @@
+{
+  "description": "Training Mode Practice with the Ninja's Frontal Attack set on in the Pause Menu, P1 idle: bone hits resolve and the practice fight restarts in place (fight_Init re-entered with g_fight_reinit_reuses_assets set)",
+  "covers": [
+    "mode:training",
+    "menu:training_settings",
+    "menu:pause"
+  ],
+  "evidence": [
+    "docs/naming/runtime/training-practice-ko-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 16000,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START",
+    "8500:CROSS",
+    "8800:CROSS",
+    "9100:CROSS",
+    "9340:UP",
+    "9370:UP",
+    "9400:UP",
+    "9430:LEFT",
+    "9460:DOWN",
+    "9490:DOWN",
+    "9520:DOWN",
+    "9560:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_training",
+    "6300:training_menu",
+    "7000:t_char",
+    "7050:char_select",
+    "7400:t_weapon",
+    "7450:weapon_select",
+    "8500:t_load",
+    "9300:pause_menu",
+    "9560:t_fight",
+    "9600:fight",
+    "11000:f11000",
+    "12000:f12000",
+    "13000:f13000",
+    "14000:f14000",
+    "15000:f15000"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6300:training_menu.first",
+    "7050:char_select.first",
+    "7450:weapon_select.first",
+    "8499:weapon_select.last",
+    "9300:pause_menu.first",
+    "9450:pause_menu.on",
+    "9555:pause_menu.last",
+    "9600:fight.first",
+    "10000:fight.10000",
+    "10400:fight.10400",
+    "10800:fight.10800",
+    "11200:f11000.11200",
+    "11600:f11000.11600",
+    "12000:f12000.first",
+    "12500:f12000.12500",
+    "13000:f13000.first",
+    "13500:f13000.13500",
+    "14000:f14000.first",
+    "14500:f14000.14500",
+    "15000:f15000.first",
+    "15999:f15000.last"
+  ]
+}
