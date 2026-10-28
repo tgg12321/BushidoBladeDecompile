@@ -1,0 +1,109 @@
+{
+  "description": "Story Mode with the LEFT x2 fighter (character id 15, command stream D_800900EC[D_8008D538[15] = 12], as story-gengoro-stage-0e), its 0x0D fight block moved to the front (a modified game): the 36 bytes at 0x8008F9E8 (op 1 stage 3, op 17 opponent 0x0D, CPU byte 0xC0, the op 19 / op 18 / op 19 that follow, op 1 0, op 3 0x1F, op 20 and the stream's op 0) poked over the stream head at 0x8008F92C when top_menu starts; P1 TRIANGLE / CROSS alternating every 20 frames from 8900 (SQUARE x8 from 9000), as story-gengoro-stage-0e; fighter_RelocateAndStartEventMove, called only from fighter_ResolveBoneHit's arm for a hit fighter with character_roster_index 0x0D (17AFC.c:413-416), runs in four of the seven 2000-frame fight phases from 10000; the fight does not end by 24000 (an uncommitted exploratory run of the same script to 40000 with value reads: record 1 character_data_index 0x0A, character_roster_index 0x0D, the stream cursor 0x8008F938 from 12000 to the end)",
+  "covers": [
+    "mode:story",
+    "menu:top",
+    "menu:char_select"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-gengoro-0d-poke-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 24000,
+  "pokes": [
+    {
+      "at": "0x8008F92C",
+      "hex": "0103110D00C013161508431213170B09010100031FFF1418230213191A08931A190E9300",
+      "phase": "top_menu"
+    }
+  ],
+  "inputs": [
+    "6100:CROSS",
+    "6400:START",
+    "6700:CROSS",
+    "6960:LEFT",
+    "6980:LEFT",
+    "7000:START",
+    "7300:CROSS",
+    "7600:START",
+    "7900:CROSS",
+    "8200:START",
+    "8500:CROSS",
+    "8800:START"
+  ],
+  "repeat": [
+    {
+      "from": 9000,
+      "every": 60,
+      "count": 8,
+      "steps": [
+        "+0:SQUARE"
+      ]
+    },
+    {
+      "from": 8900,
+      "every": 20,
+      "count": 755,
+      "steps": [
+        "+0:TRIANGLE|CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6060:top_menu",
+    "6100:t_story",
+    "6810:story_text",
+    "6910:t_char",
+    "6950:char_select",
+    "7300:t_weapon",
+    "7360:weapon_select",
+    "7900:t_stage",
+    "8320:fight",
+    "10000:f10000",
+    "12000:f12000",
+    "14000:f14000",
+    "16000:f16000",
+    "18000:f18000",
+    "20000:f20000",
+    "22000:f22000"
+  ],
+  "shots": [
+    "6060:top_menu.first",
+    "6950:char_select.first",
+    "7299:char_select.last",
+    "7360:weapon_select.first",
+    "9000:fight.9000",
+    "9500:fight.9500",
+    "10000:f10000.10000",
+    "10500:f10000.10500",
+    "11000:f10000.11000",
+    "11500:f10000.11500",
+    "12000:f12000.12000",
+    "12500:f12000.12500",
+    "13000:f12000.13000",
+    "13500:f12000.13500",
+    "14000:f14000.14000",
+    "14500:f14000.14500",
+    "15000:f14000.15000",
+    "15500:f14000.15500",
+    "16000:f16000.16000",
+    "16500:f16000.16500",
+    "17000:f16000.17000",
+    "17500:f16000.17500",
+    "18000:f18000.18000",
+    "18500:f18000.18500",
+    "19000:f18000.19000",
+    "19500:f18000.19500",
+    "20000:f20000.20000",
+    "20500:f20000.20500",
+    "21000:f20000.21000",
+    "21500:f20000.21500",
+    "22000:f22000.22000",
+    "22500:f22000.22500",
+    "23000:f22000.23000",
+    "23500:f22000.23500",
+    "23999:f22000.last"
+  ]
+}
