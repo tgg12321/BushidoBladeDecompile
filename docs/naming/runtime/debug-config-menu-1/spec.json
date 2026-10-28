@@ -1,0 +1,301 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "watch": [
+    {
+      "at": "D_800A3834",
+      "len": 2,
+      "kind": "write",
+      "max_hits": 50
+    },
+    {
+      "at": "g_fight_mode_selector",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 20
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A3834",
+      "len": 2
+    },
+    {
+      "at": "g_config_menu_cursors",
+      "len": 4
+    },
+    {
+      "at": "g_fight_config",
+      "len": 16
+    },
+    {
+      "at": "g_fight_mode_selector",
+      "len": 1
+    }
+  ],
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 8260,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6120,
+        "name": "debug"
+      },
+      {
+        "frame": 6760,
+        "name": "t_apply"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6240,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6280,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6360,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6440,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6480,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6520,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6560,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6640,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6680,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6720,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 6760,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6119,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6130,
+        "name": "debug.first"
+      },
+      {
+        "frame": 6220,
+        "name": "debug.row1"
+      },
+      {
+        "frame": 6260,
+        "name": "debug.row2"
+      },
+      {
+        "frame": 6300,
+        "name": "debug.row3"
+      },
+      {
+        "frame": 6340,
+        "name": "debug.row4"
+      },
+      {
+        "frame": 6380,
+        "name": "debug.row5"
+      },
+      {
+        "frame": 6420,
+        "name": "debug.row6"
+      },
+      {
+        "frame": 6460,
+        "name": "debug.row7"
+      },
+      {
+        "frame": 6500,
+        "name": "debug.row8"
+      },
+      {
+        "frame": 6540,
+        "name": "debug.row9"
+      },
+      {
+        "frame": 6580,
+        "name": "debug.row10"
+      },
+      {
+        "frame": 6620,
+        "name": "debug.row11"
+      },
+      {
+        "frame": 6660,
+        "name": "debug.row0"
+      },
+      {
+        "frame": 6700,
+        "name": "debug.p1_right"
+      },
+      {
+        "frame": 6740,
+        "name": "debug.p2_row1"
+      },
+      {
+        "frame": 6759,
+        "name": "debug.last"
+      },
+      {
+        "frame": 6820,
+        "name": "t_apply.60"
+      },
+      {
+        "frame": 7060,
+        "name": "t_apply.300"
+      },
+      {
+        "frame": 7560,
+        "name": "t_apply.800"
+      },
+      {
+        "frame": 8259,
+        "name": "t_apply.last"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x800A3834",
+      "hex": "0200",
+      "phase": "debug"
+    }
+  ]
+}

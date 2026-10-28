@@ -1,0 +1,67 @@
+{
+  "description": "the debug fight-settings menu (main-loop handlers 2 / 3; the only C store of 2 is the default arm of fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress (handler 17, entered from func_8001EEB4, handler 16), 9F9C.c:2409-2414, untaken in any capture: handler 2 is in no other hit map), entered by a poke (a modified game): at debug (6120) the main-loop handler index D_800A3834 is poked from 9 (the top menu) to 2, entry 2 of D_8008D090, ResetGraphClearFrameCounterAndSetMainLoopHandler3 (17AFC.c:5464-5468), which stores 3 the same frame: menu_PrintEditAndApplyConfigWithPerPadCursors (24F08.c) prints g_fight_config's fields with font_Printf, two columns, P1's cursor over 12 rows and P2's over 4 (magenta marks the selected row); P1 DOWN x12 tours the rows and wraps to row 0, RIGHT raises P1's character byte unk_4[0] 1 -> 2, P2 DOWN moves P2's cursor to row 1; START (6760): ApplyPendingConfigAndInitializeMode with pending mode 4 stores g_fight_mode_selector 4 and handler 0 (24BF0.c:99-102); fight_Init runs and the screen stays on a load screen (the Bushido Blade logo) with handler 0 to the end (8260): fight_Update is not reached",
+  "covers": [
+    "menu:top",
+    "menu:debug_config"
+  ],
+  "evidence": [
+    "docs/naming/runtime/debug-config-menu-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 8260,
+  "pokes": [
+    {
+      "at": "0x800A3834",
+      "hex": "0200",
+      "phase": "debug"
+    }
+  ],
+  "inputs": [
+    "6200:DOWN",
+    "6240:DOWN",
+    "6280:DOWN",
+    "6320:DOWN",
+    "6360:DOWN",
+    "6400:DOWN",
+    "6440:DOWN",
+    "6480:DOWN",
+    "6520:DOWN",
+    "6560:DOWN",
+    "6600:DOWN",
+    "6640:DOWN",
+    "6680:RIGHT",
+    "6720:DOWN@2",
+    "6760:START"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6120:debug",
+    "6760:t_apply"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6119:top_menu.last",
+    "6130:debug.first",
+    "6220:debug.row1",
+    "6260:debug.row2",
+    "6300:debug.row3",
+    "6340:debug.row4",
+    "6380:debug.row5",
+    "6420:debug.row6",
+    "6460:debug.row7",
+    "6500:debug.row8",
+    "6540:debug.row9",
+    "6580:debug.row10",
+    "6620:debug.row11",
+    "6660:debug.row0",
+    "6700:debug.p1_right",
+    "6740:debug.p2_row1",
+    "6759:debug.last",
+    "6820:t_apply.60",
+    "7060:t_apply.300",
+    "7560:t_apply.800",
+    "8259:t_apply.last"
+  ]
+}

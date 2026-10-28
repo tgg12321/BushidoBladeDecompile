@@ -35,13 +35,15 @@
         "menu:link_wait",
         "menu:slash_records",
         "menu:title",
-        "menu:boot_load_prompt"
+        "menu:boot_load_prompt",
+        "menu:debug_config"
       ],
       "notes": {
         "menu:link_wait": "Link Mode with no cable: CROSS on the top menu's Link Mode entry, a black load, Waiting for Challenger, then the top menu again (link-no-cable-1)",
         "menu:slash_records": "Slash Mode's first screen: 100 Kills Time Trial Records (three times and fighters) over Start / Return to Top Menu, the confirm menu (func_80077A60 -> menu_UpdateConfirmMenu) (slash-mode-1)",
         "menu:title": "the Bushido Blade 2 title after the intro movie, both run inside the movie overlay (func_8003BFC4 -> sys_ExecMovieOverlay; no hit-map function is reached while the movie and the title play); with no input it gives way to the top menu by itself (title-attract-1)",
-        "menu:boot_load_prompt": "the top menu's first entry with a save on the card: D_800A31D9 starts at 1 (25C38.c:458) and the subflow takes states 7 / 8 / 9 (25C38.c:200-235): Checking Memory Card, Load data from Memory Card? YES / NO (menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult, sheet 0x13, cursor on YES), YES: Checking, Load completed, the top menu; with no save the check ends the flow and no prompt shows (memory-card-boot-load-1 on blank cards: state 7 at 5968, back to state 1 at 6045). Scenarios start from blank or unformatted cards, so memory-card-boot-load-1 saves first and pokes D_800A31D9 back to 1 before returning to the top menu: a stand-in for power-on with a saved card (same code from state 1; other RAM differs)"
+        "menu:boot_load_prompt": "the top menu's first entry with a save on the card: D_800A31D9 starts at 1 (25C38.c:458) and the subflow takes states 7 / 8 / 9 (25C38.c:200-235): Checking Memory Card, Load data from Memory Card? YES / NO (menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult, sheet 0x13, cursor on YES), YES: Checking, Load completed, the top menu; with no save the check ends the flow and no prompt shows (memory-card-boot-load-1 on blank cards: state 7 at 5968, back to state 1 at 6045). Scenarios start from blank or unformatted cards, so memory-card-boot-load-1 saves first and pokes D_800A31D9 back to 1 before returning to the top menu: a stand-in for power-on with a saved card (same code from state 1; other RAM differs)",
+        "menu:debug_config": "a debug fight-settings menu: main-loop handlers 2 / 3 (D_8008D090 entries: ResetGraphClearFrameCounterAndSetMainLoopHandler3, which stores 3, 17AFC.c:5464-5468, and menu_PrintEditAndApplyConfigWithPerPadCursors). The only store of 2 in the C sources is the default arm of fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress (handler 17, entered from func_8001EEB4, handler 16; 9F9C.c:2409-2414: a mode selector other than 1, 4 or 6); handler 17 runs in many captures, but handler 2 is in no other hit map, so that arm is untaken; debug-config-menu-1 pokes D_800A3834 to 2 instead: g_fight_config printed as numbers in two columns, per-pad cursors, START applies the pending settings"
       }
     },
     "stages": {
