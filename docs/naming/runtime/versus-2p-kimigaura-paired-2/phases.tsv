@@ -1,0 +1,21 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; not viewed; every screenshot of this capture byte-identical to versus-2p-kimigaura-paired-1's (manifest SHA1s)	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6259	not viewed; screenshots byte-identical to versus-2p-kimigaura-paired-1's	6080:DOWN,6140:DOWN,6200:DOWN	capture.top_menu.first.png,capture.top_menu.last.png
+t_char	6260	6549	transition; no screen claim	6260:CROSS	-
+char_select	6550	6699	KANNUKI vs GENGORO (segment versus_2p_select); not viewed; screenshots byte-identical to versus-2p-kimigaura-paired-1's	6600:CROSS,6640:CROSS@2	capture.char_select.first.png,capture.char_select.last.png
+weapon_select	6700	6999	not viewed; screenshots byte-identical to versus-2p-kimigaura-paired-1's	6900:CROSS,6940:CROSS@2	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_stage	7000	7174	transition; no screen claim; screenshots byte-identical to versus-2p-kimigaura-paired-1's	-	capture.t_stage.mid.png
+stage_select	7175	7449	Kimigaura Coast picked (LEFT at 7300); not viewed; screenshots byte-identical to versus-2p-kimigaura-paired-1's	7300:LEFT	capture.stage_select.first.png,capture.stage_select.7299.png,capture.stage_select.7325.png,capture.stage_select.7355.png,capture.stage_select.last.png
+t_load	7450	8229	not viewed; screenshots byte-identical to versus-2p-kimigaura-paired-1's	7450:CROSS	capture.t_load.mid.png,capture.t_load.last.png
+fight	8230	8429	fight start, both idle; fight.first byte-identical to versus-2p-kimigaura-paired-1's	-	capture.fight.first.png
+c00	8430	8529	P1 RIGHT held 45, LEFT held 12 at +55, CROSS at +60; P2 idle; screenshots not viewed; fighter_PassesPairedMoveEntryGates reached	8430:RIGHT/45,8485:LEFT/12,8490:CROSS	capture.c00.55.png,capture.c00.75.png,capture.c00.95.png
+c01	8530	8629	as c00; screenshots not viewed; fighter_PassesPairedMoveEntryGates reached	8530:RIGHT/45,8585:LEFT/12,8590:CROSS	capture.c01.55.png,capture.c01.75.png,capture.c01.95.png
+c02	8630	8729	as c00; screenshots not viewed; fighter_PassesPairedMoveEntryGates reached	8630:RIGHT/45,8685:LEFT/12,8690:CROSS	capture.c02.55.png,capture.c02.75.png,capture.c02.95.png
+c03	8730	8829	as c00; c03.75 viewed: KANNUKI (left) and GENGORO (right) apart, swords raised, WINS 00 / 00; fighter_PassesPairedMoveEntryGates reached	8730:RIGHT/45,8785:LEFT/12,8790:CROSS	capture.c03.55.png,capture.c03.75.png,capture.c03.95.png
+c04	8830	8929	as c00 (the cycle versus-2p-kimigaura-paired-1 records the paired kind 0x11 move in); c04.75 viewed: the two fighters locked together, blades crossed overhead, WINS 00 / 00; fighter_PassesPairedMoveEntryGates, fighter_SetBasePositionSeparationCorrectionsAndGetDistance and fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents reached	8830:RIGHT/45,8885:LEFT/12,8890:CROSS	capture.c04.55.png,capture.c04.75.png,capture.c04.95.png
+c05	8930	9029	as c00; c05.55 viewed: GENGORO on the ground, KANNUKI over GENGORO, a blade in the air, pink specks on the ground; fighter_SetBasePositionSeparationCorrectionsAndGetDistance and fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents reached	8930:RIGHT/45,8985:LEFT/12,8990:CROSS	capture.c05.55.png,capture.c05.75.png,capture.c05.95.png
+c06	9030	9129	as c00; c06.95 viewed: a darker close view, KANNUKI standing, GENGORO lying on the ground; fighter_SetBasePositionSeparationCorrectionsAndGetDistance and fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents reached	9030:RIGHT/45,9085:LEFT/12,9090:CROSS	capture.c06.55.png,capture.c06.75.png,capture.c06.95.png
+c07	9130	9229	as c00; screenshots not viewed	9130:RIGHT/45,9185:LEFT/12,9190:CROSS	capture.c07.55.png,capture.c07.75.png,capture.c07.95.png
+c08	9230	9329	as c00; screenshots not viewed	9230:RIGHT/45,9285:LEFT/12,9290:CROSS	capture.c08.55.png,capture.c08.75.png,capture.c08.95.png
+c09	9330	9429	as c00; c09.95 viewed: the round reset, the fighters apart, WINS 01 for P1, 00 for P2	9330:RIGHT/45,9385:LEFT/12,9390:CROSS	capture.c09.55.png,capture.c09.75.png,capture.c09.95.png,capture.last.png
