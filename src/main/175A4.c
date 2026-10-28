@@ -183,13 +183,16 @@ tail:
             effect_position[2] = (record->world_pos.z + var_1->world_pos.z) / 2;
             effect_position[0] +=
                 (Judge[(u16)record->opponent_bearing & 0xFFF] *
-                 g_fight_midpoint_effect_offsets[midpoint_effect_index].unk0) >>
+                 g_fight_midpoint_effect_offsets[midpoint_effect_index]
+                     .bearing_distance) >>
                 12;
             effect_position[1] +=
-                g_fight_midpoint_effect_offsets[midpoint_effect_index].unk2;
+                g_fight_midpoint_effect_offsets[midpoint_effect_index]
+                    .height_offset;
             effect_position[2] +=
                 (Judge[(record->opponent_bearing + 0x400) & 0xFFF] *
-                 g_fight_midpoint_effect_offsets[midpoint_effect_index].unk0) >>
+                 g_fight_midpoint_effect_offsets[midpoint_effect_index]
+                     .bearing_distance) >>
                 12;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 0, g_fight_midpoint_effect_event_ids[midpoint_effect_index],

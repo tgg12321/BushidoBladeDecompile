@@ -365,7 +365,7 @@ void arena_ShiftBlocks(s32 a0, s32 a1) {
     s32 count;
 
     sum = 0;
-    src = g_arena_blocks[a0].unk4;
+    src = g_arena_blocks[a0].block_start;
     count = g_arena_block_count;
     dst = src + a1;
     for (i = a0; i < count; i++) {
@@ -375,7 +375,7 @@ void arena_ShiftBlocks(s32 a0, s32 a1) {
         DrawSync(0);
         mem_MoveBlockRoundedUpToWords(src, dst, sum);
         for (i = a0; i < g_arena_block_count; i++) {
-            g_arena_blocks[i].unk4 += a1;
+            g_arena_blocks[i].block_start += a1;
             if (g_arena_blocks[i].fn != 0) {
                 g_arena_blocks[i].fn(g_arena_blocks[i].id, a1);
             }
@@ -436,7 +436,7 @@ s32 *arena_OpenBlock(s32 a0) {
     e = &g_arena_blocks[idx];
     g_arena_block_count = idx + 1;
     ret = g_arena_free_ptr;
-    e->unk4 = ret;
+    e->block_start = ret;
     e->id = a0;
     e->fn = 0;
     return (s32 *)ret;

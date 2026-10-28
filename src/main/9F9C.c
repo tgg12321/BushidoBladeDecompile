@@ -433,16 +433,16 @@ typedef VECTOR CamVec;
  * collision_TestSegmentWithWork is given (its 3rd/4th/5th arguments; its other
  * callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
-    s16 unk0;     /* 0x00 */
-    s16 yaw;      /* 0x02 */
-    s16 scr04;    /* 0x04 */
-    s16 unk6;     /* 0x06 */
-    CamVec focus; /* 0x08 */
-    CamVec eye;   /* 0x18 */
-    CamVec scr28; /* 0x28 */
-    s32 hit[8];   /* 0x38 */
-    s16 nrm[4];   /* 0x58 */
-    s32 unk60;    /* 0x60 */
+    s16 unk0;         /* 0x00 */
+    s16 yaw;          /* 0x02 */
+    s16 scr04;        /* 0x04 */
+    s16 unk6;         /* 0x06 */
+    CamVec focus;     /* 0x08 */
+    CamVec eye;       /* 0x18 */
+    CamVec scr28;     /* 0x28 */
+    s32 hit[8];       /* 0x38 */
+    s16 nrm[4];       /* 0x58 */
+    s32 segment_work; /* 0x60 */
 } CamScratch;
 
 /* Two-fighter camera for g_camera_default_view_record (first_camera_point/
@@ -601,7 +601,7 @@ void camera_UpdateTwoFighterView(
         scr->scr28.vy -= 0xC8;
         if (collision_TestSegmentWithWork(
                 (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit, scr->nrm,
-                (s32)&scr->unk60) &&
+                (s32)&scr->segment_work) &&
             scr->nrm[1] < -0x320) {
             math_StoreFloorDiv2000XZOfPointStepTowards(
                 view_record->h30[p], (s32 *)&scr->eye, scr->hit);
@@ -626,7 +626,7 @@ void camera_UpdateTwoFighterView(
                 camera_CalcEye(view_record, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
                         (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
-                        scr->nrm, (s32)&scr->unk60) &&
+                        scr->nrm, (s32)&scr->segment_work) &&
                     scr->nrm[1] < -0x320) {
                     work = view_record->camera_angles.vx;
                 } else {
@@ -657,7 +657,7 @@ void camera_UpdateTwoFighterView(
                 camera_CalcEye(view_record, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
                         (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
-                        scr->nrm, (s32)&scr->unk60) &&
+                        scr->nrm, (s32)&scr->segment_work) &&
                     scr->nrm[1] < -0x320) {
                     math_StoreFloorDiv2000XZOfPointStepTowards(
                         view_record->h30[p], (s32 *)&scr->eye, scr->hit);
@@ -3342,16 +3342,16 @@ void motion_LoadFighterData(
                         (g_motion_fighter_buffers[i]->unk_03 - 1) * 6);
             g_motion_fighter_sections[i].motion_entries =
                 (u16 *)((s32)g_motion_fighter_buffers[i] +
-                        g_motion_fighter_buffers[i]->unk_04[0]);
+                        g_motion_fighter_buffers[i]->section_offsets[0]);
             g_motion_fighter_sections[i].motion_metadata_base =
                 (u8 *)((s32)g_motion_fighter_buffers[i] +
-                       g_motion_fighter_buffers[i]->unk_04[1]);
+                       g_motion_fighter_buffers[i]->section_offsets[1]);
             g_motion_fighter_sections[i].cpu_script_table =
                 (u16 *)((s32)g_motion_fighter_buffers[i] +
-                        g_motion_fighter_buffers[i]->unk_04[2]);
+                        g_motion_fighter_buffers[i]->section_offsets[2]);
             g_motion_fighter_sections[i].motion_bitstream =
                 (u32 *)((s32)g_motion_fighter_buffers[i] +
-                        g_motion_fighter_buffers[i]->unk_04[3]);
+                        g_motion_fighter_buffers[i]->section_offsets[3]);
             g_motion_fighter_loaded_data_ids[i] = var_0[i];
         }
     }
@@ -3596,7 +3596,7 @@ void fighter_StartMoveScript(
         {
             MoveScript *v0_50b = fighter_record->cur_move;
             s32 kind = fighter_record->move_kind;
-            fighter_record->unk_70 = (v0_50b->unk_09) & 3;
+            fighter_record->unk_70 = (v0_50b->move_bitfield) & 3;
             {
                 s32 a0_flag = 0;
                 if ((((kind == 2) || (kind == 0x1B)) || (kind == 0x28)) ||
@@ -4784,7 +4784,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                         &fighter_record->move_is_common),
                     fighter_record->move_is_common);
             } else {
-                if (fighter_record->cur_move->unk_09 & 0x20) {
+                if (fighter_record->cur_move->move_bitfield & 0x20) {
                     fighter_record->borrow_other_motion = 1;
                 }
                 fighter_StartMoveScript(
@@ -4866,7 +4866,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                     }
                     move_script = motion_ResolveMoveData(
                         fighter_record, transition_cursor[1], &is_common);
-                    if (fighter_record->cur_move->unk_09 & 0x80) {
+                    if (fighter_record->cur_move->move_bitfield & 0x80) {
                         fighter_record->queued_move = move_script;
                         fighter_record->queued_move_command =
                             transition_command;
@@ -5084,7 +5084,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     if (next_move_frame >= fighter_record->motion_metadata[1]) {
         next_move_frame = fighter_record->motion_metadata[1] - 1;
     }
-    if (fighter_record->cur_move->unk_09 & 0x40) {
+    if (fighter_record->cur_move->move_bitfield & 0x40) {
         decoder_index =
             fighter_record->move_is_common == 0
                 ? D_80101EC8[g_fight_paired_move_initiator].motion_slot + 1

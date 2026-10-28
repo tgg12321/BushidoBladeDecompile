@@ -1345,12 +1345,12 @@ void bitstream_InitDeltaAccumulator(s32 stream_address, s32 accumulator_index) {
     ptr->bits.next = (u32 *)stream_address;
     ptr->bits.word = 0;
     ptr->bits.avail = 0;
-    ptr->unkC[5] = 0;
-    ptr->unkC[4] = 0;
-    ptr->unkC[3] = 0;
-    ptr->unkC[2] = 0;
-    ptr->unkC[1] = 0;
-    ptr->unkC[0] = 0;
+    ptr->accumulated_values[5] = 0;
+    ptr->accumulated_values[4] = 0;
+    ptr->accumulated_values[3] = 0;
+    ptr->accumulated_values[2] = 0;
+    ptr->accumulated_values[1] = 0;
+    ptr->accumulated_values[0] = 0;
 }
 
 extern s32 bitstream_ReadBits(BitStream *, s32);
@@ -1369,10 +1369,10 @@ s16 *bitstream_AccumulateDeltas(s32 accumulator_index) {
         if ((val >> (nbits - 1)) & 1) {
             val |= 0xFFFF << (nbits - 1);
         }
-        base->unkC[i] += val;
+        base->accumulated_values[i] += val;
         i++;
     } while (i < 6);
-    return base->unkC;
+    return base->accumulated_values;
 }
 
 /* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading
@@ -2041,9 +2041,9 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
                         } else {
                             e2 = &g_gpu_grid_node_records
                                      [v1 - g_gpu_grid_cell_record_count];
-                            if (e2->unk58 == 0) {
+                            if (e2->is_collected == 0) {
                                 *out++ = e2;
-                                e2->unk58 = 1;
+                                e2->is_collected = 1;
                             }
                         }
                     } while (!(t0 & 0x8000));
@@ -2060,7 +2060,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     while (out != g_gpu_grid_unique_node_buffer) {
         out--;
         *g_draw_queue_cursor = *out;
-        ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
+        ((Unk800A6690Rec *)*g_draw_queue_cursor)->is_collected = 0;
         g_draw_queue_cursor++;
     }
     if (g_resource_selector_callbacks[resource_GetLoadedSelector()].unk4 != 0) {
@@ -2143,10 +2143,10 @@ skip:
                             } else {
                                 e2 = &g_gpu_grid_node_records
                                          [v1 - g_gpu_grid_cell_record_count];
-                                if (e2->unk58 == 0) {
+                                if (e2->is_collected == 0) {
                                     *out = e2;
                                     out += 1;
-                                    e2->unk58 = 1;
+                                    e2->is_collected = 1;
                                 }
                             }
                         } while (!(t0 & 0x8000));
@@ -2223,7 +2223,7 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
         }
         g_math_rot_matrix_funcs[c->node.rotation_order](
             &c->node.xf.rot, &c->node.xf.mat);
-        c->unk58 = 0;
+        c->is_collected = 0;
     }
     for (i = 0; i < 32; i++) {
         for (j = 0; j < 32; j++) {
@@ -2769,7 +2769,7 @@ void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
             in->f84[n][1].vx = *a2++;
             in->f84[n][1].vy = *a2++;
             in->f84[n][1].vz = *a2++;
-            in->coll.unk68[n] = *a2++;
+            in->coll.volume_bounds[n] = *a2++;
             n++;
             id = *a2;
         } while (id != -2);
@@ -2823,7 +2823,7 @@ void softbody_SetObjectGround(Unk80045878Obj *a0, s32 a1) {
     if (v1) {
         s32 i;
         for (i = 0; i < v1->count; i++) {
-            v1->recs[i].inner.coll.unk00 = a1;
+            v1->recs[i].inner.coll.ground_height = a1;
         }
     }
 }

@@ -263,10 +263,10 @@ extern s16 g_cdrom_file_group_bases[8];
  * cdrom_GetFileIndex resolves; unk_1, cdrom_StartAudio's second argument;
  * unk_4, an offset added to the file's start sector (-1: none). */
 typedef struct {
-    u8 unk_0;
-    u8 unk_1;
+    u8 audio_file_index_offset;
+    u8 xa_channel;
     u16 unk_2;
-    s32 unk_4;
+    s32 audio_end_offset;
 } Unk8008F13CRow;
 
 extern Unk8008F13CRow g_cdrom_audio_entries[12];

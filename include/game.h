@@ -105,9 +105,9 @@ typedef struct {
  * g_eff_yawed_quad_slot_masks[n] and the sibling SVECTOR table
  * g_eff_yawed_quad_slot_rotations[n][10] index the same pair (n, slot). */
 typedef struct {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
+    s32 slot_world_x;
+    s32 slot_world_y;
+    s32 slot_world_z;
 } Unk800F0EC8Record;
 
 /* Effect-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
@@ -116,9 +116,9 @@ typedef struct {
  * from it. The slot bitmask g_eff_billboard_pair_slot_mask and the age table
  * g_eff_billboard_pair_ages[slot] index the same slot. */
 typedef struct {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
+    s32 slot_world_x;
+    s32 slot_world_y;
+    s32 slot_world_z;
 } Unk800F0E38Record;
 
 /* 0x8009BC0C: the eight option rows of the list menu menu_UpdateRowMenu drives,
@@ -138,7 +138,7 @@ typedef struct {
  * drawn), then the eight option rows. */
 typedef struct {
     s32 rows_on;
-    s32 unk4;
+    s32 scroll_row_mask;
     MenuOption opt[8];
 } MenuState;
 
@@ -148,7 +148,7 @@ typedef struct {
  * menu_DrawSelGrid index it [page][cell]; menu_FadeOutSelAndWriteResult reads
  * unk1 flat. Data: unk1 is 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). */
 typedef struct {
-    u8 unk0;
+    u8 cell_entry;
     u8 unk1;
 } Unk8009BCF8Record;
 
@@ -311,9 +311,9 @@ typedef struct {
  * g_entry_menu_grid_entries entry value v it reads; after its first iteration
  * the values 12, 13, 14, 0 and 3 take unk_0C[22..26]). */
 typedef struct {
-    Unk8009B400Record *unk_00[2];
+    Unk8009B400Record *slot_cell_tables[2];
     s32 unk_08;
-    Unk8009B0E0Record unk_0C[0];
+    Unk8009B0E0Record entry_headers[0];
 } Unk8006ECF4Rec;
 
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's
@@ -418,9 +418,9 @@ typedef struct {
  * then the DR_MODE at +0x4D8. It returns the chunk size, 0x4F0; the last 0xC
  * bytes are never written. */
 typedef struct {
-    TILE unk_00[15];
+    TILE chunk_tiles[15];
     SPRT unk_F0[50];
-    DR_MODE unk_4D8;
+    DR_MODE chunk_draw_mode;
     u8 unk_4E4[0xC];
 } Unk8005C8A8Rec;
 
@@ -433,9 +433,9 @@ typedef struct {
  * gpu_DrawPairedMarkRowsAndTimeFields also writes a second DR_MODE at the
  * chunk's end, outside the chunk. */
 typedef struct {
-    TILE unk_00[10];
+    TILE chunk_tiles[10];
     SPRT unk_A0[30];
-    DR_MODE unk_2F8;
+    DR_MODE chunk_draw_mode;
 } Unk8005D814Rec;
 
 /* The draw chunk 4D0A8 gpu_DrawPackedComparisonRowsAndTotals builds at the
@@ -445,10 +445,10 @@ typedef struct {
  * at +0xBB8. It returns the chunk size, 0xBC4, and also writes a second DR_MODE
  * at the chunk's end, outside the chunk. */
 typedef struct {
-    TILE unk_00[10];
+    TILE chunk_tiles[10];
     SPRT unk_A0[102];
-    POLY_FT4 unk_898[20];
-    DR_MODE unk_BB8;
+    POLY_FT4 chunk_textured_quads[20];
+    DR_MODE chunk_draw_mode;
 } Unk8005E54CRec;
 
 /* The draw chunk 4D0A8 gpu_DrawImageAndAdvanceSplitWipe builds at the address
@@ -462,9 +462,9 @@ typedef struct {
  * each). */
 typedef struct {
     SPRT unk_00[32];
-    DR_MODE unk_280;
-    POLY_G4 unk_28C[2];
-    DR_AREA unk_2D4[3];
+    DR_MODE chunk_draw_mode;
+    POLY_G4 chunk_gradient_quads[2];
+    DR_AREA chunk_draw_areas[3];
 } Unk8005FC9CRec;
 
 /* The draw chunk 4D0A8 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
@@ -477,7 +477,7 @@ typedef struct {
  * for up to two digits. */
 typedef struct {
     SPRT unk_00[9];
-    DR_MODE unk_B4;
+    DR_MODE chunk_draw_mode;
 } Unk800600C8Rec;
 
 /* The draw chunk 4D0A8 gpu_DrawSpriteAtPackedTablePosition builds at the
@@ -486,8 +486,8 @@ typedef struct {
  * has one cell: the count byte at +2 is 1), then the DR_MODE at +0x14. It
  * returns the chunk size, 0x2C; the last 0xC bytes are never written. */
 typedef struct {
-    SPRT unk_00;
-    DR_MODE unk_14;
+    SPRT chunk_sprite;
+    DR_MODE chunk_draw_mode;
     u8 unk_20[0xC];
 } Unk80060414Rec;
 
@@ -502,8 +502,8 @@ typedef struct {
  * (D_8009B770[3] holds 1). */
 typedef struct {
     SPRT unk_00[63];
-    POLY_FT4 unk_4EC[6];
-    DR_MODE unk_5DC;
+    POLY_FT4 chunk_textured_quads[6];
+    DR_MODE chunk_draw_mode;
     u8 unk_5E8[0xC];
 } Unk80060544Rec;
 
@@ -648,7 +648,7 @@ typedef struct {
  * flags and picks the entry's sprite and sound. */
 typedef struct SelectEntryE534 {
     u8 value;
-    u8 unk1;
+    u8 grid_pick_value;
 } SelectEntryE534;
 
 /* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
@@ -821,7 +821,7 @@ typedef struct {
     u8 unk_03;
     /* g_motion_fighter_sections[slot].motion_entries .. motion_bitstream =
      * record + unk_04[k] (motion_LoadFighterData) */
-    s32 unk_04[4];
+    s32 section_offsets[4];
     s16 f14;
     u16 f16;
     u16 f18[27];
@@ -901,7 +901,7 @@ typedef struct Unk80104E88Rec {
 typedef struct {
     s16 id;
     s16 unk2;
-    s32 unk4;
+    s32 block_start;
     s32 amt;
     void (*fn)(s16, s32);
 } Unk800EED10Entry;
@@ -1547,7 +1547,7 @@ typedef struct MoveScript {
     u8 first_move_frame;
     u8 last_move_frame;
     u8 last_command_frame;
-    u8 unk_09;
+    u8 move_bitfield;
     u16 transition_commands[1];
 } MoveScript;
 
@@ -1913,8 +1913,8 @@ typedef struct {
  * offset, unk2 is added to y; g_fight_midpoint_effect_event_ids[row] is passed
  * as fight_RecordReplayEventAndDispatchSoundOrEffect's arg1. */
 typedef struct {
-    s16 unk0;
-    s16 unk2;
+    s16 bearing_distance;
+    s16 height_offset;
 } Tbl8008EB54Entry;
 
 /* 0x18-byte record table at 0x80099D88 (behaviour flags and random-pick
@@ -1946,8 +1946,8 @@ typedef struct Unk80099D88Rec {
  * fighter_InitCpuControl reads unk0/unk1,
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput the mask halfword. */
 typedef struct Unk8009A8C8Entry {
-    u8 unk0;
-    u8 unk1;
+    u8 tracked_move_tally_threshold;
+    u8 script_wait_limit;
     u16 mask;
 } Unk8009A8C8Entry;
 
@@ -2129,7 +2129,7 @@ typedef struct {
     MATRIX lmat;               /* +0x18 */
     MATRIX cmat;               /* +0x38 */
     u8 back[3];                /* +0x58 */
-    s16 unk5C;                 /* +0x5C */
+    s16 light_dir_scale;       /* +0x5C */
 } Unk800F62E0Rec;              /* 0x60 */
 
 /* 0x800F66A0: the rotation-to-matrix handlers a transform node's rotation_order
@@ -2153,7 +2153,7 @@ typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
  */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
-    u8 unk58;               /* +0x58 */
+    u8 is_collected;        /* +0x58 */
     u8 unk59[0xF];          /* +0x59 */
 } Unk800A6690Rec;           /* 0x68 */
 
@@ -2189,9 +2189,9 @@ typedef struct {
  * node_BuildProjectedNodeList copies unk_08 (-1: no node) into
  * projected_nodes[]. */
 typedef struct {
-    s16 unk_00;
-    s16 unk_02[3];
-    s16 unk_08;
+    s16 parent_index;
+    s16 node_translation[3];
+    s16 projected_entry_index;
 } Unk80094B96Rec;
 
 /* The per-slot model object
@@ -2437,10 +2437,10 @@ typedef struct {
  * the volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each
  * as three words) and its bound (unk68). */
 typedef struct Unk8003F6D8Coll {
-    /* 0x00 */ s32 unk00;
+    /* 0x00 */ s32 ground_height;
     /* 0x04 */ s32 count;
     /* 0x08 */ VECTOR foci[3][2];
-    /* 0x68 */ s32 unk68[3];
+    /* 0x68 */ s32 volume_bounds[3];
 } Unk8003F6D8Coll;
 
 /* softbody_Create's argument (2B344 softbody_CreateForNode builds it on its
@@ -2478,8 +2478,8 @@ typedef struct {
 /* MOD.BIN's unk_3C list: gpu_DrawIndexedCellsAndDecimalDigitPairs's set, then
  * the three sheets menu_DrawConfirmSheetsAndDigitPairs draws. */
 typedef struct {
-    Unk8006D808Rec unk_00;
-    Unk8009B0E0Record *unk_20[3];
+    Unk8006D808Rec cell_digit_set;
+    Unk8009B0E0Record *confirm_sheets[3];
 } Unk8006DD94List;
 
 /* MOD.BIN (resource file 2), the root 596CC's
@@ -2534,7 +2534,7 @@ typedef struct {
  */
 typedef struct {
     BitStream bits;
-    s16 unkC[6];
+    s16 accumulated_values[6];
 } Unk800A3D40Rec;
 
 /* 5ED34's work block: the 0x14 bytes InitDisplayStateLoadPackAndSetEntryFlags

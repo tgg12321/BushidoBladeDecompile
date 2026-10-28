@@ -109,12 +109,13 @@ s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
 
 s32 cdrom_StartAudioEntry(s32 entry_index) {
     Unk8008F13CRow *audio_entry = &g_cdrom_audio_entries[entry_index];
-    if (cdrom_StartAudio(cdrom_GetFileIndex(5, audio_entry->unk_0),
-                         audio_entry->unk_1) != 0) {
-        if (audio_entry->unk_4 != -1) {
+    if (cdrom_StartAudio(
+            cdrom_GetFileIndex(5, audio_entry->audio_file_index_offset),
+            audio_entry->xa_channel) != 0) {
+        if (audio_entry->audio_end_offset != -1) {
             g_cdrom_state.rec.audio_end_pos =
                 CdPosToInt(&g_cd_file_table[g_cdrom_state.rec.file_index].loc) +
-                audio_entry->unk_4;
+                audio_entry->audio_end_offset;
         }
         return 1;
     }

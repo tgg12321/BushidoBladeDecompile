@@ -2312,7 +2312,7 @@ void light_Unpack(Unk800F62E0Rec *light_setup, u16 *packed_cursor) {
     light_setup->back[0] = *packed_cursor++;
     light_setup->back[1] = *packed_cursor++;
     light_setup->back[2] = *packed_cursor;
-    light_setup->unk5C = *(packed_cursor + 1);
+    light_setup->light_dir_scale = *(packed_cursor + 1);
 }
 
 void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;
@@ -2327,11 +2327,11 @@ void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;
         p = &arg0->light[i];
         if (p->on != 0) {
             c0 = rcos(p->pitch);
-            t = ((rsin(p->yaw) * c0) >> 12) * arg0->unk5C;
+            t = ((rsin(p->yaw) * c0) >> 12) * arg0->light_dir_scale;
             arg0->lmat.m[i][0] = -t >> 12;
-            t = rsin(p->pitch) * arg0->unk5C;
+            t = rsin(p->pitch) * arg0->light_dir_scale;
             arg0->lmat.m[i][1] = t >> 12;
-            t = ((rcos(p->yaw) * c0) >> 12) * arg0->unk5C;
+            t = ((rcos(p->yaw) * c0) >> 12) * arg0->light_dir_scale;
             arg0->lmat.m[i][2] = -t >> 12;
         } else {
             arg0->lmat.m[i][0] = 0;

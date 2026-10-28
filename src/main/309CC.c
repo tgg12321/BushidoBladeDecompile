@@ -321,21 +321,24 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
             p->node.primitive_table_select = 0;
             p->node.rotation_order = 0;
             p->node.reloc_entry_index = -1;
-            v1 = g_node_hierarchy_templates.recs[i].unk_00;
+            v1 = g_node_hierarchy_templates.recs[i].parent_index;
             if (v1 != -1) {
                 p->node.parent_node = &nodes[v1].node;
             } else {
                 p->node.parent_node = 0;
             }
-            p->node.work.t[0] = (g_node_hierarchy_templates.recs[i].unk_02[0] *
-                                 a0->position_scale) >>
-                                12;
-            p->node.work.t[1] = (g_node_hierarchy_templates.recs[i].unk_02[1] *
-                                 a0->position_scale) >>
-                                12;
-            p->node.work.t[2] = (g_node_hierarchy_templates.recs[i].unk_02[2] *
-                                 a0->position_scale) >>
-                                12;
+            p->node.work.t[0] =
+                (g_node_hierarchy_templates.recs[i].node_translation[0] *
+                 a0->position_scale) >>
+                12;
+            p->node.work.t[1] =
+                (g_node_hierarchy_templates.recs[i].node_translation[1] *
+                 a0->position_scale) >>
+                12;
+            p->node.work.t[2] =
+                (g_node_hierarchy_templates.recs[i].node_translation[2] *
+                 a0->position_scale) >>
+                12;
             p->node.xf.rot.vx = 0;
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
@@ -442,7 +445,7 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
     p = arg0->projected_nodes;
     parents = &arg0->transform_nodes[1];
     for (i = 0; i < 18; i++) {
-        id = &g_node_hierarchy_templates.recs[i].unk_08;
+        id = &g_node_hierarchy_templates.recs[i].projected_entry_index;
         if (*id != -1) {
             p->node.reloc_entry_index = *id;
             p->node.node_kind = 3;

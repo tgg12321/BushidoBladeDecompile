@@ -622,7 +622,7 @@ void menu_DrawSelGrid(
          * Column loop (i = 0; i < 10; i++), passing arg1 * 10 + i:
          * g_sel_grid_page_cells[arg1][i].unk0 at all three reads -> score 53;
          * same column read once into entry, reused -> score 69. */
-        u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0;
+        u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry;
 
         if (g_sel_entry_availability_and_claims[entry] & 1) {
             s.header = table[entry + 1];
@@ -630,8 +630,8 @@ void menu_DrawSelGrid(
             s.table = cells;
             if (g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
                                             SELWORK->f20.half[arg3]]
-                    .unk0 ==
-                ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0) {
+                    .cell_entry ==
+                ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry) {
                 s.has_color = 1;
                 s.header += 1 + arg3;
             } else {
@@ -641,8 +641,9 @@ void menu_DrawSelGrid(
             s.sprt_out = draw_context->primitive_cursors.sprite_prims;
             draw_context->primitive_cursors.sprite_prims =
                 gpu_AddSpriteCells(&s);
-            if (g_sel_entry_availability_and_claims
-                    [((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0] &
+            if (g_sel_entry_availability_and_claims[((
+                    Unk8009BCF8Record *)g_sel_grid_page_cells)[i]
+                                                        .cell_entry] &
                 (4 << arg3)) {
                 menu_DrawSelGridCellOverlay(draw_context, i, arg3, 1);
             }
@@ -792,7 +793,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
         entry = g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
                                             SELWORK->f20.half[arg3]]
-                    .unk0;
+                    .cell_entry;
         flag = &g_sel_entry_availability_and_claims[entry];
         if ((*flag & 1) != 0) {
             bit = 4 << arg3;

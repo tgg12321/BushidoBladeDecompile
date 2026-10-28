@@ -305,8 +305,9 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
             src =
                 &D_8009A8C8[p->variant_index][g_fight_stage_command_count - 1];
-            p->cpu_tracked_move_tally_threshold = src->unk0;
-            p->cpu_script_wait_limit = src->unk1;
+            p->cpu_tracked_move_tally_threshold =
+                src->tracked_move_tally_threshold;
+            p->cpu_script_wait_limit = src->script_wait_limit;
         }
         break;
     case 2:

@@ -1102,9 +1102,9 @@ s32 eff_SpawnBillboardPair(void) {
         }
     }
     src_position = g_eff_command_position;
-    g_eff_billboard_pair_positions[slot_index].unk0 = src_position[0];
-    g_eff_billboard_pair_positions[slot_index].unk4 = src_position[1];
-    g_eff_billboard_pair_positions[slot_index].unk8 = src_position[2];
+    g_eff_billboard_pair_positions[slot_index].slot_world_x = src_position[0];
+    g_eff_billboard_pair_positions[slot_index].slot_world_y = src_position[1];
+    g_eff_billboard_pair_positions[slot_index].slot_world_z = src_position[2];
     g_eff_billboard_pair_ages[slot_index] = 0;
     return 1;
 }
@@ -1161,15 +1161,16 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
         for (billboard_index = 0; billboard_index < 2; billboard_index++) {
             if (g_eff_billboard_pair_ages[slot_index] < 16) {
                 relative_position->vx =
-                    g_eff_billboard_pair_positions[slot_index].unk0 -
+                    g_eff_billboard_pair_positions[slot_index].slot_world_x -
                     g_eff_view_origin[0];
                 relative_position->vz =
-                    g_eff_billboard_pair_positions[slot_index].unk8 -
+                    g_eff_billboard_pair_positions[slot_index].slot_world_z -
                     g_eff_view_origin[2];
                 if (billboard_index != 0 &&
                     g_eff_billboard_pair_ages[slot_index] >= 3) {
                     relative_position->vy =
-                        g_eff_billboard_pair_positions[slot_index].unk4 -
+                        g_eff_billboard_pair_positions[slot_index]
+                            .slot_world_y -
                         (rsin(
                              (g_eff_billboard_pair_ages[slot_index] - 3) << 8) *
                              329 / 4096 -
@@ -1178,7 +1179,8 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                         g_eff_view_origin[1];
                 } else {
                     relative_position->vy =
-                        g_eff_billboard_pair_positions[slot_index].unk4 -
+                        g_eff_billboard_pair_positions[slot_index]
+                            .slot_world_y -
                         g_eff_view_origin[1];
                 }
                 ApplyRotMatrix(relative_position, var_2);
@@ -1394,11 +1396,11 @@ u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
                                                          [slot_index]
                                                              .vz = 0;
                 g_eff_yawed_quad_slot_positions[command_slot_index][slot_index]
-                    .unk0 = g_eff_command_position[0];
+                    .slot_world_x = g_eff_command_position[0];
                 g_eff_yawed_quad_slot_positions[command_slot_index][slot_index]
-                    .unk4 = g_eff_command_position[1];
+                    .slot_world_y = g_eff_command_position[1];
                 g_eff_yawed_quad_slot_positions[command_slot_index][slot_index]
-                    .unk8 = g_eff_command_position[2];
+                    .slot_world_z = g_eff_command_position[2];
                 break;
             }
         }
@@ -1420,15 +1422,15 @@ u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
         g_eff_yawed_quad_slot_positions
             [command_slot_index]
             [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
-                .unk0 = g_eff_command_position[0];
+                .slot_world_x = g_eff_command_position[0];
         g_eff_yawed_quad_slot_positions
             [command_slot_index]
             [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
-                .unk4 = g_eff_command_position[1];
+                .slot_world_y = g_eff_command_position[1];
         g_eff_yawed_quad_slot_positions
             [command_slot_index]
             [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
-                .unk8 = g_eff_command_position[2];
+                .slot_world_z = g_eff_command_position[2];
     }
     return 1;
 }
@@ -1508,11 +1510,11 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
         *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
         *(u16 *)&prim->u3 = *g_eff_bottom_right_uv;
-        mats[i].t[0] = g_eff_yawed_quad_slot_positions[arg0][i].unk0 -
+        mats[i].t[0] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_x -
                        g_eff_view_origin[0];
-        mats[i].t[1] = g_eff_yawed_quad_slot_positions[arg0][i].unk4 -
+        mats[i].t[1] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_y -
                        g_eff_view_origin[1];
-        mats[i].t[2] = g_eff_yawed_quad_slot_positions[arg0][i].unk8 -
+        mats[i].t[2] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_z -
                        g_eff_view_origin[2];
         gte_CompMatrix(g_eff_view_rotation_matrix, &mats[i], var_2);
         gte_SetRotMatrix(var_2);

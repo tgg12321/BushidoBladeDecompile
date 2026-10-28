@@ -324,7 +324,7 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
 
     header_block =
         draw_context->resource_root.v8006EA28->selected_entry_header_block;
-    entry_sheet_headers = header_block->unk_0C;
+    entry_sheet_headers = header_block->entry_headers;
 
     for (slot_index = 0;
          slot_index < g_entry_menu_init_extra_slot_count + 1 +
@@ -396,9 +396,9 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
               2) &&
             (g_entry_menu_fight_mode != 2 ||
              !g_entry_menu_working_record_ptr->unk14_17)) {
-            s.table = header_block->unk_00[1];
+            s.table = header_block->slot_cell_tables[1];
         } else {
-            s.table = header_block->unk_00[slot_index];
+            s.table = header_block->slot_cell_tables[slot_index];
         }
         s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
         if (slot_index != 0) {
@@ -1042,7 +1042,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 g_entry_menu_slot_records.rec[slot_index].row_pick = 0xFF;
                 g_entry_menu_row_phase_choice_cursors[slot_index] = 2;
                 g_entry_menu_slot_records.rec[slot_index].grid_pick =
-                    g_entry_menu_grid_entries[*row][*col].unk1;
+                    g_entry_menu_grid_entries[*row][*col].grid_pick_value;
                 snd_QueueSound(
                     g_entry_menu_grid_entries[*row][*col].value + 0xB, 0x7F,
                     0x7F);

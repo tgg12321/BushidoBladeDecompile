@@ -359,11 +359,11 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     }
     if ((g_menu_packed_cursors & 0xF) != 7) {
         if (((g_menu_packed_cursors & 0xF) - 6) >= 0) {
-            var_0[14] = g_row_menu_row_state.unk4 & 0x80;
-            g_row_menu_row_state.unk4 =
+            var_0[14] = g_row_menu_row_state.scroll_row_mask & 0x80;
+            g_row_menu_row_state.scroll_row_mask =
                 var_0[14] | (0x1F << ((g_menu_packed_cursors & 0xF) - 5));
         } else {
-            g_row_menu_row_state.unk4 = 0x9F;
+            g_row_menu_row_state.scroll_row_mask = 0x9F;
         }
     }
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(var_0, 0, gpu_db);
@@ -1003,7 +1003,7 @@ void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
     s32 row_index;
 
     var_3 = (*(Unk8006919CRec **)(draw_context + 4))->row_sheets;
-    row_mask = g_row_menu_row_state.unk4;
+    row_mask = g_row_menu_row_state.scroll_row_mask;
     bit = 0;
     s.header = var_3[0];
     SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
@@ -2537,7 +2537,7 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *draw_context) {
             }
             s.dd94_00.y = 0;
         }
-        s.dd94_00.header = q->unk_20[sheet_index];
+        s.dd94_00.header = q->confirm_sheets[sheet_index];
         s.dd94_00.table = s.dd94_00.header->cells;
         s.dd94_00.sprt_out = draw_context[5];
         draw_context[5] = gpu_AddSpriteCells(&s.dd94_00);
@@ -2548,7 +2548,8 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *draw_context) {
     }
 
     gpu_DrawIndexedCellsAndDecimalDigitPairs(
-        &draw_context[5], &draw_context[7], &q->unk_00, s.dd94_00.ot_idx, -1);
+        &draw_context[5], &draw_context[7], &q->cell_digit_set,
+        s.dd94_00.ot_idx, -1);
 
     var_1[2] = 0x96;
     var_1[0] = 0xF5;

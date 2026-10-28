@@ -53,7 +53,7 @@ void softbody_LoadColliders(Unk80017FA0Rec *step_desc) {
     }
     ptr = temp;
 
-    SCR->ground = ptr->unk00 << 7;
+    SCR->ground = ptr->ground_height << 7;
 
     {
         s32 i = 0;
