@@ -18,3 +18,5 @@ D_80103608=g_reloc_block_entry_tables
 D_800F0BEC=g_eff_billboard_pair_ages
 D_800A3670=g_fight_reinit_reuses_assets
 D_800F6656=g_gpu_grid_and_fog_control
+g_scratchpad_ptr_30=g_eff_view_rotation_matrix
+g_scratchpad_ptr_b8=g_eff_work_area
