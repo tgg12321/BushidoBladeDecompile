@@ -55,7 +55,7 @@ start-up code, in order:
    - decrements `g_main_present_skip_frames`, or else submits the OT (`DrawOTag`) and
      increments `g_gpu_presented_frame_count`;
    - in mode 1, when no frame was skipped, Start (`0x08000800`) or the
-     `D_800A3713` countdown (with `g_fight_mode_selector == 2`) opens the pause menu
+     `g_fight_auto_pause_countdown` countdown (with `g_fight_mode_selector == 2`) opens the pause menu
      `menu_RunPauseMenu` (src/main/6CF8.c:508-522).
 
 ## Start-up routines

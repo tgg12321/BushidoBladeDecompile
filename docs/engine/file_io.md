@@ -139,7 +139,7 @@ are described in [replay.md](replay.md).
   `prim_buf` into two 0x4650-byte `POLY_FT4` buffers
   (`D_800A3420` / `D_800A3424`) and returns the end of the second.
 - `eff_Init` (src/main/6CF8.c:248) calls
-  `eff_LoadImagesAndSetup(0x801D8800, 0x8010E800)` once (flag `D_800A3716`, cleared by
+  `eff_LoadImagesAndSetup(0x801D8800, 0x8010E800)` once (flag `g_eff_initialized`, cleared by
   `eff_ClearInitFlag`). It prints the base 0x8010E800 and `eff_LoadImagesAndSetup`'s
   return (the end of the second buffer, 0x801174A0) as `size`. The
   `sys_Panic` check (`0xA000 < size`) is a signed compare against a KSEG0
@@ -252,7 +252,7 @@ or clears the channel's enable bit (16 + ch).
 The save flow is `memcard_StepRequest` (28708.c:277), stepped on `g_memcard_request_state`:
 
 - **Save (state 3):** it checks for the save file `D_80010AAC`
-  (`"BASLUS-00663BUSHIDO2"`, through `D_800A31F0`) and for free blocks. It
+  (`"BASLUS-00663BUSHIDO2"`, through `g_memcard_save_file_name`) and for free blocks. It
   clears the 0x200-byte buffer `g_shared_buffer` (`memcard_ClearBuffer`) and writes the
   card header into it (`memcard_BuildFileHeader`: icon CLUT and image). It fills the
   save block at `+0x100` (`memcard_BuildSaveBlock`, an `Unk800F34D8Save`,

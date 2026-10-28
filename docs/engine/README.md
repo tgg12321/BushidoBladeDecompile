@@ -198,7 +198,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   (`slot_FindEmpty` scans i < 3)
 - `g_slot_tim_group_requests` — per-slot 5-bit codes `slot_RequestTimGroupsAndMarkReloadOnChange` stores and
   `slot_FinalizeObjectLoadSoundTexturesAndArena` packs into the model object's flag word
-- `D_800A6690` — transform-node records (0x68 bytes) unpacked from a u16
+- `g_gpu_grid_node_records` — transform-node records (0x68 bytes) unpacked from a u16
   stream and queued by the grid draw walks
 - `g_cam_matrix` (0x800EEDB0) — camera rotation matrix base
 

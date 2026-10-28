@@ -80,7 +80,7 @@ No definition in a shared header. Types follow existing declarations/evidence (a
 [[no-new-park-categories]]). **(A5, Q70)** only `D_80102C00` (keeps `s32`), `D_800153F0` (struct of 22
 halfwords), `slot_GetObject` (declaration unchanged) and (Q88) `reloc_RebaseBlock` (unprototyped) take
 owner-decided types. **(A9)** `D_800A3264` is
-main/368E4.c's K3 global, evidence in its comment (Q80; table owner open); `D_800A3530`/`D_800A3534` stay in asm/data,
+main/368E4.c's K3 global, evidence in its comment (Q80; table owner open); `0x800A3530`/`0x800A3534` stay in asm/data,
 logged (Q81).
 
 ## File boundaries come from evidence only

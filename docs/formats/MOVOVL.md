@@ -122,11 +122,11 @@ DMAs the overlay body into RAM at the canonical overlay address:
 // src/ings.c:370
 void file_LoadOverlay(void) {
     s32 size;
-    if (g_file_dma_flag != 0) return;
+    if (g_eff_initialized != 0) return;
     size = eff_LoadImagesAndSetup(0x801D8800, 0x8010E800);
     debug_printf((s32)&g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) sys_Panic();        // sanity-check: <40 KB
-    g_file_dma_flag = 1;
+    g_eff_initialized = 1;
 }
 ```
 

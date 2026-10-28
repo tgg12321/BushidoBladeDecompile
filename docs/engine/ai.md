@@ -23,7 +23,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   the queue already holds 12.
 - `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
   pool slot and places the object at the fighter (`world_pos`, raised by
-  `size_scale / 32`). Its velocity comes from `D_8008E194[kind]`
+  `size_scale / 32`). Its velocity comes from `g_object_kind_params[kind]`
   (`Tbl8008E194`, include/game.h:1661): the horizontal speed `unk4` along the
   fighter's heading `orientation.vy`, the vertical speed `unk6`, and a spin
   `unk8` about Y or X by `unk0`.
@@ -66,7 +66,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
    goes to position 10, shifting the rest up (or at the end of a shorter list),
    and the second is appended.
 4. Appends 0x1A or 0x18 when bit 0x04000000 or 0x01000000 is set (which one
-   is tested depends on `g_fighter_group_flags`), stores the count in `D_800A391F`, and
+   is tested depends on `g_fighter_group_flags`), stores the count in `g_fight_opponent_order_count`, and
    clears the cursor `g_fight_opponent_order_cursor`.
 
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5397) steps the cursor: it sets

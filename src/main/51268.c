@@ -2755,6 +2755,8 @@ u8 func_8006786C(void) {
 }
 
 extern s16 D_800EFC8A[];
+/* The label is 0xC bytes (modes 0-5); modes 6 and 7 store past it, into the
+ * next label D_800F0BA4. */
 extern s16 g_eff_particle_mode_position_counts[];
 
 u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {

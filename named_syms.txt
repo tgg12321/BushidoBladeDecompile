@@ -2,7 +2,7 @@
 /* RESET 0x8003043C: retired name 'psyq_memset_8003043C' — preserved note: MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A78[i].unk_02 and 0xFF (u8) to D_80106A78[i].unk_0A */
 /* RESET 0x80038148: retired name 'psyq_memset_80038148' — preserved note: MISNAMED: clears g_shared_buffer (512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
 /* RESET 0x8005509C: retired name 'psyq_memset_8005509C' — preserved note: MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
-/* RESET 0x80060758: retired name 'replay_camera_check_stage_80060758' — preserved note: MISNAMED: 2-halfword clear of D_800A32B4/D_800A32B6 — Kengo name-unique size collision, not a stage check */
+/* RESET 0x80060758: retired name 'replay_camera_check_stage_80060758' — preserved note: MISNAMED: 2-halfword clear of g_gpu_highlighted_row_bar_progress/g_gpu_fixed_bar_progress — Kengo name-unique size collision, not a stage check */
 /* data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined */
 /* data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined */
 /* data-wave 2026-09-07: g_gte_sqrt_table = 0x8009C7A8 retired; SQRT is now object-defined */
@@ -128,7 +128,7 @@
 /* (a) have legacy names that conflict with their body's named callees, or */
 /* (b) lack callsite context to distinguish their role.  See */
 /* `docs/naming/MISNOMERS.md` and `tools/rename_funcs.py` for the full delta. */
-/* RESET 0x80047210: retired name 'camera_InitBoneData_80047210' — preserved note: memcpy(g_cam_bone_data, D_80101DF0.xf.mat (0x80101E08), 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
+/* RESET 0x80047210: retired name 'camera_InitBoneData_80047210' — preserved note: memcpy(g_camera_halved_row_view_matrix, D_80101DF0.xf.mat (0x80101E08), 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
 /* RESET 0x80047570: retired name 'camera_InitBone2_80047570' — preserved note: camera_InitRotation(&g_cam_bone_data2) + g_cam_interp=4. Legacy `camera_InitBone2` matches the body 1:1 (it's the second cam bone bank init). */
 
 /* === Batch 4 data-symbol renames (2026-05-17) === */
@@ -268,7 +268,7 @@
 /* RESET 0x80046A80: retired name 'snd_SelectionCallback_80046A80' — preserved note: 8-insn callback for selection loader */
 /* RESET 0x80046AA0: retired name 'snd_StopAll_80046AA0' — preserved note: calls player_Destroy + saTanMainDispGnd + snd_StopBgm */
 /* RESET 0x80047D94: retired name 'snd_CalcFade_80047D94' — preserved note: 50-insn fade calc using D_800EF7BC/C0 */
-/* RESET 0x80047E5C: retired name 'snd_GetFadeCurve_80047E5C' — preserved note: 27-insn fade curve lookup using D_800EF800/04 */
+/* RESET 0x80047E5C: retired name 'snd_GetFadeCurve_80047E5C' — preserved note: 27-insn fade curve lookup using g_wave_last_row_steps and the word at 0x800EF804 */
 /* Game lifecycle (4) */
 /* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + func_80046798 + tslLineG5Init */
 /* RESET 0x80046EDC: retired name 'game_StageCleanup_80046EDC' — note: 14 insns; calls func_800460E4(a0, a1), func_800421C8(a0), func_8003E0E0() */
@@ -338,8 +338,8 @@
 
 /* Tier 1 -- 2+ newly-named refs (function + data) */
 /* RESET 0x80037110: retired name 'special_cam_lookup_table_entry_80037110' — preserved note: [func] refs: D_8008F13C, mottest_rob_init */
-/* RESET 0x80044010: retired name 'prim_buffer_open_slot_80044010' — preserved note: [func] refs: g_reloc_block_entry_tables, D_80103658 */
-/* RESET 0x80044100: retired name 'prim_buffer_relocate_slot_80044100' — preserved note: [func] refs: g_reloc_block_entry_tables, D_80103658 */
+/* RESET 0x80044010: retired name 'prim_buffer_open_slot_80044010' — preserved note: [func] refs: g_reloc_block_entry_tables, g_reloc_block_slot_counts */
+/* RESET 0x80044100: retired name 'prim_buffer_relocate_slot_80044100' — preserved note: [func] refs: g_reloc_block_entry_tables, g_reloc_block_slot_counts */
 /* RESET 0x80061250: retired name 'anim_emit_210009_with_setup_80061250' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80061454: retired name 'anim_emit_29000B_80061454' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80065000: retired name 'motion_ex_init_state_80065000' — preserved note: [func] refs: D_800A3468, D_800A347C */
@@ -379,7 +379,7 @@
 /* RESET 0x80077820: retired name 'disp_init_for_mode_80077820' — preserved note: loads config + disp_SetFramebufferMode + clears g_satan2_gauge_state */
 /* RESET 0x80077984: retired name 'disp_apply_config_with_state_80077984' — preserved note: config + disp_SetFramebufferMode tail (sibling of disp_init_for_mode) */
 /* RESET 0x80078824: retired name 'disp_init_video_overlay_80078824' — preserved note: video/overlay init: 3 progress counters + disp_SetFramebufferMode */
-/* RESET 0x80060768: retired name 'hud_emit_warning_tiles_80060768' — preserved note: red-tinted warning tile emission; pulses via D_800A32B4/6 */
+/* RESET 0x80060768: retired name 'hud_emit_warning_tiles_80060768' — preserved note: red-tinted warning tile emission; pulses via g_gpu_highlighted_row_bar_progress / g_gpu_fixed_bar_progress */
 /* RESET 0x80073060: retired name 'hud_layout_emit_tiles_80073060' — preserved note: HUD multi-tile emission helper */
 /* Animation emit / text1b family (1) */
 /* RESET 0x80061658: retired name 'anim_emit_21000CD_80061658' — preserved note: 2-variant opcode emitter (0x21000C/D) with cyan tint; sibling of anim_emit_210009 */
@@ -390,7 +390,7 @@
 /* RESET 0x80033898: retired name 'gpu_enable_and_state_reset_80033898' — preserved note: mode-transition hook: gpu_EnableDisplay + reset frame_counter + mode=3 */
 /* RESET 0x80069120: retired name 'sync_flag_check_advance_80069120' — preserved note: 44-byte record table accessor with dirty-bit sync side-effect */
 /* Misc (2) */
-/* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears D_80103658[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1152-1158) */
+/* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears g_reloc_block_slot_counts[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1152-1158) */
 /* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, a1), then snd_VabFakeOpen(a1, ...) per entry of the func_800457A0(6) list (35000.c:787-811) */
 
 /* === rodata constant-table pass (2026-05-17) -- 19 entries, 2 retired === */
@@ -477,7 +477,7 @@
 
 /* === Serial-link exchange words at 0x800A36C0-36D4 (2026-05-17) -- 7 highs === */
 /* Source: comb_ExchangePad (28708.c).  A packed input word and its check */
-/* word (D_800A37C4 << 16 | 16-bit XOR) go out through comb_Write8; */
+/* word (g_comb_send_payload << 16 | 16-bit XOR) go out through comb_Write8; */
 /* comb_WaitRead8 stores the partner's pair on a check match. */
 /* */
 /* See also: g_comb_send_buf (0x800A3698), the 8-byte link-cable send buffer of */
@@ -601,9 +601,9 @@
 /* with ramp value (g_entry_menu_slide_displacement: 0..0x1E8 in 0x20 steps), state */
 /* (g_entry_menu_slide_phase: 1-4), dispatch table index (g_entry_menu_handler_index), deferred next */
 /* index (g_entry_menu_next_handler_index). */
-/* Note: g_entry_menu_slide_phase and D_800A35A0 are 5ED34.c statics: g_entry_menu_slide_phase's */
+/* Note: g_entry_menu_slide_phase and g_entry_menu_exit_result are 5ED34.c statics: g_entry_menu_slide_phase's */
 /* whole halfword is also the file's selection-screen state, and */
-/* D_800A35A0 is StepSlideBuildFrameRecordAndDispatchStateHandler's result. */
+/* g_entry_menu_exit_result is StepSlideBuildFrameRecordAndDispatchStateHandler's result. */
 
 /* === g_eff_command_block command-block cluster (2026-05-17) -- 4 highs === */
 /* From 51268.c eff_StartRecycledCommandWithOrangeLight etc.  Complements the command block */
@@ -789,9 +789,9 @@
 /* Not a camera matrix: row 1 is all zero (singular) and the inputs are light-direction */
 /* components (naming sweep 2026-09-29, docs/naming/sweep-2026-09-29/verify/data_cam.csv). */
 
-/* === D_800EEDD0 matrix halves (2026-05-17) -- 3 highs === */
+/* === g_camera_halved_row_view_matrix matrix halves (2026-05-17) -- 3 highs === */
 /* From camera_CopyViewMatrixWithHalvedMiddleRow (368E4.c): copies 32-byte */
-/* D_800EEDD0 from g_view_camera_root_node.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
+/* g_camera_halved_row_view_matrix from g_view_camera_root_node.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
 /* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 
 /* === 3D sound positioning result pair (2026-05-17) -- 2 highs === */
@@ -896,7 +896,7 @@
 
 /* === g_eff_point_light_countdown countdown + menu_RunOptionModeFlowStateWithRowBitEdit state (2026-05-17) -- 2 highs === */
 
-/* === D_800A3608 frame count + LIBAPI PAD init flag (2026-05-17) -- 2 highs === */
+/* === g_gpu_scrolling_display_frame frame count + LIBAPI PAD init flag (2026-05-17) -- 2 highs === */
 
 /* === 2nd menu screen state cluster at 0x800A35F0-3600 (2026-05-17) -- 5 highs === */
 /* Statics of src/main/64FD8.c (:24-28), the counterpart of the */
@@ -904,7 +904,7 @@
 
 /* === InitScrollingSpriteDisplay work-area state (2026-05-17) -- 4 highs === */
 /* InitScrollingSpriteDisplay (64FD8.c:1697-1711) stores its work-area argument, */
-/* passes it to gpu_InitPrimBufferPair and resets these cells; D_800A3608 is */
+/* passes it to gpu_InitPrimBufferPair and resets these cells; g_gpu_scrolling_display_frame is */
 /* the frame count StepScrollingSpriteDisplay advances. */
 
 /* === Char-class / ctype table + toupper/tolower (2026-05-17) -- 3 highs === */
@@ -965,7 +965,7 @@
 /* From 51268.c eff_ResetCommands (:145-163): clears 28 entries each */
 /* of g_eff_command_phase and g_eff_command_status, */
 /* plus 6 slot-allocator cells: g_eff_yawed_quad_slot_counters[2] (live-slot counts), */
-/* g_eff_yawed_quad_slot_masks[2] (in-use bitmasks), D_800A345C[2] (TexRec selectors). */
+/* g_eff_yawed_quad_slot_masks[2] (in-use bitmasks), g_eff_yawed_quad_tex_selectors[2] (TexRec selectors). */
 
 /* === Effect RNG state + text render cursors (2026-05-17) -- 3 highs === */
 
@@ -1156,7 +1156,7 @@
 /* Names use _plus_<offset> convention; future cleanup can refine. */
 /* data-wave 2026-09-24: g_alarm_pending_priority_flag = 0x800A26E0 retired; _snd_seq_tick_env_plus_0x14 is now object-defined */
 /* RENAME 0x800A3208: retired name 'D_800A3208' — preserved note: +4 from g_menu_prompt_rearm (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_4 */
-/* RENAME 0x800A32B8: retired name 'D_800A32B8' — preserved note: +2 from D_800A32B6 */  /* data-wave 2026-10-08: was g_text_render_cursor_b_plus_2 */
+/* RENAME 0x800A32B8: retired name 'D_800A32B8' — preserved note: +2 from g_gpu_fixed_bar_progress */  /* data-wave 2026-10-08: was g_text_render_cursor_b_plus_2 */
 /* g_comb_recv_buf_plus_0x4 (0x800A368C) retired: word 1 of s32 g_comb_recv_buf[2] (28708.c) */
 /* RENAME 0x800A3782: retired name 'D_800A3782' — preserved note: 0/1: cleared by replay_Reset, set by replay_AdvanceFrame, read by replay_PlayFrame */  /* data-wave 2026-10-08: was g_practice_p2_move_unlock_pending_plus_1 */
 /* RENAME 0x800A37D0: retired name 'D_800A37D0' — preserved note: +8 from D_800A37C8 */  /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8 */
@@ -1285,7 +1285,7 @@ D_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset
 
 /* RESET 0x80038148: retired name 'clear_disp_state_buf_80038148' — preserved note: sole caller pad_FuncAnalog; 512-byte zero of g_shared_buffer (also the memcard save / load image — pass 4) */
 /* RESET 0x8005509C: retired name 'practice_menu_clear_field414_8005509C' — preserved note: clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
-/* RESET 0x80060758: retired name 'text_render_cursor_reset_80060758' — preserved note: zeros the D_800A32B4/D_800A32B6 u16 pair; sole caller SetCurrentCursor */
+/* RESET 0x80060758: retired name 'text_render_cursor_reset_80060758' — preserved note: zeros the g_gpu_highlighted_row_bar_progress/g_gpu_fixed_bar_progress u16 pair; sole caller SetCurrentCursor */
 /* RESET 0x80054440: retired name 'gte_nct_wrapper_80054440' — preserved note: GTE Normal-Color-Triple lighting loop: nct op, light matrix via ctc2 $8-12, streams vertex normals -> RGB FIFO; sole caller + nct evidence */
 /* RENAME 0x8007B4D0: retired name 'gpu_draw_color_prim_8007B4D0' — preserved note: GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
 /* RENAME 0x8007B564: retired name 'gpu_draw_color_prim_stp_8007B564' — preserved note: as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
@@ -1300,7 +1300,7 @@ D_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset
 /* RESET 0x80045814: retired name 'get_ptr_D_800A9D10_80045814' — preserved note: returns &D_800A9D10 (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
 /* RESET 0x8005507C: retired name 'get_ptr_D_800EFB0C_8005507C' — preserved note: returns &D_800EFB0C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
 /* RESET 0x8005508C: retired name 'get_ptr_D_80101E1C_8005508C' — preserved note: returns D_80101DF0.xf.mat.t = 0x80101E1C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
-/* RESET 0x80054410: retired name 'set_D_800A33F0_80054410' — preserved note: D_800A33F0 = arg (2-insn setter); was Kengo-misnomer 'efc_ougi_Init' */
+/* RESET 0x80054410: retired name 'set_D_800A33F0_80054410' — preserved note: g_collision_grid = arg (2-insn setter); was Kengo-misnomer 'efc_ougi_Init' */
 /* RESET 0x80017A44: retired name 'efc_helper_80017A44' — preserved note: first-pass subsystem tag (efc); <-efc_rob_ougi_control */
 /* RESET 0x8001924C: retired name 'ang_helper_8001924C' — preserved note: first-pass subsystem tag (ang); <-ang_hosei_8003F62C */
 /* RESET 0x800194C0: retired name 'replay_camera_helper_800194C0' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
@@ -1696,12 +1696,12 @@ D_1F800060                       = 0x1F800060;  /* 6 refs; scratchpad RAM offset
 /* RESET 0x8005C6D0: retired name 'buki_collision_alloc_8005C6D0' — preserved note: iterates 0x18-entry object list D_800EFB78; coli_calc_motion2 per slot, builds params (7-bit fields), AllocBukiRmd for weapon hits */
 /* RESET 0x80042864: retired name 'get_D_800F6650_80042864' — preserved note: getter: returns D_800F6650 (no calls/branches) */
 /* RESET 0x800371AC: retired name 'set_D_80101E64_if_valid_800371AC' — preserved note: calls func_80037110; if result!=0 stores it to D_80101E64 and returns 1, else returns 0 */
-/* RENAME 0x8003A360: retired name 'events_enable_8003A360' — preserved note: bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag D_800A320C=1, clears D_800A3730 */
+/* RENAME 0x8003A360: retired name 'events_enable_8003A360' — preserved note: bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag g_comb_events_enabled=1, clears D_800A3730 */
 /* RENAME 0x80052B00: retired name 'gte_load_rot_matrix_80052B00' — preserved note: loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
 /* RENAME 0x8007E094: retired name 'gte_set_projection_params_8007E094' — preserved note: loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
 /* RESET 0x8007EFFC: retired name 'gte_set_proj_distance_8007EFFC' — preserved note: loads GTE control reg 26 (H = projection plane distance) */
 /* RESET 0x80042FA0: retired name 'calc_rotated_enemy_pos_80042FA0' — preserved note: computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
-/* RESET 0x80053304: retired name 'init_move_to_target_80053304' — preserved note: stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
+/* RESET 0x80053304: retired name 'init_move_to_target_80053304' — preserved note: stores current+target pos to ctx g_collision_static_segment_work/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
 /* RESET 0x80072CD4: retired name 'gpu_build_gradient_quad_80072CD4' — preserved note: initPolyG4 + mode-dependent gradient colors + gpu_SetSemiTransp + ot_Link */
 /* RESET 0x80072BC4: retired name 'gpu_build_quad_80072BC4' — preserved note: initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of func_80072CD4) */
 /* RESET 0x8006A3CC: retired name 'draw_anim_sprite_8006A3CC' — preserved note: render sub-obj: satan_sprite_batch_render + saMotionSet + initTexPage + ot_Link */
