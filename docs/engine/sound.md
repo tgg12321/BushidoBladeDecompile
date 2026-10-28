@@ -29,7 +29,7 @@ are described in [docs/formats/](../formats/README.md).
    `snd_FlushSoundQueue` on each pass (`main` calls it every frame regardless,
    src/main/6CF8.c:458).
 
-`sys_Exec` (src/main/cdrom.c:209) runs it again after the FMV overlay
+`sys_Exec` (src/main/cdrom.c:213) runs it again after the FMV overlay
 returns. `func_80016D78` (src/main/6CF8.c:285) runs it at boot.
 
 ## VAB slots (4BC3C.c)

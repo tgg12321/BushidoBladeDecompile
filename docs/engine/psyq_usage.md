@@ -70,6 +70,6 @@ number, for example `BIOS_B_FUNCTION(open, 0x32)` and
 ## The FMV overlay
 
 `STR\MOVOVL.EXE` is a separate PS-X EXE that `sys_Exec` loads and runs
-(src/main/cdrom.c:209). Its contents are described in
+(src/main/cdrom.c:213). Its contents are described in
 [docs/formats/MOVOVL.md](../formats/MOVOVL.md). Its libraries are not part
 of this tree's `src/`.

@@ -9,7 +9,7 @@ library level**, using only
 2. literal device / format strings the body passes to them (read from `disc/SLUS_006.63`).
 
 No game-semantic inference is allowed. `memcard_Format` is admitted because the body is
-`sprintf(buf, "bu%1d%1d:", port, slot); format(buf)` and nothing else; a name like
+`sprintf(buf, "bu%1d%1d:", port, card); format(buf)` and nothing else; a name like
 `memcard_FormatForSaveSlot` would NOT be, because "save slot" is not in the body.
 
 This sits below `libscan-verbatim` (byte identity with a Sony module) and above every

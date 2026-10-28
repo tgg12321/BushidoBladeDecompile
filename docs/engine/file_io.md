@@ -12,7 +12,7 @@ third, separate path. Disc contents and file formats are in
 `g_cd_file_table` (`CdFileEntry[159]`, include/bb2.h:474) gives each disc
 file a `CdlLOC` start position and a byte size (include/game.h:2039-2042).
 Code names a file by group and index:
-`cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:41) returns
+`cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:42) returns
 `(&D_8008F12C)[group] + i`, a group base from the s16 table `D_8008F12C`
 plus an offset. The groups that appear in calls:
 
@@ -27,9 +27,9 @@ plus an offset. The groups that appear in calls:
   `fight_InitImageAndPlaybackPresentation` (:666).
 - group 6: `cdrom_GetFileIndex(6, 0)` is the PS-X EXE that `cdrom_LoadExec`
   reads (`STR\MOVOVL.EXE`, [replay.md](replay.md)).
-  `sys_ExecMovieOverlay` (src/main/cdrom.c:233) puts pointers to entries
-  `(6, a2)` and `(6, 2)` in the argument block it hands to that EXE through
-  `sys_Exec`.
+  `sys_ExecMovieOverlay` (src/main/cdrom.c:237) puts pointers to entries
+  `(6, file_index_offset)` and `(6, 2)` in the argument block it hands to that
+  EXE through `sys_Exec`.
 
 `cdrom_GetFileSize(i)` (src/main/cdrom.c:55) returns entry `i`'s size.
 
@@ -49,21 +49,21 @@ Requests:
 - `cdrom_StartReadAt(file, dest, sector, count)` (src/main/cdrom.c:31) does
   the same, then moves the start position `sector` sectors on
   (`CdPosToInt` / `CdIntToPos`) and reads `count` sectors.
-- `cdrom_StartAudio(file, chan)` (src/main/cdrom.c:77) sets up CD audio.
+- `cdrom_StartAudio(file, chan)` (src/main/cdrom.c:80) sets up CD audio.
   `rec.unk14` is the stop position, 0x96 sectors before the file's end.
   - `chan < 0` selects mode 5 (CdlModeDA | CdlModeRept).
   - Otherwise it selects mode 0xC8 (CdlModeSpeed | CdlModeRT | CdlModeSF),
     after `CdControlB(0xD /* CdlSetfilter */, &file)` with
     `g_cdrom_state.file = 1` and `.chan = chan`.
   - It enters state 0x10.
-- `cdrom_StartAudioEntry(n)` (src/main/cdrom.c:107) starts row `n` of
+- `cdrom_StartAudioEntry(n)` (src/main/cdrom.c:110) starts row `n` of
   `D_8008F13C`: file `cdrom_GetFileIndex(5, row.unk_0)`, channel `row.unk_1`
   and, when `row.unk_4 != -1`, a stop position of the file start plus
   `row.unk_4`.
 - `cdrom_Pause` (src/main/cdrom.c:45) clears the ready callback, mutes the CD
   mix, and issues `CdFlush` and `CdControlF(9 /* CdlPause */, 0)`. It then
   sets the stop request `rec.unk08` and state 0xB.
-- `cdrom_RequestStop` (src/main/cdrom.c:139) sets `rec.unk08 = 1`.
+- `cdrom_RequestStop` (src/main/cdrom.c:143) sets `rec.unk08 = 1`.
   `cdrom_SetAudioRepeat` (:129) sets `rec.unk0A`, which sends a finished
   track back to state 0x10.
 
@@ -112,11 +112,11 @@ Steppers:
 
 Waits:
 
-- `cdrom_WaitIdle` (src/main/cdrom.c:57) loops until state 0. Each pass calls
+- `cdrom_WaitIdle` (src/main/cdrom.c:60) loops until state 0. Each pass calls
   `comb_ExchangeEmptyPad`, `cdrom_Update`, `snd_FlushSoundQueue` (while
   `D_800A3906` is set), `gpu_DrawDisplayModeOnLocalOtAndSync`, and `VSync(2)`. The loop sits
   between `comb_BeginWait` and `comb_EndWait`.
-- `cdrom_WaitAudioStarted` (src/main/cdrom.c:146) loops until state 0x16.
+- `cdrom_WaitAudioStarted` (src/main/cdrom.c:150) loops until state 0x16.
 - `cdrom_PauseAndWait` (:154) pauses a busy drive, then waits.
 
 Set-up: `cdrom_Init` (src/main/267A8.c:16) runs `CdInit`, `CdSetDebug(0)`, a
@@ -124,10 +124,10 @@ muted mix and state 0. `sys_Init` calls it (src/main/6CF8.c:183).
 
 ## Synchronous reads: `cdrom_ReadWait` and `cdrom_LoadExec`
 
-`cdrom_ReadWait(nbytes, buf, mode)` (src/main/cdrom.c:161) is the one caller
+`cdrom_ReadWait(nbytes, buf, mode)` (src/main/cdrom.c:165) is the one caller
 of libcd `CdRead`. It reads `ceil(nbytes / 0x800)` sectors and spins on
-`CdReadSync(1, 0)` with `VSync(0)`. `cdrom_LoadExec` (src/main/cdrom.c:181)
-uses it to load the overlay EXE for `sys_Exec` (src/main/cdrom.c:209). Both
+`CdReadSync(1, 0)` with `VSync(0)`. `cdrom_LoadExec` (src/main/cdrom.c:185)
+uses it to load the overlay EXE for `sys_Exec` (src/main/cdrom.c:213). Both
 are described in [replay.md](replay.md).
 
 ## Callers that load data
@@ -239,7 +239,7 @@ or clears the channel's enable bit (16 + ch).
   later events win, and returns 2 once `g_memcard_poll_count` passes 0x78. `memcard_WaitHwEvent` (:111)
   spins on the hardware events. `memcard_AckSwEvents` (:104) and
   `memcard_AckHwEvents` (:128) clear them.
-- `memcard_CountFiles(port, slot)` (:135) lists `"bu%1d%1d:*"` into
+- `memcard_CountFiles(port, card)` (:135) lists `"bu%1d%1d:*"` into
   `g_memcard_file_list` with `firstfile` / `nextfile`.
   `memcard_CountFreeBlocks` (:153) returns 15 minus the 8 KB blocks in use.
   `memcard_HasFile(name)` (:189) searches the list.

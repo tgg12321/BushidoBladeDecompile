@@ -13,10 +13,10 @@ model draws, played back in modes 4 / 5) is the `replay_*` code in
 
 `g_cd_file_table` (`0x8008EC34`, `CdFileEntry[159]`, include/bb2.h:476) holds
 the disc's file records: a `CdlLOC` start position and a byte size per file
-(not camera data). `cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:41) forms
+(not camera data). `cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:42) forms
 the indices.
 
-`cdrom_LoadExec(dest)` (src/main/cdrom.c:181) loads a PS-X EXE, the file
+`cdrom_LoadExec(dest)` (src/main/cdrom.c:185) loads a PS-X EXE, the file
 `cdrom_GetFileIndex(6, 0)` = 156 = `STR\MOVOVL.EXE`:
 
 1. Seek to the file's position (`CdControl(2, ...)`) and read one sector
@@ -29,13 +29,14 @@ Its only caller is `sys_Exec` (below).
 
 ## `cdrom_StartRead` (once `replay_camera_Init`)
 
-`cdrom_StartRead(a0, a1)` (src/main/cdrom.c:13) queues a read of file `a0`
+`cdrom_StartRead(file_index, dest_addr)` (src/main/cdrom.c:13) queues a read of
+file `file_index`
 into the CD state block `g_cdrom_state` (`CdState`, include/game.h:2079; its `rec`
 member is `Unk80101E60Rec`):
 
 1. If a request is pending (`rec.unk02 != 0`), return 0.
-2. `rec.unk00 = a0`; `rec.pair = g_cd_file_table[(s16)a0]` (position and
-   size); `rec.unk1C = a1`; `rec.unk08 = 0`.
+2. `rec.unk00 = file_index`; `rec.pair = g_cd_file_table[(s16)file_index]`
+   (position and size); `rec.unk1C = dest_addr`; `rec.unk08 = 0`.
 3. `rec.unk02 = 2`; `rec.unk3E = 0`; `rec.unk18 = (size + 0x7FF) >> 11`, the
    sector count.
 4. Return 1.
@@ -67,25 +68,26 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
 - `cdrom_ReadyCallback` (src/main/267A8.c:32, once
   `marionation_camera_Init_80036064`) is the CdReadyCallback handler. See
   [sound.md](sound.md) for the XA side.
-- `cdrom_WaitAudioStarted` (src/main/cdrom.c:146, once
+- `cdrom_WaitAudioStarted` (src/main/cdrom.c:150, once
   `marionation_camera_GetMaxFrame`) steps the CD state machine until CD-audio
   playback has started (state 0x16); it returns nothing.
-- `sys_Exec(a0, a1, a2)` (src/main/cdrom.c:209, once
+- `sys_Exec(argc, argv, stack_addr)` (src/main/cdrom.c:213, once
   `marionation_camera_Init_80037468`) runs `STR\MOVOVL.EXE` (the FMV overlay)
   and comes back: `VSync(0)`, `SetDispMask(0)`, `gpu_ResetGraphMode1()`,
   `snd_Quit()`, `memcard_Quit()`, `ResetCallback()`, `CdInit()`, then
   `cdrom_LoadExec(&exec)`, `DrawSync(0)`, `ResetGraph(0)`, `StopPAD()`,
-  `StopCallback()`; it sets `exec.s_addr = a2`, `exec.s_size = 0` and calls
-  BIOS `Exec(&exec, a0, a1)` after `EnterCriticalSection()`; on return it runs
+  `StopCallback()`; it sets `exec.s_addr = stack_addr`, `exec.s_size = 0` and
+  calls BIOS `Exec(&exec, argc, argv)` after `EnterCriticalSection()`; on return
+  it runs
   `sys_Init()`, `snd_InitAndLoadCommonVab()`, `VSync(0)`, `SetDispMask(1)`.
 
 ## `softbody_PrepareStep` (once `marionation_camera_Exec`)
 
-`softbody_PrepareStep(arg0, arg1)` (src/main/87A0.c:107):
+`softbody_PrepareStep(arg0, softbody)` (src/main/87A0.c:133):
 
 1. Loads `arg0->unk4` (a MATRIX) as the GTE rotation and translation and calls
-   `softbody_LoadColliders(arg0)` (src/main/87A0.c:42).
-2. Stores the translation delta `arg0->unk4->t - arg1->matrix.t` in the
+   `softbody_LoadColliders(arg0)` (src/main/87A0.c:43).
+2. Stores the translation delta `arg0->unk4->t - softbody->matrix.t` in the
    scratchpad words 0x1F800024..0x1F80002C (`SCRV`'s x, y, z,
    src/main/87A0.c:105).
 3. Takes the squared length `len2`: above 250000 the scale is 0x100; if the
@@ -93,7 +95,8 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
    `(isqrt(len2) << 6) / 500 + 0xC0`, the integer square root read from
    `g_sqrt_table_u8` (normalized with the GTE leading-zero count above 0x400).
 4. Sets each `SCRV` component to `(delta * scale) >> 1`, copies `*arg0->unk4`
-   into `arg1->matrix` and calls `softbody_SolveSprings(arg1)` (src/main/87A0.c:174),
+   into `softbody->matrix` and calls `softbody_SolveSprings(softbody)`
+   (src/main/87A0.c:179),
    the distance-constraint pass over a chain of 64-byte nodes described above it.
 
 It is not a camera runner. The function once named `cpu_check_run_attack`

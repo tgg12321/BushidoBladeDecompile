@@ -677,7 +677,7 @@ gpu_HideResetAndClear = 0x80016888; /* SetDispMask(0) + ResetGraph(1) + ClearIma
 func_80017F90 = 0x80017F90; /* literal `jr ra; nop` */
 func_80017F98 = 0x80017F98; /* literal `jr ra; nop` */
 softbody_FreeAll = 0x80017714; /* clear .points of all 8 entries (stride 0x34) of g_softbody_slots */
-softbody_Free = 0x80017E8C; /* g_softbody_slots[a0].points = 0 */
+softbody_Free = 0x80017E8C; /* g_softbody_slots[slot_index].points = 0 */
 InterruptCallback = 0x80082AF0; /* jalr via pCallbacks, slot +0x8 */
 DMACallback = 0x80082B20; /* jalr via pCallbacks, slot +0x4 */
 VSyncCallback = 0x80082B50; /* jalr via pCallbacks, slot +0x14, with $a0=4, $a1=arg */
@@ -1233,7 +1233,7 @@ math_Distance3D_80017748 = 0x80017748; /* vec3 sub + >>2 + sum-after-helper + <<
 disp_Init_80016918 = 0x80016918; /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */
 sys_Init_80016A18 = 0x80016A18; /* top-level: irq_DisableInterrupts + bios_ChangeClearPad + disp_Init + pad_press_control */
 sys_Panic_80016C3C = 0x80016C3C; /* debug_printf + halt-loop (calls func_800164F8 which is the loop_b_self) */
-rng_SetSeed_800171AC = 0x800171AC; /* 3-insn setter: D_800A38BC = a0 */
+rng_SetSeed_800171AC = 0x800171AC; /* 3-insn setter: g_rng_state = seed */
 rng_Next_800171B8 = 0x800171B8; /* LCG step: 15-bit output, multiplier chain that simplifies to *0x41C64E6D + 0x7FA9 == BB2 LCG constants */
 math_Distance3D_16_800177C8 = 0x800177C8; /* same as math_Distance3D but `sra 4` instead of `sra 2` -- /16 scaling for larger-range vectors */
 scratchpad_Save_80017F28 = 0x80017F28; /* copies 0xF8 dwords from 0x1F800000 (scratchpad) to g_scratchpad_save */
