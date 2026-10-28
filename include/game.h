@@ -759,9 +759,9 @@ typedef union {
 
 /* Record table at 0x800F0C10 (0x90 bytes, ends at
  * g_eff_animated_quad_positions): 4 rows of 3 records of 3 s32 words.
- * eff_PrepareParticles indexes it [arg1][idx] (arg1 0..3 from the callers
- * func_800676C8..func_8006786C); eff_SpawnParticles and eff_UpdateParticles use
- * it too. */
+ * eff_PrepareParticles indexes it [particle_row_index][idx]
+ * (particle_row_index 0..3 from the callers func_800676C8..func_8006786C);
+ * eff_SpawnParticles and eff_UpdateParticles use it too. */
 typedef struct {
     /* 0x0 */ s32 unk0;
     /* 0x4 */ s32 unk4;
@@ -993,8 +993,9 @@ typedef struct {
     s32 unk20[3];
 } Unk1F800000Unk00;
 
-/* 20-byte record table at 0x800EFC78 (51268): 4 rows (arg1) of 48 records,
- * filled by eff_SpawnParticles (which leaves +0xE untouched). */
+/* 20-byte record table at 0x800EFC78 (51268): 4 rows (particle_row_index)
+ * of 48 records, filled by eff_SpawnParticles (which leaves +0xE
+ * untouched). */
 typedef struct {
     s16 unk0;
     s16 unk2;

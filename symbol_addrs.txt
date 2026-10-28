@@ -787,7 +787,7 @@ D_8009B1AC = 0x8009B1AC; /* two 8-byte sprite cells (x, y, u, v, w, h); gpu_Draw
 D_8009B530 = 0x8009B530; /* one 12-byte sprite-sheet header (count 2), drawn by gpu_DrawPackedComparisonRowsAndTotals with cell table D_8009B56C */  /* data-wave 2026-10-08: was g_cpu_attack_arc_table_12x4 */
 D_8009A830 = 0x8009A830; /* u8[8] (dlabel D_8009A830); fighter_CalcOpponentDistanceThresholdFromTables. 0x8009A838 (s8[8]) and 0x8009A840 (u8[16]) are separate tables, not rows of one 3x8 record */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3 */
 D_800A327C = 0x800A327C; /* RECT {0x380, 0, 0x40, 0x100}, LoadImage destination in gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe */  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7 */
-D_800A32C8 = 0x800A32C8; /* u32[2] bit masks {0x2000, 0x4000}, tested against *arg0 by pad_StepOffsetsGetDirectionEvents */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_a */
+D_800A32C8 = 0x800A32C8; /* u32[2] bit masks {0x2000, 0x4000}, tested against *pad_buttons by pad_StepOffsetsGetDirectionEvents */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_a */
 D_800A32EC = 0x800A32EC; /* RECT {0x90, 0x1FB, 0x30, 1}, MoveImage source in InitDisplayStateLoadPackAndSetEntryFlags */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_b */
 D_800A3638 = 0x800A3638; /* one word: _remove_ChgclrPAD's $ra save slot (libapi/chclrpad.c:7); 0x800A3648 / 0x800A3658 belong to other modules */  /* data-wave 2026-10-09: was g_text1b_misc_state_record_table_16x4 */
 D_8009B7A0 = 0x8009B7A0; /* one 12-byte sprite-sheet header (Unk8009B0E0Record), cells D_8009B820, in gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells */  /* data-wave 2026-10-08: was g_text1b_state_record_table_12x5_a */
@@ -1416,7 +1416,7 @@ D_800A3354 = 0x800A3354; /* != 0 = display active; reset to 0 on exit */  /* dat
 D_800A3500 = 0x800A3500; /* allocation cursor stepped past each block menu_LoadResourcesInitStateSelectFirstEnabledRow sets up; gpu_BeginFullscreenImageDisplay reads it as the CD read destination */  /* data-wave 2026-10-08: was g_menuctl_scratch_ctx */
 D_800A3510 = 0x800A3510; /* only two zero stores found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_2 */
 g_menu_draw_buffer_counter = 0x800A3518; /* counter bumped on every gpu_AdvanceBufferCounterAndBuildDrawContext call; its low bit picks the g_gpu_db buffer */  /* data-wave 2026-10-08: was g_menuctl_init_state */
-D_800A351C = 0x800A351C; /* Unk8006E49CRec *: menu_LoadResourcesInitStateSelectFirstEnabledRow's arg0 (596CC.c:56), passed to gpu_InitPrimBufferPair (:71); gpu_GetPrimBufferAndRefreshStrip returns &D_800A351C[a0] (:172) */  /* data-wave 2026-10-09: was g_menuctl_arg0_saved */
+D_800A351C = 0x800A351C; /* Unk8006E49CRec *: menu_LoadResourcesInitStateSelectFirstEnabledRow's arg0 (596CC.c:56), passed to gpu_InitPrimBufferPair (:71); gpu_GetPrimBufferAndRefreshStrip returns &D_800A351C[buffer_index] (:172) */  /* data-wave 2026-10-09: was g_menuctl_arg0_saved */
 D_800A3528 = 0x800A3528; /* three-way cursor (wraps mod 3) moved by pad_StepOffsetsGetDirectionEvents's decoded input */  /* data-wave 2026-10-08: was g_menuctl_call_counter */
 g_option_mode_flow_state = 0x800A35E4; /* state (0..5) of the handler menu_RunOptionModeFlowStateWithRowBitEdit over g_working_record; = 0 by InitRowMenuBlackBgResetFlow..menu_ResetFlowBackgroundAndConfirmCursor, = 1 by SetFlowStateOne */  /* data-wave 2026-10-08: was g_menu_screen_result_pending */
 D_800A3608 = 0x800A3608; /* frame count (StepScrollingSpriteDisplay +1, returns >= 0xB40); gpu_DrawScrollingAndDelayedSheets scrolls by it (s.y = -D), tests >= 0xAAA, and from >= 0xB04 fades over 15 frames (color = 0x80 - (D - 0xB04)*128/15) */  /* data-wave 2026-10-08: was g_intro_fade_phase */
@@ -1456,7 +1456,7 @@ D_800A3334 = 0x800A3334; /* +4 from D_800A3330 */  /* data-wave 2026-10-08: was 
 D_800A3340 = 0x800A3340; /* +4 from D_800A333C (0x800A333C) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag_plus_4 */
 D_800A3344 = 0x800A3344; /* +8 from D_800A333C (0x800A333C) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag_plus_8 */
 D_800A3448 = 0x800A3448; /* +4 from D_800A3444 */  /* data-wave 2026-10-08: was g_particle_slot_bitmap_plus_4 */
-D_800A34F0 = 0x800A34F0; /* s16[2]: eff_StartRecycledYawedParticlesWithTextureSelection stores arg2 into [0] / [1]; eff_PrepareParticles / eff_UpdateParticles test [arg0 - 4] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_4 */
+D_800A34F0 = 0x800A34F0; /* s16[2]: eff_StartRecycledYawedParticlesWithTextureSelection stores arg2 into [0] / [1]; eff_PrepareParticles / eff_UpdateParticles test [particle_mode - 4] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_4 */
 D_800A3520 = 0x800A3520; /* Unk8006E49CRec *: gpu_AdvanceBufferCounterAndBuildDrawContext stores gpu_GetPrimBufferAndRefreshStrip(a1[0] & 1), i.e. &D_800A351C[parity] (596CC.c:2515, :2524, :172) */  /* data-wave 2026-10-08: was g_menuctl_arg0_saved_plus_4 */
 D_800A352C = 0x800A352C; /* +4 from D_800A3528 */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_4 */
 g_entry_menu_row_phase_extra_slot_count = 0x800A3558; /* +8 from D_800A3550 */  /* data-wave 2026-10-08: was g_motion_shift_state_a_plus_8 */

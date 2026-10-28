@@ -2540,11 +2540,12 @@ u8 func_800671CC(void) {
 extern SVECTOR D_800F0B78[];
 extern Unk800EFC78Record g_eff_particles[][48];
 
-/* eff_SpawnParticles -- spawns half (arg2 selects which) of the 0x30
- * g_eff_particles[arg1] particle records: each gets the D_800F0B78[arg1] vector
- * scaled per axis by its own random factor and turned by a random rotation
- * (spread chosen by mode arg0). arg2 == 0 first latches g_eff_command_position
- * / D_800A3478 into the emitter. Returns 1. */
+/* eff_SpawnParticles -- spawns half (half_index selects which) of the 0x30
+ * g_eff_particles[particle_row_index] particle records: each gets the
+ * D_800F0B78[particle_row_index] vector scaled per axis by its own random
+ * factor and turned by a random rotation (spread chosen by particle_mode).
+ * half_index == 0 first latches g_eff_command_position / D_800A3478 into the
+ * emitter. Returns 1. */
 u8 eff_SpawnParticles(
     s32 particle_mode, s32 particle_row_index, s32 half_index) {
     SVECTOR v;
@@ -2779,14 +2780,16 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
     }
 }
 
-/* Per-frame update + draw of the g_eff_particles[arg1] records, the middle of
- * the eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads trio.
- * For each live record of g_eff_particles[arg1] (state 1): step its unk12 and
- * derive r/g/b from it, take its D_800F0C10[arg1] entry less g_eff_view_origin
- * through the GTE rotation, set state 3 (and skip it) once r and g are both low
- * or once the squared length p_out[0..2] passes *var_1 plus a rand() term,
- * project three vertices, size the sprite by type (arg0), then emit up to three
- * POLY_FT4 quads, storing *g_eff_depth_work for each in var_9[]. */
+/* Per-frame update + draw of the g_eff_particles[particle_row_index] records,
+ * the middle of the eff_PrepareParticles / eff_UpdateParticles /
+ * eff_LinkParticleQuads trio. For each live record of
+ * g_eff_particles[particle_row_index] (state 1): step its unk12 and derive
+ * r/g/b from it, take its D_800F0C10[particle_row_index] entry less
+ * g_eff_view_origin through the GTE rotation, set state 3 (and skip it) once r
+ * and g are both low or once the squared length p_out[0..2] passes *var_1 plus
+ * a rand() term, project three vertices, size the sprite by type
+ * (particle_mode), then emit up to three POLY_FT4 quads, storing
+ * *g_eff_depth_work for each in var_9[]. */
 void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;

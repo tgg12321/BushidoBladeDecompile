@@ -972,12 +972,12 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
 
 /* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
  * sheets (cursor row flashing, rows switched on in g_row_menu_row_state.rows_on
- * lit), a counter frame, row 7, the frame icons and a TILE. arg0 = the words
- * gpu_AdvanceBufferCounterAndBuildDrawContext fills (+0x8 POLY_FT4 cursor,
- * +0x14 SPRT cursor, +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20 DR_AREA
- * cursor, +0x24 DR_OFFSET cursor), accessed as byte offsets like
- * menu_DrawRowThreeThinTilesAndTwoSheets; arg1 = the display environment's clip
- * RECT and ofs[2]; arg2 (passed by menu_UpdateRowMenu) is unused. */
+ * lit), a counter frame, row 7, the frame icons and a TILE. draw_context = the
+ * words gpu_AdvanceBufferCounterAndBuildDrawContext fills (+0x8 POLY_FT4
+ * cursor, +0x14 SPRT cursor, +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20
+ * DR_AREA cursor, +0x24 DR_OFFSET cursor), accessed as byte offsets like
+ * menu_DrawRowThreeThinTilesAndTwoSheets; draw_env = the drawing environment's
+ * clip RECT and ofs[2]; arg2 (passed by menu_UpdateRowMenu) is unused. */
 void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
     Unk8007352CRec s;
     RECT rect;
