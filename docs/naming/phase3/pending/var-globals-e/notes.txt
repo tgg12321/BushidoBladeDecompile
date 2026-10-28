@@ -1,0 +1,96 @@
+# var-globals-e notes (cites at cb3bc8099; worktree ln-naming-b; Opus research tmp/codex/var-globals-e-research.md re-derived by the drafter)
+0x800A34D4: KEPT g_eff_top_left_uv. Retired: none semantic; g_scratchpad_ptr_98 is a live alias (symbol_addrs.txt:1348) replaced by the rename (pair it like batch D g_scratchpad_ptr_30). Confidence high.
+0x800A34D8: KEPT g_eff_top_right_uv. Retired: none semantic; live alias g_scratchpad_ptr_9a (symbol_addrs.txt:1349) replaced. Confidence high.
+0x800A34DC: KEPT g_eff_bottom_left_uv. Retired: none semantic; live alias g_scratchpad_ptr_9c (symbol_addrs.txt:1350) replaced. Confidence high.
+0x800A34E0: KEPT g_eff_bottom_right_uv. Retired: none semantic; live alias g_scratchpad_ptr_9e (symbol_addrs.txt:1351) replaced. Confidence high.
+0x800A3444: KEPT g_eff_jittered_billboard_slot_mask. Retired: g_particle_slot_bitmap (symbol_addrs.txt:1399 "was"): these are billboards, not the g_eff_particles records; not reused. Confidence high.
+0x800A3448: KEPT g_eff_billboard_pair_slot_mask. Retired: g_particle_slot_bitmap_plus_4 (symbol_addrs.txt:1458): an offset label, not a meaning. Confidence high.
+0x800A3460: KEPT g_eff_rotated_quad_cluster_slot_mask. Retired: g_text1b_state_record_table_4x36 (symbol_addrs.txt:1389): TU label and a table shape the s32 does not have. Confidence high.
+0x800A3454: KEPT g_eff_yawed_quad_slot_masks. Retired: g_satan1_gauge_state_c (symbol_addrs.txt:1435): no gauge or character in these accesses. Confidence high.
+0x800F1000: KEPT g_eff_yawed_quad_slot_rotations. Retired: g_text1b_addr_800F1000 (symbol_addrs.txt:2214): address label. Confidence high.
+0x800F0EC8: KEPT g_eff_yawed_quad_slot_positions. Retired: g_text1b_addr_800F0EC8 (symbol_addrs.txt:2211): address label. Confidence high.
+0x800F0BCC: KEPT g_eff_jittered_billboard_ages. Retired: g_motion_ex_counter_id15_plus_6 (symbol_addrs.txt:2147): offset label of another object. Confidence high.
+0x800A32BC: KEPT g_eff_point_light_countdown. Retired: g_text1b_post_render_countdown (symbol_addrs.txt:887): TU label, and no render pass is counted. Confidence high.
+0x800A348C: KEPT g_eff_clut_tex_rec. Retired: g_scratchpad_ptr_b0 (symbol_addrs.txt:1444): the seed address only. Confidence high.
+0x800A3598: KEPT g_entry_menu_choice_grid_column. Retired: none found. Confidence high.
+0x800A3588: KEPT g_entry_menu_grid_column_cursors. Retired: g_replay_motion_shared_state_d (+ _plus_ forms, docs and symbol_addrs.txt:1314) and g_fade_next_dispatch_idx_plus_4 (symbol_addrs.txt:1463): replay / fade identities unsupported, offset labels. Confidence high.
+0x800A358C: KEPT g_entry_menu_grid_row_cursors. Retired: g_replay_motion_shared_state_d_plus_2 (symbol_addrs.txt:1464) and siblings: unsupported. Confidence high.
+0x800A3584: KEPT g_entry_menu_next_handler_index. Retired: g_fade_next_dispatch_idx (symbol_addrs.txt:1405): the "fade" was retired with batch D g_entry_menu_slide_displacement; "dispatch" is close but the table is the handler index, so the accepted handler vocabulary is used. Confidence high.
+0x800A3550: KEPT g_entry_menu_darken_level. Retired: g_motion_shift_state_a (symbol_addrs.txt:1394): unsupported. Confidence high.
+0x800A356C: KEPT g_entry_menu_arena_cursor. Retired: none semantic (registry has no "was" line; docs list g_fade_dispatch_state_ptr only for g_entry_menu_work_block). Confidence high.
+0x800A352C: KEPT g_menu_confirm_cursor. Retired: g_menuctl_call_counter_plus_4 (symbol_addrs.txt:1461): offset label. Confidence high.
+0x800A3528: KEPT g_menu_stored_choice_cursor. Retired: g_menuctl_call_counter (symbol_addrs.txt:1420): not a call counter. Confidence high.
+0x800A350C: KEPT g_menu_draw_offset_steps. Retired: g_menuctl_pad_result_buf / _1 / _2 (symbol_addrs.txt:1320,1397): it is a step, not a pad result. Confidence high.
+0x800A3500: KEPT g_menu_arena_cursor. Retired: g_menuctl_scratch_ctx (symbol_addrs.txt:1416): not a context record. Confidence high.
+0x800A35F8: KEPT g_gpu_timed_sprite_resources. Retired: g_menu_screen_b_state_ptr (symbol_addrs.txt:1425): not a screen state. Confidence high.
+0x8009BCF8: KEPT g_sel_grid_page_cells. Retired: none semantic (no "was" line). Confidence high.
+0x800A3783: KEPT g_fight_opponent_order_cursor. Retired: g_mottest_current_idx (symbol_addrs.txt:913): motion-test identity unsupported. Confidence high.
+0x800A382D: KEPT g_fight_tally_winner_index. Retired: g_menuctl_current_char_idx (symbol_addrs.txt:2016): not a menu cursor. Confidence high.
+0x800A3824: KEPT g_fight_weapon_contact_result. Retired: g_practice_state_word (symbol_addrs.txt:1962): unsupported. Confidence high.
+0x800A36C0: KEPT g_comb_received_pad_word. Retired: g_pad_rec_validated_packed (symbol_addrs.txt:817): close but "pad rec" names a record type that is not here. Confidence high.
+0x800A3836: KEPT g_fight_saved_first_fighter_selection. Retired: g_char_id_saved_a / _b (docs/naming retired notes): character-id wording unsupported. Confidence high.
+0x800A3770: DROPPED D_800A3770 (Opus g_gpu_prim_buffer_bases). Reads (6CF8.c:335,446,455,493) show a base-address pair, but 43500.c:771 / motion_StartPlayback.s:145-146 pass the array address itself as the resource load destination (la, not lw); a primitive-buffer-base table does not explain that access, so the accesses disagree. Stays D_800A3770.
+0x800A390D: KEPT g_main_present_skip_frames. Retired: g_voice_skip_count (symbol_addrs.txt:2009): voice identity unsupported. Confidence high.
+0x800A3814: KEPT g_memcard_request_retry_count. Retired: g_pad_analog_frame_counter (symbol_addrs.txt:1872): unsupported. Confidence high.
+0x800EFAE8: KEPT g_motion_playback_record. Retired: game_StageSetup / game_StageMain notes (named_syms.txt:1764,1769) were function names; g_stage_id etc. in docs do not name this address. Confidence high.
+0x800A33EC: KEPT g_resource_entry_category. Retired: g_gnd_target_group_mode (symbol_addrs.txt:1406): ground-target identity unsupported. Confidence high.
+0x800A33E8: KEPT g_resource_pair_selection. Retired: g_gnd_target_id_array / g_gnd_target_id_1 (symbol_addrs.txt:1325,1379): unsupported. Confidence high.
+0x80094B88: KEPT g_slot_tim_group_requests. Retired: g_player_char_ids (symbol_addrs.txt:123,596): not character ids. Confidence high.
+0x80094E08: KEPT g_gpu_clut_row_list_map. Retired: g_stage_lighting_idx_table (symbol_addrs.txt:863): no lighting. Confidence high.
+0x80094AEC: KEPT g_softbody_face_record_strides. Retired: none (g_sprite_rect_table in docs is another address). Confidence high.
+0x80095588: KEPT g_gpu_prim_type_halfword_sizes. Retired: none (g_str_path_80010DEC hits are a neighbour comment). Confidence high.
+0x800F5F68: KEPT g_fighter_bone_hit_records. Retired: g_per_char_record_440 (symbol_addrs.txt:1924): offset-based. Confidence high.
+0x800EF59C: KEPT g_wave_vertex_grid. Retired: g_snd_wave_output_table, g_snd_config_tbl (symbol_addrs.txt:1945; named_syms.txt:16): not sound. Confidence high.
+0x800A3238: KEPT g_light_point_color. Retired: g_anim_select (symbol_addrs.txt:186): unsupported; g_text1a_color_green is D_800A323A. Confidence high.
+0x800A344C: KEPT g_eff_yawed_quad_slot_counters. Retired: g_satan1_gauge_state_a (symbol_addrs.txt:1434): unsupported. Confidence medium-high.
+0x800A3478: KEPT g_eff_command_vector. Retired: g_text1b_render_dst_ptr (symbol_addrs.txt:1380): TU label, not a render destination. Confidence medium-high.
+0x800F0B78: KEPT g_eff_particle_emitter_vectors. Retired: g_text1b_addr_800F0B78 (symbol_addrs.txt:2197): address label. Confidence medium-high.
+0x800F0C10: KEPT g_eff_particle_group_positions. Retired: g_text1b_addr_800F0C10 (symbol_addrs.txt:2203): address label. Confidence medium-high.
+0x800A34CC: KEPT g_eff_rtp_flag. Retired: none semantic; live alias g_scratchpad_ptr_8c (symbol_addrs.txt:1346) replaced. Confidence medium-high.
+0x800A34C4: KEPT g_eff_upper_y_offset. Retired: none semantic; live alias g_scratchpad_ptr_84 (symbol_addrs.txt:1344) replaced. Confidence medium-high.
+0x800A35C8: KEPT g_entry_menu_selection_offset_countdowns. Retired: g_motion_table_entry_800A35C8 (symbol_addrs.txt:1483): unsupported. Confidence medium-high.
+0x800A35D0: KEPT g_sel_offset_steps. Retired: g_text1b_pad_state_arr (symbol_addrs.txt:1471): not pad state. Confidence medium-high.
+0x800A3910: KEPT g_fight_midpoint_effect_delay. Retired: g_text1b_render_call_result (symbol_addrs.txt:2043): TU label. Confidence medium-high. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800A3758: KEPT g_fight_missing_support_fighter_index. Retired: g_leaf_random_buffer_plus_8 (symbol_addrs.txt:1025): offset label. Confidence medium-high.
+0x800A376E: KEPT g_fight_paired_move_start_pending. Retired: g_mottest_substate_plus_3 (symbol_addrs.txt:1027): offset label. Confidence medium-high.
+0x800A380C: KEPT g_fight_menu_restart_count. Retired: g_misc_counter_380C (symbol_addrs.txt:2089) and g_practice_p2_move_unlock_pending (docs): neither holds. Confidence medium-high.
+0x800A38F8: KEPT g_fight_stage_list_draw_cursor. Retired: g_mental_bar_max_packets (symbol_addrs.txt:1882): unsupported. Confidence medium-high.
+0x800A381E: KEPT g_fight_time_up_phase_timer. Retired: g_stage_helper_result_cache_plus_6 (symbol_addrs.txt:2117): offset label. Confidence medium-high.
+0x800A36F1: KEPT g_main_frame_period. Retired: none retired; live alias g_vsync_target_frames replaced. Confidence medium-high.
+0x800A30F4: KEPT g_camera_pitch_search_steps. Retired: none semantic (docs only an offset label). Confidence medium-high.
+0x800A30F0: KEPT g_camera_eye_blocked_flags. Retired: g_ot_used_max_plus_8_800A30F0 (symbol_addrs.txt:1174): offset label. Confidence medium-high.
+0x800A3354: CHANGED g_memcard_message_active (was Opus g_memcard_notice_active (prefix matches accepted g_memcard_message_countdown)). Retired: g_result_screen_active_flag (symbol_addrs.txt:1415): result-screen identity unsupported (batch D retired the same family). Confidence medium-high.
+0x800A3408: CHANGED g_vab_sb_used_bytes (was Opus g_snd_vab_sb_used_bytes (prefix matches accepted g_vab_* neighbours)). Retired: none found. Confidence medium-high.
+0x80094C68: KEPT g_object_scale_factors. Retired: g_char_field12_lookup_table (symbol_addrs.txt:908): offset-based. Confidence medium-high.
+0x8009B3C8: KEPT g_gpu_time_field_cells. Retired: none (docs list only the neighbour). Confidence medium-high.
+0x8009B0E0: KEPT g_gpu_mode_panel_sheet_headers. Retired: g_cpu_no_action_table_24x3 (symbol_addrs.txt:785): not a CPU table. Confidence medium-high.
+0x8009BCD0: CHANGED g_entry_menu_transition_offsets (was Opus g_entry_menu_transition_offset (plural: s16[2], one per axis)). Retired: g_text1b_addr_8009BCD0 (symbol_addrs.txt:1103): address label. Confidence medium.
+0x8009BD20: CHANGED g_sel_sheet_code_pairs (was Opus g_sel_option_code_grid ("option" not shown; values are only sheet index 9 + code and a store to SELWORK->f66)). Retired: g_text1b_pair_lookup_BD20_lo (symbol_addrs.txt:1104): TU label. Confidence medium.
+0x800A38A8: DROPPED D_800A38A8 (Opus g_fight_contact_reaction_pending). Set to 1 at 17AFC.c:695,947,966,1996 beside D_800A3876, cleared at 9F9C.c:2826, read only as an extra gate for the both-fighters event 0xA at 17AFC.c:2312; no contact or reaction role is shown. Stays D_800A38A8.
+0x800A3876: DROPPED D_800A3876 (Opus g_fight_contact_reaction_fighter_index). Fighter index stored at the same sites as D_800A38A8 and read once (175A4.c:40, move kind 0x1C frame 4); no contact/reaction identity is shown and it cannot be told apart from its partner. Stays D_800A3876.
+0x800A3907: KEPT g_fight_stage_start_count. Retired: g_intro_render_busy_plus_1 (symbol_addrs.txt:2138): offset label. Confidence medium.
+0x800A391E: CHANGED g_fight_sound_cue_countdown (was Opus g_fight_start_cue_countdown ("start" is an inference; the only effect is sound 0x9C at 0)). Retired: g_leaf_slot_state_end (symbol_addrs.txt:1994): an end-address label. Confidence medium.
+0x800A3816: KEPT g_fight_reinit_phase_timer. Retired: g_pad_analog_frame_counter_plus_2 (symbol_addrs.txt:2116): offset label. Confidence medium.
+0x800A3712: DROPPED D_800A3712 (Opus g_fight_second_fighter_from_operands). It is 1 in fight_SetFixedFighterBytesAndLoadBothFighters (2B344.c:308), which uses constants, not operands, so the name is false at that store. Stays D_800A3712.
+0x800A3680: KEPT g_fight_second_fighter_defeats_left. Retired: g_leaf_muki_buffer_plus_8 (symbol_addrs.txt:1017): offset label. Confidence medium. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800A36F2: DROPPED D_800A36F2 (Opus g_object_first_queued_kinds). Loaded from D_8008E338[character_data_index][0] (17AFC.c:3845) and XORed against obj->kind as a boolean argument of ~12 event calls; no access shows what the byte holds. Stays D_800A36F2.
+0x800A3788: KEPT g_fight_toggle_option_bits. Retired: g_intro_select_packed_state (symbol_addrs.txt:872): unsupported. Confidence medium.
+0x800A31DA: KEPT g_menu_fight_quit_requested. Retired: g_game_session_running (symbol_addrs.txt:745): the session keeps running either way. Confidence medium. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800A36A8: KEPT g_gpu_jitter_burst_enabled. Retired: g_disp_fade (symbol_addrs.txt:175,648): no fade. Confidence medium. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800A322C: DROPPED D_800A322C (Opus g_gpu_tracked_view_mode). A 0/1 flag set by func_8003F218 and read at 2B344.c:1965,2037 to pick the D_800927C0 mask table and suppress the grid queue; nothing shows a view or tracking. Stays D_800A322C.
+0x800FF558: KEPT g_node_slot_relative_matrix. Retired: g_camera_view_state (symbol_addrs.txt:2189): no camera access. Confidence medium. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800F33D8: KEPT g_shared_buffer. Retired: g_disp_state_buf (symbol_addrs.txt:2188), g_memcard_filename_buf, g_pad_analog_state (docs): each fits one user only. Confidence medium. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x8009A850: KEPT g_cpu_move_range_rules. Retired: g_text1b_addr_8009A850 (symbol_addrs.txt:1051): address label. Confidence medium. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800A37E1: KEPT g_fight_mark_display_phase_timer. Retired: g_memcard_event_io_complete_plus_5 (symbol_addrs.txt:1034): offset label of a memcard event. Confidence medium-low. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x800A38B8: KEPT g_fight_mark_tally_phase_timer. Retired: g_cpu_move_pattern_cursor_plus_4 (symbol_addrs.txt:2126): offset label. Confidence medium-low. Medium-low/weak: reviewer may fairly FAIL, fallback is neutral.
+0x8008E5A8: DROPPED D_8008E5A8 (Opus g_fight_fighter_vab_index). First use feeds snd_ReloadListedVabsFromFileAndInstallBillboards and the cache bytes D_800A30FC/FD (9F9C.c:1658-1672), second indexes the 5-entry effect size table D_8008EBE0 (17AFC.c:4953,4979); a vab-index name fails the second access. Stays D_8008E5A8.
+0x8008F220: DROPPED D_8008F220 (Opus g_fight_default_command_stream). Accessed only by its definition and as the filler entry of the stream pointer table (2B344.c:3197-3202); "default" is table layout, not a use. Stays D_8008F220.
+0x800A36F9: DROPPED D_800A36F9 (Opus g_config_menu_unconsumed_setting). 24F08.c:97,152,192,207 steps it mod 4 and passes it to a draw, 6CF8.c:294 clears it; no consumer gives it a meaning. Stays D_800A36F9.
+NO_NAME (carried from research, no CSV row): D_800A38AA (split declarations: 9F9C.c u8[2] vs 17AFC.c scalar), D_800A93B0 and D_800A93BC (only an uncalled setter, a zeroing and an empty callee, 2B344.c:2377-2393). They stay neutral.
+GENERAL: 78 rows (87 Opus RENAME less 9 dropped); 7 live registry aliases are retired and paired after the D_ lines (g_scratchpad_ptr_84/8c/98/9a/9c/9e in symbol_addrs.txt:1344-1351, g_vsync_target_frames). Apply hazards: (1) comments naming a D_ symbol (include/bb2.h, include/game.h, src/main/*.c block comments such as 51268.c:1060,1331,1522, 596CC.c:7,124, 64FD8.c:1114,1146, game.h:1157 listing D_800A34E0) are caught only by naming_keycheck --sub-comments; (2) registry comment lines (symbol_addrs.txt, named_syms.txt) citing a target or neighbour by D_ name or "+N from D_X" must follow data_wave line by line; (3) docs/ and TU-header comments (4D0A8.c, d_*.c, 31D3C.c, 309CC.c) citing D_ names of renamed rows; (4) unbuilt asm/funcs listings and asm/data/*.s are rewritten only where the symbol is whole, and I found no folded D_X + off operand reaching a kept address from a neighbour (the one D_800A3528 + 4 hit, 596CC.c:2259, is C arithmetic on the value); (5) interior labels stay untouched: D_800A3450, D_800A3458, D_800A358A, D_800A350E, D_800A33EA, D_800A36C2, D_800A323A, D_800F0B7C, D_800F0C14, D_800F0C18, D_800F0ECC, D_800F0ED0, D_800F1002, D_800F1004, D_800F34D8; (6) D_800FF558 is also read by built asm func_8004A940 (INCLUDE_ASM; GTE rotation and t[] loads at asm/funcs/func_8004A940.s:602,672,677), consistent with its name; the research omitted it; (7) twin rows (g_menu_ vs g_entry_menu_ vs g_sel_; the four eff uv corners; the eff slot masks) were separated by role/TU, never by number.
+
+# pre-apply review (two naming-reviewers, batches A 41 / B 37): 75 PASS, 3 FAIL dropped
+DROPPED D_800A3354 (was g_memcard_message_active): other memcard messages show with it 0 (28708.c:857-866,912,974-1007); it only gates the sheet-0xA override. Idea: a mechanical override name.
+DROPPED D_800A37E1 (was g_fight_mark_display_phase_timer): the subject-2 path adds no mark (9F9C.c:1518-1520); sprite pair 2 is not shown to be a mark. Idea: g_fight_hit_tag_phase_timer (started by collision_hit_tag 2), needs fresh review.
+DROPPED D_800A31DA (was g_menu_fight_quit_requested): two quit choices leave it 0 (6CF8.c:400-407, 9F9C.c:2247-2251); it selects return to the mode submenu over the top menu (25C38.c:37,105-135,204; targets.json:165-166). Idea: g_menu_return_to_mode_submenu, needs fresh review.
+APPLY: asm/data/93E18.data.s:312-313 holds dlabel D_800A36F1 and dlabel g_vsync_target_frames: after substitution collapse to one dlabel g_main_frame_period (check the g_scratchpad_ptr_84/8c/98/9a/9c/9e alias definitions the same way). tools/trace/gdbtrace.py, movegraph.py, scan/story_streams.py docstrings need hand substitution. named_syms.txt:1040 calls D_800F33D8 a draw-state struct: correct it in the follow commit. Interior labels stay: D_800A3450 D_800A3458 D_800A358A D_800A350E D_800A33EA D_800A36C2 D_800F0B7C D_800F0C14/18 D_800F0ECC/ED0 D_800F1002/1004 D_800A323A/3C.
