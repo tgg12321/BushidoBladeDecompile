@@ -1,0 +1,62 @@
+REVIEWED (naming-reviewer pre-apply 2026-10-27, naming-a): 39 rows from 40 research rows (1 dropped at review, 1 kept name changed; judgment points listed below). TU: src/main/51268.c (39 rows, 8 functions).
+Source: Codex research run 20261027-194259-research-vl19 (tmp/codex/var-locals-19-research.md, HEAD 596d38cd3).
+Base: a0b14a945 (lanes/naming-a == main; only docs commits since the research, 51268.c and game.h unchanged, line numbers identical). Every binding was re-derived from this source: declaration and every use with its line, the callees and callers read where a role depended on them (asm/funcs/RotTransPers4.s:21-24, RotTransPers.s:7, the func_80063AF0 / func_80063B34 callers at 51268.c:1261-1269 and the eff_DrawYawedSlotQuads call at 1364).
+
+DROPPED (0 of 40 research rows)
+- none. The two names that did not survive were changed (below), not dropped.
+- Bindings the research left out stay out: in eff_DrawAndAdvanceRotatedQuadClusters count, scale, var_5, mats, sxy, prim (FAKE comment 937-942 / neutral), k (COPY33 macro body, 9F9C.c:58-59), v, c (macro bodies); in eff_DrawAndAdvanceBillboardPairs base and var_2 (FAKE comment 1138-1140), v (macro), prim, bit, scale; in eff_DrawYawedSlotQuads arg0, count, mats, var_2, sxy, var_5, prim, bit (FAKE comments 1345-1352, 1383-1387), i (inside a function-like macro argument, gte_CompMatrix at 1399; scoped_plan rejects it), k; in eff_BuildUsedSlotRotMatrices i and mask (FAKE comment 1452-1455); in eff_DrawAndAdvanceJitteredBillboards base, var_5 (FAKE comment 1545-1548), p (macro), prim, bit; func_80063AF0, func_80063B34, func_80063B78 and func_80063BA4 have no auto-named bindings. The research stopped at the 40-row cap inside eff_DrawAndAdvanceJitteredBillboards (every function of the file range after eff_SpawnRotatedQuadCluster up to it is covered); no later TU was reached.
+- The forward declarations at 51268.c:1258 and 1272-1273 (eff_AllocateOrRecycleYawedQuadSlot(s32), eff_DrawYawedSlotQuads(s32), eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx)) are not renamed (wave 17/18 left the 249 declaration; parameter names in a prototype are not bindings).
+
+CHANGED (drafter-substituted names, kept; 2 of 40)
+- eff_DrawAndAdvanceRotatedQuadClusters:var_16: src_vertices -> quad_vertices. src_ is the wave-17 spelling for a source argument a cursor walks or a copy is made from. var_16 = &D_8009BB84[j * 16] (1008) is a row of a constant table, +0/+4/+8/+12 passed as the four SVECTOR inputs of RotTransPers4 (1009): the four corner vertices of quad j.
+- eff_DrawAndAdvanceBillboardPairs:var_6: age_offset -> age_from_last_frame. *var_6 = D_800F0BEC[i] - 15 (1211) and the colour word is built from -*var_6 * 128 / 5 and -*var_6 * 255 / 5 (1212, 1215). "age_offset" does not say offset from what. A slot is drawn only while its age is below 16 (1144; 1249 clears the bit otherwise), so age 15 is the last drawn frame and the value is the age relative to it (0 at the last frame, negative before).
+
+KEPT AFTER A CHECK (judgment points for the reviewer)
+- depth_cue_out (eff_DrawAndAdvanceRotatedQuadClusters:var_2, eff_DrawAndAdvanceBillboardPairs:var_5): RotTransPers4's ninth argument stores GTE register $8 (IR0) (RotTransPers4.s:21-24, arg at 32($sp)); RotTransPers's third argument is swc2 $8 (RotTransPers.s:7). Neither is read; same wave-18 spelling.
+- composite_matrix / slot_matrix (cluster var_1, m): m = &mats[i] is rotated, scaled and given a translation (958-965), CompMatrix(D_800A3474, m, var_1) (966) and var_1 goes to SetRotMatrix and SetTransMatrix (967-968). composite_matrix makes no rotation-only claim.
+- quad_ot_indices (cluster var_3, DrawYawedSlotQuads var_4): both are u16 arrays at fixed work-area offsets written with the clamped gpu_DepthToOtIndex value (1017, 1416) and read back as g_gpu_ot_ptr + x[k] in the link loop (1040, 1435). In the second function the running count is the FAKE-cited var_5 (neutral).
+- quad_ot_read_cursor / quad_ot_write_cursor (eff_DrawAndAdvanceJitteredBillboards var_1, var_11): var_11 starts at var_1 (1533) and is the write pointer advanced with prim (1558, 1606); var_1 stays at the array start until the link loop walks it (1617-1618). The read-side name states its walking role. The reviewer may prefer a different pair of spellings.
+- quads_end (Jittered end): this one is a POLY_FT4 ** to the scratch slot that holds the end (1525, 1616, 1617, 1623); the other two quads_end locals are plain POLY_FT4 *. Kept by the wave-18 convention of naming a slot pointer for the quantity it holds (w/h); a reviewer who wants the indirection visible would use a different spelling.
+- billboard_width / billboard_height (Jittered w, h): *w is the full width (x1 - x0 = *w, 1586-1592) and *h the full height (y2 - y0 = *h, 1587-1593); the quad is not centred vertically, so neither name claims a half or a centre. game.h:1040-1041 member comments must be edited with them (below).
+- frame_index (Jittered var_4): D_800F0BCC[i] / 4 (1539), < 7 test, D_8009B8E8[*var_4] (1551); game.h:1042 already calls it "frame".
+- relative_position (BillboardPairs var_3, Jittered pos): a difference from D_800A3470 (1126-1135; 1541-1543), input of ApplyRotMatrix / ApplyRotMatrixLV. The name claims only "relative to". Both are per-function fresh.
+- local_origin (Jittered var_7): zeroed vx/vy/vz (1528), RotTransPers input (1549); wave-18 spelling.
+- ot_index (BillboardPairs z): *z = gpu_DepthToOtIndex (1162), g_gpu_ot_ptr + *z (1238); game.h:1032 "gpu_DepthToOtIndex's depth, the OT index". Same spelling as eff_DrawBillboardList (746, 781, 833); per-function fresh.
+- red_green_level (BillboardPairs var_12): (*var_6 * -128 / 5) & 0xFF used as var_12 + (var_12 << 8) = the r0 and g0 bytes of the colour word (1214); the b0 byte comes from the separate -255 expression (1215).
+- billboard_index / slot_index (BillboardPairs i, j): j in 0..1 are the two billboards of a slot (the leading comment calls them j == 0 and j == 1). slot_index and billboard_index are the wave-17/18 spellings. slot_index also exists as a struct member name (87A0.c:555, game.h:2349-2370 comments); members are a separate namespace and the wave-18 and eff_SpawnRotatedQuadCluster locals already use it.
+- command_slot_index (allocator idx, BuildUsedSlotRotMatrices idx): 0 or 1, passed as the literal 0/1 by func_80063AF0 / func_80063B34 (1263, 1269) and as arg0 by eff_DrawYawedSlotQuads (1364); the same 0/1 selects g_eff_command_phase[0/1] and D_800A345C[0/1]. The sub-slot inside it is slot_index in the allocator. The research text calls it a lane in the comment; "command slot" follows eff_StartYawedQuadSlotCommand:use_second_slot.
+- slot_count / slot_matrices (BuildUsedSlotRotMatrices count, m): *count is read only (1451), the caller's capped live-entry count (1360-1364); m[i] is one MATRIX per slot index (1457).
+- group_start_index / group_slot_index / slot_index / slot_bit (SpawnJitteredBillboards i, j, idx, mask): i = 0, 4, 8, 12 (1473), j = 0..3, idx = i + j (1475).
+- src_position (SpawnBillboardPair src): src = g_eff_command_position, copied into D_800F0E38[i] (1069-1072).
+
+COMMENTS TO UPDATE (scoped pair substitution skips comments; hand edit in the wave, reflow with format.py)
+- src/main/51268.c:1034 (cluster function) and 1428 (eff_DrawYawedSlotQuads): "`end` keeps the fill position; ..." -> `quads_end`.
+- src/main/51268.c:1077-1079 (leading comment of eff_DrawAndAdvanceBillboardPairs): "per live slot i (bit i of D_800A3448, age D_800F0BEC[i], world position D_800F0E38[i])" -> slot_index in all four places; "(j == 0, then j == 1 ...)" -> billboard_index == 0 / == 1 (or leave "j == 0 / j == 1" as prose of the pair; reviewer's choice, say which).
+- src/main/51268.c:1209-1210 (inside the same function): "*var_6 = age - 15: the colour word below is built from -*var_6 * 128 / 5 and -*var_6 * 255 / 5." -> age_from_last_frame (three places; the comment will need to reflow).
+- src/main/51268.c:1287-1291 (allocator leading comment): "lane `idx`", D_800A344C[idx], D_800A3454[idx], D_800F1000[idx][slot], D_800F0EC8[idx][slot] -> command_slot_index (the comment says "lane"; keep the word or change to "command slot").
+- src/main/51268.c:1444-1445 (eff_BuildUsedSlotRotMatrices): "i < *count ... D_800A3454[idx], RotMatrix(&D_800F1000[idx][i], &m[i])" -> slot_count, command_slot_index, slot_matrices; i stays (neutral, FAKE-cited).
+- src/main/51268.c:1494 (eff_DrawAndAdvanceJitteredBillboards leading comment): "(bit i of D_800A3444) step its counter D_800F0BCC[i]" -> slot_index.
+- include/game.h:1031: "D_800F0BEC[i] - 15, the colour scale" -> D_800F0BEC[slot_index] - 15 (or age_from_last_frame; it describes the stored value, so "age_from_last_frame, D_800F0BEC[slot_index] - 15" reads best).
+- include/game.h:1040-1041: /* w */ /* h */ -> /* billboard_width */ /* billboard_height */ (required together with the w/h rows; the line widths fit 80 columns).
+- include/game.h:1012-1013 (half_width / billboard_height of eff_DrawBillboardList), 1030 and 1017 ("RotTransPers' p"), 1042 ("frame"), 1047 ("the end of the quads") stay unchanged.
+- The FAKE comments (937-942, 1138-1140, 1345-1352, 1383-1387, 1452-1455, 1545-1548) name base, prim, mats, sxy, var_2, var_5, count, bit, mask, i and arg0 only, none of them renamed here, so they stay true. The comment at 1138-1140 names var_2 and base; var_2 in eff_DrawAndAdvanceBillboardPairs is not renamed (only the cluster function's var_2 is).
+- Other comments in the eight functions name no renamed binding (Cluster leading comment, the "SOTN: src/dra/menu.c" cites).
+
+FRESHNESS
+All 26 distinct final spellings were searched whole-word in src/** and include/** (C, headers, .inc). No code hit inside a target function and none a file-scope name, enum constant, macro or type. Pre-existing hits are other functions' locals or comments (depth_cue_out: eff_DrawBillboardList 745, 780, 831; ot_index: eff_DrawBillboardList and parameters in 4D0A8.c, 64FD8.c; billboard_index, src_position, local_origin, billboard_height: other functions of 51268.c; slot_index: eff_SpawnRotatedQuadCluster, 368E4.c:1537 parameter, struct members and comments in 87A0.c / 2B344.c / game.h). Every old token (var_1 .. var_7, var_11, var_12, var_16, i, j, m, bit, end, src, z, idx, mask, count, w, h, pos) was searched across every #define line with continuations joined: none occurs in a macro name or body (bit and mask appear only in trailing comments of psx.h defines, GP0_MASK_BIT / OT_ADDR_MASK / OT_TAG_BASE / OT_TAG_MASK).
+naming_keycheck.scoped_plan (read-only, working tree incl. Makefile) accepts all 40 pairs (275 token substitutions, all in 51268.c); this is a drafting aid, not the gate (cc1 differential, oracle build and staged keycheck are the apply gates).
+
+PRE-APPLY REVIEW (naming-reviewer 2026-10-27): 39 PASS, 1 FAIL.
+- FAIL, dropped: eff_DrawAndAdvanceBillboardPairs:var_6 -> age_from_last_frame. "last frame" reads as the previous frame
+  (age - 1 or a value carried from the prior tick); the value is age - 15, age minus the final drawn age, always <= 0.
+  var_6 stays neutral; a later row may bring it back (reviewer ideas: age_minus_15, age_past_final_frame; neither judged).
+  With the drop, the 1209-1210 comment edit goes away and game.h:1031 needs no edit (optional: D_800F0BEC[slot_index]).
+  The CHANGED entry for var_6 above records the draft, not a landed name.
+- Comment pass, per the reviewer: 1077-1079 write billboard_index == 0 / == 1 and slot_index in all four places;
+  1287-1292 "lane" is not supported by the code: say "command slot command_slot_index" in both places; 1494 i ->
+  slot_index; 1444-1445 slot_count / command_slot_index / slot_matrices, the i there stays; game.h:1040-1041 /* w */ /* h */
+  change with the w / h rows. The FAKE comments at 937-942, 1138-1140, 1345-1352, 1383-1387, 1452-1455, 1545-1548 name no
+  renamed binding and stay as they are.
+- R6 must confirm the prototypes at 51268.c:1258 and 1272-1273 (count, m, idx) are byte-unchanged and no old scoped token
+  survives in a comment of the touched functions.
+- Manifest cite nit (not blocking): 1034 in the RotatedQuadClusters end row is the comment line, not a use.

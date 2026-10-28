@@ -1,0 +1,6 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-18); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan over the working tree (src/**, include/**,
+Makefile; read_working_tree(), cwd = the lane worktree, base a0b14a945) accepted all 40 pairs (275 token substitutions: src/main/51268.c 275; no other file touched; include/game.h member comments 1031, 1040-1041 and the comments listed in notes.txt are hand edits).
+After the pre-apply review dropped eff_DrawAndAdvanceBillboardPairs:var_6, pairs.txt holds 39 pairs; the 275 count above is the 40-pair plan (it includes the var_6 tokens).
