@@ -23,7 +23,7 @@ glabel gpu_GetPrimBufferAndRefreshStrip
     /* 59970 80069170 21105000 */  addu       $v0, $v0, $s0
     /* 59974 80069174 80100200 */  sll        $v0, $v0, 2
     /* 59978 80069178 23105000 */  subu       $v0, $v0, $s0
-    /* 5997C 8006917C 5004838F */  lw         $v1, %gp_rel(D_800A351C)($gp)
+    /* 5997C 8006917C 5004838F */  lw         $v1, %gp_rel(g_row_menu_prim_buffers)($gp)
     /* 59980 80069180 80100200 */  sll        $v0, $v0, 2
     /* 59984 80069184 21106200 */  addu       $v0, $v1, $v0
     /* 59988 80069188 1400BF8F */  lw         $ra, 0x14($sp)

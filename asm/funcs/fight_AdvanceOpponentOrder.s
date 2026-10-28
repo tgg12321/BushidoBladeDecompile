@@ -91,9 +91,9 @@ glabel fight_AdvanceOpponentOrder
     /* 24508 80033D08 1080013C */  lui        $at, %hi(g_fight_config + 0x2)
     /* 2450C 80033D0C 7A2722A4 */  sh         $v0, %lo(g_fight_config + 0x2)($at)
     /* 24510 80033D10 FF00A230 */  andi       $v0, $a1, 0xFF
-    /* 24514 80033D14 0980013C */  lui        $at, %hi(D_8008E75C)
+    /* 24514 80033D14 0980013C */  lui        $at, %hi(g_fight_opponent_stage_indices)
     /* 24518 80033D18 21082200 */  addu       $at, $at, $v0
-    /* 2451C 80033D1C 5CE72290 */  lbu        $v0, %lo(D_8008E75C)($at)
+    /* 2451C 80033D1C 5CE72290 */  lbu        $v0, %lo(g_fight_opponent_stage_indices)($at)
     /* 24520 80033D20 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 24524 80033D24 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 24528 80033D28 0A80013C */  lui        $at, %hi(g_fight_stage_index)

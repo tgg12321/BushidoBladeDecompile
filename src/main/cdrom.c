@@ -40,7 +40,7 @@ s32 cdrom_StartReadAt(
 }
 
 s32 cdrom_GetFileIndex(s32 file_group, s32 file_index_offset) {
-    return D_8008F12C[file_group] + file_index_offset;
+    return g_cdrom_file_group_bases[file_group] + file_index_offset;
 }
 
 void cdrom_Pause(void) {
@@ -67,7 +67,7 @@ void cdrom_WaitIdle(void) {
         }
         comb_ExchangeEmptyPad();
         cdrom_Update();
-        if (D_800A3906 != 0) {
+        if (g_snd_initialized != 0) {
             snd_FlushSoundQueue();
         }
         gpu_DrawDisplayModeOnLocalOtAndSync();
@@ -108,7 +108,7 @@ s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
 }
 
 s32 cdrom_StartAudioEntry(s32 entry_index) {
-    Unk8008F13CRow *audio_entry = &D_8008F13C[entry_index];
+    Unk8008F13CRow *audio_entry = &g_cdrom_audio_entries[entry_index];
     if (cdrom_StartAudio(cdrom_GetFileIndex(5, audio_entry->unk_0),
                          audio_entry->unk_1) != 0) {
         if (audio_entry->unk_4 != -1) {
@@ -178,10 +178,11 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     return v;
 }
 
-/* Loads a PS-EXE from disc: seeks to entry D_8008F12C[6] (=156, MOVOVL.EXE)
- * of g_cd_file_table, reads one sector, copies the struct EXEC at +0x10 into
- * *dest, then reads dest->t_size bytes from the next sector to dest->t_addr.
- * Any failed read restarts from the seek. The sole caller is sys_Exec. */
+/* Loads a PS-EXE from disc: seeks to entry g_cdrom_file_group_bases[6] (=156,
+ * MOVOVL.EXE) of g_cd_file_table, reads one sector, copies the struct EXEC at
+ * +0x10 into *dest, then reads dest->t_size bytes from the next sector to
+ * dest->t_addr. Any failed read restarts from the seek. The sole caller is
+ * sys_Exec. */
 void cdrom_LoadExec(EXEC *dest) {
     u8 header_sector[0x800];
     CdlLOC next_sector_loc;
@@ -255,12 +256,13 @@ void sys_ExecMovieOverlay(
     sys_Exec(6, sp, v0 + 0x7FC);
 }
 
-/* .data 0x8008EC34..0x8008F19C (d_7D920.c's D_8008EC30 precedes, 28708.c's
- * D_8008F19C follows), in address order: the disc file table g_cd_file_table
+/* .data 0x8008EC34..0x8008F19C (d_7D920.c's g_fight_time_limit_choices
+ * precedes, 28708.c's D_8008F19C follows), in address order: the disc file
+ * table g_cd_file_table
  * ({CdlLOC, size} per file), cdrom_GetFileIndex's per-group first-file index
- * D_8008F12C, and cdrom_StartAudioEntry's rows D_8008F13C. Only this file reads
- * them. Defined after every function, so no body sees a definition where it saw
- * an extern. */
+ * g_cdrom_file_group_bases, and cdrom_StartAudioEntry's rows
+ * g_cdrom_audio_entries. Only this file reads them. Defined after every
+ * function, so no body sees a definition where it saw an extern. */
 CdFileEntry g_cd_file_table[159] = {
     {{0x01, 0x08, 0x68, 0x00}, 0x0376C000},
     {{0x07, 0x27, 0x19, 0x00}, 0x00000E14},
@@ -423,9 +425,9 @@ CdFileEntry g_cd_file_table[159] = {
     {{0x61, 0x56, 0x61, 0x00}, 0x00025814},
 };
 
-s16 D_8008F12C[8] = {0, 2, 21, 119, 119, 119, 156, 0};
+s16 g_cdrom_file_group_bases[8] = {0, 2, 21, 119, 119, 119, 156, 0};
 
-Unk8008F13CRow D_8008F13C[12] = {
+Unk8008F13CRow g_cdrom_audio_entries[12] = {
     {0x1F, 0, 0, 0x3BC4}, {0x1F, 1, 0, 0x749A}, {0x1F, 2, 0, 0x79E0},
     {0x1F, 3, 0, 0x8E62}, {0x1F, 4, 0, 0x8214}, {0x1F, 5, 0, 0x79E0},
     {0x1F, 6, 0, 0x8E62}, {0x1F, 7, 0, 0x8340}, {0x20, 0, 0, 0x956A},

@@ -600,9 +600,9 @@ s32 pad_PackSavedButtonMappingLowNibbles(void) {
 }
 
 void pad_UnpackButtonMappingNibblesToCells(s32 packed_mappings) {
-    D_800A3912 = packed_mappings & 0xF;
-    D_800A3913 = (packed_mappings >> 4) & 0xF;
-    D_800A3914 = (packed_mappings >> 8) & 0xF;
+    g_pad_remote_button_mapping_20 = packed_mappings & 0xF;
+    g_pad_remote_button_mapping_40 = (packed_mappings >> 4) & 0xF;
+    g_pad_remote_button_mapping_80 = (packed_mappings >> 8) & 0xF;
 }
 
 void pad_ResetState(void) {

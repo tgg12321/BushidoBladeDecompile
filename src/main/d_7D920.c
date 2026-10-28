@@ -10,22 +10,23 @@
  *    D_8008D86C set), D_8008EB04 .. D_8008EB0C (s16) and D_8008EB10 ..
  *    D_8008EB18 (s32), each with its own reader in
  * fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams, D_8008EB38
- * (u8[8], fighter_Init), D_8008EB6C (u8[6],
+ * (u8[8], fighter_Init), g_fight_midpoint_effect_event_ids (u8[6],
  * fight_UpdatePairedInputTotalsEventsAndMidpointEffects, after
  * g_fight_midpoint_effect_offsets's 6 rows), g_snd_stage_sequence_base_sounds
- * (u8[6], snd_UpdateStageSounds, before D_8008EBFC's 6 pairs) and D_8008EC30
- * (u8[4], 25788.c's g_fight_time_limit_seconds per setting; the run's end).
- * Under -G8 the original compiler puts them in .sdata, so no -G8 file defined
- * them.
+ * (u8[6], snd_UpdateStageSounds, before g_snd_stage_sequence_cue_ticks's 6
+ * pairs) and g_fight_time_limit_choices (u8[4], 25788.c's
+ * g_fight_time_limit_seconds per setting; the run's end). Under -G8 the
+ * original compiler puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours: before it, d_7D870.c's .text (game data words, no small
  *    data, none pointing into the run) and in .data link order 26940.o's
  *    empty .data (26940.c is -G8, gp accesses). After it, cdrom.o, a
  *    game module with no small data that references no object in the run (Q123:
  * not an owner candidate). Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c,
  * 28708.c, 2B344.c, 4510C.c (interleaved against .data link order, so no reader
- * owns it). Not including bb2.h: it declares D_8008D518, D_8008D55C, D_8008E748
- * and D_8008E75C as scalars (their readers index &D_8008xxxx), which these
- * array definitions would contradict. */
+ * owns it). Not including bb2.h: it declares
+ * g_snd_stage_cd_audio_entry_indices, D_8008D55C, D_8008E748 and
+ * g_fight_opponent_stage_indices as scalars (their readers index &D_8008xxxx),
+ * which these array definitions would contradict. */
 #include "common.h"
 #include "game.h"
 
@@ -116,8 +117,9 @@ u8 g_sqrt_table_u8[0x400] = {
 
 /* [g_fight_stage_index] -> cdrom_StartAudioEntry (9F9C.c); size from the gap.
  */
-u8 D_8008D518[32] = {0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
-                     4, 0, 2, 0, 0, 0, 2, 2, 3, 3, 4, 4, 0, 3, 3, 2};
+u8 g_snd_stage_cd_audio_entry_indices[32] = {
+    0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
+    4, 0, 2, 0, 0, 0, 2, 2, 3, 3, 4, 4, 0, 3, 3, 2};
 
 /* [g_fight_config.unk_4[i] / fighter_Init's arg2] ->
  * Unk80101EC8Record.character_data_index; size from the gap. */
@@ -138,7 +140,7 @@ u8 g_fight_selection_object_ids[36] = {
 
 /* The 22 hit records fighter_ScaleBoneHitRecords scales into
  * g_fighter_bone_hit_records. */
-BoneHitRec D_8008D59C[22] = {
+BoneHitRec g_fighter_bone_hit_record_templates[22] = {
     {1, 2, {56, 0, -57, 0}, 228, 51984, 200, 40000},
     {1, 1, {94, 0, 0, 0}, 210, 44100, 190, 36100},
     {1, 1, {279, 0, -120, 0}, 210, 44100, 190, 36100},
@@ -265,7 +267,7 @@ s16 D_8008DAD8[34] = {
 
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.motion_data_id
  * (motion_LoadFighterData). */
-u16 D_8008DB1C[27][8] = {
+u16 g_fighter_motion_data_ids[27][8] = {
     {0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321},
     {0x431, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321},
     {0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321},
@@ -326,7 +328,7 @@ u8 D_8008DD5C[27][8] = {
 
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.base_move_frame_step
  */
-u16 D_8008DE34[27][6] = {
+u16 g_fighter_base_move_frame_steps[27][6] = {
     {3568, 3536, 3760, 3926, 3392, 4096}, {3640, 3872, 3566, 3392, 3584, 4096},
     {3808, 4064, 3392, 3248, 3936, 4096}, {3632, 4027, 3944, 3600, 3776, 4096},
     {3798, 4071, 3376, 3238, 3927, 4096}, {3808, 4064, 3392, 3248, 3936, 4096},
@@ -343,7 +345,7 @@ u16 D_8008DE34[27][6] = {
     {4096, 4096, 4096, 4096, 4096, 4096}};
 
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.base_power / power */
-u16 D_8008DF78[27][6] = {
+u16 g_fighter_base_powers[27][6] = {
     {4864, 4096, 5712, 5744, 4864, 4096}, {4208, 3296, 4720, 4656, 4096, 4096},
     {3274, 2768, 3973, 4014, 5632, 4096}, {5664, 4096, 5728, 4096, 4096, 4096},
     {2912, 2816, 3296, 4096, 3296, 4096}, {4096, 4096, 4096, 4096, 4096, 4096},
@@ -412,7 +414,7 @@ Tbl8008E194 g_object_kind_params[30] = {
 
 /* [character_data_index][i] -> Unk80101EC8Record.carried_object_kinds[i]
  * (object_InitKindQueue; -1: none). */
-s8 D_8008E338[27][5] = {
+s8 g_fighter_initial_carried_object_kinds[27][5] = {
     {0, -1, -1, -1, -1},  {1, -1, -1, -1, -1},  {2, 2, -1, -1, -1},
     {3, -1, -1, -1, -1},  {4, -1, -1, -1, -1},  {-1, -1, -1, -1, -1},
     {5, 5, -1, -1, -1},   {15, 15, -1, -1, -1}, {6, 6, 6, 6, 6},
@@ -498,19 +500,20 @@ u8 D_8008E6A4[27][6] = {
     {0, 2, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7},
     {0, 2, 4, 5, 6, 7}, {0, 1, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7}};
 
-/* (&D_8008E748)[x] and (&D_8008E75C)[i] (fight_AdvanceOpponentOrder); sizes
- * from the gaps. */
+/* (&D_8008E748)[x] and (&g_fight_opponent_stage_indices)[i]
+ * (fight_AdvanceOpponentOrder); sizes from the gaps. */
 u8 D_8008E748[20] = {0, 4, 3, 1, 2, 0, 4, 3, 1, 2,
                      0, 4, 1, 3, 2, 1, 4, 0, 0, 0};
 
-u8 D_8008E75C[28] = {4,  5,  3,  1,  24, 9,  23, 6, 8, 22, 0, 0, 26, 12,
-                     19, 13, 29, 31, 27, 28, 17, 2, 0, 0,  0, 0, 0,  0};
+u8 g_fight_opponent_stage_indices[28] = {
+    4,  5,  3,  1,  24, 9,  23, 6, 8, 22, 0, 0, 26, 12,
+    19, 13, 29, 31, 27, 28, 17, 2, 0, 0,  0, 0, 0,  0};
 
 /* [g_fight_step_table_next_row - 1][0] + 0x1B -> cpu_profile
  * (fighter_InitCpuControl); also
  * fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags; 100 rows from the gap.
  */
-u8 D_8008E778[100][4] = {
+u8 g_fight_step_table[100][4] = {
     {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},
     {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},  {0, 255, 64, 52},
     {0, 255, 64, 52},  {1, 224, 64, 96},  {0, 72, 207, 88},  {0, 72, 207, 88},
@@ -538,12 +541,12 @@ u8 D_8008E778[100][4] = {
     {3, 48, 255, 48},  {2, 144, 48, 144}, {2, 255, 48, 48},  {4, 0, 0, 0}};
 
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's move rows (with
- * D_8008EC24's rank rows). */
+ * g_fight_step_row_object_ids's rank rows). */
 u8 D_8008E908[2][5] = {{7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
 
 /* 38 rows indexed by g_fight_stage_index (g_fight_start_position_pairs also has
  * 38 rows): the four (type, value) sound pairs snd_UpdateStageSounds walks. */
-u8 D_8008E914[38][8] = {
+u8 g_snd_stage_sound_slot_specs[38][8] = {
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -588,8 +591,8 @@ Unk8008EA44Entry D_8008EA44[5] = {
     {6, 9}, {15, 15}, {10, 13}, {10, 10}, {5, 15}};
 
 /* The source positions of sound types 5 and 6 (snd_UpdateStageSounds:
- * D_8008EA50[type - 5]). */
-s32 D_8008EA50[2][4] = {{0, 0, 0, 0}, {190, 0, -10, 0}};
+ * g_snd_stage_sound_slot_positions[type - 5]). */
+s32 g_snd_stage_sound_slot_positions[2][4] = {{0, 0, 0, 0}, {190, 0, -10, 0}};
 
 /* [g_fight_presentation_index] (fight_InitImageAndPlaybackPresentation,
  * 2B344.c); 40 pairs from the gap. */
@@ -649,7 +652,7 @@ Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6] = {
 
 /* fight_RecordReplayEventAndDispatchSoundOrEffect's arg1 per
  * g_fight_midpoint_effect_offsets row. */
-u8 D_8008EB6C[6] = {5, 8, 7, 6, 7, 8};
+u8 g_fight_midpoint_effect_event_ids[6] = {5, 8, 7, 6, 7, 8};
 
 /* fighter_ResolveBoneHit's table */
 u8 D_8008EB74[3][2][2] = {{{1, 2}, {0, 0}}, {{0, 1}, {0, 1}}, {{0, 2}, {0, 1}}};
@@ -679,8 +682,9 @@ s32 D_8008EBE0[5] = {0, 262144, 131072, 393216, 0};
 u8 g_snd_stage_sequence_base_sounds[6] = {0x7C, 0x7D, 0x7D, 0x7E, 0x7C, 0x7D};
 
 /* Per category: the ticks of the second and third sound. */
-Unk8008EA44Entry D_8008EBFC[6] = {{0x2E, 0x5C}, {0x2E, 0x62}, {0x2E, 0x62},
-                                  {0x2E, 0x2E}, {0x32, 0x62}, {0x2E, 0x62}};
+Unk8008EA44Entry g_snd_stage_sequence_cue_ticks[6] = {
+    {0x2E, 0x5C}, {0x2E, 0x62}, {0x2E, 0x62},
+    {0x2E, 0x2E}, {0x32, 0x62}, {0x2E, 0x62}};
 
 /* No reader: seven pointers to the mode name strings (STORY, VSCPU,
  * PRACTICE, CHANBARA, VS, TEAM, NETWORK). */
@@ -689,8 +693,9 @@ const char *D_8008EC08[7] = {
     D_800A3160, D_800A3158, D_800A3150};
 
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's rank rows. */
-u8 D_8008EC24[2][5] = {{58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};
+u8 g_fight_step_row_object_ids[2][5] = {
+    {58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};
 
 /* 25788.c's g_fight_time_limit_seconds per setting
- * (D_8008EC30[p->time_limit_index]). */
-u8 D_8008EC30[4] = {30, 60, 120, 0};
+ * (g_fight_time_limit_choices[p->time_limit_index]). */
+u8 g_fight_time_limit_choices[4] = {30, 60, 120, 0};

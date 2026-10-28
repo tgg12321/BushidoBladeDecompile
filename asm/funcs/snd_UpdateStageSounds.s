@@ -8,8 +8,8 @@ glabel snd_UpdateStageSounds
     /* 23DF0 800335F0 50785226 */  addiu      $s2, $s2, %lo(g_snd_sequence_positions)
     /* 23DF4 800335F4 0A80023C */  lui        $v0, %hi(g_fight_stage_index)
     /* 23DF8 800335F8 A4364284 */  lh         $v0, %lo(g_fight_stage_index)($v0)
-    /* 23DFC 800335FC 0980033C */  lui        $v1, %hi(D_8008E914)
-    /* 23E00 80033600 14E96324 */  addiu      $v1, $v1, %lo(D_8008E914)
+    /* 23DFC 800335FC 0980033C */  lui        $v1, %hi(g_snd_stage_sound_slot_specs)
+    /* 23E00 80033600 14E96324 */  addiu      $v1, $v1, %lo(g_snd_stage_sound_slot_specs)
     /* 23E04 80033604 2800BFAF */  sw         $ra, 0x28($sp)
     /* 23E08 80033608 2400B5AF */  sw         $s5, 0x24($sp)
     /* 23E0C 8003360C 2000B4AF */  sw         $s4, 0x20($sp)
@@ -35,9 +35,9 @@ glabel snd_UpdateStageSounds
     /* 23E58 80033658 AECD0008 */  j          .L800336B8
     /* 23E5C 8003365C 21284002 */   addu      $a1, $s2, $zero
   .L80033660:
-    /* 23E60 80033660 0980013C */  lui        $at, %hi(D_8008EBFC)
+    /* 23E60 80033660 0980013C */  lui        $at, %hi(g_snd_stage_sequence_cue_ticks)
     /* 23E64 80033664 21082400 */  addu       $at, $at, $a0
-    /* 23E68 80033668 FCEB2290 */  lbu        $v0, %lo(D_8008EBFC)($at)
+    /* 23E68 80033668 FCEB2290 */  lbu        $v0, %lo(g_snd_stage_sequence_cue_ticks)($at)
     /* 23E6C 8003366C 00000000 */  nop
     /* 23E70 80033670 06006214 */  bne        $v1, $v0, .L8003368C
     /* 23E74 80033674 21284002 */   addu      $a1, $s2, $zero

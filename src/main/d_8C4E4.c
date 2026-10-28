@@ -1,9 +1,9 @@
 /* Data-only file: .data 0x8009BCE4..0x8009BD68 (ROM 0x8C4E4), the character
  * select tables and the match settings record.
  * Owner ruling Q122 (data-only-no-sdata):
- * 1. One run: 63D2C.c's D_8009BCD4 ends at 0x8009BCE4, 64FD8.o(.data) is
- *    empty, and LIBAPI COUNTER's .data starts at 0x8009BD68 (the libapi
- *    modules between have none). No uninitialized objects.
+ * 1. One run: 63D2C.c's g_gpu_rotated_sprite_quad_scale ends at 0x8009BCE4,
+ * 64FD8.o(.data) is empty, and LIBAPI COUNTER's .data starts at 0x8009BD68 (the
+ * libapi modules between have none). No uninitialized objects.
  * 2. Small object in .data: g_sel_sheet_code_pairs (u8[2][2];
  * g_sel_grid_page_cells before it ends at 0x8009BD20 by its [2][10] shape,
  * g_working_record after it is another type with other readers). Under -G8 the

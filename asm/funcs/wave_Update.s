@@ -2,8 +2,8 @@ glabel wave_Update
     /* 38290 80047A90 21400000 */  addu       $t0, $zero, $zero
     /* 38294 80047A94 0980063C */  lui        $a2, %hi(Judge)
     /* 38298 80047A98 FC73C624 */  addiu      $a2, $a2, %lo(Judge)
-    /* 3829C 80047A9C 0F80043C */  lui        $a0, %hi(D_800EF558)
-    /* 382A0 80047AA0 58F58424 */  addiu      $a0, $a0, %lo(D_800EF558)
+    /* 3829C 80047A9C 0F80043C */  lui        $a0, %hi(g_wave_column_phases)
+    /* 382A0 80047AA0 58F58424 */  addiu      $a0, $a0, %lo(g_wave_column_phases)
     /* 382A4 80047AA4 0F80053C */  lui        $a1, %hi(g_wave_vertex_grid)
     /* 382A8 80047AA8 9CF5A524 */  addiu      $a1, $a1, %lo(g_wave_vertex_grid)
   .L80047AAC:
@@ -85,8 +85,8 @@ glabel wave_Update
     /* 383C4 80047BC4 04004324 */  addiu      $v1, $v0, 0x4
     /* 383C8 80047BC8 0A80013C */  lui        $at, %hi(g_draw_queue_cursor)
     /* 383CC 80047BCC 203823AC */  sw         $v1, %lo(g_draw_queue_cursor)($at)
-    /* 383D0 80047BD0 0F80033C */  lui        $v1, %hi(D_800EF070)
-    /* 383D4 80047BD4 70F06324 */  addiu      $v1, $v1, %lo(D_800EF070)
+    /* 383D0 80047BD0 0F80033C */  lui        $v1, %hi(g_wave_draw_node)
+    /* 383D4 80047BD4 70F06324 */  addiu      $v1, $v1, %lo(g_wave_draw_node)
     /* 383D8 80047BD8 0800E003 */  jr         $ra
     /* 383DC 80047BDC 000043AC */   sw        $v1, 0x0($v0)
 endlabel wave_Update

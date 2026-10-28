@@ -1,7 +1,7 @@
 glabel node_InitViewOffsetNodeWithYXZRotation
     /* 37D70 80047570 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 37D74 80047574 0F80043C */  lui        $a0, %hi(D_800EEDF0)
-    /* 37D78 80047578 F0ED8424 */  addiu      $a0, $a0, %lo(D_800EEDF0)
+    /* 37D74 80047574 0F80043C */  lui        $a0, %hi(g_view_offset_node)
+    /* 37D78 80047578 F0ED8424 */  addiu      $a0, $a0, %lo(g_view_offset_node)
     /* 37D7C 8004757C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 37D80 80047580 B01C010C */  jal        node_InitIdentity
     /* 37D84 80047584 00000000 */   nop

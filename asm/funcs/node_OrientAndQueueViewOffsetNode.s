@@ -49,8 +49,8 @@ glabel node_OrientAndQueueViewOffsetNode
     /* 37E60 80047660 57FF010C */  jal        ratan2
     /* 37E64 80047664 2000A5AF */   sw        $a1, 0x20($sp)
     /* 37E68 80047668 23100200 */  negu       $v0, $v0
-    /* 37E6C 8004766C 0F80113C */  lui        $s1, %hi(D_800EEDF0)
-    /* 37E70 80047670 F0ED3126 */  addiu      $s1, $s1, %lo(D_800EEDF0)
+    /* 37E6C 8004766C 0F80113C */  lui        $s1, %hi(g_view_offset_node)
+    /* 37E70 80047670 F0ED3126 */  addiu      $s1, $s1, %lo(g_view_offset_node)
     /* 37E74 80047674 10002426 */  addiu      $a0, $s1, 0x10
     /* 37E78 80047678 1080033C */  lui        $v1, %hi(D_80101E1C)
     /* 37E7C 8004767C 1C1E638C */  lw         $v1, %lo(D_80101E1C)($v1)

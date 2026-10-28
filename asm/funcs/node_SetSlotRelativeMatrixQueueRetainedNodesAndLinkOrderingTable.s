@@ -2,7 +2,7 @@ glabel node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
     /* 393A4 80048BA4 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 393A8 80048BA8 5000B4AF */  sw         $s4, 0x50($sp)
     /* 393AC 80048BAC 21A08000 */  addu       $s4, $a0, $zero
-    /* 393B0 80048BB0 1403848F */  lw         $a0, %gp_rel(D_800A33E0)($gp)
+    /* 393B0 80048BB0 1403848F */  lw         $a0, %gp_rel(g_node_retained_draw_slot_index)($gp)
     /* 393B4 80048BB4 5400B5AF */  sw         $s5, 0x54($sp)
     /* 393B8 80048BB8 21A8A000 */  addu       $s5, $a1, $zero
     /* 393BC 80048BBC 5800B6AF */  sw         $s6, 0x58($sp)

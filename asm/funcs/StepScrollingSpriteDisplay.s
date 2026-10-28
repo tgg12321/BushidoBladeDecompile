@@ -1,9 +1,9 @@
 glabel StepScrollingSpriteDisplay
-    /* 690B0 800788B0 3802828F */  lw         $v0, %gp_rel(D_800A3304)($gp)
+    /* 690B0 800788B0 3802828F */  lw         $v0, %gp_rel(g_gpu_scrolling_sprite_step_count)($gp)
     /* 690B4 800788B4 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 690B8 800788B8 3000BFAF */  sw         $ra, 0x30($sp)
     /* 690BC 800788BC 01004224 */  addiu      $v0, $v0, 0x1
-    /* 690C0 800788C0 380282AF */  sw         $v0, %gp_rel(D_800A3304)($gp)
+    /* 690C0 800788C0 380282AF */  sw         $v0, %gp_rel(g_gpu_scrolling_sprite_step_count)($gp)
     /* 690C4 800788C4 8DE1010C */  jal        gpu_GetScrollingSpritePrimBuffer
     /* 690C8 800788C8 01004430 */   andi      $a0, $v0, 0x1
     /* 690CC 800788CC 0000438C */  lw         $v1, 0x0($v0)

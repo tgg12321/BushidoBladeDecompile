@@ -18,7 +18,7 @@ extern s16 g_memcard_request_retry_count;
 extern s16 g_memcard_request_operation;
 extern s32 g_memcard_request_state;
 extern u8 D_800A38CC;
-extern u8 D_800A382C;
+extern u8 g_comb_write_not_aborted;
 extern s32 g_comb_read_fd;
 extern s32 g_comb_write_fd;
 extern s32 g_comb_event_error;
@@ -146,7 +146,7 @@ void memcard_ClearBuffer(void) {
     } while ((u32)i < 0x200);
 }
 
-extern u8 D_8008F1C0[];
+extern u8 g_memcard_save_title[];
 /* memcard_BuildFileHeader copies D_800109EC's first 16 halfwords to +0x60 of
  * its buffer and D_80010A2C's 128 bytes to +0x80: the memory-card file header's
  * icon CLUT (16 RGB555 colours; the 16 halfwords after them are zero) and its
@@ -220,7 +220,7 @@ void memcard_BuildFileHeader(u8 *out) {
         } while (i >= 0);
     }
 
-    strcpy(out + 4, D_8008F1C0);
+    strcpy(out + 4, g_memcard_save_title);
 
     out[0x22] = D_8008F1A8[s1 * 2 + 0];
     out[0x23] = D_8008F1A8[s1 * 2 + 1];
@@ -496,7 +496,7 @@ void memcard_RequestFormat(void) {
     g_memcard_request_state = 1;
 }
 
-extern u8 D_800A3203;
+extern u8 g_memcard_load_request_armed;
 extern u8 g_memcard_validation_load_active;
 extern void memcard_RequestLoad(void);
 extern s32 memcard_Update(void);
@@ -506,8 +506,8 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
     s32 v0;
 
     s0 = 0;
-    if (D_800A3203) {
-        D_800A3203 = 0;
+    if (g_memcard_load_request_armed) {
+        g_memcard_load_request_armed = 0;
         g_memcard_validation_load_active = 1;
         memcard_RequestLoad();
     }
@@ -554,7 +554,7 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
     }
     gpu_DrawSheetPairCenteredTileWithOptionalSelection(0, -1);
     if (s0) {
-        D_800A3203 = 1;
+        g_memcard_load_request_armed = 1;
         g_memcard_validation_load_active = 0;
     }
     return s0;
@@ -562,14 +562,14 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
 
 /* Q65: this file's statics (.sbss), in address order. */
 static u8 g_menu_two_choice_prompt_cursor;
-static u8 D_800A331C;
-static u8 D_800A3320;
-static u8 D_800A3324;
-static u8 D_800A3328;
-static u8 D_800A332C;
+static u8 g_memcard_status8_retry_count;
+static u8 g_memcard_status5_retry_count;
+static u8 g_memcard_status14_retry_count;
+static u8 g_memcard_status10_retry_count;
+static u8 g_memcard_status15_retry_count;
 static u8 g_memcard_status_wait_countdown;
 static u8 D_800A3334;
-static u8 D_800A3338;
+static u8 g_memcard_status5_retries_exhausted;
 static u8 D_800A333C;
 static u8 D_800A3340;
 static u8 D_800A3344;
@@ -616,17 +616,17 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     s32 var_2;
 
     if (D_800A3205) {
-        D_800A331C = 0;
-        D_800A3320 = 0;
-        D_800A3324 = 0;
-        D_800A3328 = 0;
-        D_800A332C = 0;
+        g_memcard_status8_retry_count = 0;
+        g_memcard_status5_retry_count = 0;
+        g_memcard_status14_retry_count = 0;
+        g_memcard_status10_retry_count = 0;
+        g_memcard_status15_retry_count = 0;
         g_memcard_validation_load_active = 1;
         memcard_RequestLoad();
         D_800A3205 = 0;
         g_memcard_status_wait_countdown = 0x5A;
         D_800A3334 = 0;
-        D_800A3338 = 0;
+        g_memcard_status5_retries_exhausted = 0;
         D_800A333C = 0;
     }
 
@@ -639,7 +639,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
 
     var_2 = 0;
     if (g_memcard_validation_load_active == 0) {
-        if (D_800A3338 == 1) {
+        if (g_memcard_status5_retries_exhausted == 1) {
             switch (v0 - 4) {
             case 0:
                 var_2 = 2;
@@ -699,8 +699,8 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         case 0:
             break;
         case 4:
-            D_800A331C++;
-            if ((u8)D_800A331C >= 5) {
+            g_memcard_status8_retry_count++;
+            if ((u8)g_memcard_status8_retry_count >= 5) {
                 D_800A333C = 1;
                 g_memcard_status_wait_countdown = 0x5A;
                 break;
@@ -708,24 +708,24 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
             memcard_RequestLoad();
             break;
         case 11:
-            D_800A332C++;
-            if ((u8)D_800A332C >= 5) {
+            g_memcard_status15_retry_count++;
+            if ((u8)g_memcard_status15_retry_count >= 5) {
                 g_memcard_validation_load_active = 0;
                 break;
             }
             memcard_RequestLoad();
             break;
         case 6:
-            D_800A3328++;
-            if ((u8)D_800A3328 >= 5) {
+            g_memcard_status10_retry_count++;
+            if ((u8)g_memcard_status10_retry_count >= 5) {
                 g_memcard_validation_load_active = 0;
                 break;
             }
             memcard_RequestLoad();
             break;
         case 10:
-            D_800A3324++;
-            if ((u8)D_800A3324 >= 5) {
+            g_memcard_status14_retry_count++;
+            if ((u8)g_memcard_status14_retry_count >= 5) {
                 g_memcard_validation_load_active = 0;
                 break;
             }
@@ -735,10 +735,10 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
             g_memcard_validation_load_active = 0;
             break;
         case 1:
-            D_800A3320++;
-            if ((u8)D_800A3320 >= 5) {
+            g_memcard_status5_retry_count++;
+            if ((u8)g_memcard_status5_retry_count >= 5) {
                 g_memcard_validation_load_active = 0;
-                D_800A3338 = 1;
+                g_memcard_status5_retries_exhausted = 1;
             }
             memcard_RequestLoad();
             break;
@@ -1654,7 +1654,7 @@ void comb_RequestClose(void) { g_comb_close_request = 1; }
 
 s32 comb_WriteWaitCallback(s32 a0, u32 a1) {
     if (a1 > 0x10000) {
-        D_800A382C = 0;
+        g_comb_write_not_aborted = 0;
         return 0;
     }
     return 1;
@@ -1694,12 +1694,12 @@ s32 comb_Write8(void *buf) {
     }
 
     _comb_control(1, 1, 1);
-    D_800A382C = 1;
+    g_comb_write_not_aborted = 1;
     _comb_control(4, 0, (s32)&comb_WriteWaitCallback);
     write(g_comb_write_fd, &g_comb_send_buf, 8);
     _comb_control(4, 0, 0);
     _comb_control(1, 1, 0);
-    return D_800A382C;
+    return g_comb_write_not_aborted;
 }
 
 void comb_Read8(void) { read(g_comb_read_fd, g_comb_recv_buf, 8); }
@@ -1940,7 +1940,8 @@ end:
 /* .data 0x8008F19C..0x8008F220 (cdrom.c's .data precedes; 2B344.c's
  * D_8008F220.. follows), in address order:
  * memcard_BuildFileHeader's full-width Shift-JIS digit tables D_8008F19C
- * ("0".."4") and D_8008F1A8 ("0".."9"), the full-width save title D_8008F1C0
+ * ("0".."4") and D_8008F1A8 ("0".."9"), the full-width save title
+ * g_memcard_save_title
  * ("BB2 Narukagami:? VS Shainto:?", the two "?" overwritten with digits) and
  * the per-character class bytes D_8008F204 (27 used; the 28th byte is zero).
  * Only this file reads them. Defined after every function, so no body sees a
@@ -1952,7 +1953,7 @@ u8 D_8008F1A8[24] = {
     0x82, 0x4F, 0x82, 0x50, 0x82, 0x51, 0x82, 0x52, 0x82, 0x53, 0x82, 0x54,
     0x82, 0x55, 0x82, 0x56, 0x82, 0x57, 0x82, 0x58, 0x00, 0x00, 0x00, 0x00,
 };
-u8 D_8008F1C0[68] = {
+u8 g_memcard_save_title[68] = {
     0x82, 0x61, 0x82, 0x61, 0x82, 0x51, 0x81, 0x40, 0x82, 0x6D, 0x82, 0x81,
     0x82, 0x92, 0x82, 0x95, 0x82, 0x8B, 0x82, 0x81, 0x82, 0x87, 0x82, 0x81,
     0x82, 0x8D, 0x82, 0x89, 0x81, 0x46, 0x81, 0x48, 0x81, 0x40, 0x82, 0x75,
@@ -1976,7 +1977,7 @@ s16 D_800A31FE = 0; /* not named by any code or data: size from the gap */
 u8 D_800A3200 = 0x81;
 u8 D_800A3201 = 0x7b;
 u8 D_800A3202 = 0; /* not named by any code or data: size from the gap */
-u8 D_800A3203 = 1;
+u8 g_memcard_load_request_armed = 1;
 u8 g_menu_prompt_rearm = 1;
 u8 D_800A3205 = 1;
 u8 D_800A3206 = 0;
@@ -2007,7 +2008,7 @@ s16 g_memcard_request_operation;
 u8 g_replay_playback_frame;
 s32 g_comb_event_error;
 s16 g_memcard_request_retry_count;
-u8 D_800A382C;
+u8 g_comb_write_not_aborted;
 s32 g_comb_wait_state;
 u8 D_800A38CC;
 s32 D_800A38D0;

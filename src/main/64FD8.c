@@ -16,21 +16,21 @@ extern void AddPrim(void *, void *);
  * {s16, s16} pair per player, passed to pad_StepOffsetsGetDirectionEvents
  * beside SelWork f40[player]. */
 static s16 g_sel_offset_steps[2][2];
-static Unk8006E49CRec *D_800A35D8;
+static Unk8006E49CRec *g_sel_prim_buffers;
 static s8 D_800A35DC;
 static s32 D_800A35E0;
 static s32 g_option_mode_flow_state;
 static s32 D_800A35E8;
 static s32 D_800A35EC; /* unreferenced: size from the gap */
 static s32 g_gpu_timed_sprite_elapsed_frames;
-static Unk8006E49CRec *D_800A35F4;
+static Unk8006E49CRec *g_gpu_timed_sprite_prim_buffers;
 static Ctx77D94 *g_gpu_timed_sprite_resources;
-static s32 D_800A35FC;
+static s32 g_gpu_timed_sprite_step_count;
 static s32 g_gpu_timed_sprite_sequence_phase;
 static s32 D_800A3604; /* unreferenced: size from the gap */
 static s32 g_gpu_scrolling_display_frame;
-static Unk8006E49CRec *D_800A360C;
-static Unk80078824Rec *D_800A3610;
+static Unk8006E49CRec *g_gpu_scrolling_sprite_prim_buffers;
+static Unk80078824Rec *g_gpu_scrolling_sprite_resources;
 static s32 D_800A3614;
 
 s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
@@ -1093,7 +1093,7 @@ s32 menu_RelocateSelLists(s32 *resource_root) {
 }
 
 Unk8006E49CRec *menu_GetSelPrimBuffer(s32 buffer_index) {
-    return &D_800A35D8[buffer_index];
+    return &g_sel_prim_buffers[buffer_index];
 }
 
 extern s32 menu_RelocateSelLists(s32 *);
@@ -1109,13 +1109,13 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     work = (void *)(arg0 + 0x58);
-    D_800A35D8 = (Unk8006E49CRec *)arg0;
+    g_sel_prim_buffers = (Unk8006E49CRec *)arg0;
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(6, work);
     r = menu_RelocateSelLists(work);
     {
         Unk80076FF8Rec *list = work;
-        work = (void *)gpu_InitPrimBufferPair(r, D_800A35D8);
+        work = (void *)gpu_InitPrimBufferPair(r, g_sel_prim_buffers);
         g_sel_screen_work = work;
         SELWORK->f04 = list;
         /* FAKE: dead store (never read) takes work out of the call result's
@@ -1463,7 +1463,7 @@ s32 reloc_RelocateFiveOffsetListsAndGetWord1(s32 *resource_root) {
 }
 
 Unk8006E49CRec *gpu_GetTimedSpritePrimBuffer(s32 buffer_index) {
-    return &D_800A35F4[buffer_index];
+    return &g_gpu_timed_sprite_prim_buffers[buffer_index];
 }
 
 extern RECT D_800A32FC;
@@ -1681,14 +1681,14 @@ s32 InitTimedSpriteSequence(s32 arg0) {
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     resource_root = (Ctx77D94 *)(arg0 + 0x58);
-    D_800A35F4 = (Unk8006E49CRec *)arg0;
+    g_gpu_timed_sprite_prim_buffers = (Unk8006E49CRec *)arg0;
     g_gpu_timed_sprite_resources = resource_root;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
         0x32, &resource_root->resource_head);
     prim_storage =
         reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)resource_root);
-    gpu_InitPrimBufferPair(prim_storage, D_800A35F4);
-    D_800A35FC = 0;
+    gpu_InitPrimBufferPair(prim_storage, g_gpu_timed_sprite_prim_buffers);
+    g_gpu_timed_sprite_step_count = 0;
     g_gpu_timed_sprite_elapsed_frames = 0;
     g_gpu_timed_sprite_sequence_phase = 0;
     return 1;
@@ -1700,8 +1700,8 @@ s32 StepTimedSpriteSequenceWithSkip(s32 pressed_buttons) {
     Unk8006EACCRec draw_context;
     Unk8006E49CRec *prim_buffer;
     s32 step_count;
-    step_count = D_800A35FC + 1;
-    D_800A35FC = step_count;
+    step_count = g_gpu_timed_sprite_step_count + 1;
+    g_gpu_timed_sprite_step_count = step_count;
     prim_buffer = gpu_GetTimedSpritePrimBuffer(step_count & 1);
     draw_context.primitive_cursors.textured_quad_prims =
         prim_buffer->textured_quad_prims;
@@ -1732,7 +1732,7 @@ s32 GetScrollingSpriteRecordWord1(Unk80078824Rec *resource_root) {
 }
 
 Unk8006E49CRec *gpu_GetScrollingSpritePrimBuffer(s32 buffer_index) {
-    return &D_800A360C[buffer_index];
+    return &g_gpu_scrolling_sprite_prim_buffers[buffer_index];
 }
 
 void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
@@ -1748,10 +1748,10 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
     s.has_color = 0;
     s.semi = 0;
     s.x = 0;
-    s.header = D_800A3610->unk_14[10];
+    s.header = g_gpu_scrolling_sprite_resources->unk_14[10];
     s.y = 0;
     s.table = s.header->cells;
-    sheet_headers = D_800A3610->unk_14;
+    sheet_headers = g_gpu_scrolling_sprite_resources->unk_14;
     if (g_gpu_scrolling_display_frame >= 0xAAA) {
         if (g_gpu_scrolling_display_frame >= 0xB04) {
             s16 brightness;
@@ -1784,20 +1784,20 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
     }
 }
 
-extern s32 D_800A3304;
+extern s32 g_gpu_scrolling_sprite_step_count;
 
 s32 InitScrollingSpriteDisplay(s32 arg0) {
     Unk80078824Rec *resource_root;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     resource_root = (Unk80078824Rec *)(arg0 + 0x58);
-    D_800A360C = (Unk8006E49CRec *)arg0;
-    D_800A3610 = resource_root;
+    g_gpu_scrolling_sprite_prim_buffers = (Unk8006E49CRec *)arg0;
+    g_gpu_scrolling_sprite_resources = resource_root;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
         0x5F, &resource_root->resource_head);
-    gpu_InitPrimBufferPair(
-        GetScrollingSpriteRecordWord1(resource_root), D_800A360C);
-    D_800A3304 = 0;
+    gpu_InitPrimBufferPair(GetScrollingSpriteRecordWord1(resource_root),
+                           g_gpu_scrolling_sprite_prim_buffers);
+    g_gpu_scrolling_sprite_step_count = 0;
     g_gpu_scrolling_display_frame = 0;
     D_800A3614 = 0;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -1809,8 +1809,9 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *);
 s32 StepScrollingSpriteDisplay(void) {
     Unk800788B0Rec primitive_cursors;
     Unk8006E49CRec *prim_buffer;
-    D_800A3304++;
-    prim_buffer = gpu_GetScrollingSpritePrimBuffer(D_800A3304 & 1);
+    g_gpu_scrolling_sprite_step_count++;
+    prim_buffer =
+        gpu_GetScrollingSpritePrimBuffer(g_gpu_scrolling_sprite_step_count & 1);
     primitive_cursors.textured_quad_prims = prim_buffer->textured_quad_prims;
     primitive_cursors.gradient_quad_prims = prim_buffer->gradient_quad_prims;
     primitive_cursors.sprite_prims = prim_buffer->sprite_prims;
@@ -1825,7 +1826,7 @@ s32 StepScrollingSpriteDisplay(void) {
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 RECT D_800A32FC = {640, 0, 64, 184};
-s32 D_800A3304 = 0;
+s32 g_gpu_scrolling_sprite_step_count = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 u8 *g_sel_screen_work;

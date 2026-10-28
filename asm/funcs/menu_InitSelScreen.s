@@ -15,7 +15,7 @@ glabel menu_InitSelScreen
     /* 678EC 800770EC 1000A0A7 */  sh         $zero, 0x10($sp)
     /* 678F0 800770F0 11EE010C */  jal        ClearOTagR
     /* 678F4 800770F4 1200A0A7 */   sh        $zero, 0x12($sp)
-    /* 678F8 800770F8 0C0590AF */  sw         $s0, %gp_rel(D_800A35D8)($gp)
+    /* 678F8 800770F8 0C0590AF */  sw         $s0, %gp_rel(g_sel_prim_buffers)($gp)
     /* 678FC 800770FC A81A010C */  jal        resource_FreeSlotsAndBlocksAndInvalidateEntryCache
     /* 67900 80077100 00000000 */   nop
     /* 67904 80077104 06000424 */  addiu      $a0, $zero, 0x6
@@ -23,7 +23,7 @@ glabel menu_InitSelScreen
     /* 6790C 8007710C 21282002 */   addu      $a1, $s1, $zero
     /* 67910 80077110 FEDB010C */  jal        menu_RelocateSelLists
     /* 67914 80077114 21202002 */   addu      $a0, $s1, $zero
-    /* 67918 80077118 0C05858F */  lw         $a1, %gp_rel(D_800A35D8)($gp)
+    /* 67918 80077118 0C05858F */  lw         $a1, %gp_rel(g_sel_prim_buffers)($gp)
     /* 6791C 8007711C 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 67920 80077120 21204000 */   addu      $a0, $v0, $zero
     /* 67924 80077124 21182002 */  addu       $v1, $s1, $zero

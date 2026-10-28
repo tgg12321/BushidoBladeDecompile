@@ -222,12 +222,12 @@ dlabel D_800A36C6
     /* 93EC6 800A36C6 */ .short 0x0000
 enddlabel D_800A36C6
 
-nonmatching D_800A36C8
+nonmatching g_fight_saved_bone_group_tim_requests
 
-dlabel D_800A36C8
+dlabel g_fight_saved_bone_group_tim_requests
     /* 93EC8 800A36C8 */ .byte 0x00
     /* 93EC9 800A36C9 */ .byte 0x00
-enddlabel D_800A36C8
+enddlabel g_fight_saved_bone_group_tim_requests
 
 nonmatching g_fight_paired_move_flags
 
@@ -280,11 +280,11 @@ dlabel g_sheet_pair_draw_mode_cursor
     /* 93EE0 800A36E0 00000000 */ .word 0x00000000
 enddlabel g_sheet_pair_draw_mode_cursor
 
-nonmatching D_800A36E4
+nonmatching g_sheet_pair_sprite_cursor
 
-dlabel D_800A36E4
+dlabel g_sheet_pair_sprite_cursor
     /* 93EE4 800A36E4 00000000 */ .word 0x00000000
-enddlabel D_800A36E4
+enddlabel g_sheet_pair_sprite_cursor
 
 nonmatching g_fight_match_result_timer
 
@@ -812,11 +812,11 @@ dlabel g_eff_quad_cursor
     /* 93FD4 800A37D4 00000000 */ .word 0x00000000
 enddlabel g_eff_quad_cursor
 
-nonmatching D_800A37D8
+nonmatching g_comb_handshake_retry_count
 
-dlabel D_800A37D8
+dlabel g_comb_handshake_retry_count
     /* 93FD8 800A37D8 00000000 */ .word 0x00000000
-enddlabel D_800A37D8
+enddlabel g_comb_handshake_retry_count
 
 nonmatching g_memcard_sw_event_ioe
 

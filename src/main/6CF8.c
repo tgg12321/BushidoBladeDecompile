@@ -26,7 +26,7 @@ extern void func_800164F8(void);
 
 extern u8 g_softbody_slot_high_water;
 extern RECT D_800A30D4;
-extern s32 D_800A30DC;
+extern s32 g_main_prim_buffer_min_remaining;
 
 extern void __main(void);
 /* Not the bb2.h spelling: the definition takes an s16 first parameter, but
@@ -269,7 +269,7 @@ void snd_InitAndLoadCommonVab(void) {
     memcpy(0x8010DB00, 0x801D8800, size);
     snd_VabFakeOpen(0xFFF35300, 0);
     snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode();
-    D_800A3906 = 1;
+    g_snd_initialized = 1;
 }
 
 extern u32 D_800A3798;
@@ -286,7 +286,7 @@ void func_80016D78(void) {
     D_800A3770[1] = 0x801EBC00;
     D_800A3798 = 0x13400;
     g_eff_initialized = 0;
-    D_800A3906 = 0;
+    g_snd_initialized = 0;
     snd_InitAndLoadCommonVab();
     pad_ResetStateMarkValid();
     font_LoadImage();
@@ -466,7 +466,7 @@ void main(void) {
             g_main_loop_handler_index = 8;
         }
 
-        D_8008D090[g_main_loop_handler_index]();
+        g_main_loop_handlers[g_main_loop_handler_index]();
         font_AddTpage();
 
         do {
@@ -488,8 +488,8 @@ void main(void) {
 
         {
             s32 remaining = D_800A3770[idx] + 0x13400 - (s32)g_prim_buf_cursor;
-            if (remaining < D_800A30DC) {
-                D_800A30DC = remaining;
+            if (remaining < g_main_prim_buffer_min_remaining) {
+                g_main_prim_buffer_min_remaining = remaining;
             }
             if (remaining < 0) {
                 printf(g_str_prim_overflow);
@@ -817,7 +817,7 @@ void func_80017F98(s32 arg0, s32 arg1, s32 arg2) {}
 RECT g_gpu_clear_rect = {0, 0, 640, 480};
 /* 0x800A30D4: copied whole into a local RECT (rect = D_800A30D4) */
 RECT D_800A30D4 = {32, 96, 256, 48};
-s32 D_800A30DC = 0x13400;
+s32 g_main_prim_buffer_min_remaining = 0x13400;
 /* not named by any code or data: size from the gap */
 s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};
 u8 g_softbody_slot_high_water = 0;
@@ -847,6 +847,6 @@ u32 *g_prim_buf_cursor;
 s32 g_rng_state;
 s16 g_fight_mode_selector;
 u8 g_fight_stage_list_draw_cursor;
-u8 D_800A3906;
+u8 g_snd_initialized;
 u8 g_main_present_skip_frames;
 u8 g_comb_abort_request;

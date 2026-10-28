@@ -107,8 +107,8 @@ glabel wave_Init
     /* 38174 80047974 0800E228 */  slti       $v0, $a3, 0x8
     /* 38178 80047978 B9FF4014 */  bnez       $v0, .L80047860
     /* 3817C 8004797C 21200000 */   addu      $a0, $zero, $zero
-    /* 38180 80047980 0F80043C */  lui        $a0, %hi(D_800EF070)
-    /* 38184 80047984 70F08424 */  addiu      $a0, $a0, %lo(D_800EF070)
+    /* 38180 80047980 0F80043C */  lui        $a0, %hi(g_wave_draw_node)
+    /* 38184 80047984 70F08424 */  addiu      $a0, $a0, %lo(g_wave_draw_node)
     /* 38188 80047988 0E000224 */  addiu      $v0, $zero, 0xE
     /* 3818C 8004798C 000082A0 */  sb         $v0, 0x0($a0)
     /* 38190 80047990 04000224 */  addiu      $v0, $zero, 0x4
@@ -157,8 +157,8 @@ glabel wave_Init
     /* 38234 80047A34 F5FF4014 */  bnez       $v0, .L80047A0C
     /* 38238 80047A38 4400A524 */   addiu     $a1, $a1, 0x44
     /* 3823C 80047A3C 21200000 */  addu       $a0, $zero, $zero
-    /* 38240 80047A40 0F80033C */  lui        $v1, %hi(D_800EF558)
-    /* 38244 80047A44 58F56324 */  addiu      $v1, $v1, %lo(D_800EF558)
+    /* 38240 80047A40 0F80033C */  lui        $v1, %hi(g_wave_column_phases)
+    /* 38244 80047A44 58F56324 */  addiu      $v1, $v1, %lo(g_wave_column_phases)
   .L80047A48:
     /* 38248 80047A48 C0110400 */  sll        $v0, $a0, 7
     /* 3824C 80047A4C FF0F4230 */  andi       $v0, $v0, 0xFFF

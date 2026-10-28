@@ -118,7 +118,7 @@ glabel eff_BindScratchpad
     /* 51808 80061008 18048AAF */  sw         $t2, %gp_rel(g_eff_current_ot_entry)($gp)
     /* 5180C 8006100C 1C0489AF */  sw         $t1, %gp_rel(g_eff_current_prim_tag)($gp)
     /* 51810 80061010 B40388AF */  sw         $t0, %gp_rel(g_eff_yawed_quad_tex_index)($gp)
-    /* 51814 80061014 B80387AF */  sw         $a3, %gp_rel(D_800A3484)($gp)
+    /* 51814 80061014 B80387AF */  sw         $a3, %gp_rel(g_eff_quad_rate_selector)($gp)
     /* 51818 80061018 C00386AF */  sw         $a2, %gp_rel(g_eff_clut_tex_rec)($gp)
     /* 5181C 8006101C 200483AF */  sw         $v1, %gp_rel(g_eff_work_area)($gp)
     /* 51820 80061020 801F013C */  lui        $at, (0x1F800004 >> 16)

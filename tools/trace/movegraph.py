@@ -131,7 +131,7 @@ SPEC_VALUES = [
     {"at": "0x80106A70", "len": 4},
     {"at": "g_fight_mode_selector", "len": 2},
     {"at": "g_comb_local_side", "len": 4},
-    {"at": "D_800A3912", "len": 3},
+    {"at": "g_pad_remote_button_mapping_20", "len": 3},
     {"at": "g_fight_paired_move_initiator", "len": 2},
     {"at": "0x80120000", "len": 0x801D8800 - 0x80120000},
 ]
@@ -250,7 +250,7 @@ class Fight:
         if mode == 6 and (not m.covered(MODE6_PLAYER, 4)
                           or not m.covered(MODE6_CONFIG, 3)):
             raise SystemExit("movegraph: mode 6 needs g_comb_local_side and "
-                             "D_800A3912..14 read")
+                             "g_pad_remote_button_mapping_20..14 read")
         if mode == 6 and idx != m.u32(MODE6_PLAYER):
             nib = [m.u8(MODE6_CONFIG + i) & 0xF for i in range(3)]
         else:

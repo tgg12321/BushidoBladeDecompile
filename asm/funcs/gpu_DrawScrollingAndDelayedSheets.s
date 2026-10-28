@@ -2,7 +2,7 @@ glabel gpu_DrawScrollingAndDelayedSheets
     /* 68E54 80078654 A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 68E58 80078658 4C00B1AF */  sw         $s1, 0x4C($sp)
     /* 68E5C 8007865C 21888000 */  addu       $s1, $a0, $zero
-    /* 68E60 80078660 4405838F */  lw         $v1, %gp_rel(D_800A3610)($gp)
+    /* 68E60 80078660 4405838F */  lw         $v1, %gp_rel(g_gpu_scrolling_sprite_resources)($gp)
     /* 68E64 80078664 3C05848F */  lw         $a0, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 68E68 80078668 02000224 */  addiu      $v0, $zero, 0x2
     /* 68E6C 8007866C 5000B2AF */  sw         $s2, 0x50($sp)

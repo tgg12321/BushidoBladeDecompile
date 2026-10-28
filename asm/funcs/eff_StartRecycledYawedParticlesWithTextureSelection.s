@@ -75,7 +75,7 @@ glabel eff_StartRecycledYawedParticlesWithTextureSelection
     /* 52518 80061D18 66114224 */  addiu      $v0, $v0, %lo(D_800F1164 + 0x2)
     /* 5251C 80061D1C 140062AC */  sw         $v0, 0x14($v1)
     /* 52520 80061D20 000064AC */  sw         $a0, 0x0($v1)
-    /* 52524 80061D24 240491A7 */  sh         $s1, %gp_rel(D_800A34F0)($gp)
+    /* 52524 80061D24 240491A7 */  sh         $s1, %gp_rel(g_eff_yawed_particle_alternate_texture_flags)($gp)
     /* 52528 80061D28 54870108 */  j          .L80061D50
     /* 5252C 80061D2C 00000000 */   nop
   .L80061D30:

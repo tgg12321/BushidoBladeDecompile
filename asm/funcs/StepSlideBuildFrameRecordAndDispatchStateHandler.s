@@ -70,9 +70,9 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F3D4 8006EBD4 B4048287 */  lh         $v0, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 5F3D8 8006EBD8 00000000 */  nop
     /* 5F3DC 8006EBDC 80100200 */  sll        $v0, $v0, 2
-    /* 5F3E0 8006EBE0 0A80013C */  lui        $at, %hi(D_8009BC1C)
+    /* 5F3E0 8006EBE0 0A80013C */  lui        $at, %hi(g_entry_menu_handlers)
     /* 5F3E4 8006EBE4 21082200 */  addu       $at, $at, $v0
-    /* 5F3E8 8006EBE8 1CBC228C */  lw         $v0, %lo(D_8009BC1C)($at)
+    /* 5F3E8 8006EBE8 1CBC228C */  lw         $v0, %lo(g_entry_menu_handlers)($at)
     /* 5F3EC 8006EBEC 00000000 */  nop
     /* 5F3F0 8006EBF0 09F84000 */  jalr       $v0
     /* 5F3F4 8006EBF4 1000A427 */   addiu     $a0, $sp, 0x10

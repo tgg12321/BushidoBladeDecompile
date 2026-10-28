@@ -43,7 +43,7 @@ glabel motion_UpdatePlayback
     /* 451A8 800549A8 3400028E */  lw         $v0, 0x34($s0)
     /* 451AC 800549AC 00000000 */  nop
     /* 451B0 800549B0 0000438C */  lw         $v1, 0x0($v0)
-    /* 451B4 800549B4 8401828F */  lw         $v0, %gp_rel(D_800A3250)($gp)
+    /* 451B4 800549B4 8401828F */  lw         $v0, %gp_rel(g_motion_null_stream_tag)($gp)
     /* 451B8 800549B8 00000000 */  nop
     /* 451BC 800549BC 02006214 */  bne        $v1, $v0, .L800549C8
     /* 451C0 800549C0 00000000 */   nop

@@ -170,8 +170,8 @@ glabel gpu_AddRotatedSpriteQuads
     /* 646FC 80073EFC D7FC010C */  jal        RotMatrix
     /* 64700 80073F00 3400ADA7 */   sh        $t5, 0x34($sp)
     /* 64704 80073F04 F800A48F */  lw         $a0, 0xF8($sp)
-    /* 64708 80073F08 0A80053C */  lui        $a1, %hi(D_8009BCD4)
-    /* 6470C 80073F0C D4BCA524 */  addiu      $a1, $a1, %lo(D_8009BCD4)
+    /* 64708 80073F08 0A80053C */  lui        $a1, %hi(g_gpu_rotated_sprite_quad_scale)
+    /* 6470C 80073F0C D4BCA524 */  addiu      $a1, $a1, %lo(g_gpu_rotated_sprite_quad_scale)
     /* 64710 80073F10 37FA010C */  jal        ScaleMatrixL
     /* 64714 80073F14 21800000 */   addu      $s0, $zero, $zero
     /* 64718 80073F18 F800A48F */  lw         $a0, 0xF8($sp)

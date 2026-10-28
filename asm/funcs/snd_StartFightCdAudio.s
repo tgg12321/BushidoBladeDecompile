@@ -22,9 +22,9 @@ glabel snd_StartFightCdAudio
   jlabel .L8001DADC
     /* E2DC 8001DADC 0A80023C */  lui        $v0, %hi(g_fight_stage_index)
     /* E2E0 8001DAE0 A4364284 */  lh         $v0, %lo(g_fight_stage_index)($v0)
-    /* E2E4 8001DAE4 0980013C */  lui        $at, %hi(D_8008D518)
+    /* E2E4 8001DAE4 0980013C */  lui        $at, %hi(g_snd_stage_cd_audio_entry_indices)
     /* E2E8 8001DAE8 21082200 */  addu       $at, $at, $v0
-    /* E2EC 8001DAEC 18D52490 */  lbu        $a0, %lo(D_8008D518)($at)
+    /* E2EC 8001DAEC 18D52490 */  lbu        $a0, %lo(g_snd_stage_cd_audio_entry_indices)($at)
     /* E2F0 8001DAF0 CE760008 */  j          .L8001DB38
     /* E2F4 8001DAF4 00000000 */   nop
   jlabel .L8001DAF8

@@ -223,14 +223,14 @@ glabel gpu_UnpackGridRecordsNodesAndCellRuns
     /* 2F8F4 8003F0F4 E6FF6214 */  bne        $v1, $v0, .L8003F090
     /* 2F8F8 8003F0F8 02003126 */   addiu     $s1, $s1, 0x2
   .L8003F0FC:
-    /* 2F8FC 8003F0FC 6401848F */  lw         $a0, %gp_rel(D_800A3230)($gp)
+    /* 2F8FC 8003F0FC 6401848F */  lw         $a0, %gp_rel(g_gpu_grid_cell_run_entry_peak)($gp)
     /* 2F900 8003F100 00000000 */  nop
     /* 2F904 8003F104 2A108700 */  slt        $v0, $a0, $a3
     /* 2F908 8003F108 02004010 */  beqz       $v0, .L8003F114
     /* 2F90C 8003F10C 00000000 */   nop
     /* 2F910 8003F110 2120E000 */  addu       $a0, $a3, $zero
   .L8003F114:
-    /* 2F914 8003F114 640184AF */  sw         $a0, %gp_rel(D_800A3230)($gp)
+    /* 2F914 8003F114 640184AF */  sw         $a0, %gp_rel(g_gpu_grid_cell_run_entry_peak)($gp)
     /* 2F918 8003F118 E8038228 */  slti       $v0, $a0, 0x3E8
     /* 2F91C 8003F11C 03004014 */  bnez       $v0, .L8003F12C
     /* 2F920 8003F120 00000000 */   nop

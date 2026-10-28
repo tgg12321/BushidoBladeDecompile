@@ -184,9 +184,9 @@ glabel menu_UpdateChoiceGrid
     /* 62BB8 800723B8 F404858F */  lw         $a1, %gp_rel(g_entry_menu_gpu_db)($gp)
     /* 62BBC 800723BC 80301700 */  sll        $a2, $s7, 2
     /* 62BC0 800723C0 100082AE */  sw         $v0, 0x10($s4)
-    /* 62BC4 800723C4 0A80013C */  lui        $at, %hi(D_8009BCC4)
+    /* 62BC4 800723C4 0A80013C */  lui        $at, %hi(g_entry_menu_choice_grid_draw_offsets)
     /* 62BC8 800723C8 21082600 */  addu       $at, $at, $a2
-    /* 62BCC 800723CC C4BC2394 */  lhu        $v1, %lo(D_8009BCC4)($at)
+    /* 62BCC 800723CC C4BC2394 */  lhu        $v1, %lo(g_entry_menu_choice_grid_draw_offsets)($at)
     /* 62BD0 800723D0 0800A294 */  lhu        $v0, 0x8($a1)
     /* 62BD4 800723D4 F804848F */  lw         $a0, %gp_rel(g_entry_menu_work_block)($gp)
     /* 62BD8 800723D8 23104300 */  subu       $v0, $v0, $v1

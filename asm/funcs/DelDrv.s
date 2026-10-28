@@ -12,7 +12,7 @@ glabel DelDrv
     /* 7D884 8008D084 00000000 */  nop
     /* 7D888 8008D088 00000000 */  nop
     /* 7D88C 8008D08C 00000000 */  nop
-  alabel D_8008D090
+  alabel g_main_loop_handlers
     /* 7D890 8008D090 B0DC0180 */  lb         $at, -0x2350($zero)
     /* 7D894 8008D094 78E80180 */  lb         $at, -0x1788($zero)
     /* 7D898 8008D098 98380380 */  lb         $v1, 0x3898($zero)

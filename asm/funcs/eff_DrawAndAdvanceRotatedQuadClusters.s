@@ -52,8 +52,8 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53220 80062A20 001B0300 */  sll        $v1, $v1, 12
     /* 53224 80062A24 18007000 */  mult       $v1, $s0
     /* 53228 80062A28 C0281700 */  sll        $a1, $s7, 3
-    /* 5322C 80062A2C 0F80043C */  lui        $a0, %hi(D_800F10A0)
-    /* 53230 80062A30 A0108424 */  addiu      $a0, $a0, %lo(D_800F10A0)
+    /* 5322C 80062A2C 0F80043C */  lui        $a0, %hi(g_eff_rotated_quad_cluster_rotations)
+    /* 53230 80062A30 A0108424 */  addiu      $a0, $a0, %lo(g_eff_rotated_quad_cluster_rotations)
     /* 53234 80062A34 2120A400 */  addu       $a0, $a1, $a0
     /* 53238 80062A38 21288002 */  addu       $a1, $s4, $zero
     /* 5323C 80062A3C 5800B6AF */  sw         $s6, 0x58($sp)

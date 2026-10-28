@@ -66,15 +66,15 @@ glabel fighter_ResolveBodyOverlap
     /* 191C4 800289C4 21B80000 */  addu       $s7, $zero, $zero
     /* 191C8 800289C8 21B00000 */  addu       $s6, $zero, $zero
     /* 191CC 800289CC 21A00000 */  addu       $s4, $zero, $zero
-    /* 191D0 800289D0 0A80123C */  lui        $s2, %hi(D_800A3144)
-    /* 191D4 800289D4 44315226 */  addiu      $s2, $s2, %lo(D_800A3144)
+    /* 191D0 800289D0 0A80123C */  lui        $s2, %hi(g_fighter_body_overlap_radii)
+    /* 191D4 800289D4 44315226 */  addiu      $s2, $s2, %lo(g_fighter_body_overlap_radii)
     /* 191D8 800289D8 21880000 */  addu       $s1, $zero, $zero
   .L800289DC:
     /* 191DC 800289DC 21C80000 */  addu       $t9, $zero, $zero
     /* 191E0 800289E0 21C02002 */  addu       $t8, $s1, $zero
     /* 191E4 800289E4 2000B2AF */  sw         $s2, 0x20($sp)
-    /* 191E8 800289E8 0A80103C */  lui        $s0, %hi(D_800A3144)
-    /* 191EC 800289EC 44311026 */  addiu      $s0, $s0, %lo(D_800A3144)
+    /* 191E8 800289E8 0A80103C */  lui        $s0, %hi(g_fighter_body_overlap_radii)
+    /* 191EC 800289EC 44311026 */  addiu      $s0, $s0, %lo(g_fighter_body_overlap_radii)
     /* 191F0 800289F0 801F0B3C */  lui        $t3, (0x1F800098 >> 16)
     /* 191F4 800289F4 98006B35 */  ori        $t3, $t3, (0x1F800098 & 0xFFFF)
   .L800289F8:

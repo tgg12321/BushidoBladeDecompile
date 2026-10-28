@@ -6,8 +6,8 @@
  * D_8009AD1C starts at 0x8009AD1C. No uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or by the pointer
  *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
- *    D_8009A384 / D_8009A3E0 / D_8009A3F4 / D_8009A598 (their D_8009A658
- *    row's npolys); the distance byte tables D_8009A830
+ *    D_8009A384 / D_8009A3E0 / D_8009A3F4 / D_8009A598 (their
+ * g_cpu_stage_nav_sets row's npolys); the distance byte tables D_8009A830
  * (fighter_CalcOpponentDistanceThresholdFromTables) and D_8009A838
  * (fighter_CalcOpponentDistanceThresholdFromTables,
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput); the pad scripts
@@ -18,15 +18,15 @@
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005490C + 0x6B30 = 0x8005B43C); so no code module owns them.
  * Readers: 4510C.c (D_8009A088 .. D_8009AA50; the vertex tables and polygon
- * arrays only through D_8009A658), 4BC3C.c (D_8009AA70, g_vab_id_list) and
- * 4D0A8.c (g_vab_id_list). */
+ * arrays only through g_cpu_stage_nav_sets), 4BC3C.c (g_snd_sound_vab_entries,
+ * g_vab_id_list) and 4D0A8.c (g_vab_id_list). */
 #include "common.h"
 #include "bb2.h"
 
 u8 D_8009A088[8] = {0x0A, 0x02, 0x02, 0x02, 0x04, 0x07, 0x00, 0x00};
 
 /* The stage navigation sets: each polygon's vertex table (x / z pairs), then
- * the polygons, then D_8009A658, one NavPolySet per stage. */
+ * the polygons, then g_cpu_stage_nav_sets, one NavPolySet per stage. */
 s16 D_8009A090[6][2] = {{8000, 4600}, {8550, 4270}, {8550, 3720},
                         {8000, 3440}, {7440, 3720}, {7440, 4270}};
 s16 D_8009A0A8[6][2] = {{8000, -3390}, {8550, -3720}, {8550, -4280},
@@ -185,7 +185,7 @@ NavPoly D_8009A638[4] = {{0xC0, 3, 37, 4, D_8009A5F8},
                          {0x40, 3, 37, 4, D_8009A608},
                          {0x40, 3, 37, 4, D_8009A618},
                          {0x40, 3, 37, 4, D_8009A628}};
-NavPolySet D_8009A658[38] = {
+NavPolySet g_cpu_stage_nav_sets[38] = {
     {0},
     {4, {0}, D_8009A0E0, {0}},
     {0},
@@ -300,7 +300,7 @@ s32 D_8009AA50[8] = {0x3000, 0x1000, 0x9000, 0x8000,
                      0xC000, 0x4000, 0x6000, 0x2000};
 
 /* 4BC3C.c's. */
-u16 D_8009AA70[170][2] = {
+u16 g_snd_sound_vab_entries[170][2] = {
     {0x0, 0x0},  {0x0, 0x1},  {0x0, 0x2},  {0x0, 0x3},  {0x0, 0x4},
     {0x1, 0x0},  {0x1, 0x1},  {0x1, 0x2},  {0x1, 0x3},  {0x1, 0x4},
     {0x1, 0x5},  {0x1, 0x6},  {0x1, 0x7},  {0x1, 0x8},  {0x1, 0x9},

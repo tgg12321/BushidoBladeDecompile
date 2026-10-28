@@ -77,9 +77,9 @@ glabel main
     /* 7B20 80017320 68078287 */  lh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
     /* 7B24 80017324 00000000 */  nop
     /* 7B28 80017328 80100200 */  sll        $v0, $v0, 2
-    /* 7B2C 8001732C 0980013C */  lui        $at, %hi(D_8008D090)
+    /* 7B2C 8001732C 0980013C */  lui        $at, %hi(g_main_loop_handlers)
     /* 7B30 80017330 21082200 */  addu       $at, $at, $v0
-    /* 7B34 80017334 90D0228C */  lw         $v0, %lo(D_8008D090)($at)
+    /* 7B34 80017334 90D0228C */  lw         $v0, %lo(g_main_loop_handlers)($at)
     /* 7B38 80017338 00000000 */  nop
     /* 7B3C 8001733C 09F84000 */  jalr       $v0
     /* 7B40 80017340 00000000 */   nop
@@ -127,12 +127,12 @@ glabel main
     /* 7BDC 800173DC 21105400 */  addu       $v0, $v0, $s4
     /* 7BE0 800173E0 21186400 */  addu       $v1, $v1, $a0
     /* 7BE4 800173E4 0000448C */  lw         $a0, 0x0($v0)
-    /* 7BE8 800173E8 1000828F */  lw         $v0, %gp_rel(D_800A30DC)($gp)
+    /* 7BE8 800173E8 1000828F */  lw         $v0, %gp_rel(g_main_prim_buffer_min_remaining)($gp)
     /* 7BEC 800173EC 23208300 */  subu       $a0, $a0, $v1
     /* 7BF0 800173F0 2A108200 */  slt        $v0, $a0, $v0
     /* 7BF4 800173F4 02004010 */  beqz       $v0, .L80017400
     /* 7BF8 800173F8 00000000 */   nop
-    /* 7BFC 800173FC 100084AF */  sw         $a0, %gp_rel(D_800A30DC)($gp)
+    /* 7BFC 800173FC 100084AF */  sw         $a0, %gp_rel(g_main_prim_buffer_min_remaining)($gp)
   .L80017400:
     /* 7C00 80017400 09008104 */  bgez       $a0, .L80017428
     /* 7C04 80017404 00000000 */   nop

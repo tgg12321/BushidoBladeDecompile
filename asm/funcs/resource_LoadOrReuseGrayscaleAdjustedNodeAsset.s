@@ -18,7 +18,7 @@ glabel resource_LoadOrReuseGrayscaleAdjustedNodeAsset
     /* 36FF4 800467F4 21284000 */  addu       $a1, $v0, $zero
     /* 36FF8 800467F8 0800A010 */  beqz       $a1, .L8004681C
     /* 36FFC 800467FC 00000000 */   nop
-    /* 37000 80046800 7C018287 */  lh         $v0, %gp_rel(D_800A3248)($gp)
+    /* 37000 80046800 7C018287 */  lh         $v0, %gp_rel(g_resource_cached_node_asset_id)($gp)
     /* 37004 80046804 00000000 */  nop
     /* 37008 80046808 04005314 */  bne        $v0, $s3, .L8004681C
     /* 3700C 8004680C 00000000 */   nop
@@ -48,7 +48,7 @@ glabel resource_LoadOrReuseGrayscaleAdjustedNodeAsset
     /* 37068 80046868 21208002 */  addu       $a0, $s4, $zero
     /* 3706C 8004686C 8015010C */  jal        arena_SetBlockEnd
     /* 37070 80046870 21282002 */   addu      $a1, $s1, $zero
-    /* 37074 80046874 7C0193A7 */  sh         $s3, %gp_rel(D_800A3248)($gp)
+    /* 37074 80046874 7C0193A7 */  sh         $s3, %gp_rel(g_resource_cached_node_asset_id)($gp)
   .L80046878:
     /* 37078 80046878 0480053C */  lui        $a1, %hi(resource_RebaseNodeAssetBlock)
     /* 3707C 8004687C DC68A524 */  addiu      $a1, $a1, %lo(resource_RebaseNodeAssetBlock)

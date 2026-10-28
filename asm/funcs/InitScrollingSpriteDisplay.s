@@ -10,19 +10,19 @@ glabel InitScrollingSpriteDisplay
     /* 69044 80078844 1000B0AF */   sw        $s0, 0x10($sp)
     /* 69048 80078848 5F000424 */  addiu      $a0, $zero, 0x5F
     /* 6904C 8007884C 58003026 */  addiu      $s0, $s1, 0x58
-    /* 69050 80078850 400591AF */  sw         $s1, %gp_rel(D_800A360C)($gp)
-    /* 69054 80078854 440590AF */  sw         $s0, %gp_rel(D_800A3610)($gp)
+    /* 69050 80078850 400591AF */  sw         $s1, %gp_rel(g_gpu_scrolling_sprite_prim_buffers)($gp)
+    /* 69054 80078854 440590AF */  sw         $s0, %gp_rel(g_gpu_scrolling_sprite_resources)($gp)
     /* 69058 80078858 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 6905C 8007885C 21280002 */   addu      $a1, $s0, $zero
     /* 69060 80078860 8AE1010C */  jal        GetScrollingSpriteRecordWord1
     /* 69064 80078864 21200002 */   addu      $a0, $s0, $zero
-    /* 69068 80078868 4005858F */  lw         $a1, %gp_rel(D_800A360C)($gp)
+    /* 69068 80078868 4005858F */  lw         $a1, %gp_rel(g_gpu_scrolling_sprite_prim_buffers)($gp)
     /* 6906C 8007886C 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 69070 80078870 21204000 */   addu      $a0, $v0, $zero
     /* 69074 80078874 01000424 */  addiu      $a0, $zero, 0x1
     /* 69078 80078878 21280000 */  addu       $a1, $zero, $zero
     /* 6907C 8007887C 21300000 */  addu       $a2, $zero, $zero
-    /* 69080 80078880 380280AF */  sw         $zero, %gp_rel(D_800A3304)($gp)
+    /* 69080 80078880 380280AF */  sw         $zero, %gp_rel(g_gpu_scrolling_sprite_step_count)($gp)
     /* 69084 80078884 3C0580AF */  sw         $zero, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 69088 80078888 480580AF */  sw         $zero, %gp_rel(D_800A3614)($gp)
     /* 6908C 8007888C DA59000C */  jal        gpu_SetDrawEnvBg

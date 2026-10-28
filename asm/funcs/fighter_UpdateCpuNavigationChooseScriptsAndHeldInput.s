@@ -837,8 +837,8 @@ glabel fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
     /* 49978 80059178 40100300 */  sll        $v0, $v1, 1
     /* 4997C 8005917C 21104300 */  addu       $v0, $v0, $v1
     /* 49980 80059180 80100200 */  sll        $v0, $v0, 2
-    /* 49984 80059184 0A80033C */  lui        $v1, %hi(D_8009A658)
-    /* 49988 80059188 58A66324 */  addiu      $v1, $v1, %lo(D_8009A658)
+    /* 49984 80059184 0A80033C */  lui        $v1, %hi(g_cpu_stage_nav_sets)
+    /* 49988 80059188 58A66324 */  addiu      $v1, $v1, %lo(g_cpu_stage_nav_sets)
     /* 4998C 8005918C 07008014 */  bnez       $a0, .L800591AC
     /* 49990 80059190 21A04300 */   addu      $s4, $v0, $v1
     /* 49994 80059194 0000028E */  lw         $v0, 0x0($s0)

@@ -186,7 +186,7 @@ tail:
                        g_fight_midpoint_effect_offsets[kind].unk0) >>
                       12;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                0, D_8008EB6C[kind], pos, (s16 *)0);
+                0, g_fight_midpoint_effect_event_ids[kind], pos, (s16 *)0);
         }
     } else {
         g_fight_midpoint_effect_delay--;

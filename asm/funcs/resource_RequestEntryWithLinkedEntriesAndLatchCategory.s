@@ -40,9 +40,9 @@ glabel resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 39C70 80049470 00000000 */   nop
     /* 39C74 80049474 40201000 */  sll        $a0, $s0, 1
   .L80049478:
-    /* 39C78 80049478 0A80013C */  lui        $at, %hi(D_80099CC8)
+    /* 39C78 80049478 0A80013C */  lui        $at, %hi(g_resource_entry_linked_entries)
     /* 39C7C 8004947C 21082400 */  addu       $at, $at, $a0
-    /* 39C80 80049480 C89C2390 */  lbu        $v1, %lo(D_80099CC8)($at)
+    /* 39C80 80049480 C89C2390 */  lbu        $v1, %lo(g_resource_entry_linked_entries)($at)
     /* 39C84 80049484 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 39C88 80049488 0D006210 */  beq        $v1, $v0, .L800494C0
     /* 39C8C 8004948C 40100300 */   sll       $v0, $v1, 1

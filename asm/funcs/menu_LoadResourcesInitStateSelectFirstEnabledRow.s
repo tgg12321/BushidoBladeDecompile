@@ -4,7 +4,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 59778 80068F78 21808000 */  addu       $s0, $a0, $zero
     /* 5977C 80068F7C 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 59780 80068F80 340490AF */  sw         $s0, %gp_rel(g_menu_arena_cursor)($gp)
-    /* 59784 80068F84 500490AF */  sw         $s0, %gp_rel(D_800A351C)($gp)
+    /* 59784 80068F84 500490AF */  sw         $s0, %gp_rel(g_row_menu_prim_buffers)($gp)
     /* 59788 80068F88 58001026 */  addiu      $s0, $s0, 0x58
     /* 5978C 80068F8C 2000BFAF */  sw         $ra, 0x20($sp)
     /* 59790 80068F90 340490AF */  sw         $s0, %gp_rel(g_menu_arena_cursor)($gp)
@@ -18,7 +18,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 597B0 80068FB0 600684AF */  sw         $a0, %gp_rel(D_800A372C)($gp)
     /* 597B4 80068FB4 67A4010C */  jal        reloc_RelocateTwelveListsAndLoadVabPack
     /* 597B8 80068FB8 00000000 */   nop
-    /* 597BC 80068FBC 5004858F */  lw         $a1, %gp_rel(D_800A351C)($gp)
+    /* 597BC 80068FBC 5004858F */  lw         $a1, %gp_rel(g_row_menu_prim_buffers)($gp)
     /* 597C0 80068FC0 21204000 */  addu       $a0, $v0, $zero
     /* 597C4 80068FC4 340484AF */  sw         $a0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597C8 80068FC8 27B9010C */  jal        gpu_InitPrimBufferPair

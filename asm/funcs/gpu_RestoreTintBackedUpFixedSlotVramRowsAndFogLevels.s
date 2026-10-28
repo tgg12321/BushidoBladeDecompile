@@ -19,8 +19,8 @@ glabel gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* 32438 80041C38 6800C013 */  beqz       $fp, .L80041DDC
     /* 3243C 80041C3C 00000000 */   nop
     /* 32440 80041C40 0800C387 */  lh         $v1, 0x8($fp)
-    /* 32444 80041C44 0B80023C */  lui        $v0, %hi(D_800A9A20)
-    /* 32448 80041C48 209A4284 */  lh         $v0, %lo(D_800A9A20)($v0)
+    /* 32444 80041C44 0B80023C */  lui        $v0, %hi(g_gpu_vram_row_backup_asset_index)
+    /* 32448 80041C48 209A4284 */  lh         $v0, %lo(g_gpu_vram_row_backup_asset_index)($v0)
     /* 3244C 80041C4C 00000000 */  nop
     /* 32450 80041C50 62006214 */  bne        $v1, $v0, .L80041DDC
     /* 32454 80041C54 FF000224 */   addiu     $v0, $zero, 0xFF
@@ -80,9 +80,9 @@ glabel gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* 3251C 80041D1C 084E2290 */  lbu        $v0, %lo(g_gpu_clut_row_list_map)($at)
     /* 32520 80041D20 00000000 */  nop
     /* 32524 80041D24 80100200 */  sll        $v0, $v0, 2
-    /* 32528 80041D28 0980013C */  lui        $at, %hi(D_80094DF0)
+    /* 32528 80041D28 0980013C */  lui        $at, %hi(g_gpu_clut_row_lists)
     /* 3252C 80041D2C 21082200 */  addu       $at, $at, $v0
-    /* 32530 80041D30 F04D308C */  lw         $s0, %lo(D_80094DF0)($at)
+    /* 32530 80041D30 F04D308C */  lw         $s0, %lo(g_gpu_clut_row_lists)($at)
     /* 32534 80041D34 68070108 */  j          .L80041DA0
     /* 32538 80041D38 21880000 */   addu      $s1, $zero, $zero
   .L80041D3C:

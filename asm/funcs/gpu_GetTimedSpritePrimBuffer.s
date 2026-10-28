@@ -3,7 +3,7 @@ glabel gpu_GetTimedSpritePrimBuffer
     /* 68578 80077D78 21104400 */  addu       $v0, $v0, $a0
     /* 6857C 80077D7C 80100200 */  sll        $v0, $v0, 2
     /* 68580 80077D80 23104400 */  subu       $v0, $v0, $a0
-    /* 68584 80077D84 2805838F */  lw         $v1, %gp_rel(D_800A35F4)($gp)
+    /* 68584 80077D84 2805838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_prim_buffers)($gp)
     /* 68588 80077D88 80100200 */  sll        $v0, $v0, 2
     /* 6858C 80077D8C 0800E003 */  jr         $ra
     /* 68590 80077D90 21106200 */   addu      $v0, $v1, $v0

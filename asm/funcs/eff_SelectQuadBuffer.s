@@ -1,11 +1,11 @@
 glabel eff_SelectQuadBuffer
     /* 51604 80060E04 04008010 */  beqz       $a0, .L80060E18
     /* 51608 80060E08 00000000 */   nop
-    /* 5160C 80060E0C 5803828F */  lw         $v0, %gp_rel(D_800A3424)($gp)
+    /* 5160C 80060E0C 5803828F */  lw         $v0, %gp_rel(g_eff_second_quad_buffer)($gp)
     /* 51610 80060E10 87830108 */  j          .L80060E1C
     /* 51614 80060E14 00000000 */   nop
   .L80060E18:
-    /* 51618 80060E18 5403828F */  lw         $v0, %gp_rel(D_800A3420)($gp)
+    /* 51618 80060E18 5403828F */  lw         $v0, %gp_rel(g_eff_first_quad_buffer)($gp)
   .L80060E1C:
     /* 5161C 80060E1C 00000000 */  nop
     /* 51620 80060E20 080782AF */  sw         $v0, %gp_rel(g_eff_quad_cursor)($gp)

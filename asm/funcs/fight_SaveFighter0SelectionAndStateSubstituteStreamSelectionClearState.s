@@ -12,8 +12,8 @@ glabel fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState
     /* 2BAF0 8003B2F0 6A376390 */  lbu        $v1, %lo(g_fight_bone_group_tim_requests)($v1)
     /* 2BAF4 8003B2F4 00004290 */  lbu        $v0, 0x0($v0)
     /* 2BAF8 8003B2F8 21280000 */  addu       $a1, $zero, $zero
-    /* 2BAFC 8003B2FC 0A80013C */  lui        $at, %hi(D_800A36C8)
-    /* 2BB00 8003B300 C83623A0 */  sb         $v1, %lo(D_800A36C8)($at)
+    /* 2BAFC 8003B2FC 0A80013C */  lui        $at, %hi(g_fight_saved_bone_group_tim_requests)
+    /* 2BB00 8003B300 C83623A0 */  sb         $v1, %lo(g_fight_saved_bone_group_tim_requests)($at)
     /* 2BB04 8003B304 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 2BB08 8003B308 6A3720A0 */  sb         $zero, %lo(g_fight_bone_group_tim_requests)($at)
     /* 2BB0C 8003B30C 000082A0 */  sb         $v0, 0x0($a0)

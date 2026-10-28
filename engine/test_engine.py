@@ -3912,7 +3912,7 @@ def test_data_as_code_conflicts() -> None:
 
     base = Path("src/main/d_7D870.c").read_text(encoding="utf-8")
     cases = []
-    for func in ("g_data_start", "D_8008D090"):
+    for func in ("g_data_start", "g_main_loop_handlers"):
         decoy = f"void {func}(void) {{ }}\n"
         cases.extend(((f"{func} plain data", base, func, False),
                       (f"{func} disabled decoy", base + "#if 0\n" + decoy + "#endif\n", func, True),
@@ -5308,7 +5308,7 @@ def test_queue_non_function_labels() -> None:
         "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
                         "D_80052394"),
         "main/43500": ("D_800545F8", "D_800545FC", "D_80054600"),
-        "main/d_7D870": ("g_data_start", "D_8008D090"),
+        "main/d_7D870": ("g_data_start", "g_main_loop_handlers"),
     }
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")
              for stem in labels}

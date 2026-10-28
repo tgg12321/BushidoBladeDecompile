@@ -61,8 +61,8 @@ glabel motion_LoadFighterData
     /* 1174C 80020F4C EAFF4014 */  bnez       $v0, .L80020EF8
     /* 11750 80020F50 01003126 */   addiu     $s1, $s1, 0x1
   .L80020F54:
-    /* 11754 80020F54 0980043C */  lui        $a0, %hi(D_8008DB1C)
-    /* 11758 80020F58 1CDB8424 */  addiu      $a0, $a0, %lo(D_8008DB1C)
+    /* 11754 80020F54 0980043C */  lui        $a0, %hi(g_fighter_motion_data_ids)
+    /* 11758 80020F58 1CDB8424 */  addiu      $a0, $a0, %lo(g_fighter_motion_data_ids)
     /* 1175C 80020F5C 00191400 */  sll        $v1, $s4, 4
     /* 11760 80020F60 21186400 */  addu       $v1, $v1, $a0
     /* 11764 80020F64 40101600 */  sll        $v0, $s6, 1

@@ -71,8 +71,8 @@ glabel eff_DrawBillboardList
     /* 529CC 800621CC 01004230 */  andi       $v0, $v0, 0x1
     /* 529D0 800621D0 A0014010 */  beqz       $v0, .L80062854
     /* 529D4 800621D4 1800A8AF */   sw        $t0, 0x18($sp)
-    /* 529D8 800621D8 0A801E3C */  lui        $fp, %hi(D_8009BA00)
-    /* 529DC 800621DC 00BADE27 */  addiu      $fp, $fp, %lo(D_8009BA00)
+    /* 529D8 800621D8 0A801E3C */  lui        $fp, %hi(g_eff_billboard_tex_recs)
+    /* 529DC 800621DC 00BADE27 */  addiu      $fp, $fp, %lo(g_eff_billboard_tex_recs)
     /* 529E0 800621E0 25003026 */  addiu      $s0, $s1, 0x25
   .L800621E4:
     /* 529E4 800621E4 001C1500 */  sll        $v1, $s5, 16

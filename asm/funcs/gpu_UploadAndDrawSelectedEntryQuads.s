@@ -129,8 +129,8 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F6C4 8006EEC4 17006210 */  beq        $v1, $v0, .L8006EF24
     /* 5F6C8 8006EEC8 00000000 */   nop
   .L8006EECC:
-    /* 5F6CC 8006EECC 0A80053C */  lui        $a1, %hi(D_800A32F4)
-    /* 5F6D0 8006EED0 F432A524 */  addiu      $a1, $a1, %lo(D_800A32F4)
+    /* 5F6CC 8006EECC 0A80053C */  lui        $a1, %hi(g_entry_menu_entry_upload_rect)
+    /* 5F6D0 8006EED0 F432A524 */  addiu      $a1, $a1, %lo(g_entry_menu_entry_upload_rect)
     /* 5F6D4 8006EED4 0300A288 */  lwl        $v0, 0x3($a1)
     /* 5F6D8 8006EED8 0000A298 */  lwr        $v0, 0x0($a1)
     /* 5F6DC 8006EEDC 0700A388 */  lwl        $v1, 0x7($a1)

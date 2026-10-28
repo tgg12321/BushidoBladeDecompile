@@ -7,9 +7,9 @@ glabel fight_InitCommandStream
     /* 2BA20 8003B220 802720A0 */  sb         $zero, %lo(g_fight_config + 0x8)($at)
     /* 2BA24 8003B224 1080013C */  lui        $at, %hi(g_fight_config + 0x9)
     /* 2BA28 8003B228 812723A0 */  sb         $v1, %lo(g_fight_config + 0x9)($at)
-    /* 2BA2C 8003B22C 0980013C */  lui        $at, %hi(D_800900EC)
+    /* 2BA2C 8003B22C 0980013C */  lui        $at, %hi(g_fight_command_streams)
     /* 2BA30 8003B230 21082400 */  addu       $at, $at, $a0
-    /* 2BA34 8003B234 EC00248C */  lw         $a0, %lo(D_800900EC)($at)
+    /* 2BA34 8003B234 EC00248C */  lw         $a0, %lo(g_fight_command_streams)($at)
     /* 2BA38 8003B238 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2BA3C 8003B23C 0A80013C */  lui        $at, %hi(D_800A3894)
     /* 2BA40 8003B240 943820AC */  sw         $zero, %lo(D_800A3894)($at)

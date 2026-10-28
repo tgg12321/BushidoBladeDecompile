@@ -1,5 +1,5 @@
 glabel wave_SampleLastRowStepsAtCachedIndex
-    /* 3865C 80047E5C 0803838F */  lw         $v1, %gp_rel(D_800A33D4)($gp)
+    /* 3865C 80047E5C 0803838F */  lw         $v1, %gp_rel(g_wave_cached_column_index)($gp)
     /* 38660 80047E60 00000000 */  nop
     /* 38664 80047E64 1200622C */  sltiu      $v0, $v1, 0x12
     /* 38668 80047E68 13004010 */  beqz       $v0, .L80047EB8
@@ -8,7 +8,7 @@ glabel wave_SampleLastRowStepsAtCachedIndex
     /* 38674 80047E74 0F80013C */  lui        $at, %hi(g_wave_last_row_steps)
     /* 38678 80047E78 21082300 */  addu       $at, $at, $v1
     /* 3867C 80047E7C 00F8228C */  lw         $v0, %lo(g_wave_last_row_steps)($at)
-    /* 38680 80047E80 0C03848F */  lw         $a0, %gp_rel(D_800A33D8)($gp)
+    /* 38680 80047E80 0C03848F */  lw         $a0, %gp_rel(g_wave_cached_remainder_parity)($gp)
     /* 38684 80047E84 00000000 */  nop
     /* 38688 80047E88 18004400 */  mult       $v0, $a0
     /* 3868C 80047E8C 0F80013C */  lui        $at, %hi(D_800EF804)

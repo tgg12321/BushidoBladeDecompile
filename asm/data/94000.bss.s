@@ -77,9 +77,9 @@ dlabel D_800A3828
 enddlabel D_800A3828
 
 /* 800A382C */
-dlabel D_800A382C
+dlabel g_comb_write_not_aborted
     .space 0x1
-enddlabel D_800A382C
+enddlabel g_comb_write_not_aborted
 
 /* 800A382D */
 dlabel g_fight_tally_winner_index
@@ -434,9 +434,9 @@ dlabel D_800A3904
 enddlabel D_800A3904
 
 /* 800A3906 */
-dlabel D_800A3906
+dlabel g_snd_initialized
     .space 0x1
-enddlabel D_800A3906
+enddlabel g_snd_initialized
 
 /* 800A3907 */
 dlabel g_fight_stage_start_count
@@ -474,19 +474,19 @@ dlabel g_fight_midpoint_effect_delay
 enddlabel g_fight_midpoint_effect_delay
 
 /* 800A3912 */
-dlabel D_800A3912
+dlabel g_pad_remote_button_mapping_20
     .space 0x1
-enddlabel D_800A3912
+enddlabel g_pad_remote_button_mapping_20
 
 /* 800A3913 */
-dlabel D_800A3913
+dlabel g_pad_remote_button_mapping_40
     .space 0x1
-enddlabel D_800A3913
+enddlabel g_pad_remote_button_mapping_40
 
 /* 800A3914 */
-dlabel D_800A3914
+dlabel g_pad_remote_button_mapping_80
     .space 0x1
-enddlabel D_800A3914
+enddlabel g_pad_remote_button_mapping_80
 
 /* 800A3915 */
 dlabel D_800A3915
@@ -614,9 +614,9 @@ dlabel g_slot_objects
 enddlabel g_slot_objects
 
 /* 800A9A20 */
-dlabel D_800A9A20
+dlabel g_gpu_vram_row_backup_asset_index
     .space 0x4
-enddlabel D_800A9A20
+enddlabel g_gpu_vram_row_backup_asset_index
 
 /* 800A9A24 */
 dlabel g_gpu_store_buf
@@ -754,9 +754,9 @@ dlabel D_800EEDD8
 enddlabel D_800EEDD8
 
 /* 800EEDF0 */
-dlabel D_800EEDF0
+dlabel g_view_offset_node
     .space 0x8
-enddlabel D_800EEDF0
+enddlabel g_view_offset_node
 
 /* 800EEDF8 */
 dlabel D_800EEDF8
@@ -789,9 +789,9 @@ dlabel D_800EEE24
 enddlabel D_800EEE24
 
 /* 800EF070 */
-dlabel D_800EF070
+dlabel g_wave_draw_node
     .space 0x1
-enddlabel D_800EF070
+enddlabel g_wave_draw_node
 
 /* 800EF071 */
 dlabel D_800EF071
@@ -859,9 +859,9 @@ dlabel D_800EF168
 enddlabel D_800EF168
 
 /* 800EF558 */
-dlabel D_800EF558
+dlabel g_wave_column_phases
     .space 0x44
-enddlabel D_800EF558
+enddlabel g_wave_column_phases
 
 /* 800EF59C */
 dlabel g_wave_vertex_grid
@@ -889,9 +889,9 @@ dlabel D_800EF804
 enddlabel D_800EF804
 
 /* 800EF848 */
-dlabel D_800EF848
+dlabel g_gpu_vram_scrolls
     .space 0x138
-enddlabel D_800EF848
+enddlabel g_gpu_vram_scrolls
 
 /* 800EF980 */
 dlabel g_resource_entry_request_state
@@ -1124,9 +1124,9 @@ dlabel D_800F1004
 enddlabel D_800F1004
 
 /* 800F10A0 */
-dlabel D_800F10A0
+dlabel g_eff_rotated_quad_cluster_rotations
     .space 0x2
-enddlabel D_800F10A0
+enddlabel g_eff_rotated_quad_cluster_rotations
 
 /* 800F10A2 */
 dlabel D_800F10A2

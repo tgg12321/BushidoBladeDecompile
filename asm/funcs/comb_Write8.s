@@ -54,7 +54,7 @@ glabel comb_Write8
     /* 2AD0C 8003A50C 0480063C */  lui        $a2, %hi(comb_WriteWaitCallback)
     /* 2AD10 8003A510 2CA4C624 */  addiu      $a2, $a2, %lo(comb_WriteWaitCallback)
     /* 2AD14 8003A514 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2AD18 8003A518 600782A3 */  sb         $v0, %gp_rel(D_800A382C)($gp)
+    /* 2AD18 8003A518 600782A3 */  sb         $v0, %gp_rel(g_comb_write_not_aborted)($gp)
     /* 2AD1C 8003A51C 1931020C */  jal        _comb_control
     /* 2AD20 8003A520 21280000 */   addu      $a1, $zero, $zero
     /* 2AD24 8003A524 0A80053C */  lui        $a1, %hi(g_comb_send_buf)
@@ -70,7 +70,7 @@ glabel comb_Write8
     /* 2AD4C 8003A54C 01000524 */  addiu      $a1, $zero, 0x1
     /* 2AD50 8003A550 1931020C */  jal        _comb_control
     /* 2AD54 8003A554 21300000 */   addu      $a2, $zero, $zero
-    /* 2AD58 8003A558 60078293 */  lbu        $v0, %gp_rel(D_800A382C)($gp)
+    /* 2AD58 8003A558 60078293 */  lbu        $v0, %gp_rel(g_comb_write_not_aborted)($gp)
   .L8003A55C:
     /* 2AD5C 8003A55C 1800BF8F */  lw         $ra, 0x18($sp)
     /* 2AD60 8003A560 1400B18F */  lw         $s1, 0x14($sp)

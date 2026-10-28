@@ -132,8 +132,8 @@ glabel fighter_Init
     /* 12F60 80022760 00000000 */  nop
     /* 12F64 80022764 1A0002A6 */  sh         $v0, 0x1A($s0)
     /* 12F68 80022768 0A000386 */  lh         $v1, 0xA($s0)
-    /* 12F6C 8002276C 0980043C */  lui        $a0, %hi(D_8008DE34)
-    /* 12F70 80022770 34DE8424 */  addiu      $a0, $a0, %lo(D_8008DE34)
+    /* 12F6C 8002276C 0980043C */  lui        $a0, %hi(g_fighter_base_move_frame_steps)
+    /* 12F70 80022770 34DE8424 */  addiu      $a0, $a0, %lo(g_fighter_base_move_frame_steps)
     /* 12F74 80022774 40100300 */  sll        $v0, $v1, 1
     /* 12F78 80022778 21104300 */  addu       $v0, $v0, $v1
     /* 12F7C 8002277C 80100200 */  sll        $v0, $v0, 2
@@ -143,8 +143,8 @@ glabel fighter_Init
     /* 12F8C 8002278C 21186200 */  addu       $v1, $v1, $v0
     /* 12F90 80022790 00006294 */  lhu        $v0, 0x0($v1)
     /* 12F94 80022794 0A000386 */  lh         $v1, 0xA($s0)
-    /* 12F98 80022798 0980043C */  lui        $a0, %hi(D_8008DF78)
-    /* 12F9C 8002279C 78DF8424 */  addiu      $a0, $a0, %lo(D_8008DF78)
+    /* 12F98 80022798 0980043C */  lui        $a0, %hi(g_fighter_base_powers)
+    /* 12F9C 8002279C 78DF8424 */  addiu      $a0, $a0, %lo(g_fighter_base_powers)
     /* 12FA0 800227A0 1C0002A6 */  sh         $v0, 0x1C($s0)
     /* 12FA4 800227A4 40100300 */  sll        $v0, $v1, 1
     /* 12FA8 800227A8 21104300 */  addu       $v0, $v0, $v1

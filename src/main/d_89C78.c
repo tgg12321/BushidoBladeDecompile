@@ -2,14 +2,15 @@
  * loaded-resource state, start positions and lookup tables.
  * Owner rulings Q122 / Q123 (data-only-no-sdata):
  * 1. One run: 35000.c's D_800993FC ends at 0x80099478 (368E4.o and 3AB48.o
- *    have no .data) and 43500.c's D_80099D54 starts at 0x80099D54. No
- *    uninitialized objects.
+ *    have no .data) and 43500.c's g_motion_playback_file_id_bases starts at
+ * 0x80099D54. No uninitialized objects.
  * 2. Small objects in .data: g_loaded_resource_selector and
  * g_resource_has_retained_subblocks (s16 each, each with its own lh / sh
  * readers; g_fight_start_position_pairs after them has its own reader) and
- * D_80099CC4 (s16[2], unread, sized by the gap between D_80099C50's 58 entries
- * and D_80099CC8). Under -G8 the original compiler puts them in .sdata, so no
- * -G8 file defined them.
+ * D_80099CC4 (s16[2], unread, sized by the gap between
+ * g_resource_prev_entry_request_state's 58 entries and
+ * g_resource_entry_linked_entries). Under -G8 the original compiler puts them
+ * in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 3AB48.c, a code module with no small
  *    data, references no object in the run (Q123: not an owner candidate);
  *    43500.c is a -G8 code module with its own .sbss and gp accesses, whose
@@ -205,12 +206,13 @@ u8 D_80099BCC[70] = {
 
 s16 D_80099C14[16] = {1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1};
 
-u16 D_80099C34[2][7] = {{0x318, 0x180, 0x8, 0x20, 0x2E8, 0x100, 0x1},
-                        {0x2F0, 0x140, 0x10, 0x40, 0x2A0, 0x180, 0x1}};
+u16 g_gpu_vram_scroll_presets[2][7] = {
+    {0x318, 0x180, 0x8, 0x20, 0x2E8, 0x100, 0x1},
+    {0x2F0, 0x140, 0x10, 0x40, 0x2A0, 0x180, 0x1}};
 
 /* resource_InvalidateEntrySelectionCache clears all 58 from the last one down.
  */
-s16 D_80099C50[58] = {
+s16 g_resource_prev_entry_request_state[58] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -218,7 +220,7 @@ s16 D_80099C50[58] = {
 
 s16 D_80099CC4[2] = {-2, 0};
 
-u8 D_80099CC8[58][2] = {
+u8 g_resource_entry_linked_entries[58][2] = {
     {0x1C, 0x1E}, {0x1D, 0x1F}, {0x20, 0x22}, {0x21, 0x23}, {0xFF, 0xFF},
     {0xFF, 0xFF}, {0xFF, 0xFF}, {0xFF, 0xFF}, {0xFF, 0xFF}, {0xFF, 0xFF},
     {0xFF, 0xFF}, {0x24, 0x25}, {0xFF, 0xFF}, {0x26, 0x27}, {0x2A, 0x2B},

@@ -21,10 +21,10 @@ extern RECT D_800A32EC;
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
 static s16 g_entry_menu_grid_pulse_shifts[2];
-static s16 D_800A3534[2];
+static s16 g_entry_menu_grid_cursor_cell_counts[2];
 static s32 D_800A3538; /* not named by any code or data: size from the gap */
 static s32 D_800A353C; /* not named by any code or data: size from the gap */
-static s16 D_800A3540[2];
+static s16 g_entry_menu_row_cursor_cell_counts[2];
 static s16 g_entry_menu_row_pulse_shifts[2];
 static s32 D_800A3548;
 static s32 g_entry_menu_pressed_buttons;
@@ -50,9 +50,9 @@ static s16 g_entry_menu_choice_grid_row;
 static s32 g_entry_menu_exit_result;
 static Unk8006E49CRec *D_800A35A4;
 static Unk8006EA28Rec *g_entry_menu_resources;
-static Unk8006E49CRec *D_800A35AC;
+static Unk8006E49CRec *g_entry_menu_prim_buffers;
 static s32 g_entry_menu_init_extra_slot_count;
-static s16 D_800A35B4;
+static s16 g_entry_menu_grid_last_column;
 static s16 D_800A35B8;
 static s32 g_entry_menu_fight_mode;
 static GpuDb *g_entry_menu_gpu_db;
@@ -67,7 +67,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     D_800A32E8 = 0x7F;
     g_entry_menu_fight_mode = arg2->fight_mode;
-    D_800A35AC = (Unk8006E49CRec *)arg0;
+    g_entry_menu_prim_buffers = (Unk8006E49CRec *)arg0;
     g_entry_menu_working_record_ptr = arg2;
     g_entry_menu_row_phase_extra_slot_count = 0;
     g_entry_menu_grid_phase_extra_slot_count = 0;
@@ -105,8 +105,8 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
 
     g_entry_menu_arena_cursor = resource_RelocateNineOffsetListsAndLoadVabPack(
         (Unk8006EA28Rec *)g_entry_menu_arena_cursor);
-    g_entry_menu_arena_cursor =
-        gpu_InitPrimBufferPair(g_entry_menu_arena_cursor, D_800A35AC);
+    g_entry_menu_arena_cursor = gpu_InitPrimBufferPair(
+        g_entry_menu_arena_cursor, g_entry_menu_prim_buffers);
     g_entry_menu_slot_records.word = -1;
     g_entry_menu_slide_displacement = 0;
     g_entry_menu_slide_phase = 0;
@@ -138,7 +138,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
         }
     }
     D_800A35B8 = (arg3 >> 20) & 3;
-    D_800A35B4 = 5;
+    g_entry_menu_grid_last_column = 5;
     g_entry_menu_entry_flags
         [g_entry_menu_grid_entries[g_entry_menu_grid_row_cursors[0]]
                                   [g_entry_menu_grid_column_cursors[0]]
@@ -164,7 +164,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
 }
 
 Unk8006E49CRec *gpu_GetIndexedPrimBufferRecord(s32 buffer_index) {
-    return &D_800A35AC[buffer_index];
+    return &g_entry_menu_prim_buffers[buffer_index];
 }
 
 void gpu_LoadVramBottomStrip(Unk8006E950Head *resource_root) {
@@ -272,7 +272,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
     if ((u16)(g_entry_menu_handler_index - 2) >= 2U) {
         gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(&draw_context);
     }
-    D_8009BC1C[g_entry_menu_handler_index](&draw_context);
+    g_entry_menu_handlers[g_entry_menu_handler_index](&draw_context);
     return g_entry_menu_exit_result;
 }
 
@@ -305,7 +305,7 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void) {
 
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
-extern RECT D_800A32F4;
+extern RECT g_entry_menu_entry_upload_rect;
 
 void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;
@@ -380,7 +380,7 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
         if (slot_index != 0) {
             if (D_800A32E8 != entry_value ||
                 D_800A32E9 != g_entry_menu_grid_phase_extra_slot_count) {
-                rectbuf = D_800A32F4;
+                rectbuf = g_entry_menu_entry_upload_rect;
                 LoadImage(&rectbuf, (u32 *)upload_pixels_addr);
                 DrawSync(0);
             }
@@ -982,7 +982,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 *flags &= ~4;
                 do {
                     (*col)++;
-                    if (*col > D_800A35B4) {
+                    if (*col > g_entry_menu_grid_last_column) {
                         *col = 0;
                     }
                     flags = &g_entry_menu_entry_flags
@@ -998,7 +998,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 do {
                     (*col)--;
                     if (*col < 0) {
-                        *col = D_800A35B4;
+                        *col = g_entry_menu_grid_last_column;
                     }
                     flags = &g_entry_menu_entry_flags
                                 [g_entry_menu_grid_entries[*row][*col].value];
@@ -1008,17 +1008,17 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 *flags |= 4;
             }
             g_entry_menu_grid_pulse_shifts[slot_index] = 7;
-            D_800A3534[slot_index] = 0;
+            g_entry_menu_grid_cursor_cell_counts[slot_index] = 0;
         } else {
             g_entry_menu_grid_pulse_shifts[slot_index] = 9;
             if (g_entry_menu_work_block->entry_countdowns[slot_index] != 0) {
                 g_entry_menu_work_block->entry_countdowns[slot_index]--;
             }
-            if (D_800A3534[slot_index] < 12) {
-                D_800A3534[slot_index]++;
+            if (g_entry_menu_grid_cursor_cell_counts[slot_index] < 12) {
+                g_entry_menu_grid_cursor_cell_counts[slot_index]++;
             }
             s.header = sheet_headers[3];
-            s.header->count = D_800A3534[slot_index];
+            s.header->count = g_entry_menu_grid_cursor_cell_counts[slot_index];
             s.table = s.header->cells;
             s.has_color = 0;
             s.x = *col * 116 + 0x6E + (*col >> 1) * 20;
@@ -1324,7 +1324,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             }
             if (g_entry_menu_slot_records.rec[i].unk2 == 0xFF) {
                 g_entry_menu_row_pulse_shifts[i] = 7;
-                D_800A3540[i] = 0;
+                g_entry_menu_row_cursor_cell_counts[i] = 0;
                 g_entry_menu_work_block->row_countdowns[i] = 0x1E;
                 if ((g_entry_menu_pressed_buttons & (0x2000 << (var_4 * 16))) &&
                     g_entry_menu_row_phase_choice_cursors[i] < max) {
@@ -1429,10 +1429,10 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                  * 2. */
                 var_0 = g_entry_menu_resources->unk_74;
                 s->header = var_0[3];
-                if (D_800A3540[i] < 12) {
-                    D_800A3540[i]++;
+                if (g_entry_menu_row_cursor_cell_counts[i] < 12) {
+                    g_entry_menu_row_cursor_cell_counts[i]++;
                 }
-                s->header->count = D_800A3540[i];
+                s->header->count = g_entry_menu_row_cursor_cell_counts[i];
                 s->has_color = 0;
                 cells = s->header->cells;
                 s->table = cells;
@@ -1790,17 +1790,21 @@ void menu_UpdateChoiceGrid(
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
     draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     g_entry_menu_work_block->draw_offset[0] =
-        g_entry_menu_gpu_db->draw.ofs[0] - D_8009BCC4[mode][0];
+        g_entry_menu_gpu_db->draw.ofs[0] -
+        g_entry_menu_choice_grid_draw_offsets[mode][0];
     g_entry_menu_work_block->draw_offset[1] =
-        g_entry_menu_gpu_db->draw.ofs[1] - D_8009BCC4[mode][1];
+        g_entry_menu_gpu_db->draw.ofs[1] -
+        g_entry_menu_choice_grid_draw_offsets[mode][1];
     if (((g_entry_menu_slide_phase & 0xFF) == 1 ||
          (g_entry_menu_slide_phase & 0xFF) == 3) &&
         g_entry_menu_next_handler_index >= 4 &&
         g_entry_menu_next_handler_index < 7 &&
         g_entry_menu_handler_index >= 4 && g_entry_menu_handler_index < 7) {
         for (i = 0; i < 2; i++) {
-            d = D_8009BCC4[g_entry_menu_next_handler_index - 4][i] -
-                D_8009BCC4[g_entry_menu_handler_index - 4][i];
+            d = g_entry_menu_choice_grid_draw_offsets
+                    [g_entry_menu_next_handler_index - 4][i] -
+                g_entry_menu_choice_grid_draw_offsets
+                    [g_entry_menu_handler_index - 4][i];
             d *= 30;
             if ((d >= 0 ? d : -d) >
                 (g_entry_menu_transition_offsets[i] >= 0
@@ -2292,4 +2296,4 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
 u8 D_800A32E8 = 0;
 u8 D_800A32E9 = 0;
 RECT D_800A32EC = {144, 507, 48, 1};
-RECT D_800A32F4 = {896, 384, 64, 64};
+RECT g_entry_menu_entry_upload_rect = {896, 384, 64, 64};

@@ -795,7 +795,7 @@ void fighter_TriggerOpponentResponseOnMoveFrame(void) {
     }
 }
 
-extern s32 D_800A3144[2];
+extern s32 g_fighter_body_overlap_radii[2];
 
 /* math_SqrtLut -- integer square root of x >= 0 by the byte LUT (>> 3 below
  * 0x400; above it the GTE LZC picks an even shift, x is replaced in place by
@@ -828,11 +828,11 @@ static inline s32 math_SqrtLut(s32 x) {
 /* Body-overlap push between the two characters (D_80101EC8[0] and [1]),
  * skipped while either's move_kind is 0x28. Each character's two points (joint
  * 1, and the midpoint of joints 15 and 19) are tested pairwise with the radii
- * D_800A3144[0..1]; an overlap (at most 0x80) pushes the characters apart along
- * x/z, scaled by the distance. After an overlap, the move_kind states and the
- * orientation.vy difference (folded to 0..0x800) pick the reaction
- * (pending_move_event, D_800A38A8 / D_800A3876). The push is added to
- * decaying_xz_velocity.vx / .vz. */
+ * g_fighter_body_overlap_radii[0..1]; an overlap (at most 0x80) pushes the
+ * characters apart along x/z, scaled by the distance. After an overlap, the
+ * move_kind states and the orientation.vy difference (folded to 0..0x800) pick
+ * the reaction (pending_move_event, D_800A38A8 / D_800A3876). The push is added
+ * to decaying_xz_velocity.vx / .vz. */
 void fighter_ResolveBodyOverlap(void) {
     s32 var_1;
     s32 i;
@@ -884,7 +884,8 @@ void fighter_ResolveBodyOverlap(void) {
                  SPAD->body_overlap_points[1][j].y;
             dz = SPAD->body_overlap_points[0][i].z -
                  SPAD->body_overlap_points[1][j].z;
-            var_12 = D_800A3144[i] + D_800A3144[j];
+            var_12 = g_fighter_body_overlap_radii[i] +
+                     g_fighter_body_overlap_radii[j];
             if (dx > var_12 || dx < -var_12 || dy > var_12 || dy < -var_12 ||
                 dz > var_12 || dz < -var_12) {
                 continue;
@@ -3893,14 +3894,16 @@ void object_InitKindQueue(Unk80101EC8Record *a0) {
     a0->carried_object_count = 0;
     i = 0;
     do {
-        val = D_8008E338[a0->character_data_index][i];
+        val =
+            g_fighter_initial_carried_object_kinds[a0->character_data_index][i];
         a0->carried_object_kinds[i] = val;
         if (val != -1) {
             a0->carried_object_count++;
         }
         i++;
     } while (i < 5);
-    D_800A36F2[a0->index] = D_8008E338[a0->character_data_index][0];
+    D_800A36F2[a0->index] =
+        g_fighter_initial_carried_object_kinds[a0->character_data_index][0];
 }
 
 void object_FreeAttachedObjects(void) {
@@ -5363,7 +5366,7 @@ void snd_QueuePositionSequence(Unk80107850Rec *arg0) {
 
 void snd_UpdateStageSounds(void) {
     s32 i;
-    u8 *tbl = D_8008E914[g_fight_stage_index];
+    u8 *tbl = g_snd_stage_sound_slot_specs[g_fight_stage_index];
 
     for (i = 0; i < 6; i++) {
         if (g_snd_sequence_ticks[i] != 0) {
@@ -5374,11 +5377,11 @@ void snd_UpdateStageSounds(void) {
                 snd_QueuePositionalSound(
                     g_snd_stage_sequence_base_sounds[var_2],
                     &g_snd_sequence_positions[i].x);
-            } else if (cur == D_8008EBFC[var_2].a) {
+            } else if (cur == g_snd_stage_sequence_cue_ticks[var_2].a) {
                 snd_QueuePositionalSound(
                     g_snd_stage_sequence_base_sounds[var_2] + 1,
                     &g_snd_sequence_positions[i].x);
-            } else if (cur == D_8008EBFC[var_2].b) {
+            } else if (cur == g_snd_stage_sequence_cue_ticks[var_2].b) {
                 snd_QueuePositionalSound(
                     g_snd_stage_sequence_base_sounds[var_2] + 2,
                     &g_snd_sequence_positions[i].x);
@@ -5387,7 +5390,8 @@ void snd_UpdateStageSounds(void) {
             {
                 s32 val = g_snd_sequence_ticks[i] + 1;
                 g_snd_sequence_ticks[i] = val;
-                if ((u32)D_8008EBFC[var_2].b < (u32)(val & 0xFF)) {
+                if ((u32)g_snd_stage_sequence_cue_ticks[var_2].b <
+                    (u32)(val & 0xFF)) {
                     g_snd_sequence_ticks[i] = 0;
                 }
             }
@@ -5443,7 +5447,8 @@ void snd_UpdateStageSounds(void) {
                     type = *tbl;
                     if ((u32)(type - 5) < 2) {
                         snd_QueuePositionalSound(
-                            0x7B + i, D_8008EA50[type - 5]);
+                            0x7B + i,
+                            g_snd_stage_sound_slot_positions[type - 5]);
                         continue;
                     }
                     goto call_default;
@@ -5630,7 +5635,7 @@ void fight_AdvanceOpponentOrder(void) {
         }
         g_fight_config.cpu_base_levels[1] = 0x800;
         {
-            s16 v = (&D_8008E75C)[a1];
+            s16 v = (&g_fight_opponent_stage_indices)[a1];
             g_main_loop_handler_index = 0;
             g_fight_stage_index = v;
         }
@@ -5715,8 +5720,8 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
         g_main_loop_handler_index = 4;
         return 0;
     } else {
-        u8 *table = D_8008E778[tableIndex];
-        u8(*ranks)[5] = D_8008EC24;
+        u8 *table = g_fight_step_table[tableIndex];
+        u8(*ranks)[5] = g_fight_step_row_object_ids;
         u8(*moves)[5] = D_8008E908;
         s32 entry;
         s32 row;
@@ -5875,7 +5880,7 @@ void fight_AdvanceMatch(void) {
 s32 D_800A3140 = 0;
 /* address taken (lui/addiu) in fighter_ResolveBodyOverlap: size from the blob
  * label */
-s32 D_800A3144[2] = {0x15e, 0x172};
+s32 g_fighter_body_overlap_radii[2] = {0x15e, 0x172};
 s32 D_800A314C = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */

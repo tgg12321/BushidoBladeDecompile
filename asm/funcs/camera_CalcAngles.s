@@ -48,9 +48,9 @@ glabel camera_CalcAngles
     /* 37C3C 8004743C 57FF010C */  jal        ratan2
     /* 37C40 80047440 2000A5AF */   sw        $a1, 0x20($sp)
     /* 37C44 80047444 23180200 */  negu       $v1, $v0
-    /* 37C48 80047448 0A80023C */  lui        $v0, %hi(D_800A33C8)
-    /* 37C4C 8004744C C8334224 */  addiu      $v0, $v0, %lo(D_800A33C8)
-    /* 37C50 80047450 FC0283A7 */  sh         $v1, %gp_rel(D_800A33C8)($gp)
+    /* 37C48 80047448 0A80023C */  lui        $v0, %hi(g_camera_calculated_angles)
+    /* 37C4C 8004744C C8334224 */  addiu      $v0, $v0, %lo(g_camera_calculated_angles)
+    /* 37C50 80047450 FC0283A7 */  sh         $v1, %gp_rel(g_camera_calculated_angles)($gp)
     /* 37C54 80047454 FE0290A7 */  sh         $s0, %gp_rel(D_800A33CA)($gp)
     /* 37C58 80047458 5400BF8F */  lw         $ra, 0x54($sp)
     /* 37C5C 8004745C 5000B08F */  lw         $s0, 0x50($sp)

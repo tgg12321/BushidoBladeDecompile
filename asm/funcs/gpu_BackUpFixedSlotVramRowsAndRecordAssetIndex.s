@@ -20,17 +20,17 @@ glabel gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex
     /* 32310 80041B10 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 32314 80041B14 2D006210 */  beq        $v1, $v0, .L80041BCC
     /* 32318 80041B18 00000000 */   nop
-    /* 3231C 80041B1C 0B80013C */  lui        $at, %hi(D_800A9A20)
-    /* 32320 80041B20 209A25A4 */  sh         $a1, %lo(D_800A9A20)($at)
+    /* 3231C 80041B1C 0B80013C */  lui        $at, %hi(g_gpu_vram_row_backup_asset_index)
+    /* 32320 80041B20 209A25A4 */  sh         $a1, %lo(g_gpu_vram_row_backup_asset_index)($at)
     /* 32324 80041B24 08008284 */  lh         $v0, 0x8($a0)
     /* 32328 80041B28 0980013C */  lui        $at, %hi(g_gpu_clut_row_list_map)
     /* 3232C 80041B2C 21082200 */  addu       $at, $at, $v0
     /* 32330 80041B30 084E2290 */  lbu        $v0, %lo(g_gpu_clut_row_list_map)($at)
     /* 32334 80041B34 00000000 */  nop
     /* 32338 80041B38 80100200 */  sll        $v0, $v0, 2
-    /* 3233C 80041B3C 0980013C */  lui        $at, %hi(D_80094DF0)
+    /* 3233C 80041B3C 0980013C */  lui        $at, %hi(g_gpu_clut_row_lists)
     /* 32340 80041B40 21082200 */  addu       $at, $at, $v0
-    /* 32344 80041B44 F04D308C */  lw         $s0, %lo(D_80094DF0)($at)
+    /* 32344 80041B44 F04D308C */  lw         $s0, %lo(g_gpu_clut_row_lists)($at)
     /* 32348 80041B48 A8F8000C */  jal        gpu_GetFogClutObject
     /* 3234C 80041B4C 00000000 */   nop
     /* 32350 80041B50 04005114 */  bne        $v0, $s1, .L80041B64

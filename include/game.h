@@ -64,12 +64,13 @@ typedef struct {
     u32 ot[0x1008]; /* +0x70 ordering table */
 } GpuDb;            /* 0x4090 */
 
-/* The record at D_800EF848 (0x134 bytes). */
+/* The record at g_gpu_vram_scrolls (0x134 bytes). */
 typedef struct {
     s32 phase; /* +0x000 */
     /* +0x004: one bank per frame parity, two packets per level */
     DR_MOVE move[2][6];
-    s16 ctl[7]; /* +0x124: filled from D_80099C34 by gpu_InitVramScroll */
+    /* +0x124: filled from g_gpu_vram_scroll_presets by gpu_InitVramScroll */
+    s16 ctl[7];
 } Unk800EF848Rec;
 
 /* 3-word record table at 0x800F1198, terminated by an all-zero record
@@ -284,11 +285,11 @@ typedef struct {
 } Unk8006E950Head;
 
 /* STAFF.BIN (resource file 0x5F), the root 64FD8's InitScrollingSpriteDisplay
- * loads at its work area + 0x58 (D_800A3610). After the head, one offset list
- * (relocated with the head by reloc_RelocateSelfOffsets, so it ends in -1 like
- * the head's own list): the sprite sheets gpu_DrawScrollingAndDelayedSheets
- * draws: unk_14[10] first, then unk_14[0] onward while the next entry is not
- * -1. */
+ * loads at its work area + 0x58 (g_gpu_scrolling_sprite_resources). After the
+ * head, one offset list (relocated with the head by reloc_RelocateSelfOffsets,
+ * so it ends in -1 like the head's own list): the sprite sheets
+ * gpu_DrawScrollingAndDelayedSheets draws: unk_14[10] first, then unk_14[0]
+ * onward while the next entry is not -1. */
 typedef struct {
     Unk8006E950Head resource_head;
     Unk8009B0E0Record *unk_14[0];
@@ -804,9 +805,9 @@ typedef struct {
  * (motion_GetCommonScriptAtFighterBufferOffset) and f18[character_data_index]
  * (motion_GetCommonScriptAtFighterBufferIndexedOffset;
  * Unk80101EC8Record.character_data_index, 0..26 as g_fight_config_id_data_rows
- * holds and as the [27][6] tables D_8008DE34 / D_8008DF78 are sized; 27
- * halfwords end exactly at f4E) are indices into
- * g_motion_common_sections.unk_00; both readers load them with lhu. */
+ * holds and as the [27][6] tables g_fighter_base_move_frame_steps /
+ * g_fighter_base_powers are sized; 27 halfwords end exactly at f4E) are indices
+ * into g_motion_common_sections.unk_00; both readers load them with lhu. */
 typedef struct {
     u8 pad00[3];
     /* motion_LoadFighterData: g_motion_fighter_sections[slot].unk_00 =
@@ -937,7 +938,7 @@ typedef struct PadState {
 } PadState;       /* sizeof == 0x18 */
 
 /* The 24-entry pending-sound pool (4BC3C): snd_QueueSound queues a request (an
- * entry of D_8009AA70) with its volumes in the first free entry;
+ * entry of g_snd_sound_vab_entries) with its volumes in the first free entry;
  * snd_FlushSoundQueue keys each queued note on via SsUtKeyOnV(.., voll, volr)
  * and clears the entry; snd_Init / snd_ResetVoicesAndQueue reset all 24. */
 typedef struct {
@@ -1171,7 +1172,7 @@ typedef union {
  * (Unk1F8000B8Union), laid out differently by its users; it runs to the end of
  * the scratchpad. The other members are one global each
  * (g_eff_view_rotation_matrix .. g_eff_bottom_right_uv,
- * g_eff_yawed_quad_tex_index / D_800A3484). */
+ * g_eff_yawed_quad_tex_index / g_eff_quad_rate_selector). */
 typedef struct {
     Unk1F800000Unk00 default_command_block;
     u8 unk2C[4];
@@ -1201,7 +1202,7 @@ typedef struct {
     u32 unkA0;
     u32 unkA4;
     s32 yawed_quad_tex_rec_index; /* g_eff_yawed_quad_tex_index */
-    s32 quad_rate_selector;       /* D_800A3484 */
+    s32 quad_rate_selector;       /* g_eff_quad_rate_selector */
     TexRec unkB0;
     Unk1F8000B8Union effect_work_area;
 } Unk1F800000Rec;
@@ -1448,8 +1449,8 @@ typedef struct NavPoly {
     s16 (*vtx)[2];
 } NavPoly;
 
-/* A stage's navigation set: a D_8009A658 row (12 bytes: count word, polygon
- * array, zero word). */
+/* A stage's navigation set: a g_cpu_stage_nav_sets row (12 bytes: count word,
+ * polygon array, zero word). */
 typedef struct NavPolySet {
     u8 npolys;
     u8 unk1[3];
@@ -1701,8 +1702,8 @@ typedef struct Unk80101EC8Record {
     s16 eased_pose_bearing_offset;
     s16 eased_pose_elevation_offset;
     s16 opponent_elevation_offset;
-    /* fighter_UpdateBoneWorldData: bone 11's matrix applied to D_800A3138 (0,
-     * 0x1000, 0) */
+    /* fighter_UpdateBoneWorldData: bone 11's matrix applied to g_unit_y_vector
+     * (0, 0x1000, 0) */
     Vec3i32 bone_y_axis;
     Vec3i32 prev_root_offset;
     u8 unk_204[0x210 - 0x204];
@@ -1885,8 +1886,9 @@ typedef struct {
 } Obj80106A78; /* sizeof == 0x64 */
 
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries
-   (types 2..6); D_8008EBFC: indexed by the category snd_GetStageSoundIndex
-   returns, 6 entries (both read by snd_UpdateStageSounds). */
+   (types 2..6); g_snd_stage_sequence_cue_ticks: indexed by the category
+   snd_GetStageSoundIndex returns, 6 entries (both read by
+   snd_UpdateStageSounds). */
 typedef struct {
     u8 a;
     u8 b;
@@ -1894,8 +1896,8 @@ typedef struct {
 
 /* 6-row tables fight_UpdatePairedInputTotalsEventsAndMidpointEffects selects by
  * D_80101EC8[0].move_kind mode (row 0..5): unk0 scales the Judge sin/cos
- * offset, unk2 is added to y; D_8008EB6C[row] is passed as
- * fight_RecordReplayEventAndDispatchSoundOrEffect's arg1. */
+ * offset, unk2 is added to y; g_fight_midpoint_effect_event_ids[row] is passed
+ * as fight_RecordReplayEventAndDispatchSoundOrEffect's arg1. */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -2064,11 +2066,12 @@ typedef struct Unk8001CD68Rec {
  * stack copy of xf.rot and &work to g_math_rot_matrix_funcs[rotation_order],
  * then copies work to xf.mat; gpu_ResetDrawQueueAndPrepareViewAndLighting
  * writes work.t just before that call. node_OrientAndQueueViewOffsetNode passes
- * &xf.rot to g_math_rot_matrix_funcs[0] and &xf.mat to ApplyMatrix. D_800EEDF0
- * and D_800EF070 are two more records of this layout: node_InitIdentity
- * initialises the first, wave_Init sets up the second and passes it to
- * node_UpdateWorldMatrix, which reads matrix_state. rot is the RotMatrix-style
- * angle SVECTOR the rotation handlers take; mat and work are libgte MATRIXes.
+ * &xf.rot to g_math_rot_matrix_funcs[0] and &xf.mat to ApplyMatrix.
+ * g_view_offset_node and g_wave_draw_node are two more records of this layout:
+ * node_InitIdentity initialises the first, wave_Init sets up the second and
+ * passes it to node_UpdateWorldMatrix, which reads matrix_state. rot is the
+ * RotMatrix-style angle SVECTOR the rotation handlers take; mat and work are
+ * libgte MATRIXes.
  */
 typedef struct {
     SVECTOR rot; /* +0x00 */

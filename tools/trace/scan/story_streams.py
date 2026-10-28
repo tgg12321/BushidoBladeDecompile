@@ -117,8 +117,8 @@ def main(argv=None):
     ap.add_argument("--stream", type=int)
     a = ap.parse_args(argv)
     exe = Path(a.exe).read_bytes()
-    syms = map_symbols(a.map, {"D_800900EC"})
-    table_addr = syms["D_800900EC"]
+    syms = map_symbols(a.map, {"g_fight_command_streams"})
+    table_addr = syms["g_fight_command_streams"]
     table = read(exe, table_addr, 32 * 4)
     starts = sorted({int.from_bytes(table[i * 4:i * 4 + 4], "little")
                      for i in range(32)})

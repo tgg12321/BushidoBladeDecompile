@@ -218,8 +218,8 @@ glabel fighter_UpdateBoneWorldData
     /* 1130C 80020B0C 0010CD48 */  ctc2       $t5, $2 /* handwritten instruction */
     /* 11310 80020B10 0018CE48 */  ctc2       $t6, $3 /* handwritten instruction */
     /* 11314 80020B14 0020CF48 */  ctc2       $t7, $4 /* handwritten instruction */
-    /* 11318 80020B18 0A80083C */  lui        $t0, %hi(D_800A3138)
-    /* 1131C 80020B1C 38310825 */  addiu      $t0, $t0, %lo(D_800A3138)
+    /* 11318 80020B18 0A80083C */  lui        $t0, %hi(g_unit_y_vector)
+    /* 1131C 80020B1C 38310825 */  addiu      $t0, $t0, %lo(g_unit_y_vector)
     /* 11320 80020B20 21600001 */  addu       $t4, $t0, $zero
     /* 11324 80020B24 000080C9 */  lwc2       $0, 0x0($t4)
     /* 11328 80020B28 040081C9 */  lwc2       $1, 0x4($t4)

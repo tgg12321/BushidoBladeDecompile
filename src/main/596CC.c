@@ -24,7 +24,7 @@ static s16 g_menu_draw_offset_steps[2];
 static s16 D_800A3510[2];
 static s32 g_row_menu_pulse_counter;
 static s32 g_menu_draw_buffer_counter;
-static Unk8006E49CRec *D_800A351C;
+static Unk8006E49CRec *g_row_menu_prim_buffers;
 static Unk8006E49CRec *D_800A3520;
 static Unk8009BD24Block *g_row_menu_working_record_ptr;
 static s16 g_menu_stored_choice_cursor;
@@ -73,7 +73,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     Unk800A34FCRec *work_block;
 
     g_menu_arena_cursor = arg0;
-    D_800A351C = (Unk8006E49CRec *)arg0;
+    g_row_menu_prim_buffers = (Unk8006E49CRec *)arg0;
     temp_s0 = arg0 + 0x58;
     g_menu_arena_cursor = temp_s0;
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
@@ -82,7 +82,8 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     D_800A372C = g_menu_arena_cursor;
     var_2 = reloc_RelocateTwelveListsAndLoadVabPack(g_menu_arena_cursor);
     g_menu_arena_cursor = var_2;
-    work_block = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
+    work_block = (Unk800A34FCRec *)gpu_InitPrimBufferPair(
+        var_2, g_row_menu_prim_buffers);
     work_block->menu_resource_root = (Unk8006919CRec *)temp_s0;
     g_menu_arena_cursor = (s32)work_block;
     g_row_menu_work_block = work_block;
@@ -185,7 +186,7 @@ Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 buffer_index) {
     v0 = g_row_menu_working_record_ptr;
     v1 = g_row_menu_work_block;
     v1->strip_refresh_snapshot = v0->grayscale;
-    return &D_800A351C[buffer_index];
+    return &g_row_menu_prim_buffers[buffer_index];
 }
 
 s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *resource_root) {
@@ -1619,7 +1620,7 @@ void menu_DrawMemCardChoices(s32 *draw_context) {
 }
 
 extern DR_MODE *g_sheet_pair_draw_mode_cursor;
-extern u8 *D_800A36E4;
+extern u8 *g_sheet_pair_sprite_cursor;
 
 void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
                               s32 highlighted_cell_index) {
@@ -1657,10 +1658,10 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
                 draw_desc->has_color = 1;
             }
             draw_desc->semi = 0;
-            draw_desc->sprt_out = (s32)D_800A36E4;
+            draw_desc->sprt_out = (s32)g_sheet_pair_sprite_cursor;
             cells = draw_desc->header->cells;
             draw_desc->table = cells + cell_index;
-            D_800A36E4 = (u8 *)gpu_AddSpriteCells(draw_desc);
+            g_sheet_pair_sprite_cursor = (u8 *)gpu_AddSpriteCells(draw_desc);
         }
 
         SetDrawMode(g_sheet_pair_draw_mode_cursor, 1, 0,
@@ -1689,7 +1690,7 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
 
     D_800A3900 = 0;
     buffer_index = g_gpu_presented_frame_count & 1;
-    D_800A36E4 = D_800F11E0 + buffer_index * 0x12C;
+    g_sheet_pair_sprite_cursor = D_800F11E0 + buffer_index * 0x12C;
     g_sheet_pair_draw_mode_cursor = D_800F1438 + buffer_index * 4;
     g_sheet_pair_panel_tile_cursor = D_800F1498 + buffer_index * 4;
     gpu_DrawIndexedSheetPair(sheet_pair_index, 0, &draw_desc, 0);
@@ -2727,14 +2728,14 @@ RECT D_800A32E0 = {0, 0, 640, 480};
  * gp-relative. */
 TILE *g_sheet_pair_panel_tile_cursor;
 DR_MODE *g_sheet_pair_draw_mode_cursor;
-u8 *D_800A36E4;
+u8 *g_sheet_pair_sprite_cursor;
 s32 D_800A372C;
 s32 D_800A3900;
 
 /* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
- * D_8009BBFC ends at 0x8009BC04, d_8C41C.c's D_8009BC1C follows): the list
- * menu's state, rows 0-7 switched on, row mask 0xBF, then the eight option
- * rows {state, mode}. Defined after every function, so no body sees a
+ * D_8009BBFC ends at 0x8009BC04, d_8C41C.c's g_entry_menu_handlers follows):
+ * the list menu's state, rows 0-7 switched on, row mask 0xBF, then the eight
+ * option rows {state, mode}. Defined after every function, so no body sees a
  * definition where it saw an extern. */
 MenuState g_row_menu_row_state = {
     0xFF,

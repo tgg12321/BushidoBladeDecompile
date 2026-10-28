@@ -29,9 +29,9 @@ glabel eff_SpawnRotatedQuadCluster
     /* 530F4 800628F4 21082300 */  addu       $at, $at, $v1
     /* 530F8 800628F8 C00F22AC */  sw         $v0, %lo(D_800F0FC0)($at)
     /* 530FC 800628FC 00002295 */  lhu        $v0, 0x0($t1)
-    /* 53100 80062900 0F80013C */  lui        $at, %hi(D_800F10A0)
+    /* 53100 80062900 0F80013C */  lui        $at, %hi(g_eff_rotated_quad_cluster_rotations)
     /* 53104 80062904 21082500 */  addu       $at, $at, $a1
-    /* 53108 80062908 A01022A4 */  sh         $v0, %lo(D_800F10A0)($at)
+    /* 53108 80062908 A01022A4 */  sh         $v0, %lo(g_eff_rotated_quad_cluster_rotations)($at)
     /* 5310C 8006290C 02002295 */  lhu        $v0, 0x2($t1)
     /* 53110 80062910 0F80013C */  lui        $at, %hi(D_800F10A2)
     /* 53114 80062914 21082500 */  addu       $at, $at, $a1

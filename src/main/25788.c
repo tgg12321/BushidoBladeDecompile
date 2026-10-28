@@ -71,7 +71,8 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         s32 win_target;
 
         g_fight_match_count = p->match_count_index + 3;
-        g_fight_time_limit_seconds = D_8008EC30[p->time_limit_index];
+        g_fight_time_limit_seconds =
+            g_fight_time_limit_choices[p->time_limit_index];
         win_target = 1;
         if (p->win_target_index) {
             win_target = 2;

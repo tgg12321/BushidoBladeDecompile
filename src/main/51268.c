@@ -15,8 +15,8 @@
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
-static POLY_FT4 *D_800A3420;
-static POLY_FT4 *D_800A3424;
+static POLY_FT4 *g_eff_first_quad_buffer;
+static POLY_FT4 *g_eff_second_quad_buffer;
 /* not named by any code or data: size from the gap */
 static s32 D_800A3428[2];
 /* not named by any code or data: size from the gap */
@@ -37,7 +37,7 @@ static MATRIX *g_eff_view_rotation_matrix;
 static s16 *g_eff_command_vector;
 static s32 *g_eff_command_position;
 static s32 *g_eff_yawed_quad_tex_index;
-static s32 *D_800A3484;
+static s32 *g_eff_quad_rate_selector;
 static TexRec *g_eff_current_tex_rec;
 static TexRec *g_eff_clut_tex_rec;
 static s32 *g_eff_tpage_word;
@@ -66,7 +66,7 @@ static u32 *g_eff_current_prim_tag;
 static Unk1F8000B8Union *g_eff_work_area;
 /* Two s16 slots at 0x800A34F0, indexed as one array (eff_PrepareParticles and
  * eff_UpdateParticles read the pair through one indexed access). */
-static s16 D_800A34F0[2];
+static s16 g_eff_yawed_particle_alternate_texture_flags[2];
 static s32 D_800A34F4; /* not named by any code or data: size from the gap */
 
 /* Runs the command in the block g_eff_active_command_block points at (idx = the
@@ -203,15 +203,16 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     eff_ResetCommands();
     srand(rand());
     second_quad_buffer_addr = quad_storage + 0x4650;
-    D_800A3420 = (POLY_FT4 *)quad_storage;
-    D_800A3424 = (POLY_FT4 *)second_quad_buffer_addr;
+    g_eff_first_quad_buffer = (POLY_FT4 *)quad_storage;
+    g_eff_second_quad_buffer = (POLY_FT4 *)second_quad_buffer_addr;
     return second_quad_buffer_addr + 0x4650;
 }
 
 extern POLY_FT4 *g_eff_quad_buffer_base;
 
 void eff_SelectQuadBuffer(s32 select_second_buffer) {
-    g_eff_quad_cursor = select_second_buffer != 0 ? D_800A3424 : D_800A3420;
+    g_eff_quad_cursor = select_second_buffer != 0 ? g_eff_second_quad_buffer
+                                                  : g_eff_first_quad_buffer;
     g_eff_quad_buffer_base = g_eff_quad_cursor;
 }
 
@@ -247,7 +248,7 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_current_ot_entry = &SPAD51268->unkA0;
     g_eff_current_prim_tag = &SPAD51268->unkA4;
     g_eff_yawed_quad_tex_index = &SPAD51268->yawed_quad_tex_rec_index;
-    D_800A3484 = &SPAD51268->quad_rate_selector;
+    g_eff_quad_rate_selector = &SPAD51268->quad_rate_selector;
     g_eff_clut_tex_rec = &SPAD51268->unkB0;
     g_eff_work_area = &SPAD51268->effect_work_area;
     SPAD51268->default_command_block.bound_rotation_src = src_rotation;
@@ -630,11 +631,11 @@ void eff_StartRecycledYawedParticlesWithTextureSelection(
     if (g_eff_command_status[22] == 0) {
         g_eff_active_command_block->status_dest = &g_eff_command_status[22];
         g_eff_active_command_block->command_word.w = 0x10016;
-        D_800A34F0[0] = use_alternate_texture;
+        g_eff_yawed_particle_alternate_texture_flags[0] = use_alternate_texture;
     } else if (g_eff_command_status[23] == 0) {
         g_eff_active_command_block->status_dest = &g_eff_command_status[23];
         g_eff_active_command_block->command_word.w = 0x10017;
-        D_800A34F0[1] = use_alternate_texture;
+        g_eff_yawed_particle_alternate_texture_flags[1] = use_alternate_texture;
     }
     eff_StartCommand();
 }
@@ -810,9 +811,9 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
             *g_eff_base_height = 0xE1;
         sel_a:
             g_eff_clut_tex_rec = g_eff_current_tex_rec =
-                &D_8009BA00[(u32)g_eff_billboard_draw_count % 6];
+                &g_eff_billboard_tex_recs[(u32)g_eff_billboard_draw_count % 6];
             if (g_working_record.grayscale) {
-                g_eff_clut_tex_rec = &D_8009BA00[10];
+                g_eff_clut_tex_rec = &g_eff_billboard_tex_recs[10];
             }
             *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x1F;
             *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x1F;
@@ -826,9 +827,9 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
             *g_eff_base_height = 0x78;
         sel_b:
             g_eff_clut_tex_rec = g_eff_current_tex_rec =
-                &D_8009BA00[6 + (g_eff_billboard_draw_count & 3)];
+                &g_eff_billboard_tex_recs[6 + (g_eff_billboard_draw_count & 3)];
             if (g_working_record.grayscale) {
-                g_eff_clut_tex_rec = &D_8009BA00[11];
+                g_eff_clut_tex_rec = &g_eff_billboard_tex_recs[11];
             }
             *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0xF;
             *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x13;
@@ -920,10 +921,10 @@ s32 eff_SpawnRotatedQuadCluster(void) {
             g_eff_rotated_quad_cluster_positions[slot_index].x = pos[0];
             g_eff_rotated_quad_cluster_positions[slot_index].y = pos[1];
             g_eff_rotated_quad_cluster_positions[slot_index].z = pos[2];
-            D_800F10A0[slot_index].vx = rot[0];
-            D_800F10A0[slot_index].vy = rot[1];
+            g_eff_rotated_quad_cluster_rotations[slot_index].vx = rot[0];
+            g_eff_rotated_quad_cluster_rotations[slot_index].vy = rot[1];
             g_eff_rotated_quad_cluster_slot_mask |= mask;
-            D_800F10A0[slot_index].vz = rot[2];
+            g_eff_rotated_quad_cluster_rotations[slot_index].vz = rot[2];
             g_eff_rotated_quad_cluster_ages[slot_index] = 0;
             break;
         }
@@ -981,7 +982,8 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         v = rsin(((g_eff_rotated_quad_cluster_ages[slot_index] + 6) << 10) / 6);
         scale[0] = scale[1] = scale[2] =
             v + (g_eff_rotated_quad_cluster_ages[slot_index] << 12) / 6;
-        RotMatrixZYX(&D_800F10A0[slot_index].vx, (u8 *)slot_matrix);
+        RotMatrixZYX(&g_eff_rotated_quad_cluster_rotations[slot_index].vx,
+                     (u8 *)slot_matrix);
         ScaleMatrix((u8 *)slot_matrix, scale);
         slot_matrix->t[0] = g_eff_rotated_quad_cluster_positions[slot_index].x -
                             g_eff_view_origin[0];
@@ -1956,9 +1958,9 @@ u8 func_80065434(void) {
 u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
     unsigned int rate_selector;
     u8 draw_result;
-    *D_800A3484 = D_800A3440;
+    *g_eff_quad_rate_selector = D_800A3440;
     draw_result = eff_DrawAnimatedQuads(5);
-    rate_selector = *D_800A3484;
+    rate_selector = *g_eff_quad_rate_selector;
     switch (rate_selector) {
     case 0: {
         s16 *p = &g_eff_animated_quad_counters[5];
@@ -2806,7 +2808,8 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
         if (tex_rec_index >= 4) {
             var_0->unk70 = 3;
         }
-        if (D_800A34F0[particle_mode - 4] != 0) {
+        if (g_eff_yawed_particle_alternate_texture_flags[particle_mode - 4] !=
+            0) {
             g_eff_current_tex_rec = &D_8009B9B8[var_0->unk70];
         } else {
             g_eff_current_tex_rec = &D_8009B998[var_0->unk70];
@@ -3120,7 +3123,9 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
                 if (g_working_record.grayscale) {
                     *(s32 *)&(*p_prim)++->r0 = 0x2C242424;
                     break;
-                } else if (D_800A34F0[particle_mode - 4] != 0) {
+                } else if (
+                    g_eff_yawed_particle_alternate_texture_flags[particle_mode -
+                                                                 4] != 0) {
                     *(s32 *)&(*p_prim)++->r0 =
                         (((rand() * 4 >> 12) + 0x3C) << 8) + 0x2C080038;
                     break;

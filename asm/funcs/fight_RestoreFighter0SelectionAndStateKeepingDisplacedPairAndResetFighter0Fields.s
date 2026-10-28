@@ -8,8 +8,8 @@ glabel fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter
     /* 2BB40 8003B340 6A37E790 */  lbu        $a3, %lo(g_fight_bone_group_tim_requests)($a3)
     /* 2BB44 8003B344 0A80083C */  lui        $t0, %hi(g_fight_saved_first_fighter_selection)
     /* 2BB48 8003B348 36380891 */  lbu        $t0, %lo(g_fight_saved_first_fighter_selection)($t0)
-    /* 2BB4C 8003B34C 0A80053C */  lui        $a1, %hi(D_800A36C8)
-    /* 2BB50 8003B350 C836A590 */  lbu        $a1, %lo(D_800A36C8)($a1)
+    /* 2BB4C 8003B34C 0A80053C */  lui        $a1, %hi(g_fight_saved_bone_group_tim_requests)
+    /* 2BB50 8003B350 C836A590 */  lbu        $a1, %lo(g_fight_saved_bone_group_tim_requests)($a1)
     /* 2BB54 8003B354 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2BB58 8003B358 0A80013C */  lui        $at, %hi(g_fight_saved_first_fighter_selection)
     /* 2BB5C 8003B35C 363822A0 */  sb         $v0, %lo(g_fight_saved_first_fighter_selection)($at)

@@ -6,7 +6,7 @@ glabel comb_WriteWaitCallback
     /* 2AC3C 8003A43C 12E90008 */  j          .L8003A448
     /* 2AC40 8003A440 01000224 */   addiu     $v0, $zero, 0x1
   .L8003A444:
-    /* 2AC44 8003A444 600780A3 */  sb         $zero, %gp_rel(D_800A382C)($gp)
+    /* 2AC44 8003A444 600780A3 */  sb         $zero, %gp_rel(g_comb_write_not_aborted)($gp)
   .L8003A448:
     /* 2AC48 8003A448 0800E003 */  jr         $ra
     /* 2AC4C 8003A44C 00000000 */   nop

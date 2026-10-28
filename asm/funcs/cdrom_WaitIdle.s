@@ -14,8 +14,8 @@ glabel cdrom_WaitIdle
     /* 2776C 80036F6C 00000000 */   nop
     /* 27770 80036F70 50DA000C */  jal        cdrom_Update
     /* 27774 80036F74 00000000 */   nop
-    /* 27778 80036F78 0A80023C */  lui        $v0, %hi(D_800A3906)
-    /* 2777C 80036F7C 06394290 */  lbu        $v0, %lo(D_800A3906)($v0)
+    /* 27778 80036F78 0A80023C */  lui        $v0, %hi(g_snd_initialized)
+    /* 2777C 80036F7C 06394290 */  lbu        $v0, %lo(g_snd_initialized)($v0)
     /* 27780 80036F80 00000000 */  nop
     /* 27784 80036F84 03004010 */  beqz       $v0, .L80036F94
     /* 27788 80036F88 00000000 */   nop

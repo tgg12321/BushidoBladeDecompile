@@ -355,9 +355,9 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17AA8 800272A8 03130900 */  sra        $v0, $t1, 12
     /* 17AAC 800272AC 2128A200 */  addu       $a1, $a1, $v0
     /* 17AB0 800272B0 1800A5AF */  sw         $a1, 0x18($sp)
-    /* 17AB4 800272B4 0980013C */  lui        $at, %hi(D_8008EB6C)
+    /* 17AB4 800272B4 0980013C */  lui        $at, %hi(g_fight_midpoint_effect_event_ids)
     /* 17AB8 800272B8 21083200 */  addu       $at, $at, $s2
-    /* 17ABC 800272BC 6CEB2590 */  lbu        $a1, %lo(D_8008EB6C)($at)
+    /* 17ABC 800272BC 6CEB2590 */  lbu        $a1, %lo(g_fight_midpoint_effect_event_ids)($at)
     /* 17AC0 800272C0 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 17AC4 800272C4 21380000 */   addu      $a3, $zero, $zero
     /* 17AC8 800272C8 B79C0008 */  j          .L800272DC

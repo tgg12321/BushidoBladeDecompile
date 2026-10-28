@@ -10,17 +10,17 @@ glabel InitTimedSpriteSequence
     /* 68D04 80078504 1000B0AF */   sw        $s0, 0x10($sp)
     /* 68D08 80078508 32000424 */  addiu      $a0, $zero, 0x32
     /* 68D0C 8007850C 58003026 */  addiu      $s0, $s1, 0x58
-    /* 68D10 80078510 280591AF */  sw         $s1, %gp_rel(D_800A35F4)($gp)
+    /* 68D10 80078510 280591AF */  sw         $s1, %gp_rel(g_gpu_timed_sprite_prim_buffers)($gp)
     /* 68D14 80078514 2C0590AF */  sw         $s0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68D18 80078518 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 68D1C 8007851C 21280002 */   addu      $a1, $s0, $zero
     /* 68D20 80078520 44DF010C */  jal        reloc_RelocateFiveOffsetListsAndGetWord1
     /* 68D24 80078524 21200002 */   addu      $a0, $s0, $zero
-    /* 68D28 80078528 2805858F */  lw         $a1, %gp_rel(D_800A35F4)($gp)
+    /* 68D28 80078528 2805858F */  lw         $a1, %gp_rel(g_gpu_timed_sprite_prim_buffers)($gp)
     /* 68D2C 8007852C 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 68D30 80078530 21204000 */   addu      $a0, $v0, $zero
     /* 68D34 80078534 01000224 */  addiu      $v0, $zero, 0x1
-    /* 68D38 80078538 300580AF */  sw         $zero, %gp_rel(D_800A35FC)($gp)
+    /* 68D38 80078538 300580AF */  sw         $zero, %gp_rel(g_gpu_timed_sprite_step_count)($gp)
     /* 68D3C 8007853C 240580AF */  sw         $zero, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
     /* 68D40 80078540 340580AF */  sw         $zero, %gp_rel(g_gpu_timed_sprite_sequence_phase)($gp)
     /* 68D44 80078544 1800BF8F */  lw         $ra, 0x18($sp)

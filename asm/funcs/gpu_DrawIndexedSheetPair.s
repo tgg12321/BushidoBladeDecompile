@@ -61,7 +61,7 @@ glabel gpu_DrawIndexedSheetPair
   .L8006BE00:
     /* 5C600 8006BE00 21202002 */  addu       $a0, $s1, $zero
     /* 5C604 8006BE04 C0281000 */  sll        $a1, $s0, 3
-    /* 5C608 8006BE08 1806838F */  lw         $v1, %gp_rel(D_800A36E4)($gp)
+    /* 5C608 8006BE08 1806838F */  lw         $v1, %gp_rel(g_sheet_pair_sprite_cursor)($gp)
     /* 5C60C 8006BE0C 0000228E */  lw         $v0, 0x0($s1)
     /* 5C610 8006BE10 01001026 */  addiu      $s0, $s0, 0x1
     /* 5C614 8006BE14 100020AE */  sw         $zero, 0x10($s1)
@@ -70,7 +70,7 @@ glabel gpu_DrawIndexedSheetPair
     /* 5C620 8006BE20 080023AE */  sw         $v1, 0x8($s1)
     /* 5C624 8006BE24 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5C628 8006BE28 040022AE */   sw        $v0, 0x4($s1)
-    /* 5C62C 8006BE2C 180682AF */  sw         $v0, %gp_rel(D_800A36E4)($gp)
+    /* 5C62C 8006BE2C 180682AF */  sw         $v0, %gp_rel(g_sheet_pair_sprite_cursor)($gp)
     /* 5C630 8006BE30 2A101202 */  slt        $v0, $s0, $s2
     /* 5C634 8006BE34 E7FF4014 */  bnez       $v0, .L8006BDD4
     /* 5C638 8006BE38 00000000 */   nop

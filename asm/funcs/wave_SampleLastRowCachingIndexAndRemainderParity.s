@@ -11,7 +11,7 @@ glabel wave_SampleLastRowCachingIndexAndRemainderParity
     /* 385B8 80047DB8 831A0500 */  sra        $v1, $a1, 10
     /* 385BC 80047DBC 23286200 */  subu       $a1, $v1, $v0
     /* 385C0 80047DC0 C3170400 */  sra        $v0, $a0, 31
-    /* 385C4 80047DC4 080385AF */  sw         $a1, %gp_rel(D_800A33D4)($gp)
+    /* 385C4 80047DC4 080385AF */  sw         $a1, %gp_rel(g_wave_cached_column_index)($gp)
     /* 385C8 80047DC8 10300000 */  mfhi       $a2
     /* 385CC 80047DCC 831A0600 */  sra        $v1, $a2, 10
     /* 385D0 80047DD0 23186200 */  subu       $v1, $v1, $v0
@@ -23,7 +23,7 @@ glabel wave_SampleLastRowCachingIndexAndRemainderParity
     /* 385E8 80047DE8 23208200 */  subu       $a0, $a0, $v0
     /* 385EC 80047DEC 01008430 */  andi       $a0, $a0, 0x1
     /* 385F0 80047DF0 1200A22C */  sltiu      $v0, $a1, 0x12
-    /* 385F4 80047DF4 0C0384AF */  sw         $a0, %gp_rel(D_800A33D8)($gp)
+    /* 385F4 80047DF4 0C0384AF */  sw         $a0, %gp_rel(g_wave_cached_remainder_parity)($gp)
     /* 385F8 80047DF8 13004010 */  beqz       $v0, .L80047E48
     /* 385FC 80047DFC F8FFBD27 */   addiu     $sp, $sp, -0x8
     /* 38600 80047E00 80180500 */  sll        $v1, $a1, 2

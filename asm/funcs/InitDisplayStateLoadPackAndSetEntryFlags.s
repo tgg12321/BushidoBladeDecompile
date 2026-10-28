@@ -16,7 +16,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5ED6C 8006E56C 7F000224 */  addiu      $v0, $zero, 0x7F
     /* 5ED70 8006E570 1C0282A3 */  sb         $v0, %gp_rel(D_800A32E8)($gp)
     /* 5ED74 8006E574 1400228E */  lw         $v0, 0x14($s1)
-    /* 5ED78 8006E578 E00490AF */  sw         $s0, %gp_rel(D_800A35AC)($gp)
+    /* 5ED78 8006E578 E00490AF */  sw         $s0, %gp_rel(g_entry_menu_prim_buffers)($gp)
     /* 5ED7C 8006E57C 58001026 */  addiu      $s0, $s0, 0x58
     /* 5ED80 8006E580 9C0491AF */  sw         $s1, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 5ED84 8006E584 8C0480A7 */  sh         $zero, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
@@ -69,7 +69,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EE28 8006E628 A004848F */  lw         $a0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE2C 8006E62C 8ABA010C */  jal        resource_RelocateNineOffsetListsAndLoadVabPack
     /* 5EE30 8006E630 00000000 */   nop
-    /* 5EE34 8006E634 E004858F */  lw         $a1, %gp_rel(D_800A35AC)($gp)
+    /* 5EE34 8006E634 E004858F */  lw         $a1, %gp_rel(g_entry_menu_prim_buffers)($gp)
     /* 5EE38 8006E638 21204000 */  addu       $a0, $v0, $zero
     /* 5EE3C 8006E63C A00484AF */  sw         $a0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE40 8006E640 27B9010C */  jal        gpu_InitPrimBufferPair
@@ -157,7 +157,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EF78 8006E778 03004230 */  andi       $v0, $v0, 0x3
     /* 5EF7C 8006E77C EC0482A7 */  sh         $v0, %gp_rel(D_800A35B8)($gp)
     /* 5EF80 8006E780 05000224 */  addiu      $v0, $zero, 0x5
-    /* 5EF84 8006E784 E80482A7 */  sh         $v0, %gp_rel(D_800A35B4)($gp)
+    /* 5EF84 8006E784 E80482A7 */  sh         $v0, %gp_rel(g_entry_menu_grid_last_column)($gp)
     /* 5EF88 8006E788 40180300 */  sll        $v1, $v1, 1
     /* 5EF8C 8006E78C 40100400 */  sll        $v0, $a0, 1
     /* 5EF90 8006E790 21104400 */  addu       $v0, $v0, $a0

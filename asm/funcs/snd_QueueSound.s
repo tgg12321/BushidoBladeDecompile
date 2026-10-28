@@ -1,8 +1,8 @@
 glabel snd_QueueSound
     /* 4CE50 8005C650 21380000 */  addu       $a3, $zero, $zero
     /* 4CE54 8005C654 80200400 */  sll        $a0, $a0, 2
-    /* 4CE58 8005C658 0A80023C */  lui        $v0, %hi(D_8009AA70)
-    /* 4CE5C 8005C65C 70AA4224 */  addiu      $v0, $v0, %lo(D_8009AA70)
+    /* 4CE58 8005C658 0A80023C */  lui        $v0, %hi(g_snd_sound_vab_entries)
+    /* 4CE5C 8005C65C 70AA4224 */  addiu      $v0, $v0, %lo(g_snd_sound_vab_entries)
     /* 4CE60 8005C660 21208200 */  addu       $a0, $a0, $v0
     /* 4CE64 8005C664 00140700 */  sll        $v0, $a3, 16
   .L8005C668:

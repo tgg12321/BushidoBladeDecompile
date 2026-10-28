@@ -26,13 +26,13 @@ static s32 D_800A33B8; /* not named by any code or data: size from the gap */
 static s32 D_800A33BC;
 static s32 D_800A33C0;
 static s32 D_800A33C4; /* not named by any code or data: size from the gap */
-static s16 D_800A33C8[2];
+static s16 g_camera_calculated_angles[2];
 static s32 D_800A33CC; /* not named by any code or data: size from the gap */
 static s16 *g_wave_cell_buffer;
-static s32 D_800A33D4;
-static s32 D_800A33D8;
+static s32 g_wave_cached_column_index;
+static s32 g_wave_cached_remainder_parity;
 static s32 D_800A33DC; /* not named by any code or data: size from the gap */
-static s32 D_800A33E0;
+static s32 g_node_retained_draw_slot_index;
 static s32 g_node_retained_draw_node_buffer;
 static s16 g_resource_pair_selection[2];
 static s32 g_resource_entry_category;
@@ -302,8 +302,8 @@ extern s16 D_800A324A;
 extern MATRIX g_math_light_plane_projection;
 
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
- * D_800EF848, which wave_SampleLastRowStepsAtCachedIndex's [v1 + 1] reaches at
- * v1 == 17 */
+ * g_gpu_vram_scrolls, which wave_SampleLastRowStepsAtCachedIndex's [v1 + 1]
+ * reaches at v1 == 17 */
 extern s32 g_wave_last_row_steps[18];
 extern u8 g_fight_start_position_pairs;
 extern s16 g_gpu_raised_ot_cutoff_requested;
@@ -313,7 +313,7 @@ extern void node_InitRootNodePairWithNegatedRotationMatrices(void);
 extern void light_InitDefaults(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
-extern s16 D_800A3248;
+extern s16 g_resource_cached_node_asset_id;
 
 void resource_RebaseNodeAssetBlock(s32 a0, s32 a1);
 
@@ -337,7 +337,7 @@ s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
     }
     {
         s32 *a1 = arena_FindBlock(8);
-        if (a1 && D_800A3248 == arg) {
+        if (a1 && g_resource_cached_node_asset_id == arg) {
             s2 = (s32 *)a1[1];
         } else {
             s32 *s1;
@@ -353,7 +353,7 @@ s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
             arena_UpdatePeak((s32)s1);
             reloc_RelocateBlock(s0, 9);
             arena_SetBlockEnd(arena_block_id, (s32)s1);
-            D_800A3248 = arg;
+            g_resource_cached_node_asset_id = arg;
         }
     }
     arena_SetMoveCallback(arena_block_id, (s32)resource_RebaseNodeAssetBlock);
@@ -663,9 +663,9 @@ s16 *camera_CalcAngles(void) {
     var_1.vz = ((s32)Judge[(var_3 + 0x400) & 0xFFF] * var_1.vz +
                 (s32)Judge[var_3 & 0xFFF] * var_1.vx) >>
                12;
-    D_800A33C8[0] = -ratan2(var_1.vy, var_1.vz);
-    D_800A33C8[1] = var_3;
-    return D_800A33C8;
+    g_camera_calculated_angles[0] = -ratan2(var_1.vy, var_1.vz);
+    g_camera_calculated_angles[1] = var_3;
+    return g_camera_calculated_angles;
 }
 
 void func_8004746C(void) { node_InitFrameEntriesFromWorldTranslations(); }
@@ -685,8 +685,8 @@ void wave_InitCallback(void) { wave_Init(); }
 void wave_UpdateCallback(void) { wave_Update(); }
 
 void node_InitViewOffsetNodeWithYXZRotation(void) {
-    node_InitIdentity(&D_800EEDF0);
-    D_800EEDF0.rotation_order = 4;
+    node_InitIdentity(&g_view_offset_node);
+    g_view_offset_node.rotation_order = 4;
 }
 
 void node_OrientAndQueueViewOffsetNode(void) {
@@ -714,7 +714,7 @@ void node_OrientAndQueueViewOffsetNode(void) {
             12;
     result.vz = var_5;
 
-    base = &D_800EEDF0;
+    base = &g_view_offset_node;
     {
         /* FAKE: s16 temporary for the negated pitch; storing -ratan2()
          * straight into base->xf.rot.vx moves its negu and the addiu: score
@@ -757,7 +757,7 @@ void wave_SetCellBuffer(s32 a0) { g_wave_cell_buffer = (s16 *)a0; }
 
 /* 17 phases and the 9 x 17 table wave_Update steps from them
  * (g_wave_last_row_steps takes the last row's deltas) */
-extern s32 D_800EF558[17];
+extern s32 g_wave_column_phases[17];
 extern s32 g_wave_vertex_grid[9][17];
 
 s32 wave_Init(void) {
@@ -861,7 +861,7 @@ s32 wave_Init(void) {
     } while (a3 < 8);
 
     {
-        Unk80101DF0Record *node = &D_800EF070;
+        Unk80101DF0Record *node = &g_wave_draw_node;
         node->unk0 = 0xE;
         node->light_setup_index = 4;
         node->work.t[0] = -0x2EE0;
@@ -890,7 +890,7 @@ s32 wave_Init(void) {
     } while (a3 < 9);
 
     a0 = 0;
-    ptr = &D_800EF558[0];
+    ptr = &g_wave_column_phases[0];
 loop3:
     *ptr = (a0 << 7) & 0xFFF;
     a0++;
@@ -910,8 +910,8 @@ void wave_Update(void) {
 
     for (i = 0; i < 17; i++) {
         g_wave_vertex_grid[0][i] =
-            ((s32)Judge[D_800EF558[i] & 0xFFF] * 0x271) >> 10;
-        D_800EF558[i] += 0x12;
+            ((s32)Judge[g_wave_column_phases[i] & 0xFFF] * 0x271) >> 10;
+        g_wave_column_phases[i] += 0x12;
     }
     for (i = 1; i < 9; i++) {
         for (j = 0; j < 17; j++) {
@@ -930,7 +930,7 @@ void wave_Update(void) {
     }
     temp = g_draw_queue_cursor;
     g_draw_queue_cursor = temp + 1;
-    *temp = &D_800EF070;
+    *temp = &g_wave_draw_node;
 }
 
 extern SVECTOR D_800EF0D8[17];
@@ -1001,8 +1001,8 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
     s32 var_3 = remainder & 1;
-    D_800A33D4 = a1;
-    D_800A33D8 = var_3;
+    g_wave_cached_column_index = a1;
+    g_wave_cached_remainder_parity = var_3;
     if ((u32)a1 >= 18) {
         return (s32)0xFFFE7960;
     }
@@ -1016,13 +1016,13 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
 }
 
 s32 wave_SampleLastRowStepsAtCachedIndex(void) {
-    s32 v1 = D_800A33D4;
+    s32 v1 = g_wave_cached_column_index;
     if ((u32)v1 >= 18) {
         return 0;
     }
     {
         s32 v0 = g_wave_last_row_steps[v1];
-        s32 a0 = D_800A33D8;
+        s32 a0 = g_wave_cached_remainder_parity;
         s32 val1 = v0 * a0;
         s32 v3 = g_wave_last_row_steps[v1 + 1];
         s32 val2 = v3 * (0x1000 - a0);
@@ -1551,7 +1551,7 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
     slot_object = slot_GetObject(slot_index);
     if (slot_object == 0)
         return 0;
-    D_800A33E0 = slot_index;
+    g_node_retained_draw_slot_index = slot_index;
     var_1 = (&D_80099BCC)[slot_object->unk_08];
     if (var_1 == 0xFF)
         return 0;
@@ -1602,7 +1602,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     MATRIX **mat_tbl;
     Unk80045878Node *node;
 
-    mat_tbl = node_GetSlotMatrixPointerArray(D_800A33E0);
+    mat_tbl = node_GetSlotMatrixPointerArray(g_node_retained_draw_slot_index);
     if (mat_tbl == 0) {
         return;
     }
@@ -1673,9 +1673,9 @@ void gpu_InitVramScroll(s32 scroll_preset_index, s32 scroll_index) {
     if (scroll_index > 0) {
         func_80052C10();
     }
-    base = &D_800EF848[scroll_index];
+    base = &g_gpu_vram_scrolls[scroll_index];
     base->phase = 0;
-    src = D_80099C34[scroll_preset_index];
+    src = g_gpu_vram_scroll_presets[scroll_preset_index];
     dst = base->ctl;
     i = 0;
     do {
@@ -1704,7 +1704,7 @@ void gpu_QueueVramScroll(s32 scroll_index) {
     DR_MOVE *p;
     s32 var_15;
 
-    scroll_record = &D_800EF848[scroll_index];
+    scroll_record = &g_gpu_vram_scrolls[scroll_index];
     var_15 = scroll_record->phase;
     scroll_controls = scroll_record->ctl;
     p = scroll_record->move[g_gpu_presented_frame_count & 1];
@@ -1791,10 +1791,11 @@ void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
             func_80052C10();
         }
     }
-    first_linked_entry_index = D_80099CC8[entry_index][0];
+    first_linked_entry_index = g_resource_entry_linked_entries[entry_index][0];
     if (first_linked_entry_index != 0xFF) {
         g_resource_entry_request_state[first_linked_entry_index] = 1;
-        g_resource_entry_request_state[D_80099CC8[entry_index][1]] = 1;
+        g_resource_entry_request_state
+            [g_resource_entry_linked_entries[entry_index][1]] = 1;
     }
 }
 
@@ -1825,8 +1826,8 @@ s32 math_UnorderedPairIndex(s32 arg0, s32 arg1, s32 arg2) {
     return sum;
 }
 
-extern s16 D_80099C50[];
-extern s32 D_800A324C;
+extern s16 g_resource_prev_entry_request_state[];
+extern s32 g_resource_last_selection_index;
 extern s32 math_UnorderedPairIndex(s32, s32, s32);
 
 void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
@@ -1846,7 +1847,7 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
 
     inputs_unchanged = 1;
     i = 0;
-    dst = D_80099C50;
+    dst = g_resource_prev_entry_request_state;
     src = g_resource_entry_request_state;
     do {
         s16 v = *src;
@@ -1897,8 +1898,8 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
     }
     i = math_UnorderedPairIndex(step, lo, hi);
 end:
-    if (D_800A324C != i) {
-        D_800A324C = i;
+    if (g_resource_last_selection_index != i) {
+        g_resource_last_selection_index = i;
         inputs_unchanged = 0;
     }
     if (inputs_unchanged == 0) {
@@ -2044,7 +2045,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     Unk80045878Obj *slot_obj;
     void **list;
 
-    linked_entry_index = D_80099CC8[arg0][arg2];
+    linked_entry_index = g_resource_entry_linked_entries[arg0][arg2];
     if (linked_entry_index == 0xFF) {
         return;
     }
@@ -2216,13 +2217,13 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
 void resource_InvalidateEntrySelectionCache(void) {
     s16 val = -1;
     s32 i = 0x39;
-    s16 *p = &D_80099C50[0x39];
+    s16 *p = &g_resource_prev_entry_request_state[0x39];
     do {
         *p = val;
         i--;
         p--;
     } while (i >= 0);
-    D_800A324C = -1;
+    g_resource_last_selection_index = -1;
 }
 
 void node_InitRootNodePairWithNegatedRotationMatrices(void) {
@@ -2337,8 +2338,8 @@ void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-s16 D_800A3248 = -1;
+s16 g_resource_cached_node_asset_id = -1;
 s16 D_800A324A = -1;
-s32 D_800A324C = -1;
+s32 g_resource_last_selection_index = -1;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u32 *g_gpu_ot256_ptr;

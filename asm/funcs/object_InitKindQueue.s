@@ -1,8 +1,8 @@
 glabel object_InitKindQueue
     /* 20C7C 8003047C 300380A4 */  sh         $zero, 0x330($a0)
     /* 20C80 80030480 21280000 */  addu       $a1, $zero, $zero
-    /* 20C84 80030484 0980083C */  lui        $t0, %hi(D_8008E338)
-    /* 20C88 80030488 38E30825 */  addiu      $t0, $t0, %lo(D_8008E338)
+    /* 20C84 80030484 0980083C */  lui        $t0, %hi(g_fighter_initial_carried_object_kinds)
+    /* 20C88 80030488 38E30825 */  addiu      $t0, $t0, %lo(g_fighter_initial_carried_object_kinds)
     /* 20C8C 8003048C FFFF0724 */  addiu      $a3, $zero, -0x1
     /* 20C90 80030490 21308000 */  addu       $a2, $a0, $zero
   .L80030494:
@@ -35,9 +35,9 @@ glabel object_InitKindQueue
     /* 20CF8 800304F8 80100300 */  sll        $v0, $v1, 2
     /* 20CFC 800304FC 21104300 */  addu       $v0, $v0, $v1
     /* 20D00 80030500 04008384 */  lh         $v1, 0x4($a0)
-    /* 20D04 80030504 0980013C */  lui        $at, %hi(D_8008E338)
+    /* 20D04 80030504 0980013C */  lui        $at, %hi(g_fighter_initial_carried_object_kinds)
     /* 20D08 80030508 21082200 */  addu       $at, $at, $v0
-    /* 20D0C 8003050C 38E32290 */  lbu        $v0, %lo(D_8008E338)($at)
+    /* 20D0C 8003050C 38E32290 */  lbu        $v0, %lo(g_fighter_initial_carried_object_kinds)($at)
     /* 20D10 80030510 0A80013C */  lui        $at, %hi(D_800A36F2)
     /* 20D14 80030514 21082300 */  addu       $at, $at, $v1
     /* 20D18 80030518 F23622A0 */  sb         $v0, %lo(D_800A36F2)($at)

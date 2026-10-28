@@ -155,7 +155,7 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *draw_desc, s32 mode) {
     return (s32)p;
 }
 
-extern VECTOR D_8009BCD4;
+extern VECTOR g_gpu_rotated_sprite_quad_scale;
 
 s32 gpu_AddRotatedSpriteQuads(env, angle, mode)
 Unk8007352CRec *env;
@@ -224,7 +224,7 @@ s32 mode;
         ang.vx = 0;
         ang.vz = angle;
         RotMatrix(&ang, &mtx);
-        ScaleMatrixL(&mtx, &D_8009BCD4);
+        ScaleMatrixL(&mtx, &g_gpu_rotated_sprite_quad_scale);
         SetRotMatrix(&mtx);
         for (j = 0; j < 4; j++) {
             vec[j].vx =
@@ -474,4 +474,4 @@ u8 *g_sel_screen_work;
  * at 0x8009BCD4, d_8C4E4.c's g_sel_entry_availability_and_claims follows): the
  * ScaleMatrixL scale, x and z 1.0, y 0.5 (4.12). Defined after every function,
  * so no body sees a definition where it saw an extern. */
-VECTOR D_8009BCD4 = {0x1000, 0x800, 0x1000, 0};
+VECTOR g_gpu_rotated_sprite_quad_scale = {0x1000, 0x800, 0x1000, 0};

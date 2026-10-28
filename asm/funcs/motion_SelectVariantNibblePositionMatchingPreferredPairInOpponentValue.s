@@ -7,8 +7,8 @@ glabel motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
     /* 12CF4 800224F4 21284300 */  addu       $a1, $v0, $v1
     /* 12CF8 800224F8 0200A724 */  addiu      $a3, $a1, 0x2
     /* 12CFC 800224FC 0000828C */  lw         $v0, 0x0($a0)
-    /* 12D00 80022500 0980043C */  lui        $a0, %hi(D_8008DB1C)
-    /* 12D04 80022504 1CDB8424 */  addiu      $a0, $a0, %lo(D_8008DB1C)
+    /* 12D00 80022500 0980043C */  lui        $a0, %hi(g_fighter_motion_data_ids)
+    /* 12D04 80022504 1CDB8424 */  addiu      $a0, $a0, %lo(g_fighter_motion_data_ids)
     /* 12D08 80022508 0A004384 */  lh         $v1, 0xA($v0)
     /* 12D0C 8002250C 0E004284 */  lh         $v0, 0xE($v0)
     /* 12D10 80022510 00190300 */  sll        $v1, $v1, 4

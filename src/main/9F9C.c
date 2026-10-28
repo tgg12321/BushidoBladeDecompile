@@ -1111,7 +1111,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
         if (g_fight_mode_selector == 6 && fighter_index != g_comb_local_side) {
             mapped_buttons = pad_words[i] & ~0xF0;
             {
-                u8 r = D_800A3912;
+                u8 r = g_pad_remote_button_mapping_20;
                 if ((r & 1) && (pad_words[i] & 0x20) ||
                     (r & 2) && (pad_words[i] & 0x10) ||
                     (r & 4) && (pad_words[i] & 0x40) ||
@@ -1120,7 +1120,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
                 }
             }
             {
-                u8 g = D_800A3913;
+                u8 g = g_pad_remote_button_mapping_40;
                 if ((g & 1) && (pad_words[i] & 0x20) ||
                     (g & 2) && (pad_words[i] & 0x10) ||
                     (g & 4) && (pad_words[i] & 0x40) ||
@@ -1129,7 +1129,7 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
                 }
             }
             {
-                u8 b = D_800A3914;
+                u8 b = g_pad_remote_button_mapping_80;
                 if ((b & 1) && (pad_words[i] & 0x20) ||
                     (b & 2) && (pad_words[i] & 0x10) ||
                     (b & 4) && (pad_words[i] & 0x40) ||
@@ -1797,7 +1797,8 @@ void snd_StartFightCdAudio(void) {
     default:
         break;
     case 4:
-        cdrom_StartAudioEntry((&D_8008D518)[g_fight_stage_index]);
+        cdrom_StartAudioEntry(
+            (&g_snd_stage_cd_audio_entry_indices)[g_fight_stage_index]);
         break;
     case 3:
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
@@ -2983,9 +2984,10 @@ void math_ComputeBallisticVelocityXZ(
 }
 
 /* Starts the rec->bone_event_counter frame counter, records bone index
- * D_8008D59C[arg1].bone at rec->bone_event_bone_index, and rotates the vector
- * arg2 by that bone's matrix of node_GetSlotMatrixPointerArray(rec->index) into
- * rec->bone_event_local_vector. */
+ * g_fighter_bone_hit_record_templates[arg1].bone at rec->bone_event_bone_index,
+ * and rotates the vector arg2 by that bone's matrix of
+ * node_GetSlotMatrixPointerArray(rec->index) into rec->bone_event_local_vector.
+ */
 void fighter_StoreBoneLocalVectorAndArmEventTrigger(
     Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     s32 mat[8];
@@ -2993,7 +2995,7 @@ void fighter_StoreBoneLocalVectorAndArmEventTrigger(
     MATRIX *src;
 
     rec->bone_event_counter = 1;
-    rec->bone_event_bone_index = D_8008D59C[arg1].bone;
+    rec->bone_event_bone_index = g_fighter_bone_hit_record_templates[arg1].bone;
     src = ((MATRIX **)node_GetSlotMatrixPointerArray(
         rec->index))[rec->bone_event_bone_index];
     math_InvertMatrix3x3(src, mat);
@@ -3054,7 +3056,7 @@ void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
 }
 
 void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
-    BoneHitRec *src = D_8008D59C;
+    BoneHitRec *src = g_fighter_bone_hit_record_templates;
     BoneHitRec *dst = g_fighter_bone_hit_records[arg0];
     s32 i;
 
@@ -3139,7 +3141,7 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
 
     m = var_1[11];
     gte_SetRotMatrix(m);
-    gte_ldv0(&D_800A3138);
+    gte_ldv0(&g_unit_y_vector);
     gte_rtv0();
     rec->bone_hit_point_0 = arg1[0];
     gte_stlvnl(&rec->bone_y_axis);
@@ -3225,7 +3227,8 @@ void motion_LoadCommonData(void) {
 /* For i = 0, 1 with v = arg0, then arg2 (when g_fight_mode_selector is 1, 4 or
  * 6): when g_motion_frame_set_ids[i] differs from v, stores v there and calls
  * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
- * 7). Then sets D_80101EC8[0].motion_data_id to D_8008DB1C[arg0][arg1] | arg1
+ * 7). Then sets D_80101EC8[0].motion_data_id to
+ * g_fighter_motion_data_ids[arg0][arg1] | arg1
  * << 12 and D_80101EC8[1].motion_data_id to the same of arg2 and arg3 (a copy
  * of the first when g_fight_mode_selector is 3). It then fills var_0[0..1] from
  * g_motion_fighter_loaded_data_ids[0..1]: it returns when every id is already
@@ -3272,13 +3275,13 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     var_0[1] = 0;
     var_0[0] = 0;
     {
-        u16 id0 = D_8008DB1C[arg0][arg1] | (arg1 << 12);
+        u16 id0 = g_fighter_motion_data_ids[arg0][arg1] | (arg1 << 12);
         u16 id1;
 
         if (g_fight_mode_selector == 3) {
             id1 = id0;
         } else {
-            id1 = D_8008DB1C[arg2][arg3] | (arg3 << 12);
+            id1 = g_fighter_motion_data_ids[arg2][arg3] | (arg3 << 12);
         }
         D_80101EC8[0].motion_data_id = id0;
         D_80101EC8[1].motion_data_id = id1;
@@ -3798,7 +3801,8 @@ s32 motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
     s32 j;
 
     p = D_8008EB1C[g_fight_step_row_column];
-    val = D_8008DB1C[arg0->other->character_data_index][arg0->other->weapon_id];
+    val = g_fighter_motion_data_ids[arg0->other->character_data_index]
+                                   [arg0->other->weapon_id];
     for (j = 0; j < 2; j++) {
         for (i = 0; i < 3; i++) {
             if (p[j] == ((val >> (i * 4)) & 0xF)) {
@@ -3857,8 +3861,10 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         p->size_scale = g_object_scale_factors
             [g_fight_selection_object_ids[p->character_roster_index]];
     }
-    p->base_move_frame_step = D_8008DE34[p->character_data_index][p->weapon_id];
-    p->base_power = D_8008DF78[p->character_data_index][p->weapon_id];
+    p->base_move_frame_step =
+        g_fighter_base_move_frame_steps[p->character_data_index][p->weapon_id];
+    p->base_power =
+        g_fighter_base_powers[p->character_data_index][p->weapon_id];
     p->power = p->base_power;
     p->cpu_base_level = 0x1000;
 

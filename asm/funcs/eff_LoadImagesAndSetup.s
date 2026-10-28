@@ -78,8 +78,8 @@ glabel eff_LoadImagesAndSetup
     /* 515D4 80060DD4 21204000 */   addu      $a0, $v0, $zero
     /* 515D8 80060DD8 50464326 */  addiu      $v1, $s2, 0x4650
     /* 515DC 80060DDC 50466224 */  addiu      $v0, $v1, 0x4650
-    /* 515E0 80060DE0 540392AF */  sw         $s2, %gp_rel(D_800A3420)($gp)
-    /* 515E4 80060DE4 580383AF */  sw         $v1, %gp_rel(D_800A3424)($gp)
+    /* 515E0 80060DE0 540392AF */  sw         $s2, %gp_rel(g_eff_first_quad_buffer)($gp)
+    /* 515E4 80060DE4 580383AF */  sw         $v1, %gp_rel(g_eff_second_quad_buffer)($gp)
     /* 515E8 80060DE8 2400BF8F */  lw         $ra, 0x24($sp)
     /* 515EC 80060DEC 2000B28F */  lw         $s2, 0x20($sp)
     /* 515F0 80060DF0 1C00B18F */  lw         $s1, 0x1C($sp)

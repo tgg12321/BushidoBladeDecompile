@@ -3,7 +3,7 @@ glabel menu_GetSelPrimBuffer
     /* 6789C 8007709C 21104400 */  addu       $v0, $v0, $a0
     /* 678A0 800770A0 80100200 */  sll        $v0, $v0, 2
     /* 678A4 800770A4 23104400 */  subu       $v0, $v0, $a0
-    /* 678A8 800770A8 0C05838F */  lw         $v1, %gp_rel(D_800A35D8)($gp)
+    /* 678A8 800770A8 0C05838F */  lw         $v1, %gp_rel(g_sel_prim_buffers)($gp)
     /* 678AC 800770AC 80100200 */  sll        $v0, $v0, 2
     /* 678B0 800770B0 0800E003 */  jr         $ra
     /* 678B4 800770B4 21106200 */   addu      $v0, $v1, $v0

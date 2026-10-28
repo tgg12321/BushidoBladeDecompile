@@ -11,7 +11,7 @@
 #include <psxsdk/gtemac.h>
 
 extern u8 g_comb_handshake_step;
-extern s32 D_800A37D8;
+extern s32 g_comb_handshake_retry_count;
 
 s32 comb_HandshakeStep(void) {
     g_handler_frame_counter++;
@@ -21,7 +21,7 @@ s32 comb_HandshakeStep(void) {
         break;
     case 1:
         comb_ReadCtsSetRts();
-        D_800A37D8 = 0;
+        g_comb_handshake_retry_count = 0;
         if (g_comb_local_side == 0) {
             SetDispMask(1);
             g_comb_handshake_step = 2;
@@ -45,8 +45,8 @@ s32 comb_HandshakeStep(void) {
             g_comb_handshake_step = 4;
             break;
         }
-        D_800A37D8++;
-        if (D_800A37D8 < 4) {
+        g_comb_handshake_retry_count++;
+        if (g_comb_handshake_retry_count < 4) {
             break;
         }
         comb_ResetClose();
@@ -235,7 +235,7 @@ void fight_InitCommandStream(s32 arg0) {
     D_800A37C6 = 1;
     g_fight_stage_command_count = 0;
     D_800A37A4 = 0;
-    g_fight_command_stream_cursor = D_800900EC[arg0];
+    g_fight_command_stream_cursor = g_fight_command_streams[arg0];
     eff_Init();
     fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
     fight_FillMissingConfigInitFighterAndLoadObject(0);
@@ -249,7 +249,7 @@ void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
         u8 *base = D_800A3894;
         u8 v1 = g_fight_bone_group_tim_requests;
         u8 v0 = *base;
-        D_800A36C8 = v1;
+        g_fight_saved_bone_group_tim_requests = v1;
         g_fight_bone_group_tim_requests = 0;
         g_fight_config.unk_4[0] = v0;
     }
@@ -261,7 +261,7 @@ void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0F
     u8 v_277C = g_fight_config.unk_4[0];
     u8 v_376A = g_fight_bone_group_tim_requests;
     u8 v_3836 = g_fight_saved_first_fighter_selection;
-    u8 v_36C8 = D_800A36C8;
+    u8 v_36C8 = g_fight_saved_bone_group_tim_requests;
     g_fight_saved_first_fighter_selection = 0xFF;
     D_800A3915 = v_277C;
     D_800A36F4 = v_376A;
@@ -467,7 +467,7 @@ void fight_UpdateCommandStreamImageLoadAndResume(void) {
 
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u16 g_comb_send_payload;
-s32 D_800A37D8;
+s32 g_comb_handshake_retry_count;
 u8 g_comb_handshake_step;
 s32 D_800A38D0;
 s32 D_800A38FC;
@@ -1191,7 +1191,7 @@ static s32 g_font_col;
 static s32 g_font_row;
 static s32 g_font_color;
 static s32 g_gpu_grid_cell_record_count;
-static s32 D_800A336C;
+static s32 g_gpu_last_grid_pass_view_yaw;
 static s32 D_800A3370;
 static s32 D_800A3374;
 
@@ -1928,9 +1928,9 @@ gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
     s32, s32, Unk800A6690Rec **);
 
 /* Grid pass: g_view_camera_root_ptr's xf.rot is turned into a matrix and
- * applied to {0,0,0x1000}; ratan2 of the result (D_800A336C) picks one of 64
- * tables of 32-bit row masks. Each set cell of the 31x31 grid window centred on
- * g_view_camera_root_ptr's cell emits its records, as in
+ * applied to {0,0,0x1000}; ratan2 of the result (g_gpu_last_grid_pass_view_yaw)
+ * picks one of 64 tables of 32-bit row masks. Each set cell of the 31x31 grid
+ * window centred on g_view_camera_root_ptr's cell emits its records, as in
  * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes. */
 void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     s32 arg0) {
@@ -1968,7 +1968,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     vec[1] = 0;
     gte_ApplyMatrix(mat, vec, res);
     ang = ratan2(res[0], res[2]);
-    D_800A336C = ang;
+    g_gpu_last_grid_pass_view_yaw = ang;
     x = cx - 0xF;
     z = cz - 0xF;
     idx = (ang >> 6) & 0x3F;
@@ -2151,7 +2151,7 @@ skip:
     return out;
 }
 
-extern s32 D_800A3230;
+extern s32 g_gpu_grid_cell_run_entry_peak;
 
 /* gpu_UnpackGridRecordsNodesAndCellRuns - unpacks a stream of u16 words in
  * sections ended by -1: (cell, id) pairs into the 16-byte record table (count
@@ -2235,13 +2235,16 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
             g_gpu_grid_cell_run_entries[i++] = w;
         } while (!(w & 0x8000));
     }
-    D_800A3230 = (D_800A3230 >= i) ? D_800A3230 : i;
-    if (D_800A3230 >= 1000) {
+    g_gpu_grid_cell_run_entry_peak =
+        (g_gpu_grid_cell_run_entry_peak >= i)
+            ? g_gpu_grid_cell_run_entry_peak
+            : i;
+    if (g_gpu_grid_cell_run_entry_peak >= 1000) {
         /* The overflowing count is passed to the halt stub: the target loads
          * it into $a0 for this jal (no argument puts it in $v1: score 5), as
          * softbody_CreateForNode's call loads its message string into $a0.
          * The stub's body ignores its arguments. */
-        func_80052C10(D_800A3230);
+        func_80052C10(g_gpu_grid_cell_run_entry_peak);
     }
     D_800A3678[0] = 0;
     D_800A3678[1] = 0;
@@ -2263,7 +2266,7 @@ void resource_InvokeLoadedSelectorInitCallback(void) {
     }
 }
 
-s32 gpu_GetLastGridPassViewYaw(void) { return D_800A336C; }
+s32 gpu_GetLastGridPassViewYaw(void) { return g_gpu_last_grid_pass_view_yaw; }
 
 void *gpu_GetGridNodeRecordTable(void) { return g_gpu_grid_node_records; }
 
@@ -2847,7 +2850,7 @@ void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
  * .data precedes; g_gpu_last_fog_ot_index .. g_softbody_face_record_strides in
  * the data-only d_80DF8.c follow): the fight command streams D_8008F220 ..
  * D_8009000C (18 byte streams of 188..224 bytes; D_8008F220 also fills the
- * unused slots) and their pointer table D_800900EC, which
+ * unused slots) and their pointer table g_fight_command_streams, which
  * fight_InitCommandStream indexes. Only that table points at the streams, and
  * only this file reads it. Defined after every function, so no body sees a
  * definition where it saw an extern. */
@@ -3207,7 +3210,7 @@ u8 D_8009000C[224] = {
     0x01, 0x01, 0x00, 0x03, 0x1F, 0xFF, 0x14, 0x18, 0x23, 0x03, 0x93, 0x19,
     0x1B, 0x02, 0x93, 0x1A, 0x17, 0x08, 0x93, 0x00,
 };
-u8 *D_800900EC[32] = {
+u8 *g_fight_command_streams[32] = {
     D_8008F220, D_8008F2EC, D_8008F3B8, D_8008F484, D_8008F540, D_8008F220,
     D_8008F60C, D_8008F6C8, D_8008F794, D_8008F860, D_8008F220, D_8008F220,
     D_8008F92C, D_8008FA0C, D_8008FAEC, D_8008FBCC, D_8008F220, D_8008FCAC,
@@ -3282,6 +3285,6 @@ s32 g_gpu_fog_clut_object = -1;
 s32 D_800A322C = 0;
 /* reached gp-relative by gpu_UnpackGridRecordsNodesAndCellRuns: size from the
  * blob label */
-s32 D_800A3230 = 0;
+s32 g_gpu_grid_cell_run_entry_peak = 0;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 s32 D_800A3818;

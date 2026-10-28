@@ -6,8 +6,8 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39D94 80049594 01001124 */  addiu      $s1, $zero, 0x1
     /* 39D98 80049598 1800B0AF */  sw         $s0, 0x18($sp)
     /* 39D9C 8004959C 21800000 */  addu       $s0, $zero, $zero
-    /* 39DA0 800495A0 0A80053C */  lui        $a1, %hi(D_80099C50)
-    /* 39DA4 800495A4 509CA524 */  addiu      $a1, $a1, %lo(D_80099C50)
+    /* 39DA0 800495A0 0A80053C */  lui        $a1, %hi(g_resource_prev_entry_request_state)
+    /* 39DA4 800495A4 509CA524 */  addiu      $a1, $a1, %lo(g_resource_prev_entry_request_state)
     /* 39DA8 800495A8 0F80063C */  lui        $a2, %hi(g_resource_entry_request_state)
     /* 39DAC 800495AC 80F9C624 */  addiu      $a2, $a2, %lo(g_resource_entry_request_state)
     /* 39DB0 800495B0 2400BFAF */  sw         $ra, 0x24($sp)
@@ -83,11 +83,11 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39EA4 800496A4 00000000 */   nop
     /* 39EA8 800496A8 21804000 */  addu       $s0, $v0, $zero
   .L800496AC:
-    /* 39EAC 800496AC 8001828F */  lw         $v0, %gp_rel(D_800A324C)($gp)
+    /* 39EAC 800496AC 8001828F */  lw         $v0, %gp_rel(g_resource_last_selection_index)($gp)
     /* 39EB0 800496B0 00000000 */  nop
     /* 39EB4 800496B4 03005010 */  beq        $v0, $s0, .L800496C4
     /* 39EB8 800496B8 00000000 */   nop
-    /* 39EBC 800496BC 800190AF */  sw         $s0, %gp_rel(D_800A324C)($gp)
+    /* 39EBC 800496BC 800190AF */  sw         $s0, %gp_rel(g_resource_last_selection_index)($gp)
     /* 39EC0 800496C0 21880000 */  addu       $s1, $zero, $zero
   .L800496C4:
     /* 39EC4 800496C4 0B002016 */  bnez       $s1, .L800496F4

@@ -1,11 +1,11 @@
 glabel StepTimedSpriteSequenceWithSkip
-    /* 68D5C 8007855C 3005828F */  lw         $v0, %gp_rel(D_800A35FC)($gp)
+    /* 68D5C 8007855C 3005828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_step_count)($gp)
     /* 68D60 80078560 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 68D64 80078564 3800B0AF */  sw         $s0, 0x38($sp)
     /* 68D68 80078568 21808000 */  addu       $s0, $a0, $zero
     /* 68D6C 8007856C 3C00BFAF */  sw         $ra, 0x3C($sp)
     /* 68D70 80078570 01004224 */  addiu      $v0, $v0, 0x1
-    /* 68D74 80078574 300582AF */  sw         $v0, %gp_rel(D_800A35FC)($gp)
+    /* 68D74 80078574 300582AF */  sw         $v0, %gp_rel(g_gpu_timed_sprite_step_count)($gp)
     /* 68D78 80078578 5DDF010C */  jal        gpu_GetTimedSpritePrimBuffer
     /* 68D7C 8007857C 01004430 */   andi      $a0, $v0, 0x1
     /* 68D80 80078580 0000438C */  lw         $v1, 0x0($v0)

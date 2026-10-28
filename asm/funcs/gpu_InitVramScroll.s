@@ -16,15 +16,15 @@ glabel gpu_InitVramScroll
     /* 3978C 80048F8C 80100200 */  sll        $v0, $v0, 2
     /* 39790 80048F90 21105000 */  addu       $v0, $v0, $s0
     /* 39794 80048F94 80100200 */  sll        $v0, $v0, 2
-    /* 39798 80048F98 0F80033C */  lui        $v1, %hi(D_800EF848)
-    /* 3979C 80048F9C 48F86324 */  addiu      $v1, $v1, %lo(D_800EF848)
+    /* 39798 80048F98 0F80033C */  lui        $v1, %hi(g_gpu_vram_scrolls)
+    /* 3979C 80048F9C 48F86324 */  addiu      $v1, $v1, %lo(g_gpu_vram_scrolls)
     /* 397A0 80048FA0 21104300 */  addu       $v0, $v0, $v1
     /* 397A4 80048FA4 000040AC */  sw         $zero, 0x0($v0)
     /* 397A8 80048FA8 C0181100 */  sll        $v1, $s1, 3
     /* 397AC 80048FAC 23187100 */  subu       $v1, $v1, $s1
     /* 397B0 80048FB0 40180300 */  sll        $v1, $v1, 1
-    /* 397B4 80048FB4 0A80043C */  lui        $a0, %hi(D_80099C34)
-    /* 397B8 80048FB8 349C8424 */  addiu      $a0, $a0, %lo(D_80099C34)
+    /* 397B4 80048FB4 0A80043C */  lui        $a0, %hi(g_gpu_vram_scroll_presets)
+    /* 397B8 80048FB8 349C8424 */  addiu      $a0, $a0, %lo(g_gpu_vram_scroll_presets)
     /* 397BC 80048FBC 21186400 */  addu       $v1, $v1, $a0
     /* 397C0 80048FC0 24014524 */  addiu      $a1, $v0, 0x124
     /* 397C4 80048FC4 21200000 */  addu       $a0, $zero, $zero

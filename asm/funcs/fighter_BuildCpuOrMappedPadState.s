@@ -104,8 +104,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* C7A0 8001BFA0 3F002212 */  beq        $s1, $v0, .L8001C0A0
     /* C7A4 8001BFA4 0FFF0224 */   addiu     $v0, $zero, -0xF1
     /* C7A8 8001BFA8 0000C38C */  lw         $v1, 0x0($a2)
-    /* C7AC 8001BFAC 0A80043C */  lui        $a0, %hi(D_800A3912)
-    /* C7B0 8001BFB0 12398490 */  lbu        $a0, %lo(D_800A3912)($a0)
+    /* C7AC 8001BFAC 0A80043C */  lui        $a0, %hi(g_pad_remote_button_mapping_20)
+    /* C7B0 8001BFB0 12398490 */  lbu        $a0, %lo(g_pad_remote_button_mapping_20)($a0)
     /* C7B4 8001BFB4 24286200 */  and        $a1, $v1, $v0
     /* C7B8 8001BFB8 01008230 */  andi       $v0, $a0, 0x1
     /* C7BC 8001BFBC 03004010 */  beqz       $v0, .L8001BFCC
@@ -133,8 +133,8 @@ glabel fighter_BuildCpuOrMappedPadState
   .L8001C008:
     /* C808 8001C008 2000A534 */  ori        $a1, $a1, 0x20
   .L8001C00C:
-    /* C80C 8001C00C 0A80033C */  lui        $v1, %hi(D_800A3913)
-    /* C810 8001C010 13396390 */  lbu        $v1, %lo(D_800A3913)($v1)
+    /* C80C 8001C00C 0A80033C */  lui        $v1, %hi(g_pad_remote_button_mapping_40)
+    /* C810 8001C010 13396390 */  lbu        $v1, %lo(g_pad_remote_button_mapping_40)($v1)
     /* C814 8001C014 00000000 */  nop
     /* C818 8001C018 01006230 */  andi       $v0, $v1, 0x1
     /* C81C 8001C01C 06004010 */  beqz       $v0, .L8001C038
@@ -171,8 +171,8 @@ glabel fighter_BuildCpuOrMappedPadState
   .L8001C08C:
     /* C88C 8001C08C 4000A534 */  ori        $a1, $a1, 0x40
   .L8001C090:
-    /* C890 8001C090 0A80033C */  lui        $v1, %hi(D_800A3914)
-    /* C894 8001C094 14396390 */  lbu        $v1, %lo(D_800A3914)($v1)
+    /* C890 8001C090 0A80033C */  lui        $v1, %hi(g_pad_remote_button_mapping_80)
+    /* C894 8001C094 14396390 */  lbu        $v1, %lo(g_pad_remote_button_mapping_80)($v1)
     /* C898 8001C098 6A700008 */  j          .L8001C1A8
     /* C89C 8001C09C 01006230 */   andi      $v0, $v1, 0x1
   .L8001C0A0:

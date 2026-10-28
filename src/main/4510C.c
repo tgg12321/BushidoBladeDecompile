@@ -5,10 +5,10 @@
  * (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #85,
  * placed before motion_UpdatePlayback rather than motion_StartPlayback so the
  * string D_80015840 belongs to its user's object): no static crosses the cut;
- * the .sdata D_800A3250..D_800A3263 belongs to these functions, and
- * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's jump tables start this
- * file's .rodata at 0x8001585C, right after 43500.o's string; the only calls
- * back are to 43500.c's collision API collision_TestSegmentWithWork. */
+ * the .sdata g_motion_null_stream_tag..D_800A3263 belongs to these functions,
+ * and fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's jump tables start
+ * this file's .rodata at 0x8001585C, right after 43500.o's string; the only
+ * calls back are to 43500.c's collision API collision_TestSegmentWithWork. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -19,18 +19,18 @@
 extern s32 collision_TestSegmentWithWork(
     s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4);
 
-extern s32 D_800A3250[2];
+extern s32 g_motion_null_stream_tag[2];
 
 /* Per-frame playback of the record g_motion_playback_record that
  * motion_StartPlayback fills. On the first frame (current_frame == 0) it
  * resolves the loaded data's offset table (block_base) into the camera stream
  * (camera_stream), the per-object motion streams (motion_streams[], dropped
- * when they start with the "NULL" tag D_800A3250) and the per-object nibble
- * tables (draw_set_tracks[]). Every frame it places the camera (rotated about y
- * by rotation_y, plus the offset origin_x..origin_z motion_StartPlayback
- * picks), then decodes (motion_DecodeFrame) and places each slot_GetObject
- * object's data. The block holds those addresses as integers: typed as
- * pointers, the relocation sums in motion_RebasePlayback and
+ * when they start with the "NULL" tag g_motion_null_stream_tag) and the
+ * per-object nibble tables (draw_set_tracks[]). Every frame it places the
+ * camera (rotated about y by rotation_y, plus the offset origin_x..origin_z
+ * motion_StartPlayback picks), then decodes (motion_DecodeFrame) and places
+ * each slot_GetObject object's data. The block holds those addresses as
+ * integers: typed as pointers, the relocation sums in motion_RebasePlayback and
  * motion_StartPlayback swap their addu operands.
  */
 s32 motion_UpdatePlayback(void) {
@@ -69,7 +69,7 @@ s32 motion_UpdatePlayback(void) {
             s->block_base;
         bitstream_InitDeltaAccumulator(s->camera_stream, 0);
         for (j = 0; j < 2; j++) {
-            if (*(s32 *)s->motion_streams[j] == D_800A3250[0]) {
+            if (*(s32 *)s->motion_streams[j] == g_motion_null_stream_tag[0]) {
                 s->motion_streams[j] = 0;
             }
             if (s->motion_streams[j] != 0) {
@@ -333,7 +333,8 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
         }
         break;
     case 3:
-        p->cpu_profile = D_8008E778[g_fight_step_table_next_row - 1][0] + 0x1B;
+        p->cpu_profile =
+            g_fight_step_table[g_fight_step_table_next_row - 1][0] + 0x1B;
         base = g_fight_step_table_next_row / 10;
         p->cpu_level = base * 16 + 0x80;
         if (g_cpu_profiles[p->cpu_profile].flags & 0x3000) {
@@ -1686,7 +1687,7 @@ extern u8 D_8009A8AC[];
 extern u8 D_8009A8B4[];
 extern u8 D_8009A8C0[];
 extern u8 g_cpu_move_range_rules[8][4];
-extern NavPolySet D_8009A658[];
+extern NavPolySet g_cpu_stage_nav_sets[];
 extern u16 D_8009A928[][23];
 extern u8 D_8009A9DC[][3];
 extern s32 D_8009A9F0[][8];
@@ -2053,7 +2054,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     }
 
     if (p->cpu_state_flags & 0x5100) {
-        nav_set = &D_8009A658[g_fight_stage_index];
+        nav_set = &g_cpu_stage_nav_sets[g_fight_stage_index];
         if (p->cpu_orbit_route_active == 0) {
             tx = p->other->world_pos.x;
             tz = p->other->world_pos.z;
@@ -2955,11 +2956,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
 
 #undef CPU_SQ
 
-/* .data 0x80099D88..0x8009A088, this file's .data (43500.c's D_80099D54
- * ends at 0x80099D88; the data-only d_8A588.c's D_8009A088 follows): the 32
- * CPU profiles, indexed by cpu_profile.
- * Defined after every function, so no body sees a definition where it saw
- * an extern. */
+/* .data 0x80099D88..0x8009A088, this file's .data (43500.c's
+ * g_motion_playback_file_id_bases ends at 0x80099D88; the data-only d_8A588.c's
+ * D_8009A088 follows): the 32 CPU profiles, indexed by cpu_profile. Defined
+ * after every function, so no body sees a definition where it saw an extern. */
 Unk80099D88Rec g_cpu_profiles[32] = {
     {0x0000,
      0x0,
@@ -3286,7 +3286,7 @@ Unk80099D88Rec g_cpu_profiles[32] = {
 /* This file's initialized small data (.sdata), in address order (Q65). */
 /* "NULL" tag motion_UpdatePlayback compares the motion streams against
  * (gp-relative): size from the blob label */
-s32 D_800A3250[2] = {0x4c4c554e, 0};
+s32 g_motion_null_stream_tag[2] = {0x4c4c554e, 0};
 PadBitTable D_800A3258 = {{0xd, 0xf, 0xc, 0xe}};
 u8 D_800A325C[4] = {1, 0, 2, 3};
 u8 D_800A3260[4] = {5, 4, 6, 7};

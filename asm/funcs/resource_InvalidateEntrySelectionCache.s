@@ -9,7 +9,7 @@ glabel resource_InvalidateEntrySelectionCache
     /* 3A634 80049E34 FDFF6104 */  bgez       $v1, .L80049E2C
     /* 3A638 80049E38 FEFF4224 */   addiu     $v0, $v0, -0x2
     /* 3A63C 80049E3C FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* 3A640 80049E40 800182AF */  sw         $v0, %gp_rel(D_800A324C)($gp)
+    /* 3A640 80049E40 800182AF */  sw         $v0, %gp_rel(g_resource_last_selection_index)($gp)
     /* 3A644 80049E44 0800E003 */  jr         $ra
     /* 3A648 80049E48 00000000 */   nop
 endlabel resource_InvalidateEntrySelectionCache

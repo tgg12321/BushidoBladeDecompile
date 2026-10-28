@@ -2,7 +2,8 @@
  * menu's tables, read only by 5ED34.c (that menu's -G8 unit).
  * Owner ruling Q122 (data-only-no-sdata):
  * 1. One run: 596CC.o(.data) ends at 0x8009BC1C and 5ED34.o(.data) is empty;
- *    the next .data is 63D2C.c's D_8009BCD4. No uninitialized objects.
+ *    the next .data is 63D2C.c's g_gpu_rotated_sprite_quad_scale. No
+ * uninitialized objects.
  * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by
  * g_entry_menu_row_phase_choice_cursors[i], 0..5 like
  * g_entry_menu_row_choice_positions[i]; the 2 zero bytes after it are the word
@@ -13,8 +14,9 @@
  * 3. Neighbours in .data link order: 596CC.c (its own .sdata, gp accesses)
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.
- * Readers: D_8009BC1C (StepSlideBuildFrameRecordAndDispatchStateHandler),
- * D_8009BC38 (menu_UpdateRowCursors), g_entry_menu_grid_entries
+ * Readers: g_entry_menu_handlers
+ * (StepSlideBuildFrameRecordAndDispatchStateHandler), D_8009BC38
+ * (menu_UpdateRowCursors), g_entry_menu_grid_entries
  * (InitDisplayStateLoadPackAndSetEntryFlags,
  * gpu_UploadAndDrawSelectedEntryQuads, menu_UpdateEntryGrid,
  * menu_UpdateEntryGridCursors), g_entry_menu_entry_flags (those,
@@ -24,7 +26,8 @@
  * g_entry_menu_row_choice_positions
  * (DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
- * D_8009BCC4 / g_entry_menu_transition_offsets (menu_UpdateChoiceGrid). */
+ * g_entry_menu_choice_grid_draw_offsets / g_entry_menu_transition_offsets
+ * (menu_UpdateChoiceGrid). */
 #include "common.h"
 #include "bb2.h"
 
@@ -40,7 +43,7 @@ void func_800720D4(Unk8006EACCRec *);
 
 /* the SEL.BIN menu's per-mode update handlers, indexed by
  * g_entry_menu_handler_index */
-void (*D_8009BC1C[7])(Unk8006EACCRec *) = {
+void (*g_entry_menu_handlers[7])(Unk8006EACCRec *) = {
     menu_UpdateEntryGrid,
     menu_UpdateRow,
     DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
@@ -103,6 +106,7 @@ Unk8009BC94Record g_entry_menu_row_choice_positions[2][6] = {
      {0x38, -0x1F}},
 };
 
-s16 D_8009BCC4[3][2] = {{0x00, 0x17}, {0x99, 0x03}, {0xA0, 0x24}};
+s16 g_entry_menu_choice_grid_draw_offsets[3][2] = {
+    {0x00, 0x17}, {0x99, 0x03}, {0xA0, 0x24}};
 
 s16 g_entry_menu_transition_offsets[2] = {0, 0};

@@ -1,12 +1,12 @@
 glabel memcard_StartLoadOnceStepAndDrawSheetPair
-    /* 2900C 8003880C 37018293 */  lbu        $v0, %gp_rel(D_800A3203)($gp)
+    /* 2900C 8003880C 37018293 */  lbu        $v0, %gp_rel(g_memcard_load_request_armed)($gp)
     /* 29010 80038810 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 29014 80038814 1000B0AF */  sw         $s0, 0x10($sp)
     /* 29018 80038818 21800000 */  addu       $s0, $zero, $zero
     /* 2901C 8003881C 06004010 */  beqz       $v0, .L80038838
     /* 29020 80038820 1400BFAF */   sw        $ra, 0x14($sp)
     /* 29024 80038824 01000224 */  addiu      $v0, $zero, 0x1
-    /* 29028 80038828 370180A3 */  sb         $zero, %gp_rel(D_800A3203)($gp)
+    /* 29028 80038828 370180A3 */  sb         $zero, %gp_rel(g_memcard_load_request_armed)($gp)
     /* 2902C 8003882C 300182A3 */  sb         $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29030 80038830 DFE1000C */  jal        memcard_RequestLoad
     /* 29034 80038834 00000000 */   nop
@@ -34,7 +34,7 @@ glabel memcard_StartLoadOnceStepAndDrawSheetPair
     /* 2907C 8003887C FFFF0524 */   addiu     $a1, $zero, -0x1
     /* 29080 80038880 03000012 */  beqz       $s0, .L80038890
     /* 29084 80038884 01000224 */   addiu     $v0, $zero, 0x1
-    /* 29088 80038888 370182A3 */  sb         $v0, %gp_rel(D_800A3203)($gp)
+    /* 29088 80038888 370182A3 */  sb         $v0, %gp_rel(g_memcard_load_request_armed)($gp)
     /* 2908C 8003888C 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
   .L80038890:
     /* 29090 80038890 21100002 */  addu       $v0, $s0, $zero

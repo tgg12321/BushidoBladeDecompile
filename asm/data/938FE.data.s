@@ -59,9 +59,9 @@ dlabel D_800A3134
     /* 93934 800A3134 B80B0000 */ .word 0x00000BB8
 enddlabel D_800A3134
 
-nonmatching D_800A3138
+nonmatching g_unit_y_vector
 
-dlabel D_800A3138
+dlabel g_unit_y_vector
     /* 93938 800A3138 00000010 */ .word 0x10000000
     /* 9393C 800A313C 00000000 */ .word 0x00000000
-enddlabel D_800A3138
+enddlabel g_unit_y_vector

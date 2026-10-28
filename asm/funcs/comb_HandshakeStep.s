@@ -26,7 +26,7 @@ glabel comb_HandshakeStep
     /* 2B39C 8003AB9C 00000000 */   nop
     /* 2B3A0 8003ABA0 0A80023C */  lui        $v0, %hi(g_comb_local_side)
     /* 2B3A4 8003ABA4 A038428C */  lw         $v0, %lo(g_comb_local_side)($v0)
-    /* 2B3A8 8003ABA8 0C0780AF */  sw         $zero, %gp_rel(D_800A37D8)($gp)
+    /* 2B3A8 8003ABA8 0C0780AF */  sw         $zero, %gp_rel(g_comb_handshake_retry_count)($gp)
     /* 2B3AC 8003ABAC 07004014 */  bnez       $v0, .L8003ABCC
     /* 2B3B0 8003ABB0 03000224 */   addiu     $v0, $zero, 0x3
     /* 2B3B4 8003ABB4 A8EC010C */  jal        SetDispMask
@@ -69,10 +69,10 @@ glabel comb_HandshakeStep
     /* 2B438 8003AC38 2AEB0008 */  j          .L8003ACA8
     /* 2B43C 8003AC3C 21100000 */   addu      $v0, $zero, $zero
   .L8003AC40:
-    /* 2B440 8003AC40 0C07828F */  lw         $v0, %gp_rel(D_800A37D8)($gp)
+    /* 2B440 8003AC40 0C07828F */  lw         $v0, %gp_rel(g_comb_handshake_retry_count)($gp)
     /* 2B444 8003AC44 00000000 */  nop
     /* 2B448 8003AC48 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2B44C 8003AC4C 0C0782AF */  sw         $v0, %gp_rel(D_800A37D8)($gp)
+    /* 2B44C 8003AC4C 0C0782AF */  sw         $v0, %gp_rel(g_comb_handshake_retry_count)($gp)
     /* 2B450 8003AC50 04004228 */  slti       $v0, $v0, 0x4
     /* 2B454 8003AC54 14004014 */  bnez       $v0, .L8003ACA8
     /* 2B458 8003AC58 21100000 */   addu      $v0, $zero, $zero

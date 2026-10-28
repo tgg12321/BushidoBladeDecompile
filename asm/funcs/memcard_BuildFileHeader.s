@@ -65,8 +65,8 @@ glabel memcard_BuildFileHeader
     /* 28A4C 8003824C FFFFE724 */  addiu      $a3, $a3, -0x1
     /* 28A50 80038250 FDFFE104 */  bgez       $a3, .L80038248
     /* 28A54 80038254 FFFF6324 */   addiu     $v1, $v1, -0x1
-    /* 28A58 80038258 0980053C */  lui        $a1, %hi(D_8008F1C0)
-    /* 28A5C 8003825C C0F1A524 */  addiu      $a1, $a1, %lo(D_8008F1C0)
+    /* 28A58 80038258 0980053C */  lui        $a1, %hi(g_memcard_save_title)
+    /* 28A5C 8003825C C0F1A524 */  addiu      $a1, $a1, %lo(g_memcard_save_title)
     /* 28A60 80038260 65E4010C */  jal        strcpy
     /* 28A64 80038264 04000426 */   addiu     $a0, $s0, 0x4
     /* 28A68 80038268 40201100 */  sll        $a0, $s1, 1

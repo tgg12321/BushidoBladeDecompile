@@ -1,8 +1,8 @@
 glabel node_QueueTableEntryNodePairUnderSlotNode
     /* 3A22C 80049A2C D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 3A230 80049A30 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* 3A234 80049A34 0A80023C */  lui        $v0, %hi(D_80099CC8)
-    /* 3A238 80049A38 C89C4224 */  addiu      $v0, $v0, %lo(D_80099CC8)
+    /* 3A234 80049A34 0A80023C */  lui        $v0, %hi(g_resource_entry_linked_entries)
+    /* 3A238 80049A38 C89C4224 */  addiu      $v0, $v0, %lo(g_resource_entry_linked_entries)
     /* 3A23C 80049A3C 40200400 */  sll        $a0, $a0, 1
     /* 3A240 80049A40 21208200 */  addu       $a0, $a0, $v0
     /* 3A244 80049A44 21208600 */  addu       $a0, $a0, $a2
