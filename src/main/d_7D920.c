@@ -296,7 +296,8 @@ u16 g_fighter_motion_data_ids[27][8] = {
     {0x666, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321},
     {0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321, 0x321}};
 
-/* Model id -> BBM file name, ended by a zero id. */
+/* Motion data id + BBM file-name string, ended by a zero id (the names are
+ * never read: motion_LoadFighterData uses the entry index). */
 Unk8008DCCCEntry g_motion_fighter_data_files[18] = {
     {0x321, D_800100FC[65]},  {0x421, D_800100FC[64]},
     {0x521, D_800100FC[63]},  {0x431, D_800100FC[62]},

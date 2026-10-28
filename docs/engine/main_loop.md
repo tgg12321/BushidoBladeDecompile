@@ -39,7 +39,7 @@ start-up code, in order:
      `snd_FlushSoundQueue()` (src/main/4BC3C.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
      `comb_Abort`, src/main/28708.c:1605): `cdrom_PauseAndWait()`, display off
-     (`g_local_ot_draw_mode = DISP_DISABLED`), clears the request and `D_800A31DA`, and
+     (`g_local_ot_draw_mode = DISP_DISABLED`), clears the request and `g_menu_mode_subflow_init_pending`, and
      sets mode 8;
    - calls the mode handler `g_main_loop_handlers[g_main_loop_handler_index]()` (src/main/6CF8.c:468),
      then `font_AddTpage()` (src/main/2B344.c:1146);
@@ -79,7 +79,7 @@ start-up code, in order:
 `gpu_DrawModeSizedPanelWithSelectedCellOpaque` to draw, `cdrom_Update`, `snd_FlushSoundQueue`, present) with 3
 choices, or 6 when `g_fight_mode_selector == 2` and `D_800A389A` is 0. Up / Down move
 the choice, Left / Right toggle bits of `g_fight_toggle_option_bits` on choices 3..5, Cross
-confirms and Triangle cancels. Choice 1 sets `D_800A31DA = 1` and mode 8;
+confirms and Triangle cancels. Choice 1 sets `g_menu_mode_subflow_init_pending = 1` and mode 8;
 choice 2 sets mode 8.
 
 ## The mode table `g_main_loop_handlers`
@@ -98,7 +98,7 @@ assigns to `g_main_loop_handler_index` itself.
 | 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
 | 6 | `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
 | 7 | `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550) | 0 | waits, then the next script step |
-| 8 | `menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
+| 8 | `menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `g_menu_mode_subflow_init_pending` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 9 | `menu_UpdateRowMenuAndSubflows` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
 | 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
 | 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `g_saved_record` |

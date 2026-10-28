@@ -1041,7 +1041,7 @@
 /* memcard save data buffer in this context. */
 
 /* === Link bit counters + check-failure counter (2026-05-17) -- 3 highs === */
-/* Companions to g_comb_received_pad_word / D_800A3916. */
+/* Companions to g_comb_received_pad_word / g_comb_initial_pad_exchange_pending. */
 
 /* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 

@@ -88,8 +88,8 @@ one-object spelling matches.
   (source in followups/func_8002738C.c12-merge-variant.diff; func_8003B2C8 12 / func_8003B328 16
   per cheat-sweep lane, not banked). No struct form was measured: open debt
   (docs/grind/handoff-2026-09-30.md); a one-object form that matches retires Q97.
-- **D_800906A4 / D_8009060C (Q98, item 4):** declared `s16 D_800906A4[39][2]`,
-  `s32 D_8009060C[38]` (StatusUpBuf retires). gpu_LatchFogDepthOnTransitionAndQueueMoves only: the pair's [1] read (twice) as
+- **g_gpu_fog_move_settings / g_gpu_fog_depth_span_limits (Q98, item 4):** `s16 [39][2]` /
+  `s32 [38]` (StatusUpBuf retires). gpu_LatchFogDepthOnTransitionAndQueueMoves only: the pair's [1] read (twice) as
   a byte offset and its [0] through a row pointer, both
   `/* FAKE */`-annotated (element reads schedule above the scalar stores: 8 / 9).
   followups/func_8003DA8C.stagetables.*.

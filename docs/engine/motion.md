@@ -14,7 +14,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   at its sections: the move streams at +0x14, then the sections named by the
   header words at +4, +8 and +0x10 (`unk_04`, `unk_08`, `unk_10`).
 - `motion_LoadFighterData` (src/main/9F9C.c:3258) loads up to two character files
-  (`cdrom_GetFileIndex(1, j + 2)`, `j` the model id's index in `D_8008DCCC`)
+  (`cdrom_GetFileIndex(1, j + 2)`, `j` the motion data id's index in `g_motion_fighter_data_files`)
   into `g_motion_fighter_buffers[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
   `g_motion_fighter_sections[i]` (include/bb2.h:482) at their sections, as the comment on
   `Unk801027B0Rec` describes (include/game.h:831). In modes 1, 4 and 6
@@ -98,7 +98,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 
 - `slot_BlendTwoPosesIntoNodeMatrices(i, f0, f1, w, m)` (src/main/31548.c:194): for joints 1..17
   it builds a rotation matrix from each frame's angle triple (the joint's
-  offset into the frame comes from `D_80094CFC`) and blends the pair by `w`
+  offset into the frame comes from `g_node_pose_rotation_indices`) and blends the pair by `w`
   with `gte_LerpMatrixRowsAndRebuildOrthonormalBasis` into the model object's node `work` matrices
   (`g_slot_objects[i]`); joints 18 and 19 also blend a translation
   (`math_LerpShortVectorsNegateYZ`).

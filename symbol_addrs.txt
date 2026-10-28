@@ -802,7 +802,7 @@ g_comb_recv_buf = 0x800A3688; /* 8-byte link-cable receive buffer: read(g_comb_r
 g_comb_send_buf = 0x800A3698; /* 8-byte link-cable send buffer: write(g_comb_write_fd, here, 8) in comb_Write8; packed by comb_ExchangePad */
 g_data_start = 0x8008D070; /* start of .data section */
 g_main_loop_handlers = 0x8008D090; /* handler table: main calls g_main_loop_handlers[g_main_loop_handler_index]() each frame */  /* data-wave 2026-10-08: was g_module_func_tbl */
-g_motion_fighter_data_files = 0x8008DCCC; /* model id -> BBM file name table, zero-id terminated */  /* data-wave 2026-10-08: was menuDat */
+g_motion_fighter_data_files = 0x8008DCCC; /* motion data id + BBM file-name string pairs, zero-id terminated; motion_LoadFighterData matches the id and uses the entry index n for CD file n + 2, the name is never read */  /* data-wave 2026-10-08: was menuDat */
 g_fight_step_table = 0x8008E778; /* 100 rows of 4 bytes; fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags copies a row into g_fight_step_row_column / g_fight_step_row_tint_red/green/blue */  /* data-wave 2026-10-08: was cpu_practice_honmokuroku_data_tbl */
 g_cd_file_table = 0x8008EC34; /* CD file table: CdFileEntry[159] {CdlLOC loc, u32 size} per disc file (include/bb2.h:480) */  /* data-wave 2026-09-24: was SpecialCam */
 g_motion_playback_file_id_bases = 0x80099D54; /* s16 CD file id bases (-1 gaps), read by motion_StartPlaybackAtIndexedBasePlusOffset for motion_StartPlayback */  /* data-wave 2026-10-08: was InfoPosYTbl1 */
@@ -903,7 +903,7 @@ g_fight_operand_tint_blue = 0x800A37B6; /* data-wave 2026-10-08: was g_lesson_ex
 D_800A30FD = 0x800A30FD; /* caches D_8008E5A8[(s8)g_fight_config.unk_4[1]] for fight_ResetGraphAndReloadResourcesOnCachedKeyChange's reload test (pair of D_800A30FC at -1) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
 D_800A3778 = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_fighter_dpad_angle_offsets = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4231, :4324) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
-g_gpu_asset_draw_move_masks = 0x80094B48; /* byte mask indexed by the object's unk_08 (`mask &= D[unk_08]`); each set bit i calls gpu_AddDrawMove(a0, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
+g_gpu_asset_draw_move_masks = 0x80094B48; /* byte mask indexed by the object's asset_index (`mask &= D[asset_index]`); each set bit i calls gpu_AddDrawMove(a0, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
 D_80094D40 = 0x80094D40; /* bit-mask table indexed by a1 (the object's unk_08) in gpu_LoadRequestedAvailableTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */
 g_object_scale_factors = 0x80094C68; /* u16 table; stored into the fighter record's +0x1A (9F9C.c:3901 / :3903) and an Unk80045878Obj's +0x12 (309CC.c) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
 D_80094B96 = 0x80094B96; /* D_80094B96[0].unk_00: s16 parent-node index, -1 for none (node_InitObjectHierarchyFromTemplates) */  /* data-wave 2026-10-08: was g_attack_scale_x */
@@ -991,7 +991,7 @@ func_800444BC = 0x800444BC; /* MISNAMED: not ground display; 1-line wrapper of g
 // RENAME 0x80046020: retired name 'func_80046020' — preserved note: MISNAMED: not ground display; arena_Free(6) then snd_StopAllVoicesAndCloseSelectedEntryVabs()
 // RENAME 0x80077A04: retired name 'func_80077A04' — preserved note: MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1)
 func_8004A940 = 0x8004A940; /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to gte_ProjectSVectorTriples */
-g_gpu_latched_fog_depth_span = 0x80090600; /* cached distance: the step between packets gpu_QueueDepthSpacedMovesAndLinkTerminalPacket inserts (written by gpu_LatchFogDepthOnTransitionAndQueueMoves) */  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8 */
+g_gpu_latched_fog_depth_span = 0x80090600; /* total fog depth span latched by gpu_LatchFogDepthOnTransitionAndQueueMoves; gpu_QueueDepthSpacedMovesAndLinkTerminalPacket caps it and divides it by the packet count to get the per-packet step */  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8 */
 D_8009A838 = 0x8009A838; /* s8[8] (dlabel D_8009A838, read lb); fighter_CalcOpponentDistanceThresholdFromTables, fighter_UpdateCpuNavigationChooseScriptsAndHeldInput */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8 */
 g_snd_stage_reverb_types = 0x8009AD1C; /* data-wave 2026-10-03: was g_byte_lookup_table_256_plus_4 (basis-withdrawn: spelled from the contradicted 0x8009AD18 alias, now g_vab_id_list) */
 g_row_menu_row_state = 0x8009BC04; /* MenuState: rows_on, unk4 (0x8009BC08), opt[8] (0x8009BC0C) */  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8 */
@@ -1930,7 +1930,7 @@ g_gpu_fog_row_moves = 0x800A3D70; /* DR_MOVE[31][2]: double-buffered VRAM moves 
 D_800F19D0 = 0x800F19D0; /* MarioCam structure */  /* data-wave 2026-09-24: was MarioCam_str */
 D_80102092 = 0x80102092; /* D_80101EC8[0].unk_1C8.vy, player 0's 12-bit facing angle; fighter_ResolveBodyOverlap differences it with player 1's (17AFC.c:995) */  /* data-wave 2026-10-08: was selCharaID */
 g_comb_local_side = 0x800A38A0; /* this console's side on the link, set by the _comb_control(3, 1, 0) handshake */  /* data-wave 2026-10-08: was g_pad_rec_playback_mode */
-g_comb_initial_pad_exchange_pending = 0x800A3916; /* 1 = skip the buffer update on this frame (28708.c:1825) */  /* data-wave 2026-10-08: was g_pad_rec_skip_flag */
+g_comb_initial_pad_exchange_pending = 0x800A3916; /* 1 = the first pad exchange after the handshake (set at 2B344.c:62): comb_ExchangePad uses the one-sided transfer order (comb_Read8, or comb_Write8 then comb_Read8) instead of comb_WaitRead8 then comb_Write8, and skips the held / type update; cleared at the end of the exchange (28708.c:1901) */  /* data-wave 2026-10-08: was g_pad_rec_skip_flag */
 g_main_loop_handler_index = 0x800A3834; /* main loop's handler index: main calls g_main_loop_handlers[it]() each frame; handlers store the next one */  /* data-wave 2026-10-08: was g_practice_mode_dispatch_idx */
 g_fight_presentation_index = 0x800A38A4; /* 0..9 selector; fight_InitImageAndPlaybackPresentation branches on 4..9 and indexes g_fight_presentation_playback_file_id_offsets / g_fight_presentation_cd_audio_entries with it */  /* data-wave 2026-10-08: was g_practice_unlock_anim_id */
 g_fight_step_table_next_row = 0x800A38E2; /* step counter: fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags picks table row [it] and stores it + 1; at 0x64 runs its end branch */  /* data-wave 2026-10-08: was g_practice_lesson_progress */
@@ -2005,7 +2005,7 @@ D_800EEDBE = 0x800EEDBE; /* data-wave 2026-09-29: was g_cam_matrix_m7 */
 D_800EEDC0 = 0x800EEDC0; /* data-wave 2026-09-29: was g_cam_matrix_m8 */
 D_800EEDD6 = 0x800EEDD6; /* s16 field halved by camera_CopyViewMatrixWithHalvedMiddleRow (h >> 1) */  /* data-wave 2026-10-07: was g_cam_bone_data_h0 */
 D_800EEDD8 = 0x800EEDD8; /* s16 field halved by camera_CopyViewMatrixWithHalvedMiddleRow; new_var pointer base */  /* data-wave 2026-10-07: was g_cam_bone_data_h1 */
-g_comb_abort_request = 0x800A3928; /* set to 1 only by comb_Abort (a failed link transfer); main (6CF8.c:460-465) then calls cdrom_PauseAndWait, sets g_local_ot_draw_mode = DISP_DISABLED, clears it and D_800A31DA, sets mode 8 */  /* data-wave 2026-10-08: was g_global_reset_request */
+g_comb_abort_request = 0x800A3928; /* set to 1 only by comb_Abort (a failed link transfer); main (6CF8.c:460-465) then calls cdrom_PauseAndWait, sets g_local_ot_draw_mode = DISP_DISABLED, clears it and g_menu_mode_subflow_init_pending, sets mode 8 */  /* data-wave 2026-10-08: was g_global_reset_request */
 g_main_present_skip_frames = 0x800A390D; /* frame-skip count: frames main draws without presenting; decrements before frame submit */  /* data-wave 2026-10-08: was g_voice_skip_count */
 D_800EEE00 = 0x800EEE00; /* sibling pair to g_camera_calculated_angles/D_800A33CA but for the bone-data2 context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
 D_800EEE02 = 0x800EEE02; /* sibling pair */  /* data-wave 2026-09-25: was g_snd_3d_angle_v_b */

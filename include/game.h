@@ -789,9 +789,11 @@ typedef struct {
     void (*unk4)(void);
 } Unk800948BCEntry;
 
-/* g_motion_fighter_data_files: model id -> BBM file name, ended by a zero id
- * (0x8008DCCC..0x8008DD5B). motion_LoadFighterData loads the model of entry n
- * from CD file n + 2. */
+/* g_motion_fighter_data_files: motion data id (the fighter records'
+ * motion_data_id) + BBM file-name string, ended by a zero id
+ * (0x8008DCCC..0x8008DD5B). motion_LoadFighterData matches the id and reads
+ * entry n's file, CD file n + 2, into g_motion_fighter_buffers; the name is
+ * never read. */
 typedef struct {
     s32 id;
     const char *name;
