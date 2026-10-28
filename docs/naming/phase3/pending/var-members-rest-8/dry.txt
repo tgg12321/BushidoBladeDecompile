@@ -1,4 +1,4 @@
-PASS Unk80101EC8Record.unk_08=cpu_base_level, Unk80101EC8Record.unk_12=weapon_entry_id, Unk80101EC8Record.unk_14=wielded_object_kind, Unk80101EC8Record.unk_1E=base_power, Unk80101EC8Record.unk_20=power, Unk80101EC8Record.unk_46=move_frame_unchanged, Unk80101EC8Record.unk_62=frame_flags, Unk80101EC8Record.unk_64=blend_src_frame_code, Unk80101EC8Record.unk_66=blend_dst_frame_code, Unk80101EC8Record.unk_72=airborne_until_landing, Unk80101EC8Record.unk_78=blend_into_move, Unk80101EC8Record.unk_82=queued_move_command, Unk80101EC8Record.unk_84=default_variant_index, Unk80101EC8Record.unk_86=variant_index, Unk80101EC8Record.unk_88=object_variant_index, Unk80101EC8Record.unk_8A=object_variant_enabled, Unk80101EC8Record.unk_8C=wielded_object_live_state, Unk80101EC8Record.unk_92=weapon_live_state, Unk80101EC8Record.unk_94=falling_backward, Unk80101EC8Record.unk_A5=frame_window_start, Unk80101EC8Record.unk_A6=frame_window_end, Unk80101EC8Record.unk_A7=release_frame, Unk80101EC8Record.unk_AA=paired_move_hit_frame, Unk80101EC8Record.unk_AB=opponent_transition_start_frame, Unk80101EC8Record.unk_AC=weapon_reload_frame, Unk80101EC8Record.unk_AD=attack_hit_armed, Unk80101EC8Record.unk_B2=collision_hit_class, Unk80101EC8Record.unk_B3=draw_move_set, Unk80101EC8Record.unk_104=base_velocity, Unk80101EC8Record.unk_134=decaying_xz_velocity, Unk80101EC8Record.unk_156=base_velocity_damping_x, Unk80101EC8Record.unk_158=base_velocity_damping_y, Unk80101EC8Record.unk_15A=base_velocity_damping_z, Unk80101EC8Record.unk_15E=decaying_xz_velocity_damping_x, Unk80101EC8Record.unk_160=decaying_xz_velocity_damping_y, Unk80101EC8Record.unk_162=decaying_xz_velocity_damping_z, Unk80101EC8Record.unk_174=bone_hit_points_4_5_midpoint, Unk80101EC8Record.unk_180=bone_hit_point_0, Unk80101EC8Record.unk_18C=bone_hit_points_1_3_centroid, Unk80101EC8Record.unk_198=ground_probe_points, Unk80101EC8Record.unk_1B0=ground_probe_floor_ys, Unk80101EC8Record.unk_1DA=bone_triangle_cross_y_positive, Unk80101EC8Record.unk_1E6=eased_pose_bearing_offset, Unk80101EC8Record.unk_1E8=eased_pose_elevation_offset, Unk80101EC8Record.unk_1EA=opponent_elevation_offset, Unk80101EC8Record.unk_1EC=bone_y_axis, Unk80101EC8Record.unk_1F8=prev_root_offset, Unk80101EC8Record.unk_210=prev_weapon_points, Unk80101EC8Record.unk_234=prev_second_weapon_points, Unk80101EC8Record.unk_25C=opponent_elevation_origin, Unk80101EC8Record.unk_268=elevation_origin_from_weapon, Unk80101EC8Record.unk_288=weapon_hit_phases, Unk80101EC8Record.unk_28C=mash_contest_score, Unk80101EC8Record.unk_316=saved_motion_frame_id, Unk80101EC8Record.unk_31A=pose_blend_requests, Unk80101EC8Record.unk_34D=throw_charges_left, Unk80101EC8Record.unk_394=cpu_action_index, Unk80101EC8Record.unk_398=cpu_action_countdown, Unk80101EC8Record.unk_39A=cpu_action_cooldown_frames, Unk80101EC8Record.unk_39C=cpu_action_from_opponent, Unk80101EC8Record.unk_39D=cpu_orbit_route_active, Unk80101EC8Record.unk_3BC=cpu_pad_script_kind, Unk80101EC8Record.unk_3CC=cpu_decided_pad_held, Unk80101EC8Record.unk_3F0=cpu_distance_error_streak, Unk80101EC8Record.unk_3F3=cpu_threat_resolved_count, Unk80101EC8Record.unk_3F5=cpu_script_wait_frames, Unk80101EC8Record.unk_3F6=cpu_script_wait_limit, Unk80101EC8Record.unk_3F8=script_min_distances, Unk80101EC8Record.unk_3FE=script_max_distances, Unk80101EC8Record.unk_404=filtered_script_max_distances, Unk80101EC8Record.unk_414=cpu_tracked_move_tallies, Unk80101EC8Record.unk_424=cpu_tracked_move_tally_threshold, Unk80101EC8Record.unk_425=incoming_projectile_state, Unk80101EC8Record.unk_426=incoming_attack_state, Unk80101EC8Record.unk_427=opponent_snapshot_hit_start_frame, Unk80101EC8Record.unk_428=cpu_tracked_move_key, Unk80101EC8Record.unk_430=cpu_frame_flags, Unk80101EC8Record.unk_438=cpu_level, Unk80101EC8Record.unk_440=latched_motion_metadata_nibble, Unk80101EC8Record.unk_441=motion_metadata_nibble, Unk80101EC8Record.unk_442=opponent_ground_y_band
+PASS Unk80101EC8Record.unk_08=cpu_base_level, Unk80101EC8Record.unk_12=weapon_entry_id, Unk80101EC8Record.unk_14=wielded_object_kind, Unk80101EC8Record.unk_1E=base_power, Unk80101EC8Record.unk_20=power, Unk80101EC8Record.unk_46=move_frame_unchanged, Unk80101EC8Record.unk_62=frame_flags, Unk80101EC8Record.unk_64=blend_src_frame_code, Unk80101EC8Record.unk_66=blend_dst_frame_code, Unk80101EC8Record.unk_72=airborne_until_landing, Unk80101EC8Record.unk_78=blend_into_move, Unk80101EC8Record.unk_82=queued_move_command, Unk80101EC8Record.unk_84=default_variant_index, Unk80101EC8Record.unk_86=variant_index, Unk80101EC8Record.unk_88=object_variant_index, Unk80101EC8Record.unk_8A=object_variant_enabled, Unk80101EC8Record.unk_8C=wielded_object_live_state, Unk80101EC8Record.unk_92=weapon_live_state, Unk80101EC8Record.unk_94=falling_backward, Unk80101EC8Record.unk_A5=frame_window_start, Unk80101EC8Record.unk_A6=frame_window_end, Unk80101EC8Record.unk_A7=release_frame, Unk80101EC8Record.unk_AA=paired_move_hit_frame, Unk80101EC8Record.unk_AB=opponent_transition_start_frame, Unk80101EC8Record.unk_AC=weapon_reload_frame, Unk80101EC8Record.unk_AD=attack_hit_armed, Unk80101EC8Record.unk_B2=collision_hit_class, Unk80101EC8Record.unk_B3=draw_move_set, Unk80101EC8Record.unk_104=base_velocity, Unk80101EC8Record.unk_134=decaying_xz_velocity, Unk80101EC8Record.unk_156=base_velocity_damping_x, Unk80101EC8Record.unk_158=base_velocity_damping_y, Unk80101EC8Record.unk_15A=base_velocity_damping_z, Unk80101EC8Record.unk_15E=decaying_xz_velocity_damping_x, Unk80101EC8Record.unk_160=decaying_xz_velocity_damping_y, Unk80101EC8Record.unk_162=decaying_xz_velocity_damping_z, Unk80101EC8Record.unk_174=bone_hit_points_4_5_midpoint, Unk80101EC8Record.unk_180=bone_hit_point_0, Unk80101EC8Record.unk_18C=bone_hit_points_1_3_centroid, Unk80101EC8Record.unk_198=ground_probe_points, Unk80101EC8Record.unk_1B0=ground_probe_floor_ys, Unk80101EC8Record.unk_1DA=bone_triangle_cross_y_positive, Unk80101EC8Record.unk_1E6=eased_pose_bearing_offset, Unk80101EC8Record.unk_1E8=eased_pose_elevation_offset, Unk80101EC8Record.unk_1EA=opponent_elevation_offset, Unk80101EC8Record.unk_1EC=bone_y_axis, Unk80101EC8Record.unk_1F8=prev_root_offset, Unk80101EC8Record.unk_210=prev_weapon_points, Unk80101EC8Record.unk_234=prev_second_weapon_points, Unk80101EC8Record.unk_25C=opponent_elevation_origin, Unk80101EC8Record.unk_268=elevation_origin_from_weapon, Unk80101EC8Record.unk_288=weapon_hit_phases, Unk80101EC8Record.unk_28C=mash_contest_score, Unk80101EC8Record.unk_316=saved_motion_frame_id, Unk80101EC8Record.unk_31A=pose_blend_requests, Unk80101EC8Record.unk_34D=throw_charges_left, Unk80101EC8Record.unk_394=cpu_action_index, Unk80101EC8Record.unk_398=cpu_action_countdown, Unk80101EC8Record.unk_39A=cpu_action_cooldown_frames, Unk80101EC8Record.unk_39C=cpu_action_from_opponent, Unk80101EC8Record.unk_39D=cpu_orbit_route_active, Unk80101EC8Record.unk_3BC=cpu_pad_script_kind, Unk80101EC8Record.unk_3CC=cpu_decided_pad_held, Unk80101EC8Record.unk_3F0=cpu_distance_error_streak, Unk80101EC8Record.unk_3F3=cpu_threat_resolved_count, Unk80101EC8Record.unk_3F5=cpu_script_wait_frames, Unk80101EC8Record.unk_3F6=cpu_script_wait_limit, Unk80101EC8Record.unk_3F8=script_min_distances, Unk80101EC8Record.unk_3FE=script_max_distances, Unk80101EC8Record.unk_404=filtered_script_max_distances, Unk80101EC8Record.unk_414=cpu_tracked_move_tallies, Unk80101EC8Record.unk_424=cpu_tracked_move_tally_threshold, Unk80101EC8Record.unk_425=incoming_projectile_state, Unk80101EC8Record.unk_426=incoming_attack_state, Unk80101EC8Record.unk_427=opponent_snapshot_hit_start_frame, Unk80101EC8Record.unk_428=cpu_tracked_move_key, Unk80101EC8Record.unk_430=unk_430, Unk80101EC8Record.unk_438=cpu_level, Unk80101EC8Record.unk_440=latched_motion_metadata_nibble, Unk80101EC8Record.unk_441=motion_metadata_nibble, Unk80101EC8Record.unk_442=opponent_ground_y_band
 decl Unk80101EC8Record.unk_08 -> cpu_base_level  include/game.h:1542
 decl Unk80101EC8Record.unk_12 -> weapon_entry_id  include/game.h:1548
 decl Unk80101EC8Record.unk_14 -> wielded_object_kind  include/game.h:1549
@@ -75,7 +75,7 @@ decl Unk80101EC8Record.unk_425 -> incoming_projectile_state  include/game.h:1798
 decl Unk80101EC8Record.unk_426 -> incoming_attack_state  include/game.h:1799
 decl Unk80101EC8Record.unk_427 -> opponent_snapshot_hit_start_frame  include/game.h:1800
 decl Unk80101EC8Record.unk_428 -> cpu_tracked_move_key  include/game.h:1801
-decl Unk80101EC8Record.unk_430 -> cpu_frame_flags  include/game.h:1805
+decl Unk80101EC8Record.unk_430 -> unk_430  include/game.h:1805
 decl Unk80101EC8Record.unk_438 -> cpu_level  include/game.h:1807
 decl Unk80101EC8Record.unk_440 -> latched_motion_metadata_nibble  include/game.h:1811
 decl Unk80101EC8Record.unk_441 -> motion_metadata_nibble  include/game.h:1812
@@ -1272,7 +1272,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +    s16 cpu_tracked_move_key;
 @@ -1805 +1805 @@
 -    s32 unk_430;
-+    s32 cpu_frame_flags;
++    s32 unk_430;
 @@ -1807 +1807 @@
 -    s16 unk_438;
 +    s16 cpu_level;
@@ -1924,7 +1924,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -    p->unk_440 = 0;
 -    p->unk_430 = 0;
 +    p->latched_motion_metadata_nibble = 0;
-+    p->cpu_frame_flags = 0;
++    p->unk_430 = 0;
 @@ -487 +487 @@
 -        if (arg0->unk_46 == 0) {
 +        if (arg0->move_frame_unchanged == 0) {
@@ -1933,10 +1933,10 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +    if (arg0->cpu_pad_script_kind != 0) {
 @@ -503 +503 @@
 -            if (arg0->unk_430 & 0x200) {
-+            if (arg0->cpu_frame_flags & 0x200) {
++            if (arg0->unk_430 & 0x200) {
 @@ -513 +513 @@
 -        if (arg0->unk_430 & 0x800)
-+        if (arg0->cpu_frame_flags & 0x800)
++        if (arg0->unk_430 & 0x800)
 @@ -515 +515 @@
 -        if ((u32)(arg0->unk_425 - 1) < 2U)
 +        if ((u32)(arg0->incoming_projectile_state - 1) < 2U)
@@ -1948,7 +1948,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +    if (arg0->cpu_pad_script_kind != 1)
 @@ -536 +536 @@
 -    if (arg0->unk_430 & 0x800) {
-+    if (arg0->cpu_frame_flags & 0x800) {
++    if (arg0->unk_430 & 0x800) {
 @@ -571 +571 @@
 -    fighter_record->unk_3BC = a2;
 +    fighter_record->cpu_pad_script_kind = a2;
@@ -1971,8 +1971,8 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +        var_1->latched_motion_metadata_nibble = var_1->motion_metadata_nibble;
 +    }
 +
-+    rec->cpu_frame_flags =
-+        (rec->cpu_frame_flags & 0x40060) |
++    rec->unk_430 =
++        (rec->unk_430 & 0x40060) |
 +        ((rand() & 0xFFF) < (rec->cpu_level >> 3) &&
 @@ -650,2 +650,2 @@
 -             ? (rec->unk_3F6 < rec->unk_3F5) << 2
@@ -2006,17 +2006,17 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +
 +    if (((D_8009A088[rec->other->weapon_id] >> rec->other->latched_motion_metadata_nibble) & 1) &&
 +        rec->other->opponent_angle_from_orientation_abs < (rec->cpu_level >> 4) &&
-+        rec->weapon_id < 6 && (rec->cpu_frame_flags & 0x2000) &&
++        rec->weapon_id < 6 && (rec->unk_430 & 0x2000) &&
 @@ -697 +697 @@
 -        rec->unk_430 |= 0x20000;
-+        rec->cpu_frame_flags |= 0x20000;
++        rec->unk_430 |= 0x20000;
 @@ -699,5 +699,5 @@
 -        rec->unk_430 &= ~0x20000;
 -    }
 -
 -    rec->unk_43E = rec->unk_3F8[rec->unk_86] +
 -                   (((rec->unk_404[rec->unk_86] - rec->unk_3F8[rec->unk_86]) *
-+        rec->cpu_frame_flags &= ~0x20000;
++        rec->unk_430 &= ~0x20000;
 +    }
 +
 +    rec->unk_43E = rec->script_min_distances[rec->variant_index] +
@@ -2045,13 +2045,13 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -    if (rec->unk_430 & 0x15500) {
 +        rec->opponent_ground_y_band = 0;
 +    }
-+    if (rec->cpu_frame_flags & 0x15500) {
++    if (rec->unk_430 & 0x15500) {
 @@ -738 +738 @@
 -    if (rec->unk_430 & 0x80) {
-+    if (rec->cpu_frame_flags & 0x80) {
++    if (rec->unk_430 & 0x80) {
 @@ -747 +747 @@
 -    if (!(rec->unk_430 & 0x80) ||
-+    if (!(rec->cpu_frame_flags & 0x80) ||
++    if (!(rec->unk_430 & 0x80) ||
 @@ -752,2 +752,2 @@
 -        if (rec->unk_428 != -1) {
 -            if (rec->unk_424 != 0 &&
@@ -2091,7 +2091,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +            }
 +            rec->cpu_tracked_move_key = -1;
 +            rec->incoming_attack_state = 0;
-+            rec->cpu_frame_flags &= ~0x60;
++            rec->unk_430 &= ~0x60;
 @@ -796 +796 @@
 -        if (rec->unk_428 != rec->other->motion_entry_index) {
 +        if (rec->cpu_tracked_move_key != rec->other->motion_entry_index) {
@@ -2108,7 +2108,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -                if (rec->unk_442 != 0 ||
 -                    ((rec->unk_430 & 0x100) &&
 +                if (rec->opponent_ground_y_band != 0 ||
-+                    ((rec->cpu_frame_flags & 0x100) &&
++                    ((rec->unk_430 & 0x100) &&
 @@ -811 +811 @@
 -                        rec->unk_426 = 1;
 +                        rec->incoming_attack_state = 1;
@@ -2139,12 +2139,12 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                    if (rec->cpu_tracked_move_tallies[i][1] >= rec->cpu_tracked_move_tally_threshold * 4) {
 @@ -838 +838 @@
 -                    rec->unk_430 |= temp;
-+                    rec->cpu_frame_flags |= temp;
++                    rec->unk_430 |= temp;
 @@ -843,2 +843,2 @@
 -        if (rec->unk_430 & 0x20) {
 -            rec->unk_430 |= 0x18;
-+        if (rec->cpu_frame_flags & 0x20) {
-+            rec->cpu_frame_flags |= 0x18;
++        if (rec->unk_430 & 0x20) {
++            rec->unk_430 |= 0x18;
 @@ -851 +851 @@
 -        rec->unk_425 = 1;
 +        rec->incoming_projectile_state = 1;
@@ -2167,17 +2167,17 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +        }
 +    }
 +
-+    if ((rec->cpu_frame_flags & 1) &&
++    if ((rec->unk_430 & 1) &&
 @@ -886,3 +886,3 @@
 -        rec->unk_426 != 1 && rec->unk_426 != 2 && rec->unk_425 != 1 &&
 -        rec->unk_425 != 2 &&
 -        (((rec->unk_430 & 0x80) &&
 +        rec->incoming_attack_state != 1 && rec->incoming_attack_state != 2 && rec->incoming_projectile_state != 1 &&
 +        rec->incoming_projectile_state != 2 &&
-+        (((rec->cpu_frame_flags & 0x80) &&
++        (((rec->unk_430 & 0x80) &&
 @@ -895 +895 @@
 -          (((rec->unk_430 & 0x80) && rec->unk_426 == 3) ||
-+          (((rec->cpu_frame_flags & 0x80) && rec->incoming_attack_state == 3) ||
++          (((rec->unk_430 & 0x80) && rec->incoming_attack_state == 3) ||
 @@ -901,2 +901,2 @@
 -            ((rec->other->carried_object_count == 0 && rec->unk_425 != 1 &&
 -              rec->unk_425 != 2) ||
@@ -2188,19 +2188,19 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +           (rec->other->move_kind == 0x22 && rec->opponent_ground_y_band == 0) ||
 @@ -910 +910 @@
 -        rec->unk_430 |= 2;
-+        rec->cpu_frame_flags |= 2;
++        rec->unk_430 |= 2;
 @@ -912 +912 @@
 -        rec->unk_430 &= ~2;
-+        rec->cpu_frame_flags &= ~2;
++        rec->unk_430 &= ~2;
 @@ -916 +916 @@
 -        rec->unk_430 &= ~0x78;
-+        rec->cpu_frame_flags &= ~0x78;
++        rec->unk_430 &= ~0x78;
 @@ -918 +918 @@
 -            rec->unk_430 |= 0x40000;
-+            rec->cpu_frame_flags |= 0x40000;
++            rec->unk_430 |= 0x40000;
 @@ -923 +923 @@
 -        rec->unk_430 |= 0x78;
-+        rec->cpu_frame_flags |= 0x78;
++        rec->unk_430 |= 0x78;
 @@ -943 +943 @@
 -            pad.held |= 1 << bits.bit[rec->unk_441];
 +            pad.held |= 1 << bits.bit[rec->motion_metadata_nibble];
@@ -2213,7 +2213,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 @@ -1772,2 +1772,2 @@
 -        ((p->unk_430 & 0x15100) ||
 -         (p->move_kind == 0xD && (p->unk_426 == 4 || p->unk_425 == 4)))) {
-+        ((p->cpu_frame_flags & 0x15100) ||
++        ((p->unk_430 & 0x15100) ||
 +         (p->move_kind == 0xD && (p->incoming_attack_state == 4 || p->incoming_projectile_state == 4)))) {
 @@ -1775,3 +1775,3 @@
 -        if ((p->unk_426 == 1 && p->other->move_frame + 1 >= p->unk_427) ||
@@ -2221,10 +2221,10 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -            if (p->unk_430 & 8) {
 +        if ((p->incoming_attack_state == 1 && p->other->move_frame + 1 >= p->opponent_snapshot_hit_start_frame) ||
 +            p->incoming_projectile_state == 2) {
-+            if (p->cpu_frame_flags & 8) {
++            if (p->unk_430 & 8) {
 @@ -1783 +1783 @@
 -                f = p->unk_430;
-+                f = p->cpu_frame_flags;
++                f = p->unk_430;
 @@ -1785,2 +1785,2 @@
 -                       ((f & 0x10) && p->unk_3F3 % ((p->unk_438 >> 8) + 2) !=
 -                                          (p->unk_438 >> 8) + 1)) &&
@@ -2252,7 +2252,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                    p->incoming_attack_state = 4;
 +                    p->incoming_projectile_state = 4;
 +                    p->cpu_threat_resolved_count++;
-+                } else if (work3 && (p->cpu_frame_flags & 8) &&
++                } else if (work3 && (p->unk_430 & 8) &&
 @@ -1823,5 +1823,5 @@
 -            if (p->unk_425 == 1 ||
 -                (p->unk_426 == 1 && p->other->unk_441 == 2 &&
@@ -2263,7 +2263,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                (p->incoming_attack_state == 1 && p->other->motion_metadata_nibble == 2 &&
 +                 p->opponent_snapshot_hit_start_frame - p->other->move_frame >= 6) ||
 +                (p->incoming_attack_state == 2 && var_7 == 0)) {
-+                if ((p->cpu_frame_flags & 8) &&
++                if ((p->unk_430 & 8) &&
 @@ -1845,2 +1845,2 @@
 -                        p->unk_426 = 1;
 -                        p->unk_425 = 2;
@@ -2286,12 +2286,12 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +        }
 +    }
 +
-+    if ((p->cpu_frame_flags & 0x400) && p->motion_metadata_nibble != 2) {
++    if ((p->unk_430 & 0x400) && p->motion_metadata_nibble != 2) {
 @@ -1863,2 +1863,2 @@
 -            p->unk_3CC = 0x2000;
 -        } else if (p->unk_430 & 8) {
 +            p->cpu_decided_pad_held = 0x2000;
-+        } else if (p->cpu_frame_flags & 8) {
++        } else if (p->unk_430 & 8) {
 @@ -1866 +1866 @@
 -            if (p->unk_441 == 0) {
 +            if (p->motion_metadata_nibble == 0) {
@@ -2346,11 +2346,11 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -                } else if (p->unk_430 & 0x20) {
 -                    p->unk_3CC = 0x20;
 +                    p->cpu_decided_pad_held = 0x20;
-+                } else if (p->cpu_frame_flags & 0x20) {
++                } else if (p->unk_430 & 0x20) {
 +                    p->cpu_decided_pad_held = 0x20;
 @@ -1950 +1950 @@
 -                if ((p->unk_426 == 1 || p->unk_425 == 2) && (p->unk_430 & 8)) {
-+                if ((p->incoming_attack_state == 1 || p->incoming_projectile_state == 2) && (p->cpu_frame_flags & 8)) {
++                if ((p->incoming_attack_state == 1 || p->incoming_projectile_state == 2) && (p->unk_430 & 8)) {
 @@ -1954 +1954 @@
 -                if ((rand() & 0xFFF) < (p->unk_438 >> 3)) {
 +                if ((rand() & 0xFFF) < (p->cpu_level >> 3)) {
@@ -2370,7 +2370,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +    if (p->cpu_decided_pad_held != 0) {
 +        return p->cpu_decided_pad_held;
 +    }
-+    if ((p->cpu_frame_flags & 0x4108) == 8) {
++    if ((p->unk_430 & 0x4108) == 8) {
 @@ -2013,3 +2013,3 @@
 -            (p->unk_426 == 1 || p->unk_426 == 2) ||
 -            (p->unk_425 == 1 || p->unk_425 == 2)) {
@@ -2383,13 +2383,13 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +            p->cpu_action_countdown = 0;
 @@ -2022 +2022 @@
 -    if (p->unk_430 & 0x5100) {
-+    if (p->cpu_frame_flags & 0x5100) {
++    if (p->unk_430 & 0x5100) {
 @@ -2024 +2024 @@
 -        if (p->unk_39D == 0) {
 +        if (p->cpu_orbit_route_active == 0) {
 @@ -2048 +2048 @@
 -                if (!(p->unk_430 & 0x800) ||
-+                if (!(p->cpu_frame_flags & 0x800) ||
++                if (!(p->unk_430 & 0x800) ||
 @@ -2050,4 +2050,4 @@
 -                    if (p->unk_442 == 2 && !(work1 == 1 || work1 == 2)) {
 -                        lim = p->other->unk_3F8[p->other->unk_86];
@@ -2408,7 +2408,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 @@ -2060,2 +2060,2 @@
 -                        if (p->unk_430 & 0x200) {
 -                            lim = p->other->unk_404[p->other->unk_86];
-+                        if (p->cpu_frame_flags & 0x200) {
++                        if (p->unk_430 & 0x200) {
 +                            lim = p->other->filtered_script_max_distances[p->other->variant_index];
 @@ -2063,2 +2063,2 @@
 -                            lim = p->unk_404[p->unk_86] +
@@ -2421,7 +2421,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -                        if (p->unk_430 & 0x200) {
 +                        lim = p->script_max_distances[p->variant_index] +
 +                              p->other->script_max_distances[p->other->variant_index];
-+                        if (p->cpu_frame_flags & 0x200) {
++                        if (p->unk_430 & 0x200) {
 @@ -2072 +2072 @@
 -                                lim = p->other->unk_3F8[p->other->unk_86];
 +                                lim = p->other->script_min_distances[p->other->variant_index];
@@ -2469,7 +2469,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +            }
 +        }
 +
-+        if ((!(p->cpu_frame_flags & 0x80) &&
++        if ((!(p->unk_430 & 0x80) &&
 @@ -2242 +2242 @@
 -                 p->other->unk_404[p->other->unk_86] &&
 +                 p->other->filtered_script_max_distances[p->other->variant_index] &&
@@ -2552,7 +2552,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 @@ -2378,2 +2378,2 @@
 -            } else if ((p->unk_430 & 0x800) || p->unk_442 != 0 ||
 -                       (p->unk_3CC == 0x2000 &&
-+            } else if ((p->cpu_frame_flags & 0x800) || p->opponent_ground_y_band != 0 ||
++            } else if ((p->unk_430 & 0x800) || p->opponent_ground_y_band != 0 ||
 +                       (p->cpu_decided_pad_held == 0x2000 &&
 @@ -2381 +2381 @@
 -                            p->other->unk_3F8[p->other->unk_86])) {
@@ -2566,7 +2566,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -                p->unk_398 = 0;
 -                if (p->unk_430 & 0xA000) {
 +                p->cpu_action_countdown = 0;
-+                if (p->cpu_frame_flags & 0xA000) {
++                if (p->unk_430 & 0xA000) {
 @@ -2392 +2392 @@
 -        } else if (p->unk_398 == 0) {
 +        } else if (p->cpu_action_countdown == 0) {
@@ -2578,7 +2578,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                        var_23 = p->cpu_distance_error_streak;
 @@ -2436 +2436 @@
 -                        if (p->unk_430 & 0x20000) {
-+                        if (p->cpu_frame_flags & 0x20000) {
++                        if (p->unk_430 & 0x20000) {
 @@ -2450 +2450 @@
 -                            p->unk_440 == 4 || p->other->move_kind == 0x18 ||
 +                            p->latched_motion_metadata_nibble == 4 || p->other->move_kind == 0x18 ||
@@ -2634,7 +2634,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +    if (p->cpu_decided_pad_held != 0 || p->cpu_action_countdown != 0) {
 +        return p->cpu_decided_pad_held;
 +    }
-+    if ((p->cpu_frame_flags & 6) && !(p->cpu_frame_flags & 0x800)) {
++    if ((p->unk_430 & 6) && !(p->unk_430 & 0x800)) {
 @@ -2529 +2529 @@
 -        if (state == 0x15 || (state == 0x19 && p->unk_441 >= 2)) {
 +        if (state == 0x15 || (state == 0x19 && p->motion_metadata_nibble >= 2)) {
@@ -2670,14 +2670,14 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 @@ -2685,2 +2685,2 @@
 -                                    !(p->unk_430 & 0x20000)) {
 -                                    if ((p->unk_430 & 0x200)
-+                                    !(p->cpu_frame_flags & 0x20000)) {
-+                                    if ((p->cpu_frame_flags & 0x200)
++                                    !(p->unk_430 & 0x20000)) {
++                                    if ((p->unk_430 & 0x200)
 @@ -2700 +2700 @@
 -                                    0x200 - ((p->unk_438 * 0x100) >> 12) &&
 +                                    0x200 - ((p->cpu_level * 0x100) >> 12) &&
 @@ -2705 +2705 @@
 -                                (p->unk_430 & 0x280) != 0x280) {
-+                                (p->cpu_frame_flags & 0x280) != 0x280) {
++                                (p->unk_430 & 0x280) != 0x280) {
 @@ -2745 +2745 @@
 -                        p->last_chosen_script_list_index = p->unk_86;
 +                        p->last_chosen_script_list_index = p->variant_index;
@@ -2702,7 +2702,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                        work1 = p->other->filtered_script_max_distances[p->other->variant_index] + 300;
 @@ -2790 +2790 @@
 -                        p->unk_442 == 0 && (p->unk_430 & 0xA002) &&
-+                        p->opponent_ground_y_band == 0 && (p->cpu_frame_flags & 0xA002) &&
++                        p->opponent_ground_y_band == 0 && (p->unk_430 & 0xA002) &&
 @@ -2793 +2793 @@
 -                        (p->unk_8A == 0 || var_60 >= 2)) {
 +                        (p->object_variant_enabled == 0 || var_60 >= 2)) {
@@ -2737,7 +2737,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -        } else if ((p->unk_430 & 0x800) &&
 +                p->cpu_decided_pad_held = 0x80;
 +            }
-+        } else if ((p->cpu_frame_flags & 0x800) &&
++        } else if ((p->unk_430 & 0x800) &&
 @@ -2839,2 +2839,2 @@
 -                   g_fighter_horizontal_separation < 4000 && p->unk_440 != 4 &&
 -                   (p->unk_442 == 0 || p->unk_442 == 2)) {
@@ -2745,7 +2745,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                   (p->opponent_ground_y_band == 0 || p->opponent_ground_y_band == 2)) {
 @@ -2843 +2843 @@
 -        } else if ((p->unk_430 & 0xA801) || p->other->move_kind == 0x18 ||
-+        } else if ((p->cpu_frame_flags & 0xA801) || p->other->move_kind == 0x18 ||
++        } else if ((p->unk_430 & 0xA801) || p->other->move_kind == 0x18 ||
 @@ -2846 +2846 @@
 -                   (p->other->move_kind == 0x1A && p->unk_441 == 1)) {
 +                   (p->other->move_kind == 0x1A && p->motion_metadata_nibble == 1)) {
@@ -2763,7 +2763,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 +                  p->other->script_min_distances[p->other->variant_index] <
 @@ -2862 +2862 @@
 -                 (p->unk_430 & 0x40000))) {
-+                 (p->cpu_frame_flags & 0x40000))) {
++                 (p->unk_430 & 0x40000))) {
 @@ -2864,6 +2864,6 @@
 -                p->unk_3CC = 0x80;
 -                p->unk_430 &= ~0x40000;
@@ -2772,7 +2772,7 @@ decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
 -    }
 -    return p->unk_3CC;
 +                p->cpu_decided_pad_held = 0x80;
-+                p->cpu_frame_flags &= ~0x40000;
++                p->unk_430 &= ~0x40000;
 +            }
 +        }
 +    }

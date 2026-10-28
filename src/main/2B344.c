@@ -184,14 +184,14 @@ void fight_RequestBothFightersEntriesAndReloadOnChange(void) {
 
     for (i = 0; i < 2; i++) {
         resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-            D_80101EC8[i].unk_12);
+            D_80101EC8[i].weapon_entry_id);
         resource_SetPairSelectionSlotWithBoundChecks(
             i, D_8008E5CC[D_80101EC8[i].character_data_index]
                          [D_80101EC8[i].weapon_id]);
-        if (D_80101EC8[i].unk_14 != -1) {
+        if (D_80101EC8[i].wielded_object_kind != -1) {
             resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-                g_resource_kind_entry_ids[D_80101EC8[i].unk_14]);
-            if (D_80101EC8[i].unk_14 == 14) {
+                g_resource_kind_entry_ids[D_80101EC8[i].wielded_object_kind]);
+            if (D_80101EC8[i].wielded_object_kind == 14) {
                 resource_RequestEntryWithLinkedEntriesAndLatchCategory(
                     g_resource_kind_entry_ids[14] + 3);
             }
@@ -209,7 +209,7 @@ void fight_RequestOneFighterEntriesAndReloadOnChange(s32 arg0) {
     ResetEntrySelectionState();
 
     resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-        D_80101EC8[arg0].unk_12);
+        D_80101EC8[arg0].weapon_entry_id);
 
     if (g_fight_mode_selector == 5) {
         resource_SetPairSelectionSlotWithBoundChecks(
@@ -516,23 +516,23 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     {
         u8 var_7 = g_fight_active_playback_descriptor[3];
         if (var_7 & 0x30) {
-            saved_first = D_80101EC8[0].unk_12;
-            saved_44c = D_80101EC8[1].unk_12;
+            saved_first = D_80101EC8[0].weapon_entry_id;
+            saved_44c = D_80101EC8[1].weapon_entry_id;
             if (var_7 & 0x10)
-                D_80101EC8[0].unk_12 = 0x32;
+                D_80101EC8[0].weapon_entry_id = 0x32;
             if (g_fight_active_playback_descriptor[3] & 0x20)
-                D_80101EC8[1].unk_12 = 0x32;
+                D_80101EC8[1].weapon_entry_id = 0x32;
             fight_RequestBothFightersEntriesAndReloadOnChange();
-            D_80101EC8[0].unk_12 = saved_first;
-            D_80101EC8[1].unk_12 = saved_44c;
+            D_80101EC8[0].weapon_entry_id = saved_first;
+            D_80101EC8[1].weapon_entry_id = saved_44c;
         }
     }
     if (g_fight_active_playback_descriptor[3] & 0x1)
-        a3_arg = D_80101EC8[0].unk_12;
+        a3_arg = D_80101EC8[0].weapon_entry_id;
     else
         a3_arg = -1;
     if (g_fight_active_playback_descriptor[3] & 0x2)
-        a0_arg = D_80101EC8[1].unk_12;
+        a0_arg = D_80101EC8[1].weapon_entry_id;
     else
         a0_arg = -1;
     flags = g_fight_active_playback_descriptor[3];
@@ -731,8 +731,8 @@ void fight_InitImageAndPlaybackPresentation(void) {
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     }
     motion_StartPlaybackAtIndexedBasePlusOffset(
-        0x16, D_8009016C[g_fight_presentation_index], 0, D_80101EC8[0].unk_12,
-        -1, -1, -1, (s32)0x80118800);
+        0x16, D_8009016C[g_fight_presentation_index], 0,
+        D_80101EC8[0].weapon_entry_id, -1, -1, -1, (s32)0x80118800);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
@@ -1077,8 +1077,8 @@ void fight_InitNearestStartPairPlayback(void) {
         result = fight_FindNearestStartPair(addr);
         D_800A3818 = result;
         motion_StartPlaybackAtIndexedBasePlusOffset(
-            0x16, s0, result, (s32)D_80101EC8[0].unk_12,
-            (s32)D_80101EC8[1].unk_12, -1, -1, 0);
+            0x16, s0, result, (s32)D_80101EC8[0].weapon_entry_id,
+            (s32)D_80101EC8[1].weapon_entry_id, -1, -1, 0);
     }
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);

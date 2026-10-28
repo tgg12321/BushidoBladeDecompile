@@ -743,10 +743,10 @@ void camera_InitTrackedFighterFocus(
     if (g_fight_tracked_fighter_index != 0) {
         a0 = a1;
     }
-    g_camera_alternate_view_record.unk_00.x = a0->unk_180.x;
-    g_camera_alternate_view_record.unk_00.z = a0->unk_180.z;
+    g_camera_alternate_view_record.unk_00.x = a0->bone_hit_point_0.x;
+    g_camera_alternate_view_record.unk_00.z = a0->bone_hit_point_0.z;
     {
-        s32 v = a0->unk_180.y;
+        s32 v = a0->bone_hit_point_0.y;
         g_camera_alternate_view_record.b40 = 0;
         g_camera_alternate_view_record.unk_00.y = v;
     }
@@ -765,15 +765,16 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
 
     func_8003F1E4(0);
 
-    val = (obj->unk_198[0].y + obj->unk_198[1].y) / 2 - obj->unk_180.y;
+    val = (obj->ground_probe_points[0].y + obj->ground_probe_points[1].y) / 2 -
+          obj->bone_hit_point_0.y;
     var_3 = val >= 0x391;
 
     if (obj->move_kind == 0x2A) {
         val = 0x200;
     } else {
-        cam->unk_00.x = obj->unk_180.x;
-        cam->unk_00.z = obj->unk_180.z;
-        val = obj->unk_180.y;
+        cam->unk_00.x = obj->bone_hit_point_0.x;
+        cam->unk_00.z = obj->bone_hit_point_0.z;
+        val = obj->bone_hit_point_0.y;
 
         if (!var_3) {
             s32 v = -(obj->size_scale * 950);
@@ -912,7 +913,8 @@ void camera_UpdateReplayView(
         dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
         return;
     }
-    if ((base->unk_198[0].y + base->unk_198[1].y) / 2 - base->unk_180.y <
+    if ((base->ground_probe_points[0].y + base->ground_probe_points[1].y) / 2 -
+            base->bone_hit_point_0.y <
         0xC8) {
         D_800A3310 += 1;
     }
@@ -1002,7 +1004,7 @@ void camera_UpdateReplayViewWithConstantYawOffset(
 
 void camera_SetFighterFocusView(Unk80101EC8Record *arg0, s32 arg1) {
     func_8003F1E4(0);
-    g_camera_default_view_record.unk_00 = arg0->unk_174;
+    g_camera_default_view_record.unk_00 = arg0->bone_hit_points_4_5_midpoint;
     g_camera_default_view_record.unk_10.vx = 0x120;
     g_camera_default_view_record.unk_10.vy = arg1;
     g_camera_default_view_record.unk_10.vz = 0;
@@ -1236,11 +1238,11 @@ void func_8001C624(void) {
     e->collision_pos.vy = y;
     e->collision_pos.vz = z;
     e->prev_collision_pos = e->collision_pos;
-    e->unk_1F8 = e->root_offset;
-    e->unk_104.vx = 0;
-    e->unk_104.vy = 0;
-    e->unk_104.vz = 0;
-    e->unk_24C = e->unk_104;
+    e->prev_root_offset = e->root_offset;
+    e->base_velocity.vx = 0;
+    e->base_velocity.vy = 0;
+    e->base_velocity.vz = 0;
+    e->unk_24C = e->base_velocity;
     /* Player 1's start position is raised by 0x384 as player 0's is, but not
      * read again here (the target performs these stores). */
     setVector(&local, local.vx, local.vy - 0x384, local.vz);
@@ -1250,9 +1252,9 @@ void func_8001C624(void) {
     e->weapon_point_delta[1].vx = 0;
     e->weapon_point_delta[1].vy = 0;
     e->weapon_point_delta[1].vz = 0;
-    e->unk_134.vx = 0;
-    e->unk_134.vy = 0;
-    e->unk_134.vz = 0;
+    e->decaying_xz_velocity.vx = 0;
+    e->decaying_xz_velocity.vy = 0;
+    e->decaying_xz_velocity.vz = 0;
     e->unk_144 = 0;
     e->remaining_turn = 0;
     e->unk_150 = 0;
@@ -1296,7 +1298,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
     if (D_80101EC8[0].is_defeated != 0 || D_80101EC8[1].is_defeated != 0) {
         D_800A382E++;
     } else if (g_fight_mode_selector == 0 && D_800A385C != 0 &&
-               D_80101EC8[0].unk_B2 == 1) {
+               D_80101EC8[0].collision_hit_class == 1) {
         func_8003B56C(3);
     }
     if (D_800A382E < 0x3D)
@@ -1858,7 +1860,7 @@ void fight_Init(void) {
                     i, D_8008D578[(s8)g_fight_config.unk_4[i]], addr);
             }
             resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-                D_80101EC8[i].unk_12);
+                D_80101EC8[i].weapon_entry_id);
             if (g_fight_mode_selector != 3 || i != 1) {
                 if ((g_fight_mode_selector == 2 && D_800A389A == 0) ||
                     g_fight_mode_selector == 5) {
@@ -1871,10 +1873,11 @@ void fight_Init(void) {
                                      [D_80101EC8[i].weapon_id]);
                 }
             }
-            if (D_80101EC8[i].unk_14 != -1) {
+            if (D_80101EC8[i].wielded_object_kind != -1) {
                 resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-                    g_resource_kind_entry_ids[D_80101EC8[i].unk_14]);
-                if (D_80101EC8[i].unk_14 == 14) {
+                    g_resource_kind_entry_ids[D_80101EC8[i]
+                                                  .wielded_object_kind]);
+                if (D_80101EC8[i].wielded_object_kind == 14) {
                     resource_RequestEntryWithLinkedEntriesAndLatchCategory(
                         g_resource_kind_entry_ids[14] + 3);
                 }
@@ -2093,13 +2096,13 @@ void fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt(void) {
     s32 v = g_fight_tracked_fighter_index;
     Unk80101EC8Record *ptr = &D_80101EC8[v];
     s32 a1;
-    if (ptr->unk_62 & 1) {
+    if (ptr->frame_flags & 1) {
         a1 = ptr->weapon_id;
     } else {
         a1 = -1;
     }
     {
-        u32 flags = ptr->unk_62 & 4;
+        u32 flags = ptr->frame_flags & 4;
         node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
             g_camera_alternate_view_record.h1C, a1, flags > 0);
     }
@@ -2148,8 +2151,8 @@ void func_8001EA04(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
     v = D_800A38D4;
-    D_80101EC8[1].unk_31A = 0;
-    D_80101EC8[0].unk_31A = 0;
+    D_80101EC8[1].pose_blend_requests = 0;
+    D_80101EC8[0].pose_blend_requests = 0;
     g_handler_frame_counter = 0;
     g_fight_choice_confirm_delay = 0;
     g_main_loop_handler_index = 0xD;
@@ -2211,7 +2214,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
                 (g_fight_choice_menu_cursor == 0) ? 1 : 0x3C;
             if (g_fight_choice_menu_cursor != 0)
                 return;
-            D_80101EC8[g_fight_followup_fighter_index == 0].unk_B3 = 0;
+            D_80101EC8[g_fight_followup_fighter_index == 0].draw_move_set = 0;
             if (g_fight_mode_selector == 3) {
                 g_fight_timer_frames = g_fight_timer_frames + 0x384;
                 if (g_fight_timer_frames > 0x2BF20) {
@@ -2259,8 +2262,8 @@ void func_8001EEB4(void) {
     Unk80101EC8Record *entry = &D_80101EC8[idx];
     u16 a1 = entry->move_kind;
 
-    if (a1 != 0xA && entry->unk_72 == 0 && a1 != 0x17 && a1 != 0x18 &&
-        entry->is_defeated == 0) {
+    if (a1 != 0xA && entry->airborne_until_landing == 0 && a1 != 0x17 &&
+        a1 != 0x18 && entry->is_defeated == 0) {
         motion_ResetVariantIndex(g_fight_followup_fighter_index);
         {
             MoveScript *ret =
@@ -2415,8 +2418,8 @@ void motion_AdjustFighterPose(
             } else if (var_2 >= 0x200) {
                 var_2 = 0x1FF;
             }
-            dx = obj->other->unk_180.x - obj->unk_180.x;
-            dz = obj->other->unk_180.z - obj->unk_180.z;
+            dx = obj->other->bone_hit_point_0.x - obj->bone_hit_point_0.x;
+            dz = obj->other->bone_hit_point_0.z - obj->bone_hit_point_0.z;
             dist_sq = dx * dx + dz * dz;
             if ((u32)dist_sq < 0x400) {
                 dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -2432,8 +2435,8 @@ void motion_AdjustFighterPose(
                     dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
-            temp2 =
-                0x400 - ratan2(dist, obj->other->unk_180.y - obj->unk_180.y);
+            temp2 = 0x400 - ratan2(dist, obj->other->bone_hit_point_0.y -
+                                             obj->bone_hit_point_0.y);
             if (temp2 < -0xFF) {
                 temp2 = -0xFF;
             } else if (temp2 >= 0x100) {
@@ -2447,23 +2450,26 @@ void motion_AdjustFighterPose(
         var_2 = 0;
     }
 
-    temp = (var_2 - obj->unk_1E6) & 0xFFF;
+    temp = (var_2 - obj->eased_pose_bearing_offset) & 0xFFF;
     if (temp >= 0x800) {
         temp -= 0x1000;
     }
-    obj->unk_1E6 = obj->unk_1E6 + temp / 8;
-    temp = (temp2 - obj->unk_1E8) & 0xFFF;
+    obj->eased_pose_bearing_offset = obj->eased_pose_bearing_offset + temp / 8;
+    temp = (temp2 - obj->eased_pose_elevation_offset) & 0xFFF;
     if (temp >= 0x800) {
         temp -= 0x1000;
     }
-    obj->unk_1E8 = obj->unk_1E8 + temp / 8;
+    obj->eased_pose_elevation_offset =
+        obj->eased_pose_elevation_offset + temp / 8;
     math_ComposeAxisRotationsAndRewriteAngles(
-        &a->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
+        &a->unk_0C[0x15], obj->eased_pose_bearing_offset,
+        obj->eased_pose_elevation_offset, var_4);
     math_ComposeAxisRotationsAndRewriteAngles(
-        &b->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
+        &b->unk_0C[0x15], obj->eased_pose_bearing_offset,
+        obj->eased_pose_elevation_offset, var_4);
 
     t = obj->character_roster_index;
-    if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
+    if ((t == 0x1D || t == 0xE) && obj->wielded_object_live_state != 0) {
         temp = (ratan2(g_fighter_horizontal_separation,
                        obj->other->world_pos.y - obj->world_pos.y) -
                 0x400) &
@@ -2476,7 +2482,7 @@ void motion_AdjustFighterPose(
         } else if (temp < -0x1FF) {
             temp = -0x1FF;
         }
-        obj->unk_1EA = temp;
+        obj->opponent_elevation_offset = temp;
         a->unk_0C[0x39] += temp;
         b->unk_0C[0x39] += temp;
     }
@@ -2485,13 +2491,13 @@ void motion_AdjustFighterPose(
         s32 dist_sq;
         s32 dist;
 
-        if (obj->unk_268 == 0) {
-            obj->unk_25C.x = obj->world_pos.x;
-            obj->unk_25C.y = obj->world_pos.y;
-            obj->unk_25C.z = obj->world_pos.z;
+        if (obj->elevation_origin_from_weapon == 0) {
+            obj->opponent_elevation_origin.x = obj->world_pos.x;
+            obj->opponent_elevation_origin.y = obj->world_pos.y;
+            obj->opponent_elevation_origin.z = obj->world_pos.z;
         }
-        dx = obj->other->world_pos.x - obj->unk_25C.x;
-        dz = obj->other->world_pos.z - obj->unk_25C.z;
+        dx = obj->other->world_pos.x - obj->opponent_elevation_origin.x;
+        dz = obj->other->world_pos.z - obj->opponent_elevation_origin.z;
         dist_sq = dx * dx + dz * dz;
         if ((u32)dist_sq < 0x400) {
             dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -2507,9 +2513,10 @@ void motion_AdjustFighterPose(
                 dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
-        temp2 =
-            (ratan2(dist, obj->other->world_pos.y - obj->unk_25C.y) - 0x400) &
-            0xFFF;
+        temp2 = (ratan2(dist, obj->other->world_pos.y -
+                                  obj->opponent_elevation_origin.y) -
+                 0x400) &
+                0xFFF;
         if (temp2 >= 0x800) {
             temp2 -= 0x1000;
         }
@@ -2518,13 +2525,14 @@ void motion_AdjustFighterPose(
         } else if (temp2 < -0x1FF) {
             temp2 = -0x1FF;
         }
-        temp = (temp2 - obj->unk_1EA) & 0xFFF;
+        temp = (temp2 - obj->opponent_elevation_offset) & 0xFFF;
         if (temp >= 0x800) {
             temp -= 0x1000;
         }
-        obj->unk_1EA = obj->unk_1EA + temp / 8;
-        a->unk_0C[0x33] += obj->unk_1EA;
-        b->unk_0C[0x33] += obj->unk_1EA;
+        obj->opponent_elevation_offset =
+            obj->opponent_elevation_offset + temp / 8;
+        a->unk_0C[0x33] += obj->opponent_elevation_offset;
+        b->unk_0C[0x33] += obj->opponent_elevation_offset;
     }
 
     if (obj->unk_26E != 0 && obj->is_defeated == 0) {
@@ -2742,17 +2750,17 @@ void fight_UpdatePairedMoves(void) {
         rec = &D_80101EC8[g_fight_missing_support_fighter_index];
         if (D_800A3769 != 0) {
             rec->pending_move_event = 1;
-            rec->unk_94 = 0;
+            rec->falling_backward = 0;
         } else {
             rec->pending_move_event = 0;
-            rec->unk_94 = 1;
+            rec->falling_backward = 1;
         }
         if (rec->is_defeated != 0) {
             rec->pending_move_event += 2;
         }
         rec->saved_collision_y = rec->collision_pos.vy;
         rec->other->pending_move_event = 1;
-        rec->other->unk_94 = 0;
+        rec->other->falling_backward = 0;
         rec->other->saved_collision_y = rec->other->collision_pos.vy;
         if (rec->other->is_defeated != 0) {
             rec->other->pending_move_event += 2;
@@ -2807,7 +2815,7 @@ void fight_UpdatePairedMoves(void) {
         fighter_StartMoveScript(i == 0, var_3, rec->move_is_common);
         rec->move_started = 2;
         rec->other->move_started = 2;
-        rec->other->unk_86 = rec->other->unk_84;
+        rec->other->variant_index = rec->other->default_variant_index;
         rec->other->unk_272 += 1;
         pos[0] = (rec->world_pos.x + rec->other->world_pos.x) / 2;
         pos[1] = (rec->world_pos.y + rec->other->world_pos.y) / 2;
@@ -3017,7 +3025,7 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
 
     m = var_1[18];
     gte_SetRotMatrix(m);
-    if (rec->unk_12 == 50) {
+    if (rec->weapon_entry_id == 50) {
         v = D_8008D774;
     } else {
         v = D_8008D86C[rec->weapon_id];
@@ -3030,10 +3038,10 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
         o->z += m->t[2];
     }
 
-    if (rec->unk_8C != 0) {
+    if (rec->wielded_object_live_state != 0) {
         m = var_1[19];
         gte_SetRotMatrix(m);
-        v = D_8008D88C[rec->unk_14];
+        v = D_8008D88C[rec->wielded_object_kind];
         o = arg3;
         for (i = 0; i < 2; i++, v++, o++) {
             gte_ApplyRotMatrix(v, o);
@@ -3047,29 +3055,29 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
     gte_SetRotMatrix(m);
     gte_ldv0(&D_800A3138);
     gte_rtv0();
-    rec->unk_180 = arg1[0];
-    gte_stlvnl(&rec->unk_1EC);
+    rec->bone_hit_point_0 = arg1[0];
+    gte_stlvnl(&rec->bone_y_axis);
 
     pos = var_1[17]->t;
-    rec->unk_198[0].x = pos[0];
-    rec->unk_198[0].y = pos[1] + ((rec->size_scale * 71) >> 11);
-    rec->unk_198[0].z = pos[2];
+    rec->ground_probe_points[0].x = pos[0];
+    rec->ground_probe_points[0].y = pos[1] + ((rec->size_scale * 71) >> 11);
+    rec->ground_probe_points[0].z = pos[2];
     pos = var_1[14]->t;
-    rec->unk_198[1].x = pos[0];
-    rec->unk_198[1].y = pos[1] + ((rec->size_scale * 71) >> 11);
-    rec->unk_198[1].z = pos[2];
+    rec->ground_probe_points[1].x = pos[0];
+    rec->ground_probe_points[1].y = pos[1] + ((rec->size_scale * 71) >> 11);
+    rec->ground_probe_points[1].z = pos[2];
     for (i = 0; i < 2; i++) {
-        var_0[0] = rec->unk_198[i].x;
-        var_0[1] = rec->unk_198[i].y - 100;
-        var_0[2] = rec->unk_198[i].z;
-        var_0[4] = rec->unk_198[i].x;
-        var_0[5] = rec->unk_198[i].y + 2000;
-        var_0[6] = rec->unk_198[i].z;
+        var_0[0] = rec->ground_probe_points[i].x;
+        var_0[1] = rec->ground_probe_points[i].y - 100;
+        var_0[2] = rec->ground_probe_points[i].z;
+        var_0[4] = rec->ground_probe_points[i].x;
+        var_0[5] = rec->ground_probe_points[i].y + 2000;
+        var_0[6] = rec->ground_probe_points[i].z;
         if (collision_TestSegmentWithWork(&var_0[0], &var_0[4], &var_0[8],
                                           (s16 *)&var_0[12], (s32)&var_0[14])) {
-            rec->unk_1B0[i] = var_0[9];
+            rec->ground_probe_floor_ys[i] = var_0[9];
         } else {
-            rec->unk_1B0[i] = var_0[5];
+            rec->ground_probe_floor_ys[i] = var_0[5];
         }
     }
     m = var_1[17];
@@ -3274,10 +3282,10 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 a0) {
         for (i = 0; i < 3; i++) {
             s32 nibble = (rec->motion_data_id >> (i << 2)) & 0xF;
             if (nibble == 4) {
-                rec->unk_88 = i;
+                rec->object_variant_index = i;
                 if (g_fight_mode_selector != 3 || a0 != 1 ||
                     g_fight_step_row_column == nibble) {
-                    rec->unk_8A = rec->unk_26C;
+                    rec->object_variant_enabled = rec->unk_26C;
                 }
             } else if (nibble == 5) {
                 rec->unk_8E = i;
@@ -3290,13 +3298,13 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 a0) {
 }
 
 void motion_AdvanceVariantIfAtNibble4Or5Position(Unk80101EC8Record *arg0) {
-    s16 a1 = arg0->unk_86;
-    if (a1 != arg0->unk_88) {
+    s16 a1 = arg0->variant_index;
+    if (a1 != arg0->object_variant_index) {
         if (a1 != arg0->unk_8E) {
             return;
         }
     }
-    arg0->unk_86 =
+    arg0->variant_index =
         (s16)((a1 + 1) % g_motion_fighter_buffers[arg0->motion_slot]->f14);
 }
 
@@ -3322,51 +3330,55 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
     s16 t;
     s32 var_1;
 
-    rec->unk_78 = 0;
+    rec->blend_into_move = 0;
     *out = 0;
     if ((u32)(id - 0x7FF5) < 11) {
         return &g_motion_fighter_sections[rec->motion_slot]
                     .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f66[id - 0x7FF5][rec->unk_86]];
+                                ->f66[id - 0x7FF5][rec->variant_index]];
     }
     switch (id) {
     case 0x7FF0:
-        rec->unk_78 = 1;
-        rec->unk_86 = rec->unk_84;
+        rec->blend_into_move = 1;
+        rec->variant_index = rec->default_variant_index;
         return &g_motion_fighter_sections[rec->motion_slot]
                     .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f4E[rec->unk_84]];
+                                ->f4E[rec->default_variant_index]];
     case 0x7FF1:
-        rec->unk_86 =
-            (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
+        rec->variant_index = (rec->variant_index + 1) %
+                             g_motion_fighter_buffers[rec->motion_slot]->f14;
     case 0x7FF2:
     case 0x7FF4:
         if (id == 0x7FF4) {
-            rec->unk_78 = 1;
+            rec->blend_into_move = 1;
         }
-        t = rec->unk_86;
-        if ((t == rec->unk_88 && rec->unk_8A == 0) ||
+        t = rec->variant_index;
+        if ((t == rec->object_variant_index &&
+             rec->object_variant_enabled == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
-            rec->unk_86 = (rec->unk_86 + 1) %
-                          g_motion_fighter_buffers[rec->motion_slot]->f14;
+            rec->variant_index =
+                (rec->variant_index + 1) %
+                g_motion_fighter_buffers[rec->motion_slot]->f14;
         } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0) {
             motion_AdvanceVariantIfAtNibble4Or5Position(rec);
         }
         return &g_motion_fighter_sections[rec->motion_slot]
                     .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f4E[rec->unk_86]];
+                                ->f4E[rec->variant_index]];
     case 0x7FF3:
-        t = (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
-        if ((t == rec->unk_88 && rec->unk_8A == 0) ||
+        t = (rec->variant_index + 1) %
+            g_motion_fighter_buffers[rec->motion_slot]->f14;
+        if ((t == rec->object_variant_index &&
+             rec->object_variant_enabled == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
             t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0 &&
-                   (t == rec->unk_88 || t == rec->unk_8E)) {
+                   (t == rec->object_variant_index || t == rec->unk_8E)) {
             t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         }
         return &g_motion_fighter_sections[rec->motion_slot]
                     .unk_00[g_motion_fighter_buffers[rec->motion_slot]
-                                ->f54[rec->unk_86][t]];
+                                ->f54[rec->variant_index][t]];
     }
     if (id & 0x8000) {
         if (rec->borrow_other_motion != 0) {
@@ -3381,19 +3393,19 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
 }
 
 void motion_ResetVariantIndex(s32 a0) {
-    D_80101EC8[a0].unk_86 = D_80101EC8[a0].unk_84;
+    D_80101EC8[a0].variant_index = D_80101EC8[a0].default_variant_index;
 }
 
 MoveScript *motion_GetCurrentVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].motion_slot;
-    s16 v0 = D_80101EC8[a0].unk_86;
+    s16 v0 = D_80101EC8[a0].variant_index;
     return (MoveScript *)&g_motion_fighter_sections[v1]
         .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
 
 MoveScript *motion_GetDefaultVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].motion_slot;
-    s16 v0 = D_80101EC8[a0].unk_84;
+    s16 v0 = D_80101EC8[a0].default_variant_index;
     return (MoveScript *)&g_motion_fighter_sections[v1]
         .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
@@ -3450,7 +3462,7 @@ void fighter_StartMoveScript(s32 arg0, MoveScript *arg1, s32 arg2) {
                 s0->move_frame_frac = 0;
                 s0->move_started = 1;
                 s0->queued_move = 0;
-                s0->unk_46 = 0;
+                s0->move_frame_unchanged = 0;
                 s0->move_frame = a1_val;
                 /* FAKE: the do-while(0) wrap's loop-depth weighting seats a0_58
                  * in $a0 and a1_val in $a1 as in target; without it they swap,
@@ -3471,7 +3483,7 @@ void fighter_StartMoveScript(s32 arg0, MoveScript *arg1, s32 arg2) {
                     (kind == 0x26)) {
                     a0_flag = 1;
                 }
-                s0->unk_AD = a0_flag;
+                s0->attack_hit_armed = a0_flag;
             }
             fighter_ReadFrameMetadata(s0);
             {
@@ -3739,17 +3751,18 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 
     if (g_fight_mode_selector == 5 ||
         (g_fight_mode_selector == 2 && D_800A389A == 0)) {
-        p->unk_12 = D_8008EB38[p->weapon_id];
+        p->weapon_entry_id = D_8008EB38[p->weapon_id];
     } else if (idx == 1 && g_fight_mode_selector == 3) {
-        p->unk_12 =
+        p->weapon_entry_id =
             D_8008EB28[p->weapon_id]
                       [g_fighter_group_flags[p->other->character_data_index] ==
                        0];
     } else if (g_fight_mode_selector == 0 && D_800A385C != 0 && idx == 0) {
-        p->unk_12 = 0x32;
+        p->weapon_entry_id = 0x32;
     } else {
-        p->unk_12 = D_8008EB28[p->weapon_id]
-                              [g_fighter_group_flags[p->character_data_index]];
+        p->weapon_entry_id =
+            D_8008EB28[p->weapon_id]
+                      [g_fighter_group_flags[p->character_data_index]];
     }
 
     if (idx == 1 && g_fight_mode_selector == 3) {
@@ -3759,32 +3772,33 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             g_object_scale_factors[D_8008D578[p->character_roster_index]];
     }
     p->base_move_frame_step = D_8008DE34[p->character_data_index][p->weapon_id];
-    p->unk_1E = D_8008DF78[p->character_data_index][p->weapon_id];
-    p->unk_20 = p->unk_1E;
-    p->unk_08 = 0x1000;
+    p->base_power = D_8008DF78[p->character_data_index][p->weapon_id];
+    p->power = p->base_power;
+    p->cpu_base_level = 0x1000;
 
     if (g_fight_mode_selector == 3 && idx == 1) {
-        p->unk_84 =
+        p->default_variant_index =
             motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
                 p);
         var_2 = (g_fight_step_table_next_row - 1) / 10 + 1;
         p->base_move_frame_step = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
         if (var_2 == 9) {
-            p->unk_20 = 0x1080;
+            p->power = 0x1080;
         } else {
-            p->unk_20 = var_2 * 64 + 0xC00;
+            p->power = var_2 * 64 + 0xC00;
         }
         if (var_2 == 9) {
-            p->unk_08 = 0xE00;
+            p->cpu_base_level = 0xE00;
         } else {
-            p->unk_08 = var_2 * 80 + 0x150;
+            p->cpu_base_level = var_2 * 80 + 0x150;
         }
     } else {
-        p->unk_84 = D_8008DD5C[p->character_data_index][p->weapon_id];
+        p->default_variant_index =
+            D_8008DD5C[p->character_data_index][p->weapon_id];
     }
 
-    p->unk_88 = -1;
-    p->unk_8A = 0;
+    p->object_variant_index = -1;
+    p->object_variant_enabled = 0;
     p->unk_8E = -1;
     p->unk_90 = 0;
     var_5 = (g_fight_reinit_reuses_assets != 0) ? D_800A38DF : 0;
@@ -3832,40 +3846,40 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->collision_pos.vy = p->base_pos.y;
     p->collision_pos.vz = p->world_pos.z;
     p->prev_collision_pos = p->collision_pos;
-    p->unk_1F8 = p->root_offset;
-    p->unk_104.vx = 0;
-    p->unk_104.vy = 0;
-    p->unk_104.vz = 0;
-    p->unk_24C = p->unk_104;
+    p->prev_root_offset = p->root_offset;
+    p->base_velocity.vx = 0;
+    p->base_velocity.vy = 0;
+    p->base_velocity.vz = 0;
+    p->unk_24C = p->base_velocity;
     p->weapon_point_delta[0].vx = 0;
     p->weapon_point_delta[0].vy = 0;
     p->weapon_point_delta[0].vz = 0;
     p->weapon_point_delta[1].vx = 0;
     p->weapon_point_delta[1].vy = 0;
     p->weapon_point_delta[1].vz = 0;
-    p->unk_134.vx = 0;
-    p->unk_134.vy = 0;
-    p->unk_134.vz = 0;
+    p->decaying_xz_velocity.vx = 0;
+    p->decaying_xz_velocity.vy = 0;
+    p->decaying_xz_velocity.vz = 0;
     p->unk_144 = 0;
     p->ground_y = p->collision_pos.vy;
     p->remaining_turn = 0;
     p->unk_150 = 0;
     p->use_root_offset_yaw = 0;
     p->forward_move_rate = 0;
-    p->unk_156 = 0xC00;
-    p->unk_158 = 0xF80;
-    p->unk_15A = 0xC00;
-    p->unk_15E = 0xC00;
-    p->unk_160 = 0xC00;
-    p->unk_162 = 0xC00;
-    p->unk_1E8 = 0;
-    p->unk_1E6 = 0;
-    p->unk_1EA = 0;
-    p->unk_268 = 0;
+    p->base_velocity_damping_x = 0xC00;
+    p->base_velocity_damping_y = 0xF80;
+    p->base_velocity_damping_z = 0xC00;
+    p->decaying_xz_velocity_damping_x = 0xC00;
+    p->decaying_xz_velocity_damping_y = 0xC00;
+    p->decaying_xz_velocity_damping_z = 0xC00;
+    p->eased_pose_elevation_offset = 0;
+    p->eased_pose_bearing_offset = 0;
+    p->opponent_elevation_offset = 0;
+    p->elevation_origin_from_weapon = 0;
     p->camera_fighter_point = p->world_pos;
-    p->unk_174 = p->world_pos;
-    p->unk_180 = p->world_pos;
-    p->unk_18C = p->world_pos;
+    p->bone_hit_points_4_5_midpoint = p->world_pos;
+    p->bone_hit_point_0 = p->world_pos;
+    p->bone_hit_points_1_3_centroid = p->world_pos;
     p->orientation.vx = 0;
     p->orientation.vy = 0;
     p->orientation.vz = 0;
@@ -3888,28 +3902,28 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_A0 = 8;
     p->queued_move = 0;
     p->pending_move_event = -1;
-    p->unk_31A = 0;
+    p->pose_blend_requests = 0;
     p->downward_probe_hit = 0;
-    p->unk_72 = 0;
+    p->airborne_until_landing = 0;
     p->is_defeated = 0;
     p->collision_hit_tag = 7;
-    p->unk_B2 = 0;
+    p->collision_hit_class = 0;
     p->reposition_count = 0;
     object_InitKindQueue(p);
-    p->unk_14 = p->carried_object_kinds[0];
+    p->wielded_object_kind = p->carried_object_kinds[0];
     if (g_fight_mode_selector == 5 ||
         (g_fight_mode_selector == 2 && D_800A389A == 0)) {
         if (p->character_data_index == 1 || p->character_data_index == 3 ||
             p->character_data_index == 4 || p->character_data_index == 9 ||
             p->character_data_index == 0x11) {
-            p->carried_object_kinds[0] = p->unk_14 = 0x11;
+            p->carried_object_kinds[0] = p->wielded_object_kind = 0x11;
         } else {
-            p->unk_14 = -1;
+            p->wielded_object_kind = -1;
             p->carried_object_count = 0;
         }
     } else if (g_fight_mode_selector == 3 && idx == 1 &&
                g_fight_step_row_column != 4) {
-        p->unk_14 = -1;
+        p->wielded_object_kind = -1;
         p->carried_object_count = 0;
     } else if (g_fight_mode_selector == 3 && idx == 1 &&
                g_fight_step_row_column == 4) {
@@ -3918,15 +3932,16 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             p->other->character_data_index == 4 ||
             p->other->character_data_index == 9 ||
             p->other->character_data_index == 0x11) {
-            p->carried_object_kinds[0] = p->unk_14 = p->other->unk_14;
+            p->carried_object_kinds[0] = p->wielded_object_kind =
+                p->other->wielded_object_kind;
             p->carried_object_count = 1;
         }
     } else {
         if (p->character_roster_index == 0x1D) {
-            p->unk_14 = 0x1F;
+            p->wielded_object_kind = 0x1F;
             p->weapon_ammo = 2;
         } else if (p->character_roster_index == 0xE) {
-            p->unk_14 = 0x1E;
+            p->wielded_object_kind = 0x1E;
             p->weapon_ammo = 2;
         } else {
             p->weapon_ammo = 0xA;
@@ -3936,9 +3951,9 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     if (g_fight_mode_selector == 5 || g_fight_mode_selector == 2 ||
         g_fight_mode_selector == 3 ||
         (g_fight_mode_selector == 0 && D_800A385C != 0)) {
-        p->unk_34D = 0;
+        p->throw_charges_left = 0;
     } else {
-        p->unk_34D = 2;
+        p->throw_charges_left = 2;
     }
     p->bone_event_counter = 0;
 }
@@ -3956,12 +3971,12 @@ void fighter_ConfigureCpuControl(void) {
 
             switch (g_fight_mode_selector) {
             case 0:
-                rec->unk_08 = g_fight_config.unk_A[i] << 4;
+                rec->cpu_base_level = g_fight_config.unk_A[i] << 4;
                 break;
             case 1:
             case 2:
             default:
-                rec->unk_08 = *tbl;
+                rec->cpu_base_level = *tbl;
                 break;
             case 3:
                 break;
@@ -4029,7 +4044,7 @@ void fighter_ResolveMovement(
                     if (((((m != 8) && (m != 0x22)) &&
                           (((u32)(mode - 0x17)) >= 2)) &&
                          (m != 0xA)) &&
-                        (obj->unk_72 == 0)) {
+                        (obj->airborne_until_landing == 0)) {
                         scratch[9] = 0;
                     }
                 }
@@ -4261,12 +4276,12 @@ void fighter_HandleMissingSupportWhileDescending(Unk80101EC8Record *arg0) {
     s32 scratchpad;
     s32 var_9;
     u16 kind;
-    if (arg0->unk_104.vy <= 0) {
+    if (arg0->base_velocity.vy <= 0) {
         return;
     }
     kind = arg0->move_kind;
-    if (kind == 0x17 || kind == 0x18 || kind == 0xA || arg0->unk_72 != 0 ||
-        kind == 1 || kind == 0x28) {
+    if (kind == 0x17 || kind == 0x18 || kind == 0xA ||
+        arg0->airborne_until_landing != 0 || kind == 1 || kind == 0x28) {
         return;
     }
     scratchpad = 0x1F8002B8;
@@ -4321,10 +4336,10 @@ void fighter_HandleMissingSupportWhileDescending(Unk80101EC8Record *arg0) {
         kind == 0x1F || kind == 0x20 || kind == 0x21) {
         if (s1 < 0x400) {
             arg0->pending_move_event = 0;
-            arg0->unk_94 = 0;
+            arg0->falling_backward = 0;
         } else {
             arg0->pending_move_event = 1;
-            arg0->unk_94 = 1;
+            arg0->falling_backward = 1;
         }
         arg0->other->pending_move_event = 2;
         arg0->saved_collision_y = arg0->collision_pos.vy;
@@ -4334,15 +4349,15 @@ void fighter_HandleMissingSupportWhileDescending(Unk80101EC8Record *arg0) {
     } else {
         if (s1 < 0x400) {
             arg0->pending_move_event = 0x12;
-            arg0->unk_94 = 0;
+            arg0->falling_backward = 0;
         } else {
             arg0->pending_move_event = 0x11;
-            arg0->unk_94 = 1;
+            arg0->falling_backward = 1;
         }
         arg0->saved_collision_y = arg0->collision_pos.vy;
     }
-    arg0->unk_104.vx += dx_delta;
-    arg0->unk_104.vz += dz_delta;
+    arg0->base_velocity.vx += dx_delta;
+    arg0->base_velocity.vz += dz_delta;
 }
 
 void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, MATRIX *arg3) {
@@ -4362,8 +4377,8 @@ void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, MATRIX *arg3) {
 
 void fighter_RequestPoseBlend(Unk80101EC8Record *arg0, s16 arg1) {
     s16 v;
-    arg0->unk_31A += 1;
-    v = arg0->unk_31A;
+    arg0->pose_blend_requests += 1;
+    v = arg0->pose_blend_requests;
     if (v == 1) {
         arg0->pose_blend_progress = arg1;
         arg0->pose_blend_base_shift.x = 0;
@@ -4381,7 +4396,7 @@ void func_80023D08(Unk80101EC8Record *arg0) {
 }
 
 void fighter_CacheDownwardProbeHit(Unk80101EC8Record *arg0) {
-    if (arg0->unk_104.vy < 0) {
+    if (arg0->base_velocity.vy < 0) {
         arg0->downward_probe_hit = 0;
         return;
     }
@@ -4513,9 +4528,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
             0;
         rec->pad_input.unheld = 0xFFFF;
     }
-    rec->unk_20 =
-        (rec->unk_1E * D_8008E0BC[rec->character_data_index]
-                                 [rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
+    rec->power =
+        (rec->base_power * D_8008E0BC[rec->character_data_index]
+                                     [rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
         12;
     if (rec->move_started == 1) {
         rec->move_started = 0;
@@ -4524,11 +4539,11 @@ void fighter_Update(s32 arg0, PadState *pad) {
     frac = rec->move_frame_frac + rec->move_frame_step;
     rec->move_frame_frac = frac;
     if (frac >= 0x1000) {
-        rec->unk_46 = 0;
+        rec->move_frame_unchanged = 0;
         rec->move_frame += frac >> 12;
         rec->move_frame_frac &= 0xFFF;
     } else {
-        rec->unk_46 = 1;
+        rec->move_frame_unchanged = 1;
     }
     if (rec->pending_move_event >= 0) {
         /* the move-script record of cur_move's event_move_table_id is a u16
@@ -4538,9 +4553,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
 
         if (rec->move_kind == 0xA || rec->move_kind == 0x17 ||
             rec->move_kind == 0x18) {
-            rec->unk_72 = 1;
+            rec->airborne_until_landing = 1;
         }
-        rec->unk_31A = 0;
+        rec->pose_blend_requests = 0;
         table = motion_ResolveMoveData(
             rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
         fighter_StartMoveScript(
@@ -4559,22 +4574,22 @@ void fighter_Update(s32 arg0, PadState *pad) {
             u16 *table;
 
             fighter_SetTurnDelta(rec, var_4);
-            rec->unk_31A = 0;
+            rec->pose_blend_requests = 0;
             table = motion_ResolveMoveData(
                 rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
             fighter_StartMoveScript(
                 arg0,
                 motion_ResolveMoveData(rec, table[0xD], &rec->move_is_common),
                 rec->move_is_common);
-            rec->unk_104.vx = 0;
-            rec->unk_104.vy = 0;
-            rec->unk_104.vz = 0;
+            rec->base_velocity.vx = 0;
+            rec->base_velocity.vy = 0;
+            rec->base_velocity.vz = 0;
         }
     }
     if (rec->cur_move->last_move_frame < rec->move_frame) {
         if (rec->queued_move != NULL) {
             rec->move_is_common = rec->queued_move_is_common;
-            if (rec->unk_82 & 0x1000) {
+            if (rec->queued_move_command & 0x1000) {
                 rec->borrow_other_motion = 1;
             }
             fighter_StartMoveScript(
@@ -4609,10 +4624,10 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 g_fight_paired_move_start_pending = 1;
                 D_800A36D8 = rec->queued_move;
                 D_800A381C = rec->queued_move_is_common;
-                D_800A36CA = rec->unk_82;
+                D_800A36CA = rec->queued_move_command;
             } else {
                 rec->move_is_common = rec->queued_move_is_common;
-                if (rec->unk_82 & 0x1000) {
+                if (rec->queued_move_command & 0x1000) {
                     rec->borrow_other_motion = 1;
                 }
                 fighter_StartMoveScript(
@@ -4648,7 +4663,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 if ((var_7 & 0xF) == 9) {
                     var_7 = (var_7 & 0xFFF0) | 3;
                     if (rec->other->move_kind != 6 &&
-                        rec->other->move_frame < rec->other->unk_AB) {
+                        rec->other->move_frame <
+                            rec->other->opponent_transition_start_frame) {
                         var_8 = 0;
                     }
                 } else if ((var_7 & 0xF) == 0xA) {
@@ -4665,7 +4681,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
                     move = motion_ResolveMoveData(rec, ent[1], &var_5);
                     if (rec->cur_move->unk_09 & 0x80) {
                         rec->queued_move = move;
-                        rec->unk_82 = var_7;
+                        rec->queued_move_command = var_7;
                         rec->borrow_other_motion = 0;
                         rec->queued_move_is_common = var_5;
                     } else if (rec->move_kind == 0x11) {
@@ -4687,7 +4703,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
             }
         }
     }
-    if (rec->move_kind == 0xA || rec->unk_72 != 0) {
+    if (rec->move_kind == 0xA || rec->airborne_until_landing != 0) {
         if (fighter_TestDownwardProbeFromCollisionPosHitsUpwardFacingSurface(
                 rec) != 0) {
             if (rec->saved_collision_y + 0xFA0 < rec->collision_pos.vy) {
@@ -4699,17 +4715,17 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 fighter_StartMoveScript(
                     arg0,
                     motion_ResolveMoveData(
-                        rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
+                        rec, table[rec->falling_backward != 0 ? 0x17 : 0x18],
                         &rec->move_is_common),
                     rec->move_is_common);
-            } else if (rec->unk_72 == 0) {
+            } else if (rec->airborne_until_landing == 0) {
                 fighter_StartMoveScript(
                     arg0,
                     motion_ResolveMoveData(rec, rec->cur_move->fallback_move_id,
                                            &rec->move_is_common),
                     rec->move_is_common);
             }
-            rec->unk_72 = 0;
+            rec->airborne_until_landing = 0;
         }
     } else if (rec->move_started != 0 &&
                (rec->prev_move_kind == 0x17 || rec->prev_move_kind == 0x18) &&
@@ -4742,24 +4758,26 @@ void fighter_Update(s32 arg0, PadState *pad) {
             }
         }
     }
-    if (rec->unk_46 == 0 && rec->move_kind == 9 &&
+    if (rec->move_frame_unchanged == 0 && rec->move_kind == 9 &&
         rec->opponent_turn_frame == rec->move_frame) {
         fighter_SetTurnDelta(rec, rec->opponent_bearing);
     }
     if (rec->move_started != 0 && rec->prev_move_kind != 0x18 &&
         rec->move_kind == 0x18) {
-        rec->unk_104.vx += (Judge[rec->orientation.vy & 0xFFF] *
-                            D_8008DA94[rec->character_data_index]) >>
-                           12;
-        rec->unk_104.vz += (Judge[(rec->orientation.vy + 0x400) & 0xFFF] *
-                            D_8008DA94[rec->character_data_index]) >>
-                           12;
-        rec->unk_104.vy += D_8008DA50[rec->character_data_index];
+        rec->base_velocity.vx +=
+            (Judge[rec->orientation.vy & 0xFFF] *
+             D_8008DA94[rec->character_data_index]) >>
+            12;
+        rec->base_velocity.vz +=
+            (Judge[(rec->orientation.vy + 0x400) & 0xFFF] *
+             D_8008DA94[rec->character_data_index]) >>
+            12;
+        rec->base_velocity.vy += D_8008DA50[rec->character_data_index];
         rec->saved_collision_y = rec->collision_pos.vy;
     }
     if (rec->move_started != 0 && rec->prev_move_kind != 0x17 &&
         rec->move_kind == 0x17) {
-        rec->unk_104.vy += D_8008DAD8[rec->character_data_index];
+        rec->base_velocity.vy += D_8008DAD8[rec->character_data_index];
         rec->saved_collision_y = rec->collision_pos.vy;
     }
     if (rec->move_started != 0 && rec->move_kind == 0x28) {
@@ -4770,31 +4788,31 @@ void fighter_Update(s32 arg0, PadState *pad) {
         if (temp >= 0x800) {
             temp = 0x1000 - temp;
         }
-        var_30[0] = rec->other->unk_18C.x -
+        var_30[0] = rec->other->bone_hit_points_1_3_centroid.x -
                     ((Judge[rec->opponent_bearing & 0xFFF] * temp) >> 14);
-        var_30[1] = rec->other->unk_18C.y;
+        var_30[1] = rec->other->bone_hit_points_1_3_centroid.y;
         var_30[2] =
-            rec->other->unk_18C.z -
+            rec->other->bone_hit_points_1_3_centroid.z -
             ((Judge[(rec->opponent_bearing + 0x400) & 0xFFF] * temp) >> 14);
-        rec->unk_104.vy -= 0xFA;
-        math_ComputeBallisticVelocityXZ(
-            (s32 *)&rec->unk_180, var_30, rec->unk_104.vy, 0x1F, dv);
-        rec->unk_104.vx += dv[0];
-        rec->unk_104.vz += dv[2];
-        rec->unk_72 = 1;
+        rec->base_velocity.vy -= 0xFA;
+        math_ComputeBallisticVelocityXZ((s32 *)&rec->bone_hit_point_0, var_30,
+                                        rec->base_velocity.vy, 0x1F, dv);
+        rec->base_velocity.vx += dv[0];
+        rec->base_velocity.vz += dv[2];
+        rec->airborne_until_landing = 1;
         rec->saved_collision_y = rec->collision_pos.vy;
     }
     if (rec->move_kind == 0x17 || rec->move_kind == 0x18 ||
         rec->move_kind == 0x28 || rec->move_kind == 0xA) {
         if (rec->move_frame == rec->cur_move->last_move_frame &&
-            rec->unk_104.vy > 0) {
+            rec->base_velocity.vy > 0) {
             rec->move_frame = rec->cur_move->last_move_frame - 1;
         }
     }
     if (rec->move_started != 0 && rec->move_kind == 0x23) {
         rec->collision_pos.vy -= 0x898;
         rec->base_pos.y -= 0x898;
-        rec->unk_1F8.y += 0x898;
+        rec->prev_root_offset.y += 0x898;
     }
     {
         /* FAKE: named intermediate: move_kind is read into `state` before
@@ -4804,14 +4822,14 @@ void fighter_Update(s32 arg0, PadState *pad) {
         s32 state = rec->move_kind;
 
         if (rec->move_started != 0 && state == 6) {
-            rec->unk_86 = rec->unk_84;
+            rec->variant_index = rec->default_variant_index;
         }
     }
     temp = (rec->remaining_turn * rec->move_frame_step) / 24576;
     rec->orientation.vy += temp;
     rec->remaining_turn -= temp;
     if (rec->move_started != 0) {
-        if (rec->unk_78 != 0) {
+        if (rec->blend_into_move != 0) {
             func_80023D08(rec);
         } else if (rec->move_kind == 0x1C) {
             fighter_RequestPoseBlend(rec, 0x400);
@@ -4859,8 +4877,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     var_15 = var_19 + *rec->motion_entry + rec->move_frame;
     var_17 = var_19 + *rec->motion_entry + next;
-    rec->unk_64 = (var_18 << 14) | var_15;
-    rec->unk_66 = (var_18 << 14) | var_17;
+    rec->blend_src_frame_code = (var_18 << 14) | var_15;
+    rec->blend_dst_frame_code = (var_18 << 14) | var_17;
     if (rec->move_kind == 0x33) {
         var_0[1] = g_motion_frame_buffers[arg0][rec->move_frame];
         var_0[0] = var_0[1];
@@ -4920,27 +4938,27 @@ void fighter_Update(s32 arg0, PadState *pad) {
         v[0].y = (v[0].y * rec->size_scale) >> 12;
         v[1].y = (v[1].y * rec->size_scale) >> 12;
     }
-    if (rec->unk_31A != 0) {
+    if (rec->pose_blend_requests != 0) {
         var_0[1] = var_0[0];
         ang[1] = ang[0];
         var_0[0] = rec->saved_motion_frame;
         ang[0] = rec->saved_frame_offset_yaw;
         var_14 = rec->pose_blend_progress;
-        rec->unk_66 = rec->unk_64;
-        rec->unk_64 = rec->unk_316;
+        rec->blend_dst_frame_code = rec->blend_src_frame_code;
+        rec->blend_src_frame_code = rec->saved_motion_frame_id;
     } else {
         var_14 = rec->move_frame_frac;
     }
     var_22 = 0x1000 - var_14;
     rec->pose_interp_weight = var_14;
-    if (rec->unk_31A != 0) {
+    if (rec->pose_blend_requests != 0) {
         Vec3i32 var_35;
 
         if (rec->move_started != 0) {
-            rec->base_pos.x += rec->unk_1F8.x - v[0].x;
-            rec->base_pos.z += rec->unk_1F8.z - v[0].z;
-            rec->pose_blend_base_shift.x += rec->unk_1F8.x - v[0].x;
-            rec->pose_blend_base_shift.z += rec->unk_1F8.z - v[0].z;
+            rec->base_pos.x += rec->prev_root_offset.x - v[0].x;
+            rec->base_pos.z += rec->prev_root_offset.z - v[0].z;
+            rec->pose_blend_base_shift.x += rec->prev_root_offset.x - v[0].x;
+            rec->pose_blend_base_shift.z += rec->prev_root_offset.z - v[0].z;
         }
         ang_q = ang[0] + 0x400;
         var_35.x = (var_0[0].unk_04 *
@@ -4962,81 +4980,95 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->root_offset.y = (v[0].y * var_22 + v[1].y * var_14) >> 12;
         rec->root_offset.z = (v[0].z * var_22 + v[1].z * var_14) >> 12;
     }
-    if (rec->move_started != 0 && rec->unk_31A == 0) {
-        rec->base_pos.x += rec->unk_1F8.x - rec->root_offset.x;
-        rec->base_pos.z += rec->unk_1F8.z - rec->root_offset.z;
+    if (rec->move_started != 0 && rec->pose_blend_requests == 0) {
+        rec->base_pos.x += rec->prev_root_offset.x - rec->root_offset.x;
+        rec->base_pos.z += rec->prev_root_offset.z - rec->root_offset.z;
         if (rec->move_kind == 0x23 || rec->move_kind == 0xA) {
-            rec->base_pos.y += rec->unk_1F8.y - rec->root_offset.y;
+            rec->base_pos.y += rec->prev_root_offset.y - rec->root_offset.y;
         }
     }
     fighter_UpdateInputSteeredForwardMotion(rec);
     fighter_HandleMissingSupportWhileDescending(rec);
     if (rec->move_kind != 8 && rec->move_kind != 0x22) {
-        rec->unk_104.vy += 0x15;
+        rec->base_velocity.vy += 0x15;
     }
     {
         s32 state = rec->move_kind;
 
         if (state == 8 || state == 0x22) {
-            rec->unk_134.vx -= rec->horizontal_probe_normal.vx / 256;
-            rec->unk_134.vz -= rec->horizontal_probe_normal.vz / 256;
+            rec->decaying_xz_velocity.vx -=
+                rec->horizontal_probe_normal.vx / 256;
+            rec->decaying_xz_velocity.vz -=
+                rec->horizontal_probe_normal.vz / 256;
         }
     }
     if (rec->move_started == 0 || rec->move_kind != 0x28) {
-        rec->unk_104.vx = (rec->unk_104.vx * rec->unk_156) >> 12;
-        rec->unk_104.vy = (rec->unk_104.vy * rec->unk_158) >> 12;
-        rec->unk_104.vz = (rec->unk_104.vz * rec->unk_15A) >> 12;
+        rec->base_velocity.vx =
+            (rec->base_velocity.vx * rec->base_velocity_damping_x) >> 12;
+        rec->base_velocity.vy =
+            (rec->base_velocity.vy * rec->base_velocity_damping_y) >> 12;
+        rec->base_velocity.vz =
+            (rec->base_velocity.vz * rec->base_velocity_damping_z) >> 12;
     }
-    if (rec->unk_104.vx >= -15 && rec->unk_104.vx <= 15) {
-        rec->unk_104.vx /= 2;
+    if (rec->base_velocity.vx >= -15 && rec->base_velocity.vx <= 15) {
+        rec->base_velocity.vx /= 2;
     }
-    if (rec->unk_104.vy >= -15 && rec->unk_104.vy <= 15) {
-        rec->unk_104.vy /= 2;
+    if (rec->base_velocity.vy >= -15 && rec->base_velocity.vy <= 15) {
+        rec->base_velocity.vy /= 2;
     }
-    if (rec->unk_104.vz >= -15 && rec->unk_104.vz <= 15) {
-        rec->unk_104.vz /= 2;
+    if (rec->base_velocity.vz >= -15 && rec->base_velocity.vz <= 15) {
+        rec->base_velocity.vz /= 2;
     }
-    rec->base_pos.x += rec->unk_104.vx;
-    rec->base_pos.y += rec->unk_104.vy;
-    rec->base_pos.z += rec->unk_104.vz;
+    rec->base_pos.x += rec->base_velocity.vx;
+    rec->base_pos.y += rec->base_velocity.vy;
+    rec->base_pos.z += rec->base_velocity.vz;
     if ((rec->move_kind == 7 || rec->move_kind == 0xD) && rec->unk_B4 == 0) {
         temp = (rec->pad_input.held & 0x1000)
                    ? 1
                    : -((rec->pad_input.held & 0x4000) != 0);
         if (temp != 0) {
-            rec->unk_134.vx /= 2;
-            rec->unk_134.vz /= 2;
-            rec->unk_134.vx +=
+            rec->decaying_xz_velocity.vx /= 2;
+            rec->decaying_xz_velocity.vz /= 2;
+            rec->decaying_xz_velocity.vx +=
                 (Judge[rec->opponent_bearing & 0xFFF] -
                  Judge[(rec->opponent_bearing + 0x400) & 0xFFF] * temp * 3) /
                 128;
-            rec->unk_134.vz +=
+            rec->decaying_xz_velocity.vz +=
                 (Judge[(rec->opponent_bearing + 0x400) & 0xFFF] +
                  Judge[rec->opponent_bearing & 0xFFF] * temp * 3) /
                 128;
         }
     }
-    rec->unk_134.vx = (rec->unk_134.vx * rec->unk_15E) >> 12;
-    if (rec->unk_134.vx >= -3 && rec->unk_134.vx <= 3) {
-        rec->unk_134.vx = 0;
+    rec->decaying_xz_velocity.vx =
+        (rec->decaying_xz_velocity.vx * rec->decaying_xz_velocity_damping_x) >>
+        12;
+    if (rec->decaying_xz_velocity.vx >= -3 &&
+        rec->decaying_xz_velocity.vx <= 3) {
+        rec->decaying_xz_velocity.vx = 0;
     }
-    rec->unk_134.vy = (rec->unk_134.vy * rec->unk_160) >> 12;
-    if (rec->unk_134.vy >= -3 && rec->unk_134.vy <= 3) {
-        rec->unk_134.vy = 0;
+    rec->decaying_xz_velocity.vy =
+        (rec->decaying_xz_velocity.vy * rec->decaying_xz_velocity_damping_y) >>
+        12;
+    if (rec->decaying_xz_velocity.vy >= -3 &&
+        rec->decaying_xz_velocity.vy <= 3) {
+        rec->decaying_xz_velocity.vy = 0;
     }
-    rec->unk_134.vz = (rec->unk_134.vz * rec->unk_162) >> 12;
-    if (rec->unk_134.vz >= -3 && rec->unk_134.vz <= 3) {
-        rec->unk_134.vz = 0;
+    rec->decaying_xz_velocity.vz =
+        (rec->decaying_xz_velocity.vz * rec->decaying_xz_velocity_damping_z) >>
+        12;
+    if (rec->decaying_xz_velocity.vz >= -3 &&
+        rec->decaying_xz_velocity.vz <= 3) {
+        rec->decaying_xz_velocity.vz = 0;
     }
     if (rec->move_kind == 4 || rec->move_kind == 0x14 ||
         rec->character_roster_index == 0x1F) {
-        rec->unk_134.vx = 0;
-        rec->unk_134.vy = 0;
-        rec->unk_134.vz = 0;
+        rec->decaying_xz_velocity.vx = 0;
+        rec->decaying_xz_velocity.vy = 0;
+        rec->decaying_xz_velocity.vz = 0;
     } else {
-        rec->base_pos.x += rec->unk_134.vx;
-        rec->base_pos.y += rec->unk_134.vy;
-        rec->base_pos.z += rec->unk_134.vz;
+        rec->base_pos.x += rec->decaying_xz_velocity.vx;
+        rec->base_pos.y += rec->decaying_xz_velocity.vy;
+        rec->base_pos.z += rec->decaying_xz_velocity.vz;
     }
     pos.vx = rec->base_pos.x + rec->root_offset.x;
     pos.vy = rec->base_pos.y;
@@ -5045,9 +5077,10 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     pos.vz = rec->base_pos.z + rec->root_offset.z;
     rec->prev_collision_pos = rec->collision_pos;
-    fighter_ResolveMovement(rec, &rec->collision_pos, &pos, &rec->unk_104.vx);
+    fighter_ResolveMovement(
+        rec, &rec->collision_pos, &pos, &rec->base_velocity.vx);
     if (rec->collision_hit_tag != 7 && rec->collision_hit_tag != 0) {
-        rec->unk_B2 = ((0x2A >> rec->collision_hit_tag) ^ 1) & 1;
+        rec->collision_hit_class = ((0x2A >> rec->collision_hit_tag) ^ 1) & 1;
     }
     rec->base_pos.x = rec->collision_pos.vx - rec->root_offset.x;
     rec->base_pos.y = rec->collision_pos.vy;
@@ -5058,7 +5091,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec->world_pos.x = rec->base_pos.x + rec->root_offset.x;
     rec->world_pos.y = rec->base_pos.y + rec->root_offset.y;
     rec->world_pos.z = rec->base_pos.z + rec->root_offset.z;
-    rec->unk_1F8 = rec->root_offset;
+    rec->prev_root_offset = rec->root_offset;
     rec->camera_fighter_point.x = rec->world_pos.x;
     rec->camera_fighter_point.y = rec->base_pos.y - 0x384;
     rec->camera_fighter_point.z = rec->world_pos.z;
@@ -5070,33 +5103,35 @@ void fighter_Update(s32 arg0, PadState *pad) {
     func_80040D48(arg0, 1, (s32 *)&rec->world_pos, (s16 *)&rec->orientation, 0,
                   rec->ground_y);
     scratchpad_Restore();
-    if (rec->unk_86 == rec->unk_8E &&
+    if (rec->variant_index == rec->unk_8E &&
         (rec->move_kind == 0x15 || rec->move_kind == 0x19 ||
          rec->move_kind == 0x1A || rec->move_kind == 0x16 ||
          rec->move_kind == 0x30 || rec->move_kind == 0x13 ||
          rec->move_kind == 0x31)) {
-        rec->unk_92 = 0;
+        rec->weapon_live_state = 0;
     } else {
-        rec->unk_92 = rec->unk_92 != 0 ? 1 : 2;
+        rec->weapon_live_state = rec->weapon_live_state != 0 ? 1 : 2;
     }
-    rec->unk_62 = 0;
+    rec->frame_flags = 0;
     if (rec->character_roster_index != 0x1F && rec->is_defeated == 0 &&
-        rec->unk_92 != 0) {
-        rec->unk_62 = 1;
+        rec->weapon_live_state != 0) {
+        rec->frame_flags = 1;
     }
     if ((g_fight_mode_selector != 3 || arg0 != 1 ||
          g_fight_step_row_column == 4) &&
         (rec->weapon_id == 0 || rec->weapon_id == 1) &&
         (g_fight_mode_selector != 2 || D_800A389A != 0) &&
         g_fight_mode_selector != 5) {
-        rec->unk_62 |= 2;
+        rec->frame_flags |= 2;
     }
-    if (rec->unk_86 == rec->unk_88 && rec->unk_8A != 0) {
+    if (rec->variant_index == rec->object_variant_index &&
+        rec->object_variant_enabled != 0) {
         if (func_8002798C(rec) != 0) {
-            rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
-            rec->unk_62 |= 4;
+            rec->wielded_object_live_state =
+                rec->wielded_object_live_state != 0 ? 1 : 2;
+            rec->frame_flags |= 4;
         } else {
-            rec->unk_8C = 0;
+            rec->wielded_object_live_state = 0;
         }
     } else if (
         ((rec->character_roster_index == 0x1D ||
@@ -5104,14 +5139,17 @@ void fighter_Update(s32 arg0, PadState *pad) {
          (rec->move_kind == 2 || rec->move_kind == 0x1B ||
           rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
          rec->weapon_hit_start_frames[1] < 0xFF && rec->unk_26C != 0 &&
-         rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
+         rec->move_frame >= rec->frame_window_start &&
+         rec->move_frame <= rec->frame_window_end) ||
         (rec->character_data_index == 0xE && rec->move_kind == 0x11 &&
          g_fight_paired_move_initiator == arg0 &&
-         rec->move_frame >= rec->unk_A5 && rec->unk_A6 >= rec->move_frame)) {
-        rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
-        rec->unk_62 |= 4;
+         rec->move_frame >= rec->frame_window_start &&
+         rec->frame_window_end >= rec->move_frame)) {
+        rec->wielded_object_live_state =
+            rec->wielded_object_live_state != 0 ? 1 : 2;
+        rec->frame_flags |= 4;
     } else {
-        rec->unk_8C = 0;
+        rec->wielded_object_live_state = 0;
     }
     if (g_fight_mode_selector != 3 || arg0 != 1 ||
         g_fight_step_row_column == 4) {
@@ -5122,7 +5160,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 rec->other->character_data_index == 4 ||
                 rec->other->character_data_index == 9 ||
                 rec->other->character_data_index == 0x11) {
-                rec->unk_62 |= 8;
+                rec->frame_flags |= 8;
             }
         } else if ((g_fight_mode_selector != 2 || D_800A389A != 0) &&
                    g_fight_mode_selector != 5) {
@@ -5131,102 +5169,116 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 rec->character_data_index == 4 ||
                 rec->character_data_index == 9 ||
                 rec->character_data_index == 0x11) {
-                rec->unk_62 |= 8;
+                rec->frame_flags |= 8;
             }
         } else {
             goto skip_62;
         }
-        if (rec->move_kind != 4 && rec->move_kind != 0x14 && rec->unk_92 == 0) {
-            rec->unk_62 |= 0x10;
+        if (rec->move_kind != 4 && rec->move_kind != 0x14 &&
+            rec->weapon_live_state == 0) {
+            rec->frame_flags |= 0x10;
         }
         if (rec->carried_object_count > 0 &&
-            rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
-            rec->unk_62 |= 0x20;
+            rec->carried_object_kinds[0] == rec->wielded_object_kind &&
+            rec->wielded_object_live_state == 0) {
+            rec->frame_flags |= 0x20;
         }
     }
 skip_62:
     if ((g_fight_mode_selector == 2 && D_800A389A == 0) ||
         g_fight_mode_selector == 5) {
         if ((rec->weapon_id == 0 || rec->weapon_id == 1) &&
-            rec->move_kind != 4 && rec->move_kind != 0x14 && rec->unk_92 == 0) {
-            rec->unk_62 = (rec->unk_62 | 2) & ~0x10;
+            rec->move_kind != 4 && rec->move_kind != 0x14 &&
+            rec->weapon_live_state == 0) {
+            rec->frame_flags = (rec->frame_flags | 2) & ~0x10;
         }
         if (rec->carried_object_count > 0 &&
-            rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
-            rec->unk_62 = (rec->unk_62 | 8) & ~0x20;
+            rec->carried_object_kinds[0] == rec->wielded_object_kind &&
+            rec->wielded_object_live_state == 0) {
+            rec->frame_flags = (rec->frame_flags | 8) & ~0x20;
             node_QueueTableEntryNodePairUnderSlotNode(
-                g_resource_kind_entry_ids[rec->unk_14], (arg0 * 2) | 1, 0);
+                g_resource_kind_entry_ids[rec->wielded_object_kind],
+                (arg0 * 2) | 1, 0);
         }
     }
-    if (rec->unk_62 & 1) {
+    if (rec->frame_flags & 1) {
         node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-            rec->unk_12, arg0 * 2 + 0x8000, 0, 0);
+            rec->weapon_entry_id, arg0 * 2 + 0x8000, 0, 0);
     }
-    if (rec->unk_62 & 4) {
+    if (rec->frame_flags & 4) {
         node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-            g_resource_kind_entry_ids[rec->unk_14], arg0 * 2 + 0x8001, 0, 0);
+            g_resource_kind_entry_ids[rec->wielded_object_kind],
+            arg0 * 2 + 0x8001, 0, 0);
     }
-    if (rec->unk_62 & 2) {
+    if (rec->frame_flags & 2) {
         node_QueueTableEntryNodePairUnderSlotNode(
-            rec->unk_12, arg0 * 2, (rec->unk_62 >> 4) & 1);
+            rec->weapon_entry_id, arg0 * 2, (rec->frame_flags >> 4) & 1);
     }
-    if (rec->unk_62 & 8) {
+    if (rec->frame_flags & 8) {
         node_QueueTableEntryNodePairUnderSlotNode(
-            g_resource_kind_entry_ids[rec->unk_14], (arg0 * 2) | 1,
-            (rec->unk_62 >> 5) & 1);
+            g_resource_kind_entry_ids[rec->wielded_object_kind], (arg0 * 2) | 1,
+            (rec->frame_flags >> 5) & 1);
     }
     rec->saved_motion_frame = var_0[0];
     rec->saved_frame_offset_yaw = ang[0];
-    rec->unk_316 = rec->unk_64;
-    if (rec->unk_31A != 0) {
-        if (rec->unk_31A >= 2) {
-            rec->unk_31A = 1;
+    rec->saved_motion_frame_id = rec->blend_src_frame_code;
+    if (rec->pose_blend_requests != 0) {
+        if (rec->pose_blend_requests >= 2) {
+            rec->pose_blend_requests = 1;
         }
         rec->pose_blend_progress += rec->pose_blend_step;
         if (rec->pose_blend_progress >= 0x1000) {
-            rec->unk_31A = 0;
+            rec->pose_blend_requests = 0;
             rec->saved_motion_frame = var_0[1];
             rec->saved_frame_offset_yaw = ang[1];
-            rec->unk_316 = rec->unk_66;
-            rec->unk_1F8 = v[1];
+            rec->saved_motion_frame_id = rec->blend_dst_frame_code;
+            rec->prev_root_offset = v[1];
         }
     }
     rec->opponent_bearing = ratan2(rec->other->world_pos.x - rec->world_pos.x,
                                    rec->other->world_pos.z - rec->world_pos.z);
-    rec->unk_24C = rec->unk_104;
+    rec->unk_24C = rec->base_velocity;
     fighter_CacheDownwardProbeHit(rec);
     fighter_UpdateBoneWorldData(
         rec, SPAD->unkA8[arg0], SPAD->unk00[arg0], SPAD->unk48[arg0]);
     if (rec->update_count == 1) {
-        rec->unk_210[0] = SPAD->unk00[arg0][0];
+        rec->prev_weapon_points[0] = SPAD->unk00[arg0][0];
     }
-    if (rec->unk_8C == 2) {
-        rec->unk_8C = 1;
-        rec->unk_234[0] = SPAD->unk48[arg0][0];
-        rec->unk_234[1] = SPAD->unk48[arg0][1];
+    if (rec->wielded_object_live_state == 2) {
+        rec->wielded_object_live_state = 1;
+        rec->prev_second_weapon_points[0] = SPAD->unk48[arg0][0];
+        rec->prev_second_weapon_points[1] = SPAD->unk48[arg0][1];
     }
-    if (rec->unk_92 == 2) {
-        rec->unk_92 = 1;
-        rec->unk_234[0] = SPAD->unk48[arg0][0];
-        rec->unk_234[1] = SPAD->unk48[arg0][1];
+    if (rec->weapon_live_state == 2) {
+        rec->weapon_live_state = 1;
+        rec->prev_second_weapon_points[0] = SPAD->unk48[arg0][0];
+        rec->prev_second_weapon_points[1] = SPAD->unk48[arg0][1];
     }
-    if ((rec->weapon_id == 6 || rec->weapon_id == 7) && (rec->unk_62 & 1)) {
-        rec->unk_25C = SPAD->unk00[arg0][0];
-        rec->unk_268 = 1;
+    if ((rec->weapon_id == 6 || rec->weapon_id == 7) &&
+        (rec->frame_flags & 1)) {
+        rec->opponent_elevation_origin = SPAD->unk00[arg0][0];
+        rec->elevation_origin_from_weapon = 1;
     } else {
-        rec->unk_268 = 0;
+        rec->elevation_origin_from_weapon = 0;
     }
-    rec->weapon_point_delta[0].vx = SPAD->unk00[arg0][0].x - rec->unk_210[0].x;
-    rec->weapon_point_delta[0].vy = SPAD->unk00[arg0][0].y - rec->unk_210[0].y;
-    rec->weapon_point_delta[0].vz = SPAD->unk00[arg0][0].z - rec->unk_210[0].z;
-    rec->weapon_point_delta[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
-    rec->weapon_point_delta[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
-    rec->weapon_point_delta[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
-    rec->unk_1DA = fighter_IsBoneTriangleCrossYPositive(rec);
+    rec->weapon_point_delta[0].vx =
+        SPAD->unk00[arg0][0].x - rec->prev_weapon_points[0].x;
+    rec->weapon_point_delta[0].vy =
+        SPAD->unk00[arg0][0].y - rec->prev_weapon_points[0].y;
+    rec->weapon_point_delta[0].vz =
+        SPAD->unk00[arg0][0].z - rec->prev_weapon_points[0].z;
+    rec->weapon_point_delta[1].vx =
+        SPAD->unk48[arg0][0].x - rec->prev_second_weapon_points[0].x;
+    rec->weapon_point_delta[1].vy =
+        SPAD->unk48[arg0][0].y - rec->prev_second_weapon_points[0].y;
+    rec->weapon_point_delta[1].vz =
+        SPAD->unk48[arg0][0].z - rec->prev_second_weapon_points[0].z;
+    rec->bone_triangle_cross_y_positive =
+        fighter_IsBoneTriangleCrossYPositive(rec);
     var_20 = 0;
     if ((rec->move_kind == 2 || rec->move_kind == 0x1B ||
          rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
-        rec->unk_AD != 0) {
+        rec->attack_hit_armed != 0) {
         if ((rec->move_frame >= rec->weapon_hit_start_frames[0] &&
              rec->move_frame <= rec->weapon_hit_end_frames[0]) ||
             (rec->move_frame >= rec->weapon_hit_start_frames[1] &&
@@ -5235,53 +5287,53 @@ skip_62:
         }
     }
     rec->unk_AE = var_20;
-    rec->unk_288[0] = 0;
-    rec->unk_288[1] = 0;
-    if (rec->unk_AD != 0) {
+    rec->weapon_hit_phases[0] = 0;
+    rec->weapon_hit_phases[1] = 0;
+    if (rec->attack_hit_armed != 0) {
         if (rec->move_kind == 2 || rec->move_kind == 0x1B ||
             rec->move_kind == 0x28 || rec->move_kind == 0x26) {
-            rec->unk_288[0] += 1;
-            rec->unk_288[1] += 1;
+            rec->weapon_hit_phases[0] += 1;
+            rec->weapon_hit_phases[1] += 1;
             if (rec->move_frame < rec->weapon_hit_start_frames[0]) {
-                rec->unk_288[0] += 2;
+                rec->weapon_hit_phases[0] += 2;
             } else if (rec->move_frame <= rec->weapon_hit_end_frames[0]) {
-                rec->unk_288[0] += 4;
+                rec->weapon_hit_phases[0] += 4;
             }
             if (rec->move_frame < rec->weapon_hit_start_frames[1]) {
-                rec->unk_288[1] += 2;
+                rec->weapon_hit_phases[1] += 2;
             } else if (rec->move_frame <= rec->weapon_hit_end_frames[1]) {
-                rec->unk_288[1] += 4;
+                rec->weapon_hit_phases[1] += 4;
             }
         }
     }
     if (rec->move_kind == 6) {
-        rec->unk_15E = 0x600;
-        rec->unk_160 = 0x600;
-        rec->unk_162 = 0x600;
+        rec->decaying_xz_velocity_damping_x = 0x600;
+        rec->decaying_xz_velocity_damping_y = 0x600;
+        rec->decaying_xz_velocity_damping_z = 0x600;
     } else if (rec->move_kind == 8) {
-        rec->unk_15E = 0x100;
-        rec->unk_160 = 0x100;
-        rec->unk_162 = 0x100;
+        rec->decaying_xz_velocity_damping_x = 0x100;
+        rec->decaying_xz_velocity_damping_y = 0x100;
+        rec->decaying_xz_velocity_damping_z = 0x100;
     } else {
-        rec->unk_15E = 0xC00;
-        rec->unk_160 = 0xC00;
-        rec->unk_162 = 0xC00;
+        rec->decaying_xz_velocity_damping_x = 0xC00;
+        rec->decaying_xz_velocity_damping_y = 0xC00;
+        rec->decaying_xz_velocity_damping_z = 0xC00;
     }
     if (rec->downward_probe_hit != 0) {
-        rec->unk_156 = 0xD00;
-        rec->unk_158 = 0xFC0;
-        rec->unk_15A = 0xD00;
+        rec->base_velocity_damping_x = 0xD00;
+        rec->base_velocity_damping_y = 0xFC0;
+        rec->base_velocity_damping_z = 0xD00;
     } else {
-        rec->unk_156 = 0xFC0;
-        rec->unk_158 = 0xFC0;
-        rec->unk_15A = 0xFC0;
+        rec->base_velocity_damping_x = 0xFC0;
+        rec->base_velocity_damping_y = 0xFC0;
+        rec->base_velocity_damping_z = 0xFC0;
     }
     if (rec->is_defeated == 0 &&
         ((rec->move_started != 0 && rec->prev_move_kind != 4 &&
           rec->prev_move_kind != 0x14 &&
           (rec->move_kind == 4 || rec->move_kind == 0x14)) ||
          (rec->move_kind == 0x11 && arg0 != g_fight_paired_move_initiator &&
-          rec->unk_AA == rec->move_frame))) {
+          rec->paired_move_hit_frame == rec->move_frame))) {
         MATRIX **var_37 = node_GetSlotMatrixPointerArray(arg0);
         if (g_fight_mode_selector != 0 ||
             g_fighter_group_flags[D_80101EC8[0].character_data_index] == 0 ||
@@ -5303,66 +5355,68 @@ skip_62:
         }
     }
     if (rec->move_started != 0 && rec->character_roster_index == 0x1B &&
-        rec->move_kind == 0xB && rec->unk_34D == 0) {
+        rec->move_kind == 0xB && rec->throw_charges_left == 0) {
         rec->pending_move_event = 0x1F;
     }
-    if (rec->unk_46 == 0) {
+    if (rec->move_frame_unchanged == 0) {
         if (g_fight_mode_selector != 5 && g_fight_mode_selector != 2 &&
             g_fight_mode_selector != 3 &&
             (g_fight_mode_selector != 0 || D_800A385C == 0)) {
-            if (rec->move_kind == 0xB && rec->move_frame == rec->unk_A7) {
+            if (rec->move_kind == 0xB &&
+                rec->move_frame == rec->release_frame) {
                 if (rec->character_roster_index == 0x1B) {
-                    if (rec->unk_34D != 0) {
-                        rec->unk_34D--;
+                    if (rec->throw_charges_left != 0) {
+                        rec->throw_charges_left--;
                     }
-                } else if (rec->unk_26C != 0 &&
-                           object_ThrowQueuedKind(rec) == rec->unk_14) {
-                    rec->unk_8A = 0;
+                } else if (rec->unk_26C != 0 && object_ThrowQueuedKind(rec) ==
+                                                    rec->wielded_object_kind) {
+                    rec->object_variant_enabled = 0;
                 }
             }
         }
         if (rec->move_kind == 6) {
-            if (object_PickUpNearby(rec) == rec->unk_14) {
-                rec->unk_8A = rec->unk_26C;
+            if (object_PickUpNearby(rec) == rec->wielded_object_kind) {
+                rec->object_variant_enabled = rec->unk_26C;
             }
         } else if (rec->unk_26C != 0 &&
                    (rec->move_kind == 0xC || rec->move_kind == 0x2A) &&
                    rec->move_frame == rec->object_pickup_frame &&
-                   object_PickUpNearby(rec) == rec->unk_14) {
-            rec->unk_8A = 1;
+                   object_PickUpNearby(rec) == rec->wielded_object_kind) {
+            rec->object_variant_enabled = 1;
         }
-        if (rec->move_kind == 0x12 && rec->move_frame == rec->unk_A7 &&
+        if (rec->move_kind == 0x12 && rec->move_frame == rec->release_frame &&
             ((0x78 >> rec->collision_hit_tag) & 1) && rec->unk_26C != 0) {
             fight_CreateBallisticRecordAndDispatchEvent(
                 rec, ((0x18 >> rec->collision_hit_tag) & 1) ? 1 : 2);
         }
-        if (rec->move_kind == 0x10 && rec->move_frame == rec->unk_AC &&
-            rec->unk_26C != 0 && rec->weapon_refills_left != 0) {
+        if (rec->move_kind == 0x10 &&
+            rec->move_frame == rec->weapon_reload_frame && rec->unk_26C != 0 &&
+            rec->weapon_refills_left != 0) {
             rec->weapon_ammo = 0xA;
             rec->weapon_refills_left--;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 arg0, 0x31, &rec->world_pos.x, 0);
         }
-        if (rec->unk_46 == 0 &&
+        if (rec->move_frame_unchanged == 0 &&
             (rec->move_kind != 0x11 || arg0 == g_fight_paired_move_initiator)) {
-            rec->unk_62 |= 0x40;
+            rec->frame_flags |= 0x40;
             fighter_ProcessFrameEvents(rec);
         }
     }
     if (rec->unk_26C != 0) {
-        rec->unk_62 |= 0x80;
+        rec->frame_flags |= 0x80;
     }
     if (rec->is_defeated != 0) {
         if (g_main_loop_handler_index != 0xD) {
-            rec->unk_B3 = 4;
+            rec->draw_move_set = 4;
         }
     } else {
-        rec->unk_B3 = 0;
+        rec->draw_move_set = 0;
     }
     if (rec->character_roster_index == 0x1F) {
-        rec->unk_B3 = 4;
+        rec->draw_move_set = 4;
     }
-    gpu_QueueSlotDrawMovesForSelectedSet(arg0, rec->unk_B3);
+    gpu_QueueSlotDrawMovesForSelectedSet(arg0, rec->draw_move_set);
     fighter_DispatchArmedBoneVectorEventAndDisarm(rec);
     if (rec->move_started == 2) {
         rec->move_started = 0;

@@ -56,10 +56,10 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
         for (i = 0; i < 2; i++) {
             current = record + i;
             if (current->pad_input.pressed & 0x20) {
-                current->unk_28C += current->unk_20;
+                current->mash_contest_score += current->power;
             }
             if (current->pad_input.pressed & 0x40) {
-                current->unk_28C += current->unk_20;
+                current->mash_contest_score += current->power;
             }
             if ((u16)current->move_kind == 0x1D ||
                 (u16)current->move_kind == 0x1E ||
@@ -71,10 +71,10 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
                 } else {
                     var_6 = 0;
                 }
-                current->unk_134.vx -=
+                current->decaying_xz_velocity.vx -=
                     (Judge[(current->orientation.vy + 0x400) & 0xFFF] * var_6) /
                     256;
-                current->unk_134.vz +=
+                current->decaying_xz_velocity.vz +=
                     (Judge[(u16)current->orientation.vy & 0xFFF] * var_6) / 256;
             }
         }
@@ -87,7 +87,8 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
         var_1 = record + 1;
         D_800A389C++;
         if ((s16)D_800A389C >= 0x2B) {
-            if (D_80101EC8[0].unk_28C > D_80101EC8[1].unk_28C) {
+            if (D_80101EC8[0].mash_contest_score >
+                D_80101EC8[1].mash_contest_score) {
                 D_80101EC8[0].pending_move_event = 3;
                 D_80101EC8[1].pending_move_event = 4;
                 if ((u16)D_80101EC8[1].move_kind == 0x21) {
@@ -95,7 +96,8 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
                 }
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     1, 0x2D, &var_1->world_pos.x, (s16 *)0);
-            } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
+            } else if (D_80101EC8[1].mash_contest_score >
+                       D_80101EC8[0].mash_contest_score) {
                 D_80101EC8[1].pending_move_event = 3;
                 D_80101EC8[0].pending_move_event = 4;
                 if ((u16)D_80101EC8[0].move_kind == 0x21) {
@@ -104,8 +106,8 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     0, 0x2D, &record->world_pos.x, (s16 *)0);
             }
-            var_1->unk_28C = 0;
-            record->unk_28C = 0;
+            var_1->mash_contest_score = 0;
+            record->mash_contest_score = 0;
             D_800A389C = 0;
         }
         if (separation_error > 200) {

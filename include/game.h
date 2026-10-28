@@ -1539,19 +1539,20 @@ typedef struct Unk80101EC8Record {
     /* != 0: fighter_BuildCpuOrMappedPadState hands pad input to
      * fighter_BuildCpuPad */
     s16 cpu_controlled;
-    s16 unk_08;
+    s16 cpu_base_level;
     /* row of D_8008E5CC / D_8008E6A4, index of g_fighter_group_flags */
     s16 character_data_index;
     s16 character_roster_index;
     s16 weapon_id; /* column of D_8008E5CC / D_8008E6A4 */
     u8 unk_10[0x12 - 0x10];
-    s16 unk_12;
-    s16 unk_14; /* -1 == none, else index of g_resource_kind_entry_ids */
+    s16 weapon_entry_id;
+    /* -1 == none, else index of g_resource_kind_entry_ids */
+    s16 wielded_object_kind;
     u8 unk_16[0x1A - 0x16];
     s16 size_scale;
     s16 base_move_frame_step;
-    s16 unk_1E;
-    s16 unk_20;
+    s16 base_power;
+    s16 power;
     u8 unk_22[0x24 - 0x22];
     /* this frame's pad input (fighter_Update copies it whole) */
     PadState pad_input;
@@ -1560,7 +1561,7 @@ typedef struct Unk80101EC8Record {
     s16 move_frame;      /* current frame of the move */
     s16 move_frame_frac; /* frame fraction, 0x1000 = one frame */
     s16 move_frame_step; /* frame-fraction step */
-    s16 unk_46;
+    s16 move_frame_unchanged;
     /* motion data id (motion_LoadFighterData);
      * fighter_AssignMotionSlotAndScanDataIdNibbles finds it in
      * g_motion_fighter_loaded_data_ids */
@@ -1581,57 +1582,57 @@ typedef struct Unk80101EC8Record {
     s16 move_is_common;
     u8 cur_move_is_common;
     u8 cur_move_slot;
-    u8 unk_62;
+    u8 frame_flags;
     u8 unk_63;
-    u16 unk_64;
-    u16 unk_66;
+    u16 blend_src_frame_code;
+    u16 blend_dst_frame_code;
     s16 pose_interp_weight;
     /* byte 0 of the current move's frame metadata (fighter_StartMoveScript) */
     u16 move_kind;
     s16 prev_move_kind;
     s16 unk_6E;
     s16 unk_70;
-    s16 unk_72;
+    s16 airborne_until_landing;
     s32 saved_collision_y;
-    s16 unk_78;
+    s16 blend_into_move;
     s16 move_started;
     MoveScript *queued_move; /* buffered next move (fighter_Update) */
     s16 queued_move_is_common;
-    u16 unk_82;
-    s16 unk_84;
+    u16 queued_move_command;
+    s16 default_variant_index;
     /* row of unk_3A8 / unk_3F8 / unk_3FE / unk_404 */
-    s16 unk_86;
-    s16 unk_88;
-    s16 unk_8A;
+    s16 variant_index;
+    s16 object_variant_index;
+    s16 object_variant_enabled;
     /* != 0: the second blade (unk_234 / SPAD unk48 points) is live */
-    s16 unk_8C;
+    s16 wielded_object_live_state;
     s16 unk_8E;
     s16 unk_90;
-    s16 unk_92;
-    s16 unk_94;
+    s16 weapon_live_state;
+    s16 falling_backward;
     s16 is_defeated;
     SVec4i16 horizontal_probe_normal;
     u8 unk_A0;
     u8 weapon_hit_start_frames[2];
     u8 weapon_hit_end_frames[2];
-    u8 unk_A5;
-    u8 unk_A6;
-    u8 unk_A7;
+    u8 frame_window_start;
+    u8 frame_window_end;
+    u8 release_frame;
     u8 object_pickup_frame;
     u8 opponent_turn_frame;
-    u8 unk_AA;
-    u8 unk_AB;
-    u8 unk_AC;
+    u8 paired_move_hit_frame;
+    u8 opponent_transition_start_frame;
+    u8 weapon_reload_frame;
     /* != 0: fight_UpdateFighterInteractionsAndPointCaches re-runs
      * fighter_ResolveWeaponContact for both records
      */
-    u8 unk_AD;
+    u8 attack_hit_armed;
     u8 unk_AE;
     u8 unk_AF;
     u8 unk_B0;
     u8 collision_hit_tag;
-    u8 unk_B2;
-    u8 unk_B3;
+    u8 collision_hit_class;
+    u8 draw_move_set;
     u8 unk_B4;
     u8 unk_B5[0xB8 - 0xB5];
     VECTOR collision_pos;
@@ -1641,11 +1642,11 @@ typedef struct Unk80101EC8Record {
     Vec3i32 root_offset;
     Vec3i32 world_pos;
     u8 unk_100[0x104 - 0x100];
-    VECTOR unk_104;
+    VECTOR base_velocity;
     /* per blade; fighter_ProcessWeaponBodyHits indexes it with its 0/1 blade
      * flag */
     VECTOR weapon_point_delta[2];
-    VECTOR unk_134;
+    VECTOR decaying_xz_velocity;
     s32 unk_144;
     s32 ground_y;
     s16 remaining_turn;
@@ -1653,24 +1654,24 @@ typedef struct Unk80101EC8Record {
     s16 unk_150;
     s16 use_root_offset_yaw;
     s16 root_offset_yaw;
-    s16 unk_156;
-    s16 unk_158;
-    s16 unk_15A;
+    s16 base_velocity_damping_x;
+    s16 base_velocity_damping_y;
+    s16 base_velocity_damping_z;
     u8 unk_15C[0x15E - 0x15C];
-    s16 unk_15E;
-    s16 unk_160;
-    s16 unk_162;
+    s16 decaying_xz_velocity_damping_x;
+    s16 decaying_xz_velocity_damping_y;
+    s16 decaying_xz_velocity_damping_z;
     u8 unk_164[0x168 - 0x164];
     Vec3i32 camera_fighter_point;
-    Vec3i32 unk_174;
-    Vec3i32 unk_180;
-    Vec3i32 unk_18C;
+    Vec3i32 bone_hit_points_4_5_midpoint;
+    Vec3i32 bone_hit_point_0;
+    Vec3i32 bone_hit_points_1_3_centroid;
     /* fighter_UpdateBoneWorldData: bone 17 / 14 translations,
      * y + ((size_scale * 71) >> 11) */
-    Vec3i32 unk_198[2];
+    Vec3i32 ground_probe_points[2];
     /* fighter_UpdateBoneWorldData: floor y under unk_198[i]
      * (collision_TestSegmentWithWork segment test) */
-    s32 unk_1B0[2];
+    s32 ground_probe_floor_ys[2];
     u8 unk_1B8[0x1BA - 0x1B8];
     /* fighter_UpdateBoneWorldData: ratan2 heading of bone 17's matrix column 2,
      * + 0x800 */
@@ -1681,27 +1682,27 @@ typedef struct Unk80101EC8Record {
     SVec4i16 orientation;
     SVec4i16 unk_1D0;
     s16 opponent_bearing;
-    s16 unk_1DA;
+    s16 bone_triangle_cross_y_positive;
     s16 downward_probe_hit;
     u8 unk_1DE[0x1E6 - 0x1DE];
-    s16 unk_1E6;
-    s16 unk_1E8;
-    s16 unk_1EA;
+    s16 eased_pose_bearing_offset;
+    s16 eased_pose_elevation_offset;
+    s16 opponent_elevation_offset;
     /* fighter_UpdateBoneWorldData: bone 11's matrix applied to D_800A3138 (0,
      * 0x1000, 0) */
-    Vec3i32 unk_1EC;
-    Vec3i32 unk_1F8;
+    Vec3i32 bone_y_axis;
+    Vec3i32 prev_root_offset;
     u8 unk_204[0x210 - 0x204];
     /* fight_UpdateFighterInteractionsAndPointCaches: copy of scratchpad points
      * 0x1F800000 + idx * 0x24 */
-    Unk80107850Rec unk_210[3];
+    Unk80107850Rec prev_weapon_points[3];
     /* fight_UpdateFighterInteractionsAndPointCaches: copy of scratchpad points
      * 0x1F800048 + idx * 0x18 */
-    Unk80107850Rec unk_234[2];
+    Unk80107850Rec prev_second_weapon_points[2];
     VECTOR unk_24C;
     /* fighter_Update: copy of scratchpad point unk00[idx][0] */
-    Unk80107850Rec unk_25C;
-    s32 unk_268;
+    Unk80107850Rec opponent_elevation_origin;
+    s32 elevation_origin_from_weapon;
     s16 unk_26C;
     s16 unk_26E;
     s16 unk_270;
@@ -1712,14 +1713,14 @@ typedef struct Unk80101EC8Record {
     s16 pending_move_event;
     /* per blade (weapon_hit_start_frames / weapon_hit_end_frames bounds),
      * fighter_Update */
-    s16 unk_288[2];
-    s32 unk_28C;
+    s16 weapon_hit_phases[2];
+    s32 mash_contest_score;
     /* the motion frame fighter_Update last used */
     MotionFrame saved_motion_frame;
     u16 saved_frame_offset_yaw;
-    u16 unk_316;
+    u16 saved_motion_frame_id;
     s16 pose_blend_progress;
-    s16 unk_31A;
+    s16 pose_blend_requests;
     s16 pose_blend_step;
     u8 unk_31E[0x320 - 0x31E];
     Vec3i32 pose_blend_base_shift;
@@ -1732,7 +1733,7 @@ typedef struct Unk80101EC8Record {
     u8 weapon_ammo;
     u8 weapon_refills_left;
     u8 reposition_count;
-    u8 unk_34D;
+    u8 throw_charges_left;
     /* written by fighter_BuildCpuOrMappedPadState for the OTHER record */
     u8 unk_34E;
     u8 unk_34F[0x350 - 0x34F];
@@ -1744,11 +1745,11 @@ typedef struct Unk80101EC8Record {
      * fighter_DispatchArmedBoneVectorEventAndDisarm's gte_ldlv0 input */
     Vec3i32 bone_event_local_vector;
     CpuRoute cpu_route; /* 0x360 */
-    s32 unk_394;
-    s16 unk_398;
-    s16 unk_39A;
-    u8 unk_39C;
-    u8 unk_39D;
+    s32 cpu_action_index;
+    s16 cpu_action_countdown;
+    s16 cpu_action_cooldown_frames;
+    u8 cpu_action_from_opponent;
+    u8 cpu_orbit_route_active;
     s16 unk_39E;
     s16 unk_3A0;
     s16 unk_3A2;
@@ -1760,7 +1761,7 @@ typedef struct Unk80101EC8Record {
     u8 *cpu_pad_script_cursor;
     u8 cpu_pad_script_delay_left;
     u8 unk_3B9[0x3BC - 0x3B9];
-    u8 unk_3BC;
+    u8 cpu_pad_script_kind;
     u8 unk_3BD;
     u8 unk_3BE[0x3C0 - 0x3BE];
     u8 unk_3C0;
@@ -1768,24 +1769,24 @@ typedef struct Unk80101EC8Record {
     s16 unk_3C2;
     s32 unk_3C4;
     s32 cpu_pad_script_held;
-    s32 unk_3CC;
+    s32 cpu_decided_pad_held;
     /* the pad record fighter_BuildCpuPad builds for
      * fighter_BuildCpuOrMappedPadState */
     PadState last_cpu_pad;
     u16 cpu_pad_build_count;
     u8 unk_3EA[0x3EE - 0x3EA];
     s16 unk_3EE;
-    s16 unk_3F0;
+    s16 cpu_distance_error_streak;
     u8 unk_3F2;
-    u8 unk_3F3;
+    u8 cpu_threat_resolved_count;
     u8 unk_3F4;
-    u8 unk_3F5;
-    u8 unk_3F6;
+    u8 cpu_script_wait_frames;
+    u8 cpu_script_wait_limit;
     u8 unk_3F7;
     /* [unk_86] distance bounds (fighter_InitCpuControl) */
-    s16 unk_3F8[3];
-    s16 unk_3FE[3];
-    s16 unk_404[3];
+    s16 script_min_distances[3];
+    s16 script_max_distances[3];
+    s16 filtered_script_max_distances[3];
     s16 scale_distance_offset;
     s8 last_chosen_script_index;
     s8 last_chosen_script_list_index;
@@ -1793,24 +1794,24 @@ typedef struct Unk80101EC8Record {
     s16 chosen_script_start_z;
     s16 chosen_script_radius;
     /* fighter_BuildCpuPad: 8 (target id, count) pairs */
-    u8 unk_414[8][2];
-    u8 unk_424;
-    u8 unk_425;
-    u8 unk_426;
-    u8 unk_427;
-    s16 unk_428;
+    u8 cpu_tracked_move_tallies[8][2];
+    u8 cpu_tracked_move_tally_threshold;
+    u8 incoming_projectile_state;
+    u8 incoming_attack_state;
+    u8 opponent_snapshot_hit_start_frame;
+    s16 cpu_tracked_move_key;
     s16 opponent_snapshot_x;
     s16 opponent_snapshot_z;
     s16 opponent_snapshot_radius;
     s32 unk_430;
     s32 nearest_nav_crossing_distance;
-    s16 unk_438;
+    s16 cpu_level;
     s16 opponent_angle_from_orientation;
     s16 opponent_angle_from_orientation_abs;
     s16 unk_43E;
-    u8 unk_440;
-    u8 unk_441;
-    u8 unk_442;
+    u8 latched_motion_metadata_nibble;
+    u8 motion_metadata_nibble;
+    u8 opponent_ground_y_band;
     u8 cpu_profile;
     u8 cpu_probes[8]; /* fighter_UpdateCpuProbes's per-direction results */
 } Unk80101EC8Record;  /* sizeof == 0x44C */

@@ -89,8 +89,11 @@ fresh at every use:
   unk_424 opponent_attack_tally_threshold -> cpu_tracked_move_tally_threshold
   unk_428 opponent_attack_tally_key -> cpu_tracked_move_key
           (key 0xFF for the fighter's own kind 0x11, 4510C.c:797-798)
-  unk_430 cpu_decision_flags -> cpu_frame_flags (bits are observations too)
+  unk_430 cpu_decision_flags -> reviewer-suggested replacement (bits are observations too; dropped at R6)
 Reviewer corrections to the miner's evidence (names still pass): unk_3F5 -
 unk_430 bit 1 (set at 4510C.c:910) also opens the gate at 2525; unk_34D - kind
 0xB is the throw kind by 4510C.c:900-902 and 9F9C.c:5313-5320.
 Dry run re-run with the final names: PASS, 0 compile failures, 0 UNRESOLVED.
+
+R6 (2026-10-28)
+unk_430 rename dropped (R6 FAIL): bits 0x40000 (4510C.c:934/2948) and 0x20/0x40 (4510C.c:647/801/851) persist across frames, so a "frame" name over-claims; unk_430 stays unk_430. Fallback cpu_state_flags needs a fresh row.

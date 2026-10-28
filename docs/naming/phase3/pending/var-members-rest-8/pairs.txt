@@ -74,7 +74,6 @@ Unk80101EC8Record.unk_425=incoming_projectile_state
 Unk80101EC8Record.unk_426=incoming_attack_state
 Unk80101EC8Record.unk_427=opponent_snapshot_hit_start_frame
 Unk80101EC8Record.unk_428=cpu_tracked_move_key
-Unk80101EC8Record.unk_430=cpu_frame_flags
 Unk80101EC8Record.unk_438=cpu_level
 Unk80101EC8Record.unk_440=latched_motion_metadata_nibble
 Unk80101EC8Record.unk_441=motion_metadata_nibble

@@ -140,7 +140,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 9:
         a0->unk_26C = 0;
         a0->unk_90 = 0;
-        a0->unk_8A = 0;
+        a0->object_variant_enabled = 0;
         break;
     case 10:
     case 11:
@@ -237,12 +237,12 @@ void fighter_RelocateAndStartEventMove(Unk80101EC8Record *arg0) {
     arg0->base_pos.z += var_0.vz;
     arg0->collision_pos.vx += var_0.vx;
     arg0->collision_pos.vz += var_0.vz;
-    arg0->unk_104.vx = 0;
-    arg0->unk_104.vy = 0;
-    arg0->unk_104.vz = 0;
-    arg0->unk_134.vx = 0;
-    arg0->unk_134.vy = 0;
-    arg0->unk_134.vz = 0;
+    arg0->base_velocity.vx = 0;
+    arg0->base_velocity.vy = 0;
+    arg0->base_velocity.vz = 0;
+    arg0->decaying_xz_velocity.vx = 0;
+    arg0->decaying_xz_velocity.vy = 0;
+    arg0->decaying_xz_velocity.vz = 0;
     r1 = motion_ResolveMoveData(
         arg0, arg0->cur_move->event_move_table_id, &arg0->move_is_common);
     r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->move_is_common);
@@ -268,7 +268,7 @@ void fighter_DispatchBoneHitSoundEvent(
 
     chk_obj = ptr->other;
     {
-        s16 f86 = chk_obj->unk_86;
+        s16 f86 = chk_obj->variant_index;
         s16 f8E = chk_obj->unk_8E;
 
         if (f86 == f8E) {
@@ -278,7 +278,7 @@ void fighter_DispatchBoneHitSoundEvent(
         }
 
         {
-            s16 f88 = chk_obj->unk_88;
+            s16 f88 = chk_obj->object_variant_index;
             if (f86 == f88 && a3 != 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     chk_obj->index, 0x27, stack_a2, (s16 *)0);
@@ -308,8 +308,9 @@ s32 func_8002798C(Unk80101EC8Record *a0) {
 
     if (a0->move_kind == 6 || a0->move_kind == 0x25 || a0->move_kind == 0x33 ||
         a0->move_kind == 4 || a0->move_kind == 0x14 ||
-        a0->move_frame < a0->unk_A5 || a0->unk_A6 < a0->move_frame) {
-        if (a0->unk_88 != -1) {
+        a0->move_frame < a0->frame_window_start ||
+        a0->frame_window_end < a0->move_frame) {
+        if (a0->object_variant_index != -1) {
             u16 state = a0->move_kind;
             if (state == 0xF || state == 0x1C || state == 0x1D ||
                 state == 0x1E || state == 0x1F || state == 0x20 ||
@@ -324,14 +325,14 @@ s32 func_8002798C(Unk80101EC8Record *a0) {
 }
 
 void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *a0) {
-    s16 v1 = a0->unk_86;
-    if (v1 == a0->unk_88) {
-        if (a0->unk_8A) {
+    s16 v1 = a0->variant_index;
+    if (v1 == a0->object_variant_index) {
+        if (a0->object_variant_enabled) {
             if (func_8002798C(a0)) {
                 MATRIX **v0 = node_GetSlotMatrixPointerArray(a0->index);
                 object_DropQueuedHeadAt(a0, (Vec3i32 *)v0[19]->t);
-                a0->unk_8A = 0;
-                a0->unk_86 = a0->unk_84;
+                a0->object_variant_enabled = 0;
+                a0->variant_index = a0->default_variant_index;
             }
         }
     }
@@ -388,8 +389,9 @@ s32 fighter_ResolveBoneHit(
     scr = &SPAD->unkA8[var_4][arg2].x;
     *out = 0;
     if (arg1->character_roster_index == 0x1C) {
-        dot = (arg1->unk_1EC.x * D_800A37E8 + arg1->unk_1EC.y * D_800A37EA +
-               arg1->unk_1EC.z * D_800A37EC) >>
+        dot = (arg1->bone_y_axis.x * D_800A37E8 +
+               arg1->bone_y_axis.y * D_800A37EA +
+               arg1->bone_y_axis.z * D_800A37EC) >>
               12;
         dot &= 0x1FFF;
         if (dot >= 0x1000) {
@@ -428,7 +430,7 @@ s32 fighter_ResolveBoneHit(
     if ((var_8 == 2 || var_8 == 0x1B || var_8 == 0x28 || var_8 == 0x26) &&
         arg1->move_frame < arg1->unk_A0) {
         if (arg0 == 0) {
-            diff = var_5->unk_20 - arg1->unk_20;
+            diff = var_5->power - arg1->power;
             var_10 = math_ClassifyAbsMagnitude(diff);
             sign = (u32)diff >> 31;
             var_12 = arg1->unk_AF == var_5->unk_AF;
@@ -464,8 +466,8 @@ s32 fighter_ResolveBoneHit(
             }
             if (vec[1] * vec[1] < vec[0] * vec[0] + vec[2] * vec[2]) {
                 fighter_SetTurnDelta(arg1, ratan2(vec[0], vec[2]));
-                arg1->unk_134.vx -= vec[0] / 16;
-                arg1->unk_134.vz -= vec[2] / 16;
+                arg1->decaying_xz_velocity.vx -= vec[0] / 16;
+                arg1->decaying_xz_velocity.vz -= vec[2] / 16;
             }
             return 0;
         }
@@ -486,8 +488,8 @@ s32 fighter_ResolveBoneHit(
                     var_4, 0x25, scr, 0);
                 arg1->pending_move_event = 1;
                 fighter_SetTurnDelta(arg1, ratan2(vec[0], vec[2]));
-                arg1->unk_134.vx -= vec[0] / 16;
-                arg1->unk_134.vz -= vec[2] / 16;
+                arg1->decaying_xz_velocity.vx -= vec[0] / 16;
+                arg1->decaying_xz_velocity.vz -= vec[2] / 16;
                 *out = arg0;
                 return 0;
             }
@@ -500,11 +502,12 @@ s32 fighter_ResolveBoneHit(
     var_8 = arg1->move_kind;
     if (var_8 == 6 || var_8 == 9) {
         if (flag) {
-            arg1->pending_move_event = arg1->unk_1DA ? 6 : 7;
+            arg1->pending_move_event =
+                arg1->bone_triangle_cross_y_positive ? 6 : 7;
             fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
             return 1;
         }
-        arg1->pending_move_event = arg1->unk_1DA ? 3 : 4;
+        arg1->pending_move_event = arg1->bone_triangle_cross_y_positive ? 3 : 4;
         fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
         fighter_AccumulateOrClearByBoneGroup(arg1, arg2, 1);
         return 0;
@@ -558,7 +561,7 @@ s32 fighter_ResolveBoneHit(
         arg1->unk_90 = 0;
         fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
         fighter_TryDropQueuedHeadAtBone(arg1);
-        arg1->unk_8A = 0;
+        arg1->object_variant_enabled = 0;
         return 0;
     case 10:
     case 11:
@@ -630,7 +633,7 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
             d_val = g_fight_weapon_contact_result;
             temp_a1_2 = (d_val >> arg0->index) & 1;
             temp_s5 = (d_val >> temp_s4->index) & 1;
-            if (arg0->unk_8C != 0) {
+            if (arg0->wielded_object_live_state != 0) {
                 var_s1 = temp_a1_2 == 0;
             }
             if (var_s1 != 0) {
@@ -644,9 +647,9 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                 goto block_49;
             }
         block_20: {
-            s16 temp_v1_3 = temp_s4->unk_288[temp_s5];
+            s16 temp_v1_3 = temp_s4->weapon_hit_phases[temp_s5];
             if (temp_v1_3 == 0) {
-                if (arg0->unk_288[temp_a1_2] > 0) {
+                if (arg0->weapon_hit_phases[temp_a1_2] > 0) {
                     var_v0 = 0x19;
                     if (var_s1 == 0) {
                     set_0xB:
@@ -664,7 +667,7 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                 goto block_49;
             }
             {
-                s16 temp_v0_3 = arg0->unk_288[temp_a1_2];
+                s16 temp_v0_3 = arg0->weapon_hit_phases[temp_a1_2];
                 s16 var_v0_2;
                 if (temp_v0_3 == temp_v1_3) {
                     /* FAKE: do-while(0) loop depth weights these refs in
@@ -676,7 +679,7 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
                             arg0->index, 0x25, arg1, (s16 *)0);
                     } while (0);
-                    if (arg0->unk_288[temp_a1_2] == 5) {
+                    if (arg0->weapon_hit_phases[temp_a1_2] == 5) {
                         if (arg0->weapon_id == 6 || arg0->weapon_id == 7 ||
                             temp_s4->weapon_id == 6 ||
                             temp_s4->weapon_id == 7) {
@@ -769,8 +772,9 @@ void fighter_TriggerOpponentResponseOnMoveFrame(void) {
 
     for (i = 0; i < 2; i++) {
         base = &D_80101EC8[i];
-        if (base->character_roster_index != 0x1B || base->unk_46 != 0 ||
-            base->move_kind != 0xB || base->move_frame != base->unk_A7) {
+        if (base->character_roster_index != 0x1B ||
+            base->move_frame_unchanged != 0 || base->move_kind != 0xB ||
+            base->move_frame != base->release_frame) {
             continue;
         }
         state = base->other->move_kind;
@@ -783,7 +787,8 @@ void fighter_TriggerOpponentResponseOnMoveFrame(void) {
                 base->other->pending_move_event = 0x1C;
                 fighter_TryDropQueuedHeadAtBone(base->other);
                 if (base->other->move_kind == 0x25) {
-                    base->other->unk_86 = base->other->unk_84;
+                    base->other->variant_index =
+                        base->other->default_variant_index;
                 }
             }
         }
@@ -888,7 +893,7 @@ void fighter_ResolveBodyOverlap(void) {
             if (var_13 == 0) {
                 var_13 = 1;
             }
-            var_16 = (D_80101EC8[1].unk_20 - D_80101EC8[0].unk_20) / 4;
+            var_16 = (D_80101EC8[1].power - D_80101EC8[0].power) / 4;
             var_5 += (dx * (var_15 * (0x400 + var_16)) / var_13) >> 10;
             var_6 += (dz * (var_15 * (0x400 + var_16)) / var_13) >> 10;
             var_7 -= (dx * (var_15 * (0x400 - var_16)) / var_13) >> 10;
@@ -969,10 +974,10 @@ void fighter_ResolveBodyOverlap(void) {
         }
     }
     if (var_1 != 0) {
-        D_80101EC8[0].unk_134.vx += var_5;
-        D_80101EC8[0].unk_134.vz += var_6;
-        D_80101EC8[1].unk_134.vx += var_7;
-        D_80101EC8[1].unk_134.vz += var_8;
+        D_80101EC8[0].decaying_xz_velocity.vx += var_5;
+        D_80101EC8[0].decaying_xz_velocity.vz += var_6;
+        D_80101EC8[1].decaying_xz_velocity.vx += var_7;
+        D_80101EC8[1].decaying_xz_velocity.vz += var_8;
     }
 }
 
@@ -1167,22 +1172,22 @@ s32 fighter_ProcessWeaponContacts(void) {
         if (rec->weapon_id == 4 || rec->weapon_id == 5) {
             var_1[0] = SPAD->unk00[i][0];
             var_1[1] = SPAD->unk00[i][2];
-            var_1[2] = rec->unk_210[0];
-            var_1[3] = rec->unk_210[2];
+            var_1[2] = rec->prev_weapon_points[0];
+            var_1[3] = rec->prev_weapon_points[2];
             var_1[4] = SPAD->unk00[i][0];
             var_1[5] = SPAD->unk00[i][1];
-            var_1[6] = rec->unk_210[0];
-            var_1[7] = rec->unk_210[1];
+            var_1[6] = rec->prev_weapon_points[0];
+            var_1[7] = rec->prev_weapon_points[1];
         } else {
             var_1[0] = SPAD->unk00[i][0];
             var_1[1] = SPAD->unk00[i][1];
-            var_1[2] = rec->unk_210[0];
-            var_1[3] = rec->unk_210[1];
-            if (rec->unk_8C != 0) {
+            var_1[2] = rec->prev_weapon_points[0];
+            var_1[3] = rec->prev_weapon_points[1];
+            if (rec->wielded_object_live_state != 0) {
                 var_1[4] = SPAD->unk48[i][0];
                 var_1[5] = SPAD->unk48[i][1];
-                var_1[6] = rec->unk_234[0];
-                var_1[7] = rec->unk_234[1];
+                var_1[6] = rec->prev_second_weapon_points[0];
+                var_1[7] = rec->prev_second_weapon_points[1];
             }
         }
         if (rec->move_frame >= rec->weapon_hit_start_frames[0] &&
@@ -1195,9 +1200,10 @@ s32 fighter_ProcessWeaponContacts(void) {
                 i, 0x26, &scr->unk100[0].x, 0);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i, 0x2D, &scr->unk100[0].x, 0);
-            rec->pending_move_event = rec->unk_8C != 0 ? 0x19 : 0xB;
-            rec->unk_AD = 0;
-        } else if (rec->unk_8C != 0 &&
+            rec->pending_move_event =
+                rec->wielded_object_live_state != 0 ? 0x19 : 0xB;
+            rec->attack_hit_armed = 0;
+        } else if (rec->wielded_object_live_state != 0 &&
                    rec->move_frame >= rec->weapon_hit_start_frames[1] &&
                    rec->move_frame <= rec->weapon_hit_end_frames[1] &&
                    fight_ProcessPositionRecordsInQuad(1, 0, var_1) != 0) {
@@ -1208,7 +1214,7 @@ s32 fighter_ProcessWeaponContacts(void) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i, 0x2D, &scr->unk100[0].x, 0);
             rec->pending_move_event = 0xB;
-            rec->unk_AD = 0;
+            rec->attack_hit_armed = 0;
         }
     }
 
@@ -1217,21 +1223,21 @@ s32 fighter_ProcessWeaponContacts(void) {
         rec = &D_80101EC8[i];
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
-        dst[2] = rec->unk_210[0];
-        dst[3] = rec->unk_210[1];
+        dst[2] = rec->prev_weapon_points[0];
+        dst[3] = rec->prev_weapon_points[1];
         count[i] = 2;
-        if (rec->is_defeated != 0 || rec->unk_92 == 0 ||
+        if (rec->is_defeated != 0 || rec->weapon_live_state == 0 ||
             rec->character_roster_index == 0x1F) {
             dst[0].y = 100000;
             dst[1].y = 100000;
             dst[2].y = 100000;
             dst[3].y = 100000;
         }
-        if (rec->unk_8C != 0) {
+        if (rec->wielded_object_live_state != 0) {
             dst[4] = SPAD->unk48[i][0];
             dst[5] = SPAD->unk48[i][1];
-            dst[6] = rec->unk_234[0];
-            dst[7] = rec->unk_234[1];
+            dst[6] = rec->prev_second_weapon_points[0];
+            dst[7] = rec->prev_second_weapon_points[1];
             count[i] += 2;
         }
     }
@@ -1716,11 +1722,11 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         var_10 = 0;
         var_5 = 0;
         var_6 = 0;
-        if (var_3->is_defeated == 0 && var_3->unk_92 != 0 &&
+        if (var_3->is_defeated == 0 && var_3->weapon_live_state != 0 &&
             var_3->update_count != 0) {
             var_10 = var_3->character_roster_index != 0x1F;
         }
-        if (var_3->unk_8C != 0) {
+        if (var_3->wielded_object_live_state != 0) {
             var_10++;
         }
         if (var_10 != 0 && (var_3->weapon_id == 4 || var_3->weapon_id == 5)) {
@@ -1771,7 +1777,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 temp1 = 0;
                 temp2 = 1;
                 var_32 = 1;
-            } else if (var_3->unk_8C != 0) {
+            } else if (var_3->wielded_object_live_state != 0) {
                 var_12 = 1;
                 temp1 = 0;
                 temp2 = 1;
@@ -1785,13 +1791,15 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             if (var_12 == 0) {
                 scr->point_slots.unk00[0] = SPAD->unk00[i == 0][temp1];
                 scr->point_slots.unk00[1] = SPAD->unk00[i == 0][temp2];
-                scr->point_slots.unk00[2] = var_3->unk_210[temp1];
-                scr->point_slots.unk00[3] = var_3->unk_210[temp2];
+                scr->point_slots.unk00[2] = var_3->prev_weapon_points[temp1];
+                scr->point_slots.unk00[3] = var_3->prev_weapon_points[temp2];
             } else {
                 scr->point_slots.unk00[0] = SPAD->unk48[i == 0][temp1];
                 scr->point_slots.unk00[1] = SPAD->unk48[i == 0][temp2];
-                scr->point_slots.unk00[2] = var_3->unk_234[temp1];
-                scr->point_slots.unk00[3] = var_3->unk_234[temp2];
+                scr->point_slots.unk00[2] =
+                    var_3->prev_second_weapon_points[temp1];
+                scr->point_slots.unk00[3] =
+                    var_3->prev_second_weapon_points[temp2];
             }
             scr->point_slots.unk00[4].x =
                 (scr->point_slots.unk00[0].x + scr->point_slots.unk00[2].x) / 2;
@@ -1886,9 +1894,9 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         rec = g_fighter_bone_hit_records[i];
         best = 0x7FFFFFFF;
-        scr->unkC8.x = var_3->unk_210[1].x;
-        scr->unkC8.y = var_3->unk_210[1].y;
-        scr->unkC8.z = var_3->unk_210[1].z;
+        scr->unkC8.x = var_3->prev_weapon_points[1].x;
+        scr->unkC8.y = var_3->prev_weapon_points[1].y;
+        scr->unkC8.z = var_3->prev_weapon_points[1].z;
         for (temp3 = 0; temp3 < 22; temp3++, rec++) {
             if (var_5 & (1 << temp3)) {
                 dx = SPAD->unkA8[i][temp3].x - scr->unkC8.x;
@@ -1981,11 +1989,11 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                      (var_3->weapon_point_delta[temp3].vz * work / 2 >> 11);
                 if (var_3->move_kind == 3 || var_3->move_kind == 7 ||
                     var_3->move_kind == 0xD || var_3->move_kind == 0x2C) {
-                    var_4->unk_134.vx += dx / 2;
-                    var_4->unk_134.vz += dz / 2;
+                    var_4->decaying_xz_velocity.vx += dx / 2;
+                    var_4->decaying_xz_velocity.vz += dz / 2;
                 } else {
-                    var_4->unk_134.vx += dx;
-                    var_4->unk_134.vz += dz;
+                    var_4->decaying_xz_velocity.vx += dx;
+                    var_4->decaying_xz_velocity.vz += dz;
                 }
                 if ((var_4->move_kind == 0x13 || var_4->move_kind == 0x1B ||
                      var_4->move_kind == 0x30) &&
@@ -2018,7 +2026,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         if (var_3->unk_AE == 0) {
             continue;
         }
-        if (var_3->unk_8C != 0 &&
+        if (var_3->wielded_object_live_state != 0 &&
             (var_3->move_frame < var_3->weapon_hit_start_frames[var_12] ||
              var_3->move_frame > var_3->weapon_hit_end_frames[var_12])) {
             continue;
@@ -2049,7 +2057,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
          * reaction fighter_ProcessWeaponContacts picks from +0x8C. */
         fighter_ResolveBoneHit(
             0, var_4, idx, ang, var_31, (Tbl8008E194 *)var_12, flag, 0);
-        var_3->unk_AD = 0;
+        var_3->attack_hit_armed = 0;
     }
 }
 
@@ -2093,10 +2101,10 @@ s32 fighter_SetBasePositionSeparationCorrectionsAndGetDistance(s32 arg0) {
     {
         s32 temp_v0 = arg0 - 0x64;
         s32 temp_v1_3 = -var_a0;
-        rec0->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
-        rec0->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
-        rec1->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
-        rec1->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
+        rec0->decaying_xz_velocity.vx = (temp_a3 * var_a0) / temp_v0;
+        rec0->decaying_xz_velocity.vz = (temp_t1 * var_a0) / temp_v0;
+        rec1->decaying_xz_velocity.vx = (temp_a3 * temp_v1_3) / temp_v0;
+        rec1->decaying_xz_velocity.vz = (temp_t1 * temp_v1_3) / temp_v0;
     }
     return (s32)var_t0;
 }
@@ -2141,10 +2149,10 @@ s32 fighter_CalcSeparationErrorAndOpposedOffsets(void) {
     {
         s32 temp_v0 = 0x3E8;
         s32 temp_v1_3 = -var_a0;
-        rec0->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
-        rec0->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
-        rec1->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
-        rec1->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
+        rec0->decaying_xz_velocity.vx = (temp_a3 * var_a0) / temp_v0;
+        rec0->decaying_xz_velocity.vz = (temp_t1 * var_a0) / temp_v0;
+        rec1->decaying_xz_velocity.vx = (temp_a3 * temp_v1_3) / temp_v0;
+        rec1->decaying_xz_velocity.vz = (temp_t1 * temp_v1_3) / temp_v0;
     }
     return (s32)var_t0 - 0x44C;
 }
@@ -2174,7 +2182,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
 
         if (chk == 0) {
             if (g_fight_missing_support_fighter_index == 0xFF) {
-                if (var_s0->unk_AA == var_s0->move_frame) {
+                if (var_s0->paired_move_hit_frame == var_s0->move_frame) {
                     fighter_ProcessWeaponBodyHits(1);
                 }
             }
@@ -2186,7 +2194,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
             if (v1 < (s32)D_800A38E8) {
                 return;
             }
-            if (v1 >= var_s0->unk_AA) {
+            if (v1 >= var_s0->paired_move_hit_frame) {
                 return;
             }
             if (D_800A371C + 0xC8 >= temp_s2) {
@@ -2226,12 +2234,12 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
         scr->unkA8.x += SPAD->unk48[0][1].x;
         scr->unkA8.y += SPAD->unk48[0][1].y;
         scr->unkA8.z += SPAD->unk48[0][1].z;
-        scr->unkB8.x = rec0->unk_234[0].x;
-        scr->unkB8.y = rec0->unk_234[0].y;
-        scr->unkB8.z = rec0->unk_234[0].z;
-        scr->unkB8.x += rec0->unk_234[1].x;
-        scr->unkB8.y += rec0->unk_234[1].y;
-        scr->unkB8.z += rec0->unk_234[1].z;
+        scr->unkB8.x = rec0->prev_second_weapon_points[0].x;
+        scr->unkB8.y = rec0->prev_second_weapon_points[0].y;
+        scr->unkB8.z = rec0->prev_second_weapon_points[0].z;
+        scr->unkB8.x += rec0->prev_second_weapon_points[1].x;
+        scr->unkB8.y += rec0->prev_second_weapon_points[1].y;
+        scr->unkB8.z += rec0->prev_second_weapon_points[1].z;
     } else {
         scr->unkA8.x = SPAD->unk00[0][0].x;
         scr->unkA8.y = SPAD->unk00[0][0].y;
@@ -2239,39 +2247,39 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
         scr->unkA8.x += SPAD->unk00[0][1].x;
         scr->unkA8.y += SPAD->unk00[0][1].y;
         scr->unkA8.z += SPAD->unk00[0][1].z;
-        scr->unkB8.x = rec0->unk_210[0].x;
-        scr->unkB8.y = rec0->unk_210[0].y;
-        scr->unkB8.z = rec0->unk_210[0].z;
-        scr->unkB8.x += rec0->unk_210[1].x;
-        scr->unkB8.y += rec0->unk_210[1].y;
-        scr->unkB8.z += rec0->unk_210[1].z;
+        scr->unkB8.x = rec0->prev_weapon_points[0].x;
+        scr->unkB8.y = rec0->prev_weapon_points[0].y;
+        scr->unkB8.z = rec0->prev_weapon_points[0].z;
+        scr->unkB8.x += rec0->prev_weapon_points[1].x;
+        scr->unkB8.y += rec0->prev_weapon_points[1].y;
+        scr->unkB8.z += rec0->prev_weapon_points[1].z;
     }
     if (g_fight_weapon_contact_result & 2) {
         scr->unkA8.x += SPAD->unk48[1][0].x;
         scr->unkA8.y += SPAD->unk48[1][0].y;
         scr->unkA8.z += SPAD->unk48[1][0].z;
-        scr->unkB8.x += rec1->unk_234[0].x;
-        scr->unkB8.y += rec1->unk_234[0].y;
-        scr->unkB8.z += rec1->unk_234[0].z;
+        scr->unkB8.x += rec1->prev_second_weapon_points[0].x;
+        scr->unkB8.y += rec1->prev_second_weapon_points[0].y;
+        scr->unkB8.z += rec1->prev_second_weapon_points[0].z;
         scr->unkA8.x += SPAD->unk48[1][1].x;
         scr->unkA8.y += SPAD->unk48[1][1].y;
         scr->unkA8.z += SPAD->unk48[1][1].z;
-        scr->unkB8.x += rec1->unk_234[1].x;
-        scr->unkB8.y += rec1->unk_234[1].y;
-        scr->unkB8.z += rec1->unk_234[1].z;
+        scr->unkB8.x += rec1->prev_second_weapon_points[1].x;
+        scr->unkB8.y += rec1->prev_second_weapon_points[1].y;
+        scr->unkB8.z += rec1->prev_second_weapon_points[1].z;
     } else {
         scr->unkA8.x += SPAD->unk00[1][0].x;
         scr->unkA8.y += SPAD->unk00[1][0].y;
         scr->unkA8.z += SPAD->unk00[1][0].z;
-        scr->unkB8.x += rec1->unk_210[0].x;
-        scr->unkB8.y += rec1->unk_210[0].y;
-        scr->unkB8.z += rec1->unk_210[0].z;
+        scr->unkB8.x += rec1->prev_weapon_points[0].x;
+        scr->unkB8.y += rec1->prev_weapon_points[0].y;
+        scr->unkB8.z += rec1->prev_weapon_points[0].z;
         scr->unkA8.x += SPAD->unk00[1][1].x;
         scr->unkA8.y += SPAD->unk00[1][1].y;
         scr->unkA8.z += SPAD->unk00[1][1].z;
-        scr->unkB8.x += rec1->unk_210[1].x;
-        scr->unkB8.y += rec1->unk_210[1].y;
-        scr->unkB8.z += rec1->unk_210[1].z;
+        scr->unkB8.x += rec1->prev_weapon_points[1].x;
+        scr->unkB8.y += rec1->prev_weapon_points[1].y;
+        scr->unkB8.z += rec1->prev_weapon_points[1].z;
     }
     scr->contact_point.x = ((scr->unkA8.x * 3) + scr->unkB8.x) >> 4;
     scr->contact_point.y = ((scr->unkA8.y * 3) + scr->unkB8.y) >> 4;
@@ -2309,13 +2317,14 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
             fighter_BlendCurrentAndPreviousContactPoints();
         }
         if (g_fight_weapon_contact_result >= 0 &&
-            (firstPlayer->unk_AD != 0 || secondPlayer->unk_AD != 0)) {
+            (firstPlayer->attack_hit_armed != 0 ||
+             secondPlayer->attack_hit_armed != 0)) {
             fighter_ResolveWeaponContact(
                 firstPlayer, &SPAD->unk2B8.rec.contact_point.x);
             fighter_ResolveWeaponContact(
                 secondPlayer, &SPAD->unk2B8.rec.contact_point.x);
-            secondPlayer->unk_AD = 0;
-            firstPlayer->unk_AD = 0;
+            secondPlayer->attack_hit_armed = 0;
+            firstPlayer->attack_hit_armed = 0;
         } else {
             fighter_ProcessWeaponBodyHits(0);
         }
@@ -2330,8 +2339,8 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
             if (diff < 0x3E8) {
                 firstPlayer->pending_move_event = 0xA;
                 secondPlayer->pending_move_event = 0xA;
-                secondPlayer->unk_28C = 0;
-                firstPlayer->unk_28C = 0;
+                secondPlayer->mash_contest_score = 0;
+                firstPlayer->mash_contest_score = 0;
                 g_fight_midpoint_effect_delay = 0;
                 D_800A389C = 0;
             }
@@ -2347,30 +2356,30 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
     }
 
     for (i = 0; i < 3; i++) {
-        D_80101EC8[0].unk_210[i] = SPAD->unk00[0][i];
-        D_80101EC8[1].unk_210[i] = SPAD->unk00[1][i];
+        D_80101EC8[0].prev_weapon_points[i] = SPAD->unk00[0][i];
+        D_80101EC8[1].prev_weapon_points[i] = SPAD->unk00[1][i];
     }
 
     for (i = 0; i < 2; i++) {
-        D_80101EC8[0].unk_234[i] = SPAD->unk48[0][i];
-        D_80101EC8[1].unk_234[i] = SPAD->unk48[1][i];
+        D_80101EC8[0].prev_second_weapon_points[i] = SPAD->unk48[0][i];
+        D_80101EC8[1].prev_second_weapon_points[i] = SPAD->unk48[1][i];
     }
 
     for (i = 0; i < 2; i++) {
-        D_80101EC8[i].unk_18C.x =
+        D_80101EC8[i].bone_hit_points_1_3_centroid.x =
             (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) /
             3;
-        D_80101EC8[i].unk_18C.y =
+        D_80101EC8[i].bone_hit_points_1_3_centroid.y =
             (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) /
             3;
-        D_80101EC8[i].unk_18C.z =
+        D_80101EC8[i].bone_hit_points_1_3_centroid.z =
             (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) /
             3;
-        D_80101EC8[i].unk_174.x =
+        D_80101EC8[i].bone_hit_points_4_5_midpoint.x =
             (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
-        D_80101EC8[i].unk_174.y =
+        D_80101EC8[i].bone_hit_points_4_5_midpoint.y =
             (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
-        D_80101EC8[i].unk_174.z =
+        D_80101EC8[i].bone_hit_points_4_5_midpoint.z =
             (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
     }
 
@@ -3946,8 +3955,8 @@ s32 object_ThrowQueuedKind(Unk80101EC8Record *a0) {
         return -1;
     }
     idx = 0;
-    if (count >= 2 && a0->unk_88 != -1) {
-        idx = a0->carried_object_kinds[0] == a0->unk_14;
+    if (count >= 2 && a0->object_variant_index != -1) {
+        idx = a0->carried_object_kinds[0] == a0->wielded_object_kind;
     }
     id = a0->carried_object_kinds[idx];
     obj = object_SpawnFromFighter(a0, id);
@@ -4014,7 +4023,7 @@ void object_SpawnScatteredAt(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     p->rot_vel[2] = 0;
     p->unk_07 = 1;
-    p->unk_0B = a0->unk_12;
+    p->unk_0B = a0->weapon_entry_id;
 }
 
 s32 object_QueueKind(Unk80101EC8Record *arg0, s32 arg1) {
@@ -4023,7 +4032,7 @@ s32 object_QueueKind(Unk80101EC8Record *arg0, s32 arg1) {
     if (arg0->carried_object_count == 0xC) {
         return 0;
     }
-    if (arg0->unk_88 != -1 && arg1 == arg0->unk_14) {
+    if (arg0->object_variant_index != -1 && arg1 == arg0->wielded_object_kind) {
         for (i = arg0->carried_object_count; i > 0; i--) {
             arg0->carried_object_kinds[i] = arg0->carried_object_kinds[i - 1];
         }
@@ -4536,7 +4545,7 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
     s0->unk_28 = src->collision_pos.vy;
     var_5[1] = src->orientation.vy;
     fight_RecordReplayEventAndDispatchSoundOrEffect(
-        src->unk_B2, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
+        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
     return s0;
 }
 
@@ -4627,13 +4636,13 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
     rec->weapon_hit_end_frames[0] = 0xFF;
     rec->weapon_hit_start_frames[1] = 0xFF;
     rec->weapon_hit_end_frames[1] = 0xFF;
-    rec->unk_AA = 0;
-    rec->unk_A7 = 0;
+    rec->paired_move_hit_frame = 0;
+    rec->release_frame = 0;
     rec->object_pickup_frame = 0;
-    rec->unk_A5 = 0;
-    rec->unk_A6 = 0xFF;
-    rec->unk_AB = 0xFF;
-    rec->unk_AC = 0xFF;
+    rec->frame_window_start = 0;
+    rec->frame_window_end = 0xFF;
+    rec->opponent_transition_start_frame = 0xFF;
+    rec->weapon_reload_frame = 0xFF;
 
     while ((c = *ptr++) != 0) {
         if (c == 0xFF) {
@@ -4650,7 +4659,7 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
                 rec->weapon_hit_end_frames[0] = val;
                 break;
             case 0x82:
-                rec->unk_A7 = val;
+                rec->release_frame = val;
                 break;
             case 0x83:
                 rec->object_pickup_frame = val;
@@ -4659,10 +4668,10 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
                 rec->opponent_turn_frame = val;
                 break;
             case 0x85:
-                rec->unk_A5 = val;
+                rec->frame_window_start = val;
                 break;
             case 0x86:
-                rec->unk_A6 = val;
+                rec->frame_window_end = val;
                 break;
             case 0x87:
                 rec->weapon_hit_start_frames[1] = val;
@@ -4671,13 +4680,13 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
                 rec->weapon_hit_end_frames[1] = val;
                 break;
             case 0x89:
-                rec->unk_AA = val;
+                rec->paired_move_hit_frame = val;
                 break;
             case 0x8A:
-                rec->unk_AB = val;
+                rec->opponent_transition_start_frame = val;
                 break;
             case 0x8B:
-                rec->unk_AC = val;
+                rec->weapon_reload_frame = val;
                 break;
             }
         }
@@ -4954,18 +4963,19 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
         }
     }
 
-    row = base + obj->unk_B2 * 4;
-    var_5 = obj->unk_B2 * 3;
-    row2 = base2 + obj->other->unk_B2 * 4;
-    var_6 = obj->other->unk_B2 * 3;
+    row = base + obj->collision_hit_class * 4;
+    var_5 = obj->collision_hit_class * 3;
+    row2 = base2 + obj->other->collision_hit_class * 4;
+    var_6 = obj->other->collision_hit_class * 3;
 
     switch (kind) {
     case 0:
         if (g_fight_stage_index == 11) {
-            if (obj->unk_1B0[0] - 600 < obj->unk_198[0].y) {
-                pos[0] = obj->unk_198[0].x;
-                pos[1] = obj->unk_1B0[0];
-                pos[2] = obj->unk_198[0].z;
+            if (obj->ground_probe_floor_ys[0] - 600 <
+                obj->ground_probe_points[0].y) {
+                pos[0] = obj->ground_probe_points[0].x;
+                pos[1] = obj->ground_probe_floor_ys[0];
+                pos[2] = obj->ground_probe_points[0].z;
                 eff_StartYawedQuadSlotCommand(
                     pos, obj->unk_1BA,
                     D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
@@ -4977,10 +4987,11 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
             }
         } else if (g_fight_stage_index == 14) {
             if (((0x60 >> obj->collision_hit_tag) & 1) &&
-                obj->unk_1B0[0] - 600 < obj->unk_198[0].y) {
-                pos[0] = obj->unk_198[0].x;
-                pos[1] = obj->unk_1B0[0];
-                pos[2] = obj->unk_198[0].z;
+                obj->ground_probe_floor_ys[0] - 600 <
+                    obj->ground_probe_points[0].y) {
+                pos[0] = obj->ground_probe_points[0].x;
+                pos[1] = obj->ground_probe_floor_ys[0];
+                pos[2] = obj->ground_probe_points[0].z;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     obj->index, 9, pos, 0);
             }
@@ -4988,10 +4999,11 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
         break;
     case 1:
         if (g_fight_stage_index == 11) {
-            if (obj->unk_1B0[1] - 600 < obj->unk_198[1].y) {
-                pos[0] = obj->unk_198[1].x;
-                pos[1] = obj->unk_1B0[1];
-                pos[2] = obj->unk_198[1].z;
+            if (obj->ground_probe_floor_ys[1] - 600 <
+                obj->ground_probe_points[1].y) {
+                pos[0] = obj->ground_probe_points[1].x;
+                pos[1] = obj->ground_probe_floor_ys[1];
+                pos[2] = obj->ground_probe_points[1].z;
                 eff_StartYawedQuadSlotCommand(
                     pos, obj->unk_1C2,
                     D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
@@ -5003,10 +5015,11 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
             }
         } else if (g_fight_stage_index == 14) {
             if (((0x60 >> obj->collision_hit_tag) & 1) &&
-                obj->unk_1B0[1] - 600 < obj->unk_198[1].y) {
-                pos[0] = obj->unk_198[1].x;
-                pos[1] = obj->unk_1B0[1];
-                pos[2] = obj->unk_198[1].z;
+                obj->ground_probe_floor_ys[1] - 600 <
+                    obj->ground_probe_points[1].y) {
+                pos[0] = obj->ground_probe_points[1].x;
+                pos[1] = obj->ground_probe_floor_ys[1];
+                pos[2] = obj->ground_probe_points[1].z;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     obj->index, 9, pos, 0);
             }
@@ -5014,15 +5027,15 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
         break;
     case 2:
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            obj->index, 10, &obj->unk_180.x, 0);
+            obj->index, 10, &obj->bone_hit_point_0.x, 0);
         break;
     case 3:
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            obj->index, 10, &obj->unk_18C.x, 0);
+            obj->index, 10, &obj->bone_hit_points_1_3_centroid.x, 0);
         break;
     case 4:
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            obj->index, 10, &obj->unk_174.x, 0);
+            obj->index, 10, &obj->bone_hit_points_4_5_midpoint.x, 0);
         break;
     case 7:
         snd_QueuePositionalSound(base + 0x31, &obj->world_pos.x);

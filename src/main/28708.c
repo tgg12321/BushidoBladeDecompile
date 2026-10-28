@@ -1255,14 +1255,14 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
 
     {
         u16 v = a0->orientation.vy;
-        u8 b = a0->unk_B3;
+        u8 b = a0->draw_move_set;
         dest->hA = (v & 0xFFF) | (b << 12);
     }
 
     dest->hC = a0->ground_y;
-    dest->b14 = a0->unk_1E6 >> 2;
-    dest->b15 = a0->unk_1E8 >> 2;
-    dest->b16 = a0->unk_1EA >> 2;
+    dest->b14 = a0->eased_pose_bearing_offset >> 2;
+    dest->b15 = a0->eased_pose_elevation_offset >> 2;
+    dest->b16 = a0->opponent_elevation_offset >> 2;
     dest->w0 = a0->cur_move;
     dest->b17 = 0;
 
@@ -1273,10 +1273,10 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
         dest->b17 |= 2;
     }
 
-    dest->hE = a0->unk_64;
-    dest->h10 = a0->unk_66;
+    dest->hE = a0->blend_src_frame_code;
+    dest->h10 = a0->blend_dst_frame_code;
     dest->h12 = a0->pose_interp_weight;
-    dest->b18 = a0->unk_62;
+    dest->b18 = a0->frame_flags;
     dest->b19 = a0->move_frame;
 }
 
@@ -1314,11 +1314,17 @@ void fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
     s32 mid_x, mid_y, mid_z;
     s32 result;
 
-    mid_x = (s32)(arg0->unk_198[0].x + arg0->unk_198[1].x) / 2;
+    mid_x =
+        (s32)(arg0->ground_probe_points[0].x + arg0->ground_probe_points[1].x) /
+        2;
     sp10[0] = mid_x;
-    mid_y = (s32)(arg0->unk_198[0].y + arg0->unk_198[1].y) / 2;
+    mid_y =
+        (s32)(arg0->ground_probe_points[0].y + arg0->ground_probe_points[1].y) /
+        2;
     sp10[1] = mid_y - 0x190;
-    mid_z = (s32)(arg0->unk_198[0].z + arg0->unk_198[1].z) / 2;
+    mid_z =
+        (s32)(arg0->ground_probe_points[0].z + arg0->ground_probe_points[1].z) /
+        2;
     sp20[0] = mid_x;
     sp20[1] = mid_y + 0x190;
     sp10[2] = mid_z;
@@ -1413,21 +1419,21 @@ void replay_PlayFrame(void) {
         func_80040D48(i, 1, pos, rot, 0, p->hC);
         if (p->b18 & 1) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                var_11->unk_12, i * 2 + 0x8000, 0, 0);
+                var_11->weapon_entry_id, i * 2 + 0x8000, 0, 0);
         }
         if (p->b18 & 4) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                g_resource_kind_entry_ids[var_11->unk_14], i * 2 + 0x8001, 0,
-                0);
+                g_resource_kind_entry_ids[var_11->wielded_object_kind],
+                i * 2 + 0x8001, 0, 0);
         }
         if (p->b18 & 2) {
             node_QueueTableEntryNodePairUnderSlotNode(
-                var_11->unk_12, i * 2, (p->b18 >> 4) & 1);
+                var_11->weapon_entry_id, i * 2, (p->b18 >> 4) & 1);
         }
         if (p->b18 & 8) {
             node_QueueTableEntryNodePairUnderSlotNode(
-                g_resource_kind_entry_ids[var_11->unk_14], i * 2 | 1,
-                (p->b18 >> 5) & 1);
+                g_resource_kind_entry_ids[var_11->wielded_object_kind],
+                i * 2 | 1, (p->b18 >> 5) & 1);
         }
         fighter_UpdateBoneWorldData(
             var_11, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
@@ -1436,7 +1442,7 @@ void replay_PlayFrame(void) {
         if (out_b1 != 1) {
             var_11->collision_hit_tag = out_b1;
             if (out_b2 != -1) {
-                var_11->unk_B2 = out_b2;
+                var_11->collision_hit_class = out_b2;
             }
         }
         var_15 = var_11->move_frame;
