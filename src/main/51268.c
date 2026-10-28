@@ -1032,7 +1032,7 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         }
     }
     if (g_eff_quad_cursor != prim) {
-        /* `end` keeps the fill position; the quad cursor prim restarts at
+        /* `quads_end` keeps the fill position; the quad cursor prim restarts at
          * g_eff_quad_cursor to link each quad, the way SOTN's menu code
          * restarts its fill cursor at the buffer to read it back (Q51) */
         /* SOTN: src/dra/menu.c:3352 @db41b28 */
@@ -1075,9 +1075,10 @@ s32 eff_SpawnBillboardPair(void) {
     return 1;
 }
 
-/* Draw the up-to-12 slots eff_SpawnBillboardPair spawns: per live slot i
-   (bit i of D_800A3448, age D_800F0BEC[i], world position D_800F0E38[i]) emit
-   two textured POLY_FT4 billboards (j == 0, then j == 1 offset vertically by
+/* Draw the up-to-12 slots eff_SpawnBillboardPair spawns: per live slot
+   slot_index (bit slot_index of D_800A3448, age D_800F0BEC[slot_index], world
+   position D_800F0E38[slot_index]) emit two textured POLY_FT4 billboards
+   (billboard_index == 0, then billboard_index == 1 offset vertically by
    an rsin of its age), each rotated/translated relative to the camera,
    projected, sized from its
    depth and animated by its age, then linked into the OT at its depth. A slot
@@ -1294,13 +1295,14 @@ u8 func_80063BA4(void) {
 
 extern SVECTOR D_800F1000[][10];
 
-/* eff_AllocateOrRecycleYawedQuadSlot -- slot allocator for lane `idx`:
- * D_800A344C[idx] counts live entries, and D_800A3454[idx] is the per-slot
- * in-use bitmask. While fewer than 10 entries are live, take the lowest free
- * bit, mark it, and fill that slot's SVECTOR (D_800F1000[idx][slot]) and 3-word
- * record (D_800F0EC8[idx][slot]) from D_800A3478 / g_eff_command_position. Once
- * the lane is full, the counter wraps through 10..19 and slots are overwritten
- * in rotation. */
+/* eff_AllocateOrRecycleYawedQuadSlot -- slot allocator for command slot
+ * `command_slot_index`: D_800A344C[command_slot_index] counts live entries, and
+ * D_800A3454[command_slot_index] is the per-slot in-use bitmask. While fewer
+ * than 10 entries are live, take the lowest free bit, mark it, and fill that
+ * slot's SVECTOR (D_800F1000[command_slot_index][slot]) and 3-word record
+ * (D_800F0EC8[command_slot_index][slot]) from D_800A3478 /
+ * g_eff_command_position. Once the command slot is full, the counter wraps
+ * through 10..19 and slots are overwritten in rotation. */
 u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
     s32 slot_bit;
     s32 slot_index;
@@ -1447,7 +1449,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
             prim++;
         }
     }
-    /* `end` keeps the fill position; the quad cursor prim restarts at
+    /* `quads_end` keeps the fill position; the quad cursor prim restarts at
      * g_eff_quad_cursor to link each quad, the way SOTN's menu code restarts
      * its fill cursor at the buffer to read it back (Q51) */
     /* SOTN: src/dra/menu.c:3352 @db41b28 */
@@ -1463,8 +1465,8 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
 }
 
 /* eff_BuildUsedSlotRotMatrices -- rotates one matrix per enabled bit: for every
- * i < *count whose bit is set in D_800A3454[idx],
- * RotMatrix(&D_800F1000[idx][i], &m[i]).
+ * i < *slot_count whose bit is set in D_800A3454[command_slot_index],
+ * RotMatrix(&D_800F1000[command_slot_index][i], &slot_matrices[i]).
  */
 void eff_BuildUsedSlotRotMatrices(
     s32 *slot_count, MATRIX *slot_matrices, s32 command_slot_index) {
@@ -1515,7 +1517,8 @@ s32 eff_SpawnJitteredBillboards(void) {
 }
 
 /* Draw the up-to-16 effect slots eff_SpawnJitteredBillboards spawns: per live
-   slot (bit i of D_800A3444) step its counter D_800F0BCC[i]; while counter / 4
+   slot (bit slot_index of D_800A3444) step its counter
+   D_800F0BCC[slot_index]; while counter / 4
    is below 7, project the slot's world position through D_800A3474 and, when
    its depth is in range, emit one textured, semi-transparent POLY_FT4 billboard
    sized by the screen depth and step the counter again; once counter / 4

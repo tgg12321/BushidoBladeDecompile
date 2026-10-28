@@ -1028,7 +1028,7 @@ typedef struct {
     SVECTOR unk24;  /* ApplyRotMatrix in */
     SVECTOR unk2C;  /* RotTransPers in */
     s32 unk34;      /* RotTransPers' p */
-    s32 unk38;      /* D_800F0BEC[i] - 15, the colour scale */
+    s32 unk38;      /* D_800F0BEC[slot_index] - 15, the colour scale */
     s32 unk3C;      /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_80063084;
 
@@ -1037,8 +1037,8 @@ typedef struct {
  * MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x10];  /* no access */
-    s16 unk10;       /* w */
-    s16 unk12;       /* h */
+    s16 unk10;       /* billboard_width */
+    s16 unk12;       /* billboard_height */
     s32 unk14;       /* frame */
     VECTOR unk18;    /* ApplyRotMatrixLV out */
     VECTOR unk28;    /* ApplyRotMatrixLV in */

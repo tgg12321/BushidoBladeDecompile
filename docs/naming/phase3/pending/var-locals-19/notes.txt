@@ -60,3 +60,19 @@ PRE-APPLY REVIEW (naming-reviewer 2026-10-27): 39 PASS, 1 FAIL.
 - R6 must confirm the prototypes at 51268.c:1258 and 1272-1273 (count, m, idx) are byte-unchanged and no old scoped token
   survives in a comment of the touched functions.
 - Manifest cite nit (not blocking): 1034 in the RotatedQuadClusters end row is the comment line, not a use.
+
+APPLY (naming-a 2026-10-27, commit faefceb60): 39/39 applied, none reverted; pairs.txt unchanged (var_6 dropped at review, stays neutral).
+Locals applied by naming_keycheck.scoped_plan (whole-word, code-only, comments and strings skipped, tokens after `.` or `->` skipped;
+270 token substitutions, all in 51268.c); format.py reflowed the longer lines. The prototypes (eff_AllocateOrRecycleYawedQuadSlot(s32),
+eff_DrawYawedSlotQuads(s32), eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx)) were verified untouched; var_6 in
+eff_DrawAndAdvanceBillboardPairs changed only in its D_800F0BEC[i] -> [slot_index] index.
+Comment pass (docs commit following faefceb60): 51268.c leading comments of eff_DrawAndAdvanceBillboardPairs (i -> slot_index x4,
+j == 0 / == 1 -> billboard_index == 0 / == 1), eff_AllocateOrRecycleYawedQuadSlot ("lane idx" -> "command slot command_slot_index", all
+places), eff_BuildUsedSlotRotMatrices (*slot_count, command_slot_index, slot_matrices; i stays), eff_DrawAndAdvanceJitteredBillboards
+(bit i / [i] -> slot_index); `end` -> `quads_end` in the comments of eff_DrawAndAdvanceRotatedQuadClusters and eff_DrawYawedSlotQuads;
+include/game.h /* w */ /* h */ -> /* billboard_width */ /* billboard_height */, unk38 comment D_800F0BEC[slot_index]. FAKE comments unchanged.
+Gates (on the wave commit faefceb60; comment commit rebuilt too): verify-oracle --rebuild build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+(build_matches true, artifact_matches true); tus-check "OK: bb2.ld links all 245 TUs, one object order across sections"; engine test
+"5516 passed, 0 failed, 2 skipped"; check_completion_integrity "OK: all completed functions satisfy their category's invariants." (exit 0);
+naming_keycheck --base 80e145896 --new faefceb60 --pairs-file pairs.txt: "OK: every change is explained by the pairs" (8 moved layer-2 keys).
+Note: keycheck on the comment commit (--new df4857b87) fails on the hand-edited comments (as in wave 18, comment edits are notes, R6; gate runs on the wave commit).
