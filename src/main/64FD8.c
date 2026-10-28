@@ -17,7 +17,7 @@ extern void AddPrim(void *, void *);
  * beside SelWork f40[player]. */
 static s16 g_sel_offset_steps[2][2];
 static Unk8006E49CRec *g_sel_prim_buffers;
-static s8 D_800A35DC;
+static s8 g_sel_sheet_code_column_cursor;
 static s32 D_800A35E0;
 static s32 g_option_mode_flow_state;
 static s32 D_800A35E8;
@@ -109,15 +109,18 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
                 SELWORK->f67 += 1;
                 SELWORK->f67 &= 1;
                 SELWORK->f66 =
-                    g_sel_sheet_code_pairs[SELWORK->f67][D_800A35DC & 1];
+                    g_sel_sheet_code_pairs[SELWORK->f67]
+                                          [g_sel_sheet_code_column_cursor & 1];
                 snd_QueueSound(0, 0x7F, 0x7F);
             }
             goto confirm;
         case 2:
             if ((ret & 0xFF) != 0) {
                 row = SELWORK->f67;
-                D_800A35DC += 1;
-                SELWORK->f66 = g_sel_sheet_code_pairs[row][D_800A35DC & 1];
+                g_sel_sheet_code_column_cursor += 1;
+                SELWORK->f66 =
+                    g_sel_sheet_code_pairs[row]
+                                          [g_sel_sheet_code_column_cursor & 1];
                 snd_QueueSound(0, 0x7F, 0x7F);
             }
         confirm:
@@ -1188,7 +1191,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     }
     SELWORK->f67 = 1;
     SELWORK->f66 = g_sel_sheet_code_pairs[SELWORK->f67][1];
-    D_800A35DC = 1;
+    g_sel_sheet_code_column_cursor = 1;
     return 1;
 }
 

@@ -24,8 +24,8 @@ glabel fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
     /* 13C00 80023400 00000000 */   nop
     /* 13C04 80023404 01008424 */  addiu      $a0, $a0, 0x1
   .L80023408:
-    /* 13C08 80023408 0980033C */  lui        $v1, %hi(D_8008EB40)
-    /* 13C0C 8002340C 40EB6324 */  addiu      $v1, $v1, %lo(D_8008EB40)
+    /* 13C08 80023408 0980033C */  lui        $v1, %hi(g_fighter_dpad_angle_offsets)
+    /* 13C0C 8002340C 40EB6324 */  addiu      $v1, $v1, %lo(g_fighter_dpad_angle_offsets)
     /* 13C10 80023410 40100400 */  sll        $v0, $a0, 1
     /* 13C14 80023414 21104400 */  addu       $v0, $v0, $a0
     /* 13C18 80023418 40100200 */  sll        $v0, $v0, 1

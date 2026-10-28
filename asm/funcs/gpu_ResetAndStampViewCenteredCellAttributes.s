@@ -27,8 +27,8 @@ glabel gpu_ResetAndStampViewCenteredCellAttributes
     /* 2FAD4 8003F2D4 0F000C24 */  addiu      $t4, $zero, 0xF
     /* 2FAD8 8003F2D8 0B800B3C */  lui        $t3, %hi(g_gpu_cell_draw_attributes)
     /* 2FADC 8003F2DC B08F6B25 */  addiu      $t3, $t3, %lo(g_gpu_cell_draw_attributes)
-    /* 2FAE0 8003F2E0 0980093C */  lui        $t1, %hi(D_80094A6C)
-    /* 2FAE4 8003F2E4 6C4A2925 */  addiu      $t1, $t1, %lo(D_80094A6C)
+    /* 2FAE0 8003F2E0 0980093C */  lui        $t1, %hi(g_gpu_view_centered_cell_attribute_pattern)
+    /* 2FAE4 8003F2E4 6C4A2925 */  addiu      $t1, $t1, %lo(g_gpu_view_centered_cell_attribute_pattern)
     /* 2FAE8 8003F2E8 C31F0300 */  sra        $v1, $v1, 31
     /* 2FAEC 8003F2EC C3210700 */  sra        $a0, $a3, 7
     /* 2FAF0 8003F2F0 23508300 */  subu       $t2, $a0, $v1

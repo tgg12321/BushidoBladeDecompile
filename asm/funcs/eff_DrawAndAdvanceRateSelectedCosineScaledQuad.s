@@ -1,7 +1,7 @@
 glabel eff_DrawAndAdvanceRateSelectedCosineScaledQuad
     /* 55C84 80065484 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55C88 80065488 B803838F */  lw         $v1, %gp_rel(g_eff_quad_rate_selector)($gp)
-    /* 55C8C 8006548C 74038287 */  lh         $v0, %gp_rel(D_800A3440)($gp)
+    /* 55C8C 8006548C 74038287 */  lh         $v0, %gp_rel(g_eff_cosine_scaled_quad_rate_selector)($gp)
     /* 55C90 80065490 05000424 */  addiu      $a0, $zero, 0x5
     /* 55C94 80065494 1000BFAF */  sw         $ra, 0x10($sp)
     /* 55C98 80065498 0096010C */  jal        eff_DrawAnimatedQuads

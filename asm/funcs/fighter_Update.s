@@ -115,8 +115,8 @@ glabel fighter_Update
     /* 148BC 800240BC 2C0020AE */  sw         $zero, 0x2C($s1)
     /* 148C0 800240C0 380022AE */  sw         $v0, 0x38($s1)
   .L800240C4:
-    /* 148C4 800240C4 0980033C */  lui        $v1, %hi(D_8008E0BC)
-    /* 148C8 800240C8 BCE06324 */  addiu      $v1, $v1, %lo(D_8008E0BC)
+    /* 148C4 800240C4 0980033C */  lui        $v1, %hi(g_fighter_power_scales)
+    /* 148C8 800240C8 BCE06324 */  addiu      $v1, $v1, %lo(g_fighter_power_scales)
     /* 148CC 800240CC 0A002286 */  lh         $v0, 0xA($s1)
     /* 148D0 800240D0 72022486 */  lh         $a0, 0x272($s1)
     /* 148D4 800240D4 1E002586 */  lh         $a1, 0x1E($s1)

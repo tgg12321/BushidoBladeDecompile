@@ -229,7 +229,7 @@ s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32 arg0, s32 arg1) {
     return 0;
 }
 
-extern u32 D_800A32D0[2];
+extern u32 g_pad_direction_negative_masks[2];
 
 s32 pad_StepOffsetsGetDirectionEvents(
     u32 *pad_buttons, s32 arg1, s16 *arg2, s16 *arg3) {
@@ -257,8 +257,8 @@ s32 pad_StepOffsetsGetDirectionEvents(
             /* FAKE: byte-offset step; element-count step: score 3,
              * arg3[i]: 11 (18 with the other two FAKEs also removed). */
             arg3 = (s16 *)((u8 *)arg3 + a3_off);
-            negative_mask = D_800A32D0[i] << arg1;
-            positive_mask = D_800A32C8[i] << arg1;
+            negative_mask = g_pad_direction_negative_masks[i] << arg1;
+            positive_mask = g_pad_direction_positive_masks[i] << arg1;
             if (*arg2 == 0) {
                 v = *pad_buttons;
                 if (v & positive_mask) {
@@ -1671,11 +1671,11 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
     }
 }
 
-extern s32 D_800A3900;
+extern s32 g_sheet_pair_selection_y_offset;
 extern TILE *g_sheet_pair_panel_tile_cursor;
-extern u8 D_800F11E0[];
-extern DR_MODE D_800F1438[];
-extern TILE D_800F1498[];
+extern u8 g_sheet_pair_sprite_buffers[];
+extern DR_MODE g_sheet_pair_draw_mode_buffers[];
+extern TILE g_sheet_pair_panel_tile_buffers[];
 
 void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
     s32 sheet_pair_index, s32 highlighted_cell_index) {
@@ -1688,11 +1688,14 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
     s32 h;
     s32 x0;
 
-    D_800A3900 = 0;
+    g_sheet_pair_selection_y_offset = 0;
     buffer_index = g_gpu_presented_frame_count & 1;
-    g_sheet_pair_sprite_cursor = D_800F11E0 + buffer_index * 0x12C;
-    g_sheet_pair_draw_mode_cursor = D_800F1438 + buffer_index * 4;
-    g_sheet_pair_panel_tile_cursor = D_800F1498 + buffer_index * 4;
+    g_sheet_pair_sprite_cursor =
+        g_sheet_pair_sprite_buffers + buffer_index * 0x12C;
+    g_sheet_pair_draw_mode_cursor =
+        g_sheet_pair_draw_mode_buffers + buffer_index * 4;
+    g_sheet_pair_panel_tile_cursor =
+        g_sheet_pair_panel_tile_buffers + buffer_index * 4;
     gpu_DrawIndexedSheetPair(sheet_pair_index, 0, &draw_desc, 0);
     h = 0;
     box_size = g_row_menu_work_block->menu_resource_root->sheet_pair_box_sizes;
@@ -1700,9 +1703,9 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
     if (highlighted_cell_index != -1) {
         w = highlighted_cell_index ? 0x1F : 0x28;
         h = 0x10;
-        D_800A3900 = (box_size->y + 0x10) >> 1;
-        gpu_DrawIndexedSheetPair(
-            0x12, D_800A3900, &draw_desc, highlighted_cell_index);
+        g_sheet_pair_selection_y_offset = (box_size->y + 0x10) >> 1;
+        gpu_DrawIndexedSheetPair(0x12, g_sheet_pair_selection_y_offset,
+                                 &draw_desc, highlighted_cell_index);
         x0 = (highlighted_cell_index & 1) * 0x3A + 0x113;
         for (tile_index = 0; tile_index < 3; tile_index++) {
             SetTile(g_sheet_pair_panel_tile_cursor);
@@ -1716,7 +1719,8 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
             g_sheet_pair_panel_tile_cursor->r0 = red;
             g_sheet_pair_panel_tile_cursor->g0 = 0;
             g_sheet_pair_panel_tile_cursor->b0 = 0;
-            g_sheet_pair_panel_tile_cursor->y0 = D_800A3900 + 0x7C - tile_index;
+            g_sheet_pair_panel_tile_cursor->y0 =
+                g_sheet_pair_selection_y_offset + 0x7C - tile_index;
             g_sheet_pair_panel_tile_cursor->x0 = x0;
             g_sheet_pair_panel_tile_cursor->w = w;
             g_sheet_pair_panel_tile_cursor->h = 1;
@@ -2597,7 +2601,7 @@ s32 menu_UpdateConfirmMenu(s32 arg0, s32 pressed_buttons) {
     return menu_HandleConfirmInput(arg0, pressed_buttons);
 }
 
-extern RECT D_800A32D8;
+extern RECT g_gpu_fullscreen_image_rect;
 
 s32 gpu_BeginFullscreenImageDisplay(void) {
     /* FAKE: read at entry and held in $s3 across the calls; read at the
@@ -2606,7 +2610,7 @@ s32 gpu_BeginFullscreenImageDisplay(void) {
     RECT rect;
     s32 file_index;
 
-    rect = D_800A32D8;
+    rect = g_gpu_fullscreen_image_rect;
     if (g_row_menu_working_record_ptr->grayscale) {
         file_index = cdrom_GetFileIndex(2, 0x60);
     } else {
@@ -2635,7 +2639,7 @@ s32 gpu_BeginFullscreenImageDisplay(void) {
     return 1;
 }
 
-extern RECT D_800A32E0;
+extern RECT g_gpu_fullscreen_image_end_clear_rect;
 
 s32 gpu_EndFullscreenImageDisplay(void) {
     RECT rect;
@@ -2643,7 +2647,7 @@ s32 gpu_EndFullscreenImageDisplay(void) {
     PutDrawEnv(&g_gpu_db[g_menu_draw_buffer_counter & 1].draw);
     PutDispEnv(&g_gpu_db[g_menu_draw_buffer_counter & 1].disp);
     DrawSync(0);
-    rect = D_800A32E0;
+    rect = g_gpu_fullscreen_image_end_clear_rect;
     ClearImage(&rect, 0, 0, 0);
     DrawSync(0);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -2719,10 +2723,10 @@ s32 gpu_InitPrimBufferPair(s32 prim_storage, Unk8006E49CRec *prim_buffer_pair) {
  * in address order; values from the original EXE. */
 /* copied whole into a local 8-byte buffer */
 u8 D_800A32C0[8] = {0x70, 0x00, 0xE1, 0x01, 0x30, 0x00, 0x01, 0x00};
-u32 D_800A32C8[2] = {0x2000, 0x4000};
-u32 D_800A32D0[2] = {0x8000, 0x1000};
-RECT D_800A32D8 = {0, 0, 640, 240};
-RECT D_800A32E0 = {0, 0, 640, 480};
+u32 g_pad_direction_positive_masks[2] = {0x2000, 0x4000};
+u32 g_pad_direction_negative_masks[2] = {0x8000, 0x1000};
+RECT g_gpu_fullscreen_image_rect = {0, 0, 640, 240};
+RECT g_gpu_fullscreen_image_end_clear_rect = {0, 0, 640, 480};
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
@@ -2730,7 +2734,7 @@ TILE *g_sheet_pair_panel_tile_cursor;
 DR_MODE *g_sheet_pair_draw_mode_cursor;
 u8 *g_sheet_pair_sprite_cursor;
 s32 D_800A372C;
-s32 D_800A3900;
+s32 g_sheet_pair_selection_y_offset;
 
 /* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
  * D_8009BBFC ends at 0x8009BC04, d_8C41C.c's g_entry_menu_handlers follows):

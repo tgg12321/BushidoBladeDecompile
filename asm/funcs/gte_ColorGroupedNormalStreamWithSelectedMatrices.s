@@ -9,8 +9,8 @@ glabel gte_ColorGroupedNormalStreamWithSelectedMatrices
     /* 44C5C 8005445C 1000B1AF */  sw         $s1, 0x10($sp)
     /* 44C60 80054460 21888000 */  addu       $s1, $a0, $zero
     /* 44C64 80054464 2190A000 */  addu       $s2, $a1, $zero
-    /* 44C68 80054468 0A80143C */  lui        $s4, %hi(D_800A3828)
-    /* 44C6C 8005446C 2838948E */  lw         $s4, %lo(D_800A3828)($s4)
+    /* 44C68 80054468 0A80143C */  lui        $s4, %hi(g_light_selected_setup)
+    /* 44C6C 8005446C 2838948E */  lw         $s4, %lo(g_light_selected_setup)($s4)
     /* 44C70 80054470 00000000 */  nop
     /* 44C74 80054474 18009422 */  addi       $s4, $s4, 0x18 /* handwritten instruction */
     /* 44C78 80054478 801F153C */  lui        $s5, (0x1F800030 >> 16)

@@ -219,8 +219,8 @@ glabel eff_PrepareParticles
     /* 583EC 80067BEC 0010CC48 */  ctc2       $t4, $2 /* handwritten instruction */
     /* 583F0 80067BF0 0018CD48 */  ctc2       $t5, $3 /* handwritten instruction */
     /* 583F4 80067BF4 0020CE48 */  ctc2       $t6, $4 /* handwritten instruction */
-    /* 583F8 80067BF8 0A80033C */  lui        $v1, %hi(g_eff_particle_group_fill_counts)
-    /* 583FC 80067BFC 38346324 */  addiu      $v1, $v1, %lo(g_eff_particle_group_fill_counts)
+    /* 583F8 80067BF8 0A80033C */  lui        $v1, %hi(g_eff_particle_group_fill_indices)
+    /* 583FC 80067BFC 38346324 */  addiu      $v1, $v1, %lo(g_eff_particle_group_fill_indices)
     /* 58400 80067C00 40100500 */  sll        $v0, $a1, 1
     /* 58404 80067C04 21304300 */  addu       $a2, $v0, $v1
     /* 58408 80067C08 0F80033C */  lui        $v1, %hi(g_eff_particle_mode_position_counts)

@@ -519,8 +519,8 @@ glabel menu_UpdateEntryGrid
     /* 60930 80070130 21208002 */   addu      $a0, $s4, $zero
     /* 60934 80070134 98048293 */  lbu        $v0, %gp_rel(D_800A3564)($gp)
     /* 60938 80070138 88048397 */  lhu        $v1, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
-    /* 6093C 8007013C 1C0282A3 */  sb         $v0, %gp_rel(D_800A32E8)($gp)
-    /* 60940 80070140 1D0283A3 */  sb         $v1, %gp_rel(D_800A32E9)($gp)
+    /* 6093C 8007013C 1C0282A3 */  sb         $v0, %gp_rel(g_entry_menu_last_grid_pass_second_slot_entry_value)($gp)
+    /* 60940 80070140 1D0283A3 */  sb         $v1, %gp_rel(g_entry_menu_last_grid_pass_extra_slot_count)($gp)
     /* 60944 80070144 84CB010C */  jal        gpu_AddGradientPanel
     /* 60948 80070148 21208002 */   addu      $a0, $s4, $zero
     /* 6094C 8007014C 80CC010C */  jal        gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer

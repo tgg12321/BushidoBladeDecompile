@@ -29,8 +29,8 @@ glabel fighter_UpdateInputSteeredForwardMotion
     /* 13EAC 800236AC 00000000 */   nop
     /* 13EB0 800236B0 01008424 */  addiu      $a0, $a0, 0x1
   .L800236B4:
-    /* 13EB4 800236B4 0980033C */  lui        $v1, %hi(D_8008EB40)
-    /* 13EB8 800236B8 40EB6324 */  addiu      $v1, $v1, %lo(D_8008EB40)
+    /* 13EB4 800236B4 0980033C */  lui        $v1, %hi(g_fighter_dpad_angle_offsets)
+    /* 13EB8 800236B8 40EB6324 */  addiu      $v1, $v1, %lo(g_fighter_dpad_angle_offsets)
     /* 13EBC 800236BC 40100400 */  sll        $v0, $a0, 1
     /* 13EC0 800236C0 21104400 */  addu       $v0, $v0, $a0
     /* 13EC4 800236C4 40100200 */  sll        $v0, $v0, 1
@@ -98,14 +98,14 @@ glabel fighter_UpdateInputSteeredForwardMotion
     /* 13FA0 800237A0 0A000286 */  lh         $v0, 0xA($s0)
     /* 13FA4 800237A4 21188300 */  addu       $v1, $a0, $v1
     /* 13FA8 800237A8 4E0103A6 */  sh         $v1, 0x14E($s0)
-    /* 13FAC 800237AC 0980013C */  lui        $at, %hi(D_8008DA08)
+    /* 13FAC 800237AC 0980013C */  lui        $at, %hi(g_fighter_forward_move_rate_limit_indices)
     /* 13FB0 800237B0 21082200 */  addu       $at, $at, $v0
-    /* 13FB4 800237B4 08DA2290 */  lbu        $v0, %lo(D_8008DA08)($at)
+    /* 13FB4 800237B4 08DA2290 */  lbu        $v0, %lo(g_fighter_forward_move_rate_limit_indices)($at)
     /* 13FB8 800237B8 1A000486 */  lh         $a0, 0x1A($s0)
     /* 13FBC 800237BC 40100200 */  sll        $v0, $v0, 1
-    /* 13FC0 800237C0 0A80013C */  lui        $at, %hi(D_800A310C)
+    /* 13FC0 800237C0 0A80013C */  lui        $at, %hi(g_fighter_forward_move_rate_limits)
     /* 13FC4 800237C4 21082200 */  addu       $at, $at, $v0
-    /* 13FC8 800237C8 0C312284 */  lh         $v0, %lo(D_800A310C)($at)
+    /* 13FC8 800237C8 0C312284 */  lh         $v0, %lo(g_fighter_forward_move_rate_limits)($at)
     /* 13FCC 800237CC 00000000 */  nop
     /* 13FD0 800237D0 18008200 */  mult       $a0, $v0
     /* 13FD4 800237D4 001C0300 */  sll        $v1, $v1, 16

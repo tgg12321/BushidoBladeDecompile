@@ -6,8 +6,8 @@ glabel snd_SetReverb
     /* 4C694 8005BE94 1800BFAF */  sw         $ra, 0x18($sp)
     /* 4C698 8005BE98 3416020C */  jal        func_800858D0
     /* 4C69C 8005BE9C 1400B1AF */   sw        $s1, 0x14($sp)
-    /* 4C6A0 8005BEA0 0A80033C */  lui        $v1, %hi(D_8009AD1C)
-    /* 4C6A4 8005BEA4 1CAD6324 */  addiu      $v1, $v1, %lo(D_8009AD1C)
+    /* 4C6A0 8005BEA0 0A80033C */  lui        $v1, %hi(g_snd_stage_reverb_types)
+    /* 4C6A4 8005BEA4 1CAD6324 */  addiu      $v1, $v1, %lo(g_snd_stage_reverb_types)
     /* 4C6A8 8005BEA8 80101000 */  sll        $v0, $s0, 2
     /* 4C6AC 8005BEAC 21884300 */  addu       $s1, $v0, $v1
     /* 4C6B0 8005BEB0 00002286 */  lh         $v0, 0x0($s1)

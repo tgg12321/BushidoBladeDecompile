@@ -8,9 +8,9 @@ glabel node_LoadSlotMappedAssetAndInitRetainedDrawNodes
     /* 392E8 80048AE8 00000000 */   nop
     /* 392EC 80048AEC 08004284 */  lh         $v0, 0x8($v0)
     /* 392F0 80048AF0 140390AF */  sw         $s0, %gp_rel(g_node_retained_draw_slot_index)($gp)
-    /* 392F4 80048AF4 0A80013C */  lui        $at, %hi(D_80099BCC)
+    /* 392F4 80048AF4 0A80013C */  lui        $at, %hi(g_node_retained_draw_asset_ids)
     /* 392F8 80048AF8 21082200 */  addu       $at, $at, $v0
-    /* 392FC 80048AFC CC9B2490 */  lbu        $a0, %lo(D_80099BCC)($at)
+    /* 392FC 80048AFC CC9B2490 */  lbu        $a0, %lo(g_node_retained_draw_asset_ids)($at)
     /* 39300 80048B00 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 39304 80048B04 03008214 */  bne        $a0, $v0, .L80048B14
     /* 39308 80048B08 00000000 */   nop

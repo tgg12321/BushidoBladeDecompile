@@ -72,9 +72,9 @@ dlabel g_fight_weapon_contact_result
 enddlabel g_fight_weapon_contact_result
 
 /* 800A3828 */
-dlabel D_800A3828
+dlabel g_light_selected_setup
     .space 0x4
-enddlabel D_800A3828
+enddlabel g_light_selected_setup
 
 /* 800A382C */
 dlabel g_comb_write_not_aborted
@@ -424,14 +424,14 @@ dlabel D_800A38FC
 enddlabel D_800A38FC
 
 /* 800A3900 */
-dlabel D_800A3900
+dlabel g_sheet_pair_selection_y_offset
     .space 0x4
-enddlabel D_800A3900
+enddlabel g_sheet_pair_selection_y_offset
 
 /* 800A3904 */
-dlabel D_800A3904
+dlabel g_fight_rng_seed
     .space 0x2
-enddlabel D_800A3904
+enddlabel g_fight_rng_seed
 
 /* 800A3906 */
 dlabel g_snd_initialized
@@ -549,14 +549,14 @@ dlabel g_bitstream_delta_accumulators
 enddlabel g_bitstream_delta_accumulators
 
 /* 800A3D70 */
-dlabel D_800A3D70
+dlabel g_gpu_fog_row_moves
     .space 0x5D0
-enddlabel D_800A3D70
+enddlabel g_gpu_fog_row_moves
 
 /* 800A4340 */
-dlabel D_800A4340
+dlabel g_gpu_fog_block_moves
     .space 0x410
-enddlabel D_800A4340
+enddlabel g_gpu_fog_block_moves
 
 /* 800A4750 */
 dlabel g_gpu_grid_cell_records
@@ -569,9 +569,9 @@ dlabel g_gpu_grid_node_records
 enddlabel g_gpu_grid_node_records
 
 /* 800A7EF0 */
-dlabel D_800A7EF0
+dlabel g_gpu_grid_unique_node_buffer
     .space 0xF0
-enddlabel D_800A7EF0
+enddlabel g_gpu_grid_unique_node_buffer
 
 /* 800A7FE0 */
 dlabel g_gpu_grid_cell_run_starts
@@ -849,14 +849,14 @@ dlabel D_800EF0C4
 enddlabel D_800EF0C4
 
 /* 800EF0D8 */
-dlabel D_800EF0D8
+dlabel g_wave_even_row_vertices
     .space 0x90
-enddlabel D_800EF0D8
+enddlabel g_wave_even_row_vertices
 
 /* 800EF168 */
-dlabel D_800EF168
+dlabel g_wave_odd_row_vertices
     .space 0x3F0
-enddlabel D_800EF168
+enddlabel g_wave_odd_row_vertices
 
 /* 800EF558 */
 dlabel g_wave_column_phases
@@ -1239,19 +1239,19 @@ dlabel D_800F11A0
 enddlabel D_800F11A0
 
 /* 800F11E0 */
-dlabel D_800F11E0
+dlabel g_sheet_pair_sprite_buffers
     .space 0x258
-enddlabel D_800F11E0
+enddlabel g_sheet_pair_sprite_buffers
 
 /* 800F1438 */
-dlabel D_800F1438
+dlabel g_sheet_pair_draw_mode_buffers
     .space 0x60
-enddlabel D_800F1438
+enddlabel g_sheet_pair_draw_mode_buffers
 
 /* 800F1498 */
-dlabel D_800F1498
+dlabel g_sheet_pair_panel_tile_buffers
     .space 0x3A0
-enddlabel D_800F1498
+enddlabel g_sheet_pair_panel_tile_buffers
 
 /* 800F1838 */
 dlabel patch0
@@ -1778,9 +1778,9 @@ dlabel _svm_pg
 enddlabel _svm_pg
 
 /* 800FF6A8 */
-dlabel D_800FF6A8
+dlabel g_snd_listed_vab_copy
     .space 0x251C
-enddlabel D_800FF6A8
+enddlabel g_snd_listed_vab_copy
 
 /* 80101BC4 */
 dlabel _svm_vh
@@ -2418,9 +2418,9 @@ dlabel g_fight_ballistic_records
 enddlabel g_fight_ballistic_records
 
 /* 80104F38 */
-dlabel D_80104F38
+dlabel g_snd_fake_open_vab_copy
     .space 0x1B18
-enddlabel D_80104F38
+enddlabel g_snd_fake_open_vab_copy
 
 /* 80106A50 */
 dlabel g_saved_record

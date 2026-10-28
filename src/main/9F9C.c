@@ -1705,7 +1705,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
 
 extern s8 D_800A30FC;
 extern s8 D_800A30FD;
-extern s32 D_800FF6A8;
+extern s32 g_snd_listed_vab_copy;
 
 void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
     s32 load_addr = (s32)0x80190800;
@@ -1736,7 +1736,7 @@ void fight_ResetGraphAndReloadResourcesOnCachedKeyChange(void) {
             sys_Panic();
         }
 
-        copy_dest = &D_800FF6A8;
+        copy_dest = &g_snd_listed_vab_copy;
         memcpy(copy_dest, load_addr, copy_size);
         snd_RebaseListedVabs((s32)copy_dest - load_addr);
     }
@@ -1753,7 +1753,7 @@ void snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9(void) {
     if (copy_size >= 0xE81) {
         sys_Panic();
     }
-    copy_dest = &D_80104F38;
+    copy_dest = &g_snd_fake_open_vab_copy;
     memcpy(copy_dest, (s32)0x80190800, copy_size);
     snd_VabFakeOpen9((s32)copy_dest - load_addr);
 }
@@ -1770,7 +1770,7 @@ void snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4(void) {
     if (copy_size >= 0x1B19) {
         sys_Panic();
     }
-    copy_dest = &D_80104F38;
+    copy_dest = &g_snd_fake_open_vab_copy;
     memcpy(copy_dest, (s32)0x80190800, copy_size);
     snd_VabFakeOpen8And4((s32)copy_dest - load_addr);
 }
@@ -1959,7 +1959,7 @@ void fight_Init(void) {
                 g_fight_step_row_tint_red, g_fight_step_row_tint_green,
                 g_fight_step_row_tint_blue);
         } else if (g_fight_mode_selector == 2) {
-            u8 *p = D_800A3100
+            u8 *p = g_fight_group_tint_colors
                 [g_fighter_group_flags[D_80101EC8[0].character_data_index]];
             if (D_800A389A == 0) {
                 gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
@@ -2052,7 +2052,7 @@ void fight_Init(void) {
     snd_ResetStageSoundState();
     snd_SetReverb(g_fight_stage_index);
     if (g_fight_mode_selector == 6) {
-        rng_SetSeed(D_800A3904);
+        rng_SetSeed(g_fight_rng_seed);
     }
 }
 
@@ -3840,7 +3840,7 @@ s32 motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
     s32 i;
     s32 j;
 
-    p = D_8008EB1C[g_fight_step_row_column];
+    p = g_motion_preferred_variant_nibble_pairs[g_fight_step_row_column];
     val = g_fighter_motion_data_ids[fighter_record->other->character_data_index]
                                    [fighter_record->other->weapon_id];
     for (j = 0; j < 2; j++) {
@@ -3928,7 +3928,8 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
         }
     } else {
         p->default_variant_index =
-            D_8008DD5C[p->character_data_index][p->weapon_id];
+            g_fighter_default_variant_indices[p->character_data_index]
+                                             [p->weapon_id];
     }
 
     p->object_variant_index = -1;
@@ -4228,7 +4229,7 @@ s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
         s32 bearing_offset;
 
         px = fighter_record->collision_pos.vx;
-        bearing_offset = D_8008EB40[input_row][input_column];
+        bearing_offset = g_fighter_dpad_angle_offsets[input_row][input_column];
 
         pos[0] = px;
         pos[1] = fighter_record->collision_pos.vy - 0x64;
@@ -4321,7 +4322,7 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
                 a0++;
             }
 
-            a2 = D_8008EB40[a0][a1];
+            a2 = g_fighter_dpad_angle_offsets[a0][a1];
 
             if (g_fight_tracked_view_setting != 0 &&
                 arg0->cpu_controlled == 0) {
@@ -4366,7 +4367,9 @@ void fighter_UpdateInputSteeredForwardMotion(Unk80101EC8Record *arg0) {
                 new_14e = sub_result + div16;
                 arg0->forward_move_rate = new_14e;
 
-                tbl_val = D_800A310C[D_8008DA08[arg0->character_data_index]];
+                tbl_val = g_fighter_forward_move_rate_limits
+                    [g_fighter_forward_move_rate_limit_indices
+                         [arg0->character_data_index]];
                 /* FAKE: the second read of arg0->size_scale is staged through
                  * the dead `sub_result`, as above; reading in place: score
                  * 11. */
@@ -4599,7 +4602,7 @@ void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *arg0) {
 /* [character_data_index][min(unk_272, 3)]: 4.12 scale of base_power into power
  * (fighter_Update).
  */
-extern s16 D_8008E0BC[27][4];
+extern s16 g_fighter_power_scales[27][4];
 /* [g_fighter_group_flags[character_data_index]][weapon_id]: the move command
  * fighter_Update hands object_SpawnScatteredAt. */
 extern u8 D_8008D90C[2][8];
@@ -4682,8 +4685,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->pad_input.unheld = 0xFFFF;
     }
     rec->power =
-        (rec->base_power * D_8008E0BC[rec->character_data_index]
-                                     [rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
+        (rec->base_power *
+         g_fighter_power_scales[rec->character_data_index]
+                               [rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
         12;
     if (rec->move_started == 1) {
         rec->move_started = 0;

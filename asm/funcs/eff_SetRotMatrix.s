@@ -15,8 +15,8 @@ glabel eff_SetRotMatrix
     /* 527E0 80061FE0 D7FC010C */  jal        RotMatrix
     /* 527E4 80061FE4 040082A4 */   sh        $v0, 0x4($a0)
     /* 527E8 80061FE8 21200002 */  addu       $a0, $s0, $zero
-    /* 527EC 80061FEC 0A80053C */  lui        $a1, %hi(D_8009BB74)
-    /* 527F0 80061FF0 74BBA524 */  addiu      $a1, $a1, %lo(D_8009BB74)
+    /* 527EC 80061FEC 0A80053C */  lui        $a1, %hi(g_eff_rotation_matrix_scale)
+    /* 527F0 80061FF0 74BBA524 */  addiu      $a1, $a1, %lo(g_eff_rotation_matrix_scale)
     /* 527F4 80061FF4 1C0000AE */  sw         $zero, 0x1C($s0)
     /* 527F8 80061FF8 180000AE */  sw         $zero, 0x18($s0)
     /* 527FC 80061FFC 37FA010C */  jal        ScaleMatrixL

@@ -243,7 +243,7 @@ u8 g_fighter_group_flags[28] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0};
 
 /* fighter_UpdateInputSteeredForwardMotion's table. */
-u8 D_8008DA08[72] = {
+u8 g_fighter_forward_move_rate_limit_indices[72] = {
     0, 1, 2, 1, 2, 1, 0, 0, 2, 1, 1, 2, 0, 1, 2, 0, 1, 1, 2, 0, 2, 1, 1, 2,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 2, 1, 1, 2,
     0, 1, 2, 0, 1, 1, 2, 0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -310,7 +310,7 @@ Unk8008DCCCEntry D_8008DCCC[18] = {
 
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.default_variant_index
  */
-u8 D_8008DD5C[27][8] = {
+u8 g_fighter_default_variant_indices[27][8] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 1, 0, 0, 0},
     {2, 2, 2, 2, 2, 0, 0, 0}, {1, 1, 0, 2, 1, 0, 0, 0},
     {1, 1, 1, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0},
@@ -362,7 +362,7 @@ u16 g_fighter_base_powers[27][6] = {
     {5888, 5888, 5888, 5888, 5888, 5888}};
 
 /* [character_data_index][i] (fighter_Update) */
-s16 D_8008E0BC[27][4] = {
+s16 g_fighter_power_scales[27][4] = {
     {4096, 3520, 3280, 2496}, {4096, 3520, 3200, 2368},
     {4096, 3424, 3144, 2359}, {4096, 3520, 3264, 2464},
     {4096, 3424, 3144, 2359}, {4096, 3520, 3200, 2368},
@@ -587,7 +587,7 @@ u8 g_snd_stage_sound_slot_specs[38][8] = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
 /* snd_UpdateStageSounds's {a, b} thresholds of types 2..6. */
-Unk8008EA44Entry D_8008EA44[5] = {
+Unk8008EA44Entry g_snd_stage_sound_slot_trigger_delays[5] = {
     {6, 9}, {15, 15}, {10, 13}, {10, 10}, {5, 15}};
 
 /* The source positions of sound types 5 and 6 (snd_UpdateStageSounds:
@@ -596,7 +596,7 @@ s32 g_snd_stage_sound_slot_positions[2][4] = {{0, 0, 0, 0}, {190, 0, -10, 0}};
 
 /* [g_fight_presentation_index] (fight_InitImageAndPlaybackPresentation,
  * 2B344.c); 40 pairs from the gap. */
-s8 D_8008EA70[40][2] = {
+s8 g_fight_presentation_cd_audio_entries[40][2] = {
     {33, 4}, {33, 5}, {33, 0}, {33, 1}, {33, 2}, {33, 3}, {-1, 0}, {-1, 0},
     {-1, 0}, {-1, 0}, {-1, 0}, {0, 0},  {1, 7},  {1, 13}, {2, 1},  {1, 2},
     {1, 3},  {-1, 0}, {2, 0},  {1, 4},  {1, 5},  {1, 14}, {-1, 0}, {-1, 3},
@@ -630,7 +630,8 @@ s32 D_8008EB18 = 0;
 /* [g_fight_step_row_column]
  * (motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue); 6
  * pairs from the gap. */
-u8 D_8008EB1C[6][2] = {{1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
+u8 g_motion_preferred_variant_nibble_pairs[6][2] = {
+    {1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
 
 /* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
 u8 D_8008EB28[8][2] = {
@@ -642,7 +643,8 @@ u8 D_8008EB38[8] = {51, 52, 53, 54, 55, 56, 51, 51};
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits
  * (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow,
  * fighter_UpdateInputSteeredForwardMotion). */
-s16 D_8008EB40[3][3] = {{-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
+s16 g_fighter_dpad_angle_offsets[3][3] = {
+    {-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
 
 /* fight_UpdatePairedInputTotalsEventsAndMidpointEffects's 6 rows
  * (D_80101EC8[0].move_kind mode). */
@@ -655,7 +657,8 @@ Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6] = {
 u8 g_fight_midpoint_effect_event_ids[6] = {5, 8, 7, 6, 7, 8};
 
 /* fighter_ResolveBoneHit's table */
-u8 D_8008EB74[3][2][2] = {{{1, 2}, {0, 0}}, {{0, 1}, {0, 1}}, {{0, 2}, {0, 1}}};
+u8 g_fighter_power_difference_move_events[3][2][2] = {
+    {{1, 2}, {0, 0}}, {{0, 1}, {0, 1}}, {{0, 2}, {0, 1}}};
 
 /* [Unk80101EC8Record.wielded_object_kind] and [object kind]: the id handed to
  * resource_RequestEntryWithLinkedEntriesAndLatchCategory /
@@ -667,7 +670,7 @@ u8 g_resource_kind_entry_ids[32] = {
     0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x2E, 0x2F, 0x30, 0x31};
 
 /* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
-u16 D_8008EBA0[22] = {
+u16 g_object_bone_hit_deflect_angles[22] = {
     0x780,  0xF880, 0xFA00, 0x600, 0xFA80, 0x580, 0xFB00, 0xFB80,
     0xFE00, 0xFE80, 0x500,  0x480, 0x200,  0x180, 0xFD00, 0xFD80,
     0xFF00, 0xFF80, 0x300,  0x280, 0x100,  0x80};

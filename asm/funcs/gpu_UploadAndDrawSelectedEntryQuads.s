@@ -119,11 +119,11 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F69C 8006EE9C 00141100 */  sll        $v0, $s1, 16
     /* 5F6A0 8006EEA0 1C004010 */  beqz       $v0, .L8006EF14
     /* 5F6A4 8006EEA4 40100300 */   sll       $v0, $v1, 1
-    /* 5F6A8 8006EEA8 1C028293 */  lbu        $v0, %gp_rel(D_800A32E8)($gp)
+    /* 5F6A8 8006EEA8 1C028293 */  lbu        $v0, %gp_rel(g_entry_menu_last_grid_pass_second_slot_entry_value)($gp)
     /* 5F6AC 8006EEAC 00000000 */  nop
     /* 5F6B0 8006EEB0 06004314 */  bne        $v0, $v1, .L8006EECC
     /* 5F6B4 8006EEB4 00000000 */   nop
-    /* 5F6B8 8006EEB8 1D028393 */  lbu        $v1, %gp_rel(D_800A32E9)($gp)
+    /* 5F6B8 8006EEB8 1D028393 */  lbu        $v1, %gp_rel(g_entry_menu_last_grid_pass_extra_slot_count)($gp)
     /* 5F6BC 8006EEBC 88048287 */  lh         $v0, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
     /* 5F6C0 8006EEC0 00000000 */  nop
     /* 5F6C4 8006EEC4 17006210 */  beq        $v1, $v0, .L8006EF24

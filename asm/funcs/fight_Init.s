@@ -267,8 +267,8 @@ glabel fight_Init
     /* E888 8001E088 00000000 */   nop
     /* E88C 8001E08C 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
     /* E890 8001E090 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
-    /* E894 8001E094 0A80033C */  lui        $v1, %hi(D_800A3100)
-    /* E898 8001E098 00316324 */  addiu      $v1, $v1, %lo(D_800A3100)
+    /* E894 8001E094 0A80033C */  lui        $v1, %hi(g_fight_group_tint_colors)
+    /* E898 8001E098 00316324 */  addiu      $v1, $v1, %lo(g_fight_group_tint_colors)
     /* E89C 8001E09C 0980013C */  lui        $at, %hi(g_fighter_group_flags)
     /* E8A0 8001E0A0 21082200 */  addu       $at, $at, $v0
     /* E8A4 8001E0A4 ECD92290 */  lbu        $v0, %lo(g_fighter_group_flags)($at)
@@ -488,8 +488,8 @@ glabel fight_Init
     /* EBCC 8001E3CC 06000224 */  addiu      $v0, $zero, 0x6
     /* EBD0 8001E3D0 05006214 */  bne        $v1, $v0, .L8001E3E8
     /* EBD4 8001E3D4 00000000 */   nop
-    /* EBD8 8001E3D8 0A80043C */  lui        $a0, %hi(D_800A3904)
-    /* EBDC 8001E3DC 04398494 */  lhu        $a0, %lo(D_800A3904)($a0)
+    /* EBD8 8001E3D8 0A80043C */  lui        $a0, %hi(g_fight_rng_seed)
+    /* EBDC 8001E3DC 04398494 */  lhu        $a0, %lo(g_fight_rng_seed)($a0)
     /* EBE0 8001E3E0 6B5C000C */  jal        rng_SetSeed
     /* EBE4 8001E3E4 00000000 */   nop
   .L8001E3E8:

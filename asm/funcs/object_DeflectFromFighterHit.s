@@ -44,9 +44,9 @@ glabel object_DeflectFromFighterHit
     /* 2212C 8003192C D8009226 */  addiu      $s2, $s4, 0xD8
     /* 22130 80031930 21284002 */  addu       $a1, $s2, $zero
     /* 22134 80031934 40101500 */  sll        $v0, $s5, 1
-    /* 22138 80031938 0980013C */  lui        $at, %hi(D_8008EBA0)
+    /* 22138 80031938 0980013C */  lui        $at, %hi(g_object_bone_hit_deflect_angles)
     /* 2213C 8003193C 21082200 */  addu       $at, $at, $v0
-    /* 22140 80031940 A0EB3194 */  lhu        $s1, %lo(D_8008EBA0)($at)
+    /* 22140 80031940 A0EB3194 */  lhu        $s1, %lo(g_object_bone_hit_deflect_angles)($at)
     /* 22144 80031944 2C00708E */  lw         $s0, 0x2C($s3)
     /* 22148 80031948 3000668E */  lw         $a2, 0x30($s3)
     /* 2214C 8003194C 3400638E */  lw         $v1, 0x34($s3)

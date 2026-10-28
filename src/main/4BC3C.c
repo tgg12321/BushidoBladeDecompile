@@ -332,7 +332,7 @@ void snd_CloseListedVabs(void) {
     }
 }
 
-extern s16 D_8009AD1C[][2];
+extern s16 g_snd_stage_reverb_types[][2];
 
 s32 snd_SetReverb(s32 reverb_index) {
     s32 result;
@@ -341,7 +341,7 @@ s32 snd_SetReverb(s32 reverb_index) {
     s16 *base;
     s32 var_4;
     func_800858D0(0);
-    base = &D_8009AD1C[0][0];
+    base = &g_snd_stage_reverb_types[0][0];
     p = base + reverb_index * 2;
     var_4 = reverb_index << 1;
     if (*p >= 0) {
@@ -603,7 +603,7 @@ void snd_FlushSoundQueue(void) {
  * rows, picked by its argument (38, the size up to 4D0A8.c's .data); [0] is
  * the reverb type it sets, or < 0 to leave the reverb as is; [1] has no
  * reader. */
-s16 D_8009AD1C[38][2] = {
+s16 g_snd_stage_reverb_types[38][2] = {
     {2, 2},  {1, 2},  {1, 2},  {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
     {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
     {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},

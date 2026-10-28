@@ -5,16 +5,16 @@ glabel pad_StepOffsetsGetDirectionEvents
     /* 59ACC 800692CC 01000E24 */  addiu      $t6, $zero, 0x1
     /* 59AD0 800692D0 21680000 */  addu       $t5, $zero, $zero
     /* 59AD4 800692D4 21480000 */  addu       $t1, $zero, $zero
-    /* 59AD8 800692D8 0A800C3C */  lui        $t4, %hi(D_800A32D0)
-    /* 59ADC 800692DC D0328C25 */  addiu      $t4, $t4, %lo(D_800A32D0)
+    /* 59AD8 800692D8 0A800C3C */  lui        $t4, %hi(g_pad_direction_negative_masks)
+    /* 59ADC 800692DC D0328C25 */  addiu      $t4, $t4, %lo(g_pad_direction_negative_masks)
   .L800692E0:
     /* 59AE0 800692E0 2138ED00 */  addu       $a3, $a3, $t5
     /* 59AE4 800692E4 0000828D */  lw         $v0, 0x0($t4)
     /* 59AE8 800692E8 80180B00 */  sll        $v1, $t3, 2
     /* 59AEC 800692EC 0440A200 */  sllv       $t0, $v0, $a1
-    /* 59AF0 800692F0 0A80013C */  lui        $at, %hi(D_800A32C8)
+    /* 59AF0 800692F0 0A80013C */  lui        $at, %hi(g_pad_direction_positive_masks)
     /* 59AF4 800692F4 21082300 */  addu       $at, $at, $v1
-    /* 59AF8 800692F8 C832228C */  lw         $v0, %lo(D_800A32C8)($at)
+    /* 59AF8 800692F8 C832228C */  lw         $v0, %lo(g_pad_direction_positive_masks)($at)
     /* 59AFC 800692FC 0000C384 */  lh         $v1, 0x0($a2)
     /* 59B00 80069300 00000000 */  nop
     /* 59B04 80069304 0C006014 */  bnez       $v1, .L80069338

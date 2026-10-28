@@ -14,8 +14,8 @@
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 extern void AddPrim(void *, void *);
 
-extern u8 D_800A32E8;
-extern u8 D_800A32E9;
+extern u8 g_entry_menu_last_grid_pass_second_slot_entry_value;
+extern u8 g_entry_menu_last_grid_pass_extra_slot_count;
 extern RECT D_800A32EC;
 
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
@@ -65,13 +65,13 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     s16 i;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    D_800A32E8 = 0x7F;
+    g_entry_menu_last_grid_pass_second_slot_entry_value = 0x7F;
     g_entry_menu_fight_mode = arg2->fight_mode;
     g_entry_menu_prim_buffers = (Unk8006E49CRec *)arg0;
     g_entry_menu_working_record_ptr = arg2;
     g_entry_menu_row_phase_extra_slot_count = 0;
     g_entry_menu_grid_phase_extra_slot_count = 0;
-    D_800A32E9 = 0;
+    g_entry_menu_last_grid_pass_extra_slot_count = 0;
     g_entry_menu_init_extra_slot_count = arg1;
     g_entry_menu_arena_cursor = arg0 + 0x58;
     g_entry_menu_resources = (Unk8006EA28Rec *)(arg0 + 0x58);
@@ -303,8 +303,8 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void) {
     }
 }
 
-extern u8 D_800A32E8;
-extern u8 D_800A32E9;
+extern u8 g_entry_menu_last_grid_pass_second_slot_entry_value;
+extern u8 g_entry_menu_last_grid_pass_extra_slot_count;
 extern RECT g_entry_menu_entry_upload_rect;
 
 void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
@@ -378,8 +378,10 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *draw_context) {
             goto draw;
         }
         if (slot_index != 0) {
-            if (D_800A32E8 != entry_value ||
-                D_800A32E9 != g_entry_menu_grid_phase_extra_slot_count) {
+            if (g_entry_menu_last_grid_pass_second_slot_entry_value !=
+                    entry_value ||
+                g_entry_menu_last_grid_pass_extra_slot_count !=
+                    g_entry_menu_grid_phase_extra_slot_count) {
                 rectbuf = g_entry_menu_entry_upload_rect;
                 LoadImage(&rectbuf, (u32 *)upload_pixels_addr);
                 DrawSync(0);
@@ -909,8 +911,10 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     gpu_AddThreeGreyTilesStackedUp((s32 *)draw_context, tile_rect, 1);
     menu_UpdateEntryGridCursors(draw_context);
     gpu_UploadAndDrawSelectedEntryQuads(draw_context);
-    D_800A32E8 = g_entry_menu_slot_records.rec[1].cursor_entry_value;
-    D_800A32E9 = g_entry_menu_grid_phase_extra_slot_count;
+    g_entry_menu_last_grid_pass_second_slot_entry_value =
+        g_entry_menu_slot_records.rec[1].cursor_entry_value;
+    g_entry_menu_last_grid_pass_extra_slot_count =
+        g_entry_menu_grid_phase_extra_slot_count;
     gpu_AddGradientPanel(draw_context);
     gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(draw_context);
 }
@@ -2309,7 +2313,7 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-u8 D_800A32E8 = 0;
-u8 D_800A32E9 = 0;
+u8 g_entry_menu_last_grid_pass_second_slot_entry_value = 0;
+u8 g_entry_menu_last_grid_pass_extra_slot_count = 0;
 RECT D_800A32EC = {144, 507, 48, 1};
 RECT g_entry_menu_entry_upload_rect = {896, 384, 64, 64};

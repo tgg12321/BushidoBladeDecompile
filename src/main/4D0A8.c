@@ -1741,7 +1741,7 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
 }
 
 /* .data 0x8009ADB4..0x8009B450, this file's .data (d_8A588.c's g_vab_id_list
- * and 4BC3C.c's D_8009AD1C precede; the data-only d_8BC50.c's
+ * and 4BC3C.c's g_snd_stage_reverb_types precede; the data-only d_8BC50.c's
  * g_gpu_time_field_line_origins .. follow). D_8009ADB4 is the 3-cell sheet
  * header whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
  * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's bd0,

@@ -338,7 +338,7 @@ void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *a0) {
     }
 }
 
-extern u8 D_8008EB74[3][2][2];
+extern u8 g_fighter_power_difference_move_events[3][2][2];
 
 /* the tail fighter_ResolveBoneHit's cases 0, 1-3 and 4-5 share */
 static inline s32 fighter_ResolveBoneHitTail(
@@ -437,7 +437,8 @@ s32 fighter_ResolveBoneHit(
             arg1->unk_B4 = var_5->unk_B4 = var_12;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 var_4, var_12 ? 0xF : 2, scr, 0);
-            code = arg1->pending_move_event = D_8008EB74[var_10][sign][var_12];
+            code = arg1->pending_move_event =
+                g_fighter_power_difference_move_events[var_10][sign][var_12];
             if (code == 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     var_4 == 0, 0x25, scr, 0);
@@ -783,7 +784,8 @@ void fighter_TriggerOpponentResponseOnMoveFrame(void) {
             state == 0x23 || state == 0 || state == 0x10 || state == 0x13 ||
             state == 0x30 || state == 0x31 || state == 0x1A || state == 0xB ||
             state == 0x12 || state == 0x2A || state == 0xC || state == 0x19) {
-            if (g_fighter_horizontal_separation < D_800A3134) {
+            if (g_fighter_horizontal_separation <
+                g_fighter_opponent_response_max_separation) {
                 base->other->pending_move_event = 0x1C;
                 fighter_TryDropQueuedHeadAtBone(base->other);
                 if (base->other->move_kind == 0x25) {
@@ -4409,7 +4411,7 @@ void object_DeflectFromFighterHit(
     }
 
     mat = &scr->rot_matrix;
-    angle1 = D_8008EBA0[idx] & 0xFFF;
+    angle1 = g_object_bone_hit_deflect_angles[idx] & 0xFFF;
     angle2 =
         (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
     /* identity 3x3 rotation matrix at scr->rot_matrix */
@@ -5463,12 +5465,13 @@ void snd_UpdateStageSounds(void) {
             count = (u16)buf[i] + 1;
             buf[i] = count;
             scount = (s16)count;
-            thresh = D_8008EA44[var_10].a;
+            thresh = g_snd_stage_sound_slot_trigger_delays[var_10].a;
             limit = thresh * 30;
 
             if (limit < scount) {
                 s32 ratio =
-                    ((scount - limit) << 10) / (D_8008EA44[var_10].b * 30);
+                    ((scount - limit) << 10) /
+                    (g_snd_stage_sound_slot_trigger_delays[var_10].b * 30);
 
                 if (var_9 < ratio) {
                     buf[i] = 0;

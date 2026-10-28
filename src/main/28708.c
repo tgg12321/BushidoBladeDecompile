@@ -570,10 +570,10 @@ static u8 g_memcard_status15_retry_count;
 static u8 g_memcard_status_wait_countdown;
 static u8 D_800A3334;
 static u8 g_memcard_status5_retries_exhausted;
-static u8 D_800A333C;
+static u8 g_memcard_retry_load_status8_latched;
 static u8 D_800A3340;
-static u8 D_800A3344;
-static u8 D_800A3348;
+static u8 g_memcard_save_prompt_status10_retry_count;
+static u8 g_memcard_save_prompt_status8_retry_count;
 static u8 g_memcard_message_countdown;
 static u8 g_memcard_prompt_choice;
 static u8 D_800A3354;
@@ -627,12 +627,12 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         g_memcard_status_wait_countdown = 0x5A;
         D_800A3334 = 0;
         g_memcard_status5_retries_exhausted = 0;
-        D_800A333C = 0;
+        g_memcard_retry_load_status8_latched = 0;
     }
 
     v0 = memcard_Update();
 
-    if (D_800A333C != 0) {
+    if (g_memcard_retry_load_status8_latched != 0) {
         gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
         goto timer;
     }
@@ -701,7 +701,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         case 4:
             g_memcard_status8_retry_count++;
             if ((u8)g_memcard_status8_retry_count >= 5) {
-                D_800A333C = 1;
+                g_memcard_retry_load_status8_latched = 1;
                 g_memcard_status_wait_countdown = 0x5A;
                 break;
             }
@@ -754,7 +754,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         case 10:
             goto timer;
         case 3:
-            D_800A333C = 1;
+            g_memcard_retry_load_status8_latched = 1;
             g_memcard_status_wait_countdown = 0x5A;
             break;
         default:
@@ -923,8 +923,8 @@ sel_dispatch:
         case 0:
             break;
         case 4:
-            D_800A3348++;
-            if (((u8)D_800A3348) >= 5) {
+            g_memcard_save_prompt_status8_retry_count++;
+            if (((u8)g_memcard_save_prompt_status8_retry_count) >= 5) {
                 D_800A3354 = 1;
                 g_memcard_message_countdown = 0x5A;
                 break;
@@ -946,8 +946,8 @@ sel_dispatch:
             memcard_RequestLoad();
             break;
         case 6:
-            D_800A3344++;
-            if (((u8)D_800A3344) >= 5) {
+            g_memcard_save_prompt_status10_retry_count++;
+            if (((u8)g_memcard_save_prompt_status10_retry_count) >= 5) {
                 g_memcard_validation_load_active = 0;
                 break;
             }
@@ -1039,9 +1039,9 @@ sel_dispatch:
                         result = 1;
                         break;
                     }
-                    D_800A3348 = 0;
+                    g_memcard_save_prompt_status8_retry_count = 0;
                     D_800A3340 = 0;
-                    D_800A3344 = 0;
+                    g_memcard_save_prompt_status10_retry_count = 0;
                     g_memcard_validation_load_active = 1;
                     memcard_RequestLoad();
                 } else {

@@ -23,8 +23,8 @@ extern u8 g_resource_entry_linked_entries[58][2];
 /* SDK OT_TYPE: one DMA tag word per table entry. */
 extern u32 *g_gpu_ot_offset_ptr;
 
-extern DR_MOVE D_800A3D70[31][2];
-extern DR_MOVE D_800A4340[19][2];
+extern DR_MOVE g_gpu_fog_row_moves[31][2];
+extern DR_MOVE g_gpu_fog_block_moves[19][2];
 extern DR_MOVE g_gpu_draw_move_packets[2][10];
 
 /* The VRAM rectangle font_LoadImage loads the image at g_font_image into
@@ -145,7 +145,7 @@ extern Unk8008DCCCEntry D_8008DCCC[18];
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits
  * (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow,
  * fighter_UpdateInputSteeredForwardMotion). */
-extern s16 D_8008EB40[3][3];
+extern s16 g_fighter_dpad_angle_offsets[3][3];
 
 /* Judge: the sine table, one full turn in 0x1000 steps, 1.0 = 0x1000
  * (cos(a) = Judge[(a + 0x400) & 0xFFF]). */
@@ -193,7 +193,7 @@ extern SVec4i16 *D_8008D88C[32];
 extern SVec4i16 D_8008D774[2];
 extern SVec4i16 g_unit_y_vector;
 extern u8 g_fighter_group_flags[];
-extern u8 D_8008DA08[0x48];
+extern u8 g_fighter_forward_move_rate_limit_indices[0x48];
 extern s16 D_8008DA50[]; /* [character_data_index] (fighter_Update) */
 extern s16 D_8008DA94[]; /* [character_data_index] (fighter_Update) */
 extern s16 D_8008DAD8[]; /* [character_data_index] (fighter_Update) */
@@ -202,7 +202,7 @@ extern s16 D_8008DAD8[]; /* [character_data_index] (fighter_Update) */
 extern u16 g_fighter_motion_data_ids[27][8];
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.default_variant_index
  */
-extern u8 D_8008DD5C[27][8];
+extern u8 g_fighter_default_variant_indices[27][8];
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.base_move_frame_step
  */
 extern u16 g_fighter_base_move_frame_steps[27][6];
@@ -230,7 +230,7 @@ extern u8 D_8008E5CC[][8]; /* [character_data_index][weapon_id] of D_80101EC8 */
 extern u8 D_8008E6A4[][6]; /* [character_data_index][weapon_id] of D_80101EC8 */
 extern u8 D_8008E748;
 extern u8 g_fight_opponent_stage_indices;
-extern Unk8008EA44Entry D_8008EA44[5];
+extern Unk8008EA44Entry g_snd_stage_sound_slot_trigger_delays[5];
 
 /* per-stage s16 table, 34 entries */
 extern s16 D_8008EAC0[34];
@@ -243,7 +243,7 @@ extern s16 D_8008EB0C;
 extern s32 D_8008EB10;
 extern s32 D_8008EB14;
 extern s32 D_8008EB18;
-extern u8 D_8008EB1C[][2];
+extern u8 g_motion_preferred_variant_nibble_pairs[][2];
 /* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
 extern u8 D_8008EB28[8][2];
 extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.weapon_entry_id */
@@ -251,7 +251,7 @@ extern Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6];
 extern u8 g_fight_midpoint_effect_event_ids[6];
 extern u8 g_resource_kind_entry_ids[];
 /* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
-extern u16 D_8008EBA0[22];
+extern u16 g_object_bone_hit_deflect_angles[22];
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
 extern u8 g_snd_stage_sequence_base_sounds[6];
@@ -274,7 +274,7 @@ extern u8 D_8008F19C[];
 extern u8 D_8008F1A8[];
 extern u8 D_8008F204[];
 extern u8 *g_fight_command_streams[];
-extern u8 D_8009016C[];
+extern u8 g_fight_presentation_playback_file_id_offsets[];
 extern u32 g_font_image[];
 extern u32 g_gpu_last_fog_ot_index;
 extern s32 D_80090600;
@@ -295,9 +295,9 @@ extern Unk8009A8C8Entry D_8009A8C8[][8];
 extern u8 D_8009A9B4[][2]; /* byte pairs (fighter_InitCpuControl) */
 /* [g_fighter_group_flags flag] -> 3 bytes
  * (gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels args), stride 4 */
-extern u8 D_800A3100[][4];
-extern s16 D_800A310C[4];
-extern s32 D_800A3134;
+extern u8 g_fight_group_tint_colors[][4];
+extern s16 g_fighter_forward_move_rate_limits[4];
+extern s32 g_fighter_opponent_response_max_separation;
 extern s32 D_800A3140;
 extern u8 D_800A31DA;
 extern u8 g_fight_reinit_reuses_assets;
@@ -467,7 +467,7 @@ extern u8 g_fight_step_row_tint_blue;
 extern s32 D_800A38F0;
 extern s32 g_fight_time_limit_elapsed_frames;
 extern u8 g_fight_stage_list_draw_cursor;
-extern u16 D_800A3904;
+extern u16 g_fight_rng_seed;
 extern u8 g_snd_initialized;
 extern u8 g_fight_stage_start_count;
 extern u8 D_800A390C;
@@ -549,7 +549,7 @@ extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
  */
 extern s32 *g_reloc_block_entry_tables[];
 extern Unk80104E88Rec g_fight_ballistic_records[];
-extern s32 D_80104F38;
+extern s32 g_snd_fake_open_vab_copy;
 
 /* fight_BuildOpponentOrder's list: the set bit numbers of g_saved_record.unk_00
  * & mask, shuffled, plus up to three appended values
@@ -592,8 +592,8 @@ extern TexRec D_8009B8C8[1];
 extern TexRec D_8009B8D0[1];
 extern TexRec D_8009B8D8[1];
 extern TexRec D_8009B8E0[1];
-extern TexRec D_8009B8E8[7];
-extern TexRec D_8009B920[4];
+extern TexRec g_eff_jittered_billboard_tex_recs[7];
+extern TexRec g_eff_yawed_slot_quad_tex_recs[4];
 extern TexRec D_8009B940[1];
 extern TexRec D_8009B948[1];
 extern TexRec D_8009B950[1];
@@ -619,7 +619,7 @@ extern Unk8009BD24Block g_working_record;
 extern s32 g_ndata_pack_loaded;
 extern s32 g_gpu_jittered_quad_pair_cycle;
 extern s32 g_eff_point_light_countdown;
-extern u32 D_800A32C8[2];
+extern u32 g_pad_direction_positive_masks[2];
 extern Unk80101DF0Record *g_view_identity_root_ptr;
 extern Unk80101DF0Record *g_view_camera_root_ptr;
 extern s32 g_memcard_poll_count;

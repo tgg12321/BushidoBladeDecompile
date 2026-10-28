@@ -287,8 +287,8 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 535A8 80062DA8 5AEA010C */  jal        SetSemiTrans
     /* 535AC 80062DAC 01000524 */   addiu     $a1, $zero, 0x1
     /* 535B0 80062DB0 40211200 */  sll        $a0, $s2, 5
-    /* 535B4 80062DB4 0A80023C */  lui        $v0, %hi(D_8009BB84)
-    /* 535B8 80062DB8 84BB4224 */  addiu      $v0, $v0, %lo(D_8009BB84)
+    /* 535B4 80062DB4 0A80023C */  lui        $v0, %hi(g_eff_rotated_quad_cluster_vertices)
+    /* 535B8 80062DB8 84BB4224 */  addiu      $v0, $v0, %lo(g_eff_rotated_quad_cluster_vertices)
     /* 535BC 80062DBC 21208200 */  addu       $a0, $a0, $v0
     /* 535C0 80062DC0 08008524 */  addiu      $a1, $a0, 0x8
     /* 535C4 80062DC4 10008624 */  addiu      $a2, $a0, 0x10

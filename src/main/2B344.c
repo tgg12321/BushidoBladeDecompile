@@ -112,7 +112,7 @@ s32 comb_Connect(void) {
         } else {
             var_v0 = D_800A36C6;
         }
-        D_800A3904 = var_v0;
+        g_fight_rng_seed = var_v0;
     }
     gpu_HideResetAndClear();
     gpu_SetDispMaskOn();
@@ -487,7 +487,7 @@ extern void fight_FillMissingConfigInitFighterAndLoadObject(s32);
 
 extern void gte_ReadFarColor(u8 *);
 
-extern s8 D_8008EA70[][2];
+extern s8 g_fight_presentation_cd_audio_entries[][2];
 
 extern void fight_RequestBothFightersEntriesAndReloadOnChange(void);
 
@@ -734,12 +734,14 @@ void fight_InitImageAndPlaybackPresentation(void) {
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     }
     motion_StartPlaybackAtIndexedBasePlusOffset(
-        0x16, D_8009016C[g_fight_presentation_index], 0,
-        D_80101EC8[0].weapon_entry_id, -1, -1, -1, (s32)0x80118800);
+        0x16,
+        g_fight_presentation_playback_file_id_offsets
+            [g_fight_presentation_index],
+        0, D_80101EC8[0].weapon_entry_id, -1, -1, -1, (s32)0x80118800);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
-    p = D_8008EA70[g_fight_presentation_index];
+    p = g_fight_presentation_cd_audio_entries[g_fight_presentation_index];
     if (p[0] >= 0) {
         snd_SerialMixOn();
         cdrom_StartAudio(cdrom_GetFileIndex(5, p[0]), (u8)p[1]);
@@ -1416,12 +1418,12 @@ void gpu_InitFogDrawMoves(void) {
     buf.y = 0x1E0;
     buf.w = 0x140;
     buf.h = 1;
-    gpu_SetDrawMoveArray(&buf, 0x1F, D_800A3D70);
+    gpu_SetDrawMoveArray(&buf, 0x1F, g_gpu_fog_row_moves);
     buf.w = 0x40;
     buf.x = 0x140;
     buf.y = 0x1E0;
     buf.h = 8;
-    gpu_SetDrawMoveArray(&buf, 0x13, D_800A4340);
+    gpu_SetDrawMoveArray(&buf, 0x13, g_gpu_fog_block_moves);
 }
 
 void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
@@ -1499,10 +1501,10 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
                above, ahead of the `sh`: score 8 */
             s32 idx = arg0 * 4;
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
-                arg1, 0x1F, D_800A3D70, *ptr,
+                arg1, 0x1F, g_gpu_fog_row_moves, *ptr,
                 *(s16 *)((u8 *)D_800906A4 + 2 + idx));
             gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
-                arg1, 0x13, D_800A4340, *ptr,
+                arg1, 0x13, g_gpu_fog_block_moves, *ptr,
                 *(s16 *)((u8 *)D_800906A4 + 2 + idx));
         }
     }
@@ -1926,7 +1928,7 @@ extern s32 D_80090740[65][32];
 extern s32 D_80094840[];
 /* gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's
  * buffer of the queued Unk800A6690Rec */
-extern Unk800A6690Rec *D_800A7EF0[];
+extern Unk800A6690Rec *g_gpu_grid_unique_node_buffer[];
 extern Unk800A6690Rec **
 gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
     s32, s32, Unk800A6690Rec **);
@@ -1992,7 +1994,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
         mask = (s32 *)0x1F800004;
     }
 
-    out = D_800A7EF0;
+    out = g_gpu_grid_unique_node_buffer;
     for (i = 0; i < 0x1F; i++) {
         row = z + i;
         if (row < 0) {
@@ -2053,7 +2055,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
         out = gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
             x, z, out);
     }
-    while (out != D_800A7EF0) {
+    while (out != g_gpu_grid_unique_node_buffer) {
         out--;
         *g_draw_queue_cursor = *out;
         ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
@@ -2262,7 +2264,7 @@ const char D_80010D8C[16] = "Multipul Model";
 
 extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 
-extern s32 D_80094A6C[];
+extern s32 g_gpu_view_centered_cell_attribute_pattern[];
 
 void resource_InvokeLoadedSelectorInitCallback(void) {
     if (g_resource_selector_callbacks[resource_GetLoadedSelector()].init != 0) {
@@ -2325,7 +2327,7 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
         {
             u32 y = (u32)(var_3 + var_5);
             if (y < 0x20) {
-                data = D_80094A6C[i];
+                data = g_gpu_view_centered_cell_attribute_pattern[i];
                 for (j = 0; j < 16; j++) {
                     var_6 = j - 8;
                     {
@@ -3226,7 +3228,7 @@ u8 *g_fight_command_streams[32] = {
 /* fight_InitImageAndPlaybackPresentation's per-mode values, passed to
  * motion_StartPlaybackAtIndexedBasePlusOffset; g_fight_presentation_index is
  * only ever 0..9. The 2 zero bytes after it are g_font_image's alignment. */
-u8 D_8009016C[10] = {
+u8 g_fight_presentation_playback_file_id_offsets[10] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x0B, 0x0A, 0x0C, 0x0D,
 };
 /* The font image font_LoadImage uploads to g_font_rect (16 x 36 16-bit

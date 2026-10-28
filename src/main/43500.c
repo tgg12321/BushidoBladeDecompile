@@ -843,8 +843,8 @@ void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void) {
 }
 
 /* .data 0x80099D54..0x80099D88, this file's whole .data (d_89C78.c's
- * D_80099D3C ends at 0x80099D54; 4510C.c's g_cpu_profiles follows):
- * per-entry base sequence ids (-1: none);
+ * g_node_entry_pair_local_transforms ends at 0x80099D54; 4510C.c's
+ * g_cpu_profiles follows): per-entry base sequence ids (-1: none);
  * motion_StartPlaybackAtIndexedBasePlusOffset starts sequence
  * g_motion_playback_file_id_bases[a0] + a1 - 0x131. The final 0 fills the 0x34
  * bytes to g_cpu_profiles. Defined after every function, so no body sees a

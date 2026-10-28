@@ -481,7 +481,7 @@ extern MATRIX D_800FF610;
 extern void (*D_800951D8[])();
 extern void (*D_80095280[])();
 extern void (*D_80095328[])();
-extern Unk800F62E0Rec *D_800A3828;
+extern Unk800F62E0Rec *g_light_selected_setup;
 
 void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
     MATRIX *dst = (MATRIX *)0x1F8003A0;
@@ -492,7 +492,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
 
     *dst = D_800FF610;
 
-    D_800A3828 = &g_light_setups[light_setup_index];
+    g_light_selected_setup = &g_light_setups[light_setup_index];
 
     dst->m[1][0] >>= 1;
     dst->m[1][1] >>= 1;
@@ -1515,4 +1515,4 @@ Unk80101DF0Record *g_view_camera_root_ptr;
 u32 *g_gpu_ot_offset_ptr;
 s32 D_800A3790;
 void **g_draw_queue_cursor;
-Unk800F62E0Rec *D_800A3828;
+Unk800F62E0Rec *g_light_selected_setup;

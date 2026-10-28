@@ -213,8 +213,8 @@ glabel fighter_Init
     /* 13090 80022890 308A0008 */  j          .L800228C0
     /* 13094 80022894 080002A6 */   sh        $v0, 0x8($s0)
   .L80022898:
-    /* 13098 80022898 0980043C */  lui        $a0, %hi(D_8008DD5C)
-    /* 1309C 8002289C 5CDD8424 */  addiu      $a0, $a0, %lo(D_8008DD5C)
+    /* 13098 80022898 0980043C */  lui        $a0, %hi(g_fighter_default_variant_indices)
+    /* 1309C 8002289C 5CDD8424 */  addiu      $a0, $a0, %lo(g_fighter_default_variant_indices)
     /* 130A0 800228A0 0A000286 */  lh         $v0, 0xA($s0)
     /* 130A4 800228A4 0E000386 */  lh         $v1, 0xE($s0)
     /* 130A8 800228A8 C0100200 */  sll        $v0, $v0, 3

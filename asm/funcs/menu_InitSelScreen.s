@@ -172,7 +172,7 @@ glabel menu_InitSelScreen
     /* 67B44 80077344 21BD2390 */  lbu        $v1, %lo(D_8009BD21)($at)
     /* 67B48 80077348 01000224 */  addiu      $v0, $zero, 0x1
     /* 67B4C 8007734C 660083A0 */  sb         $v1, 0x66($a0)
-    /* 67B50 80077350 100585A3 */  sb         $a1, %gp_rel(D_800A35DC)($gp)
+    /* 67B50 80077350 100585A3 */  sb         $a1, %gp_rel(g_sel_sheet_code_column_cursor)($gp)
     /* 67B54 80077354 3800BF8F */  lw         $ra, 0x38($sp)
     /* 67B58 80077358 3400B38F */  lw         $s3, 0x34($sp)
     /* 67B5C 8007735C 3000B28F */  lw         $s2, 0x30($sp)

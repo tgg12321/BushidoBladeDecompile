@@ -69,8 +69,8 @@ glabel gpu_LatchFogDepthOnTransitionAndQueueMoves
     /* 2E380 8003DB80 21803002 */  addu       $s0, $s1, $s0
     /* 2E384 8003DB84 1000A2AF */  sw         $v0, 0x10($sp)
     /* 2E388 8003DB88 0000078E */  lw         $a3, 0x0($s0)
-    /* 2E38C 8003DB8C 0A80063C */  lui        $a2, %hi(D_800A3D70)
-    /* 2E390 8003DB90 703DC624 */  addiu      $a2, $a2, %lo(D_800A3D70)
+    /* 2E38C 8003DB8C 0A80063C */  lui        $a2, %hi(g_gpu_fog_row_moves)
+    /* 2E390 8003DB90 703DC624 */  addiu      $a2, $a2, %lo(g_gpu_fog_row_moves)
     /* 2E394 8003DB94 F9F6000C */  jal        gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
     /* 2E398 8003DB98 1F000524 */   addiu     $a1, $zero, 0x1F
     /* 2E39C 8003DB9C 21204002 */  addu       $a0, $s2, $zero
@@ -80,8 +80,8 @@ glabel gpu_LatchFogDepthOnTransitionAndQueueMoves
     /* 2E3AC 8003DBAC 00000000 */  nop
     /* 2E3B0 8003DBB0 1000A2AF */  sw         $v0, 0x10($sp)
     /* 2E3B4 8003DBB4 0000078E */  lw         $a3, 0x0($s0)
-    /* 2E3B8 8003DBB8 0A80063C */  lui        $a2, %hi(D_800A4340)
-    /* 2E3BC 8003DBBC 4043C624 */  addiu      $a2, $a2, %lo(D_800A4340)
+    /* 2E3B8 8003DBB8 0A80063C */  lui        $a2, %hi(g_gpu_fog_block_moves)
+    /* 2E3BC 8003DBBC 4043C624 */  addiu      $a2, $a2, %lo(g_gpu_fog_block_moves)
     /* 2E3C0 8003DBC0 F9F6000C */  jal        gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
     /* 2E3C4 8003DBC4 13000524 */   addiu     $a1, $zero, 0x13
   .L8003DBC8:

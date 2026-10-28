@@ -192,8 +192,8 @@ void gpu_LoadRequestedAvailableTimGroupsForSlot(
     }
 }
 
-extern s16 *g_gpu_clut_row_lists[6];
-extern u8 g_gpu_clut_row_list_map[];
+extern s16 *g_gpu_vram_row_lists[6];
+extern u8 g_gpu_vram_row_list_map[];
 extern s16 g_gpu_vram_row_backup_asset_index;
 extern u16 g_gpu_store_buf[][16];
 
@@ -208,17 +208,17 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     if (arg0->arena_id != 1) {
         return;
     }
-    if (g_gpu_clut_row_list_map[arg0->asset_index] == 0xFF) {
+    if (g_gpu_vram_row_list_map[arg0->asset_index] == 0xFF) {
         return;
     }
     /* FAKE: id_ptr spelling: the reload of arg0->asset_index for the table
      * index stays after the g_gpu_vram_row_backup_asset_index store only when
      * it is not plain struct indexing;
-     * g_gpu_clut_row_list_map[arg0->asset_index]: score 2
+     * g_gpu_vram_row_list_map[arg0->asset_index]: score 2
      * (proven-spelling-class-reconstruction) */
     id_ptr = &arg0->asset_index;
     g_gpu_vram_row_backup_asset_index = arg0->asset_index;
-    tbl = g_gpu_clut_row_lists[g_gpu_clut_row_list_map[*id_ptr]];
+    tbl = g_gpu_vram_row_lists[g_gpu_vram_row_list_map[*id_ptr]];
     if (gpu_GetFogClutObject() == 1) {
         xoff = -0x140;
         yoff = 0xF0;
@@ -257,7 +257,7 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
     if (obj->asset_index != g_gpu_vram_row_backup_asset_index) {
         return;
     }
-    if (g_gpu_clut_row_list_map[obj->asset_index] == 0xFF) {
+    if (g_gpu_vram_row_list_map[obj->asset_index] == 0xFF) {
         return;
     }
     r = (a0 << 12) / 255;
@@ -274,7 +274,7 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
             xoff = 0x80;
             yoff = 0;
         }
-        tbl = g_gpu_clut_row_lists[g_gpu_clut_row_list_map[obj->asset_index]];
+        tbl = g_gpu_vram_row_lists[g_gpu_vram_row_list_map[obj->asset_index]];
         for (idx = 0; tbl[0] >= 0; tbl += 2) {
             rect.x = tbl[0] + xoff;
             rect.y = tbl[1] + yoff;
@@ -428,10 +428,10 @@ extern void light_SetLightOrBackColorOfSelectedSetups(s32, s32, s32, s32);
 extern void gpu_SetBackgroundClearColorAndFarColor(s32);
 
 /* 0x18-byte rows: four colour words, the angle word, a parameter */
-extern s32 D_80094E48[][6];
+extern s32 g_light_preset_rows[][6];
 
 void ApplyLightPresetRowBackgroundClearAndFarColor(s32 a0) {
-    s32 *p = D_80094E48[a0];
+    s32 *p = g_light_preset_rows[a0];
     s32 var_1;
     s32 var_2;
     light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 0, 0);
@@ -511,8 +511,8 @@ void gpu_SetBackgroundClearColorAndFarColor(s32 a0) {
  * ends at 0x80094D40; 32D04.c's D_800951D8 follows), in address order:
  * gpu_LoadRequestedAvailableTimGroupsForSlot's per-index 5-bit mask table, the
  * six VRAM CLUT-row lists
- * ({x, y} pairs ending in {-1, 0}) that g_gpu_clut_row_lists points at, the id
- * -> list index map g_gpu_clut_row_list_map (0xFF: none), and
+ * ({x, y} pairs ending in {-1, 0}) that g_gpu_vram_row_lists points at, the id
+ * -> list index map g_gpu_vram_row_list_map (0xFF: none), and
  * ApplyLightPresetRowBackgroundClearAndFarColor's 38 light rows. Defined after
  * every function, so no body sees a definition where it saw an extern. */
 u8 D_80094D40[64] = {
@@ -530,16 +530,16 @@ s16 D_80094DB0[12] = {0x280, 0xF9, 0x2B0, 0xFA, 0x2B0, 0xF8,
 s16 D_80094DC8[8] = {0x280, 0xFC, 0x290, 0xFB, 0x290, 0xFA, -1, 0x0};
 s16 D_80094DD8[6] = {0x2A0, 0xF8, 0x2B0, 0xF9, -1, 0x0};
 s16 D_80094DE4[6] = {0x280, 0xFB, 0x2B0, 0xFB, -1, 0x0};
-s16 *g_gpu_clut_row_lists[6] = {
+s16 *g_gpu_vram_row_lists[6] = {
     D_80094D80, D_80094DA0, D_80094DB0, D_80094DC8, D_80094DD8, D_80094DE4};
-u8 g_gpu_clut_row_list_map[64] = {
+u8 g_gpu_vram_row_list_map[64] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0x0,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x1,  0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0x2,  0x3,  0x4,  0x5,  0xFF, 0xFF};
-s32 D_80094E48[38][6] = {
+s32 g_light_preset_rows[38][6] = {
     {0x0098A7B5, 0x005F5D71, 0x009A84A3, 0x00302846, 0x0E9F0CA2, 0x00000000},
     {0x00DEDED6, 0x001E1E14, 0x009EA9B7, 0x002B3049, 0x0D0A0C00, 0x00000008},
     {0x007FA9DC, 0x0036394E, 0x00B7A2E3, 0x001F2E46, 0x0E300000, 0x00000000},

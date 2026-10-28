@@ -92,8 +92,8 @@ glabel comb_Connect
     /* 2B618 8003AE18 0A80023C */  lui        $v0, %hi(D_800A36C6)
     /* 2B61C 8003AE1C C6364284 */  lh         $v0, %lo(D_800A36C6)($v0)
   .L8003AE20:
-    /* 2B620 8003AE20 0A80013C */  lui        $at, %hi(D_800A3904)
-    /* 2B624 8003AE24 043922A4 */  sh         $v0, %lo(D_800A3904)($at)
+    /* 2B620 8003AE20 0A80013C */  lui        $at, %hi(g_fight_rng_seed)
+    /* 2B624 8003AE24 043922A4 */  sh         $v0, %lo(g_fight_rng_seed)($at)
     /* 2B628 8003AE28 225A000C */  jal        gpu_HideResetAndClear
     /* 2B62C 8003AE2C 00000000 */   nop
     /* 2B630 8003AE30 345A000C */  jal        gpu_SetDispMaskOn

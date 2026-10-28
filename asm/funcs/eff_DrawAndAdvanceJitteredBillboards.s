@@ -127,8 +127,8 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 550D4 800648D4 1000A88F */  lw         $t0, 0x10($sp)
     /* 550D8 800648D8 00000000 */  nop
     /* 550DC 800648DC 0000028D */  lw         $v0, 0x0($t0)
-    /* 550E0 800648E0 0A80033C */  lui        $v1, %hi(D_8009B8E8)
-    /* 550E4 800648E4 E8B86324 */  addiu      $v1, $v1, %lo(D_8009B8E8)
+    /* 550E0 800648E0 0A80033C */  lui        $v1, %hi(g_eff_jittered_billboard_tex_recs)
+    /* 550E4 800648E4 E8B86324 */  addiu      $v1, $v1, %lo(g_eff_jittered_billboard_tex_recs)
     /* 550E8 800648E8 C0100200 */  sll        $v0, $v0, 3
     /* 550EC 800648EC 21104300 */  addu       $v0, $v0, $v1
     /* 550F0 800648F0 00004394 */  lhu        $v1, 0x0($v0)

@@ -117,9 +117,9 @@ glabel snd_UpdateStageSounds
     /* 23F80 80033780 01004224 */  addiu      $v0, $v0, 0x1
     /* 23F84 80033784 000002A6 */  sh         $v0, 0x0($s0)
     /* 23F88 80033788 00140200 */  sll        $v0, $v0, 16
-    /* 23F8C 8003378C 0980013C */  lui        $at, %hi(D_8008EA44)
+    /* 23F8C 8003378C 0980013C */  lui        $at, %hi(g_snd_stage_sound_slot_trigger_delays)
     /* 23F90 80033790 21082500 */  addu       $at, $at, $a1
-    /* 23F94 80033794 44EA2390 */  lbu        $v1, %lo(D_8008EA44)($at)
+    /* 23F94 80033794 44EA2390 */  lbu        $v1, %lo(g_snd_stage_sound_slot_trigger_delays)($at)
     /* 23F98 80033798 03240200 */  sra        $a0, $v0, 16
     /* 23F9C 8003379C 00110300 */  sll        $v0, $v1, 4
     /* 23FA0 800337A0 23104300 */  subu       $v0, $v0, $v1

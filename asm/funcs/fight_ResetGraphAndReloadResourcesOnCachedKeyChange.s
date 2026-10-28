@@ -79,8 +79,8 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E0C0 8001D8C0 0F5B000C */  jal        sys_Panic
     /* E0C4 8001D8C4 00000000 */   nop
   .L8001D8C8:
-    /* E0C8 8001D8C8 1080103C */  lui        $s0, %hi(D_800FF6A8)
-    /* E0CC 8001D8CC A8F61026 */  addiu      $s0, $s0, %lo(D_800FF6A8)
+    /* E0C8 8001D8C8 1080103C */  lui        $s0, %hi(g_snd_listed_vab_copy)
+    /* E0CC 8001D8CC A8F61026 */  addiu      $s0, $s0, %lo(g_snd_listed_vab_copy)
     /* E0D0 8001D8D0 21200002 */  addu       $a0, $s0, $zero
     /* E0D4 8001D8D4 21284002 */  addu       $a1, $s2, $zero
     /* E0D8 8001D8D8 48E4010C */  jal        memcpy

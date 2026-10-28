@@ -27,8 +27,8 @@ glabel gpu_EndFullscreenImageDisplay
     /* 5EB0C 8006E30C 21209000 */   addu      $a0, $a0, $s0
     /* 5EB10 8006E310 CFEC010C */  jal        DrawSync
     /* 5EB14 8006E314 21200000 */   addu      $a0, $zero, $zero
-    /* 5EB18 8006E318 0A80053C */  lui        $a1, %hi(D_800A32E0)
-    /* 5EB1C 8006E31C E032A524 */  addiu      $a1, $a1, %lo(D_800A32E0)
+    /* 5EB18 8006E318 0A80053C */  lui        $a1, %hi(g_gpu_fullscreen_image_end_clear_rect)
+    /* 5EB1C 8006E31C E032A524 */  addiu      $a1, $a1, %lo(g_gpu_fullscreen_image_end_clear_rect)
     /* 5EB20 8006E320 0300A288 */  lwl        $v0, 0x3($a1)
     /* 5EB24 8006E324 0000A298 */  lwr        $v0, 0x0($a1)
     /* 5EB28 8006E328 0700A388 */  lwl        $v1, 0x7($a1)

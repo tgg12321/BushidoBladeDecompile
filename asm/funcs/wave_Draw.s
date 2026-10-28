@@ -17,15 +17,15 @@ glabel wave_Draw
     /* 38418 80047C18 0100A232 */  andi       $v0, $s5, 0x1
     /* 3841C 80047C1C 07004010 */  beqz       $v0, .L80047C3C
     /* 38420 80047C20 801F123C */   lui       $s2, (0x1F800068 >> 16)
-    /* 38424 80047C24 0F80143C */  lui        $s4, %hi(D_800EF168)
-    /* 38428 80047C28 68F19426 */  addiu      $s4, $s4, %lo(D_800EF168)
+    /* 38424 80047C24 0F80143C */  lui        $s4, %hi(g_wave_odd_row_vertices)
+    /* 38428 80047C28 68F19426 */  addiu      $s4, $s4, %lo(g_wave_odd_row_vertices)
     /* 3842C 80047C2C 68005236 */  ori        $s2, $s2, (0x1F800068 & 0xFFFF)
     /* 38430 80047C30 801F103C */  lui        $s0, (0x1F800134 >> 16)
     /* 38434 80047C34 141F0108 */  j          .L80047C50
     /* 38438 80047C38 34011036 */   ori       $s0, $s0, (0x1F800134 & 0xFFFF)
   .L80047C3C:
-    /* 3843C 80047C3C 0F80143C */  lui        $s4, %hi(D_800EF0D8)
-    /* 38440 80047C40 D8F09426 */  addiu      $s4, $s4, %lo(D_800EF0D8)
+    /* 3843C 80047C3C 0F80143C */  lui        $s4, %hi(g_wave_even_row_vertices)
+    /* 38440 80047C40 D8F09426 */  addiu      $s4, $s4, %lo(g_wave_even_row_vertices)
     /* 38444 80047C44 20005236 */  ori        $s2, $s2, (0x1F800020 & 0xFFFF)
     /* 38448 80047C48 801F103C */  lui        $s0, (0x1F800110 >> 16)
     /* 3844C 80047C4C 10011036 */  ori        $s0, $s0, (0x1F800110 & 0xFFFF)

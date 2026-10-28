@@ -1895,10 +1895,10 @@ typedef struct {
     u8 unk_62[0x64 - 0x62];
 } Obj80106A78; /* sizeof == 0x64 */
 
-/* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries
-   (types 2..6); g_snd_stage_sequence_cue_ticks: indexed by the category
-   snd_GetStageSoundIndex returns, 6 entries (both read by
-   snd_UpdateStageSounds). */
+/* 2-byte {a,b} threshold pairs. g_snd_stage_sound_slot_trigger_delays: indexed
+   by (type - 2), 5 entries (types 2..6); g_snd_stage_sequence_cue_ticks:
+   indexed by the category snd_GetStageSoundIndex returns, 6 entries (both read
+   by snd_UpdateStageSounds). */
 typedef struct {
     u8 a;
     u8 b;

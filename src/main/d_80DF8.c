@@ -909,8 +909,10 @@ Unk800948BCEntry g_resource_selector_callbacks[38] = {
     {0, 0},
 };
 
-/* No reader: a 2-bit cell pattern laid out like D_80094A6C (32 words, from
- * the end of g_resource_selector_callbacks to D_80094A6C). */
+/* No reader: a 2-bit cell pattern laid out like
+ * g_gpu_view_centered_cell_attribute_pattern (32 words, from the end of
+ * g_resource_selector_callbacks to g_gpu_view_centered_cell_attribute_pattern).
+ */
 s32 D_800949EC[32] = {
     0x00000000, 0x00000000, 0x00155500, 0x01555550, 0x01555550, 0x0556A554,
     0x055AA954, 0x05680A54, 0x05680A54, 0x05680A54, 0x055AA954, 0x0556A554,
@@ -922,7 +924,7 @@ s32 D_800949EC[32] = {
 
 /* gpu_ResetAndStampViewCenteredCellAttributes's 16 rows of 2-bit cell flags,
  * then 16 zero words (size from the gap to g_softbody_face_record_strides). */
-s32 D_80094A6C[32] = {
+s32 g_gpu_view_centered_cell_attribute_pattern[32] = {
     0x00000000, 0x00000000, 0x00155500, 0x01555550, 0x01555550, 0x0556A554,
     0x055AA954, 0x056AAA54, 0x056AAA54, 0x056AAA54, 0x055AA954, 0x0556A554,
     0x01555550, 0x01555550, 0x00155500, 0x00000000, 0x00000000, 0x00000000,

@@ -19,7 +19,7 @@ glabel eff_InitRateSelectedCosineScaledQuad
     /* 55844 80065044 00000000 */  nop
     /* 55848 80065048 C3140200 */  sra        $v0, $v0, 19
     /* 5584C 8006504C 03004230 */  andi       $v0, $v0, 0x3
-    /* 55850 80065050 740382A7 */  sh         $v0, %gp_rel(D_800A3440)($gp)
+    /* 55850 80065050 740382A7 */  sh         $v0, %gp_rel(g_eff_cosine_scaled_quad_rate_selector)($gp)
     /* 55854 80065054 0800E003 */  jr         $ra
     /* 55858 80065058 01000224 */   addiu     $v0, $zero, 0x1
 endlabel eff_InitRateSelectedCosineScaledQuad

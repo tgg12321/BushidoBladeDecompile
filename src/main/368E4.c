@@ -933,8 +933,8 @@ void wave_Update(void) {
     *temp = &g_wave_draw_node;
 }
 
-extern SVECTOR D_800EF0D8[17];
-extern SVECTOR D_800EF168[17];
+extern SVECTOR g_wave_even_row_vertices[17];
+extern SVECTOR g_wave_odd_row_vertices[17];
 
 void wave_Draw(void) {
     s32 sxy0, sxy1, sxy2, var_3, flag;
@@ -953,11 +953,11 @@ void wave_Draw(void) {
     src = g_wave_vertex_grid[0];
     while (i < 9) {
         if (i & 1) {
-            base = D_800EF168;
+            base = g_wave_odd_row_vertices;
             dst32 = (s32 *)0x1F800068;
             dst16 = (s16 *)0x1F800134;
         } else {
-            base = D_800EF0D8;
+            base = g_wave_even_row_vertices;
             dst32 = (s32 *)0x1F800020;
             dst16 = (s16 *)0x1F800110;
         }
@@ -1538,7 +1538,7 @@ void gpu_TintVramRowInPlace(
 /* matches the definition above */
 extern s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32);
 extern void resource_ResizeNodeAssetBlockAndUpdatePeak(s32);
-extern u8 D_80099BCC;
+extern u8 g_node_retained_draw_asset_ids;
 
 s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
     Unk80045878Obj *slot_object;
@@ -1552,7 +1552,7 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
     if (slot_object == 0)
         return 0;
     g_node_retained_draw_slot_index = slot_index;
-    var_1 = (&D_80099BCC)[slot_object->asset_index];
+    var_1 = (&g_node_retained_draw_asset_ids)[slot_object->asset_index];
     if (var_1 == 0xFF)
         return 0;
     base = (u8 *)resource_LoadOrReuseGrayscaleAdjustedNodeAsset(var_1);
@@ -2027,14 +2027,15 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     }
 }
 
-extern s16 D_80099D3C[];
+extern s16 g_node_entry_pair_local_transforms[];
 
 /* node_QueueTableEntryNodePairUnderSlotNode: `volatile u32 pre_pad[2]` is a
  * labelled FAKE (phantom-frame pad) giving the target's frame signature (.frame
- * $sp,48, vars= 8, regs= 5). The only fold-capable symbol (D_80099D3C) cannot
- * host the vars region without costing a sixth callee-saved register, and the
- * function is loopless, so no back-edge carrier exists; hence the FAKE pad.
- * SOTN precedent: `volatile char pad[8] //! FAKE`. */
+ * $sp,48, vars= 8, regs= 5). The only fold-capable symbol
+ * (g_node_entry_pair_local_transforms) cannot host the vars region without
+ * costing a sixth callee-saved register, and the function is loopless, so no
+ * back-edge carrier exists; hence the FAKE pad. SOTN precedent: `volatile char
+ * pad[8] //! FAKE`. */
 void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     // !FAKE: phantom-frame-slot pad, without it: score 12
     // (no-new-park-categories): target reserves 8 locals bytes at
@@ -2063,7 +2064,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.reloc_block_id = 6;
     obj->node.rotation_order = 0;
     obj->node.light_setup_index = 4;
-    src = &D_80099D3C[(arg1 & 1) * 6];
+    src = &g_node_entry_pair_local_transforms[(arg1 & 1) * 6];
     obj->node.work.t[0] = ((*src) * slot_obj->position_scale) >> 12;
     src++;
     obj->node.work.t[1] = ((*src) * slot_obj->position_scale) >> 12;

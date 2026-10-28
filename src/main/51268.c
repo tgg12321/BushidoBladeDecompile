@@ -21,8 +21,8 @@ static POLY_FT4 *g_eff_second_quad_buffer;
 static s32 D_800A3428[2];
 /* not named by any code or data: size from the gap */
 static s32 D_800A3430[2];
-static s16 g_eff_particle_group_fill_counts[4];
-static s16 D_800A3440;
+static s16 g_eff_particle_group_fill_indices[4];
+static s16 g_eff_cosine_scaled_quad_rate_selector;
 static s32 g_eff_jittered_billboard_slot_mask;
 static s32 g_eff_billboard_pair_slot_mask;
 static u32 g_eff_yawed_quad_slot_counters[2];
@@ -706,7 +706,7 @@ void eff_StartRecycledCommandWithMagentaLight(s32 *src_position) {
     g_eff_point_light_color = 0xFF00FF;
 }
 
-extern VECTOR D_8009BB74;
+extern VECTOR g_eff_rotation_matrix_scale;
 
 void eff_SetRotMatrix(s16 *src_rotation, s32 *a1, MATRIX *matrix_out) {
     SVECTOR *rotation = &g_eff_work_area->v80061FAC;
@@ -717,7 +717,7 @@ void eff_SetRotMatrix(s16 *src_rotation, s32 *a1, MATRIX *matrix_out) {
     matrix_out->t[2] = 0;
     matrix_out->t[1] = 0;
     matrix_out->t[0] = 0;
-    ScaleMatrixL(matrix_out, &D_8009BB74);
+    ScaleMatrixL(matrix_out, &g_eff_rotation_matrix_scale);
     SetRotMatrix(matrix_out);
 }
 
@@ -937,7 +937,7 @@ s32 eff_SpawnRotatedQuadCluster(void) {
    and finally link the new quads into the OT. Returns 1 when quads were added,
    else the live-slot mask (0 once every slot has expired). */
 s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
-    extern s16 D_8009BB84[];
+    extern s16 g_eff_rotated_quad_cluster_vertices[];
     s32 count;
     MATRIX *composite_matrix;
     s32 *depth_cue_out;
@@ -1036,7 +1036,8 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
             SetPolyFT4(prim);
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
-            quad_vertices = &D_8009BB84[quad_index * 16];
+            quad_vertices =
+                &g_eff_rotated_quad_cluster_vertices[quad_index * 16];
             RotTransPers4(quad_vertices, quad_vertices + 4, quad_vertices + 8,
                           quad_vertices + 12, sxy, sxy + 1, sxy + 2, sxy + 3,
                           depth_cue_out, g_eff_rtp_flag);
@@ -1474,7 +1475,8 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         count = 10;
     }
     eff_BuildUsedSlotRotMatrices(&count, mats, arg0);
-    g_eff_current_tex_rec = &D_8009B920[*g_eff_yawed_quad_tex_index];
+    g_eff_current_tex_rec =
+        &g_eff_yawed_slot_quad_tex_recs[*g_eff_yawed_quad_tex_index];
     prim = g_eff_quad_cursor;
     *g_eff_tpage_word = 0xE;
     *g_eff_clut_word = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
@@ -1680,7 +1682,8 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
             SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
             RotTransPers(local_origin, g_eff_screen_xy, p, g_eff_rtp_flag);
             gte_stsz(g_eff_depth_work);
-            g_eff_current_tex_rec = &D_8009B8E8[*frame_index];
+            g_eff_current_tex_rec =
+                &g_eff_jittered_billboard_tex_recs[*frame_index];
             *g_eff_clut_word =
                 (u16)(((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
                       (g_eff_current_tex_rec->clut_y << 6));
@@ -1817,7 +1820,8 @@ s32 eff_InitRateSelectedCosineScaledQuad(void) {
     g_eff_animated_quad_positions[5].world_z = g_eff_command_position[2];
     g_eff_command_phase[11] = 1;
     g_eff_animated_quad_counters[5] = 0;
-    D_800A3440 = (g_eff_active_command_block->command_word.w >> 19) & 3;
+    g_eff_cosine_scaled_quad_rate_selector =
+        (g_eff_active_command_block->command_word.w >> 19) & 3;
     return 1;
 }
 
@@ -1958,7 +1962,7 @@ u8 func_80065434(void) {
 u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
     unsigned int rate_selector;
     u8 draw_result;
-    *g_eff_quad_rate_selector = D_800A3440;
+    *g_eff_quad_rate_selector = g_eff_cosine_scaled_quad_rate_selector;
     draw_result = eff_DrawAnimatedQuads(5);
     rate_selector = *g_eff_quad_rate_selector;
     switch (rate_selector) {
@@ -2641,7 +2645,7 @@ u8 eff_SpawnParticles(
         base = 0x31;
         scale_mask = 0x1F;
     }
-    g_eff_particle_group_fill_counts[particle_row_index] = 0;
+    g_eff_particle_group_fill_indices[particle_row_index] = 0;
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
     if (half_index == 0) {
         g_eff_particle_group_positions[particle_row_index][0].world_x =
@@ -2845,31 +2849,31 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
 
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
 
-    if (g_eff_particle_group_fill_counts[particle_row_index] <
+    if (g_eff_particle_group_fill_indices[particle_row_index] <
         g_eff_particle_mode_position_counts[particle_mode]) {
         g_eff_particle_group_positions
             [particle_row_index]
-            [g_eff_particle_group_fill_counts[particle_row_index]]
+            [g_eff_particle_group_fill_indices[particle_row_index]]
                 .world_x =
             g_eff_particle_group_positions[particle_row_index][0].world_x;
         g_eff_particle_group_positions
             [particle_row_index]
-            [g_eff_particle_group_fill_counts[particle_row_index]]
+            [g_eff_particle_group_fill_indices[particle_row_index]]
                 .world_y =
             g_eff_particle_group_positions[particle_row_index][0].world_y;
         g_eff_particle_group_positions
             [particle_row_index]
-            [g_eff_particle_group_fill_counts[particle_row_index]]
+            [g_eff_particle_group_fill_indices[particle_row_index]]
                 .world_z =
             g_eff_particle_group_positions[particle_row_index][0].world_z;
     }
 
     gte_ReadGeomScreen(g_eff_geom_screen_work);
 
-    *p6C = (g_eff_particle_group_fill_counts[particle_row_index] + 1) * 16;
-    if (g_eff_particle_group_fill_counts[particle_row_index] <
+    *p6C = (g_eff_particle_group_fill_indices[particle_row_index] + 1) * 16;
+    if (g_eff_particle_group_fill_indices[particle_row_index] <
         g_eff_particle_mode_position_counts[particle_mode] - 1) {
-        g_eff_particle_group_fill_counts[particle_row_index]++;
+        g_eff_particle_group_fill_indices[particle_row_index]++;
     }
 }
 

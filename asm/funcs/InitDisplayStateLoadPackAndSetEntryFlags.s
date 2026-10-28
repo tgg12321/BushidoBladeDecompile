@@ -14,14 +14,14 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5ED64 8006E564 11EE010C */  jal        ClearOTagR
     /* 5ED68 8006E568 08100524 */   addiu     $a1, $zero, 0x1008
     /* 5ED6C 8006E56C 7F000224 */  addiu      $v0, $zero, 0x7F
-    /* 5ED70 8006E570 1C0282A3 */  sb         $v0, %gp_rel(D_800A32E8)($gp)
+    /* 5ED70 8006E570 1C0282A3 */  sb         $v0, %gp_rel(g_entry_menu_last_grid_pass_second_slot_entry_value)($gp)
     /* 5ED74 8006E574 1400228E */  lw         $v0, 0x14($s1)
     /* 5ED78 8006E578 E00490AF */  sw         $s0, %gp_rel(g_entry_menu_prim_buffers)($gp)
     /* 5ED7C 8006E57C 58001026 */  addiu      $s0, $s0, 0x58
     /* 5ED80 8006E580 9C0491AF */  sw         $s1, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 5ED84 8006E584 8C0480A7 */  sh         $zero, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
     /* 5ED88 8006E588 880480A7 */  sh         $zero, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
-    /* 5ED8C 8006E58C 1D0280A3 */  sb         $zero, %gp_rel(D_800A32E9)($gp)
+    /* 5ED8C 8006E58C 1D0280A3 */  sb         $zero, %gp_rel(g_entry_menu_last_grid_pass_extra_slot_count)($gp)
     /* 5ED90 8006E590 E40492AF */  sw         $s2, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 5ED94 8006E594 A00490AF */  sw         $s0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5ED98 8006E598 DC0490AF */  sw         $s0, %gp_rel(g_entry_menu_resources)($gp)

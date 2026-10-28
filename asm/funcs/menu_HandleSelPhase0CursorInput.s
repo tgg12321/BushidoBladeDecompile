@@ -134,7 +134,7 @@ glabel menu_HandleSelPhase0CursorInput
     /* 651BC 800749BC 01004230 */  andi       $v0, $v0, 0x1
     /* 651C0 800749C0 670062A0 */  sb         $v0, 0x67($v1)
     /* 651C4 800749C4 D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
-    /* 651C8 800749C8 10058393 */  lbu        $v1, %gp_rel(D_800A35DC)($gp)
+    /* 651C8 800749C8 10058393 */  lbu        $v1, %gp_rel(g_sel_sheet_code_column_cursor)($gp)
     /* 651CC 800749CC 6700E290 */  lbu        $v0, 0x67($a3)
     /* 651D0 800749D0 81D20108 */  j          .L80074A04
     /* 651D4 800749D4 7F000524 */   addiu     $a1, $zero, 0x7F
@@ -146,10 +146,10 @@ glabel menu_HandleSelPhase0CursorInput
     /* 651E8 800749E8 0A80063C */  lui        $a2, %hi(g_sel_sheet_code_pairs)
     /* 651EC 800749EC 20BDC624 */  addiu      $a2, $a2, %lo(g_sel_sheet_code_pairs)
     /* 651F0 800749F0 D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
-    /* 651F4 800749F4 10058393 */  lbu        $v1, %gp_rel(D_800A35DC)($gp)
+    /* 651F4 800749F4 10058393 */  lbu        $v1, %gp_rel(g_sel_sheet_code_column_cursor)($gp)
     /* 651F8 800749F8 6700E290 */  lbu        $v0, 0x67($a3)
     /* 651FC 800749FC 01006324 */  addiu      $v1, $v1, 0x1
-    /* 65200 80074A00 100583A3 */  sb         $v1, %gp_rel(D_800A35DC)($gp)
+    /* 65200 80074A00 100583A3 */  sb         $v1, %gp_rel(g_sel_sheet_code_column_cursor)($gp)
   .L80074A04:
     /* 65204 80074A04 01006330 */  andi       $v1, $v1, 0x1
     /* 65208 80074A08 40100200 */  sll        $v0, $v0, 1

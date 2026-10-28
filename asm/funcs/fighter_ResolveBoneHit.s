@@ -193,8 +193,8 @@ glabel fighter_ResolveBoneHit
     /* 185A0 80027DA0 21306002 */  addu       $a2, $s3, $zero
     /* 185A4 80027DA4 15CA000C */  jal        fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 185A8 80027DA8 21380000 */   addu      $a3, $zero, $zero
-    /* 185AC 80027DAC 0980023C */  lui        $v0, %hi(D_8008EB74)
-    /* 185B0 80027DB0 74EB4224 */  addiu      $v0, $v0, %lo(D_8008EB74)
+    /* 185AC 80027DAC 0980023C */  lui        $v0, %hi(g_fighter_power_difference_move_events)
+    /* 185B0 80027DB0 74EB4224 */  addiu      $v0, $v0, %lo(g_fighter_power_difference_move_events)
     /* 185B4 80027DB4 80181400 */  sll        $v1, $s4, 2
     /* 185B8 80027DB8 21186200 */  addu       $v1, $v1, $v0
     /* 185BC 80027DBC 40101000 */  sll        $v0, $s0, 1

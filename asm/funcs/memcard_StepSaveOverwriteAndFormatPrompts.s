@@ -195,10 +195,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29718 80038F18 08004000 */  jr         $v0
     /* 2971C 80038F1C 00000000 */   nop
   jlabel .L80038F20
-    /* 29720 80038F20 7C028293 */  lbu        $v0, %gp_rel(D_800A3348)($gp)
+    /* 29720 80038F20 7C028293 */  lbu        $v0, %gp_rel(g_memcard_save_prompt_status8_retry_count)($gp)
     /* 29724 80038F24 00000000 */  nop
     /* 29728 80038F28 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2972C 80038F2C 7C0282A3 */  sb         $v0, %gp_rel(D_800A3348)($gp)
+    /* 2972C 80038F2C 7C0282A3 */  sb         $v0, %gp_rel(g_memcard_save_prompt_status8_retry_count)($gp)
     /* 29730 80038F30 FF004230 */  andi       $v0, $v0, 0xFF
     /* 29734 80038F34 0500422C */  sltiu      $v0, $v0, 0x5
     /* 29738 80038F38 1C004014 */  bnez       $v0, .L80038FAC
@@ -221,10 +221,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29778 80038F78 90E40008 */  j          .L80039240
     /* 2977C 80038F7C 0B00222A */   slti      $v0, $s1, 0xB
   jlabel .L80038F80
-    /* 29780 80038F80 78028293 */  lbu        $v0, %gp_rel(D_800A3344)($gp)
+    /* 29780 80038F80 78028293 */  lbu        $v0, %gp_rel(g_memcard_save_prompt_status10_retry_count)($gp)
     /* 29784 80038F84 00000000 */  nop
     /* 29788 80038F88 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2978C 80038F8C 780282A3 */  sb         $v0, %gp_rel(D_800A3344)($gp)
+    /* 2978C 80038F8C 780282A3 */  sb         $v0, %gp_rel(g_memcard_save_prompt_status10_retry_count)($gp)
     /* 29790 80038F90 FF004230 */  andi       $v0, $v0, 0xFF
     /* 29794 80038F94 0500422C */  sltiu      $v0, $v0, 0x5
     /* 29798 80038F98 04004014 */  bnez       $v0, .L80038FAC
@@ -365,9 +365,9 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29974 80039174 00000000 */  nop
     /* 29978 80039178 B3FF4014 */  bnez       $v0, .L80039048
     /* 2997C 8003917C 01000224 */   addiu     $v0, $zero, 0x1
-    /* 29980 80039180 7C0280A3 */  sb         $zero, %gp_rel(D_800A3348)($gp)
+    /* 29980 80039180 7C0280A3 */  sb         $zero, %gp_rel(g_memcard_save_prompt_status8_retry_count)($gp)
     /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(D_800A3340)($gp)
-    /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(D_800A3344)($gp)
+    /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(g_memcard_save_prompt_status10_retry_count)($gp)
     /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29990 80039190 DFE1000C */  jal        memcard_RequestLoad
     /* 29994 80039194 00000000 */   nop
