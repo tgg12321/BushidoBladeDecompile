@@ -64,14 +64,14 @@ glabel eff_DrawAndAdvanceJitteredBillboards
   .L800647E0:
     /* 54FE0 800647E0 03340200 */  sra        $a2, $v0, 16
     /* 54FE4 800647E4 01000324 */  addiu      $v1, $zero, 0x1
-    /* 54FE8 800647E8 7803828F */  lw         $v0, %gp_rel(D_800A3444)($gp)
+    /* 54FE8 800647E8 7803828F */  lw         $v0, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
     /* 54FEC 800647EC 0438C300 */  sllv       $a3, $v1, $a2
     /* 54FF0 800647F0 24104700 */  and        $v0, $v0, $a3
     /* 54FF4 800647F4 69014010 */  beqz       $v0, .L80064D9C
     /* 54FF8 800647F8 01008226 */   addiu     $v0, $s4, 0x1
     /* 54FFC 800647FC 40280600 */  sll        $a1, $a2, 1
-    /* 55000 80064800 0F80083C */  lui        $t0, %hi(D_800F0BCC)
-    /* 55004 80064804 CC0B0825 */  addiu      $t0, $t0, %lo(D_800F0BCC)
+    /* 55000 80064800 0F80083C */  lui        $t0, %hi(g_eff_jittered_billboard_ages)
+    /* 55004 80064804 CC0B0825 */  addiu      $t0, $t0, %lo(g_eff_jittered_billboard_ages)
     /* 55008 80064808 2120A800 */  addu       $a0, $a1, $t0
     /* 5500C 8006480C 00008394 */  lhu        $v1, 0x0($a0)
     /* 55010 80064810 00000000 */  nop
@@ -117,7 +117,7 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 550AC 800648AC ECFF0425 */   addiu     $a0, $t0, -0x14
     /* 550B0 800648B0 2000A48F */  lw         $a0, 0x20($sp)
     /* 550B4 800648B4 EC03858F */  lw         $a1, %gp_rel(g_eff_screen_xy)($gp)
-    /* 550B8 800648B8 0004878F */  lw         $a3, %gp_rel(D_800A34CC)($gp)
+    /* 550B8 800648B8 0004878F */  lw         $a3, %gp_rel(g_eff_rtp_flag)($gp)
     /* 550BC 800648BC 2800A68F */  lw         $a2, 0x28($sp)
     /* 550C0 800648C0 87FC010C */  jal        RotTransPers
     /* 550C4 800648C4 00000000 */   nop
@@ -232,8 +232,8 @@ glabel eff_DrawAndAdvanceJitteredBillboards
   .L80064A6C:
     /* 5526C 80064A6C 00241400 */  sll        $a0, $s4, 16
     /* 55270 80064A70 C3230400 */  sra        $a0, $a0, 15
-    /* 55274 80064A74 0F80083C */  lui        $t0, %hi(D_800F0BCC)
-    /* 55278 80064A78 CC0B0825 */  addiu      $t0, $t0, %lo(D_800F0BCC)
+    /* 55274 80064A74 0F80083C */  lui        $t0, %hi(g_eff_jittered_billboard_ages)
+    /* 55278 80064A78 CC0B0825 */  addiu      $t0, $t0, %lo(g_eff_jittered_billboard_ages)
     /* 5527C 80064A7C 21208800 */  addu       $a0, $a0, $t0
     /* 55280 80064A80 000042A6 */  sh         $v0, 0x0($s2)
     /* 55284 80064A84 00006386 */  lh         $v1, 0x0($s3)
@@ -427,8 +427,8 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 5555C 80064D5C 0400F726 */  addiu      $s7, $s7, 0x4
   .L80064D60:
     /* 55560 80064D60 C31B0300 */  sra        $v1, $v1, 15
-    /* 55564 80064D64 0F80083C */  lui        $t0, %hi(D_800F0BCC)
-    /* 55568 80064D68 CC0B0825 */  addiu      $t0, $t0, %lo(D_800F0BCC)
+    /* 55564 80064D64 0F80083C */  lui        $t0, %hi(g_eff_jittered_billboard_ages)
+    /* 55568 80064D68 CC0B0825 */  addiu      $t0, $t0, %lo(g_eff_jittered_billboard_ages)
     /* 5556C 80064D6C 21186800 */  addu       $v1, $v1, $t0
     /* 55570 80064D70 00006294 */  lhu        $v0, 0x0($v1)
     /* 55574 80064D74 00000000 */  nop
@@ -437,10 +437,10 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 55580 80064D80 000062A4 */   sh        $v0, 0x0($v1)
   .L80064D84:
     /* 55584 80064D84 FFFF0234 */  ori        $v0, $zero, 0xFFFF
-    /* 55588 80064D88 7803838F */  lw         $v1, %gp_rel(D_800A3444)($gp)
+    /* 55588 80064D88 7803838F */  lw         $v1, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
     /* 5558C 80064D8C 23104700 */  subu       $v0, $v0, $a3
     /* 55590 80064D90 24186200 */  and        $v1, $v1, $v0
-    /* 55594 80064D94 780383AF */  sw         $v1, %gp_rel(D_800A3444)($gp)
+    /* 55594 80064D94 780383AF */  sw         $v1, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
   .L80064D98:
     /* 55598 80064D98 01008226 */  addiu      $v0, $s4, 0x1
   .L80064D9C:
@@ -450,7 +450,7 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 555A8 80064DA8 10004228 */  slti       $v0, $v0, 0x10
     /* 555AC 80064DAC 8CFE4014 */  bnez       $v0, .L800647E0
     /* 555B0 80064DB0 00141400 */   sll       $v0, $s4, 16
-    /* 555B4 80064DB4 7803828F */  lw         $v0, %gp_rel(D_800A3444)($gp)
+    /* 555B4 80064DB4 7803828F */  lw         $v0, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
     /* 555B8 80064DB8 00000000 */  nop
     /* 555BC 80064DBC 27004010 */  beqz       $v0, .L80064E5C
     /* 555C0 80064DC0 21100000 */   addu      $v0, $zero, $zero

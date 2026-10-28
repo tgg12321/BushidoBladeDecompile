@@ -129,7 +129,7 @@ void slot_ClearObjectPointersAndTextureRequests(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
         g_slot_objects[i] = 0;
-        D_80094B88[i] = 0;
+        g_slot_tim_group_requests[i] = 0;
     }
 }
 
@@ -261,12 +261,14 @@ after_select:
 done_cases:
     DrawSync(0);
     gpu_LoadRequestedAvailableTimGroupsForSlot(
-        a0->arena_id, a0->unk_08, D_80094B88[a0->arena_id], (s32)var_1);
+        a0->arena_id, a0->unk_08, g_slot_tim_group_requests[a0->arena_id],
+        (s32)var_1);
 
     {
-        a0->unk_00.word = (a0->unk_00.word & 0xFFE0FFFF) |
-                          ((D_80094B88[a0->arena_id] & 0x1F) << 16);
-        D_80094B88[a0->arena_id] = 0;
+        a0->unk_00.word =
+            (a0->unk_00.word & 0xFFE0FFFF) |
+            ((g_slot_tim_group_requests[a0->arena_id] & 0x1F) << 16);
+        g_slot_tim_group_requests[a0->arena_id] = 0;
     }
 
     DrawSync(0);
@@ -277,7 +279,7 @@ done_cases:
 /* The 21 node-template records at 0x80094B96 follow an s16 -1 at 0x80094B94
  * that no code reads. gcc word-aligns every top-level array and struct, so no
  * object of this file can start at 0x80094B96: the -1 and the records are one
- * word-aligned table, D_80094B94 (it ends at D_80094C68). */
+ * word-aligned table, D_80094B94 (it ends at g_object_scale_factors). */
 typedef struct {
     s16 unk_00;
     Unk80094B96Rec recs[21];
@@ -290,7 +292,7 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
     s32 count;
     s16 idx;
 
-    tbl = D_80094C68;
+    tbl = g_object_scale_factors;
     count = 0;
     while (*tbl++ != -1) {
         count++;
@@ -298,7 +300,7 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
 
     idx = a0->unk_08;
     if (idx < count) {
-        a0->position_scale = D_80094C68[idx];
+        a0->position_scale = g_object_scale_factors[idx];
     } else {
         a0->position_scale = 0x1000;
     }
@@ -449,9 +451,10 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
 }
 
 /* .data 0x80094AF4..0x80094CFC, this file's whole .data (d_80DF8.c's
- * D_80094AEC precedes it, 31548.c's D_80094CFC follows), in address order.
- * Defined after every function, so no body sees a definition where it saw an
- * extern. g_gpu_draw_move_table: gpu_AddDrawMove's seven 6-entry rows. */
+ * g_softbody_face_record_strides precedes it, 31548.c's D_80094CFC follows), in
+ * address order. Defined after every function, so no body sees a definition
+ * where it saw an extern. g_gpu_draw_move_table: gpu_AddDrawMove's seven
+ * 6-entry rows. */
 u16 g_gpu_draw_move_table[42] = {
     0x0290, 0x0000, 0x0010, 0x0020, 0x0280, 0x0000, 0x02A0, 0x0000, 0x0010,
     0x0020, 0x0280, 0x0000, 0x02B0, 0x0000, 0x0010, 0x0020, 0x0280, 0x0000,
@@ -472,7 +475,7 @@ u8 D_80094B48[64] = {
 
 /* Per arena_id: slot_ClearObjectPointersAndTextureRequests clears the three
  * slots. */
-s32 D_80094B88[3] = {-1, -1, -1};
+s32 g_slot_tim_group_requests[3] = {-1, -1, -1};
 
 Unk80094B94Table D_80094B94 = {
     -1,
@@ -487,10 +490,10 @@ Unk80094B94Table D_80094B94 = {
     },
 };
 
-/* D_80094C68, the position scales
+/* g_object_scale_factors, the position scales
  * node_InitObjectHierarchyFromTemplates counts up to the -1 at [70] and indexes
  * (9F9C.c reads it as size_scale); three zero entries follow the -1. */
-u16 D_80094C68[74] = {
+u16 g_object_scale_factors[74] = {
     0x107A, 0x1000, 0x0F5C, 0x107A, 0x1000, 0x0F5C, 0x1000, 0x1000, 0x1000,
     0x1028, 0x10A3, 0x1000, 0x1000, 0x1000, 0x1000, 0x1051, 0x1000, 0x0F85,
     0x1051, 0x1000, 0x0F85, 0x1000, 0x1000, 0x1051, 0x0F0A, 0x1000, 0x1051,

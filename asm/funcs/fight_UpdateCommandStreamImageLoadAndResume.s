@@ -40,8 +40,8 @@ glabel fight_UpdateCommandStreamImageLoadAndResume
     /* 2C174 8003B974 0A80013C */  lui        $at, %hi(D_800A37C0)
     /* 2C178 8003B978 C03722AC */  sw         $v0, %lo(D_800A37C0)($at)
     /* 2C17C 8003B97C 14000224 */  addiu      $v0, $zero, 0x14
-    /* 2C180 8003B980 0A80013C */  lui        $at, %hi(D_800A38F8)
-    /* 2C184 8003B984 F83820A0 */  sb         $zero, %lo(D_800A38F8)($at)
+    /* 2C180 8003B980 0A80013C */  lui        $at, %hi(g_fight_stage_list_draw_cursor)
+    /* 2C184 8003B984 F83820A0 */  sb         $zero, %lo(g_fight_stage_list_draw_cursor)($at)
     /* 2C188 8003B988 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
     /* 2C18C 8003B98C 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 2C190 8003B990 E475000C */  jal        fight_ResetGraphAndReloadResourcesOnCachedKeyChange
@@ -54,8 +54,8 @@ glabel fight_UpdateCommandStreamImageLoadAndResume
     /* 2C1AC 8003B9AC DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2C1B0 8003B9B0 21380000 */   addu      $a3, $zero, $zero
     /* 2C1B4 8003B9B4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2C1B8 8003B9B8 0A80013C */  lui        $at, %hi(D_800A390D)
-    /* 2C1BC 8003B9BC 0D3922A0 */  sb         $v0, %lo(D_800A390D)($at)
+    /* 2C1B8 8003B9B8 0A80013C */  lui        $at, %hi(g_main_present_skip_frames)
+    /* 2C1BC 8003B9BC 0D3922A0 */  sb         $v0, %lo(g_main_present_skip_frames)($at)
   .L8003B9C0:
     /* 2C1C0 8003B9C0 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2C1C4 8003B9C4 1800BD27 */  addiu      $sp, $sp, 0x18

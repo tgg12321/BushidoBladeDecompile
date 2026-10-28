@@ -77,8 +77,8 @@ glabel ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 2596C 8003516C 07006330 */  andi       $v1, $v1, 0x7
     /* 25970 80035170 0A80013C */  lui        $at, %hi(D_800A389A)
     /* 25974 80035174 9A3822A0 */  sb         $v0, %lo(D_800A389A)($at)
-    /* 25978 80035178 0A80013C */  lui        $at, %hi(D_800A3788)
-    /* 2597C 8003517C 883723A0 */  sb         $v1, %lo(D_800A3788)($at)
+    /* 25978 80035178 0A80013C */  lui        $at, %hi(g_fight_toggle_option_bits)
+    /* 2597C 8003517C 883723A0 */  sb         $v1, %lo(g_fight_toggle_option_bits)($at)
     /* 25980 80035180 9AD40008 */  j          .L80035268
     /* 25984 80035184 00000000 */   nop
   .L80035188:

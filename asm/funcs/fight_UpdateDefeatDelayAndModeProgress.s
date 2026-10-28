@@ -63,13 +63,13 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D1C0 8001C9C0 00000000 */  nop
     /* D1C4 8001C9C4 D0004014 */  bnez       $v0, .L8001CD08
     /* D1C8 8001C9C8 04000224 */   addiu     $v0, $zero, 0x4
-    /* D1CC 8001C9CC 0A80023C */  lui        $v0, %hi(D_800A3680)
-    /* D1D0 8001C9D0 80364290 */  lbu        $v0, %lo(D_800A3680)($v0)
+    /* D1CC 8001C9CC 0A80023C */  lui        $v0, %hi(g_fight_second_fighter_defeats_left)
+    /* D1D0 8001C9D0 80364290 */  lbu        $v0, %lo(g_fight_second_fighter_defeats_left)($v0)
     /* D1D4 8001C9D4 00000000 */  nop
     /* D1D8 8001C9D8 2F004010 */  beqz       $v0, .L8001CA98
     /* D1DC 8001C9DC FFFF4224 */   addiu     $v0, $v0, -0x1
-    /* D1E0 8001C9E0 0A80013C */  lui        $at, %hi(D_800A3680)
-    /* D1E4 8001C9E4 803622A0 */  sb         $v0, %lo(D_800A3680)($at)
+    /* D1E0 8001C9E0 0A80013C */  lui        $at, %hi(g_fight_second_fighter_defeats_left)
+    /* D1E4 8001C9E4 803622A0 */  sb         $v0, %lo(g_fight_second_fighter_defeats_left)($at)
     /* D1E8 8001C9E8 FF004230 */  andi       $v0, $v0, 0xFF
     /* D1EC 8001C9EC 24004014 */  bnez       $v0, .L8001CA80
     /* D1F0 8001C9F0 00000000 */   nop
@@ -92,8 +92,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D230 8001CA30 00000000 */   nop
     /* D234 8001CA34 21ED000C */  jal        fight_ConfigureFighter1FromOperandsAndLoad
     /* D238 8001CA38 06008424 */   addiu     $a0, $a0, 0x6
-    /* D23C 8001CA3C 0A80033C */  lui        $v1, %hi(D_800A3836)
-    /* D240 8001CA40 36386390 */  lbu        $v1, %lo(D_800A3836)($v1)
+    /* D23C 8001CA3C 0A80033C */  lui        $v1, %hi(g_fight_saved_first_fighter_selection)
+    /* D240 8001CA40 36386390 */  lbu        $v1, %lo(g_fight_saved_first_fighter_selection)($v1)
     /* D244 8001CA44 FF000224 */  addiu      $v0, $zero, 0xFF
     /* D248 8001CA48 05006210 */  beq        $v1, $v0, .L8001CA60
     /* D24C 8001CA4C 00000000 */   nop
@@ -138,8 +138,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D2D4 8001CAD4 00000000 */   nop
     /* D2D8 8001CAD8 8D004010 */  beqz       $v0, .L8001CD10
     /* D2DC 8001CADC 01001024 */   addiu     $s0, $zero, 0x1
-    /* D2E0 8001CAE0 0A80013C */  lui        $at, %hi(D_800A390D)
-    /* D2E4 8001CAE4 0D3930A0 */  sb         $s0, %lo(D_800A390D)($at)
+    /* D2E0 8001CAE0 0A80013C */  lui        $at, %hi(g_main_present_skip_frames)
+    /* D2E4 8001CAE4 0D3930A0 */  sb         $s0, %lo(g_main_present_skip_frames)($at)
     /* D2E8 8001CAE8 1A5A000C */  jal        gpu_ResetGraphMode1
     /* D2EC 8001CAEC 00000000 */   nop
     /* D2F0 8001CAF0 01000424 */  addiu      $a0, $zero, 0x1

@@ -7,8 +7,8 @@ glabel menu_HandleMemCardChoices
     /* 5C140 8006B940 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5C144 8006B944 21280000 */  addu       $a1, $zero, $zero
     /* 5C148 8006B948 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
-    /* 5C14C 8006B94C 0A80073C */  lui        $a3, %hi(D_800A350C)
-    /* 5C150 8006B950 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
+    /* 5C14C 8006B94C 0A80073C */  lui        $a3, %hi(g_menu_draw_offset_steps)
+    /* 5C150 8006B950 0C35E724 */  addiu      $a3, $a3, %lo(g_menu_draw_offset_steps)
     /* 5C154 8006B954 2000BFAF */  sw         $ra, 0x20($sp)
     /* 5C158 8006B958 0000238E */  lw         $v1, 0x0($s1)
     /* 5C15C 8006B95C 0C00C624 */  addiu      $a2, $a2, 0xC

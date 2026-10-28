@@ -20,8 +20,8 @@ glabel fighter_TestTriangleBoneHits
     /* 1D2D4 8002CAD4 2800A6AF */  sw         $a2, 0x28($sp)
     /* 1D2D8 8002CAD8 3000A0AF */  sw         $zero, 0x30($sp)
     /* 1D2DC 8002CADC 04008484 */  lh         $a0, 0x4($a0)
-    /* 1D2E0 8002CAE0 0F80033C */  lui        $v1, %hi(D_800F5F68)
-    /* 1D2E4 8002CAE4 685F6324 */  addiu      $v1, $v1, %lo(D_800F5F68)
+    /* 1D2E0 8002CAE0 0F80033C */  lui        $v1, %hi(g_fighter_bone_hit_records)
+    /* 1D2E4 8002CAE4 685F6324 */  addiu      $v1, $v1, %lo(g_fighter_bone_hit_records)
     /* 1D2E8 8002CAE8 C0100400 */  sll        $v0, $a0, 3
     /* 1D2EC 8002CAEC 23104400 */  subu       $v0, $v0, $a0
     /* 1D2F0 8002CAF0 C0100200 */  sll        $v0, $v0, 3

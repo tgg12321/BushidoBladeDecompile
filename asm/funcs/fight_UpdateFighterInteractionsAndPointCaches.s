@@ -40,15 +40,15 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1CEA8 8002C6A8 00000000 */   nop
     /* 1CEAC 8002C6AC 15A5000C */  jal        fighter_ProcessWeaponContacts
     /* 1CEB0 8002C6B0 00000000 */   nop
-    /* 1CEB4 8002C6B4 0A80013C */  lui        $at, %hi(D_800A3824)
-    /* 1CEB8 8002C6B8 243822A4 */  sh         $v0, %lo(D_800A3824)($at)
+    /* 1CEB4 8002C6B4 0A80013C */  lui        $at, %hi(g_fight_weapon_contact_result)
+    /* 1CEB8 8002C6B8 243822A4 */  sh         $v0, %lo(g_fight_weapon_contact_result)($at)
     /* 1CEBC 8002C6BC 00140200 */  sll        $v0, $v0, 16
     /* 1CEC0 8002C6C0 1F004004 */  bltz       $v0, .L8002C740
     /* 1CEC4 8002C6C4 00000000 */   nop
     /* 1CEC8 8002C6C8 8BB0000C */  jal        fighter_BlendCurrentAndPreviousContactPoints
     /* 1CECC 8002C6CC 00000000 */   nop
-    /* 1CED0 8002C6D0 0A80023C */  lui        $v0, %hi(D_800A3824)
-    /* 1CED4 8002C6D4 24384284 */  lh         $v0, %lo(D_800A3824)($v0)
+    /* 1CED0 8002C6D0 0A80023C */  lui        $v0, %hi(g_fight_weapon_contact_result)
+    /* 1CED4 8002C6D4 24384284 */  lh         $v0, %lo(g_fight_weapon_contact_result)($v0)
     /* 1CED8 8002C6D8 00000000 */  nop
     /* 1CEDC 8002C6DC 18004004 */  bltz       $v0, .L8002C740
     /* 1CEE0 8002C6E0 00000000 */   nop
@@ -126,8 +126,8 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1CFF0 8002C7F0 860202A6 */  sh         $v0, 0x286($s0)
     /* 1CFF4 8002C7F4 8C0200AE */  sw         $zero, 0x28C($s0)
     /* 1CFF8 8002C7F8 8C0220AE */  sw         $zero, 0x28C($s1)
-    /* 1CFFC 8002C7FC 0A80013C */  lui        $at, %hi(D_800A3910)
-    /* 1D000 8002C800 103920A4 */  sh         $zero, %lo(D_800A3910)($at)
+    /* 1CFFC 8002C7FC 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
+    /* 1D000 8002C800 103920A4 */  sh         $zero, %lo(g_fight_midpoint_effect_delay)($at)
     /* 1D004 8002C804 0A80013C */  lui        $at, %hi(D_800A389C)
     /* 1D008 8002C808 9C3820A4 */  sh         $zero, %lo(D_800A389C)($at)
   .L8002C80C:

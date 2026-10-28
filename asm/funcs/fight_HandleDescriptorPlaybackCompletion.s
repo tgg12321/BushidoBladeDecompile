@@ -46,12 +46,12 @@ glabel fight_HandleDescriptorPlaybackCompletion
     /* 2C560 8003BD60 08004000 */  jr         $v0
     /* 2C564 8003BD64 00000000 */   nop
   jlabel .L8003BD68
-    /* 2C568 8003BD68 0A80023C */  lui        $v0, %hi(D_800A3907)
-    /* 2C56C 8003BD6C 07394290 */  lbu        $v0, %lo(D_800A3907)($v0)
+    /* 2C568 8003BD68 0A80023C */  lui        $v0, %hi(g_fight_stage_start_count)
+    /* 2C56C 8003BD6C 07394290 */  lbu        $v0, %lo(g_fight_stage_start_count)($v0)
     /* 2C570 8003BD70 00000000 */  nop
     /* 2C574 8003BD74 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2C578 8003BD78 0A80013C */  lui        $at, %hi(D_800A3907)
-    /* 2C57C 8003BD7C 073922A0 */  sb         $v0, %lo(D_800A3907)($at)
+    /* 2C578 8003BD78 0A80013C */  lui        $at, %hi(g_fight_stage_start_count)
+    /* 2C57C 8003BD7C 073922A0 */  sb         $v0, %lo(g_fight_stage_start_count)($at)
     /* 2C580 8003BD80 80EF0008 */  j          .L8003BE00
     /* 2C584 8003BD84 00000000 */   nop
   jlabel .L8003BD88

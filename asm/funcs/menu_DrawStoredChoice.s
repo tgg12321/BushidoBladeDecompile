@@ -29,7 +29,7 @@ glabel menu_DrawStoredChoice
     /* 5DC44 8006D444 3CB50108 */  j          .L8006D4F0
     /* 5DC48 8006D448 2800A0AF */   sw        $zero, 0x28($sp)
   .L8006D44C:
-    /* 5DC4C 8006D44C 5C048487 */  lh         $a0, %gp_rel(D_800A3528)($gp)
+    /* 5DC4C 8006D44C 5C048487 */  lh         $a0, %gp_rel(g_menu_stored_choice_cursor)($gp)
     /* 5DC50 8006D450 00000000 */  nop
     /* 5DC54 8006D454 01008224 */  addiu      $v0, $a0, 0x1
     /* 5DC58 8006D458 11006214 */  bne        $v1, $v0, .L8006D4A0

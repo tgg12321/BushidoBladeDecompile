@@ -8,8 +8,8 @@ glabel fighter_Init
     /* 12D98 80022598 4400B3AF */  sw         $s3, 0x44($sp)
     /* 12D9C 8002259C 6000B38F */  lw         $s3, 0x60($sp)
     /* 12DA0 800225A0 FF000224 */  addiu      $v0, $zero, 0xFF
-    /* 12DA4 800225A4 0A80013C */  lui        $at, %hi(D_800A3758)
-    /* 12DA8 800225A8 583722A0 */  sb         $v0, %lo(D_800A3758)($at)
+    /* 12DA4 800225A4 0A80013C */  lui        $at, %hi(g_fight_missing_support_fighter_index)
+    /* 12DA8 800225A8 583722A0 */  sb         $v0, %lo(g_fight_missing_support_fighter_index)($at)
     /* 12DAC 800225AC 00111200 */  sll        $v0, $s2, 4
     /* 12DB0 800225B0 21105200 */  addu       $v0, $v0, $s2
     /* 12DB4 800225B4 80100200 */  sll        $v0, $v0, 2
@@ -21,8 +21,8 @@ glabel fighter_Init
     /* 12DCC 800225CC 21804300 */  addu       $s0, $v0, $v1
     /* 12DD0 800225D0 4800BFAF */  sw         $ra, 0x48($sp)
     /* 12DD4 800225D4 3C00B1AF */  sw         $s1, 0x3C($sp)
-    /* 12DD8 800225D8 0A80013C */  lui        $at, %hi(D_800A376E)
-    /* 12DDC 800225DC 6E3720A4 */  sh         $zero, %lo(D_800A376E)($at)
+    /* 12DD8 800225D8 0A80013C */  lui        $at, %hi(g_fight_paired_move_start_pending)
+    /* 12DDC 800225DC 6E3720A4 */  sh         $zero, %lo(g_fight_paired_move_start_pending)($at)
     /* 12DE0 800225E0 02004016 */  bnez       $s2, .L800225EC
     /* 12DE4 800225E4 3C0000AE */   sw        $zero, 0x3C($s0)
     /* 12DE8 800225E8 4C046324 */  addiu      $v1, $v1, 0x44C
@@ -126,9 +126,9 @@ glabel fighter_Init
     /* 12F4C 8002274C 00000000 */  nop
     /* 12F50 80022750 40100200 */  sll        $v0, $v0, 1
   .L80022754:
-    /* 12F54 80022754 0980013C */  lui        $at, %hi(D_80094C68)
+    /* 12F54 80022754 0980013C */  lui        $at, %hi(g_object_scale_factors)
     /* 12F58 80022758 21082200 */  addu       $at, $at, $v0
-    /* 12F5C 8002275C 684C2294 */  lhu        $v0, %lo(D_80094C68)($at)
+    /* 12F5C 8002275C 684C2294 */  lhu        $v0, %lo(g_object_scale_factors)($at)
     /* 12F60 80022760 00000000 */  nop
     /* 12F64 80022764 1A0002A6 */  sh         $v0, 0x1A($s0)
     /* 12F68 80022768 0A000386 */  lh         $v1, 0xA($s0)
@@ -456,8 +456,8 @@ glabel fighter_Init
     /* 13430 80022C30 00000000 */   nop
     /* 13434 80022C34 0C004016 */  bnez       $s2, .L80022C68
     /* 13438 80022C38 00000000 */   nop
-    /* 1343C 80022C3C 0A80023C */  lui        $v0, %hi(D_800A3907)
-    /* 13440 80022C40 07394290 */  lbu        $v0, %lo(D_800A3907)($v0)
+    /* 1343C 80022C3C 0A80023C */  lui        $v0, %hi(g_fight_stage_start_count)
+    /* 13440 80022C40 07394290 */  lbu        $v0, %lo(g_fight_stage_start_count)($v0)
     /* 13444 80022C44 00000000 */  nop
     /* 13448 80022C48 0200422C */  sltiu      $v0, $v0, 0x2
     /* 1344C 80022C4C 06004014 */  bnez       $v0, .L80022C68

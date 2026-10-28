@@ -129,13 +129,14 @@ u8 D_8008D55C[28] = {3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 18, 19,
                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0};
 
 /* [g_fight_config.unk_4[i]] -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels's
- * arg1; [character_roster_index] -> D_80094C68's index (fighter_Init); size
- * from the gap. */
+ * arg1; [character_roster_index] -> g_object_scale_factors's index
+ * (fighter_Init); size from the gap. */
 u8 D_8008D578[36] = {
     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
     18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 62, 63, 0,  0,  0};
 
-/* The 22 hit records fighter_ScaleBoneHitRecords scales into D_800F5F68. */
+/* The 22 hit records fighter_ScaleBoneHitRecords scales into
+ * g_fighter_bone_hit_records. */
 BoneHitRec D_8008D59C[22] = {
     {1, 2, {56, 0, -57, 0}, 228, 51984, 200, 40000},
     {1, 1, {94, 0, 0, 0}, 210, 44100, 190, 36100},

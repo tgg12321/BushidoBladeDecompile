@@ -228,7 +228,7 @@ void fight_InitCommandStream(s32 arg0) {
     g_fight_config.unk_4[5] = 1;
     D_800A3894 = 0;
     D_800A385C = 0;
-    D_800A3836 = 0xFF;
+    g_fight_saved_first_fighter_selection = 0xFF;
     D_800A3915 = 0xFF;
     D_800A37C6 = 1;
     g_fight_stage_command_count = 0;
@@ -242,7 +242,7 @@ void fight_InitCommandStream(s32 arg0) {
 
 void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
     void) {
-    D_800A3836 = g_fight_config.unk_4[0];
+    g_fight_saved_first_fighter_selection = g_fight_config.unk_4[0];
     {
         u8 *base = D_800A3894;
         u8 v1 = g_fight_bone_group_tim_requests;
@@ -258,9 +258,9 @@ void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0F
     void) {
     u8 v_277C = g_fight_config.unk_4[0];
     u8 v_376A = g_fight_bone_group_tim_requests;
-    u8 v_3836 = D_800A3836;
+    u8 v_3836 = g_fight_saved_first_fighter_selection;
     u8 v_36C8 = D_800A36C8;
-    D_800A3836 = 0xFF;
+    g_fight_saved_first_fighter_selection = 0xFF;
     D_800A3915 = v_277C;
     D_800A36F4 = v_376A;
     g_fight_config.unk_4[0] = v_3836;
@@ -282,7 +282,7 @@ s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *arg0) {
     g_fight_config.unk_4[3] = 0;
     {
         u8 v = arg0[0];
-        D_800A3680 = v;
+        g_fight_second_fighter_defeats_left = v;
         D_800A3671 = v;
     }
     g_fight_config.unk_A[1] = arg0[1];
@@ -383,12 +383,12 @@ void fight_RunCommandStream(void) {
             g_main_loop_handler_index = 22;
             var_0 = 1;
             fighter_ResetBoneGroupHitState(D_80101EC8);
-            D_800A3907 = 0;
+            g_fight_stage_start_count = 0;
             break;
         }
 
         case 0:
-            if (D_800A380C == 0) {
+            if (g_fight_menu_restart_count == 0) {
                 g_fight_presentation_index =
                     (g_fighter_group_flags[D_80101EC8[0]
                                                .character_data_index] != 0);
@@ -414,7 +414,7 @@ void fight_RunCommandStream(void) {
             fight_ConfigureFighter1FromLookupAndOperandsAndLoad(D_800A3894 + 1);
         case 18:
             g_main_loop_handler_index = 0;
-            D_800A3907++;
+            g_fight_stage_start_count++;
             var_0 = 1;
             break;
 
@@ -454,12 +454,12 @@ void fight_UpdateCommandStreamImageLoadAndResume(void) {
         DrawSync(0);
         fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
         D_800A37C0 = 500;
-        D_800A38F8 = 0;
+        g_fight_stage_list_draw_cursor = 0;
         g_local_ot_draw_mode = DISP_ACTIVE;
         fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
         fight_RunCommandStream();
         gpu_SetDrawEnvBg(1, 0, 0, 0);
-        D_800A390D = 1;
+        g_main_present_skip_frames = 1;
     }
 }
 
@@ -555,7 +555,7 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     }
     fight_WaitForCounterThenClearAndEnableDisplay();
     g_local_ot_draw_mode = DISP_DISABLED;
-    D_800A36A8 = 0;
+    g_gpu_jitter_burst_enabled = 0;
     snd_SerialMixOn();
     v0 = cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1]);
     cdrom_StartAudio(v0, g_fight_active_playback_descriptor[2]);
@@ -584,7 +584,7 @@ void fight_HandleDescriptorPlaybackCompletion(void) {
         case 2:
         case 4:
         case 5:
-            D_800A3907++;
+            g_fight_stage_start_count++;
             return;
         case 3:
             fight_FillMissingConfigInitFighterAndLoadObject(0);
@@ -793,7 +793,7 @@ void fight_TallyMatchResultsAndInitPresentation(void) {
         counts[g_fight_match_results[i]]++;
     }
     if (counts[0] != counts[1]) {
-        D_800A382D = counts[0] < counts[1];
+        g_fight_tally_winner_index = counts[0] < counts[1];
     } else {
         counts[1] = 0;
         counts[0] = 0;
@@ -803,9 +803,9 @@ void fight_TallyMatchResultsAndInitPresentation(void) {
             }
         }
         if (counts[0] != counts[1]) {
-            D_800A382D = counts[0] < counts[1];
+            g_fight_tally_winner_index = counts[0] < counts[1];
         } else {
-            D_800A382D = 2;
+            g_fight_tally_winner_index = 2;
         }
     }
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -816,17 +816,18 @@ void fight_TallyMatchResultsAndInitPresentation(void) {
 void fight_UpdateMatchTallyPresentation(void) {
 
     g_handler_frame_counter = g_handler_frame_counter + 1;
-    if (D_800A382D == 2) {
+    if (g_fight_tally_winner_index == 2) {
         if (g_handler_frame_counter == 0x1E) {
             snd_QueueSound(0xA4, 0x7F, 0x7F);
         }
     } else {
         if (g_handler_frame_counter == 0x1E) {
-            snd_QueueSound(g_fighter_group_flags[D_80101EC8[D_800A382D]
-                                                     .character_data_index] != 0
-                               ? 0xA8
-                               : 0xA7,
-                           0x7F, 0x7F);
+            snd_QueueSound(
+                g_fighter_group_flags[D_80101EC8[g_fight_tally_winner_index]
+                                          .character_data_index] != 0
+                    ? 0xA8
+                    : 0xA7,
+                0x7F, 0x7F);
         }
         if (g_handler_frame_counter == 0x43) {
             snd_QueueSound(0xA9, 0x7F, 0x7F);
@@ -837,12 +838,12 @@ void fight_UpdateMatchTallyPresentation(void) {
                          4;
     if ((g_pad_state.pressed & 0x400040) != 0 ||
         g_handler_frame_counter >= 0xF1) {
-        if (D_800A382D == 2) {
+        if (g_fight_tally_winner_index == 2) {
             g_main_loop_handler_index = 0x18;
         } else {
             cdrom_PauseAndWait();
             g_fight_presentation_index =
-                g_fighter_group_flags[D_80101EC8[D_800A382D]
+                g_fighter_group_flags[D_80101EC8[g_fight_tally_winner_index]
                                           .character_data_index] != 0
                     ? 5
                     : 4;
@@ -987,7 +988,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
             return;
         }
         g_fight_reinit_reuses_assets = 1;
-        D_800A380C = D_800A380C + 1;
+        g_fight_menu_restart_count = g_fight_menu_restart_count + 1;
         D_800A38DF = fight_FindNearestStartPair(
             &D_80101EC8[g_fight_followup_fighter_index].world_pos);
         g_main_loop_handler_index = 0;
@@ -1157,7 +1158,8 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
         motion_InitStream(0, g_motion_common_sections.unk_10);
         motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
         motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
-        if (g_fight_mode_selector == 0 && (u8)D_800A3836 != 0xFF) {
+        if (g_fight_mode_selector == 0 &&
+            (u8)g_fight_saved_first_fighter_selection != 0xFF) {
             snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
             fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
             fight_FillMissingConfigInitFighterAndLoadObject(0);
@@ -2522,16 +2524,16 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
     }
 }
 
-extern s16 D_80094AEC[];
+extern s16 g_softbody_face_record_strides[];
 
 /* The face records softbody_CreateForNode walks, one layout per mode ((flags >>
  * 3) & 3): bit 0 set is a quad (the size pass counts 6 springs per face, one
  * per pair of its 4 points; 3 for a triangle), bit 1 picks the longer record.
- * The sizes are the D_80094AEC[mode] strides in halfwords (12, 12, 18, 22).
- * vtx_ids holds the face's point indices, one byte each (4 for a quad, 3 for
- * a triangle), which softbody_CreateForNode writes as one spring group (count,
- * group id 2, the index bytes); read as two halfwords (the mode-1 quad record
- * places it off word alignment).
+ * The sizes are the g_softbody_face_record_strides[mode] strides in halfwords
+ * (12, 12, 18, 22). vtx_ids holds the face's point indices, one byte each (4
+ * for a quad, 3 for a triangle), which softbody_CreateForNode writes as one
+ * spring group (count, group id 2, the index bytes); read as two halfwords (the
+ * mode-1 quad record places it off word alignment).
  */
 typedef struct {
     u16 unk0[6];
@@ -2613,7 +2615,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
         } else {
             point_count += count * 3;
         }
-        src += D_80094AEC[(flags >> 3) & 3] * count;
+        src += g_softbody_face_record_strides[(flags >> 3) & 3] * count;
         count = *src++;
     }
 
@@ -2629,9 +2631,10 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     for (n = (s16)*src++, count = n; n != 0; n = (s16)*src++, count = n) {
         flags = *src++;
         /* FAKE: mode computed once ahead of the record loop; indexing
-         * D_80094AEC with the expression moves the addiu s0 / andi pair (score
-         * 6). The following tests re-derive ((s16)flags >> 3) & 1 / & 2 from
-         * flags rather than reading mode (Q129 blind verdict doubtful). */
+         * g_softbody_face_record_strides with the expression moves the addiu s0
+         * / andi pair (score 6). The following tests re-derive ((s16)flags >>
+         * 3) & 1 / & 2 from flags rather than reading mode (Q129 blind verdict
+         * doubtful). */
         mode = ((s16)flags >> 3) & 3;
         if (((s16)flags >> 3) & 1) {
             while (--count != -1) {
@@ -2648,7 +2651,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
                 *packet++ = (value >> 8) & 0xFF;
                 *packet++ = (value >> 16) & 0xFF;
                 *packet++ = (u32)value >> 24;
-                src += D_80094AEC[mode];
+                src += g_softbody_face_record_strides[mode];
             }
         } else {
             while (--count != -1) {
@@ -2664,7 +2667,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
                 *packet++ = value & 0xFF;
                 *packet++ = (value >> 8) & 0xFF;
                 *packet++ = (value >> 16) & 0xFF;
-                src += D_80094AEC[mode];
+                src += g_softbody_face_record_strides[mode];
             }
         }
         *packet++ = 0;
@@ -2830,13 +2833,13 @@ void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
 }
 
 /* .data 0x8008F220..0x800905F8, the head of this file's .data (28708.c's
- * .data precedes; g_gpu_last_fog_ot_index .. D_80094AEC in the data-only
- * d_80DF8.c follow):
- * the fight command streams D_8008F220 .. D_8009000C (18 byte streams of
- * 188..224 bytes; D_8008F220 also fills the unused slots) and their pointer
- * table D_800900EC, which fight_InitCommandStream indexes. Only that table
- * points at the streams, and only this file reads it. Defined after every
- * function, so no body sees a definition where it saw an extern. */
+ * .data precedes; g_gpu_last_fog_ot_index .. g_softbody_face_record_strides in
+ * the data-only d_80DF8.c follow): the fight command streams D_8008F220 ..
+ * D_8009000C (18 byte streams of 188..224 bytes; D_8008F220 also fills the
+ * unused slots) and their pointer table D_800900EC, which
+ * fight_InitCommandStream indexes. Only that table points at the streams, and
+ * only this file reads it. Defined after every function, so no body sees a
+ * definition where it saw an extern. */
 u8 D_8008F220[204] = {
     0x01, 0x08, 0x10, 0x07, 0x10, 0x03, 0x33, 0x24, 0x12, 0x13, 0x00, 0x19,
     0x0A, 0x01, 0x01, 0x0F, 0x10, 0x05, 0x10, 0x78, 0x00, 0xFF, 0x12, 0x11,

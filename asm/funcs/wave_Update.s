@@ -4,8 +4,8 @@ glabel wave_Update
     /* 38298 80047A98 FC73C624 */  addiu      $a2, $a2, %lo(Judge)
     /* 3829C 80047A9C 0F80043C */  lui        $a0, %hi(D_800EF558)
     /* 382A0 80047AA0 58F58424 */  addiu      $a0, $a0, %lo(D_800EF558)
-    /* 382A4 80047AA4 0F80053C */  lui        $a1, %hi(D_800EF59C)
-    /* 382A8 80047AA8 9CF5A524 */  addiu      $a1, $a1, %lo(D_800EF59C)
+    /* 382A4 80047AA4 0F80053C */  lui        $a1, %hi(g_wave_vertex_grid)
+    /* 382A8 80047AA8 9CF5A524 */  addiu      $a1, $a1, %lo(g_wave_vertex_grid)
   .L80047AAC:
     /* 382AC 80047AAC 0000828C */  lw         $v0, 0x0($a0)
     /* 382B0 80047AB0 00000000 */  nop
@@ -30,8 +30,8 @@ glabel wave_Update
     /* 382FC 80047AFC EBFF4014 */  bnez       $v0, .L80047AAC
     /* 38300 80047B00 04008424 */   addiu     $a0, $a0, 0x4
     /* 38304 80047B04 01000824 */  addiu      $t0, $zero, 0x1
-    /* 38308 80047B08 0F800A3C */  lui        $t2, %hi(D_800EF59C)
-    /* 3830C 80047B0C 9CF54A25 */  addiu      $t2, $t2, %lo(D_800EF59C)
+    /* 38308 80047B08 0F800A3C */  lui        $t2, %hi(g_wave_vertex_grid)
+    /* 3830C 80047B0C 9CF54A25 */  addiu      $t2, $t2, %lo(g_wave_vertex_grid)
     /* 38310 80047B10 44004925 */  addiu      $t1, $t2, 0x44
   .L80047B14:
     /* 38314 80047B14 21282001 */  addu       $a1, $t1, $zero

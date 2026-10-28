@@ -149,9 +149,9 @@ glabel menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
     /* 64EA4 800746A4 00000000 */  nop
     /* 64EA8 800746A8 40280200 */  sll        $a1, $v0, 1
     /* 64EAC 800746AC 00141000 */  sll        $v0, $s0, 16
-    /* 64EB0 800746B0 0A80013C */  lui        $at, %hi(D_8009BD20)
+    /* 64EB0 800746B0 0A80013C */  lui        $at, %hi(g_sel_sheet_code_pairs)
     /* 64EB4 800746B4 21082500 */  addu       $at, $at, $a1
-    /* 64EB8 800746B8 20BD2390 */  lbu        $v1, %lo(D_8009BD20)($at)
+    /* 64EB8 800746B8 20BD2390 */  lbu        $v1, %lo(g_sel_sheet_code_pairs)($at)
     /* 64EBC 800746BC 03240200 */  sra        $a0, $v0, 16
     /* 64EC0 800746C0 09006324 */  addiu      $v1, $v1, 0x9
     /* 64EC4 800746C4 0A006410 */  beq        $v1, $a0, .L800746F0

@@ -5,12 +5,12 @@ glabel eff_SpawnBillboardPair
     /* 537F8 80062FF8 21300000 */  addu       $a2, $zero, $zero
     /* 537FC 80062FFC 01000524 */  addiu      $a1, $zero, 0x1
   .L80063000:
-    /* 53800 80063000 7C03848F */  lw         $a0, %gp_rel(D_800A3448)($gp)
+    /* 53800 80063000 7C03848F */  lw         $a0, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
     /* 53804 80063004 0418C500 */  sllv       $v1, $a1, $a2
     /* 53808 80063008 24108300 */  and        $v0, $a0, $v1
     /* 5380C 8006300C 04004014 */  bnez       $v0, .L80063020
     /* 53810 80063010 25108300 */   or        $v0, $a0, $v1
-    /* 53814 80063014 7C0382AF */  sw         $v0, %gp_rel(D_800A3448)($gp)
+    /* 53814 80063014 7C0382AF */  sw         $v0, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
     /* 53818 80063018 0D8C0108 */  j          .L80063034
     /* 5381C 8006301C 40280600 */   sll       $a1, $a2, 1
   .L80063020:

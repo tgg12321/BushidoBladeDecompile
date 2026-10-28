@@ -140,8 +140,8 @@ glabel wave_Init
     /* 381F8 800479F8 00000000 */   nop
     /* 381FC 800479FC 21380000 */  addu       $a3, $zero, $zero
     /* 38200 80047A00 21300000 */  addu       $a2, $zero, $zero
-    /* 38204 80047A04 0F80053C */  lui        $a1, %hi(D_800EF59C)
-    /* 38208 80047A08 9CF5A524 */  addiu      $a1, $a1, %lo(D_800EF59C)
+    /* 38204 80047A04 0F80053C */  lui        $a1, %hi(g_wave_vertex_grid)
+    /* 38208 80047A08 9CF5A524 */  addiu      $a1, $a1, %lo(g_wave_vertex_grid)
   .L80047A0C:
     /* 3820C 80047A0C 2118C000 */  addu       $v1, $a2, $zero
     /* 38210 80047A10 10000424 */  addiu      $a0, $zero, 0x10

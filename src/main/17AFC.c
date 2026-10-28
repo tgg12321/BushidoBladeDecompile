@@ -627,7 +627,7 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                 }
             }
             var_s1 = 0;
-            d_val = D_800A3824;
+            d_val = g_fight_weapon_contact_result;
             temp_a1_2 = (d_val >> arg0->index) & 1;
             temp_s5 = (d_val >> temp_s4->index) & 1;
             if (arg0->unk_8C != 0) {
@@ -1118,8 +1118,8 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
 
 /* Blade contact test between the two D_80101EC8 records (called by
  * fight_UpdateFighterInteractionsAndPointCaches; the result goes to
- * D_800A3824). Returns -1 unless both records' +0x3C are at least 4. Borrows
- * the first 16 SPAD->unkA8 points as two 2x2 grids per record
+ * g_fight_weapon_contact_result). Returns -1 unless both records' +0x3C are at
+ * least 4. Borrows the first 16 SPAD->unkA8 points as two 2x2 grids per record
  * (fight_ProcessPositionRecordsInQuad's layout). A record whose +0xE is not 6
  * or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid
  * fight_ProcessPositionRecordsInQuad hits plays effects 1, 0x26 and 0x2D and
@@ -1473,11 +1473,11 @@ s32 fighter_ProcessWeaponContacts(void) {
  * negative square prints "ILLEGAL GUN MOTION" and returns) and unit direction
  * q, and pushes the tip out by q*4. If the yaw difference to obj->other's
  * opponent_bearing is under 0x400, each of character `id`'s 22 records
- * (D_800F5F68; records 6..9 only when obj+0x26C is set) is tested: a
- * math_TestPreparedSegmentSphere test with unk_0C / unk_0E sets bit i in *arg1
- * and, only when the record's first halfword is nonzero, a second test with
- * unk_10 / unk_12 sets bit i in *arg2. Then collision_TestSegmentWithWork casts
- * the segment against the stage; when it returns nonzero and
+ * (g_fighter_bone_hit_records; records 6..9 only when obj+0x26C is set) is
+ * tested: a math_TestPreparedSegmentSphere test with unk_0C / unk_0E sets bit i
+ * in *arg1 and, only when the record's first halfword is nonzero, a second test
+ * with unk_10 / unk_12 sets bit i in *arg2. Then collision_TestSegmentWithWork
+ * casts the segment against the stage; when it returns nonzero and
  * collision_GetHitTag() != 7: if *arg1 is nonzero, the function skips to the
  * end when the cast point is no nearer the base than obj+0xF4 and otherwise
  * clears *arg1 and *arg2; then, unless `arg3`, effect 0xA plays at the cast
@@ -1585,7 +1585,7 @@ void fighter_CastWeaponSegment(
          * unwrapped they swap (16 instructions differ)
          * (do-while-zero-exception) */
         do {
-            rec = D_800F5F68[id];
+            rec = g_fighter_bone_hit_records[id];
         } while (0);
         for (i = 0; i < 22; i++, rec++) {
             Unk80107850Rec *pos;
@@ -1884,7 +1884,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         if (var_5 == 0) {
             continue;
         }
-        rec = D_800F5F68[i];
+        rec = g_fighter_bone_hit_records[i];
         best = 0x7FFFFFFF;
         scr->unkC8.x = var_3->unk_210[1].x;
         scr->unkC8.y = var_3->unk_210[1].y;
@@ -2169,11 +2169,11 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
         s32 idx;
         s32 chk;
         idx = g_fight_paired_move_initiator;
-        chk = D_800A376E;
+        chk = g_fight_paired_move_start_pending;
         var_s0 = &D_80101EC8[idx];
 
         if (chk == 0) {
-            if (D_800A3758 == 0xFF) {
+            if (g_fight_missing_support_fighter_index == 0xFF) {
                 if (var_s0->unk_AA == var_s0->move_frame) {
                     fighter_ProcessWeaponBodyHits(1);
                 }
@@ -2204,9 +2204,9 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
 
 /* Accumulates a character's shadow vectors in the scratchpad record at
  * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points (unk48[k]
- * when bit k of D_800A3824 is set, else unk00[k]); unkB8 sums the matching pair
- * fight_UpdateFighterInteractionsAndPointCaches copied into D_80101EC8[k]
- * (unk_234 / unk_210); the result goes to contact_point. */
+ * when bit k of g_fight_weapon_contact_result is set, else unk00[k]); unkB8
+ * sums the matching pair fight_UpdateFighterInteractionsAndPointCaches copied
+ * into D_80101EC8[k] (unk_234 / unk_210); the result goes to contact_point. */
 void fighter_BlendCurrentAndPreviousContactPoints(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80101EC8Record *rec0 = &D_80101EC8[0];
@@ -2219,7 +2219,7 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
     scr->unkB8.y = 0;
     scr->unkB8.z = 0;
 
-    if (D_800A3824 & 1) {
+    if (g_fight_weapon_contact_result & 1) {
         scr->unkA8.x = SPAD->unk48[0][0].x;
         scr->unkA8.y = SPAD->unk48[0][0].y;
         scr->unkA8.z = SPAD->unk48[0][0].z;
@@ -2246,7 +2246,7 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
         scr->unkB8.y += rec0->unk_210[1].y;
         scr->unkB8.z += rec0->unk_210[1].z;
     }
-    if (D_800A3824 & 2) {
+    if (g_fight_weapon_contact_result & 2) {
         scr->unkA8.x += SPAD->unk48[1][0].x;
         scr->unkA8.y += SPAD->unk48[1][0].y;
         scr->unkA8.z += SPAD->unk48[1][0].z;
@@ -2304,11 +2304,11 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
     } else {
         fighter_TriggerOpponentResponseOnMoveFrame();
         fighter_ResolveBodyOverlap();
-        D_800A3824 = fighter_ProcessWeaponContacts();
-        if (D_800A3824 >= 0) {
+        g_fight_weapon_contact_result = fighter_ProcessWeaponContacts();
+        if (g_fight_weapon_contact_result >= 0) {
             fighter_BlendCurrentAndPreviousContactPoints();
         }
-        if (D_800A3824 >= 0 &&
+        if (g_fight_weapon_contact_result >= 0 &&
             (firstPlayer->unk_AD != 0 || secondPlayer->unk_AD != 0)) {
             fighter_ResolveWeaponContact(
                 firstPlayer, &SPAD->unk2B8.rec.contact_point.x);
@@ -2332,7 +2332,7 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
                 secondPlayer->pending_move_event = 0xA;
                 secondPlayer->unk_28C = 0;
                 firstPlayer->unk_28C = 0;
-                D_800A3910 = 0;
+                g_fight_midpoint_effect_delay = 0;
                 D_800A389C = 0;
             }
         }
@@ -2394,7 +2394,7 @@ extern s32 math_TestPreparedTriangleSphere(
 void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = a0->index;
-    BoneHitRec *recbase = D_800F5F68[id];
+    BoneHitRec *recbase = g_fighter_bone_hit_records[id];
     BoneHitRec *rec;
     s32 var_4 = 0;
     s32 seenMask = 0;
@@ -4416,7 +4416,7 @@ void object_ResolveFighterHits(void) {
         math_PrepareSegmentCollisionFrame(scr);
 
         var_10 = 0;
-        rec = D_800F5F68[var_6];
+        rec = g_fighter_bone_hit_records[var_6];
         for (j = 0; j < 22; j++, rec++) {
             Unk80107850Rec *pos;
             if (var_5->unk_26C == 0 && j >= 6 && j <= 9)
@@ -4460,7 +4460,7 @@ void object_ResolveFighterHits(void) {
             obj->unk_04 = 0;
             var_7 = var_5->move_kind;
             if (var_7 == 8 || var_7 == 0x23) {
-                D_800A36A8 = 1;
+                g_gpu_jitter_burst_enabled = 1;
             }
             continue;
         }
@@ -4816,22 +4816,26 @@ void fight_RecordReplayEventAndDispatchSoundOrEffect(
     case 5:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = eff_StartCosineScaledQuadWithPaleBlueLight(arg2);
+        g_fight_midpoint_effect_delay =
+            eff_StartCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 6:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(arg2);
+        g_fight_midpoint_effect_delay =
+            eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 7:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(arg2);
+        g_fight_midpoint_effect_delay =
+            eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 8:
         snd_QueuePositionalSound(0x3C, arg2);
         snd_QueuePositionalSound(s4 + 0x3C, arg2);
-        D_800A3910 = eff_StartFastRateCosineScaledQuadWithPaleBlueLight(arg2);
+        g_fight_midpoint_effect_delay =
+            eff_StartFastRateCosineScaledQuadWithPaleBlueLight(arg2);
         break;
     case 9:
         eff_StartBillboardPairCommand(arg2);
@@ -5525,17 +5529,17 @@ void fight_BuildOpponentOrder(void) {
     }
 set_count:
     D_800A391F = count;
-    D_800A3783 = 0;
+    g_fight_opponent_order_cursor = 0;
     D_800A37BC = 0;
 }
 
 void fight_AdvanceOpponentOrder(void) {
-    u8 a0 = D_800A3783;
+    u8 a0 = g_fight_opponent_order_cursor;
     u8 b = D_800A391F;
 
     if (a0 == b) {
         g_local_ot_draw_mode = DISP_DISABLED;
-        D_800A36A8 = 0;
+        g_gpu_jitter_burst_enabled = 0;
         if (a0 == 0x14) {
             u8 z = g_fighter_group_flags[D_80101EC8[0].character_data_index];
             s32 val = 2;
@@ -5549,7 +5553,7 @@ void fight_AdvanceOpponentOrder(void) {
     } else {
         u8 a1;
         D_800A376B = 0;
-        D_800A3783 = a0 + 1;
+        g_fight_opponent_order_cursor = a0 + 1;
         a1 = g_fight_opponent_order[a0];
         g_fight_config.unk_4[1] = (&D_8008D55C)[a1];
         if (a1 == 5) {
@@ -5636,7 +5640,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
             *flags = word | mask;
         }
 
-        if (D_800A380C == 0) {
+        if (g_fight_menu_restart_count == 0) {
             s32 *flags;
             s32 word;
             s32 mask;
@@ -5785,7 +5789,7 @@ void fight_AdvanceMatch(void) {
     fight_PackMatchScores();
     if (g_fight_match_cursor == g_fight_match_count) {
         g_local_ot_draw_mode = DISP_DISABLED;
-        D_800A36A8 = 0;
+        g_gpu_jitter_burst_enabled = 0;
         g_main_loop_handler_index = 0x14;
     } else {
         s32 v1;
@@ -5794,12 +5798,12 @@ void fight_AdvanceMatch(void) {
         D_800A3898 = 0;
         D_800A38AB = 0;
         D_800A38AA = 0;
-        D_800A3816 = 0;
-        D_800A391E = 0x50;
-        D_800A381E = 0;
+        g_fight_reinit_phase_timer = 0;
+        g_fight_sound_cue_countdown = 0x50;
+        g_fight_time_up_phase_timer = 0;
         D_800A37E1 = 0;
         g_fight_match_result_timer = 0;
-        D_800A38B8 = 0;
+        g_fight_mark_tally_phase_timer = 0;
         g_fight_point_award_phase_timer = 0;
         for (v1 = 0; v1 < 2; v1++) {
             g_fight_config.unk_4[v1] = D_801027A0[g_fight_match_cursor][v1];

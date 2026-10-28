@@ -2,8 +2,8 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 26028 80035828 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2602C 8003582C 01000224 */  addiu      $v0, $zero, 0x1
     /* 26030 80035830 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 26034 80035834 0A80013C */  lui        $at, %hi(D_800A36F1)
-    /* 26038 80035838 F13622A0 */  sb         $v0, %lo(D_800A36F1)($at)
+    /* 26034 80035834 0A80013C */  lui        $at, %hi(g_main_frame_period)
+    /* 26038 80035838 F13622A0 */  sb         $v0, %lo(g_main_frame_period)($at)
     /* 2603C 8003583C 55E4010C */  jal        rand
     /* 26040 80035840 00000000 */   nop
     /* 26044 80035844 74068393 */  lbu        $v1, %gp_rel(g_row_menu_subflow_state)($gp)
@@ -385,8 +385,8 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 265A4 80035DA4 09000224 */  addiu      $v0, $zero, 0x9
     /* 265A8 80035DA8 03006210 */  beq        $v1, $v0, .L80035DB8
     /* 265AC 80035DAC 02000224 */   addiu     $v0, $zero, 0x2
-    /* 265B0 80035DB0 0A80013C */  lui        $at, %hi(D_800A36F1)
-    /* 265B4 80035DB4 F13622A0 */  sb         $v0, %lo(D_800A36F1)($at)
+    /* 265B0 80035DB0 0A80013C */  lui        $at, %hi(g_main_frame_period)
+    /* 265B4 80035DB4 F13622A0 */  sb         $v0, %lo(g_main_frame_period)($at)
   .L80035DB8:
     /* 265B8 80035DB8 1800BF8F */  lw         $ra, 0x18($sp)
     /* 265BC 80035DBC 2000BD27 */  addiu      $sp, $sp, 0x20

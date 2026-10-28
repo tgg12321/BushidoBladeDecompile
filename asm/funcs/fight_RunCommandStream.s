@@ -102,13 +102,13 @@ glabel fight_RunCommandStream
     /* 2BF18 8003B718 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2BF1C 8003B71C 5A89000C */  jal        fighter_ResetBoneGroupHitState
     /* 2BF20 8003B720 01001024 */   addiu     $s0, $zero, 0x1
-    /* 2BF24 8003B724 0A80013C */  lui        $at, %hi(D_800A3907)
-    /* 2BF28 8003B728 073920A0 */  sb         $zero, %lo(D_800A3907)($at)
+    /* 2BF24 8003B724 0A80013C */  lui        $at, %hi(g_fight_stage_start_count)
+    /* 2BF28 8003B728 073920A0 */  sb         $zero, %lo(g_fight_stage_start_count)($at)
     /* 2BF2C 8003B72C 14EE0008 */  j          .L8003B850
     /* 2BF30 8003B730 00000000 */   nop
   jlabel .L8003B734
-    /* 2BF34 8003B734 0A80023C */  lui        $v0, %hi(D_800A380C)
-    /* 2BF38 8003B738 0C38428C */  lw         $v0, %lo(D_800A380C)($v0)
+    /* 2BF34 8003B734 0A80023C */  lui        $v0, %hi(g_fight_menu_restart_count)
+    /* 2BF38 8003B738 0C38428C */  lw         $v0, %lo(g_fight_menu_restart_count)($v0)
     /* 2BF3C 8003B73C 00000000 */  nop
     /* 2BF40 8003B740 0E004014 */  bnez       $v0, .L8003B77C
     /* 2BF44 8003B744 0A000224 */   addiu     $v0, $zero, 0xA
@@ -160,13 +160,13 @@ glabel fight_RunCommandStream
     /* 2BFF0 8003B7F0 E9EC000C */  jal        fight_ConfigureFighter1FromLookupAndOperandsAndLoad
     /* 2BFF4 8003B7F4 01008424 */   addiu     $a0, $a0, 0x1
   jlabel .L8003B7F8
-    /* 2BFF8 8003B7F8 0A80023C */  lui        $v0, %hi(D_800A3907)
-    /* 2BFFC 8003B7FC 07394290 */  lbu        $v0, %lo(D_800A3907)($v0)
+    /* 2BFF8 8003B7F8 0A80023C */  lui        $v0, %hi(g_fight_stage_start_count)
+    /* 2BFFC 8003B7FC 07394290 */  lbu        $v0, %lo(g_fight_stage_start_count)($v0)
     /* 2C000 8003B800 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 2C004 8003B804 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 2C008 8003B808 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2C00C 8003B80C 0A80013C */  lui        $at, %hi(D_800A3907)
-    /* 2C010 8003B810 073922A0 */  sb         $v0, %lo(D_800A3907)($at)
+    /* 2C00C 8003B80C 0A80013C */  lui        $at, %hi(g_fight_stage_start_count)
+    /* 2C010 8003B810 073922A0 */  sb         $v0, %lo(g_fight_stage_start_count)($at)
     /* 2C014 8003B814 14EE0008 */  j          .L8003B850
     /* 2C018 8003B818 01001024 */   addiu     $s0, $zero, 0x1
   jlabel .L8003B81C

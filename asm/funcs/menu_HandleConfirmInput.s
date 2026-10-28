@@ -10,8 +10,8 @@ glabel menu_HandleConfirmInput
     /* 5E788 8006DF88 021C1000 */  srl        $v1, $s0, 16
     /* 5E78C 8006DF8C 25104300 */  or         $v0, $v0, $v1
     /* 5E790 8006DF90 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
-    /* 5E794 8006DF94 0A80073C */  lui        $a3, %hi(D_800A350C)
-    /* 5E798 8006DF98 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
+    /* 5E794 8006DF94 0A80073C */  lui        $a3, %hi(g_menu_draw_offset_steps)
+    /* 5E798 8006DF98 0C35E724 */  addiu      $a3, $a3, %lo(g_menu_draw_offset_steps)
     /* 5E79C 8006DF9C 2000BFAF */  sw         $ra, 0x20($sp)
     /* 5E7A0 8006DFA0 1000A2AF */  sw         $v0, 0x10($sp)
     /* 5E7A4 8006DFA4 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
@@ -21,19 +21,19 @@ glabel menu_HandleConfirmInput
     /* 5E7B4 8006DFB4 08004010 */  beqz       $v0, .L8006DFD8
     /* 5E7B8 8006DFB8 21200000 */   addu      $a0, $zero, $zero
     /* 5E7BC 8006DFBC 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5E7C0 8006DFC0 6004828F */  lw         $v0, %gp_rel(D_800A352C)($gp)
+    /* 5E7C0 8006DFC0 6004828F */  lw         $v0, %gp_rel(g_menu_confirm_cursor)($gp)
     /* 5E7C4 8006DFC4 00000000 */  nop
     /* 5E7C8 8006DFC8 01004224 */  addiu      $v0, $v0, 0x1
-    /* 5E7CC 8006DFCC 600482AF */  sw         $v0, %gp_rel(D_800A352C)($gp)
+    /* 5E7CC 8006DFCC 600482AF */  sw         $v0, %gp_rel(g_menu_confirm_cursor)($gp)
     /* 5E7D0 8006DFD0 9471010C */  jal        snd_QueueSound
     /* 5E7D4 8006DFD4 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006DFD8:
     /* 5E7D8 8006DFD8 1000033C */  lui        $v1, (0x100010 >> 16)
     /* 5E7DC 8006DFDC 10006334 */  ori        $v1, $v1, (0x100010 & 0xFFFF)
-    /* 5E7E0 8006DFE0 6004828F */  lw         $v0, %gp_rel(D_800A352C)($gp)
+    /* 5E7E0 8006DFE0 6004828F */  lw         $v0, %gp_rel(g_menu_confirm_cursor)($gp)
     /* 5E7E4 8006DFE4 24180302 */  and        $v1, $s0, $v1
     /* 5E7E8 8006DFE8 01004230 */  andi       $v0, $v0, 0x1
-    /* 5E7EC 8006DFEC 600482AF */  sw         $v0, %gp_rel(D_800A352C)($gp)
+    /* 5E7EC 8006DFEC 600482AF */  sw         $v0, %gp_rel(g_menu_confirm_cursor)($gp)
     /* 5E7F0 8006DFF0 07006010 */  beqz       $v1, .L8006E010
     /* 5E7F4 8006DFF4 02000424 */   addiu     $a0, $zero, 0x2
     /* 5E7F8 8006DFF8 FFFF1124 */  addiu      $s1, $zero, -0x1
@@ -51,7 +51,7 @@ glabel menu_HandleConfirmInput
     /* 5E824 8006E024 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 5E828 8006E028 9471010C */  jal        snd_QueueSound
     /* 5E82C 8006E02C 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 5E830 8006E030 6004828F */  lw         $v0, %gp_rel(D_800A352C)($gp)
+    /* 5E830 8006E030 6004828F */  lw         $v0, %gp_rel(g_menu_confirm_cursor)($gp)
     /* 5E834 8006E034 00000000 */  nop
     /* 5E838 8006E038 02004010 */  beqz       $v0, .L8006E044
     /* 5E83C 8006E03C 01001124 */   addiu     $s1, $zero, 0x1

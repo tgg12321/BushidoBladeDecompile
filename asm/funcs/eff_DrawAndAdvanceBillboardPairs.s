@@ -66,7 +66,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
   .L80063184:
     /* 53984 80063184 03240200 */  sra        $a0, $v0, 16
     /* 53988 80063188 01000224 */  addiu      $v0, $zero, 0x1
-    /* 5398C 8006318C 7C03838F */  lw         $v1, %gp_rel(D_800A3448)($gp)
+    /* 5398C 8006318C 7C03838F */  lw         $v1, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
     /* 53990 80063190 04108200 */  sllv       $v0, $v0, $a0
     /* 53994 80063194 24186200 */  and        $v1, $v1, $v0
     /* 53998 80063198 3F026010 */  beqz       $v1, .L80063A98
@@ -153,7 +153,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53ACC 800632CC ECFF2425 */   addiu     $a0, $t1, -0x14
     /* 53AD0 800632D0 1800A48F */  lw         $a0, 0x18($sp)
     /* 53AD4 800632D4 EC03858F */  lw         $a1, %gp_rel(g_eff_screen_xy)($gp)
-    /* 53AD8 800632D8 0004878F */  lw         $a3, %gp_rel(D_800A34CC)($gp)
+    /* 53AD8 800632D8 0004878F */  lw         $a3, %gp_rel(g_eff_rtp_flag)($gp)
     /* 53ADC 800632DC 2000A68F */  lw         $a2, 0x20($sp)
     /* 53AE0 800632E0 87FC010C */  jal        RotTransPers
     /* 53AE4 800632E4 00000000 */   nop
@@ -219,7 +219,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53BC8 800633C8 00000000 */  nop
     /* 53BCC 800633CC 00004394 */  lhu        $v1, 0x0($v0)
     /* 53BD0 800633D0 CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
-    /* 53BD4 800633D4 0804848F */  lw         $a0, %gp_rel(D_800A34D4)($gp)
+    /* 53BD4 800633D4 0804848F */  lw         $a0, %gp_rel(g_eff_top_left_uv)($gp)
     /* 53BD8 800633D8 00004294 */  lhu        $v0, 0x0($v0)
     /* 53BDC 800633DC 001A0300 */  sll        $v1, $v1, 8
     /* 53BE0 800633E0 21104300 */  addu       $v0, $v0, $v1
@@ -228,7 +228,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53BEC 800633EC 00000000 */  nop
     /* 53BF0 800633F0 00004394 */  lhu        $v1, 0x0($v0)
     /* 53BF4 800633F4 D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
-    /* 53BF8 800633F8 0C04848F */  lw         $a0, %gp_rel(D_800A34D8)($gp)
+    /* 53BF8 800633F8 0C04848F */  lw         $a0, %gp_rel(g_eff_top_right_uv)($gp)
     /* 53BFC 800633FC 00004294 */  lhu        $v0, 0x0($v0)
     /* 53C00 80063400 001A0300 */  sll        $v1, $v1, 8
     /* 53C04 80063404 21104300 */  addu       $v0, $v0, $v1
@@ -237,7 +237,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53C10 80063410 00000000 */  nop
     /* 53C14 80063414 00004394 */  lhu        $v1, 0x0($v0)
     /* 53C18 80063418 CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
-    /* 53C1C 8006341C 1004848F */  lw         $a0, %gp_rel(D_800A34DC)($gp)
+    /* 53C1C 8006341C 1004848F */  lw         $a0, %gp_rel(g_eff_bottom_left_uv)($gp)
     /* 53C20 80063420 00004294 */  lhu        $v0, 0x0($v0)
     /* 53C24 80063424 001A0300 */  sll        $v1, $v1, 8
     /* 53C28 80063428 21104300 */  addu       $v0, $v0, $v1
@@ -246,7 +246,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 53C34 80063434 00000000 */  nop
     /* 53C38 80063438 00004394 */  lhu        $v1, 0x0($v0)
     /* 53C3C 8006343C D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
-    /* 53C40 80063440 1404848F */  lw         $a0, %gp_rel(D_800A34E0)($gp)
+    /* 53C40 80063440 1404848F */  lw         $a0, %gp_rel(g_eff_bottom_right_uv)($gp)
     /* 53C44 80063444 00004294 */  lhu        $v0, 0x0($v0)
     /* 53C48 80063448 001A0300 */  sll        $v1, $v1, 8
     /* 53C4C 8006344C 21104300 */  addu       $v0, $v0, $v1
@@ -541,7 +541,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 54088 80063888 00110300 */  sll        $v0, $v1, 4
     /* 5408C 8006388C 23104300 */  subu       $v0, $v0, $v1
     /* 54090 80063890 80100200 */  sll        $v0, $v0, 2
-    /* 54094 80063894 F803838F */  lw         $v1, %gp_rel(D_800A34C4)($gp)
+    /* 54094 80063894 F803838F */  lw         $v1, %gp_rel(g_eff_upper_y_offset)($gp)
     /* 54098 80063898 02004104 */  bgez       $v0, .L800638A4
     /* 5409C 8006389C 00000000 */   nop
     /* 540A0 800638A0 3F004224 */  addiu      $v0, $v0, 0x3F
@@ -553,7 +553,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 540B4 800638B4 000040AC */  sw         $zero, 0x0($v0)
     /* 540B8 800638B8 F003888F */  lw         $t0, %gp_rel(D_800A34BC)($gp)
     /* 540BC 800638BC EC03868F */  lw         $a2, %gp_rel(g_eff_screen_xy)($gp)
-    /* 540C0 800638C0 F803858F */  lw         $a1, %gp_rel(D_800A34C4)($gp)
+    /* 540C0 800638C0 F803858F */  lw         $a1, %gp_rel(g_eff_upper_y_offset)($gp)
     /* 540C4 800638C4 00000485 */  lh         $a0, 0x0($t0)
     /* 540C8 800638C8 0000C28C */  lw         $v0, 0x0($a2)
     /* 540CC 800638CC 0000A38C */  lw         $v1, 0x0($a1)
@@ -584,26 +584,26 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 54130 80063930 001C0300 */  sll        $v1, $v1, 16
     /* 54134 80063934 21104300 */  addu       $v0, $v0, $v1
     /* 54138 80063938 FCFF02AE */  sw         $v0, -0x4($s0)
-    /* 5413C 8006393C 0804828F */  lw         $v0, %gp_rel(D_800A34D4)($gp)
+    /* 5413C 8006393C 0804828F */  lw         $v0, %gp_rel(g_eff_top_left_uv)($gp)
     /* 54140 80063940 C803838F */  lw         $v1, %gp_rel(g_eff_clut_word)($gp)
     /* 54144 80063944 00004294 */  lhu        $v0, 0x0($v0)
     /* 54148 80063948 0000638C */  lw         $v1, 0x0($v1)
     /* 5414C 8006394C 00000000 */  nop
     /* 54150 80063950 21104300 */  addu       $v0, $v0, $v1
     /* 54154 80063954 E8FF02AE */  sw         $v0, -0x18($s0)
-    /* 54158 80063958 0C04828F */  lw         $v0, %gp_rel(D_800A34D8)($gp)
+    /* 54158 80063958 0C04828F */  lw         $v0, %gp_rel(g_eff_top_right_uv)($gp)
     /* 5415C 8006395C C403838F */  lw         $v1, %gp_rel(g_eff_tpage_word)($gp)
     /* 54160 80063960 00004294 */  lhu        $v0, 0x0($v0)
     /* 54164 80063964 0000638C */  lw         $v1, 0x0($v1)
     /* 54168 80063968 00000000 */  nop
     /* 5416C 8006396C 21104300 */  addu       $v0, $v0, $v1
     /* 54170 80063970 F0FF02AE */  sw         $v0, -0x10($s0)
-    /* 54174 80063974 1004828F */  lw         $v0, %gp_rel(D_800A34DC)($gp)
+    /* 54174 80063974 1004828F */  lw         $v0, %gp_rel(g_eff_bottom_left_uv)($gp)
     /* 54178 80063978 00000000 */  nop
     /* 5417C 8006397C 00004294 */  lhu        $v0, 0x0($v0)
     /* 54180 80063980 00000000 */  nop
     /* 54184 80063984 F8FF02A6 */  sh         $v0, -0x8($s0)
-    /* 54188 80063988 1404828F */  lw         $v0, %gp_rel(D_800A34E0)($gp)
+    /* 54188 80063988 1404828F */  lw         $v0, %gp_rel(g_eff_bottom_right_uv)($gp)
     /* 5418C 8006398C FF00063C */  lui        $a2, (0xFFFFFF >> 16)
     /* 54190 80063990 00004294 */  lhu        $v0, 0x0($v0)
     /* 54194 80063994 FFFFC634 */  ori        $a2, $a2, (0xFFFFFF & 0xFFFF)
@@ -652,10 +652,10 @@ glabel eff_DrawAndAdvanceBillboardPairs
   .L80063A40:
     /* 54240 80063A40 0410E202 */  sllv       $v0, $v0, $s7
     /* 54244 80063A44 FFFF0334 */  ori        $v1, $zero, 0xFFFF
-    /* 54248 80063A48 7C03848F */  lw         $a0, %gp_rel(D_800A3448)($gp)
+    /* 54248 80063A48 7C03848F */  lw         $a0, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
     /* 5424C 80063A4C 23186200 */  subu       $v1, $v1, $v0
     /* 54250 80063A50 24208300 */  and        $a0, $a0, $v1
-    /* 54254 80063A54 7C0384AF */  sw         $a0, %gp_rel(D_800A3448)($gp)
+    /* 54254 80063A54 7C0384AF */  sw         $a0, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
   .L80063A58:
     /* 54258 80063A58 01008226 */  addiu      $v0, $s4, 0x1
   .L80063A5C:
@@ -681,7 +681,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 542A4 80063AA4 0C004228 */  slti       $v0, $v0, 0xC
     /* 542A8 80063AA8 B6FD4014 */  bnez       $v0, .L80063184
     /* 542AC 80063AAC 00141E00 */   sll       $v0, $fp, 16
-    /* 542B0 80063AB0 7C03828F */  lw         $v0, %gp_rel(D_800A3448)($gp)
+    /* 542B0 80063AB0 7C03828F */  lw         $v0, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
     /* 542B4 80063AB4 080793AF */  sw         $s3, %gp_rel(g_eff_quad_cursor)($gp)
     /* 542B8 80063AB8 2B100200 */  sltu       $v0, $zero, $v0
     /* 542BC 80063ABC 5C00BF8F */  lw         $ra, 0x5C($sp)

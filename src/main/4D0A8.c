@@ -69,7 +69,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
 
     switch (mode) {
     case 2:
-        s.header = &D_8009B0E0[2];
+        s.header = &g_gpu_mode_panel_sheet_headers[2];
         s.table = D_8009B184;
         y_base = 0x33;
         s.y = top + 0x73;
@@ -80,7 +80,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         D_8009B184[0].x = (0x280 - g_panel_frame_sizes[2].w) / 2;
         D_8009B184[1].x = (g_panel_frame_sizes[2].w + 0x280) / 2 - 0xC;
         cur = gpu_AddSpriteCells(&s);
-        s.header = &D_8009B0E0[8];
+        s.header = &g_gpu_mode_panel_sheet_headers[8];
         s.table = D_8009B20C;
         s.x = 0;
         s.y = 0;
@@ -142,13 +142,13 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
             s.semi = 1;
         }
         s.table = D_8009B1AC;
-        s.header = &D_8009B0E0[4];
+        s.header = &g_gpu_mode_panel_sheet_headers[4];
         s.x = 0;
         s.sprt_out = cur;
         s.y = y_base + top;
         s.ot_idx = ot_index;
         cur = gpu_AddSpriteCells(&s);
-        s.header = &D_8009B0E0[3];
+        s.header = &g_gpu_mode_panel_sheet_headers[3];
         s.has_color = 0;
         s.table = D_8009B194;
         s.x = 0;
@@ -158,7 +158,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         s.ot_idx = ot_index;
         cur = gpu_AddSpriteCells(&s);
         top += 0xE;
-        s.header = &D_8009B0E0[2];
+        s.header = &g_gpu_mode_panel_sheet_headers[2];
         s.table = D_8009B184;
         s.x = 0;
         s.y = top;
@@ -194,7 +194,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         } else {
             s.semi = 1;
         }
-        s.header = &D_8009B0E0[5];
+        s.header = &g_gpu_mode_panel_sheet_headers[5];
         s.table = D_8009B1BC;
         s.x = 0;
         s.y = top;
@@ -211,7 +211,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
         } else {
             s.semi = 1;
         }
-        s.header = &D_8009B0E0[4 + j];
+        s.header = &g_gpu_mode_panel_sheet_headers[4 + j];
         s.table = D_8009B2AC[j];
         s.x = 0;
         s.y = y_base + top;
@@ -221,7 +221,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     }
 
     s.has_color = 0;
-    s.header = &D_8009B0E0[0];
+    s.header = &g_gpu_mode_panel_sheet_headers[0];
     s.table = D_8009B164[0];
     s.x = 0;
     s.y = (0xF0 - g_panel_frame_sizes[mode].h) / 2;
@@ -231,7 +231,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     D_8009B164[0][0].x = (0x280 - g_panel_frame_sizes[mode].w) / 2;
     D_8009B164[0][1].x = (g_panel_frame_sizes[mode].w + 0x280) / 2 - 0xC;
     cur = gpu_AddSpriteCells(&s);
-    s.header = &D_8009B0E0[1];
+    s.header = &g_gpu_mode_panel_sheet_headers[1];
     s.table = D_8009B164[1];
     s.y = (g_panel_frame_sizes[mode].h + 0xF0) / 2;
     s.sprt_out = cur;
@@ -314,7 +314,8 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
     tile->h = g_panel_frame_sizes[mode].h;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + ot_index, tile);
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B0E0[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0,
+                gpu_GetSheetTPage(&g_gpu_mode_panel_sheet_headers[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
     return size;
 }
@@ -457,7 +458,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
 
 /* gpu_DrawTimeFieldsAndDecimalCounter's 7 sprite cells: [0..2] drawn with
  * header D_8009B398[0], [3..4] with [1], [5] / [6] with [2] / [3] */
-extern Unk8009B400Record D_8009B3C8[7];
+extern Unk8009B400Record g_gpu_time_field_cells[7];
 
 s32 gpu_DrawTimeFieldsAndDecimalCounter(
     Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 ot_index) {
@@ -487,14 +488,14 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     mode_off = &draw_chunk->unk_2F8;
     end_off = arg2 + sizeof(Unk8005D814Rec);
     for (i = 0; i < 3; i++) {
-        s.table = &D_8009B3C8[i];
+        s.table = &g_gpu_time_field_cells[i];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
 
     s.header = &D_8009B398[1];
     for (i = 0; i < 2; i++) {
-        s.table = &D_8009B3C8[3 + i];
+        s.table = &g_gpu_time_field_cells[3 + i];
         if (i != 0) {
             if (arg1 == 1) {
                 s.table->w = 0x2D;
@@ -609,11 +610,11 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         tile++;
         s.y = D_8009B450[j].y;
         s.header = &D_8009B398[2];
-        s.table = &D_8009B3C8[5];
+        s.table = &g_gpu_time_field_cells[5];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
         s.header = &D_8009B398[3];
-        s.table = &D_8009B3C8[6];
+        s.table = &g_gpu_time_field_cells[6];
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
@@ -1822,7 +1823,8 @@ s16 D_8009AFB8[20] = {
 /* The sheets D_8009B0C0 points at: three frame sheets (count 6 / 3 / 12, each
  * header followed by its cells; after D_8009AFE0's six cells come 8 zero
  * bytes, kept as a seventh, empty cell), the digit sheet D_8009B0B4 (its one
- * cell is the .sdata D_800A3264), then D_8009B0C0 itself. D_8009B0E0 is
+ * cell is the .sdata D_800A3264), then D_8009B0C0 itself.
+ * g_gpu_mode_panel_sheet_headers is
  * gpu_DrawModeSizedPanelWithSelectedCellOpaque's table of 9 headers; D_8009B14C
  * / D_8009B158 two more. These cells sit in the header's cells[0] tail (a GNU
  * extension; .size says 12) because only the header is ever named, unlike
@@ -1889,7 +1891,7 @@ Unk8006D808Rec D_8009B0C0 = {
     &D_800A3264,
     D_8009AFB8,
 };
-Unk8009B0E0Record D_8009B0E0[9] = {
+Unk8009B0E0Record g_gpu_mode_panel_sheet_headers[9] = {
     {0x1F, 0x00, 2, 0x00, 0x3D0, 0x1FD, 0xA0, 0x1C},
     {0x1F, 0x00, 2, 0x00, 0x3D0, 0x1FD, 0xA0, 0x22},
     {0x1F, 0x00, 2, 0x00, 0x3D0, 0x1FD, 0xA0, 0x2A},
@@ -1974,7 +1976,7 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
  * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
  * D_8009B398 that gpu_DrawTimeFieldsAndDecimalCounter ..
  * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells
- * D_8009B3C8, and the ten digit cells g_gpu_decimal_digit_cells. */
+ * g_gpu_time_field_cells, and the ten digit cells g_gpu_decimal_digit_cells. */
 Unk8009B0E0Record D_8009B2C8[2][5] = {
     {
         {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FE, 0x0, 0x64},
@@ -2011,7 +2013,7 @@ Unk8009B0E0Record D_8009B398[4] = {
     {0x1F, 0x00, 1, 0x00, 0x3C0, 0x1FE, 0x0, 0x0},
     {0x1F, 0x00, 1, 0x00, 0x3D0, 0x1FE, 0x0, 0x0},
 };
-Unk8009B400Record D_8009B3C8[7] = {
+Unk8009B400Record g_gpu_time_field_cells[7] = {
     {459, 22, 0xFC, 0x00, 0x04, 0x05}, {513, 22, 0xFC, 0x00, 0x04, 0x05},
     {508, 22, 0xFC, 0x00, 0x04, 0x05}, {565, 23, 0xC0, 0x1C, 0x3C, 0x0E},
     {565, 42, 0xC0, 0x2A, 0x3C, 0x0E}, {568, 0, 0xC0, 0xDB, 0x23, 0x01},

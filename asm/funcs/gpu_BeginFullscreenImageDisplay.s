@@ -17,7 +17,7 @@ glabel gpu_BeginFullscreenImageDisplay
     /* 5E948 8006E148 1F00A4AB */  swl        $a0, 0x1F($sp)
     /* 5E94C 8006E14C 1C00A4BB */  swr        $a0, 0x1C($sp)
     /* 5E950 8006E150 2000428C */  lw         $v0, 0x20($v0)
-    /* 5E954 8006E154 3404938F */  lw         $s3, %gp_rel(D_800A3500)($gp)
+    /* 5E954 8006E154 3404938F */  lw         $s3, %gp_rel(g_menu_arena_cursor)($gp)
     /* 5E958 8006E158 01004230 */  andi       $v0, $v0, 0x1
     /* 5E95C 8006E15C 04004010 */  beqz       $v0, .L8006E170
     /* 5E960 8006E160 00000000 */   nop
@@ -31,7 +31,7 @@ glabel gpu_BeginFullscreenImageDisplay
     /* 5E978 8006E178 AADB000C */  jal        cdrom_GetFileIndex
     /* 5E97C 8006E17C F0001124 */   addiu     $s1, $zero, 0xF0
     /* 5E980 8006E180 21804000 */  addu       $s0, $v0, $zero
-    /* 5E984 8006E184 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
+    /* 5E984 8006E184 3404858F */  lw         $a1, %gp_rel(g_menu_arena_cursor)($gp)
     /* 5E988 8006E188 66DB000C */  jal        cdrom_StartRead
     /* 5E98C 8006E18C 21200002 */   addu      $a0, $s0, $zero
     /* 5E990 8006E190 D0DB000C */  jal        cdrom_WaitIdle

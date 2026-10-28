@@ -599,8 +599,8 @@ glabel func_8004A940
     /* 3BA74 8004B274 74290108 */  j          .L8004A5D0
     /* 3BA78 8004B278 00000000 */   nop
   jlabel .L8004B27C
-    /* 3BA7C 8004B27C 1080023C */  lui        $v0, %hi(D_800FF558)
-    /* 3BA80 8004B280 58F54224 */  addiu      $v0, $v0, %lo(D_800FF558)
+    /* 3BA7C 8004B27C 1080023C */  lui        $v0, %hi(g_node_slot_relative_matrix)
+    /* 3BA80 8004B280 58F54224 */  addiu      $v0, $v0, %lo(g_node_slot_relative_matrix)
     /* 3BA84 8004B284 2C00488E */  lw         $t0, 0x2C($s2)
     /* 3BA88 8004B288 3000498E */  lw         $t1, 0x30($s2)
     /* 3BA8C 8004B28C 34004A8E */  lw         $t2, 0x34($s2)
@@ -669,13 +669,13 @@ glabel func_8004A940
     /* 3BB88 8004B388 0090CA48 */  ctc2       $t2, $18 /* handwritten instruction */
     /* 3BB8C 8004B38C 0098CB48 */  ctc2       $t3, $19 /* handwritten instruction */
     /* 3BB90 8004B390 00A0CC48 */  ctc2       $t4, $20 /* handwritten instruction */
-    /* 3BB94 8004B394 1080043C */  lui        $a0, %hi(D_800FF558)
-    /* 3BB98 8004B398 58F58424 */  addiu      $a0, $a0, %lo(D_800FF558)
+    /* 3BB94 8004B394 1080043C */  lui        $a0, %hi(g_node_slot_relative_matrix)
+    /* 3BB98 8004B398 58F58424 */  addiu      $a0, $a0, %lo(g_node_slot_relative_matrix)
     /* 3BB9C 8004B39C 18004526 */  addiu      $a1, $s2, 0x18
     /* 3BBA0 8004B3A0 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3BBA4 8004B3A4 28002626 */   addiu     $a2, $s1, 0x28
-    /* 3BBA8 8004B3A8 1080023C */  lui        $v0, %hi(D_800FF558)
-    /* 3BBAC 8004B3AC 58F54224 */  addiu      $v0, $v0, %lo(D_800FF558)
+    /* 3BBA8 8004B3A8 1080023C */  lui        $v0, %hi(g_node_slot_relative_matrix)
+    /* 3BBAC 8004B3AC 58F54224 */  addiu      $v0, $v0, %lo(g_node_slot_relative_matrix)
     /* 3BBB0 8004B3B0 00000000 */  nop
     /* 3BBB4 8004B3B4 0000488C */  lw         $t0, 0x0($v0)
     /* 3BBB8 8004B3B8 0400498C */  lw         $t1, 0x4($v0)

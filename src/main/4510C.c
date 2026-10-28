@@ -21,19 +21,20 @@ extern s32 collision_TestSegmentWithWork(
 
 extern s32 D_800A3250[2];
 
-/* Per-frame playback of the record D_800EFAE8 that motion_StartPlayback fills.
- * On the first frame (current_frame == 0) it resolves the loaded data's offset
- * table (block_base) into the camera stream (camera_stream), the per-object
- * motion streams (motion_streams[], dropped when they start with the "NULL" tag
- * D_800A3250) and the per-object nibble tables (draw_set_tracks[]). Every frame
- * it places the camera (rotated about y by rotation_y, plus the offset
- * origin_x..origin_z motion_StartPlayback picks), then decodes
- * (motion_DecodeFrame) and places each slot_GetObject object's data. The block
- * holds those addresses as integers: typed as pointers, the relocation sums in
- * motion_RebasePlayback and motion_StartPlayback swap their addu operands.
+/* Per-frame playback of the record g_motion_playback_record that
+ * motion_StartPlayback fills. On the first frame (current_frame == 0) it
+ * resolves the loaded data's offset table (block_base) into the camera stream
+ * (camera_stream), the per-object motion streams (motion_streams[], dropped
+ * when they start with the "NULL" tag D_800A3250) and the per-object nibble
+ * tables (draw_set_tracks[]). Every frame it places the camera (rotated about y
+ * by rotation_y, plus the offset origin_x..origin_z motion_StartPlayback
+ * picks), then decodes (motion_DecodeFrame) and places each slot_GetObject
+ * object's data. The block holds those addresses as integers: typed as
+ * pointers, the relocation sums in motion_RebasePlayback and
+ * motion_StartPlayback swap their addu operands.
  */
 s32 motion_UpdatePlayback(void) {
-    Unk800EFAE8Rec *s = &D_800EFAE8;
+    Unk800EFAE8Rec *s = &g_motion_playback_record;
     VECTOR vec;
     /* The 0x84 bytes motion_DecodeFrame decodes, as s16: three of its fields
      * load signed (lh), and the array goes to func_80040D48's s16 * parameter.
@@ -211,28 +212,31 @@ s32 motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush(void) {
 }
 
 void motion_RebasePlayback(s32 rebase_delta) {
-    s32 *p = &D_800EFAE8.block_base;
+    s32 *p = &g_motion_playback_record.block_base;
     *p = rebase_delta + *p;
-    D_800EFAE8.camera_stream = rebase_delta + D_800EFAE8.camera_stream;
-    if (D_800EFAE8.motion_streams[0]) {
-        D_800EFAE8.motion_streams[0] =
-            rebase_delta + D_800EFAE8.motion_streams[0];
+    g_motion_playback_record.camera_stream =
+        rebase_delta + g_motion_playback_record.camera_stream;
+    if (g_motion_playback_record.motion_streams[0]) {
+        g_motion_playback_record.motion_streams[0] =
+            rebase_delta + g_motion_playback_record.motion_streams[0];
     }
-    if (D_800EFAE8.motion_streams[1]) {
-        D_800EFAE8.motion_streams[1] =
-            rebase_delta + D_800EFAE8.motion_streams[1];
+    if (g_motion_playback_record.motion_streams[1]) {
+        g_motion_playback_record.motion_streams[1] =
+            rebase_delta + g_motion_playback_record.motion_streams[1];
     }
-    if (D_800EFAE8.draw_set_tracks[0]) {
-        D_800EFAE8.draw_set_tracks[0] =
-            rebase_delta + D_800EFAE8.draw_set_tracks[0];
+    if (g_motion_playback_record.draw_set_tracks[0]) {
+        g_motion_playback_record.draw_set_tracks[0] =
+            rebase_delta + g_motion_playback_record.draw_set_tracks[0];
     }
-    if (D_800EFAE8.draw_set_tracks[1]) {
-        D_800EFAE8.draw_set_tracks[1] =
-            rebase_delta + D_800EFAE8.draw_set_tracks[1];
+    if (g_motion_playback_record.draw_set_tracks[1]) {
+        g_motion_playback_record.draw_set_tracks[1] =
+            rebase_delta + g_motion_playback_record.draw_set_tracks[1];
     }
 }
 
-s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.view_angles; }
+s16 *motion_GetPlaybackViewAngles(void) {
+    return g_motion_playback_record.view_angles;
+}
 
 s32 *node_GetRootNodeMatrixTranslation(void) {
     return g_view_camera_root_node.xf.mat.t;
@@ -288,13 +292,13 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
     p->unk_438 = p->unk_08;
     switch (g_fight_mode_selector) {
     case 1:
-        p->unk_438 = (D_800A3783 - 1) / 5 * 0x300 + 0x400;
+        p->unk_438 = (g_fight_opponent_order_cursor - 1) / 5 * 0x300 + 0x400;
         if (p->unk_438 > 0xD00) {
             p->unk_438 = 0xD00;
         }
         break;
     case 0:
-        if (D_800A3680 == D_800A3671) {
+        if (g_fight_second_fighter_defeats_left == D_800A3671) {
             fighter_ClearCpuTally(p->index);
         }
         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {
@@ -1664,7 +1668,7 @@ extern u8 D_8009A8A4[];
 extern u8 D_8009A8AC[];
 extern u8 D_8009A8B4[];
 extern u8 D_8009A8C0[];
-extern u8 D_8009A850[8][4];
+extern u8 g_cpu_move_range_rules[8][4];
 extern NavPolySet D_8009A658[];
 extern u16 D_8009A928[][23];
 extern u8 D_8009A9DC[][3];
@@ -1691,42 +1695,44 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     u8 mode;
     /* work1 holds nine values in turn, each read before the next write: the
      * cpu_probes[5] == 0 flag of the state-0x15 script choice; the stage
-     * distance base (100000, or D_8009A838[stage] * 8) of the D_8009A850 scan;
-     * cpu_probes[6] for the lim chain; cpu_probes[6] again for the waypoint
-     * script; the x of waypoint 1; the cpu_probes[1] == 0 flag of the 0x394
-     * choice; case 2's D_8009A9F0 pattern word, shifted in place; a script
-     * entry's low distance bound (e[1] * 40, then adjusted); the state-0x15
-     * script's near bound (the opponent's unk_3F8 entry, or its unk_404 entry +
-     * 300) (Ruling 11, reused-local-necessity). */
+     * distance base (100000, or D_8009A838[stage] * 8) of the
+     * g_cpu_move_range_rules scan; cpu_probes[6] for the lim chain;
+     * cpu_probes[6] again for the waypoint script; the x of waypoint 1; the
+     * cpu_probes[1] == 0 flag of the 0x394 choice; case 2's D_8009A9F0 pattern
+     * word, shifted in place; a script entry's low distance bound (e[1] * 40,
+     * then adjusted); the state-0x15 script's near bound (the opponent's
+     * unk_3F8 entry, or its unk_404 entry + 300) (Ruling 11,
+     * reused-local-necessity). */
     s32 work1;
     /* work2 holds seven values in turn, each read before the next write: the
-     * cpu_probes[1] == 0 flag of the state-0x15 script choice; a D_8009A850
-     * entry's distance; the pace byte cpu_probes[0]; the z of waypoint 1; the
-     * cpu_probes[5] == 0 flag of the 0x394 choice; the best weighted random
-     * value so far (Q75 constant start + copy; compared as an s16, `sll; sra
-     * 16`, Q82); case 2's nibble count, counted down (Ruling 11,
-     * reused-local-necessity). */
+     * cpu_probes[1] == 0 flag of the state-0x15 script choice; a
+     * g_cpu_move_range_rules entry's distance; the pace byte cpu_probes[0]; the
+     * z of waypoint 1; the cpu_probes[5] == 0 flag of the 0x394 choice; the
+     * best weighted random value so far (Q75 constant start + copy; compared as
+     * an s16, `sll; sra 16`, Q82); case 2's nibble count, counted down (Ruling
+     * 11, reused-local-necessity). */
     s32 work2;
     /* work3 holds thirteen values in turn, each read before the next write: the
      * script side bit (opponent unk_AF & 1, possibly inverted); cpu_probes[3]
      * == 0; the opponent_angle_from_orientation, wrapped to +-0x800; the
      * state-0x11 threshold (0x1000 - (stance sum << 8)), scaled by unk_438 >>
-     * 12; the forced-scan flag of the D_8009A850 scan; the "longer than lim"
-     * flag; the bearing to the next waypoint, wrapped; the 0x394 choice's coin
-     * bit, stepped per try; the 0x394 slot (unk_394, or a D_800A325C /
-     * D_800A3260 entry); case 3's column in D_8009A928; the entry-type mask; a
-     * script entry's character mask; the entry's accept flag. Read-before-write
-     * kept from the original (Q74): the 0x394 slot switch below reads work3
-     * with no write on the path unk_39C == 1, opponent state neither 0x19 nor
-     * 0x1A (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by the
-     * sltiu at 0x80059D70 and the sll at 0x80059DB4), switching on whatever
-     * earlier work left there (that read is excluded from the value grouping
-     * above) (Ruling 11, reused-local-necessity). */
+     * 12; the forced-scan flag of the g_cpu_move_range_rules scan; the "longer
+     * than lim" flag; the bearing to the next waypoint, wrapped; the 0x394
+     * choice's coin bit, stepped per try; the 0x394 slot (unk_394, or a
+     * D_800A325C / D_800A3260 entry); case 3's column in D_8009A928; the
+     * entry-type mask; a script entry's character mask; the entry's accept
+     * flag. Read-before-write kept from the original (Q74): the 0x394 slot
+     * switch below reads work3 with no write on the path unk_39C == 1, opponent
+     * state neither 0x19 nor 0x1A (target 0x80059D18 -> 0x80059D6C ->
+     * 0x80059DB0; $s3 read by the sltiu at 0x80059D70 and the sll at
+     * 0x80059DB4), switching on whatever earlier work left there (that read is
+     * excluded from the value grouping above) (Ruling 11,
+     * reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
-     * D_8009A850 scan index; a copy of last_route_node_index taken in the
-     * walk branch (Q34), counted down; the script-list entry index (Ruling
-     * 11, reused-local-necessity). */
+     * g_cpu_move_range_rules scan index; a copy of last_route_node_index taken
+     * in the walk branch (Q34), counted down; the script-list entry index
+     * (Ruling 11, reused-local-necessity). */
     s32 work4;
     s32 pick_weight_index;
     s32 hi;
@@ -1953,25 +1959,28 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 } else {
                     work1 = D_8009A838[p->weapon_id] * 8;
                 }
-                for (work4 = 0;
-                     work4 < sizeof(D_8009A850) / sizeof(D_8009A850[0]);
+                for (work4 = 0; work4 < sizeof(g_cpu_move_range_rules) /
+                                            sizeof(g_cpu_move_range_rules[0]);
                      work4++) {
-                    if (!(D_8009A850[work4][3] & 1) ||
+                    if (!(g_cpu_move_range_rules[work4][3] & 1) ||
                         p->move_frame >= p->cur_move->last_command_frame - 2 ||
                         work3) {
-                        work2 = D_8009A850[work4][2] * 16 + work1 +
+                        work2 = g_cpu_move_range_rules[work4][2] * 16 + work1 +
                                 p->scale_distance_offset;
                         if ((g_fighter_horizontal_separation < work2 &&
-                             (!(D_8009A850[work4][3] & 8) ||
+                             (!(g_cpu_move_range_rules[work4][3] & 8) ||
                               p->opponent_angle_from_orientation_abs < 0x100) &&
-                             (var_41 || (D_8009A850[work4][3] & 4))) ||
+                             (var_41 ||
+                              (g_cpu_move_range_rules[work4][3] & 4))) ||
                             work3) {
-                            if (D_8009A850[work4][0] == p->move_kind &&
+                            if (g_cpu_move_range_rules[work4][0] ==
+                                    p->move_kind &&
                                 ((table_other_move_kind =
-                                      D_8009A850[work4][1]) == 0xFF ||
+                                      g_cpu_move_range_rules[work4][1]) ==
+                                     0xFF ||
                                  table_other_move_kind ==
                                      p->other->move_kind)) {
-                                if (D_8009A850[work4][3] & 2) {
+                                if (g_cpu_move_range_rules[work4][3] & 2) {
                                     parity_pad_buttons = 0x40;
                                     if (p->cpu_pad_build_count & 1) {
                                         parity_pad_buttons = 0x20;
@@ -2589,7 +2598,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             case 2:
                                 work1 = D_8009A9F0[D_8009A9DC[p->weapon_id]
                                                              [p->unk_440]]
-                                                  [D_800A3788];
+                                                  [g_fight_toggle_option_bits];
                                 work3 = 0;
                                 work5 = work1 >> 27;
                                 work2 = work1 & 0xF;

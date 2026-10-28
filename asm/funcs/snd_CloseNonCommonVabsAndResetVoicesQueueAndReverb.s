@@ -28,7 +28,7 @@ glabel snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb
     /* 4BF90 8005B790 1000022A */  slti       $v0, $s0, 0x10
     /* 4BF94 8005B794 F7FF4014 */  bnez       $v0, .L8005B774
     /* 4BF98 8005B798 04003126 */   addiu     $s1, $s1, 0x4
-    /* 4BF9C 8005B79C 3C0380AF */  sw         $zero, %gp_rel(D_800A3408)($gp)
+    /* 4BF9C 8005B79C 3C0380AF */  sw         $zero, %gp_rel(g_vab_sb_used_bytes)($gp)
     /* 4BFA0 8005B7A0 6B6D010C */  jal        snd_ResetVoicesAndQueue
     /* 4BFA4 8005B7A4 00000000 */   nop
     /* 4BFA8 8005B7A8 1C00BF8F */  lw         $ra, 0x1C($sp)

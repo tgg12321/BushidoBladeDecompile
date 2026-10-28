@@ -25,7 +25,7 @@ glabel eff_StartCommand
     /* 512C4 80060AC4 180062A4 */  sh         $v0, 0x18($v1)
     /* 512C8 80060AC8 02008494 */  lhu        $a0, 0x2($a0)
     /* 512CC 80060ACC 18006224 */  addiu      $v0, $v1, 0x18
-    /* 512D0 80060AD0 AC0382AF */  sw         $v0, %gp_rel(D_800A3478)($gp)
+    /* 512D0 80060AD0 AC0382AF */  sw         $v0, %gp_rel(g_eff_command_vector)($gp)
     /* 512D4 80060AD4 1A0064A4 */  sh         $a0, 0x1A($v1)
     /* 512D8 80060AD8 0400A594 */  lhu        $a1, 0x4($a1)
     /* 512DC 80060ADC 00006494 */  lhu        $a0, 0x0($v1)
@@ -60,7 +60,7 @@ glabel eff_StartCommand
     /* 51350 80060B50 24104300 */  and        $v0, $v0, $v1
     /* 51354 80060B54 02004010 */  beqz       $v0, .L80060B60
     /* 51358 80060B58 0A000224 */   addiu     $v0, $zero, 0xA
-    /* 5135C 80060B5C F00182AF */  sw         $v0, %gp_rel(D_800A32BC)($gp)
+    /* 5135C 80060B5C F00182AF */  sw         $v0, %gp_rel(g_eff_point_light_countdown)($gp)
   .L80060B60:
     /* 51360 80060B60 1800BF8F */  lw         $ra, 0x18($sp)
     /* 51364 80060B64 2000BD27 */  addiu      $sp, $sp, 0x20

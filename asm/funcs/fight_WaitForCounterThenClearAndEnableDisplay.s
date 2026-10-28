@@ -8,8 +8,8 @@ glabel fight_WaitForCounterThenClearAndEnableDisplay
     /* E3FC 8001DBFC 1000B0AF */   sw        $s0, 0x10($sp)
     /* E400 8001DC00 9EEA000C */  jal        comb_BeginWait
     /* E404 8001DC04 00000000 */   nop
-    /* E408 8001DC08 0A80033C */  lui        $v1, %hi(D_800A38F8)
-    /* E40C 8001DC0C F8386390 */  lbu        $v1, %lo(D_800A38F8)($v1)
+    /* E408 8001DC08 0A80033C */  lui        $v1, %hi(g_fight_stage_list_draw_cursor)
+    /* E40C 8001DC0C F8386390 */  lbu        $v1, %lo(g_fight_stage_list_draw_cursor)($v1)
     /* E410 8001DC10 0A80023C */  lui        $v0, %hi(g_fight_stage_command_count)
     /* E414 8001DC14 A0374290 */  lbu        $v0, %lo(g_fight_stage_command_count)($v0)
     /* E418 8001DC18 00000000 */  nop
@@ -23,8 +23,8 @@ glabel fight_WaitForCounterThenClearAndEnableDisplay
     /* E434 8001DC34 00000000 */   nop
     /* E438 8001DC38 330A020C */  jal        VSync
     /* E43C 8001DC3C 02000424 */   addiu     $a0, $zero, 0x2
-    /* E440 8001DC40 0A80033C */  lui        $v1, %hi(D_800A38F8)
-    /* E444 8001DC44 F8386390 */  lbu        $v1, %lo(D_800A38F8)($v1)
+    /* E440 8001DC40 0A80033C */  lui        $v1, %hi(g_fight_stage_list_draw_cursor)
+    /* E444 8001DC44 F8386390 */  lbu        $v1, %lo(g_fight_stage_list_draw_cursor)($v1)
     /* E448 8001DC48 0A80023C */  lui        $v0, %hi(g_fight_stage_command_count)
     /* E44C 8001DC4C A0374290 */  lbu        $v0, %lo(g_fight_stage_command_count)($v0)
     /* E450 8001DC50 00000000 */  nop

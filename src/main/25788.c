@@ -65,7 +65,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
 
     if (val == 2) {
         D_800A389A = p->unk14_17;
-        D_800A3788 = p->unk14_18;
+        g_fight_toggle_option_bits = p->unk14_18;
     } else if (val == 5) {
         s32 win_target;
 

@@ -188,9 +188,9 @@ glabel slot_FinalizeObjectLoadSoundTexturesAndArena
     /* 3104C 8004084C 04004486 */  lh         $a0, 0x4($s2)
     /* 31050 80040850 08004586 */  lh         $a1, 0x8($s2)
     /* 31054 80040854 80100400 */  sll        $v0, $a0, 2
-    /* 31058 80040858 0980013C */  lui        $at, %hi(D_80094B88)
+    /* 31058 80040858 0980013C */  lui        $at, %hi(g_slot_tim_group_requests)
     /* 3105C 8004085C 21082200 */  addu       $at, $at, $v0
-    /* 31060 80040860 884B268C */  lw         $a2, %lo(D_80094B88)($at)
+    /* 31060 80040860 884B268C */  lw         $a2, %lo(g_slot_tim_group_requests)($at)
     /* 31064 80040864 6206010C */  jal        gpu_LoadRequestedAvailableTimGroupsForSlot
     /* 31068 80040868 21386002 */   addu      $a3, $s3, $zero
     /* 3106C 8004086C E0FF033C */  lui        $v1, (0xFFE0FFFF >> 16)
@@ -199,18 +199,18 @@ glabel slot_FinalizeObjectLoadSoundTexturesAndArena
     /* 31078 80040878 0000458E */  lw         $a1, 0x0($s2)
     /* 3107C 8004087C 80100200 */  sll        $v0, $v0, 2
     /* 31080 80040880 2428A300 */  and        $a1, $a1, $v1
-    /* 31084 80040884 0980013C */  lui        $at, %hi(D_80094B88)
+    /* 31084 80040884 0980013C */  lui        $at, %hi(g_slot_tim_group_requests)
     /* 31088 80040888 21082200 */  addu       $at, $at, $v0
-    /* 3108C 8004088C 884B228C */  lw         $v0, %lo(D_80094B88)($at)
+    /* 3108C 8004088C 884B228C */  lw         $v0, %lo(g_slot_tim_group_requests)($at)
     /* 31090 80040890 04004386 */  lh         $v1, 0x4($s2)
     /* 31094 80040894 1F004230 */  andi       $v0, $v0, 0x1F
     /* 31098 80040898 00140200 */  sll        $v0, $v0, 16
     /* 3109C 8004089C 2528A200 */  or         $a1, $a1, $v0
     /* 310A0 800408A0 80180300 */  sll        $v1, $v1, 2
     /* 310A4 800408A4 000045AE */  sw         $a1, 0x0($s2)
-    /* 310A8 800408A8 0980013C */  lui        $at, %hi(D_80094B88)
+    /* 310A8 800408A8 0980013C */  lui        $at, %hi(g_slot_tim_group_requests)
     /* 310AC 800408AC 21082300 */  addu       $at, $at, $v1
-    /* 310B0 800408B0 884B20AC */  sw         $zero, %lo(D_80094B88)($at)
+    /* 310B0 800408B0 884B20AC */  sw         $zero, %lo(g_slot_tim_group_requests)($at)
     /* 310B4 800408B4 CFEC010C */  jal        DrawSync
     /* 310B8 800408B8 21200000 */   addu      $a0, $zero, $zero
     /* 310BC 800408BC 21288002 */  addu       $a1, $s4, $zero

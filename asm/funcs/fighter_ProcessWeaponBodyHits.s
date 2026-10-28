@@ -649,8 +649,8 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1BC60 8002B460 C0100200 */  sll        $v0, $v0, 3
     /* 1BC64 8002B464 23105600 */  subu       $v0, $v0, $s6
     /* 1BC68 8002B468 C0100200 */  sll        $v0, $v0, 3
-    /* 1BC6C 8002B46C 0F80033C */  lui        $v1, %hi(D_800F5F68)
-    /* 1BC70 8002B470 685F6324 */  addiu      $v1, $v1, %lo(D_800F5F68)
+    /* 1BC6C 8002B46C 0F80033C */  lui        $v1, %hi(g_fighter_bone_hit_records)
+    /* 1BC70 8002B470 685F6324 */  addiu      $v1, $v1, %lo(g_fighter_bone_hit_records)
     /* 1BC74 8002B474 21404300 */  addu       $t0, $v0, $v1
     /* 1BC78 8002B478 FF7F093C */  lui        $t1, (0x7FFFFFFF >> 16)
     /* 1BC7C 8002B47C 1C02628E */  lw         $v0, 0x21C($s3)

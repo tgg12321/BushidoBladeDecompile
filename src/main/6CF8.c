@@ -184,7 +184,7 @@ void sys_Init(void) {
     ChangeClearPAD(0);
     disp_Init();
     g_local_ot_draw_mode = DISP_DISABLED;
-    D_800A36A8 = 0;
+    g_gpu_jitter_burst_enabled = 0;
     cdrom_Init();
     memcard_Init();
     rcnt_StartCnt1Wrapper();
@@ -297,7 +297,7 @@ void func_80016D78(void) {
     D_800A3745 = 0;
     D_800A3746 = 0;
     func_80046B44();
-    D_800A36F1 = 2;
+    g_main_frame_period = 2;
     g_motion_fighter_loaded_data_ids[1] = 0;
     D_800A36B0 = 0;
     g_comb_abort_request = 0;
@@ -344,7 +344,8 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         pad_Update();
         if (var_3 != 0) {
             gpu_DrawModeSizedPanelWithSelectedCellOpaque(
-                2, var_2 | (D_800A3788 << 16), (s32)g_prim_buf_cursor, 0);
+                2, var_2 | (g_fight_toggle_option_bits << 16),
+                (s32)g_prim_buf_cursor, 0);
         } else {
             gpu_DrawModeSizedPanelWithSelectedCellOpaque(
                 0, var_2, (s32)g_prim_buf_cursor, 0);
@@ -389,10 +390,10 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         if ((var_3 != 0) && (var_2 >= 3)) {
             if (g_pad_state.pressed & 0x80008000) {
                 snd_QueueSound(0, 0x7F, 0x7F);
-                D_800A3788 |= 1 << (var_2 - 3);
+                g_fight_toggle_option_bits |= 1 << (var_2 - 3);
             } else if (g_pad_state.pressed & 0x20002000) {
                 snd_QueueSound(0, 0x7F, 0x7F);
-                D_800A3788 &= ~(1 << (var_2 - 3));
+                g_fight_toggle_option_bits &= ~(1 << (var_2 - 3));
             }
         }
     }
@@ -427,8 +428,8 @@ void main(void) {
     s32 idx;
     GpuDb *var_1;
     u32 *var_2;
-    /* D_800A390D (frames left to skip presenting) as read this frame; the next
-     * frame passes it to pad_Update. */
+    /* g_main_present_skip_frames (frames left to skip presenting) as read this
+     * frame; the next frame passes it to pad_Update. */
     s32 var_3;
 
     __main();
@@ -441,7 +442,7 @@ void main(void) {
         (u8 *)0x80118800, var_1, idx);
 
     g_main_loop_handler_index = 0xF;
-    D_800A390D = 0;
+    g_main_present_skip_frames = 0;
     g_gpu_presented_frame_count = 0;
 
     for (;;) {
@@ -469,7 +470,7 @@ void main(void) {
         font_AddTpage();
 
         do {
-            if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80)
+            if (GetRCnt(0xF2000001u) >= ((g_main_frame_period - 1) << 8) + 0x80)
                 break;
             rand();
         } while (1);
@@ -479,7 +480,7 @@ void main(void) {
         VSync(0);
         ResetRCnt(0xF2000001u);
 
-        var_3 = D_800A390D;
+        var_3 = g_main_present_skip_frames;
         if (var_3 == 0) {
             PutDispEnv(&var_1->disp);
             PutDrawEnv(&var_1->draw);
@@ -498,8 +499,8 @@ void main(void) {
             }
         }
 
-        if (D_800A390D != 0) {
-            D_800A390D--;
+        if (g_main_present_skip_frames != 0) {
+            g_main_present_skip_frames--;
         } else {
             DrawOTag(&var_1->ot[0x1007]);
             g_gpu_presented_frame_count++;
@@ -534,7 +535,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
      * case-20 g_fight_stage_command_count limit (owner ruling 11) */
     s32 temp2;
 
-    var_3 = (s32)D_800F33D8;
+    var_3 = (s32)g_shared_buffer;
     if (g_local_ot_draw_mode == DISP_DISABLED) {
         return;
     }
@@ -549,7 +550,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     case 1:
     case 2:
         var_3 = gpu_DrawFixedSpritePairWithSelectedSheets(var_3, temp2);
-        if (D_800A36A8 != 0) {
+        if (g_gpu_jitter_burst_enabled != 0) {
             s32 i;
             temp = (rand() & 3) + 4;
             for (i = 0; i < temp; i++) {
@@ -568,21 +569,21 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
         u8 cur;
 
         temp2 = g_fight_stage_command_count;
-        cur = D_800A38F8;
+        cur = g_fight_stage_list_draw_cursor;
         if ((u32)temp2 < cur) {
             break;
         }
         if (0xF0 / (temp2 + 1) >= ++D_800A37C0) {
             break;
         }
-        /* FAKE: the common `D_800A38F8 = cur + 1` store written in both arms
-         * (F7), as the target computes it per arm; one hoisted store: score 6
-         * (131/136 insns) (Q129). */
+        /* FAKE: the common `g_fight_stage_list_draw_cursor = cur + 1` store
+         * written in both arms (F7), as the target computes it per arm; one
+         * hoisted store: score 6 (131/136 insns) (Q129). */
         if (cur == temp2) {
-            D_800A38F8 = cur + 1;
+            g_fight_stage_list_draw_cursor = cur + 1;
         } else {
             u8 next = cur + 1;
-            D_800A38F8 = next;
+            g_fight_stage_list_draw_cursor = next;
             D_800A37C0 = 0;
             temp = D_800A37A8[cur];
             if (next == temp2) {
@@ -816,10 +817,10 @@ u8 g_softbody_slot_high_water = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 u8 g_fight_view_option;
-u8 D_800A36A8;
+u8 g_gpu_jitter_burst_enabled;
 s32 g_gpu_presented_frame_count;
 u8 D_800A36B0;
-u8 D_800A36F1;
+u8 g_main_frame_period;
 u8 D_800A36F9;
 s16 g_camera_distance_offset;
 u8 D_800A3713;
@@ -829,7 +830,7 @@ u32 *g_gpu_ot_ptr;
 u8 g_local_ot_draw_mode;
 u32 D_800A3770[2];
 s32 D_800A3784;
-u8 D_800A3788;
+u8 g_fight_toggle_option_bits;
 u32 D_800A3798;
 u8 g_fight_stage_command_count;
 s32 D_800A37C0;
@@ -838,7 +839,7 @@ u8 D_800A389A;
 u32 *g_prim_buf_cursor;
 s32 g_rng_state;
 s16 g_fight_mode_selector;
-u8 D_800A38F8;
+u8 g_fight_stage_list_draw_cursor;
 u8 D_800A3906;
-u8 D_800A390D;
+u8 g_main_present_skip_frames;
 u8 g_comb_abort_request;

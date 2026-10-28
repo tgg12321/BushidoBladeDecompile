@@ -722,9 +722,9 @@ glabel fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
     /* 497D0 80058FD0 3B006012 */  beqz       $s3, .L800590C0
     /* 497D4 80058FD4 00000000 */   nop
   .L80058FD8:
-    /* 497D8 80058FD8 0A80013C */  lui        $at, %hi(D_8009A850)
+    /* 497D8 80058FD8 0A80013C */  lui        $at, %hi(g_cpu_move_range_rules)
     /* 497DC 80058FDC 21082500 */  addu       $at, $at, $a1
-    /* 497E0 80058FE0 50A82390 */  lbu        $v1, %lo(D_8009A850)($at)
+    /* 497E0 80058FE0 50A82390 */  lbu        $v1, %lo(g_cpu_move_range_rules)($at)
     /* 497E4 80058FE4 6A000296 */  lhu        $v0, 0x6A($s0)
     /* 497E8 80058FE8 00000000 */  nop
     /* 497EC 80058FEC 34006214 */  bne        $v1, $v0, .L800590C0
@@ -2372,8 +2372,8 @@ glabel fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
     /* 4AF80 8005A780 F0A98424 */  addiu      $a0, $a0, %lo(D_8009A9F0)
     /* 4AF84 8005A784 21104300 */  addu       $v0, $v0, $v1
     /* 4AF88 8005A788 00004390 */  lbu        $v1, 0x0($v0)
-    /* 4AF8C 8005A78C 0A80023C */  lui        $v0, %hi(D_800A3788)
-    /* 4AF90 8005A790 88374290 */  lbu        $v0, %lo(D_800A3788)($v0)
+    /* 4AF8C 8005A78C 0A80023C */  lui        $v0, %hi(g_fight_toggle_option_bits)
+    /* 4AF90 8005A790 88374290 */  lbu        $v0, %lo(g_fight_toggle_option_bits)($v0)
     /* 4AF94 8005A794 40190300 */  sll        $v1, $v1, 5
     /* 4AF98 8005A798 21186400 */  addu       $v1, $v1, $a0
     /* 4AF9C 8005A79C 80100200 */  sll        $v0, $v0, 2

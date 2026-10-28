@@ -171,10 +171,10 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 626CC 80071ECC 73FF4014 */  bnez       $v0, .L80071C9C
     /* 626D0 80071ED0 02007326 */   addiu     $s3, $s3, 0x2
   .L80071ED4:
-    /* 626D4 80071ED4 84048297 */  lhu        $v0, %gp_rel(D_800A3550)($gp)
+    /* 626D4 80071ED4 84048297 */  lhu        $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 626D8 80071ED8 00000000 */  nop
     /* 626DC 80071EDC 08004224 */  addiu      $v0, $v0, 0x8
-    /* 626E0 80071EE0 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
+    /* 626E0 80071EE0 840482A7 */  sh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 626E4 80071EE4 00140200 */  sll        $v0, $v0, 16
     /* 626E8 80071EE8 03140200 */  sra        $v0, $v0, 16
     /* 626EC 80071EEC FF004228 */  slti       $v0, $v0, 0xFF
@@ -183,7 +183,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 626F8 80071EF8 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 626FC 80071EFC FF000224 */  addiu      $v0, $zero, 0xFF
     /* 62700 80071F00 01001024 */  addiu      $s0, $zero, 0x1
-    /* 62704 80071F04 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
+    /* 62704 80071F04 840482A7 */  sh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 62708 80071F08 AC0490A7 */  sh         $s0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 6270C 80071F0C 9471010C */  jal        snd_QueueSound
     /* 62710 80071F10 7F000624 */   addiu     $a2, $zero, 0x7F
@@ -209,16 +209,16 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 6275C 80071F5C 05006214 */  bne        $v1, $v0, .L80071F74
     /* 62760 80071F60 06000224 */   addiu     $v0, $zero, 0x6
     /* 62764 80071F64 05000224 */  addiu      $v0, $zero, 0x5
-    /* 62768 80071F68 B80482A7 */  sh         $v0, %gp_rel(D_800A3584)($gp)
+    /* 62768 80071F68 B80482A7 */  sh         $v0, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 6276C 80071F6C E7C70108 */  j          .L80071F9C
     /* 62770 80071F70 21800000 */   addu      $s0, $zero, $zero
   .L80071F74:
     /* 62774 80071F74 07006214 */  bne        $v1, $v0, .L80071F94
     /* 62778 80071F78 01000224 */   addiu     $v0, $zero, 0x1
     /* 6277C 80071F7C 06000224 */  addiu      $v0, $zero, 0x6
-    /* 62780 80071F80 B80482A7 */  sh         $v0, %gp_rel(D_800A3584)($gp)
+    /* 62780 80071F80 B80482A7 */  sh         $v0, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 62784 80071F84 D00490A7 */  sh         $s0, %gp_rel(g_entry_menu_choice_grid_row)($gp)
-    /* 62788 80071F88 CC0490A7 */  sh         $s0, %gp_rel(D_800A3598)($gp)
+    /* 62788 80071F88 CC0490A7 */  sh         $s0, %gp_rel(g_entry_menu_choice_grid_column)($gp)
     /* 6278C 80071F8C E7C70108 */  j          .L80071F9C
     /* 62790 80071F90 21800000 */   addu      $s0, $zero, $zero
   .L80071F94:

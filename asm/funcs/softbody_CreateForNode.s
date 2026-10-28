@@ -62,8 +62,8 @@ glabel softbody_CreateForNode
     /* 30308 8003FB08 001C0700 */  sll        $v1, $a3, 16
     /* 3030C 8003FB0C 21006010 */  beqz       $v1, .L8003FB94
     /* 30310 8003FB10 02001026 */   addiu     $s0, $s0, 0x2
-    /* 30314 8003FB14 0980043C */  lui        $a0, %hi(D_80094AEC)
-    /* 30318 8003FB18 EC4A8424 */  addiu      $a0, $a0, %lo(D_80094AEC)
+    /* 30314 8003FB14 0980043C */  lui        $a0, %hi(g_softbody_face_record_strides)
+    /* 30318 8003FB18 EC4A8424 */  addiu      $a0, $a0, %lo(g_softbody_face_record_strides)
   .L8003FB1C:
     /* 3031C 8003FB1C 00000696 */  lhu        $a2, 0x0($s0)
     /* 30320 8003FB20 00000000 */  nop
@@ -116,8 +116,8 @@ glabel softbody_CreateForNode
     /* 303CC 8003FBCC 66004010 */  beqz       $v0, .L8003FD68
     /* 303D0 8003FBD0 21384000 */   addu      $a3, $v0, $zero
     /* 303D4 8003FBD4 FFFF0824 */  addiu      $t0, $zero, -0x1
-    /* 303D8 8003FBD8 0980093C */  lui        $t1, %hi(D_80094AEC)
-    /* 303DC 8003FBDC EC4A2925 */  addiu      $t1, $t1, %lo(D_80094AEC)
+    /* 303D8 8003FBD8 0980093C */  lui        $t1, %hi(g_softbody_face_record_strides)
+    /* 303DC 8003FBDC EC4A2925 */  addiu      $t1, $t1, %lo(g_softbody_face_record_strides)
   .L8003FBE0:
     /* 303E0 8003FBE0 00000696 */  lhu        $a2, 0x0($s0)
     /* 303E4 8003FBE4 02001026 */  addiu      $s0, $s0, 0x2

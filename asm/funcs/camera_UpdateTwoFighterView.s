@@ -332,14 +332,14 @@ glabel camera_UpdateTwoFighterView
     /* B4EC 8001ACEC 08000524 */  addiu      $a1, $zero, 0x8
     /* B4F0 8001ACF0 1800F426 */  addiu      $s4, $s7, %lo(D_1F800018)
     /* B4F4 8001ACF4 3800EA26 */  addiu      $t2, $s7, %lo(D_1F800038)
-    /* B4F8 8001ACF8 0A80153C */  lui        $s5, %hi(D_800A30F0)
-    /* B4FC 8001ACFC F030B526 */  addiu      $s5, $s5, %lo(D_800A30F0)
+    /* B4F8 8001ACF8 0A80153C */  lui        $s5, %hi(g_camera_eye_blocked_flags)
+    /* B4FC 8001ACFC F030B526 */  addiu      $s5, $s5, %lo(g_camera_eye_blocked_flags)
     /* B500 8001AD00 4800AAAF */  sw         $t2, 0x48($sp)
     /* B504 8001AD04 30000A24 */  addiu      $t2, $zero, 0x30
     /* B508 8001AD08 5000AAAF */  sw         $t2, 0x50($sp)
     /* B50C 8001AD0C 0200E496 */  lhu        $a0, (0x1F800002 & 0xFFFF)($s7)
-    /* B510 8001AD10 0A80133C */  lui        $s3, %hi(D_800A30F4)
-    /* B514 8001AD14 F4307326 */  addiu      $s3, $s3, %lo(D_800A30F4)
+    /* B510 8001AD10 0A80133C */  lui        $s3, %hi(g_camera_pitch_search_steps)
+    /* B514 8001AD14 F4307326 */  addiu      $s3, $s3, %lo(g_camera_pitch_search_steps)
     /* B518 8001AD18 0400E0A6 */  sh         $zero, (0x1F800004 & 0xFFFF)($s7)
     /* B51C 8001AD1C 1200C286 */  lh         $v0, 0x12($s6)
     /* B520 8001AD20 00240400 */  sll        $a0, $a0, 16
@@ -367,8 +367,8 @@ glabel camera_UpdateTwoFighterView
     /* B574 8001AD74 1800E526 */  addiu      $a1, $s7, %lo(D_1F800018)
     /* B578 8001AD78 4E69000C */  jal        camera_CalcEye
     /* B57C 8001AD7C 1000D1A6 */   sh        $s1, 0x10($s6)
-    /* B580 8001AD80 0A80023C */  lui        $v0, %hi(D_800A30F0)
-    /* B584 8001AD84 F0304224 */  addiu      $v0, $v0, %lo(D_800A30F0)
+    /* B580 8001AD80 0A80023C */  lui        $v0, %hi(g_camera_eye_blocked_flags)
+    /* B584 8001AD84 F0304224 */  addiu      $v0, $v0, %lo(g_camera_eye_blocked_flags)
     /* B588 8001AD88 0400A212 */  beq        $s5, $v0, .L8001AD9C
     /* B58C 8001AD8C 00000000 */   nop
     /* B590 8001AD90 2800AA8F */  lw         $t2, 0x28($sp)
@@ -572,8 +572,8 @@ glabel camera_UpdateTwoFighterView
     /* B854 8001B054 23103002 */   subu      $v0, $s1, $s0
     /* B858 8001B058 0000A0A2 */  sb         $zero, 0x0($s5)
   .L8001B05C:
-    /* B85C 8001B05C 0A80023C */  lui        $v0, %hi(D_800A30F0)
-    /* B860 8001B060 F0304224 */  addiu      $v0, $v0, %lo(D_800A30F0)
+    /* B85C 8001B05C 0A80023C */  lui        $v0, %hi(g_camera_eye_blocked_flags)
+    /* B860 8001B060 F0304224 */  addiu      $v0, $v0, %lo(g_camera_eye_blocked_flags)
     /* B864 8001B064 0300A212 */  beq        $s5, $v0, .L8001B074
     /* B868 8001B068 00000000 */   nop
     /* B86C 8001B06C 1E6C0008 */  j          .L8001B078
@@ -583,8 +583,8 @@ glabel camera_UpdateTwoFighterView
   .L8001B078:
     /* B878 8001B078 0100B526 */  addiu      $s5, $s5, 0x1
     /* B87C 8001B07C 04007326 */  addiu      $s3, $s3, 0x4
-    /* B880 8001B080 0A80023C */  lui        $v0, %hi(D_800A30F0 + 0x2)
-    /* B884 8001B084 F2304224 */  addiu      $v0, $v0, %lo(D_800A30F0 + 0x2)
+    /* B880 8001B080 0A80023C */  lui        $v0, %hi(g_camera_eye_blocked_flags + 0x2)
+    /* B884 8001B084 F2304224 */  addiu      $v0, $v0, %lo(g_camera_eye_blocked_flags + 0x2)
     /* B888 8001B088 5000AA8F */  lw         $t2, 0x50($sp)
     /* B88C 8001B08C 2A10A202 */  slt        $v0, $s5, $v0
     /* B890 8001B090 08004A25 */  addiu      $t2, $t2, 0x8

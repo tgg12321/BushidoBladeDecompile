@@ -563,7 +563,7 @@ s16 arg5;
     *(s32 *)0x1F800000 = g_reloc_block_entry_tables[arg0][arg1];
     gpu_OffsetTexPrimStream(arg2, arg3, arg4, arg5);
 }
-extern s16 D_80095588[];
+extern s16 g_gpu_prim_type_halfword_sizes[];
 extern void gpu_OffsetTexPolyFT3();
 extern void gpu_OffsetTexPolyFT4();
 extern void gpu_OffsetTexPolyGT3();
@@ -578,7 +578,8 @@ void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
  * (arg0, arg1) and its CLUT by (arg2, arg3): via gpu_OffsetTexPoly* for
  * mode-0 groups, via gpu_OffsetTPageClutAt0And4 / gpu_OffsetTPageClutAt6And2
  * plus a per-vertex v shift for mode-1 / mode-2 groups.  Untextured groups are
- * skipped using the per-type halfword sizes in D_80095588. */
+ * skipped using the per-type halfword sizes in g_gpu_prim_type_halfword_sizes.
+ */
 void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
     s32 count;
     s32 mode;
@@ -654,7 +655,7 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                                                  arg0, arg1, arg2, arg3);
                             break;
                         }
-                        SCRATCH_PTR += D_80095588[type];
+                        SCRATCH_PTR += g_gpu_prim_type_halfword_sizes[type];
                     }
                     break;
                 case 1:
@@ -739,7 +740,8 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     break;
                 }
             } else if (!var_4) {
-                SCRATCH_PTR += (s16)(count * D_80095588[type]);
+                SCRATCH_PTR +=
+                    (s16)(count * g_gpu_prim_type_halfword_sizes[type]);
             } else {
                 switch (type) {
                 case 0:
@@ -749,7 +751,8 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     SCRATCH_PTR += count * 32;
                     break;
                 default:
-                    SCRATCH_PTR += (s16)(count * D_80095588[type]);
+                    SCRATCH_PTR +=
+                        (s16)(count * g_gpu_prim_type_halfword_sizes[type]);
                     break;
                 }
             }
@@ -1217,8 +1220,9 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
  * primitive-type handler tables (func_80044650, which calls func_80052C10, is
  * the default entry; the others are 3AB48.c's draw routines) that func_800430E4
  * installs at scratchpad word 0x1F80001C and 3AB48.c's func_8004A4E0 selects
- * from, then gpu_OffsetTexPrimStream's per-type halfword sizes D_80095588.
- * Sizes from the data labels. Defined after every function. */
+ * from, then gpu_OffsetTexPrimStream's per-type halfword sizes
+ * g_gpu_prim_type_halfword_sizes. Sizes from the data labels. Defined after
+ * every function. */
 void gpu_EmitOtCutoffFlatLitTexturedTriangles();
 void gpu_EmitOtCutoffFlatLitTexturedQuads();
 void func_8004D634();
@@ -1497,7 +1501,7 @@ void (*D_80095508[32])() = {
     func_80044650,
     func_80044650,
 };
-s16 D_80095588[44] = {
+s16 g_gpu_prim_type_halfword_sizes[44] = {
     28, 22, 28, 22, 38, 34, 38, 0,  32, 26, 0,  0,  46, 42, 46,
     0,  48, 0,  48, 0,  52, 0,  52, 0,  62, 0,  0,  0,  66, 0,
     66, 0,  2,  2,  38, 46, 0,  40, 10, 12, 10, 12, 38, 46,

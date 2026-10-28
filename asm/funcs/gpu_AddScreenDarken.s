@@ -8,16 +8,16 @@ glabel gpu_AddScreenDarken
     /* 5F850 8006F050 B4EA010C */  jal        SetTile
     /* 5F854 8006F054 21200002 */   addu      $a0, $s0, $zero
     /* 5F858 8006F058 21200002 */  addu       $a0, $s0, $zero
-    /* 5F85C 8006F05C 84048297 */  lhu        $v0, %gp_rel(D_800A3550)($gp)
+    /* 5F85C 8006F05C 84048297 */  lhu        $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F860 8006F060 01000524 */  addiu      $a1, $zero, 0x1
     /* 5F864 8006F064 080000A6 */  sh         $zero, 0x8($s0)
     /* 5F868 8006F068 0A0000A6 */  sh         $zero, 0xA($s0)
     /* 5F86C 8006F06C 040002A2 */  sb         $v0, 0x4($s0)
-    /* 5F870 8006F070 84048397 */  lhu        $v1, %gp_rel(D_800A3550)($gp)
+    /* 5F870 8006F070 84048397 */  lhu        $v1, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F874 8006F074 80020224 */  addiu      $v0, $zero, 0x280
     /* 5F878 8006F078 0C0002A6 */  sh         $v0, 0xC($s0)
     /* 5F87C 8006F07C 050003A2 */  sb         $v1, 0x5($s0)
-    /* 5F880 8006F080 84048397 */  lhu        $v1, %gp_rel(D_800A3550)($gp)
+    /* 5F880 8006F080 84048397 */  lhu        $v1, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F884 8006F084 F0000224 */  addiu      $v0, $zero, 0xF0
     /* 5F888 8006F088 0E0002A6 */  sh         $v0, 0xE($s0)
     /* 5F88C 8006F08C 5AEA010C */  jal        SetSemiTrans

@@ -33,7 +33,7 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
 
     separation_error = fighter_CalcSeparationErrorAndOpposedOffsets();
     record = D_80101EC8;
-    D_800A3824 = -1;
+    g_fight_weapon_contact_result = -1;
     if ((u16)D_80101EC8[0].move_kind == 0x1C) {
         if (D_80101EC8[0].move_frame != 4)
             goto tail;
@@ -148,7 +148,7 @@ tail:
     /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     var_1 = record + 1;
-    if (D_800A3910 == 0) {
+    if (g_fight_midpoint_effect_delay == 0) {
         switch ((u16)D_80101EC8[0].move_kind) {
         case 0xF:
             kind = -1;
@@ -187,6 +187,6 @@ tail:
                 0, D_8008EB6C[kind], pos, (s16 *)0);
         }
     } else {
-        D_800A3910--;
+        g_fight_midpoint_effect_delay--;
     }
 }

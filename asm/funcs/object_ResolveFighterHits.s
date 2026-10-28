@@ -96,8 +96,8 @@ glabel object_ResolveFighterHits
     /* 22498 80031C98 C0100200 */  sll        $v0, $v0, 3
     /* 2249C 80031C9C 23105400 */  subu       $v0, $v0, $s4
     /* 224A0 80031CA0 C0100200 */  sll        $v0, $v0, 3
-    /* 224A4 80031CA4 0F80033C */  lui        $v1, %hi(D_800F5F68)
-    /* 224A8 80031CA8 685F6324 */  addiu      $v1, $v1, %lo(D_800F5F68)
+    /* 224A4 80031CA4 0F80033C */  lui        $v1, %hi(g_fighter_bone_hit_records)
+    /* 224A8 80031CA8 685F6324 */  addiu      $v1, $v1, %lo(g_fighter_bone_hit_records)
     /* 224AC 80031CAC 21F04300 */  addu       $fp, $v0, $v1
     /* 224B0 80031CB0 21A80000 */  addu       $s5, $zero, $zero
     /* 224B4 80031CB4 40111400 */  sll        $v0, $s4, 5
@@ -255,8 +255,8 @@ glabel object_ResolveFighterHits
     /* 22700 80031F00 00000000 */   nop
   .L80031F04:
     /* 22704 80031F04 01000224 */  addiu      $v0, $zero, 0x1
-    /* 22708 80031F08 0A80013C */  lui        $at, %hi(D_800A36A8)
-    /* 2270C 80031F0C A83622A0 */  sb         $v0, %lo(D_800A36A8)($at)
+    /* 22708 80031F08 0A80013C */  lui        $at, %hi(g_gpu_jitter_burst_enabled)
+    /* 2270C 80031F0C A83622A0 */  sb         $v0, %lo(g_gpu_jitter_burst_enabled)($at)
     /* 22710 80031F10 FBC70008 */  j          .L80031FEC
     /* 22714 80031F14 64007326 */   addiu     $s3, $s3, 0x64
   .L80031F18:

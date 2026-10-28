@@ -29,8 +29,8 @@ glabel fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
     /* 1C944 8002C144 4C041026 */   addiu     $s0, $s0, 0x44C
     /* 1C948 8002C148 0A80033C */  lui        $v1, %hi(g_fight_paired_move_initiator)
     /* 1C94C 8002C14C AE386384 */  lh         $v1, %lo(g_fight_paired_move_initiator)($v1)
-    /* 1C950 8002C150 0A80043C */  lui        $a0, %hi(D_800A376E)
-    /* 1C954 8002C154 6E378484 */  lh         $a0, %lo(D_800A376E)($a0)
+    /* 1C950 8002C150 0A80043C */  lui        $a0, %hi(g_fight_paired_move_start_pending)
+    /* 1C954 8002C154 6E378484 */  lh         $a0, %lo(g_fight_paired_move_start_pending)($a0)
     /* 1C958 8002C158 00110300 */  sll        $v0, $v1, 4
     /* 1C95C 8002C15C 21104300 */  addu       $v0, $v0, $v1
     /* 1C960 8002C160 80100200 */  sll        $v0, $v0, 2
@@ -42,8 +42,8 @@ glabel fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents
     /* 1C978 8002C178 C81E6324 */  addiu      $v1, $v1, %lo(D_80101EC8)
     /* 1C97C 8002C17C 0D008014 */  bnez       $a0, .L8002C1B4
     /* 1C980 8002C180 21804300 */   addu      $s0, $v0, $v1
-    /* 1C984 8002C184 0A80033C */  lui        $v1, %hi(D_800A3758)
-    /* 1C988 8002C188 58376390 */  lbu        $v1, %lo(D_800A3758)($v1)
+    /* 1C984 8002C184 0A80033C */  lui        $v1, %hi(g_fight_missing_support_fighter_index)
+    /* 1C988 8002C188 58376390 */  lbu        $v1, %lo(g_fight_missing_support_fighter_index)($v1)
     /* 1C98C 8002C18C FF000224 */  addiu      $v0, $zero, 0xFF
     /* 1C990 8002C190 08006214 */  bne        $v1, $v0, .L8002C1B4
     /* 1C994 8002C194 00000000 */   nop

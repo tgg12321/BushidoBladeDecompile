@@ -17,7 +17,7 @@ glabel func_80016A18
     /* 7254 80016A54 00000000 */   nop
     /* 7258 80016A58 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 725C 80016A5C 9C0682A3 */  sb         $v0, %gp_rel(g_local_ot_draw_mode)($gp)
-    /* 7260 80016A60 DC0580A3 */  sb         $zero, %gp_rel(D_800A36A8)($gp)
+    /* 7260 80016A60 DC0580A3 */  sb         $zero, %gp_rel(g_gpu_jitter_burst_enabled)($gp)
     /* 7264 80016A64 F8D7000C */  jal        cdrom_Init
     /* 7268 80016A68 00000000 */   nop
     /* 726C 80016A6C 7BDD000C */  jal        memcard_Init

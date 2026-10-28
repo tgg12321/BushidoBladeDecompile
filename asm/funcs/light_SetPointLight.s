@@ -17,7 +17,7 @@ glabel light_SetPointLight
     /* 3264C 80041E4C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 32650 80041E50 2118E300 */  addu       $v1, $a3, $v1
     /* 32654 80041E54 C3190300 */  sra        $v1, $v1, 7
-    /* 32658 80041E58 6C0183A7 */  sh         $v1, %gp_rel(D_800A3238)($gp)
+    /* 32658 80041E58 6C0183A7 */  sh         $v1, %gp_rel(g_light_point_color)($gp)
     /* 3265C 80041E5C 21102201 */  addu       $v0, $t1, $v0
     /* 32660 80041E60 C3110200 */  sra        $v0, $v0, 7
     /* 32664 80041E64 6E0182A7 */  sh         $v0, %gp_rel(D_800A323A)($gp)

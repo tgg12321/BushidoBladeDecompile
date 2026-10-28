@@ -10,11 +10,11 @@
 
 extern char g_str_sio_800A3210[5]; /* "sio:" */
 
-extern s32 D_800A36C0;
+extern s32 g_comb_received_pad_word;
 
 extern s32 g_comb_close_request;
 extern s16 g_memcard_request_status;
-extern s16 D_800A3814;
+extern s16 g_memcard_request_retry_count;
 extern s16 g_memcard_request_operation;
 extern s32 g_memcard_request_state;
 extern u8 D_800A38CC;
@@ -38,7 +38,7 @@ extern s32 g_comb_send_buf;
 extern s32 write(s32, void *, s32); /* PsyQ: long write(long, void *, long) */
 extern u8 g_replay_playback_frame;
 
-extern Unk800F34D8Save D_800F34D8; /* = D_800F33D8 + 0x100 */
+extern Unk800F34D8Save D_800F34D8; /* = g_shared_buffer + 0x100 */
 extern s32 D_800A31F0;
 
 s32 memcard_Format(s32 a0, s32 a1) {
@@ -137,7 +137,7 @@ s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
 }
 
 void memcard_ClearBuffer(void) {
-    u8 *p = D_800F33D8;
+    u8 *p = g_shared_buffer;
     s32 i = 0;
     do {
         *p = 0;
@@ -323,8 +323,8 @@ neg2_else:
     return;
 
 sub_inc:
-    temp_v0 = (u16)D_800A3814 + 1;
-    D_800A3814 = temp_v0;
+    temp_v0 = (u16)g_memcard_request_retry_count + 1;
+    g_memcard_request_retry_count = temp_v0;
     if ((s16)temp_v0 < 4)
         return;
     var_v0 = 8;
@@ -365,10 +365,10 @@ state_3:
 setup_load:
     D_800A38CC = 1;
     memcard_ClearBuffer();
-    memcard_BuildFileHeader(D_800F33D8);
-    memcard_BuildSaveBlock(D_800F33D8 + 0x100);
-    if (memcard_WriteFile(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) !=
-        0) {
+    memcard_BuildFileHeader(g_shared_buffer);
+    memcard_BuildSaveBlock(g_shared_buffer + 0x100);
+    if (memcard_WriteFile(
+            0, 0, D_800A31F0, g_shared_buffer, 1, 0x200, var_s1) != 0) {
         close(g_memcard_fd);
         var_v0 = 3;
         goto finish;
@@ -385,7 +385,7 @@ state_5:
     }
     g_memcard_request_status = 4;
     memcard_ClearBuffer();
-    if (memcard_ReadFile(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
+    if (memcard_ReadFile(0, 0, D_800A31F0, g_shared_buffer, 0x200) != 0) {
         close(g_memcard_fd);
         var_v0 = 6;
         goto finish;
@@ -466,7 +466,7 @@ s32 memcard_Update(void) {
 
 void memcard_RequestLoad(void) {
     g_memcard_request_status = 4;
-    D_800A3814 = 0;
+    g_memcard_request_retry_count = 0;
     g_memcard_request_operation = 0;
     g_memcard_request_state = 1;
 }
@@ -475,7 +475,7 @@ void memcard_RequestSave(void) {
     g_memcard_request_status = 1;
     g_memcard_request_operation = 1;
     D_800A38CC = 0;
-    D_800A3814 = 0;
+    g_memcard_request_retry_count = 0;
     g_memcard_request_state = 1;
 }
 
@@ -483,14 +483,14 @@ void memcard_RequestOverwrite(void) {
     g_memcard_request_status = 1;
     g_memcard_request_operation = 2;
     D_800A38CC = 0;
-    D_800A3814 = 0;
+    g_memcard_request_retry_count = 0;
     g_memcard_request_state = 1;
 }
 
 void memcard_RequestFormat(void) {
     g_memcard_request_status = 9;
     g_memcard_request_operation = 3;
-    D_800A3814 = 0;
+    g_memcard_request_retry_count = 0;
     g_memcard_request_state = 1;
 }
 
@@ -1098,13 +1098,13 @@ end:
     return result;
 }
 
-s32 *GetSharedBuffer(void) { return (s32 *)D_800F33D8; }
+s32 *GetSharedBuffer(void) { return (s32 *)g_shared_buffer; }
 
 void replay_Reset(void) {
     s32 i;
     s32 j;
 
-    g_replay_fighter_frames = (Rec1C(*)[2])D_800F33D8;
+    g_replay_fighter_frames = (Rec1C(*)[2])g_shared_buffer;
     g_replay_write_frame = 0;
     g_replay_ring_wrapped = 0;
     for (i = 0x1F; i >= 0; i--) {
@@ -1508,10 +1508,10 @@ void replay_PlayFrame(void) {
         switch (g_fight_mode_selector) {
         case 0:
             if (D_80101EC8[0].is_defeated == 0) {
-                s32 var_19 = D_800A3836 != 0xFF;
+                s32 var_19 = g_fight_saved_first_fighter_selection != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
-                    if (D_800A3836 != 0xFF) {
+                    if (g_fight_saved_first_fighter_selection != 0xFF) {
                         D_800A37A4 |=
                             1 << g_fight_config_id_data_rows[(s8)g_fight_config
                                                                  .unk_4[0]];
@@ -1535,7 +1535,7 @@ void replay_PlayFrame(void) {
                 return;
             }
             g_fight_followup_fighter_index = 1;
-            if (D_800A3836 == 0xFF) {
+            if (g_fight_saved_first_fighter_selection == 0xFF) {
                 g_main_loop_handler_index = 0xC;
                 break;
             }
@@ -1750,7 +1750,7 @@ success:
 ret0_tramp:
     return 0;
 match:
-    D_800A36C0 = a1;
+    g_comb_received_pad_word = a1;
     D_800A36C4 = a0;
     return 1;
 }
@@ -1824,7 +1824,7 @@ void comb_ExchangePad(PadState *a0) {
                 return;
             }
             if (g_comb_local_side == 1) {
-                if (D_800A36C0 & 0x40000000) {
+                if (g_comb_received_pad_word & 0x40000000) {
                     comb_ResetClose();
                     return;
                 }
@@ -1841,7 +1841,7 @@ void comb_ExchangePad(PadState *a0) {
             comb_Read8();
             if (g_comb_local_side == 0) {
                 if (g_comb_close_request != var_7 ||
-                    (D_800A36C0 & 0x40000000)) {
+                    (g_comb_received_pad_word & 0x40000000)) {
                     comb_ResetClose();
                     return;
                 }
@@ -1855,8 +1855,8 @@ void comb_ExchangePad(PadState *a0) {
             u32 *var_8 = &a0->held;
             s16 *type = a0->type;
 
-            D_800A38FC += math_Popcount32((u16)D_800A36C0);
-            c0lo = (u16)D_800A36C0;
+            D_800A38FC += math_Popcount32((u16)g_comb_received_pad_word);
+            c0lo = (u16)g_comb_received_pad_word;
             if (g_comb_local_side == 0) {
                 buttons = (u16)g_comb_send_buf;
                 *var_8 = (c0lo << 16) | buttons;
@@ -1871,11 +1871,12 @@ void comb_ExchangePad(PadState *a0) {
                 type[1] = t & 0xF;
             }
             if (g_comb_local_side == 0) {
-                if (((D_800A36C0 >> 28) & 3) == 2 && g_comb_wait_state == 2) {
+                if (((g_comb_received_pad_word >> 28) & 3) == 2 &&
+                    g_comb_wait_state == 2) {
                     g_comb_wait_state = 0;
                 }
             } else {
-                if (((D_800A36C0 >> 28) & 3) == 2 &&
+                if (((g_comb_received_pad_word >> 28) & 3) == 2 &&
                     ((D_800A36D0 >> 28) & 3) == 2) {
                     g_comb_wait_state = 0;
                 }
@@ -1977,7 +1978,7 @@ char g_str_sio_800A3210[5] = "sio:";
  * gp-relative. */
 s32 g_comb_recv_buf[2];
 s32 g_comb_send_buf;
-s32 D_800A36C0;
+s32 g_comb_received_pad_word;
 s32 D_800A36D0;
 Rec1C (*g_replay_fighter_frames)[2];
 u8 g_replay_write_frame;
@@ -1993,7 +1994,7 @@ u16 D_800A37C4;
 s16 g_memcard_request_operation;
 u8 g_replay_playback_frame;
 s32 g_comb_event_error;
-s16 D_800A3814;
+s16 g_memcard_request_retry_count;
 u8 D_800A382C;
 s32 g_comb_wait_state;
 u8 D_800A38CC;

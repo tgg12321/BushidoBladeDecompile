@@ -1,8 +1,8 @@
 glabel replay_Reset
     /* 29AC8 800392C8 FF000424 */  addiu      $a0, $zero, 0xFF
     /* 29ACC 800392CC F0010324 */  addiu      $v1, $zero, 0x1F0
-    /* 29AD0 800392D0 0F80023C */  lui        $v0, %hi(D_800F33D8)
-    /* 29AD4 800392D4 D8334224 */  addiu      $v0, $v0, %lo(D_800F33D8)
+    /* 29AD0 800392D0 0F80023C */  lui        $v0, %hi(g_shared_buffer)
+    /* 29AD4 800392D4 D8334224 */  addiu      $v0, $v0, %lo(g_shared_buffer)
     /* 29AD8 800392D8 200682AF */  sw         $v0, %gp_rel(g_replay_fighter_frames)($gp)
     /* 29ADC 800392DC 2C0680A3 */  sb         $zero, %gp_rel(g_replay_write_frame)($gp)
     /* 29AE0 800392E0 B60680A3 */  sb         $zero, %gp_rel(g_replay_ring_wrapped)($gp)

@@ -47,7 +47,7 @@ glabel snd_Init
     /* 4BCE8 8005B4E8 08008424 */   addiu     $a0, $a0, 0x8
     /* 4BCEC 8005B4EC A70F020C */  jal        SsStart
     /* 4BCF0 8005B4F0 00000000 */   nop
-    /* 4BCF4 8005B4F4 3C0380AF */  sw         $zero, %gp_rel(D_800A3408)($gp)
+    /* 4BCF4 8005B4F4 3C0380AF */  sw         $zero, %gp_rel(g_vab_sb_used_bytes)($gp)
     /* 4BCF8 8005B4F8 340380A7 */  sh         $zero, %gp_rel(D_800A3400)($gp)
     /* 4BCFC 8005B4FC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 4BD00 8005B500 1800BD27 */  addiu      $sp, $sp, 0x18

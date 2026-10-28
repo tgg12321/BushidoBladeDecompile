@@ -6,8 +6,8 @@ glabel fighter_ScaleBoneHitRecords
     /* 10EC0 800206C0 C0100200 */  sll        $v0, $v0, 3
     /* 10EC4 800206C4 23104400 */  subu       $v0, $v0, $a0
     /* 10EC8 800206C8 C0100200 */  sll        $v0, $v0, 3
-    /* 10ECC 800206CC 0F80033C */  lui        $v1, %hi(D_800F5F68)
-    /* 10ED0 800206D0 685F6324 */  addiu      $v1, $v1, %lo(D_800F5F68)
+    /* 10ECC 800206CC 0F80033C */  lui        $v1, %hi(g_fighter_bone_hit_records)
+    /* 10ED0 800206D0 685F6324 */  addiu      $v1, $v1, %lo(g_fighter_bone_hit_records)
     /* 10ED4 800206D4 21304300 */  addu       $a2, $v0, $v1
     /* 10ED8 800206D8 21400000 */  addu       $t0, $zero, $zero
     /* 10EDC 800206DC 1200C424 */  addiu      $a0, $a2, 0x12

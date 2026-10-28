@@ -335,8 +335,8 @@ glabel fighter_Update
     /* 14BE0 800243E0 7C00238E */  lw         $v1, 0x7C($s1)
     /* 14BE4 800243E4 80002496 */  lhu        $a0, 0x80($s1)
     /* 14BE8 800243E8 82002596 */  lhu        $a1, 0x82($s1)
-    /* 14BEC 800243EC 0A80013C */  lui        $at, %hi(D_800A376E)
-    /* 14BF0 800243F0 6E3722A4 */  sh         $v0, %lo(D_800A376E)($at)
+    /* 14BEC 800243EC 0A80013C */  lui        $at, %hi(g_fight_paired_move_start_pending)
+    /* 14BF0 800243F0 6E3722A4 */  sh         $v0, %lo(g_fight_paired_move_start_pending)($at)
     /* 14BF4 800243F4 0A80013C */  lui        $at, %hi(D_800A36D8)
     /* 14BF8 800243F8 D83623AC */  sw         $v1, %lo(D_800A36D8)($at)
     /* 14BFC 800243FC 0A80013C */  lui        $at, %hi(D_800A381C)
@@ -370,8 +370,8 @@ glabel fighter_Update
   .L80024460:
     /* 14C60 80024460 5401A397 */  lhu        $v1, 0x154($sp)
     /* 14C64 80024464 01000224 */  addiu      $v0, $zero, 0x1
-    /* 14C68 80024468 0A80013C */  lui        $at, %hi(D_800A376E)
-    /* 14C6C 8002446C 6E3722A4 */  sh         $v0, %lo(D_800A376E)($at)
+    /* 14C68 80024468 0A80013C */  lui        $at, %hi(g_fight_paired_move_start_pending)
+    /* 14C6C 8002446C 6E3722A4 */  sh         $v0, %lo(g_fight_paired_move_start_pending)($at)
     /* 14C70 80024470 0A80013C */  lui        $at, %hi(D_800A36D8)
     /* 14C74 80024474 D83625AC */  sw         $a1, %lo(D_800A36D8)($at)
     /* 14C78 80024478 0A80013C */  lui        $at, %hi(D_800A36CA)

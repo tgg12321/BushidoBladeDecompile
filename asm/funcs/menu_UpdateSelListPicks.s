@@ -30,8 +30,8 @@ glabel menu_UpdateSelListPicks
     /* 67148 80076948 80181000 */  sll        $v1, $s0, 2
     /* 6714C 8007694C D405828F */  lw         $v0, %gp_rel(g_sel_screen_work)($gp)
     /* 67150 80076950 40006624 */  addiu      $a2, $v1, 0x40
-    /* 67154 80076954 0A80073C */  lui        $a3, %hi(D_800A35D0)
-    /* 67158 80076958 D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
+    /* 67154 80076954 0A80073C */  lui        $a3, %hi(g_sel_offset_steps)
+    /* 67158 80076958 D035E724 */  addiu      $a3, $a3, %lo(g_sel_offset_steps)
     /* 6715C 8007695C 21386700 */  addu       $a3, $v1, $a3
     /* 67160 80076960 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 67164 80076964 21304600 */   addu      $a2, $v0, $a2

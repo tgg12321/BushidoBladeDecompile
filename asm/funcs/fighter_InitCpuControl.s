@@ -44,8 +44,8 @@ glabel fighter_InitCpuControl
     /* 459DC 800551DC 00000000 */   nop
   .L800551E0:
     /* 459E0 800551E0 6666033C */  lui        $v1, (0x66666667 >> 16)
-    /* 459E4 800551E4 0A80023C */  lui        $v0, %hi(D_800A3783)
-    /* 459E8 800551E8 83374290 */  lbu        $v0, %lo(D_800A3783)($v0)
+    /* 459E4 800551E4 0A80023C */  lui        $v0, %hi(g_fight_opponent_order_cursor)
+    /* 459E8 800551E8 83374290 */  lbu        $v0, %lo(g_fight_opponent_order_cursor)($v0)
     /* 459EC 800551EC 67666334 */  ori        $v1, $v1, (0x66666667 & 0xFFFF)
     /* 459F0 800551F0 FFFF4224 */  addiu      $v0, $v0, -0x1
     /* 459F4 800551F4 18004300 */  mult       $v0, $v1
@@ -66,8 +66,8 @@ glabel fighter_InitCpuControl
     /* 45A30 80055230 4C550108 */  j          .L80055530
     /* 45A34 80055234 380402A6 */   sh        $v0, 0x438($s0)
   .L80055238:
-    /* 45A38 80055238 0A80033C */  lui        $v1, %hi(D_800A3680)
-    /* 45A3C 8005523C 80366390 */  lbu        $v1, %lo(D_800A3680)($v1)
+    /* 45A38 80055238 0A80033C */  lui        $v1, %hi(g_fight_second_fighter_defeats_left)
+    /* 45A3C 8005523C 80366390 */  lbu        $v1, %lo(g_fight_second_fighter_defeats_left)($v1)
     /* 45A40 80055240 0A80023C */  lui        $v0, %hi(D_800A3671)
     /* 45A44 80055244 71364290 */  lbu        $v0, %lo(D_800A3671)($v0)
     /* 45A48 80055248 00000000 */  nop

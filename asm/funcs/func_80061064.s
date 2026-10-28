@@ -24,7 +24,7 @@ glabel func_80061064
     /* 518B4 800610B4 1C00022A */  slti       $v0, $s0, 0x1C
     /* 518B8 800610B8 F2FF4014 */  bnez       $v0, .L80061084
     /* 518BC 800610BC 00000000 */   nop
-    /* 518C0 800610C0 F001838F */  lw         $v1, %gp_rel(D_800A32BC)($gp)
+    /* 518C0 800610C0 F001838F */  lw         $v1, %gp_rel(g_eff_point_light_countdown)($gp)
     /* 518C4 800610C4 00000000 */  nop
     /* 518C8 800610C8 02006228 */  slti       $v0, $v1, 0x2
     /* 518CC 800610CC 0A004014 */  bnez       $v0, .L800610F8
@@ -33,7 +33,7 @@ glabel func_80061064
     /* 518D8 800610D8 40118424 */  addiu      $a0, $a0, %lo(g_eff_point_light_position)
     /* 518DC 800610DC 9803858F */  lw         $a1, %gp_rel(g_eff_point_light_color)($gp)
     /* 518E0 800610E0 FFFF6224 */  addiu      $v0, $v1, -0x1
-    /* 518E4 800610E4 F00182AF */  sw         $v0, %gp_rel(D_800A32BC)($gp)
+    /* 518E4 800610E4 F00182AF */  sw         $v0, %gp_rel(g_eff_point_light_countdown)($gp)
     /* 518E8 800610E8 8407010C */  jal        light_SetPointLight
     /* 518EC 800610EC 00000000 */   nop
     /* 518F0 800610F0 43840108 */  j          .L8006110C
@@ -43,7 +43,7 @@ glabel func_80061064
     /* 518FC 800610FC 00000000 */   nop
     /* 51900 80061100 6908010C */  jal        light_DisablePointLight
     /* 51904 80061104 00000000 */   nop
-    /* 51908 80061108 F00180AF */  sw         $zero, %gp_rel(D_800A32BC)($gp)
+    /* 51908 80061108 F00180AF */  sw         $zero, %gp_rel(g_eff_point_light_countdown)($gp)
   .L8006110C:
     /* 5190C 8006110C 0807838F */  lw         $v1, %gp_rel(g_eff_quad_cursor)($gp)
     /* 51910 80061110 5406828F */  lw         $v0, %gp_rel(g_eff_quad_buffer_base)($gp)

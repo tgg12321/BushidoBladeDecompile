@@ -32,7 +32,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 531D4 800629D4 4800A8AF */  sw         $t0, 0x48($sp)
   .L800629D8:
     /* 531D8 800629D8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 531DC 800629DC 9403838F */  lw         $v1, %gp_rel(D_800A3460)($gp)
+    /* 531DC 800629DC 9403838F */  lw         $v1, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
     /* 531E0 800629E0 0410E202 */  sllv       $v0, $v0, $s7
     /* 531E4 800629E4 24186200 */  and        $v1, $v1, $v0
     /* 531E8 800629E8 4F016010 */  beqz       $v1, .L80062F28
@@ -219,7 +219,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53498 80062C98 00000000 */  nop
     /* 5349C 80062C9C 00004394 */  lhu        $v1, 0x0($v0)
     /* 534A0 80062CA0 CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
-    /* 534A4 80062CA4 0804848F */  lw         $a0, %gp_rel(D_800A34D4)($gp)
+    /* 534A4 80062CA4 0804848F */  lw         $a0, %gp_rel(g_eff_top_left_uv)($gp)
     /* 534A8 80062CA8 00004294 */  lhu        $v0, 0x0($v0)
     /* 534AC 80062CAC 001A0300 */  sll        $v1, $v1, 8
     /* 534B0 80062CB0 21104300 */  addu       $v0, $v0, $v1
@@ -228,7 +228,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 534BC 80062CBC 00000000 */  nop
     /* 534C0 80062CC0 00004394 */  lhu        $v1, 0x0($v0)
     /* 534C4 80062CC4 D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
-    /* 534C8 80062CC8 0C04848F */  lw         $a0, %gp_rel(D_800A34D8)($gp)
+    /* 534C8 80062CC8 0C04848F */  lw         $a0, %gp_rel(g_eff_top_right_uv)($gp)
     /* 534CC 80062CCC 00004294 */  lhu        $v0, 0x0($v0)
     /* 534D0 80062CD0 001A0300 */  sll        $v1, $v1, 8
     /* 534D4 80062CD4 21104300 */  addu       $v0, $v0, $v1
@@ -237,7 +237,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 534E0 80062CE0 00000000 */  nop
     /* 534E4 80062CE4 00004394 */  lhu        $v1, 0x0($v0)
     /* 534E8 80062CE8 CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
-    /* 534EC 80062CEC 1004848F */  lw         $a0, %gp_rel(D_800A34DC)($gp)
+    /* 534EC 80062CEC 1004848F */  lw         $a0, %gp_rel(g_eff_bottom_left_uv)($gp)
     /* 534F0 80062CF0 00004294 */  lhu        $v0, 0x0($v0)
     /* 534F4 80062CF4 001A0300 */  sll        $v1, $v1, 8
     /* 534F8 80062CF8 21104300 */  addu       $v0, $v0, $v1
@@ -246,7 +246,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53504 80062D04 00000000 */  nop
     /* 53508 80062D08 00004394 */  lhu        $v1, 0x0($v0)
     /* 5350C 80062D0C D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
-    /* 53510 80062D10 1404848F */  lw         $a0, %gp_rel(D_800A34E0)($gp)
+    /* 53510 80062D10 1404848F */  lw         $a0, %gp_rel(g_eff_bottom_right_uv)($gp)
     /* 53514 80062D14 00004294 */  lhu        $v0, 0x0($v0)
     /* 53518 80062D18 001A0300 */  sll        $v1, $v1, 8
     /* 5351C 80062D1C 21104300 */  addu       $v0, $v0, $v1
@@ -255,26 +255,26 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53528 80062D28 E3FF02A2 */  sb         $v0, -0x1D($s0)
     /* 5352C 80062D2C 2E000224 */  addiu      $v0, $zero, 0x2E
     /* 53530 80062D30 E7FF02A2 */  sb         $v0, -0x19($s0)
-    /* 53534 80062D34 0804828F */  lw         $v0, %gp_rel(D_800A34D4)($gp)
+    /* 53534 80062D34 0804828F */  lw         $v0, %gp_rel(g_eff_top_left_uv)($gp)
     /* 53538 80062D38 C803838F */  lw         $v1, %gp_rel(g_eff_clut_word)($gp)
     /* 5353C 80062D3C 00004294 */  lhu        $v0, 0x0($v0)
     /* 53540 80062D40 0000638C */  lw         $v1, 0x0($v1)
     /* 53544 80062D44 00000000 */  nop
     /* 53548 80062D48 21104300 */  addu       $v0, $v0, $v1
     /* 5354C 80062D4C ECFF02AE */  sw         $v0, -0x14($s0)
-    /* 53550 80062D50 0C04828F */  lw         $v0, %gp_rel(D_800A34D8)($gp)
+    /* 53550 80062D50 0C04828F */  lw         $v0, %gp_rel(g_eff_top_right_uv)($gp)
     /* 53554 80062D54 C403838F */  lw         $v1, %gp_rel(g_eff_tpage_word)($gp)
     /* 53558 80062D58 00004294 */  lhu        $v0, 0x0($v0)
     /* 5355C 80062D5C 0000638C */  lw         $v1, 0x0($v1)
     /* 53560 80062D60 00000000 */  nop
     /* 53564 80062D64 21104300 */  addu       $v0, $v0, $v1
     /* 53568 80062D68 F4FF02AE */  sw         $v0, -0xC($s0)
-    /* 5356C 80062D6C 1004828F */  lw         $v0, %gp_rel(D_800A34DC)($gp)
+    /* 5356C 80062D6C 1004828F */  lw         $v0, %gp_rel(g_eff_bottom_left_uv)($gp)
     /* 53570 80062D70 00000000 */  nop
     /* 53574 80062D74 00004294 */  lhu        $v0, 0x0($v0)
     /* 53578 80062D78 00000000 */  nop
     /* 5357C 80062D7C FCFF02A6 */  sh         $v0, -0x4($s0)
-    /* 53580 80062D80 1404828F */  lw         $v0, %gp_rel(D_800A34E0)($gp)
+    /* 53580 80062D80 1404828F */  lw         $v0, %gp_rel(g_eff_bottom_right_uv)($gp)
     /* 53584 80062D84 00000000 */  nop
     /* 53588 80062D88 00004294 */  lhu        $v0, 0x0($v0)
     /* 5358C 80062D8C 21202002 */  addu       $a0, $s1, $zero
@@ -297,7 +297,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 535D0 80062DD0 08006226 */  addiu      $v0, $s3, 0x8
     /* 535D4 80062DD4 1800A2AF */  sw         $v0, 0x18($sp)
     /* 535D8 80062DD8 0C006226 */  addiu      $v0, $s3, 0xC
-    /* 535DC 80062DDC 0004838F */  lw         $v1, %gp_rel(D_800A34CC)($gp)
+    /* 535DC 80062DDC 0004838F */  lw         $v1, %gp_rel(g_eff_rtp_flag)($gp)
     /* 535E0 80062DE0 3800A88F */  lw         $t0, 0x38($sp)
     /* 535E4 80062DE4 18008724 */  addiu      $a3, $a0, 0x18
     /* 535E8 80062DE8 1000B3AF */  sw         $s3, 0x10($sp)
@@ -378,10 +378,10 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 5370C 80062F0C 06004014 */  bnez       $v0, .L80062F28
     /* 53710 80062F10 01000224 */   addiu     $v0, $zero, 0x1
     /* 53714 80062F14 0410E202 */  sllv       $v0, $v0, $s7
-    /* 53718 80062F18 9403838F */  lw         $v1, %gp_rel(D_800A3460)($gp)
+    /* 53718 80062F18 9403838F */  lw         $v1, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
     /* 5371C 80062F1C 27100200 */  nor        $v0, $zero, $v0
     /* 53720 80062F20 24186200 */  and        $v1, $v1, $v0
-    /* 53724 80062F24 940383AF */  sw         $v1, %gp_rel(D_800A3460)($gp)
+    /* 53724 80062F24 940383AF */  sw         $v1, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
   .L80062F28:
     /* 53728 80062F28 0200D626 */  addiu      $s6, $s6, 0x2
     /* 5372C 80062F2C 0C00DE27 */  addiu      $fp, $fp, 0xC
@@ -415,7 +415,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53794 80062F94 EE8B0108 */  j          .L80062FB8
     /* 53798 80062F98 01000224 */   addiu     $v0, $zero, 0x1
   .L80062F9C:
-    /* 5379C 80062F9C 9403828F */  lw         $v0, %gp_rel(D_800A3460)($gp)
+    /* 5379C 80062F9C 9403828F */  lw         $v0, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
     /* 537A0 80062FA0 00000000 */  nop
     /* 537A4 80062FA4 04004014 */  bnez       $v0, .L80062FB8
     /* 537A8 80062FA8 00000000 */   nop

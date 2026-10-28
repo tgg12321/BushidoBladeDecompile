@@ -44,13 +44,13 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39E1C 8004961C 3A00022A */  slti       $v0, $s0, 0x3A
     /* 39E20 80049620 F7FF4014 */  bnez       $v0, .L80049600
     /* 39E24 80049624 02006324 */   addiu     $v1, $v1, 0x2
-    /* 39E28 80049628 2003838F */  lw         $v1, %gp_rel(D_800A33EC)($gp)
+    /* 39E28 80049628 2003838F */  lw         $v1, %gp_rel(g_resource_entry_category)($gp)
     /* 39E2C 8004962C 00000000 */  nop
     /* 39E30 80049630 02006014 */  bnez       $v1, .L8004963C
     /* 39E34 80049634 08000424 */   addiu     $a0, $zero, 0x8
     /* 39E38 80049638 10000424 */  addiu      $a0, $zero, 0x10
   .L8004963C:
-    /* 39E3C 8004963C 1C038687 */  lh         $a2, %gp_rel(D_800A33E8)($gp)
+    /* 39E3C 8004963C 1C038687 */  lh         $a2, %gp_rel(g_resource_pair_selection)($gp)
     /* 39E40 80049640 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 39E44 80049644 0B00C214 */  bne        $a2, $v0, .L80049674
     /* 39E48 80049648 00000000 */   nop
@@ -94,7 +94,7 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39EC8 800496C8 00000000 */   nop
     /* 39ECC 800496CC 0818010C */  jal        resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs
     /* 39ED0 800496D0 00000000 */   nop
-    /* 39ED4 800496D4 2003848F */  lw         $a0, %gp_rel(D_800A33EC)($gp)
+    /* 39ED4 800496D4 2003848F */  lw         $a0, %gp_rel(g_resource_entry_category)($gp)
     /* 39ED8 800496D8 21280002 */  addu       $a1, $s0, $zero
     /* 39EDC 800496DC 0F80063C */  lui        $a2, %hi(g_resource_entry_request_state)
     /* 39EE0 800496E0 80F9C624 */  addiu      $a2, $a2, %lo(g_resource_entry_request_state)

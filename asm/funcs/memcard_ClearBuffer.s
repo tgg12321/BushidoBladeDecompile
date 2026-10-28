@@ -1,6 +1,6 @@
 glabel memcard_ClearBuffer
-    /* 28948 80038148 0F80043C */  lui        $a0, %hi(D_800F33D8)
-    /* 2894C 8003814C D8338424 */  addiu      $a0, $a0, %lo(D_800F33D8)
+    /* 28948 80038148 0F80043C */  lui        $a0, %hi(g_shared_buffer)
+    /* 2894C 8003814C D8338424 */  addiu      $a0, $a0, %lo(g_shared_buffer)
     /* 28950 80038150 21180000 */  addu       $v1, $zero, $zero
   .L80038154:
     /* 28954 80038154 000080A0 */  sb         $zero, 0x0($a0)

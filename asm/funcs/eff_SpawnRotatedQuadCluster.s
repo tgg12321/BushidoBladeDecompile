@@ -6,12 +6,12 @@ glabel eff_SpawnRotatedQuadCluster
     /* 5309C 8006289C 21280000 */  addu       $a1, $zero, $zero
     /* 530A0 800628A0 21180000 */  addu       $v1, $zero, $zero
     /* 530A4 800628A4 B003888F */  lw         $t0, %gp_rel(g_eff_command_position)($gp)
-    /* 530A8 800628A8 AC03898F */  lw         $t1, %gp_rel(D_800A3478)($gp)
+    /* 530A8 800628A8 AC03898F */  lw         $t1, %gp_rel(g_eff_command_vector)($gp)
     /* 530AC 800628AC 01000224 */  addiu      $v0, $zero, 0x1
     /* 530B0 800628B0 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x68)
     /* 530B4 800628B4 381122AC */  sw         $v0, %lo(g_eff_command_phase + 0x68)($at)
   .L800628B8:
-    /* 530B8 800628B8 9403878F */  lw         $a3, %gp_rel(D_800A3460)($gp)
+    /* 530B8 800628B8 9403878F */  lw         $a3, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
     /* 530BC 800628BC 04308B00 */  sllv       $a2, $t3, $a0
     /* 530C0 800628C0 2410E600 */  and        $v0, $a3, $a2
     /* 530C4 800628C4 1D004014 */  bnez       $v0, .L8006293C
@@ -38,7 +38,7 @@ glabel eff_SpawnRotatedQuadCluster
     /* 53118 80062918 A21022A4 */  sh         $v0, %lo(D_800F10A2)($at)
     /* 5311C 8006291C 04002395 */  lhu        $v1, 0x4($t1)
     /* 53120 80062920 2510E600 */  or         $v0, $a3, $a2
-    /* 53124 80062924 940382AF */  sw         $v0, %gp_rel(D_800A3460)($gp)
+    /* 53124 80062924 940382AF */  sw         $v0, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
     /* 53128 80062928 0F80013C */  lui        $at, %hi(D_800F10A4)
     /* 5312C 8006292C 21082500 */  addu       $at, $at, $a1
     /* 53130 80062930 A41023A4 */  sh         $v1, %lo(D_800F10A4)($at)

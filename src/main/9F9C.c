@@ -414,8 +414,8 @@ void math_StoreFloorDiv2000XZOfPointStepTowards(
 void camera_UpdateTwoFighterView(
     Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     Unk80101EC8Record *arg3);
-extern u8 D_800A30F0[];
-extern s32 D_800A30F4[];
+extern u8 g_camera_eye_blocked_flags[];
+extern s32 g_camera_pitch_search_steps[];
 typedef VECTOR CamVec;
 
 /* Scratchpad work area (0x1F800000) used by camera_UpdateTwoFighterView: the
@@ -448,9 +448,9 @@ typedef struct {
  * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero; then per
  * fighter bisects unk_10.vx (rot_x) so the segment from its collision_pos less
  * 0xC8 in vy to the eye passes collision_TestSegmentWithWork's camera-collision
- * test (step in D_800A30F4[], blocked flag in D_800A30F0[]), and eases
- * unk_10.vx toward the larger result, clamped to 0x80..0x1C0. GTE: gte_Lzc
- * (gte_ldlzc, gte_nop x2, gte_stlzc). */
+ * test (step in g_camera_pitch_search_steps[], blocked flag in
+ * g_camera_eye_blocked_flags[]), and eases unk_10.vx toward the larger result,
+ * clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
 void camera_UpdateTwoFighterView(
     Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     Unk80101EC8Record *arg3) {
@@ -588,18 +588,18 @@ void camera_UpdateTwoFighterView(
             scr->nrm[1] < -0x320) {
             math_StoreFloorDiv2000XZOfPointStepTowards(
                 var_2->h30[p], (s32 *)&scr->eye, scr->hit);
-            if (D_800A30F0[p]) {
-                D_800A30F4[p] += 0x20;
+            if (g_camera_eye_blocked_flags[p]) {
+                g_camera_pitch_search_steps[p] += 0x20;
             } else {
-                D_800A30F4[p] = 0x10;
+                g_camera_pitch_search_steps[p] = 0x10;
                 work--;
             }
-            if (D_800A30F4[p] < 0x10) {
-                D_800A30F4[p] = 0x10;
-            } else if (D_800A30F4[p] > 0x200) {
-                D_800A30F4[p] = 0x200;
+            if (g_camera_pitch_search_steps[p] < 0x10) {
+                g_camera_pitch_search_steps[p] = 0x10;
+            } else if (g_camera_pitch_search_steps[p] > 0x200) {
+                g_camera_pitch_search_steps[p] = 0x200;
             }
-            bound = work + D_800A30F4[p] / 8;
+            bound = work + g_camera_pitch_search_steps[p] / 8;
             for (i = 0; i < 2; i++) {
                 s32 d = (work - bound) & 0xFFF;
                 if (d >= 0x800) {
@@ -617,20 +617,20 @@ void camera_UpdateTwoFighterView(
                 }
             }
             work = bound;
-            D_800A30F0[p] = 1;
+            g_camera_eye_blocked_flags[p] = 1;
         } else {
-            if (D_800A30F0[p]) {
-                D_800A30F4[p] = 0x10;
+            if (g_camera_eye_blocked_flags[p]) {
+                g_camera_pitch_search_steps[p] = 0x10;
                 work++;
             } else {
-                D_800A30F4[p] += 0x10;
+                g_camera_pitch_search_steps[p] += 0x10;
             }
-            if (D_800A30F4[p] < 0x10) {
-                D_800A30F4[p] = 0x10;
-            } else if (D_800A30F4[p] > 0x100) {
-                D_800A30F4[p] = 0x100;
+            if (g_camera_pitch_search_steps[p] < 0x10) {
+                g_camera_pitch_search_steps[p] = 0x10;
+            } else if (g_camera_pitch_search_steps[p] > 0x100) {
+                g_camera_pitch_search_steps[p] = 0x100;
             }
-            bound = work - D_800A30F4[p] / 8;
+            bound = work - g_camera_pitch_search_steps[p] / 8;
             for (j = 0; j < 2; j++) {
                 s32 d = (work - bound) & 0xFFF;
                 if (d >= 0x800) {
@@ -649,7 +649,7 @@ void camera_UpdateTwoFighterView(
                     work = var_2->unk_10.vx;
                 }
             }
-            D_800A30F0[p] = 0;
+            g_camera_eye_blocked_flags[p] = 0;
         }
         if (p != 0) {
             var_15 = work;
@@ -1134,8 +1134,9 @@ void fighter_BuildCpuOrMappedPadState(s32 arg0, PadState *arg1) {
     arg1->released = buf[2];
     arg1->unheld = buf[3];
     if (g_fight_mode_selector == 5 &&
-        (D_800A381E != 0 || D_800A3816 != 0 || D_800A37E1 != 0 ||
-         D_800A38B8 != 0 || g_fight_point_award_phase_timer != 0 ||
+        (g_fight_time_up_phase_timer != 0 || g_fight_reinit_phase_timer != 0 ||
+         D_800A37E1 != 0 || g_fight_mark_tally_phase_timer != 0 ||
+         g_fight_point_award_phase_timer != 0 ||
          g_fight_match_result_timer != 0)) {
         pad_ClearStateBits(arg1);
     }
@@ -1273,7 +1274,7 @@ void fight_QueuePositionalSoundWithRandomAlternate(void) {
     if (D_800A3712 != 0)
         return;
     a0 = 0x56;
-    if (D_800A3680 != D_800A3671) {
+    if (g_fight_second_fighter_defeats_left != D_800A3671) {
         if (rand() & 1) {
             a0 = 0x57;
         } else {
@@ -1305,8 +1306,8 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
     case 0:
         if (D_80101EC8[0].is_defeated != 0)
             break;
-        if (D_800A3680 != 0) {
-            if (--D_800A3680 == 0) {
+        if (g_fight_second_fighter_defeats_left != 0) {
+            if (--g_fight_second_fighter_defeats_left == 0) {
                 snd_StopAllVoices();
                 if (D_800A37C6 != 0) {
                     D_800A37C6 = 0;
@@ -1314,7 +1315,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
                 }
                 if (D_800A3894 != 0) {
                     fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6);
-                    if (D_800A3836 != 0xFF) {
+                    if (g_fight_saved_first_fighter_selection != 0xFF) {
                         func_8003B534(2);
                     } else {
                         func_8003B534(5);
@@ -1337,7 +1338,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             break;
         if (fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags() == 0)
             goto end;
-        D_800A390D = 1;
+        g_main_present_skip_frames = 1;
         gpu_ResetGraphMode1();
         slot_LoadObjectBuildNodesSoftbodyAndFogLevels(1, D_800A38DE, 0);
         prev = g_fight_start_position_pair_index;
@@ -1458,9 +1459,10 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
     Unk8001CD68Rec buf;
 
     if (g_fight_mode_selector == 1) {
-        g_prim_buf_cursor += gpu_DrawDecrementedSingleSideCounter(
-                                 D_800A3783, (s32)g_prim_buf_cursor, 1) /
-                             4;
+        g_prim_buf_cursor +=
+            gpu_DrawDecrementedSingleSideCounter(
+                g_fight_opponent_order_cursor, (s32)g_prim_buf_cursor, 1) /
+            4;
     } else if (g_fight_mode_selector == 3) {
         if (D_80101EC8[0].is_defeated == 0 &&
             (D_80101EC8[1].is_defeated == 0 ||
@@ -1487,20 +1489,20 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
          * then the match clock's frames left for the on-screen timer. */
         s32 temp;
 
-        if (D_800A381E != 0) {
-            if (D_800A381E == 0x2D) {
+        if (g_fight_time_up_phase_timer != 0) {
+            if (g_fight_time_up_phase_timer == 0x2D) {
                 snd_QueueSound(0xA3, 0x7F, 0x7F);
             }
-            if (++D_800A381E == 0x50) {
-                D_800A381E = 0;
+            if (++g_fight_time_up_phase_timer == 0x50) {
+                g_fight_time_up_phase_timer = 0;
                 fight_RecordMatchResult();
                 g_fight_match_result_timer = 1;
             }
-        } else if (D_800A3816 != 0) {
-            if (++D_800A3816 == 0x46) {
+        } else if (g_fight_reinit_phase_timer != 0) {
+            if (++g_fight_reinit_phase_timer == 0x46) {
                 snd_QueueSound(0x9D, 0x7F, 0x7F);
-            } else if (D_800A3816 == 0x82) {
-                D_800A3816 = 0;
+            } else if (g_fight_reinit_phase_timer == 0x82) {
+                g_fight_reinit_phase_timer = 0;
                 g_fight_reinit_reuses_assets = 1;
                 g_main_loop_handler_index = 0;
             }
@@ -1513,15 +1515,15 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 if (g_fight_result_subject_index != 2) {
                     snd_QueueSound(0xA0, 0x7F, 0x7F);
                     D_800A38AA[g_fight_result_subject_index]++;
-                    D_800A38B8 = 1;
+                    g_fight_mark_tally_phase_timer = 1;
                 } else {
                     g_fight_reinit_reuses_assets = 1;
                     g_main_loop_handler_index = 0;
                 }
             }
-        } else if (D_800A38B8 != 0) {
-            if (++D_800A38B8 == 0x3C) {
-                D_800A38B8 = 0;
+        } else if (g_fight_mark_tally_phase_timer != 0) {
+            if (++g_fight_mark_tally_phase_timer == 0x3C) {
+                g_fight_mark_tally_phase_timer = 0;
                 if (D_800A38AA[g_fight_result_subject_index] == 2) {
                     D_800A3898[g_fight_result_subject_index == 0]++;
                     D_800A38AA[g_fight_result_subject_index] = 0;
@@ -1553,8 +1555,8 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                     g_main_loop_handler_index = 0;
                 }
             }
-        } else if (D_800A391E != 0) {
-            if (--D_800A391E == 0) {
+        } else if (g_fight_sound_cue_countdown != 0) {
+            if (--g_fight_sound_cue_countdown == 0) {
                 snd_QueueSound(0x9C, 0x7F, 0x7F);
             }
         } else if (g_fight_match_result_timer != 0) {
@@ -1585,7 +1587,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             }
         } else if (
             D_80101EC8[0].is_defeated != 0 && D_80101EC8[1].is_defeated != 0) {
-            D_800A3816 = 1;
+            g_fight_reinit_phase_timer = 1;
         } else if (D_80101EC8[1].is_defeated != 0) {
             g_fight_result_subject_index = 1;
             g_fight_point_award_phase_timer = 1;
@@ -1596,7 +1598,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             D_800A3898[g_fight_result_subject_index ^ 1]++;
         } else if ((u16)D_80101EC8->move_kind == 6 ||
                    (u16)D_80101EC8[1].move_kind == 6) {
-            D_800A3816 = 0x3C;
+            g_fight_reinit_phase_timer = 0x3C;
         } else if (D_80101EC8[0].collision_hit_tag == 2) {
             u16 id;
 
@@ -1625,7 +1627,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             D_800A38F4++;
             if (D_800A38F4 >= D_800A36CC * 30) {
                 snd_QueueSound(0x9E, 0x7F, 0x7F);
-                D_800A381E = 1;
+                g_fight_time_up_phase_timer = 1;
             }
         }
         if (D_800A36CC != 0) {
@@ -1782,12 +1784,13 @@ void fight_WaitForCounterThenClearAndEnableDisplay(void) {
         return;
     }
     comb_BeginWait();
-    if (!(D_800A38F8 > g_fight_stage_command_count)) {
+    if (!(g_fight_stage_list_draw_cursor > g_fight_stage_command_count)) {
         do {
             comb_ExchangeEmptyPad();
             gpu_DrawDisplayModeOnLocalOtAndSync();
             VSync(2);
-        } while (!(D_800A38F8 > g_fight_stage_command_count));
+        } while (
+            !(g_fight_stage_list_draw_cursor > g_fight_stage_command_count));
         i = 0;
         do {
             comb_ExchangeEmptyPad();
@@ -1908,7 +1911,7 @@ void fight_Init(void) {
             g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[1]],
             (s8)g_fight_config.unk_4[3]);
     } else if (g_fight_mode_selector == 5) {
-        D_800A391E = 1;
+        g_fight_sound_cue_countdown = 1;
     }
     motion_InitStreams();
     fighter_AssignMotionSlotAndScanDataIdNibbles(0);
@@ -1971,7 +1974,7 @@ void fight_Init(void) {
     eff_StopCommands();
     fight_WaitForCounterThenClearAndEnableDisplay();
     g_local_ot_draw_mode = DISP_DISABLED;
-    D_800A36A8 = 0;
+    g_gpu_jitter_burst_enabled = 0;
     eff_Init();
     g_fight_reinit_reuses_assets = 0;
     g_main_loop_handler_index = 1;
@@ -2228,7 +2231,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
         return;
     if (g_fight_choice_menu_cursor == 0) {
         g_fight_reinit_reuses_assets = 1;
-        D_800A380C = D_800A380C + 1;
+        g_fight_menu_restart_count = g_fight_menu_restart_count + 1;
         D_800A38DF = fight_FindNearestStartPair(
             &D_80101EC8[g_fight_followup_fighter_index].world_pos);
         if (D_80101EC8[1].cpu_controlled != 0) {
@@ -2714,8 +2717,8 @@ void fight_UpdatePairedMoves(void) {
     u16 kind;
     s32 pos[3];
 
-    if (D_800A376E != 0) {
-        D_800A376E = 0;
+    if (g_fight_paired_move_start_pending != 0) {
+        g_fight_paired_move_start_pending = 0;
         D_800A38E8 = 0xFF;
         if (D_80101EC8[0].is_defeated != 0) {
             return;
@@ -2735,8 +2738,8 @@ void fight_UpdatePairedMoves(void) {
         D_80101EC8[0].move_started = 2;
         return;
     }
-    if (D_800A3758 != 0xFF) {
-        rec = &D_80101EC8[D_800A3758];
+    if (g_fight_missing_support_fighter_index != 0xFF) {
+        rec = &D_80101EC8[g_fight_missing_support_fighter_index];
         if (D_800A3769 != 0) {
             rec->pending_move_event = 1;
             rec->unk_94 = 0;
@@ -2754,7 +2757,7 @@ void fight_UpdatePairedMoves(void) {
         if (rec->other->is_defeated != 0) {
             rec->other->pending_move_event += 2;
         }
-        D_800A3758 = 0xFF;
+        g_fight_missing_support_fighter_index = 0xFF;
         return;
     }
     if (D_80101EC8[0].pending_move_event != -1) {
@@ -2793,8 +2796,8 @@ void fight_UpdatePairedMoves(void) {
             continue;
         }
         g_fight_paired_move_initiator = i;
-        D_800A376E = 0;
-        D_800A3758 = 0xFF;
+        g_fight_paired_move_start_pending = 0;
+        g_fight_missing_support_fighter_index = 0xFF;
         D_800A371C = data[2] * 20;
         D_800A38E8 = data[3] & 0x7F;
         var_3 = motion_ResolveMoveData(rec, ent->id, &rec->move_is_common);
@@ -2960,7 +2963,7 @@ void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
 
 void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
     BoneHitRec *src = D_8008D59C;
-    BoneHitRec *dst = D_800F5F68[arg0];
+    BoneHitRec *dst = g_fighter_bone_hit_records[arg0];
     s32 i;
 
     for (i = 0; i < 22; i++, src++, dst++) {
@@ -3002,7 +3005,7 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
     s32 i;
 
     var_1 = node_GetSlotMatrixPointerArray(rec->index);
-    var_5 = D_800F5F68[rec->index];
+    var_5 = g_fighter_bone_hit_records[rec->index];
     o = arg1;
     for (i = 0; i < 22; i++, var_5++, o++) {
         m = var_1[var_5->bone];
@@ -3724,8 +3727,8 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 var_5;
 
     p = &D_80101EC8[idx];
-    D_800A3758 = 0xFF;
-    D_800A376E = 0;
+    g_fight_missing_support_fighter_index = 0xFF;
+    g_fight_paired_move_start_pending = 0;
     p->update_count = 0;
     p->other = (idx != 0) ? &D_80101EC8[0] : &D_80101EC8[1];
     p->index = idx;
@@ -3750,9 +3753,10 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     }
 
     if (idx == 1 && g_fight_mode_selector == 3) {
-        p->size_scale = D_80094C68[D_800A38DE];
+        p->size_scale = g_object_scale_factors[D_800A38DE];
     } else {
-        p->size_scale = D_80094C68[D_8008D578[p->character_roster_index]];
+        p->size_scale =
+            g_object_scale_factors[D_8008D578[p->character_roster_index]];
     }
     p->base_move_frame_step = D_8008DE34[p->character_data_index][p->weapon_id];
     p->unk_1E = D_8008DF78[p->character_data_index][p->weapon_id];
@@ -3872,8 +3876,8 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     }
     p->unk_1D0 = p->orientation;
     fighter_ScaleBoneHitRecords(idx, p->size_scale);
-    if (g_fight_mode_selector != 0 || idx != 0 || D_800A3907 < 2 ||
-        g_fight_reinit_reuses_assets != 0) {
+    if (g_fight_mode_selector != 0 || idx != 0 ||
+        g_fight_stage_start_count < 2 || g_fight_reinit_reuses_assets != 0) {
         fighter_ResetBoneGroupHitState(p);
     }
     p->unk_274 = D_8008E3C0[p->character_data_index];
@@ -4326,7 +4330,7 @@ void fighter_HandleMissingSupportWhileDescending(Unk80101EC8Record *arg0) {
         arg0->saved_collision_y = arg0->collision_pos.vy;
     } else if (kind == 0x11) {
         D_800A3769 = s1 < 0x400;
-        D_800A3758 = arg0->index;
+        g_fight_missing_support_fighter_index = arg0->index;
     } else {
         if (s1 < 0x400) {
             arg0->pending_move_event = 0x12;
@@ -4602,7 +4606,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     if (rec->queued_move != NULL) {
         if (rec->cur_move->last_command_frame < rec->move_frame) {
             if (rec->move_kind == 0x11) {
-                D_800A376E = 1;
+                g_fight_paired_move_start_pending = 1;
                 D_800A36D8 = rec->queued_move;
                 D_800A381C = rec->queued_move_is_common;
                 D_800A36CA = rec->unk_82;
@@ -4665,7 +4669,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
                         rec->borrow_other_motion = 0;
                         rec->queued_move_is_common = var_5;
                     } else if (rec->move_kind == 0x11) {
-                        D_800A376E = 1;
+                        g_fight_paired_move_start_pending = 1;
                         D_800A36D8 = move;
                         D_800A36CA = var_7;
                         D_800A381C = var_5;
@@ -5373,7 +5377,7 @@ const u32 D_80010428[1] = {0x00000000};
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A30EC = 0;
-u8 D_800A30F0[4] = {0, 0, 0, 0};
-s32 D_800A30F4[2] = {0, 0};
+u8 g_camera_eye_blocked_flags[4] = {0, 0, 0, 0};
+s32 g_camera_pitch_search_steps[2] = {0, 0};
 s8 D_800A30FC = -1;
 s8 D_800A30FD = -1;

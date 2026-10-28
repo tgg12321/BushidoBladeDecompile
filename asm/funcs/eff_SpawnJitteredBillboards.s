@@ -14,7 +14,7 @@ glabel eff_SpawnJitteredBillboards
     /* 54DDC 800645DC 21806402 */  addu       $s0, $s3, $a0
   .L800645E0:
     /* 54DE0 800645E0 01000324 */  addiu      $v1, $zero, 0x1
-    /* 54DE4 800645E4 7803828F */  lw         $v0, %gp_rel(D_800A3444)($gp)
+    /* 54DE4 800645E4 7803828F */  lw         $v0, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
     /* 54DE8 800645E8 04900302 */  sllv       $s2, $v1, $s0
     /* 54DEC 800645EC 24105200 */  and        $v0, $v0, $s2
     /* 54DF0 800645F0 2E004014 */  bnez       $v0, .L800646AC
@@ -55,13 +55,13 @@ glabel eff_SpawnJitteredBillboards
     /* 54E7C 8006467C 800D23AC */  sw         $v1, %lo(videoDec)($at)
     /* 54E80 80064680 55E4010C */  jal        rand
     /* 54E84 80064684 00000000 */   nop
-    /* 54E88 80064688 7803838F */  lw         $v1, %gp_rel(D_800A3444)($gp)
+    /* 54E88 80064688 7803838F */  lw         $v1, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
     /* 54E8C 8006468C 07004230 */  andi       $v0, $v0, 0x7
-    /* 54E90 80064690 0F80013C */  lui        $at, %hi(D_800F0BCC)
+    /* 54E90 80064690 0F80013C */  lui        $at, %hi(g_eff_jittered_billboard_ages)
     /* 54E94 80064694 21083100 */  addu       $at, $at, $s1
-    /* 54E98 80064698 CC0B22A4 */  sh         $v0, %lo(D_800F0BCC)($at)
+    /* 54E98 80064698 CC0B22A4 */  sh         $v0, %lo(g_eff_jittered_billboard_ages)($at)
     /* 54E9C 8006469C 25187200 */  or         $v1, $v1, $s2
-    /* 54EA0 800646A0 780383AF */  sw         $v1, %gp_rel(D_800A3444)($gp)
+    /* 54EA0 800646A0 780383AF */  sw         $v1, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
     /* 54EA4 800646A4 B0910108 */  j          .L800646C0
     /* 54EA8 800646A8 0F00622A */   slti      $v0, $s3, 0xF
   .L800646AC:

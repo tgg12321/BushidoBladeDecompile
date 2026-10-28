@@ -187,8 +187,8 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2DA3C 8003D23C 00000000 */  nop
     /* 2DA40 8003D240 12004014 */  bnez       $v0, .L8003D28C
     /* 2DA44 8003D244 18000224 */   addiu     $v0, $zero, 0x18
-    /* 2DA48 8003D248 0A80033C */  lui        $v1, %hi(D_800A3836)
-    /* 2DA4C 8003D24C 36386390 */  lbu        $v1, %lo(D_800A3836)($v1)
+    /* 2DA48 8003D248 0A80033C */  lui        $v1, %hi(g_fight_saved_first_fighter_selection)
+    /* 2DA4C 8003D24C 36386390 */  lbu        $v1, %lo(g_fight_saved_first_fighter_selection)($v1)
     /* 2DA50 8003D250 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2DA54 8003D254 0D006210 */  beq        $v1, $v0, .L8003D28C
     /* 2DA58 8003D258 18000224 */   addiu     $v0, $zero, 0x18

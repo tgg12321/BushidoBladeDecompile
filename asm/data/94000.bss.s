@@ -22,9 +22,9 @@ dlabel D_800A3808
 enddlabel D_800A3808
 
 /* 800A380C */
-dlabel D_800A380C
+dlabel g_fight_menu_restart_count
     .space 0x4
-enddlabel D_800A380C
+enddlabel g_fight_menu_restart_count
 
 /* 800A3810 */
 dlabel g_comb_event_error
@@ -32,14 +32,14 @@ dlabel g_comb_event_error
 enddlabel g_comb_event_error
 
 /* 800A3814 */
-dlabel D_800A3814
+dlabel g_memcard_request_retry_count
     .space 0x2
-enddlabel D_800A3814
+enddlabel g_memcard_request_retry_count
 
 /* 800A3816 */
-dlabel D_800A3816
+dlabel g_fight_reinit_phase_timer
     .space 0x1
-enddlabel D_800A3816
+enddlabel g_fight_reinit_phase_timer
 
 /* 800A3817 */
 dlabel g_fight_choice_menu_cursor
@@ -57,9 +57,9 @@ dlabel D_800A381C
 enddlabel D_800A381C
 
 /* 800A381E */
-dlabel D_800A381E
+dlabel g_fight_time_up_phase_timer
     .space 0x2
-enddlabel D_800A381E
+enddlabel g_fight_time_up_phase_timer
 
 /* 800A3820 */
 dlabel g_draw_queue_cursor
@@ -67,9 +67,9 @@ dlabel g_draw_queue_cursor
 enddlabel g_draw_queue_cursor
 
 /* 800A3824 */
-dlabel D_800A3824
+dlabel g_fight_weapon_contact_result
     .space 0x4
-enddlabel D_800A3824
+enddlabel g_fight_weapon_contact_result
 
 /* 800A3828 */
 dlabel D_800A3828
@@ -82,9 +82,9 @@ dlabel D_800A382C
 enddlabel D_800A382C
 
 /* 800A382D */
-dlabel D_800A382D
+dlabel g_fight_tally_winner_index
     .space 0x1
-enddlabel D_800A382D
+enddlabel g_fight_tally_winner_index
 
 /* 800A382E */
 dlabel D_800A382E
@@ -102,9 +102,9 @@ dlabel g_main_loop_handler_index
 enddlabel g_main_loop_handler_index
 
 /* 800A3836 */
-dlabel D_800A3836
+dlabel g_fight_saved_first_fighter_selection
     .space 0x2
-enddlabel D_800A3836
+enddlabel g_fight_saved_first_fighter_selection
 
 /* 800A3838 */
 dlabel g_memcard_hw_event_ioe
@@ -289,9 +289,9 @@ dlabel g_prim_buf_cursor
 enddlabel g_prim_buf_cursor
 
 /* 800A38B8 */
-dlabel D_800A38B8
+dlabel g_fight_mark_tally_phase_timer
     .space 0x2
-enddlabel D_800A38B8
+enddlabel g_fight_mark_tally_phase_timer
 
 /* 800A38BA */
 dlabel g_fight_tracked_view_setting
@@ -414,9 +414,9 @@ dlabel D_800A38F4
 enddlabel D_800A38F4
 
 /* 800A38F8 */
-dlabel D_800A38F8
+dlabel g_fight_stage_list_draw_cursor
     .space 0x4
-enddlabel D_800A38F8
+enddlabel g_fight_stage_list_draw_cursor
 
 /* 800A38FC */
 dlabel D_800A38FC
@@ -439,9 +439,9 @@ dlabel D_800A3906
 enddlabel D_800A3906
 
 /* 800A3907 */
-dlabel D_800A3907
+dlabel g_fight_stage_start_count
     .space 0x1
-enddlabel D_800A3907
+enddlabel g_fight_stage_start_count
 
 /* 800A3908 */
 dlabel D_800A3908
@@ -454,9 +454,9 @@ dlabel D_800A390C
 enddlabel D_800A390C
 
 /* 800A390D */
-dlabel D_800A390D
+dlabel g_main_present_skip_frames
     .space 0x1
-enddlabel D_800A390D
+enddlabel g_main_present_skip_frames
 
 /* 800A390E */
 dlabel D_800A390E
@@ -469,9 +469,9 @@ dlabel D_800A390F
 enddlabel D_800A390F
 
 /* 800A3910 */
-dlabel D_800A3910
+dlabel g_fight_midpoint_effect_delay
     .space 0x2
-enddlabel D_800A3910
+enddlabel g_fight_midpoint_effect_delay
 
 /* 800A3912 */
 dlabel D_800A3912
@@ -504,9 +504,9 @@ dlabel g_snd_sequence_ticks
 enddlabel g_snd_sequence_ticks
 
 /* 800A391E */
-dlabel D_800A391E
+dlabel g_fight_sound_cue_countdown
     .space 0x1
-enddlabel D_800A391E
+enddlabel g_fight_sound_cue_countdown
 
 /* 800A391F */
 dlabel D_800A391F
@@ -864,9 +864,9 @@ dlabel D_800EF558
 enddlabel D_800EF558
 
 /* 800EF59C */
-dlabel D_800EF59C
+dlabel g_wave_vertex_grid
     .space 0x220
-enddlabel D_800EF59C
+enddlabel g_wave_vertex_grid
 
 /* 800EF7BC */
 dlabel D_800EF7BC
@@ -919,9 +919,9 @@ dlabel D_800EFA00
 enddlabel D_800EFA00
 
 /* 800EFAE8 */
-dlabel D_800EFAE8
+dlabel g_motion_playback_record
     .space 0x24
-enddlabel D_800EFAE8
+enddlabel g_motion_playback_record
 
 /* 800EFB0C */
 dlabel D_800EFB0C
@@ -994,9 +994,9 @@ dlabel D_800EFC8A
 enddlabel D_800EFC8A
 
 /* 800F0B78 */
-dlabel D_800F0B78
+dlabel g_eff_particle_emitter_vectors
     .space 0x4
-enddlabel D_800F0B78
+enddlabel g_eff_particle_emitter_vectors
 
 /* 800F0B7C */
 dlabel D_800F0B7C
@@ -1019,9 +1019,9 @@ dlabel g_eff_animated_quad_counters
 enddlabel g_eff_animated_quad_counters
 
 /* 800F0BCC */
-dlabel D_800F0BCC
+dlabel g_eff_jittered_billboard_ages
     .space 0x20
-enddlabel D_800F0BCC
+enddlabel g_eff_jittered_billboard_ages
 
 /* 800F0BEC */
 dlabel g_eff_billboard_pair_ages
@@ -1034,9 +1034,9 @@ dlabel D_800F0C04
 enddlabel D_800F0C04
 
 /* 800F0C10 */
-dlabel D_800F0C10
+dlabel g_eff_particle_group_positions
     .space 0x4
-enddlabel D_800F0C10
+enddlabel g_eff_particle_group_positions
 
 /* 800F0C14 */
 dlabel D_800F0C14
@@ -1079,9 +1079,9 @@ dlabel D_800F0E40
 enddlabel D_800F0E40
 
 /* 800F0EC8 */
-dlabel D_800F0EC8
+dlabel g_eff_yawed_quad_slot_positions
     .space 0x4
-enddlabel D_800F0EC8
+enddlabel g_eff_yawed_quad_slot_positions
 
 /* 800F0ECC */
 dlabel D_800F0ECC
@@ -1109,9 +1109,9 @@ dlabel D_800F0FC0
 enddlabel D_800F0FC0
 
 /* 800F1000 */
-dlabel D_800F1000
+dlabel g_eff_yawed_quad_slot_rotations
     .space 0x2
-enddlabel D_800F1000
+enddlabel g_eff_yawed_quad_slot_rotations
 
 /* 800F1002 */
 dlabel D_800F1002
@@ -1401,9 +1401,9 @@ dlabel D_800F3340
 enddlabel D_800F3340
 
 /* 800F33D8 */
-dlabel D_800F33D8
+dlabel g_shared_buffer
     .space 0x100
-enddlabel D_800F33D8
+enddlabel g_shared_buffer
 
 /* 800F34D8 */
 dlabel D_800F34D8
@@ -1511,9 +1511,9 @@ dlabel g_gpu_ot256_db
 enddlabel g_gpu_ot256_db
 
 /* 800F5F68 */
-dlabel D_800F5F68
+dlabel g_fighter_bone_hit_records
     .space 0x4
-enddlabel D_800F5F68
+enddlabel g_fighter_bone_hit_records
 
 /* 800F5F6C */
 dlabel D_800F5F6C
@@ -1733,9 +1733,9 @@ dlabel g_gpu_db
 enddlabel g_gpu_db
 
 /* 800FF558 */
-dlabel D_800FF558
+dlabel g_node_slot_relative_matrix
     .space 0x20
-enddlabel D_800FF558
+enddlabel g_node_slot_relative_matrix
 
 /* 800FF578 */
 dlabel _svm_stereo_mono

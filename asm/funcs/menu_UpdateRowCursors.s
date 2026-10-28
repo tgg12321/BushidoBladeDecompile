@@ -378,7 +378,7 @@ glabel menu_UpdateRowCursors
     /* 61CF8 800714F8 990496A3 */  sb         $s6, %gp_rel(D_800A3565)($gp)
     /* 61CFC 800714FC 960496A3 */  sb         $s6, %gp_rel(D_800A3562)($gp)
     /* 61D00 80071500 AC0482A7 */  sh         $v0, %gp_rel(g_entry_menu_slide_phase)($gp)
-    /* 61D04 80071504 B80480A7 */  sh         $zero, %gp_rel(D_800A3584)($gp)
+    /* 61D04 80071504 B80480A7 */  sh         $zero, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 61D08 80071508 9471010C */  jal        snd_QueueSound
     /* 61D0C 8007150C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 61D10 80071510 88048287 */  lh         $v0, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
@@ -414,7 +414,7 @@ glabel menu_UpdateRowCursors
     /* 61D80 80071580 9471010C */  jal        snd_QueueSound
     /* 61D84 80071584 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 61D88 80071588 0F000224 */  addiu      $v0, $zero, 0xF
-    /* 61D8C 8007158C FC0482A7 */  sh         $v0, %gp_rel(D_800A35C8)($gp)
+    /* 61D8C 8007158C FC0482A7 */  sh         $v0, %gp_rel(g_entry_menu_selection_offset_countdowns)($gp)
     /* 61D90 80071590 14000224 */  addiu      $v0, $zero, 0x14
     /* 61D94 80071594 FE0482A7 */  sh         $v0, %gp_rel(D_800A35CA)($gp)
     /* 61D98 80071598 0A80013C */  lui        $at, %hi(g_entry_menu_slot_records + 0x2)
@@ -651,7 +651,7 @@ glabel menu_UpdateRowCursors
     /* 62104 80071904 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 62108 80071908 8C048287 */  lh         $v0, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
     /* 6210C 8007190C 01000924 */  addiu      $t1, $zero, 0x1
-    /* 62110 80071910 B80480A7 */  sh         $zero, %gp_rel(D_800A3584)($gp)
+    /* 62110 80071910 B80480A7 */  sh         $zero, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 62114 80071914 990496A3 */  sb         $s6, %gp_rel(D_800A3565)($gp)
     /* 62118 80071918 960496A3 */  sb         $s6, %gp_rel(D_800A3562)($gp)
     /* 6211C 8007191C 05004914 */  bne        $v0, $t1, .L80071934
@@ -845,9 +845,9 @@ glabel menu_UpdateRowCursors
     /* 623D0 80071BD0 01010224 */   addiu     $v0, $zero, 0x101
     /* 623D4 80071BD4 AC0482A7 */  sh         $v0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 623D8 80071BD8 02000224 */  addiu      $v0, $zero, 0x2
-    /* 623DC 80071BDC B80482A7 */  sh         $v0, %gp_rel(D_800A3584)($gp)
+    /* 623DC 80071BDC B80482A7 */  sh         $v0, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 623E0 80071BE0 01000224 */  addiu      $v0, $zero, 0x1
-    /* 623E4 80071BE4 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
+    /* 623E4 80071BE4 840482A7 */  sh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 623E8 80071BE8 900480A7 */  sh         $zero, %gp_rel(D_800A355C)($gp)
   .L80071BEC:
     /* 623EC 80071BEC 6C00BF8F */  lw         $ra, 0x6C($sp)

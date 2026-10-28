@@ -49,8 +49,8 @@ glabel menu_InitSelScreen
     /* 67970 80077170 0C0040A4 */  sh         $zero, 0xC($v0)
     /* 67974 80077174 140040A4 */  sh         $zero, 0x14($v0)
     /* 67978 80077178 3C0040A4 */  sh         $zero, 0x3C($v0)
-    /* 6797C 8007717C 0A80023C */  lui        $v0, %hi(D_800A35D0)
-    /* 67980 80077180 D0354224 */  addiu      $v0, $v0, %lo(D_800A35D0)
+    /* 6797C 8007717C 0A80023C */  lui        $v0, %hi(g_sel_offset_steps)
+    /* 67980 80077180 D0354224 */  addiu      $v0, $v0, %lo(g_sel_offset_steps)
     /* 67984 80077184 21106200 */  addu       $v0, $v1, $v0
     /* 67988 80077188 020040A4 */  sh         $zero, 0x2($v0)
     /* 6798C 8007718C 000040A4 */  sh         $zero, 0x0($v0)

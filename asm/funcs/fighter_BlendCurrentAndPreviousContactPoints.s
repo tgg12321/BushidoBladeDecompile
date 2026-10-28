@@ -1,7 +1,7 @@
 glabel fighter_BlendCurrentAndPreviousContactPoints
     /* 1CA2C 8002C22C 801F083C */  lui        $t0, (0x1F8002B8 >> 16)
-    /* 1CA30 8002C230 0A80023C */  lui        $v0, %hi(D_800A3824)
-    /* 1CA34 8002C234 24384294 */  lhu        $v0, %lo(D_800A3824)($v0)
+    /* 1CA30 8002C230 0A80023C */  lui        $v0, %hi(g_fight_weapon_contact_result)
+    /* 1CA34 8002C234 24384294 */  lhu        $v0, %lo(g_fight_weapon_contact_result)($v0)
     /* 1CA38 8002C238 1080093C */  lui        $t1, %hi(D_80101EC8 + 0x44C)
     /* 1CA3C 8002C23C 14232925 */  addiu      $t1, $t1, %lo(D_80101EC8 + 0x44C)
     /* 1CA40 8002C240 801F013C */  lui        $at, (0x1F800360 >> 16)
@@ -119,8 +119,8 @@ glabel fighter_BlendCurrentAndPreviousContactPoints
     /* 1CBF8 8002C3F8 740323AC */  sw         $v1, (0x1F800374 & 0xFFFF)($at)
     /* 1CBFC 8002C3FC 801F013C */  lui        $at, (0x1F800378 >> 16)
     /* 1CC00 8002C400 780324AC */  sw         $a0, (0x1F800378 & 0xFFFF)($at)
-    /* 1CC04 8002C404 0A80023C */  lui        $v0, %hi(D_800A3824)
-    /* 1CC08 8002C408 24384294 */  lhu        $v0, %lo(D_800A3824)($v0)
+    /* 1CC04 8002C404 0A80023C */  lui        $v0, %hi(g_fight_weapon_contact_result)
+    /* 1CC08 8002C408 24384294 */  lhu        $v0, %lo(g_fight_weapon_contact_result)($v0)
     /* 1CC0C 8002C40C 00000000 */  nop
     /* 1CC10 8002C410 02004230 */  andi       $v0, $v0, 0x2
     /* 1CC14 8002C414 35004010 */  beqz       $v0, .L8002C4EC

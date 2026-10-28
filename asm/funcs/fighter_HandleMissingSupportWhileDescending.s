@@ -206,8 +206,8 @@ glabel fighter_HandleMissingSupportWhileDescending
     /* 143A8 80023BA8 04000396 */  lhu        $v1, 0x4($s0)
     /* 143AC 80023BAC 0A80013C */  lui        $at, %hi(D_800A3769)
     /* 143B0 80023BB0 693722A0 */  sb         $v0, %lo(D_800A3769)($at)
-    /* 143B4 80023BB4 0A80013C */  lui        $at, %hi(D_800A3758)
-    /* 143B8 80023BB8 583723A0 */  sb         $v1, %lo(D_800A3758)($at)
+    /* 143B4 80023BB4 0A80013C */  lui        $at, %hi(g_fight_missing_support_fighter_index)
+    /* 143B8 80023BB8 583723A0 */  sb         $v1, %lo(g_fight_missing_support_fighter_index)($at)
     /* 143BC 80023BBC FD8E0008 */  j          .L80023BF4
     /* 143C0 80023BC0 00000000 */   nop
   .L80023BC4:

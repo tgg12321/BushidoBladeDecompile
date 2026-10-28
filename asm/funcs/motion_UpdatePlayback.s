@@ -1,8 +1,8 @@
 glabel motion_UpdatePlayback
     /* 4510C 8005490C F0FEBD27 */  addiu      $sp, $sp, -0x110
     /* 45110 80054910 FC00B3AF */  sw         $s3, 0xFC($sp)
-    /* 45114 80054914 0F80133C */  lui        $s3, %hi(D_800EFAE8)
-    /* 45118 80054918 E8FA7326 */  addiu      $s3, $s3, %lo(D_800EFAE8)
+    /* 45114 80054914 0F80133C */  lui        $s3, %hi(g_motion_playback_record)
+    /* 45118 80054918 E8FA7326 */  addiu      $s3, $s3, %lo(g_motion_playback_record)
     /* 4511C 8005491C 0C01BFAF */  sw         $ra, 0x10C($sp)
     /* 45120 80054920 0801B6AF */  sw         $s6, 0x108($sp)
     /* 45124 80054924 0401B5AF */  sw         $s5, 0x104($sp)

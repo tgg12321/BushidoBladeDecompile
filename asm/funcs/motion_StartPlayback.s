@@ -13,8 +13,8 @@ glabel motion_StartPlayback
     /* 44E30 80054630 3000B6AF */  sw         $s6, 0x30($sp)
     /* 44E34 80054634 21B0E000 */  addu       $s6, $a3, $zero
     /* 44E38 80054638 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* 44E3C 8005463C 0F80113C */  lui        $s1, %hi(D_800EFAE8)
-    /* 44E40 80054640 E8FA3126 */  addiu      $s1, $s1, %lo(D_800EFAE8)
+    /* 44E3C 8005463C 0F80113C */  lui        $s1, %hi(g_motion_playback_record)
+    /* 44E40 80054640 E8FA3126 */  addiu      $s1, $s1, %lo(g_motion_playback_record)
     /* 44E44 80054644 1800B0AF */  sw         $s0, 0x18($sp)
     /* 44E48 80054648 31019024 */  addiu      $s0, $a0, 0x131
     /* 44E4C 8005464C 3C00BFAF */  sw         $ra, 0x3C($sp)

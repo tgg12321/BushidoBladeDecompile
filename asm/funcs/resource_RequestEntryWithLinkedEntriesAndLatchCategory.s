@@ -8,17 +8,17 @@ glabel resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 39BFC 800493FC 0F80013C */  lui        $at, %hi(g_resource_entry_request_state)
     /* 39C00 80049400 21082200 */  addu       $at, $at, $v0
     /* 39C04 80049404 80F923A4 */  sh         $v1, %lo(g_resource_entry_request_state)($at)
-    /* 39C08 80049408 2003838F */  lw         $v1, %gp_rel(D_800A33EC)($gp)
+    /* 39C08 80049408 2003838F */  lw         $v1, %gp_rel(g_resource_entry_category)($gp)
     /* 39C0C 8004940C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 39C10 80049410 09006214 */  bne        $v1, $v0, .L80049438
     /* 39C14 80049414 3300022A */   slti      $v0, $s0, 0x33
     /* 39C18 80049418 04004014 */  bnez       $v0, .L8004942C
     /* 39C1C 8004941C 01000224 */   addiu     $v0, $zero, 0x1
-    /* 39C20 80049420 200382AF */  sw         $v0, %gp_rel(D_800A33EC)($gp)
+    /* 39C20 80049420 200382AF */  sw         $v0, %gp_rel(g_resource_entry_category)($gp)
     /* 39C24 80049424 1E250108 */  j          .L80049478
     /* 39C28 80049428 40201000 */   sll       $a0, $s0, 1
   .L8004942C:
-    /* 39C2C 8004942C 200380AF */  sw         $zero, %gp_rel(D_800A33EC)($gp)
+    /* 39C2C 8004942C 200380AF */  sw         $zero, %gp_rel(g_resource_entry_category)($gp)
     /* 39C30 80049430 1E250108 */  j          .L80049478
     /* 39C34 80049434 40201000 */   sll       $a0, $s0, 1
   .L80049438:
@@ -29,7 +29,7 @@ glabel resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 39C48 80049448 044B010C */  jal        func_80052C10
     /* 39C4C 8004944C 00000000 */   nop
   .L80049450:
-    /* 39C50 80049450 2003838F */  lw         $v1, %gp_rel(D_800A33EC)($gp)
+    /* 39C50 80049450 2003838F */  lw         $v1, %gp_rel(g_resource_entry_category)($gp)
     /* 39C54 80049454 01000224 */  addiu      $v0, $zero, 0x1
     /* 39C58 80049458 07006214 */  bne        $v1, $v0, .L80049478
     /* 39C5C 8004945C 40201000 */   sll       $a0, $s0, 1

@@ -7,8 +7,8 @@ glabel menu_HandleOptionMenuChoices
     /* 5BD8C 8006B58C 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5BD90 8006B590 21280000 */  addu       $a1, $zero, $zero
     /* 5BD94 8006B594 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
-    /* 5BD98 8006B598 0A80073C */  lui        $a3, %hi(D_800A350C)
-    /* 5BD9C 8006B59C 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
+    /* 5BD98 8006B598 0A80073C */  lui        $a3, %hi(g_menu_draw_offset_steps)
+    /* 5BD9C 8006B59C 0C35E724 */  addiu      $a3, $a3, %lo(g_menu_draw_offset_steps)
     /* 5BDA0 8006B5A0 2400BFAF */  sw         $ra, 0x24($sp)
     /* 5BDA4 8006B5A4 1800B0AF */  sw         $s0, 0x18($sp)
     /* 5BDA8 8006B5A8 0000238E */  lw         $v1, 0x0($s1)

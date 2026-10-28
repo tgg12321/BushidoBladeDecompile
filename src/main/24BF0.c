@@ -27,7 +27,7 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
     slot_RequestTimGroupsAndMarkReloadOnChange(1, 0);
     g_fight_bone_group_tim_requests = 0;
     D_800A376B = 0;
-    D_800A380C = 0;
+    g_fight_menu_restart_count = 0;
     D_800A38D4 = 2;
     D_800A37D3 = 0;
     D_800A37D2 = 0;

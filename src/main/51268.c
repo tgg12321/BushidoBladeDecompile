@@ -23,23 +23,23 @@ static s32 D_800A3428[2];
 static s32 D_800A3430[2];
 static s16 D_800A3438[4];
 static s16 D_800A3440;
-static s32 D_800A3444;
-static s32 D_800A3448;
-static u32 D_800A344C[2];
-static s32 D_800A3454[2];
+static s32 g_eff_jittered_billboard_slot_mask;
+static s32 g_eff_billboard_pair_slot_mask;
+static u32 g_eff_yawed_quad_slot_counters[2];
+static s32 g_eff_yawed_quad_slot_masks[2];
 static s16 D_800A345C[2];
-static s32 D_800A3460;
+static s32 g_eff_rotated_quad_cluster_slot_mask;
 static s32 g_eff_point_light_color;
 static Unk1F800000Unk00 *g_eff_active_command_block;
 static s16 *D_800A346C;
 static s32 *g_eff_view_origin;
 static MATRIX *g_eff_view_rotation_matrix;
-static s16 *D_800A3478;
+static s16 *g_eff_command_vector;
 static s32 *g_eff_command_position;
 static s32 *D_800A3480;
 static s32 *D_800A3484;
 static TexRec *g_eff_current_tex_rec;
-static TexRec *D_800A348C;
+static TexRec *g_eff_clut_tex_rec;
 static s32 *g_eff_tpage_word;
 static s32 *g_eff_clut_word;
 static u16 *g_eff_tex_left_u;
@@ -53,14 +53,14 @@ static s32 *g_eff_perspective_scale;
 static s32 *g_eff_screen_xy;
 static s16 *D_800A34BC;
 static s16 *g_eff_right_x_offset;
-static s32 *D_800A34C4;
+static s32 *g_eff_upper_y_offset;
 static s32 *g_eff_lower_y_offset_word;
-static s32 *D_800A34CC;
+static s32 *g_eff_rtp_flag;
 static s32 *g_eff_depth_work;
-static u16 *D_800A34D4;
-static u16 *D_800A34D8;
-static u16 *D_800A34DC;
-static u16 *D_800A34E0;
+static u16 *g_eff_top_left_uv;
+static u16 *g_eff_top_right_uv;
+static u16 *g_eff_bottom_left_uv;
+static u16 *g_eff_bottom_right_uv;
 static u32 *g_eff_current_ot_entry;
 static u32 *g_eff_current_prim_tag;
 static Unk1F8000B8Union *g_eff_work_area;
@@ -72,14 +72,14 @@ static s32 D_800A34F4; /* not named by any code or data: size from the gap */
 /* Runs the command in the block g_eff_active_command_block points at (idx = the
  * block's low halfword, unk00.h): copies the three words at unk0C and the three
  * halfwords at unk10 into unk20 / unk18, points g_eff_command_position /
- * D_800A3478 at the copies, clears g_eff_command_phase[idx], calls the
- * D_8009BA7C entry D_8009BA60[idx] + g_eff_command_phase[idx], stores the
- * result through unk14, and sets D_800A32BC to 0xA when bit 21 of unk00.w is
- * set. Member reads (not
+ * g_eff_command_vector at the copies, clears g_eff_command_phase[idx], calls
+ * the D_8009BA7C entry D_8009BA60[idx] + g_eff_command_phase[idx], stores the
+ * result through unk14, and sets g_eff_point_light_countdown to 0xA when bit 21
+ * of unk00.w is set. Member reads (not
  * *(u16 *)g_eff_active_command_block) let the second idx read (the D_8009BA60
  * index) rise above the g_eff_command_position store, as in the target. */
 void eff_StartCommand(void) {
-    extern s32 D_800A32BC;
+    extern s32 g_eff_point_light_countdown;
 
     s32 result;
 
@@ -89,7 +89,7 @@ void eff_StartCommand(void) {
     g_eff_active_command_block->unk20[2] = g_eff_active_command_block->unk0C[2];
     g_eff_active_command_block->unk18[0] = g_eff_active_command_block->unk10[0];
     g_eff_active_command_block->unk18[1] = g_eff_active_command_block->unk10[1];
-    D_800A3478 = g_eff_active_command_block->unk18;
+    g_eff_command_vector = g_eff_active_command_block->unk18;
     g_eff_active_command_block->unk18[2] = g_eff_active_command_block->unk10[2];
     g_eff_command_position = g_eff_active_command_block->unk20;
 
@@ -99,7 +99,7 @@ void eff_StartCommand(void) {
     *g_eff_active_command_block->unk14 = result;
 
     if (g_eff_active_command_block->unk00.w & 0x200000) {
-        D_800A32BC = 0xA;
+        g_eff_point_light_countdown = 0xA;
     }
 }
 
@@ -143,13 +143,13 @@ void eff_ResetCommands(void) {
     } while (command_index < 0x1C);
     D_800A345C[1] = 0;
     D_800A345C[0] = 0;
-    D_800A3454[1] = 0;
-    D_800A3454[0] = 0;
-    D_800A344C[1] = 0;
-    D_800A344C[0] = 0;
-    D_800A3460 = 0;
-    D_800A3444 = 0;
-    D_800A3448 = 0;
+    g_eff_yawed_quad_slot_masks[1] = 0;
+    g_eff_yawed_quad_slot_masks[0] = 0;
+    g_eff_yawed_quad_slot_counters[1] = 0;
+    g_eff_yawed_quad_slot_counters[0] = 0;
+    g_eff_rotated_quad_cluster_slot_mask = 0;
+    g_eff_jittered_billboard_slot_mask = 0;
+    g_eff_billboard_pair_slot_mask = 0;
 }
 
 s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
@@ -223,19 +223,19 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_screen_xy = SPAD51268->unk74;
     D_800A34BC = &SPAD51268->unk80;
     g_eff_right_x_offset = &SPAD51268->unk82;
-    D_800A34C4 = &SPAD51268->unk84;
+    g_eff_upper_y_offset = &SPAD51268->unk84;
     g_eff_lower_y_offset_word = &SPAD51268->unk88;
-    D_800A34CC = &SPAD51268->unk8C;
+    g_eff_rtp_flag = &SPAD51268->unk8C;
     g_eff_depth_work = SPAD51268->unk90;
-    D_800A34D4 = &SPAD51268->unk98;
-    D_800A34D8 = &SPAD51268->unk9A;
-    D_800A34DC = &SPAD51268->unk9C;
-    D_800A34E0 = &SPAD51268->unk9E;
+    g_eff_top_left_uv = &SPAD51268->unk98;
+    g_eff_top_right_uv = &SPAD51268->unk9A;
+    g_eff_bottom_left_uv = &SPAD51268->unk9C;
+    g_eff_bottom_right_uv = &SPAD51268->unk9E;
     g_eff_current_ot_entry = &SPAD51268->unkA0;
     g_eff_current_prim_tag = &SPAD51268->unkA4;
     D_800A3480 = &SPAD51268->unkA8;
     D_800A3484 = &SPAD51268->unkAC;
-    D_800A348C = &SPAD51268->unkB0;
+    g_eff_clut_tex_rec = &SPAD51268->unkB0;
     g_eff_work_area = &SPAD51268->unkB8;
     SPAD51268->unk00.unk04 = src_rotation;
     SPAD51268->unk00.unk08 = src_position;
@@ -265,13 +265,13 @@ void func_80061064(s16 *src_rotation, s32 *src_position) {
         }
         command_index += 1;
     } while (command_index < 0x1C);
-    if (D_800A32BC >= 2) {
-        D_800A32BC -= 1;
+    if (g_eff_point_light_countdown >= 2) {
+        g_eff_point_light_countdown -= 1;
         light_SetPointLight(
             &g_eff_point_light_position, g_eff_point_light_color);
-    } else if (D_800A32BC == 1) {
+    } else if (g_eff_point_light_countdown == 1) {
         light_DisablePointLight();
-        D_800A32BC = 0;
+        g_eff_point_light_countdown = 0;
     }
     quad_count = g_eff_quad_cursor - g_eff_quad_buffer_base;
     if (quad_count >= 0x1C2) {
@@ -282,7 +282,7 @@ void func_80061064(s16 *src_rotation, s32 *src_position) {
 void eff_StopCommands(void) {
     eff_ResetCommands();
     light_DisablePointLight();
-    D_800A32BC = 0;
+    g_eff_point_light_countdown = 0;
 }
 
 extern Unk1F800000Unk00 g_eff_command_block;
@@ -796,10 +796,10 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
             *g_eff_base_width = 0x1C2;
             *g_eff_base_height = 0xE1;
         sel_a:
-            D_800A348C = g_eff_current_tex_rec =
+            g_eff_clut_tex_rec = g_eff_current_tex_rec =
                 &D_8009BA00[(u32)g_eff_billboard_draw_count % 6];
             if (g_working_record.unk20_0) {
-                D_800A348C = &D_8009BA00[10];
+                g_eff_clut_tex_rec = &D_8009BA00[10];
             }
             *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x1F;
             *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x1F;
@@ -812,10 +812,10 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
             *g_eff_base_width = 0x64;
             *g_eff_base_height = 0x78;
         sel_b:
-            D_800A348C = g_eff_current_tex_rec =
+            g_eff_clut_tex_rec = g_eff_current_tex_rec =
                 &D_8009BA00[6 + (g_eff_billboard_draw_count & 3)];
             if (g_working_record.unk20_0) {
-                D_800A348C = &D_8009BA00[11];
+                g_eff_clut_tex_rec = &D_8009BA00[11];
             }
             *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0xF;
             *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x13;
@@ -831,13 +831,15 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
          * below var_3, it loads var_3 as the translation (there is no whole
          * MATRIX here). Spelled (MATRIX *)base: score 65. */
         SetTransMatrix((MATRIX *)((u8 *)var_3 - 0x14));
-        RotTransPers(local_origin, g_eff_screen_xy, depth_cue_out, D_800A34CC);
+        RotTransPers(
+            local_origin, g_eff_screen_xy, depth_cue_out, g_eff_rtp_flag);
         gte_stsz(g_eff_depth_work);
         *ot_index = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
         if (*ot_index < 0x1005 &&
             (*g_eff_geom_screen_work / 256 >> 4) < *ot_index) {
-            *g_eff_clut_word = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) +
-                                     (D_800A348C->clut_y << 6));
+            *g_eff_clut_word =
+                (u16)(((g_eff_clut_tex_rec->clut_x >> 4) & 0x3F) +
+                      (g_eff_clut_tex_rec->clut_y << 6));
             *g_eff_tex_left_u = g_eff_current_tex_rec->u;
             *g_eff_tex_top_v = g_eff_current_tex_rec->v;
             *g_eff_depth_work = *g_eff_depth_work ? *g_eff_depth_work : 1;
@@ -898,16 +900,16 @@ s32 eff_SpawnRotatedQuadCluster(void) {
 
     g_eff_command_phase[26] = 1;
     pos = g_eff_command_position;
-    rot = D_800A3478;
+    rot = g_eff_command_vector;
     for (slot_index = 0; slot_index < 6; slot_index++) {
         mask = 1 << slot_index;
-        if (!(D_800A3460 & mask)) {
+        if (!(g_eff_rotated_quad_cluster_slot_mask & mask)) {
             D_800F0FB8[slot_index].x = pos[0];
             D_800F0FB8[slot_index].y = pos[1];
             D_800F0FB8[slot_index].z = pos[2];
             D_800F10A0[slot_index].vx = rot[0];
             D_800F10A0[slot_index].vy = rot[1];
-            D_800A3460 |= mask;
+            g_eff_rotated_quad_cluster_slot_mask |= mask;
             D_800F10A0[slot_index].vz = rot[2];
             D_800F0C04[slot_index] = 0;
             break;
@@ -959,7 +961,7 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
     prim = g_eff_quad_cursor;
     for (slot_index = 0; slot_index < 6; slot_index++) {
         slot_bit = 1 << slot_index;
-        if (!(D_800A3460 & slot_bit)) {
+        if (!(g_eff_rotated_quad_cluster_slot_mask & slot_bit)) {
             continue;
         }
         slot_matrix = &mats[slot_index];
@@ -999,23 +1001,25 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
             *g_eff_tpage_word = *g_eff_tpage_word << 16;
             *g_eff_tex_left_u = g_eff_current_tex_rec->u;
             *g_eff_tex_top_v = g_eff_current_tex_rec->v;
-            *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
-            *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
-            *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
-            *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
+            *g_eff_top_left_uv = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+            *g_eff_top_right_uv = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+            *g_eff_bottom_left_uv =
+                *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+            *g_eff_bottom_right_uv =
+                *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
             setlen(prim, 9);
             prim->code = 0x2E;
-            *(s32 *)&prim->u0 = *D_800A34D4 + *g_eff_clut_word;
-            *(s32 *)&prim->u1 = *D_800A34D8 + *g_eff_tpage_word;
-            *(u16 *)&prim->u2 = *D_800A34DC;
-            *(u16 *)&prim->u3 = *D_800A34E0;
+            *(s32 *)&prim->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
+            *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
+            *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
+            *(u16 *)&prim->u3 = *g_eff_bottom_right_uv;
             SetPolyFT4(prim);
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             quad_vertices = &D_8009BB84[quad_index * 16];
             RotTransPers4(quad_vertices, quad_vertices + 4, quad_vertices + 8,
                           quad_vertices + 12, sxy, sxy + 1, sxy + 2, sxy + 3,
-                          depth_cue_out, D_800A34CC);
+                          depth_cue_out, g_eff_rtp_flag);
             gte_stsz(g_eff_depth_work);
             *g_eff_depth_work = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
             if (*g_eff_depth_work == 0) {
@@ -1035,7 +1039,7 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         }
         D_800F0C04[slot_index]++;
         if (D_800F0C04[slot_index] >= 7) {
-            D_800A3460 &= ~(1 << slot_index);
+            g_eff_rotated_quad_cluster_slot_mask &= ~(1 << slot_index);
         }
     }
     if (g_eff_quad_cursor != prim) {
@@ -1050,16 +1054,17 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         g_eff_quad_cursor = quads_end;
         return 1;
     }
-    if (D_800A3460 == 0) {
+    if (g_eff_rotated_quad_cluster_slot_mask == 0) {
         g_eff_command_phase[26] = 0;
         return 0;
     }
-    return D_800A3460;
+    return g_eff_rotated_quad_cluster_slot_mask;
 }
 
-/* Spawn a slot: claim the first free slot bit in D_800A3448 (of 12), copy
-   the position at *g_eff_command_position into its D_800F0E38 record and reset
-   its age. With every slot taken it writes slot 12 (0x800F0EC8, the next table)
+/* Spawn a slot: claim the first free slot bit in g_eff_billboard_pair_slot_mask
+   (of 12), copy the position at *g_eff_command_position into its D_800F0E38
+   record and reset its age. With every slot taken it writes slot 12
+   (0x800F0EC8, the next table)
    -- the original has no guard. */
 s32 eff_SpawnBillboardPair(void) {
     s32 slot_index;
@@ -1069,8 +1074,8 @@ s32 eff_SpawnBillboardPair(void) {
     g_eff_command_phase[8] = 1;
     for (slot_index = 0; slot_index < 12; slot_index++) {
         slot_bit = 1 << slot_index;
-        if (!(D_800A3448 & slot_bit)) {
-            D_800A3448 |= slot_bit;
+        if (!(g_eff_billboard_pair_slot_mask & slot_bit)) {
+            g_eff_billboard_pair_slot_mask |= slot_bit;
             break;
         }
     }
@@ -1083,7 +1088,7 @@ s32 eff_SpawnBillboardPair(void) {
 }
 
 /* Draw the up-to-12 slots eff_SpawnBillboardPair spawns: per live slot
-   slot_index (bit slot_index of D_800A3448, age
+   slot_index (bit slot_index of g_eff_billboard_pair_slot_mask, age
    g_eff_billboard_pair_ages[slot_index], world position D_800F0E38[slot_index])
    emit two textured POLY_FT4 billboards (billboard_index == 0, then
    billboard_index == 1 offset vertically by an rsin of its age), each
@@ -1127,7 +1132,7 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
     *g_eff_tpage_word = *g_eff_tpage_word << 16;
     for (slot_index = 0; slot_index < 12; slot_index++) {
         bit = 1 << slot_index;
-        if (!(D_800A3448 & bit)) {
+        if (!(g_eff_billboard_pair_slot_mask & bit)) {
             continue;
         }
         for (billboard_index = 0; billboard_index < 2; billboard_index++) {
@@ -1155,7 +1160,7 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                  * address 0x14 below var_2, it loads var_2 as the translation.
                  * Spelled (MATRIX *)base: score 55. */
                 SetTransMatrix((MATRIX *)((u8 *)var_2 - 0x14));
-                RotTransPers(v, g_eff_screen_xy, depth_cue_out, D_800A34CC);
+                RotTransPers(v, g_eff_screen_xy, depth_cue_out, g_eff_rtp_flag);
                 gte_stsz(g_eff_depth_work);
                 if (billboard_index == 0) {
                     g_eff_current_tex_rec = D_8009B940;
@@ -1172,10 +1177,14 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                 *g_eff_tex_top_v = g_eff_current_tex_rec->v;
                 *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x3F;
                 *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x3F;
-                *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
-                *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
-                *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
-                *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
+                *g_eff_top_left_uv =
+                    *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+                *g_eff_top_right_uv =
+                    *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+                *g_eff_bottom_left_uv =
+                    *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+                *g_eff_bottom_right_uv =
+                    *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
                 *ot_index = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
                 if (*ot_index < 0x1005 &&
                     *g_eff_geom_screen_work / 1000 >> 4 < *ot_index) {
@@ -1259,22 +1268,23 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     prim->code = 0x2E;
                     *g_eff_right_x_offset = *g_eff_right_x_offset >> 1;
                     *D_800A34BC = -*g_eff_right_x_offset;
-                    *D_800A34C4 = *g_eff_lower_y_offset_word * 60 / 64;
+                    *g_eff_upper_y_offset =
+                        *g_eff_lower_y_offset_word * 60 / 64;
                     *g_eff_lower_y_offset_word = 0;
-                    *(s32 *)&prim->x0 =
-                        *g_eff_screen_xy + *D_800A34BC - (*D_800A34C4 << 16);
+                    *(s32 *)&prim->x0 = *g_eff_screen_xy + *D_800A34BC -
+                                        (*g_eff_upper_y_offset << 16);
                     *(s32 *)&prim->x1 =
                         *g_eff_screen_xy + *g_eff_right_x_offset -
-                        (*D_800A34C4 << 16);
+                        (*g_eff_upper_y_offset << 16);
                     *(s32 *)&prim->x2 = *g_eff_screen_xy + *D_800A34BC +
                                         (*g_eff_lower_y_offset_word << 16);
                     *(s32 *)&prim->x3 =
                         *g_eff_screen_xy + *g_eff_right_x_offset +
                         (*g_eff_lower_y_offset_word << 16);
-                    *(s32 *)&prim->u0 = *D_800A34D4 + *g_eff_clut_word;
-                    *(s32 *)&prim->u1 = *D_800A34D8 + *g_eff_tpage_word;
-                    *(u16 *)&prim->u2 = *D_800A34DC;
-                    *(u16 *)&prim->u3 = *D_800A34E0;
+                    *(s32 *)&prim->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
+                    *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
+                    *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
+                    *(u16 *)&prim->u3 = *g_eff_bottom_right_uv;
                     g_eff_current_ot_entry = g_gpu_ot_ptr + *ot_index;
                     g_eff_current_prim_tag = &prim->tag;
                     *g_eff_current_prim_tag =
@@ -1288,13 +1298,13 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     }
                 }
             } else {
-                D_800A3448 &= 0xFFFF - (1 << slot_index);
+                g_eff_billboard_pair_slot_mask &= 0xFFFF - (1 << slot_index);
             }
         }
         g_eff_billboard_pair_ages[slot_index]++;
     }
     g_eff_quad_cursor = prim;
-    return D_800A3448 != 0;
+    return g_eff_billboard_pair_slot_mask != 0;
 }
 
 u8 eff_AllocateOrRecycleYawedQuadSlot(s32);
@@ -1324,63 +1334,81 @@ u8 func_80063BA4(void) {
     return eff_DrawYawedSlotQuads(1);
 }
 
-extern SVECTOR D_800F1000[][10];
+extern SVECTOR g_eff_yawed_quad_slot_rotations[][10];
 
 /* eff_AllocateOrRecycleYawedQuadSlot -- slot allocator for command slot
- * `command_slot_index`: D_800A344C[command_slot_index] counts live entries, and
- * D_800A3454[command_slot_index] is the per-slot in-use bitmask. While fewer
- * than 10 entries are live, take the lowest free bit, mark it, and fill that
- * slot's SVECTOR (D_800F1000[command_slot_index][slot]) and 3-word record
- * (D_800F0EC8[command_slot_index][slot]) from D_800A3478 /
- * g_eff_command_position. Once the command slot is full, the counter wraps
- * through 10..19 and slots are overwritten in rotation. */
+ * `command_slot_index`: g_eff_yawed_quad_slot_counters[command_slot_index]
+ * counts live entries, and g_eff_yawed_quad_slot_masks[command_slot_index] is
+ * the per-slot in-use bitmask. While fewer than 10 entries are live, take the
+ * lowest free bit, mark it, and fill that slot's SVECTOR
+ * (g_eff_yawed_quad_slot_rotations[command_slot_index][slot]) and 3-word record
+ * (g_eff_yawed_quad_slot_positions[command_slot_index][slot]) from
+ * g_eff_command_vector / g_eff_command_position. Once the command slot is full,
+ * the counter wraps through 10..19 and slots are overwritten in rotation. */
 u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
     s32 slot_bit;
     s32 slot_index;
 
-    if (D_800A344C[command_slot_index] < 10) {
-        D_800A344C[command_slot_index]++;
-        for (slot_index = 0; slot_index < D_800A344C[command_slot_index];
+    if (g_eff_yawed_quad_slot_counters[command_slot_index] < 10) {
+        g_eff_yawed_quad_slot_counters[command_slot_index]++;
+        for (slot_index = 0;
+             slot_index < g_eff_yawed_quad_slot_counters[command_slot_index];
              slot_index++) {
-            if (!(D_800A3454[command_slot_index] &
+            if (!(g_eff_yawed_quad_slot_masks[command_slot_index] &
                   (slot_bit = 1 << slot_index))) {
-                D_800A3454[command_slot_index] |= slot_bit;
-                D_800F1000[command_slot_index][slot_index].vy = D_800A3478[1];
-                D_800F1000[command_slot_index][slot_index].vx =
-                    D_800F1000[command_slot_index][slot_index].vz = 0;
-                D_800F0EC8[command_slot_index][slot_index].unk0 =
-                    g_eff_command_position[0];
-                D_800F0EC8[command_slot_index][slot_index].unk4 =
-                    g_eff_command_position[1];
-                D_800F0EC8[command_slot_index][slot_index].unk8 =
-                    g_eff_command_position[2];
+                g_eff_yawed_quad_slot_masks[command_slot_index] |= slot_bit;
+                g_eff_yawed_quad_slot_rotations[command_slot_index][slot_index]
+                    .vy = g_eff_command_vector[1];
+                g_eff_yawed_quad_slot_rotations[command_slot_index][slot_index]
+                    .vx = g_eff_yawed_quad_slot_rotations[command_slot_index]
+                                                         [slot_index]
+                                                             .vz = 0;
+                g_eff_yawed_quad_slot_positions[command_slot_index][slot_index]
+                    .unk0 = g_eff_command_position[0];
+                g_eff_yawed_quad_slot_positions[command_slot_index][slot_index]
+                    .unk4 = g_eff_command_position[1];
+                g_eff_yawed_quad_slot_positions[command_slot_index][slot_index]
+                    .unk8 = g_eff_command_position[2];
                 break;
             }
         }
     } else {
-        D_800A344C[command_slot_index] =
-            (D_800A344C[command_slot_index] + 1) % 10 + 10;
-        D_800F1000[command_slot_index][D_800A344C[command_slot_index] - 10].vy =
-            D_800A3478[1];
-        D_800F1000[command_slot_index][D_800A344C[command_slot_index] - 10].vx =
-            D_800F1000[command_slot_index][D_800A344C[command_slot_index] - 10]
-                .vz = 0;
-        D_800F0EC8[command_slot_index][D_800A344C[command_slot_index] - 10]
-            .unk0 = g_eff_command_position[0];
-        D_800F0EC8[command_slot_index][D_800A344C[command_slot_index] - 10]
-            .unk4 = g_eff_command_position[1];
-        D_800F0EC8[command_slot_index][D_800A344C[command_slot_index] - 10]
-            .unk8 = g_eff_command_position[2];
+        g_eff_yawed_quad_slot_counters[command_slot_index] =
+            (g_eff_yawed_quad_slot_counters[command_slot_index] + 1) % 10 + 10;
+        g_eff_yawed_quad_slot_rotations
+            [command_slot_index]
+            [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
+                .vy = g_eff_command_vector[1];
+        g_eff_yawed_quad_slot_rotations
+            [command_slot_index]
+            [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
+                .vx =
+            g_eff_yawed_quad_slot_rotations
+                [command_slot_index]
+                [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
+                    .vz = 0;
+        g_eff_yawed_quad_slot_positions
+            [command_slot_index]
+            [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
+                .unk0 = g_eff_command_position[0];
+        g_eff_yawed_quad_slot_positions
+            [command_slot_index]
+            [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
+                .unk4 = g_eff_command_position[1];
+        g_eff_yawed_quad_slot_positions
+            [command_slot_index]
+            [g_eff_yawed_quad_slot_counters[command_slot_index] - 10]
+                .unk8 = g_eff_command_position[2];
     }
     return 1;
 }
 
 /* Draw the live slots (up to 10, see eff_AllocateOrRecycleYawedQuadSlot) of
- * `arg0`: per slot whose bit is set in D_800A3454[arg0], emit one textured
- * POLY_FT4 billboard at the slot's position (relative to *g_eff_view_origin)
- * through the composite of g_eff_view_rotation_matrix and the slot's matrix,
- * keep it when its depth is in range, then link every new quad into the OT at
- * its depth. Returns 1. */
+ * `arg0`: per slot whose bit is set in g_eff_yawed_quad_slot_masks[arg0], emit
+ * one textured POLY_FT4 billboard at the slot's position (relative to
+ * *g_eff_view_origin) through the composite of g_eff_view_rotation_matrix and
+ * the slot's matrix, keep it when its depth is in range, then link every new
+ * quad into the OT at its depth. Returns 1. */
 s32 eff_DrawYawedSlotQuads(s32 arg0) {
     extern SVECTOR D_8009BBE4;
     extern SVECTOR D_8009BBEC;
@@ -1412,8 +1440,8 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     sxy = (s32 *)((u8 *)prim + 0x188);
     quad_ot_indices = (u16 *)((u8 *)prim + 0x19C);
     var_5 = (u16 *)((u8 *)prim + 0x1B0);
-    if (D_800A344C[arg0] < 10) {
-        count = D_800A344C[arg0];
+    if (g_eff_yawed_quad_slot_counters[arg0] < 10) {
+        count = g_eff_yawed_quad_slot_counters[arg0];
     } else {
         count = 10;
     }
@@ -1429,29 +1457,32 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     *g_eff_tex_top_v = g_eff_current_tex_rec->v;
     *g_eff_tex_right_u = g_eff_current_tex_rec->u + 7;
     *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0xF;
-    *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
-    *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
-    *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
-    *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
+    *g_eff_top_left_uv = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+    *g_eff_top_right_uv = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+    *g_eff_bottom_left_uv = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+    *g_eff_bottom_right_uv = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
     *var_5 = 0;
     *g_eff_geom_screen_work = ReadGeomScreen();
     for (i = 0; i < count; i++) {
         /* FAKE: the slot's mask is named `bit` inside the test and not read
-         * again; it stretches the D_800A3454[arg0] address's life so loop.c
-         * hoists it (target spills it to 32(sp)), and keeps combine from making
-         * the test srav/andi. Without `bit`: score 43. */
-        if (!(D_800A3454[arg0] & (bit = 1 << i))) {
+         * again; it stretches the g_eff_yawed_quad_slot_masks[arg0] address's
+         * life so loop.c hoists it (target spills it to 32(sp)), and keeps
+         * combine from making the test srav/andi. Without `bit`: score 43. */
+        if (!(g_eff_yawed_quad_slot_masks[arg0] & (bit = 1 << i))) {
             continue;
         }
         setlen(prim, 9);
         prim->code = 0x2F;
-        *(s32 *)&prim->u0 = *D_800A34D4 + *g_eff_clut_word;
-        *(s32 *)&prim->u1 = *D_800A34D8 + *g_eff_tpage_word;
-        *(u16 *)&prim->u2 = *D_800A34DC;
-        *(u16 *)&prim->u3 = *D_800A34E0;
-        mats[i].t[0] = D_800F0EC8[arg0][i].unk0 - g_eff_view_origin[0];
-        mats[i].t[1] = D_800F0EC8[arg0][i].unk4 - g_eff_view_origin[1];
-        mats[i].t[2] = D_800F0EC8[arg0][i].unk8 - g_eff_view_origin[2];
+        *(s32 *)&prim->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
+        *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
+        *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
+        *(u16 *)&prim->u3 = *g_eff_bottom_right_uv;
+        mats[i].t[0] = g_eff_yawed_quad_slot_positions[arg0][i].unk0 -
+                       g_eff_view_origin[0];
+        mats[i].t[1] = g_eff_yawed_quad_slot_positions[arg0][i].unk4 -
+                       g_eff_view_origin[1];
+        mats[i].t[2] = g_eff_yawed_quad_slot_positions[arg0][i].unk8 -
+                       g_eff_view_origin[2];
         gte_CompMatrix(g_eff_view_rotation_matrix, &mats[i], var_2);
         gte_SetRotMatrix(var_2);
         gte_SetTransMatrix(var_2);
@@ -1499,8 +1530,10 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
 }
 
 /* eff_BuildUsedSlotRotMatrices -- rotates one matrix per enabled bit: for every
- * i < *slot_count whose bit is set in D_800A3454[command_slot_index],
- * RotMatrix(&D_800F1000[command_slot_index][i], &slot_matrices[i]).
+ * i < *slot_count whose bit is set in
+ * g_eff_yawed_quad_slot_masks[command_slot_index],
+ * RotMatrix(&g_eff_yawed_quad_slot_rotations[command_slot_index][i],
+ * &slot_matrices[i]).
  */
 void eff_BuildUsedSlotRotMatrices(
     s32 *slot_count, MATRIX *slot_matrices, s32 command_slot_index) {
@@ -1512,16 +1545,18 @@ void eff_BuildUsedSlotRotMatrices(
          * the loop; `mask = 1 << i` hoists the 1 into s5: score 12 (Q129) */
         mask = 1;
         mask <<= i;
-        if (D_800A3454[command_slot_index] & mask) {
-            RotMatrix(&D_800F1000[command_slot_index][i], &slot_matrices[i]);
+        if (g_eff_yawed_quad_slot_masks[command_slot_index] & mask) {
+            RotMatrix(&g_eff_yawed_quad_slot_rotations[command_slot_index][i],
+                      &slot_matrices[i]);
         }
     }
 }
 
 /* eff_SpawnJitteredBillboards -- for each group of four slots (bits of
- * D_800A3444), claim the first free slot: set its position D_800F0D78[slot] to
- * the position at g_eff_command_position jittered by (rand() & 0xFF) - 0x7F per
- * axis, give it a random 0..7 in D_800F0BCC, and mark its bit. */
+ * g_eff_jittered_billboard_slot_mask), claim the first free slot: set its
+ * position D_800F0D78[slot] to the position at g_eff_command_position jittered
+ * by (rand() & 0xFF) - 0x7F per axis, give it a random 0..7 in
+ * g_eff_jittered_billboard_ages, and mark its bit. */
 s32 eff_SpawnJitteredBillboards(void) {
     s32 group_start_index;
     s32 group_slot_index;
@@ -1534,15 +1569,15 @@ s32 eff_SpawnJitteredBillboards(void) {
         for (group_slot_index = 0; group_slot_index < 4; group_slot_index++) {
             slot_index = group_start_index + group_slot_index;
             slot_bit = 1 << slot_index;
-            if (!(D_800A3444 & slot_bit)) {
+            if (!(g_eff_jittered_billboard_slot_mask & slot_bit)) {
                 D_800F0D78[slot_index].x =
                     g_eff_command_position[0] + (rand() & 0xFF) - 0x7F;
                 D_800F0D78[slot_index].y =
                     g_eff_command_position[1] + (rand() & 0xFF) - 0x7F;
                 D_800F0D78[slot_index].z =
                     g_eff_command_position[2] + (rand() & 0xFF) - 0x7F;
-                D_800F0BCC[slot_index] = rand() & 7;
-                D_800A3444 |= slot_bit;
+                g_eff_jittered_billboard_ages[slot_index] = rand() & 7;
+                g_eff_jittered_billboard_slot_mask |= slot_bit;
                 break;
             }
         }
@@ -1551,8 +1586,8 @@ s32 eff_SpawnJitteredBillboards(void) {
 }
 
 /* Draw the up-to-16 effect slots eff_SpawnJitteredBillboards spawns: per live
-   slot (bit slot_index of D_800A3444) step its counter
-   D_800F0BCC[slot_index]; while counter / 4
+   slot (bit slot_index of g_eff_jittered_billboard_slot_mask) step its counter
+   g_eff_jittered_billboard_ages[slot_index]; while counter / 4
    is below 7, project the slot's world position through
    g_eff_view_rotation_matrix and, when its depth is in range, emit one
    textured, semi-transparent POLY_FT4 billboard sized by the screen depth and
@@ -1595,11 +1630,11 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     for (slot_index = 0, quad_ot_write_cursor = quad_ot_read_cursor;
          slot_index < 16; slot_index++) {
         bit = 1 << slot_index;
-        if (!(D_800A3444 & bit)) {
+        if (!(g_eff_jittered_billboard_slot_mask & bit)) {
             continue;
         }
-        D_800F0BCC[slot_index]++;
-        *frame_index = D_800F0BCC[slot_index] / 4;
+        g_eff_jittered_billboard_ages[slot_index]++;
+        *frame_index = g_eff_jittered_billboard_ages[slot_index] / 4;
         if (*frame_index < 7) {
             relative_position->vx =
                 D_800F0D78[slot_index].x - g_eff_view_origin[0];
@@ -1612,7 +1647,7 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
              * m->t (there is no whole MATRIX here). Spelled
              * (MATRIX *)((u8 *)base + 4): score 68. */
             SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
-            RotTransPers(local_origin, g_eff_screen_xy, p, D_800A34CC);
+            RotTransPers(local_origin, g_eff_screen_xy, p, g_eff_rtp_flag);
             gte_stsz(g_eff_depth_work);
             g_eff_current_tex_rec = &D_8009B8E8[*frame_index];
             *g_eff_clut_word =
@@ -1640,10 +1675,13 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
                 *g_eff_base_height * *g_eff_perspective_scale > 0x800
                     ? (*g_eff_base_height * *g_eff_perspective_scale) >> 8
                     : 8;
-            *billboard_width +=
-                (*billboard_width * D_800F0BCC[slot_index]) >> 5;
+            *billboard_width += (*billboard_width *
+                                 g_eff_jittered_billboard_ages[slot_index]) >>
+                                5;
             *billboard_height +=
-                (*billboard_height * (D_800F0BCC[slot_index] << 2)) >> 8;
+                (*billboard_height *
+                 (g_eff_jittered_billboard_ages[slot_index] << 2)) >>
+                8;
             SetPolyFT4(prim);
             prim->tpage = *g_eff_tpage_word;
             prim->clut = *g_eff_clut_word;
@@ -1678,12 +1716,12 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
                 prim++;
                 quad_ot_write_cursor++;
             }
-            D_800F0BCC[slot_index]++;
+            g_eff_jittered_billboard_ages[slot_index]++;
         } else {
-            D_800A3444 &= 0xFFFF - bit;
+            g_eff_jittered_billboard_slot_mask &= 0xFFFF - bit;
         }
     }
-    if (D_800A3444 == 0) {
+    if (g_eff_jittered_billboard_slot_mask == 0) {
         return 0;
     }
     *quads_end = prim;
@@ -2073,7 +2111,8 @@ u8 eff_DrawAnimatedQuads(s32 mode_index) {
     p_v->vz = 0;
     p_v->vy = 0;
     p_v->vx = 0;
-    gte_RotTransPers(p_v, g_eff_screen_xy, var_2, D_800A34CC, g_eff_depth_work);
+    gte_RotTransPers(
+        p_v, g_eff_screen_xy, var_2, g_eff_rtp_flag, g_eff_depth_work);
     *g_eff_depth_work = *g_eff_depth_work ? *g_eff_depth_work << 2 : 1;
 
 again:
@@ -2537,15 +2576,15 @@ u8 func_800671CC(void) {
     return spawn_result;
 }
 
-extern SVECTOR D_800F0B78[];
+extern SVECTOR g_eff_particle_emitter_vectors[];
 extern Unk800EFC78Record g_eff_particles[][48];
 
 /* eff_SpawnParticles -- spawns half (half_index selects which) of the 0x30
  * g_eff_particles[particle_row_index] particle records: each gets the
- * D_800F0B78[particle_row_index] vector scaled per axis by its own random
- * factor and turned by a random rotation (spread chosen by particle_mode).
- * half_index == 0 first latches g_eff_command_position / D_800A3478 into the
- * emitter. Returns 1. */
+ * g_eff_particle_emitter_vectors[particle_row_index] vector scaled per axis by
+ * its own random factor and turned by a random rotation (spread chosen by
+ * particle_mode). half_index == 0 first latches g_eff_command_position /
+ * g_eff_command_vector into the emitter. Returns 1. */
 u8 eff_SpawnParticles(
     s32 particle_mode, s32 particle_row_index, s32 half_index) {
     SVECTOR v;
@@ -2572,12 +2611,18 @@ u8 eff_SpawnParticles(
     D_800A3438[particle_row_index] = 0;
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
     if (half_index == 0) {
-        D_800F0C10[particle_row_index][0].unk0 = g_eff_command_position[0];
-        D_800F0C10[particle_row_index][0].unk4 = g_eff_command_position[1];
-        D_800F0C10[particle_row_index][0].unk8 = g_eff_command_position[2];
-        D_800F0B78[particle_row_index].vx = D_800A3478[0];
-        D_800F0B78[particle_row_index].vy = D_800A3478[1];
-        D_800F0B78[particle_row_index].vz = D_800A3478[2];
+        g_eff_particle_group_positions[particle_row_index][0].unk0 =
+            g_eff_command_position[0];
+        g_eff_particle_group_positions[particle_row_index][0].unk4 =
+            g_eff_command_position[1];
+        g_eff_particle_group_positions[particle_row_index][0].unk8 =
+            g_eff_command_position[2];
+        g_eff_particle_emitter_vectors[particle_row_index].vx =
+            g_eff_command_vector[0];
+        g_eff_particle_emitter_vectors[particle_row_index].vy =
+            g_eff_command_vector[1];
+        g_eff_particle_emitter_vectors[particle_row_index].vz =
+            g_eff_command_vector[2];
     }
     particle_count = 0x30;
     random_values[5] = rand();
@@ -2594,9 +2639,9 @@ u8 eff_SpawnParticles(
         angle_mask = 0x7F;
         angle_offset = 0x3F;
     }
-    var_5.vx = D_800F0B78[particle_row_index].vx;
-    var_5.vy = D_800F0B78[particle_row_index].vy;
-    var_5.vz = D_800F0B78[particle_row_index].vz;
+    var_5.vx = g_eff_particle_emitter_vectors[particle_row_index].vx;
+    var_5.vy = g_eff_particle_emitter_vectors[particle_row_index].vy;
+    var_5.vz = g_eff_particle_emitter_vectors[particle_row_index].vz;
     for (particle_index = (particle_count >> 1) * half_index;
          particle_index < (particle_count >> 1) * (half_index + 1);
          particle_index++) {
@@ -2756,20 +2801,26 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
     *g_eff_tex_top_v = g_eff_current_tex_rec->v;
     *g_eff_tex_right_u = *p0 + g_eff_current_tex_rec->u;
     *g_eff_tex_bottom_v = *p2 + g_eff_current_tex_rec->v;
-    *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
-    *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
-    *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
-    *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
+    *g_eff_top_left_uv = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+    *g_eff_top_right_uv = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+    *g_eff_bottom_left_uv = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+    *g_eff_bottom_right_uv = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
 
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
 
     if (D_800A3438[particle_row_index] < D_800F0B98[particle_mode]) {
-        D_800F0C10[particle_row_index][D_800A3438[particle_row_index]].unk0 =
-            D_800F0C10[particle_row_index][0].unk0;
-        D_800F0C10[particle_row_index][D_800A3438[particle_row_index]].unk4 =
-            D_800F0C10[particle_row_index][0].unk4;
-        D_800F0C10[particle_row_index][D_800A3438[particle_row_index]].unk8 =
-            D_800F0C10[particle_row_index][0].unk8;
+        g_eff_particle_group_positions[particle_row_index]
+                                      [D_800A3438[particle_row_index]]
+                                          .unk0 =
+            g_eff_particle_group_positions[particle_row_index][0].unk0;
+        g_eff_particle_group_positions[particle_row_index]
+                                      [D_800A3438[particle_row_index]]
+                                          .unk4 =
+            g_eff_particle_group_positions[particle_row_index][0].unk4;
+        g_eff_particle_group_positions[particle_row_index]
+                                      [D_800A3438[particle_row_index]]
+                                          .unk8 =
+            g_eff_particle_group_positions[particle_row_index][0].unk8;
     }
 
     gte_ReadGeomScreen(g_eff_geom_screen_work);
@@ -2784,10 +2835,10 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
  * the middle of the eff_PrepareParticles / eff_UpdateParticles /
  * eff_LinkParticleQuads trio. For each live record of
  * g_eff_particles[particle_row_index] (state 1): step its unk12 and derive
- * r/g/b from it, take its D_800F0C10[particle_row_index] entry less
- * g_eff_view_origin through the GTE rotation, set state 3 (and skip it) once r
- * and g are both low or once the squared length p_out[0..2] passes *var_1 plus
- * a rand() term, project three vertices, size the sprite by type
+ * r/g/b from it, take its g_eff_particle_group_positions[particle_row_index]
+ * entry less g_eff_view_origin through the GTE rotation, set state 3 (and skip
+ * it) once r and g are both low or once the squared length p_out[0..2] passes
+ * *var_1 plus a rand() term, project three vertices, size the sprite by type
  * (particle_mode), then emit up to three POLY_FT4 quads, storing
  * *g_eff_depth_work for each in var_9[]. */
 void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
@@ -2857,7 +2908,8 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
         }
         *p_b = (*var_14 << 5) < 100 ? 100 - (*var_14 << 5) : 0;
 
-        *var_8 = &D_800F0C10[particle_row_index][(*p_ent)->unk6];
+        *var_8 =
+            &g_eff_particle_group_positions[particle_row_index][(*p_ent)->unk6];
         var_2->vx = (*var_8)->unk0;
         var_13[0].vx = var_2->vx - g_eff_view_origin[0];
         var_2->vy = (*var_8)->unk4;
@@ -2914,8 +2966,8 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
         if (*g_eff_depth_work == 0) {
             *g_eff_depth_work = 1;
         }
-        *D_800A34CC = 1;
-        if (*g_eff_depth_work >= 0x1005 || *D_800A34CC == 0) {
+        *g_eff_rtp_flag = 1;
+        if (*g_eff_depth_work >= 0x1005 || *g_eff_rtp_flag == 0) {
             continue;
         }
 
@@ -2979,9 +3031,9 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
             *g_eff_lower_y_offset_word = *g_eff_base_height >> 1;
         }
         *D_800A34BC = -*g_eff_right_x_offset;
-        *D_800A34C4 = -*g_eff_lower_y_offset_word;
+        *g_eff_upper_y_offset = -*g_eff_lower_y_offset_word;
         *g_eff_lower_y_offset_word <<= 16;
-        *D_800A34C4 <<= 16;
+        *g_eff_upper_y_offset <<= 16;
 
         squared_length = p_out[0] + p_out[1] + p_out[2];
         if (*var_1 / 3 < squared_length) {
@@ -2999,18 +3051,19 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
         for (; *p_n >= 0; (*p_n)--) {
             var_9[*p_prim - g_eff_quad_cursor] = *g_eff_depth_work;
             *(s32 *)&(*p_prim)->x0 =
-                g_eff_screen_xy[*p_n] + *D_800A34BC + *D_800A34C4;
+                g_eff_screen_xy[*p_n] + *D_800A34BC + *g_eff_upper_y_offset;
             *(s32 *)&(*p_prim)->x1 =
-                g_eff_screen_xy[*p_n] + *g_eff_right_x_offset + *D_800A34C4;
+                g_eff_screen_xy[*p_n] + *g_eff_right_x_offset +
+                *g_eff_upper_y_offset;
             *(s32 *)&(*p_prim)->x2 = g_eff_screen_xy[*p_n] + *D_800A34BC +
                                      *g_eff_lower_y_offset_word;
             *(s32 *)&(*p_prim)->x3 =
                 g_eff_screen_xy[*p_n] + *g_eff_right_x_offset +
                 *g_eff_lower_y_offset_word;
-            *(s32 *)&(*p_prim)->u0 = *D_800A34D4 + *g_eff_clut_word;
-            *(s32 *)&(*p_prim)->u1 = *D_800A34D8 + *g_eff_tpage_word;
-            *(u16 *)&(*p_prim)->u2 = *D_800A34DC;
-            *(u16 *)&(*p_prim)->u3 = *D_800A34E0;
+            *(s32 *)&(*p_prim)->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
+            *(s32 *)&(*p_prim)->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
+            *(u16 *)&(*p_prim)->u2 = *g_eff_bottom_left_uv;
+            *(u16 *)&(*p_prim)->u3 = *g_eff_bottom_right_uv;
             setlen(*p_prim, 9);
             if (particle_mode < 2) {
                 *(s32 *)&(*p_prim)->r0 = *p_r + (*p_g << 8) + 0x2E000000;
@@ -3098,7 +3151,7 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
 /* Q65: this file's initialized small data (.sdata), in address order; values
  * from the original EXE. */
 s32 g_eff_billboard_draw_count = 0;
-s32 D_800A32BC = 0;
+s32 g_eff_point_light_countdown = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 POLY_FT4 *g_eff_quad_buffer_base;

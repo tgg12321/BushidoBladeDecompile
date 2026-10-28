@@ -53,10 +53,10 @@ glabel memcard_StepRequest
     /* 28C5C 8003845C 8FE10008 */  j          .L8003863C
     /* 28C60 80038460 00000000 */   nop
   .L80038464:
-    /* 28C64 80038464 48078297 */  lhu        $v0, %gp_rel(D_800A3814)($gp)
+    /* 28C64 80038464 48078297 */  lhu        $v0, %gp_rel(g_memcard_request_retry_count)($gp)
     /* 28C68 80038468 00000000 */  nop
     /* 28C6C 8003846C 01004224 */  addiu      $v0, $v0, 0x1
-    /* 28C70 80038470 480782A7 */  sh         $v0, %gp_rel(D_800A3814)($gp)
+    /* 28C70 80038470 480782A7 */  sh         $v0, %gp_rel(g_memcard_request_retry_count)($gp)
     /* 28C74 80038474 00140200 */  sll        $v0, $v0, 16
     /* 28C78 80038478 03140200 */  sra        $v0, $v0, 16
     /* 28C7C 8003847C 04004228 */  slti       $v0, $v0, 0x4
@@ -108,8 +108,8 @@ glabel memcard_StepRequest
     /* 28D20 80038520 000882A3 */  sb         $v0, %gp_rel(D_800A38CC)($gp)
     /* 28D24 80038524 52E0000C */  jal        memcard_ClearBuffer
     /* 28D28 80038528 00000000 */   nop
-    /* 28D2C 8003852C 0F80103C */  lui        $s0, %hi(D_800F33D8)
-    /* 28D30 80038530 D8331026 */  addiu      $s0, $s0, %lo(D_800F33D8)
+    /* 28D2C 8003852C 0F80103C */  lui        $s0, %hi(g_shared_buffer)
+    /* 28D30 80038530 D8331026 */  addiu      $s0, $s0, %lo(g_shared_buffer)
     /* 28D34 80038534 5CE0000C */  jal        memcard_BuildFileHeader
     /* 28D38 80038538 21200002 */   addu      $a0, $s0, $zero
     /* 28D3C 8003853C D0DF000C */  jal        memcard_BuildSaveBlock
@@ -155,8 +155,8 @@ glabel memcard_StepRequest
     /* 28DD0 800385D0 00000000 */   nop
     /* 28DD4 800385D4 21200000 */  addu       $a0, $zero, $zero
     /* 28DD8 800385D8 21280000 */  addu       $a1, $zero, $zero
-    /* 28DDC 800385DC 0F80073C */  lui        $a3, %hi(D_800F33D8)
-    /* 28DE0 800385E0 D833E724 */  addiu      $a3, $a3, %lo(D_800F33D8)
+    /* 28DDC 800385DC 0F80073C */  lui        $a3, %hi(g_shared_buffer)
+    /* 28DE0 800385E0 D833E724 */  addiu      $a3, $a3, %lo(g_shared_buffer)
     /* 28DE4 800385E4 2401868F */  lw         $a2, %gp_rel(D_800A31F0)($gp)
     /* 28DE8 800385E8 00020224 */  addiu      $v0, $zero, 0x200
     /* 28DEC 800385EC E4DE000C */  jal        memcard_ReadFile

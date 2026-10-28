@@ -27,7 +27,7 @@ glabel snd_Quit
     /* 4BD6C 8005B56C 1000A228 */  slti       $v0, $a1, 0x10
     /* 4BD70 8005B570 FAFF4014 */  bnez       $v0, .L8005B55C
     /* 4BD74 8005B574 04006324 */   addiu     $v1, $v1, 0x4
-    /* 4BD78 8005B578 3C0380AF */  sw         $zero, %gp_rel(D_800A3408)($gp)
+    /* 4BD78 8005B578 3C0380AF */  sw         $zero, %gp_rel(g_vab_sb_used_bytes)($gp)
     /* 4BD7C 8005B57C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 4BD80 8005B580 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4BD84 8005B584 0800E003 */  jr         $ra

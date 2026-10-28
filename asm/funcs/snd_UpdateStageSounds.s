@@ -76,8 +76,8 @@ glabel snd_UpdateStageSounds
     /* 23EEC 800336EC 000000A2 */  sb         $zero, 0x0($s0)
   .L800336F0:
     /* 23EF0 800336F0 01001026 */  addiu      $s0, $s0, 0x1
-    /* 23EF4 800336F4 0A80023C */  lui        $v0, %hi(D_800A391E)
-    /* 23EF8 800336F8 1E394224 */  addiu      $v0, $v0, %lo(D_800A391E)
+    /* 23EF4 800336F4 0A80023C */  lui        $v0, %hi(g_fight_sound_cue_countdown)
+    /* 23EF8 800336F8 1E394224 */  addiu      $v0, $v0, %lo(g_fight_sound_cue_countdown)
     /* 23EFC 800336FC 2A100202 */  slt        $v0, $s0, $v0
     /* 23F00 80033700 C7FF4014 */  bnez       $v0, .L80033620
     /* 23F04 80033704 0C005226 */   addiu     $s2, $s2, 0xC

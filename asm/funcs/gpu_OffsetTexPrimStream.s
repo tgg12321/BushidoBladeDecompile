@@ -215,9 +215,9 @@ glabel gpu_OffsetTexPrimStream
   .L8004375C:
     /* 33F5C 8004375C 40101600 */  sll        $v0, $s6, 1
     /* 33F60 80043760 FFFF0824 */  addiu      $t0, $zero, -0x1
-    /* 33F64 80043764 0980013C */  lui        $at, %hi(D_80095588)
+    /* 33F64 80043764 0980013C */  lui        $at, %hi(g_gpu_prim_type_halfword_sizes)
     /* 33F68 80043768 21082200 */  addu       $at, $at, $v0
-    /* 33F6C 8004376C 88552284 */  lh         $v0, %lo(D_80095588)($at)
+    /* 33F6C 8004376C 88552284 */  lh         $v0, %lo(g_gpu_prim_type_halfword_sizes)($at)
     /* 33F70 80043770 0000838E */  lw         $v1, (0x1F800000 & 0xFFFF)($s4)
     /* 33F74 80043774 40100200 */  sll        $v0, $v0, 1
     /* 33F78 80043778 21186200 */  addu       $v1, $v1, $v0
@@ -425,9 +425,9 @@ glabel gpu_OffsetTexPrimStream
     /* 34258 80043A58 00000000 */  nop
     /* 3425C 80043A5C 0A000015 */  bnez       $t0, .L80043A88
     /* 34260 80043A60 40101600 */   sll       $v0, $s6, 1
-    /* 34264 80043A64 0980013C */  lui        $at, %hi(D_80095588)
+    /* 34264 80043A64 0980013C */  lui        $at, %hi(g_gpu_prim_type_halfword_sizes)
     /* 34268 80043A68 21082200 */  addu       $at, $at, $v0
-    /* 3426C 80043A6C 88552284 */  lh         $v0, %lo(D_80095588)($at)
+    /* 3426C 80043A6C 88552284 */  lh         $v0, %lo(g_gpu_prim_type_halfword_sizes)($at)
     /* 34270 80043A70 00000000 */  nop
     /* 34274 80043A74 18006202 */  mult       $s3, $v0
     /* 34278 80043A78 12400000 */  mflo       $t0
@@ -452,9 +452,9 @@ glabel gpu_OffsetTexPrimStream
     /* 342B8 80043AB8 BB0E0108 */  j          .L80043AEC
     /* 342BC 80043ABC 000082AE */   sw        $v0, (0x1F800000 & 0xFFFF)($s4)
   .L80043AC0:
-    /* 342C0 80043AC0 0980013C */  lui        $at, %hi(D_80095588)
+    /* 342C0 80043AC0 0980013C */  lui        $at, %hi(g_gpu_prim_type_halfword_sizes)
     /* 342C4 80043AC4 21082200 */  addu       $at, $at, $v0
-    /* 342C8 80043AC8 88552284 */  lh         $v0, %lo(D_80095588)($at)
+    /* 342C8 80043AC8 88552284 */  lh         $v0, %lo(g_gpu_prim_type_halfword_sizes)($at)
     /* 342CC 80043ACC 00000000 */  nop
     /* 342D0 80043AD0 18006202 */  mult       $s3, $v0
     /* 342D4 80043AD4 0000838E */  lw         $v1, (0x1F800000 & 0xFFFF)($s4)

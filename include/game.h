@@ -98,8 +98,9 @@ typedef struct {
 
 /* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one 3-word
  * record (12 bytes; lane stride 120). eff_AllocateOrRecycleYawedQuadSlot writes
- * it, eff_DrawYawedSlotQuads reads it. The slot bitmask D_800A3454[n] and the
- * sibling SVECTOR table D_800F1000[n][10] index the same pair (n, slot). */
+ * it, eff_DrawYawedSlotQuads reads it. The slot bitmask
+ * g_eff_yawed_quad_slot_masks[n] and the sibling SVECTOR table
+ * g_eff_yawed_quad_slot_rotations[n][10] index the same pair (n, slot). */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -109,7 +110,7 @@ typedef struct {
 /* Effect-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
  * eff_SpawnBillboardPair spawns into it, eff_DrawAndAdvanceBillboardPairs draws
- * from it. The slot bitmask D_800A3448 and the age table
+ * from it. The slot bitmask g_eff_billboard_pair_slot_mask and the age table
  * g_eff_billboard_pair_ages[slot] index the same slot. */
 typedef struct {
     s32 unk0;
@@ -138,11 +139,11 @@ typedef struct {
     MenuOption opt[8];
 } MenuState;
 
-/* 0x8009BCF8: 2 pages x 10 two-byte records (0x8009BCF8..0x8009BD1F; D_8009BD20
- * follows), one page per character-select page, 2 rows x 5 columns of cells
- * (cell = row * 5 + col). menu_UpdateSelGridPicks / menu_DrawSelGrid index it
- * [page][cell]; menu_FadeOutSelAndWriteResult reads unk1 flat. Data: unk1 is
- * 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). */
+/* 0x8009BCF8: 2 pages x 10 two-byte records (0x8009BCF8..0x8009BD1F;
+ * g_sel_sheet_code_pairs follows), one page per character-select page, 2 rows x
+ * 5 columns of cells (cell = row * 5 + col). menu_UpdateSelGridPicks /
+ * menu_DrawSelGrid index it [page][cell]; menu_FadeOutSelAndWriteResult reads
+ * unk1 flat. Data: unk1 is 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -372,11 +373,12 @@ typedef struct {
 } Unk80077D94Entry;
 
 /* NAR.BIN (resource file 0x32), the root 64FD8's InitTimedSpriteSequence loads
- * at its work area + 0x58 (D_800A35F8). After the head: table, the cell table
- * gpu_DrawAndAdvanceTimedSpriteSequence draws the hdr18..hdr24 sheets with;
- * hdr18..hdr28, the five sheet lists reloc_RelocateFiveOffsetListsAndGetWord1
- * relocates; nar2C, in30 / out34 and the five portrait TIMs img38
- * gpu_DrawAndAdvanceTimedSpriteSequence uploads. */
+ * at its work area + 0x58 (g_gpu_timed_sprite_resources). After the head:
+ * table, the cell table gpu_DrawAndAdvanceTimedSpriteSequence draws the
+ * hdr18..hdr24 sheets with; hdr18..hdr28, the five sheet lists
+ * reloc_RelocateFiveOffsetListsAndGetWord1 relocates; nar2C, in30 / out34 and
+ * the five portrait TIMs img38 gpu_DrawAndAdvanceTimedSpriteSequence uploads.
+ */
 typedef struct {
     Unk8006E950Head resource_head;
     Unk8009B400Record *table;
@@ -941,8 +943,8 @@ typedef struct {
 
 /* One 8-byte texture record: the CLUT position (PsyQ getClut(x, y) = (y << 6) |
  * ((x >> 4) & 0x3F)) and the texture u/v origin. 51268's g_eff_current_tex_rec
- * / D_800A348C point at one; the D_8009B890 .. D_8009BA58 tables are runs of
- * them. */
+ * / g_eff_clut_tex_rec point at one; the D_8009B890 .. D_8009BA58 tables are
+ * runs of them. */
 typedef struct {
     u16 clut_x;
     u16 clut_y;
@@ -971,7 +973,7 @@ typedef struct {
  * - unk14: the byte eff_StartCommand / eff_StepCommand store the called
  * function's result to (`sb`).
  * - unk18 / unk20: the copies. D_800A346C / g_eff_view_origin point at the
- * scratchpad block's, D_800A3478 / g_eff_command_position at the
+ * scratchpad block's, g_eff_command_vector / g_eff_command_position at the
  * g_eff_command_block block's (eff_StartCommand). unk18 is s16 like its sources
  * (unk04 / unk10) and every consumer (SVECTOR / SVec4i16 fields:
  * eff_SetRotMatrix, eff_SpawnRotatedQuadCluster,
@@ -1147,17 +1149,17 @@ typedef union {
  * function retargets it; D_800A346C / g_eff_view_origin point at its unk18 /
  * unk20.
  * - unk2C: no access.
- * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec / D_800A348C
- * (TexRec). eff_DrawBillboardList retargets them only in its switch cases 0-3
- * (unk4 & 7), so its later reads go through these seeded values when no earlier
- * record took one of those cases.
+ * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec /
+ * g_eff_clut_tex_rec (TexRec). eff_DrawBillboardList retargets them only in its
+ * switch cases 0-3 (unk4 & 7), so its later reads go through these seeded
+ * values when no earlier record took one of those cases.
  * - unkA0 / unkA4: the initial targets of g_eff_current_ot_entry (u32 *) /
  * g_eff_current_prim_tag (u32
  * *), which every user retargets before use.
  * - unkB8: the work area g_eff_work_area points at (Unk1F8000B8Union), laid out
  * differently by its users; it runs to the end of the scratchpad. The other
- * members are one global each (g_eff_view_rotation_matrix .. D_800A34E0,
- * D_800A3480 / D_800A3484). */
+ * members are one global each (g_eff_view_rotation_matrix ..
+ * g_eff_bottom_right_uv, D_800A3480 / D_800A3484). */
 typedef struct {
     Unk1F800000Unk00 unk00;
     u8 unk2C[4];
@@ -1176,14 +1178,14 @@ typedef struct {
     s32 unk74[3]; /* g_eff_screen_xy */
     s16 unk80;    /* D_800A34BC */
     s16 unk82;    /* g_eff_right_x_offset */
-    s32 unk84;    /* D_800A34C4 */
+    s32 unk84;    /* g_eff_upper_y_offset */
     s32 unk88;    /* g_eff_lower_y_offset_word */
-    s32 unk8C;    /* D_800A34CC */
+    s32 unk8C;    /* g_eff_rtp_flag */
     s32 unk90[2]; /* g_eff_depth_work */
-    u16 unk98;    /* D_800A34D4 */
-    u16 unk9A;    /* D_800A34D8 */
-    u16 unk9C;    /* D_800A34DC */
-    u16 unk9E;    /* D_800A34E0 */
+    u16 unk98;    /* g_eff_top_left_uv */
+    u16 unk9A;    /* g_eff_top_right_uv */
+    u16 unk9C;    /* g_eff_bottom_left_uv */
+    u16 unk9E;    /* g_eff_bottom_right_uv */
     u32 unkA0;
     u32 unkA4;
     s32 unkA8; /* D_800A3480 */
@@ -2141,8 +2143,8 @@ typedef struct {
     s8 pad62[6];            /* +0x62 */
 } Unk800A9CF8Entry;         /* 0x68 */
 
-/* The 21 ten-byte node-template records at 0x80094B96 (up to D_80094C68):
- * node_InitObjectHierarchyFromTemplates builds
+/* The 21 ten-byte node-template records at 0x80094B96 (up to
+ * g_object_scale_factors): node_InitObjectHierarchyFromTemplates builds
  * Unk80045878Obj.transform_nodes[i] from record i (unk_00: the parent node
  * index, -1 for none; unk_02: the position, scaled by position_scale),
  * node_BuildProjectedNodeList copies unk_08 (-1: no node) into
@@ -2161,8 +2163,8 @@ typedef struct {
  * rebases them as 0x15, 0x14 and 0x14 records), then three 20-entry pointer
  * tables.
  * - unk_00: flag word; slot_FinalizeObjectLoadSoundTexturesAndArena sets bit 1
- * and keeps the TIM-group request (D_80094B88[arena_id] & 0x1F) in bits 16..20,
- * which slot_RequestTimGroupsAndMarkReloadOnChange /
+ * and keeps the TIM-group request (g_slot_tim_group_requests[arena_id] & 0x1F)
+ * in bits 16..20, which slot_RequestTimGroupsAndMarkReloadOnChange /
  * slot_GetLastLoadTimGroupRequest read as (word >> 16) & 0x1F; no code reads it
  * through half[].
  * - arena_id: slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0,
@@ -2172,12 +2174,12 @@ typedef struct {
  * slot_FinalizeObjectLoadSoundTexturesAndArena returns at once when it is 0,
  * else clears it and runs its setup; unk_08:
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a1, indexing the
- * D_80094C68 / D_80094B48 tables.
+ * g_object_scale_factors / D_80094B48 tables.
  * - unk_10 / unk_14 / unk_16:
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0 / a0 / a0 + 3
  * (unk_14 / unk_16 are the reloc_RelocateBlock / gpu_OffsetBlockTexPrimStreams
  * ids); position_scale: the Q12 scale node_InitObjectHierarchyFromTemplates
- * sets from D_80094C68.
+ * sets from g_object_scale_factors.
  * - unk_18: written as the word 0x8000 by
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock, read as three
  * colour bytes by node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor.
@@ -2498,8 +2500,8 @@ typedef struct {
 
 /* 5ED34's work block: the 0x14 bytes InitDisplayStateLoadPackAndSetEntryFlags
  * keeps at the start of gpu_InitPrimBufferPair's returned space
- * (g_entry_menu_work_block; the arena cursor D_800A356C moves past it), as
- * 596CC's Unk800A34FCRec.
+ * (g_entry_menu_work_block; the arena cursor g_entry_menu_arena_cursor moves
+ * past it), as 596CC's Unk800A34FCRec.
  * - entry_countdowns / row_countdowns: one s16 per player each (counted down
  * from 0x1E by the draw handlers).
  * - animation_frame_counter: the frame counter
@@ -2518,7 +2520,7 @@ typedef struct {
 /* 596CC's work block: the 0x34 bytes
  * menu_LoadResourcesInitStateSelectFirstEnabledRow keeps at the start of
  * gpu_InitPrimBufferPair's returned space (g_row_menu_work_block; its arena
- * cursor D_800A3500 moves past the block).
+ * cursor g_menu_arena_cursor moves past the block).
  * menu_LoadResourcesInitStateSelectFirstEnabledRow zeroes menu_draw_offsets /
  * unk_10 / unk_12, sets both row_bit_cursors halves to 5 and
  * strip_refresh_snapshot to bit 0 of g_row_menu_working_record_ptr's word 8

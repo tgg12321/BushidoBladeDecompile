@@ -5,8 +5,8 @@ glabel wave_Draw
     /* 383EC 80047BEC 5400B5AF */  sw         $s5, 0x54($sp)
     /* 383F0 80047BF0 21A80000 */  addu       $s5, $zero, $zero
     /* 383F4 80047BF4 5800B6AF */  sw         $s6, 0x58($sp)
-    /* 383F8 80047BF8 0F80163C */  lui        $s6, %hi(D_800EF59C)
-    /* 383FC 80047BFC 9CF5D626 */  addiu      $s6, $s6, %lo(D_800EF59C)
+    /* 383F8 80047BF8 0F80163C */  lui        $s6, %hi(g_wave_vertex_grid)
+    /* 383FC 80047BFC 9CF5D626 */  addiu      $s6, $s6, %lo(g_wave_vertex_grid)
     /* 38400 80047C00 6000BFAF */  sw         $ra, 0x60($sp)
     /* 38404 80047C04 5000B4AF */  sw         $s4, 0x50($sp)
     /* 38408 80047C08 4C00B3AF */  sw         $s3, 0x4C($sp)

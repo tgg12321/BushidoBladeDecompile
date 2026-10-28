@@ -14,12 +14,12 @@ glabel eff_ResetCommands
     /* 5148C 80060C8C 920380A7 */  sh         $zero, %gp_rel(D_800A345E)($gp)
     /* 51490 80060C90 900380A7 */  sh         $zero, %gp_rel(D_800A345C)($gp)
     /* 51494 80060C94 8C0380AF */  sw         $zero, %gp_rel(D_800A3458)($gp)
-    /* 51498 80060C98 880380AF */  sw         $zero, %gp_rel(D_800A3454)($gp)
+    /* 51498 80060C98 880380AF */  sw         $zero, %gp_rel(g_eff_yawed_quad_slot_masks)($gp)
     /* 5149C 80060C9C 840380AF */  sw         $zero, %gp_rel(D_800A3450)($gp)
-    /* 514A0 80060CA0 800380AF */  sw         $zero, %gp_rel(D_800A344C)($gp)
-    /* 514A4 80060CA4 940380AF */  sw         $zero, %gp_rel(D_800A3460)($gp)
-    /* 514A8 80060CA8 780380AF */  sw         $zero, %gp_rel(D_800A3444)($gp)
-    /* 514AC 80060CAC 7C0380AF */  sw         $zero, %gp_rel(D_800A3448)($gp)
+    /* 514A0 80060CA0 800380AF */  sw         $zero, %gp_rel(g_eff_yawed_quad_slot_counters)($gp)
+    /* 514A4 80060CA4 940380AF */  sw         $zero, %gp_rel(g_eff_rotated_quad_cluster_slot_mask)($gp)
+    /* 514A8 80060CA8 780380AF */  sw         $zero, %gp_rel(g_eff_jittered_billboard_slot_mask)($gp)
+    /* 514AC 80060CAC 7C0380AF */  sw         $zero, %gp_rel(g_eff_billboard_pair_slot_mask)($gp)
     /* 514B0 80060CB0 0800E003 */  jr         $ra
     /* 514B4 80060CB4 00000000 */   nop
 endlabel eff_ResetCommands

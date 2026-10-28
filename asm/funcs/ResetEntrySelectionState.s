@@ -13,9 +13,9 @@ glabel ResetEntrySelectionState
     /* 39BC4 800493C4 F4F922A4 */  sh         $v0, %lo(D_800EF9F4)($at)
     /* 39BC8 800493C8 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 39BCC 800493CC 1E0382A7 */  sh         $v0, %gp_rel(D_800A33EA)($gp)
-    /* 39BD0 800493D0 1C0382A7 */  sh         $v0, %gp_rel(D_800A33E8)($gp)
+    /* 39BD0 800493D0 1C0382A7 */  sh         $v0, %gp_rel(g_resource_pair_selection)($gp)
     /* 39BD4 800493D4 FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* 39BD8 800493D8 200382AF */  sw         $v0, %gp_rel(D_800A33EC)($gp)
+    /* 39BD8 800493D8 200382AF */  sw         $v0, %gp_rel(g_resource_entry_category)($gp)
     /* 39BDC 800493DC 0800E003 */  jr         $ra
     /* 39BE0 800493E0 00000000 */   nop
 endlabel ResetEntrySelectionState

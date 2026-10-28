@@ -29,7 +29,7 @@ glabel StepSlideProgressCommitPendingStateAndQueueSound
     /* 5F470 8006EC70 E8014228 */  slti       $v0, $v0, 0x1E8
     /* 5F474 8006EC74 1B004014 */  bnez       $v0, .L8006ECE4
     /* 5F478 8006EC78 E8010324 */   addiu     $v1, $zero, 0x1E8
-    /* 5F47C 8006EC7C B8048297 */  lhu        $v0, %gp_rel(D_800A3584)($gp)
+    /* 5F47C 8006EC7C B8048297 */  lhu        $v0, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 5F480 8006EC80 AC048497 */  lhu        $a0, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 5F484 8006EC84 A40483A7 */  sh         $v1, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5F488 8006EC88 B40482A7 */  sh         $v0, %gp_rel(g_entry_menu_handler_index)($gp)

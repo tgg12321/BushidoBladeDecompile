@@ -97,9 +97,9 @@ dlabel D_800A3678
     /* 93E7E 800A367E */ .short 0x0000
 enddlabel D_800A3678
 
-nonmatching D_800A3680
+nonmatching g_fight_second_fighter_defeats_left
 
-dlabel D_800A3680
+dlabel g_fight_second_fighter_defeats_left
     /* 93E80 800A3680 */ .byte 0x00
     /* 93E81 800A3681 */ .byte 0x00
     /* 93E82 800A3682 */ .byte 0x00
@@ -108,7 +108,7 @@ dlabel D_800A3680
     /* 93E85 800A3685 */ .byte 0x00
     /* 93E86 800A3686 */ .byte 0x00
     /* 93E87 800A3687 */ .byte 0x00
-enddlabel D_800A3680
+enddlabel g_fight_second_fighter_defeats_left
 
 nonmatching g_comb_recv_buf
 
@@ -155,14 +155,14 @@ dlabel g_fight_stage_index
     /* 93EA6 800A36A6 */ .short 0x0000
 enddlabel g_fight_stage_index
 
-nonmatching D_800A36A8
+nonmatching g_gpu_jitter_burst_enabled
 
-dlabel D_800A36A8
+dlabel g_gpu_jitter_burst_enabled
     /* 93EA8 800A36A8 */ .byte 0x00
     /* 93EA9 800A36A9 */ .byte 0x00
     /* 93EAA 800A36AA */ .byte 0x00
     /* 93EAB 800A36AB */ .byte 0x00
-enddlabel D_800A36A8
+enddlabel g_gpu_jitter_burst_enabled
 
 nonmatching g_gpu_presented_frame_count
 
@@ -198,11 +198,11 @@ dlabel g_cd_atv_target
     /* 93EBF 800A36BF */ .byte 0x00
 enddlabel g_cd_atv_target
 
-nonmatching D_800A36C0
+nonmatching g_comb_received_pad_word
 
-dlabel D_800A36C0
+dlabel g_comb_received_pad_word
     /* 93EC0 800A36C0 */ .short 0x0000
-enddlabel D_800A36C0
+enddlabel g_comb_received_pad_word
 
 nonmatching D_800A36C2
 
@@ -307,12 +307,11 @@ dlabel D_800A36F0
     /* 93EF0 800A36F0 */ .byte 0x00
 enddlabel D_800A36F0
 
-nonmatching D_800A36F1
+nonmatching g_main_frame_period
 
-dlabel D_800A36F1
-dlabel g_vsync_target_frames
+dlabel g_main_frame_period
     /* 93EF1 800A36F1 */ .byte 0x00
-enddlabel D_800A36F1
+enddlabel g_main_frame_period
 
 nonmatching D_800A36F2
 
@@ -530,9 +529,9 @@ dlabel D_800A3756
     /* 93F56 800A3756 */ .short 0x0000
 enddlabel D_800A3756
 
-nonmatching D_800A3758
+nonmatching g_fight_missing_support_fighter_index
 
-dlabel D_800A3758
+dlabel g_fight_missing_support_fighter_index
     /* 93F58 800A3758 */ .byte 0x00
     /* 93F59 800A3759 */ .byte 0x00
     /* 93F5A 800A375A */ .byte 0x00
@@ -541,7 +540,7 @@ dlabel D_800A3758
     /* 93F5D 800A375D */ .byte 0x00
     /* 93F5E 800A375E */ .byte 0x00
     /* 93F5F 800A375F */ .byte 0x00
-enddlabel D_800A3758
+enddlabel g_fight_missing_support_fighter_index
 
 nonmatching g_cd_result
 
@@ -587,11 +586,11 @@ dlabel D_800A376C
     /* 93F6D 800A376D */ .byte 0x00
 enddlabel D_800A376C
 
-nonmatching D_800A376E
+nonmatching g_fight_paired_move_start_pending
 
-dlabel D_800A376E
+dlabel g_fight_paired_move_start_pending
     /* 93F6E 800A376E */ .short 0x0000
-enddlabel D_800A376E
+enddlabel g_fight_paired_move_start_pending
 
 nonmatching D_800A3770
 
@@ -631,11 +630,11 @@ dlabel g_replay_ring_wrapped
     /* 93F82 800A3782 */ .byte 0x00
 enddlabel g_replay_ring_wrapped
 
-nonmatching D_800A3783
+nonmatching g_fight_opponent_order_cursor
 
-dlabel D_800A3783
+dlabel g_fight_opponent_order_cursor
     /* 93F83 800A3783 */ .byte 0x00
-enddlabel D_800A3783
+enddlabel g_fight_opponent_order_cursor
 
 nonmatching D_800A3784
 
@@ -643,14 +642,14 @@ dlabel D_800A3784
     /* 93F84 800A3784 00000000 */ .word 0x00000000
 enddlabel D_800A3784
 
-nonmatching D_800A3788
+nonmatching g_fight_toggle_option_bits
 
-dlabel D_800A3788
+dlabel g_fight_toggle_option_bits
     /* 93F88 800A3788 */ .byte 0x00
     /* 93F89 800A3789 */ .byte 0x00
     /* 93F8A 800A378A */ .byte 0x00
     /* 93F8B 800A378B */ .byte 0x00
-enddlabel D_800A3788
+enddlabel g_fight_toggle_option_bits
 
 nonmatching g_gpu_ot_offset_ptr
 

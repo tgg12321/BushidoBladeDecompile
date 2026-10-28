@@ -137,8 +137,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 23230 80032A30 21282002 */   addu      $a1, $s1, $zero
     /* 23234 80032A34 CF84010C */  jal        eff_StartCosineScaledQuadWithPaleBlueLight
     /* 23238 80032A38 21202002 */   addu      $a0, $s1, $zero
-    /* 2323C 80032A3C 0A80013C */  lui        $at, %hi(D_800A3910)
-    /* 23240 80032A40 103922A4 */  sh         $v0, %lo(D_800A3910)($at)
+    /* 2323C 80032A3C 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
+    /* 23240 80032A40 103922A4 */  sh         $v0, %lo(g_fight_midpoint_effect_delay)($at)
     /* 23244 80032A44 0ACB0008 */  j          .L80032C28
     /* 23248 80032A48 00000000 */   nop
   jlabel .L80032A4C
@@ -150,8 +150,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 23260 80032A60 21282002 */   addu      $a1, $s1, $zero
     /* 23264 80032A64 F284010C */  jal        eff_StartSlowRateCosineScaledQuadWithPaleBlueLight
     /* 23268 80032A68 21202002 */   addu      $a0, $s1, $zero
-    /* 2326C 80032A6C 0A80013C */  lui        $at, %hi(D_800A3910)
-    /* 23270 80032A70 103922A4 */  sh         $v0, %lo(D_800A3910)($at)
+    /* 2326C 80032A6C 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
+    /* 23270 80032A70 103922A4 */  sh         $v0, %lo(g_fight_midpoint_effect_delay)($at)
     /* 23274 80032A74 0ACB0008 */  j          .L80032C28
     /* 23278 80032A78 00000000 */   nop
   jlabel .L80032A7C
@@ -163,8 +163,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 23290 80032A90 21282002 */   addu      $a1, $s1, $zero
     /* 23294 80032A94 1585010C */  jal        eff_StartMediumRateCosineScaledQuadWithPaleBlueLight
     /* 23298 80032A98 21202002 */   addu      $a0, $s1, $zero
-    /* 2329C 80032A9C 0A80013C */  lui        $at, %hi(D_800A3910)
-    /* 232A0 80032AA0 103922A4 */  sh         $v0, %lo(D_800A3910)($at)
+    /* 2329C 80032A9C 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
+    /* 232A0 80032AA0 103922A4 */  sh         $v0, %lo(g_fight_midpoint_effect_delay)($at)
     /* 232A4 80032AA4 0ACB0008 */  j          .L80032C28
     /* 232A8 80032AA8 00000000 */   nop
   jlabel .L80032AAC
@@ -176,8 +176,8 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 232C0 80032AC0 21282002 */   addu      $a1, $s1, $zero
     /* 232C4 80032AC4 3885010C */  jal        eff_StartFastRateCosineScaledQuadWithPaleBlueLight
     /* 232C8 80032AC8 21202002 */   addu      $a0, $s1, $zero
-    /* 232CC 80032ACC 0A80013C */  lui        $at, %hi(D_800A3910)
-    /* 232D0 80032AD0 103922A4 */  sh         $v0, %lo(D_800A3910)($at)
+    /* 232CC 80032ACC 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
+    /* 232D0 80032AD0 103922A4 */  sh         $v0, %lo(g_fight_midpoint_effect_delay)($at)
     /* 232D4 80032AD4 0ACB0008 */  j          .L80032C28
     /* 232D8 80032AD8 00000000 */   nop
   jlabel .L80032ADC

@@ -169,8 +169,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D418 8003CC18 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* 2D41C 8003CC1C 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
     /* 2D420 8003CC20 703622A0 */  sb         $v0, %lo(g_fight_reinit_reuses_assets)($at)
-    /* 2D424 8003CC24 0A80023C */  lui        $v0, %hi(D_800A380C)
-    /* 2D428 8003CC28 0C38428C */  lw         $v0, %lo(D_800A380C)($v0)
+    /* 2D424 8003CC24 0A80023C */  lui        $v0, %hi(g_fight_menu_restart_count)
+    /* 2D428 8003CC28 0C38428C */  lw         $v0, %lo(g_fight_menu_restart_count)($v0)
     /* 2D42C 8003CC2C 00210300 */  sll        $a0, $v1, 4
     /* 2D430 8003CC30 21208300 */  addu       $a0, $a0, $v1
     /* 2D434 8003CC34 80200400 */  sll        $a0, $a0, 2
@@ -181,8 +181,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D448 8003CC48 1080033C */  lui        $v1, %hi(D_80101FBC)
     /* 2D44C 8003CC4C BC1F6324 */  addiu      $v1, $v1, %lo(D_80101FBC)
     /* 2D450 8003CC50 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2D454 8003CC54 0A80013C */  lui        $at, %hi(D_800A380C)
-    /* 2D458 8003CC58 0C3822AC */  sw         $v0, %lo(D_800A380C)($at)
+    /* 2D454 8003CC54 0A80013C */  lui        $at, %hi(g_fight_menu_restart_count)
+    /* 2D458 8003CC58 0C3822AC */  sw         $v0, %lo(g_fight_menu_restart_count)($at)
     /* 2D45C 8003CC5C 0289000C */  jal        fight_FindNearestStartPair
     /* 2D460 8003CC60 21208300 */   addu      $a0, $a0, $v1
     /* 2D464 8003CC64 0A80013C */  lui        $at, %hi(D_800A38DF)

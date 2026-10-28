@@ -752,7 +752,7 @@ const char D_80015840[28] = "Destruction tiny model.\n";
 
 s32 motion_StartPlayback(
     s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
-    Unk800EFAE8Rec *s = &D_800EFAE8;
+    Unk800EFAE8Rec *s = &g_motion_playback_record;
     s32 playback_file_id = a0 + 0x131;
     s32 ret;
     s16 *start_position_cursor;

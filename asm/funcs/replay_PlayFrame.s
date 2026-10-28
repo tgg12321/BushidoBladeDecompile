@@ -432,8 +432,8 @@ glabel replay_PlayFrame
     /* 2A790 80039F90 00000000 */  nop
     /* 2A794 80039F94 37004014 */  bnez       $v0, .L8003A074
     /* 2A798 80039F98 01000224 */   addiu     $v0, $zero, 0x1
-    /* 2A79C 80039F9C 0A80043C */  lui        $a0, %hi(D_800A3836)
-    /* 2A7A0 80039FA0 36388490 */  lbu        $a0, %lo(D_800A3836)($a0)
+    /* 2A79C 80039F9C 0A80043C */  lui        $a0, %hi(g_fight_saved_first_fighter_selection)
+    /* 2A7A0 80039FA0 36388490 */  lbu        $a0, %lo(g_fight_saved_first_fighter_selection)($a0)
     /* 2A7A4 80039FA4 0A80033C */  lui        $v1, %hi(D_800A3712)
     /* 2A7A8 80039FA8 12376390 */  lbu        $v1, %lo(D_800A3712)($v1)
     /* 2A7AC 80039FAC FF008238 */  xori       $v0, $a0, 0xFF
@@ -491,8 +491,8 @@ glabel replay_PlayFrame
     /* 2A86C 8003A06C 50E80008 */  j          .L8003A140
     /* 2A870 8003A070 00000000 */   nop
   .L8003A074:
-    /* 2A874 8003A074 0A80033C */  lui        $v1, %hi(D_800A3836)
-    /* 2A878 8003A078 36386390 */  lbu        $v1, %lo(D_800A3836)($v1)
+    /* 2A874 8003A074 0A80033C */  lui        $v1, %hi(g_fight_saved_first_fighter_selection)
+    /* 2A878 8003A078 36386390 */  lbu        $v1, %lo(g_fight_saved_first_fighter_selection)($v1)
     /* 2A87C 8003A07C 0A80013C */  lui        $at, %hi(g_fight_followup_fighter_index)
     /* 2A880 8003A080 483722A0 */  sb         $v0, %lo(g_fight_followup_fighter_index)($at)
     /* 2A884 8003A084 FF000224 */  addiu      $v0, $zero, 0xFF

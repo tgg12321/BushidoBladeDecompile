@@ -225,8 +225,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F5D4 8001EDD4 01000224 */  addiu      $v0, $zero, 0x1
     /* F5D8 8001EDD8 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
     /* F5DC 8001EDDC 703622A0 */  sb         $v0, %lo(g_fight_reinit_reuses_assets)($at)
-    /* F5E0 8001EDE0 0A80023C */  lui        $v0, %hi(D_800A380C)
-    /* F5E4 8001EDE4 0C38428C */  lw         $v0, %lo(D_800A380C)($v0)
+    /* F5E0 8001EDE0 0A80023C */  lui        $v0, %hi(g_fight_menu_restart_count)
+    /* F5E4 8001EDE4 0C38428C */  lw         $v0, %lo(g_fight_menu_restart_count)($v0)
     /* F5E8 8001EDE8 00210300 */  sll        $a0, $v1, 4
     /* F5EC 8001EDEC 21208300 */  addu       $a0, $a0, $v1
     /* F5F0 8001EDF0 80200400 */  sll        $a0, $a0, 2
@@ -237,8 +237,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F604 8001EE04 1080033C */  lui        $v1, %hi(D_80101FBC)
     /* F608 8001EE08 BC1F6324 */  addiu      $v1, $v1, %lo(D_80101FBC)
     /* F60C 8001EE0C 01004224 */  addiu      $v0, $v0, 0x1
-    /* F610 8001EE10 0A80013C */  lui        $at, %hi(D_800A380C)
-    /* F614 8001EE14 0C3822AC */  sw         $v0, %lo(D_800A380C)($at)
+    /* F610 8001EE10 0A80013C */  lui        $at, %hi(g_fight_menu_restart_count)
+    /* F614 8001EE14 0C3822AC */  sw         $v0, %lo(g_fight_menu_restart_count)($at)
     /* F618 8001EE18 0289000C */  jal        fight_FindNearestStartPair
     /* F61C 8001EE1C 21208300 */   addu      $a0, $a0, $v1
     /* F620 8001EE20 1080033C */  lui        $v1, %hi(D_8010231A)

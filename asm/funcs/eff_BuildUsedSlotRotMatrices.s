@@ -11,8 +11,8 @@ glabel eff_BuildUsedSlotRotMatrices
     /* 54D20 80064520 00000000 */  nop
     /* 54D24 80064524 19004018 */  blez       $v0, .L8006458C
     /* 54D28 80064528 21800000 */   addu      $s0, $zero, $zero
-    /* 54D2C 8006452C 0A80033C */  lui        $v1, %hi(D_800A3454)
-    /* 54D30 80064530 54346324 */  addiu      $v1, $v1, %lo(D_800A3454)
+    /* 54D2C 8006452C 0A80033C */  lui        $v1, %hi(g_eff_yawed_quad_slot_masks)
+    /* 54D30 80064530 54346324 */  addiu      $v1, $v1, %lo(g_eff_yawed_quad_slot_masks)
     /* 54D34 80064534 80100600 */  sll        $v0, $a2, 2
     /* 54D38 80064538 21A04300 */  addu       $s4, $v0, $v1
     /* 54D3C 8006453C 21104600 */  addu       $v0, $v0, $a2
@@ -25,8 +25,8 @@ glabel eff_BuildUsedSlotRotMatrices
     /* 54D54 80064554 24186200 */  and        $v1, $v1, $v0
     /* 54D58 80064558 07006010 */  beqz       $v1, .L80064578
     /* 54D5C 8006455C C0201000 */   sll       $a0, $s0, 3
-    /* 54D60 80064560 0F80023C */  lui        $v0, %hi(D_800F1000)
-    /* 54D64 80064564 00104224 */  addiu      $v0, $v0, %lo(D_800F1000)
+    /* 54D60 80064560 0F80023C */  lui        $v0, %hi(g_eff_yawed_quad_slot_rotations)
+    /* 54D64 80064564 00104224 */  addiu      $v0, $v0, %lo(g_eff_yawed_quad_slot_rotations)
     /* 54D68 80064568 21208200 */  addu       $a0, $a0, $v0
     /* 54D6C 8006456C 21206402 */  addu       $a0, $s3, $a0
     /* 54D70 80064570 D7FC010C */  jal        RotMatrix

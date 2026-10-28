@@ -253,8 +253,8 @@ glabel fighter_CastWeaponSegment
     /* 1B010 8002A810 C0100200 */  sll        $v0, $v0, 3
     /* 1B014 8002A814 23105700 */  subu       $v0, $v0, $s7
     /* 1B018 8002A818 C0100200 */  sll        $v0, $v0, 3
-    /* 1B01C 8002A81C 0F80033C */  lui        $v1, %hi(D_800F5F68)
-    /* 1B020 8002A820 685F6324 */  addiu      $v1, $v1, %lo(D_800F5F68)
+    /* 1B01C 8002A81C 0F80033C */  lui        $v1, %hi(g_fighter_bone_hit_records)
+    /* 1B020 8002A820 685F6324 */  addiu      $v1, $v1, %lo(g_fighter_bone_hit_records)
     /* 1B024 8002A824 21A04300 */  addu       $s4, $v0, $v1
     /* 1B028 8002A828 21980000 */  addu       $s3, $zero, $zero
     /* 1B02C 8002A82C 40111700 */  sll        $v0, $s7, 5

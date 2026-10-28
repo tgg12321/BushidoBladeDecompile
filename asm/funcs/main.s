@@ -27,7 +27,7 @@ glabel main
     /* 7A64 80017264 70379426 */  addiu      $s4, $s4, %lo(D_800A3770)
     /* 7A68 80017268 0F000224 */  addiu      $v0, $zero, 0xF
     /* 7A6C 8001726C 680782A7 */  sh         $v0, %gp_rel(g_main_loop_handler_index)($gp)
-    /* 7A70 80017270 410880A3 */  sb         $zero, %gp_rel(D_800A390D)($gp)
+    /* 7A70 80017270 410880A3 */  sb         $zero, %gp_rel(g_main_present_skip_frames)($gp)
     /* 7A74 80017274 E00580AF */  sw         $zero, %gp_rel(g_gpu_presented_frame_count)($gp)
   .L80017278:
     /* 7A78 80017278 08100524 */  addiu      $a1, $zero, 0x1008
@@ -89,7 +89,7 @@ glabel main
   .L80017350:
     /* 7B50 80017350 C1E2010C */  jal        GetRCnt
     /* 7B54 80017354 01008434 */   ori       $a0, $a0, (0xF2000001 & 0xFFFF)
-    /* 7B58 80017358 25068393 */  lbu        $v1, %gp_rel(D_800A36F1)($gp)
+    /* 7B58 80017358 25068393 */  lbu        $v1, %gp_rel(g_main_frame_period)($gp)
     /* 7B5C 8001735C 00000000 */  nop
     /* 7B60 80017360 FFFF6324 */  addiu      $v1, $v1, -0x1
     /* 7B64 80017364 001A0300 */  sll        $v1, $v1, 8
@@ -111,7 +111,7 @@ glabel main
     /* 7BA0 800173A0 00F2043C */  lui        $a0, (0xF2000001 >> 16)
     /* 7BA4 800173A4 EAE2010C */  jal        ResetRCnt
     /* 7BA8 800173A8 01008434 */   ori       $a0, $a0, (0xF2000001 & 0xFFFF)
-    /* 7BAC 800173AC 41089393 */  lbu        $s3, %gp_rel(D_800A390D)($gp)
+    /* 7BAC 800173AC 41089393 */  lbu        $s3, %gp_rel(g_main_present_skip_frames)($gp)
     /* 7BB0 800173B0 00000000 */  nop
     /* 7BB4 800173B4 06006016 */  bnez       $s3, .L800173D0
     /* 7BB8 800173B8 FEFF043C */   lui       $a0, (0xFFFECC00 >> 16)
@@ -146,11 +146,11 @@ glabel main
     /* 7C20 80017420 065D0008 */  j          .L80017418
     /* 7C24 80017424 00000000 */   nop
   .L80017428:
-    /* 7C28 80017428 41088293 */  lbu        $v0, %gp_rel(D_800A390D)($gp)
+    /* 7C28 80017428 41088293 */  lbu        $v0, %gp_rel(g_main_present_skip_frames)($gp)
     /* 7C2C 8001742C 00000000 */  nop
     /* 7C30 80017430 04004010 */  beqz       $v0, .L80017444
     /* 7C34 80017434 FFFF4224 */   addiu     $v0, $v0, -0x1
-    /* 7C38 80017438 410882A3 */  sb         $v0, %gp_rel(D_800A390D)($gp)
+    /* 7C38 80017438 410882A3 */  sb         $v0, %gp_rel(g_main_present_skip_frames)($gp)
     /* 7C3C 8001743C 175D0008 */  j          .L8001745C
     /* 7C40 80017440 00000000 */   nop
   .L80017444:

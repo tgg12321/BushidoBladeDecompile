@@ -40,7 +40,7 @@ glabel func_80016D78
     /* 7610 80016E10 D11A010C */  jal        func_80046B44
     /* 7614 80016E14 00000000 */   nop
     /* 7618 80016E18 02000224 */  addiu      $v0, $zero, 0x2
-    /* 761C 80016E1C 250682A3 */  sb         $v0, %gp_rel(D_800A36F1)($gp)
+    /* 761C 80016E1C 250682A3 */  sb         $v0, %gp_rel(g_main_frame_period)($gp)
     /* 7620 80016E20 0A80013C */  lui        $at, %hi(g_motion_fighter_loaded_data_ids + 0x2)
     /* 7624 80016E24 C63820A4 */  sh         $zero, %lo(g_motion_fighter_loaded_data_ids + 0x2)($at)
     /* 7628 80016E28 E40580A3 */  sb         $zero, %gp_rel(D_800A36B0)($gp)

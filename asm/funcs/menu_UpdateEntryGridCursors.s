@@ -47,11 +47,11 @@ glabel menu_UpdateEntryGridCursors
   .L8007023C:
     /* 60A3C 8007023C 032C0500 */  sra        $a1, $a1, 16
     /* 60A40 80070240 40300500 */  sll        $a2, $a1, 1
-    /* 60A44 80070244 0A80023C */  lui        $v0, %hi(D_800A3588)
-    /* 60A48 80070248 88354224 */  addiu      $v0, $v0, %lo(D_800A3588)
+    /* 60A44 80070244 0A80023C */  lui        $v0, %hi(g_entry_menu_grid_column_cursors)
+    /* 60A48 80070248 88354224 */  addiu      $v0, $v0, %lo(g_entry_menu_grid_column_cursors)
     /* 60A4C 8007024C 2190C200 */  addu       $s2, $a2, $v0
-    /* 60A50 80070250 0A80023C */  lui        $v0, %hi(D_800A358C)
-    /* 60A54 80070254 8C354224 */  addiu      $v0, $v0, %lo(D_800A358C)
+    /* 60A50 80070250 0A80023C */  lui        $v0, %hi(g_entry_menu_grid_row_cursors)
+    /* 60A54 80070254 8C354224 */  addiu      $v0, $v0, %lo(g_entry_menu_grid_row_cursors)
     /* 60A58 80070258 2198C200 */  addu       $s3, $a2, $v0
     /* 60A5C 8007025C 0A80083C */  lui        $t0, %hi(g_entry_menu_entry_flags)
     /* 60A60 80070260 7CBC0825 */  addiu      $t0, $t0, %lo(g_entry_menu_entry_flags)
@@ -431,7 +431,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60FE8 800707E8 9471010C */  jal        snd_QueueSound
     /* 60FEC 800707EC 0B008424 */   addiu     $a0, $a0, 0xB
     /* 60FF0 800707F0 0F000224 */  addiu      $v0, $zero, 0xF
-    /* 60FF4 800707F4 FC0482A7 */  sh         $v0, %gp_rel(D_800A35C8)($gp)
+    /* 60FF4 800707F4 FC0482A7 */  sh         $v0, %gp_rel(g_entry_menu_selection_offset_countdowns)($gp)
     /* 60FF8 800707F8 14000224 */  addiu      $v0, $zero, 0x14
     /* 60FFC 800707FC F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 61000 80070800 02000824 */  addiu      $t0, $zero, 0x2
@@ -722,7 +722,7 @@ glabel menu_UpdateEntryGridCursors
     /* 61428 80070C28 02000224 */  addiu      $v0, $zero, 0x2
     /* 6142C 80070C2C C60482A7 */  sh         $v0, %gp_rel(D_800A3592)($gp)
   .L80070C30:
-    /* 61430 80070C30 B80484A7 */  sh         $a0, %gp_rel(D_800A3584)($gp)
+    /* 61430 80070C30 B80484A7 */  sh         $a0, %gp_rel(g_entry_menu_next_handler_index)($gp)
   .L80070C34:
     /* 61434 80070C34 B471010C */  jal        snd_FlushSoundQueue
     /* 61438 80070C38 00000000 */   nop

@@ -16,8 +16,8 @@ glabel menu_HandleSelPhase0CursorInput
     /* 65010 80074810 1000A2AF */  sw         $v0, 0x10($sp)
     /* 65014 80074814 1000A427 */  addiu      $a0, $sp, 0x10
     /* 65018 80074818 21280000 */  addu       $a1, $zero, $zero
-    /* 6501C 8007481C 0A80073C */  lui        $a3, %hi(D_800A35D0)
-    /* 65020 80074820 D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
+    /* 6501C 8007481C 0A80073C */  lui        $a3, %hi(g_sel_offset_steps)
+    /* 65020 80074820 D035E724 */  addiu      $a3, $a3, %lo(g_sel_offset_steps)
     /* 65024 80074824 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 65028 80074828 4000C624 */   addiu     $a2, $a2, 0x40
     /* 6502C 8007482C 21804000 */  addu       $s0, $v0, $zero
@@ -129,8 +129,8 @@ glabel menu_HandleSelPhase0CursorInput
     /* 651A8 800749A8 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)
     /* 651AC 800749AC 00000000 */  nop
     /* 651B0 800749B0 67006290 */  lbu        $v0, 0x67($v1)
-    /* 651B4 800749B4 0A80063C */  lui        $a2, %hi(D_8009BD20)
-    /* 651B8 800749B8 20BDC624 */  addiu      $a2, $a2, %lo(D_8009BD20)
+    /* 651B4 800749B4 0A80063C */  lui        $a2, %hi(g_sel_sheet_code_pairs)
+    /* 651B8 800749B8 20BDC624 */  addiu      $a2, $a2, %lo(g_sel_sheet_code_pairs)
     /* 651BC 800749BC 01004230 */  andi       $v0, $v0, 0x1
     /* 651C0 800749C0 670062A0 */  sb         $v0, 0x67($v1)
     /* 651C4 800749C4 D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
@@ -143,8 +143,8 @@ glabel menu_HandleSelPhase0CursorInput
     /* 651DC 800749DC 12004010 */  beqz       $v0, .L80074A28
     /* 651E0 800749E0 21200000 */   addu      $a0, $zero, $zero
     /* 651E4 800749E4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 651E8 800749E8 0A80063C */  lui        $a2, %hi(D_8009BD20)
-    /* 651EC 800749EC 20BDC624 */  addiu      $a2, $a2, %lo(D_8009BD20)
+    /* 651E8 800749E8 0A80063C */  lui        $a2, %hi(g_sel_sheet_code_pairs)
+    /* 651EC 800749EC 20BDC624 */  addiu      $a2, $a2, %lo(g_sel_sheet_code_pairs)
     /* 651F0 800749F0 D405878F */  lw         $a3, %gp_rel(g_sel_screen_work)($gp)
     /* 651F4 800749F4 10058393 */  lbu        $v1, %gp_rel(D_800A35DC)($gp)
     /* 651F8 800749F8 6700E290 */  lbu        $v0, 0x67($a3)

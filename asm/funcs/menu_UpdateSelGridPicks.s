@@ -80,8 +80,8 @@ glabel menu_UpdateSelGridPicks
     /* 668AC 800760AC 80101000 */  sll        $v0, $s0, 2
     /* 668B0 800760B0 40004624 */  addiu      $a2, $v0, 0x40
     /* 668B4 800760B4 21306600 */  addu       $a2, $v1, $a2
-    /* 668B8 800760B8 0A80073C */  lui        $a3, %hi(D_800A35D0)
-    /* 668BC 800760BC D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
+    /* 668B8 800760B8 0A80073C */  lui        $a3, %hi(g_sel_offset_steps)
+    /* 668BC 800760BC D035E724 */  addiu      $a3, $a3, %lo(g_sel_offset_steps)
     /* 668C0 800760C0 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 668C4 800760C4 21384700 */   addu      $a3, $v0, $a3
     /* 668C8 800760C8 21984000 */  addu       $s3, $v0, $zero
@@ -162,9 +162,9 @@ glabel menu_UpdateSelGridPicks
     /* 669D0 800761D0 21105500 */  addu       $v0, $v0, $s5
     /* 669D4 800761D4 80100200 */  sll        $v0, $v0, 2
     /* 669D8 800761D8 21186200 */  addu       $v1, $v1, $v0
-    /* 669DC 800761DC 0A80013C */  lui        $at, %hi(D_8009BCF8)
+    /* 669DC 800761DC 0A80013C */  lui        $at, %hi(g_sel_grid_page_cells)
     /* 669E0 800761E0 21082300 */  addu       $at, $at, $v1
-    /* 669E4 800761E4 F8BC2490 */  lbu        $a0, %lo(D_8009BCF8)($at)
+    /* 669E4 800761E4 F8BC2490 */  lbu        $a0, %lo(g_sel_grid_page_cells)($at)
     /* 669E8 800761E8 0A80023C */  lui        $v0, %hi(g_sel_entry_availability_and_claims)
     /* 669EC 800761EC E4BC4224 */  addiu      $v0, $v0, %lo(g_sel_entry_availability_and_claims)
     /* 669F0 800761F0 21888200 */  addu       $s1, $a0, $v0

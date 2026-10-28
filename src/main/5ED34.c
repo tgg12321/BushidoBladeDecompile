@@ -28,24 +28,24 @@ static s16 D_800A3540[2];
 static s16 D_800A3544[2];
 static s32 D_800A3548;
 static s32 g_entry_menu_pressed_buttons;
-static s16 D_800A3550;
+static s16 g_entry_menu_darken_level;
 static s16 g_entry_menu_grid_phase_extra_slot_count;
 static s16 g_entry_menu_row_phase_extra_slot_count;
 static s16 D_800A355C;
 static Unk800A3560Slots g_entry_menu_slot_records;
 static Unk8009BD24Block *g_entry_menu_working_record_ptr;
-static s32 D_800A356C;
+static s32 g_entry_menu_arena_cursor;
 static s16 g_entry_menu_slide_displacement;
 static s32 D_800A3574; /* not named by any code or data: size from the gap */
 static s16 g_entry_menu_slide_phase;
 static s16 D_800A357C;
 static s16 g_entry_menu_handler_index;
-static s16 D_800A3584;
-static s16 D_800A3588[2];
-static s16 D_800A358C[2];
+static s16 g_entry_menu_next_handler_index;
+static s16 g_entry_menu_grid_column_cursors[2];
+static s16 g_entry_menu_grid_row_cursors[2];
 static s16 g_entry_menu_row_phase_choice_cursors[2];
 static s16 D_800A3594[2];
-static s16 D_800A3598;
+static s16 g_entry_menu_choice_grid_column;
 static s16 g_entry_menu_choice_grid_row;
 static s32 D_800A35A0;
 static Unk8006E49CRec *D_800A35A4;
@@ -57,7 +57,7 @@ static s16 D_800A35B8;
 static s32 g_entry_menu_fight_mode;
 static GpuDb *g_entry_menu_gpu_db;
 static Unk800A35C4Rec *g_entry_menu_work_block;
-static s16 D_800A35C8[2];
+static s16 g_entry_menu_selection_offset_countdowns[2];
 
 s32 InitDisplayStateLoadPackAndSetEntryFlags(
     s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
@@ -73,49 +73,50 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     g_entry_menu_grid_phase_extra_slot_count = 0;
     D_800A32E9 = 0;
     g_entry_menu_init_extra_slot_count = arg1;
-    D_800A356C = arg0 + 0x58;
+    g_entry_menu_arena_cursor = arg0 + 0x58;
     g_entry_menu_resources = (Unk8006EA28Rec *)(arg0 + 0x58);
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
 
     switch (g_entry_menu_fight_mode) {
     case 0:
         gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-            5, (Unk8006E950Head *)D_800A356C);
+            5, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         break;
     case 4:
     case 6:
         gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-            3, (Unk8006E950Head *)D_800A356C);
+            3, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         break;
     case 2:
         if (g_entry_menu_working_record_ptr->unk14_17) {
             gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-                3, (Unk8006E950Head *)D_800A356C);
+                3, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         } else {
             gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-                4, (Unk8006E950Head *)D_800A356C);
+                4, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         }
         break;
     case 1:
     case 3:
         gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-            4, (Unk8006E950Head *)D_800A356C);
+            4, (Unk8006E950Head *)g_entry_menu_arena_cursor);
         break;
     }
 
-    D_800A356C = resource_RelocateNineOffsetListsAndLoadVabPack(
-        (Unk8006EA28Rec *)D_800A356C);
-    D_800A356C = gpu_InitPrimBufferPair(D_800A356C, D_800A35AC);
+    g_entry_menu_arena_cursor = resource_RelocateNineOffsetListsAndLoadVabPack(
+        (Unk8006EA28Rec *)g_entry_menu_arena_cursor);
+    g_entry_menu_arena_cursor =
+        gpu_InitPrimBufferPair(g_entry_menu_arena_cursor, D_800A35AC);
     g_entry_menu_slot_records.word = -1;
     g_entry_menu_slide_displacement = 0;
     g_entry_menu_slide_phase = 0;
     D_800A357C = 0;
     g_entry_menu_handler_index = 0;
     D_800A35A0 = 0;
-    D_800A3588[0] = 0;
-    D_800A358C[0] = 0;
-    D_800A3588[1] = 2;
-    D_800A358C[1] = 0;
+    g_entry_menu_grid_column_cursors[0] = 0;
+    g_entry_menu_grid_row_cursors[0] = 0;
+    g_entry_menu_grid_column_cursors[1] = 2;
+    g_entry_menu_grid_row_cursors[1] = 0;
     g_entry_menu_slot_records.rec[0].unk1 =
         g_entry_menu_grid_entries[0][0].value;
     g_entry_menu_slot_records.rec[1].unk1 =
@@ -139,21 +140,24 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     D_800A35B8 = (arg3 >> 20) & 3;
     D_800A35B4 = 5;
     g_entry_menu_entry_flags
-        [g_entry_menu_grid_entries[D_800A358C[0]][D_800A3588[0]].value] |= 4;
+        [g_entry_menu_grid_entries[g_entry_menu_grid_row_cursors[0]]
+                                  [g_entry_menu_grid_column_cursors[0]]
+                                      .value] |= 4;
     if (g_entry_menu_init_extra_slot_count != 0) {
         g_entry_menu_entry_flags
-            [g_entry_menu_grid_entries[D_800A358C[1]][D_800A3588[1]].value] |=
-            4;
+            [g_entry_menu_grid_entries[g_entry_menu_grid_row_cursors[1]]
+                                      [g_entry_menu_grid_column_cursors[1]]
+                                          .value] |= 4;
     }
 
     rect = D_800A32EC;
     g_entry_menu_choice_grid_row = 0;
-    D_800A3598 = 0;
+    g_entry_menu_choice_grid_column = 0;
     DrawSync(0);
     MoveImage(&rect, 0x3C0, 0x1FE);
     DrawSync(0);
-    g_entry_menu_work_block = (Unk800A35C4Rec *)D_800A356C;
-    D_800A356C += 0x14;
+    g_entry_menu_work_block = (Unk800A35C4Rec *)g_entry_menu_arena_cursor;
+    g_entry_menu_arena_cursor += 0x14;
     g_entry_menu_work_block->animation_frame_counter = 0;
     g_entry_menu_work_block->prim_buffer_counter = 0;
     return 1;
@@ -276,7 +280,7 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void) {
         g_entry_menu_slide_displacement += 0x20;
         if (g_entry_menu_slide_displacement >= 0x1E8) {
             g_entry_menu_slide_displacement = 0x1E8;
-            g_entry_menu_handler_index = D_800A3584;
+            g_entry_menu_handler_index = g_entry_menu_next_handler_index;
             if ((g_entry_menu_slide_phase >> 8) == 0) {
                 g_entry_menu_slide_phase++;
             }
@@ -321,7 +325,9 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
     for (i = 0; i < g_entry_menu_init_extra_slot_count + 1 +
                         g_entry_menu_grid_phase_extra_slot_count;
          i++) {
-        var_3 = g_entry_menu_grid_entries[D_800A358C[i]][D_800A3588[i]].value;
+        var_3 = g_entry_menu_grid_entries[g_entry_menu_grid_row_cursors[i]]
+                                         [g_entry_menu_grid_column_cursors[i]]
+                                             .value;
         if (g_entry_menu_entry_flags[var_3] & 1) {
             s.semi = 0;
             if (g_entry_menu_work_block->animation_frame_counter & 4) {
@@ -404,14 +410,14 @@ void gpu_AddScreenDarken(Unk8006EACCRec *draw_context) {
 
     tile_cursor = draw_context->primitive_cursors.tile_prims;
     SetTile(tile_cursor);
-    v1 = D_800A3550;
+    v1 = g_entry_menu_darken_level;
     tile_cursor->x0 = 0;
     tile_cursor->y0 = 0;
     tile_cursor->r0 = v1;
-    v2 = D_800A3550;
+    v2 = g_entry_menu_darken_level;
     tile_cursor->w = 0x280;
     tile_cursor->g0 = v2;
-    v3 = D_800A3550;
+    v3 = g_entry_menu_darken_level;
     tile_cursor->h = 0xF0;
     tile_cursor->b0 = v3;
     SetSemiTrans(tile_cursor, 1);
@@ -439,12 +445,12 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
     s16 dx;
     s16 dy;
 
-    if (D_800A3550 != 0) {
-        D_800A3550 += 0x10;
-        if (D_800A3550 >= 0x100) {
-            D_800A3550 = 0xFF;
+    if (g_entry_menu_darken_level != 0) {
+        g_entry_menu_darken_level += 0x10;
+        if (g_entry_menu_darken_level >= 0x100) {
+            g_entry_menu_darken_level = 0xFF;
             gpu_AddScreenDarken(arg0);
-            D_800A3550 = 0;
+            g_entry_menu_darken_level = 0;
         } else {
             gpu_AddScreenDarken(arg0);
         }
@@ -455,7 +461,7 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
     }
 
     if (D_800A355C >= 0x79) {
-        D_800A3584 = 3;
+        g_entry_menu_next_handler_index = 3;
     }
     s.scale_x = 0x100;
     s.scale_y = 0x100;
@@ -489,13 +495,13 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
             s.header->ubase = 0;
         }
         s.table = obj[1].cells;
-        t1 = -(D_800A35C8[i] * 800) / 20;
+        t1 = -(g_entry_menu_selection_offset_countdowns[i] * 800) / 20;
         {
             s32 idx = s.header->count - 1;
             dx = s.table[idx].x + s.table[idx].w - obj[1].cells[0].x;
             dy = s.table[idx].y + s.table[idx].h - obj[1].cells[0].y;
         }
-        t2 = -(D_800A35C8[i] * 664) / 20;
+        t2 = -(g_entry_menu_selection_offset_countdowns[i] * 664) / 20;
         if (i != 0) {
             t1 = -t1;
         }
@@ -513,14 +519,14 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
             arg0->primitive_cursors.textured_quad_prims =
                 gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
         }
-        if (D_800A35C8[i] > 0) {
-            D_800A35C8[i]--;
+        if (g_entry_menu_selection_offset_countdowns[i] > 0) {
+            g_entry_menu_selection_offset_countdowns[i]--;
         }
-        if (D_800A35C8[i] == 10) {
+        if (g_entry_menu_selection_offset_countdowns[i] == 10) {
             snd_QueueSound(7, 0x7F, 0x7F);
         }
-        if (D_800A35C8[i] < 0) {
-            D_800A35C8[i] = 0;
+        if (g_entry_menu_selection_offset_countdowns[i] < 0) {
+            g_entry_menu_selection_offset_countdowns[i] = 0;
             snd_QueueSound(8, 0x7F, 0x7F);
         }
     }
@@ -718,7 +724,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
                         g_entry_menu_grid_phase_extra_slot_count;
          i++) {
-        if (D_800A3588[i] == 5) {
+        if (g_entry_menu_grid_column_cursors[i] == 5) {
             s.header += 1 + i;
             if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
                 s.x += (rsin((g_entry_menu_work_block->animation_frame_counter *
@@ -755,7 +761,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
                         g_entry_menu_grid_phase_extra_slot_count;
          i++) {
-        if (D_800A3588[i] == 4) {
+        if (g_entry_menu_grid_column_cursors[i] == 4) {
             s.header += 1 + i;
             if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
                 s.x += (rsin((g_entry_menu_work_block->animation_frame_counter *
@@ -815,7 +821,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                     } else {
                         shift[i] = 9;
                     }
-                    if (col == D_800A358C[i] && row == D_800A3588[i] &&
+                    if (col == g_entry_menu_grid_row_cursors[i] &&
+                        row == g_entry_menu_grid_column_cursors[i] &&
                         g_entry_menu_work_block->entry_countdowns[i] != 0) {
                         s.has_color = 1;
                         s.col_r = s.col_g = s.col_b =
@@ -901,8 +908,8 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
     for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
                         (var_7 = g_entry_menu_grid_phase_extra_slot_count);
          i++) {
-        col = &D_800A3588[i];
-        row = &D_800A358C[i];
+        col = &g_entry_menu_grid_column_cursors[i];
+        row = &g_entry_menu_grid_row_cursors[i];
         flags = &g_entry_menu_entry_flags[g_entry_menu_grid_entries[*row][*col]
                                               .value];
         g_entry_menu_slot_records.rec[i].unk1 =
@@ -1000,24 +1007,27 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 snd_QueueSound(
                     g_entry_menu_grid_entries[*row][*col].value + 0xB, 0x7F,
                     0x7F);
-                D_800A35C8[0] = 0xF;
-                D_800A35C8[1] = 0x14;
+                g_entry_menu_selection_offset_countdowns[0] = 0xF;
+                g_entry_menu_selection_offset_countdowns[1] = 0x14;
                 if (g_entry_menu_fight_mode == 2 &&
                     (g_entry_menu_working_record_ptr->unk14_17) && i == 0) {
                     if (g_entry_menu_entry_flags
                             [g_entry_menu_slot_records.rec[0].unk1] &
                         2) {
-                        D_800A3588[1] = 2;
+                        g_entry_menu_grid_column_cursors[1] = 2;
                     } else {
-                        D_800A3588[1] = 0;
+                        g_entry_menu_grid_column_cursors[1] = 0;
                     }
-                    D_800A358C[1] = 0;
+                    g_entry_menu_grid_row_cursors[1] = 0;
                     if (g_entry_menu_work_block->entry_countdowns[0] == 0) {
                         g_entry_menu_slot_records.rec[1].unk1 =
-                            g_entry_menu_grid_entries[0][D_800A3588[1]].value;
+                            g_entry_menu_grid_entries
+                                [0][g_entry_menu_grid_column_cursors[1]]
+                                    .value;
                         g_entry_menu_entry_flags
-                            [g_entry_menu_grid_entries[0][D_800A3588[1]]
-                                 .value] |= 4;
+                            [g_entry_menu_grid_entries
+                                 [0][g_entry_menu_grid_column_cursors[1]]
+                                     .value] |= 4;
                     }
                     break;
                 }
@@ -1086,7 +1096,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
                 g_entry_menu_row_phase_choice_cursors[1] = 2;
             }
-            D_800A3584 = 1;
+            g_entry_menu_next_handler_index = 1;
         }
     }
     snd_FlushSoundQueue();
@@ -1356,7 +1366,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
                         g_entry_menu_slot_records.rec[0].unk2 = 0xFF;
                         g_entry_menu_slide_phase = 3;
-                        D_800A3584 = 0;
+                        g_entry_menu_next_handler_index = 0;
                         snd_QueueSound(6, 0x7F, 0x7F);
                         if (g_entry_menu_grid_phase_extra_slot_count == 1) {
                             g_entry_menu_slot_records.rec[1].unk0 = 0xFF;
@@ -1371,8 +1381,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     g_entry_menu_slide_phase == 0 &&
                     g_entry_menu_fight_mode != 3) {
                     snd_QueueSound(2, 0x7F, 0x7F);
-                    D_800A35C8[0] = 0xF;
-                    D_800A35C8[1] = 0x14;
+                    g_entry_menu_selection_offset_countdowns[0] = 0xF;
+                    g_entry_menu_selection_offset_countdowns[1] = 0x14;
                     g_entry_menu_slot_records.rec[i].unk2 = 0xFF;
                 }
                 D_800A3544[i] = 9;
@@ -1463,7 +1473,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 g_entry_menu_slide_phase = 3;
                 snd_QueueSound(6, 0x7F, 0x7F);
-                D_800A3584 = 0;
+                g_entry_menu_next_handler_index = 0;
                 g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
                 g_entry_menu_slot_records.rec[0].unk2 = 0xFF;
                 if (g_entry_menu_row_phase_extra_slot_count == 1) {
@@ -1522,8 +1532,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                  0) &&
             flag != 1) {
             g_entry_menu_slide_phase = 0x101;
-            D_800A3584 = 2;
-            D_800A3550 = 1;
+            g_entry_menu_next_handler_index = 2;
+            g_entry_menu_darken_level = 1;
             D_800A355C = 0;
         }
     }
@@ -1602,20 +1612,20 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
         }
     }
 
-    D_800A3550 += 8;
-    if (D_800A3550 >= 0xFF) {
-        D_800A3550 = 0xFF;
+    g_entry_menu_darken_level += 8;
+    if (g_entry_menu_darken_level >= 0xFF) {
+        g_entry_menu_darken_level = 0xFF;
         g_entry_menu_slide_phase = 1;
         snd_QueueSound(6, 0x7F, 0x7F);
         if ((u32)g_entry_menu_fight_mode < 2) {
             g_entry_menu_working_record_ptr->unk14_4 = func_80071C20();
             D_800A35A0 = 1;
         } else if (g_entry_menu_fight_mode == 4) {
-            D_800A3584 = 5;
+            g_entry_menu_next_handler_index = 5;
         } else if (g_entry_menu_fight_mode == 6) {
-            D_800A3584 = 6;
+            g_entry_menu_next_handler_index = 6;
             g_entry_menu_choice_grid_row = 1;
-            D_800A3598 = 1;
+            g_entry_menu_choice_grid_column = 1;
         } else {
             D_800A35A0 = 1;
         }
@@ -1692,18 +1702,22 @@ void menu_UpdateChoiceGrid(
         var_4 = g_entry_menu_resources->unk_74;
         s.header = var_4[4];
         cells = s.header[1].cells;
-        if (!(g_entry_menu_choice_grid_row * 2 + D_800A3598 == 3 &&
+        if (!(g_entry_menu_choice_grid_row * 2 +
+                      g_entry_menu_choice_grid_column ==
+                  3 &&
               g_entry_menu_fight_mode == 6 && mode == 2)) {
             s.table = cells;
-            s.table +=
-                (g_entry_menu_choice_grid_row + mode * 3) * 2 + D_800A3598;
+            s.table += (g_entry_menu_choice_grid_row + mode * 3) * 2 +
+                       g_entry_menu_choice_grid_column;
             s.sprt_out = arg0->primitive_cursors.sprite_prims;
             arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
         }
         s.header++;
         for (i = 0; i < 6; i++) {
             if (!(i == 3 && g_entry_menu_fight_mode == 6 && mode == 2) &&
-                g_entry_menu_choice_grid_row * 2 + D_800A3598 != i) {
+                g_entry_menu_choice_grid_row * 2 +
+                        g_entry_menu_choice_grid_column !=
+                    i) {
                 s.table = cells + (mode * 6 + i);
                 s.sprt_out = arg0->primitive_cursors.sprite_prims;
                 arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
@@ -1729,23 +1743,27 @@ void menu_UpdateChoiceGrid(
         g_entry_menu_gpu_db->draw.ofs[1] - D_8009BCC4[mode][1];
     if (((g_entry_menu_slide_phase & 0xFF) == 1 ||
          (g_entry_menu_slide_phase & 0xFF) == 3) &&
-        D_800A3584 >= 4 && D_800A3584 < 7 && g_entry_menu_handler_index >= 4 &&
-        g_entry_menu_handler_index < 7) {
+        g_entry_menu_next_handler_index >= 4 &&
+        g_entry_menu_next_handler_index < 7 &&
+        g_entry_menu_handler_index >= 4 && g_entry_menu_handler_index < 7) {
         for (i = 0; i < 2; i++) {
-            d = D_8009BCC4[D_800A3584 - 4][i] -
+            d = D_8009BCC4[g_entry_menu_next_handler_index - 4][i] -
                 D_8009BCC4[g_entry_menu_handler_index - 4][i];
             d *= 30;
             if ((d >= 0 ? d : -d) >
-                (D_8009BCD0[i] >= 0 ? D_8009BCD0[i] : -D_8009BCD0[i])) {
-                D_8009BCD0[i] += d * 32 / 488;
+                (g_entry_menu_transition_offsets[i] >= 0
+                     ? g_entry_menu_transition_offsets[i]
+                     : -g_entry_menu_transition_offsets[i])) {
+                g_entry_menu_transition_offsets[i] += d * 32 / 488;
             } else {
-                D_8009BCD0[i] = d;
+                g_entry_menu_transition_offsets[i] = d;
             }
-            g_entry_menu_work_block->draw_offset[i] -= D_8009BCD0[i] / 30;
+            g_entry_menu_work_block->draw_offset[i] -=
+                g_entry_menu_transition_offsets[i] / 30;
         }
     } else {
-        D_8009BCD0[1] = 0;
-        D_8009BCD0[0] = 0;
+        g_entry_menu_transition_offsets[1] = 0;
+        g_entry_menu_transition_offsets[0] = 0;
     }
     SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
                   g_entry_menu_work_block->draw_offset);
@@ -1785,18 +1803,19 @@ void menu_UpdateChoiceGrid(
         if ((g_entry_menu_slide_phase & 0xFF) == 0) {
             snd_QueueSound(0, 0x7F, 0x7F);
             if (((g_entry_menu_pressed_buttons & 0x20002000) &&
-                 D_800A3598 != 0) ||
+                 g_entry_menu_choice_grid_column != 0) ||
                 ((g_entry_menu_pressed_buttons & 0x80008000) &&
-                 D_800A3598 == 0)) {
+                 g_entry_menu_choice_grid_column == 0)) {
                 code = var_3[(g_entry_menu_handler_index - 4) * 8 + 3 * 2 +
-                             D_800A3598];
-                D_800A3584 = code & 0xF;
-                if (D_800A3584 != 0xF) {
+                             g_entry_menu_choice_grid_column];
+                g_entry_menu_next_handler_index = code & 0xF;
+                if (g_entry_menu_next_handler_index != 0xF) {
                     g_entry_menu_slide_phase = code >> 4;
                     snd_QueueSound(6, 0x7F, 0x7F);
                 }
             }
-            D_800A3598 = D_800A3598 == 0;
+            g_entry_menu_choice_grid_column =
+                g_entry_menu_choice_grid_column == 0;
         }
     }
     if (g_entry_menu_pressed_buttons & 0x40004000) {
@@ -1840,7 +1859,8 @@ void menu_UpdateChoiceGrid(
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 2; j++) {
-            if (i == g_entry_menu_choice_grid_row && j == D_800A3598 &&
+            if (i == g_entry_menu_choice_grid_row &&
+                j == g_entry_menu_choice_grid_column &&
                 (g_entry_menu_slide_phase & 0xFF) == 0) {
                 s.has_color = 1;
             } else {
@@ -1881,8 +1901,8 @@ void menu_UpdateChoiceGrid(
                 } else {
                     g_entry_menu_handler_index = 1;
                 }
-                D_800A35C8[0] = 0xF;
-                D_800A35C8[1] = 0x14;
+                g_entry_menu_selection_offset_countdowns[0] = 0xF;
+                g_entry_menu_selection_offset_countdowns[1] = 0x14;
                 g_entry_menu_work_block->row_countdowns[1] = 0;
                 g_entry_menu_work_block->row_countdowns[0] = 0;
                 goto end;
@@ -1890,7 +1910,8 @@ void menu_UpdateChoiceGrid(
         }
         if (g_entry_menu_pressed_buttons & 0x400040) {
             var_10 = var_3[(g_entry_menu_handler_index - 4) * 8 +
-                           g_entry_menu_choice_grid_row * 2 + D_800A3598];
+                           g_entry_menu_choice_grid_row * 2 +
+                           g_entry_menu_choice_grid_column];
             snd_QueueSound(1, 0x7F, 0x7F);
             if (var_10 != 0xD || g_entry_menu_fight_mode != 6) {
                 g_entry_menu_working_record_ptr->unk14_4 = var_10;

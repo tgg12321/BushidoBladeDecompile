@@ -64,7 +64,7 @@ glabel menu_RunPauseMenu
     /* 774C 80016F4C 07004012 */  beqz       $s2, .L80016F6C
     /* 7750 80016F50 21380000 */   addu      $a3, $zero, $zero
     /* 7754 80016F54 02000424 */  addiu      $a0, $zero, 0x2
-    /* 7758 80016F58 BC068593 */  lbu        $a1, %gp_rel(D_800A3788)($gp)
+    /* 7758 80016F58 BC068593 */  lbu        $a1, %gp_rel(g_fight_toggle_option_bits)($gp)
     /* 775C 80016F5C E807868F */  lw         $a2, %gp_rel(g_prim_buf_cursor)($gp)
     /* 7760 80016F60 002C0500 */  sll        $a1, $a1, 16
     /* 7764 80016F64 DE5B0008 */  j          .L80016F78
@@ -152,10 +152,10 @@ glabel menu_RunPauseMenu
     /* 7894 80017094 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 7898 80017098 FDFF2226 */  addiu      $v0, $s1, -0x3
     /* 789C 8001709C 01000324 */  addiu      $v1, $zero, 0x1
-    /* 78A0 800170A0 BC068493 */  lbu        $a0, %gp_rel(D_800A3788)($gp)
+    /* 78A0 800170A0 BC068493 */  lbu        $a0, %gp_rel(g_fight_toggle_option_bits)($gp)
     /* 78A4 800170A4 04184300 */  sllv       $v1, $v1, $v0
     /* 78A8 800170A8 25208300 */  or         $a0, $a0, $v1
-    /* 78AC 800170AC BC0684A3 */  sb         $a0, %gp_rel(D_800A3788)($gp)
+    /* 78AC 800170AC BC0684A3 */  sb         $a0, %gp_rel(g_fight_toggle_option_bits)($gp)
     /* 78B0 800170B0 BA5B0008 */  j          .L80016EE8
     /* 78B4 800170B4 01000524 */   addiu     $a1, $zero, 0x1
   .L800170B8:
@@ -171,10 +171,10 @@ glabel menu_RunPauseMenu
     /* 78DC 800170DC FDFF2226 */  addiu      $v0, $s1, -0x3
     /* 78E0 800170E0 01000324 */  addiu      $v1, $zero, 0x1
     /* 78E4 800170E4 04184300 */  sllv       $v1, $v1, $v0
-    /* 78E8 800170E8 BC068293 */  lbu        $v0, %gp_rel(D_800A3788)($gp)
+    /* 78E8 800170E8 BC068293 */  lbu        $v0, %gp_rel(g_fight_toggle_option_bits)($gp)
     /* 78EC 800170EC 27180300 */  nor        $v1, $zero, $v1
     /* 78F0 800170F0 24104300 */  and        $v0, $v0, $v1
-    /* 78F4 800170F4 BC0682A3 */  sb         $v0, %gp_rel(D_800A3788)($gp)
+    /* 78F4 800170F4 BC0682A3 */  sb         $v0, %gp_rel(g_fight_toggle_option_bits)($gp)
     /* 78F8 800170F8 BA5B0008 */  j          .L80016EE8
     /* 78FC 800170FC 01000524 */   addiu     $a1, $zero, 0x1
   .L80017100:

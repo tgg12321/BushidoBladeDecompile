@@ -45,26 +45,26 @@ glabel eff_SpawnParticles
     /* 57AA4 800672A4 2118B400 */  addu       $v1, $a1, $s4
     /* 57AA8 800672A8 0000828C */  lw         $v0, 0x0($a0)
     /* 57AAC 800672AC 80180300 */  sll        $v1, $v1, 2
-    /* 57AB0 800672B0 0F80013C */  lui        $at, %hi(D_800F0C10)
+    /* 57AB0 800672B0 0F80013C */  lui        $at, %hi(g_eff_particle_group_positions)
     /* 57AB4 800672B4 21082300 */  addu       $at, $at, $v1
-    /* 57AB8 800672B8 100C22AC */  sw         $v0, %lo(D_800F0C10)($at)
+    /* 57AB8 800672B8 100C22AC */  sw         $v0, %lo(g_eff_particle_group_positions)($at)
     /* 57ABC 800672BC 0400828C */  lw         $v0, 0x4($a0)
     /* 57AC0 800672C0 0F80013C */  lui        $at, %hi(D_800F0C14)
     /* 57AC4 800672C4 21082300 */  addu       $at, $at, $v1
     /* 57AC8 800672C8 140C22AC */  sw         $v0, %lo(D_800F0C14)($at)
     /* 57ACC 800672CC 0800828C */  lw         $v0, 0x8($a0)
-    /* 57AD0 800672D0 AC03848F */  lw         $a0, %gp_rel(D_800A3478)($gp)
+    /* 57AD0 800672D0 AC03848F */  lw         $a0, %gp_rel(g_eff_command_vector)($gp)
     /* 57AD4 800672D4 0F80013C */  lui        $at, %hi(D_800F0C18)
     /* 57AD8 800672D8 21082300 */  addu       $at, $at, $v1
     /* 57ADC 800672DC 180C22AC */  sw         $v0, %lo(D_800F0C18)($at)
     /* 57AE0 800672E0 00008294 */  lhu        $v0, 0x0($a0)
-    /* 57AE4 800672E4 0F80013C */  lui        $at, %hi(D_800F0B78)
+    /* 57AE4 800672E4 0F80013C */  lui        $at, %hi(g_eff_particle_emitter_vectors)
     /* 57AE8 800672E8 21082500 */  addu       $at, $at, $a1
-    /* 57AEC 800672EC 780B22A4 */  sh         $v0, %lo(D_800F0B78)($at)
+    /* 57AEC 800672EC 780B22A4 */  sh         $v0, %lo(g_eff_particle_emitter_vectors)($at)
     /* 57AF0 800672F0 02008294 */  lhu        $v0, 0x2($a0)
-    /* 57AF4 800672F4 0F80013C */  lui        $at, %hi(D_800F0B78 + 0x2)
+    /* 57AF4 800672F4 0F80013C */  lui        $at, %hi(g_eff_particle_emitter_vectors + 0x2)
     /* 57AF8 800672F8 21082500 */  addu       $at, $at, $a1
-    /* 57AFC 800672FC 7A0B22A4 */  sh         $v0, %lo(D_800F0B78 + 0x2)($at)
+    /* 57AFC 800672FC 7A0B22A4 */  sh         $v0, %lo(g_eff_particle_emitter_vectors + 0x2)($at)
     /* 57B00 80067300 04008294 */  lhu        $v0, 0x4($a0)
     /* 57B04 80067304 0F80013C */  lui        $at, %hi(D_800F0B7C)
     /* 57B08 80067308 21082500 */  addu       $at, $at, $a1
@@ -105,14 +105,14 @@ glabel eff_SpawnParticles
     /* 57B7C 8006737C 00000000 */  nop
     /* 57B80 80067380 18006200 */  mult       $v1, $v0
     /* 57B84 80067384 C0181400 */  sll        $v1, $s4, 3
-    /* 57B88 80067388 0F80013C */  lui        $at, %hi(D_800F0B78)
+    /* 57B88 80067388 0F80013C */  lui        $at, %hi(g_eff_particle_emitter_vectors)
     /* 57B8C 8006738C 21082300 */  addu       $at, $at, $v1
-    /* 57B90 80067390 780B2294 */  lhu        $v0, %lo(D_800F0B78)($at)
+    /* 57B90 80067390 780B2294 */  lhu        $v0, %lo(g_eff_particle_emitter_vectors)($at)
     /* 57B94 80067394 00000000 */  nop
     /* 57B98 80067398 6800A2A7 */  sh         $v0, 0x68($sp)
-    /* 57B9C 8006739C 0F80013C */  lui        $at, %hi(D_800F0B78 + 0x2)
+    /* 57B9C 8006739C 0F80013C */  lui        $at, %hi(g_eff_particle_emitter_vectors + 0x2)
     /* 57BA0 800673A0 21082300 */  addu       $at, $at, $v1
-    /* 57BA4 800673A4 7A0B2294 */  lhu        $v0, %lo(D_800F0B78 + 0x2)($at)
+    /* 57BA4 800673A4 7A0B2294 */  lhu        $v0, %lo(g_eff_particle_emitter_vectors + 0x2)($at)
     /* 57BA8 800673A8 00000000 */  nop
     /* 57BAC 800673AC 6A00A2A7 */  sh         $v0, 0x6A($sp)
     /* 57BB0 800673B0 0F80013C */  lui        $at, %hi(D_800F0B7C)

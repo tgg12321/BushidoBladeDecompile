@@ -3,31 +3,31 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 59774 80068F74 1800B0AF */  sw         $s0, 0x18($sp)
     /* 59778 80068F78 21808000 */  addu       $s0, $a0, $zero
     /* 5977C 80068F7C 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* 59780 80068F80 340490AF */  sw         $s0, %gp_rel(D_800A3500)($gp)
+    /* 59780 80068F80 340490AF */  sw         $s0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 59784 80068F84 500490AF */  sw         $s0, %gp_rel(D_800A351C)($gp)
     /* 59788 80068F88 58001026 */  addiu      $s0, $s0, 0x58
     /* 5978C 80068F8C 2000BFAF */  sw         $ra, 0x20($sp)
-    /* 59790 80068F90 340490AF */  sw         $s0, %gp_rel(D_800A3500)($gp)
+    /* 59790 80068F90 340490AF */  sw         $s0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 59794 80068F94 A81A010C */  jal        resource_FreeSlotsAndBlocksAndInvalidateEntryCache
     /* 59798 80068F98 2188A000 */   addu      $s1, $a1, $zero
-    /* 5979C 80068F9C 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
+    /* 5979C 80068F9C 3404858F */  lw         $a1, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597A0 80068FA0 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 597A4 80068FA4 02000424 */   addiu     $a0, $zero, 0x2
-    /* 597A8 80068FA8 3404848F */  lw         $a0, %gp_rel(D_800A3500)($gp)
+    /* 597A8 80068FA8 3404848F */  lw         $a0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597AC 80068FAC 00000000 */  nop
     /* 597B0 80068FB0 600684AF */  sw         $a0, %gp_rel(D_800A372C)($gp)
     /* 597B4 80068FB4 67A4010C */  jal        reloc_RelocateTwelveListsAndLoadVabPack
     /* 597B8 80068FB8 00000000 */   nop
     /* 597BC 80068FBC 5004858F */  lw         $a1, %gp_rel(D_800A351C)($gp)
     /* 597C0 80068FC0 21204000 */  addu       $a0, $v0, $zero
-    /* 597C4 80068FC4 340484AF */  sw         $a0, %gp_rel(D_800A3500)($gp)
+    /* 597C4 80068FC4 340484AF */  sw         $a0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597C8 80068FC8 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 597CC 80068FCC 00000000 */   nop
     /* 597D0 80068FD0 240050AC */  sw         $s0, 0x24($v0)
-    /* 597D4 80068FD4 340482AF */  sw         $v0, %gp_rel(D_800A3500)($gp)
+    /* 597D4 80068FD4 340482AF */  sw         $v0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597D8 80068FD8 300482AF */  sw         $v0, %gp_rel(g_row_menu_work_block)($gp)
     /* 597DC 80068FDC 34004224 */  addiu      $v0, $v0, 0x34
-    /* 597E0 80068FE0 340482AF */  sw         $v0, %gp_rel(D_800A3500)($gp)
+    /* 597E0 80068FE0 340482AF */  sw         $v0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597E4 80068FE4 F0FF0224 */  addiu      $v0, $zero, -0x10
     /* 597E8 80068FE8 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
     /* 597EC 80068FEC 0A80043C */  lui        $a0, %hi(g_row_menu_row_state)
@@ -64,7 +64,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 5985C 8006905C 3004858F */  lw         $a1, %gp_rel(g_row_menu_work_block)($gp)
     /* 59860 80069060 580491AF */  sw         $s1, %gp_rel(g_row_menu_working_record_ptr)($gp)
     /* 59864 80069064 4C0480AF */  sw         $zero, %gp_rel(g_menu_draw_buffer_counter)($gp)
-    /* 59868 80069068 5C0480A7 */  sh         $zero, %gp_rel(D_800A3528)($gp)
+    /* 59868 80069068 5C0480A7 */  sh         $zero, %gp_rel(g_menu_stored_choice_cursor)($gp)
     /* 5986C 8006906C 2A00A2A4 */  sh         $v0, 0x2A($a1)
     /* 59870 80069070 2800A2A4 */  sh         $v0, 0x28($a1)
     /* 59874 80069074 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
@@ -72,7 +72,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 5987C 8006907C 460480A7 */  sh         $zero, %gp_rel(D_800A3512)($gp)
     /* 59880 80069080 440480A7 */  sh         $zero, %gp_rel(D_800A3510)($gp)
     /* 59884 80069084 420480A7 */  sh         $zero, %gp_rel(D_800A350E)($gp)
-    /* 59888 80069088 400480A7 */  sh         $zero, %gp_rel(D_800A350C)($gp)
+    /* 59888 80069088 400480A7 */  sh         $zero, %gp_rel(g_menu_draw_offset_steps)($gp)
     /* 5988C 8006908C 24186200 */  and        $v1, $v1, $v0
     /* 59890 80069090 00106334 */  ori        $v1, $v1, 0x1000
     /* 59894 80069094 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)

@@ -42,7 +42,7 @@ void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
             ptr->load_status = -2;
         }
     }
-    D_80094B88[a0] = a1;
+    g_slot_tim_group_requests[a0] = a1;
 }
 
 s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
@@ -193,7 +193,7 @@ void gpu_LoadRequestedAvailableTimGroupsForSlot(
 }
 
 extern s16 *D_80094DF0[6];
-extern u8 D_80094E08[];
+extern u8 g_gpu_clut_row_list_map[];
 extern s16 D_800A9A20;
 extern u16 g_gpu_store_buf[][16];
 
@@ -208,16 +208,16 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     if (arg0->arena_id != 1) {
         return;
     }
-    if (D_80094E08[arg0->unk_08] == 0xFF) {
+    if (g_gpu_clut_row_list_map[arg0->unk_08] == 0xFF) {
         return;
     }
     /* FAKE: id_ptr spelling: the reload of arg0->unk_08 for the table
      * index stays after the D_800A9A20 store only when it is not plain
-     * struct indexing; D_80094E08[arg0->unk_08]: score 2
+     * struct indexing; g_gpu_clut_row_list_map[arg0->unk_08]: score 2
      * (proven-spelling-class-reconstruction) */
     id_ptr = &arg0->unk_08;
     D_800A9A20 = arg0->unk_08;
-    tbl = D_80094DF0[D_80094E08[*id_ptr]];
+    tbl = D_80094DF0[g_gpu_clut_row_list_map[*id_ptr]];
     if (gpu_GetFogClutObject() == 1) {
         xoff = -0x140;
         yoff = 0xF0;
@@ -256,7 +256,7 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
     if (obj->unk_08 != D_800A9A20) {
         return;
     }
-    if (D_80094E08[obj->unk_08] == 0xFF) {
+    if (g_gpu_clut_row_list_map[obj->unk_08] == 0xFF) {
         return;
     }
     r = (a0 << 12) / 255;
@@ -273,7 +273,7 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
             xoff = 0x80;
             yoff = 0;
         }
-        tbl = D_80094DF0[D_80094E08[obj->unk_08]];
+        tbl = D_80094DF0[g_gpu_clut_row_list_map[obj->unk_08]];
         for (idx = 0; tbl[0] >= 0; tbl += 2) {
             rect.x = tbl[0] + xoff;
             rect.y = tbl[1] + yoff;
@@ -289,13 +289,13 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
     }
 }
 
-extern s16 D_800A3238[3];
+extern s16 g_light_point_color[3];
 extern VECTOR D_800A9B28;
 
 void light_SetPointLight(VECTOR *a0, s32 a1) {
-    D_800A3238[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
-    D_800A3238[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
-    D_800A3238[2] = (s16)(((a1 & 0xFF) << 12) / 255);
+    g_light_point_color[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
+    g_light_point_color[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
+    g_light_point_color[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
 
@@ -325,7 +325,7 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
         if (ptr == 0) {
             goto skip;
         }
-        if (D_800A3238[0] < 0) {
+        if (g_light_point_color[0] < 0) {
             goto skip;
         }
 
@@ -371,9 +371,9 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
             (s16)-ratan2(dy, (rcos(angle) * dz + rsin(angle) * dx) >> 12);
         tbl->light[1].yaw = (s16)angle;
         tbl->light[1].on = 1;
-        tbl->cmat.m[0][1] = D_800A3238[0];
-        tbl->cmat.m[1][1] = D_800A3238[1];
-        tbl->cmat.m[2][1] = D_800A3238[2];
+        tbl->cmat.m[0][1] = g_light_point_color[0];
+        tbl->cmat.m[1][1] = g_light_point_color[1];
+        tbl->cmat.m[2][1] = g_light_point_color[2];
         continue;
 
     skip:
@@ -384,7 +384,7 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
     calc_LightMatrix(&g_light_setups[1]);
 }
 
-extern s16 D_800A3238[3];
+extern s16 g_light_point_color[3];
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
 static s16 D_800A3380[2];
@@ -393,7 +393,7 @@ static s32 D_800A3384[2];
 void light_ResetPointLight(void) {
     D_800A3380[1] = 0;
     D_800A3380[0] = 0;
-    D_800A3238[0] = -1;
+    g_light_point_color[0] = -1;
 }
 
 void light_SetPointLightTarget(s32 a0, s32 a1) {
@@ -510,7 +510,7 @@ void gpu_SetBackgroundClearColorAndFarColor(s32 a0) {
  * gpu_LoadRequestedAvailableTimGroupsForSlot's per-index 5-bit mask table, the
  * six VRAM CLUT-row lists
  * ({x, y} pairs ending in {-1, 0}) that D_80094DF0 points at, the id ->
- * list index map D_80094E08 (0xFF: none), and
+ * list index map g_gpu_clut_row_list_map (0xFF: none), and
  * ApplyLightPresetRowBackgroundClearAndFarColor's 38 light rows. Defined after
  * every function, so no body sees a definition where it saw an extern. */
 u8 D_80094D40[64] = {
@@ -530,7 +530,7 @@ s16 D_80094DD8[6] = {0x2A0, 0xF8, 0x2B0, 0xF9, -1, 0x0};
 s16 D_80094DE4[6] = {0x280, 0xFB, 0x2B0, 0xFB, -1, 0x0};
 s16 *D_80094DF0[6] = {D_80094D80, D_80094DA0, D_80094DB0,
                       D_80094DC8, D_80094DD8, D_80094DE4};
-u8 D_80094E08[64] = {
+u8 g_gpu_clut_row_list_map[64] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0x0,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x1,  0xFF, 0xFF, 0xFF,
@@ -578,4 +578,4 @@ s32 D_80094E48[38][6] = {
     {0x00E6E4A7, 0x00161E28, 0x0092AFCC, 0x001F253F, 0x0E000650, 0x00000000}};
 
 /* This file's initialized small data (.sdata), in address order (Q65). */
-s16 D_800A3238[3] = {0, 0, 0};
+s16 g_light_point_color[3] = {0, 0, 0};

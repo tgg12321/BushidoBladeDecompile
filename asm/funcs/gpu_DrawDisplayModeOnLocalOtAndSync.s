@@ -1,8 +1,8 @@
 glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7CF4 800174F4 68FFBD27 */  addiu      $sp, $sp, -0x98
     /* 7CF8 800174F8 9000B2AF */  sw         $s2, 0x90($sp)
-    /* 7CFC 800174FC 0F80123C */  lui        $s2, %hi(D_800F33D8)
-    /* 7D00 80017500 D8335226 */  addiu      $s2, $s2, %lo(D_800F33D8)
+    /* 7CFC 800174FC 0F80123C */  lui        $s2, %hi(g_shared_buffer)
+    /* 7D00 80017500 D8335226 */  addiu      $s2, $s2, %lo(g_shared_buffer)
     /* 7D04 80017504 9C068393 */  lbu        $v1, %gp_rel(g_local_ot_draw_mode)($gp)
     /* 7D08 80017508 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 7D0C 8001750C 9400BFAF */  sw         $ra, 0x94($sp)
@@ -45,7 +45,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7D9C 8001759C 00000000 */   nop
     /* 7DA0 800175A0 1B75010C */  jal        gpu_DrawFixedSpritePairWithSelectedSheets
     /* 7DA4 800175A4 21204002 */   addu      $a0, $s2, $zero
-    /* 7DA8 800175A8 DC058393 */  lbu        $v1, %gp_rel(D_800A36A8)($gp)
+    /* 7DA8 800175A8 DC058393 */  lbu        $v1, %gp_rel(g_gpu_jitter_burst_enabled)($gp)
     /* 7DAC 800175AC 00000000 */  nop
     /* 7DB0 800175B0 11006010 */  beqz       $v1, .L800175F8
     /* 7DB4 800175B4 21904000 */   addu      $s2, $v0, $zero
@@ -85,7 +85,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E30 80017630 B95D0008 */  j          .L800176E4
     /* 7E34 80017634 00000000 */   nop
   .L80017638:
-    /* 7E38 80017638 2C088693 */  lbu        $a2, %gp_rel(D_800A38F8)($gp)
+    /* 7E38 80017638 2C088693 */  lbu        $a2, %gp_rel(g_fight_stage_list_draw_cursor)($gp)
     /* 7E3C 8001763C D4068593 */  lbu        $a1, %gp_rel(g_fight_stage_command_count)($gp)
     /* 7E40 80017640 FF00C430 */  andi       $a0, $a2, 0xFF
     /* 7E44 80017644 2B10A400 */  sltu       $v0, $a1, $a0
@@ -114,11 +114,11 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E98 80017698 05008514 */  bne        $a0, $a1, .L800176B0
     /* 7E9C 8001769C 0100C224 */   addiu     $v0, $a2, 0x1
     /* 7EA0 800176A0 0100C224 */  addiu      $v0, $a2, 0x1
-    /* 7EA4 800176A4 2C0882A3 */  sb         $v0, %gp_rel(D_800A38F8)($gp)
+    /* 7EA4 800176A4 2C0882A3 */  sb         $v0, %gp_rel(g_fight_stage_list_draw_cursor)($gp)
     /* 7EA8 800176A8 B95D0008 */  j          .L800176E4
     /* 7EAC 800176AC 00000000 */   nop
   .L800176B0:
-    /* 7EB0 800176B0 2C0882A3 */  sb         $v0, %gp_rel(D_800A38F8)($gp)
+    /* 7EB0 800176B0 2C0882A3 */  sb         $v0, %gp_rel(g_fight_stage_list_draw_cursor)($gp)
     /* 7EB4 800176B4 FF004230 */  andi       $v0, $v0, 0xFF
     /* 7EB8 800176B8 F40680AF */  sw         $zero, %gp_rel(D_800A37C0)($gp)
     /* 7EBC 800176BC 0A80013C */  lui        $at, %hi(D_800A37A8)

@@ -43,7 +43,7 @@ Spec (JSON):
     ],
     "values": [                      # value watch (needs a script): read
       {"at": "D_800A38DC", "len": 8},  # at every phase start after frame
-      {"at": "D_800A3910", "len": 32,  # 0 and at the end, while the
+      {"at": "g_fight_midpoint_effect_delay", "len": 32,  # 0 and at the end, while the
        "ptr_off": 0}                   # script holds the emulator paused;
     ],                               # ptr_off: read the u32 at `at`, then
                                      # len (default 4) bytes at that

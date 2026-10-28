@@ -1,8 +1,8 @@
 glabel fight_UpdateMatchTallyPresentation
     /* 2CD60 8003C560 0A80023C */  lui        $v0, %hi(g_handler_frame_counter)
     /* 2CD64 8003C564 B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
-    /* 2CD68 8003C568 0A80033C */  lui        $v1, %hi(D_800A382D)
-    /* 2CD6C 8003C56C 2D386390 */  lbu        $v1, %lo(D_800A382D)($v1)
+    /* 2CD68 8003C568 0A80033C */  lui        $v1, %hi(g_fight_tally_winner_index)
+    /* 2CD6C 8003C56C 2D386390 */  lbu        $v1, %lo(g_fight_tally_winner_index)($v1)
     /* 2CD70 8003C570 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2CD74 8003C574 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2CD78 8003C578 01004424 */  addiu      $a0, $v0, 0x1
@@ -79,15 +79,15 @@ glabel fight_UpdateMatchTallyPresentation
     /* 2CE7C 8003C67C 21004014 */  bnez       $v0, .L8003C704
     /* 2CE80 8003C680 00000000 */   nop
   .L8003C684:
-    /* 2CE84 8003C684 0A80033C */  lui        $v1, %hi(D_800A382D)
-    /* 2CE88 8003C688 2D386390 */  lbu        $v1, %lo(D_800A382D)($v1)
+    /* 2CE84 8003C684 0A80033C */  lui        $v1, %hi(g_fight_tally_winner_index)
+    /* 2CE88 8003C688 2D386390 */  lbu        $v1, %lo(g_fight_tally_winner_index)($v1)
     /* 2CE8C 8003C68C 02000224 */  addiu      $v0, $zero, 0x2
     /* 2CE90 8003C690 1A006210 */  beq        $v1, $v0, .L8003C6FC
     /* 2CE94 8003C694 18000224 */   addiu     $v0, $zero, 0x18
     /* 2CE98 8003C698 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2CE9C 8003C69C 00000000 */   nop
-    /* 2CEA0 8003C6A0 0A80033C */  lui        $v1, %hi(D_800A382D)
-    /* 2CEA4 8003C6A4 2D386390 */  lbu        $v1, %lo(D_800A382D)($v1)
+    /* 2CEA0 8003C6A0 0A80033C */  lui        $v1, %hi(g_fight_tally_winner_index)
+    /* 2CEA4 8003C6A4 2D386390 */  lbu        $v1, %lo(g_fight_tally_winner_index)($v1)
     /* 2CEA8 8003C6A8 00000000 */  nop
     /* 2CEAC 8003C6AC 00110300 */  sll        $v0, $v1, 4
     /* 2CEB0 8003C6B0 21104300 */  addu       $v0, $v0, $v1

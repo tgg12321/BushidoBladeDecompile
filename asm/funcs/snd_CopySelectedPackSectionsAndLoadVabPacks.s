@@ -31,7 +31,7 @@ glabel snd_CopySelectedPackSectionsAndLoadVabPacks
     /* 3A494 80049C94 21A00000 */  addu       $s4, $zero, $zero
   .L80049C98:
     /* 3A498 80049C98 FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* 3A49C 80049C9C 1C039087 */  lh         $s0, %gp_rel(D_800A33E8)($gp)
+    /* 3A49C 80049C9C 1C039087 */  lh         $s0, %gp_rel(g_resource_pair_selection)($gp)
     /* 3A4A0 80049CA0 1E039287 */  lh         $s2, %gp_rel(D_800A33EA)($gp)
     /* 3A4A4 80049CA4 05000216 */  bne        $s0, $v0, .L80049CBC
     /* 3A4A8 80049CA8 0C007126 */   addiu     $s1, $s3, 0xC

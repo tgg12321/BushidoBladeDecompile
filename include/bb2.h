@@ -32,7 +32,7 @@ extern DR_MOVE g_gpu_draw_move_packets[2][10];
 extern RECT g_font_rect;
 
 extern u8 g_local_ot_draw_mode;
-extern u8 D_800A36A8;
+extern u8 g_gpu_jitter_burst_enabled;
 extern s16 D_800F665C;
 extern s16 D_800F6658;
 extern s32 D_800A3790;
@@ -40,7 +40,7 @@ extern s16 g_loaded_resource_selector;
 extern s16 g_resource_has_retained_subblocks;
 extern Unk800F1198Record g_eff_billboards[];
 extern Unk800A9CF8Rec g_node_frame_animation_context;
-extern Unk800F0EC8Record D_800F0EC8[][10];
+extern Unk800F0EC8Record g_eff_yawed_quad_slot_positions[][10];
 extern Unk800F0E38Record D_800F0E38[12];
 extern MenuState g_row_menu_row_state;
 
@@ -49,18 +49,18 @@ extern MenuState g_row_menu_row_state;
 extern s16 D_8009BCC4[3][2];
 
 /* The current scroll offset, one s16 per axis (menu_UpdateChoiceGrid). */
-extern s16 D_8009BCD0[2];
+extern s16 g_entry_menu_transition_offsets[2];
 
 /* 20 flag bytes indexed by entry id (bit 0 = selectable; mask 4 << player,
  * i.e. bit 2 + player = taken by that player); d_8C4E4.c, read by 64FD8.c. */
 extern u8 g_sel_entry_availability_and_claims[20];
-extern Unk8009BCF8Record D_8009BCF8[2][10];
+extern Unk8009BCF8Record g_sel_grid_page_cells[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by
  * menu_HandleSelPhase0CursorInput,
  * menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles and
  * menu_InitSelScreen. */
-extern u8 D_8009BD20[2][2];
+extern u8 g_sel_sheet_code_pairs[2][2];
 
 extern u8 *g_sel_screen_work;
 #define SELWORK ((SelWork *)g_sel_screen_work)
@@ -69,7 +69,7 @@ extern u8 *g_sel_screen_work;
  * passes it to gte_MulMatrix0ClearTrans;
  * node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable writes m[][]
  * and passes t to ApplyMatrix. */
-extern MATRIX D_800FF558;
+extern MATRIX g_node_slot_relative_matrix;
 
 extern Unk8009BC94Record D_8009BC94[][6];
 /* The SEL.BIN menu's tables (d_8C41C.c, read by 5ED34.c): the per-mode
@@ -100,7 +100,7 @@ extern Unk8009B400Record D_8009B5F0[2][2];
  */
 extern Unk8009B400Record D_8009B490[2][2];
 
-extern Unk8009B0E0Record D_8009B0E0[9];
+extern Unk8009B0E0Record g_gpu_mode_panel_sheet_headers[9];
 extern Unk8009B0E0Record D_8009B14C;
 extern Unk8009B0E0Record D_8009B158;
 
@@ -120,8 +120,8 @@ extern Unk8009B400Record D_8009B184[2];
 extern Unk8009B400Record D_800A328C;
 
 extern Unk8009B2BCRecord g_panel_frame_sizes[3];
-extern Unk800EFAE8Rec D_800EFAE8;
-extern Unk800F0C10Record D_800F0C10[4][3];
+extern Unk800EFAE8Rec g_motion_playback_record;
+extern Unk800F0C10Record g_eff_particle_group_positions[4][3];
 
 /* Per-effect-mode state, modes 0..0x11 (eff_DrawAnimatedQuads): the timers here
  * and the position records in g_eff_animated_quad_positions. The init functions
@@ -152,22 +152,23 @@ extern s16 D_8008EB40[3][3];
 extern s16 Judge[0x1000];
 
 /* The 16 slots eff_SpawnJitteredBillboards spawns and
- * eff_DrawAndAdvanceJitteredBillboards draws (bit i of D_800A3444 live): slot
- * i's position. */
+ * eff_DrawAndAdvanceJitteredBillboards draws (bit i of
+ * g_eff_jittered_billboard_slot_mask live): slot i's position. */
 extern Vec3i32 D_800F0D78[16];
 
 extern Unk800EED10Entry g_arena_blocks[10];
 
 /* The two characters' hit records (0x800F5F68..0x800F62D7):
- * fighter_ScaleBoneHitRecords fills D_800F5F68[ch] from the template
- * D_8008D59C, offsets and limits scaled. */
-extern BoneHitRec D_800F5F68[2][22];
+ * fighter_ScaleBoneHitRecords fills g_fighter_bone_hit_records[ch] from the
+ * template D_8008D59C, offsets and limits scaled. */
+extern BoneHitRec g_fighter_bone_hit_records[2][22];
 
 extern BoneHitRec D_8008D59C[22];
 
 /* The 6 slots eff_SpawnRotatedQuadCluster spawns and
- * eff_DrawAndAdvanceRotatedQuadClusters draws (bit i of D_800A3460 live): slot
- * i's position and its RotMatrixZYX angles. */
+ * eff_DrawAndAdvanceRotatedQuadClusters draws (bit i of
+ * g_eff_rotated_quad_cluster_slot_mask live): slot i's position and its
+ * RotMatrixZYX angles. */
 extern Vec3i32 D_800F0FB8[6];
 
 extern SVec4i16 D_800F10A0[6];
@@ -286,7 +287,7 @@ extern s16 D_80090608;
 extern s32 D_8009060C[38];
 
 extern s16 D_800906A4[39][2];
-extern u16 D_80094C68[];
+extern u16 g_object_scale_factors[];
 extern Unk80099D88Rec g_cpu_profiles[];
 extern Unk8009A8C8Entry D_8009A8C8[][8];
 extern u8 D_8009A9B4[][2]; /* byte pairs (fighter_InitCpuControl) */
@@ -302,7 +303,7 @@ extern u8 D_800A3671;
 /* Three angles: gpu_PrepareViewAndFlushDrawQueue passes them to
  * math_RotMatrixZXY; gpu_UnpackGridRecordsNodesAndCellRuns zeroes them. */
 extern u16 D_800A3678[3];
-extern u8 D_800A3680;
+extern u8 g_fight_second_fighter_defeats_left;
 extern u8 g_fight_view_option;
 /* FAKE: word 1 of the 8-byte sio send buffer as its own symbol; declaring
  * g_comb_send_buf s32[2] makes cc1 keep its address live through
@@ -314,12 +315,12 @@ extern s32 g_gpu_presented_frame_count;
  * placed (read by snd_QueuePositionalSound as the listener) */
 extern Rec44 *g_listener_cam;
 extern CdlATV g_cd_atv_target;
-/* FAKE: the high halfword (+2) of the s32 link pad word D_800A36C0 as its own
- * symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the word
- * and its low half go gp-relative. One-object forms score: Q33 union per
- * pad word 4 (member reads force the address into $s0), (u16) word low
- * reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned halves 4. Owner
- * ruling Q125: comb_ExchangePad only. */
+/* FAKE: the high halfword (+2) of the s32 link pad word
+ * g_comb_received_pad_word as its own symbol. comb_ExchangePad reads it lui /
+ * %lo (symbol + 2) while the word and its low half go gp-relative. One-object
+ * forms score: Q33 union per pad word 4 (member reads force the address into
+ * $s0), (u16) word low reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned
+ * halves 4. Owner ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
@@ -337,7 +338,7 @@ extern s32 D_800A36D4;
 extern MoveScript *D_800A36D8;
 extern u8 g_fight_match_result_timer;
 extern u8 D_800A36F0;
-extern u8 D_800A36F1;
+extern u8 g_main_frame_period;
 /* per-player byte, [unk_04] (object_InitKindQueue) */
 extern u8 D_800A36F2[2];
 extern u8 D_800A36F4;
@@ -357,7 +358,7 @@ extern s8 g_fight_followup_fighter_index;
    them); snd_ResetStageSoundState clears it from the last element down. */
 extern s16 g_snd_stage_sound_state[4];
 
-extern u8 D_800A3758;
+extern u8 g_fight_missing_support_fighter_index;
 
 /* The 8-byte CD status/result buffer CdSync / CdReady fill: result[0] is the
  * status byte; cdrom_UpdateAudio hands &result[3] / &result[5] (the reported
@@ -369,7 +370,7 @@ extern u8 D_800A3769;
 extern u8 g_fight_bone_group_tim_requests;
 extern u8 D_800A376B;
 extern u8 D_800A376C;
-extern s16 D_800A376E;
+extern s16 g_fight_paired_move_start_pending;
 extern MATRIX *D_800A3778;
 /* match-result table: 0/1/2 per match, indexed by g_fight_match_cursor */
 extern u8 g_fight_match_results[];
@@ -380,9 +381,9 @@ extern u8 g_fight_match_results[];
 extern u32 D_800A3770[2];
 
 extern u8 D_800A3781;
-extern u8 D_800A3783;
+extern u8 g_fight_opponent_order_cursor;
 extern s32 D_800A3784;
-extern u8 D_800A3788;
+extern u8 g_fight_toggle_option_bits;
 extern s32 g_memcard_fd;
 extern u8 g_fight_stage_command_count;
 extern s32 D_800A37A4;
@@ -403,19 +404,19 @@ extern s16 D_800A37EA;
 extern s16 D_800A37EC;
 extern u8 g_fight_win_target;
 extern u8 D_800A3804;
-extern s32 D_800A380C;
-extern u8 D_800A3816;
+extern s32 g_fight_menu_restart_count;
+extern u8 g_fight_reinit_phase_timer;
 extern u8 g_fight_choice_menu_cursor;
 extern s16 D_800A381C;
-extern u8 D_800A381E;
+extern u8 g_fight_time_up_phase_timer;
 /* the draw queue cursor (into g_draw_queue) */
 extern void **g_draw_queue_cursor;
-extern s16 D_800A3824;
-extern u8 D_800A382D;
+extern s16 g_fight_weapon_contact_result;
+extern u8 g_fight_tally_winner_index;
 extern s16 D_800A382E;
 extern s32 g_motion_common_buffer;
 extern s16 g_main_loop_handler_index;
-extern u8 D_800A3836;
+extern u8 g_fight_saved_first_fighter_selection;
 extern u8 *g_fight_command_stream_cursor;
 extern s32 g_fight_timer_frames;
 extern u8 *D_800A385C;
@@ -435,7 +436,7 @@ extern u8 g_fight_presentation_index;
 extern s16 D_800A38A8;
 extern s16 g_fight_paired_move_initiator;
 extern u8 g_fight_result_subject_index;
-extern u8 D_800A38B8;
+extern u8 g_fight_mark_tally_phase_timer;
 extern s16 g_fight_tracked_view_setting;
 /* per player: id of the 7-sector frame set loaded into
  * g_motion_frame_buffers[i] (0xFF = none) */
@@ -462,15 +463,15 @@ extern u8 D_800A38ED;
 extern u8 D_800A38EE;
 extern s32 D_800A38F0;
 extern s32 D_800A38F4;
-extern u8 D_800A38F8;
+extern u8 g_fight_stage_list_draw_cursor;
 extern u16 D_800A3904;
 extern u8 D_800A3906;
-extern u8 D_800A3907;
+extern u8 g_fight_stage_start_count;
 extern u8 D_800A390C;
-extern u8 D_800A390D;
+extern u8 g_main_present_skip_frames;
 extern s8 D_800A390E;
 extern u8 D_800A390F;
-extern s16 D_800A3910;
+extern s16 g_fight_midpoint_effect_delay;
 extern u8 D_800A3912;
 extern u8 D_800A3913;
 extern u8 D_800A3914;
@@ -478,11 +479,12 @@ extern u8 D_800A3915;
 
 /* Six per-slot counters, 0 = free: snd_QueuePositionSequence claims a slot with
    1, snd_UpdateStageSounds advances and frees them, snd_ResetStageSoundState
-   zeroes all six. D_800A391E is not an element: it is its own countdown byte,
-   and snd_UpdateStageSounds uses only its address, as the loop bound. */
+   zeroes all six. g_fight_sound_cue_countdown is not an element: it is its own
+   countdown byte, and snd_UpdateStageSounds uses only its address, as the loop
+   bound. */
 extern u8 g_snd_sequence_ticks[6];
 
-extern u8 D_800A391E;
+extern u8 g_fight_sound_cue_countdown;
 extern u8 D_800A391F;
 extern u8 g_fight_point_award_phase_timer;
 extern u8 g_comb_abort_request;
@@ -547,7 +549,8 @@ extern s32 D_80104F38;
 
 /* fight_BuildOpponentOrder's list: the set bit numbers of g_saved_record.unk_00
  * & mask, shuffled, plus up to three appended values (D_800A391F entries;
- * fight_AdvanceOpponentOrder reads entry D_800A3783, then advances it). */
+ * fight_AdvanceOpponentOrder reads entry g_fight_opponent_order_cursor, then
+ * advances it). */
 extern u8 g_fight_opponent_order[24];
 
 extern Unk80107850Rec g_snd_sequence_positions[6];
@@ -611,7 +614,7 @@ extern u8 D_8009BA60[];
 extern Unk8009BD24Block g_working_record;
 extern s32 g_ndata_pack_loaded;
 extern s32 D_800A326C;
-extern s32 D_800A32BC;
+extern s32 g_eff_point_light_countdown;
 extern u32 D_800A32C8[2];
 extern Unk80101DF0Record *g_view_identity_root_ptr;
 extern Unk80101DF0Record *g_view_camera_root_ptr;
@@ -632,14 +635,14 @@ extern s32 D_800A38FC;
 extern s32 D_800A3908;
 extern u8 D_800A3916;
 extern u8 g_arena;
-extern s16 D_800F0BCC[];
+extern s16 g_eff_jittered_billboard_ages[];
 extern s16 g_eff_billboard_pair_ages[];
 extern s32 g_eff_command_phase[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
  * it to light_SetPointLight, which copies all 16 bytes to D_800A9B28. */
 extern VECTOR g_eff_point_light_position;
 extern Unk800F1B18Rec g_motion_decoders[];
-extern u8 D_800F33D8[];
+extern u8 g_shared_buffer[];
 extern s16 D_800F6650;
 extern s16 g_gpu_grid_and_fog_control;
 extern u8 D_801027A0[5][2];
@@ -648,7 +651,7 @@ extern u8 D_801027D8[5][2];
 extern void *g_draw_queue[640];
 extern s32 D_8009BA7C[];
 extern Func80017A44Output g_softbody_slots[8];
-extern s32 D_80094B88[];
+extern s32 g_slot_tim_group_requests[];
 extern Unk80045878Obj *g_slot_objects[];
 
 extern s32 bits_DepositMask3F83F8(s32);

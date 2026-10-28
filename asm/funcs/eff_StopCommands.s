@@ -5,7 +5,7 @@ glabel eff_StopCommands
     /* 51984 80061184 00000000 */   nop
     /* 51988 80061188 6908010C */  jal        light_DisablePointLight
     /* 5198C 8006118C 00000000 */   nop
-    /* 51990 80061190 F00180AF */  sw         $zero, %gp_rel(D_800A32BC)($gp)
+    /* 51990 80061190 F00180AF */  sw         $zero, %gp_rel(g_eff_point_light_countdown)($gp)
     /* 51994 80061194 1000BF8F */  lw         $ra, 0x10($sp)
     /* 51998 80061198 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 5199C 8006119C 0800E003 */  jr         $ra

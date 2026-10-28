@@ -9,8 +9,9 @@
  *    word after it (D_80090600 is read on its own); D_80090600 / D_80090604
  *    (s32) and D_80090608 (s16, word-padded before D_8009060C), each read
  *    on its own by gpu_LatchFogDepthOnTransitionAndQueueMoves /
- * gpu_QueueDepthSpacedMovesAndLinkTerminalPacket; D_80094AEC (s16[4], the run's
- * end, softbody_CreateForNode's per-mode strides 12, 12, 18, 22). Under -G8 the
+ * gpu_QueueDepthSpacedMovesAndLinkTerminalPacket;
+ * g_softbody_face_record_strides (s16[4], the run's end,
+ * softbody_CreateForNode's per-mode strides 12, 12, 18, 22). Under -G8 the
  * original compiler puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 2B344.c and 309CC.c, -G8 code modules
  *    with their own .sdata and gp accesses, whose .text is adjacent (bb2.ld
@@ -920,7 +921,7 @@ s32 D_800949EC[32] = {
 };
 
 /* gpu_ResetAndStampViewCenteredCellAttributes's 16 rows of 2-bit cell flags,
- * then 16 zero words (size from the gap to D_80094AEC). */
+ * then 16 zero words (size from the gap to g_softbody_face_record_strides). */
 s32 D_80094A6C[32] = {
     0x00000000, 0x00000000, 0x00155500, 0x01555550, 0x01555550, 0x0556A554,
     0x055AA954, 0x056AAA54, 0x056AAA54, 0x056AAA54, 0x055AA954, 0x0556A554,
@@ -930,4 +931,4 @@ s32 D_80094A6C[32] = {
     0x00000000, 0x00000000,
 };
 
-s16 D_80094AEC[4] = {12, 12, 18, 22};
+s16 g_softbody_face_record_strides[4] = {12, 12, 18, 22};

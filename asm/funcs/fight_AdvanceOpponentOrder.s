@@ -1,6 +1,6 @@
 glabel fight_AdvanceOpponentOrder
-    /* 243C0 80033BC0 0A80043C */  lui        $a0, %hi(D_800A3783)
-    /* 243C4 80033BC4 83378490 */  lbu        $a0, %lo(D_800A3783)($a0)
+    /* 243C0 80033BC0 0A80043C */  lui        $a0, %hi(g_fight_opponent_order_cursor)
+    /* 243C4 80033BC4 83378490 */  lbu        $a0, %lo(g_fight_opponent_order_cursor)($a0)
     /* 243C8 80033BC8 0A80023C */  lui        $v0, %hi(D_800A391F)
     /* 243CC 80033BCC 1F394290 */  lbu        $v0, %lo(D_800A391F)($v0)
     /* 243D0 80033BD0 FF008330 */  andi       $v1, $a0, 0xFF
@@ -10,8 +10,8 @@ glabel fight_AdvanceOpponentOrder
     /* 243E0 80033BE0 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
     /* 243E4 80033BE4 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
     /* 243E8 80033BE8 14000224 */  addiu      $v0, $zero, 0x14
-    /* 243EC 80033BEC 0A80013C */  lui        $at, %hi(D_800A36A8)
-    /* 243F0 80033BF0 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
+    /* 243EC 80033BEC 0A80013C */  lui        $at, %hi(g_gpu_jitter_burst_enabled)
+    /* 243F0 80033BF0 A83620A0 */  sb         $zero, %lo(g_gpu_jitter_burst_enabled)($at)
     /* 243F4 80033BF4 11006214 */  bne        $v1, $v0, .L80033C3C
     /* 243F8 80033BF8 20000224 */   addiu     $v0, $zero, 0x20
     /* 243FC 80033BFC 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
@@ -39,8 +39,8 @@ glabel fight_AdvanceOpponentOrder
   .L80033C4C:
     /* 2444C 80033C4C 0A80013C */  lui        $at, %hi(D_800A376B)
     /* 24450 80033C50 6B3720A0 */  sb         $zero, %lo(D_800A376B)($at)
-    /* 24454 80033C54 0A80013C */  lui        $at, %hi(D_800A3783)
-    /* 24458 80033C58 833722A0 */  sb         $v0, %lo(D_800A3783)($at)
+    /* 24454 80033C54 0A80013C */  lui        $at, %hi(g_fight_opponent_order_cursor)
+    /* 24458 80033C58 833722A0 */  sb         $v0, %lo(g_fight_opponent_order_cursor)($at)
     /* 2445C 80033C5C 1080013C */  lui        $at, %hi(g_fight_opponent_order)
     /* 24460 80033C60 21082300 */  addu       $at, $at, $v1
     /* 24464 80033C64 B0772590 */  lbu        $a1, %lo(g_fight_opponent_order)($at)

@@ -434,8 +434,9 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
                 s.has_color = 0;
             }
         }
-        if ((u16)(i - 10) >= 4 || D_8009BD20[SELWORK->f67][0] + 9 == i ||
-            D_8009BD20[SELWORK->f67][1] + 9 == i) {
+        if ((u16)(i - 10) >= 4 ||
+            g_sel_sheet_code_pairs[SELWORK->f67][0] + 9 == i ||
+            g_sel_sheet_code_pairs[SELWORK->f67][1] + 9 == i) {
             s.header = table[i];
             s.table = s.header->cells;
             s.sprt_out = arg0->primitive_cursors.sprite_prims;
@@ -464,8 +465,8 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
 u8 *g_sel_screen_work;
 
 /* .data 0x8009BCD4..0x8009BCE4, this file's whole .data (its one reader is
- * gpu_AddRotatedSpriteQuads; d_8C41C.c's D_8009BCD0 ends at 0x8009BCD4,
- * d_8C4E4.c's g_sel_entry_availability_and_claims follows): the ScaleMatrixL
- * scale, x and z 1.0, y 0.5 (4.12). Defined after every function, so no body
- * sees a definition where it saw an extern. */
+ * gpu_AddRotatedSpriteQuads; d_8C41C.c's g_entry_menu_transition_offsets ends
+ * at 0x8009BCD4, d_8C4E4.c's g_sel_entry_availability_and_claims follows): the
+ * ScaleMatrixL scale, x and z 1.0, y 0.5 (4.12). Defined after every function,
+ * so no body sees a definition where it saw an extern. */
 VECTOR D_8009BCD4 = {0x1000, 0x800, 0x1000, 0};

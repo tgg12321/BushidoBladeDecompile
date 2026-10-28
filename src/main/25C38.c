@@ -195,7 +195,7 @@ extern void cdrom_EnableSerialMixAndStartRepeatingAudio(void);
 void menu_UpdateRowMenuAndSubflows(void) {
     s32 ret;
 
-    D_800A36F1 = 1;
+    g_main_frame_period = 1;
     rand();
     if (g_row_menu_subflow_state == 1 && D_800A31D9 != 0) {
         D_800A31D9 = 0;
@@ -390,7 +390,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         break;
     }
     if (g_main_loop_handler_index != 9) {
-        D_800A36F1 = 2;
+        g_main_frame_period = 2;
     }
 }
 
@@ -408,11 +408,11 @@ void menu_ReleaseResourcesCloseVabsAndInitRowMenu(void) {
 }
 
 void DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit(void) {
-    D_800A36F1 = 1;
+    g_main_frame_period = 1;
     gpu_AddScreenGradient();
     if (memcard_StepSaveOverwriteAndFormatPrompts() != 0) {
         g_main_loop_handler_index = 8;
-        D_800A36F1 = 2;
+        g_main_frame_period = 2;
     }
 }
 

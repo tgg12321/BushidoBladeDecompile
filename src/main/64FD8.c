@@ -12,10 +12,10 @@ extern void AddPrim(void *, void *);
 
 /* menu_HandleSelPhase0CursorInput: the duplicated `var_7 = 4;`
  * (duplicated-statement-into-arms) carries its FAKE label inline. */
-/* Q65: this file's statics (.sbss), in address order. D_800A35D0: one {s16,
- * s16} pair per player, passed to pad_StepOffsetsGetDirectionEvents beside
- * SelWork f40[player]. */
-static s16 D_800A35D0[2][2];
+/* Q65: this file's statics (.sbss), in address order. g_sel_offset_steps: one
+ * {s16, s16} pair per player, passed to pad_StepOffsetsGetDirectionEvents
+ * beside SelWork f40[player]. */
+static s16 g_sel_offset_steps[2][2];
 static Unk8006E49CRec *D_800A35D8;
 static s8 D_800A35DC;
 static s32 D_800A35E0;
@@ -24,7 +24,7 @@ static s32 D_800A35E8;
 static s32 D_800A35EC; /* unreferenced: size from the gap */
 static s32 g_gpu_timed_sprite_elapsed_frames;
 static Unk8006E49CRec *D_800A35F4;
-static Ctx77D94 *D_800A35F8;
+static Ctx77D94 *g_gpu_timed_sprite_resources;
 static s32 D_800A35FC;
 static s32 g_gpu_timed_sprite_sequence_phase;
 static s32 D_800A3604; /* unreferenced: size from the gap */
@@ -48,7 +48,7 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
     if (base->f10.word == 0) {
         sp10 = (arg0 & 0xFFFF) | (arg0 >> 16);
         ret = pad_StepOffsetsGetDirectionEvents(
-            (u32 *)&sp10, 0, base->f40[0], D_800A35D0[0]);
+            (u32 *)&sp10, 0, base->f40[0], g_sel_offset_steps[0]);
         switch (ret >> 16) {
         case 1:
             SELWORK->f34 = 0;
@@ -108,7 +108,8 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
             if ((ret & 0xFF) != 0) {
                 SELWORK->f67 += 1;
                 SELWORK->f67 &= 1;
-                SELWORK->f66 = D_8009BD20[SELWORK->f67][D_800A35DC & 1];
+                SELWORK->f66 =
+                    g_sel_sheet_code_pairs[SELWORK->f67][D_800A35DC & 1];
                 snd_QueueSound(0, 0x7F, 0x7F);
             }
             goto confirm;
@@ -116,7 +117,7 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
             if ((ret & 0xFF) != 0) {
                 row = SELWORK->f67;
                 D_800A35DC += 1;
-                SELWORK->f66 = D_8009BD20[row][D_800A35DC & 1];
+                SELWORK->f66 = g_sel_sheet_code_pairs[row][D_800A35DC & 1];
                 snd_QueueSound(0, 0x7F, 0x7F);
             }
         confirm:
@@ -478,7 +479,7 @@ void menu_HandleSelOpposedChoice(s32 arg0, s32 arg1) {
         return;
     }
     if ((pad_StepOffsetsGetDirectionEvents(
-             &arg0, arg1, base->f40[arg1], D_800A35D0[arg1]) >>
+             &arg0, arg1, base->f40[arg1], g_sel_offset_steps[arg1]) >>
          16) != 0) {
         SELWORK->f34 = 0;
         SELWORK->f68[arg1] = SELWORK->f68[arg1] + 1;
@@ -546,9 +547,9 @@ void menu_DrawSelGridCellOverlay(
 }
 
 /* Character-select grid renderer (the draw half of menu_UpdateSelGridPicks),
- * once per player per frame: arg1 = page into D_8009BCF8, arg2 = pick list (-1
- * = cleared), arg3 = player. Draws the page frame, the page's 10 character
- * cells, the picks so far and the f65+3 slot sprites. */
+ * once per player per frame: arg1 = page into g_sel_grid_page_cells, arg2 =
+ * pick list (-1 = cleared), arg3 = player. Draws the page frame, the page's 10
+ * character cells, the picks so far and the f65+3 slot sprites. */
 void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     Unk8007352CRec s;
     /* the current sprite-sheet pointer table: the page table, then the slot
@@ -607,21 +608,22 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
         /* The flat read through the element pointer (the target adds i * 2
          * to the hoisted table base). Subscripted instead:
-         * D_8009BCF8[0][i].unk0 at all three reads -> score 44 (Q53);
-         * D_8009BCF8[arg1][i - arg1 * 10].unk0 -> score 51;
+         * g_sel_grid_page_cells[0][i].unk0 at all three reads -> score 44
+         * (Q53); g_sel_grid_page_cells[arg1][i - arg1 * 10].unk0 -> score 51;
          * same row read once into entry, reused -> score 58.
          * Column loop (i = 0; i < 10; i++), passing arg1 * 10 + i:
-         * D_8009BCF8[arg1][i].unk0 at all three reads -> score 53;
+         * g_sel_grid_page_cells[arg1][i].unk0 at all three reads -> score 53;
          * same column read once into entry, reused -> score 69. */
-        u8 entry = ((Unk8009BCF8Record *)D_8009BCF8)[i].unk0;
+        u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0;
 
         if (g_sel_entry_availability_and_claims[entry] & 1) {
             s.header = table[entry + 1];
             cells = s.header[2].cells;
             s.table = cells;
-            if (D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 +
-                                 SELWORK->f20.half[arg3]]
-                    .unk0 == ((Unk8009BCF8Record *)D_8009BCF8)[i].unk0) {
+            if (g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
+                                            SELWORK->f20.half[arg3]]
+                    .unk0 ==
+                ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0) {
                 s.has_color = 1;
                 s.header += 1 + arg3;
             } else {
@@ -631,7 +633,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.sprt_out = arg0->primitive_cursors.sprite_prims;
             arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
             if (g_sel_entry_availability_and_claims
-                    [((Unk8009BCF8Record *)D_8009BCF8)[i].unk0] &
+                    [((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0] &
                 (4 << arg3)) {
                 menu_DrawSelGridCellOverlay(arg0, i, arg3, 1);
             }
@@ -701,7 +703,7 @@ static inline void selgrid_StorePlaceholder(s32 pad, s16 *picks, s32 player) {
 
 /* Character-select cursor / pick handler, once per player per frame.
  *   arg0 = pad bits, both players packed (player N in bits N*16)
- *   arg1 = select page into D_8009BCF8 (2 rows x 5 columns per page)
+ *   arg1 = select page into g_sel_grid_page_cells (2 rows x 5 columns per page)
  *   arg2 = this player's pick list (character ids, -1 = cleared slot)
  *   arg3 = player index (0/1) */
 void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
@@ -737,7 +739,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 
     result = pad_StepOffsetsGetDirectionEvents(
-        &arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
+        &arg0, arg3, SELWORK->f40[arg3], g_sel_offset_steps[arg3]);
     if (arg0 & (0xF000 << (arg3 * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
@@ -776,8 +778,8 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     {
         u8 entry;
 
-        entry = D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 +
-                                 SELWORK->f20.half[arg3]]
+        entry = g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
+                                            SELWORK->f20.half[arg3]]
                     .unk0;
         flag = &g_sel_entry_availability_and_claims[entry];
         if ((*flag & 1) != 0) {
@@ -934,9 +936,10 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     if (arg0 & (0xA000 << (arg3 * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
-    switch (pad_StepOffsetsGetDirectionEvents(
-                (u32 *)&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]) &
-            0xFF) {
+    switch (
+        pad_StepOffsetsGetDirectionEvents(
+            (u32 *)&arg0, arg3, SELWORK->f40[arg3], g_sel_offset_steps[arg3]) &
+        0xFF) {
     case 1:
         SELWORK->f5C[arg3]++;
         if (SELWORK->f5C[arg3] >= SELWORK->f60[arg3]) {
@@ -1039,7 +1042,8 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *arg0) {
             for (j = 0; j < SELWORK->f65 + 3; j++) {
                 /* flat index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
-                var_1->unk00[i][j].bd0 = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
+                var_1->unk00[i][j].bd0 =
+                    g_sel_grid_page_cells[0][SELWORK->f6A[i][j]].unk1;
                 var_1->unk00[i][j].unk1 = SELWORK->f7E[i][j];
             }
         }
@@ -1111,9 +1115,9 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     t0 = 0;
     do {
         SelWork *base = SELWORK;
-        /* FAKE: row pointer alias to D_800A35D0, for the same-value re-set
-           below (pointer-alias-fake-exception); direct D_800A35D0 with no
-           re-set: score 19 */
+        /* FAKE: row pointer alias to g_sel_offset_steps, for the same-value
+           re-set below (pointer-alias-fake-exception); direct
+           g_sel_offset_steps with no re-set: score 19 */
         s16(*row)[2];
         a2 = 0;
         base->f10.half[t0] = 0;
@@ -1121,7 +1125,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
         base->f0C[t0] = 0;
         base->f14.half[t0] = 0;
         base->f3C[t0] = 0;
-        row = D_800A35D0;
+        row = g_sel_offset_steps;
         row[t0][1] = 0;
         row[t0][0] = 0;
         base->f40[t0][1] = 0;
@@ -1143,10 +1147,10 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
                 g_sel_entry_availability_and_claims[idx] =
                     (u8)(g_sel_entry_availability_and_claims[idx] | 1);
                 sp[t0] += 1;
-                /* FAKE: same-value dead store keeps D_800A35D0's lui/addiu
-                   inside the outer loop instead of hoisted
+                /* FAKE: same-value dead store keeps g_sel_offset_steps's
+                   lui/addiu inside the outer loop instead of hoisted
                    (dead-store-fake-exception); without it: score 18 */
-                row = D_800A35D0;
+                row = g_sel_offset_steps;
             }
         }
         t0 = (s16)(t0 + 1);
@@ -1170,7 +1174,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
         q->f65 = 0;
     }
     SELWORK->f67 = 1;
-    SELWORK->f66 = D_8009BD20[SELWORK->f67][1];
+    SELWORK->f66 = g_sel_sheet_code_pairs[SELWORK->f67][1];
     D_800A35DC = 1;
     return 1;
 }
@@ -1457,9 +1461,9 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
     s.ot_idx = 2;
     s.y = 0x1E;
     s.semi = 0;
-    in = D_800A35F8->in30;
-    table = D_800A35F8->table;
-    out = D_800A35F8->out34;
+    in = g_gpu_timed_sprite_resources->in30;
+    table = g_gpu_timed_sprite_resources->table;
+    out = g_gpu_timed_sprite_resources->out34;
     var_5 = 0x20;
     if (g_gpu_timed_sprite_elapsed_frames <
             in[g_gpu_timed_sprite_sequence_phase] + 60 &&
@@ -1497,7 +1501,7 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                 }
             } else if (g_gpu_timed_sprite_elapsed_frames >=
                        in[g_gpu_timed_sprite_sequence_phase]) {
-                var_6 = D_800A35F8->hdr18;
+                var_6 = g_gpu_timed_sprite_resources->hdr18;
                 for (i = 0; i < 5; var_6++, i++) {
                     s.header = *var_6;
                     s.table = table;
@@ -1523,7 +1527,7 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                 }
                 break;
             }
-            var_6 = D_800A35F8->hdr24;
+            var_6 = g_gpu_timed_sprite_resources->hdr24;
             for (i = 0, x = 0x156; i < 2; x += 0x80, var_6++, i++) {
                 s.header = *var_6;
                 s.x = x;
@@ -1547,7 +1551,7 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                 g_gpu_timed_sprite_elapsed_frames >= in[2]) {
                 s.has_color = 0;
             }
-            var_6 = D_800A35F8->hdr20;
+            var_6 = g_gpu_timed_sprite_resources->hdr20;
             for (i = 0, x = 0x2B; i < 2; x += 0x80, var_6++, i++) {
                 s.header = *var_6;
                 s.x = x;
@@ -1565,8 +1569,9 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             rect = D_800A32FC;
             for (i = 0; i < 5; i++) {
                 /* FAKE: named slot address lets loop.c strength-reduce it;
-                 * inline `D_800A35F8->img38[i]`: score 9 (Q129). */
-                slot = &D_800A35F8->img38[i];
+                 * inline `g_gpu_timed_sprite_resources->img38[i]`: score 9
+                 * (Q129). */
+                slot = &g_gpu_timed_sprite_resources->img38[i];
                 LoadImage(&rect, (u32 *)(*slot + 0x220));
                 DrawSync(0);
                 rect.x += 0x40;
@@ -1577,7 +1582,7 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
         case 4:
             if (g_gpu_timed_sprite_elapsed_frames + 1 <
                 out[g_gpu_timed_sprite_sequence_phase] + 60) {
-                var_6 = D_800A35F8->hdr1C;
+                var_6 = g_gpu_timed_sprite_resources->hdr1C;
                 for (i = 0; i < 5; var_6++, i++) {
                     s.header = *var_6;
                     s.table = table;
@@ -1599,11 +1604,13 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
     s.ot_idx = 1;
     s.y = 0;
     s.x = 0;
-    var_6 = D_800A35F8->hdr28;
+    var_6 = g_gpu_timed_sprite_resources->hdr28;
     for (i = 0; i < 21; i++) {
         /* FAKE: integer-sum address gives the target's addu operand order;
-           `&D_800A35F8->nar2C[i]`: score 1; `w = nar2C; w += i`: 2 */
-        w = (Unk80077D94Entry *)(i * 4 + (s32)D_800A35F8->nar2C);
+           `&g_gpu_timed_sprite_resources->nar2C[i]`: score 1; `w = nar2C; w +=
+           i`: 2 */
+        w = (Unk80077D94Entry *)(i * 4 +
+                                 (s32)g_gpu_timed_sprite_resources->nar2C);
         if (g_gpu_timed_sprite_elapsed_frames < w->off + 60 &&
             g_gpu_timed_sprite_elapsed_frames >= w->on) {
             if (g_gpu_timed_sprite_elapsed_frames < w->on + 60) {
@@ -1644,7 +1651,7 @@ s32 InitTimedSpriteSequence(s32 arg0) {
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     s0 = (Ctx77D94 *)(arg0 + 0x58);
     D_800A35F4 = (Unk8006E49CRec *)arg0;
-    D_800A35F8 = s0;
+    g_gpu_timed_sprite_resources = s0;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
         0x32, &s0->resource_head);
     r = reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)s0);
@@ -1676,7 +1683,7 @@ s32 StepTimedSpriteSequenceWithSkip(s32 arg0) {
     }
     gpu_DrawAndAdvanceTimedSpriteSequence(&s);
     {
-        s16 *out = D_800A35F8->out34;
+        s16 *out = g_gpu_timed_sprite_resources->out34;
         s32 new_val = g_gpu_timed_sprite_elapsed_frames + 1;
         int cond = new_val < out[5];
         g_gpu_timed_sprite_elapsed_frames = new_val;

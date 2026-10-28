@@ -2,7 +2,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68594 80077D94 88FFBD27 */  addiu      $sp, $sp, -0x78
     /* 68598 80077D98 5800B2AF */  sw         $s2, 0x58($sp)
     /* 6859C 80077D9C 21908000 */  addu       $s2, $a0, $zero
-    /* 685A0 80077DA0 2C05838F */  lw         $v1, %gp_rel(D_800A35F8)($gp)
+    /* 685A0 80077DA0 2C05838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 685A4 80077DA4 02000224 */  addiu      $v0, $zero, 0x2
     /* 685A8 80077DA8 2C00A2AF */  sw         $v0, 0x2C($sp)
     /* 685AC 80077DAC 1E000224 */  addiu      $v0, $zero, 0x1E
@@ -113,7 +113,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68738 80077F38 2A10A200 */  slt        $v0, $a1, $v0
     /* 6873C 80077F3C F5004014 */  bnez       $v0, .L80078314
     /* 68740 80077F40 8888143C */   lui       $s4, (0x88888889 >> 16)
-    /* 68744 80077F44 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 68744 80077F44 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68748 80077F48 21800000 */  addu       $s0, $zero, $zero
     /* 6874C 80077F4C 1800518C */  lw         $s1, 0x18($v0)
     /* 68750 80077F50 1800A427 */  addiu      $a0, $sp, 0x18
@@ -175,7 +175,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68828 80078028 C6E00108 */  j          .L80078318
     /* 6882C 8007802C 89889436 */   ori       $s4, $s4, (0x88888889 & 0xFFFF)
   .L80078030:
-    /* 68830 80078030 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 68830 80078030 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68834 80078034 56011324 */  addiu      $s3, $zero, 0x156
     /* 68838 80078038 2400518C */  lw         $s1, 0x24($v0)
   .L8007803C:
@@ -243,7 +243,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
   .L80078128:
     /* 68928 80078128 21800000 */  addu       $s0, $zero, $zero
   .L8007812C:
-    /* 6892C 8007812C 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 6892C 8007812C 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68930 80078130 2B001324 */  addiu      $s3, $zero, 0x2B
     /* 68934 80078134 2000518C */  lw         $s1, 0x20($v0)
   .L80078138:
@@ -298,7 +298,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 689F4 800781F4 21800000 */  addu       $s0, $zero, $zero
     /* 689F8 800781F8 38001124 */  addiu      $s1, $zero, 0x38
   .L800781FC:
-    /* 689FC 800781FC 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 689FC 800781FC 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68A00 80078200 4800A427 */  addiu      $a0, $sp, 0x48
     /* 68A04 80078204 21105100 */  addu       $v0, $v0, $s1
     /* 68A08 80078208 0000458C */  lw         $a1, 0x0($v0)
@@ -331,7 +331,7 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68A70 80078270 2A186200 */  slt        $v1, $v1, $v0
     /* 68A74 80078274 26006010 */  beqz       $v1, .L80078310
     /* 68A78 80078278 21800000 */   addu      $s0, $zero, $zero
-    /* 68A7C 8007827C 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 68A7C 8007827C 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68A80 80078280 00000000 */  nop
     /* 68A84 80078284 1C00518C */  lw         $s1, 0x1C($v0)
     /* 68A88 80078288 1800A427 */  addiu      $a0, $sp, 0x18
@@ -376,14 +376,14 @@ glabel gpu_DrawAndAdvanceTimedSpriteSequence
   .L80078318:
     /* 68B18 80078318 01001324 */  addiu      $s3, $zero, 0x1
     /* 68B1C 8007831C 21800000 */  addu       $s0, $zero, $zero
-    /* 68B20 80078320 2C05838F */  lw         $v1, %gp_rel(D_800A35F8)($gp)
+    /* 68B20 80078320 2C05838F */  lw         $v1, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68B24 80078324 01000224 */  addiu      $v0, $zero, 0x1
     /* 68B28 80078328 2C00A2AF */  sw         $v0, 0x2C($sp)
     /* 68B2C 8007832C 3400A0AF */  sw         $zero, 0x34($sp)
     /* 68B30 80078330 3000A0AF */  sw         $zero, 0x30($sp)
     /* 68B34 80078334 2800718C */  lw         $s1, 0x28($v1)
   .L80078338:
-    /* 68B38 80078338 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 68B38 80078338 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68B3C 8007833C 00000000 */  nop
     /* 68B40 80078340 2C00428C */  lw         $v0, 0x2C($v0)
     /* 68B44 80078344 00000000 */  nop

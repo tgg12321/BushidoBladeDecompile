@@ -18,9 +18,9 @@ glabel eff_DrawYawedSlotQuads
     /* 54650 80063E50 88015326 */  addiu      $s3, $s2, 0x188
     /* 54654 80063E54 9C014926 */  addiu      $t1, $s2, 0x19C
     /* 54658 80063E58 1800A9AF */  sw         $t1, 0x18($sp)
-    /* 5465C 80063E5C 0A80013C */  lui        $at, %hi(D_800A344C)
+    /* 5465C 80063E5C 0A80013C */  lui        $at, %hi(g_eff_yawed_quad_slot_counters)
     /* 54660 80063E60 21082200 */  addu       $at, $at, $v0
-    /* 54664 80063E64 4C34238C */  lw         $v1, %lo(D_800A344C)($at)
+    /* 54664 80063E64 4C34238C */  lw         $v1, %lo(g_eff_yawed_quad_slot_counters)($at)
     /* 54668 80063E68 00000000 */  nop
     /* 5466C 80063E6C 0A00622C */  sltiu      $v0, $v1, 0xA
     /* 54670 80063E70 03004010 */  beqz       $v0, .L80063E80
@@ -89,7 +89,7 @@ glabel eff_DrawYawedSlotQuads
     /* 54764 80063F64 00000000 */  nop
     /* 54768 80063F68 00004394 */  lhu        $v1, 0x0($v0)
     /* 5476C 80063F6C CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
-    /* 54770 80063F70 0804848F */  lw         $a0, %gp_rel(D_800A34D4)($gp)
+    /* 54770 80063F70 0804848F */  lw         $a0, %gp_rel(g_eff_top_left_uv)($gp)
     /* 54774 80063F74 00004294 */  lhu        $v0, 0x0($v0)
     /* 54778 80063F78 001A0300 */  sll        $v1, $v1, 8
     /* 5477C 80063F7C 21104300 */  addu       $v0, $v0, $v1
@@ -98,7 +98,7 @@ glabel eff_DrawYawedSlotQuads
     /* 54788 80063F88 00000000 */  nop
     /* 5478C 80063F8C 00004394 */  lhu        $v1, 0x0($v0)
     /* 54790 80063F90 D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
-    /* 54794 80063F94 0C04848F */  lw         $a0, %gp_rel(D_800A34D8)($gp)
+    /* 54794 80063F94 0C04848F */  lw         $a0, %gp_rel(g_eff_top_right_uv)($gp)
     /* 54798 80063F98 00004294 */  lhu        $v0, 0x0($v0)
     /* 5479C 80063F9C 001A0300 */  sll        $v1, $v1, 8
     /* 547A0 80063FA0 21104300 */  addu       $v0, $v0, $v1
@@ -107,7 +107,7 @@ glabel eff_DrawYawedSlotQuads
     /* 547AC 80063FAC 00000000 */  nop
     /* 547B0 80063FB0 00004394 */  lhu        $v1, 0x0($v0)
     /* 547B4 80063FB4 CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
-    /* 547B8 80063FB8 1004848F */  lw         $a0, %gp_rel(D_800A34DC)($gp)
+    /* 547B8 80063FB8 1004848F */  lw         $a0, %gp_rel(g_eff_bottom_left_uv)($gp)
     /* 547BC 80063FBC 00004294 */  lhu        $v0, 0x0($v0)
     /* 547C0 80063FC0 001A0300 */  sll        $v1, $v1, 8
     /* 547C4 80063FC4 21104300 */  addu       $v0, $v0, $v1
@@ -116,7 +116,7 @@ glabel eff_DrawYawedSlotQuads
     /* 547D0 80063FD0 00000000 */  nop
     /* 547D4 80063FD4 00004394 */  lhu        $v1, 0x0($v0)
     /* 547D8 80063FD8 D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
-    /* 547DC 80063FDC 1404848F */  lw         $a0, %gp_rel(D_800A34E0)($gp)
+    /* 547DC 80063FDC 1404848F */  lw         $a0, %gp_rel(g_eff_bottom_right_uv)($gp)
     /* 547E0 80063FE0 00004294 */  lhu        $v0, 0x0($v0)
     /* 547E4 80063FE4 001A0300 */  sll        $v1, $v1, 8
     /* 547E8 80063FE8 21104300 */  addu       $v0, $v0, $v1
@@ -130,8 +130,8 @@ glabel eff_DrawYawedSlotQuads
     /* 54808 80064008 00000000 */  nop
     /* 5480C 8006400C 09014018 */  blez       $v0, .L80064434
     /* 54810 80064010 21A00000 */   addu      $s4, $zero, $zero
-    /* 54814 80064014 0A80033C */  lui        $v1, %hi(D_800A3454)
-    /* 54818 80064018 54346324 */  addiu      $v1, $v1, %lo(D_800A3454)
+    /* 54814 80064014 0A80033C */  lui        $v1, %hi(g_eff_yawed_quad_slot_masks)
+    /* 54818 80064018 54346324 */  addiu      $v1, $v1, %lo(g_eff_yawed_quad_slot_masks)
     /* 5481C 8006401C 80101700 */  sll        $v0, $s7, 2
     /* 54820 80064020 21104300 */  addu       $v0, $v0, $v1
     /* 54824 80064024 2000A2AF */  sw         $v0, 0x20($sp)
@@ -149,34 +149,34 @@ glabel eff_DrawYawedSlotQuads
     /* 54850 80064050 E3FF02A2 */  sb         $v0, -0x1D($s0)
     /* 54854 80064054 2F000224 */  addiu      $v0, $zero, 0x2F
     /* 54858 80064058 E7FF02A2 */  sb         $v0, -0x19($s0)
-    /* 5485C 8006405C 0804828F */  lw         $v0, %gp_rel(D_800A34D4)($gp)
+    /* 5485C 8006405C 0804828F */  lw         $v0, %gp_rel(g_eff_top_left_uv)($gp)
     /* 54860 80064060 C803838F */  lw         $v1, %gp_rel(g_eff_clut_word)($gp)
     /* 54864 80064064 00004294 */  lhu        $v0, 0x0($v0)
     /* 54868 80064068 0000638C */  lw         $v1, 0x0($v1)
     /* 5486C 8006406C 00000000 */  nop
     /* 54870 80064070 21104300 */  addu       $v0, $v0, $v1
     /* 54874 80064074 ECFF02AE */  sw         $v0, -0x14($s0)
-    /* 54878 80064078 0C04828F */  lw         $v0, %gp_rel(D_800A34D8)($gp)
+    /* 54878 80064078 0C04828F */  lw         $v0, %gp_rel(g_eff_top_right_uv)($gp)
     /* 5487C 8006407C C403838F */  lw         $v1, %gp_rel(g_eff_tpage_word)($gp)
     /* 54880 80064080 00004294 */  lhu        $v0, 0x0($v0)
     /* 54884 80064084 0000638C */  lw         $v1, 0x0($v1)
     /* 54888 80064088 00000000 */  nop
     /* 5488C 8006408C 21104300 */  addu       $v0, $v0, $v1
     /* 54890 80064090 F4FF02AE */  sw         $v0, -0xC($s0)
-    /* 54894 80064094 1004828F */  lw         $v0, %gp_rel(D_800A34DC)($gp)
+    /* 54894 80064094 1004828F */  lw         $v0, %gp_rel(g_eff_bottom_left_uv)($gp)
     /* 54898 80064098 00211700 */  sll        $a0, $s7, 4
     /* 5489C 8006409C 00004294 */  lhu        $v0, 0x0($v0)
     /* 548A0 800640A0 23209700 */  subu       $a0, $a0, $s7
     /* 548A4 800640A4 FCFF02A6 */  sh         $v0, -0x4($s0)
-    /* 548A8 800640A8 1404828F */  lw         $v0, %gp_rel(D_800A34E0)($gp)
+    /* 548A8 800640A8 1404828F */  lw         $v0, %gp_rel(g_eff_bottom_right_uv)($gp)
     /* 548AC 800640AC C0200400 */  sll        $a0, $a0, 3
     /* 548B0 800640B0 00004294 */  lhu        $v0, 0x0($v0)
     /* 548B4 800640B4 2120C402 */  addu       $a0, $s6, $a0
     /* 548B8 800640B8 040002A6 */  sh         $v0, 0x4($s0)
     /* 548BC 800640BC A403858F */  lw         $a1, %gp_rel(g_eff_view_origin)($gp)
-    /* 548C0 800640C0 0F80013C */  lui        $at, %hi(D_800F0EC8)
+    /* 548C0 800640C0 0F80013C */  lui        $at, %hi(g_eff_yawed_quad_slot_positions)
     /* 548C4 800640C4 21082400 */  addu       $at, $at, $a0
-    /* 548C8 800640C8 C80E228C */  lw         $v0, %lo(D_800F0EC8)($at)
+    /* 548C8 800640C8 C80E228C */  lw         $v0, %lo(g_eff_yawed_quad_slot_positions)($at)
     /* 548CC 800640CC 0000A38C */  lw         $v1, 0x0($a1)
     /* 548D0 800640D0 00000000 */  nop
     /* 548D4 800640D4 23104300 */  subu       $v0, $v0, $v1

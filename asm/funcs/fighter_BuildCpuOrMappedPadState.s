@@ -321,13 +321,13 @@ glabel fighter_BuildCpuOrMappedPadState
     /* CA90 8001C290 05000224 */  addiu      $v0, $zero, 0x5
     /* CA94 8001C294 22006214 */  bne        $v1, $v0, .L8001C320
     /* CA98 8001C298 01000224 */   addiu     $v0, $zero, 0x1
-    /* CA9C 8001C29C 0A80023C */  lui        $v0, %hi(D_800A381E)
-    /* CAA0 8001C2A0 1E384290 */  lbu        $v0, %lo(D_800A381E)($v0)
+    /* CA9C 8001C29C 0A80023C */  lui        $v0, %hi(g_fight_time_up_phase_timer)
+    /* CAA0 8001C2A0 1E384290 */  lbu        $v0, %lo(g_fight_time_up_phase_timer)($v0)
     /* CAA4 8001C2A4 00000000 */  nop
     /* CAA8 8001C2A8 1A004014 */  bnez       $v0, .L8001C314
     /* CAAC 8001C2AC 00000000 */   nop
-    /* CAB0 8001C2B0 0A80023C */  lui        $v0, %hi(D_800A3816)
-    /* CAB4 8001C2B4 16384290 */  lbu        $v0, %lo(D_800A3816)($v0)
+    /* CAB0 8001C2B0 0A80023C */  lui        $v0, %hi(g_fight_reinit_phase_timer)
+    /* CAB4 8001C2B4 16384290 */  lbu        $v0, %lo(g_fight_reinit_phase_timer)($v0)
     /* CAB8 8001C2B8 00000000 */  nop
     /* CABC 8001C2BC 15004014 */  bnez       $v0, .L8001C314
     /* CAC0 8001C2C0 00000000 */   nop
@@ -336,8 +336,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* CACC 8001C2CC 00000000 */  nop
     /* CAD0 8001C2D0 10004014 */  bnez       $v0, .L8001C314
     /* CAD4 8001C2D4 00000000 */   nop
-    /* CAD8 8001C2D8 0A80023C */  lui        $v0, %hi(D_800A38B8)
-    /* CADC 8001C2DC B8384290 */  lbu        $v0, %lo(D_800A38B8)($v0)
+    /* CAD8 8001C2D8 0A80023C */  lui        $v0, %hi(g_fight_mark_tally_phase_timer)
+    /* CADC 8001C2DC B8384290 */  lbu        $v0, %lo(g_fight_mark_tally_phase_timer)($v0)
     /* CAE0 8001C2E0 00000000 */  nop
     /* CAE4 8001C2E4 0B004014 */  bnez       $v0, .L8001C314
     /* CAE8 8001C2E8 00000000 */   nop

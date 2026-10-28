@@ -22,7 +22,7 @@ glabel menu_DrawConfirmSheetsAndDigitPairs
     /* 5E5E0 8006DDE0 01000224 */  addiu      $v0, $zero, 0x1
     /* 5E5E4 8006DDE4 001C1100 */  sll        $v1, $s1, 16
     /* 5E5E8 8006DDE8 4000A2A3 */  sb         $v0, 0x40($sp)
-    /* 5E5EC 8006DDEC 6004828F */  lw         $v0, %gp_rel(D_800A352C)($gp)
+    /* 5E5EC 8006DDEC 6004828F */  lw         $v0, %gp_rel(g_menu_confirm_cursor)($gp)
     /* 5E5F0 8006DDF0 031C0300 */  sra        $v1, $v1, 16
     /* 5E5F4 8006DDF4 01004224 */  addiu      $v0, $v0, 0x1
     /* 5E5F8 8006DDF8 10006214 */  bne        $v1, $v0, .L8006DE3C

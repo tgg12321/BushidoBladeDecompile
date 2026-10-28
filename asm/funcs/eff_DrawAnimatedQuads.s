@@ -80,7 +80,7 @@ glabel eff_DrawAnimatedQuads
     /* 56138 80065938 00000000 */  nop
     /* 5613C 8006593C 0000EEE8 */  swc2       $14, 0x0($a3)
     /* 56140 80065940 000028EA */  swc2       $8, 0x0($s1)
-    /* 56144 80065944 0004878F */  lw         $a3, %gp_rel(D_800A34CC)($gp)
+    /* 56144 80065944 0004878F */  lw         $a3, %gp_rel(g_eff_rtp_flag)($gp)
     /* 56148 80065948 00F84C48 */  cfc2       $t4, $31 /* handwritten instruction */
     /* 5614C 8006594C 00000000 */  nop
     /* 56150 80065950 0000ECAC */  sw         $t4, 0x0($a3)

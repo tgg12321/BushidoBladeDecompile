@@ -1,5 +1,5 @@
 glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
-    /* 5F900 8006F100 84048287 */  lh         $v0, %gp_rel(D_800A3550)($gp)
+    /* 5F900 8006F100 84048287 */  lh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F904 8006F104 80FFBD27 */  addiu      $sp, $sp, -0x80
     /* 5F908 8006F108 6000B2AF */  sw         $s2, 0x60($sp)
     /* 5F90C 8006F10C 21908000 */  addu       $s2, $a0, $zero
@@ -14,16 +14,16 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5F930 8006F130 18004010 */  beqz       $v0, .L8006F194
     /* 5F934 8006F134 21184000 */   addu      $v1, $v0, $zero
     /* 5F938 8006F138 10006224 */  addiu      $v0, $v1, 0x10
-    /* 5F93C 8006F13C 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
+    /* 5F93C 8006F13C 840482A7 */  sh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F940 8006F140 00140200 */  sll        $v0, $v0, 16
     /* 5F944 8006F144 03140200 */  sra        $v0, $v0, 16
     /* 5F948 8006F148 00014228 */  slti       $v0, $v0, 0x100
     /* 5F94C 8006F14C 07004014 */  bnez       $v0, .L8006F16C
     /* 5F950 8006F150 FF000224 */   addiu     $v0, $zero, 0xFF
-    /* 5F954 8006F154 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
+    /* 5F954 8006F154 840482A7 */  sh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F958 8006F158 0EBC010C */  jal        gpu_AddScreenDarken
     /* 5F95C 8006F15C 00000000 */   nop
-    /* 5F960 8006F160 840480A7 */  sh         $zero, %gp_rel(D_800A3550)($gp)
+    /* 5F960 8006F160 840480A7 */  sh         $zero, %gp_rel(g_entry_menu_darken_level)($gp)
     /* 5F964 8006F164 5DBC0108 */  j          .L8006F174
     /* 5F968 8006F168 00000000 */   nop
   .L8006F16C:
@@ -44,7 +44,7 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5F99C 8006F19C 79004228 */  slti       $v0, $v0, 0x79
     /* 5F9A0 8006F1A0 02004014 */  bnez       $v0, .L8006F1AC
     /* 5F9A4 8006F1A4 03000224 */   addiu     $v0, $zero, 0x3
-    /* 5F9A8 8006F1A8 B80482A7 */  sh         $v0, %gp_rel(D_800A3584)($gp)
+    /* 5F9A8 8006F1A8 B80482A7 */  sh         $v0, %gp_rel(g_entry_menu_next_handler_index)($gp)
   .L8006F1AC:
     /* 5F9AC 8006F1AC 8C048387 */  lh         $v1, %gp_rel(g_entry_menu_row_phase_extra_slot_count)($gp)
     /* 5F9B0 8006F1B0 00010224 */  addiu      $v0, $zero, 0x100
@@ -63,8 +63,8 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5F9E4 8006F1E4 21880000 */   addu      $s1, $zero, $zero
     /* 5F9E8 8006F1E8 6666163C */  lui        $s6, (0x66666667 >> 16)
     /* 5F9EC 8006F1EC 6766D636 */  ori        $s6, $s6, (0x66666667 & 0xFFFF)
-    /* 5F9F0 8006F1F0 0A80103C */  lui        $s0, %hi(D_800A35C8)
-    /* 5F9F4 8006F1F4 C8351026 */  addiu      $s0, $s0, %lo(D_800A35C8)
+    /* 5F9F0 8006F1F0 0A80103C */  lui        $s0, %hi(g_entry_menu_selection_offset_countdowns)
+    /* 5F9F4 8006F1F4 C8351026 */  addiu      $s0, $s0, %lo(g_entry_menu_selection_offset_countdowns)
     /* 5F9F8 8006F1F8 21A80000 */  addu       $s5, $zero, $zero
     /* 5F9FC 8006F1FC 21A00000 */  addu       $s4, $zero, $zero
     /* 5FA00 8006F200 21980000 */  addu       $s3, $zero, $zero

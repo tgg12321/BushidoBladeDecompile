@@ -328,8 +328,8 @@ glabel fight_Init
     /* E968 8001E168 00000000 */  nop
     /* E96C 8001E16C 03006214 */  bne        $v1, $v0, .L8001E17C
     /* E970 8001E170 01000224 */   addiu     $v0, $zero, 0x1
-    /* E974 8001E174 0A80013C */  lui        $at, %hi(D_800A391E)
-    /* E978 8001E178 1E3922A0 */  sb         $v0, %lo(D_800A391E)($at)
+    /* E974 8001E174 0A80013C */  lui        $at, %hi(g_fight_sound_cue_countdown)
+    /* E978 8001E178 1E3922A0 */  sb         $v0, %lo(g_fight_sound_cue_countdown)($at)
   .L8001E17C:
     /* E97C 8001E17C 8484000C */  jal        motion_InitStreams
     /* E980 8001E180 02001024 */   addiu     $s0, $zero, 0x2
@@ -464,8 +464,8 @@ glabel fight_Init
     /* EB6C 8001E36C FF000224 */  addiu      $v0, $zero, 0xFF
     /* EB70 8001E370 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
     /* EB74 8001E374 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
-    /* EB78 8001E378 0A80013C */  lui        $at, %hi(D_800A36A8)
-    /* EB7C 8001E37C A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
+    /* EB78 8001E378 0A80013C */  lui        $at, %hi(g_gpu_jitter_burst_enabled)
+    /* EB7C 8001E37C A83620A0 */  sb         $zero, %lo(g_gpu_jitter_burst_enabled)($at)
     /* EB80 8001E380 205B000C */  jal        eff_Init
     /* EB84 8001E384 00000000 */   nop
     /* EB88 8001E388 01000224 */  addiu      $v0, $zero, 0x1

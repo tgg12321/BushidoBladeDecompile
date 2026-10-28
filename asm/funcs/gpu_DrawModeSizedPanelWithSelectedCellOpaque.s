@@ -759,8 +759,8 @@ glabel gpu_DrawModeSizedPanelWithSelectedCellOpaque
     /* 4DBEC 8005D3EC 80800800 */  sll        $s0, $t0, 2
     /* 4DBF0 8005D3F0 2DEA010C */  jal        AddPrim
     /* 4DBF4 8005D3F4 21209000 */   addu      $a0, $a0, $s0
-    /* 4DBF8 8005D3F8 0A80043C */  lui        $a0, %hi(D_8009B0E0)
-    /* 4DBFC 8005D3FC E0B08424 */  addiu      $a0, $a0, %lo(D_8009B0E0)
+    /* 4DBF8 8005D3F8 0A80043C */  lui        $a0, %hi(g_gpu_mode_panel_sheet_headers)
+    /* 4DBFC 8005D3FC E0B08424 */  addiu      $a0, $a0, %lo(g_gpu_mode_panel_sheet_headers)
     /* 4DC00 8005D400 20B9010C */  jal        gpu_GetSheetTPage
     /* 4DC04 8005D404 21280000 */   addu      $a1, $zero, $zero
     /* 4DC08 8005D408 01000524 */  addiu      $a1, $zero, 0x1

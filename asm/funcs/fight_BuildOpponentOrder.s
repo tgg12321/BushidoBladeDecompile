@@ -197,8 +197,8 @@ glabel fight_BuildOpponentOrder
   .L80033B8C:
     /* 2438C 80033B8C 0A80013C */  lui        $at, %hi(D_800A391F)
     /* 24390 80033B90 1F3932A0 */  sb         $s2, %lo(D_800A391F)($at)
-    /* 24394 80033B94 0A80013C */  lui        $at, %hi(D_800A3783)
-    /* 24398 80033B98 833720A0 */  sb         $zero, %lo(D_800A3783)($at)
+    /* 24394 80033B94 0A80013C */  lui        $at, %hi(g_fight_opponent_order_cursor)
+    /* 24398 80033B98 833720A0 */  sb         $zero, %lo(g_fight_opponent_order_cursor)($at)
     /* 2439C 80033B9C 0A80013C */  lui        $at, %hi(D_800A37BC)
     /* 243A0 80033BA0 BC3720A0 */  sb         $zero, %lo(D_800A37BC)($at)
     /* 243A4 80033BA4 2400BF8F */  lw         $ra, 0x24($sp)

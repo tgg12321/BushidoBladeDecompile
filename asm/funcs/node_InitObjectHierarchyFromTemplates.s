@@ -1,7 +1,7 @@
 glabel node_InitObjectHierarchyFromTemplates
     /* 310F8 800408F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 310FC 800408FC 0980053C */  lui        $a1, %hi(D_80094C68)
-    /* 31100 80040900 684CA524 */  addiu      $a1, $a1, %lo(D_80094C68)
+    /* 310FC 800408FC 0980053C */  lui        $a1, %hi(g_object_scale_factors)
+    /* 31100 80040900 684CA524 */  addiu      $a1, $a1, %lo(g_object_scale_factors)
     /* 31104 80040904 21300000 */  addu       $a2, $zero, $zero
     /* 31108 80040908 1000BFAF */  sw         $ra, 0x10($sp)
     /* 3110C 8004090C 0000A384 */  lh         $v1, 0x0($a1)
@@ -21,9 +21,9 @@ glabel node_InitObjectHierarchyFromTemplates
     /* 3113C 8004093C 2A106600 */  slt        $v0, $v1, $a2
     /* 31140 80040940 06004010 */  beqz       $v0, .L8004095C
     /* 31144 80040944 40100300 */   sll       $v0, $v1, 1
-    /* 31148 80040948 0980013C */  lui        $at, %hi(D_80094C68)
+    /* 31148 80040948 0980013C */  lui        $at, %hi(g_object_scale_factors)
     /* 3114C 8004094C 21082200 */  addu       $at, $at, $v0
-    /* 31150 80040950 684C2294 */  lhu        $v0, %lo(D_80094C68)($at)
+    /* 31150 80040950 684C2294 */  lhu        $v0, %lo(g_object_scale_factors)($at)
     /* 31154 80040954 59020108 */  j          .L80040964
     /* 31158 80040958 120082A4 */   sh        $v0, 0x12($a0)
   .L8004095C:

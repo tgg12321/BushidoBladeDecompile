@@ -10,8 +10,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 175C4 80026DC4 C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
     /* 175C8 80026DC8 FFFF0324 */  addiu      $v1, $zero, -0x1
     /* 175CC 80026DCC 21984000 */  addu       $s3, $v0, $zero
-    /* 175D0 80026DD0 0A80013C */  lui        $at, %hi(D_800A3824)
-    /* 175D4 80026DD4 243823A4 */  sh         $v1, %lo(D_800A3824)($at)
+    /* 175D0 80026DD0 0A80013C */  lui        $at, %hi(g_fight_weapon_contact_result)
+    /* 175D4 80026DD4 243823A4 */  sh         $v1, %lo(g_fight_weapon_contact_result)($at)
     /* 175D8 80026DD8 1080033C */  lui        $v1, %hi(D_80101F32)
     /* 175DC 80026DDC 321F6394 */  lhu        $v1, %lo(D_80101F32)($v1)
     /* 175E0 80026DE0 1C000224 */  addiu      $v0, $zero, 0x1C
@@ -249,8 +249,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17924 80027124 1080103C */  lui        $s0, %hi(D_80101EC8)
     /* 17928 80027128 C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
   .L8002712C:
-    /* 1792C 8002712C 0A80023C */  lui        $v0, %hi(D_800A3910)
-    /* 17930 80027130 10394284 */  lh         $v0, %lo(D_800A3910)($v0)
+    /* 1792C 8002712C 0A80023C */  lui        $v0, %hi(g_fight_midpoint_effect_delay)
+    /* 17930 80027130 10394284 */  lh         $v0, %lo(g_fight_midpoint_effect_delay)($v0)
     /* 17934 80027134 4C041126 */  addiu      $s1, $s0, 0x44C
     /* 17938 80027138 65004014 */  bnez       $v0, .L800272D0
     /* 1793C 8002713C 21184000 */   addu      $v1, $v0, $zero
@@ -364,8 +364,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17ACC 800272CC 00000000 */   nop
   .L800272D0:
     /* 17AD0 800272D0 FFFF6224 */  addiu      $v0, $v1, -0x1
-    /* 17AD4 800272D4 0A80013C */  lui        $at, %hi(D_800A3910)
-    /* 17AD8 800272D8 103922A4 */  sh         $v0, %lo(D_800A3910)($at)
+    /* 17AD4 800272D4 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
+    /* 17AD8 800272D8 103922A4 */  sh         $v0, %lo(g_fight_midpoint_effect_delay)($at)
   .L800272DC:
     /* 17ADC 800272DC 4000BF8F */  lw         $ra, 0x40($sp)
     /* 17AE0 800272E0 3C00B38F */  lw         $s3, 0x3C($sp)

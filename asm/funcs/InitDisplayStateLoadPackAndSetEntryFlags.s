@@ -23,7 +23,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5ED88 8006E588 880480A7 */  sh         $zero, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
     /* 5ED8C 8006E58C 1D0280A3 */  sb         $zero, %gp_rel(D_800A32E9)($gp)
     /* 5ED90 8006E590 E40492AF */  sw         $s2, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
-    /* 5ED94 8006E594 A00490AF */  sw         $s0, %gp_rel(D_800A356C)($gp)
+    /* 5ED94 8006E594 A00490AF */  sw         $s0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5ED98 8006E598 DC0490AF */  sw         $s0, %gp_rel(g_entry_menu_resources)($gp)
     /* 5ED9C 8006E59C 0F004230 */  andi       $v0, $v0, 0xF
     /* 5EDA0 8006E5A0 F00482AF */  sw         $v0, %gp_rel(g_entry_menu_fight_mode)($gp)
@@ -41,11 +41,11 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EDD0 8006E5D0 08004000 */  jr         $v0
     /* 5EDD4 8006E5D4 00000000 */   nop
   jlabel .L8006E5D8
-    /* 5EDD8 8006E5D8 A004858F */  lw         $a1, %gp_rel(D_800A356C)($gp)
+    /* 5EDD8 8006E5D8 A004858F */  lw         $a1, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EDDC 8006E5DC 88B90108 */  j          .L8006E620
     /* 5EDE0 8006E5E0 05000424 */   addiu     $a0, $zero, 0x5
   jlabel .L8006E5E4
-    /* 5EDE4 8006E5E4 A004858F */  lw         $a1, %gp_rel(D_800A356C)($gp)
+    /* 5EDE4 8006E5E4 A004858F */  lw         $a1, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EDE8 8006E5E8 88B90108 */  j          .L8006E620
     /* 5EDEC 8006E5EC 03000424 */   addiu     $a0, $zero, 0x3
   jlabel .L8006E5F0
@@ -56,22 +56,22 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EE00 8006E600 24104300 */  and        $v0, $v0, $v1
     /* 5EE04 8006E604 04004010 */  beqz       $v0, .L8006E618
     /* 5EE08 8006E608 03000424 */   addiu     $a0, $zero, 0x3
-    /* 5EE0C 8006E60C A004858F */  lw         $a1, %gp_rel(D_800A356C)($gp)
+    /* 5EE0C 8006E60C A004858F */  lw         $a1, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE10 8006E610 88B90108 */  j          .L8006E620
     /* 5EE14 8006E614 00000000 */   nop
   jlabel .L8006E618
-    /* 5EE18 8006E618 A004858F */  lw         $a1, %gp_rel(D_800A356C)($gp)
+    /* 5EE18 8006E618 A004858F */  lw         $a1, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE1C 8006E61C 04000424 */  addiu      $a0, $zero, 0x4
   .L8006E620:
     /* 5EE20 8006E620 54BA010C */  jal        gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip
     /* 5EE24 8006E624 00000000 */   nop
   jlabel .L8006E628
-    /* 5EE28 8006E628 A004848F */  lw         $a0, %gp_rel(D_800A356C)($gp)
+    /* 5EE28 8006E628 A004848F */  lw         $a0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE2C 8006E62C 8ABA010C */  jal        resource_RelocateNineOffsetListsAndLoadVabPack
     /* 5EE30 8006E630 00000000 */   nop
     /* 5EE34 8006E634 E004858F */  lw         $a1, %gp_rel(D_800A35AC)($gp)
     /* 5EE38 8006E638 21204000 */  addu       $a0, $v0, $zero
-    /* 5EE3C 8006E63C A00484AF */  sw         $a0, %gp_rel(D_800A356C)($gp)
+    /* 5EE3C 8006E63C A00484AF */  sw         $a0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE40 8006E640 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 5EE44 8006E644 00000000 */   nop
     /* 5EE48 8006E648 21280000 */  addu       $a1, $zero, $zero
@@ -80,7 +80,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EE54 8006E654 0A80043C */  lui        $a0, %hi(D_8009BC44)
     /* 5EE58 8006E658 44BC8490 */  lbu        $a0, %lo(D_8009BC44)($a0)
     /* 5EE5C 8006E65C 01000624 */  addiu      $a2, $zero, 0x1
-    /* 5EE60 8006E660 A00482AF */  sw         $v0, %gp_rel(D_800A356C)($gp)
+    /* 5EE60 8006E660 A00482AF */  sw         $v0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5EE64 8006E664 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 5EE68 8006E668 940482AF */  sw         $v0, %gp_rel(g_entry_menu_slot_records)($gp)
     /* 5EE6C 8006E66C 02000224 */  addiu      $v0, $zero, 0x2
@@ -89,8 +89,8 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EE78 8006E678 B00480A7 */  sh         $zero, %gp_rel(D_800A357C)($gp)
     /* 5EE7C 8006E67C B40480A7 */  sh         $zero, %gp_rel(g_entry_menu_handler_index)($gp)
     /* 5EE80 8006E680 D40480AF */  sw         $zero, %gp_rel(D_800A35A0)($gp)
-    /* 5EE84 8006E684 BC0480A7 */  sh         $zero, %gp_rel(D_800A3588)($gp)
-    /* 5EE88 8006E688 C00480A7 */  sh         $zero, %gp_rel(D_800A358C)($gp)
+    /* 5EE84 8006E684 BC0480A7 */  sh         $zero, %gp_rel(g_entry_menu_grid_column_cursors)($gp)
+    /* 5EE88 8006E688 C00480A7 */  sh         $zero, %gp_rel(g_entry_menu_grid_row_cursors)($gp)
     /* 5EE8C 8006E68C BE0482A7 */  sh         $v0, %gp_rel(D_800A358A)($gp)
     /* 5EE90 8006E690 C20480A7 */  sh         $zero, %gp_rel(D_800A358E)($gp)
     /* 5EE94 8006E694 950483A3 */  sb         $v1, %gp_rel(D_800A3561)($gp)
@@ -152,8 +152,8 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
   .L8006E76C:
     /* 5EF6C 8006E76C 02151300 */  srl        $v0, $s3, 20
   .L8006E770:
-    /* 5EF70 8006E770 BC048387 */  lh         $v1, %gp_rel(D_800A3588)($gp)
-    /* 5EF74 8006E774 C0048487 */  lh         $a0, %gp_rel(D_800A358C)($gp)
+    /* 5EF70 8006E770 BC048387 */  lh         $v1, %gp_rel(g_entry_menu_grid_column_cursors)($gp)
+    /* 5EF74 8006E774 C0048487 */  lh         $a0, %gp_rel(g_entry_menu_grid_row_cursors)($gp)
     /* 5EF78 8006E778 03004230 */  andi       $v0, $v0, 0x3
     /* 5EF7C 8006E77C EC0482A7 */  sh         $v0, %gp_rel(D_800A35B8)($gp)
     /* 5EF80 8006E780 05000224 */  addiu      $v0, $zero, 0x5
@@ -208,7 +208,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5F040 8006E840 1700A3AB */  swl        $v1, 0x17($sp)
     /* 5F044 8006E844 1400A3BB */  swr        $v1, 0x14($sp)
     /* 5F048 8006E848 D00480A7 */  sh         $zero, %gp_rel(g_entry_menu_choice_grid_row)($gp)
-    /* 5F04C 8006E84C CC0480A7 */  sh         $zero, %gp_rel(D_800A3598)($gp)
+    /* 5F04C 8006E84C CC0480A7 */  sh         $zero, %gp_rel(g_entry_menu_choice_grid_column)($gp)
     /* 5F050 8006E850 CFEC010C */  jal        DrawSync
     /* 5F054 8006E854 21200000 */   addu      $a0, $zero, $zero
     /* 5F058 8006E858 1000A427 */  addiu      $a0, $sp, 0x10
@@ -217,11 +217,11 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5F064 8006E864 FE010624 */   addiu     $a2, $zero, 0x1FE
     /* 5F068 8006E868 CFEC010C */  jal        DrawSync
     /* 5F06C 8006E86C 21200000 */   addu      $a0, $zero, $zero
-    /* 5F070 8006E870 A004848F */  lw         $a0, %gp_rel(D_800A356C)($gp)
+    /* 5F070 8006E870 A004848F */  lw         $a0, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5F074 8006E874 01000224 */  addiu      $v0, $zero, 0x1
     /* 5F078 8006E878 14008324 */  addiu      $v1, $a0, 0x14
     /* 5F07C 8006E87C F80484AF */  sw         $a0, %gp_rel(g_entry_menu_work_block)($gp)
-    /* 5F080 8006E880 A00483AF */  sw         $v1, %gp_rel(D_800A356C)($gp)
+    /* 5F080 8006E880 A00483AF */  sw         $v1, %gp_rel(g_entry_menu_arena_cursor)($gp)
     /* 5F084 8006E884 080080AC */  sw         $zero, 0x8($a0)
     /* 5F088 8006E888 0C0080AC */  sw         $zero, 0xC($a0)
     /* 5F08C 8006E88C 2800BF8F */  lw         $ra, 0x28($sp)

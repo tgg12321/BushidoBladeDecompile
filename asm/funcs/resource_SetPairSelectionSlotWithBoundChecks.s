@@ -1,5 +1,5 @@
 glabel resource_SetPairSelectionSlotWithBoundChecks
-    /* 39CD4 800494D4 2003828F */  lw         $v0, %gp_rel(D_800A33EC)($gp)
+    /* 39CD4 800494D4 2003828F */  lw         $v0, %gp_rel(g_resource_entry_category)($gp)
     /* 39CD8 800494D8 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 39CDC 800494DC 1400B1AF */  sw         $s1, 0x14($sp)
     /* 39CE0 800494E0 21888000 */  addu       $s1, $a0, $zero
@@ -24,9 +24,9 @@ glabel resource_SetPairSelectionSlotWithBoundChecks
     /* 39D20 80049520 00000000 */   nop
     /* 39D24 80049524 40101100 */  sll        $v0, $s1, 1
   .L80049528:
-    /* 39D28 80049528 0A80013C */  lui        $at, %hi(D_800A33E8)
+    /* 39D28 80049528 0A80013C */  lui        $at, %hi(g_resource_pair_selection)
     /* 39D2C 8004952C 21082200 */  addu       $at, $at, $v0
-    /* 39D30 80049530 E83330A4 */  sh         $s0, %lo(D_800A33E8)($at)
+    /* 39D30 80049530 E83330A4 */  sh         $s0, %lo(g_resource_pair_selection)($at)
     /* 39D34 80049534 1800BF8F */  lw         $ra, 0x18($sp)
     /* 39D38 80049538 1400B18F */  lw         $s1, 0x14($sp)
     /* 39D3C 8004953C 1000B08F */  lw         $s0, 0x10($sp)

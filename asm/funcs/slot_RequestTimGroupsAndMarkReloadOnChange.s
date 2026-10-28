@@ -15,9 +15,9 @@ glabel slot_RequestTimGroupsAndMarkReloadOnChange
   .L80041638:
     /* 31E38 80041638 80100400 */  sll        $v0, $a0, 2
   .L8004163C:
-    /* 31E3C 8004163C 0980013C */  lui        $at, %hi(D_80094B88)
+    /* 31E3C 8004163C 0980013C */  lui        $at, %hi(g_slot_tim_group_requests)
     /* 31E40 80041640 21082200 */  addu       $at, $at, $v0
-    /* 31E44 80041644 884B25AC */  sw         $a1, %lo(D_80094B88)($at)
+    /* 31E44 80041644 884B25AC */  sw         $a1, %lo(g_slot_tim_group_requests)($at)
     /* 31E48 80041648 0800E003 */  jr         $ra
     /* 31E4C 8004164C 00000000 */   nop
 endlabel slot_RequestTimGroupsAndMarkReloadOnChange

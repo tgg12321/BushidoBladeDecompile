@@ -66,8 +66,8 @@ glabel fight_TallyMatchResultsAndInitPresentation
     /* 2CD18 8003C518 2A104300 */   slt       $v0, $v0, $v1
     /* 2CD1C 8003C51C 02000224 */  addiu      $v0, $zero, 0x2
   .L8003C520:
-    /* 2CD20 8003C520 0A80013C */  lui        $at, %hi(D_800A382D)
-    /* 2CD24 8003C524 2D3822A0 */  sb         $v0, %lo(D_800A382D)($at)
+    /* 2CD20 8003C520 0A80013C */  lui        $at, %hi(g_fight_tally_winner_index)
+    /* 2CD24 8003C524 2D3822A0 */  sb         $v0, %lo(g_fight_tally_winner_index)($at)
     /* 2CD28 8003C528 01000424 */  addiu      $a0, $zero, 0x1
     /* 2CD2C 8003C52C 21280000 */  addu       $a1, $zero, $zero
     /* 2CD30 8003C530 21300000 */  addu       $a2, $zero, $zero

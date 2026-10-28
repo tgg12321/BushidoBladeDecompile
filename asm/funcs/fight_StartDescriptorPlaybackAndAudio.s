@@ -164,8 +164,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C424 8003BC24 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 2C428 8003BC28 0A80013C */  lui        $at, %hi(g_local_ot_draw_mode)
     /* 2C42C 8003BC2C 683722A0 */  sb         $v0, %lo(g_local_ot_draw_mode)($at)
-    /* 2C430 8003BC30 0A80013C */  lui        $at, %hi(D_800A36A8)
-    /* 2C434 8003BC34 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
+    /* 2C430 8003BC30 0A80013C */  lui        $at, %hi(g_gpu_jitter_burst_enabled)
+    /* 2C434 8003BC34 A83620A0 */  sb         $zero, %lo(g_gpu_jitter_burst_enabled)($at)
     /* 2C438 8003BC38 EAD7000C */  jal        snd_SerialMixOn
     /* 2C43C 8003BC3C 00000000 */   nop
     /* 2C440 8003BC40 0A80023C */  lui        $v0, %hi(g_fight_active_playback_descriptor)

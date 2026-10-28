@@ -17,7 +17,7 @@ fighter_Init's arg2 for fighter 1, 9F9C.c:1796):
         unk_A[1] = op2
   op 3  (2): unk_4[1] = op0, unk_4[3] = op1
   op 2  (29): D_800A3894 = the operands, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState (unk_4[0] = op0,
-        the old unk_4[0] kept in D_800A3836), fight_FillMissingConfigInitFighterAndLoadObject(0), fight_ConfigureFighter1FromLookupAndOperandsAndLoad(operands + 1)
+        the old unk_4[0] kept in g_fight_saved_first_fighter_selection), fight_FillMissingConfigInitFighterAndLoadObject(0), fight_ConfigureFighter1FromLookupAndOperandsAndLoad(operands + 1)
         (0xE or 0x1D as op 16), then as op 18; after that fight
         fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
         unk_4[1] = operand 6, shown as "0x0E|0x1D then 0xNN"

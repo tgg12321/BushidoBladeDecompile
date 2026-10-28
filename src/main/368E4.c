@@ -34,8 +34,8 @@ static s32 D_800A33D8;
 static s32 D_800A33DC; /* not named by any code or data: size from the gap */
 static s32 D_800A33E0;
 static s32 D_800A33E4;
-static s16 D_800A33E8[2];
-static s32 D_800A33EC;
+static s16 g_resource_pair_selection[2];
+static s32 g_resource_entry_category;
 
 void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     s32 *s0;
@@ -756,7 +756,7 @@ void wave_SetCellBuffer(s32 a0) { g_wave_cell_buffer = (s16 *)a0; }
 /* 17 phases and the 9 x 17 table wave_Update steps from them
  * (D_800EF800 takes the last row's deltas) */
 extern s32 D_800EF558[17];
-extern s32 D_800EF59C[9][17];
+extern s32 g_wave_vertex_grid[9][17];
 
 s32 wave_Init(void) {
     s16 *s0;
@@ -879,7 +879,7 @@ s32 wave_Init(void) {
     w = 0;
     do {
         val = w;
-        p = D_800EF59C[a3];
+        p = g_wave_vertex_grid[a3];
         for (a0 = 0x10; a0 >= 0; a0--) {
             p[a0] = val;
         }
@@ -907,18 +907,20 @@ void wave_Update(void) {
     void **temp;
 
     for (i = 0; i < 17; i++) {
-        D_800EF59C[0][i] = ((s32)Judge[D_800EF558[i] & 0xFFF] * 0x271) >> 10;
+        g_wave_vertex_grid[0][i] =
+            ((s32)Judge[D_800EF558[i] & 0xFFF] * 0x271) >> 10;
         D_800EF558[i] += 0x12;
     }
     for (i = 1; i < 9; i++) {
         for (j = 0; j < 17; j++) {
-            a0 = 0x7D0 - (D_800EF59C[i][j] - D_800EF59C[i - 1][j]);
+            a0 = 0x7D0 -
+                 (g_wave_vertex_grid[i][j] - g_wave_vertex_grid[i - 1][j]);
             if (a0 < 0) {
                 v1 = (a0 + 0xF) >> 4;
             } else {
                 v1 = a0 / 10;
             }
-            D_800EF59C[i][j] += v1;
+            g_wave_vertex_grid[i][j] += v1;
             if (i == 8) {
                 D_800EF800[j] = v1;
             }
@@ -946,7 +948,7 @@ void wave_Draw(void) {
 
     s7val = g_wave_cell_buffer;
     i = 0;
-    src = D_800EF59C[0];
+    src = g_wave_vertex_grid[0];
     while (i < 9) {
         if (i & 1) {
             base = D_800EF168;
@@ -1005,8 +1007,8 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
     {
         /* row 8 of the table; a1 + 1 == 17 / 18 reads on into D_800EF800,
          * which follows the table */
-        s32 val1 = D_800EF59C[8][a1] * var_3;
-        s32 val2 = D_800EF59C[8][a1 + 1] * (0x1000 - var_3);
+        s32 val1 = g_wave_vertex_grid[8][a1] * var_3;
+        s32 val2 = g_wave_vertex_grid[8][a1 + 1] * (0x1000 - var_3);
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
@@ -1611,10 +1613,10 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     rot.vz = ((s32)Judge[arg0 & 0xFFF] * rot.vx) >> 12;
     rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * rot.vx) >> 12;
     node = (Unk80045878Node *)D_800A33E4;
-    ApplyMatrix(mat_tbl[0], &rot, (VECTOR *)D_800FF558.t);
-    D_800FF558.t[0] += mat_tbl[0]->t[0];
-    D_800FF558.t[1] += mat_tbl[1]->t[1];
-    D_800FF558.t[2] += mat_tbl[2]->t[2];
+    ApplyMatrix(mat_tbl[0], &rot, (VECTOR *)g_node_slot_relative_matrix.t);
+    g_node_slot_relative_matrix.t[0] += mat_tbl[0]->t[0];
+    g_node_slot_relative_matrix.t[1] += mat_tbl[1]->t[1];
+    g_node_slot_relative_matrix.t[2] += mat_tbl[2]->t[2];
 
     rot.vx = 0;
     rot.vy = 0xC00 - arg0;
@@ -1622,15 +1624,15 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     indices = D_80099C14;
     math_RotMatrixZYX(&rot, &mtx);
     gte_MulMatrix0ClearTrans(mat_tbl[0], &mtx, &mtx);
-    D_800FF558.m[0][0] = mtx.m[0][0];
-    D_800FF558.m[0][1] = mtx.m[1][0];
-    D_800FF558.m[0][2] = mtx.m[2][0];
-    D_800FF558.m[1][0] = mtx.m[0][1];
-    D_800FF558.m[1][1] = mtx.m[1][1];
-    D_800FF558.m[1][2] = mtx.m[2][1];
-    D_800FF558.m[2][0] = mtx.m[0][2];
-    D_800FF558.m[2][1] = mtx.m[1][2];
-    D_800FF558.m[2][2] = mtx.m[2][2];
+    g_node_slot_relative_matrix.m[0][0] = mtx.m[0][0];
+    g_node_slot_relative_matrix.m[0][1] = mtx.m[1][0];
+    g_node_slot_relative_matrix.m[0][2] = mtx.m[2][0];
+    g_node_slot_relative_matrix.m[1][0] = mtx.m[0][1];
+    g_node_slot_relative_matrix.m[1][1] = mtx.m[1][1];
+    g_node_slot_relative_matrix.m[1][2] = mtx.m[2][1];
+    g_node_slot_relative_matrix.m[2][0] = mtx.m[0][2];
+    g_node_slot_relative_matrix.m[2][1] = mtx.m[1][2];
+    g_node_slot_relative_matrix.m[2][2] = mtx.m[2][2];
 
     while ((index = *indices++) >= 0) {
         node->node.xf.mat = *mat_tbl[index];
@@ -1761,9 +1763,9 @@ void ResetEntrySelectionState(void) {
         p--;
     } while (i >= 0);
     D_800EF9F4 = -2;
-    D_800A33E8[1] = -1;
-    D_800A33E8[0] = -1;
-    D_800A33EC = -1;
+    g_resource_pair_selection[1] = -1;
+    g_resource_pair_selection[0] = -1;
+    g_resource_entry_category = -1;
 }
 
 extern s16 g_resource_entry_request_state[];
@@ -1772,17 +1774,17 @@ void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
     u8 first_linked_entry_index;
 
     g_resource_entry_request_state[entry_index] = 1;
-    if (D_800A33EC == -1) {
+    if (g_resource_entry_category == -1) {
         if (entry_index >= 0x33) {
-            D_800A33EC = 1;
+            g_resource_entry_category = 1;
         } else {
-            D_800A33EC = 0;
+            g_resource_entry_category = 0;
         }
     } else {
-        if (D_800A33EC == 0 && !(entry_index < 0x33)) {
+        if (g_resource_entry_category == 0 && !(entry_index < 0x33)) {
             func_80052C10();
         }
-        if (D_800A33EC == 1 && entry_index < 0x33) {
+        if (g_resource_entry_category == 1 && entry_index < 0x33) {
             func_80052C10();
         }
     }
@@ -1795,7 +1797,7 @@ void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
 
 void resource_SetPairSelectionSlotWithBoundChecks(s32 idx, s32 val) {
     s32 cond;
-    if (D_800A33EC == 0) {
+    if (g_resource_entry_category == 0) {
         cond = val < 16;
     } else {
         cond = val < 8;
@@ -1806,7 +1808,7 @@ void resource_SetPairSelectionSlotWithBoundChecks(s32 idx, s32 val) {
     if (((u32)idx) >= 2U) {
         func_80052C10();
     }
-    D_800A33E8[idx] = (s16)val;
+    g_resource_pair_selection[idx] = (s16)val;
 }
 
 s32 math_UnorderedPairIndex(s32 arg0, s32 arg1, s32 arg2) {
@@ -1865,15 +1867,15 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
         p++;
     } while (i < 0x3A);
     step = 8;
-    if (D_800A33EC == 0) {
+    if (g_resource_entry_category == 0) {
         step = 0x10;
     }
-    hi = D_800A33E8[0];
+    hi = g_resource_pair_selection[0];
     if (hi == -1) {
-        lo = D_800A33E8[1];
+        lo = g_resource_pair_selection[1];
         if (lo == hi) {
             i = 0x24;
-            if (D_800A33EC == 0) {
+            if (g_resource_entry_category == 0) {
                 i = 0x88;
             }
             goto end;
@@ -1881,11 +1883,12 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
         hi = lo;
     } else {
         lo = hi;
-        if ((D_800A33E8[1] != (-1)) && (hi != D_800A33E8[1])) {
-            if (hi < D_800A33E8[1]) {
-                hi = D_800A33E8[1];
+        if ((g_resource_pair_selection[1] != (-1)) &&
+            (hi != g_resource_pair_selection[1])) {
+            if (hi < g_resource_pair_selection[1]) {
+                hi = g_resource_pair_selection[1];
             } else {
-                lo = D_800A33E8[1];
+                lo = g_resource_pair_selection[1];
             }
         }
     }
@@ -1898,7 +1901,7 @@ end:
     if (inputs_unchanged == 0) {
         resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
         resource_LoadSelectedEntriesTexturesAndSound(
-            D_800A33EC, i, g_resource_entry_request_state, arg0);
+            g_resource_entry_category, i, g_resource_entry_request_state, arg0);
         gpu_BuildFogBlockLevels();
     }
 }
@@ -2133,8 +2136,8 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
         second_section_size = 0;
     }
 
-    var_s0 = D_800A33E8[0];
-    var_s2 = D_800A33E8[1];
+    var_s0 = g_resource_pair_selection[0];
+    var_s2 = g_resource_pair_selection[1];
     pack_cursor_addr = header_cursor_addr + 0xC;
 
     if (var_s0 == -1) {

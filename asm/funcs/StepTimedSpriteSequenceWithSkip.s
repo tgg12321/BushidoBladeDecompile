@@ -37,7 +37,7 @@ glabel StepTimedSpriteSequenceWithSkip
   .L800785E8:
     /* 68DE8 800785E8 65DF010C */  jal        gpu_DrawAndAdvanceTimedSpriteSequence
     /* 68DEC 800785EC 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 68DF0 800785F0 2C05828F */  lw         $v0, %gp_rel(D_800A35F8)($gp)
+    /* 68DF0 800785F0 2C05828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_resources)($gp)
     /* 68DF4 800785F4 00000000 */  nop
     /* 68DF8 800785F8 3400438C */  lw         $v1, 0x34($v0)
     /* 68DFC 800785FC 2405828F */  lw         $v0, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)

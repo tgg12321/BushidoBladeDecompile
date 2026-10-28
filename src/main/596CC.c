@@ -4,7 +4,7 @@
  * ..., gpu_InitPrimBufferPair). .text 0x80068ECC (ROM 0x596CC). Start boundary:
  * SEAM (owner ruling 2026-10-17; Codex seam #99): no direct call or static
  * crosses the cut; 51268.c's .sbss ends at D_800A34F4 and these functions own
- * g_menu_packed_cursors..D_800A352C; .rodata 0x80015988+0x28
+ * g_menu_packed_cursors..g_menu_confirm_cursor; .rodata 0x80015988+0x28
  * (menu_HandleOptionMenuChoices's table, D_800159A0) follows 51268.o's. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
@@ -17,18 +17,18 @@
 /* Q65: this file's statics (.sbss), in address order. */
 static s32 g_menu_packed_cursors;
 static Unk800A34FCRec *g_row_menu_work_block;
-static s32 D_800A3500;
+static s32 g_menu_arena_cursor;
 /* not named by any code or data: size from the gap */
 static s32 D_800A3504[2];
-static s16 D_800A350C[2];
+static s16 g_menu_draw_offset_steps[2];
 static s16 D_800A3510[2];
 static s32 g_row_menu_pulse_counter;
 static s32 g_menu_draw_buffer_counter;
 static Unk8006E49CRec *D_800A351C;
 static Unk8006E49CRec *D_800A3520;
 static Unk8009BD24Block *g_row_menu_working_record_ptr;
-static s16 D_800A3528;
-static s32 D_800A352C;
+static s16 g_menu_stored_choice_cursor;
+static s32 g_menu_confirm_cursor;
 
 extern void AddPrim(void *, void *);
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
@@ -72,21 +72,21 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     s32 var_2;
     Unk800A34FCRec *work_block;
 
-    D_800A3500 = arg0;
+    g_menu_arena_cursor = arg0;
     D_800A351C = (Unk8006E49CRec *)arg0;
     temp_s0 = arg0 + 0x58;
-    D_800A3500 = temp_s0;
+    g_menu_arena_cursor = temp_s0;
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-        2, (Unk8006E950Head *)D_800A3500);
-    D_800A372C = D_800A3500;
-    var_2 = reloc_RelocateTwelveListsAndLoadVabPack(D_800A3500);
-    D_800A3500 = var_2;
+        2, (Unk8006E950Head *)g_menu_arena_cursor);
+    D_800A372C = g_menu_arena_cursor;
+    var_2 = reloc_RelocateTwelveListsAndLoadVabPack(g_menu_arena_cursor);
+    g_menu_arena_cursor = var_2;
     work_block = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
     work_block->menu_resource_root = (Unk8006919CRec *)temp_s0;
-    D_800A3500 = (s32)work_block;
+    g_menu_arena_cursor = (s32)work_block;
     g_row_menu_work_block = work_block;
-    D_800A3500 = (s32)(work_block + 1);
+    g_menu_arena_cursor = (s32)(work_block + 1);
     {
         s32 var_4 = -0x10;
         s32 var_5;
@@ -121,9 +121,9 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
         {
             /* FAKE: one s16 * holder per stored work-block field, set before
              * the g_row_menu_working_record_ptr store; plain `*p` stores keep
-             * the D_800A3528 and g_menu_packed_cursors stores in place. Member
-             * stores through a holder: score 28; straight through
-             * g_row_menu_work_block: 39. */
+             * the g_menu_stored_choice_cursor and g_menu_packed_cursors stores
+             * in place. Member stores through a holder: score 28; straight
+             * through g_row_menu_work_block: 39. */
             s16 *p_2A;
             s16 *p_28;
             s16 *p_0E;
@@ -151,14 +151,14 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             do {
             } while (0);
             g_menu_draw_buffer_counter = 0;
-            D_800A3528 = 0;
+            g_menu_stored_choice_cursor = 0;
             *p_2A = value;
             *p_28 = value;
             flags = g_menu_packed_cursors & ~0x1C00;
             D_800A3510[1] = 0;
             D_800A3510[0] = 0;
-            D_800A350C[1] = 0;
-            D_800A350C[0] = 0;
+            g_menu_draw_offset_steps[1] = 0;
+            g_menu_draw_offset_steps[0] = 0;
             flags |= 0x1000;
             g_menu_packed_cursors = flags;
             *p_12 = 0;
@@ -312,7 +312,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
     direction_events = pad_StepOffsetsGetDirectionEvents(
         (u32 *)&var_0[12], 0, g_row_menu_work_block->menu_draw_offsets,
-        D_800A350C);
+        g_menu_draw_offset_steps);
     switch (direction_events >> 16) {
     case 1:
         do {
@@ -1382,7 +1382,8 @@ s32 menu_HandleOptionMenuChoices(s32 *arg0, u32 *arg1) {
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        (u32 *)&sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+        (u32 *)&sp10, 0, g_row_menu_work_block->menu_draw_offsets,
+        g_menu_draw_offset_steps);
     switch (ret >> 16) {
     case 1:
         if ((g_menu_packed_cursors & 0x1C00) == 0x1400) {
@@ -1500,7 +1501,8 @@ s32 menu_HandleMemCardChoices(s32 *arg0, u32 *arg1) {
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->menu_draw_offsets,
+        g_menu_draw_offset_steps);
     switch (ret >> 16) {
     case 1:
         if ((g_menu_packed_cursors & 0xE000) == 0x4000) {
@@ -2253,7 +2255,7 @@ void menu_DrawStoredChoice(s32 *arg0) {
             s.y = 0;
             s.has_color = 0;
             s.semi = 0;
-        } else if (i == D_800A3528 + 1) {
+        } else if (i == g_menu_stored_choice_cursor + 1) {
             s.y = g_row_menu_work_block->menu_draw_offsets[1];
             s.col_r = s.col_g = s.col_b =
                 ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF)
@@ -2261,7 +2263,8 @@ void menu_DrawStoredChoice(s32 *arg0) {
                  12) -
                 0x80;
             s.semi = 0;
-        } else if (i != 1 && i != 2 && i != 3 && i == D_800A3528 + 4) {
+        } else if (i != 1 && i != 2 && i != 3 &&
+                   i == g_menu_stored_choice_cursor + 4) {
             s.col_r = s.col_g = s.col_b = 0x80;
             s.y = 0;
             s.semi = 0;
@@ -2295,24 +2298,25 @@ s32 menu_HandleStoredChoice(s32 arg0, u32 arg1) {
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->menu_draw_offsets,
+        g_menu_draw_offset_steps);
     if ((ret >> 16) == 1) {
-        D_800A3528 = D_800A3528 + 1;
+        g_menu_stored_choice_cursor = g_menu_stored_choice_cursor + 1;
         snd_QueueSound(0, 0x7F, 0x7F);
     } else if ((ret >> 16) == 2) {
-        D_800A3528 = D_800A3528 - 1;
+        g_menu_stored_choice_cursor = g_menu_stored_choice_cursor - 1;
         snd_QueueSound(0, 0x7F, 0x7F);
     }
-    if ((s16)D_800A3528 < 0) {
-        D_800A3528 = 2;
+    if ((s16)g_menu_stored_choice_cursor < 0) {
+        g_menu_stored_choice_cursor = 2;
     }
-    D_800A3528 = (s16)D_800A3528 % 3;
+    g_menu_stored_choice_cursor = (s16)g_menu_stored_choice_cursor % 3;
     if (arg1 & 0x100010) {
         snd_QueueSound(2, 0x7F, 0x7F);
         result = -1;
     } else if (arg1 & 0x400040) {
         snd_QueueSound(1, 0x7F, 0x7F);
-        sval = (s16)D_800A3528;
+        sval = (s16)g_menu_stored_choice_cursor;
         if (sval == 2) {
             result = -1;
         } else {
@@ -2341,7 +2345,7 @@ s32 menu_UpdateStoredChoice(s32 arg0, s32 arg1) {
 }
 
 s32 menu_ResetConfirmCursor(void) {
-    D_800A352C = 0;
+    g_menu_confirm_cursor = 0;
     return 1;
 }
 
@@ -2479,7 +2483,7 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *arg0) {
 
     for (i = 0; i < 3; i++) {
         s.dd94_00.has_color = 1;
-        if (i == D_800A352C + 1) {
+        if (i == g_menu_confirm_cursor + 1) {
             s.dd94_00.y = g_row_menu_work_block->menu_draw_offsets[1];
             s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b =
                 ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF)
@@ -2521,18 +2525,19 @@ s32 menu_HandleConfirmInput(s32 arg0, u32 arg1) {
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
     ret = pad_StepOffsetsGetDirectionEvents(
-        &sp10, 0, g_row_menu_work_block->menu_draw_offsets, D_800A350C);
+        &sp10, 0, g_row_menu_work_block->menu_draw_offsets,
+        g_menu_draw_offset_steps);
     if (((ret >> 16) & 0xFF) != 0) {
-        D_800A352C += 1;
+        g_menu_confirm_cursor += 1;
         snd_QueueSound(0, 0x7F, 0x7F);
     }
-    D_800A352C &= 1;
+    g_menu_confirm_cursor &= 1;
     if ((arg1 & 0x100010) != 0) {
         result = -1;
         snd_QueueSound(2, 0x7F, 0x7F);
     } else if ((arg1 & 0x400040) != 0) {
         snd_QueueSound(1, 0x7F, 0x7F);
-        if (D_800A352C != 0) {
+        if (g_menu_confirm_cursor != 0) {
             result = -1;
         } else {
             result = 1;
@@ -2561,7 +2566,7 @@ extern RECT D_800A32D8;
 s32 gpu_BeginFullscreenImageDisplay(void) {
     /* FAKE: read at entry and held in $s3 across the calls; read at the
      * LoadImage call: score 22 (Q129). */
-    s32 temp_s3 = D_800A3500;
+    s32 temp_s3 = g_menu_arena_cursor;
     RECT rect;
     s32 v0;
 
@@ -2571,7 +2576,7 @@ s32 gpu_BeginFullscreenImageDisplay(void) {
     } else {
         v0 = cdrom_GetFileIndex(2, 7);
     }
-    cdrom_StartRead(v0, D_800A3500);
+    cdrom_StartRead(v0, g_menu_arena_cursor);
     cdrom_WaitIdle();
     cdrom_GetFileSize(v0);
     SetDispMask(0);

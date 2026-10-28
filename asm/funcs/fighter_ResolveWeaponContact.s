@@ -51,8 +51,8 @@ glabel fighter_ResolveWeaponContact
   .L80028490:
     /* 18C90 80028490 21880000 */  addu       $s1, $zero, $zero
   .L80028494:
-    /* 18C94 80028494 0A80033C */  lui        $v1, %hi(D_800A3824)
-    /* 18C98 80028498 24386384 */  lh         $v1, %lo(D_800A3824)($v1)
+    /* 18C94 80028494 0A80033C */  lui        $v1, %hi(g_fight_weapon_contact_result)
+    /* 18C98 80028498 24386384 */  lh         $v1, %lo(g_fight_weapon_contact_result)($v1)
     /* 18C9C 8002849C 04000286 */  lh         $v0, 0x4($s0)
     /* 18CA0 800284A0 04008486 */  lh         $a0, 0x4($s4)
     /* 18CA4 800284A4 07104300 */  srav       $v0, $v1, $v0

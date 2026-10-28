@@ -47,7 +47,7 @@ class EventsTest(unittest.TestCase):
         self.tracked = ["docs/naming/runtime/sample/capture.manifest.json"]
         self.records = []
         self.spec = dict(breakpoints=[dict(at="func_80010000", max_hits=100)],
-                         watch=[dict(at="D_800A3910+0x2", kind=k, max_hits=100, len=2)
+                         watch=[dict(at="g_fight_midpoint_effect_delay+0x2", kind=k, max_hits=100, len=2)
                                 for k in ("write", "read")], max_events=1000)
         self.end_changes = {}
         for phase, frame in (("p", 1), ("q", 8)):
@@ -70,7 +70,7 @@ class EventsTest(unittest.TestCase):
         self.root.rmdir()
 
     def watch(self, kind=2, phase="p", frame=1, value=7):
-        return dict(ev="hit", at="D_800A3910+0x2", kind=kind, phase=phase,
+        return dict(ev="hit", at="g_fight_midpoint_effect_delay+0x2", kind=kind, phase=phase,
                     frame=frame, addr=0x800A3912,
                     access=dict(pc=0x80030010, addr=0x800A3912,
                                            width=2, store=kind == 2, value=value))
@@ -98,7 +98,7 @@ class EventsTest(unittest.TestCase):
                 report += (f"## func_80010000: {n} hits\n\nCall sites (ra-8):\n"
                            f"- `caller+0x0` x{n}\n\n")
             else:
-                report += (f"## D_800A3910+0x2 (Z{kind} watch): {n} hits\n\n"
+                report += (f"## g_fight_midpoint_effect_delay+0x2 (Z{kind} watch): {n} hits\n\n"
                            f"Accessing instructions:\n- `func_80030000+0x10` x{n}\n\n")
         (self.capture / "report.md").write_bytes(report.encode())
 
@@ -185,7 +185,7 @@ class EventsTest(unittest.TestCase):
                 self.assertEqual(row["site"], "0x80020000")
                 self.assertEqual(json.loads(row["values"]), [[1, 2, 3, 4]])
             else:
-                self.assertEqual(row["target"], "D_800A3910+0x2")
+                self.assertEqual(row["target"], "g_fight_midpoint_effect_delay+0x2")
                 self.assertEqual(row["site_function"], "func_80030000")
                 self.assertEqual(row["site"], "0x80030010")
                 self.assertEqual(json.loads(row["values"]), [7])
@@ -284,7 +284,7 @@ class EventsTest(unittest.TestCase):
         baseline = self.rows()
         self.assertTrue(baseline)
         for key, entry in (("stubs", dict(at="func_80010000", phase="q")),
-                           ("pokes", dict(at="D_800A3910", hex="06", phase="q"))):
+                           ("pokes", dict(at="g_fight_midpoint_effect_delay", hex="06", phase="q"))):
             with self.subTest(spec=key):
                 self.spec[key] = [entry]
                 self.save()
@@ -292,7 +292,7 @@ class EventsTest(unittest.TestCase):
                 del self.spec[key]
         for ev in ("stub", "poke"):
             with self.subTest(record=ev):
-                self.records.insert(3, dict(ev=ev, at="D_800A3910", when="q"))
+                self.records.insert(3, dict(ev=ev, at="g_fight_midpoint_effect_delay", when="q"))
                 self.save()
                 self.assertEqual(self.rows(), [])
                 del self.records[3]
@@ -321,7 +321,7 @@ class EventsTest(unittest.TestCase):
         for row in self.rows():
             self.assertEqual(row["inconclusive"], "1" if row["kind"] == "write" else "0")
             if row["kind"] == "write":
-                self.assertIn("max_hits_reached:Z2:D_800A3910+0x2:2", row["reason"])
+                self.assertIn("max_hits_reached:Z2:g_fight_midpoint_effect_delay+0x2:2", row["reason"])
         self.spec["breakpoints"][0]["max_hits"] = 2
         self.spec["max_events"] = 6
         self.end_changes["script_ended"] = False
@@ -334,7 +334,7 @@ class EventsTest(unittest.TestCase):
 
     def test_kseg1_and_bios_normalization(self):
         self.assertEqual(events.canonical(0xA00A3910), events.canonical(0x800A3910))
-        self.assertEqual(events.normalized_target("D_A00A3910+0x2"), "D_800A3910+0x2")
+        self.assertEqual(events.normalized_target("D_A00A3910+0x2"), "g_fight_midpoint_effect_delay+0x2")
         self.assertEqual(events.normalized_target("0xA00A3910"), "0x800A3910")
         watch = self.watch()
         watch["ra"] = 0x80040008  # A watch must use access.pc, never this ra.
@@ -363,8 +363,8 @@ class EventsTest(unittest.TestCase):
         self.assertEqual(self.render(), before)
 
     def test_exact_wider_and_partial_stores(self):
-        entry = events.declarations(self.spec)[("D_800A3910+0x2", 2)]
-        resolved = {(("D_800A3910+0x2", 2), 0x80030010): ("writer", "report")}
+        entry = events.declarations(self.spec)[("g_fight_midpoint_effect_delay+0x2", 2)]
+        resolved = {(("g_fight_midpoint_effect_delay+0x2", 2), 0x80030010): ("writer", "report")}
         for address, width, value, expected, offset, partial in (
                 (0x800A3910, 4, 0x00150000, 0x15, "-2", False),
                 (0x800A3912, 1, 0x15, 0x15, "0", True),
@@ -444,15 +444,15 @@ class EventsTest(unittest.TestCase):
             self.rows()
 
     def test_end_counter_missing_or_mismatch_is_target_local(self):
-        for hits in ({}, {"Z2:D_800A3910+0x2": 1},
-                     {"Z2:D_800A3910+0x2": 3}):
+        for hits in ({}, {"Z2:g_fight_midpoint_effect_delay+0x2": 1},
+                     {"Z2:g_fight_midpoint_effect_delay+0x2": 3}):
             with self.subTest(hits=hits):
                 self.end_changes["hits"] = {
-                    "Z0:func_80010000": 2, "Z3:D_800A3910+0x2": 2, **hits}
+                    "Z0:func_80010000": 2, "Z3:g_fight_midpoint_effect_delay+0x2": 2, **hits}
                 self.save()
                 for row in self.rows():
                     self.assertEqual(row["inconclusive"], "1" if row["kind"] == "write" else "0")
-                    self.assertEqual("hit_count_mismatch:Z2:D_800A3910+0x2" in row["reason"],
+                    self.assertEqual("hit_count_mismatch:Z2:g_fight_midpoint_effect_delay+0x2" in row["reason"],
                                      row["kind"] == "write")
 
     def test_end_counter_includes_hitmap_and_stub_hits_across_phases(self):
@@ -504,7 +504,7 @@ class EventsTest(unittest.TestCase):
         event = self.records[0]
         entry = self.spec["watch"][0]
         self.assertEqual(events.limits(self.spec, self.records, None, entry, event),
-                         {"missing_end_record", "hit_count_mismatch:Z2:D_800A3910+0x2"})
+                         {"missing_end_record", "hit_count_mismatch:Z2:g_fight_midpoint_effect_delay+0x2"})
 
     def test_tsv_rejects_control_characters(self):
         self.records[0]["phase"] = "bad\tphase"

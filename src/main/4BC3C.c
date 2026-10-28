@@ -19,7 +19,7 @@ extern void eff_SetBillboardList();
  * order (Q65). */
 static s16 D_800A3400;
 static s32 g_vab_sticky_sbaddr;
-static s32 D_800A3408;
+static s32 g_vab_sb_used_bytes;
 static s32 D_800A340C;
 /* not named by any code or data: size from the gap */
 static s32 D_800A3410[2];
@@ -57,7 +57,7 @@ void snd_Init(void) {
         g_snd_queue[queue_index].volr = g_snd_queue[queue_index].voll = 0x7F;
     }
     SsStart();
-    D_800A3408 = 0;
+    g_vab_sb_used_bytes = 0;
     D_800A3400 = 0;
 }
 
@@ -83,7 +83,7 @@ void snd_Quit(void) {
         vabs_cleared++;
         vab_record_cursor++;
     } while (vabs_cleared < 0x10);
-    D_800A3408 = 0;
+    g_vab_sb_used_bytes = 0;
 }
 
 void snd_StopAllVoices(void) { func_800858D0(0); }
@@ -142,7 +142,7 @@ void snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb(void) {
         vab_sbaddr_cursor++;
         vab_record_cursor++;
     }
-    D_800A3408 = 0;
+    g_vab_sb_used_bytes = 0;
     snd_ResetVoicesAndQueue();
 }
 
@@ -160,7 +160,7 @@ s32 snd_LoadCommonVab(s32 load_addr) {
     cdrom_StartRead(file_index, load_addr);
     file_size = cdrom_GetFileSize(file_index);
     cdrom_WaitIdle();
-    D_800A3408 = 0;
+    g_vab_sb_used_bytes = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
     body_offset =
@@ -470,7 +470,7 @@ s32 snd_LoadVabPack(
             }
         }
     }
-    D_800A3408 = g_vab_sticky_sbaddr - D_800A340C;
+    g_vab_sb_used_bytes = g_vab_sticky_sbaddr - D_800A340C;
     if (vab_id != 0) {
         snd_CompactVabBodies(vab_id, ram_buffer_addr);
     }
@@ -481,8 +481,8 @@ s32 snd_LoadVabPack(
     SsVabTransCompleted(1);
     if (id != -1) {
         g_vab_rec_ptr[id] = vab_pack;
-        D_800A3408 += vab_pack->unk_0C;
-        g_vab_sticky_sbaddr = D_800A340C + D_800A3408;
+        g_vab_sb_used_bytes += vab_pack->unk_0C;
+        g_vab_sticky_sbaddr = D_800A340C + g_vab_sb_used_bytes;
         g_vab_vb_sbaddr[vab_id] = SsUtGetVBaddrInSB(vab_id);
         return vab_pack->unk_08 - (s32)vab_pack;
     }

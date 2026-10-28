@@ -25,8 +25,8 @@ glabel menu_UpdateRowMenu
     /* 59C28 80069428 021C1000 */  srl        $v1, $s0, 16
     /* 59C2C 8006942C 25104300 */  or         $v0, $v0, $v1
     /* 59C30 80069430 3004868F */  lw         $a2, %gp_rel(g_row_menu_work_block)($gp)
-    /* 59C34 80069434 0A80073C */  lui        $a3, %hi(D_800A350C)
-    /* 59C38 80069438 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
+    /* 59C34 80069434 0A80073C */  lui        $a3, %hi(g_menu_draw_offset_steps)
+    /* 59C38 80069438 0C35E724 */  addiu      $a3, $a3, %lo(g_menu_draw_offset_steps)
     /* 59C3C 8006943C 4000A2AF */  sw         $v0, 0x40($sp)
     /* 59C40 80069440 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 59C44 80069444 0C00C624 */   addiu     $a2, $a2, 0xC

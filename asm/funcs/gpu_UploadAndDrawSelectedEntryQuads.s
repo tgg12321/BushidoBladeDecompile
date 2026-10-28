@@ -29,12 +29,12 @@ glabel gpu_UploadAndDrawSelectedEntryQuads
     /* 5F560 8006ED60 00141100 */  sll        $v0, $s1, 16
   .L8006ED64:
     /* 5F564 8006ED64 C3130200 */  sra        $v0, $v0, 15
-    /* 5F568 8006ED68 0A80013C */  lui        $at, %hi(D_800A3588)
+    /* 5F568 8006ED68 0A80013C */  lui        $at, %hi(g_entry_menu_grid_column_cursors)
     /* 5F56C 8006ED6C 21082200 */  addu       $at, $at, $v0
-    /* 5F570 8006ED70 88352384 */  lh         $v1, %lo(D_800A3588)($at)
-    /* 5F574 8006ED74 0A80013C */  lui        $at, %hi(D_800A358C)
+    /* 5F570 8006ED70 88352384 */  lh         $v1, %lo(g_entry_menu_grid_column_cursors)($at)
+    /* 5F574 8006ED74 0A80013C */  lui        $at, %hi(g_entry_menu_grid_row_cursors)
     /* 5F578 8006ED78 21082200 */  addu       $at, $at, $v0
-    /* 5F57C 8006ED7C 8C352484 */  lh         $a0, %lo(D_800A358C)($at)
+    /* 5F57C 8006ED7C 8C352484 */  lh         $a0, %lo(g_entry_menu_grid_row_cursors)($at)
     /* 5F580 8006ED80 40180300 */  sll        $v1, $v1, 1
     /* 5F584 8006ED84 40100400 */  sll        $v0, $a0, 1
     /* 5F588 8006ED88 21104400 */  addu       $v0, $v0, $a0

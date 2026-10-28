@@ -40,7 +40,7 @@ paired start reset that record's unk_86 to unk_84:
     fire ("[and none earlier fires: L1 held; RIGHT not held; ...]": an
     earlier "unheld X" means X must stay held);
     none fire for D_800A38AE in a kind-0x11 move; the other record's input
-    there is handed off (D_800A376E) and installs the move on both);
+    there is handed off (g_fight_paired_move_start_pending) and installs the move on both);
   * the first 0x4000 entry is the paired move fight_UpdatePairedMoves
     starts by distance (its extra bytes are distance data; the label lists
     its gates): both records install it from the starter's file,
@@ -455,7 +455,7 @@ class Fight:
             if f & 0x4000:
                 lab += " (paired entry tested as an input)"
             if kind == 0x11:
-                # D_800A376E hand-off: fight_UpdatePairedMoves installs the
+                # g_fight_paired_move_start_pending hand-off: fight_UpdatePairedMoves installs the
                 # move on D_800A38AE and on the other (borrow if 0x1000)
                 t = target(mid, bool(f & 0x1000))
                 if t is None:

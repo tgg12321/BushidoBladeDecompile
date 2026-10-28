@@ -6,9 +6,9 @@
  * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by
  * g_entry_menu_row_phase_choice_cursors[i], 0..5 like D_8009BC94[i]; the 2 zero
  * bytes after it are the word alignment of g_entry_menu_grid_entries, another
- * type with other readers) and D_8009BCD0 (s16[2], scroll state
- * menu_UpdateChoiceGrid writes; the run's end). Under -G8 the original compiler
- * puts both in .sdata, so no -G8 file defined them.
+ * type with other readers) and g_entry_menu_transition_offsets (s16[2], scroll
+ * state menu_UpdateChoiceGrid writes; the run's end). Under -G8 the original
+ * compiler puts both in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 596CC.c (its own .sdata, gp accesses)
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.
@@ -22,7 +22,7 @@
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
  * D_8009BC94 (DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
- * D_8009BCC4 / D_8009BCD0 (menu_UpdateChoiceGrid). */
+ * D_8009BCC4 / g_entry_menu_transition_offsets (menu_UpdateChoiceGrid). */
 #include "common.h"
 #include "bb2.h"
 
@@ -103,4 +103,4 @@ Unk8009BC94Record D_8009BC94[2][6] = {
 
 s16 D_8009BCC4[3][2] = {{0x00, 0x17}, {0x99, 0x03}, {0xA0, 0x24}};
 
-s16 D_8009BCD0[2] = {0, 0};
+s16 g_entry_menu_transition_offsets[2] = {0, 0};

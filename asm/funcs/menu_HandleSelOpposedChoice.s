@@ -12,8 +12,8 @@ glabel menu_HandleSelOpposedChoice
     /* 65E98 80075698 80101000 */  sll        $v0, $s0, 2
     /* 65E9C 8007569C 40004624 */  addiu      $a2, $v0, 0x40
     /* 65EA0 800756A0 21306600 */  addu       $a2, $v1, $a2
-    /* 65EA4 800756A4 0A80073C */  lui        $a3, %hi(D_800A35D0)
-    /* 65EA8 800756A8 D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
+    /* 65EA4 800756A4 0A80073C */  lui        $a3, %hi(g_sel_offset_steps)
+    /* 65EA8 800756A8 D035E724 */  addiu      $a3, $a3, %lo(g_sel_offset_steps)
     /* 65EAC 800756AC B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 65EB0 800756B0 21384700 */   addu      $a3, $v0, $a3
     /* 65EB4 800756B4 03140200 */  sra        $v0, $v0, 16
