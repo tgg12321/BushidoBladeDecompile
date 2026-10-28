@@ -508,13 +508,13 @@ typedef struct {
    index (gpu_DrawPackedComparisonRowsAndTotals reads it at
    j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it;
    gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0).
-   Unk8009BD24Block.unk00. */
+   Unk8009BD24Block.match_picks. */
 typedef struct {
     u8 bd0;
     u8 unk1;
 } Unk8009BD24Record;
 
-/* One of the three 4-byte records at Unk8009BD24Block.unk21
+/* One of the three 4-byte records at Unk8009BD24Block.time_records
    (fight_PackTimeRecordsAndInitPresentation and
    CopySavedFlagsButtonMappingsAndTimesToWorkingRecord store them;
    gpu_DrawIndexedCellsAndDecimalDigitPairs reads them). */
@@ -530,15 +530,19 @@ typedef struct {
    InitDisplayStateLoadPackAndSetEntryFlags / menu_InitSelScreen, whose callees
    reach every field off that one base (596CC g_row_menu_working_record_ptr,
    5ED34 g_entry_menu_working_record_ptr, SelWork.f00). Bit fields are named by
-   bit offset.
-   - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; menu_UpdateRowMenuStoreResult
-   stores it), unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
-   results-screen layout), unk14_12 (`== 2` tests), unk14_14, unk14_15 (one bit
-   per player), unk14_17, unk14_18 (3 bits); no code reads bits 21-23.
-   - unk17 / unk1A / unk1D: three byte triples. menu_HandleRowBitInput rebuilds
-   a player's nibble of unk17 from unk1A or unk1D; 64FD8 copies unk17 and unk1D
-   into each other.
-   - unk20_*: the word at +0x20, bits 0-3; its upper bytes start the unk21
+   bit offset until named.
+   - unk14_*: the word at +0x14. fight_mode (`& 0xF`;
+   menu_UpdateRowMenuStoreResult stores it), stage_index (6 bits),
+   match_count_index (the round count - 3; also picks the results-screen
+   layout), time_limit_index (`== 2` tests), win_target_index (the win target
+   - 1), unk14_15 (one bit per player), unk14_17, unk14_18 (3 bits); no code
+   reads bits 21-23.
+   - button_mappings / default_button_mappings / committed_button_mappings:
+   three byte triples. menu_HandleRowBitInput rebuilds a player's nibble of
+   button_mappings from default_button_mappings or committed_button_mappings;
+   64FD8 copies button_mappings and committed_button_mappings into each other.
+   - unk20_*: the word at +0x20, bits 0-3 (grayscale, unk20_1,
+   cd_audio_suppressed, view_setting); its upper bytes start the time_records
    records. */
 typedef struct {
     Unk8009BD24Record match_picks[2][5];

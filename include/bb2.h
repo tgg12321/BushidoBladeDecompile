@@ -210,7 +210,7 @@ extern Tbl8008E194 D_8008E194[];
 
 /* 8 byte pairs ({0,0} {1,0} {2,0} {3,0} {4,1} {5,1} {6,1} {7,0});
  * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in D_800A35E0,
- * n = g_working_record.unk14_0. */
+ * n = g_working_record.fight_mode. */
 extern u8 D_8009BD58[8][2];
 
 extern Obj80106A78 g_object_pool[12];
@@ -608,7 +608,7 @@ extern TexRec D_8009B9E0[1];
 extern TexRec D_8009B9E8[1];
 extern TexRec D_8009B9F0[2];
 /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]
- * their g_working_record.unk20_0 CLUT substitutes (eff_DrawBillboardList) */
+ * their g_working_record.grayscale CLUT substitutes (eff_DrawBillboardList) */
 extern TexRec D_8009BA00[12];
 extern u8 D_8009BA60[];
 extern Unk8009BD24Block g_working_record;

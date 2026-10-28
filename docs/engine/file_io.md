@@ -133,7 +133,7 @@ are described in [replay.md](replay.md).
 ## Callers that load data
 
 - `eff_LoadImagesAndSetup(dest, prim_buf)` (51268.c) picks a group-2 file by
-  `g_working_record.unk14_0` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
+  `g_working_record.fight_mode` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
   `dest` and uploads two VRAM rectangles from it: (0x380, 0, 0x80, 0x1DC),
   then (0x380, 0x1DC, 0x70, 0x24) from `dest + 0x1DC00`. It then splits
   `prim_buf` into two 0x4650-byte `POLY_FT4` buffers

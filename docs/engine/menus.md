@@ -86,10 +86,10 @@ Cited by function name.
   for a step one way or the other.
 - `menu_UpdateRowMenu` (called from `menu_UpdateRowMenuStoreResult`, src/main/64FD8.c:1273) moves
   the row index with that result, applies the row's `opt[].mode` to
-  `g_row_menu_working_record_ptr->unk20_3`, and on Cross (with per-player conditions on the
+  `g_row_menu_working_record_ptr->view_setting`, and on Cross (with per-player conditions on the
   row's `state`) returns that `state`; Triangle returns -2, otherwise -1.
 - `menu_HandleOptionMenuChoices` steps the bits 10-12 cursor; in positions 0..2 the
-  low-half result toggles `g_row_menu_working_record_ptr->unk20_0..2`, and Cross advances the
+  low-half result toggles `g_row_menu_working_record_ptr->grayscale`, `unk20_1` and `cd_audio_suppressed`, and Cross advances the
   cursor; positions 3, 4, 5 return 2, 3, 1 on Cross, and Triangle returns 1.
 - `menu_HandleMemCardChoices` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
   (position 2 also advances the bits 10-12 cursor); Triangle returns 1.

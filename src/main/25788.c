@@ -8,8 +8,9 @@
 #include "bb2_const.h"
 
 /* Copies the record at GetWorkingRecord() into the FileRecord g_saved_record:
- * flags bits 0-2 are cleared and re-set from p->unk20_0..2, then the three
- * bytes at p->unk17 are copied to g_saved_record.frec20. */
+ * flags bits 0-2 are cleared and re-set from p->grayscale, p->unk20_1 and
+ * p->cd_audio_suppressed, then the three bytes at p->button_mappings are copied
+ * to g_saved_record.frec20. */
 void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
     Unk8009BD24Block *p;
     s32 i;

@@ -855,9 +855,10 @@ void fight_UpdateMatchTallyPresentation(void) {
 /*
  * Copies the three clock records (g_saved_record.times, frame counts at 30 fps)
  * into the record at GetWorkingRecord(): minutes (/1800), seconds ((/30) % 60),
- * hundredths ((% 30) * 100 / 30) and the record's unk_0 byte at +0x21 + i*4;
- * then three bytes from fight_SplitFrameCounterIntoMinutesSecondsHundredths at
- * +0x2D..+0x2F and the stage at +0x30.
+ * hundredths ((% 30) * 100 / 30) and character_index (the record's unk_0) of
+ * time_records[i]; then the three bytes from
+ * fight_SplitFrameCounterIntoMinutesSecondsHundredths into fight_time[] and
+ * D_80101EC8[0].character_data_index into fight_character_index.
  */
 void fight_PackTimeRecordsAndInitPresentation(void) {
     Unk8001CD68Rec buf;

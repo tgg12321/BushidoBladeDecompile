@@ -686,5 +686,5 @@ const char *D_8008EC08[7] = {
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's rank rows. */
 u8 D_8008EC24[2][5] = {{58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};
 
-/* 25788.c's D_800A36CC per setting (D_8008EC30[p->unk14_12]). */
+/* 25788.c's D_800A36CC per setting (D_8008EC30[p->time_limit_index]). */
 u8 D_8008EC30[4] = {30, 60, 120, 0};
