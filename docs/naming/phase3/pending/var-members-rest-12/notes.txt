@@ -1,0 +1,65 @@
+var-members-rest-12 -- draft notes (research re-derived by the drafter in the lane worktree; research treated as hints only)
+
+BASIS: line numbers cite the lane worktree ln-naming-a (HEAD 2edca58e3, includes rest..rest-11), read-only. Dry run: type-resolved tools/naming_member_apply.py --dry-run from WSL (the Windows python has no cpp), see dry.txt: exit=0, "OK: every member access renamed", 0 UNRESOLVED, 15 files would change. The ACCESSES list of each manifest row is generated from that diff (the new name's line numbers).
+Scope: 15 structs (Obj80106A78, Tbl8008E194, BoneHitRec, Unk80101BF0Rec, FileRecord, TimeRec, Unk8001CD68Rec, Unk800A4750Rec, Unk80017FA0Rec, Unk800A9CF8Entry, Unk8005C2A8Pack, Unk80099D88Rec, Unk800F1198Record, Unk8006D808Rec) plus the item-2 audit rename Unk80101EC8Record.ground_probe_floor_ys.
+Research: 82 rows, 54 RENAME / 28 NO_NAME. Result: 45 rows in pairs.txt (44 member rows + 1 audit rename), 0 CHANGED FROM RESEARCH, 9 DROPPED. The verdict column of member_manifest.csv is empty (the reviewer decides). NO_NAME rows are not in the manifest (same as rest-10 / rest-11).
+Per type kept: Obj80106A78 3, Tbl8008E194 4, BoneHitRec 3, Unk80101BF0Rec 4, FileRecord 1, TimeRec 3, Unk8001CD68Rec 3, Unk800A4750Rec 6, Unk80017FA0Rec 1, Unk800A9CF8Entry 2, Unk8005C2A8Pack 4, Unk80099D88Rec 2, Unk800F1198Record 3, Unk8006D808Rec 5, audit 1.
+
+Re-derivation
+- Every access line was read in context (17AFC/9F9C/4510C for the object pool, bone records and audit member; 28708 replay; 6CF8/17AFC/2B344/25C38/25788/28708 save record; 9F9C/2B344/4D0A8 time triple; 2B344/3AB48 asm for the grid cell record; 87A0 softbody; 35000/32D04 frame entries; 4BC3C sound packs; 4510C CPU profile; 51268 billboards; 596CC sheet set).
+- INCLUDE_ASM: 137 bodies remain. None names g_object_pool, g_object_kind_params, g_fighter_bone_hit_records, g_replay_events, g_saved_record, g_gpu_grid_cell_records, g_vab_rec_ptr, g_cpu_profiles, g_eff_billboards, g_node_frame_animation_context, D_80101EC8, g_working_record or g_fight_timer_frames (asm/funcs checked against the src INCLUDE_ASM list); none uses +0x1B0/0x1B4/0x1B8 off a fighter record. Only g_draw_queue is named, by func_8004A4E0. TUs holding these accesses have no INCLUDE_ASM except 3AB48.c. The grid cell record (Unk800A4750Rec) is read raw by func_8004C404 (lbu/lh 0 kind, lh 2 block, lh 4 entry, lh 6 level/flags half, lw 8 x, lw 0xC z), func_8004A940 (scratch 0x1F8001E1 bit 0 -> GP0 bit 25) and dispatched by func_8004A4E0; all agree with the names. func_8004A4E0's lh 4 / lh 2 table read is the kind-0 (Unk80101DF0Record) case, another type.
+- Freshness: grep -rnw over src/ and include/ finds none of the 45 names; none appears in any pending pairs.txt (this worktree) nor in ln-naming-c / ln-trace-a src, include or pending pairs; none in tools, Makefile, *.ld or symbol_addrs.txt. 45 pairs, 45 distinct names, no sharing.
+
+Per-row confidence (H/M/W) and weak points for the reviewer
+- Obj80106A78: can_hit_fighter M (also gates bounce cues and, inverted, the lie-flat lerp; all follow from a live throw); drop_state H; model_entry_id M (written only by object_SpawnScatteredAt, read only for kinds 0x12..0x1D, stale otherwise).
+- Tbl8008E194: launch_speed M (horizontal only), launch_vel_y H, spin_rate M (u16 declared, used as signed rate), bounce_restitution H.
+- BoneHitRec: has_inner_sphere M, outer_radius M, inner_radius M. "inner" rests on the data (200<228, 190<210, 161<174, second test only after the first hits), not on a code comparison.
+- Unk80101BF0Rec: event_frame M (0xFF sentinel), event_kind M, event_pos H, event_vector M (generic).
+- FileRecord.unlock_mask W (inferred from OR-only growth, the 0x7007 seed, and gating of select menus / opponent pool).
+- TimeRec: holder_character_index W (assumes fighter 0 is the holder; consumers call it character_index), holder_weapon_id W (write-only in C), time_frames H.
+- Unk8001CD68Rec: time_minutes H, time_seconds M (splitter writes in-minute seconds, the countdown writes total remaining seconds), time_hundredths H.
+- Unk800A4750Rec: draw_kind M (constant 0xC, same slot as node_kind), cell_reloc_block_id H, cell_reloc_entry_index H, draw_flags W (generic flag byte; bit 0 semi-transparent, bit 3 stream-id bit 15), cell_world_x / cell_world_z H.
+- Unk80017FA0Rec.object_matrix H.
+- Unk800A9CF8Entry: anim_yaw M, finish_countdown W (0x1000 = Q12 1.0 hints a fade; no code uses it so).
+- Unk8005C2A8Pack: key_on_table M, vab_header H, vab_body H, vab_body_size H.
+- Unk80099D88Rec: script_distance_fraction M (one use), script_kind_weight M ([5] and [6] are also direct chances).
+- Unk800F1198Record: packed_x H, packed_y H, z_coord M.
+- Unk8006D808Rec: character_sheet M, character_cells M (leading group only for character 8), digit_sheet H, digit_cell H, character_x_offsets M (single use).
+- Audit: Unk80101EC8Record.ground_probe_floor_ys -> ground_probe_end_ys M. The miss branch (9F9C.c:3168) stores the segment lower end (probe y + 2000), not a floor; the readers (17AFC.c:5044-5091) gate on end - 600 < probe y, so the miss value acts as a sentinel. Alternative ground_probe_result_ys (also fresh).
+
+DROPPED from the research RENAME list (could not support at every use; neutral kept)
+- Obj80106A78.unk_05 hop_state: 1 (at rest) is written for every kind (17AFC.c:4350), 0 also gates the kind 0x10 velocity turn (4219), and only 2 / 3 are kind 0xE hops; a hop name fails the 0 and 1 uses.
+- BoneHitRec.unk_0E outer_radius_sq and unk_12 inner_radius_sq: the templates hold the square (228/51984, 200/40000), but fighter_ScaleBoneHitRecords scales them linearly (9F9C.c:3070, 3072: (v * size_scale) >> 12) and g_object_scale_factors holds 3850..4259 (not 4096) for most characters, so after scaling they are not the square of the scaled radius. The value is still passed as r_sq, but the _sq name would claim a relation the scaling breaks.
+- FileRecord.unk_04 base_character_bits: "base" (the six initial characters) rests on the 0x7007 seed correspondence only; the setter is the scrolling-sprite handler finish, which is unnamed. Neutral.
+- Unk800A4750Rec.unk6 cell_draw_level: its asm consumers share scratch 0x1F8001E0 with fighter_CacheDownwardProbeHit and others, and the level/cull/colour-shift reading in func_8004A940 (compare against a tag, subtract from a shift) was not settled. Neutral.
+- Unk80017FA0Rec.unk8 node_buffer: write-only (2B344.c:2711); the game.h comment ("point table end") is contradicted but no read shows the role.
+- Unk800A9CF8Entry.unk58 anim_frame: also holds -1 (idle) and -2 (finished) sentinels (32D04.c:1216, 35000.c:100, 117), so it is a state as much as a frame index.
+- Unk80099D88Rec.unk6 action_weight: the two uses differ in unit (an 8-bit chance at 4510C.c:2458 vs the scale of a countdown at 2544).
+- Unk8006D808Rec.unk_00 fixed_sheets: "fixed" is not shown by the code (three sheets drawn whole at x = y = 0); the existing game.h comment calls them frame sheets, also unproven.
+
+NO_NAME rows (research verdict, none contradicted by my reading, none in pairs)
+- Obj80106A78.unk_5A, unk_62: padding, never accessed.
+- Tbl8008E194.unk0 (a selector: spin axis for 1/2/3, a fighter hit reaction for 4, lying pose for 2; 1 and 3 spawn identically, no single role), unk2 (constant 100, never read), unkC (per-kind reaction selector, move kinds unnamed), unkD (level 0..2: 2 doubles two tallies, only 0 allows the inner test).
+- Unk80101BF0Rec.unk_1 (dispatcher first argument: fighter index, booleans, collision_hit_class; no single role).
+- FileRecord.unk_05 (u8[3] padding, whole-record copies only).
+- Unk80017FA0Rec.unk3 (cleared once, never read).
+- Unk80045878Node.unk58 (three unrelated roles by list and kind: light-plane Y, matrix-pointer table, duplicate source pointer), unk5C, unk64 (no C access, none in the node draw asm).
+- Unk80099D88Rec.unk2, unk17 (never accessed), unk3 (threshold for the unnamed unk_3F4 counter), unk4 (chance of one press during move kind 0x1D, move kind unnamed), unk7 (tolerance used once as a scaled distance, once as a streak count).
+
+AUDIT LEADS (item 2), judged against every use
+- ScrPad.bone_hit_points: KEEP. Outside two functions the storage holds the 22 per-character points that fighter_UpdateBoneWorldData places from the BoneHitRec records. The two borrowers (fighter_ProcessWeaponContacts, 17AFC.c:1149; the second grid test ending near 17AFC.c:1482) save the first 16 points first (17AFC.c:1170) and restore them on every exit (1364, 1372, 1475, 1482): a bracketed borrow, not a second role. A neutral points_A8 would also lose the derived names bone_hit_points_1_3_centroid / _4_5_midpoint. Not in pairs.
+- Unk80101EC8Record.cpu_threat_resolved_count: KEEP. The suggested cpu_threat_response_count fails at 4510C.c:1823 and :1837 (both increment with no response script: var_7 = 0 or the pad cleared); all three increments coincide with incoming_attack_state = incoming_projectile_state = 4, the threat-closed state. Not in pairs.
+- Unk80101EC8Record.ground_probe_floor_ys -> ground_probe_end_ys: in pairs (see above). Comments to edit by hand afterwards: include/game.h:1695-1696 ("floor y under ground_probe_points[i]") and 9F9C.c:3088 ("floor height ... the segment's lower end when it finds nothing" already fits end_ys).
+
+Item 3 (no new evidence; all stay NO_NAME, not in pairs): MotionFrame.unk_06 / unk_08 / unk_0A, ScrPad.unk2B8, Unk80102778Rec.unk_4 / unk_F, Unk80101E60Rec.unk06 / unk3E, Unk1F800000Unk00.unk1E, Unk1F800000Rec.unk50 / unk8C / unkA0 / unkA4 / unkB0, Unk1F8000B8_80063084.unk38, Unk1F8000B8_80065800.unk14 / unk64, Unk1F8000B8_800678A8.unk10 / unk34 / unk44 / unk6E / unk70, Unk1F8000B8_800646E8.unk38 / unk40 / unk44. Reasons as in the research (one array in three roles, write-only, padding, address-of only, keycheck-blocked siblings).
+
+Item 4 wording follow-ups (not in this wave; report only)
+- include/game.h:1474 and docs/engine/motion.md:71-72: replace "the root heading and distance" with "the polar angle and length of the horizontal root offset"; fighter_Update takes the angle against the fighter's yaw (orientation.vy, or root_offset_yaw, 9F9C.c:5016-5031). Verified wording is the research's; I did not re-open 9F9C.c:5016 beyond the dry-run scope.
+- Parent member rename for the stutter scr->point_slots.slot_points[i]: Unk1F8002B8Rec.point_slots -> shape_point_pool (fresh by the research: grep -rw = 0, not in pending pairs; it is the pool shape_points[0..2] aim into, 17AFC.c:1540-1542). Optional, a separate row in a later wave. Not re-derived by me.
+
+COMMENT LIST (R6: comments the tool does not edit; old member spelling or old meaning). Same-spelled words of OTHER types stay.
+- include/game.h: BoneHitRec block comment ~907-913 (names unk_00 / unk_0C..unk_12); Unk80017FA0Rec (+8 "point table end" stays valid text only because node_buffer is not renamed; the comment is wrong about the role); Unk800A4750Rec comment; Unk8005C2A8Pack comment ~203-210 (unk_00 .. unk_0C); Unk80099D88Rec +0x8 / +0xF comments (unkF); Unk8006D808Rec comment ~2455-2463 (unk_00, unk_0C .. unk_1C); Unk800F1198Record comment ~75-77; Unk80101EC8Record ground_probe_floor_ys comment ~1695-1696.
+- src: 9F9C.c:3088 (ground probe comment); 17AFC.c:1493 ("unk_0C / unk_0E" in a math_TestPreparedSegmentSphere comment); d_7D920.c:141 and :135 area comments naming the old members of BoneHitRec / the scale table.
+
+PRE-APPLY REVIEW (naming-reviewer, two parallel batches, 2026-10-28): batch A 22/22 PASS; batch B 22/23 PASS. DROPPED Unk800A9CF8Entry.unk60=finish_countdown (kind-0 colour-scaled emitters read node+0x60 as a Q12 IR0 colour scale; likely a colour fade; candidate fade_scale once asset data shows those primitive types). 44 pairs remain, all CONFIRM.
+R6 notes: game.h:1695 and 9F9C.c:3085-3088 comments still call ground_probe_end_ys a floor; fix in the comment pass.

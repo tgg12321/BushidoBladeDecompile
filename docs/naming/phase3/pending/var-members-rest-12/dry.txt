@@ -1,0 +1,919 @@
+PASS Obj80106A78.unk_04=can_hit_fighter, Obj80106A78.unk_07=drop_state, Obj80106A78.unk_0B=model_entry_id, Tbl8008E194.unk4=launch_speed, Tbl8008E194.unk6=launch_vel_y, Tbl8008E194.unk8=spin_rate, Tbl8008E194.unkA=bounce_restitution, BoneHitRec.unk_00=has_inner_sphere, BoneHitRec.unk_0C=outer_radius, BoneHitRec.unk_10=inner_radius, Unk80101BF0Rec.unk_0=event_frame, Unk80101BF0Rec.unk_2=event_kind, Unk80101BF0Rec.unk_4=event_pos, Unk80101BF0Rec.unk_A=event_vector, TimeRec.unk_1=holder_weapon_id, Unk8001CD68Rec.unk_3=time_hundredths, Unk800A4750Rec.unk0=draw_kind, Unk800A4750Rec.unk2=cell_reloc_block_id, Unk800A4750Rec.unk7=draw_flags, Unk800A4750Rec.unkC=cell_world_z, Unk800A9CF8Entry.unk5C=anim_yaw, Unk8005C2A8Pack.unk_08=vab_body, Unk80099D88Rec.unk5=script_distance_fraction, Unk80099D88Rec.unkF=script_kind_weight, Unk8006D808Rec.unk_14=digit_sheet, Unk8006D808Rec.unk_18=digit_cell, Unk8006D808Rec.unk_1C=character_x_offsets, Unk80101EC8Record.ground_probe_floor_ys=ground_probe_end_ys
+decl Obj80106A78.unk_04 -> can_hit_fighter  include/game.h:1869
+decl Obj80106A78.unk_07 -> drop_state  include/game.h:1873
+decl Obj80106A78.unk_0B -> model_entry_id  include/game.h:1882
+decl Tbl8008E194.unk4 -> launch_speed  include/game.h:1850
+decl Tbl8008E194.unk6 -> launch_vel_y  include/game.h:1851
+decl Tbl8008E194.unk8 -> spin_rate  include/game.h:1852
+decl Tbl8008E194.unkA -> bounce_restitution  include/game.h:1853
+decl BoneHitRec.unk_00 -> has_inner_sphere  include/game.h:915
+decl BoneHitRec.unk_0C -> outer_radius  include/game.h:918
+decl BoneHitRec.unk_10 -> inner_radius  include/game.h:920
+decl Unk80101BF0Rec.unk_0 -> event_frame  include/game.h:2047
+decl Unk80101BF0Rec.unk_2 -> event_kind  include/game.h:2049
+decl Unk80101BF0Rec.unk_4 -> event_pos  include/game.h:2051
+decl Unk80101BF0Rec.unk_A -> event_vector  include/game.h:2052
+decl TimeRec.unk_1 -> holder_weapon_id  include/game.h:26
+decl Unk8001CD68Rec.unk_3 -> time_hundredths  include/game.h:2067
+decl Unk800A4750Rec.unk0 -> draw_kind  include/game.h:2285
+decl Unk800A4750Rec.unk2 -> cell_reloc_block_id  include/game.h:2286
+decl Unk800A4750Rec.unk7 -> draw_flags  include/game.h:2289
+decl Unk800A4750Rec.unkC -> cell_world_z  include/game.h:2291
+decl Unk800A9CF8Entry.unk5C -> anim_yaw  include/game.h:2174
+decl Unk8005C2A8Pack.unk_08 -> vab_body  include/game.h:213
+decl Unk80099D88Rec.unk5 -> script_distance_fraction  include/game.h:1924
+decl Unk80099D88Rec.unkF -> script_kind_weight  include/game.h:1934
+decl Unk8006D808Rec.unk_14 -> digit_sheet  include/game.h:2467
+decl Unk8006D808Rec.unk_18 -> digit_cell  include/game.h:2468
+decl Unk8006D808Rec.unk_1C -> character_x_offsets  include/game.h:2469
+decl Unk80101EC8Record.ground_probe_floor_ys -> ground_probe_end_ys  include/game.h:1697
+  round 0: 102 member error line(s)
+    src/main/17AFC.c:1613 unk_0C x1
+    src/main/17AFC.c:1616 unk_00 x1
+    src/main/17AFC.c:1618 unk_10 x1
+    src/main/17AFC.c:2483 unk_0C x1
+    src/main/17AFC.c:2510 unk_00 x1
+    src/main/17AFC.c:2512 unk_10 x1
+    src/main/17AFC.c:2521 unk_00 x1
+    src/main/17AFC.c:2523 unk_10 x1
+    src/main/17AFC.c:3869 unk_0B x1
+    src/main/17AFC.c:3960 unk_07 x1
+    src/main/17AFC.c:3962 unk_04 x1
+    src/main/17AFC.c:3968 unk4 x1
+    src/main/17AFC.c:3969 unk6 x1
+    src/main/17AFC.c:3971 unk4 x1
+    src/main/17AFC.c:3984 unk8 x1
+    src/main/17AFC.c:3987 unk8 x1
+    src/main/17AFC.c:3992 unk8 x1
+    src/main/17AFC.c:4049 unk_04 x1
+    src/main/17AFC.c:4062 unk_07 x1
+    src/main/17AFC.c:4074 unk_04 x1
+    src/main/17AFC.c:4087 unk_07 x1
+    src/main/17AFC.c:4088 unk_0B x1
+    src/main/17AFC.c:4289 unkA x1
+    src/main/17AFC.c:4298 unk_04 x1
+    src/main/17AFC.c:4304 unk_04 x1
+    src/main/17AFC.c:4333 unk_04 x1
+    src/main/17AFC.c:4334 unk_07 x1
+    src/main/17AFC.c:4335 unk_07 x1
+    src/main/17AFC.c:4371 unk_07 x1
+    src/main/17AFC.c:4376 unk_04 x1
+    src/main/17AFC.c:4471 unk_04 x1
+    src/main/17AFC.c:4498 unk_0C x1
+    src/main/17AFC.c:4501 unk_00 x1
+    src/main/17AFC.c:4504 unk_10 x1
+    src/main/17AFC.c:4533 unk_04 x1
+    src/main/17AFC.c:4561 unk_04 x1
+    src/main/17AFC.c:5044 ground_probe_floor_ys x1
+    src/main/17AFC.c:5047 ground_probe_floor_ys x1
+    src/main/17AFC.c:5060 ground_probe_floor_ys x1
+    src/main/17AFC.c:5063 ground_probe_floor_ys x1
+    src/main/17AFC.c:5072 ground_probe_floor_ys x1
+    src/main/17AFC.c:5075 ground_probe_floor_ys x1
+    src/main/17AFC.c:5088 ground_probe_floor_ys x1
+    src/main/17AFC.c:5091 ground_probe_floor_ys x1
+    src/main/17AFC.c:5700 unk_1 x1
+    src/main/28708.c:1115 unk_0 x1
+    src/main/28708.c:1130 unk_0 x1
+    src/main/28708.c:1131 unk_0 x1
+    src/main/28708.c:1228 unk_0 x1
+    src/main/28708.c:1236 unk_2 x1
+    src/main/28708.c:1237 unk_0 x1
+    src/main/28708.c:1238 unk_4 x1
+    src/main/28708.c:1239 unk_4 x1
+    src/main/28708.c:1240 unk_4 x1
+    src/main/28708.c:1242 unk_A x1
+    src/main/28708.c:1243 unk_A x1
+    src/main/28708.c:1244 unk_A x1
+    src/main/28708.c:1479 unk_0 x1
+    src/main/28708.c:1480 unk_4 x1
+    src/main/28708.c:1481 unk_4 x1
+    src/main/28708.c:1482 unk_4 x1
+    src/main/28708.c:1483 unk_A x1
+    src/main/28708.c:1484 unk_A x1
+    src/main/28708.c:1485 unk_A x1
+    src/main/28708.c:1488 unk_2 x1
+    src/main/2B344.c:905 unk_3 x1
+    src/main/2B344.c:2029 unk7 x1
+    src/main/2B344.c:2030 unk7 x1
+    src/main/2B344.c:2032 unk7 x1
+    src/main/2B344.c:2130 unk7 x1
+    src/main/2B344.c:2131 unk7 x1
+    src/main/2B344.c:2133 unk7 x1
+    src/main/2B344.c:2185 unk7 x1
+    src/main/2B344.c:2187 unk7 x1
+    src/main/2B344.c:2189 unk0 x1
+    src/main/2B344.c:2191 unk2 x1
+    src/main/2B344.c:2193 unkC x1
+    src/main/35000.c:38 unk5C x1
+    src/main/35000.c:133 unk5C x1
+    src/main/4510C.c:712 unk5 x1
+    src/main/4510C.c:876 unk_04 x1
+    src/main/4510C.c:2799 unkF x1
+    src/main/4510C.c:2834 unkF x1
+    src/main/4510C.c:2865 unkF x1
+    src/main/4BC3C.c:479 unk_08 x1
+    src/main/4BC3C.c:487 unk_08 x1
+    src/main/4BC3C.c:527 unk_08 x1
+    src/main/4D0A8.c:550 unk_3 x1
+    src/main/4D0A8.c:1211 unk_3 x1
+    src/main/596CC.c:2423 unk_1C x1
+    src/main/596CC.c:2468 unk_14 x1
+    src/main/596CC.c:2470 unk_18 x1
+    src/main/596CC.c:2486 unk_14 x1
+    src/main/6CF8.c:138 unk_1 x1
+    src/main/9F9C.c:1481 unk_3 x1
+    src/main/9F9C.c:1491 unk_3 x1
+    src/main/9F9C.c:1694 unk_3 x1
+    src/main/9F9C.c:3064 unk_00 x2
+    src/main/9F9C.c:3069 unk_0C x2
+    src/main/9F9C.c:3071 unk_10 x2
+    src/main/9F9C.c:3166 ground_probe_floor_ys x1
+    src/main/9F9C.c:3168 ground_probe_floor_ys x1
+  round 1: 0 member error line(s)
+PASS FileRecord.unk_00=unlock_mask, TimeRec.unk_0=holder_character_index, TimeRec.unk_4=time_frames, Unk8001CD68Rec.unk_2=time_seconds, Unk800A4750Rec.unk4=cell_reloc_entry_index, Unk800A4750Rec.unk8=cell_world_x, Unk8005C2A8Pack.unk_04=vab_header, Unk8005C2A8Pack.unk_0C=vab_body_size, Unk800F1198Record.unk0=packed_x, Unk8006D808Rec.unk_10=character_cells
+decl FileRecord.unk_00 -> unlock_mask  include/game.h:31
+decl TimeRec.unk_0 -> holder_character_index  include/game.h:25
+decl TimeRec.unk_4 -> time_frames  include/game.h:27
+decl Unk8001CD68Rec.unk_2 -> time_seconds  include/game.h:2066
+decl Unk800A4750Rec.unk4 -> cell_reloc_entry_index  include/game.h:2287
+decl Unk800A4750Rec.unk8 -> cell_world_x  include/game.h:2290
+decl Unk8005C2A8Pack.unk_04 -> vab_header  include/game.h:212
+decl Unk8005C2A8Pack.unk_0C -> vab_body_size  include/game.h:214
+decl Unk800F1198Record.unk0 -> packed_x  include/game.h:79
+decl Unk8006D808Rec.unk_10 -> character_cells  include/game.h:2466
+  round 0: 62 member error line(s)
+    src/main/17AFC.c:5518 unk_00 x1
+    src/main/17AFC.c:5546 unk_00 x1
+    src/main/17AFC.c:5547 unk_00 x1
+    src/main/17AFC.c:5548 unk_00 x1
+    src/main/17AFC.c:5603 unk_00 x1
+    src/main/17AFC.c:5608 unk_00 x1
+    src/main/17AFC.c:5686 unk_4 x1
+    src/main/17AFC.c:5699 unk_0 x1
+    src/main/17AFC.c:5701 unk_4 x1
+    src/main/17AFC.c:5725 unk_00 x1
+    src/main/17AFC.c:5741 unk_00 x1
+    src/main/25788.c:144 unk_4 x1
+    src/main/25788.c:146 unk_4 x1
+    src/main/25788.c:148 unk_4 x1
+    src/main/25788.c:150 unk_0 x1
+    src/main/25C38.c:145 unk_00 x1
+    src/main/25C38.c:161 unk_00 x1
+    src/main/25C38.c:168 unk_00 x1
+    src/main/25C38.c:175 unk_00 x1
+    src/main/25C38.c:360 unk_00 x1
+    src/main/28708.c:188 unk_00 x1
+    src/main/2B344.c:88 unk_00 x1
+    src/main/2B344.c:648 unk_00 x1
+    src/main/2B344.c:650 unk_00 x1
+    src/main/2B344.c:883 unk_4 x1
+    src/main/2B344.c:886 unk_4 x1
+    src/main/2B344.c:890 unk_4 x1
+    src/main/2B344.c:895 unk_0 x1
+    src/main/2B344.c:904 unk_2 x1
+    src/main/2B344.c:2182 unk4 x1
+    src/main/2B344.c:2184 unk4 x1
+    src/main/2B344.c:2192 unk8 x1
+    src/main/4BC3C.c:376 unk_0C x1
+    src/main/4BC3C.c:379 unk_0C x1
+    src/main/4BC3C.c:381 unk_04 x1
+    src/main/4BC3C.c:384 unk_0C x1
+    src/main/4BC3C.c:422 unk_0C x1
+    src/main/4BC3C.c:426 unk_0C x1
+    src/main/4BC3C.c:469 unk_0C x1
+    src/main/4BC3C.c:478 unk_04 x1
+    src/main/4BC3C.c:484 unk_0C x1
+    src/main/4BC3C.c:506 unk_04 x1
+    src/main/4BC3C.c:509 unk_04 x1
+    src/main/4BC3C.c:525 unk_04 x1
+    src/main/4BC3C.c:526 unk_04 x1
+    src/main/4D0A8.c:535 unk_2 x1
+    src/main/4D0A8.c:1192 unk_2 x1
+    src/main/51268.c:730 unk0 x1
+    src/main/51268.c:732 unk0 x1
+    src/main/51268.c:733 unk0 x1
+    src/main/51268.c:739 unk0 x1
+    src/main/51268.c:802 unk0 x1
+    src/main/51268.c:839 unk0 x1
+    src/main/596CC.c:2422 unk_10 x1
+    src/main/596CC.c:2432 unk_10 x1
+    src/main/6CF8.c:134 unk_00 x1
+    src/main/6CF8.c:137 unk_0 x1
+    src/main/6CF8.c:139 unk_4 x1
+    src/main/6CF8.c:141 unk_4 x1
+    src/main/9F9C.c:1480 unk_2 x1
+    src/main/9F9C.c:1487 unk_2 x1
+    src/main/9F9C.c:1693 unk_2 x1
+  round 1: 0 member error line(s)
+PASS Unk8001CD68Rec.unk_0=time_minutes, Unk80017FA0Rec.unk4=object_matrix, Unk8005C2A8Pack.unk_00=key_on_table, Unk800F1198Record.unk8=z_coord, Unk8006D808Rec.unk_0C=character_sheet
+decl Unk8001CD68Rec.unk_0 -> time_minutes  include/game.h:2065
+decl Unk80017FA0Rec.unk4 -> object_matrix  include/game.h:2423
+decl Unk8005C2A8Pack.unk_00 -> key_on_table  include/game.h:211
+decl Unk800F1198Record.unk8 -> z_coord  include/game.h:81
+decl Unk8006D808Rec.unk_0C -> character_sheet  include/game.h:2465
+  round 0: 23 member error line(s)
+    src/main/2B344.c:903 unk_0 x1
+    src/main/2B344.c:2710 unk4 x1
+    src/main/4BC3C.c:477 unk_00 x1
+    src/main/4BC3C.c:505 unk_00 x1
+    src/main/4BC3C.c:584 unk_00 x1
+    src/main/4D0A8.c:520 unk_0 x1
+    src/main/51268.c:736 unk8 x1
+    src/main/51268.c:737 unk8 x1
+    src/main/51268.c:741 unk8 x1
+    src/main/51268.c:842 unk8 x1
+    src/main/596CC.c:2421 unk_0C x1
+    src/main/596CC.c:2438 unk_0C x1
+    src/main/87A0.c:142 unk4 x1
+    src/main/87A0.c:143 unk4 x1
+    src/main/87A0.c:147 unk4 x1
+    src/main/87A0.c:149 unk4 x1
+    src/main/87A0.c:151 unk4 x1
+    src/main/87A0.c:168 unk4 x1
+    src/main/87A0.c:571 unk4 x1
+    src/main/87A0.c:572 unk4 x1
+    src/main/87A0.c:587 unk4 x1
+    src/main/9F9C.c:1479 unk_0 x1
+    src/main/9F9C.c:1490 unk_0 x1
+  round 1: 0 member error line(s)
+PASS Unk800F1198Record.unk4=packed_y
+decl Unk800F1198Record.unk4 -> packed_y  include/game.h:80
+  round 0: 5 member error line(s)
+    src/main/51268.c:734 unk4 x1
+    src/main/51268.c:735 unk4 x1
+    src/main/51268.c:740 unk4 x1
+    src/main/51268.c:804 unk4 x1
+    src/main/51268.c:841 unk4 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -25,3 +25,3 @@
+-    u8 unk_0;
+-    u8 unk_1;
+-    s32 unk_4;
++    u8 holder_character_index;
++    u8 holder_weapon_id;
++    s32 time_frames;
+@@ -31 +31 @@
+-    s32 unk_00; /* 0x80106A50 */
++    s32 unlock_mask; /* 0x80106A50 */
+@@ -79,3 +79,3 @@
+-    s32 unk0;
+-    s32 unk4;
+-    s32 unk8;
++    s32 packed_x;
++    s32 packed_y;
++    s32 z_coord;
+@@ -211,4 +211,4 @@
+-    s32 unk_00;
+-    s32 unk_04;
+-    s32 unk_08;
+-    s32 unk_0C;
++    s32 key_on_table;
++    s32 vab_header;
++    s32 vab_body;
++    s32 vab_body_size;
+@@ -915 +915 @@
+-    s16 unk_00;
++    s16 has_inner_sphere;
+@@ -918 +918 @@
+-    u16 unk_0C;
++    u16 outer_radius;
+@@ -920 +920 @@
+-    u16 unk_10;
++    u16 inner_radius;
+@@ -1697 +1697 @@
+-    s32 ground_probe_floor_ys[2];
++    s32 ground_probe_end_ys[2];
+@@ -1850,4 +1850,4 @@
+-    s16 unk4;
+-    s16 unk6;
+-    u16 unk8;
+-    s16 unkA;
++    s16 launch_speed;
++    s16 launch_vel_y;
++    u16 spin_rate;
++    s16 bounce_restitution;
+@@ -1869 +1869 @@
+-    u8 unk_04;
++    u8 can_hit_fighter;
+@@ -1873 +1873 @@
+-    u8 unk_07;
++    u8 drop_state;
+@@ -1882 +1882 @@
+-    u8 unk_0B;
++    u8 model_entry_id;
+@@ -1924 +1924 @@
+-    u8 unk5;
++    u8 script_distance_fraction;
+@@ -1934 +1934 @@
+-    u8 unkF[8];
++    u8 script_kind_weight[8];
+@@ -2047 +2047 @@
+-    u8 unk_0;
++    u8 event_frame;
+@@ -2049 +2049 @@
+-    u8 unk_2;
++    u8 event_kind;
+@@ -2051,2 +2051,2 @@
+-    s16 unk_4[3];
+-    u16 unk_A[3];
++    s16 event_pos[3];
++    u16 event_vector[3];
+@@ -2065,3 +2065,3 @@
+-    s16 unk_0;
+-    u8 unk_2;
+-    u8 unk_3;
++    s16 time_minutes;
++    u8 time_seconds;
++    u8 time_hundredths;
+@@ -2174 +2174 @@
+-    s32 unk5C;              /* +0x5C */
++    s32 anim_yaw;              /* +0x5C */
+@@ -2285,3 +2285,3 @@
+-    s16 unk0;     /* +0x00 */
+-    s16 unk2;     /* +0x02 */
+-    u16 unk4;     /* +0x04 */
++    s16 draw_kind;     /* +0x00 */
++    s16 cell_reloc_block_id;     /* +0x02 */
++    u16 cell_reloc_entry_index;     /* +0x04 */
+@@ -2289,3 +2289,3 @@
+-    u8 unk7;      /* +0x07 */
+-    s32 unk8;     /* +0x08 */
+-    s32 unkC;     /* +0x0C */
++    u8 draw_flags;      /* +0x07 */
++    s32 cell_world_x;     /* +0x08 */
++    s32 cell_world_z;     /* +0x0C */
+@@ -2423 +2423 @@
+-    /* 0x04 */ MATRIX *unk4;
++    /* 0x04 */ MATRIX *object_matrix;
+@@ -2465,5 +2465,5 @@
+-    Unk8009B0E0Record *unk_0C;
+-    Unk8009B400Record *unk_10;
+-    Unk8009B0E0Record *unk_14;
+-    Unk8009B400Record *unk_18;
+-    s16 *unk_1C;
++    Unk8009B0E0Record *character_sheet;
++    Unk8009B400Record *character_cells;
++    Unk8009B0E0Record *digit_sheet;
++    Unk8009B400Record *digit_cell;
++    s16 *character_x_offsets;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -1613 +1613 @@
+-                    scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
++                    scr, pos, rec->outer_radius, rec->unk_0E) != 0) {
+@@ -1616 +1616 @@
+-                if (rec->unk_00 != 0 &&
++                if (rec->has_inner_sphere != 0 &&
+@@ -1618 +1618 @@
+-                        scr, pos, rec->unk_10, rec->unk_12) != 0) {
++                        scr, pos, rec->inner_radius, rec->unk_12) != 0) {
+@@ -2483 +2483 @@
+-        r = rec->unk_0C;
++        r = rec->outer_radius;
+@@ -2510 +2510 @@
+-                if (rec->unk_00 != 0 && a2 != 0) {
++                if (rec->has_inner_sphere != 0 && a2 != 0) {
+@@ -2512 +2512 @@
+-                            1, scr, (s32 *)0, rec->unk_10, rec->unk_12) != 0) {
++                            1, scr, (s32 *)0, rec->inner_radius, rec->unk_12) != 0) {
+@@ -2521 +2521 @@
+-                if (rec->unk_00 != 0 && a2 != 0) {
++                if (rec->has_inner_sphere != 0 && a2 != 0) {
+@@ -2523 +2523 @@
+-                            1, scr, NULL, rec->unk_10, rec->unk_12) != 0) {
++                            1, scr, NULL, rec->inner_radius, rec->unk_12) != 0) {
+@@ -3869 +3869 @@
+-            lookup = obj->unk_0B;
++            lookup = obj->model_entry_id;
+@@ -3960 +3960 @@
+-    obj->unk_07 = 0;
++    obj->drop_state = 0;
+@@ -3962 +3962 @@
+-    obj->unk_04 = 1;
++    obj->can_hit_fighter = 1;
+@@ -3968,2 +3968,2 @@
+-    obj->vel.x = (Judge[arg0->orientation.vy & 0xFFF] * tbl->unk4) >> 12;
+-    obj->vel.y = tbl->unk6;
++    obj->vel.x = (Judge[arg0->orientation.vy & 0xFFF] * tbl->launch_speed) >> 12;
++    obj->vel.y = tbl->launch_vel_y;
+@@ -3971 +3971 @@
+-        (Judge[(arg0->orientation.vy + 0x400) & 0xFFF] * tbl->unk4) >> 12;
++        (Judge[(arg0->orientation.vy + 0x400) & 0xFFF] * tbl->launch_speed) >> 12;
+@@ -3984 +3984 @@
+-        obj->rot_vel[1] = tbl->unk8;
++        obj->rot_vel[1] = tbl->spin_rate;
+@@ -3987 +3987 @@
+-        obj->rot_vel[0] = tbl->unk8;
++        obj->rot_vel[0] = tbl->spin_rate;
+@@ -3992 +3992 @@
+-        obj->rot_vel[1] = tbl->unk8;
++        obj->rot_vel[1] = tbl->spin_rate;
+@@ -4049 +4049 @@
+-    p->unk_04 = 0;
++    p->can_hit_fighter = 0;
+@@ -4062 +4062 @@
+-    p->unk_07 = 1;
++    p->drop_state = 1;
+@@ -4074 +4074 @@
+-    p->unk_04 = 0;
++    p->can_hit_fighter = 0;
+@@ -4087,2 +4087,2 @@
+-    p->unk_07 = 1;
+-    p->unk_0B = a0->weapon_entry_id;
++    p->drop_state = 1;
++    p->model_entry_id = a0->weapon_entry_id;
+@@ -4289 +4289 @@
+-            work = g_object_kind_params[kind].unkA;
++            work = g_object_kind_params[kind].bounce_restitution;
+@@ -4298 +4298 @@
+-                    if (obj->kind != 0xE && obj->unk_04 != 0) {
++                    if (obj->kind != 0xE && obj->can_hit_fighter != 0) {
+@@ -4304 +4304 @@
+-                    if (obj->unk_04 != 0) {
++                    if (obj->can_hit_fighter != 0) {
+@@ -4333,3 +4333,3 @@
+-            obj->unk_04 = 0;
+-            if (obj->unk_07 == 1) {
+-                obj->unk_07 = 2;
++            obj->can_hit_fighter = 0;
++            if (obj->drop_state == 1) {
++                obj->drop_state = 2;
+@@ -4371 +4371 @@
+-        if (obj->unk_07 == 2) {
++        if (obj->drop_state == 2) {
+@@ -4376 +4376 @@
+-            obj->unk_04 == 0 && g_object_kind_params[obj->kind].unk0 == 2) {
++            obj->can_hit_fighter == 0 && g_object_kind_params[obj->kind].unk0 == 2) {
+@@ -4471 +4471 @@
+-        if (obj->unk_04 == 0)
++        if (obj->can_hit_fighter == 0)
+@@ -4498 +4498 @@
+-                scr, pos, rec->unk_0C, rec->unk_0E);
++                scr, pos, rec->outer_radius, rec->unk_0E);
+@@ -4501 +4501 @@
+-                if (rec->unk_00 != 0 &&
++                if (rec->has_inner_sphere != 0 &&
+@@ -4504 +4504 @@
+-                                scr, pos, rec->unk_10, rec->unk_12) != 0;
++                                scr, pos, rec->inner_radius, rec->unk_12) != 0;
+@@ -4533 +4533 @@
+-            obj->unk_04 = 0;
++            obj->can_hit_fighter = 0;
+@@ -4561 +4561 @@
+-        obj->unk_04 = 0;
++        obj->can_hit_fighter = 0;
+@@ -5044 +5044 @@
+-            if (obj->ground_probe_floor_ys[0] - 600 <
++            if (obj->ground_probe_end_ys[0] - 600 <
+@@ -5047 +5047 @@
+-                pos[1] = obj->ground_probe_floor_ys[0];
++                pos[1] = obj->ground_probe_end_ys[0];
+@@ -5060 +5060 @@
+-                obj->ground_probe_floor_ys[0] - 600 <
++                obj->ground_probe_end_ys[0] - 600 <
+@@ -5063 +5063 @@
+-                pos[1] = obj->ground_probe_floor_ys[0];
++                pos[1] = obj->ground_probe_end_ys[0];
+@@ -5072 +5072 @@
+-            if (obj->ground_probe_floor_ys[1] - 600 <
++            if (obj->ground_probe_end_ys[1] - 600 <
+@@ -5075 +5075 @@
+-                pos[1] = obj->ground_probe_floor_ys[1];
++                pos[1] = obj->ground_probe_end_ys[1];
+@@ -5088 +5088 @@
+-                obj->ground_probe_floor_ys[1] - 600 <
++                obj->ground_probe_end_ys[1] - 600 <
+@@ -5091 +5091 @@
+-                pos[1] = obj->ground_probe_floor_ys[1];
++                pos[1] = obj->ground_probe_end_ys[1];
+@@ -5518 +5518 @@
+-        bits = g_saved_record.unk_00 & mask;
++        bits = g_saved_record.unlock_mask & mask;
+@@ -5546,3 +5546,3 @@
+-    if (g_saved_record.unk_00 & 0x10020) {
+-        s32 v1 = g_saved_record.unk_00 & 0x20;
+-        s32 v0 = g_saved_record.unk_00 & 0x10000;
++    if (g_saved_record.unlock_mask & 0x10020) {
++        s32 v1 = g_saved_record.unlock_mask & 0x20;
++        s32 v0 = g_saved_record.unlock_mask & 0x10000;
+@@ -5603 +5603 @@
+-            if (g_saved_record.unk_00 & 0x04000000) {
++            if (g_saved_record.unlock_mask & 0x04000000) {
+@@ -5608 +5608 @@
+-            if (g_saved_record.unk_00 & 0x01000000) {
++            if (g_saved_record.unlock_mask & 0x01000000) {
+@@ -5686 +5686 @@
+-        if (record->times[j].unk_4 < g_fight_timer_frames) {
++        if (record->times[j].time_frames < g_fight_timer_frames) {
+@@ -5699,3 +5699,3 @@
+-        record->times[n].unk_0 = (u8)D_80101EC8[0].character_data_index;
+-        record->times[n].unk_1 = (u8)D_80101EC8[0].weapon_id;
+-        record->times[n].unk_4 = g_fight_timer_frames;
++        record->times[n].holder_character_index = (u8)D_80101EC8[0].character_data_index;
++        record->times[n].holder_weapon_id = (u8)D_80101EC8[0].weapon_id;
++        record->times[n].time_frames = g_fight_timer_frames;
+@@ -5725 +5725 @@
+-            flags = &g_saved_record.unk_00;
++            flags = &g_saved_record.unlock_mask;
+@@ -5741 +5741 @@
+-            flags = &g_saved_record.unk_00;
++            flags = &g_saved_record.unlock_mask;
+--- a/src/main/25788.c
++++ b/src/main/25788.c
+@@ -144 +144 @@
+-        var_4 = times[i].unk_4 / 1800;
++        var_4 = times[i].time_frames / 1800;
+@@ -146 +146 @@
+-        var_5 = (times[i].unk_4 / 30) % 60;
++        var_5 = (times[i].time_frames / 30) % 60;
+@@ -148 +148 @@
+-        var_6 = (times[i].unk_4 % 30) * 100 / 30;
++        var_6 = (times[i].time_frames % 30) * 100 / 30;
+@@ -150 +150 @@
+-        t = times[i].unk_0;
++        t = times[i].holder_character_index;
+--- a/src/main/25C38.c
++++ b/src/main/25C38.c
+@@ -145 +145 @@
+-                (g_saved_record.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
++                (g_saved_record.unlock_mask | D_800A38E4 | 0x7007) & 0x003FF3FF);
+@@ -161 +161 @@
+-        StoreCompactedBits(g_saved_record.unk_00 & 0x003EF3DF);
++        StoreCompactedBits(g_saved_record.unlock_mask & 0x003EF3DF);
+@@ -168 +168 @@
+-        StoreCompactedBits(g_saved_record.unk_00 & 0x003FF3FF);
++        StoreCompactedBits(g_saved_record.unlock_mask & 0x003FF3FF);
+@@ -175 +175 @@
+-        StoreCompactedBits(g_saved_record.unk_00 & 0x053FF3FF);
++        StoreCompactedBits(g_saved_record.unlock_mask & 0x053FF3FF);
+@@ -360 +360 @@
+-        StoreCompactedBits(g_saved_record.unk_00 & 0x3EF3DF);
++        StoreCompactedBits(g_saved_record.unlock_mask & 0x3EF3DF);
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -188 +188 @@
+-    mask = g_saved_record.unk_00;
++    mask = g_saved_record.unlock_mask;
+@@ -1115 +1115 @@
+-        g_replay_events[i].unk_0 = 0xFF;
++        g_replay_events[i].event_frame = 0xFF;
+@@ -1130,2 +1130,2 @@
+-        if (g_replay_events[i].unk_0 == g_replay_write_frame) {
+-            g_replay_events[i].unk_0 = 0xFF;
++        if (g_replay_events[i].event_frame == g_replay_write_frame) {
++            g_replay_events[i].event_frame = 0xFF;
+@@ -1228 +1228 @@
+-            if (var_0->unk_0 == 0xFF) {
++            if (var_0->event_frame == 0xFF) {
+@@ -1236,5 +1236,5 @@
+-            var_0->unk_2 = arg1;
+-            var_0->unk_0 = tmp;
+-            var_0->unk_4[0] = arg2[0];
+-            var_0->unk_4[1] = arg2[1];
+-            var_0->unk_4[2] = arg2[2];
++            var_0->event_kind = arg1;
++            var_0->event_frame = tmp;
++            var_0->event_pos[0] = arg2[0];
++            var_0->event_pos[1] = arg2[1];
++            var_0->event_pos[2] = arg2[2];
+@@ -1242,3 +1242,3 @@
+-                var_0->unk_A[0] = arg3[0];
+-                var_0->unk_A[1] = arg3[1];
+-                var_0->unk_A[2] = arg3[2];
++                var_0->event_vector[0] = arg3[0];
++                var_0->event_vector[1] = arg3[1];
++                var_0->event_vector[2] = arg3[2];
+@@ -1479,7 +1479,7 @@
+-        if (e->unk_0 == idx) {
+-            pos[0] = e->unk_4[0];
+-            pos[1] = e->unk_4[1];
+-            pos[2] = e->unk_4[2];
+-            rot[0] = e->unk_A[0];
+-            rot[1] = e->unk_A[1];
+-            rot[2] = e->unk_A[2];
++        if (e->event_frame == idx) {
++            pos[0] = e->event_pos[0];
++            pos[1] = e->event_pos[1];
++            pos[2] = e->event_pos[2];
++            rot[0] = e->event_vector[0];
++            rot[1] = e->event_vector[1];
++            rot[2] = e->event_vector[2];
+@@ -1488 +1488 @@
+-                e->unk_1, e->unk_2, pos, rot);
++                e->unk_1, e->event_kind, pos, rot);
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -88 +88 @@
+-    g_comb_send_payload = bits_ExtractMask3F83F8(g_saved_record.unk_00);
++    g_comb_send_payload = bits_ExtractMask3F83F8(g_saved_record.unlock_mask);
+@@ -648 +648 @@
+-        old = g_saved_record.unk_00;
++        old = g_saved_record.unlock_mask;
+@@ -650 +650 @@
+-            g_saved_record.unk_00 = old | D_800A37A4;
++            g_saved_record.unlock_mask = old | D_800A37A4;
+@@ -883 +883 @@
+-        a = src->unk_4;
++        a = src->time_frames;
+@@ -886 +886 @@
+-        b = src->unk_4;
++        b = src->time_frames;
+@@ -890 +890 @@
+-        c = src->unk_4;
++        c = src->time_frames;
+@@ -895 +895 @@
+-        v = src->unk_0;
++        v = src->holder_character_index;
+@@ -903,3 +903,3 @@
+-    s0->fight_time[0] = buf.unk_0;
+-    s0->fight_time[1] = buf.unk_2;
+-    s0->fight_time[2] = buf.unk_3;
++    s0->fight_time[0] = buf.time_minutes;
++    s0->fight_time[1] = buf.time_seconds;
++    s0->fight_time[2] = buf.time_hundredths;
+@@ -2029,2 +2029,2 @@
+-                            if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
+-                                e->unk7 |= 1;
++                            if ((a3 & 8) || ((a3 & 4) && (e->draw_flags & 8))) {
++                                e->draw_flags |= 1;
+@@ -2032 +2032 @@
+-                                e->unk7 &= 0xFE;
++                                e->draw_flags &= 0xFE;
+@@ -2130,2 +2130,2 @@
+-                                if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
+-                                    e->unk7 |= 1;
++                                if ((a3 & 8) || ((a3 & 4) && (e->draw_flags & 8))) {
++                                    e->draw_flags |= 1;
+@@ -2133 +2133 @@
+-                                    e->unk7 &= 0xFE;
++                                    e->draw_flags &= 0xFE;
+@@ -2182 +2182 @@
+-        r->unk4 = var_8;
++        r->cell_reloc_entry_index = var_8;
+@@ -2184,2 +2184,2 @@
+-            r->unk4 = var_8 & 0x7FFF;
+-            r->unk7 = 8;
++            r->cell_reloc_entry_index = var_8 & 0x7FFF;
++            r->draw_flags = 8;
+@@ -2187,3 +2187,3 @@
+-            r->unk7 = 0;
+-        }
+-        r->unk0 = 0xC;
++            r->draw_flags = 0;
++        }
++        r->draw_kind = 0xC;
+@@ -2191,3 +2191,3 @@
+-        r->unk2 = arg1;
+-        r->unk8 = (w % 32) * 2000 - 32000;
+-        r->unkC = (w / 32) * 2000 - 32000;
++        r->cell_reloc_block_id = arg1;
++        r->cell_world_x = (w % 32) * 2000 - 32000;
++        r->cell_world_z = (w / 32) * 2000 - 32000;
+@@ -2710 +2710 @@
+-    rec->step_desc.unk4 = &obj->node.xf.mat;
++    rec->step_desc.object_matrix = &obj->node.xf.mat;
+--- a/src/main/35000.c
++++ b/src/main/35000.c
+@@ -38 +38 @@
+-            angle = rec->unk5C;
++            angle = rec->anim_yaw;
+@@ -133 +133 @@
+-    p->unk5C = a1;
++    p->anim_yaw = a1;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -712 +712 @@
+-          g_cpu_profiles[rec->cpu_profile].unk5) >>
++          g_cpu_profiles[rec->cpu_profile].script_distance_fraction) >>
+@@ -876 +876 @@
+-            if (pool_object->kind != -1 && pool_object->unk_04 != 0 &&
++            if (pool_object->kind != -1 && pool_object->can_hit_fighter != 0 &&
+@@ -2799 +2799 @@
+-                                 g_cpu_profiles[p->cpu_profile].unkF[var_18]) >>
++                                 g_cpu_profiles[p->cpu_profile].script_kind_weight[var_18]) >>
+@@ -2834 +2834 @@
+-                        (g_cpu_profiles[p->cpu_profile].unkF[5] >> 2) &&
++                        (g_cpu_profiles[p->cpu_profile].script_kind_weight[5] >> 2) &&
+@@ -2865 +2865 @@
+-                            (g_cpu_profiles[p->cpu_profile].unkF[6] >> 2) &&
++                            (g_cpu_profiles[p->cpu_profile].script_kind_weight[6] >> 2) &&
+--- a/src/main/4BC3C.c
++++ b/src/main/4BC3C.c
+@@ -376 +376 @@
+-    SpuRead(ram_buffer_addr, g_vab_rec_ptr[vab_id]->unk_0C);
++    SpuRead(ram_buffer_addr, g_vab_rec_ptr[vab_id]->vab_body_size);
+@@ -379 +379 @@
+-    SpuWrite(ram_buffer_addr, g_vab_rec_ptr[vab_id]->unk_0C);
++    SpuWrite(ram_buffer_addr, g_vab_rec_ptr[vab_id]->vab_body_size);
+@@ -381 +381 @@
+-    SsVabFakeHead(g_vab_rec_ptr[vab_id]->unk_04, (s16)vab_id, dest_sbaddr);
++    SsVabFakeHead(g_vab_rec_ptr[vab_id]->vab_header, (s16)vab_id, dest_sbaddr);
+@@ -384 +384 @@
+-    return dest_sbaddr + g_vab_rec_ptr[vab_id]->unk_0C;
++    return dest_sbaddr + g_vab_rec_ptr[vab_id]->vab_body_size;
+@@ -422 +422 @@
+-        addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0]->unk_0C;
++        addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0]->vab_body_size;
+@@ -426 +426 @@
+-            addr += g_vab_rec_ptr[sorted_vab_ids[j]]->unk_0C;
++            addr += g_vab_rec_ptr[sorted_vab_ids[j]]->vab_body_size;
+@@ -469 +469 @@
+-                g_vab_sticky_sbaddr += g_vab_rec_ptr[vab_index]->unk_0C;
++                g_vab_sticky_sbaddr += g_vab_rec_ptr[vab_index]->vab_body_size;
+@@ -477,3 +477,3 @@
+-    vab_pack->unk_00 += (s32)vab_pack;
+-    vab_pack->unk_04 += (s32)vab_pack;
+-    vab_pack->unk_08 += (s32)vab_pack;
++    vab_pack->key_on_table += (s32)vab_pack;
++    vab_pack->vab_header += (s32)vab_pack;
++    vab_pack->vab_body += (s32)vab_pack;
+@@ -484 +484 @@
+-        g_vab_sb_used_bytes += vab_pack->unk_0C;
++        g_vab_sb_used_bytes += vab_pack->vab_body_size;
+@@ -487 +487 @@
+-        return vab_pack->unk_08 - (s32)vab_pack;
++        return vab_pack->vab_body - (s32)vab_pack;
+@@ -505,2 +505,2 @@
+-        g_vab_rec_ptr[idx]->unk_00 += rebase_delta;
+-        g_vab_rec_ptr[idx]->unk_04 += rebase_delta;
++        g_vab_rec_ptr[idx]->key_on_table += rebase_delta;
++        g_vab_rec_ptr[idx]->vab_header += rebase_delta;
+@@ -509 +509 @@
+-            g_vab_rec_ptr[idx]->unk_04, idx, g_vab_vb_sbaddr[idx]);
++            g_vab_rec_ptr[idx]->vab_header, idx, g_vab_vb_sbaddr[idx]);
+@@ -525,3 +525,3 @@
+-    SsVabOpenHeadSticky(vab_pack->unk_04, vab_id, g_vab_sticky_sbaddr);
+-    ((VabHdr *)vab_pack->unk_04)->id = vab_id;
+-    return (s16)SsVabTransBody(vab_pack->unk_08, vab_id);
++    SsVabOpenHeadSticky(vab_pack->vab_header, vab_id, g_vab_sticky_sbaddr);
++    ((VabHdr *)vab_pack->vab_header)->id = vab_id;
++    return (s16)SsVabTransBody(vab_pack->vab_body, vab_id);
+@@ -584 +584 @@
+-                        &((u32 *)g_vab_rec_ptr[vab_id]->unk_00)[p[1]];
++                        &((u32 *)g_vab_rec_ptr[vab_id]->key_on_table)[p[1]];
+--- a/src/main/4D0A8.c
++++ b/src/main/4D0A8.c
+@@ -520 +520 @@
+-                var_2[i] = arg0->unk_0;
++                var_2[i] = arg0->time_minutes;
+@@ -535 +535 @@
+-                var_2[i] = arg0->unk_2;
++                var_2[i] = arg0->time_seconds;
+@@ -550 +550 @@
+-                var_2[i] = arg0->unk_3;
++                var_2[i] = arg0->time_hundredths;
+@@ -1192 +1192 @@
+-                    d[k] = arg0->unk_2;
++                    d[k] = arg0->time_seconds;
+@@ -1211 +1211 @@
+-                    d[k] = arg0->unk_3;
++                    d[k] = arg0->time_hundredths;
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -730 +730 @@
+-    for (billboard_index = 0; src_billboards[billboard_index].unk0 & 1;
++    for (billboard_index = 0; src_billboards[billboard_index].packed_x & 1;
+@@ -732,10 +732,10 @@
+-        g_eff_billboards[billboard_index].unk0 =
+-            src_billboards[billboard_index].unk0;
+-        g_eff_billboards[billboard_index].unk4 =
+-            src_billboards[billboard_index].unk4;
+-        g_eff_billboards[billboard_index].unk8 =
+-            src_billboards[billboard_index].unk8;
+-    }
+-    g_eff_billboards[billboard_index].unk0 =
+-        g_eff_billboards[billboard_index].unk4 =
+-            g_eff_billboards[billboard_index].unk8 = 0;
++        g_eff_billboards[billboard_index].packed_x =
++            src_billboards[billboard_index].packed_x;
++        g_eff_billboards[billboard_index].packed_y =
++            src_billboards[billboard_index].packed_y;
++        g_eff_billboards[billboard_index].z_coord =
++            src_billboards[billboard_index].z_coord;
++    }
++    g_eff_billboards[billboard_index].packed_x =
++        g_eff_billboards[billboard_index].packed_y =
++            g_eff_billboards[billboard_index].z_coord = 0;
+@@ -802 +802 @@
+-    for (billboard_index = 0; g_eff_billboards[billboard_index].unk0 & 1;
++    for (billboard_index = 0; g_eff_billboards[billboard_index].packed_x & 1;
+@@ -804 +804 @@
+-        switch (g_eff_billboards[billboard_index].unk4 & 7) {
++        switch (g_eff_billboards[billboard_index].packed_y & 7) {
+@@ -839 +839 @@
+-            g_eff_billboards[billboard_index].unk0 / 2 - g_eff_view_origin[0];
++            g_eff_billboards[billboard_index].packed_x / 2 - g_eff_view_origin[0];
+@@ -841,2 +841,2 @@
+-            g_eff_billboards[billboard_index].unk4 / 8 - g_eff_view_origin[1];
+-        v->vz = g_eff_billboards[billboard_index].unk8 - g_eff_view_origin[2];
++            g_eff_billboards[billboard_index].packed_y / 8 - g_eff_view_origin[1];
++        v->vz = g_eff_billboards[billboard_index].z_coord - g_eff_view_origin[2];
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -2421,3 +2421,3 @@
+-        s.header = arg2->unk_0C;
+-        s.table = arg2->unk_10 + 3 + idx * 3;
+-        s.x = arg2->unk_1C[idx];
++        s.header = arg2->character_sheet;
++        s.table = arg2->character_cells + 3 + idx * 3;
++        s.x = arg2->character_x_offsets[idx];
+@@ -2432 +2432 @@
+-            s.table = arg2->unk_10;
++            s.table = arg2->character_cells;
+@@ -2438 +2438 @@
+-    s.header = arg2->unk_0C;
++    s.header = arg2->character_sheet;
+@@ -2468 +2468 @@
+-            s.header = arg2->unk_14;
++            s.header = arg2->digit_sheet;
+@@ -2470 +2470 @@
+-            s.table = arg2->unk_18;
++            s.table = arg2->digit_cell;
+@@ -2486 +2486 @@
+-    s.header = arg2->unk_14;
++    s.header = arg2->digit_sheet;
+--- a/src/main/6CF8.c
++++ b/src/main/6CF8.c
+@@ -134 +134 @@
+-    var_1->unk_00 = 0x7007;
++    var_1->unlock_mask = 0x7007;
+@@ -137,5 +137,5 @@
+-        var_1->times[i].unk_0 = 0;
+-        var_1->times[i].unk_1 = 0;
+-        var_1->times[i].unk_4 = 0x1A5E0;
+-    }
+-    g_saved_record.times[0].unk_4 = 0x6978;
++        var_1->times[i].holder_character_index = 0;
++        var_1->times[i].holder_weapon_id = 0;
++        var_1->times[i].time_frames = 0x1A5E0;
++    }
++    g_saved_record.times[0].time_frames = 0x6978;
+--- a/src/main/87A0.c
++++ b/src/main/87A0.c
+@@ -142,2 +142,2 @@
+-    gte_SetRotMatrix(arg0->unk4);
+-    gte_SetTransMatrix(arg0->unk4);
++    gte_SetRotMatrix(arg0->object_matrix);
++    gte_SetTransMatrix(arg0->object_matrix);
+@@ -147 +147 @@
+-    dx = arg0->unk4->t[0] - softbody->matrix.t[0];
++    dx = arg0->object_matrix->t[0] - softbody->matrix.t[0];
+@@ -149 +149 @@
+-    dy = arg0->unk4->t[1] - softbody->matrix.t[1];
++    dy = arg0->object_matrix->t[1] - softbody->matrix.t[1];
+@@ -151 +151 @@
+-    dz = arg0->unk4->t[2] - softbody->matrix.t[2];
++    dz = arg0->object_matrix->t[2] - softbody->matrix.t[2];
+@@ -168 +168 @@
+-    softbody->matrix = *arg0->unk4;
++    softbody->matrix = *arg0->object_matrix;
+@@ -571,2 +571,2 @@
+-    gte_SetRotMatrix(arg0->unk4);
+-    gte_SetTransMatrix(arg0->unk4);
++    gte_SetRotMatrix(arg0->object_matrix);
++    gte_SetTransMatrix(arg0->object_matrix);
+@@ -587 +587 @@
+-    arg1->matrix = *arg0->unk4;
++    arg1->matrix = *arg0->object_matrix;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -1479,3 +1479,3 @@
+-        time_fields_out->unk_0 = 99;
+-        time_fields_out->unk_2 = 59;
+-        time_fields_out->unk_3 = 99;
++        time_fields_out->time_minutes = 99;
++        time_fields_out->time_seconds = 59;
++        time_fields_out->time_hundredths = 99;
+@@ -1487 +1487 @@
+-        time_fields_out->unk_2 = seconds;
++        time_fields_out->time_seconds = seconds;
+@@ -1490,2 +1490,2 @@
+-            time_fields_out->unk_0 = minutes;
+-            time_fields_out->unk_3 = hundredths;
++            time_fields_out->time_minutes = minutes;
++            time_fields_out->time_hundredths = hundredths;
+@@ -1693,2 +1693,2 @@
+-            time_fields.unk_2 = temp / 30;
+-            time_fields.unk_3 = temp % 30 * 100 / 30;
++            time_fields.time_seconds = temp / 30;
++            time_fields.time_hundredths = temp % 30 * 100 / 30;
+@@ -3064 +3064 @@
+-        dst->unk_00 = src->unk_00;
++        dst->has_inner_sphere = src->has_inner_sphere;
+@@ -3069 +3069 @@
+-        dst->unk_0C = (src->unk_0C * arg1) >> 12;
++        dst->outer_radius = (src->outer_radius * arg1) >> 12;
+@@ -3071 +3071 @@
+-        dst->unk_10 = (src->unk_10 * arg1) >> 12;
++        dst->inner_radius = (src->inner_radius * arg1) >> 12;
+@@ -3166 +3166 @@
+-            rec->ground_probe_floor_ys[i] = var_0[9];
++            rec->ground_probe_end_ys[i] = var_0[9];
+@@ -3168 +3168 @@
+-            rec->ground_probe_floor_ys[i] = var_0[5];
++            rec->ground_probe_end_ys[i] = var_0[5];
+DRY RUN: 15 file(s) would change; nothing written
+OK: every member access renamed
