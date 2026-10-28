@@ -24,9 +24,9 @@ glabel eff_SpawnBillboardPair
     /* 53838 80063038 2118A600 */  addu       $v1, $a1, $a2
     /* 5383C 8006303C 0000828C */  lw         $v0, 0x0($a0)
     /* 53840 80063040 80180300 */  sll        $v1, $v1, 2
-    /* 53844 80063044 0F80013C */  lui        $at, %hi(D_800F0E38)
+    /* 53844 80063044 0F80013C */  lui        $at, %hi(g_eff_billboard_pair_positions)
     /* 53848 80063048 21082300 */  addu       $at, $at, $v1
-    /* 5384C 8006304C 380E22AC */  sw         $v0, %lo(D_800F0E38)($at)
+    /* 5384C 8006304C 380E22AC */  sw         $v0, %lo(g_eff_billboard_pair_positions)($at)
     /* 53850 80063050 0400828C */  lw         $v0, 0x4($a0)
     /* 53854 80063054 0F80013C */  lui        $at, %hi(D_800F0E3C)
     /* 53858 80063058 21082300 */  addu       $at, $at, $v1

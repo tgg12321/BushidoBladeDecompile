@@ -85,12 +85,12 @@ s32 comb_Connect(void) {
     } while (temp_s0 == 0);
     func_80077B00();
     pad_ResetState();
-    D_800A37C4 = bits_ExtractMask3F83F8(g_saved_record.unk_00);
+    g_comb_send_payload = bits_ExtractMask3F83F8(g_saved_record.unk_00);
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
     D_800A38E4 = bits_DepositMask3F83F8(D_800A36C6);
-    D_800A37C4 = pad_PackSavedButtonMappingLowNibbles();
+    g_comb_send_payload = pad_PackSavedButtonMappingLowNibbles();
     VSync(1);
     comb_ExchangeEmptyPad();
     VSync(1);
@@ -98,7 +98,7 @@ s32 comb_Connect(void) {
     VSync(1);
     comb_ExchangeEmptyPad();
     pad_UnpackButtonMappingNibblesToCells(D_800A36C6);
-    D_800A37C4 = rand();
+    g_comb_send_payload = rand();
     VSync(1);
     comb_ExchangeEmptyPad();
     VSync(1);
@@ -108,7 +108,7 @@ s32 comb_Connect(void) {
     {
         s32 var_v0;
         if (g_comb_local_side == 0) {
-            var_v0 = (u16)D_800A37C4;
+            var_v0 = (u16)g_comb_send_payload;
         } else {
             var_v0 = D_800A36C6;
         }
@@ -153,7 +153,8 @@ void fight_ScanCommandStreamAndLoadImage(u8 *command_cursor) {
     } while (!scan_done);
 
     if (result >= 0) {
-        D_800A37A8[g_fight_stage_command_count] = g_fight_stage_index;
+        g_fight_stage_list_entries[g_fight_stage_command_count] =
+            g_fight_stage_index;
         gpu_ResetGraphMode1();
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
         gpu_ReadCdFileRelocateTwoImagesAndUploadFourRegions(result, addr);
@@ -171,7 +172,8 @@ void fight_FillMissingConfigInitFighterAndLoadObject(s32 arg0) {
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
-        arg0, D_8008D578[(s8)g_fight_config.unk_4[arg0]], (s32)0x80190800);
+        arg0, g_fight_selection_object_ids[(s8)g_fight_config.unk_4[arg0]],
+        (s32)0x80190800);
 }
 
 void fight_RequestBothFightersEntriesAndReloadOnChange(void) {
@@ -283,12 +285,12 @@ s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *arg0) {
     {
         u8 v = arg0[0];
         g_fight_second_fighter_defeats_left = v;
-        D_800A3671 = v;
+        g_fight_second_fighter_initial_defeats_left = v;
     }
     g_fight_config.unk_A[1] = arg0[1];
-    D_800A37B4 = arg0[2];
-    D_800A37B5 = arg0[3];
-    D_800A37B6 = arg0[4];
+    g_fight_operand_tint_red = arg0[2];
+    g_fight_operand_tint_green = arg0[3];
+    g_fight_operand_tint_blue = arg0[4];
     fight_FillMissingConfigInitFighterAndLoadObject(1);
     fight_RequestBothFightersEntriesAndReloadOnChange();
     return 5;
@@ -379,7 +381,7 @@ void fight_RunCommandStream(void) {
             byte = *p;
             g_fight_stage_command_count = counter + 1;
             g_fight_stage_index = byte;
-            D_800A37A8[counter] = byte;
+            g_fight_stage_list_entries[counter] = byte;
             g_main_loop_handler_index = 22;
             var_0 = 1;
             fighter_ResetBoneGroupHitState(D_80101EC8);
@@ -453,7 +455,7 @@ void fight_UpdateCommandStreamImageLoadAndResume(void) {
     if (g_handler_frame_counter == 3) {
         DrawSync(0);
         fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
-        D_800A37C0 = 500;
+        g_fight_stage_list_step_timer = 500;
         g_fight_stage_list_draw_cursor = 0;
         g_local_ot_draw_mode = DISP_ACTIVE;
         fight_ResetGraphAndReloadResourcesOnCachedKeyChange();
@@ -464,7 +466,7 @@ void fight_UpdateCommandStreamImageLoadAndResume(void) {
 }
 
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
-u16 D_800A37C4;
+u16 g_comb_send_payload;
 s32 D_800A37D8;
 u8 g_comb_handshake_step;
 s32 D_800A38D0;
@@ -475,10 +477,10 @@ u8 D_800A3916;
 /* Merged section (Q65: one original file). */
 extern DR_TPAGE g_font_tpage[2]; /* one per frame parity (g_font_buf_index) */
 
-extern Unk800A4750Rec D_800A4750[];
-extern Unk800A6690Rec D_800A6690[];
-extern s16 D_800A7FE0[32][32];
-extern u16 D_800A87E0[];
+extern Unk800A4750Rec g_gpu_grid_cell_records[];
+extern Unk800A6690Rec g_gpu_grid_node_records[];
+extern s16 g_gpu_grid_cell_run_starts[32][32];
+extern u16 g_gpu_grid_cell_run_entries[];
 extern u8 g_gpu_cell_draw_attributes[];
 
 extern void fight_FillMissingConfigInitFighterAndLoadObject(s32);
@@ -551,7 +553,8 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     if ((s8)g_fight_config.unk_4[1] == 0xE ||
         (s8)g_fight_config.unk_4[1] == 0x1D) {
         gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
-            D_800A37B4, D_800A37B5, D_800A37B6);
+            g_fight_operand_tint_red, g_fight_operand_tint_green,
+            g_fight_operand_tint_blue);
     }
     fight_WaitForCounterThenClearAndEnableDisplay();
     g_local_ot_draw_mode = DISP_DISABLED;
@@ -833,9 +836,10 @@ void fight_UpdateMatchTallyPresentation(void) {
             snd_QueueSound(0xA9, 0x7F, 0x7F);
         }
     }
-    g_prim_buf_cursor += gpu_DrawPackedComparisonRowsAndTotals(
-                             D_800A3784, (s32)g_prim_buf_cursor, 1) /
-                         4;
+    g_prim_buf_cursor +=
+        gpu_DrawPackedComparisonRowsAndTotals(
+            g_fight_packed_match_scores, (s32)g_prim_buf_cursor, 1) /
+        4;
     if ((g_pad_state.pressed & 0x400040) != 0 ||
         g_handler_frame_counter >= 0xF1) {
         if (g_fight_tally_winner_index == 2) {
@@ -908,9 +912,10 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
 
 void fight_UpdateTimeRecordPresentation(void) {
     g_handler_frame_counter = g_handler_frame_counter + 1;
-    g_prim_buf_cursor += gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
-                             (s32)g_prim_buf_cursor, 1, D_800A38E9) /
-                         4;
+    g_prim_buf_cursor +=
+        gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
+            (s32)g_prim_buf_cursor, 1, g_fight_best_time_rank) /
+        4;
     if ((g_pad_state.pressed & 0x400040) != 0 ||
         g_handler_frame_counter >= 0xF1) {
         fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank();
@@ -990,7 +995,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
         }
         g_fight_reinit_reuses_assets = 1;
         g_fight_menu_restart_count = g_fight_menu_restart_count + 1;
-        D_800A38DF = fight_FindNearestStartPair(
+        g_fight_nearest_start_pair_index = fight_FindNearestStartPair(
             &D_80101EC8[g_fight_followup_fighter_index].world_pos);
         g_main_loop_handler_index = 0;
         return;
@@ -1030,7 +1035,7 @@ void fight_UpdateRotatingViewDecimalPresentation(void) {
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
     g_prim_buf_cursor += gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
-        D_800A391F, (s32)g_prim_buf_cursor, 1);
+        g_fight_opponent_order_count, (s32)g_prim_buf_cursor, 1);
     g_handler_frame_counter = g_handler_frame_counter + 1;
     if (g_handler_frame_counter >= 0x97 ||
         (g_pad_state.pressed & 0x400040) != 0) {
@@ -1183,7 +1188,7 @@ static s32 g_font_sprite_count;
 static s32 g_font_col;
 static s32 g_font_row;
 static s32 g_font_color;
-static s32 D_800A3368;
+static s32 g_gpu_grid_cell_record_count;
 static s32 D_800A336C;
 static s32 D_800A3370;
 static s32 D_800A3374;
@@ -2006,14 +2011,14 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
                 break;
             }
             if (bits < 0) {
-                vidx = D_800A7FE0[row][col];
+                vidx = g_gpu_grid_cell_run_starts[row][col];
                 if (vidx >= 0) {
                     a3 = g_gpu_cell_draw_attributes[row * 0x20 + col];
                     do {
-                        t0 = D_800A87E0[vidx++];
+                        t0 = g_gpu_grid_cell_run_entries[vidx++];
                         v1 = t0 & 0x7FFF;
-                        if (v1 < D_800A3368) {
-                            e = &D_800A4750[v1];
+                        if (v1 < g_gpu_grid_cell_record_count) {
+                            e = &g_gpu_grid_cell_records[v1];
                             e->unk6 = a3 & 3;
                             if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
                                 e->unk7 |= 1;
@@ -2024,7 +2029,8 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
                             g_draw_queue_cursor = list + 1;
                             *list = e;
                         } else {
-                            e2 = &D_800A6690[v1 - D_800A3368];
+                            e2 = &g_gpu_grid_node_records
+                                     [v1 - g_gpu_grid_cell_record_count];
                             if (e2->unk58 == 0) {
                                 *out++ = e2;
                                 e2->unk58 = 1;
@@ -2047,8 +2053,8 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
         ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
         g_draw_queue_cursor++;
     }
-    if (D_800948BC[resource_GetLoadedSelector()].unk4 != 0) {
-        D_800948BC[resource_GetLoadedSelector()].unk4();
+    if (g_resource_selector_callbacks[resource_GetLoadedSelector()].unk4 != 0) {
+        g_resource_selector_callbacks[resource_GetLoadedSelector()].unk4();
     }
     pos[0] = -g_view_camera_root_node.xf.rot.vx;
     pos[1] = -g_view_camera_root_node.xf.rot.vy;
@@ -2106,14 +2112,14 @@ skip:
         if (t2 != 0) {
             for (t1 = 0; t1 < 0x20; t1++) {
                 if (t2 < 0) {
-                    vidx = D_800A7FE0[t4][t1];
+                    vidx = g_gpu_grid_cell_run_starts[t4][t1];
                     if (vidx >= 0) {
                         a3 = g_gpu_cell_draw_attributes[t4 * 0x20 + t1];
                         do {
-                            t0 = D_800A87E0[vidx++];
+                            t0 = g_gpu_grid_cell_run_entries[vidx++];
                             v1 = t0 & 0x7FFF;
-                            if (v1 < D_800A3368) {
-                                e = &D_800A4750[v1];
+                            if (v1 < g_gpu_grid_cell_record_count) {
+                                e = &g_gpu_grid_cell_records[v1];
                                 e->unk6 = a3 & 3;
                                 if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
                                     e->unk7 |= 1;
@@ -2124,7 +2130,8 @@ skip:
                                 g_draw_queue_cursor = list + 1;
                                 *list = e;
                             } else {
-                                e2 = &D_800A6690[v1 - D_800A3368];
+                                e2 = &g_gpu_grid_node_records
+                                         [v1 - g_gpu_grid_cell_record_count];
                                 if (e2->unk58 == 0) {
                                     *out = e2;
                                     out += 1;
@@ -2146,10 +2153,11 @@ extern s32 D_800A3230;
 
 /* gpu_UnpackGridRecordsNodesAndCellRuns - unpacks a stream of u16 words in
  * sections ended by -1: (cell, id) pairs into the 16-byte record table (count
- * kept in D_800A3368), the transform-node records (header word, xf.mat.t,
- * xf.rot; each node is then passed to its g_math_rot_matrix_funcs handler),
- * then the 32x32 cell grid, each listed cell indexing a run of record ids (bit
- * 15 ends a run) in the run table. Cells are numbered row * 32 + column. */
+ * kept in g_gpu_grid_cell_record_count), the transform-node records (header
+ * word, xf.mat.t, xf.rot; each node is then passed to its
+ * g_math_rot_matrix_funcs handler), then the 32x32 cell grid, each listed cell
+ * indexing a run of record ids (bit 15 ends a run) in the run table. Cells are
+ * numbered row * 32 + column. */
 void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
     Unk800A4750Rec *r;
     Unk800A6690Rec *c;
@@ -2163,7 +2171,7 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
 
     n = 0;
     while ((w = *p++) != -1) {
-        r = &D_800A4750[n++];
+        r = &g_gpu_grid_cell_records[n++];
         var_8 = *p++;
         r->unk4 = var_8;
         if (var_8 & 0x8000) {
@@ -2178,10 +2186,10 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
         r->unk8 = (w % 32) * 2000 - 32000;
         r->unkC = (w / 32) * 2000 - 32000;
     }
-    D_800A3368 = n;
+    g_gpu_grid_cell_record_count = n;
     n = 0;
     while ((w = *p++) != -1) {
-        c = &D_800A6690[n++];
+        c = &g_gpu_grid_node_records[n++];
         c->node.unk1 = 0;
         c->node.parent_node = 0;
         c->node.rotation_order = 0;
@@ -2208,7 +2216,7 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
     }
     for (i = 0; i < 32; i++) {
         for (j = 0; j < 32; j++) {
-            D_800A7FE0[i][j] = -1;
+            g_gpu_grid_cell_run_starts[i][j] = -1;
         }
     }
     /* the grid row counter i, restarted as the run-table fill index (its
@@ -2219,10 +2227,10 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
     while ((w = *p++) != -1) {
         x = w % 32;
         z = w / 32;
-        D_800A7FE0[z][x] = i;
+        g_gpu_grid_cell_run_starts[z][x] = i;
         do {
             w = *p++;
-            D_800A87E0[i++] = w;
+            g_gpu_grid_cell_run_entries[i++] = w;
         } while (!(w & 0x8000));
     }
     D_800A3230 = (D_800A3230 >= i) ? D_800A3230 : i;
@@ -2248,14 +2256,14 @@ extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 D_80094A6C[];
 
 void resource_InvokeLoadedSelectorInitCallback(void) {
-    if (D_800948BC[resource_GetLoadedSelector()].init != 0) {
-        D_800948BC[resource_GetLoadedSelector()].init();
+    if (g_resource_selector_callbacks[resource_GetLoadedSelector()].init != 0) {
+        g_resource_selector_callbacks[resource_GetLoadedSelector()].init();
     }
 }
 
 s32 gpu_GetLastGridPassViewYaw(void) { return D_800A336C; }
 
-void *gpu_GetGridNodeRecordTable(void) { return D_800A6690; }
+void *gpu_GetGridNodeRecordTable(void) { return g_gpu_grid_node_records; }
 
 void func_8003F1E4(s32 a0) {
     if (a0) {

@@ -1,5 +1,5 @@
 glabel eff_Init
-    /* 7480 80016C80 4A068293 */  lbu        $v0, %gp_rel(D_800A3716)($gp)
+    /* 7480 80016C80 4A068293 */  lbu        $v0, %gp_rel(g_eff_initialized)($gp)
     /* 7484 80016C84 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 7488 80016C88 1400BFAF */  sw         $ra, 0x14($sp)
     /* 748C 80016C8C 15004014 */  bnez       $v0, .L80016CE4
@@ -24,7 +24,7 @@ glabel eff_Init
     /* 74D8 80016CD8 00000000 */   nop
     /* 74DC 80016CDC 01000224 */  addiu      $v0, $zero, 0x1
   .L80016CE0:
-    /* 74E0 80016CE0 4A0682A3 */  sb         $v0, %gp_rel(D_800A3716)($gp)
+    /* 74E0 80016CE0 4A0682A3 */  sb         $v0, %gp_rel(g_eff_initialized)($gp)
   .L80016CE4:
     /* 74E4 80016CE4 1400BF8F */  lw         $ra, 0x14($sp)
     /* 74E8 80016CE8 1000B08F */  lw         $s0, 0x10($sp)

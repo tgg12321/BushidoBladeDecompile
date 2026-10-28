@@ -337,12 +337,12 @@ glabel fighter_Update
     /* 14BE8 800243E8 82002596 */  lhu        $a1, 0x82($s1)
     /* 14BEC 800243EC 0A80013C */  lui        $at, %hi(g_fight_paired_move_start_pending)
     /* 14BF0 800243F0 6E3722A4 */  sh         $v0, %lo(g_fight_paired_move_start_pending)($at)
-    /* 14BF4 800243F4 0A80013C */  lui        $at, %hi(D_800A36D8)
-    /* 14BF8 800243F8 D83623AC */  sw         $v1, %lo(D_800A36D8)($at)
+    /* 14BF4 800243F4 0A80013C */  lui        $at, %hi(g_fight_paired_move)
+    /* 14BF8 800243F8 D83623AC */  sw         $v1, %lo(g_fight_paired_move)($at)
     /* 14BFC 800243FC 0A80013C */  lui        $at, %hi(D_800A381C)
     /* 14C00 80024400 1C3824A4 */  sh         $a0, %lo(D_800A381C)($at)
-    /* 14C04 80024404 0A80013C */  lui        $at, %hi(D_800A36CA)
-    /* 14C08 80024408 CA3625A4 */  sh         $a1, %lo(D_800A36CA)($at)
+    /* 14C04 80024404 0A80013C */  lui        $at, %hi(g_fight_paired_move_flags)
+    /* 14C08 80024408 CA3625A4 */  sh         $a1, %lo(g_fight_paired_move_flags)($at)
     /* 14C0C 8002440C AC910008 */  j          .L800246B0
     /* 14C10 80024410 00000000 */   nop
   .L80024414:
@@ -372,10 +372,10 @@ glabel fighter_Update
     /* 14C64 80024464 01000224 */  addiu      $v0, $zero, 0x1
     /* 14C68 80024468 0A80013C */  lui        $at, %hi(g_fight_paired_move_start_pending)
     /* 14C6C 8002446C 6E3722A4 */  sh         $v0, %lo(g_fight_paired_move_start_pending)($at)
-    /* 14C70 80024470 0A80013C */  lui        $at, %hi(D_800A36D8)
-    /* 14C74 80024474 D83625AC */  sw         $a1, %lo(D_800A36D8)($at)
-    /* 14C78 80024478 0A80013C */  lui        $at, %hi(D_800A36CA)
-    /* 14C7C 8002447C CA3630A4 */  sh         $s0, %lo(D_800A36CA)($at)
+    /* 14C70 80024470 0A80013C */  lui        $at, %hi(g_fight_paired_move)
+    /* 14C74 80024474 D83625AC */  sw         $a1, %lo(g_fight_paired_move)($at)
+    /* 14C78 80024478 0A80013C */  lui        $at, %hi(g_fight_paired_move_flags)
+    /* 14C7C 8002447C CA3630A4 */  sh         $s0, %lo(g_fight_paired_move_flags)($at)
     /* 14C80 80024480 0A80013C */  lui        $at, %hi(D_800A381C)
     /* 14C84 80024484 1C3823A4 */  sh         $v1, %lo(D_800A381C)($at)
     /* 14C88 80024488 AC910008 */  j          .L800246B0

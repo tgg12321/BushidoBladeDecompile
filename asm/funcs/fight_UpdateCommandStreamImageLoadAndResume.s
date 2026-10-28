@@ -37,8 +37,8 @@ glabel fight_UpdateCommandStreamImageLoadAndResume
     /* 2C168 8003B968 97EB000C */  jal        fight_ScanCommandStreamAndLoadImage
     /* 2C16C 8003B96C 00000000 */   nop
     /* 2C170 8003B970 F4010224 */  addiu      $v0, $zero, 0x1F4
-    /* 2C174 8003B974 0A80013C */  lui        $at, %hi(D_800A37C0)
-    /* 2C178 8003B978 C03722AC */  sw         $v0, %lo(D_800A37C0)($at)
+    /* 2C174 8003B974 0A80013C */  lui        $at, %hi(g_fight_stage_list_step_timer)
+    /* 2C178 8003B978 C03722AC */  sw         $v0, %lo(g_fight_stage_list_step_timer)($at)
     /* 2C17C 8003B97C 14000224 */  addiu      $v0, $zero, 0x14
     /* 2C180 8003B980 0A80013C */  lui        $at, %hi(g_fight_stage_list_draw_cursor)
     /* 2C184 8003B984 F83820A0 */  sb         $zero, %lo(g_fight_stage_list_draw_cursor)($at)

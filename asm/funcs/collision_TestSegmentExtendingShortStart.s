@@ -1,6 +1,6 @@
 glabel collision_TestSegmentExtendingShortStart
-    /* 43B04 80053304 0F80023C */  lui        $v0, %hi(D_800EF9F8)
-    /* 43B08 80053308 F8F94224 */  addiu      $v0, $v0, %lo(D_800EF9F8)
+    /* 43B04 80053304 0F80023C */  lui        $v0, %hi(g_collision_static_segment_work)
+    /* 43B08 80053308 F8F94224 */  addiu      $v0, $v0, %lo(g_collision_static_segment_work)
     /* 43B0C 8005330C 280382AF */  sw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43B10 80053310 2803828F */  lw         $v0, %gp_rel(g_collision_segment_work)($gp)
     /* 43B14 80053314 E0FFBD27 */  addiu      $sp, $sp, -0x20

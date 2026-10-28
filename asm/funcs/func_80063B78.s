@@ -1,7 +1,7 @@
 glabel func_80063B78
     /* 54378 80063B78 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 5437C 80063B7C B403838F */  lw         $v1, %gp_rel(D_800A3480)($gp)
-    /* 54380 80063B80 90038287 */  lh         $v0, %gp_rel(D_800A345C)($gp)
+    /* 5437C 80063B7C B403838F */  lw         $v1, %gp_rel(g_eff_yawed_quad_tex_index)($gp)
+    /* 54380 80063B80 90038287 */  lh         $v0, %gp_rel(g_eff_yawed_quad_tex_selectors)($gp)
     /* 54384 80063B84 21200000 */  addu       $a0, $zero, $zero
     /* 54388 80063B88 1000BFAF */  sw         $ra, 0x10($sp)
     /* 5438C 80063B8C 848F010C */  jal        eff_DrawYawedSlotQuads

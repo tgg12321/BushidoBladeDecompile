@@ -29,9 +29,9 @@ glabel snd_UpdateStageSounds
     /* 23E40 80033640 01000224 */  addiu      $v0, $zero, 0x1
     /* 23E44 80033644 06006214 */  bne        $v1, $v0, .L80033660
     /* 23E48 80033648 40201100 */   sll       $a0, $s1, 1
-    /* 23E4C 8003364C 0980013C */  lui        $at, %hi(D_8008EBF4)
+    /* 23E4C 8003364C 0980013C */  lui        $at, %hi(g_snd_stage_sequence_base_sounds)
     /* 23E50 80033650 21083100 */  addu       $at, $at, $s1
-    /* 23E54 80033654 F4EB2490 */  lbu        $a0, %lo(D_8008EBF4)($at)
+    /* 23E54 80033654 F4EB2490 */  lbu        $a0, %lo(g_snd_stage_sequence_base_sounds)($at)
     /* 23E58 80033658 AECD0008 */  j          .L800336B8
     /* 23E5C 8003365C 21284002 */   addu      $a1, $s2, $zero
   .L80033660:
@@ -41,9 +41,9 @@ glabel snd_UpdateStageSounds
     /* 23E6C 8003366C 00000000 */  nop
     /* 23E70 80033670 06006214 */  bne        $v1, $v0, .L8003368C
     /* 23E74 80033674 21284002 */   addu      $a1, $s2, $zero
-    /* 23E78 80033678 0980013C */  lui        $at, %hi(D_8008EBF4)
+    /* 23E78 80033678 0980013C */  lui        $at, %hi(g_snd_stage_sequence_base_sounds)
     /* 23E7C 8003367C 21083100 */  addu       $at, $at, $s1
-    /* 23E80 80033680 F4EB2490 */  lbu        $a0, %lo(D_8008EBF4)($at)
+    /* 23E80 80033680 F4EB2490 */  lbu        $a0, %lo(g_snd_stage_sequence_base_sounds)($at)
     /* 23E84 80033684 AECD0008 */  j          .L800336B8
     /* 23E88 80033688 01008424 */   addiu     $a0, $a0, 0x1
   .L8003368C:
@@ -53,9 +53,9 @@ glabel snd_UpdateStageSounds
     /* 23E98 80033698 00000000 */  nop
     /* 23E9C 8003369C 08006214 */  bne        $v1, $v0, .L800336C0
     /* 23EA0 800336A0 00000000 */   nop
-    /* 23EA4 800336A4 0980013C */  lui        $at, %hi(D_8008EBF4)
+    /* 23EA4 800336A4 0980013C */  lui        $at, %hi(g_snd_stage_sequence_base_sounds)
     /* 23EA8 800336A8 21083100 */  addu       $at, $at, $s1
-    /* 23EAC 800336AC F4EB2490 */  lbu        $a0, %lo(D_8008EBF4)($at)
+    /* 23EAC 800336AC F4EB2490 */  lbu        $a0, %lo(g_snd_stage_sequence_base_sounds)($at)
     /* 23EB0 800336B0 00000000 */  nop
     /* 23EB4 800336B4 02008424 */  addiu      $a0, $a0, 0x2
   .L800336B8:

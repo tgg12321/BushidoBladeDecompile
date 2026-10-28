@@ -90,9 +90,9 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 55040 80064840 2128A600 */   addu      $a1, $a1, $a2
     /* 55044 80064844 80280500 */  sll        $a1, $a1, 2
     /* 55048 80064848 A403868F */  lw         $a2, %gp_rel(g_eff_view_origin)($gp)
-    /* 5504C 8006484C 0F80013C */  lui        $at, %hi(D_800F0D78)
+    /* 5504C 8006484C 0F80013C */  lui        $at, %hi(g_eff_jittered_billboard_positions)
     /* 55050 80064850 21082500 */  addu       $at, $at, $a1
-    /* 55054 80064854 780D228C */  lw         $v0, %lo(D_800F0D78)($at)
+    /* 55054 80064854 780D228C */  lw         $v0, %lo(g_eff_jittered_billboard_positions)($at)
     /* 55058 80064858 0000C38C */  lw         $v1, 0x0($a2)
     /* 5505C 8006485C 00000000 */  nop
     /* 55060 80064860 23104300 */  subu       $v0, $v0, $v1

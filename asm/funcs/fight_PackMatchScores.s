@@ -39,8 +39,8 @@ glabel fight_PackMatchScores
     /* 24A84 80034284 EDFF4014 */  bnez       $v0, .L8003423C
     /* 24A88 80034288 0200A524 */   addiu     $a1, $a1, 0x2
   .L8003428C:
-    /* 24A8C 8003428C 0A80013C */  lui        $at, %hi(D_800A3784)
-    /* 24A90 80034290 843724AC */  sw         $a0, %lo(D_800A3784)($at)
+    /* 24A8C 8003428C 0A80013C */  lui        $at, %hi(g_fight_packed_match_scores)
+    /* 24A90 80034290 843724AC */  sw         $a0, %lo(g_fight_packed_match_scores)($at)
     /* 24A94 80034294 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 24A98 80034298 0800E003 */  jr         $ra
     /* 24A9C 8003429C 00000000 */   nop

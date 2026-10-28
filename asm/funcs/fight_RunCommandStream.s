@@ -95,9 +95,9 @@ glabel fight_RunCommandStream
     /* 2BEFC 8003B6FC 16000224 */  addiu      $v0, $zero, 0x16
     /* 2BF00 8003B700 0A80013C */  lui        $at, %hi(g_fight_stage_index)
     /* 2BF04 8003B704 A43625A4 */  sh         $a1, %lo(g_fight_stage_index)($at)
-    /* 2BF08 8003B708 0A80013C */  lui        $at, %hi(D_800A37A8)
+    /* 2BF08 8003B708 0A80013C */  lui        $at, %hi(g_fight_stage_list_entries)
     /* 2BF0C 8003B70C 21082300 */  addu       $at, $at, $v1
-    /* 2BF10 8003B710 A83725A0 */  sb         $a1, %lo(D_800A37A8)($at)
+    /* 2BF10 8003B710 A83725A0 */  sb         $a1, %lo(g_fight_stage_list_entries)($at)
     /* 2BF14 8003B714 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 2BF18 8003B718 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* 2BF1C 8003B71C 5A89000C */  jal        fighter_ResetBoneGroupHitState

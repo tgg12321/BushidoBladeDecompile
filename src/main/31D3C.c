@@ -290,13 +290,13 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
 }
 
 extern s16 g_light_point_color[3];
-extern VECTOR D_800A9B28;
+extern VECTOR g_light_point_position;
 
 void light_SetPointLight(VECTOR *a0, s32 a1) {
     g_light_point_color[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
     g_light_point_color[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
     g_light_point_color[2] = (s16)(((a1 & 0xFF) << 12) / 255);
-    D_800A9B28 = *a0;
+    g_light_point_position = *a0;
 }
 
 void light_ApplyPointLight(s32 a0, s32 a1) {
@@ -329,9 +329,9 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
             goto skip;
         }
 
-        dx = ptr[0] - D_800A9B28.vx;
-        dy = ptr[1] - D_800A9B28.vy;
-        dz = ptr[2] - D_800A9B28.vz;
+        dx = ptr[0] - g_light_point_position.vx;
+        dy = ptr[1] - g_light_point_position.vy;
+        dz = ptr[2] - g_light_point_position.vz;
 
         if (dx < 0)
             goto neg_dx;
@@ -387,33 +387,34 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
 extern s16 g_light_point_color[3];
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
-static s16 D_800A3380[2];
-static s32 D_800A3384[2];
+static s16 g_light_point_target_flags[2];
+static s32 g_light_point_targets[2];
 
 void light_ResetPointLight(void) {
-    D_800A3380[1] = 0;
-    D_800A3380[0] = 0;
+    g_light_point_target_flags[1] = 0;
+    g_light_point_target_flags[0] = 0;
     g_light_point_color[0] = -1;
 }
 
 void light_SetPointLightTarget(s32 a0, s32 a1) {
     if (a0 < 2) {
-        D_800A3380[a0] = 1;
-        D_800A3384[a0] = a1;
+        g_light_point_target_flags[a0] = 1;
+        g_light_point_targets[a0] = a1;
     }
 }
 
 void light_ApplyPointLightTargets(void) {
-    s32 val = D_800A3380[0] * 2 + D_800A3380[1];
+    s32 val = g_light_point_target_flags[0] * 2 + g_light_point_target_flags[1];
     switch (val) {
     case 1:
-        light_ApplyPointLight(0, D_800A3384[1]);
+        light_ApplyPointLight(0, g_light_point_targets[1]);
         break;
     case 2:
-        light_ApplyPointLight(D_800A3384[0], 0);
+        light_ApplyPointLight(g_light_point_targets[0], 0);
         break;
     case 3:
-        light_ApplyPointLight(D_800A3384[0], D_800A3384[1]);
+        light_ApplyPointLight(
+            g_light_point_targets[0], g_light_point_targets[1]);
         break;
     }
 }

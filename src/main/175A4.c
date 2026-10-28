@@ -179,11 +179,11 @@ tail:
             pos[1] = (record->base_pos.y + var_1->base_pos.y) / 2;
             pos[2] = (record->world_pos.z + var_1->world_pos.z) / 2;
             pos[0] += (Judge[(u16)record->opponent_bearing & 0xFFF] *
-                       D_8008EB54[kind].unk0) >>
+                       g_fight_midpoint_effect_offsets[kind].unk0) >>
                       12;
-            pos[1] += D_8008EB54[kind].unk2;
+            pos[1] += g_fight_midpoint_effect_offsets[kind].unk2;
             pos[2] += (Judge[(record->opponent_bearing + 0x400) & 0xFFF] *
-                       D_8008EB54[kind].unk0) >>
+                       g_fight_midpoint_effect_offsets[kind].unk0) >>
                       12;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 0, D_8008EB6C[kind], pos, (s16 *)0);

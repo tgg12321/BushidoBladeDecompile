@@ -13,9 +13,9 @@ glabel reloc_RelocateBlock
     /* 3483C 8004403C 21082200 */  addu       $at, $at, $v0
     /* 34840 80044040 083624AC */  sw         $a0, %lo(g_reloc_block_entry_tables)($at)
     /* 34844 80044044 FF7F6230 */  andi       $v0, $v1, 0x7FFF
-    /* 34848 80044048 1080013C */  lui        $at, %hi(D_80103658)
+    /* 34848 80044048 1080013C */  lui        $at, %hi(g_reloc_block_slot_counts)
     /* 3484C 8004404C 21082500 */  addu       $at, $at, $a1
-    /* 34850 80044050 583622A4 */  sh         $v0, %lo(D_80103658)($at)
+    /* 34850 80044050 583622A4 */  sh         $v0, %lo(g_reloc_block_slot_counts)($at)
     /* 34854 80044054 21106000 */  addu       $v0, $v1, $zero
     /* 34858 80044058 00806330 */  andi       $v1, $v1, 0x8000
     /* 3485C 8004405C 0B006014 */  bnez       $v1, .L8004408C

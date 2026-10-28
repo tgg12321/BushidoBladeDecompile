@@ -185,8 +185,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D458 8003CC58 0C3822AC */  sw         $v0, %lo(g_fight_menu_restart_count)($at)
     /* 2D45C 8003CC5C 0289000C */  jal        fight_FindNearestStartPair
     /* 2D460 8003CC60 21208300 */   addu      $a0, $a0, $v1
-    /* 2D464 8003CC64 0A80013C */  lui        $at, %hi(D_800A38DF)
-    /* 2D468 8003CC68 DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)
+    /* 2D464 8003CC64 0A80013C */  lui        $at, %hi(g_fight_nearest_start_pair_index)
+    /* 2D468 8003CC68 DF3822A0 */  sb         $v0, %lo(g_fight_nearest_start_pair_index)($at)
     /* 2D46C 8003CC6C 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 2D470 8003CC70 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 2D474 8003CC74 2FF30008 */  j          .L8003CCBC

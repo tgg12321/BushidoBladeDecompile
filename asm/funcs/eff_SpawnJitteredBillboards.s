@@ -28,9 +28,9 @@ glabel eff_SpawnJitteredBillboards
     /* 54E10 80064610 FF004230 */  andi       $v0, $v0, 0xFF
     /* 54E14 80064614 21186200 */  addu       $v1, $v1, $v0
     /* 54E18 80064618 81FF6324 */  addiu      $v1, $v1, -0x7F
-    /* 54E1C 8006461C 0F80013C */  lui        $at, %hi(D_800F0D78)
+    /* 54E1C 8006461C 0F80013C */  lui        $at, %hi(g_eff_jittered_billboard_positions)
     /* 54E20 80064620 21083000 */  addu       $at, $at, $s0
-    /* 54E24 80064624 780D23AC */  sw         $v1, %lo(D_800F0D78)($at)
+    /* 54E24 80064624 780D23AC */  sw         $v1, %lo(g_eff_jittered_billboard_positions)($at)
     /* 54E28 80064628 55E4010C */  jal        rand
     /* 54E2C 8006462C 04007326 */   addiu     $s3, $s3, 0x4
     /* 54E30 80064630 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)

@@ -20,12 +20,12 @@ extern RECT D_800A32EC;
 
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
-static s16 D_800A3530[2];
+static s16 g_entry_menu_grid_pulse_shifts[2];
 static s16 D_800A3534[2];
 static s32 D_800A3538; /* not named by any code or data: size from the gap */
 static s32 D_800A353C; /* not named by any code or data: size from the gap */
 static s16 D_800A3540[2];
-static s16 D_800A3544[2];
+static s16 g_entry_menu_row_pulse_shifts[2];
 static s32 D_800A3548;
 static s32 g_entry_menu_pressed_buttons;
 static s16 g_entry_menu_darken_level;
@@ -47,7 +47,7 @@ static s16 g_entry_menu_row_phase_choice_cursors[2];
 static s16 D_800A3594[2];
 static s16 g_entry_menu_choice_grid_column;
 static s16 g_entry_menu_choice_grid_row;
-static s32 D_800A35A0;
+static s32 g_entry_menu_exit_result;
 static Unk8006E49CRec *D_800A35A4;
 static Unk8006EA28Rec *g_entry_menu_resources;
 static Unk8006E49CRec *D_800A35AC;
@@ -112,7 +112,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     g_entry_menu_slide_phase = 0;
     D_800A357C = 0;
     g_entry_menu_handler_index = 0;
-    D_800A35A0 = 0;
+    g_entry_menu_exit_result = 0;
     g_entry_menu_grid_column_cursors[0] = 0;
     g_entry_menu_grid_row_cursors[0] = 0;
     g_entry_menu_grid_column_cursors[1] = 2;
@@ -273,7 +273,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
         gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(&draw_context);
     }
     D_8009BC1C[g_entry_menu_handler_index](&draw_context);
-    return D_800A35A0;
+    return g_entry_menu_exit_result;
 }
 
 void StepSlideProgressCommitPendingStateAndQueueSound(void) {
@@ -517,16 +517,18 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
         if (slot_index != 0) {
             x_offset = -x_offset;
         }
-        s.x = (D_8009BC94[slot_index]
-                         [g_entry_menu_row_phase_choice_cursors[slot_index]]
-                             .x +
-               0x140) +
-              x_offset - ((dx * s.scale_x >> 8) / 2);
-        s.y = (D_8009BC94[slot_index]
-                         [g_entry_menu_row_phase_choice_cursors[slot_index]]
-                             .y +
-               0x9D) +
-              y_offset - ((dy * s.scale_y >> 8) / 2);
+        s.x =
+            (g_entry_menu_row_choice_positions
+                 [slot_index][g_entry_menu_row_phase_choice_cursors[slot_index]]
+                     .x +
+             0x140) +
+            x_offset - ((dx * s.scale_x >> 8) / 2);
+        s.y =
+            (g_entry_menu_row_choice_positions
+                 [slot_index][g_entry_menu_row_phase_choice_cursors[slot_index]]
+                     .y +
+             0x9D) +
+            y_offset - ((dy * s.scale_y >> 8) / 2);
         s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
         if (slot_index != 0) {
             draw_context->primitive_cursors.textured_quad_prims =
@@ -1005,10 +1007,10 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             }
-            D_800A3530[slot_index] = 7;
+            g_entry_menu_grid_pulse_shifts[slot_index] = 7;
             D_800A3534[slot_index] = 0;
         } else {
-            D_800A3530[slot_index] = 9;
+            g_entry_menu_grid_pulse_shifts[slot_index] = 9;
             if (g_entry_menu_work_block->entry_countdowns[slot_index] != 0) {
                 g_entry_menu_work_block->entry_countdowns[slot_index]--;
             }
@@ -1069,7 +1071,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 if (g_entry_menu_slot_records.rec[slot_index].unk0 == 0xFF &&
                     g_entry_menu_grid_phase_extra_slot_count == 0) {
-                    D_800A35A0 = -1;
+                    g_entry_menu_exit_result = -1;
                 } else if (g_entry_menu_grid_phase_extra_slot_count == 1) {
                     if (g_entry_menu_slot_records.rec[1].unk0 == 0xFF) {
                         g_entry_menu_grid_phase_extra_slot_count = 0;
@@ -1098,7 +1100,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *draw_context) {
         s.table = s.header->cells;
         s.col_r = s.col_g = s.col_b =
             ((rsin(((g_entry_menu_work_block->animation_frame_counter & 0x1F)
-                    << D_800A3530[slot_index]) +
+                    << g_entry_menu_grid_pulse_shifts[slot_index]) +
                    slot_index * 511) *
               63) >>
              12) -
@@ -1321,7 +1323,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 min = 1;
             }
             if (g_entry_menu_slot_records.rec[i].unk2 == 0xFF) {
-                D_800A3544[i] = 7;
+                g_entry_menu_row_pulse_shifts[i] = 7;
                 D_800A3540[i] = 0;
                 g_entry_menu_work_block->row_countdowns[i] = 0x1E;
                 if ((g_entry_menu_pressed_buttons & (0x2000 << (var_4 * 16))) &&
@@ -1418,7 +1420,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     g_entry_menu_selection_offset_countdowns[1] = 0x14;
                     g_entry_menu_slot_records.rec[i].unk2 = 0xFF;
                 }
-                D_800A3544[i] = 9;
+                g_entry_menu_row_pulse_shifts[i] = 9;
                 if (g_entry_menu_work_block->row_countdowns[i] != 0) {
                     g_entry_menu_work_block->row_countdowns[i]--;
                 }
@@ -1459,7 +1461,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 s->col_r = s->col_g = s->col_b =
                     ((rsin(((g_entry_menu_work_block->animation_frame_counter &
                              0x1F)
-                            << D_800A3544[i]) +
+                            << g_entry_menu_row_pulse_shifts[i]) +
                            i * 511) *
                       63) >>
                      12) -
@@ -1634,13 +1636,15 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
                 dx = s.table[idx].x + s.table[idx].w - obj[1].cells[0].x;
                 dy = s.table[idx].y + s.table[idx].h - obj[1].cells[0].y;
             }
-            s.x = D_8009BC94[slot_index]
-                            [g_entry_menu_row_phase_choice_cursors[slot_index]]
-                                .x +
+            s.x = g_entry_menu_row_choice_positions
+                      [slot_index]
+                      [g_entry_menu_row_phase_choice_cursors[slot_index]]
+                          .x +
                   0x140 - ((dx * s.scale_x >> 8) / 2);
-            s.y = D_8009BC94[slot_index]
-                            [g_entry_menu_row_phase_choice_cursors[slot_index]]
-                                .y +
+            s.y = g_entry_menu_row_choice_positions
+                      [slot_index]
+                      [g_entry_menu_row_phase_choice_cursors[slot_index]]
+                          .y +
                   0x9D - ((dy * s.scale_y >> 8) / 2);
             s.ft4_out = draw_context->primitive_cursors.textured_quad_prims;
             if (slot_index != 0) {
@@ -1660,7 +1664,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
         snd_QueueSound(6, 0x7F, 0x7F);
         if ((u32)g_entry_menu_fight_mode < 2) {
             g_entry_menu_working_record_ptr->stage_index = func_80071C20();
-            D_800A35A0 = 1;
+            g_entry_menu_exit_result = 1;
         } else if (g_entry_menu_fight_mode == 4) {
             g_entry_menu_next_handler_index = 5;
         } else if (g_entry_menu_fight_mode == 6) {
@@ -1668,7 +1672,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
             g_entry_menu_choice_grid_row = 1;
             g_entry_menu_choice_grid_column = 1;
         } else {
-            D_800A35A0 = 1;
+            g_entry_menu_exit_result = 1;
         }
         for (slot_index = 0;
              slot_index < 1 + g_entry_menu_init_extra_slot_count +
@@ -1971,7 +1975,7 @@ void menu_UpdateChoiceGrid(
             } else {
                 g_entry_menu_working_record_ptr->stage_index = 0x25;
             }
-            D_800A35A0 = 1;
+            g_entry_menu_exit_result = 1;
         }
     }
 end:

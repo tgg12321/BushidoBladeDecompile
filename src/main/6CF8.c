@@ -10,7 +10,7 @@
 #include <psxsdk/libgte.h>
 #include <psxsdk/libsn.h>
 
-extern u8 D_800A3716;
+extern u8 g_eff_initialized;
 extern s32 g_rng_state;
 extern RECT g_gpu_clear_rect;
 extern u32 g_scratchpad_save;
@@ -239,12 +239,12 @@ void sys_Panic(void) {
     }
 }
 
-void eff_ClearInitFlag(void) { D_800A3716 = 0; }
+void eff_ClearInitFlag(void) { g_eff_initialized = 0; }
 
 void eff_Init(void) {
     s32 size;
 
-    if (D_800A3716 != 0) {
+    if (g_eff_initialized != 0) {
         return;
     }
     size = eff_LoadImagesAndSetup(0x801D8800, 0x8010E800);
@@ -252,7 +252,7 @@ void eff_Init(void) {
     if (0xA000 < size) {
         sys_Panic();
     }
-    D_800A3716 = 1;
+    g_eff_initialized = 1;
 }
 
 extern void memcpy(u32, u32, s32);
@@ -285,7 +285,7 @@ void func_80016D78(void) {
     D_800A3770[0] = 0x801D8800;
     D_800A3770[1] = 0x801EBC00;
     D_800A3798 = 0x13400;
-    D_800A3716 = 0;
+    g_eff_initialized = 0;
     D_800A3906 = 0;
     snd_InitAndLoadCommonVab();
     pad_ResetStateMarkValid();
@@ -513,10 +513,10 @@ void main(void) {
         if (!(g_pad_state.pressed & 0x08000800u)) {
             if (g_fight_mode_selector != 2)
                 continue;
-            if (D_800A3713 == 0)
+            if (g_fight_auto_pause_countdown == 0)
                 continue;
-            D_800A3713--;
-            if (D_800A3713 != 0)
+            g_fight_auto_pause_countdown--;
+            if (g_fight_auto_pause_countdown != 0)
                 continue;
         }
         menu_RunPauseMenu(var_1, idx);
@@ -527,8 +527,8 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     u32 local_ot[2];
     DRAWENV env;
     /* holds two values: the case-1/2 fade loop's iteration count, then the
-     * case-20 D_800A37A8[] code passed to gpu_DrawSpriteAtPackedTablePosition
-     * (owner ruling 11) */
+     * case-20 g_fight_stage_list_entries[] code passed to
+     * gpu_DrawSpriteAtPackedTablePosition (owner ruling 11) */
     s32 temp;
     s32 draw_chunk_addr;
     /* holds two values: the g_local_ot_draw_mode switch selector, then the
@@ -565,7 +565,8 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
         }
         break;
     case 10:
-        gpu_DrawPackedComparisonRowsAndTotals(D_800A3784, draw_chunk_addr, 0);
+        gpu_DrawPackedComparisonRowsAndTotals(
+            g_fight_packed_match_scores, draw_chunk_addr, 0);
         break;
     case 20: {
         u8 cur;
@@ -575,7 +576,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
         if ((u32)temp2 < cur) {
             break;
         }
-        if (0xF0 / (temp2 + 1) >= ++D_800A37C0) {
+        if (0xF0 / (temp2 + 1) >= ++g_fight_stage_list_step_timer) {
             break;
         }
         /* FAKE: the common `g_fight_stage_list_draw_cursor = cur + 1` store
@@ -586,8 +587,8 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
         } else {
             u8 next = cur + 1;
             g_fight_stage_list_draw_cursor = next;
-            D_800A37C0 = 0;
-            temp = D_800A37A8[cur];
+            g_fight_stage_list_step_timer = 0;
+            temp = g_fight_stage_list_entries[cur];
             if (next == temp2) {
                 temp |= 0x8000;
             }
@@ -829,17 +830,17 @@ u8 D_800A36B0;
 u8 g_main_frame_period;
 u8 D_800A36F9;
 s16 g_camera_distance_offset;
-u8 D_800A3713;
-u8 D_800A3716;
+u8 g_fight_auto_pause_countdown;
+u8 g_eff_initialized;
 u8 D_800A3744;
 u32 *g_gpu_ot_ptr;
 u8 g_local_ot_draw_mode;
 u32 D_800A3770[2];
-s32 D_800A3784;
+s32 g_fight_packed_match_scores;
 u8 g_fight_toggle_option_bits;
 u32 D_800A3798;
 u8 g_fight_stage_command_count;
-s32 D_800A37C0;
+s32 g_fight_stage_list_step_timer;
 s16 g_main_loop_handler_index;
 u8 D_800A389A;
 u32 *g_prim_buf_cursor;

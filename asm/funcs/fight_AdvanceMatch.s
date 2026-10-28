@@ -26,8 +26,8 @@ glabel fight_AdvanceMatch
     /* 24AFC 800342FC 1080043C */  lui        $a0, %hi(D_801027D8)
     /* 24B00 80034300 D8278424 */  addiu      $a0, $a0, %lo(D_801027D8)
     /* 24B04 80034304 50000224 */  addiu      $v0, $zero, 0x50
-    /* 24B08 80034308 0A80013C */  lui        $at, %hi(D_800A38F4)
-    /* 24B0C 8003430C F43820AC */  sw         $zero, %lo(D_800A38F4)($at)
+    /* 24B08 80034308 0A80013C */  lui        $at, %hi(g_fight_time_limit_elapsed_frames)
+    /* 24B0C 8003430C F43820AC */  sw         $zero, %lo(g_fight_time_limit_elapsed_frames)($at)
     /* 24B10 80034310 0A80013C */  lui        $at, %hi(D_800A3899)
     /* 24B14 80034314 993820A0 */  sb         $zero, %lo(D_800A3899)($at)
     /* 24B18 80034318 0A80013C */  lui        $at, %hi(D_800A3898)

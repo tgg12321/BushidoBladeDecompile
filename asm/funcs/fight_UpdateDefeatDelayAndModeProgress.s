@@ -12,12 +12,12 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D104 8001C904 09004010 */  beqz       $v0, .L8001C92C
     /* D108 8001C908 00000000 */   nop
   .L8001C90C:
-    /* D10C 8001C90C 0A80023C */  lui        $v0, %hi(D_800A382E)
-    /* D110 8001C910 2E384294 */  lhu        $v0, %lo(D_800A382E)($v0)
+    /* D10C 8001C90C 0A80023C */  lui        $v0, %hi(g_fight_defeat_delay_frames)
+    /* D110 8001C910 2E384294 */  lhu        $v0, %lo(g_fight_defeat_delay_frames)($v0)
     /* D114 8001C914 00000000 */  nop
     /* D118 8001C918 01004224 */  addiu      $v0, $v0, 0x1
-    /* D11C 8001C91C 0A80013C */  lui        $at, %hi(D_800A382E)
-    /* D120 8001C920 2E3822A4 */  sh         $v0, %lo(D_800A382E)($at)
+    /* D11C 8001C91C 0A80013C */  lui        $at, %hi(g_fight_defeat_delay_frames)
+    /* D120 8001C920 2E3822A4 */  sh         $v0, %lo(g_fight_defeat_delay_frames)($at)
     /* D124 8001C924 5C720008 */  j          .L8001C970
     /* D128 8001C928 00000000 */   nop
   .L8001C92C:
@@ -39,8 +39,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D168 8001C968 5BED000C */  jal        func_8003B56C
     /* D16C 8001C96C 03000424 */   addiu     $a0, $zero, 0x3
   .L8001C970:
-    /* D170 8001C970 0A80023C */  lui        $v0, %hi(D_800A382E)
-    /* D174 8001C974 2E384284 */  lh         $v0, %lo(D_800A382E)($v0)
+    /* D170 8001C970 0A80023C */  lui        $v0, %hi(g_fight_defeat_delay_frames)
+    /* D174 8001C974 2E384284 */  lh         $v0, %lo(g_fight_defeat_delay_frames)($v0)
     /* D178 8001C978 00000000 */  nop
     /* D17C 8001C97C 3D004228 */  slti       $v0, $v0, 0x3D
     /* D180 8001C980 E3004014 */  bnez       $v0, .L8001CD10
@@ -143,8 +143,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D2E8 8001CAE8 1A5A000C */  jal        gpu_ResetGraphMode1
     /* D2EC 8001CAEC 00000000 */   nop
     /* D2F0 8001CAF0 01000424 */  addiu      $a0, $zero, 0x1
-    /* D2F4 8001CAF4 0A80053C */  lui        $a1, %hi(D_800A38DE)
-    /* D2F8 8001CAF8 DE38A590 */  lbu        $a1, %lo(D_800A38DE)($a1)
+    /* D2F4 8001CAF4 0A80053C */  lui        $a1, %hi(g_fight_step_row_object_id)
+    /* D2F8 8001CAF8 DE38A590 */  lbu        $a1, %lo(g_fight_step_row_object_id)($a1)
     /* D2FC 8001CAFC 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* D300 8001CB00 21300000 */   addu      $a2, $zero, $zero
     /* D304 8001CB04 33000224 */  addiu      $v0, $zero, 0x33
@@ -190,8 +190,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D38C 8001CB8C 00000000 */  nop
     /* D390 8001CB90 26102202 */  xor        $v0, $s1, $v0
     /* D394 8001CB94 2B100200 */  sltu       $v0, $zero, $v0
-    /* D398 8001CB98 0A80013C */  lui        $at, %hi(D_800A3728)
-    /* D39C 8001CB9C 283722A0 */  sb         $v0, %lo(D_800A3728)($at)
+    /* D398 8001CB98 0A80013C */  lui        $at, %hi(g_fight_start_position_pair_changed)
+    /* D39C 8001CB9C 283722A0 */  sb         $v0, %lo(g_fight_start_position_pair_changed)($at)
     /* D3A0 8001CBA0 FF004230 */  andi       $v0, $v0, 0xFF
     /* D3A4 8001CBA4 0B004010 */  beqz       $v0, .L8001CBD4
     /* D3A8 8001CBA8 00000000 */   nop
@@ -214,12 +214,12 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D3E8 8001CBE8 0400422C */  sltiu      $v0, $v0, 0x4
     /* D3EC 8001CBEC 48004010 */  beqz       $v0, .L8001CD10
     /* D3F0 8001CBF0 00000000 */   nop
-    /* D3F4 8001CBF4 0A80043C */  lui        $a0, %hi(D_800A38EC)
-    /* D3F8 8001CBF8 EC388490 */  lbu        $a0, %lo(D_800A38EC)($a0)
-    /* D3FC 8001CBFC 0A80053C */  lui        $a1, %hi(D_800A38ED)
-    /* D400 8001CC00 ED38A590 */  lbu        $a1, %lo(D_800A38ED)($a1)
-    /* D404 8001CC04 0A80063C */  lui        $a2, %hi(D_800A38EE)
-    /* D408 8001CC08 EE38C690 */  lbu        $a2, %lo(D_800A38EE)($a2)
+    /* D3F4 8001CBF4 0A80043C */  lui        $a0, %hi(g_fight_step_row_tint_red)
+    /* D3F8 8001CBF8 EC388490 */  lbu        $a0, %lo(g_fight_step_row_tint_red)($a0)
+    /* D3FC 8001CBFC 0A80053C */  lui        $a1, %hi(g_fight_step_row_tint_green)
+    /* D400 8001CC00 ED38A590 */  lbu        $a1, %lo(g_fight_step_row_tint_green)($a1)
+    /* D404 8001CC04 0A80063C */  lui        $a2, %hi(g_fight_step_row_tint_blue)
+    /* D408 8001CC08 EE38C690 */  lbu        $a2, %lo(g_fight_step_row_tint_blue)($a2)
     /* D40C 8001CC0C FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* D410 8001CC10 00000000 */   nop
     /* D414 8001CC14 44730008 */  j          .L8001CD10
@@ -261,8 +261,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D498 8001CC98 80200400 */  sll        $a0, $a0, 2
     /* D49C 8001CC9C 0289000C */  jal        fight_FindNearestStartPair
     /* D4A0 8001CCA0 21208200 */   addu      $a0, $a0, $v0
-    /* D4A4 8001CCA4 0A80013C */  lui        $at, %hi(D_800A38DF)
-    /* D4A8 8001CCA8 DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)
+    /* D4A4 8001CCA4 0A80013C */  lui        $at, %hi(g_fight_nearest_start_pair_index)
+    /* D4A8 8001CCA8 DF3822A0 */  sb         $v0, %lo(g_fight_nearest_start_pair_index)($at)
     /* D4AC 8001CCAC 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* D4B0 8001CCB0 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* D4B4 8001CCB4 44730008 */  j          .L8001CD10

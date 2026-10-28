@@ -49,7 +49,7 @@ glabel node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable
     /* 3945C 80048C5C 03130B00 */  sra        $v0, $t3, 12
     /* 39460 80048C60 3000A2A7 */  sh         $v0, 0x30($sp)
     /* 39464 80048C64 0000648E */  lw         $a0, 0x0($s3)
-    /* 39468 80048C68 1803928F */  lw         $s2, %gp_rel(D_800A33E4)($gp)
+    /* 39468 80048C68 1803928F */  lw         $s2, %gp_rel(g_node_retained_draw_node_buffer)($gp)
     /* 3946C 80048C6C 5BFB010C */  jal        ApplyMatrix
     /* 39470 80048C70 21300002 */   addu      $a2, $s0, $zero
     /* 39474 80048C74 0000638E */  lw         $v1, 0x0($s3)

@@ -5,23 +5,24 @@
  * 1. One run: 4D0A8.c's g_gpu_decimal_digit_cells ends at 0x8009B450 and
  * 51268.o(.data) is empty, so 596CC.c's g_row_menu_row_state follows at
  * 0x8009BC04. No uninitialized objects.
- * 2. Small objects in .data, each with its own readers: D_8009B450 (two
- *    points, gpu_DrawTimeFieldsAndDecimalCounter), the single cells D_8009B488,
- * D_8009B4FC .. D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the
- * one-record TexRec tables D_8009B8C8 .. D_8009B9E8 and the SVECTORs D_8009BBE4
+ * 2. Small objects in .data, each with its own readers:
+ * g_gpu_time_field_line_origins (two points,
+ * gpu_DrawTimeFieldsAndDecimalCounter), the single cells D_8009B488, D_8009B4FC
+ * .. D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the one-record
+ * TexRec tables D_8009B8C8 .. D_8009B9E8 and the SVECTORs D_8009BBE4
  * .. D_8009BBFC (51268.c). Under -G8 the original compiler puts them in .sdata,
  * so no -G8 file defined them.
  * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005C8A8 + 0x41C0 = 0x80060A68); so no code module owns them.
- * Readers: D_8009B450 .. D_8009B850 (4D0A8.c), D_8009B890 .. D_8009BBFC
- * (51268.c). */
+ * Readers: g_gpu_time_field_line_origins .. D_8009B850 (4D0A8.c), D_8009B890 ..
+ * D_8009BBFC (51268.c). */
 #include "common.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
 
 /* 4D0A8.c's sheets (its .data head, 0x8009ADB4..0x8009B450, is in 4D0A8.c). */
-Unk8009B450Record D_8009B450[2] = {{418, 36}, {503, 55}};
+Unk8009B450Record g_gpu_time_field_line_origins[2] = {{418, 36}, {503, 55}};
 Unk8009B400Record D_8009B458[3][2] = {
     {{565, 23, 0xC0, 0x1C, 0x3C, 0x0E}, {15, 23, 0xC0, 0x1C, 0x3C, 0x0E}},
     {{568, 0, 0xC0, 0xDB, 0x23, 0x01}, {603, 0, 0xE3, 0xDB, 0x1D, 0x01}},
@@ -139,10 +140,11 @@ u16 D_8009B850[32] = {
     0x7750, 0x673C, 0x50D9, 0x4946, 0x488C, 0x2FEA, 0x2146, 0x133E,
     0xA499, 0x8394, 0x7A47, 0x695A, 0x47F4, 0x5AAB, 0x5834, 0xCC6};
 
-/* 51268.c's: the effect texture records (TexRec runs), D_8009BA60 and the
- * handler table D_8009BA7C (eff_StartCommand / eff_StepCommand), D_8009BB74
- * (eff_SetRotMatrix), D_8009BB84 (eff_DrawAndAdvanceRotatedQuadClusters) and
- * D_8009BBE4 .. D_8009BBFC (eff_DrawYawedSlotQuads). */
+/* 51268.c's: the effect texture records (TexRec runs),
+ * g_eff_command_handler_bases and the handler table g_eff_command_handlers
+ * (eff_StartCommand / eff_StepCommand), D_8009BB74 (eff_SetRotMatrix),
+ * D_8009BB84 (eff_DrawAndAdvanceRotatedQuadClusters) and D_8009BBE4 ..
+ * D_8009BBFC (eff_DrawYawedSlotQuads). */
 TexRec D_8009B890[4] = {{0x380, 0xFF, 0xA0, 0xE0},
                         {0x380, 0xFF, 0xA0, 0xE8},
                         {0x380, 0xFF, 0xA0, 0xE8},
@@ -192,9 +194,10 @@ TexRec D_8009BA00[12] = {
     {0x3F0, 0xFC, 0x0, 0x80},  {0x3F0, 0xFC, 0x10, 0x80},
     {0x3F0, 0xFC, 0x20, 0x80}, {0x3F0, 0xFC, 0x30, 0x80},
     {0x3C0, 0xFE, 0x0, 0x94},  {0x3F0, 0xFD, 0x30, 0x80}};
-u8 D_8009BA60[28] = {0x00, 0x02, 0x04, 0x07, 0x0A, 0x0C, 0x0E, 0x10, 0x12, 0x14,
-                     0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24, 0x26, 0x28,
-                     0x2A, 0x2D, 0x30, 0x33, 0x36, 0x39, 0x3C, 0x00};
+u8 g_eff_command_handler_bases[28] = {
+    0x00, 0x02, 0x04, 0x07, 0x0A, 0x0C, 0x0E, 0x10, 0x12, 0x14,
+    0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24, 0x26, 0x28,
+    0x2A, 0x2D, 0x30, 0x33, 0x36, 0x39, 0x3C, 0x00};
 
 u8 func_80063AF0(void);
 u8 func_80063B78(void);
@@ -259,7 +262,7 @@ u8 func_8006786C(void);
 s32 eff_SpawnRotatedQuadCluster(void);
 s32 eff_DrawAndAdvanceRotatedQuadClusters(void);
 
-s32 D_8009BA7C[62] = {
+s32 g_eff_command_handlers[62] = {
     (s32)func_80063AF0,
     (s32)func_80063B78,
     (s32)func_80063B34,

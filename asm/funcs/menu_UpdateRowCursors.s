@@ -179,9 +179,9 @@ glabel menu_UpdateRowCursors
     /* 61A08 80071208 CD005614 */  bne        $v0, $s6, .L80071540
     /* 61A0C 8007120C 00141500 */   sll       $v0, $s5, 16
     /* 61A10 80071210 07000224 */  addiu      $v0, $zero, 0x7
-    /* 61A14 80071214 0A80013C */  lui        $at, %hi(D_800A3544)
+    /* 61A14 80071214 0A80013C */  lui        $at, %hi(g_entry_menu_row_pulse_shifts)
     /* 61A18 80071218 21082500 */  addu       $at, $at, $a1
-    /* 61A1C 8007121C 443522A4 */  sh         $v0, %lo(D_800A3544)($at)
+    /* 61A1C 8007121C 443522A4 */  sh         $v0, %lo(g_entry_menu_row_pulse_shifts)($at)
     /* 61A20 80071220 1E000224 */  addiu      $v0, $zero, 0x1E
     /* 61A24 80071224 00241500 */  sll        $a0, $s5, 16
     /* 61A28 80071228 F804838F */  lw         $v1, %gp_rel(g_entry_menu_work_block)($gp)
@@ -426,9 +426,9 @@ glabel menu_UpdateRowCursors
     /* 61DA8 800715A8 C32B0200 */  sra        $a1, $v0, 15
     /* 61DAC 800715AC F804838F */  lw         $v1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 61DB0 800715B0 09000224 */  addiu      $v0, $zero, 0x9
-    /* 61DB4 800715B4 0A80013C */  lui        $at, %hi(D_800A3544)
+    /* 61DB4 800715B4 0A80013C */  lui        $at, %hi(g_entry_menu_row_pulse_shifts)
     /* 61DB8 800715B8 21082500 */  addu       $at, $at, $a1
-    /* 61DBC 800715BC 443522A4 */  sh         $v0, %lo(D_800A3544)($at)
+    /* 61DBC 800715BC 443522A4 */  sh         $v0, %lo(g_entry_menu_row_pulse_shifts)($at)
     /* 61DC0 800715C0 2120A300 */  addu       $a0, $a1, $v1
     /* 61DC4 800715C4 04008284 */  lh         $v0, 0x4($a0)
     /* 61DC8 800715C8 00000000 */  nop
@@ -533,9 +533,9 @@ glabel menu_UpdateRowCursors
     /* 61F38 80071738 040030AE */  sw         $s0, 0x4($s1)
     /* 61F3C 8007173C 40800300 */  sll        $s0, $v1, 1
     /* 61F40 80071740 0800428C */  lw         $v0, 0x8($v0)
-    /* 61F44 80071744 0A80013C */  lui        $at, %hi(D_800A3544)
+    /* 61F44 80071744 0A80013C */  lui        $at, %hi(g_entry_menu_row_pulse_shifts)
     /* 61F48 80071748 21083000 */  addu       $at, $at, $s0
-    /* 61F4C 8007174C 44352484 */  lh         $a0, %lo(D_800A3544)($at)
+    /* 61F4C 8007174C 44352484 */  lh         $a0, %lo(g_entry_menu_row_pulse_shifts)($at)
     /* 61F50 80071750 1F004230 */  andi       $v0, $v0, 0x1F
     /* 61F54 80071754 04108200 */  sllv       $v0, $v0, $a0
     /* 61F58 80071758 40220300 */  sll        $a0, $v1, 9

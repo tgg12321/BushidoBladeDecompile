@@ -18,8 +18,8 @@ glabel camera_StartTurnEasingOnLargeHeadingChange
   .L8001B6D0:
     /* BED0 8001B6D0 06004014 */  bnez       $v0, .L8001B6EC
     /* BED4 8001B6D4 19000224 */   addiu     $v0, $zero, 0x19
-    /* BED8 8001B6D8 0A80013C */  lui        $at, %hi(D_800A36FC)
-    /* BEDC 8001B6DC FC3622A4 */  sh         $v0, %lo(D_800A36FC)($at)
+    /* BED8 8001B6D8 0A80013C */  lui        $at, %hi(g_camera_turn_easing_countdown)
+    /* BEDC 8001B6DC FC3622A4 */  sh         $v0, %lo(g_camera_turn_easing_countdown)($at)
     /* BEE0 8001B6E0 00080224 */  addiu      $v0, $zero, 0x800
     /* BEE4 8001B6E4 0F80013C */  lui        $at, %hi(D_800F5344)
     /* BEE8 8001B6E8 445322A4 */  sh         $v0, %lo(D_800F5344)($at)

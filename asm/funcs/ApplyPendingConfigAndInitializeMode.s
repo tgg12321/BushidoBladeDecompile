@@ -73,8 +73,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24DC0 800345C0 E03820A0 */  sb         $zero, %lo(g_fight_start_position_pair_index)($at)
     /* 24DC4 800345C4 0A80013C */  lui        $at, %hi(g_fight_timer_frames)
     /* 24DC8 800345C8 583820AC */  sw         $zero, %lo(g_fight_timer_frames)($at)
-    /* 24DCC 800345CC 0A80013C */  lui        $at, %hi(D_800A3728)
-    /* 24DD0 800345D0 283720A0 */  sb         $zero, %lo(D_800A3728)($at)
+    /* 24DCC 800345CC 0A80013C */  lui        $at, %hi(g_fight_start_position_pair_changed)
+    /* 24DD0 800345D0 283720A0 */  sb         $zero, %lo(g_fight_start_position_pair_changed)($at)
     /* 24DD4 800345D4 0A80013C */  lui        $at, %hi(g_fight_stage_index)
     /* 24DD8 800345D8 A43622A4 */  sh         $v0, %lo(g_fight_stage_index)($at)
     /* 24DDC 800345DC 7DCF000C */  jal        fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
@@ -110,8 +110,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24E48 80034648 00000000 */  nop
     /* 24E4C 8003464C 0100622C */  sltiu      $v0, $v1, 0x1
     /* 24E50 80034650 40100200 */  sll        $v0, $v0, 1
-    /* 24E54 80034654 0A80013C */  lui        $at, %hi(D_800A3713)
-    /* 24E58 80034658 133722A0 */  sb         $v0, %lo(D_800A3713)($at)
+    /* 24E54 80034654 0A80013C */  lui        $at, %hi(g_fight_auto_pause_countdown)
+    /* 24E58 80034658 133722A0 */  sb         $v0, %lo(g_fight_auto_pause_countdown)($at)
     /* 24E5C 8003465C 02006010 */  beqz       $v1, .L80034668
     /* 24E60 80034660 23000424 */   addiu     $a0, $zero, 0x23
     /* 24E64 80034664 24000424 */  addiu      $a0, $zero, 0x24

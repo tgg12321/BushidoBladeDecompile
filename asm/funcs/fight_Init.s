@@ -107,9 +107,9 @@ glabel fight_Init
     /* E63C 8001DE3C 1080013C */  lui        $at, %hi(g_fight_config + 0x4)
     /* E640 8001DE40 21083000 */  addu       $at, $at, $s0
     /* E644 8001DE44 7C272280 */  lb         $v0, %lo(g_fight_config + 0x4)($at)
-    /* E648 8001DE48 0980013C */  lui        $at, %hi(D_8008D578)
+    /* E648 8001DE48 0980013C */  lui        $at, %hi(g_fight_selection_object_ids)
     /* E64C 8001DE4C 21082200 */  addu       $at, $at, $v0
-    /* E650 8001DE50 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
+    /* E650 8001DE50 78D52590 */  lbu        $a1, %lo(g_fight_selection_object_ids)($at)
     /* E654 8001DE54 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* E658 8001DE58 21304002 */   addu      $a2, $s2, $zero
     /* E65C 8001DE5C B422010C */  jal        node_LoadSlotMappedAssetAndInitRetainedDrawNodes
@@ -124,8 +124,8 @@ glabel fight_Init
     /* E67C 8001DE7C 01000224 */   addiu     $v0, $zero, 0x1
     /* E680 8001DE80 05000216 */  bne        $s0, $v0, .L8001DE98
     /* E684 8001DE84 01000424 */   addiu     $a0, $zero, 0x1
-    /* E688 8001DE88 0A80053C */  lui        $a1, %hi(D_800A38DE)
-    /* E68C 8001DE8C DE38A590 */  lbu        $a1, %lo(D_800A38DE)($a1)
+    /* E688 8001DE88 0A80053C */  lui        $a1, %hi(g_fight_step_row_object_id)
+    /* E68C 8001DE8C DE38A590 */  lbu        $a1, %lo(g_fight_step_row_object_id)($a1)
     /* E690 8001DE90 AE770008 */  j          .L8001DEB8
     /* E694 8001DE94 21300000 */   addu      $a2, $zero, $zero
   .L8001DE98:
@@ -133,9 +133,9 @@ glabel fight_Init
     /* E69C 8001DE9C 21083000 */  addu       $at, $at, $s0
     /* E6A0 8001DEA0 7C272280 */  lb         $v0, %lo(g_fight_config + 0x4)($at)
     /* E6A4 8001DEA4 21200002 */  addu       $a0, $s0, $zero
-    /* E6A8 8001DEA8 0980013C */  lui        $at, %hi(D_8008D578)
+    /* E6A8 8001DEA8 0980013C */  lui        $at, %hi(g_fight_selection_object_ids)
     /* E6AC 8001DEAC 21082200 */  addu       $at, $at, $v0
-    /* E6B0 8001DEB0 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
+    /* E6B0 8001DEB0 78D52590 */  lbu        $a1, %lo(g_fight_selection_object_ids)($at)
     /* E6B4 8001DEB4 21304002 */  addu       $a2, $s2, $zero
   .L8001DEB8:
     /* E6B8 8001DEB8 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
@@ -240,12 +240,12 @@ glabel fight_Init
     /* E824 8001E024 00000000 */  nop
     /* E828 8001E028 09004014 */  bnez       $v0, .L8001E050
     /* E82C 8001E02C 00000000 */   nop
-    /* E830 8001E030 0A80043C */  lui        $a0, %hi(D_800A37B4)
-    /* E834 8001E034 B4378490 */  lbu        $a0, %lo(D_800A37B4)($a0)
-    /* E838 8001E038 0A80053C */  lui        $a1, %hi(D_800A37B5)
-    /* E83C 8001E03C B537A590 */  lbu        $a1, %lo(D_800A37B5)($a1)
-    /* E840 8001E040 0A80063C */  lui        $a2, %hi(D_800A37B6)
-    /* E844 8001E044 B637C690 */  lbu        $a2, %lo(D_800A37B6)($a2)
+    /* E830 8001E030 0A80043C */  lui        $a0, %hi(g_fight_operand_tint_red)
+    /* E834 8001E034 B4378490 */  lbu        $a0, %lo(g_fight_operand_tint_red)($a0)
+    /* E838 8001E038 0A80053C */  lui        $a1, %hi(g_fight_operand_tint_green)
+    /* E83C 8001E03C B537A590 */  lbu        $a1, %lo(g_fight_operand_tint_green)($a1)
+    /* E840 8001E040 0A80063C */  lui        $a2, %hi(g_fight_operand_tint_blue)
+    /* E844 8001E044 B637C690 */  lbu        $a2, %lo(g_fight_operand_tint_blue)($a2)
     /* E848 8001E048 32780008 */  j          .L8001E0C8
     /* E84C 8001E04C 00000000 */   nop
   .L8001E050:
@@ -254,12 +254,12 @@ glabel fight_Init
     /* E858 8001E058 03000224 */  addiu      $v0, $zero, 0x3
     /* E85C 8001E05C 09006214 */  bne        $v1, $v0, .L8001E084
     /* E860 8001E060 02000224 */   addiu     $v0, $zero, 0x2
-    /* E864 8001E064 0A80043C */  lui        $a0, %hi(D_800A38EC)
-    /* E868 8001E068 EC388490 */  lbu        $a0, %lo(D_800A38EC)($a0)
-    /* E86C 8001E06C 0A80053C */  lui        $a1, %hi(D_800A38ED)
-    /* E870 8001E070 ED38A590 */  lbu        $a1, %lo(D_800A38ED)($a1)
-    /* E874 8001E074 0A80063C */  lui        $a2, %hi(D_800A38EE)
-    /* E878 8001E078 EE38C690 */  lbu        $a2, %lo(D_800A38EE)($a2)
+    /* E864 8001E064 0A80043C */  lui        $a0, %hi(g_fight_step_row_tint_red)
+    /* E868 8001E068 EC388490 */  lbu        $a0, %lo(g_fight_step_row_tint_red)($a0)
+    /* E86C 8001E06C 0A80053C */  lui        $a1, %hi(g_fight_step_row_tint_green)
+    /* E870 8001E070 ED38A590 */  lbu        $a1, %lo(g_fight_step_row_tint_green)($a1)
+    /* E874 8001E074 0A80063C */  lui        $a2, %hi(g_fight_step_row_tint_blue)
+    /* E878 8001E078 EE38C690 */  lbu        $a2, %lo(g_fight_step_row_tint_blue)($a2)
     /* E87C 8001E07C 32780008 */  j          .L8001E0C8
     /* E880 8001E080 00000000 */   nop
   .L8001E084:
@@ -441,8 +441,8 @@ glabel fight_Init
     /* EB14 8001E314 21200002 */  addu       $a0, $s0, $zero
     /* EB18 8001E318 4C041126 */  addiu      $s1, $s0, 0x44C
     /* EB1C 8001E31C FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* EB20 8001E320 0A80013C */  lui        $at, %hi(D_800A382E)
-    /* EB24 8001E324 2E3820A4 */  sh         $zero, %lo(D_800A382E)($at)
+    /* EB20 8001E320 0A80013C */  lui        $at, %hi(g_fight_defeat_delay_frames)
+    /* EB24 8001E324 2E3820A4 */  sh         $zero, %lo(g_fight_defeat_delay_frames)($at)
     /* EB28 8001E328 0A80013C */  lui        $at, %hi(g_fight_followup_fighter_index)
     /* EB2C 8001E32C 483722A0 */  sb         $v0, %lo(g_fight_followup_fighter_index)($at)
     /* EB30 8001E330 A56C000C */  jal        camera_InitTwoFighterView

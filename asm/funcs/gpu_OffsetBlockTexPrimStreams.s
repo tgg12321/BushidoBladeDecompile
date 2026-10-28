@@ -9,8 +9,8 @@ glabel gpu_OffsetBlockTexPrimStreams
     /* 33ABC 800432BC 1000B0AF */  sw         $s0, 0x10($sp)
     /* 33AC0 800432C0 00240400 */  sll        $a0, $a0, 16
     /* 33AC4 800432C4 03240400 */  sra        $a0, $a0, 16
-    /* 33AC8 800432C8 1080033C */  lui        $v1, %hi(D_80103658)
-    /* 33ACC 800432CC 58366324 */  addiu      $v1, $v1, %lo(D_80103658)
+    /* 33AC8 800432C8 1080033C */  lui        $v1, %hi(g_reloc_block_slot_counts)
+    /* 33ACC 800432CC 58366324 */  addiu      $v1, $v1, %lo(g_reloc_block_slot_counts)
     /* 33AD0 800432D0 40100400 */  sll        $v0, $a0, 1
     /* 33AD4 800432D4 21284300 */  addu       $a1, $v0, $v1
     /* 33AD8 800432D8 2C00BFAF */  sw         $ra, 0x2C($sp)

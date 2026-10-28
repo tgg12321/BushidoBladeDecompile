@@ -11,9 +11,10 @@
  *    D_8008EB18 (s32), each with its own reader in
  * fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams, D_8008EB38
  * (u8[8], fighter_Init), D_8008EB6C (u8[6],
- * fight_UpdatePairedInputTotalsEventsAndMidpointEffects, after D_8008EB54's 6
- * rows), D_8008EBF4 (u8[6], snd_UpdateStageSounds, before D_8008EBFC's 6 pairs)
- * and D_8008EC30 (u8[4], 25788.c's D_800A36CC per setting; the run's end).
+ * fight_UpdatePairedInputTotalsEventsAndMidpointEffects, after
+ * g_fight_midpoint_effect_offsets's 6 rows), g_snd_stage_sequence_base_sounds
+ * (u8[6], snd_UpdateStageSounds, before D_8008EBFC's 6 pairs) and D_8008EC30
+ * (u8[4], 25788.c's g_fight_time_limit_seconds per setting; the run's end).
  * Under -G8 the original compiler puts them in .sdata, so no -G8 file defined
  * them.
  * 3. Neighbours: before it, d_7D870.c's .text (game data words, no small
@@ -131,7 +132,7 @@ u8 D_8008D55C[28] = {3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 18, 19,
 /* [g_fight_config.unk_4[i]] -> slot_LoadObjectBuildNodesSoftbodyAndFogLevels's
  * arg1; [character_roster_index] -> g_object_scale_factors's index
  * (fighter_Init); size from the gap. */
-u8 D_8008D578[36] = {
+u8 g_fight_selection_object_ids[36] = {
     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
     18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 62, 63, 0,  0,  0};
 
@@ -377,7 +378,7 @@ s16 D_8008E0BC[27][4] = {
 
 /* Per object kind (object_SpawnFromFighter, object_UpdatePool,
  * object_ResolveFighterHits); 30 records from the gap. */
-Tbl8008E194 D_8008E194[30] = {
+Tbl8008E194 g_object_kind_params[30] = {
     {1, 100, 400, -80, 1152, 2048, 1, 2},
     {0, 100, 400, -80, 0, 2048, 1, 0},
     {0, 100, 500, -80, 0, 2048, 0, 1},
@@ -642,10 +643,12 @@ s16 D_8008EB40[3][3] = {{-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
 
 /* fight_UpdatePairedInputTotalsEventsAndMidpointEffects's 6 rows
  * (D_80101EC8[0].move_kind mode). */
-Tbl8008EB54Entry D_8008EB54[6] = {{0, -1280}, {-149, -680}, {-112, -1280},
-                                  {0, -1280}, {112, -1280}, {149, -680}};
+Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6] = {
+    {0, -1280}, {-149, -680}, {-112, -1280},
+    {0, -1280}, {112, -1280}, {149, -680}};
 
-/* fight_RecordReplayEventAndDispatchSoundOrEffect's arg1 per D_8008EB54 row. */
+/* fight_RecordReplayEventAndDispatchSoundOrEffect's arg1 per
+ * g_fight_midpoint_effect_offsets row. */
 u8 D_8008EB6C[6] = {5, 8, 7, 6, 7, 8};
 
 /* fighter_ResolveBoneHit's table */
@@ -673,7 +676,7 @@ s32 D_8008EBCC[5] = {0, 51, 58, 65, 72};
 s32 D_8008EBE0[5] = {0, 262144, 131072, 393216, 0};
 
 /* Per snd_GetStageSoundIndex category: the first of three sound ids. */
-u8 D_8008EBF4[6] = {0x7C, 0x7D, 0x7D, 0x7E, 0x7C, 0x7D};
+u8 g_snd_stage_sequence_base_sounds[6] = {0x7C, 0x7D, 0x7D, 0x7E, 0x7C, 0x7D};
 
 /* Per category: the ticks of the second and third sound. */
 Unk8008EA44Entry D_8008EBFC[6] = {{0x2E, 0x5C}, {0x2E, 0x62}, {0x2E, 0x62},
@@ -688,5 +691,6 @@ const char *D_8008EC08[7] = {
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags's rank rows. */
 u8 D_8008EC24[2][5] = {{58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};
 
-/* 25788.c's D_800A36CC per setting (D_8008EC30[p->time_limit_index]). */
+/* 25788.c's g_fight_time_limit_seconds per setting
+ * (D_8008EC30[p->time_limit_index]). */
 u8 D_8008EC30[4] = {30, 60, 120, 0};

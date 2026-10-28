@@ -39,7 +39,7 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 50FFC 800607FC D50740A2 */  sb         $zero, 0x7D5($s2)
     /* 51000 80060800 D60740A2 */  sb         $zero, 0x7D6($s2)
     /* 51004 80060804 DA0742A6 */  sh         $v0, 0x7DA($s2)
-    /* 51008 80060808 E8018497 */  lhu        $a0, %gp_rel(D_800A32B4)($gp)
+    /* 51008 80060808 E8018497 */  lhu        $a0, %gp_rel(g_gpu_highlighted_row_bar_progress)($gp)
     /* 5100C 8006080C 8988A534 */  ori        $a1, $a1, (0x88888889 & 0xFFFF)
     /* 51010 80060810 001C0400 */  sll        $v1, $a0, 16
     /* 51014 80060814 031C0300 */  sra        $v1, $v1, 16
@@ -53,7 +53,7 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 51034 80060834 18006500 */  mult       $v1, $a1
     /* 51038 80060838 01008424 */  addiu      $a0, $a0, 0x1
     /* 5103C 8006083C 02000224 */  addiu      $v0, $zero, 0x2
-    /* 51040 80060840 E80184A7 */  sh         $a0, %gp_rel(D_800A32B4)($gp)
+    /* 51040 80060840 E80184A7 */  sh         $a0, %gp_rel(g_gpu_highlighted_row_bar_progress)($gp)
     /* 51044 80060844 DE0742A6 */  sh         $v0, 0x7DE($s2)
     /* 51048 80060848 10400000 */  mfhi       $t0
     /* 5104C 8006084C 21100301 */  addu       $v0, $t0, $v1
@@ -61,12 +61,12 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 51054 80060854 C31F0300 */  sra        $v1, $v1, 31
     /* 51058 80060858 23104300 */  subu       $v0, $v0, $v1
     /* 5105C 8006085C DC0742A6 */  sh         $v0, 0x7DC($s2)
-    /* 51060 80060860 E8018287 */  lh         $v0, %gp_rel(D_800A32B4)($gp)
+    /* 51060 80060860 E8018287 */  lh         $v0, %gp_rel(g_gpu_highlighted_row_bar_progress)($gp)
     /* 51064 80060864 00000000 */  nop
     /* 51068 80060868 1F004228 */  slti       $v0, $v0, 0x1F
     /* 5106C 8006086C 02004014 */  bnez       $v0, .L80060878
     /* 51070 80060870 1E000224 */   addiu     $v0, $zero, 0x1E
-    /* 51074 80060874 E80182A7 */  sh         $v0, %gp_rel(D_800A32B4)($gp)
+    /* 51074 80060874 E80182A7 */  sh         $v0, %gp_rel(g_gpu_highlighted_row_bar_progress)($gp)
   .L80060878:
     /* 51078 80060878 21202002 */  addu       $a0, $s1, $zero
     /* 5107C 8006087C 5AEA010C */  jal        SetSemiTrans
@@ -90,7 +90,7 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 510C0 800608C0 050020A2 */  sb         $zero, 0x5($s1)
     /* 510C4 800608C4 060020A2 */  sb         $zero, 0x6($s1)
     /* 510C8 800608C8 0A0022A6 */  sh         $v0, 0xA($s1)
-    /* 510CC 800608CC EA018497 */  lhu        $a0, %gp_rel(D_800A32B6)($gp)
+    /* 510CC 800608CC EA018497 */  lhu        $a0, %gp_rel(g_gpu_fixed_bar_progress)($gp)
     /* 510D0 800608D0 8988A534 */  ori        $a1, $a1, (0x88888889 & 0xFFFF)
     /* 510D4 800608D4 001C0400 */  sll        $v1, $a0, 16
     /* 510D8 800608D8 031C0300 */  sra        $v1, $v1, 16
@@ -102,7 +102,7 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 510F0 800608F0 18004500 */  mult       $v0, $a1
     /* 510F4 800608F4 01008424 */  addiu      $a0, $a0, 0x1
     /* 510F8 800608F8 02000324 */  addiu      $v1, $zero, 0x2
-    /* 510FC 800608FC EA0184A7 */  sh         $a0, %gp_rel(D_800A32B6)($gp)
+    /* 510FC 800608FC EA0184A7 */  sh         $a0, %gp_rel(g_gpu_fixed_bar_progress)($gp)
     /* 51100 80060900 0E0023A6 */  sh         $v1, 0xE($s1)
     /* 51104 80060904 10400000 */  mfhi       $t0
     /* 51108 80060908 21180201 */  addu       $v1, $t0, $v0
@@ -110,12 +110,12 @@ glabel gpu_DrawIndexedCellsDigitPairsAndGrowingBars
     /* 51110 80060910 C3170200 */  sra        $v0, $v0, 31
     /* 51114 80060914 23186200 */  subu       $v1, $v1, $v0
     /* 51118 80060918 0C0023A6 */  sh         $v1, 0xC($s1)
-    /* 5111C 8006091C EA018287 */  lh         $v0, %gp_rel(D_800A32B6)($gp)
+    /* 5111C 8006091C EA018287 */  lh         $v0, %gp_rel(g_gpu_fixed_bar_progress)($gp)
     /* 51120 80060920 00000000 */  nop
     /* 51124 80060924 1F004228 */  slti       $v0, $v0, 0x1F
     /* 51128 80060928 02004014 */  bnez       $v0, .L80060934
     /* 5112C 8006092C 1E000224 */   addiu     $v0, $zero, 0x1E
-    /* 51130 80060930 EA0182A7 */  sh         $v0, %gp_rel(D_800A32B6)($gp)
+    /* 51130 80060930 EA0182A7 */  sh         $v0, %gp_rel(g_gpu_fixed_bar_progress)($gp)
   .L80060934:
     /* 51134 80060934 21202002 */  addu       $a0, $s1, $zero
     /* 51138 80060938 5AEA010C */  jal        SetSemiTrans

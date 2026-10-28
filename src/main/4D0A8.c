@@ -5,8 +5,9 @@
  * gpu_DrawIndexedCellsDigitPairsAndGrowingBars, ...). .text 0x8005C8A8 (ROM
  * 0x4D0A8). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #136): no
  * direct call crosses the cut; the static g_gpu_jitter_random_state and the
- * .sdata D_800A3264..D_800A32B6 (RECTs and draw records) are used only here and
- * follow 4BC3C.c's .sbss and 4510C.c's .sdata in address order. */
+ * .sdata D_800A3264..g_gpu_fixed_bar_progress (RECTs and draw records) are used
+ * only here and follow 4BC3C.c's .sbss and 4510C.c's .sdata in address order.
+ */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -382,7 +383,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
      * header 3/4 selection; inline at use: score 36. */
     Unk8009B0E0Record *random_header_pair;
 
-    D_800A326C %= 4;
+    g_gpu_jittered_quad_pair_cycle %= 4;
 
     var_4 = ft4_out_addr;
     if (arg1 > 0)
@@ -394,7 +395,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
     base_y = ((u32)(g_gpu_jitter_random_state * 0xDC)) >> 0xF;
 
     quad_pairs_drawn = 0;
-    if (quad_pairs_drawn < ((D_800A326C + 1) * 2)) {
+    if (quad_pairs_drawn < ((g_gpu_jittered_quad_pair_cycle + 1) * 2)) {
         var_10 = 0x100;
         var_11 = 1;
         row_off = arg1 * 0x3C;
@@ -450,9 +451,9 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
             s.y = y;
             var_4 = gpu_AddScaledSpriteQuads(&s, 0);
             quad_pairs_drawn += 1;
-        } while (quad_pairs_drawn < ((D_800A326C + 1) * 2));
+        } while (quad_pairs_drawn < ((g_gpu_jittered_quad_pair_cycle + 1) * 2));
     }
-    D_800A326C += 1;
+    g_gpu_jittered_quad_pair_cycle += 1;
     return var_4;
 }
 
@@ -601,14 +602,14 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         tile->r0 = 0xFF;
         tile->g0 = 0x10;
         tile->b0 = 0x10;
-        tile->x0 = D_8009B450[j].x;
-        tile->y0 = D_8009B450[j].y;
-        tile->w = 0x238 - D_8009B450[j].x;
+        tile->x0 = g_gpu_time_field_line_origins[j].x;
+        tile->y0 = g_gpu_time_field_line_origins[j].y;
+        tile->w = 0x238 - g_gpu_time_field_line_origins[j].x;
         tile->h = 1;
         SetSemiTrans(tile, 0);
         AddPrim(g_gpu_ot_ptr + ot_index, tile);
         tile++;
-        s.y = D_8009B450[j].y;
+        s.y = g_gpu_time_field_line_origins[j].y;
         s.header = &D_8009B398[2];
         s.table = &g_gpu_time_field_cells[5];
         s.sprt_out = cur;
@@ -1296,7 +1297,7 @@ s32 gpu_DrawSelectedStretchedSpritePair(
 
 extern RECT D_800A327C;
 extern RECT D_800A3284;
-extern s32 D_800A3278;
+extern s32 g_gpu_split_wipe_frame;
 
 void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
     s32 file_index_offset, u8 *file_buffer) {
@@ -1312,7 +1313,7 @@ void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
     DrawSync(0);
     LoadImage(&r2, (u32 *)(file_buffer + 0x14));
     DrawSync(0);
-    D_800A3278 = 0;
+    g_gpu_split_wipe_frame = 0;
 }
 
 extern Unk8009B0E0Record D_8009B698[2];
@@ -1358,9 +1359,9 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     s.x = 0;
     s.ot_idx = ot_index;
     s.table = D_8009B6B0;
-    off = (D_800A3278 - 0xB4) * 24;
+    off = (g_gpu_split_wipe_frame - 0xB4) * 24;
     do {
-        if (D_800A3278 >= 0xB5) {
+        if (g_gpu_split_wipe_frame >= 0xB5) {
             SetPolyG4(gradient_quad_cursor);
             SetSemiTrans(gradient_quad_cursor, 1);
             if (side_index != 0) {
@@ -1413,7 +1414,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
         }
-        if (D_800A3278 >= 0xB5) {
+        if (g_gpu_split_wipe_frame >= 0xB5) {
             SetDrawArea(area, &r);
             AddPrim(g_gpu_ot_ptr + ot_index, area);
             area++;
@@ -1423,7 +1424,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(D_8009B698, 0x20), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
     if (off <= 0x140) {
-        D_800A3278++;
+        g_gpu_split_wipe_frame++;
     }
     return end_off - arg0;
 }
@@ -1633,12 +1634,12 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     return end_off - arg0;
 }
 
-extern u16 D_800A32B6;
-extern u16 D_800A32B4;
+extern u16 g_gpu_fixed_bar_progress;
+extern u16 g_gpu_highlighted_row_bar_progress;
 
 void gpu_ResetGrowingBarProgress(void) {
-    D_800A32B6 = 0;
-    D_800A32B4 = 0;
+    g_gpu_fixed_bar_progress = 0;
+    g_gpu_highlighted_row_bar_progress = 0;
 }
 
 extern Unk8006D808Rec D_8009B0C0;
@@ -1671,19 +1672,19 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
         *(u8 *)(arg0 + 0x7D5) = 0;
         *(u8 *)(arg0 + 0x7D6) = 0;
         *(s16 *)(arg0 + 0x7DA) = (s16)(highlighted_row_index * 0x1A + 0x5B);
-        cur1 = D_800A32B4;
+        cur1 = g_gpu_highlighted_row_bar_progress;
         /* FAKE: increment staged through t1 (stored next line, then reused for
          * the product): the reassignment breaks cse's mem==reg equivalence, so
          * the clamp re-read emits lh (staged-value-reused-variable); direct
          * increment: score 8 (with t2's: 16); fresh s16/u16/s32 next
          * locals or inline products at both sites: score 16 */
         t1 = cur1 + 1;
-        D_800A32B4 = t1;
+        g_gpu_highlighted_row_bar_progress = t1;
         t1 = (s32)((s16)cur1) * 0x1AA;
         *(s16 *)(arg0 + 0x7DE) = 2;
         *(s16 *)(arg0 + 0x7DC) = (s16)(t1 / 0x1E);
-        if ((s16)D_800A32B4 >= 0x1F) {
-            D_800A32B4 = 0x1E;
+        if ((s16)g_gpu_highlighted_row_bar_progress >= 0x1F) {
+            g_gpu_highlighted_row_bar_progress = 0x1E;
         }
         SetSemiTrans((TILE *)tile_out_addr, 0);
         AddPrim(g_gpu_ot_ptr + ot_index, (void *)tile_out_addr);
@@ -1695,16 +1696,16 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
     *(u8 *)(tile_out_addr + 5) = 0;
     *(u8 *)(tile_out_addr + 6) = 0;
     *(s16 *)(tile_out_addr + 0xA) = 0xBD;
-    cur2 = D_800A32B6;
+    cur2 = g_gpu_fixed_bar_progress;
     /* FAKE: increment staged through t2, as t1 above: the clamp re-read emits
      * lh (staged-value-reused-variable); direct increment: score 8 */
     t2 = cur2 + 1;
-    D_800A32B6 = t2;
+    g_gpu_fixed_bar_progress = t2;
     t2 = (s32)((s16)cur2) * 0x144;
     *(s16 *)(tile_out_addr + 0xE) = 2;
     *(s16 *)(tile_out_addr + 0xC) = (s16)(t2 / 0x1E);
-    if ((s16)D_800A32B6 >= 0x1F) {
-        D_800A32B6 = 0x1E;
+    if ((s16)g_gpu_fixed_bar_progress >= 0x1F) {
+        g_gpu_fixed_bar_progress = 0x1E;
     }
     SetSemiTrans((TILE *)tile_out_addr, 0);
     AddPrim(g_gpu_ot_ptr + ot_index, (void *)tile_out_addr);
@@ -1741,8 +1742,8 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
 
 /* .data 0x8009ADB4..0x8009B450, this file's .data (d_8A588.c's g_vab_id_list
  * and 4BC3C.c's D_8009AD1C precede; the data-only d_8BC50.c's
- * D_8009B450 .. follow). D_8009ADB4 is the 3-cell sheet header
- * whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
+ * g_gpu_time_field_line_origins .. follow). D_8009ADB4 is the 3-cell sheet
+ * header whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
  * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's bd0,
  * less 2 from 12; the old D_8009AF94 label inside row 18 was only sin_1's
  * folded rsin_tbl base), D_8009AFB8 20 x offsets (D_8009B0C0.unk_1C).
@@ -2033,9 +2034,9 @@ Unk8009B400Record g_gpu_decimal_digit_cells[10] = {
 /* D_8009B0C0.unk_18, the one cell of the digit sheet D_8009B0B4; this file's
  * by layout, between its gp-reached objects (Q80) */
 Unk8009B400Record D_800A3264 = {0xB3, 0x4E, 0x00, 0x00, 0x18, 0x0C};
-s32 D_800A326C = 0;
+s32 g_gpu_jittered_quad_pair_cycle = 0;
 u8 D_800A3270[8] = {0, 1, 2, 3, 4, 0, 0, 0};
-s32 D_800A3278 = 0;
+s32 g_gpu_split_wipe_frame = 0;
 RECT D_800A327C = {0x380, 0, 0x40, 0x100};
 RECT D_800A3284 = {0x3E0, 0x1FF, 0x10, 1};
 Unk8009B400Record D_800A328C = {0, 0, 0, 0, 0x14, 0xE};
@@ -2043,5 +2044,5 @@ RECT D_800A3294 = {0x3C0, 0x180, 0x40, 0x16};
 RECT D_800A329C = {0x3C0, 0x1FF, 0x10, 1};
 RECT D_800A32A4 = {0x380, 0x17F, 0x40, 0x7F};
 RECT D_800A32AC = {0x380, 0x1FF, 0x20, 1};
-u16 D_800A32B4 = 0;
-u16 D_800A32B6 = 0;
+u16 g_gpu_highlighted_row_bar_progress = 0;
+u16 g_gpu_fixed_bar_progress = 0;

@@ -49,8 +49,8 @@ glabel fight_UpdateMatchTallyPresentation
     /* 2CE0C 8003C60C 9471010C */  jal        snd_QueueSound
     /* 2CE10 8003C610 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8003C614:
-    /* 2CE14 8003C614 0A80043C */  lui        $a0, %hi(D_800A3784)
-    /* 2CE18 8003C618 8437848C */  lw         $a0, %lo(D_800A3784)($a0)
+    /* 2CE14 8003C614 0A80043C */  lui        $a0, %hi(g_fight_packed_match_scores)
+    /* 2CE18 8003C618 8437848C */  lw         $a0, %lo(g_fight_packed_match_scores)($a0)
     /* 2CE1C 8003C61C 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* 2CE20 8003C620 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
     /* 2CE24 8003C624 5379010C */  jal        gpu_DrawPackedComparisonRowsAndTotals

@@ -29,7 +29,7 @@ glabel node_LoadSlotMappedAssetAndInitRetainedDrawNodes
     /* 39334 80048B34 21184300 */  addu       $v1, $v0, $v1
     /* 39338 80048B38 23306200 */  subu       $a2, $v1, $v0
     /* 3933C 80048B3C 0A006524 */  addiu      $a1, $v1, 0xA
-    /* 39340 80048B40 180383AF */  sw         $v1, %gp_rel(D_800A33E4)($gp)
+    /* 39340 80048B40 180383AF */  sw         $v1, %gp_rel(g_node_retained_draw_node_buffer)($gp)
   .L80048B44:
     /* 39344 80048B44 F8FFA4A4 */  sh         $a0, -0x8($a1)
     /* 39348 80048B48 FAFFA8A4 */  sh         $t0, -0x6($a1)

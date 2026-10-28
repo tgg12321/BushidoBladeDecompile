@@ -1,8 +1,8 @@
 glabel fight_AdvanceOpponentOrder
     /* 243C0 80033BC0 0A80043C */  lui        $a0, %hi(g_fight_opponent_order_cursor)
     /* 243C4 80033BC4 83378490 */  lbu        $a0, %lo(g_fight_opponent_order_cursor)($a0)
-    /* 243C8 80033BC8 0A80023C */  lui        $v0, %hi(D_800A391F)
-    /* 243CC 80033BCC 1F394290 */  lbu        $v0, %lo(D_800A391F)($v0)
+    /* 243C8 80033BC8 0A80023C */  lui        $v0, %hi(g_fight_opponent_order_count)
+    /* 243CC 80033BCC 1F394290 */  lbu        $v0, %lo(g_fight_opponent_order_count)($v0)
     /* 243D0 80033BD0 FF008330 */  andi       $v1, $a0, 0xFF
     /* 243D4 80033BD4 1D006214 */  bne        $v1, $v0, .L80033C4C
     /* 243D8 80033BD8 01008224 */   addiu     $v0, $a0, 0x1

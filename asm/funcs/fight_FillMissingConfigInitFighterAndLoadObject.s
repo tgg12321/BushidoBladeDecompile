@@ -37,9 +37,9 @@ glabel fight_FillMissingConfigInitFighterAndLoadObject
     /* 2B7C8 8003AFC8 21082400 */  addu       $at, $at, $a0
     /* 2B7CC 8003AFCC 7C272280 */  lb         $v0, %lo(g_fight_config + 0x4)($at)
     /* 2B7D0 8003AFD0 1980063C */  lui        $a2, (0x80190800 >> 16)
-    /* 2B7D4 8003AFD4 0980013C */  lui        $at, %hi(D_8008D578)
+    /* 2B7D4 8003AFD4 0980013C */  lui        $at, %hi(g_fight_selection_object_ids)
     /* 2B7D8 8003AFD8 21082200 */  addu       $at, $at, $v0
-    /* 2B7DC 8003AFDC 78D52590 */  lbu        $a1, %lo(D_8008D578)($at)
+    /* 2B7DC 8003AFDC 78D52590 */  lbu        $a1, %lo(g_fight_selection_object_ids)($at)
     /* 2B7E0 8003AFE0 4401010C */  jal        slot_LoadObjectBuildNodesSoftbodyAndFogLevels
     /* 2B7E4 8003AFE4 0008C634 */   ori       $a2, $a2, (0x80190800 & 0xFFFF)
     /* 2B7E8 8003AFE8 1C00BF8F */  lw         $ra, 0x1C($sp)

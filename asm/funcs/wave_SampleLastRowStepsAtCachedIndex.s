@@ -5,9 +5,9 @@ glabel wave_SampleLastRowStepsAtCachedIndex
     /* 38668 80047E68 13004010 */  beqz       $v0, .L80047EB8
     /* 3866C 80047E6C F8FFBD27 */   addiu     $sp, $sp, -0x8
     /* 38670 80047E70 80180300 */  sll        $v1, $v1, 2
-    /* 38674 80047E74 0F80013C */  lui        $at, %hi(D_800EF800)
+    /* 38674 80047E74 0F80013C */  lui        $at, %hi(g_wave_last_row_steps)
     /* 38678 80047E78 21082300 */  addu       $at, $at, $v1
-    /* 3867C 80047E7C 00F8228C */  lw         $v0, %lo(D_800EF800)($at)
+    /* 3867C 80047E7C 00F8228C */  lw         $v0, %lo(g_wave_last_row_steps)($at)
     /* 38680 80047E80 0C03848F */  lw         $a0, %gp_rel(D_800A33D8)($gp)
     /* 38684 80047E84 00000000 */  nop
     /* 38688 80047E88 18004400 */  mult       $v0, $a0

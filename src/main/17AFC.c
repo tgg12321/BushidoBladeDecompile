@@ -2162,8 +2162,8 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
     Unk80101EC8Record *var_s0;
     s32 temp_s2;
 
-    temp_s2 =
-        fighter_SetBasePositionSeparationCorrectionsAndGetDistance(D_800A371C);
+    temp_s2 = fighter_SetBasePositionSeparationCorrectionsAndGetDistance(
+        g_fight_paired_move_separation);
 
     for (i = 0; i < 2; i++) {
         Unk80101EC8Record *e = &D_80101EC8[i];
@@ -2197,7 +2197,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
             if (v1 >= var_s0->paired_move_hit_frame) {
                 return;
             }
-            if (D_800A371C + 0xC8 >= temp_s2) {
+            if (g_fight_paired_move_separation + 0xC8 >= temp_s2) {
                 return;
             }
             {
@@ -3903,7 +3903,7 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     obj->pos.x = arg0->world_pos.x;
     obj->pos.y = arg0->world_pos.y - arg0->size_scale / 32;
     obj->pos.z = arg0->world_pos.z;
-    tbl = &D_8008E194[arg1];
+    tbl = &g_object_kind_params[arg1];
     obj->vel.x = (Judge[arg0->orientation.vy & 0xFFF] * tbl->unk4) >> 12;
     obj->vel.y = tbl->unk6;
     obj->vel.z =
@@ -4134,7 +4134,7 @@ void object_UpdatePool(void) {
     obj = g_object_pool;
     for (i = 0; i < 12; i++, obj++) {
         /* work: the clamped turn amount (turn block), then the bounce
-         * restitution factor D_8008E194[kind].unkA (Ruling 11,
+         * restitution factor g_object_kind_params[kind].unkA (Ruling 11,
          * ordinary-c-judge-decidable) */
         s32 work;
         /* temp: the ratan2() heading of the velocity (turn block), then
@@ -4225,7 +4225,7 @@ void object_UpdatePool(void) {
             obj->vel.z -= var_7[2] * dot / 4096;
             obj->pos = scr->unk10;
             kind = obj->kind;
-            work = D_8008E194[kind].unkA;
+            work = g_object_kind_params[kind].unkA;
             if (obj->is_moving != 0) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
@@ -4311,7 +4311,8 @@ void object_UpdatePool(void) {
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x800);
             obj->rot[2] = math_LerpAngle(obj->rot[2], 0x400, 0xE00);
             obj->rot_vel[1] = obj->rot_vel[1] * 3 / 4;
-        } else if (obj->unk_04 == 0 && D_8008E194[obj->kind].unk0 == 2) {
+        } else if (
+            obj->unk_04 == 0 && g_object_kind_params[obj->kind].unk0 == 2) {
             obj->rot[0] = math_LerpAngle(obj->rot[0], 0, 0xE00);
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x600);
             obj->rot[2] = math_LerpAngle(obj->rot[2], -0x400, 0xE00);
@@ -4436,7 +4437,8 @@ void object_ResolveFighterHits(void) {
                 scr, pos, rec->unk_0C, rec->unk_0E);
             if (var_10 != 0) {
                 var_2 = 0;
-                if (rec->unk_00 != 0 && D_8008E194[obj->kind].unkD == 0) {
+                if (rec->unk_00 != 0 &&
+                    g_object_kind_params[obj->kind].unkD == 0) {
                     var_2 = math_TestPreparedSegmentSphere(
                                 scr, pos, rec->unk_10, rec->unk_12) != 0;
                 }
@@ -4458,8 +4460,8 @@ void object_ResolveFighterHits(void) {
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
-        r = fighter_ResolveBoneHit(
-            1, var_5, j, diff, var_2, &D_8008E194[obj->kind], 0, &flag);
+        r = fighter_ResolveBoneHit(1, var_5, j, diff, var_2,
+                                   &g_object_kind_params[obj->kind], 0, &flag);
         if (r == 2)
             continue;
         if (r != 0) {
@@ -4501,7 +4503,7 @@ void object_ResolveFighterHits(void) {
 void fight_ClearBallisticRecords(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
-        D_80104E88[i].unk_00 = 0;
+        g_fight_ballistic_records[i].unk_00 = 0;
     }
 }
 
@@ -4513,7 +4515,7 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
      * 10). */
     s32 var_1 = -0xC8;
     s32 i = 0;
-    Unk80104E88Rec *ptr = D_80104E88;
+    Unk80104E88Rec *ptr = g_fight_ballistic_records;
     Unk80104E88Rec *s0;
     s16 var_5[3];
 
@@ -4552,7 +4554,7 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
 
 void fight_UpdateBallisticRecords(void) {
     Unk1F8002B8_8005344C *scr = &SPAD->unk2B8.v8005344C;
-    Unk80104E88Rec *base = D_80104E88;
+    Unk80104E88Rec *base = g_fight_ballistic_records;
     s32 i;
 
     i = 0;
@@ -4579,7 +4581,7 @@ void fight_UpdateBallisticRecords(void) {
 }
 
 void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
-    Unk80104E88Rec *rec = D_80104E88;
+    Unk80104E88Rec *rec = g_fight_ballistic_records;
     s32 i;
     for (i = 0; i < 4; i++, rec++) {
         Unk80101EC8Record *ent;
@@ -5334,13 +5336,16 @@ void snd_UpdateStageSounds(void) {
 
             if (cur == 1) {
                 snd_QueuePositionalSound(
-                    D_8008EBF4[var_2], &g_snd_sequence_positions[i].x);
+                    g_snd_stage_sequence_base_sounds[var_2],
+                    &g_snd_sequence_positions[i].x);
             } else if (cur == D_8008EBFC[var_2].a) {
                 snd_QueuePositionalSound(
-                    D_8008EBF4[var_2] + 1, &g_snd_sequence_positions[i].x);
+                    g_snd_stage_sequence_base_sounds[var_2] + 1,
+                    &g_snd_sequence_positions[i].x);
             } else if (cur == D_8008EBFC[var_2].b) {
                 snd_QueuePositionalSound(
-                    D_8008EBF4[var_2] + 2, &g_snd_sequence_positions[i].x);
+                    g_snd_stage_sequence_base_sounds[var_2] + 2,
+                    &g_snd_sequence_positions[i].x);
             }
 
             {
@@ -5542,14 +5547,14 @@ void fight_BuildOpponentOrder(void) {
         count++;
     }
 set_count:
-    D_800A391F = count;
+    g_fight_opponent_order_count = count;
     g_fight_opponent_order_cursor = 0;
     D_800A37BC = 0;
 }
 
 void fight_AdvanceOpponentOrder(void) {
     u8 a0 = g_fight_opponent_order_cursor;
-    u8 b = D_800A391F;
+    u8 b = g_fight_opponent_order_count;
 
     if (a0 == b) {
         g_local_ot_draw_mode = DISP_DISABLED;
@@ -5617,7 +5622,7 @@ void fight_InsertBestTime(void) {
             break;
         }
     }
-    D_800A38E9 = (u8)n;
+    g_fight_best_time_rank = (u8)n;
     if (n < 3) {
         for (k = 2; k > n; k--) {
             record->times[k] = record->times[k - 1];
@@ -5688,10 +5693,10 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
                   [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]] ==
               0;
         entry &= 0xFF;
-        D_800A38DE = ranks[row][entry];
-        D_800A38EC = table[1];
-        D_800A38ED = table[2];
-        D_800A38EE = table[3];
+        g_fight_step_row_object_id = ranks[row][entry];
+        g_fight_step_row_tint_red = table[1];
+        g_fight_step_row_tint_green = table[2];
+        g_fight_step_row_tint_blue = table[3];
         g_fight_config.unk_4[1] = moves[row][entry];
         return 1;
     }
@@ -5717,7 +5722,7 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
         g_main_loop_handler_index = 0x12;
         return;
     }
-    if (D_800A38E9 < 3) {
+    if (g_fight_best_time_rank < 3) {
         g_main_loop_handler_index = 0x1A;
     } else {
         g_main_loop_handler_index = 8;
@@ -5794,7 +5799,7 @@ void fight_PackMatchScores(void) {
         } while (i < n);
     }
 
-    D_800A3784 = acc;
+    g_fight_packed_match_scores = acc;
 }
 
 extern void fight_PackMatchScores(void);
@@ -5807,7 +5812,7 @@ void fight_AdvanceMatch(void) {
         g_main_loop_handler_index = 0x14;
     } else {
         s32 v1;
-        D_800A38F4 = 0;
+        g_fight_time_limit_elapsed_frames = 0;
         D_800A3899 = 0;
         D_800A3898 = 0;
         D_800A38AB = 0;

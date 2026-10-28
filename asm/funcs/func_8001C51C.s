@@ -8,8 +8,8 @@ glabel func_8001C51C
     /* CD34 8001C534 03000224 */  addiu      $v0, $zero, 0x3
     /* CD38 8001C538 0E006214 */  bne        $v1, $v0, .L8001C574
     /* CD3C 8001C53C 01000424 */   addiu     $a0, $zero, 0x1
-    /* CD40 8001C540 0A80023C */  lui        $v0, %hi(D_800A3728)
-    /* CD44 8001C544 28374290 */  lbu        $v0, %lo(D_800A3728)($v0)
+    /* CD40 8001C540 0A80023C */  lui        $v0, %hi(g_fight_start_position_pair_changed)
+    /* CD44 8001C544 28374290 */  lbu        $v0, %lo(g_fight_start_position_pair_changed)($v0)
     /* CD48 8001C548 00000000 */  nop
     /* CD4C 8001C54C 09004010 */  beqz       $v0, .L8001C574
     /* CD50 8001C550 00000000 */   nop
@@ -47,8 +47,8 @@ glabel func_8001C51C
     /* CDC8 8001C5C8 A686000C */  jal        fighter_StartMoveScript
     /* CDCC 8001C5CC 000000A6 */   sh        $zero, 0x0($s0)
     /* CDD0 8001C5D0 FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* CDD4 8001C5D4 0A80013C */  lui        $at, %hi(D_800A382E)
-    /* CDD8 8001C5D8 2E3820A4 */  sh         $zero, %lo(D_800A382E)($at)
+    /* CDD4 8001C5D4 0A80013C */  lui        $at, %hi(g_fight_defeat_delay_frames)
+    /* CDD8 8001C5D8 2E3820A4 */  sh         $zero, %lo(g_fight_defeat_delay_frames)($at)
     /* CDDC 8001C5DC 0A80013C */  lui        $at, %hi(g_fight_followup_fighter_index)
     /* CDE0 8001C5E0 483722A0 */  sb         $v0, %lo(g_fight_followup_fighter_index)($at)
     /* CDE4 8001C5E4 49C1000C */  jal        object_FreeAttachedObjects

@@ -104,8 +104,8 @@ glabel camera_UpdateTrackedFighterView
     /* BDF4 8001B5F4 100042A6 */  sh         $v0, 0x10($s2)
     /* BDF8 8001B5F8 140040A6 */  sh         $zero, 0x14($s2)
     /* BDFC 8001B5FC CA012286 */  lh         $v0, 0x1CA($s1)
-    /* BE00 8001B600 0A80033C */  lui        $v1, %hi(D_800A36FC)
-    /* BE04 8001B604 FC366384 */  lh         $v1, %lo(D_800A36FC)($v1)
+    /* BE00 8001B600 0A80033C */  lui        $v1, %hi(g_camera_turn_easing_countdown)
+    /* BE04 8001B604 FC366384 */  lh         $v1, %lo(g_camera_turn_easing_countdown)($v1)
     /* BE08 8001B608 23800200 */  negu       $s0, $v0
     /* BE0C 8001B60C 16006010 */  beqz       $v1, .L8001B668
     /* BE10 8001B610 21206000 */   addu      $a0, $v1, $zero
@@ -121,8 +121,8 @@ glabel camera_UpdateTrackedFighterView
     /* BE34 8001B634 1C004386 */  lh         $v1, 0x1C($s2)
     /* BE38 8001B638 2110A200 */  addu       $v0, $a1, $v0
     /* BE3C 8001B63C 120042A6 */  sh         $v0, 0x12($s2)
-    /* BE40 8001B640 0A80013C */  lui        $at, %hi(D_800A36FC)
-    /* BE44 8001B644 FC3624A4 */  sh         $a0, %lo(D_800A36FC)($at)
+    /* BE40 8001B640 0A80013C */  lui        $at, %hi(g_camera_turn_easing_countdown)
+    /* BE44 8001B644 FC3624A4 */  sh         $a0, %lo(g_camera_turn_easing_countdown)($at)
     /* BE48 8001B648 40100300 */  sll        $v0, $v1, 1
     /* BE4C 8001B64C 21104300 */  addu       $v0, $v0, $v1
     /* BE50 8001B650 02004104 */  bgez       $v0, .L8001B65C

@@ -6,7 +6,7 @@ glabel menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
     /* 290B8 800388B8 03004010 */  beqz       $v0, .L800388C8
     /* 290BC 800388BC 1400BFAF */   sw        $ra, 0x14($sp)
     /* 290C0 800388C0 380180A3 */  sb         $zero, %gp_rel(g_menu_prompt_rearm)($gp)
-    /* 290C4 800388C4 4C0280A3 */  sb         $zero, %gp_rel(D_800A3318)($gp)
+    /* 290C4 800388C4 4C0280A3 */  sb         $zero, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
   .L800388C8:
     /* 290C8 800388C8 4000023C */  lui        $v0, (0x400040 >> 16)
     /* 290CC 800388CC 1080033C */  lui        $v1, %hi(g_pad_state + 0xC)
@@ -18,7 +18,7 @@ glabel menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
     /* 290E4 800388E4 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 290E8 800388E8 9471010C */  jal        snd_QueueSound
     /* 290EC 800388EC 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 290F0 800388F0 4C028293 */  lbu        $v0, %gp_rel(D_800A3318)($gp)
+    /* 290F0 800388F0 4C028293 */  lbu        $v0, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
     /* 290F4 800388F4 00000000 */  nop
     /* 290F8 800388F8 17004014 */  bnez       $v0, .L80038958
     /* 290FC 800388FC FFFF1024 */   addiu     $s0, $zero, -0x1
@@ -33,7 +33,7 @@ glabel menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
     /* 2911C 8003891C 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 29120 80038920 9471010C */  jal        snd_QueueSound
     /* 29124 80038924 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 29128 80038928 4C0280A3 */  sb         $zero, %gp_rel(D_800A3318)($gp)
+    /* 29128 80038928 4C0280A3 */  sb         $zero, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
     /* 2912C 8003892C 56E20008 */  j          .L80038958
     /* 29130 80038930 00000000 */   nop
   .L80038934:
@@ -45,9 +45,9 @@ glabel menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
     /* 29148 80038948 9471010C */  jal        snd_QueueSound
     /* 2914C 8003894C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 29150 80038950 01000224 */  addiu      $v0, $zero, 0x1
-    /* 29154 80038954 4C0282A3 */  sb         $v0, %gp_rel(D_800A3318)($gp)
+    /* 29154 80038954 4C0282A3 */  sb         $v0, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
   .L80038958:
-    /* 29158 80038958 4C028593 */  lbu        $a1, %gp_rel(D_800A3318)($gp)
+    /* 29158 80038958 4C028593 */  lbu        $a1, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
     /* 2915C 8003895C B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 29160 80038960 13000424 */   addiu     $a0, $zero, 0x13
     /* 29164 80038964 02000012 */  beqz       $s0, .L80038970

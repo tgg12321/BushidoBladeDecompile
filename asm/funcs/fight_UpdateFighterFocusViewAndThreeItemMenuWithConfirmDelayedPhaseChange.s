@@ -108,8 +108,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F41C 8001EC1C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* F420 8001EC20 0A80033C */  lui        $v1, %hi(g_fight_choice_menu_cursor)
     /* F424 8001EC24 17386390 */  lbu        $v1, %lo(g_fight_choice_menu_cursor)($v1)
-    /* F428 8001EC28 0A80023C */  lui        $v0, %hi(D_800A3804)
-    /* F42C 8001EC2C 04384290 */  lbu        $v0, %lo(D_800A3804)($v0)
+    /* F428 8001EC28 0A80023C */  lui        $v0, %hi(g_fight_choice_menu_first_cursor)
+    /* F42C 8001EC2C 04384290 */  lbu        $v0, %lo(g_fight_choice_menu_first_cursor)($v0)
     /* F430 8001EC30 00000000 */  nop
     /* F434 8001EC34 12006214 */  bne        $v1, $v0, .L8001EC80
     /* F438 8001EC38 FFFF6224 */   addiu     $v0, $v1, -0x1
@@ -129,8 +129,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F46C 8001EC6C FF008330 */  andi       $v1, $a0, 0xFF
     /* F470 8001EC70 03006214 */  bne        $v1, $v0, .L8001EC80
     /* F474 8001EC74 01008224 */   addiu     $v0, $a0, 0x1
-    /* F478 8001EC78 0A80023C */  lui        $v0, %hi(D_800A3804)
-    /* F47C 8001EC7C 04384290 */  lbu        $v0, %lo(D_800A3804)($v0)
+    /* F478 8001EC78 0A80023C */  lui        $v0, %hi(g_fight_choice_menu_first_cursor)
+    /* F47C 8001EC7C 04384290 */  lbu        $v0, %lo(g_fight_choice_menu_first_cursor)($v0)
   .L8001EC80:
     /* F480 8001EC80 0A80013C */  lui        $at, %hi(g_fight_choice_menu_cursor)
     /* F484 8001EC84 173822A0 */  sb         $v0, %lo(g_fight_choice_menu_cursor)($at)
@@ -243,8 +243,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F61C 8001EE1C 21208300 */   addu      $a0, $a0, $v1
     /* F620 8001EE20 1080033C */  lui        $v1, %hi(D_8010231A)
     /* F624 8001EE24 1A236384 */  lh         $v1, %lo(D_8010231A)($v1)
-    /* F628 8001EE28 0A80013C */  lui        $at, %hi(D_800A38DF)
-    /* F62C 8001EE2C DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)
+    /* F628 8001EE28 0A80013C */  lui        $at, %hi(g_fight_nearest_start_pair_index)
+    /* F62C 8001EE2C DF3822A0 */  sb         $v0, %lo(g_fight_nearest_start_pair_index)($at)
     /* F630 8001EE30 03006010 */  beqz       $v1, .L8001EE40
     /* F634 8001EE34 00000000 */   nop
     /* F638 8001EE38 3A54010C */  jal        fighter_HalveCpuTally

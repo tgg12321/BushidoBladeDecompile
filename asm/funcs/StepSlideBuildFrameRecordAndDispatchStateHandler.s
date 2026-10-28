@@ -76,7 +76,7 @@ glabel StepSlideBuildFrameRecordAndDispatchStateHandler
     /* 5F3EC 8006EBEC 00000000 */  nop
     /* 5F3F0 8006EBF0 09F84000 */  jalr       $v0
     /* 5F3F4 8006EBF4 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 5F3F8 8006EBF8 D404828F */  lw         $v0, %gp_rel(D_800A35A0)($gp)
+    /* 5F3F8 8006EBF8 D404828F */  lw         $v0, %gp_rel(g_entry_menu_exit_result)($gp)
     /* 5F3FC 8006EBFC 3800BF8F */  lw         $ra, 0x38($sp)
     /* 5F400 8006EC00 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 5F404 8006EC04 0800E003 */  jr         $ra

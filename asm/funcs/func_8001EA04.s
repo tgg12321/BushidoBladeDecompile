@@ -23,8 +23,8 @@ glabel func_8001EA04
     /* F258 8001EA58 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* F25C 8001EA5C 343823A4 */  sh         $v1, %lo(g_main_loop_handler_index)($at)
     /* F260 8001EA60 0100422C */  sltiu      $v0, $v0, 0x1
-    /* F264 8001EA64 0A80013C */  lui        $at, %hi(D_800A3804)
-    /* F268 8001EA68 043822A0 */  sb         $v0, %lo(D_800A3804)($at)
+    /* F264 8001EA64 0A80013C */  lui        $at, %hi(g_fight_choice_menu_first_cursor)
+    /* F268 8001EA68 043822A0 */  sb         $v0, %lo(g_fight_choice_menu_first_cursor)($at)
     /* F26C 8001EA6C 0A80013C */  lui        $at, %hi(g_fight_choice_menu_cursor)
     /* F270 8001EA70 173822A0 */  sb         $v0, %lo(g_fight_choice_menu_cursor)($at)
     /* F274 8001EA74 1000BF8F */  lw         $ra, 0x10($sp)

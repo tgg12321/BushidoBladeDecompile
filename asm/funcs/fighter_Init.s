@@ -114,15 +114,15 @@ glabel fighter_Init
     /* 12F20 80022720 00000000 */  nop
     /* 12F24 80022724 05006214 */  bne        $v1, $v0, .L8002273C
     /* 12F28 80022728 00000000 */   nop
-    /* 12F2C 8002272C 0A80023C */  lui        $v0, %hi(D_800A38DE)
-    /* 12F30 80022730 DE384290 */  lbu        $v0, %lo(D_800A38DE)($v0)
+    /* 12F2C 8002272C 0A80023C */  lui        $v0, %hi(g_fight_step_row_object_id)
+    /* 12F30 80022730 DE384290 */  lbu        $v0, %lo(g_fight_step_row_object_id)($v0)
     /* 12F34 80022734 D5890008 */  j          .L80022754
     /* 12F38 80022738 40100200 */   sll       $v0, $v0, 1
   .L8002273C:
     /* 12F3C 8002273C 0C000286 */  lh         $v0, 0xC($s0)
-    /* 12F40 80022740 0980013C */  lui        $at, %hi(D_8008D578)
+    /* 12F40 80022740 0980013C */  lui        $at, %hi(g_fight_selection_object_ids)
     /* 12F44 80022744 21082200 */  addu       $at, $at, $v0
-    /* 12F48 80022748 78D52290 */  lbu        $v0, %lo(D_8008D578)($at)
+    /* 12F48 80022748 78D52290 */  lbu        $v0, %lo(g_fight_selection_object_ids)($at)
     /* 12F4C 8002274C 00000000 */  nop
     /* 12F50 80022750 40100200 */  sll        $v0, $v0, 1
   .L80022754:
@@ -233,8 +233,8 @@ glabel fighter_Init
     /* 130D8 800228D8 900000A6 */  sh         $zero, 0x90($s0)
     /* 130DC 800228DC 03006010 */  beqz       $v1, .L800228EC
     /* 130E0 800228E0 21880000 */   addu      $s1, $zero, $zero
-    /* 130E4 800228E4 0A80113C */  lui        $s1, %hi(D_800A38DF)
-    /* 130E8 800228E8 DF383192 */  lbu        $s1, %lo(D_800A38DF)($s1)
+    /* 130E4 800228E4 0A80113C */  lui        $s1, %hi(g_fight_nearest_start_pair_index)
+    /* 130E8 800228E8 DF383192 */  lbu        $s1, %lo(g_fight_nearest_start_pair_index)($s1)
   .L800228EC:
     /* 130EC 800228EC 0A80033C */  lui        $v1, %hi(g_fight_mode_selector)
     /* 130F0 800228F0 DC386384 */  lh         $v1, %lo(g_fight_mode_selector)($v1)

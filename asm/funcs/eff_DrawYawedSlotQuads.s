@@ -35,7 +35,7 @@ glabel eff_DrawYawedSlotQuads
     /* 5468C 80063E8C 21280002 */  addu       $a1, $s0, $zero
     /* 54690 80063E90 3F91010C */  jal        eff_BuildUsedSlotRotMatrices
     /* 54694 80063E94 2130E002 */   addu      $a2, $s7, $zero
-    /* 54698 80063E98 B403828F */  lw         $v0, %gp_rel(D_800A3480)($gp)
+    /* 54698 80063E98 B403828F */  lw         $v0, %gp_rel(g_eff_yawed_quad_tex_index)($gp)
     /* 5469C 80063E9C 0A80033C */  lui        $v1, %hi(D_8009B920)
     /* 546A0 80063EA0 20B96324 */  addiu      $v1, $v1, %lo(D_8009B920)
     /* 546A4 80063EA4 0000428C */  lw         $v0, 0x0($v0)

@@ -65,9 +65,9 @@ glabel wave_Update
     /* 38378 80047B78 08000224 */  addiu      $v0, $zero, 0x8
     /* 3837C 80047B7C 04000215 */  bne        $t0, $v0, .L80047B90
     /* 38380 80047B80 00000000 */   nop
-    /* 38384 80047B84 0F80013C */  lui        $at, %hi(D_800EF800)
+    /* 38384 80047B84 0F80013C */  lui        $at, %hi(g_wave_last_row_steps)
     /* 38388 80047B88 21082700 */  addu       $at, $at, $a3
-    /* 3838C 80047B8C 00F823AC */  sw         $v1, %lo(D_800EF800)($at)
+    /* 3838C 80047B8C 00F823AC */  sw         $v1, %lo(g_wave_last_row_steps)($at)
   .L80047B90:
     /* 38390 80047B90 0400A524 */  addiu      $a1, $a1, 0x4
     /* 38394 80047B94 0400E724 */  addiu      $a3, $a3, 0x4

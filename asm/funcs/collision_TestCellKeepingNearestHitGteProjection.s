@@ -17,7 +17,7 @@ glabel collision_TestCellKeepingNearestHitGteProjection
     /* 446D8 80053ED8 40291400 */   sll       $a1, $s4, 5
     /* 446DC 80053EDC 2110B300 */  addu       $v0, $a1, $s3
     /* 446E0 80053EE0 40100200 */  sll        $v0, $v0, 1
-    /* 446E4 80053EE4 2403838F */  lw         $v1, %gp_rel(D_800A33F0)($gp)
+    /* 446E4 80053EE4 2403838F */  lw         $v1, %gp_rel(g_collision_grid)($gp)
     /* 446E8 80053EE8 2803878F */  lw         $a3, %gp_rel(g_collision_segment_work)($gp)
     /* 446EC 80053EEC 21104300 */  addu       $v0, $v0, $v1
     /* 446F0 80053EF0 00004494 */  lhu        $a0, 0x0($v0)

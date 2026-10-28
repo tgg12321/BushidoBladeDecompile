@@ -31,7 +31,7 @@ glabel gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 5C738 8006BF38 38146324 */  addiu      $v1, $v1, %lo(D_800F1438)
     /* 5C73C 8006BF3C 21104300 */  addu       $v0, $v0, $v1
     /* 5C740 8006BF40 80410800 */  sll        $t0, $t0, 6
-    /* 5C744 8006BF44 140682AF */  sw         $v0, %gp_rel(D_800A36E0)($gp)
+    /* 5C744 8006BF44 140682AF */  sw         $v0, %gp_rel(g_sheet_pair_draw_mode_cursor)($gp)
     /* 5C748 8006BF48 0F80023C */  lui        $v0, %hi(D_800F1498)
     /* 5C74C 8006BF4C 98144224 */  addiu      $v0, $v0, %lo(D_800F1498)
     /* 5C750 8006BF50 21400201 */  addu       $t0, $t0, $v0

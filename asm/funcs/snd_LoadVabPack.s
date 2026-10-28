@@ -72,7 +72,7 @@ glabel snd_LoadVabPack
     /* 4CBB0 8005C3B0 00140400 */   sll       $v0, $a0, 16
   .L8005C3B4:
     /* 4CBB4 8005C3B4 3803828F */  lw         $v0, %gp_rel(g_vab_sticky_sbaddr)($gp)
-    /* 4CBB8 8005C3B8 4003838F */  lw         $v1, %gp_rel(D_800A340C)($gp)
+    /* 4CBB8 8005C3B8 4003838F */  lw         $v1, %gp_rel(g_vab_pack_base_sbaddr)($gp)
     /* 4CBBC 8005C3BC 00000000 */  nop
     /* 4CBC0 8005C3C0 23104300 */  subu       $v0, $v0, $v1
     /* 4CBC4 8005C3C4 3C0382AF */  sw         $v0, %gp_rel(g_vab_sb_used_bytes)($gp)
@@ -115,7 +115,7 @@ glabel snd_LoadVabPack
     /* 4CC50 8005C450 38FC31AC */  sw         $s1, %lo(g_vab_rec_ptr)($at)
     /* 4CC54 8005C454 3C03828F */  lw         $v0, %gp_rel(g_vab_sb_used_bytes)($gp)
     /* 4CC58 8005C458 0C00258E */  lw         $a1, 0xC($s1)
-    /* 4CC5C 8005C45C 4003838F */  lw         $v1, %gp_rel(D_800A340C)($gp)
+    /* 4CC5C 8005C45C 4003838F */  lw         $v1, %gp_rel(g_vab_pack_base_sbaddr)($gp)
     /* 4CC60 8005C460 21104500 */  addu       $v0, $v0, $a1
     /* 4CC64 8005C464 21186200 */  addu       $v1, $v1, $v0
     /* 4CC68 8005C468 3C0382AF */  sw         $v0, %gp_rel(g_vab_sb_used_bytes)($gp)

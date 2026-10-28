@@ -68,8 +68,8 @@ glabel fighter_InitCpuControl
   .L80055238:
     /* 45A38 80055238 0A80033C */  lui        $v1, %hi(g_fight_second_fighter_defeats_left)
     /* 45A3C 8005523C 80366390 */  lbu        $v1, %lo(g_fight_second_fighter_defeats_left)($v1)
-    /* 45A40 80055240 0A80023C */  lui        $v0, %hi(D_800A3671)
-    /* 45A44 80055244 71364290 */  lbu        $v0, %lo(D_800A3671)($v0)
+    /* 45A40 80055240 0A80023C */  lui        $v0, %hi(g_fight_second_fighter_initial_defeats_left)
+    /* 45A44 80055244 71364290 */  lbu        $v0, %lo(g_fight_second_fighter_initial_defeats_left)($v0)
     /* 45A48 80055248 00000000 */  nop
     /* 45A4C 8005524C 04006214 */  bne        $v1, $v0, .L80055260
     /* 45A50 80055250 00000000 */   nop

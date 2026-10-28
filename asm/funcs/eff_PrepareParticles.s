@@ -128,9 +128,9 @@ glabel eff_PrepareParticles
     /* 58288 80067A88 40180700 */  sll        $v1, $a3, 1
     /* 5828C 80067A8C 02000224 */  addiu      $v0, $zero, 0x2
   .L80067A90:
-    /* 58290 80067A90 0F80013C */  lui        $at, %hi(D_800F0B98)
+    /* 58290 80067A90 0F80013C */  lui        $at, %hi(g_eff_particle_mode_position_counts)
     /* 58294 80067A94 21082300 */  addu       $at, $at, $v1
-    /* 58298 80067A98 980B22A4 */  sh         $v0, %lo(D_800F0B98)($at)
+    /* 58298 80067A98 980B22A4 */  sh         $v0, %lo(g_eff_particle_mode_position_counts)($at)
   .L80067A9C:
     /* 5829C 80067A9C BC03838F */  lw         $v1, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 582A0 80067AA0 00000000 */  nop
@@ -219,12 +219,12 @@ glabel eff_PrepareParticles
     /* 583EC 80067BEC 0010CC48 */  ctc2       $t4, $2 /* handwritten instruction */
     /* 583F0 80067BF0 0018CD48 */  ctc2       $t5, $3 /* handwritten instruction */
     /* 583F4 80067BF4 0020CE48 */  ctc2       $t6, $4 /* handwritten instruction */
-    /* 583F8 80067BF8 0A80033C */  lui        $v1, %hi(D_800A3438)
-    /* 583FC 80067BFC 38346324 */  addiu      $v1, $v1, %lo(D_800A3438)
+    /* 583F8 80067BF8 0A80033C */  lui        $v1, %hi(g_eff_particle_group_fill_counts)
+    /* 583FC 80067BFC 38346324 */  addiu      $v1, $v1, %lo(g_eff_particle_group_fill_counts)
     /* 58400 80067C00 40100500 */  sll        $v0, $a1, 1
     /* 58404 80067C04 21304300 */  addu       $a2, $v0, $v1
-    /* 58408 80067C08 0F80033C */  lui        $v1, %hi(D_800F0B98)
-    /* 5840C 80067C0C 980B6324 */  addiu      $v1, $v1, %lo(D_800F0B98)
+    /* 58408 80067C08 0F80033C */  lui        $v1, %hi(g_eff_particle_mode_position_counts)
+    /* 5840C 80067C0C 980B6324 */  addiu      $v1, $v1, %lo(g_eff_particle_mode_position_counts)
     /* 58410 80067C10 40100700 */  sll        $v0, $a3, 1
     /* 58414 80067C14 21384300 */  addu       $a3, $v0, $v1
     /* 58418 80067C18 0000C384 */  lh         $v1, 0x0($a2)

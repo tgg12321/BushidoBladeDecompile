@@ -20,7 +20,7 @@
 #include "common.h"
 #include "bb2.h"
 
-/* D_800948BC's hooks, defined in 368E4.c. */
+/* g_resource_selector_callbacks's hooks, defined in 368E4.c. */
 void func_8004746C(void);
 void func_8004748C(void);
 void func_800474AC(void);
@@ -867,8 +867,8 @@ s32 D_80094840[31] = {
 /* One {init, unk4} pair per stage (38, as D_8009060C), indexed by
  * resource_GetLoadedSelector(); the label D_800948C0 was
  * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards's
- * folded &D_800948BC[0].unk4. */
-Unk800948BCEntry D_800948BC[38] = {
+ * folded &g_resource_selector_callbacks[0].unk4. */
+Unk800948BCEntry g_resource_selector_callbacks[38] = {
     {0, 0},
     {0, 0},
     {0, 0},
@@ -910,7 +910,7 @@ Unk800948BCEntry D_800948BC[38] = {
 };
 
 /* No reader: a 2-bit cell pattern laid out like D_80094A6C (32 words, from
- * the end of D_800948BC to D_80094A6C). */
+ * the end of g_resource_selector_callbacks to D_80094A6C). */
 s32 D_800949EC[32] = {
     0x00000000, 0x00000000, 0x00155500, 0x01555550, 0x01555550, 0x0556A554,
     0x055AA954, 0x05680A54, 0x05680A54, 0x05680A54, 0x055AA954, 0x0556A554,

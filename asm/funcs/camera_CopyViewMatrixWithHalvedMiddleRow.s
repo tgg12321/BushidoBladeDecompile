@@ -1,8 +1,8 @@
 glabel camera_CopyViewMatrixWithHalvedMiddleRow
     /* 37A10 80047210 1080053C */  lui        $a1, %hi(D_80101E08)
     /* 37A14 80047214 081EA524 */  addiu      $a1, $a1, %lo(D_80101E08)
-    /* 37A18 80047218 0F80043C */  lui        $a0, %hi(D_800EEDD0)
-    /* 37A1C 8004721C D0ED8424 */  addiu      $a0, $a0, %lo(D_800EEDD0)
+    /* 37A18 80047218 0F80043C */  lui        $a0, %hi(g_camera_halved_row_view_matrix)
+    /* 37A1C 8004721C D0ED8424 */  addiu      $a0, $a0, %lo(g_camera_halved_row_view_matrix)
     /* 37A20 80047220 0000A28C */  lw         $v0, 0x0($a1)
     /* 37A24 80047224 0400A38C */  lw         $v1, 0x4($a1)
     /* 37A28 80047228 000082AC */  sw         $v0, 0x0($a0)

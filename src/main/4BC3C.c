@@ -2,7 +2,7 @@
  * snd_Quit, snd_LoadCommonVab, snd_VabOpen, snd_VabFakeOpen, ...). .text
  * 0x8005B43C (ROM 0x4BC3C). Start boundary: SEAM (owner ruling 2026-10-17;
  * Codex seam #108): no direct call crosses the cut; the sound statics
- * D_800A3400..D_800A340C follow 43500.c's in .sbss, and the strings
+ * D_800A3400..g_vab_pack_base_sbaddr follow 43500.c's in .sbss, and the strings
  * D_800158B4 / D_800158CC follow 4510C.c's jump tables in .rodata. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
@@ -20,7 +20,7 @@ extern void eff_SetBillboardList();
 static s16 D_800A3400;
 static s32 g_vab_sticky_sbaddr;
 static s32 g_vab_sb_used_bytes;
-static s32 D_800A340C;
+static s32 g_vab_pack_base_sbaddr;
 /* not named by any code or data: size from the gap */
 static s32 D_800A3410[2];
 
@@ -161,11 +161,11 @@ s32 snd_LoadCommonVab(s32 load_addr) {
     file_size = cdrom_GetFileSize(file_index);
     cdrom_WaitIdle();
     g_vab_sb_used_bytes = 0;
-    D_800A340C = 0x1010;
+    g_vab_pack_base_sbaddr = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
     body_offset =
         snd_LoadVabPack((Unk8005C2A8Pack *)load_addr, 0, load_addr + file_size);
-    D_800A340C = g_vab_sticky_sbaddr;
+    g_vab_pack_base_sbaddr = g_vab_sticky_sbaddr;
     return body_offset;
 }
 
@@ -470,7 +470,7 @@ s32 snd_LoadVabPack(
             }
         }
     }
-    g_vab_sb_used_bytes = g_vab_sticky_sbaddr - D_800A340C;
+    g_vab_sb_used_bytes = g_vab_sticky_sbaddr - g_vab_pack_base_sbaddr;
     if (vab_id != 0) {
         snd_CompactVabBodies(vab_id, ram_buffer_addr);
     }
@@ -482,7 +482,7 @@ s32 snd_LoadVabPack(
     if (id != -1) {
         g_vab_rec_ptr[id] = vab_pack;
         g_vab_sb_used_bytes += vab_pack->unk_0C;
-        g_vab_sticky_sbaddr = D_800A340C + g_vab_sb_used_bytes;
+        g_vab_sticky_sbaddr = g_vab_pack_base_sbaddr + g_vab_sb_used_bytes;
         g_vab_vb_sbaddr[vab_id] = SsUtGetVBaddrInSB(vab_id);
         return vab_pack->unk_08 - (s32)vab_pack;
     }

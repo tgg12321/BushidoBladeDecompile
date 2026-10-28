@@ -123,9 +123,9 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 62618 80071E18 1800A200 */  mult       $a1, $v0
     /* 6261C 80071E1C 21186400 */  addu       $v1, $v1, $a0
     /* 62620 80071E20 43180300 */  sra        $v1, $v1, 1
-    /* 62624 80071E24 0A80013C */  lui        $at, %hi(D_8009BC94)
+    /* 62624 80071E24 0A80013C */  lui        $at, %hi(g_entry_menu_row_choice_positions)
     /* 62628 80071E28 21082600 */  addu       $at, $at, $a2
-    /* 6262C 80071E2C 94BC2284 */  lh         $v0, %lo(D_8009BC94)($at)
+    /* 6262C 80071E2C 94BC2284 */  lh         $v0, %lo(g_entry_menu_row_choice_positions)($at)
     /* 62630 80071E30 C0FE6324 */  addiu      $v1, $v1, -0x140
     /* 62634 80071E34 23104300 */  subu       $v0, $v0, $v1
     /* 62638 80071E38 2800A2AF */  sw         $v0, 0x28($sp)
@@ -198,7 +198,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 62734 80071F34 0FFC0424 */  addiu      $a0, $zero, -0x3F1
     /* 62738 80071F38 9C04858F */  lw         $a1, %gp_rel(g_entry_menu_working_record_ptr)($gp)
     /* 6273C 80071F3C 3F004230 */  andi       $v0, $v0, 0x3F
-    /* 62740 80071F40 D40483AF */  sw         $v1, %gp_rel(D_800A35A0)($gp)
+    /* 62740 80071F40 D40483AF */  sw         $v1, %gp_rel(g_entry_menu_exit_result)($gp)
     /* 62744 80071F44 1400A38C */  lw         $v1, 0x14($a1)
     /* 62748 80071F48 00110200 */  sll        $v0, $v0, 4
     /* 6274C 80071F4C 24186400 */  and        $v1, $v1, $a0
@@ -222,7 +222,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 6278C 80071F8C E7C70108 */  j          .L80071F9C
     /* 62790 80071F90 21800000 */   addu      $s0, $zero, $zero
   .L80071F94:
-    /* 62794 80071F94 D40482AF */  sw         $v0, %gp_rel(D_800A35A0)($gp)
+    /* 62794 80071F94 D40482AF */  sw         $v0, %gp_rel(g_entry_menu_exit_result)($gp)
     /* 62798 80071F98 21800000 */  addu       $s0, $zero, $zero
   .L80071F9C:
     /* 6279C 80071F9C 88048287 */  lh         $v0, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)

@@ -17,8 +17,8 @@ glabel fight_InsertBestTime
     /* 24570 80033D70 F7FFE01C */  bgtz       $a3, .L80033D50
     /* 24574 80033D74 FFFFE324 */   addiu     $v1, $a3, -0x1
   .L80033D78:
-    /* 24578 80033D78 0A80013C */  lui        $at, %hi(D_800A38E9)
-    /* 2457C 80033D7C E93827A0 */  sb         $a3, %lo(D_800A38E9)($at)
+    /* 24578 80033D78 0A80013C */  lui        $at, %hi(g_fight_best_time_rank)
+    /* 2457C 80033D7C E93827A0 */  sb         $a3, %lo(g_fight_best_time_rank)($at)
     /* 24580 80033D80 0300E228 */  slti       $v0, $a3, 0x3
     /* 24584 80033D84 19004010 */  beqz       $v0, .L80033DEC
     /* 24588 80033D88 0200E228 */   slti      $v0, $a3, 0x2

@@ -87,9 +87,9 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 539D0 800631D0 1B024010 */  beqz       $v0, .L80063A40
     /* 539D4 800631D4 01000224 */   addiu     $v0, $zero, 0x1
     /* 539D8 800631D8 A403848F */  lw         $a0, %gp_rel(g_eff_view_origin)($gp)
-    /* 539DC 800631DC 0F80013C */  lui        $at, %hi(D_800F0E38)
+    /* 539DC 800631DC 0F80013C */  lui        $at, %hi(g_eff_billboard_pair_positions)
     /* 539E0 800631E0 21083600 */  addu       $at, $at, $s6
-    /* 539E4 800631E4 380E228C */  lw         $v0, %lo(D_800F0E38)($at)
+    /* 539E4 800631E4 380E228C */  lw         $v0, %lo(g_eff_billboard_pair_positions)($at)
     /* 539E8 800631E8 0000838C */  lw         $v1, 0x0($a0)
     /* 539EC 800631EC 00000000 */  nop
     /* 539F0 800631F0 23104300 */  subu       $v0, $v0, $v1
@@ -531,7 +531,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 54060 80063860 F403828F */  lw         $v0, %gp_rel(g_eff_right_x_offset)($gp)
     /* 54064 80063864 00000000 */  nop
     /* 54068 80063868 00004294 */  lhu        $v0, 0x0($v0)
-    /* 5406C 8006386C F003838F */  lw         $v1, %gp_rel(D_800A34BC)($gp)
+    /* 5406C 8006386C F003838F */  lw         $v1, %gp_rel(g_eff_left_x_offset)($gp)
     /* 54070 80063870 23100200 */  negu       $v0, $v0
     /* 54074 80063874 000062A4 */  sh         $v0, 0x0($v1)
     /* 54078 80063878 FC03828F */  lw         $v0, %gp_rel(g_eff_lower_y_offset_word)($gp)
@@ -551,7 +551,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 540AC 800638AC FC03828F */  lw         $v0, %gp_rel(g_eff_lower_y_offset_word)($gp)
     /* 540B0 800638B0 00000000 */  nop
     /* 540B4 800638B4 000040AC */  sw         $zero, 0x0($v0)
-    /* 540B8 800638B8 F003888F */  lw         $t0, %gp_rel(D_800A34BC)($gp)
+    /* 540B8 800638B8 F003888F */  lw         $t0, %gp_rel(g_eff_left_x_offset)($gp)
     /* 540BC 800638BC EC03868F */  lw         $a2, %gp_rel(g_eff_screen_xy)($gp)
     /* 540C0 800638C0 F803858F */  lw         $a1, %gp_rel(g_eff_upper_y_offset)($gp)
     /* 540C4 800638C4 00000485 */  lh         $a0, 0x0($t0)

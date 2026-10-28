@@ -28,11 +28,11 @@ glabel StepScrollingSpriteDisplay
     /* 69118 80078918 1000A427 */  addiu      $a0, $sp, 0x10
     /* 6911C 8007891C 95E1010C */  jal        gpu_DrawScrollingAndDelayedSheets
     /* 69120 80078920 2C00A2AF */   sw        $v0, 0x2C($sp)
-    /* 69124 80078924 3C05838F */  lw         $v1, %gp_rel(D_800A3608)($gp)
+    /* 69124 80078924 3C05838F */  lw         $v1, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 69128 80078928 00000000 */  nop
     /* 6912C 8007892C 01006324 */  addiu      $v1, $v1, 0x1
     /* 69130 80078930 400B6228 */  slti       $v0, $v1, 0xB40
-    /* 69134 80078934 3C0583AF */  sw         $v1, %gp_rel(D_800A3608)($gp)
+    /* 69134 80078934 3C0583AF */  sw         $v1, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 69138 80078938 3000BF8F */  lw         $ra, 0x30($sp)
     /* 6913C 8007893C 01004238 */  xori       $v0, $v0, 0x1
     /* 69140 80078940 0800E003 */  jr         $ra

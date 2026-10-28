@@ -78,7 +78,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E18 80017618 B95D0008 */  j          .L800176E4
     /* 7E1C 8001761C 00000000 */   nop
   .L80017620:
-    /* 7E20 80017620 B806848F */  lw         $a0, %gp_rel(D_800A3784)($gp)
+    /* 7E20 80017620 B806848F */  lw         $a0, %gp_rel(g_fight_packed_match_scores)($gp)
     /* 7E24 80017624 21284002 */  addu       $a1, $s2, $zero
     /* 7E28 80017628 5379010C */  jal        gpu_DrawPackedComparisonRowsAndTotals
     /* 7E2C 8001762C 21300000 */   addu      $a2, $zero, $zero
@@ -104,10 +104,10 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7E74 80017674 0D000600 */  break      6
   .L80017678:
     /* 7E78 80017678 12180000 */  mflo       $v1
-    /* 7E7C 8001767C F406828F */  lw         $v0, %gp_rel(D_800A37C0)($gp)
+    /* 7E7C 8001767C F406828F */  lw         $v0, %gp_rel(g_fight_stage_list_step_timer)($gp)
     /* 7E80 80017680 00000000 */  nop
     /* 7E84 80017684 01004224 */  addiu      $v0, $v0, 0x1
-    /* 7E88 80017688 F40682AF */  sw         $v0, %gp_rel(D_800A37C0)($gp)
+    /* 7E88 80017688 F40682AF */  sw         $v0, %gp_rel(g_fight_stage_list_step_timer)($gp)
     /* 7E8C 8001768C 2A186200 */  slt        $v1, $v1, $v0
     /* 7E90 80017690 14006010 */  beqz       $v1, .L800176E4
     /* 7E94 80017694 00000000 */   nop
@@ -120,10 +120,10 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
   .L800176B0:
     /* 7EB0 800176B0 2C0882A3 */  sb         $v0, %gp_rel(g_fight_stage_list_draw_cursor)($gp)
     /* 7EB4 800176B4 FF004230 */  andi       $v0, $v0, 0xFF
-    /* 7EB8 800176B8 F40680AF */  sw         $zero, %gp_rel(D_800A37C0)($gp)
-    /* 7EBC 800176BC 0A80013C */  lui        $at, %hi(D_800A37A8)
+    /* 7EB8 800176B8 F40680AF */  sw         $zero, %gp_rel(g_fight_stage_list_step_timer)($gp)
+    /* 7EBC 800176BC 0A80013C */  lui        $at, %hi(g_fight_stage_list_entries)
     /* 7EC0 800176C0 21082400 */  addu       $at, $at, $a0
-    /* 7EC4 800176C4 A8373190 */  lbu        $s1, %lo(D_800A37A8)($at)
+    /* 7EC4 800176C4 A8373190 */  lbu        $s1, %lo(g_fight_stage_list_entries)($at)
     /* 7EC8 800176C8 02004514 */  bne        $v0, $a1, .L800176D4
     /* 7ECC 800176CC 00000000 */   nop
     /* 7ED0 800176D0 00803136 */  ori        $s1, $s1, 0x8000

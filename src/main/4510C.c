@@ -298,7 +298,8 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
         }
         break;
     case 0:
-        if (g_fight_second_fighter_defeats_left == D_800A3671) {
+        if (g_fight_second_fighter_defeats_left ==
+            g_fight_second_fighter_initial_defeats_left) {
             fighter_ClearCpuTally(p->index);
         }
         if (g_cpu_profiles[p->cpu_profile].flags & 0x300) {

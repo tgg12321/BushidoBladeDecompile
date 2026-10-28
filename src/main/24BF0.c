@@ -70,7 +70,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_fight_step_table_next_row = 0;
         g_fight_start_position_pair_index = 0;
         g_fight_timer_frames = 0;
-        D_800A3728 = 0;
+        g_fight_start_position_pair_changed = 0;
         g_fight_stage_index = 0x22;
         fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags();
         g_local_ot_draw_mode = 1;
@@ -84,7 +84,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         fight_AdvanceMatch();
         break;
     case 2:
-        D_800A3713 = (D_800A389A == 0) << 1;
+        g_fight_auto_pause_countdown = (D_800A389A == 0) << 1;
         g_fight_stage_index = (D_800A389A != 0) ? 0x24 : 0x23;
         g_fight_config.unk_4[5] = 1;
         if (D_800A389A == 0) {

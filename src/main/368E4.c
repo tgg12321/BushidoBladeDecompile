@@ -33,7 +33,7 @@ static s32 D_800A33D4;
 static s32 D_800A33D8;
 static s32 D_800A33DC; /* not named by any code or data: size from the gap */
 static s32 D_800A33E0;
-static s32 D_800A33E4;
+static s32 g_node_retained_draw_node_buffer;
 static s16 g_resource_pair_selection[2];
 static s32 g_resource_entry_category;
 
@@ -304,10 +304,10 @@ extern MATRIX g_math_light_plane_projection;
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
  * D_800EF848, which wave_SampleLastRowStepsAtCachedIndex's [v1 + 1] reaches at
  * v1 == 17 */
-extern s32 D_800EF800[18];
+extern s32 g_wave_last_row_steps[18];
 extern u8 g_fight_start_position_pairs;
 extern s16 g_gpu_raised_ot_cutoff_requested;
-extern MATRIX D_800EEDD0;
+extern MATRIX g_camera_halved_row_view_matrix;
 
 extern void node_InitRootNodePairWithNegatedRotationMatrices(void);
 extern void light_InitDefaults(void);
@@ -620,13 +620,15 @@ typedef struct {
 } Block32;
 
 void camera_CopyViewMatrixWithHalvedMiddleRow(void) {
-    D_800EEDD0 = g_view_camera_root_node.xf.mat;
-    D_800EEDD0.m[1][0] >>= 1;
-    D_800EEDD0.m[1][1] >>= 1;
-    D_800EEDD0.m[1][2] >>= 1;
+    g_camera_halved_row_view_matrix = g_view_camera_root_node.xf.mat;
+    g_camera_halved_row_view_matrix.m[1][0] >>= 1;
+    g_camera_halved_row_view_matrix.m[1][1] >>= 1;
+    g_camera_halved_row_view_matrix.m[1][2] >>= 1;
 }
 
-MATRIX *camera_GetViewMatrixWithHalvedMiddleRow(void) { return &D_800EEDD0; }
+MATRIX *camera_GetViewMatrixWithHalvedMiddleRow(void) {
+    return &g_camera_halved_row_view_matrix;
+}
 
 void node_InitIdentity(Unk80101DF0Record *node) {
     node->unk4 = 8;
@@ -754,7 +756,7 @@ void func_800477D4(void) {}
 void wave_SetCellBuffer(s32 a0) { g_wave_cell_buffer = (s16 *)a0; }
 
 /* 17 phases and the 9 x 17 table wave_Update steps from them
- * (D_800EF800 takes the last row's deltas) */
+ * (g_wave_last_row_steps takes the last row's deltas) */
 extern s32 D_800EF558[17];
 extern s32 g_wave_vertex_grid[9][17];
 
@@ -922,7 +924,7 @@ void wave_Update(void) {
             }
             g_wave_vertex_grid[i][j] += v1;
             if (i == 8) {
-                D_800EF800[j] = v1;
+                g_wave_last_row_steps[j] = v1;
             }
         }
     }
@@ -1005,8 +1007,8 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
         return (s32)0xFFFE7960;
     }
     {
-        /* row 8 of the table; a1 + 1 == 17 / 18 reads on into D_800EF800,
-         * which follows the table */
+        /* row 8 of the table; a1 + 1 == 17 / 18 reads on into
+         * g_wave_last_row_steps, which follows the table */
         s32 val1 = g_wave_vertex_grid[8][a1] * var_3;
         s32 val2 = g_wave_vertex_grid[8][a1 + 1] * (0x1000 - var_3);
         return ((val1 + val2) >> 12) - 0x3F48;
@@ -1019,10 +1021,10 @@ s32 wave_SampleLastRowStepsAtCachedIndex(void) {
         return 0;
     }
     {
-        s32 v0 = D_800EF800[v1];
+        s32 v0 = g_wave_last_row_steps[v1];
         s32 a0 = D_800A33D8;
         s32 val1 = v0 * a0;
-        s32 v3 = D_800EF800[v1 + 1];
+        s32 v3 = g_wave_last_row_steps[v1 + 1];
         s32 val2 = v3 * (0x1000 - a0);
         return (val1 + val2) >> 12;
     }
@@ -1556,13 +1558,14 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
     base = (u8 *)resource_LoadOrReuseGrayscaleAdjustedNodeAsset(var_1);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
     delta = (s32)(p - base);
-    D_800A33E4 = (s32)p;
+    g_node_retained_draw_node_buffer = (s32)p;
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
      * -8 / -6 / -9 / 0 from it). As Unk80045878Node stores (unk0 / unk1 /
      * unk2 / unk4 / light_setup_index), no q: p[var_1] subscripts 11 (delta
-     * taken as the byte offset first 14, D_800A33E4 stored first 11), p++
-     * walk in the for header 12 (delta first 9, field order 0/1/2/4/A 12, p
-     * read back from D_800A33E4 9), delta first with p++ in the body 7 */
+     * taken as the byte offset first 14, g_node_retained_draw_node_buffer
+     * stored first 11), p++ walk in the for header 12 (delta first 9, field
+     * order 0/1/2/4/A 12, p read back from g_node_retained_draw_node_buffer 9),
+     * delta first with p++ in the body 7 */
     q = p + 0xA;
     /* FAKE: the record counter reuses `var_1` (the slot id, tested and
        passed to resource_LoadOrReuseGrayscaleAdjustedNodeAsset above),
@@ -1581,7 +1584,7 @@ s32 node_LoadSlotMappedAssetAndInitRetainedDrawNodes(s32 slot_index) {
 }
 
 void node_RebaseRetainedDrawNodeBuffer(s32 rebase_delta) {
-    D_800A33E4 += rebase_delta;
+    g_node_retained_draw_node_buffer += rebase_delta;
 }
 
 extern u32 *g_gpu_ot256_ptr;
@@ -1612,7 +1615,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     rot.vz = 0;
     rot.vz = ((s32)Judge[arg0 & 0xFFF] * rot.vx) >> 12;
     rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * rot.vx) >> 12;
-    node = (Unk80045878Node *)D_800A33E4;
+    node = (Unk80045878Node *)g_node_retained_draw_node_buffer;
     ApplyMatrix(mat_tbl[0], &rot, (VECTOR *)g_node_slot_relative_matrix.t);
     g_node_slot_relative_matrix.t[0] += mat_tbl[0]->t[0];
     g_node_slot_relative_matrix.t[1] += mat_tbl[1]->t[1];

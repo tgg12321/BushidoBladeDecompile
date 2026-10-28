@@ -5,8 +5,8 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53168 80062968 7C00B7AF */  sw         $s7, 0x7C($sp)
     /* 5316C 8006296C 21B80000 */  addu       $s7, $zero, $zero
     /* 53170 80062970 7800B6AF */  sw         $s6, 0x78($sp)
-    /* 53174 80062974 0F80163C */  lui        $s6, %hi(D_800F0C04)
-    /* 53178 80062978 040CD626 */  addiu      $s6, $s6, %lo(D_800F0C04)
+    /* 53174 80062974 0F80163C */  lui        $s6, %hi(g_eff_rotated_quad_cluster_ages)
+    /* 53178 80062978 040CD626 */  addiu      $s6, $s6, %lo(g_eff_rotated_quad_cluster_ages)
     /* 5317C 8006297C 8000BEAF */  sw         $fp, 0x80($sp)
     /* 53180 80062980 21F00000 */  addu       $fp, $zero, $zero
     /* 53184 80062984 8400BFAF */  sw         $ra, 0x84($sp)
@@ -70,9 +70,9 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 53268 80062A68 6FFB010C */  jal        ScaleMatrix
     /* 5326C 80062A6C 21208002 */   addu      $a0, $s4, $zero
     /* 53270 80062A70 A403848F */  lw         $a0, %gp_rel(g_eff_view_origin)($gp)
-    /* 53274 80062A74 0F80013C */  lui        $at, %hi(D_800F0FB8)
+    /* 53274 80062A74 0F80013C */  lui        $at, %hi(g_eff_rotated_quad_cluster_positions)
     /* 53278 80062A78 21083E00 */  addu       $at, $at, $fp
-    /* 5327C 80062A7C B80F228C */  lw         $v0, %lo(D_800F0FB8)($at)
+    /* 5327C 80062A7C B80F228C */  lw         $v0, %lo(g_eff_rotated_quad_cluster_positions)($at)
     /* 53280 80062A80 0000838C */  lw         $v1, 0x0($a0)
     /* 53284 80062A84 21288002 */  addu       $a1, $s4, $zero
     /* 53288 80062A88 23104300 */  subu       $v0, $v0, $v1

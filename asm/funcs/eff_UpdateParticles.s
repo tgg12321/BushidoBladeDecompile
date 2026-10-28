@@ -793,7 +793,7 @@ glabel eff_UpdateParticles
     /* 590D0 800688D0 F403828F */  lw         $v0, %gp_rel(g_eff_right_x_offset)($gp)
     /* 590D4 800688D4 00000000 */  nop
     /* 590D8 800688D8 00004294 */  lhu        $v0, 0x0($v0)
-    /* 590DC 800688DC F003838F */  lw         $v1, %gp_rel(D_800A34BC)($gp)
+    /* 590DC 800688DC F003838F */  lw         $v1, %gp_rel(g_eff_left_x_offset)($gp)
     /* 590E0 800688E0 23100200 */  negu       $v0, $v0
     /* 590E4 800688E4 000062A4 */  sh         $v0, 0x0($v1)
     /* 590E8 800688E8 FC03828F */  lw         $v0, %gp_rel(g_eff_lower_y_offset_word)($gp)
@@ -867,7 +867,7 @@ glabel eff_UpdateParticles
     /* 591E4 800689E4 0807828F */  lw         $v0, %gp_rel(g_eff_quad_cursor)($gp)
     /* 591E8 800689E8 5800A98F */  lw         $t1, 0x58($sp)
     /* 591EC 800689EC EC03868F */  lw         $a2, %gp_rel(g_eff_screen_xy)($gp)
-    /* 591F0 800689F0 F003888F */  lw         $t0, %gp_rel(D_800A34BC)($gp)
+    /* 591F0 800689F0 F003888F */  lw         $t0, %gp_rel(g_eff_left_x_offset)($gp)
     /* 591F4 800689F4 23186200 */  subu       $v1, $v1, $v0
     /* 591F8 800689F8 40100300 */  sll        $v0, $v1, 1
     /* 591FC 800689FC 21104300 */  addu       $v0, $v0, $v1

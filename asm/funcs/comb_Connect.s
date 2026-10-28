@@ -33,7 +33,7 @@ glabel comb_Connect
     /* 2B530 8003AD30 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
     /* 2B534 8003AD34 A2D7000C */  jal        bits_ExtractMask3F83F8
     /* 2B538 8003AD38 00000000 */   nop
-    /* 2B53C 8003AD3C F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
+    /* 2B53C 8003AD3C F80682A7 */  sh         $v0, %gp_rel(g_comb_send_payload)($gp)
     /* 2B540 8003AD40 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 2B544 8003AD44 00000000 */   nop
     /* 2B548 8003AD48 330A020C */  jal        VSync
@@ -48,7 +48,7 @@ glabel comb_Connect
     /* 2B56C 8003AD6C E43822AC */  sw         $v0, %lo(D_800A38E4)($at)
     /* 2B570 8003AD70 2265000C */  jal        pad_PackSavedButtonMappingLowNibbles
     /* 2B574 8003AD74 00000000 */   nop
-    /* 2B578 8003AD78 F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
+    /* 2B578 8003AD78 F80682A7 */  sh         $v0, %gp_rel(g_comb_send_payload)($gp)
     /* 2B57C 8003AD7C 330A020C */  jal        VSync
     /* 2B580 8003AD80 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B584 8003AD84 92EA000C */  jal        comb_ExchangeEmptyPad
@@ -67,7 +67,7 @@ glabel comb_Connect
     /* 2B5B8 8003ADB8 00000000 */   nop
     /* 2B5BC 8003ADBC 55E4010C */  jal        rand
     /* 2B5C0 8003ADC0 00000000 */   nop
-    /* 2B5C4 8003ADC4 F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
+    /* 2B5C4 8003ADC4 F80682A7 */  sh         $v0, %gp_rel(g_comb_send_payload)($gp)
     /* 2B5C8 8003ADC8 330A020C */  jal        VSync
     /* 2B5CC 8003ADCC 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B5D0 8003ADD0 92EA000C */  jal        comb_ExchangeEmptyPad
@@ -85,7 +85,7 @@ glabel comb_Connect
     /* 2B600 8003AE00 00000000 */  nop
     /* 2B604 8003AE04 04004014 */  bnez       $v0, .L8003AE18
     /* 2B608 8003AE08 00000000 */   nop
-    /* 2B60C 8003AE0C F8068297 */  lhu        $v0, %gp_rel(D_800A37C4)($gp)
+    /* 2B60C 8003AE0C F8068297 */  lhu        $v0, %gp_rel(g_comb_send_payload)($gp)
     /* 2B610 8003AE10 88EB0008 */  j          .L8003AE20
     /* 2B614 8003AE14 00000000 */   nop
   .L8003AE18:

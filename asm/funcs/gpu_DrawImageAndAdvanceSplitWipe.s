@@ -52,7 +52,7 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 50564 8005FD64 80201700 */  sll        $a0, $s7, 2
     /* 50568 8005FD68 2DEA010C */  jal        AddPrim
     /* 5056C 8005FD6C 21204400 */   addu      $a0, $v0, $a0
-    /* 50570 8005FD70 AC01838F */  lw         $v1, %gp_rel(D_800A3278)($gp)
+    /* 50570 8005FD70 AC01838F */  lw         $v1, %gp_rel(g_gpu_split_wipe_frame)($gp)
     /* 50574 8005FD74 0A80023C */  lui        $v0, %hi(D_8009B6B0)
     /* 50578 8005FD78 B0B64224 */  addiu      $v0, $v0, %lo(D_8009B6B0)
     /* 5057C 8005FD7C 4000A0A3 */  sb         $zero, 0x40($sp)
@@ -72,7 +72,7 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 505B4 8005FDB4 23186200 */  subu       $v1, $v1, $v0
     /* 505B8 8005FDB8 7800A3AF */  sw         $v1, 0x78($sp)
   .L8005FDBC:
-    /* 505BC 8005FDBC AC01828F */  lw         $v0, %gp_rel(D_800A3278)($gp)
+    /* 505BC 8005FDBC AC01828F */  lw         $v0, %gp_rel(g_gpu_split_wipe_frame)($gp)
     /* 505C0 8005FDC0 00000000 */  nop
     /* 505C4 8005FDC4 B5004228 */  slti       $v0, $v0, 0xB5
     /* 505C8 8005FDC8 67004014 */  bnez       $v0, .L8005FF68
@@ -206,7 +206,7 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 507B8 8005FFB8 02004228 */  slti       $v0, $v0, 0x2
     /* 507BC 8005FFBC EBFF4014 */  bnez       $v0, .L8005FF6C
     /* 507C0 8005FFC0 1800A427 */   addiu     $a0, $sp, 0x18
-    /* 507C4 8005FFC4 AC01828F */  lw         $v0, %gp_rel(D_800A3278)($gp)
+    /* 507C4 8005FFC4 AC01828F */  lw         $v0, %gp_rel(g_gpu_split_wipe_frame)($gp)
     /* 507C8 8005FFC8 00000000 */  nop
     /* 507CC 8005FFCC B5004228 */  slti       $v0, $v0, 0xB5
     /* 507D0 8005FFD0 0B004014 */  bnez       $v0, .L80060000
@@ -252,10 +252,10 @@ glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 5086C 8006006C 41014228 */  slti       $v0, $v0, 0x141
     /* 50870 80060070 05004010 */  beqz       $v0, .L80060088
     /* 50874 80060074 00000000 */   nop
-    /* 50878 80060078 AC01828F */  lw         $v0, %gp_rel(D_800A3278)($gp)
+    /* 50878 80060078 AC01828F */  lw         $v0, %gp_rel(g_gpu_split_wipe_frame)($gp)
     /* 5087C 8006007C 00000000 */  nop
     /* 50880 80060080 01004224 */  addiu      $v0, $v0, 0x1
-    /* 50884 80060084 AC0182AF */  sw         $v0, %gp_rel(D_800A3278)($gp)
+    /* 50884 80060084 AC0182AF */  sw         $v0, %gp_rel(g_gpu_split_wipe_frame)($gp)
   .L80060088:
     /* 50888 80060088 6000A88F */  lw         $t0, 0x60($sp)
     /* 5088C 8006008C 00000000 */  nop

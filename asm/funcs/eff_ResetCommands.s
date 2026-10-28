@@ -12,7 +12,7 @@ glabel eff_ResetCommands
     /* 51484 80060C84 F9FF4014 */  bnez       $v0, .L80060C6C
     /* 51488 80060C88 04008424 */   addiu     $a0, $a0, 0x4
     /* 5148C 80060C8C 920380A7 */  sh         $zero, %gp_rel(D_800A345E)($gp)
-    /* 51490 80060C90 900380A7 */  sh         $zero, %gp_rel(D_800A345C)($gp)
+    /* 51490 80060C90 900380A7 */  sh         $zero, %gp_rel(g_eff_yawed_quad_tex_selectors)($gp)
     /* 51494 80060C94 8C0380AF */  sw         $zero, %gp_rel(D_800A3458)($gp)
     /* 51498 80060C98 880380AF */  sw         $zero, %gp_rel(g_eff_yawed_quad_slot_masks)($gp)
     /* 5149C 80060C9C 840380AF */  sw         $zero, %gp_rel(D_800A3450)($gp)

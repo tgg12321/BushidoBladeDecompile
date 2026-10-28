@@ -6,7 +6,7 @@
  * motion_StartPlaybackAtIndexedBasePlusOffset /
  * motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock. .text 0x80052D00 (ROM
  * 0x43500). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #72): the
- * statics D_800A33F0, g_collision_segment_work and g_collision_hit_tag
+ * statics g_collision_grid, g_collision_segment_work and g_collision_hit_tag
  * (0x800A33F0..0x800A33F8) are used only here and open the old 3AB48 .sbss
  * group in address order; calls run from here into 3AB48.c's GTE helpers
  * (gte_SumSquares3, gte_ReadIR1IR2Sra2,
@@ -27,7 +27,7 @@
 
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
-static s32 D_800A33F0;
+static s32 g_collision_grid;
 static Work_80053E9C *g_collision_segment_work;
 static u16 g_collision_hit_tag;
 static s32 D_800A33FC; /* not named by any code or data: size from the gap */
@@ -203,14 +203,14 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
 extern s32 collision_WalkSegmentGrid(s32 *, s16 *);
 extern s32 collision_TestCellKeepingNearestHitScalarProjection();
 extern s32 collision_TestCellKeepingNearestHitGteProjection();
-extern Work_80053E9C D_800EF9F8;
+extern Work_80053E9C g_collision_static_segment_work;
 
 void collision_TestSegmentExtendingShortStart(
     s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal) {
     s32 start_x, start_y, start_z;
     s32 end_x, end_y, end_z;
-    g_collision_segment_work = &D_800EF9F8;
-    D_800EF9F8.seg_start = *(VECTOR *)segment_start;
+    g_collision_segment_work = &g_collision_static_segment_work;
+    g_collision_static_segment_work.seg_start = *(VECTOR *)segment_start;
     g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
     if (gte_SumSquares3(g_collision_segment_work->seg_end.vx -
                             g_collision_segment_work->seg_start.vx,
@@ -276,8 +276,8 @@ s32 collision_TestSegmentExtendingShortStartWithWork(
 
 s32 collision_TestSegment(
     s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal) {
-    g_collision_segment_work = &D_800EF9F8;
-    D_800EF9F8.seg_start = *(VECTOR *)segment_start;
+    g_collision_segment_work = &g_collision_static_segment_work;
+    g_collision_static_segment_work.seg_start = *(VECTOR *)segment_start;
     g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
     g_collision_segment_work->unk5C =
         collision_TestCellKeepingNearestHitGteProjection;
@@ -330,11 +330,12 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(
     if (cell_x < 0 || cell_z < 0 || cell_x >= 32 || cell_z >= 32) {
         return 0;
     }
-    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[cell_z * 32 + cell_x];
+    g_collision_segment_work->unkE0 =
+        ((u16 *)g_collision_grid)[cell_z * 32 + cell_x];
     if (g_collision_segment_work->unkE0 == 0xFFFF) {
         return 0;
     }
-    data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
+    data = (s16 *)(g_collision_grid + g_collision_segment_work->unkE0);
     x = cell_x * 2000 - 32000;
     z = cell_z * 2000 - 32000;
     g_collision_segment_work->local_start_x =
@@ -568,11 +569,12 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
     if (cell_x < 0 || cell_z < 0 || cell_x >= 32 || cell_z >= 32) {
         return 0;
     }
-    g_collision_segment_work->unkE0 = ((u16 *)D_800A33F0)[cell_z * 32 + cell_x];
+    g_collision_segment_work->unkE0 =
+        ((u16 *)g_collision_grid)[cell_z * 32 + cell_x];
     if (g_collision_segment_work->unkE0 == 0xFFFF) {
         return 0;
     }
-    data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
+    data = (s16 *)(g_collision_grid + g_collision_segment_work->unkE0);
     x = cell_x * 2000 - 32000;
     z = cell_z * 2000 - 32000;
     g_collision_segment_work->local_start_x =
@@ -739,9 +741,11 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
     return g_collision_segment_work->nearest_dist_sq != 0x7FFFFFFF;
 }
 
-void collision_SetGrid(s32 grid_addr) { D_800A33F0 = grid_addr; }
+void collision_SetGrid(s32 grid_addr) { g_collision_grid = grid_addr; }
 
-void collision_RebaseGrid(s32 rebase_delta) { D_800A33F0 += rebase_delta; }
+void collision_RebaseGrid(s32 rebase_delta) {
+    g_collision_grid += rebase_delta;
+}
 
 s16 collision_GetHitTag(void) { return g_collision_hit_tag; }
 

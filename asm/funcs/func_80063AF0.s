@@ -9,7 +9,7 @@ glabel func_80063AF0
     /* 5430C 80063B0C 00000000 */  nop
     /* 54310 80063B10 43140200 */  sra        $v0, $v0, 17
     /* 54314 80063B14 03004230 */  andi       $v0, $v0, 0x3
-    /* 54318 80063B18 900382A7 */  sh         $v0, %gp_rel(D_800A345C)($gp)
+    /* 54318 80063B18 900382A7 */  sh         $v0, %gp_rel(g_eff_yawed_quad_tex_selectors)($gp)
     /* 5431C 80063B1C F48E010C */  jal        eff_AllocateOrRecycleYawedQuadSlot
     /* 54320 80063B20 21200000 */   addu      $a0, $zero, $zero
     /* 54324 80063B24 1000BF8F */  lw         $ra, 0x10($sp)

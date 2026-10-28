@@ -1,5 +1,5 @@
 glabel gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
-    /* 4DD54 8005D554 A001838F */  lw         $v1, %gp_rel(D_800A326C)($gp)
+    /* 4DD54 8005D554 A001838F */  lw         $v1, %gp_rel(g_gpu_jittered_quad_pair_cycle)($gp)
     /* 4DD58 8005D558 88FFBD27 */  addiu      $sp, $sp, -0x78
     /* 4DD5C 8005D55C 5000B0AF */  sw         $s0, 0x50($sp)
     /* 4DD60 8005D560 2180A000 */  addu       $s0, $a1, $zero
@@ -19,7 +19,7 @@ glabel gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 4DD94 8005D594 83100200 */  sra        $v0, $v0, 2
     /* 4DD98 8005D598 80100200 */  sll        $v0, $v0, 2
     /* 4DD9C 8005D59C 23106200 */  subu       $v0, $v1, $v0
-    /* 4DDA0 8005D5A0 A00182AF */  sw         $v0, %gp_rel(D_800A326C)($gp)
+    /* 4DDA0 8005D5A0 A00182AF */  sw         $v0, %gp_rel(g_gpu_jittered_quad_pair_cycle)($gp)
     /* 4DDA4 8005D5A4 0200001A */  blez       $s0, .L8005D5B0
     /* 4DDA8 8005D5A8 21888000 */   addu      $s1, $a0, $zero
     /* 4DDAC 8005D5AC FFFF1026 */  addiu      $s0, $s0, -0x1
@@ -46,7 +46,7 @@ glabel gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 4DDFC 8005D5FC 23104300 */  subu       $v0, $v0, $v1
     /* 4DE00 8005D600 80100200 */  sll        $v0, $v0, 2
     /* 4DE04 8005D604 4C0383AF */  sw         $v1, %gp_rel(g_gpu_jitter_random_state)($gp)
-    /* 4DE08 8005D608 A001838F */  lw         $v1, %gp_rel(D_800A326C)($gp)
+    /* 4DE08 8005D608 A001838F */  lw         $v1, %gp_rel(g_gpu_jittered_quad_pair_cycle)($gp)
     /* 4DE0C 8005D60C 00000000 */  nop
     /* 4DE10 8005D610 01006324 */  addiu      $v1, $v1, 0x1
     /* 4DE14 8005D614 40180300 */  sll        $v1, $v1, 1
@@ -154,7 +154,7 @@ glabel gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 4DFA8 8005D7A8 4C0383AF */  sw         $v1, %gp_rel(g_gpu_jitter_random_state)($gp)
     /* 4DFAC 8005D7AC CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 4DFB0 8005D7B0 2C00A6AF */   sw        $a2, 0x2C($sp)
-    /* 4DFB4 8005D7B4 A001838F */  lw         $v1, %gp_rel(D_800A326C)($gp)
+    /* 4DFB4 8005D7B4 A001838F */  lw         $v1, %gp_rel(g_gpu_jittered_quad_pair_cycle)($gp)
     /* 4DFB8 8005D7B8 00000000 */  nop
     /* 4DFBC 8005D7BC 01006324 */  addiu      $v1, $v1, 0x1
     /* 4DFC0 8005D7C0 40180300 */  sll        $v1, $v1, 1
@@ -162,10 +162,10 @@ glabel gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle
     /* 4DFC8 8005D7C8 A1FF6014 */  bnez       $v1, .L8005D650
     /* 4DFCC 8005D7CC 21884000 */   addu      $s1, $v0, $zero
   .L8005D7D0:
-    /* 4DFD0 8005D7D0 A001838F */  lw         $v1, %gp_rel(D_800A326C)($gp)
+    /* 4DFD0 8005D7D0 A001838F */  lw         $v1, %gp_rel(g_gpu_jittered_quad_pair_cycle)($gp)
     /* 4DFD4 8005D7D4 21102002 */  addu       $v0, $s1, $zero
     /* 4DFD8 8005D7D8 01006324 */  addiu      $v1, $v1, 0x1
-    /* 4DFDC 8005D7DC A00183AF */  sw         $v1, %gp_rel(D_800A326C)($gp)
+    /* 4DFDC 8005D7DC A00183AF */  sw         $v1, %gp_rel(g_gpu_jittered_quad_pair_cycle)($gp)
     /* 4DFE0 8005D7E0 7400BF8F */  lw         $ra, 0x74($sp)
     /* 4DFE4 8005D7E4 7000BE8F */  lw         $fp, 0x70($sp)
     /* 4DFE8 8005D7E8 6C00B78F */  lw         $s7, 0x6C($sp)

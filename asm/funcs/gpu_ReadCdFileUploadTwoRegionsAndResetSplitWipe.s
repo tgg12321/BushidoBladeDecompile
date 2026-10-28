@@ -45,7 +45,7 @@ glabel gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe
     /* 50474 8005FC74 14002526 */   addiu     $a1, $s1, 0x14
     /* 50478 8005FC78 CFEC010C */  jal        DrawSync
     /* 5047C 8005FC7C 21200000 */   addu      $a0, $zero, $zero
-    /* 50480 8005FC80 AC0180AF */  sw         $zero, %gp_rel(D_800A3278)($gp)
+    /* 50480 8005FC80 AC0180AF */  sw         $zero, %gp_rel(g_gpu_split_wipe_frame)($gp)
     /* 50484 8005FC84 2800BF8F */  lw         $ra, 0x28($sp)
     /* 50488 8005FC88 2400B18F */  lw         $s1, 0x24($sp)
     /* 5048C 8005FC8C 2000B08F */  lw         $s0, 0x20($sp)

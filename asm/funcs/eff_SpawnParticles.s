@@ -24,9 +24,9 @@ glabel eff_SpawnParticles
   .L80067254:
     /* 57A54 80067254 A8038F8F */  lw         $t7, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 57A58 80067258 40101400 */  sll        $v0, $s4, 1
-    /* 57A5C 8006725C 0A80013C */  lui        $at, %hi(D_800A3438)
+    /* 57A5C 8006725C 0A80013C */  lui        $at, %hi(g_eff_particle_group_fill_counts)
     /* 57A60 80067260 21082200 */  addu       $at, $at, $v0
-    /* 57A64 80067264 383420A4 */  sh         $zero, %lo(D_800A3438)($at)
+    /* 57A64 80067264 383420A4 */  sh         $zero, %lo(g_eff_particle_group_fill_counts)($at)
     /* 57A68 80067268 0000EC8D */  lw         $t4, 0x0($t7)
     /* 57A6C 8006726C 0400ED8D */  lw         $t5, 0x4($t7)
     /* 57A70 80067270 0000CC48 */  ctc2       $t4, $0 /* handwritten instruction */

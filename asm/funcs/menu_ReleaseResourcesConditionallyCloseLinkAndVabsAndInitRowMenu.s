@@ -27,8 +27,8 @@ glabel menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu
     /* 25CE0 800354E0 CB6D010C */  jal        snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb
     /* 25CE4 800354E4 00000000 */   nop
     /* 25CE8 800354E8 FFFF0224 */  addiu      $v0, $zero, -0x1
-    /* 25CEC 800354EC 0A80013C */  lui        $at, %hi(D_800A390E)
-    /* 25CF0 800354F0 0E3922A0 */  sb         $v0, %lo(D_800A390E)($at)
+    /* 25CEC 800354EC 0A80013C */  lui        $at, %hi(g_fight_loaded_stage_index)
+    /* 25CF0 800354F0 0E3922A0 */  sb         $v0, %lo(g_fight_loaded_stage_index)($at)
     /* 25CF4 800354F4 01000224 */  addiu      $v0, $zero, 0x1
   .L800354F8:
     /* 25CF8 800354F8 0C0182A3 */  sb         $v0, %gp_rel(D_800A31D8)($gp)

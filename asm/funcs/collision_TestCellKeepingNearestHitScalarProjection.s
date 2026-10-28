@@ -16,7 +16,7 @@ glabel collision_TestCellKeepingNearestHitScalarProjection
     /* 43F8C 8005378C 40291300 */   sll       $a1, $s3, 5
     /* 43F90 80053790 2110B200 */  addu       $v0, $a1, $s2
     /* 43F94 80053794 40100200 */  sll        $v0, $v0, 1
-    /* 43F98 80053798 2403848F */  lw         $a0, %gp_rel(D_800A33F0)($gp)
+    /* 43F98 80053798 2403848F */  lw         $a0, %gp_rel(g_collision_grid)($gp)
     /* 43F9C 8005379C 2803878F */  lw         $a3, %gp_rel(g_collision_segment_work)($gp)
     /* 43FA0 800537A0 21104400 */  addu       $v0, $v0, $a0
     /* 43FA4 800537A4 00004394 */  lhu        $v1, 0x0($v0)

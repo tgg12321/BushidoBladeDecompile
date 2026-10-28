@@ -5,8 +5,8 @@ glabel fight_CreateBallisticRecordAndDispatchEvent
     /* 22870 80032070 50000524 */  addiu      $a1, $zero, 0x50
     /* 22874 80032074 38FF0824 */  addiu      $t0, $zero, -0xC8
     /* 22878 80032078 21180000 */  addu       $v1, $zero, $zero
-    /* 2287C 8003207C 1080043C */  lui        $a0, %hi(D_80104E88)
-    /* 22880 80032080 884E8424 */  addiu      $a0, $a0, %lo(D_80104E88)
+    /* 2287C 8003207C 1080043C */  lui        $a0, %hi(g_fight_ballistic_records)
+    /* 22880 80032080 884E8424 */  addiu      $a0, $a0, %lo(g_fight_ballistic_records)
     /* 22884 80032084 2400BFAF */  sw         $ra, 0x24($sp)
     /* 22888 80032088 2000B0AF */  sw         $s0, 0x20($sp)
   .L8003208C:

@@ -43,7 +43,7 @@ void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     eff_ClearInitFlag();
     if (D_800A31D8 != 0) {
         snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
-        D_800A390E = -1;
+        g_fight_loaded_stage_index = -1;
     }
     D_800A31D8 = 1;
     menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();

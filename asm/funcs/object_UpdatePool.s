@@ -710,9 +710,9 @@ glabel object_UpdatePool
     /* 21FC8 800317C8 C0180200 */  sll        $v1, $v0, 3
     /* 21FCC 800317CC 23186200 */  subu       $v1, $v1, $v0
     /* 21FD0 800317D0 40180300 */  sll        $v1, $v1, 1
-    /* 21FD4 800317D4 0980013C */  lui        $at, %hi(D_8008E194)
+    /* 21FD4 800317D4 0980013C */  lui        $at, %hi(g_object_kind_params)
     /* 21FD8 800317D8 21082300 */  addu       $at, $at, $v1
-    /* 21FDC 800317DC 94E12284 */  lh         $v0, %lo(D_8008E194)($at)
+    /* 21FDC 800317DC 94E12284 */  lh         $v0, %lo(g_object_kind_params)($at)
     /* 21FE0 800317E0 00000000 */  nop
     /* 21FE4 800317E4 0F004914 */  bne        $v0, $t1, .L80031824
     /* 21FE8 800317E8 21280000 */   addu      $a1, $zero, $zero

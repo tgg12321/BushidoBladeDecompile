@@ -3,7 +3,7 @@ glabel gpu_DrawScrollingAndDelayedSheets
     /* 68E58 80078658 4C00B1AF */  sw         $s1, 0x4C($sp)
     /* 68E5C 8007865C 21888000 */  addu       $s1, $a0, $zero
     /* 68E60 80078660 4405838F */  lw         $v1, %gp_rel(D_800A3610)($gp)
-    /* 68E64 80078664 3C05848F */  lw         $a0, %gp_rel(D_800A3608)($gp)
+    /* 68E64 80078664 3C05848F */  lw         $a0, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 68E68 80078668 02000224 */  addiu      $v0, $zero, 0x2
     /* 68E6C 8007866C 5000B2AF */  sw         $s2, 0x50($sp)
     /* 68E70 80078670 21900000 */  addu       $s2, $zero, $zero
@@ -78,7 +78,7 @@ glabel gpu_DrawScrollingAndDelayedSheets
     /* 68F78 80078778 4000A0A3 */   sb        $zero, 0x40($sp)
   .L8007877C:
     /* 68F7C 8007877C 0000028E */  lw         $v0, 0x0($s0)
-    /* 68F80 80078780 3C05838F */  lw         $v1, %gp_rel(D_800A3608)($gp)
+    /* 68F80 80078780 3C05838F */  lw         $v1, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 68F84 80078784 1800A2AF */  sw         $v0, 0x18($sp)
     /* 68F88 80078788 0C004224 */  addiu      $v0, $v0, 0xC
     /* 68F8C 8007878C 23180300 */  negu       $v1, $v1

@@ -4,8 +4,8 @@ glabel fight_UpdateTimeRecordPresentation
     /* 2D0BC 8003C8BC B837428C */  lw         $v0, %lo(g_handler_frame_counter)($v0)
     /* 2D0C0 8003C8C0 0A80043C */  lui        $a0, %hi(g_prim_buf_cursor)
     /* 2D0C4 8003C8C4 B438848C */  lw         $a0, %lo(g_prim_buf_cursor)($a0)
-    /* 2D0C8 8003C8C8 0A80063C */  lui        $a2, %hi(D_800A38E9)
-    /* 2D0CC 8003C8CC E938C690 */  lbu        $a2, %lo(D_800A38E9)($a2)
+    /* 2D0C8 8003C8C8 0A80063C */  lui        $a2, %hi(g_fight_best_time_rank)
+    /* 2D0CC 8003C8CC E938C690 */  lbu        $a2, %lo(g_fight_best_time_rank)($a2)
     /* 2D0D0 8003C8D0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2D0D4 8003C8D4 01004224 */  addiu      $v0, $v0, 0x1
     /* 2D0D8 8003C8D8 0A80013C */  lui        $at, %hi(g_handler_frame_counter)

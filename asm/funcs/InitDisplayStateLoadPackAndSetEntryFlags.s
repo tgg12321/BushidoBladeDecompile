@@ -88,7 +88,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EE74 8006E674 AC0480A7 */  sh         $zero, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 5EE78 8006E678 B00480A7 */  sh         $zero, %gp_rel(D_800A357C)($gp)
     /* 5EE7C 8006E67C B40480A7 */  sh         $zero, %gp_rel(g_entry_menu_handler_index)($gp)
-    /* 5EE80 8006E680 D40480AF */  sw         $zero, %gp_rel(D_800A35A0)($gp)
+    /* 5EE80 8006E680 D40480AF */  sw         $zero, %gp_rel(g_entry_menu_exit_result)($gp)
     /* 5EE84 8006E684 BC0480A7 */  sh         $zero, %gp_rel(g_entry_menu_grid_column_cursors)($gp)
     /* 5EE88 8006E688 C00480A7 */  sh         $zero, %gp_rel(g_entry_menu_grid_row_cursors)($gp)
     /* 5EE8C 8006E68C BE0482A7 */  sh         $v0, %gp_rel(D_800A358A)($gp)

@@ -1,9 +1,9 @@
 glabel fight_ClearBallisticRecords
     /* 22840 80032040 84000224 */  addiu      $v0, $zero, 0x84
   .L80032044:
-    /* 22844 80032044 1080013C */  lui        $at, %hi(D_80104E88)
+    /* 22844 80032044 1080013C */  lui        $at, %hi(g_fight_ballistic_records)
     /* 22848 80032048 21082200 */  addu       $at, $at, $v0
-    /* 2284C 8003204C 884E20A0 */  sb         $zero, %lo(D_80104E88)($at)
+    /* 2284C 8003204C 884E20A0 */  sb         $zero, %lo(g_fight_ballistic_records)($at)
     /* 22850 80032050 D4FF4224 */  addiu      $v0, $v0, -0x2C
     /* 22854 80032054 FBFF4104 */  bgez       $v0, .L80032044
     /* 22858 80032058 00000000 */   nop

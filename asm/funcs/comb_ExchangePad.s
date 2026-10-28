@@ -1,5 +1,5 @@
 glabel comb_ExchangePad
-    /* 2AF28 8003A728 40018293 */  lbu        $v0, %gp_rel(D_800A320C)($gp)
+    /* 2AF28 8003A728 40018293 */  lbu        $v0, %gp_rel(g_comb_events_enabled)($gp)
     /* 2AF2C 8003A72C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2AF30 8003A730 1400B1AF */  sw         $s1, 0x14($sp)
     /* 2AF34 8003A734 21888000 */  addu       $s1, $a0, $zero
@@ -20,7 +20,7 @@ glabel comb_ExchangePad
     /* 2AF70 8003A770 25104400 */  or         $v0, $v0, $a0
     /* 2AF74 8003A774 FFFF1232 */  andi       $s2, $s0, 0xFFFF
     /* 2AF78 8003A778 00002386 */  lh         $v1, 0x0($s1)
-    /* 2AF7C 8003A77C F8068497 */  lhu        $a0, %gp_rel(D_800A37C4)($gp)
+    /* 2AF7C 8003A77C F8068497 */  lhu        $a0, %gp_rel(g_comb_send_payload)($gp)
     /* 2AF80 8003A780 001C0300 */  sll        $v1, $v1, 16
     /* 2AF84 8003A784 25104300 */  or         $v0, $v0, $v1
     /* 2AF88 8003A788 25105200 */  or         $v0, $v0, $s2
@@ -75,7 +75,7 @@ glabel comb_ExchangePad
     /* 2B044 8003A844 24104300 */  and        $v0, $v0, $v1
     /* 2B048 8003A848 26004014 */  bnez       $v0, .L8003A8E4
     /* 2B04C 8003A84C 00000000 */   nop
-    /* 2B050 8003A850 0406828F */  lw         $v0, %gp_rel(D_800A36D0)($gp)
+    /* 2B050 8003A850 0406828F */  lw         $v0, %gp_rel(g_comb_prev_send_word)($gp)
     /* 2B054 8003A854 00000000 */  nop
     /* 2B058 8003A858 24104300 */  and        $v0, $v0, $v1
     /* 2B05C 8003A85C 21004014 */  bnez       $v0, .L8003A8E4
@@ -146,7 +146,7 @@ glabel comb_ExchangePad
     /* 2B14C 8003A94C 63EA0008 */  j          .L8003A98C
     /* 2B150 8003A950 0F004230 */   andi      $v0, $v0, 0xF
   .L8003A954:
-    /* 2B154 8003A954 04069097 */  lhu        $s0, %gp_rel(D_800A36D0)($gp)
+    /* 2B154 8003A954 04069097 */  lhu        $s0, %gp_rel(g_comb_prev_send_word)($gp)
     /* 2B158 8003A958 00000000 */  nop
     /* 2B15C 8003A95C 00141000 */  sll        $v0, $s0, 16
     /* 2B160 8003A960 25104300 */  or         $v0, $v0, $v1
@@ -185,7 +185,7 @@ glabel comb_ExchangePad
     /* 2B1DC 8003A9DC 02000224 */  addiu      $v0, $zero, 0x2
     /* 2B1E0 8003A9E0 08006214 */  bne        $v1, $v0, .L8003AA04
     /* 2B1E4 8003A9E4 00000000 */   nop
-    /* 2B1E8 8003A9E8 0406828F */  lw         $v0, %gp_rel(D_800A36D0)($gp)
+    /* 2B1E8 8003A9E8 0406828F */  lw         $v0, %gp_rel(g_comb_prev_send_word)($gp)
     /* 2B1EC 8003A9EC 00000000 */  nop
     /* 2B1F0 8003A9F0 03170200 */  sra        $v0, $v0, 28
     /* 2B1F4 8003A9F4 03004230 */  andi       $v0, $v0, 0x3
@@ -198,7 +198,7 @@ glabel comb_ExchangePad
     /* 2B208 8003AA08 0A80033C */  lui        $v1, %hi(g_comb_send_buf + 0x4)
     /* 2B20C 8003AA0C 9C36638C */  lw         $v1, %lo(g_comb_send_buf + 0x4)($v1)
     /* 2B210 8003AA10 4A0880A3 */  sb         $zero, %gp_rel(D_800A3916)($gp)
-    /* 2B214 8003AA14 040682AF */  sw         $v0, %gp_rel(D_800A36D0)($gp)
+    /* 2B214 8003AA14 040682AF */  sw         $v0, %gp_rel(g_comb_prev_send_word)($gp)
     /* 2B218 8003AA18 0A80013C */  lui        $at, %hi(D_800A36D4)
     /* 2B21C 8003AA1C D43623AC */  sw         $v1, %lo(D_800A36D4)($at)
     /* 2B220 8003AA20 8BEA0008 */  j          .L8003AA2C

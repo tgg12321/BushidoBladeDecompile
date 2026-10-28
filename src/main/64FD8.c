@@ -28,7 +28,7 @@ static Ctx77D94 *g_gpu_timed_sprite_resources;
 static s32 D_800A35FC;
 static s32 g_gpu_timed_sprite_sequence_phase;
 static s32 D_800A3604; /* unreferenced: size from the gap */
-static s32 D_800A3608;
+static s32 g_gpu_scrolling_display_frame;
 static Unk8006E49CRec *D_800A360C;
 static Unk80078824Rec *D_800A3610;
 static s32 D_800A3614;
@@ -1752,11 +1752,12 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
     s.y = 0;
     s.table = s.header->cells;
     sheet_headers = D_800A3610->unk_14;
-    if (D_800A3608 >= 0xAAA) {
-        if (D_800A3608 >= 0xB04) {
+    if (g_gpu_scrolling_display_frame >= 0xAAA) {
+        if (g_gpu_scrolling_display_frame >= 0xB04) {
             s16 brightness;
             s.has_color = 1;
-            brightness = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            brightness =
+                0x80 - (((g_gpu_scrolling_display_frame - 0xB04) << 7) / 15);
             if (brightness < 0) {
                 brightness = 0;
             }
@@ -1773,7 +1774,7 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
     for (i = 0; sheet_headers[i + 1] != (Unk8009B0E0Record *)-1; i++) {
         s.header = sheet_headers[i];
         s.table = s.header->cells;
-        s.y = -D_800A3608;
+        s.y = -g_gpu_scrolling_display_frame;
         s.sprt_out = primitive_cursors->sprite_prims;
         primitive_cursors->sprite_prims = gpu_AddSpriteCells(&s);
         SetDrawMode(primitive_cursors->unk_14, 1, 0,
@@ -1797,7 +1798,7 @@ s32 InitScrollingSpriteDisplay(s32 arg0) {
     gpu_InitPrimBufferPair(
         GetScrollingSpriteRecordWord1(resource_root), D_800A360C);
     D_800A3304 = 0;
-    D_800A3608 = 0;
+    g_gpu_scrolling_display_frame = 0;
     D_800A3614 = 0;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
@@ -1818,8 +1819,8 @@ s32 StepScrollingSpriteDisplay(void) {
     primitive_cursors.draw_area_prims = prim_buffer->draw_area_prims;
     primitive_cursors.draw_offset_prims = prim_buffer->draw_offset_prims;
     gpu_DrawScrollingAndDelayedSheets(&primitive_cursors);
-    D_800A3608++;
-    return D_800A3608 >= 0xB40;
+    g_gpu_scrolling_display_frame++;
+    return g_gpu_scrolling_display_frame >= 0xB40;
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order. */

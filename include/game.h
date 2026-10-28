@@ -219,8 +219,8 @@ typedef struct {
  * per digit (gpu_DrawTimeFieldsAndDecimalCounter /
  * gpu_DrawTwoDigitCounterWithOptionalSecondSide index it with a 0..9 value),
  * and 0x8009B458..0x8009B487 6 more
- * (gpu_DrawTwoDigitCounterWithOptionalSecondSide); D_8009B450 and D_8009B488
- * follow. */
+ * (gpu_DrawTwoDigitCounterWithOptionalSecondSide);
+ * g_gpu_time_field_line_origins and D_8009B488 follow. */
 typedef struct {
     s16 x;
     s16 y;
@@ -774,10 +774,11 @@ typedef struct {
     /* 0x8 */ s32 unk8;
 } Unk800F0C10Record;
 
-/* 0x800948BC (D_800948BC): function-pointer pairs, indexed by
- * resource_GetLoadedSelector(). resource_InvokeLoadedSelectorInitCallback calls
- * .init; gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
- * calls .unk4 (e.g. entry 13 holds node_InitViewOffsetNodeWithYXZRotation /
+/* 0x800948BC (g_resource_selector_callbacks): function-pointer pairs, indexed
+ * by resource_GetLoadedSelector(). resource_InvokeLoadedSelectorInitCallback
+ * calls .init;
+ * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards calls
+ * .unk4 (e.g. entry 13 holds node_InitViewOffsetNodeWithYXZRotation /
  * node_OrientAndQueueViewOffsetNode). */
 typedef struct {
     void (*init)(void);
@@ -860,7 +861,7 @@ typedef struct {
     s16 vx, vy, vz, pad;
 } SVec4i16;
 
-/* D_80104E88[4]: the four 0x2C-byte records
+/* g_fight_ballistic_records[4]: the four 0x2C-byte records
  * fight_CreateBallisticRecordAndDispatchEvent claims (first with unk_00 == 0)
  * and fight_UpdateBallisticRecords steps each frame (unk_02 counts frames;
  * unk_10 keeps the previous unk_04; unk_1C is added to unk_04 with unk_1C.y
@@ -965,8 +966,8 @@ typedef struct {
  * - unk00: one word, stored whole and read whole (bit 21 in eff_StartCommand,
  * bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
  * eff_InitRateSelectedCosineScaledQuad); eff_StartCommand / eff_StepCommand
- * also read its low halfword (`lhu`), their g_eff_command_phase / D_8009BA60
- * index.
+ * also read its low halfword (`lhu`), their g_eff_command_phase /
+ * g_eff_command_handler_bases index.
  * - unk04 / unk08: the three halfwords / three words eff_StepCommand and
  * eff_DrawBillboardList copy into the scratchpad block's unk18 / unk20 (through
  * D_800A346C / g_eff_view_origin). Only the scratchpad block's are set:
@@ -1166,8 +1167,8 @@ typedef union {
  * - effect_work_area: the work area g_eff_work_area points at
  * (Unk1F8000B8Union), laid out differently by its users; it runs to the end of
  * the scratchpad. The other members are one global each
- * (g_eff_view_rotation_matrix .. g_eff_bottom_right_uv, D_800A3480 /
- * D_800A3484). */
+ * (g_eff_view_rotation_matrix .. g_eff_bottom_right_uv,
+ * g_eff_yawed_quad_tex_index / D_800A3484). */
 typedef struct {
     Unk1F800000Unk00 default_command_block;
     u8 unk2C[4];
@@ -1184,7 +1185,7 @@ typedef struct {
     s32 geom_screen_work;  /* g_eff_geom_screen_work */
     s32 perspective_scale; /* g_eff_perspective_scale */
     s32 screen_xy[3];      /* g_eff_screen_xy */
-    s16 left_x_offset;     /* D_800A34BC */
+    s16 left_x_offset;     /* g_eff_left_x_offset */
     s16 right_x_offset;    /* g_eff_right_x_offset */
     s32 upper_y_offset;    /* g_eff_upper_y_offset */
     s32 unk88;             /* g_eff_lower_y_offset_word */
@@ -1196,7 +1197,7 @@ typedef struct {
     u16 bottom_right_uv;   /* g_eff_bottom_right_uv */
     u32 unkA0;
     u32 unkA4;
-    s32 yawed_quad_tex_rec_index; /* D_800A3480 */
+    s32 yawed_quad_tex_rec_index; /* g_eff_yawed_quad_tex_index */
     s32 quad_rate_selector;       /* D_800A3484 */
     TexRec unkB0;
     Unk1F8000B8Union effect_work_area;
@@ -1214,9 +1215,9 @@ typedef struct {
  * g_collision_segment_work). collision_TestSegmentExtendingShortStartWithWork /
  * collision_TestSegmentWithWork place it at their last argument;
  * collision_TestSegmentExtendingShortStart / collision_TestSegment at
- * D_800EF9F8. 17AFC object_UpdatePool / fight_UpdateBallisticRecords pass
- * 0x1F8002F0, its place in their scratchpad layout
- * (Unk1F8002B8_8005344C.cast_work). */
+ * g_collision_static_segment_work. 17AFC object_UpdatePool /
+ * fight_UpdateBallisticRecords pass 0x1F8002F0, its place in their scratchpad
+ * layout (Unk1F8002B8_8005344C.cast_work). */
 typedef struct {
     s32 nearest_dist_sq;
     u16 hit_tag;
@@ -1512,7 +1513,7 @@ typedef struct Unk800F1B18Rec {
  * zero flags word. The two extra halfwords are [mask lo, mask hi], except in a
  * 0x4000 paired entry (motion_FindPairedMoveEntry), whose four bytes are a
  * distance range (min, max, x 20), a target separation (x 20, stored to
- * D_800A371C: the distance
+ * g_fight_paired_move_separation: the distance
  * fighter_SetBasePositionSeparationCorrectionsAndGetDistance pulls the two
  * fighters toward) and a flags byte (bit 7 tested; the low 7 bits, stored to
  * D_800A38E8, are a frame threshold for
@@ -1838,10 +1839,11 @@ typedef struct {
 } Tbl8008E194;
 
 /* The twelve 0x64-byte object records at 0x80106A78. object_SpawnFromFighter
- * spawns one (its kind indexes D_8008E194 / g_resource_kind_entry_ids),
- * object_UpdatePool moves them, object_ResolveFighterHits tests them against
- * both fighters, object_SubmitPoolTransforms hands them to the effect calls;
- * kind == -1 marks a free record.
+ * spawns one (its kind indexes g_object_kind_params /
+ * g_resource_kind_entry_ids), object_UpdatePool moves them,
+ * object_ResolveFighterHits tests them against both fighters,
+ * object_SubmitPoolTransforms hands them to the effect calls; kind == -1 marks
+ * a free record.
  */
 typedef struct {
     /* 0 at spawn; object_UpdatePool adds 1 per step while is_moving != 0 */

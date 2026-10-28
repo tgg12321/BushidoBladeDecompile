@@ -183,9 +183,9 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5FBA8 8006F3A8 00140900 */  sll        $v0, $t1, 16
     /* 5FBAC 8006F3AC 03140200 */  sra        $v0, $v0, 16
     /* 5FBB0 8006F3B0 40014224 */  addiu      $v0, $v0, 0x140
-    /* 5FBB4 8006F3B4 0A80013C */  lui        $at, %hi(D_8009BC94)
+    /* 5FBB4 8006F3B4 0A80013C */  lui        $at, %hi(g_entry_menu_row_choice_positions)
     /* 5FBB8 8006F3B8 21082300 */  addu       $at, $at, $v1
-    /* 5FBBC 8006F3BC 94BC2584 */  lh         $a1, %lo(D_8009BC94)($at)
+    /* 5FBBC 8006F3BC 94BC2584 */  lh         $a1, %lo(g_entry_menu_row_choice_positions)($at)
     /* 5FBC0 8006F3C0 3400A38F */  lw         $v1, 0x34($sp)
     /* 5FBC4 8006F3C4 2128A200 */  addu       $a1, $a1, $v0
     /* 5FBC8 8006F3C8 12200000 */  mflo       $a0

@@ -23,7 +23,7 @@ glabel InitScrollingSpriteDisplay
     /* 69078 80078878 21280000 */  addu       $a1, $zero, $zero
     /* 6907C 8007887C 21300000 */  addu       $a2, $zero, $zero
     /* 69080 80078880 380280AF */  sw         $zero, %gp_rel(D_800A3304)($gp)
-    /* 69084 80078884 3C0580AF */  sw         $zero, %gp_rel(D_800A3608)($gp)
+    /* 69084 80078884 3C0580AF */  sw         $zero, %gp_rel(g_gpu_scrolling_display_frame)($gp)
     /* 69088 80078888 480580AF */  sw         $zero, %gp_rel(D_800A3614)($gp)
     /* 6908C 8007888C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 69090 80078890 21380000 */   addu      $a3, $zero, $zero

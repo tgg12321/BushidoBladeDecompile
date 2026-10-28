@@ -4,11 +4,12 @@
  * 1. One run: 596CC.o(.data) ends at 0x8009BC1C and 5ED34.o(.data) is empty;
  *    the next .data is 63D2C.c's D_8009BCD4. No uninitialized objects.
  * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by
- * g_entry_menu_row_phase_choice_cursors[i], 0..5 like D_8009BC94[i]; the 2 zero
- * bytes after it are the word alignment of g_entry_menu_grid_entries, another
- * type with other readers) and g_entry_menu_transition_offsets (s16[2], scroll
- * state menu_UpdateChoiceGrid writes; the run's end). Under -G8 the original
- * compiler puts both in .sdata, so no -G8 file defined them.
+ * g_entry_menu_row_phase_choice_cursors[i], 0..5 like
+ * g_entry_menu_row_choice_positions[i]; the 2 zero bytes after it are the word
+ * alignment of g_entry_menu_grid_entries, another type with other readers) and
+ * g_entry_menu_transition_offsets (s16[2], scroll state menu_UpdateChoiceGrid
+ * writes; the run's end). Under -G8 the original compiler puts both in .sdata,
+ * so no -G8 file defined them.
  * 3. Neighbours in .data link order: 596CC.c (its own .sdata, gp accesses)
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.
@@ -20,7 +21,8 @@
  * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
  * menu_UpdateRowCursors, func_80071C20,
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
- * D_8009BC94 (DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
+ * g_entry_menu_row_choice_positions
+ * (DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
  * D_8009BCC4 / g_entry_menu_transition_offsets (menu_UpdateChoiceGrid). */
 #include "common.h"
@@ -86,7 +88,7 @@ SelectEntryE534 g_entry_menu_grid_entries[5][6] = {
 u8 g_entry_menu_entry_flags[24] = {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0};
 
-Unk8009BC94Record D_8009BC94[2][6] = {
+Unk8009BC94Record g_entry_menu_row_choice_positions[2][6] = {
     {{-0x38, -0x1F},
      {-0x06, -0x0E},
      {-0x1A, -0x10},

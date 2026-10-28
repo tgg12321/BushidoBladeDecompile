@@ -39,8 +39,8 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 2486C 8003406C 24D00008 */  j          .L80034090
     /* 24870 80034070 12000224 */   addiu     $v0, $zero, 0x12
   .L80034074:
-    /* 24874 80034074 0A80023C */  lui        $v0, %hi(D_800A38E9)
-    /* 24878 80034078 E9384290 */  lbu        $v0, %lo(D_800A38E9)($v0)
+    /* 24874 80034074 0A80023C */  lui        $v0, %hi(g_fight_best_time_rank)
+    /* 24878 80034078 E9384290 */  lbu        $v0, %lo(g_fight_best_time_rank)($v0)
     /* 2487C 8003407C 00000000 */  nop
     /* 24880 80034080 0300422C */  sltiu      $v0, $v0, 0x3
     /* 24884 80034084 02004014 */  bnez       $v0, .L80034090

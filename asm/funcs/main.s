@@ -177,11 +177,11 @@ glabel main
     /* 7C90 80017490 00000000 */  nop
     /* 7C94 80017494 78FF6214 */  bne        $v1, $v0, .L80017278
     /* 7C98 80017498 00000000 */   nop
-    /* 7C9C 8001749C 47068293 */  lbu        $v0, %gp_rel(D_800A3713)($gp)
+    /* 7C9C 8001749C 47068293 */  lbu        $v0, %gp_rel(g_fight_auto_pause_countdown)($gp)
     /* 7CA0 800174A0 00000000 */  nop
     /* 7CA4 800174A4 75FF4010 */  beqz       $v0, .L8001727C
     /* 7CA8 800174A8 FFFF4224 */   addiu     $v0, $v0, -0x1
-    /* 7CAC 800174AC 470682A3 */  sb         $v0, %gp_rel(D_800A3713)($gp)
+    /* 7CAC 800174AC 470682A3 */  sb         $v0, %gp_rel(g_fight_auto_pause_countdown)($gp)
     /* 7CB0 800174B0 FF004230 */  andi       $v0, $v0, 0xFF
     /* 7CB4 800174B4 70FF4014 */  bnez       $v0, .L80017278
     /* 7CB8 800174B8 00000000 */   nop

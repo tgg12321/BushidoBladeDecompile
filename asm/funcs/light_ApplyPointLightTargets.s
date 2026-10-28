@@ -1,5 +1,5 @@
 glabel light_ApplyPointLightTargets
-    /* 3291C 8004211C B4028287 */  lh         $v0, %gp_rel(D_800A3380)($gp)
+    /* 3291C 8004211C B4028287 */  lh         $v0, %gp_rel(g_light_point_target_flags)($gp)
     /* 32920 80042120 B6028387 */  lh         $v1, %gp_rel(D_800A3382)($gp)
     /* 32924 80042124 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 32928 80042128 40100200 */  sll        $v0, $v0, 1
@@ -25,11 +25,11 @@ glabel light_ApplyPointLightTargets
     /* 32970 80042170 63080108 */  j          .L8004218C
     /* 32974 80042174 21200000 */   addu      $a0, $zero, $zero
   .L80042178:
-    /* 32978 80042178 B802848F */  lw         $a0, %gp_rel(D_800A3384)($gp)
+    /* 32978 80042178 B802848F */  lw         $a0, %gp_rel(g_light_point_targets)($gp)
     /* 3297C 8004217C 63080108 */  j          .L8004218C
     /* 32980 80042180 21280000 */   addu      $a1, $zero, $zero
   .L80042184:
-    /* 32984 80042184 B802848F */  lw         $a0, %gp_rel(D_800A3384)($gp)
+    /* 32984 80042184 B802848F */  lw         $a0, %gp_rel(g_light_point_targets)($gp)
     /* 32988 80042188 BC02858F */  lw         $a1, %gp_rel(D_800A3388)($gp)
   .L8004218C:
     /* 3298C 8004218C AC07010C */  jal        light_ApplyPointLight

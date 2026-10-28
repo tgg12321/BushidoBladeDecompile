@@ -321,18 +321,18 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17A20 80027220 0980013C */  lui        $at, %hi(Judge)
     /* 17A24 80027224 21082200 */  addu       $at, $at, $v0
     /* 17A28 80027228 FC732684 */  lh         $a2, %lo(Judge)($at)
-    /* 17A2C 8002722C 0980013C */  lui        $at, %hi(D_8008EB54)
+    /* 17A2C 8002722C 0980013C */  lui        $at, %hi(g_fight_midpoint_effect_offsets)
     /* 17A30 80027230 21082700 */  addu       $at, $at, $a3
-    /* 17A34 80027234 54EB2284 */  lh         $v0, %lo(D_8008EB54)($at)
+    /* 17A34 80027234 54EB2284 */  lh         $v0, %lo(g_fight_midpoint_effect_offsets)($at)
     /* 17A38 80027238 00000000 */  nop
     /* 17A3C 8002723C 1800C200 */  mult       $a2, $v0
     /* 17A40 80027240 12480000 */  mflo       $t1
     /* 17A44 80027244 03130900 */  sra        $v0, $t1, 12
     /* 17A48 80027248 21208200 */  addu       $a0, $a0, $v0
     /* 17A4C 8002724C 1000A4AF */  sw         $a0, 0x10($sp)
-    /* 17A50 80027250 0980013C */  lui        $at, %hi(D_8008EB54 + 0x2)
+    /* 17A50 80027250 0980013C */  lui        $at, %hi(g_fight_midpoint_effect_offsets + 0x2)
     /* 17A54 80027254 21082700 */  addu       $at, $at, $a3
-    /* 17A58 80027258 56EB2284 */  lh         $v0, %lo(D_8008EB54 + 0x2)($at)
+    /* 17A58 80027258 56EB2284 */  lh         $v0, %lo(g_fight_midpoint_effect_offsets + 0x2)($at)
     /* 17A5C 8002725C 00000000 */  nop
     /* 17A60 80027260 21186200 */  addu       $v1, $v1, $v0
     /* 17A64 80027264 1400A3AF */  sw         $v1, 0x14($sp)
@@ -344,9 +344,9 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17A7C 8002727C 0980013C */  lui        $at, %hi(Judge)
     /* 17A80 80027280 21082200 */  addu       $at, $at, $v0
     /* 17A84 80027284 FC732384 */  lh         $v1, %lo(Judge)($at)
-    /* 17A88 80027288 0980013C */  lui        $at, %hi(D_8008EB54)
+    /* 17A88 80027288 0980013C */  lui        $at, %hi(g_fight_midpoint_effect_offsets)
     /* 17A8C 8002728C 21082700 */  addu       $at, $at, $a3
-    /* 17A90 80027290 54EB2284 */  lh         $v0, %lo(D_8008EB54)($at)
+    /* 17A90 80027290 54EB2284 */  lh         $v0, %lo(g_fight_midpoint_effect_offsets)($at)
     /* 17A94 80027294 00000000 */  nop
     /* 17A98 80027298 18006200 */  mult       $v1, $v0
     /* 17A9C 8002729C 1000A627 */  addiu      $a2, $sp, 0x10

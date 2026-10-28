@@ -98,8 +98,8 @@ glabel ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 259BC 800351BC 21082300 */  addu       $at, $at, $v1
     /* 259C0 800351C0 30EC2390 */  lbu        $v1, %lo(D_8008EC30)($at)
     /* 259C4 800351C4 00404230 */  andi       $v0, $v0, 0x4000
-    /* 259C8 800351C8 0A80013C */  lui        $at, %hi(D_800A36CC)
-    /* 259CC 800351CC CC3623A0 */  sb         $v1, %lo(D_800A36CC)($at)
+    /* 259C8 800351C8 0A80013C */  lui        $at, %hi(g_fight_time_limit_seconds)
+    /* 259CC 800351CC CC3623A0 */  sb         $v1, %lo(g_fight_time_limit_seconds)($at)
     /* 259D0 800351D0 02004010 */  beqz       $v0, .L800351DC
     /* 259D4 800351D4 01000424 */   addiu     $a0, $zero, 0x1
     /* 259D8 800351D8 02000424 */  addiu      $a0, $zero, 0x2

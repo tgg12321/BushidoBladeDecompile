@@ -150,12 +150,12 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C3F4 8003BBF4 09006214 */  bne        $v1, $v0, .L8003BC1C
     /* 2C3F8 8003BBF8 00000000 */   nop
   .L8003BBFC:
-    /* 2C3FC 8003BBFC 0A80043C */  lui        $a0, %hi(D_800A37B4)
-    /* 2C400 8003BC00 B4378490 */  lbu        $a0, %lo(D_800A37B4)($a0)
-    /* 2C404 8003BC04 0A80053C */  lui        $a1, %hi(D_800A37B5)
-    /* 2C408 8003BC08 B537A590 */  lbu        $a1, %lo(D_800A37B5)($a1)
-    /* 2C40C 8003BC0C 0A80063C */  lui        $a2, %hi(D_800A37B6)
-    /* 2C410 8003BC10 B637C690 */  lbu        $a2, %lo(D_800A37B6)($a2)
+    /* 2C3FC 8003BBFC 0A80043C */  lui        $a0, %hi(g_fight_operand_tint_red)
+    /* 2C400 8003BC00 B4378490 */  lbu        $a0, %lo(g_fight_operand_tint_red)($a0)
+    /* 2C404 8003BC04 0A80053C */  lui        $a1, %hi(g_fight_operand_tint_green)
+    /* 2C408 8003BC08 B537A590 */  lbu        $a1, %lo(g_fight_operand_tint_green)($a1)
+    /* 2C40C 8003BC0C 0A80063C */  lui        $a2, %hi(g_fight_operand_tint_blue)
+    /* 2C410 8003BC10 B637C690 */  lbu        $a2, %lo(g_fight_operand_tint_blue)($a2)
     /* 2C414 8003BC14 FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
     /* 2C418 8003BC18 00000000 */   nop
   .L8003BC1C:

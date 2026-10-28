@@ -1618,7 +1618,7 @@ void menu_DrawMemCardChoices(s32 *draw_context) {
     gpu_AddThreeGreyTilesStackedUp(draw_context, tile_rect, 0x11);
 }
 
-extern DR_MODE *D_800A36E0;
+extern DR_MODE *g_sheet_pair_draw_mode_cursor;
 extern u8 *D_800A36E4;
 
 void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
@@ -1663,10 +1663,10 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
             D_800A36E4 = (u8 *)gpu_AddSpriteCells(draw_desc);
         }
 
-        SetDrawMode(
-            D_800A36E0, 1, 0, gpu_GetSheetTPage(draw_desc->header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + 8, D_800A36E0);
-        D_800A36E0++;
+        SetDrawMode(g_sheet_pair_draw_mode_cursor, 1, 0,
+                    gpu_GetSheetTPage(draw_desc->header, 0), 0);
+        AddPrim(g_gpu_ot_ptr + 8, g_sheet_pair_draw_mode_cursor);
+        g_sheet_pair_draw_mode_cursor++;
     }
 }
 
@@ -1690,7 +1690,7 @@ void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
     D_800A3900 = 0;
     buffer_index = g_gpu_presented_frame_count & 1;
     D_800A36E4 = D_800F11E0 + buffer_index * 0x12C;
-    D_800A36E0 = D_800F1438 + buffer_index * 4;
+    g_sheet_pair_draw_mode_cursor = D_800F1438 + buffer_index * 4;
     g_sheet_pair_panel_tile_cursor = D_800F1498 + buffer_index * 4;
     gpu_DrawIndexedSheetPair(sheet_pair_index, 0, &draw_desc, 0);
     h = 0;
@@ -2726,7 +2726,7 @@ RECT D_800A32E0 = {0, 0, 640, 480};
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 TILE *g_sheet_pair_panel_tile_cursor;
-DR_MODE *D_800A36E0;
+DR_MODE *g_sheet_pair_draw_mode_cursor;
 u8 *D_800A36E4;
 s32 D_800A372C;
 s32 D_800A3900;

@@ -8,8 +8,8 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* DFA8 8001D7A8 1000B0AF */   sw        $s0, 0x10($sp)
     /* DFAC 8001D7AC 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
     /* DFB0 8001D7B0 A4366384 */  lh         $v1, %lo(g_fight_stage_index)($v1)
-    /* DFB4 8001D7B4 0A80023C */  lui        $v0, %hi(D_800A390E)
-    /* DFB8 8001D7B8 0E394280 */  lb         $v0, %lo(D_800A390E)($v0)
+    /* DFB4 8001D7B4 0A80023C */  lui        $v0, %hi(g_fight_loaded_stage_index)
+    /* DFB8 8001D7B8 0E394280 */  lb         $v0, %lo(g_fight_loaded_stage_index)($v0)
     /* DFBC 8001D7BC 00000000 */  nop
     /* DFC0 8001D7C0 13006214 */  bne        $v1, $v0, .L8001D810
     /* DFC4 8001D7C4 00085236 */   ori       $s2, $s2, (0x80190800 & 0xFFFF)
@@ -60,8 +60,8 @@ glabel fight_ResetGraphAndReloadResourcesOnCachedKeyChange
     /* E074 8001D874 0A80033C */  lui        $v1, %hi(g_fight_stage_index)
     /* E078 8001D878 A4366394 */  lhu        $v1, %lo(g_fight_stage_index)($v1)
     /* E07C 8001D87C 00000482 */  lb         $a0, 0x0($s0)
-    /* E080 8001D880 0A80013C */  lui        $at, %hi(D_800A390E)
-    /* E084 8001D884 0E3923A0 */  sb         $v1, %lo(D_800A390E)($at)
+    /* E080 8001D880 0A80013C */  lui        $at, %hi(g_fight_loaded_stage_index)
+    /* E084 8001D884 0E3923A0 */  sb         $v1, %lo(g_fight_loaded_stage_index)($at)
     /* E088 8001D888 0980013C */  lui        $at, %hi(D_8008E5A8)
     /* E08C 8001D88C 21082400 */  addu       $at, $at, $a0
     /* E090 8001D890 A8E52390 */  lbu        $v1, %lo(D_8008E5A8)($at)

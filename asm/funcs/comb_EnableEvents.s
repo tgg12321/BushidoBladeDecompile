@@ -8,7 +8,7 @@ glabel comb_EnableEvents
     /* 2AB78 8003A378 6AE2010C */  jal        EnableEvent
     /* 2AB7C 8003A37C 00000000 */   nop
     /* 2AB80 8003A380 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2AB84 8003A384 400182A3 */  sb         $v0, %gp_rel(D_800A320C)($gp)
+    /* 2AB84 8003A384 400182A3 */  sb         $v0, %gp_rel(g_comb_events_enabled)($gp)
     /* 2AB88 8003A388 640680AF */  sw         $zero, %gp_rel(g_comb_close_request)($gp)
     /* 2AB8C 8003A38C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2AB90 8003A390 1800BD27 */  addiu      $sp, $sp, 0x18

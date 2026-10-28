@@ -4,8 +4,8 @@ glabel fight_UpdateBallisticRecords
     /* 229F0 800321F0 801F113C */  lui        $s1, (0x1F8002B8 >> 16)
     /* 229F4 800321F4 B8023136 */  ori        $s1, $s1, (0x1F8002B8 & 0xFFFF)
     /* 229F8 800321F8 2000B2AF */  sw         $s2, 0x20($sp)
-    /* 229FC 800321FC 1080123C */  lui        $s2, %hi(D_80104E88)
-    /* 22A00 80032200 884E5226 */  addiu      $s2, $s2, %lo(D_80104E88)
+    /* 229FC 800321FC 1080123C */  lui        $s2, %hi(g_fight_ballistic_records)
+    /* 22A00 80032200 884E5226 */  addiu      $s2, $s2, %lo(g_fight_ballistic_records)
     /* 22A04 80032204 2400B3AF */  sw         $s3, 0x24($sp)
     /* 22A08 80032208 21980000 */  addu       $s3, $zero, $zero
     /* 22A0C 8003220C 1800B0AF */  sw         $s0, 0x18($sp)

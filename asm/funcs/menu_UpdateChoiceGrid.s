@@ -711,7 +711,7 @@ glabel menu_UpdateChoiceGrid
     /* 6336C 80072B6C 140043AC */  sw         $v1, 0x14($v0)
   .L80072B70:
     /* 63370 80072B70 01000224 */  addiu      $v0, $zero, 0x1
-    /* 63374 80072B74 D40482AF */  sw         $v0, %gp_rel(D_800A35A0)($gp)
+    /* 63374 80072B74 D40482AF */  sw         $v0, %gp_rel(g_entry_menu_exit_result)($gp)
   .L80072B78:
     /* 63378 80072B78 84CB010C */  jal        gpu_AddGradientPanel
     /* 6337C 80072B7C 21208002 */   addu      $a0, $s4, $zero

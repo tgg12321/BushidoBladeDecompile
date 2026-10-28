@@ -17,7 +17,7 @@ glabel memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
     /* 291C4 800389C4 00000000 */   nop
     /* 291C8 800389C8 5A000224 */  addiu      $v0, $zero, 0x5A
     /* 291CC 800389CC 390180A3 */  sb         $zero, %gp_rel(g_menu_prompt_rearm + 0x1)($gp)
-    /* 291D0 800389D0 640282A3 */  sb         $v0, %gp_rel(D_800A3330)($gp)
+    /* 291D0 800389D0 640282A3 */  sb         $v0, %gp_rel(g_memcard_status_wait_countdown)($gp)
     /* 291D4 800389D4 680280A3 */  sb         $zero, %gp_rel(D_800A3334)($gp)
     /* 291D8 800389D8 6C0280A3 */  sb         $zero, %gp_rel(D_800A3338)($gp)
     /* 291DC 800389DC 700280A3 */  sb         $zero, %gp_rel(D_800A333C)($gp)
@@ -178,14 +178,14 @@ glabel memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
   .L80038BEC:
     /* 293EC 80038BEC 700282A3 */  sb         $v0, %gp_rel(D_800A333C)($gp)
     /* 293F0 80038BF0 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 293F4 80038BF4 640282A3 */  sb         $v0, %gp_rel(D_800A3330)($gp)
+    /* 293F4 80038BF4 640282A3 */  sb         $v0, %gp_rel(g_memcard_status_wait_countdown)($gp)
     /* 293F8 80038BF8 12E30008 */  j          .L80038C48
     /* 293FC 80038BFC 00000000 */   nop
   jlabel .L80038C00
-    /* 29400 80038C00 64028293 */  lbu        $v0, %gp_rel(D_800A3330)($gp)
+    /* 29400 80038C00 64028293 */  lbu        $v0, %gp_rel(g_memcard_status_wait_countdown)($gp)
     /* 29404 80038C04 00000000 */  nop
     /* 29408 80038C08 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 2940C 80038C0C 640282A3 */  sb         $v0, %gp_rel(D_800A3330)($gp)
+    /* 2940C 80038C0C 640282A3 */  sb         $v0, %gp_rel(g_memcard_status_wait_countdown)($gp)
     /* 29410 80038C10 FF004230 */  andi       $v0, $v0, 0xFF
     /* 29414 80038C14 07004010 */  beqz       $v0, .L80038C34
     /* 29418 80038C18 1000033C */   lui       $v1, (0x100010 >> 16)

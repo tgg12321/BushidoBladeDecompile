@@ -28,8 +28,8 @@ glabel fight_UpdateRotatingViewDecimalPresentation
     /* 2D578 8003CD78 10270624 */   addiu     $a2, $zero, 0x2710
     /* 2D57C 8003CD7C 6A1B010C */  jal        gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue
     /* 2D580 8003CD80 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2D584 8003CD84 0A80043C */  lui        $a0, %hi(D_800A391F)
-    /* 2D588 8003CD88 1F398490 */  lbu        $a0, %lo(D_800A391F)($a0)
+    /* 2D584 8003CD84 0A80043C */  lui        $a0, %hi(g_fight_opponent_order_count)
+    /* 2D588 8003CD88 1F398490 */  lbu        $a0, %lo(g_fight_opponent_order_count)($a0)
     /* 2D58C 8003CD8C 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* 2D590 8003CD90 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
     /* 2D594 8003CD94 3280010C */  jal        gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite

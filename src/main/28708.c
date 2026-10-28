@@ -23,7 +23,7 @@ extern s32 g_comb_read_fd;
 extern s32 g_comb_write_fd;
 extern s32 g_comb_event_error;
 extern s32 g_comb_event_ioer;
-extern u8 D_800A320C;
+extern u8 g_comb_events_enabled;
 
 extern s32 D_800A31F8;
 extern u8 g_replay_write_frame;
@@ -39,7 +39,7 @@ extern s32 write(s32, void *, s32); /* PsyQ: long write(long, void *, long) */
 extern u8 g_replay_playback_frame;
 
 extern Unk800F34D8Save D_800F34D8; /* = g_shared_buffer + 0x100 */
-extern s32 D_800A31F0;
+extern s32 g_memcard_save_file_name;
 
 s32 memcard_Format(s32 port, s32 card) {
     char buf[8];
@@ -150,8 +150,9 @@ extern u8 D_8008F1C0[];
 /* memcard_BuildFileHeader copies D_800109EC's first 16 halfwords to +0x60 of
  * its buffer and D_80010A2C's 128 bytes to +0x80: the memory-card file header's
  * icon CLUT (16 RGB555 colours; the 16 halfwords after them are zero) and its
- * 16x16 4-bit icon image. D_80010AAC is the save-file id (D_800A31F0 holds its
- * address), then 3 bytes of rodata padding. */
+ * 16x16 4-bit icon image. D_80010AAC is the save-file id
+ * (g_memcard_save_file_name holds its address), then 3 bytes of rodata padding.
+ */
 const u16 D_800109EC[32] = {
     0x7FFF, 0x77DF, 0x6B9F, 0x635E, 0x5B1E, 0x56FD, 0x4ABD, 0x427C,
     0x323C, 0x2DFB, 0x21BB, 0x199B, 0x115A, 0x0D3A, 0x051A, 0x8000,
@@ -349,7 +350,7 @@ state_3:
     g_memcard_request_status = 1;
     memcard_CountFiles(0, 0);
     temp_s0 = memcard_CountFreeBlocks();
-    if (memcard_HasFile((u8 *)D_800A31F0) != 0) {
+    if (memcard_HasFile((u8 *)g_memcard_save_file_name) != 0) {
         var_s1 = 0;
         if (g_memcard_request_operation == 1) {
             var_v0 = 0xD;
@@ -367,8 +368,8 @@ setup_load:
     memcard_ClearBuffer();
     memcard_BuildFileHeader(g_shared_buffer);
     memcard_BuildSaveBlock(g_shared_buffer + 0x100);
-    if (memcard_WriteFile(
-            0, 0, D_800A31F0, g_shared_buffer, 1, 0x200, var_s1) != 0) {
+    if (memcard_WriteFile(0, 0, g_memcard_save_file_name, g_shared_buffer, 1,
+                          0x200, var_s1) != 0) {
         close(g_memcard_fd);
         var_v0 = 3;
         goto finish;
@@ -379,13 +380,14 @@ setup_load:
 state_5:
     memcard_CountFiles(0, 0);
     memcard_CountFreeBlocks();
-    if (memcard_HasFile((u8 *)D_800A31F0) == 0) {
+    if (memcard_HasFile((u8 *)g_memcard_save_file_name) == 0) {
         var_v0 = 0xE;
         goto finish;
     }
     g_memcard_request_status = 4;
     memcard_ClearBuffer();
-    if (memcard_ReadFile(0, 0, D_800A31F0, g_shared_buffer, 0x200) != 0) {
+    if (memcard_ReadFile(
+            0, 0, g_memcard_save_file_name, g_shared_buffer, 0x200) != 0) {
         close(g_memcard_fd);
         var_v0 = 6;
         goto finish;
@@ -559,13 +561,13 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
 }
 
 /* Q65: this file's statics (.sbss), in address order. */
-static u8 D_800A3318;
+static u8 g_menu_two_choice_prompt_cursor;
 static u8 D_800A331C;
 static u8 D_800A3320;
 static u8 D_800A3324;
 static u8 D_800A3328;
 static u8 D_800A332C;
-static u8 D_800A3330;
+static u8 g_memcard_status_wait_countdown;
 static u8 D_800A3334;
 static u8 D_800A3338;
 static u8 D_800A333C;
@@ -582,24 +584,25 @@ s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
     u32 var_1;
     if (g_menu_prompt_rearm != 0) {
         g_menu_prompt_rearm = 0;
-        D_800A3318 = 0;
+        g_menu_two_choice_prompt_cursor = 0;
     }
     var_1 = g_pad_state.pressed;
     if (var_1 & 0x400040) {
         snd_QueueSound(1, 0x7F, 0x7F);
-        if (D_800A3318 == 0) {
+        if (g_menu_two_choice_prompt_cursor == 0) {
             result = 1;
         } else {
             result = -1;
         }
     } else if (var_1 & (u32)0x80008000) {
         snd_QueueSound(0, 0x7F, 0x7F);
-        D_800A3318 = 0;
+        g_menu_two_choice_prompt_cursor = 0;
     } else if (var_1 & 0x20002000) {
         snd_QueueSound(0, 0x7F, 0x7F);
-        D_800A3318 = 1;
+        g_menu_two_choice_prompt_cursor = 1;
     }
-    gpu_DrawSheetPairCenteredTileWithOptionalSelection(0x13, D_800A3318);
+    gpu_DrawSheetPairCenteredTileWithOptionalSelection(
+        0x13, g_menu_two_choice_prompt_cursor);
     if (result != 0) {
         g_menu_prompt_rearm = 1;
     }
@@ -621,7 +624,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         g_memcard_validation_load_active = 1;
         memcard_RequestLoad();
         D_800A3205 = 0;
-        D_800A3330 = 0x5A;
+        g_memcard_status_wait_countdown = 0x5A;
         D_800A3334 = 0;
         D_800A3338 = 0;
         D_800A333C = 0;
@@ -699,7 +702,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
             D_800A331C++;
             if ((u8)D_800A331C >= 5) {
                 D_800A333C = 1;
-                D_800A3330 = 0x5A;
+                g_memcard_status_wait_countdown = 0x5A;
                 break;
             }
             memcard_RequestLoad();
@@ -752,7 +755,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
             goto timer;
         case 3:
             D_800A333C = 1;
-            D_800A3330 = 0x5A;
+            g_memcard_status_wait_countdown = 0x5A;
             break;
         default:
             break;
@@ -762,8 +765,9 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     goto end;
 
 timer:
-    D_800A3330--;
-    if ((u8)D_800A3330 == 0 || (g_pad_state.pressed & 0x100010)) {
+    g_memcard_status_wait_countdown--;
+    if ((u8)g_memcard_status_wait_countdown == 0 ||
+        (g_pad_state.pressed & 0x100010)) {
         snd_QueueSound(2, 0x7F, 0x7F);
         result = 1;
     }
@@ -1627,12 +1631,12 @@ void comb_ReadCtsSetRts(void) {
 void comb_EnableEvents(void) {
     EnableEvent(g_comb_event_error);
     EnableEvent(g_comb_event_ioer);
-    D_800A320C = 1;
+    g_comb_events_enabled = 1;
     g_comb_close_request = 0;
 }
 
 void comb_ResetClose(void) {
-    D_800A320C = 0;
+    g_comb_events_enabled = 0;
     g_comb_close_request = 0;
     _comb_control(2, 0, 0);
     _comb_control(1, 1, 0);
@@ -1770,21 +1774,22 @@ s32 math_Popcount32(u32 arg0) {
     return count;
 }
 
-extern s32 D_800A36D0;
+extern s32 g_comb_prev_send_word;
 
-/* Clears g_comb_wait_state while D_800A320C is 0. Otherwise packs bits of
- * g_comb_local_side, g_comb_close_request and g_comb_wait_state, a0->type[0]
- * and the low half of a0->held into g_comb_send_buf, puts D_800A37C4 and a
- * 16-bit xor check in g_comb_send_buf_plus_0x4, and calls comb_Write8,
- * comb_Read8 or comb_WaitRead8 as D_800A3916 and g_comb_local_side select,
- * returning early when a transfer fails or after comb_ResetClose. If D_800A3916
- * is then 0, it stores new values to a0->held and a0->type. */
+/* Clears g_comb_wait_state while g_comb_events_enabled is 0. Otherwise packs
+ * bits of g_comb_local_side, g_comb_close_request and g_comb_wait_state,
+ * a0->type[0] and the low half of a0->held into g_comb_send_buf, puts
+ * g_comb_send_payload and a 16-bit xor check in g_comb_send_buf_plus_0x4, and
+ * calls comb_Write8, comb_Read8 or comb_WaitRead8 as D_800A3916 and
+ * g_comb_local_side select, returning early when a transfer fails or after
+ * comb_ResetClose. If D_800A3916 is then 0, it stores new values to a0->held
+ * and a0->type. */
 void comb_ExchangePad(PadState *a0) {
     /* buttons holds the input pad button word, then an outgoing button
-     * halfword (this exchange's, or the previous one's from D_800A36D0)
-     * being packed into held, as SOTN's CheckStageCollision reuses y for
-     * successive CheckCollision coordinates (Q51; separate locals: score
-     * 33). */
+     * halfword (this exchange's, or the previous one's from
+     * g_comb_prev_send_word) being packed into held, as SOTN's
+     * CheckStageCollision reuses y for successive CheckCollision coordinates
+     * (Q51; separate locals: score 33). */
     /* SOTN: src/dra/692E8.c:447 @db41b28 */
     s32 buttons;
     s32 var_1;
@@ -1797,7 +1802,7 @@ void comb_ExchangePad(PadState *a0) {
      * the slot before the branch (emits nothing); the literal: score 3 */
     s32 var_7;
 
-    if (D_800A320C != 0) {
+    if (g_comb_events_enabled != 0) {
         buttons = a0->held;
         var_4 = g_comb_local_side;
         var_7 = 0;
@@ -1805,7 +1810,7 @@ void comb_ExchangePad(PadState *a0) {
                 ((g_comb_wait_state & 3) << 28) | (a0->type[0] << 16) |
                 (buttons & 0xFFFF);
         g_comb_send_buf = var_1;
-        hi16 = D_800A37C4 << 16;
+        hi16 = g_comb_send_payload << 16;
         var_1 = var_1 ^ (var_1 >> 16);
         var_1 = var_1 ^ (hi16 >> 16);
         var_1 = var_1 & 0xFFFF;
@@ -1834,7 +1839,7 @@ void comb_ExchangePad(PadState *a0) {
                     comb_ResetClose();
                     return;
                 }
-                if (D_800A36D0 & 0x40000000) {
+                if (g_comb_prev_send_word & 0x40000000) {
                     comb_ResetClose();
                     return;
                 }
@@ -1869,7 +1874,7 @@ void comb_ExchangePad(PadState *a0) {
                 t = D_800A36C2;
                 type[1] = t & 0xF;
             } else {
-                buttons = (u16)D_800A36D0;
+                buttons = (u16)g_comb_prev_send_word;
                 *var_8 = (buttons << 16) | c0lo;
                 t = D_800A36C2;
                 type[0] = t & 0xF;
@@ -1883,13 +1888,13 @@ void comb_ExchangePad(PadState *a0) {
                 }
             } else {
                 if (((g_comb_received_pad_word >> 28) & 3) == 2 &&
-                    ((D_800A36D0 >> 28) & 3) == 2) {
+                    ((g_comb_prev_send_word >> 28) & 3) == 2) {
                     g_comb_wait_state = 0;
                 }
             }
         }
         D_800A3916 = 0;
-        D_800A36D0 = g_comb_send_buf;
+        g_comb_prev_send_word = g_comb_send_buf;
         D_800A36D4 = g_comb_send_buf_plus_0x4;
     } else {
         g_comb_wait_state = 0;
@@ -1918,7 +1923,7 @@ void comb_EndWait(void) {
     val = 2;
     do {
         comb_ExchangeEmptyPad();
-        if (D_800A320C == 0) {
+        if (g_comb_events_enabled == 0) {
             goto end;
         }
         ResetRCnt(0xF2000001);
@@ -1961,7 +1966,7 @@ u8 D_8008F204[28] = {
 };
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-s32 D_800A31F0 = (s32)D_80010AAC;
+s32 g_memcard_save_file_name = (s32)D_80010AAC;
 s32 g_memcard_request_state = 0;
 s32 D_800A31F8 = 0;
 u8 g_memcard_validation_load_active = 0;
@@ -1978,14 +1983,14 @@ u8 D_800A3207 = 0;
 u8 g_replay_replaying_event = 0;
 u8 D_800A3209 = 0;
 s16 D_800A320A = 0; /* not named by any code or data: size from the gap */
-u8 D_800A320C = 0;
+u8 g_comb_events_enabled = 0;
 char g_str_sio_800A3210[5] = "sio:";
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 s32 g_comb_recv_buf[2];
 s32 g_comb_send_buf;
 s32 g_comb_received_pad_word;
-s32 D_800A36D0;
+s32 g_comb_prev_send_word;
 Rec1C (*g_replay_fighter_frames)[2];
 u8 g_replay_write_frame;
 s16 g_replay_model_draw_search_cursor;
@@ -1996,7 +2001,7 @@ s32 g_comb_write_fd;
 u8 g_replay_ring_wrapped;
 u8 g_replay_event_search_cursor;
 s16 g_memcard_request_status;
-u16 D_800A37C4;
+u16 g_comb_send_payload;
 s16 g_memcard_request_operation;
 u8 g_replay_playback_frame;
 s32 g_comb_event_error;

@@ -53,10 +53,10 @@ glabel gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
     /* 2F430 8003EC30 21600000 */  addu       $t4, $zero, $zero
     /* 2F434 8003EC34 0B80183C */  lui        $t8, %hi(g_gpu_cell_draw_attributes)
     /* 2F438 8003EC38 B08F1827 */  addiu      $t8, $t8, %lo(g_gpu_cell_draw_attributes)
-    /* 2F43C 8003EC3C 0B800F3C */  lui        $t7, %hi(D_800A87E0)
-    /* 2F440 8003EC40 E087EF25 */  addiu      $t7, $t7, %lo(D_800A87E0)
-    /* 2F444 8003EC44 0A800E3C */  lui        $t6, %hi(D_800A7FE0)
-    /* 2F448 8003EC48 E07FCE25 */  addiu      $t6, $t6, %lo(D_800A7FE0)
+    /* 2F43C 8003EC3C 0B800F3C */  lui        $t7, %hi(g_gpu_grid_cell_run_entries)
+    /* 2F440 8003EC40 E087EF25 */  addiu      $t7, $t7, %lo(g_gpu_grid_cell_run_entries)
+    /* 2F444 8003EC44 0A800E3C */  lui        $t6, %hi(g_gpu_grid_cell_run_starts)
+    /* 2F448 8003EC48 E07FCE25 */  addiu      $t6, $t6, %lo(g_gpu_grid_cell_run_starts)
     /* 2F44C 8003EC4C 2168A003 */  addu       $t5, $sp, $zero
   .L8003EC50:
     /* 2F450 8003EC50 0000AA8D */  lw         $t2, 0x0($t5)
@@ -82,14 +82,14 @@ glabel gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
     /* 2F498 8003EC98 C3130200 */  sra        $v0, $v0, 15
     /* 2F49C 8003EC9C 21104F00 */  addu       $v0, $v0, $t7
     /* 2F4A0 8003ECA0 00004894 */  lhu        $t0, 0x0($v0)
-    /* 2F4A4 8003ECA4 9C02848F */  lw         $a0, %gp_rel(D_800A3368)($gp)
+    /* 2F4A4 8003ECA4 9C02848F */  lw         $a0, %gp_rel(g_gpu_grid_cell_record_count)($gp)
     /* 2F4A8 8003ECA8 FF7F0331 */  andi       $v1, $t0, 0x7FFF
     /* 2F4AC 8003ECAC 2A106400 */  slt        $v0, $v1, $a0
     /* 2F4B0 8003ECB0 21004010 */  beqz       $v0, .L8003ED38
     /* 2F4B4 8003ECB4 0100A524 */   addiu     $a1, $a1, 0x1
     /* 2F4B8 8003ECB8 00190300 */  sll        $v1, $v1, 4
-    /* 2F4BC 8003ECBC 0A80023C */  lui        $v0, %hi(D_800A4750)
-    /* 2F4C0 8003ECC0 50474224 */  addiu      $v0, $v0, %lo(D_800A4750)
+    /* 2F4BC 8003ECBC 0A80023C */  lui        $v0, %hi(g_gpu_grid_cell_records)
+    /* 2F4C0 8003ECC0 50474224 */  addiu      $v0, $v0, %lo(g_gpu_grid_cell_records)
     /* 2F4C4 8003ECC4 21206200 */  addu       $a0, $v1, $v0
     /* 2F4C8 8003ECC8 0300E230 */  andi       $v0, $a3, 0x3
     /* 2F4CC 8003ECCC 060082A0 */  sb         $v0, 0x6($a0)
@@ -129,8 +129,8 @@ glabel gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes
     /* 2F544 8003ED44 80100200 */  sll        $v0, $v0, 2
     /* 2F548 8003ED48 21104300 */  addu       $v0, $v0, $v1
     /* 2F54C 8003ED4C C0100200 */  sll        $v0, $v0, 3
-    /* 2F550 8003ED50 0A80033C */  lui        $v1, %hi(D_800A6690)
-    /* 2F554 8003ED54 90666324 */  addiu      $v1, $v1, %lo(D_800A6690)
+    /* 2F550 8003ED50 0A80033C */  lui        $v1, %hi(g_gpu_grid_node_records)
+    /* 2F554 8003ED54 90666324 */  addiu      $v1, $v1, %lo(g_gpu_grid_node_records)
     /* 2F558 8003ED58 21184300 */  addu       $v1, $v0, $v1
     /* 2F55C 8003ED5C 58006290 */  lbu        $v0, 0x58($v1)
     /* 2F560 8003ED60 00000000 */  nop

@@ -41,7 +41,7 @@ extern s16 g_resource_has_retained_subblocks;
 extern Unk800F1198Record g_eff_billboards[];
 extern Unk800A9CF8Rec g_node_frame_animation_context;
 extern Unk800F0EC8Record g_eff_yawed_quad_slot_positions[][10];
-extern Unk800F0E38Record D_800F0E38[12];
+extern Unk800F0E38Record g_eff_billboard_pair_positions[12];
 extern MenuState g_row_menu_row_state;
 
 /* The three scroll pages' origins: s16 (x, y) pairs for pages 4..6
@@ -71,7 +71,7 @@ extern u8 *g_sel_screen_work;
  * and passes t to ApplyMatrix. */
 extern MATRIX g_node_slot_relative_matrix;
 
-extern Unk8009BC94Record D_8009BC94[][6];
+extern Unk8009BC94Record g_entry_menu_row_choice_positions[][6];
 /* The SEL.BIN menu's tables (d_8C41C.c, read by 5ED34.c): the per-mode
  * update handlers (StepSlideBuildFrameRecordAndDispatchStateHandler),
  * menu_UpdateRowCursors' row values, the entry grid and its per-value flags. */
@@ -85,7 +85,7 @@ extern u8 g_entry_menu_entry_flags[];
 extern Unk8009B0E0Record D_8009B398[4];
 extern Unk8009B400Record g_gpu_decimal_digit_cells[10];
 extern Unk8009B400Record D_8009B458[3][2];
-extern Unk8009B450Record D_8009B450[2];
+extern Unk8009B450Record g_gpu_time_field_line_origins[2];
 
 /* Two 8-byte sprite cells, the cell table
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle hands gpu_AddScaledSpriteQuads
@@ -130,7 +130,7 @@ extern Unk800F0C10Record g_eff_particle_group_positions[4][3];
 extern s16 g_eff_animated_quad_counters[18];
 
 extern Unk800F0C10Record g_eff_animated_quad_positions[18];
-extern Unk800948BCEntry D_800948BC[];
+extern Unk800948BCEntry g_resource_selector_callbacks[];
 
 /* The per-mode main-loop handlers, indexed by g_main_loop_handler_index. */
 extern void (*D_8008D090[])(void);
@@ -154,7 +154,7 @@ extern s16 Judge[0x1000];
 /* The 16 slots eff_SpawnJitteredBillboards spawns and
  * eff_DrawAndAdvanceJitteredBillboards draws (bit i of
  * g_eff_jittered_billboard_slot_mask live): slot i's position. */
-extern Vec3i32 D_800F0D78[16];
+extern Vec3i32 g_eff_jittered_billboard_positions[16];
 
 extern Unk800EED10Entry g_arena_blocks[10];
 
@@ -169,17 +169,17 @@ extern BoneHitRec D_8008D59C[22];
  * eff_DrawAndAdvanceRotatedQuadClusters draws (bit i of
  * g_eff_rotated_quad_cluster_slot_mask live): slot i's position and its
  * RotMatrixZYX angles. */
-extern Vec3i32 D_800F0FB8[6];
+extern Vec3i32 g_eff_rotated_quad_cluster_positions[6];
 
 extern SVec4i16 D_800F10A0[6];
-extern s16 D_800F0C04[6];
+extern s16 g_eff_rotated_quad_cluster_ages[6];
 extern Unk800EFB78Entry g_snd_queue[24];
 extern Unk80101EC8Record D_80101EC8[];
 extern const char D_800109C8[];
 extern u8 D_8008D518;
 extern u8 g_fight_config_id_data_rows[];
 extern u8 D_8008D55C;
-extern u8 D_8008D578[];
+extern u8 g_fight_selection_object_ids[];
 
 /* Attachment point sets fighter_UpdateBoneWorldData rotates by a character's
  * bone matrices: D_8008D86C[weapon_id] (D_8008D864[weapon_id] points;
@@ -208,7 +208,7 @@ extern u8 D_8008DD5C[27][8];
 extern u16 D_8008DE34[27][6];
 /* [character_data_index][weapon_id] -> Unk80101EC8Record.base_power / power */
 extern u16 D_8008DF78[27][6];
-extern Tbl8008E194 D_8008E194[];
+extern Tbl8008E194 g_object_kind_params[];
 
 /* 8 byte pairs ({0,0} {1,0} {2,0} {3,0} {4,1} {5,1} {6,1} {7,0});
  * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in D_800A35E0,
@@ -247,14 +247,14 @@ extern u8 D_8008EB1C[][2];
 /* [weapon_id][flag] -> Unk80101EC8Record.weapon_entry_id */
 extern u8 D_8008EB28[8][2];
 extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.weapon_entry_id */
-extern Tbl8008EB54Entry D_8008EB54[6];
+extern Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6];
 extern u8 D_8008EB6C[6];
 extern u8 g_resource_kind_entry_ids[];
 /* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
 extern u16 D_8008EBA0[22];
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
-extern u8 D_8008EBF4[6];
+extern u8 g_snd_stage_sequence_base_sounds[6];
 extern Unk8008EA44Entry D_8008EBFC[6];
 extern u8 D_8008EC30[4];
 extern s16 D_8008F12C[8];
@@ -301,7 +301,7 @@ extern s32 D_800A3134;
 extern s32 D_800A3140;
 extern u8 D_800A31DA;
 extern u8 g_fight_reinit_reuses_assets;
-extern u8 D_800A3671;
+extern u8 g_fight_second_fighter_initial_defeats_left;
 /* Three angles: gpu_PrepareViewAndFlushDrawQueue passes them to
  * math_RotMatrixZXY; gpu_UnpackGridRecordsNodesAndCellRuns zeroes them. */
 extern u16 D_800A3678[3];
@@ -327,17 +327,17 @@ extern s16 D_800A36C2;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
 extern u8 D_800A36C8;
-extern u16 D_800A36CA;
-extern u8 D_800A36CC;
-/* FAKE: the high halfword (+2) of the s32 link pad word D_800A36D0 as its own
- * symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the word
- * and its low half go gp-relative. One-object forms score: Q33 union per
+extern u16 g_fight_paired_move_flags;
+extern u8 g_fight_time_limit_seconds;
+/* FAKE: the high halfword (+2) of the s32 link pad word g_comb_prev_send_word
+ * as its own symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the
+ * word and its low half go gp-relative. One-object forms score: Q33 union per
  * pad word 4 (member reads force the address into $s0), (u16) word low
  * reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned halves 4. Owner
  * ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36D2;
 extern s32 D_800A36D4;
-extern MoveScript *D_800A36D8;
+extern MoveScript *g_fight_paired_move;
 extern u8 g_fight_match_result_timer;
 extern u8 D_800A36F0;
 extern u8 g_main_frame_period;
@@ -347,12 +347,12 @@ extern u8 D_800A36F4;
 extern s16 g_fight_tracked_fighter_index;
 extern u8 D_800A36F9;
 extern u8 g_camera_fight_view_mode;
-extern s16 D_800A36FC;
+extern s16 g_camera_turn_easing_countdown;
 extern u8 D_800A3712;
-extern u8 D_800A3713;
+extern u8 g_fight_auto_pause_countdown;
 extern CdlATV g_cd_atv;
-extern s32 D_800A371C;
-extern u8 D_800A3728;
+extern s32 g_fight_paired_move_separation;
+extern u8 g_fight_start_position_pair_changed;
 extern s8 g_fight_followup_fighter_index;
 
 /* Four s16 counters / latches, one per D_8008E914 row snd_UpdateStageSounds
@@ -384,18 +384,18 @@ extern u32 D_800A3770[2];
 
 extern u8 D_800A3781;
 extern u8 g_fight_opponent_order_cursor;
-extern s32 D_800A3784;
+extern s32 g_fight_packed_match_scores;
 extern u8 g_fight_toggle_option_bits;
 extern s32 g_memcard_fd;
 extern u8 g_fight_stage_command_count;
 extern s32 D_800A37A4;
 extern u8 D_800A37B0;
-extern u8 D_800A37B4;
-extern u8 D_800A37B5;
-extern u8 D_800A37B6;
+extern u8 g_fight_operand_tint_red;
+extern u8 g_fight_operand_tint_green;
+extern u8 g_fight_operand_tint_blue;
 extern s32 g_handler_frame_counter;
 extern u8 D_800A37BC;
-extern s32 D_800A37C0;
+extern s32 g_fight_stage_list_step_timer;
 extern u8 D_800A37C6;
 extern u8 D_800A37D2;
 extern u8 D_800A37D3;
@@ -405,7 +405,7 @@ extern s16 D_800A37E8;
 extern s16 D_800A37EA;
 extern s16 D_800A37EC;
 extern u8 g_fight_win_target;
-extern u8 D_800A3804;
+extern u8 g_fight_choice_menu_first_cursor;
 extern s32 g_fight_menu_restart_count;
 extern u8 g_fight_reinit_phase_timer;
 extern u8 g_fight_choice_menu_cursor;
@@ -415,7 +415,7 @@ extern u8 g_fight_time_up_phase_timer;
 extern void **g_draw_queue_cursor;
 extern s16 g_fight_weapon_contact_result;
 extern u8 g_fight_tally_winner_index;
-extern s16 D_800A382E;
+extern s16 g_fight_defeat_delay_frames;
 extern s32 g_motion_common_buffer;
 extern s16 g_main_loop_handler_index;
 extern u8 g_fight_saved_first_fighter_selection;
@@ -452,26 +452,26 @@ extern u8 g_motion_frame_set_ids[2];
 extern u16 g_motion_fighter_loaded_data_ids[2];
 extern u8 D_800A38D4;
 extern s16 g_fight_mode_selector;
-extern u8 D_800A38DE;
-extern u8 D_800A38DF;
+extern u8 g_fight_step_row_object_id;
+extern u8 g_fight_nearest_start_pair_index;
 extern u8 g_fight_start_position_pair_index;
 extern u8 D_800A38E1;
 extern u8 g_fight_step_table_next_row;
 extern s32 D_800A38E4;
 extern u8 D_800A38E8;
-extern u8 D_800A38E9;
-extern u8 D_800A38EC;
-extern u8 D_800A38ED;
-extern u8 D_800A38EE;
+extern u8 g_fight_best_time_rank;
+extern u8 g_fight_step_row_tint_red;
+extern u8 g_fight_step_row_tint_green;
+extern u8 g_fight_step_row_tint_blue;
 extern s32 D_800A38F0;
-extern s32 D_800A38F4;
+extern s32 g_fight_time_limit_elapsed_frames;
 extern u8 g_fight_stage_list_draw_cursor;
 extern u16 D_800A3904;
 extern u8 D_800A3906;
 extern u8 g_fight_stage_start_count;
 extern u8 D_800A390C;
 extern u8 g_main_present_skip_frames;
-extern s8 D_800A390E;
+extern s8 g_fight_loaded_stage_index;
 extern u8 D_800A390F;
 extern s16 g_fight_midpoint_effect_delay;
 extern u8 D_800A3912;
@@ -487,7 +487,7 @@ extern u8 D_800A3915;
 extern u8 g_snd_sequence_ticks[6];
 
 extern u8 g_fight_sound_cue_countdown;
-extern u8 D_800A391F;
+extern u8 g_fight_opponent_order_count;
 extern u8 g_fight_point_award_phase_timer;
 extern u8 g_comb_abort_request;
 extern u8 g_fight_choice_confirm_delay;
@@ -505,7 +505,7 @@ extern Rec44 g_camera_default_view_record;
 
 /* Per-match snapshot: fight_RecordMatchResult stores both players' counters
  * (D_800A3898 / D_800A3899) for match g_fight_match_cursor;
- * fight_PackMatchScores packs the pairs into D_800A3784,
+ * fight_PackMatchScores packs the pairs into g_fight_packed_match_scores,
  * fight_TallyMatchResultsAndInitPresentation sums them. */
 extern u8 g_fight_match_scores[8][2];
 
@@ -536,23 +536,24 @@ extern Unk80102778Rec g_fight_config;
 extern PadState g_pad_state;
 extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
 /* [i] points to block i's slots, the words after its header word
- * (reloc_RelocateBlock records it and D_80103658[i] holds the slot count). Each
- * slot is a word holding a block-relative offset that reloc_RelocateBlock turns
- * into an address by adding the block's base, unless header bit 15 marks the
- * block relocated; reloc_UnrelocateBlock subtracts the base again (and clears
- * bit 15), and reloc_RebaseBlock moves [i] by a1 / 4 words and adds a1 to each
- * slot.  gpu_OffsetBlockTexPrimStreams / gpu_OffsetBlockTexPrimStream store a
- * slot to scratchpad word 0, the u16 * cursor gpu_OffsetTexPrimStream reads,
- * and softbody_CreateForNode reads u16 data through one.
+ * (reloc_RelocateBlock records it and g_reloc_block_slot_counts[i] holds the
+ * slot count). Each slot is a word holding a block-relative offset that
+ * reloc_RelocateBlock turns into an address by adding the block's base, unless
+ * header bit 15 marks the block relocated; reloc_UnrelocateBlock subtracts the
+ * base again (and clears bit 15), and reloc_RebaseBlock moves [i] by a1 / 4
+ * words and adds a1 to each slot.  gpu_OffsetBlockTexPrimStreams /
+ * gpu_OffsetBlockTexPrimStream store a slot to scratchpad word 0, the u16 *
+ * cursor gpu_OffsetTexPrimStream reads, and softbody_CreateForNode reads u16
+ * data through one.
  */
 extern s32 *g_reloc_block_entry_tables[];
-extern Unk80104E88Rec D_80104E88[];
+extern Unk80104E88Rec g_fight_ballistic_records[];
 extern s32 D_80104F38;
 
 /* fight_BuildOpponentOrder's list: the set bit numbers of g_saved_record.unk_00
- * & mask, shuffled, plus up to three appended values (D_800A391F entries;
- * fight_AdvanceOpponentOrder reads entry g_fight_opponent_order_cursor, then
- * advances it). */
+ * & mask, shuffled, plus up to three appended values
+ * (g_fight_opponent_order_count entries; fight_AdvanceOpponentOrder reads entry
+ * g_fight_opponent_order_cursor, then advances it). */
 extern u8 g_fight_opponent_order[24];
 
 extern Unk80107850Rec g_snd_sequence_positions[6];
@@ -612,18 +613,18 @@ extern TexRec D_8009B9F0[2];
 /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]
  * their g_working_record.grayscale CLUT substitutes (eff_DrawBillboardList) */
 extern TexRec D_8009BA00[12];
-extern u8 D_8009BA60[];
+extern u8 g_eff_command_handler_bases[];
 extern Unk8009BD24Block g_working_record;
 extern s32 g_ndata_pack_loaded;
-extern s32 D_800A326C;
+extern s32 g_gpu_jittered_quad_pair_cycle;
 extern s32 g_eff_point_light_countdown;
 extern u32 D_800A32C8[2];
 extern Unk80101DF0Record *g_view_identity_root_ptr;
 extern Unk80101DF0Record *g_view_camera_root_ptr;
 extern s32 g_memcard_poll_count;
 extern void mem_MoveBlockRoundedUpToWords(s32, s32, s32);
-extern u8 D_800A37A8[];
-extern u16 D_800A37C4;
+extern u8 g_fight_stage_list_entries[];
+extern u16 g_comb_send_payload;
 extern POLY_FT4 *g_eff_quad_cursor;
 extern u32 *D_800A3808;
 extern s16 g_cd_fade_step;
@@ -641,7 +642,8 @@ extern s16 g_eff_jittered_billboard_ages[];
 extern s16 g_eff_billboard_pair_ages[];
 extern s32 g_eff_command_phase[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
- * it to light_SetPointLight, which copies all 16 bytes to D_800A9B28. */
+ * it to light_SetPointLight, which copies all 16 bytes to
+ * g_light_point_position. */
 extern VECTOR g_eff_point_light_position;
 extern Unk800F1B18Rec g_motion_decoders[];
 extern u8 g_shared_buffer[];
@@ -651,7 +653,7 @@ extern u8 D_801027A0[5][2];
 extern u8 D_801027D8[5][2];
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern void *g_draw_queue[640];
-extern s32 D_8009BA7C[];
+extern s32 g_eff_command_handlers[];
 extern Func80017A44Output g_softbody_slots[8];
 extern s32 g_slot_tim_group_requests[];
 extern Unk80045878Obj *g_slot_objects[];

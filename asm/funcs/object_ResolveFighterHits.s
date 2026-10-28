@@ -214,8 +214,8 @@ glabel object_ResolveFighterHits
     /* 2265C 80031E5C C0100300 */  sll        $v0, $v1, 3
     /* 22660 80031E60 23104300 */  subu       $v0, $v0, $v1
     /* 22664 80031E64 40100200 */  sll        $v0, $v0, 1
-    /* 22668 80031E68 0980033C */  lui        $v1, %hi(D_8008E194)
-    /* 2266C 80031E6C 94E16324 */  addiu      $v1, $v1, %lo(D_8008E194)
+    /* 22668 80031E68 0980033C */  lui        $v1, %hi(g_object_kind_params)
+    /* 2266C 80031E6C 94E16324 */  addiu      $v1, $v1, %lo(g_object_kind_params)
     /* 22670 80031E70 21104300 */  addu       $v0, $v0, $v1
     /* 22674 80031E74 B69E000C */  jal        fighter_ResolveBoneHit
     /* 22678 80031E78 1400A2AF */   sw        $v0, 0x14($sp)

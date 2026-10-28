@@ -37,18 +37,18 @@ glabel eff_StepCommand
     /* 513FC 80060BFC 00004294 */  lhu        $v0, 0x0($v0)
     /* 51400 80060C00 00000000 */  nop
     /* 51404 80060C04 80180200 */  sll        $v1, $v0, 2
-    /* 51408 80060C08 0A80013C */  lui        $at, %hi(D_8009BA60)
+    /* 51408 80060C08 0A80013C */  lui        $at, %hi(g_eff_command_handler_bases)
     /* 5140C 80060C0C 21082200 */  addu       $at, $at, $v0
-    /* 51410 80060C10 60BA2290 */  lbu        $v0, %lo(D_8009BA60)($at)
+    /* 51410 80060C10 60BA2290 */  lbu        $v0, %lo(g_eff_command_handler_bases)($at)
     /* 51414 80060C14 0F80013C */  lui        $at, %hi(g_eff_command_phase)
     /* 51418 80060C18 21082300 */  addu       $at, $at, $v1
     /* 5141C 80060C1C D010238C */  lw         $v1, %lo(g_eff_command_phase)($at)
     /* 51420 80060C20 00000000 */  nop
     /* 51424 80060C24 21104300 */  addu       $v0, $v0, $v1
     /* 51428 80060C28 80100200 */  sll        $v0, $v0, 2
-    /* 5142C 80060C2C 0A80013C */  lui        $at, %hi(D_8009BA7C)
+    /* 5142C 80060C2C 0A80013C */  lui        $at, %hi(g_eff_command_handlers)
     /* 51430 80060C30 21082200 */  addu       $at, $at, $v0
-    /* 51434 80060C34 7CBA228C */  lw         $v0, %lo(D_8009BA7C)($at)
+    /* 51434 80060C34 7CBA228C */  lw         $v0, %lo(g_eff_command_handlers)($at)
     /* 51438 80060C38 00000000 */  nop
     /* 5143C 80060C3C 09F84000 */  jalr       $v0
     /* 51440 80060C40 00000000 */   nop

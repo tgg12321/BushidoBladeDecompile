@@ -1,7 +1,7 @@
 glabel fight_TriggerOpposingFighterEventFromNearBallisticRecords
     /* 22B14 80032314 F8FFBD27 */  addiu      $sp, $sp, -0x8
-    /* 22B18 80032318 1080083C */  lui        $t0, %hi(D_80104E88)
-    /* 22B1C 8003231C 884E0825 */  addiu      $t0, $t0, %lo(D_80104E88)
+    /* 22B18 80032318 1080083C */  lui        $t0, %hi(g_fight_ballistic_records)
+    /* 22B1C 8003231C 884E0825 */  addiu      $t0, $t0, %lo(g_fight_ballistic_records)
     /* 22B20 80032320 21480000 */  addu       $t1, $zero, $zero
     /* 22B24 80032324 02000725 */  addiu      $a3, $t0, 0x2
   .L80032328:

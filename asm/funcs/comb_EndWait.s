@@ -10,7 +10,7 @@ glabel comb_EndWait
   .L8003AAD0:
     /* 2B2D0 8003AAD0 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 2B2D4 8003AAD4 00000000 */   nop
-    /* 2B2D8 8003AAD8 40018293 */  lbu        $v0, %gp_rel(D_800A320C)($gp)
+    /* 2B2D8 8003AAD8 40018293 */  lbu        $v0, %gp_rel(g_comb_events_enabled)($gp)
     /* 2B2DC 8003AADC 00000000 */  nop
     /* 2B2E0 8003AAE0 0D004010 */  beqz       $v0, .L8003AB18
     /* 2B2E4 8003AAE4 00F2043C */   lui       $a0, (0xF2000001 >> 16)
