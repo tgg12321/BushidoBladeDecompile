@@ -1204,28 +1204,28 @@ typedef struct {
  * 0x1F8002F0, its place in their scratchpad layout
  * (Unk1F8002B8_8005344C.unk38). */
 typedef struct {
-    s32 unk0;
-    u16 unk4;
+    s32 nearest_dist_sq;
+    u16 hit_tag;
     s16 unk6;
-    VECTOR unk8;
-    VECTOR unk18;
-    s32 unk28;
-    s32 unk2C;
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-    s32 unk3C;
-    s32 unk40;
+    VECTOR seg_start;
+    VECTOR seg_end;
+    s32 hit_nx;
+    s32 hit_ny;
+    s32 hit_nz;
+    s32 hit_plane_d;
+    s32 hit_local_x;
+    s32 hit_local_y;
+    s32 hit_local_z;
     s32 unk44;
-    s16 unk48;
-    s16 unk4A;
-    s16 unk4C;
-    s16 unk4E;
-    s16 unk50;
+    s16 hit_cell_x;
+    s16 hit_cell_z;
+    s16 local_start_x;
+    s16 local_start_y;
+    s16 local_start_z;
     s16 unk52;
-    s16 unk54;
-    s16 unk56;
-    s16 unk58;
+    s16 local_end_x;
+    s16 local_end_y;
+    s16 local_end_z;
     s16 unk5A;
     s32 (*unk5C)(s32, s32);
     s32 unk60;
@@ -1234,31 +1234,31 @@ typedef struct {
     s32 unk6C;
     s32 unk70;
     s32 unk74;
-    s32 unk78;
-    s32 unk7C;
+    s32 walk_minor_step;
+    s32 walk_slope;
     s32 unk80;
-    s32 unk84;
-    Cell_80052D00 unk88;
-    Cell_80052D00 unk8C;
-    s16 unk90;
+    s32 start_cell_center_z;
+    Cell_80052D00 walk_cell;
+    Cell_80052D00 end_cell;
+    s16 walk_steps_left;
     u8 unk92[0xA];
-    s32 unk9C;
-    s32 unkA0;
-    s32 unkA4;
-    s32 unkA8;
-    s32 unkAC;
-    s32 unkB0;
-    s32 unkB4;
-    s32 unkB8;
-    s32 unkBC;
-    s32 unkC0;
-    s32 unkC4;
-    s32 unkC8;
-    s32 unkCC;
-    s32 unkD0;
-    s32 unkD4;
-    s32 unkD8;
-    s32 unkDC;
+    s32 proj_axis_x;
+    s32 proj_axis_y;
+    s32 proj_axis_z;
+    s32 plane_cross_x;
+    s32 plane_cross_y;
+    s32 plane_cross_z;
+    s32 edge_from_u;
+    s32 edge_from_v;
+    s32 edge_to_u;
+    s32 edge_to_v;
+    s32 proj_cross_u;
+    s32 proj_cross_v;
+    s32 face_tag;
+    s32 face_nx;
+    s32 face_ny;
+    s32 face_nz;
+    s32 face_plane_d;
     s32 unkE0;
     s32 unkE4;
     s32 unkE8;
@@ -1313,24 +1313,24 @@ typedef union {
  * unkB8. unk00 is scratch (Unk1F8002B8Unk00): fighter_CastWeaponSegment /
  * object_ResolveFighterHits / fighter_ProcessWeaponBodyHits use its points. */
 typedef struct {
-    Unk1F8002B8Unk00 unk00;
-    Unk80107850Rec *unk60[3];
-    Unk80107850Rec *unk6C[3];
+    Unk1F8002B8Unk00 point_slots;
+    Unk80107850Rec *shape_points[3];
+    Unk80107850Rec *other_shape_points[3];
     Vec3i32 unk78;
-    Vec3i32 unk84;
-    Vec3i32 unk90;
-    Vec3i32 unk9C;
+    Vec3i32 bbox_max;
+    Vec3i32 other_bbox_min;
+    Vec3i32 other_bbox_max;
     Vec3i32 unkA8;
-    s32 unkB4;
+    s32 bone_hit_mask;
     Vec3i32 unkB8;
     s32 unkC4;
     Vec3i32 unkC8;
     s32 unkD4;
-    MATRIX unkD8;
+    MATRIX rot_matrix;
     SVECTOR unkF8;
     Vec3i32 unk100[2];
     Vec3i32 unk118[3];
-    Vec3i32 unk13C;
+    Vec3i32 contact_point;
 } Unk1F8002B8Rec;
 
 /* The layout object_UpdatePool and fight_UpdateBallisticRecords give the
@@ -1340,7 +1340,7 @@ typedef struct {
 typedef struct {
     /* to; collision_TestSegmentExtendingShortStartWithWork copies 16 bytes from
      * it */
-    Vec3i32 unk00;
+    Vec3i32 cast_end;
     s32 unk0C; /* read only as the 4th word of that copy */
     /* the hit point; object_UpdatePool's turn block first keeps a
        rotated velocity here */
@@ -1349,12 +1349,12 @@ typedef struct {
     /* object_UpdatePool's turn block's second rotated vector
        (fight_UpdateBallisticRecords does not access it) */
     Vec3i32 unk20;
-    s32 unk2C;    /* no access */
-    s16 unk30[3]; /* the hit normal */
-    s16 unk36;    /* no access */
+    s32 unk2C;          /* no access */
+    s16 cast_normal[3]; /* the hit normal */
+    s16 unk36;          /* no access */
     /* collision_TestSegmentExtendingShortStartWithWork's work area,
      * +0x38..+0x123 */
-    Work_80053E9C unk38;
+    Work_80053E9C cast_work;
 } Unk1F8002B8_8005344C;
 
 /* ScrPad.unk2B8: the scratchpad's last 0x148 bytes, 0x1F8002B8..0x1F8003FF,

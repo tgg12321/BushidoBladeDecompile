@@ -1025,8 +1025,8 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
      * (Ruling 11) */
     s32 temp2;
 
-    scr->unk84 = tbl[idx * 4];
-    scr->unk78 = scr->unk84;
+    scr->bbox_max = tbl[idx * 4];
+    scr->unk78 = scr->bbox_max;
 
     for (i = 1; i < 4; i++) {
         temp = i / 2;
@@ -1034,16 +1034,16 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
         n = idx * 4 + temp * 2 + temp2;
         if (tbl[n].x < scr->unk78.x) {
             scr->unk78.x = tbl[n].x;
-        } else if (scr->unk84.x < tbl[n].x) {
-            scr->unk84.x = tbl[n].x;
+        } else if (scr->bbox_max.x < tbl[n].x) {
+            scr->bbox_max.x = tbl[n].x;
         }
         if (tbl[n].z < scr->unk78.z) {
             scr->unk78.z = tbl[n].z;
-        } else if (scr->unk84.z < tbl[n].z) {
-            scr->unk84.z = tbl[n].z;
+        } else if (scr->bbox_max.z < tbl[n].z) {
+            scr->bbox_max.z = tbl[n].z;
         }
-        if (tbl[n].y > scr->unk84.y) {
-            scr->unk84.y = tbl[n].y;
+        if (tbl[n].y > scr->bbox_max.y) {
+            scr->bbox_max.y = tbl[n].y;
         }
     }
 
@@ -1051,15 +1051,15 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     for (temp = 0; rec->type != 0; temp++, rec++) {
         if (rec->used != 0)
             continue;
-        if (rec->y > scr->unk84.y)
+        if (rec->y > scr->bbox_max.y)
             continue;
         if (rec->x < scr->unk78.x)
             continue;
-        if (scr->unk84.x < rec->x)
+        if (scr->bbox_max.x < rec->x)
             continue;
         if (rec->z < scr->unk78.z)
             continue;
-        if (scr->unk84.z < rec->z)
+        if (scr->bbox_max.z < rec->z)
             continue;
 
         scr->unk100[0].x = rec->x;
@@ -1094,7 +1094,7 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
         if (flag == 0 || idx == 0)
             continue;
     hit:
-        scr->unk100[0].y = (scr->unk78.y + scr->unk84.y) / 2;
+        scr->unk100[0].y = (scr->unk78.y + scr->bbox_max.y) / 2;
         return 1;
     }
     return 0;
@@ -1103,9 +1103,12 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
 /* 1 when the box unk78 (min) / unk84 (max) and the box unk90 (min) / unk9C
  * (max) overlap on all three axes. */
 static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
-    return scr->unk78.x <= scr->unk9C.x && scr->unk84.x >= scr->unk90.x &&
-           scr->unk78.y <= scr->unk9C.y && scr->unk84.y >= scr->unk90.y &&
-           scr->unk78.z <= scr->unk9C.z && scr->unk84.z >= scr->unk90.z;
+    return scr->unk78.x <= scr->other_bbox_max.x &&
+           scr->bbox_max.x >= scr->other_bbox_min.x &&
+           scr->unk78.y <= scr->other_bbox_max.y &&
+           scr->bbox_max.y >= scr->other_bbox_min.y &&
+           scr->unk78.z <= scr->other_bbox_max.z &&
+           scr->bbox_max.z >= scr->other_bbox_min.z;
 }
 
 /* Both are defined further down this file. */
@@ -1249,94 +1252,98 @@ s32 fighter_ProcessWeaponContacts(void) {
     for (j = 0; j < count[0]; j++) {
         switch (j) {
         case 0:
-            scr->unk60[0] = &var_1[2];
-            scr->unk60[1] = &var_1[3];
-            scr->unk60[2] = &var_1[1];
+            scr->shape_points[0] = &var_1[2];
+            scr->shape_points[1] = &var_1[3];
+            scr->shape_points[2] = &var_1[1];
             break;
         case 1:
-            scr->unk60[0] = &var_1[0];
-            scr->unk60[1] = &var_1[1];
-            scr->unk60[2] = &var_1[2];
+            scr->shape_points[0] = &var_1[0];
+            scr->shape_points[1] = &var_1[1];
+            scr->shape_points[2] = &var_1[2];
             break;
         case 2:
-            scr->unk60[0] = &var_1[6];
-            scr->unk60[1] = &var_1[7];
-            scr->unk60[2] = &var_1[5];
+            scr->shape_points[0] = &var_1[6];
+            scr->shape_points[1] = &var_1[7];
+            scr->shape_points[2] = &var_1[5];
             break;
         case 3:
-            scr->unk60[0] = &var_1[4];
-            scr->unk60[1] = &var_1[5];
-            scr->unk60[2] = &var_1[6];
+            scr->shape_points[0] = &var_1[4];
+            scr->shape_points[1] = &var_1[5];
+            scr->shape_points[2] = &var_1[6];
             break;
         }
         if (math_TryPrepareTriangleNormalFrame(scr) == 0) {
             mask |= 1 << j;
             continue;
         }
-        scr->unk84 = *scr->unk60[0];
-        scr->unk78 = scr->unk84;
+        scr->bbox_max = *scr->shape_points[0];
+        scr->unk78 = scr->bbox_max;
         for (k = 1; k < 3; k++) {
-            if (scr->unk60[k]->x < scr->unk78.x) {
-                scr->unk78.x = scr->unk60[k]->x;
-            } else if (scr->unk84.x < scr->unk60[k]->x) {
-                scr->unk84.x = scr->unk60[k]->x;
+            if (scr->shape_points[k]->x < scr->unk78.x) {
+                scr->unk78.x = scr->shape_points[k]->x;
+            } else if (scr->bbox_max.x < scr->shape_points[k]->x) {
+                scr->bbox_max.x = scr->shape_points[k]->x;
             }
-            if (scr->unk60[k]->y < scr->unk78.y) {
-                scr->unk78.y = scr->unk60[k]->y;
-            } else if (scr->unk84.y < scr->unk60[k]->y) {
-                scr->unk84.y = scr->unk60[k]->y;
+            if (scr->shape_points[k]->y < scr->unk78.y) {
+                scr->unk78.y = scr->shape_points[k]->y;
+            } else if (scr->bbox_max.y < scr->shape_points[k]->y) {
+                scr->bbox_max.y = scr->shape_points[k]->y;
             }
-            if (scr->unk60[k]->z < scr->unk78.z) {
-                scr->unk78.z = scr->unk60[k]->z;
-            } else if (scr->unk84.z < scr->unk60[k]->z) {
-                scr->unk84.z = scr->unk60[k]->z;
+            if (scr->shape_points[k]->z < scr->unk78.z) {
+                scr->unk78.z = scr->shape_points[k]->z;
+            } else if (scr->bbox_max.z < scr->shape_points[k]->z) {
+                scr->bbox_max.z = scr->shape_points[k]->z;
             }
         }
         for (n = 0; n < count[1]; n++) {
             switch (n) {
             case 0:
-                scr->unk6C[0] = &var_1[10];
-                scr->unk6C[1] = &var_1[11];
-                scr->unk6C[2] = &var_1[9];
+                scr->other_shape_points[0] = &var_1[10];
+                scr->other_shape_points[1] = &var_1[11];
+                scr->other_shape_points[2] = &var_1[9];
                 break;
             case 1:
-                scr->unk6C[0] = &var_1[8];
-                scr->unk6C[1] = &var_1[9];
-                scr->unk6C[2] = &var_1[10];
+                scr->other_shape_points[0] = &var_1[8];
+                scr->other_shape_points[1] = &var_1[9];
+                scr->other_shape_points[2] = &var_1[10];
                 break;
             case 2:
-                scr->unk6C[0] = &var_1[14];
-                scr->unk6C[1] = &var_1[15];
-                scr->unk6C[2] = &var_1[13];
+                scr->other_shape_points[0] = &var_1[14];
+                scr->other_shape_points[1] = &var_1[15];
+                scr->other_shape_points[2] = &var_1[13];
                 break;
             case 3:
-                scr->unk6C[0] = &var_1[12];
-                scr->unk6C[1] = &var_1[13];
-                scr->unk6C[2] = &var_1[14];
+                scr->other_shape_points[0] = &var_1[12];
+                scr->other_shape_points[1] = &var_1[13];
+                scr->other_shape_points[2] = &var_1[14];
                 break;
             }
-            scr->unk9C = *scr->unk6C[0];
-            scr->unk90 = scr->unk9C;
+            scr->other_bbox_max = *scr->other_shape_points[0];
+            scr->other_bbox_min = scr->other_bbox_max;
             for (k = 1; k < 3; k++) {
-                if (scr->unk6C[k]->x < scr->unk90.x) {
-                    scr->unk90.x = scr->unk6C[k]->x;
-                } else if (scr->unk9C.x < scr->unk6C[k]->x) {
-                    scr->unk9C.x = scr->unk6C[k]->x;
+                if (scr->other_shape_points[k]->x < scr->other_bbox_min.x) {
+                    scr->other_bbox_min.x = scr->other_shape_points[k]->x;
+                } else if (
+                    scr->other_bbox_max.x < scr->other_shape_points[k]->x) {
+                    scr->other_bbox_max.x = scr->other_shape_points[k]->x;
                 }
-                if (scr->unk6C[k]->y < scr->unk90.y) {
-                    scr->unk90.y = scr->unk6C[k]->y;
-                } else if (scr->unk9C.y < scr->unk6C[k]->y) {
-                    scr->unk9C.y = scr->unk6C[k]->y;
+                if (scr->other_shape_points[k]->y < scr->other_bbox_min.y) {
+                    scr->other_bbox_min.y = scr->other_shape_points[k]->y;
+                } else if (
+                    scr->other_bbox_max.y < scr->other_shape_points[k]->y) {
+                    scr->other_bbox_max.y = scr->other_shape_points[k]->y;
                 }
-                if (scr->unk6C[k]->z < scr->unk90.z) {
-                    scr->unk90.z = scr->unk6C[k]->z;
-                } else if (scr->unk9C.z < scr->unk6C[k]->z) {
-                    scr->unk9C.z = scr->unk6C[k]->z;
+                if (scr->other_shape_points[k]->z < scr->other_bbox_min.z) {
+                    scr->other_bbox_min.z = scr->other_shape_points[k]->z;
+                } else if (
+                    scr->other_bbox_max.z < scr->other_shape_points[k]->z) {
+                    scr->other_bbox_max.z = scr->other_shape_points[k]->z;
                 }
             }
             if (box_overlap(scr) &&
                 func_8002DE20(
-                    scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
+                    scr, scr->other_shape_points[0], scr->other_shape_points[1],
+                    scr->other_shape_points[2]) != 0) {
                 for (k = 0; k < 16; k++) {
                     SPAD->unkA8[0][k] = saved[k];
                 }
@@ -1354,46 +1361,46 @@ s32 fighter_ProcessWeaponContacts(void) {
     for (j = 0; j < count[1]; j++) {
         switch (j) {
         case 0:
-            scr->unk60[0] = &var_1[10];
-            scr->unk60[1] = &var_1[11];
-            scr->unk60[2] = &var_1[9];
+            scr->shape_points[0] = &var_1[10];
+            scr->shape_points[1] = &var_1[11];
+            scr->shape_points[2] = &var_1[9];
             break;
         case 1:
-            scr->unk60[0] = &var_1[8];
-            scr->unk60[1] = &var_1[9];
-            scr->unk60[2] = &var_1[10];
+            scr->shape_points[0] = &var_1[8];
+            scr->shape_points[1] = &var_1[9];
+            scr->shape_points[2] = &var_1[10];
             break;
         case 2:
-            scr->unk60[0] = &var_1[14];
-            scr->unk60[1] = &var_1[15];
-            scr->unk60[2] = &var_1[13];
+            scr->shape_points[0] = &var_1[14];
+            scr->shape_points[1] = &var_1[15];
+            scr->shape_points[2] = &var_1[13];
             break;
         case 3:
-            scr->unk60[0] = &var_1[12];
-            scr->unk60[1] = &var_1[13];
-            scr->unk60[2] = &var_1[14];
+            scr->shape_points[0] = &var_1[12];
+            scr->shape_points[1] = &var_1[13];
+            scr->shape_points[2] = &var_1[14];
             break;
         }
         if (math_TryPrepareTriangleNormalFrame(scr) == 0) {
             continue;
         }
-        scr->unk84 = *scr->unk60[0];
-        scr->unk78 = scr->unk84;
+        scr->bbox_max = *scr->shape_points[0];
+        scr->unk78 = scr->bbox_max;
         for (k = 1; k < 3; k++) {
-            if (scr->unk60[k]->x < scr->unk78.x) {
-                scr->unk78.x = scr->unk60[k]->x;
-            } else if (scr->unk84.x < scr->unk60[k]->x) {
-                scr->unk84.x = scr->unk60[k]->x;
+            if (scr->shape_points[k]->x < scr->unk78.x) {
+                scr->unk78.x = scr->shape_points[k]->x;
+            } else if (scr->bbox_max.x < scr->shape_points[k]->x) {
+                scr->bbox_max.x = scr->shape_points[k]->x;
             }
-            if (scr->unk60[k]->y < scr->unk78.y) {
-                scr->unk78.y = scr->unk60[k]->y;
-            } else if (scr->unk84.y < scr->unk60[k]->y) {
-                scr->unk84.y = scr->unk60[k]->y;
+            if (scr->shape_points[k]->y < scr->unk78.y) {
+                scr->unk78.y = scr->shape_points[k]->y;
+            } else if (scr->bbox_max.y < scr->shape_points[k]->y) {
+                scr->bbox_max.y = scr->shape_points[k]->y;
             }
-            if (scr->unk60[k]->z < scr->unk78.z) {
-                scr->unk78.z = scr->unk60[k]->z;
-            } else if (scr->unk84.z < scr->unk60[k]->z) {
-                scr->unk84.z = scr->unk60[k]->z;
+            if (scr->shape_points[k]->z < scr->unk78.z) {
+                scr->unk78.z = scr->shape_points[k]->z;
+            } else if (scr->bbox_max.z < scr->shape_points[k]->z) {
+                scr->bbox_max.z = scr->shape_points[k]->z;
             }
         }
         for (n = 0; n < count[0]; n++) {
@@ -1402,48 +1409,52 @@ s32 fighter_ProcessWeaponContacts(void) {
             }
             switch (n) {
             case 0:
-                scr->unk6C[0] = &var_1[2];
-                scr->unk6C[1] = &var_1[3];
-                scr->unk6C[2] = &var_1[1];
+                scr->other_shape_points[0] = &var_1[2];
+                scr->other_shape_points[1] = &var_1[3];
+                scr->other_shape_points[2] = &var_1[1];
                 break;
             case 1:
-                scr->unk6C[0] = &var_1[0];
-                scr->unk6C[1] = &var_1[1];
-                scr->unk6C[2] = &var_1[2];
+                scr->other_shape_points[0] = &var_1[0];
+                scr->other_shape_points[1] = &var_1[1];
+                scr->other_shape_points[2] = &var_1[2];
                 break;
             case 2:
-                scr->unk6C[0] = &var_1[6];
-                scr->unk6C[1] = &var_1[7];
-                scr->unk6C[2] = &var_1[5];
+                scr->other_shape_points[0] = &var_1[6];
+                scr->other_shape_points[1] = &var_1[7];
+                scr->other_shape_points[2] = &var_1[5];
                 break;
             case 3:
-                scr->unk6C[0] = &var_1[4];
-                scr->unk6C[1] = &var_1[5];
-                scr->unk6C[2] = &var_1[6];
+                scr->other_shape_points[0] = &var_1[4];
+                scr->other_shape_points[1] = &var_1[5];
+                scr->other_shape_points[2] = &var_1[6];
                 break;
             }
-            scr->unk9C = *scr->unk6C[0];
-            scr->unk90 = scr->unk9C;
+            scr->other_bbox_max = *scr->other_shape_points[0];
+            scr->other_bbox_min = scr->other_bbox_max;
             for (k = 1; k < 3; k++) {
-                if (scr->unk6C[k]->x < scr->unk90.x) {
-                    scr->unk90.x = scr->unk6C[k]->x;
-                } else if (scr->unk9C.x < scr->unk6C[k]->x) {
-                    scr->unk9C.x = scr->unk6C[k]->x;
+                if (scr->other_shape_points[k]->x < scr->other_bbox_min.x) {
+                    scr->other_bbox_min.x = scr->other_shape_points[k]->x;
+                } else if (
+                    scr->other_bbox_max.x < scr->other_shape_points[k]->x) {
+                    scr->other_bbox_max.x = scr->other_shape_points[k]->x;
                 }
-                if (scr->unk6C[k]->y < scr->unk90.y) {
-                    scr->unk90.y = scr->unk6C[k]->y;
-                } else if (scr->unk9C.y < scr->unk6C[k]->y) {
-                    scr->unk9C.y = scr->unk6C[k]->y;
+                if (scr->other_shape_points[k]->y < scr->other_bbox_min.y) {
+                    scr->other_bbox_min.y = scr->other_shape_points[k]->y;
+                } else if (
+                    scr->other_bbox_max.y < scr->other_shape_points[k]->y) {
+                    scr->other_bbox_max.y = scr->other_shape_points[k]->y;
                 }
-                if (scr->unk6C[k]->z < scr->unk90.z) {
-                    scr->unk90.z = scr->unk6C[k]->z;
-                } else if (scr->unk9C.z < scr->unk6C[k]->z) {
-                    scr->unk9C.z = scr->unk6C[k]->z;
+                if (scr->other_shape_points[k]->z < scr->other_bbox_min.z) {
+                    scr->other_bbox_min.z = scr->other_shape_points[k]->z;
+                } else if (
+                    scr->other_bbox_max.z < scr->other_shape_points[k]->z) {
+                    scr->other_bbox_max.z = scr->other_shape_points[k]->z;
                 }
             }
             if (box_overlap(scr) &&
                 func_8002DE20(
-                    scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
+                    scr, scr->other_shape_points[0], scr->other_shape_points[1],
+                    scr->other_shape_points[2]) != 0) {
                 for (k = 0; k < 16; k++) {
                     SPAD->unkA8[0][k] = saved[k];
                 }
@@ -1510,12 +1521,12 @@ void fighter_CastWeaponSegment(
     BoneHitRec *rec;
     s32 i;
 
-    scr->unk60[0] = &scr->unk00.unk00[0];
-    scr->unk60[1] = &scr->unk00.unk00[1];
-    scr->unkC8 = scr->unk00.unk00[1];
-    dx = scr->unk60[1]->x - scr->unk60[0]->x;
-    dy = scr->unk60[1]->y - scr->unk60[0]->y;
-    dz = scr->unk60[1]->z - scr->unk60[0]->z;
+    scr->shape_points[0] = &scr->point_slots.unk00[0];
+    scr->shape_points[1] = &scr->point_slots.unk00[1];
+    scr->unkC8 = scr->point_slots.unk00[1];
+    dx = scr->shape_points[1]->x - scr->shape_points[0]->x;
+    dy = scr->shape_points[1]->y - scr->shape_points[0]->y;
+    dz = scr->shape_points[1]->z - scr->shape_points[0]->z;
     diff = (var_2->opponent_bearing - ratan2(dx, dz)) & 0xFFF;
     if (diff >= 0x800) {
         diff = 0x1000 - diff;
@@ -1564,10 +1575,10 @@ void fighter_CastWeaponSegment(
     qx = (dx << 12) / temp;
     qy = (dy << 12) / temp;
     qz = (dz << 12) / temp;
-    *scr->unk60[0] = *scr->unk60[1];
-    scr->unk60[1]->x += qx * 4;
-    scr->unk60[1]->y += qy * 4;
-    scr->unk60[1]->z += qz * 4;
+    *scr->shape_points[0] = *scr->shape_points[1];
+    scr->shape_points[1]->x += qx * 4;
+    scr->shape_points[1]->y += qy * 4;
+    scr->shape_points[1]->z += qz * 4;
     if (diff < 0x400) {
         math_PrepareSegmentCollisionFrame(scr);
         /* FAKE: do-while(0) puts id in $s7 / obj in $fp as in the target;
@@ -1594,15 +1605,15 @@ void fighter_CastWeaponSegment(
             }
         }
     }
-    scr->unkA8.x = scr->unk60[0]->x - qx / 4;
-    scr->unkA8.y = scr->unk60[0]->y - qy / 4;
-    scr->unkA8.z = scr->unk60[0]->z - qz / 4;
+    scr->unkA8.x = scr->shape_points[0]->x - qx / 4;
+    scr->unkA8.y = scr->shape_points[0]->y - qy / 4;
+    scr->unkA8.z = scr->shape_points[0]->z - qz / 4;
     if (collision_TestSegmentWithWork(
-            &scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x, &scr->unkF8.vx,
-            (s32)work) != 0 &&
+            &scr->unkA8.x, &scr->shape_points[1]->x, &scr->unk100[0].x,
+            &scr->unkF8.vx, (s32)work) != 0 &&
         collision_GetHitTag() != 7) {
         if (*arg1 != 0) {
-            p = scr->unk60[0];
+            p = scr->shape_points[0];
             dx = scr->unk100[0].x - p->x;
             dy = scr->unk100[0].y - p->y;
             dz = scr->unk100[0].z - p->z;
@@ -1721,8 +1732,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             var_3->move_frame == var_3->weapon_hit_start_frames[0]) {
             if (var_3->weapon_ammo != 0) {
                 var_3->weapon_ammo -= 1;
-                scr->unk00.unk00[0] = SPAD->unk00[i == 0][1];
-                scr->unk00.unk00[1] = SPAD->unk00[i == 0][0];
+                scr->point_slots.unk00[0] = SPAD->unk00[i == 0][1];
+                scr->point_slots.unk00[1] = SPAD->unk00[i == 0][0];
                 fighter_CastWeaponSegment(var_4, &var_5, &var_6, 0);
                 mask_a |= var_5;
             } else {
@@ -1740,8 +1751,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             var_3->move_frame == var_3->weapon_hit_start_frames[1] &&
             var_3->weapon_ammo != 0) {
             var_3->weapon_ammo -= 1;
-            scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
-            scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
+            scr->point_slots.unk00[0] = SPAD->unk48[i == 0][1];
+            scr->point_slots.unk00[1] = SPAD->unk48[i == 0][0];
             fighter_CastWeaponSegment(
                 var_4, &var_5, &var_6, var_3->character_roster_index == 0xE);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -1772,31 +1783,31 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 var_32 = 0;
             }
             if (var_12 == 0) {
-                scr->unk00.unk00[0] = SPAD->unk00[i == 0][temp1];
-                scr->unk00.unk00[1] = SPAD->unk00[i == 0][temp2];
-                scr->unk00.unk00[2] = var_3->unk_210[temp1];
-                scr->unk00.unk00[3] = var_3->unk_210[temp2];
+                scr->point_slots.unk00[0] = SPAD->unk00[i == 0][temp1];
+                scr->point_slots.unk00[1] = SPAD->unk00[i == 0][temp2];
+                scr->point_slots.unk00[2] = var_3->unk_210[temp1];
+                scr->point_slots.unk00[3] = var_3->unk_210[temp2];
             } else {
-                scr->unk00.unk00[0] = SPAD->unk48[i == 0][temp1];
-                scr->unk00.unk00[1] = SPAD->unk48[i == 0][temp2];
-                scr->unk00.unk00[2] = var_3->unk_234[temp1];
-                scr->unk00.unk00[3] = var_3->unk_234[temp2];
+                scr->point_slots.unk00[0] = SPAD->unk48[i == 0][temp1];
+                scr->point_slots.unk00[1] = SPAD->unk48[i == 0][temp2];
+                scr->point_slots.unk00[2] = var_3->unk_234[temp1];
+                scr->point_slots.unk00[3] = var_3->unk_234[temp2];
             }
-            scr->unk00.unk00[4].x =
-                (scr->unk00.unk00[0].x + scr->unk00.unk00[2].x) / 2;
-            scr->unk00.unk00[4].y =
-                (scr->unk00.unk00[0].y + scr->unk00.unk00[2].y) / 2;
-            scr->unk00.unk00[4].z =
-                (scr->unk00.unk00[0].z + scr->unk00.unk00[2].z) / 2;
-            scr->unk00.unk00[5].x =
-                (scr->unk00.unk00[1].x + scr->unk00.unk00[3].x) / 2;
-            scr->unk00.unk00[5].y =
-                (scr->unk00.unk00[1].y + scr->unk00.unk00[3].y) / 2;
-            scr->unk00.unk00[5].z =
-                (scr->unk00.unk00[1].z + scr->unk00.unk00[3].z) / 2;
-            dx = scr->unk00.unk00[1].x - scr->unk00.unk00[3].x;
-            dy = scr->unk00.unk00[1].y - scr->unk00.unk00[3].y;
-            dz = scr->unk00.unk00[1].z - scr->unk00.unk00[3].z;
+            scr->point_slots.unk00[4].x =
+                (scr->point_slots.unk00[0].x + scr->point_slots.unk00[2].x) / 2;
+            scr->point_slots.unk00[4].y =
+                (scr->point_slots.unk00[0].y + scr->point_slots.unk00[2].y) / 2;
+            scr->point_slots.unk00[4].z =
+                (scr->point_slots.unk00[0].z + scr->point_slots.unk00[2].z) / 2;
+            scr->point_slots.unk00[5].x =
+                (scr->point_slots.unk00[1].x + scr->point_slots.unk00[3].x) / 2;
+            scr->point_slots.unk00[5].y =
+                (scr->point_slots.unk00[1].y + scr->point_slots.unk00[3].y) / 2;
+            scr->point_slots.unk00[5].z =
+                (scr->point_slots.unk00[1].z + scr->point_slots.unk00[3].z) / 2;
+            dx = scr->point_slots.unk00[1].x - scr->point_slots.unk00[3].x;
+            dy = scr->point_slots.unk00[1].y - scr->point_slots.unk00[3].y;
+            dz = scr->point_slots.unk00[1].z - scr->point_slots.unk00[3].z;
             work = dx * dx + dy * dy + dz * dz;
             var_15 = 2;
             if (work > 6249999) {
@@ -1805,68 +1816,68 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             for (idx = 0; idx < var_15; idx++) {
                 if (var_15 == 2) {
                     if (idx == 0) {
-                        scr->unk60[0] = &scr->unk00.unk00[2];
-                        scr->unk60[1] = &scr->unk00.unk00[3];
-                        scr->unk60[2] = &scr->unk00.unk00[1];
+                        scr->shape_points[0] = &scr->point_slots.unk00[2];
+                        scr->shape_points[1] = &scr->point_slots.unk00[3];
+                        scr->shape_points[2] = &scr->point_slots.unk00[1];
                     } else {
-                        scr->unk60[0] = &scr->unk00.unk00[0];
-                        scr->unk60[1] = &scr->unk00.unk00[1];
-                        scr->unk60[2] = &scr->unk00.unk00[2];
+                        scr->shape_points[0] = &scr->point_slots.unk00[0];
+                        scr->shape_points[1] = &scr->point_slots.unk00[1];
+                        scr->shape_points[2] = &scr->point_slots.unk00[2];
                     }
                 } else {
                     switch (idx) {
                     case 0:
-                        scr->unk60[0] = &scr->unk00.unk00[3];
-                        scr->unk60[1] = &scr->unk00.unk00[2];
-                        scr->unk60[2] = &scr->unk00.unk00[5];
+                        scr->shape_points[0] = &scr->point_slots.unk00[3];
+                        scr->shape_points[1] = &scr->point_slots.unk00[2];
+                        scr->shape_points[2] = &scr->point_slots.unk00[5];
                         break;
                     case 1:
-                        scr->unk60[0] = &scr->unk00.unk00[5];
-                        scr->unk60[1] = &scr->unk00.unk00[4];
-                        scr->unk60[2] = &scr->unk00.unk00[2];
+                        scr->shape_points[0] = &scr->point_slots.unk00[5];
+                        scr->shape_points[1] = &scr->point_slots.unk00[4];
+                        scr->shape_points[2] = &scr->point_slots.unk00[2];
                         break;
                     case 2:
-                        scr->unk60[0] = &scr->unk00.unk00[5];
-                        scr->unk60[1] = &scr->unk00.unk00[4];
-                        scr->unk60[2] = &scr->unk00.unk00[1];
+                        scr->shape_points[0] = &scr->point_slots.unk00[5];
+                        scr->shape_points[1] = &scr->point_slots.unk00[4];
+                        scr->shape_points[2] = &scr->point_slots.unk00[1];
                         break;
                     case 3:
-                        scr->unk60[0] = &scr->unk00.unk00[1];
-                        scr->unk60[1] = &scr->unk00.unk00[0];
-                        scr->unk60[2] = &scr->unk00.unk00[4];
+                        scr->shape_points[0] = &scr->point_slots.unk00[1];
+                        scr->shape_points[1] = &scr->point_slots.unk00[0];
+                        scr->shape_points[2] = &scr->point_slots.unk00[4];
                         break;
                     }
                 }
-                scr->unk84 = *scr->unk60[0];
-                scr->unk78 = scr->unk84;
+                scr->bbox_max = *scr->shape_points[0];
+                scr->unk78 = scr->bbox_max;
                 for (j = 1; j < 3; j++) {
-                    if (scr->unk60[j]->x < scr->unk78.x) {
-                        scr->unk78.x = scr->unk60[j]->x;
-                    } else if (scr->unk84.x < scr->unk60[j]->x) {
-                        scr->unk84.x = scr->unk60[j]->x;
+                    if (scr->shape_points[j]->x < scr->unk78.x) {
+                        scr->unk78.x = scr->shape_points[j]->x;
+                    } else if (scr->bbox_max.x < scr->shape_points[j]->x) {
+                        scr->bbox_max.x = scr->shape_points[j]->x;
                     }
-                    if (scr->unk60[j]->y < scr->unk78.y) {
-                        scr->unk78.y = scr->unk60[j]->y;
-                    } else if (scr->unk84.y < scr->unk60[j]->y) {
-                        scr->unk84.y = scr->unk60[j]->y;
+                    if (scr->shape_points[j]->y < scr->unk78.y) {
+                        scr->unk78.y = scr->shape_points[j]->y;
+                    } else if (scr->bbox_max.y < scr->shape_points[j]->y) {
+                        scr->bbox_max.y = scr->shape_points[j]->y;
                     }
-                    if (scr->unk60[j]->z < scr->unk78.z) {
-                        scr->unk78.z = scr->unk60[j]->z;
-                    } else if (scr->unk84.z < scr->unk60[j]->z) {
-                        scr->unk84.z = scr->unk60[j]->z;
+                    if (scr->shape_points[j]->z < scr->unk78.z) {
+                        scr->unk78.z = scr->shape_points[j]->z;
+                    } else if (scr->bbox_max.z < scr->shape_points[j]->z) {
+                        scr->bbox_max.z = scr->shape_points[j]->z;
                     }
                 }
                 fighter_TestTriangleBoneHits(
                     var_4, math_PrepareTriangleCollisionFrame(scr), var_32);
-                var_5 |= scr->unkB4;
+                var_5 |= scr->bone_hit_mask;
                 var_6 |= scr->unkC4;
                 if (var_12 != 0) {
-                    mask_a |= scr->unkB4;
+                    mask_a |= scr->bone_hit_mask;
                 }
                 if (var_11 == 1 && var_12 == 0) {
-                    mask_b |= scr->unkB4;
+                    mask_b |= scr->bone_hit_mask;
                 } else {
-                    mask_c |= scr->unkB4;
+                    mask_c |= scr->bone_hit_mask;
                 }
             }
         }
@@ -2262,9 +2273,9 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
         scr->unkB8.y += rec1->unk_210[1].y;
         scr->unkB8.z += rec1->unk_210[1].z;
     }
-    scr->unk13C.x = ((scr->unkA8.x * 3) + scr->unkB8.x) >> 4;
-    scr->unk13C.y = ((scr->unkA8.y * 3) + scr->unkB8.y) >> 4;
-    scr->unk13C.z = ((scr->unkA8.z * 3) + scr->unkB8.z) >> 4;
+    scr->contact_point.x = ((scr->unkA8.x * 3) + scr->unkB8.x) >> 4;
+    scr->contact_point.y = ((scr->unkA8.y * 3) + scr->unkB8.y) >> 4;
+    scr->contact_point.z = ((scr->unkA8.z * 3) + scr->unkB8.z) >> 4;
 }
 
 /* Per-frame update of the two D_80101EC8 records.  The three
@@ -2300,9 +2311,9 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
         if (D_800A3824 >= 0 &&
             (firstPlayer->unk_AD != 0 || secondPlayer->unk_AD != 0)) {
             fighter_ResolveWeaponContact(
-                firstPlayer, &SPAD->unk2B8.rec.unk13C.x);
+                firstPlayer, &SPAD->unk2B8.rec.contact_point.x);
             fighter_ResolveWeaponContact(
-                secondPlayer, &SPAD->unk2B8.rec.unk13C.x);
+                secondPlayer, &SPAD->unk2B8.rec.contact_point.x);
             secondPlayer->unk_AD = 0;
             firstPlayer->unk_AD = 0;
         } else {
@@ -2406,15 +2417,15 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
          * separate flag takes $a1 instead of the target's $s0 (score 3) */
         var_11 = 0;
         x = SPAD->unkA8[id][i].x;
-        if (scr->unk84.x < x - r || x + r < scr->unk78.x) {
+        if (scr->bbox_max.x < x - r || x + r < scr->unk78.x) {
             var_11 = 1;
         } else {
             y = SPAD->unkA8[id][i].y;
-            if (scr->unk84.y < y - r || y + r < scr->unk78.y) {
+            if (scr->bbox_max.y < y - r || y + r < scr->unk78.y) {
                 var_11 = 1;
             } else {
                 z = SPAD->unkA8[id][i].z;
-                if (scr->unk84.z < z - r || z + r < scr->unk78.z) {
+                if (scr->bbox_max.z < z - r || z + r < scr->unk78.z) {
                     var_11 = 1;
                 }
             }
@@ -2451,7 +2462,7 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
     }
 
-    scr->unkB4 = seenMask;
+    scr->bone_hit_mask = seenMask;
     scr->unkC4 = var_4;
 }
 
@@ -2472,12 +2483,12 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     s32 temp;
     s32 nxz_len;
 
-    obj->unkA8.x = obj->unk60[1]->x - obj->unk60[0]->x;
-    obj->unkA8.y = obj->unk60[1]->y - obj->unk60[0]->y;
-    obj->unkA8.z = obj->unk60[1]->z - obj->unk60[0]->z;
-    obj->unkB8.x = obj->unk60[2]->x - obj->unk60[0]->x;
-    obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
-    obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
+    obj->unkA8.x = obj->shape_points[1]->x - obj->shape_points[0]->x;
+    obj->unkA8.y = obj->shape_points[1]->y - obj->shape_points[0]->y;
+    obj->unkA8.z = obj->shape_points[1]->z - obj->shape_points[0]->z;
+    obj->unkB8.x = obj->shape_points[2]->x - obj->shape_points[0]->x;
+    obj->unkB8.y = obj->shape_points[2]->y - obj->shape_points[0]->y;
+    obj->unkB8.z = obj->shape_points[2]->z - obj->shape_points[0]->z;
 
     gte_OuterProduct0(&obj->unkA8, &obj->unkB8, &obj->unkC8);
 
@@ -2523,18 +2534,18 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
                 }
             }
             obj->unkF8.vx = 0x800 - ratan2(obj->unkA8.y, len);
-            obj->unkD8.m[0][0] = 0x1000;
-            obj->unkD8.m[0][1] = 0;
-            obj->unkD8.m[0][2] = 0;
-            obj->unkD8.m[1][0] = 0;
-            obj->unkD8.m[1][1] = 0x1000;
-            obj->unkD8.m[1][2] = 0;
-            obj->unkD8.m[2][0] = 0;
-            obj->unkD8.m[2][1] = 0;
-            obj->unkD8.m[2][2] = 0x1000;
-            RotMatrixY(obj->unkF8.vy, &obj->unkD8);
-            RotMatrixX(obj->unkF8.vx, &obj->unkD8);
-            gte_SetRotMatrix(&obj->unkD8);
+            obj->rot_matrix.m[0][0] = 0x1000;
+            obj->rot_matrix.m[0][1] = 0;
+            obj->rot_matrix.m[0][2] = 0;
+            obj->rot_matrix.m[1][0] = 0;
+            obj->rot_matrix.m[1][1] = 0x1000;
+            obj->rot_matrix.m[1][2] = 0;
+            obj->rot_matrix.m[2][0] = 0;
+            obj->rot_matrix.m[2][1] = 0;
+            obj->rot_matrix.m[2][2] = 0x1000;
+            RotMatrixY(obj->unkF8.vy, &obj->rot_matrix);
+            RotMatrixX(obj->unkF8.vx, &obj->rot_matrix);
+            gte_SetRotMatrix(&obj->rot_matrix);
             gte_ldlv0(&obj->unkA8);
             gte_rtv0();
             gte_stlvnl(&obj->unkA8);
@@ -2565,18 +2576,18 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
         }
     }
     obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, nxz_len);
-    obj->unkD8.m[0][0] = 0x1000;
-    obj->unkD8.m[0][1] = 0;
-    obj->unkD8.m[0][2] = 0;
-    obj->unkD8.m[1][0] = 0;
-    obj->unkD8.m[1][1] = 0x1000;
-    obj->unkD8.m[1][2] = 0;
-    obj->unkD8.m[2][0] = 0;
-    obj->unkD8.m[2][1] = 0;
-    obj->unkD8.m[2][2] = 0x1000;
-    RotMatrixY(obj->unkF8.vy, &obj->unkD8);
-    RotMatrixX(obj->unkF8.vx, &obj->unkD8);
-    gte_SetRotMatrix(&obj->unkD8);
+    obj->rot_matrix.m[0][0] = 0x1000;
+    obj->rot_matrix.m[0][1] = 0;
+    obj->rot_matrix.m[0][2] = 0;
+    obj->rot_matrix.m[1][0] = 0;
+    obj->rot_matrix.m[1][1] = 0x1000;
+    obj->rot_matrix.m[1][2] = 0;
+    obj->rot_matrix.m[2][0] = 0;
+    obj->rot_matrix.m[2][1] = 0;
+    obj->rot_matrix.m[2][2] = 0x1000;
+    RotMatrixY(obj->unkF8.vy, &obj->rot_matrix);
+    RotMatrixX(obj->unkF8.vx, &obj->rot_matrix);
+    gte_SetRotMatrix(&obj->rot_matrix);
     gte_ldlv0(&obj->unkA8);
     gte_rtv0();
     gte_stlvnl(&obj->unkA8);
@@ -2590,9 +2601,9 @@ s32 math_TestSphereAgainstPreparedAxialVertexSpan(
     s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos, s32 threshold,
     s32 r_sq) {
     if (flag == 0) {
-        obj->unkF8.vx = pos->x - obj->unk60[0]->x;
-        obj->unkF8.vy = pos->y - obj->unk60[0]->y;
-        obj->unkF8.vz = pos->z - obj->unk60[0]->z;
+        obj->unkF8.vx = pos->x - obj->shape_points[0]->x;
+        obj->unkF8.vy = pos->y - obj->shape_points[0]->y;
+        obj->unkF8.vz = pos->z - obj->shape_points[0]->z;
         gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]);
     }
     {
@@ -2781,9 +2792,9 @@ dist_calc: {
 s32 math_TestPreparedTriangleSphere(
     s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
-        obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
-        obj->unkF8.vy = pos[1] - obj->unk60[0]->y;
-        obj->unkF8.vz = pos[2] - obj->unk60[0]->z;
+        obj->unkF8.vx = pos[0] - obj->shape_points[0]->x;
+        obj->unkF8.vy = pos[1] - obj->shape_points[0]->y;
+        obj->unkF8.vz = pos[2] - obj->shape_points[0]->z;
         gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]);
     }
 
@@ -2896,13 +2907,13 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     s32 dist_sq;
     s32 dist;
 
-    obj->unkA8.x = obj->unk60[1]->x - obj->unk60[0]->x;
-    obj->unkA8.y = obj->unk60[1]->y - obj->unk60[0]->y;
-    obj->unkA8.z = obj->unk60[1]->z - obj->unk60[0]->z;
+    obj->unkA8.x = obj->shape_points[1]->x - obj->shape_points[0]->x;
+    obj->unkA8.y = obj->shape_points[1]->y - obj->shape_points[0]->y;
+    obj->unkA8.z = obj->shape_points[1]->z - obj->shape_points[0]->z;
 
-    obj->unkB8.x = obj->unk60[2]->x - obj->unk60[0]->x;
-    obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
-    obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
+    obj->unkB8.x = obj->shape_points[2]->x - obj->shape_points[0]->x;
+    obj->unkB8.y = obj->shape_points[2]->y - obj->shape_points[0]->y;
+    obj->unkB8.z = obj->shape_points[2]->z - obj->shape_points[0]->z;
 
     gte_OuterProduct0(&obj->unkA8, &obj->unkB8, &obj->unkC8);
 
@@ -2940,18 +2951,18 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     }
 
     obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, dist);
-    mat = &obj->unkD8;
+    mat = &obj->rot_matrix;
 
     /* identity 3x3 rotation matrix obj->unkD8 */
-    obj->unkD8.m[0][0] = 0x1000;
-    obj->unkD8.m[0][1] = 0;
-    obj->unkD8.m[0][2] = 0;
-    obj->unkD8.m[1][0] = 0;
-    obj->unkD8.m[1][1] = 0x1000;
-    obj->unkD8.m[1][2] = 0;
-    obj->unkD8.m[2][0] = 0;
-    obj->unkD8.m[2][1] = 0;
-    obj->unkD8.m[2][2] = 0x1000;
+    obj->rot_matrix.m[0][0] = 0x1000;
+    obj->rot_matrix.m[0][1] = 0;
+    obj->rot_matrix.m[0][2] = 0;
+    obj->rot_matrix.m[1][0] = 0;
+    obj->rot_matrix.m[1][1] = 0x1000;
+    obj->rot_matrix.m[1][2] = 0;
+    obj->rot_matrix.m[2][0] = 0;
+    obj->rot_matrix.m[2][1] = 0;
+    obj->rot_matrix.m[2][2] = 0x1000;
     RotMatrixY(obj->unkF8.vy, mat);
     RotMatrixX(obj->unkF8.vx, mat);
 
@@ -2998,20 +3009,20 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     /* edge A-B x ((x2,y2) - A) */
     s32 cross_ab2;
 
-    obj->unkF8.vx = p0->x - obj->unk60[0]->x;
-    obj->unkF8.vy = p0->y - obj->unk60[0]->y;
-    obj->unkF8.vz = p0->z - obj->unk60[0]->z;
+    obj->unkF8.vx = p0->x - obj->shape_points[0]->x;
+    obj->unkF8.vy = p0->y - obj->shape_points[0]->y;
+    obj->unkF8.vz = p0->z - obj->shape_points[0]->z;
     gte_ldv0(&obj->unkF8);
     gte_rtv0();
-    obj->unkF8.vx = p1->x - obj->unk60[0]->x;
-    obj->unkF8.vy = p1->y - obj->unk60[0]->y;
-    obj->unkF8.vz = p1->z - obj->unk60[0]->z;
+    obj->unkF8.vx = p1->x - obj->shape_points[0]->x;
+    obj->unkF8.vy = p1->y - obj->shape_points[0]->y;
+    obj->unkF8.vz = p1->z - obj->shape_points[0]->z;
     gte_stlvnl(&obj->unk118[0]);
     gte_ldv0(&obj->unkF8);
     gte_rtv0();
-    obj->unkF8.vx = p2->x - obj->unk60[0]->x;
-    obj->unkF8.vy = p2->y - obj->unk60[0]->y;
-    obj->unkF8.vz = p2->z - obj->unk60[0]->z;
+    obj->unkF8.vx = p2->x - obj->shape_points[0]->x;
+    obj->unkF8.vy = p2->y - obj->shape_points[0]->y;
+    obj->unkF8.vz = p2->z - obj->shape_points[0]->z;
     gte_stlvnl(&obj->unk118[1]);
     gte_ApplyRotMatrix(&obj->unkF8, &obj->unk118[2]);
 
@@ -3214,9 +3225,9 @@ void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr) {
     s32 angle;
     s32 dist;
 
-    scr->unkA8.x = scr->unk60[1]->x - scr->unk60[0]->x;
-    scr->unkA8.y = scr->unk60[1]->y - scr->unk60[0]->y;
-    scr->unkA8.z = scr->unk60[1]->z - scr->unk60[0]->z;
+    scr->unkA8.x = scr->shape_points[1]->x - scr->shape_points[0]->x;
+    scr->unkA8.y = scr->shape_points[1]->y - scr->shape_points[0]->y;
+    scr->unkA8.z = scr->shape_points[1]->z - scr->shape_points[0]->z;
     angle = ratan2(scr->unkA8.x, scr->unkA8.z);
     dist_sq = scr->unkA8.x * scr->unkA8.x + scr->unkA8.z * scr->unkA8.z;
     scr->unkF8.vy = 0x800 - angle;
@@ -3237,19 +3248,19 @@ void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr) {
     }
 
     angle = ratan2(scr->unkA8.y, dist);
-    mat = &scr->unkD8;
+    mat = &scr->rot_matrix;
     scr->unkF8.vx = 0x800 - angle;
 
     /* identity 3x3 rotation matrix at scr->unkD8 */
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
     RotMatrixY(scr->unkF8.vy, mat);
     RotMatrixX(scr->unkF8.vx, mat);
 
@@ -3261,9 +3272,9 @@ void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr) {
 
 s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq) {
-    scr->unkF8.vx = pos->x - scr->unk60[0]->x;
-    scr->unkF8.vy = pos->y - scr->unk60[0]->y;
-    scr->unkF8.vz = pos->z - scr->unk60[0]->z;
+    scr->unkF8.vx = pos->x - scr->shape_points[0]->x;
+    scr->unkF8.vy = pos->y - scr->shape_points[0]->y;
+    scr->unkF8.vz = pos->z - scr->shape_points[0]->z;
     gte_ApplyRotMatrix(&scr->unkF8, &scr->unk100[0]);
 
     {
@@ -3357,18 +3368,18 @@ void math_ScaleVectorInDirectionFrame(
     }
 
     angle2 = ratan2(arg1[1], dist);
-    mat = &scr->unkD8;
+    mat = &scr->rot_matrix;
     scr->unkF8.vx = 0x800 - angle2;
 
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
     RotMatrixY(scr->unkF8.vy, mat);
     RotMatrixX(scr->unkF8.vx, mat);
 
@@ -3382,15 +3393,15 @@ void math_ScaleVectorInDirectionFrame(
     vec->x = (vec->x * scale_xy) / 256;
     vec->y = (vec->y * scale_xy) / 256;
 
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
     RotMatrixX(-scr->unkF8.vx, mat);
     RotMatrixY(-scr->unkF8.vy, mat);
 
@@ -3474,7 +3485,7 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     s32 temp;
     s32 sp_tmp;
 
-    m = &SPAD->unk2B8.rec.unkD8;
+    m = &SPAD->unk2B8.rec.rot_matrix;
     *m = *a0;
 
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
@@ -3508,16 +3519,16 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     }
 
     ang_y = ratan2(i2, var_7);
-    mat = &scr->unkD8;
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
+    mat = &scr->rot_matrix;
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
     RotMatrixZ(ang_z, mat);
     RotMatrixY(ang_y, mat);
 
@@ -3557,23 +3568,23 @@ void math_ComposeAxisRotationsAndRewriteAngles(
     s32 sp_tmp;
 
     scr = &SPAD->unk2B8.rec;
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
-    RotMatrixX(x, &scr->unkD8);
-    RotMatrixY(y, &scr->unkD8);
-    RotMatrixZ(-z, &scr->unkD8);
-    RotMatrixX(angles[0], &scr->unkD8);
-    RotMatrixY(angles[1], &scr->unkD8);
-    RotMatrixZ(angles[2], &scr->unkD8);
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
+    RotMatrixX(x, &scr->rot_matrix);
+    RotMatrixY(y, &scr->rot_matrix);
+    RotMatrixZ(-z, &scr->rot_matrix);
+    RotMatrixX(angles[0], &scr->rot_matrix);
+    RotMatrixY(angles[1], &scr->rot_matrix);
+    RotMatrixZ(angles[2], &scr->rot_matrix);
 
-    m = &scr->unkD8;
+    m = &scr->rot_matrix;
     c0 = m->m[1][2] * m->m[2][1] - m->m[1][1] * m->m[2][2];
     d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
@@ -3604,16 +3615,16 @@ void math_ComposeAxisRotationsAndRewriteAngles(
     }
 
     ang_y = ratan2(i2, var_7);
-    mat = &scr->unkD8;
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
+    mat = &scr->rot_matrix;
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
     RotMatrixZ(ang_z, mat);
     RotMatrixY(ang_y, mat);
 
@@ -4176,13 +4187,14 @@ void object_UpdatePool(void) {
         obj->rot[1] += obj->rot_vel[1];
         obj->rot[2] += obj->rot_vel[2];
         obj->vel.y += 13;
-        scr->unk00.x = obj->pos.x + obj->vel.x;
-        scr->unk00.y = obj->pos.y + obj->vel.y;
-        scr->unk00.z = obj->pos.z + obj->vel.z;
+        scr->cast_end.x = obj->pos.x + obj->vel.x;
+        scr->cast_end.y = obj->pos.y + obj->vel.y;
+        scr->cast_end.z = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
-        var_7 = scr->unk30;
+        var_7 = scr->cast_normal;
         temp = collision_TestSegmentExtendingShortStartWithWork(
-            &obj->pos.x, &scr->unk00.x, &scr->unk10.x, var_7, (s32)&scr->unk38);
+            &obj->pos.x, &scr->cast_end.x, &scr->unk10.x, var_7,
+            (s32)&scr->cast_work);
         if (temp != 0 && collision_GetHitTag() == 7) {
             temp = 0;
         }
@@ -4207,7 +4219,7 @@ void object_UpdatePool(void) {
                 obj->vel.y = obj->vel.y * work / 4096;
                 obj->vel.z = obj->vel.z * work / 4096;
                 var_5 = obj->vel.x * obj->vel.x + obj->vel.z * obj->vel.z;
-                if (scr->unk30[1] >= -0x7FF) {
+                if (scr->cast_normal[1] >= -0x7FF) {
                     obj->rot_vel[1] +=
                         (rng_Next() & 1) ? var_5 / 64 : -var_5 / 64;
                     if (obj->kind != 0xE && obj->unk_04 != 0) {
@@ -4233,7 +4245,7 @@ void object_UpdatePool(void) {
                             obj->owner, 0x29, &obj->pos.x, 0);
                     }
                 }
-            } else if (scr->unk30[1] >= -0x7FF && kind == 0xE) {
+            } else if (scr->cast_normal[1] >= -0x7FF && kind == 0xE) {
                 if (obj->unk_05 == 1) {
                     obj->is_moving = 1;
                     obj->rot[1] += 0x780 + (rng_Next() & 0xFF);
@@ -4253,7 +4265,7 @@ void object_UpdatePool(void) {
                 obj->unk_05 = 3;
             }
         } else {
-            obj->pos = scr->unk00;
+            obj->pos = scr->cast_end;
         }
         if (obj->vel.y >= -15 && obj->vel.y <= 15 && obj->vel.x >= -3 &&
             obj->vel.x <= 3 && obj->vel.z >= -3 && obj->vel.z <= 3) {
@@ -4322,20 +4334,20 @@ void object_DeflectFromFighterHit(
         ent->rot_vel[1] = var_8 + var_5;
     }
 
-    mat = &scr->unkD8;
+    mat = &scr->rot_matrix;
     angle1 = D_8008EBA0[idx] & 0xFFF;
     angle2 =
         (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
     /* identity 3x3 rotation matrix at scr->unkD8 */
-    scr->unkD8.m[0][0] = 0x1000;
-    scr->unkD8.m[0][1] = 0;
-    scr->unkD8.m[0][2] = 0;
-    scr->unkD8.m[1][0] = 0;
-    scr->unkD8.m[1][1] = 0x1000;
-    scr->unkD8.m[1][2] = 0;
-    scr->unkD8.m[2][0] = 0;
-    scr->unkD8.m[2][1] = 0;
-    scr->unkD8.m[2][2] = 0x1000;
+    scr->rot_matrix.m[0][0] = 0x1000;
+    scr->rot_matrix.m[0][1] = 0;
+    scr->rot_matrix.m[0][2] = 0;
+    scr->rot_matrix.m[1][0] = 0;
+    scr->rot_matrix.m[1][1] = 0x1000;
+    scr->rot_matrix.m[1][2] = 0;
+    scr->rot_matrix.m[2][0] = 0;
+    scr->rot_matrix.m[2][1] = 0;
+    scr->rot_matrix.m[2][2] = 0x1000;
     RotMatrixY(angle1, mat);
     RotMatrixX(angle2, mat);
 
@@ -4366,7 +4378,7 @@ void object_ResolveFighterHits(void) {
     s32 i;
     s32 var_2;
     Obj80106A78 *obj;
-    Vec3i32 *var_4 = scr->unk00.unk00;
+    Vec3i32 *var_4 = scr->point_slots.unk00;
     Unk80101EC8Record *var_5;
     s32 var_6;
     u16 var_7;
@@ -4397,8 +4409,8 @@ void object_ResolveFighterHits(void) {
 
         var_4[0] = obj->prev_pos;
         var_4[1] = obj->pos;
-        scr->unk60[0] = &var_4[0];
-        scr->unk60[1] = &var_4[1];
+        scr->shape_points[0] = &var_4[0];
+        scr->shape_points[1] = &var_4[1];
         math_PrepareSegmentCollisionFrame(scr);
 
         var_10 = 0;
@@ -4537,16 +4549,16 @@ void fight_UpdateBallisticRecords(void) {
             base->unk_02 += 1;
             base->unk_10 = base->unk_04;
             base->unk_1C.y += 0xD;
-            scr->unk00.x = base->unk_04.x + base->unk_1C.x;
-            scr->unk00.y = base->unk_04.y + base->unk_1C.y;
-            scr->unk00.z = base->unk_04.z + base->unk_1C.z;
+            scr->cast_end.x = base->unk_04.x + base->unk_1C.x;
+            scr->cast_end.y = base->unk_04.y + base->unk_1C.y;
+            scr->cast_end.z = base->unk_04.z + base->unk_1C.z;
             if (collision_TestSegmentExtendingShortStartWithWork(
-                    &base->unk_04.x, &scr->unk00.x, &scr->unk10.x, scr->unk30,
-                    (s32)&scr->unk38) != 0 ||
+                    &base->unk_04.x, &scr->cast_end.x, &scr->unk10.x,
+                    scr->cast_normal, (s32)&scr->cast_work) != 0 ||
                 base->unk_04.y > base->unk_28) {
                 base->unk_00 = 0;
             } else {
-                base->unk_04 = scr->unk00;
+                base->unk_04 = scr->cast_end;
             }
         }
         i++;

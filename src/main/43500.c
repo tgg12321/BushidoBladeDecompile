@@ -48,44 +48,52 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
     s32 z_direction;
     s32 axes_swapped;
 
-    g_collision_segment_work->unk60 = g_collision_segment_work->unk8.vx + 32000;
-    g_collision_segment_work->unk64 = g_collision_segment_work->unk8.vz + 32000;
+    g_collision_segment_work->unk60 =
+        g_collision_segment_work->seg_start.vx + 32000;
+    g_collision_segment_work->unk64 =
+        g_collision_segment_work->seg_start.vz + 32000;
     g_collision_segment_work->unk68 =
-        g_collision_segment_work->unk18.vx + 32000;
-    g_collision_segment_work->unk0 = 0x7FFFFFFF;
+        g_collision_segment_work->seg_end.vx + 32000;
+    g_collision_segment_work->nearest_dist_sq = 0x7FFFFFFF;
     g_collision_segment_work->unk6C =
-        g_collision_segment_work->unk18.vz + 32000;
+        g_collision_segment_work->seg_end.vz + 32000;
     g_collision_segment_work->unk70 =
         g_collision_segment_work->unk68 - g_collision_segment_work->unk60;
-    g_collision_segment_work->unk88.x = g_collision_segment_work->unk60 / 2000;
-    g_collision_segment_work->unk88.z = g_collision_segment_work->unk64 / 2000;
-    g_collision_segment_work->unk8C.x = g_collision_segment_work->unk68 / 2000;
-    g_collision_segment_work->unk8C.z = g_collision_segment_work->unk6C / 2000;
+    g_collision_segment_work->walk_cell.x =
+        g_collision_segment_work->unk60 / 2000;
+    g_collision_segment_work->walk_cell.z =
+        g_collision_segment_work->unk64 / 2000;
+    g_collision_segment_work->end_cell.x =
+        g_collision_segment_work->unk68 / 2000;
+    g_collision_segment_work->end_cell.z =
+        g_collision_segment_work->unk6C / 2000;
     g_collision_segment_work->unk74 =
         g_collision_segment_work->unk6C - g_collision_segment_work->unk64;
-    if (g_collision_segment_work->unk88.x ==
-            g_collision_segment_work->unk8C.x &&
-        g_collision_segment_work->unk88.z ==
-            g_collision_segment_work->unk8C.z) {
-        if (g_collision_segment_work->unk8.vx ==
-                g_collision_segment_work->unk18.vx &&
-            g_collision_segment_work->unk8.vy ==
-                g_collision_segment_work->unk18.vy &&
-            g_collision_segment_work->unk8.vz ==
-                g_collision_segment_work->unk18.vz) {
+    if (g_collision_segment_work->walk_cell.x ==
+            g_collision_segment_work->end_cell.x &&
+        g_collision_segment_work->walk_cell.z ==
+            g_collision_segment_work->end_cell.z) {
+        if (g_collision_segment_work->seg_start.vx ==
+                g_collision_segment_work->seg_end.vx &&
+            g_collision_segment_work->seg_start.vy ==
+                g_collision_segment_work->seg_end.vy &&
+            g_collision_segment_work->seg_start.vz ==
+                g_collision_segment_work->seg_end.vz) {
             return 0;
         }
-        g_collision_segment_work->unk5C(g_collision_segment_work->unk88.x,
-                                        g_collision_segment_work->unk88.z);
+        g_collision_segment_work->unk5C(g_collision_segment_work->walk_cell.x,
+                                        g_collision_segment_work->walk_cell.z);
     } else {
         g_collision_segment_work->unk80 =
-            g_collision_segment_work->unk88.x * 2000 + 1000;
-        g_collision_segment_work->unk84 =
-            g_collision_segment_work->unk88.z * 2000 + 1000;
+            g_collision_segment_work->walk_cell.x * 2000 + 1000;
+        g_collision_segment_work->start_cell_center_z =
+            g_collision_segment_work->walk_cell.z * 2000 + 1000;
         g_collision_segment_work->unk60 -= g_collision_segment_work->unk80;
-        g_collision_segment_work->unk64 -= g_collision_segment_work->unk84;
+        g_collision_segment_work->unk64 -=
+            g_collision_segment_work->start_cell_center_z;
         g_collision_segment_work->unk68 -= g_collision_segment_work->unk80;
-        g_collision_segment_work->unk6C -= g_collision_segment_work->unk84;
+        g_collision_segment_work->unk6C -=
+            g_collision_segment_work->start_cell_center_z;
         if (g_collision_segment_work->unk70 < 0) {
             x_direction = -1;
             g_collision_segment_work->unk70 = -g_collision_segment_work->unk70;
@@ -119,72 +127,74 @@ s32 collision_WalkSegmentGrid(s32 *hit_point, s16 *hit_normal) {
         g_collision_segment_work->unk68 += 1000;
         g_collision_segment_work->unk60 += 1000;
         g_collision_segment_work->unk64 += 1000;
-        g_collision_segment_work->unk90 =
+        g_collision_segment_work->walk_steps_left =
             g_collision_segment_work->unk68 / 2000 -
             g_collision_segment_work->unk60 / 2000 + 1;
-        g_collision_segment_work->unk7C =
+        g_collision_segment_work->walk_slope =
             (g_collision_segment_work->unk74 << 12) /
             g_collision_segment_work->unk70;
         g_collision_segment_work->unk64 -=
             (g_collision_segment_work->unk60 *
-             g_collision_segment_work->unk7C) >>
+             g_collision_segment_work->walk_slope) >>
             12;
-        g_collision_segment_work->unk78 =
-            (g_collision_segment_work->unk7C * 2000) >> 12;
-        while (--g_collision_segment_work->unk90 != -1) {
+        g_collision_segment_work->walk_minor_step =
+            (g_collision_segment_work->walk_slope * 2000) >> 12;
+        while (--g_collision_segment_work->walk_steps_left != -1) {
             if ((g_collision_segment_work->unk80 =
                      g_collision_segment_work->unk5C(
-                         g_collision_segment_work->unk88.x,
-                         g_collision_segment_work->unk88.z)) != 0) {
+                         g_collision_segment_work->walk_cell.x,
+                         g_collision_segment_work->walk_cell.z)) != 0) {
                 break;
             }
             g_collision_segment_work->unk64 %= 2000;
-            g_collision_segment_work->unk64 += g_collision_segment_work->unk78;
-            if (g_collision_segment_work->unk90 == 0) {
+            g_collision_segment_work->unk64 +=
+                g_collision_segment_work->walk_minor_step;
+            if (g_collision_segment_work->walk_steps_left == 0) {
                 break;
             }
             if (g_collision_segment_work->unk64 > 2000) {
                 if (axes_swapped) {
                     if (x_direction < 0) {
-                        g_collision_segment_work->unk88.x--;
+                        g_collision_segment_work->walk_cell.x--;
                     } else {
-                        g_collision_segment_work->unk88.x++;
+                        g_collision_segment_work->walk_cell.x++;
                     }
                 } else {
                     if (z_direction < 0) {
-                        g_collision_segment_work->unk88.z--;
+                        g_collision_segment_work->walk_cell.z--;
                     } else {
-                        g_collision_segment_work->unk88.z++;
+                        g_collision_segment_work->walk_cell.z++;
                     }
                 }
                 if ((g_collision_segment_work->unk80 =
                          g_collision_segment_work->unk5C(
-                             g_collision_segment_work->unk88.x,
-                             g_collision_segment_work->unk88.z)) != 0) {
+                             g_collision_segment_work->walk_cell.x,
+                             g_collision_segment_work->walk_cell.z)) != 0) {
                     break;
                 }
             }
             if (axes_swapped) {
                 if (z_direction < 0) {
-                    g_collision_segment_work->unk88.z--;
+                    g_collision_segment_work->walk_cell.z--;
                 } else {
-                    g_collision_segment_work->unk88.z++;
+                    g_collision_segment_work->walk_cell.z++;
                 }
             } else {
                 if (x_direction < 0) {
-                    g_collision_segment_work->unk88.x--;
+                    g_collision_segment_work->walk_cell.x--;
                 } else {
-                    g_collision_segment_work->unk88.x++;
+                    g_collision_segment_work->walk_cell.x++;
                 }
             }
         }
         if (g_collision_segment_work->unk80 == 0 &&
-            (g_collision_segment_work->unk88.x !=
-                 g_collision_segment_work->unk8C.x ||
-             g_collision_segment_work->unk88.z !=
-                 g_collision_segment_work->unk8C.z)) {
-            g_collision_segment_work->unk5C(g_collision_segment_work->unk8C.x,
-                                            g_collision_segment_work->unk8C.z);
+            (g_collision_segment_work->walk_cell.x !=
+                 g_collision_segment_work->end_cell.x ||
+             g_collision_segment_work->walk_cell.z !=
+                 g_collision_segment_work->end_cell.z)) {
+            g_collision_segment_work->unk5C(
+                g_collision_segment_work->end_cell.x,
+                g_collision_segment_work->end_cell.z);
         }
     }
     return collision_GetHit(hit_point, hit_normal);
@@ -200,25 +210,28 @@ void collision_TestSegmentExtendingShortStart(
     s32 start_x, start_y, start_z;
     s32 end_x, end_y, end_z;
     g_collision_segment_work = &D_800EF9F8;
-    D_800EF9F8.unk8 = *(VECTOR *)segment_start;
-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
-    if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
-                            g_collision_segment_work->unk8.vx,
-                        g_collision_segment_work->unk18.vy -
-                            g_collision_segment_work->unk8.vy,
-                        g_collision_segment_work->unk18.vz -
-                            g_collision_segment_work->unk8.vz) <= 0x9C3F) {
-        end_x = g_collision_segment_work->unk18.vx;
-        start_x = g_collision_segment_work->unk8.vx;
-        end_y = g_collision_segment_work->unk18.vy;
-        start_y = g_collision_segment_work->unk8.vy;
+    D_800EF9F8.seg_start = *(VECTOR *)segment_start;
+    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
+    if (gte_SumSquares3(g_collision_segment_work->seg_end.vx -
+                            g_collision_segment_work->seg_start.vx,
+                        g_collision_segment_work->seg_end.vy -
+                            g_collision_segment_work->seg_start.vy,
+                        g_collision_segment_work->seg_end.vz -
+                            g_collision_segment_work->seg_start.vz) <= 0x9C3F) {
+        end_x = g_collision_segment_work->seg_end.vx;
+        start_x = g_collision_segment_work->seg_start.vx;
+        end_y = g_collision_segment_work->seg_end.vy;
+        start_y = g_collision_segment_work->seg_start.vy;
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitScalarProjection;
-        end_z = g_collision_segment_work->unk18.vz;
-        g_collision_segment_work->unk8.vx = start_x - ((end_x - start_x) << 1);
-        g_collision_segment_work->unk8.vy = start_y - ((end_y - start_y) << 1);
-        start_z = g_collision_segment_work->unk8.vz;
-        g_collision_segment_work->unk8.vz = start_z - ((end_z - start_z) << 1);
+        end_z = g_collision_segment_work->seg_end.vz;
+        g_collision_segment_work->seg_start.vx =
+            start_x - ((end_x - start_x) << 1);
+        g_collision_segment_work->seg_start.vy =
+            start_y - ((end_y - start_y) << 1);
+        start_z = g_collision_segment_work->seg_start.vz;
+        g_collision_segment_work->seg_start.vz =
+            start_z - ((end_z - start_z) << 1);
     } else {
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitGteProjection;
@@ -232,25 +245,28 @@ s32 collision_TestSegmentExtendingShortStartWithWork(
     s32 start_x, start_y, start_z;
     s32 end_x, end_y, end_z;
     g_collision_segment_work = (Work_80053E9C *)segment_work_addr;
-    g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
-    if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
-                            g_collision_segment_work->unk8.vx,
-                        g_collision_segment_work->unk18.vy -
-                            g_collision_segment_work->unk8.vy,
-                        g_collision_segment_work->unk18.vz -
-                            g_collision_segment_work->unk8.vz) <= 0x9C3F) {
-        end_x = g_collision_segment_work->unk18.vx;
-        start_x = g_collision_segment_work->unk8.vx;
-        end_y = g_collision_segment_work->unk18.vy;
-        start_y = g_collision_segment_work->unk8.vy;
+    g_collision_segment_work->seg_start = *(VECTOR *)segment_start;
+    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
+    if (gte_SumSquares3(g_collision_segment_work->seg_end.vx -
+                            g_collision_segment_work->seg_start.vx,
+                        g_collision_segment_work->seg_end.vy -
+                            g_collision_segment_work->seg_start.vy,
+                        g_collision_segment_work->seg_end.vz -
+                            g_collision_segment_work->seg_start.vz) <= 0x9C3F) {
+        end_x = g_collision_segment_work->seg_end.vx;
+        start_x = g_collision_segment_work->seg_start.vx;
+        end_y = g_collision_segment_work->seg_end.vy;
+        start_y = g_collision_segment_work->seg_start.vy;
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitScalarProjection;
-        end_z = g_collision_segment_work->unk18.vz;
-        g_collision_segment_work->unk8.vx = start_x - ((end_x - start_x) << 1);
-        g_collision_segment_work->unk8.vy = start_y - ((end_y - start_y) << 1);
-        start_z = g_collision_segment_work->unk8.vz;
-        g_collision_segment_work->unk8.vz = start_z - ((end_z - start_z) << 1);
+        end_z = g_collision_segment_work->seg_end.vz;
+        g_collision_segment_work->seg_start.vx =
+            start_x - ((end_x - start_x) << 1);
+        g_collision_segment_work->seg_start.vy =
+            start_y - ((end_y - start_y) << 1);
+        start_z = g_collision_segment_work->seg_start.vz;
+        g_collision_segment_work->seg_start.vz =
+            start_z - ((end_z - start_z) << 1);
     } else {
         g_collision_segment_work->unk5C =
             collision_TestCellKeepingNearestHitGteProjection;
@@ -261,8 +277,8 @@ s32 collision_TestSegmentExtendingShortStartWithWork(
 s32 collision_TestSegment(
     s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal) {
     g_collision_segment_work = &D_800EF9F8;
-    D_800EF9F8.unk8 = *(VECTOR *)segment_start;
-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
+    D_800EF9F8.seg_start = *(VECTOR *)segment_start;
+    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
     g_collision_segment_work->unk5C =
         collision_TestCellKeepingNearestHitGteProjection;
     return collision_WalkSegmentGrid(hit_point, hit_normal);
@@ -272,8 +288,8 @@ s32 collision_TestSegmentWithWork(
     s32 *segment_start, s32 *segment_end, s32 *hit_point, s16 *hit_normal,
     s32 segment_work_addr) {
     g_collision_segment_work = (Work_80053E9C *)segment_work_addr;
-    g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
+    g_collision_segment_work->seg_start = *(VECTOR *)segment_start;
+    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
     g_collision_segment_work->unk5C =
         collision_TestCellKeepingNearestHitGteProjection;
     return collision_WalkSegmentGrid(hit_point, hit_normal);
@@ -282,16 +298,16 @@ s32 collision_TestSegmentWithWork(
 s32 collision_GetHit(s32 *hit_point, s16 *hit_normal) {
     Work_80053E9C *p = g_collision_segment_work;
     s32 t;
-    if (p->unk0 != 0x7FFFFFFF) {
-        t = (p->unk48 * 0x7D0) - 0x7D00;
-        hit_point[0] = p->unk38 + t;
-        hit_point[1] = p->unk3C;
-        t = (p->unk4A * 0x7D0) - 0x7D00;
-        hit_point[2] = p->unk40 + t;
-        hit_normal[0] = p->unk28 >> 2;
-        hit_normal[1] = p->unk2C >> 2;
-        hit_normal[2] = p->unk30 >> 2;
-        g_collision_hit_tag = p->unk4;
+    if (p->nearest_dist_sq != 0x7FFFFFFF) {
+        t = (p->hit_cell_x * 0x7D0) - 0x7D00;
+        hit_point[0] = p->hit_local_x + t;
+        hit_point[1] = p->hit_local_y;
+        t = (p->hit_cell_z * 0x7D0) - 0x7D00;
+        hit_point[2] = p->hit_local_z + t;
+        hit_normal[0] = p->hit_nx >> 2;
+        hit_normal[1] = p->hit_ny >> 2;
+        hit_normal[2] = p->hit_nz >> 2;
+        g_collision_hit_tag = p->hit_tag;
         return 1;
     }
     return 0;
@@ -321,37 +337,49 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(
     data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
     x = cell_x * 2000 - 32000;
     z = cell_z * 2000 - 32000;
-    g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
-    g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
-    g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
-    g_collision_segment_work->unk54 = g_collision_segment_work->unk18.vx - x;
-    g_collision_segment_work->unk56 = g_collision_segment_work->unk18.vy;
-    g_collision_segment_work->unk58 = g_collision_segment_work->unk18.vz - z;
+    g_collision_segment_work->local_start_x =
+        g_collision_segment_work->seg_start.vx - x;
+    g_collision_segment_work->local_start_y =
+        g_collision_segment_work->seg_start.vy;
+    g_collision_segment_work->local_start_z =
+        g_collision_segment_work->seg_start.vz - z;
+    g_collision_segment_work->local_end_x =
+        g_collision_segment_work->seg_end.vx - x;
+    g_collision_segment_work->local_end_y =
+        g_collision_segment_work->seg_end.vy;
+    g_collision_segment_work->local_end_z =
+        g_collision_segment_work->seg_end.vz - z;
 
     count = *data;
     data++;
     while (--count != -1) {
-        g_collision_segment_work->unkD0 = *data;
+        g_collision_segment_work->face_nx = *data;
         data++;
-        g_collision_segment_work->unkD4 = *data;
+        g_collision_segment_work->face_ny = *data;
         data++;
-        g_collision_segment_work->unkD8 = *data;
+        g_collision_segment_work->face_nz = *data;
         data++;
-        g_collision_segment_work->unkDC = (u16)*data;
+        g_collision_segment_work->face_plane_d = (u16)*data;
         data++;
-        g_collision_segment_work->unkDC =
-            (*data << 16) | g_collision_segment_work->unkDC;
+        g_collision_segment_work->face_plane_d =
+            (*data << 16) | g_collision_segment_work->face_plane_d;
         data++;
         g_collision_segment_work->unkE4 =
-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk4C +
-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk4E +
-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk50 +
-            g_collision_segment_work->unkDC;
+            g_collision_segment_work->face_nx *
+                g_collision_segment_work->local_start_x +
+            g_collision_segment_work->face_ny *
+                g_collision_segment_work->local_start_y +
+            g_collision_segment_work->face_nz *
+                g_collision_segment_work->local_start_z +
+            g_collision_segment_work->face_plane_d;
         g_collision_segment_work->unkE8 =
-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk54 +
-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk56 +
-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk58 +
-            g_collision_segment_work->unkDC;
+            g_collision_segment_work->face_nx *
+                g_collision_segment_work->local_end_x +
+            g_collision_segment_work->face_ny *
+                g_collision_segment_work->local_end_y +
+            g_collision_segment_work->face_nz *
+                g_collision_segment_work->local_end_z +
+            g_collision_segment_work->face_plane_d;
 
         g_collision_segment_work->unkE4 =
             (g_collision_segment_work->unkE4 < 0 ? -1 : 1) *
@@ -371,147 +399,150 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(
             g_collision_segment_work->unkE0 = g_collision_segment_work->unkE4 -
                                               g_collision_segment_work->unkE8;
             g_collision_segment_work->unkE4 *= 2;
-            g_collision_segment_work->unkA8 =
-                (g_collision_segment_work->unk54 -
-                 g_collision_segment_work->unk4C) *
+            g_collision_segment_work->plane_cross_x =
+                (g_collision_segment_work->local_end_x -
+                 g_collision_segment_work->local_start_x) *
                 g_collision_segment_work->unkE4 /
                 g_collision_segment_work->unkE0;
-            g_collision_segment_work->unkAC =
-                (g_collision_segment_work->unk56 -
-                 g_collision_segment_work->unk4E) *
+            g_collision_segment_work->plane_cross_y =
+                (g_collision_segment_work->local_end_y -
+                 g_collision_segment_work->local_start_y) *
                 g_collision_segment_work->unkE4 /
                 g_collision_segment_work->unkE0;
-            g_collision_segment_work->unkB0 =
-                (g_collision_segment_work->unk58 -
-                 g_collision_segment_work->unk50) *
+            g_collision_segment_work->plane_cross_z =
+                (g_collision_segment_work->local_end_z -
+                 g_collision_segment_work->local_start_z) *
                 g_collision_segment_work->unkE4 /
                 g_collision_segment_work->unkE0;
-            g_collision_segment_work->unkA8 =
-                (g_collision_segment_work->unkA8 < 0 ? -1 : 1) *
-                ((g_collision_segment_work->unkA8 >= 0
-                      ? g_collision_segment_work->unkA8 + 1
-                      : -g_collision_segment_work->unkA8 + 1) >>
+            g_collision_segment_work->plane_cross_x =
+                (g_collision_segment_work->plane_cross_x < 0 ? -1 : 1) *
+                ((g_collision_segment_work->plane_cross_x >= 0
+                      ? g_collision_segment_work->plane_cross_x + 1
+                      : -g_collision_segment_work->plane_cross_x + 1) >>
                  1);
-            g_collision_segment_work->unkAC =
-                (g_collision_segment_work->unkAC < 0 ? -1 : 1) *
-                ((g_collision_segment_work->unkAC >= 0
-                      ? g_collision_segment_work->unkAC + 1
-                      : -g_collision_segment_work->unkAC + 1) >>
+            g_collision_segment_work->plane_cross_y =
+                (g_collision_segment_work->plane_cross_y < 0 ? -1 : 1) *
+                ((g_collision_segment_work->plane_cross_y >= 0
+                      ? g_collision_segment_work->plane_cross_y + 1
+                      : -g_collision_segment_work->plane_cross_y + 1) >>
                  1);
-            g_collision_segment_work->unkB0 =
-                (g_collision_segment_work->unkB0 < 0 ? -1 : 1) *
-                ((g_collision_segment_work->unkB0 >= 0
-                      ? g_collision_segment_work->unkB0 + 1
-                      : -g_collision_segment_work->unkB0 + 1) >>
+            g_collision_segment_work->plane_cross_z =
+                (g_collision_segment_work->plane_cross_z < 0 ? -1 : 1) *
+                ((g_collision_segment_work->plane_cross_z >= 0
+                      ? g_collision_segment_work->plane_cross_z + 1
+                      : -g_collision_segment_work->plane_cross_z + 1) >>
                  1);
-            g_collision_segment_work->unkA8 += g_collision_segment_work->unk4C;
-            g_collision_segment_work->unkAC += g_collision_segment_work->unk4E;
-            g_collision_segment_work->unkB0 += g_collision_segment_work->unk50;
+            g_collision_segment_work->plane_cross_x +=
+                g_collision_segment_work->local_start_x;
+            g_collision_segment_work->plane_cross_y +=
+                g_collision_segment_work->local_start_y;
+            g_collision_segment_work->plane_cross_z +=
+                g_collision_segment_work->local_start_z;
             g_collision_segment_work->unkE0 = *data;
             data++;
             g_collision_segment_work->unkE4 = *data;
             data++;
             g_collision_segment_work->unkE8 = *data;
             data++;
-            g_collision_segment_work->unk9C = *data;
+            g_collision_segment_work->proj_axis_x = *data;
             data++;
-            g_collision_segment_work->unkA0 = *data;
+            g_collision_segment_work->proj_axis_y = *data;
             data++;
-            g_collision_segment_work->unkA4 = *data;
+            g_collision_segment_work->proj_axis_z = *data;
             data++;
-            g_collision_segment_work->unkC4 =
-                ((g_collision_segment_work->unkA8 -
+            g_collision_segment_work->proj_cross_u =
+                ((g_collision_segment_work->plane_cross_x -
                   g_collision_segment_work->unkE0) *
-                     g_collision_segment_work->unk9C +
-                 (g_collision_segment_work->unkAC -
+                     g_collision_segment_work->proj_axis_x +
+                 (g_collision_segment_work->plane_cross_y -
                   g_collision_segment_work->unkE4) *
-                     g_collision_segment_work->unkA0 +
-                 (g_collision_segment_work->unkB0 -
+                     g_collision_segment_work->proj_axis_y +
+                 (g_collision_segment_work->plane_cross_z -
                   g_collision_segment_work->unkE8) *
-                     g_collision_segment_work->unkA4) >>
+                     g_collision_segment_work->proj_axis_z) >>
                 14;
-            g_collision_segment_work->unk9C = *data;
+            g_collision_segment_work->proj_axis_x = *data;
             data++;
-            g_collision_segment_work->unkA0 = *data;
+            g_collision_segment_work->proj_axis_y = *data;
             data++;
-            g_collision_segment_work->unkA4 = *data;
+            g_collision_segment_work->proj_axis_z = *data;
             data++;
-            g_collision_segment_work->unkC8 =
-                ((g_collision_segment_work->unkA8 -
+            g_collision_segment_work->proj_cross_v =
+                ((g_collision_segment_work->plane_cross_x -
                   g_collision_segment_work->unkE0) *
-                     g_collision_segment_work->unk9C +
-                 (g_collision_segment_work->unkAC -
+                     g_collision_segment_work->proj_axis_x +
+                 (g_collision_segment_work->plane_cross_y -
                   g_collision_segment_work->unkE4) *
-                     g_collision_segment_work->unkA0 +
-                 (g_collision_segment_work->unkB0 -
+                     g_collision_segment_work->proj_axis_y +
+                 (g_collision_segment_work->plane_cross_z -
                   g_collision_segment_work->unkE8) *
-                     g_collision_segment_work->unkA4) >>
+                     g_collision_segment_work->proj_axis_z) >>
                 14;
             var_6 = (u16)*data;
             data++;
             n = var_6;
-            g_collision_segment_work->unkCC = n >> 8;
+            g_collision_segment_work->face_tag = n >> 8;
             n &= 0xFF;
-            g_collision_segment_work->unkB4 = *data;
+            g_collision_segment_work->edge_from_u = *data;
             data++;
             y = *data;
             data++;
             g_collision_segment_work->unkE0 = 1;
-            g_collision_segment_work->unkB8 = y;
+            g_collision_segment_work->edge_from_v = y;
             while (--n != -1) {
-                g_collision_segment_work->unkBC = *data;
+                g_collision_segment_work->edge_to_u = *data;
                 data++;
-                g_collision_segment_work->unkC0 = *data;
+                g_collision_segment_work->edge_to_v = *data;
                 data++;
-                if ((g_collision_segment_work->unkC4 -
-                     g_collision_segment_work->unkB4) *
-                            (g_collision_segment_work->unkC0 -
-                             g_collision_segment_work->unkB8) -
-                        (g_collision_segment_work->unkC8 -
-                         g_collision_segment_work->unkB8) *
-                            (g_collision_segment_work->unkBC -
-                             g_collision_segment_work->unkB4) >
+                if ((g_collision_segment_work->proj_cross_u -
+                     g_collision_segment_work->edge_from_u) *
+                            (g_collision_segment_work->edge_to_v -
+                             g_collision_segment_work->edge_from_v) -
+                        (g_collision_segment_work->proj_cross_v -
+                         g_collision_segment_work->edge_from_v) *
+                            (g_collision_segment_work->edge_to_u -
+                             g_collision_segment_work->edge_from_u) >
                     0) {
                     g_collision_segment_work->unkE0 = 0;
                     break;
                 }
-                g_collision_segment_work->unkB4 =
-                    g_collision_segment_work->unkBC;
-                g_collision_segment_work->unkB8 =
-                    g_collision_segment_work->unkC0;
+                g_collision_segment_work->edge_from_u =
+                    g_collision_segment_work->edge_to_u;
+                g_collision_segment_work->edge_from_v =
+                    g_collision_segment_work->edge_to_v;
             }
             if (n > 0) {
                 data += n * 2;
             }
             if (g_collision_segment_work->unkE0 != 0) {
                 if ((g_collision_segment_work->unkE0 = gte_SumSquares3(
-                         g_collision_segment_work->unkA8 -
-                             g_collision_segment_work->unk4C,
-                         g_collision_segment_work->unkAC -
-                             g_collision_segment_work->unk4E,
-                         g_collision_segment_work->unkB0 -
-                             g_collision_segment_work->unk50)) <
-                    g_collision_segment_work->unk0) {
-                    g_collision_segment_work->unk48 = cell_x;
-                    g_collision_segment_work->unk4A = cell_z;
-                    g_collision_segment_work->unk38 =
-                        g_collision_segment_work->unkA8;
-                    g_collision_segment_work->unk3C =
-                        g_collision_segment_work->unkAC;
-                    g_collision_segment_work->unk40 =
-                        g_collision_segment_work->unkB0;
-                    g_collision_segment_work->unk28 =
-                        g_collision_segment_work->unkD0;
-                    g_collision_segment_work->unk2C =
-                        g_collision_segment_work->unkD4;
-                    g_collision_segment_work->unk30 =
-                        g_collision_segment_work->unkD8;
-                    g_collision_segment_work->unk34 =
-                        g_collision_segment_work->unkDC;
-                    g_collision_segment_work->unk0 =
+                         g_collision_segment_work->plane_cross_x -
+                             g_collision_segment_work->local_start_x,
+                         g_collision_segment_work->plane_cross_y -
+                             g_collision_segment_work->local_start_y,
+                         g_collision_segment_work->plane_cross_z -
+                             g_collision_segment_work->local_start_z)) <
+                    g_collision_segment_work->nearest_dist_sq) {
+                    g_collision_segment_work->hit_cell_x = cell_x;
+                    g_collision_segment_work->hit_cell_z = cell_z;
+                    g_collision_segment_work->hit_local_x =
+                        g_collision_segment_work->plane_cross_x;
+                    g_collision_segment_work->hit_local_y =
+                        g_collision_segment_work->plane_cross_y;
+                    g_collision_segment_work->hit_local_z =
+                        g_collision_segment_work->plane_cross_z;
+                    g_collision_segment_work->hit_nx =
+                        g_collision_segment_work->face_nx;
+                    g_collision_segment_work->hit_ny =
+                        g_collision_segment_work->face_ny;
+                    g_collision_segment_work->hit_nz =
+                        g_collision_segment_work->face_nz;
+                    g_collision_segment_work->hit_plane_d =
+                        g_collision_segment_work->face_plane_d;
+                    g_collision_segment_work->nearest_dist_sq =
                         g_collision_segment_work->unkE0;
-                    g_collision_segment_work->unk4 =
-                        g_collision_segment_work->unkCC;
+                    g_collision_segment_work->hit_tag =
+                        g_collision_segment_work->face_tag;
                 }
             }
         } else {
@@ -522,7 +553,7 @@ s32 collision_TestCellKeepingNearestHitScalarProjection(
             data += (n + 1) * 2;
         }
     }
-    return g_collision_segment_work->unk0 != 0x7FFFFFFF;
+    return g_collision_segment_work->nearest_dist_sq != 0x7FFFFFFF;
 }
 
 s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
@@ -544,37 +575,49 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
     data = (s16 *)(D_800A33F0 + g_collision_segment_work->unkE0);
     x = cell_x * 2000 - 32000;
     z = cell_z * 2000 - 32000;
-    g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
-    g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
-    g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
-    g_collision_segment_work->unk54 = g_collision_segment_work->unk18.vx - x;
-    g_collision_segment_work->unk56 = g_collision_segment_work->unk18.vy;
-    g_collision_segment_work->unk58 = g_collision_segment_work->unk18.vz - z;
+    g_collision_segment_work->local_start_x =
+        g_collision_segment_work->seg_start.vx - x;
+    g_collision_segment_work->local_start_y =
+        g_collision_segment_work->seg_start.vy;
+    g_collision_segment_work->local_start_z =
+        g_collision_segment_work->seg_start.vz - z;
+    g_collision_segment_work->local_end_x =
+        g_collision_segment_work->seg_end.vx - x;
+    g_collision_segment_work->local_end_y =
+        g_collision_segment_work->seg_end.vy;
+    g_collision_segment_work->local_end_z =
+        g_collision_segment_work->seg_end.vz - z;
 
     count = *data;
     data++;
     while (--count != -1) {
-        g_collision_segment_work->unkD0 = *data;
+        g_collision_segment_work->face_nx = *data;
         data++;
-        g_collision_segment_work->unkD4 = *data;
+        g_collision_segment_work->face_ny = *data;
         data++;
-        g_collision_segment_work->unkD8 = *data;
+        g_collision_segment_work->face_nz = *data;
         data++;
-        g_collision_segment_work->unkDC = (u16)*data;
+        g_collision_segment_work->face_plane_d = (u16)*data;
         data++;
-        g_collision_segment_work->unkDC =
-            (*data << 16) | g_collision_segment_work->unkDC;
+        g_collision_segment_work->face_plane_d =
+            (*data << 16) | g_collision_segment_work->face_plane_d;
         data++;
         g_collision_segment_work->unkE4 =
-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk4C +
-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk4E +
-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk50 +
-            g_collision_segment_work->unkDC;
+            g_collision_segment_work->face_nx *
+                g_collision_segment_work->local_start_x +
+            g_collision_segment_work->face_ny *
+                g_collision_segment_work->local_start_y +
+            g_collision_segment_work->face_nz *
+                g_collision_segment_work->local_start_z +
+            g_collision_segment_work->face_plane_d;
         g_collision_segment_work->unkE8 =
-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk54 +
-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk56 +
-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk58 +
-            g_collision_segment_work->unkDC;
+            g_collision_segment_work->face_nx *
+                g_collision_segment_work->local_end_x +
+            g_collision_segment_work->face_ny *
+                g_collision_segment_work->local_end_y +
+            g_collision_segment_work->face_nz *
+                g_collision_segment_work->local_end_z +
+            g_collision_segment_work->face_plane_d;
 
         g_collision_segment_work->unkE4 =
             (g_collision_segment_work->unkE4 < 0 ? -1 : 1) *
@@ -593,96 +636,96 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
             g_collision_segment_work->unkE8 < 0) {
             g_collision_segment_work->unkE0 = g_collision_segment_work->unkE4 -
                                               g_collision_segment_work->unkE8;
-            g_collision_segment_work->unkA8 =
-                (g_collision_segment_work->unk54 -
-                 g_collision_segment_work->unk4C) *
+            g_collision_segment_work->plane_cross_x =
+                (g_collision_segment_work->local_end_x -
+                 g_collision_segment_work->local_start_x) *
                     g_collision_segment_work->unkE4 /
                     g_collision_segment_work->unkE0 +
-                g_collision_segment_work->unk4C;
-            g_collision_segment_work->unkAC =
-                (g_collision_segment_work->unk56 -
-                 g_collision_segment_work->unk4E) *
+                g_collision_segment_work->local_start_x;
+            g_collision_segment_work->plane_cross_y =
+                (g_collision_segment_work->local_end_y -
+                 g_collision_segment_work->local_start_y) *
                     g_collision_segment_work->unkE4 /
                     g_collision_segment_work->unkE0 +
-                g_collision_segment_work->unk4E;
-            g_collision_segment_work->unkB0 =
-                (g_collision_segment_work->unk58 -
-                 g_collision_segment_work->unk50) *
+                g_collision_segment_work->local_start_y;
+            g_collision_segment_work->plane_cross_z =
+                (g_collision_segment_work->local_end_z -
+                 g_collision_segment_work->local_start_z) *
                     g_collision_segment_work->unkE4 /
                     g_collision_segment_work->unkE0 +
-                g_collision_segment_work->unk50;
+                g_collision_segment_work->local_start_z;
             gte_TransformPointDifferenceWithInheritedLastRow(
-                (s32)data, g_collision_segment_work->unkA8,
-                g_collision_segment_work->unkAC,
-                g_collision_segment_work->unkB0);
+                (s32)data, g_collision_segment_work->plane_cross_x,
+                g_collision_segment_work->plane_cross_y,
+                g_collision_segment_work->plane_cross_z);
             data += 9;
             var_6 = (u16)*data;
             data++;
             n = var_6;
-            g_collision_segment_work->unkCC = n >> 8;
+            g_collision_segment_work->face_tag = n >> 8;
             n &= 0xFF;
-            g_collision_segment_work->unkB4 = *data;
+            g_collision_segment_work->edge_from_u = *data;
             data++;
             y = *data;
             data++;
             g_collision_segment_work->unkE0 = 1;
-            g_collision_segment_work->unkB8 = y;
-            gte_ReadIR1IR2Sra2(&g_collision_segment_work->unkC4,
-                               &g_collision_segment_work->unkC8);
+            g_collision_segment_work->edge_from_v = y;
+            gte_ReadIR1IR2Sra2(&g_collision_segment_work->proj_cross_u,
+                               &g_collision_segment_work->proj_cross_v);
             while (--n != -1) {
-                g_collision_segment_work->unkBC = *data;
+                g_collision_segment_work->edge_to_u = *data;
                 data++;
-                g_collision_segment_work->unkC0 = *data;
+                g_collision_segment_work->edge_to_v = *data;
                 data++;
-                if ((g_collision_segment_work->unkC4 -
-                     g_collision_segment_work->unkB4) *
-                            (g_collision_segment_work->unkC0 -
-                             g_collision_segment_work->unkB8) -
-                        (g_collision_segment_work->unkC8 -
-                         g_collision_segment_work->unkB8) *
-                            (g_collision_segment_work->unkBC -
-                             g_collision_segment_work->unkB4) >
+                if ((g_collision_segment_work->proj_cross_u -
+                     g_collision_segment_work->edge_from_u) *
+                            (g_collision_segment_work->edge_to_v -
+                             g_collision_segment_work->edge_from_v) -
+                        (g_collision_segment_work->proj_cross_v -
+                         g_collision_segment_work->edge_from_v) *
+                            (g_collision_segment_work->edge_to_u -
+                             g_collision_segment_work->edge_from_u) >
                     0) {
                     g_collision_segment_work->unkE0 = 0;
                     break;
                 }
-                g_collision_segment_work->unkB4 =
-                    g_collision_segment_work->unkBC;
-                g_collision_segment_work->unkB8 =
-                    g_collision_segment_work->unkC0;
+                g_collision_segment_work->edge_from_u =
+                    g_collision_segment_work->edge_to_u;
+                g_collision_segment_work->edge_from_v =
+                    g_collision_segment_work->edge_to_v;
             }
             if (n > 0) {
                 data += n * 2;
             }
             if (g_collision_segment_work->unkE0 != 0) {
                 if ((g_collision_segment_work->unkE0 = gte_SumSquares3(
-                         g_collision_segment_work->unkA8 -
-                             g_collision_segment_work->unk4C,
-                         g_collision_segment_work->unkAC -
-                             g_collision_segment_work->unk4E,
-                         g_collision_segment_work->unkB0 -
-                             g_collision_segment_work->unk50)) <
-                    g_collision_segment_work->unk0) {
-                    g_collision_segment_work->unk48 = cell_x;
-                    g_collision_segment_work->unk4A = cell_z;
-                    g_collision_segment_work->unk38 =
-                        g_collision_segment_work->unkA8;
-                    g_collision_segment_work->unk3C =
-                        g_collision_segment_work->unkAC;
-                    g_collision_segment_work->unk40 =
-                        g_collision_segment_work->unkB0;
-                    g_collision_segment_work->unk28 =
-                        g_collision_segment_work->unkD0;
-                    g_collision_segment_work->unk2C =
-                        g_collision_segment_work->unkD4;
-                    g_collision_segment_work->unk30 =
-                        g_collision_segment_work->unkD8;
-                    g_collision_segment_work->unk34 =
-                        g_collision_segment_work->unkDC;
-                    g_collision_segment_work->unk0 =
+                         g_collision_segment_work->plane_cross_x -
+                             g_collision_segment_work->local_start_x,
+                         g_collision_segment_work->plane_cross_y -
+                             g_collision_segment_work->local_start_y,
+                         g_collision_segment_work->plane_cross_z -
+                             g_collision_segment_work->local_start_z)) <
+                    g_collision_segment_work->nearest_dist_sq) {
+                    g_collision_segment_work->hit_cell_x = cell_x;
+                    g_collision_segment_work->hit_cell_z = cell_z;
+                    g_collision_segment_work->hit_local_x =
+                        g_collision_segment_work->plane_cross_x;
+                    g_collision_segment_work->hit_local_y =
+                        g_collision_segment_work->plane_cross_y;
+                    g_collision_segment_work->hit_local_z =
+                        g_collision_segment_work->plane_cross_z;
+                    g_collision_segment_work->hit_nx =
+                        g_collision_segment_work->face_nx;
+                    g_collision_segment_work->hit_ny =
+                        g_collision_segment_work->face_ny;
+                    g_collision_segment_work->hit_nz =
+                        g_collision_segment_work->face_nz;
+                    g_collision_segment_work->hit_plane_d =
+                        g_collision_segment_work->face_plane_d;
+                    g_collision_segment_work->nearest_dist_sq =
                         g_collision_segment_work->unkE0;
-                    g_collision_segment_work->unk4 =
-                        g_collision_segment_work->unkCC;
+                    g_collision_segment_work->hit_tag =
+                        g_collision_segment_work->face_tag;
                 }
             }
         } else {
@@ -693,7 +736,7 @@ s32 collision_TestCellKeepingNearestHitGteProjection(s32 cell_x, s32 cell_z) {
             data += (n + 1) * 2;
         }
     }
-    return g_collision_segment_work->unk0 != 0x7FFFFFFF;
+    return g_collision_segment_work->nearest_dist_sq != 0x7FFFFFFF;
 }
 
 void collision_SetGrid(s32 grid_addr) { D_800A33F0 = grid_addr; }
