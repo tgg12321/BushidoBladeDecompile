@@ -1778,8 +1778,8 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
     s32 var_8;
     /* `var_9` counts the phase-2 option-bit, phase-4 sprite and phase-6
      * rectangle loops, then holds each player's menu row cursor
-     * (row_bit_cursors.half[j], tested against 5 and used as the recs
-     * subscript), the way SOTN's AluInit reuses its loop counter i for the
+     * (row_bit_cursors.half[player_index], tested against 5 and used as the
+     * recs subscript), the way SOTN's AluInit reuses its loop counter i for the
      * weapon id (Q51); one local per role: score 90 */
     /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 var_9;
@@ -2135,7 +2135,7 @@ s32 menu_HandleRowBitInput(
     return result;
 }
 
-/* The two per-row sprite counters: the target clears both with one word
+/* The two per-player sprite counters: the target clears both with one word
  * store, so the storage is the counter array plus one word view (Q33); every
  * other access goes through count[]. */
 typedef union {
