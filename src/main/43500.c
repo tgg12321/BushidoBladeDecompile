@@ -761,34 +761,38 @@ s32 motion_StartPlayback(
 
     if (a6 != 0) {
         ret = ndata_ReadChecked(playback_file_id, a6);
-        s->unk2C = a6;
+        s->block_base = a6;
     } else {
         if (ndata_GetArenaRoomAfter(playback_file_id) < 0) {
             resource_FreeNodeAssetBlock();
             printf(D_80015840);
         }
-        s->unk2C = (s32)motion_LoadPlaybackBlock(playback_file_id);
+        s->block_base = (s32)motion_LoadPlaybackBlock(playback_file_id);
         ret = 0;
     }
-    s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
-    s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
-    s->unk0 = 0;
+    s->control_word =
+        *(s32 *)(((Unk800469C4Hdr *)s->block_base)->control_word_offset +
+                 s->block_base);
+    s->frame_count =
+        *(u16 *)(((Unk800469C4Hdr *)s->block_base)->frame_count_offset +
+                 s->block_base);
+    s->current_frame = 0;
     start_position_cursor = fight_GetStartPositionPairTable();
     start_position_cursor += resource_GetLoadedSelector() * 24 + a1 * 6;
-    s->unkC = *start_position_cursor++;
-    s->unk10 = *start_position_cursor++;
-    s->unk14 = *start_position_cursor++;
-    s->unk1C = 0;
-    s->unk20 = 0;
+    s->origin_x = *start_position_cursor++;
+    s->origin_y = *start_position_cursor++;
+    s->origin_z = *start_position_cursor++;
+    s->rotation_x = 0;
+    s->rotation_z = 0;
     s->unk44[0] = a2;
     s->unk44[1] = a3;
     s->unk48[0] = a4;
     s->unk48[1] = a5;
-    s->unk1E = (((s->unk4 >> 8) & 0x7F) << 14) / 360;
-    if (s->unk4 >= 0) {
+    s->rotation_y = (((s->control_word >> 8) & 0x7F) << 14) / 360;
+    if (s->control_word >= 0) {
         s->unk44[0] = -1;
     }
-    if (!(s->unk4 & 0x40000000)) {
+    if (!(s->control_word & 0x40000000)) {
         s->unk44[1] = -1;
     }
     slot_object = slot_GetObject(0);
@@ -799,11 +803,11 @@ s32 motion_StartPlayback(
     if (slot_object != 0) {
         softbody_RequestRebuild(slot_object);
     }
-    s->unk8 = a1;
+    s->start_pair_index = a1;
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
-    if (s->unk4 & 0x3F) {
-        n = (s->unk4 & 0x3F) - 1;
+    if (s->control_word & 0x3F) {
+        n = (s->control_word & 0x3F) - 1;
         if (a6 != 0) {
             a6 += ret;
             resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
@@ -814,7 +818,7 @@ s32 motion_StartPlayback(
                 n, (s32)D_800A3770);
         }
     }
-    if (s->unk4 & 0x8000) {
+    if (s->control_word & 0x8000) {
         resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     }
     return ret;

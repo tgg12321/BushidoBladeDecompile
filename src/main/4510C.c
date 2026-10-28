@@ -51,31 +51,41 @@ s32 motion_UpdatePlayback(void) {
      * takes $t0; one local per block: score 41 */
     s32 var_6;
 
-    if (s->unk0 < 0) {
+    if (s->current_frame < 0) {
         return 0;
     }
-    if (s->unk0 == 0) {
+    if (s->current_frame == 0) {
         s32 j;
 
-        s->unk30 = ((Unk800469C4Hdr *)s->unk2C)->unkC + s->unk2C;
-        s->unk34[0] = ((Unk800469C4Hdr *)s->unk2C)->unk10[0] + s->unk2C;
-        s->unk34[1] = ((Unk800469C4Hdr *)s->unk2C)->unk10[1] + s->unk2C;
-        bitstream_InitDeltaAccumulator(s->unk30, 0);
+        s->camera_stream =
+            ((Unk800469C4Hdr *)s->block_base)->camera_stream_offset +
+            s->block_base;
+        s->motion_streams[0] =
+            ((Unk800469C4Hdr *)s->block_base)->motion_stream_offsets[0] +
+            s->block_base;
+        s->motion_streams[1] =
+            ((Unk800469C4Hdr *)s->block_base)->motion_stream_offsets[1] +
+            s->block_base;
+        bitstream_InitDeltaAccumulator(s->camera_stream, 0);
         for (j = 0; j < 2; j++) {
-            if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
-                s->unk34[j] = 0;
+            if (*(s32 *)s->motion_streams[j] == D_800A3250[0]) {
+                s->motion_streams[j] = 0;
             }
-            if (s->unk34[j] != 0) {
-                motion_InitStream(j, (u32 *)s->unk34[j]);
+            if (s->motion_streams[j] != 0) {
+                motion_InitStream(j, (u32 *)s->motion_streams[j]);
             }
         }
-        s->unk3C[1] = 0;
-        s->unk3C[0] = 0;
-        if (s->unk4 & 0x80) {
-            s->unk3C[0] = ((Unk800469C4Hdr *)s->unk2C)->unk18[0] + s->unk2C;
+        s->draw_set_tracks[1] = 0;
+        s->draw_set_tracks[0] = 0;
+        if (s->control_word & 0x80) {
+            s->draw_set_tracks[0] =
+                ((Unk800469C4Hdr *)s->block_base)->draw_set_track_offsets[0] +
+                s->block_base;
         }
-        if (s->unk4 & 0x40) {
-            s->unk3C[1] = ((Unk800469C4Hdr *)s->unk2C)->unk18[1] + s->unk2C;
+        if (s->control_word & 0x40) {
+            s->draw_set_tracks[1] =
+                ((Unk800469C4Hdr *)s->block_base)->draw_set_track_offsets[1] +
+                s->block_base;
         }
         slot_object = slot_GetObject(0);
         if (slot_object != 0) {
@@ -91,24 +101,24 @@ s32 motion_UpdatePlayback(void) {
     vec.vy = camera_pose[1];
     vec.vz = -camera_pose[2];
     {
-        s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
-        s32 sn = Judge[s->unk1E & 0xFFF];
+        s32 c = Judge[(s->rotation_y + 0x400) & 0xFFF];
+        s32 sn = Judge[s->rotation_y & 0xFFF];
         var_6 = (vec.vz * c - vec.vx * sn) >> 12;
         vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
         vec.vz = var_6;
     }
-    g_view_camera_root_node.work.t[0] = vec.vx + s->unkC;
-    g_view_camera_root_node.work.t[1] = vec.vy + s->unk10;
-    g_view_camera_root_node.work.t[2] = vec.vz + s->unk14;
+    g_view_camera_root_node.work.t[0] = vec.vx + s->origin_x;
+    g_view_camera_root_node.work.t[1] = vec.vy + s->origin_y;
+    g_view_camera_root_node.work.t[2] = vec.vz + s->origin_z;
     g_view_camera_root_node.xf.rot.vx = camera_pose[3];
     g_view_camera_root_node.xf.rot.vy = camera_pose[4] + 0x800;
     g_view_camera_root_node.xf.rot.vz = camera_pose[5];
-    if (s->unk1E != 0) {
+    if (s->rotation_y != 0) {
         MATRIX playback_rotation_matrix;
         SVECTOR playback_rotation;
         playback_rotation.vx = 0;
         playback_rotation.vz = 0;
-        playback_rotation.vy = s->unk1E;
+        playback_rotation.vy = s->rotation_y;
         g_math_rot_matrix_funcs[0](
             &playback_rotation, &playback_rotation_matrix);
         g_math_rot_matrix_funcs[0](
@@ -121,9 +131,9 @@ s32 motion_UpdatePlayback(void) {
     } else {
         node_SetMatrixFromNegatedRot(&g_view_camera_root_node);
     }
-    s->unk24[0] = -g_view_camera_root_node.xf.rot.vx;
-    s->unk24[1] = -g_view_camera_root_node.xf.rot.vy;
-    s->unk24[2] = -g_view_camera_root_node.xf.rot.vz;
+    s->view_angles[0] = -g_view_camera_root_node.xf.rot.vx;
+    s->view_angles[1] = -g_view_camera_root_node.xf.rot.vy;
+    s->view_angles[2] = -g_view_camera_root_node.xf.rot.vz;
     light_ResetPointLight();
     light_ApplyPointLightTargets();
     camera_CopyViewMatrixWithHalvedMiddleRow();
@@ -132,11 +142,12 @@ s32 motion_UpdatePlayback(void) {
     calc_LightMatrix(&g_light_setups[1]);
     calc_LightMatrix(&g_light_setups[4]);
     for (i = 0; i < 2; i++) {
-        if (s->unk34[i] != 0) {
+        if (s->motion_streams[i] != 0) {
             s32 motion_angle;
             slot_object = slot_GetObject(i);
-            motion_DecodeFrame(i, s->unk0, (MotionFrame *)decoded_motion_frame,
-                               (u16 *)0x1F800000);
+            motion_DecodeFrame(
+                i, s->current_frame, (MotionFrame *)decoded_motion_frame,
+                (u16 *)0x1F800000);
             vec.vy = decoded_motion_frame[0];
             vec.vy *= slot_object->position_scale;
             vec.vy >>= 12;
@@ -149,17 +160,17 @@ s32 motion_UpdatePlayback(void) {
             vec.vy = -vec.vy;
             vec.vz = -vec.vz;
             {
-                s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
-                s32 sn = Judge[s->unk1E & 0xFFF];
+                s32 c = Judge[(s->rotation_y + 0x400) & 0xFFF];
+                s32 sn = Judge[s->rotation_y & 0xFFF];
                 var_6 = (vec.vz * c - vec.vx * sn) >> 12;
                 vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
                 vec.vz = var_6;
             }
-            vec.vy += s->unk10;
-            vec.vx += s->unkC;
-            vec.vz += s->unk14;
-            func_80040D48(
-                i, 0, &vec.vx, &s->unk1C, decoded_motion_frame, s->unk10);
+            vec.vy += s->origin_y;
+            vec.vx += s->origin_x;
+            vec.vz += s->origin_z;
+            func_80040D48(i, 0, &vec.vx, &s->rotation_x, decoded_motion_frame,
+                          s->origin_y);
             if (s->unk44[i] >= 0) {
                 node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
                     s->unk44[i], (i * 2) | 0x8000, 0, 0);
@@ -170,18 +181,18 @@ s32 motion_UpdatePlayback(void) {
                 node_QueueTableEntryNodePairUnderSlotNode(
                     s->unk48[i], (i * 2) | 1, 1);
             }
-            if (s->unk3C[i] != 0) {
+            if (s->draw_set_tracks[i] != 0) {
                 gpu_QueueSlotDrawMovesForSelectedSet(
-                    i,
-                    (((u32 *)s->unk3C[i])[s->unk0 / 8] >> ((s->unk0 % 8) * 4)) &
-                        0xF);
+                    i, (((u32 *)s->draw_set_tracks[i])[s->current_frame / 8] >>
+                        ((s->current_frame % 8) * 4)) &
+                           0xF);
             }
         }
     }
     gpu_RunGridDrawPassAndQueueFogMoves(10000);
-    s->unk0++;
-    if (s->unk0 >= s->unk2) {
-        s->unk0 = -1;
+    s->current_frame++;
+    if (s->current_frame >= s->frame_count) {
+        s->current_frame = -1;
     }
     return 1;
 }
@@ -200,24 +211,28 @@ s32 motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush(void) {
 }
 
 void motion_RebasePlayback(s32 rebase_delta) {
-    s32 *p = &D_800EFAE8.unk2C;
+    s32 *p = &D_800EFAE8.block_base;
     *p = rebase_delta + *p;
-    D_800EFAE8.unk30 = rebase_delta + D_800EFAE8.unk30;
-    if (D_800EFAE8.unk34[0]) {
-        D_800EFAE8.unk34[0] = rebase_delta + D_800EFAE8.unk34[0];
+    D_800EFAE8.camera_stream = rebase_delta + D_800EFAE8.camera_stream;
+    if (D_800EFAE8.motion_streams[0]) {
+        D_800EFAE8.motion_streams[0] =
+            rebase_delta + D_800EFAE8.motion_streams[0];
     }
-    if (D_800EFAE8.unk34[1]) {
-        D_800EFAE8.unk34[1] = rebase_delta + D_800EFAE8.unk34[1];
+    if (D_800EFAE8.motion_streams[1]) {
+        D_800EFAE8.motion_streams[1] =
+            rebase_delta + D_800EFAE8.motion_streams[1];
     }
-    if (D_800EFAE8.unk3C[0]) {
-        D_800EFAE8.unk3C[0] = rebase_delta + D_800EFAE8.unk3C[0];
+    if (D_800EFAE8.draw_set_tracks[0]) {
+        D_800EFAE8.draw_set_tracks[0] =
+            rebase_delta + D_800EFAE8.draw_set_tracks[0];
     }
-    if (D_800EFAE8.unk3C[1]) {
-        D_800EFAE8.unk3C[1] = rebase_delta + D_800EFAE8.unk3C[1];
+    if (D_800EFAE8.draw_set_tracks[1]) {
+        D_800EFAE8.draw_set_tracks[1] =
+            rebase_delta + D_800EFAE8.draw_set_tracks[1];
     }
 }
 
-s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.unk24; }
+s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.view_angles; }
 
 s32 *node_GetRootNodeMatrixTranslation(void) {
     return g_view_camera_root_node.xf.mat.t;

@@ -692,11 +692,11 @@ typedef struct {
    motion_UpdatePlayback use. */
 typedef struct {
     s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10[2];
-    s32 unk18[2];
+    s32 control_word_offset;
+    s32 frame_count_offset;
+    s32 camera_stream_offset;
+    s32 motion_stream_offsets[2];
+    s32 draw_set_track_offsets[2];
 } Unk800469C4Hdr;
 
 /* Record at 0x800EFAE8 (0x4C bytes): motion_StartPlayback sets it
@@ -706,30 +706,30 @@ typedef struct {
  */
 typedef struct {
     /* phase (motion_UpdatePlayback: -1 = done, 0 = init) */
-    /* 0x00 */ s16 unk0;
-    /* 0x02 */ s16 unk2;
+    /* 0x00 */ s16 current_frame;
+    /* 0x02 */ s16 frame_count;
     /* stage flags (bit31/bit30 tests, low 6 bits = cleanup index + 1) */
-    /* 0x04 */ s32 unk4;
-    /* 0x08 */ s16 unk8;
+    /* 0x04 */ s32 control_word;
+    /* 0x08 */ s16 start_pair_index;
     /* 0x0A */ s16 unkA;
-    /* 0x0C */ s32 unkC;
-    /* 0x10 */ s32 unk10;
-    /* 0x14 */ s32 unk14;
+    /* 0x0C */ s32 origin_x;
+    /* 0x10 */ s32 origin_y;
+    /* 0x14 */ s32 origin_z;
     /* 0x18 */ s32 unk18;
-    /* 0x1C */ s16 unk1C;
-    /* 0x1E */ s16 unk1E;
-    /* 0x20 */ s16 unk20;
+    /* 0x1C */ s16 rotation_x;
+    /* 0x1E */ s16 rotation_y;
+    /* 0x20 */ s16 rotation_z;
     /* 0x22 */ s16 unk22;
     /* negated camera rotation vx/vy/vz; motion_GetPlaybackViewAngles returns
      * its address */
-    /* 0x24 */ s16 unk24[4];
+    /* 0x24 */ s16 view_angles[4];
     /* loaded data base; relocated by motion_RebasePlayback */
-    /* 0x2C */ s32 unk2C;
-    /* 0x30 */ s32 unk30; /* relocated by motion_RebasePlayback */
+    /* 0x2C */ s32 block_base;
+    /* 0x30 */ s32 camera_stream; /* relocated by motion_RebasePlayback */
     /* per player; relocated by motion_RebasePlayback when nonzero */
-    /* 0x34 */ s32 unk34[2];
+    /* 0x34 */ s32 motion_streams[2];
     /* per player; relocated by motion_RebasePlayback when nonzero */
-    /* 0x3C */ s32 unk3C[2];
+    /* 0x3C */ s32 draw_set_tracks[2];
     /* 0x44 */ s16 unk44[2]; /* per player */
     /* 0x48 */ s16 unk48[2]; /* per player */
 } Unk800EFAE8Rec;
