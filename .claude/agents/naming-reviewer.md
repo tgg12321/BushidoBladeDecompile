@@ -81,6 +81,12 @@ For each row:
 Never approve a replacement name you suggest yourself in the same review. Put it in
 `suggestion` and let it come back as a new row for a fresh review.
 
+# Done marker
+
+If the brief names a done-marker path, writing it is the one permitted write outside scratch:
+PowerShell `Set-Content -LiteralPath "<...>.tmp" -Value <the same JSON verdict you return>`, then
+`Rename-Item -LiteralPath "<...>.tmp" -NewName <task>.done`, as your very last step.
+
 # Scratch
 
 If you need a scratch copy (a clone, a wave dry run), make ONE folder `tmp/rev-<topic>-<id>/` under

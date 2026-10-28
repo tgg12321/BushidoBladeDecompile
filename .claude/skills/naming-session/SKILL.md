@@ -78,8 +78,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   or drop what is left), then run `lanes.py close <lane> --remove`. It removes the lane and landing
   worktrees through `tools/safe_remove_worktree.ps1` and deletes the branch (never use a raw
   `git worktree remove`). Remove the scratch you and your subagents made under main's `tmp/`
-  (e.g. `tmp/p3w<N>`, review copies; CLAUDE.md: list, delete the files, `rmdir`; the research
-  extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
+  (e.g. `tmp/p3w<N>`, review copies, unconsumed `*.done` / `*.tmp` markers in `tmp/<lane>-done/` and that folder;
+  CLAUDE.md: list, delete the files, `rmdir`; the research extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
 - **Nothing waits on Codex (owner 2026-10-27).** Codex is a separate parallel lane (its usage may
   run out), so a session researches with an Opus subagent (PREPARE step 1). The Codex lane
@@ -103,10 +103,32 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   Never launch an Agent with `run_in_background`: a backgrounded applier once left a session
   idle 80 minutes after it had finished. A subagent whose own command can outlast a tool timeout
   backgrounds that command and waits for it itself.
+- **Done markers (2026-10-28).** A fallback for when an Agent call returns without its result:
+  in lane sessions the harness may run every Agent in the background anyway, and its completion
+  notice sometimes never arrives (drafters and reviewers finished while sessions sat idle 25-80
+  min). It does not replace the foreground rule.
+  - Markers live in `<main>\tmp\<lane>-done\<task>.done`; the session creates that folder
+    before its first Agent call (`New-Item -ItemType Directory -Force`). `<task>` is unique per
+    Agent call (with the batch number, e.g. `r6-b2`; a re-run gets a new name, `r6-b2-2`).
+    Delete any existing marker of that name first.
+  - Every subagent brief ends with: "as your very last step, after all other files are written,
+    write `<main>\tmp\<lane>-done\<task>.tmp` in one write, then rename it to `<task>.done` in
+    that folder (absolute paths, quoted: they contain spaces), containing your complete final
+    answer (a reviewer: the whole JSON verdict; others: the one-line result and the paths of
+    your output files)". A reviewer has no Write tool: it uses PowerShell, `Set-Content
+    -LiteralPath "<tmp>"` then `Rename-Item -LiteralPath "<tmp>" -NewName <task>.done`.
+  - If an Agent call returns its result, ignore the marker (it goes at cleanup). If it returns
+    only a launch acknowledgement, wait with one `Bash` call per marker, `run_in_background:
+    true` (one completion notice, no 30-min cap, as for `lanes.py land`), on the quoted bash path
+    (`/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/tmp/<lane>-done/<task>.done`):
+    `for i in $(seq N); do [ -s "<marker>" ] && { echo FOUND; exit 0; }; sleep 15; done;
+    echo TIMEOUT`, N = 180 (45 min; 360 for an applier). FOUND: read the marker (and the files
+    it names), delete it, go on. TIMEOUT: check once more for the marker, then the subagent's
+    files; re-run it under a new name only if they are incomplete (unchanged for 10 min).
 - Models: `naming-reviewer` for every review; `general-purpose` with `model: sonnet` for drafting
   and mechanical applies; `general-purpose` with `model: opus` for research, never Sonnet
   (owner 2026-10-27).
-- The one thing you do wait on is `lanes.py land`: run it with `run_in_background: true`, because
+- The only other thing you wait on, besides the done markers above, is `lanes.py land`: run it with `run_in_background: true`, because
   it can outlast a tool timeout. It builds in a private landing worktree, so you may prepare the
   next unit in the lane worktree meanwhile. Commits made during a land are not included; they
   are rebased onto the new main afterwards and land next time. If land notes that the branch
