@@ -1,0 +1,2210 @@
+PASS Unk80045878Obj.unk_00=load_flags, Unk80045878Obj.unk_08=asset_index, Unk80045878Obj.unk_10=node_light_setup_index, Unk80045878Obj.unk_14=transform_block_id, Unk80045878Obj.unk_16=projected_block_id, Unk80045878Obj.unk_18=patch_color, Unk80045878Obj.unk_1C=asset_block, Unk80045878Obj.unk_20=staging_buffer, Unk80045878Obj.unk_24=softbody_block, Unk800A3560Record.unk0=grid_pick, Unk800A3560Record.unk1=cursor_entry_value, Unk800A3560Record.unk2=row_pick, Unk80101DF0Record.unk4=reloc_block_id, Unk800F0C10Record.unk8=world_z, MotionFrame.unk_02=root_offset_angle, MotionFrame.unk_04=root_distance, MotionFrame.unk_0C=node_channels, Unk1F8002B8Unk00.unk00=slot_points, Unk80104E88Rec.unk_03=owner_index, Unk80104E88Rec.unk_28=launcher_collision_y, Unk800A9CF8Rec.unk6=frame_entry_count, Unk800A9CF8Rec.unkC=frame_entries, Unk800A9CF8Rec.unk10=paired_grid_nodes, Unk800F68E0Rec.unk_0=draw_age, Unk800F68E0Rec.unk_2=draw_span, Unk800F68E0Rec.unk_3=model_entry_index, Unk800F68E0Rec.unk_4=draw_pos, Unk800F68E0Rec.unk_A=slot_rot_x, Unk800F68E0Rec.unk_C=draw_rot_y, Unk800F68E0Rec.unk_E=draw_rot_z, Unk800EFC78Record.unkA=velocity_y, Unk800EFC78Record.unk12=frame_age
+decl Unk80045878Obj.unk_00 -> load_flags  include/game.h:2235
+decl Unk80045878Obj.unk_08 -> asset_index  include/game.h:2239
+decl Unk80045878Obj.unk_10 -> node_light_setup_index  include/game.h:2241
+decl Unk80045878Obj.unk_14 -> transform_block_id  include/game.h:2243
+decl Unk80045878Obj.unk_16 -> projected_block_id  include/game.h:2244
+decl Unk80045878Obj.unk_18 -> patch_color  include/game.h:2249
+decl Unk80045878Obj.unk_1C -> asset_block  include/game.h:2251
+decl Unk80045878Obj.unk_20 -> staging_buffer  include/game.h:2252
+decl Unk80045878Obj.unk_24 -> softbody_block  include/game.h:2253
+decl Unk800A3560Record.unk0 -> grid_pick  include/game.h:756
+decl Unk800A3560Record.unk1 -> cursor_entry_value  include/game.h:757
+decl Unk800A3560Record.unk2 -> row_pick  include/game.h:758
+decl Unk80101DF0Record.unk4 -> reloc_block_id  include/game.h:2082
+decl Unk800F0C10Record.unk8 -> world_z  include/game.h:774
+decl MotionFrame.unk_02 -> root_offset_angle  include/game.h:1473
+decl MotionFrame.unk_04 -> root_distance  include/game.h:1474
+decl MotionFrame.unk_0C -> node_channels  include/game.h:1478
+decl Unk1F8002B8Unk00.unk00 -> slot_points  include/game.h:1304
+decl Unk80104E88Rec.unk_03 -> owner_index  include/game.h:878
+decl Unk80104E88Rec.unk_28 -> launcher_collision_y  include/game.h:882
+decl Unk800A9CF8Rec.unk6 -> frame_entry_count  include/game.h:92
+decl Unk800A9CF8Rec.unkC -> frame_entries  include/game.h:94
+decl Unk800A9CF8Rec.unk10 -> paired_grid_nodes  include/game.h:95
+decl Unk800F68E0Rec.unk_0 -> draw_age  include/game.h:2020
+decl Unk800F68E0Rec.unk_2 -> draw_span  include/game.h:2021
+decl Unk800F68E0Rec.unk_3 -> model_entry_index  include/game.h:2022
+decl Unk800F68E0Rec.unk_4 -> draw_pos  include/game.h:2023
+decl Unk800F68E0Rec.unk_A -> slot_rot_x  include/game.h:2024
+decl Unk800F68E0Rec.unk_C -> draw_rot_y  include/game.h:2025
+decl Unk800F68E0Rec.unk_E -> draw_rot_z  include/game.h:2026
+decl Unk800EFC78Record.unkA -> velocity_y  include/game.h:1015
+decl Unk800EFC78Record.unk12 -> frame_age  include/game.h:1019
+  round 0: 327 member error line(s)
+    src/main/17AFC.c:57 unk_0C x1
+    src/main/17AFC.c:58 unk_0C x1
+    src/main/17AFC.c:59 unk_0C x1
+    src/main/17AFC.c:60 unk_0C x1
+    src/main/17AFC.c:61 unk_0C x1
+    src/main/17AFC.c:62 unk_0C x1
+    src/main/17AFC.c:63 unk_0C x1
+    src/main/17AFC.c:64 unk_0C x1
+    src/main/17AFC.c:65 unk_0C x1
+    src/main/17AFC.c:66 unk_0C x1
+    src/main/17AFC.c:67 unk_0C x1
+    src/main/17AFC.c:68 unk_0C x1
+    src/main/17AFC.c:1539 unk00 x1
+    src/main/17AFC.c:1540 unk00 x1
+    src/main/17AFC.c:1541 unk00 x1
+    src/main/17AFC.c:1751 unk00 x1
+    src/main/17AFC.c:1752 unk00 x1
+    src/main/17AFC.c:1772 unk00 x1
+    src/main/17AFC.c:1773 unk00 x1
+    src/main/17AFC.c:1806 unk00 x1
+    src/main/17AFC.c:1807 unk00 x1
+    src/main/17AFC.c:1808 unk00 x1
+    src/main/17AFC.c:1809 unk00 x1
+    src/main/17AFC.c:1811 unk00 x1
+    src/main/17AFC.c:1813 unk00 x1
+    src/main/17AFC.c:1815 unk00 x1
+    src/main/17AFC.c:1817 unk00 x1
+    src/main/17AFC.c:1820 unk00 x1
+    src/main/17AFC.c:1821 unk00 x2
+    src/main/17AFC.c:1822 unk00 x1
+    src/main/17AFC.c:1823 unk00 x2
+    src/main/17AFC.c:1824 unk00 x1
+    src/main/17AFC.c:1825 unk00 x2
+    src/main/17AFC.c:1826 unk00 x1
+    src/main/17AFC.c:1827 unk00 x2
+    src/main/17AFC.c:1828 unk00 x1
+    src/main/17AFC.c:1829 unk00 x2
+    src/main/17AFC.c:1830 unk00 x1
+    src/main/17AFC.c:1831 unk00 x2
+    src/main/17AFC.c:1832 unk00 x2
+    src/main/17AFC.c:1833 unk00 x2
+    src/main/17AFC.c:1834 unk00 x2
+    src/main/17AFC.c:1843 unk00 x1
+    src/main/17AFC.c:1844 unk00 x1
+    src/main/17AFC.c:1845 unk00 x1
+    src/main/17AFC.c:1847 unk00 x1
+    src/main/17AFC.c:1848 unk00 x1
+    src/main/17AFC.c:1849 unk00 x1
+    src/main/17AFC.c:1854 unk00 x1
+    src/main/17AFC.c:1855 unk00 x1
+    src/main/17AFC.c:1856 unk00 x1
+    src/main/17AFC.c:1859 unk00 x1
+    src/main/17AFC.c:1860 unk00 x1
+    src/main/17AFC.c:1861 unk00 x1
+    src/main/17AFC.c:1864 unk00 x1
+    src/main/17AFC.c:1865 unk00 x1
+    src/main/17AFC.c:1866 unk00 x1
+    src/main/17AFC.c:1869 unk00 x1
+    src/main/17AFC.c:1870 unk00 x1
+    src/main/17AFC.c:1871 unk00 x1
+    src/main/17AFC.c:4429 unk00 x1
+    src/main/17AFC.c:4570 unk_03 x1
+    src/main/17AFC.c:4584 unk_28 x1
+    src/main/17AFC.c:4608 unk_28 x1
+    src/main/17AFC.c:4633 unk_03 x1
+    src/main/28708.c:1118 unk_0 x1
+    src/main/28708.c:1138 unk_0 x1
+    src/main/28708.c:1141 unk_0 x1
+    src/main/28708.c:1142 unk_2 x1
+    src/main/28708.c:1143 unk_0 x1
+    src/main/28708.c:1169 unk_0 x1
+    src/main/28708.c:1171 unk_2 x1
+    src/main/28708.c:1173 unk_A x1
+    src/main/28708.c:1176 unk_4 x2
+    src/main/28708.c:1177 unk_4 x1
+    src/main/28708.c:1179 unk_C x1
+    src/main/28708.c:1180 unk_E x1
+    src/main/28708.c:1181 unk_2 x1
+    src/main/28708.c:1193 unk_0 x1
+    src/main/28708.c:1207 unk_0 x1
+    src/main/28708.c:1208 unk_3 x1
+    src/main/28708.c:1209 unk_2 x1
+    src/main/28708.c:1210 unk_4 x1
+    src/main/28708.c:1211 unk_4 x1
+    src/main/28708.c:1212 unk_4 x1
+    src/main/28708.c:1213 unk_A x1
+    src/main/28708.c:1214 unk_C x1
+    src/main/28708.c:1215 unk_E x1
+    src/main/28708.c:1500 unk_0 x2
+    src/main/28708.c:1500 unk_2 x1
+    src/main/28708.c:1501 unk_4 x1
+    src/main/28708.c:1502 unk_4 x1
+    src/main/28708.c:1503 unk_4 x1
+    src/main/28708.c:1504 unk_A x1
+    src/main/28708.c:1505 unk_C x1
+    src/main/28708.c:1506 unk_E x1
+    src/main/28708.c:1508 unk_3 x1
+    src/main/2B344.c:1741 unk_14 x1
+    src/main/2B344.c:1743 unk_14 x1
+    src/main/2B344.c:1759 unk_14 x1
+    src/main/2B344.c:1761 unk_14 x1
+    src/main/2B344.c:2200 unk4 x1
+    src/main/2B344.c:2442 unk_24 x1
+    src/main/2B344.c:2492 unk_24 x1
+    src/main/2B344.c:2498 unk_24 x1
+    src/main/2B344.c:2534 unk_1C x1
+    src/main/2B344.c:2599 unk4 x1
+    src/main/2B344.c:2776 unk_24 x1
+    src/main/2B344.c:2785 unk_24 x1
+    src/main/2B344.c:2809 unk_24 x1
+    src/main/2B344.c:2821 unk_24 x1
+    src/main/2B344.c:2837 unk_24 x1
+    src/main/2B344.c:2840 unk_24 x1
+    src/main/309CC.c:84 unk_08 x1
+    src/main/309CC.c:108 unk4 x1
+    src/main/309CC.c:171 unk_20 x1
+    src/main/309CC.c:172 unk_20 x1
+    src/main/309CC.c:174 unk_1C x1
+    src/main/309CC.c:204 unk_00 x1
+    src/main/309CC.c:214 unk_20 x1
+    src/main/309CC.c:215 unk_1C x1
+    src/main/309CC.c:215 unk_20 x1
+    src/main/309CC.c:216 unk_1C x1
+    src/main/309CC.c:217 unk_00 x1
+    src/main/309CC.c:218 unk_20 x1
+    src/main/309CC.c:227 unk_14 x1
+    src/main/309CC.c:228 unk_16 x1
+    src/main/309CC.c:242 unk_14 x1
+    src/main/309CC.c:250 unk_14 x1
+    src/main/309CC.c:255 unk_14 x1
+    src/main/309CC.c:264 unk_08 x1
+    src/main/309CC.c:268 unk_00 x1
+    src/main/309CC.c:269 unk_00 x1
+    src/main/309CC.c:275 unk_1C x1
+    src/main/309CC.c:275 unk_24 x1
+    src/main/309CC.c:301 unk_08 x1
+    src/main/309CC.c:335 unk_10 x1
+    src/main/309CC.c:336 unk4 x1
+    src/main/309CC.c:336 unk_14 x1
+    src/main/309CC.c:388 unk_1C x1
+    src/main/309CC.c:445 unk4 x1
+    src/main/309CC.c:445 unk_16 x1
+    src/main/31D3C.c:15 unk_08 x1
+    src/main/31D3C.c:41 unk_00 x1
+    src/main/31D3C.c:51 unk_00 x1
+    src/main/31D3C.c:114 unk_18 x2
+    src/main/31D3C.c:115 unk_18 x1
+    src/main/31D3C.c:118 unk_18 x1
+    src/main/31D3C.c:119 unk_18 x1
+    src/main/31D3C.c:120 unk_18 x1
+    src/main/31D3C.c:211 unk_08 x1
+    src/main/31D3C.c:218 unk_08 x1
+    src/main/31D3C.c:219 unk_08 x1
+    src/main/31D3C.c:256 unk_08 x1
+    src/main/31D3C.c:259 unk_08 x1
+    src/main/31D3C.c:276 unk_08 x1
+    src/main/32D04.c:1173 unkC x1
+    src/main/32D04.c:1178 unk6 x1
+    src/main/32D04.c:1181 unk6 x1
+    src/main/32D04.c:1184 unk6 x1
+    src/main/32D04.c:1187 unk6 x1
+    src/main/32D04.c:1196 unk10 x1
+    src/main/32D04.c:1198 unkC x1
+    src/main/32D04.c:1199 unk6 x1
+    src/main/32D04.c:1203 unk4 x1
+    src/main/35000.c:30 unkC x1
+    src/main/35000.c:31 unk6 x1
+    src/main/35000.c:73 unk10 x1
+    src/main/35000.c:110 unk6 x1
+    src/main/35000.c:113 unkC x1
+    src/main/35000.c:136 unk10 x1
+    src/main/35000.c:138 unk4 x1
+    src/main/35000.c:156 unkC x1
+    src/main/35000.c:536 unk_08 x1
+    src/main/35000.c:543 unk_08 x1
+    src/main/35000.c:547 unk_20 x1
+    src/main/35000.c:549 unk_1C x1
+    src/main/35000.c:561 unk_24 x1
+    src/main/35000.c:562 unk_00 x1
+    src/main/35000.c:565 unk_08 x1
+    src/main/35000.c:566 unk_14 x1
+    src/main/35000.c:567 unk_10 x1
+    src/main/35000.c:568 unk_16 x1
+    src/main/35000.c:569 unk_18 x1
+    src/main/35000.c:608 unk_1C x2
+    src/main/35000.c:610 unk_00 x1
+    src/main/368E4.c:634 unk4 x1
+    src/main/368E4.c:1555 unk_08 x1
+    src/main/368E4.c:1940 unk4 x1
+    src/main/368E4.c:2017 unk4 x1
+    src/main/368E4.c:2059 unk4 x1
+    src/main/368E4.c:2090 unk4 x1
+    src/main/51268.c:1773 unk8 x1
+    src/main/51268.c:1781 unk8 x1
+    src/main/51268.c:1789 unk8 x1
+    src/main/51268.c:1797 unk8 x1
+    src/main/51268.c:1806 unk8 x1
+    src/main/51268.c:1815 unk8 x1
+    src/main/51268.c:1825 unk8 x1
+    src/main/51268.c:1833 unk8 x1
+    src/main/51268.c:1841 unk8 x1
+    src/main/51268.c:1849 unk8 x1
+    src/main/51268.c:1857 unk8 x1
+    src/main/51268.c:1861 unk8 x1
+    src/main/51268.c:1869 unk8 x1
+    src/main/51268.c:1873 unk8 x1
+    src/main/51268.c:1881 unk8 x1
+    src/main/51268.c:1889 unk8 x1
+    src/main/51268.c:2137 unk8 x1
+    src/main/51268.c:2649 unk8 x1
+    src/main/51268.c:2699 unk12 x1
+    src/main/51268.c:2707 unkA x1
+    src/main/51268.c:2860 unk8 x1
+    src/main/51268.c:2861 unk8 x1
+    src/main/51268.c:2942 unk12 x1
+    src/main/51268.c:2943 unk12 x1
+    src/main/51268.c:2958 unk8 x1
+    src/main/51268.c:2977 unkA x1
+    src/main/5ED34.c:120 unk1 x1
+    src/main/5ED34.c:122 unk1 x1
+    src/main/5ED34.c:393 unk1 x1
+    src/main/5ED34.c:484 unk2 x1
+    src/main/5ED34.c:489 unk1 x1
+    src/main/5ED34.c:497 unk1 x1
+    src/main/5ED34.c:844 unk0 x1
+    src/main/5ED34.c:912 unk1 x1
+    src/main/5ED34.c:945 unk1 x1
+    src/main/5ED34.c:948 unk0 x1
+    src/main/5ED34.c:960 unk1 x1
+    src/main/5ED34.c:975 unk1 x1
+    src/main/5ED34.c:990 unk1 x1
+    src/main/5ED34.c:1005 unk1 x1
+    src/main/5ED34.c:1032 unk0 x1
+    src/main/5ED34.c:1034 unk2 x1
+    src/main/5ED34.c:1036 unk0 x1
+    src/main/5ED34.c:1047 unk1 x1
+    src/main/5ED34.c:1055 unk1 x1
+    src/main/5ED34.c:1072 unk0 x1
+    src/main/5ED34.c:1076 unk0 x1
+    src/main/5ED34.c:1078 unk0 x1
+    src/main/5ED34.c:1080 unk0 x1
+    src/main/5ED34.c:1084 unk0 x1
+    src/main/5ED34.c:1086 unk0 x1
+    src/main/5ED34.c:1115 unk0 x1
+    src/main/5ED34.c:1121 unk0 x1
+    src/main/5ED34.c:1129 unk2 x1
+    src/main/5ED34.c:1215 unk0 x1
+    src/main/5ED34.c:1274 unk0 x1
+    src/main/5ED34.c:1275 unk2 x1
+    src/main/5ED34.c:1278 unk0 x1
+    src/main/5ED34.c:1279 unk2 x1
+    src/main/5ED34.c:1300 unk0 x1
+    src/main/5ED34.c:1301 unk0 x1
+    src/main/5ED34.c:1308 unk1 x1
+    src/main/5ED34.c:1317 unk1 x1
+    src/main/5ED34.c:1325 unk2 x1
+    src/main/5ED34.c:1352 unk2 x1
+    src/main/5ED34.c:1353 unk2 x1
+    src/main/5ED34.c:1355 unk1 x1
+    src/main/5ED34.c:1361 unk2 x1
+    src/main/5ED34.c:1374 unk2 x1
+    src/main/5ED34.c:1381 unk1 x1
+    src/main/5ED34.c:1386 unk1 x1
+    src/main/5ED34.c:1390 unk2 x1
+    src/main/5ED34.c:1399 unk2 x1
+    src/main/5ED34.c:1401 unk2 x1
+    src/main/5ED34.c:1402 unk2 x1
+    src/main/5ED34.c:1407 unk0 x1
+    src/main/5ED34.c:1409 unk0 x1
+    src/main/5ED34.c:1421 unk2 x1
+    src/main/5ED34.c:1479 unk2 x1
+    src/main/5ED34.c:1497 unk1 x1
+    src/main/5ED34.c:1503 unk2 x1
+    src/main/5ED34.c:1514 unk2 x1
+    src/main/5ED34.c:1515 unk2 x1
+    src/main/5ED34.c:1518 unk0 x1
+    src/main/5ED34.c:1520 unk0 x1
+    src/main/5ED34.c:1536 unk0 x1
+    src/main/5ED34.c:1537 unk0 x1
+    src/main/5ED34.c:1545 unk1 x1
+    src/main/5ED34.c:1551 unk1 x1
+    src/main/5ED34.c:1560 unk2 x1
+    src/main/5ED34.c:1565 unk2 x1
+    src/main/5ED34.c:1582 unk1 x1
+    src/main/5ED34.c:1603 unk0 x1
+    src/main/5ED34.c:1604 unk0 x1
+    src/main/5ED34.c:1610 unk2 x1
+    src/main/5ED34.c:1616 unk1 x1
+    src/main/5ED34.c:1623 unk1 x1
+    src/main/5ED34.c:1682 unk0 x1
+    src/main/5ED34.c:1689 unk2 x1
+    src/main/5ED34.c:1950 unk0 x1
+    src/main/5ED34.c:1951 unk2 x1
+    src/main/5ED34.c:1954 unk2 x1
+    src/main/5ED34.c:1955 unk0 x1
+    src/main/9F9C.c:2373 unk_0C x1
+    src/main/9F9C.c:2375 unk_0C x1
+    src/main/9F9C.c:2378 unk_0C x1
+    src/main/9F9C.c:2379 unk_0C x1
+    src/main/9F9C.c:2382 unk_0C x1
+    src/main/9F9C.c:2383 unk_0C x1
+    src/main/9F9C.c:2491 unk_0C x1
+    src/main/9F9C.c:2494 unk_0C x1
+    src/main/9F9C.c:2512 unk_0C x1
+    src/main/9F9C.c:2513 unk_0C x1
+    src/main/9F9C.c:2560 unk_0C x1
+    src/main/9F9C.c:2561 unk_0C x1
+    src/main/9F9C.c:2566 unk_0C x1
+    src/main/9F9C.c:2567 unk_0C x1
+    src/main/9F9C.c:2568 unk_0C x1
+    src/main/9F9C.c:2569 unk_0C x1
+    src/main/9F9C.c:2571 unk_0C x1
+    src/main/9F9C.c:2572 unk_0C x1
+    src/main/9F9C.c:2573 unk_0C x1
+    src/main/9F9C.c:2574 unk_0C x1
+    src/main/9F9C.c:4955 unk_02 x1
+    src/main/9F9C.c:4955 unk_04 x1
+    src/main/9F9C.c:4959 unk_02 x1
+    src/main/9F9C.c:4959 unk_04 x1
+    src/main/9F9C.c:4961 unk_02 x1
+    src/main/9F9C.c:4961 unk_04 x1
+    src/main/9F9C.c:4965 unk_02 x1
+    src/main/9F9C.c:4965 unk_04 x1
+    src/main/9F9C.c:4997 unk_04 x1
+    src/main/9F9C.c:4998 unk_02 x1
+    src/main/9F9C.c:5002 unk_02 x1
+    src/main/9F9C.c:5002 unk_04 x1
+  round 1: 0 member error line(s)
+PASS Unk80101DF0Record.unk0=node_kind, Unk80101DF0Record.unk1=primitive_table_select, Unk80101DF0Record.unk2=reloc_entry_index, Unk800F0C10Record.unk4=world_y, MotionFrame.unk_00=root_height, Unk80104E88Rec.unk_02=flight_frames, Unk80104E88Rec.unk_04=ballistic_pos, Unk80104E88Rec.unk_10=prev_ballistic_pos, Unk80104E88Rec.unk_1C=ballistic_velocity, Unk800A9CF8Rec.unk8=frame_data, Unk801027B0Rec.unk_08=motion_metadata_base, Unk801027B0Rec.unk_0C=cpu_script_table, Unk800EFC78Record.unk6=group_position_index, Unk800EFC78Record.unkC=velocity_z, Unk800EFC78Record.unk10=life_state
+decl Unk80101DF0Record.unk0 -> node_kind  include/game.h:2079
+decl Unk80101DF0Record.unk1 -> primitive_table_select  include/game.h:2080
+decl Unk80101DF0Record.unk2 -> reloc_entry_index  include/game.h:2081
+decl Unk800F0C10Record.unk4 -> world_y  include/game.h:773
+decl MotionFrame.unk_00 -> root_height  include/game.h:1472
+decl Unk80104E88Rec.unk_02 -> flight_frames  include/game.h:877
+decl Unk80104E88Rec.unk_04 -> ballistic_pos  include/game.h:879
+decl Unk80104E88Rec.unk_10 -> prev_ballistic_pos  include/game.h:880
+decl Unk80104E88Rec.unk_1C -> ballistic_velocity  include/game.h:881
+decl Unk800A9CF8Rec.unk8 -> frame_data  include/game.h:93
+decl Unk801027B0Rec.unk_08 -> motion_metadata_base  include/game.h:839
+decl Unk801027B0Rec.unk_0C -> cpu_script_table  include/game.h:840
+decl Unk800EFC78Record.unk6 -> group_position_index  include/game.h:1013
+decl Unk800EFC78Record.unkC -> velocity_z  include/game.h:1016
+decl Unk800EFC78Record.unk10 -> life_state  include/game.h:1018
+  round 0: 132 member error line(s)
+    src/main/17AFC.c:4569 unk_02 x1
+    src/main/17AFC.c:4571 unk_04 x1
+    src/main/17AFC.c:4576 unk_04 x1
+    src/main/17AFC.c:4578 unk_04 x1
+    src/main/17AFC.c:4579 unk_1C x1
+    src/main/17AFC.c:4580 unk_1C x1
+    src/main/17AFC.c:4581 unk_1C x1
+    src/main/17AFC.c:4583 unk_04 x1
+    src/main/17AFC.c:4583 unk_10 x1
+    src/main/17AFC.c:4587 unk_04 x1
+    src/main/17AFC.c:4599 unk_02 x1
+    src/main/17AFC.c:4600 unk_04 x1
+    src/main/17AFC.c:4600 unk_10 x1
+    src/main/17AFC.c:4601 unk_1C x1
+    src/main/17AFC.c:4602 unk_04 x1
+    src/main/17AFC.c:4602 unk_1C x1
+    src/main/17AFC.c:4603 unk_04 x1
+    src/main/17AFC.c:4603 unk_1C x1
+    src/main/17AFC.c:4604 unk_04 x1
+    src/main/17AFC.c:4604 unk_1C x1
+    src/main/17AFC.c:4606 unk_04 x1
+    src/main/17AFC.c:4608 unk_04 x1
+    src/main/17AFC.c:4611 unk_04 x1
+    src/main/17AFC.c:4642 unk_04 x1
+    src/main/17AFC.c:4643 unk_04 x1
+    src/main/17AFC.c:4644 unk_04 x1
+    src/main/17AFC.c:4661 unk_02 x1
+    src/main/28708.c:1460 unk_08 x1
+    src/main/28708.c:1466 unk_08 x1
+    src/main/2B344.c:2195 unk1 x1
+    src/main/2B344.c:2199 unk2 x1
+    src/main/2B344.c:2211 unk0 x1
+    src/main/2B344.c:2213 unk0 x1
+    src/main/2B344.c:2516 unk0 x1
+    src/main/2B344.c:2599 unk2 x1
+    src/main/309CC.c:98 unk2 x1
+    src/main/309CC.c:101 unk2 x1
+    src/main/309CC.c:102 unk0 x1
+    src/main/309CC.c:103 unk1 x1
+    src/main/309CC.c:110 unk2 x1
+    src/main/309CC.c:119 unk2 x1
+    src/main/309CC.c:125 unk2 x1
+    src/main/309CC.c:315 unk0 x1
+    src/main/309CC.c:316 unk1 x1
+    src/main/309CC.c:318 unk2 x1
+    src/main/309CC.c:407 unk2 x1
+    src/main/309CC.c:412 unk2 x1
+    src/main/309CC.c:438 unk2 x1
+    src/main/309CC.c:439 unk0 x1
+    src/main/309CC.c:440 unk1 x1
+    src/main/309CC.c:450 unk2 x1
+    src/main/31548.c:127 unk0 x1
+    src/main/31548.c:139 unk2 x1
+    src/main/31548.c:144 unk2 x1
+    src/main/31548.c:172 unk2 x1
+    src/main/31548.c:179 unk2 x1
+    src/main/31D3C.c:77 unk1 x1
+    src/main/31D3C.c:79 unk1 x1
+    src/main/31D3C.c:89 unk2 x1
+    src/main/31D3C.c:92 unk1 x1
+    src/main/31D3C.c:94 unk1 x1
+    src/main/32D04.c:1172 unk8 x1
+    src/main/32D04.c:1200 unk0 x1
+    src/main/32D04.c:1201 unk1 x1
+    src/main/32D04.c:1202 unk2 x1
+    src/main/35000.c:39 unk8 x1
+    src/main/35000.c:76 unk8 x1
+    src/main/35000.c:137 unk2 x1
+    src/main/35000.c:140 unk0 x1
+    src/main/35000.c:157 unk8 x1
+    src/main/368E4.c:636 unk2 x1
+    src/main/368E4.c:637 unk0 x1
+    src/main/368E4.c:638 unk1 x1
+    src/main/368E4.c:865 unk0 x1
+    src/main/368E4.c:868 unk1 x1
+    src/main/368E4.c:1648 unk2 x1
+    src/main/368E4.c:1656 unk2 x1
+    src/main/368E4.c:1937 unk0 x1
+    src/main/368E4.c:1938 unk1 x1
+    src/main/368E4.c:1939 unk2 x1
+    src/main/368E4.c:2004 unk0 x1
+    src/main/368E4.c:2005 unk1 x1
+    src/main/368E4.c:2018 unk2 x1
+    src/main/368E4.c:2056 unk0 x1
+    src/main/368E4.c:2057 unk1 x1
+    src/main/368E4.c:2058 unk2 x1
+    src/main/368E4.c:2083 unk2 x1
+    src/main/368E4.c:2084 unk0 x1
+    src/main/368E4.c:2086 unk1 x1
+    src/main/368E4.c:2231 unk0 x1
+    src/main/368E4.c:2232 unk1 x1
+    src/main/368E4.c:2242 unk0 x1
+    src/main/368E4.c:2243 unk1 x1
+    src/main/51268.c:1772 unk4 x1
+    src/main/51268.c:1780 unk4 x1
+    src/main/51268.c:1788 unk4 x1
+    src/main/51268.c:1796 unk4 x1
+    src/main/51268.c:1805 unk4 x1
+    src/main/51268.c:1814 unk4 x1
+    src/main/51268.c:1824 unk4 x1
+    src/main/51268.c:1832 unk4 x1
+    src/main/51268.c:1840 unk4 x1
+    src/main/51268.c:1848 unk4 x1
+    src/main/51268.c:1856 unk4 x1
+    src/main/51268.c:1860 unk4 x1
+    src/main/51268.c:1868 unk4 x1
+    src/main/51268.c:1872 unk4 x1
+    src/main/51268.c:1880 unk4 x1
+    src/main/51268.c:1888 unk4 x1
+    src/main/51268.c:2135 unk4 x1
+    src/main/51268.c:2647 unk4 x1
+    src/main/51268.c:2698 unk6 x1
+    src/main/51268.c:2703 unk10 x1
+    src/main/51268.c:2708 unkC x1
+    src/main/51268.c:2855 unk4 x1
+    src/main/51268.c:2856 unk4 x1
+    src/main/51268.c:2939 unk10 x1
+    src/main/51268.c:2947 unk10 x1
+    src/main/51268.c:2953 unk6 x1
+    src/main/51268.c:2956 unk4 x1
+    src/main/51268.c:2974 unkC x1
+    src/main/51268.c:2993 unk10 x1
+    src/main/9F9C.c:3163 unk_08 x1
+    src/main/9F9C.c:3269 unk_08 x1
+    src/main/9F9C.c:3272 unk_0C x1
+    src/main/9F9C.c:3468 unk_08 x1
+    src/main/9F9C.c:3472 unk_08 x1
+    src/main/9F9C.c:4020 unk_0C x1
+    src/main/9F9C.c:4022 unk_0C x1
+    src/main/9F9C.c:4957 unk_00 x1
+    src/main/9F9C.c:4963 unk_00 x1
+    src/main/9F9C.c:5000 unk_00 x1
+  round 1: 0 member error line(s)
+PASS Unk800F0C10Record.unk0=world_x, Unk80104E88Rec.unk_00=ballistic_kind, Unk800A9CF8Rec.unk2=anim_frame_count, Unk800A9CF8Rec.unk4=resource_selector, Unk801027B0Rec.unk_04=motion_entries, Unk801027B0Rec.unk_10=motion_bitstream, Unk800EFC78Record.unk8=velocity_x
+decl Unk800F0C10Record.unk0 -> world_x  include/game.h:772
+decl Unk80104E88Rec.unk_00 -> ballistic_kind  include/game.h:875
+decl Unk800A9CF8Rec.unk2 -> anim_frame_count  include/game.h:90
+decl Unk800A9CF8Rec.unk4 -> resource_selector  include/game.h:91
+decl Unk801027B0Rec.unk_04 -> motion_entries  include/game.h:838
+decl Unk801027B0Rec.unk_10 -> motion_bitstream  include/game.h:841
+decl Unk800EFC78Record.unk8 -> velocity_x  include/game.h:1014
+  round 0: 53 member error line(s)
+    src/main/17AFC.c:4542 unk_00 x1
+    src/main/17AFC.c:4560 unk_00 x1
+    src/main/17AFC.c:4567 unk_00 x1
+    src/main/17AFC.c:4598 unk_00 x1
+    src/main/17AFC.c:4609 unk_00 x1
+    src/main/17AFC.c:4629 unk_00 x1
+    src/main/17AFC.c:4663 unk_00 x1
+    src/main/28708.c:1458 unk_04 x1
+    src/main/28708.c:1464 unk_04 x1
+    src/main/2B344.c:1166 unk_10 x1
+    src/main/2B344.c:1167 unk_10 x1
+    src/main/2B344.c:1168 unk_10 x1
+    src/main/32D04.c:1171 unk2 x1
+    src/main/32D04.c:1175 unk4 x1
+    src/main/35000.c:35 unk2 x1
+    src/main/35000.c:61 unk2 x1
+    src/main/35000.c:65 unk4 x1
+    src/main/35000.c:75 unk2 x1
+    src/main/35000.c:96 unk4 x1
+    src/main/35000.c:117 unk4 x1
+    src/main/35000.c:147 unk4 x1
+    src/main/51268.c:1771 unk0 x1
+    src/main/51268.c:1779 unk0 x1
+    src/main/51268.c:1787 unk0 x1
+    src/main/51268.c:1795 unk0 x1
+    src/main/51268.c:1804 unk0 x1
+    src/main/51268.c:1813 unk0 x1
+    src/main/51268.c:1823 unk0 x1
+    src/main/51268.c:1831 unk0 x1
+    src/main/51268.c:1839 unk0 x1
+    src/main/51268.c:1847 unk0 x1
+    src/main/51268.c:1855 unk0 x1
+    src/main/51268.c:1859 unk0 x1
+    src/main/51268.c:1867 unk0 x1
+    src/main/51268.c:1871 unk0 x1
+    src/main/51268.c:1879 unk0 x1
+    src/main/51268.c:1887 unk0 x1
+    src/main/51268.c:2133 unk0 x1
+    src/main/51268.c:2645 unk0 x1
+    src/main/51268.c:2706 unk8 x1
+    src/main/51268.c:2850 unk0 x1
+    src/main/51268.c:2851 unk0 x1
+    src/main/51268.c:2954 unk0 x1
+    src/main/51268.c:2971 unk8 x1
+    src/main/9F9C.c:3162 unk_04 x1
+    src/main/9F9C.c:3164 unk_10 x1
+    src/main/9F9C.c:3266 unk_04 x1
+    src/main/9F9C.c:3275 unk_10 x1
+    src/main/9F9C.c:3284 unk_10 x1
+    src/main/9F9C.c:3286 unk_10 x1
+    src/main/9F9C.c:3289 unk_10 x1
+    src/main/9F9C.c:3466 unk_04 x1
+    src/main/9F9C.c:3470 unk_04 x1
+  round 1: 0 member error line(s)
+PASS Unk800A9CF8Rec.unk0=reloc_block_id, Unk801027B0Rec.unk_00=move_scripts, Unk800EFC78Record.unk2=offset_y, Unk800EFC78Record.unk4=offset_z, Unk800FF5C8Rec.unk_10=camera_angles_offset
+decl Unk800A9CF8Rec.unk0 -> reloc_block_id  include/game.h:89
+decl Unk801027B0Rec.unk_00 -> move_scripts  include/game.h:837
+decl Unk800EFC78Record.unk2 -> offset_y  include/game.h:1011
+decl Unk800EFC78Record.unk4 -> offset_z  include/game.h:1012
+decl Unk800FF5C8Rec.unk_10 -> camera_angles_offset  include/game.h:1973
+  round 0: 33 member error line(s)
+    src/main/32D04.c:1170 unk0 x1
+    src/main/32D04.c:1203 unk0 x1
+    src/main/35000.c:138 unk0 x1
+    src/main/35000.c:155 unk0 x1
+    src/main/51268.c:2700 unk4 x1
+    src/main/51268.c:2701 unk2 x1
+    src/main/51268.c:2969 unk4 x1
+    src/main/51268.c:2970 unk2 x1
+    src/main/51268.c:2975 unk4 x1
+    src/main/51268.c:2976 unk4 x1
+    src/main/51268.c:2978 unk2 x1
+    src/main/51268.c:2979 unk2 x1
+    src/main/9F9C.c:679 unk_10 x1
+    src/main/9F9C.c:680 unk_10 x1
+    src/main/9F9C.c:681 unk_10 x1
+    src/main/9F9C.c:2063 unk_10 x1
+    src/main/9F9C.c:2065 unk_10 x1
+    src/main/9F9C.c:2067 unk_10 x1
+    src/main/9F9C.c:2102 unk_10 x1
+    src/main/9F9C.c:2104 unk_10 x1
+    src/main/9F9C.c:2106 unk_10 x1
+    src/main/9F9C.c:3161 unk_00 x1
+    src/main/9F9C.c:3263 unk_00 x1
+    src/main/9F9C.c:3366 unk_00 x1
+    src/main/9F9C.c:3374 unk_00 x1
+    src/main/9F9C.c:3395 unk_00 x1
+    src/main/9F9C.c:3409 unk_00 x1
+    src/main/9F9C.c:3418 unk_00 x1
+    src/main/9F9C.c:3421 unk_00 x1
+    src/main/9F9C.c:3432 unk_00 x1
+    src/main/9F9C.c:3439 unk_00 x1
+    src/main/9F9C.c:3444 unk_00 x1
+    src/main/9F9C.c:3449 unk_00 x1
+  round 1: 0 member error line(s)
+PASS Unk800EFC78Record.unk0=offset_x, Unk800FF5C8Rec.unk_00=focus_point_offset
+decl Unk800EFC78Record.unk0 -> offset_x  include/game.h:1010
+decl Unk800FF5C8Rec.unk_00 -> focus_point_offset  include/game.h:1971
+  round 0: 13 member error line(s)
+    src/main/51268.c:2702 unk0 x1
+    src/main/51268.c:2968 unk0 x1
+    src/main/51268.c:2972 unk0 x1
+    src/main/51268.c:2973 unk0 x1
+    src/main/9F9C.c:676 unk_00 x1
+    src/main/9F9C.c:677 unk_00 x1
+    src/main/9F9C.c:678 unk_00 x1
+    src/main/9F9C.c:2059 unk_00 x1
+    src/main/9F9C.c:2060 unk_00 x1
+    src/main/9F9C.c:2061 unk_00 x1
+    src/main/9F9C.c:2098 unk_00 x1
+    src/main/9F9C.c:2099 unk_00 x1
+    src/main/9F9C.c:2100 unk_00 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -89,7 +89,7 @@
+-    s16 unk0;
+-    s16 unk2;
+-    s16 unk4; /* = resource_GetLoadedSelector() (g_loaded_resource_selector) */
+-    s16 unk6; /* entry count */
+-    s32 unk8;
+-    s32 unkC;  /* entry table (stride 0x68) */
+-    s32 unk10; /* gpu_GetGridNodeRecordTable() table (stride 0x68) */
++    s16 reloc_block_id;
++    s16 anim_frame_count;
++    s16 resource_selector; /* = resource_GetLoadedSelector() (g_loaded_resource_selector) */
++    s16 frame_entry_count; /* entry count */
++    s32 frame_data;
++    s32 frame_entries;  /* entry table (stride 0x68) */
++    s32 paired_grid_nodes; /* gpu_GetGridNodeRecordTable() table (stride 0x68) */
+@@ -756,3 +756,3 @@
+-    u8 unk0;
+-    u8 unk1;
+-    u8 unk2;
++    u8 grid_pick;
++    u8 cursor_entry_value;
++    u8 row_pick;
+@@ -772,3 +772,3 @@
+-    /* 0x0 */ s32 unk0;
+-    /* 0x4 */ s32 unk4;
+-    /* 0x8 */ s32 unk8;
++    /* 0x0 */ s32 world_x;
++    /* 0x4 */ s32 world_y;
++    /* 0x8 */ s32 world_z;
+@@ -837,5 +837,5 @@
+-    u16 *unk_00;
+-    u16 *unk_04;
+-    u8 *unk_08;
+-    u16 *unk_0C;
+-    u32 *unk_10;
++    u16 *move_scripts;
++    u16 *motion_entries;
++    u8 *motion_metadata_base;
++    u16 *cpu_script_table;
++    u32 *motion_bitstream;
+@@ -875 +875 @@
+-    u8 unk_00;
++    u8 ballistic_kind;
+@@ -877,6 +877,6 @@
+-    u8 unk_02;
+-    u8 unk_03; /* player index (Unk80101EC8Record.index) */
+-    Vec3i32 unk_04;
+-    Vec3i32 unk_10;
+-    Vec3i32 unk_1C;
+-    s32 unk_28;
++    u8 flight_frames;
++    u8 owner_index; /* player index (Unk80101EC8Record.index) */
++    Vec3i32 ballistic_pos;
++    Vec3i32 prev_ballistic_pos;
++    Vec3i32 ballistic_velocity;
++    s32 launcher_collision_y;
+@@ -1010,7 +1010,7 @@
+-    s16 unk0;
+-    s16 unk2;
+-    s16 unk4;
+-    s16 unk6;
+-    s16 unk8;
+-    s16 unkA;
+-    s16 unkC;
++    s16 offset_x;
++    s16 offset_y;
++    s16 offset_z;
++    s16 group_position_index;
++    s16 velocity_x;
++    s16 velocity_y;
++    s16 velocity_z;
+@@ -1018,2 +1018,2 @@
+-    s16 unk10;
+-    s16 unk12;
++    s16 life_state;
++    s16 frame_age;
+@@ -1304 +1304 @@
+-    Unk80107850Rec unk00[6];
++    Unk80107850Rec slot_points[6];
+@@ -1472,3 +1472,3 @@
+-    s16 unk_00;
+-    u16 unk_02;
+-    u16 unk_04;
++    s16 root_height;
++    u16 root_offset_angle;
++    u16 root_distance;
+@@ -1478 +1478 @@
+-    s16 unk_0C[0x3C];
++    s16 node_channels[0x3C];
+@@ -1971 +1971 @@
+-    Vec3i32 unk_00;
++    Vec3i32 focus_point_offset;
+@@ -1973 +1973 @@
+-    SVECTOR unk_10;
++    SVECTOR camera_angles_offset;
+@@ -2020,7 +2020,7 @@
+-    s16 unk_0;
+-    u8 unk_2;
+-    u8 unk_3;
+-    s16 unk_4[3];
+-    u16 unk_A;
+-    s16 unk_C;
+-    s16 unk_E;
++    s16 draw_age;
++    u8 draw_span;
++    u8 model_entry_index;
++    s16 draw_pos[3];
++    u16 slot_rot_x;
++    s16 draw_rot_y;
++    s16 draw_rot_z;
+@@ -2079,4 +2079,4 @@
+-    u8 unk0;          /* +0x00 */
+-    s8 unk1;          /* +0x01 */
+-    s16 unk2;         /* +0x02 */
+-    s16 unk4;         /* +0x04 */
++    u8 node_kind;          /* +0x00 */
++    s8 primitive_table_select;          /* +0x01 */
++    s16 reloc_entry_index;         /* +0x02 */
++    s16 reloc_block_id;         /* +0x04 */
+@@ -2235 +2235 @@
+-    } unk_00; /* +0x0000 */
++    } load_flags; /* +0x0000 */
+@@ -2239 +2239 @@
+-    s16 unk_08;         /* +0x0008 */
++    s16 asset_index;         /* +0x0008 */
+@@ -2241 +2241 @@
+-    u16 unk_10;         /* +0x0010 */
++    u16 node_light_setup_index;         /* +0x0010 */
+@@ -2243,2 +2243,2 @@
+-    s16 unk_14;         /* +0x0014 */
+-    s16 unk_16;         /* +0x0016 */
++    s16 transform_block_id;         /* +0x0014 */
++    s16 projected_block_id;         /* +0x0016 */
+@@ -2249,5 +2249,5 @@
+-    } unk_18; /* +0x0018 */
+-
+-    s32 unk_1C;                          /* +0x001C */
+-    s32 unk_20;                          /* +0x0020 */
+-    void *unk_24;                        /* +0x0024 */
++    } patch_color; /* +0x0018 */
++
++    s32 asset_block;                          /* +0x001C */
++    s32 staging_buffer;                          /* +0x0020 */
++    void *softbody_block;                        /* +0x0024 */
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -57,12 +57,12 @@
+-    motion_frame->unk_0C[0x18] = 0x3F5;
+-    motion_frame->unk_0C[0x19] = 0x2B6;
+-    motion_frame->unk_0C[0x1A] = 0x77A;
+-    motion_frame->unk_0C[0x1B] = 0xBEE;
+-    motion_frame->unk_0C[0x1C] = 0x8C;
+-    motion_frame->unk_0C[0x1D] = 0x227;
+-    motion_frame->unk_0C[0x21] = 0x8A0;
+-    motion_frame->unk_0C[0x22] = 0xF0E;
+-    motion_frame->unk_0C[0x1E] = 0;
+-    motion_frame->unk_0C[0x1F] = 0;
+-    motion_frame->unk_0C[0x20] = 0;
+-    motion_frame->unk_0C[0x23] = 0xBCD;
++    motion_frame->node_channels[0x18] = 0x3F5;
++    motion_frame->node_channels[0x19] = 0x2B6;
++    motion_frame->node_channels[0x1A] = 0x77A;
++    motion_frame->node_channels[0x1B] = 0xBEE;
++    motion_frame->node_channels[0x1C] = 0x8C;
++    motion_frame->node_channels[0x1D] = 0x227;
++    motion_frame->node_channels[0x21] = 0x8A0;
++    motion_frame->node_channels[0x22] = 0xF0E;
++    motion_frame->node_channels[0x1E] = 0;
++    motion_frame->node_channels[0x1F] = 0;
++    motion_frame->node_channels[0x20] = 0;
++    motion_frame->node_channels[0x23] = 0xBCD;
+@@ -1539,3 +1539,3 @@
+-    scr->shape_points[0] = &scr->point_slots.unk00[0];
+-    scr->shape_points[1] = &scr->point_slots.unk00[1];
+-    scr->unkC8 = scr->point_slots.unk00[1];
++    scr->shape_points[0] = &scr->point_slots.slot_points[0];
++    scr->shape_points[1] = &scr->point_slots.slot_points[1];
++    scr->unkC8 = scr->point_slots.slot_points[1];
+@@ -1751,2 +1751,2 @@
+-                scr->point_slots.unk00[0] = SPAD->weapon_points[i == 0][1];
+-                scr->point_slots.unk00[1] = SPAD->weapon_points[i == 0][0];
++                scr->point_slots.slot_points[0] = SPAD->weapon_points[i == 0][1];
++                scr->point_slots.slot_points[1] = SPAD->weapon_points[i == 0][0];
+@@ -1772,2 +1772,2 @@
+-            scr->point_slots.unk00[0] = SPAD->second_weapon_points[i == 0][1];
+-            scr->point_slots.unk00[1] = SPAD->second_weapon_points[i == 0][0];
++            scr->point_slots.slot_points[0] = SPAD->second_weapon_points[i == 0][1];
++            scr->point_slots.slot_points[1] = SPAD->second_weapon_points[i == 0][0];
+@@ -1806,4 +1806,4 @@
+-                scr->point_slots.unk00[0] = SPAD->weapon_points[i == 0][temp1];
+-                scr->point_slots.unk00[1] = SPAD->weapon_points[i == 0][temp2];
+-                scr->point_slots.unk00[2] = var_3->prev_weapon_points[temp1];
+-                scr->point_slots.unk00[3] = var_3->prev_weapon_points[temp2];
++                scr->point_slots.slot_points[0] = SPAD->weapon_points[i == 0][temp1];
++                scr->point_slots.slot_points[1] = SPAD->weapon_points[i == 0][temp2];
++                scr->point_slots.slot_points[2] = var_3->prev_weapon_points[temp1];
++                scr->point_slots.slot_points[3] = var_3->prev_weapon_points[temp2];
+@@ -1811 +1811 @@
+-                scr->point_slots.unk00[0] =
++                scr->point_slots.slot_points[0] =
+@@ -1813 +1813 @@
+-                scr->point_slots.unk00[1] =
++                scr->point_slots.slot_points[1] =
+@@ -1815 +1815 @@
+-                scr->point_slots.unk00[2] =
++                scr->point_slots.slot_points[2] =
+@@ -1817 +1817 @@
+-                scr->point_slots.unk00[3] =
++                scr->point_slots.slot_points[3] =
+@@ -1820,15 +1820,15 @@
+-            scr->point_slots.unk00[4].x =
+-                (scr->point_slots.unk00[0].x + scr->point_slots.unk00[2].x) / 2;
+-            scr->point_slots.unk00[4].y =
+-                (scr->point_slots.unk00[0].y + scr->point_slots.unk00[2].y) / 2;
+-            scr->point_slots.unk00[4].z =
+-                (scr->point_slots.unk00[0].z + scr->point_slots.unk00[2].z) / 2;
+-            scr->point_slots.unk00[5].x =
+-                (scr->point_slots.unk00[1].x + scr->point_slots.unk00[3].x) / 2;
+-            scr->point_slots.unk00[5].y =
+-                (scr->point_slots.unk00[1].y + scr->point_slots.unk00[3].y) / 2;
+-            scr->point_slots.unk00[5].z =
+-                (scr->point_slots.unk00[1].z + scr->point_slots.unk00[3].z) / 2;
+-            dx = scr->point_slots.unk00[1].x - scr->point_slots.unk00[3].x;
+-            dy = scr->point_slots.unk00[1].y - scr->point_slots.unk00[3].y;
+-            dz = scr->point_slots.unk00[1].z - scr->point_slots.unk00[3].z;
++            scr->point_slots.slot_points[4].x =
++                (scr->point_slots.slot_points[0].x + scr->point_slots.slot_points[2].x) / 2;
++            scr->point_slots.slot_points[4].y =
++                (scr->point_slots.slot_points[0].y + scr->point_slots.slot_points[2].y) / 2;
++            scr->point_slots.slot_points[4].z =
++                (scr->point_slots.slot_points[0].z + scr->point_slots.slot_points[2].z) / 2;
++            scr->point_slots.slot_points[5].x =
++                (scr->point_slots.slot_points[1].x + scr->point_slots.slot_points[3].x) / 2;
++            scr->point_slots.slot_points[5].y =
++                (scr->point_slots.slot_points[1].y + scr->point_slots.slot_points[3].y) / 2;
++            scr->point_slots.slot_points[5].z =
++                (scr->point_slots.slot_points[1].z + scr->point_slots.slot_points[3].z) / 2;
++            dx = scr->point_slots.slot_points[1].x - scr->point_slots.slot_points[3].x;
++            dy = scr->point_slots.slot_points[1].y - scr->point_slots.slot_points[3].y;
++            dz = scr->point_slots.slot_points[1].z - scr->point_slots.slot_points[3].z;
+@@ -1843,3 +1843,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.unk00[2];
+-                        scr->shape_points[1] = &scr->point_slots.unk00[3];
+-                        scr->shape_points[2] = &scr->point_slots.unk00[1];
++                        scr->shape_points[0] = &scr->point_slots.slot_points[2];
++                        scr->shape_points[1] = &scr->point_slots.slot_points[3];
++                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
+@@ -1847,3 +1847,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.unk00[0];
+-                        scr->shape_points[1] = &scr->point_slots.unk00[1];
+-                        scr->shape_points[2] = &scr->point_slots.unk00[2];
++                        scr->shape_points[0] = &scr->point_slots.slot_points[0];
++                        scr->shape_points[1] = &scr->point_slots.slot_points[1];
++                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
+@@ -1854,3 +1854,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.unk00[3];
+-                        scr->shape_points[1] = &scr->point_slots.unk00[2];
+-                        scr->shape_points[2] = &scr->point_slots.unk00[5];
++                        scr->shape_points[0] = &scr->point_slots.slot_points[3];
++                        scr->shape_points[1] = &scr->point_slots.slot_points[2];
++                        scr->shape_points[2] = &scr->point_slots.slot_points[5];
+@@ -1859,3 +1859,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.unk00[5];
+-                        scr->shape_points[1] = &scr->point_slots.unk00[4];
+-                        scr->shape_points[2] = &scr->point_slots.unk00[2];
++                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
++                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
++                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
+@@ -1864,3 +1864,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.unk00[5];
+-                        scr->shape_points[1] = &scr->point_slots.unk00[4];
+-                        scr->shape_points[2] = &scr->point_slots.unk00[1];
++                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
++                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
++                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
+@@ -1869,3 +1869,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.unk00[1];
+-                        scr->shape_points[1] = &scr->point_slots.unk00[0];
+-                        scr->shape_points[2] = &scr->point_slots.unk00[4];
++                        scr->shape_points[0] = &scr->point_slots.slot_points[1];
++                        scr->shape_points[1] = &scr->point_slots.slot_points[0];
++                        scr->shape_points[2] = &scr->point_slots.slot_points[4];
+@@ -4429 +4429 @@
+-    Vec3i32 *var_4 = scr->point_slots.unk00;
++    Vec3i32 *var_4 = scr->point_slots.slot_points;
+@@ -4542 +4542 @@
+-        g_fight_ballistic_records[i].unk_00 = 0;
++        g_fight_ballistic_records[i].ballistic_kind = 0;
+@@ -4560 +4560 @@
+-        if (s0->unk_00 == 0)
++        if (s0->ballistic_kind == 0)
+@@ -4567 +4567 @@
+-    s0->unk_00 = type;
++    s0->ballistic_kind = type;
+@@ -4569,3 +4569,3 @@
+-    s0->unk_02 = 0;
+-    s0->unk_03 = src->index;
+-    s0->unk_04.x = src->world_pos.x;
++    s0->flight_frames = 0;
++    s0->owner_index = src->index;
++    s0->ballistic_pos.x = src->world_pos.x;
+@@ -4576,6 +4576,6 @@
+-        s0->unk_04.y = src->collision_pos.vy - (v1 >> 5);
+-    }
+-    s0->unk_04.z = src->world_pos.z;
+-    s0->unk_1C.x = ((s32)Judge[src->orientation.vy & 0xFFF] * speed) >> 12;
+-    s0->unk_1C.y = var_1;
+-    s0->unk_1C.z =
++        s0->ballistic_pos.y = src->collision_pos.vy - (v1 >> 5);
++    }
++    s0->ballistic_pos.z = src->world_pos.z;
++    s0->ballistic_velocity.x = ((s32)Judge[src->orientation.vy & 0xFFF] * speed) >> 12;
++    s0->ballistic_velocity.y = var_1;
++    s0->ballistic_velocity.z =
+@@ -4583,2 +4583,2 @@
+-    s0->unk_10 = s0->unk_04;
+-    s0->unk_28 = src->collision_pos.vy;
++    s0->prev_ballistic_pos = s0->ballistic_pos;
++    s0->launcher_collision_y = src->collision_pos.vy;
+@@ -4587 +4587 @@
+-        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
++        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->ballistic_pos.x, var_5);
+@@ -4598,7 +4598,7 @@
+-        if (base->unk_00 != 0) {
+-            base->unk_02 += 1;
+-            base->unk_10 = base->unk_04;
+-            base->unk_1C.y += 0xD;
+-            scr->cast_end.x = base->unk_04.x + base->unk_1C.x;
+-            scr->cast_end.y = base->unk_04.y + base->unk_1C.y;
+-            scr->cast_end.z = base->unk_04.z + base->unk_1C.z;
++        if (base->ballistic_kind != 0) {
++            base->flight_frames += 1;
++            base->prev_ballistic_pos = base->ballistic_pos;
++            base->ballistic_velocity.y += 0xD;
++            scr->cast_end.x = base->ballistic_pos.x + base->ballistic_velocity.x;
++            scr->cast_end.y = base->ballistic_pos.y + base->ballistic_velocity.y;
++            scr->cast_end.z = base->ballistic_pos.z + base->ballistic_velocity.z;
+@@ -4606 +4606 @@
+-                    &base->unk_04.x, &scr->cast_end.x, &scr->unk10.x,
++                    &base->ballistic_pos.x, &scr->cast_end.x, &scr->unk10.x,
+@@ -4608,2 +4608,2 @@
+-                base->unk_04.y > base->unk_28) {
+-                base->unk_00 = 0;
++                base->ballistic_pos.y > base->launcher_collision_y) {
++                base->ballistic_kind = 0;
+@@ -4611 +4611 @@
+-                base->unk_04 = scr->cast_end;
++                base->ballistic_pos = scr->cast_end;
+@@ -4629 +4629 @@
+-        if (rec->unk_00 == 0)
++        if (rec->ballistic_kind == 0)
+@@ -4633 +4633 @@
+-            s32 other = (rec->unk_03 == 0);
++            s32 other = (rec->owner_index == 0);
+@@ -4642,3 +4642,3 @@
+-        dx = ent->world_pos.x - rec->unk_04.x;
+-        dy = ent->world_pos.y - rec->unk_04.y;
+-        dz = ent->world_pos.z - rec->unk_04.z;
++        dx = ent->world_pos.x - rec->ballistic_pos.x;
++        dy = ent->world_pos.y - rec->ballistic_pos.y;
++        dz = ent->world_pos.z - rec->ballistic_pos.z;
+@@ -4661 +4661 @@
+-        if (dist < (u32)(rec->unk_02 * 30 + 0x1F4)) {
++        if (dist < (u32)(rec->flight_frames * 30 + 0x1F4)) {
+@@ -4663 +4663 @@
+-            rec->unk_00 = 0;
++            rec->ballistic_kind = 0;
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1118 +1118 @@
+-        g_replay_model_draws[j].unk_0 = -1;
++        g_replay_model_draws[j].draw_age = -1;
+@@ -1138 +1138 @@
+-        val = q->unk_0;
++        val = q->draw_age;
+@@ -1141,3 +1141,3 @@
+-            q->unk_0 = newval;
+-            if (newval - q->unk_2 >= 0x101) {
+-                q->unk_0 = -1;
++            q->draw_age = newval;
++            if (newval - q->draw_span >= 0x101) {
++                q->draw_age = -1;
+@@ -1169 +1169 @@
+-        state = var_0->unk_0;
++        state = var_0->draw_age;
+@@ -1171 +1171 @@
+-            seen = var_0->unk_2;
++            seen = var_0->draw_span;
+@@ -1173 +1173 @@
+-                raw = var_0->unk_A << 16;
++                raw = var_0->slot_rot_x << 16;
+@@ -1176,2 +1176,2 @@
+-                    var_0->unk_4[0] == arg2[0] && var_0->unk_4[1] == arg2[1] &&
+-                    var_0->unk_4[2] == arg2[2] &&
++                    var_0->draw_pos[0] == arg2[0] && var_0->draw_pos[1] == arg2[1] &&
++                    var_0->draw_pos[2] == arg2[2] &&
+@@ -1179,3 +1179,3 @@
+-                    ((var_0->unk_C - arg3[1]) & 0xFFF) == 0 &&
+-                    ((var_0->unk_E - arg3[2]) & 0xFFF) == 0) {
+-                    var_0->unk_2 = seen + 1;
++                    ((var_0->draw_rot_y - arg3[1]) & 0xFFF) == 0 &&
++                    ((var_0->draw_rot_z - arg3[2]) & 0xFFF) == 0) {
++                    var_0->draw_span = seen + 1;
+@@ -1193 +1193 @@
+-        if (var_0->unk_0 == -1) {
++        if (var_0->draw_age == -1) {
+@@ -1207,9 +1207,9 @@
+-    var_0->unk_0 = 0;
+-    var_0->unk_3 = arg1;
+-    var_0->unk_2 = 0;
+-    var_0->unk_4[0] = arg2[0];
+-    var_0->unk_4[1] = arg2[1];
+-    var_0->unk_4[2] = arg2[2];
+-    var_0->unk_A = (arg3[0] & 0xFFF) | (arg0 << 12);
+-    var_0->unk_C = arg3[1];
+-    var_0->unk_E = arg3[2];
++    var_0->draw_age = 0;
++    var_0->model_entry_index = arg1;
++    var_0->draw_span = 0;
++    var_0->draw_pos[0] = arg2[0];
++    var_0->draw_pos[1] = arg2[1];
++    var_0->draw_pos[2] = arg2[2];
++    var_0->slot_rot_x = (arg3[0] & 0xFFF) | (arg0 << 12);
++    var_0->draw_rot_y = arg3[1];
++    var_0->draw_rot_z = arg3[2];
+@@ -1458 +1458 @@
+-                         .unk_04[p->w0->motion_bank_entry_index * 2];
++                         .motion_entries[p->w0->motion_bank_entry_index * 2];
+@@ -1460 +1460 @@
+-                g_motion_common_sections.unk_08 + entry[1];
++                g_motion_common_sections.motion_metadata_base + entry[1];
+@@ -1464 +1464 @@
+-                         .unk_04[p->w0->motion_bank_entry_index * 2];
++                         .motion_entries[p->w0->motion_bank_entry_index * 2];
+@@ -1466 +1466 @@
+-                g_motion_fighter_sections[temp].unk_08 + entry[1];
++                g_motion_fighter_sections[temp].motion_metadata_base + entry[1];
+@@ -1500,7 +1500,7 @@
+-        if (s->unk_0 >= temp && s->unk_0 - s->unk_2 <= temp) {
+-            pos[0] = s->unk_4[0];
+-            pos[1] = s->unk_4[1];
+-            pos[2] = s->unk_4[2];
+-            rot[0] = s->unk_A;
+-            rot[1] = s->unk_C;
+-            rot[2] = s->unk_E;
++        if (s->draw_age >= temp && s->draw_age - s->draw_span <= temp) {
++            pos[0] = s->draw_pos[0];
++            pos[1] = s->draw_pos[1];
++            pos[2] = s->draw_pos[2];
++            rot[0] = s->slot_rot_x;
++            rot[1] = s->draw_rot_y;
++            rot[2] = s->draw_rot_z;
+@@ -1508 +1508 @@
+-                s->unk_3, 1, pos, rot);
++                s->model_entry_index, 1, pos, rot);
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -1166,3 +1166,3 @@
+-        motion_InitStream(0, g_motion_common_sections.unk_10);
+-        motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
+-        motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
++        motion_InitStream(0, g_motion_common_sections.motion_bitstream);
++        motion_InitStream(1, g_motion_fighter_sections[0].motion_bitstream);
++        motion_InitStream(2, g_motion_fighter_sections[1].motion_bitstream);
+@@ -1741 +1741 @@
+-                gpu_OffsetBlockTexPrimStreams(obj->unk_14, 0, 0, -0x140, 0xE8);
++                gpu_OffsetBlockTexPrimStreams(obj->transform_block_id, 0, 0, -0x140, 0xE8);
+@@ -1743 +1743 @@
+-                gpu_OffsetBlockTexPrimStreams(obj->unk_14, 0, 0, -0x1C0, 0xE8);
++                gpu_OffsetBlockTexPrimStreams(obj->transform_block_id, 0, 0, -0x1C0, 0xE8);
+@@ -1759 +1759 @@
+-                gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x140, -0xE8);
++                gpu_OffsetBlockTexPrimStreams(v1->transform_block_id, 0, 0, 0x140, -0xE8);
+@@ -1761 +1761 @@
+-                gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x1C0, -0xE8);
++                gpu_OffsetBlockTexPrimStreams(v1->transform_block_id, 0, 0, 0x1C0, -0xE8);
+@@ -2195 +2195 @@
+-        c->node.unk1 = 0;
++        c->node.primitive_table_select = 0;
+@@ -2199,2 +2199,2 @@
+-        c->node.unk2 = w;
+-        c->node.unk4 = arg1;
++        c->node.reloc_entry_index = w;
++        c->node.reloc_block_id = arg1;
+@@ -2211 +2211 @@
+-            c->node.unk0 = 1;
++            c->node.node_kind = 1;
+@@ -2213 +2213 @@
+-            c->node.unk0 = 0;
++            c->node.node_kind = 0;
+@@ -2442 +2442 @@
+-    s0 = a0->unk_24;
++    s0 = a0->softbody_block;
+@@ -2492 +2492 @@
+-    var_0 = arg0->unk_24;
++    var_0 = arg0->softbody_block;
+@@ -2498 +2498 @@
+-        arg0->unk_24 = 0;
++        arg0->softbody_block = 0;
+@@ -2516 +2516 @@
+-            obj->node.unk0 = 0xD;
++            obj->node.node_kind = 0xD;
+@@ -2534 +2534 @@
+-            arg0->arena_id, cur - (u8 *)arg0->unk_1C);
++            arg0->arena_id, cur - (u8 *)arg0->asset_block);
+@@ -2599 +2599 @@
+-    src = (u16 *)g_reloc_block_entry_tables[obj->node.unk4][obj->node.unk2];
++    src = (u16 *)g_reloc_block_entry_tables[obj->node.reloc_block_id][obj->node.reloc_entry_index];
+@@ -2776 +2776 @@
+-    Unk8003F62CRec *v1 = a0->unk_24;
++    Unk8003F62CRec *v1 = a0->softbody_block;
+@@ -2785 +2785 @@
+-        Unk8003F62CRec *v1 = v0->unk_24;
++        Unk8003F62CRec *v1 = v0->softbody_block;
+@@ -2809 +2809 @@
+-    Unk8003F62CRec *v1 = a0->unk_24;
++    Unk8003F62CRec *v1 = a0->softbody_block;
+@@ -2821 +2821 @@
+-    s2 = a0->unk_24;
++    s2 = a0->softbody_block;
+@@ -2837 +2837 @@
+-    Unk8003F62CRec *v1 = a0->unk_24;
++    Unk8003F62CRec *v1 = a0->softbody_block;
+@@ -2840 +2840 @@
+-        a0->unk_24 = v1;
++        a0->softbody_block = v1;
+--- a/src/main/309CC.c
++++ b/src/main/309CC.c
+@@ -84 +84 @@
+-        mask = mask & D_80094B48[ptr->unk_08];
++        mask = mask & D_80094B48[ptr->asset_index];
+@@ -98 +98 @@
+-    while (a1->node.unk2 != -1) {
++    while (a1->node.reloc_entry_index != -1) {
+@@ -101,3 +101,3 @@
+-    a1->node.unk2 = 2;
+-    a1->node.unk0 = 3;
+-    a1->node.unk1 = 0;
++    a1->node.reloc_entry_index = 2;
++    a1->node.node_kind = 3;
++    a1->node.primitive_table_select = 0;
+@@ -108 +108 @@
+-    a1->node.unk4 = a2;
++    a1->node.reloc_block_id = a2;
+@@ -110 +110 @@
+-    a1[1].node.unk2 = -1;
++    a1[1].node.reloc_entry_index = -1;
+@@ -119 +119 @@
+-    if (a0->node.unk2 == -1) {
++    if (a0->node.reloc_entry_index == -1) {
+@@ -125 +125 @@
+-    } while (a0->node.unk2 != -1);
++    } while (a0->node.reloc_entry_index != -1);
+@@ -171,2 +171,2 @@
+-    if (a0->unk_20 != 0) {
+-        var_0 = (s32 *)a0->unk_20;
++    if (a0->staging_buffer != 0) {
++        var_0 = (s32 *)a0->staging_buffer;
+@@ -174 +174 @@
+-        var_0 = (s32 *)a0->unk_1C;
++        var_0 = (s32 *)a0->asset_block;
+@@ -204 +204 @@
+-        a0->unk_00.word |= 2;
++        a0->load_flags.word |= 2;
+@@ -214,5 +214,5 @@
+-    if (a0->unk_20 != 0) {
+-        mem_MoveBlockRoundedUpToWords(a0->unk_20, a0->unk_1C, off);
+-        var_0 = (s32 *)a0->unk_1C;
+-        if ((a0->unk_00.word >> 1) & 1) {
+-            snd_VabFakeOpen((s32)var_0 - a0->unk_20, a0->arena_id * 3 + 1);
++    if (a0->staging_buffer != 0) {
++        mem_MoveBlockRoundedUpToWords(a0->staging_buffer, a0->asset_block, off);
++        var_0 = (s32 *)a0->asset_block;
++        if ((a0->load_flags.word >> 1) & 1) {
++            snd_VabFakeOpen((s32)var_0 - a0->staging_buffer, a0->arena_id * 3 + 1);
+@@ -227,2 +227,2 @@
+-        reloc_RelocateBlock(block_1, a0->unk_14);
+-        reloc_RelocateBlock(block_4, a0->unk_16);
++        reloc_RelocateBlock(block_1, a0->transform_block_id);
++        reloc_RelocateBlock(block_4, a0->projected_block_id);
+@@ -242 +242 @@
+-        gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0, 0, -0x140, 0xE8);
++        gpu_OffsetBlockTexPrimStreams(a0->transform_block_id, 0, 0, -0x140, 0xE8);
+@@ -250 +250 @@
+-        gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0x80, 0, -0x140, 0xE8);
++        gpu_OffsetBlockTexPrimStreams(a0->transform_block_id, 0x80, 0, -0x140, 0xE8);
+@@ -255 +255 @@
+-        gpu_OffsetBlockTexPrimStreamsByPages(a0->unk_14, 2, 0, 2, 0);
++        gpu_OffsetBlockTexPrimStreamsByPages(a0->transform_block_id, 2, 0, 2, 0);
+@@ -264 +264 @@
+-        a0->arena_id, a0->unk_08, g_slot_tim_group_requests[a0->arena_id],
++        a0->arena_id, a0->asset_index, g_slot_tim_group_requests[a0->arena_id],
+@@ -268,2 +268,2 @@
+-        a0->unk_00.word =
+-            (a0->unk_00.word & 0xFFE0FFFF) |
++        a0->load_flags.word =
++            (a0->load_flags.word & 0xFFE0FFFF) |
+@@ -275 +275 @@
+-    a0->unk_24 = (void *)(a0->unk_1C + off);
++    a0->softbody_block = (void *)(a0->asset_block + off);
+@@ -301 +301 @@
+-    idx = a0->unk_08;
++    idx = a0->asset_index;
+@@ -315,2 +315,2 @@
+-            p->node.unk0 = 0;
+-            p->node.unk1 = 0;
++            p->node.node_kind = 0;
++            p->node.primitive_table_select = 0;
+@@ -318 +318 @@
+-            p->node.unk2 = -1;
++            p->node.reloc_entry_index = -1;
+@@ -335,2 +335,2 @@
+-            p->node.light_setup_index = a0->unk_10;
+-            p->node.unk4 = a0->unk_14;
++            p->node.light_setup_index = a0->node_light_setup_index;
++            p->node.reloc_block_id = a0->transform_block_id;
+@@ -388 +388 @@
+-    v1 = (s32 *)arg0->unk_1C;
++    v1 = (s32 *)arg0->asset_block;
+@@ -407 +407 @@
+-            t7[a3].node.unk2 = id;
++            t7[a3].node.reloc_entry_index = id;
+@@ -412 +412 @@
+-            t5->node.unk2 = id;
++            t5->node.reloc_entry_index = id;
+@@ -438,3 +438,3 @@
+-            p->node.unk2 = *id;
+-            p->node.unk0 = 3;
+-            p->node.unk1 = 0;
++            p->node.reloc_entry_index = *id;
++            p->node.node_kind = 3;
++            p->node.primitive_table_select = 0;
+@@ -445 +445 @@
+-            p->node.unk4 = arg0->unk_16;
++            p->node.reloc_block_id = arg0->projected_block_id;
+@@ -450 +450 @@
+-    p->node.unk2 = -1;
++    p->node.reloc_entry_index = -1;
+--- a/src/main/31548.c
++++ b/src/main/31548.c
+@@ -127 +127 @@
+-    s3->node.unk0 = 0xA;
++    s3->node.node_kind = 0xA;
+@@ -139 +139 @@
+-        s3->node.unk2 = 0;
++        s3->node.reloc_entry_index = 0;
+@@ -144 +144 @@
+-            if (a4p->node.unk2 >= 0) {
++            if (a4p->node.reloc_entry_index >= 0) {
+@@ -172 +172 @@
+-        if (s4->projected_nodes[0].node.unk2 != -1) {
++        if (s4->projected_nodes[0].node.reloc_entry_index != -1) {
+@@ -179 +179 @@
+-            } while (a2p->node.unk2 != -1);
++            } while (a2p->node.reloc_entry_index != -1);
+--- a/src/main/31D3C.c
++++ b/src/main/31D3C.c
+@@ -15 +15 @@
+-        return ptr->unk_08;
++        return ptr->asset_index;
+@@ -41 +41 @@
+-        if (((ptr->unk_00.word >> 16) & 0x1F) != a1) {
++        if (((ptr->load_flags.word >> 16) & 0x1F) != a1) {
+@@ -51 +51 @@
+-        return (ptr->unk_00.word >> 16) & 0x1F;
++        return (ptr->load_flags.word >> 16) & 0x1F;
+@@ -77 +77 @@
+-        p->node.unk1 |= 1;
++        p->node.primitive_table_select |= 1;
+@@ -79 +79 @@
+-        p->node.unk1 &= ~1;
++        p->node.primitive_table_select &= ~1;
+@@ -89 +89 @@
+-    b = p->node.unk2 >= 0;
++    b = p->node.reloc_entry_index >= 0;
+@@ -92 +92 @@
+-            p->node.unk1 |= 1;
++            p->node.primitive_table_select |= 1;
+@@ -94 +94 @@
+-            p->node.unk1 &= ~1;
++            p->node.primitive_table_select &= ~1;
+@@ -114,2 +114,2 @@
+-            slot_object->unk_18.byte[2], slot_object->unk_18.byte[1],
+-            slot_object->unk_18.byte[0]);
++            slot_object->patch_color.byte[2], slot_object->patch_color.byte[1],
++            slot_object->patch_color.byte[0]);
+@@ -118,3 +118,3 @@
+-        r = slot_object->unk_18.byte[0];
+-        g = slot_object->unk_18.byte[1];
+-        b = slot_object->unk_18.byte[2];
++        r = slot_object->patch_color.byte[0];
++        g = slot_object->patch_color.byte[1];
++        b = slot_object->patch_color.byte[2];
+@@ -211 +211 @@
+-    if (g_gpu_clut_row_list_map[arg0->unk_08] == 0xFF) {
++    if (g_gpu_clut_row_list_map[arg0->asset_index] == 0xFF) {
+@@ -218,2 +218,2 @@
+-    id_ptr = &arg0->unk_08;
+-    D_800A9A20 = arg0->unk_08;
++    id_ptr = &arg0->asset_index;
++    D_800A9A20 = arg0->asset_index;
+@@ -256,4 +256,4 @@
+-    if (obj->unk_08 != D_800A9A20) {
+-        return;
+-    }
+-    if (g_gpu_clut_row_list_map[obj->unk_08] == 0xFF) {
++    if (obj->asset_index != D_800A9A20) {
++        return;
++    }
++    if (g_gpu_clut_row_list_map[obj->asset_index] == 0xFF) {
+@@ -276 +276 @@
+-        tbl = D_80094DF0[g_gpu_clut_row_list_map[obj->unk_08]];
++        tbl = D_80094DF0[g_gpu_clut_row_list_map[obj->asset_index]];
+--- a/src/main/32D04.c
++++ b/src/main/32D04.c
+@@ -1170,4 +1170,4 @@
+-    g_node_frame_animation_context.unk0 = a1;
+-    g_node_frame_animation_context.unk2 = *a0++;
+-    g_node_frame_animation_context.unk8 = (s32)a0;
+-    g_node_frame_animation_context.unkC = a2;
++    g_node_frame_animation_context.reloc_block_id = a1;
++    g_node_frame_animation_context.anim_frame_count = *a0++;
++    g_node_frame_animation_context.frame_data = (s32)a0;
++    g_node_frame_animation_context.frame_entries = a2;
+@@ -1175 +1175 @@
+-    g_node_frame_animation_context.unk4 = v0;
++    g_node_frame_animation_context.resource_selector = v0;
+@@ -1178 +1178 @@
+-        g_node_frame_animation_context.unk6 = 0x11;
++        g_node_frame_animation_context.frame_entry_count = 0x11;
+@@ -1181 +1181 @@
+-        g_node_frame_animation_context.unk6 = 2;
++        g_node_frame_animation_context.frame_entry_count = 2;
+@@ -1184 +1184 @@
+-        g_node_frame_animation_context.unk6 = 0xA;
++        g_node_frame_animation_context.frame_entry_count = 0xA;
+@@ -1187 +1187 @@
+-    a2 += g_node_frame_animation_context.unk6 * 104;
++    a2 += g_node_frame_animation_context.frame_entry_count * 104;
+@@ -1196 +1196 @@
+-    g_node_frame_animation_context.unk10 =
++    g_node_frame_animation_context.paired_grid_nodes =
+@@ -1198,6 +1198,6 @@
+-    dst = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC;
+-    for (i = 0; i < g_node_frame_animation_context.unk6; dst++, src++, i++) {
+-        dst->node.unk0 = 0;
+-        dst->node.unk1 = 0;
+-        dst->node.unk2 = 0;
+-        dst->node.unk4 = g_node_frame_animation_context.unk0;
++    dst = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries;
++    for (i = 0; i < g_node_frame_animation_context.frame_entry_count; dst++, src++, i++) {
++        dst->node.node_kind = 0;
++        dst->node.primitive_table_select = 0;
++        dst->node.reloc_entry_index = 0;
++        dst->node.reloc_block_id = g_node_frame_animation_context.reloc_block_id;
+--- a/src/main/35000.c
++++ b/src/main/35000.c
+@@ -30,2 +30,2 @@
+-    rec = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC;
+-    for (i = 0; i < g_node_frame_animation_context.unk6; rec++, i++) {
++    rec = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries;
++    for (i = 0; i < g_node_frame_animation_context.frame_entry_count; rec++, i++) {
+@@ -35 +35 @@
+-        if (var_5 < g_node_frame_animation_context.unk2) {
++        if (var_5 < g_node_frame_animation_context.anim_frame_count) {
+@@ -39 +39 @@
+-            var_7 = (s16 *)(g_node_frame_animation_context.unk8 + var_5 * 12);
++            var_7 = (s16 *)(g_node_frame_animation_context.frame_data + var_5 * 12);
+@@ -61 +61 @@
+-            if (var_5 >= g_node_frame_animation_context.unk2) {
++            if (var_5 >= g_node_frame_animation_context.anim_frame_count) {
+@@ -65 +65 @@
+-            if (g_node_frame_animation_context.unk4 == 0x12) {
++            if (g_node_frame_animation_context.resource_selector == 0x12) {
+@@ -73 +73 @@
+-                                                   .unk10 +
++                                                   .paired_grid_nodes +
+@@ -75,2 +75,2 @@
+-                last = g_node_frame_animation_context.unk2 - 1;
+-                var_7 = (s16 *)(g_node_frame_animation_context.unk8 +
++                last = g_node_frame_animation_context.anim_frame_count - 1;
++                var_7 = (s16 *)(g_node_frame_animation_context.frame_data +
+@@ -96 +96 @@
+-            if (var_15 == 0 && g_node_frame_animation_context.unk4 != 4) {
++            if (var_15 == 0 && g_node_frame_animation_context.resource_selector != 4) {
+@@ -110 +110 @@
+-    if (a0 >= g_node_frame_animation_context.unk6)
++    if (a0 >= g_node_frame_animation_context.frame_entry_count)
+@@ -113 +113 @@
+-    p = (Unk800A9CF8Entry *)g_node_frame_animation_context.unkC + a0;
++    p = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries + a0;
+@@ -117 +117 @@
+-    switch (g_node_frame_animation_context.unk4) {
++    switch (g_node_frame_animation_context.resource_selector) {
+@@ -136,3 +136,3 @@
+-             *)((Unk800A6690Rec *)g_node_frame_animation_context.unk10 + a0);
+-    p->node.unk2 = 1;
+-    p->node.unk4 = g_node_frame_animation_context.unk0;
++             *)((Unk800A6690Rec *)g_node_frame_animation_context.paired_grid_nodes + a0);
++    p->node.reloc_entry_index = 1;
++    p->node.reloc_block_id = g_node_frame_animation_context.reloc_block_id;
+@@ -140 +140 @@
+-    p->node.unk0 = 0;
++    p->node.node_kind = 0;
+@@ -147 +147 @@
+-    if (g_node_frame_animation_context.unk4 == 0x12) {
++    if (g_node_frame_animation_context.resource_selector == 0x12) {
+@@ -155,3 +155,3 @@
+-    reloc_RebaseBlock((s32)g_node_frame_animation_context.unk0, a0);
+-    g_node_frame_animation_context.unkC += a0;
+-    g_node_frame_animation_context.unk8 += a0;
++    reloc_RebaseBlock((s32)g_node_frame_animation_context.reloc_block_id, a0);
++    g_node_frame_animation_context.frame_entries += a0;
++    g_node_frame_animation_context.frame_data += a0;
+@@ -536 +536 @@
+-        s1->unk_08 = -1;
++        s1->asset_index = -1;
+@@ -543 +543 @@
+-    if (((arena_FindBlock(s3) != 0) && (s1->unk_08 == a1)) &&
++    if (((arena_FindBlock(s3) != 0) && (s1->asset_index == a1)) &&
+@@ -547 +547 @@
+-        s1->unk_20 = a2;
++        s1->staging_buffer = a2;
+@@ -549 +549 @@
+-        s1->unk_1C = s0;
++        s1->asset_block = s0;
+@@ -561,2 +561,2 @@
+-        s1->unk_24 = 0;
+-        s1->unk_00.word = 0;
++        s1->softbody_block = 0;
++        s1->load_flags.word = 0;
+@@ -565,5 +565,5 @@
+-    s1->unk_08 = a1;
+-    s1->unk_14 = a0;
+-    s1->unk_10 = a0;
+-    s1->unk_16 = a0 + 3;
+-    s1->unk_18.word = 0x8000;
++    s1->asset_index = a1;
++    s1->transform_block_id = a0;
++    s1->node_light_setup_index = a0;
++    s1->projected_block_id = a0 + 3;
++    s1->patch_color.word = 0x8000;
+@@ -608 +608 @@
+-    ptr->unk_1C = ptr->unk_1C + a1;
++    ptr->asset_block = ptr->asset_block + a1;
+@@ -610 +610 @@
+-    if ((ptr->unk_00.word >> 1) & 1) {
++    if ((ptr->load_flags.word >> 1) & 1) {
+--- a/src/main/368E4.c
++++ b/src/main/368E4.c
+@@ -634 +634 @@
+-    node->unk4 = 8;
++    node->reloc_block_id = 8;
+@@ -636,3 +636,3 @@
+-    node->unk2 = 0;
+-    node->unk0 = 0;
+-    node->unk1 = 0;
++    node->reloc_entry_index = 0;
++    node->node_kind = 0;
++    node->primitive_table_select = 0;
+@@ -865 +865 @@
+-        node->unk0 = 0xE;
++        node->node_kind = 0xE;
+@@ -868 +868 @@
+-        node->unk1 = 0;
++        node->primitive_table_select = 0;
+@@ -1555 +1555 @@
+-    var_1 = (&D_80099BCC)[slot_object->unk_08];
++    var_1 = (&D_80099BCC)[slot_object->asset_index];
+@@ -1648 +1648 @@
+-        node->node.unk2 = arg1 + 0xF;
++        node->node.reloc_entry_index = arg1 + 0xF;
+@@ -1656 +1656 @@
+-        node->node.unk2 = 0x15;
++        node->node.reloc_entry_index = 0x15;
+@@ -1937,4 +1937,4 @@
+-    obj->node.unk0 = 0;
+-    obj->node.unk1 = 0;
+-    obj->node.unk2 = g_resource_entry_request_state[entry_index] * 2;
+-    obj->node.unk4 = 6;
++    obj->node.node_kind = 0;
++    obj->node.primitive_table_select = 0;
++    obj->node.reloc_entry_index = g_resource_entry_request_state[entry_index] * 2;
++    obj->node.reloc_block_id = 6;
+@@ -2004,2 +2004,2 @@
+-            obj->node.unk0 = 3;
+-            obj->node.unk1 = 0;
++            obj->node.node_kind = 3;
++            obj->node.primitive_table_select = 0;
+@@ -2017,2 +2017,2 @@
+-            obj->node.unk4 = 6;
+-            obj->node.unk2 = entry * 2 + 1;
++            obj->node.reloc_block_id = 6;
++            obj->node.reloc_entry_index = entry * 2 + 1;
+@@ -2056,4 +2056,4 @@
+-    obj->node.unk0 = 0;
+-    obj->node.unk1 = 0;
+-    obj->node.unk2 = g_resource_entry_request_state[linked_entry_index] * 2;
+-    obj->node.unk4 = 6;
++    obj->node.node_kind = 0;
++    obj->node.primitive_table_select = 0;
++    obj->node.reloc_entry_index = g_resource_entry_request_state[linked_entry_index] * 2;
++    obj->node.reloc_block_id = 6;
+@@ -2083,2 +2083,2 @@
+-    obj->node.unk2 = g_resource_entry_request_state[linked_entry_index] * 2 + 1;
+-    obj->node.unk0 = 3;
++    obj->node.reloc_entry_index = g_resource_entry_request_state[linked_entry_index] * 2 + 1;
++    obj->node.node_kind = 3;
+@@ -2086 +2086 @@
+-    obj->node.unk1 = 0;
++    obj->node.primitive_table_select = 0;
+@@ -2090 +2090 @@
+-    obj->node.unk4 = 6;
++    obj->node.reloc_block_id = 6;
+@@ -2231,2 +2231,2 @@
+-    camera_root->unk0 = 0x64;
+-    g_view_camera_root_node.unk1 = 0;
++    camera_root->node_kind = 0x64;
++    g_view_camera_root_node.primitive_table_select = 0;
+@@ -2242,2 +2242,2 @@
+-    identity_root->unk0 = 0x65;
+-    g_view_identity_root_node.unk1 = 0;
++    identity_root->node_kind = 0x65;
++    g_view_identity_root_node.primitive_table_select = 0;
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -1771,3 +1771,3 @@
+-    g_eff_animated_quad_positions[0].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[0].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[0].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[0].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[0].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[0].world_z = g_eff_command_position[2];
+@@ -1779,3 +1779,3 @@
+-    g_eff_animated_quad_positions[1].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[1].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[1].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[1].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[1].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[1].world_z = g_eff_command_position[2];
+@@ -1787,3 +1787,3 @@
+-    g_eff_animated_quad_positions[2].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[2].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[2].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[2].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[2].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[2].world_z = g_eff_command_position[2];
+@@ -1795,3 +1795,3 @@
+-    g_eff_animated_quad_positions[3].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[3].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[3].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[3].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[3].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[3].world_z = g_eff_command_position[2];
+@@ -1804,3 +1804,3 @@
+-    g_eff_animated_quad_positions[4].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[4].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[4].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[4].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[4].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[4].world_z = g_eff_command_position[2];
+@@ -1813,3 +1813,3 @@
+-    g_eff_animated_quad_positions[5].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[5].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[5].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[5].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[5].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[5].world_z = g_eff_command_position[2];
+@@ -1823,3 +1823,3 @@
+-    g_eff_animated_quad_positions[6].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[6].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[6].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[6].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[6].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[6].world_z = g_eff_command_position[2];
+@@ -1831,3 +1831,3 @@
+-    g_eff_animated_quad_positions[7].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[7].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[7].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[7].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[7].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[7].world_z = g_eff_command_position[2];
+@@ -1839,3 +1839,3 @@
+-    g_eff_animated_quad_positions[10].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[10].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[10].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[10].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[10].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[10].world_z = g_eff_command_position[2];
+@@ -1847,3 +1847,3 @@
+-    g_eff_animated_quad_positions[11].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[11].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[11].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[11].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[11].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[11].world_z = g_eff_command_position[2];
+@@ -1855,3 +1855,3 @@
+-    g_eff_animated_quad_positions[12].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[12].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[12].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[12].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[12].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[12].world_z = g_eff_command_position[2];
+@@ -1859,3 +1859,3 @@
+-    g_eff_animated_quad_positions[14].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[14].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[14].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[14].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[14].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[14].world_z = g_eff_command_position[2];
+@@ -1867,3 +1867,3 @@
+-    g_eff_animated_quad_positions[13].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[13].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[13].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[13].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[13].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[13].world_z = g_eff_command_position[2];
+@@ -1871,3 +1871,3 @@
+-    g_eff_animated_quad_positions[15].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[15].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[15].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[15].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[15].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[15].world_z = g_eff_command_position[2];
+@@ -1879,3 +1879,3 @@
+-    g_eff_animated_quad_positions[16].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[16].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[16].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[16].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[16].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[16].world_z = g_eff_command_position[2];
+@@ -1887,3 +1887,3 @@
+-    g_eff_animated_quad_positions[17].unk0 = g_eff_command_position[0];
+-    g_eff_animated_quad_positions[17].unk4 = g_eff_command_position[1];
+-    g_eff_animated_quad_positions[17].unk8 = g_eff_command_position[2];
++    g_eff_animated_quad_positions[17].world_x = g_eff_command_position[0];
++    g_eff_animated_quad_positions[17].world_y = g_eff_command_position[1];
++    g_eff_animated_quad_positions[17].world_z = g_eff_command_position[2];
+@@ -2133 +2133 @@
+-        g_eff_animated_quad_positions[mode_index].unk0 - g_eff_view_origin[0];
++        g_eff_animated_quad_positions[mode_index].world_x - g_eff_view_origin[0];
+@@ -2135 +2135 @@
+-        g_eff_animated_quad_positions[mode_index].unk4 - g_eff_view_origin[1];
++        g_eff_animated_quad_positions[mode_index].world_y - g_eff_view_origin[1];
+@@ -2137 +2137 @@
+-        g_eff_animated_quad_positions[mode_index].unk8 - g_eff_view_origin[2];
++        g_eff_animated_quad_positions[mode_index].world_z - g_eff_view_origin[2];
+@@ -2645 +2645 @@
+-        g_eff_particle_group_positions[particle_row_index][0].unk0 =
++        g_eff_particle_group_positions[particle_row_index][0].world_x =
+@@ -2647 +2647 @@
+-        g_eff_particle_group_positions[particle_row_index][0].unk4 =
++        g_eff_particle_group_positions[particle_row_index][0].world_y =
+@@ -2649 +2649 @@
+-        g_eff_particle_group_positions[particle_row_index][0].unk8 =
++        g_eff_particle_group_positions[particle_row_index][0].world_z =
+@@ -2698,6 +2698,6 @@
+-        p->unk6 = particle_index / 16;
+-        p->unk12 = 0;
+-        p->unk4 = 0;
+-        p->unk2 = 0;
+-        p->unk0 = 0;
+-        p->unk10 = 1;
++        p->group_position_index = particle_index / 16;
++        p->frame_age = 0;
++        p->offset_z = 0;
++        p->offset_y = 0;
++        p->offset_x = 0;
++        p->life_state = 1;
+@@ -2706,3 +2706,3 @@
+-        p->unk8 = out.vx;
+-        p->unkA = out.vy;
+-        p->unkC = out.vz;
++        p->velocity_x = out.vx;
++        p->velocity_y = out.vy;
++        p->velocity_z = out.vz;
+@@ -2850,2 +2850,2 @@
+-                .unk0 =
+-            g_eff_particle_group_positions[particle_row_index][0].unk0;
++                .world_x =
++            g_eff_particle_group_positions[particle_row_index][0].world_x;
+@@ -2855,2 +2855,2 @@
+-                .unk4 =
+-            g_eff_particle_group_positions[particle_row_index][0].unk4;
++                .world_y =
++            g_eff_particle_group_positions[particle_row_index][0].world_y;
+@@ -2860,2 +2860,2 @@
+-                .unk8 =
+-            g_eff_particle_group_positions[particle_row_index][0].unk8;
++                .world_z =
++            g_eff_particle_group_positions[particle_row_index][0].world_z;
+@@ -2939 +2939 @@
+-        if ((*p_ent)->unk10 != 1) {
++        if ((*p_ent)->life_state != 1) {
+@@ -2942,2 +2942,2 @@
+-        (*p_ent)->unk12++;
+-        *var_14 = (*p_ent)->unk12;
++        (*p_ent)->frame_age++;
++        *var_14 = (*p_ent)->frame_age;
+@@ -2947 +2947 @@
+-            (*p_ent)->unk10 = 3;
++            (*p_ent)->life_state = 3;
+@@ -2953,2 +2953,2 @@
+-            &g_eff_particle_group_positions[particle_row_index][(*p_ent)->unk6];
+-        var_2->vx = (*var_8)->unk0;
++            &g_eff_particle_group_positions[particle_row_index][(*p_ent)->group_position_index];
++        var_2->vx = (*var_8)->world_x;
+@@ -2956 +2956 @@
+-        var_2->vy = (*var_8)->unk4;
++        var_2->vy = (*var_8)->world_y;
+@@ -2958 +2958 @@
+-        var_2->vz = (*var_8)->unk8;
++        var_2->vz = (*var_8)->world_z;
+@@ -2968,12 +2968,12 @@
+-        var_13[1].vx = (*p_ent)->unk0;
+-        var_13[1].vz = (*p_ent)->unk4;
+-        var_13[1].vy = (*p_ent)->unk2;
+-        p_work->vx = (*p_ent)->unk8 / 30;
+-        (*p_ent)->unk0 += p_work->vx;
+-        var_13[0].vx = (*p_ent)->unk0;
+-        p_work->vz = (*p_ent)->unkC / 30;
+-        (*p_ent)->unk4 += p_work->vz;
+-        var_13[0].vz = (*p_ent)->unk4;
+-        p_work->vy = (*p_ent)->unkA / 30 + *var_14 * 9800 / 900;
+-        (*p_ent)->unk2 += p_work->vy;
+-        var_13[0].vy = (*p_ent)->unk2;
++        var_13[1].vx = (*p_ent)->offset_x;
++        var_13[1].vz = (*p_ent)->offset_z;
++        var_13[1].vy = (*p_ent)->offset_y;
++        p_work->vx = (*p_ent)->velocity_x / 30;
++        (*p_ent)->offset_x += p_work->vx;
++        var_13[0].vx = (*p_ent)->offset_x;
++        p_work->vz = (*p_ent)->velocity_z / 30;
++        (*p_ent)->offset_z += p_work->vz;
++        var_13[0].vz = (*p_ent)->offset_z;
++        p_work->vy = (*p_ent)->velocity_y / 30 + *var_14 * 9800 / 900;
++        (*p_ent)->offset_y += p_work->vy;
++        var_13[0].vy = (*p_ent)->offset_y;
+@@ -2993 +2993 @@
+-            (*p_ent)->unk10 = 3;
++            (*p_ent)->life_state = 3;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -120 +120 @@
+-    g_entry_menu_slot_records.rec[0].unk1 =
++    g_entry_menu_slot_records.rec[0].cursor_entry_value =
+@@ -122 +122 @@
+-    g_entry_menu_slot_records.rec[1].unk1 =
++    g_entry_menu_slot_records.rec[1].cursor_entry_value =
+@@ -393 +393 @@
+-                                           .unk1] &
++                                           .cursor_entry_value] &
+@@ -484 +484 @@
+-        obj = base[g_entry_menu_slot_records.rec[slot_index].unk2];
++        obj = base[g_entry_menu_slot_records.rec[slot_index].row_pick];
+@@ -489 +489 @@
+-                                             .unk1] &
++                                             .cursor_entry_value] &
+@@ -497 +497 @@
+-                                         .unk1] &
++                                         .cursor_entry_value] &
+@@ -844 +844 @@
+-                    if (g_entry_menu_slot_records.rec[slot_index].unk0 ==
++                    if (g_entry_menu_slot_records.rec[slot_index].grid_pick ==
+@@ -912 +912 @@
+-    D_800A32E8 = g_entry_menu_slot_records.rec[1].unk1;
++    D_800A32E8 = g_entry_menu_slot_records.rec[1].cursor_entry_value;
+@@ -945 +945 @@
+-        g_entry_menu_slot_records.rec[slot_index].unk1 =
++        g_entry_menu_slot_records.rec[slot_index].cursor_entry_value =
+@@ -948 +948 @@
+-        if (g_entry_menu_slot_records.rec[slot_index].unk0 == 0xFF) {
++        if (g_entry_menu_slot_records.rec[slot_index].grid_pick == 0xFF) {
+@@ -960 +960 @@
+-                    g_entry_menu_slot_records.rec[slot_index].unk1 =
++                    g_entry_menu_slot_records.rec[slot_index].cursor_entry_value =
+@@ -975 +975 @@
+-                    g_entry_menu_slot_records.rec[slot_index].unk1 =
++                    g_entry_menu_slot_records.rec[slot_index].cursor_entry_value =
+@@ -990 +990 @@
+-                    g_entry_menu_slot_records.rec[slot_index].unk1 =
++                    g_entry_menu_slot_records.rec[slot_index].cursor_entry_value =
+@@ -1005 +1005 @@
+-                    g_entry_menu_slot_records.rec[slot_index].unk1 =
++                    g_entry_menu_slot_records.rec[slot_index].cursor_entry_value =
+@@ -1032 +1032 @@
+-            g_entry_menu_slot_records.rec[slot_index].unk0 == 0xFF) {
++            g_entry_menu_slot_records.rec[slot_index].grid_pick == 0xFF) {
+@@ -1034 +1034 @@
+-                g_entry_menu_slot_records.rec[slot_index].unk2 = 0xFF;
++                g_entry_menu_slot_records.rec[slot_index].row_pick = 0xFF;
+@@ -1036 +1036 @@
+-                g_entry_menu_slot_records.rec[slot_index].unk0 =
++                g_entry_menu_slot_records.rec[slot_index].grid_pick =
+@@ -1047 +1047 @@
+-                            [g_entry_menu_slot_records.rec[0].unk1] &
++                            [g_entry_menu_slot_records.rec[0].cursor_entry_value] &
+@@ -1055 +1055 @@
+-                        g_entry_menu_slot_records.rec[1].unk1 =
++                        g_entry_menu_slot_records.rec[1].cursor_entry_value =
+@@ -1072 +1072 @@
+-                if (g_entry_menu_slot_records.rec[slot_index].unk0 == 0xFF &&
++                if (g_entry_menu_slot_records.rec[slot_index].grid_pick == 0xFF &&
+@@ -1076 +1076 @@
+-                    if (g_entry_menu_slot_records.rec[1].unk0 == 0xFF) {
++                    if (g_entry_menu_slot_records.rec[1].grid_pick == 0xFF) {
+@@ -1078 +1078 @@
+-                        g_entry_menu_slot_records.rec[0].unk0 = 0xFF;
++                        g_entry_menu_slot_records.rec[0].grid_pick = 0xFF;
+@@ -1080 +1080 @@
+-                        g_entry_menu_slot_records.rec[1].unk0 = 0xFF;
++                        g_entry_menu_slot_records.rec[1].grid_pick = 0xFF;
+@@ -1084 +1084 @@
+-                    g_entry_menu_slot_records.rec[slot_index].unk0 != 0xFF &&
++                    g_entry_menu_slot_records.rec[slot_index].grid_pick != 0xFF &&
+@@ -1086 +1086 @@
+-                    g_entry_menu_slot_records.rec[slot_index].unk0 = 0xFF;
++                    g_entry_menu_slot_records.rec[slot_index].grid_pick = 0xFF;
+@@ -1115 +1115 @@
+-        g_entry_menu_slot_records.rec[0].unk0 != 0xFF &&
++        g_entry_menu_slot_records.rec[0].grid_pick != 0xFF &&
+@@ -1121 +1121 @@
+-        if ((g_entry_menu_slot_records.rec[1].unk0 != 0xFF &&
++        if ((g_entry_menu_slot_records.rec[1].grid_pick != 0xFF &&
+@@ -1129 +1129 @@
+-                g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
++                g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
+@@ -1215 +1215 @@
+-        code = g_entry_menu_slot_records.rec[var_s0].unk0;
++        code = g_entry_menu_slot_records.rec[var_s0].grid_pick;
+@@ -1274,2 +1274,2 @@
+-            if (g_entry_menu_slot_records.rec[i].unk0 == 5) {
+-                g_entry_menu_slot_records.rec[i].unk2 = 6;
++            if (g_entry_menu_slot_records.rec[i].grid_pick == 5) {
++                g_entry_menu_slot_records.rec[i].row_pick = 6;
+@@ -1278,2 +1278,2 @@
+-            } else if (g_entry_menu_slot_records.rec[i].unk0 == 0x10) {
+-                g_entry_menu_slot_records.rec[i].unk2 = 7;
++            } else if (g_entry_menu_slot_records.rec[i].grid_pick == 0x10) {
++                g_entry_menu_slot_records.rec[i].row_pick = 7;
+@@ -1300,2 +1300,2 @@
+-        if (g_entry_menu_slot_records.rec[i].unk0 != 5 &&
+-            g_entry_menu_slot_records.rec[i].unk0 != 0x10) {
++        if (g_entry_menu_slot_records.rec[i].grid_pick != 5 &&
++            g_entry_menu_slot_records.rec[i].grid_pick != 0x10) {
+@@ -1308 +1308 @@
+-                                                 .unk1] &
++                                                 .cursor_entry_value] &
+@@ -1317 +1317 @@
+-                                                    .unk1] &
++                                                    .cursor_entry_value] &
+@@ -1325 +1325 @@
+-            if (g_entry_menu_slot_records.rec[i].unk2 == 0xFF) {
++            if (g_entry_menu_slot_records.rec[i].row_pick == 0xFF) {
+@@ -1352,2 +1352,2 @@
+-                    g_entry_menu_slot_records.rec[1].unk2 = 0;
+-                    g_entry_menu_slot_records.rec[0].unk2 = 0;
++                    g_entry_menu_slot_records.rec[1].row_pick = 0;
++                    g_entry_menu_slot_records.rec[0].row_pick = 0;
+@@ -1355 +1355 @@
+-                            [g_entry_menu_slot_records.rec[i].unk1] &
++                            [g_entry_menu_slot_records.rec[i].cursor_entry_value] &
+@@ -1361 +1361 @@
+-                    id = g_entry_menu_slot_records.rec[i].unk2;
++                    id = g_entry_menu_slot_records.rec[i].row_pick;
+@@ -1374 +1374 @@
+-                    g_entry_menu_slot_records.rec[i].unk2 =
++                    g_entry_menu_slot_records.rec[i].row_pick =
+@@ -1381 +1381 @@
+-                                  [g_entry_menu_slot_records.rec[0].unk1] &
++                                  [g_entry_menu_slot_records.rec[0].cursor_entry_value] &
+@@ -1386 +1386 @@
+-                                   [g_entry_menu_slot_records.rec[i].unk1] &
++                                   [g_entry_menu_slot_records.rec[i].cursor_entry_value] &
+@@ -1390 +1390 @@
+-                    id = g_entry_menu_slot_records.rec[i].unk2;
++                    id = g_entry_menu_slot_records.rec[i].row_pick;
+@@ -1399 +1399 @@
+-                        g_entry_menu_slot_records.rec[0].unk2 = 0xFF;
++                        g_entry_menu_slot_records.rec[0].row_pick = 0xFF;
+@@ -1401,2 +1401,2 @@
+-                        g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
+-                        g_entry_menu_slot_records.rec[0].unk2 = 0xFF;
++                        g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
++                        g_entry_menu_slot_records.rec[0].row_pick = 0xFF;
+@@ -1407 +1407 @@
+-                            g_entry_menu_slot_records.rec[1].unk0 = 0xFF;
++                            g_entry_menu_slot_records.rec[1].grid_pick = 0xFF;
+@@ -1409 +1409 @@
+-                            g_entry_menu_slot_records.rec[i].unk0 = 0xFF;
++                            g_entry_menu_slot_records.rec[i].grid_pick = 0xFF;
+@@ -1421 +1421 @@
+-                    g_entry_menu_slot_records.rec[i].unk2 = 0xFF;
++                    g_entry_menu_slot_records.rec[i].row_pick = 0xFF;
+@@ -1479 +1479 @@
+-                if (g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].unk2 !=
++                if (g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].row_pick !=
+@@ -1497 +1497 @@
+-                            [g_entry_menu_slot_records.rec[i].unk1] &
++                            [g_entry_menu_slot_records.rec[i].cursor_entry_value] &
+@@ -1503 +1503 @@
+-                    id = g_entry_menu_slot_records.rec[i].unk2;
++                    id = g_entry_menu_slot_records.rec[i].row_pick;
+@@ -1514,2 +1514,2 @@
+-                g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
+-                g_entry_menu_slot_records.rec[0].unk2 = 0xFF;
++                g_entry_menu_slot_records.rec[1].row_pick = 0xFF;
++                g_entry_menu_slot_records.rec[0].row_pick = 0xFF;
+@@ -1518 +1518 @@
+-                    g_entry_menu_slot_records.rec[1].unk0 = 0xFF;
++                    g_entry_menu_slot_records.rec[1].grid_pick = 0xFF;
+@@ -1520 +1520 @@
+-                    g_entry_menu_slot_records.rec[i].unk0 = 0xFF;
++                    g_entry_menu_slot_records.rec[i].grid_pick = 0xFF;
+@@ -1536,2 +1536,2 @@
+-        if (g_entry_menu_slot_records.rec[i].unk0 != 5 &&
+-            g_entry_menu_slot_records.rec[i].unk0 != 0x10 &&
++        if (g_entry_menu_slot_records.rec[i].grid_pick != 5 &&
++            g_entry_menu_slot_records.rec[i].grid_pick != 0x10 &&
+@@ -1545 +1545 @@
+-                                                 .unk1] &
++                                                 .cursor_entry_value] &
+@@ -1551 +1551 @@
+-                                               .unk1] &
++                                               .cursor_entry_value] &
+@@ -1560 +1560 @@
+-    if (g_entry_menu_slot_records.rec[0].unk2 != 0xFF &&
++    if (g_entry_menu_slot_records.rec[0].row_pick != 0xFF &&
+@@ -1565 +1565 @@
+-        if (((g_entry_menu_slot_records.rec[1].unk2 != 0xFF &&
++        if (((g_entry_menu_slot_records.rec[1].row_pick != 0xFF &&
+@@ -1582 +1582 @@
+-    if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0].unk1] & 2) {
++    if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0].cursor_entry_value] & 2) {
+@@ -1603,2 +1603,2 @@
+-        if (g_entry_menu_slot_records.rec[slot_index].unk0 != 5 &&
+-            g_entry_menu_slot_records.rec[slot_index].unk0 != 16) {
++        if (g_entry_menu_slot_records.rec[slot_index].grid_pick != 5 &&
++            g_entry_menu_slot_records.rec[slot_index].grid_pick != 16) {
+@@ -1610 +1610 @@
+-            obj = base[g_entry_menu_slot_records.rec[slot_index].unk2];
++            obj = base[g_entry_menu_slot_records.rec[slot_index].row_pick];
+@@ -1616 +1616 @@
+-                                                 .unk1] &
++                                                 .cursor_entry_value] &
+@@ -1623 +1623 @@
+-                           [g_entry_menu_slot_records.rec[slot_index].unk1] &
++                           [g_entry_menu_slot_records.rec[slot_index].cursor_entry_value] &
+@@ -1682 +1682 @@
+-                g_entry_menu_slot_records.rec[slot_index].unk0;
++                g_entry_menu_slot_records.rec[slot_index].grid_pick;
+@@ -1689 +1689 @@
+-                g_entry_menu_slot_records.rec[slot_index].unk2;
++                g_entry_menu_slot_records.rec[slot_index].row_pick;
+@@ -1950,2 +1950,2 @@
+-                var_11 = g_entry_menu_slot_records.rec[i].unk0;
+-                g_entry_menu_slot_records.rec[i].unk2 = 0xFF;
++                var_11 = g_entry_menu_slot_records.rec[i].grid_pick;
++                g_entry_menu_slot_records.rec[i].row_pick = 0xFF;
+@@ -1954,2 +1954,2 @@
+-                    g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].unk2 = 0xFF;
+-                    g_entry_menu_slot_records.rec[i].unk0 = 0xFF;
++                    g_entry_menu_slot_records.rec[i == 0 ? 1 : 0].row_pick = 0xFF;
++                    g_entry_menu_slot_records.rec[i].grid_pick = 0xFF;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -676,6 +676,6 @@
+-    g_camera_view_offset.unk_00.x = 0;
+-    g_camera_view_offset.unk_00.y = 0;
+-    g_camera_view_offset.unk_00.z = 0;
+-    g_camera_view_offset.unk_10.vx = 0;
+-    g_camera_view_offset.unk_10.vy = 0;
+-    g_camera_view_offset.unk_10.vz = 0;
++    g_camera_view_offset.focus_point_offset.x = 0;
++    g_camera_view_offset.focus_point_offset.y = 0;
++    g_camera_view_offset.focus_point_offset.z = 0;
++    g_camera_view_offset.camera_angles_offset.vx = 0;
++    g_camera_view_offset.camera_angles_offset.vy = 0;
++    g_camera_view_offset.camera_angles_offset.vz = 0;
+@@ -2059,3 +2059,3 @@
+-        local.focus_point.x = s2->focus_point.x + g_camera_view_offset.unk_00.x;
+-        local.focus_point.y = s2->focus_point.y + g_camera_view_offset.unk_00.y;
+-        local.focus_point.z = s2->focus_point.z + g_camera_view_offset.unk_00.z;
++        local.focus_point.x = s2->focus_point.x + g_camera_view_offset.focus_point_offset.x;
++        local.focus_point.y = s2->focus_point.y + g_camera_view_offset.focus_point_offset.y;
++        local.focus_point.z = s2->focus_point.z + g_camera_view_offset.focus_point_offset.z;
+@@ -2063 +2063 @@
+-            s2->camera_angles.vx + g_camera_view_offset.unk_10.vx;
++            s2->camera_angles.vx + g_camera_view_offset.camera_angles_offset.vx;
+@@ -2065 +2065 @@
+-            s2->camera_angles.vy + g_camera_view_offset.unk_10.vy;
++            s2->camera_angles.vy + g_camera_view_offset.camera_angles_offset.vy;
+@@ -2067 +2067 @@
+-            s2->camera_angles.vz + g_camera_view_offset.unk_10.vz;
++            s2->camera_angles.vz + g_camera_view_offset.camera_angles_offset.vz;
+@@ -2098,3 +2098,3 @@
+-    local.focus_point.x = s2->focus_point.x + g_camera_view_offset.unk_00.x;
+-    local.focus_point.y = s2->focus_point.y + g_camera_view_offset.unk_00.y;
+-    local.focus_point.z = s2->focus_point.z + g_camera_view_offset.unk_00.z;
++    local.focus_point.x = s2->focus_point.x + g_camera_view_offset.focus_point_offset.x;
++    local.focus_point.y = s2->focus_point.y + g_camera_view_offset.focus_point_offset.y;
++    local.focus_point.z = s2->focus_point.z + g_camera_view_offset.focus_point_offset.z;
+@@ -2102 +2102 @@
+-        s2->camera_angles.vx + g_camera_view_offset.unk_10.vx;
++        s2->camera_angles.vx + g_camera_view_offset.camera_angles_offset.vx;
+@@ -2104 +2104 @@
+-        s2->camera_angles.vy + g_camera_view_offset.unk_10.vy;
++        s2->camera_angles.vy + g_camera_view_offset.camera_angles_offset.vy;
+@@ -2106 +2106 @@
+-        s2->camera_angles.vz + g_camera_view_offset.unk_10.vz;
++        s2->camera_angles.vz + g_camera_view_offset.camera_angles_offset.vz;
+@@ -2373 +2373 @@
+-        &arg2->unk_0C[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
++        &arg2->node_channels[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
+@@ -2375 +2375 @@
+-        &arg3->unk_0C[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
++        &arg3->node_channels[0x15], arg1->b14 * 4, arg1->b15 * 4, 0);
+@@ -2378,2 +2378,2 @@
+-        arg2->unk_0C[0x39] += arg1->b16 * 4;
+-        arg3->unk_0C[0x39] += arg1->b16 * 4;
++        arg2->node_channels[0x39] += arg1->b16 * 4;
++        arg3->node_channels[0x39] += arg1->b16 * 4;
+@@ -2382,2 +2382,2 @@
+-        arg2->unk_0C[0x33] += arg1->b16 * 4;
+-        arg3->unk_0C[0x33] += arg1->b16 * 4;
++        arg2->node_channels[0x33] += arg1->b16 * 4;
++        arg3->node_channels[0x33] += arg1->b16 * 4;
+@@ -2491 +2491 @@
+-        &a->unk_0C[0x15], obj->eased_pose_bearing_offset,
++        &a->node_channels[0x15], obj->eased_pose_bearing_offset,
+@@ -2494 +2494 @@
+-        &b->unk_0C[0x15], obj->eased_pose_bearing_offset,
++        &b->node_channels[0x15], obj->eased_pose_bearing_offset,
+@@ -2512,2 +2512,2 @@
+-        a->unk_0C[0x39] += temp;
+-        b->unk_0C[0x39] += temp;
++        a->node_channels[0x39] += temp;
++        b->node_channels[0x39] += temp;
+@@ -2560,2 +2560,2 @@
+-        a->unk_0C[0x33] += obj->opponent_elevation_offset;
+-        b->unk_0C[0x33] += obj->opponent_elevation_offset;
++        a->node_channels[0x33] += obj->opponent_elevation_offset;
++        b->node_channels[0x33] += obj->opponent_elevation_offset;
+@@ -2566,4 +2566,4 @@
+-        a->unk_0C[0] += temp;
+-        b->unk_0C[0] += temp;
+-        a->unk_0C[4] -= temp;
+-        b->unk_0C[4] -= temp;
++        a->node_channels[0] += temp;
++        b->node_channels[0] += temp;
++        a->node_channels[4] -= temp;
++        b->node_channels[4] -= temp;
+@@ -2571,4 +2571,4 @@
+-        a->unk_0C[9] += temp;
+-        b->unk_0C[9] += temp;
+-        a->unk_0C[0xD] -= temp;
+-        b->unk_0C[0xD] -= temp;
++        a->node_channels[9] += temp;
++        b->node_channels[9] += temp;
++        a->node_channels[0xD] -= temp;
++        b->node_channels[0xD] -= temp;
+@@ -3161,4 +3161,4 @@
+-    g_motion_common_sections.unk_00 = (u16 *)(v1 + 0x14);
+-    g_motion_common_sections.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
+-    g_motion_common_sections.unk_08 = (u8 *)(v1 + *(s32 *)(v1 + 8));
+-    g_motion_common_sections.unk_10 = (u32 *)(v1 + *(s32 *)(v1 + 0x10));
++    g_motion_common_sections.move_scripts = (u16 *)(v1 + 0x14);
++    g_motion_common_sections.motion_entries = (u16 *)(v1 + *(s32 *)(v1 + 4));
++    g_motion_common_sections.motion_metadata_base = (u8 *)(v1 + *(s32 *)(v1 + 8));
++    g_motion_common_sections.motion_bitstream = (u32 *)(v1 + *(s32 *)(v1 + 0x10));
+@@ -3263 +3263 @@
+-            g_motion_fighter_sections[i].unk_00 =
++            g_motion_fighter_sections[i].move_scripts =
+@@ -3266 +3266 @@
+-            g_motion_fighter_sections[i].unk_04 =
++            g_motion_fighter_sections[i].motion_entries =
+@@ -3269 +3269 @@
+-            g_motion_fighter_sections[i].unk_08 =
++            g_motion_fighter_sections[i].motion_metadata_base =
+@@ -3272 +3272 @@
+-            g_motion_fighter_sections[i].unk_0C =
++            g_motion_fighter_sections[i].cpu_script_table =
+@@ -3275 +3275 @@
+-            g_motion_fighter_sections[i].unk_10 =
++            g_motion_fighter_sections[i].motion_bitstream =
+@@ -3284 +3284 @@
+-    motion_InitStream(0, g_motion_common_sections.unk_10);
++    motion_InitStream(0, g_motion_common_sections.motion_bitstream);
+@@ -3286 +3286 @@
+-        motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
++        motion_InitStream(1, g_motion_fighter_sections[0].motion_bitstream);
+@@ -3289 +3289 @@
+-        motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
++        motion_InitStream(2, g_motion_fighter_sections[1].motion_bitstream);
+@@ -3366 +3366 @@
+-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
++                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+@@ -3374 +3374 @@
+-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
++                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+@@ -3395 +3395 @@
+-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
++                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+@@ -3409 +3409 @@
+-                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
++                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
+@@ -3418 +3418 @@
+-        return &g_motion_fighter_sections[var_1].unk_00[id & 0x7FFF];
++        return &g_motion_fighter_sections[var_1].move_scripts[id & 0x7FFF];
+@@ -3421 +3421 @@
+-    return &g_motion_common_sections.unk_00[id];
++    return &g_motion_common_sections.move_scripts[id];
+@@ -3432 +3432 @@
+-        .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
++        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
+@@ -3439 +3439 @@
+-        .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
++        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
+@@ -3444 +3444 @@
+-        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f16];
++        .move_scripts[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f16];
+@@ -3449 +3449 @@
+-        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f18[a1]];
++        .move_scripts[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f18[a1]];
+@@ -3466 +3466 @@
+-            u16 *v0 = &g_motion_common_sections.unk_04[v1 * 2];
++            u16 *v0 = &g_motion_common_sections.motion_entries[v1 * 2];
+@@ -3468 +3468 @@
+-            s0->motion_metadata = g_motion_common_sections.unk_08 + v0[1];
++            s0->motion_metadata = g_motion_common_sections.motion_metadata_base + v0[1];
+@@ -3470 +3470 @@
+-            u16 *v0 = &g_motion_fighter_sections[a3].unk_04[v1 * 2];
++            u16 *v0 = &g_motion_fighter_sections[a3].motion_entries[v1 * 2];
+@@ -3472 +3472 @@
+-            s0->motion_metadata = g_motion_fighter_sections[a3].unk_08 + v0[1];
++            s0->motion_metadata = g_motion_fighter_sections[a3].motion_metadata_base + v0[1];
+@@ -4020 +4020 @@
+-                        i, g_motion_fighter_sections[rec->motion_slot].unk_0C,
++                        i, g_motion_fighter_sections[rec->motion_slot].cpu_script_table,
+@@ -4022 +4022 @@
+-                            .unk_0C);
++                            .cpu_script_table);
+@@ -4955 +4955 @@
+-        (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_13 + 0x400) & 0xFFF]) >>
++        (var_0[0].root_distance * Judge[(var_0[0].root_offset_angle - var_13 + 0x400) & 0xFFF]) >>
+@@ -4957 +4957 @@
+-    v[0].y = -var_0[0].unk_00;
++    v[0].y = -var_0[0].root_height;
+@@ -4959 +4959 @@
+-        (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_13) & 0xFFF]) >> 12;
++        (var_0[0].root_distance * Judge[(var_0[0].root_offset_angle - var_13) & 0xFFF]) >> 12;
+@@ -4961 +4961 @@
+-        (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13 + 0x400) & 0xFFF]) >>
++        (var_0[1].root_distance * Judge[(var_0[1].root_offset_angle - var_13 + 0x400) & 0xFFF]) >>
+@@ -4963 +4963 @@
+-    v[1].y = -var_0[1].unk_00;
++    v[1].y = -var_0[1].root_height;
+@@ -4965 +4965 @@
+-        (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13) & 0xFFF]) >> 12;
++        (var_0[1].root_distance * Judge[(var_0[1].root_offset_angle - var_13) & 0xFFF]) >> 12;
+@@ -4997,2 +4997,2 @@
+-        var_35.x = (var_0[0].unk_04 *
+-                    Judge[(var_0[0].unk_02 - ang_q + 0x400) & 0xFFF]) >>
++        var_35.x = (var_0[0].root_distance *
++                    Judge[(var_0[0].root_offset_angle - ang_q + 0x400) & 0xFFF]) >>
+@@ -5000 +5000 @@
+-        var_35.y = -var_0[0].unk_00;
++        var_35.y = -var_0[0].root_height;
+@@ -5002 +5002 @@
+-            (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - ang_q) & 0xFFF]) >> 12;
++            (var_0[0].root_distance * Judge[(var_0[0].root_offset_angle - ang_q) & 0xFFF]) >> 12;
+DRY RUN: 13 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

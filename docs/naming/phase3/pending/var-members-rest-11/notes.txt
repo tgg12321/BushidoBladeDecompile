@@ -1,0 +1,53 @@
+var-members-rest-11 -- draft notes (research re-derived by the drafter in the lane worktree; research treated as hints only)
+
+BASIS: line numbers cite the lane worktree ln-naming-b (HEAD 19de11d00, includes rest..rest-10), read-only. Dry run: type-resolved tools/naming_member_apply.py --dry-run from WSL (the Windows python has no cpp), see dry.txt: exit=0, "OK: every member access renamed", 0 UNRESOLVED, 13 files would change.
+Scope: 11 structs (Unk80045878Obj, Unk800A3560Record, Unk80101DF0Record, Unk800F0C10Record, MotionFrame, Unk1F8002B8Unk00, Unk80104E88Rec, Unk800A9CF8Rec, Unk801027B0Rec, Unk800F68E0Rec, Unk800EFC78Record) plus the two item-2 rows Unk800FF5C8Rec.unk_00 / unk_10.
+Research: 94 rows, 61 RENAME / 33 NO_NAME. Result: 61 rows in pairs.txt, 0 CHANGED, 0 DROPPED. The verdict column of member_manifest.csv is empty (the reviewer decides). NO_NAME rows are not in the manifest (same as rest-10).
+Per type: Unk80045878Obj 9, Unk800A3560Record 3, Unk80101DF0Record 4, Unk800F0C10Record 3, MotionFrame 4, Unk1F8002B8Unk00 1, Unk80104E88Rec 7, Unk800A9CF8Rec 7, Unk801027B0Rec 5, Unk800F68E0Rec 7, Unk800EFC78Record 9, Unk800FF5C8Rec 2.
+
+Re-derivation
+- Each pair's access lines come from the dry-run diff (the ACCESSES list in the manifest is generated from it); every line was matched against the research list and the functions were read in context (35000/309CC/31D3C/2B344 for the slot object, 5ED34 for the entry menu, 368E4/2B344/309CC/31548/32D04/35000 for the node, 51268 for the effects, 9F9C/17AFC/28708 for motion, ballistic and replay).
+- INCLUDE_ASM: only 137 INCLUDE_ASM bodies remain. None names g_slot_objects, g_entry_menu_slot_records, the g_eff_* tables, g_fight_ballistic_records, g_node_frame_animation_context, the motion sections, g_replay_model_draws or g_camera_view_offset (the asm/funcs files that do are C-matched functions, not INCLUDE_ASM'd). The draw-queue asm does read Unk80101DF0Record nodes: func_8004A4E0 (lbu 0 -> jtbl_8001541C; lh 4 / lh 2 -> g_reloc_block_entry_tables[+4][+2]; lbu 1 & 1 -> table), func_8004A940 and gpu_ProjectStridedNodeVerticesAndDispatchPackets (lh 4 / lh 2; lbu 1 & 1). func_8004C404 reads lh 2 as the table and lh 4 as the entry, but on the kind-0xC grid cell record (Unk800A4750Rec, tag set at 2B344.c:2185), another type.
+- Freshness: grep -rw over src/ include/ finds none of the 60 distinct names; none appears in any pending pairs.txt of this worktree (var-*members*, var-globals, var-locals), nor in src/include of ln-naming-a / ln-naming-c / ln-codex, nor in a tool, Makefile or linker file. 61 pairs, 60 distinct names.
+- Sanctioned sharing: reloc_block_id on Unk80101DF0Record.unk4 and Unk800A9CF8Rec.unk0. Verified same meaning: both are indices into g_reloc_block_entry_tables (reloc_RelocateBlock / reloc_RebaseBlock arg1). Unk80101DF0Record.unk4 is written 8 (368E4.c:634, the same slot 368E4.c:151 hands node_BindFrameDataAndReserveEntryBuffer), 6, 7 (2B344.c:2200, gpu_UnpackGridRecordsNodesAndCellRuns arg1, callers pass 7), the slot object's unk_14 / unk_16 and g_node_frame_animation_context.unk0 (32D04.c:1203, 35000.c:138); every reader indexes g_reloc_block_entry_tables with it (2B344.c:2599 and the asm above). Unk800A9CF8Rec.unk0 is set from node_BindFrameDataAndReserveEntryBuffer's a1 (32D04.c:1170), copied into node.unk4 and passed to reloc_RebaseBlock (35000.c:155). The two must land together; if either row fails review, give the other frame_block_id or drop both.
+
+Per-row confidence (H/M/W) and weak points for the reviewer
+- Unk80045878Obj: asset_index H; asset_block H; staging_buffer M (0 = read straight into the block); softbody_block H; patch_color H; load_flags M (bit word: bit 1 plus bits 16..20; half[] never accessed); transform_block_id / projected_block_id M (always equal to the slot / slot + 3); node_light_setup_index W (one write a0, one read into node.light_setup_index; the node_ prefix keeps it from the landed Unk80101DF0Record member).
+- Unk800A3560Record: grid_pick M, cursor_entry_value M, row_pick M (forced to 6 / 7 for grid picks 5 / 0x10, still a row choice; 5ED34.c:484 and :1610 index a header array with it).
+- Unk80101DF0Record: node_kind M (the view roots carry 0x64 / 0x65 outside the 16-entry table); primitive_table_select H; reloc_entry_index H; reloc_block_id H.
+- Unk800F0C10Record world_x / y / z H (every write copies g_eff_command_position; every read subtracts g_eff_view_origin).
+- MotionFrame: root_height H, root_heading M ("heading" is the polar angle of the horizontal root offset, relative to the fighter yaw; game.h:1462 already calls it the root heading), root_distance H, node_channels M (s16 channels after the first triple; translation pairs at +0x6C.. rule out "angles").
+- Unk1F8002B8Unk00.slot_points M (stutters with the parent member point_slots; 'points' is taken).
+- Unk80104E88Rec: ballistic_kind H, flight_frames H, owner_index H, ballistic_pos H, ballistic_velocity H, launch_y M, prev_ballistic_pos W (written only, never read; the two writes are the copy of ballistic_pos made just before it advances).
+- Unk800A9CF8Rec: anim_frame_count, resource_selector, frame_entry_count, frame_data, frame_entries, paired_grid_nodes all H/M; resource_selector names the source (resource_GetLoadedSelector), not a value.
+- Unk801027B0Rec: move_scripts H, motion_entries H, motion_metadata_base H, motion_bitstream H, cpu_script_table W (its only consumer is fighter_InitCpuControl, whose receiving member Unk80101EC8Record.unk_3A4 is still unnamed).
+- Unk800F68E0Rec: draw_age H, draw_span H, model_entry_index M, draw_pos H, draw_rot_y / draw_rot_z H, slot_rot_x W (packs the 12-bit x rotation with the slot in the top nibble; playback hands the packed value on as rot[0] unmasked, the callee takes it as an angle).
+- Unk800EFC78Record: offset_x / y / z H, group_position_index H, velocity_x / y / z H, life_state M (1 live, 3 expired), frame_age H (the raw alias D_800EFC8A at 51268.c:2804 reads particle 0's value >> 3 as the texture index, consistent with an age).
+- Unk800FF5C8Rec.focus_point_offset / camera_angles_offset W: only ever zeroed (9F9C.c:676-681); both readers add them component by component to the landed Rec44.focus_point / camera_angles (9F9C.c:2059-2067, 2098-2106). w18 already has an unnamed sibling and stays.
+
+Neutral on purpose (NO_NAME, none contradicted by my reading, none in pairs)
+- Unk80045878Obj.unk_18F4 (permuted matrix-pointer view whose consumer, func_80040D48 -> node.unk58, is unnamed), unk_1A84 (func_80040D48 arg5, role not shown).
+- MotionFrame.unk_06 / unk_08 / unk_0A (rotation triple 1: fighter_Update feeds it to math_RotMatrixZYXAngles and the pose blend reads it as node 11's rotation; no role is shown, the miner's facing_angle_* is a guess).
+- Unk80104E88Rec.unk_01 (constant 1 written, never read). Unk800A9CF8Rec.unk14 and Unk800EFC78Record.unkE (no access).
+- Item 2, no new evidence: Unk80102778Rec.unk_4 (one array, three roles; needs a layout split) and unk_F; ScrPad.unk2B8 (the rest-10 FAIL stands: math scratch uses it too); Unk80101E60Rec.unk06 (write-only 0) and unk3E (VSync tally, never read); Unk1F800000Unk00.unk1E (padding); Unk1F800000Rec.unk8C / unk50 / unkA0 / unkA4 / unkB0; Unk1F8000B8_80063084.unk38; Unk1F8000B8_80065800.unk14 / unk64; Unk1F8000B8_800678A8.unk10 / unk34 / unk44 / unk6E / unk70; Unk1F8000B8_800646E8.unk38 / unk40 / unk44 (keycheck-blocked, siblings still unnamed); Unk8009BD24Record.unk1 (writer 5ED34.c:1688 is this wave's row_pick, the other writer SELWORK->f7E at 64FD8.c:1058 is unnamed); Unk8009BD24Block.unk14_15 / unk14_17 / unk14_18 / unk14_21 / unk20_1 / unk20_4; Unk800EFAE8Rec.unk44 / unk48; Unk800469C4Hdr.unk0; Work_80053E9C.unk5C.
+
+COMMENT LIST (R6: comments the tool does not edit; old member spelling or old meaning; worktree numbering). Same-spelled words of OTHER types stay.
+- include/game.h:
+  83-97 (Unk800A9CF8Rec comment and inline comments: "unk8 / unkC pointers", "entry count", "entry table (stride 0x68)", "gpu_GetGridNodeRecordTable() table", "= resource_GetLoadedSelector()")
+  744-753 (Unk800A3560Record comment: "+0 / +1 / +2", "byte +1")
+  320 (row_choice_pixels comment: "rec.unk2" is Unk800A3560Record.row_pick); 307-309 are the Unk80094B-style sheet headers, other type, stay
+  764-771 (Unk800F0C10Record comment: describes the unk0 / unk4 / unk8 words as the position triple)
+  801, 809, 812, 815-817, 826-834 (Unk801027B0Rec comments: g_motion_*_sections.unk_00 / unk_04 .. unk_10 / unk_0C / unk_08; text names every section member)
+  864-872 and the inline /* 0 = free ... */ at 874-883 (Unk80104E88Rec: unk_00 / unk_02 / unk_03 / unk_04 / unk_10 / unk_1C / unk_28)
+  1003-1006 (Unk800EFC78Record comment: "+0xE untouched" keeps its meaning, unkE stays)
+  1285-1296 and 1334-1336 (Unk1F8002B8Unk00: "[0] / [1]" slots, "point_slots"; unk00 is the member being renamed)
+  1460-1470 (MotionFrame comment: unk_00 / unk_02 / unk_04 / unk_06..unk_0A / unk_0C[])
+  1963-1968 (Unk800FF5C8Rec comment: "camera-target offset ... fields", and its field comments)
+  2012-2018 (Unk800F68E0Rec comment: unk_0 / unk_2 / unk_3 / unk_4 / unk_A / unk_C / unk_E)
+  2059-2072 ("unk0 = 0x64" / "(unk0 = 0x65" for the view roots: now node_kind)
+  2142-2158 (Unk800A9CF8Entry comment: g_node_frame_animation_context.unkC / unk10 / unk8 / unk4)
+  2183-2221 (Unk80045878Obj comment: unk_00, unk_08, unk_10 / unk_14 / unk_16, unk_18, unk_1C / unk_20, unk_24; "unk2 = -1 ends it" at 2215 is node.unk2 = reloc_entry_index; unk_18F4 and unk_1A84 stay)
+- src/main/309CC.c:429 ("stored into p->node.unk2": reloc_entry_index).
+- src/main/368E4.c:1563-1564 ("As Unk80045878Node stores (unk0 / unk1 / unk2 / unk4 / light_setup_index)": node_kind / primitive_table_select / reloc_entry_index / reloc_block_id).
+- src/main/51268.c:2876 ("step its unk12": frame_age); 2087, 2614, 2873-2877 and include/bb2.h:127 name g_eff_* tables, check for unk0 / unk4 / unk8 / unkA / unk12 spellings.
+- Hand edits after the apply: none. The dry run resolves every access (0 UNRESOLVED; the 9F9C.c lines that rest-10 listed as unresolved are renamed by Rec44 landing).
