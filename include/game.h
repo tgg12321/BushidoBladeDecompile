@@ -687,7 +687,7 @@ typedef struct {
 } Unk8009B2BCRecord;
 
 /* The playback block (motion_LoadPlaybackBlock loads it, or the buffer
-   motion_StartPlayback is handed; Unk800EFAE8Rec .unk2C): its header holds
+   motion_StartPlayback is handed; Unk800EFAE8Rec .block_base): its header holds
    file-relative offsets of the parts motion_StartPlayback /
    motion_UpdatePlayback use. */
 typedef struct {
@@ -705,10 +705,11 @@ typedef struct {
  * the 0x2C..0x40 words.
  */
 typedef struct {
-    /* phase (motion_UpdatePlayback: -1 = done, 0 = init) */
+    /* frame cursor (motion_UpdatePlayback: -1 = finished, 0 = first frame) */
     /* 0x00 */ s16 current_frame;
     /* 0x02 */ s16 frame_count;
-    /* stage flags (bit31/bit30 tests, low 6 bits = cleanup index + 1) */
+    /* packed control word (bit31/bit30 tests, low 6 bits = resource block
+     * index + 1) */
     /* 0x04 */ s32 control_word;
     /* 0x08 */ s16 start_pair_index;
     /* 0x0A */ s16 unkA;

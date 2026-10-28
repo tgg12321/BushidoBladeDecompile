@@ -22,15 +22,15 @@ extern s32 collision_TestSegmentWithWork(
 extern s32 D_800A3250[2];
 
 /* Per-frame playback of the record D_800EFAE8 that motion_StartPlayback fills.
- * On the first frame (unk0 == 0) it resolves the loaded data's offset table
- * (unk2C) into the camera stream (unk30), the per-object motion streams
- * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
- * per-object nibble tables (unk3C[]). Every frame it places the camera (rotated
- * about y by unk1E, plus the offset unkC..unk14 motion_StartPlayback picks),
- * then decodes (motion_DecodeFrame) and places each slot_GetObject object's
- * data. The block holds those addresses as integers: typed as pointers, the
- * relocation sums in motion_RebasePlayback and motion_StartPlayback swap their
- * addu operands.
+ * On the first frame (current_frame == 0) it resolves the loaded data's offset
+ * table (block_base) into the camera stream (camera_stream), the per-object
+ * motion streams (motion_streams[], dropped when they start with the "NULL" tag
+ * D_800A3250) and the per-object nibble tables (draw_set_tracks[]). Every frame
+ * it places the camera (rotated about y by rotation_y, plus the offset
+ * origin_x..origin_z motion_StartPlayback picks), then decodes
+ * (motion_DecodeFrame) and places each slot_GetObject object's data. The block
+ * holds those addresses as integers: typed as pointers, the relocation sums in
+ * motion_RebasePlayback and motion_StartPlayback swap their addu operands.
  */
 s32 motion_UpdatePlayback(void) {
     Unk800EFAE8Rec *s = &D_800EFAE8;
