@@ -1,0 +1,36 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 25 (row var-locals-25, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15..24 lessons in
+`docs/naming/phase3/pending/var-locals-{16,...,24}/prompt.txt` and `pending/var-locals-24/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD 149f384cd (read-only; equals main, wave 24 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-25-research.md`
+  (overrides any output file the earlier prompts name): HEAD first, then the proposed
+  `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with reasons,
+  comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs). Cite file:line at HEAD. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. the 5 cap-cut rows of pending/var-locals-24/notes.txt
+  (softbody_UpdateList arg0/arg1 in 87A0.c, pad_UnpackButtonMappingNibblesToCells arg0 and
+  pad_Update var_1/var_3 in 2B344.c; symbol_addrs.txt:2091 cites pad_Unpack's old token; re-derive each).
+  2. src/main/9F9C.c, every C definition in file order. 3. Then the later game TUs in ROM-offset
+  order (175A4.c, 17AFC.c, 24BF0.c, ...) that still have auto-named bindings (argN, var_N, a0..a3,
+  v0_xxxx, spNN, temp_*, s, p, ...) not on any NO_NAME / neutral list. Skip psxsdk/.
+- Do not re-propose wave 8-24 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,24}/notes.txt) without new evidence, said in the row.
+- Lessons: every old name a rename retires may be cited in symbol_addrs.txt comments, include/*.h
+  comments and live docs (docs/engine/*.md); list each such citation with file:line. Arguments of
+  function-like macros (gte_* etc.) are rejected by scoped_plan: do not propose them. A
+  FAKE-comment-cited binding stays neutral — judge a FAKE comment by the function it sits in (a var_N
+  cited in one function does not bind another's). A binding with two roles in one body stays
+  neutral. A new name must not equal a member the same function accesses (keycheck "already
+  occurs in f").
+- Names already used for the same roles (reuse per function only with the same meaning):
+  draw_context, resource_root, sheet_headers, slot_index, buffer_index, prim_buffer, draw_desc,
+  primitive_cursors, file_index, dest_addr, file_index_offset, port, card, channel, softbody,
+  step_desc, input, local_ot, first_point, second_point, ot_index, cell_index, pressed_buttons,
+  result, gpu_db, player_index, row_index, pad_buttons, brightness.
+- Left neutral, do not propose: parameter names in forward declarations/prototypes.
