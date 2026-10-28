@@ -525,32 +525,32 @@ void eff_StartJitteredBillboardsCommand(s32 *src_position) {
     eff_StartCommand();
 }
 
-void eff_StartYawedQuadSlotCommand(
-    s32 *src_position, s16 command_vector_y, s32 a2, s32 a3) {
-    s16 sp[4];
+void eff_StartYawedQuadSlotCommand(s32 *src_position, s16 command_vector_y,
+                                   s32 command_word_bits, s32 use_second_slot) {
+    s16 command_vector[4];
 
     g_eff_active_command_block = &g_eff_command_block;
-    sp[2] = 0;
-    sp[0] = 0;
-    sp[1] = command_vector_y;
+    command_vector[2] = 0;
+    command_vector[0] = 0;
+    command_vector[1] = command_vector_y;
     g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk10 = sp;
-    if (a3 == 0) {
+    g_eff_command_block.unk10 = command_vector;
+    if (use_second_slot == 0) {
         g_eff_command_block.unk14 = &g_eff_command_status[0];
-        g_eff_command_block.unk00.w = a2 + 0x10000;
+        g_eff_command_block.unk00.w = command_word_bits + 0x10000;
     } else {
         g_eff_command_block.unk14 = &g_eff_command_status[1];
-        g_eff_command_block.unk00.w = a2 + 0x10001;
+        g_eff_command_block.unk00.w = command_word_bits + 0x10001;
     }
     eff_StartCommand();
 }
 
 void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
-    s32 *arg0, s16 *arg1) {
+    s32 *src_position, s16 *src_command_vector) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
-    g_eff_command_block.unk10 = arg1;
+    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.unk10 = src_command_vector;
     if (g_eff_command_status[20] != 0 && g_eff_command_status[21] != 0) {
         g_eff_command_status[21] = 0;
         g_eff_command_status[20] = 0;
@@ -569,7 +569,7 @@ void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
         g_eff_active_command_block->unk00.w = 0x10007;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
@@ -577,38 +577,38 @@ void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
 }
 
 void eff_StartRecycledYawedParticlesWithTextureSelection(
-    s32 *arg0, s32 arg1, s32 arg2) {
-    SVECTOR sp10;
-    SVECTOR sp18;
-    VECTOR sp20;
-    MATRIX sp30;
-    s32 sp50;
+    s32 *src_position, s32 yaw_angle, s32 use_alternate_texture) {
+    SVECTOR command_vector;
+    SVECTOR yaw_rotation;
+    VECTOR rotated_vector;
+    MATRIX yaw_matrix;
+    s32 gte_flag_out;
 
     g_eff_active_command_block = &g_eff_command_block;
-    if (arg2 != 1) {
-        arg2 = 0;
+    if (use_alternate_texture != 1) {
+        use_alternate_texture = 0;
     }
-    sp10.vy = -0xA00;
-    sp10.vx = 0;
-    sp10.vz = 0xA00;
-    sp20.vz = 0;
-    sp20.vy = 0;
-    sp20.vx = 0;
-    sp18.vy = arg1;
-    sp18.vz = 0;
-    sp18.vx = 0;
-    RotMatrix(&sp18, &sp30);
-    sp30.t[2] = 0;
-    sp30.t[1] = 0;
-    sp30.t[0] = 0;
-    SetRotMatrix(&sp30);
-    SetTransMatrix(&sp30);
-    RotTrans(&sp10, &sp20, &sp50);
-    sp10.vx = sp20.vx;
-    sp10.vy = sp20.vy;
-    sp10.vz = sp20.vz;
-    g_eff_active_command_block->unk0C = arg0;
-    g_eff_active_command_block->unk10 = &sp10.vx;
+    command_vector.vy = -0xA00;
+    command_vector.vx = 0;
+    command_vector.vz = 0xA00;
+    rotated_vector.vz = 0;
+    rotated_vector.vy = 0;
+    rotated_vector.vx = 0;
+    yaw_rotation.vy = yaw_angle;
+    yaw_rotation.vz = 0;
+    yaw_rotation.vx = 0;
+    RotMatrix(&yaw_rotation, &yaw_matrix);
+    yaw_matrix.t[2] = 0;
+    yaw_matrix.t[1] = 0;
+    yaw_matrix.t[0] = 0;
+    SetRotMatrix(&yaw_matrix);
+    SetTransMatrix(&yaw_matrix);
+    RotTrans(&command_vector, &rotated_vector, &gte_flag_out);
+    command_vector.vx = rotated_vector.vx;
+    command_vector.vy = rotated_vector.vy;
+    command_vector.vz = rotated_vector.vz;
+    g_eff_active_command_block->unk0C = src_position;
+    g_eff_active_command_block->unk10 = &command_vector.vx;
     if (g_eff_command_status[22] != 0 && g_eff_command_status[23] != 0) {
         g_eff_command_status[23] = 0;
         g_eff_command_status[22] = 0;
@@ -616,44 +616,44 @@ void eff_StartRecycledYawedParticlesWithTextureSelection(
     if (g_eff_command_status[22] == 0) {
         g_eff_active_command_block->unk14 = &g_eff_command_status[22];
         g_eff_active_command_block->unk00.w = 0x10016;
-        D_800A34F0[0] = arg2;
+        D_800A34F0[0] = use_alternate_texture;
     } else if (g_eff_command_status[23] == 0) {
         g_eff_active_command_block->unk14 = &g_eff_command_status[23];
         g_eff_active_command_block->unk00.w = 0x10017;
-        D_800A34F0[1] = arg2;
+        D_800A34F0[1] = use_alternate_texture;
     }
     eff_StartCommand();
 }
 
-void eff_StartRecycledYawedParticles(s32 *arg0, s16 arg1) {
-    SVECTOR sp10;
-    SVECTOR sp18;
-    VECTOR sp20;
-    MATRIX sp30;
-    s32 sp50;
+void eff_StartRecycledYawedParticles(s32 *src_position, s16 yaw_angle) {
+    SVECTOR command_vector;
+    SVECTOR yaw_rotation;
+    VECTOR rotated_vector;
+    MATRIX yaw_matrix;
+    s32 gte_flag_out;
 
     g_eff_active_command_block = &g_eff_command_block;
-    sp10.vy = -0xA00;
-    sp10.vx = 0;
-    sp10.vz = 0xA00;
-    sp20.vz = 0;
-    sp20.vy = 0;
-    sp20.vx = 0;
-    sp18.vz = 0;
-    sp18.vy = arg1;
-    sp18.vx = 0;
-    RotMatrix(&sp18, &sp30);
-    sp30.t[2] = 0;
-    sp30.t[1] = 0;
-    sp30.t[0] = 0;
-    SetRotMatrix(&sp30);
-    SetTransMatrix(&sp30);
-    RotTrans(&sp10, &sp20, &sp50);
-    sp10.vx = sp20.vx;
-    sp10.vy = sp20.vy;
-    sp10.vz = sp20.vz;
-    g_eff_active_command_block->unk0C = arg0;
-    g_eff_active_command_block->unk10 = &sp10.vx;
+    command_vector.vy = -0xA00;
+    command_vector.vx = 0;
+    command_vector.vz = 0xA00;
+    rotated_vector.vz = 0;
+    rotated_vector.vy = 0;
+    rotated_vector.vx = 0;
+    yaw_rotation.vz = 0;
+    yaw_rotation.vy = yaw_angle;
+    yaw_rotation.vx = 0;
+    RotMatrix(&yaw_rotation, &yaw_matrix);
+    yaw_matrix.t[2] = 0;
+    yaw_matrix.t[1] = 0;
+    yaw_matrix.t[0] = 0;
+    SetRotMatrix(&yaw_matrix);
+    SetTransMatrix(&yaw_matrix);
+    RotTrans(&command_vector, &rotated_vector, &gte_flag_out);
+    command_vector.vx = rotated_vector.vx;
+    command_vector.vy = rotated_vector.vy;
+    command_vector.vz = rotated_vector.vz;
+    g_eff_active_command_block->unk0C = src_position;
+    g_eff_active_command_block->unk10 = &command_vector.vx;
     if (g_eff_command_status[24] != 0 && g_eff_command_status[25] != 0) {
         g_eff_command_status[25] = 0;
         g_eff_command_status[24] = 0;
@@ -668,10 +668,10 @@ void eff_StartRecycledYawedParticles(s32 *arg0, s16 arg1) {
     eff_StartCommand();
 }
 
-void eff_StartRecycledCommandWithMagentaLight(s32 *arg0) {
+void eff_StartRecycledCommandWithMagentaLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk0C = src_position;
     if (g_eff_command_status[18] != 0 && g_eff_command_status[19] != 0) {
         g_eff_command_status[19] = 0;
         g_eff_command_status[18] = 0;
@@ -684,7 +684,7 @@ void eff_StartRecycledCommandWithMagentaLight(s32 *arg0) {
         g_eff_command_block.unk00.w = 0x210013;
     }
     eff_StartCommand();
-    p = arg0;
+    p = src_position;
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
     g_eff_point_light_position.vz = *p;
@@ -693,32 +693,37 @@ void eff_StartRecycledCommandWithMagentaLight(s32 *arg0) {
 
 extern VECTOR D_8009BB74;
 
-void eff_SetRotMatrix(s16 *a0, s32 *a1, MATRIX *a2) {
-    SVECTOR *dest = &D_800A34EC->v80061FAC;
-    dest->vx = a0[0];
-    dest->vy = a0[1];
-    dest->vz = a0[2];
-    RotMatrix(dest, a2);
-    a2->t[2] = 0;
-    a2->t[1] = 0;
-    a2->t[0] = 0;
-    ScaleMatrixL(a2, &D_8009BB74);
-    SetRotMatrix(a2);
+void eff_SetRotMatrix(s16 *src_rotation, s32 *a1, MATRIX *matrix_out) {
+    SVECTOR *rotation = &D_800A34EC->v80061FAC;
+    rotation->vx = src_rotation[0];
+    rotation->vy = src_rotation[1];
+    rotation->vz = src_rotation[2];
+    RotMatrix(rotation, matrix_out);
+    matrix_out->t[2] = 0;
+    matrix_out->t[1] = 0;
+    matrix_out->t[0] = 0;
+    ScaleMatrixL(matrix_out, &D_8009BB74);
+    SetRotMatrix(matrix_out);
 }
 
 extern s32 g_eff_billboard_draw_count;
 
 void eff_SetBillboardList(Unk800F1198Record *src_billboards) {
-    s32 i;
+    s32 billboard_index;
 
     g_eff_billboard_draw_count = 0;
-    for (i = 0; src_billboards[i].unk0 & 1; i++) {
-        g_eff_billboards[i].unk0 = src_billboards[i].unk0;
-        g_eff_billboards[i].unk4 = src_billboards[i].unk4;
-        g_eff_billboards[i].unk8 = src_billboards[i].unk8;
+    for (billboard_index = 0; src_billboards[billboard_index].unk0 & 1;
+         billboard_index++) {
+        g_eff_billboards[billboard_index].unk0 =
+            src_billboards[billboard_index].unk0;
+        g_eff_billboards[billboard_index].unk4 =
+            src_billboards[billboard_index].unk4;
+        g_eff_billboards[billboard_index].unk8 =
+            src_billboards[billboard_index].unk8;
     }
-    g_eff_billboards[i].unk0 = g_eff_billboards[i].unk4 =
-        g_eff_billboards[i].unk8 = 0;
+    g_eff_billboards[billboard_index].unk0 =
+        g_eff_billboards[billboard_index].unk4 =
+            g_eff_billboards[billboard_index].unk8 = 0;
 }
 
 /* Draw the g_eff_billboards billboard list (see eff_SetBillboardList): per
@@ -726,61 +731,62 @@ void eff_SetBillboardList(Unk800F1198Record *src_billboards) {
    the record's type, rotate/translate its position, project it, and when it
    lands in range emit one textured POLY_FT4 billboard and link it into the OT
    at its depth. */
-void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
+void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     extern s32 g_eff_billboard_draw_count;
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     extern s32 rand(void);
     Unk1F8000B8_800620B8 *base;
-    s16 *w;
-    s16 *h;
+    s16 *half_width;
+    s16 *billboard_height;
     VECTOR *var_3;
     VECTOR *v;
-    SVECTOR *var_5;
-    s32 *var_6;
-    u32 *z;
+    SVECTOR *local_origin;
+    s32 *depth_cue_out;
+    u32 *ot_index;
     POLY_FT4 *prim;
-    Unk1F800000Unk00 *var_9;
-    s16 *dst16;
-    s32 *dst32;
-    MATRIX *rot;
-    s16 i;
-    s32 var_14;
-    s32 var_15;
+    Unk1F800000Unk00 *src_command_block;
+    s16 *rotation_out;
+    s32 *position_out;
+    MATRIX *scaled_rotation_matrix;
+    s16 billboard_index;
+    s32 scaled_width;
+    s32 scaled_height;
     s16 width;
     s16 height;
 
-    eff_BindScratchpad(arg0, arg1);
-    var_9 = g_eff_active_command_block;
-    dst16 = D_800A346C;
-    dst16[0] = var_9->unk04[0];
+    eff_BindScratchpad(src_rotation, src_position);
+    src_command_block = g_eff_active_command_block;
+    rotation_out = D_800A346C;
+    rotation_out[0] = src_command_block->unk04[0];
     prim = g_eff_quad_cursor;
-    dst16[1] = var_9->unk04[1];
-    dst16[2] = var_9->unk04[2];
-    dst32 = D_800A3470;
+    rotation_out[1] = src_command_block->unk04[1];
+    rotation_out[2] = src_command_block->unk04[2];
+    position_out = D_800A3470;
     /* the matrix eff_SetRotMatrix builds from the angles at arg0 */
-    rot = D_800A3474;
-    dst32[0] = var_9->unk08[0];
+    scaled_rotation_matrix = D_800A3474;
+    position_out[0] = src_command_block->unk08[0];
     base = &D_800A34EC->v800620B8;
-    dst32[1] = var_9->unk08[1];
-    dst32[2] = var_9->unk08[2];
+    position_out[1] = src_command_block->unk08[1];
+    position_out[2] = src_command_block->unk08[2];
     g_eff_billboard_draw_count++;
-    eff_SetRotMatrix(dst16, dst32, rot);
+    eff_SetRotMatrix(rotation_out, position_out, scaled_rotation_matrix);
     SetRotMatrix(D_800A3474);
-    w = &base->unk10;
-    h = &base->unk12;
+    half_width = &base->unk10;
+    billboard_height = &base->unk12;
     var_3 = &base->unk14;
     v = &base->unk24;
-    var_5 = &base->unk34;
-    var_6 = &base->unk3C;
-    z = &base->unk44;
-    var_5->vz = 0;
-    var_5->vy = 0;
-    var_5->vx = 0;
+    local_origin = &base->unk34;
+    depth_cue_out = &base->unk3C;
+    ot_index = &base->unk44;
+    local_origin->vz = 0;
+    local_origin->vy = 0;
+    local_origin->vx = 0;
     *D_800A34B0 = ReadGeomScreen() << 8;
     *D_800A3490 = 0x2F;
-    for (i = 0; g_eff_billboards[i].unk0 & 1; i++) {
-        switch (g_eff_billboards[i].unk4 & 7) {
+    for (billboard_index = 0; g_eff_billboards[billboard_index].unk0 & 1;
+         billboard_index++) {
+        switch (g_eff_billboards[billboard_index].unk4 & 7) {
         case 3:
             *D_800A34A8 = 0x151;
             *D_800A34AC = 0xA8;
@@ -814,44 +820,44 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             *D_800A34A4 = g_eff_current_tex_rec->v + 0x13;
             break;
         }
-        v->vx = g_eff_billboards[i].unk0 / 2 - D_800A3470[0];
-        v->vy = g_eff_billboards[i].unk4 / 8 - D_800A3470[1];
-        v->vz = g_eff_billboards[i].unk8 - D_800A3470[2];
+        v->vx = g_eff_billboards[billboard_index].unk0 / 2 - D_800A3470[0];
+        v->vy = g_eff_billboards[billboard_index].unk4 / 8 - D_800A3470[1];
+        v->vz = g_eff_billboards[billboard_index].unk8 - D_800A3470[2];
         ApplyRotMatrixLV(v, var_3);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
          * below var_3, it loads var_3 as the translation (there is no whole
          * MATRIX here). Spelled (MATRIX *)base: score 65. */
         SetTransMatrix((MATRIX *)((u8 *)var_3 - 0x14));
-        RotTransPers(var_5, D_800A34B8, var_6, D_800A34CC);
+        RotTransPers(local_origin, D_800A34B8, depth_cue_out, D_800A34CC);
         gte_stsz(D_800A34D0);
-        *z = gpu_DepthToOtIndex(*D_800A34D0, 0);
-        if (*z < 0x1005 && (*D_800A34B0 / 256 >> 4) < *z) {
+        *ot_index = gpu_DepthToOtIndex(*D_800A34D0, 0);
+        if (*ot_index < 0x1005 && (*D_800A34B0 / 256 >> 4) < *ot_index) {
             *D_800A3494 = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) +
                                 (D_800A348C->clut_y << 6));
             *D_800A3498 = g_eff_current_tex_rec->u;
             *D_800A34A0 = g_eff_current_tex_rec->v;
             *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 : 1;
             *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
-            var_14 = *D_800A34A8 * *D_800A34B4;
-            width = var_14 > 0x200 ? var_14 >> 8 : 2;
-            *w = width / 2;
-            var_15 = *D_800A34AC * *D_800A34B4;
-            height = var_15 > 0x200 ? var_15 >> 8 : 2;
-            *h = height;
-            *h += (*h * rand() / 10) >> 14;
+            scaled_width = *D_800A34A8 * *D_800A34B4;
+            width = scaled_width > 0x200 ? scaled_width >> 8 : 2;
+            *half_width = width / 2;
+            scaled_height = *D_800A34AC * *D_800A34B4;
+            height = scaled_height > 0x200 ? scaled_height >> 8 : 2;
+            *billboard_height = height;
+            *billboard_height += (*billboard_height * rand() / 10) >> 14;
             SetPolyFT4(prim);
             prim->tpage = *D_800A3490;
             prim->clut = *D_800A3494;
             prim->r0 = 0xFF;
             prim->g0 = 0x80;
             prim->b0 = 0x80;
-            prim->x0 = *D_800A34B8 - *w;
-            prim->y0 = (*D_800A34B8 >> 16) - *h;
-            prim->x1 = *w + *D_800A34B8;
-            prim->y1 = (*D_800A34B8 >> 16) - *h;
-            prim->x2 = *D_800A34B8 - *w;
+            prim->x0 = *D_800A34B8 - *half_width;
+            prim->y0 = (*D_800A34B8 >> 16) - *billboard_height;
+            prim->x1 = *half_width + *D_800A34B8;
+            prim->y1 = (*D_800A34B8 >> 16) - *billboard_height;
+            prim->x2 = *D_800A34B8 - *half_width;
             prim->y2 = *D_800A34B8 >> 16;
-            prim->x3 = *w + *D_800A34B8;
+            prim->x3 = *half_width + *D_800A34B8;
             prim->y3 = *D_800A34B8 >> 16;
             prim->u0 = *D_800A3498;
             prim->v0 = *D_800A34A0;
@@ -864,7 +870,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             if (prim - g_eff_quad_buffer_base < 0x1C1) {
-                D_800A34E4 = g_gpu_ot_ptr + *z;
+                D_800A34E4 = g_gpu_ot_ptr + *ot_index;
                 D_800A34E8 = &prim->tag;
                 *D_800A34E8 =
                     (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
@@ -880,23 +886,23 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
 s32 eff_SpawnRotatedQuadCluster(void) {
     s32 *pos;
     s16 *rot;
-    s32 i;
+    s32 slot_index;
     s32 mask;
 
     g_eff_command_phase[26] = 1;
     pos = g_eff_command_position;
     rot = D_800A3478;
-    for (i = 0; i < 6; i++) {
-        mask = 1 << i;
+    for (slot_index = 0; slot_index < 6; slot_index++) {
+        mask = 1 << slot_index;
         if (!(D_800A3460 & mask)) {
-            D_800F0FB8[i].x = pos[0];
-            D_800F0FB8[i].y = pos[1];
-            D_800F0FB8[i].z = pos[2];
-            D_800F10A0[i].vx = rot[0];
-            D_800F10A0[i].vy = rot[1];
+            D_800F0FB8[slot_index].x = pos[0];
+            D_800F0FB8[slot_index].y = pos[1];
+            D_800F0FB8[slot_index].z = pos[2];
+            D_800F10A0[slot_index].vx = rot[0];
+            D_800F10A0[slot_index].vy = rot[1];
             D_800A3460 |= mask;
-            D_800F10A0[i].vz = rot[2];
-            D_800F0C04[i] = 0;
+            D_800F10A0[slot_index].vz = rot[2];
+            D_800F0C04[slot_index] = 0;
             break;
         }
     }
