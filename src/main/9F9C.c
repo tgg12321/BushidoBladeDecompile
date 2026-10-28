@@ -3973,74 +3973,68 @@ void fighter_ConfigureCpuControl(void) {
     } while (i < 2);
 }
 
-/* Its scratchpad address holders are
- * a labelled FAKE.
- * The masked state id is spelled as in its
+/* The masked state id is spelled as in its
  * copy-paste sibling fighter_UpdateGroundYByMoveKind (`s32 a0 =
  * arg0->move_kind; s32 v1 = a0 & 0xFFFF;`, same comparison cascade), which
  * keeps the target's `andi $v1,$a0,0xffff`: the raw value stays live for `mode
  * - 0x17`, so combine never folds the mask. A u16 on either side loses it. */
 void fighter_ResolveMovement(
     Unk80101EC8Record *obj, VECTOR *pos1, VECTOR *pos2, s32 *arg3) {
-    /* FAKE: the scratchpad addresses scratch_c (0x1F8001C0) / scratch_d
-     * (0x1F8001D0) and work (0x1F8002B8) are held in locals; as literals they
-     * are re-formed at each use (scratch_c: score 29; scratch_d: 17; work: 13).
-     */
     s32 *scratch = (s32 *)0x1F8001B0;
     s32 count = 0;
-    s32 work;
-    s16 *scratch_d;
-    s16 *scratch_c = (s16 *)0x1F8001C0;
-    work = 0x1F8002B8;
-    scratch_d = (s16 *)0x1F8001D0;
-loop:
-    if (((pos1->vx != pos2->vx) || (pos1->vy != pos2->vy)) ||
-        (pos1->vz != pos2->vz)) {
-        if (collision_TestSegmentExtendingShortStartWithWork(
-                &pos1->vx, &pos2->vx, scratch, scratch_c, work) == 0) {
-            *pos1 = *pos2;
-            goto done;
-        }
-        obj->collision_hit_tag = collision_GetHitTag();
-        *pos1 = *(VECTOR *)scratch;
-        math_ScaleVectorInDirectionFrame(arg3, scratch_c, arg3, -0x40, 0xE6);
-        scratch[12] = pos1->vx + (*((s16 *)(((u8 *)scratch) + 0x10)) / 1024);
-        scratch[13] = pos1->vy + (*((s16 *)(((u8 *)scratch) + 0x12)) / 1024);
-        scratch[14] = pos1->vz + (*((s16 *)(((u8 *)scratch) + 0x14)) / 1024);
-        pos2->vx += *((s16 *)(((u8 *)scratch) + 0x10)) / 1024;
-        pos2->vy += *((s16 *)(((u8 *)scratch) + 0x12)) / 1024;
-        pos2->vz += *((s16 *)(((u8 *)scratch) + 0x14)) / 1024;
-        if (collision_TestSegmentExtendingShortStartWithWork(
-                &pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6), work) ==
-            0) {
-            *pos1 = *(VECTOR *)(scratch + 12);
-            scratch[8] = pos2->vx - pos1->vx;
-            scratch[9] = pos2->vy - pos1->vy;
-            scratch[10] = pos2->vz - pos1->vz;
+    do {
+        if (((pos1->vx != pos2->vx) || (pos1->vy != pos2->vy)) ||
+            (pos1->vz != pos2->vz)) {
+            if (collision_TestSegmentExtendingShortStartWithWork(
+                    &pos1->vx, &pos2->vx, scratch, (s16 *)(scratch + 4),
+                    0x1F8002B8) == 0) {
+                *pos1 = *pos2;
+                break;
+            }
+            obj->collision_hit_tag = collision_GetHitTag();
+            *pos1 = *(VECTOR *)scratch;
             math_ScaleVectorInDirectionFrame(
-                (s32 *)scratch_d, scratch_c, (s32 *)scratch_d, 0,
-                (obj->move_kind == 0x15) ? 0x80 : 0x100);
-            if (*((s16 *)(((u8 *)scratch) + 0x12)) >= (-0x7FF)) {
-                s32 mode = obj->move_kind;
-                s32 m = mode & 0xFFFF;
-                if (((((m != 8) && (m != 0x22)) &&
-                      (((u32)(mode - 0x17)) >= 2)) &&
-                     (m != 0xA)) &&
-                    (obj->unk_72 == 0)) {
-                    scratch[9] = 0;
+                arg3, (s16 *)(scratch + 4), arg3, -0x40, 0xE6);
+            scratch[12] =
+                pos1->vx + (*((s16 *)(((u8 *)scratch) + 0x10)) / 1024);
+            scratch[13] =
+                pos1->vy + (*((s16 *)(((u8 *)scratch) + 0x12)) / 1024);
+            scratch[14] =
+                pos1->vz + (*((s16 *)(((u8 *)scratch) + 0x14)) / 1024);
+            pos2->vx += *((s16 *)(((u8 *)scratch) + 0x10)) / 1024;
+            pos2->vy += *((s16 *)(((u8 *)scratch) + 0x12)) / 1024;
+            pos2->vz += *((s16 *)(((u8 *)scratch) + 0x14)) / 1024;
+            if (collision_TestSegmentExtendingShortStartWithWork(
+                    &pos1->vx, scratch + 12, scratch, (s16 *)(scratch + 6),
+                    0x1F8002B8) == 0) {
+                *pos1 = *(VECTOR *)(scratch + 12);
+                scratch[8] = pos2->vx - pos1->vx;
+                scratch[9] = pos2->vy - pos1->vy;
+                scratch[10] = pos2->vz - pos1->vz;
+                math_ScaleVectorInDirectionFrame(
+                    scratch + 8, (s16 *)(scratch + 4), scratch + 8, 0,
+                    (obj->move_kind == 0x15) ? 0x80 : 0x100);
+                if (*((s16 *)(((u8 *)scratch) + 0x12)) >= (-0x7FF)) {
+                    s32 mode = obj->move_kind;
+                    s32 m = mode & 0xFFFF;
+                    if (((((m != 8) && (m != 0x22)) &&
+                          (((u32)(mode - 0x17)) >= 2)) &&
+                         (m != 0xA)) &&
+                        (obj->unk_72 == 0)) {
+                        scratch[9] = 0;
+                    }
                 }
+                pos2->vx = pos1->vx + scratch[8];
+                pos2->vy = pos1->vy + scratch[9];
+                count++;
+                pos2->vz = pos1->vz + scratch[10];
+            } else {
+                break;
             }
-            pos2->vx = pos1->vx + scratch[8];
-            pos2->vy = pos1->vy + scratch[9];
-            count++;
-            pos2->vz = pos1->vz + scratch[10];
-            if (count < 4) {
-                goto loop;
-            }
+        } else {
+            break;
         }
-    }
-
-done:;
+    } while (count < 4);
 }
 
 s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
