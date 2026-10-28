@@ -640,8 +640,8 @@
 /* g_fight_opponent_order: see their lines. */
 
 /* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
-/* From text1a.c around lines 55, 1093, 1201, 1235 etc.  g_gpu_clut_row_list_map */
-/* (the index into g_gpu_clut_row_lists's VRAM rect lists) */
+/* From text1a.c around lines 55, 1093, 1201, 1235 etc.  g_gpu_vram_row_list_map */
+/* (the index into g_gpu_vram_row_lists's VRAM rect lists) */
 /* plus the DR_MOVE packet cursor g_gpu_draw_move_cursor and color conversion. */
 /* RENAME 0x800A3234: retired name 'D_800A3234' — preserved note: frame-parity bank last selected (D_800A36AC & 1), index into D_800A9830; init -1 (gpu_AddDrawMove) */  /* data-wave 2026-10-08: was g_text1a_record_idx */
 

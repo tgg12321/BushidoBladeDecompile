@@ -93,7 +93,7 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
   latter case also sets `pending_move_event = 7`.
 - The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < unk_A0`:
   with `src == 0` the reaction code
-  comes from `D_8008EB74[math_ClassifyAbsMagnitude(diff)][sign][same]`, where `diff` is
+  comes from `g_fighter_power_difference_move_events[math_ClassifyAbsMagnitude(diff)][sign][same]`, where `diff` is
   the difference of the two `power` values and `same` whether their `unk_AF`
   match; codes 0..2 play cue pairs (0x25 / 0x26 / 0x2D), and code 2 also runs
   `fighter_TryDropQueuedHeadAtBone`. With `src == 1` the table record's `unkC` picks code 0

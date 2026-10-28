@@ -195,7 +195,8 @@ Unk80099B9CRec D_80099B9C = {
     {800, 256, 128, 128, 128, 480},
     {{-9300, -6000, 8000}, {500, -6000, 8000}, {10700, -6000, 8000}}};
 
-/* 70 sound ids (0xFF: none); the 2 zero bytes after it align D_80099C14. */
+/* 70 retained-draw asset ids (0xFF: none); the 2 zero bytes after it align
+ * D_80099C14. */
 u8 g_node_retained_draw_asset_ids[70] = {
     0x15, 0x16, 0x17, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
     0x09, 0xFF, 0xFF, 0x18, 0x19, 0x1A, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
