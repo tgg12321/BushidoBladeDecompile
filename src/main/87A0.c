@@ -546,15 +546,16 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
     }
 }
 
-void softbody_UpdateList(Unk80017FA0Rec *arg0, s32 arg1) {
+void softbody_UpdateList(Unk80017FA0Rec *step_descs, s32 step_desc_count) {
     s32 i;
 
-    for (i = 0; i < arg1; i++) {
-        if (arg0[i].snap & 1) {
+    for (i = 0; i < step_desc_count; i++) {
+        if (step_descs[i].snap & 1) {
             softbody_SnapToPoints(
-                &arg0[i], &g_softbody_slots[arg0[i].slot_index]);
+                &step_descs[i], &g_softbody_slots[step_descs[i].slot_index]);
         } else {
-            softbody_Step(&arg0[i], &g_softbody_slots[arg0[i].slot_index]);
+            softbody_Step(
+                &step_descs[i], &g_softbody_slots[step_descs[i].slot_index]);
         }
     }
 }
@@ -598,10 +599,10 @@ s32 pad_PackSavedButtonMappingLowNibbles(void) {
            ((g_saved_record.frec20[2] & 0xF) << 8);
 }
 
-void pad_UnpackButtonMappingNibblesToCells(s32 arg0) {
-    D_800A3912 = arg0 & 0xF;
-    D_800A3913 = (arg0 >> 4) & 0xF;
-    D_800A3914 = (arg0 >> 8) & 0xF;
+void pad_UnpackButtonMappingNibblesToCells(s32 packed_mappings) {
+    D_800A3912 = packed_mappings & 0xF;
+    D_800A3913 = (packed_mappings >> 4) & 0xF;
+    D_800A3914 = (packed_mappings >> 8) & 0xF;
 }
 
 void pad_ResetState(void) {
@@ -621,20 +622,20 @@ void pad_ResetStateMarkValid(void) {
 
 void pad_Update(s32 arg0) {
     PadState pad;
-    s32 var_1[4];
+    s32 pad_packets[4];
     s32 i;
-    s32 var_3;
+    s32 held_bits;
     s32 previous_held;
 
-    var_3 = 0;
+    held_bits = 0;
     i = 0;
-    var_1[0] = g_pad_buf[0][0];
-    var_1[1] = g_pad_buf[0][1];
-    var_1[2] = g_pad_buf[1][0];
-    var_1[3] = g_pad_buf[1][1];
+    pad_packets[0] = g_pad_buf[0][0];
+    pad_packets[1] = g_pad_buf[0][1];
+    pad_packets[2] = g_pad_buf[1][0];
+    pad_packets[3] = g_pad_buf[1][1];
     do {
         /* pad i's copied receive packet: status, type << 4, button bytes */
-        u8 *pkt = (u8 *)var_1 + i * 8;
+        u8 *pkt = (u8 *)pad_packets + i * 8;
         s32 bits;
 
         if (pkt[0] == 0) {
@@ -666,11 +667,11 @@ void pad_Update(s32 arg0) {
             bits = 0;
         }
 
-        var_3 = ((u32)var_3 >> 16) | (bits << 16);
+        held_bits = ((u32)held_bits >> 16) | (bits << 16);
         i++;
     } while (i < 2);
 
-    pad.held = var_3;
+    pad.held = held_bits;
     camera_UpdatePadOffset(&pad.held);
 
     if (g_main_loop_handler_index == 1 && arg0 == 0) {
