@@ -1,0 +1,16 @@
+Unk8006E950Head.unk_00=sound_pack
+Unk8006E950Head.unk_04=free_ram_start
+Unk8006E950Head.unk_08=vram_image_pixels
+Unk80078824Rec.unk_00=resource_head
+Unk8006EA28Rec.unk_00=resource_head
+Unk80076FF8Rec.unk_00=resource_head
+Ctx77D94.unk_00=resource_head
+Unk8006919CRec.unk_00=resource_head
+Unk8006EA28Rec.unk_14=row_choice_pixels
+Unk8006EA28Rec.unk_54=selected_entry_header_block
+Unk8006EA28Rec.unk_7C=row_choice_upload_rects
+Unk8006EA28Rec.unk_84=entry_upload_pixels
+Unk80076FF8Rec.unk_18=sel_panel_sheets
+Unk80076FF8Rec.unk_20=pick_slot_sheets
+Unk80076FF8Rec.unk_2C=opposed_choice_sheets
+Unk80076FF8Rec.unk_3C=row_tile_rects

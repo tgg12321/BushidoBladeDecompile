@@ -1,0 +1,182 @@
+PASS Unk8006E950Head.unk_00=sound_pack, Unk8006E950Head.unk_04=free_ram_start, Unk8006E950Head.unk_08=vram_image_pixels, Unk8006EA28Rec.unk_14=row_choice_pixels, Unk8006EA28Rec.unk_54=selected_entry_header_block, Unk8006EA28Rec.unk_7C=row_choice_upload_rects, Unk8006EA28Rec.unk_84=entry_upload_pixels, Unk80076FF8Rec.unk_18=sel_panel_sheets, Unk80076FF8Rec.unk_20=pick_slot_sheets, Unk80076FF8Rec.unk_2C=opposed_choice_sheets, Unk80076FF8Rec.unk_3C=row_tile_rects
+decl Unk8006E950Head.unk_00 -> sound_pack  include/game.h:275
+decl Unk8006E950Head.unk_04 -> free_ram_start  include/game.h:276
+decl Unk8006E950Head.unk_08 -> vram_image_pixels  include/game.h:277
+decl Unk8006EA28Rec.unk_14 -> row_choice_pixels  include/game.h:329
+decl Unk8006EA28Rec.unk_54 -> selected_entry_header_block  include/game.h:330
+decl Unk8006EA28Rec.unk_7C -> row_choice_upload_rects  include/game.h:340
+decl Unk8006EA28Rec.unk_84 -> entry_upload_pixels  include/game.h:342
+decl Unk80076FF8Rec.unk_18 -> sel_panel_sheets  include/game.h:355
+decl Unk80076FF8Rec.unk_20 -> pick_slot_sheets  include/game.h:357
+decl Unk80076FF8Rec.unk_2C -> opposed_choice_sheets  include/game.h:358
+decl Unk80076FF8Rec.unk_3C -> row_tile_rects  include/game.h:362
+  round 0: 26 member error line(s)
+    src/main/596CC.c:199 unk_00 x3
+    src/main/596CC.c:199 unk_04 x1
+    src/main/596CC.c:200 unk_04 x1
+    src/main/5ED34.c:195 unk_08 x1
+    src/main/5ED34.c:215 unk_54 x1
+    src/main/5ED34.c:224 unk_00 x3
+    src/main/5ED34.c:224 unk_04 x1
+    src/main/5ED34.c:225 unk_04 x1
+    src/main/5ED34.c:317 unk_54 x1
+    src/main/5ED34.c:344 unk_84 x1
+    src/main/5ED34.c:348 unk_84 x1
+    src/main/5ED34.c:352 unk_84 x1
+    src/main/5ED34.c:356 unk_84 x1
+    src/main/5ED34.c:360 unk_84 x1
+    src/main/5ED34.c:1246 unk_7C x1
+    src/main/5ED34.c:1311 unk_14 x1
+    src/main/5ED34.c:1340 unk_14 x1
+    src/main/5ED34.c:1441 unk_7C x1
+    src/main/5ED34.c:1451 unk_14 x1
+    src/main/64FD8.c:167 unk_3C x1
+    src/main/64FD8.c:252 unk_18 x1
+    src/main/64FD8.c:420 unk_2C x1
+    src/main/64FD8.c:449 unk_2C x1
+    src/main/64FD8.c:663 unk_20 x1
+    src/main/64FD8.c:903 unk_20 x1
+    src/main/64FD8.c:1687 unk_04 x1
+  round 1: 2 member error line(s)
+  round 2: 0 member error line(s)
+PASS Unk80078824Rec.unk_00=resource_head, Unk8006EA28Rec.unk_00=resource_head, Unk80076FF8Rec.unk_00=resource_head, Ctx77D94.unk_00=resource_head, Unk8006919CRec.unk_00=resource_head
+decl Unk80078824Rec.unk_00 -> resource_head  include/game.h:289
+decl Unk8006EA28Rec.unk_00 -> resource_head  include/game.h:328
+decl Unk80076FF8Rec.unk_00 -> resource_head  include/game.h:353
+decl Ctx77D94.unk_00 -> resource_head  include/game.h:376
+decl Unk8006919CRec.unk_00 -> resource_head  include/game.h:2450
+  round 0: 5 member error line(s)
+    src/main/596CC.c:200 unk_00 x1
+    src/main/5ED34.c:225 unk_00 x1
+    src/main/64FD8.c:1648 unk_00 x1
+    src/main/64FD8.c:1687 unk_00 x1
+    src/main/64FD8.c:1749 unk_00 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -275,3 +275,3 @@
+-    Unk8005C2A8Pack *unk_00;
+-    s32 unk_04;
+-    s32 unk_08;
++    Unk8005C2A8Pack *sound_pack;
++    s32 free_ram_start;
++    s32 vram_image_pixels;
+@@ -289 +289 @@
+-    Unk8006E950Head unk_00;
++    Unk8006E950Head resource_head;
+@@ -328,3 +328,3 @@
+-    Unk8006E950Head unk_00;
+-    s32 unk_14[8][2];
+-    Unk8006ECF4Rec *unk_54;
++    Unk8006E950Head resource_head;
++    s32 row_choice_pixels[8][2];
++    Unk8006ECF4Rec *selected_entry_header_block;
+@@ -340 +340 @@
+-    RECT *unk_7C;
++    RECT *row_choice_upload_rects;
+@@ -342 +342 @@
+-    s32 unk_84[5];
++    s32 entry_upload_pixels[5];
+@@ -353 +353 @@
+-    Unk8006E950Head unk_00;
++    Unk8006E950Head resource_head;
+@@ -355 +355 @@
+-    Unk8009B0E0Record **unk_18;
++    Unk8009B0E0Record **sel_panel_sheets;
+@@ -357,2 +357,2 @@
+-    Unk8009B0E0Record **unk_20[3];
+-    Unk8009B0E0Record **unk_2C;
++    Unk8009B0E0Record **pick_slot_sheets[3];
++    Unk8009B0E0Record **opposed_choice_sheets;
+@@ -362 +362 @@
+-    Rec_8006C21C *unk_3C;
++    Rec_8006C21C *row_tile_rects;
+@@ -376 +376 @@
+-    Unk8006E950Head unk_00;
++    Unk8006E950Head resource_head;
+@@ -2450 +2450 @@
+-    Unk8006E950Head unk_00;
++    Unk8006E950Head resource_head;
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -200 +200 @@
+-    return a0->unk_00.unk_04;
++    return a0->resource_head.free_ram_start;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -195 +195 @@
+-    s3 = a1->unk_08;
++    s3 = a1->vram_image_pixels;
+@@ -215 +215 @@
+-    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_54);
++    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->selected_entry_header_block);
+@@ -225 +225 @@
+-    return a0->unk_00.unk_04;
++    return a0->resource_head.free_ram_start;
+@@ -317 +317 @@
+-    s3 = arg0->resource_root.v8006EA28->unk_54;
++    s3 = arg0->resource_root.v8006EA28->selected_entry_header_block;
+@@ -344 +344 @@
+-            a2 = g_entry_menu_resources->unk_84[0];
++            a2 = g_entry_menu_resources->entry_upload_pixels[0];
+@@ -348 +348 @@
+-            a2 = g_entry_menu_resources->unk_84[1];
++            a2 = g_entry_menu_resources->entry_upload_pixels[1];
+@@ -352 +352 @@
+-            a2 = g_entry_menu_resources->unk_84[2];
++            a2 = g_entry_menu_resources->entry_upload_pixels[2];
+@@ -356 +356 @@
+-            a2 = g_entry_menu_resources->unk_84[3];
++            a2 = g_entry_menu_resources->entry_upload_pixels[3];
+@@ -360 +360 @@
+-            a2 = g_entry_menu_resources->unk_84[4];
++            a2 = g_entry_menu_resources->entry_upload_pixels[4];
+@@ -1246 +1246 @@
+-        var_6 = g_entry_menu_resources->unk_7C;
++        var_6 = g_entry_menu_resources->row_choice_upload_rects;
+@@ -1311 +1311 @@
+-                    tim = &g_entry_menu_resources->unk_14[id][sel];
++                    tim = &g_entry_menu_resources->row_choice_pixels[id][sel];
+@@ -1340 +1340 @@
+-                    tim = &g_entry_menu_resources->unk_14[id][sel];
++                    tim = &g_entry_menu_resources->row_choice_pixels[id][sel];
+@@ -1441 +1441 @@
+-                    var_6 = g_entry_menu_resources->unk_7C;
++                    var_6 = g_entry_menu_resources->row_choice_upload_rects;
+@@ -1451 +1451 @@
+-                    tim = &g_entry_menu_resources->unk_14[id][sel];
++                    tim = &g_entry_menu_resources->row_choice_pixels[id][sel];
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -167 +167 @@
+-        t = SELWORK->f04->unk_3C;
++        t = SELWORK->f04->row_tile_rects;
+@@ -252 +252 @@
+-    records = arg0->resource_root.v80076FF8->unk_18;
++    records = arg0->resource_root.v80076FF8->sel_panel_sheets;
+@@ -420 +420 @@
+-    tbl = arg0->resource_root.v80076FF8->unk_2C;
++    tbl = arg0->resource_root.v80076FF8->opposed_choice_sheets;
+@@ -449 +449 @@
+-    tbl = arg0->resource_root.v80076FF8->unk_2C;
++    tbl = arg0->resource_root.v80076FF8->opposed_choice_sheets;
+@@ -663 +663 @@
+-        table = arg0->resource_root.v80076FF8->unk_20[SELWORK->f65];
++        table = arg0->resource_root.v80076FF8->pick_slot_sheets[SELWORK->f65];
+@@ -903 +903 @@
+-    table = arg0->resource_root.v80076FF8->unk_20[SELWORK->f65];
++    table = arg0->resource_root.v80076FF8->pick_slot_sheets[SELWORK->f65];
+@@ -1648 +1648 @@
+-    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x32, &s0->unk_00);
++    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x32, &s0->resource_head);
+@@ -1687 +1687 @@
+-    return a0->unk_00.unk_04;
++    return a0->resource_head.free_ram_start;
+@@ -1749 +1749 @@
+-    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x5F, &s0->unk_00);
++    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x5F, &s0->resource_head);
+DRY RUN: 4 file(s) would change; nothing written
+UNRESOLVED (2): edit by hand, then re-run the keycheck
+  src/main/596CC.c:199: also reaches `unk_00` through another type
+  src/main/5ED34.c:224: also reaches `unk_00` through another type
+exit=1

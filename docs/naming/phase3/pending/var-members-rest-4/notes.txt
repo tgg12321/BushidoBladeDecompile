@@ -1,0 +1,61 @@
+var-members-rest-4 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Surviving: 16 member rows (pairs.txt), two with a changed spelling:
+  Unk8006E950Head.unk_04  Codex primitive_storage -> free_ram_start. The same word is also snd_LoadVabPack's
+    ram_buffer_addr (the base snd_CompactVabBodies moves SPU bodies through, 4BC3C.c:392,475) for MOD and SEL
+    before gpu_InitPrimBufferPair lays the primitive buffers there; "primitive storage" is contradicted by the
+    first read, "free RAM start" bears out both. Fallback if the reviewer dislikes it: work_ram_start.
+  Unk8006EA28Rec.unk_54   Codex selected_entry_quads -> selected_entry_header_block. The member points at the
+    Unk8006ECF4Rec block (per-player cell tables + 12-byte sheet headers); the quads are what gpu_Upload-
+    AndDrawSelectedEntryQuads emits, not what the member holds.
+Unchanged from Codex: sound_pack, vram_image_pixels, resource_head (x5, shared-name exception), row_choice_pixels,
+row_choice_upload_rects, entry_upload_pixels, sel_panel_sheets, pick_slot_sheets, opposed_choice_sheets, row_tile_rects.
+
+Dropped rows: none. Codex's NO_NAME rows are all re-confirmed neutral (no consumer fixes an identity), not in pairs:
+  Unk8006E950Head.unk_0C / unk_10 (two 640x32 bottom-strip pointers chosen by Unk8009BD24Block.unk20_0 only)
+  Unk8006EA28Rec.unk_58 / unk_5C / unk_60 / unk_64 / unk_68 / unk_6C / unk_70 / unk_74 (sheet lists with mixed or
+    mechanical uses), unk_78 (no reader), unk_80 (byte table read as transitions and as a stored choice, 5ED34.c:1665)
+  Unk80076FF8Rec.unk_14 (mixed), unk_1C, unk_30, unk_34, unk_38 (63D2C.c:303,376)
+  Unk80078824Rec.unk_14 (scrolling and delayed sheet mixed, 64FD8.c:1707-1710)
+
+Dry run (dry.txt, exit=1): 4 files change (include/game.h, 5ED34.c, 596CC.c, 64FD8.c); 0 compile failures; the two
+UNRESOLVED lines are the tool's documented limit for a line holding two renamed `unk_00` tokens (embedded head
+`.unk_00` then the head member). Dropping sound_pack does not help (same exit 1, tested and discarded): any pair of
+Rec.unk_00=resource_head with Head.unk_00 on one line trips it. Hand-edit at apply (then re-run the keycheck):
+  src/main/596CC.c:199  snd_LoadVabPack(a0->resource_head.sound_pack, 1, a0->resource_head.free_ram_start);
+  src/main/5ED34.c:224  same text with a0 of type Unk8006EA28Rec *.
+(Lines :200 and :225 resolve by the tool: `a0->resource_head.free_ram_start`.) Pass 1 (Head.unk_00) and pass 2
+(Rec.unk_00s, one pass: shared new name) are produced by split_passes.
+
+R6 watch points (comments the tool does not edit)
+- include/game.h:254-280 Unk8006E950Head comment: "pass unk_00 and unk_04 to the VAB loader", "unk_00..unk_08 are
+  equal", "loads the image at unk_08", "return unk_04", "strip at unk_0C or unk_10" -> sound_pack / free_ram_start /
+  vram_image_pixels (unk_0C, unk_10 stay).
+- include/game.h:283-288 STAFF comment: "After the head, one offset list" (no old name; ok). :291 member rename only.
+- include/game.h:294-295 "D_SEL.BIN's unk_3C (menu_DrawSelRowTiles)" -> row_tile_rects.
+- include/game.h:301-307 Unk8006ECF4Rec comment "SEL.BIN's unk_54 block" -> selected_entry_header_block.
+- include/game.h:309-326 SEL comment: unk_14 -> row_choice_pixels, unk_54 (twice, ":" lines 318, 320) ->
+  selected_entry_header_block, "unk_54..unk_74" range stays but unk_54 token changes, unk_7C -> row_choice_upload_rects,
+  unk_84 -> entry_upload_pixels; unk_58..unk_80 stay.
+- include/game.h:345-349 D_SEL comment: "unk_14..unk_38" (range), "(unk_20 is indexed by the round count ...)" ->
+  pick_slot_sheets, "unk_3C" -> row_tile_rects.
+- include/game.h:2433 etc. (MOD comment): "After the head: unk_14..cursor_row_sheets" unaffected.
+- src/main/5ED34.c:1194-1195 comment names g_entry_menu_resources->unk_74 / unk_60 (stay); :1238 and :1244
+  `g_entry_menu_resources->unk_7C` -> row_choice_upload_rects (the :1244 form is quoted measured text, still a rename).
+- src/main/4BC3C.c:441-442 `Unk8005C2A8Pack unk_00..unk_08` is the pack type, not the head: leave.
+- include/bb2.h:1053-1054 prototypes name only the types. docs/engine/*.md name no head or SEL/D_SEL member.
+- Other same-spelled members that must NOT be touched (the tool resolves by type): Unk8005C2A8Pack.unk_00/04/08
+  (4BC3C.c:477-487), Unk8006ECF4Rec.unk_00 / unk_0C (5ED34.c:317, :383-385), Unk8006919CRec.unk_14..unk_3C (596CC.c),
+  Unk80076FF8Rec.unk_14/1C/30/34/38 and Unk8006EA28Rec.unk_58..unk_80 (neutral), primitive_cursors.unk_14.
+
+Judgement calls for the reviewer
+- free_ram_start (above); "free" is argued from the two writers, not from a file-size proof.
+- resource_head shared on five types: all five embed the same Unk8006E950Head at +0 in this wave; Unk80076FF8Rec and
+  Ctx77D94 have no C member expression (only game.h declaration, raw a0[1] and &s0->unk_00), still named for
+  consistency of the shared head.
+- sound_pack: D_SEL / NAR never read it (the relocators do not call snd_LoadVabPack); the claim is the type
+  (Unk8005C2A8Pack *) plus the two real consumers.
+- pick_slot_sheets / opposed_choice_sheets / sel_panel_sheets lean on existing function names (menu_DrawSelPanel,
+  menu_DrawSelOpposedChoice, "pick" in menu_UpdateSel*Picks); N4 prefix check should confirm those names pass.
+- row_choice_*: "row choice" is the id (slot_records.rec[i].unk2) menu_UpdateRowCursors stores and indexes both
+  unk_14 and unk_7C with; "entry" in entry_upload_pixels follows g_entry_menu_grid_entries value.
