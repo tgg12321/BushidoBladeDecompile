@@ -957,8 +957,8 @@ typedef struct {
 } TexRec;
 
 /* The 0x2C-byte block g_eff_active_command_block points at (51268):
- * Unk1F800000Rec.unk00 (eff_BindScratchpad's seed) or g_eff_command_block,
- * where eff_StartRotatedQuadClusterWithNearWhiteLight ..
+ * Unk1F800000Rec.default_command_block (eff_BindScratchpad's seed) or
+ * g_eff_command_block, where eff_StartRotatedQuadClusterWithNearWhiteLight ..
  * eff_StartRecycledCommandWithMagentaLight point it before calling
  * eff_StartCommand. g_eff_billboards follows g_eff_command_block, so that copy
  * ends at +0x2C. Each copy sets one pointer pair:
@@ -1018,8 +1018,8 @@ typedef struct {
 /* eff_DrawBillboardList's layout of the 51268 work area
  * (Unk1F8000B8Union.v800620B8). eff_SetRotMatrix, which eff_DrawBillboardList
  * calls before it touches the area, writes and consumes its SVECTOR at
- * +0x00..+0x07. SetTransMatrix is handed the address 0x14 below unk14, so unk14
- * is read as a MATRIX's t[]. */
+ * +0x00..+0x07. SetTransMatrix is handed the address 0x14 below
+ * rotated_position, so rotated_position is read as a MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x10];                  /* no access here */
     s16 billboard_screen_half_width; /* half_width */
@@ -1033,8 +1033,8 @@ typedef struct {
 } Unk1F8000B8_800620B8;
 
 /* eff_DrawAndAdvanceBillboardPairs's layout (Unk1F8000B8Union.v80063084).
- * SetTransMatrix is handed the address 0x14 below unk14 (the area's base), so
- * unk14 is read as a MATRIX's t[]. */
+ * SetTransMatrix is handed the address 0x14 below rotated_position (the area's
+ * base), so rotated_position is read as a MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x14];                 /* no access */
     VECTOR rotated_position;        /* ApplyRotMatrix out */
@@ -1047,8 +1047,8 @@ typedef struct {
 } Unk1F8000B8_80063084;
 
 /* eff_DrawAndAdvanceJitteredBillboards's layout (Unk1F8000B8Union.v800646E8).
- * SetTransMatrix is handed the address 0x14 below unk18, so unk18 is read as a
- * MATRIX's t[]. */
+ * SetTransMatrix is handed the address 0x14 below rotated_position, so
+ * rotated_position is read as a MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x10];                /* no access */
     s16 billboard_screen_width;    /* billboard_width */
@@ -1084,11 +1084,13 @@ typedef struct {
 
 /* The layout eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads
  * share (Unk1F8000B8Union.v800678A8): each of the wrappers func_800676C8 ..
- * func_8006786C calls the three in turn, and values cross the calls (unk04,
- * unk6C, unk80, the unk8C table; eff_PrepareParticles and eff_UpdateParticles
- * each use unk70 for their own value). eff_PrepareParticles sets it up,
- * eff_UpdateParticles builds the quads at unk80 and records each one's depth
- * (its OT slot index) in unk8C, eff_LinkParticleQuads links them. */
+ * func_8006786C calls the three in turn, and values cross the calls
+ * (squared_distance_limit, particle_scan_count, particle_quad_cursor, the
+ * quad_ot_index_table; eff_PrepareParticles and eff_UpdateParticles each use
+ * unk70 for their own value). eff_PrepareParticles sets it up,
+ * eff_UpdateParticles builds the quads at particle_quad_cursor and records each
+ * one's depth (its OT slot index) in quad_ot_index_table, eff_LinkParticleQuads
+ * links them. */
 typedef struct {
     u16 tex_right_u_offset;  /* eff_PrepareParticles: added to the texture u */
     u16 tex_bottom_v_offset; /* eff_PrepareParticles: added to the texture v */
@@ -1128,9 +1130,9 @@ typedef struct {
     s32 random_accumulator;
 } Unk1F8000B8_800678A8;
 
-/* Unk1F800000Rec.unkB8, the 51268 work area g_eff_work_area points at
- * (0x1F8000B8 to the end of the scratchpad). Each user lays it out for one call
- * (or, for the eff_PrepareParticles trio, one wrapper call); raw sizes the
+/* Unk1F800000Rec.effect_work_area, the 51268 work area g_eff_work_area points
+ * at (0x1F8000B8 to the end of the scratchpad). Each user lays it out for one
+ * call (or, for the eff_PrepareParticles trio, one wrapper call); raw sizes the
  * union. eff_SetRotMatrix's is one SVECTOR.
  * eff_DrawAndAdvanceRotatedQuadClusters and eff_DrawYawedSlotQuads still
  * convert g_eff_work_area (their work-area base is staged through a POLY_FT4 *
@@ -1148,11 +1150,11 @@ typedef union {
 /* 51268's view of the scratchpad from 0x1F800000 (SPAD51268).
  * 17AFC's view of the same memory, used at other times, is ScrPad.
  * eff_BindScratchpad points 51268's D_800A34xx globals at these members; apart
- * from its own two stores to unk00.unk04 / unk08, the code reaches them only
- * through those globals:
- * - unk00: the command block g_eff_active_command_block points at until a
- * function retargets it; D_800A346C / g_eff_view_origin point at its unk18 /
- * unk20.
+ * from its own two stores to default_command_block.unk04 / unk08, the code
+ * reaches them only through those globals:
+ * - default_command_block: the command block g_eff_active_command_block points
+ * at until a function retargets it; D_800A346C / g_eff_view_origin point at its
+ * unk18 / unk20.
  * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec /
  * g_eff_clut_tex_rec (TexRec). eff_DrawBillboardList retargets them only in its
@@ -1161,10 +1163,11 @@ typedef union {
  * - unkA0 / unkA4: the initial targets of g_eff_current_ot_entry (u32 *) /
  * g_eff_current_prim_tag (u32
  * *), which every user retargets before use.
- * - unkB8: the work area g_eff_work_area points at (Unk1F8000B8Union), laid out
- * differently by its users; it runs to the end of the scratchpad. The other
- * members are one global each (g_eff_view_rotation_matrix ..
- * g_eff_bottom_right_uv, D_800A3480 / D_800A3484). */
+ * - effect_work_area: the work area g_eff_work_area points at
+ * (Unk1F8000B8Union), laid out differently by its users; it runs to the end of
+ * the scratchpad. The other members are one global each
+ * (g_eff_view_rotation_matrix .. g_eff_bottom_right_uv, D_800A3480 /
+ * D_800A3484). */
 typedef struct {
     Unk1F800000Unk00 default_command_block;
     u8 unk2C[4];
