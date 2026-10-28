@@ -16,11 +16,11 @@ void CopyWorkingFlagsAndButtonMappingsToSavedRecord(void) {
 
     p = GetWorkingRecord();
     g_saved_record.flags &= ~7;
-    g_saved_record.flags |= p->unk20_0 ? 1 : 0;
+    g_saved_record.flags |= p->grayscale ? 1 : 0;
     g_saved_record.flags |= p->unk20_1 ? 2 : 0;
-    g_saved_record.flags |= p->unk20_2 ? 4 : 0;
+    g_saved_record.flags |= p->cd_audio_suppressed ? 4 : 0;
     for (i = 0; i < 3; i++) {
-        g_saved_record.frec20[i] = p->unk17[i];
+        g_saved_record.frec20[i] = p->button_mappings[i];
     }
 }
 
@@ -58,8 +58,8 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         i++;
     } while (i < 2);
 
-    g_fight_config.unk_C = p->unk14_4;
-    g_fight_config.unk_E = p->unk20_3;
+    g_fight_config.unk_C = p->stage_index;
+    g_fight_config.unk_E = p->view_setting;
     g_fight_tracked_fighter_index = 0;
     val = g_fight_config.unk_D;
 
@@ -69,10 +69,10 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
     } else if (val == 5) {
         s32 win_target;
 
-        g_fight_match_count = p->unk14_10 + 3;
-        D_800A36CC = D_8008EC30[p->unk14_12];
+        g_fight_match_count = p->match_count_index + 3;
+        D_800A36CC = D_8008EC30[p->time_limit_index];
         win_target = 1;
-        if (p->unk14_14) {
+        if (p->win_target_index) {
             win_target = 2;
         }
         g_fight_win_target = win_target;
@@ -117,13 +117,13 @@ void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
 
     p = GetWorkingRecord();
     i = 0;
-    p->unk20_0 = g_saved_record.flags & 1;
+    p->grayscale = g_saved_record.flags & 1;
     p->unk20_1 = (g_saved_record.flags >> 1) & 1;
-    p->unk20_2 = (g_saved_record.flags >> 2) & 1;
+    p->cd_audio_suppressed = (g_saved_record.flags >> 2) & 1;
     src = g_saved_record.frec20;
     for (; i < 3; i++) {
-        p->unk17[i] = *src;
-        p->unk1D[i] = *src;
+        p->button_mappings[i] = *src;
+        p->committed_button_mappings[i] = *src;
         src++;
     }
     times = g_saved_record.times;
@@ -140,13 +140,13 @@ void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
         s32 t;
 
         var_4 = times[i].unk_4 / 1800;
-        p->unk21[i].unk0 = var_4;
+        p->time_records[i].minutes = var_4;
         var_5 = (times[i].unk_4 / 30) % 60;
-        p->unk21[i].unk1 = var_5;
+        p->time_records[i].seconds = var_5;
         var_6 = (times[i].unk_4 % 30) * 100 / 30;
-        p->unk21[i].unk2 = var_6;
+        p->time_records[i].hundredths = var_6;
         t = times[i].unk_0;
-        p->unk21[i].unk3 = t;
+        p->time_records[i].character_index = t;
     }
 }
 

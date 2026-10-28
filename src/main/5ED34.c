@@ -66,7 +66,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     D_800A32E8 = 0x7F;
-    g_entry_menu_fight_mode = arg2->unk14_0;
+    g_entry_menu_fight_mode = arg2->fight_mode;
     D_800A35AC = (Unk8006E49CRec *)arg0;
     g_entry_menu_working_record_ptr = arg2;
     g_entry_menu_row_phase_extra_slot_count = 0;
@@ -172,7 +172,7 @@ void gpu_LoadVramBottomStrip(Unk8006E950Head *a0) {
     s32 data;
     RECT rect;
     p = GetWorkingRecord();
-    if (p->unk20_0) {
+    if (p->grayscale) {
         data = a0->unk_10;
     } else {
         data = a0->unk_0C;
@@ -652,7 +652,7 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     prim = arg0->primitive_cursors.tile_prims;
     SetTile(prim);
     SetSemiTrans(prim, 0);
-    if (g_entry_menu_working_record_ptr->unk20_0) {
+    if (g_entry_menu_working_record_ptr->grayscale) {
         prim->r0 = 0xC8;
         prim->g0 = 0xC8;
         prim->b0 = 0xC8;
@@ -1618,7 +1618,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
         g_entry_menu_slide_phase = 1;
         snd_QueueSound(6, 0x7F, 0x7F);
         if ((u32)g_entry_menu_fight_mode < 2) {
-            g_entry_menu_working_record_ptr->unk14_4 = func_80071C20();
+            g_entry_menu_working_record_ptr->stage_index = func_80071C20();
             D_800A35A0 = 1;
         } else if (g_entry_menu_fight_mode == 4) {
             g_entry_menu_next_handler_index = 5;
@@ -1632,13 +1632,13 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
         for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
                             g_entry_menu_grid_phase_extra_slot_count;
              i++) {
-            g_entry_menu_working_record_ptr->unk00[i][0].bd0 =
+            g_entry_menu_working_record_ptr->match_picks[i][0].bd0 =
                 g_entry_menu_slot_records.rec[i].unk0;
         }
         for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
                             g_entry_menu_row_phase_extra_slot_count;
              i++) {
-            g_entry_menu_working_record_ptr->unk00[i][0].unk1 =
+            g_entry_menu_working_record_ptr->match_picks[i][0].unk1 =
                 g_entry_menu_slot_records.rec[i].unk2;
         }
     }
@@ -1914,9 +1914,9 @@ void menu_UpdateChoiceGrid(
                            g_entry_menu_choice_grid_column];
             snd_QueueSound(1, 0x7F, 0x7F);
             if (var_10 != 0xD || g_entry_menu_fight_mode != 6) {
-                g_entry_menu_working_record_ptr->unk14_4 = var_10;
+                g_entry_menu_working_record_ptr->stage_index = var_10;
             } else {
-                g_entry_menu_working_record_ptr->unk14_4 = 0x25;
+                g_entry_menu_working_record_ptr->stage_index = 0x25;
             }
             D_800A35A0 = 1;
         }

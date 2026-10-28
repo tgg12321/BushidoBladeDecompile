@@ -1028,23 +1028,23 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *arg0) {
     if (v >= 0xFF) {
         *cnt = 0xFF;
         var_1 = SELWORK->f00;
-        var_1->unk14_10 = SELWORK->f65;
+        var_1->match_count_index = SELWORK->f65;
         ret = 1;
         if (SELWORK->f66 < 3) {
             var_6 = SELWORK->f66 - 1;
         } else {
             var_6 = SELWORK->f66 - 2;
         }
-        var_1->unk14_12 = var_6;
-        var_1->unk14_14 = SELWORK->f67;
+        var_1->time_limit_index = var_6;
+        var_1->win_target_index = SELWORK->f67;
         var_1->unk14_15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
         for (i = 0; i < 2; i++) {
             for (j = 0; j < SELWORK->f65 + 3; j++) {
                 /* flat index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
-                var_1->unk00[i][j].bd0 =
+                var_1->match_picks[i][j].bd0 =
                     g_sel_grid_page_cells[0][SELWORK->f6A[i][j]].unk1;
-                var_1->unk00[i][j].unk1 = SELWORK->f7E[i][j];
+                var_1->match_picks[i][j].unk1 = SELWORK->f7E[i][j];
             }
         }
     }
@@ -1296,7 +1296,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
     if (result >= 0) {
         ret = 1;
         g_option_mode_flow_state = 0;
-        g_working_record.unk14_0 = result;
+        g_working_record.fight_mode = result;
     } else if (result == -2) {
         ret = -1;
     }
@@ -1305,8 +1305,8 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
 
 s32 ResetFlowAndFetchRowTablePair(void) {
     g_option_mode_flow_state = 0;
-    D_800A35E0 = D_8009BD58[g_working_record.unk14_0][1];
-    return D_8009BD58[g_working_record.unk14_0][0];
+    D_800A35E0 = D_8009BD58[g_working_record.fight_mode][1];
+    return D_8009BD58[g_working_record.fight_mode][0];
 }
 
 void StoreCompactedBits(s32 arg0) {
@@ -1382,9 +1382,12 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
             g_option_mode_flow_state = 1;
             break;
         case 3:
-            g_working_record.unk17[0] = g_working_record.unk1D[0];
-            g_working_record.unk17[1] = g_working_record.unk1D[1];
-            g_working_record.unk17[2] = g_working_record.unk1D[2];
+            g_working_record.button_mappings[0] =
+                g_working_record.committed_button_mappings[0];
+            g_working_record.button_mappings[1] =
+                g_working_record.committed_button_mappings[1];
+            g_working_record.button_mappings[2] =
+                g_working_record.committed_button_mappings[2];
             g_option_mode_flow_state = 4;
             break;
         }
@@ -1415,9 +1418,12 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         result = menu_UpdateRowBitMenu(arg0, arg1);
         if (result == 1) {
             g_option_mode_flow_state = 0;
-            g_working_record.unk1D[0] = g_working_record.unk17[0];
-            g_working_record.unk1D[1] = g_working_record.unk17[1];
-            g_working_record.unk1D[2] = g_working_record.unk17[2];
+            g_working_record.committed_button_mappings[0] =
+                g_working_record.button_mappings[0];
+            g_working_record.committed_button_mappings[1] =
+                g_working_record.button_mappings[1];
+            g_working_record.committed_button_mappings[2] =
+                g_working_record.button_mappings[2];
         } else if (result == -1) {
             g_option_mode_flow_state = 0;
         }

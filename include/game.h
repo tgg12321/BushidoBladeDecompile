@@ -519,10 +519,10 @@ typedef struct {
    CopySavedFlagsButtonMappingsAndTimesToWorkingRecord store them;
    gpu_DrawIndexedCellsAndDecimalDigitPairs reads them). */
 typedef struct {
-    u8 unk0;
-    u8 unk1;
-    u8 unk2;
-    u8 unk3;
+    u8 minutes;
+    u8 seconds;
+    u8 hundredths;
+    u8 character_index;
 } Unk8009BD45Rec;
 
 /* 0x8009BD24..0x8009BD57: the settings record GetWorkingRecord returns and
@@ -541,27 +541,27 @@ typedef struct {
    - unk20_*: the word at +0x20, bits 0-3; its upper bytes start the unk21
    records. */
 typedef struct {
-    Unk8009BD24Record unk00[2][5];
-    u32 unk14_0 : 4;
-    u32 unk14_4 : 6;
-    u32 unk14_10 : 2;
-    u32 unk14_12 : 2;
-    u32 unk14_14 : 1;
+    Unk8009BD24Record match_picks[2][5];
+    u32 fight_mode : 4;
+    u32 stage_index : 6;
+    u32 match_count_index : 2;
+    u32 time_limit_index : 2;
+    u32 win_target_index : 1;
     u32 unk14_15 : 2;
     u32 unk14_17 : 1;
     u32 unk14_18 : 3;
     u32 unk14_21 : 3;
-    u8 unk17[3];
-    u8 unk1A[3];
-    u8 unk1D[3];
-    u32 unk20_0 : 1;
+    u8 button_mappings[3];
+    u8 default_button_mappings[3];
+    u8 committed_button_mappings[3];
+    u32 grayscale : 1;
     u32 unk20_1 : 1;
-    u32 unk20_2 : 1;
-    u32 unk20_3 : 1;
+    u32 cd_audio_suppressed : 1;
+    u32 view_setting : 1;
     u32 unk20_4 : 4;
-    Unk8009BD45Rec unk21[3];
-    u8 unk2D[3];
-    u8 unk30;
+    Unk8009BD45Rec time_records[3];
+    u8 fight_time[3];
+    u8 fight_character_index;
 } Unk8009BD24Block;
 
 /* The select-screen work area g_sel_screen_work points at (menu_InitSelScreen

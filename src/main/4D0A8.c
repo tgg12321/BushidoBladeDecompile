@@ -837,12 +837,12 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
 
     s.semi = 0;
     s.has_color = 0;
-    for (i = 0; i < g_working_record.unk14_10 + 3; i++) {
+    for (i = 0; i < g_working_record.match_count_index + 3; i++) {
         var_1[0] = (packed_row_values >> (i * 4)) & 3;
         var_1[1] = (packed_row_values >> (i * 4 + 2)) & 3;
-        if (g_working_record.unk14_10 == 2) {
+        if (g_working_record.match_count_index == 2) {
             s.y = i * 24 + 0x44;
-        } else if (g_working_record.unk14_10 == 1) {
+        } else if (g_working_record.match_count_index == 1) {
             s.y = i * 24 + 0x4F;
         } else {
             s.y = i * 34 + 0x4F;
@@ -891,9 +891,9 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
 
     s.header = &D_8009B4E4;
     s.x = 0;
-    if (g_working_record.unk14_10 == 2) {
+    if (g_working_record.match_count_index == 2) {
         totals_y = 0xC6;
-    } else if (g_working_record.unk14_10 == 1) {
+    } else if (g_working_record.match_count_index == 1) {
         totals_y = 0xC2;
     } else {
         totals_y = 0xBE;
@@ -906,7 +906,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
      * $zero,0x18($sp)`; Q36, no-new-park-categories); `var_1[0] = var_1[1] =
      * 0`: score 2 */
     *(s32 *)var_1 = 0;
-    for (i = 0; i < g_working_record.unk14_10 + 3; i++) {
+    for (i = 0; i < g_working_record.match_count_index + 3; i++) {
         if (((packed_row_values >> (i * 4)) & 3) != 3) {
             var_1[0] += (packed_row_values >> (i * 4)) & 3;
         }
@@ -938,7 +938,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
 
     s.ot_idx = ot_index;
     var_2[0] = var_2[1] = 0;
-    for (i = 0; i < g_working_record.unk14_10 + 3; i++) {
+    for (i = 0; i < g_working_record.match_count_index + 3; i++) {
         s.header = &D_8009ADB4;
         s.semi = 0;
         var_1[0] = (packed_row_values >> (i * 4)) & 3;
@@ -957,22 +957,22 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
                 }
                 s.has_color = 0;
             }
-            c = g_working_record.unk00[j][i].bd0;
+            c = g_working_record.match_picks[j][i].bd0;
             if (c >= 12) {
                 c -= 2;
             }
             s.table = D_8009ADD8[c];
             s.x = j * 320 + D_8009B58C[c];
-            if (g_working_record.unk14_10 == 2) {
+            if (g_working_record.match_count_index == 2) {
                 s.y = i * 24 - 8;
-            } else if (g_working_record.unk14_10 == 1) {
+            } else if (g_working_record.match_count_index == 1) {
                 s.y = i * 24 + 3;
             } else {
                 s.y = i * 34 + 3;
             }
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
-            if (g_working_record.unk00[j][i].bd0 == 8) {
+            if (g_working_record.match_picks[j][i].bd0 == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
                 cur = gpu_AddSpriteCells(&s);
@@ -1000,9 +1000,9 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
 
     s.header = &D_8009B398[0];
     s.semi = 0;
-    if (g_working_record.unk14_10 == 2) {
+    if (g_working_record.match_count_index == 2) {
         s.y = 0xC9;
-    } else if (g_working_record.unk14_10 == 1) {
+    } else if (g_working_record.match_count_index == 1) {
         s.y = 0xC5;
     } else {
         s.y = 0xC1;
@@ -1044,9 +1044,9 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     tile->r0 = 0xFF;
     tile->g0 = 0x10;
     tile->b0 = 0x10;
-    if (g_working_record.unk14_10 == 2) {
+    if (g_working_record.match_count_index == 2) {
         setXY0(tile, 0x5E, 0xC1);
-    } else if (g_working_record.unk14_10 == 1) {
+    } else if (g_working_record.match_count_index == 1) {
         setXY0(tile, 0x5E, 0xBD);
     } else {
         setXY0(tile, 0x5E, 0xB9);
@@ -1105,7 +1105,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
         if (mark_group_index != 0) {
             mark_slot_count = 2;
         } else {
-            mark_slot_count = g_working_record.unk14_14 + 1;
+            mark_slot_count = g_working_record.win_target_index + 1;
         }
         for (side_index = 0; side_index < 2; side_index++) {
             for (k = 0; k < mark_slot_count; k++) {
@@ -1187,12 +1187,13 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
         for (k = 0; k < 3; k++) {
             switch (j) {
             case 0:
-                if (k < 2 || g_working_record.unk14_12 == 2) {
+                if (k < 2 || g_working_record.time_limit_index == 2) {
                     d[k] = arg0->unk_2;
-                    if (k == 0 && g_working_record.unk14_12 == 2) {
+                    if (k == 0 && g_working_record.time_limit_index == 2) {
                         d[k] = d[k] / 100;
                     } else if (
-                        k == 0 || (k == 1 && g_working_record.unk14_12 == 2)) {
+                        k == 0 ||
+                        (k == 1 && g_working_record.time_limit_index == 2)) {
                         d[k] = d[k] / 10;
                     }
                     d[k] = d[k] % 10;
@@ -1212,8 +1213,9 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                     } else {
                         d[k] = d[k] / 10 % 10;
                     }
-                    x = (g_working_record.unk14_12 == 2) ? k * 20 + 0x48
-                                                         : k * 20 + 0x34;
+                    x = (g_working_record.time_limit_index == 2)
+                            ? k * 20 + 0x48
+                            : k * 20 + 0x34;
                     s.table = &g_gpu_decimal_digit_cells[d[k]];
                     if (d[k] == 1) {
                         s.x = x + 3;
@@ -1223,7 +1225,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                 }
                 break;
             }
-            if (g_working_record.unk14_12 == 2) {
+            if (g_working_record.time_limit_index == 2) {
                 s.table->x = 0x109;
             } else {
                 s.table->x = 0x113;
@@ -1232,7 +1234,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             cur = gpu_AddSpriteCells(&s);
         }
         s.table = &D_8009B5E8;
-        if (g_working_record.unk14_12 == 2) {
+        if (g_working_record.time_limit_index == 2) {
             s.x = j * 6 + 0x145;
         } else {
             s.x = j * 6 + 0x13B;
@@ -1536,7 +1538,7 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     s.y = (D_8009B850[flagged_position_index & 0x7FFF] & 0x7F) + 0x2A;
     if (flagged_position_index & 0x8000) {
         s.header = &D_8009B7AC[0];
-    } else if (g_working_record.unk00[0][0].bd0 < 0xC) {
+    } else if (g_working_record.match_picks[0][0].bd0 < 0xC) {
         s.header = &D_8009B7AC[1];
     } else {
         s.header = &D_8009B7AC[2];

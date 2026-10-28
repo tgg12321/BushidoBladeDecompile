@@ -162,7 +162,7 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     s32 second_quad_buffer_addr;
     new_var = arg0;
     cdrom_WaitIdle();
-    v = g_working_record.unk14_0;
+    v = g_working_record.fight_mode;
     if (v == 0) {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0x3C), arg0);
     } else if (v == 3) {
@@ -798,7 +798,7 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
         sel_a:
             g_eff_clut_tex_rec = g_eff_current_tex_rec =
                 &D_8009BA00[(u32)g_eff_billboard_draw_count % 6];
-            if (g_working_record.unk20_0) {
+            if (g_working_record.grayscale) {
                 g_eff_clut_tex_rec = &D_8009BA00[10];
             }
             *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x1F;
@@ -814,7 +814,7 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
         sel_b:
             g_eff_clut_tex_rec = g_eff_current_tex_rec =
                 &D_8009BA00[6 + (g_eff_billboard_draw_count & 3)];
-            if (g_working_record.unk20_0) {
+            if (g_working_record.grayscale) {
                 g_eff_clut_tex_rec = &D_8009BA00[11];
             }
             *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0xF;
@@ -1238,7 +1238,7 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                                  85 / 4096) /
                                 100;
                         }
-                        if (g_working_record.unk20_0) {
+                        if (g_working_record.grayscale) {
                             *(s32 *)&prim->r0 = 0x808080;
                         } else {
                             *(s32 *)&prim->r0 = 0xFF8080;
@@ -1685,7 +1685,7 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
             SetPolyFT4(prim);
             prim->tpage = *g_eff_tpage_word;
             prim->clut = *g_eff_clut_word;
-            if (g_working_record.unk20_0) {
+            if (g_working_record.grayscale) {
                 prim->r0 = 0x80;
                 prim->g0 = 0x80;
                 prim->b0 = 0x80;
@@ -2164,7 +2164,7 @@ again:
         break;
     case 10:
     case 11:
-        if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
             g_eff_current_tex_rec = D_8009B9D8;
         } else {
             g_eff_current_tex_rec = D_8009B990;
@@ -2183,12 +2183,14 @@ again:
     case 6:
     case 7:
         if (g_eff_animated_quad_counters[mode_index] < 0x96) {
-            if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+            if (g_working_record.view_setting &&
+                g_main_loop_handler_index != 5) {
                 g_eff_current_tex_rec = D_8009B9D8;
             } else {
                 g_eff_current_tex_rec = D_8009B988;
             }
-        } else if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+        } else if (
+            g_working_record.view_setting && g_main_loop_handler_index != 5) {
             g_eff_current_tex_rec = D_8009B9E0;
         } else {
             g_eff_current_tex_rec = D_8009B990;
@@ -2197,7 +2199,7 @@ again:
         prim->g0 = ~g_eff_animated_quad_counters[mode_index];
         prim->b0 = 0xFF;
     size_sel:
-        if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
             *g_eff_base_width = 0x80;
             *g_eff_base_height = 0x80;
             *g_eff_tpage_word = 0x2F;
@@ -2411,12 +2413,12 @@ again:
         break;
     case 6:
     case 10:
-        if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
             *p_w = -*p_w;
         }
     case 7:
     case 11:
-        if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
             *p_w =
                 *p_w * rsin(g_eff_animated_quad_counters[mode_index] & 0xFFF) >>
                 11;
@@ -2432,7 +2434,7 @@ again:
                                255) >>
                    12;
         }
-        if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
+        if (g_working_record.view_setting && g_main_loop_handler_index != 5) {
             prim->x0 = *g_eff_screen_xy - *p_w;
             prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 2;
             prim->x1 = *p_w + *g_eff_screen_xy;
@@ -3074,7 +3076,7 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
                 if (*p_prim - g_eff_quad_buffer_base >= 0x1C1) {
                     continue;
                 }
-                if (g_working_record.unk20_0) {
+                if (g_working_record.grayscale) {
                     *(s32 *)&(*p_prim)++->r0 = 0x2C242424;
                     break;
                 } else if (D_800A34F0[particle_mode - 4] != 0) {

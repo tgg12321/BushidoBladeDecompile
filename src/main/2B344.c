@@ -877,28 +877,28 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
         src = &base[i];
         a = src->unk_4;
         a = a / 1800;
-        s0->unk21[i].unk0 = a;
+        s0->time_records[i].minutes = a;
         b = src->unk_4;
         b = b / 30;
         b = b % 60;
-        s0->unk21[i].unk1 = b;
+        s0->time_records[i].seconds = b;
         c = src->unk_4;
         c = c % 30;
         c = c * 100;
         c = c / 30;
-        s0->unk21[i].unk2 = c;
+        s0->time_records[i].hundredths = c;
         v = src->unk_0;
-        s0->unk21[i].unk3 = v;
+        s0->time_records[i].character_index = v;
         i += 1;
         if (i >= 3) {
             break;
         }
     } while (1);
     fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-    s0->unk2D[0] = buf.unk_0;
-    s0->unk2D[1] = buf.unk_2;
-    s0->unk2D[2] = buf.unk_3;
-    s0->unk30 = D_80101EC8[0].character_data_index;
+    s0->fight_time[0] = buf.unk_0;
+    s0->fight_time[1] = buf.unk_2;
+    s0->fight_time[2] = buf.unk_3;
+    s0->fight_character_index = D_80101EC8[0].character_data_index;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_handler_frame_counter = 0;
     g_main_loop_handler_index = 0x1F;
