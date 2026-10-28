@@ -1,0 +1,43 @@
+{
+  "description": "memory-card-save-load (slot 1 now holds a save), then TRIANGLE from the Option Menu to the top menu (8150) with D_800A31D9 poked back to its boot value 1 (25C38.c:458; the only store to it is the clear at 25C38.c:201), a poked stand-in for the power-on path with a saved card (the same code from subflow state 1 on; other RAM differs: the save was loaded at 7560, entry is by TRIANGLE from the Option Menu; a modified game): subflow states 7 / 8 / 9 (25C38.c:200-235): Checking Memory Card (memcard_StartLoadOnceStepAndDrawSheetPair), Load data from Memory Card? YES / NO (menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult, cursor on YES), CROSS 8600, Checking, Load completed (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress), then the top menu",
+  "covers": [
+    "menu:top",
+    "menu:option",
+    "menu:memory_card",
+    "menu:boot_load_prompt",
+    "event:save",
+    "event:load"
+  ],
+  "evidence": [
+    "docs/naming/runtime/memory-card-boot-load-1/spec.json"
+  ],
+  "extends": "memory-card-save-load",
+  "end_frame": 9400,
+  "pokes": [
+    {
+      "at": "0x800A31D9",
+      "hex": "01",
+      "phase": "t_top"
+    }
+  ],
+  "inputs": [
+    "8150:TRIANGLE",
+    "8600:CROSS"
+  ],
+  "phases": [
+    "8150:t_top",
+    "8250:load_prompt",
+    "8600:boot_load",
+    "8900:top_menu_2"
+  ],
+  "shots": [
+    "8200:t_top.checking",
+    "8300:load_prompt.first",
+    "8599:load_prompt.last",
+    "8650:boot_load.checking",
+    "8700:boot_load.completed",
+    "8899:boot_load.last",
+    "8950:top_menu_2.first",
+    "9399:top_menu_2.last"
+  ]
+}

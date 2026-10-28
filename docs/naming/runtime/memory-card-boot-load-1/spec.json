@@ -1,0 +1,396 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "watch": [
+    {
+      "at": "D_800A31D9",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 20
+    },
+    {
+      "at": "g_row_menu_subflow_state",
+      "len": 1,
+      "kind": "write",
+      "max_hits": 100
+    }
+  ],
+  "values": [
+    {
+      "at": "D_800A31D9",
+      "len": 1
+    },
+    {
+      "at": "g_row_menu_subflow_state",
+      "len": 1
+    },
+    {
+      "at": "D_800A3834",
+      "len": 2
+    }
+  ],
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 9400,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "t_option"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu"
+      },
+      {
+        "frame": 6660,
+        "name": "t_card"
+      },
+      {
+        "frame": 6700,
+        "name": "memory_card"
+      },
+      {
+        "frame": 6860,
+        "name": "load_empty"
+      },
+      {
+        "frame": 7120,
+        "name": "save"
+      },
+      {
+        "frame": 7560,
+        "name": "load"
+      },
+      {
+        "frame": 7850,
+        "name": "t_card_exit"
+      },
+      {
+        "frame": 7875,
+        "name": "option_menu_2"
+      },
+      {
+        "frame": 8150,
+        "name": "t_top"
+      },
+      {
+        "frame": 8250,
+        "name": "load_prompt"
+      },
+      {
+        "frame": 8600,
+        "name": "boot_load"
+      },
+      {
+        "frame": 8900,
+        "name": "top_menu_2"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6380,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6660,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6800,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6860,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7060,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7120,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7500,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7560,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7850,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8150,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6459,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu.first"
+      },
+      {
+        "frame": 6640,
+        "name": "option_menu.card_cursor"
+      },
+      {
+        "frame": 6700,
+        "name": "memory_card.first"
+      },
+      {
+        "frame": 6825,
+        "name": "memory_card.load_cursor"
+      },
+      {
+        "frame": 6875,
+        "name": "load_empty.checking"
+      },
+      {
+        "frame": 6925,
+        "name": "load_empty.no_data"
+      },
+      {
+        "frame": 7075,
+        "name": "load_empty.save_cursor"
+      },
+      {
+        "frame": 7200,
+        "name": "save.prompt"
+      },
+      {
+        "frame": 7325,
+        "name": "save.checking"
+      },
+      {
+        "frame": 7350,
+        "name": "save.saving"
+      },
+      {
+        "frame": 7400,
+        "name": "save.completed"
+      },
+      {
+        "frame": 7450,
+        "name": "save.last"
+      },
+      {
+        "frame": 7550,
+        "name": "save.load_cursor"
+      },
+      {
+        "frame": 7600,
+        "name": "load.checking"
+      },
+      {
+        "frame": 7650,
+        "name": "load.loading"
+      },
+      {
+        "frame": 7700,
+        "name": "load.completed"
+      },
+      {
+        "frame": 7800,
+        "name": "load.last"
+      },
+      {
+        "frame": 7900,
+        "name": "option_menu_2.first"
+      },
+      {
+        "frame": 8099,
+        "name": "option_menu_2.last"
+      },
+      {
+        "frame": 8200,
+        "name": "t_top.checking"
+      },
+      {
+        "frame": 8300,
+        "name": "load_prompt.first"
+      },
+      {
+        "frame": 8599,
+        "name": "load_prompt.last"
+      },
+      {
+        "frame": 8650,
+        "name": "boot_load.checking"
+      },
+      {
+        "frame": 8700,
+        "name": "boot_load.completed"
+      },
+      {
+        "frame": 8899,
+        "name": "boot_load.last"
+      },
+      {
+        "frame": 8950,
+        "name": "top_menu_2.first"
+      },
+      {
+        "frame": 9399,
+        "name": "top_menu_2.last"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x800A31D9",
+      "hex": "01",
+      "phase": "t_top"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim; the top menu's first pass on blank cards: D_800A31D9 <- 0 and subflow state 7 at 5968 (pc 0x80035864), the card check fails back to state 1 at 6045 (pc 0x80035928), no prompt	5500:CROSS,5800:START	-
+top_menu	6050	6459	top menu: first frame Story Mode, last frame Option Menu (Other Options) named in the right panel	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN,6320:DOWN,6380:DOWN	capture.top_menu.first.png,capture.top_menu.last.png
+t_option	6460	6559	transition; no screen claim	6460:CROSS	-
+option_menu	6560	6659	Option Menu (Monitor Color, Difficulty Hard, Music On): Key Configuration highlighted first, Memory Card after UP	6600:UP	capture.option_menu.first.png,capture.option_menu.card_cursor.png
+t_card	6660	6699	transition; no screen claim	6660:CROSS	-
+memory_card	6700	6859	Memory Card screen (Load Data, Save Data, Return): Return highlighted first, Load Data after DOWN	6800:DOWN	capture.memory_card.first.png,capture.memory_card.load_cursor.png
+load_empty	6860	7119	Load Data on blank cards: Checking Memory Card / Please wait / Do not remove Memory Card, then No Bushido Blade 2 data found on Memory Card; Save Data highlighted after DOWN	6860:CROSS,7060:DOWN	capture.load_empty.checking.png,capture.load_empty.no_data.png,capture.load_empty.save_cursor.png
+save	7120	7559	Save Data: Save current data on Memory Card? YES; after CROSS Checking Memory Card, Saving / Please wait, Save completed; Load Data highlighted after UP	7120:CROSS,7300:CROSS,7500:UP	capture.save.prompt.png,capture.save.checking.png,capture.save.saving.png,capture.save.completed.png,capture.save.last.png,capture.save.load_cursor.png
+load	7560	7849	Load Data: Checking Memory Card, Loading / Please wait, Load completed, back to the Memory Card screen	7560:CROSS	capture.load.checking.png,capture.load.loading.png,capture.load.completed.png,capture.load.last.png
+t_card_exit	7850	7874	transition; no screen claim	7850:TRIANGLE	-
+option_menu_2	7875	8149	Option Menu again, Memory Card highlighted	-	capture.option_menu_2.first.png,capture.option_menu_2.last.png
+t_top	8150	8249	TRIANGLE leaves the Option Menu; D_800A31D9 poked to 1 at 8150; subflow state 1 at 8184, then D_800A31D9 <- 0 and state 7 at 8185 (menu_UpdateRowMenuAndSubflows, 25C38.c:200-203), state 8 at 8198; the 8200 frame still shows Checking Memory Card / Please wait / Do not remove Memory Card on the blue gradient	8150:TRIANGLE	capture.t_top.checking.png
+load_prompt	8250	8599	Load data from Memory Card? YES / NO, YES highlighted (subflow state 8: menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult)	-	capture.load_prompt.first.png,capture.load_prompt.last.png
+boot_load	8600	8899	YES taken: subflow state 9 at 8600 (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress): Checking Memory Card, Load completed; subflow state 1 at 8785 (menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows); the top menu with Option Menu (Other Options) in the right panel by 8899	8600:CROSS	capture.boot_load.checking.png,capture.boot_load.completed.png,capture.boot_load.last.png
+top_menu_2	8900	9399	top menu, Option Menu (Other Options) named in the right panel, no input	-	capture.top_menu_2.first.png,capture.top_menu_2.last.png
