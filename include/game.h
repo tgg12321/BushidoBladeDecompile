@@ -303,10 +303,10 @@ typedef struct {
 } Rec_8006C21C;
 
 /* SEL.BIN's selected_entry_header_block, gpu_UploadAndDrawSelectedEntryQuads's:
- * two cell tables (unk_00[i], one per player), a 0 word, then the 12-byte sheet
- * headers the cells are drawn with (unk_0C[v] for the g_entry_menu_grid_entries
- * entry value v it reads; after its first iteration the values 12, 13, 14, 0
- * and 3 take unk_0C[22..26]). */
+ * two cell tables (unk_00[slot_index], one per player), a 0 word, then the
+ * 12-byte sheet headers the cells are drawn with (unk_0C[v] for the
+ * g_entry_menu_grid_entries entry value v it reads; after its first iteration
+ * the values 12, 13, 14, 0 and 3 take unk_0C[22..26]). */
 typedef struct {
     Unk8009B400Record *unk_00[2];
     s32 unk_08;
@@ -575,9 +575,9 @@ typedef struct {
  * cancelling moves f7E[--f3C] back into f48 in sorted order; f6A holds the
  * picked entries menu_FadeOutSelAndWriteResult reports. f00 is the result
  * record menu_FadeOutSelAndWriteResult writes; f04 is the resource table the
- * select draw functions receive as arg0[0] (menu_StepSelScreen passes it as the
- * first word of that context). f10, f14, f1C and f20 are per-player s16 pairs
- * the code also accesses as one word (union word views, Q33/Q46):
+ * select draw functions receive as draw_context[0] (menu_StepSelScreen passes
+ * it as the first word of that context). f10, f14, f1C and f20 are per-player
+ * s16 pairs the code also accesses as one word (union word views, Q33/Q46):
  * menu_HandleSelPhase0CursorInput and menu_HandleSelOpposedChoice read f10
  * whole, menu_RunSelPhases reads f14 whole, menu_InitSelScreen clears f1C / f20
  * whole (menu_UpdateSelGridPicks reads and writes their halves). The s32
@@ -746,7 +746,7 @@ typedef struct {
  * Object-model evidence:
  * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection and
  * menu_UpdateRow step one offset register by 3 per slot;
- * menu_UpdateEntryGridCursors reaches +0 / +1 / +2 through i * 3;
+ * menu_UpdateEntryGridCursors reaches +0 / +1 / +2 through slot_index * 3;
  * InitDisplayStateLoadPackAndSetEntryFlags stores byte +1 of both. `word` (Q33
  * union word view) is InitDisplayStateLoadPackAndSetEntryFlags's one word store
  * of -1 over bytes 0..3; every other access goes through rec[]. Every consumer

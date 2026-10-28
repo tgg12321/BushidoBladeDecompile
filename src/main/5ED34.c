@@ -901,9 +901,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *draw_context) {
     tile_rect[0] = 0xC6;
     tile_rect[1] = 0x25;
     tile_rect[3] = 1;
-    /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
-     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
-     * +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
+    /* The original passes draw_context (the Unk8006EACCRec) here, unadjusted:
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and
+     * draw_context's +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)draw_context, tile_rect, 1);
     menu_UpdateEntryGridCursors(draw_context);
     gpu_UploadAndDrawSelectedEntryQuads(draw_context);
@@ -1169,7 +1169,7 @@ void menu_UpdateRow(Unk8006EACCRec *draw_context) {
     var_1.has_color = 0;
     sheet_headers = g_entry_menu_resources->unk_64;
     /* Not a coercion: the target stores zero to both fields twice, before
-     * and again after the var_3 load. */
+     * and again after the sheet_headers load. */
     var_1.y = 0;
     var_1.x = 0;
     var_1.header = sheet_headers[1];
@@ -1186,9 +1186,9 @@ void menu_UpdateRow(Unk8006EACCRec *draw_context) {
     tile_rect[0] = 0xCC;
     tile_rect[1] = 0x25;
     tile_rect[3] = 1;
-    /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
-     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
-     * +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
+    /* The original passes draw_context (the Unk8006EACCRec) here, unadjusted:
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and
+     * draw_context's +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)draw_context, tile_rect, 1);
     var_1.header = sheet_headers[0];
     t = var_1.header[5].cells;
@@ -1902,9 +1902,9 @@ void menu_UpdateChoiceGrid(
     tile_rect[0] = 0xB7;
     tile_rect[1] = 0x25;
     tile_rect[3] = 1;
-    /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
-     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
-     * +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
+    /* The original passes draw_context (the Unk8006EACCRec) here, unadjusted:
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and
+     * draw_context's +0x18 is the DR_MODE cursor primitive_cursors.unk_14. */
     gpu_AddThreeGreyTilesStackedUp((s32 *)draw_context, tile_rect, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
@@ -2189,11 +2189,12 @@ void gpu_AddPanelGrid(Unk8006EACCRec *draw_context) {
 
 /* gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer - draws three
  * sprite-sheet layers: in modes g_entry_menu_handler_index < 4, four cells of
- * var_1[4]'s sheet through gpu_AddScaledSpriteQuads; then var_1[5]'s sheet and,
- * for g_entry_menu_handler_index < 2, the var_1[10..13] sheet picked by the
- * frame counter at g_entry_menu_work_block->animation_frame_counter
- * (incremented in StepSlideBuildFrameRecordAndDispatchStateHandler), each
- * through gpu_AddSpriteCells, with a draw-mode primitive per layer. */
+ * sheet_headers[4]'s sheet through gpu_AddScaledSpriteQuads; then
+ * sheet_headers[5]'s sheet and, for g_entry_menu_handler_index < 2, the
+ * sheet_headers[10..13] sheet picked by the frame counter at
+ * g_entry_menu_work_block->animation_frame_counter (incremented in
+ * StepSlideBuildFrameRecordAndDispatchStateHandler), each through
+ * gpu_AddSpriteCells, with a draw-mode primitive per layer. */
 void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
     Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;

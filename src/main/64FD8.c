@@ -712,7 +712,7 @@ static inline void selgrid_StorePlaceholder(s32 pad, s16 *picks, s32 player) {
 
 /* Character-select cursor / pick handler, once per player per frame.
  *   arg0 = pad bits, both players packed (player N in bits N*16)
- *   arg1 = select page into g_sel_grid_page_cells (2 rows x 5 columns per page)
+ *   arg1 = select page into g_sel_grid_page_cells (2 columns x 5 rows per page)
  *   arg2 = this player's pick list (character ids, -1 = cleared slot)
  *   arg3 = player index (0/1) */
 void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {

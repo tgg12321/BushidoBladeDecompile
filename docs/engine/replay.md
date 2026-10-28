@@ -46,7 +46,7 @@ member is `Unk80101E60Rec`):
 
 ## `menu_UpdateEntryGridCursors` and `gpu_SetSegmentCellsGateBit` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
 
-`menu_UpdateEntryGridCursors(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
+`menu_UpdateEntryGridCursors(draw_context)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
 its 1 + `g_entry_menu_init_extra_slot_count` + `g_entry_menu_grid_phase_extra_slot_count` cursors it moves a (row, column) position
 over a 5-row table
 (`g_entry_menu_grid_entries`) on the pad bits in `g_entry_menu_pressed_buttons`, skipping cells already taken
