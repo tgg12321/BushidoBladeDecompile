@@ -2454,87 +2454,87 @@ u8 func_80066EF4(void) {
 }
 
 u8 func_80066F28(void) {
-    u8 ret = eff_SpawnParticles(1, 1, 0);
+    u8 spawn_result = eff_SpawnParticles(1, 1, 0);
     g_eff_command_phase[3] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80066F5C(void) {
-    u8 ret = eff_SpawnParticles(1, 1, 1);
+    u8 spawn_result = eff_SpawnParticles(1, 1, 1);
     g_eff_command_phase[3] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80066F90(void) {
-    u8 ret = eff_SpawnParticles(2, 1, 0);
+    u8 spawn_result = eff_SpawnParticles(2, 1, 0);
     g_eff_command_phase[20] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80066FC4(void) {
-    u8 ret = eff_SpawnParticles(2, 1, 1);
+    u8 spawn_result = eff_SpawnParticles(2, 1, 1);
     g_eff_command_phase[20] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80066FF8(void) {
-    u8 ret = eff_SpawnParticles(3, 0, 0);
+    u8 spawn_result = eff_SpawnParticles(3, 0, 0);
     g_eff_command_phase[21] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_8006702C(void) {
-    u8 ret = eff_SpawnParticles(3, 0, 1);
+    u8 spawn_result = eff_SpawnParticles(3, 0, 1);
     g_eff_command_phase[21] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80067060(void) {
-    u8 ret = eff_SpawnParticles(4, 2, 0);
+    u8 spawn_result = eff_SpawnParticles(4, 2, 0);
     g_eff_command_phase[22] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80067094(void) {
-    u8 ret = eff_SpawnParticles(4, 2, 1);
+    u8 spawn_result = eff_SpawnParticles(4, 2, 1);
     g_eff_command_phase[22] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_800670C8(void) {
-    u8 ret = eff_SpawnParticles(5, 3, 0);
+    u8 spawn_result = eff_SpawnParticles(5, 3, 0);
     g_eff_command_phase[23] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_800670FC(void) {
-    u8 ret = eff_SpawnParticles(5, 3, 1);
+    u8 spawn_result = eff_SpawnParticles(5, 3, 1);
     g_eff_command_phase[23] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80067130(void) {
-    u8 ret = eff_SpawnParticles(6, 3, 0);
+    u8 spawn_result = eff_SpawnParticles(6, 3, 0);
     g_eff_command_phase[24] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80067164(void) {
-    u8 ret = eff_SpawnParticles(6, 3, 1);
+    u8 spawn_result = eff_SpawnParticles(6, 3, 1);
     g_eff_command_phase[24] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80067198(void) {
-    u8 ret = eff_SpawnParticles(7, 2, 0);
+    u8 spawn_result = eff_SpawnParticles(7, 2, 0);
     g_eff_command_phase[25] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_800671CC(void) {
-    u8 ret = eff_SpawnParticles(7, 2, 1);
+    u8 spawn_result = eff_SpawnParticles(7, 2, 1);
     g_eff_command_phase[25] = 2;
-    return ret;
+    return spawn_result;
 }
 
 extern SVECTOR D_800F0B78[];
@@ -2545,80 +2545,86 @@ extern Unk800EFC78Record g_eff_particles[][48];
  * scaled per axis by its own random factor and turned by a random rotation
  * (spread chosen by mode arg0). arg2 == 0 first latches g_eff_command_position
  * / D_800A3478 into the emitter. Returns 1. */
-u8 eff_SpawnParticles(s32 arg0, s32 arg1, s32 arg2) {
+u8 eff_SpawnParticles(
+    s32 particle_mode, s32 particle_row_index, s32 half_index) {
     SVECTOR v;
-    s32 r[6];
+    s32 random_values[6];
     MATRIX m;
-    SVECTOR ang;
+    SVECTOR rotation_angles;
     VECTOR out;
     SVECTOR var_5;
     s16 base;
-    s16 mask;
-    s16 amask;
-    s16 aoff;
-    u8 count;
-    s32 i;
+    s16 scale_mask;
+    s16 angle_mask;
+    s16 angle_offset;
+    u8 particle_count;
+    s32 particle_index;
     Unk800EFC78Record *p;
 
-    if (arg0 < 4) {
+    if (particle_mode < 4) {
         base = 0x41;
-        mask = 0x3F;
+        scale_mask = 0x3F;
     } else {
         base = 0x31;
-        mask = 0x1F;
+        scale_mask = 0x1F;
     }
-    D_800A3438[arg1] = 0;
+    D_800A3438[particle_row_index] = 0;
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
-    if (arg2 == 0) {
-        D_800F0C10[arg1][0].unk0 = g_eff_command_position[0];
-        D_800F0C10[arg1][0].unk4 = g_eff_command_position[1];
-        D_800F0C10[arg1][0].unk8 = g_eff_command_position[2];
-        D_800F0B78[arg1].vx = D_800A3478[0];
-        D_800F0B78[arg1].vy = D_800A3478[1];
-        D_800F0B78[arg1].vz = D_800A3478[2];
+    if (half_index == 0) {
+        D_800F0C10[particle_row_index][0].unk0 = g_eff_command_position[0];
+        D_800F0C10[particle_row_index][0].unk4 = g_eff_command_position[1];
+        D_800F0C10[particle_row_index][0].unk8 = g_eff_command_position[2];
+        D_800F0B78[particle_row_index].vx = D_800A3478[0];
+        D_800F0B78[particle_row_index].vy = D_800A3478[1];
+        D_800F0B78[particle_row_index].vz = D_800A3478[2];
     }
-    count = 0x30;
-    r[5] = rand();
-    if (arg0 < 2) {
-        amask = 0xFF;
-        aoff = 0x7F;
-    } else if (arg0 < 4) {
-        amask = 0xFFF;
-        aoff = 0;
-    } else if (arg0 < 6) {
-        amask = 0x7F;
-        aoff = 0x3F;
-    } else if (arg0 < 8) {
-        amask = 0x7F;
-        aoff = 0x3F;
+    particle_count = 0x30;
+    random_values[5] = rand();
+    if (particle_mode < 2) {
+        angle_mask = 0xFF;
+        angle_offset = 0x7F;
+    } else if (particle_mode < 4) {
+        angle_mask = 0xFFF;
+        angle_offset = 0;
+    } else if (particle_mode < 6) {
+        angle_mask = 0x7F;
+        angle_offset = 0x3F;
+    } else if (particle_mode < 8) {
+        angle_mask = 0x7F;
+        angle_offset = 0x3F;
     }
-    var_5.vx = D_800F0B78[arg1].vx;
-    var_5.vy = D_800F0B78[arg1].vy;
-    var_5.vz = D_800F0B78[arg1].vz;
-    for (i = (count >> 1) * arg2; i < (count >> 1) * (arg2 + 1); i++) {
-        r[0] = r[5] ^ rand();
-        r[1] = r[0] ^ rand();
-        r[2] = r[1] ^ rand();
-        r[3] = r[2] ^ rand();
-        r[4] = r[3] ^ rand();
-        r[5] = r[4] ^ rand();
-        ang.vy = r[0] = (r[0] & amask) - aoff;
-        ang.vx = r[1] = (r[1] & amask) - aoff;
-        ang.vz = r[2] = (r[2] & amask) - aoff;
-        r[3] &= mask;
-        r[4] &= mask;
-        r[5] &= mask;
-        v.vx = var_5.vx * (base + r[3]) / mask;
-        v.vy = var_5.vy * (base + r[4]) / mask;
-        v.vz = var_5.vz * (base + r[5]) / mask;
-        p = &g_eff_particles[arg1][i];
-        p->unk6 = i / 16;
+    var_5.vx = D_800F0B78[particle_row_index].vx;
+    var_5.vy = D_800F0B78[particle_row_index].vy;
+    var_5.vz = D_800F0B78[particle_row_index].vz;
+    for (particle_index = (particle_count >> 1) * half_index;
+         particle_index < (particle_count >> 1) * (half_index + 1);
+         particle_index++) {
+        random_values[0] = random_values[5] ^ rand();
+        random_values[1] = random_values[0] ^ rand();
+        random_values[2] = random_values[1] ^ rand();
+        random_values[3] = random_values[2] ^ rand();
+        random_values[4] = random_values[3] ^ rand();
+        random_values[5] = random_values[4] ^ rand();
+        rotation_angles.vy = random_values[0] =
+            (random_values[0] & angle_mask) - angle_offset;
+        rotation_angles.vx = random_values[1] =
+            (random_values[1] & angle_mask) - angle_offset;
+        rotation_angles.vz = random_values[2] =
+            (random_values[2] & angle_mask) - angle_offset;
+        random_values[3] &= scale_mask;
+        random_values[4] &= scale_mask;
+        random_values[5] &= scale_mask;
+        v.vx = var_5.vx * (base + random_values[3]) / scale_mask;
+        v.vy = var_5.vy * (base + random_values[4]) / scale_mask;
+        v.vz = var_5.vz * (base + random_values[5]) / scale_mask;
+        p = &g_eff_particles[particle_row_index][particle_index];
+        p->unk6 = particle_index / 16;
         p->unk12 = 0;
         p->unk4 = 0;
         p->unk2 = 0;
         p->unk0 = 0;
         p->unk10 = 1;
-        RotMatrix(&ang, &m);
+        RotMatrix(&rotation_angles, &m);
         gte_ApplyMatrix(&m, &v, &out);
         p->unk8 = out.vx;
         p->unkA = out.vy;
@@ -2682,7 +2688,7 @@ u8 func_8006786C(void) {
 extern s16 D_800EFC8A[];
 extern s16 D_800F0B98[];
 
-u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
+u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;
     /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the
@@ -2700,27 +2706,27 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
     *p4 = 0x895440;
     *g_eff_tpage_word = 0x2E;
 
-    if (arg0 < 2) {
+    if (particle_mode < 2) {
         g_eff_current_tex_rec = D_8009B890;
         *p2 = 7;
         *p0 = 7;
         *g_eff_base_width = 0x40;
         *g_eff_base_height = 0x20;
-        D_800F0B98[arg0] = 3;
-    } else if (arg0 < 4) {
+        D_800F0B98[particle_mode] = 3;
+    } else if (particle_mode < 4) {
         g_eff_current_tex_rec = D_8009B890;
         *p2 = 7;
         *p0 = 7;
         *g_eff_base_width = 0x20;
         *g_eff_base_height = 0x10;
-        D_800F0B98[arg0] = 3;
-    } else if (arg0 < 6) {
-        s16 var_6 = D_800EFC8A[arg1 * 0x1E0] >> 3;
-        var_0->unk70 = var_6;
-        if (var_6 >= 4) {
+        D_800F0B98[particle_mode] = 3;
+    } else if (particle_mode < 6) {
+        s16 tex_rec_index = D_800EFC8A[particle_row_index * 0x1E0] >> 3;
+        var_0->unk70 = tex_rec_index;
+        if (tex_rec_index >= 4) {
             var_0->unk70 = 3;
         }
-        if (D_800A34F0[arg0 - 4] != 0) {
+        if (D_800A34F0[particle_mode - 4] != 0) {
             g_eff_current_tex_rec = &D_8009B9B8[var_0->unk70];
         } else {
             g_eff_current_tex_rec = &D_8009B998[var_0->unk70];
@@ -2730,15 +2736,15 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
         *g_eff_base_width = 0xC0;
         *g_eff_base_height = 0x30;
         *g_eff_tpage_word = 0xF;
-        D_800F0B98[arg0] = 1;
-    } else if (arg0 < 8) {
+        D_800F0B98[particle_mode] = 1;
+    } else if (particle_mode < 8) {
         *g_eff_tpage_word = 0x2E;
         g_eff_current_tex_rec = D_8009B8B0;
         *p2 = 0xF;
         *p0 = 0xF;
         *g_eff_base_width = 0xC0;
         *g_eff_base_height = 0x60;
-        D_800F0B98[arg0] = 2;
+        D_800F0B98[particle_mode] = 2;
     }
 
     *g_eff_clut_word = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
@@ -2756,17 +2762,20 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
 
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
 
-    if (D_800A3438[arg1] < D_800F0B98[arg0]) {
-        D_800F0C10[arg1][D_800A3438[arg1]].unk0 = D_800F0C10[arg1][0].unk0;
-        D_800F0C10[arg1][D_800A3438[arg1]].unk4 = D_800F0C10[arg1][0].unk4;
-        D_800F0C10[arg1][D_800A3438[arg1]].unk8 = D_800F0C10[arg1][0].unk8;
+    if (D_800A3438[particle_row_index] < D_800F0B98[particle_mode]) {
+        D_800F0C10[particle_row_index][D_800A3438[particle_row_index]].unk0 =
+            D_800F0C10[particle_row_index][0].unk0;
+        D_800F0C10[particle_row_index][D_800A3438[particle_row_index]].unk4 =
+            D_800F0C10[particle_row_index][0].unk4;
+        D_800F0C10[particle_row_index][D_800A3438[particle_row_index]].unk8 =
+            D_800F0C10[particle_row_index][0].unk8;
     }
 
     gte_ReadGeomScreen(g_eff_geom_screen_work);
 
-    *p6C = (D_800A3438[arg1] + 1) * 16;
-    if (D_800A3438[arg1] < D_800F0B98[arg0] - 1) {
-        D_800A3438[arg1]++;
+    *p6C = (D_800A3438[particle_row_index] + 1) * 16;
+    if (D_800A3438[particle_row_index] < D_800F0B98[particle_mode] - 1) {
+        D_800A3438[particle_row_index]++;
     }
 }
 
@@ -2778,7 +2787,7 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
  * or once the squared length p_out[0..2] passes *var_1 plus a rand() term,
  * project three vertices, size the sprite by type (arg0), then emit up to three
  * POLY_FT4 quads, storing *g_eff_depth_work for each in var_9[]. */
-void eff_UpdateParticles(s32 arg0, s32 arg1) {
+void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;
     /* FAKE: scratchpad members are reached through the plain pointers below.
@@ -2807,7 +2816,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
     s16 *p_n;
     POLY_FT4 **p_prim;
     Unk800EFC78Record **p_ent;
-    u32 sum;
+    u32 squared_length;
     s16 *sxy;
 
     D_800A3724 = &var_0->unk1AC;
@@ -2831,7 +2840,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
     var_9 = var_0->unk8C;
 
     for (*p_idx = 0; *p_idx < *p_count; (*p_idx)++) {
-        *p_ent = &g_eff_particles[arg1][*p_idx];
+        *p_ent = &g_eff_particles[particle_row_index][*p_idx];
         if ((*p_ent)->unk10 != 1) {
             continue;
         }
@@ -2845,7 +2854,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
         }
         *p_b = (*var_14 << 5) < 100 ? 100 - (*var_14 << 5) : 0;
 
-        *var_8 = &D_800F0C10[arg1][(*p_ent)->unk6];
+        *var_8 = &D_800F0C10[particle_row_index][(*p_ent)->unk6];
         var_2->vx = (*var_8)->unk0;
         var_13[0].vx = var_2->vx - g_eff_view_origin[0];
         var_2->vy = (*var_8)->unk4;
@@ -2907,7 +2916,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
             continue;
         }
 
-        if (arg0 < 2) {
+        if (particle_mode < 2) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
             *g_eff_right_x_offset =
@@ -2918,7 +2927,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
                 *g_eff_base_height * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_height * *g_eff_perspective_scale >> 9
                     : 1;
-        } else if (arg0 < 4) {
+        } else if (particle_mode < 4) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
             *g_eff_right_x_offset =
@@ -2933,7 +2942,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
                 *g_eff_right_x_offset * 20 / (*var_14 * 6 + 1);
             *g_eff_lower_y_offset_word +=
                 *g_eff_lower_y_offset_word * 20 / (*var_14 * 6 + 1);
-        } else if (arg0 < 6) {
+        } else if (particle_mode < 6) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
             *g_eff_right_x_offset =
@@ -2947,7 +2956,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
             *g_eff_right_x_offset += *g_eff_right_x_offset * *var_14 / 2;
             *g_eff_lower_y_offset_word +=
                 *g_eff_lower_y_offset_word * *var_14 / 2;
-        } else if (arg0 < 8) {
+        } else if (particle_mode < 8) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
             *g_eff_right_x_offset =
@@ -2971,10 +2980,10 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
         *g_eff_lower_y_offset_word <<= 16;
         *D_800A34C4 <<= 16;
 
-        sum = p_out[0] + p_out[1] + p_out[2];
-        if (*var_1 / 3 < sum) {
+        squared_length = p_out[0] + p_out[1] + p_out[2];
+        if (*var_1 / 3 < squared_length) {
             *p_n = 1;
-        } else if (*var_1 / 2 < sum) {
+        } else if (*var_1 / 2 < squared_length) {
             *p_n = 0;
         } else {
             *p_n = 2;
@@ -3000,19 +3009,19 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
             *(u16 *)&(*p_prim)->u2 = *D_800A34DC;
             *(u16 *)&(*p_prim)->u3 = *D_800A34E0;
             setlen(*p_prim, 9);
-            if (arg0 < 2) {
+            if (particle_mode < 2) {
                 *(s32 *)&(*p_prim)->r0 = *p_r + (*p_g << 8) + 0x2E000000;
-            } else if (arg0 < 4) {
+            } else if (particle_mode < 4) {
                 *(s32 *)&(*p_prim)->r0 =
                     *p_r + ((*p_r >> 2) << 8) + (*p_b << 16) + 0x2E000000;
-            } else if (arg0 < 6) {
+            } else if (particle_mode < 6) {
                 if (*p_prim - g_eff_quad_buffer_base >= 0x1C1) {
                     continue;
                 }
                 if (g_working_record.unk20_0) {
                     *(s32 *)&(*p_prim)++->r0 = 0x2C242424;
                     break;
-                } else if (D_800A34F0[arg0 - 4] != 0) {
+                } else if (D_800A34F0[particle_mode - 4] != 0) {
                     *(s32 *)&(*p_prim)++->r0 =
                         (((rand() * 4 >> 12) + 0x3C) << 8) + 0x2C080038;
                     break;
@@ -3020,7 +3029,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
                     *(s32 *)&(*p_prim)++->r0 = 0x2C285A78;
                     break;
                 }
-            } else if (arg0 < 8) {
+            } else if (particle_mode < 8) {
                 if (*p_prim - g_eff_quad_buffer_base >= 0x1C1) {
                     break;
                 }
@@ -3036,50 +3045,51 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
 
 u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
-    Unk1F8000B8_800678A8 *var_0 = &g_eff_work_area->v800678A8;
-    s16 *p_idx = &var_0->unk6E;
-    POLY_FT4 **p_end = &var_0->unk7C;
-    POLY_FT4 **p_cur = &var_0->unk80;
-    u16 *var_4 = var_0->unk8C;
-    POLY_FT4 *var_5;
-    POLY_FT4 *var_6;
-    s32 count;
-    s32 ret;
+    Unk1F8000B8_800678A8 *work_area = &g_eff_work_area->v800678A8;
+    s16 *quad_index = &work_area->unk6E;
+    POLY_FT4 **quad_end = &work_area->unk7C;
+    POLY_FT4 **quad_cursor = &work_area->unk80;
+    u16 *quad_ot_indices = work_area->unk8C;
+    POLY_FT4 *entry_quad_cursor;
+    POLY_FT4 *first_quad;
+    s32 quad_count;
+    s32 has_quads;
 
-    D_800A3724 = &var_0->unk1AC;
-    var_6 = g_eff_quad_cursor;
-    var_5 = *p_cur;
-    count = var_5 - var_6;
+    D_800A3724 = &work_area->unk1AC;
+    first_quad = g_eff_quad_cursor;
+    entry_quad_cursor = *quad_cursor;
+    quad_count = entry_quad_cursor - first_quad;
 
-    if (count != 0) {
-        *p_cur = var_6;
-        *p_end = var_5;
-        ret = 1;
-        *p_idx = 0;
+    if (quad_count != 0) {
+        *quad_cursor = first_quad;
+        *quad_end = entry_quad_cursor;
+        has_quads = 1;
+        *quad_index = 0;
 
-        if (*p_cur < *p_end) {
-            u32 *p_b;
+        if (*quad_cursor < *quad_end) {
+            u32 *prim_tag;
             do {
-                g_eff_current_ot_entry = g_gpu_ot_ptr + var_4[*p_idx];
-                p_b = &(*p_cur)->tag;
-                g_eff_current_prim_tag = p_b;
-                *p_b =
-                    (*p_b & 0xFF000000) | (*g_eff_current_ot_entry & 0xFFFFFF);
+                g_eff_current_ot_entry =
+                    g_gpu_ot_ptr + quad_ot_indices[*quad_index];
+                prim_tag = &(*quad_cursor)->tag;
+                g_eff_current_prim_tag = prim_tag;
+                *prim_tag = (*prim_tag & 0xFF000000) |
+                            (*g_eff_current_ot_entry & 0xFFFFFF);
 
                 *g_eff_current_ot_entry =
                     ((u32)g_eff_current_prim_tag & 0xFFFFFF) |
                     (*g_eff_current_ot_entry & 0xFF000000);
 
-                (*p_cur)++;
-                (*p_idx)++;
-            } while (*p_cur < *p_end);
+                (*quad_cursor)++;
+                (*quad_index)++;
+            } while (*quad_cursor < *quad_end);
         }
-        g_eff_quad_cursor = *p_end;
+        g_eff_quad_cursor = *quad_end;
     } else {
-        ret = 0;
+        has_quads = 0;
     }
 
-    return ret;
+    return has_quads;
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values

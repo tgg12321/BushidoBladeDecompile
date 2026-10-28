@@ -70,7 +70,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     RECT buf;
     s32 temp_s0;
     s32 var_2;
-    Unk800A34FCRec *v0_e49c;
+    Unk800A34FCRec *work_block;
 
     D_800A3500 = arg0;
     D_800A351C = (Unk8006E49CRec *)arg0;
@@ -82,11 +82,11 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     D_800A372C = D_800A3500;
     var_2 = reloc_RelocateTwelveListsAndLoadVabPack(D_800A3500);
     D_800A3500 = var_2;
-    v0_e49c = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
-    v0_e49c->menu_resource_root = (Unk8006919CRec *)temp_s0;
-    D_800A3500 = (s32)v0_e49c;
-    g_row_menu_work_block = v0_e49c;
-    D_800A3500 = (s32)(v0_e49c + 1);
+    work_block = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
+    work_block->menu_resource_root = (Unk8006919CRec *)temp_s0;
+    D_800A3500 = (s32)work_block;
+    g_row_menu_work_block = work_block;
+    D_800A3500 = (s32)(work_block + 1);
     {
         s32 var_4 = -0x10;
         s32 var_5;
@@ -101,7 +101,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             mask = (u32)-0x10;
             var_8 = g_row_menu_row_state.rows_on;
             do {
-                s32 next;
+                s32 next_row;
                 s32 lo;
                 flags = g_menu_packed_cursors;
                 lo = flags;
@@ -110,8 +110,8 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
                     g_menu_packed_cursors = flags & mask;
                     break;
                 }
-                next = lo + 1;
-                flags = (flags & mask) | (next & 0xF);
+                next_row = lo + 1;
+                flags = (flags & mask) | (next_row & 0xF);
                 g_menu_packed_cursors = flags;
                 flags &= 0xF;
                 flags = (u32)var_8 >> flags;
@@ -176,7 +176,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     return 1;
 }
 
-Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 a0) {
+Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 buffer_index) {
     Unk8009BD24Block *v0 = g_row_menu_working_record_ptr;
     Unk800A34FCRec *v1 = g_row_menu_work_block;
     if (v1->strip_refresh_snapshot != v0->unk20_0) {
@@ -185,29 +185,29 @@ Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 a0) {
     v0 = g_row_menu_working_record_ptr;
     v1 = g_row_menu_work_block;
     v1->strip_refresh_snapshot = v0->unk20_0;
-    return &D_800A351C[a0];
+    return &D_800A351C[buffer_index];
 }
 
-s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *a0) {
-    s32 i = 0;
-    Unk8009B0E0Record ***p = &a0->unk_14;
+s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *resource_root) {
+    s32 lists_relocated = 0;
+    Unk8009B0E0Record ***p = &resource_root->unk_14;
     do {
-        reloc_RelocateOffsetList((s32 *)a0, (s32)*p);
+        reloc_RelocateOffsetList((s32 *)resource_root, (s32)*p);
         p++;
-        i++;
-    } while (i < 12);
-    snd_LoadVabPack(
-        a0->resource_head.sound_pack, 1, a0->resource_head.free_ram_start);
-    return a0->resource_head.free_ram_start;
+        lists_relocated++;
+    } while (lists_relocated < 12);
+    snd_LoadVabPack(resource_root->resource_head.sound_pack, 1,
+                    resource_root->resource_head.free_ram_start);
+    return resource_root->resource_head.free_ram_start;
 }
 
-void reloc_RelocateOffsetList(s32 *a0, s32 a1) {
-    s32 *p = (s32 *)a1;
+void reloc_RelocateOffsetList(s32 *base_addr, s32 offset_list_addr) {
+    s32 *p = (s32 *)offset_list_addr;
     if (!*p)
         return;
     while (*p) {
         if (*p != -1) {
-            *p = *p + (s32)a0;
+            *p = *p + (s32)base_addr;
         }
         p++;
     }
@@ -231,13 +231,13 @@ s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32 arg0, s32 arg1) {
 extern u32 D_800A32D0[2];
 
 s32 pad_StepOffsetsGetDirectionEvents(
-    u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+    u32 *pad_buttons, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 one;
     s32 sum;
     s32 i;
     s32 a3_off;
-    u32 maskA;
-    u32 maskB;
+    u32 positive_mask;
+    u32 negative_mask;
     u32 v;
     s16 sval;
 
@@ -256,20 +256,20 @@ s32 pad_StepOffsetsGetDirectionEvents(
             /* FAKE: byte-offset step; element-count step: score 3,
              * arg3[i]: 11 (18 with the other two FAKEs also removed). */
             arg3 = (s16 *)((u8 *)arg3 + a3_off);
-            maskB = D_800A32D0[i] << arg1;
-            maskA = D_800A32C8[i] << arg1;
+            negative_mask = D_800A32D0[i] << arg1;
+            positive_mask = D_800A32C8[i] << arg1;
             if (*arg2 == 0) {
-                v = *arg0;
-                if (v & maskA) {
+                v = *pad_buttons;
+                if (v & positive_mask) {
                     *arg3 = one;
-                } else if (v & maskB) {
+                } else if (v & negative_mask) {
                     *arg3 = -1;
                 }
             } else {
-                v = *arg0;
-                if (v & maskA) {
+                v = *pad_buttons;
+                if (v & positive_mask) {
                     *arg2 = 6;
-                } else if (v & maskB) {
+                } else if (v & negative_mask) {
                     *arg3 = -6;
                 }
                 sval = *arg2;
@@ -304,16 +304,16 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
      * frame (sp+0x40 / sp+0x48); separate locals give the wrong frame:
      * score 11. */
     s32 var_0[15];
-    s32 result;
-    GpuDb *var_2;
-    var_2 = &g_gpu_db[g_gpu_presented_frame_count & 1];
+    s32 direction_events;
+    GpuDb *gpu_db;
+    gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(
         var_0, &g_menu_draw_buffer_counter);
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
-    result = pad_StepOffsetsGetDirectionEvents(
+    direction_events = pad_StepOffsetsGetDirectionEvents(
         (u32 *)&var_0[12], 0, g_row_menu_work_block->menu_draw_offsets,
         D_800A350C);
-    switch (result >> 16) {
+    switch (direction_events >> 16) {
     case 1:
         do {
             s32 flags = g_menu_packed_cursors;
@@ -345,7 +345,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         g_row_menu_working_record_ptr->unk20_3 = 0;
         break;
     }
-    if (((result & 0xFF) < 3) && ((result & 0xFF) != 0) &&
+    if (((direction_events & 0xFF) < 3) && ((direction_events & 0xFF) != 0) &&
         (g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode == 3)) {
         g_row_menu_working_record_ptr->unk20_3 ^= 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -365,9 +365,9 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
             g_row_menu_row_state.unk4 = 0x9F;
         }
     }
-    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(var_0, 0, var_2);
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(var_0, 0, gpu_db);
     menu_DrawMaskedRowList(
-        (u8 *)var_0, (u16 *)var_2,
+        (u8 *)var_0, (u16 *)gpu_db,
         g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
     menu_DrawModeBit1Sheets(
         var_0, g_row_menu_row_state.opt[g_menu_packed_cursors & 0xF].mode);
@@ -417,8 +417,9 @@ cancel:
     return -1;
 }
 
-void gpu_AddThreeGreyTilesStackedUp(s32 *arg0, u16 *arg1, s32 arg2) {
-    TILE *p = (TILE *)arg0[6];
+void gpu_AddThreeGreyTilesStackedUp(
+    s32 *draw_context, u16 *tile_rect, s32 ot_index) {
+    TILE *p = (TILE *)draw_context[6];
 
     SetTile(p);
     p->r0 = 0xFF;
@@ -427,39 +428,39 @@ void gpu_AddThreeGreyTilesStackedUp(s32 *arg0, u16 *arg1, s32 arg2) {
     p->r0 = 0x80;
     p->g0 = 0x80;
     p->b0 = 0x80;
-    p->x0 = arg1[0];
-    p->y0 = arg1[1];
-    p->w = arg1[2];
-    p->h = arg1[3];
+    p->x0 = tile_rect[0];
+    p->y0 = tile_rect[1];
+    p->w = tile_rect[2];
+    p->h = tile_rect[3];
     SetSemiTrans(p, 0);
-    AddPrim(g_gpu_ot_ptr + arg2, p);
+    AddPrim(g_gpu_ot_ptr + ot_index, p);
     p++;
 
     SetTile(p);
     p->r0 = 0x80;
     p->g0 = 0x80;
     p->b0 = 0x80;
-    p->x0 = arg1[0];
-    p->y0 = arg1[1] - 1;
-    p->w = arg1[2];
-    p->h = arg1[3];
+    p->x0 = tile_rect[0];
+    p->y0 = tile_rect[1] - 1;
+    p->w = tile_rect[2];
+    p->h = tile_rect[3];
     SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr + arg2, p);
+    AddPrim(g_gpu_ot_ptr + ot_index, p);
     p++;
 
     SetTile(p);
     p->r0 = 0x40;
     p->g0 = 0x40;
     p->b0 = 0x40;
-    p->x0 = arg1[0];
-    p->y0 = arg1[1] - 2;
-    p->w = arg1[2];
-    p->h = arg1[3];
+    p->x0 = tile_rect[0];
+    p->y0 = tile_rect[1] - 2;
+    p->w = tile_rect[2];
+    p->h = tile_rect[3];
     SetSemiTrans(p, 1);
-    AddPrim(g_gpu_ot_ptr + arg2, p);
+    AddPrim(g_gpu_ot_ptr + ot_index, p);
     p++;
 
-    arg0[6] = (s32)p;
+    draw_context[6] = (s32)p;
 }
 
 void gpu_SetTileRgbFromBlockFlag(void *tile_prim) {
@@ -496,15 +497,15 @@ void gpu_SetPolyF4RgbFromBlockFlag(void *flat_quad_prim) {
 }
 
 void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
-    s32 *arg0, s32 mode, GpuDb *arg2) {
+    s32 *draw_context, s32 mode, GpuDb *arg2) {
     TILE *p;
     POLY_F4 *poly;
-    Unk8009B0E0Record **qbase;
-    Unk8009B0E0Record **q;
-    s32 i;
+    Unk8009B0E0Record **sheet_headers;
+    Unk8009B0E0Record **sheet_header_cursor;
+    s32 sheets_drawn;
     Unk8007352CRec s;
 
-    p = (TILE *)arg0[6];
+    p = (TILE *)draw_context[6];
 
     if (mode == 2) {
         SetTile(p);
@@ -546,33 +547,33 @@ void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
         AddPrim(g_gpu_ot_ptr + 0x11, p);
         p++;
     }
-    arg0[6] = (s32)p;
+    draw_context[6] = (s32)p;
     s.ot_idx = 0x12;
     s.has_color = 0;
     s.semi = 0;
-    qbase = ((Unk8006919CRec *)arg0[1])->unk_34;
+    sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_34;
     s.x = 0;
     s.y = 0;
-    q = qbase;
-    i = 0;
+    sheet_header_cursor = sheet_headers;
+    sheets_drawn = 0;
     do {
-        s.header = *q;
+        s.header = *sheet_header_cursor;
         s.table = s.header->cells;
-        s.sprt_out = arg0[5];
-        arg0[5] = gpu_AddSpriteCells(&s);
-        q++;
-        i++;
-    } while (i < 3);
+        s.sprt_out = draw_context[5];
+        draw_context[5] = gpu_AddSpriteCells(&s);
+        sheet_header_cursor++;
+        sheets_drawn++;
+    } while (sheets_drawn < 3);
 
     {
-        s.header = qbase[0];
-        SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+        s.header = sheet_headers[0];
+        SetDrawMode((DR_MODE *)draw_context[7], 1, 0,
+                    gpu_GetSheetTPage(s.header, 0), 0);
     }
-    AddPrim(g_gpu_ot_ptr + 0x12, (DR_MODE *)arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x12, (DR_MODE *)draw_context[7]);
 
-    poly = (POLY_F4 *)arg0[3];
-    arg0[7] += 0xC;
+    poly = (POLY_F4 *)draw_context[3];
+    draw_context[7] += 0xC;
     SetPolyF4(poly);
     gpu_SetPolyF4RgbFromBlockFlag(poly);
     poly->x0 = 0;
@@ -615,10 +616,10 @@ void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
     AddPrim(g_gpu_ot_ptr + 0x13, poly);
     poly++;
 
-    arg0[3] = (s32)poly;
+    draw_context[3] = (s32)poly;
 }
 
-void func_80069E18(s32 arg0) {
+void func_80069E18(s32 draw_context_addr) {
     TILE *tile;
     Unk8009B0E0Record **ptr;
     Unk8007352CRec s;
@@ -626,7 +627,7 @@ void func_80069E18(s32 arg0) {
      * store; stored directly: score 8. */
     Unk8009B400Record *p1;
 
-    tile = (TILE *)*(s32 *)(arg0 + 0x18);
+    tile = (TILE *)*(s32 *)(draw_context_addr + 0x18);
     SetTile(tile);
     tile->r0 = 0xFF;
     tile->g0 = 0xFF;
@@ -637,9 +638,9 @@ void func_80069E18(s32 arg0) {
     tile->h = 0xF0;
     SetSemiTrans(tile, 0);
     AddPrim(g_gpu_ot_ptr + 0x14, tile);
-    *(s32 *)(arg0 + 0x18) = (s32)(tile + 1);
+    *(s32 *)(draw_context_addr + 0x18) = (s32)(tile + 1);
 
-    ptr = (*(Unk8006919CRec **)(arg0 + 4))->unk_14;
+    ptr = (*(Unk8006919CRec **)(draw_context_addr + 4))->unk_14;
     s.ot_idx = 0x10;
     s.semi = 0;
     s.x = 0;
@@ -647,27 +648,28 @@ void func_80069E18(s32 arg0) {
     s.has_color = 0;
 
     s.header = ptr[0];
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context_addr + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0x11, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
+    AddPrim(g_gpu_ot_ptr + 0x11, (DR_MODE *)*(s32 *)(draw_context_addr + 0x1C));
+    *(s32 *)(draw_context_addr + 0x1C) =
+        *(s32 *)(draw_context_addr + 0x1C) + 0xC;
 
     p1 = s.header->cells;
     s.table = p1;
-    s.sprt_out = *(s32 *)(arg0 + 0x14);
-    *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
+    s.sprt_out = *(s32 *)(draw_context_addr + 0x14);
+    *(s32 *)(draw_context_addr + 0x14) = gpu_AddSpriteCells(&s);
 
     s.header = ptr[1];
     p1 = s.header->cells;
     s.table = p1;
-    s.sprt_out = *(s32 *)(arg0 + 0x14);
-    *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
+    s.sprt_out = *(s32 *)(draw_context_addr + 0x14);
+    *(s32 *)(draw_context_addr + 0x14) = gpu_AddSpriteCells(&s);
 
     s.header = ptr[2];
     p1 = s.header->cells;
     s.table = p1;
-    s.sprt_out = *(s32 *)(arg0 + 0x14);
-    *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
+    s.sprt_out = *(s32 *)(draw_context_addr + 0x14);
+    *(s32 *)(draw_context_addr + 0x14) = gpu_AddSpriteCells(&s);
 }
 
 /* FAKE: frame layout (oversized live object): the descriptor plus an
@@ -679,7 +681,7 @@ typedef struct {
     s32 tail[4];
 } Unk80069F80Rec;
 
-void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
+void menu_DrawModeBit1Sheets(s32 *draw_context, s32 cursor_row_mode) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
      * gpu_AddScaledSpriteQuads / gpu_AddSpriteCells); tail[0..3] is unwritten
      * padding that brings the locals to the target's 0x70 frame (the 0x2C
@@ -693,10 +695,10 @@ void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
      * store; stored directly: score 8. */
     Unk8009B400Record *var_4;
 
-    if (arg1 & 2) {
-        ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
+    if (cursor_row_mode & 2) {
+        ptr = ((Unk8006919CRec *)draw_context[1])->unk_1C;
         s.fr00.header = ptr[0];
-        if (arg1 & 1) {
+        if (cursor_row_mode & 1) {
             s.fr00.x = 0x9C;
             s.fr00.has_color = 1;
         } else {
@@ -705,7 +707,7 @@ void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
         }
         x0 = s.fr00.x;
         if (g_row_menu_working_record_ptr->unk20_3) {
-            if (arg1 & 1) {
+            if (cursor_row_mode & 1) {
                 s.fr00.x = x0 + g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin((g_row_menu_pulse_counter & 0x1F) << 7) * 47) >>
                      12) -
@@ -729,17 +731,17 @@ void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
         s.fr00.ot_idx = 3;
         var_4 = s.fr00.header->cells;
         s.fr00.table = var_4;
-        s.fr00.ft4_out = arg0[2];
-        arg0[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
+        s.fr00.ft4_out = draw_context[2];
+        draw_context[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
         s.fr00.header = ptr[1];
         var_4 = s.fr00.header->cells;
         s.fr00.table = var_4;
-        s.fr00.sprt_out = arg0[5];
-        arg0[5] = gpu_AddSpriteCells(&s.fr00);
-        if (arg1 & 1) {
+        s.fr00.sprt_out = draw_context[5];
+        draw_context[5] = gpu_AddSpriteCells(&s.fr00);
+        if (cursor_row_mode & 1) {
             s.fr00.ot_idx = 2;
             s.fr00.semi = 0;
             s.fr00.header = ptr[6];
@@ -747,17 +749,17 @@ void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
             s.fr00.y = 0;
             s.fr00.has_color = 1;
             s.fr00.table = &s.fr00.header->cells[1];
-            s.fr00.sprt_out = arg0[5];
-            arg0[5] = gpu_AddSpriteCells(&s.fr00);
+            s.fr00.sprt_out = draw_context[5];
+            draw_context[5] = gpu_AddSpriteCells(&s.fr00);
         }
-        SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.fr00.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + 3, (DR_MODE *)arg0[7]);
-        arg0[7] += 0xC;
+        SetDrawMode((DR_MODE *)draw_context[7], 1, 0,
+                    gpu_GetSheetTPage(s.fr00.header, 0), 0);
+        AddPrim(g_gpu_ot_ptr + 3, (DR_MODE *)draw_context[7]);
+        draw_context[7] += 0xC;
     }
 }
 
-void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
+void menu_DrawModeBit0Sheets(s32 *draw_context, s32 cursor_row_mode) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
      * gpu_AddScaledSpriteQuads / gpu_AddSpriteCells); tail[0..3] is unwritten
      * padding that brings the locals to the target's 0x70 frame (the 0x2C
@@ -771,10 +773,10 @@ void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
      * store; stored directly: score 8. */
     Unk8009B400Record *var_4;
 
-    if (arg1 & 1) {
-        ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
+    if (cursor_row_mode & 1) {
+        ptr = ((Unk8006919CRec *)draw_context[1])->unk_1C;
         s.fr00.header = ptr[2];
-        if (arg1 & 2) {
+        if (cursor_row_mode & 2) {
             s.fr00.x = -1;
             s.fr00.has_color = 1;
         } else {
@@ -783,7 +785,7 @@ void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
         }
         x0 = s.fr00.x;
         if (!(g_row_menu_working_record_ptr->unk20_3)) {
-            if (arg1 & 2) {
+            if (cursor_row_mode & 2) {
                 s.fr00.x = x0 + g_row_menu_work_block->menu_draw_offsets[0];
                 c = ((rsin((g_row_menu_pulse_counter & 0x1F) << 7) * 47) >>
                      12) -
@@ -808,17 +810,17 @@ void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
         s.fr00.ot_idx = 2;
         var_4 = s.fr00.header->cells;
         s.fr00.table = var_4;
-        s.fr00.ft4_out = arg0[2];
-        arg0[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
+        s.fr00.ft4_out = draw_context[2];
+        draw_context[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
         s.fr00.header = ptr[3];
         var_4 = s.fr00.header->cells;
         s.fr00.table = var_4;
-        s.fr00.sprt_out = arg0[5];
-        arg0[5] = gpu_AddSpriteCells(&s.fr00);
-        if (arg1 & 2) {
+        s.fr00.sprt_out = draw_context[5];
+        draw_context[5] = gpu_AddSpriteCells(&s.fr00);
+        if (cursor_row_mode & 2) {
             s.fr00.ot_idx = 2;
             s.fr00.semi = 0;
             s.fr00.header = ptr[6];
@@ -827,60 +829,61 @@ void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
             s.fr00.has_color = 1;
             var_4 = s.fr00.header->cells;
             s.fr00.table = var_4;
-            s.fr00.sprt_out = arg0[5];
-            arg0[5] = gpu_AddSpriteCells(&s.fr00);
+            s.fr00.sprt_out = draw_context[5];
+            draw_context[5] = gpu_AddSpriteCells(&s.fr00);
         }
-        SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.fr00.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + 2, (DR_MODE *)arg0[7]);
-        arg0[7] += 0xC;
+        SetDrawMode((DR_MODE *)draw_context[7], 1, 0,
+                    gpu_GetSheetTPage(s.fr00.header, 0), 0);
+        AddPrim(g_gpu_ot_ptr + 2, (DR_MODE *)draw_context[7]);
+        draw_context[7] += 0xC;
     }
 }
 
-void gpu_DrawList1CEntry4SpriteCellsAtOrigin(s32 *arg0, Unk8007352CRec *arg1) {
-    arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[4];
-    arg1->x = 0;
-    arg1->y = 0;
-    arg1->has_color = 0;
-    arg1->semi = 0;
-    arg1->ot_idx = 1;
-    arg1->table = arg1->header->cells;
-    arg1->sprt_out = arg0[5];
-    arg0[5] = gpu_AddSpriteCells(arg1);
-    SetDrawMode(
-        (DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(arg1->header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)arg0[7]);
-    arg0[7] += 0xC;
+void gpu_DrawList1CEntry4SpriteCellsAtOrigin(
+    s32 *draw_context, Unk8007352CRec *draw_desc) {
+    draw_desc->header = ((Unk8006919CRec *)draw_context[1])->unk_1C[4];
+    draw_desc->x = 0;
+    draw_desc->y = 0;
+    draw_desc->has_color = 0;
+    draw_desc->semi = 0;
+    draw_desc->ot_idx = 1;
+    draw_desc->table = draw_desc->header->cells;
+    draw_desc->sprt_out = draw_context[5];
+    draw_context[5] = gpu_AddSpriteCells(draw_desc);
+    SetDrawMode((DR_MODE *)draw_context[7], 1, 0,
+                gpu_GetSheetTPage(draw_desc->header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)draw_context[7]);
+    draw_context[7] += 0xC;
 }
 
 void menu_DrawList1CEntry9UnitScaleQuadsAtOrigin(
-    s32 *arg0, Unk8007352CRec *arg1) {
-    arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[9];
-    arg1->x = 0;
-    arg1->y = 0;
-    arg1->has_color = 0;
-    arg1->semi = 0;
-    arg1->ot_idx = 1;
-    arg1->scale_x = 0x100;
-    arg1->scale_y = 0x100;
-    arg1->table = arg1->header->cells;
-    arg1->ft4_out = arg0[2];
-    arg0[2] = gpu_AddScaledSpriteQuads(arg1, 0);
-    SetDrawMode(
-        (DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(arg1->header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)arg0[7]);
-    arg0[7] += 0xC;
+    s32 *draw_context, Unk8007352CRec *draw_desc) {
+    draw_desc->header = ((Unk8006919CRec *)draw_context[1])->unk_1C[9];
+    draw_desc->x = 0;
+    draw_desc->y = 0;
+    draw_desc->has_color = 0;
+    draw_desc->semi = 0;
+    draw_desc->ot_idx = 1;
+    draw_desc->scale_x = 0x100;
+    draw_desc->scale_y = 0x100;
+    draw_desc->table = draw_desc->header->cells;
+    draw_desc->ft4_out = draw_context[2];
+    draw_context[2] = gpu_AddScaledSpriteQuads(draw_desc, 0);
+    SetDrawMode((DR_MODE *)draw_context[7], 1, 0,
+                gpu_GetSheetTPage(draw_desc->header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)draw_context[7]);
+    draw_context[7] += 0xC;
 }
 
 void menu_DrawRowThreeThinTilesAndTwoSheets(
-    u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
+    u8 *draw_context, Unk8007352CRec *arg1, s32 row_index) {
     TILE *tile;
-    Unk8009B0E0Record **tbl;
+    Unk8009B0E0Record **sheet_headers;
     s32 s4;
 
-    tile = (TILE *)*(s32 *)(arg0 + 0x18);
+    tile = (TILE *)*(s32 *)(draw_context + 0x18);
     SetTile(tile);
-    if ((g_menu_packed_cursors & 0xF) == arg2) {
+    if ((g_menu_packed_cursors & 0xF) == row_index) {
         setRGB0(tile, arg1->col_r, 0, arg1->col_b);
         s4 = 0;
     } else {
@@ -896,7 +899,7 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
     tile++;
 
     SetTile(tile);
-    if ((g_menu_packed_cursors & 0xF) == arg2) {
+    if ((g_menu_packed_cursors & 0xF) == row_index) {
         setRGB0(tile, arg1->col_r, 0, arg1->col_b);
     } else {
         setRGB0(tile, 0x20, 0x20, 0x20);
@@ -910,7 +913,7 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
     tile++;
 
     SetTile(tile);
-    if ((g_menu_packed_cursors & 0xF) == arg2) {
+    if ((g_menu_packed_cursors & 0xF) == row_index) {
         setRGB0(tile, arg1->col_r >> 1, 0, arg1->col_b >> 1);
     } else {
         setRGB0(tile, 0x10, 0x10, 0x10);
@@ -923,8 +926,8 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
     AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
 
     tile = tile + 1;
-    *(s32 *)(arg0 + 0x18) = (s32)tile;
-    tbl = (*(Unk8006919CRec **)(arg0 + 4))->unk_1C;
+    *(s32 *)(draw_context + 0x18) = (s32)tile;
+    sheet_headers = (*(Unk8006919CRec **)(draw_context + 4))->unk_1C;
     {
         /* FAKE: single-use holder of the cell table ahead of the descriptor's
          * table store; stored directly: score 7. */
@@ -934,8 +937,8 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
            g_menu_packed_cursors load (MEM_IN_STRUCT_P); score 7. */
         Unk8009B0E0Record **var_7 = &arg1->header;
 
-        *var_7 = tbl[10];
-        if ((g_menu_packed_cursors & 0xF) == arg2) {
+        *var_7 = sheet_headers[10];
+        if ((g_menu_packed_cursors & 0xF) == row_index) {
             arg1->col_g = 0;
             arg1->col_r = arg1->col_r >> 1;
             arg1->col_b = arg1->col_b >> 1;
@@ -950,20 +953,21 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
         arg1->y += 0xF;
         arg1->table = v1;
 
-        arg1->sprt_out = *(s32 *)(arg0 + 0x14);
-        *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(arg1);
+        arg1->sprt_out = *(s32 *)(draw_context + 0x14);
+        *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(arg1);
 
-        arg1->header = tbl[11];
+        arg1->header = sheet_headers[11];
         v1 = arg1->header->cells;
         arg1->table = v1;
-        arg1->sprt_out = *(s32 *)(arg0 + 0x14);
-        *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(arg1);
+        arg1->sprt_out = *(s32 *)(draw_context + 0x14);
+        *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(arg1);
     }
 
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(arg1->header, s4), 0);
-    AddPrim(g_gpu_ot_ptr + arg1->ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
+    AddPrim(
+        g_gpu_ot_ptr + arg1->ot_idx, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) = *(s32 *)(draw_context + 0x1C) + 0xC;
 }
 
 /* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
@@ -974,7 +978,7 @@ void menu_DrawRowThreeThinTilesAndTwoSheets(
  * cursor, +0x24 DR_OFFSET cursor), accessed as byte offsets like
  * menu_DrawRowThreeThinTilesAndTwoSheets; arg1 = the display environment's clip
  * RECT and ofs[2]; arg2 (passed by menu_UpdateRowMenu) is unused. */
-void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
+void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
     Unk8007352CRec s;
     RECT rect;
     s16 ofs[2];
@@ -995,41 +999,41 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     Unk8009B400Record *cells;
     s32 yofs;
     s32 bit;
-    s32 i;
+    s32 row_index;
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->row_sheets;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->row_sheets;
     row_mask = g_row_menu_row_state.unk4;
     bit = 0;
     s.header = var_3[0];
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 0xC, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
-    rect.x = arg1[0];
-    rect.y = arg1[1] + 0x3A;
+    AddPrim(g_gpu_ot_ptr + 0xC, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
+    rect.x = draw_env[0];
+    rect.y = draw_env[1] + 0x3A;
     rect.w = 0xF6;
     rect.h = 0x92;
-    SetDrawArea((DR_AREA *)*(s32 *)(arg0 + 0x20), &rect);
-    AddPrim(g_gpu_ot_ptr + 0xC, (DR_AREA *)*(s32 *)(arg0 + 0x20));
-    *(s32 *)(arg0 + 0x20) += 0xC;
+    SetDrawArea((DR_AREA *)*(s32 *)(draw_context + 0x20), &rect);
+    AddPrim(g_gpu_ot_ptr + 0xC, (DR_AREA *)*(s32 *)(draw_context + 0x20));
+    *(s32 *)(draw_context + 0x20) += 0xC;
     yofs = 0;
     for (; !(row_mask & (1 << bit)); bit++) {
         yofs -= 0x18;
     }
-    ofs[0] = arg1[4];
-    ofs[1] = arg1[5] + yofs;
-    SetDrawOffset((DR_OFFSET *)*(s32 *)(arg0 + 0x24), ofs);
-    AddPrim(g_gpu_ot_ptr + 0xC, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
-    *(s32 *)(arg0 + 0x24) += 0xC;
+    ofs[0] = draw_env[4];
+    ofs[1] = draw_env[5] + yofs;
+    SetDrawOffset((DR_OFFSET *)*(s32 *)(draw_context + 0x24), ofs);
+    AddPrim(g_gpu_ot_ptr + 0xC, (DR_OFFSET *)*(s32 *)(draw_context + 0x24));
+    *(s32 *)(draw_context + 0x24) += 0xC;
 
     row_mask = g_row_menu_row_state.rows_on;
     s.ot_idx = 0xB;
-    for (i = 0; i < 7; i++) {
-        s32 y = i * 0x18 + 0x3F;
+    for (row_index = 0; row_index < 7; row_index++) {
+        s32 y = row_index * 0x18 + 0x3F;
 
         s.x = 0x76;
         s.has_color = 1;
-        if ((g_menu_packed_cursors & 0xF) == i) {
+        if ((g_menu_packed_cursors & 0xF) == row_index) {
             s.semi = 0;
             s.col_r = ((rsin(((g_row_menu_pulse_counter & 0x1F) << 7) + 0x1FF) *
                         63) >>
@@ -1042,7 +1046,7 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
             s.col_b = 0x30;
             s.y = g_row_menu_work_block->menu_draw_offsets[1] + y;
             g_row_menu_pulse_counter++;
-        } else if ((row_mask >> i) & 1) {
+        } else if ((row_mask >> row_index) & 1) {
             s.col_r = 0x80;
             s.col_g = 0x6C;
             s.col_b = 0x30;
@@ -1058,20 +1062,21 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
             s.semi = 1;
             s.y = y;
         }
-        s.header = var_3[i];
+        s.header = var_3[row_index];
         cells = s.header->cells;
         s.table = cells;
-        s.sprt_out = *(s32 *)(arg0 + 0x14);
-        *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
-        SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+        s.sprt_out = *(s32 *)(draw_context + 0x14);
+        *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(&s);
+        SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                     gpu_GetSheetTPage(s.header, 0), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-        *(s32 *)(arg0 + 0x1C) += 0xC;
+        AddPrim(
+            g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+        *(s32 *)(draw_context + 0x1C) += 0xC;
         s.has_color = 1;
-        menu_DrawRowThreeThinTilesAndTwoSheets(arg0, &s, i);
+        menu_DrawRowThreeThinTilesAndTwoSheets(draw_context, &s, row_index);
     }
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->cursor_row_sheets;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->cursor_row_sheets;
     s.ot_idx = 0xA;
     s.has_color = 0;
     s.semi = 0;
@@ -1080,26 +1085,26 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     s.header = var_3[g_menu_packed_cursors & 0xF];
     cells = s.header->cells;
     s.table = cells;
-    s.sprt_out = *(s32 *)(arg0 + 0x14);
-    *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    s.sprt_out = *(s32 *)(draw_context + 0x14);
+    *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(&s);
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->row_sheets;
-    rect.x = arg1[0];
-    rect.y = arg1[1];
-    rect.w = arg1[2];
-    rect.h = arg1[3];
-    SetDrawArea((DR_AREA *)*(s32 *)(arg0 + 0x20), &rect);
-    AddPrim(g_gpu_ot_ptr + 0xA, (DR_AREA *)*(s32 *)(arg0 + 0x20));
-    *(s32 *)(arg0 + 0x20) += 0xC;
-    ofs[0] = arg1[4];
-    ofs[1] = arg1[5];
-    SetDrawOffset((DR_OFFSET *)*(s32 *)(arg0 + 0x24), ofs);
-    AddPrim(g_gpu_ot_ptr + 0xA, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
-    *(s32 *)(arg0 + 0x24) += 0xC;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->row_sheets;
+    rect.x = draw_env[0];
+    rect.y = draw_env[1];
+    rect.w = draw_env[2];
+    rect.h = draw_env[3];
+    SetDrawArea((DR_AREA *)*(s32 *)(draw_context + 0x20), &rect);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_AREA *)*(s32 *)(draw_context + 0x20));
+    *(s32 *)(draw_context + 0x20) += 0xC;
+    ofs[0] = draw_env[4];
+    ofs[1] = draw_env[5];
+    SetDrawOffset((DR_OFFSET *)*(s32 *)(draw_context + 0x24), ofs);
+    AddPrim(g_gpu_ot_ptr + 0xA, (DR_OFFSET *)*(s32 *)(draw_context + 0x24));
+    *(s32 *)(draw_context + 0x24) += 0xC;
 
     s.x = 0x76;
     s.has_color = 1;
@@ -1136,27 +1141,27 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     s.header = var_3[7];
     cells = s.header->cells;
     s.table = cells;
-    s.sprt_out = *(s32 *)(arg0 + 0x14);
-    *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    s.sprt_out = *(s32 *)(draw_context + 0x14);
+    *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(&s);
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
+    AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
     s.has_color = 1;
-    menu_DrawRowThreeThinTilesAndTwoSheets(arg0, &s, 7);
-    menu_DrawList1CEntry9UnitScaleQuadsAtOrigin((s32 *)arg0, &s);
+    menu_DrawRowThreeThinTilesAndTwoSheets(draw_context, &s, 7);
+    menu_DrawList1CEntry9UnitScaleQuadsAtOrigin((s32 *)draw_context, &s);
 
     s.has_color = 0;
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
+    AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
 
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->unk_24;
     s.header = var_3[(g_menu_packed_cursors & 0xF) + 8];
     s.x = 0;
     s.y = 0x19;
@@ -1165,16 +1170,16 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     s.ot_idx = 0;
     cells = s.header->cells;
     s.table = cells;
-    s.sprt_out = *(s32 *)(arg0 + 0x14);
-    *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    s.sprt_out = *(s32 *)(draw_context + 0x14);
+    *(s32 *)(draw_context + 0x14) = gpu_AddSpriteCells(&s);
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
+    AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
 
     /* FAKE: reused: re-stores the unk_24 list var_3 already holds; dropped:
      * score 3; read in place, or a second local: 2. */
-    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->unk_24;
     s.header = var_3[g_menu_packed_cursors & 0xF];
     s.scale_x = 0x200;
     s.x = 0;
@@ -1185,25 +1190,25 @@ void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     s.ot_idx = 0;
     cells = s.header->cells;
     s.table = cells;
-    s.ft4_out = *(s32 *)(arg0 + 8);
-    *(s32 *)(arg0 + 8) = gpu_AddScaledSpriteQuads(&s, 0);
+    s.ft4_out = *(s32 *)(draw_context + 8);
+    *(s32 *)(draw_context + 8) = gpu_AddScaledSpriteQuads(&s, 0);
 
-    SetTile((TILE *)*(s32 *)(arg0 + 0x18));
-    ((TILE *)*(s32 *)(arg0 + 0x18))->r0 = 0;
-    ((TILE *)*(s32 *)(arg0 + 0x18))->g0 = 0;
-    ((TILE *)*(s32 *)(arg0 + 0x18))->b0 = 0;
-    ((TILE *)*(s32 *)(arg0 + 0x18))->x0 = 0x142;
-    ((TILE *)*(s32 *)(arg0 + 0x18))->y0 = 0x51;
-    ((TILE *)*(s32 *)(arg0 + 0x18))->w = 0x100;
-    ((TILE *)*(s32 *)(arg0 + 0x18))->h = 0x59;
-    SetSemiTrans((TILE *)*(s32 *)(arg0 + 0x18), 0);
-    AddPrim(g_gpu_ot_ptr + 1, (TILE *)*(s32 *)(arg0 + 0x18));
-    *(s32 *)(arg0 + 0x18) += 0x10;
+    SetTile((TILE *)*(s32 *)(draw_context + 0x18));
+    ((TILE *)*(s32 *)(draw_context + 0x18))->r0 = 0;
+    ((TILE *)*(s32 *)(draw_context + 0x18))->g0 = 0;
+    ((TILE *)*(s32 *)(draw_context + 0x18))->b0 = 0;
+    ((TILE *)*(s32 *)(draw_context + 0x18))->x0 = 0x142;
+    ((TILE *)*(s32 *)(draw_context + 0x18))->y0 = 0x51;
+    ((TILE *)*(s32 *)(draw_context + 0x18))->w = 0x100;
+    ((TILE *)*(s32 *)(draw_context + 0x18))->h = 0x59;
+    SetSemiTrans((TILE *)*(s32 *)(draw_context + 0x18), 0);
+    AddPrim(g_gpu_ot_ptr + 1, (TILE *)*(s32 *)(draw_context + 0x18));
+    *(s32 *)(draw_context + 0x18) += 0x10;
 
-    SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
+    SetDrawMode((DR_MODE *)*(s32 *)(draw_context + 0x1C), 1, 0,
                 gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
-    *(s32 *)(arg0 + 0x1C) += 0xC;
+    AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
+    *(s32 *)(draw_context + 0x1C) += 0xC;
 }
 
 /* One argument: the caller's s32[10] (asm reads a0 only). */
