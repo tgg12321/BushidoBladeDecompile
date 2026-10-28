@@ -17,7 +17,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 - `object_InitKindQueue(rec)` (src/main/17AFC.c:3728) seeds the queue: it copies the five entries of
   `g_fighter_initial_carried_object_kinds[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
-  src/main/9F9C.c:3783.
+  src/main/9F9C.c:4051.
 - `object_QueueKind(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it
   first when `rec->object_variant_index != -1` and `kind == rec->wielded_object_kind`; it returns 0 when
   the queue already holds 12.
@@ -40,8 +40,8 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   vertically and within a squared horizontal distance of 0xF423F of
   `world_pos`. It frees the slot and returns the kind (-1 if none, or if the
   queue is full).
-- The fighter update calls these at src/main/9F9C.c:5101 (`object_SpawnScatteredAt`),
-  :5122 (`object_ThrowQueuedKind`) and :5128 / :5133 (`object_PickUpNearby`), gated on the
+- The fighter update calls these at src/main/9F9C.c:5504 (`object_SpawnScatteredAt`),
+  :5529 (`object_ThrowQueuedKind`) and :5536 / :5542 (`object_PickUpNearby`), gated on the
   record's `move_kind` / `move_frame` values.
 - Pool cleanup: `object_ResetPool` (src/main/17AFC.c:3719) frees all twelve
   slots (called at src/main/9F9C.c:1769); `object_FreeAttachedObjects`

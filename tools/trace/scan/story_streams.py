@@ -9,7 +9,7 @@ byte and its operands per command, until
 a command ends the call. This lists every command of every stream, read from
 the retail EXE's bytes, with the operand count and the opponent id each
 fight-setting command leaves in D_80102778.unk_4[1] (P2's character id,
-fighter_Init's arg2 for fighter 1, 9F9C.c:1796):
+fighter_Init's roster_index for fighter 1, 9F9C.c:1244-1250):
 
   op 16 (5 operands): fight_ConfigureFighter1FromLookupAndOperandsAndLoad, unk_4[1] = 0xE or 0x1D (2B344.c:270:
         0xE when D_8008D9EC[P1's D_8008D538 entry] != 0 and D_800A37A0 != 1)

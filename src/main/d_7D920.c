@@ -121,7 +121,7 @@ u8 g_snd_stage_cd_audio_entry_indices[32] = {
     0, 4, 0, 0, 0, 0, 0, 3, 0, 3, 2, 2, 0, 4, 0, 4,
     4, 0, 2, 0, 0, 0, 2, 2, 3, 3, 4, 4, 0, 3, 3, 2};
 
-/* [g_fight_config.unk_4[i] / fighter_Init's arg2] ->
+/* [g_fight_config.unk_4[i] / fighter_Init's roster_index] ->
  * Unk80101EC8Record.character_data_index; size from the gap. */
 u8 g_fight_config_id_data_rows[36] = {
     0,  1,  2,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,

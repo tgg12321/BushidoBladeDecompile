@@ -119,10 +119,10 @@ e->world_pos.z = z;
 | +0xFC | `world_pos.z` | `D_80101FC4` |
 
 `base_pos` + `root_offset` = `world_pos`: fighter_Init and fighter_Update
-(9F9C.c:4060, :5286) sum them. `collision_pos` (+0xB8) is the collision-space
+(9F9C.c:3977, :5248) sum them. `collision_pos` (+0xB8) is the collision-space
 position. `base_pos` is also passed by address to fight_GetStartPosition /
-fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1201, :4029-4051), stepped by `base_velocity`
-and `decaying_xz_velocity` (:5228-5230, :5264-5266) and differenced between records 0 and 1
+fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1201, :3946-3969), stepped by `base_velocity`
+and `decaying_xz_velocity` (:5179-5181, :5226-5228) and differenced between records 0 and 1
 (17AFC.c:2104-2105, :2227-2228).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
@@ -175,7 +175,7 @@ structure to identify several sub-fields and clusters:
 
 Two adjacent Vec3i32 members that fight_UpdateFighterInteractionsAndPointCaches fills with averages of
 scratchpad points (17AFC.c:2428-2442) and func_80022580 sets to `unk_F4`
-(9F9C.c:4100, :4102):
+(9F9C.c:4018, :4020):
 
 | Offset | Member (rec[0] address) | fight_UpdateFighterInteractionsAndPointCaches computation (record i) |
 |---|---|---|

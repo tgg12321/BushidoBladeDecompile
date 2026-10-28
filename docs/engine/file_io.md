@@ -17,8 +17,8 @@ Code names a file by group and index:
 plus an offset. The groups that appear in calls:
 
 - group 1: `motion_LoadCommonData` reads `cdrom_GetFileIndex(1, 1)` into the buffer
-  at `g_motion_common_buffer` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
-  `(1, j + 2)` (9F9C.c:3040, :3090).
+  at `g_motion_common_buffer` (src/main/9F9C.c:3229), and the motion data `(1, 0)` /
+  `(1, j + 2)` (9F9C.c:3283, :3337).
 - group 2: image and data files. Readers include `eff_LoadImagesAndSetup`,
   `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are

@@ -9,11 +9,11 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 
 ## Loading
 
-- `motion_LoadCommonData` (src/main/9F9C.c:2991) reads file `cdrom_GetFileIndex(1, 1)`
+- `motion_LoadCommonData` (src/main/9F9C.c:3227) reads file `cdrom_GetFileIndex(1, 1)`
   to `g_motion_common_buffer` and points the common record `g_motion_common_sections` (include/bb2.h:479)
   at its sections: the move streams at +0x14, then the sections named by the
   header words at +4, +8 and +0x10 (`unk_04`, `unk_08`, `unk_10`).
-- `motion_LoadFighterData` (src/main/9F9C.c:3016) loads up to two character files
+- `motion_LoadFighterData` (src/main/9F9C.c:3258) loads up to two character files
   (`cdrom_GetFileIndex(1, j + 2)`, `j` the model id's index in `D_8008DCCC`)
   into `g_motion_fighter_buffers[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
   `g_motion_fighter_sections[i]` (include/bb2.h:482) at their sections, as the comment on
@@ -21,12 +21,12 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   (`g_fight_mode_selector`) it also reads seven sectors per fighter from
   `cdrom_GetFileIndex(1, 0)` into `g_motion_frame_buffers[i]`, a table of ready
   `MotionFrame`s.
-- `motion_InitStreams` (src/main/9F9C.c:3138) hands each loaded file's bitstream
+- `motion_InitStreams` (src/main/9F9C.c:3360) hands each loaded file's bitstream
   (`unk_10`) to `motion_InitStream`, decoder slots 0 (common), 1 and 2.
 
 ## Move scripts
 
-`motion_ResolveMoveData(rec, id, out)` (src/main/9F9C.c:3231) turns a move id into a
+`motion_ResolveMoveData(rec, id, is_common_out)` (src/main/9F9C.c:3438) turns a move id into a
 `MoveScript *`:
 
 - ids 0x7FF0..0x7FFF select through the character file's tables (`f4E`,
@@ -35,14 +35,14 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   `unk_8E` while their flags `object_variant_enabled` / `unk_90` are clear);
 - other ids with bit 15 set index the character file's streams (the
   opponent's when `borrow_other_motion` is set);
-- the rest index the common file's streams, and `*out` is set to 1.
+- the rest index the common file's streams, and `*is_common_out` is set to 1.
 
-`fighter_StartMoveScript(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
-current move of fighter `i`: `cur_move = script`, `motion_entry_index = script->motion_bank_entry_index`, and
+`fighter_StartMoveScript(fighter_index, move_script, is_common)` (src/main/9F9C.c:3537) makes `move_script` the
+current move of fighter `fighter_index`: `cur_move = move_script`, `motion_entry_index = move_script->motion_bank_entry_index`, and
 `motion_entry` / `motion_metadata` point at the script's entry in the file's `unk_04` table
 and at the byte stream it names in `unk_08` (the frame-window stream that
 [combat.md](combat.md) describes). It also resets the frame counter `move_frame`
-from `script->first_move_frame` and records the previous state in `prev_move_kind`.
+from `move_script->first_move_frame` and records the previous state in `prev_move_kind`.
 
 The script's own fields (`event_move_table_id` / `fallback_move_id` move ids,
 `last_move_frame` / `last_command_frame` frame bounds, `unk_09` flags, and the
@@ -77,22 +77,22 @@ per-joint channels (the comment at include/game.h:1469).
 The fighter loop calls `fighter_BuildCpuOrMappedPadState(i, pad)` and then `fighter_Update(i, pad)`
 for each fighter (src/main/9F9C.c:2040-2043); the variants at :2086 and :2195
 call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
-`fighter_Update` (src/main/9F9C.c:4337; its comment lists the whole sequence):
+`fighter_Update` (src/main/9F9C.c:4623; its comment lists the whole sequence):
 
 1. converts the pad bits, advances the frame `move_frame` and runs the move
    script's command list, switching moves through `motion_ResolveMoveData` /
    `fighter_StartMoveScript`;
 2. decodes the frames at `move_frame` and the next one with `motion_DecodeFrame`
-   (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][move_frame]` in state
+   (src/main/9F9C.c:5039-5040), or copies `g_motion_frame_buffers[i][move_frame]` in state
    0x33; the frame keys go to `blend_src_frame_code` / `blend_dst_frame_code` as `(slot << 14) | frame`
-   (src/main/9F9C.c:4698);
+   (src/main/9F9C.c:5033);
 3. turns the two root offsets into a position delta (heading and distance
    through `Judge`, scaled by `size_scale`), blended by `move_frame_frac` or by
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
 4. integrates the velocities `base_velocity` / `decaying_xz_velocity`, resolves the position
-   (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
-   `slot_BlendTwoPosesIntoNodeMatrices(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:4898) and
-   `func_80040D48` (src/main/9F9C.c:4901).
+   (`fighter_ResolveMovement`, src/main/9F9C.c:4147), and builds the pose:
+   `slot_BlendTwoPosesIntoNodeMatrices(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:5256) and
+   `func_80040D48` (src/main/9F9C.c:5260).
 
 ## Building the pose
 

@@ -770,7 +770,7 @@ g_gpu_rotated_sprite_quad_scale = 0x8009BCD4; /* 4 entries */  /* data-wave 2026
 D_8009BEF4 = 0x8009BEF4; /* 5 entries */  /* data-wave 2026-10-09: was g_bitmask_table_5_8009BEF4 */
 D_8008D754 = 0x8008D754; /* two 8-byte vectors; entry [0] of D_8008D86C (fighter_UpdateBoneWorldData) */  /* data-wave 2026-10-08: was g_motion_descriptor_table_5x16 */
 D_8008D7C4 = 0x8008D7C4; /* two 8-byte records; entry [6] of D_8008D86C (fighter_UpdateBoneWorldData) */  /* data-wave 2026-10-08: was g_motion_descriptor_table_10x16 */
-D_8008DA50 = 0x8008DA50; /* one s16 per class index (fighter record +0x0A), added to base_velocity.vy (9F9C.c:4984-4990) */  /* data-wave 2026-10-08: was g_char_pose_data_table_3x68 */
+D_8008DA50 = 0x8008DA50; /* one s16 per class index (fighter record +0x0A), added to base_velocity.vy (9F9C.c:4928) */  /* data-wave 2026-10-08: was g_char_pose_data_table_3x68 */
 g_fighter_base_move_frame_steps = 0x8008DE34; /* [27][6] halfword table by class; one read initialises fighter record +0x1C */  /* data-wave 2026-10-08: was g_char_anim_curve_table_3x324 */
 D_8008F220 = 0x8008F220; /* one 204-byte byte-coded command stream (g_fight_command_streams entries 0, 5, 10, 11, 16, 22-31), read by the fight_ScanCommandStreamAndLoadImage / fight_RunCommandStream cursor */  /* data-wave 2026-10-08: was g_move_pattern_table_a_4x204 */
 D_8008F6C8 = 0x8008F6C8; /* one 204-byte command stream (g_fight_command_streams entry 7) */  /* data-wave 2026-10-08: was g_move_pattern_table_b_4x204 */
@@ -857,7 +857,7 @@ _gpucb = 0x8009BE2C; /* the GPU callback table: rcsid + 15 entry points (GpuDevT
 g_fight_stage_index = 0x800A36A4; /* selector = g_fight_config.pending_stage_index or a per-mode constant; indexes tables (e.g. fight_GetStartPositionPairTable's block) */  /* data-wave 2026-10-08: was g_stage_id_current */
 D_8008E5A8 = 0x8008E5A8; /* u8 lookup, values 0..4, indexed by g_fight_config.unk_4[0] / [1] (D_8010277C) or obj->character_roster_index; fight_ResetGraphAndReloadResourcesOnCachedKeyChange passes the values to snd_ReloadListedVabsFromFileAndInstallBillboards, fighter_DispatchFrameEvent indexes D_8008EBE0 with one */  /* data-wave 2026-10-08: was g_char_class_table */
 g_fight_tracked_fighter_index = 0x800A36F6; /* fighter index, written 0 or (g_comb_local_side != 0) (24BF0.c:19, :46, 25788.c:115); read as D_80101EC8[it] and compared with camera_StartTurnEasingOnLargeHeadingChange's fighter_index (9F9C.c:886) */  /* data-wave 2026-10-08: was g_gnd_init_arg_saved */
-g_fight_config_id_data_rows = 0x8008D538; /* 36-byte u8 table, values 0..0x1A: fight_BuildOpponentOrder clears bit (1 << value) of 0x3EF3DF (17AFC.c:6372); fighter_Init stores it in character_data_index (9F9C.c:3978), the row of D_8008E5CC / D_8008E6A4 */  /* data-wave 2026-10-09: was g_char_class_id_table */
+g_fight_config_id_data_rows = 0x8008D538; /* 36-byte u8 table, values 0..0x1A: fight_BuildOpponentOrder clears bit (1 << value) of 0x3EF3DF (17AFC.c:6372); fighter_Init stores it in character_data_index (9F9C.c:3880), the row of D_8008E5CC / D_8008E6A4 */  /* data-wave 2026-10-09: was g_char_class_id_table */
 D_8008D55C = 0x8008D55C; /* byte map from a table index into the g_fight_config.unk_4 id space (skips 0-2 and 0x0F-0x11) */  /* data-wave 2026-10-08: was g_char_lesson_idx_table */
 g_listener_cam = 0x800A36B4; /* Rec44 view record pointer (camera_ApplyFightView / camera_ApplyReplayView); snd_QueuePositionalSound reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
 g_gpu_clut_row_list_map = 0x80094E08; /* u8 lookup by obj->unk_08 (0xFF = none); values index g_gpu_clut_row_lists */  /* data-wave 2026-10-08: was g_stage_lighting_idx_table */
@@ -902,10 +902,10 @@ g_fight_operand_tint_green = 0x800A37B5; /* data-wave 2026-10-08: was g_lesson_e
 g_fight_operand_tint_blue = 0x800A37B6; /* data-wave 2026-10-08: was g_lesson_extra_arg_d */
 D_800A30FD = 0x800A30FD; /* caches D_8008E5A8[(s8)g_fight_config.unk_4[1]] for fight_ResetGraphAndReloadResourcesOnCachedKeyChange's reload test (pair of D_800A30FC at -1) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
 D_800A3778 = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
-D_8008EB40 = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4286-4410) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
+D_8008EB40 = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4231, :4324) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
 D_80094B48 = 0x80094B48; /* byte mask indexed by the object's unk_08 (`mask &= D[unk_08]`); each set bit i calls gpu_AddDrawMove(a0, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
 D_80094D40 = 0x80094D40; /* bit-mask table indexed by a1 (the object's unk_08) in gpu_LoadRequestedAvailableTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */
-g_object_scale_factors = 0x80094C68; /* u16 table; stored into the fighter record's +0x1A (9F9C.c:3992 / :3994) and an Unk80045878Obj's +0x12 (309CC.c) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
+g_object_scale_factors = 0x80094C68; /* u16 table; stored into the fighter record's +0x1A (9F9C.c:3901 / :3903) and an Unk80045878Obj's +0x12 (309CC.c) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
 D_80094B96 = 0x80094B96; /* D_80094B96[0].unk_00: s16 parent-node index, -1 for none (node_InitObjectHierarchyFromTemplates) */  /* data-wave 2026-10-08: was g_attack_scale_x */
 D_80094B98 = 0x80094B98; /* D_80094B96[0].unk_02[0]: s16, times a0->position_scale >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
 D_80094B9A = 0x80094B9A; /* D_80094B96[0].unk_02[1]: s16, times a0->position_scale >> 12 it becomes node work.t[1] */  /* data-wave 2026-10-08: was g_attack_scale_z */
@@ -1901,10 +1901,10 @@ D_80101F00 = 0x80101F00; /* +0x38 of D_80101EC8[0] (two 0x44C-byte records): the
 D_80101FBC = 0x80101FBC; /* ref: g_fight_followup_fighter_index */  /* data-wave 2026-10-08: was g_replay_camera_target_a */
 g_motion_fighter_sections = 0x801027B0; /* Unk801027B0Rec[2]: each load slot's section pointers into its loaded file (motion_LoadFighterData) */  /* data-wave 2026-10-08: was g_motion_keyframe_table_ptr */
 VBLANK_MINUS = 0x80104E80; /* ref: md_game_check_change_main_mode_default */  /* data-wave 2026-09-07: was g_blood_spot_timer */
-D_8010203C = 0x8010203C; /* D_80101EC8[0].bone_hit_points_4_5_midpoint.x: fight_UpdateFighterInteractionsAndPointCaches stores (SPAD->bone_hit_points[i][4] + [5]) / 2 (17AFC.c:2437-2442); fighter_Init copies unk_F4 in (9F9C.c:4100) */  /* data-wave 2026-10-09: was g_char_pos_midpoint_x */
+D_8010203C = 0x8010203C; /* D_80101EC8[0].bone_hit_points_4_5_midpoint.x: fight_UpdateFighterInteractionsAndPointCaches stores (SPAD->bone_hit_points[i][4] + [5]) / 2 (17AFC.c:2437-2442); fighter_Init copies unk_F4 in (9F9C.c:4018) */  /* data-wave 2026-10-09: was g_char_pos_midpoint_x */
 D_80102040 = 0x80102040; /* D_80101EC8[0].bone_hit_points_4_5_midpoint.y (see D_8010203C) */  /* data-wave 2026-10-09: was g_char_pos_midpoint_y */
 D_80102044 = 0x80102044; /* D_80101EC8[0].bone_hit_points_4_5_midpoint.z (see D_8010203C) */  /* data-wave 2026-10-09: was g_char_pos_midpoint_z */
-D_80102054 = 0x80102054; /* D_80101EC8[0].bone_hit_points_1_3_centroid.x: fight_UpdateFighterInteractionsAndPointCaches stores (SPAD->bone_hit_points[i][1] + [2] + [3]) / 3 (17AFC.c:2428-2436); fighter_Init copies unk_F4 in (9F9C.c:4102) */  /* data-wave 2026-10-09: was g_char_pos_centroid_x */
+D_80102054 = 0x80102054; /* D_80101EC8[0].bone_hit_points_1_3_centroid.x: fight_UpdateFighterInteractionsAndPointCaches stores (SPAD->bone_hit_points[i][1] + [2] + [3]) / 3 (17AFC.c:2428-2436); fighter_Init copies unk_F4 in (9F9C.c:4020) */  /* data-wave 2026-10-09: was g_char_pos_centroid_x */
 D_80102058 = 0x80102058; /* D_80101EC8[0].bone_hit_points_1_3_centroid.y (see D_80102054) */  /* data-wave 2026-10-09: was g_char_pos_centroid_y */
 D_8010205C = 0x8010205C; /* D_80101EC8[0].bone_hit_points_1_3_centroid.z (see D_80102054) */  /* data-wave 2026-10-09: was g_char_pos_centroid_z */
 D_80102114 = 0x80102114; /* +0x24C of D_80101EC8[0]: vx of VECTOR unk_24C (copied as a whole vector) */  /* data-wave 2026-10-08: was g_char_vec3_b_w_or_alpha */
@@ -2117,7 +2117,7 @@ g_fight_reinit_phase_timer = 0x800A3816; /* +2 from g_memcard_request_retry_coun
 g_fight_time_up_phase_timer = 0x800A381E; /* frame counter of fight_UpdateModeDisplaysAndMatchProgress's g_fight_mode_selector == 5 branch; cleared by fight_AdvanceMatch */  /* data-wave 2026-10-08: was g_stage_helper_result_cache_plus_6 */
 D_800A3828 = 0x800A3828; /* = &g_light_setups[arg2] (func_800430E4); read by gte_ColorGroupedNormalStreamWithSelectedMatrices */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
 g_fight_defeat_delay_frames = 0x800A382E; /* frame counter gating fight_UpdateDefeatDelayAndModeProgress at 0x3D */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_1 */
-g_motion_common_buffer = 0x800A3830; /* load address 0x80120000 used as a CD read destination (9F9C.c:3302 / :3311) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_3 */
+g_motion_common_buffer = 0x800A3830; /* load address 0x80120000 used as a CD read destination (9F9C.c:3221 / :3229) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_3 */
 D_800A3864 = 0x800A3864; /* g_motion_fighter_buffers[1] (= 0x80190800, motion_InitBuffers) */  /* data-wave 2026-10-08: was g_motion_data_base_ptr_plus_4 */
 D_800A3876 = 0x800A3876; /* fighter index 0 / 1 / -1, set with D_800A38A8 = 1; read by fight_UpdatePairedInputTotalsEventsAndMidpointEffects */  /* data-wave 2026-10-08: was g_match_round_index_plus_2 */
 g_motion_common_loaded = 0x800A3880; /* loaded latch: motion_LoadCommonData sets it after reading a CD file into g_motion_common_buffer; motion_LoadFighterData calls motion_LoadCommonData while it is 0; motion_InvalidateMarkedNdataPackAndResetLoadCaches clears it */  /* data-wave 2026-10-08: was g_round_total_score_plus_4 */

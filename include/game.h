@@ -1552,7 +1552,8 @@ typedef struct MoveScript {
 /* Per-character record table (base 0x80101EC8, stride 0x44C, 2 records;
  * schema: docs/naming/CHAR_STRUCT_SCHEMA.md; the old "practice menu" name was
  * reset by owner ruling Q103). Only the fields reached by C so far are named;
- * the rest is reserved padding. fighter_Init initializes record [idx]. */
+ * the rest is reserved padding. fighter_Init initializes record
+ * [fighter_index]. */
 typedef struct Unk80101EC8Record {
     /* the other record: [1] for record 0, else [0] (fighter_Init) */
     struct Unk80101EC8Record *other;
@@ -1598,8 +1599,8 @@ typedef struct Unk80101EC8Record {
     u8 *motion_metadata;
     u16 motion_entry_index;
     /* 1: the last-resolved move is in g_motion_common_sections
-     * (motion_ResolveMoveData's out flag), 0: in a fighter slot (its own, or
-     * the other fighter's when borrow_other_motion is set) */
+     * (motion_ResolveMoveData's is_common_out flag), 0: in a fighter slot (its
+     * own, or the other fighter's when borrow_other_motion is set) */
     s16 move_is_common;
     u8 cur_move_is_common;
     u8 cur_move_slot;

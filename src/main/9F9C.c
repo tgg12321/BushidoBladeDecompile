@@ -2661,13 +2661,15 @@ s32 fighter_CalcHorizontalSeparation(void) {
     }
 }
 
-/* Computes the s16 factor at arg0+0x44 from the state kind at arg0+0x6A.
- * Some kinds (and, for kinds 0x2/0x1B/0x28/0x26, an arg0+0x40 value inside
- * the 0xA1..0xA3 bounds or not outside the 0xA2..0xA4 bounds) force 0x1000.
- * Otherwise arg0+0x1C is scaled (Q12) by the table at arg0+0x27E indexed by
- * min(arg0+0x26E + arg0+0x272, 3); the range-checked kinds first also scale
- * by arg0+0x274 (when arg0+0x26C is 0) and by the table at arg0+0x276 indexed
- * by arg0+0x270 clamped to 3.
+/* Computes the s16 factor at fighter_record+0x44 from the state kind at
+ * fighter_record+0x6A. Some kinds (and, for kinds 0x2/0x1B/0x28/0x26, an
+ * fighter_record+0x40 value inside the 0xA1..0xA3 bounds or not outside the
+ * 0xA2..0xA4 bounds) force 0x1000. Otherwise fighter_record+0x1C is scaled
+ * (Q12) by the table at fighter_record+0x27E indexed by
+ * min(fighter_record+0x26E + fighter_record+0x272, 3); the range-checked kinds
+ * first also scale by fighter_record+0x274 (when fighter_record+0x26C is 0) and
+ * by the table at fighter_record+0x276 indexed by fighter_record+0x270 clamped
+ * to 3.
  *
  * `short var_7` is a plain signed short local: GCC's lowering of it gives the
  * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `var_0`
@@ -2987,10 +2989,10 @@ void math_ComputeBallisticVelocityXZ(
 }
 
 /* Starts the rec->bone_event_counter frame counter, records bone index
- * g_fighter_bone_hit_record_templates[arg1].bone at rec->bone_event_bone_index,
- * and rotates the vector arg2 by that bone's matrix of
- * node_GetSlotMatrixPointerArray(rec->index) into rec->bone_event_local_vector.
- */
+ * g_fighter_bone_hit_record_templates[hit_record_index].bone at
+ * rec->bone_event_bone_index, and rotates the vector src_vector by that bone's
+ * matrix of node_GetSlotMatrixPointerArray(rec->index) into
+ * rec->bone_event_local_vector. */
 void fighter_StoreBoneLocalVectorAndArmEventTrigger(
     Unk80101EC8Record *rec, s32 hit_record_index, s16 *src_vector) {
     s32 mat[8];
@@ -3016,10 +3018,11 @@ void fighter_StoreBoneLocalVectorAndArmEventTrigger(
  * fighter_StoreBoneLocalVectorAndArmEventTrigger starts at 1. On the tick where
  * (counter & 7) == 2, the vector fighter_StoreBoneLocalVectorAndArmEventTrigger
  * stored at rec->bone_event_local_vector is rotated by matrix
- * rec->bone_event_bone_index of node_GetSlotMatrixPointerArray(var_2) (GTE
- * MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds 0x800,
- * and handed to fight_RecordReplayEventAndDispatchSoundOrEffect with scratchpad
- * point SPAD->bone_hit_points[var_2][rec->bone_event_bone_index]. The counter
+ * rec->bone_event_bone_index of node_GetSlotMatrixPointerArray(fighter_index)
+ * (GTE MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds
+ * 0x800, and handed to fight_RecordReplayEventAndDispatchSoundOrEffect with
+ * scratchpad point
+ * SPAD->bone_hit_points[fighter_index][rec->bone_event_bone_index]. The counter
  * is cleared on every call that finds it running (the original stores 0 under
  * `>= 150` and then again unconditionally). */
 void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
@@ -3079,16 +3082,16 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
     }
 }
 
-/* Places character rec->index's points in world space with its bone
- * matrices (node_GetSlotMatrixPointerArray()): each of the 22 hit records'
- * offsets through its bone into arg1 (the callers pass
+/* Places character rec->index's points in world space with its bone matrices
+ * (node_GetSlotMatrixPointerArray()): each of the 22 hit records' offsets
+ * through its bone into bone_hit_points (the callers pass
  * SPAD->bone_hit_points[i]); the point set D_8008D86C[weapon_id] (D_8008D774
- * when weapon_entry_id == 50) through bone 18 into arg2; when
+ * when weapon_entry_id == 50) through bone 18 into weapon_points; when
  * wielded_object_live_state != 0, the pair D_8008D88C[wielded_object_kind]
- * through bone 19 into arg3. A point is the GTE MVMVA rotation (sf=1) of the
- * SVECTOR plus the matrix translation. Then: bone 11's y axis into
- * rec->bone_y_axis, arg1[0] into rec->bone_hit_point_0, the translations of
- * bones 17 and 14 (y raised by (size_scale * 71) >> 11) into
+ * through bone 19 into second_weapon_points. A point is the GTE MVMVA rotation
+ * (sf=1) of the SVECTOR plus the matrix translation. Then: bone 11's y axis
+ * into rec->bone_y_axis, bone_hit_points[0] into rec->bone_hit_point_0, the
+ * translations of bones 17 and 14 (y raised by (size_scale * 71) >> 11) into
  * rec->ground_probe_points[], the floor height under each
  * (collision_TestSegmentWithWork down a segment from y - 100 to y + 2000; the
  * segment's lower end when it finds nothing) into rec->ground_probe_floor_ys[],
@@ -3239,19 +3242,19 @@ void motion_LoadCommonData(void) {
  * 6): when g_motion_frame_set_ids[i] differs from v, stores v there and calls
  * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
  * 7). Then sets D_80101EC8[0].motion_data_id to
- * g_fighter_motion_data_ids[arg0][arg1] | arg1
- * << 12 and D_80101EC8[1].motion_data_id to the same of arg2 and arg3 (a copy
- * of the first when g_fight_mode_selector is 3). It then fills var_0[0..1] from
- * g_motion_fighter_loaded_data_ids[0..1]: it returns when every id is already
- * there; equal ids give var_0[0] = id0; an id found in
- * g_motion_fighter_loaded_data_ids[0] stays and the other id goes to var_0[1];
- * id1 found only in g_motion_fighter_loaded_data_ids[1] gives var_0[0] = id0;
- * otherwise (also when id0 is only in g_motion_fighter_loaded_data_ids[1])
- * var_0[0] = id0 and var_0[1] = id1. For each nonzero var_0[i] it calls
- * cdrom_StartRead(cdrom_GetFileIndex(1, j + 2), g_motion_fighter_buffers[i]), j
- * the id's D_8008DCCC index, points g_motion_fighter_sections[i] into
- * g_motion_fighter_buffers[i] and stores the id in
- * g_motion_fighter_loaded_data_ids[i]. */
+ * g_fighter_motion_data_ids[arg0][fighter0_weapon_id] | fighter0_weapon_id <<
+ * 12 and D_80101EC8[1].motion_data_id to the same of arg2 and
+ * fighter1_weapon_id (a copy of the first when g_fight_mode_selector is 3). It
+ * then fills var_0[0..1] from g_motion_fighter_loaded_data_ids[0..1]: it
+ * returns when every id is already there; equal ids give var_0[0] = id0; an id
+ * found in g_motion_fighter_loaded_data_ids[0] stays and the other id goes to
+ * var_0[1]; id1 found only in g_motion_fighter_loaded_data_ids[1] gives
+ * var_0[0] = id0; otherwise (also when id0 is only in
+ * g_motion_fighter_loaded_data_ids[1]) var_0[0] = id0 and var_0[1] = id1. For
+ * each nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j + 2),
+ * g_motion_fighter_buffers[i]), j the id's D_8008DCCC index, points
+ * g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and stores the
+ * id in g_motion_fighter_loaded_data_ids[i]. */
 void motion_LoadFighterData(
     s32 arg0, s32 fighter0_weapon_id, s32 arg2, s32 fighter1_weapon_id) {
     /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
