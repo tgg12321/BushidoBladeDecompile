@@ -1,0 +1,120 @@
+var-members-rest-9 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Scope: Unk1F800000Rec (51268.c's scratchpad record at 0x1F800000, include/game.h ~1167-1199), the five Unk1F8000B8_* views
+laid over its work area (Unk1F8000B8Union, ~1018-1145) and Unk80101EC8Record.unk_430 (the fighter record's CPU flag word).
+Research: 70 RENAME / 23 NO_NAME. Surviving: 69 rows (pairs.txt). Dropped 1, respelled 5 (names changed from the research proposal), 0 other.
+Per type: Unk1F800000Rec 25, Unk1F8000B8_800620B8 7, Unk1F8000B8_80063084 5, Unk1F8000B8_800646E8 9, Unk1F8000B8_80065800 7,
+Unk1F8000B8_800678A8 15, Unk80101EC8Record 1.
+
+Re-derivation
+- All of 51268.c (3161 lines) and the game.h type bodies were read. The types are named only in 51268.c and game.h. Every member is
+  reached by an address-of: eff_BindScratchpad seeds a g_eff_* / D_800A34xx pointer global with it (Rec), or a function's
+  prologue binds a local to it (views). So the evidence is every use of that global or local; those were listed mechanically
+  (comment-stripped 51268.c, each occurrence classified R / W / RW / bind / cursor, call-arguments by the callee's out-parameter
+  positions) and the ACCESSES text of each manifest row carries the lists. The BODY text was checked against them: every line
+  number it cites is in the list, or is a sibling-view, constant or command-field line (named in the text).
+- unk_430: all 52 lines (53 accesses) of 4510C.c read or grep-verified; every one is a bit test, set or clear of the word.
+- Raw offsets: the only raw-offset layouts over the work area are eff_DrawAndAdvanceRotatedQuadClusters (51268.c:954-960) and
+  eff_DrawYawedSlotQuads (1438-1442); they name no member. 51268.c has no INCLUDE_ASM body left; none of the 137 remaining
+  INCLUDE_ASM bodies names a g_eff_* / D_800A34xx pointer global, D_800A3480/84, D_800A3724, D_80101EC8 or a 0x430($reg) access
+  (asm/funcs checked). A group of gpu_Emit* / func_8004* asm bodies uses other scratchpad layouts (0x1F80xxxx) of other types.
+- Collisions: whole-word grep of src/ and include/ finds none of the 69 new names (no member, local, type, macro, global or
+  keyword of that spelling); the names repeated across views below are this wave's shared groups only.
+
+Dropped (1)
+  Rec.unk8C rtp_flag: the particle drawer writes the constant 1 and tests it (51268.c:2971-2972) without any RotTransPers result;
+    every other use passes it as RotTransPers' flag out-argument. The name claims the GTE flag; one use contradicts it. Stays unk8C.
+
+Respelled (names differ from the research; each checked at every use)
+  Rec.unk88   lower_y_offset_word -> lower_y_offset: 'word' is not borne out (shifted at use in the pairs drawer 1280/1283, in place
+              in the particle drawer 3037, unshifted 1199-1254).
+  *.unk34/2C/38 (620B8 / 63084 / 646E8)  origin_vector -> zero_vector: the vector is zeroed once (783-785, 1125-1127, 1625) and only
+              passed to RotTransPers; 'origin' reads as g_eff_view_origin (the camera).
+  646E8.unk14 billboard_frame -> billboard_frame_index (the member is the index age / 4 into the D_8009B8E8 TexRec table).
+  646E8.unk44, 678A8.unk7C  quad_list_end -> new_quads_end (exclusive end of the quads emitted this call, [g_eff_quad_cursor, it)).
+  678A8.unk1AC particle_random -> random_accumulator (rand() at 2880 then xor-accumulated per particle 2951; no other use).
+
+WEAK rows kept (reviewer may drop)
+  Rec.unk6C geom_screen_work ('work' = scaled per drawer: <<8, *1000, plain; every store is ReadGeomScreen, every read a threshold/divisor),
+  Rec.unk90 depth_work (raw depth then its OT index in the same cell; every use depth-derived), Rec.unk80 left_x_offset (only -right_x_offset
+  stored, only added to x0/x2), Rec.unkA8 yawed_quad_tex_rec_index (two writers copy the slot's 2-bit index; sole reader indexes the TexRec
+  table D_8009B920 in eff_DrawYawedSlotQuads), Rec.unkAC quad_rate_selector (1930 write, 1932 switch), Rec.unk82 right_x_offset (carries the
+  scaled width before the 1269 halve; final role is the right-corner offset), 678A8.unk73 particle_green (in modes 2/3 only the retire test
+  reads it; the prim's green is red >> 2), 678A8.unk78 screen_xy_index (also the loop counter; the 3044 branch is unreachable),
+  65800.unk6C/70 quad_extent_x/y ('extent' because half or full per mode), Rec.unk00 default_command_block ('default' = bound target absent
+  a retarget; scratchpad_command_block considered).
+  Unk80101EC8Record.unk_430 cpu_state_flags (R6 of var-members-rest-8 rejected cpu_frame_flags: 0x40000 (4510C.c:934/2944-2947) and
+  0x20/0x40 (mask 0x40060 at 647, set 851, cleared 801) persist across frames). 'state' is the one word that fits all four bit kinds
+  without a lifetime or purpose claim: per-call random rolls (0x1/0x4/0x8/0x10, 648-660), per-call own/opponent move-kind sets (0x80..0x10000,
+  661-681), tally-trigger bits that persist until the key resets (0x20/0x40, 0x18 added 857), and 0x40000 (set from pad button 0x100 under a
+  profile flag, 934; cleared when consumed, 2947). Counter: the rolls are random outcomes, not state, so this is WEAK generic; fallback is a
+  drop (unk_430 stays).
+
+Shared-name groups (same name only where the code shows the same meaning)
+  billboard_screen_height   620B8.unk12, 646E8.unk12  (full on-screen quad height; 620B8.unk10 is the HALF width and 646E8.unk10 the FULL
+                            width: different quantities, different names: billboard_screen_half_width / billboard_screen_width)
+  rotated_position          620B8.unk14, 63084.unk14, 646E8.unk18  (ApplyRotMatrix(LV) output, then read as MATRIX t[] by SetTransMatrix)
+  view_relative_position    620B8.unk24, 63084.unk24, 646E8.unk28, 65800.unk54  (world position minus g_eff_view_origin, rotation input)
+  zero_vector               620B8.unk34, 63084.unk2C, 646E8.unk38  (zeroed once, RotTransPers input)
+  depth_cue                 620B8.unk3C, 63084.unk34, 646E8.unk40, 65800.unk10  (RotTransPers p out-arg, never read; gte_stdp = IR0
+                            depth-cue value, include/psxsdk/gtemac.h:7-13)
+  billboard_ot_index        620B8.unk44, 63084.unk3C  (gpu_DepthToOtIndex result, range tests, OT link slot)
+  new_quads_end             646E8.unk44, 678A8.unk7C  (exclusive end of the quads emitted this call; link bound; becomes g_eff_quad_cursor)
+  quad_ot_index_table       646E8.unk48 (u32[16]), 678A8.unk8C (u16[0x90])  (per emitted quad, its OT index)
+  No name is shared with a Rec member or another type outside these groups.
+
+NO_NAME (23, from research, none contradicted, not in pairs; plus the dropped rtp_flag above)
+  Rec: unk50 / unkB0 (seeds of g_eff_current_tex_rec / g_eff_clut_tex_rec, storage never written), unkA0 / unkA4 (seeds of
+    g_eff_current_ot_entry / g_eff_current_prim_tag, every user retargets before use); unk2C and the Unk1F800000Unk00 members unproposed.
+  63084.unk38 (one-use temp age - 15 feeding the colour word, 1258-1262).
+  65800.unk14 (translation [0], later four corner offsets: two roles), 65800.unk64 (zero origin vector for RTP, then the RotMatrix angles,
+    then the corner offsets: three roles).
+  678A8.unk10 (translation, then Square0 out), unk34 (velocity step, then vertex copy), unk44 (relative position, then ldv3 vertices),
+    unk6E (particle index in Update, quad index in Link), unk70 (TexRec index in Prepare, age in Update).
+  Unk80101EC8Record: unk_3F2 (counts 2 of 5 script starts), unk_3F4 (counts starts of an unnamed move-kind subset, 4510C.c:735-742),
+    unk_8E, unk_90, unk_AF, unk_150 (only ever 0), unk_24C (write-only copy of base_velocity), unk_26C, unk_26E, unk_270, unk_272
+    (per-bone-group intact flag / hit counters, told apart only by hit-record index range).
+
+Dry run (dry.txt, exit=0, run under WSL): 3 files change (include/game.h, src/main/4510C.c, src/main/51268.c); "OK: every member
+access renamed"; member error rounds 113 -> 0, 15 -> 0, 4 -> 0 (three batches because of repeated names). 0 UNRESOLVED lines; 0 compile
+failures. The tool's PASS (keycheck) line is the first line of each batch in dry.txt. Many decl comment alignments and 4510C.c lines
+exceed 80 columns after the rename: tools/format.py lands them. The worktree's tracked files are unchanged (git status shows only
+this draft dir).
+Cross-lane claims at LAND time: src/main/51268.c, src/main/4510C.c, include/game.h (shared header).
+tools/canonical_asm_regions.json has grants for 9 eff_* functions of main/51268 (eff_PrepareParticles, eff_SpawnParticles,
+eff_DrawBillboardList, ...Clusters, eff_DrawYawedSlotQuads, ...JitteredBillboards, ...BillboardPairs, eff_UpdateParticles,
+eff_DrawAnimatedQuads); their GTE islands (gte_* macro statements) name no renamed member (grep: no gte_ line contains ->unk /.unk), so the
+hashes should not move; re-run check_completion_integrity after the apply anyway (rest-8 needed a re-hash).
+
+R6 watch list: comments the tool does not edit (old member spelling, this wave's meaning). Update at apply, then the keycheck.
+Same-spelled words of OTHER types stay (unk00 / unk04 / unk08 / unk0C / unk10 / unk14 / unk18 / unk1E / unk20 are members of
+Unk1F800000Unk00; unk0..unkE of Unk800EFC78Record; unk6, unk10, unk12 of the particle records; unk_* of other types).
+- include/game.h:
+  960 ("Unk1F800000Rec.unk00" -> default_command_block); the rest of 959-985 names Unk1F800000Unk00 members: stays.
+  1018-1022 ("so unk14 is read as a MATRIX's t[]", 620B8.unk14 -> rotated_position); 1035-1037 (63084 "unk14"); 1049-1051 (646E8 "unk18");
+  1066-1067 ("t[] is unk14[0]" is 65800.unk14[4], not renamed: stays).
+  The trailing field comments of 1024-1032, 1039-1046, 1053-1062, 1069-1082, 1093-1127 (e.g. "half_width", "billboard_height",
+  "billboard_width", "frame", "p_w", "p_h", "added to the texture u") describe locals / roles and stay valid; re-read them against the new
+  names (1025 half_width vs billboard_screen_half_width, 1054-1056).
+  1085-1091 ("unk04, unk6C, unk80, the unk8C table", "builds the quads at unk80 ... unk8C"; unk70 stays: two roles).
+  1130 ("Unk1F800000Rec.unkB8" -> effect_work_area); 1147-1166 (the Rec comment: "unk00" at 1152, "unkB8" at 1163; the unk2C / unk50 /
+  unkA0 / unkA4 / unkB0 / unk18 / unk20 / unk04 / unk08 mentions are unrenamed members: stay); the per-member comments at 1170-1196 name
+  the old twin globals (g_eff_tpage_word ...), still true; g_eff_lower_y_offset_word (1186) now differs from the member lower_y_offset.
+- src/main/51268.c: 2742-2746 (FAKE comment "unk00 / unk02 / unk04 / unk6C / unk80 ... p0 / p2 / p4 / p6C / p80": the locals p6C and
+  p80 carry old offsets in their names, a locals-wave matter); 2850-2857 (FAKE comment pairing locals with members: unk04, unk5C, unk6C,
+  unk72, unk73, unk74, unk88, unk1AC, unk78, unk80, unk84 renamed; unk6E, unk70, unk34 stay); 2923-2926 ("&var_0->unk10", 678A8.unk10 stays).
+  No other 51268.c comment names a renamed member (73-80 and 2839 name Unk1F800000Unk00 / record members of other types).
+- src/main/4510C.c: no comment names unk_430 (all 52 hits are code).
+- Registries / docs: docs/engine/memory_layout.md:97 and symbol_addrs.txt:1244 name the types only; named_syms.txt:296 names
+  g_eff_command_block.unk14 (Unk1F800000Unk00, not renamed). docs/naming/phase3/backlog.tsv row var-members-rest-9 (status text).
+  Older docs/naming/phase3 manifests are the free path. TUs the apply edits: include/game.h, src/main/51268.c, src/main/4510C.c.
+PRE-APPLY REVIEW (naming-reviewer, two batches, 2026-10-28)
+68/69 PASS. Batch A (Unk1F800000Rec 25 + Unk80101EC8Record.unk_430): 25/26 PASS;
+FAIL Unk1F800000Rec.unk88 lower_y_offset (N1/R2: in the billboard-pair drawer
+51268.c:1199-1254 it holds the full sprite height that becomes upper_y_offset
+at 1271, then is zeroed at 1273). Dropped; stays unk88 (suggestion
+y_extent_work needs a fresh row). cpu_state_flags PASS after a per-bit check
+(rebuilt rolls and snapshots plus persisted 0x40060; 'state' claims no
+lifetime). Batch B (the five Unk1F8000B8_* views, 43): 43/43 PASS; the eight
+shared-name groups hold the same role at every member.
+Dry run re-run with the final 68 pairs: see dry.txt.

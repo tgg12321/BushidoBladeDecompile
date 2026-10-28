@@ -1,0 +1,711 @@
+PASS Unk1F800000Rec.unk00=default_command_block, Unk1F800000Rec.unk30=view_rotation_matrix, Unk1F800000Rec.unk58=tpage_word, Unk1F800000Rec.unk5C=clut_word, Unk1F800000Rec.unk60=tex_left_u, Unk1F800000Rec.unk62=tex_right_u, Unk1F800000Rec.unk64=tex_top_v, Unk1F800000Rec.unk66=tex_bottom_v, Unk1F800000Rec.unk68=base_width, Unk1F800000Rec.unk6A=base_height, Unk1F800000Rec.unk6C=geom_screen_work, Unk1F800000Rec.unk70=perspective_scale, Unk1F800000Rec.unk74=screen_xy, Unk1F800000Rec.unk80=left_x_offset, Unk1F800000Rec.unk82=right_x_offset, Unk1F800000Rec.unk84=upper_y_offset, Unk1F800000Rec.unk90=depth_work, Unk1F800000Rec.unk98=top_left_uv, Unk1F800000Rec.unk9A=top_right_uv, Unk1F800000Rec.unk9C=bottom_left_uv, Unk1F800000Rec.unk9E=bottom_right_uv, Unk1F800000Rec.unkA8=yawed_quad_tex_rec_index, Unk1F800000Rec.unkAC=quad_rate_selector, Unk1F800000Rec.unkB8=effect_work_area, Unk1F8000B8_800620B8.unk10=billboard_screen_half_width, Unk1F8000B8_800620B8.unk12=billboard_screen_height, Unk1F8000B8_800620B8.unk14=rotated_position, Unk1F8000B8_800620B8.unk24=view_relative_position, Unk1F8000B8_800620B8.unk34=zero_vector, Unk1F8000B8_800620B8.unk3C=depth_cue, Unk1F8000B8_800620B8.unk44=billboard_ot_index, Unk1F8000B8_80063084.unk14=rotated_position, Unk1F8000B8_80063084.unk24=view_relative_position, Unk1F8000B8_80063084.unk2C=zero_vector, Unk1F8000B8_800646E8.unk12=billboard_screen_height, Unk1F8000B8_800646E8.unk18=rotated_position, Unk1F8000B8_800646E8.unk28=view_relative_position, Unk1F8000B8_800646E8.unk38=zero_vector, Unk1F8000B8_800646E8.unk40=depth_cue, Unk1F8000B8_800646E8.unk48=quad_ot_index_table, Unk1F8000B8_80065800.unk54=view_relative_position, Unk1F8000B8_80065800.unk94=tex_width, Unk1F8000B8_80065800.unk96=tex_height, Unk1F8000B8_800678A8.unk02=tex_bottom_v_offset, Unk1F8000B8_800678A8.unk04=squared_distance_limit, Unk1F8000B8_800678A8.unk72=particle_red, Unk1F8000B8_800678A8.unk73=particle_green, Unk1F8000B8_800678A8.unk78=screen_xy_index, Unk1F8000B8_800678A8.unk7C=new_quads_end, Unk1F8000B8_800678A8.unk88=group_position_entry, Unk1F8000B8_800678A8.unk8C=quad_ot_index_table, Unk1F8000B8_800678A8.unk1AC=random_accumulator, Unk80101EC8Record.unk_430=cpu_state_flags
+decl Unk1F800000Rec.unk00 -> default_command_block  include/game.h:1168
+decl Unk1F800000Rec.unk30 -> view_rotation_matrix  include/game.h:1170
+decl Unk1F800000Rec.unk58 -> tpage_word  include/game.h:1172
+decl Unk1F800000Rec.unk5C -> clut_word  include/game.h:1173
+decl Unk1F800000Rec.unk60 -> tex_left_u  include/game.h:1174
+decl Unk1F800000Rec.unk62 -> tex_right_u  include/game.h:1175
+decl Unk1F800000Rec.unk64 -> tex_top_v  include/game.h:1176
+decl Unk1F800000Rec.unk66 -> tex_bottom_v  include/game.h:1177
+decl Unk1F800000Rec.unk68 -> base_width  include/game.h:1178
+decl Unk1F800000Rec.unk6A -> base_height  include/game.h:1179
+decl Unk1F800000Rec.unk6C -> geom_screen_work  include/game.h:1180
+decl Unk1F800000Rec.unk70 -> perspective_scale  include/game.h:1181
+decl Unk1F800000Rec.unk74 -> screen_xy  include/game.h:1182
+decl Unk1F800000Rec.unk80 -> left_x_offset  include/game.h:1183
+decl Unk1F800000Rec.unk82 -> right_x_offset  include/game.h:1184
+decl Unk1F800000Rec.unk84 -> upper_y_offset  include/game.h:1185
+decl Unk1F800000Rec.unk90 -> depth_work  include/game.h:1188
+decl Unk1F800000Rec.unk98 -> top_left_uv  include/game.h:1189
+decl Unk1F800000Rec.unk9A -> top_right_uv  include/game.h:1190
+decl Unk1F800000Rec.unk9C -> bottom_left_uv  include/game.h:1191
+decl Unk1F800000Rec.unk9E -> bottom_right_uv  include/game.h:1192
+decl Unk1F800000Rec.unkA8 -> yawed_quad_tex_rec_index  include/game.h:1195
+decl Unk1F800000Rec.unkAC -> quad_rate_selector  include/game.h:1196
+decl Unk1F800000Rec.unkB8 -> effect_work_area  include/game.h:1198
+decl Unk1F8000B8_800620B8.unk10 -> billboard_screen_half_width  include/game.h:1025
+decl Unk1F8000B8_800620B8.unk12 -> billboard_screen_height  include/game.h:1026
+decl Unk1F8000B8_800620B8.unk14 -> rotated_position  include/game.h:1027
+decl Unk1F8000B8_800620B8.unk24 -> view_relative_position  include/game.h:1028
+decl Unk1F8000B8_800620B8.unk34 -> zero_vector  include/game.h:1029
+decl Unk1F8000B8_800620B8.unk3C -> depth_cue  include/game.h:1030
+decl Unk1F8000B8_800620B8.unk44 -> billboard_ot_index  include/game.h:1032
+decl Unk1F8000B8_80063084.unk14 -> rotated_position  include/game.h:1040
+decl Unk1F8000B8_80063084.unk24 -> view_relative_position  include/game.h:1041
+decl Unk1F8000B8_80063084.unk2C -> zero_vector  include/game.h:1042
+decl Unk1F8000B8_800646E8.unk12 -> billboard_screen_height  include/game.h:1055
+decl Unk1F8000B8_800646E8.unk18 -> rotated_position  include/game.h:1057
+decl Unk1F8000B8_800646E8.unk28 -> view_relative_position  include/game.h:1058
+decl Unk1F8000B8_800646E8.unk38 -> zero_vector  include/game.h:1059
+decl Unk1F8000B8_800646E8.unk40 -> depth_cue  include/game.h:1060
+decl Unk1F8000B8_800646E8.unk48 -> quad_ot_index_table  include/game.h:1062
+decl Unk1F8000B8_80065800.unk54 -> view_relative_position  include/game.h:1073
+decl Unk1F8000B8_80065800.unk94 -> tex_width  include/game.h:1081
+decl Unk1F8000B8_80065800.unk96 -> tex_height  include/game.h:1082
+decl Unk1F8000B8_800678A8.unk02 -> tex_bottom_v_offset  include/game.h:1094
+decl Unk1F8000B8_800678A8.unk04 -> squared_distance_limit  include/game.h:1097
+decl Unk1F8000B8_800678A8.unk72 -> particle_red  include/game.h:1113
+decl Unk1F8000B8_800678A8.unk73 -> particle_green  include/game.h:1114
+decl Unk1F8000B8_800678A8.unk78 -> screen_xy_index  include/game.h:1117
+decl Unk1F8000B8_800678A8.unk7C -> new_quads_end  include/game.h:1119
+decl Unk1F8000B8_800678A8.unk88 -> group_position_entry  include/game.h:1122
+decl Unk1F8000B8_800678A8.unk8C -> quad_ot_index_table  include/game.h:1125
+decl Unk1F8000B8_800678A8.unk1AC -> random_accumulator  include/game.h:1127
+decl Unk80101EC8Record.unk_430 -> cpu_state_flags  include/game.h:1808
+  round 0: 113 member error line(s)
+    src/main/4510C.c:474 unk_430 x1
+    src/main/4510C.c:504 unk_430 x1
+    src/main/4510C.c:514 unk_430 x1
+    src/main/4510C.c:537 unk_430 x1
+    src/main/4510C.c:646 unk_430 x1
+    src/main/4510C.c:647 unk_430 x1
+    src/main/4510C.c:699 unk_430 x1
+    src/main/4510C.c:701 unk_430 x1
+    src/main/4510C.c:703 unk_430 x1
+    src/main/4510C.c:732 unk_430 x1
+    src/main/4510C.c:744 unk_430 x1
+    src/main/4510C.c:753 unk_430 x1
+    src/main/4510C.c:801 unk_430 x1
+    src/main/4510C.c:818 unk_430 x1
+    src/main/4510C.c:851 unk_430 x1
+    src/main/4510C.c:856 unk_430 x1
+    src/main/4510C.c:857 unk_430 x1
+    src/main/4510C.c:897 unk_430 x1
+    src/main/4510C.c:902 unk_430 x1
+    src/main/4510C.c:909 unk_430 x1
+    src/main/4510C.c:926 unk_430 x1
+    src/main/4510C.c:928 unk_430 x1
+    src/main/4510C.c:932 unk_430 x1
+    src/main/4510C.c:934 unk_430 x1
+    src/main/4510C.c:939 unk_430 x1
+    src/main/4510C.c:1788 unk_430 x1
+    src/main/4510C.c:1796 unk_430 x1
+    src/main/4510C.c:1802 unk_430 x1
+    src/main/4510C.c:1836 unk_430 x1
+    src/main/4510C.c:1849 unk_430 x1
+    src/main/4510C.c:1883 unk_430 x1
+    src/main/4510C.c:1886 unk_430 x1
+    src/main/4510C.c:1964 unk_430 x1
+    src/main/4510C.c:1979 unk_430 x1
+    src/main/4510C.c:2039 unk_430 x1
+    src/main/4510C.c:2054 unk_430 x1
+    src/main/4510C.c:2080 unk_430 x1
+    src/main/4510C.c:2098 unk_430 x1
+    src/main/4510C.c:2112 unk_430 x1
+    src/main/4510C.c:2292 unk_430 x1
+    src/main/4510C.c:2440 unk_430 x1
+    src/main/4510C.c:2450 unk_430 x1
+    src/main/4510C.c:2499 unk_430 x1
+    src/main/4510C.c:2589 unk_430 x2
+    src/main/4510C.c:2754 unk_430 x1
+    src/main/4510C.c:2755 unk_430 x1
+    src/main/4510C.c:2774 unk_430 x1
+    src/main/4510C.c:2867 unk_430 x1
+    src/main/4510C.c:2915 unk_430 x1
+    src/main/4510C.c:2924 unk_430 x1
+    src/main/4510C.c:2944 unk_430 x1
+    src/main/4510C.c:2947 unk_430 x1
+    src/main/51268.c:208 unk00 x1
+    src/main/51268.c:209 unk00 x1
+    src/main/51268.c:210 unk00 x1
+    src/main/51268.c:211 unk30 x1
+    src/main/51268.c:213 unk58 x1
+    src/main/51268.c:214 unk5C x1
+    src/main/51268.c:215 unk60 x1
+    src/main/51268.c:216 unk62 x1
+    src/main/51268.c:217 unk64 x1
+    src/main/51268.c:218 unk66 x1
+    src/main/51268.c:219 unk68 x1
+    src/main/51268.c:220 unk6A x1
+    src/main/51268.c:221 unk6C x1
+    src/main/51268.c:222 unk70 x1
+    src/main/51268.c:223 unk74 x1
+    src/main/51268.c:224 unk80 x1
+    src/main/51268.c:225 unk82 x1
+    src/main/51268.c:226 unk84 x1
+    src/main/51268.c:229 unk90 x1
+    src/main/51268.c:230 unk98 x1
+    src/main/51268.c:231 unk9A x1
+    src/main/51268.c:232 unk9C x1
+    src/main/51268.c:233 unk9E x1
+    src/main/51268.c:236 unkA8 x1
+    src/main/51268.c:237 unkAC x1
+    src/main/51268.c:239 unkB8 x1
+    src/main/51268.c:240 unk00 x1
+    src/main/51268.c:241 unk00 x1
+    src/main/51268.c:776 unk10 x1
+    src/main/51268.c:777 unk12 x1
+    src/main/51268.c:778 unk14 x1
+    src/main/51268.c:779 unk24 x1
+    src/main/51268.c:780 unk34 x1
+    src/main/51268.c:781 unk3C x1
+    src/main/51268.c:782 unk44 x1
+    src/main/51268.c:1118 unk14 x1
+    src/main/51268.c:1119 unk24 x1
+    src/main/51268.c:1120 unk2C x1
+    src/main/51268.c:1614 unk48 x1
+    src/main/51268.c:1616 unk12 x1
+    src/main/51268.c:1618 unk18 x1
+    src/main/51268.c:1619 unk28 x1
+    src/main/51268.c:1620 unk38 x1
+    src/main/51268.c:1621 unk40 x1
+    src/main/51268.c:2094 unk54 x1
+    src/main/51268.c:2099 unk94 x1
+    src/main/51268.c:2100 unk96 x1
+    src/main/51268.c:2747 unk02 x1
+    src/main/51268.c:2748 unk04 x1
+    src/main/51268.c:2752 unk1AC x1
+    src/main/51268.c:2878 unk1AC x1
+    src/main/51268.c:2879 unk1AC x1
+    src/main/51268.c:2881 unk04 x1
+    src/main/51268.c:2889 unk72 x1
+    src/main/51268.c:2890 unk73 x1
+    src/main/51268.c:2892 unk78 x1
+    src/main/51268.c:2895 unk88 x1
+    src/main/51268.c:2896 unk8C x1
+    src/main/51268.c:3108 unk7C x1
+    src/main/51268.c:3110 unk8C x1
+    src/main/51268.c:3116 unk1AC x1
+  round 1: 0 member error line(s)
+PASS Unk1F8000B8_80063084.unk34=depth_cue, Unk1F8000B8_80063084.unk3C=billboard_ot_index, Unk1F8000B8_800646E8.unk10=billboard_screen_width, Unk1F8000B8_800646E8.unk14=billboard_frame_index, Unk1F8000B8_800646E8.unk44=new_quads_end, Unk1F8000B8_80065800.unk6C=quad_extent_x, Unk1F8000B8_80065800.unk70=quad_extent_y, Unk1F8000B8_80065800.unk74=corner_rotation_matrix, Unk1F8000B8_800678A8.unk00=tex_right_u_offset, Unk1F8000B8_800678A8.unk5C=group_position, Unk1F8000B8_800678A8.unk80=particle_quad_cursor, Unk1F8000B8_800678A8.unk84=current_particle
+decl Unk1F8000B8_80063084.unk34 -> depth_cue  include/game.h:1043
+decl Unk1F8000B8_80063084.unk3C -> billboard_ot_index  include/game.h:1046
+decl Unk1F8000B8_800646E8.unk10 -> billboard_screen_width  include/game.h:1054
+decl Unk1F8000B8_800646E8.unk14 -> billboard_frame_index  include/game.h:1056
+decl Unk1F8000B8_800646E8.unk44 -> new_quads_end  include/game.h:1061
+decl Unk1F8000B8_80065800.unk6C -> quad_extent_x  include/game.h:1076
+decl Unk1F8000B8_80065800.unk70 -> quad_extent_y  include/game.h:1078
+decl Unk1F8000B8_80065800.unk74 -> corner_rotation_matrix  include/game.h:1080
+decl Unk1F8000B8_800678A8.unk00 -> tex_right_u_offset  include/game.h:1093
+decl Unk1F8000B8_800678A8.unk5C -> group_position  include/game.h:1106
+decl Unk1F8000B8_800678A8.unk80 -> particle_quad_cursor  include/game.h:1120
+decl Unk1F8000B8_800678A8.unk84 -> current_particle  include/game.h:1121
+  round 0: 14 member error line(s)
+    src/main/51268.c:1121 unk34 x1
+    src/main/51268.c:1123 unk3C x1
+    src/main/51268.c:1615 unk10 x1
+    src/main/51268.c:1617 unk14 x1
+    src/main/51268.c:1622 unk44 x1
+    src/main/51268.c:2096 unk6C x1
+    src/main/51268.c:2097 unk70 x1
+    src/main/51268.c:2098 unk74 x1
+    src/main/51268.c:2746 unk00 x1
+    src/main/51268.c:2750 unk80 x1
+    src/main/51268.c:2885 unk5C x1
+    src/main/51268.c:2893 unk80 x1
+    src/main/51268.c:2894 unk84 x1
+    src/main/51268.c:3109 unk80 x1
+  round 1: 0 member error line(s)
+PASS Unk1F8000B8_80065800.unk10=depth_cue, Unk1F8000B8_800678A8.unk6C=particle_scan_count, Unk1F8000B8_800678A8.unk74=particle_blue
+decl Unk1F8000B8_80065800.unk10 -> depth_cue  include/game.h:1070
+decl Unk1F8000B8_800678A8.unk6C -> particle_scan_count  include/game.h:1108
+decl Unk1F8000B8_800678A8.unk74 -> particle_blue  include/game.h:1115
+  round 0: 4 member error line(s)
+    src/main/51268.c:2092 unk10 x1
+    src/main/51268.c:2749 unk6C x1
+    src/main/51268.c:2886 unk6C x1
+    src/main/51268.c:2891 unk74 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1025,6 +1025,6 @@
+-    s16 unk10;      /* half_width */
+-    s16 unk12;      /* billboard_height */
+-    VECTOR unk14;   /* ApplyRotMatrixLV out */
+-    VECTOR unk24;   /* ApplyRotMatrixLV in */
+-    SVECTOR unk34;  /* RotTransPers in */
+-    s32 unk3C;      /* RotTransPers' p */
++    s16 billboard_screen_half_width;      /* half_width */
++    s16 billboard_screen_height;      /* billboard_height */
++    VECTOR rotated_position;   /* ApplyRotMatrixLV out */
++    VECTOR view_relative_position;   /* ApplyRotMatrixLV in */
++    SVECTOR zero_vector;  /* RotTransPers in */
++    s32 depth_cue;      /* RotTransPers' p */
+@@ -1032 +1032 @@
+-    u32 unk44;      /* gpu_DepthToOtIndex's depth, the OT index */
++    u32 billboard_ot_index;      /* gpu_DepthToOtIndex's depth, the OT index */
+@@ -1040,4 +1040,4 @@
+-    VECTOR unk14;   /* ApplyRotMatrix out */
+-    SVECTOR unk24;  /* ApplyRotMatrix in */
+-    SVECTOR unk2C;  /* RotTransPers in */
+-    s32 unk34;      /* RotTransPers' p */
++    VECTOR rotated_position;   /* ApplyRotMatrix out */
++    SVECTOR view_relative_position;  /* ApplyRotMatrix in */
++    SVECTOR zero_vector;  /* RotTransPers in */
++    s32 depth_cue;      /* RotTransPers' p */
+@@ -1046 +1046 @@
+-    s32 unk3C; /* gpu_DepthToOtIndex's depth, the OT index */
++    s32 billboard_ot_index; /* gpu_DepthToOtIndex's depth, the OT index */
+@@ -1054,9 +1054,9 @@
+-    s16 unk10;       /* billboard_width */
+-    s16 unk12;       /* billboard_height */
+-    s32 unk14;       /* frame */
+-    VECTOR unk18;    /* ApplyRotMatrixLV out */
+-    VECTOR unk28;    /* ApplyRotMatrixLV in */
+-    SVECTOR unk38;   /* RotTransPers in */
+-    s32 unk40;       /* RotTransPers' p */
+-    POLY_FT4 *unk44; /* the end of the quads */
+-    u32 unk48[16];   /* per kept quad, its OT index */
++    s16 billboard_screen_width;       /* billboard_width */
++    s16 billboard_screen_height;       /* billboard_height */
++    s32 billboard_frame_index;       /* frame */
++    VECTOR rotated_position;    /* ApplyRotMatrixLV out */
++    VECTOR view_relative_position;    /* ApplyRotMatrixLV in */
++    SVECTOR zero_vector;   /* RotTransPers in */
++    s32 depth_cue;       /* RotTransPers' p */
++    POLY_FT4 *new_quads_end; /* the end of the quads */
++    u32 quad_ot_index_table[16];   /* per kept quad, its OT index */
+@@ -1070 +1070 @@
+-    s32 unk10;      /* gte_stdp out; not read */
++    s32 depth_cue;      /* gte_stdp out; not read */
+@@ -1073 +1073 @@
+-    VECTOR unk54; /* ApplyRotMatrixLV in */
++    VECTOR view_relative_position; /* ApplyRotMatrixLV in */
+@@ -1076 +1076 @@
+-    s16 unk6C;    /* p_w */
++    s16 quad_extent_x;    /* p_w */
+@@ -1078 +1078 @@
+-    s16 unk70;    /* p_h */
++    s16 quad_extent_y;    /* p_h */
+@@ -1080,3 +1080,3 @@
+-    MATRIX unk74; /* RotMatrix out, SetRotMatrix in */
+-    s16 unk94;    /* added to the texture u */
+-    s16 unk96;    /* added to the texture v */
++    MATRIX corner_rotation_matrix; /* RotMatrix out, SetRotMatrix in */
++    s16 tex_width;    /* added to the texture u */
++    s16 tex_height;    /* added to the texture v */
+@@ -1093,2 +1093,2 @@
+-    u16 unk00; /* eff_PrepareParticles: added to the texture u */
+-    u16 unk02; /* eff_PrepareParticles: added to the texture v */
++    u16 tex_right_u_offset; /* eff_PrepareParticles: added to the texture u */
++    u16 tex_bottom_v_offset; /* eff_PrepareParticles: added to the texture v */
+@@ -1097 +1097 @@
+-    u32 unk04;
++    u32 squared_distance_limit;
+@@ -1106 +1106 @@
+-    VECTOR unk5C; /* eff_UpdateParticles */
++    VECTOR group_position; /* eff_UpdateParticles */
+@@ -1108 +1108 @@
+-    s16 unk6C;
++    s16 particle_scan_count;
+@@ -1113,3 +1113,3 @@
+-    u8 unk72; /* eff_UpdateParticles colours */
+-    u8 unk73;
+-    u8 unk74;
++    u8 particle_red; /* eff_UpdateParticles colours */
++    u8 particle_green;
++    u8 particle_blue;
+@@ -1117 +1117 @@
+-    s16 unk78;                /* eff_UpdateParticles */
++    s16 screen_xy_index;                /* eff_UpdateParticles */
+@@ -1119,4 +1119,4 @@
+-    POLY_FT4 *unk7C;          /* eff_LinkParticleQuads: the end of the quads */
+-    POLY_FT4 *unk80;          /* the quad cursor */
+-    Unk800EFC78Record *unk84; /* eff_UpdateParticles */
+-    Unk800F0C10Record *unk88; /* eff_UpdateParticles */
++    POLY_FT4 *new_quads_end;          /* eff_LinkParticleQuads: the end of the quads */
++    POLY_FT4 *particle_quad_cursor;          /* the quad cursor */
++    Unk800EFC78Record *current_particle; /* eff_UpdateParticles */
++    Unk800F0C10Record *group_position_entry; /* eff_UpdateParticles */
+@@ -1125 +1125 @@
+-    u16 unk8C[0x90];
++    u16 quad_ot_index_table[0x90];
+@@ -1127 +1127 @@
+-    s32 unk1AC;
++    s32 random_accumulator;
+@@ -1168 +1168 @@
+-    Unk1F800000Unk00 unk00;
++    Unk1F800000Unk00 default_command_block;
+@@ -1170 +1170 @@
+-    MATRIX unk30; /* g_eff_view_rotation_matrix */
++    MATRIX view_rotation_matrix; /* g_eff_view_rotation_matrix */
+@@ -1172,14 +1172,14 @@
+-    s32 unk58;    /* g_eff_tpage_word */
+-    s32 unk5C;    /* g_eff_clut_word */
+-    u16 unk60;    /* g_eff_tex_left_u */
+-    u16 unk62;    /* g_eff_tex_right_u */
+-    u16 unk64;    /* g_eff_tex_top_v */
+-    u16 unk66;    /* g_eff_tex_bottom_v */
+-    s16 unk68;    /* g_eff_base_width */
+-    s16 unk6A;    /* g_eff_base_height */
+-    s32 unk6C;    /* g_eff_geom_screen_work */
+-    s32 unk70;    /* g_eff_perspective_scale */
+-    s32 unk74[3]; /* g_eff_screen_xy */
+-    s16 unk80;    /* D_800A34BC */
+-    s16 unk82;    /* g_eff_right_x_offset */
+-    s32 unk84;    /* g_eff_upper_y_offset */
++    s32 tpage_word;    /* g_eff_tpage_word */
++    s32 clut_word;    /* g_eff_clut_word */
++    u16 tex_left_u;    /* g_eff_tex_left_u */
++    u16 tex_right_u;    /* g_eff_tex_right_u */
++    u16 tex_top_v;    /* g_eff_tex_top_v */
++    u16 tex_bottom_v;    /* g_eff_tex_bottom_v */
++    s16 base_width;    /* g_eff_base_width */
++    s16 base_height;    /* g_eff_base_height */
++    s32 geom_screen_work;    /* g_eff_geom_screen_work */
++    s32 perspective_scale;    /* g_eff_perspective_scale */
++    s32 screen_xy[3]; /* g_eff_screen_xy */
++    s16 left_x_offset;    /* D_800A34BC */
++    s16 right_x_offset;    /* g_eff_right_x_offset */
++    s32 upper_y_offset;    /* g_eff_upper_y_offset */
+@@ -1188,5 +1188,5 @@
+-    s32 unk90[2]; /* g_eff_depth_work */
+-    u16 unk98;    /* g_eff_top_left_uv */
+-    u16 unk9A;    /* g_eff_top_right_uv */
+-    u16 unk9C;    /* g_eff_bottom_left_uv */
+-    u16 unk9E;    /* g_eff_bottom_right_uv */
++    s32 depth_work[2]; /* g_eff_depth_work */
++    u16 top_left_uv;    /* g_eff_top_left_uv */
++    u16 top_right_uv;    /* g_eff_top_right_uv */
++    u16 bottom_left_uv;    /* g_eff_bottom_left_uv */
++    u16 bottom_right_uv;    /* g_eff_bottom_right_uv */
+@@ -1195,2 +1195,2 @@
+-    s32 unkA8; /* D_800A3480 */
+-    s32 unkAC; /* D_800A3484 */
++    s32 yawed_quad_tex_rec_index; /* D_800A3480 */
++    s32 quad_rate_selector; /* D_800A3484 */
+@@ -1198 +1198 @@
+-    Unk1F8000B8Union unkB8;
++    Unk1F8000B8Union effect_work_area;
+@@ -1808 +1808 @@
+-    s32 unk_430;
++    s32 cpu_state_flags;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -474 +474 @@
+-    p->unk_430 = 0;
++    p->cpu_state_flags = 0;
+@@ -504 +504 @@
+-            if (arg0->unk_430 & 0x200) {
++            if (arg0->cpu_state_flags & 0x200) {
+@@ -514 +514 @@
+-        if (arg0->unk_430 & 0x800)
++        if (arg0->cpu_state_flags & 0x800)
+@@ -537 +537 @@
+-    if (arg0->unk_430 & 0x800) {
++    if (arg0->cpu_state_flags & 0x800) {
+@@ -646,2 +646,2 @@
+-    rec->unk_430 =
+-        (rec->unk_430 & 0x40060) |
++    rec->cpu_state_flags =
++        (rec->cpu_state_flags & 0x40060) |
+@@ -699 +699 @@
+-        rec->weapon_id < 6 && (rec->unk_430 & 0x2000) &&
++        rec->weapon_id < 6 && (rec->cpu_state_flags & 0x2000) &&
+@@ -701 +701 @@
+-        rec->unk_430 |= 0x20000;
++        rec->cpu_state_flags |= 0x20000;
+@@ -703 +703 @@
+-        rec->unk_430 &= ~0x20000;
++        rec->cpu_state_flags &= ~0x20000;
+@@ -732 +732 @@
+-    if (rec->unk_430 & 0x15500) {
++    if (rec->cpu_state_flags & 0x15500) {
+@@ -744 +744 @@
+-    if (rec->unk_430 & 0x80) {
++    if (rec->cpu_state_flags & 0x80) {
+@@ -753 +753 @@
+-    if (!(rec->unk_430 & 0x80) ||
++    if (!(rec->cpu_state_flags & 0x80) ||
+@@ -801 +801 @@
+-            rec->unk_430 &= ~0x60;
++            rec->cpu_state_flags &= ~0x60;
+@@ -818 +818 @@
+-                    ((rec->unk_430 & 0x100) &&
++                    ((rec->cpu_state_flags & 0x100) &&
+@@ -851 +851 @@
+-                    rec->unk_430 |= temp;
++                    rec->cpu_state_flags |= temp;
+@@ -856,2 +856,2 @@
+-        if (rec->unk_430 & 0x20) {
+-            rec->unk_430 |= 0x18;
++        if (rec->cpu_state_flags & 0x20) {
++            rec->cpu_state_flags |= 0x18;
+@@ -897 +897 @@
+-    if ((rec->unk_430 & 1) &&
++    if ((rec->cpu_state_flags & 1) &&
+@@ -902 +902 @@
+-        (((rec->unk_430 & 0x80) &&
++        (((rec->cpu_state_flags & 0x80) &&
+@@ -909 +909 @@
+-          (((rec->unk_430 & 0x80) && rec->incoming_attack_state == 3) ||
++          (((rec->cpu_state_flags & 0x80) && rec->incoming_attack_state == 3) ||
+@@ -926 +926 @@
+-        rec->unk_430 |= 2;
++        rec->cpu_state_flags |= 2;
+@@ -928 +928 @@
+-        rec->unk_430 &= ~2;
++        rec->cpu_state_flags &= ~2;
+@@ -932 +932 @@
+-        rec->unk_430 &= ~0x78;
++        rec->cpu_state_flags &= ~0x78;
+@@ -934 +934 @@
+-            rec->unk_430 |= 0x40000;
++            rec->cpu_state_flags |= 0x40000;
+@@ -939 +939 @@
+-        rec->unk_430 |= 0x78;
++        rec->cpu_state_flags |= 0x78;
+@@ -1788 +1788 @@
+-        ((p->unk_430 & 0x15100) ||
++        ((p->cpu_state_flags & 0x15100) ||
+@@ -1796 +1796 @@
+-            if (p->unk_430 & 8) {
++            if (p->cpu_state_flags & 8) {
+@@ -1802 +1802 @@
+-                f = p->unk_430;
++                f = p->cpu_state_flags;
+@@ -1836 +1836 @@
+-                } else if (work3 && (p->unk_430 & 8) &&
++                } else if (work3 && (p->cpu_state_flags & 8) &&
+@@ -1849 +1849 @@
+-                if ((p->unk_430 & 8) &&
++                if ((p->cpu_state_flags & 8) &&
+@@ -1883 +1883 @@
+-    if ((p->unk_430 & 0x400) && p->motion_metadata_nibble != 2) {
++    if ((p->cpu_state_flags & 0x400) && p->motion_metadata_nibble != 2) {
+@@ -1886 +1886 @@
+-        } else if (p->unk_430 & 8) {
++        } else if (p->cpu_state_flags & 8) {
+@@ -1964 +1964 @@
+-                } else if (p->unk_430 & 0x20) {
++                } else if (p->cpu_state_flags & 0x20) {
+@@ -1979 +1979 @@
+-                    (p->unk_430 & 8)) {
++                    (p->cpu_state_flags & 8)) {
+@@ -2039 +2039 @@
+-    if ((p->unk_430 & 0x4108) == 8) {
++    if ((p->cpu_state_flags & 0x4108) == 8) {
+@@ -2054 +2054 @@
+-    if (p->unk_430 & 0x5100) {
++    if (p->cpu_state_flags & 0x5100) {
+@@ -2080 +2080 @@
+-                if (!(p->unk_430 & 0x800) ||
++                if (!(p->cpu_state_flags & 0x800) ||
+@@ -2098 +2098 @@
+-                        if (p->unk_430 & 0x200) {
++                        if (p->cpu_state_flags & 0x200) {
+@@ -2112 +2112 @@
+-                        if (p->unk_430 & 0x200) {
++                        if (p->cpu_state_flags & 0x200) {
+@@ -2292 +2292 @@
+-        if ((!(p->unk_430 & 0x80) &&
++        if ((!(p->cpu_state_flags & 0x80) &&
+@@ -2440 +2440 @@
+-                (p->unk_430 & 0x800) || p->opponent_ground_y_band != 0 ||
++                (p->cpu_state_flags & 0x800) || p->opponent_ground_y_band != 0 ||
+@@ -2450 +2450 @@
+-                if (p->unk_430 & 0xA000) {
++                if (p->cpu_state_flags & 0xA000) {
+@@ -2499 +2499 @@
+-                        if (p->unk_430 & 0x20000) {
++                        if (p->cpu_state_flags & 0x20000) {
+@@ -2589 +2589 @@
+-    if ((p->unk_430 & 6) && !(p->unk_430 & 0x800)) {
++    if ((p->cpu_state_flags & 6) && !(p->cpu_state_flags & 0x800)) {
+@@ -2754,2 +2754,2 @@
+-                                    !(p->unk_430 & 0x20000)) {
+-                                    if ((p->unk_430 & 0x200)
++                                    !(p->cpu_state_flags & 0x20000)) {
++                                    if ((p->cpu_state_flags & 0x200)
+@@ -2774 +2774 @@
+-                                (p->unk_430 & 0x280) != 0x280) {
++                                (p->cpu_state_flags & 0x280) != 0x280) {
+@@ -2867 +2867 @@
+-                        (p->unk_430 & 0xA002) &&
++                        (p->cpu_state_flags & 0xA002) &&
+@@ -2915 +2915 @@
+-        } else if ((p->unk_430 & 0x800) &&
++        } else if ((p->cpu_state_flags & 0x800) &&
+@@ -2924 +2924 @@
+-            (p->unk_430 & 0xA801) || p->other->move_kind == 0x18 ||
++            (p->cpu_state_flags & 0xA801) || p->other->move_kind == 0x18 ||
+@@ -2944 +2944 @@
+-                 (p->unk_430 & 0x40000))) {
++                 (p->cpu_state_flags & 0x40000))) {
+@@ -2947 +2947 @@
+-                p->unk_430 &= ~0x40000;
++                p->cpu_state_flags &= ~0x40000;
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -208,4 +208,4 @@
+-    g_eff_active_command_block = &SPAD51268->unk00;
+-    D_800A346C = SPAD51268->unk00.unk18;
+-    g_eff_view_origin = SPAD51268->unk00.unk20;
+-    g_eff_view_rotation_matrix = &SPAD51268->unk30;
++    g_eff_active_command_block = &SPAD51268->default_command_block;
++    D_800A346C = SPAD51268->default_command_block.unk18;
++    g_eff_view_origin = SPAD51268->default_command_block.unk20;
++    g_eff_view_rotation_matrix = &SPAD51268->view_rotation_matrix;
+@@ -213,14 +213,14 @@
+-    g_eff_tpage_word = &SPAD51268->unk58;
+-    g_eff_clut_word = &SPAD51268->unk5C;
+-    g_eff_tex_left_u = &SPAD51268->unk60;
+-    g_eff_tex_right_u = &SPAD51268->unk62;
+-    g_eff_tex_top_v = &SPAD51268->unk64;
+-    g_eff_tex_bottom_v = &SPAD51268->unk66;
+-    g_eff_base_width = &SPAD51268->unk68;
+-    g_eff_base_height = &SPAD51268->unk6A;
+-    g_eff_geom_screen_work = &SPAD51268->unk6C;
+-    g_eff_perspective_scale = &SPAD51268->unk70;
+-    g_eff_screen_xy = SPAD51268->unk74;
+-    D_800A34BC = &SPAD51268->unk80;
+-    g_eff_right_x_offset = &SPAD51268->unk82;
+-    g_eff_upper_y_offset = &SPAD51268->unk84;
++    g_eff_tpage_word = &SPAD51268->tpage_word;
++    g_eff_clut_word = &SPAD51268->clut_word;
++    g_eff_tex_left_u = &SPAD51268->tex_left_u;
++    g_eff_tex_right_u = &SPAD51268->tex_right_u;
++    g_eff_tex_top_v = &SPAD51268->tex_top_v;
++    g_eff_tex_bottom_v = &SPAD51268->tex_bottom_v;
++    g_eff_base_width = &SPAD51268->base_width;
++    g_eff_base_height = &SPAD51268->base_height;
++    g_eff_geom_screen_work = &SPAD51268->geom_screen_work;
++    g_eff_perspective_scale = &SPAD51268->perspective_scale;
++    g_eff_screen_xy = SPAD51268->screen_xy;
++    D_800A34BC = &SPAD51268->left_x_offset;
++    g_eff_right_x_offset = &SPAD51268->right_x_offset;
++    g_eff_upper_y_offset = &SPAD51268->upper_y_offset;
+@@ -229,5 +229,5 @@
+-    g_eff_depth_work = SPAD51268->unk90;
+-    g_eff_top_left_uv = &SPAD51268->unk98;
+-    g_eff_top_right_uv = &SPAD51268->unk9A;
+-    g_eff_bottom_left_uv = &SPAD51268->unk9C;
+-    g_eff_bottom_right_uv = &SPAD51268->unk9E;
++    g_eff_depth_work = SPAD51268->depth_work;
++    g_eff_top_left_uv = &SPAD51268->top_left_uv;
++    g_eff_top_right_uv = &SPAD51268->top_right_uv;
++    g_eff_bottom_left_uv = &SPAD51268->bottom_left_uv;
++    g_eff_bottom_right_uv = &SPAD51268->bottom_right_uv;
+@@ -236,2 +236,2 @@
+-    D_800A3480 = &SPAD51268->unkA8;
+-    D_800A3484 = &SPAD51268->unkAC;
++    D_800A3480 = &SPAD51268->yawed_quad_tex_rec_index;
++    D_800A3484 = &SPAD51268->quad_rate_selector;
+@@ -239,3 +239,3 @@
+-    g_eff_work_area = &SPAD51268->unkB8;
+-    SPAD51268->unk00.unk04 = src_rotation;
+-    SPAD51268->unk00.unk08 = src_position;
++    g_eff_work_area = &SPAD51268->effect_work_area;
++    SPAD51268->default_command_block.unk04 = src_rotation;
++    SPAD51268->default_command_block.unk08 = src_position;
+@@ -776,7 +776,7 @@
+-    half_width = &base->unk10;
+-    billboard_height = &base->unk12;
+-    var_3 = &base->unk14;
+-    v = &base->unk24;
+-    local_origin = &base->unk34;
+-    depth_cue_out = &base->unk3C;
+-    ot_index = &base->unk44;
++    half_width = &base->billboard_screen_half_width;
++    billboard_height = &base->billboard_screen_height;
++    var_3 = &base->rotated_position;
++    v = &base->view_relative_position;
++    local_origin = &base->zero_vector;
++    depth_cue_out = &base->depth_cue;
++    ot_index = &base->billboard_ot_index;
+@@ -1118,4 +1118,4 @@
+-    var_2 = &base->unk14;
+-    relative_position = &base->unk24;
+-    v = &base->unk2C;
+-    depth_cue_out = &base->unk34;
++    var_2 = &base->rotated_position;
++    relative_position = &base->view_relative_position;
++    v = &base->zero_vector;
++    depth_cue_out = &base->depth_cue;
+@@ -1123 +1123 @@
+-    ot_index = &base->unk3C;
++    ot_index = &base->billboard_ot_index;
+@@ -1614,9 +1614,9 @@
+-    quad_ot_read_cursor = base->unk48;
+-    billboard_width = &base->unk10;
+-    billboard_height = &base->unk12;
+-    frame_index = &base->unk14;
+-    var_5 = &base->unk18;
+-    relative_position = &base->unk28;
+-    local_origin = &base->unk38;
+-    p = &base->unk40;
+-    quads_end = &base->unk44;
++    quad_ot_read_cursor = base->quad_ot_index_table;
++    billboard_width = &base->billboard_screen_width;
++    billboard_height = &base->billboard_screen_height;
++    frame_index = &base->billboard_frame_index;
++    var_5 = &base->rotated_position;
++    relative_position = &base->view_relative_position;
++    local_origin = &base->zero_vector;
++    p = &base->depth_cue;
++    quads_end = &base->new_quads_end;
+@@ -2092 +2092 @@
+-    var_2 = &var_0->unk10;
++    var_2 = &var_0->depth_cue;
+@@ -2094 +2094 @@
+-    relative_position = &var_0->unk54;
++    relative_position = &var_0->view_relative_position;
+@@ -2096,5 +2096,5 @@
+-    p_w = &var_0->unk6C;
+-    p_h = &var_0->unk70;
+-    rotation_matrix = &var_0->unk74;
+-    texture_width = &var_0->unk94;
+-    texture_height = &var_0->unk96;
++    p_w = &var_0->quad_extent_x;
++    p_h = &var_0->quad_extent_y;
++    rotation_matrix = &var_0->corner_rotation_matrix;
++    texture_width = &var_0->tex_width;
++    texture_height = &var_0->tex_height;
+@@ -2746,7 +2746,7 @@
+-    u16 *p0 = &var_0->unk00;
+-    u16 *p2 = &var_0->unk02;
+-    u32 *p4 = &var_0->unk04;
+-    s16 *p6C = &var_0->unk6C;
+-    POLY_FT4 **p80 = &var_0->unk80;
+-
+-    D_800A3724 = &var_0->unk1AC;
++    u16 *p0 = &var_0->tex_right_u_offset;
++    u16 *p2 = &var_0->tex_bottom_v_offset;
++    u32 *p4 = &var_0->squared_distance_limit;
++    s16 *p6C = &var_0->particle_scan_count;
++    POLY_FT4 **p80 = &var_0->particle_quad_cursor;
++
++    D_800A3724 = &var_0->random_accumulator;
+@@ -2878,2 +2878,2 @@
+-    D_800A3724 = &var_0->unk1AC;
+-    var_10 = &var_0->unk1AC;
++    D_800A3724 = &var_0->random_accumulator;
++    var_10 = &var_0->random_accumulator;
+@@ -2881 +2881 @@
+-    var_1 = &var_0->unk04;
++    var_1 = &var_0->squared_distance_limit;
+@@ -2885,2 +2885,2 @@
+-    var_2 = &var_0->unk5C;
+-    p_count = &var_0->unk6C;
++    var_2 = &var_0->group_position;
++    p_count = &var_0->particle_scan_count;
+@@ -2889,8 +2889,8 @@
+-    p_r = &var_0->unk72;
+-    p_g = &var_0->unk73;
+-    p_b = &var_0->unk74;
+-    p_n = &var_0->unk78;
+-    p_prim = &var_0->unk80;
+-    p_ent = &var_0->unk84;
+-    var_8 = &var_0->unk88;
+-    var_9 = var_0->unk8C;
++    p_r = &var_0->particle_red;
++    p_g = &var_0->particle_green;
++    p_b = &var_0->particle_blue;
++    p_n = &var_0->screen_xy_index;
++    p_prim = &var_0->particle_quad_cursor;
++    p_ent = &var_0->current_particle;
++    var_8 = &var_0->group_position_entry;
++    var_9 = var_0->quad_ot_index_table;
+@@ -3108,3 +3108,3 @@
+-    POLY_FT4 **quad_end = &work_area->unk7C;
+-    POLY_FT4 **quad_cursor = &work_area->unk80;
+-    u16 *quad_ot_indices = work_area->unk8C;
++    POLY_FT4 **quad_end = &work_area->new_quads_end;
++    POLY_FT4 **quad_cursor = &work_area->particle_quad_cursor;
++    u16 *quad_ot_indices = work_area->quad_ot_index_table;
+@@ -3116 +3116 @@
+-    D_800A3724 = &work_area->unk1AC;
++    D_800A3724 = &work_area->random_accumulator;
+DRY RUN: 3 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
