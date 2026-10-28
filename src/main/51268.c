@@ -2006,8 +2006,8 @@ u8 func_800657B0(void) {
  * camera, picks the texture/colour and quad size from the mode and its
  * g_eff_animated_quad_counters timer, shapes the four corners (switch 2) and
  * links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the paired mode
- * (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by `arg0 < 9`,
- * so modes 10/11 draw once. */
+ * (mode_index + 2, i.e. 8/9) via `goto again`; the re-run is guarded by
+ * `mode_index < 9`, so modes 10/11 draw once. */
 u8 eff_DrawAnimatedQuads(s32 mode_index) {
     extern s16 g_main_loop_handler_index;
     extern s32 ReadGeomScreen(void);
