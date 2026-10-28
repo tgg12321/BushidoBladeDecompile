@@ -1,0 +1,41 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 26 (row var-locals-26, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15..25 lessons in
+`docs/naming/phase3/pending/var-locals-{16,...,25}/prompt.txt` and `pending/var-locals-25/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD aa906aa72 (read-only; equals main, wave 25 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-26-research.md`
+  (overrides any output file the earlier prompts name): HEAD first, then the proposed
+  `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with reasons,
+  comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs). Cite file:line at HEAD. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. the 11 cap-cut rows of pending/var-locals-25/notes.txt
+  (fighter_SetTurnDelta:arg0, fighter_CalcHorizontalSeparation:s0, motion_UpdateFrameStep:arg0/a2,
+  motion_FindPairedMoveEntry:arg0/a0/v1, fighter_PassesPairedMoveEntryGates:arg0,
+  fight_UpdatePairedMoves:var_3, fight_UpdateSeparationAndPairedMoves:s0/v0); they are research claims
+  only: re-derive each from the source; carry the 9F9C.c leading comment of motion_UpdateFrameStep
+  (eleven arg0+0x.. offsets) as a comment follow-up. 2. the rest of src/main/9F9C.c after
+  motion_AdjustFighterPose, every C definition in file order. 3. Then the later game TUs in ROM-offset
+  order (175A4.c, 17AFC.c, 24BF0.c, ...) that still have auto-named bindings (argN, var_N, a0..a3,
+  v0_xxxx, spNN, temp_*, s, p, ...) not on any NO_NAME / neutral list. Skip psxsdk/.
+- Do not re-propose wave 8-25 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,25}/notes.txt) without new evidence, said in the row.
+- Lessons: every old name a rename retires may be cited in symbol_addrs.txt comments, include/*.h
+  comments and live docs (docs/engine/*.md); list each such citation with file:line. Arguments of
+  function-like macros (gte_* etc.) are rejected by scoped_plan: do not propose them. A
+  FAKE-comment-cited binding stays neutral — judge a FAKE comment by the function it sits in. A
+  binding with two roles in one body stays neutral. A new name must not equal a member the same
+  function accesses (keycheck "already occurs in f"). Wave 25: list stale docs/engine cites for the
+  touched TUs in one pass (motion.md:78 and combat.md:12 were left stale).
+- Names already used for the same roles (reuse per function only with the same meaning):
+  draw_context, resource_root, sheet_headers, slot_index, buffer_index, prim_buffer, draw_desc,
+  primitive_cursors, file_index, dest_addr, file_index_offset, port, card, channel, softbody,
+  step_desc, input, local_ot, first_point, second_point, ot_index, cell_index, pressed_buttons,
+  result, gpu_db, player_index, row_index, pad_buttons, brightness, fighter_record, step_descs.
+- Left neutral, do not propose: parameter names in forward declarations/prototypes; idx / idx2 in
+  motion_DecodeFrame; the 9F9C.c forward declarations of camera_UpdateTwoFighterView /
+  fighter_BuildCpuOrMappedPadState.

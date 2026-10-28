@@ -1,0 +1,6 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-25); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan over the working tree (src/**, include/**,
+Makefile; read_working_tree(), NAMING_KEYCHECK_ROOT = cwd = the lane worktree, HEAD aa906aa72 = main) accepted all 80 pairs
+(470 token substitutions: src/main/9F9C.c 470; no other file touched; the comment edits listed in notes.txt COMMENTS TO UPDATE are hand edits). Each pair was also run alone: all accepted, none rejected (per-pair counts sum to 470; the three CAP rows were run alone too and accepted: 8, 5, 9). The count equals a token scan of the 80 bindings in their definitions (signature and body, comments and strings excluded; the forward declaration is not in the count and is not substituted), pair by pair. The run modified no file in the worktree.
