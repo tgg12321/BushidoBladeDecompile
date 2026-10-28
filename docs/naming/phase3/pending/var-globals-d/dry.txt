@@ -1,0 +1,159 @@
+==============================================================================
+DATA WAVE — 20 addresses, 22 identifiers remapped
+  0x800a3464: D_800A3464 -> g_eff_point_light_color
+  0x800a334c: D_800A334C -> g_memcard_message_countdown
+  0x800a3350: D_800A3350 -> g_memcard_prompt_choice
+  0x800a3204: D_800A3204 -> g_menu_prompt_rearm
+  0x800a3570: D_800A3570 -> g_entry_menu_slide_displacement
+  0x800a35c0: D_800A35C0 -> g_entry_menu_gpu_db
+  0x800a359c: D_800A359C -> g_entry_menu_choice_grid_row
+  0x8009947a: D_8009947A -> g_resource_has_retained_subblocks
+  0x800a3518: D_800A3518 -> g_menu_draw_buffer_counter
+  0x8009b400: D_8009B400 -> g_gpu_decimal_digit_cells
+  0x800a3418: D_800A3418 -> g_gpu_jitter_random_state
+  0x800a3474: D_800A3474, g_scratchpad_ptr_30 -> g_eff_view_rotation_matrix
+  0x800a34ec: D_800A34EC, g_scratchpad_ptr_b8 -> g_eff_work_area
+  0x800a38e0: D_800A38E0 -> g_fight_start_position_pair_index
+  0x800a36e8: D_800A36E8 -> g_fight_match_result_timer
+  0x800a3690: D_800A3690 -> g_fight_view_option
+  0x80103608: D_80103608 -> g_reloc_block_entry_tables
+  0x800f0bec: D_800F0BEC -> g_eff_billboard_pair_ages
+  0x800a3670: D_800A3670 -> g_fight_reinit_reuses_assets
+  0x800f6656: D_800F6656 -> g_gpu_grid_and_fog_control
+
+-- file edits (105) --
+  asm/data/93E18.data.s  (9)
+  asm/data/94000.bss.s  (8)
+  asm/funcs/ApplyPendingConfigAndInitializeMode.s  (2)
+  asm/funcs/DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections.s  (1)
+  asm/funcs/InitDisplayStateLoadPackAndSetEntryFlags.s  (2)
+  asm/funcs/StepSlideBuildFrameRecordAndDispatchStateHandler.s  (1)
+  asm/funcs/StepSlideProgressCommitPendingStateAndQueueSound.s  (7)
+  asm/funcs/camera_UpdateTwoFighterView.s  (2)
+  asm/funcs/eff_BindScratchpad.s  (2)
+  asm/funcs/eff_DrawAndAdvanceBillboardPairs.s  (6)
+  asm/funcs/eff_DrawAndAdvanceJitteredBillboards.s  (2)
+  asm/funcs/eff_DrawAndAdvanceRotatedQuadClusters.s  (2)
+  asm/funcs/eff_DrawAnimatedQuads.s  (2)
+  asm/funcs/eff_DrawBillboardList.s  (3)
+  asm/funcs/eff_DrawYawedSlotQuads.s  (3)
+  asm/funcs/eff_LinkParticleQuads.s  (1)
+  asm/funcs/eff_PrepareParticles.s  (2)
+  asm/funcs/eff_SetRotMatrix.s  (1)
+  asm/funcs/eff_SpawnBillboardPair.s  (2)
+  asm/funcs/eff_SpawnParticles.s  (1)
+  asm/funcs/eff_StartArgSelectedCommandWithCyanLight.s  (1)
+  asm/funcs/eff_StartArgSelectedCommandWithGreenLight.s  (1)
+  asm/funcs/eff_StartCosineScaledQuadWithPaleBlueLight.s  (1)
+  asm/funcs/eff_StartFastRateCosineScaledQuadWithPaleBlueLight.s  (1)
+  asm/funcs/eff_StartMediumRateCosineScaledQuadWithPaleBlueLight.s  (1)
+  asm/funcs/eff_StartRecycledCommandWithMagentaLight.s  (1)
+  asm/funcs/eff_StartRecycledCommandWithOrangeLight.s  (1)
+  asm/funcs/eff_StartRecycledCommandWithPaleRedLight.s  (1)
+  asm/funcs/eff_StartRecycledCommandWithRoseLight.s  (1)
+  asm/funcs/eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight.s  (1)
+  asm/funcs/eff_StartRecycledVectorCommandWithRedLight.s  (1)
+  asm/funcs/eff_StartRotatedQuadClusterWithNearWhiteLight.s  (1)
+  asm/funcs/eff_StartSlowRateCosineScaledQuadWithPaleBlueLight.s  (1)
+  asm/funcs/eff_StepCommand.s  (1)
+  asm/funcs/eff_UpdateParticles.s  (1)
+  asm/funcs/fight_AdvanceMatch.s  (2)
+  asm/funcs/fight_Init.s  (6)
+  asm/funcs/fight_SearchRadialFlatSurfacePointOrUseStartPositionPair.s  (2)
+  asm/funcs/fight_Update.s  (2)
+  asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (12)
+  asm/funcs/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s  (2)
+  asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (14)
+  asm/funcs/fight_UpdateRotatingViewThreeOptionChoice.s  (2)
+  asm/funcs/fighter_BuildCpuOrMappedPadState.s  (2)
+  asm/funcs/fighter_Init.s  (8)
+  asm/funcs/func_80016D78.s  (1)
+  asm/funcs/func_8003E2AC.s  (2)
+  asm/funcs/func_8003F1E4.s  (4)
+  asm/funcs/func_80046B44.s  (2)
+  asm/funcs/func_8004A4E0.s  (2)
+  asm/funcs/func_8004A940.s  (2)
+  asm/funcs/func_8004C404.s  (2)
+  asm/funcs/func_80061064.s  (1)
+  asm/funcs/gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards.s  (4)
+  asm/funcs/gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle.s  (15)
+  asm/funcs/gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset.s  (11)
+  asm/funcs/gpu_DrawPackedComparisonRowsAndTotals.s  (2)
+  asm/funcs/gpu_DrawPairedMarkRowsAndTimeFields.s  (4)
+  asm/funcs/gpu_DrawTimeFieldsAndDecimalCounter.s  (8)
+  asm/funcs/gpu_DrawTwoDigitCounterWithOptionalSecondSide.s  (2)
+  asm/funcs/gpu_DrawWhiteTileAndSheetsTestPadMask.s  (2)
+  asm/funcs/gpu_EndFullscreenImageDisplay.s  (2)
+  asm/funcs/gpu_LatchFogDepthOnTransitionAndQueueMoves.s  (4)
+  asm/funcs/gpu_OffsetBlockTexPrimStream.s  (2)
+  asm/funcs/gpu_OffsetBlockTexPrimStreams.s  (2)
+  asm/funcs/gpu_ProjectStridedNodeVerticesAndDispatchPackets.s  (2)
+  asm/funcs/gpu_QueueDepthSpacedMovesAndLinkTerminalPacket.s  (2)
+  asm/funcs/memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress.s  (3)
+  asm/funcs/memcard_StepSaveOverwriteAndFormatPrompts.s  (42)
+  asm/funcs/menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads.s  (1)
+  asm/funcs/menu_LoadResourcesInitStateSelectFirstEnabledRow.s  (1)
+  asm/funcs/menu_PrintEditAndApplyConfigWithPerPadCursors.s  (12)
+  asm/funcs/menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult.s  (3)
+  asm/funcs/menu_UpdateChoiceGrid.s  (15)
+  asm/funcs/menu_UpdateConfirmMenu.s  (2)
+  asm/funcs/menu_UpdateMemCardChoices.s  (2)
+  asm/funcs/menu_UpdateOptionMenuChoices.s  (2)
+  asm/funcs/menu_UpdateRowBitMenu.s  (2)
+  asm/funcs/menu_UpdateRowMenu.s  (2)
+  asm/funcs/menu_UpdateStoredChoice.s  (2)
+  asm/funcs/reloc_RebaseBlock.s  (2)
+  asm/funcs/reloc_RelocateBlock.s  (2)
+  asm/funcs/reloc_UnrelocateBlock.s  (2)
+  asm/funcs/resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks.s  (4)
+  asm/funcs/resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks.s  (2)
+  asm/funcs/resource_HasRetainedSubblocks.s  (2)
+  asm/funcs/resource_LoadOrReuseSelectedBlock.s  (8)
+  asm/funcs/resource_SelectRetainedSubblockOrApplyHeaderSections.s  (2)
+  asm/funcs/softbody_CreateForNode.s  (2)
+  include/bb2.h  (9)
+  src/main/17AFC.c  (1)
+  src/main/24BF0.c  (1)
+  src/main/24F08.c  (4)
+  src/main/28708.c  (40)
+  src/main/2B344.c  (10)
+  src/main/32D04.c  (6)
+  src/main/368E4.c  (10)
+  src/main/4D0A8.c  (24)
+  src/main/51268.c  (56)
+  src/main/596CC.c  (12)
+  src/main/5ED34.c  (49)
+  src/main/6CF8.c  (2)
+  src/main/9F9C.c  (32)
+  src/main/d_89C78.c  (1)
+  symbol_addrs.txt  (26)
+
+-- registry lines --
+  symbol_addrs.txt:133 D_8009947A -> g_resource_has_retained_subblocks
+  symbol_addrs.txt:144 D_800F6656 -> g_gpu_grid_and_fog_control
+  symbol_addrs.txt:331 D_800A3670 -> g_fight_reinit_reuses_assets
+  symbol_addrs.txt:335 D_800A3690 -> g_fight_view_option
+  symbol_addrs.txt:346 D_800A36E8 -> g_fight_match_result_timer
+  symbol_addrs.txt:645 D_8009947A -> g_resource_has_retained_subblocks
+  symbol_addrs.txt:930 D_800A3690 -> g_fight_view_option
+  symbol_addrs.txt:941 D_800A3204 -> g_menu_prompt_rearm
+  symbol_addrs.txt:1169 D_800A3670 -> g_fight_reinit_reuses_assets
+  symbol_addrs.txt:1171 D_800A36E8 -> g_fight_match_result_timer
+  symbol_addrs.txt:1244 g_scratchpad_ptr_b8 -> g_eff_work_area
+  symbol_addrs.txt:1248 g_scratchpad_ptr_30 -> g_eff_view_rotation_matrix
+  symbol_addrs.txt:1375 D_800A334C -> g_memcard_message_countdown
+  symbol_addrs.txt:1386 D_800A3418 -> g_gpu_jitter_random_state
+  symbol_addrs.txt:1403 D_800A3570 -> g_entry_menu_slide_displacement
+  symbol_addrs.txt:1407 D_800A3464 -> g_eff_point_light_color
+  symbol_addrs.txt:1418 D_800A3518 -> g_menu_draw_buffer_counter
+  symbol_addrs.txt:1440 D_800A3350 -> g_memcard_prompt_choice
+  symbol_addrs.txt:1469 D_800A35C0 -> g_entry_menu_gpu_db
+  symbol_addrs.txt:1543 D_800A38E0 -> g_fight_start_position_pair_index
+  symbol_addrs.txt:1639 D_800F0BEC -> g_eff_billboard_pair_ages
+  symbol_addrs.txt:1809 D_80103608 -> g_reloc_block_entry_tables
+  symbol_addrs.txt:1834 D_800F6656 -> g_gpu_grid_and_fog_control
+  symbol_addrs.txt:1859 D_80103608 -> g_reloc_block_entry_tables
+  symbol_addrs.txt:2131 D_800A38E0 -> g_fight_start_position_pair_index
+  symbol_addrs.txt:2201 D_800F0BEC -> g_eff_billboard_pair_ages
+
+DRY RUN — nothing written. Re-run with --apply.
