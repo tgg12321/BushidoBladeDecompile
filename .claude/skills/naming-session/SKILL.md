@@ -25,10 +25,16 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   have it use absolute paths, `git -C "<wt>"`, `& tools/wteng.ps1 "<wt>" <cmd>`, and
   `cd "<wt>" && python …` for cwd-relative tools.
 - **Claims.** Before taking a backlog row, run `python tools/lanes/lanes.py claim <lane> topic:row:<id>`.
-  It refuses a row another live lane holds; take the next one. Before PREPARE, also claim what the
-  wave will name: `topic:tu:<tu>` for function waves, or `topic:type:<Type>` for member waves. Pick
-  targets no other lane has claimed (`lanes.py status`). Parallel lanes then never name the same
-  thing.
+  It refuses a row another live lane holds; take the next one. PREPARE claims only the row. At
+  LAND, before the applier starts, claim in one `lanes.py claim` call (it is atomic) every TU the
+  wave edits, spelled as the TU id (`topic:tu:main/51268`: the path under `src/` without `.c`,
+  taken from the `src/` paths in `dry.txt`'s edit list; for local pairs, the TU defining each
+  function), plus `topic:type:<Type>` for member waves; then `lanes.py fresh <lane>`, so the
+  apply and keycheck see every name another lane landed. `fresh` refuses while an earlier
+  unit's commits are unlanded (its `land` still running): finish that land first; never
+  `fresh --discard` here. If any claim is refused, unclaim what you took and do another unit or
+  stop; never wait for it. Claims are held until the unit's stopping point. Older row notes that
+  say to claim TUs or types before PREPARE are superseded.
 - **Landing.** `python tools/lanes/lanes.py land <lane>` replays the lane's commits onto the current
   main in a private landing worktree, then:
   - runs the gates (`verify-oracle --rebuild`, `tus-check`, integrity, `engine test`,
@@ -73,19 +79,27 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   (e.g. `tmp/p3w<N>`, review copies; CLAUDE.md: list, delete the files, `rmdir`; the research
   extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
-- **Pick order:** LAND first (oldest `reviewed` row no other lane claims), then PREPARE (first
-  unclaimed `researched` row, or `researching` row whose cited Codex run has finished, then
-  `idea` row).
+- **Nothing waits on Codex (owner 2026-10-27).** Codex is a separate parallel lane (its usage may
+  run out), so naming research is done by an Opus subagent in the session (PREPARE step 1).
+- **Tracks run in parallel, batches don't.** A track (locals, globals, members) has at most one
+  open row (`idea` .. `reviewed`) at a time, and parallel lanes take different rows. Names can
+  still meet across tracks (a local and a global in one TU), so two lanes never hold one
+  `topic:tu` claim during a LAND (§Claims).
+- **Pick order:** LAND first (oldest `reviewed` row that no other lane claims and whose TUs no
+  other lane claims), then PREPARE (first unclaimed `researched` row, or `researching` row whose
+  cited Codex run has finished, then `idea` row).
 
 ## Agents are bounded
 
 - No long-lived teammates. Every subagent gets **one task**, returns, and is done.
 - Run subagents in the **foreground** (the call blocks until it returns) so the session never idles
   waiting for a notification. Independent tasks can go as several Agent calls in one message.
+  Never launch an Agent with `run_in_background`: a backgrounded applier once left a session
+  idle 80 minutes after it had finished. A subagent whose own command can outlast a tool timeout
+  backgrounds that command and waits for it itself.
 - Models: `naming-reviewer` for every review; `general-purpose` with `model: sonnet` for drafting
-  and mechanical applies; Codex (`tools/codex_worker.py research`) for research only.
-- Codex is the one background job you leave running. Start it as the **last** step of a
-  session, and record the backlog row as `researching`. The next session extracts the result.
+  and mechanical applies; `general-purpose` with `model: opus` for research, never Sonnet
+  (owner 2026-10-27).
 - The one thing you do wait on is `lanes.py land`: run it with `run_in_background: true`, because
   it can outlast a tool timeout. It builds in a private landing worktree, so you may prepare the
   next unit in the lane worktree meanwhile. Commits made during a land are not included; they
@@ -94,7 +108,9 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
 
 ## Backlog (`docs/naming/phase3/backlog.tsv`)
 
-The columns are `id  kind  stage  draft  note`. `kind` is `func`, `member` or `data`.
+The columns are `id  kind  stage  draft  note`. `kind` is `func`, `member`, `data` or `local`.
+Each kind is one track: `local` = locals, `data` = globals, `member` = members, `func` = functions
+(blocked: `func-second-pass`).
 `draft` is the tracked draft dir `docs/naming/phase3/pending/<id>/` (rows.py, member_manifest.csv,
 pairs.txt, dry.txt). Stages:
 
@@ -105,25 +121,44 @@ reviewed`.
 
 ## Unit PREPARE (idea or researched -> reviewed)
 
-1. `idea`: write the Codex prompt (templates: `tmp/codex/prompt-research-m05.md` for members,
+1. `idea`: write the research prompt (templates: `tmp/codex/prompt-research-m05.md` for members,
    `tmp/mkprompt.py` and `tmp/queued_in.py` for functions). Tell it which names are taken and which
-   earlier rows failed. Launch it, mark the row `researching`, and that ends the unit.
+   earlier rows failed, and to write its result to main's `tmp/codex/<id>-research.md` (in the
+   shape `extract_final.py` gives a Codex run; this overrides any output file a template names)
+   and return a one-line summary.
+   **Wave size: up to 80 rows** (raised from 40 on 2026-10-27 under the owner's "fix these
+   structural issues"; apply, R6 and land cost ~45 min whatever the size; older `max 40` caps in
+   row notes are superseded), so ask for up to ~90 proposals. Run it
+   through one `general-purpose` subagent with `model: opus` (foreground). Note `research: Opus`
+   on the row and
+   go on to step 3 in this unit; if the unit stops before step 5, land the row as `researched`.
    For functions, take the target list from `python tools/naming_noname.py free <tu,...>`: it
    skips every function in the NO_NAME ledger (`docs/naming/phase3/no_name.tsv`). Bring one back
    only with new evidence (a neighbour named since, a type landed, a Q124 trace capture):
    `--revive <addr>=<evidence>`. Put the printed `# revive` lines in the prompt and the row note.
-2. `researching` or `researched`: `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`.
-   A run that ended `failed` / `timeout` / `cancelled` (its `meta.json`): relaunch it (step 1)
-   with the new run id in the note, or `dropped` with the reason.
+2. `researched` with `research: Opus`: the file is in main's `tmp/codex/` (it is untracked: if it
+   is missing, redo step 1); go to step 3. An older Codex row (`researching` / `researched` citing
+   a run id): `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`. If the run
+   has no `meta.json` or ended other than `ok` (`failed` / `timeout` / `cancelled`), redo the
+   research by step 1 (Opus), replacing the run id in the note with `research: Opus`, or mark the
+   row `dropped` with the reason. A run still in progress: take another unit; if it is still running when its track is the
+   only work left, redo it by step 1 (Opus) and note the abandoned run id.
 3. Sonnet drafter (foreground) writes `docs/naming/phase3/pending/<id>/`. For members this
    includes a compiled dry run, run from PowerShell inside the worktree:
    `cd "<wt>"; python tools/naming_member_apply.py --dry-run <pairs.txt>`.
    The drafter re-derives every use and drops anything it can't show.
-4. `naming-reviewer` pre-apply (foreground).
+4. `naming-reviewer` pre-apply (foreground). Over 40 rows, split them into batches of about 40 by
+   the file or type that defines each name, one fresh reviewer per batch, in parallel (several
+   Agent calls in one message). Rows that share a proposed name (or name family) stay in one
+   batch, even past 40. Give each reviewer the manifest path, its batch's row list (judge only
+   those rows, every use wherever it is) and the whole manifest's proposed names (R5 across the
+   wave). Each row's verdict is its batch reviewer's; paste every reviewer's JSON in the commit
+   body.
    - Rows that FAIL are dropped.
    - A name the reviewer only *suggests* may replace a failed one, but it is marked
      `suggested` in the manifest, and R6 must judge it fresh at every use.
-   - If no row survives, the unit ends as `dropped`.
+   - If no row survives, the unit ends as `dropped`; if the track still has targets, add its
+     next `idea` row in the same commit.
 5. Set VERDICT CONFIRM with a verifier note, commit the draft dir and the backlog row as
    `reviewed` in the lane worktree, and `lanes.py land <lane>` (docs-only, so no build gates).
    That is the stopping point.
@@ -142,7 +177,11 @@ reviewed`.
    It commits the wave plus a `docs:` comment commit in `<wt>` and returns the hashes. It never
    touches main.
 2. `naming-reviewer` R6 (foreground) on those commits: identifiers only, comments true, no stale
-   old names in live docs and registries, and suggested names judged fresh.
+   old names in live docs and registries, and suggested names judged fresh. Over 40 renames,
+   split them across parallel fresh reviewers as in pre-apply, each with the full keycheck
+   report and its own pairs' comments and scoped notes; one of them also owns the wave-level
+   checks (pairs equal the CONFIRMed rows, moved layer-2 keys, survival grep for old scoped
+   names, registry note lines). R6 is OK only when every reviewer returns `r6: OK`.
 3. In the lane worktree:
    - Apply R6's blocking fixes verbatim, amended into the wave's `docs:` comment commit (one
      commit per purpose, owner 2026-10-25: no separate `R6 fixes` commit).
@@ -161,7 +200,8 @@ reviewed`.
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
      stopping point.
 4. If R6 fails on a name, revert that pair on the lane branch (or redo the apply without it) and
-   run R6 again. On a second failure, mark the row `dropped`.
+   run R6 again. On a second failure, mark the row `dropped` (and queue the track's next `idea`
+   row, as in step 3).
 
 ## Gate commands (from PowerShell)
 
