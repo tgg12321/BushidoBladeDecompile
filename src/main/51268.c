@@ -727,18 +727,18 @@ void eff_SetBillboardList(Unk800F1198Record *src_billboards) {
     s32 billboard_index;
 
     g_eff_billboard_draw_count = 0;
-    for (billboard_index = 0; src_billboards[billboard_index].unk0 & 1;
+    for (billboard_index = 0; src_billboards[billboard_index].packed_x & 1;
          billboard_index++) {
-        g_eff_billboards[billboard_index].unk0 =
-            src_billboards[billboard_index].unk0;
-        g_eff_billboards[billboard_index].unk4 =
-            src_billboards[billboard_index].unk4;
-        g_eff_billboards[billboard_index].unk8 =
-            src_billboards[billboard_index].unk8;
+        g_eff_billboards[billboard_index].packed_x =
+            src_billboards[billboard_index].packed_x;
+        g_eff_billboards[billboard_index].packed_y =
+            src_billboards[billboard_index].packed_y;
+        g_eff_billboards[billboard_index].z_coord =
+            src_billboards[billboard_index].z_coord;
     }
-    g_eff_billboards[billboard_index].unk0 =
-        g_eff_billboards[billboard_index].unk4 =
-            g_eff_billboards[billboard_index].unk8 = 0;
+    g_eff_billboards[billboard_index].packed_x =
+        g_eff_billboards[billboard_index].packed_y =
+            g_eff_billboards[billboard_index].z_coord = 0;
 }
 
 /* Draw the g_eff_billboards billboard list (see eff_SetBillboardList): per
@@ -799,9 +799,9 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     local_origin->vx = 0;
     *g_eff_geom_screen_work = ReadGeomScreen() << 8;
     *g_eff_tpage_word = 0x2F;
-    for (billboard_index = 0; g_eff_billboards[billboard_index].unk0 & 1;
+    for (billboard_index = 0; g_eff_billboards[billboard_index].packed_x & 1;
          billboard_index++) {
-        switch (g_eff_billboards[billboard_index].unk4 & 7) {
+        switch (g_eff_billboards[billboard_index].packed_y & 7) {
         case 3:
             *g_eff_base_width = 0x151;
             *g_eff_base_height = 0xA8;
@@ -835,11 +835,12 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
             *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x13;
             break;
         }
-        v->vx =
-            g_eff_billboards[billboard_index].unk0 / 2 - g_eff_view_origin[0];
-        v->vy =
-            g_eff_billboards[billboard_index].unk4 / 8 - g_eff_view_origin[1];
-        v->vz = g_eff_billboards[billboard_index].unk8 - g_eff_view_origin[2];
+        v->vx = g_eff_billboards[billboard_index].packed_x / 2 -
+                g_eff_view_origin[0];
+        v->vy = g_eff_billboards[billboard_index].packed_y / 8 -
+                g_eff_view_origin[1];
+        v->vz =
+            g_eff_billboards[billboard_index].z_coord - g_eff_view_origin[2];
         ApplyRotMatrixLV(v, var_3);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
          * below var_3, it loads var_3 as the translation (there is no whole

@@ -517,7 +517,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         for (i = 0; i < 2; i++) {
             switch (j) {
             case 0:
-                var_2[i] = arg0->unk_0;
+                var_2[i] = arg0->time_minutes;
                 if (i != 0) {
                     var_2[i] = var_2[i] % 10;
                 } else {
@@ -532,7 +532,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 s.table->x = 0x1A2;
                 break;
             case 1:
-                var_2[i] = arg0->unk_2;
+                var_2[i] = arg0->time_seconds;
                 if (i != 0) {
                     var_2[i] = var_2[i] % 10;
                 } else {
@@ -547,7 +547,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 s.table->x = 0x1D3;
                 break;
             case 2:
-                var_2[i] = arg0->unk_3;
+                var_2[i] = arg0->time_hundredths;
                 if (i != 0) {
                     var_2[i] = var_2[i] % 10;
                 } else {
@@ -1189,7 +1189,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             switch (j) {
             case 0:
                 if (k < 2 || g_working_record.time_limit_index == 2) {
-                    d[k] = arg0->unk_2;
+                    d[k] = arg0->time_seconds;
                     if (k == 0 && g_working_record.time_limit_index == 2) {
                         d[k] = d[k] / 100;
                     } else if (
@@ -1208,7 +1208,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                 break;
             case 1:
                 if (k < 2) {
-                    d[k] = arg0->unk_3;
+                    d[k] = arg0->time_hundredths;
                     if (k != 0) {
                         d[k] = d[k] % 10;
                     } else {

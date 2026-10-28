@@ -35,7 +35,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             continue;
         if (var_5 < g_node_frame_animation_context.anim_frame_count) {
             var_0.vx = 0;
-            angle = rec->unk5C;
+            angle = rec->anim_yaw;
             var_0.vz = 0;
             var_7 =
                 (s16 *)(g_node_frame_animation_context.frame_data + var_5 * 12);
@@ -130,7 +130,7 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
         a1 = 0;
         break;
     }
-    p->unk5C = a1;
+    p->anim_yaw = a1;
     p->unk58 = 0;
     /* FAKE: p is reused for the paired gpu_GetGridNodeRecordTable entry, an
      * Unk800A6690Rec reached only through its node member (both records start

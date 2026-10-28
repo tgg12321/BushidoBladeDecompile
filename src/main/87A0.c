@@ -139,16 +139,16 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     s32 sum_sq;
     s32 scale;
 
-    gte_SetRotMatrix(arg0->unk4);
-    gte_SetTransMatrix(arg0->unk4);
+    gte_SetRotMatrix(arg0->object_matrix);
+    gte_SetTransMatrix(arg0->object_matrix);
 
     softbody_LoadColliders(arg0);
 
-    dx = arg0->unk4->t[0] - softbody->matrix.t[0];
+    dx = arg0->object_matrix->t[0] - softbody->matrix.t[0];
     SCR->dpos[0] = dx;
-    dy = arg0->unk4->t[1] - softbody->matrix.t[1];
+    dy = arg0->object_matrix->t[1] - softbody->matrix.t[1];
     SCR->dpos[1] = dy;
-    dz = arg0->unk4->t[2] - softbody->matrix.t[2];
+    dz = arg0->object_matrix->t[2] - softbody->matrix.t[2];
     SCR->dpos[2] = dz;
 
     sum_sq = (dx * dx) + (dy * dy) + (dz * dz);
@@ -165,7 +165,7 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     SCR->dpos[1] = (SCR->dpos[1] * scale) >> 1;
     SCR->dpos[2] = (SCR->dpos[2] * scale) >> 1;
 
-    softbody->matrix = *arg0->unk4;
+    softbody->matrix = *arg0->object_matrix;
     softbody_SolveSprings(softbody);
 }
 
@@ -568,8 +568,8 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     s32 i;
     Func80017A44Record *dst;
 
-    gte_SetRotMatrix(arg0->unk4);
-    gte_SetTransMatrix(arg0->unk4);
+    gte_SetRotMatrix(arg0->object_matrix);
+    gte_SetTransMatrix(arg0->object_matrix);
 
     dst = arg1->nodes;
     for (i = 0; i < arg1->count; i++) {
@@ -584,7 +584,7 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         dst->vel_z = 0;
         dst++;
     }
-    arg1->matrix = *arg0->unk4;
+    arg1->matrix = *arg0->object_matrix;
 }
 
 void pad_SetDefaultSavedButtonMappings(void) {

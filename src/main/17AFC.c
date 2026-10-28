@@ -1612,12 +1612,12 @@ void fighter_CastWeaponSegment(
             }
             pos = &SPAD->bone_hit_points[id][i];
             if (math_TestPreparedSegmentSphere(
-                    scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
+                    scr, pos, rec->outer_radius, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
                 *arg1 |= bit;
-                if (rec->unk_00 != 0 &&
+                if (rec->has_inner_sphere != 0 &&
                     math_TestPreparedSegmentSphere(
-                        scr, pos, rec->unk_10, rec->unk_12) != 0) {
+                        scr, pos, rec->inner_radius, rec->unk_12) != 0) {
                     *arg2 |= bit;
                 }
             }
@@ -2482,7 +2482,7 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
             continue;
         }
 
-        r = rec->unk_0C;
+        r = rec->outer_radius;
         /* FAKE: the AABB reject flag is staged through `var_11` (set on
          * reject, read by the `continue` test, then overwritten by the call); a
          * separate flag takes $a1 instead of the target's $s0 (score 3) */
@@ -2509,9 +2509,10 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
             var_11 = math_TestPreparedTriangleSphere(
                 0, scr, (s32 *)&SPAD->bone_hit_points[id][i], r, rec->unk_0E);
             if (var_11 != 0) {
-                if (rec->unk_00 != 0 && a2 != 0) {
+                if (rec->has_inner_sphere != 0 && a2 != 0) {
                     if (math_TestPreparedTriangleSphere(
-                            1, scr, (s32 *)0, rec->unk_10, rec->unk_12) != 0) {
+                            1, scr, (s32 *)0, rec->inner_radius, rec->unk_12) !=
+                        0) {
                         var_4 |= 1 << i;
                     }
                 }
@@ -2520,9 +2521,10 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
             var_11 = math_TestSphereAgainstPreparedAxialVertexSpan(
                 0, scr, &SPAD->bone_hit_points[id][i], r, rec->unk_0E);
             if (var_11 != 0) {
-                if (rec->unk_00 != 0 && a2 != 0) {
+                if (rec->has_inner_sphere != 0 && a2 != 0) {
                     if (math_TestSphereAgainstPreparedAxialVertexSpan(
-                            1, scr, NULL, rec->unk_10, rec->unk_12) != 0) {
+                            1, scr, NULL, rec->inner_radius, rec->unk_12) !=
+                        0) {
                         var_4 |= 1 << i;
                     }
                 }
@@ -3868,7 +3870,7 @@ void object_SubmitPoolTransforms(void) {
         }
         lookup = g_resource_kind_entry_ids[kind];
         if (kind >= 0x12 && kind < 0x1E) {
-            lookup = obj->unk_0B;
+            lookup = obj->model_entry_id;
         } else if (kind == 0xE && obj->unk_05 == 2) {
             lookup += 3;
         }
@@ -3959,18 +3961,20 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     }
     obj->slot = i;
     obj->kind = arg1;
-    obj->unk_07 = 0;
+    obj->drop_state = 0;
     obj->is_attached = 0;
-    obj->unk_04 = 1;
+    obj->can_hit_fighter = 1;
     obj->owner = arg0->index;
     obj->pos.x = arg0->world_pos.x;
     obj->pos.y = arg0->world_pos.y - arg0->size_scale / 32;
     obj->pos.z = arg0->world_pos.z;
     tbl = &g_object_kind_params[arg1];
-    obj->vel.x = (Judge[arg0->orientation.vy & 0xFFF] * tbl->unk4) >> 12;
-    obj->vel.y = tbl->unk6;
+    obj->vel.x =
+        (Judge[arg0->orientation.vy & 0xFFF] * tbl->launch_speed) >> 12;
+    obj->vel.y = tbl->launch_vel_y;
     obj->vel.z =
-        (Judge[(arg0->orientation.vy + 0x400) & 0xFFF] * tbl->unk4) >> 12;
+        (Judge[(arg0->orientation.vy + 0x400) & 0xFFF] * tbl->launch_speed) >>
+        12;
     obj->pos.x += obj->vel.x;
     obj->pos.y += obj->vel.y;
     obj->pos.z += obj->vel.z;
@@ -3983,15 +3987,15 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     obj->rot[2] = 0;
     if (tbl->unk0 == 1) {
         obj->rot_vel[0] = 0;
-        obj->rot_vel[1] = tbl->unk8;
+        obj->rot_vel[1] = tbl->spin_rate;
         obj->rot_vel[2] = 0;
     } else if (tbl->unk0 == 2) {
-        obj->rot_vel[0] = tbl->unk8;
+        obj->rot_vel[0] = tbl->spin_rate;
         obj->rot_vel[1] = 0;
         obj->rot_vel[2] = 0;
     } else if (tbl->unk0 == 3) {
         obj->rot_vel[0] = 0;
-        obj->rot_vel[1] = tbl->unk8;
+        obj->rot_vel[1] = tbl->spin_rate;
         obj->rot_vel[2] = 0;
     } else {
         obj->rot_vel[0] = 0;
@@ -4048,7 +4052,7 @@ void object_DropQueuedHeadAt(Unk80101EC8Record *a0, Vec3i32 *a1) {
     s32 i;
 
     p = object_SpawnFromFighter(a0, a0->carried_object_kinds[0]);
-    p->unk_04 = 0;
+    p->can_hit_fighter = 0;
     p->pos = *a1;
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
     p->vel.y = -(rng_Next() & 0x3F) - 0x80;
@@ -4061,7 +4065,7 @@ void object_DropQueuedHeadAt(Unk80101EC8Record *a0, Vec3i32 *a1) {
     }
     p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     p->rot_vel[2] = 0;
-    p->unk_07 = 1;
+    p->drop_state = 1;
     for (i = 0; i < a0->carried_object_count - 1; i++) {
         a0->carried_object_kinds[i] = a0->carried_object_kinds[i + 1];
     }
@@ -4073,7 +4077,7 @@ void object_SpawnScatteredAt(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     s32 var_1;
 
     p = object_SpawnFromFighter(a0, a1);
-    p->unk_04 = 0;
+    p->can_hit_fighter = 0;
     p->pos = *a2;
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
     p->vel.y = -(rng_Next() & 0x3F) - 0x80;
@@ -4086,8 +4090,8 @@ void object_SpawnScatteredAt(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     }
     p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     p->rot_vel[2] = 0;
-    p->unk_07 = 1;
-    p->unk_0B = a0->weapon_entry_id;
+    p->drop_state = 1;
+    p->model_entry_id = a0->weapon_entry_id;
 }
 
 s32 object_QueueKind(Unk80101EC8Record *arg0, s32 arg1) {
@@ -4288,7 +4292,7 @@ void object_UpdatePool(void) {
             obj->vel.z -= var_7[2] * dot / 4096;
             obj->pos = scr->unk10;
             kind = obj->kind;
-            work = g_object_kind_params[kind].unkA;
+            work = g_object_kind_params[kind].bounce_restitution;
             if (obj->is_moving != 0) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
@@ -4297,13 +4301,13 @@ void object_UpdatePool(void) {
                 if (scr->cast_normal[1] >= -0x7FF) {
                     obj->rot_vel[1] +=
                         (rng_Next() & 1) ? var_5 / 64 : -var_5 / 64;
-                    if (obj->kind != 0xE && obj->unk_04 != 0) {
+                    if (obj->kind != 0xE && obj->can_hit_fighter != 0) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
                             obj->owner, 1, &obj->pos.x, 0);
                     }
                 }
                 if (obj->kind == 0xE) {
-                    if (obj->unk_04 != 0) {
+                    if (obj->can_hit_fighter != 0) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
                             (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x,
                             0);
@@ -4332,9 +4336,9 @@ void object_UpdatePool(void) {
                         (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
                 }
             }
-            obj->unk_04 = 0;
-            if (obj->unk_07 == 1) {
-                obj->unk_07 = 2;
+            obj->can_hit_fighter = 0;
+            if (obj->drop_state == 1) {
+                obj->drop_state = 2;
             }
             if (obj->unk_05 == 2) {
                 obj->unk_05 = 3;
@@ -4370,12 +4374,12 @@ void object_UpdatePool(void) {
                     (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
             }
         }
-        if (obj->unk_07 == 2) {
+        if (obj->drop_state == 2) {
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x800);
             obj->rot[2] = math_LerpAngle(obj->rot[2], 0x400, 0xE00);
             obj->rot_vel[1] = obj->rot_vel[1] * 3 / 4;
-        } else if (
-            obj->unk_04 == 0 && g_object_kind_params[obj->kind].unk0 == 2) {
+        } else if (obj->can_hit_fighter == 0 &&
+                   g_object_kind_params[obj->kind].unk0 == 2) {
             obj->rot[0] = math_LerpAngle(obj->rot[0], 0, 0xE00);
             obj->rot[1] = math_LerpAngle(obj->rot[1], 0, 0x600);
             obj->rot[2] = math_LerpAngle(obj->rot[2], -0x400, 0xE00);
@@ -4470,7 +4474,7 @@ void object_ResolveFighterHits(void) {
     for (i = 0; i < 12; i++, obj++) {
         if (obj->kind == -1)
             continue;
-        if (obj->unk_04 == 0)
+        if (obj->can_hit_fighter == 0)
             continue;
         if (obj->is_moving == 0)
             continue;
@@ -4497,13 +4501,13 @@ void object_ResolveFighterHits(void) {
                 continue;
             pos = &SPAD->bone_hit_points[var_6][j];
             var_10 = math_TestPreparedSegmentSphere(
-                scr, pos, rec->unk_0C, rec->unk_0E);
+                scr, pos, rec->outer_radius, rec->unk_0E);
             if (var_10 != 0) {
                 var_2 = 0;
-                if (rec->unk_00 != 0 &&
+                if (rec->has_inner_sphere != 0 &&
                     g_object_kind_params[obj->kind].unkD == 0) {
                     var_2 = math_TestPreparedSegmentSphere(
-                                scr, pos, rec->unk_10, rec->unk_12) != 0;
+                                scr, pos, rec->inner_radius, rec->unk_12) != 0;
                 }
                 break;
             }
@@ -4532,7 +4536,7 @@ void object_ResolveFighterHits(void) {
                 (obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
                 &SPAD->bone_hit_points[var_6][j].x, 0);
             object_AttachToOpponentBone(obj, rec->bone);
-            obj->unk_04 = 0;
+            obj->can_hit_fighter = 0;
             var_7 = var_5->move_kind;
             if (var_7 == 8 || var_7 == 0x23) {
                 g_gpu_jitter_burst_enabled = 1;
@@ -4560,7 +4564,7 @@ void object_ResolveFighterHits(void) {
                 &SPAD->bone_hit_points[var_6][j].x, 0);
         }
         object_DeflectFromFighterHit(scr, obj, j);
-        obj->unk_04 = 0;
+        obj->can_hit_fighter = 0;
     }
 }
 
@@ -5043,10 +5047,10 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
     switch (kind) {
     case 0:
         if (g_fight_stage_index == 11) {
-            if (obj->ground_probe_floor_ys[0] - 600 <
+            if (obj->ground_probe_end_ys[0] - 600 <
                 obj->ground_probe_points[0].y) {
                 pos[0] = obj->ground_probe_points[0].x;
-                pos[1] = obj->ground_probe_floor_ys[0];
+                pos[1] = obj->ground_probe_end_ys[0];
                 pos[2] = obj->ground_probe_points[0].z;
                 eff_StartYawedQuadSlotCommand(
                     pos, obj->unk_1BA,
@@ -5059,10 +5063,10 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
             }
         } else if (g_fight_stage_index == 14) {
             if (((0x60 >> obj->collision_hit_tag) & 1) &&
-                obj->ground_probe_floor_ys[0] - 600 <
+                obj->ground_probe_end_ys[0] - 600 <
                     obj->ground_probe_points[0].y) {
                 pos[0] = obj->ground_probe_points[0].x;
-                pos[1] = obj->ground_probe_floor_ys[0];
+                pos[1] = obj->ground_probe_end_ys[0];
                 pos[2] = obj->ground_probe_points[0].z;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     obj->index, 9, pos, 0);
@@ -5071,10 +5075,10 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
         break;
     case 1:
         if (g_fight_stage_index == 11) {
-            if (obj->ground_probe_floor_ys[1] - 600 <
+            if (obj->ground_probe_end_ys[1] - 600 <
                 obj->ground_probe_points[1].y) {
                 pos[0] = obj->ground_probe_points[1].x;
-                pos[1] = obj->ground_probe_floor_ys[1];
+                pos[1] = obj->ground_probe_end_ys[1];
                 pos[2] = obj->ground_probe_points[1].z;
                 eff_StartYawedQuadSlotCommand(
                     pos, obj->unk_1C2,
@@ -5087,10 +5091,10 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
             }
         } else if (g_fight_stage_index == 14) {
             if (((0x60 >> obj->collision_hit_tag) & 1) &&
-                obj->ground_probe_floor_ys[1] - 600 <
+                obj->ground_probe_end_ys[1] - 600 <
                     obj->ground_probe_points[1].y) {
                 pos[0] = obj->ground_probe_points[1].x;
-                pos[1] = obj->ground_probe_floor_ys[1];
+                pos[1] = obj->ground_probe_end_ys[1];
                 pos[2] = obj->ground_probe_points[1].z;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
                     obj->index, 9, pos, 0);
@@ -5518,7 +5522,7 @@ void fight_BuildOpponentOrder(void) {
         s32 bits;
         count = 0;
         i = 0;
-        bits = g_saved_record.unk_00 & mask;
+        bits = g_saved_record.unlock_mask & mask;
         /* FAKE: `var_5` carries the constant 1 of `1 << i`; with the literal
            the test becomes `(bits >> i) & 1` (srav/andi instead of the
            target's `li a2,1` + sllv/and), score 4. */
@@ -5546,9 +5550,9 @@ void fight_BuildOpponentOrder(void) {
         }
     } while (i < 0x6C);
 
-    if (g_saved_record.unk_00 & 0x10020) {
-        s32 v1 = g_saved_record.unk_00 & 0x20;
-        s32 v0 = g_saved_record.unk_00 & 0x10000;
+    if (g_saved_record.unlock_mask & 0x10020) {
+        s32 v1 = g_saved_record.unlock_mask & 0x20;
+        s32 v0 = g_saved_record.unlock_mask & 0x10000;
         sp[0] = v1;
         sp[1] = v0;
         if (v1 == 0) {
@@ -5603,12 +5607,12 @@ void fight_BuildOpponentOrder(void) {
             [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]];
         s32 val;
         if (lookup != 0) {
-            if (g_saved_record.unk_00 & 0x04000000) {
+            if (g_saved_record.unlock_mask & 0x04000000) {
                 val = 0x1A;
                 goto append_last;
             }
         } else {
-            if (g_saved_record.unk_00 & 0x01000000) {
+            if (g_saved_record.unlock_mask & 0x01000000) {
                 val = 0x18;
                 goto append_last;
             }
@@ -5686,7 +5690,7 @@ void fight_InsertBestTime(void) {
 
     while (1) {
         j = n - 1;
-        if (record->times[j].unk_4 < g_fight_timer_frames) {
+        if (record->times[j].time_frames < g_fight_timer_frames) {
             break;
         }
         n = j;
@@ -5699,9 +5703,10 @@ void fight_InsertBestTime(void) {
         for (k = 2; k > n; k--) {
             record->times[k] = record->times[k - 1];
         }
-        record->times[n].unk_0 = (u8)D_80101EC8[0].character_data_index;
-        record->times[n].unk_1 = (u8)D_80101EC8[0].weapon_id;
-        record->times[n].unk_4 = g_fight_timer_frames;
+        record->times[n].holder_character_index =
+            (u8)D_80101EC8[0].character_data_index;
+        record->times[n].holder_weapon_id = (u8)D_80101EC8[0].weapon_id;
+        record->times[n].time_frames = g_fight_timer_frames;
     }
 }
 
@@ -5725,7 +5730,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
                                           [(s8)g_fight_config.unk_4[0]]] != 0) {
                 mask = 0x10000;
             }
-            flags = &g_saved_record.unk_00;
+            flags = &g_saved_record.unlock_mask;
             word = *flags;
             D_800A36F0 = (u32)(word & mask) < 1;
             *flags = word | mask;
@@ -5741,7 +5746,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
                                           [(s8)g_fight_config.unk_4[0]]] != 0) {
                 mask = 0x4000000;
             }
-            flags = &g_saved_record.unk_00;
+            flags = &g_saved_record.unlock_mask;
             word = *flags;
             D_800A3781 = (u32)(word & mask) < 1;
             *flags = word | mask;

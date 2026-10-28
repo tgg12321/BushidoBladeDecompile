@@ -1476,19 +1476,19 @@ void fight_SplitFrameCounterIntoMinutesSecondsHundredths(
     s32 timer_frames = g_fight_timer_frames;
 
     if (timer_frames > 0x2BF1F) {
-        time_fields_out->unk_0 = 99;
-        time_fields_out->unk_2 = 59;
-        time_fields_out->unk_3 = 99;
+        time_fields_out->time_minutes = 99;
+        time_fields_out->time_seconds = 59;
+        time_fields_out->time_hundredths = 99;
         return;
     }
     {
         s32 minutes = timer_frames / 1800;
         s32 seconds = timer_frames / 30 - minutes * 60;
-        time_fields_out->unk_2 = seconds;
+        time_fields_out->time_seconds = seconds;
         {
             s32 hundredths = (g_fight_timer_frames % 30) * 100 / 30;
-            time_fields_out->unk_0 = minutes;
-            time_fields_out->unk_3 = hundredths;
+            time_fields_out->time_minutes = minutes;
+            time_fields_out->time_hundredths = hundredths;
         }
     }
 }
@@ -1690,8 +1690,8 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
         if (g_fight_time_limit_seconds != 0) {
             temp = g_fight_time_limit_seconds * 30 -
                    g_fight_time_limit_elapsed_frames;
-            time_fields.unk_2 = temp / 30;
-            time_fields.unk_3 = temp % 30 * 100 / 30;
+            time_fields.time_seconds = temp / 30;
+            time_fields.time_hundredths = temp % 30 * 100 / 30;
         }
         g_prim_buf_cursor +=
             gpu_DrawPairedMarkRowsAndTimeFields(
@@ -3070,14 +3070,14 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
     s32 i;
 
     for (i = 0; i < 22; i++, src++, dst++) {
-        dst->unk_00 = src->unk_00;
+        dst->has_inner_sphere = src->has_inner_sphere;
         dst->bone = src->bone;
         dst->ofs.vx = (src->ofs.vx * size_scale) >> 12;
         dst->ofs.vy = (src->ofs.vy * size_scale) >> 12;
         dst->ofs.vz = (src->ofs.vz * size_scale) >> 12;
-        dst->unk_0C = (src->unk_0C * size_scale) >> 12;
+        dst->outer_radius = (src->outer_radius * size_scale) >> 12;
         dst->unk_0E = (src->unk_0E * size_scale) >> 12;
-        dst->unk_10 = (src->unk_10 * size_scale) >> 12;
+        dst->inner_radius = (src->inner_radius * size_scale) >> 12;
         dst->unk_12 = (src->unk_12 * size_scale) >> 12;
     }
 }
@@ -3175,9 +3175,9 @@ void fighter_UpdateBoneWorldData(
                 &segment_test_args[0], &segment_test_args[4],
                 &segment_test_args[8], (s16 *)&segment_test_args[12],
                 (s32)&segment_test_args[14])) {
-            rec->ground_probe_floor_ys[i] = segment_test_args[9];
+            rec->ground_probe_end_ys[i] = segment_test_args[9];
         } else {
-            rec->ground_probe_floor_ys[i] = segment_test_args[5];
+            rec->ground_probe_end_ys[i] = segment_test_args[5];
         }
     }
     m = bone_matrices[17];

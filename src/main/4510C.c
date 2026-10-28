@@ -709,7 +709,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
         rec->script_min_distances[rec->variant_index] +
         (((rec->filtered_script_max_distances[rec->variant_index] -
            rec->script_min_distances[rec->variant_index]) *
-          g_cpu_profiles[rec->cpu_profile].unk5) >>
+          g_cpu_profiles[rec->cpu_profile].script_distance_fraction) >>
          8);
     temp2 = (g_cpu_profiles[rec->cpu_profile].unk7 * 25u) >> 3;
     work = g_fighter_horizontal_separation - rec->unk_43E;
@@ -873,7 +873,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
                                     (rec->world_pos.x - pool_object->pos.x) +
                                 (rec->world_pos.z - pool_object->pos.z) *
                                     (rec->world_pos.z - pool_object->pos.z));
-            if (pool_object->kind != -1 && pool_object->unk_04 != 0 &&
+            if (pool_object->kind != -1 && pool_object->can_hit_fighter != 0 &&
                 pool_object->owner != rec->index) {
                 temp = (ratan2(rec->world_pos.x - pool_object->pos.x,
                                rec->world_pos.z - pool_object->pos.z) -
@@ -2794,10 +2794,10 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             }
                         }
                         if (work3) {
-                            script_score =
-                                ((rand() & 0xFFF) *
-                                 g_cpu_profiles[p->cpu_profile].unkF[var_18]) >>
-                                12;
+                            script_score = ((rand() & 0xFFF) *
+                                            g_cpu_profiles[p->cpu_profile]
+                                                .script_kind_weight[var_18]) >>
+                                           12;
                             if (script_score != 0 &&
                                 best_script_score < script_score) {
                                 best_script_score = script_score;
@@ -2831,7 +2831,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 !(g_fight_mode_selector == 2 || g_fight_mode_selector == 3)) {
                 var_10 = 0;
                 if ((rand() & 0xFF) <
-                        (g_cpu_profiles[p->cpu_profile].unkF[5] >> 2) &&
+                        (g_cpu_profiles[p->cpu_profile].script_kind_weight[5] >>
+                         2) &&
                     ((0x78 >> p->collision_hit_tag) & 1) &&
                     p->opponent_ground_y_band == 0 &&
                     p->other->filtered_script_max_distances
@@ -2861,8 +2862,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                         }
                     }
                     var_40 = 0;
-                    if ((rand() & 0xFF) <
-                            (g_cpu_profiles[p->cpu_profile].unkF[6] >> 2) &&
+                    if ((rand() & 0xFF) < (g_cpu_profiles[p->cpu_profile]
+                                               .script_kind_weight[6] >>
+                                           2) &&
                         var_60 != 0 &&
                         work1 < g_fighter_horizontal_separation &&
                         p->nearest_nav_crossing_distance == 100000 &&

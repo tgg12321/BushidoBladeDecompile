@@ -2422,9 +2422,9 @@ void gpu_DrawIndexedCellsAndDecimalDigitPairs(
         if (idx >= 12 && idx < 22) {
             idx -= 2;
         }
-        s.header = arg2->unk_0C;
-        s.table = arg2->unk_10 + 3 + idx * 3;
-        s.x = arg2->unk_1C[idx];
+        s.header = arg2->character_sheet;
+        s.table = arg2->character_cells + 3 + idx * 3;
+        s.x = arg2->character_x_offsets[idx];
         s.y = i * 26;
         if (i == 3) {
             s.x -= 50;
@@ -2433,13 +2433,13 @@ void gpu_DrawIndexedCellsAndDecimalDigitPairs(
         s.sprt_out = *sprt_out_addr;
         *sprt_out_addr = gpu_AddSpriteCells(&s);
         if (idx == 8) {
-            s.table = arg2->unk_10;
+            s.table = arg2->character_cells;
             s.sprt_out = *sprt_out_addr;
             *sprt_out_addr = gpu_AddSpriteCells(&s);
         }
     }
 
-    s.header = arg2->unk_0C;
+    s.header = arg2->character_sheet;
     SetDrawMode(
         (DR_MODE *)*dr_mode_out_addr, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, (DR_MODE *)*dr_mode_out_addr);
@@ -2469,9 +2469,9 @@ void gpu_DrawIndexedCellsAndDecimalDigitPairs(
             }
             d[0] = d[0] % 10;
             d[1] = d[1] / 10 % 10;
-            s.header = arg2->unk_14;
+            s.header = arg2->digit_sheet;
             s.header->ubase = d[0] * 24;
-            s.table = arg2->unk_18;
+            s.table = arg2->digit_cell;
             s.x = i * 58 + 24;
             s.y = k * 26 + 2;
             if (k == 3) {
@@ -2487,7 +2487,7 @@ void gpu_DrawIndexedCellsAndDecimalDigitPairs(
         }
     }
 
-    s.header = arg2->unk_14;
+    s.header = arg2->digit_sheet;
     SetDrawMode(
         (DR_MODE *)*dr_mode_out_addr, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + ot_index, (DR_MODE *)*dr_mode_out_addr);

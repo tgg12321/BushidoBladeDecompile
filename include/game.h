@@ -22,14 +22,14 @@
 /* The 0x24-byte file record at 0x80106A50 (memcard_BuildSaveBlock checksums it
  * as one block; InitSavedRecordAndResetCameraDistanceOffset initialises it). */
 typedef struct {
-    u8 unk_0;
-    u8 unk_1;
-    s32 unk_4;
+    u8 holder_character_index;
+    u8 holder_weapon_id;
+    s32 time_frames;
 } TimeRec;
 
 typedef struct {
-    s32 unk_00; /* 0x80106A50 */
-    u8 unk_04;  /* 0x80106A54 */
+    s32 unlock_mask; /* 0x80106A50 */
+    u8 unk_04;       /* 0x80106A54 */
     u8 unk_05[3];
     TimeRec times[3]; /* 0x80106A58 */
     u8 frec20[3];     /* 0x80106A70 */
@@ -76,9 +76,9 @@ typedef struct {
 /* 3-word record table at 0x800F1198, terminated by an all-zero record
  * (eff_SetBillboardList walks it with a 12-byte stride). */
 typedef struct {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
+    s32 packed_x;
+    s32 packed_y;
+    s32 z_coord;
 } Unk800F1198Record;
 
 /* 0x800A9CF8 record (0x18 bytes); node_InitFrameEntriesFromWorldTranslations
@@ -208,10 +208,10 @@ typedef struct {
    snd_VabOpen opens; unk_08: the body snd_VabOpen transfers; unk_0C: the body's
    size in SPU memory. */
 typedef struct {
-    s32 unk_00;
-    s32 unk_04;
-    s32 unk_08;
-    s32 unk_0C;
+    s32 key_on_table;
+    s32 vab_header;
+    s32 vab_body;
+    s32 vab_body_size;
 } Unk8005C2A8Pack;
 
 /* The 8-byte sprite cell: x / y, its offset from the descriptor's screen
@@ -912,12 +912,12 @@ typedef struct {
  * as the first test's limits and, when unk_00 != 0, unk_10 / unk_12 as a second
  * test's. */
 typedef struct BoneHitRec {
-    s16 unk_00;
+    s16 has_inner_sphere;
     s16 bone;
     SVec4i16 ofs;
-    u16 unk_0C;
+    u16 outer_radius;
     u16 unk_0E;
-    u16 unk_10;
+    u16 inner_radius;
     u16 unk_12;
 } BoneHitRec; /* sizeof == 0x14 */
 
@@ -1695,7 +1695,7 @@ typedef struct Unk80101EC8Record {
     Vec3i32 ground_probe_points[2];
     /* fighter_UpdateBoneWorldData: floor y under ground_probe_points[i]
      * (collision_TestSegmentWithWork segment test) */
-    s32 ground_probe_floor_ys[2];
+    s32 ground_probe_end_ys[2];
     u8 unk_1B8[0x1BA - 0x1B8];
     /* fighter_UpdateBoneWorldData: ratan2 heading of bone 17's matrix column 2,
      * + 0x800 */
@@ -1848,10 +1848,10 @@ typedef struct Unk80101EC8Record {
 typedef struct {
     s16 unk0;
     s16 unk2;
-    s16 unk4;
-    s16 unk6;
-    u16 unk8;
-    s16 unkA;
+    s16 launch_speed;
+    s16 launch_vel_y;
+    u16 spin_rate;
+    s16 bounce_restitution;
     u8 unkC;
     u8 unkD;
 } Tbl8008E194;
@@ -1867,11 +1867,11 @@ typedef struct {
     /* 0 at spawn; object_UpdatePool adds 1 per step while is_moving != 0 */
     s16 moving_ticks;
     s16 kind; /* -1 = free */
-    u8 unk_04;
+    u8 can_hit_fighter;
     u8 unk_05;
     /* .index of the spawning record (object_SpawnFromFighter) */
     u8 owner;
-    u8 unk_07;
+    u8 drop_state;
     u8 is_attached;
     /* index into the opponent's bone-matrix table,
      * node_GetSlotMatrixPointerArray(owner < 1) (object_AttachToOpponentBone,
@@ -1880,7 +1880,7 @@ typedef struct {
     /* own index in g_object_pool once allocated; 0xFF = free (set by
      * object_ResetPool at init and by object_UpdatePool once kind == -1) */
     u8 slot;
-    u8 unk_0B;
+    u8 model_entry_id;
     /* object_AttachToOpponentBone builds it (identity, RotMatrixX/Y/Z,
        MulMatrix0); object_SubmitAttachedTransform reads it */
     MATRIX mtx;
@@ -1922,7 +1922,7 @@ typedef struct Unk80099D88Rec {
     u8 unk2;
     u8 unk3;
     u8 unk4;
-    u8 unk5;
+    u8 script_distance_fraction;
     u8 unk6;
     u8 unk7;
     /* +0x8: fighter_UpdateCpuNavigationChooseScriptsAndHeldInput scales a
@@ -1932,7 +1932,7 @@ typedef struct Unk80099D88Rec {
     /* +0xF: fighter_UpdateCpuNavigationChooseScriptsAndHeldInput scales a
        random 12-bit draw by an element, and compares [5] >> 2 and [6] >> 2 with
        a random 8-bit draw */
-    u8 unkF[8];
+    u8 script_kind_weight[8];
     u8 unk17;
 } Unk80099D88Rec; /* size 0x18 */
 
@@ -2045,12 +2045,12 @@ typedef struct Unk800F68E0Rec {
  * replay_RecordEvent's arg0 / arg1; unk_4: the s16 x / y / z of arg2; unk_A:
  * arg3[0..2]. */
 typedef struct Unk80101BF0Rec {
-    u8 unk_0;
+    u8 event_frame;
     u8 unk_1;
-    u8 unk_2;
+    u8 event_kind;
     u8 pad3;
-    s16 unk_4[3];
-    u16 unk_A[3];
+    s16 event_pos[3];
+    u16 event_vector[3];
 } Unk80101BF0Rec;
 
 /* The 4-byte record fight_SplitFrameCounterIntoMinutesSecondsHundredths fills
@@ -2063,9 +2063,9 @@ typedef struct Unk80101BF0Rec {
  * * 100 / 30 from a frame countdown n, for gpu_DrawPairedMarkRowsAndTimeFields
  * to draw. */
 typedef struct Unk8001CD68Rec {
-    s16 unk_0;
-    u8 unk_2;
-    u8 unk_3;
+    s16 time_minutes;
+    u8 time_seconds;
+    u8 time_hundredths;
 } Unk8001CD68Rec;
 
 /* Two 0x58-byte records set up side by side by
@@ -2172,7 +2172,7 @@ typedef struct {
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
-    s32 unk5C;              /* +0x5C */
+    s32 anim_yaw;           /* +0x5C */
     s16 unk60;              /* +0x60 */
     s8 pad62[6];            /* +0x62 */
 } Unk800A9CF8Entry;         /* 0x68 */
@@ -2283,14 +2283,14 @@ typedef struct Unk80045878Obj {
  * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes set unk6
  * and the unk7 bits and queue them on g_draw_queue. */
 typedef struct {
-    s16 unk0;     /* +0x00 */
-    s16 unk2;     /* +0x02 */
-    u16 unk4;     /* +0x04 */
-    u8 unk6;      /* +0x06 */
-    u8 unk7;      /* +0x07 */
-    s32 unk8;     /* +0x08 */
-    s32 unkC;     /* +0x0C */
-} Unk800A4750Rec; /* 0x10 */
+    s16 draw_kind;              /* +0x00 */
+    s16 cell_reloc_block_id;    /* +0x02 */
+    u16 cell_reloc_entry_index; /* +0x04 */
+    u8 unk6;                    /* +0x06 */
+    u8 draw_flags;              /* +0x07 */
+    s32 cell_world_x;           /* +0x08 */
+    s32 cell_world_z;           /* +0x0C */
+} Unk800A4750Rec;               /* 0x10 */
 
 /* One entry of the CD file table (all 159 entries equal the disc's ISO9660
  * directory records). */
@@ -2421,7 +2421,7 @@ typedef struct {
     /* 0x00 */ s16 slot_index;
     /* 0x02 */ u8 snap;
     /* 0x03 */ u8 unk3;
-    /* 0x04 */ MATRIX *unk4;
+    /* 0x04 */ MATRIX *object_matrix;
     /* 0x08 */ u8 *unk8;
     /* 0x0C */ struct Unk8003F6D8Coll *colliders;
 } Unk80017FA0Rec;
@@ -2463,11 +2463,11 @@ typedef struct Size2s16 {
  * menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's unk_3C. */
 typedef struct {
     Unk8009B0E0Record *unk_00[3];
-    Unk8009B0E0Record *unk_0C;
-    Unk8009B400Record *unk_10;
-    Unk8009B0E0Record *unk_14;
-    Unk8009B400Record *unk_18;
-    s16 *unk_1C;
+    Unk8009B0E0Record *character_sheet;
+    Unk8009B400Record *character_cells;
+    Unk8009B0E0Record *digit_sheet;
+    Unk8009B400Record *digit_cell;
+    s16 *character_x_offsets;
 } Unk8006D808Rec;
 
 /* MOD.BIN's unk_3C list: gpu_DrawIndexedCellsAndDecimalDigitPairs's set, then

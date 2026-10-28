@@ -85,7 +85,7 @@ s32 comb_Connect(void) {
     } while (temp_s0 == 0);
     func_80077B00();
     pad_ResetState();
-    g_comb_send_payload = bits_ExtractMask3F83F8(g_saved_record.unk_00);
+    g_comb_send_payload = bits_ExtractMask3F83F8(g_saved_record.unlock_mask);
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
@@ -645,9 +645,9 @@ void fight_UpdateScrollingSpriteDisplayAndMergeBitFlags(void) {
     }
     if (go) {
         cdrom_PauseAndWait();
-        old = g_saved_record.unk_00;
+        old = g_saved_record.unlock_mask;
         if ((old | D_800A37A4) != old) {
-            g_saved_record.unk_00 = old | D_800A37A4;
+            g_saved_record.unlock_mask = old | D_800A37A4;
             changed = 1;
         }
         if (D_80101EC8[0].character_data_index == 0 ||
@@ -882,19 +882,19 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
     base = g_saved_record.times;
     do {
         src = &base[i];
-        a = src->unk_4;
+        a = src->time_frames;
         a = a / 1800;
         s0->time_records[i].minutes = a;
-        b = src->unk_4;
+        b = src->time_frames;
         b = b / 30;
         b = b % 60;
         s0->time_records[i].seconds = b;
-        c = src->unk_4;
+        c = src->time_frames;
         c = c % 30;
         c = c * 100;
         c = c / 30;
         s0->time_records[i].hundredths = c;
-        v = src->unk_0;
+        v = src->holder_character_index;
         s0->time_records[i].character_index = v;
         i += 1;
         if (i >= 3) {
@@ -902,9 +902,9 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
         }
     } while (1);
     fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-    s0->fight_time[0] = buf.unk_0;
-    s0->fight_time[1] = buf.unk_2;
-    s0->fight_time[2] = buf.unk_3;
+    s0->fight_time[0] = buf.time_minutes;
+    s0->fight_time[1] = buf.time_seconds;
+    s0->fight_time[2] = buf.time_hundredths;
     s0->fight_character_index = D_80101EC8[0].character_data_index;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_handler_frame_counter = 0;
@@ -2028,10 +2028,10 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
                         if (v1 < g_gpu_grid_cell_record_count) {
                             e = &g_gpu_grid_cell_records[v1];
                             e->unk6 = a3 & 3;
-                            if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
-                                e->unk7 |= 1;
+                            if ((a3 & 8) || ((a3 & 4) && (e->draw_flags & 8))) {
+                                e->draw_flags |= 1;
                             } else {
-                                e->unk7 &= 0xFE;
+                                e->draw_flags &= 0xFE;
                             }
                             list = g_draw_queue_cursor;
                             g_draw_queue_cursor = list + 1;
@@ -2129,10 +2129,11 @@ skip:
                             if (v1 < g_gpu_grid_cell_record_count) {
                                 e = &g_gpu_grid_cell_records[v1];
                                 e->unk6 = a3 & 3;
-                                if ((a3 & 8) || ((a3 & 4) && (e->unk7 & 8))) {
-                                    e->unk7 |= 1;
+                                if ((a3 & 8) ||
+                                    ((a3 & 4) && (e->draw_flags & 8))) {
+                                    e->draw_flags |= 1;
                                 } else {
-                                    e->unk7 &= 0xFE;
+                                    e->draw_flags &= 0xFE;
                                 }
                                 list = g_draw_queue_cursor;
                                 g_draw_queue_cursor = list + 1;
@@ -2181,18 +2182,18 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
     while ((w = *p++) != -1) {
         r = &g_gpu_grid_cell_records[n++];
         var_8 = *p++;
-        r->unk4 = var_8;
+        r->cell_reloc_entry_index = var_8;
         if (var_8 & 0x8000) {
-            r->unk4 = var_8 & 0x7FFF;
-            r->unk7 = 8;
+            r->cell_reloc_entry_index = var_8 & 0x7FFF;
+            r->draw_flags = 8;
         } else {
-            r->unk7 = 0;
+            r->draw_flags = 0;
         }
-        r->unk0 = 0xC;
+        r->draw_kind = 0xC;
         r->unk6 = 0;
-        r->unk2 = arg1;
-        r->unk8 = (w % 32) * 2000 - 32000;
-        r->unkC = (w / 32) * 2000 - 32000;
+        r->cell_reloc_block_id = arg1;
+        r->cell_world_x = (w % 32) * 2000 - 32000;
+        r->cell_world_z = (w / 32) * 2000 - 32000;
     }
     g_gpu_grid_cell_record_count = n;
     n = 0;
@@ -2709,7 +2710,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     rec->inner.coll.count = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     rec->step_desc.slot_index = rec->slot_index;
-    rec->step_desc.unk4 = &obj->node.xf.mat;
+    rec->step_desc.object_matrix = &obj->node.xf.mat;
     rec->step_desc.unk8 = obj->softbody_nodes;
     rec->step_desc.colliders = &rec->inner.coll;
     rec->step_desc.snap = 0;

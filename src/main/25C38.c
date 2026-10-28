@@ -142,7 +142,8 @@ void menu_InitSubflowForMode(s32 arg0) {
         temp = comb_Connect();
         if (temp == 1) {
             StoreCompactedBits(
-                (g_saved_record.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
+                (g_saved_record.unlock_mask | D_800A38E4 | 0x7007) &
+                0x003FF3FF);
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             g_row_menu_subflow_state = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -158,21 +159,21 @@ void menu_InitSubflowForMode(s32 arg0) {
         return;
 
     case 1:
-        StoreCompactedBits(g_saved_record.unk_00 & 0x003EF3DF);
+        StoreCompactedBits(g_saved_record.unlock_mask & 0x003EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 5:
-        StoreCompactedBits(g_saved_record.unk_00 & 0x003FF3FF);
+        StoreCompactedBits(g_saved_record.unlock_mask & 0x003FF3FF);
         menu_InitSelWithStoredBits(0x80118800);
         g_row_menu_subflow_state = 0xA;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
         return;
 
     case 4:
-        StoreCompactedBits(g_saved_record.unk_00 & 0x053FF3FF);
+        StoreCompactedBits(g_saved_record.unlock_mask & 0x053FF3FF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -357,7 +358,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         }
     load:
         cdrom_PauseAndWait();
-        StoreCompactedBits(g_saved_record.unk_00 & 0x3EF3DF);
+        StoreCompactedBits(g_saved_record.unlock_mask & 0x3EF3DF);
         InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         g_row_menu_subflow_state = 3;
         cdrom_EnableSerialMixAndStartRepeatingAudio();

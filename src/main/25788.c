@@ -141,13 +141,13 @@ void CopySavedFlagsButtonMappingsAndTimesToWorkingRecord(void) {
         u8 var_6;
         s32 t;
 
-        var_4 = times[i].unk_4 / 1800;
+        var_4 = times[i].time_frames / 1800;
         p->time_records[i].minutes = var_4;
-        var_5 = (times[i].unk_4 / 30) % 60;
+        var_5 = (times[i].time_frames / 30) % 60;
         p->time_records[i].seconds = var_5;
-        var_6 = (times[i].unk_4 % 30) * 100 / 30;
+        var_6 = (times[i].time_frames % 30) * 100 / 30;
         p->time_records[i].hundredths = var_6;
-        t = times[i].unk_0;
+        t = times[i].holder_character_index;
         p->time_records[i].character_index = t;
     }
 }

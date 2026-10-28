@@ -185,7 +185,7 @@ void memcard_BuildFileHeader(u8 *out) {
     s3 = 0;
     s2 = 0;
     s1 = 0;
-    mask = g_saved_record.unk_00;
+    mask = g_saved_record.unlock_mask;
 
     for (i = 0; i < 0x1B; i++) {
         bit = 1 << i;
@@ -1112,7 +1112,7 @@ void replay_Reset(void) {
     g_replay_write_frame = 0;
     g_replay_ring_wrapped = 0;
     for (i = 0x1F; i >= 0; i--) {
-        g_replay_events[i].unk_0 = 0xFF;
+        g_replay_events[i].event_frame = 0xFF;
     }
     for (j = 0xB3; j >= 0; j--) {
         g_replay_model_draws[j].draw_age = -1;
@@ -1127,8 +1127,8 @@ void replay_BeginFrame(void) {
     s16 val;
     s16 newval;
     for (i = 0; i < 0x20; i++) {
-        if (g_replay_events[i].unk_0 == g_replay_write_frame) {
-            g_replay_events[i].unk_0 = 0xFF;
+        if (g_replay_events[i].event_frame == g_replay_write_frame) {
+            g_replay_events[i].event_frame = 0xFF;
         }
     }
 
@@ -1225,7 +1225,7 @@ void replay_RecordEvent(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
         idx = g_replay_event_search_cursor;
         var_0 = &g_replay_events[idx];
         for (; idx < 0x20; idx++, var_0++) {
-            if (var_0->unk_0 == 0xFF) {
+            if (var_0->event_frame == 0xFF) {
                 break;
             }
             g_replay_event_search_cursor = idx + 1;
@@ -1233,15 +1233,15 @@ void replay_RecordEvent(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
         if (g_replay_event_search_cursor != 0x20) {
             u8 tmp = g_replay_write_frame;
             var_0->unk_1 = arg0;
-            var_0->unk_2 = arg1;
-            var_0->unk_0 = tmp;
-            var_0->unk_4[0] = arg2[0];
-            var_0->unk_4[1] = arg2[1];
-            var_0->unk_4[2] = arg2[2];
+            var_0->event_kind = arg1;
+            var_0->event_frame = tmp;
+            var_0->event_pos[0] = arg2[0];
+            var_0->event_pos[1] = arg2[1];
+            var_0->event_pos[2] = arg2[2];
             if (arg3 != NULL) {
-                var_0->unk_A[0] = arg3[0];
-                var_0->unk_A[1] = arg3[1];
-                var_0->unk_A[2] = arg3[2];
+                var_0->event_vector[0] = arg3[0];
+                var_0->event_vector[1] = arg3[1];
+                var_0->event_vector[2] = arg3[2];
             }
         }
     }
@@ -1476,16 +1476,16 @@ void replay_PlayFrame(void) {
 
     e = g_replay_events;
     for (i = 0; i < 0x20; i++, e++) {
-        if (e->unk_0 == idx) {
-            pos[0] = e->unk_4[0];
-            pos[1] = e->unk_4[1];
-            pos[2] = e->unk_4[2];
-            rot[0] = e->unk_A[0];
-            rot[1] = e->unk_A[1];
-            rot[2] = e->unk_A[2];
+        if (e->event_frame == idx) {
+            pos[0] = e->event_pos[0];
+            pos[1] = e->event_pos[1];
+            pos[2] = e->event_pos[2];
+            rot[0] = e->event_vector[0];
+            rot[1] = e->event_vector[1];
+            rot[2] = e->event_vector[2];
             g_replay_replaying_event = 1;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                e->unk_1, e->unk_2, pos, rot);
+                e->unk_1, e->event_kind, pos, rot);
             g_replay_replaying_event = 0;
         }
     }
