@@ -37,6 +37,69 @@ def reg(**lanes):
 
 
 class Candidates(unittest.TestCase):
+    def live(self, *claims):
+        return {"owner": "S", "heartbeat": NOW, "claims": list(claims)}
+
+    def test_claimed_rows_are_not_startable(self):
+        b = bl(naming_stages=("reviewed", "idea"))
+        # another lane holds row m0: only m1 can start a session
+        r = reg(**{"naming-x": self.live("topic:row:m0")})
+        self.assertEqual(o.candidates(b, r, st(), NOW, "naming"), ["naming-a"])
+        r = reg(**{"naming-x": self.live("topic:row:m0"), "codex": self.live("topic:row:m1")})
+        self.assertEqual(o.candidates(b, r, st(), NOW, "naming"), [])
+
+    def test_reviewed_row_blocked_by_held_draft_tu(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "MAIN", Path(d)):
+            draft = Path(d) / "pending" / "w1"
+            draft.mkdir(parents=True)
+            (draft / "dry.txt").write_text("-- file edits (2) --\nsrc/main/51268.c\n"
+                                           "src/main/psxsdk/libgpu/sys.c\n", encoding="utf-8")
+            b = bl(naming_stages=("reviewed",))
+            b["naming"][0]["draft"] = "pending/w1/"
+            self.assertEqual(o.draft_tu_claims(b["naming"][0]),
+                             {"topic:tu:main/51268", "topic:tu:main/psxsdk/libgpu/sys"})
+            held = reg(**{"trace-x": self.live("topic:row:other", "topic:tu:main/51268")})
+            self.assertEqual(o.candidates(b, held, st(), NOW, "naming"), [])
+            free = reg(**{"trace-x": self.live("topic:row:other", "topic:tu:main/9F9C")})
+            self.assertEqual(o.candidates(b, free, st(), NOW, "naming"), ["naming-a"])
+
+    def test_active_count_only_drops_lanes_on_a_workable_row(self):
+        b = bl(naming_stages=("idea", "idea"))
+        # naming-x works m0: m0 and naming-x both drop out; m1 starts one session
+        r = reg(**{"naming-x": self.live("topic:row:m0")})
+        self.assertEqual(o.candidates(b, r, st(), NOW, "naming"), ["naming-a"])
+        # naming-x holds a row that is no longer workable (just landed): it is about to pick a
+        # workable one, so it still counts as active and nothing new starts for one free row
+        b = bl(naming_stages=("landed", "idea"))
+        r = reg(**{"naming-x": self.live("topic:row:m0")})
+        self.assertEqual(o.candidates(b, r, st(), NOW, "naming"), [])
+
+    def test_stale_claims_do_not_block(self):
+        b = bl(naming_stages=("idea",))
+        stale = {"owner": "S", "heartbeat": NOW - o.STALE_SECS - 10, "claims": ["topic:row:m0"]}
+        self.assertEqual(o.candidates(b, reg(**{"naming-x": stale}), st(), NOW, "naming"),
+                         ["naming-a"])
+
+    def test_claim_blocked_ids(self):
+        b = bl(naming_stages=("idea", "idea"))
+        r = reg(**{"trace-x": self.live("topic:row:m1")})
+        self.assertEqual(o.claim_blocked_naming_ids(b, r, NOW), ["m1"])
+
+    def test_draft_tus_prefer_the_dry_run_edit_list(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d, patch.object(o, "MAIN", Path(d)):
+            draft = Path(d) / "w"
+            draft.mkdir()
+            (draft / "dry.txt").write_text("-- file edits (1) --\nsrc\\main\\9F9C.c\n"
+                                           "-- other --\nsrc/main/1111.c\n", encoding="utf-8")
+            (draft / "notes.txt").write_text("see src/main/43500.c:846\n", encoding="utf-8")
+            self.assertEqual(o.draft_tu_claims({"draft": "w"}), {"topic:tu:main/9F9C"})
+            (draft / "dry.txt").write_text("SKIPPED\n", encoding="utf-8")  # locals: no dry run
+            self.assertEqual(o.draft_tu_claims({"draft": "w"}), {"topic:tu:main/43500"})
+            self.assertEqual(o.draft_tu_claims({"draft": "-"}), set())
+            self.assertEqual(o.draft_tu_claims({"draft": "missing/"}), set())
+
     def test_alternates_and_skips_done_lanes(self):
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, None),
                          ["naming-a", "pins", "naming-b", "data"])
@@ -97,6 +160,7 @@ class Candidates(unittest.TestCase):
 
 
 class Phase(unittest.TestCase):
+
     def test_new_session_not_yet_open_is_running(self):
         self.assertEqual(o.session_phase(slot("pins"), {"state": "working", "pid": 1}, reg(), NOW), "running")
 
@@ -323,6 +387,7 @@ class GateQueue(unittest.TestCase):
 
 
 class Slots(unittest.TestCase):
+
     def test_finish_with_progress_and_without(self):
         b = bl()
         s = st({"a1": slot("pins", progress_at_start="old"),
@@ -463,6 +528,7 @@ class Slots(unittest.TestCase):
 
 
 class Cli(unittest.TestCase):
+
     def test_number_means_run(self):
         seen = {}
         orig = o.cmd_run
@@ -475,6 +541,7 @@ class Cli(unittest.TestCase):
 
 
 class Robustness(unittest.TestCase):
+
     def test_exited_row_without_pid_is_ended(self):
         r = reg(pins={"owner": "S1"})
         self.assertEqual(o.session_phase(slot("pins"), {"state": "done"}, r, NOW), "lost")
@@ -853,6 +920,36 @@ class Tick(unittest.TestCase):
             self.assertFalse(o.tick(self.args))
         self.assertIn("remaining work is paused", buf.getvalue())
 
+    def test_claim_blocked_naming_rows_keep_it_polling(self):
+        # the only workable row is held by a lane this orchestrator does not track
+        # (a crashed or hand-run session): no start, but no exit either
+        o.backlogs = lambda: bl(naming_stages=("idea",), foundation=())
+        o.write_max(1)
+        self.reg = {"lanes": {"naming-z": {"owner": "X", "heartbeat": time.time(),
+                                           "claims": ["topic:row:m0"]}}}
+        self.assertTrue(o.tick(self.args))
+        self.assertEqual(self.started, [])
+        self.assertIn("other lanes' claims", o.load_state()["waiting"])
+
+    def test_claim_blocked_rows_keep_polling_under_the_hold(self):
+        o.backlogs = lambda: bl(naming_stages=("idea",), foundation=())
+        o.write_max(1)
+        self.reg = {"lanes": {"trace-z": {"owner": "X", "heartbeat": time.time(),
+                                          "claims": ["topic:row:m0"]}}}
+        s = o.load_state()
+        s["no_progress_naming"] = o.naming_hold(o.backlogs())
+        o.write_state(s)
+        self.assertTrue(o.tick(self.args))
+        self.assertIn("other lanes' claims", o.load_state()["waiting"])
+
+    def test_claim_wait_ignores_paused_naming(self):
+        o.backlogs = lambda: bl(naming_stages=("idea",), foundation=())
+        o.write_max(1)
+        o.main(["pause", "naming"])
+        self.reg = {"lanes": {"trace-z": {"owner": "X", "heartbeat": time.time(),
+                                          "claims": ["topic:row:m0"]}}}
+        self.assertFalse(o.tick(self.args))
+
     def test_codex_quota_block_alone_keeps_running(self):
         o.backlogs = lambda: bl(naming_stages=(), foundation=())
         o.main(["codex", "on"])
@@ -983,7 +1080,6 @@ class Tick(unittest.TestCase):
         self.assertEqual(st["sessions"]["c0dec0de"]["kind"], "codex")
         self.assertNotIn(o.CODEX_PROMPT, self.started)
 
-
     def test_finished_idle_session_not_adopted_nor_busy(self):
         # an idle `lane-codex` / `lane-pins` long done: process alive, lane not owned
         self.listing["41a20439"] = {"name": "lane-codex", "state": "done", "status": "idle",
@@ -1025,6 +1121,7 @@ class Tick(unittest.TestCase):
 
 
 class Pause(unittest.TestCase):
+
     def test_pause_and_when_away(self):
         p = {"pins": {"when_away": False}, "data": {"when_away": True}}
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "foundation", p, False), [])
@@ -1037,6 +1134,7 @@ class Pause(unittest.TestCase):
 
 
 class Housekeeping(unittest.TestCase):
+
     def test_stale_tmp_dirs_one_level_and_keep_list(self):
         import os
         import tempfile
@@ -1074,6 +1172,7 @@ class Housekeeping(unittest.TestCase):
 
 
 class Io(unittest.TestCase):
+
     def test_non_ascii_log_on_cp1252_stream(self):
         raw = io.BytesIO()
         stream = io.TextIOWrapper(raw, encoding="cp1252")
@@ -1114,6 +1213,7 @@ class Io(unittest.TestCase):
 
 
 class Live(unittest.TestCase):
+
     def test_live_lanes(self):
         ag = {"a": {"name": "lane-pins", "pid": 1, "state": "working"},
               "b": {"name": "lane-data", "state": "done"},            # exited: no pid
@@ -1138,12 +1238,14 @@ class Live(unittest.TestCase):
 
 
 class Blocked(unittest.TestCase):
+
     def test_blocked_rows_count_as_done(self):
         b = bl(foundation=(("pins", "blocked"), ("data", "idea"), ("data", "blocked")))
         self.assertEqual(o.candidates(b, reg(), st(), NOW, "foundation"), ["data"])
 
 
 class Codex(unittest.TestCase):
+
     def test_landed_by_body(self):
         commits = [("cheat-cleanup: a", "the Claude fake lane's own work"),
                    ("docs: Codex lane note", ""),

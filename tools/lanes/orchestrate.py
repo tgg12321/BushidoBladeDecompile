@@ -577,6 +577,70 @@ def naming_row_workable(r: dict) -> bool:
     return found
 
 
+DRAFT_TU = re.compile(r"\bsrc/(main/[0-9A-Za-z_/]+)\.c\b")  # TU id = path under src/ w/o .c
+DRY_EDITS = re.compile(r"^-- file edits \(\d+\) --$(.*?)(?=^--|\Z)", re.M | re.S)
+
+
+def draft_tu_claims(r: dict) -> set[str]:
+    """The `topic:tu:` tokens a row's LAND will claim: every game TU named in its tracked draft
+    dir (dry.txt's edit list, manifests, pairs). Empty when the row has no draft yet."""
+    d = (r.get("draft") or "").strip()
+    if not d or d == "-":
+        return set()
+    root = MAIN / d
+    if not root.is_dir():
+        return set()
+    try:  # the dry run's edit list is exact; prose elsewhere cites TUs the wave never edits
+        m = DRY_EDITS.search((root / "dry.txt").read_text(encoding="utf-8", errors="replace"))
+    except OSError:
+        m = None
+    if m and DRAFT_TU.search(m.group(1).replace("\\", "/")):
+        return {f"topic:tu:{t}" for t in DRAFT_TU.findall(m.group(1).replace("\\", "/"))}
+    out = set()  # no dry-run edit list (locals waves): every TU the draft names
+    for f in root.iterdir():
+        if f.is_file() and f.suffix in (".txt", ".csv", ".tsv", ".py"):
+            try:
+                text = f.read_text(encoding="utf-8", errors="replace").replace("\\", "/")
+                out.update(f"topic:tu:{m}" for m in DRAFT_TU.findall(text))
+            except OSError:
+                pass
+    return out
+
+
+def held_claims(reg: dict, now: float) -> dict[str, str]:
+    """Every claim token held by a live (owned, fresh) lane -> that lane."""
+    out = {}
+    for lane, e in reg.get("lanes", {}).items():
+        if lane_owned(reg, lane, now):
+            for tok in e.get("claims") or []:
+                out.setdefault(tok, lane)
+    return out
+
+
+def startable_naming_rows(bl: dict, reg: dict, now: float,
+                          held: dict[str, str] | None = None) -> list[dict]:
+    """Workable naming rows a NEW session could take now: no live lane claims the row, and a
+    `reviewed` row's draft TUs are not held by another lane (its LAND would be refused). Counting
+    these instead of every workable row stops sessions that start, find every row blocked by
+    another lane's claims, and quit."""
+    held = held_claims(reg, now) if held is None else held
+    out = []  # member waves' topic:type claims are not checked: one open row per track
+    for r in bl["naming"]:
+        if not naming_row_workable(r) or f"topic:row:{r.get('id')}" in held:
+            continue
+        if r.get("stage") == "reviewed" and draft_tu_claims(r) & held.keys():
+            continue
+        out.append(r)
+    return out
+
+
+def claim_blocked_naming_ids(bl: dict, reg: dict, now: float) -> list[str]:
+    """Workable rows no new session can take because of live claims. They clear when the holder
+    lands or its claims go stale (STALE_SECS), so the orchestrator keeps polling for them."""
+    return sorted(set(workable_naming_ids(bl))
+                  - {r["id"] for r in startable_naming_rows(bl, reg, now)})
+
+
 def workable_naming_ids(bl: dict) -> list[str]:
     """Stable snapshot of row identities, independent of backlog order."""
     return sorted({r["id"] for r in bl["naming"] if naming_row_workable(r)})
@@ -609,9 +673,14 @@ def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
         del st["no_progress_naming"]
     naming: list[str] = []
     if only in (None, "naming") and "no_progress_naming" not in st:
-        workable = len(workable_ids)
+        held = held_claims(reg, now)
+        workable = len(startable_naming_rows(bl, reg, now, held))
         owned = {l for l in reg.get("lanes", {}) if lane_owned(reg, l, now)}
-        active = sum(1 for lane in busy | owned if lane.startswith("naming"))
+        on_row = {f"topic:row:{i}" for i in workable_ids}
+        held_rows = {lane for tok, lane in held.items() if tok in on_row}
+        # naming lanes already on a row are excluded with that row; the rest may be picking one
+        active = sum(1 for lane in busy | owned
+                     if lane.startswith("naming") and lane not in held_rows)
         free = [f"naming-{c}" for c in "abcdefghijklmnopqrstuvwxyz"
                 if f"naming-{c}" not in busy and not lane_owned(reg, f"naming-{c}", now)
                 and not pause_blocks(paused, f"naming-{c}", away)]
@@ -1047,6 +1116,12 @@ def tick(args) -> bool:
         if candidates(bl, reg, unheld, now, args.only, paused, True, live):
             naming_wait = "naming waits for the naming backlog to change"
             wait = f"{wait}; {naming_wait}" if wait else naming_wait
+    if args.only in (None, "naming") and not (wait and "naming waits" in wait) and any(
+            not pause_blocks(paused, f"naming-{c}", True) for c in "abcdefghijklmnopqrstuvwxyz"):
+        blocked = claim_blocked_naming_ids(bl, reg, now)
+        if blocked and not candidates(bl, reg, st, now, args.only, paused, True, live):
+            claim_wait = f"naming rows {', '.join(blocked)} wait on other lanes' claims"
+            wait = f"{wait}; {claim_wait}" if wait else claim_wait
     if wait:
         if wait != st.get("waiting"):
             log(f"waiting: {wait}")
