@@ -33,3 +33,13 @@ COMMENTS TO UPDATE (scoped pair substitution skips comments)
 FRESHNESS
 All 27 distinct final spellings were searched whole-word in src/** and include/**. No code hit inside the target function and none a file-scope name, enum constant, macro or type; the pre-existing hits are parameters, locals or comments of other functions (rotation: comments only; slot_index: a parameter in 368E4.c; ot_index: parameters in 4D0A8.c, 64FD8.c). The old tokens occur in no #define body (p and v do and are left alone).
 naming_keycheck.scoped_plan (read-only, working tree incl. Makefile) accepts all 40 pairs (206 token substitutions, all in 51268.c); this is a drafting aid, not the gate (cc1 differential, oracle build and staged keycheck are the apply gates).
+
+APPLY (naming-a 2026-10-27, commit 402e07ba7): 40/40 applied, none reverted; pairs.txt unchanged. Locals applied by
+naming_keycheck.scoped_plan (whole-word, code-only, comments and strings skipped, tokens after `.` or `->` skipped; 206 token
+substitutions, all in 51268.c); format.py reflowed the longer lines. The forward declaration at 51268.c:249
+(eff_BindScratchpad(s16 *arg0, s32 *arg1);) was verified untouched. Comment pass: 51268.c:766 "angles at arg0" -> "angles at
+src_rotation" (one line, fits 80 columns); no other comment in the touched functions or just above them names an old token as a
+binding (the FAKE comment at 821-824 names var_3 and base only, both unchanged).
+include/game.h:1012-1013 Unk1F8000B8_800620B8 member comments /* w */ /* h */ -> /* half_width */
+/* billboard_height */ (eff_DrawBillboardList locals; R6 fix).
+Gates: verify-oracle --rebuild build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true, artifact_matches true); tus-check "OK: bb2.ld links all 245 TUs, one object order across sections"; engine test "5516 passed, 0 failed, 2 skipped"; check_completion_integrity "OK: all completed functions satisfy their category's invariants." (exit 0); naming_keycheck --base c4e0d63ec --new 402e07ba7 --pairs-file pairs.txt: "OK: every change is explained by the pairs".

@@ -763,7 +763,7 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     rotation_out[1] = src_command_block->unk04[1];
     rotation_out[2] = src_command_block->unk04[2];
     position_out = D_800A3470;
-    /* the matrix eff_SetRotMatrix builds from the angles at arg0 */
+    /* the matrix eff_SetRotMatrix builds from the angles at src_rotation */
     scaled_rotation_matrix = D_800A3474;
     position_out[0] = src_command_block->unk08[0];
     base = &D_800A34EC->v800620B8;

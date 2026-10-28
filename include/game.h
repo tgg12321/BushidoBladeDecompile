@@ -1009,8 +1009,8 @@ typedef struct {
  * is read as a MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x10]; /* no access here */
-    s16 unk10;      /* w */
-    s16 unk12;      /* h */
+    s16 unk10;      /* half_width */
+    s16 unk12;      /* billboard_height */
     VECTOR unk14;   /* ApplyRotMatrixLV out */
     VECTOR unk24;   /* ApplyRotMatrixLV in */
     SVECTOR unk34;  /* RotTransPers in */
