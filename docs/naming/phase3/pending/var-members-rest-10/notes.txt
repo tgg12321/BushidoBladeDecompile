@@ -1,0 +1,55 @@
+var-members-rest-10 -- draft notes (Opus research re-derived by the drafter; research treated as hints only)
+
+BASIS: line numbers cite the lane worktree ln-naming-b (HEAD 238260c54, var-globals-f landed), read-only. That wave lands before this one, so its numbering is the right basis. Main (cefae2387) numbers differ by a few lines in 9F9C.c (about -14 near 2040-2095), 17AFC.c (-5 near 5590) and 51268.c. Dry run: type-resolved tools/naming_member_apply.py --dry-run from the worktree (WSL), see dry.txt and dry.sh.
+
+Scope: ScrPad (include/game.h ~1401), Rec44 (~1937), Unk80102778Rec = g_fight_config, Unk80101E60Rec + CdState.unk04 (the CD request block inside g_cdrom_state), Unk1F800000Unk00 (the effect command block, 0x2C bytes) and Unk1F800000Rec.unk88.
+Research: 38 RENAME / 18 NO_NAME. Result: 38 rows in pairs.txt: 36 KEPT, 2 CHANGED, 0 DROPPED. The verdict column of member_manifest.csv is empty (the reviewer decides).
+Per type: ScrPad 5, Rec44 2, Unk80102778Rec 5, Unk80101E60Rec 16, CdState 1, Unk1F800000Unk00 8, Unk1F800000Rec 1.
+
+Re-derivation
+- The dry run lists every direct member-name line per renamed token (the ACCESSES lists in the manifest are generated from its diff). Uses through pointers (g_eff_* globals, D_800A346C) were listed by grep and read in context.
+- Read in full or in context: cdrom.c (starters, stop, wait), 26940.c (cdrom_UpdateAudio steps 0x10-0x1E and cdrom_Update steps 0-0xD), 267A8.c (ready callback), the g_fight_config accesses (24F08, 24BF0, 25788, 25C38, 2B344, 9F9C fighter_ConfigureCpuControl), 51268.c eff_StartCommand / eff_StepCommand / eff_BindScratchpad / all eff_Start* stores / the billboard-pair and particle drawers (unk88), fighter_UpdateBoneWorldData and fighter_ResolveBodyOverlap, and every Rec44 line in the dry-run diff (focus_point 42 lines, camera_angles 60 lines).
+- INCLUDE_ASM: none of the 217 remaining INCLUDE_ASM bodies names g_cdrom_state, g_fight_config, the camera view records or the effect command blocks. The ones that touch 0x1F80xxxx (gpu_Emit*, gpu_WriteAndLink*, gpu_ProjectStridedNodeVertices..., gte_ColorGroupedNormalStream..., func_8004xxxx / func_8005xxxx) use the scratchpad with their own render layout: an alias of other data at other times, not an access of ScrPad (same treatment as rest-9 for Unk1F800000Rec).
+- Freshness: grep -rw over src/ include/ finds none of the 38 names except file_index, which exists only as locals and parameters (4BC3C.c, 4D0A8.c, 596CC.c, cdrom.c): no member, type or macro. No name is shared with another member in this wave.
+
+Per row (all KEPT unless stated; confidence H high / M medium / W weak)
+ScrPad.unk00 weapon_points KEPT (M). unk48 second_weapon_points KEPT (W: table indexed by wielded-object kind; follows the landed prev_second_weapon_points). unk78 body_overlap_points KEPT (H, one function). unkA8 bone_hit_points KEPT (H; ProcessWeaponContacts borrows 16 slots and restores them). unk2B8 collision_work KEPT (W: union with two layouts, both collision work records; some users use it only as scratch of their test).
+Rec44.unk_00 focus_point KEPT (H). unk_10 camera_angles KEPT (H).
+Unk80102778Rec.unk_0 cpu_base_levels KEPT (M). unk_A: CHANGED stream_cpu_base_levels -> operand_cpu_base_levels (W): the writers are fight_ConfigureFighter1FromLookupAndOperandsAndLoad / ...FromOperandsAndLoad (their own names say Operands); nothing shows they are command-stream handlers. unk_C pending_stage_index KEPT (H). unk_D pending_mode_selector KEPT (H). unk_E pending_view_setting KEPT (M; mode 6 writes it after the apply, still the next pending value).
+Unk80101E60Rec: unk00 file_index KEPT (H). unk02 io_state KEPT (H). unk04 audio_hold KEPT (M). unk08 stop_request KEPT (H). unk0A audio_repeat KEPT (H). unk14 audio_end_pos KEPT (M: StartAudio stores file end less 0x96; the comparisons use it as the end). unk18 read_sector_count KEPT (H). unk1C read_dest_addr KEPT (H). unk28 audio_step_count KEPT (W: two phases share it). unk2C settle_count KEPT (W: the word settle goes beyond a delay). unk30 audio_mode KEPT (H). unk34 is_xa_audio KEPT (H). unk38 read_timeout KEPT (H). unk3A getloc_timeout KEPT (M). unk3C report_timeout KEPT (M, DA only). unk44 end_countdown KEPT (M).
+CdState.unk04 recovery_wait KEPT (W: cdrom_Pause also zeroes it when it jumps to step 0xB).
+Unk1F800000Unk00: unk00 command_word KEPT (M; union name). unk04: CHANGED bound_vector_src -> bound_rotation_src (M): the stored parameter is src_rotation, the receiving local is rotation_out and the only consumer is eff_SetRotMatrix(rotation_out, ...); vector had no support. unk08 bound_position_src KEPT (H). unk0C start_position_src KEPT (H). unk10 start_vector_src KEPT (H). unk14 status_dest KEPT (H). unk18 vector_copy KEPT (M; a rotation in most consumers, a vector in the particle emitters). unk20 position_copy KEPT (H).
+Unk1F800000Rec.unk88 y_extent_work KEPT (W, resubmitted): all uses through g_eff_lower_y_offset_word read (see the VIA list in the manifest). Every value is the vertical size of the quad or its bottom-corner y offset; no use contradicts it. Weakness: in the pair drawer it holds the full height that becomes upper_y_offset, then 0 (the reason rest-9 lower_y_offset failed); y_extent_work claims only the vertical quantity. Reviewer may drop.
+
+NO_NAME (18, not in pairs, none contradicted by my reading)
+Unk80102778Rec.unk_4 (one array, three roles: [i] roster index, [2+i] weapon id, [4+i] cpu-controlled flag; needs a layout split), unk_F (0/1 option whose effect is one unexplained branch via D_800A3140).
+Unk80101E60Rec.unk06 (write-only 0), unk3E (VSync tally, never consumed).
+Unk1F800000Unk00.unk1E (padding, no access).
+Item-2 rows with no new evidence: Unk1F800000Rec.unk8C (rtp flag out in most drawers but constant 1 tested in the particle drawer), unk50, unkA0, unkA4, unkB0 (seeds of pointer globals, storage never written or retargeted before use); Unk1F8000B8_80063084.unk38 (one-use age temp), Unk1F8000B8_80065800.unk14 / unk64 (several roles), Unk1F8000B8_800678A8.unk10 / unk34 / unk44 / unk6E / unk70 (two roles each). The keycheck-blocked Unk1F8000B8_800646E8 rows (unk38, unk40, unk44) stay blocked: 80063084.unk38 is an age temp, 800620B8.unk40 has no access and 800678A8.unk44 has two roles.
+
+HAND EDITS after the apply (the tool prints these as UNRESOLVED, 16 lines; dry exit=1 is that, not a failure; compile rounds 477 -> 17 -> 0, 57 -> 0, 47 -> 0)
+- 9F9C.c:2054-2056 and 2090-2092 (main: 2040-2042, 2076-2078): rename ONLY local.unk_00.x/.y/.z to local.focus_point.x/.y/.z and s2->unk_00.x/.y/.z to s2->focus_point.x/.y/.z. KEEP g_camera_view_offset.unk_00.* (Unk800FF5C8Rec, not in this wave).
+- 9F9C.c:2057-2059 and 2093-2095 (main: 2043-2045, 2079-2081): rename ONLY local.unk_10.vx/.vy/.vz to local.camera_angles.* and s2->unk_10.* to s2->camera_angles.*. KEEP g_camera_view_offset.unk_10.* (Unk800FF5C8Rec). The lines after (local.w18 = s2->w18 + g_camera_view_offset.w18) have no unk token.
+- 17AFC.c:1741, 1742, 1792, 1793 (identical on main): rename ONLY the SPAD->unk00 token to SPAD->weapon_points. KEEP scr->point_slots.unk00[..] (Unk1F8002B8Rec member point_slots.unk00, not in this wave).
+After the hand edits re-run the dry run: expect 0 UNRESOLVED and exit=0.
+Unk800FF5C8Rec.unk_00 / unk_10 are offsets added to the Rec44 members; they are NOT renamed in this wave.
+
+COMMENT LIST (R6: comments the tool does not edit; old member spelling or old meaning; worktree numbering). Same-spelled words of OTHER types stay.
+- include/game.h: 899 (SPAD->unkA8[ch][i]); 1290 (ScrPad.unk00 or unk48); 1304 (ScrPad.unk2B8.rec); 1378 (ScrPad.unk2B8 block comment); 1390-1398 (ScrPad comment: unk00 / unk48 / unk78 / unkA8 / unk2B8); 1613 (SPAD unk48 points); 1749 (SPAD->unkA8[]); 1960-1961 (the Rec44 unk_00, unk_10 and w18 text of the Unk800FF5C8Rec comment: names Rec44 fields); the Rec44 block comment above the typedef (+0x00 / +0x10 text, about 1925-1936); 960-985 (Unk1F800000Unk00 comment: unk00, unk04 / unk08, unk0C / unk10, unk14, unk18 / unk20: rewrite to the new names); 1156-1166 (Rec comment: default_command_block, unk04 / unk08 stores); 2282-2290 (Unk80101E60Rec comment: unk3C / unk44 / unk3E), 2319 (rec.unk02, rec.unk00 in the CdState comment), 2331-2336 (Unk80102778Rec comment: unk_4 stays; unk_A, unk_C, unk_E rename).
+- src/main/17AFC.c: 1127 (SPAD->unkA8), 2291-2295 (SPAD->unk00 / unk48 / unkA8). 17AFC.c:2214 names scr->unkA8 of Unk1F8002B8Rec (stays).
+- src/main/9F9C.c: 422, 448-452, 470 (unk_10.vy / vz / vx of g_camera_default_view_record: Rec44), 2948 (SPAD->unkA8), 3007 (callers pass SPAD->unkA8[i]).
+- src/main/51268.c: 70-81 (eff_StartCommand comment: unk00.h, unk0C, unk10, unk20 / unk18, unk14, unk00.w).
+- include/bb2.h:316 (Rec44 view record text): check wording. d_7D920.c 122/132/466 name g_fight_config.unk_4 (stays).
+- Registries and docs that may name the types only: docs/engine/memory_layout.md, symbol_addrs.txt, named_syms.txt (g_eff_command_block.unk14 if listed). docs/naming/phase3/backlog.tsv row var-members-rest-10 (status text).
+
+Cross-lane claims at LAND time: include/game.h (shared header), src/main/17AFC.c, 9F9C.c, 24BF0.c, 24F08.c, 25788.c, 25C38.c, 267A8.c, 26940.c, 28708.c, 2B344.c, 4510C.c, 51268.c, cdrom.c (the dry run changes all of them).
+Re-run check_completion_integrity after the apply: tools/canonical_asm_regions.json has grants for 9 eff_* functions of main/51268 and GTE islands; rest-8 needed a re-hash.
+Many decl comment alignments and lines exceed 80 columns after the rename: tools/format.py lands them.
+
+VERDICT (naming-reviewer pre-apply, one batch of 38, 2026-10-28): 35 PASS, 3 FAIL -> VERDICT CONFIRM on 37 pairs.
+- ScrPad.unk2B8 collision_work FAIL (17AFC.c:3500/3582 use the area as math scratch for draw transforms and motion pose angles): DROPPED, stays unk2B8.
+- Unk80101E60Rec.unk2C settle_count FAIL ('settle' unsupported): takes the reviewer's suggested command_delay_count (marked suggested; R6 judges it fresh).
+- CdState.unk04 recovery_wait FAIL (cdrom_Pause, cdrom.c:53, waits on CdlPause's sync): takes the reviewer's suggested sync_wait_count (marked suggested; R6 judges it fresh).
+Freshness of both suggested names: grep -rw over src/ include/ in ln-naming-b: 0 hits.
+dry.txt predates these three changes (it shows settle_count / recovery_wait / collision_work): the applier re-runs the dry run on pairs.txt.
+Verifier: the session (naming-b) checked the reviewer verdicts against the manifest rows; the alias treatment of the scratchpad gpu emitters (rest-9 precedent) was agreed by the reviewer.
