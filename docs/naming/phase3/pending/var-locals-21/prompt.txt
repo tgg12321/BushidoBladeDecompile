@@ -1,0 +1,27 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 21 (row var-locals-21, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15..19 lessons in
+`docs/naming/phase3/pending/var-locals-{16,17,18,19,20}/prompt.txt`, with these changes:
+
+- Output: write ONE file, main's `tmp/codex/var-locals-21-research.md` (overrides any output file the
+  earlier prompts name): HEAD first, then the proposed `local_manifest.csv` in a ```csv block, then the
+  notes (NO_NAME / skipped bindings with reasons, comments citing old tokens with file:line). Cite
+  file:line at HEAD. Return only a one-line summary.
+- Wave size: up to 80 rows (the older `max 40` caps are superseded): propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. src/main/51268.c, the functions after
+  func_80066EF4 in file order (eff_SpawnParticles and on; C definitions only; wave 20 covered every
+  function up to and including func_80066EF4). 2. Then the next src/main/*.c game TUs in ROM-offset
+  order after 51268.c that still have auto-named bindings.
+- Do not re-propose wave 8-20 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,20}/notes.txt) without new evidence, said in the row.
+- Wave 20 lessons: a value later masked or zeroed before it is returned is no longer a call result
+  (`return_value`, not `draw_result`); when a function makes two calls and keeps one result, say which
+  (`second_draw_result`); a multiplier of colour channels is named for the direction of its effect
+  (`fade_level` failed: a larger value was brighter -> `brightness`); a parameter rewritten in place
+  (`+= 2; goto again`) keeps a role name only if the new value still has that role at every later use;
+  a pointer to a counter slot is named for the counter (`quad_counter`), with call order spelled out when
+  "first"/"second" is claimed.
+- Left neutral by wave 20, do not propose: eff_DrawAnimatedQuads:var_18 (FAKE comment at 51268.c
+  ~2032-2033), parameter names in the forward declarations, FAKE-cited and macro-body bindings listed in
+  pending/var-locals-20/notes.txt.
