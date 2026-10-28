@@ -1,0 +1,27 @@
+wave94 (func-second-pass-3): 5 RENAME kept (all 4 effect names CHANGED FROM RESEARCH); 40 NO_NAME in rows.py docstring; 0 dropped.
+Kept rows:
+ 0x80065540 func_80065540 -> eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay (research: ...MirroringViewSettingQuadPair)
+ 0x80065590 func_80065590 -> eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting (research: ...NonMirroringViewSettingQuadPair)
+ 0x800655E0 func_800655E0 -> eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay (research: ...MirroringViewSettingQuad)
+ 0x80065630 func_80065630 -> eff_DrawAndAdvanceQuadNotMirroredByViewSetting (research: ...NonMirroringViewSettingQuad)
+ 0x80071C20 func_80071C20 -> menu_SelectStageIndexFromFirstSlotEntryFlag (kept from research)
+Why the four effect names changed: the research verified the facts (eff_DrawAnimatedQuads modes 6/7/10/11; case 6/10 negate p_w, 51268.c:2449-2453,
+ only when g_working_record.view_setting && g_main_loop_handler_index != 5, index 5 = replay_PlayFrame) but "Mirroring"/"NonMirroring ViewSettingQuad"
+ reads as unconditional mirroring: with the view setting off (or in replay) modes 6/7 and 10/11 draw identical geometry, so an unconditional
+ "Mirroring" is contradicted by that path (naming-bar N1). The new names carry the condition, and the pair name says only the first quad mirrors
+ (the mode-8/9 partner, case 8/9, never negates). Twin objection: 80065540 vs 80065590 and 800655E0 vs 80065630 differ by exactly the case-6 / case-10
+ negation; Pair vs single differs by the mode_index < 9 re-run (:2500). Index-only distinction is not used for any of the four. Fresh: 0 hits (grep -w
+ over src/ include/ asm/ function-names.csv named_syms.txt symbol_addrs.txt) for all 5 names. wave number: wave93 is the last landed (git log, census), 94 free.
+Weak spots for the reviewer: (1) "Mirrored" is horizontal edge swap of the view-setting-branch quad (x0/x1 order), not a texture flip; (2) "ViewSetting" is the
+ g_working_record.view_setting bit (game.h bit field), no gameplay meaning claimed; (3) 80071C20: bit 2 of g_entry_menu_entry_flags is a static table
+ flag (d_8C41C.c:91) with no claimed meaning, stages 3 / 9 unidentified; if the reviewer finds FromFirstSlotEntryFlag too vague, the neutral name stays.
+Dropped rows: none.
+Old-name citations for the comment pass (naming_wave dry run substitutes the first group, not the rest):
+ substituted by naming_wave: src/main/51268.c:1991/2003/2015/2027 (definitions); src/main/d_8BC50.c:232/234/236/238 (declarations) and :296/298/300/302
+   (handler-table words); src/main/5ED34.c:1595 (definition) and :1685 (call); asm/funcs/func_80065540.s, func_80065590.s, func_800655E0.s,
+   func_80065630.s, func_80071C20.s; asm/funcs/DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections.s:195 (jal);
+   memory/grind/_completed/func_80065540.json, func_80065590.json, func_80071C20.json (+ func_80071C20/layer2.jsonl); json/registry files per dry.txt.
+ comment/doc pass: src/main/d_8C41C.c:24 ("menu_UpdateRowCursors, func_80071C20," reader list); named_syms.txt:1552 (RESET note for 0x80071C20, historical,
+   leave); docs/naming/phase3/no_name.tsv rows 0x80065540/90/E0/30 and 0x80071C20 (the batch lander removes them when named);
+   memory/grind/phase2-2026-10-03/lt/fdesc/fdesc1.py:531-532 (historical fixture text, leave).
+ Line cites in src/main/51268.c may shift after format.py re-wraps the long names; the comment pass refreshes any file:line cites in docs/engine for 51268.c.

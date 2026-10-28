@@ -1,0 +1,37 @@
+rc=0
+==============================================================================
+NAMING WAVE — 5 operations (0 RESET, 5 RENAME)
+  5 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (9) --
+  asm: 6 files, 11 substitutions
+      asm/funcs/DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections.s  (1)
+      asm/funcs/func_80065540.s  (2)
+      asm/funcs/func_80065590.s  (2)
+      asm/funcs/func_800655E0.s  (2)
+      asm/funcs/func_80065630.s  (2)
+      asm/funcs/func_80071C20.s  (2)
+  src: 3 files, 14 substitutions
+      src/main/51268.c  (4)
+      src/main/5ED34.c  (2)
+      src/main/d_8BC50.c  (8)
+
+-- .s file renames (5) --
+  asm/funcs/func_80065540.s -> asm/funcs/eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay.s
+  asm/funcs/func_80065590.s -> asm/funcs/eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting.s
+  asm/funcs/func_800655E0.s -> asm/funcs/eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay.s
+  asm/funcs/func_80065630.s -> asm/funcs/eff_DrawAndAdvanceQuadNotMirroredByViewSetting.s
+  asm/funcs/func_80071C20.s -> asm/funcs/menu_SelectStageIndexFromFirstSlotEntryFlag.s
+
+-- ledger directory renames (1) --
+  memory/grind/_completed/func_80071C20 -> memory/grind/_completed/menu_SelectStageIndexFromFirstSlotEntryFlag
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (1) --
+  memory/grind/_completed/func_80071C20/layer2.jsonl: 1 changes
+      line 1: func func_80071C20 -> menu_SelectStageIndexFromFirstSlotEntryFlag
+
+DRY RUN — nothing written. Re-run with --apply.
