@@ -1,0 +1,193 @@
+==============================================================================
+DATA WAVE — 41 addresses, 42 identifiers remapped
+  0x800a36f0: D_800A36F0 -> g_fight_timer_unlock_bit_newly_set
+  0x800a3781: D_800A3781 -> g_fight_no_restart_unlock_bit_newly_set
+  0x8008e5cc: D_8008E5CC -> g_resource_default_pair_selections
+  0x8008e6a4: D_8008E6A4 -> g_resource_alternate_pair_selections
+  0x80095328: D_80095328 -> g_gpu_default_primitive_handlers
+  0x800a3678: D_800A3678 -> g_gpu_flush_rotation_angles
+  0x80101bd0: D_80101BD0 -> g_gpu_flush_work_matrix
+  0x800ff610: D_800FF610 -> g_gpu_flush_view_matrix
+  0x800a37a4: D_800A37A4 -> g_fight_pending_unlock_mask_bits
+  0x800a376c: D_800A376C -> g_fight_playback_file_base_index
+  0x8008ebcc: D_8008EBCC -> g_fight_step_row_sound_offsets
+  0x800a3594: D_800A3594 -> g_entry_menu_row_cursor_y_slots
+  0x800f2b70: D_800F2B70 -> g_gpu_normal_color_table
+  0x8008f1a8: D_8008F1A8 -> g_memcard_title_sjis_digits
+  0x8008f19c: D_8008F19C -> g_memcard_title_sjis_digits_0_to_4
+  0x8008f204: D_8008F204 -> g_memcard_title_count_class_by_unlock_bit
+  0x800a38cc: D_800A38CC -> g_memcard_request_write_started
+  0x800a3915: D_800A3915 -> g_fight_displaced_first_fighter_selection
+  0x800a36f4: D_800A36F4 -> g_fight_displaced_bone_group_tim_requests
+  0x800a37c6: D_800A37C6 -> g_fight_skip_first_defeats_left_expiry
+  0x800993fc: D_800993FC -> g_resource_entry_texture_groups
+  0x80015820: D_80015820 -> g_color_immediate_patch_sites
+  0x8009aa50: D_8009AA50 -> g_cpu_route_sector_dpad_masks
+  0x800a38e4: D_800A38E4 -> g_comb_received_unlock_mask_bits
+  0x800a31d8: D_800A31D8 -> g_menu_release_closes_non_common_vabs
+  0x80099c14: D_80099C14 -> g_node_retained_draw_matrix_indices
+  0x800a3258: D_800A3258 -> g_cpu_pad_metadata_nibble_dpad_bits
+  0x800a33c0: D_800A33C0 -> g_gpu_view_eye_distance
+  0x800a30ec: D_800A30EC -> g_motion_decode_skip_code_copy
+  0x800a32c0: D_800A32C0 -> g_row_menu_vram_copy_source_rect
+  0x800a32ec: D_800A32EC -> g_entry_menu_vram_copy_source_rect
+  0x8009bd58: D_8009BD58 -> g_menu_mode_selector_and_extra_slot_counts
+  0x800a35e0: D_800A35E0 -> g_menu_pending_entry_extra_slot_count
+  0x800a35e8: D_800A35E8 -> g_menu_compacted_unlock_mask
+  0x800a3818: D_800A3818 -> g_fight_followup_playback_start_pair
+  0x80015480: D_80015480 -> g_gpu_strided_node_packet_handlers
+  0x800a3310: D_800A3310 -> g_camera_replay_low_probe_gap_count
+  0x800a30d4: D_800A30D4 -> g_gpu_cd_file_image_rect
+  0x800a355c: D_800A355C -> g_entry_menu_post_darken_frame_count
+  0x800a346c: D_800A346C, g_scratchpad_ptr_18 -> g_eff_view_angles
+  0x800a38e8: D_800A38E8 -> g_fight_paired_move_event_min_frame
+
+-- file edits (83) --
+  asm/data/93E18.data.s  (21)
+  asm/data/94000.bss.s  (16)
+  asm/funcs/DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection.s  (3)
+  asm/funcs/InitDisplayStateLoadPackAndSetEntryFlags.s  (2)
+  asm/funcs/InitWithCachedValueAndStoredBitsBlackBg.s  (2)
+  asm/funcs/PatchColorImmediatesAtListedCodeSites.s  (2)
+  asm/funcs/ResetFlowAndFetchRowTablePair.s  (5)
+  asm/funcs/StoreCompactedBits.s  (1)
+  asm/funcs/camera_UpdateReplayView.s  (4)
+  asm/funcs/comb_Connect.s  (2)
+  asm/funcs/eff_BindScratchpad.s  (1)
+  asm/funcs/eff_DrawBillboardList.s  (1)
+  asm/funcs/eff_StepCommand.s  (1)
+  asm/funcs/fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags.s  (8)
+  asm/funcs/fight_Init.s  (4)
+  asm/funcs/fight_InitCommandStream.s  (8)
+  asm/funcs/fight_InitNearestStartPairPlayback.s  (1)
+  asm/funcs/fight_RecordReplayEventAndDispatchSoundOrEffect.s  (2)
+  asm/funcs/fight_RequestBothFightersEntriesAndReloadOnChange.s  (2)
+  asm/funcs/fight_RequestOneFighterEntriesAndReloadOnChange.s  (4)
+  asm/funcs/fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields.s  (4)
+  asm/funcs/fight_RunCommandStream.s  (4)
+  asm/funcs/fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank.s  (4)
+  asm/funcs/fight_StartDescriptorPlaybackAndAudio.s  (2)
+  asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (4)
+  asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (1)
+  asm/funcs/fight_UpdatePairedMoves.s  (4)
+  asm/funcs/fight_UpdateScrollingSpriteDisplayAndMergeBitFlags.s  (2)
+  asm/funcs/fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents.s  (2)
+  asm/funcs/fight_UpdateSplitWipeImageAndPlaybackPresentation.s  (2)
+  asm/funcs/fighter_BuildCpuPad.s  (2)
+  asm/funcs/fighter_BuildCpuRoutePadWithSurfaceProbe.s  (2)
+  asm/funcs/fighter_DispatchFrameEvent.s  (4)
+  asm/funcs/func_800430E4.s  (4)
+  asm/funcs/gpu_DrawQueuedNodes.s  (6)
+  asm/funcs/gpu_EmitAveragedTableColorTexturedQuads.s  (2)
+  asm/funcs/gpu_EmitAveragedTableColorTexturedTriangles.s  (2)
+  asm/funcs/gpu_EmitTableColorGouraudTexturedQuads.s  (2)
+  asm/funcs/gpu_EmitTableColorGouraudTexturedTriangles.s  (2)
+  asm/funcs/gpu_PrepareViewAndFlushDrawQueue.s  (8)
+  asm/funcs/gpu_ProjectStridedNodeVerticesAndDispatchPackets.s  (2)
+  asm/funcs/gpu_ResetDrawQueueAndPrepareViewAndLighting.s  (1)
+  asm/funcs/gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue.s  (1)
+  asm/funcs/gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth.s  (2)
+  asm/funcs/gpu_UnpackGridRecordsNodesAndCellRuns.s  (6)
+  asm/funcs/gte_ColorGroupedNormalStreamWithSelectedMatrices.s  (2)
+  asm/funcs/memcard_BuildFileHeader.s  (8)
+  asm/funcs/memcard_RequestOverwrite.s  (1)
+  asm/funcs/memcard_RequestSave.s  (1)
+  asm/funcs/memcard_StepRequest.s  (1)
+  asm/funcs/memcard_StepSaveOverwriteAndFormatPrompts.s  (1)
+  asm/funcs/menu_InitSelWithStoredBits.s  (1)
+  asm/funcs/menu_InitSubflowForMode.s  (2)
+  asm/funcs/menu_LoadResourcesInitStateSelectFirstEnabledRow.s  (2)
+  asm/funcs/menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu.s  (2)
+  asm/funcs/menu_UpdateRowCursors.s  (9)
+  asm/funcs/menu_UpdateRowMenuAndSubflows.s  (1)
+  asm/funcs/motion_DecodeFrame.s  (1)
+  asm/funcs/node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable.s  (2)
+  asm/funcs/replay_PlayFrame.s  (4)
+  asm/funcs/resource_LoadSelectedEntriesTexturesAndSound.s  (4)
+  include/bb2.h  (17)
+  src/main/17AFC.c  (10)
+  src/main/25C38.c  (6)
+  src/main/28708.c  (17)
+  src/main/2B344.c  (23)
+  src/main/31548.c  (2)
+  src/main/32D04.c  (12)
+  src/main/35000.c  (4)
+  src/main/368E4.c  (5)
+  src/main/4510C.c  (5)
+  src/main/51268.c  (4)
+  src/main/596CC.c  (3)
+  src/main/5ED34.c  (12)
+  src/main/64FD8.c  (9)
+  src/main/6CF8.c  (3)
+  src/main/9F9C.c  (13)
+  src/main/d_5BF0.c  (2)
+  src/main/d_7D920.c  (3)
+  src/main/d_89C78.c  (1)
+  src/main/d_8A588.c  (1)
+  src/main/d_8C4E4.c  (1)
+  symbol_addrs.txt  (61)
+
+-- registry lines --
+  symbol_addrs.txt:154 D_800A33C0 -> g_gpu_view_eye_distance
+  symbol_addrs.txt:288 D_800A3781 -> g_fight_no_restart_unlock_bit_newly_set
+  symbol_addrs.txt:292 D_800A37C6 -> g_fight_skip_first_defeats_left_expiry
+  symbol_addrs.txt:317 D_800A32C0 -> g_row_menu_vram_copy_source_rect
+  symbol_addrs.txt:322 D_800A32EC -> g_entry_menu_vram_copy_source_rect
+  symbol_addrs.txt:332 D_800A3678 -> g_gpu_flush_rotation_angles
+  symbol_addrs.txt:347 D_800A36F0 -> g_fight_timer_unlock_bit_newly_set
+  symbol_addrs.txt:348 D_800A36F4 -> g_fight_displaced_bone_group_tim_requests
+  symbol_addrs.txt:359 D_800A376C -> g_fight_playback_file_base_index
+  symbol_addrs.txt:367 D_800A37A4 -> g_fight_pending_unlock_mask_bits
+  symbol_addrs.txt:381 D_80015820 -> g_color_immediate_patch_sites
+  symbol_addrs.txt:448 D_8008E6A4 -> g_resource_alternate_pair_selections
+  symbol_addrs.txt:462 D_80095328 -> g_gpu_default_primitive_handlers
+  symbol_addrs.txt:471 D_8009AA50 -> g_cpu_route_sector_dpad_masks
+  symbol_addrs.txt:498 D_8009BD58 -> g_menu_mode_selector_and_extra_slot_counts
+  symbol_addrs.txt:562 D_800A30D4 -> g_gpu_cd_file_image_rect
+  symbol_addrs.txt:748 D_800A3678 -> g_gpu_flush_rotation_angles
+  symbol_addrs.txt:754 D_80015480 -> g_gpu_strided_node_packet_handlers
+  symbol_addrs.txt:755 D_80015820 -> g_color_immediate_patch_sites
+  symbol_addrs.txt:762 D_8008EBCC -> g_fight_step_row_sound_offsets
+  symbol_addrs.txt:764 D_80099C14 -> g_node_retained_draw_matrix_indices
+  symbol_addrs.txt:791 D_800A32EC -> g_entry_menu_vram_copy_source_rect
+  symbol_addrs.txt:821 D_800A36F0 -> g_fight_timer_unlock_bit_newly_set
+  symbol_addrs.txt:822 D_800A3781 -> g_fight_no_restart_unlock_bit_newly_set
+  symbol_addrs.txt:922 D_800A31D8 -> g_menu_release_closes_non_common_vabs
+  symbol_addrs.txt:925 D_800A30D4 -> g_gpu_cd_file_image_rect
+  symbol_addrs.txt:937 D_8008E5CC -> g_resource_default_pair_selections
+  symbol_addrs.txt:938 D_8008E6A4 -> g_resource_alternate_pair_selections
+  symbol_addrs.txt:944 D_80095328 -> g_gpu_default_primitive_handlers
+  symbol_addrs.txt:1014 D_800A32C0 -> g_row_menu_vram_copy_source_rect
+  symbol_addrs.txt:1022 D_800A36F4 -> g_fight_displaced_bone_group_tim_requests
+  symbol_addrs.txt:1026 D_800A376C -> g_fight_playback_file_base_index
+  symbol_addrs.txt:1029 D_800A37A4 -> g_fight_pending_unlock_mask_bits
+  symbol_addrs.txt:1032 D_800A37C6 -> g_fight_skip_first_defeats_left_expiry
+  symbol_addrs.txt:1052 D_8009AA50 -> g_cpu_route_sector_dpad_masks
+  symbol_addrs.txt:1105 D_8009BD58 -> g_menu_mode_selector_and_extra_slot_counts
+  symbol_addrs.txt:1144 D_8008F19C -> g_memcard_title_sjis_digits_0_to_4
+  symbol_addrs.txt:1146 D_8008F1A8 -> g_memcard_title_sjis_digits
+  symbol_addrs.txt:1148 D_8008F204 -> g_memcard_title_count_class_by_unlock_bit
+  symbol_addrs.txt:1183 D_800A3258 -> g_cpu_pad_metadata_nibble_dpad_bits
+  symbol_addrs.txt:1246 g_scratchpad_ptr_18 -> g_eff_view_angles
+  symbol_addrs.txt:1410 D_800A3310 -> g_camera_replay_low_probe_gap_count
+  symbol_addrs.txt:1441 D_800A35E8 -> g_menu_compacted_unlock_mask
+  symbol_addrs.txt:1442 D_800A35E0 -> g_menu_pending_entry_extra_slot_count
+  symbol_addrs.txt:1477 D_800A3594 -> g_entry_menu_row_cursor_y_slots
+  symbol_addrs.txt:1494 D_800A3818 -> g_fight_followup_playback_start_pair
+  symbol_addrs.txt:1535 D_800A38CC -> g_memcard_request_write_started
+  symbol_addrs.txt:1546 D_800A38E4 -> g_comb_received_unlock_mask_bits
+  symbol_addrs.txt:1547 D_800A38E8 -> g_fight_paired_move_event_min_frame
+  symbol_addrs.txt:1569 D_800A3915 -> g_fight_displaced_first_fighter_selection
+  symbol_addrs.txt:1693 D_800F2B70 -> g_gpu_normal_color_table
+  symbol_addrs.txt:1752 D_800FF610 -> g_gpu_flush_view_matrix
+  symbol_addrs.txt:1761 D_80101BD0 -> g_gpu_flush_work_matrix
+  symbol_addrs.txt:1942 D_800A38CC -> g_memcard_request_write_started
+  symbol_addrs.txt:2017 D_800A3818 -> g_fight_followup_playback_start_pair
+  symbol_addrs.txt:2031 D_800A3915 -> g_fight_displaced_first_fighter_selection
+  symbol_addrs.txt:2081 D_800FF610 -> g_gpu_flush_view_matrix
+  symbol_addrs.txt:2133 D_800A38E4 -> g_comb_received_unlock_mask_bits
+  symbol_addrs.txt:2134 D_800A38E8 -> g_fight_paired_move_event_min_frame
+  symbol_addrs.txt:2160 D_80101BD0 -> g_gpu_flush_work_matrix
+  symbol_addrs.txt:2187 D_800F2B70 -> g_gpu_normal_color_table
+
+DRY RUN — nothing written. Re-run with --apply.
