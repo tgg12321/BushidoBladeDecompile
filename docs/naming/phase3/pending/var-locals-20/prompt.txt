@@ -1,0 +1,29 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 20 (row var-locals-20)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15 lessons in
+`docs/naming/phase3/pending/var-locals-16/prompt.txt`, the wave-16 lessons in
+`docs/naming/phase3/pending/var-locals-17/prompt.txt`, the wave-17 lessons in
+`docs/naming/phase3/pending/var-locals-18/prompt.txt` and the wave-18 lessons in
+`docs/naming/phase3/pending/var-locals-19/prompt.txt`, with these changes:
+
+- Output files: `tmp/codex/vl20_local_manifest.csv` and `tmp/codex/vl20_notes.md` (both full contents
+  also in your final message; the filesystem may be read-only). Print HEAD and cite file:line at it.
+- Scope, in this order (stop at 40 RENAMEs): 1. src/main/51268.c, the functions after
+  eff_DrawAndAdvanceJitteredBillboards in file order (C definitions only; wave 19 covered every
+  function up to and including it). 2. Then the next src/main/*.c game TUs in ROM-offset order after
+  51268.c that still have auto-named bindings.
+- Do not re-propose wave 8-19 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,19}/notes.txt) without new evidence, said in the row.
+- Wave 19 lessons: a value relative to a fixed frame or age must say relative to what in words a
+  reader cannot misread (`age_from_last_frame` failed: "last frame" reads as the previous frame, the
+  value was age - 15, age minus the final drawn age); a word like "lane" that the code does not
+  support does not go into a name or a comment (use the existing `command_slot` vocabulary of
+  51268.c); `src_` is for a source a cursor walks or a copy is made from, not a row of a constant
+  table (`quad_vertices`, not `src_vertices`); a pointer to a scratch slot is named for the quantity it
+  holds; parameter names in forward declarations are not bindings; when renaming a local, list every
+  comment (function leading comments, include/game.h member comments) that cites the old token, with
+  file:line, in the notes.
+- Left neutral by wave 19, do not propose: eff_DrawAndAdvanceBillboardPairs:var_6 (age - 15; bring it
+  back only with a name for "age minus the final drawn age" that cannot be read as the previous frame,
+  said in the row), FAKE-cited and macro-body bindings listed in pending/var-locals-19/notes.txt.
