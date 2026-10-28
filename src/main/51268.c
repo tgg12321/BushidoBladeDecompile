@@ -1812,72 +1812,72 @@ void func_800652AC(void) {
 u8 eff_DrawAnimatedQuads(s32);
 
 u8 eff_DrawAndAdvanceCosineScaledQuad(void) {
-    u8 v0 = eff_DrawAnimatedQuads(0);
+    u8 draw_result = eff_DrawAnimatedQuads(0);
     s16 *p = &g_eff_animated_quad_counters[0];
-    s16 v1 = *p;
-    v1 += 0x1FF;
-    *p = v1;
-    if ((s16)v1 < 0x1001) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x1FF;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x1001) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_80065344(void) {
-    u8 v0 = eff_DrawAnimatedQuads(1);
+    u8 draw_result = eff_DrawAnimatedQuads(1);
     s16 *p = &g_eff_animated_quad_counters[1];
-    u16 v1 = *p;
-    v1 += 0x1C6;
-    *p = v1;
-    if ((s16)v1 < 0x11C8) {
-        return v0;
+    u16 quad_counter = *p;
+    quad_counter += 0x1C6;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x11C8) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_80065394(void) {
-    u8 v0 = eff_DrawAnimatedQuads(2);
+    u8 draw_result = eff_DrawAnimatedQuads(2);
     s16 *p = &g_eff_animated_quad_counters[2];
-    s16 v1 = *p;
-    v1 += 0x1C6;
-    *p = v1;
-    if ((s16)v1 < 0x11C8) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x1C6;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x11C8) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_800653E4(void) {
-    u8 v0 = eff_DrawAnimatedQuads(3);
+    u8 draw_result = eff_DrawAnimatedQuads(3);
     s16 *p = &g_eff_animated_quad_counters[3];
-    s16 v1 = *p;
-    v1 += 0x19;
-    *p = v1;
-    if ((s16)v1 < 0xC9) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x19;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0xC9) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_80065434(void) {
-    u8 v0 = eff_DrawAnimatedQuads(4);
+    u8 draw_result = eff_DrawAnimatedQuads(4);
     s16 *p = &g_eff_animated_quad_counters[4];
-    u16 v1 = *p;
-    v1 += 0x19;
-    *p = v1;
-    if ((s16)v1 < 0xC9) {
-        return v0;
+    u16 quad_counter = *p;
+    quad_counter += 0x19;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0xC9) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
-    unsigned int temp_v1;
-    u8 v0;
+    unsigned int rate_selector;
+    u8 draw_result;
     *D_800A3484 = D_800A3440;
-    v0 = eff_DrawAnimatedQuads(5);
-    temp_v1 = *D_800A3484;
-    switch (temp_v1) {
+    draw_result = eff_DrawAnimatedQuads(5);
+    rate_selector = *D_800A3484;
+    switch (rate_selector) {
     case 0: {
         s16 *p = &g_eff_animated_quad_counters[5];
         *p = *p + 0x1FF;
@@ -1895,107 +1895,107 @@ u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
     }
     }
     if (g_eff_animated_quad_counters[5] < 0x2001) {
-        return v0;
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_80065540(void) {
-    u8 v0 = eff_DrawAnimatedQuads(6);
+    u8 draw_result = eff_DrawAnimatedQuads(6);
     s16 *p = &g_eff_animated_quad_counters[6];
-    u16 v1 = *p;
-    v1 += 0x32;
-    *p = v1;
-    if ((s16)v1 < 0x100) {
-        return v0;
+    u16 quad_counter = *p;
+    quad_counter += 0x32;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x100) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_80065590(void) {
-    u8 v0 = eff_DrawAnimatedQuads(7);
+    u8 draw_result = eff_DrawAnimatedQuads(7);
     s16 *p = &g_eff_animated_quad_counters[7];
-    u16 v1 = *p;
-    v1 += 0x32;
-    *p = v1;
-    if ((s16)v1 < 0x100) {
-        return v0;
+    u16 quad_counter = *p;
+    quad_counter += 0x32;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x100) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_800655E0(void) {
-    u8 v0 = eff_DrawAnimatedQuads(0xA);
+    u8 draw_result = eff_DrawAnimatedQuads(0xA);
     s16 *p = &g_eff_animated_quad_counters[10];
-    s16 v1 = *p;
-    v1 += 0x32;
-    *p = v1;
-    if ((s16)v1 < 0x100) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x32;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x100) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_80065630(void) {
-    u8 v0 = eff_DrawAnimatedQuads(0xB);
+    u8 draw_result = eff_DrawAnimatedQuads(0xB);
     s16 *p = &g_eff_animated_quad_counters[11];
-    s16 v1 = *p;
-    v1 += 0x32;
-    *p = v1;
-    if ((s16)v1 < 0x100) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x32;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x100) {
+        return draw_result;
     }
     return 0;
 }
 
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires(void) {
-    s16 *v1;
-    s32 v0;
+    s16 *first_quad_counter;
+    s32 return_value;
     eff_DrawAnimatedQuads(0xC);
-    v1 = &g_eff_animated_quad_counters[12];
-    *v1 = *v1 + 1;
-    v0 = eff_DrawAnimatedQuads(0xE);
+    first_quad_counter = &g_eff_animated_quad_counters[12];
+    *first_quad_counter = *first_quad_counter + 1;
+    return_value = eff_DrawAnimatedQuads(0xE);
     g_eff_animated_quad_counters[14] = g_eff_animated_quad_counters[14] + 1;
-    v0 &= 0xFF;
+    return_value &= 0xFF;
     if (g_eff_animated_quad_counters[14] >= 11) {
-        v0 = 0;
+        return_value = 0;
     }
-    return v0;
+    return return_value;
 }
 
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void) {
-    s16 *s0 = &g_eff_animated_quad_counters[13];
-    s32 v0;
+    s16 *first_quad_counter = &g_eff_animated_quad_counters[13];
+    s32 second_draw_result;
     eff_DrawAnimatedQuads(0xD);
-    *s0 = *s0 + 1;
-    v0 = eff_DrawAnimatedQuads(0xF);
+    *first_quad_counter = *first_quad_counter + 1;
+    second_draw_result = eff_DrawAnimatedQuads(0xF);
     g_eff_animated_quad_counters[15] = g_eff_animated_quad_counters[15] + 1;
-    if ((s16)*s0 < 11) {
-        return v0 & 0xFF;
+    if ((s16)*first_quad_counter < 11) {
+        return second_draw_result & 0xFF;
     }
     return 0;
 }
 
 u8 func_80065760(void) {
-    u8 v0 = eff_DrawAnimatedQuads(0x10);
+    u8 draw_result = eff_DrawAnimatedQuads(0x10);
     s16 *p = &g_eff_animated_quad_counters[16];
-    s16 v1 = *p;
-    v1 += 0x1C6;
-    *p = v1;
-    if (v1 < 0x11C8) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x1C6;
+    *p = quad_counter;
+    if (quad_counter < 0x11C8) {
+        return draw_result;
     }
     return 0;
 }
 
 u8 func_800657B0(void) {
-    u8 v0 = eff_DrawAnimatedQuads(0x11);
+    u8 draw_result = eff_DrawAnimatedQuads(0x11);
     s16 *p = &g_eff_animated_quad_counters[17];
-    s16 v1 = *p;
-    v1 += 0x1C6;
-    *p = v1;
-    if ((s16)v1 < 0x11C8) {
-        return v0;
+    s16 quad_counter = *p;
+    quad_counter += 0x1C6;
+    *p = quad_counter;
+    if ((s16)quad_counter < 0x11C8) {
+        return draw_result;
     }
     return 0;
 }
@@ -2008,49 +2008,52 @@ u8 func_800657B0(void) {
  * links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the paired mode
  * (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by `arg0 < 9`,
  * so modes 10/11 draw once. */
-u8 eff_DrawAnimatedQuads(s32 arg0) {
+u8 eff_DrawAnimatedQuads(s32 mode_index) {
     extern s16 g_main_loop_handler_index;
     extern s32 ReadGeomScreen(void);
     Unk1F8000B8_80065800 *var_0;
     POLY_FT4 *prim;
     s32 *var_2;
     VECTOR *p_t;
-    VECTOR *p_in;
+    VECTOR *relative_position;
     SVECTOR *p_v;
     s16 *p_w;
     s16 *p_h;
-    MATRIX *p_mat;
-    s16 *var_9;
-    s16 *var_10;
+    MATRIX *rotation_matrix;
+    s16 *texture_width;
+    s16 *texture_height;
     VECTOR *dst;
-    s32 n;
+    s32 brightness;
     s32 w;
-    s32 var_14;
-    s32 var_15;
+    s32 width_scale;
+    s32 height_scale;
     s32 h;
-    s16 *t;
+    s16 *quad_counter;
     /* FAKE: pointer alias of g_eff_animated_quad_counters - case 10/11's base
      * address in its own register ahead of the index shift */
     s16 *var_18;
-    s32 i;
+    s32 vertex_index;
 
     var_0 = &D_800A34EC->v80065800;
     prim = g_eff_quad_cursor;
     var_2 = &var_0->unk10;
     p_t = var_0->unk14;
-    p_in = &var_0->unk54;
+    relative_position = &var_0->unk54;
     p_v = &var_0->unk64;
     p_w = &var_0->unk6C;
     p_h = &var_0->unk70;
-    p_mat = &var_0->unk74;
-    var_9 = &var_0->unk94;
-    var_10 = &var_0->unk96;
+    rotation_matrix = &var_0->unk74;
+    texture_width = &var_0->unk94;
+    texture_height = &var_0->unk96;
 
     gte_SetRotMatrix(D_800A3474);
-    p_in->vx = g_eff_animated_quad_positions[arg0].unk0 - g_eff_view_origin[0];
-    p_in->vy = g_eff_animated_quad_positions[arg0].unk4 - g_eff_view_origin[1];
-    p_in->vz = g_eff_animated_quad_positions[arg0].unk8 - g_eff_view_origin[2];
-    ApplyRotMatrixLV(p_in, p_t);
+    relative_position->vx =
+        g_eff_animated_quad_positions[mode_index].unk0 - g_eff_view_origin[0];
+    relative_position->vy =
+        g_eff_animated_quad_positions[mode_index].unk4 - g_eff_view_origin[1];
+    relative_position->vz =
+        g_eff_animated_quad_positions[mode_index].unk8 - g_eff_view_origin[2];
+    ApplyRotMatrixLV(relative_position, p_t);
     gte_SetTransMatrix((MATRIX *)var_0);
     p_v->vz = 0;
     p_v->vy = 0;
@@ -2061,10 +2064,10 @@ u8 eff_DrawAnimatedQuads(s32 arg0) {
 again:
     *g_eff_base_width = 0x20;
     *g_eff_base_height = 0x20;
-    *var_9 = 0x40;
-    *var_10 = 0x40;
+    *texture_width = 0x40;
+    *texture_height = 0x40;
     *g_eff_tpage_word = 0x2E;
-    switch (arg0) {
+    switch (mode_index) {
     case 1:
     case 2:
         if (*g_eff_depth_work > 4000) {
@@ -2078,13 +2081,13 @@ again:
         break;
     case 3:
     case 4:
-        if (g_eff_animated_quad_counters[arg0] < 0x96) {
+        if (g_eff_animated_quad_counters[mode_index] < 0x96) {
             g_eff_current_tex_rec = D_8009B980;
         } else {
             g_eff_current_tex_rec = D_8009B978;
         }
         prim->r0 = 0xFF;
-        prim->g0 = g_eff_animated_quad_counters[arg0];
+        prim->g0 = g_eff_animated_quad_counters[mode_index];
         prim->b0 = 0x60;
         *g_eff_base_width = 0xC0;
         *g_eff_base_height = 0xC0;
@@ -2113,19 +2116,19 @@ again:
             g_eff_current_tex_rec = D_8009B990;
         }
         var_18 = g_eff_animated_quad_counters;
-        t = var_18 + arg0;
-        if (*t > 0x96) {
+        quad_counter = var_18 + mode_index;
+        if (*quad_counter > 0x96) {
             prim->r0 = 0;
-            prim->g0 = (0xFF - *t) * 0xFF / 105;
+            prim->g0 = (0xFF - *quad_counter) * 0xFF / 105;
         } else {
             prim->r0 = 0;
             prim->g0 = 0xFF;
         }
-        prim->b0 = 0x7F - *t / 2;
+        prim->b0 = 0x7F - *quad_counter / 2;
         goto size_sel;
     case 6:
     case 7:
-        if (g_eff_animated_quad_counters[arg0] < 0x96) {
+        if (g_eff_animated_quad_counters[mode_index] < 0x96) {
             if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
                 g_eff_current_tex_rec = D_8009B9D8;
             } else {
@@ -2137,7 +2140,7 @@ again:
             g_eff_current_tex_rec = D_8009B990;
         }
         prim->r0 = 0x10;
-        prim->g0 = ~g_eff_animated_quad_counters[arg0];
+        prim->g0 = ~g_eff_animated_quad_counters[mode_index];
         prim->b0 = 0xFF;
     size_sel:
         if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
@@ -2147,19 +2150,19 @@ again:
         } else {
             *g_eff_base_width = 0x20;
             *g_eff_base_height = 0x80;
-            *var_9 = 0x40;
-            *var_10 = 0x10;
+            *texture_width = 0x40;
+            *texture_height = 0x10;
         }
         break;
     case 8:
     case 9:
-        if (g_eff_animated_quad_counters[arg0 - 2] < 0xC8) {
+        if (g_eff_animated_quad_counters[mode_index - 2] < 0xC8) {
             g_eff_current_tex_rec = D_8009B980;
         } else {
             g_eff_current_tex_rec = D_8009B978;
         }
-        prim->r0 = g_eff_animated_quad_counters[arg0 - 2] * 2 / 3;
-        prim->g0 = g_eff_animated_quad_counters[arg0 - 2] / 2;
+        prim->r0 = g_eff_animated_quad_counters[mode_index - 2] * 2 / 3;
+        prim->g0 = g_eff_animated_quad_counters[mode_index - 2] / 2;
         prim->b0 = 0xFF;
         *g_eff_base_width = 0x100;
         *g_eff_base_height = 0x100;
@@ -2173,15 +2176,15 @@ again:
         prim->b0 = 0x13;
         *g_eff_base_width *= 2;
         *g_eff_base_height *= 2;
-        if (g_eff_animated_quad_counters[arg0] >= 8) {
+        if (g_eff_animated_quad_counters[mode_index] >= 8) {
             g_eff_current_tex_rec = D_8009B8C8;
-            n = 10 - g_eff_animated_quad_counters[arg0];
-            prim->r0 = n << 6;
-            prim->g0 = n * 0x70 / 3;
-            prim->b0 = n * 0x60 / 15;
+            brightness = 10 - g_eff_animated_quad_counters[mode_index];
+            prim->r0 = brightness << 6;
+            prim->g0 = brightness * 0x70 / 3;
+            prim->b0 = brightness * 0x60 / 15;
             *g_eff_tpage_word = 0x2E;
         } else {
-            if (g_eff_animated_quad_counters[arg0] >= 5) {
+            if (g_eff_animated_quad_counters[mode_index] >= 5) {
                 g_eff_current_tex_rec = D_8009B9F0;
             } else {
                 g_eff_current_tex_rec = D_8009B9E8;
@@ -2201,8 +2204,8 @@ again:
                              (g_eff_current_tex_rec->clut_y << 6));
     *g_eff_tex_left_u = g_eff_current_tex_rec->u;
     *g_eff_tex_top_v = g_eff_current_tex_rec->v;
-    *g_eff_tex_right_u = *var_9 + g_eff_current_tex_rec->u - 1;
-    *g_eff_tex_bottom_v = *var_10 + g_eff_current_tex_rec->v - 1;
+    *g_eff_tex_right_u = *texture_width + g_eff_current_tex_rec->u - 1;
+    *g_eff_tex_bottom_v = *texture_height + g_eff_current_tex_rec->v - 1;
     *g_eff_geom_screen_work = ReadGeomScreen() * 1000;
     *g_eff_perspective_scale = *g_eff_geom_screen_work / *g_eff_depth_work;
     *p_w = *g_eff_base_width * *g_eff_perspective_scale > 0x200
@@ -2224,12 +2227,13 @@ again:
     prim->v3 = *g_eff_tex_bottom_v;
     SetShadeTex(prim, 0);
     SetSemiTrans(prim, 1);
-    switch (arg0) {
+    switch (mode_index) {
     case 0:
         *p_w = (u16)*p_w * 8 +
-               (*p_w * rcos(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 9);
+               (*p_w * rcos(g_eff_animated_quad_counters[mode_index] & 0xFFF) >>
+                9);
         *p_h = (u16)*p_h * 2 +
-               (*p_h * rcos((g_eff_animated_quad_counters[arg0] + 0x7FF) &
+               (*p_h * rcos((g_eff_animated_quad_counters[mode_index] + 0x7FF) &
                             0xFFF) >>
                 11);
         prim->x0 = *g_eff_screen_xy - *p_w / 2;
@@ -2245,36 +2249,38 @@ again:
     case 2:
     case 16:
     case 17:
-        var_14 =
-            (rsin((g_eff_animated_quad_counters[arg0] << 11) / 4551 - 0x400) +
+        width_scale =
+            (rsin((g_eff_animated_quad_counters[mode_index] << 11) / 4551 -
+                  0x400) +
              0x1000) *
             25;
-        *p_w = (*p_w * var_14 >> 13) / 2;
-        var_15 = rsin((g_eff_animated_quad_counters[arg0] << 11) / 4551) * 15;
-        *p_h = (*p_h * var_15 >> 12) / 2;
-        i = 0;
+        *p_w = (*p_w * width_scale >> 13) / 2;
+        height_scale =
+            rsin((g_eff_animated_quad_counters[mode_index] << 11) / 4551) * 15;
+        *p_h = (*p_h * height_scale >> 12) / 2;
+        vertex_index = 0;
         p_v->vy = 0;
         p_v->vx = 0;
-        p_v->vz = g_eff_animated_quad_counters[arg0];
-        RotMatrix(p_v, p_mat);
+        p_v->vz = g_eff_animated_quad_counters[mode_index];
+        RotMatrix(p_v, rotation_matrix);
         dst = p_t;
-        SetRotMatrix(p_mat);
+        SetRotMatrix(rotation_matrix);
         do {
             w = *p_w;
-            if (!(i & 1)) {
+            if (!(vertex_index & 1)) {
                 p_v->vx = -w;
             } else {
                 p_v->vx = w;
             }
             h = *p_h;
-            if (!(i & 2)) {
+            if (!(vertex_index & 2)) {
                 p_v->vy = -h;
             } else {
                 p_v->vy = h;
             }
             ApplyRotMatrix(p_v, dst);
             dst++;
-        } while (++i < 4);
+        } while (++vertex_index < 4);
         prim->x0 = *g_eff_screen_xy + p_t[0].vx / 2;
         prim->y0 = (*g_eff_screen_xy >> 16) + p_t[0].vy / 4;
         prim->x1 = *g_eff_screen_xy + p_t[1].vx / 2;
@@ -2288,26 +2294,32 @@ again:
     case 13:
     case 14:
     case 15:
-        *p_w = *p_w * rsin((g_eff_animated_quad_counters[arg0] * 0x3FF / 10) &
-                           0xFFF) >>
-               11;
-        *p_h = *p_h * rsin((g_eff_animated_quad_counters[arg0] * 0x3FF / 10) &
-                           0xFFF) >>
-               11;
+        *p_w =
+            *p_w *
+                rsin((g_eff_animated_quad_counters[mode_index] * 0x3FF / 10) &
+                     0xFFF) >>
+            11;
+        *p_h =
+            *p_h *
+                rsin((g_eff_animated_quad_counters[mode_index] * 0x3FF / 10) &
+                     0xFFF) >>
+            11;
         goto quad;
     case 8:
     case 9:
-        *p_w =
-            *p_w * rsin((g_eff_animated_quad_counters[arg0 - 2] / 2) & 0xFFF) >>
-            11;
-        *p_h =
-            *p_h * rsin((g_eff_animated_quad_counters[arg0 - 2] / 2) & 0xFFF) >>
-            11;
+        *p_w = *p_w * rsin((g_eff_animated_quad_counters[mode_index - 2] / 2) &
+                           0xFFF) >>
+               11;
+        *p_h = *p_h * rsin((g_eff_animated_quad_counters[mode_index - 2] / 2) &
+                           0xFFF) >>
+               11;
         goto quad;
     case 3:
     case 4:
-        *p_w = *p_w * rsin(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 11;
-        *p_h = *p_h * rsin(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 11;
+        *p_w =
+            *p_w * rsin(g_eff_animated_quad_counters[mode_index] & 0xFFF) >> 11;
+        *p_h =
+            *p_h * rsin(g_eff_animated_quad_counters[mode_index] & 0xFFF) >> 11;
     quad:
         prim->x0 = *g_eff_screen_xy - *p_w;
         prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 2;
@@ -2319,14 +2331,17 @@ again:
         prim->y3 = (*g_eff_screen_xy >> 16) + *p_h / 2;
         break;
     case 5:
-        if (g_eff_animated_quad_counters[arg0] < 0x1000) {
-            *p_w =
-                (u16)*p_w * 8 +
-                (*p_w * rcos(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 9);
-            *p_h = (u16)*p_h * 2 +
-                   (*p_h * rcos((g_eff_animated_quad_counters[arg0] + 0x7FF) &
+        if (g_eff_animated_quad_counters[mode_index] < 0x1000) {
+            *p_w = (u16)*p_w * 8 +
+                   (*p_w * rcos(g_eff_animated_quad_counters[mode_index] &
                                 0xFFF) >>
-                    11);
+                    9);
+            *p_h =
+                (u16)*p_h * 2 +
+                (*p_h *
+                     rcos((g_eff_animated_quad_counters[mode_index] + 0x7FF) &
+                          0xFFF) >>
+                 11);
         } else {
             *p_h = 0;
             *p_w = 0;
@@ -2349,16 +2364,19 @@ again:
     case 11:
         if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
             *p_w =
-                *p_w * rsin(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 11;
+                *p_w * rsin(g_eff_animated_quad_counters[mode_index] & 0xFFF) >>
+                11;
             *p_h =
-                *p_h * rsin(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 11;
+                *p_h * rsin(g_eff_animated_quad_counters[mode_index] & 0xFFF) >>
+                11;
         } else {
-            *p_w = *p_w + (*p_w * rsin(g_eff_animated_quad_counters[arg0] *
-                                       0x300 / 255) >>
-                           11);
-            *p_h =
-                *p_h * rcos((g_eff_animated_quad_counters[arg0] << 9) / 255) >>
-                12;
+            *p_w =
+                *p_w + (*p_w * rsin(g_eff_animated_quad_counters[mode_index] *
+                                    0x300 / 255) >>
+                        11);
+            *p_h = *p_h * rcos((g_eff_animated_quad_counters[mode_index] << 9) /
+                               255) >>
+                   12;
         }
         if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
             prim->x0 = *g_eff_screen_xy - *p_w;
@@ -2369,7 +2387,7 @@ again:
             prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 2;
             prim->x3 = *p_w + *g_eff_screen_xy;
             prim->y3 = (*g_eff_screen_xy >> 16) + *p_h / 2;
-        } else if (g_eff_animated_quad_counters[arg0] < 0x96) {
+        } else if (g_eff_animated_quad_counters[mode_index] < 0x96) {
             prim->x0 = *g_eff_screen_xy - *p_w / 2;
             prim->y0 = (*g_eff_screen_xy >> 16) + *p_h / 2;
             prim->x1 = *g_eff_screen_xy - *p_w / 2;
@@ -2388,12 +2406,12 @@ again:
             prim->x3 = *p_w + *g_eff_screen_xy;
             prim->y3 = (*g_eff_screen_xy >> 16) - *p_h / 2;
         }
-        if (arg0 < 9) {
+        if (mode_index < 9) {
             AddPrim(g_gpu_ot_ptr + 1, prim);
             if (prim - g_eff_quad_buffer_base < 0x1C1) {
                 prim++;
             }
-            arg0 += 2;
+            mode_index += 2;
             goto again;
         }
         break;
@@ -2409,15 +2427,15 @@ again:
 u8 eff_SpawnParticles(s32, s32, s32);
 
 u8 func_80066EC0(void) {
-    u8 ret = eff_SpawnParticles(0, 0, 0);
+    u8 spawn_result = eff_SpawnParticles(0, 0, 0);
     g_eff_command_phase[2] = 1;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80066EF4(void) {
-    u8 ret = eff_SpawnParticles(0, 0, 1);
+    u8 spawn_result = eff_SpawnParticles(0, 0, 1);
     g_eff_command_phase[2] = 2;
-    return ret;
+    return spawn_result;
 }
 
 u8 func_80066F28(void) {
