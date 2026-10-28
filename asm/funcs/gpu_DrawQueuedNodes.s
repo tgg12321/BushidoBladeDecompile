@@ -1,4 +1,4 @@
-glabel func_8004A4E0
+glabel gpu_DrawQueuedNodes
     /* 3ACE0 8004A4E0 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 3ACE4 8004A4E4 3400BFAF */  sw         $ra, 0x34($sp)
     /* 3ACE8 8004A4E8 3000BEAF */  sw         $fp, 0x30($sp)
@@ -173,4 +173,4 @@ glabel func_8004A4E0
     /* 3AF60 8004A760 1C00348E */  lw         $s4, 0x1C($s1)
     /* 3AF64 8004A764 70290108 */  j          .L8004A5C0
     /* 3AF68 8004A768 00000000 */   nop
-endlabel func_8004A4E0
+endlabel gpu_DrawQueuedNodes

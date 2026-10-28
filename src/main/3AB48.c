@@ -11,7 +11,7 @@
 extern void func_80052C10(void);
 
 INCLUDE_ASM("asm/funcs", math_RotMatrixZYX);
-INCLUDE_ASM("asm/funcs", func_8004A4E0);
+INCLUDE_ASM("asm/funcs", gpu_DrawQueuedNodes);
 INCLUDE_ASM("asm/funcs", gte_ProjectSVectorTriples);
 INCLUDE_ASM("asm/funcs", gte_ProjectPackedVertices);
 

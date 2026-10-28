@@ -1,1 +1,0 @@
-{"func": "func_8004A4E0", "addr": "8004A4E0", "verdict": "PASS", "body_hash": "61f7119547ffbd01", "body_kind": "asm", "file": "main/3AB48", "reviewer": "a4e0-auth-review", "scope": "auth", "date": "2026-10-16T04:32:34Z", "head": "98b638a8a", "notes": "re-audit 2026-10-15: scan_hand_coded STRONG on S9/S10/S11, signals verified against the oracle"}

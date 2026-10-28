@@ -74,7 +74,7 @@ glabel gpu_PrepareViewAndFlushDrawQueue
   .L80044614:
     /* 34E14 80044614 801F013C */  lui        $at, (0x1F800018 >> 16)
     /* 34E18 80044618 180022AC */  sw         $v0, (0x1F800018 & 0xFFFF)($at)
-    /* 34E1C 8004461C 3829010C */  jal        func_8004A4E0
+    /* 34E1C 8004461C 3829010C */  jal        gpu_DrawQueuedNodes
     /* 34E20 80044620 00000000 */   nop
     /* 34E24 80044624 951B010C */  jal        gpu_SetRaisedOtCutoffRequested
     /* 34E28 80044628 01000424 */   addiu     $a0, $zero, 0x1

@@ -1130,7 +1130,7 @@ void func_800444E0(void) {
 
 extern MATRIX D_80101BD0;
 
-extern void func_8004A4E0(void);
+extern void gpu_DrawQueuedNodes(void);
 
 void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
     math_RotMatrixZXY(D_800A3678, &D_80101BD0);
@@ -1158,7 +1158,7 @@ void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
     } else {
         *(s32 *)0x1F800018 = 0xBE;
     }
-    func_8004A4E0();
+    gpu_DrawQueuedNodes();
     gpu_SetRaisedOtCutoffRequested(1);
     g_draw_queue_cursor = g_draw_queue;
 }
@@ -1221,8 +1221,8 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
  * follow), in address order: five
  * primitive-type handler tables (func_80044650, which calls func_80052C10, is
  * the default entry; the others are 3AB48.c's draw routines) that func_800430E4
- * installs at scratchpad word 0x1F80001C and 3AB48.c's func_8004A4E0 selects
- * from, then gpu_OffsetTexPrimStream's per-type halfword sizes
+ * installs at scratchpad word 0x1F80001C and 3AB48.c's gpu_DrawQueuedNodes
+ * selects from, then gpu_OffsetTexPrimStream's per-type halfword sizes
  * g_gpu_prim_type_halfword_sizes. Sizes from the data labels. Defined after
  * every function. */
 void gpu_EmitOtCutoffFlatLitTexturedTriangles();
