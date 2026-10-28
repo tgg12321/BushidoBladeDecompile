@@ -1,4 +1,4 @@
-glabel func_8002798C
+glabel fighter_TestMoveFrameWindowOrObjectVariantKind
     /* 1818C 8002798C 6A008394 */  lhu        $v1, 0x6A($a0)
     /* 18190 80027990 06000224 */  addiu      $v0, $zero, 0x6
     /* 18194 80027994 15006210 */  beq        $v1, $v0, .L800279EC
@@ -53,4 +53,4 @@ glabel func_8002798C
   .L80027A50:
     /* 18250 80027A50 0800E003 */  jr         $ra
     /* 18254 80027A54 2110A000 */   addu      $v0, $a1, $zero
-endlabel func_8002798C
+endlabel fighter_TestMoveFrameWindowOrObjectVariantKind

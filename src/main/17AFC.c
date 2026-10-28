@@ -303,7 +303,7 @@ void fighter_DispatchBoneHitSoundEvent(
         ptr->other->index, 0x24, stack_a2, (s16 *)0);
 }
 
-s32 func_8002798C(Unk80101EC8Record *a0) {
+s32 fighter_TestMoveFrameWindowOrObjectVariantKind(Unk80101EC8Record *a0) {
     s32 ret = 0;
 
     if (a0->move_kind == 6 || a0->move_kind == 0x25 || a0->move_kind == 0x33 ||
@@ -328,7 +328,7 @@ void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *a0) {
     s16 v1 = a0->variant_index;
     if (v1 == a0->object_variant_index) {
         if (a0->object_variant_enabled) {
-            if (func_8002798C(a0)) {
+            if (fighter_TestMoveFrameWindowOrObjectVariantKind(a0)) {
                 MATRIX **v0 = node_GetSlotMatrixPointerArray(a0->index);
                 object_DropQueuedHeadAt(a0, (Vec3i32 *)v0[19]->t);
                 a0->object_variant_enabled = 0;

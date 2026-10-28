@@ -1,4 +1,4 @@
-glabel func_8001EA04
+glabel fight_InitFighterFocusViewAndThreeItemMenu
     /* F204 8001EA04 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* F208 8001EA08 21200000 */  addu       $a0, $zero, $zero
     /* F20C 8001EA0C 1000BFAF */  sw         $ra, 0x10($sp)
@@ -31,4 +31,4 @@ glabel func_8001EA04
     /* F278 8001EA78 1800BD27 */  addiu      $sp, $sp, 0x18
     /* F27C 8001EA7C 0800E003 */  jr         $ra
     /* F280 8001EA80 00000000 */   nop
-endlabel func_8001EA04
+endlabel fight_InitFighterFocusViewAndThreeItemMenu

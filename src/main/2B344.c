@@ -1558,13 +1558,13 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     }
 
     if (arg4 != 0) {
-        func_8003DDF8((u32)pkt);
+        gpu_SetLastDepthIndexOtEntryLinkToPacket((u32)pkt);
     } else {
         addPrim(&g_gpu_ot_offset_ptr[0xFFB], pkt);
     }
 }
 
-void func_8003DDF8(u32 arg0) {
+void gpu_SetLastDepthIndexOtEntryLinkToPacket(u32 arg0) {
     u32 *ptr = g_gpu_ot_offset_ptr;
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;

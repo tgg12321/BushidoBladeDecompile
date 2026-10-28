@@ -39,7 +39,7 @@ __asm__(
     "    .word menu_UpdateRowMenuAndSubflows\n"
     "    .word fight_InitScrollingSpriteDisplayAndAudio\n"
     "    .word fight_UpdateScrollingSpriteDisplayAndMergeBitFlags\n"
-    "    .word func_8001EA04\n"
+    "    .word fight_InitFighterFocusViewAndThreeItemMenu\n"
     "    .word fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange\n"
     "    .word func_80035430\n"
     "    .word ExecMovieOverlayAndReinitialize\n"

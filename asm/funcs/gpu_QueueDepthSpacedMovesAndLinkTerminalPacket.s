@@ -114,7 +114,7 @@ glabel gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
   .L8003DD74:
     /* 2E574 8003DD74 0500E012 */  beqz       $s7, .L8003DD8C
     /* 2E578 8003DD78 FF00043C */   lui       $a0, (0xFFFFFF >> 16)
-    /* 2E57C 8003DD7C 7EF7000C */  jal        func_8003DDF8
+    /* 2E57C 8003DD7C 7EF7000C */  jal        gpu_SetLastDepthIndexOtEntryLinkToPacket
     /* 2E580 8003DD80 21200002 */   addu      $a0, $s0, $zero
     /* 2E584 8003DD84 72F70008 */  j          .L8003DDC8
     /* 2E588 8003DD88 00000000 */   nop

@@ -2141,7 +2141,7 @@ glabel fighter_Update
     /* 1662C 80025E2C 00000000 */  nop
     /* 16630 80025E30 07004010 */  beqz       $v0, .L80025E50
     /* 16634 80025E34 00000000 */   nop
-    /* 16638 80025E38 639E000C */  jal        func_8002798C
+    /* 16638 80025E38 639E000C */  jal        fighter_TestMoveFrameWindowOrObjectVariantKind
     /* 1663C 80025E3C 21202002 */   addu      $a0, $s1, $zero
     /* 16640 80025E40 49004010 */  beqz       $v0, .L80025F68
     /* 16644 80025E44 00000000 */   nop

@@ -728,7 +728,7 @@ extern s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
 extern void fighter_Update(s32, PadState *);
 extern void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void);
 extern void motion_SetFixedChannelBlock(MotionFrame *);
-extern s32 func_8002798C(Unk80101EC8Record *);
+extern s32 fighter_TestMoveFrameWindowOrObjectVariantKind(Unk80101EC8Record *);
 /* fighter_TryDropQueuedHeadAtBone (17AFC.c, void (Unk80101EC8Record *)) has no
  * declaration: 175A4.c calls it implicitly, and any truthful declaration
  * changes fight_UpdatePairedInputTotalsEventsAndMidpointEffects's register-save
@@ -823,7 +823,7 @@ extern void bitstream_InitDeltaAccumulator(s32, s32);
 extern s16 *bitstream_AccumulateDeltas(s32);
 extern void gpu_InitFogDrawMoves(void);
 extern void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32, s32);
-extern void func_8003DDF8(u32);
+extern void gpu_SetLastDepthIndexOtEntryLinkToPacket(u32);
 extern void gpu_BuildFogRowLevels(void);
 extern void gpu_BuildFogBlockLevels(void);
 extern void gpu_MoveObjectClutsToFogBlock(s32);

@@ -2223,7 +2223,7 @@ void fight_Update(void) {
     fight_UpdateDefeatDelayAndModeProgress();
 }
 
-void func_8001EA04(void) {
+void fight_InitFighterFocusViewAndThreeItemMenu(void) {
     u8 v;
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
@@ -5232,7 +5232,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     if (rec->variant_index == rec->object_variant_index &&
         rec->object_variant_enabled != 0) {
-        if (func_8002798C(rec) != 0) {
+        if (fighter_TestMoveFrameWindowOrObjectVariantKind(rec) != 0) {
             rec->wielded_object_live_state =
                 rec->wielded_object_live_state != 0 ? 1 : 2;
             rec->frame_flags |= 4;

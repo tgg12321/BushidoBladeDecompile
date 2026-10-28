@@ -1,0 +1,1 @@
+{"func": "fighter_TestMoveFrameWindowOrObjectVariantKind", "addr": "8002798C", "verdict": "PASS", "body_hash": "294d8f1b17a9a48a", "body_kind": "c", "file": "main/17AFC", "reviewer": "cheat-reviewer-fakeb3-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T11:09:13Z", "head": "bf43e110c", "notes": "", "renamed_from": ["func_8002798C"]}

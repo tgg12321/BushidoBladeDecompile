@@ -12,7 +12,7 @@ glabel fighter_TryDropQueuedHeadAtBone
     /* 18280 80027A80 00000000 */  nop
     /* 18284 80027A84 0F004010 */  beqz       $v0, .L80027AC4
     /* 18288 80027A88 00000000 */   nop
-    /* 1828C 80027A8C 639E000C */  jal        func_8002798C
+    /* 1828C 80027A8C 639E000C */  jal        fighter_TestMoveFrameWindowOrObjectVariantKind
     /* 18290 80027A90 00000000 */   nop
     /* 18294 80027A94 0B004010 */  beqz       $v0, .L80027AC4
     /* 18298 80027A98 00000000 */   nop
