@@ -1,0 +1,73 @@
+var-members-rest-6 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Scope: Unk800EFAE8Rec (D_800EFAE8, 0x4C bytes, include/game.h ~702-735) and Unk800469C4Hdr (the playback block header,
+game.h ~687-700). Users: src/main/43500.c (motion_StartPlayback 753-823), src/main/4510C.c (motion_UpdatePlayback,
+motion_RebasePlayback, motion_GetPlaybackViewAngles), src/main/368E4.c (motion_LoadPlaybackBlock, raw s32 *v0, header word 0
+only). Re-derived: every `s->m` / `D_800EFAE8.m` / `((Unk800469C4Hdr *)s->unk2C)->m` access by grep (line numbers in the
+evidence column; other types' same-spelled members at 4510C.c:287, :1883 are not ours). No other TU names D_800EFAE8 or
+either type. The four playback functions' asm/funcs listings are reference listings of C functions (they use the aliases
+D_800EFB0C/B14/B18/B1C/B20/B24/B28 = unk24/2C/30/34[0]/34[1]/3C[0]/3C[1]); none of the 137 remaining INCLUDE_ASM bodies
+names D_800EFAE8..D_800EFB2F or 0x800469C4. No raw-offset or absolute-address view exists.
+
+Surviving: 20 rows (pairs.txt): Unk800EFAE8Rec 15, Unk800469C4Hdr 5. Research: 20 RENAME / 6 NO_NAME. Kept 20, dropped 0,
+respelled 0 (all 20 Codex spellings re-derived and fresh: whole-word grep of src/ include/ finds none; no keyword or macro).
+No member is a function-pointer declarator (keycheck-safe). No name carries a number or flag.
+
+Scrutinized weak rows (all kept; reviewer may drop)
+  Rec.unk4 control_word (+ Hdr.unk4 control_word_offset): reads are bits 8..14 -> unk1E yaw (43500.c:787), sign bit and bit30
+    gating unk44[0]/[1] (:788,:791), low 6 bits -> resource block index + 1 (:805-806), 0x8000 -> header sections (:817),
+    0x80/0x40 enabling the draw-set tracks (4510C.c:74,77). Mixed fields, so `flags` would be false; `control_word`
+    claims only "packed word that steers playback". Generic, judgement call.
+  Rec.unk8 start_pair_index: write-only (43500.c:802 = a1). a1 also indexes the row (a1*6 s16) of the start-position table
+    at :776-778 that fills unkC/10/14, and callers pass 0 or fight_FindNearestStartPair's result (2B344.c:544,733,1075-1077).
+    The one write agrees; no reader can contradict. Judgement call (drop for N2 if the reviewer will not name a write-only member).
+  Rec.unk1C/1E/20 rotation_x/y/z: unk1C and unk20 are written 0 (43500.c:781-782) and read only via &unk1C -> func_80040D48
+    a3[0..2] = root rot.vx/vy/vz (31548.c:22-24); the same parameter gets rot[0]=0 at 28708.c:1407. Axis role holds at every
+    use. unk1E is the yaw (written from control_word, used by Judge sin/cos 4510C.c:94,95,152,153, test :106, :111, :162).
+  Rec.unk3C draw_set_tracks (+ Hdr.unk18 draw_set_track_offsets): per-frame 4-bit entry -> gpu_QueueSlotDrawMovesForSelectedSet(i, set)
+    (4510C.c:176); built only when control_word 0x80/0x40 (:75,:78); rebased when nonzero (:212-216). "set" rests on the callee name.
+    The two rows stand or fall together.
+
+NO_NAME (6, re-confirmed neutral, not in pairs)
+  Unk800EFAE8Rec.unkA (no access), unk18 (no access), unk22 (pad of the rotation triple; func_80040D48 reads a3[0..2] only),
+    unk44 and unk48 (per-object entry indices passed to node_Queue*; written from the a2..a5 arguments and gated by control_word
+    bits; the code does not show what distinguishes them, no name that tells them apart without a guess).
+  Unk800469C4Hdr.unk0 (one raw use, 368E4.c motion_LoadPlaybackBlock: v0[v0[0] + 1] = the block-end word; looks like an offset
+    count but that needs the file layout, not shown by the code).
+  Also never touched: unk24[3].
+
+Dry run (dry.txt, exit=1): 3 files change (include/game.h, src/main/43500.c, src/main/4510C.c); 0 compile failures (member error
+rounds 78 -> 3 -> 0 for the Rec pass, 4 -> 0 for the Hdr pass). 1 UNRESOLVED line, the documented same-line limit:
+  src/main/43500.c:773  `s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);`
+  (Rec.unk4 and Hdr.unk4 on one line; the tool leaves the whole line, including its unk2C, untouched.)
+Hand-edit at apply (then format.py, which will re-wrap it, and the keycheck):
+  s->control_word = *(s32 *)(((Unk800469C4Hdr *)s->block_base)->control_word_offset + s->block_base);
+No other line holds two renamed tokens of the same old spelling and different types. Same-type repeats (4510C.c:176 unk0 x2,
+:205/:207/:210/:213/:216 unk30/unk34/unk3C x2) resolve by the tool. Many lines exceed 80 columns after the rename
+(43500.c:774, 4510C.c:60-62,75,78,138,162,176,205-216): format.py lands them. Apply only after checking the byte oracle, as
+identifier changes never move bytes.
+
+R6 watch points (comments the tool does not edit; update at apply)
+- include/game.h:690 comment "Unk800EFAE8Rec .unk2C" -> block_base.
+- include/game.h:708 comment "phase (motion_UpdatePlayback: -1 = done, 0 = init)" above unk0: reword for current_frame (frame
+  cursor; -1 = finished, 0 = first frame). Comment above unk4 "stage flags (bit31/bit30 tests, low 6 bits = cleanup index + 1)":
+  reword for control_word (a packed control word; low 6 bits = resource block index + 1). game.h:726-730 member comments
+  ("loaded data base", "relocated by motion_RebasePlayback", "per player") name no old spelling: keep.
+- src/main/4510C.c:24-33 function comment names old members: unk0 (:25) -> current_frame, unk2C (:26) -> block_base, unk30
+  (:26) -> camera_stream, unk34[] (:27) -> motion_streams[], unk3C[] (:28) -> draw_set_tracks[], unk1E (:29) -> rotation_y,
+  "unkC..unk14" (:29) -> origin_x..origin_z. (The keycheck compares non-comment tokens, but the comment must stay true.)
+- named_syms.txt:1764 (RESET note "offset unkC..unk14", "unk4 & 0x3F") and :1769 ("unk2", "[+0]") describe retired-name notes;
+  update the old spellings (origin_x..origin_z, control_word & 0x3F, frame_count, current_frame) or leave as historical notes if
+  the reviewer prefers (they name the record by D_800EFAE8, so a reader can follow either way). symbol_addrs.txt has no
+  member comments for D_800EFAE8 (:1628 is bare); its D_800EFB14..B28 lines carry stale "was g_snd_data_*" data-wave comments for
+  the same bytes as unk2C/30/34/3C: not an old member spelling, not in scope.
+- docs/engine/README.md:121 and .claude/rules/*: name the functions only, no old member spelling. docs/naming/function-names.csv
+  and earlier docs/naming/phase3 manifests quote unk2C/unk30/unk34 etc. as history: leave.
+- Bare unkNN words in those comments that belong to OTHER types: 4510C.c:287 and :1883 (code, other types) must not be touched;
+  none of the Rec/Hdr comment words are of other types, but the tool resolves by type, so only these two types' members change.
+  func_80040D48's parameters, D_80101EC8[i].unk_12 and similar stay.
+
+Judgement calls
+- Header `*_offset` names derive from the record names they feed; every reader adds block_base, so "offset" is true at each use.
+- The record keeps `unk44`/`unk48` neutral rather than guess primary/secondary; Hdr.unk0 neutral rather than assume the layout.
+- `current_frame` over `frame` (taken, 146 hits) and `rotation_y` over `yaw` (taken) as in research.

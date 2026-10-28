@@ -1,0 +1,345 @@
+PASS Unk800EFAE8Rec.unk0=current_frame, Unk800EFAE8Rec.unk2=frame_count, Unk800EFAE8Rec.unk4=control_word, Unk800EFAE8Rec.unk8=start_pair_index, Unk800EFAE8Rec.unkC=origin_x, Unk800EFAE8Rec.unk10=origin_y, Unk800EFAE8Rec.unk14=origin_z, Unk800EFAE8Rec.unk1C=rotation_x, Unk800EFAE8Rec.unk1E=rotation_y, Unk800EFAE8Rec.unk20=rotation_z, Unk800EFAE8Rec.unk24=view_angles, Unk800EFAE8Rec.unk2C=block_base, Unk800EFAE8Rec.unk30=camera_stream, Unk800EFAE8Rec.unk34=motion_streams, Unk800EFAE8Rec.unk3C=draw_set_tracks, Unk800469C4Hdr.unk18=draw_set_track_offsets
+decl Unk800EFAE8Rec.unk0 -> current_frame  include/game.h:709
+decl Unk800EFAE8Rec.unk2 -> frame_count  include/game.h:710
+decl Unk800EFAE8Rec.unk4 -> control_word  include/game.h:712
+decl Unk800EFAE8Rec.unk8 -> start_pair_index  include/game.h:713
+decl Unk800EFAE8Rec.unkC -> origin_x  include/game.h:715
+decl Unk800EFAE8Rec.unk10 -> origin_y  include/game.h:716
+decl Unk800EFAE8Rec.unk14 -> origin_z  include/game.h:717
+decl Unk800EFAE8Rec.unk1C -> rotation_x  include/game.h:719
+decl Unk800EFAE8Rec.unk1E -> rotation_y  include/game.h:720
+decl Unk800EFAE8Rec.unk20 -> rotation_z  include/game.h:721
+decl Unk800EFAE8Rec.unk24 -> view_angles  include/game.h:725
+decl Unk800EFAE8Rec.unk2C -> block_base  include/game.h:727
+decl Unk800EFAE8Rec.unk30 -> camera_stream  include/game.h:728
+decl Unk800EFAE8Rec.unk34 -> motion_streams  include/game.h:730
+decl Unk800EFAE8Rec.unk3C -> draw_set_tracks  include/game.h:732
+decl Unk800469C4Hdr.unk18 -> draw_set_track_offsets  include/game.h:699
+  round 0: 78 member error line(s)
+    src/main/43500.c:764 unk2C x1
+    src/main/43500.c:770 unk2C x1
+    src/main/43500.c:773 unk2C x2
+    src/main/43500.c:773 unk4 x2
+    src/main/43500.c:774 unk2 x1
+    src/main/43500.c:774 unk2C x2
+    src/main/43500.c:775 unk0 x1
+    src/main/43500.c:778 unkC x1
+    src/main/43500.c:779 unk10 x1
+    src/main/43500.c:780 unk14 x1
+    src/main/43500.c:781 unk1C x1
+    src/main/43500.c:782 unk20 x1
+    src/main/43500.c:787 unk1E x1
+    src/main/43500.c:787 unk4 x1
+    src/main/43500.c:788 unk4 x1
+    src/main/43500.c:791 unk4 x1
+    src/main/43500.c:802 unk8 x1
+    src/main/43500.c:805 unk4 x1
+    src/main/43500.c:806 unk4 x1
+    src/main/43500.c:817 unk4 x1
+    src/main/4510C.c:54 unk0 x1
+    src/main/4510C.c:57 unk0 x1
+    src/main/4510C.c:60 unk2C x2
+    src/main/4510C.c:60 unk30 x1
+    src/main/4510C.c:61 unk2C x2
+    src/main/4510C.c:61 unk34 x1
+    src/main/4510C.c:62 unk2C x2
+    src/main/4510C.c:62 unk34 x1
+    src/main/4510C.c:63 unk30 x1
+    src/main/4510C.c:65 unk34 x1
+    src/main/4510C.c:66 unk34 x1
+    src/main/4510C.c:68 unk34 x1
+    src/main/4510C.c:69 unk34 x1
+    src/main/4510C.c:72 unk3C x1
+    src/main/4510C.c:73 unk3C x1
+    src/main/4510C.c:74 unk4 x1
+    src/main/4510C.c:75 unk2C x2
+    src/main/4510C.c:75 unk3C x1
+    src/main/4510C.c:77 unk4 x1
+    src/main/4510C.c:78 unk2C x2
+    src/main/4510C.c:78 unk3C x1
+    src/main/4510C.c:94 unk1E x1
+    src/main/4510C.c:95 unk1E x1
+    src/main/4510C.c:100 unkC x1
+    src/main/4510C.c:101 unk10 x1
+    src/main/4510C.c:102 unk14 x1
+    src/main/4510C.c:106 unk1E x1
+    src/main/4510C.c:111 unk1E x1
+    src/main/4510C.c:124 unk24 x1
+    src/main/4510C.c:125 unk24 x1
+    src/main/4510C.c:126 unk24 x1
+    src/main/4510C.c:135 unk34 x1
+    src/main/4510C.c:138 unk0 x1
+    src/main/4510C.c:152 unk1E x1
+    src/main/4510C.c:153 unk1E x1
+    src/main/4510C.c:158 unk10 x1
+    src/main/4510C.c:159 unkC x1
+    src/main/4510C.c:160 unk14 x1
+    src/main/4510C.c:162 unk10 x1
+    src/main/4510C.c:162 unk1C x1
+    src/main/4510C.c:173 unk3C x1
+    src/main/4510C.c:176 unk0 x2
+    src/main/4510C.c:176 unk3C x1
+    src/main/4510C.c:182 unk0 x1
+    src/main/4510C.c:183 unk0 x1
+    src/main/4510C.c:183 unk2 x1
+    src/main/4510C.c:184 unk0 x1
+    src/main/4510C.c:203 unk2C x1
+    src/main/4510C.c:205 unk30 x2
+    src/main/4510C.c:206 unk34 x1
+    src/main/4510C.c:207 unk34 x2
+    src/main/4510C.c:209 unk34 x1
+    src/main/4510C.c:210 unk34 x2
+    src/main/4510C.c:212 unk3C x1
+    src/main/4510C.c:213 unk3C x2
+    src/main/4510C.c:215 unk3C x1
+    src/main/4510C.c:216 unk3C x2
+    src/main/4510C.c:220 unk24 x1
+  round 1: 3 member error line(s)
+    src/main/4510C.c:75 unk18 x1
+    src/main/4510C.c:78 unk18 x1
+  round 2: 0 member error line(s)
+PASS Unk800469C4Hdr.unk4=control_word_offset, Unk800469C4Hdr.unk8=frame_count_offset, Unk800469C4Hdr.unkC=camera_stream_offset, Unk800469C4Hdr.unk10=motion_stream_offsets
+decl Unk800469C4Hdr.unk4 -> control_word_offset  include/game.h:695
+decl Unk800469C4Hdr.unk8 -> frame_count_offset  include/game.h:696
+decl Unk800469C4Hdr.unkC -> camera_stream_offset  include/game.h:697
+decl Unk800469C4Hdr.unk10 -> motion_stream_offsets  include/game.h:698
+  round 0: 4 member error line(s)
+    src/main/43500.c:774 unk8 x1
+    src/main/4510C.c:60 unkC x1
+    src/main/4510C.c:61 unk10 x1
+    src/main/4510C.c:62 unk10 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -695,5 +695,5 @@
+-    s32 unk4;
+-    s32 unk8;
+-    s32 unkC;
+-    s32 unk10[2];
+-    s32 unk18[2];
++    s32 control_word_offset;
++    s32 frame_count_offset;
++    s32 camera_stream_offset;
++    s32 motion_stream_offsets[2];
++    s32 draw_set_track_offsets[2];
+@@ -709,2 +709,2 @@
+-    /* 0x00 */ s16 unk0;
+-    /* 0x02 */ s16 unk2;
++    /* 0x00 */ s16 current_frame;
++    /* 0x02 */ s16 frame_count;
+@@ -712,2 +712,2 @@
+-    /* 0x04 */ s32 unk4;
+-    /* 0x08 */ s16 unk8;
++    /* 0x04 */ s32 control_word;
++    /* 0x08 */ s16 start_pair_index;
+@@ -715,3 +715,3 @@
+-    /* 0x0C */ s32 unkC;
+-    /* 0x10 */ s32 unk10;
+-    /* 0x14 */ s32 unk14;
++    /* 0x0C */ s32 origin_x;
++    /* 0x10 */ s32 origin_y;
++    /* 0x14 */ s32 origin_z;
+@@ -719,3 +719,3 @@
+-    /* 0x1C */ s16 unk1C;
+-    /* 0x1E */ s16 unk1E;
+-    /* 0x20 */ s16 unk20;
++    /* 0x1C */ s16 rotation_x;
++    /* 0x1E */ s16 rotation_y;
++    /* 0x20 */ s16 rotation_z;
+@@ -725 +725 @@
+-    /* 0x24 */ s16 unk24[4];
++    /* 0x24 */ s16 view_angles[4];
+@@ -727,2 +727,2 @@
+-    /* 0x2C */ s32 unk2C;
+-    /* 0x30 */ s32 unk30; /* relocated by motion_RebasePlayback */
++    /* 0x2C */ s32 block_base;
++    /* 0x30 */ s32 camera_stream; /* relocated by motion_RebasePlayback */
+@@ -730 +730 @@
+-    /* 0x34 */ s32 unk34[2];
++    /* 0x34 */ s32 motion_streams[2];
+@@ -732 +732 @@
+-    /* 0x3C */ s32 unk3C[2];
++    /* 0x3C */ s32 draw_set_tracks[2];
+--- a/src/main/43500.c
++++ b/src/main/43500.c
+@@ -764 +764 @@
+-        s->unk2C = a6;
++        s->block_base = a6;
+@@ -770 +770 @@
+-        s->unk2C = (s32)motion_LoadPlaybackBlock(playback_file_id);
++        s->block_base = (s32)motion_LoadPlaybackBlock(playback_file_id);
+@@ -774,2 +774,2 @@
+-    s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
+-    s->unk0 = 0;
++    s->frame_count = *(u16 *)(((Unk800469C4Hdr *)s->block_base)->frame_count_offset + s->block_base);
++    s->current_frame = 0;
+@@ -778,5 +778,5 @@
+-    s->unkC = *start_position_cursor++;
+-    s->unk10 = *start_position_cursor++;
+-    s->unk14 = *start_position_cursor++;
+-    s->unk1C = 0;
+-    s->unk20 = 0;
++    s->origin_x = *start_position_cursor++;
++    s->origin_y = *start_position_cursor++;
++    s->origin_z = *start_position_cursor++;
++    s->rotation_x = 0;
++    s->rotation_z = 0;
+@@ -787,2 +787,2 @@
+-    s->unk1E = (((s->unk4 >> 8) & 0x7F) << 14) / 360;
+-    if (s->unk4 >= 0) {
++    s->rotation_y = (((s->control_word >> 8) & 0x7F) << 14) / 360;
++    if (s->control_word >= 0) {
+@@ -791 +791 @@
+-    if (!(s->unk4 & 0x40000000)) {
++    if (!(s->control_word & 0x40000000)) {
+@@ -802 +802 @@
+-    s->unk8 = a1;
++    s->start_pair_index = a1;
+@@ -805,2 +805,2 @@
+-    if (s->unk4 & 0x3F) {
+-        n = (s->unk4 & 0x3F) - 1;
++    if (s->control_word & 0x3F) {
++        n = (s->control_word & 0x3F) - 1;
+@@ -817 +817 @@
+-    if (s->unk4 & 0x8000) {
++    if (s->control_word & 0x8000) {
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -54 +54 @@
+-    if (s->unk0 < 0) {
++    if (s->current_frame < 0) {
+@@ -57 +57 @@
+-    if (s->unk0 == 0) {
++    if (s->current_frame == 0) {
+@@ -60,4 +60,4 @@
+-        s->unk30 = ((Unk800469C4Hdr *)s->unk2C)->unkC + s->unk2C;
+-        s->unk34[0] = ((Unk800469C4Hdr *)s->unk2C)->unk10[0] + s->unk2C;
+-        s->unk34[1] = ((Unk800469C4Hdr *)s->unk2C)->unk10[1] + s->unk2C;
+-        bitstream_InitDeltaAccumulator(s->unk30, 0);
++        s->camera_stream = ((Unk800469C4Hdr *)s->block_base)->camera_stream_offset + s->block_base;
++        s->motion_streams[0] = ((Unk800469C4Hdr *)s->block_base)->motion_stream_offsets[0] + s->block_base;
++        s->motion_streams[1] = ((Unk800469C4Hdr *)s->block_base)->motion_stream_offsets[1] + s->block_base;
++        bitstream_InitDeltaAccumulator(s->camera_stream, 0);
+@@ -65,14 +65,14 @@
+-            if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
+-                s->unk34[j] = 0;
+-            }
+-            if (s->unk34[j] != 0) {
+-                motion_InitStream(j, (u32 *)s->unk34[j]);
+-            }
+-        }
+-        s->unk3C[1] = 0;
+-        s->unk3C[0] = 0;
+-        if (s->unk4 & 0x80) {
+-            s->unk3C[0] = ((Unk800469C4Hdr *)s->unk2C)->unk18[0] + s->unk2C;
+-        }
+-        if (s->unk4 & 0x40) {
+-            s->unk3C[1] = ((Unk800469C4Hdr *)s->unk2C)->unk18[1] + s->unk2C;
++            if (*(s32 *)s->motion_streams[j] == D_800A3250[0]) {
++                s->motion_streams[j] = 0;
++            }
++            if (s->motion_streams[j] != 0) {
++                motion_InitStream(j, (u32 *)s->motion_streams[j]);
++            }
++        }
++        s->draw_set_tracks[1] = 0;
++        s->draw_set_tracks[0] = 0;
++        if (s->control_word & 0x80) {
++            s->draw_set_tracks[0] = ((Unk800469C4Hdr *)s->block_base)->draw_set_track_offsets[0] + s->block_base;
++        }
++        if (s->control_word & 0x40) {
++            s->draw_set_tracks[1] = ((Unk800469C4Hdr *)s->block_base)->draw_set_track_offsets[1] + s->block_base;
+@@ -94,2 +94,2 @@
+-        s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
+-        s32 sn = Judge[s->unk1E & 0xFFF];
++        s32 c = Judge[(s->rotation_y + 0x400) & 0xFFF];
++        s32 sn = Judge[s->rotation_y & 0xFFF];
+@@ -100,3 +100,3 @@
+-    g_view_camera_root_node.work.t[0] = vec.vx + s->unkC;
+-    g_view_camera_root_node.work.t[1] = vec.vy + s->unk10;
+-    g_view_camera_root_node.work.t[2] = vec.vz + s->unk14;
++    g_view_camera_root_node.work.t[0] = vec.vx + s->origin_x;
++    g_view_camera_root_node.work.t[1] = vec.vy + s->origin_y;
++    g_view_camera_root_node.work.t[2] = vec.vz + s->origin_z;
+@@ -106 +106 @@
+-    if (s->unk1E != 0) {
++    if (s->rotation_y != 0) {
+@@ -111 +111 @@
+-        playback_rotation.vy = s->unk1E;
++        playback_rotation.vy = s->rotation_y;
+@@ -124,3 +124,3 @@
+-    s->unk24[0] = -g_view_camera_root_node.xf.rot.vx;
+-    s->unk24[1] = -g_view_camera_root_node.xf.rot.vy;
+-    s->unk24[2] = -g_view_camera_root_node.xf.rot.vz;
++    s->view_angles[0] = -g_view_camera_root_node.xf.rot.vx;
++    s->view_angles[1] = -g_view_camera_root_node.xf.rot.vy;
++    s->view_angles[2] = -g_view_camera_root_node.xf.rot.vz;
+@@ -135 +135 @@
+-        if (s->unk34[i] != 0) {
++        if (s->motion_streams[i] != 0) {
+@@ -138 +138 @@
+-            motion_DecodeFrame(i, s->unk0, (MotionFrame *)decoded_motion_frame,
++            motion_DecodeFrame(i, s->current_frame, (MotionFrame *)decoded_motion_frame,
+@@ -152,2 +152,2 @@
+-                s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
+-                s32 sn = Judge[s->unk1E & 0xFFF];
++                s32 c = Judge[(s->rotation_y + 0x400) & 0xFFF];
++                s32 sn = Judge[s->rotation_y & 0xFFF];
+@@ -158,3 +158,3 @@
+-            vec.vy += s->unk10;
+-            vec.vx += s->unkC;
+-            vec.vz += s->unk14;
++            vec.vy += s->origin_y;
++            vec.vx += s->origin_x;
++            vec.vz += s->origin_z;
+@@ -162 +162 @@
+-                i, 0, &vec.vx, &s->unk1C, decoded_motion_frame, s->unk10);
++                i, 0, &vec.vx, &s->rotation_x, decoded_motion_frame, s->origin_y);
+@@ -173 +173 @@
+-            if (s->unk3C[i] != 0) {
++            if (s->draw_set_tracks[i] != 0) {
+@@ -176 +176 @@
+-                    (((u32 *)s->unk3C[i])[s->unk0 / 8] >> ((s->unk0 % 8) * 4)) &
++                    (((u32 *)s->draw_set_tracks[i])[s->current_frame / 8] >> ((s->current_frame % 8) * 4)) &
+@@ -182,3 +182,3 @@
+-    s->unk0++;
+-    if (s->unk0 >= s->unk2) {
+-        s->unk0 = -1;
++    s->current_frame++;
++    if (s->current_frame >= s->frame_count) {
++        s->current_frame = -1;
+@@ -203 +203 @@
+-    s32 *p = &D_800EFAE8.unk2C;
++    s32 *p = &D_800EFAE8.block_base;
+@@ -205,12 +205,12 @@
+-    D_800EFAE8.unk30 = rebase_delta + D_800EFAE8.unk30;
+-    if (D_800EFAE8.unk34[0]) {
+-        D_800EFAE8.unk34[0] = rebase_delta + D_800EFAE8.unk34[0];
+-    }
+-    if (D_800EFAE8.unk34[1]) {
+-        D_800EFAE8.unk34[1] = rebase_delta + D_800EFAE8.unk34[1];
+-    }
+-    if (D_800EFAE8.unk3C[0]) {
+-        D_800EFAE8.unk3C[0] = rebase_delta + D_800EFAE8.unk3C[0];
+-    }
+-    if (D_800EFAE8.unk3C[1]) {
+-        D_800EFAE8.unk3C[1] = rebase_delta + D_800EFAE8.unk3C[1];
++    D_800EFAE8.camera_stream = rebase_delta + D_800EFAE8.camera_stream;
++    if (D_800EFAE8.motion_streams[0]) {
++        D_800EFAE8.motion_streams[0] = rebase_delta + D_800EFAE8.motion_streams[0];
++    }
++    if (D_800EFAE8.motion_streams[1]) {
++        D_800EFAE8.motion_streams[1] = rebase_delta + D_800EFAE8.motion_streams[1];
++    }
++    if (D_800EFAE8.draw_set_tracks[0]) {
++        D_800EFAE8.draw_set_tracks[0] = rebase_delta + D_800EFAE8.draw_set_tracks[0];
++    }
++    if (D_800EFAE8.draw_set_tracks[1]) {
++        D_800EFAE8.draw_set_tracks[1] = rebase_delta + D_800EFAE8.draw_set_tracks[1];
+@@ -220 +220 @@
+-s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.unk24; }
++s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.view_angles; }
+DRY RUN: 3 file(s) would change; nothing written
+UNRESOLVED (1): edit by hand, then re-run the keycheck
+  src/main/43500.c:773: also reaches `unk4` through another type
+exit=1
