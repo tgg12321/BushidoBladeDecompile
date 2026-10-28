@@ -205,40 +205,40 @@ void eff_SelectQuadBuffer(s32 select_second_buffer) {
 #define SPAD51268 ((Unk1F800000Rec *)0x1F800000)
 
 void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
-    g_eff_active_command_block = &SPAD51268->unk00;
-    D_800A346C = SPAD51268->unk00.unk18;
-    g_eff_view_origin = SPAD51268->unk00.unk20;
-    g_eff_view_rotation_matrix = &SPAD51268->unk30;
+    g_eff_active_command_block = &SPAD51268->default_command_block;
+    D_800A346C = SPAD51268->default_command_block.unk18;
+    g_eff_view_origin = SPAD51268->default_command_block.unk20;
+    g_eff_view_rotation_matrix = &SPAD51268->view_rotation_matrix;
     g_eff_current_tex_rec = &SPAD51268->unk50;
-    g_eff_tpage_word = &SPAD51268->unk58;
-    g_eff_clut_word = &SPAD51268->unk5C;
-    g_eff_tex_left_u = &SPAD51268->unk60;
-    g_eff_tex_right_u = &SPAD51268->unk62;
-    g_eff_tex_top_v = &SPAD51268->unk64;
-    g_eff_tex_bottom_v = &SPAD51268->unk66;
-    g_eff_base_width = &SPAD51268->unk68;
-    g_eff_base_height = &SPAD51268->unk6A;
-    g_eff_geom_screen_work = &SPAD51268->unk6C;
-    g_eff_perspective_scale = &SPAD51268->unk70;
-    g_eff_screen_xy = SPAD51268->unk74;
-    D_800A34BC = &SPAD51268->unk80;
-    g_eff_right_x_offset = &SPAD51268->unk82;
-    g_eff_upper_y_offset = &SPAD51268->unk84;
+    g_eff_tpage_word = &SPAD51268->tpage_word;
+    g_eff_clut_word = &SPAD51268->clut_word;
+    g_eff_tex_left_u = &SPAD51268->tex_left_u;
+    g_eff_tex_right_u = &SPAD51268->tex_right_u;
+    g_eff_tex_top_v = &SPAD51268->tex_top_v;
+    g_eff_tex_bottom_v = &SPAD51268->tex_bottom_v;
+    g_eff_base_width = &SPAD51268->base_width;
+    g_eff_base_height = &SPAD51268->base_height;
+    g_eff_geom_screen_work = &SPAD51268->geom_screen_work;
+    g_eff_perspective_scale = &SPAD51268->perspective_scale;
+    g_eff_screen_xy = SPAD51268->screen_xy;
+    D_800A34BC = &SPAD51268->left_x_offset;
+    g_eff_right_x_offset = &SPAD51268->right_x_offset;
+    g_eff_upper_y_offset = &SPAD51268->upper_y_offset;
     g_eff_lower_y_offset_word = &SPAD51268->unk88;
     g_eff_rtp_flag = &SPAD51268->unk8C;
-    g_eff_depth_work = SPAD51268->unk90;
-    g_eff_top_left_uv = &SPAD51268->unk98;
-    g_eff_top_right_uv = &SPAD51268->unk9A;
-    g_eff_bottom_left_uv = &SPAD51268->unk9C;
-    g_eff_bottom_right_uv = &SPAD51268->unk9E;
+    g_eff_depth_work = SPAD51268->depth_work;
+    g_eff_top_left_uv = &SPAD51268->top_left_uv;
+    g_eff_top_right_uv = &SPAD51268->top_right_uv;
+    g_eff_bottom_left_uv = &SPAD51268->bottom_left_uv;
+    g_eff_bottom_right_uv = &SPAD51268->bottom_right_uv;
     g_eff_current_ot_entry = &SPAD51268->unkA0;
     g_eff_current_prim_tag = &SPAD51268->unkA4;
-    D_800A3480 = &SPAD51268->unkA8;
-    D_800A3484 = &SPAD51268->unkAC;
+    D_800A3480 = &SPAD51268->yawed_quad_tex_rec_index;
+    D_800A3484 = &SPAD51268->quad_rate_selector;
     g_eff_clut_tex_rec = &SPAD51268->unkB0;
-    g_eff_work_area = &SPAD51268->unkB8;
-    SPAD51268->unk00.unk04 = src_rotation;
-    SPAD51268->unk00.unk08 = src_position;
+    g_eff_work_area = &SPAD51268->effect_work_area;
+    SPAD51268->default_command_block.unk04 = src_rotation;
+    SPAD51268->default_command_block.unk08 = src_position;
 }
 
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
@@ -773,13 +773,13 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     g_eff_billboard_draw_count++;
     eff_SetRotMatrix(rotation_out, position_out, scaled_rotation_matrix);
     SetRotMatrix(g_eff_view_rotation_matrix);
-    half_width = &base->unk10;
-    billboard_height = &base->unk12;
-    var_3 = &base->unk14;
-    v = &base->unk24;
-    local_origin = &base->unk34;
-    depth_cue_out = &base->unk3C;
-    ot_index = &base->unk44;
+    half_width = &base->billboard_screen_half_width;
+    billboard_height = &base->billboard_screen_height;
+    var_3 = &base->rotated_position;
+    v = &base->view_relative_position;
+    local_origin = &base->zero_vector;
+    depth_cue_out = &base->depth_cue;
+    ot_index = &base->billboard_ot_index;
     local_origin->vz = 0;
     local_origin->vy = 0;
     local_origin->vx = 0;
@@ -1115,12 +1115,12 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
 
     base = &g_eff_work_area->v80063084;
     prim = g_eff_quad_cursor;
-    var_2 = &base->unk14;
-    relative_position = &base->unk24;
-    v = &base->unk2C;
-    depth_cue_out = &base->unk34;
+    var_2 = &base->rotated_position;
+    relative_position = &base->view_relative_position;
+    v = &base->zero_vector;
+    depth_cue_out = &base->depth_cue;
     var_6 = &base->unk38;
-    ot_index = &base->unk3C;
+    ot_index = &base->billboard_ot_index;
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
     v->vz = 0;
     v->vy = 0;
@@ -1611,12 +1611,12 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     s32 bit;
 
     base = &g_eff_work_area->v800646E8;
-    quad_ot_read_cursor = base->unk48;
-    billboard_width = &base->unk10;
-    billboard_height = &base->unk12;
-    frame_index = &base->unk14;
-    var_5 = &base->unk18;
-    relative_position = &base->unk28;
+    quad_ot_read_cursor = base->quad_ot_index_table;
+    billboard_width = &base->billboard_screen_width;
+    billboard_height = &base->billboard_screen_height;
+    frame_index = &base->billboard_frame_index;
+    var_5 = &base->rotated_position;
+    relative_position = &base->view_relative_position;
     local_origin = &base->unk38;
     p = &base->unk40;
     quads_end = &base->unk44;
@@ -2089,15 +2089,15 @@ u8 eff_DrawAnimatedQuads(s32 mode_index) {
 
     var_0 = &g_eff_work_area->v80065800;
     prim = g_eff_quad_cursor;
-    var_2 = &var_0->unk10;
+    var_2 = &var_0->depth_cue;
     p_t = var_0->unk14;
-    relative_position = &var_0->unk54;
+    relative_position = &var_0->view_relative_position;
     p_v = &var_0->unk64;
-    p_w = &var_0->unk6C;
-    p_h = &var_0->unk70;
-    rotation_matrix = &var_0->unk74;
-    texture_width = &var_0->unk94;
-    texture_height = &var_0->unk96;
+    p_w = &var_0->quad_extent_x;
+    p_h = &var_0->quad_extent_y;
+    rotation_matrix = &var_0->corner_rotation_matrix;
+    texture_width = &var_0->tex_width;
+    texture_height = &var_0->tex_height;
 
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
     relative_position->vx =
@@ -2743,13 +2743,13 @@ u8 eff_PrepareParticles(s32 particle_mode, s32 particle_row_index) {
      * plain pointers p0 / p2 / p4 / p6C / p80: member stores are
      * MEM_IN_STRUCT_P and let scalar accesses move across them (as members, p0:
      * scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49) (Q129). */
-    u16 *p0 = &var_0->unk00;
-    u16 *p2 = &var_0->unk02;
-    u32 *p4 = &var_0->unk04;
-    s16 *p6C = &var_0->unk6C;
-    POLY_FT4 **p80 = &var_0->unk80;
+    u16 *p0 = &var_0->tex_right_u_offset;
+    u16 *p2 = &var_0->tex_bottom_v_offset;
+    u32 *p4 = &var_0->squared_distance_limit;
+    s16 *p6C = &var_0->particle_scan_count;
+    POLY_FT4 **p80 = &var_0->particle_quad_cursor;
 
-    D_800A3724 = &var_0->unk1AC;
+    D_800A3724 = &var_0->random_accumulator;
     *p80 = g_eff_quad_cursor;
     *p4 = 0x895440;
     *g_eff_tpage_word = 0x2E;
@@ -2875,25 +2875,25 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
     u32 squared_length;
     s16 *sxy;
 
-    D_800A3724 = &var_0->unk1AC;
-    var_10 = &var_0->unk1AC;
+    D_800A3724 = &var_0->random_accumulator;
+    var_10 = &var_0->random_accumulator;
     *var_10 = rand();
-    var_1 = &var_0->unk04;
+    var_1 = &var_0->squared_distance_limit;
     p_out = var_0->unk10.t;
     p_work = &var_0->unk34;
     var_13 = var_0->unk44;
-    var_2 = &var_0->unk5C;
-    p_count = &var_0->unk6C;
+    var_2 = &var_0->group_position;
+    p_count = &var_0->particle_scan_count;
     p_idx = &var_0->unk6E;
     var_14 = &var_0->unk70;
-    p_r = &var_0->unk72;
-    p_g = &var_0->unk73;
-    p_b = &var_0->unk74;
-    p_n = &var_0->unk78;
-    p_prim = &var_0->unk80;
-    p_ent = &var_0->unk84;
-    var_8 = &var_0->unk88;
-    var_9 = var_0->unk8C;
+    p_r = &var_0->particle_red;
+    p_g = &var_0->particle_green;
+    p_b = &var_0->particle_blue;
+    p_n = &var_0->screen_xy_index;
+    p_prim = &var_0->particle_quad_cursor;
+    p_ent = &var_0->current_particle;
+    var_8 = &var_0->group_position_entry;
+    var_9 = var_0->quad_ot_index_table;
 
     for (*p_idx = 0; *p_idx < *p_count; (*p_idx)++) {
         *p_ent = &g_eff_particles[particle_row_index][*p_idx];
@@ -3105,15 +3105,15 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *work_area = &g_eff_work_area->v800678A8;
     s16 *quad_index = &work_area->unk6E;
-    POLY_FT4 **quad_end = &work_area->unk7C;
-    POLY_FT4 **quad_cursor = &work_area->unk80;
-    u16 *quad_ot_indices = work_area->unk8C;
+    POLY_FT4 **quad_end = &work_area->new_quads_end;
+    POLY_FT4 **quad_cursor = &work_area->particle_quad_cursor;
+    u16 *quad_ot_indices = work_area->quad_ot_index_table;
     POLY_FT4 *entry_quad_cursor;
     POLY_FT4 *first_quad;
     s32 quad_count;
     s32 has_quads;
 
-    D_800A3724 = &work_area->unk1AC;
+    D_800A3724 = &work_area->random_accumulator;
     first_quad = g_eff_quad_cursor;
     entry_quad_cursor = *quad_cursor;
     quad_count = entry_quad_cursor - first_quad;

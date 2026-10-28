@@ -1021,45 +1021,45 @@ typedef struct {
  * +0x00..+0x07. SetTransMatrix is handed the address 0x14 below unk14, so unk14
  * is read as a MATRIX's t[]. */
 typedef struct {
-    u8 unk00[0x10]; /* no access here */
-    s16 unk10;      /* half_width */
-    s16 unk12;      /* billboard_height */
-    VECTOR unk14;   /* ApplyRotMatrixLV out */
-    VECTOR unk24;   /* ApplyRotMatrixLV in */
-    SVECTOR unk34;  /* RotTransPers in */
-    s32 unk3C;      /* RotTransPers' p */
-    u8 unk40[4];    /* no access */
-    u32 unk44;      /* gpu_DepthToOtIndex's depth, the OT index */
+    u8 unk00[0x10];                  /* no access here */
+    s16 billboard_screen_half_width; /* half_width */
+    s16 billboard_screen_height;     /* billboard_height */
+    VECTOR rotated_position;         /* ApplyRotMatrixLV out */
+    VECTOR view_relative_position;   /* ApplyRotMatrixLV in */
+    SVECTOR zero_vector;             /* RotTransPers in */
+    s32 depth_cue;                   /* RotTransPers' p */
+    u8 unk40[4];                     /* no access */
+    u32 billboard_ot_index; /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_800620B8;
 
 /* eff_DrawAndAdvanceBillboardPairs's layout (Unk1F8000B8Union.v80063084).
  * SetTransMatrix is handed the address 0x14 below unk14 (the area's base), so
  * unk14 is read as a MATRIX's t[]. */
 typedef struct {
-    u8 unk00[0x14]; /* no access */
-    VECTOR unk14;   /* ApplyRotMatrix out */
-    SVECTOR unk24;  /* ApplyRotMatrix in */
-    SVECTOR unk2C;  /* RotTransPers in */
-    s32 unk34;      /* RotTransPers' p */
+    u8 unk00[0x14];                 /* no access */
+    VECTOR rotated_position;        /* ApplyRotMatrix out */
+    SVECTOR view_relative_position; /* ApplyRotMatrix in */
+    SVECTOR zero_vector;            /* RotTransPers in */
+    s32 depth_cue;                  /* RotTransPers' p */
     /* g_eff_billboard_pair_ages[slot_index] - 15, the colour scale */
     s32 unk38;
-    s32 unk3C; /* gpu_DepthToOtIndex's depth, the OT index */
+    s32 billboard_ot_index; /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_80063084;
 
 /* eff_DrawAndAdvanceJitteredBillboards's layout (Unk1F8000B8Union.v800646E8).
  * SetTransMatrix is handed the address 0x14 below unk18, so unk18 is read as a
  * MATRIX's t[]. */
 typedef struct {
-    u8 unk00[0x10];  /* no access */
-    s16 unk10;       /* billboard_width */
-    s16 unk12;       /* billboard_height */
-    s32 unk14;       /* frame */
-    VECTOR unk18;    /* ApplyRotMatrixLV out */
-    VECTOR unk28;    /* ApplyRotMatrixLV in */
-    SVECTOR unk38;   /* RotTransPers in */
-    s32 unk40;       /* RotTransPers' p */
-    POLY_FT4 *unk44; /* the end of the quads */
-    u32 unk48[16];   /* per kept quad, its OT index */
+    u8 unk00[0x10];                /* no access */
+    s16 billboard_screen_width;    /* billboard_width */
+    s16 billboard_screen_height;   /* billboard_height */
+    s32 billboard_frame_index;     /* frame */
+    VECTOR rotated_position;       /* ApplyRotMatrixLV out */
+    VECTOR view_relative_position; /* ApplyRotMatrixLV in */
+    SVECTOR unk38;                 /* RotTransPers in */
+    s32 unk40;                     /* RotTransPers' p */
+    POLY_FT4 *unk44;               /* the end of the quads */
+    u32 quad_ot_index_table[16];   /* per kept quad, its OT index */
 } Unk1F8000B8_800646E8;
 
 /* eff_DrawAnimatedQuads's layout of the 51268 work area
@@ -1067,19 +1067,19 @@ typedef struct {
  * the area's base as a MATRIX, whose t[] is unk14[0]. */
 typedef struct {
     u8 unk00[0x10]; /* no access */
-    s32 unk10;      /* gte_stdp out; not read */
+    s32 depth_cue;  /* gte_stdp out; not read */
     /* ApplyRotMatrixLV out ([0]); the corner loop's ApplyRotMatrix outs */
     VECTOR unk14[4];
-    VECTOR unk54; /* ApplyRotMatrixLV in */
+    VECTOR view_relative_position; /* ApplyRotMatrixLV in */
     /* gte_ldv0 / RotMatrix / ApplyRotMatrix in */
     SVECTOR unk64;
-    s16 unk6C;    /* p_w */
-    u8 unk6E[2];  /* no access */
-    s16 unk70;    /* p_h */
-    u8 unk72[2];  /* no access */
-    MATRIX unk74; /* RotMatrix out, SetRotMatrix in */
-    s16 unk94;    /* added to the texture u */
-    s16 unk96;    /* added to the texture v */
+    s16 quad_extent_x;             /* p_w */
+    u8 unk6E[2];                   /* no access */
+    s16 quad_extent_y;             /* p_h */
+    u8 unk72[2];                   /* no access */
+    MATRIX corner_rotation_matrix; /* RotMatrix out, SetRotMatrix in */
+    s16 tex_width;                 /* added to the texture u */
+    s16 tex_height;                /* added to the texture v */
 } Unk1F8000B8_80065800;
 
 /* The layout eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads
@@ -1090,11 +1090,11 @@ typedef struct {
  * eff_UpdateParticles builds the quads at unk80 and records each one's depth
  * (its OT slot index) in unk8C, eff_LinkParticleQuads links them. */
 typedef struct {
-    u16 unk00; /* eff_PrepareParticles: added to the texture u */
-    u16 unk02; /* eff_PrepareParticles: added to the texture v */
+    u16 tex_right_u_offset;  /* eff_PrepareParticles: added to the texture u */
+    u16 tex_bottom_v_offset; /* eff_PrepareParticles: added to the texture v */
     /* eff_PrepareParticles stores 0x895440; eff_UpdateParticles compares
      * against it */
-    u32 unk04;
+    u32 squared_distance_limit;
     u8 unk08[8]; /* no access */
     /* eff_UpdateParticles: only its translation (+0x24) is used: the
        gte_ApplyRotMatrix / gte_Square0 output, loaded by gte_SetTransMatrix */
@@ -1103,28 +1103,29 @@ typedef struct {
     VECTOR unk34; /* eff_UpdateParticles: gte_Square0 in */
     /* eff_UpdateParticles: gte_ApplyRotMatrix / gte_ldv3 in */
     SVECTOR unk44[3];
-    VECTOR unk5C; /* eff_UpdateParticles */
+    VECTOR group_position; /* eff_UpdateParticles */
     /* eff_PrepareParticles stores it; eff_UpdateParticles's loop bound */
-    s16 unk6C;
+    s16 particle_scan_count;
     /* eff_UpdateParticles / eff_LinkParticleQuads loop index */
     s16 unk6E;
     /* eff_PrepareParticles: table index; eff_UpdateParticles: per entry */
     s16 unk70;
-    u8 unk72; /* eff_UpdateParticles colours */
-    u8 unk73;
-    u8 unk74;
-    u8 unk75[3];              /* no access */
-    s16 unk78;                /* eff_UpdateParticles */
-    u8 unk7A[2];              /* no access */
-    POLY_FT4 *unk7C;          /* eff_LinkParticleQuads: the end of the quads */
-    POLY_FT4 *unk80;          /* the quad cursor */
-    Unk800EFC78Record *unk84; /* eff_UpdateParticles */
-    Unk800F0C10Record *unk88; /* eff_UpdateParticles */
+    u8 particle_red; /* eff_UpdateParticles colours */
+    u8 particle_green;
+    u8 particle_blue;
+    u8 unk75[3];         /* no access */
+    s16 screen_xy_index; /* eff_UpdateParticles */
+    u8 unk7A[2];         /* no access */
+    /* eff_LinkParticleQuads: the end of the quads */
+    POLY_FT4 *new_quads_end;
+    POLY_FT4 *particle_quad_cursor;          /* the quad cursor */
+    Unk800EFC78Record *current_particle;     /* eff_UpdateParticles */
+    Unk800F0C10Record *group_position_entry; /* eff_UpdateParticles */
     /* per quad, its depth, the OT slot index (eff_UpdateParticles stores,
        eff_LinkParticleQuads reads) */
-    u16 unk8C[0x90];
+    u16 quad_ot_index_table[0x90];
     /* eff_UpdateParticles stores rand() values here; D_800A3724 points at it */
-    s32 unk1AC;
+    s32 random_accumulator;
 } Unk1F8000B8_800678A8;
 
 /* Unk1F800000Rec.unkB8, the 51268 work area g_eff_work_area points at
@@ -1165,37 +1166,37 @@ typedef union {
  * members are one global each (g_eff_view_rotation_matrix ..
  * g_eff_bottom_right_uv, D_800A3480 / D_800A3484). */
 typedef struct {
-    Unk1F800000Unk00 unk00;
+    Unk1F800000Unk00 default_command_block;
     u8 unk2C[4];
-    MATRIX unk30; /* g_eff_view_rotation_matrix */
+    MATRIX view_rotation_matrix; /* g_eff_view_rotation_matrix */
     TexRec unk50;
-    s32 unk58;    /* g_eff_tpage_word */
-    s32 unk5C;    /* g_eff_clut_word */
-    u16 unk60;    /* g_eff_tex_left_u */
-    u16 unk62;    /* g_eff_tex_right_u */
-    u16 unk64;    /* g_eff_tex_top_v */
-    u16 unk66;    /* g_eff_tex_bottom_v */
-    s16 unk68;    /* g_eff_base_width */
-    s16 unk6A;    /* g_eff_base_height */
-    s32 unk6C;    /* g_eff_geom_screen_work */
-    s32 unk70;    /* g_eff_perspective_scale */
-    s32 unk74[3]; /* g_eff_screen_xy */
-    s16 unk80;    /* D_800A34BC */
-    s16 unk82;    /* g_eff_right_x_offset */
-    s32 unk84;    /* g_eff_upper_y_offset */
-    s32 unk88;    /* g_eff_lower_y_offset_word */
-    s32 unk8C;    /* g_eff_rtp_flag */
-    s32 unk90[2]; /* g_eff_depth_work */
-    u16 unk98;    /* g_eff_top_left_uv */
-    u16 unk9A;    /* g_eff_top_right_uv */
-    u16 unk9C;    /* g_eff_bottom_left_uv */
-    u16 unk9E;    /* g_eff_bottom_right_uv */
+    s32 tpage_word;        /* g_eff_tpage_word */
+    s32 clut_word;         /* g_eff_clut_word */
+    u16 tex_left_u;        /* g_eff_tex_left_u */
+    u16 tex_right_u;       /* g_eff_tex_right_u */
+    u16 tex_top_v;         /* g_eff_tex_top_v */
+    u16 tex_bottom_v;      /* g_eff_tex_bottom_v */
+    s16 base_width;        /* g_eff_base_width */
+    s16 base_height;       /* g_eff_base_height */
+    s32 geom_screen_work;  /* g_eff_geom_screen_work */
+    s32 perspective_scale; /* g_eff_perspective_scale */
+    s32 screen_xy[3];      /* g_eff_screen_xy */
+    s16 left_x_offset;     /* D_800A34BC */
+    s16 right_x_offset;    /* g_eff_right_x_offset */
+    s32 upper_y_offset;    /* g_eff_upper_y_offset */
+    s32 unk88;             /* g_eff_lower_y_offset_word */
+    s32 unk8C;             /* g_eff_rtp_flag */
+    s32 depth_work[2];     /* g_eff_depth_work */
+    u16 top_left_uv;       /* g_eff_top_left_uv */
+    u16 top_right_uv;      /* g_eff_top_right_uv */
+    u16 bottom_left_uv;    /* g_eff_bottom_left_uv */
+    u16 bottom_right_uv;   /* g_eff_bottom_right_uv */
     u32 unkA0;
     u32 unkA4;
-    s32 unkA8; /* D_800A3480 */
-    s32 unkAC; /* D_800A3484 */
+    s32 yawed_quad_tex_rec_index; /* D_800A3480 */
+    s32 quad_rate_selector;       /* D_800A3484 */
     TexRec unkB0;
-    Unk1F8000B8Union unkB8;
+    Unk1F8000B8Union effect_work_area;
 } Unk1F800000Rec;
 
 /* A cell (x, z) of the 32x32 grid of 2000-unit cells that 43500's
@@ -1805,7 +1806,7 @@ typedef struct Unk80101EC8Record {
     s16 opponent_snapshot_x;
     s16 opponent_snapshot_z;
     s16 opponent_snapshot_radius;
-    s32 unk_430;
+    s32 cpu_state_flags;
     s32 nearest_nav_crossing_distance;
     s16 cpu_level;
     s16 opponent_angle_from_orientation;

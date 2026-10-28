@@ -118,3 +118,10 @@ y_extent_work needs a fresh row). cpu_state_flags PASS after a per-bit check
 lifetime). Batch B (the five Unk1F8000B8_* views, 43): 43/43 PASS; the eight
 shared-name groups hold the same role at every member.
 Dry run re-run with the final 68 pairs: see dry.txt.
+
+APPLY (2026-10-28): naming_keycheck rejects a pair T.m=n when another aggregate holds both m and n
+(member destination not fresh in cpp aggregates). Dropped for that reason, names passed review:
+  Unk1F8000B8_800646E8.unk38=zero_vector (80063084 keeps unk38, gains zero_vector)
+  Unk1F8000B8_800646E8.unk40=depth_cue (800620B8 keeps unk40, gains depth_cue)
+  Unk1F8000B8_800646E8.unk44=new_quads_end (800678A8 keeps unk44, gains new_quads_end)
+65 pairs land. They can return once the sibling members (80063084.unk38, 800620B8.unk40, 800678A8.unk44) are named.
