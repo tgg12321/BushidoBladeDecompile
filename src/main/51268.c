@@ -916,23 +916,23 @@ s32 eff_SpawnRotatedQuadCluster(void) {
 s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
     extern s16 D_8009BB84[];
     s32 count;
-    MATRIX *var_1;
-    s32 *var_2;
-    u16 *var_3;
+    MATRIX *composite_matrix;
+    s32 *depth_cue_out;
+    u16 *quad_ot_indices;
     s32 *scale;
     s32 *var_5;
     MATRIX *mats;
-    MATRIX *m;
+    MATRIX *slot_matrix;
     s32 *sxy;
     POLY_FT4 *prim;
-    s32 i;
-    s32 j;
+    s32 slot_index;
+    s32 quad_index;
     s32 k;
     s32 v;
     s32 c;
-    s32 bit;
-    s16 *var_16;
-    POLY_FT4 *end;
+    s32 slot_bit;
+    s16 *quad_vertices;
+    POLY_FT4 *quads_end;
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
      * prim becomes the quad cursor; keeps `mats = base + 0x78` out of the
@@ -943,43 +943,43 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
-    var_1 = (MATRIX *)((u8 *)prim + 0x138);
+    composite_matrix = (MATRIX *)((u8 *)prim + 0x138);
     sxy = (s32 *)((u8 *)prim + 0x158);
-    var_2 = (s32 *)((u8 *)prim + 0x168);
-    var_3 = (u16 *)((u8 *)prim + 0x16C);
+    depth_cue_out = (s32 *)((u8 *)prim + 0x168);
+    quad_ot_indices = (u16 *)((u8 *)prim + 0x16C);
     scale = (s32 *)((u8 *)prim + 0x178);
     var_5 = (s32 *)((u8 *)prim + 0x188);
     prim = g_eff_quad_cursor;
-    for (i = 0; i < 6; i++) {
-        bit = 1 << i;
-        if (!(D_800A3460 & bit)) {
+    for (slot_index = 0; slot_index < 6; slot_index++) {
+        slot_bit = 1 << slot_index;
+        if (!(D_800A3460 & slot_bit)) {
             continue;
         }
-        m = &mats[i];
-        v = rsin(((D_800F0C04[i] + 6) << 10) / 6);
-        scale[0] = scale[1] = scale[2] = v + (D_800F0C04[i] << 12) / 6;
-        RotMatrixZYX(&D_800F10A0[i].vx, (u8 *)m);
-        ScaleMatrix((u8 *)m, scale);
-        m->t[0] = D_800F0FB8[i].x - D_800A3470[0];
-        m->t[1] = D_800F0FB8[i].y - D_800A3470[1];
-        m->t[2] = D_800F0FB8[i].z - D_800A3470[2];
-        CompMatrix(D_800A3474, m, var_1);
-        SetRotMatrix(var_1);
-        SetTransMatrix(var_1);
-        for (j = 0; j < 3; j++) {
-            if (D_800F0C04[i] < 3) {
+        slot_matrix = &mats[slot_index];
+        v = rsin(((D_800F0C04[slot_index] + 6) << 10) / 6);
+        scale[0] = scale[1] = scale[2] = v + (D_800F0C04[slot_index] << 12) / 6;
+        RotMatrixZYX(&D_800F10A0[slot_index].vx, (u8 *)slot_matrix);
+        ScaleMatrix((u8 *)slot_matrix, scale);
+        slot_matrix->t[0] = D_800F0FB8[slot_index].x - D_800A3470[0];
+        slot_matrix->t[1] = D_800F0FB8[slot_index].y - D_800A3470[1];
+        slot_matrix->t[2] = D_800F0FB8[slot_index].z - D_800A3470[2];
+        CompMatrix(D_800A3474, slot_matrix, composite_matrix);
+        SetRotMatrix(composite_matrix);
+        SetTransMatrix(composite_matrix);
+        for (quad_index = 0; quad_index < 3; quad_index++) {
+            if (D_800F0C04[slot_index] < 3) {
                 *(s32 *)&prim->r0 = 0x808080;
             } else {
-                c = ((6 - D_800F0C04[i]) << 7) / 3;
+                c = ((6 - D_800F0C04[slot_index]) << 7) / 3;
                 *var_5 = c;
                 *(s32 *)&prim->r0 = c + (c << 8) + (c << 16);
             }
-            if (D_800F0C04[i] < 3) {
-                g_eff_current_tex_rec = j ? D_8009B960 : D_8009B958;
+            if (D_800F0C04[slot_index] < 3) {
+                g_eff_current_tex_rec = quad_index ? D_8009B960 : D_8009B958;
             } else {
-                g_eff_current_tex_rec = j ? D_8009B970 : D_8009B968;
+                g_eff_current_tex_rec = quad_index ? D_8009B970 : D_8009B968;
             }
-            if (j) {
+            if (quad_index) {
                 *D_800A349C = g_eff_current_tex_rec->u + 0x3F;
             } else {
                 *D_800A349C = g_eff_current_tex_rec->u + 0x1F;
@@ -1005,16 +1005,17 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
             SetPolyFT4(prim);
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
-            var_16 = &D_8009BB84[j * 16];
-            RotTransPers4(var_16, var_16 + 4, var_16 + 8, var_16 + 12, sxy,
-                          sxy + 1, sxy + 2, sxy + 3, var_2, D_800A34CC);
+            quad_vertices = &D_8009BB84[quad_index * 16];
+            RotTransPers4(quad_vertices, quad_vertices + 4, quad_vertices + 8,
+                          quad_vertices + 12, sxy, sxy + 1, sxy + 2, sxy + 3,
+                          depth_cue_out, D_800A34CC);
             gte_stsz(D_800A34D0);
             *D_800A34D0 = gpu_DepthToOtIndex(*D_800A34D0, 0);
             if (*D_800A34D0 == 0) {
                 *D_800A34D0 = 1;
             }
             if (*D_800A34D0 < 0x1005) {
-                var_3[count] = *D_800A34D0;
+                quad_ot_indices[count] = *D_800A34D0;
                 *(s32 *)&prim->x0 = sxy[0];
                 *(s32 *)&prim->x1 = sxy[1];
                 *(s32 *)&prim->x2 = sxy[2];
@@ -1025,9 +1026,9 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
                 }
             }
         }
-        D_800F0C04[i]++;
-        if (D_800F0C04[i] >= 7) {
-            D_800A3460 &= ~(1 << i);
+        D_800F0C04[slot_index]++;
+        if (D_800F0C04[slot_index] >= 7) {
+            D_800A3460 &= ~(1 << slot_index);
         }
     }
     if (g_eff_quad_cursor != prim) {
@@ -1035,11 +1036,11 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
          * g_eff_quad_cursor to link each quad, the way SOTN's menu code
          * restarts its fill cursor at the buffer to read it back (Q51) */
         /* SOTN: src/dra/menu.c:3352 @db41b28 */
-        end = prim;
-        for (prim = g_eff_quad_cursor, k = 0; prim < end; prim++, k++) {
-            AddPrim(g_gpu_ot_ptr + var_3[k], prim);
+        quads_end = prim;
+        for (prim = g_eff_quad_cursor, k = 0; prim < quads_end; prim++, k++) {
+            AddPrim(g_gpu_ot_ptr + quad_ot_indices[k], prim);
         }
-        g_eff_quad_cursor = end;
+        g_eff_quad_cursor = quads_end;
         return 1;
     }
     if (D_800A3460 == 0) {
@@ -1054,23 +1055,23 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
    its age. With every slot taken it writes slot 12 (0x800F0EC8, the next table)
    -- the original has no guard. */
 s32 eff_SpawnBillboardPair(void) {
-    s32 i;
-    s32 bit;
-    s32 *src;
+    s32 slot_index;
+    s32 slot_bit;
+    s32 *src_position;
 
     g_eff_command_phase[8] = 1;
-    for (i = 0; i < 12; i++) {
-        bit = 1 << i;
-        if (!(D_800A3448 & bit)) {
-            D_800A3448 |= bit;
+    for (slot_index = 0; slot_index < 12; slot_index++) {
+        slot_bit = 1 << slot_index;
+        if (!(D_800A3448 & slot_bit)) {
+            D_800A3448 |= slot_bit;
             break;
         }
     }
-    src = g_eff_command_position;
-    D_800F0E38[i].unk0 = src[0];
-    D_800F0E38[i].unk4 = src[1];
-    D_800F0E38[i].unk8 = src[2];
-    D_800F0BEC[i] = 0;
+    src_position = g_eff_command_position;
+    D_800F0E38[slot_index].unk0 = src_position[0];
+    D_800F0E38[slot_index].unk4 = src_position[1];
+    D_800F0E38[slot_index].unk8 = src_position[2];
+    D_800F0BEC[slot_index] = 0;
     return 1;
 }
 
@@ -1088,25 +1089,25 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
     Unk1F8000B8_80063084 *base;
     POLY_FT4 *prim;
     VECTOR *var_2;
-    SVECTOR *var_3;
+    SVECTOR *relative_position;
     SVECTOR *v;
-    s32 *var_5;
+    s32 *depth_cue_out;
     s32 *var_6;
-    s32 *z;
-    s16 i;
-    s16 j;
+    s32 *ot_index;
+    s16 slot_index;
+    s16 billboard_index;
     s32 bit;
     s32 scale;
-    s32 var_12;
+    s32 red_green_level;
 
     base = &D_800A34EC->v80063084;
     prim = g_eff_quad_cursor;
     var_2 = &base->unk14;
-    var_3 = &base->unk24;
+    relative_position = &base->unk24;
     v = &base->unk2C;
-    var_5 = &base->unk34;
+    depth_cue_out = &base->unk34;
     var_6 = &base->unk38;
-    z = &base->unk3C;
+    ot_index = &base->unk3C;
     gte_SetRotMatrix(D_800A3474);
     v->vz = 0;
     v->vy = 0;
@@ -1116,34 +1117,38 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
     *D_800A34AC = 0x60;
     *D_800A3490 = 0x2E;
     *D_800A3490 = *D_800A3490 << 16;
-    for (i = 0; i < 12; i++) {
-        bit = 1 << i;
+    for (slot_index = 0; slot_index < 12; slot_index++) {
+        bit = 1 << slot_index;
         if (!(D_800A3448 & bit)) {
             continue;
         }
-        for (j = 0; j < 2; j++) {
-            if (D_800F0BEC[i] < 16) {
-                var_3->vx = D_800F0E38[i].unk0 - D_800A3470[0];
-                var_3->vz = D_800F0E38[i].unk8 - D_800A3470[2];
-                if (j != 0 && D_800F0BEC[i] >= 3) {
-                    var_3->vy =
-                        D_800F0E38[i].unk4 -
-                        (rsin((D_800F0BEC[i] - 3) << 8) * 329 / 4096 - 69) /
+        for (billboard_index = 0; billboard_index < 2; billboard_index++) {
+            if (D_800F0BEC[slot_index] < 16) {
+                relative_position->vx =
+                    D_800F0E38[slot_index].unk0 - D_800A3470[0];
+                relative_position->vz =
+                    D_800F0E38[slot_index].unk8 - D_800A3470[2];
+                if (billboard_index != 0 && D_800F0BEC[slot_index] >= 3) {
+                    relative_position->vy =
+                        D_800F0E38[slot_index].unk4 -
+                        (rsin((D_800F0BEC[slot_index] - 3) << 8) * 329 / 4096 -
+                         69) /
                             10 -
                         D_800A3470[1];
                 } else {
-                    var_3->vy = D_800F0E38[i].unk4 - D_800A3470[1];
+                    relative_position->vy =
+                        D_800F0E38[slot_index].unk4 - D_800A3470[1];
                 }
-                ApplyRotMatrix(var_3, var_2);
+                ApplyRotMatrix(relative_position, var_2);
                 /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the
                  * address 0x14 below var_2, it loads var_2 as the translation.
                  * Spelled (MATRIX *)base: score 55. */
                 SetTransMatrix((MATRIX *)((u8 *)var_2 - 0x14));
-                RotTransPers(v, D_800A34B8, var_5, D_800A34CC);
+                RotTransPers(v, D_800A34B8, depth_cue_out, D_800A34CC);
                 gte_stsz(D_800A34D0);
-                if (j == 0) {
+                if (billboard_index == 0) {
                     g_eff_current_tex_rec = D_8009B940;
-                } else if (D_800F0BEC[i] < 11) {
+                } else if (D_800F0BEC[slot_index] < 11) {
                     g_eff_current_tex_rec = D_8009B948;
                 } else {
                     g_eff_current_tex_rec = D_8009B950;
@@ -1159,8 +1164,8 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                 *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
                 *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
                 *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
-                *z = gpu_DepthToOtIndex(*D_800A34D0, 0);
-                if (*z < 0x1005 && *D_800A34B0 / 1000 >> 4 < *z) {
+                *ot_index = gpu_DepthToOtIndex(*D_800A34D0, 0);
+                if (*ot_index < 0x1005 && *D_800A34B0 / 1000 >> 4 < *ot_index) {
                     *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
                     /* Sprite size = base size * depth scale, in 1/256 units,
                        at least 8. */
@@ -1170,30 +1175,34 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x800
                                       ? *D_800A34AC * *D_800A34B4 >> 8
                                       : 8;
-                    if (j == 0) {
-                        if (D_800F0BEC[i] < 5) {
+                    if (billboard_index == 0) {
+                        if (D_800F0BEC[slot_index] < 5) {
                             *D_800A34C0 =
                                 *D_800A34C0 *
-                                (rcos((D_800F0BEC[i] << 10) / 5) * 3 / 4096 +
+                                (rcos((D_800F0BEC[slot_index] << 10) / 5) * 3 /
+                                     4096 +
                                  7) /
                                 10;
-                        } else if (D_800F0BEC[i] < 16) {
+                        } else if (D_800F0BEC[slot_index] < 16) {
                             *D_800A34C0 =
                                 *D_800A34C0 *
-                                (rcos(((D_800F0BEC[i] - 5) << 10) / 11) * 7 /
-                                 4096) /
+                                (rcos(((D_800F0BEC[slot_index] - 5) << 10) /
+                                      11) *
+                                 7 / 4096) /
                                 10;
                         }
-                        if (D_800F0BEC[i] < 10) {
+                        if (D_800F0BEC[slot_index] < 10) {
                             *D_800A34C8 =
                                 *D_800A34C8 *
-                                (rsin((D_800F0BEC[i] << 10) / 10) * 85 / 4096) /
+                                (rsin((D_800F0BEC[slot_index] << 10) / 10) *
+                                 85 / 4096) /
                                 100;
-                        } else if (D_800F0BEC[i] < 16) {
+                        } else if (D_800F0BEC[slot_index] < 16) {
                             *D_800A34C8 =
                                 *D_800A34C8 *
-                                (rcos(((D_800F0BEC[i] - 10) << 10) / 6) * 85 /
-                                 4096) /
+                                (rcos(((D_800F0BEC[slot_index] - 10) << 10) /
+                                      6) *
+                                 85 / 4096) /
                                 100;
                         }
                         if (g_working_record.unk20_0) {
@@ -1202,16 +1211,17 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                             *(s32 *)&prim->r0 = 0xFF8080;
                         }
                     } else {
-                        scale = rsin((D_800F0BEC[i] << 10) / 12) * 12 / 4096;
+                        scale = rsin((D_800F0BEC[slot_index] << 10) / 12) * 12 /
+                                4096;
                         *D_800A34C0 = *D_800A34C0 * scale / 10;
                         *D_800A34C8 = *D_800A34C8 * scale / 10;
-                        if (D_800F0BEC[i] >= 9) {
+                        if (D_800F0BEC[slot_index] >= 9) {
                             /* *var_6 = age - 15: the colour word below is built
                              * from -*var_6 * 128 / 5 and -*var_6 * 255 / 5. */
-                            *var_6 = D_800F0BEC[i] - 15;
-                            var_12 = (*var_6 * -128 / 5) & 0xFF;
+                            *var_6 = D_800F0BEC[slot_index] - 15;
+                            red_green_level = (*var_6 * -128 / 5) & 0xFF;
                             *(s32 *)&prim->r0 =
-                                var_12 + (var_12 << 8) +
+                                red_green_level + (red_green_level << 8) +
                                 ((*var_6 * -255 / 5 & 0xFF) << 16);
                         } else {
                             *(s32 *)&prim->r0 = 0;
@@ -1235,7 +1245,7 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
                     *(u16 *)&prim->u2 = *D_800A34DC;
                     *(u16 *)&prim->u3 = *D_800A34E0;
-                    D_800A34E4 = g_gpu_ot_ptr + *z;
+                    D_800A34E4 = g_gpu_ot_ptr + *ot_index;
                     D_800A34E8 = &prim->tag;
                     *D_800A34E8 =
                         (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
@@ -1246,10 +1256,10 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     }
                 }
             } else {
-                D_800A3448 &= 0xFFFF - (1 << i);
+                D_800A3448 &= 0xFFFF - (1 << slot_index);
             }
         }
-        D_800F0BEC[i]++;
+        D_800F0BEC[slot_index]++;
     }
     g_eff_quad_cursor = prim;
     return D_800A3448 != 0;
@@ -1291,31 +1301,43 @@ extern SVECTOR D_800F1000[][10];
  * record (D_800F0EC8[idx][slot]) from D_800A3478 / g_eff_command_position. Once
  * the lane is full, the counter wraps through 10..19 and slots are overwritten
  * in rotation. */
-u8 eff_AllocateOrRecycleYawedQuadSlot(s32 idx) {
-    s32 mask;
-    s32 i;
+u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
+    s32 slot_bit;
+    s32 slot_index;
 
-    if (D_800A344C[idx] < 10) {
-        D_800A344C[idx]++;
-        for (i = 0; i < D_800A344C[idx]; i++) {
-            if (!(D_800A3454[idx] & (mask = 1 << i))) {
-                D_800A3454[idx] |= mask;
-                D_800F1000[idx][i].vy = D_800A3478[1];
-                D_800F1000[idx][i].vx = D_800F1000[idx][i].vz = 0;
-                D_800F0EC8[idx][i].unk0 = g_eff_command_position[0];
-                D_800F0EC8[idx][i].unk4 = g_eff_command_position[1];
-                D_800F0EC8[idx][i].unk8 = g_eff_command_position[2];
+    if (D_800A344C[command_slot_index] < 10) {
+        D_800A344C[command_slot_index]++;
+        for (slot_index = 0; slot_index < D_800A344C[command_slot_index];
+             slot_index++) {
+            if (!(D_800A3454[command_slot_index] &
+                  (slot_bit = 1 << slot_index))) {
+                D_800A3454[command_slot_index] |= slot_bit;
+                D_800F1000[command_slot_index][slot_index].vy = D_800A3478[1];
+                D_800F1000[command_slot_index][slot_index].vx =
+                    D_800F1000[command_slot_index][slot_index].vz = 0;
+                D_800F0EC8[command_slot_index][slot_index].unk0 =
+                    g_eff_command_position[0];
+                D_800F0EC8[command_slot_index][slot_index].unk4 =
+                    g_eff_command_position[1];
+                D_800F0EC8[command_slot_index][slot_index].unk8 =
+                    g_eff_command_position[2];
                 break;
             }
         }
     } else {
-        D_800A344C[idx] = (D_800A344C[idx] + 1) % 10 + 10;
-        D_800F1000[idx][D_800A344C[idx] - 10].vy = D_800A3478[1];
-        D_800F1000[idx][D_800A344C[idx] - 10].vx =
-            D_800F1000[idx][D_800A344C[idx] - 10].vz = 0;
-        D_800F0EC8[idx][D_800A344C[idx] - 10].unk0 = g_eff_command_position[0];
-        D_800F0EC8[idx][D_800A344C[idx] - 10].unk4 = g_eff_command_position[1];
-        D_800F0EC8[idx][D_800A344C[idx] - 10].unk8 = g_eff_command_position[2];
+        D_800A344C[command_slot_index] =
+            (D_800A344C[command_slot_index] + 1) % 10 + 10;
+        D_800F1000[command_slot_index][D_800A344C[command_slot_index] - 10].vy =
+            D_800A3478[1];
+        D_800F1000[command_slot_index][D_800A344C[command_slot_index] - 10].vx =
+            D_800F1000[command_slot_index][D_800A344C[command_slot_index] - 10]
+                .vz = 0;
+        D_800F0EC8[command_slot_index][D_800A344C[command_slot_index] - 10]
+            .unk0 = g_eff_command_position[0];
+        D_800F0EC8[command_slot_index][D_800A344C[command_slot_index] - 10]
+            .unk4 = g_eff_command_position[1];
+        D_800F0EC8[command_slot_index][D_800A344C[command_slot_index] - 10]
+            .unk8 = g_eff_command_position[2];
     }
     return 1;
 }
@@ -1334,10 +1356,10 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     MATRIX *mats;
     MATRIX *var_2;
     s32 *sxy;
-    u16 *var_4;
+    u16 *quad_ot_indices;
     u16 *var_5;
     POLY_FT4 *prim;
-    POLY_FT4 *end;
+    POLY_FT4 *quads_end;
     s32 i;
     s32 k;
     s32 bit;
@@ -1354,7 +1376,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     mats = (MATRIX *)((u8 *)prim + 0x28);
     var_2 = (MATRIX *)((u8 *)prim + 0x168);
     sxy = (s32 *)((u8 *)prim + 0x188);
-    var_4 = (u16 *)((u8 *)prim + 0x19C);
+    quad_ot_indices = (u16 *)((u8 *)prim + 0x19C);
     var_5 = (u16 *)((u8 *)prim + 0x1B0);
     if (D_800A344C[arg0] < 10) {
         count = D_800A344C[arg0];
@@ -1413,7 +1435,7 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         if ((*D_800A34B0 >> 4) >= *D_800A34D0) {
             continue;
         }
-        var_4[(*var_5)++] = *D_800A34D0;
+        quad_ot_indices[(*var_5)++] = *D_800A34D0;
         gte_ldv0(&D_8009BBFC);
         gte_rtps();
         gte_stsxy(sxy + 3);
@@ -1429,14 +1451,14 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
      * g_eff_quad_cursor to link each quad, the way SOTN's menu code restarts
      * its fill cursor at the buffer to read it back (Q51) */
     /* SOTN: src/dra/menu.c:3352 @db41b28 */
-    end = prim;
-    for (prim = g_eff_quad_cursor, k = 0; prim < end; prim++, k++) {
+    quads_end = prim;
+    for (prim = g_eff_quad_cursor, k = 0; prim < quads_end; prim++, k++) {
         D_800A34E8 = &prim->tag;
-        D_800A34E4 = g_gpu_ot_ptr + var_4[k];
+        D_800A34E4 = g_gpu_ot_ptr + quad_ot_indices[k];
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
-    g_eff_quad_cursor = end;
+    g_eff_quad_cursor = quads_end;
     return 1;
 }
 
@@ -1444,17 +1466,18 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
  * i < *count whose bit is set in D_800A3454[idx],
  * RotMatrix(&D_800F1000[idx][i], &m[i]).
  */
-void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx) {
+void eff_BuildUsedSlotRotMatrices(
+    s32 *slot_count, MATRIX *slot_matrices, s32 command_slot_index) {
     s32 i;
     s32 mask;
 
-    for (i = 0; i < *count; i++) {
+    for (i = 0; i < *slot_count; i++) {
         /* FAKE: setting mask twice keeps the target's `li v0,1; sllv` inside
          * the loop; `mask = 1 << i` hoists the 1 into s5: score 12 (Q129) */
         mask = 1;
         mask <<= i;
-        if (D_800A3454[idx] & mask) {
-            RotMatrix(&D_800F1000[idx][i], &m[i]);
+        if (D_800A3454[command_slot_index] & mask) {
+            RotMatrix(&D_800F1000[command_slot_index][i], &slot_matrices[i]);
         }
     }
 }
@@ -1464,25 +1487,26 @@ void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx) {
  * the position at g_eff_command_position jittered by (rand() & 0xFF) - 0x7F per
  * axis, give it a random 0..7 in D_800F0BCC, and mark its bit. */
 s32 eff_SpawnJitteredBillboards(void) {
-    s32 i;
-    s32 j;
-    s32 idx;
-    s32 mask;
+    s32 group_start_index;
+    s32 group_slot_index;
+    s32 slot_index;
+    s32 slot_bit;
 
     g_eff_command_phase[7] = 1;
-    for (i = 0; i < 0xF; i += 4) {
-        for (j = 0; j < 4; j++) {
-            idx = i + j;
-            mask = 1 << idx;
-            if (!(D_800A3444 & mask)) {
-                D_800F0D78[idx].x =
+    for (group_start_index = 0; group_start_index < 0xF;
+         group_start_index += 4) {
+        for (group_slot_index = 0; group_slot_index < 4; group_slot_index++) {
+            slot_index = group_start_index + group_slot_index;
+            slot_bit = 1 << slot_index;
+            if (!(D_800A3444 & slot_bit)) {
+                D_800F0D78[slot_index].x =
                     g_eff_command_position[0] + (rand() & 0xFF) - 0x7F;
-                D_800F0D78[idx].y =
+                D_800F0D78[slot_index].y =
                     g_eff_command_position[1] + (rand() & 0xFF) - 0x7F;
-                D_800F0D78[idx].z =
+                D_800F0D78[slot_index].z =
                     g_eff_command_position[2] + (rand() & 0xFF) - 0x7F;
-                D_800F0BCC[idx] = rand() & 7;
-                D_800A3444 |= mask;
+                D_800F0BCC[slot_index] = rand() & 7;
+                D_800A3444 |= slot_bit;
                 break;
             }
         }
@@ -1499,78 +1523,81 @@ s32 eff_SpawnJitteredBillboards(void) {
    depth. Returns 1 when any slot is still live, else 0. */
 s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     Unk1F8000B8_800646E8 *base;
-    u32 *var_1;
-    s16 *w;
-    s16 *h;
-    s32 *var_4;
+    u32 *quad_ot_read_cursor;
+    s16 *billboard_width;
+    s16 *billboard_height;
+    s32 *frame_index;
     VECTOR *var_5;
-    VECTOR *pos;
-    SVECTOR *var_7;
+    VECTOR *relative_position;
+    SVECTOR *local_origin;
     s32 *p;
-    POLY_FT4 **end;
+    POLY_FT4 **quads_end;
     POLY_FT4 *prim;
-    u32 *var_11;
-    s16 i;
+    u32 *quad_ot_write_cursor;
+    s16 slot_index;
     s32 bit;
 
     base = &D_800A34EC->v800646E8;
-    var_1 = base->unk48;
-    w = &base->unk10;
-    h = &base->unk12;
-    var_4 = &base->unk14;
+    quad_ot_read_cursor = base->unk48;
+    billboard_width = &base->unk10;
+    billboard_height = &base->unk12;
+    frame_index = &base->unk14;
     var_5 = &base->unk18;
-    pos = &base->unk28;
-    var_7 = &base->unk38;
+    relative_position = &base->unk28;
+    local_origin = &base->unk38;
     p = &base->unk40;
-    end = &base->unk44;
+    quads_end = &base->unk44;
     prim = g_eff_quad_cursor;
     gte_SetRotMatrix(D_800A3474);
-    var_7->vx = var_7->vy = var_7->vz = 0;
+    local_origin->vx = local_origin->vy = local_origin->vz = 0;
     *D_800A34B0 = ReadGeomScreen() * 1000;
     *D_800A34A8 = 0x40;
     *D_800A34AC = 0x20;
     *D_800A3490 = 0xE;
-    for (i = 0, var_11 = var_1; i < 16; i++) {
-        bit = 1 << i;
+    for (slot_index = 0, quad_ot_write_cursor = quad_ot_read_cursor;
+         slot_index < 16; slot_index++) {
+        bit = 1 << slot_index;
         if (!(D_800A3444 & bit)) {
             continue;
         }
-        D_800F0BCC[i]++;
-        *var_4 = D_800F0BCC[i] / 4;
-        if (*var_4 < 7) {
-            pos->vx = D_800F0D78[i].x - D_800A3470[0];
-            pos->vy = D_800F0D78[i].y - D_800A3470[1];
-            pos->vz = D_800F0D78[i].z - D_800A3470[2];
-            ApplyRotMatrixLV(pos, var_5);
+        D_800F0BCC[slot_index]++;
+        *frame_index = D_800F0BCC[slot_index] / 4;
+        if (*frame_index < 7) {
+            relative_position->vx = D_800F0D78[slot_index].x - D_800A3470[0];
+            relative_position->vy = D_800F0D78[slot_index].y - D_800A3470[1];
+            relative_position->vz = D_800F0D78[slot_index].z - D_800A3470[2];
+            ApplyRotMatrixLV(relative_position, var_5);
             /* FAKE: the MATRIX whose t[] is *var_5: SetTransMatrix reads only
              * m->t (there is no whole MATRIX here). Spelled
              * (MATRIX *)((u8 *)base + 4): score 68. */
             SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
-            RotTransPers(var_7, D_800A34B8, p, D_800A34CC);
+            RotTransPers(local_origin, D_800A34B8, p, D_800A34CC);
             gte_stsz(D_800A34D0);
-            g_eff_current_tex_rec = &D_8009B8E8[*var_4];
+            g_eff_current_tex_rec = &D_8009B8E8[*frame_index];
             *D_800A3494 = (u16)(((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
                                 (g_eff_current_tex_rec->clut_y << 6));
             *D_800A3498 = g_eff_current_tex_rec->u;
             *D_800A34A0 = g_eff_current_tex_rec->v;
             *D_800A349C = g_eff_current_tex_rec->u + 0x3F;
             *D_800A34A4 = g_eff_current_tex_rec->v + 0x1F;
-            *var_11 = gpu_DepthToOtIndex(*D_800A34D0, 0);
-            if (*var_11 >= 0x1005) {
+            *quad_ot_write_cursor = gpu_DepthToOtIndex(*D_800A34D0, 0);
+            if (*quad_ot_write_cursor >= 0x1005) {
                 continue;
             }
-            if ((*D_800A34B0 / 1000 >> 4) >= *var_11) {
+            if ((*D_800A34B0 / 1000 >> 4) >= *quad_ot_write_cursor) {
                 continue;
             }
             *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
-            *w = *D_800A34A8 * *D_800A34B4 > 0x800
-                     ? (*D_800A34A8 * *D_800A34B4) >> 8
-                     : 8;
-            *h = *D_800A34AC * *D_800A34B4 > 0x800
-                     ? (*D_800A34AC * *D_800A34B4) >> 8
-                     : 8;
-            *w += (*w * D_800F0BCC[i]) >> 5;
-            *h += (*h * (D_800F0BCC[i] << 2)) >> 8;
+            *billboard_width = *D_800A34A8 * *D_800A34B4 > 0x800
+                                   ? (*D_800A34A8 * *D_800A34B4) >> 8
+                                   : 8;
+            *billboard_height = *D_800A34AC * *D_800A34B4 > 0x800
+                                    ? (*D_800A34AC * *D_800A34B4) >> 8
+                                    : 8;
+            *billboard_width +=
+                (*billboard_width * D_800F0BCC[slot_index]) >> 5;
+            *billboard_height +=
+                (*billboard_height * (D_800F0BCC[slot_index] << 2)) >> 8;
             SetPolyFT4(prim);
             prim->tpage = *D_800A3490;
             prim->clut = *D_800A3494;
@@ -1583,14 +1610,14 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
                 prim->g0 = 0x8C;
                 prim->b0 = 0x50;
             }
-            prim->x0 = *D_800A34B8 - *w / 2;
-            prim->y0 = (*D_800A34B8 >> 16) - *h * 28 / 32;
-            prim->x1 = *D_800A34B8 + *w / 2;
-            prim->y1 = (*D_800A34B8 >> 16) - *h * 28 / 32;
-            prim->x2 = *D_800A34B8 - *w / 2;
-            prim->y2 = (*D_800A34B8 >> 16) + *h / 8;
-            prim->x3 = *D_800A34B8 + *w / 2;
-            prim->y3 = (*D_800A34B8 >> 16) + *h / 8;
+            prim->x0 = *D_800A34B8 - *billboard_width / 2;
+            prim->y0 = (*D_800A34B8 >> 16) - *billboard_height * 28 / 32;
+            prim->x1 = *D_800A34B8 + *billboard_width / 2;
+            prim->y1 = (*D_800A34B8 >> 16) - *billboard_height * 28 / 32;
+            prim->x2 = *D_800A34B8 - *billboard_width / 2;
+            prim->y2 = (*D_800A34B8 >> 16) + *billboard_height / 8;
+            prim->x3 = *D_800A34B8 + *billboard_width / 2;
+            prim->y3 = (*D_800A34B8 >> 16) + *billboard_height / 8;
             prim->u0 = *D_800A3498;
             prim->v0 = *D_800A34A0;
             prim->u1 = *D_800A349C;
@@ -1603,9 +1630,9 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
             SetSemiTrans(prim, 1);
             if (prim - g_eff_quad_buffer_base < 0x1C1) {
                 prim++;
-                var_11++;
+                quad_ot_write_cursor++;
             }
-            D_800F0BCC[i]++;
+            D_800F0BCC[slot_index]++;
         } else {
             D_800A3444 &= 0xFFFF - bit;
         }
@@ -1613,14 +1640,15 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     if (D_800A3444 == 0) {
         return 0;
     }
-    *end = prim;
-    for (prim = g_eff_quad_cursor; prim < *end; prim++, var_1++) {
-        D_800A34E4 = g_gpu_ot_ptr + *var_1;
+    *quads_end = prim;
+    for (prim = g_eff_quad_cursor; prim < *quads_end; prim++,
+        quad_ot_read_cursor++) {
+        D_800A34E4 = g_gpu_ot_ptr + *quad_ot_read_cursor;
         D_800A34E8 = &prim->tag;
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
-    g_eff_quad_cursor = *end;
+    g_eff_quad_cursor = *quads_end;
     return 1;
 }
 
