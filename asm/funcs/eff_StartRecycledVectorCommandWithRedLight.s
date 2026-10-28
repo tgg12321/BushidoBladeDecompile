@@ -55,7 +55,7 @@ glabel eff_StartRecycledVectorCommandWithRedLight
     /* 52178 80061978 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 5217C 8006197C 0800038E */  lw         $v1, 0x8($s0)
     /* 52180 80061980 FF00023C */  lui        $v0, (0xFF0000 >> 16)
-    /* 52184 80061984 980382AF */  sw         $v0, %gp_rel(D_800A3464)($gp)
+    /* 52184 80061984 980382AF */  sw         $v0, %gp_rel(g_eff_point_light_color)($gp)
     /* 52188 80061988 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 5218C 8006198C 481123AC */  sw         $v1, %lo(D_800F1148)($at)
     /* 52190 80061990 1400BF8F */  lw         $ra, 0x14($sp)

@@ -1,7 +1,7 @@
 glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 5315C 8006295C 78FFBD27 */  addiu      $sp, $sp, -0x88
     /* 53160 80062960 6400B1AF */  sw         $s1, 0x64($sp)
-    /* 53164 80062964 2004918F */  lw         $s1, %gp_rel(D_800A34EC)($gp)
+    /* 53164 80062964 2004918F */  lw         $s1, %gp_rel(g_eff_work_area)($gp)
     /* 53168 80062968 7C00B7AF */  sw         $s7, 0x7C($sp)
     /* 5316C 8006296C 21B80000 */  addu       $s7, $zero, $zero
     /* 53170 80062970 7800B6AF */  sw         $s6, 0x78($sp)
@@ -88,7 +88,7 @@ glabel eff_DrawAndAdvanceRotatedQuadClusters
     /* 532B0 80062AB0 21083E00 */  addu       $at, $at, $fp
     /* 532B4 80062AB4 C00F228C */  lw         $v0, %lo(D_800F0FC0)($at)
     /* 532B8 80062AB8 0800838C */  lw         $v1, 0x8($a0)
-    /* 532BC 80062ABC A803848F */  lw         $a0, %gp_rel(D_800A3474)($gp)
+    /* 532BC 80062ABC A803848F */  lw         $a0, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 532C0 80062AC0 23104300 */  subu       $v0, $v0, $v1
     /* 532C4 80062AC4 7BF9010C */  jal        CompMatrix
     /* 532C8 80062AC8 1C0082AE */   sw        $v0, 0x1C($s4)

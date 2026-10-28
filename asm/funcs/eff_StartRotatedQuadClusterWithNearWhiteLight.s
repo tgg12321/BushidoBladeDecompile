@@ -34,7 +34,7 @@ glabel eff_StartRotatedQuadClusterWithNearWhiteLight
     /* 51A24 80061224 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51A28 80061228 0800028E */  lw         $v0, 0x8($s0)
     /* 51A2C 8006122C EFFF6334 */  ori        $v1, $v1, (0xFFFFEF & 0xFFFF)
-    /* 51A30 80061230 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51A30 80061230 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51A34 80061234 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51A38 80061238 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51A3C 8006123C 1C00BF8F */  lw         $ra, 0x1C($sp)

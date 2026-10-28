@@ -1,7 +1,7 @@
 glabel eff_DrawAnimatedQuads
     /* 56000 80065800 A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 56004 80065804 3000B0AF */  sw         $s0, 0x30($sp)
-    /* 56008 80065808 2004908F */  lw         $s0, %gp_rel(D_800A34EC)($gp)
+    /* 56008 80065808 2004908F */  lw         $s0, %gp_rel(g_eff_work_area)($gp)
     /* 5600C 8006580C 3800B2AF */  sw         $s2, 0x38($sp)
     /* 56010 80065810 0807928F */  lw         $s2, %gp_rel(g_eff_quad_cursor)($gp)
     /* 56014 80065814 3C00B3AF */  sw         $s3, 0x3C($sp)
@@ -24,7 +24,7 @@ glabel eff_DrawAnimatedQuads
     /* 56058 80065858 1000A7AF */  sw         $a3, 0x10($sp)
     /* 5605C 8006585C 96000726 */  addiu      $a3, $s0, 0x96
     /* 56060 80065860 1800A7AF */  sw         $a3, 0x18($sp)
-    /* 56064 80065864 A803878F */  lw         $a3, %gp_rel(D_800A3474)($gp)
+    /* 56064 80065864 A803878F */  lw         $a3, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 56068 80065868 00000000 */  nop
     /* 5606C 8006586C 0000EC8C */  lw         $t4, 0x0($a3)
     /* 56070 80065870 0400ED8C */  lw         $t5, 0x4($a3)

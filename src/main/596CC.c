@@ -23,7 +23,7 @@ static s32 D_800A3504[2];
 static s16 D_800A350C[2];
 static s16 D_800A3510[2];
 static s32 g_row_menu_pulse_counter;
-static s32 D_800A3518;
+static s32 g_menu_draw_buffer_counter;
 static Unk8006E49CRec *D_800A351C;
 static Unk8006E49CRec *D_800A3520;
 static Unk8009BD24Block *g_row_menu_working_record_ptr;
@@ -150,7 +150,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
                below the zero-stores; without it: score 2 */
             do {
             } while (0);
-            D_800A3518 = 0;
+            g_menu_draw_buffer_counter = 0;
             D_800A3528 = 0;
             *p_2A = value;
             *p_28 = value;
@@ -218,7 +218,8 @@ extern void gpu_AdvanceBufferCounterAndBuildDrawContext();
 s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32 arg0, s32 arg1) {
     s32 sp10[10];
     g_row_menu_pulse_counter = 0;
-    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        sp10, &g_menu_draw_buffer_counter);
     func_80069E18(sp10, 0);
     if ((arg1 & 0x400040) != 0) {
         snd_QueueSound(1, 0x7F, 0x7F);
@@ -306,7 +307,8 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     s32 result;
     GpuDb *var_2;
     var_2 = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    gpu_AdvanceBufferCounterAndBuildDrawContext(var_0, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        var_0, &g_menu_draw_buffer_counter);
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
     result = pad_StepOffsetsGetDirectionEvents(
         (u32 *)&var_0[12], 0, g_row_menu_work_block->menu_draw_offsets,
@@ -1476,7 +1478,8 @@ s32 menu_UpdateOptionMenuChoices(s32 arg0, u32 arg1) {
     GpuDb *t;
     g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        sp10, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
     menu_DrawOptionMenuChoices(sp10);
     return menu_HandleOptionMenuChoices(&arg0, &arg1);
@@ -1725,7 +1728,8 @@ s32 menu_UpdateMemCardChoices(s32 arg0, s32 arg1) {
     GpuDb *t;
     g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        sp10, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
     menu_DrawMemCardChoices(sp10);
     return menu_HandleMemCardChoices(&arg0, &arg1);
@@ -1888,7 +1892,8 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     }
     arg0[6] = (s32)tile;
 
-    var_18 = ((rcos((D_800A3518 << 7) & 0xF80) * 32) >> 12) + 0xD0;
+    var_18 =
+        ((rcos((g_menu_draw_buffer_counter << 7) & 0xF80) * 32) >> 12) + 0xD0;
     poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
@@ -2214,7 +2219,8 @@ s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     s32 r;
     g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        sp10, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 2, t);
     menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(sp10);
     r = menu_DrawKeyConfigRowBitsGetEmptyRowSides(sp10);
@@ -2321,7 +2327,7 @@ s32 menu_UpdateStoredChoice(s32 arg0, s32 arg1) {
     g_row_menu_pulse_counter += 1;
     db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     gpu_AdvanceBufferCounterAndBuildDrawContext(
-        (s32)&sp_buf[0], (s32)&D_800A3518);
+        (s32)&sp_buf[0], (s32)&g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(&sp_buf[0], 1, db);
     menu_DrawStoredChoice(&sp_buf[0]);
     result = menu_HandleStoredChoice(arg0, arg1);
@@ -2538,7 +2544,8 @@ s32 menu_UpdateConfirmMenu(s32 arg0, s32 arg1) {
     GpuDb *t;
     g_row_menu_pulse_counter += 1;
     t = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        sp10, &g_menu_draw_buffer_counter);
     gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
     menu_DrawConfirmSheetsAndDigitPairs(sp10);
     return menu_HandleConfirmInput(arg0, arg1);
@@ -2587,8 +2594,8 @@ extern RECT D_800A32E0;
 s32 gpu_EndFullscreenImageDisplay(void) {
     RECT rect;
     SetDispMask(0);
-    PutDrawEnv(&g_gpu_db[D_800A3518 & 1].draw);
-    PutDispEnv(&g_gpu_db[D_800A3518 & 1].disp);
+    PutDrawEnv(&g_gpu_db[g_menu_draw_buffer_counter & 1].draw);
+    PutDispEnv(&g_gpu_db[g_menu_draw_buffer_counter & 1].disp);
     DrawSync(0);
     rect = D_800A32E0;
     ClearImage(&rect, 0, 0, 0);

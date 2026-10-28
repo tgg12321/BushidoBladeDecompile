@@ -15,9 +15,9 @@ glabel softbody_CreateForNode
     /* 30258 8003FA58 04006386 */  lh         $v1, 0x4($s3)
     /* 3025C 8003FA5C 02006286 */  lh         $v0, 0x2($s3)
     /* 30260 8003FA60 80180300 */  sll        $v1, $v1, 2
-    /* 30264 8003FA64 1080013C */  lui        $at, %hi(D_80103608)
+    /* 30264 8003FA64 1080013C */  lui        $at, %hi(g_reloc_block_entry_tables)
     /* 30268 8003FA68 21082300 */  addu       $at, $at, $v1
-    /* 3026C 8003FA6C 0836238C */  lw         $v1, %lo(D_80103608)($at)
+    /* 3026C 8003FA6C 0836238C */  lw         $v1, %lo(g_reloc_block_entry_tables)($at)
     /* 30270 8003FA70 80100200 */  sll        $v0, $v0, 2
     /* 30274 8003FA74 21104300 */  addu       $v0, $v0, $v1
     /* 30278 8003FA78 0000508C */  lw         $s0, 0x0($v0)

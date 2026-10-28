@@ -20,8 +20,8 @@ glabel gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
   .L8003DC2C:
     /* 2E42C 8003DC2C FFFF3526 */  addiu      $s5, $s1, -0x1
   .L8003DC30:
-    /* 2E430 8003DC30 0F80023C */  lui        $v0, %hi(D_800F6656)
-    /* 2E434 8003DC34 56664294 */  lhu        $v0, %lo(D_800F6656)($v0)
+    /* 2E430 8003DC30 0F80023C */  lui        $v0, %hi(g_gpu_grid_and_fog_control)
+    /* 2E434 8003DC34 56664294 */  lhu        $v0, %lo(g_gpu_grid_and_fog_control)($v0)
     /* 2E438 8003DC38 00000000 */  nop
     /* 2E43C 8003DC3C 01004230 */  andi       $v0, $v0, 0x1
     /* 2E440 8003DC40 05004010 */  beqz       $v0, .L8003DC58

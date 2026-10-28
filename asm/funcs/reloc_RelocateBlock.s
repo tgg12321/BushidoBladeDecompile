@@ -9,9 +9,9 @@ glabel reloc_RelocateBlock
     /* 3482C 8004402C 04008424 */  addiu      $a0, $a0, 0x4
     /* 34830 80044030 80100500 */  sll        $v0, $a1, 2
     /* 34834 80044034 40280500 */  sll        $a1, $a1, 1
-    /* 34838 80044038 1080013C */  lui        $at, %hi(D_80103608)
+    /* 34838 80044038 1080013C */  lui        $at, %hi(g_reloc_block_entry_tables)
     /* 3483C 8004403C 21082200 */  addu       $at, $at, $v0
-    /* 34840 80044040 083624AC */  sw         $a0, %lo(D_80103608)($at)
+    /* 34840 80044040 083624AC */  sw         $a0, %lo(g_reloc_block_entry_tables)($at)
     /* 34844 80044044 FF7F6230 */  andi       $v0, $v1, 0x7FFF
     /* 34848 80044048 1080013C */  lui        $at, %hi(D_80103658)
     /* 3484C 8004404C 21082500 */  addu       $at, $at, $a1

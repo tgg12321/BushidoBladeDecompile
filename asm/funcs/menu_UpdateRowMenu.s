@@ -5,8 +5,8 @@ glabel menu_UpdateRowMenu
     /* 59BD8 800693D8 1000A427 */  addiu      $a0, $sp, 0x10
     /* 59BDC 800693DC 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
     /* 59BE0 800693E0 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
-    /* 59BE4 800693E4 0A80053C */  lui        $a1, %hi(D_800A3518)
-    /* 59BE8 800693E8 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
+    /* 59BE4 800693E4 0A80053C */  lui        $a1, %hi(g_menu_draw_buffer_counter)
+    /* 59BE8 800693E8 1835A524 */  addiu      $a1, $a1, %lo(g_menu_draw_buffer_counter)
     /* 59BEC 800693EC 5800BFAF */  sw         $ra, 0x58($sp)
     /* 59BF0 800693F0 5400B1AF */  sw         $s1, 0x54($sp)
     /* 59BF4 800693F4 01006330 */  andi       $v1, $v1, 0x1

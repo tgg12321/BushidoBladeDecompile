@@ -1,5 +1,5 @@
 glabel eff_DrawAndAdvanceJitteredBillboards
-    /* 54EE8 800646E8 2004828F */  lw         $v0, %gp_rel(D_800A34EC)($gp)
+    /* 54EE8 800646E8 2004828F */  lw         $v0, %gp_rel(g_eff_work_area)($gp)
     /* 54EEC 800646EC 98FFBD27 */  addiu      $sp, $sp, -0x68
     /* 54EF0 800646F0 4400B1AF */  sw         $s1, 0x44($sp)
     /* 54EF4 800646F4 0807918F */  lw         $s1, %gp_rel(g_eff_quad_cursor)($gp)
@@ -25,7 +25,7 @@ glabel eff_DrawAndAdvanceJitteredBillboards
     /* 54F44 80064744 40004824 */  addiu      $t0, $v0, 0x40
     /* 54F48 80064748 44005E24 */  addiu      $fp, $v0, 0x44
     /* 54F4C 8006474C 2800A8AF */  sw         $t0, 0x28($sp)
-    /* 54F50 80064750 A803888F */  lw         $t0, %gp_rel(D_800A3474)($gp)
+    /* 54F50 80064750 A803888F */  lw         $t0, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 54F54 80064754 00000000 */  nop
     /* 54F58 80064758 00000C8D */  lw         $t4, 0x0($t0)
     /* 54F5C 8006475C 04000D8D */  lw         $t5, 0x4($t0)

@@ -359,9 +359,9 @@ dlabel D_800A38DF
 enddlabel D_800A38DF
 
 /* 800A38E0 */
-dlabel D_800A38E0
+dlabel g_fight_start_position_pair_index
     .space 0x1
-enddlabel D_800A38E0
+enddlabel g_fight_start_position_pair_index
 
 /* 800A38E1 */
 dlabel D_800A38E1
@@ -1024,9 +1024,9 @@ dlabel D_800F0BCC
 enddlabel D_800F0BCC
 
 /* 800F0BEC */
-dlabel D_800F0BEC
+dlabel g_eff_billboard_pair_ages
     .space 0x18
-enddlabel D_800F0BEC
+enddlabel g_eff_billboard_pair_ages
 
 /* 800F0C04 */
 dlabel D_800F0C04
@@ -1648,9 +1648,9 @@ dlabel g_gpu_raised_ot_cutoff_requested
 enddlabel g_gpu_raised_ot_cutoff_requested
 
 /* 800F6656 */
-dlabel D_800F6656
+dlabel g_gpu_grid_and_fog_control
     .space 0x2
-enddlabel D_800F6656
+enddlabel g_gpu_grid_and_fog_control
 
 /* 800F6658 */
 dlabel D_800F6658
@@ -2383,9 +2383,9 @@ dlabel D_80103604
 enddlabel D_80103604
 
 /* 80103608 */
-dlabel D_80103608
+dlabel g_reloc_block_entry_tables
     .space 0x1C
-enddlabel D_80103608
+enddlabel g_reloc_block_entry_tables
 
 /* 80103624 */
 dlabel D_80103624

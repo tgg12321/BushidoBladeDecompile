@@ -54,7 +54,7 @@ glabel eff_StartRecycledCommandWithOrangeLight
     /* 52088 80061888 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 5208C 8006188C 0800028E */  lw         $v0, 0x8($s0)
     /* 52090 80061890 13606334 */  ori        $v1, $v1, (0xC06013 & 0xFFFF)
-    /* 52094 80061894 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 52094 80061894 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 52098 80061898 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 5209C 8006189C 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 520A0 800618A0 1400BF8F */  lw         $ra, 0x14($sp)

@@ -25,7 +25,7 @@ glabel eff_StartFastRateCosineScaledQuadWithPaleBlueLight
     /* 51D3C 8006153C 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51D40 80061540 0800028E */  lw         $v0, 0x8($s0)
     /* 51D44 80061544 FF806334 */  ori        $v1, $v1, (0x8080FF & 0xFFFF)
-    /* 51D48 80061548 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51D48 80061548 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51D4C 8006154C 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51D50 80061550 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51D54 80061554 05000224 */  addiu      $v0, $zero, 0x5

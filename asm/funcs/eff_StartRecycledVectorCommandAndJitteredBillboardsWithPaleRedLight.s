@@ -71,7 +71,7 @@ glabel eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight
     /* 523D0 80061BD0 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 523D4 80061BD4 0800228E */  lw         $v0, 0x8($s1)
     /* 523D8 80061BD8 80806334 */  ori        $v1, $v1, (0xFF8080 & 0xFFFF)
-    /* 523DC 80061BDC 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 523DC 80061BDC 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 523E0 80061BE0 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 523E4 80061BE4 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 523E8 80061BE8 1800BF8F */  lw         $ra, 0x18($sp)

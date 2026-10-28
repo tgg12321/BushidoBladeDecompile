@@ -75,8 +75,8 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2EFFC 8003E7FC 1FFA0008 */  j          .L8003E87C
     /* 2F000 8003E800 21606200 */   addu      $t4, $v1, $v0
   .L8003E804:
-    /* 2F004 8003E804 0F80023C */  lui        $v0, %hi(D_800F6656)
-    /* 2F008 8003E808 56664294 */  lhu        $v0, %lo(D_800F6656)($v0)
+    /* 2F004 8003E804 0F80023C */  lui        $v0, %hi(g_gpu_grid_and_fog_control)
+    /* 2F008 8003E808 56664294 */  lhu        $v0, %lo(g_gpu_grid_and_fog_control)($v0)
     /* 2F00C 8003E80C 00000000 */  nop
     /* 2F010 8003E810 01004230 */  andi       $v0, $v0, 0x1
     /* 2F014 8003E814 05004010 */  beqz       $v0, .L8003E82C
@@ -235,8 +235,8 @@ glabel gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
     /* 2F23C 8003EA3C 99FF4014 */  bnez       $v0, .L8003E8A4
     /* 2F240 8003EA40 2110AD00 */   addu      $v0, $a1, $t5
   .L8003EA44:
-    /* 2F244 8003EA44 0F80023C */  lui        $v0, %hi(D_800F6656)
-    /* 2F248 8003EA48 56664294 */  lhu        $v0, %lo(D_800F6656)($v0)
+    /* 2F244 8003EA44 0F80023C */  lui        $v0, %hi(g_gpu_grid_and_fog_control)
+    /* 2F248 8003EA48 56664294 */  lhu        $v0, %lo(g_gpu_grid_and_fog_control)($v0)
     /* 2F24C 8003EA4C 00000000 */  nop
     /* 2F250 8003EA50 01004230 */  andi       $v0, $v0, 0x1
     /* 2F254 8003EA54 0A004010 */  beqz       $v0, .L8003EA80

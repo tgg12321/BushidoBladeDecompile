@@ -31,7 +31,7 @@ glabel func_80016D78
     /* 75EC 80016DEC 1171000C */  jal        fight_InitSettings
     /* 75F0 80016DF0 00000000 */   nop
     /* 75F4 80016DF4 2D0680A3 */  sb         $zero, %gp_rel(D_800A36F9)($gp)
-    /* 75F8 80016DF8 C40580A3 */  sb         $zero, %gp_rel(D_800A3690)($gp)
+    /* 75F8 80016DF8 C40580A3 */  sb         $zero, %gp_rel(g_fight_view_option)($gp)
     /* 75FC 80016DFC 780680A3 */  sb         $zero, %gp_rel(D_800A3744)($gp)
     /* 7600 80016E00 0A80013C */  lui        $at, %hi(D_800A3745)
     /* 7604 80016E04 453720A0 */  sb         $zero, %lo(D_800A3745)($at)

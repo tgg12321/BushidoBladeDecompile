@@ -54,7 +54,7 @@ glabel eff_StartRecycledCommandWithMagentaLight
     /* 52780 80061F80 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 52784 80061F84 0800028E */  lw         $v0, 0x8($s0)
     /* 52788 80061F88 FF006334 */  ori        $v1, $v1, (0xFF00FF & 0xFFFF)
-    /* 5278C 80061F8C 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 5278C 80061F8C 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 52790 80061F90 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 52794 80061F94 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 52798 80061F98 1400BF8F */  lw         $ra, 0x14($sp)

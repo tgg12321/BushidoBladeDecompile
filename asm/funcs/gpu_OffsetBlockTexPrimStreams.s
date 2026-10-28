@@ -21,8 +21,8 @@ glabel gpu_OffsetBlockTexPrimStreams
     /* 33AEC 800432EC 4000B397 */  lhu        $s3, 0x40($sp)
     /* 33AF0 800432F0 1E004010 */  beqz       $v0, .L8004336C
     /* 33AF4 800432F4 21800000 */   addu      $s0, $zero, $zero
-    /* 33AF8 800432F8 1080033C */  lui        $v1, %hi(D_80103608)
-    /* 33AFC 800432FC 08366324 */  addiu      $v1, $v1, %lo(D_80103608)
+    /* 33AF8 800432F8 1080033C */  lui        $v1, %hi(g_reloc_block_entry_tables)
+    /* 33AFC 800432FC 08366324 */  addiu      $v1, $v1, %lo(g_reloc_block_entry_tables)
     /* 33B00 80043300 80100400 */  sll        $v0, $a0, 2
     /* 33B04 80043304 21904300 */  addu       $s2, $v0, $v1
     /* 33B08 80043308 2188A000 */  addu       $s1, $a1, $zero

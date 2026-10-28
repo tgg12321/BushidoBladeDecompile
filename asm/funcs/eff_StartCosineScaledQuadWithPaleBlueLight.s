@@ -25,7 +25,7 @@ glabel eff_StartCosineScaledQuadWithPaleBlueLight
     /* 51B98 80061398 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51B9C 8006139C 0800028E */  lw         $v0, 0x8($s0)
     /* 51BA0 800613A0 FF806334 */  ori        $v1, $v1, (0x8080FF & 0xFFFF)
-    /* 51BA4 800613A4 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51BA4 800613A4 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51BA8 800613A8 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51BAC 800613AC 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51BB0 800613B0 01000224 */  addiu      $v0, $zero, 0x1

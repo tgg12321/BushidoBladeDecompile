@@ -41,7 +41,7 @@ glabel eff_StartArgSelectedCommandWithGreenLight
     /* 51F9C 8006179C 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51FA0 800617A0 0800028E */  lw         $v0, 0x8($s0)
     /* 51FA4 800617A4 10FF6334 */  ori        $v1, $v1, (0x10FF10 & 0xFFFF)
-    /* 51FA8 800617A8 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51FA8 800617A8 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51FAC 800617AC 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51FB0 800617B0 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51FB4 800617B4 1400BF8F */  lw         $ra, 0x14($sp)

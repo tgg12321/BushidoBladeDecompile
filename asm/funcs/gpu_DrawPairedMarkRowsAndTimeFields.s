@@ -402,8 +402,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 4FFB4 8005F7B4 3000A3A4 */  sh         $v1, 0x30($a1)
     /* 4FFB8 8005F7B8 001C0300 */  sll        $v1, $v1, 16
     /* 4FFBC 8005F7BC 431B0300 */  sra        $v1, $v1, 13
-    /* 4FFC0 8005F7C0 0A80023C */  lui        $v0, %hi(D_8009B400)
-    /* 4FFC4 8005F7C4 00B44224 */  addiu      $v0, $v0, %lo(D_8009B400)
+    /* 4FFC0 8005F7C0 0A80023C */  lui        $v0, %hi(g_gpu_decimal_digit_cells)
+    /* 4FFC4 8005F7C4 00B44224 */  addiu      $v0, $v0, %lo(g_gpu_decimal_digit_cells)
     /* 4FFC8 8005F7C8 21186200 */  addu       $v1, $v1, $v0
     /* 4FFCC 8005F7CC 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 4FFD0 8005F7D0 3000A284 */  lh         $v0, 0x30($a1)
@@ -489,8 +489,8 @@ glabel gpu_DrawPairedMarkRowsAndTimeFields
     /* 500F8 8005F8F8 C3230400 */  sra        $a0, $a0, 15
     /* 500FC 8005F8FC 21209100 */  addu       $a0, $a0, $s1
     /* 50100 8005F900 30008284 */  lh         $v0, 0x30($a0)
-    /* 50104 8005F904 0A80033C */  lui        $v1, %hi(D_8009B400)
-    /* 50108 8005F908 00B46324 */  addiu      $v1, $v1, %lo(D_8009B400)
+    /* 50104 8005F904 0A80033C */  lui        $v1, %hi(g_gpu_decimal_digit_cells)
+    /* 50108 8005F908 00B46324 */  addiu      $v1, $v1, %lo(g_gpu_decimal_digit_cells)
     /* 5010C 8005F90C C0100200 */  sll        $v0, $v0, 3
     /* 50110 8005F910 21104300 */  addu       $v0, $v0, $v1
     /* 50114 8005F914 1C00A2AF */  sw         $v0, 0x1C($sp)

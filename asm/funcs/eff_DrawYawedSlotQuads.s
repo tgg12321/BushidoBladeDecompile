@@ -3,7 +3,7 @@ glabel eff_DrawYawedSlotQuads
     /* 54614 80063E14 4C00B7AF */  sw         $s7, 0x4C($sp)
     /* 54618 80063E18 21B88000 */  addu       $s7, $a0, $zero
     /* 5461C 80063E1C 3800B2AF */  sw         $s2, 0x38($sp)
-    /* 54620 80063E20 2004928F */  lw         $s2, %gp_rel(D_800A34EC)($gp)
+    /* 54620 80063E20 2004928F */  lw         $s2, %gp_rel(g_eff_work_area)($gp)
     /* 54624 80063E24 80101700 */  sll        $v0, $s7, 2
     /* 54628 80063E28 5400BFAF */  sw         $ra, 0x54($sp)
     /* 5462C 80063E2C 5000BEAF */  sw         $fp, 0x50($sp)
@@ -192,7 +192,7 @@ glabel eff_DrawYawedSlotQuads
     /* 548FC 800640FC 21082400 */  addu       $at, $at, $a0
     /* 54900 80064100 D00E228C */  lw         $v0, %lo(D_800F0ED0)($at)
     /* 54904 80064104 0800A38C */  lw         $v1, 0x8($a1)
-    /* 54908 80064108 A8038B8F */  lw         $t3, %gp_rel(D_800A3474)($gp)
+    /* 54908 80064108 A8038B8F */  lw         $t3, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 5490C 8006410C 23104300 */  subu       $v0, $v0, $v1
     /* 54910 80064110 1C0022AE */  sw         $v0, 0x1C($s1)
     /* 54914 80064114 00006C8D */  lw         $t4, 0x0($t3)
@@ -254,7 +254,7 @@ glabel eff_DrawYawedSlotQuads
     /* 549F4 800641F4 00004CA4 */  sh         $t4, 0x0($v0)
     /* 549F8 800641F8 06004DA4 */  sh         $t5, 0x6($v0)
     /* 549FC 800641FC 0C004EA4 */  sh         $t6, 0xC($v0)
-    /* 54A00 80064200 A803898F */  lw         $t1, %gp_rel(D_800A3474)($gp)
+    /* 54A00 80064200 A803898F */  lw         $t1, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 54A04 80064204 00000000 */  nop
     /* 54A08 80064208 14002C8D */  lw         $t4, 0x14($t1)
     /* 54A0C 8006420C 18002D8D */  lw         $t5, 0x18($t1)

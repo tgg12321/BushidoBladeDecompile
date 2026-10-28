@@ -1,5 +1,5 @@
 glabel memcard_StepSaveOverwriteAndFormatPrompts
-    /* 29470 80038C70 3B018293 */  lbu        $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29470 80038C70 3B018293 */  lbu        $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29474 80038C74 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 29478 80038C78 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 2947C 80038C7C 21980000 */  addu       $s3, $zero, $zero
@@ -10,10 +10,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29490 80038C90 08004014 */  bnez       $v0, .L80038CB4
     /* 29494 80038C94 1000B0AF */   sw        $s0, 0x10($sp)
     /* 29498 80038C98 01000224 */  addiu      $v0, $zero, 0x1
-    /* 2949C 80038C9C 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 2949C 80038C9C 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 294A0 80038CA0 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 294A4 80038CA4 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
-    /* 294A8 80038CA8 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
+    /* 294A4 80038CA4 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
+    /* 294A8 80038CA8 840280A3 */  sb         $zero, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 294AC 80038CAC 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
     /* 294B0 80038CB0 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
   .L80038CB4:
@@ -26,10 +26,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 294CC 80038CCC 0A000424 */  addiu      $a0, $zero, 0xA
     /* 294D0 80038CD0 B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 294D4 80038CD4 FFFF0524 */   addiu     $a1, $zero, -0x1
-    /* 294D8 80038CD8 80028293 */  lbu        $v0, %gp_rel(D_800A334C)($gp)
+    /* 294D8 80038CD8 80028293 */  lbu        $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 294DC 80038CDC 00000000 */  nop
     /* 294E0 80038CE0 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 294E4 80038CE4 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
+    /* 294E4 80038CE4 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 294E8 80038CE8 FF004230 */  andi       $v0, $v0, 0xFF
     /* 294EC 80038CEC 07004010 */  beqz       $v0, .L80038D0C
     /* 294F0 80038CF0 1000033C */   lui       $v1, (0x100010 >> 16)
@@ -45,16 +45,16 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29514 80038D14 9471010C */  jal        snd_QueueSound
     /* 29518 80038D18 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 2951C 80038D1C 01000224 */  addiu      $v0, $zero, 0x1
-    /* 29520 80038D20 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29520 80038D20 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29524 80038D24 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 29528 80038D28 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
-    /* 2952C 80038D2C 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
+    /* 29528 80038D28 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
+    /* 2952C 80038D2C 840280A3 */  sb         $zero, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 29530 80038D30 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
     /* 29534 80038D34 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 29538 80038D38 A2E40008 */  j          .L80039288
     /* 2953C 80038D3C 00000000 */   nop
   .L80038D40:
-    /* 29540 80038D40 3B018393 */  lbu        $v1, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29540 80038D40 3B018393 */  lbu        $v1, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29544 80038D44 01000224 */  addiu      $v0, $zero, 0x1
     /* 29548 80038D48 03006214 */  bne        $v1, $v0, .L80038D58
     /* 2954C 80038D4C 02000224 */   addiu     $v0, $zero, 0x2
@@ -73,7 +73,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29578 80038D78 00000000 */  nop
     /* 2957C 80038D7C 57004014 */  bnez       $v0, .L80038EDC
     /* 29580 80038D80 21800000 */   addu      $s0, $zero, $zero
-    /* 29584 80038D84 3B018393 */  lbu        $v1, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29584 80038D84 3B018393 */  lbu        $v1, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29588 80038D88 03000224 */  addiu      $v0, $zero, 0x3
     /* 2958C 80038D8C 08006214 */  bne        $v1, $v0, .L80038DB0
     /* 29590 80038D90 1200222E */   sltiu     $v0, $s1, 0x12
@@ -96,7 +96,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
   jlabel .L80038DD0
     /* 295D0 80038DD0 11001024 */  addiu      $s0, $zero, 0x11
   .L80038DD4:
-    /* 295D4 80038DD4 84029293 */  lbu        $s2, %gp_rel(D_800A3350)($gp)
+    /* 295D4 80038DD4 84029293 */  lbu        $s2, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 295D8 80038DD8 B7E30008 */  j          .L80038EDC
     /* 295DC 80038DDC 00000000 */   nop
   jlabel .L80038DE0
@@ -122,12 +122,12 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29618 80038E18 B7E30008 */  j          .L80038EDC
     /* 2961C 80038E1C 05001024 */   addiu     $s0, $zero, 0x5
   jlabel .L80038E20
-    /* 29620 80038E20 3A018293 */  lbu        $v0, %gp_rel(D_800A3204 + 0x2)($gp)
+    /* 29620 80038E20 3A018293 */  lbu        $v0, %gp_rel(g_menu_prompt_rearm + 0x2)($gp)
     /* 29624 80038E24 00000000 */  nop
     /* 29628 80038E28 04004014 */  bnez       $v0, .L80038E3C
     /* 2962C 80038E2C 4000023C */   lui       $v0, (0x400040 >> 16)
     /* 29630 80038E30 01000224 */  addiu      $v0, $zero, 0x1
-    /* 29634 80038E34 840282A3 */  sb         $v0, %gp_rel(D_800A3350)($gp)
+    /* 29634 80038E34 840282A3 */  sb         $v0, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 29638 80038E38 4000023C */  lui        $v0, (0x400040 >> 16)
   .L80038E3C:
     /* 2963C 80038E3C 1080033C */  lui        $v1, %hi(g_pad_state + 0xC)
@@ -137,10 +137,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 2964C 80038E4C 15004010 */  beqz       $v0, .L80038EA4
     /* 29650 80038E50 01000424 */   addiu     $a0, $zero, 0x1
     /* 29654 80038E54 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 29658 80038E58 3A0180A3 */  sb         $zero, %gp_rel(D_800A3204 + 0x2)($gp)
+    /* 29658 80038E58 3A0180A3 */  sb         $zero, %gp_rel(g_menu_prompt_rearm + 0x2)($gp)
     /* 2965C 80038E5C 9471010C */  jal        snd_QueueSound
     /* 29660 80038E60 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 29664 80038E64 84028293 */  lbu        $v0, %gp_rel(D_800A3350)($gp)
+    /* 29664 80038E64 84028293 */  lbu        $v0, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 29668 80038E68 00000000 */  nop
     /* 2966C 80038E6C 05004014 */  bnez       $v0, .L80038E84
     /* 29670 80038E70 0D001024 */   addiu     $s0, $zero, 0xD
@@ -151,10 +151,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
   .L80038E84:
     /* 29684 80038E84 21880000 */  addu       $s1, $zero, $zero
     /* 29688 80038E88 05000224 */  addiu      $v0, $zero, 0x5
-    /* 2968C 80038E8C 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 2968C 80038E8C 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29690 80038E90 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 29694 80038E94 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
-    /* 29698 80038E98 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
+    /* 29694 80038E94 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
+    /* 29698 80038E98 840280A3 */  sb         $zero, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 2969C 80038E9C B7E30008 */  j          .L80038EDC
     /* 296A0 80038EA0 FFFF1024 */   addiu     $s0, $zero, -0x1
   .L80038EA4:
@@ -164,7 +164,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 296B0 80038EB0 C8FF4010 */  beqz       $v0, .L80038DD4
     /* 296B4 80038EB4 0C001024 */   addiu     $s0, $zero, 0xC
     /* 296B8 80038EB8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 296BC 80038EBC 3A0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x2)($gp)
+    /* 296BC 80038EBC 3A0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x2)($gp)
     /* 296C0 80038EC0 75E30008 */  j          .L80038DD4
     /* 296C4 80038EC4 00000000 */   nop
   jlabel .L80038EC8
@@ -238,7 +238,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 297B4 80038FB4 90E40008 */  j          .L80039240
     /* 297B8 80038FB8 0B00222A */   slti      $v0, $s1, 0xB
   .L80038FBC:
-    /* 297BC 80038FBC 3B018393 */  lbu        $v1, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 297BC 80038FBC 3B018393 */  lbu        $v1, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 297C0 80038FC0 03000224 */  addiu      $v0, $zero, 0x3
     /* 297C4 80038FC4 22006214 */  bne        $v1, $v0, .L80039050
     /* 297C8 80038FC8 1200222E */   sltiu     $v0, $s1, 0x12
@@ -258,10 +258,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 297FC 80038FFC 73E40008 */  j          .L800391CC
     /* 29800 80039000 02000224 */   addiu     $v0, $zero, 0x2
   jlabel .L80039004
-    /* 29804 80039004 80028293 */  lbu        $v0, %gp_rel(D_800A334C)($gp)
+    /* 29804 80039004 80028293 */  lbu        $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 29808 80039008 00000000 */  nop
     /* 2980C 8003900C FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 29810 80039010 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
+    /* 29810 80039010 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 29814 80039014 FF004230 */  andi       $v0, $v0, 0xFF
     /* 29818 80039018 07004010 */  beqz       $v0, .L80039038
     /* 2981C 8003901C 1000033C */   lui       $v1, (0x100010 >> 16)
@@ -294,10 +294,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29878 80039078 43E40008 */  j          .L8003910C
     /* 2987C 8003907C 5A000224 */   addiu     $v0, $zero, 0x5A
   jlabel .L80039080
-    /* 29880 80039080 80028293 */  lbu        $v0, %gp_rel(D_800A334C)($gp)
+    /* 29880 80039080 80028293 */  lbu        $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 29884 80039084 00000000 */  nop
     /* 29888 80039088 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 2988C 8003908C 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
+    /* 2988C 8003908C 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 29890 80039090 FF004230 */  andi       $v0, $v0, 0xFF
     /* 29894 80039094 07004010 */  beqz       $v0, .L800390B4
     /* 29898 80039098 1000033C */   lui       $v1, (0x100010 >> 16)
@@ -315,10 +315,10 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 298C4 800390C4 07000224 */  addiu      $v0, $zero, 0x7
     /* 298C8 800390C8 DFFF2216 */  bne        $s1, $v0, .L80039048
     /* 298CC 800390CC 01000224 */   addiu     $v0, $zero, 0x1
-    /* 298D0 800390D0 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 298D0 800390D0 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 298D4 800390D4 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 298D8 800390D8 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
-    /* 298DC 800390DC 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
+    /* 298D8 800390D8 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
+    /* 298DC 800390DC 840280A3 */  sb         $zero, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 298E0 800390E0 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
     /* 298E4 800390E4 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
     /* 298E8 800390E8 90E40008 */  j          .L80039240
@@ -329,22 +329,22 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 298F8 800390F8 DFE1000C */  jal        memcard_RequestLoad
     /* 298FC 800390FC 00000000 */   nop
     /* 29900 80039100 03000224 */  addiu      $v0, $zero, 0x3
-    /* 29904 80039104 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29904 80039104 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29908 80039108 5A000224 */  addiu      $v0, $zero, 0x5A
   .L8003910C:
-    /* 2990C 8003910C 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
+    /* 2990C 8003910C 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
     /* 29910 80039110 90E40008 */  j          .L80039240
     /* 29914 80039114 0B00222A */   slti      $v0, $s1, 0xB
   jlabel .L80039118
     /* 29918 80039118 73E40008 */  j          .L800391CC
     /* 2991C 8003911C 04000224 */   addiu     $v0, $zero, 0x4
   jlabel .L80039120
-    /* 29920 80039120 3B018393 */  lbu        $v1, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29920 80039120 3B018393 */  lbu        $v1, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29924 80039124 05000224 */  addiu      $v0, $zero, 0x5
     /* 29928 80039128 06006214 */  bne        $v1, $v0, .L80039144
     /* 2992C 8003912C 4000033C */   lui       $v1, (0x400040 >> 16)
     /* 29930 80039130 01000224 */  addiu      $v0, $zero, 0x1
-    /* 29934 80039134 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29934 80039134 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29938 80039138 90E40008 */  j          .L80039240
     /* 2993C 8003913C 0B00222A */   slti      $v0, $s1, 0xB
   jlabel .L80039140
@@ -361,7 +361,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29964 80039164 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 29968 80039168 0D002016 */  bnez       $s1, .L800391A0
     /* 2996C 8003916C 00000000 */   nop
-    /* 29970 80039170 84028293 */  lbu        $v0, %gp_rel(D_800A3350)($gp)
+    /* 29970 80039170 84028293 */  lbu        $v0, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 29974 80039174 00000000 */  nop
     /* 29978 80039178 B3FF4014 */  bnez       $v0, .L80039048
     /* 2997C 8003917C 01000224 */   addiu     $v0, $zero, 0x1
@@ -374,7 +374,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29998 80039198 6FE40008 */  j          .L800391BC
     /* 2999C 8003919C 02000224 */   addiu     $v0, $zero, 0x2
   .L800391A0:
-    /* 299A0 800391A0 84028293 */  lbu        $v0, %gp_rel(D_800A3350)($gp)
+    /* 299A0 800391A0 84028293 */  lbu        $v0, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 299A4 800391A4 00000000 */  nop
     /* 299A8 800391A8 07004014 */  bnez       $v0, .L800391C8
     /* 299AC 800391AC 01000224 */   addiu     $v0, $zero, 0x1
@@ -382,16 +382,16 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 299B4 800391B4 00000000 */   nop
     /* 299B8 800391B8 02000224 */  addiu      $v0, $zero, 0x2
   .L800391BC:
-    /* 299BC 800391BC 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 299BC 800391BC 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 299C0 800391C0 90E40008 */  j          .L80039240
     /* 299C4 800391C4 0B00222A */   slti      $v0, $s1, 0xB
   .L800391C8:
     /* 299C8 800391C8 21880000 */  addu       $s1, $zero, $zero
   .L800391CC:
-    /* 299CC 800391CC 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 299CC 800391CC 3B0182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 299D0 800391D0 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 299D4 800391D4 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
-    /* 299D8 800391D8 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
+    /* 299D4 800391D4 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
+    /* 299D8 800391D8 840280A3 */  sb         $zero, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 299DC 800391DC 90E40008 */  j          .L80039240
     /* 299E0 800391E0 0B00222A */   slti      $v0, $s1, 0xB
   jlabel .L800391E4
@@ -405,7 +405,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29A00 80039200 7F000524 */  addiu      $a1, $zero, 0x7F
     /* 29A04 80039204 9471010C */  jal        snd_QueueSound
     /* 29A08 80039208 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 29A0C 8003920C 840280A3 */  sb         $zero, %gp_rel(D_800A3350)($gp)
+    /* 29A0C 8003920C 840280A3 */  sb         $zero, %gp_rel(g_memcard_prompt_choice)($gp)
     /* 29A10 80039210 90E40008 */  j          .L80039240
     /* 29A14 80039214 0B00222A */   slti      $v0, $s1, 0xB
   .L80039218:
@@ -417,7 +417,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29A2C 8003922C 9471010C */  jal        snd_QueueSound
     /* 29A30 80039230 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 29A34 80039234 01000224 */  addiu      $v0, $zero, 0x1
-    /* 29A38 80039238 840282A3 */  sb         $v0, %gp_rel(D_800A3350)($gp)
+    /* 29A38 80039238 840282A3 */  sb         $v0, %gp_rel(g_memcard_prompt_choice)($gp)
   jlabel .L8003923C
     /* 29A3C 8003923C 0B00222A */  slti       $v0, $s1, 0xB
   .L80039240:
@@ -440,11 +440,11 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 29A78 80039278 01000224 */   addiu     $v0, $zero, 0x1
     /* 29A7C 8003927C 880282A3 */  sb         $v0, %gp_rel(D_800A3354)($gp)
     /* 29A80 80039280 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 29A84 80039284 800282A3 */  sb         $v0, %gp_rel(D_800A334C)($gp)
+    /* 29A84 80039284 800282A3 */  sb         $v0, %gp_rel(g_memcard_message_countdown)($gp)
   .L80039288:
     /* 29A88 80039288 03006012 */  beqz       $s3, .L80039298
     /* 29A8C 8003928C 21106002 */   addu      $v0, $s3, $zero
-    /* 29A90 80039290 3B0180A3 */  sb         $zero, %gp_rel(D_800A3204 + 0x3)($gp)
+    /* 29A90 80039290 3B0180A3 */  sb         $zero, %gp_rel(g_menu_prompt_rearm + 0x3)($gp)
     /* 29A94 80039294 300180A3 */  sb         $zero, %gp_rel(g_memcard_validation_load_active)($gp)
   .L80039298:
     /* 29A98 80039298 2000BF8F */  lw         $ra, 0x20($sp)

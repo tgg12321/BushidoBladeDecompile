@@ -8,8 +8,8 @@ glabel menu_UpdateConfirmMenu
     /* 5E880 8006E080 4804828F */  lw         $v0, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 5E884 8006E084 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
     /* 5E888 8006E088 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
-    /* 5E88C 8006E08C 0A80053C */  lui        $a1, %hi(D_800A3518)
-    /* 5E890 8006E090 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
+    /* 5E88C 8006E08C 0A80053C */  lui        $a1, %hi(g_menu_draw_buffer_counter)
+    /* 5E890 8006E090 1835A524 */  addiu      $a1, $a1, %lo(g_menu_draw_buffer_counter)
     /* 5E894 8006E094 7400BFAF */  sw         $ra, 0x74($sp)
     /* 5E898 8006E098 6800B0AF */  sw         $s0, 0x68($sp)
     /* 5E89C 8006E09C 01004224 */  addiu      $v0, $v0, 0x1

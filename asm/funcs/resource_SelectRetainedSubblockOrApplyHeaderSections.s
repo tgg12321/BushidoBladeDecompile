@@ -13,8 +13,8 @@ glabel resource_SelectRetainedSubblockOrApplyHeaderSections
     /* 36DC8 800465C8 9A190108 */  j          .L80046668
     /* 36DCC 800465CC 00000000 */   nop
   .L800465D0:
-    /* 36DD0 800465D0 0A80023C */  lui        $v0, %hi(D_8009947A)
-    /* 36DD4 800465D4 7A944284 */  lh         $v0, %lo(D_8009947A)($v0)
+    /* 36DD0 800465D0 0A80023C */  lui        $v0, %hi(g_resource_has_retained_subblocks)
+    /* 36DD4 800465D4 7A944284 */  lh         $v0, %lo(g_resource_has_retained_subblocks)($v0)
     /* 36DD8 800465D8 00000000 */  nop
     /* 36DDC 800465DC 22004010 */  beqz       $v0, .L80046668
     /* 36DE0 800465E0 00000000 */   nop

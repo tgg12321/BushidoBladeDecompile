@@ -125,8 +125,8 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36AB0 800462B0 8C14010C */  jal        arena_UpdatePeak
     /* 36AB4 800462B4 21200402 */   addu      $a0, $s0, $a0
   .L800462B8:
-    /* 36AB8 800462B8 0A80013C */  lui        $at, %hi(D_8009947A)
-    /* 36ABC 800462BC 7A9420A4 */  sh         $zero, %lo(D_8009947A)($at)
+    /* 36AB8 800462B8 0A80013C */  lui        $at, %hi(g_resource_has_retained_subblocks)
+    /* 36ABC 800462BC 7A9420A4 */  sh         $zero, %lo(g_resource_has_retained_subblocks)($at)
     /* 36AC0 800462C0 FDFFA326 */  addiu      $v1, $s5, -0x3
     /* 36AC4 800462C4 2000622C */  sltiu      $v0, $v1, 0x20
     /* 36AC8 800462C8 4B004010 */  beqz       $v0, .L800463F8
@@ -145,8 +145,8 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36AF8 800462F8 F8FF438C */  lw         $v1, -0x8($v0)
     /* 36AFC 800462FC FCFF448C */  lw         $a0, -0x4($v0)
     /* 36B00 80046300 01000224 */  addiu      $v0, $zero, 0x1
-    /* 36B04 80046304 0A80013C */  lui        $at, %hi(D_8009947A)
-    /* 36B08 80046308 7A9422A4 */  sh         $v0, %lo(D_8009947A)($at)
+    /* 36B04 80046304 0A80013C */  lui        $at, %hi(g_resource_has_retained_subblocks)
+    /* 36B08 80046308 7A9422A4 */  sh         $v0, %lo(g_resource_has_retained_subblocks)($at)
     /* 36B0C 8004630C 82180300 */  srl        $v1, $v1, 2
     /* 36B10 80046310 80180300 */  sll        $v1, $v1, 2
     /* 36B14 80046314 21B00302 */  addu       $s6, $s0, $v1
@@ -197,16 +197,16 @@ glabel resource_LoadOrReuseSelectedBlock
     /* 36BBC 800463BC 0410010C */  jal        reloc_RelocateBlock
     /* 36BC0 800463C0 21200402 */   addu      $a0, $s0, $a0
     /* 36BC4 800463C4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 36BC8 800463C8 0A80013C */  lui        $at, %hi(D_8009947A)
-    /* 36BCC 800463CC 7A9422A4 */  sh         $v0, %lo(D_8009947A)($at)
+    /* 36BC8 800463C8 0A80013C */  lui        $at, %hi(g_resource_has_retained_subblocks)
+    /* 36BCC 800463CC 7A9422A4 */  sh         $v0, %lo(g_resource_has_retained_subblocks)($at)
     /* 36BD0 800463D0 FF180108 */  j          .L800463FC
     /* 36BD4 800463D4 2120C002 */   addu      $a0, $s6, $zero
   jlabel .L800463D8
     /* 36BD8 800463D8 21884002 */  addu       $s1, $s2, $zero
     /* 36BDC 800463DC 1400028E */  lw         $v0, 0x14($s0)
     /* 36BE0 800463E0 01000324 */  addiu      $v1, $zero, 0x1
-    /* 36BE4 800463E4 0A80013C */  lui        $at, %hi(D_8009947A)
-    /* 36BE8 800463E8 7A9423A4 */  sh         $v1, %lo(D_8009947A)($at)
+    /* 36BE4 800463E4 0A80013C */  lui        $at, %hi(g_resource_has_retained_subblocks)
+    /* 36BE8 800463E8 7A9423A4 */  sh         $v1, %lo(g_resource_has_retained_subblocks)($at)
     /* 36BEC 800463EC 82100200 */  srl        $v0, $v0, 2
     /* 36BF0 800463F0 80100200 */  sll        $v0, $v0, 2
     /* 36BF4 800463F4 21A00202 */  addu       $s4, $s0, $v0

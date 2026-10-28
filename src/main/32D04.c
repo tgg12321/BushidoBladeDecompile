@@ -538,7 +538,7 @@ void gpu_OffsetBlockTexPrimStreams(
     s16 i;
 
     for (i = 0; i < D_80103658[arg0]; i++) {
-        *(s32 *)0x1F800000 = D_80103608[arg0][i];
+        *(s32 *)0x1F800000 = g_reloc_block_entry_tables[arg0][i];
         gpu_OffsetTexPrimStream(arg1, arg2, arg3, arg4_lo);
     }
 }
@@ -560,7 +560,7 @@ s16 arg3;
 s16 arg4;
 s16 arg5;
 {
-    *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
+    *(s32 *)0x1F800000 = g_reloc_block_entry_tables[arg0][arg1];
     gpu_OffsetTexPrimStream(arg2, arg3, arg4, arg5);
 }
 extern s16 D_80095588[];
@@ -888,9 +888,9 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
 /* Relocates a block of pointer words in place. p[0] holds the word count in
  * its low 15 bits, bit 15 set once the block is relocated. Marks the block
  * relocated (keeping the low halfword), records its first word (p + 1) and
- * count in D_80103608 / D_80103658 [arg1], and, if it was not relocated yet,
- * turns each word's block-relative offset into an address by adding the
- * block's base. reloc_UnrelocateBlock is the inverse. */
+ * count in g_reloc_block_entry_tables / D_80103658 [arg1], and, if it was not
+ * relocated yet, turns each word's block-relative offset into an address by
+ * adding the block's base. reloc_UnrelocateBlock is the inverse. */
 void reloc_RelocateBlock(s32 *p, s16 arg1) {
     s32 *base = p;
     s32 block_header;
@@ -900,7 +900,7 @@ void reloc_RelocateBlock(s32 *p, s16 arg1) {
     block_header = *p;
     *p = (block_header | 0x8000) & 0xFFFF;
     p++;
-    D_80103608[arg1] = p;
+    g_reloc_block_entry_tables[arg1] = p;
     D_80103658[arg1] = block_header & 0x7FFF;
     if (!(block_header & 0x8000)) {
         n = block_header;
@@ -915,7 +915,7 @@ void reloc_UnrelocateBlock(s16 a0) {
     s32 a4;
     s32 *a6;
 
-    v1 = D_80103608[a0];
+    v1 = g_reloc_block_entry_tables[a0];
     a4 = *(v1 - 1);
     a6 = v1 - 1;
     if (a4 & 0x8000) {
@@ -938,9 +938,9 @@ void reloc_UnrelocateBlock(s16 a0) {
 }
 
 void reloc_RebaseBlock(s32 a0, s32 a1) {
-    s32 *ptr = D_80103608[a0];
+    s32 *ptr = g_reloc_block_entry_tables[a0];
     s32 count = D_80103658[a0];
-    D_80103608[a0] = (ptr = ptr + (a1 / 4));
+    g_reloc_block_entry_tables[a0] = (ptr = ptr + (a1 / 4));
     count--;
     if (count != -1) {
         do {

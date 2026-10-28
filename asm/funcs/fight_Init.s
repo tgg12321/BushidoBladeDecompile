@@ -82,8 +82,8 @@ glabel fight_Init
     /* E5DC 8001DDDC 21200000 */   addu      $a0, $zero, $zero
     /* E5E0 8001DDE0 F8FF000C */  jal        softbody_RequestSnap
     /* E5E4 8001DDE4 01000424 */   addiu     $a0, $zero, 0x1
-    /* E5E8 8001DDE8 0A80023C */  lui        $v0, %hi(D_800A3670)
-    /* E5EC 8001DDEC 70364290 */  lbu        $v0, %lo(D_800A3670)($v0)
+    /* E5E8 8001DDE8 0A80023C */  lui        $v0, %hi(g_fight_reinit_reuses_assets)
+    /* E5EC 8001DDEC 70364290 */  lbu        $v0, %lo(g_fight_reinit_reuses_assets)($v0)
     /* E5F0 8001DDF0 00000000 */  nop
     /* E5F4 8001DDF4 DA004014 */  bnez       $v0, .L8001E160
     /* E5F8 8001DDF8 05000224 */   addiu     $v0, $zero, 0x5
@@ -347,8 +347,8 @@ glabel fight_Init
     /* E9B0 8001E1B0 41006214 */  bne        $v1, $v0, .L8001E2B8
     /* E9B4 8001E1B4 00000000 */   nop
   .L8001E1B8:
-    /* E9B8 8001E1B8 0A80023C */  lui        $v0, %hi(D_800A3670)
-    /* E9BC 8001E1BC 70364290 */  lbu        $v0, %lo(D_800A3670)($v0)
+    /* E9B8 8001E1B8 0A80023C */  lui        $v0, %hi(g_fight_reinit_reuses_assets)
+    /* E9BC 8001E1BC 70364290 */  lbu        $v0, %lo(g_fight_reinit_reuses_assets)($v0)
     /* E9C0 8001E1C0 00000000 */  nop
     /* E9C4 8001E1C4 27004010 */  beqz       $v0, .L8001E264
     /* E9C8 8001E1C8 00000000 */   nop
@@ -469,8 +469,8 @@ glabel fight_Init
     /* EB80 8001E380 205B000C */  jal        eff_Init
     /* EB84 8001E384 00000000 */   nop
     /* EB88 8001E388 01000224 */  addiu      $v0, $zero, 0x1
-    /* EB8C 8001E38C 0A80013C */  lui        $at, %hi(D_800A3670)
-    /* EB90 8001E390 703620A0 */  sb         $zero, %lo(D_800A3670)($at)
+    /* EB8C 8001E38C 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
+    /* EB90 8001E390 703620A0 */  sb         $zero, %lo(g_fight_reinit_reuses_assets)($at)
     /* EB94 8001E394 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* EB98 8001E398 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
     /* EB9C 8001E39C 0872000C */  jal        fight_QueuePositionalSoundWithRandomAlternate

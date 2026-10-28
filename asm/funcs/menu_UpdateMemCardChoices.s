@@ -6,8 +6,8 @@ glabel menu_UpdateMemCardChoices
     /* 5C978 8006C178 4804828F */  lw         $v0, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 5C97C 8006C17C 0A80033C */  lui        $v1, %hi(g_gpu_presented_frame_count)
     /* 5C980 8006C180 AC36638C */  lw         $v1, %lo(g_gpu_presented_frame_count)($v1)
-    /* 5C984 8006C184 0A80053C */  lui        $a1, %hi(D_800A3518)
-    /* 5C988 8006C188 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
+    /* 5C984 8006C184 0A80053C */  lui        $a1, %hi(g_menu_draw_buffer_counter)
+    /* 5C988 8006C188 1835A524 */  addiu      $a1, $a1, %lo(g_menu_draw_buffer_counter)
     /* 5C98C 8006C18C 6C00BFAF */  sw         $ra, 0x6C($sp)
     /* 5C990 8006C190 6800B0AF */  sw         $s0, 0x68($sp)
     /* 5C994 8006C194 01004224 */  addiu      $v0, $v0, 0x1

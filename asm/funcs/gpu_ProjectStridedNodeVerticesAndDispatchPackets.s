@@ -14,8 +14,8 @@ glabel gpu_ProjectStridedNodeVerticesAndDispatchPackets
     /* 3E2A4 8004DAA4 04002886 */  lh         $t0, 0x4($s1)
     /* 3E2A8 8004DAA8 02002986 */  lh         $t1, 0x2($s1)
     /* 3E2AC 8004DAAC 80400800 */  sll        $t0, $t0, 2
-    /* 3E2B0 8004DAB0 10800A3C */  lui        $t2, %hi(D_80103608)
-    /* 3E2B4 8004DAB4 08364A25 */  addiu      $t2, $t2, %lo(D_80103608)
+    /* 3E2B0 8004DAB0 10800A3C */  lui        $t2, %hi(g_reloc_block_entry_tables)
+    /* 3E2B4 8004DAB4 08364A25 */  addiu      $t2, $t2, %lo(g_reloc_block_entry_tables)
     /* 3E2B8 8004DAB8 21400A01 */  addu       $t0, $t0, $t2
     /* 3E2BC 8004DABC 0000088D */  lw         $t0, 0x0($t0)
     /* 3E2C0 8004DAC0 80480900 */  sll        $t1, $t1, 2

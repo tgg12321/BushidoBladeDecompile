@@ -98,7 +98,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     font_Printf(D_800A31D0,
                 (s32)(g_config_menu_cursors[0] == 11 ? selected_prefix
                                                      : unselected_prefix),
-                D_800A3690);
+                g_fight_view_option);
 
     for (i = 0; i < 2; i++) {
         if (g_pad_state.pressed & (0x1000 << (i * 16))) {
@@ -152,7 +152,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 D_800A36F9--;
                 break;
             case 11:
-                D_800A3690--;
+                g_fight_view_option--;
                 break;
             }
         } else if (g_pad_state.pressed & (0x2000 << (i * 16))) {
@@ -192,7 +192,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 D_800A36F9++;
                 break;
             case 11:
-                D_800A3690++;
+                g_fight_view_option++;
                 break;
             }
         }
@@ -205,7 +205,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     g_fight_config.unk_E &= 1;
     g_fight_config.unk_F &= 1;
     D_800A36F9 = (D_800A36F9 + 4) % 4;
-    D_800A3690 &= 1;
+    g_fight_view_option &= 1;
     if (g_pad_state.pressed & 0x08000800) {
         snd_QueueSound(1, 0x7F, 0x7F);
         ApplyPendingConfigAndInitializeMode();

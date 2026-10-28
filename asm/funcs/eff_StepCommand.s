@@ -28,7 +28,7 @@ glabel eff_StepCommand
     /* 513D8 80060BD8 00000000 */  nop
     /* 513DC 80060BDC 0400A2AC */  sw         $v0, 0x4($a1)
     /* 513E0 80060BE0 0800628C */  lw         $v0, 0x8($v1)
-    /* 513E4 80060BE4 A803868F */  lw         $a2, %gp_rel(D_800A3474)($gp)
+    /* 513E4 80060BE4 A803868F */  lw         $a2, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 513E8 80060BE8 0800428C */  lw         $v0, 0x8($v0)
     /* 513EC 80060BEC EB87010C */  jal        eff_SetRotMatrix
     /* 513F0 80060BF0 0800A2AC */   sw        $v0, 0x8($a1)

@@ -4,8 +4,8 @@
  * gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite,
  * gpu_DrawIndexedCellsDigitPairsAndGrowingBars, ...). .text 0x8005C8A8 (ROM
  * 0x4D0A8). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #136): no
- * direct call crosses the cut; the static D_800A3418 and the .sdata
- * D_800A3264..D_800A32B6 (RECTs and draw records) are used only here and
+ * direct call crosses the cut; the static g_gpu_jitter_random_state and the
+ * .sdata D_800A3264..D_800A32B6 (RECTs and draw records) are used only here and
  * follow 4BC3C.c's .sbss and 4510C.c's .sdata in address order. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
@@ -15,7 +15,7 @@
 
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
-static s32 D_800A3418;
+static s32 g_gpu_jitter_random_state;
 
 extern Unk8009B400Record D_8009B194[3];
 extern Unk8009B400Record D_8009B1AC[2];
@@ -387,10 +387,10 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
     if (arg1 > 0)
         arg1 -= 1;
 
-    D_800A3418 ^= rand();
-    base_x = ((u32)(D_800A3418 * 0x260)) >> 0xF;
-    D_800A3418 ^= rand();
-    base_y = ((u32)(D_800A3418 * 0xDC)) >> 0xF;
+    g_gpu_jitter_random_state ^= rand();
+    base_x = ((u32)(g_gpu_jitter_random_state * 0x260)) >> 0xF;
+    g_gpu_jitter_random_state ^= rand();
+    base_y = ((u32)(g_gpu_jitter_random_state * 0xDC)) >> 0xF;
 
     quad_pairs_drawn = 0;
     if (quad_pairs_drawn < ((D_800A326C + 1) * 2)) {
@@ -405,21 +405,21 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
              * swaps it: score 1 */
             s.header = (Unk8009B0E0Record *)(row_off + (s32)var_12);
             s.table = &D_8009B388[0];
-            D_800A3418 ^= rand();
+            g_gpu_jitter_random_state ^= rand();
             s.scale_y = var_10;
             s.scale_x = var_10;
-            D_800A3418 ^= rand();
+            g_gpu_jitter_random_state ^= rand();
             /* Ruling 4 compound-assignment split; one expression: score 3. */
             x = (s32)base_x - 0x19;
-            x += ((u32)(D_800A3418 * 0x32) >> 0xF);
+            x += ((u32)(g_gpu_jitter_random_state * 0x32) >> 0xF);
             /* FAKE: tmp1 is written twice (y base, then a copy of var_4) so
              * sched1 places the y base after the argument setup; dropping
              * either write or one carrier for both halves does not match (no
              * y-base write: score 4; no var_4 copy: 35; one carrier: 30) */
             tmp1 = (s32)base_y - 0xC;
             s.x = x;
-            D_800A3418 ^= rand();
-            y = tmp1 + ((u32)(D_800A3418 * 0x19) >> 0xF);
+            g_gpu_jitter_random_state ^= rand();
+            y = tmp1 + ((u32)(g_gpu_jitter_random_state * 0x19) >> 0xF);
             s.semi = 0;
             s.ot_idx = var_11;
             tmp1 = var_4;
@@ -431,17 +431,17 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
             s.scale_y = var_10;
             s.scale_x = var_10;
             s.table = &D_8009B388[1];
-            s.header = random_header_pair + (D_800A3418 & 1);
-            D_800A3418 ^= rand();
+            s.header = random_header_pair + (g_gpu_jitter_random_state & 1);
+            g_gpu_jitter_random_state ^= rand();
             /* Ruling 4 compound-assignment split; one expression: score 3. */
             x = (s32)base_x - 0x32;
-            x += ((u32)(D_800A3418 * 0x64) >> 0xF);
+            x += ((u32)(g_gpu_jitter_random_state * 0x64) >> 0xF);
             /* FAKE: tmp2 written twice, as tmp1 above (no y-base write: score
              * 4; no var_4 copy: 35) */
             tmp2 = (s32)base_y - 0x19;
             s.x = x;
-            D_800A3418 ^= rand();
-            y = tmp2 + ((u32)(D_800A3418 * 0x32) >> 0xF);
+            g_gpu_jitter_random_state ^= rand();
+            y = tmp2 + ((u32)(g_gpu_jitter_random_state * 0x32) >> 0xF);
             s.semi = 0;
             s.ot_idx = var_11;
             tmp2 = var_4;
@@ -521,7 +521,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 } else {
                     var_2[0] = var_2[0] / 10 % 10;
                 }
-                s.table = &D_8009B400[var_2[i]];
+                s.table = &g_gpu_decimal_digit_cells[var_2[i]];
                 if (var_2[i] == 1) {
                     s.x = i * 20 + 3;
                 } else {
@@ -536,7 +536,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 } else {
                     var_2[0] = var_2[0] / 10 % 10;
                 }
-                s.table = &D_8009B400[var_2[i]];
+                s.table = &g_gpu_decimal_digit_cells[var_2[i]];
                 if (var_2[i] == 1) {
                     s.x = i * 20 + 3;
                 } else {
@@ -551,7 +551,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 } else {
                     var_2[0] = var_2[0] / 10 % 10;
                 }
-                s.table = &D_8009B400[var_2[i]];
+                s.table = &g_gpu_decimal_digit_cells[var_2[i]];
                 if (var_2[i] == 1) {
                     s.x = i * 20 + 3;
                 } else {
@@ -575,7 +575,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     digits_started = 0;
     for (j = 0; j < 3; j++) {
         if (digits_started || var_2[j] != 0 || j == 2) {
-            s.table = &D_8009B400[var_2[j]];
+            s.table = &g_gpu_decimal_digit_cells[var_2[j]];
             s.table->x = 0x1F3;
             digits_started = 1;
             if (var_2[j] == 1) {
@@ -684,7 +684,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
             if (d[i] == 0 && i == 0 && arg0 < 0) {
                 i++;
             }
-            s.table = &D_8009B400[d[i]];
+            s.table = &g_gpu_decimal_digit_cells[d[i]];
             if (j != 0) {
                 s.table->x = 0x50;
             } else {
@@ -1011,7 +1011,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
         if (var_2[j] == 1) {
             s.x += 3;
         }
-        s.table = &D_8009B400[var_2[j]];
+        s.table = &g_gpu_decimal_digit_cells[var_2[j]];
         s.table->x = s.table->y = 0;
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
@@ -1195,7 +1195,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                         d[k] = d[k] / 10;
                     }
                     d[k] = d[k] % 10;
-                    s.table = &D_8009B400[d[k]];
+                    s.table = &g_gpu_decimal_digit_cells[d[k]];
                     if (d[k] == 1) {
                         s.x = k * 20 + 3;
                     } else {
@@ -1213,7 +1213,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                     }
                     x = (g_working_record.unk14_12 == 2) ? k * 20 + 0x48
                                                          : k * 20 + 0x34;
-                    s.table = &D_8009B400[d[k]];
+                    s.table = &g_gpu_decimal_digit_cells[d[k]];
                     if (d[k] == 1) {
                         s.x = x + 3;
                     } else {
@@ -1974,7 +1974,7 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
  * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
  * D_8009B398 that gpu_DrawTimeFieldsAndDecimalCounter ..
  * gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells draw with, the cells
- * D_8009B3C8, and the ten digit cells D_8009B400. */
+ * D_8009B3C8, and the ten digit cells g_gpu_decimal_digit_cells. */
 Unk8009B0E0Record D_8009B2C8[2][5] = {
     {
         {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FE, 0x0, 0x64},
@@ -2017,7 +2017,7 @@ Unk8009B400Record D_8009B3C8[7] = {
     {565, 42, 0xC0, 0x2A, 0x3C, 0x0E}, {568, 0, 0xC0, 0xDB, 0x23, 0x01},
     {603, 0, 0xE3, 0xDB, 0x1D, 0x01},
 };
-Unk8009B400Record D_8009B400[10] = {
+Unk8009B400Record g_gpu_decimal_digit_cells[10] = {
     {0, 0, 0xA0, 0x00, 0x13, 0x0E}, {0, 0, 0xB3, 0x00, 0x0F, 0x0E},
     {0, 0, 0xC2, 0x00, 0x13, 0x0E}, {0, 0, 0xD5, 0x00, 0x13, 0x0E},
     {0, 0, 0xE8, 0x00, 0x13, 0x0E}, {0, 0, 0xA0, 0x0E, 0x13, 0x0E},

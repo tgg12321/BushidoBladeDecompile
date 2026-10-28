@@ -224,8 +224,8 @@ glabel fighter_Init
     /* 130B8 800228B8 00000000 */  nop
     /* 130BC 800228BC 840002A6 */  sh         $v0, 0x84($s0)
   .L800228C0:
-    /* 130C0 800228C0 0A80033C */  lui        $v1, %hi(D_800A3670)
-    /* 130C4 800228C4 70366390 */  lbu        $v1, %lo(D_800A3670)($v1)
+    /* 130C0 800228C0 0A80033C */  lui        $v1, %hi(g_fight_reinit_reuses_assets)
+    /* 130C4 800228C4 70366390 */  lbu        $v1, %lo(g_fight_reinit_reuses_assets)($v1)
     /* 130C8 800228C8 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 130CC 800228CC 880002A6 */  sh         $v0, 0x88($s0)
     /* 130D0 800228D0 8A0000A6 */  sh         $zero, 0x8A($s0)
@@ -282,13 +282,13 @@ glabel fighter_Init
     /* 13190 80022990 788A0008 */  j          .L800229E0
     /* 13194 80022994 00000000 */   nop
   .L80022998:
-    /* 13198 80022998 0A80063C */  lui        $a2, %hi(D_800A38E0)
-    /* 1319C 8002299C E038C690 */  lbu        $a2, %lo(D_800A38E0)($a2)
+    /* 13198 80022998 0A80063C */  lui        $a2, %hi(g_fight_start_position_pair_index)
+    /* 1319C 8002299C E038C690 */  lbu        $a2, %lo(g_fight_start_position_pair_index)($a2)
     /* 131A0 800229A0 4487000C */  jal        fight_GetStartPosition
     /* 131A4 800229A4 D8000526 */   addiu     $a1, $s0, 0xD8
     /* 131A8 800229A8 0100442E */  sltiu      $a0, $s2, 0x1
-    /* 131AC 800229AC 0A80063C */  lui        $a2, %hi(D_800A38E0)
-    /* 131B0 800229B0 E038C690 */  lbu        $a2, %lo(D_800A38E0)($a2)
+    /* 131AC 800229AC 0A80063C */  lui        $a2, %hi(g_fight_start_position_pair_index)
+    /* 131B0 800229B0 E038C690 */  lbu        $a2, %lo(g_fight_start_position_pair_index)($a2)
     /* 131B4 800229B4 768A0008 */  j          .L800229D8
     /* 131B8 800229B8 1000A527 */   addiu     $a1, $sp, 0x10
   .L800229BC:
@@ -462,8 +462,8 @@ glabel fighter_Init
     /* 13448 80022C48 0200422C */  sltiu      $v0, $v0, 0x2
     /* 1344C 80022C4C 06004014 */  bnez       $v0, .L80022C68
     /* 13450 80022C50 00000000 */   nop
-    /* 13454 80022C54 0A80023C */  lui        $v0, %hi(D_800A3670)
-    /* 13458 80022C58 70364290 */  lbu        $v0, %lo(D_800A3670)($v0)
+    /* 13454 80022C54 0A80023C */  lui        $v0, %hi(g_fight_reinit_reuses_assets)
+    /* 13458 80022C58 70364290 */  lbu        $v0, %lo(g_fight_reinit_reuses_assets)($v0)
     /* 1345C 80022C5C 00000000 */  nop
     /* 13460 80022C60 04004010 */  beqz       $v0, .L80022C74
     /* 13464 80022C64 21280000 */   addu      $a1, $zero, $zero

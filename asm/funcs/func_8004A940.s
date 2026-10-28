@@ -473,8 +473,8 @@ glabel func_8004A940
     /* 3B884 8004B084 04004886 */  lh         $t0, 0x4($s2)
     /* 3B888 8004B088 02004986 */  lh         $t1, 0x2($s2)
     /* 3B88C 8004B08C 80400800 */  sll        $t0, $t0, 2
-    /* 3B890 8004B090 10800A3C */  lui        $t2, %hi(D_80103608)
-    /* 3B894 8004B094 08364A25 */  addiu      $t2, $t2, %lo(D_80103608)
+    /* 3B890 8004B090 10800A3C */  lui        $t2, %hi(g_reloc_block_entry_tables)
+    /* 3B894 8004B094 08364A25 */  addiu      $t2, $t2, %lo(g_reloc_block_entry_tables)
     /* 3B898 8004B098 21400A01 */  addu       $t0, $t0, $t2
     /* 3B89C 8004B09C 0000088D */  lw         $t0, 0x0($t0)
     /* 3B8A0 8004B0A0 80480900 */  sll        $t1, $t1, 2

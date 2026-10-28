@@ -441,8 +441,8 @@ typedef struct {
 /* Two-fighter camera for g_camera_default_view_record (arg0/arg1 = the
  * fighters' positions, arg2/arg3 = the fighter records; caller fight_Update).
  * Eases the focus toward the fighters' midpoint (or arg0's position when
- * D_800A3690 is set); turns their separation (byte-LUT square root, GTE
- * leading-zero count for large inputs) into the value
+ * g_fight_view_option is set); turns their separation (byte-LUT square root,
+ * GTE leading-zero count for large inputs) into the value
  * g_camera_default_view_record.w18 eases 1/12 toward (0xBB8 in some
  * arg2->move_kind states), clamps w18, and sets a hysteresis flag for
  * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero; then per
@@ -485,7 +485,7 @@ void camera_UpdateTwoFighterView(
     dx = arg1->x - arg0->x;
     dy = arg1->y - arg0->y;
     dz = arg1->z - arg0->z;
-    if (D_800A3690 == 0) {
+    if (g_fight_view_option == 0) {
         scr->focus.vx = (arg0->x + arg1->x) / 2;
         scr->focus.vy = (arg0->y + arg1->y) / 2;
         scr->focus.vz = (arg0->z + arg1->z) / 2;
@@ -1136,7 +1136,7 @@ void fighter_BuildCpuOrMappedPadState(s32 arg0, PadState *arg1) {
     if (g_fight_mode_selector == 5 &&
         (D_800A381E != 0 || D_800A3816 != 0 || D_800A37E1 != 0 ||
          D_800A38B8 != 0 || g_fight_point_award_phase_timer != 0 ||
-         D_800A36E8 != 0)) {
+         g_fight_match_result_timer != 0)) {
         pad_ClearStateBits(arg1);
     }
     if (arg0 == 1 && g_fight_mode_selector != 6) {
@@ -1218,8 +1218,10 @@ void func_8001C624(void) {
     VECTOR local;
     s32 x, y, z;
 
-    fight_GetStartPosition(0, &e->base_pos.x, (s32)D_800A38E0);
-    fight_GetStartPosition(1, &local.vx, (s32)D_800A38E0);
+    fight_GetStartPosition(
+        0, &e->base_pos.x, (s32)g_fight_start_position_pair_index);
+    fight_GetStartPosition(
+        1, &local.vx, (s32)g_fight_start_position_pair_index);
     e->root_offset.x = 0;
     x = e->base_pos.x;
     y = e->base_pos.y;
@@ -1338,22 +1340,22 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         D_800A390D = 1;
         gpu_ResetGraphMode1();
         slot_LoadObjectBuildNodesSoftbodyAndFogLevels(1, D_800A38DE, 0);
-        prev = D_800A38E0;
+        prev = g_fight_start_position_pair_index;
         switch (g_fight_step_table_next_row) {
         case 0x1F:
-            D_800A38E0 = 1;
+            g_fight_start_position_pair_index = 1;
             resource_SelectRetainedSubblockOrApplyHeaderSections(1);
             break;
         case 0x33:
-            D_800A38E0 = 2;
+            g_fight_start_position_pair_index = 2;
             resource_SelectRetainedSubblockOrApplyHeaderSections(2);
             break;
         case 0x51:
-            D_800A38E0 = 3;
+            g_fight_start_position_pair_index = 3;
             resource_SelectRetainedSubblockOrApplyHeaderSections(3);
             break;
         }
-        if (D_800A3728 = prev != D_800A38E0) {
+        if (D_800A3728 = prev != g_fight_start_position_pair_index) {
             func_8001C624();
             var_1 = motion_GetCurrentVariantScript(0);
             D_80101EC8[0].move_is_common = 0;
@@ -1382,7 +1384,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
             p[t != 0]++;
         }
     }
-        D_800A3670 = 1;
+        g_fight_reinit_reuses_assets = 1;
         D_800A38DF = fight_FindNearestStartPair(
             &D_80101EC8[g_fight_followup_fighter_index].world_pos);
         g_main_loop_handler_index = 0;
@@ -1492,14 +1494,14 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             if (++D_800A381E == 0x50) {
                 D_800A381E = 0;
                 fight_RecordMatchResult();
-                D_800A36E8 = 1;
+                g_fight_match_result_timer = 1;
             }
         } else if (D_800A3816 != 0) {
             if (++D_800A3816 == 0x46) {
                 snd_QueueSound(0x9D, 0x7F, 0x7F);
             } else if (D_800A3816 == 0x82) {
                 D_800A3816 = 0;
-                D_800A3670 = 1;
+                g_fight_reinit_reuses_assets = 1;
                 g_main_loop_handler_index = 0;
             }
         } else if (D_800A37E1 != 0) {
@@ -1513,7 +1515,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                     D_800A38AA[g_fight_result_subject_index]++;
                     D_800A38B8 = 1;
                 } else {
-                    D_800A3670 = 1;
+                    g_fight_reinit_reuses_assets = 1;
                     g_main_loop_handler_index = 0;
                 }
             }
@@ -1525,7 +1527,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                     D_800A38AA[g_fight_result_subject_index] = 0;
                     g_fight_point_award_phase_timer = 0x5A;
                 } else {
-                    D_800A3670 = 1;
+                    g_fight_reinit_reuses_assets = 1;
                     g_main_loop_handler_index = 0;
                 }
             }
@@ -1545,9 +1547,9 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 if (D_800A3898[g_fight_result_subject_index == 0] ==
                     g_fight_win_target) {
                     fight_RecordMatchResult();
-                    D_800A36E8 = 1;
+                    g_fight_match_result_timer = 1;
                 } else {
-                    D_800A3670 = 1;
+                    g_fight_reinit_reuses_assets = 1;
                     g_main_loop_handler_index = 0;
                 }
             }
@@ -1555,17 +1557,17 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
             if (--D_800A391E == 0) {
                 snd_QueueSound(0x9C, 0x7F, 0x7F);
             }
-        } else if (D_800A36E8 != 0) {
+        } else if (g_fight_match_result_timer != 0) {
             if (g_fight_match_results[g_fight_match_cursor - 1] == 2) {
-                if (D_800A36E8 == 1) {
+                if (g_fight_match_result_timer == 1) {
                     snd_QueueSound(0xA4, 0x7F, 0x7F);
                 }
                 temp = 0x50;
             } else {
-                if (D_800A36E8 == 1) {
+                if (g_fight_match_result_timer == 1) {
                     snd_QueueSound(0xA6, 0x7F, 0x7F);
                 }
-                if (D_800A36E8 == 0x14) {
+                if (g_fight_match_result_timer == 0x14) {
                     snd_QueueSound(
                         g_fighter_group_flags
                                 [D_80101EC8[g_fight_match_results
@@ -1577,8 +1579,8 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 }
                 temp = 0x64;
             }
-            if (++D_800A36E8 == temp) {
-                D_800A36E8 = 0;
+            if (++g_fight_match_result_timer == temp) {
+                g_fight_match_result_timer = 0;
                 fight_AdvanceMatch();
             }
         } else if (
@@ -1836,7 +1838,7 @@ void fight_Init(void) {
     }
     softbody_RequestSnap(0);
     softbody_RequestSnap(1);
-    if (D_800A3670 == 0) {
+    if (g_fight_reinit_reuses_assets == 0) {
         ResetEntrySelectionState();
         addr = (s32)0x80190800;
         motion_InvalidateMarkedNdataPackAndClearSlot1Id();
@@ -1913,7 +1915,7 @@ void fight_Init(void) {
     fighter_AssignMotionSlotAndScanDataIdNibbles(1);
     fighter_ConfigureCpuControl();
     if (g_fight_mode_selector == 2 || g_fight_mode_selector == 5) {
-        if (D_800A3670 != 0) {
+        if (g_fight_reinit_reuses_assets != 0) {
             motion_ResetVariantIndex(0);
             {
                 MoveScript *v = motion_GetDefaultVariantScript(0);
@@ -1971,7 +1973,7 @@ void fight_Init(void) {
     g_local_ot_draw_mode = DISP_DISABLED;
     D_800A36A8 = 0;
     eff_Init();
-    D_800A3670 = 0;
+    g_fight_reinit_reuses_assets = 0;
     g_main_loop_handler_index = 1;
     fight_QueuePositionalSoundWithRandomAlternate();
     snd_StartFightCdAudio();
@@ -2131,7 +2133,7 @@ void fight_Update(void) {
             D_80101EC8[1].world_pos.x, D_80101EC8[1].world_pos.z);
     }
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
-        (D_800A3690 ^ 1) != 0);
+        (g_fight_view_option ^ 1) != 0);
     fight_UpdateModeDisplaysAndMatchProgress();
     snd_UpdateStageSounds();
     fight_UpdateDefeatDelayAndModeProgress();
@@ -2225,7 +2227,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     if (g_fight_choice_confirm_delay < 0x3C)
         return;
     if (g_fight_choice_menu_cursor == 0) {
-        D_800A3670 = 1;
+        g_fight_reinit_reuses_assets = 1;
         D_800A380C = D_800A380C + 1;
         D_800A38DF = fight_FindNearestStartPair(
             &D_80101EC8[g_fight_followup_fighter_index].world_pos);
@@ -3530,8 +3532,9 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
     /* Ruling 11 (ordinary-c-judge-decidable): holds three values -- the
      * horizontal step (1..40, dx / dz scaled by temp / 40), the vertical
      * step (1..40, temp * 100 in y), then the index of a record of
-     * fight_GetStartPositionPairTable's block (D_800A38E0 when
-     * g_fight_mode_selector is 3, else the one of four nearest pos in x / z).
+     * fight_GetStartPositionPairTable's block
+     * (g_fight_start_position_pair_index when g_fight_mode_selector is 3, else
+     * the one of four nearest pos in x / z).
      */
     s32 temp;
     s32 angle;
@@ -3591,7 +3594,7 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
         }
     }
     if (g_fight_mode_selector == 3) {
-        temp = D_800A38E0;
+        temp = g_fight_start_position_pair_index;
     } else {
         best = 0x7FFFFFFF;
         var_5 += g_fight_stage_index * 24;
@@ -3780,7 +3783,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_8A = 0;
     p->unk_8E = -1;
     p->unk_90 = 0;
-    var_5 = (D_800A3670 != 0) ? D_800A38DF : 0;
+    var_5 = (g_fight_reinit_reuses_assets != 0) ? D_800A38DF : 0;
 
     switch (g_fight_mode_selector) {
     case 0:
@@ -3800,8 +3803,10 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
                 idx, &p->base_pos, &var_1.x);
         } else {
-            fight_GetStartPosition(idx, &p->base_pos.x, D_800A38E0);
-            fight_GetStartPosition(idx == 0, &var_1.x, D_800A38E0);
+            fight_GetStartPosition(
+                idx, &p->base_pos.x, g_fight_start_position_pair_index);
+            fight_GetStartPosition(
+                idx == 0, &var_1.x, g_fight_start_position_pair_index);
         }
         break;
     default:
@@ -3868,7 +3873,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_1D0 = p->orientation;
     fighter_ScaleBoneHitRecords(idx, p->size_scale);
     if (g_fight_mode_selector != 0 || idx != 0 || D_800A3907 < 2 ||
-        D_800A3670 != 0) {
+        g_fight_reinit_reuses_assets != 0) {
         fighter_ResetBoneGroupHitState(p);
     }
     p->unk_274 = D_8008E3C0[p->character_data_index];

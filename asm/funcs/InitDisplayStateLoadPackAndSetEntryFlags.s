@@ -84,7 +84,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5EE64 8006E664 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 5EE68 8006E668 940482AF */  sw         $v0, %gp_rel(g_entry_menu_slot_records)($gp)
     /* 5EE6C 8006E66C 02000224 */  addiu      $v0, $zero, 0x2
-    /* 5EE70 8006E670 A40480A7 */  sh         $zero, %gp_rel(D_800A3570)($gp)
+    /* 5EE70 8006E670 A40480A7 */  sh         $zero, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5EE74 8006E674 AC0480A7 */  sh         $zero, %gp_rel(g_entry_menu_slide_phase)($gp)
     /* 5EE78 8006E678 B00480A7 */  sh         $zero, %gp_rel(D_800A357C)($gp)
     /* 5EE7C 8006E67C B40480A7 */  sh         $zero, %gp_rel(g_entry_menu_handler_index)($gp)
@@ -207,7 +207,7 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5F03C 8006E83C 1000A2BB */  swr        $v0, 0x10($sp)
     /* 5F040 8006E840 1700A3AB */  swl        $v1, 0x17($sp)
     /* 5F044 8006E844 1400A3BB */  swr        $v1, 0x14($sp)
-    /* 5F048 8006E848 D00480A7 */  sh         $zero, %gp_rel(D_800A359C)($gp)
+    /* 5F048 8006E848 D00480A7 */  sh         $zero, %gp_rel(g_entry_menu_choice_grid_row)($gp)
     /* 5F04C 8006E84C CC0480A7 */  sh         $zero, %gp_rel(D_800A3598)($gp)
     /* 5F050 8006E850 CFEC010C */  jal        DrawSync
     /* 5F054 8006E854 21200000 */   addu      $a0, $zero, $zero

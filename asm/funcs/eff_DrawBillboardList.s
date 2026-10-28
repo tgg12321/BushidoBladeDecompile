@@ -29,12 +29,12 @@ glabel eff_DrawBillboardList
     /* 52924 80062124 00000000 */  nop
     /* 52928 80062128 040082A4 */  sh         $v0, 0x4($a0)
     /* 5292C 8006212C 0800628C */  lw         $v0, 0x8($v1)
-    /* 52930 80062130 A803868F */  lw         $a2, %gp_rel(D_800A3474)($gp)
+    /* 52930 80062130 A803868F */  lw         $a2, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 52934 80062134 0000428C */  lw         $v0, 0x0($v0)
     /* 52938 80062138 00000000 */  nop
     /* 5293C 8006213C 0000A2AC */  sw         $v0, 0x0($a1)
     /* 52940 80062140 0800628C */  lw         $v0, 0x8($v1)
-    /* 52944 80062144 2004908F */  lw         $s0, %gp_rel(D_800A34EC)($gp)
+    /* 52944 80062144 2004908F */  lw         $s0, %gp_rel(g_eff_work_area)($gp)
     /* 52948 80062148 0400428C */  lw         $v0, 0x4($v0)
     /* 5294C 8006214C 00000000 */  nop
     /* 52950 80062150 0400A2AC */  sw         $v0, 0x4($a1)
@@ -45,7 +45,7 @@ glabel eff_DrawBillboardList
     /* 52964 80062164 EC0182AF */  sw         $v0, %gp_rel(g_eff_billboard_draw_count)($gp)
     /* 52968 80062168 EB87010C */  jal        eff_SetRotMatrix
     /* 5296C 8006216C 0800A3AC */   sw        $v1, 0x8($a1)
-    /* 52970 80062170 A803848F */  lw         $a0, %gp_rel(D_800A3474)($gp)
+    /* 52970 80062170 A803848F */  lw         $a0, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 52974 80062174 BBFB010C */  jal        SetRotMatrix
     /* 52978 80062178 21A80000 */   addu      $s5, $zero, $zero
     /* 5297C 8006217C 380000A6 */  sh         $zero, 0x38($s0)

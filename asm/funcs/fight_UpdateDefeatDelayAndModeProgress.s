@@ -150,8 +150,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D304 8001CB04 33000224 */  addiu      $v0, $zero, 0x33
     /* D308 8001CB08 0A80033C */  lui        $v1, %hi(g_fight_step_table_next_row)
     /* D30C 8001CB0C E2386390 */  lbu        $v1, %lo(g_fight_step_table_next_row)($v1)
-    /* D310 8001CB10 0A80113C */  lui        $s1, %hi(D_800A38E0)
-    /* D314 8001CB14 E0383192 */  lbu        $s1, %lo(D_800A38E0)($s1)
+    /* D310 8001CB10 0A80113C */  lui        $s1, %hi(g_fight_start_position_pair_index)
+    /* D314 8001CB14 E0383192 */  lbu        $s1, %lo(g_fight_start_position_pair_index)($s1)
     /* D318 8001CB18 10006210 */  beq        $v1, $v0, .L8001CB5C
     /* D31C 8001CB1C 34006228 */   slti      $v0, $v1, 0x34
     /* D320 8001CB20 05004010 */  beqz       $v0, .L8001CB38
@@ -167,26 +167,26 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D344 8001CB44 E1720008 */  j          .L8001CB84
     /* D348 8001CB48 00000000 */   nop
   .L8001CB4C:
-    /* D34C 8001CB4C 0A80013C */  lui        $at, %hi(D_800A38E0)
-    /* D350 8001CB50 E03830A0 */  sb         $s0, %lo(D_800A38E0)($at)
+    /* D34C 8001CB4C 0A80013C */  lui        $at, %hi(g_fight_start_position_pair_index)
+    /* D350 8001CB50 E03830A0 */  sb         $s0, %lo(g_fight_start_position_pair_index)($at)
     /* D354 8001CB54 DF720008 */  j          .L8001CB7C
     /* D358 8001CB58 01000424 */   addiu     $a0, $zero, 0x1
   .L8001CB5C:
     /* D35C 8001CB5C 02000224 */  addiu      $v0, $zero, 0x2
-    /* D360 8001CB60 0A80013C */  lui        $at, %hi(D_800A38E0)
-    /* D364 8001CB64 E03822A0 */  sb         $v0, %lo(D_800A38E0)($at)
+    /* D360 8001CB60 0A80013C */  lui        $at, %hi(g_fight_start_position_pair_index)
+    /* D364 8001CB64 E03822A0 */  sb         $v0, %lo(g_fight_start_position_pair_index)($at)
     /* D368 8001CB68 DF720008 */  j          .L8001CB7C
     /* D36C 8001CB6C 02000424 */   addiu     $a0, $zero, 0x2
   .L8001CB70:
-    /* D370 8001CB70 0A80013C */  lui        $at, %hi(D_800A38E0)
-    /* D374 8001CB74 E03822A0 */  sb         $v0, %lo(D_800A38E0)($at)
+    /* D370 8001CB70 0A80013C */  lui        $at, %hi(g_fight_start_position_pair_index)
+    /* D374 8001CB74 E03822A0 */  sb         $v0, %lo(g_fight_start_position_pair_index)($at)
     /* D378 8001CB78 03000424 */  addiu      $a0, $zero, 0x3
   .L8001CB7C:
     /* D37C 8001CB7C 6719010C */  jal        resource_SelectRetainedSubblockOrApplyHeaderSections
     /* D380 8001CB80 00000000 */   nop
   .L8001CB84:
-    /* D384 8001CB84 0A80023C */  lui        $v0, %hi(D_800A38E0)
-    /* D388 8001CB88 E0384290 */  lbu        $v0, %lo(D_800A38E0)($v0)
+    /* D384 8001CB84 0A80023C */  lui        $v0, %hi(g_fight_start_position_pair_index)
+    /* D388 8001CB88 E0384290 */  lbu        $v0, %lo(g_fight_start_position_pair_index)($v0)
     /* D38C 8001CB8C 00000000 */  nop
     /* D390 8001CB90 26102202 */  xor        $v0, $s1, $v0
     /* D394 8001CB94 2B100200 */  sltu       $v0, $zero, $v0
@@ -248,8 +248,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D464 8001CC64 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
     /* D468 8001CC68 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* D46C 8001CC6C 01000224 */  addiu      $v0, $zero, 0x1
-    /* D470 8001CC70 0A80013C */  lui        $at, %hi(D_800A3670)
-    /* D474 8001CC74 703622A0 */  sb         $v0, %lo(D_800A3670)($at)
+    /* D470 8001CC70 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
+    /* D474 8001CC74 703622A0 */  sb         $v0, %lo(g_fight_reinit_reuses_assets)($at)
     /* D478 8001CC78 1080023C */  lui        $v0, %hi(D_80101FBC)
     /* D47C 8001CC7C BC1F4224 */  addiu      $v0, $v0, %lo(D_80101FBC)
     /* D480 8001CC80 00210300 */  sll        $a0, $v1, 4

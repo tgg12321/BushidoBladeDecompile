@@ -5798,7 +5798,7 @@ void fight_AdvanceMatch(void) {
         D_800A391E = 0x50;
         D_800A381E = 0;
         D_800A37E1 = 0;
-        D_800A36E8 = 0;
+        g_fight_match_result_timer = 0;
         D_800A38B8 = 0;
         g_fight_point_award_phase_timer = 0;
         for (v1 = 0; v1 < 2; v1++) {

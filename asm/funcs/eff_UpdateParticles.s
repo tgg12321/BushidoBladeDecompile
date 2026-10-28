@@ -1,7 +1,7 @@
 glabel eff_UpdateParticles
     /* 58514 80067D14 48FFBD27 */  addiu      $sp, $sp, -0xB8
     /* 58518 80067D18 9000B0AF */  sw         $s0, 0x90($sp)
-    /* 5851C 80067D1C 2004908F */  lw         $s0, %gp_rel(D_800A34EC)($gp)
+    /* 5851C 80067D1C 2004908F */  lw         $s0, %gp_rel(g_eff_work_area)($gp)
     /* 58520 80067D20 A400B5AF */  sw         $s5, 0xA4($sp)
     /* 58524 80067D24 21A88000 */  addu       $s5, $a0, $zero
     /* 58528 80067D28 B400BFAF */  sw         $ra, 0xB4($sp)

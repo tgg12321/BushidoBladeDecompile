@@ -31,7 +31,7 @@ glabel func_80061064
     /* 518D0 800610D0 01000224 */   addiu     $v0, $zero, 0x1
     /* 518D4 800610D4 0F80043C */  lui        $a0, %hi(g_eff_point_light_position)
     /* 518D8 800610D8 40118424 */  addiu      $a0, $a0, %lo(g_eff_point_light_position)
-    /* 518DC 800610DC 9803858F */  lw         $a1, %gp_rel(D_800A3464)($gp)
+    /* 518DC 800610DC 9803858F */  lw         $a1, %gp_rel(g_eff_point_light_color)($gp)
     /* 518E0 800610E0 FFFF6224 */  addiu      $v0, $v1, -0x1
     /* 518E4 800610E4 F00182AF */  sw         $v0, %gp_rel(D_800A32BC)($gp)
     /* 518E8 800610E8 8407010C */  jal        light_SetPointLight

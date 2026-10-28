@@ -223,8 +223,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F5CC 8001EDCC 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
     /* F5D0 8001EDD0 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
     /* F5D4 8001EDD4 01000224 */  addiu      $v0, $zero, 0x1
-    /* F5D8 8001EDD8 0A80013C */  lui        $at, %hi(D_800A3670)
-    /* F5DC 8001EDDC 703622A0 */  sb         $v0, %lo(D_800A3670)($at)
+    /* F5D8 8001EDD8 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
+    /* F5DC 8001EDDC 703622A0 */  sb         $v0, %lo(g_fight_reinit_reuses_assets)($at)
     /* F5E0 8001EDE0 0A80023C */  lui        $v0, %hi(D_800A380C)
     /* F5E4 8001EDE4 0C38428C */  lw         $v0, %lo(D_800A380C)($v0)
     /* F5E8 8001EDE8 00210300 */  sll        $a0, $v1, 4

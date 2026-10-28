@@ -41,7 +41,7 @@ glabel eff_StartArgSelectedCommandWithCyanLight
     /* 51EE4 800616E4 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51EE8 800616E8 0800028E */  lw         $v0, 0x8($s0)
     /* 51EEC 800616EC FFFF6334 */  ori        $v1, $v1, (0x10FFFF & 0xFFFF)
-    /* 51EF0 800616F0 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51EF0 800616F0 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51EF4 800616F4 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51EF8 800616F8 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51EFC 800616FC 1400BF8F */  lw         $ra, 0x14($sp)

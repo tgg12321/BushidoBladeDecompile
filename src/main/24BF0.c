@@ -68,7 +68,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_fight_config.unk_4[3] = 0;
         g_fight_config.unk_4[2] = 0;
         g_fight_step_table_next_row = 0;
-        D_800A38E0 = 0;
+        g_fight_start_position_pair_index = 0;
         g_fight_timer_frames = 0;
         D_800A3728 = 0;
         g_fight_stage_index = 0x22;

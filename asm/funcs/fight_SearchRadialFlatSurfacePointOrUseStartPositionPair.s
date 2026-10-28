@@ -220,8 +220,8 @@ glabel fight_SearchRadialFlatSurfacePointOrUseStartPositionPair
     /* 128F8 800220F8 03000224 */  addiu      $v0, $zero, 0x3
     /* 128FC 800220FC 08006214 */  bne        $v1, $v0, .L80022120
     /* 12900 80022100 FF7F053C */   lui       $a1, (0x7FFFFFFF >> 16)
-    /* 12904 80022104 0A80113C */  lui        $s1, %hi(D_800A38E0)
-    /* 12908 80022108 E0383192 */  lbu        $s1, %lo(D_800A38E0)($s1)
+    /* 12904 80022104 0A80113C */  lui        $s1, %hi(g_fight_start_position_pair_index)
+    /* 12908 80022108 E0383192 */  lbu        $s1, %lo(g_fight_start_position_pair_index)($s1)
     /* 1290C 8002210C 6D880008 */  j          .L800221B4
     /* 12910 80022110 40101100 */   sll       $v0, $s1, 1
   .L80022114:

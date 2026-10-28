@@ -217,7 +217,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 62778 80071F78 01000224 */   addiu     $v0, $zero, 0x1
     /* 6277C 80071F7C 06000224 */  addiu      $v0, $zero, 0x6
     /* 62780 80071F80 B80482A7 */  sh         $v0, %gp_rel(D_800A3584)($gp)
-    /* 62784 80071F84 D00490A7 */  sh         $s0, %gp_rel(D_800A359C)($gp)
+    /* 62784 80071F84 D00490A7 */  sh         $s0, %gp_rel(g_entry_menu_choice_grid_row)($gp)
     /* 62788 80071F88 CC0490A7 */  sh         $s0, %gp_rel(D_800A3598)($gp)
     /* 6278C 80071F8C E7C70108 */  j          .L80071F9C
     /* 62790 80071F90 21800000 */   addu      $s0, $zero, $zero

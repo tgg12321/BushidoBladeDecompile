@@ -1,6 +1,6 @@
 glabel reloc_RebaseBlock
-    /* 34900 80044100 1080033C */  lui        $v1, %hi(D_80103608)
-    /* 34904 80044104 08366324 */  addiu      $v1, $v1, %lo(D_80103608)
+    /* 34900 80044100 1080033C */  lui        $v1, %hi(g_reloc_block_entry_tables)
+    /* 34904 80044104 08366324 */  addiu      $v1, $v1, %lo(g_reloc_block_entry_tables)
     /* 34908 80044108 80100400 */  sll        $v0, $a0, 2
     /* 3490C 8004410C 21304300 */  addu       $a2, $v0, $v1
     /* 34910 80044110 40200400 */  sll        $a0, $a0, 1

@@ -291,15 +291,15 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DA98 8001D298 28D0000C */  jal        fight_RecordMatchResult
     /* DA9C 8001D29C 00000000 */   nop
     /* DAA0 8001D2A0 01000224 */  addiu      $v0, $zero, 0x1
-    /* DAA4 8001D2A4 0A80013C */  lui        $at, %hi(D_800A36E8)
-    /* DAA8 8001D2A8 E83622A0 */  sb         $v0, %lo(D_800A36E8)($at)
+    /* DAA4 8001D2A4 0A80013C */  lui        $at, %hi(g_fight_match_result_timer)
+    /* DAA8 8001D2A8 E83622A0 */  sb         $v0, %lo(g_fight_match_result_timer)($at)
     /* DAAC 8001D2AC 9F750008 */  j          .L8001D67C
     /* DAB0 8001D2B0 00000000 */   nop
   .L8001D2B4:
     /* DAB4 8001D2B4 01000224 */  addiu      $v0, $zero, 0x1
   .L8001D2B8:
-    /* DAB8 8001D2B8 0A80013C */  lui        $at, %hi(D_800A3670)
-    /* DABC 8001D2BC 703622A0 */  sb         $v0, %lo(D_800A3670)($at)
+    /* DAB8 8001D2B8 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
+    /* DABC 8001D2BC 703622A0 */  sb         $v0, %lo(g_fight_reinit_reuses_assets)($at)
     /* DAC0 8001D2C0 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* DAC4 8001D2C4 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* DAC8 8001D2C8 9F750008 */  j          .L8001D67C
@@ -322,8 +322,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DB04 8001D304 9F750008 */  j          .L8001D67C
     /* DB08 8001D308 00000000 */   nop
   .L8001D30C:
-    /* DB0C 8001D30C 0A80033C */  lui        $v1, %hi(D_800A36E8)
-    /* DB10 8001D310 E8366390 */  lbu        $v1, %lo(D_800A36E8)($v1)
+    /* DB0C 8001D30C 0A80033C */  lui        $v1, %hi(g_fight_match_result_timer)
+    /* DB10 8001D310 E8366390 */  lbu        $v1, %lo(g_fight_match_result_timer)($v1)
     /* DB14 8001D314 00000000 */  nop
     /* DB18 8001D318 45006010 */  beqz       $v1, .L8001D430
     /* DB1C 8001D31C 00000000 */   nop
@@ -350,8 +350,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DB6C 8001D36C 9471010C */  jal        snd_QueueSound
     /* DB70 8001D370 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8001D374:
-    /* DB74 8001D374 0A80033C */  lui        $v1, %hi(D_800A36E8)
-    /* DB78 8001D378 E8366390 */  lbu        $v1, %lo(D_800A36E8)($v1)
+    /* DB74 8001D374 0A80033C */  lui        $v1, %hi(g_fight_match_result_timer)
+    /* DB78 8001D378 E8366390 */  lbu        $v1, %lo(g_fight_match_result_timer)($v1)
     /* DB7C 8001D37C 14000224 */  addiu      $v0, $zero, 0x14
     /* DB80 8001D380 1C006214 */  bne        $v1, $v0, .L8001D3F4
     /* DB84 8001D384 64000324 */   addiu     $v1, $zero, 0x64
@@ -384,17 +384,17 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DBEC 8001D3EC 7F000624 */   addiu     $a2, $zero, 0x7F
     /* DBF0 8001D3F0 64000324 */  addiu      $v1, $zero, 0x64
   .L8001D3F4:
-    /* DBF4 8001D3F4 0A80023C */  lui        $v0, %hi(D_800A36E8)
-    /* DBF8 8001D3F8 E8364290 */  lbu        $v0, %lo(D_800A36E8)($v0)
+    /* DBF4 8001D3F4 0A80023C */  lui        $v0, %hi(g_fight_match_result_timer)
+    /* DBF8 8001D3F8 E8364290 */  lbu        $v0, %lo(g_fight_match_result_timer)($v0)
     /* DBFC 8001D3FC 00000000 */  nop
     /* DC00 8001D400 01004224 */  addiu      $v0, $v0, 0x1
-    /* DC04 8001D404 0A80013C */  lui        $at, %hi(D_800A36E8)
-    /* DC08 8001D408 E83622A0 */  sb         $v0, %lo(D_800A36E8)($at)
+    /* DC04 8001D404 0A80013C */  lui        $at, %hi(g_fight_match_result_timer)
+    /* DC08 8001D408 E83622A0 */  sb         $v0, %lo(g_fight_match_result_timer)($at)
     /* DC0C 8001D40C FF004230 */  andi       $v0, $v0, 0xFF
     /* DC10 8001D410 9A004314 */  bne        $v0, $v1, .L8001D67C
     /* DC14 8001D414 00000000 */   nop
-    /* DC18 8001D418 0A80013C */  lui        $at, %hi(D_800A36E8)
-    /* DC1C 8001D41C E83620A0 */  sb         $zero, %lo(D_800A36E8)($at)
+    /* DC18 8001D418 0A80013C */  lui        $at, %hi(g_fight_match_result_timer)
+    /* DC1C 8001D41C E83620A0 */  sb         $zero, %lo(g_fight_match_result_timer)($at)
     /* DC20 8001D420 A8D0000C */  jal        fight_AdvanceMatch
     /* DC24 8001D424 00000000 */   nop
     /* DC28 8001D428 9F750008 */  j          .L8001D67C

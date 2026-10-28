@@ -1,5 +1,5 @@
 glabel memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
-    /* 29188 80038988 39018293 */  lbu        $v0, %gp_rel(D_800A3204 + 0x1)($gp)
+    /* 29188 80038988 39018293 */  lbu        $v0, %gp_rel(g_menu_prompt_rearm + 0x1)($gp)
     /* 2918C 8003898C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 29190 80038990 1400B1AF */  sw         $s1, 0x14($sp)
     /* 29194 80038994 21880000 */  addu       $s1, $zero, $zero
@@ -16,7 +16,7 @@ glabel memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
     /* 291C0 800389C0 DFE1000C */  jal        memcard_RequestLoad
     /* 291C4 800389C4 00000000 */   nop
     /* 291C8 800389C8 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* 291CC 800389CC 390180A3 */  sb         $zero, %gp_rel(D_800A3204 + 0x1)($gp)
+    /* 291CC 800389CC 390180A3 */  sb         $zero, %gp_rel(g_menu_prompt_rearm + 0x1)($gp)
     /* 291D0 800389D0 640282A3 */  sb         $v0, %gp_rel(D_800A3330)($gp)
     /* 291D4 800389D4 680280A3 */  sb         $zero, %gp_rel(D_800A3334)($gp)
     /* 291D8 800389D8 6C0280A3 */  sb         $zero, %gp_rel(D_800A3338)($gp)
@@ -204,7 +204,7 @@ glabel memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress
   jlabel .L80038C48
     /* 29448 80038C48 02002012 */  beqz       $s1, .L80038C54
     /* 2944C 80038C4C 01000224 */   addiu     $v0, $zero, 0x1
-    /* 29450 80038C50 390182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x1)($gp)
+    /* 29450 80038C50 390182A3 */  sb         $v0, %gp_rel(g_menu_prompt_rearm + 0x1)($gp)
   .L80038C54:
     /* 29454 80038C54 21102002 */  addu       $v0, $s1, $zero
     /* 29458 80038C58 1800BF8F */  lw         $ra, 0x18($sp)

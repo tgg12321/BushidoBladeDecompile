@@ -3,7 +3,7 @@ glabel eff_PrepareParticles
     /* 580AC 800678AC 21388000 */  addu       $a3, $a0, $zero
     /* 580B0 800678B0 8900043C */  lui        $a0, (0x895440 >> 16)
     /* 580B4 800678B4 40548434 */  ori        $a0, $a0, (0x895440 & 0xFFFF)
-    /* 580B8 800678B8 2004868F */  lw         $a2, %gp_rel(D_800A34EC)($gp)
+    /* 580B8 800678B8 2004868F */  lw         $a2, %gp_rel(g_eff_work_area)($gp)
     /* 580BC 800678BC 0807838F */  lw         $v1, %gp_rel(g_eff_quad_cursor)($gp)
     /* 580C0 800678C0 AC01C224 */  addiu      $v0, $a2, 0x1AC
     /* 580C4 800678C4 580682AF */  sw         $v0, %gp_rel(D_800A3724)($gp)
@@ -207,7 +207,7 @@ glabel eff_PrepareParticles
     /* 583BC 80067BBC 001A0300 */  sll        $v1, $v1, 8
     /* 583C0 80067BC0 21104300 */  addu       $v0, $v0, $v1
     /* 583C4 80067BC4 000082A4 */  sh         $v0, 0x0($a0)
-    /* 583C8 80067BC8 A8038A8F */  lw         $t2, %gp_rel(D_800A3474)($gp)
+    /* 583C8 80067BC8 A8038A8F */  lw         $t2, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 583CC 80067BCC 00000000 */  nop
     /* 583D0 80067BD0 00004C8D */  lw         $t4, 0x0($t2)
     /* 583D4 80067BD4 04004D8D */  lw         $t5, 0x4($t2)

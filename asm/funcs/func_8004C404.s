@@ -165,8 +165,8 @@ glabel func_8004C404
     /* 3CE8C 8004C68C 02002886 */  lh         $t0, 0x2($s1)
     /* 3CE90 8004C690 04002986 */  lh         $t1, 0x4($s1)
     /* 3CE94 8004C694 80400800 */  sll        $t0, $t0, 2
-    /* 3CE98 8004C698 10800A3C */  lui        $t2, %hi(D_80103608)
-    /* 3CE9C 8004C69C 08364A25 */  addiu      $t2, $t2, %lo(D_80103608)
+    /* 3CE98 8004C698 10800A3C */  lui        $t2, %hi(g_reloc_block_entry_tables)
+    /* 3CE9C 8004C69C 08364A25 */  addiu      $t2, $t2, %lo(g_reloc_block_entry_tables)
     /* 3CEA0 8004C6A0 21400A01 */  addu       $t0, $t0, $t2
     /* 3CEA4 8004C6A4 0000088D */  lw         $t0, 0x0($t0)
     /* 3CEA8 8004C6A8 80480900 */  sll        $t1, $t1, 2

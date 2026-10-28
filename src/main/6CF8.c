@@ -292,7 +292,7 @@ void func_80016D78(void) {
     font_LoadImage();
     fight_InitSettings();
     D_800A36F9 = 0;
-    D_800A3690 = 0;
+    g_fight_view_option = 0;
     D_800A3744 = 0;
     D_800A3745 = 0;
     D_800A3746 = 0;
@@ -815,7 +815,7 @@ s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};
 u8 g_softbody_slot_high_water = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-u8 D_800A3690;
+u8 g_fight_view_option;
 u8 D_800A36A8;
 s32 g_gpu_presented_frame_count;
 u8 D_800A36B0;

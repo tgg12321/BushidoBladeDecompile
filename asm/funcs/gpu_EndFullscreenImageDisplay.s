@@ -4,7 +4,7 @@ glabel gpu_EndFullscreenImageDisplay
     /* 5EAB0 8006E2B0 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 5EAB4 8006E2B4 A8EC010C */  jal        SetDispMask
     /* 5EAB8 8006E2B8 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 5EABC 8006E2BC 4C04828F */  lw         $v0, %gp_rel(D_800A3518)($gp)
+    /* 5EABC 8006E2BC 4C04828F */  lw         $v0, %gp_rel(g_menu_draw_buffer_counter)($gp)
     /* 5EAC0 8006E2C0 0F80103C */  lui        $s0, %hi(g_gpu_db)
     /* 5EAC4 8006E2C4 38741026 */  addiu      $s0, $s0, %lo(g_gpu_db)
     /* 5EAC8 8006E2C8 01004230 */  andi       $v0, $v0, 0x1
@@ -15,7 +15,7 @@ glabel gpu_EndFullscreenImageDisplay
     /* 5EADC 8006E2DC 00210400 */  sll        $a0, $a0, 4
     /* 5EAE0 8006E2E0 6CEE010C */  jal        PutDrawEnv
     /* 5EAE4 8006E2E4 21209000 */   addu      $a0, $a0, $s0
-    /* 5EAE8 8006E2E8 4C04828F */  lw         $v0, %gp_rel(D_800A3518)($gp)
+    /* 5EAE8 8006E2E8 4C04828F */  lw         $v0, %gp_rel(g_menu_draw_buffer_counter)($gp)
     /* 5EAEC 8006E2EC 5C001026 */  addiu      $s0, $s0, 0x5C
     /* 5EAF0 8006E2F0 01004230 */  andi       $v0, $v0, 0x1
     /* 5EAF4 8006E2F4 C0210200 */  sll        $a0, $v0, 7

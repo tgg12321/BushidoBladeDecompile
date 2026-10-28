@@ -986,7 +986,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
             fight_AdvanceMatch();
             return;
         }
-        D_800A3670 = 1;
+        g_fight_reinit_reuses_assets = 1;
         D_800A380C = D_800A380C + 1;
         D_800A38DF = fight_FindNearestStartPair(
             &D_80101EC8[g_fight_followup_fighter_index].world_pos);
@@ -1469,7 +1469,7 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
             offset = 0;
         }
         {
-            s16 v1 = D_800F6656;
+            s16 v1 = g_gpu_grid_and_fog_control;
             s16 mask = D_80090608;
             if ((v1 & ~mask) & 1) {
                 D_80090600 = dist;
@@ -1481,7 +1481,7 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
                 arg1 -= offset;
             }
         }
-        D_80090608 = (u16)D_800F6656;
+        D_80090608 = (u16)g_gpu_grid_and_fog_control;
         ptr = &D_8009060C[arg0];
         {
             /* FAKE: D_800906A4[arg0][1] read as a byte offset off the array
@@ -1513,7 +1513,7 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
         limit = arg1 - 1;
     }
 
-    if (D_800F6656 & 1) {
+    if (g_gpu_grid_and_fog_control & 1) {
         step = D_80090600;
     } else {
         if (func_8003F268() == 0) {
@@ -1759,8 +1759,8 @@ s32 gpu_GetFogClutObject(void) { return g_gpu_fog_clut_object; }
 
 void func_8003E2AC(void) {
     /* FAKE: the flag word's address held in p (one lui / addiu, lhu / sh off
-     * it); `D_800F6656 &= ~2` scores 6 */
-    s16 *p = &D_800F6656;
+     * it); `g_gpu_grid_and_fog_control &= ~2` scores 6 */
+    s16 *p = &g_gpu_grid_and_fog_control;
     *p &= ~2;
 }
 
@@ -1964,7 +1964,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     idx = (ang >> 6) & 0x3F;
     if (D_800A322C != 0) {
         mask = D_800927C0[idx];
-    } else if (D_800F6656 & 1) {
+    } else if (g_gpu_grid_and_fog_control & 1) {
         mask = D_80090740[idx];
     } else {
         s32 *src2;
@@ -2034,7 +2034,7 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
         }
     }
 
-    if ((D_800F6656 & 1) && D_800A322C == 0) {
+    if ((g_gpu_grid_and_fog_control & 1) && D_800A322C == 0) {
         out = gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
             x, z, out);
     }
@@ -2256,10 +2256,10 @@ void *gpu_GetGridNodeRecordTable(void) { return D_800A6690; }
 
 void func_8003F1E4(s32 a0) {
     if (a0) {
-        D_800F6656 = 3;
+        g_gpu_grid_and_fog_control = 3;
         D_800F6658 = 2;
     } else {
-        D_800F6656 = 0;
+        g_gpu_grid_and_fog_control = 0;
         D_800F6658 = 1;
     }
 }
@@ -2583,7 +2583,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
 
     obj = rec->obj;
     dst = (u16 *)cur;
-    src = (u16 *)D_80103608[obj->node.unk4][obj->node.unk2];
+    src = (u16 *)g_reloc_block_entry_tables[obj->node.unk4][obj->node.unk2];
     count = *src;
     init.in.count = count;
     init.in.points = (SVECTOR *)cur;

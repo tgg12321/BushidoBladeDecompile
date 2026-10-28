@@ -35,9 +35,9 @@ glabel eff_SpawnBillboardPair
     /* 53864 80063064 0F80013C */  lui        $at, %hi(D_800F0E40)
     /* 53868 80063068 21082300 */  addu       $at, $at, $v1
     /* 5386C 8006306C 400E22AC */  sw         $v0, %lo(D_800F0E40)($at)
-    /* 53870 80063070 0F80013C */  lui        $at, %hi(D_800F0BEC)
+    /* 53870 80063070 0F80013C */  lui        $at, %hi(g_eff_billboard_pair_ages)
     /* 53874 80063074 21082500 */  addu       $at, $at, $a1
-    /* 53878 80063078 EC0B20A4 */  sh         $zero, %lo(D_800F0BEC)($at)
+    /* 53878 80063078 EC0B20A4 */  sh         $zero, %lo(g_eff_billboard_pair_ages)($at)
     /* 5387C 8006307C 0800E003 */  jr         $ra
     /* 53880 80063080 01000224 */   addiu     $v0, $zero, 0x1
 endlabel eff_SpawnBillboardPair

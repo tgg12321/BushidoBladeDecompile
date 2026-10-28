@@ -63,7 +63,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
   .L8006905C:
     /* 5985C 8006905C 3004858F */  lw         $a1, %gp_rel(g_row_menu_work_block)($gp)
     /* 59860 80069060 580491AF */  sw         $s1, %gp_rel(g_row_menu_working_record_ptr)($gp)
-    /* 59864 80069064 4C0480AF */  sw         $zero, %gp_rel(D_800A3518)($gp)
+    /* 59864 80069064 4C0480AF */  sw         $zero, %gp_rel(g_menu_draw_buffer_counter)($gp)
     /* 59868 80069068 5C0480A7 */  sh         $zero, %gp_rel(D_800A3528)($gp)
     /* 5986C 8006906C 2A00A2A4 */  sh         $v0, 0x2A($a1)
     /* 59870 80069070 2800A2A4 */  sh         $v0, 0x28($a1)

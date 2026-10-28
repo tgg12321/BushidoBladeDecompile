@@ -35,7 +35,7 @@ static s16 D_800A355C;
 static Unk800A3560Slots g_entry_menu_slot_records;
 static Unk8009BD24Block *g_entry_menu_working_record_ptr;
 static s32 D_800A356C;
-static s16 D_800A3570;
+static s16 g_entry_menu_slide_displacement;
 static s32 D_800A3574; /* not named by any code or data: size from the gap */
 static s16 g_entry_menu_slide_phase;
 static s16 D_800A357C;
@@ -46,7 +46,7 @@ static s16 D_800A358C[2];
 static s16 g_entry_menu_row_phase_choice_cursors[2];
 static s16 D_800A3594[2];
 static s16 D_800A3598;
-static s16 D_800A359C;
+static s16 g_entry_menu_choice_grid_row;
 static s32 D_800A35A0;
 static Unk8006E49CRec *D_800A35A4;
 static Unk8006EA28Rec *g_entry_menu_resources;
@@ -55,7 +55,7 @@ static s32 g_entry_menu_init_extra_slot_count;
 static s16 D_800A35B4;
 static s16 D_800A35B8;
 static s32 g_entry_menu_fight_mode;
-static GpuDb *D_800A35C0;
+static GpuDb *g_entry_menu_gpu_db;
 static Unk800A35C4Rec *g_entry_menu_work_block;
 static s16 D_800A35C8[2];
 
@@ -107,7 +107,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
         (Unk8006EA28Rec *)D_800A356C);
     D_800A356C = gpu_InitPrimBufferPair(D_800A356C, D_800A35AC);
     g_entry_menu_slot_records.word = -1;
-    D_800A3570 = 0;
+    g_entry_menu_slide_displacement = 0;
     g_entry_menu_slide_phase = 0;
     D_800A357C = 0;
     g_entry_menu_handler_index = 0;
@@ -147,7 +147,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     }
 
     rect = D_800A32EC;
-    D_800A359C = 0;
+    g_entry_menu_choice_grid_row = 0;
     D_800A3598 = 0;
     DrawSync(0);
     MoveImage(&rect, 0x3C0, 0x1FE);
@@ -235,7 +235,7 @@ s32 StepSlideBuildFrameRecordAndDispatchStateHandler(
     Unk8006E49CRec *prim_buffer_record;
     s32 temp_v1;
 
-    D_800A35C0 = &g_gpu_db[g_gpu_presented_frame_count & 1];
+    g_entry_menu_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
     D_800A3548 = arg0;
     g_entry_menu_pressed_buttons = pad_buttons;
     if (g_entry_menu_fight_mode == 2) {
@@ -273,9 +273,9 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void) {
     switch (g_entry_menu_slide_phase & 0xFF) {
     case 1:
     case 3:
-        D_800A3570 += 0x20;
-        if (D_800A3570 >= 0x1E8) {
-            D_800A3570 = 0x1E8;
+        g_entry_menu_slide_displacement += 0x20;
+        if (g_entry_menu_slide_displacement >= 0x1E8) {
+            g_entry_menu_slide_displacement = 0x1E8;
             g_entry_menu_handler_index = D_800A3584;
             if ((g_entry_menu_slide_phase >> 8) == 0) {
                 g_entry_menu_slide_phase++;
@@ -284,12 +284,12 @@ void StepSlideProgressCommitPendingStateAndQueueSound(void) {
         break;
     case 2:
     case 4:
-        if (D_800A3570 == 0x1E8) {
+        if (g_entry_menu_slide_displacement == 0x1E8) {
             snd_QueueSound(5, 0x7F, 0x7F);
         }
-        D_800A3570 -= 0x20;
-        if (D_800A3570 <= 0) {
-            D_800A3570 = 0;
+        g_entry_menu_slide_displacement -= 0x20;
+        if (g_entry_menu_slide_displacement <= 0) {
+            g_entry_menu_slide_displacement = 0;
             g_entry_menu_slide_phase = 0;
         }
         break;
@@ -549,7 +549,7 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     s.header = var_2[0];
     p1 = s.header->cells;
     if (state >= 3) {
-        s.x = D_800A3570;
+        s.x = g_entry_menu_slide_displacement;
     } else {
         s.x = 0;
     }
@@ -575,7 +575,7 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     s.header = var_2[0];
     p1 = s.header->cells;
     if (state < 3) {
-        s.x = -D_800A3570 + 0x200;
+        s.x = -g_entry_menu_slide_displacement + 0x200;
     } else {
         s.x = 0x200;
     }
@@ -599,21 +599,21 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
         gpu_AddScaledSpriteQuads(&s, 1);
 
     if (state >= 3) {
-        rect.x = D_800A3570 + 0x4C;
+        rect.x = g_entry_menu_slide_displacement + 0x4C;
     } else {
         rect.x = 0x4C;
     }
-    rect.y = D_800A35C0->draw.clip.y + 0x7C;
-    rect.w = 0x1E8 - D_800A3570;
+    rect.y = g_entry_menu_gpu_db->draw.clip.y + 0x7C;
+    rect.w = 0x1E8 - g_entry_menu_slide_displacement;
     rect.h = 0x54;
     SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
     AddPrim(g_gpu_ot_ptr + 0xF, arg0->primitive_cursors.draw_area_prims);
     arg0->primitive_cursors.draw_area_prims++;
 
-    rect.x = D_800A35C0->draw.clip.x;
-    rect.y = D_800A35C0->draw.clip.y;
-    rect.w = D_800A35C0->draw.clip.w;
-    rect.h = D_800A35C0->draw.clip.h;
+    rect.x = g_entry_menu_gpu_db->draw.clip.x;
+    rect.y = g_entry_menu_gpu_db->draw.clip.y;
+    rect.w = g_entry_menu_gpu_db->draw.clip.w;
+    rect.h = g_entry_menu_gpu_db->draw.clip.h;
     SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
     AddPrim(g_gpu_ot_ptr + 6, arg0->primitive_cursors.draw_area_prims);
     arg0->primitive_cursors.draw_area_prims++;
@@ -622,15 +622,20 @@ void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(Unk8006EACCRec *arg0) {
     case 2:
     case 4:
         g_entry_menu_work_block->draw_offset[0] =
-            D_800A35C0->draw.ofs[0] + (state == 2 ? -D_800A3570 : D_800A3570);
-        g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+            g_entry_menu_gpu_db->draw.ofs[0] +
+            (state == 2 ? -g_entry_menu_slide_displacement
+                        : g_entry_menu_slide_displacement);
+        g_entry_menu_work_block->draw_offset[1] =
+            g_entry_menu_gpu_db->draw.ofs[1];
         SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
                       g_entry_menu_work_block->draw_offset);
         AddPrim(g_gpu_ot_ptr + 0xF, arg0->primitive_cursors.draw_offset_prims);
         arg0->primitive_cursors.draw_offset_prims++;
 
-        g_entry_menu_work_block->draw_offset[0] = D_800A35C0->draw.ofs[0];
-        g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+        g_entry_menu_work_block->draw_offset[0] =
+            g_entry_menu_gpu_db->draw.ofs[0];
+        g_entry_menu_work_block->draw_offset[1] =
+            g_entry_menu_gpu_db->draw.ofs[1];
         SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
                       g_entry_menu_work_block->draw_offset);
         AddPrim(g_gpu_ot_ptr + 6, arg0->primitive_cursors.draw_offset_prims);
@@ -1609,7 +1614,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
             D_800A3584 = 5;
         } else if (g_entry_menu_fight_mode == 6) {
             D_800A3584 = 6;
-            D_800A359C = 1;
+            g_entry_menu_choice_grid_row = 1;
             D_800A3598 = 1;
         } else {
             D_800A35A0 = 1;
@@ -1667,15 +1672,15 @@ void menu_UpdateChoiceGrid(
     s.semi = 0;
     s.has_color = 0;
     s.ot_idx = 0x11;
-    rect.x = D_800A35C0->draw.clip.x;
-    rect.y = D_800A35C0->draw.clip.y;
-    rect.w = D_800A35C0->draw.clip.w;
-    rect.h = D_800A35C0->draw.clip.h;
+    rect.x = g_entry_menu_gpu_db->draw.clip.x;
+    rect.y = g_entry_menu_gpu_db->draw.clip.y;
+    rect.w = g_entry_menu_gpu_db->draw.clip.w;
+    rect.h = g_entry_menu_gpu_db->draw.clip.h;
     SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_area_prims);
     arg0->primitive_cursors.draw_area_prims++;
-    g_entry_menu_work_block->draw_offset[0] = D_800A35C0->draw.ofs[0];
-    g_entry_menu_work_block->draw_offset[1] = D_800A35C0->draw.ofs[1];
+    g_entry_menu_work_block->draw_offset[0] = g_entry_menu_gpu_db->draw.ofs[0];
+    g_entry_menu_work_block->draw_offset[1] = g_entry_menu_gpu_db->draw.ofs[1];
     SetDrawOffset(arg0->primitive_cursors.draw_offset_prims,
                   g_entry_menu_work_block->draw_offset);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_offset_prims);
@@ -1687,17 +1692,18 @@ void menu_UpdateChoiceGrid(
         var_4 = g_entry_menu_resources->unk_74;
         s.header = var_4[4];
         cells = s.header[1].cells;
-        if (!(D_800A359C * 2 + D_800A3598 == 3 &&
+        if (!(g_entry_menu_choice_grid_row * 2 + D_800A3598 == 3 &&
               g_entry_menu_fight_mode == 6 && mode == 2)) {
             s.table = cells;
-            s.table += (D_800A359C + mode * 3) * 2 + D_800A3598;
+            s.table +=
+                (g_entry_menu_choice_grid_row + mode * 3) * 2 + D_800A3598;
             s.sprt_out = arg0->primitive_cursors.sprite_prims;
             arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
         }
         s.header++;
         for (i = 0; i < 6; i++) {
             if (!(i == 3 && g_entry_menu_fight_mode == 6 && mode == 2) &&
-                D_800A359C * 2 + D_800A3598 != i) {
+                g_entry_menu_choice_grid_row * 2 + D_800A3598 != i) {
                 s.table = cells + (mode * 6 + i);
                 s.sprt_out = arg0->primitive_cursors.sprite_prims;
                 arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
@@ -1718,9 +1724,9 @@ void menu_UpdateChoiceGrid(
     s.sprt_out = arg0->primitive_cursors.sprite_prims;
     arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     g_entry_menu_work_block->draw_offset[0] =
-        D_800A35C0->draw.ofs[0] - D_8009BCC4[mode][0];
+        g_entry_menu_gpu_db->draw.ofs[0] - D_8009BCC4[mode][0];
     g_entry_menu_work_block->draw_offset[1] =
-        D_800A35C0->draw.ofs[1] - D_8009BCC4[mode][1];
+        g_entry_menu_gpu_db->draw.ofs[1] - D_8009BCC4[mode][1];
     if (((g_entry_menu_slide_phase & 0xFF) == 1 ||
          (g_entry_menu_slide_phase & 0xFF) == 3) &&
         D_800A3584 >= 4 && D_800A3584 < 7 && g_entry_menu_handler_index >= 4 &&
@@ -1746,7 +1752,7 @@ void menu_UpdateChoiceGrid(
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.draw_offset_prims);
     arg0->primitive_cursors.draw_offset_prims++;
     rect.x = s.x;
-    rect.y = D_800A35C0->draw.clip.y + s.y;
+    rect.y = g_entry_menu_gpu_db->draw.clip.y + s.y;
     rect.w = 0x160;
     rect.h = 0x4A;
     SetDrawArea(arg0->primitive_cursors.draw_area_prims, &rect);
@@ -1795,15 +1801,15 @@ void menu_UpdateChoiceGrid(
     }
     if (g_entry_menu_pressed_buttons & 0x40004000) {
         snd_QueueSound(0, 0x7F, 0x7F);
-        D_800A359C++;
+        g_entry_menu_choice_grid_row++;
     } else if (g_entry_menu_pressed_buttons & 0x10001000) {
         snd_QueueSound(0, 0x7F, 0x7F);
-        D_800A359C--;
+        g_entry_menu_choice_grid_row--;
     }
-    if (D_800A359C >= 3) {
-        D_800A359C = 0;
-    } else if (D_800A359C < 0) {
-        D_800A359C = 2;
+    if (g_entry_menu_choice_grid_row >= 3) {
+        g_entry_menu_choice_grid_row = 0;
+    } else if (g_entry_menu_choice_grid_row < 0) {
+        g_entry_menu_choice_grid_row = 2;
     }
 
     s.col_r = s.col_g = s.col_b =
@@ -1834,7 +1840,7 @@ void menu_UpdateChoiceGrid(
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 2; j++) {
-            if (i == D_800A359C && j == D_800A3598 &&
+            if (i == g_entry_menu_choice_grid_row && j == D_800A3598 &&
                 (g_entry_menu_slide_phase & 0xFF) == 0) {
                 s.has_color = 1;
             } else {
@@ -1884,7 +1890,7 @@ void menu_UpdateChoiceGrid(
         }
         if (g_entry_menu_pressed_buttons & 0x400040) {
             var_10 = var_3[(g_entry_menu_handler_index - 4) * 8 +
-                           D_800A359C * 2 + D_800A3598];
+                           g_entry_menu_choice_grid_row * 2 + D_800A3598];
             snd_QueueSound(1, 0x7F, 0x7F);
             if (var_10 != 0xD || g_entry_menu_fight_mode != 6) {
                 g_entry_menu_working_record_ptr->unk14_4 = var_10;

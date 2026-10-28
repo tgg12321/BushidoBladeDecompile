@@ -37,8 +37,8 @@ glabel camera_UpdateTwoFighterView
     /* B0AC 8001A8AC 23486200 */  subu       $t1, $v1, $v0
     /* B0B0 8001A8B0 2388E600 */  subu       $s1, $a3, $a2
     /* B0B4 8001A8B4 0800028D */  lw         $v0, 0x8($t0)
-    /* B0B8 8001A8B8 0A80033C */  lui        $v1, %hi(D_800A3690)
-    /* B0BC 8001A8BC 90366390 */  lbu        $v1, %lo(D_800A3690)($v1)
+    /* B0B8 8001A8B8 0A80033C */  lui        $v1, %hi(g_fight_view_option)
+    /* B0BC 8001A8BC 90366390 */  lbu        $v1, %lo(g_fight_view_option)($v1)
     /* B0C0 8001A8C0 00000000 */  nop
     /* B0C4 8001A8C4 1B006014 */  bnez       $v1, .L8001A934
     /* B0C8 8001A8C8 23808200 */   subu      $s0, $a0, $v0

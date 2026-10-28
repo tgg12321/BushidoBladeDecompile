@@ -1,6 +1,6 @@
 glabel resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks
-    /* 36CC4 800464C4 0A80023C */  lui        $v0, %hi(D_8009947A)
-    /* 36CC8 800464C8 7A944284 */  lh         $v0, %lo(D_8009947A)($v0)
+    /* 36CC4 800464C4 0A80023C */  lui        $v0, %hi(g_resource_has_retained_subblocks)
+    /* 36CC8 800464C8 7A944284 */  lh         $v0, %lo(g_resource_has_retained_subblocks)($v0)
     /* 36CCC 800464CC E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 36CD0 800464D0 1800BFAF */  sw         $ra, 0x18($sp)
     /* 36CD4 800464D4 1400B1AF */  sw         $s1, 0x14($sp)
@@ -50,8 +50,8 @@ glabel resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks
     /* 36D70 80046570 07000424 */  addiu      $a0, $zero, 0x7
     /* 36D74 80046574 4415010C */  jal        arena_Resize
     /* 36D78 80046578 23283002 */   subu      $a1, $s1, $s0
-    /* 36D7C 8004657C 0A80013C */  lui        $at, %hi(D_8009947A)
-    /* 36D80 80046580 7A9420A4 */  sh         $zero, %lo(D_8009947A)($at)
+    /* 36D7C 8004657C 0A80013C */  lui        $at, %hi(g_resource_has_retained_subblocks)
+    /* 36D80 80046580 7A9420A4 */  sh         $zero, %lo(g_resource_has_retained_subblocks)($at)
   .L80046584:
     /* 36D84 80046584 1800BF8F */  lw         $ra, 0x18($sp)
     /* 36D88 80046588 1400B18F */  lw         $s1, 0x14($sp)

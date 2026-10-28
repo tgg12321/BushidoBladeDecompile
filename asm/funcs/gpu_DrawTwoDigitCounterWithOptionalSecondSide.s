@@ -147,8 +147,8 @@ glabel gpu_DrawTwoDigitCounterWithOptionalSecondSide
     /* 4EAB4 8005E2B4 C3130200 */  sra        $v0, $v0, 15
     /* 4EAB8 8005E2B8 21105100 */  addu       $v0, $v0, $s1
     /* 4EABC 8005E2BC 30004284 */  lh         $v0, 0x30($v0)
-    /* 4EAC0 8005E2C0 0A80033C */  lui        $v1, %hi(D_8009B400)
-    /* 4EAC4 8005E2C4 00B46324 */  addiu      $v1, $v1, %lo(D_8009B400)
+    /* 4EAC0 8005E2C0 0A80033C */  lui        $v1, %hi(g_gpu_decimal_digit_cells)
+    /* 4EAC4 8005E2C4 00B46324 */  addiu      $v1, $v1, %lo(g_gpu_decimal_digit_cells)
     /* 4EAC8 8005E2C8 C0100200 */  sll        $v0, $v0, 3
     /* 4EACC 8005E2CC 21184300 */  addu       $v1, $v0, $v1
     /* 4EAD0 8005E2D0 0300C012 */  beqz       $s6, .L8005E2E0

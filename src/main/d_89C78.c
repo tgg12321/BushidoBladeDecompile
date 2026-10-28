@@ -4,11 +4,12 @@
  * 1. One run: 35000.c's D_800993FC ends at 0x80099478 (368E4.o and 3AB48.o
  *    have no .data) and 43500.c's D_80099D54 starts at 0x80099D54. No
  *    uninitialized objects.
- * 2. Small objects in .data: g_loaded_resource_selector and D_8009947A (s16
- * each, each with its own lh / sh readers; g_fight_start_position_pairs after
- * them has its own reader) and D_80099CC4 (s16[2], unread, sized by the gap
- * between D_80099C50's 58 entries and D_80099CC8). Under -G8 the original
- * compiler puts them in .sdata, so no -G8 file defined them.
+ * 2. Small objects in .data: g_loaded_resource_selector and
+ * g_resource_has_retained_subblocks (s16 each, each with its own lh / sh
+ * readers; g_fight_start_position_pairs after them has its own reader) and
+ * D_80099CC4 (s16[2], unread, sized by the gap between D_80099C50's 58 entries
+ * and D_80099CC8). Under -G8 the original compiler puts them in .sdata, so no
+ * -G8 file defined them.
  * 3. Neighbours in .data link order: 3AB48.c, a code module with no small
  *    data, references no object in the run (Q123: not an owner candidate);
  *    43500.c is a -G8 code module with its own .sbss and gp accesses, whose
@@ -29,7 +30,7 @@ typedef struct {
  * resource_GetLoadedSelector returns it) and the 0/1 flag it sets for
  * selectors 3, 13 and 34 (resource_HasRetainedSubblocks returns it). */
 s16 g_loaded_resource_selector = -1;
-s16 D_8009947A = 0;
+s16 g_resource_has_retained_subblocks = 0;
 
 /* fight_GetStartPositionPairTable's block: 38 rows of four start records of
  * two (x, y, z) points; 9F9C.c indexes the row by g_fight_stage_index,

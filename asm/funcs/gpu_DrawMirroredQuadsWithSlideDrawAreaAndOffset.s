@@ -23,7 +23,7 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5FD7C 8006F57C 0C006524 */  addiu      $a1, $v1, 0xC
     /* 5FD80 8006F580 04004014 */  bnez       $v0, .L8006F594
     /* 5FD84 8006F584 1000A3AF */   sw        $v1, 0x10($sp)
-    /* 5FD88 8006F588 A4048287 */  lh         $v0, %gp_rel(D_800A3570)($gp)
+    /* 5FD88 8006F588 A4048287 */  lh         $v0, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5FD8C 8006F58C 66BD0108 */  j          .L8006F598
     /* 5FD90 8006F590 2800A2AF */   sw        $v0, 0x28($sp)
   .L8006F594:
@@ -66,7 +66,7 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5FE20 8006F620 0300422A */  slti       $v0, $s2, 0x3
     /* 5FE24 8006F624 06004010 */  beqz       $v0, .L8006F640
     /* 5FE28 8006F628 00000000 */   nop
-    /* 5FE2C 8006F62C A4048287 */  lh         $v0, %gp_rel(D_800A3570)($gp)
+    /* 5FE2C 8006F62C A4048287 */  lh         $v0, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5FE30 8006F630 00000000 */  nop
     /* 5FE34 8006F634 23100200 */  negu       $v0, $v0
     /* 5FE38 8006F638 91BD0108 */  j          .L8006F644
@@ -108,7 +108,7 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5FEC0 8006F6C0 0300422A */  slti       $v0, $s2, 0x3
     /* 5FEC4 8006F6C4 04004014 */  bnez       $v0, .L8006F6D8
     /* 5FEC8 8006F6C8 00000000 */   nop
-    /* 5FECC 8006F6CC A4048297 */  lhu        $v0, %gp_rel(D_800A3570)($gp)
+    /* 5FECC 8006F6CC A4048297 */  lhu        $v0, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5FED0 8006F6D0 B7BD0108 */  j          .L8006F6DC
     /* 5FED4 8006F6D4 4C004224 */   addiu     $v0, $v0, 0x4C
   .L8006F6D8:
@@ -117,8 +117,8 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5FEDC 8006F6DC 4000A2A7 */  sh         $v0, 0x40($sp)
     /* 5FEE0 8006F6E0 E8010224 */  addiu      $v0, $zero, 0x1E8
     /* 5FEE4 8006F6E4 4000B027 */  addiu      $s0, $sp, 0x40
-    /* 5FEE8 8006F6E8 F404838F */  lw         $v1, %gp_rel(D_800A35C0)($gp)
-    /* 5FEEC 8006F6EC A4048497 */  lhu        $a0, %gp_rel(D_800A3570)($gp)
+    /* 5FEE8 8006F6E8 F404838F */  lw         $v1, %gp_rel(g_entry_menu_gpu_db)($gp)
+    /* 5FEEC 8006F6EC A4048497 */  lhu        $a0, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5FEF0 8006F6F0 02006394 */  lhu        $v1, 0x2($v1)
     /* 5FEF4 8006F6F4 23104400 */  subu       $v0, $v0, $a0
     /* 5FEF8 8006F6F8 4400A2A7 */  sh         $v0, 0x44($sp)
@@ -135,7 +135,7 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5FF24 8006F724 2DEA010C */  jal        AddPrim
     /* 5FF28 8006F728 3C008424 */   addiu     $a0, $a0, 0x3C
     /* 5FF2C 8006F72C 1C00228E */  lw         $v0, 0x1C($s1)
-    /* 5FF30 8006F730 F404838F */  lw         $v1, %gp_rel(D_800A35C0)($gp)
+    /* 5FF30 8006F730 F404838F */  lw         $v1, %gp_rel(g_entry_menu_gpu_db)($gp)
     /* 5FF34 8006F734 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5FF38 8006F738 1C0022AE */  sw         $v0, 0x1C($s1)
     /* 5FF3C 8006F73C 00006294 */  lhu        $v0, 0x0($v1)
@@ -168,21 +168,21 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 5FFA8 8006F7A8 31006214 */  bne        $v1, $v0, .L8006F870
     /* 5FFAC 8006F7AC 00000000 */   nop
   .L8006F7B0:
-    /* 5FFB0 8006F7B0 F404828F */  lw         $v0, %gp_rel(D_800A35C0)($gp)
+    /* 5FFB0 8006F7B0 F404828F */  lw         $v0, %gp_rel(g_entry_menu_gpu_db)($gp)
     /* 5FFB4 8006F7B4 F804858F */  lw         $a1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 5FFB8 8006F7B8 08004484 */  lh         $a0, 0x8($v0)
     /* 5FFBC 8006F7BC 04006614 */  bne        $v1, $a2, .L8006F7D0
     /* 5FFC0 8006F7C0 00000000 */   nop
-    /* 5FFC4 8006F7C4 A4048287 */  lh         $v0, %gp_rel(D_800A3570)($gp)
+    /* 5FFC4 8006F7C4 A4048287 */  lh         $v0, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5FFC8 8006F7C8 F7BD0108 */  j          .L8006F7DC
     /* 5FFCC 8006F7CC 23108200 */   subu      $v0, $a0, $v0
   .L8006F7D0:
-    /* 5FFD0 8006F7D0 A4048287 */  lh         $v0, %gp_rel(D_800A3570)($gp)
+    /* 5FFD0 8006F7D0 A4048287 */  lh         $v0, %gp_rel(g_entry_menu_slide_displacement)($gp)
     /* 5FFD4 8006F7D4 00000000 */  nop
     /* 5FFD8 8006F7D8 21108200 */  addu       $v0, $a0, $v0
   .L8006F7DC:
     /* 5FFDC 8006F7DC 1000A2A4 */  sh         $v0, 0x10($a1)
-    /* 5FFE0 8006F7E0 F404828F */  lw         $v0, %gp_rel(D_800A35C0)($gp)
+    /* 5FFE0 8006F7E0 F404828F */  lw         $v0, %gp_rel(g_entry_menu_gpu_db)($gp)
     /* 5FFE4 8006F7E4 F804858F */  lw         $a1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 5FFE8 8006F7E8 0A004294 */  lhu        $v0, 0xA($v0)
     /* 5FFEC 8006F7EC 00000000 */  nop
@@ -196,7 +196,7 @@ glabel gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset
     /* 6000C 8006F80C 2DEA010C */  jal        AddPrim
     /* 60010 8006F810 3C008424 */   addiu     $a0, $a0, 0x3C
     /* 60014 8006F814 2000228E */  lw         $v0, 0x20($s1)
-    /* 60018 8006F818 F404838F */  lw         $v1, %gp_rel(D_800A35C0)($gp)
+    /* 60018 8006F818 F404838F */  lw         $v1, %gp_rel(g_entry_menu_gpu_db)($gp)
     /* 6001C 8006F81C F804858F */  lw         $a1, %gp_rel(g_entry_menu_work_block)($gp)
     /* 60020 8006F820 0C004224 */  addiu      $v0, $v0, 0xC
     /* 60024 8006F824 200022AE */  sw         $v0, 0x20($s1)

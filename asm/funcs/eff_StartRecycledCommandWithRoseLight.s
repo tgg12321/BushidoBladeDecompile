@@ -54,7 +54,7 @@ glabel eff_StartRecycledCommandWithRoseLight
     /* 51B10 80061310 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51B14 80061314 0800028E */  lw         $v0, 0x8($s0)
     /* 51B18 80061318 60006334 */  ori        $v1, $v1, (0xFF0060 & 0xFFFF)
-    /* 51B1C 8006131C 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51B1C 8006131C 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51B20 80061320 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51B24 80061324 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51B28 80061328 1400BF8F */  lw         $ra, 0x14($sp)

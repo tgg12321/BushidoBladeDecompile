@@ -720,8 +720,8 @@ glabel gpu_DrawPackedComparisonRowsAndTotals
   .L8005EFB0:
     /* 4F7B0 8005EFB0 08008284 */  lh         $v0, 0x8($a0)
     /* 4F7B4 8005EFB4 2800A427 */  addiu      $a0, $sp, 0x28
-    /* 4F7B8 8005EFB8 0A80033C */  lui        $v1, %hi(D_8009B400)
-    /* 4F7BC 8005EFBC 00B46324 */  addiu      $v1, $v1, %lo(D_8009B400)
+    /* 4F7B8 8005EFB8 0A80033C */  lui        $v1, %hi(g_gpu_decimal_digit_cells)
+    /* 4F7BC 8005EFBC 00B46324 */  addiu      $v1, $v1, %lo(g_gpu_decimal_digit_cells)
     /* 4F7C0 8005EFC0 C0100200 */  sll        $v0, $v0, 3
     /* 4F7C4 8005EFC4 21104300 */  addu       $v0, $v0, $v1
     /* 4F7C8 8005EFC8 2C00A2AF */  sw         $v0, 0x2C($sp)

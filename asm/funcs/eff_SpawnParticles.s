@@ -22,7 +22,7 @@ glabel eff_SpawnParticles
     /* 57A4C 8006724C 31001624 */  addiu      $s6, $zero, 0x31
     /* 57A50 80067250 1F001524 */  addiu      $s5, $zero, 0x1F
   .L80067254:
-    /* 57A54 80067254 A8038F8F */  lw         $t7, %gp_rel(D_800A3474)($gp)
+    /* 57A54 80067254 A8038F8F */  lw         $t7, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 57A58 80067258 40101400 */  sll        $v0, $s4, 1
     /* 57A5C 8006725C 0A80013C */  lui        $at, %hi(D_800A3438)
     /* 57A60 80067260 21082200 */  addu       $at, $at, $v0

@@ -37,7 +37,7 @@ extern s16 D_800F665C;
 extern s16 D_800F6658;
 extern s32 D_800A3790;
 extern s16 g_loaded_resource_selector;
-extern s16 D_8009947A;
+extern s16 g_resource_has_retained_subblocks;
 extern Unk800F1198Record g_eff_billboards[];
 extern Unk800A9CF8Rec g_node_frame_animation_context;
 extern Unk800F0EC8Record D_800F0EC8[][10];
@@ -83,7 +83,7 @@ extern u8 g_entry_menu_entry_flags[];
  * (gpu_DrawTwoDigitCounterWithOptionalSecondSide,
  * gpu_DrawPackedComparisonRowsAndTotals). */
 extern Unk8009B0E0Record D_8009B398[4];
-extern Unk8009B400Record D_8009B400[10];
+extern Unk8009B400Record g_gpu_decimal_digit_cells[10];
 extern Unk8009B400Record D_8009B458[3][2];
 extern Unk8009B450Record D_8009B450[2];
 
@@ -297,13 +297,13 @@ extern s16 D_800A310C[4];
 extern s32 D_800A3134;
 extern s32 D_800A3140;
 extern u8 D_800A31DA;
-extern u8 D_800A3670;
+extern u8 g_fight_reinit_reuses_assets;
 extern u8 D_800A3671;
 /* Three angles: gpu_PrepareViewAndFlushDrawQueue passes them to
  * math_RotMatrixZXY; gpu_UnpackGridRecordsNodesAndCellRuns zeroes them. */
 extern u16 D_800A3678[3];
 extern u8 D_800A3680;
-extern u8 D_800A3690;
+extern u8 g_fight_view_option;
 /* FAKE: word 1 of the 8-byte sio send buffer as its own symbol; declaring
  * g_comb_send_buf s32[2] makes cc1 keep its address live through
  * comb_ExchangePad (35 words differ) */
@@ -335,7 +335,7 @@ extern u8 D_800A36CC;
 extern s16 D_800A36D2;
 extern s32 D_800A36D4;
 extern MoveScript *D_800A36D8;
-extern u8 D_800A36E8;
+extern u8 g_fight_match_result_timer;
 extern u8 D_800A36F0;
 extern u8 D_800A36F1;
 /* per-player byte, [unk_04] (object_InitKindQueue) */
@@ -451,7 +451,7 @@ extern u8 D_800A38D4;
 extern s16 g_fight_mode_selector;
 extern u8 D_800A38DE;
 extern u8 D_800A38DF;
-extern u8 D_800A38E0;
+extern u8 g_fight_start_position_pair_index;
 extern u8 D_800A38E1;
 extern u8 g_fight_step_table_next_row;
 extern s32 D_800A38E4;
@@ -541,7 +541,7 @@ extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
  * slot to scratchpad word 0, the u16 * cursor gpu_OffsetTexPrimStream reads,
  * and softbody_CreateForNode reads u16 data through one.
  */
-extern s32 *D_80103608[];
+extern s32 *g_reloc_block_entry_tables[];
 extern Unk80104E88Rec D_80104E88[];
 extern s32 D_80104F38;
 
@@ -633,7 +633,7 @@ extern s32 D_800A3908;
 extern u8 D_800A3916;
 extern u8 g_arena;
 extern s16 D_800F0BCC[];
-extern s16 D_800F0BEC[];
+extern s16 g_eff_billboard_pair_ages[];
 extern s32 g_eff_command_phase[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
  * it to light_SetPointLight, which copies all 16 bytes to D_800A9B28. */
@@ -641,7 +641,7 @@ extern VECTOR g_eff_point_light_position;
 extern Unk800F1B18Rec g_motion_decoders[];
 extern u8 D_800F33D8[];
 extern s16 D_800F6650;
-extern s16 D_800F6656;
+extern s16 g_gpu_grid_and_fog_control;
 extern u8 D_801027A0[5][2];
 extern u8 D_801027D8[5][2];
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */

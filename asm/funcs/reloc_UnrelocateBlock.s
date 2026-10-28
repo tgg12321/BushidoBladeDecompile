@@ -1,9 +1,9 @@
 glabel reloc_UnrelocateBlock
     /* 34898 80044098 00240400 */  sll        $a0, $a0, 16
     /* 3489C 8004409C 83230400 */  sra        $a0, $a0, 14
-    /* 348A0 800440A0 1080013C */  lui        $at, %hi(D_80103608)
+    /* 348A0 800440A0 1080013C */  lui        $at, %hi(g_reloc_block_entry_tables)
     /* 348A4 800440A4 21082400 */  addu       $at, $at, $a0
-    /* 348A8 800440A8 0836238C */  lw         $v1, %lo(D_80103608)($at)
+    /* 348A8 800440A8 0836238C */  lw         $v1, %lo(g_reloc_block_entry_tables)($at)
     /* 348AC 800440AC 00000000 */  nop
     /* 348B0 800440B0 FCFF648C */  lw         $a0, -0x4($v1)
     /* 348B4 800440B4 00000000 */  nop

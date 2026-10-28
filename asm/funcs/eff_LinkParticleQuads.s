@@ -1,5 +1,5 @@
 glabel eff_LinkParticleQuads
-    /* 59588 80068D88 2004848F */  lw         $a0, %gp_rel(D_800A34EC)($gp)
+    /* 59588 80068D88 2004848F */  lw         $a0, %gp_rel(g_eff_work_area)($gp)
     /* 5958C 80068D8C 0807878F */  lw         $a3, %gp_rel(g_eff_quad_cursor)($gp)
     /* 59590 80068D90 AC018224 */  addiu      $v0, $a0, 0x1AC
     /* 59594 80068D94 6E008824 */  addiu      $t0, $a0, 0x6E

@@ -84,8 +84,8 @@ glabel fight_Update
     /* F1B8 8001E9B8 A8F9000C */  jal        gpu_SetViewOriginSegmentCellsGateBit
     /* F1BC 8001E9BC 00000000 */   nop
   .L8001E9C0:
-    /* F1C0 8001E9C0 0A80043C */  lui        $a0, %hi(D_800A3690)
-    /* F1C4 8001E9C4 90368490 */  lbu        $a0, %lo(D_800A3690)($a0)
+    /* F1C0 8001E9C0 0A80043C */  lui        $a0, %hi(g_fight_view_option)
+    /* F1C4 8001E9C4 90368490 */  lbu        $a0, %lo(g_fight_view_option)($a0)
     /* F1C8 8001E9C8 00000000 */  nop
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
     /* F1D0 8001E9D0 6A1B010C */  jal        gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue

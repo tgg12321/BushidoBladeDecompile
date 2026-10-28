@@ -54,7 +54,7 @@ glabel eff_StartRecycledCommandWithPaleRedLight
     /* 51E2C 8006162C 441122AC */  sw         $v0, %lo(D_800F1144)($at)
     /* 51E30 80061630 0800028E */  lw         $v0, 0x8($s0)
     /* 51E34 80061634 80806334 */  ori        $v1, $v1, (0xFF8080 & 0xFFFF)
-    /* 51E38 80061638 980383AF */  sw         $v1, %gp_rel(D_800A3464)($gp)
+    /* 51E38 80061638 980383AF */  sw         $v1, %gp_rel(g_eff_point_light_color)($gp)
     /* 51E3C 8006163C 0F80013C */  lui        $at, %hi(D_800F1148)
     /* 51E40 80061640 481122AC */  sw         $v0, %lo(D_800F1148)($at)
     /* 51E44 80061644 1400BF8F */  lw         $ra, 0x14($sp)

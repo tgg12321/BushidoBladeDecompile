@@ -1,5 +1,5 @@
 glabel eff_DrawAndAdvanceBillboardPairs
-    /* 53884 80063084 2004828F */  lw         $v0, %gp_rel(D_800A34EC)($gp)
+    /* 53884 80063084 2004828F */  lw         $v0, %gp_rel(g_eff_work_area)($gp)
     /* 53888 80063088 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 5388C 8006308C 4400B3AF */  sw         $s3, 0x44($sp)
     /* 53890 80063090 0807938F */  lw         $s3, %gp_rel(g_eff_quad_cursor)($gp)
@@ -23,7 +23,7 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 538D8 800630D8 2800A9AF */  sw         $t1, 0x28($sp)
     /* 538DC 800630DC 3C004924 */  addiu      $t1, $v0, 0x3C
     /* 538E0 800630E0 3000A9AF */  sw         $t1, 0x30($sp)
-    /* 538E4 800630E4 A803898F */  lw         $t1, %gp_rel(D_800A3474)($gp)
+    /* 538E4 800630E4 A803898F */  lw         $t1, %gp_rel(g_eff_view_rotation_matrix)($gp)
     /* 538E8 800630E8 00000000 */  nop
     /* 538EC 800630EC 00002C8D */  lw         $t4, 0x0($t1)
     /* 538F0 800630F0 04002D8D */  lw         $t5, 0x4($t1)
@@ -74,8 +74,8 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 539A0 800631A0 21A00000 */  addu       $s4, $zero, $zero
     /* 539A4 800631A4 21B88000 */  addu       $s7, $a0, $zero
     /* 539A8 800631A8 40101700 */  sll        $v0, $s7, 1
-    /* 539AC 800631AC 0F80093C */  lui        $t1, %hi(D_800F0BEC)
-    /* 539B0 800631B0 EC0B2925 */  addiu      $t1, $t1, %lo(D_800F0BEC)
+    /* 539AC 800631AC 0F80093C */  lui        $t1, %hi(g_eff_billboard_pair_ages)
+    /* 539B0 800631B0 EC0B2925 */  addiu      $t1, $t1, %lo(g_eff_billboard_pair_ages)
     /* 539B4 800631B4 21904900 */  addu       $s2, $v0, $t1
     /* 539B8 800631B8 21105700 */  addu       $v0, $v0, $s7
     /* 539BC 800631BC 80B00200 */  sll        $s6, $v0, 2
@@ -666,8 +666,8 @@ glabel eff_DrawAndAdvanceBillboardPairs
     /* 5426C 80063A6C D5FD4014 */  bnez       $v0, .L800631C4
     /* 54270 80063A70 001C1E00 */   sll       $v1, $fp, 16
     /* 54274 80063A74 C31B0300 */  sra        $v1, $v1, 15
-    /* 54278 80063A78 0F80093C */  lui        $t1, %hi(D_800F0BEC)
-    /* 5427C 80063A7C EC0B2925 */  addiu      $t1, $t1, %lo(D_800F0BEC)
+    /* 54278 80063A78 0F80093C */  lui        $t1, %hi(g_eff_billboard_pair_ages)
+    /* 5427C 80063A7C EC0B2925 */  addiu      $t1, $t1, %lo(g_eff_billboard_pair_ages)
     /* 54280 80063A80 21186900 */  addu       $v1, $v1, $t1
     /* 54284 80063A84 00006294 */  lhu        $v0, 0x0($v1)
     /* 54288 80063A88 00000000 */  nop

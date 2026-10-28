@@ -70,11 +70,11 @@ dlabel D_800A3668
     /* 93E6C 800A366C 00000000 */ .word 0x00000000
 enddlabel D_800A3668
 
-nonmatching D_800A3670
+nonmatching g_fight_reinit_reuses_assets
 
-dlabel D_800A3670
+dlabel g_fight_reinit_reuses_assets
     /* 93E70 800A3670 */ .byte 0x00
-enddlabel D_800A3670
+enddlabel g_fight_reinit_reuses_assets
 
 nonmatching D_800A3671
 
@@ -117,9 +117,9 @@ dlabel g_comb_recv_buf
     /* 93E8C 800A368C 00000000 */ .word 0x00000000
 enddlabel g_comb_recv_buf
 
-nonmatching D_800A3690
+nonmatching g_fight_view_option
 
-dlabel D_800A3690
+dlabel g_fight_view_option
     /* 93E90 800A3690 */ .byte 0x00
     /* 93E91 800A3691 */ .byte 0x00
     /* 93E92 800A3692 */ .byte 0x00
@@ -128,7 +128,7 @@ dlabel D_800A3690
     /* 93E95 800A3695 */ .byte 0x00
     /* 93E96 800A3696 */ .byte 0x00
     /* 93E97 800A3697 */ .byte 0x00
-enddlabel D_800A3690
+enddlabel g_fight_view_option
 
 nonmatching g_comb_send_buf
 
@@ -286,14 +286,14 @@ dlabel D_800A36E4
     /* 93EE4 800A36E4 00000000 */ .word 0x00000000
 enddlabel D_800A36E4
 
-nonmatching D_800A36E8
+nonmatching g_fight_match_result_timer
 
-dlabel D_800A36E8
+dlabel g_fight_match_result_timer
     /* 93EE8 800A36E8 */ .byte 0x00
     /* 93EE9 800A36E9 */ .byte 0x00
     /* 93EEA 800A36EA */ .byte 0x00
     /* 93EEB 800A36EB */ .byte 0x00
-enddlabel D_800A36E8
+enddlabel g_fight_match_result_timer
 
 nonmatching g_replay_fighter_frames
 

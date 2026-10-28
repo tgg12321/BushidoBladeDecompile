@@ -2,8 +2,8 @@ glabel gpu_DrawWhiteTileAndSheetsTestPadMask
     /* 59A50 80069250 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 59A54 80069254 3800B0AF */  sw         $s0, 0x38($sp)
     /* 59A58 80069258 2180A000 */  addu       $s0, $a1, $zero
-    /* 59A5C 8006925C 0A80053C */  lui        $a1, %hi(D_800A3518)
-    /* 59A60 80069260 1835A524 */  addiu      $a1, $a1, %lo(D_800A3518)
+    /* 59A5C 8006925C 0A80053C */  lui        $a1, %hi(g_menu_draw_buffer_counter)
+    /* 59A60 80069260 1835A524 */  addiu      $a1, $a1, %lo(g_menu_draw_buffer_counter)
     /* 59A64 80069264 3C00BFAF */  sw         $ra, 0x3C($sp)
     /* 59A68 80069268 480480AF */  sw         $zero, %gp_rel(g_row_menu_pulse_counter)($gp)
     /* 59A6C 8006926C E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext

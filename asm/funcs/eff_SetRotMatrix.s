@@ -1,6 +1,6 @@
 glabel eff_SetRotMatrix
     /* 527AC 80061FAC 21188000 */  addu       $v1, $a0, $zero
-    /* 527B0 80061FB0 2004848F */  lw         $a0, %gp_rel(D_800A34EC)($gp)
+    /* 527B0 80061FB0 2004848F */  lw         $a0, %gp_rel(g_eff_work_area)($gp)
     /* 527B4 80061FB4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 527B8 80061FB8 1400BFAF */  sw         $ra, 0x14($sp)
     /* 527BC 80061FBC 1000B0AF */  sw         $s0, 0x10($sp)

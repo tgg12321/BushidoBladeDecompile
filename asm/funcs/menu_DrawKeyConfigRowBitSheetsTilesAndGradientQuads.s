@@ -280,7 +280,7 @@ glabel menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads
     /* 5CE4C 8006C64C 0B00C22B */  slti       $v0, $fp, 0xB
     /* 5CE50 8006C650 D4FF4014 */  bnez       $v0, .L8006C5A4
     /* 5CE54 8006C654 0C003126 */   addiu     $s1, $s1, 0xC
-    /* 5CE58 8006C658 4C04848F */  lw         $a0, %gp_rel(D_800A3518)($gp)
+    /* 5CE58 8006C658 4C04848F */  lw         $a0, %gp_rel(g_menu_draw_buffer_counter)($gp)
     /* 5CE5C 8006C65C 4800A88F */  lw         $t0, 0x48($sp)
     /* 5CE60 8006C660 21980000 */  addu       $s3, $zero, $zero
     /* 5CE64 8006C664 5000A0AF */  sw         $zero, 0x50($sp)

@@ -572,16 +572,16 @@ static u8 D_800A333C;
 static u8 D_800A3340;
 static u8 D_800A3344;
 static u8 D_800A3348;
-static u8 D_800A334C;
-static u8 D_800A3350;
+static u8 g_memcard_message_countdown;
+static u8 g_memcard_prompt_choice;
 static u8 D_800A3354;
 
 s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
-    extern u8 D_800A3204;
+    extern u8 g_menu_prompt_rearm;
     s32 result = 0;
     u32 var_1;
-    if (D_800A3204 != 0) {
-        D_800A3204 = 0;
+    if (g_menu_prompt_rearm != 0) {
+        g_menu_prompt_rearm = 0;
         D_800A3318 = 0;
     }
     var_1 = g_pad_state.pressed;
@@ -601,7 +601,7 @@ s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
     }
     gpu_DrawSheetPairCenteredTileWithOptionalSelection(0x13, D_800A3318);
     if (result != 0) {
-        D_800A3204 = 1;
+        g_menu_prompt_rearm = 1;
     }
     return result;
 }
@@ -789,8 +789,8 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
 
     if (!D_800A3207) {
         D_800A3207 = 1;
-        D_800A334C = 0x5A;
-        D_800A3350 = 0;
+        g_memcard_message_countdown = 0x5A;
+        g_memcard_prompt_choice = 0;
         D_800A3354 = 0;
         g_memcard_validation_load_active = 0;
     }
@@ -799,12 +799,13 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
 
     if (D_800A3354 != 0) {
         gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
-        D_800A334C--;
-        if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
+        g_memcard_message_countdown--;
+        if (((u8)g_memcard_message_countdown) == 0 ||
+            (g_pad_state.pressed & 0x100010)) {
             snd_QueueSound(2, 0x7F, 0x7F);
             D_800A3207 = 1;
-            D_800A334C = 0x5A;
-            D_800A3350 = 0;
+            g_memcard_message_countdown = 0x5A;
+            g_memcard_prompt_choice = 0;
             D_800A3354 = 0;
             g_memcard_validation_load_active = 0;
         }
@@ -842,16 +843,16 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     switch (v0) {
     case 0:
         var_3 = 0x11;
-        /* each case that passes D_800A3350 to
+        /* each case that passes g_memcard_prompt_choice to
            gpu_DrawSheetPairCenteredTileWithOptionalSelection sets var_1 in its
            own body (cross-jump merges the stores; one shared store reached by
            goto: score 13) */
-        var_1 = D_800A3350;
+        var_1 = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 13:
     case 17:
         var_3 = 6;
-        var_1 = D_800A3350;
+        var_1 = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 1:
         var_3 = (-(D_800A38CC != 0)) & 7;
@@ -871,20 +872,20 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         goto sel_dispatch;
     case 10:
         if (D_800A3206 == 0) {
-            D_800A3350 = 1;
+            g_memcard_prompt_choice = 1;
         }
         if (g_pad_state.pressed & 0x400040) {
             D_800A3206 = 0;
             snd_QueueSound(1, 0x7F, 0x7F);
             var_3 = 0xD;
-            if (D_800A3350 == 0) {
+            if (g_memcard_prompt_choice == 0) {
                 memcard_RequestFormat();
                 goto sel_dispatch;
             }
             v0 = 0;
             D_800A3207 = 5;
-            D_800A334C = 0x5A;
-            D_800A3350 = 0;
+            g_memcard_message_countdown = 0x5A;
+            g_memcard_prompt_choice = 0;
             var_3 = -1;
             goto sel_dispatch;
         }
@@ -892,7 +893,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         if ((g_pad_state.pressed & 0xA000A000U) != 0) {
             D_800A3206 = 1;
         }
-        var_1 = D_800A3350;
+        var_1 = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 9:
     case 11:
@@ -921,7 +922,7 @@ sel_dispatch:
             D_800A3348++;
             if (((u8)D_800A3348) >= 5) {
                 D_800A3354 = 1;
-                D_800A334C = 0x5A;
+                g_memcard_message_countdown = 0x5A;
                 break;
             }
             memcard_RequestLoad();
@@ -970,12 +971,13 @@ sel_dispatch:
         default:
             memcard_RequestSave();
             D_800A3207 = 2;
-            D_800A334C = 0x5A;
-            D_800A3350 = 0;
+            g_memcard_message_countdown = 0x5A;
+            g_memcard_prompt_choice = 0;
             break;
         case 6:
-            D_800A334C--;
-            if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
+            g_memcard_message_countdown--;
+            if (((u8)g_memcard_message_countdown) == 0 ||
+                (g_pad_state.pressed & 0x100010)) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 result = 1;
                 break;
@@ -986,22 +988,23 @@ sel_dispatch:
         switch (v0) {
         case 8:
             D_800A3354 = 1;
-            D_800A334C = 0x5A;
+            g_memcard_message_countdown = 0x5A;
             break;
         case 2:
         case 3:
         case 7:
         case 12:
-            D_800A334C--;
-            if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
+            g_memcard_message_countdown--;
+            if (((u8)g_memcard_message_countdown) == 0 ||
+                (g_pad_state.pressed & 0x100010)) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 if (v0 != 7) {
                     result = 1;
                     break;
                 }
                 D_800A3207 = 1;
-                D_800A334C = 0x5A;
-                D_800A3350 = 0;
+                g_memcard_message_countdown = 0x5A;
+                g_memcard_prompt_choice = 0;
                 D_800A3354 = 0;
                 g_memcard_validation_load_active = 0;
             }
@@ -1010,12 +1013,12 @@ sel_dispatch:
             g_memcard_validation_load_active = 1;
             memcard_RequestLoad();
             D_800A3207 = 3;
-            D_800A334C = 0x5A;
+            g_memcard_message_countdown = 0x5A;
             break;
         case 13:
             D_800A3207 = 4;
-            D_800A334C = 0x5A;
-            D_800A3350 = 0;
+            g_memcard_message_countdown = 0x5A;
+            g_memcard_prompt_choice = 0;
             break;
         case 0:
             if (D_800A3207 == 5) {
@@ -1028,7 +1031,7 @@ sel_dispatch:
             if (g_pad_state.pressed & 0x400040) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 if (v0 == 0) {
-                    if (D_800A3350 != 0) {
+                    if (g_memcard_prompt_choice != 0) {
                         result = 1;
                         break;
                     }
@@ -1038,7 +1041,7 @@ sel_dispatch:
                     g_memcard_validation_load_active = 1;
                     memcard_RequestLoad();
                 } else {
-                    if (D_800A3350 != 0)
+                    if (g_memcard_prompt_choice != 0)
                         goto area_c_long;
                     memcard_RequestOverwrite();
                 }
@@ -1047,8 +1050,8 @@ sel_dispatch:
             area_c_long:
                 v0 = 0;
                 D_800A3207 = 1;
-                D_800A334C = 0x5A;
-                D_800A3350 = 0;
+                g_memcard_message_countdown = 0x5A;
+                g_memcard_prompt_choice = 0;
                 break;
             }
             goto sw4_buttons;
@@ -1056,12 +1059,12 @@ sel_dispatch:
         sw4_buttons:
             if (g_pad_state.pressed & 0x80008000U) {
                 snd_QueueSound(0, 0x7F, 0x7F);
-                D_800A3350 = 0;
+                g_memcard_prompt_choice = 0;
                 break;
             }
             if (g_pad_state.pressed & 0x20002000) {
                 snd_QueueSound(0, 0x7F, 0x7F);
-                D_800A3350 = 1;
+                g_memcard_prompt_choice = 1;
             }
             break;
         default:
@@ -1084,7 +1087,7 @@ sel_dispatch:
 d_check:
     if (D_800A31F8 == -1) {
         D_800A3354 = 1;
-        D_800A334C = 0x5A;
+        g_memcard_message_countdown = 0x5A;
     }
 
 end:
@@ -1961,7 +1964,7 @@ u8 D_800A3200 = 0x81;
 u8 D_800A3201 = 0x7b;
 u8 D_800A3202 = 0; /* not named by any code or data: size from the gap */
 u8 D_800A3203 = 1;
-u8 D_800A3204 = 1;
+u8 g_menu_prompt_rearm = 1;
 u8 D_800A3205 = 1;
 u8 D_800A3206 = 0;
 u8 D_800A3207 = 0;

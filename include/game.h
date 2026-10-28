@@ -109,8 +109,8 @@ typedef struct {
 /* Effect-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
  * eff_SpawnBillboardPair spawns into it, eff_DrawAndAdvanceBillboardPairs draws
- * from it. The slot bitmask D_800A3448 and the age table D_800F0BEC[slot] index
- * the same slot. */
+ * from it. The slot bitmask D_800A3448 and the age table
+ * g_eff_billboard_pair_ages[slot] index the same slot. */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -1033,8 +1033,9 @@ typedef struct {
     SVECTOR unk24;  /* ApplyRotMatrix in */
     SVECTOR unk2C;  /* RotTransPers in */
     s32 unk34;      /* RotTransPers' p */
-    s32 unk38;      /* D_800F0BEC[slot_index] - 15, the colour scale */
-    s32 unk3C;      /* gpu_DepthToOtIndex's depth, the OT index */
+    /* g_eff_billboard_pair_ages[slot_index] - 15, the colour scale */
+    s32 unk38;
+    s32 unk3C; /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_80063084;
 
 /* eff_DrawAndAdvanceJitteredBillboards's layout (Unk1F8000B8Union.v800646E8).
@@ -1118,12 +1119,13 @@ typedef struct {
     s32 unk1AC;
 } Unk1F8000B8_800678A8;
 
-/* Unk1F800000Rec.unkB8, the 51268 work area D_800A34EC points at (0x1F8000B8 to
- * the end of the scratchpad). Each user lays it out for one call (or, for the
- * eff_PrepareParticles trio, one wrapper call); raw sizes the union.
- * eff_SetRotMatrix's is one SVECTOR. eff_DrawAndAdvanceRotatedQuadClusters and
- * eff_DrawYawedSlotQuads still convert D_800A34EC (their work-area base is
- * staged through a POLY_FT4 * local). */
+/* Unk1F800000Rec.unkB8, the 51268 work area g_eff_work_area points at
+ * (0x1F8000B8 to the end of the scratchpad). Each user lays it out for one call
+ * (or, for the eff_PrepareParticles trio, one wrapper call); raw sizes the
+ * union. eff_SetRotMatrix's is one SVECTOR.
+ * eff_DrawAndAdvanceRotatedQuadClusters and eff_DrawYawedSlotQuads still
+ * convert g_eff_work_area (their work-area base is staged through a POLY_FT4 *
+ * local). */
 typedef union {
     u8 raw[0x400 - 0xB8];
     SVECTOR v80061FAC;
@@ -1150,14 +1152,14 @@ typedef union {
  * - unkA0 / unkA4: the initial targets of g_eff_current_ot_entry (u32 *) /
  * g_eff_current_prim_tag (u32
  * *), which every user retargets before use.
- * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out
+ * - unkB8: the work area g_eff_work_area points at (Unk1F8000B8Union), laid out
  * differently by its users; it runs to the end of the scratchpad. The other
- * members are one global each (D_800A3474 .. D_800A34E0, D_800A3480 /
- * D_800A3484). */
+ * members are one global each (g_eff_view_rotation_matrix .. D_800A34E0,
+ * D_800A3480 / D_800A3484). */
 typedef struct {
     Unk1F800000Unk00 unk00;
     u8 unk2C[4];
-    MATRIX unk30; /* D_800A3474 */
+    MATRIX unk30; /* g_eff_view_rotation_matrix */
     TexRec unk50;
     s32 unk58;    /* g_eff_tpage_word */
     s32 unk5C;    /* g_eff_clut_word */

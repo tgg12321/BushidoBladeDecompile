@@ -126,7 +126,7 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
         }
     }
 
-    D_8009947A = 0;
+    g_resource_has_retained_subblocks = 0;
     /* FAKE: s1 = s4 routed through a delta-rebase detour that combine folds
        back (zero bytes); the extra refs lift s1's allocation priority above
        the s2 pointer, as in the target; plain s1 = s4: score 32 */
@@ -140,7 +140,7 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
-        D_8009947A = 1;
+        g_resource_has_retained_subblocks = 1;
         break;
     }
     case 4:
@@ -160,11 +160,11 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
         reloc_RelocateBlock((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
-        D_8009947A = 1;
+        g_resource_has_retained_subblocks = 1;
         break;
     case 34:
         s1 = s2;
-        D_8009947A = 1;
+        g_resource_has_retained_subblocks = 1;
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
         break;
     }
@@ -192,7 +192,7 @@ void resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks(void) {
     s32 *a0;
     s32 v0;
 
-    if (D_8009947A == 0) {
+    if (g_resource_has_retained_subblocks == 0) {
         return;
     }
     s0 = (s32 *)arena_GetBlockAddr(7);
@@ -212,7 +212,7 @@ void resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks(void) {
     reloc_RelocateBlock(a0, 7);
     gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s1, 7);
     arena_Resize(7, (s32)((u8 *)s1 - (u8 *)s0));
-    D_8009947A = 0;
+    g_resource_has_retained_subblocks = 0;
 }
 
 void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
@@ -227,7 +227,7 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
         resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks();
         return;
     }
-    if (D_8009947A == 0) {
+    if (g_resource_has_retained_subblocks == 0) {
         return;
     }
     v0 = arena_GetBlockAddr(7);
@@ -253,7 +253,7 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
 void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
     arena_Free(7);
     g_loaded_resource_selector = -1;
-    D_8009947A = 0;
+    g_resource_has_retained_subblocks = 0;
 }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
@@ -323,7 +323,9 @@ s32 fight_GetPositionRecordList(void) { return g_fight_position_records; }
 
 s32 resource_GetLoadedSelector(void) { return g_loaded_resource_selector; }
 
-s32 resource_HasRetainedSubblocks(void) { return D_8009947A; }
+s32 resource_HasRetainedSubblocks(void) {
+    return g_resource_has_retained_subblocks;
+}
 
 s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
     s32 arg = a0;
@@ -434,7 +436,7 @@ void func_80046B44(void) {
     g_color_mode = 0;
     D_800F6650 = 0;
     g_gpu_raised_ot_cutoff_requested = 1;
-    D_800F6656 = 0;
+    g_gpu_grid_and_fog_control = 0;
     D_800F6658 = 2;
     D_800F665A = 1;
     D_800F665C = 0;

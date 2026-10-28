@@ -163,8 +163,8 @@ glabel gpu_DrawTimeFieldsAndDecimalCounter
     /* 4E270 8005DA70 40200500 */  sll        $a0, $a1, 1
     /* 4E274 8005DA74 21209200 */  addu       $a0, $a0, $s2
     /* 4E278 8005DA78 30008284 */  lh         $v0, 0x30($a0)
-    /* 4E27C 8005DA7C 0A80033C */  lui        $v1, %hi(D_8009B400)
-    /* 4E280 8005DA80 00B46324 */  addiu      $v1, $v1, %lo(D_8009B400)
+    /* 4E27C 8005DA7C 0A80033C */  lui        $v1, %hi(g_gpu_decimal_digit_cells)
+    /* 4E280 8005DA80 00B46324 */  addiu      $v1, $v1, %lo(g_gpu_decimal_digit_cells)
     /* 4E284 8005DA84 C0100200 */  sll        $v0, $v0, 3
     /* 4E288 8005DA88 21104300 */  addu       $v0, $v0, $v1
     /* 4E28C 8005DA8C 1C00A2AF */  sw         $v0, 0x1C($sp)
@@ -235,8 +235,8 @@ glabel gpu_DrawTimeFieldsAndDecimalCounter
     /* 4E37C 8005DB7C 40200500 */  sll        $a0, $a1, 1
     /* 4E380 8005DB80 21209200 */  addu       $a0, $a0, $s2
     /* 4E384 8005DB84 30008284 */  lh         $v0, 0x30($a0)
-    /* 4E388 8005DB88 0A80033C */  lui        $v1, %hi(D_8009B400)
-    /* 4E38C 8005DB8C 00B46324 */  addiu      $v1, $v1, %lo(D_8009B400)
+    /* 4E388 8005DB88 0A80033C */  lui        $v1, %hi(g_gpu_decimal_digit_cells)
+    /* 4E38C 8005DB8C 00B46324 */  addiu      $v1, $v1, %lo(g_gpu_decimal_digit_cells)
     /* 4E390 8005DB90 C0100200 */  sll        $v0, $v0, 3
     /* 4E394 8005DB94 21104300 */  addu       $v0, $v0, $v1
     /* 4E398 8005DB98 1C00A2AF */  sw         $v0, 0x1C($sp)
@@ -306,8 +306,8 @@ glabel gpu_DrawTimeFieldsAndDecimalCounter
     /* 4E484 8005DC84 40200500 */  sll        $a0, $a1, 1
     /* 4E488 8005DC88 21209200 */  addu       $a0, $a0, $s2
     /* 4E48C 8005DC8C 30008284 */  lh         $v0, 0x30($a0)
-    /* 4E490 8005DC90 0A80033C */  lui        $v1, %hi(D_8009B400)
-    /* 4E494 8005DC94 00B46324 */  addiu      $v1, $v1, %lo(D_8009B400)
+    /* 4E490 8005DC90 0A80033C */  lui        $v1, %hi(g_gpu_decimal_digit_cells)
+    /* 4E494 8005DC94 00B46324 */  addiu      $v1, $v1, %lo(g_gpu_decimal_digit_cells)
     /* 4E498 8005DC98 C0100200 */  sll        $v0, $v0, 3
     /* 4E49C 8005DC9C 21104300 */  addu       $v0, $v0, $v1
     /* 4E4A0 8005DCA0 1C00A2AF */  sw         $v0, 0x1C($sp)
@@ -425,8 +425,8 @@ glabel gpu_DrawTimeFieldsAndDecimalCounter
     /* 4E648 8005DE48 40200500 */  sll        $a0, $a1, 1
     /* 4E64C 8005DE4C 21209100 */  addu       $a0, $a0, $s1
     /* 4E650 8005DE50 30008384 */  lh         $v1, 0x30($a0)
-    /* 4E654 8005DE54 0A80023C */  lui        $v0, %hi(D_8009B400)
-    /* 4E658 8005DE58 00B44224 */  addiu      $v0, $v0, %lo(D_8009B400)
+    /* 4E654 8005DE54 0A80023C */  lui        $v0, %hi(g_gpu_decimal_digit_cells)
+    /* 4E658 8005DE58 00B44224 */  addiu      $v0, $v0, %lo(g_gpu_decimal_digit_cells)
     /* 4E65C 8005DE5C C0180300 */  sll        $v1, $v1, 3
     /* 4E660 8005DE60 21186200 */  addu       $v1, $v1, $v0
     /* 4E664 8005DE64 F3010224 */  addiu      $v0, $zero, 0x1F3

@@ -167,8 +167,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
   .L8003CC14:
     /* 2D414 8003CC14 0A80033C */  lui        $v1, %hi(g_fight_followup_fighter_index)
     /* 2D418 8003CC18 48376380 */  lb         $v1, %lo(g_fight_followup_fighter_index)($v1)
-    /* 2D41C 8003CC1C 0A80013C */  lui        $at, %hi(D_800A3670)
-    /* 2D420 8003CC20 703622A0 */  sb         $v0, %lo(D_800A3670)($at)
+    /* 2D41C 8003CC1C 0A80013C */  lui        $at, %hi(g_fight_reinit_reuses_assets)
+    /* 2D420 8003CC20 703622A0 */  sb         $v0, %lo(g_fight_reinit_reuses_assets)($at)
     /* 2D424 8003CC24 0A80023C */  lui        $v0, %hi(D_800A380C)
     /* 2D428 8003CC28 0C38428C */  lw         $v0, %lo(D_800A380C)($v0)
     /* 2D42C 8003CC2C 00210300 */  sll        $a0, $v1, 4
