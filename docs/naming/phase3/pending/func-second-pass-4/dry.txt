@@ -1,0 +1,59 @@
+==============================================================================
+NAMING WAVE — 4 operations (0 RESET, 4 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — symbol_addrs.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (30) --
+  (root): 1 files, 1 substitutions
+      inline_asm_canonical.txt  (1)
+  asm: 19 files, 27 substitutions
+      asm/funcs/arena_SetBlockEnd.s  (1)
+      asm/funcs/arena_UpdatePeak.s  (1)
+      asm/funcs/func_80044650.s  (3)
+      asm/funcs/func_8004C404.s  (1)
+      asm/funcs/func_80052C10.s  (2)
+      asm/funcs/func_8006505C.s  (2)
+      ... and 13 more
+  include: 1 files, 1 substitutions
+      include/bb2.h  (1)
+  src: 9 files, 216 substitutions
+      src/main/2B344.c  (3)
+      src/main/309CC.c  (1)
+      src/main/32D04.c  (191)
+      src/main/35000.c  (2)
+      src/main/368E4.c  (8)
+      src/main/3AB48.c  (2)
+      ... and 3 more
+
+-- .s file renames (4) --
+  asm/funcs/func_80044650.s -> asm/funcs/gpu_FailCheckOnUnhandledPrimitiveType.s
+  asm/funcs/func_80052C10.s -> asm/funcs/sys_StoreZeroPastScratchpadOnFailedCheck.s
+  asm/funcs/func_8006505C.s -> asm/funcs/eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay.s
+  asm/funcs/func_800650A4.s -> asm/funcs/eff_InitQuadPairNotMirroredByViewSetting.s
+
+-- ledger directory renames (6) --
+  memory/grind/func_80052C10 -> memory/grind/sys_StoreZeroPastScratchpadOnFailedCheck
+  memory/grind/func_8006505C -> memory/grind/eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay
+  memory/grind/func_800650A4 -> memory/grind/eff_InitQuadPairNotMirroredByViewSetting
+  memory/grind/_completed/func_80052C10 -> memory/grind/_completed/sys_StoreZeroPastScratchpadOnFailedCheck
+  memory/grind/_completed/func_8006505C -> memory/grind/_completed/eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay
+  memory/grind/_completed/func_800650A4 -> memory/grind/_completed/eff_InitQuadPairNotMirroredByViewSetting
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (6) --
+  memory/grind/func_80052C10/layer2.jsonl: 1 changes
+      line 1: func func_80052C10 -> sys_StoreZeroPastScratchpadOnFailedCheck
+  memory/grind/func_8006505C/layer2.jsonl: 1 changes
+      line 1: func func_8006505C -> eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay
+  memory/grind/func_800650A4/layer2.jsonl: 1 changes
+      line 1: func func_800650A4 -> eff_InitQuadPairNotMirroredByViewSetting
+  memory/grind/_completed/func_80052C10/layer2.jsonl: 1 changes
+      line 1: func func_80052C10 -> sys_StoreZeroPastScratchpadOnFailedCheck
+  memory/grind/_completed/func_8006505C/layer2.jsonl: 1 changes
+      line 1: func func_8006505C -> eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay
+  memory/grind/_completed/func_800650A4/layer2.jsonl: 1 changes
+      line 1: func func_800650A4 -> eff_InitQuadPairNotMirroredByViewSetting
+
+DRY RUN — nothing written. Re-run with --apply.

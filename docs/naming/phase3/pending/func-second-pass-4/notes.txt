@@ -1,0 +1,54 @@
+wave95 (func-second-pass-4): 6 RENAME kept (0 CHANGED FROM RESEARCH); 14 NO_NAME in rows.py docstring; 0 dropped.
+Kept rows:
+ 0x8006505C func_8006505C -> eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay (research name kept)
+ 0x800650A4 func_800650A4 -> eff_InitQuadPairNotMirroredByViewSetting (kept)
+ 0x800650EC func_800650EC -> eff_InitQuadMirroredByViewSettingOutsideReplay (kept)
+ 0x80065134 func_80065134 -> eff_InitQuadNotMirroredByViewSetting (kept)
+ 0x80052C10 func_80052C10 -> sys_StoreZeroPastScratchpadOnFailedCheck (kept)
+ 0x80044650 func_80044650 -> gpu_FailCheckOnUnhandledPrimitiveType (kept; depends on the 80052C10 row, falls back to NO_NAME if that row fails)
+Re-derived from the worktree (8ced99b8a), all facts held:
+ - eff_Init* x4 (51268.c:1829-1859): copy g_eff_command_position into g_eff_animated_quad_positions[6/7/10/11], g_eff_command_phase[12..15] = 1,
+   counters[...] = 0. Handler slots 26/28/30/32 (d_8BC50.c:295/297/299/301) = bases[12..15] = 0x1A/0x1C/0x1E/0x20 (d_8BC50.c:202) via
+   eff_StepCommand (51268.c:138-142), so phase-0 handlers; phase 1 hands to the wave94 drawers at slots 27/29/31/33, whose
+   eff_DrawAnimatedQuads(6/7/0xA/0xB) + counter += 0x32 (51268.c:1992-2035) read the very record/counter the init fills (:2139-2144).
+   Mirroring condition: case 6/10 negate p_w only when g_working_record.view_setting && g_main_loop_handler_index != 5 (51268.c:2450-2454),
+   7/11 never; mode_index < 9 re-run (:2501-2507) makes 6/7 pairs, 10/11 single. Same shape as accepted eff_InitCosineScaledQuad /
+   eff_InitRateSelectedCosineScaledQuad (d_8BC50.c:279-294).
+ - 80052C10 (asm/funcs/func_80052C10.s): lui/ori $t9 = 0x1F800400; sw $zero,0($t9); jr $ra; args ignored (2B344.c:2256 passes one, 2703 passes a string).
+   Checked 22 C sites (2B344.c:2256/2520/2703, 309CC.c:201, 32D04.c:694/736/985, 35000.c:356/461, 368E4.c:1675/1789/1792/1811/1814/1932/2056/2172)
+   and 18 asm sites (listed in rows.py); each sits on the failed branch of a bound/null/state/default check (c-sites read directly, asm sites via
+   slt/bnez/bgez/blez/beqz skip), plus D_80015470[2],[3] (d_5BF0.c:73-74) and 80044650. No caller reads a result.
+ - 80044650 (asm 4 jal, 32D04.c:1166): no direct call; fills every no-emitter slot of D_800951D8 (:1260), D_80095280 (:1304), D_80095328 (:1348),
+   g_gpu_packed_vertex_textured_primitive_handlers (:1438), g_gpu_embedded_lit_packet_handlers (:1472); the comment at :1222 already calls it
+   "the default entry". Tables installed at scratchpad 0x1F80001C by func_800430E4 (:486-511) and indexed by halfword type in the stream loops
+   (func_8004A940.s:7-13, func_8004DDB4.s:440-446: lhu, sll 2, add table, lw, jalr).
+One wording fix in rows.py: the research said modes 6/7 and 10/11 'draw alike' with the view setting off; precisely, 6 draws like 7 and 10 like 11
+ (51268.c:2450-2475); 10/11 also pick their texture record from the same condition (:2201-2207), so the two pairs are not claimed identical.
+ Freshness: grep -w over src include asm function-names.csv named_syms.txt symbol_addrs.txt = 0 hits for all 6 names.
+ Dry run: 0 rejects, 6 RENAME, 32 file edits, 0 symbol-registry line deletions (so apply.sh uses --stale-map-ok; the link map is STALE only
+ because symbol_addrs.txt is newer), saved as dry.txt.
+Weak spots for the reviewer:
+ (1) The four inits never read view_setting; the name borrows the drawer's noun through the handler pairing and record index (as eff_InitCosineScaledQuad
+ does) and the long name repeats the wave94 drawer names. Twin split is the drawer's code, not the index alone.
+ (2) 800650EC / 80065134: their last ledger commit is wave94 itself (8961e2e4f), so strictly nothing is newer; the evidence is that the partner drawers
+ landed there (the w94 research proposed it and deferred these rows). Drop both if the reviewer reads the cutoff strictly; 8006505C / 800650A4 are not affected.
+ (3) 80052C10: "OnFailedCheck" is a call-graph role (naming-bar N3 class 3), 2B344.c:2251-2255 calls it a halt stub (a comment, not evidence); no Panic/Abort/Trap
+ wording because it returns and the hardware effect of the store past scratchpad is unproven. Fallback name: sys_StoreZeroPastScratchpadEnd. sys_ matches
+ sys_Panic (6CF8.c:236) because callers span arena/resource/gpu/softbody/reloc/sound.
+ (4) 80044650: "FailCheck" is the callee's role; some default slots are merely unused type values, not errors found at run time; ledger w88 treated it as a pure
+ forwarder (Q132 exception allows neutral, does not require it). Falls with the 80052C10 row.
+Dropped rows: none.
+Old-name citations for the comment pass (naming_wave substitutes the first group, not the rest):
+ substituted by naming_wave: src/main/51268.c:1829-1859 definitions of the 4 eff_Init*; d_8BC50.c:231/233/235/237 declarations and :295/297/299/301 table words;
+   func_80052C10 in include/bb2.h:961, src/main/3AB48.c:11/104, d_5BF0.c:47/73/74, 2B344.c, 309CC.c, 32D04.c, 35000.c, 368E4.c call sites and the 18 asm jal/j sites;
+   func_80044650 at 32D04.c:1166 and all five table bodies (1260-1504), 32D04.c:1222 comment; asm/funcs/func_8006505C.s, func_800650A4.s, func_800650EC.s,
+   func_80065134.s, func_80052C10.s, func_80044650.s renamed to the new names; memory/grind ledger dirs (5 live + 5 _completed) and layer2.jsonl func fields;
+   inline_asm_canonical.txt:332 (func_80052C10 -> sys_StoreZeroPastScratchpadOnFailedCheck, 1 substitution; the entry text itself still says text1b.c and stays historical).
+   No symbol-registry line deletions, so no [allow-config-symbol-loss] is needed.
+ comment/doc pass: src/main/2B344.c:2251-2255 ("halt stub" comment; refresh to the new name's wording); src/main/32D04.c:1222-1224 (comment names func_80044650/func_80052C10; confirm substituted); named_syms.txt:618 ("call func_80052C10" prose comment; refresh by hand); docs/naming/function-names.csv rows for reloc_KeepListedEntries (:490) and
+   gpu_InitVramScroll (:631) cite func_80052C10 in prose (historical, regenerated by census; leave); docs/naming/phase3/no_name.tsv rows 0x8006505C/0x800650A4/
+   0x800650EC/0x80065134/0x80052C10/0x80044650 (the batch lander removes them when named); symbol_addrs.txt:756 ([0..37] func_80044650 comment on D_800951D8; refresh by hand). Line cites in src/main/51268.c and 32D04.c may shift after format.py re-wraps the long names; refresh docs/engine file:line cites.
+PRE-APPLY REVIEW (naming-reviewer, 2026-10-28): 4/6 PASS (0x8006505C, 0x800650A4, 0x80052C10, 0x80044650). FAIL and DROPPED: 0x800650EC and
+ 0x80065134 (N3 revive cutoff: their NO_NAME ledger commit is wave94, the commit that named their partner drawers, so no evidence is newer;
+ no_name.tsv w94 rows already weighed it). They stay in the ledger (the LAND's noname add re-records them from the research with tag w95).
+ 4 pairs remain, VERDICT CONFIRM; dry.txt re-run: 4 RENAME, 0 rejects.
