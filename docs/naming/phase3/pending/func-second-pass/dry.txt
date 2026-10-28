@@ -1,0 +1,48 @@
+rc=0
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  3 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (11) --
+  asm: 6 files, 9 substitutions
+      asm/funcs/fighter_TryDropQueuedHeadAtBone.s  (1)
+      asm/funcs/fighter_Update.s  (1)
+      asm/funcs/func_8001EA04.s  (2)
+      asm/funcs/func_8002798C.s  (2)
+      asm/funcs/func_8003DDF8.s  (2)
+      asm/funcs/gpu_QueueDepthSpacedMovesAndLinkTerminalPacket.s  (1)
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 4 files, 7 substitutions
+      src/main/17AFC.c  (2)
+      src/main/2B344.c  (2)
+      src/main/9F9C.c  (2)
+      src/main/d_7D870.c  (1)
+
+-- .s file renames (3) --
+  asm/funcs/func_8001EA04.s -> asm/funcs/fight_InitFighterFocusViewAndThreeItemMenu.s
+  asm/funcs/func_8002798C.s -> asm/funcs/fighter_TestMoveFrameWindowOrObjectVariantKind.s
+  asm/funcs/func_8003DDF8.s -> asm/funcs/gpu_SetLastDepthIndexOtEntryLinkToPacket.s
+
+-- ledger directory renames (4) --
+  memory/grind/func_8002798C -> memory/grind/fighter_TestMoveFrameWindowOrObjectVariantKind
+  memory/grind/_completed/func_8001EA04 -> memory/grind/_completed/fight_InitFighterFocusViewAndThreeItemMenu
+  memory/grind/_completed/func_8002798C -> memory/grind/_completed/fighter_TestMoveFrameWindowOrObjectVariantKind
+  memory/grind/_completed/func_8003DDF8 -> memory/grind/_completed/gpu_SetLastDepthIndexOtEntryLinkToPacket
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (4) --
+  memory/grind/func_8002798C/layer2.jsonl: 1 changes
+      line 1: func func_8002798C -> fighter_TestMoveFrameWindowOrObjectVariantKind
+  memory/grind/_completed/func_8001EA04/layer2.jsonl: 2 changes
+      line 1: func func_8001EA04 -> fight_InitFighterFocusViewAndThreeItemMenu
+      line 2: func func_8001EA04 -> fight_InitFighterFocusViewAndThreeItemMenu
+  memory/grind/_completed/func_8002798C/layer2.jsonl: 1 changes
+      line 1: func func_8002798C -> fighter_TestMoveFrameWindowOrObjectVariantKind
+  memory/grind/_completed/func_8003DDF8/layer2.jsonl: 1 changes
+      line 1: func func_8003DDF8 -> gpu_SetLastDepthIndexOtEntryLinkToPacket
+
+DRY RUN — nothing written. Re-run with --apply.
