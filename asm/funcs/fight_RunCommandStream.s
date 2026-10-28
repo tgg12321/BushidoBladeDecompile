@@ -61,13 +61,13 @@ glabel fight_RunCommandStream
     /* 2BE7C 8003B67C 01008290 */  lbu        $v0, 0x1($a0)
     /* 2BE80 8003B680 001E0300 */  sll        $v1, $v1, 24
     /* 2BE84 8003B684 020022A2 */  sb         $v0, 0x2($s1)
-    /* 2BE88 8003B688 0A80023C */  lui        $v0, %hi(D_800A3915)
-    /* 2BE8C 8003B68C 15394290 */  lbu        $v0, %lo(D_800A3915)($v0)
+    /* 2BE88 8003B688 0A80023C */  lui        $v0, %hi(g_fight_displaced_first_fighter_selection)
+    /* 2BE8C 8003B68C 15394290 */  lbu        $v0, %lo(g_fight_displaced_first_fighter_selection)($v0)
     /* 2BE90 8003B690 031E0300 */  sra        $v1, $v1, 24
     /* 2BE94 8003B694 05006214 */  bne        $v1, $v0, .L8003B6AC
     /* 2BE98 8003B698 00000000 */   nop
-    /* 2BE9C 8003B69C 0A80053C */  lui        $a1, %hi(D_800A36F4)
-    /* 2BEA0 8003B6A0 F436A590 */  lbu        $a1, %lo(D_800A36F4)($a1)
+    /* 2BE9C 8003B69C 0A80053C */  lui        $a1, %hi(g_fight_displaced_bone_group_tim_requests)
+    /* 2BEA0 8003B6A0 F436A590 */  lbu        $a1, %lo(g_fight_displaced_bone_group_tim_requests)($a1)
     /* 2BEA4 8003B6A4 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* 2BEA8 8003B6A8 01000424 */   addiu     $a0, $zero, 0x1
   .L8003B6AC:

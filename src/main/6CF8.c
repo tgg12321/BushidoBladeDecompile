@@ -25,7 +25,7 @@ const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
 extern void func_800164F8(void);
 
 extern u8 g_softbody_slot_high_water;
-extern RECT D_800A30D4;
+extern RECT g_gpu_cd_file_image_rect;
 extern s32 g_main_prim_buffer_min_remaining;
 
 extern void __main(void);
@@ -196,7 +196,7 @@ void gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
     RECT rect;
     s32 i;
 
-    rect = D_800A30D4;
+    rect = g_gpu_cd_file_image_rect;
 
     SetDispMask(0);
     SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x140, 0xF0);
@@ -817,7 +817,7 @@ void func_80017F98(s32 arg0, s32 arg1, s32 arg2) {}
 /* 0x800A30CC: the full 640x480 display area ClearImage clears */
 RECT g_gpu_clear_rect = {0, 0, 640, 480};
 /* 0x800A30D4: copied whole into a local RECT (rect = D_800A30D4) */
-RECT D_800A30D4 = {32, 96, 256, 48};
+RECT g_gpu_cd_file_image_rect = {32, 96, 256, 48};
 s32 g_main_prim_buffer_min_remaining = 0x13400;
 /* not named by any code or data: size from the gap */
 s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};

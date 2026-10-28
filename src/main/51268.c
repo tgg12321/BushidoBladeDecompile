@@ -31,7 +31,7 @@ static s16 g_eff_yawed_quad_tex_selectors[2];
 static s32 g_eff_rotated_quad_cluster_slot_mask;
 static s32 g_eff_point_light_color;
 static Unk1F800000Unk00 *g_eff_active_command_block;
-static s16 *D_800A346C;
+static s16 *g_eff_view_angles;
 static s32 *g_eff_view_origin;
 static MATRIX *g_eff_view_rotation_matrix;
 static s16 *g_eff_command_vector;
@@ -123,7 +123,7 @@ void eff_StepCommand(void) {
     s32 result;
 
     src_command_block = g_eff_active_command_block;
-    rotation_out = D_800A346C;
+    rotation_out = g_eff_view_angles;
     rotation_out[0] = src_command_block->bound_rotation_src[0];
     rotation_out[1] = src_command_block->bound_rotation_src[1];
     rotation_out[2] = src_command_block->bound_rotation_src[2];
@@ -220,7 +220,7 @@ void eff_SelectQuadBuffer(s32 select_second_buffer) {
 
 void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_active_command_block = &SPAD51268->default_command_block;
-    D_800A346C = SPAD51268->default_command_block.vector_copy;
+    g_eff_view_angles = SPAD51268->default_command_block.vector_copy;
     g_eff_view_origin = SPAD51268->default_command_block.position_copy;
     g_eff_view_rotation_matrix = &SPAD51268->view_rotation_matrix;
     g_eff_current_tex_rec = &SPAD51268->unk50;
@@ -772,7 +772,7 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
 
     eff_BindScratchpad(src_rotation, src_position);
     src_command_block = g_eff_active_command_block;
-    rotation_out = D_800A346C;
+    rotation_out = g_eff_view_angles;
     rotation_out[0] = src_command_block->bound_rotation_src[0];
     prim = g_eff_quad_cursor;
     rotation_out[1] = src_command_block->bound_rotation_src[1];

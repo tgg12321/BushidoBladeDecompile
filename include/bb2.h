@@ -213,7 +213,7 @@ extern Tbl8008E194 g_object_kind_params[];
 /* 8 byte pairs ({0,0} {1,0} {2,0} {3,0} {4,1} {5,1} {6,1} {7,0});
  * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in D_800A35E0,
  * n = g_working_record.fight_mode. */
-extern u8 D_8009BD58[8][2];
+extern u8 g_menu_mode_selector_and_extra_slot_counts[8][2];
 
 extern Obj80106A78 g_object_pool[12];
 /* [character_data_index][i] -> Unk80101EC8Record.carried_object_kinds[i]
@@ -226,8 +226,10 @@ extern u16 D_8008E3F8[27][4];
 /* [character_data_index][i] -> Unk80101EC8Record.unk_27E[i] */
 extern u16 D_8008E4D0[27][4];
 extern u8 D_8008E5A8[];
-extern u8 D_8008E5CC[][8]; /* [character_data_index][weapon_id] of D_80101EC8 */
-extern u8 D_8008E6A4[][6]; /* [character_data_index][weapon_id] of D_80101EC8 */
+/* [character_data_index][weapon_id] of D_80101EC8 */
+extern u8 g_resource_default_pair_selections[][8];
+/* [character_data_index][weapon_id] of D_80101EC8 */
+extern u8 g_resource_alternate_pair_selections[][6];
 extern u8 D_8008E748;
 extern u8 g_fight_opponent_stage_indices;
 extern Unk8008EA44Entry g_snd_stage_sound_slot_trigger_delays[5];
@@ -252,7 +254,7 @@ extern u8 g_fight_midpoint_effect_event_ids[6];
 extern u8 g_resource_kind_entry_ids[];
 /* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
 extern u16 g_object_bone_hit_deflect_angles[22];
-extern s32 D_8008EBCC[];
+extern s32 g_fight_step_row_sound_offsets[];
 extern s32 D_8008EBE0[];
 extern u8 g_snd_stage_sequence_base_sounds[6];
 extern Unk8008EA44Entry g_snd_stage_sequence_cue_ticks[6];
@@ -271,9 +273,9 @@ typedef struct {
 } Unk8008F13CRow;
 
 extern Unk8008F13CRow g_cdrom_audio_entries[12];
-extern u8 D_8008F19C[];
-extern u8 D_8008F1A8[];
-extern u8 D_8008F204[];
+extern u8 g_memcard_title_sjis_digits_0_to_4[];
+extern u8 g_memcard_title_sjis_digits[];
+extern u8 g_memcard_title_count_class_by_unlock_bit[];
 extern u8 *g_fight_command_streams[];
 extern u8 g_fight_presentation_playback_file_id_offsets[];
 extern u32 g_font_image[];
@@ -305,7 +307,7 @@ extern u8 g_fight_reinit_reuses_assets;
 extern u8 g_fight_second_fighter_initial_defeats_left;
 /* Three angles: gpu_PrepareViewAndFlushDrawQueue passes them to
  * math_RotMatrixZXY; gpu_UnpackGridRecordsNodesAndCellRuns zeroes them. */
-extern u16 D_800A3678[3];
+extern u16 g_gpu_flush_rotation_angles[3];
 extern u8 g_fight_second_fighter_defeats_left;
 extern u8 g_fight_view_option;
 /* FAKE: word 1 of the 8-byte sio send buffer as its own symbol; declaring
@@ -340,11 +342,11 @@ extern s16 D_800A36D2;
 extern s32 D_800A36D4;
 extern MoveScript *g_fight_paired_move;
 extern u8 g_fight_match_result_timer;
-extern u8 D_800A36F0;
+extern u8 g_fight_timer_unlock_bit_newly_set;
 extern u8 g_main_frame_period;
 /* per-player byte, [unk_04] (object_InitKindQueue) */
 extern u8 D_800A36F2[2];
-extern u8 D_800A36F4;
+extern u8 g_fight_displaced_bone_group_tim_requests;
 extern s16 g_fight_tracked_fighter_index;
 extern u8 D_800A36F9;
 extern u8 g_camera_fight_view_mode;
@@ -373,7 +375,7 @@ extern u8 g_cd_result[8];
 extern u8 D_800A3769;
 extern u8 g_fight_bone_group_tim_requests;
 extern u8 D_800A376B;
-extern u8 D_800A376C;
+extern u8 g_fight_playback_file_base_index;
 extern s16 g_fight_paired_move_start_pending;
 extern MATRIX *D_800A3778;
 /* match-result table: 0/1/2 per match, indexed by g_fight_match_cursor */
@@ -384,13 +386,13 @@ extern u8 g_fight_match_results[];
  * 1]. */
 extern u32 D_800A3770[2];
 
-extern u8 D_800A3781;
+extern u8 g_fight_no_restart_unlock_bit_newly_set;
 extern u8 g_fight_opponent_order_cursor;
 extern s32 g_fight_packed_match_scores;
 extern u8 g_fight_toggle_option_bits;
 extern s32 g_memcard_fd;
 extern u8 g_fight_stage_command_count;
-extern s32 D_800A37A4;
+extern s32 g_fight_pending_unlock_mask_bits;
 extern u8 D_800A37B0;
 extern u8 g_fight_operand_tint_red;
 extern u8 g_fight_operand_tint_green;
@@ -398,7 +400,7 @@ extern u8 g_fight_operand_tint_blue;
 extern s32 g_handler_frame_counter;
 extern u8 D_800A37BC;
 extern s32 g_fight_stage_list_step_timer;
-extern u8 D_800A37C6;
+extern u8 g_fight_skip_first_defeats_left_expiry;
 extern u8 D_800A37D2;
 extern u8 D_800A37D3;
 extern u8 D_800A37E0;
@@ -459,8 +461,8 @@ extern u8 g_fight_nearest_start_pair_index;
 extern u8 g_fight_start_position_pair_index;
 extern u8 D_800A38E1;
 extern u8 g_fight_step_table_next_row;
-extern s32 D_800A38E4;
-extern u8 D_800A38E8;
+extern s32 g_comb_received_unlock_mask_bits;
+extern u8 g_fight_paired_move_event_min_frame;
 extern u8 g_fight_best_time_rank;
 extern u8 g_fight_step_row_tint_red;
 extern u8 g_fight_step_row_tint_green;
@@ -479,7 +481,7 @@ extern s16 g_fight_midpoint_effect_delay;
 extern u8 g_pad_remote_button_mapping_20;
 extern u8 g_pad_remote_button_mapping_40;
 extern u8 g_pad_remote_button_mapping_80;
-extern u8 D_800A3915;
+extern u8 g_fight_displaced_first_fighter_selection;
 
 /* Six per-slot counters, 0 = free: snd_QueuePositionSequence claims a slot with
    1, snd_UpdateStageSounds advances and frees them, snd_ResetStageSoundState

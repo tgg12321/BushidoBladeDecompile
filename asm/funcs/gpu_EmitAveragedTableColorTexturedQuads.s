@@ -89,8 +89,8 @@ glabel gpu_EmitAveragedTableColorTexturedQuads
     /* 3F13C 8004E93C FF03C630 */  andi       $a2, $a2, 0x3FF
     /* 3F140 8004E940 00040824 */  addiu      $t0, $zero, 0x400
     /* 3F144 8004E944 00408848 */  mtc2       $t0, $8 /* handwritten instruction */
-    /* 3F148 8004E948 0F80083C */  lui        $t0, %hi(D_800F2B70)
-    /* 3F14C 8004E94C 702B0825 */  addiu      $t0, $t0, %lo(D_800F2B70)
+    /* 3F148 8004E948 0F80083C */  lui        $t0, %hi(g_gpu_normal_color_table)
+    /* 3F14C 8004E94C 702B0825 */  addiu      $t0, $t0, %lo(g_gpu_normal_color_table)
     /* 3F150 8004E950 80200400 */  sll        $a0, $a0, 2
     /* 3F154 8004E954 20208800 */  add        $a0, $a0, $t0 /* handwritten instruction */
     /* 3F158 8004E958 00008C8C */  lw         $t4, 0x0($a0)

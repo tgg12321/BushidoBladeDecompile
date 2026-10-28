@@ -473,7 +473,7 @@ u8 D_8008E5A8[36] = {0, 0, 0, 1, 3, 1, 2, 2, 0, 3, 2, 2, 2, 4, 2, 0, 0, 0,
                      2, 2, 2, 1, 0, 3, 1, 0, 0, 0, 2, 0, 2, 0, 2, 0, 0, 0};
 
 /* [character_data_index][weapon_id] of D_80101EC8 */
-u8 D_8008E5CC[27][8] = {
+u8 g_resource_default_pair_selections[27][8] = {
     {0, 3, 7, 9, 10, 12, 14, 15},     {2, 5, 6, 8, 10, 12, 14, 15},
     {0, 3, 6, 8, 11, 12, 14, 15},     {2, 5, 7, 8, 10, 12, 14, 15},
     {2, 5, 6, 8, 10, 12, 14, 15},     {15, 15, 15, 15, 15, 15, 14, 15},
@@ -490,7 +490,7 @@ u8 D_8008E5CC[27][8] = {
     {1, 4, 7, 9, 11, 13, 14, 15}};
 
 /* [character_data_index][weapon_id] of D_80101EC8 */
-u8 D_8008E6A4[27][6] = {
+u8 g_resource_alternate_pair_selections[27][6] = {
     {0, 2, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7},
     {1, 3, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 7}, {1, 2, 4, 5, 6, 7},
     {0, 2, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7}, {0, 2, 4, 5, 6, 7},
@@ -678,7 +678,7 @@ u16 g_object_bone_hit_deflect_angles[22] = {
 
 /* fighter_DispatchFrameEvent / fight_RecordReplayEventAndDispatchSoundOrEffect;
  * D_8008EBCC and D_8008EBE0 sized from the gaps. */
-s32 D_8008EBCC[5] = {0, 51, 58, 65, 72};
+s32 g_fight_step_row_sound_offsets[5] = {0, 51, 58, 65, 72};
 
 s32 D_8008EBE0[5] = {0, 262144, 131072, 393216, 0};
 

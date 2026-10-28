@@ -105,7 +105,7 @@ glabel memcard_StepRequest
     /* 28D18 80038518 07000224 */   addiu     $v0, $zero, 0x7
   .L8003851C:
     /* 28D1C 8003851C 01000224 */  addiu      $v0, $zero, 0x1
-    /* 28D20 80038520 000882A3 */  sb         $v0, %gp_rel(D_800A38CC)($gp)
+    /* 28D20 80038520 000882A3 */  sb         $v0, %gp_rel(g_memcard_request_write_started)($gp)
     /* 28D24 80038524 52E0000C */  jal        memcard_ClearBuffer
     /* 28D28 80038528 00000000 */   nop
     /* 28D2C 8003852C 0F80103C */  lui        $s0, %hi(g_shared_buffer)

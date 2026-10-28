@@ -2,11 +2,11 @@ glabel gpu_PrepareViewAndFlushDrawQueue
     /* 34D04 80044504 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 34D08 80044508 1400B1AF */  sw         $s1, 0x14($sp)
     /* 34D0C 8004450C 21888000 */  addu       $s1, $a0, $zero
-    /* 34D10 80044510 0A80043C */  lui        $a0, %hi(D_800A3678)
-    /* 34D14 80044514 78368424 */  addiu      $a0, $a0, %lo(D_800A3678)
+    /* 34D10 80044510 0A80043C */  lui        $a0, %hi(g_gpu_flush_rotation_angles)
+    /* 34D14 80044514 78368424 */  addiu      $a0, $a0, %lo(g_gpu_flush_rotation_angles)
     /* 34D18 80044518 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 34D1C 8004451C 1080103C */  lui        $s0, %hi(D_80101BD0)
-    /* 34D20 80044520 D01B1026 */  addiu      $s0, $s0, %lo(D_80101BD0)
+    /* 34D1C 8004451C 1080103C */  lui        $s0, %hi(g_gpu_flush_work_matrix)
+    /* 34D20 80044520 D01B1026 */  addiu      $s0, $s0, %lo(g_gpu_flush_work_matrix)
     /* 34D24 80044524 1800BFAF */  sw         $ra, 0x18($sp)
     /* 34D28 80044528 1D0A010C */  jal        math_RotMatrixZXY
     /* 34D2C 8004452C 21280002 */   addu      $a1, $s0, $zero
@@ -19,8 +19,8 @@ glabel gpu_PrepareViewAndFlushDrawQueue
     /* 34D48 80044548 21280002 */  addu       $a1, $s0, $zero
     /* 34D4C 8004454C 17FB010C */  jal        MulMatrix2
     /* 34D50 80044550 18008424 */   addiu     $a0, $a0, 0x18
-    /* 34D54 80044554 1080063C */  lui        $a2, %hi(D_800FF610)
-    /* 34D58 80044558 10F6C624 */  addiu      $a2, $a2, %lo(D_800FF610)
+    /* 34D54 80044554 1080063C */  lui        $a2, %hi(g_gpu_flush_view_matrix)
+    /* 34D58 80044558 10F6C624 */  addiu      $a2, $a2, %lo(g_gpu_flush_view_matrix)
     /* 34D5C 8004455C 0A80043C */  lui        $a0, %hi(g_view_identity_root_ptr)
     /* 34D60 80044560 0C37848C */  lw         $a0, %lo(g_view_identity_root_ptr)($a0)
     /* 34D64 80044564 3C06858F */  lw         $a1, %gp_rel(g_view_camera_root_ptr)($gp)
@@ -44,8 +44,8 @@ glabel gpu_PrepareViewAndFlushDrawQueue
     /* 34DA4 800445A4 C91B010C */  jal        math_SetLightPlaneProjection
     /* 34DA8 800445A8 00000000 */   nop
     /* 34DAC 800445AC C406838F */  lw         $v1, %gp_rel(D_800A3790)($gp)
-    /* 34DB0 800445B0 0980023C */  lui        $v0, %hi(D_80095328)
-    /* 34DB4 800445B4 28534224 */  addiu      $v0, $v0, %lo(D_80095328)
+    /* 34DB0 800445B0 0980023C */  lui        $v0, %hi(g_gpu_default_primitive_handlers)
+    /* 34DB4 800445B4 28534224 */  addiu      $v0, $v0, %lo(g_gpu_default_primitive_handlers)
     /* 34DB8 800445B8 801F013C */  lui        $at, (0x1F80001C >> 16)
     /* 34DBC 800445BC 1C0022AC */  sw         $v0, (0x1F80001C & 0xFFFF)($at)
     /* 34DC0 800445C0 801F013C */  lui        $at, (0x1F80000C >> 16)

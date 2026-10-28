@@ -69,7 +69,7 @@ glabel fight_InitNearestStartPairPlayback
     /* 2D718 8003CF18 1080023C */  lui        $v0, %hi(D_80101EC8 + 0x45E)
     /* 2D71C 8003CF1C 26234284 */  lh         $v0, %lo(D_80101EC8 + 0x45E)($v0)
     /* 2D720 8003CF20 21280002 */  addu       $a1, $s0, $zero
-    /* 2D724 8003CF24 4C0786AF */  sw         $a2, %gp_rel(D_800A3818)($gp)
+    /* 2D724 8003CF24 4C0786AF */  sw         $a2, %gp_rel(g_fight_followup_playback_start_pair)($gp)
     /* 2D728 8003CF28 1C00A0AF */  sw         $zero, 0x1C($sp)
     /* 2D72C 8003CF2C 2152010C */  jal        motion_StartPlaybackAtIndexedBasePlusOffset
     /* 2D730 8003CF30 1000A2AF */   sw        $v0, 0x10($sp)

@@ -170,8 +170,8 @@ glabel fight_Init
     /* E71C 8001DF1C 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* E720 8001DF20 21083100 */  addu       $at, $at, $s1
     /* E724 8001DF24 D21E2384 */  lh         $v1, %lo(D_80101EC8 + 0xA)($at)
-    /* E728 8001DF28 0980043C */  lui        $a0, %hi(D_8008E6A4)
-    /* E72C 8001DF2C A4E68424 */  addiu      $a0, $a0, %lo(D_8008E6A4)
+    /* E728 8001DF28 0980043C */  lui        $a0, %hi(g_resource_alternate_pair_selections)
+    /* E72C 8001DF2C A4E68424 */  addiu      $a0, $a0, %lo(g_resource_alternate_pair_selections)
     /* E730 8001DF30 40100300 */  sll        $v0, $v1, 1
     /* E734 8001DF34 21104300 */  addu       $v0, $v0, $v1
     /* E738 8001DF38 1080013C */  lui        $at, %hi(D_80101EC8 + 0xE)
@@ -180,8 +180,8 @@ glabel fight_Init
     /* E744 8001DF44 DC770008 */  j          .L8001DF70
     /* E748 8001DF48 40100200 */   sll       $v0, $v0, 1
   .L8001DF4C:
-    /* E74C 8001DF4C 0980043C */  lui        $a0, %hi(D_8008E5CC)
-    /* E750 8001DF50 CCE58424 */  addiu      $a0, $a0, %lo(D_8008E5CC)
+    /* E74C 8001DF4C 0980043C */  lui        $a0, %hi(g_resource_default_pair_selections)
+    /* E750 8001DF50 CCE58424 */  addiu      $a0, $a0, %lo(g_resource_default_pair_selections)
     /* E754 8001DF54 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* E758 8001DF58 21083100 */  addu       $at, $at, $s1
     /* E75C 8001DF5C D21E2284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($at)

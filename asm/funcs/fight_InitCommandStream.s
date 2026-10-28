@@ -17,14 +17,14 @@ glabel fight_InitCommandStream
     /* 2BA48 8003B248 5C3820AC */  sw         $zero, %lo(D_800A385C)($at)
     /* 2BA4C 8003B24C 0A80013C */  lui        $at, %hi(g_fight_saved_first_fighter_selection)
     /* 2BA50 8003B250 363822A0 */  sb         $v0, %lo(g_fight_saved_first_fighter_selection)($at)
-    /* 2BA54 8003B254 0A80013C */  lui        $at, %hi(D_800A3915)
-    /* 2BA58 8003B258 153922A0 */  sb         $v0, %lo(D_800A3915)($at)
-    /* 2BA5C 8003B25C 0A80013C */  lui        $at, %hi(D_800A37C6)
-    /* 2BA60 8003B260 C63723A0 */  sb         $v1, %lo(D_800A37C6)($at)
+    /* 2BA54 8003B254 0A80013C */  lui        $at, %hi(g_fight_displaced_first_fighter_selection)
+    /* 2BA58 8003B258 153922A0 */  sb         $v0, %lo(g_fight_displaced_first_fighter_selection)($at)
+    /* 2BA5C 8003B25C 0A80013C */  lui        $at, %hi(g_fight_skip_first_defeats_left_expiry)
+    /* 2BA60 8003B260 C63723A0 */  sb         $v1, %lo(g_fight_skip_first_defeats_left_expiry)($at)
     /* 2BA64 8003B264 0A80013C */  lui        $at, %hi(g_fight_stage_command_count)
     /* 2BA68 8003B268 A03720A0 */  sb         $zero, %lo(g_fight_stage_command_count)($at)
-    /* 2BA6C 8003B26C 0A80013C */  lui        $at, %hi(D_800A37A4)
-    /* 2BA70 8003B270 A43720AC */  sw         $zero, %lo(D_800A37A4)($at)
+    /* 2BA6C 8003B26C 0A80013C */  lui        $at, %hi(g_fight_pending_unlock_mask_bits)
+    /* 2BA70 8003B270 A43720AC */  sw         $zero, %lo(g_fight_pending_unlock_mask_bits)($at)
     /* 2BA74 8003B274 0A80013C */  lui        $at, %hi(g_fight_command_stream_cursor)
     /* 2BA78 8003B278 443824AC */  sw         $a0, %lo(g_fight_command_stream_cursor)($at)
     /* 2BA7C 8003B27C 205B000C */  jal        eff_Init
@@ -40,8 +40,8 @@ glabel fight_InitCommandStream
     /* 2BAA4 8003B2A4 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 2BAA8 8003B2A8 21082200 */  addu       $at, $at, $v0
     /* 2BAAC 8003B2AC 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)
-    /* 2BAB0 8003B2B0 0A80013C */  lui        $at, %hi(D_800A376C)
-    /* 2BAB4 8003B2B4 6C3722A0 */  sb         $v0, %lo(D_800A376C)($at)
+    /* 2BAB0 8003B2B0 0A80013C */  lui        $at, %hi(g_fight_playback_file_base_index)
+    /* 2BAB4 8003B2B4 6C3722A0 */  sb         $v0, %lo(g_fight_playback_file_base_index)($at)
     /* 2BAB8 8003B2B8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2BABC 8003B2BC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2BAC0 8003B2C0 0800E003 */  jr         $ra

@@ -477,10 +477,10 @@ void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
 }
 
 extern void func_8004DDB4(s32, s32, s32, s32);
-extern MATRIX D_800FF610;
+extern MATRIX g_gpu_flush_view_matrix;
 extern void (*D_800951D8[])();
 extern void (*D_80095280[])();
-extern void (*D_80095328[])();
+extern void (*g_gpu_default_primitive_handlers[])();
 extern Unk800F62E0Rec *g_light_selected_setup;
 
 void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
@@ -490,7 +490,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
     t0 = *(s32 *)0x1F800008;
     *(s32 *)0x1F800008 = 3 - t0;
 
-    *dst = D_800FF610;
+    *dst = g_gpu_flush_view_matrix;
 
     g_light_selected_setup = &g_light_setups[light_setup_index];
 
@@ -507,7 +507,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 light_setup_index, u8 *arg3) {
 
     func_8004DDB4(arg0, arg1, (s32)dst, t0);
 
-    *(s32 *)0x1F80001C = (s32)&D_80095328;
+    *(s32 *)0x1F80001C = (s32)&g_gpu_default_primitive_handlers;
 }
 
 s32 math_ClassifyThresholdBand(s32 a0) {
@@ -1128,23 +1128,23 @@ void func_800444E0(void) {
     gpu_PrepareViewAndFlushDrawQueue(g_gpu_ot_offset_ptr);
 }
 
-extern MATRIX D_80101BD0;
+extern MATRIX g_gpu_flush_work_matrix;
 
 extern void gpu_DrawQueuedNodes(void);
 
 void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
-    math_RotMatrixZXY(D_800A3678, &D_80101BD0);
-    MulMatrix(&D_80101BD0, &g_view_camera_root_ptr->xf.mat);
-    MulMatrix2(&g_view_identity_root_ptr->xf.mat, &D_80101BD0);
+    math_RotMatrixZXY(g_gpu_flush_rotation_angles, &g_gpu_flush_work_matrix);
+    MulMatrix(&g_gpu_flush_work_matrix, &g_view_camera_root_ptr->xf.mat);
+    MulMatrix2(&g_view_identity_root_ptr->xf.mat, &g_gpu_flush_work_matrix);
     MulMatrix0(&g_view_identity_root_ptr->xf.mat,
-               &g_view_camera_root_ptr->xf.mat, &D_800FF610);
+               &g_view_camera_root_ptr->xf.mat, &g_gpu_flush_view_matrix);
     if (g_gpu_presented_frame_count & 1) {
         *(s32 *)0x1F800014 = -1;
     } else {
         *(s32 *)0x1F800014 = 0;
     }
     math_SetLightPlaneProjection();
-    *(s32 *)0x1F80001C = (s32)&D_80095328;
+    *(s32 *)0x1F80001C = (s32)&g_gpu_default_primitive_handlers;
     *(s32 *)0x1F80000C = (s32)a0;
     if (D_800A3790 & 8) {
         *(s32 *)0x1F800010 = gpu_GetLastFogOtIndex();
@@ -1345,7 +1345,7 @@ void (*D_80095280[42])() = {
     func_80050E60,
     func_80051010,
 };
-void (*D_80095328[88])() = {
+void (*g_gpu_default_primitive_handlers[88])() = {
     func_80044650,
     func_80044650,
     func_80044650,

@@ -1,7 +1,7 @@
 glabel InitWithCachedValueAndStoredBitsBlackBg
     /* 68184 80077984 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 68188 80077988 1405858F */  lw         $a1, %gp_rel(D_800A35E0)($gp)
-    /* 6818C 8007798C 1C05878F */  lw         $a3, %gp_rel(D_800A35E8)($gp)
+    /* 68188 80077988 1405858F */  lw         $a1, %gp_rel(g_menu_pending_entry_extra_slot_count)($gp)
+    /* 6818C 8007798C 1C05878F */  lw         $a3, %gp_rel(g_menu_compacted_unlock_mask)($gp)
     /* 68190 80077990 0A80063C */  lui        $a2, %hi(g_working_record)
     /* 68194 80077994 24BDC624 */  addiu      $a2, $a2, %lo(g_working_record)
     /* 68198 80077998 1000BFAF */  sw         $ra, 0x10($sp)

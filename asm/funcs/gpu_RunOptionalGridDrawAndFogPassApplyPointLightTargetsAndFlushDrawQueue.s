@@ -3,7 +3,7 @@ glabel gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue
     /* 375AC 80046DAC 01008430 */  andi       $a0, $a0, 0x1
     /* 375B0 80046DB0 04008010 */  beqz       $a0, .L80046DC4
     /* 375B4 80046DB4 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 375B8 80046DB8 F402848F */  lw         $a0, %gp_rel(D_800A33C0)($gp)
+    /* 375B8 80046DB8 F402848F */  lw         $a0, %gp_rel(g_gpu_view_eye_distance)($gp)
     /* 375BC 80046DBC A81B010C */  jal        gpu_RunGridDrawPassAndQueueFogMoves
     /* 375C0 80046DC0 00000000 */   nop
   .L80046DC4:

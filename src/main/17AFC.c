@@ -2284,7 +2284,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
         {
             s32 v1;
             v1 = var_s0->move_frame;
-            if (v1 < (s32)D_800A38E8) {
+            if (v1 < (s32)g_fight_paired_move_event_min_frame) {
                 return;
             }
             if (v1 >= var_s0->paired_move_hit_frame) {
@@ -4908,7 +4908,7 @@ void fight_RecordReplayEventAndDispatchSoundOrEffect(
     }
 
     if (g_fight_mode_selector == 3 && arg0 == 1 && (u32)(arg1 - 0x2D) < 2) {
-        s0 += D_8008EBCC[g_fight_step_row_column];
+        s0 += g_fight_step_row_sound_offsets[g_fight_step_row_column];
     }
 
     replay_RecordEvent(arg0, arg1, arg2, arg3);
@@ -5072,9 +5072,9 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
          (u32)(kind - 0x19) < 2 || kind == 0x26 || (u32)(kind - 0x36) < 2 ||
          (u32)(kind - 0x38) < 2 || (u32)(kind - 0x3A) < 2 || kind == 0x47)) {
         if (obj->index == 1) {
-            base += D_8008EBCC[g_fight_step_row_column];
+            base += g_fight_step_row_sound_offsets[g_fight_step_row_column];
         } else {
-            base2 += D_8008EBCC[g_fight_step_row_column];
+            base2 += g_fight_step_row_sound_offsets[g_fight_step_row_column];
         }
     }
 
@@ -5756,8 +5756,8 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
     state = g_fight_step_table_next_row;
     tableIndex = state & 0xFF;
     if (tableIndex == 0x64) {
-        D_800A36F0 = 0;
-        D_800A3781 = 0;
+        g_fight_timer_unlock_bit_newly_set = 0;
+        g_fight_no_restart_unlock_bit_newly_set = 0;
 
         if (g_fight_timer_frames < 0x6979) {
             s32 *flags;
@@ -5771,7 +5771,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
             }
             flags = &g_saved_record.unlock_mask;
             word = *flags;
-            D_800A36F0 = (u32)(word & mask) < 1;
+            g_fight_timer_unlock_bit_newly_set = (u32)(word & mask) < 1;
             *flags = word | mask;
         }
 
@@ -5787,7 +5787,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
             }
             flags = &g_saved_record.unlock_mask;
             word = *flags;
-            D_800A3781 = (u32)(word & mask) < 1;
+            g_fight_no_restart_unlock_bit_newly_set = (u32)(word & mask) < 1;
             *flags = word | mask;
         }
 
@@ -5820,7 +5820,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
 
 void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
     s32 v1;
-    if (D_800A36F0 != 0) {
+    if (g_fight_timer_unlock_bit_newly_set != 0) {
         v1 = 6;
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
             v1 = 7;
@@ -5829,7 +5829,7 @@ void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
         g_main_loop_handler_index = 0x12;
         return;
     }
-    if (D_800A3781 != 0) {
+    if (g_fight_no_restart_unlock_bit_newly_set != 0) {
         v1 = 8;
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
             v1 = 9;

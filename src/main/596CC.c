@@ -63,7 +63,7 @@ void menu_SetEnabledRows(s32 arg0) {
 }
 
 extern s32 D_800A372C;
-extern u8 D_800A32C0[8];
+extern u8 g_row_menu_vram_copy_source_rect[8];
 
 s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     s32 arg0, Unk8009BD24Block *arg1) {
@@ -166,7 +166,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             *p_10 = 0;
             *p_0E = 0;
             *p_0C = 0;
-            __builtin_memcpy(&buf, D_800A32C0, 8);
+            __builtin_memcpy(&buf, g_row_menu_vram_copy_source_rect, 8);
             DrawSync(0);
             MoveImage(&buf, 0x3C0, 0x1FE);
             DrawSync(0);
@@ -2723,7 +2723,8 @@ s32 gpu_InitPrimBufferPair(s32 prim_storage, Unk8006E49CRec *prim_buffer_pair) {
 /* Q65: this file's initialized small data (.sdata, 0x800A32C0..0x800A32E8),
  * in address order; values from the original EXE. */
 /* copied whole into a local 8-byte buffer */
-u8 D_800A32C0[8] = {0x70, 0x00, 0xE1, 0x01, 0x30, 0x00, 0x01, 0x00};
+u8 g_row_menu_vram_copy_source_rect[8] = {
+    0x70, 0x00, 0xE1, 0x01, 0x30, 0x00, 0x01, 0x00};
 u32 g_pad_direction_positive_masks[2] = {0x2000, 0x4000};
 u32 g_pad_direction_negative_masks[2] = {0x8000, 0x1000};
 RECT g_gpu_fullscreen_image_rect = {0, 0, 640, 240};

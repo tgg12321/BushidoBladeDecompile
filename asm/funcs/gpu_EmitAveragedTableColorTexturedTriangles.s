@@ -74,8 +74,8 @@ glabel gpu_EmitAveragedTableColorTexturedTriangles
     /* 3EE90 8004E690 1000048E */  lw         $a0, 0x10($s0)
     /* 3EE94 8004E694 55050824 */  addiu      $t0, $zero, 0x555
     /* 3EE98 8004E698 00408848 */  mtc2       $t0, $8 /* handwritten instruction */
-    /* 3EE9C 8004E69C 0F80083C */  lui        $t0, %hi(D_800F2B70)
-    /* 3EEA0 8004E6A0 702B0825 */  addiu      $t0, $t0, %lo(D_800F2B70)
+    /* 3EE9C 8004E69C 0F80083C */  lui        $t0, %hi(g_gpu_normal_color_table)
+    /* 3EEA0 8004E6A0 702B0825 */  addiu      $t0, $t0, %lo(g_gpu_normal_color_table)
     /* 3EEA4 8004E6A4 82640400 */  srl        $t4, $a0, 18
     /* 3EEA8 8004E6A8 FC0F8C31 */  andi       $t4, $t4, 0xFFC
     /* 3EEAC 8004E6AC 20608801 */  add        $t4, $t4, $t0 /* handwritten instruction */

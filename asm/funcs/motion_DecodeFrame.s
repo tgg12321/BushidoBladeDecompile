@@ -18,7 +18,7 @@ glabel motion_DecodeFrame
     /* A110 80019910 21484300 */  addu       $t1, $v0, $v1
     /* A114 80019914 0000B0AF */  sw         $s0, 0x0($sp)
     /* A118 80019918 0000228D */  lw         $v0, 0x0($t1)
-    /* A11C 8001991C 2000838F */  lw         $v1, %gp_rel(D_800A30EC)($gp)
+    /* A11C 8001991C 2000838F */  lw         $v1, %gp_rel(g_motion_decode_skip_code_copy)($gp)
     /* A120 80019920 00000000 */  nop
     /* A124 80019924 0B006014 */  bnez       $v1, .L80019954
     /* A128 80019928 70004F24 */   addiu     $t7, $v0, 0x70

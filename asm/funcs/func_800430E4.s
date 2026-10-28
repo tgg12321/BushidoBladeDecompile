@@ -13,8 +13,8 @@ glabel func_800430E4
     /* 33910 80043110 03340600 */  sra        $a2, $a2, 16
     /* 33914 80043114 23104800 */  subu       $v0, $v0, $t0
     /* 33918 80043118 000062AC */  sw         $v0, 0x0($v1)
-    /* 3391C 8004311C 1080053C */  lui        $a1, %hi(D_800FF610)
-    /* 33920 80043120 10F6A524 */  addiu      $a1, $a1, %lo(D_800FF610)
+    /* 3391C 8004311C 1080053C */  lui        $a1, %hi(g_gpu_flush_view_matrix)
+    /* 33920 80043120 10F6A524 */  addiu      $a1, $a1, %lo(g_gpu_flush_view_matrix)
     /* 33924 80043124 0000A28C */  lw         $v0, 0x0($a1)
     /* 33928 80043128 0400A38C */  lw         $v1, 0x4($a1)
     /* 3392C 8004312C 0800A48C */  lw         $a0, 0x8($a1)
@@ -81,8 +81,8 @@ glabel func_800430E4
     /* 33A18 80043218 21302001 */  addu       $a2, $t1, $zero
     /* 33A1C 8004321C 6D37010C */  jal        func_8004DDB4
     /* 33A20 80043220 21380001 */   addu      $a3, $t0, $zero
-    /* 33A24 80043224 0980023C */  lui        $v0, %hi(D_80095328)
-    /* 33A28 80043228 28534224 */  addiu      $v0, $v0, %lo(D_80095328)
+    /* 33A24 80043224 0980023C */  lui        $v0, %hi(g_gpu_default_primitive_handlers)
+    /* 33A28 80043228 28534224 */  addiu      $v0, $v0, %lo(g_gpu_default_primitive_handlers)
     /* 33A2C 8004322C 801F013C */  lui        $at, (0x1F80001C >> 16)
     /* 33A30 80043230 1C0022AC */  sw         $v0, (0x1F80001C & 0xFFFF)($at)
     /* 33A34 80043234 1000BF8F */  lw         $ra, 0x10($sp)

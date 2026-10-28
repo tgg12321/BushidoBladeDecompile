@@ -29,7 +29,7 @@ void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
     menu_SetEnabledRows(a0);
 }
 
-extern u8 D_800A31D8;
+extern u8 g_menu_release_closes_non_common_vabs;
 
 void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     gpu_ResetGraphMode1();
@@ -41,11 +41,11 @@ void menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu(void) {
     slot_ReleaseObjectAndResources(0);
     slot_ReleaseObjectAndResources(1);
     eff_ClearInitFlag();
-    if (D_800A31D8 != 0) {
+    if (g_menu_release_closes_non_common_vabs != 0) {
         snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb();
         g_fight_loaded_stage_index = -1;
     }
-    D_800A31D8 = 1;
+    g_menu_release_closes_non_common_vabs = 1;
     menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows();
     InitRowMenuBlackBgResetFlow((s32)0x80118800);
     g_handler_frame_counter = 0;
@@ -141,9 +141,9 @@ void menu_InitSubflowForMode(s32 arg0) {
 
         temp = comb_Connect();
         if (temp == 1) {
-            StoreCompactedBits(
-                (g_saved_record.unlock_mask | D_800A38E4 | 0x7007) &
-                0x003FF3FF);
+            StoreCompactedBits((g_saved_record.unlock_mask |
+                                g_comb_received_unlock_mask_bits | 0x7007) &
+                               0x003FF3FF);
             InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             g_row_menu_subflow_state = 3;
             cdrom_EnableSerialMixAndStartRepeatingAudio();
@@ -387,7 +387,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
         if (ret == -1) {
             cdrom_PauseAndWait();
             g_main_loop_handler_index = 8;
-            D_800A31D8 = 0;
+            g_menu_release_closes_non_common_vabs = 0;
         }
         break;
     }
@@ -455,7 +455,7 @@ s32 bits_DepositMask3F83F8(s32 a0) {
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-u8 D_800A31D8 = 1;
+u8 g_menu_release_closes_non_common_vabs = 1;
 u8 D_800A31D9 = 1;
 u8 g_menu_mode_subflow_init_pending = 0;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */

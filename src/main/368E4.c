@@ -24,7 +24,7 @@ static s32 D_800A33B0;
 static s32 g_fight_position_records;
 static s32 D_800A33B8; /* not named by any code or data: size from the gap */
 static s32 D_800A33BC;
-static s32 D_800A33C0;
+static s32 g_gpu_view_eye_distance;
 static s32 D_800A33C4; /* not named by any code or data: size from the gap */
 static s16 g_camera_calculated_angles[2];
 static s32 D_800A33CC; /* not named by any code or data: size from the gap */
@@ -483,7 +483,7 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
         camera_CopyViewMatrixWithHalvedMiddleRow();
         gpu_ResetAndStampViewCenteredCellAttributes();
 
-        D_800A33C0 = a2;
+        g_gpu_view_eye_distance = a2;
     }
 
     calc_LightMatrix(&g_light_setups[0]);
@@ -497,7 +497,7 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
 void gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
     s32 a0) {
     if (a0 & 1) {
-        gpu_RunGridDrawPassAndQueueFogMoves(D_800A33C0);
+        gpu_RunGridDrawPassAndQueueFogMoves(g_gpu_view_eye_distance);
     }
     light_ApplyPointLightTargets();
     func_800444BC();
@@ -1590,7 +1590,7 @@ void node_RebaseRetainedDrawNodeBuffer(s32 rebase_delta) {
 
 extern u32 *g_gpu_ot256_ptr;
 extern u32 g_gpu_ot256_db[][256];
-extern s16 D_80099C14[];
+extern s16 g_node_retained_draw_matrix_indices[];
 
 void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     s32 arg0, s32 arg1, s32 arg2) {
@@ -1625,7 +1625,7 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     rot.vx = 0;
     rot.vy = 0xC00 - arg0;
     rot.vz = 0;
-    indices = D_80099C14;
+    indices = g_node_retained_draw_matrix_indices;
     math_RotMatrixZYX(&rot, &mtx);
     gte_MulMatrix0ClearTrans(mat_tbl[0], &mtx, &mtx);
     g_node_slot_relative_matrix.m[0][0] = mtx.m[0][0];

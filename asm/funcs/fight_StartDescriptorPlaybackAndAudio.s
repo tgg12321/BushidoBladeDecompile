@@ -118,8 +118,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C378 8003BB78 0000A590 */  lbu        $a1, 0x0($a1)
     /* 2C37C 8003BB7C 21300000 */  addu       $a2, $zero, $zero
     /* 2C380 8003BB80 1000A4AF */  sw         $a0, 0x10($sp)
-    /* 2C384 8003BB84 0A80043C */  lui        $a0, %hi(D_800A376C)
-    /* 2C388 8003BB88 6C378490 */  lbu        $a0, %lo(D_800A376C)($a0)
+    /* 2C384 8003BB84 0A80043C */  lui        $a0, %hi(g_fight_playback_file_base_index)
+    /* 2C388 8003BB88 6C378490 */  lbu        $a0, %lo(g_fight_playback_file_base_index)($a0)
     /* 2C38C 8003BB8C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 2C390 8003BB90 1400A2AF */  sw         $v0, 0x14($sp)
     /* 2C394 8003BB94 1800A2AF */  sw         $v0, 0x18($sp)

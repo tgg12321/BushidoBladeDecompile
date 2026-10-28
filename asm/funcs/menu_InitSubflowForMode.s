@@ -70,8 +70,8 @@ glabel menu_InitSubflowForMode
     /* 25F0C 8003570C 3F00033C */  lui        $v1, (0x3FF3FF >> 16)
     /* 25F10 80035710 1080043C */  lui        $a0, %hi(g_saved_record)
     /* 25F14 80035714 506A848C */  lw         $a0, %lo(g_saved_record)($a0)
-    /* 25F18 80035718 0A80023C */  lui        $v0, %hi(D_800A38E4)
-    /* 25F1C 8003571C E438428C */  lw         $v0, %lo(D_800A38E4)($v0)
+    /* 25F18 80035718 0A80023C */  lui        $v0, %hi(g_comb_received_unlock_mask_bits)
+    /* 25F1C 8003571C E438428C */  lw         $v0, %lo(g_comb_received_unlock_mask_bits)($v0)
     /* 25F20 80035720 FFF36334 */  ori        $v1, $v1, (0x3FF3FF & 0xFFFF)
     /* 25F24 80035724 25208200 */  or         $a0, $a0, $v0
     /* 25F28 80035728 07708434 */  ori        $a0, $a0, 0x7007

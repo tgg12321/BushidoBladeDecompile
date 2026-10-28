@@ -75,7 +75,7 @@ void * const D_80015470[4] = {
 };
 
 /* D_80015480: 8 words (32B) @ 0x80015480 — function-pointer table */
-void (* const D_80015480[8])() = {
+void (* const g_gpu_strided_node_packet_handlers[8])() = {
     gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles,
     gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads,
     gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles,
@@ -134,7 +134,7 @@ const u32 g_sqrt_table[128] = {
 
 /* D_80015820: 8 words (32B) @ 0x80015820: the code sites
  * PatchColorImmediatesAtListedCodeSites patches */
-void * const D_80015820[8] = {
+void * const g_color_immediate_patch_sites[8] = {
     L80050C0C, L80050DAC, L80050FB4, L80051154,
     L80051358, L800514FC, L800516FC, L80051894,
 };

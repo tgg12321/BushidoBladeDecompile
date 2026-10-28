@@ -17,8 +17,8 @@ glabel fight_UpdatePairedMoves
     /* 10424 8001FC24 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 10428 8001FC28 0A80013C */  lui        $at, %hi(g_fight_paired_move_start_pending)
     /* 1042C 8001FC2C 6E3720A4 */  sh         $zero, %lo(g_fight_paired_move_start_pending)($at)
-    /* 10430 8001FC30 0A80013C */  lui        $at, %hi(D_800A38E8)
-    /* 10434 8001FC34 E83822A0 */  sb         $v0, %lo(D_800A38E8)($at)
+    /* 10430 8001FC30 0A80013C */  lui        $at, %hi(g_fight_paired_move_event_min_frame)
+    /* 10434 8001FC34 E83822A0 */  sb         $v0, %lo(g_fight_paired_move_event_min_frame)($at)
     /* 10438 8001FC38 00016014 */  bnez       $v1, .L8002003C
     /* 1043C 8001FC3C 00000000 */   nop
     /* 10440 8001FC40 1080023C */  lui        $v0, %hi(D_801023AA)
@@ -217,8 +217,8 @@ glabel fight_UpdatePairedMoves
     /* 10720 8001FF20 0300E292 */  lbu        $v0, 0x3($s7)
     /* 10724 8001FF24 02006596 */  lhu        $a1, 0x2($s3)
     /* 10728 8001FF28 7F004230 */  andi       $v0, $v0, 0x7F
-    /* 1072C 8001FF2C 0A80013C */  lui        $at, %hi(D_800A38E8)
-    /* 10730 8001FF30 E83822A0 */  sb         $v0, %lo(D_800A38E8)($at)
+    /* 1072C 8001FF2C 0A80013C */  lui        $at, %hi(g_fight_paired_move_event_min_frame)
+    /* 10730 8001FF30 E83822A0 */  sb         $v0, %lo(g_fight_paired_move_event_min_frame)($at)
     /* 10734 8001FF34 0985000C */  jal        motion_ResolveMoveData
     /* 10738 8001FF38 5E002626 */   addiu     $a2, $s1, 0x5E
     /* 1073C 8001FF3C 2120A002 */  addu       $a0, $s5, $zero

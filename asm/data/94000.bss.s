@@ -47,9 +47,9 @@ dlabel g_fight_choice_menu_cursor
 enddlabel g_fight_choice_menu_cursor
 
 /* 800A3818 */
-dlabel D_800A3818
+dlabel g_fight_followup_playback_start_pair
     .space 0x4
-enddlabel D_800A3818
+enddlabel g_fight_followup_playback_start_pair
 
 /* 800A381C */
 dlabel D_800A381C
@@ -319,9 +319,9 @@ dlabel g_memcard_file_count
 enddlabel g_memcard_file_count
 
 /* 800A38CC */
-dlabel D_800A38CC
+dlabel g_memcard_request_write_started
     .space 0x4
-enddlabel D_800A38CC
+enddlabel g_memcard_request_write_started
 
 /* 800A38D0 */
 dlabel D_800A38D0
@@ -374,14 +374,14 @@ dlabel g_fight_step_table_next_row
 enddlabel g_fight_step_table_next_row
 
 /* 800A38E4 */
-dlabel D_800A38E4
+dlabel g_comb_received_unlock_mask_bits
     .space 0x4
-enddlabel D_800A38E4
+enddlabel g_comb_received_unlock_mask_bits
 
 /* 800A38E8 */
-dlabel D_800A38E8
+dlabel g_fight_paired_move_event_min_frame
     .space 0x1
-enddlabel D_800A38E8
+enddlabel g_fight_paired_move_event_min_frame
 
 /* 800A38E9 */
 dlabel g_fight_best_time_rank
@@ -489,9 +489,9 @@ dlabel g_pad_remote_button_mapping_80
 enddlabel g_pad_remote_button_mapping_80
 
 /* 800A3915 */
-dlabel D_800A3915
+dlabel g_fight_displaced_first_fighter_selection
     .space 0x1
-enddlabel D_800A3915
+enddlabel g_fight_displaced_first_fighter_selection
 
 /* 800A3916 */
 dlabel g_comb_initial_pad_exchange_pending
@@ -1391,9 +1391,9 @@ dlabel D_800F2B68
 enddlabel D_800F2B68
 
 /* 800F2B70 */
-dlabel D_800F2B70
+dlabel g_gpu_normal_color_table
     .space 0x7D0
-enddlabel D_800F2B70
+enddlabel g_gpu_normal_color_table
 
 /* 800F3340 */
 dlabel D_800F3340
@@ -1753,9 +1753,9 @@ dlabel g_camera_view_offset
 enddlabel g_camera_view_offset
 
 /* 800FF610 */
-dlabel D_800FF610
+dlabel g_gpu_flush_view_matrix
     .space 0x20
-enddlabel D_800FF610
+enddlabel g_gpu_flush_view_matrix
 
 /* 800FF630 */
 dlabel _snd_ev_flag
@@ -1798,9 +1798,9 @@ dlabel _SsVmMaxVoice
 enddlabel _SsVmMaxVoice
 
 /* 80101BD0 */
-dlabel D_80101BD0
+dlabel g_gpu_flush_work_matrix
     .space 0x20
-enddlabel D_80101BD0
+enddlabel g_gpu_flush_work_matrix
 
 /* 80101BF0 */
 dlabel g_replay_events

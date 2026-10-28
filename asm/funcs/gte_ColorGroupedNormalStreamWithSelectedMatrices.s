@@ -15,8 +15,8 @@ glabel gte_ColorGroupedNormalStreamWithSelectedMatrices
     /* 44C74 80054474 18009422 */  addi       $s4, $s4, 0x18 /* handwritten instruction */
     /* 44C78 80054478 801F153C */  lui        $s5, (0x1F800030 >> 16)
     /* 44C7C 8005447C 00308048 */  mtc2       $zero, $6 /* handwritten instruction */
-    /* 44C80 80054480 0F80133C */  lui        $s3, %hi(D_800F2B70)
-    /* 44C84 80054484 702B7326 */  addiu      $s3, $s3, %lo(D_800F2B70)
+    /* 44C80 80054480 0F80133C */  lui        $s3, %hi(g_gpu_normal_color_table)
+    /* 44C84 80054484 702B7326 */  addiu      $s3, $s3, %lo(g_gpu_normal_color_table)
     /* 44C88 80054488 4B000104 */  bgez       $zero, .L800545B8
     /* 44C8C 8005448C 00000000 */   nop
   .L80054490:

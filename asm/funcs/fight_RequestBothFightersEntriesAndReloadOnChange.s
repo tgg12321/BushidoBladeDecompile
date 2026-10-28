@@ -13,8 +13,8 @@ glabel fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2B828 8003B028 21900000 */   addu      $s2, $zero, $zero
     /* 2B82C 8003B02C E724010C */  jal        ResetEntrySelectionState
     /* 2B830 8003B030 21800000 */   addu      $s0, $zero, $zero
-    /* 2B834 8003B034 0980143C */  lui        $s4, %hi(D_8008E5CC)
-    /* 2B838 8003B038 CCE59426 */  addiu      $s4, $s4, %lo(D_8008E5CC)
+    /* 2B834 8003B034 0980143C */  lui        $s4, %hi(g_resource_default_pair_selections)
+    /* 2B838 8003B038 CCE59426 */  addiu      $s4, $s4, %lo(g_resource_default_pair_selections)
     /* 2B83C 8003B03C 1080113C */  lui        $s1, %hi(D_80101EC8 + 0x14)
     /* 2B840 8003B040 DC1E3126 */  addiu      $s1, $s1, %lo(D_80101EC8 + 0x14)
   .L8003B044:

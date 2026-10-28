@@ -16,7 +16,7 @@ extern void AddPrim(void *, void *);
 
 extern u8 g_entry_menu_last_grid_pass_second_slot_entry_value;
 extern u8 g_entry_menu_last_grid_pass_extra_slot_count;
-extern RECT D_800A32EC;
+extern RECT g_entry_menu_vram_copy_source_rect;
 
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
@@ -31,7 +31,7 @@ static s32 g_entry_menu_pressed_buttons;
 static s16 g_entry_menu_darken_level;
 static s16 g_entry_menu_grid_phase_extra_slot_count;
 static s16 g_entry_menu_row_phase_extra_slot_count;
-static s16 D_800A355C;
+static s16 g_entry_menu_post_darken_frame_count;
 static Unk800A3560Slots g_entry_menu_slot_records;
 static Unk8009BD24Block *g_entry_menu_working_record_ptr;
 static s32 g_entry_menu_arena_cursor;
@@ -44,7 +44,7 @@ static s16 g_entry_menu_next_handler_index;
 static s16 g_entry_menu_grid_column_cursors[2];
 static s16 g_entry_menu_grid_row_cursors[2];
 static s16 g_entry_menu_row_phase_choice_cursors[2];
-static s16 D_800A3594[2];
+static s16 g_entry_menu_row_cursor_y_slots[2];
 static s16 g_entry_menu_choice_grid_column;
 static s16 g_entry_menu_choice_grid_row;
 static s32 g_entry_menu_exit_result;
@@ -150,7 +150,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
                                           .value] |= 4;
     }
 
-    rect = D_800A32EC;
+    rect = g_entry_menu_vram_copy_source_rect;
     g_entry_menu_choice_grid_row = 0;
     g_entry_menu_choice_grid_column = 0;
     DrawSync(0);
@@ -470,7 +470,7 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
         return;
     }
 
-    if (D_800A355C >= 0x79) {
+    if (g_entry_menu_post_darken_frame_count >= 0x79) {
         g_entry_menu_next_handler_index = 3;
     }
     s.scale_x = 0x100;
@@ -550,7 +550,7 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
             snd_QueueSound(8, 0x7F, 0x7F);
         }
     }
-    D_800A355C++;
+    g_entry_menu_post_darken_frame_count++;
 }
 
 void gpu_DrawMirroredQuadsWithSlideDrawAreaAndOffset(
@@ -1347,7 +1347,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                     snd_QueueSound(0, 0x7F, 0x7F);
                     g_entry_menu_row_phase_choice_cursors[i]--;
                 }
-                D_800A3594[i] = i;
+                g_entry_menu_row_cursor_y_slots[i] = i;
                 if (g_entry_menu_fight_mode == 3) {
                     s32 sel;
                     s32 id;
@@ -1452,7 +1452,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                 cells = s->header->cells;
                 s->table = cells;
                 s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x85;
-                s->y = 0xB6 - (D_800A3594[i] << 5);
+                s->y = 0xB6 - (g_entry_menu_row_cursor_y_slots[i] << 5);
                 s->ot_idx = 7;
                 s->sprt_out = draw_context->primitive_cursors.sprite_prims;
                 draw_context->primitive_cursors.sprite_prims =
@@ -1482,7 +1482,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
                      12) -
                     0x40;
                 s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x80;
-                s->y = 0xAC - (D_800A3594[i] << 5);
+                s->y = 0xAC - (g_entry_menu_row_cursor_y_slots[i] << 5);
                 s->ft4_out =
                     draw_context->primitive_cursors.textured_quad_prims;
                 s->ot_idx = 7;
@@ -1554,7 +1554,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             g_entry_menu_slide_phase != 3) {
             s->table = cells;
             s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x80;
-            s->y = 0xAC - (D_800A3594[i] << 5);
+            s->y = 0xAC - (g_entry_menu_row_cursor_y_slots[i] << 5);
             if (g_entry_menu_fight_mode == 2 &&
                 !(g_entry_menu_working_record_ptr->unk14_17) && i == 1) {
                 if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0]
@@ -1587,7 +1587,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
             g_entry_menu_slide_phase = 0x101;
             g_entry_menu_next_handler_index = 2;
             g_entry_menu_darken_level = 1;
-            D_800A355C = 0;
+            g_entry_menu_post_darken_frame_count = 0;
         }
     }
 }
@@ -2316,5 +2316,5 @@ void gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(
 /* Q65: this file's initialized small data (.sdata), in address order. */
 u8 g_entry_menu_last_grid_pass_second_slot_entry_value = 0;
 u8 g_entry_menu_last_grid_pass_extra_slot_count = 0;
-RECT D_800A32EC = {144, 507, 48, 1};
+RECT g_entry_menu_vram_copy_source_rect = {144, 507, 48, 1};
 RECT g_entry_menu_entry_upload_rect = {896, 384, 64, 64};

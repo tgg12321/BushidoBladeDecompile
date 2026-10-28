@@ -1,6 +1,6 @@
 glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
-    /* 247E4 80033FE4 0A80023C */  lui        $v0, %hi(D_800A36F0)
-    /* 247E8 80033FE8 F0364290 */  lbu        $v0, %lo(D_800A36F0)($v0)
+    /* 247E4 80033FE4 0A80023C */  lui        $v0, %hi(g_fight_timer_unlock_bit_newly_set)
+    /* 247E8 80033FE8 F0364290 */  lbu        $v0, %lo(g_fight_timer_unlock_bit_newly_set)($v0)
     /* 247EC 80033FEC 00000000 */  nop
     /* 247F0 80033FF0 0E004010 */  beqz       $v0, .L8003402C
     /* 247F4 80033FF4 00000000 */   nop
@@ -19,8 +19,8 @@ glabel fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank
     /* 24824 80034024 24D00008 */  j          .L80034090
     /* 24828 80034028 12000224 */   addiu     $v0, $zero, 0x12
   .L8003402C:
-    /* 2482C 8003402C 0A80023C */  lui        $v0, %hi(D_800A3781)
-    /* 24830 80034030 81374290 */  lbu        $v0, %lo(D_800A3781)($v0)
+    /* 2482C 8003402C 0A80023C */  lui        $v0, %hi(g_fight_no_restart_unlock_bit_newly_set)
+    /* 24830 80034030 81374290 */  lbu        $v0, %lo(g_fight_no_restart_unlock_bit_newly_set)($v0)
     /* 24834 80034034 00000000 */  nop
     /* 24838 80034038 0E004010 */  beqz       $v0, .L80034074
     /* 2483C 8003403C 00000000 */   nop

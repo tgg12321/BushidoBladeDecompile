@@ -44,8 +44,8 @@ glabel comb_Connect
     /* 2B55C 8003AD5C C6368484 */  lh         $a0, %lo(D_800A36C6)($a0)
     /* 2B560 8003AD60 B7D7000C */  jal        bits_DepositMask3F83F8
     /* 2B564 8003AD64 00000000 */   nop
-    /* 2B568 8003AD68 0A80013C */  lui        $at, %hi(D_800A38E4)
-    /* 2B56C 8003AD6C E43822AC */  sw         $v0, %lo(D_800A38E4)($at)
+    /* 2B568 8003AD68 0A80013C */  lui        $at, %hi(g_comb_received_unlock_mask_bits)
+    /* 2B56C 8003AD6C E43822AC */  sw         $v0, %lo(g_comb_received_unlock_mask_bits)($at)
     /* 2B570 8003AD70 2265000C */  jal        pad_PackSavedButtonMappingLowNibbles
     /* 2B574 8003AD74 00000000 */   nop
     /* 2B578 8003AD78 F80682A7 */  sh         $v0, %gp_rel(g_comb_send_payload)($gp)

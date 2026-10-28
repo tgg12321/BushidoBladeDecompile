@@ -237,12 +237,12 @@ glabel gpu_UnpackGridRecordsNodesAndCellRuns
     /* 2F924 8003F124 044B010C */  jal        func_80052C10
     /* 2F928 8003F128 00000000 */   nop
   .L8003F12C:
-    /* 2F92C 8003F12C 0A80013C */  lui        $at, %hi(D_800A3678)
-    /* 2F930 8003F130 783620A4 */  sh         $zero, %lo(D_800A3678)($at)
-    /* 2F934 8003F134 0A80013C */  lui        $at, %hi(D_800A3678 + 0x2)
-    /* 2F938 8003F138 7A3620A4 */  sh         $zero, %lo(D_800A3678 + 0x2)($at)
-    /* 2F93C 8003F13C 0A80013C */  lui        $at, %hi(D_800A3678 + 0x4)
-    /* 2F940 8003F140 7C3620A4 */  sh         $zero, %lo(D_800A3678 + 0x4)($at)
+    /* 2F92C 8003F12C 0A80013C */  lui        $at, %hi(g_gpu_flush_rotation_angles)
+    /* 2F930 8003F130 783620A4 */  sh         $zero, %lo(g_gpu_flush_rotation_angles)($at)
+    /* 2F934 8003F134 0A80013C */  lui        $at, %hi(g_gpu_flush_rotation_angles + 0x2)
+    /* 2F938 8003F138 7A3620A4 */  sh         $zero, %lo(g_gpu_flush_rotation_angles + 0x2)($at)
+    /* 2F93C 8003F13C 0A80013C */  lui        $at, %hi(g_gpu_flush_rotation_angles + 0x4)
+    /* 2F940 8003F140 7C3620A4 */  sh         $zero, %lo(g_gpu_flush_rotation_angles + 0x4)($at)
     /* 2F944 8003F144 4400BF8F */  lw         $ra, 0x44($sp)
     /* 2F948 8003F148 4000B48F */  lw         $s4, 0x40($sp)
     /* 2F94C 8003F14C 3C00B38F */  lw         $s3, 0x3C($sp)

@@ -89,7 +89,7 @@ s32 comb_Connect(void) {
     comb_ExchangeEmptyPad();
     VSync(1);
     comb_ExchangeEmptyPad();
-    D_800A38E4 = bits_DepositMask3F83F8(D_800A36C6);
+    g_comb_received_unlock_mask_bits = bits_DepositMask3F83F8(D_800A36C6);
     g_comb_send_payload = pad_PackSavedButtonMappingLowNibbles();
     VSync(1);
     comb_ExchangeEmptyPad();
@@ -188,8 +188,9 @@ void fight_RequestBothFightersEntriesAndReloadOnChange(void) {
         resource_RequestEntryWithLinkedEntriesAndLatchCategory(
             D_80101EC8[i].weapon_entry_id);
         resource_SetPairSelectionSlotWithBoundChecks(
-            i, D_8008E5CC[D_80101EC8[i].character_data_index]
-                         [D_80101EC8[i].weapon_id]);
+            i,
+            g_resource_default_pair_selections
+                [D_80101EC8[i].character_data_index][D_80101EC8[i].weapon_id]);
         if (D_80101EC8[i].wielded_object_kind != -1) {
             resource_RequestEntryWithLinkedEntriesAndLatchCategory(
                 g_resource_kind_entry_ids[D_80101EC8[i].wielded_object_kind]);
@@ -215,12 +216,16 @@ void fight_RequestOneFighterEntriesAndReloadOnChange(s32 arg0) {
 
     if (g_fight_mode_selector == 5) {
         resource_SetPairSelectionSlotWithBoundChecks(
-            arg0, D_8008E6A4[D_80101EC8[arg0].character_data_index]
-                            [D_80101EC8[arg0].weapon_id]);
+            arg0,
+            g_resource_alternate_pair_selections[D_80101EC8[arg0]
+                                                     .character_data_index]
+                                                [D_80101EC8[arg0].weapon_id]);
     } else {
         resource_SetPairSelectionSlotWithBoundChecks(
-            arg0, D_8008E5CC[D_80101EC8[arg0].character_data_index]
-                            [D_80101EC8[arg0].weapon_id]);
+            arg0,
+            g_resource_default_pair_selections[D_80101EC8[arg0]
+                                                   .character_data_index]
+                                              [D_80101EC8[arg0].weapon_id]);
     }
     resource_RankRequestedEntriesAndReloadOnChange(addr);
 }
@@ -231,15 +236,16 @@ void fight_InitCommandStream(s32 arg0) {
     D_800A3894 = 0;
     D_800A385C = 0;
     g_fight_saved_first_fighter_selection = 0xFF;
-    D_800A3915 = 0xFF;
-    D_800A37C6 = 1;
+    g_fight_displaced_first_fighter_selection = 0xFF;
+    g_fight_skip_first_defeats_left_expiry = 1;
     g_fight_stage_command_count = 0;
-    D_800A37A4 = 0;
+    g_fight_pending_unlock_mask_bits = 0;
     g_fight_command_stream_cursor = g_fight_command_streams[arg0];
     eff_Init();
     fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
     fight_FillMissingConfigInitFighterAndLoadObject(0);
-    D_800A376C = g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
+    g_fight_playback_file_base_index =
+        g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
 }
 
 void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
@@ -263,8 +269,8 @@ void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0F
     u8 v_3836 = g_fight_saved_first_fighter_selection;
     u8 v_36C8 = g_fight_saved_bone_group_tim_requests;
     g_fight_saved_first_fighter_selection = 0xFF;
-    D_800A3915 = v_277C;
-    D_800A36F4 = v_376A;
+    g_fight_displaced_first_fighter_selection = v_277C;
+    g_fight_displaced_bone_group_tim_requests = v_376A;
     g_fight_config.unk_4[0] = v_3836;
     g_fight_bone_group_tim_requests = v_36C8;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, v_36C8);
@@ -365,8 +371,9 @@ void fight_RunCommandStream(void) {
             g_fight_command_stream_cursor = p + 2;
             var_1[0] = byte0;
             var_1[2] = p[1];
-            if ((s8)byte0 == D_800A3915) {
-                slot_RequestTimGroupsAndMarkReloadOnChange(1, D_800A36F4);
+            if ((s8)byte0 == g_fight_displaced_first_fighter_selection) {
+                slot_RequestTimGroupsAndMarkReloadOnChange(
+                    1, g_fight_displaced_bone_group_tim_requests);
             }
             fight_FillMissingConfigInitFighterAndLoadObject(1);
             fight_RequestBothFightersEntriesAndReloadOnChange();
@@ -544,8 +551,8 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
         a0_arg = 0x32;
     D_800A390F = 0;
     motion_StartPlaybackAtIndexedBasePlusOffset(
-        D_800A376C, g_fight_active_playback_descriptor[0], 0, a3_arg, a0_arg,
-        -1, -1, var_4);
+        g_fight_playback_file_base_index, g_fight_active_playback_descriptor[0],
+        0, a3_arg, a0_arg, -1, -1, var_4);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     if (g_fight_active_playback_descriptor[3] & 0x40)
@@ -646,8 +653,8 @@ void fight_UpdateScrollingSpriteDisplayAndMergeBitFlags(void) {
     if (go) {
         cdrom_PauseAndWait();
         old = g_saved_record.unlock_mask;
-        if ((old | D_800A37A4) != old) {
-            g_saved_record.unlock_mask = old | D_800A37A4;
+        if ((old | g_fight_pending_unlock_mask_bits) != old) {
+            g_saved_record.unlock_mask = old | g_fight_pending_unlock_mask_bits;
             changed = 1;
         }
         if (D_80101EC8[0].character_data_index == 0 ||
@@ -758,7 +765,8 @@ void fight_UpdateSplitWipeImageAndPlaybackPresentation(void) {
         gpu_DrawImageAndAdvanceSplitWipe((s32)g_prim_buf_cursor, 1);
     if (motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush() == 0 ||
         (g_pad_state.pressed & 0x400040) != 0) {
-        if ((u32)(g_fight_presentation_index - 6) < 2u && D_800A3781 != 0) {
+        if ((u32)(g_fight_presentation_index - 6) < 2u &&
+            g_fight_no_restart_unlock_bit_newly_set != 0) {
             g_fight_presentation_index =
                 g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0
                     ? 9
@@ -1049,7 +1057,7 @@ void fight_UpdateRotatingViewDecimalPresentation(void) {
     }
 }
 
-extern s32 D_800A3818;
+extern s32 g_fight_followup_playback_start_pair;
 
 void fight_InitNearestStartPairPlayback(void) {
     s32 s0;
@@ -1084,7 +1092,7 @@ void fight_InitNearestStartPairPlayback(void) {
             addr = &D_80101EC8[1].world_pos;
         }
         result = fight_FindNearestStartPair(addr);
-        D_800A3818 = result;
+        g_fight_followup_playback_start_pair = result;
         motion_StartPlaybackAtIndexedBasePlusOffset(
             0x16, s0, result, (s32)D_80101EC8[0].weapon_entry_id,
             (s32)D_80101EC8[1].weapon_entry_id, -1, -1, 0);
@@ -1144,7 +1152,7 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
         snd_QueueSound(0x71, 0x7F, 0x7F);
     }
     if (g_handler_frame_counter == D_8008EB0C) {
-        fight_GetStartPosition(0, vec, D_800A3818);
+        fight_GetStartPosition(0, vec, g_fight_followup_playback_start_pair);
         vec[0] += D_8008EB10;
         vec[1] += D_8008EB14;
         vec[2] += D_8008EB18;
@@ -2255,9 +2263,9 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
          * The stub's body ignores its arguments. */
         func_80052C10(g_gpu_grid_cell_run_entry_peak);
     }
-    D_800A3678[0] = 0;
-    D_800A3678[1] = 0;
-    D_800A3678[2] = 0;
+    g_gpu_flush_rotation_angles[0] = 0;
+    g_gpu_flush_rotation_angles[1] = 0;
+    g_gpu_flush_rotation_angles[2] = 0;
 }
 
 /* Merged section (Q65: one original file). */
@@ -3297,4 +3305,4 @@ s32 D_800A322C = 0;
  * blob label */
 s32 g_gpu_grid_cell_run_entry_peak = 0;
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
-s32 D_800A3818;
+s32 g_fight_followup_playback_start_pair;

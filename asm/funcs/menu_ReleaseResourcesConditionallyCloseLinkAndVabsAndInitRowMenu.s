@@ -20,7 +20,7 @@ glabel menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu
     /* 25CC4 800354C4 01000424 */   addiu     $a0, $zero, 0x1
     /* 25CC8 800354C8 1D5B000C */  jal        eff_ClearInitFlag
     /* 25CCC 800354CC 00000000 */   nop
-    /* 25CD0 800354D0 0C018293 */  lbu        $v0, %gp_rel(D_800A31D8)($gp)
+    /* 25CD0 800354D0 0C018293 */  lbu        $v0, %gp_rel(g_menu_release_closes_non_common_vabs)($gp)
     /* 25CD4 800354D4 00000000 */  nop
     /* 25CD8 800354D8 07004010 */  beqz       $v0, .L800354F8
     /* 25CDC 800354DC 01000224 */   addiu     $v0, $zero, 0x1
@@ -31,7 +31,7 @@ glabel menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu
     /* 25CF0 800354F0 0E3922A0 */  sb         $v0, %lo(g_fight_loaded_stage_index)($at)
     /* 25CF4 800354F4 01000224 */  addiu      $v0, $zero, 0x1
   .L800354F8:
-    /* 25CF8 800354F8 0C0182A3 */  sb         $v0, %gp_rel(D_800A31D8)($gp)
+    /* 25CF8 800354F8 0C0182A3 */  sb         $v0, %gp_rel(g_menu_release_closes_non_common_vabs)($gp)
     /* 25CFC 800354FC 0ED5000C */  jal        menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows
     /* 25D00 80035500 00000000 */   nop
     /* 25D04 80035504 1180043C */  lui        $a0, (0x80118800 >> 16)

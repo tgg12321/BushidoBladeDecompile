@@ -1137,8 +1137,8 @@ glabel fighter_BuildCpuPad
     /* 47364 80056B64 60064230 */  andi       $v0, $v0, 0x660
     /* 47368 80056B68 1B004010 */  beqz       $v0, .L80056BD8
     /* 4736C 80056B6C 00000000 */   nop
-    /* 47370 80056B70 0A80053C */  lui        $a1, %hi(D_800A3258)
-    /* 47374 80056B74 5832A524 */  addiu      $a1, $a1, %lo(D_800A3258)
+    /* 47370 80056B70 0A80053C */  lui        $a1, %hi(g_cpu_pad_metadata_nibble_dpad_bits)
+    /* 47374 80056B74 5832A524 */  addiu      $a1, $a1, %lo(g_cpu_pad_metadata_nibble_dpad_bits)
     /* 47378 80056B78 0300A288 */  lwl        $v0, 0x3($a1)
     /* 4737C 80056B7C 0000A298 */  lwr        $v0, 0x0($a1)
     /* 47380 80056B80 00000000 */  nop

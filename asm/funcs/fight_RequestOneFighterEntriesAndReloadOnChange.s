@@ -31,8 +31,8 @@ glabel fight_RequestOneFighterEntriesAndReloadOnChange
     /* 2B980 8003B180 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* 2B984 8003B184 21083000 */  addu       $at, $at, $s0
     /* 2B988 8003B188 D21E2384 */  lh         $v1, %lo(D_80101EC8 + 0xA)($at)
-    /* 2B98C 8003B18C 0980043C */  lui        $a0, %hi(D_8008E6A4)
-    /* 2B990 8003B190 A4E68424 */  addiu      $a0, $a0, %lo(D_8008E6A4)
+    /* 2B98C 8003B18C 0980043C */  lui        $a0, %hi(g_resource_alternate_pair_selections)
+    /* 2B990 8003B190 A4E68424 */  addiu      $a0, $a0, %lo(g_resource_alternate_pair_selections)
     /* 2B994 8003B194 40100300 */  sll        $v0, $v1, 1
     /* 2B998 8003B198 21104300 */  addu       $v0, $v0, $v1
     /* 2B99C 8003B19C 1080013C */  lui        $at, %hi(D_80101EC8 + 0xE)
@@ -41,8 +41,8 @@ glabel fight_RequestOneFighterEntriesAndReloadOnChange
     /* 2B9A8 8003B1A8 75EC0008 */  j          .L8003B1D4
     /* 2B9AC 8003B1AC 40100200 */   sll       $v0, $v0, 1
   .L8003B1B0:
-    /* 2B9B0 8003B1B0 0980043C */  lui        $a0, %hi(D_8008E5CC)
-    /* 2B9B4 8003B1B4 CCE58424 */  addiu      $a0, $a0, %lo(D_8008E5CC)
+    /* 2B9B0 8003B1B0 0980043C */  lui        $a0, %hi(g_resource_default_pair_selections)
+    /* 2B9B4 8003B1B4 CCE58424 */  addiu      $a0, $a0, %lo(g_resource_default_pair_selections)
     /* 2B9B8 8003B1B8 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* 2B9BC 8003B1BC 21083000 */  addu       $at, $at, $s0
     /* 2B9C0 8003B1C0 D21E2284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($at)

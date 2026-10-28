@@ -4,8 +4,8 @@ glabel gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth
     /* 7294 80016A94 21888000 */  addu       $s1, $a0, $zero
     /* 7298 80016A98 3000BFAF */  sw         $ra, 0x30($sp)
     /* 729C 80016A9C 2800B0AF */  sw         $s0, 0x28($sp)
-    /* 72A0 80016AA0 0A80053C */  lui        $a1, %hi(D_800A30D4)
-    /* 72A4 80016AA4 D430A524 */  addiu      $a1, $a1, %lo(D_800A30D4)
+    /* 72A0 80016AA0 0A80053C */  lui        $a1, %hi(g_gpu_cd_file_image_rect)
+    /* 72A4 80016AA4 D430A524 */  addiu      $a1, $a1, %lo(g_gpu_cd_file_image_rect)
     /* 72A8 80016AA8 0300A288 */  lwl        $v0, 0x3($a1)
     /* 72AC 80016AAC 0000A298 */  lwr        $v0, 0x0($a1)
     /* 72B0 80016AB0 0700A388 */  lwl        $v1, 0x7($a1)

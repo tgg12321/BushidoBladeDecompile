@@ -244,9 +244,9 @@ glabel menu_UpdateRowCursors
     /* 61AFC 800712FC 40801200 */  sll        $s0, $s2, 1
     /* 61B00 80071300 F004838F */  lw         $v1, %gp_rel(g_entry_menu_fight_mode)($gp)
     /* 61B04 80071304 03000224 */  addiu      $v0, $zero, 0x3
-    /* 61B08 80071308 0A80013C */  lui        $at, %hi(D_800A3594)
+    /* 61B08 80071308 0A80013C */  lui        $at, %hi(g_entry_menu_row_cursor_y_slots)
     /* 61B0C 8007130C 21083000 */  addu       $at, $at, $s0
-    /* 61B10 80071310 943533A4 */  sh         $s3, %lo(D_800A3594)($at)
+    /* 61B10 80071310 943533A4 */  sh         $s3, %lo(g_entry_menu_row_cursor_y_slots)($at)
     /* 61B14 80071314 1A006214 */  bne        $v1, $v0, .L80071380
     /* 61B18 80071318 00141500 */   sll       $v0, $s5, 16
     /* 61B1C 8007131C 01000424 */  addiu      $a0, $zero, 0x1
@@ -471,9 +471,9 @@ glabel menu_UpdateRowCursors
     /* 61E54 80071654 80110200 */  sll        $v0, $v0, 6
     /* 61E58 80071658 85004224 */  addiu      $v0, $v0, 0x85
     /* 61E5C 8007165C 180022AE */  sw         $v0, 0x18($s1)
-    /* 61E60 80071660 0A80013C */  lui        $at, %hi(D_800A3594)
+    /* 61E60 80071660 0A80013C */  lui        $at, %hi(g_entry_menu_row_cursor_y_slots)
     /* 61E64 80071664 21082500 */  addu       $at, $at, $a1
-    /* 61E68 80071668 94352384 */  lh         $v1, %lo(D_800A3594)($at)
+    /* 61E68 80071668 94352384 */  lh         $v1, %lo(g_entry_menu_row_cursor_y_slots)($at)
     /* 61E6C 8007166C 07000224 */  addiu      $v0, $zero, 0x7
     /* 61E70 80071670 140022AE */  sw         $v0, 0x14($s1)
     /* 61E74 80071674 B6000224 */  addiu      $v0, $zero, 0xB6
@@ -558,9 +558,9 @@ glabel menu_UpdateRowCursors
     /* 61F9C 8007179C 80110200 */  sll        $v0, $v0, 6
     /* 61FA0 800717A0 80004224 */  addiu      $v0, $v0, 0x80
     /* 61FA4 800717A4 180022AE */  sw         $v0, 0x18($s1)
-    /* 61FA8 800717A8 0A80013C */  lui        $at, %hi(D_800A3594)
+    /* 61FA8 800717A8 0A80013C */  lui        $at, %hi(g_entry_menu_row_cursor_y_slots)
     /* 61FAC 800717AC 21083000 */  addu       $at, $at, $s0
-    /* 61FB0 800717B0 94352384 */  lh         $v1, %lo(D_800A3594)($at)
+    /* 61FB0 800717B0 94352384 */  lh         $v1, %lo(g_entry_menu_row_cursor_y_slots)($at)
     /* 61FB4 800717B4 AC000224 */  addiu      $v0, $zero, 0xAC
     /* 61FB8 800717B8 40190300 */  sll        $v1, $v1, 5
     /* 61FBC 800717BC 23104300 */  subu       $v0, $v0, $v1
@@ -733,9 +733,9 @@ glabel menu_UpdateRowCursors
     /* 62234 80071A34 80110200 */  sll        $v0, $v0, 6
     /* 62238 80071A38 80004224 */  addiu      $v0, $v0, 0x80
     /* 6223C 80071A3C 180022AE */  sw         $v0, 0x18($s1)
-    /* 62240 80071A40 0A80013C */  lui        $at, %hi(D_800A3594)
+    /* 62240 80071A40 0A80013C */  lui        $at, %hi(g_entry_menu_row_cursor_y_slots)
     /* 62244 80071A44 21082400 */  addu       $at, $at, $a0
-    /* 62248 80071A48 94352384 */  lh         $v1, %lo(D_800A3594)($at)
+    /* 62248 80071A48 94352384 */  lh         $v1, %lo(g_entry_menu_row_cursor_y_slots)($at)
     /* 6224C 80071A4C AC000224 */  addiu      $v0, $zero, 0xAC
     /* 62250 80071A50 40190300 */  sll        $v1, $v1, 5
     /* 62254 80071A54 23104300 */  subu       $v0, $v0, $v1
@@ -848,7 +848,7 @@ glabel menu_UpdateRowCursors
     /* 623DC 80071BDC B80482A7 */  sh         $v0, %gp_rel(g_entry_menu_next_handler_index)($gp)
     /* 623E0 80071BE0 01000224 */  addiu      $v0, $zero, 0x1
     /* 623E4 80071BE4 840482A7 */  sh         $v0, %gp_rel(g_entry_menu_darken_level)($gp)
-    /* 623E8 80071BE8 900480A7 */  sh         $zero, %gp_rel(D_800A355C)($gp)
+    /* 623E8 80071BE8 900480A7 */  sh         $zero, %gp_rel(g_entry_menu_post_darken_frame_count)($gp)
   .L80071BEC:
     /* 623EC 80071BEC 6C00BF8F */  lw         $ra, 0x6C($sp)
     /* 623F0 80071BF0 6800BE8F */  lw         $fp, 0x68($sp)

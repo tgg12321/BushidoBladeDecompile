@@ -55,7 +55,7 @@ glabel camera_UpdateReplayView
     /* C01C 8001B81C 0800A284 */  lh         $v0, 0x8($a1)
     /* C020 8001B820 00000000 */  nop
     /* C024 8001B824 18000201 */  mult       $t0, $v0
-    /* C028 8001B828 440280A7 */  sh         $zero, %gp_rel(D_800A3310)($gp)
+    /* C028 8001B828 440280A7 */  sh         $zero, %gp_rel(g_camera_replay_low_probe_gap_count)($gp)
     /* C02C 8001B82C 80181100 */  sll        $v1, $s1, 2
     /* C030 8001B830 21187100 */  addu       $v1, $v1, $s1
     /* C034 8001B834 C0180300 */  sll        $v1, $v1, 3
@@ -98,10 +98,10 @@ glabel camera_UpdateReplayView
     /* C0C4 8001B8C4 C8004228 */  slti       $v0, $v0, 0xC8
     /* C0C8 8001B8C8 05004010 */  beqz       $v0, .L8001B8E0
     /* C0CC 8001B8CC 00000000 */   nop
-    /* C0D0 8001B8D0 44028297 */  lhu        $v0, %gp_rel(D_800A3310)($gp)
+    /* C0D0 8001B8D0 44028297 */  lhu        $v0, %gp_rel(g_camera_replay_low_probe_gap_count)($gp)
     /* C0D4 8001B8D4 00000000 */  nop
     /* C0D8 8001B8D8 01004224 */  addiu      $v0, $v0, 0x1
-    /* C0DC 8001B8DC 440282A7 */  sh         $v0, %gp_rel(D_800A3310)($gp)
+    /* C0DC 8001B8DC 440282A7 */  sh         $v0, %gp_rel(g_camera_replay_low_probe_gap_count)($gp)
   .L8001B8E0:
     /* C0E0 8001B8E0 0400A284 */  lh         $v0, 0x4($a1)
     /* C0E4 8001B8E4 00000000 */  nop
@@ -114,7 +114,7 @@ glabel camera_UpdateReplayView
     /* C100 8001B900 12500000 */  mflo       $t2
     /* C104 8001B904 21106A00 */  addu       $v0, $v1, $t2
     /* C108 8001B908 031B0200 */  sra        $v1, $v0, 12
-    /* C10C 8001B90C 44028287 */  lh         $v0, %gp_rel(D_800A3310)($gp)
+    /* C10C 8001B90C 44028287 */  lh         $v0, %gp_rel(g_camera_replay_low_probe_gap_count)($gp)
     /* C110 8001B910 23186400 */  subu       $v1, $v1, $a0
     /* C114 8001B914 0B004228 */  slti       $v0, $v0, 0xB
     /* C118 8001B918 02006104 */  bgez       $v1, .L8001B924

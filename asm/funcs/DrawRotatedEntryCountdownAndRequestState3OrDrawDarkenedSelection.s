@@ -39,7 +39,7 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5F98C 8006F18C 3EBD0108 */  j          .L8006F4F8
     /* 5F990 8006F190 00000000 */   nop
   .L8006F194:
-    /* 5F994 8006F194 90048287 */  lh         $v0, %gp_rel(D_800A355C)($gp)
+    /* 5F994 8006F194 90048287 */  lh         $v0, %gp_rel(g_entry_menu_post_darken_frame_count)($gp)
     /* 5F998 8006F198 00000000 */  nop
     /* 5F99C 8006F19C 79004228 */  slti       $v0, $v0, 0x79
     /* 5F9A0 8006F1A0 02004014 */  bnez       $v0, .L8006F1AC
@@ -266,10 +266,10 @@ glabel DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection
     /* 5FCE0 8006F4E0 48FF4014 */  bnez       $v0, .L8006F204
     /* 5FCE4 8006F4E4 03007326 */   addiu     $s3, $s3, 0x3
   .L8006F4E8:
-    /* 5FCE8 8006F4E8 90048297 */  lhu        $v0, %gp_rel(D_800A355C)($gp)
+    /* 5FCE8 8006F4E8 90048297 */  lhu        $v0, %gp_rel(g_entry_menu_post_darken_frame_count)($gp)
     /* 5FCEC 8006F4EC 00000000 */  nop
     /* 5FCF0 8006F4F0 01004224 */  addiu      $v0, $v0, 0x1
-    /* 5FCF4 8006F4F4 900482A7 */  sh         $v0, %gp_rel(D_800A355C)($gp)
+    /* 5FCF4 8006F4F4 900482A7 */  sh         $v0, %gp_rel(g_entry_menu_post_darken_frame_count)($gp)
   .L8006F4F8:
     /* 5FCF8 8006F4F8 7800BF8F */  lw         $ra, 0x78($sp)
     /* 5FCFC 8006F4FC 7400B78F */  lw         $s7, 0x74($sp)

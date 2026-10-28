@@ -55,9 +55,9 @@ glabel fighter_BuildCpuRoutePadWithSurfaceProbe
     /* 47960 80057160 00000000 */  nop
     /* 47964 80057164 07004230 */  andi       $v0, $v0, 0x7
     /* 47968 80057168 80100200 */  sll        $v0, $v0, 2
-    /* 4796C 8005716C 0A80013C */  lui        $at, %hi(D_8009AA50)
+    /* 4796C 8005716C 0A80013C */  lui        $at, %hi(g_cpu_route_sector_dpad_masks)
     /* 47970 80057170 21082200 */  addu       $at, $at, $v0
-    /* 47974 80057174 50AA308C */  lw         $s0, %lo(D_8009AA50)($at)
+    /* 47974 80057174 50AA308C */  lw         $s0, %lo(g_cpu_route_sector_dpad_masks)($at)
     /* 47978 80057178 01000224 */  addiu      $v0, $zero, 0x1
     /* 4797C 8005717C 02006216 */  bne        $s3, $v0, .L80057188
     /* 47980 80057180 21204002 */   addu      $a0, $s2, $zero

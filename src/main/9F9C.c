@@ -84,7 +84,7 @@ void motion_InitStream(s32 decoder_index, u32 *ptr) {
     base->ctr = 0;
 }
 
-extern s32 D_800A30EC;
+extern s32 g_motion_decode_skip_code_copy;
 
 /* Decode entry `frame_index` of g_motion_decoders[decoder_index]'s stream into
    `out` (33 words). The table at stream + 0x70 holds a 24-bit offset per group
@@ -132,7 +132,7 @@ void motion_DecodeFrame(
     group_index = frame_index >> 3;
     rec = &g_motion_decoders[decoder_index];
     tbl = (u8 *)rec->stream + 0x70;
-    if (D_800A30EC == 0) {
+    if (g_motion_decode_skip_code_copy == 0) {
         COPY33(work + 0x84, rec->code);
     }
     var_9 = rec->ctr;
@@ -906,7 +906,7 @@ void func_8001B6F4(void) {
 }
 
 /* Q65: this file's statics (.sbss), in address order. */
-static u16 D_800A3310;
+static u16 g_camera_replay_low_probe_gap_count;
 
 void camera_UpdateReplayView(
     Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
@@ -930,7 +930,7 @@ void camera_UpdateReplayView(
         dst->focus_point.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
         dst->focus_point.y =
             (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
-        D_800A3310 = 0;
+        g_camera_replay_low_probe_gap_count = 0;
         dst->focus_point.z = ((frac * a->h8) + (inv_frac * b->h8)) >> 12;
         dst->camera_angles.vy = val;
         dst->camera_angles.vx = 0x80;
@@ -941,9 +941,9 @@ void camera_UpdateReplayView(
     if ((base->ground_probe_points[0].y + base->ground_probe_points[1].y) / 2 -
             base->bone_hit_point_0.y <
         0xC8) {
-        D_800A3310 += 1;
+        g_camera_replay_low_probe_gap_count += 1;
     }
-    var_8 = ((s16)D_800A3310) >= 0xB;
+    var_8 = ((s16)g_camera_replay_low_probe_gap_count) >= 0xB;
     cur = dst->focus_point.x;
     t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
     dx = t - cur;
@@ -1360,8 +1360,8 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         if (g_fight_second_fighter_defeats_left != 0) {
             if (--g_fight_second_fighter_defeats_left == 0) {
                 snd_StopAllVoices();
-                if (D_800A37C6 != 0) {
-                    D_800A37C6 = 0;
+                if (g_fight_skip_first_defeats_left_expiry != 0) {
+                    g_fight_skip_first_defeats_left_expiry = 0;
                     break;
                 }
                 if (D_800A3894 != 0) {
@@ -1929,12 +1929,14 @@ void fight_Init(void) {
                 if ((g_fight_mode_selector == 2 && D_800A389A == 0) ||
                     g_fight_mode_selector == 5) {
                     resource_SetPairSelectionSlotWithBoundChecks(
-                        i, D_8008E6A4[D_80101EC8[i].character_data_index]
-                                     [D_80101EC8[i].weapon_id]);
+                        i, g_resource_alternate_pair_selections
+                               [D_80101EC8[i].character_data_index]
+                               [D_80101EC8[i].weapon_id]);
                 } else {
                     resource_SetPairSelectionSlotWithBoundChecks(
-                        i, D_8008E5CC[D_80101EC8[i].character_data_index]
-                                     [D_80101EC8[i].weapon_id]);
+                        i, g_resource_default_pair_selections
+                               [D_80101EC8[i].character_data_index]
+                               [D_80101EC8[i].weapon_id]);
                 }
             }
             if (D_80101EC8[i].wielded_object_kind != -1) {
@@ -2814,7 +2816,7 @@ void fight_UpdatePairedMoves(void) {
 
     if (g_fight_paired_move_start_pending != 0) {
         g_fight_paired_move_start_pending = 0;
-        D_800A38E8 = 0xFF;
+        g_fight_paired_move_event_min_frame = 0xFF;
         if (D_80101EC8[0].is_defeated != 0) {
             return;
         }
@@ -2894,7 +2896,7 @@ void fight_UpdatePairedMoves(void) {
         g_fight_paired_move_start_pending = 0;
         g_fight_missing_support_fighter_index = 0xFF;
         g_fight_paired_move_separation = data[2] * 20;
-        D_800A38E8 = data[3] & 0x7F;
+        g_fight_paired_move_event_min_frame = data[3] & 0x7F;
         paired_script =
             motion_ResolveMoveData(rec, ent->id, &rec->move_is_common);
         fighter_StartMoveScript(i, paired_script, rec->move_is_common);
@@ -5808,7 +5810,7 @@ skip_62:
 const u32 D_80010428[1] = {0x00000000};
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-s32 D_800A30EC = 0;
+s32 g_motion_decode_skip_code_copy = 0;
 u8 g_camera_eye_blocked_flags[4] = {0, 0, 0, 0};
 s32 g_camera_pitch_search_steps[2] = {0, 0};
 s8 D_800A30FC = -1;

@@ -197,8 +197,8 @@ glabel InitDisplayStateLoadPackAndSetEntryFlags
     /* 5F018 8006E818 21082300 */  addu       $at, $at, $v1
     /* 5F01C 8006E81C 7CBC22A0 */  sb         $v0, %lo(g_entry_menu_entry_flags)($at)
   .L8006E820:
-    /* 5F020 8006E820 0A80053C */  lui        $a1, %hi(D_800A32EC)
-    /* 5F024 8006E824 EC32A524 */  addiu      $a1, $a1, %lo(D_800A32EC)
+    /* 5F020 8006E820 0A80053C */  lui        $a1, %hi(g_entry_menu_vram_copy_source_rect)
+    /* 5F024 8006E824 EC32A524 */  addiu      $a1, $a1, %lo(g_entry_menu_vram_copy_source_rect)
     /* 5F028 8006E828 0300A288 */  lwl        $v0, 0x3($a1)
     /* 5F02C 8006E82C 0000A298 */  lwr        $v0, 0x0($a1)
     /* 5F030 8006E830 0700A388 */  lwl        $v1, 0x7($a1)

@@ -8,10 +8,10 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 2460C 80033E0C 1000BFAF */   sw        $ra, 0x10($sp)
     /* 24610 80033E10 0A80023C */  lui        $v0, %hi(g_fight_timer_frames)
     /* 24614 80033E14 5838428C */  lw         $v0, %lo(g_fight_timer_frames)($v0)
-    /* 24618 80033E18 0A80013C */  lui        $at, %hi(D_800A36F0)
-    /* 2461C 80033E1C F03620A0 */  sb         $zero, %lo(D_800A36F0)($at)
-    /* 24620 80033E20 0A80013C */  lui        $at, %hi(D_800A3781)
-    /* 24624 80033E24 813720A0 */  sb         $zero, %lo(D_800A3781)($at)
+    /* 24618 80033E18 0A80013C */  lui        $at, %hi(g_fight_timer_unlock_bit_newly_set)
+    /* 2461C 80033E1C F03620A0 */  sb         $zero, %lo(g_fight_timer_unlock_bit_newly_set)($at)
+    /* 24620 80033E20 0A80013C */  lui        $at, %hi(g_fight_no_restart_unlock_bit_newly_set)
+    /* 24624 80033E24 813720A0 */  sb         $zero, %lo(g_fight_no_restart_unlock_bit_newly_set)($at)
     /* 24628 80033E28 79694228 */  slti       $v0, $v0, 0x6979
     /* 2462C 80033E2C 17004010 */  beqz       $v0, .L80033E8C
     /* 24630 80033E30 00000000 */   nop
@@ -35,8 +35,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24674 80033E74 24106500 */  and        $v0, $v1, $a1
     /* 24678 80033E78 0100422C */  sltiu      $v0, $v0, 0x1
     /* 2467C 80033E7C 25186500 */  or         $v1, $v1, $a1
-    /* 24680 80033E80 0A80013C */  lui        $at, %hi(D_800A36F0)
-    /* 24684 80033E84 F03622A0 */  sb         $v0, %lo(D_800A36F0)($at)
+    /* 24680 80033E80 0A80013C */  lui        $at, %hi(g_fight_timer_unlock_bit_newly_set)
+    /* 24684 80033E84 F03622A0 */  sb         $v0, %lo(g_fight_timer_unlock_bit_newly_set)($at)
     /* 24688 80033E88 000083AC */  sw         $v1, 0x0($a0)
   .L80033E8C:
     /* 2468C 80033E8C 0A80023C */  lui        $v0, %hi(g_fight_menu_restart_count)
@@ -64,8 +64,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 246E0 80033EE0 24106500 */  and        $v0, $v1, $a1
     /* 246E4 80033EE4 0100422C */  sltiu      $v0, $v0, 0x1
     /* 246E8 80033EE8 25186500 */  or         $v1, $v1, $a1
-    /* 246EC 80033EEC 0A80013C */  lui        $at, %hi(D_800A3781)
-    /* 246F0 80033EF0 813722A0 */  sb         $v0, %lo(D_800A3781)($at)
+    /* 246EC 80033EEC 0A80013C */  lui        $at, %hi(g_fight_no_restart_unlock_bit_newly_set)
+    /* 246F0 80033EF0 813722A0 */  sb         $v0, %lo(g_fight_no_restart_unlock_bit_newly_set)($at)
     /* 246F4 80033EF4 000083AC */  sw         $v1, 0x0($a0)
   .L80033EF8:
     /* 246F8 80033EF8 4ECF000C */  jal        fight_InsertBestTime

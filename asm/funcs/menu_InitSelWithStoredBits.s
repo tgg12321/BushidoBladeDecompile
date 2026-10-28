@@ -1,6 +1,6 @@
 glabel menu_InitSelWithStoredBits
     /* 68280 80077A80 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 68284 80077A84 1C05868F */  lw         $a2, %gp_rel(D_800A35E8)($gp)
+    /* 68284 80077A84 1C05868F */  lw         $a2, %gp_rel(g_menu_compacted_unlock_mask)($gp)
     /* 68288 80077A88 0A80053C */  lui        $a1, %hi(g_working_record)
     /* 6828C 80077A8C 24BDA524 */  addiu      $a1, $a1, %lo(g_working_record)
     /* 68290 80077A90 1000BFAF */  sw         $ra, 0x10($sp)

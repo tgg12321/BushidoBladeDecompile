@@ -75,13 +75,13 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D1F0 8001C9F0 00000000 */   nop
     /* D1F4 8001C9F4 636D010C */  jal        snd_StopAllVoices
     /* D1F8 8001C9F8 00000000 */   nop
-    /* D1FC 8001C9FC 0A80023C */  lui        $v0, %hi(D_800A37C6)
-    /* D200 8001CA00 C6374290 */  lbu        $v0, %lo(D_800A37C6)($v0)
+    /* D1FC 8001C9FC 0A80023C */  lui        $v0, %hi(g_fight_skip_first_defeats_left_expiry)
+    /* D200 8001CA00 C6374290 */  lbu        $v0, %lo(g_fight_skip_first_defeats_left_expiry)($v0)
     /* D204 8001CA04 00000000 */  nop
     /* D208 8001CA08 05004010 */  beqz       $v0, .L8001CA20
     /* D20C 8001CA0C 04000224 */   addiu     $v0, $zero, 0x4
-    /* D210 8001CA10 0A80013C */  lui        $at, %hi(D_800A37C6)
-    /* D214 8001CA14 C63720A0 */  sb         $zero, %lo(D_800A37C6)($at)
+    /* D210 8001CA10 0A80013C */  lui        $at, %hi(g_fight_skip_first_defeats_left_expiry)
+    /* D214 8001CA14 C63720A0 */  sb         $zero, %lo(g_fight_skip_first_defeats_left_expiry)($at)
     /* D218 8001CA18 42730008 */  j          .L8001CD08
     /* D21C 8001CA1C 00000000 */   nop
   .L8001CA20:

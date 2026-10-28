@@ -4,7 +4,7 @@ glabel memcard_RequestOverwrite
     /* 28FC8 800387C8 02000224 */  addiu      $v0, $zero, 0x2
     /* 28FCC 800387CC FC0682A7 */  sh         $v0, %gp_rel(g_memcard_request_operation)($gp)
     /* 28FD0 800387D0 01000224 */  addiu      $v0, $zero, 0x1
-    /* 28FD4 800387D4 000880A3 */  sb         $zero, %gp_rel(D_800A38CC)($gp)
+    /* 28FD4 800387D4 000880A3 */  sb         $zero, %gp_rel(g_memcard_request_write_started)($gp)
     /* 28FD8 800387D8 480780A7 */  sh         $zero, %gp_rel(g_memcard_request_retry_count)($gp)
     /* 28FDC 800387DC 280182AF */  sw         $v0, %gp_rel(g_memcard_request_state)($gp)
     /* 28FE0 800387E0 0800E003 */  jr         $ra

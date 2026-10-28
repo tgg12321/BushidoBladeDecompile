@@ -378,7 +378,7 @@ glabel menu_UpdateRowMenuAndSubflows
     /* 2658C 80035D8C 08000224 */  addiu      $v0, $zero, 0x8
     /* 26590 80035D90 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 26594 80035D94 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
-    /* 26598 80035D98 0C0180A3 */  sb         $zero, %gp_rel(D_800A31D8)($gp)
+    /* 26598 80035D98 0C0180A3 */  sb         $zero, %gp_rel(g_menu_release_closes_non_common_vabs)($gp)
   jlabel .L80035D9C
     /* 2659C 80035D9C 0A80033C */  lui        $v1, %hi(g_main_loop_handler_index)
     /* 265A0 80035DA0 34386384 */  lh         $v1, %lo(g_main_loop_handler_index)($v1)

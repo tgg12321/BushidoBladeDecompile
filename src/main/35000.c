@@ -619,7 +619,7 @@ void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 a1) {
     }
 }
 
-extern s16 D_800993FC[];
+extern s16 g_resource_entry_texture_groups[];
 extern void ndata_ReadIndexInRangeSelectedByFlag(s32, s32, s32);
 extern void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32, s32);
 
@@ -667,7 +667,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     i = 0;
     while ((s16)t != -2) {
         if ((s16)t >= 0) {
-            sp108[D_800993FC[i]] = 1;
+            sp108[g_resource_entry_texture_groups[i]] = 1;
         }
         i++;
         t = *q++;
@@ -734,7 +734,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     i = 0;
     while (*q != -2) {
         if (*q >= 0) {
-            switch (sp108[D_800993FC[i]]) {
+            switch (sp108[g_resource_entry_texture_groups[i]]) {
             case 0:
                 gpu_OffsetBlockTexPrimStream(6, y * 2, 0, 0, -0x180, 0xE8);
                 break;
@@ -1672,7 +1672,7 @@ s16 Judge[0x1000] = {
     -163,  -157,  -150,  -144,  -138,  -131,  -125,  -119,  -113,  -106,  -100,
     -94,   -87,   -81,   -75,   -69,   -62,   -56,   -50,   -43,   -37,   -31,
     -25,   -18,   -12,   -6};
-s16 D_800993FC[62] = {
+s16 g_resource_entry_texture_groups[62] = {
     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
     16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 24, 0,  1,  0,  1,
     2,  3,  2,  3,  11, 11, 13, 13, 22, 22, 14, 14, 17, 17, 27, 28,

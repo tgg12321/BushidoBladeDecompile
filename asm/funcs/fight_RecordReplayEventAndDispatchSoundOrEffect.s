@@ -59,9 +59,9 @@ glabel fight_RecordReplayEventAndDispatchSoundOrEffect
     /* 23128 80032928 4C384290 */  lbu        $v0, %lo(g_fight_step_row_column)($v0)
     /* 2312C 8003292C 00000000 */  nop
     /* 23130 80032930 80100200 */  sll        $v0, $v0, 2
-    /* 23134 80032934 0980013C */  lui        $at, %hi(D_8008EBCC)
+    /* 23134 80032934 0980013C */  lui        $at, %hi(g_fight_step_row_sound_offsets)
     /* 23138 80032938 21082200 */  addu       $at, $at, $v0
-    /* 2313C 8003293C CCEB228C */  lw         $v0, %lo(D_8008EBCC)($at)
+    /* 2313C 8003293C CCEB228C */  lw         $v0, %lo(g_fight_step_row_sound_offsets)($at)
     /* 23140 80032940 00000000 */  nop
     /* 23144 80032944 21800202 */  addu       $s0, $s0, $v0
     /* 23148 80032948 21206002 */  addu       $a0, $s3, $zero

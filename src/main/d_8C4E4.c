@@ -70,5 +70,5 @@ Unk8009BD24Block g_working_record = {
     0,
 };
 
-u8 D_8009BD58[8][2] = {
+u8 g_menu_mode_selector_and_extra_slot_counts[8][2] = {
     {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 1}, {5, 1}, {6, 1}, {7, 0}};

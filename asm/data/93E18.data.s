@@ -88,14 +88,14 @@ dlabel g_fight_second_fighter_initial_defeats_left
     /* 93E77 800A3677 */ .byte 0x00
 enddlabel g_fight_second_fighter_initial_defeats_left
 
-nonmatching D_800A3678
+nonmatching g_gpu_flush_rotation_angles
 
-dlabel D_800A3678
+dlabel g_gpu_flush_rotation_angles
     /* 93E78 800A3678 */ .short 0x0000
     /* 93E7A 800A367A */ .short 0x0000
     /* 93E7C 800A367C */ .short 0x0000
     /* 93E7E 800A367E */ .short 0x0000
-enddlabel D_800A3678
+enddlabel g_gpu_flush_rotation_angles
 
 nonmatching g_fight_second_fighter_defeats_left
 
@@ -301,11 +301,11 @@ dlabel g_replay_fighter_frames
     /* 93EEC 800A36EC 00000000 */ .word 0x00000000
 enddlabel g_replay_fighter_frames
 
-nonmatching D_800A36F0
+nonmatching g_fight_timer_unlock_bit_newly_set
 
-dlabel D_800A36F0
+dlabel g_fight_timer_unlock_bit_newly_set
     /* 93EF0 800A36F0 */ .byte 0x00
-enddlabel D_800A36F0
+enddlabel g_fight_timer_unlock_bit_newly_set
 
 nonmatching g_main_frame_period
 
@@ -320,12 +320,12 @@ dlabel D_800A36F2
     /* 93EF3 800A36F3 */ .byte 0x00
 enddlabel D_800A36F2
 
-nonmatching D_800A36F4
+nonmatching g_fight_displaced_bone_group_tim_requests
 
-dlabel D_800A36F4
+dlabel g_fight_displaced_bone_group_tim_requests
     /* 93EF4 800A36F4 */ .byte 0x00
     /* 93EF5 800A36F5 */ .byte 0x00
-enddlabel D_800A36F4
+enddlabel g_fight_displaced_bone_group_tim_requests
 
 nonmatching g_fight_tracked_fighter_index
 
@@ -579,12 +579,12 @@ dlabel D_800A376B
     /* 93F6B 800A376B */ .byte 0x00
 enddlabel D_800A376B
 
-nonmatching D_800A376C
+nonmatching g_fight_playback_file_base_index
 
-dlabel D_800A376C
+dlabel g_fight_playback_file_base_index
     /* 93F6C 800A376C */ .byte 0x00
     /* 93F6D 800A376D */ .byte 0x00
-enddlabel D_800A376C
+enddlabel g_fight_playback_file_base_index
 
 nonmatching g_fight_paired_move_start_pending
 
@@ -618,11 +618,11 @@ dlabel g_fight_match_results
     /* 93F80 800A3780 */ .byte 0x00
 enddlabel g_fight_match_results
 
-nonmatching D_800A3781
+nonmatching g_fight_no_restart_unlock_bit_newly_set
 
-dlabel D_800A3781
+dlabel g_fight_no_restart_unlock_bit_newly_set
     /* 93F81 800A3781 */ .byte 0x00
-enddlabel D_800A3781
+enddlabel g_fight_no_restart_unlock_bit_newly_set
 
 nonmatching g_replay_ring_wrapped
 
@@ -697,11 +697,11 @@ dlabel g_fight_stage_command_count
     /* 93FA3 800A37A3 */ .byte 0x00
 enddlabel g_fight_stage_command_count
 
-nonmatching D_800A37A4
+nonmatching g_fight_pending_unlock_mask_bits
 
-dlabel D_800A37A4
+dlabel g_fight_pending_unlock_mask_bits
     /* 93FA4 800A37A4 00000000 */ .word 0x00000000
-enddlabel D_800A37A4
+enddlabel g_fight_pending_unlock_mask_bits
 
 nonmatching g_fight_stage_list_entries
 
@@ -771,12 +771,12 @@ dlabel g_comb_send_payload
     /* 93FC4 800A37C4 */ .short 0x0000
 enddlabel g_comb_send_payload
 
-nonmatching D_800A37C6
+nonmatching g_fight_skip_first_defeats_left_expiry
 
-dlabel D_800A37C6
+dlabel g_fight_skip_first_defeats_left_expiry
     /* 93FC6 800A37C6 */ .byte 0x00
     /* 93FC7 800A37C7 */ .byte 0x00
-enddlabel D_800A37C6
+enddlabel g_fight_skip_first_defeats_left_expiry
 
 nonmatching g_memcard_request_operation
 

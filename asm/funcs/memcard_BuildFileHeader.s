@@ -19,9 +19,9 @@ glabel memcard_BuildFileHeader
     /* 289B0 800381B0 2410A200 */  and        $v0, $a1, $v0
     /* 289B4 800381B4 16004010 */  beqz       $v0, .L80038210
     /* 289B8 800381B8 00000000 */   nop
-    /* 289BC 800381BC 0980013C */  lui        $at, %hi(D_8008F204)
+    /* 289BC 800381BC 0980013C */  lui        $at, %hi(g_memcard_title_count_class_by_unlock_bit)
     /* 289C0 800381C0 21082700 */  addu       $at, $at, $a3
-    /* 289C4 800381C4 04F22390 */  lbu        $v1, %lo(D_8008F204)($at)
+    /* 289C4 800381C4 04F22390 */  lbu        $v1, %lo(g_memcard_title_count_class_by_unlock_bit)($at)
     /* 289C8 800381C8 00000000 */  nop
     /* 289CC 800381CC 0D006410 */  beq        $v1, $a0, .L80038204
     /* 289D0 800381D0 02006228 */   slti      $v0, $v1, 0x2
@@ -70,12 +70,12 @@ glabel memcard_BuildFileHeader
     /* 28A60 80038260 65E4010C */  jal        strcpy
     /* 28A64 80038264 04000426 */   addiu     $a0, $s0, 0x4
     /* 28A68 80038268 40201100 */  sll        $a0, $s1, 1
-    /* 28A6C 8003826C 0980033C */  lui        $v1, %hi(D_8008F1A8)
-    /* 28A70 80038270 A8F16324 */  addiu      $v1, $v1, %lo(D_8008F1A8)
+    /* 28A6C 8003826C 0980033C */  lui        $v1, %hi(g_memcard_title_sjis_digits)
+    /* 28A70 80038270 A8F16324 */  addiu      $v1, $v1, %lo(g_memcard_title_sjis_digits)
     /* 28A74 80038274 01006524 */  addiu      $a1, $v1, 0x1
-    /* 28A78 80038278 0980013C */  lui        $at, %hi(D_8008F1A8)
+    /* 28A78 80038278 0980013C */  lui        $at, %hi(g_memcard_title_sjis_digits)
     /* 28A7C 8003827C 21082400 */  addu       $at, $at, $a0
-    /* 28A80 80038280 A8F12290 */  lbu        $v0, %lo(D_8008F1A8)($at)
+    /* 28A80 80038280 A8F12290 */  lbu        $v0, %lo(g_memcard_title_sjis_digits)($at)
     /* 28A84 80038284 21208500 */  addu       $a0, $a0, $a1
     /* 28A88 80038288 220002A2 */  sb         $v0, 0x22($s0)
     /* 28A8C 8003828C 00008290 */  lbu        $v0, 0x0($a0)
@@ -95,9 +95,9 @@ glabel memcard_BuildFileHeader
     /* 28AC4 800382C4 35018293 */  lbu        $v0, %gp_rel(D_800A3201)($gp)
     /* 28AC8 800382C8 40181300 */  sll        $v1, $s3, 1
     /* 28ACC 800382CC 410002A2 */  sb         $v0, 0x41($s0)
-    /* 28AD0 800382D0 0980013C */  lui        $at, %hi(D_8008F19C)
+    /* 28AD0 800382D0 0980013C */  lui        $at, %hi(g_memcard_title_sjis_digits_0_to_4)
     /* 28AD4 800382D4 21082300 */  addu       $at, $at, $v1
-    /* 28AD8 800382D8 9CF12290 */  lbu        $v0, %lo(D_8008F19C)($at)
+    /* 28AD8 800382D8 9CF12290 */  lbu        $v0, %lo(g_memcard_title_sjis_digits_0_to_4)($at)
     /* 28ADC 800382DC 00000000 */  nop
     /* 28AE0 800382E0 420002A2 */  sb         $v0, 0x42($s0)
     /* 28AE4 800382E4 0980013C */  lui        $at, %hi(D_8008F19D)

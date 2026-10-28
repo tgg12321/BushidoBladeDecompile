@@ -17,8 +17,8 @@ glabel gpu_DrawQueuedNodes
     /* 3AD1C 8004A51C 2C005710 */  beq        $v0, $s7, .L8004A5D0
     /* 3AD20 8004A520 801F113C */   lui       $s1, (0x1F80001C >> 16)
     /* 3AD24 8004A524 21A80000 */  addu       $s5, $zero, $zero
-    /* 3AD28 8004A528 10801E3C */  lui        $fp, %hi(D_800FF610)
-    /* 3AD2C 8004A52C 10F6DE27 */  addiu      $fp, $fp, %lo(D_800FF610)
+    /* 3AD28 8004A528 10801E3C */  lui        $fp, %hi(g_gpu_flush_view_matrix)
+    /* 3AD2C 8004A52C 10F6DE27 */  addiu      $fp, $fp, %lo(g_gpu_flush_view_matrix)
     /* 3AD30 8004A530 1C00348E */  lw         $s4, (0x1F80001C & 0xFFFF)($s1)
   .L8004A534:
     /* 3AD34 8004A534 0000F28E */  lw         $s2, 0x0($s7)
@@ -104,8 +104,8 @@ glabel gpu_DrawQueuedNodes
     /* 3AE5C 8004A65C 022A010C */  jal        gte_ProjectPackedVertices
     /* 3AE60 8004A660 00000000 */   nop
     /* 3AE64 8004A664 01004992 */  lbu        $t1, 0x1($s2)
-    /* 3AE68 8004A668 0980143C */  lui        $s4, %hi(D_80095328)
-    /* 3AE6C 8004A66C 28539426 */  addiu      $s4, $s4, %lo(D_80095328)
+    /* 3AE68 8004A668 0980143C */  lui        $s4, %hi(g_gpu_default_primitive_handlers)
+    /* 3AE6C 8004A66C 28539426 */  addiu      $s4, $s4, %lo(g_gpu_default_primitive_handlers)
     /* 3AE70 8004A670 01002931 */  andi       $t1, $t1, 0x1
     /* 3AE74 8004A674 02002011 */  beqz       $t1, .L8004A680
     /* 3AE78 8004A678 00000000 */   nop
@@ -149,8 +149,8 @@ glabel gpu_DrawQueuedNodes
     /* 3AF04 8004A704 B4022626 */  addiu      $a2, $s1, 0x2B4
     /* 3AF08 8004A708 4E2A010C */  jal        func_8004A938
     /* 3AF0C 8004A70C 00000000 */   nop
-    /* 3AF10 8004A710 0980143C */  lui        $s4, %hi(D_80095328)
-    /* 3AF14 8004A714 28539426 */  addiu      $s4, $s4, %lo(D_80095328)
+    /* 3AF10 8004A710 0980143C */  lui        $s4, %hi(g_gpu_default_primitive_handlers)
+    /* 3AF14 8004A714 28539426 */  addiu      $s4, $s4, %lo(g_gpu_default_primitive_handlers)
     /* 3AF18 8004A718 00000000 */  nop
     /* 3AF1C 8004A71C 502A010C */  jal        func_8004A940
     /* 3AF20 8004A720 00000000 */   nop

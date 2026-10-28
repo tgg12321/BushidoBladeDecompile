@@ -13,7 +13,7 @@ glabel StoreCompactedBits
     /* 6816C 8007796C 24208200 */  and        $a0, $a0, $v0
     /* 68170 80077970 42210400 */  srl        $a0, $a0, 5
     /* 68174 80077974 21186400 */  addu       $v1, $v1, $a0
-    /* 68178 80077978 1C0583AF */  sw         $v1, %gp_rel(D_800A35E8)($gp)
+    /* 68178 80077978 1C0583AF */  sw         $v1, %gp_rel(g_menu_compacted_unlock_mask)($gp)
     /* 6817C 8007797C 0800E003 */  jr         $ra
     /* 68180 80077980 00000000 */   nop
 endlabel StoreCompactedBits

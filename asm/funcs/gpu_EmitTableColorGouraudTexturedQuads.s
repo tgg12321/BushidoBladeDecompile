@@ -87,8 +87,8 @@ glabel gpu_EmitTableColorGouraudTexturedQuads
     /* 3F618 8004EE18 FF03A530 */  andi       $a1, $a1, 0x3FF
     /* 3F61C 8004EE1C 82320600 */  srl        $a2, $a2, 10
     /* 3F620 8004EE20 FF03C630 */  andi       $a2, $a2, 0x3FF
-    /* 3F624 8004EE24 0F80083C */  lui        $t0, %hi(D_800F2B70)
-    /* 3F628 8004EE28 702B0825 */  addiu      $t0, $t0, %lo(D_800F2B70)
+    /* 3F624 8004EE24 0F80083C */  lui        $t0, %hi(g_gpu_normal_color_table)
+    /* 3F628 8004EE28 702B0825 */  addiu      $t0, $t0, %lo(g_gpu_normal_color_table)
     /* 3F62C 8004EE2C 80200400 */  sll        $a0, $a0, 2
     /* 3F630 8004EE30 80280500 */  sll        $a1, $a1, 2
     /* 3F634 8004EE34 80300600 */  sll        $a2, $a2, 2

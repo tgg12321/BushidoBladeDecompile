@@ -34,8 +34,8 @@ glabel fight_UpdateSplitWipeImageAndPlaybackPresentation
     /* 2CB3C 8003C33C 0200422C */  sltiu      $v0, $v0, 0x2
     /* 2CB40 8003C340 13004010 */  beqz       $v0, .L8003C390
     /* 2CB44 8003C344 00000000 */   nop
-    /* 2CB48 8003C348 0A80023C */  lui        $v0, %hi(D_800A3781)
-    /* 2CB4C 8003C34C 81374290 */  lbu        $v0, %lo(D_800A3781)($v0)
+    /* 2CB48 8003C348 0A80023C */  lui        $v0, %hi(g_fight_no_restart_unlock_bit_newly_set)
+    /* 2CB4C 8003C34C 81374290 */  lbu        $v0, %lo(g_fight_no_restart_unlock_bit_newly_set)($v0)
     /* 2CB50 8003C350 00000000 */  nop
     /* 2CB54 8003C354 0E004010 */  beqz       $v0, .L8003C390
     /* 2CB58 8003C358 00000000 */   nop

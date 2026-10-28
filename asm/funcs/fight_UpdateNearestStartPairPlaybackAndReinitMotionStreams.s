@@ -104,7 +104,7 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2D904 8003D104 18004314 */  bne        $v0, $v1, .L8003D168
     /* 2D908 8003D108 21200000 */   addu      $a0, $zero, $zero
     /* 2D90C 8003D10C 2000B027 */  addiu      $s0, $sp, 0x20
-    /* 2D910 8003D110 4C07868F */  lw         $a2, %gp_rel(D_800A3818)($gp)
+    /* 2D910 8003D110 4C07868F */  lw         $a2, %gp_rel(g_fight_followup_playback_start_pair)($gp)
     /* 2D914 8003D114 4487000C */  jal        fight_GetStartPosition
     /* 2D918 8003D118 21280002 */   addu      $a1, $s0, $zero
     /* 2D91C 8003D11C 21200002 */  addu       $a0, $s0, $zero

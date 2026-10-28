@@ -450,12 +450,12 @@ glabel replay_PlayFrame
     /* 2A7D8 80039FD8 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 2A7DC 80039FDC 21082200 */  addu       $at, $at, $v0
     /* 2A7E0 80039FE0 38D52490 */  lbu        $a0, %lo(g_fight_config_id_data_rows)($at)
-    /* 2A7E4 80039FE4 0A80023C */  lui        $v0, %hi(D_800A37A4)
-    /* 2A7E8 80039FE8 A437428C */  lw         $v0, %lo(D_800A37A4)($v0)
+    /* 2A7E4 80039FE4 0A80023C */  lui        $v0, %hi(g_fight_pending_unlock_mask_bits)
+    /* 2A7E8 80039FE8 A437428C */  lw         $v0, %lo(g_fight_pending_unlock_mask_bits)($v0)
     /* 2A7EC 80039FEC 04188300 */  sllv       $v1, $v1, $a0
     /* 2A7F0 80039FF0 25104300 */  or         $v0, $v0, $v1
-    /* 2A7F4 80039FF4 0A80013C */  lui        $at, %hi(D_800A37A4)
-    /* 2A7F8 80039FF8 A43722AC */  sw         $v0, %lo(D_800A37A4)($at)
+    /* 2A7F4 80039FF4 0A80013C */  lui        $at, %hi(g_fight_pending_unlock_mask_bits)
+    /* 2A7F8 80039FF8 A43722AC */  sw         $v0, %lo(g_fight_pending_unlock_mask_bits)($at)
   .L80039FFC:
     /* 2A7FC 80039FFC 03000012 */  beqz       $s0, .L8003A00C
     /* 2A800 8003A000 00000000 */   nop

@@ -72,8 +72,8 @@ glabel gpu_EmitTableColorGouraudTexturedTriangles
     /* 3F3DC 8004EBDC 2A004018 */  blez       $v0, .L8004EC88
     /* 3F3E0 8004EBE0 80100200 */   sll       $v0, $v0, 2
     /* 3F3E4 8004EBE4 1000048E */  lw         $a0, 0x10($s0)
-    /* 3F3E8 8004EBE8 0F80083C */  lui        $t0, %hi(D_800F2B70)
-    /* 3F3EC 8004EBEC 702B0825 */  addiu      $t0, $t0, %lo(D_800F2B70)
+    /* 3F3E8 8004EBE8 0F80083C */  lui        $t0, %hi(g_gpu_normal_color_table)
+    /* 3F3EC 8004EBEC 702B0825 */  addiu      $t0, $t0, %lo(g_gpu_normal_color_table)
     /* 3F3F0 8004EBF0 824C0400 */  srl        $t1, $a0, 18
     /* 3F3F4 8004EBF4 02520400 */  srl        $t2, $a0, 8
     /* 3F3F8 8004EBF8 80200400 */  sll        $a0, $a0, 2

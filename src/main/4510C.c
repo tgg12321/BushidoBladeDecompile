@@ -584,7 +584,7 @@ typedef struct {
     u8 bit[4];
 } PadBitTable;
 
-extern PadBitTable D_800A3258;
+extern PadBitTable g_cpu_pad_metadata_nibble_dpad_bits;
 extern u8 D_8009A088[];
 extern s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(
     Unk80101EC8Record *);
@@ -957,7 +957,7 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
         pad.held = 0;
     }
     if (pad.held & 0x660) {
-        bits = D_800A3258;
+        bits = g_cpu_pad_metadata_nibble_dpad_bits;
         if (rec->move_kind == 0x19) {
             pad.held |= 1 << bits.bit[rec->motion_metadata_nibble];
         } else if (rec->move_kind == 0x13) {
@@ -1106,7 +1106,7 @@ s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *arg0) {
     return base + arg0->other->scale_distance_offset + 0x12C;
 }
 
-extern s32 D_8009AA50[];
+extern s32 g_cpu_route_sector_dpad_masks[];
 
 s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
     Unk80101EC8Record *arg0, s32 route_target_x, s32 route_target_z, s32 arg3) {
@@ -1138,7 +1138,7 @@ s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
             }
         }
     }
-    var_v0 = D_8009AA50[sp10 & 7];
+    var_v0 = g_cpu_route_sector_dpad_masks[sp10 & 7];
     if (arg3 == 1) {
         var_v0 |= 4;
     }
@@ -3290,6 +3290,6 @@ Unk80099D88Rec g_cpu_profiles[32] = {
 /* "NULL" tag motion_UpdatePlayback compares the motion streams against
  * (gp-relative): size from the blob label */
 s32 g_motion_null_stream_tag[2] = {0x4c4c554e, 0};
-PadBitTable D_800A3258 = {{0xd, 0xf, 0xc, 0xe}};
+PadBitTable g_cpu_pad_metadata_nibble_dpad_bits = {{0xd, 0xf, 0xc, 0xe}};
 u8 D_800A325C[4] = {1, 0, 2, 3};
 u8 D_800A3260[4] = {5, 4, 6, 7};

@@ -75,7 +75,7 @@ glabel eff_BindScratchpad
     /* 5175C 80060F5C 9C0382AF */  sw         $v0, %gp_rel(g_eff_active_command_block)($gp)
     /* 51760 80060F60 0000A28F */  lw         $v0, 0x0($sp)
     /* 51764 80060F64 A4002935 */  ori        $t1, $t1, (0x1F8000A4 & 0xFFFF)
-    /* 51768 80060F68 A00382AF */  sw         $v0, %gp_rel(D_800A346C)($gp)
+    /* 51768 80060F68 A00382AF */  sw         $v0, %gp_rel(g_eff_view_angles)($gp)
     /* 5176C 80060F6C 0800A28F */  lw         $v0, 0x8($sp)
     /* 51770 80060F70 801F083C */  lui        $t0, (0x1F8000A8 >> 16)
     /* 51774 80060F74 A40382AF */  sw         $v0, %gp_rel(g_eff_view_origin)($gp)

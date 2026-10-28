@@ -17,7 +17,7 @@ extern s16 g_memcard_request_status;
 extern s16 g_memcard_request_retry_count;
 extern s16 g_memcard_request_operation;
 extern s32 g_memcard_request_state;
-extern u8 D_800A38CC;
+extern u8 g_memcard_request_write_started;
 extern u8 g_comb_write_not_aborted;
 extern s32 g_comb_read_fd;
 extern s32 g_comb_write_fd;
@@ -190,7 +190,7 @@ void memcard_BuildFileHeader(u8 *out) {
     for (i = 0; i < 0x1B; i++) {
         bit = 1 << i;
         if (mask & bit) {
-            s32 v = D_8008F204[i];
+            s32 v = g_memcard_title_count_class_by_unlock_bit[i];
             switch (v) {
             case 0:
                 s1++;
@@ -222,16 +222,16 @@ void memcard_BuildFileHeader(u8 *out) {
 
     strcpy(out + 4, g_memcard_save_title);
 
-    out[0x22] = D_8008F1A8[s1 * 2 + 0];
-    out[0x23] = D_8008F1A8[s1 * 2 + 1];
-    out[0x3C] = D_8008F1A8[s2 * 2 + 0];
-    out[0x3D] = D_8008F1A8[s2 * 2 + 1];
+    out[0x22] = g_memcard_title_sjis_digits[s1 * 2 + 0];
+    out[0x23] = g_memcard_title_sjis_digits[s1 * 2 + 1];
+    out[0x3C] = g_memcard_title_sjis_digits[s2 * 2 + 0];
+    out[0x3D] = g_memcard_title_sjis_digits[s2 * 2 + 1];
 
     if (s3 > 0) {
         out[0x40] = D_800A3200;
         out[0x41] = D_800A3201;
-        out[0x42] = D_8008F19C[s3 * 2 + 0];
-        out[0x43] = D_8008F19C[s3 * 2 + 1];
+        out[0x42] = g_memcard_title_sjis_digits_0_to_4[s3 * 2 + 0];
+        out[0x43] = g_memcard_title_sjis_digits_0_to_4[s3 * 2 + 1];
     }
 
     i = 0x1B;
@@ -364,7 +364,7 @@ state_3:
         goto finish;
     }
 setup_load:
-    D_800A38CC = 1;
+    g_memcard_request_write_started = 1;
     memcard_ClearBuffer();
     memcard_BuildFileHeader(g_shared_buffer);
     memcard_BuildSaveBlock(g_shared_buffer + 0x100);
@@ -476,7 +476,7 @@ void memcard_RequestLoad(void) {
 void memcard_RequestSave(void) {
     g_memcard_request_status = 1;
     g_memcard_request_operation = 1;
-    D_800A38CC = 0;
+    g_memcard_request_write_started = 0;
     g_memcard_request_retry_count = 0;
     g_memcard_request_state = 1;
 }
@@ -484,7 +484,7 @@ void memcard_RequestSave(void) {
 void memcard_RequestOverwrite(void) {
     g_memcard_request_status = 1;
     g_memcard_request_operation = 2;
-    D_800A38CC = 0;
+    g_memcard_request_write_started = 0;
     g_memcard_request_retry_count = 0;
     g_memcard_request_state = 1;
 }
@@ -859,7 +859,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         var_1 = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 1:
-        var_3 = (-(D_800A38CC != 0)) & 7;
+        var_3 = (-(g_memcard_request_write_started != 0)) & 7;
         goto sel_dispatch;
     case 2:
         var_3 = 8;
@@ -1526,7 +1526,7 @@ void replay_PlayFrame(void) {
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
                     if (g_fight_saved_first_fighter_selection != 0xFF) {
-                        D_800A37A4 |=
+                        g_fight_pending_unlock_mask_bits |=
                             1 << g_fight_config_id_data_rows[(s8)g_fight_config
                                                                  .unk_4[0]];
                     }
@@ -1950,10 +1950,10 @@ end:
  * the per-character class bytes D_8008F204 (27 used; the 28th byte is zero).
  * Only this file reads them. Defined after every function, so no body sees a
  * definition where it saw an extern. */
-u8 D_8008F19C[12] = {
+u8 g_memcard_title_sjis_digits_0_to_4[12] = {
     0x82, 0x4F, 0x82, 0x50, 0x82, 0x51, 0x82, 0x52, 0x82, 0x53, 0x00, 0x00,
 };
-u8 D_8008F1A8[24] = {
+u8 g_memcard_title_sjis_digits[24] = {
     0x82, 0x4F, 0x82, 0x50, 0x82, 0x51, 0x82, 0x52, 0x82, 0x53, 0x82, 0x54,
     0x82, 0x55, 0x82, 0x56, 0x82, 0x57, 0x82, 0x58, 0x00, 0x00, 0x00, 0x00,
 };
@@ -1965,7 +1965,7 @@ u8 g_memcard_save_title[68] = {
     0x82, 0x8E, 0x82, 0x94, 0x82, 0x8F, 0x81, 0x46, 0x81, 0x48, 0x81, 0x40,
     0x81, 0x40, 0x81, 0x40, 0x00, 0x00, 0x00, 0x00,
 };
-u8 D_8008F204[28] = {
+u8 g_memcard_title_count_class_by_unlock_bit[28] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00,
     0x03, 0x03, 0x01, 0x01, 0x01, 0x01, 0x02, 0x01, 0x01, 0x01,
     0x01, 0x01, 0x03, 0x03, 0x03, 0x02, 0x03, 0x00,
@@ -2014,7 +2014,7 @@ s32 g_comb_event_error;
 s16 g_memcard_request_retry_count;
 u8 g_comb_write_not_aborted;
 s32 g_comb_wait_state;
-u8 D_800A38CC;
+u8 g_memcard_request_write_started;
 s32 D_800A38D0;
 s32 D_800A38FC;
 s32 D_800A3908;

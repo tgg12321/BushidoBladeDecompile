@@ -14,7 +14,7 @@ glabel eff_DrawBillboardList
     /* 528E8 800620E8 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 528EC 800620EC 00000000 */  nop
     /* 528F0 800620F0 0400628C */  lw         $v0, 0x4($v1)
-    /* 528F4 800620F4 A003848F */  lw         $a0, %gp_rel(D_800A346C)($gp)
+    /* 528F4 800620F4 A003848F */  lw         $a0, %gp_rel(g_eff_view_angles)($gp)
     /* 528F8 800620F8 00004294 */  lhu        $v0, 0x0($v0)
     /* 528FC 800620FC 00000000 */  nop
     /* 52900 80062100 000082A4 */  sh         $v0, 0x0($a0)

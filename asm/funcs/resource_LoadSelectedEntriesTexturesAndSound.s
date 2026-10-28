@@ -69,8 +69,8 @@ glabel resource_LoadSelectedEntriesTexturesAndSound
     /* 36464 80045C64 1800A527 */  addiu      $a1, $sp, 0x18
     /* 36468 80045C68 01000724 */  addiu      $a3, $zero, 0x1
     /* 3646C 80045C6C FEFF0624 */  addiu      $a2, $zero, -0x2
-    /* 36470 80045C70 0A80033C */  lui        $v1, %hi(D_800993FC)
-    /* 36474 80045C74 FC936324 */  addiu      $v1, $v1, %lo(D_800993FC)
+    /* 36470 80045C70 0A80033C */  lui        $v1, %hi(g_resource_entry_texture_groups)
+    /* 36474 80045C74 FC936324 */  addiu      $v1, $v1, %lo(g_resource_entry_texture_groups)
   .L80045C78:
     /* 36478 80045C78 06008004 */  bltz       $a0, .L80045C94
     /* 3647C 80045C7C 00000000 */   nop
@@ -234,9 +234,9 @@ glabel resource_LoadSelectedEntriesTexturesAndSound
     /* 366A0 80045EA0 00000000 */  nop
     /* 366A4 80045EA4 32004004 */  bltz       $v0, .L80045F70
     /* 366A8 80045EA8 40101100 */   sll       $v0, $s1, 1
-    /* 366AC 80045EAC 0A80013C */  lui        $at, %hi(D_800993FC)
+    /* 366AC 80045EAC 0A80013C */  lui        $at, %hi(g_resource_entry_texture_groups)
     /* 366B0 80045EB0 21082200 */  addu       $at, $at, $v0
-    /* 366B4 80045EB4 FC932284 */  lh         $v0, %lo(D_800993FC)($at)
+    /* 366B4 80045EB4 FC932284 */  lh         $v0, %lo(g_resource_entry_texture_groups)($at)
     /* 366B8 80045EB8 00000000 */  nop
     /* 366BC 80045EBC 40100200 */  sll        $v0, $v0, 1
     /* 366C0 80045EC0 2110A203 */  addu       $v0, $sp, $v0

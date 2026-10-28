@@ -18,9 +18,9 @@ extern void AddPrim(void *, void *);
 static s16 g_sel_offset_steps[2][2];
 static Unk8006E49CRec *g_sel_prim_buffers;
 static s8 g_sel_sheet_code_column_cursor;
-static s32 D_800A35E0;
+static s32 g_menu_pending_entry_extra_slot_count;
 static s32 g_option_mode_flow_state;
-static s32 D_800A35E8;
+static s32 g_menu_compacted_unlock_mask;
 static s32 D_800A35EC; /* unreferenced: size from the gap */
 static s32 g_gpu_timed_sprite_elapsed_frames;
 static Unk8006E49CRec *g_gpu_timed_sprite_prim_buffers;
@@ -1330,19 +1330,23 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
 
 s32 ResetFlowAndFetchRowTablePair(void) {
     g_option_mode_flow_state = 0;
-    D_800A35E0 = D_8009BD58[g_working_record.fight_mode][1];
-    return D_8009BD58[g_working_record.fight_mode][0];
+    g_menu_pending_entry_extra_slot_count =
+        g_menu_mode_selector_and_extra_slot_counts[g_working_record.fight_mode]
+                                                  [1];
+    return g_menu_mode_selector_and_extra_slot_counts[g_working_record
+                                                          .fight_mode][0];
 }
 
 void StoreCompactedBits(s32 arg0) {
-    D_800A35E8 =
+    g_menu_compacted_unlock_mask =
         (arg0 & 0x3FF) + ((u32)(arg0 & 0x3FF000) >> 2) +
         ((u32)(arg0 & 0x01000000) >> 4) + ((u32)(arg0 & 0x04000000) >> 5);
 }
 
 s32 InitWithCachedValueAndStoredBitsBlackBg(s32 a0) {
     InitDisplayStateLoadPackAndSetEntryFlags(
-        a0, D_800A35E0, &g_working_record, D_800A35E8);
+        a0, g_menu_pending_entry_extra_slot_count, &g_working_record,
+        g_menu_compacted_unlock_mask);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
@@ -1373,7 +1377,7 @@ s32 func_80077A60(s32 arg0, s32 arg1) {
 s32 menu_InitSelScreen(s32, Unk8009BD24Block *, s32);
 
 s32 menu_InitSelWithStoredBits(s32 a0) {
-    menu_InitSelScreen(a0, &g_working_record, D_800A35E8);
+    menu_InitSelScreen(a0, &g_working_record, g_menu_compacted_unlock_mask);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }

@@ -258,14 +258,14 @@ loop2:
     }
 }
 
-extern s32 *D_80015820[];
+extern s32 *g_color_immediate_patch_sites[];
 extern s32 func_800545F4;
 extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
 
 void PatchColorImmediatesAtListedCodeSites(s32 a0) {
-    s32 **t0 = D_80015820;
+    s32 **t0 = g_color_immediate_patch_sites;
     s32 t1 = 0;
     s32 mask8 = ~0xFF;
     s32 a1 = (a0 >> 16) & 0xFF;

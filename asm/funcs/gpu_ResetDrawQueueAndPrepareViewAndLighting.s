@@ -85,7 +85,7 @@ glabel gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* 37540 80046D40 00000000 */   nop
     /* 37544 80046D44 9DFC000C */  jal        gpu_ResetAndStampViewCenteredCellAttributes
     /* 37548 80046D48 00000000 */   nop
-    /* 3754C 80046D4C F40293AF */  sw         $s3, %gp_rel(D_800A33C0)($gp)
+    /* 3754C 80046D4C F40293AF */  sw         $s3, %gp_rel(g_gpu_view_eye_distance)($gp)
   .L80046D50:
     /* 37550 80046D50 0F80103C */  lui        $s0, %hi(g_light_setups)
     /* 37554 80046D54 E0621026 */  addiu      $s0, $s0, %lo(g_light_setups)

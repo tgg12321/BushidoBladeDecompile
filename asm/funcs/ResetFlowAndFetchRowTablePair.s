@@ -4,14 +4,14 @@ glabel ResetFlowAndFetchRowTablePair
     /* 6810C 8007790C 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
     /* 68110 80077910 0F004230 */  andi       $v0, $v0, 0xF
     /* 68114 80077914 40100200 */  sll        $v0, $v0, 1
-    /* 68118 80077918 0A80013C */  lui        $at, %hi(D_8009BD58 + 0x1)
+    /* 68118 80077918 0A80013C */  lui        $at, %hi(g_menu_mode_selector_and_extra_slot_counts + 0x1)
     /* 6811C 8007791C 21082200 */  addu       $at, $at, $v0
-    /* 68120 80077920 59BD2390 */  lbu        $v1, %lo(D_8009BD58 + 0x1)($at)
+    /* 68120 80077920 59BD2390 */  lbu        $v1, %lo(g_menu_mode_selector_and_extra_slot_counts + 0x1)($at)
     /* 68124 80077924 00000000 */  nop
-    /* 68128 80077928 140583AF */  sw         $v1, %gp_rel(D_800A35E0)($gp)
-    /* 6812C 8007792C 0A80013C */  lui        $at, %hi(D_8009BD58)
+    /* 68128 80077928 140583AF */  sw         $v1, %gp_rel(g_menu_pending_entry_extra_slot_count)($gp)
+    /* 6812C 8007792C 0A80013C */  lui        $at, %hi(g_menu_mode_selector_and_extra_slot_counts)
     /* 68130 80077930 21082200 */  addu       $at, $at, $v0
-    /* 68134 80077934 58BD2290 */  lbu        $v0, %lo(D_8009BD58)($at)
+    /* 68134 80077934 58BD2290 */  lbu        $v0, %lo(g_menu_mode_selector_and_extra_slot_counts)($at)
     /* 68138 80077938 0800E003 */  jr         $ra
     /* 6813C 8007793C 00000000 */   nop
 endlabel ResetFlowAndFetchRowTablePair

@@ -3,7 +3,7 @@ glabel eff_StepCommand
     /* 51374 80060B74 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 51378 80060B78 1000BFAF */  sw         $ra, 0x10($sp)
     /* 5137C 80060B7C 0400628C */  lw         $v0, 0x4($v1)
-    /* 51380 80060B80 A003848F */  lw         $a0, %gp_rel(D_800A346C)($gp)
+    /* 51380 80060B80 A003848F */  lw         $a0, %gp_rel(g_eff_view_angles)($gp)
     /* 51384 80060B84 00004294 */  lhu        $v0, 0x0($v0)
     /* 51388 80060B88 00000000 */  nop
     /* 5138C 80060B8C 000082A4 */  sh         $v0, 0x0($a0)

@@ -103,7 +103,7 @@ glabel memcard_StepSaveOverwriteAndFormatPrompts
     /* 295E0 80038DE0 75E30008 */  j          .L80038DD4
     /* 295E4 80038DE4 06001024 */   addiu     $s0, $zero, 0x6
   jlabel .L80038DE8
-    /* 295E8 80038DE8 00088293 */  lbu        $v0, %gp_rel(D_800A38CC)($gp)
+    /* 295E8 80038DE8 00088293 */  lbu        $v0, %gp_rel(g_memcard_request_write_started)($gp)
     /* 295EC 80038DEC 00000000 */  nop
     /* 295F0 80038DF0 2B100200 */  sltu       $v0, $zero, $v0
     /* 295F4 80038DF4 23100200 */  negu       $v0, $v0

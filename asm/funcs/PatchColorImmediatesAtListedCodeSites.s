@@ -1,6 +1,6 @@
 glabel PatchColorImmediatesAtListedCodeSites
-    /* 31B98 80041398 0180083C */  lui        $t0, %hi(D_80015820)
-    /* 31B9C 8004139C 20580825 */  addiu      $t0, $t0, %lo(D_80015820)
+    /* 31B98 80041398 0180083C */  lui        $t0, %hi(g_color_immediate_patch_sites)
+    /* 31B9C 8004139C 20580825 */  addiu      $t0, $t0, %lo(g_color_immediate_patch_sites)
     /* 31BA0 800413A0 21480000 */  addu       $t1, $zero, $zero
     /* 31BA4 800413A4 00FF0724 */  addiu      $a3, $zero, -0x100
     /* 31BA8 800413A8 032C0400 */  sra        $a1, $a0, 16

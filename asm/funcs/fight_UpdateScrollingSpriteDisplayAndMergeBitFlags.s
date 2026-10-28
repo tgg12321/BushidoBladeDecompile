@@ -19,8 +19,8 @@ glabel fight_UpdateScrollingSpriteDisplayAndMergeBitFlags
     /* 2C6E8 8003BEE8 1080043C */  lui        $a0, %hi(g_saved_record)
     /* 2C6EC 8003BEEC 506A8424 */  addiu      $a0, $a0, %lo(g_saved_record)
     /* 2C6F0 8003BEF0 0000838C */  lw         $v1, 0x0($a0)
-    /* 2C6F4 8003BEF4 0A80023C */  lui        $v0, %hi(D_800A37A4)
-    /* 2C6F8 8003BEF8 A437428C */  lw         $v0, %lo(D_800A37A4)($v0)
+    /* 2C6F4 8003BEF4 0A80023C */  lui        $v0, %hi(g_fight_pending_unlock_mask_bits)
+    /* 2C6F8 8003BEF8 A437428C */  lw         $v0, %lo(g_fight_pending_unlock_mask_bits)($v0)
     /* 2C6FC 8003BEFC 00000000 */  nop
     /* 2C700 8003BF00 25106200 */  or         $v0, $v1, $v0
     /* 2C704 8003BF04 03004310 */  beq        $v0, $v1, .L8003BF14
