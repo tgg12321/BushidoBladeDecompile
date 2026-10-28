@@ -272,9 +272,9 @@ typedef struct {
  * gpu_InitPrimBufferPair buffer starts. The words after the head differ per
  * file. */
 typedef struct {
-    Unk8005C2A8Pack *unk_00;
-    s32 unk_04;
-    s32 unk_08;
+    Unk8005C2A8Pack *sound_pack;
+    s32 free_ram_start;
+    s32 vram_image_pixels;
     s32 unk_0C;
     s32 unk_10;
 } Unk8006E950Head;
@@ -286,7 +286,7 @@ typedef struct {
  * draws: unk_14[10] first, then unk_14[0] onward while the next entry is not
  * -1. */
 typedef struct {
-    Unk8006E950Head unk_00;
+    Unk8006E950Head resource_head;
     Unk8009B0E0Record *unk_14[0];
 } Unk80078824Rec;
 
@@ -325,9 +325,9 @@ typedef struct {
  * - unk_84: TIM pixel addresses gpu_UploadAndDrawSelectedEntryQuads loads per
  * character case. */
 typedef struct {
-    Unk8006E950Head unk_00;
-    s32 unk_14[8][2];
-    Unk8006ECF4Rec *unk_54;
+    Unk8006E950Head resource_head;
+    s32 row_choice_pixels[8][2];
+    Unk8006ECF4Rec *selected_entry_header_block;
     Unk8009B0E0Record **unk_58;
     Unk8009B0E0Record **unk_5C;
     Unk8009B0E0Record **unk_60;
@@ -337,9 +337,9 @@ typedef struct {
     Unk8009B0E0Record **unk_70;
     Unk8009B0E0Record **unk_74;
     s32 *unk_78;
-    RECT *unk_7C;
+    RECT *row_choice_upload_rects;
     u8 *unk_80;
-    s32 unk_84[5];
+    s32 entry_upload_pixels[5];
 } Unk8006EA28Rec;
 
 /* D_SEL.BIN (resource file 6), the root 64FD8's menu_InitSelScreen loads at its
@@ -350,16 +350,16 @@ typedef struct {
  * rows menu_DrawSelRowTiles draws.
  */
 typedef struct {
-    Unk8006E950Head unk_00;
+    Unk8006E950Head resource_head;
     Unk8009B0E0Record **unk_14;
-    Unk8009B0E0Record **unk_18;
+    Unk8009B0E0Record **sel_panel_sheets;
     Unk8009B0E0Record **unk_1C;
-    Unk8009B0E0Record **unk_20[3];
-    Unk8009B0E0Record **unk_2C;
+    Unk8009B0E0Record **pick_slot_sheets[3];
+    Unk8009B0E0Record **opposed_choice_sheets;
     Unk8009B0E0Record **unk_30;
     Unk8009B0E0Record **unk_34;
     Unk8009B0E0Record **unk_38;
-    Rec_8006C21C *unk_3C;
+    Rec_8006C21C *row_tile_rects;
 } Unk80076FF8Rec;
 
 typedef struct {
@@ -373,7 +373,7 @@ typedef struct {
  * relocates; nar2C, in30 / out34 and the five portrait TIMs img38
  * gpu_DrawAndAdvanceTimedSpriteSequence uploads. */
 typedef struct {
-    Unk8006E950Head unk_00;
+    Unk8006E950Head resource_head;
     Unk8009B400Record *table;
     Unk8009B0E0Record **hdr18;
     Unk8009B0E0Record **hdr1C;
@@ -2447,7 +2447,7 @@ typedef struct {
  * reloc_RelocateSelfOffsets's offset list follows at +0x4C; no reader touches
  * it. */
 typedef struct {
-    Unk8006E950Head unk_00;
+    Unk8006E950Head resource_head;
     Unk8009B0E0Record **unk_14;
     Unk8009B0E0Record **row_sheets;
     Unk8009B0E0Record **unk_1C;

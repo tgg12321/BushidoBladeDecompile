@@ -196,8 +196,9 @@ s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *a0) {
         p++;
         i++;
     } while (i < 12);
-    snd_LoadVabPack(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
-    return a0->unk_00.unk_04;
+    snd_LoadVabPack(
+        a0->resource_head.sound_pack, 1, a0->resource_head.free_ram_start);
+    return a0->resource_head.free_ram_start;
 }
 
 void reloc_RelocateOffsetList(s32 *a0, s32 a1) {

@@ -192,7 +192,7 @@ void gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
     cdrom_WaitIdle();
     reloc_RelocateSelfOffsets((s32 *)a1);
 
-    s3 = a1->unk_08;
+    s3 = a1->vram_image_pixels;
 
     rect.x = 0x280;
     rect.y = 0;
@@ -212,7 +212,7 @@ void gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
 }
 
 s32 resource_RelocateNineOffsetListsAndLoadVabPack(Unk8006EA28Rec *a0) {
-    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_54);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->selected_entry_header_block);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_58);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_5C);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_60);
@@ -221,8 +221,9 @@ s32 resource_RelocateNineOffsetListsAndLoadVabPack(Unk8006EA28Rec *a0) {
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_6C);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_70);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_74);
-    snd_LoadVabPack(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
-    return a0->unk_00.unk_04;
+    snd_LoadVabPack(
+        a0->resource_head.sound_pack, 1, a0->resource_head.free_ram_start);
+    return a0->resource_head.free_ram_start;
 }
 
 void StepSlideProgressCommitPendingStateAndQueueSound(void);
@@ -314,7 +315,7 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
     s.y = 0;
     s.scale_y = 0x100;
 
-    s3 = arg0->resource_root.v8006EA28->unk_54;
+    s3 = arg0->resource_root.v8006EA28->selected_entry_header_block;
     s0 = s3->unk_0C;
 
     for (i = 0; i < g_entry_menu_init_extra_slot_count + 1 +
@@ -341,23 +342,23 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
 
         switch (var_3) {
         case 12:
-            a2 = g_entry_menu_resources->unk_84[0];
+            a2 = g_entry_menu_resources->entry_upload_pixels[0];
             s.header = s0 + 22;
             break;
         case 13:
-            a2 = g_entry_menu_resources->unk_84[1];
+            a2 = g_entry_menu_resources->entry_upload_pixels[1];
             s.header = s0 + 23;
             break;
         case 14:
-            a2 = g_entry_menu_resources->unk_84[2];
+            a2 = g_entry_menu_resources->entry_upload_pixels[2];
             s.header = s0 + 24;
             break;
         case 0:
-            a2 = g_entry_menu_resources->unk_84[3];
+            a2 = g_entry_menu_resources->entry_upload_pixels[3];
             s.header = s0 + 25;
             break;
         case 3:
-            a2 = g_entry_menu_resources->unk_84[4];
+            a2 = g_entry_menu_resources->entry_upload_pixels[4];
             s.header = s0 + 26;
             break;
         default:
@@ -1243,7 +1244,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
         /* FAKE: base and step as two statements, here and in the locked-slot
          * arm; `var_6 = g_entry_menu_resources->unk_7C + i * 8`: score 28
          * (Q129) */
-        var_6 = g_entry_menu_resources->unk_7C;
+        var_6 = g_entry_menu_resources->row_choice_upload_rects;
         var_6 += i * 8;
         var_4 = i - var_5;
         if (g_entry_menu_slot_records.rec[i].unk0 != 5 &&
@@ -1308,7 +1309,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         sel = 1;
                     }
                     id = g_entry_menu_slot_records.rec[i].unk2;
-                    tim = &g_entry_menu_resources->unk_14[id][sel];
+                    tim = &g_entry_menu_resources->row_choice_pixels[id][sel];
                     LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (
@@ -1337,7 +1338,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         sel = 0;
                     }
                     id = g_entry_menu_slot_records.rec[i].unk2;
-                    tim = &g_entry_menu_resources->unk_14[id][sel];
+                    tim = &g_entry_menu_resources->row_choice_pixels[id][sel];
                     LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (
@@ -1438,7 +1439,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     /* FAKE: reused: recomputes the rect row var_6 already
                      * holds; dropped: score 32; a block-scoped second local,
                      * or computing it only in the live arm: 12. */
-                    var_6 = g_entry_menu_resources->unk_7C;
+                    var_6 = g_entry_menu_resources->row_choice_upload_rects;
                     var_6 += i * 8;
                     if (g_entry_menu_entry_flags
                             [g_entry_menu_slot_records.rec[i].unk1] &
@@ -1448,7 +1449,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         sel = 1;
                     }
                     id = g_entry_menu_slot_records.rec[i].unk2;
-                    tim = &g_entry_menu_resources->unk_14[id][sel];
+                    tim = &g_entry_menu_resources->row_choice_pixels[id][sel];
                     LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 }

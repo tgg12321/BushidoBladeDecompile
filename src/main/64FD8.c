@@ -164,7 +164,7 @@ void menu_DrawSelRowTiles(Unk8006EACCRec *draw_context, s32 arg1, s32 arg2) {
     }
     p = draw_context->primitive_cursors.tile_prims;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
-        t = SELWORK->f04->unk_3C;
+        t = SELWORK->f04->row_tile_rects;
         for (j = 0; j < n; j++) {
             SetTile(p);
             p->r0 = t->r;
@@ -249,7 +249,7 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     prim++;
     arg0->primitive_cursors.tile_prims = prim;
 
-    records = arg0->resource_root.v80076FF8->unk_18;
+    records = arg0->resource_root.v80076FF8->sel_panel_sheets;
     s.semi = 0;
     s.has_color = 0;
     s.x = arg1 * 0xF0;
@@ -417,7 +417,7 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *arg0, s32 arg1) {
     } else {
         s.ot_idx = 0xC;
     }
-    tbl = arg0->resource_root.v80076FF8->unk_2C;
+    tbl = arg0->resource_root.v80076FF8->opposed_choice_sheets;
     s.header = tbl[arg1 + 2];
     s.x = arg1 * 240;
     var_3 = s.header->cells;
@@ -446,7 +446,7 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *arg0, s32 arg1) {
                 gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
     arg0->primitive_cursors.unk_14++;
-    tbl = arg0->resource_root.v80076FF8->unk_2C;
+    tbl = arg0->resource_root.v80076FF8->opposed_choice_sheets;
     do {
         s.header = tbl[i];
         s.x = arg1 * 240;
@@ -660,7 +660,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     s.has_color = 0;
     for (i = 0; i < SELWORK->f65 + 3; i++) {
-        table = arg0->resource_root.v80076FF8->unk_20[SELWORK->f65];
+        table = arg0->resource_root.v80076FF8->pick_slot_sheets[SELWORK->f65];
         s.header = table[i];
         cells = s.header[2].cells;
         if (i == SELWORK->f3C[arg3]) {
@@ -900,7 +900,7 @@ void menu_DrawSelListPicks(
         arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     }
 
-    table = arg0->resource_root.v80076FF8->unk_20[SELWORK->f65];
+    table = arg0->resource_root.v80076FF8->pick_slot_sheets[SELWORK->f65];
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         s.has_color = 0;
         s.header = table[i];
@@ -1645,7 +1645,8 @@ s32 InitTimedSpriteSequence(s32 arg0) {
     s0 = (Ctx77D94 *)(arg0 + 0x58);
     D_800A35F4 = (Unk8006E49CRec *)arg0;
     D_800A35F8 = s0;
-    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x32, &s0->unk_00);
+    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+        0x32, &s0->resource_head);
     r = reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)s0);
     gpu_InitPrimBufferPair(r, D_800A35F4);
     D_800A35FC = 0;
@@ -1684,7 +1685,7 @@ s32 StepTimedSpriteSequenceWithSkip(s32 arg0) {
 }
 
 s32 GetScrollingSpriteRecordWord1(Unk80078824Rec *a0) {
-    return a0->unk_00.unk_04;
+    return a0->resource_head.free_ram_start;
 }
 
 Unk8006E49CRec *gpu_GetScrollingSpritePrimBuffer(s32 a0) {
@@ -1746,7 +1747,8 @@ s32 InitScrollingSpriteDisplay(s32 arg0) {
     s0 = (Unk80078824Rec *)(arg0 + 0x58);
     D_800A360C = (Unk8006E49CRec *)arg0;
     D_800A3610 = s0;
-    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(0x5F, &s0->unk_00);
+    gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
+        0x5F, &s0->resource_head);
     gpu_InitPrimBufferPair(GetScrollingSpriteRecordWord1(s0), D_800A360C);
     D_800A3304 = 0;
     D_800A3608 = 0;
