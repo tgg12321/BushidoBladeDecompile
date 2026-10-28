@@ -1,0 +1,9 @@
+wave93 (func-second-pass-2): 1 RENAME 0x8004A4E0 func_8004A4E0 -> gpu_DrawQueuedNodes (kept from research); 19 NO_NAME in rows.py docstring.
+Old-name citations for the comment pass (dry run substitutes the first group, not the rest):
+ substituted by naming_wave: src/main/32D04.c:1133 (extern) and :1161 (call); src/main/3AB48.c:14 (INCLUDE_ASM);
+   asm/funcs/func_8004A4E0.s, asm/funcs/gpu_PrepareViewAndFlushDrawQueue.s:77; inline_asm_canonical.txt; known_psyq_stdlib.txt;
+   memory/grind/func_8004A4E0 ledger dir + layer2.jsonl.
+ comment/doc pass: src/main/32D04.c:1224 ("3AB48.c's func_8004A4E0 selects from"); include/m2c_context.h:678 (prototype, check
+   whether the dry run leaves it); docs/audits/func_8004A4E0-canonical-2026-09-29.md, docs/audits/RETRO-AUDIT-2026-09-29.md:33,
+   docs/grind/decisions.md:1320-1337 (historical, leave).
+ Related stale text, not this rename: symbol_addrs.txt:993 (func_8004A940 "MISNAMED ... u16 stream decoder"); named_syms.txt:447 cites func_80064ED8.

@@ -1,0 +1,31 @@
+rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — symbol_addrs.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (6) --
+  (root): 2 files, 2 substitutions
+      inline_asm_canonical.txt  (1)
+      known_psyq_stdlib.txt  (1)
+  asm: 2 files, 3 substitutions
+      asm/funcs/func_8004A4E0.s  (2)
+      asm/funcs/gpu_PrepareViewAndFlushDrawQueue.s  (1)
+  src: 2 files, 3 substitutions
+      src/main/32D04.c  (2)
+      src/main/3AB48.c  (1)
+
+-- .s file renames (1) --
+  asm/funcs/func_8004A4E0.s -> asm/funcs/gpu_DrawQueuedNodes.s
+
+-- ledger directory renames (1) --
+  memory/grind/func_8004A4E0 -> memory/grind/gpu_DrawQueuedNodes
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (1) --
+  memory/grind/func_8004A4E0/layer2.jsonl: 1 changes
+      line 1: func func_8004A4E0 -> gpu_DrawQueuedNodes
+
+DRY RUN — nothing written. Re-run with --apply.
