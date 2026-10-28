@@ -1746,10 +1746,11 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
  * header whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
  * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's bd0,
  * less 2 from 12; the old D_8009AF94 label inside row 18 was only sin_1's
- * folded rsin_tbl base), D_8009AFB8 20 x offsets (D_8009B0C0.unk_1C).
- * D_8009ADD8 must follow D_8009ADC0: gpu_DrawIndexedCellsAndDecimalDigitPairs
- * reaches row idx as D_8009B0C0.unk_10 + 3 + idx * 3, so the two read as one
- * table of a 3-cell group and 20 rows. */
+ * folded rsin_tbl base), D_8009AFB8 20 x offsets
+ * (D_8009B0C0.character_x_offsets). D_8009ADD8 must follow D_8009ADC0:
+ * gpu_DrawIndexedCellsAndDecimalDigitPairs reaches row idx as
+ * D_8009B0C0.character_cells + 3 + idx * 3, so the two read as one table of a
+ * 3-cell group and 20 rows. */
 Unk8009B0E0Record D_8009ADB4 = {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FF, 0x0, 0x77};
 Unk8009B400Record D_8009ADC0[3] = {
     {48, 80, 0xB0, 0x00, 0x10, 0x0C},
@@ -2031,8 +2032,8 @@ Unk8009B400Record g_gpu_decimal_digit_cells[10] = {
 };
 
 /* This file's initialized small data (.sdata), in address order (Q65). */
-/* D_8009B0C0.unk_18, the one cell of the digit sheet D_8009B0B4; this file's
- * by layout, between its gp-reached objects (Q80) */
+/* D_8009B0C0.digit_cell, the one cell of the digit sheet D_8009B0B4; this
+ * file's by layout, between its gp-reached objects (Q80) */
 Unk8009B400Record D_800A3264 = {0xB3, 0x4E, 0x00, 0x00, 0x18, 0x0C};
 s32 g_gpu_jittered_quad_pair_cycle = 0;
 u8 D_800A3270[8] = {0, 1, 2, 3, 4, 0, 0, 0};

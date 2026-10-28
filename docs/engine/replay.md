@@ -85,16 +85,16 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
 
 `softbody_PrepareStep(arg0, softbody)` (src/main/87A0.c:133):
 
-1. Loads `arg0->unk4` (a MATRIX) as the GTE rotation and translation and calls
+1. Loads `arg0->object_matrix` (a MATRIX) as the GTE rotation and translation and calls
    `softbody_LoadColliders(arg0)` (src/main/87A0.c:43).
-2. Stores the translation delta `arg0->unk4->t - softbody->matrix.t` in the
+2. Stores the translation delta `arg0->object_matrix->t - softbody->matrix.t` in the
    scratchpad words 0x1F800024..0x1F80002C (`SCRV`'s x, y, z,
    src/main/87A0.c:105).
 3. Takes the squared length `len2`: above 250000 the scale is 0x100; if the
    sum is negative (overflow) it is 0; otherwise it is
    `(isqrt(len2) << 6) / 500 + 0xC0`, the integer square root read from
    `g_sqrt_table_u8` (normalized with the GTE leading-zero count above 0x400).
-4. Sets each `SCRV` component to `(delta * scale) >> 1`, copies `*arg0->unk4`
+4. Sets each `SCRV` component to `(delta * scale) >> 1`, copies `*arg0->object_matrix`
    into `softbody->matrix` and calls `softbody_SolveSprings(softbody)`
    (src/main/87A0.c:179),
    the distance-constraint pass over a chain of 64-byte nodes described above it.

@@ -124,7 +124,8 @@ u32 snd_GetSavedCdAudioSuppressFlag(void) {
 void InitSavedRecordAndResetCameraDistanceOffset(void) {
     s32 i;
     /* FAKE: second handle to g_saved_record; using the global directly
-     * everywhere: score 19; final times[0].unk_4 store through var_1: score 10
+     * everywhere: score 19; final times[0].time_frames store through var_1:
+     * score 10
      */
     /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
     FileRecord *var_1 = &g_saved_record;

@@ -62,7 +62,7 @@ Handlers that the script's modes reach:
   display on.
 - `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
   player 0) or `StepScrollingSpriteDisplay()`, merges `D_800A37A4` into
-  `g_saved_record.unk_00` and a per-character bit into `unk_04`, and sets mode
+  `g_saved_record.unlock_mask` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
 - `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651, mode 15) runs the FMV overlay
   through `sys_ExecMovieOverlay` and sets mode 8.

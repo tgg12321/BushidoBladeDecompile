@@ -3092,9 +3092,9 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
  * (sf=1) of the SVECTOR plus the matrix translation. Then: bone 11's y axis
  * into rec->bone_y_axis, bone_hit_points[0] into rec->bone_hit_point_0, the
  * translations of bones 17 and 14 (y raised by (size_scale * 71) >> 11) into
- * rec->ground_probe_points[], the floor height under each
- * (collision_TestSegmentWithWork down a segment from y - 100 to y + 2000; the
- * segment's lower end when it finds nothing) into rec->ground_probe_floor_ys[],
+ * rec->ground_probe_points[], the end y of a down-segment from each (y - 100
+ * to y + 2000): the hit y from collision_TestSegmentWithWork, or the segment's
+ * lower end (y + 2000) when it finds nothing, into rec->ground_probe_end_ys[],
  * and the two bones' headings into unk_1BA / unk_1C2. */
 void fighter_UpdateBoneWorldData(
     Unk80101EC8Record *rec, Unk80107850Rec *bone_hit_points,

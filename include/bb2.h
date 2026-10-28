@@ -551,8 +551,8 @@ extern s32 *g_reloc_block_entry_tables[];
 extern Unk80104E88Rec g_fight_ballistic_records[];
 extern s32 g_snd_fake_open_vab_copy;
 
-/* fight_BuildOpponentOrder's list: the set bit numbers of g_saved_record.unk_00
- * & mask, shuffled, plus up to three appended values
+/* fight_BuildOpponentOrder's list: the set bit numbers of
+ * g_saved_record.unlock_mask & mask, shuffled, plus up to three appended values
  * (g_fight_opponent_order_count entries; fight_AdvanceOpponentOrder reads entry
  * g_fight_opponent_order_cursor, then advances it). */
 extern u8 g_fight_opponent_order[24];

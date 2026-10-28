@@ -203,10 +203,10 @@ typedef struct {
 
 /* The VAB pack snd_LoadVabPack loads (MOD.BIN's head sound_pack points at one;
    g_vab_rec_ptr keeps the loaded ones): four words, the first three
-   file-relative offsets snd_LoadVabPack turns into addresses in place. unk_00:
-   the u32 key-event table snd_FlushSoundQueue reads; unk_04: the VabHdr
-   snd_VabOpen opens; unk_08: the body snd_VabOpen transfers; unk_0C: the body's
-   size in SPU memory. */
+   file-relative offsets snd_LoadVabPack turns into addresses in place.
+   key_on_table: the u32 key-event table snd_FlushSoundQueue reads; vab_header:
+   the VabHdr snd_VabOpen opens; vab_body: the body snd_VabOpen transfers;
+   vab_body_size: the body's size in SPU memory. */
 typedef struct {
     s32 key_on_table;
     s32 vab_header;
@@ -908,9 +908,9 @@ typedef struct {
  * fighter_UpdateBoneWorldData places point i at SPAD->bone_hit_points[ch][i]
  * (`ofs` rotated by node_GetSlotMatrixPointerArray()'s matrix `bone`, plus that
  * matrix's translation); the hit tests (fighter_CastWeaponSegment,
- * fighter_TestTriangleBoneHits, object_ResolveFighterHits) take unk_0C / unk_0E
- * as the first test's limits and, when unk_00 != 0, unk_10 / unk_12 as a second
- * test's. */
+ * fighter_TestTriangleBoneHits, object_ResolveFighterHits) take outer_radius /
+ * unk_0E as the first test's limits and, when has_inner_sphere != 0,
+ * inner_radius / unk_12 as a second test's. */
 typedef struct BoneHitRec {
     s16 has_inner_sphere;
     s16 bone;
@@ -1693,8 +1693,9 @@ typedef struct Unk80101EC8Record {
     /* fighter_UpdateBoneWorldData: bone 17 / 14 translations,
      * y + ((size_scale * 71) >> 11) */
     Vec3i32 ground_probe_points[2];
-    /* fighter_UpdateBoneWorldData: floor y under ground_probe_points[i]
-     * (collision_TestSegmentWithWork segment test) */
+    /* fighter_UpdateBoneWorldData: probe end y for ground_probe_points[i]:
+     * the hit y of the collision_TestSegmentWithWork down-segment, else the
+     * segment's lower end (probe y + 2000) */
     s32 ground_probe_end_ys[2];
     u8 unk_1B8[0x1BA - 0x1B8];
     /* fighter_UpdateBoneWorldData: ratan2 heading of bone 17's matrix column 2,
@@ -2039,11 +2040,11 @@ typedef struct Unk800F68E0Rec {
 } Unk800F68E0Rec;
 
 /* The 0x20 0x10-byte records of the event table g_replay_events (replay_Reset
- * sets unk_0 to 0xFF = free, replay_BeginFrame frees the current frame's,
- * replay_RecordEvent fills one, replay_PlayFrame replays those whose unk_0 is
- * the frame index). unk_0: the frame (g_replay_write_frame); unk_1 / unk_2:
- * replay_RecordEvent's arg0 / arg1; unk_4: the s16 x / y / z of arg2; unk_A:
- * arg3[0..2]. */
+ * sets event_frame to 0xFF = free, replay_BeginFrame frees the current frame's,
+ * replay_RecordEvent fills one, replay_PlayFrame replays those whose
+ * event_frame is the frame index). event_frame: the frame
+ * (g_replay_write_frame); unk_1 / event_kind: replay_RecordEvent's arg0 / arg1;
+ * event_pos: the s16 x / y / z of arg2; event_vector: arg3[0..2]. */
 typedef struct Unk80101BF0Rec {
     u8 event_frame;
     u8 unk_1;
@@ -2054,12 +2055,13 @@ typedef struct Unk80101BF0Rec {
 } Unk80101BF0Rec;
 
 /* The 4-byte record fight_SplitFrameCounterIntoMinutesSecondsHundredths fills
- * from the frame counter g_fight_timer_frames (30 per second): unk_0 = count /
- * 1800, unk_2 = count / 30 % 60, unk_3 = count % 30 * 100 / 30 (99 / 59 / 99
- * past 0x2BF1F). gpu_DrawTimeFieldsAndDecimalCounter draws the three as
- * two-digit numbers; fight_PackTimeRecordsAndInitPresentation copies them into
- * its save record at +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress
- * also fills only unk_2 = n / 30 and unk_3 = n % 30
+ * from the frame counter g_fight_timer_frames (30 per second): time_minutes =
+ * count / 1800, time_seconds = count / 30 % 60, time_hundredths = count % 30 *
+ * 100 / 30 (99 / 59 / 99 past 0x2BF1F). gpu_DrawTimeFieldsAndDecimalCounter
+ * draws the three as two-digit numbers;
+ * fight_PackTimeRecordsAndInitPresentation copies them into its save record at
+ * +0x2D..+0x2F. fight_UpdateModeDisplaysAndMatchProgress also fills only
+ * time_seconds = n / 30 and time_hundredths = n % 30
  * * 100 / 30 from a frame countdown n, for gpu_DrawPairedMarkRowsAndTimeFields
  * to draw. */
 typedef struct Unk8001CD68Rec {
@@ -2163,7 +2165,7 @@ typedef struct {
  * node_AdvanceFrameAnimatedEntriesAndQueueDraws run the node from the
  * g_node_frame_animation_context.frame_data key frames and queue it on
  * g_draw_queue. unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
- * node_StartFrameAnimatedEntryAndInitPairedNode, -2 done), unk5C the word Y
+ * node_StartFrameAnimatedEntryAndInitPairedNode, -2 done), anim_yaw the word Y
  * angle node_StartFrameAnimatedEntryAndInitPairedNode stores, unk60 an s16
  * node_AdvanceFrameAnimatedEntriesAndQueueDraws sets to 0x1000 at the last key
  * frame and then lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless
@@ -2278,10 +2280,10 @@ typedef struct Unk80045878Obj {
 } Unk80045878Obj;                        /* 0x1A88 */
 
 /* The 16-byte records gpu_UnpackGridRecordsNodesAndCellRuns fills ahead of
- * those (unk8 / unkC = the grid cell's column / row * 2000 - 32000);
- * gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards and
- * gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes set unk6
- * and the unk7 bits and queue them on g_draw_queue. */
+ * those (cell_world_x / cell_world_z = the grid cell's column / row * 2000 -
+ * 32000); gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards
+ * and gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes set
+ * unk6 and the draw_flags bits and queue them on g_draw_queue. */
 typedef struct {
     s16 draw_kind;              /* +0x00 */
     s16 cell_reloc_block_id;    /* +0x02 */
@@ -2456,11 +2458,11 @@ typedef struct Size2s16 {
 } Size2s16;
 
 /* The record gpu_DrawIndexedCellsAndDecimalDigitPairs reads: three frame sheets
- * (unk_00), the name sheet and the per-character name cells (unk_0C / unk_10,
- * three cells per character after a first group), the digit sheet and its cells
- * (unk_14 / unk_18; the walker shifts the sheet's ubase per digit), and
- * per-character x offsets (unk_1C). 4D0A8 hands it D_8009B0C0,
- * menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's unk_3C. */
+ * (unk_00), the name sheet and the per-character name cells (character_sheet /
+ * character_cells, three cells per character after a first group), the digit
+ * sheet and its cells (digit_sheet / digit_cell; the walker shifts the sheet's
+ * ubase per digit), and per-character x offsets (character_x_offsets). 4D0A8
+ * hands it D_8009B0C0, menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's unk_3C. */
 typedef struct {
     Unk8009B0E0Record *unk_00[3];
     Unk8009B0E0Record *character_sheet;

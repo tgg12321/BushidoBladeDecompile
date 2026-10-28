@@ -818,8 +818,8 @@ g_comb_received_pad_word = 0x800A36C0; /* partner's packed input word received o
 D_800A36C4 = 0x800A36C4; /* check word of the received word: (sender's g_comb_send_payload << 16) | 16-bit XOR */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash */
 g_comb_prev_send_word = 0x800A36D0; /* this side's previously sent link word */  /* data-wave 2026-10-08: was g_pad_rec_prev_packed */
 D_800A36D4 = 0x800A36D4; /* store-only copy of the last sent check word */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash */
-D_800A36F0 = 0x800A36F0; /* 0/1: bit 0x20 / 0x10000 of g_saved_record.unk_00 was clear when fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags set it */  /* data-wave 2026-10-08: was g_practice_p1_move_unlock_pending */
-D_800A3781 = 0x800A3781; /* 0/1: bit 0x1000000 / 0x4000000 of g_saved_record.unk_00 was clear when fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags set it */  /* data-wave 2026-10-08: was g_practice_p2_move_unlock_pending */
+D_800A36F0 = 0x800A36F0; /* 0/1: bit 0x20 / 0x10000 of g_saved_record.unlock_mask was clear when fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags set it */  /* data-wave 2026-10-08: was g_practice_p1_move_unlock_pending */
+D_800A3781 = 0x800A3781; /* 0/1: bit 0x1000000 / 0x4000000 of g_saved_record.unlock_mask was clear when fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags set it */  /* data-wave 2026-10-08: was g_practice_p2_move_unlock_pending */
 dma_dpcr = 0x800A2CEC; /* holds 0x1F8010F0 (DPCR, DMA control); _spu_init sets channel 4's enable/priority field (*dma_dpcr |= 0xB0000, spu.c:39; also :369-373) */  /* data-wave 2026-10-09: was g_spu_ctrl_reg_ptr */
 _spu_mem_mode = 0x800A2D00; /* SPU init constant = 2 (paired with g_spu_addr_shift=3) */  /* data-wave 2026-09-29: was g_spu_init_const_a */
 _spu_mem_mode_unit = 0x800A2D08; /* SPU init constant = 8 */  /* data-wave 2026-09-29: was g_spu_init_const_c */
@@ -2079,7 +2079,7 @@ D_800A9D00 = 0x800A9D00; /* a0 advanced past its first halfword; base of 12-byte
 D_800F6650 = 0x800F6650; /* set / clear / get flag */  /* data-wave 2026-10-08: was g_motion_table_flag */
 D_800EED18 = 0x800EED18; /* +8 of each g_arena_blocks block entry: the block's byte amount */  /* data-wave 2026-10-08: was g_snd_stream_slot_field_8 */
 D_800FF610 = 0x800FF610; /* MATRIX: output of MulMatrix0 (0x8007E4DC); old 'vector template' claim refuted, sweep 2026-10-03 */  /* data-wave 2026-10-03: was g_gte_vector_template */
-g_eff_billboards = 0x800F1198; /* list of 12-byte packed records (unk0 bit 0 = present, unk0 / 2 = x; unk4 & 7 = type, unk4 / 8 = y; unk8 = z) ended by one with unk0 bit 0 clear; each is drawn as one POLY_FT4 (51268.c:893-964) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer */
+g_eff_billboards = 0x800F1198; /* list of 12-byte packed records (packed_x bit 0 = present, packed_x / 2 = x; packed_y & 7 = type, packed_y / 8 = y; z_coord = z) ended by one with packed_x bit 0 clear; each is drawn as one POLY_FT4 (51268.c:893-964) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer */
 g_motion_common_sections = 0x80102760; /* Unk801027B0Rec: the common file's section pointers */  /* data-wave 2026-10-08: was g_practice_halfword_table */
 g_fight_choice_menu_first_cursor = 0x800A3804; /* v < 1, set together with g_fight_choice_menu_cursor (9F9C.c:2173-2174); lower bound of the cursor's up/down wrap (9F9C.c:2212-2223) */  /* data-wave 2026-10-08: was g_input_idle_flag */
 D_800F115B = 0x800F115B; /* g_eff_command_status[11], status byte for commands 0x21000B / 0x29000B / 0x31000B; g_eff_command_block.status_dest = &D_800F115B */  /* data-wave 2026-10-08: was g_text1b_glyph_data_b1 */

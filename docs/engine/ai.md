@@ -24,9 +24,9 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 - `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
   pool slot and places the object at the fighter (`world_pos`, raised by
   `size_scale / 32`). Its velocity comes from `g_object_kind_params[kind]`
-  (`Tbl8008E194`, include/game.h:1661): the horizontal speed `unk4` along the
-  fighter's heading `orientation.vy`, the vertical speed `unk6`, and a spin
-  `unk8` about Y or X by `unk0`.
+  (`Tbl8008E194`, include/game.h:1858): the horizontal speed `launch_speed`
+  along the fighter's heading `orientation.vy`, the vertical speed
+  `launch_vel_y`, and a spin `spin_rate` about Y or X by `unk0`.
 - `object_ThrowQueuedKind(rec)` (src/main/17AFC.c:3819) takes an entry off the queue
   (index 1 instead of 0 when it holds two or more, the head equals
   `rec->wielded_object_kind` and `rec->object_variant_index != -1`), spawns it through `object_SpawnFromFighter`, and plays a cue
@@ -57,11 +57,11 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 `fight_BuildOpponentOrder` (src/main/17AFC.c:5279):
 
 1. Collects the IDs `i` in 0..26 whose bit is set in
-   `g_saved_record.unk_00 & 0x3EF3DF`, minus the bit
+   `g_saved_record.unlock_mask & 0x3EF3DF`, minus the bit
    `g_fight_config_id_data_rows[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5288), into
    `g_fight_opponent_order`.
 2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5309).
-3. If bit 0x20 or 0x10000 of `g_saved_record.unk_00` is set, adds ID 5 (bit 0x20)
+3. If bit 0x20 or 0x10000 of `g_saved_record.unlock_mask` is set, adds ID 5 (bit 0x20)
    and / or ID 0x10 (bit 0x10000), in random order when both are set: the first
    goes to position 10, shifting the rest up (or at the end of a shorter list),
    and the second is appended.

@@ -30,7 +30,7 @@ unit `snd_LoadVabPack`
 
 `snd_LoadVabPack` adds the pack's address to the first three words in place,
 then `snd_VabOpen` passes the VH to `SsVabOpenHeadSticky` and the VB to
-`SsVabTransBody`; `unk_0C` (vb_size) advances the sticky SPU address for the
+`SsVabTransBody`; `vab_body_size` (vb_size) advances the sticky SPU address for the
 next bank. In all four files the VAG size table's entry 0 and every entry
 past `vs` are 0, the entries sum to `vb_size`, and the VH's `fsize` equals
 VH size + `vb_size`.

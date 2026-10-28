@@ -1492,17 +1492,18 @@ s32 fighter_ProcessWeaponContacts(void) {
  * q, and pushes the tip out by q*4. If the yaw difference to obj->other's
  * opponent_bearing is under 0x400, each of character `id`'s 22 records
  * (g_fighter_bone_hit_records; records 6..9 only when obj+0x26C is set) is
- * tested: a math_TestPreparedSegmentSphere test with unk_0C / unk_0E sets bit i
- * in *arg1 and, only when the record's first halfword is nonzero, a second test
- * with unk_10 / unk_12 sets bit i in *arg2. Then collision_TestSegmentWithWork
- * casts the segment against the stage; when it returns nonzero and
- * collision_GetHitTag() != 7: if *arg1 is nonzero, the function skips to the
- * end when the cast point is no nearer the base than obj+0xF4 and otherwise
- * clears *arg1 and *arg2; then, unless `arg3`, effect 0xA plays at the cast
- * point. D_800A37E8.. receive -q. GTE: gte_Lzc (gte_ldlzc, gte_nop x2,
- * gte_stlzc) per square root, inline_o.h class (inline-asm-policy, owner ruling
- * 2026-09-26). Everything else is ordinary C, except the five Ruling 11 locals
- * (dx, dy, dz, temp, temp2) and the do-while(0), each annotated below. */
+ * tested: a math_TestPreparedSegmentSphere test with outer_radius / unk_0E sets
+ * bit i in *arg1 and, only when the record's first halfword is nonzero, a
+ * second test with inner_radius / unk_12 sets bit i in *arg2. Then
+ * collision_TestSegmentWithWork casts the segment against the stage; when it
+ * returns nonzero and collision_GetHitTag() != 7: if *arg1 is nonzero, the
+ * function skips to the end when the cast point is no nearer the base than
+ * obj+0xF4 and otherwise clears *arg1 and *arg2; then, unless `arg3`, effect
+ * 0xA plays at the cast point. D_800A37E8.. receive -q. GTE: gte_Lzc
+ * (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h class
+ * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C,
+ * except the five Ruling 11 locals (dx, dy, dz, temp, temp2) and the
+ * do-while(0), each annotated below. */
 extern void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr);
 extern s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);
@@ -4201,8 +4202,8 @@ void object_UpdatePool(void) {
     obj = g_object_pool;
     for (i = 0; i < 12; i++, obj++) {
         /* work: the clamped turn amount (turn block), then the bounce
-         * restitution factor g_object_kind_params[kind].unkA (Ruling 11,
-         * ordinary-c-judge-decidable) */
+         * restitution factor g_object_kind_params[kind].bounce_restitution
+         * (Ruling 11, ordinary-c-judge-decidable) */
         s32 work;
         /* temp: the ratan2() heading of the velocity (turn block), then
          * the collision_TestSegmentExtendingShortStartWithWork() collision

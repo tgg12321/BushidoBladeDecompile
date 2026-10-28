@@ -125,11 +125,12 @@ static inline s32 softbody_Sqrt(s32 x) {
 }
 
 /* softbody_PrepareStep -- loads the GTE rotation/translation from arg0's MATRIX
- * (arg0->unk4), runs softbody_LoadColliders, writes that MATRIX's translation
- * minus the object's (softbody->matrix.t) to scratchpad, scales it by a factor
- * derived from its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100
- * when the squared length exceeds 250000, 0 when it is negative (overflowed)),
- * copies the MATRIX to softbody->matrix and runs softbody_SolveSprings. */
+ * (arg0->object_matrix), runs softbody_LoadColliders, writes that MATRIX's
+ * translation minus the object's (softbody->matrix.t) to scratchpad, scales it
+ * by a factor derived from its length (byte-LUT integer sqrt, GTE LZC above
+ * 0x400; 0x100 when the squared length exceeds 250000, 0 when it is negative
+ * (overflowed)), copies the MATRIX to softbody->matrix and runs
+ * softbody_SolveSprings. */
 void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     s32 dx, dy, dz;
     /* the squared length, then its square root in place, as SOTN's cloaked

@@ -438,8 +438,9 @@ s32 snd_CompactVabBodies(s16 arg0, s32 base) {
 /* snd_LoadVabPack - load a VAB: close whatever occupies slot `vab_id`,
  * recompute the sticky SPU address from the resident banks (compacting them
  * with snd_CompactVabBodies for vab_id != 0), turn the pack's first three
- * offsets (Unk8005C2A8Pack unk_00..unk_08) into addresses, open it with
- * snd_VabOpen and record its slot and SPU address. Returns unk_08 less the
+ * offsets (Unk8005C2A8Pack key_on_table, vab_header,
+ * vab_body) into addresses, open it with
+ * snd_VabOpen and record its slot and SPU address. Returns vab_body less the
  * pack's address (the third offset, unrelocated), or 0 on failure. snd_VabOpen
  * returns s32, as this call site's bytes say (the sll/sra in its body comes
  * from an explicit cast). */
