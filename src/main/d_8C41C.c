@@ -21,7 +21,7 @@
  * gpu_UploadAndDrawSelectedEntryQuads, menu_UpdateEntryGrid,
  * menu_UpdateEntryGridCursors), g_entry_menu_entry_flags (those,
  * DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
- * menu_UpdateRowCursors, func_80071C20,
+ * menu_UpdateRowCursors, menu_SelectStageIndexFromFirstSlotEntryFlag,
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections),
  * g_entry_menu_row_choice_positions
  * (DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,

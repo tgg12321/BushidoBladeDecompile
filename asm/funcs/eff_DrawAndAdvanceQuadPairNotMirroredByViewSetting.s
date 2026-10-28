@@ -1,4 +1,4 @@
-glabel func_80065590
+glabel eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting
     /* 55D90 80065590 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55D94 80065594 1000BFAF */  sw         $ra, 0x10($sp)
     /* 55D98 80065598 0096010C */  jal        eff_DrawAnimatedQuads
@@ -20,4 +20,4 @@ glabel func_80065590
     /* 55DD4 800655D4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 55DD8 800655D8 0800E003 */  jr         $ra
     /* 55DDC 800655DC 00000000 */   nop
-endlabel func_80065590
+endlabel eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting

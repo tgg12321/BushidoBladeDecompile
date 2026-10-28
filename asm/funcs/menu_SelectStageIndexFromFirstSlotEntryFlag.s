@@ -1,4 +1,4 @@
-glabel func_80071C20
+glabel menu_SelectStageIndexFromFirstSlotEntryFlag
     /* 62420 80071C20 95048293 */  lbu        $v0, %gp_rel(D_800A3561)($gp)
     /* 62424 80071C24 0A80013C */  lui        $at, %hi(g_entry_menu_entry_flags)
     /* 62428 80071C28 21082200 */  addu       $at, $at, $v0
@@ -11,4 +11,4 @@ glabel func_80071C20
   .L80071C44:
     /* 62444 80071C44 0800E003 */  jr         $ra
     /* 62448 80071C48 21106000 */   addu      $v0, $v1, $zero
-endlabel func_80071C20
+endlabel menu_SelectStageIndexFromFirstSlotEntryFlag

@@ -192,7 +192,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 6271C 80071F1C 0200622C */  sltiu      $v0, $v1, 0x2
     /* 62720 80071F20 0E004010 */  beqz       $v0, .L80071F5C
     /* 62724 80071F24 04000224 */   addiu     $v0, $zero, 0x4
-    /* 62728 80071F28 08C7010C */  jal        func_80071C20
+    /* 62728 80071F28 08C7010C */  jal        menu_SelectStageIndexFromFirstSlotEntryFlag
     /* 6272C 80071F2C 21800000 */   addu      $s0, $zero, $zero
     /* 62730 80071F30 01000324 */  addiu      $v1, $zero, 0x1
     /* 62734 80071F34 0FFC0424 */  addiu      $a0, $zero, -0x3F1

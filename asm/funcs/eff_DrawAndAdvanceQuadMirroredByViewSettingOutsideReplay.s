@@ -1,4 +1,4 @@
-glabel func_800655E0
+glabel eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay
     /* 55DE0 800655E0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55DE4 800655E4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 55DE8 800655E8 0096010C */  jal        eff_DrawAnimatedQuads
@@ -20,4 +20,4 @@ glabel func_800655E0
     /* 55E24 80065624 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 55E28 80065628 0800E003 */  jr         $ra
     /* 55E2C 8006562C 00000000 */   nop
-endlabel func_800655E0
+endlabel eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay

@@ -1989,7 +1989,7 @@ u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void) {
     return 0;
 }
 
-u8 func_80065540(void) {
+u8 eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay(void) {
     u8 draw_result = eff_DrawAnimatedQuads(6);
     s16 *p = &g_eff_animated_quad_counters[6];
     u16 quad_counter = *p;
@@ -2001,7 +2001,7 @@ u8 func_80065540(void) {
     return 0;
 }
 
-u8 func_80065590(void) {
+u8 eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting(void) {
     u8 draw_result = eff_DrawAnimatedQuads(7);
     s16 *p = &g_eff_animated_quad_counters[7];
     u16 quad_counter = *p;
@@ -2013,7 +2013,7 @@ u8 func_80065590(void) {
     return 0;
 }
 
-u8 func_800655E0(void) {
+u8 eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0xA);
     s16 *p = &g_eff_animated_quad_counters[10];
     s16 quad_counter = *p;
@@ -2025,7 +2025,7 @@ u8 func_800655E0(void) {
     return 0;
 }
 
-u8 func_80065630(void) {
+u8 eff_DrawAndAdvanceQuadNotMirroredByViewSetting(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0xB);
     s16 *p = &g_eff_animated_quad_counters[11];
     s16 quad_counter = *p;

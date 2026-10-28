@@ -1592,7 +1592,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *draw_context, Unk8007352CRec *s) {
     }
 }
 
-s32 func_80071C20(void) {
+s32 menu_SelectStageIndexFromFirstSlotEntryFlag(void) {
     s32 stage_index;
     stage_index = 3;
     if (g_entry_menu_entry_flags[g_entry_menu_slot_records.rec[0]
@@ -1682,7 +1682,8 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
         g_entry_menu_slide_phase = 1;
         snd_QueueSound(6, 0x7F, 0x7F);
         if ((u32)g_entry_menu_fight_mode < 2) {
-            g_entry_menu_working_record_ptr->stage_index = func_80071C20();
+            g_entry_menu_working_record_ptr->stage_index =
+                menu_SelectStageIndexFromFirstSlotEntryFlag();
             g_entry_menu_exit_result = 1;
         } else if (g_entry_menu_fight_mode == 4) {
             g_entry_menu_next_handler_index = 5;
