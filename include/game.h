@@ -1189,7 +1189,7 @@ typedef struct {
 } Unk1F800000Rec;
 
 /* A cell (x, z) of the 32x32 grid of 2000-unit cells that 43500's
- * collision_WalkSegmentGrid walks (Work_80053E9C.unk88 / unk8C). */
+ * collision_WalkSegmentGrid walks (Work_80053E9C.walk_cell / end_cell). */
 typedef struct {
     s16 x;
     s16 z;
@@ -1202,7 +1202,7 @@ typedef struct {
  * collision_TestSegmentExtendingShortStart / collision_TestSegment at
  * D_800EF9F8. 17AFC object_UpdatePool / fight_UpdateBallisticRecords pass
  * 0x1F8002F0, its place in their scratchpad layout
- * (Unk1F8002B8_8005344C.unk38). */
+ * (Unk1F8002B8_8005344C.cast_work). */
 typedef struct {
     s32 nearest_dist_sq;
     u16 hit_tag;
@@ -1264,17 +1264,18 @@ typedef struct {
     s32 unkE8;
 } Work_80053E9C;
 
-/* Unk1F8002B8Rec.unk00, 0x60 bytes of scratch. unk00 is up to six points that
- * unk60[0..2] aim at. fighter_CastWeaponSegment and object_ResolveFighterHits
- * use [0] / [1], for math_PrepareSegmentCollisionFrame /
- * math_TestPreparedSegmentSphere: fighter_CastWeaponSegment's segment, base
- * then tip (fighter_ProcessWeaponBodyHits writes them before each call), and
+/* Unk1F8002B8Rec.point_slots, 0x60 bytes of scratch. point_slots is up to six
+ * points that shape_points[0..2] aim at. fighter_CastWeaponSegment and
+ * object_ResolveFighterHits use [0] / [1], for
+ * math_PrepareSegmentCollisionFrame / math_TestPreparedSegmentSphere:
+ * fighter_CastWeaponSegment's segment, base then tip
+ * (fighter_ProcessWeaponBodyHits writes them before each call), and
  * object_ResolveFighterHits's g_object_pool object step, prev_pos then pos.
  * fighter_ProcessWeaponBodyHits uses all six: [0] / [1] are two of the other
  * character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3] the same two
  * from its record (unk_210 or unk_234), [4] / [5] the midpoints of [0] / [2]
  * and [1] / [3]; for each triangle it hands math_PrepareTriangleCollisionFrame
- * it aims unk60[0..2] at three of them. object_UpdatePool /
+ * it aims shape_points[0..2] at three of them. object_UpdatePool /
  * fight_UpdateBallisticRecords lay the bytes out differently
  * (collision_TestSegmentExtendingShortStartWithWork's argument block, its work
  * area from +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
@@ -1292,7 +1293,8 @@ typedef union {
  * collision_TestSegmentExtendingShortStartWithWork keep their work area
  * (Work_80053E9C, 0xEC bytes) at the address of their last argument
  * (g_collision_segment_work); callers pass 0x1F8002B8 (the area spans record
- * +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123, over unk60 up into unk118).
+ * +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123, over shape_points up into
+ * unk118).
  * - 9F9C fighter_UpdateBoneWorldData keeps collision_TestSegmentWithWork's
  * whole argument record at 0x1F8002B8: from, to, hit, normal, then that work
  * area.
@@ -1303,15 +1305,16 @@ typedef union {
  * per-vertex table at 0x1F8002B4 + 2 * i, which runs into the record for i
  * >= 2. In 17AFC, the collision code takes the record's address (`scr`) and
  * passes it on, or addresses it directly (object_UpdatePool /
- * fight_UpdateBallisticRecords use Unk1F8002B8_8005344C instead). unk60 / unk6C
- * hold point pointers (fighter_ProcessWeaponContacts reads unk60[0..2]); unkB4
- * / unkC4 are fighter_TestTriangleBoneHits's two hit masks
- * (fighter_ProcessWeaponBodyHits reads them; no 17AFC code accesses unkD4 as a
- * member); unkD8 is the matrix the RotMatrix* calls build, and the GTE rotates
- * unkA8 through it; func_8002DE20 rotates three points, relative to the origin
- * *unk60[0], into unk118 and tests them against the triangle (0,0) / unkA8 /
- * unkB8. unk00 is scratch (Unk1F8002B8Unk00): fighter_CastWeaponSegment /
- * object_ResolveFighterHits / fighter_ProcessWeaponBodyHits use its points. */
+ * fight_UpdateBallisticRecords use Unk1F8002B8_8005344C instead). shape_points
+ * / other_shape_points hold point pointers (fighter_ProcessWeaponContacts reads
+ * shape_points[0..2]); bone_hit_mask / unkC4 are fighter_TestTriangleBoneHits's
+ * two hit masks (fighter_ProcessWeaponBodyHits reads them; no 17AFC code
+ * accesses unkD4 as a member); rot_matrix is the matrix the RotMatrix* calls
+ * build, and the GTE rotates unkA8 through it; func_8002DE20 rotates three
+ * points, relative to the origin *shape_points[0], into unk118 and tests them
+ * against the triangle (0,0) / unkA8 / unkB8. point_slots is scratch
+ * (Unk1F8002B8Unk00): fighter_CastWeaponSegment / object_ResolveFighterHits /
+ * fighter_ProcessWeaponBodyHits use its points. */
 typedef struct {
     Unk1F8002B8Unk00 point_slots;
     Unk80107850Rec *shape_points[3];
@@ -1336,7 +1339,7 @@ typedef struct {
 /* The layout object_UpdatePool and fight_UpdateBallisticRecords give the
  * scratchpad area at 0x1F8002B8 (Unk1F8002B8Union.v8005344C): the to point, hit
  * point and normal they pass collision_TestSegmentExtendingShortStartWithWork,
- * and its work area, which runs over Unk1F8002B8Rec's unk60..unk118. */
+ * and its work area, which runs over Unk1F8002B8Rec's shape_points..unk118. */
 typedef struct {
     /* to; collision_TestSegmentExtendingShortStartWithWork copies 16 bytes from
      * it */
@@ -1362,7 +1365,8 @@ typedef struct {
  * (Unk1F8002B8Rec). object_UpdatePool and fight_UpdateBallisticRecords use
  * v8005344C: they pass 0x1F8002F0 as
  * collision_TestSegmentExtendingShortStartWithWork's work-area address, so its
- * 0xEC-byte Work_80053E9C sits at +0x38..+0x123, over rec's unk60..unk118. */
+ * 0xEC-byte Work_80053E9C sits at +0x38..+0x123, over rec's
+ * shape_points..unk118. */
 typedef union {
     Unk1F8002B8Rec rec;
     Unk1F8002B8_8005344C v8005344C;

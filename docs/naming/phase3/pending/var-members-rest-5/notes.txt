@@ -99,3 +99,8 @@ Judgement calls for the reviewer
 - walk_steps_left is the major-axis cell counter pre-decremented at the loop head (:122,:134,:143).
 - cast_normal / cast_work are the 8005344C layout's s16[3] hit normal and the embedded Work_80053E9C (named for the layout of
   object_UpdatePool / fight_UpdateBallisticRecords only).
+
+At apply (naming-c LAND): Work_80053E9C.unk5C=cell_test removed from pairs.txt and the manifest (54 pairs).
+Pre-apply PASS, but tools/naming_keycheck.py member_declarators raises 'ambiguous/unsupported member declaration'
+on the function-pointer declarator `s32 (*unk5C)(s32, s32)`, so the keycheck cannot explain the rename (the other
+4 unexplained changes were knock-ons). Bring the name back once the keycheck parses `(*name)(...)` members.

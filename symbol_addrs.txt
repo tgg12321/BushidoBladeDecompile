@@ -1434,7 +1434,7 @@ g_entry_menu_pressed_buttons = 0x800A354C; /* cached arg1 (masked with 0xFFFF wh
 D_800A344C = 0x800A344C; /* data-wave 2026-10-08: was g_satan1_gauge_state_a */
 D_800A3454 = 0x800A3454; /* data-wave 2026-10-08: was g_satan1_gauge_state_c */
 D_800A345C = 0x800A345C; /* data-wave 2026-10-08: was g_satan1_gauge_state_e */
-g_collision_hit_tag = 0x800A33F8; /* u16 = the cast work area's unk4 on a hit (collision_GetHit); returned by the getter collision_GetHitTag */  /* data-wave 2026-10-08: was g_effect_cached_id */
+g_collision_hit_tag = 0x800A33F8; /* u16 = the cast work area's hit_tag on a hit (collision_GetHit); returned by the getter collision_GetHitTag */  /* data-wave 2026-10-08: was g_effect_cached_id */
 D_800A33F0 = 0x800A33F0; /* s32 set by collision_SetGrid / incremented by collision_RebaseGrid */  /* data-wave 2026-10-08: was g_effect_accumulator */
 D_800A3318 = 0x800A3318; /* current choice (0 / 1) of menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult's two-way pad prompt: confirm returns +1 when 0, -1 otherwise; D_800A3204 resets it (28708.c:573-595) */  /* data-wave 2026-10-08: was g_input_pause_pending_flag */
 D_800A3350 = 0x800A3350; /* two-way choice cursor (0 / 1) of a memory-card message, gpu_DrawSheetPairCenteredTileWithOptionalSelection's second argument */  /* data-wave 2026-10-08: was g_result_screen_state_c */
@@ -1947,7 +1947,7 @@ D_800A3906 = 0x800A3906; /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D7
 g_pad_state_plus_0xC = 0x80102794; /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 _que = 0x80103680; /* function-pointer field (offset 0) of each 0x60-byte slot in the 64-slot queue; paired with g_gpu_packet_buffer_64x96 (+4) */  /* data-wave 2026-09-07: was g_gpu_packet_queue_base */
 D_800EF9F8 = 0x800EF9F8; /* static Work_80053E9C cast work area; g_collision_segment_work = &D_800EF9F8 in collision_TestSegmentExtendingShortStart / collision_TestSegment */  /* data-wave 2026-10-08: was g_effect_struct_a */
-D_800EFA00 = 0x800EFA00; /* D_800EF9F8.unk8 (+8): the cast's start VECTOR */  /* data-wave 2026-10-08: was g_effect_struct_a_vfield */
+D_800EFA00 = 0x800EFA00; /* D_800EF9F8.seg_start (+8): the cast's start VECTOR */  /* data-wave 2026-10-08: was g_effect_struct_a_vfield */
 g_vab_rec_ptr = 0x800EFC38; /* data-wave 2026-09-24: was g_effect_struct_b */
 D_800F1160 = 0x800F1160; /* g_eff_command_status[16..19], status bytes for commands 0x210010-0x210013 (eff_StartRecycledCommandWithOrangeLight, eff_StartRecycledCommandWithMagentaLight) */  /* data-wave 2026-10-08: was g_text1b_slot_a_flags */
 D_800F1152 = 0x800F1152; /* g_eff_command_status[2..3], status bytes for commands 0x210002 / 0x210003 (eff_StartRecycledVectorCommandWithRedLight) */  /* data-wave 2026-10-08: was g_text1b_slot_b_flags */

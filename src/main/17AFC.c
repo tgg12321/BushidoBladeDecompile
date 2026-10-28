@@ -1100,8 +1100,8 @@ s32 fight_ProcessPositionRecordsInQuad(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     return 0;
 }
 
-/* 1 when the box unk78 (min) / unk84 (max) and the box unk90 (min) / unk9C
- * (max) overlap on all three axes. */
+/* 1 when the box unk78 (min) / bbox_max (max) and the box other_bbox_min (min)
+ * / other_bbox_max (max) overlap on all three axes. */
 static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
     return scr->unk78.x <= scr->other_bbox_max.x &&
            scr->bbox_max.x >= scr->other_bbox_min.x &&
@@ -2206,7 +2206,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
  * 0x1F8002B8 (`scr`): unkA8 sums two of the character's SPAD points (unk48[k]
  * when bit k of D_800A3824 is set, else unk00[k]); unkB8 sums the matching pair
  * fight_UpdateFighterInteractionsAndPointCaches copied into D_80101EC8[k]
- * (unk_234 / unk_210); the result goes to unk13C. */
+ * (unk_234 / unk_210); the result goes to contact_point. */
 void fighter_BlendCurrentAndPreviousContactPoints(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80101EC8Record *rec0 = &D_80101EC8[0];
@@ -2466,12 +2466,13 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     scr->unkC4 = var_4;
 }
 
-/* Orients a triangle's local frame. The vertices obj->unk60[0..2] give edge
- * vectors a = v1 - v0 (unkA8) and b = v2 - v0 (unkB8) and n = a x b (unkC8).
- * If n's components are within +-0x3FFF and |n| < 0x4000, the yaw (unkF8.vy)
- * and pitch (.vx) come from a and it returns 0; otherwise n is scaled down by
- * 64 and the angles come from n (returns 1). A rotation matrix built in unkD8
- * (RotMatrixY, RotMatrixX) then rotates a and b in place. */
+/* Orients a triangle's local frame. The vertices obj->shape_points[0..2] give
+ * edge vectors a = v1 - v0 (unkA8) and b = v2 - v0 (unkB8) and n = a x b
+ * (unkC8). If n's components are within +-0x3FFF and |n| < 0x4000, the yaw
+ * (unkF8.vy) and pitch (.vx) come from a and it returns 0; otherwise n is
+ * scaled down by 64 and the angles come from n (returns 1). A rotation matrix
+ * built in rot_matrix (RotMatrixY, RotMatrixX) then rotates a and b in place.
+ */
 s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
@@ -2899,7 +2900,8 @@ s32 math_TestPreparedTriangleSphere(
  * vectors a = v1 - v0 (unkA8), b = v2 - v0 (unkB8) and n = a x b (unkC8). It
  * returns 0 while n's components are within +-0x3FFF; otherwise n is scaled
  * down by 64, the yaw (unkF8.vy) and pitch (.vx) come from n, and the rotation
- * built in unkD8 (RotMatrixY, RotMatrixX) rotates a and b in place (returns 1).
+ * built in rot_matrix (RotMatrixY, RotMatrixX) rotates a and b in place
+ * (returns 1).
  */
 s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
@@ -2953,7 +2955,7 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     obj->unkF8.vx = 0x800 - ratan2(obj->unkC8.y, dist);
     mat = &obj->rot_matrix;
 
-    /* identity 3x3 rotation matrix obj->unkD8 */
+    /* identity 3x3 rotation matrix obj->rot_matrix */
     obj->rot_matrix.m[0][0] = 0x1000;
     obj->rot_matrix.m[0][1] = 0;
     obj->rot_matrix.m[0][2] = 0;
@@ -3251,7 +3253,7 @@ void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr) {
     mat = &scr->rot_matrix;
     scr->unkF8.vx = 0x800 - angle;
 
-    /* identity 3x3 rotation matrix at scr->unkD8 */
+    /* identity 3x3 rotation matrix at scr->rot_matrix */
     scr->rot_matrix.m[0][0] = 0x1000;
     scr->rot_matrix.m[0][1] = 0;
     scr->rot_matrix.m[0][2] = 0;
@@ -4338,7 +4340,7 @@ void object_DeflectFromFighterHit(
     angle1 = D_8008EBA0[idx] & 0xFFF;
     angle2 =
         (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
-    /* identity 3x3 rotation matrix at scr->unkD8 */
+    /* identity 3x3 rotation matrix at scr->rot_matrix */
     scr->rot_matrix.m[0][0] = 0x1000;
     scr->rot_matrix.m[0][1] = 0;
     scr->rot_matrix.m[0][2] = 0;

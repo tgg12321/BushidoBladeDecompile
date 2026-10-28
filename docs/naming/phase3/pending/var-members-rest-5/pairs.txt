@@ -17,7 +17,6 @@ Work_80053E9C.unk50=local_start_z
 Work_80053E9C.unk54=local_end_x
 Work_80053E9C.unk56=local_end_y
 Work_80053E9C.unk58=local_end_z
-Work_80053E9C.unk5C=cell_test
 Work_80053E9C.unk78=walk_minor_step
 Work_80053E9C.unk7C=walk_slope
 Work_80053E9C.unk84=start_cell_center_z
