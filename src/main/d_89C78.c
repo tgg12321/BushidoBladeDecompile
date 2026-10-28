@@ -35,7 +35,7 @@ s16 g_resource_has_retained_subblocks = 0;
 
 /* fight_GetStartPositionPairTable's block: 38 rows of four start records of
  * two (x, y, z) points; 9F9C.c indexes the row by g_fight_stage_index,
- * 43500.c:595 by resource_GetLoadedSelector(), 17AFC.c:222 steps
+ * 43500.c:595 by resource_GetLoadedSelector(), 17AFC.c:223 steps
  * g_fight_stage_index * 12. */
 s16 g_fight_start_position_pairs[38][4][2][3] = {
     {{{-2000, 0, 0}, {2000, 0, 0}},

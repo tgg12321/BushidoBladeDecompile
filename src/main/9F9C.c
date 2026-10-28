@@ -4141,8 +4141,8 @@ void fighter_ConfigureCpuControl(void) {
 }
 
 /* The masked state id is spelled as in its
- * copy-paste sibling fighter_UpdateGroundYByMoveKind (`s32 a0 =
- * arg0->move_kind; s32 v1 = a0 & 0xFFFF;`, same comparison cascade), which
+ * copy-paste sibling fighter_UpdateGroundYByMoveKind (the same masked read of
+ * fighter_record->move_kind, same comparison cascade), which
  * keeps the target's `andi $v1,$a0,0xffff`: the raw value stays live for `mode
  * - 0x17`, so combine never folds the mask. A u16 on either side loses it. */
 void fighter_ResolveMovement(Unk80101EC8Record *fighter_record, VECTOR *pos1,
@@ -4610,19 +4610,20 @@ extern s16 g_fighter_power_scales[27][4];
 extern u8 D_8008D90C[2][8];
 extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);
 
-/* Per-frame update of character `arg0`'s record from this frame's pad input:
- * converts the pad bits, advances the move frame, runs the move script's
+/* Per-frame update of character `fighter_index`'s record from this frame's pad
+ * input: converts the pad bits, advances the move frame, runs the move script's
  * command list (cur_move / queued_move, motion_ResolveMoveData /
  * fighter_StartMoveScript), decodes two MotionFrames with motion_DecodeFrame
  * (at move_frame and at move_frame + 1, capped at motion_metadata[1] - 1, each
  * offset by *motion_entry, and by motion_metadata[1] in some states; state
- * move_kind 0x33 instead copies g_motion_frame_buffers[arg0][move_frame] into
- * both); when pose_blend_requests is 0 it mixes their root offsets into
- * root_offset by the 4.12 weight move_frame_frac, otherwise the first one's (by
- * the weight pose_blend_progress) with saved_motion_frame's less
- * pose_blend_base_shift (by 0x1000 - pose_blend_progress), integrates the
- * velocities (base_velocity / decaying_xz_velocity) into the position, resolves
- * it (fighter_ResolveMovement), then refreshes the bone points, the flags
+ * move_kind 0x33 instead copies
+ * g_motion_frame_buffers[fighter_index][move_frame] into both); when
+ * pose_blend_requests is 0 it mixes their root offsets into root_offset by the
+ * 4.12 weight move_frame_frac, otherwise the first one's (by the weight
+ * pose_blend_progress) with saved_motion_frame's less pose_blend_base_shift (by
+ * 0x1000 - pose_blend_progress), integrates the velocities (base_velocity /
+ * decaying_xz_velocity) into the position, resolves it
+ * (fighter_ResolveMovement), then refreshes the bone points, the flags
  * frame_flags, unk_AE and weapon_hit_phases, the damping and the per-frame side
  * effects. */
 void fighter_Update(s32 fighter_index, PadState *pad) {

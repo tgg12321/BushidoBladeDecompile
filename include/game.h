@@ -1727,7 +1727,8 @@ typedef struct Unk80101EC8Record {
      * 0x1F800048 + idx * 0x18 */
     Unk80107850Rec prev_second_weapon_points[2];
     VECTOR unk_24C;
-    /* fighter_Update: copy of scratchpad point weapon_points[idx][0] */
+    /* fighter_Update: copy of scratchpad point
+     * weapon_points[fighter_index][0] */
     Unk80107850Rec opponent_elevation_origin;
     s32 elevation_origin_from_weapon;
     s16 unk_26C;

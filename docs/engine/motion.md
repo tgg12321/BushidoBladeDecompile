@@ -74,25 +74,25 @@ per-joint channels (the comment at include/game.h:1469).
 
 ## Per-frame update: `fighter_Update`
 
-The fighter loop calls `fighter_BuildCpuOrMappedPadState(i, pad)` and then `fighter_Update(i, pad)`
-for each fighter (src/main/9F9C.c:2040-2043); the variants at :2086 and :2195
+The fighter loop calls `fighter_BuildCpuOrMappedPadState(fighter_index, pad)` and then `fighter_Update(fighter_index, pad)`
+for each fighter (src/main/9F9C.c:2203-2206); the variants at :2254 and :2379
 call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
-`fighter_Update` (src/main/9F9C.c:4623; its comment lists the whole sequence):
+`fighter_Update` (src/main/9F9C.c:4629; its comment lists the whole sequence):
 
 1. converts the pad bits, advances the frame `move_frame` and runs the move
    script's command list, switching moves through `motion_ResolveMoveData` /
    `fighter_StartMoveScript`;
 2. decodes the frames at `move_frame` and the next one with `motion_DecodeFrame`
-   (src/main/9F9C.c:5039-5040), or copies `g_motion_frame_buffers[i][move_frame]` in state
+   (src/main/9F9C.c:5122-5124), or copies `g_motion_frame_buffers[fighter_index][move_frame]` in state
    0x33; the frame keys go to `blend_src_frame_code` / `blend_dst_frame_code` as `(slot << 14) | frame`
-   (src/main/9F9C.c:5033);
+   (src/main/9F9C.c:5113-5116);
 3. turns the two root offsets into a position delta (heading and distance
    through `Judge`, scaled by `size_scale`), blended by `move_frame_frac` or by
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
 4. integrates the velocities `base_velocity` / `decaying_xz_velocity`, resolves the position
-   (`fighter_ResolveMovement`, src/main/9F9C.c:4147), and builds the pose:
-   `slot_BlendTwoPosesIntoNodeMatrices(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:5256) and
-   `func_80040D48` (src/main/9F9C.c:5260).
+   (`fighter_ResolveMovement`, src/main/9F9C.c:4148), and builds the pose:
+   `slot_BlendTwoPosesIntoNodeMatrices(fighter_index, &pose_frames[0], &pose_frames[1], pose_interp_weight, ...)` (src/main/9F9C.c:5412) and
+   `func_80040D48` (src/main/9F9C.c:5416).
 
 ## Building the pose
 
