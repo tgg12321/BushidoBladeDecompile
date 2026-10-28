@@ -32,7 +32,7 @@ Each frame `main` (src/main/6CF8.c:423) runs these steps:
 
 `ClearOTagR` links each entry to the one below it, so the GPU walks from
 entry 0x1007 down to entry 0. A primitive linked at a higher index is drawn
-earlier. `D_800A390D` skips presenting for a number of frames.
+earlier. `g_main_present_skip_frames` skips presenting for a number of frames.
 
 The two `SetDefDrawEnv` calls in `disp_Init` put buffer 0's draw area at
 y = 0 and buffer 1's at y = 0xF0. Each buffer displays the other's area. Both
@@ -41,7 +41,7 @@ are 640 x 240.
 Two small extra lists use a local 1- or 2-entry OT:
 
 - `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526) draws a full-screen overlay into the
-  buffer at `D_800F33D8`, chosen by `g_local_ot_draw_mode`. It uses `ClearOTagR(ot, 2)`
+  buffer at `g_shared_buffer`, chosen by `g_local_ot_draw_mode`. It uses `ClearOTagR(ot, 2)`
   and `DrawOTag(ot + 1)`.
 - `menu_RunPauseMenu` (src/main/6CF8.c:312), the pause menu loop, uses
   `ClearOTagR(ot, 1)`.

@@ -185,7 +185,7 @@ fi
 #           fix (operative 2026-08-24 .. 2026-09-25). Expects:
 #     main/63D2C: func_80073C78's `+` UV stores — stock emits the target `ori`
 #             pair, no-rewrite `addu`.
-#     main/6CF8: `main`'s natural `((D_800A36F1 - 1) << 8) + 0x80` (site C) —
+#     main/6CF8: `main`'s natural `((g_main_frame_period - 1) << 8) + 0x80` (site C) —
 #             stock keeps the unfolded `addiu -1; sll 8; addiu 0x80`,
 #             no-rewrite folds to `sll; addiu -128`.
 NARROW_REF_EXPECT_DIFF="main/9F9C"

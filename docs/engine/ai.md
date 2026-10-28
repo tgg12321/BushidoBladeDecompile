@@ -67,7 +67,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
    and the second is appended.
 4. Appends 0x1A or 0x18 when bit 0x04000000 or 0x01000000 is set (which one
    is tested depends on `g_fighter_group_flags`), stores the count in `D_800A391F`, and
-   clears the cursor `D_800A3783`.
+   clears the cursor `g_fight_opponent_order_cursor`.
 
 `fight_AdvanceOpponentOrder` (src/main/17AFC.c:5397) steps the cursor: it sets
 `g_fight_config.unk_4[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor

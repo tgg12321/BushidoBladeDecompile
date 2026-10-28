@@ -27,14 +27,14 @@ start-up code, in order:
    `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(0x80118800, ...)` (src/main/6CF8.c:188), which reads file
    `cdrom_GetFileIndex(2, 0x61)`, shows it for 150 frames and darkens it over
    the last 29.
-2. `g_main_loop_handler_index = 0xF` (the first mode, `ExecMovieOverlayAndReinitialize`), `D_800A390D = 0`,
+2. `g_main_loop_handler_index = 0xF` (the first mode, `ExecMovieOverlayAndReinitialize`), `g_main_present_skip_frames = 0`,
    `g_gpu_presented_frame_count = 0`.
 3. The loop (src/main/6CF8.c:447):
    - picks the buffer `g_gpu_db[g_gpu_presented_frame_count & 1]`, clears its OT
      (`ClearOTagR(ot, 0x1008)`), sets `g_gpu_ot_ptr` and the primitive cursor
      `g_prim_buf_cursor = D_800A3770[idx]`;
    - `eff_SelectQuadBuffer(idx)` (src/main/51268.c), `font_BeginFrame()`
-     (src/main/2B344.c:1131), `pad_Update(skip)` (last frame's `D_800A390D`),
+     (src/main/2B344.c:1131), `pad_Update(skip)` (last frame's `g_main_present_skip_frames`),
      `cdrom_Update()`,
      `snd_FlushSoundQueue()` (src/main/4BC3C.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
@@ -44,15 +44,15 @@ start-up code, in order:
    - calls the mode handler `D_8008D090[g_main_loop_handler_index]()` (src/main/6CF8.c:468),
      then `font_AddTpage()` (src/main/2B344.c:1146);
    - waits until root counter 2 (`GetRCnt(0xF2000001)`) reaches
-     `((D_800A36F1 - 1) << 8) + 0x80`, calling `rand()` while it waits; then
+     `((g_main_frame_period - 1) << 8) + 0x80`, calling `rand()` while it waits; then
      `VSync(1)`, `DrawSync(0)`, `VSync(0)`, `ResetRCnt(0xF2000001)`;
-   - unless frames are being skipped (`D_800A390D != 0`), `PutDispEnv` /
+   - unless frames are being skipped (`g_main_present_skip_frames != 0`), `PutDispEnv` /
      `PutDrawEnv` for the buffer;
    - checks the primitive buffer: the space left
      (`D_800A3770[idx] + 0x13400 - g_prim_buf_cursor`) updates the low-water
      mark `D_800A30DC`; below 0 it prints `g_str_prim_overflow` and stops in
      `func_800164F8` (src/main/6CF8.c:488-499);
-   - decrements `D_800A390D`, or else submits the OT (`DrawOTag`) and
+   - decrements `g_main_present_skip_frames`, or else submits the OT (`DrawOTag`) and
      increments `g_gpu_presented_frame_count`;
    - in mode 1, when no frame was skipped, Start (`0x08000800`) or the
      `D_800A3713` countdown (with `g_fight_mode_selector == 2`) opens the pause menu
@@ -62,12 +62,12 @@ start-up code, in order:
 
 - `sys_Init` (src/main/6CF8.c:175): `ResetCallback`, `InitPAD` on
   `g_pad_buf`, `StartPAD`, `ChangeClearPAD(0)`, `disp_Init`, display off,
-  `D_800A36A8 = 0`, `cdrom_Init`, `memcard_Init`, `rcnt_StartCnt1Wrapper`.
+  `g_gpu_jitter_burst_enabled = 0`, `cdrom_Init`, `memcard_Init`, `rcnt_StartCnt1Wrapper`.
 - `func_80016D78` (src/main/6CF8.c:285): sets the two primitive buffers
   `D_800A3770[0..1] = 0x801D8800 / 0x801EBC00` and their size `D_800A3798 =
   0x13400`, loads the common sound bank (`snd_InitAndLoadCommonVab`,
   src/main/6CF8.c:265), `pad_ResetStateMarkValid`, `font_LoadImage`,
-  `fight_InitSettings`, `func_80046B44`, sets `D_800A36F1 = 2` and clears the
+  `fight_InitSettings`, `func_80046B44`, sets `g_main_frame_period = 2` and clears the
   start-up flags and `g_comb_abort_request`.
 - `sys_Panic` (src/main/6CF8.c:239) prints `g_str_overflow` and stops in
   `func_800164F8`; `eff_Init` and `snd_InitAndLoadCommonVab` call it when
@@ -78,7 +78,7 @@ start-up code, in order:
 `menu_RunPauseMenu` (src/main/6CF8.c:312) runs its own frame loop (OT, `pad_Update`,
 `gpu_DrawModeSizedPanelWithSelectedCellOpaque` to draw, `cdrom_Update`, `snd_FlushSoundQueue`, present) with 3
 choices, or 6 when `g_fight_mode_selector == 2` and `D_800A389A` is 0. Up / Down move
-the choice, Left / Right toggle bits of `D_800A3788` on choices 3..5, Cross
+the choice, Left / Right toggle bits of `g_fight_toggle_option_bits` on choices 3..5, Cross
 confirms and Triangle cancels. Choice 1 sets `D_800A31DA = 1` and mode 8;
 choice 2 sets mode 8.
 

@@ -70,7 +70,7 @@ Large objects named elsewhere in these pages:
 - `CdState g_cdrom_state`: the CD state block (include/game.h:2084).
   `g_cd_file_table` (0x8008EC34, include/bb2.h:474) holds the disc file
   records. See [file_io.md](file_io.md).
-- `D_800F33D8`: the 0x200-byte memory-card image. Its second half is
+- `g_shared_buffer`: the 0x200-byte memory-card image. Its second half is
   `Unk800F34D8Save D_800F34D8` (include/game.h:40-52).
   `gpu_DrawDisplayModeOnLocalOtAndSync` also builds its overlay primitives there
   (src/main/6CF8.c:537).

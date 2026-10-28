@@ -32,7 +32,7 @@ With the standard digital-pad bit order, the masks the handlers use are:
 until an opcode ends the step. The opcodes and what they do:
 
 - 0: mode 18 (with `g_fight_presentation_index` from `g_fighter_group_flags[fighter 0's character_data_index]`), or
-  mode 10 when `D_800A380C` is set.
+  mode 10 when `g_fight_menu_restart_count` is set.
 - 1: one operand byte into `g_fight_stage_index` and the history `D_800A37A8[]`;
   mode 22.
 - 2: keeps a 0x1D-byte block in `D_800A3894`, sets up fighter 0
@@ -103,7 +103,7 @@ Cited by function name.
   `D_800A35A0`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1307).
 - `StepSlideProgressCommitPendingStateAndQueueSound` (src/main/5ED34.c:249) slides `g_entry_menu_slide_displacement` by 0x20 a frame:
   states 1 / 3 (low byte of `g_entry_menu_slide_phase`) slide in to 0x1E8 and then switch
-  `g_entry_menu_handler_index` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5
+  `g_entry_menu_handler_index` to `g_entry_menu_next_handler_index`; states 2 / 4 slide back to 0, playing sound 5
   as they start.
 - `menu_UpdateEntryGridCursors` (src/main/5ED34.c:826) is the grid cursor of that screen
   (see [replay.md](replay.md)).

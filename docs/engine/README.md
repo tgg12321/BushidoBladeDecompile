@@ -118,7 +118,7 @@ address is the stable key.
 | `text1a_c.c` | 0x80042504-0x80044800 | Matrix/colour math (`math_RotMatrix*`, `math_RgbToHsv`), primitive texture-offset helpers (`gpu_OffsetTexPoly*`), prim-buffer slots |
 | `text1a_c_tu2.c` | 0x80044800-0x800460E4 | NDATA pack cache (`ndata_LoadPack` / `ndata_ReadFromPack`) and channel helpers |
 | `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`resource_LoadOrReuseSelectedBlock`, `game_*Init`, `resource_HasRetainedSubblocks`), SE allocation/stop, camera bone setup |
-| `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `motion_StartPlayback` / `motion_UpdatePlayback` (fill and play back the `D_800EFAE8` camera / motion block) |
+| `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `motion_StartPlayback` / `motion_UpdatePlayback` (fill and play back the `g_motion_playback_record` camera / motion block) |
 | `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: the 16 `eff_SpawnParticles` particle-bank wrappers (`func_80066EC0`..`func_800671CC`), `motion_ex_*`, animated sprite/object drawing |
 | `text1b_tu1d.c` | 0x8006E534-0x8007352C | HUD/overlay rendering, replay display setup |
 | `text1b_tu1e.c` | 0x8007352C-0x800747D8 | Sprite/animated-object drawing (5 functions) |
@@ -179,7 +179,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `g_local_ot_draw_mode` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
   `gpu_DrawDisplayModeOnLocalOtAndSync` draws each frame (6CF8.c:540-590); `bb2_const.h` names
   three of the values.
-- `D_800A36A8` — a 0/1 switch that multiplies the `gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle` sprite passes.
+- `g_gpu_jitter_burst_enabled` — a 0/1 switch that multiplies the `gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle` sprite passes.
 - `g_gpu_presented_frame_count` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
   double-buffer index, `fight_UpdateRotatingViewThreeOptionChoice` / `fight_UpdateRotatingViewDecimalPresentation` use the whole value.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
@@ -196,7 +196,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   `g_gpu_cell_draw_attributes` — 32x32 cell grid read by the draw walks (no collision use)
 - `g_slot_objects` — three slots for the model objects `slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock` builds
   (`slot_FindEmpty` scans i < 3)
-- `D_80094B88` — per-slot 5-bit codes `slot_RequestTimGroupsAndMarkReloadOnChange` stores and
+- `g_slot_tim_group_requests` — per-slot 5-bit codes `slot_RequestTimGroupsAndMarkReloadOnChange` stores and
   `slot_FinalizeObjectLoadSoundTexturesAndArena` packs into the model object's flag word
 - `D_800A6690` — transform-node records (0x68 bytes) unpacked from a u16
   stream and queued by the grid draw walks

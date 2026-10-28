@@ -22,7 +22,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
      comment at :766): two points per fighter tested pairwise against the
      radii `D_800A3144[0..1]`, an overlap pushing both apart along x/z
      through `unk_134`.
-  3. `D_800A3824 = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1077): the blade
+  3. `g_fight_weapon_contact_result = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1077): the blade
      contact test between the two fighters (comment at :1065); it returns
      `(fighter-1 grid << 1) | fighter-0 grid` on contact, else -1.
   4. On contact, `fighter_BlendCurrentAndPreviousContactPoints` (src/main/17AFC.c:2118), then
@@ -62,7 +62,7 @@ target, with the opponent as the attacker:
    moved more than 2500 units) and each triangle goes through `math_PrepareTriangleCollisionFrame`
    (src/main/17AFC.c:2377) and `fighter_TestTriangleBoneHits` (src/main/17AFC.c:2296), which
    leave bit masks of struck limb records in the scratch record.
-3. Of the struck records among the target's 22 limb records (`D_800F5F68[i]`)
+3. Of the struck records among the target's 22 limb records (`g_fighter_bone_hit_records[i]`)
    it picks the one nearest the attacker's point `unk_210[1]`
    (src/main/17AFC.c:1806-1822). With `mode == 1` it only plays cue 4 there
    and returns.

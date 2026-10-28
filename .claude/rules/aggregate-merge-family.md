@@ -97,8 +97,8 @@ one-object spelling matches.
   with the saved result pointer as `.result` at 0x34 (psyz ReadAttr); every cdread.c access goes
   through it. The cb_read per-member FAKE is retired.
 - **D_800A36C2 / D_800A36D2 (Q125, item 4):** comb_ExchangePad only. The high halfwords (+2) of
-  the s32 link pad words D_800A36C0 / D_800A36D0 as their own `extern s16` in bb2.h, each
-  `/* FAKE */`-annotated with the measured scores; every other access goes through the s32 words.
+  the s32 link pad words g_comb_received_pad_word / D_800A36D0 as their own `extern s16` in
+  bb2.h, each `/* FAKE */`-annotated with the measured scores; other accesses use the s32 words.
   Basis: the original reads each word and its low half gp-relative and the high half lui / %lo
   (the `.comm` S+k rule of [[per-file-gp-model]]); every one-object form measured failing (Q33 union
   per word 4, its member reads forcing the address into $s0; (u16) word low reads 4; u16 h[2] 7;

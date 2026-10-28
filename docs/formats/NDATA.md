@@ -126,7 +126,7 @@ corresponding INF entry — they were never copied into NDATA.DAT.
 
 The executable does hold the pool's 899 pointers, as `.data` words at 0x800955E0
 (`D_800955E0`, `const char *[899]` at the head of 35000.c's `.data`), right after 32D04.c's 44-halfword per-type size
-table D_80095588. No code reads them.
+table g_gpu_prim_type_halfword_sizes. No code reads them.
 
 The mapping from filename to file-ID is NOT a pointer table at runtime — it
 is fixed at build time by the *order* in which the path-string pool appears

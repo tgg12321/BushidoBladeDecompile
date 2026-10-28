@@ -253,7 +253,7 @@ The save flow is `memcard_StepRequest` (28708.c:277), stepped on `g_memcard_requ
 
 - **Save (state 3):** it checks for the save file `D_80010AAC`
   (`"BASLUS-00663BUSHIDO2"`, through `D_800A31F0`) and for free blocks. It
-  clears the 0x200-byte buffer `D_800F33D8` (`memcard_ClearBuffer`) and writes the
+  clears the 0x200-byte buffer `g_shared_buffer` (`memcard_ClearBuffer`) and writes the
   card header into it (`memcard_BuildFileHeader`: icon CLUT and image). It fills the
   save block at `+0x100` (`memcard_BuildSaveBlock`, an `Unk800F34D8Save`,
   include/game.h:40-52), then writes 0x200 bytes.
