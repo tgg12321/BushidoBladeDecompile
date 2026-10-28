@@ -8,23 +8,23 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-s32 cdrom_IsIdle(void) { return g_cdrom_state.rec.unk02 == 0; }
+s32 cdrom_IsIdle(void) { return g_cdrom_state.rec.io_state == 0; }
 
 s32 cdrom_StartRead(s32 file_index, s32 dest_addr) {
     s32 file_size;
 
-    if (g_cdrom_state.rec.unk02 != 0) {
+    if (g_cdrom_state.rec.io_state != 0) {
         return 0;
     }
 
-    g_cdrom_state.rec.unk00 = file_index;
+    g_cdrom_state.rec.file_index = file_index;
     g_cdrom_state.rec.pair = g_cd_file_table[(s16)file_index];
-    g_cdrom_state.rec.unk1C = dest_addr;
-    g_cdrom_state.rec.unk08 = 0;
-    g_cdrom_state.rec.unk02 = 2;
+    g_cdrom_state.rec.read_dest_addr = dest_addr;
+    g_cdrom_state.rec.stop_request = 0;
+    g_cdrom_state.rec.io_state = 2;
     file_size = g_cdrom_state.rec.pair.size;
     g_cdrom_state.rec.unk3E = 0;
-    g_cdrom_state.rec.unk18 = (u32)(file_size + 0x7FF) >> 11;
+    g_cdrom_state.rec.read_sector_count = (u32)(file_size + 0x7FF) >> 11;
     return 1;
 }
 
@@ -35,7 +35,7 @@ s32 cdrom_StartReadAt(
     }
     CdIntToPos(CdPosToInt(&g_cdrom_state.rec.pair.loc) + sector_offset,
                &g_cdrom_state.rec.pair.loc);
-    g_cdrom_state.rec.unk18 = sector_count;
+    g_cdrom_state.rec.read_sector_count = sector_count;
     return 1;
 }
 
@@ -48,9 +48,9 @@ void cdrom_Pause(void) {
     cdrom_SetMix(0, 0, 0, 0);
     CdFlush();
     CdControlF(9, 0);
-    g_cdrom_state.rec.unk08 = 1;
-    g_cdrom_state.rec.unk02 = 0xB;
-    g_cdrom_state.unk04 = 0;
+    g_cdrom_state.rec.stop_request = 1;
+    g_cdrom_state.rec.io_state = 0xB;
+    g_cdrom_state.sync_wait_count = 0;
 }
 
 u32 cdrom_GetFileSize(s32 file_index) {
@@ -78,31 +78,31 @@ void cdrom_WaitIdle(void) {
 }
 
 s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
-    if (g_cdrom_state.rec.unk02 != 0) {
+    if (g_cdrom_state.rec.io_state != 0) {
         return 0;
     }
 
-    g_cdrom_state.rec.unk00 = file_index;
-    g_cdrom_state.rec.pair = g_cd_file_table[g_cdrom_state.rec.unk00];
-    g_cdrom_state.rec.unk14 =
-        CdPosToInt(&g_cd_file_table[g_cdrom_state.rec.unk00].loc) +
-        ((u32)g_cd_file_table[g_cdrom_state.rec.unk00].size >> 11) - 0x96;
+    g_cdrom_state.rec.file_index = file_index;
+    g_cdrom_state.rec.pair = g_cd_file_table[g_cdrom_state.rec.file_index];
+    g_cdrom_state.rec.audio_end_pos =
+        CdPosToInt(&g_cd_file_table[g_cdrom_state.rec.file_index].loc) +
+        ((u32)g_cd_file_table[g_cdrom_state.rec.file_index].size >> 11) - 0x96;
 
     if (audio_channel < 0) {
-        g_cdrom_state.rec.unk34 = 0;
-        g_cdrom_state.rec.unk30 = 5;
+        g_cdrom_state.rec.is_xa_audio = 0;
+        g_cdrom_state.rec.audio_mode = 5;
     } else {
-        g_cdrom_state.rec.unk34 = 1;
+        g_cdrom_state.rec.is_xa_audio = 1;
         g_cdrom_state.file = 1;
         g_cdrom_state.chan = audio_channel;
         CdControlB(0xD, &g_cdrom_state.file, 0);
-        g_cdrom_state.rec.unk30 = 0xC8;
+        g_cdrom_state.rec.audio_mode = 0xC8;
     }
 
-    g_cdrom_state.rec.unk04 = 0;
-    g_cdrom_state.rec.unk08 = 0;
-    g_cdrom_state.rec.unk0A = 0;
-    g_cdrom_state.rec.unk02 = 0x10;
+    g_cdrom_state.rec.audio_hold = 0;
+    g_cdrom_state.rec.stop_request = 0;
+    g_cdrom_state.rec.audio_repeat = 0;
+    g_cdrom_state.rec.io_state = 0x10;
 
     return 1;
 }
@@ -112,8 +112,8 @@ s32 cdrom_StartAudioEntry(s32 entry_index) {
     if (cdrom_StartAudio(cdrom_GetFileIndex(5, audio_entry->unk_0),
                          audio_entry->unk_1) != 0) {
         if (audio_entry->unk_4 != -1) {
-            g_cdrom_state.rec.unk14 =
-                CdPosToInt(&g_cd_file_table[g_cdrom_state.rec.unk00].loc) +
+            g_cdrom_state.rec.audio_end_pos =
+                CdPosToInt(&g_cd_file_table[g_cdrom_state.rec.file_index].loc) +
                 audio_entry->unk_4;
         }
         return 1;
@@ -124,31 +124,31 @@ s32 cdrom_StartAudioEntry(s32 entry_index) {
 s32 cdrom_StartAudioEntryHeld(void) {
     s32 ret = ((s32(*)())cdrom_StartAudioEntry)();
     if (ret) {
-        g_cdrom_state.rec.unk04 = 1;
+        g_cdrom_state.rec.audio_hold = 1;
         return 1;
     }
     return 0;
 }
 
-void cdrom_SetAudioRepeat(s16 arg0) { g_cdrom_state.rec.unk0A = arg0; }
+void cdrom_SetAudioRepeat(s16 arg0) { g_cdrom_state.rec.audio_repeat = arg0; }
 
 s32 cdrom_StartAudioHeld(void) {
     if (((s32(*)())cdrom_StartAudio)() != 0) {
-        g_cdrom_state.rec.unk04 = 1;
+        g_cdrom_state.rec.audio_hold = 1;
         return 1;
     }
     return 0;
 }
 
 void cdrom_RequestStop(void) {
-    g_cdrom_state.rec.unk04 = 0;
-    g_cdrom_state.rec.unk08 = 1;
+    g_cdrom_state.rec.audio_hold = 0;
+    g_cdrom_state.rec.stop_request = 1;
 }
 
-void cdrom_ReleaseAudio(void) { g_cdrom_state.rec.unk04 = 0; }
+void cdrom_ReleaseAudio(void) { g_cdrom_state.rec.audio_hold = 0; }
 
 void cdrom_WaitAudioStarted(void) {
-    while (g_cdrom_state.rec.unk02 != 0x16) {
+    while (g_cdrom_state.rec.io_state != 0x16) {
         comb_ExchangeEmptyPad();
         cdrom_Update();
         VSync(2);
@@ -156,7 +156,7 @@ void cdrom_WaitAudioStarted(void) {
 }
 
 void cdrom_PauseAndWait(void) {
-    if (g_cdrom_state.rec.unk02 != 0) {
+    if (g_cdrom_state.rec.io_state != 0) {
         cdrom_Pause();
     }
     cdrom_WaitIdle();

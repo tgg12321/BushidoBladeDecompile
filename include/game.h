@@ -988,16 +988,16 @@ typedef struct {
     union {
         s32 w;
         u16 h;
-    } unk00;
+    } command_word;
 
-    s16 *unk04;
-    s32 *unk08;
-    s32 *unk0C;
-    s16 *unk10;
-    u8 *unk14;
-    s16 unk18[3];
+    s16 *bound_rotation_src;
+    s32 *bound_position_src;
+    s32 *start_position_src;
+    s16 *start_vector_src;
+    u8 *status_dest;
+    s16 vector_copy[3];
     u8 unk1E[2];
-    s32 unk20[3];
+    s32 position_copy[3];
 } Unk1F800000Unk00;
 
 /* 20-byte record table at 0x800EFC78 (51268): 4 rows (particle_row_index)
@@ -1188,7 +1188,7 @@ typedef struct {
     s16 left_x_offset;     /* g_eff_left_x_offset */
     s16 right_x_offset;    /* g_eff_right_x_offset */
     s32 upper_y_offset;    /* g_eff_upper_y_offset */
-    s32 unk88;             /* g_eff_lower_y_offset_word */
+    s32 y_extent_work;     /* g_eff_lower_y_offset_word */
     s32 unk8C;             /* g_eff_rtp_flag */
     s32 depth_work[2];     /* g_eff_depth_work */
     u16 top_left_uv;       /* g_eff_top_left_uv */
@@ -1398,10 +1398,10 @@ typedef union {
  * (Unk1F8002B8Union), to the end of the scratchpad; the scratchpad is shared
  * scratch that other code also uses with its own views (see Unk1F8002B8Rec). */
 typedef struct {
-    Unk80107850Rec unk00[2][3];
-    Unk80107850Rec unk48[2][2];
-    Unk80107850Rec unk78[2][2];
-    Unk80107850Rec unkA8[2][22];
+    Unk80107850Rec weapon_points[2][3];
+    Unk80107850Rec second_weapon_points[2][2];
+    Unk80107850Rec body_overlap_points[2][2];
+    Unk80107850Rec bone_hit_points[2][22];
     Unk1F8002B8Union unk2B8;
 } ScrPad;
 
@@ -1936,9 +1936,9 @@ typedef struct Unk8009A8C8Entry {
  * gpu_ResetDrawQueueAndPrepareViewAndLighting takes it with the +0x00 vector;
  * its pad (+0x16) is unused. */
 typedef struct Rec44 {
-    Vec3i32 unk_00;
+    Vec3i32 focus_point;
     s32 wC;
-    SVECTOR unk_10;
+    SVECTOR camera_angles;
     s32 w18;
     s16 h1C;
     u8 b1E;
@@ -2290,28 +2290,28 @@ typedef struct {
  * g_cd_file_table element (a CdFileEntry), copied whole by cdrom_StartRead /
  * cdrom_StartAudio. */
 typedef struct {
-    s16 unk00;        /* 0x80101E60 */
-    s16 unk02;        /* 0x80101E62 */
-    s16 unk04;        /* 0x80101E64 */
-    s16 unk06;        /* 0x80101E66 */
-    s16 unk08;        /* 0x80101E68 */
-    s16 unk0A;        /* 0x80101E6A */
-    CdFileEntry pair; /* 0x80101E6C .. 0x80101E73 */
-    s32 unk14;        /* 0x80101E74 */
-    s32 unk18;        /* 0x80101E78 */
-    s32 unk1C;        /* 0x80101E7C */
-    s32 cd20;         /* 0x80101E80 */
-    s32 dest_buffer;  /* 0x80101E84 */
-    s32 unk28;        /* 0x80101E88 */
-    s32 unk2C;        /* 0x80101E8C */
-    u8 unk30;         /* 0x80101E90 */
-    s32 unk34;        /* 0x80101E94 */
-    s16 unk38;        /* 0x80101E98 */
-    s16 unk3A;        /* 0x80101E9A */
-    s16 unk3C;        /* 0x80101E9C */
-    u16 unk3E;        /* 0x80101E9E */
-    s32 expected_pos; /* 0x80101EA0 */
-    s32 unk44;        /* 0x80101EA4 */
+    s16 file_index;          /* 0x80101E60 */
+    s16 io_state;            /* 0x80101E62 */
+    s16 audio_hold;          /* 0x80101E64 */
+    s16 unk06;               /* 0x80101E66 */
+    s16 stop_request;        /* 0x80101E68 */
+    s16 audio_repeat;        /* 0x80101E6A */
+    CdFileEntry pair;        /* 0x80101E6C .. 0x80101E73 */
+    s32 audio_end_pos;       /* 0x80101E74 */
+    s32 read_sector_count;   /* 0x80101E78 */
+    s32 read_dest_addr;      /* 0x80101E7C */
+    s32 cd20;                /* 0x80101E80 */
+    s32 dest_buffer;         /* 0x80101E84 */
+    s32 audio_step_count;    /* 0x80101E88 */
+    s32 command_delay_count; /* 0x80101E8C */
+    u8 audio_mode;           /* 0x80101E90 */
+    s32 is_xa_audio;         /* 0x80101E94 */
+    s16 read_timeout;        /* 0x80101E98 */
+    s16 getloc_timeout;      /* 0x80101E9A */
+    s16 report_timeout;      /* 0x80101E9C */
+    u16 unk3E;               /* 0x80101E9E */
+    s32 expected_pos;        /* 0x80101EA0 */
+    s32 end_countdown;       /* 0x80101EA4 */
 } Unk80101E60Rec;
 
 /* The CD module's state block, one 0x50-byte object at 0x80101E58 (span
@@ -2320,10 +2320,10 @@ typedef struct {
  * its CdFileEntry copy into rec.pair (one object for the scheduler);
  * cdrom_Update forms &rec.pair off later members. */
 typedef struct {
-    u8 file;            /* 0x80101E58 */
-    u8 chan;            /* 0x80101E59 */
-    s32 unk04;          /* 0x80101E5C */
-    Unk80101E60Rec rec; /* 0x80101E60 .. 0x80101EA7 */
+    u8 file;             /* 0x80101E58 */
+    u8 chan;             /* 0x80101E59 */
+    s32 sync_wait_count; /* 0x80101E5C */
+    Unk80101E60Rec rec;  /* 0x80101E60 .. 0x80101EA7 */
 } CdState;
 
 /* The parameter block 0x80102778..0x80102787 (fight_InitSettings sets
@@ -2335,12 +2335,12 @@ typedef struct {
  * offsets from the address of unk_C.
  */
 typedef struct {
-    u16 unk_0[2];
+    u16 cpu_base_levels[2];
     u8 unk_4[6];
-    u8 unk_A[2];
-    u8 unk_C;
-    u8 unk_D;
-    u8 unk_E;
+    u8 operand_cpu_base_levels[2];
+    u8 pending_stage_index;
+    u8 pending_mode_selector;
+    u8 pending_view_setting;
     u8 unk_F;
 } Unk80102778Rec;
 

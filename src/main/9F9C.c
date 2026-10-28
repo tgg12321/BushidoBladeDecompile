@@ -361,12 +361,12 @@ void camera_CalcEye(Rec44 *arg0, s32 *arg1) {
     m.m[2][0] = 0;
     m.m[2][1] = 0;
     m.m[2][2] = 0x1000;
-    RotMatrixX(-arg0->unk_10.vx, &m);
-    RotMatrixY(-arg0->unk_10.vy, &m);
-    RotMatrixZ(-arg0->unk_10.vz, &m);
-    arg1[0] = arg0->unk_00.x - ((s32)(m.m[0][2] * arg0->w18) >> 12);
-    arg1[1] = arg0->unk_00.y - ((s32)(m.m[1][2] * arg0->w18) >> 12);
-    arg1[2] = arg0->unk_00.z - ((s32)(m.m[2][2] * arg0->w18) >> 12);
+    RotMatrixX(-arg0->camera_angles.vx, &m);
+    RotMatrixY(-arg0->camera_angles.vy, &m);
+    RotMatrixZ(-arg0->camera_angles.vz, &m);
+    arg1[0] = arg0->focus_point.x - ((s32)(m.m[0][2] * arg0->w18) >> 12);
+    arg1[1] = arg0->focus_point.y - ((s32)(m.m[1][2] * arg0->w18) >> 12);
+    arg1[2] = arg0->focus_point.z - ((s32)(m.m[2][2] * arg0->w18) >> 12);
 }
 
 s32 math_FloorDiv2000(s32 arg0) {
@@ -492,9 +492,9 @@ void camera_UpdateTwoFighterView(
     } else {
         scr->focus = *(CamVec *)arg0;
     }
-    var_2->unk_00.x += (scr->focus.vx - var_2->unk_00.x) / 4;
-    var_2->unk_00.y += (scr->focus.vy - var_2->unk_00.y) / 4;
-    var_2->unk_00.z += (scr->focus.vz - var_2->unk_00.z) / 4;
+    var_2->focus_point.x += (scr->focus.vx - var_2->focus_point.x) / 4;
+    var_2->focus_point.y += (scr->focus.vy - var_2->focus_point.y) / 4;
+    var_2->focus_point.z += (scr->focus.vz - var_2->focus_point.z) / 4;
 
     x = dx;
     y = dy;
@@ -558,14 +558,16 @@ void camera_UpdateTwoFighterView(
     func_8003F1E4(var_2->b1E);
 
     if (arg2->move_kind == 0x11) {
-        scr->yaw = var_2->unk_10.vy;
+        scr->yaw = var_2->camera_angles.vy;
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
     }
     scr->scr04 = 0;
-    var_2->unk_10.vy += math_SignExt12Div(scr->yaw - var_2->unk_10.vy, 8);
-    var_2->unk_10.vz += math_SignExt12Div(scr->scr04 - var_2->unk_10.vz, 8);
-    var_16 = var_2->unk_10.vx;
+    var_2->camera_angles.vy +=
+        math_SignExt12Div(scr->yaw - var_2->camera_angles.vy, 8);
+    var_2->camera_angles.vz +=
+        math_SignExt12Div(scr->scr04 - var_2->camera_angles.vz, 8);
+    var_16 = var_2->camera_angles.vx;
 
     for (p = 0; p < 2; p++) {
         /* The far end of either arm's bisection (above work when the eye is
@@ -574,7 +576,7 @@ void camera_UpdateTwoFighterView(
         s32 bound;
 
         work = var_16;
-        var_2->unk_10.vx = work;
+        var_2->camera_angles.vx = work;
         camera_CalcEye(var_2, &scr->eye.vx);
         if (p != 0) {
             scr->scr28 = arg3->collision_pos;
@@ -605,15 +607,15 @@ void camera_UpdateTwoFighterView(
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                var_2->unk_10.vx = bound + d / 2;
+                var_2->camera_angles.vx = bound + d / 2;
                 camera_CalcEye(var_2, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
                         (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
                         scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
-                    work = var_2->unk_10.vx;
+                    work = var_2->camera_angles.vx;
                 } else {
-                    bound = var_2->unk_10.vx;
+                    bound = var_2->camera_angles.vx;
                 }
             }
             work = bound;
@@ -636,7 +638,7 @@ void camera_UpdateTwoFighterView(
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                var_2->unk_10.vx = bound + d / 2;
+                var_2->camera_angles.vx = bound + d / 2;
                 camera_CalcEye(var_2, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
                         (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
@@ -644,9 +646,9 @@ void camera_UpdateTwoFighterView(
                     scr->nrm[1] < -0x320) {
                     math_StoreFloorDiv2000XZOfPointStepTowards(
                         var_2->h30[p], (s32 *)&scr->eye, scr->hit);
-                    bound = var_2->unk_10.vx;
+                    bound = var_2->camera_angles.vx;
                 } else {
-                    work = var_2->unk_10.vx;
+                    work = var_2->camera_angles.vx;
                 }
             }
             g_camera_eye_blocked_flags[p] = 0;
@@ -664,9 +666,9 @@ void camera_UpdateTwoFighterView(
     if (work > 0x1C0) {
         work = 0x1C0;
     }
-    var_2->unk_10.vx = var_16;
+    var_2->camera_angles.vx = var_16;
     work = math_SignExt12Div(work - var_16, 8);
-    var_2->unk_10.vx += work;
+    var_2->camera_angles.vx += work;
 }
 
 void camera_UpdatePadOffset(s32 *arg0) {
@@ -715,17 +717,17 @@ void camera_InitTwoFighterView(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     g_camera_default_view_record.h30[1][1] = 0;
     g_camera_default_view_record.h30[1][2] = 0x64;
     func_8003F1E4(0);
-    g_camera_default_view_record.unk_00.x =
+    g_camera_default_view_record.focus_point.x =
         (a0->world_pos.x + a1->world_pos.x) / 2;
-    g_camera_default_view_record.unk_00.y =
+    g_camera_default_view_record.focus_point.y =
         (a0->world_pos.y + a1->world_pos.y) / 2;
-    g_camera_default_view_record.unk_00.z =
+    g_camera_default_view_record.focus_point.z =
         (a0->world_pos.z + a1->world_pos.z) / 2;
-    g_camera_default_view_record.unk_10.vx = 0;
-    g_camera_default_view_record.unk_10.vy =
+    g_camera_default_view_record.camera_angles.vx = 0;
+    g_camera_default_view_record.camera_angles.vy =
         0x400 - ratan2(a1->world_pos.x - a0->world_pos.x,
                        a1->world_pos.z - a0->world_pos.z);
-    g_camera_default_view_record.unk_10.vz = 0;
+    g_camera_default_view_record.camera_angles.vz = 0;
     g_camera_default_view_record.w18 = 0x1388;
     g_camera_default_view_record.b1E = 0;
 }
@@ -743,12 +745,12 @@ void camera_InitTrackedFighterFocus(
     if (g_fight_tracked_fighter_index != 0) {
         a0 = a1;
     }
-    g_camera_alternate_view_record.unk_00.x = a0->bone_hit_point_0.x;
-    g_camera_alternate_view_record.unk_00.z = a0->bone_hit_point_0.z;
+    g_camera_alternate_view_record.focus_point.x = a0->bone_hit_point_0.x;
+    g_camera_alternate_view_record.focus_point.z = a0->bone_hit_point_0.z;
     {
         s32 v = a0->bone_hit_point_0.y;
         g_camera_alternate_view_record.b40 = 0;
-        g_camera_alternate_view_record.unk_00.y = v;
+        g_camera_alternate_view_record.focus_point.y = v;
     }
 }
 
@@ -772,8 +774,8 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     if (obj->move_kind == 0x2A) {
         val = 0x200;
     } else {
-        cam->unk_00.x = obj->bone_hit_point_0.x;
-        cam->unk_00.z = obj->bone_hit_point_0.z;
+        cam->focus_point.x = obj->bone_hit_point_0.x;
+        cam->focus_point.z = obj->bone_hit_point_0.z;
         val = obj->bone_hit_point_0.y;
 
         if (!var_3) {
@@ -785,18 +787,18 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
         }
 
         {
-            s32 diff = val - cam->unk_00.y;
+            s32 diff = val - cam->focus_point.y;
             if (diff < 0) {
                 diff += 3;
             }
-            a2 = cam->unk_00.y + (diff >> 2);
-            cam->unk_00.y = a2;
+            a2 = cam->focus_point.y + (diff >> 2);
+            cam->focus_point.y = a2;
         }
 
         if (obj->move_kind == 0x2A) {
             val = 0x200;
         } else {
-            val = (-obj->opponent_bearing - cam->unk_10.vy) & 0xFFF;
+            val = (-obj->opponent_bearing - cam->camera_angles.vy) & 0xFFF;
 
             if (val >= 0x800) {
                 val = 0x1000 - val;
@@ -813,14 +815,14 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     }
 
     {
-        s16 old = cam->unk_10.vx;
+        s16 old = cam->camera_angles.vx;
         s32 diff = val - old;
         if (diff < 0) {
             diff += 7;
         }
-        cam->unk_10.vx = old + (diff >> 3);
+        cam->camera_angles.vx = old + (diff >> 3);
     }
-    cam->unk_10.vz = 0;
+    cam->camera_angles.vz = 0;
 
     {
         s16 counter;
@@ -828,14 +830,14 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
         counter = g_camera_turn_easing_countdown;
 
         if (counter != 0) {
-            s16 old12 = cam->unk_10.vy;
+            s16 old12 = cam->camera_angles.vy;
             s32 diff = val - old12;
             if (diff < 0) {
                 diff += 3;
             }
             {
                 counter--;
-                cam->unk_10.vy = old12 + (diff >> 2);
+                cam->camera_angles.vy = old12 + (diff >> 2);
                 g_camera_turn_easing_countdown = counter;
             }
 
@@ -847,7 +849,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
                 cam->h1C = var_12 >> 2;
             }
         } else {
-            cam->unk_10.vy = val;
+            cam->camera_angles.vy = val;
             cam->h1C = 0;
         }
     }
@@ -902,14 +904,14 @@ void camera_UpdateReplayView(
     s32 var_11;
     if (dst->b1F == 0) {
         dst->b1F = 1;
-        dst->unk_00.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
-        dst->unk_00.y =
+        dst->focus_point.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
+        dst->focus_point.y =
             (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
         D_800A3310 = 0;
-        dst->unk_00.z = ((frac * a->h8) + (inv_frac * b->h8)) >> 12;
-        dst->unk_10.vy = val;
-        dst->unk_10.vx = 0x80;
-        dst->unk_10.vz = 0;
+        dst->focus_point.z = ((frac * a->h8) + (inv_frac * b->h8)) >> 12;
+        dst->camera_angles.vy = val;
+        dst->camera_angles.vx = 0x80;
+        dst->camera_angles.vz = 0;
         dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
         return;
     }
@@ -919,36 +921,37 @@ void camera_UpdateReplayView(
         D_800A3310 += 1;
     }
     var_8 = ((s16)D_800A3310) >= 0xB;
-    cur = dst->unk_00.x;
+    cur = dst->focus_point.x;
     t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
     dx = t - cur;
     if (dx < 0) {
         dx += 0xF;
     }
-    dst->unk_00.x = cur + (dx >> 4);
-    cur = dst->unk_00.y;
+    dst->focus_point.x = cur + (dx >> 4);
+    cur = dst->focus_point.y;
     t = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
     dy = t - cur;
     if (dy < 0) {
         dy += 0xF;
     }
-    dst->unk_00.y = cur + (dy >> 4);
-    cur = dst->unk_00.z;
+    dst->focus_point.y = cur + (dy >> 4);
+    cur = dst->focus_point.z;
     t = ((frac * (a->h8)) + (inv_frac * (b->h8))) >> 12;
     dz = t - cur;
     if (dz < 0) {
         dz += 0xF;
     }
-    dst->unk_00.z = cur + (dz >> 4);
+    dst->focus_point.z = cur + (dz >> 4);
     if (var_8) {
         t = ((frac_s1 * 0x180) >> 12) + 0x80;
     } else {
         t = 0x80 - ((frac_s1 << 8) >> 12);
     }
-    dst->unk_10.vx =
-        dst->unk_10.vx + math_SignExt12Div(t - dst->unk_10.vx, 0x10);
-    dst->unk_10.vy += math_SignExt12Div(val - dst->unk_10.vy, 0x10);
-    dst->unk_10.vz = 0;
+    dst->camera_angles.vx = dst->camera_angles.vx +
+                            math_SignExt12Div(t - dst->camera_angles.vx, 0x10);
+    dst->camera_angles.vy +=
+        math_SignExt12Div(val - dst->camera_angles.vy, 0x10);
+    dst->camera_angles.vz = 0;
     if (var_8) {
         t = ((frac_s1 * 0x7D0) + (inv_s1 * 0x2EE0)) >> 12;
     } else {
@@ -1004,10 +1007,11 @@ void camera_UpdateReplayViewWithConstantYawOffset(
 
 void camera_SetFighterFocusView(Unk80101EC8Record *arg0, s32 arg1) {
     func_8003F1E4(0);
-    g_camera_default_view_record.unk_00 = arg0->bone_hit_points_4_5_midpoint;
-    g_camera_default_view_record.unk_10.vx = 0x120;
-    g_camera_default_view_record.unk_10.vy = arg1;
-    g_camera_default_view_record.unk_10.vz = 0;
+    g_camera_default_view_record.focus_point =
+        arg0->bone_hit_points_4_5_midpoint;
+    g_camera_default_view_record.camera_angles.vx = 0x120;
+    g_camera_default_view_record.camera_angles.vy = arg1;
+    g_camera_default_view_record.camera_angles.vz = 0;
     g_camera_default_view_record.w18 = 0x1162;
 }
 
@@ -1019,11 +1023,11 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
     /* FAKE: block copy of collision_pos's x / y / z (three lw, then three sw
        through one base); the three member assignments interleave the loads and
        stores (score 27). */
-    g_camera_default_view_record.unk_00 = *(Vec3i32 *)&arg0->collision_pos;
+    g_camera_default_view_record.focus_point = *(Vec3i32 *)&arg0->collision_pos;
 
-    g_camera_default_view_record.unk_00.y -= 0x44C;
+    g_camera_default_view_record.focus_point.y -= 0x44C;
 
-    g_camera_default_view_record.unk_10.vx = 0x100 - (arg1 * 288) / 4096;
+    g_camera_default_view_record.camera_angles.vx = 0x100 - (arg1 * 288) / 4096;
 
     {
         /* FAKE: div4 taken first; written at its use the multiply chain is
@@ -1033,8 +1037,8 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
         s32 val;
         g_camera_default_view_record.w18 = (arg1 * 3000 + diff * 8000) >> 12;
         val = 0xB00 - div4;
-        g_camera_default_view_record.unk_10.vz = 0;
-        g_camera_default_view_record.unk_10.vy = val - rot_y;
+        g_camera_default_view_record.camera_angles.vz = 0;
+        g_camera_default_view_record.camera_angles.vy = val - rot_y;
     }
 }
 
@@ -1163,17 +1167,17 @@ void fighter_BuildCpuOrMappedPadState(s32 arg0, PadState *arg1) {
 }
 
 void fight_InitSettings(void) {
-    g_fight_config.unk_0[1] = 0x800;
-    g_fight_config.unk_0[0] = 0x800;
+    g_fight_config.cpu_base_levels[1] = 0x800;
+    g_fight_config.cpu_base_levels[0] = 0x800;
     g_fight_config.unk_4[0] = 1;
     g_fight_config.unk_4[1] = 0x10;
-    g_fight_config.unk_C = 0xC;
+    g_fight_config.pending_stage_index = 0xC;
     g_fight_config.unk_4[2] = 0;
     g_fight_config.unk_4[3] = 0;
     g_fight_config.unk_4[5] = 0;
     g_fight_config.unk_4[4] = 0;
-    g_fight_config.unk_D = 4;
-    g_fight_config.unk_E = 0;
+    g_fight_config.pending_mode_selector = 4;
+    g_fight_config.pending_view_setting = 0;
     g_fight_config.unk_F = 0;
 }
 
@@ -2051,22 +2055,25 @@ void camera_ApplyFightView(void) {
     }
 
     if (g_main_loop_handler_index == 1) {
-        local.unk_00.x = s2->unk_00.x + g_camera_view_offset.unk_00.x;
-        local.unk_00.y = s2->unk_00.y + g_camera_view_offset.unk_00.y;
-        local.unk_00.z = s2->unk_00.z + g_camera_view_offset.unk_00.z;
-        local.unk_10.vx = s2->unk_10.vx + g_camera_view_offset.unk_10.vx;
-        local.unk_10.vy = s2->unk_10.vy + g_camera_view_offset.unk_10.vy;
-        local.unk_10.vz = s2->unk_10.vz + g_camera_view_offset.unk_10.vz;
+        local.focus_point.x = s2->focus_point.x + g_camera_view_offset.unk_00.x;
+        local.focus_point.y = s2->focus_point.y + g_camera_view_offset.unk_00.y;
+        local.focus_point.z = s2->focus_point.z + g_camera_view_offset.unk_00.z;
+        local.camera_angles.vx =
+            s2->camera_angles.vx + g_camera_view_offset.unk_10.vx;
+        local.camera_angles.vy =
+            s2->camera_angles.vy + g_camera_view_offset.unk_10.vy;
+        local.camera_angles.vz =
+            s2->camera_angles.vz + g_camera_view_offset.unk_10.vz;
         local.w18 = s2->w18 + g_camera_view_offset.w18;
     } else {
         local = *s2;
     }
 
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
-        &local.unk_00, &local.unk_10, local.w18);
+        &local.focus_point, &local.camera_angles, local.w18);
     {
         camera_CalcEye(&local, &s2->w20);
-        func_80061064(&local.unk_10.vx, &s2->w20);
+        func_80061064(&local.camera_angles.vx, &s2->w20);
     }
     gpu_SetCellForceBit(s2->h30[0]);
     gpu_SetCellForceBit(s2->h30[1]);
@@ -2087,20 +2094,23 @@ void camera_ApplyReplayView(s32 arg0) {
         s2 = &g_camera_default_view_record;
     }
 
-    local.unk_00.x = s2->unk_00.x + g_camera_view_offset.unk_00.x;
-    local.unk_00.y = s2->unk_00.y + g_camera_view_offset.unk_00.y;
-    local.unk_00.z = s2->unk_00.z + g_camera_view_offset.unk_00.z;
-    local.unk_10.vx = s2->unk_10.vx + g_camera_view_offset.unk_10.vx;
-    local.unk_10.vy = s2->unk_10.vy + g_camera_view_offset.unk_10.vy;
-    local.unk_10.vz = s2->unk_10.vz + g_camera_view_offset.unk_10.vz;
+    local.focus_point.x = s2->focus_point.x + g_camera_view_offset.unk_00.x;
+    local.focus_point.y = s2->focus_point.y + g_camera_view_offset.unk_00.y;
+    local.focus_point.z = s2->focus_point.z + g_camera_view_offset.unk_00.z;
+    local.camera_angles.vx =
+        s2->camera_angles.vx + g_camera_view_offset.unk_10.vx;
+    local.camera_angles.vy =
+        s2->camera_angles.vy + g_camera_view_offset.unk_10.vy;
+    local.camera_angles.vz =
+        s2->camera_angles.vz + g_camera_view_offset.unk_10.vz;
 
     local.w18 = s2->w18 + g_camera_view_offset.w18;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
-        &local.unk_00, &local.unk_10, local.w18);
+        &local.focus_point, &local.camera_angles, local.w18);
 
     {
         camera_CalcEye(&local, &s2->w20);
-        func_80061064(&local.unk_10.vx, &s2->w20);
+        func_80061064(&local.camera_angles.vx, &s2->w20);
     }
 
     g_listener_cam = s2;
@@ -2974,7 +2984,8 @@ void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
                 out[2] = -out[2];
             }
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                var_2, 4, &SPAD->unkA8[var_2][rec->bone_event_bone_index].x,
+                var_2, 4,
+                &SPAD->bone_hit_points[var_2][rec->bone_event_bone_index].x,
                 out);
         }
         if (rec->bone_event_counter >= 0x96) {
@@ -3982,7 +3993,7 @@ void fighter_ConfigureCpuControl(void) {
     u16 *tbl;
 
     i = 0;
-    tbl = g_fight_config.unk_0;
+    tbl = g_fight_config.cpu_base_levels;
     do {
         Unk80101EC8Record *rec = &D_80101EC8[i];
 
@@ -3990,7 +4001,8 @@ void fighter_ConfigureCpuControl(void) {
 
             switch (g_fight_mode_selector) {
             case 0:
-                rec->cpu_base_level = g_fight_config.unk_A[i] << 4;
+                rec->cpu_base_level =
+                    g_fight_config.operand_cpu_base_levels[i] << 4;
                 break;
             case 1:
             case 2:
@@ -5260,39 +5272,40 @@ skip_62:
     rec->unk_24C = rec->base_velocity;
     fighter_CacheDownwardProbeHit(rec);
     fighter_UpdateBoneWorldData(
-        rec, SPAD->unkA8[arg0], SPAD->unk00[arg0], SPAD->unk48[arg0]);
+        rec, SPAD->bone_hit_points[arg0], SPAD->weapon_points[arg0],
+        SPAD->second_weapon_points[arg0]);
     if (rec->update_count == 1) {
-        rec->prev_weapon_points[0] = SPAD->unk00[arg0][0];
+        rec->prev_weapon_points[0] = SPAD->weapon_points[arg0][0];
     }
     if (rec->wielded_object_live_state == 2) {
         rec->wielded_object_live_state = 1;
-        rec->prev_second_weapon_points[0] = SPAD->unk48[arg0][0];
-        rec->prev_second_weapon_points[1] = SPAD->unk48[arg0][1];
+        rec->prev_second_weapon_points[0] = SPAD->second_weapon_points[arg0][0];
+        rec->prev_second_weapon_points[1] = SPAD->second_weapon_points[arg0][1];
     }
     if (rec->weapon_live_state == 2) {
         rec->weapon_live_state = 1;
-        rec->prev_second_weapon_points[0] = SPAD->unk48[arg0][0];
-        rec->prev_second_weapon_points[1] = SPAD->unk48[arg0][1];
+        rec->prev_second_weapon_points[0] = SPAD->second_weapon_points[arg0][0];
+        rec->prev_second_weapon_points[1] = SPAD->second_weapon_points[arg0][1];
     }
     if ((rec->weapon_id == 6 || rec->weapon_id == 7) &&
         (rec->frame_flags & 1)) {
-        rec->opponent_elevation_origin = SPAD->unk00[arg0][0];
+        rec->opponent_elevation_origin = SPAD->weapon_points[arg0][0];
         rec->elevation_origin_from_weapon = 1;
     } else {
         rec->elevation_origin_from_weapon = 0;
     }
     rec->weapon_point_delta[0].vx =
-        SPAD->unk00[arg0][0].x - rec->prev_weapon_points[0].x;
+        SPAD->weapon_points[arg0][0].x - rec->prev_weapon_points[0].x;
     rec->weapon_point_delta[0].vy =
-        SPAD->unk00[arg0][0].y - rec->prev_weapon_points[0].y;
+        SPAD->weapon_points[arg0][0].y - rec->prev_weapon_points[0].y;
     rec->weapon_point_delta[0].vz =
-        SPAD->unk00[arg0][0].z - rec->prev_weapon_points[0].z;
-    rec->weapon_point_delta[1].vx =
-        SPAD->unk48[arg0][0].x - rec->prev_second_weapon_points[0].x;
-    rec->weapon_point_delta[1].vy =
-        SPAD->unk48[arg0][0].y - rec->prev_second_weapon_points[0].y;
-    rec->weapon_point_delta[1].vz =
-        SPAD->unk48[arg0][0].z - rec->prev_second_weapon_points[0].z;
+        SPAD->weapon_points[arg0][0].z - rec->prev_weapon_points[0].z;
+    rec->weapon_point_delta[1].vx = SPAD->second_weapon_points[arg0][0].x -
+                                    rec->prev_second_weapon_points[0].x;
+    rec->weapon_point_delta[1].vy = SPAD->second_weapon_points[arg0][0].y -
+                                    rec->prev_second_weapon_points[0].y;
+    rec->weapon_point_delta[1].vz = SPAD->second_weapon_points[arg0][0].z -
+                                    rec->prev_second_weapon_points[0].z;
     rec->bone_triangle_cross_y_positive =
         fighter_IsBoneTriangleCrossYPositive(rec);
     var_20 = 0;

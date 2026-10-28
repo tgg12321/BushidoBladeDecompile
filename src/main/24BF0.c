@@ -13,9 +13,9 @@
  * because the file boundary follows the per-file gp evidence (owner ruling
  * Q65). */
 void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
-    s8 val_85 = (s8)g_fight_config.unk_D;
-    s8 val_86 = (s8)g_fight_config.unk_E;
-    s8 val_84 = (s8)g_fight_config.unk_C;
+    s8 val_85 = (s8)g_fight_config.pending_mode_selector;
+    s8 val_86 = (s8)g_fight_config.pending_view_setting;
+    s8 val_84 = (s8)g_fight_config.pending_stage_index;
     s32 val_87 = (s8)g_fight_config.unk_F;
 
     g_fight_tracked_fighter_index = 0;
@@ -45,7 +45,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
 
     switch (g_fight_mode_selector) {
     case 6:
-        g_fight_config.unk_E = 1;
+        g_fight_config.pending_view_setting = 1;
         g_local_ot_draw_mode = 1;
         g_main_loop_handler_index = 0;
         g_fight_tracked_fighter_index = (g_comb_local_side != 0);

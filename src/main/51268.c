@@ -85,23 +85,30 @@ void eff_StartCommand(void) {
 
     s32 result;
 
-    g_eff_command_phase[g_eff_active_command_block->unk00.h] = 0;
-    g_eff_active_command_block->unk20[0] = g_eff_active_command_block->unk0C[0];
-    g_eff_active_command_block->unk20[1] = g_eff_active_command_block->unk0C[1];
-    g_eff_active_command_block->unk20[2] = g_eff_active_command_block->unk0C[2];
-    g_eff_active_command_block->unk18[0] = g_eff_active_command_block->unk10[0];
-    g_eff_active_command_block->unk18[1] = g_eff_active_command_block->unk10[1];
-    g_eff_command_vector = g_eff_active_command_block->unk18;
-    g_eff_active_command_block->unk18[2] = g_eff_active_command_block->unk10[2];
-    g_eff_command_position = g_eff_active_command_block->unk20;
+    g_eff_command_phase[g_eff_active_command_block->command_word.h] = 0;
+    g_eff_active_command_block->position_copy[0] =
+        g_eff_active_command_block->start_position_src[0];
+    g_eff_active_command_block->position_copy[1] =
+        g_eff_active_command_block->start_position_src[1];
+    g_eff_active_command_block->position_copy[2] =
+        g_eff_active_command_block->start_position_src[2];
+    g_eff_active_command_block->vector_copy[0] =
+        g_eff_active_command_block->start_vector_src[0];
+    g_eff_active_command_block->vector_copy[1] =
+        g_eff_active_command_block->start_vector_src[1];
+    g_eff_command_vector = g_eff_active_command_block->vector_copy;
+    g_eff_active_command_block->vector_copy[2] =
+        g_eff_active_command_block->start_vector_src[2];
+    g_eff_command_position = g_eff_active_command_block->position_copy;
 
-    result =
-        ((s32(*)(void))g_eff_command_handlers
-             [g_eff_command_handler_bases[g_eff_active_command_block->unk00.h] +
-              g_eff_command_phase[g_eff_active_command_block->unk00.h]])();
-    *g_eff_active_command_block->unk14 = result;
+    result = ((s32(*)(void))g_eff_command_handlers
+                  [g_eff_command_handler_bases[g_eff_active_command_block
+                                                   ->command_word.h] +
+                   g_eff_command_phase[g_eff_active_command_block->command_word
+                                           .h]])();
+    *g_eff_active_command_block->status_dest = result;
 
-    if (g_eff_active_command_block->unk00.w & 0x200000) {
+    if (g_eff_active_command_block->command_word.w & 0x200000) {
         g_eff_point_light_countdown = 0xA;
     }
 }
@@ -116,23 +123,23 @@ void eff_StepCommand(void) {
 
     src_command_block = g_eff_active_command_block;
     rotation_out = D_800A346C;
-    rotation_out[0] = src_command_block->unk04[0];
-    rotation_out[1] = src_command_block->unk04[1];
-    rotation_out[2] = src_command_block->unk04[2];
+    rotation_out[0] = src_command_block->bound_rotation_src[0];
+    rotation_out[1] = src_command_block->bound_rotation_src[1];
+    rotation_out[2] = src_command_block->bound_rotation_src[2];
 
     position_out = g_eff_view_origin;
-    position_out[0] = src_command_block->unk08[0];
-    position_out[1] = src_command_block->unk08[1];
-    position_out[2] = src_command_block->unk08[2];
+    position_out[0] = src_command_block->bound_position_src[0];
+    position_out[1] = src_command_block->bound_position_src[1];
+    position_out[2] = src_command_block->bound_position_src[2];
     eff_SetRotMatrix(rotation_out, position_out, g_eff_view_rotation_matrix);
 
-    command_index = g_eff_active_command_block->unk00.h;
+    command_index = g_eff_active_command_block->command_word.h;
     result =
         ((s32(*)(void))
              g_eff_command_handlers[g_eff_command_handler_bases[command_index] +
                                     g_eff_command_phase[command_index]])();
 
-    *g_eff_active_command_block->unk14 = result;
+    *g_eff_active_command_block->status_dest = result;
 }
 
 extern u8 g_eff_command_status[0x1C];
@@ -211,8 +218,8 @@ void eff_SelectQuadBuffer(s32 select_second_buffer) {
 
 void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_active_command_block = &SPAD51268->default_command_block;
-    D_800A346C = SPAD51268->default_command_block.unk18;
-    g_eff_view_origin = SPAD51268->default_command_block.unk20;
+    D_800A346C = SPAD51268->default_command_block.vector_copy;
+    g_eff_view_origin = SPAD51268->default_command_block.position_copy;
     g_eff_view_rotation_matrix = &SPAD51268->view_rotation_matrix;
     g_eff_current_tex_rec = &SPAD51268->unk50;
     g_eff_tpage_word = &SPAD51268->tpage_word;
@@ -229,7 +236,7 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_left_x_offset = &SPAD51268->left_x_offset;
     g_eff_right_x_offset = &SPAD51268->right_x_offset;
     g_eff_upper_y_offset = &SPAD51268->upper_y_offset;
-    g_eff_lower_y_offset_word = &SPAD51268->unk88;
+    g_eff_lower_y_offset_word = &SPAD51268->y_extent_work;
     g_eff_rtp_flag = &SPAD51268->unk8C;
     g_eff_depth_work = SPAD51268->depth_work;
     g_eff_top_left_uv = &SPAD51268->top_left_uv;
@@ -242,8 +249,8 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     D_800A3484 = &SPAD51268->quad_rate_selector;
     g_eff_clut_tex_rec = &SPAD51268->unkB0;
     g_eff_work_area = &SPAD51268->effect_work_area;
-    SPAD51268->default_command_block.unk04 = src_rotation;
-    SPAD51268->default_command_block.unk08 = src_position;
+    SPAD51268->default_command_block.bound_rotation_src = src_rotation;
+    SPAD51268->default_command_block.bound_position_src = src_position;
 }
 
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
@@ -262,10 +269,10 @@ void func_80061064(s16 *src_rotation, s32 *src_position) {
     eff_BindScratchpad(src_rotation, src_position);
     command_index = 0;
     do {
-        g_eff_active_command_block->unk14 =
+        g_eff_active_command_block->status_dest =
             &g_eff_command_status[command_index];
         if (g_eff_command_status[command_index] != 0) {
-            g_eff_active_command_block->unk00.w = command_index;
+            g_eff_active_command_block->command_word.w = command_index;
             eff_StepCommand();
         }
         command_index += 1;
@@ -301,10 +308,10 @@ void eff_StartRotatedQuadClusterWithNearWhiteLight(
     command_vector[1] = *src_command_vector_cursor++;
     g_eff_active_command_block = &g_eff_command_block;
     command_vector[2] = *src_command_vector_cursor;
-    g_eff_command_block.unk10 = command_vector;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[26];
-    g_eff_command_block.unk00.w = 0x21001A;
+    g_eff_command_block.start_vector_src = command_vector;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[26];
+    g_eff_command_block.command_word.w = 0x21001A;
     eff_StartCommand();
     p = src_position;
     g_eff_point_light_position.vx = *p++;
@@ -316,17 +323,17 @@ void eff_StartRotatedQuadClusterWithNearWhiteLight(
 void eff_StartRecycledCommandWithRoseLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[9] != 0 && g_eff_command_status[10] != 0) {
         g_eff_command_status[10] = 0;
         g_eff_command_status[9] = 0;
     }
     if (g_eff_command_status[9] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[9];
-        g_eff_active_command_block->unk00.w = 0x210009;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[9];
+        g_eff_active_command_block->command_word.w = 0x210009;
     } else if (g_eff_command_status[10] == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[10];
-        g_eff_command_block.unk00.w = 0x21000A;
+        g_eff_command_block.status_dest = &g_eff_command_status[10];
+        g_eff_command_block.command_word.w = 0x21000A;
     }
     eff_StartCommand();
     p = src_position;
@@ -339,9 +346,9 @@ void eff_StartRecycledCommandWithRoseLight(s32 *src_position) {
 s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
     s32 *p = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[4];
-    g_eff_command_block.unk00.w = 0x210004;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[4];
+    g_eff_command_block.command_word.w = 0x210004;
     eff_StartCommand();
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
@@ -353,9 +360,9 @@ s32 eff_StartCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
 s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
     s32 *src_position_cursor = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[11];
-    g_eff_command_block.unk00.w = 0x21000B;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[11];
+    g_eff_command_block.command_word.w = 0x21000B;
     eff_StartCommand();
     g_eff_point_light_position.vx = *src_position_cursor++;
     g_eff_point_light_position.vy = *src_position_cursor++;
@@ -367,9 +374,9 @@ s32 eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
 s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
     s32 *p = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[11];
-    g_eff_command_block.unk00.w = 0x29000B;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[11];
+    g_eff_command_block.command_word.w = 0x29000B;
     eff_StartCommand();
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
@@ -381,9 +388,9 @@ s32 eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
 s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
     s32 *p = src_position;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[11];
-    g_eff_command_block.unk00.w = 0x31000B;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[11];
+    g_eff_command_block.command_word.w = 0x31000B;
     eff_StartCommand();
     g_eff_point_light_position.vx = *p++;
     g_eff_point_light_position.vy = *p++;
@@ -395,17 +402,17 @@ s32 eff_StartFastRateCosineScaledQuadWithPaleBlueLight(s32 *src_position) {
 void eff_StartRecycledCommandWithPaleRedLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[5] != 0 && g_eff_command_status[6] != 0) {
         g_eff_command_status[6] = 0;
         g_eff_command_status[5] = 0;
     }
     if (g_eff_command_status[5] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[5];
-        g_eff_active_command_block->unk00.w = 0x210005;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[5];
+        g_eff_active_command_block->command_word.w = 0x210005;
     } else if (g_eff_command_status[6] == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[6];
-        g_eff_command_block.unk00.w = 0x210006;
+        g_eff_command_block.status_dest = &g_eff_command_status[6];
+        g_eff_command_block.command_word.w = 0x210006;
     }
     eff_StartCommand();
     p = src_position;
@@ -420,17 +427,17 @@ void eff_StartArgSelectedCommandWithCyanLight(
     s32 *p;
 
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.start_position_src = src_position;
     switch (command_variant) {
     case 0:
         g_eff_command_status[12] = 0;
-        g_eff_command_block.unk14 = &g_eff_command_status[12];
-        g_eff_command_block.unk00.w = 0x21000C;
+        g_eff_command_block.status_dest = &g_eff_command_status[12];
+        g_eff_command_block.command_word.w = 0x21000C;
         break;
     case 1:
         g_eff_command_status[13] = 0;
-        g_eff_command_block.unk14 = &g_eff_command_status[13];
-        g_eff_command_block.unk00.w = 0x21000D;
+        g_eff_command_block.status_dest = &g_eff_command_status[13];
+        g_eff_command_block.command_word.w = 0x21000D;
         break;
     }
     eff_StartCommand();
@@ -446,17 +453,17 @@ void eff_StartArgSelectedCommandWithGreenLight(
     s32 *p;
 
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.start_position_src = src_position;
     switch (command_variant) {
     case 0:
         g_eff_command_status[14] = 0;
-        g_eff_command_block.unk14 = &g_eff_command_status[14];
-        g_eff_command_block.unk00.w = 0x21000E;
+        g_eff_command_block.status_dest = &g_eff_command_status[14];
+        g_eff_command_block.command_word.w = 0x21000E;
         break;
     case 1:
         g_eff_command_status[15] = 0;
-        g_eff_command_block.unk14 = &g_eff_command_status[15];
-        g_eff_command_block.unk00.w = 0x21000F;
+        g_eff_command_block.status_dest = &g_eff_command_status[15];
+        g_eff_command_block.command_word.w = 0x21000F;
         break;
     }
     eff_StartCommand();
@@ -470,17 +477,17 @@ void eff_StartArgSelectedCommandWithGreenLight(
 void eff_StartRecycledCommandWithOrangeLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[16] != 0 && g_eff_command_status[17] != 0) {
         g_eff_command_status[17] = 0;
         g_eff_command_status[16] = 0;
     }
     if (g_eff_command_status[16] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[16];
-        g_eff_active_command_block->unk00.w = 0x210010;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[16];
+        g_eff_active_command_block->command_word.w = 0x210010;
     } else if (g_eff_command_status[17] == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[17];
-        g_eff_command_block.unk00.w = 0x210011;
+        g_eff_command_block.status_dest = &g_eff_command_status[17];
+        g_eff_command_block.command_word.w = 0x210011;
     }
     eff_StartCommand();
     p = src_position;
@@ -494,18 +501,18 @@ void eff_StartRecycledVectorCommandWithRedLight(
     s32 *src_position, s16 *src_command_vector) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk10 = src_command_vector;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.start_vector_src = src_command_vector;
     if (g_eff_command_status[2] != 0 && g_eff_command_status[3] != 0) {
         g_eff_command_status[3] = 0;
         g_eff_command_status[2] = 0;
     }
     if (g_eff_command_status[2] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[2];
-        g_eff_active_command_block->unk00.w = 0x210002;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[2];
+        g_eff_active_command_block->command_word.w = 0x210002;
     } else if (g_eff_command_status[3] == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[3];
-        g_eff_command_block.unk00.w = 0x210003;
+        g_eff_command_block.status_dest = &g_eff_command_status[3];
+        g_eff_command_block.command_word.w = 0x210003;
     }
     eff_StartCommand();
     p = src_position;
@@ -517,17 +524,17 @@ void eff_StartRecycledVectorCommandWithRedLight(
 
 void eff_StartBillboardPairCommand(s32 *src_position) {
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[8];
-    g_eff_command_block.unk00.w = 0x10008;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[8];
+    g_eff_command_block.command_word.w = 0x10008;
     eff_StartCommand();
 }
 
 void eff_StartJitteredBillboardsCommand(s32 *src_position) {
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk14 = &g_eff_command_status[7];
-    g_eff_command_block.unk00.w = 0x10007;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.status_dest = &g_eff_command_status[7];
+    g_eff_command_block.command_word.w = 0x10007;
     eff_StartCommand();
 }
 
@@ -539,14 +546,14 @@ void eff_StartYawedQuadSlotCommand(s32 *src_position, s16 command_vector_y,
     command_vector[2] = 0;
     command_vector[0] = 0;
     command_vector[1] = command_vector_y;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk10 = command_vector;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.start_vector_src = command_vector;
     if (use_second_slot == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[0];
-        g_eff_command_block.unk00.w = command_word_bits + 0x10000;
+        g_eff_command_block.status_dest = &g_eff_command_status[0];
+        g_eff_command_block.command_word.w = command_word_bits + 0x10000;
     } else {
-        g_eff_command_block.unk14 = &g_eff_command_status[1];
-        g_eff_command_block.unk00.w = command_word_bits + 0x10001;
+        g_eff_command_block.status_dest = &g_eff_command_status[1];
+        g_eff_command_block.command_word.w = command_word_bits + 0x10001;
     }
     eff_StartCommand();
 }
@@ -555,24 +562,24 @@ void eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
     s32 *src_position, s16 *src_command_vector) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
-    g_eff_command_block.unk10 = src_command_vector;
+    g_eff_command_block.start_position_src = src_position;
+    g_eff_command_block.start_vector_src = src_command_vector;
     if (g_eff_command_status[20] != 0 && g_eff_command_status[21] != 0) {
         g_eff_command_status[21] = 0;
         g_eff_command_status[20] = 0;
     }
     if (g_eff_command_status[20] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[20];
-        g_eff_active_command_block->unk00.w = 0x210014;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[20];
+        g_eff_active_command_block->command_word.w = 0x210014;
         eff_StartCommand();
-        g_eff_active_command_block->unk14 = &g_eff_command_status[7];
-        g_eff_active_command_block->unk00.w = 0x10007;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[7];
+        g_eff_active_command_block->command_word.w = 0x10007;
     } else if (g_eff_command_status[21] == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[21];
-        g_eff_active_command_block->unk00.w = 0x210015;
+        g_eff_command_block.status_dest = &g_eff_command_status[21];
+        g_eff_active_command_block->command_word.w = 0x210015;
         eff_StartCommand();
-        g_eff_active_command_block->unk14 = &g_eff_command_status[7];
-        g_eff_active_command_block->unk00.w = 0x10007;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[7];
+        g_eff_active_command_block->command_word.w = 0x10007;
     }
     eff_StartCommand();
     p = src_position;
@@ -613,19 +620,19 @@ void eff_StartRecycledYawedParticlesWithTextureSelection(
     command_vector.vx = rotated_vector.vx;
     command_vector.vy = rotated_vector.vy;
     command_vector.vz = rotated_vector.vz;
-    g_eff_active_command_block->unk0C = src_position;
-    g_eff_active_command_block->unk10 = &command_vector.vx;
+    g_eff_active_command_block->start_position_src = src_position;
+    g_eff_active_command_block->start_vector_src = &command_vector.vx;
     if (g_eff_command_status[22] != 0 && g_eff_command_status[23] != 0) {
         g_eff_command_status[23] = 0;
         g_eff_command_status[22] = 0;
     }
     if (g_eff_command_status[22] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[22];
-        g_eff_active_command_block->unk00.w = 0x10016;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[22];
+        g_eff_active_command_block->command_word.w = 0x10016;
         D_800A34F0[0] = use_alternate_texture;
     } else if (g_eff_command_status[23] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[23];
-        g_eff_active_command_block->unk00.w = 0x10017;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[23];
+        g_eff_active_command_block->command_word.w = 0x10017;
         D_800A34F0[1] = use_alternate_texture;
     }
     eff_StartCommand();
@@ -658,18 +665,18 @@ void eff_StartRecycledYawedParticles(s32 *src_position, s16 yaw_angle) {
     command_vector.vx = rotated_vector.vx;
     command_vector.vy = rotated_vector.vy;
     command_vector.vz = rotated_vector.vz;
-    g_eff_active_command_block->unk0C = src_position;
-    g_eff_active_command_block->unk10 = &command_vector.vx;
+    g_eff_active_command_block->start_position_src = src_position;
+    g_eff_active_command_block->start_vector_src = &command_vector.vx;
     if (g_eff_command_status[24] != 0 && g_eff_command_status[25] != 0) {
         g_eff_command_status[25] = 0;
         g_eff_command_status[24] = 0;
     }
     if (g_eff_command_status[24] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[24];
-        g_eff_active_command_block->unk00.w = 0x10018;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[24];
+        g_eff_active_command_block->command_word.w = 0x10018;
     } else if (g_eff_command_status[25] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[25];
-        g_eff_active_command_block->unk00.w = 0x10019;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[25];
+        g_eff_active_command_block->command_word.w = 0x10019;
     }
     eff_StartCommand();
 }
@@ -677,17 +684,17 @@ void eff_StartRecycledYawedParticles(s32 *src_position, s16 yaw_angle) {
 void eff_StartRecycledCommandWithMagentaLight(s32 *src_position) {
     s32 *p;
     g_eff_active_command_block = &g_eff_command_block;
-    g_eff_command_block.unk0C = src_position;
+    g_eff_command_block.start_position_src = src_position;
     if (g_eff_command_status[18] != 0 && g_eff_command_status[19] != 0) {
         g_eff_command_status[19] = 0;
         g_eff_command_status[18] = 0;
     }
     if (g_eff_command_status[18] == 0) {
-        g_eff_active_command_block->unk14 = &g_eff_command_status[18];
-        g_eff_active_command_block->unk00.w = 0x210012;
+        g_eff_active_command_block->status_dest = &g_eff_command_status[18];
+        g_eff_active_command_block->command_word.w = 0x210012;
     } else if (g_eff_command_status[19] == 0) {
-        g_eff_command_block.unk14 = &g_eff_command_status[19];
-        g_eff_command_block.unk00.w = 0x210013;
+        g_eff_command_block.status_dest = &g_eff_command_status[19];
+        g_eff_command_block.command_word.w = 0x210013;
     }
     eff_StartCommand();
     p = src_position;
@@ -764,17 +771,17 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     eff_BindScratchpad(src_rotation, src_position);
     src_command_block = g_eff_active_command_block;
     rotation_out = D_800A346C;
-    rotation_out[0] = src_command_block->unk04[0];
+    rotation_out[0] = src_command_block->bound_rotation_src[0];
     prim = g_eff_quad_cursor;
-    rotation_out[1] = src_command_block->unk04[1];
-    rotation_out[2] = src_command_block->unk04[2];
+    rotation_out[1] = src_command_block->bound_rotation_src[1];
+    rotation_out[2] = src_command_block->bound_rotation_src[2];
     position_out = g_eff_view_origin;
     /* the matrix eff_SetRotMatrix builds from the angles at src_rotation */
     scaled_rotation_matrix = g_eff_view_rotation_matrix;
-    position_out[0] = src_command_block->unk08[0];
+    position_out[0] = src_command_block->bound_position_src[0];
     base = &g_eff_work_area->v800620B8;
-    position_out[1] = src_command_block->unk08[1];
-    position_out[2] = src_command_block->unk08[2];
+    position_out[1] = src_command_block->bound_position_src[1];
+    position_out[2] = src_command_block->bound_position_src[2];
     g_eff_billboard_draw_count++;
     eff_SetRotMatrix(rotation_out, position_out, scaled_rotation_matrix);
     SetRotMatrix(g_eff_view_rotation_matrix);
@@ -1328,14 +1335,14 @@ u8 eff_AllocateOrRecycleYawedQuadSlot(s32);
 u8 func_80063AF0(void) {
     g_eff_command_phase[0] = 1;
     g_eff_yawed_quad_tex_selectors[0] =
-        (g_eff_active_command_block->unk00.w >> 17) & 3;
+        (g_eff_active_command_block->command_word.w >> 17) & 3;
     return eff_AllocateOrRecycleYawedQuadSlot(0);
 }
 
 u8 func_80063B34(void) {
     g_eff_command_phase[1] = 1;
     g_eff_yawed_quad_tex_selectors[1] =
-        (g_eff_active_command_block->unk00.w >> 17) & 3;
+        (g_eff_active_command_block->command_word.w >> 17) & 3;
     return eff_AllocateOrRecycleYawedQuadSlot(1);
 }
 
@@ -1807,7 +1814,7 @@ s32 eff_InitRateSelectedCosineScaledQuad(void) {
     g_eff_animated_quad_positions[5].unk8 = g_eff_command_position[2];
     g_eff_command_phase[11] = 1;
     g_eff_animated_quad_counters[5] = 0;
-    D_800A3440 = (g_eff_active_command_block->unk00.w >> 19) & 3;
+    D_800A3440 = (g_eff_active_command_block->command_word.w >> 19) & 3;
     return 1;
 }
 

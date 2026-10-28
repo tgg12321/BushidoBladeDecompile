@@ -17,7 +17,7 @@ void cdrom_Init(void) {
     CdInit();
     CdSetDebug(0);
     cdrom_SetMix(0, 0, 0, 0);
-    g_cdrom_state.rec.unk02 = 0;
+    g_cdrom_state.rec.io_state = 0;
     if (D_800A31E4 == 0) {
         D_800A31E4 = 1;
     }
@@ -33,7 +33,7 @@ void cdrom_ReadyCallback(u8 arg0, u8 *result) {
     s32 sp[4];
 
     if (arg0 == 1) {
-        g_cdrom_state.rec.unk38 = 0;
+        g_cdrom_state.rec.read_timeout = 0;
         if (g_cdrom_state.rec.cd20 <= 0) {
             return;
         }

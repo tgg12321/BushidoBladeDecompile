@@ -48,7 +48,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         g_fight_config.unk_4[i] = var_7;
         if ((u32)(var_7 - 3) < 2 || (s8)var_7 == new_var ||
             (u32)(var_7 - 18) < 2 || (s8)var_7 == new_var2) {
-            if ((s8)g_fight_config.unk_D == 0) {
+            if ((s8)g_fight_config.pending_mode_selector == 0) {
                 g_fight_config.unk_4[i] = g_fight_config.unk_4[i] - 3;
             }
         }
@@ -59,10 +59,10 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
         i++;
     } while (i < 2);
 
-    g_fight_config.unk_C = p->stage_index;
-    g_fight_config.unk_E = p->view_setting;
+    g_fight_config.pending_stage_index = p->stage_index;
+    g_fight_config.pending_view_setting = p->view_setting;
     g_fight_tracked_fighter_index = 0;
-    val = g_fight_config.unk_D;
+    val = g_fight_config.pending_mode_selector;
 
     if (val == 2) {
         D_800A389A = p->unk14_17;

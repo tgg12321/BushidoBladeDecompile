@@ -287,7 +287,7 @@ s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *arg0) {
         g_fight_second_fighter_defeats_left = v;
         g_fight_second_fighter_initial_defeats_left = v;
     }
-    g_fight_config.unk_A[1] = arg0[1];
+    g_fight_config.operand_cpu_base_levels[1] = arg0[1];
     g_fight_operand_tint_red = arg0[2];
     g_fight_operand_tint_green = arg0[3];
     g_fight_operand_tint_blue = arg0[4];
@@ -300,7 +300,7 @@ s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *arg0) {
     D_800A3712 = 1;
     g_fight_config.unk_4[1] = arg0[0];
     g_fight_config.unk_4[3] = arg0[1];
-    g_fight_config.unk_A[1] = arg0[2];
+    g_fight_config.operand_cpu_base_levels[1] = arg0[2];
     fight_FillMissingConfigInitFighterAndLoadObject(1);
     fight_RequestBothFightersEntriesAndReloadOnChange();
     return 3;
@@ -933,16 +933,17 @@ void fight_InitRotatingViewThreeOptionChoice(void) {
 
 void fight_UpdateRotatingViewThreeOptionChoice(void) {
     func_8003F1E4(0);
-    g_camera_default_view_record.unk_00.x = 0;
-    g_camera_default_view_record.unk_00.y = -0xBB8;
-    g_camera_default_view_record.unk_00.z = 0;
-    g_camera_default_view_record.unk_10.vx = 0x20;
-    g_camera_default_view_record.unk_10.vz = 0;
+    g_camera_default_view_record.focus_point.x = 0;
+    g_camera_default_view_record.focus_point.y = -0xBB8;
+    g_camera_default_view_record.focus_point.z = 0;
+    g_camera_default_view_record.camera_angles.vx = 0x20;
+    g_camera_default_view_record.camera_angles.vz = 0;
     g_camera_default_view_record.w18 = 0x2710;
-    g_camera_default_view_record.unk_10.vy = g_gpu_presented_frame_count << 2;
+    g_camera_default_view_record.camera_angles.vy =
+        g_gpu_presented_frame_count << 2;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
-        &g_camera_default_view_record.unk_00,
-        &g_camera_default_view_record.unk_10, 0x2710);
+        &g_camera_default_view_record.focus_point,
+        &g_camera_default_view_record.camera_angles, 0x2710);
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
     if (g_fight_choice_confirm_delay == 0) {
@@ -1022,16 +1023,17 @@ void fight_InitRotatingViewDecimalPresentation(void) {
 
 void fight_UpdateRotatingViewDecimalPresentation(void) {
     func_8003F1E4(0);
-    g_camera_default_view_record.unk_00.x = 0;
-    g_camera_default_view_record.unk_00.y = -0xBB8;
-    g_camera_default_view_record.unk_00.z = 0;
-    g_camera_default_view_record.unk_10.vx = 0x20;
-    g_camera_default_view_record.unk_10.vz = 0;
+    g_camera_default_view_record.focus_point.x = 0;
+    g_camera_default_view_record.focus_point.y = -0xBB8;
+    g_camera_default_view_record.focus_point.z = 0;
+    g_camera_default_view_record.camera_angles.vx = 0x20;
+    g_camera_default_view_record.camera_angles.vz = 0;
     g_camera_default_view_record.w18 = 0x2710;
-    g_camera_default_view_record.unk_10.vy = g_gpu_presented_frame_count << 2;
+    g_camera_default_view_record.camera_angles.vy =
+        g_gpu_presented_frame_count << 2;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
-        &g_camera_default_view_record.unk_00,
-        &g_camera_default_view_record.unk_10, 0x2710);
+        &g_camera_default_view_record.focus_point,
+        &g_camera_default_view_record.camera_angles, 0x2710);
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
     g_prim_buf_cursor += gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(

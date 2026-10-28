@@ -266,8 +266,9 @@ void menu_UpdateRowMenuAndSubflows(void) {
     case 11:
         if (--g_handler_frame_counter == 0) {
             cdrom_PauseAndWait();
-            g_fight_config.unk_D = ResetFlowAndFetchRowTablePair();
-            menu_InitSubflowForMode((s8)g_fight_config.unk_D);
+            g_fight_config.pending_mode_selector =
+                ResetFlowAndFetchRowTablePair();
+            menu_InitSubflowForMode((s8)g_fight_config.pending_mode_selector);
         }
         break;
     case 12:

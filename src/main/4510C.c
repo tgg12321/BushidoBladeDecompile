@@ -1003,9 +1003,9 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         if (arg0->move_kind == 0x13 || arg0->move_kind == 6) {
             flags += probe_origin_fighter->orientation.vy;
         } else {
-            flags += ratan2(g_camera_default_view_record.unk_00.x -
+            flags += ratan2(g_camera_default_view_record.focus_point.x -
                                 probe_origin_fighter->world_pos.x,
-                            g_camera_default_view_record.unk_00.z -
+                            g_camera_default_view_record.focus_point.z -
                                 probe_origin_fighter->world_pos.z);
         }
 
@@ -1115,8 +1115,8 @@ s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
     s32 var_v0;
 
     focus_bearing =
-        ratan2(g_camera_default_view_record.unk_00.x - arg0->world_pos.x,
-               g_camera_default_view_record.unk_00.z - arg0->world_pos.z);
+        ratan2(g_camera_default_view_record.focus_point.x - arg0->world_pos.x,
+               g_camera_default_view_record.focus_point.z - arg0->world_pos.z);
     var_v0 = focus_bearing - ratan2(route_target_x - arg0->world_pos.x,
                                     route_target_z - arg0->world_pos.z);
     var_v0 -= 0x100;

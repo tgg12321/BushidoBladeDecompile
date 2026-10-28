@@ -62,23 +62,23 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
     font_Printf(D_800A31A0,
                 (s32)(g_config_menu_cursors[0] == 3 ? selected_prefix
                                                     : unselected_prefix),
-                g_fight_config.unk_0[0] >> 8);
+                g_fight_config.cpu_base_levels[0] >> 8);
     font_Printf(D_800A31A8,
                 (s32)(g_config_menu_cursors[1] == 3 ? selected_prefix
                                                     : unselected_prefix),
-                g_fight_config.unk_0[1] >> 8);
+                g_fight_config.cpu_base_levels[1] >> 8);
     font_Printf(D_800A31B0,
                 (s32)(g_config_menu_cursors[0] == 4 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_C);
+                (s8)g_fight_config.pending_stage_index);
     font_Printf(D_800A31B0,
                 (s32)(g_config_menu_cursors[0] == 5 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_D);
+                (s8)g_fight_config.pending_mode_selector);
     font_Printf(D_800A31B8,
                 (s32)(g_config_menu_cursors[0] == 6 ? selected_prefix
                                                     : unselected_prefix),
-                (s8)g_fight_config.unk_E);
+                (s8)g_fight_config.pending_view_setting);
     font_Printf((u8 *)D_80010834,
                 (s32)(g_config_menu_cursors[0] == 7 ? selected_prefix
                                                     : unselected_prefix),
@@ -128,16 +128,16 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_fight_config.unk_4[4 + i]--;
                 break;
             case 3:
-                g_fight_config.unk_0[i] -= 0x80;
+                g_fight_config.cpu_base_levels[i] -= 0x80;
                 break;
             case 4:
-                g_fight_config.unk_C--;
+                g_fight_config.pending_stage_index--;
                 break;
             case 5:
-                g_fight_config.unk_D--;
+                g_fight_config.pending_mode_selector--;
                 break;
             case 6:
-                g_fight_config.unk_E--;
+                g_fight_config.pending_view_setting--;
                 break;
             case 7:
                 g_fight_config.unk_F--;
@@ -168,16 +168,16 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 g_fight_config.unk_4[4 + i]++;
                 break;
             case 3:
-                g_fight_config.unk_0[i] += 0x80;
+                g_fight_config.cpu_base_levels[i] += 0x80;
                 break;
             case 4:
-                g_fight_config.unk_C++;
+                g_fight_config.pending_stage_index++;
                 break;
             case 5:
-                g_fight_config.unk_D++;
+                g_fight_config.pending_mode_selector++;
                 break;
             case 6:
-                g_fight_config.unk_E++;
+                g_fight_config.pending_view_setting++;
                 break;
             case 7:
                 g_fight_config.unk_F++;
@@ -200,9 +200,11 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
         g_fight_config.unk_4[2 + i] = ((s8)g_fight_config.unk_4[2 + i] + 8) % 8;
         g_fight_config.unk_4[4 + i] = ((s8)g_fight_config.unk_4[4 + i] + 2) % 2;
     }
-    g_fight_config.unk_C = ((s8)g_fight_config.unk_C + 38) % 38;
-    g_fight_config.unk_D = ((s8)g_fight_config.unk_D + 7) % 7;
-    g_fight_config.unk_E &= 1;
+    g_fight_config.pending_stage_index =
+        ((s8)g_fight_config.pending_stage_index + 38) % 38;
+    g_fight_config.pending_mode_selector =
+        ((s8)g_fight_config.pending_mode_selector + 7) % 7;
+    g_fight_config.pending_view_setting &= 1;
     g_fight_config.unk_F &= 1;
     D_800A36F9 = (D_800A36F9 + 4) % 4;
     g_fight_view_option &= 1;
