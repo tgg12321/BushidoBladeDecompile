@@ -846,7 +846,7 @@ class Tick(unittest.TestCase):
         o.backlogs = lambda: bl(naming_stages=(), foundation=())
         o.main(["codex", "on"])
         o.write_max(1)
-        self.bridge["usage"]["secondary"]["usedPercent"] = 85
+        self.bridge["usage"]["secondary"]["usedPercent"] = 98
         self.assertTrue(o.tick(self.args))
         self.assertIn("weekly", o.load_state()["waiting"])
         o.main(["codex", "off"])
@@ -1167,10 +1167,10 @@ class Codex(unittest.TestCase):
         self.assertIsNone(o.codex_gate({"enabled": True, "armed": 6}, {}, False, [nothing, nothing]))
 
     def test_quota(self):
-        ok = {"clear": True, "usage": {"primary": {"usedPercent": 89}, "secondary": {"usedPercent": 79}}}
+        ok = {"clear": True, "usage": {"primary": {"usedPercent": 94}, "secondary": {"usedPercent": 97}}}
         self.assertIsNone(o.codex_quota_block(ok))
-        hi5 = {"clear": True, "usage": {"primary": {"usedPercent": 90}, "secondary": {"usedPercent": 1}}}
-        hiw = {"clear": True, "usage": {"primary": {"usedPercent": 1}, "secondary": {"usedPercent": 80}}}
+        hi5 = {"clear": True, "usage": {"primary": {"usedPercent": 95}, "secondary": {"usedPercent": 1}}}
+        hiw = {"clear": True, "usage": {"primary": {"usedPercent": 1}, "secondary": {"usedPercent": 98}}}
         self.assertIn("5-hour", o.codex_quota_block(hi5))
         self.assertIn("weekly", o.codex_quota_block(hiw))
         self.assertIn("BLOCKED", o.codex_quota_block({"clear": False, "blockers": ["busy"]}))

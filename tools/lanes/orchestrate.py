@@ -38,7 +38,7 @@ status). `max 0` drains: running sessions finish, then the orchestrator exits.
 
 Codex lane (`--codex` / `codex on`): one extra session `lane-codex`, outside the N slots, that
 follows tmp/codex/fake-lane-brief.md. It is restarted when it finishes only while Codex usage is
-under 90% (5 h) / 80% (week), the bridge is not BLOCKED, and its last two sessions did not both
+under 95% (5 h) / 98% (week), the bridge is not BLOCKED, and its last two sessions did not both
 land nothing (a main commit whose body has a line starting `Codex run:`); `codex on` re-arms
 that. An untracked `lane-<x>` session (from before a restart) is adopted, and keeps lane x busy,
 only while it works or, idle, still owns lane x in the registry. With nothing running it keeps polling only while work
@@ -91,7 +91,7 @@ AWAY_SECS = 20 * 60  # owner input idle this long = away (for --when-away lanes)
 CODEX_LANE = "codex"
 CODEX_PROMPT = "Read tmp/codex/fake-lane-brief.md and follow it exactly."
 CODEX_BRIEF = MAIN / "tmp" / "codex" / "fake-lane-brief.md"
-CODEX_MAX_5H, CODEX_MAX_WEEK = 90, 80
+CODEX_MAX_5H, CODEX_MAX_WEEK = 95, 98  # owner 2026-10-28: spend all weekly Codex usage
 CODEX_RECHECK_SECS = 10 * 60  # how often a quota-blocked Codex lane re-asks the bridge
 CODEX_HISTORY = 20
 

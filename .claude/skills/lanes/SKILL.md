@@ -27,7 +27,7 @@ anything itself.
 | `/lanes plan` | `python tools/lanes/orchestrate.py plan` (what would start next; starts nothing). |
 | `/lanes pause <lane> [--when-away]` / `resume <lane>` | `orchestrate.py pause` / `resume`: a paused lane is never started (`naming` = all naming lanes); `--when-away` starts it only after 20 min without owner input. Persists across runs (`tmp/lanes-state/paused.json`). Does not stop a running session. |
 | `/lanes ack <lane>` (or `all`) | `orchestrate.py ack ...`: clear attention items after reading them. |
-| `/lanes codex on` / `off` | `orchestrate.py codex on` / `off` (or `run --codex`): one extra `lane-codex` session outside N, following `tmp/codex/fake-lane-brief.md`. Restarted only while Codex is under 90% (5 h) / 80% (week) and not BLOCKED, and unless its last two sessions landed nothing (landed = a main commit with a `Codex run:` trailer); `codex on` re-arms. |
+| `/lanes codex on` / `off` | `orchestrate.py codex on` / `off` (or `run --codex`): one extra `lane-codex` session outside N, following `tmp/codex/fake-lane-brief.md`. Restarted only while Codex is under 95% (5 h) / 98% (week) and not BLOCKED, and unless its last two sessions landed nothing (landed = a main commit with a `Codex run:` trailer); `codex on` re-arms. |
 | `/lanes stop` | `python tools/lanes/orchestrate.py max 0`: running sessions finish their units and close, none start, then the orchestrator exits. Never `claude stop` a session mid-land. |
 
 ## Start
