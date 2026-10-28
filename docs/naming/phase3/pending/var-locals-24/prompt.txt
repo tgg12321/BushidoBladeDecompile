@@ -1,0 +1,41 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 24 (row var-locals-24, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15..23 lessons in
+`docs/naming/phase3/pending/var-locals-{16,...,23}/prompt.txt` and `pending/var-locals-23/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD e082d6aea (read-only; equals main, wave 23 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-24-research.md`
+  (overrides any output file the earlier prompts name): HEAD first, then the proposed
+  `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with reasons,
+  comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs citing parameters). Cite file:line at HEAD. Return only a
+  one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. the 9 cap-cut rows of pending/var-locals-23/notes.txt
+  (CAP bullet; re-derive each at HEAD). 2. src/main/64FD8.c, every C definition in file order from
+  gpu_DrawAndAdvanceTimedSpriteSequence (~64FD8.c:1471) onward. 3. Then any other game TU under
+  src/main/ (not psxsdk/) that still has auto-named bindings (argN, var_N, a0..a3, v0_xxxx, spNN,
+  temp_*, s, p, ...): 64FD8.c is the last offset-named game TU, so check cdrom.c and memcard.c,
+  then sweep earlier TUs in ROM-offset order for leftovers not on any NO_NAME / neutral list.
+- Do not re-propose wave 8-23 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,23}/notes.txt) without new evidence, said in the row. Left neutral by
+  wave 23: menu_UpdateEntryGridCursors:var_6, menu_UpdateRowCursors:var_4,
+  menu_FadeOutSelAndWriteResult:var_6, menu_UpdateChoiceGrid:i and var_4, and 63D2C.c's K&R
+  gpu_AddRotatedSpriteQuads (skip it).
+- Lessons: every old name a rename retires may be cited in symbol_addrs.txt comments, include/*.h
+  comments and live docs (docs/engine/*.md cite parameters as arg0: wave 23 R6 caught
+  gpu_pipeline.md and replay.md); list each such citation in the notes with file:line (comment
+  survival is a grep). Arguments of function-like macros (gte_* etc.) are rejected by scoped_plan:
+  do not propose them. A FAKE-comment-cited binding stays neutral. A binding with two roles in one
+  body stays neutral. A new name must not equal a member the same function accesses (keycheck
+  "already occurs in f": wave 23 lost stage_index / time_limit_index this way).
+- Names already used for the same roles (reuse per function only with the same meaning):
+  draw_context, resource_root, sheet_headers, slot_index, buffer_index, prim_buffer, draw_desc,
+  sprt_cursor, tile_cursor, flat_quad_cursor, header_block, header_index, ot_index, cell_index,
+  tile_rect, pressed_buttons, result, gpu_db, choice_index, y_offset, x_offset, cell_count,
+  tile_index, player_index, row_index, file_index, offset_list, draw_env, pad_buttons,
+  primitive_cursors (Unk800788B0Rec, game.h:183-199).
+- Left neutral, do not propose: parameter names in forward declarations/prototypes.
