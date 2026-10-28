@@ -1,0 +1,97 @@
+# var-globals-g notes (cites at 26e60d5e4; worktree ln-naming-a; Opus research tmp/codex/var-globals-g-research.md re-derived by the drafter)
+0x8008D090: KEPT g_main_loop_handlers. Retired: g_module_func_tbl (symbol_addrs.txt:206, symbol_addrs.txt:595, symbol_addrs.txt:804): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8009A658: KEPT g_cpu_stage_nav_sets. Retired: none. Confidence high.
+0x8008D59C: KEPT g_fighter_bone_hit_record_templates. Retired: g_tbl20_field0_D59C (symbol_addrs.txt:1122): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008DB1C: KEPT g_fighter_motion_data_ids. Retired: g_c6c_data_ptr_DB1C (symbol_addrs.txt:1124): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008DE34: KEPT g_fighter_base_move_frame_steps. Retired: g_char_anim_curve_table_3x324 (symbol_addrs.txt:774): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008DF78: KEPT g_fighter_base_powers. Retired: none. Confidence high.
+0x8008E338: KEPT g_fighter_initial_carried_object_kinds. Retired: g_char_class_init_tbl_5bytes (symbol_addrs.txt:1126): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3144: KEPT g_fighter_body_overlap_radii. Retired: g_game_pad_index_800A3144 (symbol_addrs.txt:1175): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3138: KEPT g_unit_y_vector. Retired: none. Confidence high.
+0x8008EC30: KEPT g_fight_time_limit_choices. Retired: g_char_id_saved_d_init_tbl_EC30 (symbol_addrs.txt:1142): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008E75C: KEPT g_fight_opponent_stage_indices. Retired: g_s16_lookup_u8idx_E75C (symbol_addrs.txt:1127): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008E778: KEPT g_fight_step_table. Retired: cpu_practice_honmokuroku_data_tbl (symbol_addrs.txt:218, symbol_addrs.txt:806): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008EC24: KEPT g_fight_step_row_object_ids. Retired: g_c6cb_data_ptr_EC24 (symbol_addrs.txt:1141): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008EB6C: KEPT g_fight_midpoint_effect_event_ids. Retired: none. Confidence medium-high.
+0x800900EC: KEPT g_fight_command_streams. Retired: g_per_char_descriptor_table_32 (symbol_addrs.txt:759): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A36C8: KEPT g_fight_saved_bone_group_tim_requests. Retired: g_char_id_saved_d (symbol_addrs.txt:939): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x80099CC8: KEPT g_resource_entry_linked_entries. Retired: g_panel_sibling_lookup_a (symbol_addrs.txt:898): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x80099C50: KEPT g_resource_prev_entry_request_state. Retired: g_text1b_value_99C50 (symbol_addrs.txt:1046): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A324C: KEPT g_resource_last_selection_index. Retired: g_text1b_last_frame_id (symbol_addrs.txt:912): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3248: KEPT g_resource_cached_node_asset_id. Retired: none. Confidence high.
+0x80099D54: KEPT g_motion_playback_file_id_bases. Retired: InfoPosYTbl1 (symbol_addrs.txt:220, symbol_addrs.txt:579, symbol_addrs.txt:808): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3250: KEPT g_motion_null_stream_tag. Retired: none. Confidence high.
+0x8008EBFC: KEPT g_snd_stage_sequence_cue_ticks. Retired: g_leaf_action_threshold_a (symbol_addrs.txt:867): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008E914: KEPT g_snd_stage_sound_slot_specs. Retired: g_leaf_stage_data_table (symbol_addrs.txt:865): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008EA50: KEPT g_snd_stage_sound_slot_positions. Retired: none. Confidence high.
+0x8008D518: SUGGESTED g_snd_stage_cd_audio_entry_indices (pre-apply batch A FAILed g_snd_stage_cd_audio_entries: R4/R5 (N2): it holds u8 indices into D_8008F13C, which this wave names g_cdrom_audio_entries (9F9C.c:1749, cdrom.c:111)). Retired: g_func37110_lookup_D518 (symbol_addrs.txt:1120): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8009AA70: KEPT g_snd_sound_vab_entries. Retired: g_text1b_s32_arr_aa70 (symbol_addrs.txt:1053): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3906: KEPT g_snd_initialized. Retired: g_intro_render_busy (symbol_addrs.txt:1946): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x8008F12C: KEPT g_cdrom_file_group_bases. Retired: g_offset_lookup_F12C (symbol_addrs.txt:1143): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008F13C: KEPT g_cdrom_audio_entries. Retired: g_special_cam_command_table (symbol_addrs.txt:652): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x80094DF0: KEPT g_gpu_clut_row_lists. Retired: g_stage_lighting_ptr_array_6 (symbol_addrs.txt:760): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3230: KEPT g_gpu_grid_cell_run_entry_peak. Retired: none. Confidence high.
+0x800A336C: KEPT g_gpu_last_grid_pass_view_yaw. Retired: g_game_mode (symbol_addrs.txt:141): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A9A20: KEPT g_gpu_vram_row_backup_asset_index. Retired: g_anim_event_arg4_cached (symbol_addrs.txt:2062): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800EF848: KEPT g_gpu_vram_scrolls. Retired: g_snd_ch_data (symbol_addrs.txt:160, symbol_addrs.txt:1837): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x80099C34: KEPT g_gpu_vram_scroll_presets. Retired: g_snd_se_bank (symbol_addrs.txt:159, symbol_addrs.txt:599): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A30DC: KEPT g_main_prim_buffer_min_remaining. Retired: g_ot_remaining_min (symbol_addrs.txt:869): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8009BCD4: KEPT g_gpu_rotated_sprite_quad_scale. Retired: g_bitmask_table_4_8009BCD4 (symbol_addrs.txt:769): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A35F4: KEPT g_gpu_timed_sprite_prim_buffers. Retired: g_menu_screen_b_state_arg (symbol_addrs.txt:1424): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A35FC: KEPT g_gpu_timed_sprite_step_count. Retired: g_menu_screen_b_frame_counter (symbol_addrs.txt:1426): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A360C: KEPT g_gpu_scrolling_sprite_prim_buffers. Retired: g_intro_state_arg (symbol_addrs.txt:1428): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3610: KEPT g_gpu_scrolling_sprite_resources. Retired: g_intro_sprite_data_ptr (symbol_addrs.txt:1429): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3304: KEPT g_gpu_scrolling_sprite_step_count. Retired: g_intro_dbuf_parity (symbol_addrs.txt:889): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A351C: KEPT g_row_menu_prim_buffers. Retired: g_menuctl_arg0_saved (symbol_addrs.txt:1419): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A35AC: KEPT g_entry_menu_prim_buffers. Retired: g_fade_dispatch_sp10_0_plus_4 (symbol_addrs.txt:1467): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A35D8: KEPT g_sel_prim_buffers. Retired: given (symbol_addrs.txt:1402); g_mode_state_arg_alt (symbol_addrs.txt:1402): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A36E4: KEPT g_sheet_pair_sprite_cursor. Retired: g_text1b_arg2_8_save (symbol_addrs.txt:1115): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8009BC1C: KEPT g_entry_menu_handlers. Retired: g_fade_dispatch_table (symbol_addrs.txt:854): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8009BCC4: KEPT g_entry_menu_choice_grid_draw_offsets. Retired: g_text1b_addr_8009BCC4 (symbol_addrs.txt:1102): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A32E9: SUGGESTED g_entry_menu_prev_frame_extra_slot_count (pre-apply batch B FAILed g_entry_menu_uploaded_extra_slot_count: N1/R4: 'uploaded' is false; 5ED34.c:913 stores last frame's g_entry_menu_grid_phase_extra_slot_count every frame whether or not the conditional LoadImage at :380-386 ran). Retired: none. Confidence medium-high.
+0x800A32F4: KEPT g_entry_menu_entry_upload_rect. Retired: none. Confidence high.
+0x800A3534: KEPT g_entry_menu_grid_cursor_cell_counts. Retired: g_menuctl_call_counter_plus_8_plus_4 (symbol_addrs.txt:1114): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3540: KEPT g_entry_menu_row_cursor_cell_counts. Retired: g_menuctl_call_counter_plus_8_plus_16 (symbol_addrs.txt:1474): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A35B4: KEPT g_entry_menu_grid_last_column. Retired: none. Confidence high.
+0x8009BA00: KEPT g_eff_billboard_tex_recs. Retired: none. Confidence high.
+0x800F10A0: KEPT g_eff_rotated_quad_cluster_rotations. Retired: g_motion_state_aux_at_0 (symbol_addrs.txt:2184): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3484: KEPT g_eff_quad_rate_selector. Retired: live alias g_scratchpad_ptr_ac (symbol_addrs.txt:1245), replaced by the rename: does not hold at these accesses (see WHY); not reused. Live alias g_scratchpad_ptr_ac replaced. Confidence high.
+0x800A34F0: KEPT g_eff_yawed_particle_alternate_texture_flags. Retired: g_scratchpad_ptr_b8_plus_4 (symbol_addrs.txt:1459): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3420: KEPT g_eff_first_quad_buffer. Retired: g_gnd_fog_value_a (symbol_addrs.txt:1448): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3424: KEPT g_eff_second_quad_buffer. Retired: g_gnd_fog_value_b (symbol_addrs.txt:1449): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800EEDF0: KEPT g_view_offset_node. Retired: g_cam_bone_data2 (symbol_addrs.txt:128, symbol_addrs.txt:1832): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A33C8: KEPT g_camera_calculated_angles. Retired: none. Confidence high.
+0x800EF070: KEPT g_wave_draw_node. Retired: g_snd_voice_init_block (symbol_addrs.txt:1943): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800EF558: KEPT g_wave_column_phases. Retired: g_snd_wave_phase_table (symbol_addrs.txt:1944): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A33D4: KEPT g_wave_cached_column_index. Retired: g_snd_fade_pos (symbol_addrs.txt:156): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A33D8: KEPT g_wave_cached_remainder_parity. Retired: g_snd_fade_amt (symbol_addrs.txt:157): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A33E0: KEPT g_node_retained_draw_slot_index. Retired: none. Confidence high.
+0x800A37D8: KEPT g_comb_handshake_retry_count. Retired: g_overlay_load_counter (symbol_addrs.txt:877): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A382C: SUGGESTED g_comb_write_not_aborted (pre-apply batch B FAILed g_comb_write_pending: N1/R4: 'pending' is false; comb_WriteWaitCallback clears it only on its give-up path (28708.c:1656) and comb_Write8 returns it as the success result (28708.c:1701)). Retired: g_comb_write_wait_flag (symbol_addrs.txt:2068): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008F1C0: KEPT g_memcard_save_title. Retired: g_c_mid_init_template_F1C0 (symbol_addrs.txt:1147): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A3203: KEPT g_memcard_load_request_armed. Retired: g_damage_debug_pending (symbol_addrs.txt:747): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A331C: KEPT g_memcard_status8_retry_count. Retired: g_input_retry_counter_a (symbol_addrs.txt:1451): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3320: KEPT g_memcard_status5_retry_count. Retired: g_input_retry_counter_b (symbol_addrs.txt:1452): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3324: KEPT g_memcard_status14_retry_count. Retired: g_input_retry_counter_b_plus_4 (symbol_addrs.txt:1453): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3328: KEPT g_memcard_status10_retry_count. Retired: g_input_retry_counter_b_plus_8 (symbol_addrs.txt:1454): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A332C: KEPT g_memcard_status15_retry_count. Retired: g_input_retry_counter_b_plus_8_plus_4 (symbol_addrs.txt:1480): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3338: KEPT g_memcard_status5_retries_exhausted. Retired: g_file_io_state_event_cells_17 (symbol_addrs.txt:1388): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3912: KEPT g_pad_remote_button_mapping_20. Retired: g_current_color_r (symbol_addrs.txt:2091): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3913: KEPT g_pad_remote_button_mapping_40. Retired: g_current_color_g (symbol_addrs.txt:2092): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3914: KEPT g_pad_remote_button_mapping_80. Retired: g_current_color_b (symbol_addrs.txt:2093): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+
+DROPPED at 80-row cap (researcher-flagged weakest first, then the weakest medium-high; mechanics clear, wording weaker; neutral names stay):
+0x8008EB40: DROPPED g_fighter_dpad_bearing_offsets (weakest per researcher: bearing offset rests on one turn computation (9F9C.c:4202), probe use is indirect; fallback D_8008EB40).
+0x8008EA44: DROPPED g_snd_stage_sound_slot_delay_seconds (cut to stay at 80: medium-high; seconds reading rests on the *30 frame scale in one function; fallback D_8008EA44).
+0x8009AD1C: DROPPED g_snd_stage_reverb_settings (weakest: only the first halfword has a C reader; the second is unexplained; fallback D_8009AD1C).
+0x800A31E4: DROPPED g_cdrom_initialized (weakest: no reader besides its own guard, so "initialized" is only the write-once reading; fallback D_800A31E4).
+0x800A3900: DROPPED g_sheet_pair_selection_y (weakest: single-function y offset, role of the 0x7C placement not shown; fallback D_800A3900).
+0x800A32E8: DROPPED g_entry_menu_uploaded_entry_value (cut to stay at 80: medium-high; "entry value" of the upload comparison is not shown beyond the compare; fallback D_800A32E8).
+0x800A35DC: DROPPED g_sel_sheet_code_column_toggle (cut to stay at 80: a bumped counter used as (n & 1) column pick; "toggle" claims more than the code shows; fallback D_800A35DC).
+0x800A3440: DROPPED g_eff_command_quad_rate_selector (cut to stay at 80: medium-high; the command bits (19-20) read is shown only by one init and one copy; fallback D_800A3440).
+0x800A3828: DROPPED g_light_current_setup (cut to stay at 80: medium-high; the only readers are leftover asm (gte_ColorGroupedNormalStream...), no C reader; fallback D_800A3828).
+0x800A333C: DROPPED g_memcard_status8_latched (weakest: latch semantics rest on one draw branch; fallback D_800A333C).
+
+CHANGED: none (every name re-derived from its uses; the cited C/header/asm sites match every grep hit; the only grep hits beyond the research lists are prose in docs/ and one registry comment, handled by the wave tools or noted in dry.txt).
+Pre-apply (naming-reviewer, two batches): A rows 0-36 36 PASS / 1 FAIL, B rows 37-79 41 PASS / 2 FAIL; the three FAILs take the reviewers' suggested names (marked suggested in data_manifest.csv; R6 judges them fresh).
+R6 watch: reword symbol_addrs.txt:1249 "with g_scratchpad_ptr_ac / _b8"; drop stale "// fade position" / "// fade amount" at symbol_addrs.txt:156-157; fix symbol_addrs.txt:1388 "17 x 4-byte cells" note (u8 flag g_memcard_status5_retries_exhausted); engine/queue.py:239 docstring names D_8008D090.
