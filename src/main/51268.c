@@ -32,7 +32,7 @@ static s32 D_800A3460;
 static s32 D_800A3464;
 static Unk1F800000Unk00 *g_eff_active_command_block;
 static s16 *D_800A346C;
-static s32 *D_800A3470;
+static s32 *g_eff_view_origin;
 static MATRIX *D_800A3474;
 static s16 *D_800A3478;
 static s32 *g_eff_command_position;
@@ -40,29 +40,29 @@ static s32 *D_800A3480;
 static s32 *D_800A3484;
 static TexRec *g_eff_current_tex_rec;
 static TexRec *D_800A348C;
-static s32 *D_800A3490;
-static s32 *D_800A3494;
-static u16 *D_800A3498;
-static u16 *D_800A349C;
-static u16 *D_800A34A0;
-static u16 *D_800A34A4;
-static s16 *D_800A34A8;
-static s16 *D_800A34AC;
-static s32 *D_800A34B0;
-static s32 *D_800A34B4;
-static s32 *D_800A34B8;
+static s32 *g_eff_tpage_word;
+static s32 *g_eff_clut_word;
+static u16 *g_eff_tex_left_u;
+static u16 *g_eff_tex_right_u;
+static u16 *g_eff_tex_top_v;
+static u16 *g_eff_tex_bottom_v;
+static s16 *g_eff_base_width;
+static s16 *g_eff_base_height;
+static s32 *g_eff_geom_screen_work;
+static s32 *g_eff_perspective_scale;
+static s32 *g_eff_screen_xy;
 static s16 *D_800A34BC;
-static s16 *D_800A34C0;
+static s16 *g_eff_right_x_offset;
 static s32 *D_800A34C4;
-static s32 *D_800A34C8;
+static s32 *g_eff_lower_y_offset_word;
 static s32 *D_800A34CC;
-static s32 *D_800A34D0;
+static s32 *g_eff_depth_work;
 static u16 *D_800A34D4;
 static u16 *D_800A34D8;
 static u16 *D_800A34DC;
 static u16 *D_800A34E0;
-static u32 *D_800A34E4;
-static u32 *D_800A34E8;
+static u32 *g_eff_current_ot_entry;
+static u32 *g_eff_current_prim_tag;
 static Unk1F8000B8Union *D_800A34EC;
 /* Two s16 slots at 0x800A34F0, indexed as one array (eff_PrepareParticles and
  * eff_UpdateParticles read the pair through one indexed access). */
@@ -117,7 +117,7 @@ void eff_StepCommand(void) {
     rotation_out[1] = src_command_block->unk04[1];
     rotation_out[2] = src_command_block->unk04[2];
 
-    position_out = D_800A3470;
+    position_out = g_eff_view_origin;
     position_out[0] = src_command_block->unk08[0];
     position_out[1] = src_command_block->unk08[1];
     position_out[2] = src_command_block->unk08[2];
@@ -207,32 +207,32 @@ void eff_SelectQuadBuffer(s32 select_second_buffer) {
 void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_active_command_block = &SPAD51268->unk00;
     D_800A346C = SPAD51268->unk00.unk18;
-    D_800A3470 = SPAD51268->unk00.unk20;
+    g_eff_view_origin = SPAD51268->unk00.unk20;
     D_800A3474 = &SPAD51268->unk30;
     g_eff_current_tex_rec = &SPAD51268->unk50;
-    D_800A3490 = &SPAD51268->unk58;
-    D_800A3494 = &SPAD51268->unk5C;
-    D_800A3498 = &SPAD51268->unk60;
-    D_800A349C = &SPAD51268->unk62;
-    D_800A34A0 = &SPAD51268->unk64;
-    D_800A34A4 = &SPAD51268->unk66;
-    D_800A34A8 = &SPAD51268->unk68;
-    D_800A34AC = &SPAD51268->unk6A;
-    D_800A34B0 = &SPAD51268->unk6C;
-    D_800A34B4 = &SPAD51268->unk70;
-    D_800A34B8 = SPAD51268->unk74;
+    g_eff_tpage_word = &SPAD51268->unk58;
+    g_eff_clut_word = &SPAD51268->unk5C;
+    g_eff_tex_left_u = &SPAD51268->unk60;
+    g_eff_tex_right_u = &SPAD51268->unk62;
+    g_eff_tex_top_v = &SPAD51268->unk64;
+    g_eff_tex_bottom_v = &SPAD51268->unk66;
+    g_eff_base_width = &SPAD51268->unk68;
+    g_eff_base_height = &SPAD51268->unk6A;
+    g_eff_geom_screen_work = &SPAD51268->unk6C;
+    g_eff_perspective_scale = &SPAD51268->unk70;
+    g_eff_screen_xy = SPAD51268->unk74;
     D_800A34BC = &SPAD51268->unk80;
-    D_800A34C0 = &SPAD51268->unk82;
+    g_eff_right_x_offset = &SPAD51268->unk82;
     D_800A34C4 = &SPAD51268->unk84;
-    D_800A34C8 = &SPAD51268->unk88;
+    g_eff_lower_y_offset_word = &SPAD51268->unk88;
     D_800A34CC = &SPAD51268->unk8C;
-    D_800A34D0 = SPAD51268->unk90;
+    g_eff_depth_work = SPAD51268->unk90;
     D_800A34D4 = &SPAD51268->unk98;
     D_800A34D8 = &SPAD51268->unk9A;
     D_800A34DC = &SPAD51268->unk9C;
     D_800A34E0 = &SPAD51268->unk9E;
-    D_800A34E4 = &SPAD51268->unkA0;
-    D_800A34E8 = &SPAD51268->unkA4;
+    g_eff_current_ot_entry = &SPAD51268->unkA0;
+    g_eff_current_prim_tag = &SPAD51268->unkA4;
     D_800A3480 = &SPAD51268->unkA8;
     D_800A3484 = &SPAD51268->unkAC;
     D_800A348C = &SPAD51268->unkB0;
@@ -762,7 +762,7 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     prim = g_eff_quad_cursor;
     rotation_out[1] = src_command_block->unk04[1];
     rotation_out[2] = src_command_block->unk04[2];
-    position_out = D_800A3470;
+    position_out = g_eff_view_origin;
     /* the matrix eff_SetRotMatrix builds from the angles at src_rotation */
     scaled_rotation_matrix = D_800A3474;
     position_out[0] = src_command_block->unk08[0];
@@ -782,100 +782,106 @@ void eff_DrawBillboardList(s16 *src_rotation, s32 *src_position) {
     local_origin->vz = 0;
     local_origin->vy = 0;
     local_origin->vx = 0;
-    *D_800A34B0 = ReadGeomScreen() << 8;
-    *D_800A3490 = 0x2F;
+    *g_eff_geom_screen_work = ReadGeomScreen() << 8;
+    *g_eff_tpage_word = 0x2F;
     for (billboard_index = 0; g_eff_billboards[billboard_index].unk0 & 1;
          billboard_index++) {
         switch (g_eff_billboards[billboard_index].unk4 & 7) {
         case 3:
-            *D_800A34A8 = 0x151;
-            *D_800A34AC = 0xA8;
+            *g_eff_base_width = 0x151;
+            *g_eff_base_height = 0xA8;
             goto sel_a;
         case 0:
-            *D_800A34A8 = 0x1C2;
-            *D_800A34AC = 0xE1;
+            *g_eff_base_width = 0x1C2;
+            *g_eff_base_height = 0xE1;
         sel_a:
             D_800A348C = g_eff_current_tex_rec =
                 &D_8009BA00[(u32)g_eff_billboard_draw_count % 6];
             if (g_working_record.unk20_0) {
                 D_800A348C = &D_8009BA00[10];
             }
-            *D_800A349C = g_eff_current_tex_rec->u + 0x1F;
-            *D_800A34A4 = g_eff_current_tex_rec->v + 0x1F;
+            *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x1F;
+            *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x1F;
             break;
         case 2:
-            *D_800A34A8 = 0x50;
-            *D_800A34AC = 0x3C;
+            *g_eff_base_width = 0x50;
+            *g_eff_base_height = 0x3C;
             goto sel_b;
         case 1:
-            *D_800A34A8 = 0x64;
-            *D_800A34AC = 0x78;
+            *g_eff_base_width = 0x64;
+            *g_eff_base_height = 0x78;
         sel_b:
             D_800A348C = g_eff_current_tex_rec =
                 &D_8009BA00[6 + (g_eff_billboard_draw_count & 3)];
             if (g_working_record.unk20_0) {
                 D_800A348C = &D_8009BA00[11];
             }
-            *D_800A349C = g_eff_current_tex_rec->u + 0xF;
-            *D_800A34A4 = g_eff_current_tex_rec->v + 0x13;
+            *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0xF;
+            *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x13;
             break;
         }
-        v->vx = g_eff_billboards[billboard_index].unk0 / 2 - D_800A3470[0];
-        v->vy = g_eff_billboards[billboard_index].unk4 / 8 - D_800A3470[1];
-        v->vz = g_eff_billboards[billboard_index].unk8 - D_800A3470[2];
+        v->vx =
+            g_eff_billboards[billboard_index].unk0 / 2 - g_eff_view_origin[0];
+        v->vy =
+            g_eff_billboards[billboard_index].unk4 / 8 - g_eff_view_origin[1];
+        v->vz = g_eff_billboards[billboard_index].unk8 - g_eff_view_origin[2];
         ApplyRotMatrixLV(v, var_3);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
          * below var_3, it loads var_3 as the translation (there is no whole
          * MATRIX here). Spelled (MATRIX *)base: score 65. */
         SetTransMatrix((MATRIX *)((u8 *)var_3 - 0x14));
-        RotTransPers(local_origin, D_800A34B8, depth_cue_out, D_800A34CC);
-        gte_stsz(D_800A34D0);
-        *ot_index = gpu_DepthToOtIndex(*D_800A34D0, 0);
-        if (*ot_index < 0x1005 && (*D_800A34B0 / 256 >> 4) < *ot_index) {
-            *D_800A3494 = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) +
-                                (D_800A348C->clut_y << 6));
-            *D_800A3498 = g_eff_current_tex_rec->u;
-            *D_800A34A0 = g_eff_current_tex_rec->v;
-            *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 : 1;
-            *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
-            scaled_width = *D_800A34A8 * *D_800A34B4;
+        RotTransPers(local_origin, g_eff_screen_xy, depth_cue_out, D_800A34CC);
+        gte_stsz(g_eff_depth_work);
+        *ot_index = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
+        if (*ot_index < 0x1005 &&
+            (*g_eff_geom_screen_work / 256 >> 4) < *ot_index) {
+            *g_eff_clut_word = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) +
+                                     (D_800A348C->clut_y << 6));
+            *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+            *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+            *g_eff_depth_work = *g_eff_depth_work ? *g_eff_depth_work : 1;
+            *g_eff_perspective_scale =
+                *g_eff_geom_screen_work / *g_eff_depth_work;
+            scaled_width = *g_eff_base_width * *g_eff_perspective_scale;
             width = scaled_width > 0x200 ? scaled_width >> 8 : 2;
             *half_width = width / 2;
-            scaled_height = *D_800A34AC * *D_800A34B4;
+            scaled_height = *g_eff_base_height * *g_eff_perspective_scale;
             height = scaled_height > 0x200 ? scaled_height >> 8 : 2;
             *billboard_height = height;
             *billboard_height += (*billboard_height * rand() / 10) >> 14;
             SetPolyFT4(prim);
-            prim->tpage = *D_800A3490;
-            prim->clut = *D_800A3494;
+            prim->tpage = *g_eff_tpage_word;
+            prim->clut = *g_eff_clut_word;
             prim->r0 = 0xFF;
             prim->g0 = 0x80;
             prim->b0 = 0x80;
-            prim->x0 = *D_800A34B8 - *half_width;
-            prim->y0 = (*D_800A34B8 >> 16) - *billboard_height;
-            prim->x1 = *half_width + *D_800A34B8;
-            prim->y1 = (*D_800A34B8 >> 16) - *billboard_height;
-            prim->x2 = *D_800A34B8 - *half_width;
-            prim->y2 = *D_800A34B8 >> 16;
-            prim->x3 = *half_width + *D_800A34B8;
-            prim->y3 = *D_800A34B8 >> 16;
-            prim->u0 = *D_800A3498;
-            prim->v0 = *D_800A34A0;
-            prim->u1 = *D_800A349C;
-            prim->v1 = *D_800A34A0;
-            prim->u2 = *D_800A3498;
-            prim->v2 = *D_800A34A4;
-            prim->u3 = *D_800A349C;
-            prim->v3 = *D_800A34A4;
+            prim->x0 = *g_eff_screen_xy - *half_width;
+            prim->y0 = (*g_eff_screen_xy >> 16) - *billboard_height;
+            prim->x1 = *half_width + *g_eff_screen_xy;
+            prim->y1 = (*g_eff_screen_xy >> 16) - *billboard_height;
+            prim->x2 = *g_eff_screen_xy - *half_width;
+            prim->y2 = *g_eff_screen_xy >> 16;
+            prim->x3 = *half_width + *g_eff_screen_xy;
+            prim->y3 = *g_eff_screen_xy >> 16;
+            prim->u0 = *g_eff_tex_left_u;
+            prim->v0 = *g_eff_tex_top_v;
+            prim->u1 = *g_eff_tex_right_u;
+            prim->v1 = *g_eff_tex_top_v;
+            prim->u2 = *g_eff_tex_left_u;
+            prim->v2 = *g_eff_tex_bottom_v;
+            prim->u3 = *g_eff_tex_right_u;
+            prim->v3 = *g_eff_tex_bottom_v;
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
             if (prim - g_eff_quad_buffer_base < 0x1C1) {
-                D_800A34E4 = g_gpu_ot_ptr + *ot_index;
-                D_800A34E8 = &prim->tag;
-                *D_800A34E8 =
-                    (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
-                *D_800A34E4 =
-                    ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
+                g_eff_current_ot_entry = g_gpu_ot_ptr + *ot_index;
+                g_eff_current_prim_tag = &prim->tag;
+                *g_eff_current_prim_tag =
+                    (*g_eff_current_prim_tag & 0xFF000000) |
+                    (*g_eff_current_ot_entry & 0xFFFFFF);
+                *g_eff_current_ot_entry =
+                    ((u32)g_eff_current_prim_tag & 0xFFFFFF) |
+                    (*g_eff_current_ot_entry & 0xFF000000);
                 prim++;
             }
         }
@@ -960,9 +966,9 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
         scale[0] = scale[1] = scale[2] = v + (D_800F0C04[slot_index] << 12) / 6;
         RotMatrixZYX(&D_800F10A0[slot_index].vx, (u8 *)slot_matrix);
         ScaleMatrix((u8 *)slot_matrix, scale);
-        slot_matrix->t[0] = D_800F0FB8[slot_index].x - D_800A3470[0];
-        slot_matrix->t[1] = D_800F0FB8[slot_index].y - D_800A3470[1];
-        slot_matrix->t[2] = D_800F0FB8[slot_index].z - D_800A3470[2];
+        slot_matrix->t[0] = D_800F0FB8[slot_index].x - g_eff_view_origin[0];
+        slot_matrix->t[1] = D_800F0FB8[slot_index].y - g_eff_view_origin[1];
+        slot_matrix->t[2] = D_800F0FB8[slot_index].z - g_eff_view_origin[2];
         CompMatrix(D_800A3474, slot_matrix, composite_matrix);
         SetRotMatrix(composite_matrix);
         SetTransMatrix(composite_matrix);
@@ -980,26 +986,26 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
                 g_eff_current_tex_rec = quad_index ? D_8009B970 : D_8009B968;
             }
             if (quad_index) {
-                *D_800A349C = g_eff_current_tex_rec->u + 0x3F;
+                *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x3F;
             } else {
-                *D_800A349C = g_eff_current_tex_rec->u + 0x1F;
+                *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x1F;
             }
-            *D_800A34A4 = g_eff_current_tex_rec->v + 0x1F;
-            *D_800A3490 = 0x2E;
-            *D_800A3494 = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
-                           (g_eff_current_tex_rec->clut_y << 6))
-                          << 16;
-            *D_800A3490 = *D_800A3490 << 16;
-            *D_800A3498 = g_eff_current_tex_rec->u;
-            *D_800A34A0 = g_eff_current_tex_rec->v;
-            *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
-            *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
-            *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
-            *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
+            *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x1F;
+            *g_eff_tpage_word = 0x2E;
+            *g_eff_clut_word = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
+                                (g_eff_current_tex_rec->clut_y << 6))
+                               << 16;
+            *g_eff_tpage_word = *g_eff_tpage_word << 16;
+            *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+            *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+            *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+            *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+            *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+            *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
             setlen(prim, 9);
             prim->code = 0x2E;
-            *(s32 *)&prim->u0 = *D_800A34D4 + *D_800A3494;
-            *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
+            *(s32 *)&prim->u0 = *D_800A34D4 + *g_eff_clut_word;
+            *(s32 *)&prim->u1 = *D_800A34D8 + *g_eff_tpage_word;
             *(u16 *)&prim->u2 = *D_800A34DC;
             *(u16 *)&prim->u3 = *D_800A34E0;
             SetPolyFT4(prim);
@@ -1009,13 +1015,13 @@ s32 eff_DrawAndAdvanceRotatedQuadClusters(void) {
             RotTransPers4(quad_vertices, quad_vertices + 4, quad_vertices + 8,
                           quad_vertices + 12, sxy, sxy + 1, sxy + 2, sxy + 3,
                           depth_cue_out, D_800A34CC);
-            gte_stsz(D_800A34D0);
-            *D_800A34D0 = gpu_DepthToOtIndex(*D_800A34D0, 0);
-            if (*D_800A34D0 == 0) {
-                *D_800A34D0 = 1;
+            gte_stsz(g_eff_depth_work);
+            *g_eff_depth_work = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
+            if (*g_eff_depth_work == 0) {
+                *g_eff_depth_work = 1;
             }
-            if (*D_800A34D0 < 0x1005) {
-                quad_ot_indices[count] = *D_800A34D0;
+            if (*g_eff_depth_work < 0x1005) {
+                quad_ot_indices[count] = *g_eff_depth_work;
                 *(s32 *)&prim->x0 = sxy[0];
                 *(s32 *)&prim->x1 = sxy[1];
                 *(s32 *)&prim->x2 = sxy[2];
@@ -1113,11 +1119,11 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
     v->vz = 0;
     v->vy = 0;
     v->vx = 0;
-    *D_800A34B0 = ReadGeomScreen() * 1000;
-    *D_800A34A8 = 0xC0;
-    *D_800A34AC = 0x60;
-    *D_800A3490 = 0x2E;
-    *D_800A3490 = *D_800A3490 << 16;
+    *g_eff_geom_screen_work = ReadGeomScreen() * 1000;
+    *g_eff_base_width = 0xC0;
+    *g_eff_base_height = 0x60;
+    *g_eff_tpage_word = 0x2E;
+    *g_eff_tpage_word = *g_eff_tpage_word << 16;
     for (slot_index = 0; slot_index < 12; slot_index++) {
         bit = 1 << slot_index;
         if (!(D_800A3448 & bit)) {
@@ -1126,27 +1132,27 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
         for (billboard_index = 0; billboard_index < 2; billboard_index++) {
             if (D_800F0BEC[slot_index] < 16) {
                 relative_position->vx =
-                    D_800F0E38[slot_index].unk0 - D_800A3470[0];
+                    D_800F0E38[slot_index].unk0 - g_eff_view_origin[0];
                 relative_position->vz =
-                    D_800F0E38[slot_index].unk8 - D_800A3470[2];
+                    D_800F0E38[slot_index].unk8 - g_eff_view_origin[2];
                 if (billboard_index != 0 && D_800F0BEC[slot_index] >= 3) {
                     relative_position->vy =
                         D_800F0E38[slot_index].unk4 -
                         (rsin((D_800F0BEC[slot_index] - 3) << 8) * 329 / 4096 -
                          69) /
                             10 -
-                        D_800A3470[1];
+                        g_eff_view_origin[1];
                 } else {
                     relative_position->vy =
-                        D_800F0E38[slot_index].unk4 - D_800A3470[1];
+                        D_800F0E38[slot_index].unk4 - g_eff_view_origin[1];
                 }
                 ApplyRotMatrix(relative_position, var_2);
                 /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the
                  * address 0x14 below var_2, it loads var_2 as the translation.
                  * Spelled (MATRIX *)base: score 55. */
                 SetTransMatrix((MATRIX *)((u8 *)var_2 - 0x14));
-                RotTransPers(v, D_800A34B8, depth_cue_out, D_800A34CC);
-                gte_stsz(D_800A34D0);
+                RotTransPers(v, g_eff_screen_xy, depth_cue_out, D_800A34CC);
+                gte_stsz(g_eff_depth_work);
                 if (billboard_index == 0) {
                     g_eff_current_tex_rec = D_8009B940;
                 } else if (D_800F0BEC[slot_index] < 11) {
@@ -1154,53 +1160,58 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                 } else {
                     g_eff_current_tex_rec = D_8009B950;
                 }
-                *D_800A3494 = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
-                               (g_eff_current_tex_rec->clut_y << 6))
-                              << 16;
-                *D_800A3498 = g_eff_current_tex_rec->u;
-                *D_800A34A0 = g_eff_current_tex_rec->v;
-                *D_800A349C = g_eff_current_tex_rec->u + 0x3F;
-                *D_800A34A4 = g_eff_current_tex_rec->v + 0x3F;
-                *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
-                *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
-                *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
-                *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
-                *ot_index = gpu_DepthToOtIndex(*D_800A34D0, 0);
-                if (*ot_index < 0x1005 && *D_800A34B0 / 1000 >> 4 < *ot_index) {
-                    *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
+                *g_eff_clut_word =
+                    (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
+                     (g_eff_current_tex_rec->clut_y << 6))
+                    << 16;
+                *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+                *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+                *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x3F;
+                *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x3F;
+                *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+                *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+                *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+                *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
+                *ot_index = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
+                if (*ot_index < 0x1005 &&
+                    *g_eff_geom_screen_work / 1000 >> 4 < *ot_index) {
+                    *g_eff_perspective_scale =
+                        *g_eff_geom_screen_work / *g_eff_depth_work;
                     /* Sprite size = base size * depth scale, in 1/256 units,
                        at least 8. */
-                    *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x800
-                                      ? *D_800A34A8 * *D_800A34B4 >> 8
-                                      : 8;
-                    *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x800
-                                      ? *D_800A34AC * *D_800A34B4 >> 8
-                                      : 8;
+                    *g_eff_right_x_offset =
+                        *g_eff_base_width * *g_eff_perspective_scale > 0x800
+                            ? *g_eff_base_width * *g_eff_perspective_scale >> 8
+                            : 8;
+                    *g_eff_lower_y_offset_word =
+                        *g_eff_base_height * *g_eff_perspective_scale > 0x800
+                            ? *g_eff_base_height * *g_eff_perspective_scale >> 8
+                            : 8;
                     if (billboard_index == 0) {
                         if (D_800F0BEC[slot_index] < 5) {
-                            *D_800A34C0 =
-                                *D_800A34C0 *
+                            *g_eff_right_x_offset =
+                                *g_eff_right_x_offset *
                                 (rcos((D_800F0BEC[slot_index] << 10) / 5) * 3 /
                                      4096 +
                                  7) /
                                 10;
                         } else if (D_800F0BEC[slot_index] < 16) {
-                            *D_800A34C0 =
-                                *D_800A34C0 *
+                            *g_eff_right_x_offset =
+                                *g_eff_right_x_offset *
                                 (rcos(((D_800F0BEC[slot_index] - 5) << 10) /
                                       11) *
                                  7 / 4096) /
                                 10;
                         }
                         if (D_800F0BEC[slot_index] < 10) {
-                            *D_800A34C8 =
-                                *D_800A34C8 *
+                            *g_eff_lower_y_offset_word =
+                                *g_eff_lower_y_offset_word *
                                 (rsin((D_800F0BEC[slot_index] << 10) / 10) *
                                  85 / 4096) /
                                 100;
                         } else if (D_800F0BEC[slot_index] < 16) {
-                            *D_800A34C8 =
-                                *D_800A34C8 *
+                            *g_eff_lower_y_offset_word =
+                                *g_eff_lower_y_offset_word *
                                 (rcos(((D_800F0BEC[slot_index] - 10) << 10) /
                                       6) *
                                  85 / 4096) /
@@ -1214,8 +1225,10 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     } else {
                         scale = rsin((D_800F0BEC[slot_index] << 10) / 12) * 12 /
                                 4096;
-                        *D_800A34C0 = *D_800A34C0 * scale / 10;
-                        *D_800A34C8 = *D_800A34C8 * scale / 10;
+                        *g_eff_right_x_offset =
+                            *g_eff_right_x_offset * scale / 10;
+                        *g_eff_lower_y_offset_word =
+                            *g_eff_lower_y_offset_word * scale / 10;
                         if (D_800F0BEC[slot_index] >= 9) {
                             /* *var_6 = age - 15: the colour word below is built
                              * from -*var_6 * 128 / 5 and -*var_6 * 255 / 5. */
@@ -1230,28 +1243,32 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     }
                     setlen(prim, 9);
                     prim->code = 0x2E;
-                    *D_800A34C0 = *D_800A34C0 >> 1;
-                    *D_800A34BC = -*D_800A34C0;
-                    *D_800A34C4 = *D_800A34C8 * 60 / 64;
-                    *D_800A34C8 = 0;
+                    *g_eff_right_x_offset = *g_eff_right_x_offset >> 1;
+                    *D_800A34BC = -*g_eff_right_x_offset;
+                    *D_800A34C4 = *g_eff_lower_y_offset_word * 60 / 64;
+                    *g_eff_lower_y_offset_word = 0;
                     *(s32 *)&prim->x0 =
-                        *D_800A34B8 + *D_800A34BC - (*D_800A34C4 << 16);
+                        *g_eff_screen_xy + *D_800A34BC - (*D_800A34C4 << 16);
                     *(s32 *)&prim->x1 =
-                        *D_800A34B8 + *D_800A34C0 - (*D_800A34C4 << 16);
-                    *(s32 *)&prim->x2 =
-                        *D_800A34B8 + *D_800A34BC + (*D_800A34C8 << 16);
+                        *g_eff_screen_xy + *g_eff_right_x_offset -
+                        (*D_800A34C4 << 16);
+                    *(s32 *)&prim->x2 = *g_eff_screen_xy + *D_800A34BC +
+                                        (*g_eff_lower_y_offset_word << 16);
                     *(s32 *)&prim->x3 =
-                        *D_800A34B8 + *D_800A34C0 + (*D_800A34C8 << 16);
-                    *(s32 *)&prim->u0 = *D_800A34D4 + *D_800A3494;
-                    *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
+                        *g_eff_screen_xy + *g_eff_right_x_offset +
+                        (*g_eff_lower_y_offset_word << 16);
+                    *(s32 *)&prim->u0 = *D_800A34D4 + *g_eff_clut_word;
+                    *(s32 *)&prim->u1 = *D_800A34D8 + *g_eff_tpage_word;
                     *(u16 *)&prim->u2 = *D_800A34DC;
                     *(u16 *)&prim->u3 = *D_800A34E0;
-                    D_800A34E4 = g_gpu_ot_ptr + *ot_index;
-                    D_800A34E8 = &prim->tag;
-                    *D_800A34E8 =
-                        (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
-                    *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) |
-                                  (*D_800A34E4 & 0xFF000000);
+                    g_eff_current_ot_entry = g_gpu_ot_ptr + *ot_index;
+                    g_eff_current_prim_tag = &prim->tag;
+                    *g_eff_current_prim_tag =
+                        (*g_eff_current_prim_tag & 0xFF000000) |
+                        (*g_eff_current_ot_entry & 0xFFFFFF);
+                    *g_eff_current_ot_entry =
+                        ((u32)g_eff_current_prim_tag & 0xFFFFFF) |
+                        (*g_eff_current_ot_entry & 0xFF000000);
                     if (prim - g_eff_quad_buffer_base < 0x1C1) {
                         prim++;
                     }
@@ -1346,9 +1363,10 @@ u8 eff_AllocateOrRecycleYawedQuadSlot(s32 command_slot_index) {
 
 /* Draw the live slots (up to 10, see eff_AllocateOrRecycleYawedQuadSlot) of
  * `arg0`: per slot whose bit is set in D_800A3454[arg0], emit one textured
- * POLY_FT4 billboard at the slot's position (relative to *D_800A3470) through
- * the composite of D_800A3474 and the slot's matrix, keep it when its depth is
- * in range, then link every new quad into the OT at its depth. Returns 1. */
+ * POLY_FT4 billboard at the slot's position (relative to *g_eff_view_origin)
+ * through the composite of D_800A3474 and the slot's matrix, keep it when its
+ * depth is in range, then link every new quad into the OT at its depth.
+ * Returns 1. */
 s32 eff_DrawYawedSlotQuads(s32 arg0) {
     extern SVECTOR D_8009BBE4;
     extern SVECTOR D_8009BBEC;
@@ -1388,21 +1406,21 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     eff_BuildUsedSlotRotMatrices(&count, mats, arg0);
     g_eff_current_tex_rec = &D_8009B920[*D_800A3480];
     prim = g_eff_quad_cursor;
-    *D_800A3490 = 0xE;
-    *D_800A3494 = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
-                   (g_eff_current_tex_rec->clut_y << 6))
-                  << 16;
-    *D_800A3490 = *D_800A3490 << 16;
-    *D_800A3498 = g_eff_current_tex_rec->u;
-    *D_800A34A0 = g_eff_current_tex_rec->v;
-    *D_800A349C = g_eff_current_tex_rec->u + 7;
-    *D_800A34A4 = g_eff_current_tex_rec->v + 0xF;
-    *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
-    *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
-    *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
-    *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
+    *g_eff_tpage_word = 0xE;
+    *g_eff_clut_word = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
+                        (g_eff_current_tex_rec->clut_y << 6))
+                       << 16;
+    *g_eff_tpage_word = *g_eff_tpage_word << 16;
+    *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+    *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+    *g_eff_tex_right_u = g_eff_current_tex_rec->u + 7;
+    *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0xF;
+    *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+    *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+    *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+    *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
     *var_5 = 0;
-    *D_800A34B0 = ReadGeomScreen();
+    *g_eff_geom_screen_work = ReadGeomScreen();
     for (i = 0; i < count; i++) {
         /* FAKE: the slot's mask is named `bit` inside the test and not read
          * again; it stretches the D_800A3454[arg0] address's life so loop.c
@@ -1413,31 +1431,31 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
         }
         setlen(prim, 9);
         prim->code = 0x2F;
-        *(s32 *)&prim->u0 = *D_800A34D4 + *D_800A3494;
-        *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
+        *(s32 *)&prim->u0 = *D_800A34D4 + *g_eff_clut_word;
+        *(s32 *)&prim->u1 = *D_800A34D8 + *g_eff_tpage_word;
         *(u16 *)&prim->u2 = *D_800A34DC;
         *(u16 *)&prim->u3 = *D_800A34E0;
-        mats[i].t[0] = D_800F0EC8[arg0][i].unk0 - D_800A3470[0];
-        mats[i].t[1] = D_800F0EC8[arg0][i].unk4 - D_800A3470[1];
-        mats[i].t[2] = D_800F0EC8[arg0][i].unk8 - D_800A3470[2];
+        mats[i].t[0] = D_800F0EC8[arg0][i].unk0 - g_eff_view_origin[0];
+        mats[i].t[1] = D_800F0EC8[arg0][i].unk4 - g_eff_view_origin[1];
+        mats[i].t[2] = D_800F0EC8[arg0][i].unk8 - g_eff_view_origin[2];
         gte_CompMatrix(D_800A3474, &mats[i], var_2);
         gte_SetRotMatrix(var_2);
         gte_SetTransMatrix(var_2);
         gte_ldv3(&D_8009BBE4, &D_8009BBEC, &D_8009BBF4);
         gte_rtpt();
         gte_stsxy3(sxy, sxy + 1, sxy + 2);
-        gte_stsz(D_800A34D0);
-        if (*D_800A34D0 <= 0) {
+        gte_stsz(g_eff_depth_work);
+        if (*g_eff_depth_work <= 0) {
             continue;
         }
-        *D_800A34D0 = gpu_DepthToOtIndex(*D_800A34D0 - 50, 0);
-        if (*D_800A34D0 >= 0x1005) {
+        *g_eff_depth_work = gpu_DepthToOtIndex(*g_eff_depth_work - 50, 0);
+        if (*g_eff_depth_work >= 0x1005) {
             continue;
         }
-        if ((*D_800A34B0 >> 4) >= *D_800A34D0) {
+        if ((*g_eff_geom_screen_work >> 4) >= *g_eff_depth_work) {
             continue;
         }
-        quad_ot_indices[(*var_5)++] = *D_800A34D0;
+        quad_ot_indices[(*var_5)++] = *g_eff_depth_work;
         gte_ldv0(&D_8009BBFC);
         gte_rtps();
         gte_stsxy(sxy + 3);
@@ -1455,10 +1473,12 @@ s32 eff_DrawYawedSlotQuads(s32 arg0) {
     /* SOTN: src/dra/menu.c:3352 @db41b28 */
     quads_end = prim;
     for (prim = g_eff_quad_cursor, k = 0; prim < quads_end; prim++, k++) {
-        D_800A34E8 = &prim->tag;
-        D_800A34E4 = g_gpu_ot_ptr + quad_ot_indices[k];
-        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
-        *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
+        g_eff_current_prim_tag = &prim->tag;
+        g_eff_current_ot_entry = g_gpu_ot_ptr + quad_ot_indices[k];
+        *g_eff_current_prim_tag = (*g_eff_current_prim_tag & 0xFF000000) |
+                                  (*g_eff_current_ot_entry & 0xFFFFFF);
+        *g_eff_current_ot_entry = ((u32)g_eff_current_prim_tag & 0xFFFFFF) |
+                                  (*g_eff_current_ot_entry & 0xFF000000);
     }
     g_eff_quad_cursor = quads_end;
     return 1;
@@ -1553,10 +1573,10 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     prim = g_eff_quad_cursor;
     gte_SetRotMatrix(D_800A3474);
     local_origin->vx = local_origin->vy = local_origin->vz = 0;
-    *D_800A34B0 = ReadGeomScreen() * 1000;
-    *D_800A34A8 = 0x40;
-    *D_800A34AC = 0x20;
-    *D_800A3490 = 0xE;
+    *g_eff_geom_screen_work = ReadGeomScreen() * 1000;
+    *g_eff_base_width = 0x40;
+    *g_eff_base_height = 0x20;
+    *g_eff_tpage_word = 0xE;
     for (slot_index = 0, quad_ot_write_cursor = quad_ot_read_cursor;
          slot_index < 16; slot_index++) {
         bit = 1 << slot_index;
@@ -1566,44 +1586,52 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
         D_800F0BCC[slot_index]++;
         *frame_index = D_800F0BCC[slot_index] / 4;
         if (*frame_index < 7) {
-            relative_position->vx = D_800F0D78[slot_index].x - D_800A3470[0];
-            relative_position->vy = D_800F0D78[slot_index].y - D_800A3470[1];
-            relative_position->vz = D_800F0D78[slot_index].z - D_800A3470[2];
+            relative_position->vx =
+                D_800F0D78[slot_index].x - g_eff_view_origin[0];
+            relative_position->vy =
+                D_800F0D78[slot_index].y - g_eff_view_origin[1];
+            relative_position->vz =
+                D_800F0D78[slot_index].z - g_eff_view_origin[2];
             ApplyRotMatrixLV(relative_position, var_5);
             /* FAKE: the MATRIX whose t[] is *var_5: SetTransMatrix reads only
              * m->t (there is no whole MATRIX here). Spelled
              * (MATRIX *)((u8 *)base + 4): score 68. */
             SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
-            RotTransPers(local_origin, D_800A34B8, p, D_800A34CC);
-            gte_stsz(D_800A34D0);
+            RotTransPers(local_origin, g_eff_screen_xy, p, D_800A34CC);
+            gte_stsz(g_eff_depth_work);
             g_eff_current_tex_rec = &D_8009B8E8[*frame_index];
-            *D_800A3494 = (u16)(((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
-                                (g_eff_current_tex_rec->clut_y << 6));
-            *D_800A3498 = g_eff_current_tex_rec->u;
-            *D_800A34A0 = g_eff_current_tex_rec->v;
-            *D_800A349C = g_eff_current_tex_rec->u + 0x3F;
-            *D_800A34A4 = g_eff_current_tex_rec->v + 0x1F;
-            *quad_ot_write_cursor = gpu_DepthToOtIndex(*D_800A34D0, 0);
+            *g_eff_clut_word =
+                (u16)(((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
+                      (g_eff_current_tex_rec->clut_y << 6));
+            *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+            *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+            *g_eff_tex_right_u = g_eff_current_tex_rec->u + 0x3F;
+            *g_eff_tex_bottom_v = g_eff_current_tex_rec->v + 0x1F;
+            *quad_ot_write_cursor = gpu_DepthToOtIndex(*g_eff_depth_work, 0);
             if (*quad_ot_write_cursor >= 0x1005) {
                 continue;
             }
-            if ((*D_800A34B0 / 1000 >> 4) >= *quad_ot_write_cursor) {
+            if ((*g_eff_geom_screen_work / 1000 >> 4) >=
+                *quad_ot_write_cursor) {
                 continue;
             }
-            *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
-            *billboard_width = *D_800A34A8 * *D_800A34B4 > 0x800
-                                   ? (*D_800A34A8 * *D_800A34B4) >> 8
-                                   : 8;
-            *billboard_height = *D_800A34AC * *D_800A34B4 > 0x800
-                                    ? (*D_800A34AC * *D_800A34B4) >> 8
-                                    : 8;
+            *g_eff_perspective_scale =
+                *g_eff_geom_screen_work / *g_eff_depth_work;
+            *billboard_width =
+                *g_eff_base_width * *g_eff_perspective_scale > 0x800
+                    ? (*g_eff_base_width * *g_eff_perspective_scale) >> 8
+                    : 8;
+            *billboard_height =
+                *g_eff_base_height * *g_eff_perspective_scale > 0x800
+                    ? (*g_eff_base_height * *g_eff_perspective_scale) >> 8
+                    : 8;
             *billboard_width +=
                 (*billboard_width * D_800F0BCC[slot_index]) >> 5;
             *billboard_height +=
                 (*billboard_height * (D_800F0BCC[slot_index] << 2)) >> 8;
             SetPolyFT4(prim);
-            prim->tpage = *D_800A3490;
-            prim->clut = *D_800A3494;
+            prim->tpage = *g_eff_tpage_word;
+            prim->clut = *g_eff_clut_word;
             if (g_working_record.unk20_0) {
                 prim->r0 = 0x80;
                 prim->g0 = 0x80;
@@ -1613,22 +1641,22 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
                 prim->g0 = 0x8C;
                 prim->b0 = 0x50;
             }
-            prim->x0 = *D_800A34B8 - *billboard_width / 2;
-            prim->y0 = (*D_800A34B8 >> 16) - *billboard_height * 28 / 32;
-            prim->x1 = *D_800A34B8 + *billboard_width / 2;
-            prim->y1 = (*D_800A34B8 >> 16) - *billboard_height * 28 / 32;
-            prim->x2 = *D_800A34B8 - *billboard_width / 2;
-            prim->y2 = (*D_800A34B8 >> 16) + *billboard_height / 8;
-            prim->x3 = *D_800A34B8 + *billboard_width / 2;
-            prim->y3 = (*D_800A34B8 >> 16) + *billboard_height / 8;
-            prim->u0 = *D_800A3498;
-            prim->v0 = *D_800A34A0;
-            prim->u1 = *D_800A349C;
-            prim->v1 = *D_800A34A0;
-            prim->u2 = *D_800A3498;
-            prim->v2 = *D_800A34A4;
-            prim->u3 = *D_800A349C;
-            prim->v3 = *D_800A34A4;
+            prim->x0 = *g_eff_screen_xy - *billboard_width / 2;
+            prim->y0 = (*g_eff_screen_xy >> 16) - *billboard_height * 28 / 32;
+            prim->x1 = *g_eff_screen_xy + *billboard_width / 2;
+            prim->y1 = (*g_eff_screen_xy >> 16) - *billboard_height * 28 / 32;
+            prim->x2 = *g_eff_screen_xy - *billboard_width / 2;
+            prim->y2 = (*g_eff_screen_xy >> 16) + *billboard_height / 8;
+            prim->x3 = *g_eff_screen_xy + *billboard_width / 2;
+            prim->y3 = (*g_eff_screen_xy >> 16) + *billboard_height / 8;
+            prim->u0 = *g_eff_tex_left_u;
+            prim->v0 = *g_eff_tex_top_v;
+            prim->u1 = *g_eff_tex_right_u;
+            prim->v1 = *g_eff_tex_top_v;
+            prim->u2 = *g_eff_tex_left_u;
+            prim->v2 = *g_eff_tex_bottom_v;
+            prim->u3 = *g_eff_tex_right_u;
+            prim->v3 = *g_eff_tex_bottom_v;
             SetShadeTex(prim, 0);
             SetSemiTrans(prim, 1);
             if (prim - g_eff_quad_buffer_base < 0x1C1) {
@@ -1646,10 +1674,12 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     *quads_end = prim;
     for (prim = g_eff_quad_cursor; prim < *quads_end; prim++,
         quad_ot_read_cursor++) {
-        D_800A34E4 = g_gpu_ot_ptr + *quad_ot_read_cursor;
-        D_800A34E8 = &prim->tag;
-        *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
-        *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
+        g_eff_current_ot_entry = g_gpu_ot_ptr + *quad_ot_read_cursor;
+        g_eff_current_prim_tag = &prim->tag;
+        *g_eff_current_prim_tag = (*g_eff_current_prim_tag & 0xFF000000) |
+                                  (*g_eff_current_ot_entry & 0xFFFFFF);
+        *g_eff_current_ot_entry = ((u32)g_eff_current_prim_tag & 0xFFFFFF) |
+                                  (*g_eff_current_ot_entry & 0xFF000000);
     }
     g_eff_quad_cursor = *quads_end;
     return 1;
@@ -2017,27 +2047,27 @@ u8 eff_DrawAnimatedQuads(s32 arg0) {
     var_10 = &var_0->unk96;
 
     gte_SetRotMatrix(D_800A3474);
-    p_in->vx = g_eff_animated_quad_positions[arg0].unk0 - D_800A3470[0];
-    p_in->vy = g_eff_animated_quad_positions[arg0].unk4 - D_800A3470[1];
-    p_in->vz = g_eff_animated_quad_positions[arg0].unk8 - D_800A3470[2];
+    p_in->vx = g_eff_animated_quad_positions[arg0].unk0 - g_eff_view_origin[0];
+    p_in->vy = g_eff_animated_quad_positions[arg0].unk4 - g_eff_view_origin[1];
+    p_in->vz = g_eff_animated_quad_positions[arg0].unk8 - g_eff_view_origin[2];
     ApplyRotMatrixLV(p_in, p_t);
     gte_SetTransMatrix((MATRIX *)var_0);
     p_v->vz = 0;
     p_v->vy = 0;
     p_v->vx = 0;
-    gte_RotTransPers(p_v, D_800A34B8, var_2, D_800A34CC, D_800A34D0);
-    *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 << 2 : 1;
+    gte_RotTransPers(p_v, g_eff_screen_xy, var_2, D_800A34CC, g_eff_depth_work);
+    *g_eff_depth_work = *g_eff_depth_work ? *g_eff_depth_work << 2 : 1;
 
 again:
-    *D_800A34A8 = 0x20;
-    *D_800A34AC = 0x20;
+    *g_eff_base_width = 0x20;
+    *g_eff_base_height = 0x20;
     *var_9 = 0x40;
     *var_10 = 0x40;
-    *D_800A3490 = 0x2E;
+    *g_eff_tpage_word = 0x2E;
     switch (arg0) {
     case 1:
     case 2:
-        if (*D_800A34D0 > 4000) {
+        if (*g_eff_depth_work > 4000) {
             g_eff_current_tex_rec = D_8009B8D0;
         } else {
             g_eff_current_tex_rec = D_8009B8D8;
@@ -2056,8 +2086,8 @@ again:
         prim->r0 = 0xFF;
         prim->g0 = g_eff_animated_quad_counters[arg0];
         prim->b0 = 0x60;
-        *D_800A34A8 = 0xC0;
-        *D_800A34AC = 0xC0;
+        *g_eff_base_width = 0xC0;
+        *g_eff_base_height = 0xC0;
         break;
     case 5:
         if (g_eff_animated_quad_counters[4] > 0x800) {
@@ -2111,12 +2141,12 @@ again:
         prim->b0 = 0xFF;
     size_sel:
         if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
-            *D_800A34A8 = 0x80;
-            *D_800A34AC = 0x80;
-            *D_800A3490 = 0x2F;
+            *g_eff_base_width = 0x80;
+            *g_eff_base_height = 0x80;
+            *g_eff_tpage_word = 0x2F;
         } else {
-            *D_800A34A8 = 0x20;
-            *D_800A34AC = 0x80;
+            *g_eff_base_width = 0x20;
+            *g_eff_base_height = 0x80;
             *var_9 = 0x40;
             *var_10 = 0x10;
         }
@@ -2131,8 +2161,8 @@ again:
         prim->r0 = g_eff_animated_quad_counters[arg0 - 2] * 2 / 3;
         prim->g0 = g_eff_animated_quad_counters[arg0 - 2] / 2;
         prim->b0 = 0xFF;
-        *D_800A34A8 = 0x100;
-        *D_800A34AC = 0x100;
+        *g_eff_base_width = 0x100;
+        *g_eff_base_height = 0x100;
         break;
     case 12:
     case 13:
@@ -2141,22 +2171,22 @@ again:
         prim->r0 = 0xC0;
         prim->g0 = 0x70;
         prim->b0 = 0x13;
-        *D_800A34A8 *= 2;
-        *D_800A34AC *= 2;
+        *g_eff_base_width *= 2;
+        *g_eff_base_height *= 2;
         if (g_eff_animated_quad_counters[arg0] >= 8) {
             g_eff_current_tex_rec = D_8009B8C8;
             n = 10 - g_eff_animated_quad_counters[arg0];
             prim->r0 = n << 6;
             prim->g0 = n * 0x70 / 3;
             prim->b0 = n * 0x60 / 15;
-            *D_800A3490 = 0x2E;
+            *g_eff_tpage_word = 0x2E;
         } else {
             if (g_eff_animated_quad_counters[arg0] >= 5) {
                 g_eff_current_tex_rec = D_8009B9F0;
             } else {
                 g_eff_current_tex_rec = D_8009B9E8;
             }
-            *D_800A3490 = 0x2F;
+            *g_eff_tpage_word = 0x2F;
         }
         break;
     case 16:
@@ -2167,29 +2197,31 @@ again:
         prim->b0 = 0xFF;
         break;
     }
-    *D_800A3494 = (u16)(((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
-                        (g_eff_current_tex_rec->clut_y << 6));
-    *D_800A3498 = g_eff_current_tex_rec->u;
-    *D_800A34A0 = g_eff_current_tex_rec->v;
-    *D_800A349C = *var_9 + g_eff_current_tex_rec->u - 1;
-    *D_800A34A4 = *var_10 + g_eff_current_tex_rec->v - 1;
-    *D_800A34B0 = ReadGeomScreen() * 1000;
-    *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
-    *p_w =
-        *D_800A34A8 * *D_800A34B4 > 0x200 ? *D_800A34A8 * *D_800A34B4 >> 8 : 6;
-    *p_h =
-        *D_800A34AC * *D_800A34B4 > 0x200 ? *D_800A34AC * *D_800A34B4 >> 8 : 6;
+    *g_eff_clut_word = (u16)(((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
+                             (g_eff_current_tex_rec->clut_y << 6));
+    *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+    *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+    *g_eff_tex_right_u = *var_9 + g_eff_current_tex_rec->u - 1;
+    *g_eff_tex_bottom_v = *var_10 + g_eff_current_tex_rec->v - 1;
+    *g_eff_geom_screen_work = ReadGeomScreen() * 1000;
+    *g_eff_perspective_scale = *g_eff_geom_screen_work / *g_eff_depth_work;
+    *p_w = *g_eff_base_width * *g_eff_perspective_scale > 0x200
+               ? *g_eff_base_width * *g_eff_perspective_scale >> 8
+               : 6;
+    *p_h = *g_eff_base_height * *g_eff_perspective_scale > 0x200
+               ? *g_eff_base_height * *g_eff_perspective_scale >> 8
+               : 6;
     SetPolyFT4(prim);
-    prim->tpage = *D_800A3490;
-    prim->clut = *D_800A3494;
-    prim->u0 = *D_800A3498;
-    prim->v0 = *D_800A34A0;
-    prim->u1 = *D_800A349C;
-    prim->v1 = *D_800A34A0;
-    prim->u2 = *D_800A3498;
-    prim->v2 = *D_800A34A4;
-    prim->u3 = *D_800A349C;
-    prim->v3 = *D_800A34A4;
+    prim->tpage = *g_eff_tpage_word;
+    prim->clut = *g_eff_clut_word;
+    prim->u0 = *g_eff_tex_left_u;
+    prim->v0 = *g_eff_tex_top_v;
+    prim->u1 = *g_eff_tex_right_u;
+    prim->v1 = *g_eff_tex_top_v;
+    prim->u2 = *g_eff_tex_left_u;
+    prim->v2 = *g_eff_tex_bottom_v;
+    prim->u3 = *g_eff_tex_right_u;
+    prim->v3 = *g_eff_tex_bottom_v;
     SetShadeTex(prim, 0);
     SetSemiTrans(prim, 1);
     switch (arg0) {
@@ -2200,14 +2232,14 @@ again:
                (*p_h * rcos((g_eff_animated_quad_counters[arg0] + 0x7FF) &
                             0xFFF) >>
                 11);
-        prim->x0 = *D_800A34B8 - *p_w / 2;
-        prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
-        prim->x1 = *D_800A34B8 + *p_w / 2;
-        prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
-        prim->x2 = *D_800A34B8 - *p_w / 2;
-        prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
-        prim->x3 = *D_800A34B8 + *p_w / 2;
-        prim->y3 = (*D_800A34B8 >> 16) + *p_h / 2;
+        prim->x0 = *g_eff_screen_xy - *p_w / 2;
+        prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+        prim->x1 = *g_eff_screen_xy + *p_w / 2;
+        prim->y1 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+        prim->x2 = *g_eff_screen_xy - *p_w / 2;
+        prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+        prim->x3 = *g_eff_screen_xy + *p_w / 2;
+        prim->y3 = (*g_eff_screen_xy >> 16) + *p_h / 2;
         break;
     case 1:
     case 2:
@@ -2243,14 +2275,14 @@ again:
             ApplyRotMatrix(p_v, dst);
             dst++;
         } while (++i < 4);
-        prim->x0 = *D_800A34B8 + p_t[0].vx / 2;
-        prim->y0 = (*D_800A34B8 >> 16) + p_t[0].vy / 4;
-        prim->x1 = *D_800A34B8 + p_t[1].vx / 2;
-        prim->y1 = (*D_800A34B8 >> 16) + p_t[1].vy / 4;
-        prim->x2 = *D_800A34B8 + p_t[2].vx / 2;
-        prim->y2 = (*D_800A34B8 >> 16) + p_t[2].vy / 4;
-        prim->x3 = *D_800A34B8 + p_t[3].vx / 2;
-        prim->y3 = (*D_800A34B8 >> 16) + p_t[3].vy / 4;
+        prim->x0 = *g_eff_screen_xy + p_t[0].vx / 2;
+        prim->y0 = (*g_eff_screen_xy >> 16) + p_t[0].vy / 4;
+        prim->x1 = *g_eff_screen_xy + p_t[1].vx / 2;
+        prim->y1 = (*g_eff_screen_xy >> 16) + p_t[1].vy / 4;
+        prim->x2 = *g_eff_screen_xy + p_t[2].vx / 2;
+        prim->y2 = (*g_eff_screen_xy >> 16) + p_t[2].vy / 4;
+        prim->x3 = *g_eff_screen_xy + p_t[3].vx / 2;
+        prim->y3 = (*g_eff_screen_xy >> 16) + p_t[3].vy / 4;
         break;
     case 12:
     case 13:
@@ -2277,14 +2309,14 @@ again:
         *p_w = *p_w * rsin(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 11;
         *p_h = *p_h * rsin(g_eff_animated_quad_counters[arg0] & 0xFFF) >> 11;
     quad:
-        prim->x0 = *D_800A34B8 - *p_w;
-        prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
-        prim->x1 = *p_w + *D_800A34B8;
-        prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
-        prim->x2 = *D_800A34B8 - *p_w;
-        prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
-        prim->x3 = *p_w + *D_800A34B8;
-        prim->y3 = (*D_800A34B8 >> 16) + *p_h / 2;
+        prim->x0 = *g_eff_screen_xy - *p_w;
+        prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+        prim->x1 = *p_w + *g_eff_screen_xy;
+        prim->y1 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+        prim->x2 = *g_eff_screen_xy - *p_w;
+        prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+        prim->x3 = *p_w + *g_eff_screen_xy;
+        prim->y3 = (*g_eff_screen_xy >> 16) + *p_h / 2;
         break;
     case 5:
         if (g_eff_animated_quad_counters[arg0] < 0x1000) {
@@ -2299,14 +2331,14 @@ again:
             *p_h = 0;
             *p_w = 0;
         }
-        prim->x0 = *D_800A34B8 - *p_w / 4;
-        prim->y0 = (*D_800A34B8 >> 16) - *p_h / 4;
-        prim->x1 = *D_800A34B8 + *p_w / 4;
-        prim->y1 = (*D_800A34B8 >> 16) - *p_h / 4;
-        prim->x2 = *D_800A34B8 - *p_w / 4;
-        prim->y2 = (*D_800A34B8 >> 16) + *p_h / 4;
-        prim->x3 = *D_800A34B8 + *p_w / 4;
-        prim->y3 = (*D_800A34B8 >> 16) + *p_h / 4;
+        prim->x0 = *g_eff_screen_xy - *p_w / 4;
+        prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 4;
+        prim->x1 = *g_eff_screen_xy + *p_w / 4;
+        prim->y1 = (*g_eff_screen_xy >> 16) - *p_h / 4;
+        prim->x2 = *g_eff_screen_xy - *p_w / 4;
+        prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 4;
+        prim->x3 = *g_eff_screen_xy + *p_w / 4;
+        prim->y3 = (*g_eff_screen_xy >> 16) + *p_h / 4;
         break;
     case 6:
     case 10:
@@ -2329,32 +2361,32 @@ again:
                 12;
         }
         if (g_working_record.unk20_3 && g_main_loop_handler_index != 5) {
-            prim->x0 = *D_800A34B8 - *p_w;
-            prim->y0 = (*D_800A34B8 >> 16) - *p_h / 2;
-            prim->x1 = *p_w + *D_800A34B8;
-            prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
-            prim->x2 = *D_800A34B8 - *p_w;
-            prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
-            prim->x3 = *p_w + *D_800A34B8;
-            prim->y3 = (*D_800A34B8 >> 16) + *p_h / 2;
+            prim->x0 = *g_eff_screen_xy - *p_w;
+            prim->y0 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+            prim->x1 = *p_w + *g_eff_screen_xy;
+            prim->y1 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+            prim->x2 = *g_eff_screen_xy - *p_w;
+            prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+            prim->x3 = *p_w + *g_eff_screen_xy;
+            prim->y3 = (*g_eff_screen_xy >> 16) + *p_h / 2;
         } else if (g_eff_animated_quad_counters[arg0] < 0x96) {
-            prim->x0 = *D_800A34B8 - *p_w / 2;
-            prim->y0 = (*D_800A34B8 >> 16) + *p_h / 2;
-            prim->x1 = *D_800A34B8 - *p_w / 2;
-            prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
-            prim->x2 = *D_800A34B8 + *p_w / 2;
-            prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
-            prim->x3 = *D_800A34B8 + *p_w / 2;
-            prim->y3 = (*D_800A34B8 >> 16) - *p_h / 2;
+            prim->x0 = *g_eff_screen_xy - *p_w / 2;
+            prim->y0 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+            prim->x1 = *g_eff_screen_xy - *p_w / 2;
+            prim->y1 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+            prim->x2 = *g_eff_screen_xy + *p_w / 2;
+            prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+            prim->x3 = *g_eff_screen_xy + *p_w / 2;
+            prim->y3 = (*g_eff_screen_xy >> 16) - *p_h / 2;
         } else {
-            prim->x0 = *D_800A34B8;
-            prim->y0 = (*D_800A34B8 >> 16) + *p_h / 2;
-            prim->x1 = *D_800A34B8;
-            prim->y1 = (*D_800A34B8 >> 16) - *p_h / 2;
-            prim->x2 = *p_w + *D_800A34B8;
-            prim->y2 = (*D_800A34B8 >> 16) + *p_h / 2;
-            prim->x3 = *p_w + *D_800A34B8;
-            prim->y3 = (*D_800A34B8 >> 16) - *p_h / 2;
+            prim->x0 = *g_eff_screen_xy;
+            prim->y0 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+            prim->x1 = *g_eff_screen_xy;
+            prim->y1 = (*g_eff_screen_xy >> 16) - *p_h / 2;
+            prim->x2 = *p_w + *g_eff_screen_xy;
+            prim->y2 = (*g_eff_screen_xy >> 16) + *p_h / 2;
+            prim->x3 = *p_w + *g_eff_screen_xy;
+            prim->y3 = (*g_eff_screen_xy >> 16) - *p_h / 2;
         }
         if (arg0 < 9) {
             AddPrim(g_gpu_ot_ptr + 1, prim);
@@ -2633,21 +2665,21 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
     D_800A3724 = &var_0->unk1AC;
     *p80 = g_eff_quad_cursor;
     *p4 = 0x895440;
-    *D_800A3490 = 0x2E;
+    *g_eff_tpage_word = 0x2E;
 
     if (arg0 < 2) {
         g_eff_current_tex_rec = D_8009B890;
         *p2 = 7;
         *p0 = 7;
-        *D_800A34A8 = 0x40;
-        *D_800A34AC = 0x20;
+        *g_eff_base_width = 0x40;
+        *g_eff_base_height = 0x20;
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 4) {
         g_eff_current_tex_rec = D_8009B890;
         *p2 = 7;
         *p0 = 7;
-        *D_800A34A8 = 0x20;
-        *D_800A34AC = 0x10;
+        *g_eff_base_width = 0x20;
+        *g_eff_base_height = 0x10;
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 6) {
         s16 var_6 = D_800EFC8A[arg1 * 0x1E0] >> 3;
@@ -2662,32 +2694,32 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
         }
         *p0 = 0x1F;
         *p2 = 0x20;
-        *D_800A34A8 = 0xC0;
-        *D_800A34AC = 0x30;
-        *D_800A3490 = 0xF;
+        *g_eff_base_width = 0xC0;
+        *g_eff_base_height = 0x30;
+        *g_eff_tpage_word = 0xF;
         D_800F0B98[arg0] = 1;
     } else if (arg0 < 8) {
-        *D_800A3490 = 0x2E;
+        *g_eff_tpage_word = 0x2E;
         g_eff_current_tex_rec = D_8009B8B0;
         *p2 = 0xF;
         *p0 = 0xF;
-        *D_800A34A8 = 0xC0;
-        *D_800A34AC = 0x60;
+        *g_eff_base_width = 0xC0;
+        *g_eff_base_height = 0x60;
         D_800F0B98[arg0] = 2;
     }
 
-    *D_800A3494 = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
-                   (g_eff_current_tex_rec->clut_y << 6))
-                  << 16;
-    *D_800A3490 <<= 16;
-    *D_800A3498 = g_eff_current_tex_rec->u;
-    *D_800A34A0 = g_eff_current_tex_rec->v;
-    *D_800A349C = *p0 + g_eff_current_tex_rec->u;
-    *D_800A34A4 = *p2 + g_eff_current_tex_rec->v;
-    *D_800A34D4 = *D_800A3498 + (*D_800A34A0 << 8);
-    *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
-    *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
-    *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
+    *g_eff_clut_word = (((g_eff_current_tex_rec->clut_x >> 4) & 0x3F) +
+                        (g_eff_current_tex_rec->clut_y << 6))
+                       << 16;
+    *g_eff_tpage_word <<= 16;
+    *g_eff_tex_left_u = g_eff_current_tex_rec->u;
+    *g_eff_tex_top_v = g_eff_current_tex_rec->v;
+    *g_eff_tex_right_u = *p0 + g_eff_current_tex_rec->u;
+    *g_eff_tex_bottom_v = *p2 + g_eff_current_tex_rec->v;
+    *D_800A34D4 = *g_eff_tex_left_u + (*g_eff_tex_top_v << 8);
+    *D_800A34D8 = *g_eff_tex_right_u + (*g_eff_tex_top_v << 8);
+    *D_800A34DC = *g_eff_tex_left_u + (*g_eff_tex_bottom_v << 8);
+    *D_800A34E0 = *g_eff_tex_right_u + (*g_eff_tex_bottom_v << 8);
 
     gte_SetRotMatrix(D_800A3474);
 
@@ -2697,7 +2729,7 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
         D_800F0C10[arg1][D_800A3438[arg1]].unk8 = D_800F0C10[arg1][0].unk8;
     }
 
-    gte_ReadGeomScreen(D_800A34B0);
+    gte_ReadGeomScreen(g_eff_geom_screen_work);
 
     *p6C = (D_800A3438[arg1] + 1) * 16;
     if (D_800A3438[arg1] < D_800F0B98[arg0] - 1) {
@@ -2708,11 +2740,11 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
 /* Per-frame update + draw of the g_eff_particles[arg1] records, the middle of
  * the eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads trio.
  * For each live record of g_eff_particles[arg1] (state 1): step its unk12 and
- * derive r/g/b from it, take its D_800F0C10[arg1] entry less D_800A3470 through
- * the GTE rotation, set state 3 (and skip it) once r and g are both low or once
- * the squared length p_out[0..2] passes *var_1 plus a rand() term, project
- * three vertices, size the sprite by type (arg0), then emit up to three
- * POLY_FT4 quads, storing *D_800A34D0 for each in var_9[]. */
+ * derive r/g/b from it, take its D_800F0C10[arg1] entry less g_eff_view_origin
+ * through the GTE rotation, set state 3 (and skip it) once r and g are both low
+ * or once the squared length p_out[0..2] passes *var_1 plus a rand() term,
+ * project three vertices, size the sprite by type (arg0), then emit up to three
+ * POLY_FT4 quads, storing *g_eff_depth_work for each in var_9[]. */
 void eff_UpdateParticles(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
@@ -2782,11 +2814,11 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
 
         *var_8 = &D_800F0C10[arg1][(*p_ent)->unk6];
         var_2->vx = (*var_8)->unk0;
-        var_13[0].vx = var_2->vx - D_800A3470[0];
+        var_13[0].vx = var_2->vx - g_eff_view_origin[0];
         var_2->vy = (*var_8)->unk4;
-        var_13[0].vy = var_2->vy - D_800A3470[1];
+        var_13[0].vy = var_2->vy - g_eff_view_origin[1];
         var_2->vz = (*var_8)->unk8;
-        var_13[0].vz = var_2->vz - D_800A3470[2];
+        var_13[0].vz = var_2->vz - g_eff_view_origin[2];
 
         gte_ApplyRotMatrix(var_13, p_out);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed p_out - 0x14,
@@ -2825,69 +2857,85 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
         }
 
         gte_rtpt();
-        gte_stsxy3(&D_800A34B8[0], &D_800A34B8[1], &D_800A34B8[2]);
-        gte_stsz(D_800A34D0);
+        gte_stsxy3(
+            &g_eff_screen_xy[0], &g_eff_screen_xy[1], &g_eff_screen_xy[2]);
+        gte_stsz(g_eff_depth_work);
 
-        if (*D_800A34D0 < 0) {
+        if (*g_eff_depth_work < 0) {
             continue;
         }
-        D_800A34D0[1] = *D_800A34D0 ? *D_800A34D0 : 1;
-        *D_800A34D0 = gpu_DepthToOtIndex(D_800A34D0[1], 0);
-        if (*D_800A34D0 == 0) {
-            *D_800A34D0 = 1;
+        g_eff_depth_work[1] = *g_eff_depth_work ? *g_eff_depth_work : 1;
+        *g_eff_depth_work = gpu_DepthToOtIndex(g_eff_depth_work[1], 0);
+        if (*g_eff_depth_work == 0) {
+            *g_eff_depth_work = 1;
         }
         *D_800A34CC = 1;
-        if (*D_800A34D0 >= 0x1005 || *D_800A34CC == 0) {
+        if (*g_eff_depth_work >= 0x1005 || *D_800A34CC == 0) {
             continue;
         }
 
         if (arg0 < 2) {
-            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
-            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
-                              ? *D_800A34A8 * *D_800A34B4 >> 9
-                              : 1;
-            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
-                              ? *D_800A34AC * *D_800A34B4 >> 9
-                              : 1;
+            *g_eff_perspective_scale =
+                *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
+            *g_eff_right_x_offset =
+                *g_eff_base_width * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_width * *g_eff_perspective_scale >> 9
+                    : 1;
+            *g_eff_lower_y_offset_word =
+                *g_eff_base_height * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_height * *g_eff_perspective_scale >> 9
+                    : 1;
         } else if (arg0 < 4) {
-            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
-            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
-                              ? *D_800A34A8 * *D_800A34B4 >> 9
-                              : 1;
-            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
-                              ? *D_800A34AC * *D_800A34B4 >> 9
-                              : 1;
-            *D_800A34C0 += *D_800A34C0 * 20 / (*var_14 * 6 + 1);
-            *D_800A34C8 += *D_800A34C8 * 20 / (*var_14 * 6 + 1);
+            *g_eff_perspective_scale =
+                *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
+            *g_eff_right_x_offset =
+                *g_eff_base_width * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_width * *g_eff_perspective_scale >> 9
+                    : 1;
+            *g_eff_lower_y_offset_word =
+                *g_eff_base_height * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_height * *g_eff_perspective_scale >> 9
+                    : 1;
+            *g_eff_right_x_offset +=
+                *g_eff_right_x_offset * 20 / (*var_14 * 6 + 1);
+            *g_eff_lower_y_offset_word +=
+                *g_eff_lower_y_offset_word * 20 / (*var_14 * 6 + 1);
         } else if (arg0 < 6) {
-            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
-            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
-                              ? *D_800A34A8 * *D_800A34B4 >> 9
-                              : 1;
-            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
-                              ? *D_800A34AC * *D_800A34B4 >> 9
-                              : 1;
-            *D_800A34C0 += *D_800A34C0 * *var_14 / 2;
-            *D_800A34C8 += *D_800A34C8 * *var_14 / 2;
+            *g_eff_perspective_scale =
+                *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
+            *g_eff_right_x_offset =
+                *g_eff_base_width * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_width * *g_eff_perspective_scale >> 9
+                    : 1;
+            *g_eff_lower_y_offset_word =
+                *g_eff_base_height * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_height * *g_eff_perspective_scale >> 9
+                    : 1;
+            *g_eff_right_x_offset += *g_eff_right_x_offset * *var_14 / 2;
+            *g_eff_lower_y_offset_word +=
+                *g_eff_lower_y_offset_word * *var_14 / 2;
         } else if (arg0 < 8) {
-            *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
-            *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
-                              ? *D_800A34A8 * *D_800A34B4 >> 9
-                              : 1;
-            *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
-                              ? *D_800A34AC * *D_800A34B4 >> 9
-                              : 1;
-            sxy = (s16 *)D_800A34B8;
+            *g_eff_perspective_scale =
+                *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
+            *g_eff_right_x_offset =
+                *g_eff_base_width * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_width * *g_eff_perspective_scale >> 9
+                    : 1;
+            *g_eff_lower_y_offset_word =
+                *g_eff_base_height * *g_eff_perspective_scale > 0x200
+                    ? *g_eff_base_height * *g_eff_perspective_scale >> 9
+                    : 1;
+            sxy = (s16 *)g_eff_screen_xy;
             sxy[2] += rand() * 20 / 32768;
             sxy[3] += rand() * 10 / 32768;
         }
-        if (*D_800A34C0 > *D_800A34A8 * 2) {
-            *D_800A34C0 = *D_800A34A8 >> 1;
-            *D_800A34C8 = *D_800A34AC >> 1;
+        if (*g_eff_right_x_offset > *g_eff_base_width * 2) {
+            *g_eff_right_x_offset = *g_eff_base_width >> 1;
+            *g_eff_lower_y_offset_word = *g_eff_base_height >> 1;
         }
-        *D_800A34BC = -*D_800A34C0;
-        *D_800A34C4 = -*D_800A34C8;
-        *D_800A34C8 <<= 16;
+        *D_800A34BC = -*g_eff_right_x_offset;
+        *D_800A34C4 = -*g_eff_lower_y_offset_word;
+        *g_eff_lower_y_offset_word <<= 16;
         *D_800A34C4 <<= 16;
 
         sum = p_out[0] + p_out[1] + p_out[2];
@@ -2904,17 +2952,18 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
            SOTN: src/dra/8BEF8.c:185 @aa53500
            SOTN: src/st/cat/e_bone_ark.c:436 @aa53500 */
         for (; *p_n >= 0; (*p_n)--) {
-            var_9[*p_prim - g_eff_quad_cursor] = *D_800A34D0;
+            var_9[*p_prim - g_eff_quad_cursor] = *g_eff_depth_work;
             *(s32 *)&(*p_prim)->x0 =
-                D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C4;
+                g_eff_screen_xy[*p_n] + *D_800A34BC + *D_800A34C4;
             *(s32 *)&(*p_prim)->x1 =
-                D_800A34B8[*p_n] + *D_800A34C0 + *D_800A34C4;
-            *(s32 *)&(*p_prim)->x2 =
-                D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C8;
+                g_eff_screen_xy[*p_n] + *g_eff_right_x_offset + *D_800A34C4;
+            *(s32 *)&(*p_prim)->x2 = g_eff_screen_xy[*p_n] + *D_800A34BC +
+                                     *g_eff_lower_y_offset_word;
             *(s32 *)&(*p_prim)->x3 =
-                D_800A34B8[*p_n] + *D_800A34C0 + *D_800A34C8;
-            *(s32 *)&(*p_prim)->u0 = *D_800A34D4 + *D_800A3494;
-            *(s32 *)&(*p_prim)->u1 = *D_800A34D8 + *D_800A3490;
+                g_eff_screen_xy[*p_n] + *g_eff_right_x_offset +
+                *g_eff_lower_y_offset_word;
+            *(s32 *)&(*p_prim)->u0 = *D_800A34D4 + *g_eff_clut_word;
+            *(s32 *)&(*p_prim)->u1 = *D_800A34D8 + *g_eff_tpage_word;
             *(u16 *)&(*p_prim)->u2 = *D_800A34DC;
             *(u16 *)&(*p_prim)->u3 = *D_800A34E0;
             setlen(*p_prim, 9);
@@ -2978,13 +3027,15 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
         if (*p_cur < *p_end) {
             u32 *p_b;
             do {
-                D_800A34E4 = g_gpu_ot_ptr + var_4[*p_idx];
+                g_eff_current_ot_entry = g_gpu_ot_ptr + var_4[*p_idx];
                 p_b = &(*p_cur)->tag;
-                D_800A34E8 = p_b;
-                *p_b = (*p_b & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
+                g_eff_current_prim_tag = p_b;
+                *p_b =
+                    (*p_b & 0xFF000000) | (*g_eff_current_ot_entry & 0xFFFFFF);
 
-                *D_800A34E4 =
-                    ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
+                *g_eff_current_ot_entry =
+                    ((u32)g_eff_current_prim_tag & 0xFFFFFF) |
+                    (*g_eff_current_ot_entry & 0xFF000000);
 
                 (*p_cur)++;
                 (*p_idx)++;

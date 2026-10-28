@@ -8,14 +8,14 @@ glabel fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState
     /* 2BAE0 8003B2E0 363822A0 */  sb         $v0, %lo(D_800A3836)($at)
     /* 2BAE4 8003B2E4 0A80023C */  lui        $v0, %hi(D_800A3894)
     /* 2BAE8 8003B2E8 9438428C */  lw         $v0, %lo(D_800A3894)($v0)
-    /* 2BAEC 8003B2EC 0A80033C */  lui        $v1, %hi(D_800A376A)
-    /* 2BAF0 8003B2F0 6A376390 */  lbu        $v1, %lo(D_800A376A)($v1)
+    /* 2BAEC 8003B2EC 0A80033C */  lui        $v1, %hi(g_fight_bone_group_tim_requests)
+    /* 2BAF0 8003B2F0 6A376390 */  lbu        $v1, %lo(g_fight_bone_group_tim_requests)($v1)
     /* 2BAF4 8003B2F4 00004290 */  lbu        $v0, 0x0($v0)
     /* 2BAF8 8003B2F8 21280000 */  addu       $a1, $zero, $zero
     /* 2BAFC 8003B2FC 0A80013C */  lui        $at, %hi(D_800A36C8)
     /* 2BB00 8003B300 C83623A0 */  sb         $v1, %lo(D_800A36C8)($at)
-    /* 2BB04 8003B304 0A80013C */  lui        $at, %hi(D_800A376A)
-    /* 2BB08 8003B308 6A3720A0 */  sb         $zero, %lo(D_800A376A)($at)
+    /* 2BB04 8003B304 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
+    /* 2BB08 8003B308 6A3720A0 */  sb         $zero, %lo(g_fight_bone_group_tim_requests)($at)
     /* 2BB0C 8003B30C 000082A0 */  sb         $v0, 0x0($a0)
     /* 2BB10 8003B310 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* 2BB14 8003B314 21200000 */   addu      $a0, $zero, $zero

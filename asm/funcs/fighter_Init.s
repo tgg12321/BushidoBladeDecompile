@@ -565,8 +565,8 @@ glabel fighter_Init
     /* 135C4 80022DC4 01000224 */   addiu     $v0, $zero, 0x1
     /* 135C8 80022DC8 0C004216 */  bne        $s2, $v0, .L80022DFC
     /* 135CC 80022DCC 03000224 */   addiu     $v0, $zero, 0x3
-    /* 135D0 80022DD0 0A80033C */  lui        $v1, %hi(D_800A384C)
-    /* 135D4 80022DD4 4C386390 */  lbu        $v1, %lo(D_800A384C)($v1)
+    /* 135D0 80022DD0 0A80033C */  lui        $v1, %hi(g_fight_step_row_column)
+    /* 135D4 80022DD4 4C386390 */  lbu        $v1, %lo(g_fight_step_row_column)($v1)
     /* 135D8 80022DD8 04000224 */  addiu      $v0, $zero, 0x4
     /* 135DC 80022DDC 04006210 */  beq        $v1, $v0, .L80022DF0
     /* 135E0 80022DE0 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -582,8 +582,8 @@ glabel fighter_Init
     /* 13600 80022E00 01000224 */   addiu     $v0, $zero, 0x1
     /* 13604 80022E04 1D004216 */  bne        $s2, $v0, .L80022E7C
     /* 13608 80022E08 04000224 */   addiu     $v0, $zero, 0x4
-    /* 1360C 80022E0C 0A80033C */  lui        $v1, %hi(D_800A384C)
-    /* 13610 80022E10 4C386390 */  lbu        $v1, %lo(D_800A384C)($v1)
+    /* 1360C 80022E0C 0A80033C */  lui        $v1, %hi(g_fight_step_row_column)
+    /* 13610 80022E10 4C386390 */  lbu        $v1, %lo(g_fight_step_row_column)($v1)
     /* 13614 80022E14 00000000 */  nop
     /* 13618 80022E18 18006214 */  bne        $v1, $v0, .L80022E7C
     /* 1361C 80022E1C 00000000 */   nop

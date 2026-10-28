@@ -136,8 +136,8 @@ glabel fight_RunCommandStream
     /* 2BF94 8003B794 06000224 */  addiu      $v0, $zero, 0x6
     /* 2BF98 8003B798 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 2BF9C 8003B79C 343822A4 */  sh         $v0, %lo(g_main_loop_handler_index)($at)
-    /* 2BFA0 8003B7A0 0A80013C */  lui        $at, %hi(D_800A3878)
-    /* 2BFA4 8003B7A4 783823AC */  sw         $v1, %lo(D_800A3878)($at)
+    /* 2BFA0 8003B7A0 0A80013C */  lui        $at, %hi(g_fight_active_playback_descriptor)
+    /* 2BFA4 8003B7A4 783823AC */  sw         $v1, %lo(g_fight_active_playback_descriptor)($at)
     /* 2BFA8 8003B7A8 04006324 */  addiu      $v1, $v1, 0x4
     /* 2BFAC 8003B7AC 0A80013C */  lui        $at, %hi(g_fight_command_stream_cursor)
     /* 2BFB0 8003B7B0 443823AC */  sw         $v1, %lo(g_fight_command_stream_cursor)($at)

@@ -132,9 +132,9 @@ dlabel g_memcard_hw_event_timeout
 enddlabel g_memcard_hw_event_timeout
 
 /* 800A384C */
-dlabel D_800A384C
+dlabel g_fight_step_row_column
     .space 0x4
-enddlabel D_800A384C
+enddlabel g_fight_step_row_column
 
 /* 800A3850 */
 dlabel g_memcard_hw_event_new
@@ -182,9 +182,9 @@ dlabel D_800A3876
 enddlabel D_800A3876
 
 /* 800A3878 */
-dlabel D_800A3878
+dlabel g_fight_active_playback_descriptor
     .space 0x4
-enddlabel D_800A3878
+enddlabel g_fight_active_playback_descriptor
 
 /* 800A387C */
 dlabel g_fighter_horizontal_separation
@@ -244,9 +244,9 @@ dlabel D_800A389C
 enddlabel D_800A389C
 
 /* 800A38A0 */
-dlabel D_800A38A0
+dlabel g_comb_local_side
     .space 0x4
-enddlabel D_800A38A0
+enddlabel g_comb_local_side
 
 /* 800A38A4 */
 dlabel g_fight_presentation_index
@@ -279,9 +279,9 @@ dlabel g_fight_paired_move_initiator
 enddlabel g_fight_paired_move_initiator
 
 /* 800A38B0 */
-dlabel D_800A38B0
+dlabel g_fight_result_subject_index
     .space 0x4
-enddlabel D_800A38B0
+enddlabel g_fight_result_subject_index
 
 /* 800A38B4 */
 dlabel g_prim_buf_cursor
@@ -514,9 +514,9 @@ dlabel D_800A391F
 enddlabel D_800A391F
 
 /* 800A3920 */
-dlabel D_800A3920
+dlabel g_fight_point_award_phase_timer
     .space 0x4
-enddlabel D_800A3920
+enddlabel g_fight_point_award_phase_timer
 
 /* 800A3924 */
 dlabel g_memcard_poll_count
@@ -529,9 +529,9 @@ dlabel g_comb_abort_request
 enddlabel g_comb_abort_request
 
 /* 800A3929 */
-dlabel D_800A3929
+dlabel g_fight_choice_confirm_delay
     .space 0x7
-enddlabel D_800A3929
+enddlabel g_fight_choice_confirm_delay
 
 /* 800A3930 */
 dlabel g_font_sprites
@@ -894,9 +894,9 @@ dlabel D_800EF848
 enddlabel D_800EF848
 
 /* 800EF980 */
-dlabel D_800EF980
+dlabel g_resource_entry_request_state
     .space 0x72
-enddlabel D_800EF980
+enddlabel g_resource_entry_request_state
 
 /* 800EF9F2 */
 dlabel D_800EF9F2
@@ -2453,9 +2453,9 @@ dlabel _snd_seq_t_max
 enddlabel _snd_seq_t_max
 
 /* 801077B0 */
-dlabel D_801077B0
+dlabel g_fight_opponent_order
     .space 0x18
-enddlabel D_801077B0
+enddlabel g_fight_opponent_order
 
 /* 801077C8 */
 dlabel _svm_vab_total

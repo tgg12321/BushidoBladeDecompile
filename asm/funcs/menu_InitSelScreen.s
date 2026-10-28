@@ -95,22 +95,22 @@ glabel menu_InitSelScreen
   .L80077224:
     /* 67A24 80077224 00140200 */  sll        $v0, $v0, 16
     /* 67A28 80077228 031C0200 */  sra        $v1, $v0, 16
-    /* 67A2C 8007722C 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 67A2C 8007722C 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 67A30 80077230 21082300 */  addu       $at, $at, $v1
-    /* 67A34 80077234 E4BC2290 */  lbu        $v0, %lo(D_8009BCE4)($at)
+    /* 67A34 80077234 E4BC2290 */  lbu        $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 67A38 80077238 00000000 */  nop
     /* 67A3C 8007723C F2004430 */  andi       $a0, $v0, 0xF2
     /* 67A40 80077240 04106900 */  sllv       $v0, $t1, $v1
     /* 67A44 80077244 24104202 */  and        $v0, $s2, $v0
-    /* 67A48 80077248 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 67A48 80077248 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 67A4C 8007724C 21082300 */  addu       $at, $at, $v1
-    /* 67A50 80077250 E4BC24A0 */  sb         $a0, %lo(D_8009BCE4)($at)
+    /* 67A50 80077250 E4BC24A0 */  sb         $a0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 67A54 80077254 0A004010 */  beqz       $v0, .L80077280
     /* 67A58 80077258 0100C224 */   addiu     $v0, $a2, 0x1
     /* 67A5C 8007725C 01008234 */  ori        $v0, $a0, 0x1
-    /* 67A60 80077260 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 67A60 80077260 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 67A64 80077264 21082300 */  addu       $at, $at, $v1
-    /* 67A68 80077268 E4BC22A0 */  sb         $v0, %lo(D_8009BCE4)($at)
+    /* 67A68 80077268 E4BC22A0 */  sb         $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 67A6C 8007726C 0000A294 */  lhu        $v0, 0x0($a1)
     /* 67A70 80077270 00000000 */  nop
     /* 67A74 80077274 01004224 */  addiu      $v0, $v0, 0x1

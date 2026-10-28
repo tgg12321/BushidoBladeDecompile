@@ -22,8 +22,8 @@ glabel camera_InitTrackedFighterFocus
     /* BC10 8001B410 645322A4 */  sh         $v0, %lo(D_800F5364)($at)
     /* BC14 8001B414 79FC000C */  jal        func_8003F1E4
     /* BC18 8001B418 21200000 */   addu      $a0, $zero, $zero
-    /* BC1C 8001B41C 0A80023C */  lui        $v0, %hi(D_800A36F6)
-    /* BC20 8001B420 F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
+    /* BC1C 8001B41C 0A80023C */  lui        $v0, %hi(g_fight_tracked_fighter_index)
+    /* BC20 8001B420 F6364284 */  lh         $v0, %lo(g_fight_tracked_fighter_index)($v0)
     /* BC24 8001B424 00000000 */  nop
     /* BC28 8001B428 02004010 */  beqz       $v0, .L8001B434
     /* BC2C 8001B42C 00000000 */   nop

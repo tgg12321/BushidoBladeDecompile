@@ -89,8 +89,8 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
   .L80071D94:
     /* 62594 80071D94 1800C324 */  addiu      $v1, $a2, 0x18
     /* 62598 80071D98 1000A28F */  lw         $v0, 0x10($sp)
-    /* 6259C 80071D9C 0A80073C */  lui        $a3, %hi(D_800A3590)
-    /* 625A0 80071DA0 9035E724 */  addiu      $a3, $a3, %lo(D_800A3590)
+    /* 6259C 80071D9C 0A80073C */  lui        $a3, %hi(g_entry_menu_row_phase_choice_cursors)
+    /* 625A0 80071DA0 9035E724 */  addiu      $a3, $a3, %lo(g_entry_menu_row_phase_choice_cursors)
     /* 625A4 80071DA4 1400A3AF */  sw         $v1, 0x14($sp)
     /* 625A8 80071DA8 02004290 */  lbu        $v0, 0x2($v0)
     /* 625AC 80071DAC 21386702 */  addu       $a3, $s3, $a3
@@ -225,7 +225,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 62794 80071F94 D40482AF */  sw         $v0, %gp_rel(D_800A35A0)($gp)
     /* 62798 80071F98 21800000 */  addu       $s0, $zero, $zero
   .L80071F9C:
-    /* 6279C 80071F9C 88048287 */  lh         $v0, %gp_rel(D_800A3554)($gp)
+    /* 6279C 80071F9C 88048287 */  lh         $v0, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
     /* 627A0 80071FA0 E404838F */  lw         $v1, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 627A4 80071FA4 01004224 */  addiu      $v0, $v0, 0x1
     /* 627A8 80071FA8 21186200 */  addu       $v1, $v1, $v0
@@ -242,7 +242,7 @@ glabel DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSele
     /* 627D0 80071FD0 01001026 */  addiu      $s0, $s0, 0x1
     /* 627D4 80071FD4 21104400 */  addu       $v0, $v0, $a0
     /* 627D8 80071FD8 000043A0 */  sb         $v1, 0x0($v0)
-    /* 627DC 80071FDC 88048387 */  lh         $v1, %gp_rel(D_800A3554)($gp)
+    /* 627DC 80071FDC 88048387 */  lh         $v1, %gp_rel(g_entry_menu_grid_phase_extra_slot_count)($gp)
     /* 627E0 80071FE0 E404828F */  lw         $v0, %gp_rel(g_entry_menu_init_extra_slot_count)($gp)
     /* 627E4 80071FE4 01006324 */  addiu      $v1, $v1, 0x1
     /* 627E8 80071FE8 21104300 */  addu       $v0, $v0, $v1

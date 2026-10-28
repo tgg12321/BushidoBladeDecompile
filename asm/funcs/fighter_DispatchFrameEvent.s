@@ -78,8 +78,8 @@ glabel fighter_DispatchFrameEvent
     /* 2356C 80032D6C 01000224 */  addiu      $v0, $zero, 0x1
     /* 23570 80032D70 0A006214 */  bne        $v1, $v0, .L80032D9C
     /* 23574 80032D74 00000000 */   nop
-    /* 23578 80032D78 0A80023C */  lui        $v0, %hi(D_800A384C)
-    /* 2357C 80032D7C 4C384290 */  lbu        $v0, %lo(D_800A384C)($v0)
+    /* 23578 80032D78 0A80023C */  lui        $v0, %hi(g_fight_step_row_column)
+    /* 2357C 80032D7C 4C384290 */  lbu        $v0, %lo(g_fight_step_row_column)($v0)
     /* 23580 80032D80 00000000 */  nop
     /* 23584 80032D84 80100200 */  sll        $v0, $v0, 2
     /* 23588 80032D88 0980013C */  lui        $at, %hi(D_8008EBCC)
@@ -88,8 +88,8 @@ glabel fighter_DispatchFrameEvent
     /* 23594 80032D94 70CB0008 */  j          .L80032DC0
     /* 23598 80032D98 2130C200 */   addu      $a2, $a2, $v0
   .L80032D9C:
-    /* 2359C 80032D9C 0A80023C */  lui        $v0, %hi(D_800A384C)
-    /* 235A0 80032DA0 4C384290 */  lbu        $v0, %lo(D_800A384C)($v0)
+    /* 2359C 80032D9C 0A80023C */  lui        $v0, %hi(g_fight_step_row_column)
+    /* 235A0 80032DA0 4C384290 */  lbu        $v0, %lo(g_fight_step_row_column)($v0)
     /* 235A4 80032DA4 00000000 */  nop
     /* 235A8 80032DA8 80100200 */  sll        $v0, $v0, 2
     /* 235AC 80032DAC 0980013C */  lui        $at, %hi(D_8008EBCC)

@@ -11,7 +11,7 @@ glabel menu_UpdateRowMenuStoreResult
     /* 680B8 800778B8 38BD8424 */  addiu      $a0, $a0, %lo(D_8009BD38)
     /* 680BC 800778BC 01001024 */  addiu      $s0, $zero, 0x1
     /* 680C0 800778C0 0000838C */  lw         $v1, 0x0($a0)
-    /* 680C4 800778C4 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
+    /* 680C4 800778C4 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
     /* 680C8 800778C8 24186200 */  and        $v1, $v1, $v0
     /* 680CC 800778CC 0F00A230 */  andi       $v0, $a1, 0xF
     /* 680D0 800778D0 25186200 */  or         $v1, $v1, $v0

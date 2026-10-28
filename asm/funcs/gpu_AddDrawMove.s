@@ -60,8 +60,8 @@ glabel gpu_AddDrawMove
     /* 30AAC 800402AC FFFFC634 */  ori        $a2, $a2, (0xFFFFFF & 0xFFFF)
     /* 30AB0 800402B0 00FF073C */  lui        $a3, (0xFF000000 >> 16)
     /* 30AB4 800402B4 AC02848F */  lw         $a0, %gp_rel(g_gpu_draw_move_cursor)($gp)
-    /* 30AB8 800402B8 0A80053C */  lui        $a1, %hi(D_800A378C)
-    /* 30ABC 800402BC 8C37A58C */  lw         $a1, %lo(D_800A378C)($a1)
+    /* 30AB8 800402B8 0A80053C */  lui        $a1, %hi(g_gpu_ot_offset_ptr)
+    /* 30ABC 800402BC 8C37A58C */  lw         $a1, %lo(g_gpu_ot_offset_ptr)($a1)
     /* 30AC0 800402C0 0000838C */  lw         $v1, 0x0($a0)
     /* 30AC4 800402C4 FC3FA28C */  lw         $v0, 0x3FFC($a1)
     /* 30AC8 800402C8 24186700 */  and        $v1, $v1, $a3

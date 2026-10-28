@@ -29,7 +29,7 @@ static s16 D_800A3544[2];
 static s32 D_800A3548;
 static s32 g_entry_menu_pressed_buttons;
 static s16 D_800A3550;
-static s16 D_800A3554;
+static s16 g_entry_menu_grid_phase_extra_slot_count;
 static s16 g_entry_menu_row_phase_extra_slot_count;
 static s16 D_800A355C;
 static Unk800A3560Slots g_entry_menu_slot_records;
@@ -43,7 +43,7 @@ static s16 g_entry_menu_handler_index;
 static s16 D_800A3584;
 static s16 D_800A3588[2];
 static s16 D_800A358C[2];
-static s16 D_800A3590[2];
+static s16 g_entry_menu_row_phase_choice_cursors[2];
 static s16 D_800A3594[2];
 static s16 D_800A3598;
 static s16 D_800A359C;
@@ -70,7 +70,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
     D_800A35AC = (Unk8006E49CRec *)arg0;
     g_entry_menu_working_record_ptr = arg2;
     g_entry_menu_row_phase_extra_slot_count = 0;
-    D_800A3554 = 0;
+    g_entry_menu_grid_phase_extra_slot_count = 0;
     D_800A32E9 = 0;
     g_entry_menu_init_extra_slot_count = arg1;
     D_800A356C = arg0 + 0x58;
@@ -317,7 +317,9 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
     s3 = arg0->resource_root.v8006EA28->unk_54;
     s0 = s3->unk_0C;
 
-    for (i = 0; i < g_entry_menu_init_extra_slot_count + 1 + D_800A3554; i++) {
+    for (i = 0; i < g_entry_menu_init_extra_slot_count + 1 +
+                        g_entry_menu_grid_phase_extra_slot_count;
+         i++) {
         var_3 = g_entry_menu_grid_entries[D_800A358C[i]][D_800A3588[i]].value;
         if (g_entry_menu_entry_flags[var_3] & 1) {
             s.semi = 0;
@@ -363,7 +365,8 @@ void gpu_UploadAndDrawSelectedEntryQuads(Unk8006EACCRec *arg0) {
             goto draw;
         }
         if (i != 0) {
-            if (D_800A32E8 != var_3 || D_800A32E9 != D_800A3554) {
+            if (D_800A32E8 != var_3 ||
+                D_800A32E9 != g_entry_menu_grid_phase_extra_slot_count) {
                 rectbuf = D_800A32F4;
                 LoadImage(&rectbuf, (u32 *)a2);
                 DrawSync(0);
@@ -495,10 +498,12 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
         if (i != 0) {
             t1 = -t1;
         }
-        s.x = (D_8009BC94[i][D_800A3590[i]].x + 0x140) + t1 -
-              ((dx * s.scale_x >> 8) / 2);
-        s.y = (D_8009BC94[i][D_800A3590[i]].y + 0x9D) + t2 -
-              ((dy * s.scale_y >> 8) / 2);
+        s.x = (D_8009BC94[i][g_entry_menu_row_phase_choice_cursors[i]].x +
+               0x140) +
+              t1 - ((dx * s.scale_x >> 8) / 2);
+        s.y =
+            (D_8009BC94[i][g_entry_menu_row_phase_choice_cursors[i]].y + 0x9D) +
+            t2 - ((dy * s.scale_y >> 8) / 2);
         s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
         if (i != 0) {
             arg0->primitive_cursors.textured_quad_prims =
@@ -704,7 +709,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.header = var_3[0];
     var_4 = s.header[2].cells;
     s.has_color = 0;
-    for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count + D_800A3554; i++) {
+    for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
+                        g_entry_menu_grid_phase_extra_slot_count;
+         i++) {
         if (D_800A3588[i] == 5) {
             s.header += 1 + i;
             if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
@@ -739,7 +746,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.y = 0x86;
     s.header = var_3[0];
     s.has_color = 0;
-    for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count + D_800A3554; i++) {
+    for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
+                        g_entry_menu_grid_phase_extra_slot_count;
+         i++) {
         if (D_800A3588[i] == 4) {
             s.header += 1 + i;
             if (g_entry_menu_work_block->entry_countdowns[i] != 0) {
@@ -792,8 +801,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                 s.y = 0;
                 s.x = 0;
                 s.has_color = 0;
-                for (i = 0;
-                     i < 1 + g_entry_menu_init_extra_slot_count + D_800A3554;
+                for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
+                                    g_entry_menu_grid_phase_extra_slot_count;
                      i++) {
                     if (g_entry_menu_slot_records.rec[i].unk0 == 0xFF) {
                         shift[i] = 7;
@@ -859,7 +868,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     menu_UpdateEntryGridCursors(arg0);
     gpu_UploadAndDrawSelectedEntryQuads(arg0);
     D_800A32E8 = g_entry_menu_slot_records.rec[1].unk1;
-    D_800A32E9 = D_800A3554;
+    D_800A32E9 = g_entry_menu_grid_phase_extra_slot_count;
     gpu_AddGradientPanel(arg0);
     gpu_DrawTintedFlippedQuadsFixedCellLayerAndFrameCycledLayer(arg0);
 }
@@ -883,8 +892,8 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 8, arg0->primitive_cursors.unk_14);
     arg0->primitive_cursors.unk_14++;
-    for (i = 0;
-         i < 1 + g_entry_menu_init_extra_slot_count + (var_7 = D_800A3554);
+    for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
+                        (var_7 = g_entry_menu_grid_phase_extra_slot_count);
          i++) {
         col = &D_800A3588[i];
         row = &D_800A358C[i];
@@ -979,7 +988,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             g_entry_menu_slot_records.rec[i].unk0 == 0xFF) {
             if (*flags & 1) {
                 g_entry_menu_slot_records.rec[i].unk2 = 0xFF;
-                D_800A3590[i] = 2;
+                g_entry_menu_row_phase_choice_cursors[i] = 2;
                 g_entry_menu_slot_records.rec[i].unk0 =
                     g_entry_menu_grid_entries[*row][*col].unk1;
                 snd_QueueSound(
@@ -1013,11 +1022,11 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             if (g_entry_menu_slide_phase == 0) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 if (g_entry_menu_slot_records.rec[i].unk0 == 0xFF &&
-                    D_800A3554 == 0) {
+                    g_entry_menu_grid_phase_extra_slot_count == 0) {
                     D_800A35A0 = -1;
-                } else if (D_800A3554 == 1) {
+                } else if (g_entry_menu_grid_phase_extra_slot_count == 1) {
                     if (g_entry_menu_slot_records.rec[1].unk0 == 0xFF) {
-                        D_800A3554 = 0;
+                        g_entry_menu_grid_phase_extra_slot_count = 0;
                         g_entry_menu_slot_records.rec[0].unk0 = 0xFF;
                     } else {
                         g_entry_menu_slot_records.rec[1].unk0 = 0xFF;
@@ -1034,7 +1043,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
         } else {
             s.has_color = 0;
         }
-        if (D_800A3554 != 0 && i != 0) {
+        if (g_entry_menu_grid_phase_extra_slot_count != 0 && i != 0) {
             s.header = var_1[i + 1];
         } else {
             s.header = var_1[i];
@@ -1058,16 +1067,18 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
         g_entry_menu_work_block->entry_countdowns[0] == 0) {
         if (g_entry_menu_fight_mode == 2 &&
             (g_entry_menu_working_record_ptr->unk14_17)) {
-            D_800A3554 = 1;
+            g_entry_menu_grid_phase_extra_slot_count = 1;
         }
         if ((g_entry_menu_slot_records.rec[1].unk0 != 0xFF &&
              g_entry_menu_work_block->entry_countdowns[1] == 0) ||
-            g_entry_menu_init_extra_slot_count + D_800A3554 == 0) {
+            g_entry_menu_init_extra_slot_count +
+                    g_entry_menu_grid_phase_extra_slot_count ==
+                0) {
             g_entry_menu_slide_phase = 1;
             g_entry_menu_row_phase_extra_slot_count = 0;
             if (g_entry_menu_fight_mode == 2) {
                 g_entry_menu_slot_records.rec[1].unk2 = 0xFF;
-                D_800A3590[1] = 2;
+                g_entry_menu_row_phase_choice_cursors[1] = 2;
             }
             D_800A3584 = 1;
         }
@@ -1155,7 +1166,7 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
         if ((code != 5) && (code != 16)) {
             t = var_1.header->cells;
             var_1.table = t;
-            var_1.table += D_800A3590[var_s0] * 2;
+            var_1.table += g_entry_menu_row_phase_choice_cursors[var_s0] * 2;
             if (((g_entry_menu_init_extra_slot_count +
                   g_entry_menu_row_phase_extra_slot_count) != 0) ||
                 (g_entry_menu_fight_mode == 2)) {
@@ -1265,14 +1276,14 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 D_800A3540[i] = 0;
                 g_entry_menu_work_block->row_countdowns[i] = 0x1E;
                 if ((g_entry_menu_pressed_buttons & (0x2000 << (var_4 * 16))) &&
-                    D_800A3590[i] < max) {
+                    g_entry_menu_row_phase_choice_cursors[i] < max) {
                     snd_QueueSound(0, 0x7F, 0x7F);
-                    D_800A3590[i]++;
+                    g_entry_menu_row_phase_choice_cursors[i]++;
                 } else if (
                     (g_entry_menu_pressed_buttons & (0x8000 << (var_4 * 16))) &&
-                    min < D_800A3590[i]) {
+                    min < g_entry_menu_row_phase_choice_cursors[i]) {
                     snd_QueueSound(0, 0x7F, 0x7F);
-                    D_800A3590[i]--;
+                    g_entry_menu_row_phase_choice_cursors[i]--;
                 }
                 D_800A3594[i] = i;
                 if (g_entry_menu_fight_mode == 3) {
@@ -1310,7 +1321,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
 
                     snd_QueueSound(1, 0x7F, 0x7F);
                     g_entry_menu_slot_records.rec[i].unk2 =
-                        D_8009BC38[D_800A3590[i]];
+                        D_8009BC38[g_entry_menu_row_phase_choice_cursors[i]];
                     sel = 1;
                     if (g_entry_menu_fight_mode == 2 &&
                         !(g_entry_menu_working_record_ptr->unk14_17) &&
@@ -1341,7 +1352,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         g_entry_menu_slide_phase = 3;
                         D_800A3584 = 0;
                         snd_QueueSound(6, 0x7F, 0x7F);
-                        if (D_800A3554 == 1) {
+                        if (g_entry_menu_grid_phase_extra_slot_count == 1) {
                             g_entry_menu_slot_records.rec[1].unk0 = 0xFF;
                         } else {
                             g_entry_menu_slot_records.rec[i].unk0 = 0xFF;
@@ -1374,7 +1385,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 s->has_color = 0;
                 cells = s->header->cells;
                 s->table = cells;
-                s->x = (D_800A3590[i] << 6) + 0x85;
+                s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x85;
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;
                 s->sprt_out = arg0->primitive_cursors.sprite_prims;
@@ -1403,7 +1414,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                       63) >>
                      12) -
                     0x40;
-                s->x = (D_800A3590[i] << 6) + 0x80;
+                s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x80;
                 s->y = 0xAC - (D_800A3594[i] << 5);
                 s->ft4_out = arg0->primitive_cursors.textured_quad_prims;
                 s->ot_idx = 7;
@@ -1473,7 +1484,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
             g_entry_menu_slot_records.rec[i].unk0 != 0x10 &&
             g_entry_menu_slide_phase != 3) {
             s->table = cells;
-            s->x = (D_800A3590[i] << 6) + 0x80;
+            s->x = (g_entry_menu_row_phase_choice_cursors[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
             if (g_entry_menu_fight_mode == 2 &&
                 !(g_entry_menu_working_record_ptr->unk14_17) && i == 1) {
@@ -1570,10 +1581,10 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
                 dx = s.table[idx].x + s.table[idx].w - obj[1].cells[0].x;
                 dy = s.table[idx].y + s.table[idx].h - obj[1].cells[0].y;
             }
-            s.x = D_8009BC94[i][D_800A3590[i]].x + 0x140 -
-                  ((dx * s.scale_x >> 8) / 2);
-            s.y = D_8009BC94[i][D_800A3590[i]].y + 0x9D -
-                  ((dy * s.scale_y >> 8) / 2);
+            s.x = D_8009BC94[i][g_entry_menu_row_phase_choice_cursors[i]].x +
+                  0x140 - ((dx * s.scale_x >> 8) / 2);
+            s.y = D_8009BC94[i][g_entry_menu_row_phase_choice_cursors[i]].y +
+                  0x9D - ((dy * s.scale_y >> 8) / 2);
             s.ft4_out = arg0->primitive_cursors.textured_quad_prims;
             if (i != 0) {
                 arg0->primitive_cursors.textured_quad_prims =
@@ -1602,7 +1613,8 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
         } else {
             D_800A35A0 = 1;
         }
-        for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count + D_800A3554;
+        for (i = 0; i < 1 + g_entry_menu_init_extra_slot_count +
+                            g_entry_menu_grid_phase_extra_slot_count;
              i++) {
             g_entry_menu_working_record_ptr->unk00[i][0].bd0 =
                 g_entry_menu_slot_records.rec[i].unk0;

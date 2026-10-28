@@ -75,8 +75,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F3A0 8001EBA0 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
     /* F3A4 8001EBA4 B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
   .L8001EBA8:
-    /* F3A8 8001EBA8 0A80023C */  lui        $v0, %hi(D_800A3929)
-    /* F3AC 8001EBAC 29394290 */  lbu        $v0, %lo(D_800A3929)($v0)
+    /* F3A8 8001EBA8 0A80023C */  lui        $v0, %hi(g_fight_choice_confirm_delay)
+    /* F3AC 8001EBAC 29394290 */  lbu        $v0, %lo(g_fight_choice_confirm_delay)($v0)
     /* F3B0 8001EBB0 00000000 */  nop
     /* F3B4 8001EBB4 63004014 */  bnez       $v0, .L8001ED44
     /* F3B8 8001EBB8 01000424 */   addiu     $a0, $zero, 0x1
@@ -152,8 +152,8 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F4C0 8001ECC0 3C000224 */   addiu     $v0, $zero, 0x3C
     /* F4C4 8001ECC4 01000224 */  addiu      $v0, $zero, 0x1
   .L8001ECC8:
-    /* F4C8 8001ECC8 0A80013C */  lui        $at, %hi(D_800A3929)
-    /* F4CC 8001ECCC 293922A0 */  sb         $v0, %lo(D_800A3929)($at)
+    /* F4C8 8001ECC8 0A80013C */  lui        $at, %hi(g_fight_choice_confirm_delay)
+    /* F4CC 8001ECCC 293922A0 */  sb         $v0, %lo(g_fight_choice_confirm_delay)($at)
     /* F4D0 8001ECD0 73006014 */  bnez       $v1, .L8001EEA0
     /* F4D4 8001ECD4 00000000 */   nop
     /* F4D8 8001ECD8 0A80023C */  lui        $v0, %hi(g_fight_followup_fighter_index)
@@ -205,12 +205,12 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F588 8001ED88 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
     /* F58C 8001ED8C B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
   .L8001ED90:
-    /* F590 8001ED90 0A80023C */  lui        $v0, %hi(D_800A3929)
-    /* F594 8001ED94 29394290 */  lbu        $v0, %lo(D_800A3929)($v0)
+    /* F590 8001ED90 0A80023C */  lui        $v0, %hi(g_fight_choice_confirm_delay)
+    /* F594 8001ED94 29394290 */  lbu        $v0, %lo(g_fight_choice_confirm_delay)($v0)
     /* F598 8001ED98 00000000 */  nop
     /* F59C 8001ED9C 01004224 */  addiu      $v0, $v0, 0x1
-    /* F5A0 8001EDA0 0A80013C */  lui        $at, %hi(D_800A3929)
-    /* F5A4 8001EDA4 293922A0 */  sb         $v0, %lo(D_800A3929)($at)
+    /* F5A0 8001EDA0 0A80013C */  lui        $at, %hi(g_fight_choice_confirm_delay)
+    /* F5A4 8001EDA4 293922A0 */  sb         $v0, %lo(g_fight_choice_confirm_delay)($at)
     /* F5A8 8001EDA8 FF004230 */  andi       $v0, $v0, 0xFF
     /* F5AC 8001EDAC 3C00422C */  sltiu      $v0, $v0, 0x3C
     /* F5B0 8001EDB0 3B004014 */  bnez       $v0, .L8001EEA0

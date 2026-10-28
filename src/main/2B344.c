@@ -22,7 +22,7 @@ s32 comb_HandshakeStep(void) {
     case 1:
         comb_ReadCtsSetRts();
         D_800A37D8 = 0;
-        if (D_800A38A0 == 0) {
+        if (g_comb_local_side == 0) {
             SetDispMask(1);
             g_comb_handshake_step = 2;
         } else {
@@ -107,7 +107,7 @@ s32 comb_Connect(void) {
     comb_ExchangeEmptyPad();
     {
         s32 var_v0;
-        if (D_800A38A0 == 0) {
+        if (g_comb_local_side == 0) {
             var_v0 = (u16)D_800A37C4;
         } else {
             var_v0 = D_800A36C6;
@@ -190,10 +190,10 @@ void fight_RequestBothFightersEntriesAndReloadOnChange(void) {
                          [D_80101EC8[i].weapon_id]);
         if (D_80101EC8[i].unk_14 != -1) {
             resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-                D_8008EB80[D_80101EC8[i].unk_14]);
+                g_resource_kind_entry_ids[D_80101EC8[i].unk_14]);
             if (D_80101EC8[i].unk_14 == 14) {
                 resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-                    D_8008EB80[14] + 3);
+                    g_resource_kind_entry_ids[14] + 3);
             }
         }
     }
@@ -245,10 +245,10 @@ void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
     D_800A3836 = g_fight_config.unk_4[0];
     {
         u8 *base = D_800A3894;
-        u8 v1 = D_800A376A;
+        u8 v1 = g_fight_bone_group_tim_requests;
         u8 v0 = *base;
         D_800A36C8 = v1;
-        D_800A376A = 0;
+        g_fight_bone_group_tim_requests = 0;
         g_fight_config.unk_4[0] = v0;
     }
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
@@ -257,14 +257,14 @@ void fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState(
 void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
     void) {
     u8 v_277C = g_fight_config.unk_4[0];
-    u8 v_376A = D_800A376A;
+    u8 v_376A = g_fight_bone_group_tim_requests;
     u8 v_3836 = D_800A3836;
     u8 v_36C8 = D_800A36C8;
     D_800A3836 = 0xFF;
     D_800A3915 = v_277C;
     D_800A36F4 = v_376A;
     g_fight_config.unk_4[0] = v_3836;
-    D_800A376A = v_36C8;
+    g_fight_bone_group_tim_requests = v_36C8;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, v_36C8);
     fighter_ResetBoneGroupHitState(D_80101EC8);
 }
@@ -317,13 +317,13 @@ void fight_SetFixedFighterBytesAndLoadBothFighters(void) {
 void func_8003B534(s32 a0) {
     D_800A37B0 = a0;
     g_main_loop_handler_index = 6;
-    D_800A3878 = D_800A3894 + (a0 * 4 + 1);
+    g_fight_active_playback_descriptor = D_800A3894 + (a0 * 4 + 1);
 }
 
 void func_8003B56C(s32 arg0) {
     D_800A390C = arg0;
     g_main_loop_handler_index = 6;
-    D_800A3878 = D_800A385C + (arg0 * 4 - 4);
+    g_fight_active_playback_descriptor = D_800A385C + (arg0 * 4 - 4);
 }
 
 void fight_RunCommandStream(void) {
@@ -401,7 +401,7 @@ void fight_RunCommandStream(void) {
 
         case 19:
             g_main_loop_handler_index = 6;
-            D_800A3878 = g_fight_command_stream_cursor;
+            g_fight_active_playback_descriptor = g_fight_command_stream_cursor;
             g_fight_command_stream_cursor += 4;
             var_0 = 1;
             break;
@@ -431,7 +431,8 @@ void fight_RunCommandStream(void) {
 }
 
 void fight_InitCommandStreamImageLoad(void) {
-    slot_RequestTimGroupsAndMarkReloadOnChange(0, D_800A376A);
+    slot_RequestTimGroupsAndMarkReloadOnChange(
+        0, g_fight_bone_group_tim_requests);
     slot_RequestTimGroupsAndMarkReloadOnChange(1, 0);
     snd_ResetVoicesAndQueue();
     gpu_HideResetAndClear();
@@ -508,43 +509,44 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
-    if (D_800A3878[3] & 0x80) {
+    if (g_fight_active_playback_descriptor[3] & 0x80) {
         motion_InvalidateMarkedNdataPackAndResetLoadCaches();
         var_4 = 0x80118800;
     }
     {
-        u8 var_7 = D_800A3878[3];
+        u8 var_7 = g_fight_active_playback_descriptor[3];
         if (var_7 & 0x30) {
             saved_first = D_80101EC8[0].unk_12;
             saved_44c = D_80101EC8[1].unk_12;
             if (var_7 & 0x10)
                 D_80101EC8[0].unk_12 = 0x32;
-            if (D_800A3878[3] & 0x20)
+            if (g_fight_active_playback_descriptor[3] & 0x20)
                 D_80101EC8[1].unk_12 = 0x32;
             fight_RequestBothFightersEntriesAndReloadOnChange();
             D_80101EC8[0].unk_12 = saved_first;
             D_80101EC8[1].unk_12 = saved_44c;
         }
     }
-    if (D_800A3878[3] & 0x1)
+    if (g_fight_active_playback_descriptor[3] & 0x1)
         a3_arg = D_80101EC8[0].unk_12;
     else
         a3_arg = -1;
-    if (D_800A3878[3] & 0x2)
+    if (g_fight_active_playback_descriptor[3] & 0x2)
         a0_arg = D_80101EC8[1].unk_12;
     else
         a0_arg = -1;
-    flags = D_800A3878[3];
+    flags = g_fight_active_playback_descriptor[3];
     if (flags & 0x10)
         a3_arg = 0x32;
     if (flags & 0x20)
         a0_arg = 0x32;
     D_800A390F = 0;
     motion_StartPlaybackAtIndexedBasePlusOffset(
-        D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, var_4);
+        D_800A376C, g_fight_active_playback_descriptor[0], 0, a3_arg, a0_arg,
+        -1, -1, var_4);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
-    if (D_800A3878[3] & 0x40)
+    if (g_fight_active_playback_descriptor[3] & 0x40)
         resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     if ((s8)g_fight_config.unk_4[1] == 0xE ||
         (s8)g_fight_config.unk_4[1] == 0x1D) {
@@ -555,8 +557,8 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     g_local_ot_draw_mode = DISP_DISABLED;
     D_800A36A8 = 0;
     snd_SerialMixOn();
-    v0 = cdrom_GetFileIndex(5, D_800A3878[1]);
-    cdrom_StartAudio(v0, D_800A3878[2]);
+    v0 = cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1]);
+    cdrom_StartAudio(v0, g_fight_active_playback_descriptor[2]);
     cdrom_WaitAudioStarted();
     g_handler_frame_counter = 0;
     g_main_loop_handler_index = 7;
@@ -916,7 +918,7 @@ void fight_UpdateTimeRecordPresentation(void) {
 void fight_InitRotatingViewThreeOptionChoice(void) {
     gpu_HideResetAndClear();
     g_fight_choice_menu_cursor = 0;
-    D_800A3929 = 0;
+    g_fight_choice_confirm_delay = 0;
     g_handler_frame_counter = 0;
     g_main_loop_handler_index = 0x19;
     gpu_SetDispMaskOn();
@@ -936,7 +938,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
         &g_camera_default_view_record.unk_10, 0x2710);
     gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(1);
 
-    if (D_800A3929 == 0) {
+    if (g_fight_choice_confirm_delay == 0) {
         g_prim_buf_cursor +=
             gpu_DrawModeSizedPanelWithSelectedCellOpaque(
                 1, g_fight_choice_menu_cursor, (s32)g_prim_buf_cursor, 0) /
@@ -960,7 +962,8 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
 
         if ((g_pad_state.pressed & 0x400040) != 0) {
             snd_QueueSound(1, 0x7F, 0x7F);
-            D_800A3929 = (g_fight_choice_menu_cursor == 0) ? 1 : 0x3C;
+            g_fight_choice_confirm_delay =
+                (g_fight_choice_menu_cursor == 0) ? 1 : 0x3C;
         }
         return;
     }
@@ -970,8 +973,8 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
             gpu_DrawSelectedStretchedSpritePair(0, (s32)g_prim_buf_cursor, 1) /
             4;
     }
-    D_800A3929 = D_800A3929 + 1;
-    if (D_800A3929 < 0x3C)
+    g_fight_choice_confirm_delay = g_fight_choice_confirm_delay + 1;
+    if (g_fight_choice_confirm_delay < 0x3C)
         return;
 
     cdrom_PauseAndWait();
@@ -1535,7 +1538,7 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     for (i = 0; i < limit; i++) {
         s32 idx = gpu_DepthToOtIndex((u32)arg0 >> 2, 2);
         if (idx < 0x1000) {
-            addPrim(&D_800A378C[idx], pkt);
+            addPrim(&g_gpu_ot_offset_ptr[idx], pkt);
             pkt += 2;
             if (i == limit - 1) {
                 g_gpu_last_fog_ot_index = idx;
@@ -1547,12 +1550,12 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     if (arg4 != 0) {
         func_8003DDF8((u32)pkt);
     } else {
-        addPrim(&D_800A378C[0xFFB], pkt);
+        addPrim(&g_gpu_ot_offset_ptr[0xFFB], pkt);
     }
 }
 
 void func_8003DDF8(u32 arg0) {
-    u32 *ptr = D_800A378C;
+    u32 *ptr = g_gpu_ot_offset_ptr;
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;
 }

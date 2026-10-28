@@ -11,13 +11,14 @@
  * 3. Neighbours in .data link order: 63D2C.c (gp accesses) and 64FD8.c (its
  *    own .sdata / .sbss, gp accesses), both -G8 code modules with adjacent
  *    .text, then Sony's LIBAPI; so no code module owns D_8009BD20.
- * Readers: D_8009BCE4 / D_8009BCF8 / D_8009BD58 (64FD8.c), D_8009BD20
- * (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, 51268.c, 64FD8.c). */
+ * Readers: g_sel_entry_availability_and_claims / D_8009BCF8 / D_8009BD58
+ * (64FD8.c), D_8009BD20 (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, 51268.c,
+ * 64FD8.c). */
 #include "common.h"
 #include "bb2.h"
 
-u8 D_8009BCE4[20] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+u8 g_sel_entry_availability_and_claims[20] = {
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 Unk8009BCF8Record D_8009BCF8[2][10] = {
     {{0x00, 0x00},

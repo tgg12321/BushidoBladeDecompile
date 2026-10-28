@@ -452,7 +452,7 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
     g_draw_queue_cursor = g_draw_queue;
     D_800A3808 = g_gpu_ot_ptr;
     D_800A38D6++;
-    D_800A378C = g_gpu_ot_ptr + 4;
+    g_gpu_ot_offset_ptr = g_gpu_ot_ptr + 4;
 
     if (a0 != 0) {
         g_view_camera_root_node.xf.rot.vx = -a1->vx;
@@ -1653,8 +1653,8 @@ void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
 
     g_gpu_ot256_ptr = g_gpu_ot256_db[g_gpu_presented_frame_count & 1];
     ClearOTagR(g_gpu_ot256_ptr, 0x100);
-    old = D_800A378C[0];
-    D_800A378C[0] = (u32)(g_gpu_ot256_ptr + 0xFF) & 0xFFFFFF;
+    old = g_gpu_ot_offset_ptr[0];
+    g_gpu_ot_offset_ptr[0] = (u32)(g_gpu_ot256_ptr + 0xFF) & 0xFFFFFF;
     *g_gpu_ot256_ptr = old;
 }
 
@@ -1725,12 +1725,12 @@ void gpu_QueueVramScroll(s32 scroll_index) {
         rect.w = w;
         rect.h = h1;
         SetDrawMove(p, &rect, dest_x, dest_y + var_15);
-        addPrim(&D_800A378C[0xFFF], p);
+        addPrim(&g_gpu_ot_offset_ptr[0xFFF], p);
         p++;
         rect.y = sy + h1;
         rect.h = h2;
         SetDrawMove(p, &rect, dest_x, dest_y);
-        addPrim(&D_800A378C[0xFFF], p);
+        addPrim(&g_gpu_ot_offset_ptr[0xFFF], p);
         p++;
         source_x_offset >>= 1;
         source_y_offset >>= 1;
@@ -1764,12 +1764,12 @@ void ResetEntrySelectionState(void) {
     D_800A33EC = -1;
 }
 
-extern s16 D_800EF980[];
+extern s16 g_resource_entry_request_state[];
 
 void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
     u8 first_linked_entry_index;
 
-    D_800EF980[entry_index] = 1;
+    g_resource_entry_request_state[entry_index] = 1;
     if (D_800A33EC == -1) {
         if (entry_index >= 0x33) {
             D_800A33EC = 1;
@@ -1786,8 +1786,8 @@ void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
     }
     first_linked_entry_index = D_80099CC8[entry_index][0];
     if (first_linked_entry_index != 0xFF) {
-        D_800EF980[first_linked_entry_index] = 1;
-        D_800EF980[D_80099CC8[entry_index][1]] = 1;
+        g_resource_entry_request_state[first_linked_entry_index] = 1;
+        g_resource_entry_request_state[D_80099CC8[entry_index][1]] = 1;
     }
 }
 
@@ -1840,7 +1840,7 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
     inputs_unchanged = 1;
     i = 0;
     dst = D_80099C50;
-    src = D_800EF980;
+    src = g_resource_entry_request_state;
     do {
         s16 v = *src;
         if ((v >= 0) != ((*dst) >= 0)) {
@@ -1853,7 +1853,7 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
     } while (i < 0x3A);
     next_rank = 0;
     i = 0;
-    p = D_800EF980;
+    p = g_resource_entry_request_state;
     do {
         if ((*p) >= 0) {
             *p = (s16)next_rank;
@@ -1896,7 +1896,7 @@ end:
     if (inputs_unchanged == 0) {
         resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
         resource_LoadSelectedEntriesTexturesAndSound(
-            D_800A33EC, i, D_800EF980, arg0);
+            D_800A33EC, i, g_resource_entry_request_state, arg0);
         gpu_BuildFogBlockLevels();
     }
 }
@@ -1918,7 +1918,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     Unk80045878Node *obj;
     Unk80045878Node *slot_transform_node;
     s32 node_bit;
-    if (D_800EF980[entry_index] < 0) {
+    if (g_resource_entry_request_state[entry_index] < 0) {
         func_80052C10();
     }
     obj = (Unk80045878Node *)g_prim_buf_cursor;
@@ -1928,7 +1928,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     val58 = 0;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
-    obj->node.unk2 = D_800EF980[entry_index] * 2;
+    obj->node.unk2 = g_resource_entry_request_state[entry_index] * 2;
     obj->node.unk4 = 6;
     obj->node.rotation_order = 0;
     obj->node.parent_node = 0;
@@ -1991,7 +1991,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
         }
         obj++;
         if (flags != 1) {
-            s32 entry = D_800EF980[entry_index];
+            s32 entry = g_resource_entry_request_state[entry_index];
             void **list;
             obj->node.unk0 = 3;
             obj->node.unk1 = 0;
@@ -2040,14 +2040,14 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     if (linked_entry_index == 0xFF) {
         return;
     }
-    if (D_800EF980[linked_entry_index] < 0) {
+    if (g_resource_entry_request_state[linked_entry_index] < 0) {
         func_80052C10();
     }
     slot_obj = slot_GetObject(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
-    obj->node.unk2 = D_800EF980[linked_entry_index] * 2;
+    obj->node.unk2 = g_resource_entry_request_state[linked_entry_index] * 2;
     obj->node.unk4 = 6;
     obj->node.rotation_order = 0;
     obj->node.light_setup_index = 4;
@@ -2072,7 +2072,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
     g_draw_queue_cursor = list + 1;
     *list = obj;
     obj++;
-    obj->node.unk2 = D_800EF980[linked_entry_index] * 2 + 1;
+    obj->node.unk2 = g_resource_entry_request_state[linked_entry_index] * 2 + 1;
     obj->node.unk0 = 3;
     obj->node.parent_node = &obj[-1].node;
     obj->node.unk1 = 0;

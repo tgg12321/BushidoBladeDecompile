@@ -98,8 +98,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* C788 8001BF88 06000224 */  addiu      $v0, $zero, 0x6
     /* C78C 8001BF8C 44006214 */  bne        $v1, $v0, .L8001C0A0
     /* C790 8001BF90 00000000 */   nop
-    /* C794 8001BF94 0A80023C */  lui        $v0, %hi(D_800A38A0)
-    /* C798 8001BF98 A038428C */  lw         $v0, %lo(D_800A38A0)($v0)
+    /* C794 8001BF94 0A80023C */  lui        $v0, %hi(g_comb_local_side)
+    /* C798 8001BF98 A038428C */  lw         $v0, %lo(g_comb_local_side)($v0)
     /* C79C 8001BF9C 00000000 */  nop
     /* C7A0 8001BFA0 3F002212 */  beq        $s1, $v0, .L8001C0A0
     /* C7A4 8001BFA4 0FFF0224 */   addiu     $v0, $zero, -0xF1
@@ -341,8 +341,8 @@ glabel fighter_BuildCpuOrMappedPadState
     /* CAE0 8001C2E0 00000000 */  nop
     /* CAE4 8001C2E4 0B004014 */  bnez       $v0, .L8001C314
     /* CAE8 8001C2E8 00000000 */   nop
-    /* CAEC 8001C2EC 0A80023C */  lui        $v0, %hi(D_800A3920)
-    /* CAF0 8001C2F0 20394290 */  lbu        $v0, %lo(D_800A3920)($v0)
+    /* CAEC 8001C2EC 0A80023C */  lui        $v0, %hi(g_fight_point_award_phase_timer)
+    /* CAF0 8001C2F0 20394290 */  lbu        $v0, %lo(g_fight_point_award_phase_timer)($v0)
     /* CAF4 8001C2F4 00000000 */  nop
     /* CAF8 8001C2F8 06004014 */  bnez       $v0, .L8001C314
     /* CAFC 8001C2FC 00000000 */   nop

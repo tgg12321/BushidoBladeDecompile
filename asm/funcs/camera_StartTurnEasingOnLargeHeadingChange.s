@@ -4,8 +4,8 @@ glabel camera_StartTurnEasingOnLargeHeadingChange
     /* BE98 8001B698 00000000 */  nop
     /* BE9C 8001B69C 13004010 */  beqz       $v0, .L8001B6EC
     /* BEA0 8001B6A0 00000000 */   nop
-    /* BEA4 8001B6A4 0A80023C */  lui        $v0, %hi(D_800A36F6)
-    /* BEA8 8001B6A8 F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
+    /* BEA4 8001B6A4 0A80023C */  lui        $v0, %hi(g_fight_tracked_fighter_index)
+    /* BEA8 8001B6A8 F6364284 */  lh         $v0, %lo(g_fight_tracked_fighter_index)($v0)
     /* BEAC 8001B6AC 00000000 */  nop
     /* BEB0 8001B6B0 0E004414 */  bne        $v0, $a0, .L8001B6EC
     /* BEB4 8001B6B4 FF0FA530 */   andi      $a1, $a1, 0xFFF

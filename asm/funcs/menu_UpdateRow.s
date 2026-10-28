@@ -124,9 +124,9 @@ glabel menu_UpdateRow
     /* 61650 80070E50 00000000 */  nop
     /* 61654 80070E54 0C004324 */  addiu      $v1, $v0, 0xC
     /* 61658 80070E58 1C00A3AF */  sw         $v1, 0x1C($sp)
-    /* 6165C 80070E5C 0A80013C */  lui        $at, %hi(D_800A3590)
+    /* 6165C 80070E5C 0A80013C */  lui        $at, %hi(g_entry_menu_row_phase_choice_cursors)
     /* 61660 80070E60 21082400 */  addu       $at, $at, $a0
-    /* 61664 80070E64 90352284 */  lh         $v0, %lo(D_800A3590)($at)
+    /* 61664 80070E64 90352284 */  lh         $v0, %lo(g_entry_menu_row_phase_choice_cursors)($at)
     /* 61668 80070E68 00000000 */  nop
     /* 6166C 80070E6C 00110200 */  sll        $v0, $v0, 4
     /* 61670 80070E70 21106200 */  addu       $v0, $v1, $v0

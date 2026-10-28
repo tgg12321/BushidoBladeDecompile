@@ -3,8 +3,8 @@
  * records, command tables and vectors.
  * Owner ruling Q122 (data-only-no-sdata):
  * 1. One run: 4D0A8.c's D_8009B400 ends at 0x8009B450 and 51268.o(.data) is
- *    empty, so 596CC.c's D_8009BC04 follows at 0x8009BC04. No uninitialized
- *    objects.
+ *    empty, so 596CC.c's g_row_menu_row_state follows at 0x8009BC04. No
+ * uninitialized objects.
  * 2. Small objects in .data, each with its own readers: D_8009B450 (two
  *    points, gpu_DrawTimeFieldsAndDecimalCounter), the single cells D_8009B488,
  * D_8009B4FC .. D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the

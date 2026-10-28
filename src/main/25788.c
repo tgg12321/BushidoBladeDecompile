@@ -60,7 +60,7 @@ void ApplyWorkingRecordToPendingConfigAndInitializeMode(void) {
 
     g_fight_config.unk_C = p->unk14_4;
     g_fight_config.unk_E = p->unk20_3;
-    D_800A36F6 = 0;
+    g_fight_tracked_fighter_index = 0;
     val = g_fight_config.unk_D;
 
     if (val == 2) {

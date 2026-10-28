@@ -22,7 +22,7 @@ glabel InitTimedSpriteSequence
     /* 68D34 80078534 01000224 */  addiu      $v0, $zero, 0x1
     /* 68D38 80078538 300580AF */  sw         $zero, %gp_rel(D_800A35FC)($gp)
     /* 68D3C 8007853C 240580AF */  sw         $zero, %gp_rel(g_gpu_timed_sprite_elapsed_frames)($gp)
-    /* 68D40 80078540 340580AF */  sw         $zero, %gp_rel(D_800A3600)($gp)
+    /* 68D40 80078540 340580AF */  sw         $zero, %gp_rel(g_gpu_timed_sprite_sequence_phase)($gp)
     /* 68D44 80078544 1800BF8F */  lw         $ra, 0x18($sp)
     /* 68D48 80078548 1400B18F */  lw         $s1, 0x14($sp)
     /* 68D4C 8007854C 1000B08F */  lw         $s0, 0x10($sp)

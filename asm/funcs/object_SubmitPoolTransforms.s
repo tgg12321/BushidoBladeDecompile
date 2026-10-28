@@ -30,9 +30,9 @@ glabel object_SubmitPoolTransforms
     /* 20A70 80030270 02004228 */  slti       $v0, $v0, 0x2
     /* 20A74 80030274 1E004014 */  bnez       $v0, .L800302F0
     /* 20A78 80030278 EEFF8224 */   addiu     $v0, $a0, -0x12
-    /* 20A7C 8003027C 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 20A7C 8003027C 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 20A80 80030280 21082300 */  addu       $at, $at, $v1
-    /* 20A84 80030284 80EB3290 */  lbu        $s2, %lo(D_8008EB80)($at)
+    /* 20A84 80030284 80EB3290 */  lbu        $s2, %lo(g_resource_kind_entry_ids)($at)
     /* 20A88 80030288 FFFF4230 */  andi       $v0, $v0, 0xFFFF
     /* 20A8C 8003028C 0C00422C */  sltiu      $v0, $v0, 0xC
     /* 20A90 80030290 04004010 */  beqz       $v0, .L800302A4

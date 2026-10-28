@@ -1414,7 +1414,8 @@ void replay_PlayFrame(void) {
         }
         if (p->b18 & 4) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                D_8008EB80[var_11->unk_14], i * 2 + 0x8001, 0, 0);
+                g_resource_kind_entry_ids[var_11->unk_14], i * 2 + 0x8001, 0,
+                0);
         }
         if (p->b18 & 2) {
             node_QueueTableEntryNodePairUnderSlotNode(
@@ -1422,7 +1423,8 @@ void replay_PlayFrame(void) {
         }
         if (p->b18 & 8) {
             node_QueueTableEntryNodePairUnderSlotNode(
-                D_8008EB80[var_11->unk_14], i * 2 | 1, (p->b18 >> 5) & 1);
+                g_resource_kind_entry_ids[var_11->unk_14], i * 2 | 1,
+                (p->b18 >> 5) & 1);
         }
         fighter_UpdateBoneWorldData(
             var_11, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
@@ -1606,9 +1608,9 @@ s32 comb_IsCtsDsrClear(void) { return (_comb_control(0, 0, 0) & 0x180) == 0; }
 
 void comb_ReadCtsSetRts(void) {
     if (_comb_control(3, 1, 0) != 0) {
-        D_800A38A0 = 1;
+        g_comb_local_side = 1;
     } else {
-        D_800A38A0 = 0;
+        g_comb_local_side = 0;
     }
     _comb_control(3, 0, 1);
 }
@@ -1762,12 +1764,12 @@ s32 math_Popcount32(u32 arg0) {
 extern s32 D_800A36D0;
 
 /* Clears g_comb_wait_state while D_800A320C is 0. Otherwise packs bits of
- * D_800A38A0, g_comb_close_request and g_comb_wait_state, a0->type[0] and the
- * low half of a0->held into g_comb_send_buf, puts D_800A37C4 and a 16-bit xor
- * check in g_comb_send_buf_plus_0x4, and calls comb_Write8, comb_Read8 or
- * comb_WaitRead8 as D_800A3916 and D_800A38A0 select, returning early when
- * a transfer fails or after comb_ResetClose. If D_800A3916 is then 0, it
- * stores new values to a0->held and a0->type. */
+ * g_comb_local_side, g_comb_close_request and g_comb_wait_state, a0->type[0]
+ * and the low half of a0->held into g_comb_send_buf, puts D_800A37C4 and a
+ * 16-bit xor check in g_comb_send_buf_plus_0x4, and calls comb_Write8,
+ * comb_Read8 or comb_WaitRead8 as D_800A3916 and g_comb_local_side select,
+ * returning early when a transfer fails or after comb_ResetClose. If D_800A3916
+ * is then 0, it stores new values to a0->held and a0->type. */
 void comb_ExchangePad(PadState *a0) {
     /* buttons holds the input pad button word, then an outgoing button
      * halfword (this exchange's, or the previous one's from D_800A36D0)
@@ -1788,7 +1790,7 @@ void comb_ExchangePad(PadState *a0) {
 
     if (D_800A320C != 0) {
         buttons = a0->held;
-        var_4 = D_800A38A0;
+        var_4 = g_comb_local_side;
         var_7 = 0;
         var_1 = (var_4 << 31) | (g_comb_close_request << 30) |
                 ((g_comb_wait_state & 3) << 28) | (a0->type[0] << 16) |
@@ -1818,7 +1820,7 @@ void comb_ExchangePad(PadState *a0) {
                 comb_Abort();
                 return;
             }
-            if (D_800A38A0 == 1) {
+            if (g_comb_local_side == 1) {
                 if (D_800A36C0 & 0x40000000) {
                     comb_ResetClose();
                     return;
@@ -1834,7 +1836,7 @@ void comb_ExchangePad(PadState *a0) {
             }
             D_800A3908 += math_Popcount32(buttons & 0xFFFF);
             comb_Read8();
-            if (D_800A38A0 == 0) {
+            if (g_comb_local_side == 0) {
                 if (g_comb_close_request != var_7 ||
                     (D_800A36C0 & 0x40000000)) {
                     comb_ResetClose();
@@ -1852,7 +1854,7 @@ void comb_ExchangePad(PadState *a0) {
 
             D_800A38FC += math_Popcount32((u16)D_800A36C0);
             c0lo = (u16)D_800A36C0;
-            if (D_800A38A0 == 0) {
+            if (g_comb_local_side == 0) {
                 buttons = (u16)g_comb_send_buf;
                 *var_8 = (c0lo << 16) | buttons;
                 t = D_800A36C2;
@@ -1865,7 +1867,7 @@ void comb_ExchangePad(PadState *a0) {
                 t = D_800A36D2;
                 type[1] = t & 0xF;
             }
-            if (D_800A38A0 == 0) {
+            if (g_comb_local_side == 0) {
                 if (((D_800A36C0 >> 28) & 3) == 2 && g_comb_wait_state == 2) {
                     g_comb_wait_state = 0;
                 }

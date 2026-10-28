@@ -2103,8 +2103,8 @@ glabel fighter_Update
     /* 165A0 80025DA0 01000224 */   addiu     $v0, $zero, 0x1
     /* 165A4 80025DA4 06006216 */  bne        $s3, $v0, .L80025DC0
     /* 165A8 80025DA8 04000224 */   addiu     $v0, $zero, 0x4
-    /* 165AC 80025DAC 0A80033C */  lui        $v1, %hi(D_800A384C)
-    /* 165B0 80025DB0 4C386390 */  lbu        $v1, %lo(D_800A384C)($v1)
+    /* 165AC 80025DAC 0A80033C */  lui        $v1, %hi(g_fight_step_row_column)
+    /* 165B0 80025DB0 4C386390 */  lbu        $v1, %lo(g_fight_step_row_column)($v1)
     /* 165B4 80025DB4 00000000 */  nop
     /* 165B8 80025DB8 16006214 */  bne        $v1, $v0, .L80025E14
     /* 165BC 80025DBC 00000000 */   nop
@@ -2233,8 +2233,8 @@ glabel fighter_Update
     /* 1677C 80025F7C 01000424 */   addiu     $a0, $zero, 0x1
     /* 16780 80025F80 1E006416 */  bne        $s3, $a0, .L80025FFC
     /* 16784 80025F84 02000224 */   addiu     $v0, $zero, 0x2
-    /* 16788 80025F88 0A80033C */  lui        $v1, %hi(D_800A384C)
-    /* 1678C 80025F8C 4C386390 */  lbu        $v1, %lo(D_800A384C)($v1)
+    /* 16788 80025F88 0A80033C */  lui        $v1, %hi(g_fight_step_row_column)
+    /* 1678C 80025F8C 4C386390 */  lbu        $v1, %lo(g_fight_step_row_column)($v1)
     /* 16790 80025F90 04000224 */  addiu      $v0, $zero, 0x4
     /* 16794 80025F94 52006214 */  bne        $v1, $v0, .L800260E0
     /* 16798 80025F98 00000000 */   nop
@@ -2381,9 +2381,9 @@ glabel fighter_Update
     /* 169A0 800261A0 08004234 */  ori        $v0, $v0, 0x8
     /* 169A4 800261A4 DF004230 */  andi       $v0, $v0, 0xDF
     /* 169A8 800261A8 620022A2 */  sb         $v0, 0x62($s1)
-    /* 169AC 800261AC 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 169AC 800261AC 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 169B0 800261B0 21082300 */  addu       $at, $at, $v1
-    /* 169B4 800261B4 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* 169B4 800261B4 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* 169B8 800261B8 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 169BC 800261BC 21300000 */   addu      $a2, $zero, $zero
   .L800261C0:
@@ -2408,9 +2408,9 @@ glabel fighter_Update
     /* 16A04 80026204 21284500 */  addu       $a1, $v0, $a1
     /* 16A08 80026208 14002286 */  lh         $v0, 0x14($s1)
     /* 16A0C 8002620C 21300000 */  addu       $a2, $zero, $zero
-    /* 16A10 80026210 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 16A10 80026210 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 16A14 80026214 21082200 */  addu       $at, $at, $v0
-    /* 16A18 80026218 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* 16A18 80026218 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* 16A1C 8002621C C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 16A20 80026220 21380000 */   addu      $a3, $zero, $zero
   .L80026224:
@@ -2432,9 +2432,9 @@ glabel fighter_Update
     /* 16A5C 8002625C 0100A534 */  ori        $a1, $a1, 0x1
     /* 16A60 80026260 14002286 */  lh         $v0, 0x14($s1)
     /* 16A64 80026264 42310600 */  srl        $a2, $a2, 5
-    /* 16A68 80026268 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 16A68 80026268 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 16A6C 8002626C 21082200 */  addu       $at, $at, $v0
-    /* 16A70 80026270 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* 16A70 80026270 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* 16A74 80026274 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 16A78 80026278 0100C630 */   andi      $a2, $a2, 0x1
   .L8002627C:

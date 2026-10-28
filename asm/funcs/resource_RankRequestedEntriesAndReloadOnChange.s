@@ -8,8 +8,8 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39D9C 8004959C 21800000 */  addu       $s0, $zero, $zero
     /* 39DA0 800495A0 0A80053C */  lui        $a1, %hi(D_80099C50)
     /* 39DA4 800495A4 509CA524 */  addiu      $a1, $a1, %lo(D_80099C50)
-    /* 39DA8 800495A8 0F80063C */  lui        $a2, %hi(D_800EF980)
-    /* 39DAC 800495AC 80F9C624 */  addiu      $a2, $a2, %lo(D_800EF980)
+    /* 39DA8 800495A8 0F80063C */  lui        $a2, %hi(g_resource_entry_request_state)
+    /* 39DAC 800495AC 80F9C624 */  addiu      $a2, $a2, %lo(g_resource_entry_request_state)
     /* 39DB0 800495B0 2400BFAF */  sw         $ra, 0x24($sp)
   .L800495B4:
     /* 39DB4 800495B4 0000C484 */  lh         $a0, 0x0($a2)
@@ -30,8 +30,8 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39DEC 800495EC 0200C624 */   addiu     $a2, $a2, 0x2
     /* 39DF0 800495F0 21200000 */  addu       $a0, $zero, $zero
     /* 39DF4 800495F4 21800000 */  addu       $s0, $zero, $zero
-    /* 39DF8 800495F8 0F80033C */  lui        $v1, %hi(D_800EF980)
-    /* 39DFC 800495FC 80F96324 */  addiu      $v1, $v1, %lo(D_800EF980)
+    /* 39DF8 800495F8 0F80033C */  lui        $v1, %hi(g_resource_entry_request_state)
+    /* 39DFC 800495FC 80F96324 */  addiu      $v1, $v1, %lo(g_resource_entry_request_state)
   .L80049600:
     /* 39E00 80049600 00006284 */  lh         $v0, 0x0($v1)
     /* 39E04 80049604 00000000 */  nop
@@ -96,8 +96,8 @@ glabel resource_RankRequestedEntriesAndReloadOnChange
     /* 39ED0 800496D0 00000000 */   nop
     /* 39ED4 800496D4 2003848F */  lw         $a0, %gp_rel(D_800A33EC)($gp)
     /* 39ED8 800496D8 21280002 */  addu       $a1, $s0, $zero
-    /* 39EDC 800496DC 0F80063C */  lui        $a2, %hi(D_800EF980)
-    /* 39EE0 800496E0 80F9C624 */  addiu      $a2, $a2, %lo(D_800EF980)
+    /* 39EDC 800496DC 0F80063C */  lui        $a2, %hi(g_resource_entry_request_state)
+    /* 39EE0 800496E0 80F9C624 */  addiu      $a2, $a2, %lo(g_resource_entry_request_state)
     /* 39EE4 800496E4 DA16010C */  jal        resource_LoadSelectedEntriesTexturesAndSound
     /* 39EE8 800496E8 21384002 */   addu      $a3, $s2, $zero
     /* 39EEC 800496EC 48F8000C */  jal        gpu_BuildFogBlockLevels

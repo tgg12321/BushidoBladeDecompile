@@ -45,14 +45,14 @@ glabel menu_UpdateSelGridPicks
     /* 6682C 8007602C 21105400 */  addu       $v0, $v0, $s4
     /* 66830 80076030 00004484 */  lh         $a0, 0x0($v0)
     /* 66834 80076034 04180302 */  sllv       $v1, $v1, $s0
-    /* 66838 80076038 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 66838 80076038 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 6683C 8007603C 21082400 */  addu       $at, $at, $a0
-    /* 66840 80076040 E4BC2290 */  lbu        $v0, %lo(D_8009BCE4)($at)
+    /* 66840 80076040 E4BC2290 */  lbu        $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 66844 80076044 27180300 */  nor        $v1, $zero, $v1
     /* 66848 80076048 24104300 */  and        $v0, $v0, $v1
-    /* 6684C 8007604C 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 6684C 8007604C 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 66850 80076050 21082400 */  addu       $at, $at, $a0
-    /* 66854 80076054 E4BC22A0 */  sb         $v0, %lo(D_8009BCE4)($at)
+    /* 66854 80076054 E4BC22A0 */  sb         $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 66858 80076058 D1D80108 */  j          .L80076344
     /* 6685C 8007605C 00000000 */   nop
   .L80076060:
@@ -165,8 +165,8 @@ glabel menu_UpdateSelGridPicks
     /* 669DC 800761DC 0A80013C */  lui        $at, %hi(D_8009BCF8)
     /* 669E0 800761E0 21082300 */  addu       $at, $at, $v1
     /* 669E4 800761E4 F8BC2490 */  lbu        $a0, %lo(D_8009BCF8)($at)
-    /* 669E8 800761E8 0A80023C */  lui        $v0, %hi(D_8009BCE4)
-    /* 669EC 800761EC E4BC4224 */  addiu      $v0, $v0, %lo(D_8009BCE4)
+    /* 669E8 800761E8 0A80023C */  lui        $v0, %hi(g_sel_entry_availability_and_claims)
+    /* 669EC 800761EC E4BC4224 */  addiu      $v0, $v0, %lo(g_sel_entry_availability_and_claims)
     /* 669F0 800761F0 21888200 */  addu       $s1, $a0, $v0
     /* 669F4 800761F4 00002392 */  lbu        $v1, 0x0($s1)
     /* 669F8 800761F8 00000000 */  nop

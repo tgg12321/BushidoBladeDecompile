@@ -28,8 +28,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D20C 8003CA0C 10270624 */   addiu     $a2, $zero, 0x2710
     /* 2D210 8003CA10 6A1B010C */  jal        gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue
     /* 2D214 8003CA14 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2D218 8003CA18 0A80023C */  lui        $v0, %hi(D_800A3929)
-    /* 2D21C 8003CA1C 29394290 */  lbu        $v0, %lo(D_800A3929)($v0)
+    /* 2D218 8003CA18 0A80023C */  lui        $v0, %hi(g_fight_choice_confirm_delay)
+    /* 2D21C 8003CA1C 29394290 */  lbu        $v0, %lo(g_fight_choice_confirm_delay)($v0)
     /* 2D220 8003CA20 00000000 */  nop
     /* 2D224 8003CA24 48004014 */  bnez       $v0, .L8003CB48
     /* 2D228 8003CA28 01000424 */   addiu     $a0, $zero, 0x1
@@ -106,8 +106,8 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D330 8003CB30 3C000324 */   addiu     $v1, $zero, 0x3C
     /* 2D334 8003CB34 01000324 */  addiu      $v1, $zero, 0x1
   .L8003CB38:
-    /* 2D338 8003CB38 0A80013C */  lui        $at, %hi(D_800A3929)
-    /* 2D33C 8003CB3C 293923A0 */  sb         $v1, %lo(D_800A3929)($at)
+    /* 2D338 8003CB38 0A80013C */  lui        $at, %hi(g_fight_choice_confirm_delay)
+    /* 2D33C 8003CB3C 293923A0 */  sb         $v1, %lo(g_fight_choice_confirm_delay)($at)
     /* 2D340 8003CB40 2FF30008 */  j          .L8003CCBC
     /* 2D344 8003CB44 00000000 */   nop
   .L8003CB48:
@@ -132,12 +132,12 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D38C 8003CB8C 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
     /* 2D390 8003CB90 B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
   .L8003CB94:
-    /* 2D394 8003CB94 0A80023C */  lui        $v0, %hi(D_800A3929)
-    /* 2D398 8003CB98 29394290 */  lbu        $v0, %lo(D_800A3929)($v0)
+    /* 2D394 8003CB94 0A80023C */  lui        $v0, %hi(g_fight_choice_confirm_delay)
+    /* 2D398 8003CB98 29394290 */  lbu        $v0, %lo(g_fight_choice_confirm_delay)($v0)
     /* 2D39C 8003CB9C 00000000 */  nop
     /* 2D3A0 8003CBA0 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2D3A4 8003CBA4 0A80013C */  lui        $at, %hi(D_800A3929)
-    /* 2D3A8 8003CBA8 293922A0 */  sb         $v0, %lo(D_800A3929)($at)
+    /* 2D3A4 8003CBA4 0A80013C */  lui        $at, %hi(g_fight_choice_confirm_delay)
+    /* 2D3A8 8003CBA8 293922A0 */  sb         $v0, %lo(g_fight_choice_confirm_delay)($at)
     /* 2D3AC 8003CBAC FF004230 */  andi       $v0, $v0, 0xFF
     /* 2D3B0 8003CBB0 3C00422C */  sltiu      $v0, $v0, 0x3C
     /* 2D3B4 8003CBB4 41004014 */  bnez       $v0, .L8003CCBC

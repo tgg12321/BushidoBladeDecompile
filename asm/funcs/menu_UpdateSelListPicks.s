@@ -179,14 +179,14 @@ glabel menu_UpdateSelListPicks
     /* 6737C 80076B7C 04000324 */  addiu      $v1, $zero, 0x4
     /* 67380 80076B80 00004484 */  lh         $a0, 0x0($v0)
     /* 67384 80076B84 04180302 */  sllv       $v1, $v1, $s0
-    /* 67388 80076B88 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 67388 80076B88 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 6738C 80076B8C 21082400 */  addu       $at, $at, $a0
-    /* 67390 80076B90 E4BC2290 */  lbu        $v0, %lo(D_8009BCE4)($at)
+    /* 67390 80076B90 E4BC2290 */  lbu        $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 67394 80076B94 27180300 */  nor        $v1, $zero, $v1
     /* 67398 80076B98 24104300 */  and        $v0, $v0, $v1
-    /* 6739C 80076B9C 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 6739C 80076B9C 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 673A0 80076BA0 21082400 */  addu       $at, $at, $a0
-    /* 673A4 80076BA4 E4BC22A0 */  sb         $v0, %lo(D_8009BCE4)($at)
+    /* 673A4 80076BA4 E4BC22A0 */  sb         $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 673A8 80076BA8 80101000 */  sll        $v0, $s0, 2
     /* 673AC 80076BAC 21105000 */  addu       $v0, $v0, $s0
     /* 673B0 80076BB0 D405838F */  lw         $v1, %gp_rel(g_sel_screen_work)($gp)

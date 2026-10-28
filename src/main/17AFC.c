@@ -69,7 +69,7 @@ void motion_SetFixedChannelBlock(MotionFrame *motion_frame) {
 }
 
 /* fighter_AccumulateBoneGroupFlagWhenGameModeZero ORs limb bits into
- * `*(&D_800A376A + a0)`; its only caller passes a0 = 0
+ * `*(&g_fight_bone_group_tim_requests + a0)`; its only caller passes a0 = 0
  * (fighter_ResolveBoneHit), so D_800A376B (written 0 elsewhere, never read) is
  * not reached from here. FAKE (Q97): two u8 scalars; as u8[2],
  * fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState /
@@ -86,31 +86,31 @@ void fighter_AccumulateBoneGroupFlagWhenGameModeZero(s32 a0, s32 a1) {
     case 3:
     case 4:
     case 5:
-        *(&D_800A376A + a0) |= 0x10; /* FAKE: Q97 */
+        *(&g_fight_bone_group_tim_requests + a0) |= 0x10; /* FAKE: Q97 */
         break;
     case 6:
     case 7:
     case 8:
     case 9:
-        *(&D_800A376A + a0) |= 0x01; /* FAKE: Q97 */
+        *(&g_fight_bone_group_tim_requests + a0) |= 0x01; /* FAKE: Q97 */
         break;
     case 10:
     case 11:
     case 12:
     case 13:
-        *(&D_800A376A + a0) |= 0x02; /* FAKE: Q97 */
+        *(&g_fight_bone_group_tim_requests + a0) |= 0x02; /* FAKE: Q97 */
         break;
     case 14:
     case 15:
     case 16:
     case 17:
-        *(&D_800A376A + a0) |= 0x04; /* FAKE: Q97 */
+        *(&g_fight_bone_group_tim_requests + a0) |= 0x04; /* FAKE: Q97 */
         break;
     case 18:
     case 19:
     case 20:
     case 21:
-        *(&D_800A376A + a0) |= 0x08; /* FAKE: Q97 */
+        *(&g_fight_bone_group_tim_requests + a0) |= 0x08; /* FAKE: Q97 */
         break;
     }
 }
@@ -3759,7 +3759,7 @@ void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     MulMatrix0(mat, &arg0->mtx, &mtx);
     math_MatrixToAngles(&mtx, var_1);
 
-    lookup = D_8008EB80[arg0->kind];
+    lookup = g_resource_kind_entry_ids[arg0->kind];
     node_QueueEntryNodesFromTransformOrUpdatedSlotNode(lookup, 1, mac, var_1);
     replay_RecordModelDraw(arg0->slot, lookup, mac, var_1);
 }
@@ -3782,7 +3782,7 @@ void object_SubmitPoolTransforms(void) {
         if (obj->moving_ticks < 2) {
             continue;
         }
-        lookup = D_8008EB80[kind];
+        lookup = g_resource_kind_entry_ids[kind];
         if (kind >= 0x12 && kind < 0x1E) {
             lookup = obj->unk_0B;
         } else if (kind == 0xE && obj->unk_05 == 2) {
@@ -4770,7 +4770,7 @@ void fight_RecordReplayEventAndDispatchSoundOrEffect(
     }
 
     if (g_fight_mode_selector == 3 && arg0 == 1 && (u32)(arg1 - 0x2D) < 2) {
-        s0 += D_8008EBCC[D_800A384C];
+        s0 += D_8008EBCC[g_fight_step_row_column];
     }
 
     replay_RecordEvent(arg0, arg1, arg2, arg3);
@@ -4930,9 +4930,9 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
          (u32)(kind - 0x19) < 2 || kind == 0x26 || (u32)(kind - 0x36) < 2 ||
          (u32)(kind - 0x38) < 2 || (u32)(kind - 0x3A) < 2 || kind == 0x47)) {
         if (obj->index == 1) {
-            base += D_8008EBCC[D_800A384C];
+            base += D_8008EBCC[g_fight_step_row_column];
         } else {
-            base2 += D_8008EBCC[D_800A384C];
+            base2 += D_8008EBCC[g_fight_step_row_column];
         }
     }
 
@@ -5414,7 +5414,7 @@ void fight_BuildOpponentOrder(void) {
            the test becomes `(bits >> i) & 1` (srav/andi instead of the
            target's `li a2,1` + sllv/and), score 4. */
         var_5 = 1;
-        ptr = D_801077B0;
+        ptr = g_fight_opponent_order;
         do {
             if (bits & (var_5 << i)) {
                 *ptr = i;
@@ -5431,9 +5431,9 @@ void fight_BuildOpponentOrder(void) {
         idx1 = rand() % count;
         {
             s32 idx2 = rand() % count;
-            s32 tmp = D_801077B0[idx1];
-            D_801077B0[idx1] = D_801077B0[idx2];
-            D_801077B0[idx2] = tmp;
+            s32 tmp = g_fight_opponent_order[idx1];
+            g_fight_opponent_order[idx1] = g_fight_opponent_order[idx2];
+            g_fight_opponent_order[idx2] = tmp;
         }
     } while (i < 0x6C);
 
@@ -5459,7 +5459,7 @@ void fight_BuildOpponentOrder(void) {
         if (count >= 0xB) {
             i = count;
             do {
-                D_801077B0[i] = D_801077B0[i - 1];
+                g_fight_opponent_order[i] = g_fight_opponent_order[i - 1];
                 i--;
             } while (i >= 0xB);
             {
@@ -5467,18 +5467,18 @@ void fight_BuildOpponentOrder(void) {
                 if (sp[0] & 0x20) {
                     dir = 5;
                 }
-                D_801077B0[10] = dir;
+                g_fight_opponent_order[10] = dir;
             }
         } else {
             s32 dir = 0x10;
             if (sp[0] & 0x20) {
                 dir = 5;
             }
-            D_801077B0[count] = dir;
+            g_fight_opponent_order[count] = dir;
         }
         count++;
         if (sp[1] != 0) {
-            u8 *a1 = &D_801077B0[count];
+            u8 *a1 = &g_fight_opponent_order[count];
             count++;
             {
                 s32 dir = 0x10;
@@ -5506,7 +5506,7 @@ void fight_BuildOpponentOrder(void) {
         }
         goto set_count;
     append_last:
-        D_801077B0[count] = val;
+        g_fight_opponent_order[count] = val;
         count++;
     }
 set_count:
@@ -5536,7 +5536,7 @@ void fight_AdvanceOpponentOrder(void) {
         u8 a1;
         D_800A376B = 0;
         D_800A3783 = a0 + 1;
-        a1 = D_801077B0[a0];
+        a1 = g_fight_opponent_order[a0];
         g_fight_config.unk_4[1] = (&D_8008D55C)[a1];
         if (a1 == 5) {
             g_fight_config.unk_4[3] = 6;
@@ -5651,7 +5651,7 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
         g_fight_step_table_next_row = state + 1;
         D_800A376B = 0;
         entry = table[0];
-        D_800A384C = entry;
+        g_fight_step_row_column = entry;
         row = g_fighter_group_flags
                   [g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]]] ==
               0;
@@ -5786,7 +5786,7 @@ void fight_AdvanceMatch(void) {
         D_800A37E1 = 0;
         D_800A36E8 = 0;
         D_800A38B8 = 0;
-        D_800A3920 = 0;
+        g_fight_point_award_phase_timer = 0;
         for (v1 = 0; v1 < 2; v1++) {
             g_fight_config.unk_4[v1] = D_801027A0[g_fight_match_cursor][v1];
             g_fight_config.unk_4[2 + v1] = D_801027D8[g_fight_match_cursor][v1];

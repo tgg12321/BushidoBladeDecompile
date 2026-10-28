@@ -80,8 +80,8 @@ glabel comb_Connect
     /* 2B5EC 8003ADEC 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B5F0 8003ADF0 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 2B5F4 8003ADF4 00000000 */   nop
-    /* 2B5F8 8003ADF8 0A80023C */  lui        $v0, %hi(D_800A38A0)
-    /* 2B5FC 8003ADFC A038428C */  lw         $v0, %lo(D_800A38A0)($v0)
+    /* 2B5F8 8003ADF8 0A80023C */  lui        $v0, %hi(g_comb_local_side)
+    /* 2B5FC 8003ADFC A038428C */  lw         $v0, %lo(g_comb_local_side)($v0)
     /* 2B600 8003AE00 00000000 */  nop
     /* 2B604 8003AE04 04004014 */  bnez       $v0, .L8003AE18
     /* 2B608 8003AE08 00000000 */   nop

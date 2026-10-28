@@ -6,7 +6,7 @@ glabel DrawWhiteTileAndSheetsAndResetFlowOnPadMatch
     /* 68070 80077870 01000324 */  addiu      $v1, $zero, 0x1
     /* 68074 80077874 03004314 */  bne        $v0, $v1, .L80077884
     /* 68078 80077878 21100000 */   addu      $v0, $zero, $zero
-    /* 6807C 8007787C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
+    /* 6807C 8007787C 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
     /* 68080 80077880 01000224 */  addiu      $v0, $zero, 0x1
   .L80077884:
     /* 68084 80077884 1000BF8F */  lw         $ra, 0x10($sp)

@@ -16,8 +16,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24CEC 800344EC 08004000 */  jr         $v0
     /* 24CF0 800344F0 00000000 */   nop
   jlabel .L800344F4
-    /* 24CF4 800344F4 0A80033C */  lui        $v1, %hi(D_800A38A0)
-    /* 24CF8 800344F8 A038638C */  lw         $v1, %lo(D_800A38A0)($v1)
+    /* 24CF4 800344F4 0A80033C */  lui        $v1, %hi(g_comb_local_side)
+    /* 24CF8 800344F8 A038638C */  lw         $v1, %lo(g_comb_local_side)($v1)
     /* 24CFC 800344FC 01000224 */  addiu      $v0, $zero, 0x1
     /* 24D00 80034500 1080013C */  lui        $at, %hi(g_fight_config + 0xE)
     /* 24D04 80034504 862722A0 */  sb         $v0, %lo(g_fight_config + 0xE)($at)
@@ -26,8 +26,8 @@ glabel ApplyPendingConfigAndInitializeMode
     /* 24D10 80034510 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)
     /* 24D14 80034514 343820A4 */  sh         $zero, %lo(g_main_loop_handler_index)($at)
     /* 24D18 80034518 2B180300 */  sltu       $v1, $zero, $v1
-    /* 24D1C 8003451C 0A80013C */  lui        $at, %hi(D_800A36F6)
-    /* 24D20 80034520 F63623A4 */  sh         $v1, %lo(D_800A36F6)($at)
+    /* 24D1C 8003451C 0A80013C */  lui        $at, %hi(g_fight_tracked_fighter_index)
+    /* 24D20 80034520 F63623A4 */  sh         $v1, %lo(g_fight_tracked_fighter_index)($at)
     /* 24D24 80034524 B6D10008 */  j          .L800346D8
     /* 24D28 80034528 00000000 */   nop
   jlabel .L8003452C

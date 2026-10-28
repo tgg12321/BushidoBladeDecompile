@@ -86,8 +86,8 @@ glabel gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
     /* 2E508 8003DD08 0010A228 */  slti       $v0, $a1, 0x1000
     /* 2E50C 8003DD0C 15004010 */  beqz       $v0, .L8003DD64
     /* 2E510 8003DD10 80200500 */   sll       $a0, $a1, 2
-    /* 2E514 8003DD14 0A80023C */  lui        $v0, %hi(D_800A378C)
-    /* 2E518 8003DD18 8C37428C */  lw         $v0, %lo(D_800A378C)($v0)
+    /* 2E514 8003DD14 0A80023C */  lui        $v0, %hi(g_gpu_ot_offset_ptr)
+    /* 2E518 8003DD18 8C37428C */  lw         $v0, %lo(g_gpu_ot_offset_ptr)($v0)
     /* 2E51C 8003DD1C 0000038E */  lw         $v1, 0x0($s0)
     /* 2E520 8003DD20 21208200 */  addu       $a0, $a0, $v0
     /* 2E524 8003DD24 0000828C */  lw         $v0, 0x0($a0)
@@ -121,8 +121,8 @@ glabel gpu_QueueDepthSpacedMovesAndLinkTerminalPacket
   .L8003DD8C:
     /* 2E58C 8003DD8C FFFF8434 */  ori        $a0, $a0, (0xFFFFFF & 0xFFFF)
     /* 2E590 8003DD90 00FF063C */  lui        $a2, (0xFF000000 >> 16)
-    /* 2E594 8003DD94 0A80053C */  lui        $a1, %hi(D_800A378C)
-    /* 2E598 8003DD98 8C37A58C */  lw         $a1, %lo(D_800A378C)($a1)
+    /* 2E594 8003DD94 0A80053C */  lui        $a1, %hi(g_gpu_ot_offset_ptr)
+    /* 2E598 8003DD98 8C37A58C */  lw         $a1, %lo(g_gpu_ot_offset_ptr)($a1)
     /* 2E59C 8003DD9C 0000038E */  lw         $v1, 0x0($s0)
     /* 2E5A0 8003DDA0 EC3FA28C */  lw         $v0, 0x3FEC($a1)
     /* 2E5A4 8003DDA4 24186600 */  and        $v1, $v1, $a2

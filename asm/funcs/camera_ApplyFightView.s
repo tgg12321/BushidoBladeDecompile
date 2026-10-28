@@ -81,12 +81,12 @@ glabel camera_ApplyFightView
     /* ED20 8001E520 00000000 */  nop
     /* ED24 8001E524 0C004014 */  bnez       $v0, .L8001E558
     /* ED28 8001E528 21200000 */   addu      $a0, $zero, $zero
-    /* ED2C 8001E52C 0A80043C */  lui        $a0, %hi(D_800A36F6)
-    /* ED30 8001E530 F6368484 */  lh         $a0, %lo(D_800A36F6)($a0)
+    /* ED2C 8001E52C 0A80043C */  lui        $a0, %hi(g_fight_tracked_fighter_index)
+    /* ED30 8001E530 F6368484 */  lh         $a0, %lo(g_fight_tracked_fighter_index)($a0)
     /* ED34 8001E534 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* ED38 8001E538 01000524 */   addiu     $a1, $zero, 0x1
-    /* ED3C 8001E53C 0A80043C */  lui        $a0, %hi(D_800A36F6)
-    /* ED40 8001E540 F6368484 */  lh         $a0, %lo(D_800A36F6)($a0)
+    /* ED3C 8001E53C 0A80043C */  lui        $a0, %hi(g_fight_tracked_fighter_index)
+    /* ED40 8001E540 F6368484 */  lh         $a0, %lo(g_fight_tracked_fighter_index)($a0)
     /* ED44 8001E544 21280000 */  addu       $a1, $zero, $zero
     /* ED48 8001E548 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* ED4C 8001E54C 0100842C */   sltiu     $a0, $a0, 0x1

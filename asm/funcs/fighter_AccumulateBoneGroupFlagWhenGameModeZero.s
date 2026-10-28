@@ -13,39 +13,39 @@ glabel fighter_AccumulateBoneGroupFlagWhenGameModeZero
     /* 17BB8 800273B8 08004000 */  jr         $v0
     /* 17BBC 800273BC 00000000 */   nop
   jlabel .L800273C0
-    /* 17BC0 800273C0 0A80013C */  lui        $at, %hi(D_800A376A)
+    /* 17BC0 800273C0 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 17BC4 800273C4 21082400 */  addu       $at, $at, $a0
-    /* 17BC8 800273C8 6A372290 */  lbu        $v0, %lo(D_800A376A)($at)
+    /* 17BC8 800273C8 6A372290 */  lbu        $v0, %lo(g_fight_bone_group_tim_requests)($at)
     /* 17BCC 800273CC 099D0008 */  j          .L80027424
     /* 17BD0 800273D0 10004234 */   ori       $v0, $v0, 0x10
   jlabel .L800273D4
-    /* 17BD4 800273D4 0A80013C */  lui        $at, %hi(D_800A376A)
+    /* 17BD4 800273D4 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 17BD8 800273D8 21082400 */  addu       $at, $at, $a0
-    /* 17BDC 800273DC 6A372290 */  lbu        $v0, %lo(D_800A376A)($at)
+    /* 17BDC 800273DC 6A372290 */  lbu        $v0, %lo(g_fight_bone_group_tim_requests)($at)
     /* 17BE0 800273E0 099D0008 */  j          .L80027424
     /* 17BE4 800273E4 01004234 */   ori       $v0, $v0, 0x1
   jlabel .L800273E8
-    /* 17BE8 800273E8 0A80013C */  lui        $at, %hi(D_800A376A)
+    /* 17BE8 800273E8 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 17BEC 800273EC 21082400 */  addu       $at, $at, $a0
-    /* 17BF0 800273F0 6A372290 */  lbu        $v0, %lo(D_800A376A)($at)
+    /* 17BF0 800273F0 6A372290 */  lbu        $v0, %lo(g_fight_bone_group_tim_requests)($at)
     /* 17BF4 800273F4 099D0008 */  j          .L80027424
     /* 17BF8 800273F8 02004234 */   ori       $v0, $v0, 0x2
   jlabel .L800273FC
-    /* 17BFC 800273FC 0A80013C */  lui        $at, %hi(D_800A376A)
+    /* 17BFC 800273FC 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 17C00 80027400 21082400 */  addu       $at, $at, $a0
-    /* 17C04 80027404 6A372290 */  lbu        $v0, %lo(D_800A376A)($at)
+    /* 17C04 80027404 6A372290 */  lbu        $v0, %lo(g_fight_bone_group_tim_requests)($at)
     /* 17C08 80027408 099D0008 */  j          .L80027424
     /* 17C0C 8002740C 04004234 */   ori       $v0, $v0, 0x4
   jlabel .L80027410
-    /* 17C10 80027410 0A80013C */  lui        $at, %hi(D_800A376A)
+    /* 17C10 80027410 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 17C14 80027414 21082400 */  addu       $at, $at, $a0
-    /* 17C18 80027418 6A372290 */  lbu        $v0, %lo(D_800A376A)($at)
+    /* 17C18 80027418 6A372290 */  lbu        $v0, %lo(g_fight_bone_group_tim_requests)($at)
     /* 17C1C 8002741C 00000000 */  nop
     /* 17C20 80027420 08004234 */  ori        $v0, $v0, 0x8
   .L80027424:
-    /* 17C24 80027424 0A80013C */  lui        $at, %hi(D_800A376A)
+    /* 17C24 80027424 0A80013C */  lui        $at, %hi(g_fight_bone_group_tim_requests)
     /* 17C28 80027428 21082400 */  addu       $at, $at, $a0
-    /* 17C2C 8002742C 6A3722A0 */  sb         $v0, %lo(D_800A376A)($at)
+    /* 17C2C 8002742C 6A3722A0 */  sb         $v0, %lo(g_fight_bone_group_tim_requests)($at)
   .L80027430:
     /* 17C30 80027430 0800E003 */  jr         $ra
     /* 17C34 80027434 00000000 */   nop

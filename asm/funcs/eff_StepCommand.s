@@ -18,7 +18,7 @@ glabel eff_StepCommand
     /* 513B0 80060BB0 00000000 */  nop
     /* 513B4 80060BB4 040082A4 */  sh         $v0, 0x4($a0)
     /* 513B8 80060BB8 0800628C */  lw         $v0, 0x8($v1)
-    /* 513BC 80060BBC A403858F */  lw         $a1, %gp_rel(D_800A3470)($gp)
+    /* 513BC 80060BBC A403858F */  lw         $a1, %gp_rel(g_eff_view_origin)($gp)
     /* 513C0 80060BC0 0000428C */  lw         $v0, 0x0($v0)
     /* 513C4 80060BC4 00000000 */  nop
     /* 513C8 80060BC8 0000A2AC */  sw         $v0, 0x0($a1)

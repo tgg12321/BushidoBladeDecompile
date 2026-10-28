@@ -44,7 +44,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
             u = u + 0x80;
         }
         SetDrawMove(g_gpu_draw_move_cursor, &buf, u, v);
-        addPrim(&D_800A378C[0x3FFC / 4], g_gpu_draw_move_cursor);
+        addPrim(&g_gpu_ot_offset_ptr[0x3FFC / 4], g_gpu_draw_move_cursor);
         g_gpu_draw_move_cursor++;
     }
 }

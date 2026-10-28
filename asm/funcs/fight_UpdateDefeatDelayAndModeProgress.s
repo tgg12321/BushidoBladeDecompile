@@ -208,8 +208,8 @@ glabel fight_UpdateDefeatDelayAndModeProgress
   .L8001CBD4:
     /* D3D4 8001CBD4 4771000C */  jal        func_8001C51C
     /* D3D8 8001CBD8 00000000 */   nop
-    /* D3DC 8001CBDC 0A80023C */  lui        $v0, %hi(D_800A384C)
-    /* D3E0 8001CBE0 4C384290 */  lbu        $v0, %lo(D_800A384C)($v0)
+    /* D3DC 8001CBDC 0A80023C */  lui        $v0, %hi(g_fight_step_row_column)
+    /* D3E0 8001CBE0 4C384290 */  lbu        $v0, %lo(g_fight_step_row_column)($v0)
     /* D3E4 8001CBE4 00000000 */  nop
     /* D3E8 8001CBE8 0400422C */  sltiu      $v0, $v0, 0x4
     /* D3EC 8001CBEC 48004010 */  beqz       $v0, .L8001CD10

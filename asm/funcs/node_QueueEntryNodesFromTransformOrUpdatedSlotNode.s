@@ -6,8 +6,8 @@ glabel node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 39F28 80049728 2198A000 */  addu       $s3, $a1, $zero
     /* 39F2C 8004972C 2800B4AF */  sw         $s4, 0x28($sp)
     /* 39F30 80049730 21A0C000 */  addu       $s4, $a2, $zero
-    /* 39F34 80049734 0F80023C */  lui        $v0, %hi(D_800EF980)
-    /* 39F38 80049738 80F94224 */  addiu      $v0, $v0, %lo(D_800EF980)
+    /* 39F34 80049734 0F80023C */  lui        $v0, %hi(g_resource_entry_request_state)
+    /* 39F38 80049738 80F94224 */  addiu      $v0, $v0, %lo(g_resource_entry_request_state)
     /* 39F3C 8004973C 40181600 */  sll        $v1, $s6, 1
     /* 39F40 80049740 1800B0AF */  sw         $s0, 0x18($sp)
     /* 39F44 80049744 21806200 */  addu       $s0, $v1, $v0
@@ -161,9 +161,9 @@ glabel node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 3A188 80049988 1B006212 */  beq        $s3, $v0, .L800499F8
     /* 3A18C 8004998C 68005226 */   addiu     $s2, $s2, 0x68
     /* 3A190 80049990 40101600 */  sll        $v0, $s6, 1
-    /* 3A194 80049994 0F80013C */  lui        $at, %hi(D_800EF980)
+    /* 3A194 80049994 0F80013C */  lui        $at, %hi(g_resource_entry_request_state)
     /* 3A198 80049998 21082200 */  addu       $at, $at, $v0
-    /* 3A19C 8004999C 80F92384 */  lh         $v1, %lo(D_800EF980)($at)
+    /* 3A19C 8004999C 80F92384 */  lh         $v1, %lo(g_resource_entry_request_state)($at)
     /* 3A1A0 800499A0 03000224 */  addiu      $v0, $zero, 0x3
     /* 3A1A4 800499A4 000042A2 */  sb         $v0, 0x0($s2)
     /* 3A1A8 800499A8 010040A2 */  sb         $zero, 0x1($s2)

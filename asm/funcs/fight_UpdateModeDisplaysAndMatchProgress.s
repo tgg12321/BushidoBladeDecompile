@@ -158,8 +158,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D8A0 8001D0A0 B43823AC */  sw         $v1, %lo(g_prim_buf_cursor)($at)
     /* D8A4 8001D0A4 75018214 */  bne        $a0, $v0, .L8001D67C
     /* D8A8 8001D0A8 00000000 */   nop
-    /* D8AC 8001D0AC 0A80023C */  lui        $v0, %hi(D_800A38B0)
-    /* D8B0 8001D0B0 B0384290 */  lbu        $v0, %lo(D_800A38B0)($v0)
+    /* D8AC 8001D0AC 0A80023C */  lui        $v0, %hi(g_fight_result_subject_index)
+    /* D8B0 8001D0B0 B0384290 */  lbu        $v0, %lo(g_fight_result_subject_index)($v0)
     /* D8B4 8001D0B4 0A80013C */  lui        $at, %hi(D_800A37E1)
     /* D8B8 8001D0B8 E13720A0 */  sb         $zero, %lo(D_800A37E1)($at)
     /* D8BC 8001D0BC 7D005010 */  beq        $v0, $s0, .L8001D2B4
@@ -167,8 +167,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D8C4 8001D0C4 7F000524 */  addiu      $a1, $zero, 0x7F
     /* D8C8 8001D0C8 9471010C */  jal        snd_QueueSound
     /* D8CC 8001D0CC 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* D8D0 8001D0D0 0A80023C */  lui        $v0, %hi(D_800A38B0)
-    /* D8D4 8001D0D4 B0384290 */  lbu        $v0, %lo(D_800A38B0)($v0)
+    /* D8D0 8001D0D0 0A80023C */  lui        $v0, %hi(g_fight_result_subject_index)
+    /* D8D4 8001D0D4 B0384290 */  lbu        $v0, %lo(g_fight_result_subject_index)($v0)
     /* D8D8 8001D0D8 0A80013C */  lui        $at, %hi(D_800A38AA)
     /* D8DC 8001D0DC 21082200 */  addu       $at, $at, $v0
     /* D8E0 8001D0E0 AA382390 */  lbu        $v1, %lo(D_800A38AA)($at)
@@ -194,8 +194,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D92C 8001D12C 3C000324 */  addiu      $v1, $zero, 0x3C
     /* D930 8001D130 52014314 */  bne        $v0, $v1, .L8001D67C
     /* D934 8001D134 00000000 */   nop
-    /* D938 8001D138 0A80033C */  lui        $v1, %hi(D_800A38B0)
-    /* D93C 8001D13C B0386390 */  lbu        $v1, %lo(D_800A38B0)($v1)
+    /* D938 8001D138 0A80033C */  lui        $v1, %hi(g_fight_result_subject_index)
+    /* D93C 8001D13C B0386390 */  lbu        $v1, %lo(g_fight_result_subject_index)($v1)
     /* D940 8001D140 0A80013C */  lui        $at, %hi(D_800A38B8)
     /* D944 8001D144 B83820A0 */  sb         $zero, %lo(D_800A38B8)($at)
     /* D948 8001D148 0A80013C */  lui        $at, %hi(D_800A38AA)
@@ -212,19 +212,19 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* D974 8001D174 00000000 */  nop
     /* D978 8001D178 01004224 */  addiu      $v0, $v0, 0x1
     /* D97C 8001D17C 000062A0 */  sb         $v0, 0x0($v1)
-    /* D980 8001D180 0A80023C */  lui        $v0, %hi(D_800A38B0)
-    /* D984 8001D184 B0384290 */  lbu        $v0, %lo(D_800A38B0)($v0)
+    /* D980 8001D180 0A80023C */  lui        $v0, %hi(g_fight_result_subject_index)
+    /* D984 8001D184 B0384290 */  lbu        $v0, %lo(g_fight_result_subject_index)($v0)
     /* D988 8001D188 0A80013C */  lui        $at, %hi(D_800A38AA)
     /* D98C 8001D18C 21082200 */  addu       $at, $at, $v0
     /* D990 8001D190 AA3820A0 */  sb         $zero, %lo(D_800A38AA)($at)
     /* D994 8001D194 5A000224 */  addiu      $v0, $zero, 0x5A
-    /* D998 8001D198 0A80013C */  lui        $at, %hi(D_800A3920)
-    /* D99C 8001D19C 203922A0 */  sb         $v0, %lo(D_800A3920)($at)
+    /* D998 8001D198 0A80013C */  lui        $at, %hi(g_fight_point_award_phase_timer)
+    /* D99C 8001D19C 203922A0 */  sb         $v0, %lo(g_fight_point_award_phase_timer)($at)
     /* D9A0 8001D1A0 9F750008 */  j          .L8001D67C
     /* D9A4 8001D1A4 00000000 */   nop
   .L8001D1A8:
-    /* D9A8 8001D1A8 0A80023C */  lui        $v0, %hi(D_800A3920)
-    /* D9AC 8001D1AC 20394290 */  lbu        $v0, %lo(D_800A3920)($v0)
+    /* D9A8 8001D1A8 0A80023C */  lui        $v0, %hi(g_fight_point_award_phase_timer)
+    /* D9AC 8001D1AC 20394290 */  lbu        $v0, %lo(g_fight_point_award_phase_timer)($v0)
     /* D9B0 8001D1B0 00000000 */  nop
     /* D9B4 8001D1B4 46004010 */  beqz       $v0, .L8001D2D0
     /* D9B8 8001D1B8 01000424 */   addiu     $a0, $zero, 0x1
@@ -238,14 +238,14 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
   .L8001D1D8:
     /* D9D8 8001D1D8 83100200 */  sra        $v0, $v0, 2
     /* D9DC 8001D1DC 80100200 */  sll        $v0, $v0, 2
-    /* D9E0 8001D1E0 0A80043C */  lui        $a0, %hi(D_800A3920)
-    /* D9E4 8001D1E4 20398490 */  lbu        $a0, %lo(D_800A3920)($a0)
+    /* D9E0 8001D1E0 0A80043C */  lui        $a0, %hi(g_fight_point_award_phase_timer)
+    /* D9E4 8001D1E4 20398490 */  lbu        $a0, %lo(g_fight_point_award_phase_timer)($a0)
     /* D9E8 8001D1E8 0A80033C */  lui        $v1, %hi(g_prim_buf_cursor)
     /* D9EC 8001D1EC B438638C */  lw         $v1, %lo(g_prim_buf_cursor)($v1)
     /* D9F0 8001D1F0 01008424 */  addiu      $a0, $a0, 0x1
     /* D9F4 8001D1F4 21186200 */  addu       $v1, $v1, $v0
-    /* D9F8 8001D1F8 0A80013C */  lui        $at, %hi(D_800A3920)
-    /* D9FC 8001D1FC 203924A0 */  sb         $a0, %lo(D_800A3920)($at)
+    /* D9F8 8001D1F8 0A80013C */  lui        $at, %hi(g_fight_point_award_phase_timer)
+    /* D9FC 8001D1FC 203924A0 */  sb         $a0, %lo(g_fight_point_award_phase_timer)($at)
     /* DA00 8001D200 FF008430 */  andi       $a0, $a0, 0xFF
     /* DA04 8001D204 1E000224 */  addiu      $v0, $zero, 0x1E
     /* DA08 8001D208 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)
@@ -256,8 +256,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DA1C 8001D21C 9471010C */  jal        snd_QueueSound
     /* DA20 8001D220 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8001D224:
-    /* DA24 8001D224 0A80033C */  lui        $v1, %hi(D_800A3920)
-    /* DA28 8001D228 20396390 */  lbu        $v1, %lo(D_800A3920)($v1)
+    /* DA24 8001D224 0A80033C */  lui        $v1, %hi(g_fight_point_award_phase_timer)
+    /* DA28 8001D228 20396390 */  lbu        $v1, %lo(g_fight_point_award_phase_timer)($v1)
     /* DA2C 8001D22C 69000224 */  addiu      $v0, $zero, 0x69
     /* DA30 8001D230 08006214 */  bne        $v1, $v0, .L8001D254
     /* DA34 8001D234 5A000224 */   addiu     $v0, $zero, 0x5A
@@ -265,8 +265,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DA3C 8001D23C 7F000524 */  addiu      $a1, $zero, 0x7F
     /* DA40 8001D240 9471010C */  jal        snd_QueueSound
     /* DA44 8001D244 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* DA48 8001D248 0A80033C */  lui        $v1, %hi(D_800A3920)
-    /* DA4C 8001D24C 20396390 */  lbu        $v1, %lo(D_800A3920)($v1)
+    /* DA48 8001D248 0A80033C */  lui        $v1, %hi(g_fight_point_award_phase_timer)
+    /* DA4C 8001D24C 20396390 */  lbu        $v1, %lo(g_fight_point_award_phase_timer)($v1)
     /* DA50 8001D250 5A000224 */  addiu      $v0, $zero, 0x5A
   .L8001D254:
     /* DA54 8001D254 03006210 */  beq        $v1, $v0, .L8001D264
@@ -274,10 +274,10 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DA5C 8001D25C 07016214 */  bne        $v1, $v0, .L8001D67C
     /* DA60 8001D260 00000000 */   nop
   .L8001D264:
-    /* DA64 8001D264 0A80023C */  lui        $v0, %hi(D_800A38B0)
-    /* DA68 8001D268 B0384290 */  lbu        $v0, %lo(D_800A38B0)($v0)
-    /* DA6C 8001D26C 0A80013C */  lui        $at, %hi(D_800A3920)
-    /* DA70 8001D270 203920A0 */  sb         $zero, %lo(D_800A3920)($at)
+    /* DA64 8001D264 0A80023C */  lui        $v0, %hi(g_fight_result_subject_index)
+    /* DA68 8001D268 B0384290 */  lbu        $v0, %lo(g_fight_result_subject_index)($v0)
+    /* DA6C 8001D26C 0A80013C */  lui        $at, %hi(g_fight_point_award_phase_timer)
+    /* DA70 8001D270 203920A0 */  sb         $zero, %lo(g_fight_point_award_phase_timer)($at)
     /* DA74 8001D274 0100422C */  sltiu      $v0, $v0, 0x1
     /* DA78 8001D278 0A80013C */  lui        $at, %hi(D_800A3898)
     /* DA7C 8001D27C 21082200 */  addu       $at, $at, $v0
@@ -422,10 +422,10 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DC78 8001D478 01000324 */   addiu     $v1, $zero, 0x1
     /* DC7C 8001D47C 0A80023C */  lui        $v0, %hi(D_800A3898)
     /* DC80 8001D480 98384290 */  lbu        $v0, %lo(D_800A3898)($v0)
-    /* DC84 8001D484 0A80013C */  lui        $at, %hi(D_800A38B0)
-    /* DC88 8001D488 B03823A0 */  sb         $v1, %lo(D_800A38B0)($at)
-    /* DC8C 8001D48C 0A80013C */  lui        $at, %hi(D_800A3920)
-    /* DC90 8001D490 203923A0 */  sb         $v1, %lo(D_800A3920)($at)
+    /* DC84 8001D484 0A80013C */  lui        $at, %hi(g_fight_result_subject_index)
+    /* DC88 8001D488 B03823A0 */  sb         $v1, %lo(g_fight_result_subject_index)($at)
+    /* DC8C 8001D48C 0A80013C */  lui        $at, %hi(g_fight_point_award_phase_timer)
+    /* DC90 8001D490 203923A0 */  sb         $v1, %lo(g_fight_point_award_phase_timer)($at)
     /* DC94 8001D494 01004224 */  addiu      $v0, $v0, 0x1
     /* DC98 8001D498 0A80013C */  lui        $at, %hi(D_800A3898)
     /* DC9C 8001D49C 983822A0 */  sb         $v0, %lo(D_800A3898)($at)
@@ -439,10 +439,10 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DCB8 8001D4B8 01000324 */   addiu     $v1, $zero, 0x1
     /* DCBC 8001D4BC 0A80023C */  lui        $v0, %hi(D_800A3899)
     /* DCC0 8001D4C0 99384290 */  lbu        $v0, %lo(D_800A3899)($v0)
-    /* DCC4 8001D4C4 0A80013C */  lui        $at, %hi(D_800A38B0)
-    /* DCC8 8001D4C8 B03820A0 */  sb         $zero, %lo(D_800A38B0)($at)
-    /* DCCC 8001D4CC 0A80013C */  lui        $at, %hi(D_800A3920)
-    /* DCD0 8001D4D0 203923A0 */  sb         $v1, %lo(D_800A3920)($at)
+    /* DCC4 8001D4C4 0A80013C */  lui        $at, %hi(g_fight_result_subject_index)
+    /* DCC8 8001D4C8 B03820A0 */  sb         $zero, %lo(g_fight_result_subject_index)($at)
+    /* DCCC 8001D4CC 0A80013C */  lui        $at, %hi(g_fight_point_award_phase_timer)
+    /* DCD0 8001D4D0 203923A0 */  sb         $v1, %lo(g_fight_point_award_phase_timer)($at)
     /* DCD4 8001D4D4 01004224 */  addiu      $v0, $v0, 0x1
     /* DCD8 8001D4D8 0A80013C */  lui        $at, %hi(D_800A3899)
     /* DCDC 8001D4DC 993822A0 */  sb         $v0, %lo(D_800A3899)($at)
@@ -493,8 +493,8 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
     /* DD84 8001D584 24006214 */  bne        $v1, $v0, .L8001D618
     /* DD88 8001D588 02000224 */   addiu     $v0, $zero, 0x2
   .L8001D58C:
-    /* DD8C 8001D58C 0A80013C */  lui        $at, %hi(D_800A38B0)
-    /* DD90 8001D590 B03820A0 */  sb         $zero, %lo(D_800A38B0)($at)
+    /* DD8C 8001D58C 0A80013C */  lui        $at, %hi(g_fight_result_subject_index)
+    /* DD90 8001D590 B03820A0 */  sb         $zero, %lo(g_fight_result_subject_index)($at)
     /* DD94 8001D594 9F750008 */  j          .L8001D67C
     /* DD98 8001D598 00000000 */   nop
   .L8001D59C:
@@ -527,13 +527,13 @@ glabel fight_UpdateModeDisplaysAndMatchProgress
   .L8001D604:
     /* DE04 8001D604 01000224 */  addiu      $v0, $zero, 0x1
   .L8001D608:
-    /* DE08 8001D608 0A80013C */  lui        $at, %hi(D_800A38B0)
-    /* DE0C 8001D60C B03822A0 */  sb         $v0, %lo(D_800A38B0)($at)
+    /* DE08 8001D608 0A80013C */  lui        $at, %hi(g_fight_result_subject_index)
+    /* DE0C 8001D60C B03822A0 */  sb         $v0, %lo(g_fight_result_subject_index)($at)
     /* DE10 8001D610 9F750008 */  j          .L8001D67C
     /* DE14 8001D614 00000000 */   nop
   .L8001D618:
-    /* DE18 8001D618 0A80013C */  lui        $at, %hi(D_800A38B0)
-    /* DE1C 8001D61C B03822A0 */  sb         $v0, %lo(D_800A38B0)($at)
+    /* DE18 8001D618 0A80013C */  lui        $at, %hi(g_fight_result_subject_index)
+    /* DE1C 8001D61C B03822A0 */  sb         $v0, %lo(g_fight_result_subject_index)($at)
     /* DE20 8001D620 9F750008 */  j          .L8001D67C
     /* DE24 8001D624 00000000 */   nop
   .L8001D628:

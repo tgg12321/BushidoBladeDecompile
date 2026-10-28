@@ -1,6 +1,6 @@
 glabel menu_SetEnabledRows
-    /* 596CC 80068ECC 0A80053C */  lui        $a1, %hi(D_8009BC04)
-    /* 596D0 80068ED0 04BCA524 */  addiu      $a1, $a1, %lo(D_8009BC04)
+    /* 596CC 80068ECC 0A80053C */  lui        $a1, %hi(g_row_menu_row_state)
+    /* 596D0 80068ED0 04BCA524 */  addiu      $a1, $a1, %lo(g_row_menu_row_state)
     /* 596D4 80068ED4 0000A28C */  lw         $v0, 0x0($a1)
     /* 596D8 80068ED8 FEFF0324 */  addiu      $v1, $zero, -0x2
     /* 596DC 80068EDC 24104300 */  and        $v0, $v0, $v1

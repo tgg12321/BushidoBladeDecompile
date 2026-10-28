@@ -9,8 +9,8 @@ glabel func_8003B56C
     /* 2BD88 8003B588 5C38428C */  lw         $v0, %lo(D_800A385C)($v0)
     /* 2BD8C 8003B58C FCFF8424 */  addiu      $a0, $a0, -0x4
     /* 2BD90 8003B590 21104400 */  addu       $v0, $v0, $a0
-    /* 2BD94 8003B594 0A80013C */  lui        $at, %hi(D_800A3878)
-    /* 2BD98 8003B598 783822AC */  sw         $v0, %lo(D_800A3878)($at)
+    /* 2BD94 8003B594 0A80013C */  lui        $at, %hi(g_fight_active_playback_descriptor)
+    /* 2BD98 8003B598 783822AC */  sw         $v0, %lo(g_fight_active_playback_descriptor)($at)
     /* 2BD9C 8003B59C 0800E003 */  jr         $ra
     /* 2BDA0 8003B5A0 00000000 */   nop
 endlabel func_8003B56C

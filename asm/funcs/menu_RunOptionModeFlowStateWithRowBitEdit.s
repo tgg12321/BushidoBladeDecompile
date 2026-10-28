@@ -1,5 +1,5 @@
 glabel menu_RunOptionModeFlowStateWithRowBitEdit
-    /* 68330 80077B30 1805838F */  lw         $v1, %gp_rel(D_800A35E4)($gp)
+    /* 68330 80077B30 1805838F */  lw         $v1, %gp_rel(g_option_mode_flow_state)($gp)
     /* 68334 80077B34 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 68338 80077B38 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6833C 80077B3C 21808000 */  addu       $s0, $a0, $zero
@@ -42,7 +42,7 @@ glabel menu_RunOptionModeFlowStateWithRowBitEdit
     /* 683C4 80077BC4 FFFF1224 */   addiu     $s2, $zero, -0x1
   .L80077BC8:
     /* 683C8 80077BC8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 683CC 80077BCC 180582AF */  sw         $v0, %gp_rel(D_800A35E4)($gp)
+    /* 683CC 80077BCC 180582AF */  sw         $v0, %gp_rel(g_option_mode_flow_state)($gp)
     /* 683D0 80077BD0 39DF0108 */  j          .L80077CE4
     /* 683D4 80077BD4 21104002 */   addu      $v0, $s2, $zero
   .L80077BD8:
@@ -52,7 +52,7 @@ glabel menu_RunOptionModeFlowStateWithRowBitEdit
     /* 683E4 80077BE4 42BD8490 */  lbu        $a0, %lo(D_8009BD42)($a0)
     /* 683E8 80077BE8 0A80053C */  lui        $a1, %hi(D_8009BD42 + 0x1)
     /* 683EC 80077BEC 43BDA590 */  lbu        $a1, %lo(D_8009BD42 + 0x1)($a1)
-    /* 683F0 80077BF0 180582AF */  sw         $v0, %gp_rel(D_800A35E4)($gp)
+    /* 683F0 80077BF0 180582AF */  sw         $v0, %gp_rel(g_option_mode_flow_state)($gp)
     /* 683F4 80077BF4 0A80013C */  lui        $at, %hi(D_8009BD38 + 0x3)
     /* 683F8 80077BF8 3BBD23A0 */  sb         $v1, %lo(D_8009BD38 + 0x3)($at)
     /* 683FC 80077BFC 0A80013C */  lui        $at, %hi(D_8009BD3C)
@@ -75,7 +75,7 @@ glabel menu_RunOptionModeFlowStateWithRowBitEdit
     /* 6843C 80077C3C 29006214 */  bne        $v1, $v0, .L80077CE4
     /* 68440 80077C40 21104002 */   addu      $v0, $s2, $zero
   .L80077C44:
-    /* 68444 80077C44 180583AF */  sw         $v1, %gp_rel(D_800A35E4)($gp)
+    /* 68444 80077C44 180583AF */  sw         $v1, %gp_rel(g_option_mode_flow_state)($gp)
     /* 68448 80077C48 39DF0108 */  j          .L80077CE4
     /* 6844C 80077C4C 21104002 */   addu      $v0, $s2, $zero
   jlabel .L80077C50
@@ -87,10 +87,10 @@ glabel menu_RunOptionModeFlowStateWithRowBitEdit
   jlabel .L80077C60
     /* 68460 80077C60 C9B4010C */  jal        menu_ResetRowBitCursors
     /* 68464 80077C64 00000000 */   nop
-    /* 68468 80077C68 1805828F */  lw         $v0, %gp_rel(D_800A35E4)($gp)
+    /* 68468 80077C68 1805828F */  lw         $v0, %gp_rel(g_option_mode_flow_state)($gp)
     /* 6846C 80077C6C 00000000 */  nop
     /* 68470 80077C70 01004224 */  addiu      $v0, $v0, 0x1
-    /* 68474 80077C74 180582AF */  sw         $v0, %gp_rel(D_800A35E4)($gp)
+    /* 68474 80077C74 180582AF */  sw         $v0, %gp_rel(g_option_mode_flow_state)($gp)
   jlabel .L80077C78
     /* 68478 80077C78 21900000 */  addu       $s2, $zero, $zero
     /* 6847C 80077C7C 21200002 */  addu       $a0, $s0, $zero
@@ -106,7 +106,7 @@ glabel menu_RunOptionModeFlowStateWithRowBitEdit
     /* 684A4 80077CA4 3CBD6390 */  lbu        $v1, %lo(D_8009BD3C)($v1)
     /* 684A8 80077CA8 0A80043C */  lui        $a0, %hi(D_8009BD3C + 0x1)
     /* 684AC 80077CAC 3DBD8490 */  lbu        $a0, %lo(D_8009BD3C + 0x1)($a0)
-    /* 684B0 80077CB0 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
+    /* 684B0 80077CB0 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
     /* 684B4 80077CB4 0A80013C */  lui        $at, %hi(D_8009BD41)
     /* 684B8 80077CB8 41BD22A0 */  sb         $v0, %lo(D_8009BD41)($at)
     /* 684BC 80077CBC 0A80013C */  lui        $at, %hi(D_8009BD42)
@@ -119,7 +119,7 @@ glabel menu_RunOptionModeFlowStateWithRowBitEdit
     /* 684D4 80077CD4 03006214 */  bne        $v1, $v0, .L80077CE4
     /* 684D8 80077CD8 21104002 */   addu      $v0, $s2, $zero
   .L80077CDC:
-    /* 684DC 80077CDC 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
+    /* 684DC 80077CDC 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
   .L80077CE0:
     /* 684E0 80077CE0 21104002 */  addu       $v0, $s2, $zero
   .L80077CE4:

@@ -66,8 +66,8 @@ glabel fight_Init
     /* E5A0 8001DDA0 00000000 */  nop
     /* E5A4 8001DDA4 08004010 */  beqz       $v0, .L8001DDC8
     /* E5A8 8001DDA8 00000000 */   nop
-    /* E5AC 8001DDAC 0A80023C */  lui        $v0, %hi(D_800A36F6)
-    /* E5B0 8001DDB0 F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
+    /* E5AC 8001DDAC 0A80023C */  lui        $v0, %hi(g_fight_tracked_fighter_index)
+    /* E5B0 8001DDB0 F6364284 */  lh         $v0, %lo(g_fight_tracked_fighter_index)($v0)
     /* E5B4 8001DDB4 00000000 */  nop
     /* E5B8 8001DDB8 03005014 */  bne        $v0, $s0, .L8001DDC8
     /* E5BC 8001DDBC 00000000 */   nop
@@ -99,8 +99,8 @@ glabel fight_Init
     /* E61C 8001DE1C 00000000 */  nop
     /* E620 8001DE20 12004010 */  beqz       $v0, .L8001DE6C
     /* E624 8001DE24 00000000 */   nop
-    /* E628 8001DE28 0A80023C */  lui        $v0, %hi(D_800A36F6)
-    /* E62C 8001DE2C F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
+    /* E628 8001DE28 0A80023C */  lui        $v0, %hi(g_fight_tracked_fighter_index)
+    /* E62C 8001DE2C F6364284 */  lh         $v0, %lo(g_fight_tracked_fighter_index)($v0)
     /* E630 8001DE30 00000000 */  nop
     /* E634 8001DE34 0D005014 */  bne        $v0, $s0, .L8001DE6C
     /* E638 8001DE38 21200002 */   addu      $a0, $s0, $zero
@@ -202,9 +202,9 @@ glabel fight_Init
     /* E790 8001DF90 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* E794 8001DF94 10006210 */  beq        $v1, $v0, .L8001DFD8
     /* E798 8001DF98 00000000 */   nop
-    /* E79C 8001DF9C 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* E79C 8001DF9C 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* E7A0 8001DFA0 21082300 */  addu       $at, $at, $v1
-    /* E7A4 8001DFA4 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* E7A4 8001DFA4 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* E7A8 8001DFA8 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* E7AC 8001DFAC 00000000 */   nop
     /* E7B0 8001DFB0 1080013C */  lui        $at, %hi(D_80101EC8 + 0x14)

@@ -19,14 +19,14 @@ static s16 D_800A35D0[2][2];
 static Unk8006E49CRec *D_800A35D8;
 static s8 D_800A35DC;
 static s32 D_800A35E0;
-static s32 D_800A35E4;
+static s32 g_option_mode_flow_state;
 static s32 D_800A35E8;
 static s32 D_800A35EC; /* unreferenced: size from the gap */
 static s32 g_gpu_timed_sprite_elapsed_frames;
 static Unk8006E49CRec *D_800A35F4;
 static Ctx77D94 *D_800A35F8;
 static s32 D_800A35FC;
-static s32 D_800A3600;
+static s32 g_gpu_timed_sprite_sequence_phase;
 static s32 D_800A3604; /* unreferenced: size from the gap */
 static s32 D_800A3608;
 static Unk8006E49CRec *D_800A360C;
@@ -615,7 +615,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
          * same column read once into entry, reused -> score 69. */
         u8 entry = ((Unk8009BCF8Record *)D_8009BCF8)[i].unk0;
 
-        if (D_8009BCE4[entry] & 1) {
+        if (g_sel_entry_availability_and_claims[entry] & 1) {
             s.header = table[entry + 1];
             cells = s.header[2].cells;
             s.table = cells;
@@ -630,7 +630,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.y = 0;
             s.sprt_out = arg0->primitive_cursors.sprite_prims;
             arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
-            if (D_8009BCE4[((Unk8009BCF8Record *)D_8009BCF8)[i].unk0] &
+            if (g_sel_entry_availability_and_claims
+                    [((Unk8009BCF8Record *)D_8009BCF8)[i].unk0] &
                 (4 << arg3)) {
                 menu_DrawSelGridCellOverlay(arg0, i, arg3, 1);
             }
@@ -718,7 +719,8 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (SELWORK->f3C[arg3] != 0) {
             arg2[SELWORK->f3C[arg3]] = -1;
             SELWORK->f3C[arg3]--;
-            D_8009BCE4[arg2[SELWORK->f3C[arg3]]] &= ~(4 << arg3);
+            g_sel_entry_availability_and_claims[arg2[SELWORK->f3C[arg3]]] &=
+                ~(4 << arg3);
             return;
         }
         /* Neither player has a pick yet (folded into one word test). */
@@ -777,7 +779,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         entry = D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 +
                                  SELWORK->f20.half[arg3]]
                     .unk0;
-        flag = &D_8009BCE4[entry];
+        flag = &g_sel_entry_availability_and_claims[entry];
         if ((*flag & 1) != 0) {
             bit = 4 << arg3;
             if ((*flag & bit) == 0) {
@@ -971,7 +973,8 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
             SELWORK->f10.half[arg3] = 3;
             SELWORK->f18[arg3] = 2;
             SELWORK->f38[arg3] = SELWORK->f65 + 2;
-            D_8009BCE4[arg2[SELWORK->f38[arg3]]] &= ~(4 << arg3);
+            g_sel_entry_availability_and_claims[arg2[SELWORK->f38[arg3]]] &=
+                ~(4 << arg3);
             SELWORK->f60[arg3] = 5;
             for (i = 0; i < SELWORK->f60[arg3]; i++) {
                 SELWORK->f48[arg3][i] = i;
@@ -1134,9 +1137,11 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
         for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) {
             s16 idx = (s16)(a2 + (t0 * 10));
             s32 mask = 1 << idx;
-            D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] & 0xF2);
+            g_sel_entry_availability_and_claims[idx] =
+                (u8)(g_sel_entry_availability_and_claims[idx] & 0xF2);
             if ((arg2 & mask) != 0) {
-                D_8009BCE4[idx] = (u8)(D_8009BCE4[idx] | 1);
+                g_sel_entry_availability_and_claims[idx] =
+                    (u8)(g_sel_entry_availability_and_claims[idx] | 1);
                 sp[t0] += 1;
                 /* FAKE: same-value dead store keeps D_800A35D0's lui/addiu
                    inside the outer loop instead of hoisted
@@ -1266,13 +1271,13 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
 s32 InitRowMenuBlackBgResetFlow(s32 a0) {
     menu_LoadResourcesInitStateSelectFirstEnabledRow(a0, &g_working_record);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
-    D_800A35E4 = 0;
+    g_option_mode_flow_state = 0;
     return 1;
 }
 
 s32 DrawWhiteTileAndSheetsAndResetFlowOnPadMatch(void) {
     if (((s32(*)())gpu_DrawWhiteTileAndSheetsTestPadMask)() == 1) {
-        D_800A35E4 = 0;
+        g_option_mode_flow_state = 0;
         return 1;
     }
     return 0;
@@ -1286,7 +1291,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
     result = menu_UpdateRowMenu(arg0, arg1);
     if (result >= 0) {
         ret = 1;
-        D_800A35E4 = 0;
+        g_option_mode_flow_state = 0;
         g_working_record.unk14_0 = result;
     } else if (result == -2) {
         ret = -1;
@@ -1295,7 +1300,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
 }
 
 s32 ResetFlowAndFetchRowTablePair(void) {
-    D_800A35E4 = 0;
+    g_option_mode_flow_state = 0;
     D_800A35E0 = D_8009BD58[g_working_record.unk14_0][1];
     return D_8009BD58[g_working_record.unk14_0][0];
 }
@@ -1322,12 +1327,12 @@ s32 StepThenCloseVab1OnNonzero(s32 arg0, s32 arg1) {
 }
 
 s32 menu_ResetFlowThenRunUpdate(s32 a0, s32 a1) {
-    D_800A35E4 = 0;
+    g_option_mode_flow_state = 0;
     return menu_UpdateStoredChoice(a0, a1);
 }
 
 void menu_ResetFlowBackgroundAndConfirmCursor(void) {
-    D_800A35E4 = 0;
+    g_option_mode_flow_state = 0;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     menu_ResetConfirmCursor();
 }
@@ -1350,7 +1355,7 @@ void func_80077AE0(void) { gpu_BeginFullscreenImageDisplay(); }
 
 void func_80077B00(void) { gpu_EndFullscreenImageDisplay(); }
 
-void SetFlowStateOne(void) { D_800A35E4 = 1; }
+void SetFlowStateOne(void) { g_option_mode_flow_state = 1; }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 column;
@@ -1361,7 +1366,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
     s32 s2;
     s32 result;
 
-    switch (D_800A35E4) {
+    switch (g_option_mode_flow_state) {
     case 0:
         s2 = 0;
         result = menu_UpdateOptionMenuChoices(arg0, arg1);
@@ -1370,13 +1375,13 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
             s2 = -1;
             break;
         case 2:
-            D_800A35E4 = 1;
+            g_option_mode_flow_state = 1;
             break;
         case 3:
             g_working_record.unk17[0] = g_working_record.unk1D[0];
             g_working_record.unk17[1] = g_working_record.unk1D[1];
             g_working_record.unk17[2] = g_working_record.unk1D[2];
-            D_800A35E4 = 4;
+            g_option_mode_flow_state = 4;
             break;
         }
         break;
@@ -1384,11 +1389,11 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         s2 = 0;
         result = func_8006C1FC(arg0, arg1);
         if (result == 1) {
-            D_800A35E4 = 0;
+            g_option_mode_flow_state = 0;
         } else if (result == 2) {
-            D_800A35E4 = result;
+            g_option_mode_flow_state = result;
         } else if (result == 3) {
-            D_800A35E4 = result;
+            g_option_mode_flow_state = result;
         }
         break;
     case 2:
@@ -1399,18 +1404,18 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         break;
     case 4:
         menu_ResetRowBitCursors();
-        D_800A35E4++;
+        g_option_mode_flow_state++;
         /* fall through */
     case 5:
         s2 = 0;
         result = menu_UpdateRowBitMenu(arg0, arg1);
         if (result == 1) {
-            D_800A35E4 = 0;
+            g_option_mode_flow_state = 0;
             g_working_record.unk1D[0] = g_working_record.unk17[0];
             g_working_record.unk1D[1] = g_working_record.unk17[1];
             g_working_record.unk1D[2] = g_working_record.unk17[2];
         } else if (result == -1) {
-            D_800A35E4 = 0;
+            g_option_mode_flow_state = 0;
         }
         break;
     }
@@ -1456,14 +1461,22 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
     table = D_800A35F8->table;
     out = D_800A35F8->out34;
     var_5 = 0x20;
-    if (g_gpu_timed_sprite_elapsed_frames < in[D_800A3600] + 60 &&
-        g_gpu_timed_sprite_elapsed_frames >= in[D_800A3600]) {
-        v = ((g_gpu_timed_sprite_elapsed_frames - in[D_800A3600]) << 7) / 60;
+    if (g_gpu_timed_sprite_elapsed_frames <
+            in[g_gpu_timed_sprite_sequence_phase] + 60 &&
+        g_gpu_timed_sprite_elapsed_frames >=
+            in[g_gpu_timed_sprite_sequence_phase]) {
+        v = ((g_gpu_timed_sprite_elapsed_frames -
+              in[g_gpu_timed_sprite_sequence_phase])
+             << 7) /
+            60;
         s.has_color = 1;
         s.col_r = s.col_g = s.col_b = v;
-    } else if (g_gpu_timed_sprite_elapsed_frames >= out[D_800A3600] &&
-               g_gpu_timed_sprite_elapsed_frames < out[D_800A3600] + 60) {
-        v = ((60 - (g_gpu_timed_sprite_elapsed_frames - out[D_800A3600]))
+    } else if (g_gpu_timed_sprite_elapsed_frames >=
+                   out[g_gpu_timed_sprite_sequence_phase] &&
+               g_gpu_timed_sprite_elapsed_frames <
+                   out[g_gpu_timed_sprite_sequence_phase] + 60) {
+        v = ((60 - (g_gpu_timed_sprite_elapsed_frames -
+                    out[g_gpu_timed_sprite_sequence_phase]))
              << 7) /
             60;
         s.has_color = 1;
@@ -1473,14 +1486,17 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
     }
 
     if (g_gpu_timed_sprite_elapsed_frames < out[5] + 60) {
-        switch (D_800A3600) {
+        switch (g_gpu_timed_sprite_sequence_phase) {
         case 0:
-            if (g_gpu_timed_sprite_elapsed_frames + 1 >= out[D_800A3600] + 60) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 >=
+                out[g_gpu_timed_sprite_sequence_phase] + 60) {
                 if (g_gpu_timed_sprite_elapsed_frames + 1 >=
-                    in[D_800A3600 + 1]) {
-                    D_800A3600 = D_800A3600 + 1;
+                    in[g_gpu_timed_sprite_sequence_phase + 1]) {
+                    g_gpu_timed_sprite_sequence_phase =
+                        g_gpu_timed_sprite_sequence_phase + 1;
                 }
-            } else if (g_gpu_timed_sprite_elapsed_frames >= in[D_800A3600]) {
+            } else if (g_gpu_timed_sprite_elapsed_frames >=
+                       in[g_gpu_timed_sprite_sequence_phase]) {
                 var_6 = D_800A35F8->hdr18;
                 for (i = 0; i < 5; var_6++, i++) {
                     s.header = *var_6;
@@ -1498,10 +1514,12 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             }
             break;
         case 2:
-            if (g_gpu_timed_sprite_elapsed_frames + 1 >= out[D_800A3600] + 60) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 >=
+                out[g_gpu_timed_sprite_sequence_phase] + 60) {
                 if (g_gpu_timed_sprite_elapsed_frames + 1 >=
-                    in[D_800A3600 + 1]) {
-                    D_800A3600 = D_800A3600 + 1;
+                    in[g_gpu_timed_sprite_sequence_phase + 1]) {
+                    g_gpu_timed_sprite_sequence_phase =
+                        g_gpu_timed_sprite_sequence_phase + 1;
                 }
                 break;
             }
@@ -1520,9 +1538,10 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             }
             /* fall through */
         case 1:
-            if (g_gpu_timed_sprite_elapsed_frames + 1 >= in[D_800A3600 + 1] &&
-                D_800A3600 == 1) {
-                D_800A3600 = 2;
+            if (g_gpu_timed_sprite_elapsed_frames + 1 >=
+                    in[g_gpu_timed_sprite_sequence_phase + 1] &&
+                g_gpu_timed_sprite_sequence_phase == 1) {
+                g_gpu_timed_sprite_sequence_phase = 2;
             }
             if (g_gpu_timed_sprite_elapsed_frames < out[2] &&
                 g_gpu_timed_sprite_elapsed_frames >= in[2]) {
@@ -1552,10 +1571,12 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                 DrawSync(0);
                 rect.x += 0x40;
             }
-            D_800A3600 = D_800A3600 + 1;
+            g_gpu_timed_sprite_sequence_phase =
+                g_gpu_timed_sprite_sequence_phase + 1;
             break;
         case 4:
-            if (g_gpu_timed_sprite_elapsed_frames + 1 < out[D_800A3600] + 60) {
+            if (g_gpu_timed_sprite_elapsed_frames + 1 <
+                out[g_gpu_timed_sprite_sequence_phase] + 60) {
                 var_6 = D_800A35F8->hdr1C;
                 for (i = 0; i < 5; var_6++, i++) {
                     s.header = *var_6;
@@ -1629,7 +1650,7 @@ s32 InitTimedSpriteSequence(s32 arg0) {
     gpu_InitPrimBufferPair(r, D_800A35F4);
     D_800A35FC = 0;
     g_gpu_timed_sprite_elapsed_frames = 0;
-    D_800A3600 = 0;
+    g_gpu_timed_sprite_sequence_phase = 0;
     return 1;
 }
 

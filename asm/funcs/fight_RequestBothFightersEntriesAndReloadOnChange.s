@@ -39,9 +39,9 @@ glabel fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2B88C 8003B08C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 2B890 8003B090 0E006210 */  beq        $v1, $v0, .L8003B0CC
     /* 2B894 8003B094 00000000 */   nop
-    /* 2B898 8003B098 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 2B898 8003B098 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 2B89C 8003B09C 21082300 */  addu       $at, $at, $v1
-    /* 2B8A0 8003B0A0 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* 2B8A0 8003B0A0 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* 2B8A4 8003B0A4 F924010C */  jal        resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 2B8A8 8003B0A8 00000000 */   nop
     /* 2B8AC 8003B0AC 00002386 */  lh         $v1, 0x0($s1)

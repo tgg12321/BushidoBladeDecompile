@@ -24,8 +24,8 @@ glabel comb_HandshakeStep
   jlabel .L8003AB98
     /* 2B398 8003AB98 C2E8000C */  jal        comb_ReadCtsSetRts
     /* 2B39C 8003AB9C 00000000 */   nop
-    /* 2B3A0 8003ABA0 0A80023C */  lui        $v0, %hi(D_800A38A0)
-    /* 2B3A4 8003ABA4 A038428C */  lw         $v0, %lo(D_800A38A0)($v0)
+    /* 2B3A0 8003ABA0 0A80023C */  lui        $v0, %hi(g_comb_local_side)
+    /* 2B3A4 8003ABA4 A038428C */  lw         $v0, %lo(g_comb_local_side)($v0)
     /* 2B3A8 8003ABA8 0C0780AF */  sw         $zero, %gp_rel(D_800A37D8)($gp)
     /* 2B3AC 8003ABAC 07004014 */  bnez       $v0, .L8003ABCC
     /* 2B3B0 8003ABB0 03000224 */   addiu     $v0, $zero, 0x3

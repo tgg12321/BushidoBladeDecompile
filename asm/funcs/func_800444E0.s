@@ -1,5 +1,5 @@
 glabel func_800444E0
-    /* 34CE0 800444E0 C006848F */  lw         $a0, %gp_rel(D_800A378C)($gp)
+    /* 34CE0 800444E0 C006848F */  lw         $a0, %gp_rel(g_gpu_ot_offset_ptr)($gp)
     /* 34CE4 800444E4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 34CE8 800444E8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 34CEC 800444EC 4111010C */  jal        gpu_PrepareViewAndFlushDrawQueue

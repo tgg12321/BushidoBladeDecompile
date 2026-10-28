@@ -5,9 +5,9 @@ glabel resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 39BF0 800493F0 40101000 */  sll        $v0, $s0, 1
     /* 39BF4 800493F4 01000324 */  addiu      $v1, $zero, 0x1
     /* 39BF8 800493F8 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 39BFC 800493FC 0F80013C */  lui        $at, %hi(D_800EF980)
+    /* 39BFC 800493FC 0F80013C */  lui        $at, %hi(g_resource_entry_request_state)
     /* 39C00 80049400 21082200 */  addu       $at, $at, $v0
-    /* 39C04 80049404 80F923A4 */  sh         $v1, %lo(D_800EF980)($at)
+    /* 39C04 80049404 80F923A4 */  sh         $v1, %lo(g_resource_entry_request_state)($at)
     /* 39C08 80049408 2003838F */  lw         $v1, %gp_rel(D_800A33EC)($gp)
     /* 39C0C 8004940C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 39C10 80049410 09006214 */  bne        $v1, $v0, .L80049438
@@ -47,17 +47,17 @@ glabel resource_RequestEntryWithLinkedEntriesAndLatchCategory
     /* 39C88 80049488 0D006210 */  beq        $v1, $v0, .L800494C0
     /* 39C8C 8004948C 40100300 */   sll       $v0, $v1, 1
     /* 39C90 80049490 01000324 */  addiu      $v1, $zero, 0x1
-    /* 39C94 80049494 0F80013C */  lui        $at, %hi(D_800EF980)
+    /* 39C94 80049494 0F80013C */  lui        $at, %hi(g_resource_entry_request_state)
     /* 39C98 80049498 21082200 */  addu       $at, $at, $v0
-    /* 39C9C 8004949C 80F923A4 */  sh         $v1, %lo(D_800EF980)($at)
+    /* 39C9C 8004949C 80F923A4 */  sh         $v1, %lo(g_resource_entry_request_state)($at)
     /* 39CA0 800494A0 0A80013C */  lui        $at, %hi(D_80099CC9)
     /* 39CA4 800494A4 21082400 */  addu       $at, $at, $a0
     /* 39CA8 800494A8 C99C2290 */  lbu        $v0, %lo(D_80099CC9)($at)
     /* 39CAC 800494AC 00000000 */  nop
     /* 39CB0 800494B0 40100200 */  sll        $v0, $v0, 1
-    /* 39CB4 800494B4 0F80013C */  lui        $at, %hi(D_800EF980)
+    /* 39CB4 800494B4 0F80013C */  lui        $at, %hi(g_resource_entry_request_state)
     /* 39CB8 800494B8 21082200 */  addu       $at, $at, $v0
-    /* 39CBC 800494BC 80F923A4 */  sh         $v1, %lo(D_800EF980)($at)
+    /* 39CBC 800494BC 80F923A4 */  sh         $v1, %lo(g_resource_entry_request_state)($at)
   .L800494C0:
     /* 39CC0 800494C0 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 39CC4 800494C4 1800B08F */  lw         $s0, 0x18($sp)

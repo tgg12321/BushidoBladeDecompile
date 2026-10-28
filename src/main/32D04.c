@@ -1117,9 +1117,13 @@ void reloc_ClearCounts(void) {
     }
 }
 
-void func_800444BC(void) { gpu_PrepareViewAndFlushDrawQueue(D_800A378C); }
+void func_800444BC(void) {
+    gpu_PrepareViewAndFlushDrawQueue(g_gpu_ot_offset_ptr);
+}
 
-void func_800444E0(void) { gpu_PrepareViewAndFlushDrawQueue(D_800A378C); }
+void func_800444E0(void) {
+    gpu_PrepareViewAndFlushDrawQueue(g_gpu_ot_offset_ptr);
+}
 
 extern MATRIX D_80101BD0;
 
@@ -1502,7 +1506,7 @@ s16 D_80095588[44] = {
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 Unk80101DF0Record *g_view_camera_root_ptr;
-u32 *D_800A378C;
+u32 *g_gpu_ot_offset_ptr;
 s32 D_800A3790;
 void **g_draw_queue_cursor;
 Unk800F62E0Rec *D_800A3828;

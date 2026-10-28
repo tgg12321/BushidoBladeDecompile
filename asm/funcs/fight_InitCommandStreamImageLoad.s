@@ -1,7 +1,7 @@
 glabel fight_InitCommandStreamImageLoad
     /* 2C070 8003B870 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 2C074 8003B874 0A80053C */  lui        $a1, %hi(D_800A376A)
-    /* 2C078 8003B878 6A37A590 */  lbu        $a1, %lo(D_800A376A)($a1)
+    /* 2C074 8003B874 0A80053C */  lui        $a1, %hi(g_fight_bone_group_tim_requests)
+    /* 2C078 8003B878 6A37A590 */  lbu        $a1, %lo(g_fight_bone_group_tim_requests)($a1)
     /* 2C07C 8003B87C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2C080 8003B880 8105010C */  jal        slot_RequestTimGroupsAndMarkReloadOnChange
     /* 2C084 8003B884 21200000 */   addu      $a0, $zero, $zero

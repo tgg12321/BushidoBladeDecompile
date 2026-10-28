@@ -65,9 +65,9 @@ glabel object_SubmitAttachedTransform
     /* 209B0 800301B0 01000524 */  addiu      $a1, $zero, 0x1
     /* 209B4 800301B4 02006286 */  lh         $v0, 0x2($s3)
     /* 209B8 800301B8 21304002 */  addu       $a2, $s2, $zero
-    /* 209BC 800301BC 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 209BC 800301BC 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 209C0 800301C0 21082200 */  addu       $at, $at, $v0
-    /* 209C4 800301C4 80EB3090 */  lbu        $s0, %lo(D_8008EB80)($at)
+    /* 209C4 800301C4 80EB3090 */  lbu        $s0, %lo(g_resource_kind_entry_ids)($at)
     /* 209C8 800301C8 21382002 */  addu       $a3, $s1, $zero
     /* 209CC 800301CC C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 209D0 800301D0 21200002 */   addu      $a0, $s0, $zero

@@ -18,14 +18,14 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
     s8 val_84 = (s8)g_fight_config.unk_C;
     s32 val_87 = (s8)g_fight_config.unk_F;
 
-    D_800A36F6 = 0;
+    g_fight_tracked_fighter_index = 0;
     g_fight_mode_selector = val_85;
     g_fight_tracked_view_setting = val_86;
     D_800A3140 = val_87;
     g_fight_stage_index = val_84;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
     slot_RequestTimGroupsAndMarkReloadOnChange(1, 0);
-    D_800A376A = 0;
+    g_fight_bone_group_tim_requests = 0;
     D_800A376B = 0;
     D_800A380C = 0;
     D_800A38D4 = 2;
@@ -48,7 +48,7 @@ void ApplyPendingConfigAndInitializeMode(void) {
         g_fight_config.unk_E = 1;
         g_local_ot_draw_mode = 1;
         g_main_loop_handler_index = 0;
-        D_800A36F6 = (D_800A38A0 != 0);
+        g_fight_tracked_fighter_index = (g_comb_local_side != 0);
         break;
     case 0:
         fight_InitCommandStream(

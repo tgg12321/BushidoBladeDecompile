@@ -624,7 +624,7 @@ typedef struct {
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
  * row; DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection and
  * DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections
- * index it [row][D_800A3590[row]]. */
+ * index it [row][g_entry_menu_row_phase_choice_cursors[row]]. */
 typedef struct {
     s16 x;
     s16 y;
@@ -957,19 +957,19 @@ typedef struct {
  * index.
  * - unk04 / unk08: the three halfwords / three words eff_StepCommand and
  * eff_DrawBillboardList copy into the scratchpad block's unk18 / unk20 (through
- * D_800A346C / D_800A3470). Only the scratchpad block's are set:
+ * D_800A346C / g_eff_view_origin). Only the scratchpad block's are set:
  * eff_BindScratchpad stores its two arguments there.
  * - unk0C / unk10: the three words / three halfwords eff_StartCommand copies
  * into unk20 / unk18. Set only in the g_eff_command_block block (through
  * g_eff_active_command_block or g_eff_command_block directly).
  * - unk14: the byte eff_StartCommand / eff_StepCommand store the called
  * function's result to (`sb`).
- * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad
- * block's, D_800A3478 / g_eff_command_position at the g_eff_command_block
- * block's (eff_StartCommand). unk18 is s16 like its sources (unk04 / unk10) and
- * every consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix,
- * eff_SpawnRotatedQuadCluster, eff_AllocateOrRecycleYawedQuadSlot,
- * eff_SpawnParticles).
+ * - unk18 / unk20: the copies. D_800A346C / g_eff_view_origin point at the
+ * scratchpad block's, D_800A3478 / g_eff_command_position at the
+ * g_eff_command_block block's (eff_StartCommand). unk18 is s16 like its sources
+ * (unk04 / unk10) and every consumer (SVECTOR / SVec4i16 fields:
+ * eff_SetRotMatrix, eff_SpawnRotatedQuadCluster,
+ * eff_AllocateOrRecycleYawedQuadSlot, eff_SpawnParticles).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -1135,13 +1135,15 @@ typedef union {
  * from its own two stores to unk00.unk04 / unk08, the code reaches them only
  * through those globals:
  * - unk00: the command block g_eff_active_command_block points at until a
- * function retargets it; D_800A346C / D_800A3470 point at its unk18 / unk20.
+ * function retargets it; D_800A346C / g_eff_view_origin point at its unk18 /
+ * unk20.
  * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec / D_800A348C
  * (TexRec). eff_DrawBillboardList retargets them only in its switch cases 0-3
  * (unk4 & 7), so its later reads go through these seeded values when no earlier
  * record took one of those cases.
- * - unkA0 / unkA4: the initial targets of D_800A34E4 (u32 *) / D_800A34E8 (u32
+ * - unkA0 / unkA4: the initial targets of g_eff_current_ot_entry (u32 *) /
+ * g_eff_current_prim_tag (u32
  * *), which every user retargets before use.
  * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out
  * differently by its users; it runs to the end of the scratchpad. The other
@@ -1152,23 +1154,23 @@ typedef struct {
     u8 unk2C[4];
     MATRIX unk30; /* D_800A3474 */
     TexRec unk50;
-    s32 unk58;    /* D_800A3490 */
-    s32 unk5C;    /* D_800A3494 */
-    u16 unk60;    /* D_800A3498 */
-    u16 unk62;    /* D_800A349C */
-    u16 unk64;    /* D_800A34A0 */
-    u16 unk66;    /* D_800A34A4 */
-    s16 unk68;    /* D_800A34A8 */
-    s16 unk6A;    /* D_800A34AC */
-    s32 unk6C;    /* D_800A34B0 */
-    s32 unk70;    /* D_800A34B4 */
-    s32 unk74[3]; /* D_800A34B8 */
+    s32 unk58;    /* g_eff_tpage_word */
+    s32 unk5C;    /* g_eff_clut_word */
+    u16 unk60;    /* g_eff_tex_left_u */
+    u16 unk62;    /* g_eff_tex_right_u */
+    u16 unk64;    /* g_eff_tex_top_v */
+    u16 unk66;    /* g_eff_tex_bottom_v */
+    s16 unk68;    /* g_eff_base_width */
+    s16 unk6A;    /* g_eff_base_height */
+    s32 unk6C;    /* g_eff_geom_screen_work */
+    s32 unk70;    /* g_eff_perspective_scale */
+    s32 unk74[3]; /* g_eff_screen_xy */
     s16 unk80;    /* D_800A34BC */
-    s16 unk82;    /* D_800A34C0 */
+    s16 unk82;    /* g_eff_right_x_offset */
     s32 unk84;    /* D_800A34C4 */
-    s32 unk88;    /* D_800A34C8 */
+    s32 unk88;    /* g_eff_lower_y_offset_word */
     s32 unk8C;    /* D_800A34CC */
-    s32 unk90[2]; /* D_800A34D0 */
+    s32 unk90[2]; /* g_eff_depth_work */
     u16 unk98;    /* D_800A34D4 */
     u16 unk9A;    /* D_800A34D8 */
     u16 unk9C;    /* D_800A34DC */
@@ -1525,7 +1527,7 @@ typedef struct Unk80101EC8Record {
     s16 weapon_id; /* column of D_8008E5CC / D_8008E6A4 */
     u8 unk_10[0x12 - 0x10];
     s16 unk_12;
-    s16 unk_14; /* -1 == none, else index of D_8008EB80 */
+    s16 unk_14; /* -1 == none, else index of g_resource_kind_entry_ids */
     u8 unk_16[0x1A - 0x16];
     s16 size_scale;
     s16 base_move_frame_step;
@@ -1810,10 +1812,10 @@ typedef struct {
 } Tbl8008E194;
 
 /* The twelve 0x64-byte object records at 0x80106A78. object_SpawnFromFighter
- * spawns one (its kind indexes D_8008E194 / D_8008EB80), object_UpdatePool
- * moves them, object_ResolveFighterHits tests them against both fighters,
- * object_SubmitPoolTransforms hands them to the effect calls; kind == -1 marks
- * a free record.
+ * spawns one (its kind indexes D_8008E194 / g_resource_kind_entry_ids),
+ * object_UpdatePool moves them, object_ResolveFighterHits tests them against
+ * both fighters, object_SubmitPoolTransforms hands them to the effect calls;
+ * kind == -1 marks a free record.
  */
 typedef struct {
     /* 0 at spawn; object_UpdatePool adds 1 per step while is_moving != 0 */

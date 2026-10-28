@@ -42,18 +42,18 @@ glabel eff_LinkParticleQuads
     /* 59624 80068E24 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 59628 80068E28 80100200 */  sll        $v0, $v0, 2
     /* 5962C 80068E2C 21208200 */  addu       $a0, $a0, $v0
-    /* 59630 80068E30 180484AF */  sw         $a0, %gp_rel(D_800A34E4)($gp)
+    /* 59630 80068E30 180484AF */  sw         $a0, %gp_rel(g_eff_current_ot_entry)($gp)
     /* 59634 80068E34 0000C58C */  lw         $a1, 0x0($a2)
     /* 59638 80068E38 00000000 */  nop
-    /* 5963C 80068E3C 1C0485AF */  sw         $a1, %gp_rel(D_800A34E8)($gp)
+    /* 5963C 80068E3C 1C0485AF */  sw         $a1, %gp_rel(g_eff_current_prim_tag)($gp)
     /* 59640 80068E40 0000A38C */  lw         $v1, 0x0($a1)
     /* 59644 80068E44 0000828C */  lw         $v0, 0x0($a0)
     /* 59648 80068E48 24186900 */  and        $v1, $v1, $t1
     /* 5964C 80068E4C 24104700 */  and        $v0, $v0, $a3
     /* 59650 80068E50 25186200 */  or         $v1, $v1, $v0
     /* 59654 80068E54 0000A3AC */  sw         $v1, 0x0($a1)
-    /* 59658 80068E58 1804848F */  lw         $a0, %gp_rel(D_800A34E4)($gp)
-    /* 5965C 80068E5C 1C04838F */  lw         $v1, %gp_rel(D_800A34E8)($gp)
+    /* 59658 80068E58 1804848F */  lw         $a0, %gp_rel(g_eff_current_ot_entry)($gp)
+    /* 5965C 80068E5C 1C04838F */  lw         $v1, %gp_rel(g_eff_current_prim_tag)($gp)
     /* 59660 80068E60 0000828C */  lw         $v0, 0x0($a0)
     /* 59664 80068E64 24186700 */  and        $v1, $v1, $a3
     /* 59668 80068E68 24104900 */  and        $v0, $v0, $t1

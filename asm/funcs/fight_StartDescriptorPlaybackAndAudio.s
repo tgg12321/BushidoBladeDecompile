@@ -37,8 +37,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C254 8003BA54 21300000 */  addu       $a2, $zero, $zero
     /* 2C258 8003BA58 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2C25C 8003BA5C 21380000 */   addu      $a3, $zero, $zero
-    /* 2C260 8003BA60 0A80023C */  lui        $v0, %hi(D_800A3878)
-    /* 2C264 8003BA64 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
+    /* 2C260 8003BA60 0A80023C */  lui        $v0, %hi(g_fight_active_playback_descriptor)
+    /* 2C264 8003BA64 7838428C */  lw         $v0, %lo(g_fight_active_playback_descriptor)($v0)
     /* 2C268 8003BA68 00000000 */  nop
     /* 2C26C 8003BA6C 03004290 */  lbu        $v0, 0x3($v0)
     /* 2C270 8003BA70 00000000 */  nop
@@ -49,8 +49,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C284 8003BA84 1180133C */   lui       $s3, (0x80118800 >> 16)
     /* 2C288 8003BA88 00887336 */  ori        $s3, $s3, (0x80118800 & 0xFFFF)
   .L8003BA8C:
-    /* 2C28C 8003BA8C 0A80043C */  lui        $a0, %hi(D_800A3878)
-    /* 2C290 8003BA90 7838848C */  lw         $a0, %lo(D_800A3878)($a0)
+    /* 2C28C 8003BA8C 0A80043C */  lui        $a0, %hi(g_fight_active_playback_descriptor)
+    /* 2C290 8003BA90 7838848C */  lw         $a0, %lo(g_fight_active_playback_descriptor)($a0)
     /* 2C294 8003BA94 00000000 */  nop
     /* 2C298 8003BA98 03008390 */  lbu        $v1, 0x3($a0)
     /* 2C29C 8003BA9C 00000000 */  nop
@@ -77,8 +77,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C2E8 8003BAE8 000011A6 */  sh         $s1, 0x0($s0)
     /* 2C2EC 8003BAEC 4C0412A6 */  sh         $s2, 0x44C($s0)
   .L8003BAF0:
-    /* 2C2F0 8003BAF0 0A80023C */  lui        $v0, %hi(D_800A3878)
-    /* 2C2F4 8003BAF4 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
+    /* 2C2F0 8003BAF0 0A80023C */  lui        $v0, %hi(g_fight_active_playback_descriptor)
+    /* 2C2F4 8003BAF4 7838428C */  lw         $v0, %lo(g_fight_active_playback_descriptor)($v0)
     /* 2C2F8 8003BAF8 00000000 */  nop
     /* 2C2FC 8003BAFC 03004290 */  lbu        $v0, 0x3($v0)
     /* 2C300 8003BB00 00000000 */  nop
@@ -88,8 +88,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C310 8003BB10 1080073C */  lui        $a3, %hi(D_80101EC8 + 0x12)
     /* 2C314 8003BB14 DA1EE784 */  lh         $a3, %lo(D_80101EC8 + 0x12)($a3)
   .L8003BB18:
-    /* 2C318 8003BB18 0A80023C */  lui        $v0, %hi(D_800A3878)
-    /* 2C31C 8003BB1C 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
+    /* 2C318 8003BB18 0A80023C */  lui        $v0, %hi(g_fight_active_playback_descriptor)
+    /* 2C31C 8003BB1C 7838428C */  lw         $v0, %lo(g_fight_active_playback_descriptor)($v0)
     /* 2C320 8003BB20 00000000 */  nop
     /* 2C324 8003BB24 03004290 */  lbu        $v0, 0x3($v0)
     /* 2C328 8003BB28 00000000 */  nop
@@ -99,8 +99,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C338 8003BB38 1080043C */  lui        $a0, %hi(D_80101EC8 + 0x45E)
     /* 2C33C 8003BB3C 26238484 */  lh         $a0, %lo(D_80101EC8 + 0x45E)($a0)
   .L8003BB40:
-    /* 2C340 8003BB40 0A80053C */  lui        $a1, %hi(D_800A3878)
-    /* 2C344 8003BB44 7838A58C */  lw         $a1, %lo(D_800A3878)($a1)
+    /* 2C340 8003BB40 0A80053C */  lui        $a1, %hi(g_fight_active_playback_descriptor)
+    /* 2C344 8003BB44 7838A58C */  lw         $a1, %lo(g_fight_active_playback_descriptor)($a1)
     /* 2C348 8003BB48 00000000 */  nop
     /* 2C34C 8003BB4C 0300A390 */  lbu        $v1, 0x3($a1)
     /* 2C350 8003BB50 00000000 */  nop
@@ -131,8 +131,8 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C3AC 8003BBAC 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C3B0 8003BBB0 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* 2C3B4 8003BBB4 21280000 */   addu      $a1, $zero, $zero
-    /* 2C3B8 8003BBB8 0A80023C */  lui        $v0, %hi(D_800A3878)
-    /* 2C3BC 8003BBBC 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
+    /* 2C3B8 8003BBB8 0A80023C */  lui        $v0, %hi(g_fight_active_playback_descriptor)
+    /* 2C3BC 8003BBBC 7838428C */  lw         $v0, %lo(g_fight_active_playback_descriptor)($v0)
     /* 2C3C0 8003BBC0 00000000 */  nop
     /* 2C3C4 8003BBC4 03004290 */  lbu        $v0, 0x3($v0)
     /* 2C3C8 8003BBC8 00000000 */  nop
@@ -168,14 +168,14 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C434 8003BC34 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
     /* 2C438 8003BC38 EAD7000C */  jal        snd_SerialMixOn
     /* 2C43C 8003BC3C 00000000 */   nop
-    /* 2C440 8003BC40 0A80023C */  lui        $v0, %hi(D_800A3878)
-    /* 2C444 8003BC44 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
+    /* 2C440 8003BC40 0A80023C */  lui        $v0, %hi(g_fight_active_playback_descriptor)
+    /* 2C444 8003BC44 7838428C */  lw         $v0, %lo(g_fight_active_playback_descriptor)($v0)
     /* 2C448 8003BC48 00000000 */  nop
     /* 2C44C 8003BC4C 01004590 */  lbu        $a1, 0x1($v0)
     /* 2C450 8003BC50 AADB000C */  jal        cdrom_GetFileIndex
     /* 2C454 8003BC54 05000424 */   addiu     $a0, $zero, 0x5
-    /* 2C458 8003BC58 0A80033C */  lui        $v1, %hi(D_800A3878)
-    /* 2C45C 8003BC5C 7838638C */  lw         $v1, %lo(D_800A3878)($v1)
+    /* 2C458 8003BC58 0A80033C */  lui        $v1, %hi(g_fight_active_playback_descriptor)
+    /* 2C45C 8003BC5C 7838638C */  lw         $v1, %lo(g_fight_active_playback_descriptor)($v1)
     /* 2C460 8003BC60 00000000 */  nop
     /* 2C464 8003BC64 02006590 */  lbu        $a1, 0x2($v1)
     /* 2C468 8003BC68 F5DB000C */  jal        cdrom_StartAudio

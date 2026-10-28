@@ -328,11 +328,11 @@ dlabel D_800A36F4
     /* 93EF5 800A36F5 */ .byte 0x00
 enddlabel D_800A36F4
 
-nonmatching D_800A36F6
+nonmatching g_fight_tracked_fighter_index
 
-dlabel D_800A36F6
+dlabel g_fight_tracked_fighter_index
     /* 93EF6 800A36F6 */ .short 0x0000
-enddlabel D_800A36F6
+enddlabel g_fight_tracked_fighter_index
 
 nonmatching g_replay_write_frame
 
@@ -568,11 +568,11 @@ dlabel D_800A3769
     /* 93F69 800A3769 */ .byte 0x00
 enddlabel D_800A3769
 
-nonmatching D_800A376A
+nonmatching g_fight_bone_group_tim_requests
 
-dlabel D_800A376A
+dlabel g_fight_bone_group_tim_requests
     /* 93F6A 800A376A */ .byte 0x00
-enddlabel D_800A376A
+enddlabel g_fight_bone_group_tim_requests
 
 nonmatching D_800A376B
 
@@ -652,11 +652,11 @@ dlabel D_800A3788
     /* 93F8B 800A378B */ .byte 0x00
 enddlabel D_800A3788
 
-nonmatching D_800A378C
+nonmatching g_gpu_ot_offset_ptr
 
-dlabel D_800A378C
+dlabel g_gpu_ot_offset_ptr
     /* 93F8C 800A378C 00000000 */ .word 0x00000000
-enddlabel D_800A378C
+enddlabel g_gpu_ot_offset_ptr
 
 nonmatching D_800A3790
 

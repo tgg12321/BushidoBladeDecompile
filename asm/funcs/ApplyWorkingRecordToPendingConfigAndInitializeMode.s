@@ -60,8 +60,8 @@ glabel ApplyWorkingRecordToPendingConfigAndInitializeMode
     /* 25928 80035128 1080013C */  lui        $at, %hi(D_80102784)
     /* 2592C 8003512C 842722A0 */  sb         $v0, %lo(D_80102784)($at)
     /* 25930 80035130 2000628D */  lw         $v0, 0x20($t3)
-    /* 25934 80035134 0A80013C */  lui        $at, %hi(D_800A36F6)
-    /* 25938 80035138 F63620A4 */  sh         $zero, %lo(D_800A36F6)($at)
+    /* 25934 80035134 0A80013C */  lui        $at, %hi(g_fight_tracked_fighter_index)
+    /* 25938 80035138 F63620A4 */  sh         $zero, %lo(g_fight_tracked_fighter_index)($at)
     /* 2593C 8003513C C2100200 */  srl        $v0, $v0, 3
     /* 25940 80035140 01004230 */  andi       $v0, $v0, 0x1
     /* 25944 80035144 1080013C */  lui        $at, %hi(D_80102786)

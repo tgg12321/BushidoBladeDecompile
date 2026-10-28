@@ -174,9 +174,9 @@ glabel replay_PlayFrame
     /* 2A3CC 80039BCC 21288502 */  addu       $a1, $s4, $a1
     /* 2A3D0 80039BD0 14002286 */  lh         $v0, 0x14($s1)
     /* 2A3D4 80039BD4 21300000 */  addu       $a2, $zero, $zero
-    /* 2A3D8 80039BD8 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 2A3D8 80039BD8 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 2A3DC 80039BDC 21082200 */  addu       $at, $at, $v0
-    /* 2A3E0 80039BE0 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* 2A3E0 80039BE0 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* 2A3E4 80039BE4 C625010C */  jal        node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 2A3E8 80039BE8 21380000 */   addu      $a3, $zero, $zero
   .L80039BEC:
@@ -197,9 +197,9 @@ glabel replay_PlayFrame
     /* 2A420 80039C20 01008536 */   ori       $a1, $s4, 0x1
     /* 2A424 80039C24 14002286 */  lh         $v0, 0x14($s1)
     /* 2A428 80039C28 42310600 */  srl        $a2, $a2, 5
-    /* 2A42C 80039C2C 0980013C */  lui        $at, %hi(D_8008EB80)
+    /* 2A42C 80039C2C 0980013C */  lui        $at, %hi(g_resource_kind_entry_ids)
     /* 2A430 80039C30 21082200 */  addu       $at, $at, $v0
-    /* 2A434 80039C34 80EB2490 */  lbu        $a0, %lo(D_8008EB80)($at)
+    /* 2A434 80039C34 80EB2490 */  lbu        $a0, %lo(g_resource_kind_entry_ids)($at)
     /* 2A438 80039C38 8B26010C */  jal        node_QueueTableEntryNodePairUnderSlotNode
     /* 2A43C 80039C3C 0100C630 */   andi      $a2, $a2, 0x1
   .L80039C40:

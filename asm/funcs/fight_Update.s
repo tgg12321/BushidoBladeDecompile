@@ -17,8 +17,8 @@ glabel fight_Update
     /* F0B4 8001E8B4 00000000 */  nop
     /* F0B8 8001E8B8 0D004010 */  beqz       $v0, .L8001E8F0
     /* F0BC 8001E8BC 00000000 */   nop
-    /* F0C0 8001E8C0 0A80023C */  lui        $v0, %hi(D_800A36F6)
-    /* F0C4 8001E8C4 F6364284 */  lh         $v0, %lo(D_800A36F6)($v0)
+    /* F0C0 8001E8C0 0A80023C */  lui        $v0, %hi(g_fight_tracked_fighter_index)
+    /* F0C4 8001E8C4 F6364284 */  lh         $v0, %lo(g_fight_tracked_fighter_index)($v0)
     /* F0C8 8001E8C8 00000000 */  nop
     /* F0CC 8001E8CC 00210200 */  sll        $a0, $v0, 4
     /* F0D0 8001E8D0 21208200 */  addu       $a0, $a0, $v0

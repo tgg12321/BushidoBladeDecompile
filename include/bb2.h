@@ -16,12 +16,12 @@ extern void gpu_ResetGraphMode1(void);
 extern void gpu_HideResetAndClear(void);
 extern Unk800EF848Rec D_800EF848[];
 extern u16 D_80099C34[][7];
-/* 58 byte pairs (0x80099CC8..0x80099D3B), each byte an index into D_800EF980 or
- * 0xFF for none. */
+/* 58 byte pairs (0x80099CC8..0x80099D3B), each byte an index into
+ * g_resource_entry_request_state or 0xFF for none. */
 extern u8 D_80099CC8[58][2];
 
 /* SDK OT_TYPE: one DMA tag word per table entry. */
-extern u32 *D_800A378C;
+extern u32 *g_gpu_ot_offset_ptr;
 
 extern DR_MOVE D_800A3D70[31][2];
 extern DR_MOVE D_800A4340[19][2];
@@ -42,7 +42,7 @@ extern Unk800F1198Record g_eff_billboards[];
 extern Unk800A9CF8Rec g_node_frame_animation_context;
 extern Unk800F0EC8Record D_800F0EC8[][10];
 extern Unk800F0E38Record D_800F0E38[12];
-extern MenuState D_8009BC04;
+extern MenuState g_row_menu_row_state;
 
 /* The three scroll pages' origins: s16 (x, y) pairs for pages 4..6
  * (menu_UpdateChoiceGrid). */
@@ -53,7 +53,7 @@ extern s16 D_8009BCD0[2];
 
 /* 20 flag bytes indexed by entry id (bit 0 = selectable; mask 4 << player,
  * i.e. bit 2 + player = taken by that player); d_8C4E4.c, read by 64FD8.c. */
-extern u8 D_8009BCE4[20];
+extern u8 g_sel_entry_availability_and_claims[20];
 extern Unk8009BCF8Record D_8009BCF8[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by
@@ -246,7 +246,7 @@ extern u8 D_8008EB28[8][2];
 extern u8 D_8008EB38[8]; /* [weapon_id] -> Unk80101EC8Record.unk_12 */
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
-extern u8 D_8008EB80[];
+extern u8 g_resource_kind_entry_ids[];
 /* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
 extern u16 D_8008EBA0[22];
 extern s32 D_8008EBCC[];
@@ -341,7 +341,7 @@ extern u8 D_800A36F1;
 /* per-player byte, [unk_04] (object_InitKindQueue) */
 extern u8 D_800A36F2[2];
 extern u8 D_800A36F4;
-extern s16 D_800A36F6;
+extern s16 g_fight_tracked_fighter_index;
 extern u8 D_800A36F9;
 extern u8 g_camera_fight_view_mode;
 extern s16 D_800A36FC;
@@ -366,7 +366,7 @@ extern u8 D_800A3758;
 extern u8 g_cd_result[8];
 
 extern u8 D_800A3769;
-extern u8 D_800A376A;
+extern u8 g_fight_bone_group_tim_requests;
 extern u8 D_800A376B;
 extern u8 D_800A376C;
 extern s16 D_800A376E;
@@ -422,7 +422,7 @@ extern u8 *D_800A385C;
 extern Tbl800A3860Entry *g_motion_fighter_buffers[];
 extern u8 g_fight_match_cursor;
 extern s16 D_800A3876;
-extern u8 *D_800A3878;
+extern u8 *g_fight_active_playback_descriptor;
 extern s32 g_fighter_horizontal_separation;
 extern u8 g_motion_common_loaded;
 /* per player: preset motion frames (motion_InitBuffers, fighter_Update) */
@@ -430,11 +430,11 @@ extern MotionFrame *g_motion_frame_buffers[2];
 extern u8 D_800A389A;
 extern u8 g_fight_match_count;
 extern u16 D_800A389C;
-extern s32 D_800A38A0;
+extern s32 g_comb_local_side;
 extern u8 g_fight_presentation_index;
 extern s16 D_800A38A8;
 extern s16 g_fight_paired_move_initiator;
-extern u8 D_800A38B0;
+extern u8 g_fight_result_subject_index;
 extern u8 D_800A38B8;
 extern s16 g_fight_tracked_view_setting;
 /* per player: id of the 7-sector frame set loaded into
@@ -484,9 +484,9 @@ extern u8 g_snd_sequence_ticks[6];
 
 extern u8 D_800A391E;
 extern u8 D_800A391F;
-extern u8 D_800A3920;
+extern u8 g_fight_point_award_phase_timer;
 extern u8 g_comb_abort_request;
-extern u8 D_800A3929;
+extern u8 g_fight_choice_confirm_delay;
 extern Unk800A3D40Rec g_bitstream_delta_accumulators[];
 
 /* Three word pairs: the uncalled func_8003F5A8 stores pair i,
@@ -548,7 +548,7 @@ extern s32 D_80104F38;
 /* fight_BuildOpponentOrder's list: the set bit numbers of g_saved_record.unk_00
  * & mask, shuffled, plus up to three appended values (D_800A391F entries;
  * fight_AdvanceOpponentOrder reads entry D_800A3783, then advances it). */
-extern u8 D_801077B0[24];
+extern u8 g_fight_opponent_order[24];
 
 extern Unk80107850Rec g_snd_sequence_positions[6];
 extern void camera_UpdateReplayView(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
@@ -622,7 +622,7 @@ extern u16 D_800A37C4;
 extern POLY_FT4 *g_eff_quad_cursor;
 extern u32 *D_800A3808;
 extern s16 g_cd_fade_step;
-extern u8 D_800A384C;
+extern u8 g_fight_step_row_column;
 extern s16 g_cd_fade_len;
 extern u8 *D_800A3894;
 extern u32 *g_prim_buf_cursor; /* the draw-chunk builders' word cursor */

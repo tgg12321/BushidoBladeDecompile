@@ -1,7 +1,7 @@
 glabel ResetFlowAndFetchRowTablePair
     /* 68104 80077904 0A80023C */  lui        $v0, %hi(D_8009BD38)
     /* 68108 80077908 38BD428C */  lw         $v0, %lo(D_8009BD38)($v0)
-    /* 6810C 8007790C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
+    /* 6810C 8007790C 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
     /* 68110 80077910 0F004230 */  andi       $v0, $v0, 0xF
     /* 68114 80077914 40100200 */  sll        $v0, $v0, 1
     /* 68118 80077918 0A80013C */  lui        $at, %hi(D_8009BD58 + 0x1)

@@ -41,9 +41,9 @@ glabel fight_AdvanceOpponentOrder
     /* 24450 80033C50 6B3720A0 */  sb         $zero, %lo(D_800A376B)($at)
     /* 24454 80033C54 0A80013C */  lui        $at, %hi(D_800A3783)
     /* 24458 80033C58 833722A0 */  sb         $v0, %lo(D_800A3783)($at)
-    /* 2445C 80033C5C 1080013C */  lui        $at, %hi(D_801077B0)
+    /* 2445C 80033C5C 1080013C */  lui        $at, %hi(g_fight_opponent_order)
     /* 24460 80033C60 21082300 */  addu       $at, $at, $v1
-    /* 24464 80033C64 B0772590 */  lbu        $a1, %lo(D_801077B0)($at)
+    /* 24464 80033C64 B0772590 */  lbu        $a1, %lo(g_fight_opponent_order)($at)
     /* 24468 80033C68 00000000 */  nop
     /* 2446C 80033C6C FF00A430 */  andi       $a0, $a1, 0xFF
     /* 24470 80033C70 0980013C */  lui        $at, %hi(D_8008D55C)

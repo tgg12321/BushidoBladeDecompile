@@ -88,8 +88,8 @@ glabel fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags
     /* 24738 80033F38 0000A690 */  lbu        $a2, 0x0($a1)
     /* 2473C 80033F3C 1080023C */  lui        $v0, %hi(g_fight_config + 0x4)
     /* 24740 80033F40 7C274280 */  lb         $v0, %lo(g_fight_config + 0x4)($v0)
-    /* 24744 80033F44 0A80013C */  lui        $at, %hi(D_800A384C)
-    /* 24748 80033F48 4C3826A0 */  sb         $a2, %lo(D_800A384C)($at)
+    /* 24744 80033F44 0A80013C */  lui        $at, %hi(g_fight_step_row_column)
+    /* 24748 80033F48 4C3826A0 */  sb         $a2, %lo(g_fight_step_row_column)($at)
     /* 2474C 80033F4C 0980013C */  lui        $at, %hi(g_fight_config_id_data_rows)
     /* 24750 80033F50 21082200 */  addu       $at, $at, $v0
     /* 24754 80033F54 38D52290 */  lbu        $v0, %lo(g_fight_config_id_data_rows)($at)

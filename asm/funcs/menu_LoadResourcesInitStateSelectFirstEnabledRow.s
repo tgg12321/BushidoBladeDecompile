@@ -30,8 +30,8 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 597E0 80068FE0 340482AF */  sw         $v0, %gp_rel(D_800A3500)($gp)
     /* 597E4 80068FE4 F0FF0224 */  addiu      $v0, $zero, -0x10
     /* 597E8 80068FE8 2C04838F */  lw         $v1, %gp_rel(g_menu_packed_cursors)($gp)
-    /* 597EC 80068FEC 0A80043C */  lui        $a0, %hi(D_8009BC04)
-    /* 597F0 80068FF0 04BC848C */  lw         $a0, %lo(D_8009BC04)($a0)
+    /* 597EC 80068FEC 0A80043C */  lui        $a0, %hi(g_row_menu_row_state)
+    /* 597F0 80068FF0 04BC848C */  lw         $a0, %lo(g_row_menu_row_state)($a0)
     /* 597F4 80068FF4 24186200 */  and        $v1, $v1, $v0
     /* 597F8 80068FF8 01008230 */  andi       $v0, $a0, 0x1
     /* 597FC 80068FFC 2C0483AF */  sw         $v1, %gp_rel(g_menu_packed_cursors)($gp)

@@ -36,8 +36,8 @@ glabel fighter_AssignMotionSlotAndScanDataIdNibbles
     /* 11B00 80021300 01000A24 */  addiu      $t2, $zero, 0x1
     /* 11B04 80021304 0A80073C */  lui        $a3, %hi(g_fight_mode_selector)
     /* 11B08 80021308 DC38E784 */  lh         $a3, %lo(g_fight_mode_selector)($a3)
-    /* 11B0C 8002130C 0A80083C */  lui        $t0, %hi(D_800A384C)
-    /* 11B10 80021310 4C380891 */  lbu        $t0, %lo(D_800A384C)($t0)
+    /* 11B0C 8002130C 0A80083C */  lui        $t0, %hi(g_fight_step_row_column)
+    /* 11B10 80021310 4C380891 */  lbu        $t0, %lo(g_fight_step_row_column)($t0)
     /* 11B14 80021314 80100500 */  sll        $v0, $a1, 2
   .L80021318:
     /* 11B18 80021318 07104900 */  srav       $v0, $t1, $v0

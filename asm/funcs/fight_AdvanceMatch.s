@@ -48,8 +48,8 @@ glabel fight_AdvanceMatch
     /* 24B54 80034354 E83620A0 */  sb         $zero, %lo(D_800A36E8)($at)
     /* 24B58 80034358 0A80013C */  lui        $at, %hi(D_800A38B8)
     /* 24B5C 8003435C B83820A0 */  sb         $zero, %lo(D_800A38B8)($at)
-    /* 24B60 80034360 0A80013C */  lui        $at, %hi(D_800A3920)
-    /* 24B64 80034364 203920A0 */  sb         $zero, %lo(D_800A3920)($at)
+    /* 24B60 80034360 0A80013C */  lui        $at, %hi(g_fight_point_award_phase_timer)
+    /* 24B64 80034364 203920A0 */  sb         $zero, %lo(g_fight_point_award_phase_timer)($at)
   .L80034368:
     /* 24B68 80034368 0A80023C */  lui        $v0, %hi(g_fight_match_cursor)
     /* 24B6C 8003436C 74384290 */  lbu        $v0, %lo(g_fight_match_cursor)($v0)

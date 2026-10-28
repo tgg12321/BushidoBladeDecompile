@@ -10,7 +10,7 @@ glabel InitRowMenuBlackBgResetFlow
     /* 68040 80077840 21300000 */  addu       $a2, $zero, $zero
     /* 68044 80077844 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 68048 80077848 21380000 */   addu      $a3, $zero, $zero
-    /* 6804C 8007784C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
+    /* 6804C 8007784C 180580AF */  sw         $zero, %gp_rel(g_option_mode_flow_state)($gp)
     /* 68050 80077850 1000BF8F */  lw         $ra, 0x10($sp)
     /* 68054 80077854 01000224 */  addiu      $v0, $zero, 0x1
     /* 68058 80077858 0800E003 */  jr         $ra

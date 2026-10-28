@@ -24,7 +24,7 @@ glabel eff_DrawBillboardList
     /* 52910 80062110 00000000 */  nop
     /* 52914 80062114 020082A4 */  sh         $v0, 0x2($a0)
     /* 52918 80062118 0400628C */  lw         $v0, 0x4($v1)
-    /* 5291C 8006211C A403858F */  lw         $a1, %gp_rel(D_800A3470)($gp)
+    /* 5291C 8006211C A403858F */  lw         $a1, %gp_rel(g_eff_view_origin)($gp)
     /* 52920 80062120 04004294 */  lhu        $v0, 0x4($v0)
     /* 52924 80062124 00000000 */  nop
     /* 52928 80062128 040082A4 */  sh         $v0, 0x4($a0)
@@ -57,10 +57,10 @@ glabel eff_DrawBillboardList
     /* 52994 80062194 12001226 */  addiu      $s2, $s0, 0x12
     /* 52998 80062198 14001726 */  addiu      $s7, $s0, 0x14
     /* 5299C 8006219C 24001426 */  addiu      $s4, $s0, 0x24
-    /* 529A0 800621A0 E403838F */  lw         $v1, %gp_rel(D_800A34B0)($gp)
+    /* 529A0 800621A0 E403838F */  lw         $v1, %gp_rel(g_eff_geom_screen_work)($gp)
     /* 529A4 800621A4 34000826 */  addiu      $t0, $s0, 0x34
     /* 529A8 800621A8 000062AC */  sw         $v0, 0x0($v1)
-    /* 529AC 800621AC C403838F */  lw         $v1, %gp_rel(D_800A3490)($gp)
+    /* 529AC 800621AC C403838F */  lw         $v1, %gp_rel(g_eff_tpage_word)($gp)
     /* 529B0 800621B0 2F000224 */  addiu      $v0, $zero, 0x2F
     /* 529B4 800621B4 000062AC */  sw         $v0, 0x0($v1)
     /* 529B8 800621B8 0F80023C */  lui        $v0, %hi(g_eff_billboards)
@@ -101,17 +101,17 @@ glabel eff_DrawBillboardList
     /* 52A3C 8006223C 03000224 */  addiu      $v0, $zero, 0x3
     /* 52A40 80062240 54006214 */  bne        $v1, $v0, .L80062394
     /* 52A44 80062244 001C1500 */   sll       $v1, $s5, 16
-    /* 52A48 80062248 DC03838F */  lw         $v1, %gp_rel(D_800A34A8)($gp)
+    /* 52A48 80062248 DC03838F */  lw         $v1, %gp_rel(g_eff_base_width)($gp)
     /* 52A4C 8006224C 51010224 */  addiu      $v0, $zero, 0x151
     /* 52A50 80062250 000062A4 */  sh         $v0, 0x0($v1)
-    /* 52A54 80062254 E003838F */  lw         $v1, %gp_rel(D_800A34AC)($gp)
+    /* 52A54 80062254 E003838F */  lw         $v1, %gp_rel(g_eff_base_height)($gp)
     /* 52A58 80062258 9D880108 */  j          .L80062274
     /* 52A5C 8006225C A8000224 */   addiu     $v0, $zero, 0xA8
   .L80062260:
-    /* 52A60 80062260 DC03838F */  lw         $v1, %gp_rel(D_800A34A8)($gp)
+    /* 52A60 80062260 DC03838F */  lw         $v1, %gp_rel(g_eff_base_width)($gp)
     /* 52A64 80062264 00000000 */  nop
     /* 52A68 80062268 000062A4 */  sh         $v0, 0x0($v1)
-    /* 52A6C 8006226C E003838F */  lw         $v1, %gp_rel(D_800A34AC)($gp)
+    /* 52A6C 8006226C E003838F */  lw         $v1, %gp_rel(g_eff_base_height)($gp)
     /* 52A70 80062270 E1000224 */  addiu      $v0, $zero, 0xE1
   .L80062274:
     /* 52A74 80062274 000062A4 */  sh         $v0, 0x0($v1)
@@ -139,27 +139,27 @@ glabel eff_DrawBillboardList
     /* 52ACC 800622CC C00388AF */  sw         $t0, %gp_rel(D_800A348C)($gp)
   .L800622D0:
     /* 52AD0 800622D0 04008294 */  lhu        $v0, 0x4($a0)
-    /* 52AD4 800622D4 D003838F */  lw         $v1, %gp_rel(D_800A349C)($gp)
+    /* 52AD4 800622D4 D003838F */  lw         $v1, %gp_rel(g_eff_tex_right_u)($gp)
     /* 52AD8 800622D8 1F004224 */  addiu      $v0, $v0, 0x1F
     /* 52ADC 800622DC 000062A4 */  sh         $v0, 0x0($v1)
     /* 52AE0 800622E0 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 52AE4 800622E4 00000000 */  nop
     /* 52AE8 800622E8 06004294 */  lhu        $v0, 0x6($v0)
-    /* 52AEC 800622EC D803838F */  lw         $v1, %gp_rel(D_800A34A4)($gp)
+    /* 52AEC 800622EC D803838F */  lw         $v1, %gp_rel(g_eff_tex_bottom_v)($gp)
     /* 52AF0 800622F0 E3880108 */  j          .L8006238C
     /* 52AF4 800622F4 1F004224 */   addiu     $v0, $v0, 0x1F
   .L800622F8:
-    /* 52AF8 800622F8 DC03838F */  lw         $v1, %gp_rel(D_800A34A8)($gp)
+    /* 52AF8 800622F8 DC03838F */  lw         $v1, %gp_rel(g_eff_base_width)($gp)
     /* 52AFC 800622FC 00000000 */  nop
     /* 52B00 80062300 000062A4 */  sh         $v0, 0x0($v1)
-    /* 52B04 80062304 E003838F */  lw         $v1, %gp_rel(D_800A34AC)($gp)
+    /* 52B04 80062304 E003838F */  lw         $v1, %gp_rel(g_eff_base_height)($gp)
     /* 52B08 80062308 C9880108 */  j          .L80062324
     /* 52B0C 8006230C 3C000224 */   addiu     $v0, $zero, 0x3C
   .L80062310:
-    /* 52B10 80062310 DC03838F */  lw         $v1, %gp_rel(D_800A34A8)($gp)
+    /* 52B10 80062310 DC03838F */  lw         $v1, %gp_rel(g_eff_base_width)($gp)
     /* 52B14 80062314 64000224 */  addiu      $v0, $zero, 0x64
     /* 52B18 80062318 000062A4 */  sh         $v0, 0x0($v1)
-    /* 52B1C 8006231C E003838F */  lw         $v1, %gp_rel(D_800A34AC)($gp)
+    /* 52B1C 8006231C E003838F */  lw         $v1, %gp_rel(g_eff_base_height)($gp)
     /* 52B20 80062320 78000224 */  addiu      $v0, $zero, 0x78
   .L80062324:
     /* 52B24 80062324 000062A4 */  sh         $v0, 0x0($v1)
@@ -181,13 +181,13 @@ glabel eff_DrawBillboardList
     /* 52B64 80062364 C00388AF */  sw         $t0, %gp_rel(D_800A348C)($gp)
   .L80062368:
     /* 52B68 80062368 04004294 */  lhu        $v0, 0x4($v0)
-    /* 52B6C 8006236C D003838F */  lw         $v1, %gp_rel(D_800A349C)($gp)
+    /* 52B6C 8006236C D003838F */  lw         $v1, %gp_rel(g_eff_tex_right_u)($gp)
     /* 52B70 80062370 0F004224 */  addiu      $v0, $v0, 0xF
     /* 52B74 80062374 000062A4 */  sh         $v0, 0x0($v1)
     /* 52B78 80062378 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
     /* 52B7C 8006237C 00000000 */  nop
     /* 52B80 80062380 06004294 */  lhu        $v0, 0x6($v0)
-    /* 52B84 80062384 D803838F */  lw         $v1, %gp_rel(D_800A34A4)($gp)
+    /* 52B84 80062384 D803838F */  lw         $v1, %gp_rel(g_eff_tex_bottom_v)($gp)
     /* 52B88 80062388 13004224 */  addiu      $v0, $v0, 0x13
   .L8006238C:
     /* 52B8C 8006238C 000062A4 */  sh         $v0, 0x0($v1)
@@ -200,7 +200,7 @@ glabel eff_DrawBillboardList
     /* 52BA4 800623A4 0F80013C */  lui        $at, %hi(g_eff_billboards)
     /* 52BA8 800623A8 21082600 */  addu       $at, $at, $a2
     /* 52BAC 800623AC 9811228C */  lw         $v0, %lo(g_eff_billboards)($at)
-    /* 52BB0 800623B0 A403858F */  lw         $a1, %gp_rel(D_800A3470)($gp)
+    /* 52BB0 800623B0 A403858F */  lw         $a1, %gp_rel(g_eff_view_origin)($gp)
     /* 52BB4 800623B4 C21F0200 */  srl        $v1, $v0, 31
     /* 52BB8 800623B8 21104300 */  addu       $v0, $v0, $v1
     /* 52BBC 800623BC 0000A38C */  lw         $v1, 0x0($a1)
@@ -231,15 +231,15 @@ glabel eff_DrawBillboardList
     /* 52C1C 8006241C D3FB010C */  jal        SetTransMatrix
     /* 52C20 80062420 ECFFE426 */   addiu     $a0, $s7, -0x14
     /* 52C24 80062424 1000A48F */  lw         $a0, 0x10($sp)
-    /* 52C28 80062428 EC03858F */  lw         $a1, %gp_rel(D_800A34B8)($gp)
+    /* 52C28 80062428 EC03858F */  lw         $a1, %gp_rel(g_eff_screen_xy)($gp)
     /* 52C2C 8006242C 0004878F */  lw         $a3, %gp_rel(D_800A34CC)($gp)
     /* 52C30 80062430 1800A68F */  lw         $a2, 0x18($sp)
     /* 52C34 80062434 87FC010C */  jal        RotTransPers
     /* 52C38 80062438 00000000 */   nop
-    /* 52C3C 8006243C 0404888F */  lw         $t0, %gp_rel(D_800A34D0)($gp)
+    /* 52C3C 8006243C 0404888F */  lw         $t0, %gp_rel(g_eff_depth_work)($gp)
     /* 52C40 80062440 00000000 */  nop
     /* 52C44 80062444 000013E9 */  swc2       $19, 0x0($t0)
-    /* 52C48 80062448 0404828F */  lw         $v0, %gp_rel(D_800A34D0)($gp)
+    /* 52C48 80062448 0404828F */  lw         $v0, %gp_rel(g_eff_depth_work)($gp)
     /* 52C4C 8006244C 00000000 */  nop
     /* 52C50 80062450 0000448C */  lw         $a0, 0x0($v0)
     /* 52C54 80062454 0A4B010C */  jal        gpu_DepthToOtIndex
@@ -248,7 +248,7 @@ glabel eff_DrawBillboardList
     /* 52C60 80062460 0510622C */  sltiu      $v0, $v1, 0x1005
     /* 52C64 80062464 EE004010 */  beqz       $v0, .L80062820
     /* 52C68 80062468 0000C3AE */   sw        $v1, 0x0($s6)
-    /* 52C6C 8006246C E403828F */  lw         $v0, %gp_rel(D_800A34B0)($gp)
+    /* 52C6C 8006246C E403828F */  lw         $v0, %gp_rel(g_eff_geom_screen_work)($gp)
     /* 52C70 80062470 00000000 */  nop
     /* 52C74 80062474 0000428C */  lw         $v0, 0x0($v0)
     /* 52C78 80062478 00000000 */  nop
@@ -268,20 +268,20 @@ glabel eff_DrawBillboardList
     /* 52CAC 800624AC 3F004230 */  andi       $v0, $v0, 0x3F
     /* 52CB0 800624B0 80190300 */  sll        $v1, $v1, 6
     /* 52CB4 800624B4 21104300 */  addu       $v0, $v0, $v1
-    /* 52CB8 800624B8 C803838F */  lw         $v1, %gp_rel(D_800A3494)($gp)
+    /* 52CB8 800624B8 C803838F */  lw         $v1, %gp_rel(g_eff_clut_word)($gp)
     /* 52CBC 800624BC FFFF4230 */  andi       $v0, $v0, 0xFFFF
     /* 52CC0 800624C0 000062AC */  sw         $v0, 0x0($v1)
     /* 52CC4 800624C4 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
-    /* 52CC8 800624C8 CC03838F */  lw         $v1, %gp_rel(D_800A3498)($gp)
+    /* 52CC8 800624C8 CC03838F */  lw         $v1, %gp_rel(g_eff_tex_left_u)($gp)
     /* 52CCC 800624CC 04004294 */  lhu        $v0, 0x4($v0)
     /* 52CD0 800624D0 00000000 */  nop
     /* 52CD4 800624D4 000062A4 */  sh         $v0, 0x0($v1)
     /* 52CD8 800624D8 BC03828F */  lw         $v0, %gp_rel(g_eff_current_tex_rec)($gp)
-    /* 52CDC 800624DC D403838F */  lw         $v1, %gp_rel(D_800A34A0)($gp)
+    /* 52CDC 800624DC D403838F */  lw         $v1, %gp_rel(g_eff_tex_top_v)($gp)
     /* 52CE0 800624E0 06004294 */  lhu        $v0, 0x6($v0)
     /* 52CE4 800624E4 00000000 */  nop
     /* 52CE8 800624E8 000062A4 */  sh         $v0, 0x0($v1)
-    /* 52CEC 800624EC 0404838F */  lw         $v1, %gp_rel(D_800A34D0)($gp)
+    /* 52CEC 800624EC 0404838F */  lw         $v1, %gp_rel(g_eff_depth_work)($gp)
     /* 52CF0 800624F0 00000000 */  nop
     /* 52CF4 800624F4 0000628C */  lw         $v0, 0x0($v1)
     /* 52CF8 800624F8 00000000 */  nop
@@ -290,8 +290,8 @@ glabel eff_DrawBillboardList
     /* 52D04 80062504 01000224 */  addiu      $v0, $zero, 0x1
   .L80062508:
     /* 52D08 80062508 000062AC */  sw         $v0, 0x0($v1)
-    /* 52D0C 8006250C E403828F */  lw         $v0, %gp_rel(D_800A34B0)($gp)
-    /* 52D10 80062510 0404848F */  lw         $a0, %gp_rel(D_800A34D0)($gp)
+    /* 52D0C 8006250C E403828F */  lw         $v0, %gp_rel(g_eff_geom_screen_work)($gp)
+    /* 52D10 80062510 0404848F */  lw         $a0, %gp_rel(g_eff_depth_work)($gp)
     /* 52D14 80062514 0000438C */  lw         $v1, 0x0($v0)
     /* 52D18 80062518 0000828C */  lw         $v0, 0x0($a0)
     /* 52D1C 8006251C 00000000 */  nop
@@ -308,11 +308,11 @@ glabel eff_DrawBillboardList
     /* 52D44 80062544 0D000600 */  break      6
   .L80062548:
     /* 52D48 80062548 12180000 */  mflo       $v1
-    /* 52D4C 8006254C E803828F */  lw         $v0, %gp_rel(D_800A34B4)($gp)
+    /* 52D4C 8006254C E803828F */  lw         $v0, %gp_rel(g_eff_perspective_scale)($gp)
     /* 52D50 80062550 00000000 */  nop
     /* 52D54 80062554 000043AC */  sw         $v1, 0x0($v0)
-    /* 52D58 80062558 DC03828F */  lw         $v0, %gp_rel(D_800A34A8)($gp)
-    /* 52D5C 8006255C E803838F */  lw         $v1, %gp_rel(D_800A34B4)($gp)
+    /* 52D58 80062558 DC03828F */  lw         $v0, %gp_rel(g_eff_base_width)($gp)
+    /* 52D5C 8006255C E803838F */  lw         $v1, %gp_rel(g_eff_perspective_scale)($gp)
     /* 52D60 80062560 00004484 */  lh         $a0, 0x0($v0)
     /* 52D64 80062564 0000628C */  lw         $v0, 0x0($v1)
     /* 52D68 80062568 00000000 */  nop
@@ -329,8 +329,8 @@ glabel eff_DrawBillboardList
     /* 52D90 80062590 21186200 */  addu       $v1, $v1, $v0
     /* 52D94 80062594 43180300 */  sra        $v1, $v1, 1
     /* 52D98 80062598 000063A6 */  sh         $v1, 0x0($s3)
-    /* 52D9C 8006259C E003828F */  lw         $v0, %gp_rel(D_800A34AC)($gp)
-    /* 52DA0 800625A0 E803838F */  lw         $v1, %gp_rel(D_800A34B4)($gp)
+    /* 52D9C 8006259C E003828F */  lw         $v0, %gp_rel(g_eff_base_height)($gp)
+    /* 52DA0 800625A0 E803838F */  lw         $v1, %gp_rel(g_eff_perspective_scale)($gp)
     /* 52DA4 800625A4 00004484 */  lh         $a0, 0x0($v0)
     /* 52DA8 800625A8 0000628C */  lw         $v0, 0x0($v1)
     /* 52DAC 800625AC 00000000 */  nop
@@ -359,8 +359,8 @@ glabel eff_DrawBillboardList
     /* 52E04 80062604 2128A300 */  addu       $a1, $a1, $v1
     /* 52E08 80062608 87EA010C */  jal        SetPolyFT4
     /* 52E0C 8006260C 000045A6 */   sh        $a1, 0x0($s2)
-    /* 52E10 80062610 C403828F */  lw         $v0, %gp_rel(D_800A3490)($gp)
-    /* 52E14 80062614 C803838F */  lw         $v1, %gp_rel(D_800A3494)($gp)
+    /* 52E10 80062610 C403828F */  lw         $v0, %gp_rel(g_eff_tpage_word)($gp)
+    /* 52E14 80062614 C803838F */  lw         $v1, %gp_rel(g_eff_clut_word)($gp)
     /* 52E18 80062618 0000428C */  lw         $v0, 0x0($v0)
     /* 52E1C 8006261C 00000000 */  nop
     /* 52E20 80062620 F1FF02A6 */  sh         $v0, -0xF($s0)
@@ -370,7 +370,7 @@ glabel eff_DrawBillboardList
     /* 52E30 80062630 80000224 */  addiu      $v0, $zero, 0x80
     /* 52E34 80062634 E0FF02A2 */  sb         $v0, -0x20($s0)
     /* 52E38 80062638 E1FF02A2 */  sb         $v0, -0x1F($s0)
-    /* 52E3C 8006263C EC03848F */  lw         $a0, %gp_rel(D_800A34B8)($gp)
+    /* 52E3C 8006263C EC03848F */  lw         $a0, %gp_rel(g_eff_screen_xy)($gp)
     /* 52E40 80062640 E9FF03A6 */  sh         $v1, -0x17($s0)
     /* 52E44 80062644 0000828C */  lw         $v0, 0x0($a0)
     /* 52E48 80062648 00006396 */  lhu        $v1, 0x0($s3)
@@ -406,42 +406,42 @@ glabel eff_DrawBillboardList
     /* 52EC0 800626C0 21104300 */  addu       $v0, $v0, $v1
     /* 52EC4 800626C4 FBFF02A6 */  sh         $v0, -0x5($s0)
     /* 52EC8 800626C8 02008284 */  lh         $v0, 0x2($a0)
-    /* 52ECC 800626CC CC03838F */  lw         $v1, %gp_rel(D_800A3498)($gp)
+    /* 52ECC 800626CC CC03838F */  lw         $v1, %gp_rel(g_eff_tex_left_u)($gp)
     /* 52ED0 800626D0 FDFF02A6 */  sh         $v0, -0x3($s0)
     /* 52ED4 800626D4 00006294 */  lhu        $v0, 0x0($v1)
     /* 52ED8 800626D8 00000000 */  nop
     /* 52EDC 800626DC E7FF02A2 */  sb         $v0, -0x19($s0)
-    /* 52EE0 800626E0 D403828F */  lw         $v0, %gp_rel(D_800A34A0)($gp)
+    /* 52EE0 800626E0 D403828F */  lw         $v0, %gp_rel(g_eff_tex_top_v)($gp)
     /* 52EE4 800626E4 00000000 */  nop
     /* 52EE8 800626E8 00004294 */  lhu        $v0, 0x0($v0)
     /* 52EEC 800626EC 00000000 */  nop
     /* 52EF0 800626F0 E8FF02A2 */  sb         $v0, -0x18($s0)
-    /* 52EF4 800626F4 D003828F */  lw         $v0, %gp_rel(D_800A349C)($gp)
+    /* 52EF4 800626F4 D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
     /* 52EF8 800626F8 00000000 */  nop
     /* 52EFC 800626FC 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F00 80062700 00000000 */  nop
     /* 52F04 80062704 EFFF02A2 */  sb         $v0, -0x11($s0)
-    /* 52F08 80062708 D403828F */  lw         $v0, %gp_rel(D_800A34A0)($gp)
+    /* 52F08 80062708 D403828F */  lw         $v0, %gp_rel(g_eff_tex_top_v)($gp)
     /* 52F0C 8006270C 00000000 */  nop
     /* 52F10 80062710 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F14 80062714 00000000 */  nop
     /* 52F18 80062718 F0FF02A2 */  sb         $v0, -0x10($s0)
-    /* 52F1C 8006271C CC03828F */  lw         $v0, %gp_rel(D_800A3498)($gp)
+    /* 52F1C 8006271C CC03828F */  lw         $v0, %gp_rel(g_eff_tex_left_u)($gp)
     /* 52F20 80062720 00000000 */  nop
     /* 52F24 80062724 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F28 80062728 00000000 */  nop
     /* 52F2C 8006272C F7FF02A2 */  sb         $v0, -0x9($s0)
-    /* 52F30 80062730 D803828F */  lw         $v0, %gp_rel(D_800A34A4)($gp)
+    /* 52F30 80062730 D803828F */  lw         $v0, %gp_rel(g_eff_tex_bottom_v)($gp)
     /* 52F34 80062734 00000000 */  nop
     /* 52F38 80062738 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F3C 8006273C 00000000 */  nop
     /* 52F40 80062740 F8FF02A2 */  sb         $v0, -0x8($s0)
-    /* 52F44 80062744 D003828F */  lw         $v0, %gp_rel(D_800A349C)($gp)
+    /* 52F44 80062744 D003828F */  lw         $v0, %gp_rel(g_eff_tex_right_u)($gp)
     /* 52F48 80062748 00000000 */  nop
     /* 52F4C 8006274C 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F50 80062750 00000000 */  nop
     /* 52F54 80062754 FFFF02A2 */  sb         $v0, -0x1($s0)
-    /* 52F58 80062758 D803828F */  lw         $v0, %gp_rel(D_800A34A4)($gp)
+    /* 52F58 80062758 D803828F */  lw         $v0, %gp_rel(g_eff_tex_bottom_v)($gp)
     /* 52F5C 8006275C 01000524 */  addiu      $a1, $zero, 0x1
     /* 52F60 80062760 00004294 */  lhu        $v0, 0x0($v0)
     /* 52F64 80062764 21202002 */  addu       $a0, $s1, $zero
@@ -473,10 +473,10 @@ glabel eff_DrawBillboardList
     /* 52FCC 800627CC 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
     /* 52FD0 800627D0 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 52FD4 800627D4 00FF053C */  lui        $a1, (0xFF000000 >> 16)
-    /* 52FD8 800627D8 1C0491AF */  sw         $s1, %gp_rel(D_800A34E8)($gp)
+    /* 52FD8 800627D8 1C0491AF */  sw         $s1, %gp_rel(g_eff_current_prim_tag)($gp)
     /* 52FDC 800627DC 80180300 */  sll        $v1, $v1, 2
     /* 52FE0 800627E0 21104300 */  addu       $v0, $v0, $v1
-    /* 52FE4 800627E4 180482AF */  sw         $v0, %gp_rel(D_800A34E4)($gp)
+    /* 52FE4 800627E4 180482AF */  sw         $v0, %gp_rel(g_eff_current_ot_entry)($gp)
     /* 52FE8 800627E8 0000238E */  lw         $v1, 0x0($s1)
     /* 52FEC 800627EC 0000428C */  lw         $v0, 0x0($v0)
     /* 52FF0 800627F0 24186500 */  and        $v1, $v1, $a1
@@ -484,8 +484,8 @@ glabel eff_DrawBillboardList
     /* 52FF8 800627F8 25186200 */  or         $v1, $v1, $v0
     /* 52FFC 800627FC 000023AE */  sw         $v1, 0x0($s1)
     /* 53000 80062800 28003126 */  addiu      $s1, $s1, 0x28
-    /* 53004 80062804 1804848F */  lw         $a0, %gp_rel(D_800A34E4)($gp)
-    /* 53008 80062808 1C04838F */  lw         $v1, %gp_rel(D_800A34E8)($gp)
+    /* 53004 80062804 1804848F */  lw         $a0, %gp_rel(g_eff_current_ot_entry)($gp)
+    /* 53008 80062808 1C04838F */  lw         $v1, %gp_rel(g_eff_current_prim_tag)($gp)
     /* 5300C 8006280C 0000828C */  lw         $v0, 0x0($a0)
     /* 53010 80062810 24186600 */  and        $v1, $v1, $a2
     /* 53014 80062814 24104500 */  and        $v0, $v0, $a1

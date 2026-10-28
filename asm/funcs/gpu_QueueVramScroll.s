@@ -144,8 +144,8 @@ glabel gpu_QueueVramScroll
     /* 39A20 80049220 21905302 */  addu       $s2, $s2, $s3
     /* 39A24 80049224 3000AB8F */  lw         $t3, 0x30($sp)
     /* 39A28 80049228 3800AA8F */  lw         $t2, 0x38($sp)
-    /* 39A2C 8004922C 0A80083C */  lui        $t0, %hi(D_800A378C)
-    /* 39A30 80049230 8C37088D */  lw         $t0, %lo(D_800A378C)($t0)
+    /* 39A2C 8004922C 0A80083C */  lui        $t0, %hi(g_gpu_ot_offset_ptr)
+    /* 39A30 80049230 8C37088D */  lw         $t0, %lo(g_gpu_ot_offset_ptr)($t0)
     /* 39A34 80049234 43580B00 */  sra        $t3, $t3, 1
     /* 39A38 80049238 3000ABAF */  sw         $t3, 0x30($sp)
     /* 39A3C 8004923C 5000AB8F */  lw         $t3, 0x50($sp)
@@ -181,8 +181,8 @@ glabel gpu_QueueVramScroll
     /* 39AB4 800492B4 1200B2A7 */  sh         $s2, 0x12($sp)
     /* 39AB8 800492B8 EEEA010C */  jal        SetDrawMove
     /* 39ABC 800492BC 1600A9A7 */   sh        $t1, 0x16($sp)
-    /* 39AC0 800492C0 0A80043C */  lui        $a0, %hi(D_800A378C)
-    /* 39AC4 800492C4 8C37848C */  lw         $a0, %lo(D_800A378C)($a0)
+    /* 39AC0 800492C0 0A80043C */  lui        $a0, %hi(g_gpu_ot_offset_ptr)
+    /* 39AC4 800492C4 8C37848C */  lw         $a0, %lo(g_gpu_ot_offset_ptr)($a0)
     /* 39AC8 800492C8 0000838E */  lw         $v1, 0x0($s4)
     /* 39ACC 800492CC FC3F828C */  lw         $v0, 0x3FFC($a0)
     /* 39AD0 800492D0 24187E00 */  and        $v1, $v1, $fp

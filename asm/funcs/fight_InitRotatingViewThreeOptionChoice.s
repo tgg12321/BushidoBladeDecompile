@@ -6,8 +6,8 @@ glabel fight_InitRotatingViewThreeOptionChoice
     /* 2D168 8003C968 19000224 */  addiu      $v0, $zero, 0x19
     /* 2D16C 8003C96C 0A80013C */  lui        $at, %hi(g_fight_choice_menu_cursor)
     /* 2D170 8003C970 173820A0 */  sb         $zero, %lo(g_fight_choice_menu_cursor)($at)
-    /* 2D174 8003C974 0A80013C */  lui        $at, %hi(D_800A3929)
-    /* 2D178 8003C978 293920A0 */  sb         $zero, %lo(D_800A3929)($at)
+    /* 2D174 8003C974 0A80013C */  lui        $at, %hi(g_fight_choice_confirm_delay)
+    /* 2D178 8003C978 293920A0 */  sb         $zero, %lo(g_fight_choice_confirm_delay)($at)
     /* 2D17C 8003C97C 0A80013C */  lui        $at, %hi(g_handler_frame_counter)
     /* 2D180 8003C980 B83720AC */  sw         $zero, %lo(g_handler_frame_counter)($at)
     /* 2D184 8003C984 0A80013C */  lui        $at, %hi(g_main_loop_handler_index)

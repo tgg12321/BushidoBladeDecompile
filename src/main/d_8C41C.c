@@ -3,12 +3,12 @@
  * Owner ruling Q122 (data-only-no-sdata):
  * 1. One run: 596CC.o(.data) ends at 0x8009BC1C and 5ED34.o(.data) is empty;
  *    the next .data is 63D2C.c's D_8009BCD4. No uninitialized objects.
- * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by D_800A3590[i],
- *    0..5 like D_8009BC94[i]; the 2 zero bytes after it are the word
- *    alignment of g_entry_menu_grid_entries, another type with other readers)
- * and D_8009BCD0 (s16[2], scroll state menu_UpdateChoiceGrid writes; the run's
- * end). Under -G8 the original compiler puts both in .sdata, so no -G8 file
- * defined them.
+ * 2. Small objects in .data: D_8009BC38 (u8[6], indexed by
+ * g_entry_menu_row_phase_choice_cursors[i], 0..5 like D_8009BC94[i]; the 2 zero
+ * bytes after it are the word alignment of g_entry_menu_grid_entries, another
+ * type with other readers) and D_8009BCD0 (s16[2], scroll state
+ * menu_UpdateChoiceGrid writes; the run's end). Under -G8 the original compiler
+ * puts both in .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 596CC.c (its own .sdata, gp accesses)
  *    and 5ED34.c (its own .sdata / .sbss, gp accesses), both -G8 code
  *    modules with adjacent .text, so neither owns these objects.

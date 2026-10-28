@@ -16,8 +16,8 @@ glabel motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush
     /* 457A0 80054FA0 10006324 */  addiu      $v1, $v1, 0x10
     /* 457A4 80054FA4 0A80013C */  lui        $at, %hi(D_800A38D6)
     /* 457A8 80054FA8 D63822A4 */  sh         $v0, %lo(D_800A38D6)($at)
-    /* 457AC 80054FAC 0A80013C */  lui        $at, %hi(D_800A378C)
-    /* 457B0 80054FB0 8C3723AC */  sw         $v1, %lo(D_800A378C)($at)
+    /* 457AC 80054FAC 0A80013C */  lui        $at, %hi(g_gpu_ot_offset_ptr)
+    /* 457B0 80054FB0 8C3723AC */  sw         $v1, %lo(g_gpu_ot_offset_ptr)($at)
     /* 457B4 80054FB4 4352010C */  jal        motion_UpdatePlayback
     /* 457B8 80054FB8 00000000 */   nop
     /* 457BC 80054FBC 3811010C */  jal        func_800444E0

@@ -21,8 +21,8 @@ glabel gpu_ResetDrawQueueAndPrepareViewAndLighting
     /* 37440 80046C40 10006324 */  addiu      $v1, $v1, 0x10
     /* 37444 80046C44 0A80013C */  lui        $at, %hi(D_800A38D6)
     /* 37448 80046C48 D63822A4 */  sh         $v0, %lo(D_800A38D6)($at)
-    /* 3744C 80046C4C 0A80013C */  lui        $at, %hi(D_800A378C)
-    /* 37450 80046C50 8C3723AC */  sw         $v1, %lo(D_800A378C)($at)
+    /* 3744C 80046C4C 0A80013C */  lui        $at, %hi(g_gpu_ot_offset_ptr)
+    /* 37450 80046C50 8C3723AC */  sw         $v1, %lo(g_gpu_ot_offset_ptr)($at)
     /* 37454 80046C54 3E004012 */  beqz       $s2, .L80046D50
     /* 37458 80046C58 2198C000 */   addu      $s3, $a2, $zero
     /* 3745C 80046C5C 0000E294 */  lhu        $v0, 0x0($a3)

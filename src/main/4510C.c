@@ -193,7 +193,7 @@ s32 motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush(void) {
     g_draw_queue_cursor = g_draw_queue;
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = g_gpu_ot_ptr;
-    D_800A378C = g_gpu_ot_ptr + 4;
+    g_gpu_ot_offset_ptr = g_gpu_ot_ptr + 4;
     playback_updated = motion_UpdatePlayback();
     func_800444E0();
     return playback_updated;

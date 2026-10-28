@@ -116,9 +116,9 @@ glabel menu_DrawSelGrid
     /* 66380 80075B80 40100500 */  sll        $v0, $a1, 1
     /* 66384 80075B84 21405600 */  addu       $t0, $v0, $s6
     /* 66388 80075B88 00000391 */  lbu        $v1, 0x0($t0)
-    /* 6638C 80075B8C 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 6638C 80075B8C 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 66390 80075B90 21082300 */  addu       $at, $at, $v1
-    /* 66394 80075B94 E4BC2290 */  lbu        $v0, %lo(D_8009BCE4)($at)
+    /* 66394 80075B94 E4BC2290 */  lbu        $v0, %lo(g_sel_entry_availability_and_claims)($at)
     /* 66398 80075B98 00000000 */  nop
     /* 6639C 80075B9C 01004230 */  andi       $v0, $v0, 0x1
     /* 663A0 80075BA0 34004010 */  beqz       $v0, .L80075C74
@@ -165,9 +165,9 @@ glabel menu_DrawSelGrid
     /* 6643C 80075C3C 21105600 */  addu       $v0, $v0, $s6
     /* 66440 80075C40 00004390 */  lbu        $v1, 0x0($v0)
     /* 66444 80075C44 04000224 */  addiu      $v0, $zero, 0x4
-    /* 66448 80075C48 0A80013C */  lui        $at, %hi(D_8009BCE4)
+    /* 66448 80075C48 0A80013C */  lui        $at, %hi(g_sel_entry_availability_and_claims)
     /* 6644C 80075C4C 21082300 */  addu       $at, $at, $v1
-    /* 66450 80075C50 E4BC2390 */  lbu        $v1, %lo(D_8009BCE4)($at)
+    /* 66450 80075C50 E4BC2390 */  lbu        $v1, %lo(g_sel_entry_availability_and_claims)($at)
     /* 66454 80075C54 04104202 */  sllv       $v0, $v0, $s2
     /* 66458 80075C58 24186200 */  and        $v1, $v1, $v0
     /* 6645C 80075C5C 0B006010 */  beqz       $v1, .L80075C8C

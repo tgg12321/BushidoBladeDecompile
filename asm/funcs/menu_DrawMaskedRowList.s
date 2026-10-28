@@ -89,8 +89,8 @@ glabel menu_DrawMaskedRowList
     /* 5B1D4 8006A9D4 3F001224 */  addiu      $s2, $zero, 0x3F
     /* 5B1D8 8006A9D8 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5B1DC 8006A9DC 240002AE */  sw         $v0, 0x24($s0)
-    /* 5B1E0 8006A9E0 0A80163C */  lui        $s6, %hi(D_8009BC04)
-    /* 5B1E4 8006A9E4 04BCD68E */  lw         $s6, %lo(D_8009BC04)($s6)
+    /* 5B1E0 8006A9E0 0A80163C */  lui        $s6, %hi(g_row_menu_row_state)
+    /* 5B1E4 8006A9E4 04BCD68E */  lw         $s6, %lo(g_row_menu_row_state)($s6)
     /* 5B1E8 8006A9E8 0B000224 */  addiu      $v0, $zero, 0xB
     /* 5B1EC 8006A9EC 2C00A2AF */  sw         $v0, 0x2C($sp)
   .L8006A9F0:
