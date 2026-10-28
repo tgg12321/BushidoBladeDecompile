@@ -36,21 +36,21 @@ extern void eff_StartRecycledYawedParticlesWithTextureSelection();
 const char D_80010478[] = "ILLEGAL GUN MOTION : %d\n";
 const char D_80010494[] = "";
 
-s32 math_ClassifyAbsMagnitude(s32 a0) {
-    s32 v1;
-    if (a0 < 0) {
-        a0 = -a0;
+s32 math_ClassifyAbsMagnitude(s32 input_value) {
+    s32 magnitude_class;
+    if (input_value < 0) {
+        input_value = -input_value;
     }
-    if (a0 < 0xA01) {
-        if (a0 < 0x600) {
-            v1 = 1;
+    if (input_value < 0xA01) {
+        if (input_value < 0x600) {
+            magnitude_class = 1;
         } else {
-            v1 = 2;
+            magnitude_class = 2;
         }
     } else {
-        v1 = 0;
+        magnitude_class = 0;
     }
-    return v1;
+    return magnitude_class;
 }
 
 void motion_SetFixedChannelBlock(MotionFrame *motion_frame) {
@@ -75,11 +75,12 @@ void motion_SetFixedChannelBlock(MotionFrame *motion_frame) {
  * fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState /
  * fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields
  * were reported at 12 / 16 (not banked). */
-void fighter_AccumulateBoneGroupFlagWhenGameModeZero(s32 a0, s32 a1) {
+void fighter_AccumulateBoneGroupFlagWhenGameModeZero(
+    s32 a0, s32 hit_record_index) {
     if (g_fight_mode_selector != 0) {
         return;
     }
-    switch (a1) {
+    switch (hit_record_index) {
     case 0:
     case 1:
     case 2:
@@ -116,37 +117,37 @@ void fighter_AccumulateBoneGroupFlagWhenGameModeZero(s32 a0, s32 a1) {
 }
 
 void fighter_AccumulateOrClearByBoneGroup(
-    Unk80101EC8Record *a0, s32 a1, s16 a2) {
-    s16 v1;
-    v1 = g_fight_mode_selector;
-    if (v1 == 5) {
+    Unk80101EC8Record *fighter_record, s32 hit_record_index, s16 increment) {
+    s16 fight_mode;
+    fight_mode = g_fight_mode_selector;
+    if (fight_mode == 5) {
         return;
     }
-    if ((u32)a1 >= 0x16) {
+    if ((u32)hit_record_index >= 0x16) {
         return;
     }
-    switch (a1) {
+    switch (hit_record_index) {
     case 0:
     case 1:
     case 2:
     case 3:
     case 4:
     case 5:
-        a0->unk_272 += a2;
+        fighter_record->unk_272 += increment;
         break;
     case 6:
     case 7:
     case 8:
     case 9:
-        a0->unk_26C = 0;
-        a0->unk_90 = 0;
-        a0->object_variant_enabled = 0;
+        fighter_record->unk_26C = 0;
+        fighter_record->unk_90 = 0;
+        fighter_record->object_variant_enabled = 0;
         break;
     case 10:
     case 11:
     case 12:
     case 13:
-        a0->unk_270 += a2;
+        fighter_record->unk_270 += increment;
         break;
     case 14:
     case 15:
@@ -156,7 +157,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 19:
     case 20:
     case 21:
-        a0->unk_26E += a2;
+        fighter_record->unk_26E += increment;
         break;
     }
 }
@@ -174,13 +175,13 @@ void math_NegNormalize3D(s32 *input_vector, s16 *output_vector) {
         {
             u32 v0_m = (u32)-2;
             u32 v1_m;
-            u32 idx;
+            u32 sqrt_table_index;
             u32 hi;
             v0_m &= sp_tmp;
             v1_m = 0x16 - v0_m;
-            idx = dist_sq >> v1_m;
+            sqrt_table_index = dist_sq >> v1_m;
             v1_m = v1_m >> 1;
-            hi = (u32)((u8)(g_sqrt_table_u8[idx]));
+            hi = (u32)((u8)(g_sqrt_table_u8[sqrt_table_index]));
             vector_length = (hi << 16) >> (0x13 - v1_m);
         }
     }
@@ -189,72 +190,79 @@ void math_NegNormalize3D(s32 *input_vector, s16 *output_vector) {
     output_vector[2] = (s16)(((-input_vector[2]) << 12) / ((s32)vector_length));
 }
 
-void fighter_RelocateAndStartEventMove(Unk80101EC8Record *arg0) {
+void fighter_RelocateAndStartEventMove(Unk80101EC8Record *fighter_record) {
     VECTOR var_0;
-    VECTOR var_1;
-    s32 idx;
-    s16 *tbl;
-    s32 var_4;
-    u8 cnt;
+    VECTOR target_position;
+    s32 fighter_index;
+    s16 *start_position_cursor;
+    s32 reposition_percent;
+    u8 previous_reposition_count;
     u16 *r1;
-    void *r2;
+    void *move_script;
     s32 vx;
     s32 vz;
 
-    idx = arg0->index;
-    tbl = fight_GetStartPositionPairTable();
-    cnt = arg0->reposition_count;
-    if (cnt < 0x40) {
-        arg0->reposition_count = cnt + 1;
+    fighter_index = fighter_record->index;
+    start_position_cursor = fight_GetStartPositionPairTable();
+    previous_reposition_count = fighter_record->reposition_count;
+    if (previous_reposition_count < 0x40) {
+        fighter_record->reposition_count = previous_reposition_count + 1;
     }
-    var_4 = 0x3C - ((arg0->reposition_count - 1) * 4);
-    if (var_4 < 10) {
-        var_4 = 10;
+    reposition_percent = 0x3C - ((fighter_record->reposition_count - 1) * 4);
+    if (reposition_percent < 10) {
+        reposition_percent = 10;
     }
     if (g_fight_stage_index == 3) {
         vx = 0x2EE0;
-        if (arg0->other->world_pos.x >= 0x3E9) {
+        if (fighter_record->other->world_pos.x >= 0x3E9) {
             vx = -0x2710;
         }
-        var_1.vx = vx;
+        target_position.vx = vx;
         vz = 0x1770;
-        if (arg0->other->world_pos.z > 0) {
+        if (fighter_record->other->world_pos.z > 0) {
             vz = -0x1770;
         }
-        var_1.vz = vz;
-        var_0.vx = (var_1.vx * var_4 + arg0->world_pos.x * (100 - var_4)) / 100;
-        var_0.vz = (var_1.vz * var_4 + arg0->world_pos.z * (100 - var_4)) / 100;
+        target_position.vz = vz;
+        var_0.vx = (target_position.vx * reposition_percent +
+                    fighter_record->world_pos.x * (100 - reposition_percent)) /
+                   100;
+        var_0.vz = (target_position.vz * reposition_percent +
+                    fighter_record->world_pos.z * (100 - reposition_percent)) /
+                   100;
     } else {
-        tbl += (g_fight_stage_index * 12 + idx * 3);
-        var_0.vx = tbl[0];
-        var_0.vz = tbl[2];
+        start_position_cursor += (g_fight_stage_index * 12 + fighter_index * 3);
+        var_0.vx = start_position_cursor[0];
+        var_0.vz = start_position_cursor[2];
     }
-    var_0.vx -= arg0->world_pos.x;
-    var_0.vz -= arg0->world_pos.z;
-    arg0->world_pos.x += var_0.vx;
-    arg0->world_pos.z += var_0.vz;
-    arg0->base_pos.x += var_0.vx;
-    arg0->base_pos.z += var_0.vz;
-    arg0->collision_pos.vx += var_0.vx;
-    arg0->collision_pos.vz += var_0.vz;
-    arg0->base_velocity.vx = 0;
-    arg0->base_velocity.vy = 0;
-    arg0->base_velocity.vz = 0;
-    arg0->decaying_xz_velocity.vx = 0;
-    arg0->decaying_xz_velocity.vy = 0;
-    arg0->decaying_xz_velocity.vz = 0;
+    var_0.vx -= fighter_record->world_pos.x;
+    var_0.vz -= fighter_record->world_pos.z;
+    fighter_record->world_pos.x += var_0.vx;
+    fighter_record->world_pos.z += var_0.vz;
+    fighter_record->base_pos.x += var_0.vx;
+    fighter_record->base_pos.z += var_0.vz;
+    fighter_record->collision_pos.vx += var_0.vx;
+    fighter_record->collision_pos.vz += var_0.vz;
+    fighter_record->base_velocity.vx = 0;
+    fighter_record->base_velocity.vy = 0;
+    fighter_record->base_velocity.vz = 0;
+    fighter_record->decaying_xz_velocity.vx = 0;
+    fighter_record->decaying_xz_velocity.vy = 0;
+    fighter_record->decaying_xz_velocity.vz = 0;
     r1 = motion_ResolveMoveData(
-        arg0, arg0->cur_move->event_move_table_id, &arg0->move_is_common);
-    r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->move_is_common);
-    fighter_StartMoveScript(idx, r2, arg0->move_is_common);
+        fighter_record, fighter_record->cur_move->event_move_table_id,
+        &fighter_record->move_is_common);
+    move_script = motion_ResolveMoveData(
+        fighter_record, r1[0x1D], &fighter_record->move_is_common);
+    fighter_StartMoveScript(
+        fighter_index, move_script, fighter_record->move_is_common);
     fight_RecordReplayEventAndDispatchSoundOrEffect(
-        arg0->index, 0x30, &arg0->world_pos.x, 0);
+        fighter_record->index, 0x30, &fighter_record->world_pos.x, 0);
 }
 
 void fighter_DispatchBoneHitSoundEvent(
-    s32 a0, Unk80101EC8Record *ptr, s32 arg2, Tbl8008E194 *a3, s32 *stack_a2,
-    s32 stack_v1) {
-    Unk80101EC8Record *chk_obj;
+    s32 a0, Unk80101EC8Record *ptr, s32 hit_record_index, Tbl8008E194 *a3,
+    s32 *hit_point, s32 stack_v1) {
+    Unk80101EC8Record *other_record;
 
     if (a0 == 1) {
         return;
@@ -262,77 +270,84 @@ void fighter_DispatchBoneHitSoundEvent(
 
     if (stack_v1 != 0) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            ptr->other->index, 0x2B, stack_a2, (s16 *)0);
+            ptr->other->index, 0x2B, hit_point, (s16 *)0);
         return;
     }
 
-    chk_obj = ptr->other;
+    other_record = ptr->other;
     {
-        s16 f86 = chk_obj->variant_index;
-        s16 f8E = chk_obj->unk_8E;
+        s16 current_variant = other_record->variant_index;
+        s16 f8E = other_record->unk_8E;
 
-        if (f86 == f8E) {
+        if (current_variant == f8E) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                chk_obj->index, 0x28, stack_a2, (s16 *)0);
+                other_record->index, 0x28, hit_point, (s16 *)0);
             return;
         }
 
         {
-            s16 f88 = chk_obj->object_variant_index;
-            if (f86 == f88 && a3 != 0) {
+            s16 object_variant = other_record->object_variant_index;
+            if (current_variant == object_variant && a3 != 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    chk_obj->index, 0x27, stack_a2, (s16 *)0);
+                    other_record->index, 0x27, hit_point, (s16 *)0);
                 return;
             }
         }
     }
 
-    if (arg2 == 0) {
+    if (hit_record_index == 0) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            ptr->other->index, 0x22, stack_a2, (s16 *)0);
+            ptr->other->index, 0x22, hit_point, (s16 *)0);
         return;
     }
 
-    if (arg2 < 6) {
+    if (hit_record_index < 6) {
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            ptr->other->index, 0x23, stack_a2, (s16 *)0);
+            ptr->other->index, 0x23, hit_point, (s16 *)0);
         return;
     }
 
     fight_RecordReplayEventAndDispatchSoundOrEffect(
-        ptr->other->index, 0x24, stack_a2, (s16 *)0);
+        ptr->other->index, 0x24, hit_point, (s16 *)0);
 }
 
-s32 fighter_TestMoveFrameWindowOrObjectVariantKind(Unk80101EC8Record *a0) {
-    s32 ret = 0;
+s32 fighter_TestMoveFrameWindowOrObjectVariantKind(
+    Unk80101EC8Record *fighter_record) {
+    s32 result = 0;
 
-    if (a0->move_kind == 6 || a0->move_kind == 0x25 || a0->move_kind == 0x33 ||
-        a0->move_kind == 4 || a0->move_kind == 0x14 ||
-        a0->move_frame < a0->frame_window_start ||
-        a0->frame_window_end < a0->move_frame) {
-        if (a0->object_variant_index != -1) {
-            u16 state = a0->move_kind;
-            if (state == 0xF || state == 0x1C || state == 0x1D ||
-                state == 0x1E || state == 0x1F || state == 0x20 ||
-                state == 0x21 || state == 0x2B) {
-                ret = 1;
+    if (fighter_record->move_kind == 6 || fighter_record->move_kind == 0x25 ||
+        fighter_record->move_kind == 0x33 || fighter_record->move_kind == 4 ||
+        fighter_record->move_kind == 0x14 ||
+        fighter_record->move_frame < fighter_record->frame_window_start ||
+        fighter_record->frame_window_end < fighter_record->move_frame) {
+        if (fighter_record->object_variant_index != -1) {
+            u16 current_move_kind = fighter_record->move_kind;
+            if (current_move_kind == 0xF || current_move_kind == 0x1C ||
+                current_move_kind == 0x1D || current_move_kind == 0x1E ||
+                current_move_kind == 0x1F || current_move_kind == 0x20 ||
+                current_move_kind == 0x21 || current_move_kind == 0x2B) {
+                result = 1;
             }
         }
     } else {
-        ret = 1;
+        result = 1;
     }
-    return ret;
+    return result;
 }
 
-void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *a0) {
-    s16 v1 = a0->variant_index;
-    if (v1 == a0->object_variant_index) {
-        if (a0->object_variant_enabled) {
-            if (fighter_TestMoveFrameWindowOrObjectVariantKind(a0)) {
-                MATRIX **v0 = node_GetSlotMatrixPointerArray(a0->index);
-                object_DropQueuedHeadAt(a0, (Vec3i32 *)v0[19]->t);
-                a0->object_variant_enabled = 0;
-                a0->variant_index = a0->default_variant_index;
+void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *fighter_record) {
+    s16 current_variant = fighter_record->variant_index;
+    if (current_variant == fighter_record->object_variant_index) {
+        if (fighter_record->object_variant_enabled) {
+            if (fighter_TestMoveFrameWindowOrObjectVariantKind(
+                    fighter_record)) {
+                MATRIX **bone_matrices =
+                    node_GetSlotMatrixPointerArray(fighter_record->index);
+                object_DropQueuedHeadAt(
+                    fighter_record, (Vec3i32 *)bone_matrices[19]->t);
+                fighter_record->object_variant_enabled = 0;
+                fighter_record->variant_index =
+                    fighter_record->default_variant_index;
             }
         }
     }
@@ -342,23 +357,24 @@ extern u8 g_fighter_power_difference_move_events[3][2][2];
 
 /* the tail fighter_ResolveBoneHit's cases 0, 1-3 and 4-5 share */
 static inline s32 fighter_ResolveBoneHitTail(
-    s32 arg0, Tbl8008E194 *var_0, Unk80101EC8Record *arg1, s32 var_4,
-    s32 *scr) {
+    s32 arg0, Tbl8008E194 *var_0, Unk80101EC8Record *fighter_record,
+    s32 fighter_index, s32 *hit_point) {
     if (arg0 == 1 && var_0->unkD == 2) {
-        arg1->unk_272++;
+        fighter_record->unk_272++;
     }
     if (g_fight_mode_selector != 5) {
-        arg1->unk_272++;
+        fighter_record->unk_272++;
     }
-    arg1->pending_move_event = 5;
-    fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
-    fighter_TryDropQueuedHeadAtBone(arg1);
+    fighter_record->pending_move_event = 5;
+    fight_RecordReplayEventAndDispatchSoundOrEffect(
+        fighter_index, 3, hit_point, 0);
+    fighter_TryDropQueuedHeadAtBone(fighter_record);
     return 0;
 }
 
 s32 fighter_ResolveBoneHit(
-    s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh, s32 flag,
-    Tbl8008E194 *rec, s32 arg6, s32 *out) {
+    s32 arg0, Unk80101EC8Record *fighter_record, s32 hit_record_index,
+    s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: var_0, var_1: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
      * directly: score 78 (Ruling 12) */
@@ -366,15 +382,15 @@ s32 fighter_ResolveBoneHit(
     /* the record, passed on to fighter_DispatchBoneHitSoundEvent */
     Tbl8008E194 *var_1;
     s16 *vec;
-    s32 *scr;
-    s32 var_4;
-    Unk80101EC8Record *var_5;
-    s32 dot;
-    s32 var_7;
-    u16 var_8;
-    s32 diff;
-    s32 var_10;
-    u32 sign;
+    s32 *hit_point;
+    s32 fighter_index;
+    Unk80101EC8Record *other_record;
+    s32 bone_axis_dot;
+    s32 axis_dot_below_limit;
+    u16 current_move_kind;
+    s32 power_difference;
+    s32 power_difference_class;
+    u32 power_difference_negative;
     s32 var_12;
     s32 code;
 
@@ -382,198 +398,219 @@ s32 fighter_ResolveBoneHit(
      * first's address, passed to fighter_StoreBoneLocalVectorAndArmEventTrigger
      * and read as vec[0..2] (Q96); as s16[3] or {x,y,z}: score 2 */
     vec = &D_800A37E8;
-    var_4 = arg1->index;
-    var_5 = arg1->other;
+    fighter_index = fighter_record->index;
+    other_record = fighter_record->other;
     var_0 = rec;
     var_1 = rec;
-    scr = &SPAD->bone_hit_points[var_4][arg2].x;
+    hit_point = &SPAD->bone_hit_points[fighter_index][hit_record_index].x;
     *out = 0;
-    if (arg1->character_roster_index == 0x1C) {
-        dot = (arg1->bone_y_axis.x * D_800A37E8 +
-               arg1->bone_y_axis.y * D_800A37EA +
-               arg1->bone_y_axis.z * D_800A37EC) >>
-              12;
-        dot &= 0x1FFF;
-        if (dot >= 0x1000) {
-            dot -= 0x2000;
+    if (fighter_record->character_roster_index == 0x1C) {
+        bone_axis_dot = (fighter_record->bone_y_axis.x * D_800A37E8 +
+                         fighter_record->bone_y_axis.y * D_800A37EA +
+                         fighter_record->bone_y_axis.z * D_800A37EC) >>
+                        12;
+        bone_axis_dot &= 0x1FFF;
+        if (bone_axis_dot >= 0x1000) {
+            bone_axis_dot -= 0x2000;
         }
-        var_7 = dot < 0x400;
-        if (!((0xE >> arg2) & 1) || var_7) {
-            if (arg1->is_defeated == 0) {
-                arg1->pending_move_event = 0x1E;
+        axis_dot_below_limit = bone_axis_dot < 0x400;
+        if (!((0xE >> hit_record_index) & 1) || axis_dot_below_limit) {
+            if (fighter_record->is_defeated == 0) {
+                fighter_record->pending_move_event = 0x1E;
             }
-            if (arg0 == 0 && var_5->pending_move_event == -1) {
-                var_5->pending_move_event = var_0 == NULL ? 0xB : 0x19;
+            if (arg0 == 0 && other_record->pending_move_event == -1) {
+                other_record->pending_move_event = var_0 == NULL ? 0xB : 0x19;
             }
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                var_4, 0x12, scr, 0);
+                fighter_index, 0x12, hit_point, 0);
             return 0;
         }
     }
-    if (arg1->character_roster_index == 0xD && arg1->is_defeated == 0 &&
-        arg1->move_kind != 0x2E) {
-        fighter_RelocateAndStartEventMove(arg1);
+    if (fighter_record->character_roster_index == 0xD &&
+        fighter_record->is_defeated == 0 && fighter_record->move_kind != 0x2E) {
+        fighter_RelocateAndStartEventMove(fighter_record);
         return 2;
     }
-    var_8 = arg1->move_kind;
-    if (var_8 == 4 || var_8 == 0x14) {
-        fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
-        fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
+    current_move_kind = fighter_record->move_kind;
+    if (current_move_kind == 4 || current_move_kind == 0x14) {
+        fighter_StoreBoneLocalVectorAndArmEventTrigger(
+            fighter_record, hit_record_index, vec);
+        fighter_DispatchBoneHitSoundEvent(
+            arg0, fighter_record, hit_record_index, var_1, hit_point, arg6);
         return 1;
     }
-    if (arg1->character_roster_index == 0x1F) {
-        fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
-        fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
-        arg1->pending_move_event = 7;
+    if (fighter_record->character_roster_index == 0x1F) {
+        fighter_StoreBoneLocalVectorAndArmEventTrigger(
+            fighter_record, hit_record_index, vec);
+        fighter_DispatchBoneHitSoundEvent(
+            arg0, fighter_record, hit_record_index, var_1, hit_point, arg6);
+        fighter_record->pending_move_event = 7;
         return 1;
     }
-    if ((var_8 == 2 || var_8 == 0x1B || var_8 == 0x28 || var_8 == 0x26) &&
-        arg1->move_frame < arg1->unk_A0) {
+    if ((current_move_kind == 2 || current_move_kind == 0x1B ||
+         current_move_kind == 0x28 || current_move_kind == 0x26) &&
+        fighter_record->move_frame < fighter_record->unk_A0) {
         if (arg0 == 0) {
-            diff = var_5->power - arg1->power;
-            var_10 = math_ClassifyAbsMagnitude(diff);
-            sign = (u32)diff >> 31;
-            var_12 = arg1->unk_AF == var_5->unk_AF;
-            arg1->unk_B4 = var_5->unk_B4 = var_12;
+            power_difference = other_record->power - fighter_record->power;
+            power_difference_class =
+                math_ClassifyAbsMagnitude(power_difference);
+            power_difference_negative = (u32)power_difference >> 31;
+            var_12 = fighter_record->unk_AF == other_record->unk_AF;
+            fighter_record->unk_B4 = other_record->unk_B4 = var_12;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                var_4, var_12 ? 0xF : 2, scr, 0);
-            code = arg1->pending_move_event =
-                g_fighter_power_difference_move_events[var_10][sign][var_12];
+                fighter_index, var_12 ? 0xF : 2, hit_point, 0);
+            code = fighter_record->pending_move_event =
+                g_fighter_power_difference_move_events
+                    [power_difference_class][power_difference_negative][var_12];
             if (code == 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4 == 0, 0x25, scr, 0);
+                    fighter_index == 0, 0x25, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x25, scr, 0);
+                    fighter_index, 0x25, hit_point, 0);
             } else if (code == 1) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4 == 0, 0x26, scr, 0);
+                    fighter_index == 0, 0x26, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x25, scr, 0);
+                    fighter_index, 0x25, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x2D, scr, 0);
+                    fighter_index, 0x2D, hit_point, 0);
             } else if (code == 2) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4 == 0, 0x26, scr, 0);
+                    fighter_index == 0, 0x26, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x26, scr, 0);
+                    fighter_index, 0x26, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x2D, scr, 0);
-                fighter_TryDropQueuedHeadAtBone(arg1);
+                    fighter_index, 0x2D, hit_point, 0);
+                fighter_TryDropQueuedHeadAtBone(fighter_record);
             } else {
                 return 0;
             }
-            if (arg1->pending_move_event != 2) {
+            if (fighter_record->pending_move_event != 2) {
                 return 0;
             }
             if (vec[1] * vec[1] < vec[0] * vec[0] + vec[2] * vec[2]) {
-                fighter_SetTurnDelta(arg1, ratan2(vec[0], vec[2]));
-                arg1->decaying_xz_velocity.vx -= vec[0] / 16;
-                arg1->decaying_xz_velocity.vz -= vec[2] / 16;
+                fighter_SetTurnDelta(fighter_record, ratan2(vec[0], vec[2]));
+                fighter_record->decaying_xz_velocity.vx -= vec[0] / 16;
+                fighter_record->decaying_xz_velocity.vz -= vec[2] / 16;
             }
             return 0;
         }
         if (arg0 == 1) {
             if (var_0->unkC == 0) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 2, scr, 0);
+                    fighter_index, 2, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x25, scr, 0);
-                arg1->pending_move_event = 0;
+                    fighter_index, 0x25, hit_point, 0);
+                fighter_record->pending_move_event = 0;
                 *out = arg0;
                 return 0;
             }
             if (var_0->unkC == 1) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 2, scr, 0);
+                    fighter_index, 2, hit_point, 0);
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    var_4, 0x25, scr, 0);
-                arg1->pending_move_event = 1;
-                fighter_SetTurnDelta(arg1, ratan2(vec[0], vec[2]));
-                arg1->decaying_xz_velocity.vx -= vec[0] / 16;
-                arg1->decaying_xz_velocity.vz -= vec[2] / 16;
+                    fighter_index, 0x25, hit_point, 0);
+                fighter_record->pending_move_event = 1;
+                fighter_SetTurnDelta(fighter_record, ratan2(vec[0], vec[2]));
+                fighter_record->decaying_xz_velocity.vx -= vec[0] / 16;
+                fighter_record->decaying_xz_velocity.vz -= vec[2] / 16;
                 *out = arg0;
                 return 0;
             }
         }
     }
-    if (g_fight_mode_selector == 0 && var_4 == 0) {
-        fighter_AccumulateBoneGroupFlagWhenGameModeZero(0, arg2);
+    if (g_fight_mode_selector == 0 && fighter_index == 0) {
+        fighter_AccumulateBoneGroupFlagWhenGameModeZero(0, hit_record_index);
     }
-    fighter_DispatchBoneHitSoundEvent(arg0, arg1, arg2, var_1, scr, arg6);
-    var_8 = arg1->move_kind;
-    if (var_8 == 6 || var_8 == 9) {
+    fighter_DispatchBoneHitSoundEvent(
+        arg0, fighter_record, hit_record_index, var_1, hit_point, arg6);
+    current_move_kind = fighter_record->move_kind;
+    if (current_move_kind == 6 || current_move_kind == 9) {
         if (flag) {
-            arg1->pending_move_event =
-                arg1->bone_triangle_cross_y_positive ? 6 : 7;
-            fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
+            fighter_record->pending_move_event =
+                fighter_record->bone_triangle_cross_y_positive ? 6 : 7;
+            fighter_StoreBoneLocalVectorAndArmEventTrigger(
+                fighter_record, hit_record_index, vec);
             return 1;
         }
-        arg1->pending_move_event = arg1->bone_triangle_cross_y_positive ? 3 : 4;
-        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
-        fighter_AccumulateOrClearByBoneGroup(arg1, arg2, 1);
+        fighter_record->pending_move_event =
+            fighter_record->bone_triangle_cross_y_positive ? 3 : 4;
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            fighter_index, 3, hit_point, 0);
+        fighter_AccumulateOrClearByBoneGroup(
+            fighter_record, hit_record_index, 1);
         return 0;
     }
     if (arg0 == 1 && var_0->unk0 == 4) {
-        s16 kind = arg1->character_data_index;
+        s16 kind = fighter_record->character_data_index;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
             fighter_AccumulateOrClearByBoneGroup(
-                arg1, arg2, var_0->unkD == 2 ? 2 : 1);
-            arg1->pending_move_event = 0x1B;
-            fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
+                fighter_record, hit_record_index, var_0->unkD == 2 ? 2 : 1);
+            fighter_record->pending_move_event = 0x1B;
+            fight_RecordReplayEventAndDispatchSoundOrEffect(
+                fighter_index, 3, hit_point, 0);
             return 0;
         }
     }
-    switch (arg2) {
+    switch (hit_record_index) {
     case 0:
         if (flag) {
-            arg1->pending_move_event = thresh > 0x400 ? 6 : 9;
-            fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
-            fighter_TryDropQueuedHeadAtBone(arg1);
+            fighter_record->pending_move_event = thresh > 0x400 ? 6 : 9;
+            fighter_StoreBoneLocalVectorAndArmEventTrigger(
+                fighter_record, hit_record_index, vec);
+            fighter_TryDropQueuedHeadAtBone(fighter_record);
             return 1;
         }
-        return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
+        return fighter_ResolveBoneHitTail(
+            arg0, var_0, fighter_record, fighter_index, hit_point);
     case 1:
     case 2:
     case 3:
         if (flag) {
-            arg1->pending_move_event = thresh > 0x400 ? 7 : 9;
-            fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
-            fighter_TryDropQueuedHeadAtBone(arg1);
+            fighter_record->pending_move_event = thresh > 0x400 ? 7 : 9;
+            fighter_StoreBoneLocalVectorAndArmEventTrigger(
+                fighter_record, hit_record_index, vec);
+            fighter_TryDropQueuedHeadAtBone(fighter_record);
             return 1;
         }
-        return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
+        return fighter_ResolveBoneHitTail(
+            arg0, var_0, fighter_record, fighter_index, hit_point);
     case 4:
     case 5:
         if (!flag) {
-            return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
+            return fighter_ResolveBoneHitTail(
+                arg0, var_0, fighter_record, fighter_index, hit_point);
         }
-        arg1->pending_move_event = thresh > 0x400 ? 8 : 9;
-        fighter_StoreBoneLocalVectorAndArmEventTrigger(arg1, arg2, vec);
-        fighter_TryDropQueuedHeadAtBone(arg1);
+        fighter_record->pending_move_event = thresh > 0x400 ? 8 : 9;
+        fighter_StoreBoneLocalVectorAndArmEventTrigger(
+            fighter_record, hit_record_index, vec);
+        fighter_TryDropQueuedHeadAtBone(fighter_record);
         return 1;
     case 6:
     case 7:
     case 8:
     case 9:
         if (g_fight_mode_selector != 5) {
-            arg1->unk_26C = 0;
+            fighter_record->unk_26C = 0;
         }
-        arg1->pending_move_event = 4;
-        arg1->unk_90 = 0;
-        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
-        fighter_TryDropQueuedHeadAtBone(arg1);
-        arg1->object_variant_enabled = 0;
+        fighter_record->pending_move_event = 4;
+        fighter_record->unk_90 = 0;
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            fighter_index, 3, hit_point, 0);
+        fighter_TryDropQueuedHeadAtBone(fighter_record);
+        fighter_record->object_variant_enabled = 0;
         return 0;
     case 10:
     case 11:
     case 12:
     case 13:
         if (g_fight_mode_selector != 5) {
-            arg1->unk_270++;
+            fighter_record->unk_270++;
         }
-        arg1->pending_move_event = 5;
-        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
-        fighter_TryDropQueuedHeadAtBone(arg1);
+        fighter_record->pending_move_event = 5;
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            fighter_index, 3, hit_point, 0);
+        fighter_TryDropQueuedHeadAtBone(fighter_record);
         return 0;
     case 14:
     case 15:
@@ -584,11 +621,12 @@ s32 fighter_ResolveBoneHit(
     case 20:
     case 21:
         if (g_fight_mode_selector != 5) {
-            arg1->unk_26E++;
+            fighter_record->unk_26E++;
         }
-        arg1->pending_move_event = 3;
-        fight_RecordReplayEventAndDispatchSoundOrEffect(var_4, 3, scr, 0);
-        fighter_TryDropQueuedHeadAtBone(arg1);
+        fighter_record->pending_move_event = 3;
+        fight_RecordReplayEventAndDispatchSoundOrEffect(
+            fighter_index, 3, hit_point, 0);
+        fighter_TryDropQueuedHeadAtBone(fighter_record);
         return 0;
     }
 }

@@ -23,13 +23,13 @@
 void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
     Unk80101EC8Record *record;
     Unk80101EC8Record *var_1;
-    Unk80101EC8Record *current;
+    Unk80101EC8Record *fighter_record;
     s32 separation_error;
-    s32 i;
-    s32 idx;
-    s32 var_6;
-    s32 kind;
-    s32 pos[3];
+    s32 fighter_index;
+    s32 selected_fighter_index;
+    s32 drift_sign;
+    s32 midpoint_effect_index;
+    s32 effect_position[3];
 
     separation_error = fighter_CalcSeparationErrorAndOpposedOffsets();
     record = D_80101EC8;
@@ -37,45 +37,48 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
     if ((u16)D_80101EC8[0].move_kind == 0x1C) {
         if (D_80101EC8[0].move_frame != 4)
             goto tail;
-        idx = D_800A3876;
-        if (idx == -1)
+        selected_fighter_index = D_800A3876;
+        if (selected_fighter_index == -1)
             goto tail;
         /* `record` holds the selected record and `var_1` its partner, then
            both return to the fixed pair, the way SOTN's tempEntity moves
            between entities and returns to entity zero at the join (Q51) */
         /* SOTN: src/st/lib/unk_3B53C.c:41-55
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
-        record = &D_80101EC8[idx];
+        record = &D_80101EC8[selected_fighter_index];
         var_1 = D_80101EC8;
-        if (idx == 0) {
+        if (selected_fighter_index == 0) {
             var_1++;
         }
         record->pending_move_event = 3;
         var_1->pending_move_event = 4;
     } else if ((u16)D_80101EC8[0].move_kind != 0xF) {
-        for (i = 0; i < 2; i++) {
-            current = record + i;
-            if (current->pad_input.pressed & 0x20) {
-                current->mash_contest_score += current->power;
+        for (fighter_index = 0; fighter_index < 2; fighter_index++) {
+            fighter_record = record + fighter_index;
+            if (fighter_record->pad_input.pressed & 0x20) {
+                fighter_record->mash_contest_score += fighter_record->power;
             }
-            if (current->pad_input.pressed & 0x40) {
-                current->mash_contest_score += current->power;
+            if (fighter_record->pad_input.pressed & 0x40) {
+                fighter_record->mash_contest_score += fighter_record->power;
             }
-            if ((u16)current->move_kind == 0x1D ||
-                (u16)current->move_kind == 0x1E ||
-                (u16)current->move_kind == 0x20) {
-                if (current->pad_input.held & 0x1000) {
-                    var_6 = 1;
-                } else if (current->pad_input.held & 0x4000) {
-                    var_6 = -1;
+            if ((u16)fighter_record->move_kind == 0x1D ||
+                (u16)fighter_record->move_kind == 0x1E ||
+                (u16)fighter_record->move_kind == 0x20) {
+                if (fighter_record->pad_input.held & 0x1000) {
+                    drift_sign = 1;
+                } else if (fighter_record->pad_input.held & 0x4000) {
+                    drift_sign = -1;
                 } else {
-                    var_6 = 0;
+                    drift_sign = 0;
                 }
-                current->decaying_xz_velocity.vx -=
-                    (Judge[(current->orientation.vy + 0x400) & 0xFFF] * var_6) /
+                fighter_record->decaying_xz_velocity.vx -=
+                    (Judge[(fighter_record->orientation.vy + 0x400) & 0xFFF] *
+                     drift_sign) /
                     256;
-                current->decaying_xz_velocity.vz +=
-                    (Judge[(u16)current->orientation.vy & 0xFFF] * var_6) / 256;
+                fighter_record->decaying_xz_velocity.vz +=
+                    (Judge[(u16)fighter_record->orientation.vy & 0xFFF] *
+                     drift_sign) /
+                    256;
             }
         }
         /* FAKE: re-sets record to the base it already holds after the drift
@@ -114,10 +117,10 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
             record->pending_move_event = 2;
             var_1->pending_move_event = 2;
         } else {
-            s32 diff = record->world_pos.y - var_1->world_pos.y;
-            if (diff < 0)
-                diff = -diff;
-            if (diff >= 1000) {
+            s32 vertical_separation = record->world_pos.y - var_1->world_pos.y;
+            if (vertical_separation < 0)
+                vertical_separation = -vertical_separation;
+            if (vertical_separation >= 1000) {
                 record->pending_move_event = 2;
                 var_1->pending_move_event = 2;
             }
@@ -153,40 +156,44 @@ tail:
     if (g_fight_midpoint_effect_delay == 0) {
         switch ((u16)D_80101EC8[0].move_kind) {
         case 0xF:
-            kind = -1;
+            midpoint_effect_index = -1;
             break;
         case 0x1C:
-            kind = 0;
+            midpoint_effect_index = 0;
             break;
         case 0x21:
-            kind = 1;
+            midpoint_effect_index = 1;
             break;
         case 0x20:
-            kind = 2;
+            midpoint_effect_index = 2;
             break;
         case 0x1D:
-            kind = 3;
+            midpoint_effect_index = 3;
             break;
         case 0x1E:
-            kind = 4;
+            midpoint_effect_index = 4;
             break;
         case 0x1F:
-            kind = 5;
+            midpoint_effect_index = 5;
             break;
         }
-        if (kind >= 0) {
-            pos[0] = (record->world_pos.x + var_1->world_pos.x) / 2;
-            pos[1] = (record->base_pos.y + var_1->base_pos.y) / 2;
-            pos[2] = (record->world_pos.z + var_1->world_pos.z) / 2;
-            pos[0] += (Judge[(u16)record->opponent_bearing & 0xFFF] *
-                       g_fight_midpoint_effect_offsets[kind].unk0) >>
-                      12;
-            pos[1] += g_fight_midpoint_effect_offsets[kind].unk2;
-            pos[2] += (Judge[(record->opponent_bearing + 0x400) & 0xFFF] *
-                       g_fight_midpoint_effect_offsets[kind].unk0) >>
-                      12;
+        if (midpoint_effect_index >= 0) {
+            effect_position[0] = (record->world_pos.x + var_1->world_pos.x) / 2;
+            effect_position[1] = (record->base_pos.y + var_1->base_pos.y) / 2;
+            effect_position[2] = (record->world_pos.z + var_1->world_pos.z) / 2;
+            effect_position[0] +=
+                (Judge[(u16)record->opponent_bearing & 0xFFF] *
+                 g_fight_midpoint_effect_offsets[midpoint_effect_index].unk0) >>
+                12;
+            effect_position[1] +=
+                g_fight_midpoint_effect_offsets[midpoint_effect_index].unk2;
+            effect_position[2] +=
+                (Judge[(record->opponent_bearing + 0x400) & 0xFFF] *
+                 g_fight_midpoint_effect_offsets[midpoint_effect_index].unk0) >>
+                12;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                0, g_fight_midpoint_effect_event_ids[kind], pos, (s16 *)0);
+                0, g_fight_midpoint_effect_event_ids[midpoint_effect_index],
+                effect_position, (s16 *)0);
         }
     } else {
         g_fight_midpoint_effect_delay--;
