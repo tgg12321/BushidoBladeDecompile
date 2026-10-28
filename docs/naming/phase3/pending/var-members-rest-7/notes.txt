@@ -1,0 +1,98 @@
+var-members-rest-7 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Scope: Unk8009BD24Block (g_working_record, 0x8009BD24..0x8009BD57, include/game.h ~535-563, extern include/bb2.h:611,
+GetWorkingRecord 64FD8.c:1425), Unk8009BD24Record (unk00[2][5] element, bd0/unk1) and Unk8009BD45Rec (unk21[3] element).
+Re-derived: every access by grep over the four routes into the record (g_working_record; GetWorkingRecord() locals in
+25788.c p, 2B344.c s0, 596CC.c p, 4BC3C.c temporary; the statics g_row_menu_working_record_ptr (596CC.c) and
+g_entry_menu_working_record_ptr (5ED34.c); SELWORK->f00 as var_1 in 64FD8.c), plus the raw byte walks (25788.c:43-54,91-95
+stride 10/2 over unk00; 596CC.c:2084-2099 rec+0x17/0x1A/0x1D). No absolute-address access exists in src/ or include/
+(only include/m2c_context.h D_8009BD38, not a build file). None of the 137 remaining INCLUDE_ASM bodies names
+g_working_record, GetWorkingRecord or either static pointer, and the eight TUs using the record (25788, 2B344, 4BC3C, 4D0A8,
+51268, 596CC, 5ED34, 64FD8) have no INCLUDE_ASM left.
+
+Cross-lane: this wave touches src/main/51268.c (unk14_0 at :165, unk20_0 at :801,817,1232,1650,3012, unk20_3 at
+:2128-2396). That TU may be claimed by another lane at LAND time; the land needs the claim cleared or coordinated.
+
+Surviving: 19 rows (pairs.txt): Unk8009BD24Block 15, Unk8009BD45Rec 4. Research: 19 RENAME / 7 NO_NAME. Kept 19, dropped 0,
+respelled 0. All 19 Codex spellings re-derived against every use and fresh: whole-word grep of src/ include/ finds no member,
+type, macro or keyword of those spellings. The only whole-word hits are the three locals below.
+
+Tooling checks
+- Bitfield declarators (`u32 unk14_0 : 4;`): both tools handle them. naming_member_apply.py:207 lists "plain / array /
+  bit-field declarators"; naming_keycheck.py:100 and :805-826 handle "plain, array, bit-field (`m : 3`)". The dry run renamed
+  all eight renamed bitfields' declarations and accesses (game.h:543-547,555,557,558), so the bitfield rows are kept.
+- Array-of-struct members (`Unk8009BD24Record unk00[2][5];`, `Unk8009BD45Rec unk21[3];`): declarators parse, accesses
+  through `[j][i].bd0` and `[i].unk0` resolve (round 0 -> 1 -> 2 -> 0 errors, see dry.txt). The element-type members need a
+  second round (116 -> 12 -> 0 errors) because their accesses compile only once the container members are renamed; the tool
+  does that on its own.
+- Locals of the same spelling as new members (not members, so no keycheck conflict; the rule is "n is no member, type, macro,
+  paste or keyword name"): src/main/9F9C.c:1429 `s32 minutes`, :1430 `s32 seconds`, :1433 `s32 hundredths`, all in
+  fight_SplitFrameCounterIntoMinutesSecondsHundredths. Flagged for the reviewer: harmless (member access by `->`/`.` is not
+  shadowed by a local, and the substitution is by type), but the same word now names a local there and a member elsewhere.
+  Those three locals are not renamed; the pairs do not touch them.
+
+Scrutinized weak rows (all kept; reviewer may drop)
+  unk00 match_picks: bd0 is a character index (D_8008D55C[bd0] feeds g_fight_config.unk_4[i], the 12..21 -> -2 remap and the
+    bd0 == 8 extra cell at 4D0A8.c:960-976 match Unk8009BD45Rec.character_index), unk1 is opaque (f7E / slot-rec unk2). The
+    name claims only the per-player per-match selection ([player][match], stride 10 = 5 matches x 2 bytes). Judgement call.
+  unk14_10 match_count_index: every read adds 3 (25788.c:72, 4D0A8.c loops), tests == 2 / == 1 pick the results layout.
+    "_index" because the stored value is the count minus 3.
+  unk14_14 win_target_index: 1 bit, 25788.c:75 maps 0/1 to 1/2; 4D0A8.c:1107 mark_slot_count = value + 1. "_index" because
+    the stored value is target - 1, never a table index. Wording is the weak point.
+  unk20_3 view_setting: also reset to 0 on every cursor move (596CC.c:330,345) and set by option mode (350-357); the reads
+    (25788.c:62 -> g_fight_config.unk_E -> g_fight_tracked_view_setting, which switches the FOV and camera paths; 51268.c
+    alternate effect sprites) agree with a per-mode view choice, nothing says which view.
+  unk1A default_button_mappings: no C access; only the raw rec+0x1A read at 596CC.c:2085 and the d_8C4E4.c:61 initializer
+    {0x11,0x44,0x88}, equal to pad_SetDefaultSavedButtonMappings' values (87A0.c:590-592) and never written. The name rests on
+    that equality plus the restore action.
+  unk1D committed_button_mappings: W only when menu_UpdateRowBitMenu returns 1 (64FD8.c:1414-1416), read back into unk17 on
+    entering the edit (:1381-1383) and by the raw rec+0x1D copy (596CC.c:2096).
+  unk21 time_records / unk2D fight_time / unk30 fight_character_index: unk21[3] (read by gpu_DrawIndexedCellsAndDecimalDigitPairs,
+    596CC.c:2377-2420, when arg4 != -1) overlays +0x2D..+0x30, the fight time and character, so the neutral plural fits the
+    declared three and the aliased fourth. The declared bound stays 3.
+  unk14_0 fight_mode: not g_fight_mode_selector (g_fight_config.unk_D); named for the entry-menu copy g_entry_menu_fight_mode.
+
+NO_NAME (7, re-confirmed neutral, not in pairs; none contradicted)
+  Unk8009BD24Record.unk1 (sources f7E / slot rec unk2 and sinks fight_config.unk_4[2..3] / D_801027D8 all unnamed)
+  Unk8009BD24Block.unk14_15 (W 64FD8.c:1037 f68[0] + f68[1]*2, R 25788.c:80 -> D_800A38E1, R 4D0A8.c:817,826 bit i per player;
+    source SelWork f68 and sink D_800A38E1 give no single role)
+  Unk8009BD24Block.unk14_17 (W 596CC.c:2314, R 25788.c:67 -> D_800A389A, R 5ED34.c mode-2 branches; sink unnamed)
+  Unk8009BD24Block.unk14_18 (R 25788.c:68 -> D_800A3788 only; no C writer, only the zero initializer)
+  Unk8009BD24Block.unk14_21 (no access in src or asm/funcs)
+  Unk8009BD24Block.unk20_1 (R 25788.c:20, W :121, option row 1 596CC.c:1299,1421; the game reader is flags bit 1 via
+    fighter_GetSavedCpuBehaviorAdjustFlag: a CPU option, not which one)
+  Unk8009BD24Block.unk20_4 (no access)
+
+Dry run (dry.txt, exit=0, run under WSL): 9 files change (include/game.h, src/main/25788.c, 2B344.c, 4BC3C.c, 4D0A8.c,
+51268.c, 596CC.c, 5ED34.c, 64FD8.c); "OK: every member access renamed"; member error rounds 116 -> 12 -> 0. 0 UNRESOLVED lines.
+Unlike rest-6 no line holds two renamed tokens of the same old spelling and different types (64FD8.c:1381-1383 and
+:1414-1416 hold unk17 and unk1D, both of Unk8009BD24Block, which the tool resolved). Hand-edit lines: none from the tool.
+Many lines exceed 80 columns after the rename (4D0A8.c:1194,1214, 51268.c:2128-2396, 596CC.c:2414-2420, 64FD8.c:1042-1043,
+1381-1383, 1414-1416): tools/format.py lands them.
+
+R6 watch points (comments the tool does not edit; update at apply, then the keycheck)
+- include/game.h:504-509 comment above Unk8009BD24Record ends "Unk8009BD24Block.unk00" -> match_picks.
+- include/game.h:515 comment "Unk8009BD24Block.unk21" -> time_records; the lines 515-518 text is otherwise fine.
+- include/game.h:526-540 block comment: "unk14_*" / "unk14_0 (...)" / "unk14_4" / "unk14_10" / "unk14_12" / "unk14_14" ->
+  fight_mode / stage_index / match_count_index / time_limit_index / win_target_index (keep unk14_15, unk14_17, unk14_18 as is);
+  "unk17 / unk1A / unk1D" -> button_mappings / default_button_mappings / committed_button_mappings, "copies unk17 and unk1D into
+  each other" likewise; "unk20_*: ... bits 0-3" -> keep the leading note but name grayscale / cd_audio_suppressed / view_setting;
+  "the unk21 records" -> time_records; "Bit fields are named by bit offset" stays true for the remaining unkNN_M ones.
+- include/bb2.h:210-212 comment "n = g_working_record.unk14_0" -> fight_mode; include/bb2.h:608 comment
+  "g_working_record.unk20_0 CLUT substitutes" -> grayscale.
+- src/main/25788.c:11-12 comment "p->unk20_0..2", "p->unk17" -> grayscale / cd_audio_suppressed (unk20_1 stays) and
+  button_mappings; src/main/2B344.c:855-860 comment: "+0x21", "+0x2D..+0x2F", "the stage at +0x30" -> the stage claim is wrong
+  (the code stores D_80101EC8[0].character_data_index): reword to fight_time / fight_character_index.
+- src/main/d_7D920.c:688 comment "D_8008EC30[p->unk14_12]" -> time_limit_index.
+- src/main/596CC.c, 4D0A8.c, 5ED34.c, 64FD8.c: grep their comments for "unk14_", "unk17", "unk1D", "unk20_", "unk21", "unk2D",
+  "unk30" and the raw "+ 0x17 / 0x1A / 0x1D" notes; the raw offset code is unchanged by the pairs.
+- Words belonging to OTHER types stay: Unk8009BD24Record.unk1 (5ED34.c:1631, 64FD8.c:1043), TimeRec.unk_0/unk_4,
+  Unk8001CD68Rec.unk_0/unk_2/unk_3 (buf in 2B344.c), g_fight_config.unk_4/C/D/E, SPAD->unk00 (9F9C.c:5197-5217, a different
+  type: the tool resolves by type, check the dry diff shows no 9F9C.c hunk, which it does not).
+
+Judgement calls
+- Four-member group names (button_mappings / default_ / committed_) share a stem on purpose: they are one format, differing
+  in lifetime (current edit / constant / last confirmed).
+- fight_character_index is kept distinct from character_index: same meaning, different container (the overflow fourth record is
+  declared separately as unk2D/unk30); the names say so.
+- Locals minutes/seconds/hundredths in 9F9C.c:1429-1433 coexist with the new members (see Tooling checks).
