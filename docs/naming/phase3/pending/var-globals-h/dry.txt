@@ -1,0 +1,189 @@
+==============================================================================
+DATA WAVE — 49 addresses, 52 identifiers remapped
+  0x800a3440: D_800A3440 -> g_eff_cosine_scaled_quad_rate_selector
+  0x8009bb84: D_8009BB84 -> g_eff_rotated_quad_cluster_vertices
+  0x8009bb74: D_8009BB74 -> g_eff_rotation_matrix_scale
+  0x80094e48: D_80094E48 -> g_light_preset_rows
+  0x80094a6c: D_80094A6C -> g_gpu_view_centered_cell_attribute_pattern
+  0x800a3438: D_800A3438, g_eff_particle_group_fill_counts -> g_eff_particle_group_fill_indices
+  0x800a32c8: D_800A32C8 -> g_pad_direction_positive_masks
+  0x800a32d0: D_800A32D0 -> g_pad_direction_negative_masks
+  0x8008dd5c: D_8008DD5C -> g_fighter_default_variant_indices
+  0x8008eba0: D_8008EBA0 -> g_object_bone_hit_deflect_angles
+  0x8008ea70: D_8008EA70 -> g_fight_presentation_cd_audio_entries
+  0x8009016c: D_8009016C -> g_fight_presentation_playback_file_id_offsets
+  0x8009b920: D_8009B920 -> g_eff_yawed_slot_quad_tex_recs
+  0x8009b8e8: D_8009B8E8 -> g_eff_jittered_billboard_tex_recs
+  0x800a3828: D_800A3828 -> g_light_selected_setup
+  0x800a7ef0: D_800A7EF0 -> g_gpu_grid_unique_node_buffer
+  0x800a3d70: D_800A3D70 -> g_gpu_fog_row_moves
+  0x800a4340: D_800A4340 -> g_gpu_fog_block_moves
+  0x800a32d8: D_800A32D8 -> g_gpu_fullscreen_image_rect
+  0x800a32e0: D_800A32E0 -> g_gpu_fullscreen_image_end_clear_rect
+  0x80094df0: D_80094DF0, g_gpu_clut_row_lists -> g_gpu_vram_row_lists
+  0x80094e08: D_80094E08, g_gpu_clut_row_list_map -> g_gpu_vram_row_list_map
+  0x8008eb40: D_8008EB40 -> g_fighter_dpad_angle_offsets
+  0x8008e0bc: D_8008E0BC -> g_fighter_power_scales
+  0x800a310c: D_800A310C -> g_fighter_forward_move_rate_limits
+  0x8008da08: D_8008DA08 -> g_fighter_forward_move_rate_limit_indices
+  0x8008eb74: D_8008EB74 -> g_fighter_power_difference_move_events
+  0x8008eb1c: D_8008EB1C -> g_motion_preferred_variant_nibble_pairs
+  0x80099bcc: D_80099BCC -> g_node_retained_draw_asset_ids
+  0x80099d3c: D_80099D3C -> g_node_entry_pair_local_transforms
+  0x800a3134: D_800A3134 -> g_fighter_opponent_response_max_separation
+  0x800a3100: D_800A3100 -> g_fight_group_tint_colors
+  0x800a3904: D_800A3904 -> g_fight_rng_seed
+  0x800ef0d8: D_800EF0D8 -> g_wave_even_row_vertices
+  0x800ef168: D_800EF168 -> g_wave_odd_row_vertices
+  0x800f11e0: D_800F11E0 -> g_sheet_pair_sprite_buffers
+  0x800f1438: D_800F1438 -> g_sheet_pair_draw_mode_buffers
+  0x800f1498: D_800F1498 -> g_sheet_pair_panel_tile_buffers
+  0x800a32e8: D_800A32E8 -> g_entry_menu_last_grid_pass_second_slot_entry_value
+  0x800a32e9: D_800A32E9 -> g_entry_menu_last_grid_pass_extra_slot_count
+  0x800a35dc: D_800A35DC -> g_sel_sheet_code_column_cursor
+  0x8008ea44: D_8008EA44 -> g_snd_stage_sound_slot_trigger_delays
+  0x80104f38: D_80104F38 -> g_snd_fake_open_vab_copy
+  0x800ff6a8: D_800FF6A8 -> g_snd_listed_vab_copy
+  0x800a3900: D_800A3900 -> g_sheet_pair_selection_y_offset
+  0x8009ad1c: D_8009AD1C -> g_snd_stage_reverb_types
+  0x800a333c: D_800A333C -> g_memcard_retry_load_status8_latched
+  0x800a3348: D_800A3348 -> g_memcard_save_prompt_status8_retry_count
+  0x800a3344: D_800A3344 -> g_memcard_save_prompt_status10_retry_count
+
+-- file edits (67) --
+  asm/data/938FE.data.s  (9)
+  asm/data/94000.bss.s  (26)
+  asm/funcs/ApplyLightPresetRowBackgroundClearAndFarColor.s  (2)
+  asm/funcs/InitDisplayStateLoadPackAndSetEntryFlags.s  (2)
+  asm/funcs/comb_Connect.s  (2)
+  asm/funcs/eff_DrawAndAdvanceJitteredBillboards.s  (2)
+  asm/funcs/eff_DrawAndAdvanceRateSelectedCosineScaledQuad.s  (1)
+  asm/funcs/eff_DrawAndAdvanceRotatedQuadClusters.s  (2)
+  asm/funcs/eff_DrawYawedSlotQuads.s  (2)
+  asm/funcs/eff_InitRateSelectedCosineScaledQuad.s  (1)
+  asm/funcs/eff_PrepareParticles.s  (2)
+  asm/funcs/eff_SetRotMatrix.s  (2)
+  asm/funcs/eff_SpawnParticles.s  (2)
+  asm/funcs/fight_Init.s  (4)
+  asm/funcs/fight_InitImageAndPlaybackPresentation.s  (4)
+  asm/funcs/fight_ResetGraphAndReloadResourcesOnCachedKeyChange.s  (2)
+  asm/funcs/fighter_Init.s  (2)
+  asm/funcs/fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow.s  (2)
+  asm/funcs/fighter_ResolveBoneHit.s  (2)
+  asm/funcs/fighter_TriggerOpponentResponseOnMoveFrame.s  (2)
+  asm/funcs/fighter_Update.s  (2)
+  asm/funcs/fighter_UpdateInputSteeredForwardMotion.s  (6)
+  asm/funcs/func_800430E4.s  (1)
+  asm/funcs/gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex.s  (6)
+  asm/funcs/gpu_BeginFullscreenImageDisplay.s  (2)
+  asm/funcs/gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards.s  (4)
+  asm/funcs/gpu_DrawSheetPairCenteredTileWithOptionalSelection.s  (9)
+  asm/funcs/gpu_EndFullscreenImageDisplay.s  (2)
+  asm/funcs/gpu_InitFogDrawMoves.s  (4)
+  asm/funcs/gpu_LatchFogDepthOnTransitionAndQueueMoves.s  (4)
+  asm/funcs/gpu_ResetAndStampViewCenteredCellAttributes.s  (2)
+  asm/funcs/gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels.s  (6)
+  asm/funcs/gpu_UploadAndDrawSelectedEntryQuads.s  (2)
+  asm/funcs/gte_ColorGroupedNormalStreamWithSelectedMatrices.s  (2)
+  asm/funcs/memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress.s  (3)
+  asm/funcs/memcard_StepSaveOverwriteAndFormatPrompts.s  (6)
+  asm/funcs/menu_HandleSelPhase0CursorInput.s  (3)
+  asm/funcs/menu_InitSelScreen.s  (1)
+  asm/funcs/menu_UpdateEntryGrid.s  (2)
+  asm/funcs/motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue.s  (2)
+  asm/funcs/node_LoadSlotMappedAssetAndInitRetainedDrawNodes.s  (2)
+  asm/funcs/node_QueueTableEntryNodePairUnderSlotNode.s  (2)
+  asm/funcs/object_DeflectFromFighterHit.s  (2)
+  asm/funcs/pad_StepOffsetsGetDirectionEvents.s  (4)
+  asm/funcs/snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVab9.s  (2)
+  asm/funcs/snd_ResetGraphForgetSlot1LoadCopyAndFakeOpenVabs8And4.s  (2)
+  asm/funcs/snd_SetReverb.s  (2)
+  asm/funcs/snd_UpdateStageSounds.s  (2)
+  asm/funcs/wave_Draw.s  (4)
+  include/bb2.h  (17)
+  src/main/17AFC.c  (6)
+  src/main/28708.c  (13)
+  src/main/2B344.c  (14)
+  src/main/31D3C.c  (13)
+  src/main/32D04.c  (3)
+  src/main/368E4.c  (8)
+  src/main/4BC3C.c  (3)
+  src/main/51268.c  (18)
+  src/main/596CC.c  (23)
+  src/main/5ED34.c  (12)
+  src/main/64FD8.c  (5)
+  src/main/9F9C.c  (14)
+  src/main/d_7D920.c  (9)
+  src/main/d_80DF8.c  (1)
+  src/main/d_89C78.c  (2)
+  src/main/d_8BC50.c  (4)
+  symbol_addrs.txt  (65)
+
+-- registry lines --
+  symbol_addrs.txt:191 D_80094E48 -> g_light_preset_rows
+  symbol_addrs.txt:223 D_800A3D70 -> g_gpu_fog_row_moves
+  symbol_addrs.txt:248 D_8008EA44 -> g_snd_stage_sound_slot_trigger_delays
+  symbol_addrs.txt:299 D_800A3100 -> g_fight_group_tint_colors
+  symbol_addrs.txt:300 D_800A310C -> g_fighter_forward_move_rate_limits
+  symbol_addrs.txt:302 D_800A3134 -> g_fighter_opponent_response_max_separation
+  symbol_addrs.txt:318 D_800A32C8 -> g_pad_direction_positive_masks
+  symbol_addrs.txt:319 D_800A32D0 -> g_pad_direction_negative_masks
+  symbol_addrs.txt:320 D_800A32D8 -> g_gpu_fullscreen_image_rect
+  symbol_addrs.txt:321 D_800A32E0 -> g_gpu_fullscreen_image_end_clear_rect
+  symbol_addrs.txt:452 D_8008EA70 -> g_fight_presentation_cd_audio_entries
+  symbol_addrs.txt:453 D_8008EB40 -> g_fighter_dpad_angle_offsets
+  symbol_addrs.txt:457 D_80094A6C -> g_gpu_view_centered_cell_attribute_pattern
+  symbol_addrs.txt:458 g_gpu_clut_row_lists -> g_gpu_vram_row_lists
+  symbol_addrs.txt:459 g_gpu_clut_row_list_map -> g_gpu_vram_row_list_map
+  symbol_addrs.txt:463 D_80099BCC -> g_node_retained_draw_asset_ids
+  symbol_addrs.txt:474 D_8009AD1C -> g_snd_stage_reverb_types
+  symbol_addrs.txt:484 D_8009BB74 -> g_eff_rotation_matrix_scale
+  symbol_addrs.txt:760 g_gpu_clut_row_lists -> g_gpu_vram_row_lists
+  symbol_addrs.txt:768 D_8009BB74 -> g_eff_rotation_matrix_scale
+  symbol_addrs.txt:790 D_800A32C8 -> g_pad_direction_positive_masks
+  symbol_addrs.txt:828 D_80094A6C -> g_gpu_view_centered_cell_attribute_pattern
+  symbol_addrs.txt:863 g_gpu_clut_row_list_map -> g_gpu_vram_row_list_map
+  symbol_addrs.txt:905 D_8008EB40 -> g_fighter_dpad_angle_offsets
+  symbol_addrs.txt:942 D_8008EA70 -> g_fight_presentation_cd_audio_entries
+  symbol_addrs.txt:943 D_8009016C -> g_fight_presentation_playback_file_id_offsets
+  symbol_addrs.txt:996 D_8009AD1C -> g_snd_stage_reverb_types
+  symbol_addrs.txt:1015 D_800A32D0 -> g_pad_direction_negative_masks
+  symbol_addrs.txt:1045 D_80099BCC -> g_node_retained_draw_asset_ids
+  symbol_addrs.txt:1048 D_80099D3C -> g_node_entry_pair_local_transforms
+  symbol_addrs.txt:1112 D_800A32D8 -> g_gpu_fullscreen_image_rect
+  symbol_addrs.txt:1113 D_800A32E0 -> g_gpu_fullscreen_image_end_clear_rect
+  symbol_addrs.txt:1123 D_8008DA08 -> g_fighter_forward_move_rate_limit_indices
+  symbol_addrs.txt:1129 D_8008EA44 -> g_snd_stage_sound_slot_trigger_delays
+  symbol_addrs.txt:1139 D_8008EB1C -> g_motion_preferred_variant_nibble_pairs
+  symbol_addrs.txt:1140 D_8008EBA0 -> g_object_bone_hit_deflect_angles
+  symbol_addrs.txt:1164 D_800A310C -> g_fighter_forward_move_rate_limits
+  symbol_addrs.txt:1165 D_800A3134 -> g_fighter_opponent_response_max_separation
+  symbol_addrs.txt:1450 D_800A333C -> g_memcard_retry_load_status8_latched
+  symbol_addrs.txt:1457 D_800A3344 -> g_memcard_save_prompt_status10_retry_count
+  symbol_addrs.txt:1470 D_800A35DC -> g_sel_sheet_code_column_cursor
+  symbol_addrs.txt:1472 g_eff_particle_group_fill_counts -> g_eff_particle_group_fill_indices
+  symbol_addrs.txt:1473 D_800A3440 -> g_eff_cosine_scaled_quad_rate_selector
+  symbol_addrs.txt:1481 D_800A3348 -> g_memcard_save_prompt_status8_retry_count
+  symbol_addrs.txt:1499 D_800A3828 -> g_light_selected_setup
+  symbol_addrs.txt:1556 D_800A3900 -> g_sheet_pair_selection_y_offset
+  symbol_addrs.txt:1557 D_800A3904 -> g_fight_rng_seed
+  symbol_addrs.txt:1575 D_800A3D70 -> g_gpu_fog_row_moves
+  symbol_addrs.txt:1576 D_800A4340 -> g_gpu_fog_block_moves
+  symbol_addrs.txt:1578 D_800A7EF0 -> g_gpu_grid_unique_node_buffer
+  symbol_addrs.txt:1618 D_800EF0D8 -> g_wave_even_row_vertices
+  symbol_addrs.txt:1619 D_800EF168 -> g_wave_odd_row_vertices
+  symbol_addrs.txt:1670 D_800F11E0 -> g_sheet_pair_sprite_buffers
+  symbol_addrs.txt:1671 D_800F1438 -> g_sheet_pair_draw_mode_buffers
+  symbol_addrs.txt:1672 D_800F1498 -> g_sheet_pair_panel_tile_buffers
+  symbol_addrs.txt:1757 D_800FF6A8 -> g_snd_listed_vab_copy
+  symbol_addrs.txt:1816 D_80104F38 -> g_snd_fake_open_vab_copy
+  symbol_addrs.txt:1857 D_80104F38 -> g_snd_fake_open_vab_copy
+  symbol_addrs.txt:1929 D_800A3D70 -> g_gpu_fog_row_moves
+  symbol_addrs.txt:2063 D_800A4340 -> g_gpu_fog_block_moves
+  symbol_addrs.txt:2118 D_800A3828 -> g_light_selected_setup
+  symbol_addrs.txt:2137 D_800A3904 -> g_fight_rng_seed
+  symbol_addrs.txt:2227 D_800EF0D8 -> g_wave_even_row_vertices
+  symbol_addrs.txt:2228 D_800EF168 -> g_wave_odd_row_vertices
+  symbol_addrs.txt:2235 D_800FF6A8 -> g_snd_listed_vab_copy
+
+DRY RUN — nothing written. Re-run with --apply.

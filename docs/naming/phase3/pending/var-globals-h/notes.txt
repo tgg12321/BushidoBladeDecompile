@@ -1,0 +1,79 @@
+# var-globals-h notes (cites at 8b165c422; worktree ln-naming-c; research tmp/codex/var-globals-h-research.md re-derived by the drafter)
+0x800A3440: KEPT g_eff_cosine_scaled_quad_rate_selector. Retired: g_text1b_quat_2bit_state (symbol_addrs.txt:1473): does not hold at these accesses (see WHY); not reused; var-globals-g cap cut g_eff_command_quad_rate_selector (pending/var-globals-g/notes.txt:91) never landed; not reused. Confidence high.
+0x8009BB84: KEPT g_eff_rotated_quad_cluster_vertices. Retired: none. Confidence high.
+0x8009BB74: KEPT g_eff_rotation_matrix_scale. Retired: g_bitmask_table_4_8009BB74 (symbol_addrs.txt:768): does not hold at these accesses (see WHY); not reused (a fixed-point scale, not a bit mask). Confidence high.
+0x80094E48: KEPT g_light_preset_rows. Retired: g_char_setup_tbl (symbol_addrs.txt:191): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x80094A6C: KEPT g_gpu_view_centered_cell_attribute_pattern. Retired: g_default_collision_pattern (symbol_addrs.txt:828): does not hold at these accesses (see WHY); not reused (no collision access). Confidence high.
+0x800A3438: KEPT g_eff_particle_group_fill_indices. Retired: g_text1b_addr_800A3438 (symbol_addrs.txt:1472): does not hold at these accesses (see WHY); not reused. Current g_eff_particle_group_fill_counts retires with this row. Confidence high.
+0x800A32C8: KEPT g_pad_direction_positive_masks. Retired: g_text1b_state_record_table_8x4_a (symbol_addrs.txt:790): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x800A32D0: KEPT g_pad_direction_negative_masks. Retired: g_text1b_state_record_table_8x4_a_plus_8 (symbol_addrs.txt:1015): does not hold at these accesses (see WHY); not reused. Confidence high.
+0x8008DD5C: KEPT g_fighter_default_variant_indices. Retired: none. Confidence high.
+0x8008EBA0: KEPT g_object_bone_hit_deflect_angles. Retired: g_angle_raw_u16_lookup_EBA0 (symbol_addrs.txt:1140): true but role-free; superseded. Confidence high.
+0x8008EA70: KEPT g_fight_presentation_cd_audio_entries. Retired: g_unlock_anim_p_pair_table (symbol_addrs.txt:942): unlock / animation identity unshown; not reused. Confidence high.
+0x8009016C: KEPT g_fight_presentation_playback_file_id_offsets. Retired: g_unlock_anim_char_table (symbol_addrs.txt:943): unlock / character identity unshown; not reused. Confidence high.
+0x8009B920: KEPT g_eff_yawed_slot_quad_tex_recs. Retired: none. Confidence medium-high.
+0x8009B8E8: KEPT g_eff_jittered_billboard_tex_recs. Retired: none. Confidence medium-high.
+0x800A3828: KEPT g_light_selected_setup. Retired: g_practice_state_word_plus_4 (symbol_addrs.txt:2118): does not hold at these accesses (see WHY); not reused; var-globals-g cap cut g_light_current_setup never landed; not reused. Confidence medium-high.
+0x800A7EF0: KEPT g_gpu_grid_unique_node_buffer. Retired: none. Confidence medium-high.
+0x800A3D70: KEPT g_gpu_fog_row_moves. Retired: light_effect_col (symbol_addrs.txt:223, symbol_addrs.txt:1575, symbol_addrs.txt:1929): Kengo-era name, no light or colour access; not reused. Confidence medium-high.
+0x800A4340: KEPT g_gpu_fog_block_moves. Retired: g_gpu_loadimage_packet_buf (symbol_addrs.txt:2063): does not hold at these accesses (see WHY); not reused (MoveImage packets, not LoadImage). Confidence medium-high.
+0x800A32D8: KEPT g_gpu_fullscreen_image_rect. Retired: g_text1b_state_record_table_8x4_a_plus_8_plus_8 (symbol_addrs.txt:1112): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A32E0: KEPT g_gpu_fullscreen_image_end_clear_rect. Retired: g_text1b_state_record_table_8x4_a_plus_8_plus_16 (symbol_addrs.txt:1113): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x80094DF0: KEPT g_gpu_vram_row_lists. Retired: g_stage_lighting_ptr_array_6 (symbol_addrs.txt:760): does not hold at these accesses (see WHY); not reused. Current g_gpu_clut_row_lists retires with this row. Confidence medium-high.
+0x80094E08: KEPT g_gpu_vram_row_list_map. Retired: g_stage_lighting_idx_table (symbol_addrs.txt:863): does not hold at these accesses (see WHY); not reused. Current g_gpu_clut_row_list_map retires with this row. Confidence medium-high.
+0x8008EB40: KEPT g_fighter_dpad_angle_offsets. Retired: g_attack_angle_offset_table (symbol_addrs.txt:905, wave09/data_manifest.csv:117): no attack access; not reused. var-globals-g cap cut g_fighter_dpad_bearing_offsets never landed; not reused. Confidence medium-high.
+0x8008E0BC: KEPT g_fighter_power_scales. Retired: none. Confidence medium-high.
+0x800A310C: KEPT g_fighter_forward_move_rate_limits. Retired: g_char_pose_id_p2_plus_15 (symbol_addrs.txt:1164): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x8008DA08: KEPT g_fighter_forward_move_rate_limit_indices. Retired: g_byte_indirection_tbl_DA08 (symbol_addrs.txt:1123): an indirection, true but role-free; superseded. Confidence medium-high.
+0x8008EB74: KEPT g_fighter_power_difference_move_events. Retired: none. Confidence medium-high.
+0x8008EB1C: KEPT g_motion_preferred_variant_nibble_pairs. Retired: g_winanim_event_subtable_eb1c (symbol_addrs.txt:1139): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x80099BCC: KEPT g_node_retained_draw_asset_ids. Retired: g_text1b_sound_id_lookup (symbol_addrs.txt:1045): no sound access; not reused. Confidence medium-high.
+0x80099D3C: KEPT g_node_entry_pair_local_transforms. Retired: g_text1b_pair_6byte_99D3C (symbol_addrs.txt:1048): shape-only; superseded. Confidence medium-high.
+0x800A3134: KEPT g_fighter_opponent_response_max_separation. Retired: g_str_gn_bbm_800A3124_plus_8_plus_8 (symbol_addrs.txt:1165): not a string; not reused. Confidence medium-high.
+0x800A3100: KEPT g_fight_group_tint_colors. Retired: none. Confidence medium-high.
+0x800A3904: KEPT g_fight_rng_seed. Retired: g_pad_rec_bit_count_b_plus_8 (symbol_addrs.txt:2137): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800EF0D8: KEPT g_wave_even_row_vertices. Retired: g_snd_voice_envelope_block_a (symbol_addrs.txt:2227): no sound access; not reused. Confidence medium-high.
+0x800EF168: KEPT g_wave_odd_row_vertices. Retired: g_snd_voice_envelope_block_b (symbol_addrs.txt:2228): no sound access; not reused. Confidence medium-high.
+0x800F11E0: KEPT g_sheet_pair_sprite_buffers. Retired: none. Confidence medium-high.
+0x800F1438: KEPT g_sheet_pair_draw_mode_buffers. Retired: none. Confidence medium-high.
+0x800F1498: KEPT g_sheet_pair_panel_tile_buffers. Retired: none. Confidence medium-high.
+0x800A32E8: KEPT g_entry_menu_last_grid_pass_second_slot_entry_value. Retired: var-globals-g cap cut g_entry_menu_uploaded_entry_value never landed ('uploaded' false for the same reason as 0x800A32E9); not reused. Confidence medium-high.
+0x800A32E9: KEPT g_entry_menu_last_grid_pass_extra_slot_count. Retired: g_entry_menu_uploaded_extra_slot_count (pre-apply FAIL) and g_entry_menu_prev_frame_extra_slot_count (R6 FAIL, reverted; pending/var-globals-g/notes.txt:51, data_manifest.csv:51): both false as noted; not reused. Confidence medium-high.
+0x800A35DC: KEPT g_sel_sheet_code_column_cursor. Retired: g_mode_state_arg_alt_plus_4 (symbol_addrs.txt:1470): offset-spelled; not reused. var-globals-g cap cut g_sel_sheet_code_column_toggle never landed; not reused. Confidence medium-high.
+0x8008EA44: KEPT g_snd_stage_sound_slot_trigger_delays. Retired: g_threshold_lookup_EA44 (symbol_addrs.txt:1129): role-free; superseded. var-globals-g cap cut g_snd_stage_sound_slot_delay_seconds never landed; not reused. Confidence medium-high.
+0x80104F38: KEPT g_snd_fake_open_vab_copy. Retired: MotDataBaseAddress (symbol_addrs.txt:1857): Kengo-era, no motion access; not reused. Confidence medium-high.
+0x800FF6A8: KEPT g_snd_listed_vab_copy. Retired: g_voice_state_ptr_plus_8 (symbol_addrs.txt:2235): does not hold at these accesses (see WHY); not reused. Confidence medium-high.
+0x800A3900: KEPT g_sheet_pair_selection_y_offset. Retired: var-globals-g cap cut g_sheet_pair_selection_y never landed; not reused. Confidence medium.
+0x8009AD1C: KEPT g_snd_stage_reverb_types. Retired: g_byte_lookup_table_256_plus_4 (symbol_addrs.txt:996, basis-withdrawn): does not hold at these accesses (see WHY); not reused. var-globals-g cap cut g_snd_stage_reverb_settings never landed; not reused. Confidence medium.
+0x800A333C: KEPT g_memcard_retry_load_status8_latched. Retired: g_result_timer_complete_flag (symbol_addrs.txt:1450): result-screen identity unshown; not reused. var-globals-g cap cut g_memcard_status8_latched never landed; not reused. Confidence medium-high.
+0x800A3348: KEPT g_memcard_save_prompt_status8_retry_count. Retired: g_result_timer_complete_flag_plus_8_plus_4 (symbol_addrs.txt:1481): offset-spelled; not reused. Confidence medium-high.
+0x800A3344: KEPT g_memcard_save_prompt_status10_retry_count. Retired: g_result_timer_complete_flag_plus_8 (symbol_addrs.txt:1457): offset-spelled; not reused. Confidence medium-high.
+0x800A3340: (research) g_memcard_save_prompt_other_status_retry_count. Retired: g_result_timer_complete_flag_plus_4 (symbol_addrs.txt:1456): offset-spelled; not reused. Confidence medium.
+
+CHANGED FROM RESEARCH: none (all 50 research rows kept with their proposed names; evidence prefixed RE-DERIVED at 8b165c422; the C/header/asm/registry site lists of every row match the drafter's grep of the D_ name, the live aliases and the address). Additions to evidence only: 0x800A32E8 and 0x8009AD1C gained the address-range prose comments the research did not list (src/main/596CC.c:2718, src/main/5ED34.c:3; src/main/4BC3C.c:601, src/main/d_8A588.c:1; they quote the address as a range bound, not the symbol, and need no rewrite); 0x800A3904 gained the note that fight_Init reads the seed only when g_fight_mode_selector == 6 (9F9C.c:2054-2055), the mode comb_Connect fills it for.
+DROPPED: none.
+Rows that rename an already-landed g_ name (audit findings, current_names = landed name): 0x80094DF0 g_gpu_clut_row_lists -> g_gpu_vram_row_lists; 0x80094E08 g_gpu_clut_row_list_map -> g_gpu_vram_row_list_map; 0x800A3438 g_eff_particle_group_fill_counts -> g_eff_particle_group_fill_indices. Pairs use the landed spelling as the old name; the two clut rows go together (rename both or neither).
+Weakest rows, a reviewer may fairly FAIL (fallback: keep the neutral D_ name, or for the three landed names keep the landed g_ name): 0x8009AD1C (row[1] never read), 0x800A3900 (single function), 0x800A3340 ('other_status' wording), 0x8009B920 / 0x8009B8E8, 0x80099D3C, 0x800A32D8 / 0x800A32E0.
+Freshness: git grep -w of every proposed name over src include docs symbol_addrs.txt named_syms.txt undefined_syms_auto.txt = 0 hits except docs/naming/phase3/backlog.tsv:73 (the name-audit row's prose suggestion of g_gpu_vram_row_list_map and g_eff_particle_group_fill_indices); no two rows share a name; no retired name appears outside "was" comments in the registries.
+
+LEFT NEUTRAL (research NO_NAME list, summarized; no row, fallback D_ names stay):
+0x800A31E4 (write-once, no consumer); 0x800A3354 (status-8 wording false: third setter on D_800A31F8 == -1, 28708.c:1091-1093); 0x800A3334 (store-only); 0x800A3205 / 0x800A3206 / 0x800A3207 (adjacency-only reason in var-globals-d; mechanics noted for a later row); 0x8008EAC0 and 0x800A312C (members of the unnamed fight timeline family); 0x8008E3C0 / 0x8008E3F8 / 0x8008E4D0 (readings rest on unnamed fighter members unk_274 / unk_276 / unk_27E); 0x801027A0 / 0x801027D8 (g_fight_config.unk_4); 0x80095280 (function table handed to asm); 0x80095488 / 0x80095508 (read only by unnamed func_8004A4E0); 0x8009BBE4 / 0x8009BBEC / 0x8009BBF4 (corner vertices, told apart only by corner); 0x800A327C / 0x800A3284 / 0x800A3294 / 0x800A329C / 0x800A32A4 / 0x800A32AC and 0x800A328C (call-order RECTs / one sprite cell); 0x800A36D2 (interior of landed g_comb_prev_send_word); 0x800A36D4 (store-only); 0x800A37E0 / 0x800A38F0 / 0x800A390F / 0x800F665C / 0x800F665A / 0x800A3548 / 0x800A35A4 / 0x800A357C / 0x800A35B8 / 0x800A3614 / 0x800A3745 / 0x800A3746 / 0x800A33BC / 0x800A3520 / 0x800EF9F2 / 0x800EF9F4 (write-only); 0x800EFC8A (folded interior of a particle array); 0x8010367E (folded end of g_reloc_block_slot_counts); 0x80103624 (read only by unnamed func_8004C404); 0x800A30E0 (string-only wave). Also neutral: the 3-reference sheet / cell / TexRec run D_8009B0B4 .. D_8009B9F0 (except the two single-drawer TexRec tables in the CSV), data-only references (D_8008D754 .. D_8008D854, D_8008F2EC .. D_8009000C, D_80094D80 .. D_80094DE4, D_80099CC4, D_8009A090 .. D_8009A638, D_8009AFB8 / D_8009AFE0 / D_8009B024 / D_8009B048), definition-only symbols, text-section labels (D_800521AC etc.), and the string-only wave range D_800A3178 .. D_800A31D0.
+
+COMMENTS TO UPDATE / R6 watch (comment and doc lines naming old spellings; the wave tools do not rewrite comments, so the post-apply comment pass or a hand edit must):
+- src/main/d_8BC50.c:145-146: header prose names D_8009BB74 and D_8009BB84 (and D_8009BBE4 ..).
+- src/main/d_80DF8.c:912-913: comment names D_80094A6C twice.
+- src/main/368E4.c:2032: codegen note names D_80099D3C.
+- src/main/43500.c:846: comment names D_80099D3C.
+- include/game.h:1888: comment names D_8008EA44.
+- src/main/4D0A8.c:1744 and src/main/d_8A588.c:6: prose names D_8009AD1C (d_8A588.c:1 and src/main/4BC3C.c:601, src/main/596CC.c:2718, src/main/5ED34.c:3 only quote the address as a range bound: leave).
+- src/main/31D3C.c:216, 513, 514: comments name g_gpu_clut_row_lists / g_gpu_clut_row_list_map (landed spellings that retire); also reword "clut" where it describes the rows.
+- named_syms.txt:643-644: comment names g_gpu_clut_row_list_map and g_gpu_clut_row_lists.
+- symbol_addrs.txt:760 and :863: registry notes name the retiring clut spellings ("picked via g_gpu_clut_row_list_map", "index g_gpu_clut_row_lists"); symbol_addrs.txt:458-459 note text likewise ("those VRAM rects" wording is fine).
+- symbol_addrs.txt:768 keeps "/* 4 entries */" next to the new g_eff_rotation_matrix_scale (a size note, not a role; fine, check wording).
+- docs/naming/phase3/backlog.tsv:73: prose suggests g_gpu_vram_row_list_map and g_eff_particle_group_fill_indices (a docs path, free; no rewrite needed).
+- src/main/d_8A588.c header (lines 1-30) and d_8BC50.c / 4D0A8.c header comments list several of these addresses in prose; re-read them after apply.
+- engine/queue.py names no row's symbol in this wave (the D_8008D090 docstring is var-globals-g's R6 item).
+
+Pre-apply (naming-reviewer, two batches): A rows 1-22 22 PASS; B rows 23-50 27 PASS / 1 FAIL.
+0x800A3340: DROPPED g_memcard_save_prompt_other_status_retry_count (pre-apply batch B FAIL R4/N1: incremented only for statuses 5, 6, 7, 13, 14, 15 (28708.c:921-956); status 4 and default statuses leave it untouched, so "other_status" overclaims; neutral D_800A3340 stays).
+R6 watch (from reviewers): 31D3C.c:512-514 comment says "VRAM CLUT-row lists" (reword: the CLUT claim is withdrawn); named_syms.txt:643-644, symbol_addrs.txt:760,863 registry notes likewise; d_89C78.c:198 "70 sound ids" is stale for D_80099BCC (g_node_retained_draw_asset_ids), reword.
