@@ -1,0 +1,101 @@
+var-members-rest-5 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Scope: Work_80053E9C, Unk1F8002B8_8005344C, Unk1F8002B8Rec (include/game.h ~1191-1370). Users: src/main/43500.c (all 14 C
+bodies), src/main/17AFC.c. Re-derived: every `->`/`.` access of each member (the evidence column lists the line numbers by
+grep, split W / RW / A (address taken) / R), the raw scratchpad users (4510C.c:991-1199 and 9F9C.c:3010-3060, :3557-3585,
+:4269 only pass 0x1F8002B8 / 0x1F8002F0 as a work or argument address; 32D04.c:487 puts a MATRIX at 0x1F8003A0, another
+view), and the 137 remaining INCLUDE_ASM bodies (asm/funcs/<f>.s): the only ones touching 0x1F8002B4.. are the s16
+per-vertex-table users (func_8004D634/D838, func_80050334/80050538, the gpu_Emit* / gpu_WriteAndLink* family), which index
+0x1F8002B4 + 2*i (a different, time-multiplexed view; runs into Rec.unk00 for i >= 2); 43500.c's own two INCLUDE_ASM bodies
+touch only 0x1F800020..0x1F800030. No asm body touches a Work / v8005344C / Rec member at its offset.
+
+Surviving: 55 member rows (pairs.txt): Work_80053E9C 43, Unk1F8002B8_8005344C 3, Unk1F8002B8Rec 9.
+(Research: 62 RENAME / 23 NO_NAME. 62 - 7 dropped = 55.)
+
+Changed spellings (3)
+  Work_80053E9C.unk34   hit_d -> hit_plane_d      "d" alone says nothing; it is the hit face's plane constant (n.p + d).
+  Work_80053E9C.unkDC   face_d -> face_plane_d    same reason; keeps the hit_*/face_* pair parallel.
+  Unk1F8002B8Rec.unk6C  other_points -> other_shape_points   pairs with shape_points (unk60), "other" alone has no referent.
+Unchanged from Codex: the other 52 spellings.
+
+Dropped rows (7)
+  Work_80053E9C.unk60 walk_start_major, unk64 walk_minor_pos, unk68 walk_end_major, unk6C walk_end_minor,
+  unk70 walk_major_extent, unk74 walk_minor_extent: at collision_WalkSegmentGrid:51-64 they are x/z start, x/z end and
+  dx/dz; only after the exchange at :105-116 (when |dz| > |dx|) is the first of each pair the major axis. A name true at
+  every use does not exist (x/z before, major/minor after), and "major/minor" lies at :51-104. Left neutral. The same
+  reasoning keeps unk80 neutral (start-cell x centre :81, exchange temporary :107-115, per-cell result :135,:160).
+  Unk1F8002B8Rec.unk78 bbox_min: fighter_ProcessPositionRecordsInQuad (17AFC.c:1029-1047) takes no y minimum: unk78.y is
+  only the first corner's y (seeded from unk84 = tbl[idx*4]), and :1097 averages it with the top y. 'min' lies at that use;
+  every other use (1276-1292, 1380-1396, 1840-1856) is a true minimum. Dropped, not renamed; its partner unk84 -> bbox_max IS
+  kept because it is a true maximum at every use (y included). (A reviewer who prefers a symmetric pair can drop unk84 too.)
+Kept with the walk caveat handled: unk78 walk_minor_step / unk7C walk_slope / unk90 walk_steps_left are written and read
+  only after the exchange (or never exchanged), so "minor" holds at every use.
+
+NO_NAME (23, re-confirmed neutral, not in pairs)
+  Work_80053E9C: unk6 (no use), unk44 (no use), unk52 (no use), unk5A (no use), unk80 (three roles), unk92 (no use),
+    unkE0 (five roles: cell data offset, start-end distance diff, face origin x, inside flag, squared distance),
+    unkE4 (two roles: start plane distance, face origin y), unkE8 (two roles: end plane distance, face origin z).
+  Unk1F8002B8_8005344C: unk0C (pad, only as the 4th word of the 16-byte copy), unk10 (rotated velocity in the turn block,
+    then the hit point: two roles), unk1C (no access), unk20 (one-block arithmetic temporary), unk2C (no access),
+    unk36 (no access).
+  Unk1F8002B8Rec: unkA8, unkB8 (edge vectors, sums, 2D vertices, segment start...: many roles), unkC4 (second hit mask: what
+    the second sphere test means is not shown by the code), unkC8 (normal, tip copy, reference point), unkD4 (no member
+    access), unkF8 (angles vs offset vectors), unk100 (hit/effect point, squared components, 2D vectors), unk118 (rotated
+    points vs 2D edge offsets).
+
+Dry run (dry.txt, exit=1): 3 files change (include/game.h, src/main/17AFC.c, src/main/43500.c); 0 compile failures (member
+error rounds converge to 0 in both passes); 49 UNRESOLVED lines, all the tool's documented limit for a line holding two
+`unk00` tokens: `scr->unk00.unk00` (Unk1F8002B8Rec.unk00 then the inner Unk1F8002B8Unk00.unk00 point array, which stays
+neutral). Every unresolved line is of that exact form, all with `scr` an Unk1F8002B8Rec * (17AFC.c:1513-1515, 1743-1744,
+1777-1836 and 4369; none in object_UpdatePool / fight_UpdateBallisticRecords, whose scr.unk00 is the v8005344C member and
+resolves by the tool). Hand-edit at apply, then format.py and the keycheck:
+  sed -i 's/scr->unk00\.unk00/scr->point_slots.unk00/g' src/main/17AFC.c
+(expected: exactly the 49 lines in dry.txt; a longer name can re-wrap lines, which format.py lands). Renaming the inner
+member too would not help (same-line same-spelling limit, as rest-4 found), so it stays unk00.
+
+R6 watch points (comments the tool does not edit)
+- include/game.h:1192 "Work_80053E9C.unk88 / unk8C" -> walk_cell / end_cell.
+- include/game.h:1205 "(Unk1F8002B8_8005344C.unk38)" -> cast_work.
+- include/game.h:1267-1277 Unk1F8002B8Unk00 comment: "Unk1F8002B8Rec.unk00 ... unk00 is up to six points that unk60[0..2]
+  aim at" and ":1277 it aims unk60[0..2]" -> point_slots / shape_points ("ScrPad.unk00 or unk48" at :1274 is ScrPad: leave).
+- include/game.h:1295 "over unk60 up into unk118" -> shape_points (unk118 stays); :1339 and :1365 "unk60..unk118" same.
+- include/game.h:1306-1313 Rec comment: "unk60 / unk6C hold point pointers (... reads unk60[0..2])" -> shape_points /
+  other_shape_points; "unkB4 / unkC4 are fighter_TestTriangleBoneHits's two hit masks" -> unkB4 becomes bone_hit_mask,
+  unkC4 stays (reword to keep it true); "unkD8 is the matrix" -> rot_matrix; "*unk60[0]" -> *shape_points[0];
+  "unk00 is scratch (Unk1F8002B8Unk00)" -> point_slots. unkA8 / unkB8 / unkD4 / unk118 tokens stay.
+- include/game.h:1340-1366 8005344C member comments name roles only (no old spelling): keep; the `/* the hit normal */`
+  (unk30) and `/* no access */` notes stay true.
+- src/main/17AFC.c:1103 "the box unk78 (min) / unk84 (max) and the box unk90 (min) / unk9C (max)" -> unk84 -> bbox_max,
+  unk90 -> other_bbox_min, unk9C -> other_bbox_max (unk78 stays; the comment must not call unk78 a box min of both).
+- src/main/17AFC.c:1010 "unk78.y" (unk78 stays; no edit).
+- src/main/17AFC.c:2198 "the result goes to unk13C" -> contact_point.
+- src/main/17AFC.c:2458 "obj->unk60[0..2]" -> shape_points; :2462 and :2891 "built in unkD8" and :2945, :3243, :4329
+  "obj->unkD8" / "scr->unkD8" -> rot_matrix.
+- src/main/17AFC.c:1652 "the unk00 / unk_210 points" and :2196 "else unk00[k]" are SPAD (ScrPad.unk00): do NOT touch.
+- src/main/43500.c:38-43 header comment names members only by byte offsets (+0x8/+0x10, +0x18/+0x20, +0x88/+0x8C,
+  +0x70/+0x74, +0x60/+0x64, +0x68/+0x6C, +0x7C, +0x90, +0x5C): no old spelling, left alone (a reviewer may want it updated,
+  but then the keycheck requires a pairs-only change, so leave).
+- docs/engine/*.md and .claude/rules name none of these members; docs/naming/phase3/backlog.tsv only mentions the row.
+- Same-spelled members that must NOT be touched (the tool resolves by type): ScrPad.unk00 / unk48 / unk78 / unkA8,
+  Unk1F800000Rec.unk60 / unk6C / unk84 / unk90 / unk9C (game.h:1164-1181, effects), Unk1F8002B8Unk00.unk00, Cell_80052D00
+  x / z, and every other struct's unk0 / unk4 / unk8 / unk18 ...
+
+Judgement calls for the reviewer
+- Time-multiplexed scratch: Unk1F8002B8Rec / Unk1F8002B8_8005344C / Work_80053E9C are views of the same scratchpad bytes
+  (0x1F8002B8..); other code (9F9C.c fighter_UpdateBoneWorldData keeps from/to/hit/normal at words 0..13, the s16 vertex table,
+  32D04's MATRIX) puts other data there at other times. Names are claimed per view and by that view's accesses (the existing
+  game.h comments already say so). Rows most exposed: cast_end (+0x00 is "from" in 9F9C's own layout), point_slots (the s16
+  vertex table at 0x1F8002B4 + 2*i runs into it for i >= 2), rot_matrix (32D04 MATRIX at +0xE8).
+- seg_start: for short segments collision_TestSegmentExtendingShortStart[WithWork] stores the *extended* start (:218-221,
+  :250-253); the name claims the segment actually tested, not the caller's argument.
+- local_start_y / local_end_y / hit_local_y: the cell-local frame has no y offset, so "local" is a convention shared with x/z.
+- plane_cross_x/y/z: in the scalar projection test the member first holds the interpolated delta, then the rounded delta
+  (:374-393), and only then the crossing (:407); all later reads and the copy to hit_local_* use the finished crossing.
+- proj_axis_x/y/z: scalar test only; holds the first projection axis then the second.
+- start_cell_center_z has no x partner in the pairs (unk80 is reused: three roles).
+- hit_plane_d is write-only (role fixed by its source face_plane_d).
+- bbox_max without bbox_min (see dropped rows); other_bbox_min / other_bbox_max are both true at every use.
+- bone_hit_mask: bit i = bone sphere i passed the first sphere test; the sibling unkC4 stays neutral.
+- walk_steps_left is the major-axis cell counter pre-decremented at the loop head (:122,:134,:143).
+- cast_normal / cast_work are the 8005344C layout's s16[3] hit normal and the embedded Work_80053E9C (named for the layout of
+  object_UpdatePool / fight_UpdateBallisticRecords only).

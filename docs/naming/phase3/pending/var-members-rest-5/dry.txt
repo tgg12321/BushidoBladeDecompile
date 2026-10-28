@@ -1,0 +1,2521 @@
+PASS Work_80053E9C.unk0=nearest_dist_sq, Work_80053E9C.unk4=hit_tag, Work_80053E9C.unk8=seg_start, Work_80053E9C.unk18=seg_end, Work_80053E9C.unk28=hit_nx, Work_80053E9C.unk2C=hit_ny, Work_80053E9C.unk30=hit_nz, Work_80053E9C.unk34=hit_plane_d, Work_80053E9C.unk38=hit_local_x, Work_80053E9C.unk3C=hit_local_y, Work_80053E9C.unk40=hit_local_z, Work_80053E9C.unk48=hit_cell_x, Work_80053E9C.unk4A=hit_cell_z, Work_80053E9C.unk4C=local_start_x, Work_80053E9C.unk4E=local_start_y, Work_80053E9C.unk50=local_start_z, Work_80053E9C.unk54=local_end_x, Work_80053E9C.unk56=local_end_y, Work_80053E9C.unk58=local_end_z, Work_80053E9C.unk5C=cell_test, Work_80053E9C.unk78=walk_minor_step, Work_80053E9C.unk7C=walk_slope, Work_80053E9C.unk84=start_cell_center_z, Work_80053E9C.unk88=walk_cell, Work_80053E9C.unk8C=end_cell, Work_80053E9C.unk90=walk_steps_left, Work_80053E9C.unk9C=proj_axis_x, Work_80053E9C.unkA0=proj_axis_y, Work_80053E9C.unkA4=proj_axis_z, Work_80053E9C.unkA8=plane_cross_x, Work_80053E9C.unkAC=plane_cross_y, Work_80053E9C.unkB0=plane_cross_z, Work_80053E9C.unkB4=edge_from_u, Work_80053E9C.unkB8=edge_from_v, Work_80053E9C.unkBC=edge_to_u, Work_80053E9C.unkC0=edge_to_v, Work_80053E9C.unkC4=proj_cross_u, Work_80053E9C.unkC8=proj_cross_v, Work_80053E9C.unkCC=face_tag, Work_80053E9C.unkD0=face_nx, Work_80053E9C.unkD4=face_ny, Work_80053E9C.unkD8=face_nz, Work_80053E9C.unkDC=face_plane_d, Unk1F8002B8_8005344C.unk00=cast_end, Unk1F8002B8Rec.unk60=shape_points, Unk1F8002B8Rec.unk6C=other_shape_points, Unk1F8002B8Rec.unk13C=contact_point
+decl Work_80053E9C.unk0 -> nearest_dist_sq  include/game.h:1207
+decl Work_80053E9C.unk4 -> hit_tag  include/game.h:1208
+decl Work_80053E9C.unk8 -> seg_start  include/game.h:1210
+decl Work_80053E9C.unk18 -> seg_end  include/game.h:1211
+decl Work_80053E9C.unk28 -> hit_nx  include/game.h:1212
+decl Work_80053E9C.unk2C -> hit_ny  include/game.h:1213
+decl Work_80053E9C.unk30 -> hit_nz  include/game.h:1214
+decl Work_80053E9C.unk34 -> hit_plane_d  include/game.h:1215
+decl Work_80053E9C.unk38 -> hit_local_x  include/game.h:1216
+decl Work_80053E9C.unk3C -> hit_local_y  include/game.h:1217
+decl Work_80053E9C.unk40 -> hit_local_z  include/game.h:1218
+decl Work_80053E9C.unk48 -> hit_cell_x  include/game.h:1220
+decl Work_80053E9C.unk4A -> hit_cell_z  include/game.h:1221
+decl Work_80053E9C.unk4C -> local_start_x  include/game.h:1222
+decl Work_80053E9C.unk4E -> local_start_y  include/game.h:1223
+decl Work_80053E9C.unk50 -> local_start_z  include/game.h:1224
+decl Work_80053E9C.unk54 -> local_end_x  include/game.h:1226
+decl Work_80053E9C.unk56 -> local_end_y  include/game.h:1227
+decl Work_80053E9C.unk58 -> local_end_z  include/game.h:1228
+decl Work_80053E9C.unk5C -> cell_test  include/game.h:1230
+decl Work_80053E9C.unk78 -> walk_minor_step  include/game.h:1237
+decl Work_80053E9C.unk7C -> walk_slope  include/game.h:1238
+decl Work_80053E9C.unk84 -> start_cell_center_z  include/game.h:1240
+decl Work_80053E9C.unk88 -> walk_cell  include/game.h:1241
+decl Work_80053E9C.unk8C -> end_cell  include/game.h:1242
+decl Work_80053E9C.unk90 -> walk_steps_left  include/game.h:1243
+decl Work_80053E9C.unk9C -> proj_axis_x  include/game.h:1245
+decl Work_80053E9C.unkA0 -> proj_axis_y  include/game.h:1246
+decl Work_80053E9C.unkA4 -> proj_axis_z  include/game.h:1247
+decl Work_80053E9C.unkA8 -> plane_cross_x  include/game.h:1248
+decl Work_80053E9C.unkAC -> plane_cross_y  include/game.h:1249
+decl Work_80053E9C.unkB0 -> plane_cross_z  include/game.h:1250
+decl Work_80053E9C.unkB4 -> edge_from_u  include/game.h:1251
+decl Work_80053E9C.unkB8 -> edge_from_v  include/game.h:1252
+decl Work_80053E9C.unkBC -> edge_to_u  include/game.h:1253
+decl Work_80053E9C.unkC0 -> edge_to_v  include/game.h:1254
+decl Work_80053E9C.unkC4 -> proj_cross_u  include/game.h:1255
+decl Work_80053E9C.unkC8 -> proj_cross_v  include/game.h:1256
+decl Work_80053E9C.unkCC -> face_tag  include/game.h:1257
+decl Work_80053E9C.unkD0 -> face_nx  include/game.h:1258
+decl Work_80053E9C.unkD4 -> face_ny  include/game.h:1259
+decl Work_80053E9C.unkD8 -> face_nz  include/game.h:1260
+decl Work_80053E9C.unkDC -> face_plane_d  include/game.h:1261
+decl Unk1F8002B8_8005344C.unk00 -> cast_end  include/game.h:1343
+decl Unk1F8002B8Rec.unk60 -> shape_points  include/game.h:1317
+decl Unk1F8002B8Rec.unk6C -> other_shape_points  include/game.h:1318
+decl Unk1F8002B8Rec.unk13C -> contact_point  include/game.h:1333
+  round 0: 526 member error line(s)
+    src/main/17AFC.c:1252 unk60 x1
+    src/main/17AFC.c:1253 unk60 x1
+    src/main/17AFC.c:1254 unk60 x1
+    src/main/17AFC.c:1257 unk60 x1
+    src/main/17AFC.c:1258 unk60 x1
+    src/main/17AFC.c:1259 unk60 x1
+    src/main/17AFC.c:1262 unk60 x1
+    src/main/17AFC.c:1263 unk60 x1
+    src/main/17AFC.c:1264 unk60 x1
+    src/main/17AFC.c:1267 unk60 x1
+    src/main/17AFC.c:1268 unk60 x1
+    src/main/17AFC.c:1269 unk60 x1
+    src/main/17AFC.c:1276 unk60 x1
+    src/main/17AFC.c:1279 unk60 x1
+    src/main/17AFC.c:1280 unk60 x1
+    src/main/17AFC.c:1281 unk60 x1
+    src/main/17AFC.c:1282 unk60 x1
+    src/main/17AFC.c:1284 unk60 x1
+    src/main/17AFC.c:1285 unk60 x1
+    src/main/17AFC.c:1286 unk60 x1
+    src/main/17AFC.c:1287 unk60 x1
+    src/main/17AFC.c:1289 unk60 x1
+    src/main/17AFC.c:1290 unk60 x1
+    src/main/17AFC.c:1291 unk60 x1
+    src/main/17AFC.c:1292 unk60 x1
+    src/main/17AFC.c:1298 unk6C x1
+    src/main/17AFC.c:1299 unk6C x1
+    src/main/17AFC.c:1300 unk6C x1
+    src/main/17AFC.c:1303 unk6C x1
+    src/main/17AFC.c:1304 unk6C x1
+    src/main/17AFC.c:1305 unk6C x1
+    src/main/17AFC.c:1308 unk6C x1
+    src/main/17AFC.c:1309 unk6C x1
+    src/main/17AFC.c:1310 unk6C x1
+    src/main/17AFC.c:1313 unk6C x1
+    src/main/17AFC.c:1314 unk6C x1
+    src/main/17AFC.c:1315 unk6C x1
+    src/main/17AFC.c:1318 unk6C x1
+    src/main/17AFC.c:1321 unk6C x1
+    src/main/17AFC.c:1322 unk6C x1
+    src/main/17AFC.c:1323 unk6C x1
+    src/main/17AFC.c:1324 unk6C x1
+    src/main/17AFC.c:1326 unk6C x1
+    src/main/17AFC.c:1327 unk6C x1
+    src/main/17AFC.c:1328 unk6C x1
+    src/main/17AFC.c:1329 unk6C x1
+    src/main/17AFC.c:1331 unk6C x1
+    src/main/17AFC.c:1332 unk6C x1
+    src/main/17AFC.c:1333 unk6C x1
+    src/main/17AFC.c:1334 unk6C x1
+    src/main/17AFC.c:1339 unk6C x3
+    src/main/17AFC.c:1357 unk60 x1
+    src/main/17AFC.c:1358 unk60 x1
+    src/main/17AFC.c:1359 unk60 x1
+    src/main/17AFC.c:1362 unk60 x1
+    src/main/17AFC.c:1363 unk60 x1
+    src/main/17AFC.c:1364 unk60 x1
+    src/main/17AFC.c:1367 unk60 x1
+    src/main/17AFC.c:1368 unk60 x1
+    src/main/17AFC.c:1369 unk60 x1
+    src/main/17AFC.c:1372 unk60 x1
+    src/main/17AFC.c:1373 unk60 x1
+    src/main/17AFC.c:1374 unk60 x1
+    src/main/17AFC.c:1380 unk60 x1
+    src/main/17AFC.c:1383 unk60 x1
+    src/main/17AFC.c:1384 unk60 x1
+    src/main/17AFC.c:1385 unk60 x1
+    src/main/17AFC.c:1386 unk60 x1
+    src/main/17AFC.c:1388 unk60 x1
+    src/main/17AFC.c:1389 unk60 x1
+    src/main/17AFC.c:1390 unk60 x1
+    src/main/17AFC.c:1391 unk60 x1
+    src/main/17AFC.c:1393 unk60 x1
+    src/main/17AFC.c:1394 unk60 x1
+    src/main/17AFC.c:1395 unk60 x1
+    src/main/17AFC.c:1396 unk60 x1
+    src/main/17AFC.c:1405 unk6C x1
+    src/main/17AFC.c:1406 unk6C x1
+    src/main/17AFC.c:1407 unk6C x1
+    src/main/17AFC.c:1410 unk6C x1
+    src/main/17AFC.c:1411 unk6C x1
+    src/main/17AFC.c:1412 unk6C x1
+    src/main/17AFC.c:1415 unk6C x1
+    src/main/17AFC.c:1416 unk6C x1
+    src/main/17AFC.c:1417 unk6C x1
+    src/main/17AFC.c:1420 unk6C x1
+    src/main/17AFC.c:1421 unk6C x1
+    src/main/17AFC.c:1422 unk6C x1
+    src/main/17AFC.c:1425 unk6C x1
+    src/main/17AFC.c:1428 unk6C x1
+    src/main/17AFC.c:1429 unk6C x1
+    src/main/17AFC.c:1430 unk6C x1
+    src/main/17AFC.c:1431 unk6C x1
+    src/main/17AFC.c:1433 unk6C x1
+    src/main/17AFC.c:1434 unk6C x1
+    src/main/17AFC.c:1435 unk6C x1
+    src/main/17AFC.c:1436 unk6C x1
+    src/main/17AFC.c:1438 unk6C x1
+    src/main/17AFC.c:1439 unk6C x1
+    src/main/17AFC.c:1440 unk6C x1
+    src/main/17AFC.c:1441 unk6C x1
+    src/main/17AFC.c:1446 unk6C x3
+    src/main/17AFC.c:1513 unk60 x1
+    src/main/17AFC.c:1514 unk60 x1
+    src/main/17AFC.c:1516 unk60 x2
+    src/main/17AFC.c:1517 unk60 x2
+    src/main/17AFC.c:1518 unk60 x2
+    src/main/17AFC.c:1567 unk60 x2
+    src/main/17AFC.c:1568 unk60 x1
+    src/main/17AFC.c:1569 unk60 x1
+    src/main/17AFC.c:1570 unk60 x1
+    src/main/17AFC.c:1597 unk60 x1
+    src/main/17AFC.c:1598 unk60 x1
+    src/main/17AFC.c:1599 unk60 x1
+    src/main/17AFC.c:1601 unk60 x1
+    src/main/17AFC.c:1605 unk60 x1
+    src/main/17AFC.c:1808 unk60 x1
+    src/main/17AFC.c:1809 unk60 x1
+    src/main/17AFC.c:1810 unk60 x1
+    src/main/17AFC.c:1812 unk60 x1
+    src/main/17AFC.c:1813 unk60 x1
+    src/main/17AFC.c:1814 unk60 x1
+    src/main/17AFC.c:1819 unk60 x1
+    src/main/17AFC.c:1820 unk60 x1
+    src/main/17AFC.c:1821 unk60 x1
+    src/main/17AFC.c:1824 unk60 x1
+    src/main/17AFC.c:1825 unk60 x1
+    src/main/17AFC.c:1826 unk60 x1
+    src/main/17AFC.c:1829 unk60 x1
+    src/main/17AFC.c:1830 unk60 x1
+    src/main/17AFC.c:1831 unk60 x1
+    src/main/17AFC.c:1834 unk60 x1
+    src/main/17AFC.c:1835 unk60 x1
+    src/main/17AFC.c:1836 unk60 x1
+    src/main/17AFC.c:1840 unk60 x1
+    src/main/17AFC.c:1843 unk60 x1
+    src/main/17AFC.c:1844 unk60 x1
+    src/main/17AFC.c:1845 unk60 x1
+    src/main/17AFC.c:1846 unk60 x1
+    src/main/17AFC.c:1848 unk60 x1
+    src/main/17AFC.c:1849 unk60 x1
+    src/main/17AFC.c:1850 unk60 x1
+    src/main/17AFC.c:1851 unk60 x1
+    src/main/17AFC.c:1853 unk60 x1
+    src/main/17AFC.c:1854 unk60 x1
+    src/main/17AFC.c:1855 unk60 x1
+    src/main/17AFC.c:1856 unk60 x1
+    src/main/17AFC.c:2265 unk13C x1
+    src/main/17AFC.c:2266 unk13C x1
+    src/main/17AFC.c:2267 unk13C x1
+    src/main/17AFC.c:2303 unk13C x1
+    src/main/17AFC.c:2305 unk13C x1
+    src/main/17AFC.c:2475 unk60 x2
+    src/main/17AFC.c:2476 unk60 x2
+    src/main/17AFC.c:2477 unk60 x2
+    src/main/17AFC.c:2478 unk60 x2
+    src/main/17AFC.c:2479 unk60 x2
+    src/main/17AFC.c:2480 unk60 x2
+    src/main/17AFC.c:2593 unk60 x1
+    src/main/17AFC.c:2594 unk60 x1
+    src/main/17AFC.c:2595 unk60 x1
+    src/main/17AFC.c:2784 unk60 x1
+    src/main/17AFC.c:2785 unk60 x1
+    src/main/17AFC.c:2786 unk60 x1
+    src/main/17AFC.c:2899 unk60 x2
+    src/main/17AFC.c:2900 unk60 x2
+    src/main/17AFC.c:2901 unk60 x2
+    src/main/17AFC.c:2903 unk60 x2
+    src/main/17AFC.c:2904 unk60 x2
+    src/main/17AFC.c:2905 unk60 x2
+    src/main/17AFC.c:3001 unk60 x1
+    src/main/17AFC.c:3002 unk60 x1
+    src/main/17AFC.c:3003 unk60 x1
+    src/main/17AFC.c:3006 unk60 x1
+    src/main/17AFC.c:3007 unk60 x1
+    src/main/17AFC.c:3008 unk60 x1
+    src/main/17AFC.c:3012 unk60 x1
+    src/main/17AFC.c:3013 unk60 x1
+    src/main/17AFC.c:3014 unk60 x1
+    src/main/17AFC.c:3217 unk60 x2
+    src/main/17AFC.c:3218 unk60 x2
+    src/main/17AFC.c:3219 unk60 x2
+    src/main/17AFC.c:3264 unk60 x1
+    src/main/17AFC.c:3265 unk60 x1
+    src/main/17AFC.c:3266 unk60 x1
+    src/main/17AFC.c:4179 unk00 x1
+    src/main/17AFC.c:4180 unk00 x1
+    src/main/17AFC.c:4181 unk00 x1
+    src/main/17AFC.c:4185 unk00 x1
+    src/main/17AFC.c:4256 unk00 x1
+    src/main/17AFC.c:4400 unk60 x1
+    src/main/17AFC.c:4401 unk60 x1
+    src/main/17AFC.c:4540 unk00 x1
+    src/main/17AFC.c:4541 unk00 x1
+    src/main/17AFC.c:4542 unk00 x1
+    src/main/17AFC.c:4544 unk00 x1
+    src/main/17AFC.c:4549 unk00 x1
+    src/main/43500.c:51 unk8 x1
+    src/main/43500.c:52 unk8 x1
+    src/main/43500.c:54 unk18 x1
+    src/main/43500.c:55 unk0 x1
+    src/main/43500.c:57 unk18 x1
+    src/main/43500.c:60 unk88 x1
+    src/main/43500.c:61 unk88 x1
+    src/main/43500.c:62 unk8C x1
+    src/main/43500.c:63 unk8C x1
+    src/main/43500.c:66 unk88 x1
+    src/main/43500.c:67 unk8C x1
+    src/main/43500.c:68 unk88 x1
+    src/main/43500.c:69 unk8C x1
+    src/main/43500.c:70 unk8 x1
+    src/main/43500.c:71 unk18 x1
+    src/main/43500.c:72 unk8 x1
+    src/main/43500.c:73 unk18 x1
+    src/main/43500.c:74 unk8 x1
+    src/main/43500.c:75 unk18 x1
+    src/main/43500.c:78 unk5C x1
+    src/main/43500.c:78 unk88 x1
+    src/main/43500.c:79 unk88 x1
+    src/main/43500.c:82 unk88 x1
+    src/main/43500.c:83 unk84 x1
+    src/main/43500.c:84 unk88 x1
+    src/main/43500.c:86 unk84 x1
+    src/main/43500.c:88 unk84 x1
+    src/main/43500.c:122 unk90 x1
+    src/main/43500.c:125 unk7C x1
+    src/main/43500.c:130 unk7C x1
+    src/main/43500.c:132 unk78 x1
+    src/main/43500.c:133 unk7C x1
+    src/main/43500.c:134 unk90 x1
+    src/main/43500.c:136 unk5C x1
+    src/main/43500.c:137 unk88 x1
+    src/main/43500.c:138 unk88 x1
+    src/main/43500.c:142 unk78 x1
+    src/main/43500.c:143 unk90 x1
+    src/main/43500.c:149 unk88 x1
+    src/main/43500.c:151 unk88 x1
+    src/main/43500.c:155 unk88 x1
+    src/main/43500.c:157 unk88 x1
+    src/main/43500.c:161 unk5C x1
+    src/main/43500.c:162 unk88 x1
+    src/main/43500.c:163 unk88 x1
+    src/main/43500.c:169 unk88 x1
+    src/main/43500.c:171 unk88 x1
+    src/main/43500.c:175 unk88 x1
+    src/main/43500.c:177 unk88 x1
+    src/main/43500.c:182 unk88 x1
+    src/main/43500.c:183 unk8C x1
+    src/main/43500.c:184 unk88 x1
+    src/main/43500.c:185 unk8C x1
+    src/main/43500.c:186 unk5C x1
+    src/main/43500.c:186 unk8C x1
+    src/main/43500.c:187 unk8C x1
+    src/main/43500.c:203 unk8 x1
+    src/main/43500.c:204 unk18 x1
+    src/main/43500.c:205 unk18 x1
+    src/main/43500.c:206 unk8 x1
+    src/main/43500.c:207 unk18 x1
+    src/main/43500.c:208 unk8 x1
+    src/main/43500.c:209 unk18 x1
+    src/main/43500.c:210 unk8 x1
+    src/main/43500.c:211 unk18 x1
+    src/main/43500.c:212 unk8 x1
+    src/main/43500.c:213 unk18 x1
+    src/main/43500.c:214 unk8 x1
+    src/main/43500.c:215 unk5C x1
+    src/main/43500.c:217 unk18 x1
+    src/main/43500.c:218 unk8 x1
+    src/main/43500.c:219 unk8 x1
+    src/main/43500.c:220 unk8 x1
+    src/main/43500.c:221 unk8 x1
+    src/main/43500.c:223 unk5C x1
+    src/main/43500.c:235 unk8 x1
+    src/main/43500.c:236 unk18 x1
+    src/main/43500.c:237 unk18 x1
+    src/main/43500.c:238 unk8 x1
+    src/main/43500.c:239 unk18 x1
+    src/main/43500.c:240 unk8 x1
+    src/main/43500.c:241 unk18 x1
+    src/main/43500.c:242 unk8 x1
+    src/main/43500.c:243 unk18 x1
+    src/main/43500.c:244 unk8 x1
+    src/main/43500.c:245 unk18 x1
+    src/main/43500.c:246 unk8 x1
+    src/main/43500.c:247 unk5C x1
+    src/main/43500.c:249 unk18 x1
+    src/main/43500.c:250 unk8 x1
+    src/main/43500.c:251 unk8 x1
+    src/main/43500.c:252 unk8 x1
+    src/main/43500.c:253 unk8 x1
+    src/main/43500.c:255 unk5C x1
+    src/main/43500.c:264 unk8 x1
+    src/main/43500.c:265 unk18 x1
+    src/main/43500.c:266 unk5C x1
+    src/main/43500.c:275 unk8 x1
+    src/main/43500.c:276 unk18 x1
+    src/main/43500.c:277 unk5C x1
+    src/main/43500.c:285 unk0 x1
+    src/main/43500.c:286 unk48 x1
+    src/main/43500.c:287 unk38 x1
+    src/main/43500.c:288 unk3C x1
+    src/main/43500.c:289 unk4A x1
+    src/main/43500.c:290 unk40 x1
+    src/main/43500.c:291 unk28 x1
+    src/main/43500.c:292 unk2C x1
+    src/main/43500.c:293 unk30 x1
+    src/main/43500.c:294 unk4 x1
+    src/main/43500.c:324 unk4C x1
+    src/main/43500.c:324 unk8 x1
+    src/main/43500.c:325 unk4E x1
+    src/main/43500.c:325 unk8 x1
+    src/main/43500.c:326 unk50 x1
+    src/main/43500.c:326 unk8 x1
+    src/main/43500.c:327 unk18 x1
+    src/main/43500.c:327 unk54 x1
+    src/main/43500.c:328 unk18 x1
+    src/main/43500.c:328 unk56 x1
+    src/main/43500.c:329 unk18 x1
+    src/main/43500.c:329 unk58 x1
+    src/main/43500.c:334 unkD0 x1
+    src/main/43500.c:336 unkD4 x1
+    src/main/43500.c:338 unkD8 x1
+    src/main/43500.c:340 unkDC x1
+    src/main/43500.c:342 unkDC x1
+    src/main/43500.c:343 unkDC x1
+    src/main/43500.c:346 unk4C x1
+    src/main/43500.c:346 unkD0 x1
+    src/main/43500.c:347 unk4E x1
+    src/main/43500.c:347 unkD4 x1
+    src/main/43500.c:348 unk50 x1
+    src/main/43500.c:348 unkD8 x1
+    src/main/43500.c:349 unkDC x1
+    src/main/43500.c:351 unk54 x1
+    src/main/43500.c:351 unkD0 x1
+    src/main/43500.c:352 unk56 x1
+    src/main/43500.c:352 unkD4 x1
+    src/main/43500.c:353 unk58 x1
+    src/main/43500.c:353 unkD8 x1
+    src/main/43500.c:354 unkDC x1
+    src/main/43500.c:374 unkA8 x1
+    src/main/43500.c:375 unk54 x1
+    src/main/43500.c:376 unk4C x1
+    src/main/43500.c:379 unkAC x1
+    src/main/43500.c:380 unk56 x1
+    src/main/43500.c:381 unk4E x1
+    src/main/43500.c:384 unkB0 x1
+    src/main/43500.c:385 unk58 x1
+    src/main/43500.c:386 unk50 x1
+    src/main/43500.c:389 unkA8 x1
+    src/main/43500.c:390 unkA8 x1
+    src/main/43500.c:391 unkA8 x1
+    src/main/43500.c:392 unkA8 x1
+    src/main/43500.c:393 unkA8 x1
+    src/main/43500.c:395 unkAC x1
+    src/main/43500.c:396 unkAC x1
+    src/main/43500.c:397 unkAC x1
+    src/main/43500.c:398 unkAC x1
+    src/main/43500.c:399 unkAC x1
+    src/main/43500.c:401 unkB0 x1
+    src/main/43500.c:402 unkB0 x1
+    src/main/43500.c:403 unkB0 x1
+    src/main/43500.c:404 unkB0 x1
+    src/main/43500.c:405 unkB0 x1
+    src/main/43500.c:407 unk4C x1
+    src/main/43500.c:407 unkA8 x1
+    src/main/43500.c:408 unk4E x1
+    src/main/43500.c:408 unkAC x1
+    src/main/43500.c:409 unk50 x1
+    src/main/43500.c:409 unkB0 x1
+    src/main/43500.c:416 unk9C x1
+    src/main/43500.c:418 unkA0 x1
+    src/main/43500.c:420 unkA4 x1
+    src/main/43500.c:422 unkC4 x1
+    src/main/43500.c:423 unkA8 x1
+    src/main/43500.c:425 unk9C x1
+    src/main/43500.c:426 unkAC x1
+    src/main/43500.c:428 unkA0 x1
+    src/main/43500.c:429 unkB0 x1
+    src/main/43500.c:431 unkA4 x1
+    src/main/43500.c:433 unk9C x1
+    src/main/43500.c:435 unkA0 x1
+    src/main/43500.c:437 unkA4 x1
+    src/main/43500.c:439 unkC8 x1
+    src/main/43500.c:440 unkA8 x1
+    src/main/43500.c:442 unk9C x1
+    src/main/43500.c:443 unkAC x1
+    src/main/43500.c:445 unkA0 x1
+    src/main/43500.c:446 unkB0 x1
+    src/main/43500.c:448 unkA4 x1
+    src/main/43500.c:453 unkCC x1
+    src/main/43500.c:455 unkB4 x1
+    src/main/43500.c:460 unkB8 x1
+    src/main/43500.c:462 unkBC x1
+    src/main/43500.c:464 unkC0 x1
+    src/main/43500.c:466 unkC4 x1
+    src/main/43500.c:467 unkB4 x1
+    src/main/43500.c:468 unkC0 x1
+    src/main/43500.c:469 unkB8 x1
+    src/main/43500.c:470 unkC8 x1
+    src/main/43500.c:471 unkB8 x1
+    src/main/43500.c:472 unkBC x1
+    src/main/43500.c:473 unkB4 x1
+    src/main/43500.c:478 unkB4 x1
+    src/main/43500.c:479 unkBC x1
+    src/main/43500.c:480 unkB8 x1
+    src/main/43500.c:481 unkC0 x1
+    src/main/43500.c:488 unkA8 x1
+    src/main/43500.c:489 unk4C x1
+    src/main/43500.c:490 unkAC x1
+    src/main/43500.c:491 unk4E x1
+    src/main/43500.c:492 unkB0 x1
+    src/main/43500.c:493 unk50 x1
+    src/main/43500.c:494 unk0 x1
+    src/main/43500.c:495 unk48 x1
+    src/main/43500.c:496 unk4A x1
+    src/main/43500.c:497 unk38 x1
+    src/main/43500.c:498 unkA8 x1
+    src/main/43500.c:499 unk3C x1
+    src/main/43500.c:500 unkAC x1
+    src/main/43500.c:501 unk40 x1
+    src/main/43500.c:502 unkB0 x1
+    src/main/43500.c:503 unk28 x1
+    src/main/43500.c:504 unkD0 x1
+    src/main/43500.c:505 unk2C x1
+    src/main/43500.c:506 unkD4 x1
+    src/main/43500.c:507 unk30 x1
+    src/main/43500.c:508 unkD8 x1
+    src/main/43500.c:509 unk34 x1
+    src/main/43500.c:510 unkDC x1
+    src/main/43500.c:511 unk0 x1
+    src/main/43500.c:513 unk4 x1
+    src/main/43500.c:514 unkCC x1
+    src/main/43500.c:525 unk0 x1
+    src/main/43500.c:547 unk4C x1
+    src/main/43500.c:547 unk8 x1
+    src/main/43500.c:548 unk4E x1
+    src/main/43500.c:548 unk8 x1
+    src/main/43500.c:549 unk50 x1
+    src/main/43500.c:549 unk8 x1
+    src/main/43500.c:550 unk18 x1
+    src/main/43500.c:550 unk54 x1
+    src/main/43500.c:551 unk18 x1
+    src/main/43500.c:551 unk56 x1
+    src/main/43500.c:552 unk18 x1
+    src/main/43500.c:552 unk58 x1
+    src/main/43500.c:557 unkD0 x1
+    src/main/43500.c:559 unkD4 x1
+    src/main/43500.c:561 unkD8 x1
+    src/main/43500.c:563 unkDC x1
+    src/main/43500.c:565 unkDC x1
+    src/main/43500.c:566 unkDC x1
+    src/main/43500.c:569 unk4C x1
+    src/main/43500.c:569 unkD0 x1
+    src/main/43500.c:570 unk4E x1
+    src/main/43500.c:570 unkD4 x1
+    src/main/43500.c:571 unk50 x1
+    src/main/43500.c:571 unkD8 x1
+    src/main/43500.c:572 unkDC x1
+    src/main/43500.c:574 unk54 x1
+    src/main/43500.c:574 unkD0 x1
+    src/main/43500.c:575 unk56 x1
+    src/main/43500.c:575 unkD4 x1
+    src/main/43500.c:576 unk58 x1
+    src/main/43500.c:576 unkD8 x1
+    src/main/43500.c:577 unkDC x1
+    src/main/43500.c:596 unkA8 x1
+    src/main/43500.c:597 unk54 x1
+    src/main/43500.c:598 unk4C x1
+    src/main/43500.c:601 unk4C x1
+    src/main/43500.c:602 unkAC x1
+    src/main/43500.c:603 unk56 x1
+    src/main/43500.c:604 unk4E x1
+    src/main/43500.c:607 unk4E x1
+    src/main/43500.c:608 unkB0 x1
+    src/main/43500.c:609 unk58 x1
+    src/main/43500.c:610 unk50 x1
+    src/main/43500.c:613 unk50 x1
+    src/main/43500.c:615 unkA8 x1
+    src/main/43500.c:616 unkAC x1
+    src/main/43500.c:617 unkB0 x1
+    src/main/43500.c:622 unkCC x1
+    src/main/43500.c:624 unkB4 x1
+    src/main/43500.c:629 unkB8 x1
+    src/main/43500.c:630 unkC4 x1
+    src/main/43500.c:631 unkC8 x1
+    src/main/43500.c:633 unkBC x1
+    src/main/43500.c:635 unkC0 x1
+    src/main/43500.c:637 unkC4 x1
+    src/main/43500.c:638 unkB4 x1
+    src/main/43500.c:639 unkC0 x1
+    src/main/43500.c:640 unkB8 x1
+    src/main/43500.c:641 unkC8 x1
+    src/main/43500.c:642 unkB8 x1
+    src/main/43500.c:643 unkBC x1
+    src/main/43500.c:644 unkB4 x1
+    src/main/43500.c:649 unkB4 x1
+    src/main/43500.c:650 unkBC x1
+    src/main/43500.c:651 unkB8 x1
+    src/main/43500.c:652 unkC0 x1
+    src/main/43500.c:659 unkA8 x1
+    src/main/43500.c:660 unk4C x1
+    src/main/43500.c:661 unkAC x1
+    src/main/43500.c:662 unk4E x1
+    src/main/43500.c:663 unkB0 x1
+    src/main/43500.c:664 unk50 x1
+    src/main/43500.c:665 unk0 x1
+    src/main/43500.c:666 unk48 x1
+    src/main/43500.c:667 unk4A x1
+    src/main/43500.c:668 unk38 x1
+    src/main/43500.c:669 unkA8 x1
+    src/main/43500.c:670 unk3C x1
+    src/main/43500.c:671 unkAC x1
+    src/main/43500.c:672 unk40 x1
+    src/main/43500.c:673 unkB0 x1
+    src/main/43500.c:674 unk28 x1
+    src/main/43500.c:675 unkD0 x1
+    src/main/43500.c:676 unk2C x1
+    src/main/43500.c:677 unkD4 x1
+    src/main/43500.c:678 unk30 x1
+    src/main/43500.c:679 unkD8 x1
+    src/main/43500.c:680 unk34 x1
+    src/main/43500.c:681 unkDC x1
+    src/main/43500.c:682 unk0 x1
+    src/main/43500.c:684 unk4 x1
+    src/main/43500.c:685 unkCC x1
+    src/main/43500.c:696 unk0 x1
+  round 1: 0 member error line(s)
+PASS Unk1F8002B8_8005344C.unk30=cast_normal, Unk1F8002B8_8005344C.unk38=cast_work, Unk1F8002B8Rec.unk00=point_slots, Unk1F8002B8Rec.unk84=bbox_max, Unk1F8002B8Rec.unk90=other_bbox_min, Unk1F8002B8Rec.unk9C=other_bbox_max, Unk1F8002B8Rec.unkB4=bone_hit_mask, Unk1F8002B8Rec.unkD8=rot_matrix
+decl Unk1F8002B8_8005344C.unk30 -> cast_normal  include/game.h:1353
+decl Unk1F8002B8_8005344C.unk38 -> cast_work  include/game.h:1357
+decl Unk1F8002B8Rec.unk00 -> point_slots  include/game.h:1316
+decl Unk1F8002B8Rec.unk84 -> bbox_max  include/game.h:1320
+decl Unk1F8002B8Rec.unk90 -> other_bbox_min  include/game.h:1321
+decl Unk1F8002B8Rec.unk9C -> other_bbox_max  include/game.h:1322
+decl Unk1F8002B8Rec.unkB4 -> bone_hit_mask  include/game.h:1324
+decl Unk1F8002B8Rec.unkD8 -> rot_matrix  include/game.h:1329
+  round 0: 248 member error line(s)
+    src/main/17AFC.c:1028 unk84 x1
+    src/main/17AFC.c:1029 unk84 x1
+    src/main/17AFC.c:1037 unk84 x1
+    src/main/17AFC.c:1038 unk84 x1
+    src/main/17AFC.c:1042 unk84 x1
+    src/main/17AFC.c:1043 unk84 x1
+    src/main/17AFC.c:1045 unk84 x1
+    src/main/17AFC.c:1046 unk84 x1
+    src/main/17AFC.c:1054 unk84 x1
+    src/main/17AFC.c:1058 unk84 x1
+    src/main/17AFC.c:1062 unk84 x1
+    src/main/17AFC.c:1097 unk84 x1
+    src/main/17AFC.c:1106 unk84 x1
+    src/main/17AFC.c:1106 unk90 x1
+    src/main/17AFC.c:1106 unk9C x1
+    src/main/17AFC.c:1107 unk84 x1
+    src/main/17AFC.c:1107 unk90 x1
+    src/main/17AFC.c:1107 unk9C x1
+    src/main/17AFC.c:1108 unk84 x1
+    src/main/17AFC.c:1108 unk90 x1
+    src/main/17AFC.c:1108 unk9C x1
+    src/main/17AFC.c:1276 unk84 x1
+    src/main/17AFC.c:1277 unk84 x1
+    src/main/17AFC.c:1281 unk84 x1
+    src/main/17AFC.c:1282 unk84 x1
+    src/main/17AFC.c:1286 unk84 x1
+    src/main/17AFC.c:1287 unk84 x1
+    src/main/17AFC.c:1291 unk84 x1
+    src/main/17AFC.c:1292 unk84 x1
+    src/main/17AFC.c:1318 unk9C x1
+    src/main/17AFC.c:1319 unk90 x1
+    src/main/17AFC.c:1319 unk9C x1
+    src/main/17AFC.c:1321 unk90 x1
+    src/main/17AFC.c:1322 unk90 x1
+    src/main/17AFC.c:1323 unk9C x1
+    src/main/17AFC.c:1324 unk9C x1
+    src/main/17AFC.c:1326 unk90 x1
+    src/main/17AFC.c:1327 unk90 x1
+    src/main/17AFC.c:1328 unk9C x1
+    src/main/17AFC.c:1329 unk9C x1
+    src/main/17AFC.c:1331 unk90 x1
+    src/main/17AFC.c:1332 unk90 x1
+    src/main/17AFC.c:1333 unk9C x1
+    src/main/17AFC.c:1334 unk9C x1
+    src/main/17AFC.c:1380 unk84 x1
+    src/main/17AFC.c:1381 unk84 x1
+    src/main/17AFC.c:1385 unk84 x1
+    src/main/17AFC.c:1386 unk84 x1
+    src/main/17AFC.c:1390 unk84 x1
+    src/main/17AFC.c:1391 unk84 x1
+    src/main/17AFC.c:1395 unk84 x1
+    src/main/17AFC.c:1396 unk84 x1
+    src/main/17AFC.c:1425 unk9C x1
+    src/main/17AFC.c:1426 unk90 x1
+    src/main/17AFC.c:1426 unk9C x1
+    src/main/17AFC.c:1428 unk90 x1
+    src/main/17AFC.c:1429 unk90 x1
+    src/main/17AFC.c:1430 unk9C x1
+    src/main/17AFC.c:1431 unk9C x1
+    src/main/17AFC.c:1433 unk90 x1
+    src/main/17AFC.c:1434 unk90 x1
+    src/main/17AFC.c:1435 unk9C x1
+    src/main/17AFC.c:1436 unk9C x1
+    src/main/17AFC.c:1438 unk90 x1
+    src/main/17AFC.c:1439 unk90 x1
+    src/main/17AFC.c:1440 unk9C x1
+    src/main/17AFC.c:1441 unk9C x1
+    src/main/17AFC.c:1513 unk00 x2
+    src/main/17AFC.c:1514 unk00 x2
+    src/main/17AFC.c:1515 unk00 x2
+    src/main/17AFC.c:1724 unk00 x3
+    src/main/17AFC.c:1725 unk00 x3
+    src/main/17AFC.c:1743 unk00 x2
+    src/main/17AFC.c:1744 unk00 x2
+    src/main/17AFC.c:1775 unk00 x3
+    src/main/17AFC.c:1776 unk00 x3
+    src/main/17AFC.c:1777 unk00 x2
+    src/main/17AFC.c:1778 unk00 x2
+    src/main/17AFC.c:1780 unk00 x2
+    src/main/17AFC.c:1781 unk00 x2
+    src/main/17AFC.c:1782 unk00 x2
+    src/main/17AFC.c:1783 unk00 x2
+    src/main/17AFC.c:1785 unk00 x2
+    src/main/17AFC.c:1786 unk00 x4
+    src/main/17AFC.c:1787 unk00 x2
+    src/main/17AFC.c:1788 unk00 x4
+    src/main/17AFC.c:1789 unk00 x2
+    src/main/17AFC.c:1790 unk00 x4
+    src/main/17AFC.c:1791 unk00 x2
+    src/main/17AFC.c:1792 unk00 x4
+    src/main/17AFC.c:1793 unk00 x2
+    src/main/17AFC.c:1794 unk00 x4
+    src/main/17AFC.c:1795 unk00 x2
+    src/main/17AFC.c:1796 unk00 x4
+    src/main/17AFC.c:1797 unk00 x4
+    src/main/17AFC.c:1798 unk00 x4
+    src/main/17AFC.c:1799 unk00 x4
+    src/main/17AFC.c:1808 unk00 x2
+    src/main/17AFC.c:1809 unk00 x2
+    src/main/17AFC.c:1810 unk00 x2
+    src/main/17AFC.c:1812 unk00 x2
+    src/main/17AFC.c:1813 unk00 x2
+    src/main/17AFC.c:1814 unk00 x2
+    src/main/17AFC.c:1819 unk00 x2
+    src/main/17AFC.c:1820 unk00 x2
+    src/main/17AFC.c:1821 unk00 x2
+    src/main/17AFC.c:1824 unk00 x2
+    src/main/17AFC.c:1825 unk00 x2
+    src/main/17AFC.c:1826 unk00 x2
+    src/main/17AFC.c:1829 unk00 x2
+    src/main/17AFC.c:1830 unk00 x2
+    src/main/17AFC.c:1831 unk00 x2
+    src/main/17AFC.c:1834 unk00 x2
+    src/main/17AFC.c:1835 unk00 x2
+    src/main/17AFC.c:1836 unk00 x2
+    src/main/17AFC.c:1840 unk84 x1
+    src/main/17AFC.c:1841 unk84 x1
+    src/main/17AFC.c:1845 unk84 x1
+    src/main/17AFC.c:1846 unk84 x1
+    src/main/17AFC.c:1850 unk84 x1
+    src/main/17AFC.c:1851 unk84 x1
+    src/main/17AFC.c:1855 unk84 x1
+    src/main/17AFC.c:1856 unk84 x1
+    src/main/17AFC.c:1861 unkB4 x1
+    src/main/17AFC.c:1864 unkB4 x1
+    src/main/17AFC.c:1867 unkB4 x1
+    src/main/17AFC.c:1869 unkB4 x1
+    src/main/17AFC.c:2409 unk84 x1
+    src/main/17AFC.c:2413 unk84 x1
+    src/main/17AFC.c:2417 unk84 x1
+    src/main/17AFC.c:2454 unkB4 x1
+    src/main/17AFC.c:2526 unkD8 x1
+    src/main/17AFC.c:2527 unkD8 x1
+    src/main/17AFC.c:2528 unkD8 x1
+    src/main/17AFC.c:2529 unkD8 x1
+    src/main/17AFC.c:2530 unkD8 x1
+    src/main/17AFC.c:2531 unkD8 x1
+    src/main/17AFC.c:2532 unkD8 x1
+    src/main/17AFC.c:2533 unkD8 x1
+    src/main/17AFC.c:2534 unkD8 x1
+    src/main/17AFC.c:2535 unkD8 x1
+    src/main/17AFC.c:2536 unkD8 x1
+    src/main/17AFC.c:2537 unkD8 x1
+    src/main/17AFC.c:2568 unkD8 x1
+    src/main/17AFC.c:2569 unkD8 x1
+    src/main/17AFC.c:2570 unkD8 x1
+    src/main/17AFC.c:2571 unkD8 x1
+    src/main/17AFC.c:2572 unkD8 x1
+    src/main/17AFC.c:2573 unkD8 x1
+    src/main/17AFC.c:2574 unkD8 x1
+    src/main/17AFC.c:2575 unkD8 x1
+    src/main/17AFC.c:2576 unkD8 x1
+    src/main/17AFC.c:2577 unkD8 x1
+    src/main/17AFC.c:2578 unkD8 x1
+    src/main/17AFC.c:2579 unkD8 x1
+    src/main/17AFC.c:2943 unkD8 x1
+    src/main/17AFC.c:2946 unkD8 x1
+    src/main/17AFC.c:2947 unkD8 x1
+    src/main/17AFC.c:2948 unkD8 x1
+    src/main/17AFC.c:2949 unkD8 x1
+    src/main/17AFC.c:2950 unkD8 x1
+    src/main/17AFC.c:2951 unkD8 x1
+    src/main/17AFC.c:2952 unkD8 x1
+    src/main/17AFC.c:2953 unkD8 x1
+    src/main/17AFC.c:2954 unkD8 x1
+    src/main/17AFC.c:3240 unkD8 x1
+    src/main/17AFC.c:3244 unkD8 x1
+    src/main/17AFC.c:3245 unkD8 x1
+    src/main/17AFC.c:3246 unkD8 x1
+    src/main/17AFC.c:3247 unkD8 x1
+    src/main/17AFC.c:3248 unkD8 x1
+    src/main/17AFC.c:3249 unkD8 x1
+    src/main/17AFC.c:3250 unkD8 x1
+    src/main/17AFC.c:3251 unkD8 x1
+    src/main/17AFC.c:3252 unkD8 x1
+    src/main/17AFC.c:3360 unkD8 x1
+    src/main/17AFC.c:3363 unkD8 x1
+    src/main/17AFC.c:3364 unkD8 x1
+    src/main/17AFC.c:3365 unkD8 x1
+    src/main/17AFC.c:3366 unkD8 x1
+    src/main/17AFC.c:3367 unkD8 x1
+    src/main/17AFC.c:3368 unkD8 x1
+    src/main/17AFC.c:3369 unkD8 x1
+    src/main/17AFC.c:3370 unkD8 x1
+    src/main/17AFC.c:3371 unkD8 x1
+    src/main/17AFC.c:3385 unkD8 x1
+    src/main/17AFC.c:3386 unkD8 x1
+    src/main/17AFC.c:3387 unkD8 x1
+    src/main/17AFC.c:3388 unkD8 x1
+    src/main/17AFC.c:3389 unkD8 x1
+    src/main/17AFC.c:3390 unkD8 x1
+    src/main/17AFC.c:3391 unkD8 x1
+    src/main/17AFC.c:3392 unkD8 x1
+    src/main/17AFC.c:3393 unkD8 x1
+    src/main/17AFC.c:3477 unkD8 x1
+    src/main/17AFC.c:3511 unkD8 x1
+    src/main/17AFC.c:3512 unkD8 x1
+    src/main/17AFC.c:3513 unkD8 x1
+    src/main/17AFC.c:3514 unkD8 x1
+    src/main/17AFC.c:3515 unkD8 x1
+    src/main/17AFC.c:3516 unkD8 x1
+    src/main/17AFC.c:3517 unkD8 x1
+    src/main/17AFC.c:3518 unkD8 x1
+    src/main/17AFC.c:3519 unkD8 x1
+    src/main/17AFC.c:3520 unkD8 x1
+    src/main/17AFC.c:3560 unkD8 x1
+    src/main/17AFC.c:3561 unkD8 x1
+    src/main/17AFC.c:3562 unkD8 x1
+    src/main/17AFC.c:3563 unkD8 x1
+    src/main/17AFC.c:3564 unkD8 x1
+    src/main/17AFC.c:3565 unkD8 x1
+    src/main/17AFC.c:3566 unkD8 x1
+    src/main/17AFC.c:3567 unkD8 x1
+    src/main/17AFC.c:3568 unkD8 x1
+    src/main/17AFC.c:3569 unkD8 x1
+    src/main/17AFC.c:3570 unkD8 x1
+    src/main/17AFC.c:3571 unkD8 x1
+    src/main/17AFC.c:3572 unkD8 x1
+    src/main/17AFC.c:3573 unkD8 x1
+    src/main/17AFC.c:3574 unkD8 x1
+    src/main/17AFC.c:3576 unkD8 x1
+    src/main/17AFC.c:3607 unkD8 x1
+    src/main/17AFC.c:3608 unkD8 x1
+    src/main/17AFC.c:3609 unkD8 x1
+    src/main/17AFC.c:3610 unkD8 x1
+    src/main/17AFC.c:3611 unkD8 x1
+    src/main/17AFC.c:3612 unkD8 x1
+    src/main/17AFC.c:3613 unkD8 x1
+    src/main/17AFC.c:3614 unkD8 x1
+    src/main/17AFC.c:3615 unkD8 x1
+    src/main/17AFC.c:3616 unkD8 x1
+    src/main/17AFC.c:4183 unk30 x1
+    src/main/17AFC.c:4185 unk38 x1
+    src/main/17AFC.c:4210 unk30 x1
+    src/main/17AFC.c:4236 unk30 x1
+    src/main/17AFC.c:4325 unkD8 x1
+    src/main/17AFC.c:4330 unkD8 x1
+    src/main/17AFC.c:4331 unkD8 x1
+    src/main/17AFC.c:4332 unkD8 x1
+    src/main/17AFC.c:4333 unkD8 x1
+    src/main/17AFC.c:4334 unkD8 x1
+    src/main/17AFC.c:4335 unkD8 x1
+    src/main/17AFC.c:4336 unkD8 x1
+    src/main/17AFC.c:4337 unkD8 x1
+    src/main/17AFC.c:4338 unkD8 x1
+    src/main/17AFC.c:4369 unk00 x2
+    src/main/17AFC.c:4544 unk30 x1
+    src/main/17AFC.c:4545 unk38 x1
+  round 1: 49 member error line(s)
+  round 2: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1207,2 +1207,2 @@
+-    s32 unk0;
+-    u16 unk4;
++    s32 nearest_dist_sq;
++    u16 hit_tag;
+@@ -1210,9 +1210,9 @@
+-    VECTOR unk8;
+-    VECTOR unk18;
+-    s32 unk28;
+-    s32 unk2C;
+-    s32 unk30;
+-    s32 unk34;
+-    s32 unk38;
+-    s32 unk3C;
+-    s32 unk40;
++    VECTOR seg_start;
++    VECTOR seg_end;
++    s32 hit_nx;
++    s32 hit_ny;
++    s32 hit_nz;
++    s32 hit_plane_d;
++    s32 hit_local_x;
++    s32 hit_local_y;
++    s32 hit_local_z;
+@@ -1220,5 +1220,5 @@
+-    s16 unk48;
+-    s16 unk4A;
+-    s16 unk4C;
+-    s16 unk4E;
+-    s16 unk50;
++    s16 hit_cell_x;
++    s16 hit_cell_z;
++    s16 local_start_x;
++    s16 local_start_y;
++    s16 local_start_z;
+@@ -1226,3 +1226,3 @@
+-    s16 unk54;
+-    s16 unk56;
+-    s16 unk58;
++    s16 local_end_x;
++    s16 local_end_y;
++    s16 local_end_z;
+@@ -1230 +1230 @@
+-    s32 (*unk5C)(s32, s32);
++    s32 (*cell_test)(s32, s32);
+@@ -1237,2 +1237,2 @@
+-    s32 unk78;
+-    s32 unk7C;
++    s32 walk_minor_step;
++    s32 walk_slope;
+@@ -1240,4 +1240,4 @@
+-    s32 unk84;
+-    Cell_80052D00 unk88;
+-    Cell_80052D00 unk8C;
+-    s16 unk90;
++    s32 start_cell_center_z;
++    Cell_80052D00 walk_cell;
++    Cell_80052D00 end_cell;
++    s16 walk_steps_left;
+@@ -1245,17 +1245,17 @@
+-    s32 unk9C;
+-    s32 unkA0;
+-    s32 unkA4;
+-    s32 unkA8;
+-    s32 unkAC;
+-    s32 unkB0;
+-    s32 unkB4;
+-    s32 unkB8;
+-    s32 unkBC;
+-    s32 unkC0;
+-    s32 unkC4;
+-    s32 unkC8;
+-    s32 unkCC;
+-    s32 unkD0;
+-    s32 unkD4;
+-    s32 unkD8;
+-    s32 unkDC;
++    s32 proj_axis_x;
++    s32 proj_axis_y;
++    s32 proj_axis_z;
++    s32 plane_cross_x;
++    s32 plane_cross_y;
++    s32 plane_cross_z;
++    s32 edge_from_u;
++    s32 edge_from_v;
++    s32 edge_to_u;
++    s32 edge_to_v;
++    s32 proj_cross_u;
++    s32 proj_cross_v;
++    s32 face_tag;
++    s32 face_nx;
++    s32 face_ny;
++    s32 face_nz;
++    s32 face_plane_d;
+@@ -1316,3 +1316,3 @@
+-    Unk1F8002B8Unk00 unk00;
+-    Unk80107850Rec *unk60[3];
+-    Unk80107850Rec *unk6C[3];
++    Unk1F8002B8Unk00 point_slots;
++    Unk80107850Rec *shape_points[3];
++    Unk80107850Rec *other_shape_points[3];
+@@ -1320,3 +1320,3 @@
+-    Vec3i32 unk84;
+-    Vec3i32 unk90;
+-    Vec3i32 unk9C;
++    Vec3i32 bbox_max;
++    Vec3i32 other_bbox_min;
++    Vec3i32 other_bbox_max;
+@@ -1324 +1324 @@
+-    s32 unkB4;
++    s32 bone_hit_mask;
+@@ -1329 +1329 @@
+-    MATRIX unkD8;
++    MATRIX rot_matrix;
+@@ -1333 +1333 @@
+-    Vec3i32 unk13C;
++    Vec3i32 contact_point;
+@@ -1343 +1343 @@
+-    Vec3i32 unk00;
++    Vec3i32 cast_end;
+@@ -1353 +1353 @@
+-    s16 unk30[3]; /* the hit normal */
++    s16 cast_normal[3]; /* the hit normal */
+@@ -1357 +1357 @@
+-    Work_80053E9C unk38;
++    Work_80053E9C cast_work;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -1028,2 +1028,2 @@
+-    scr->unk84 = tbl[idx * 4];
+-    scr->unk78 = scr->unk84;
++    scr->bbox_max = tbl[idx * 4];
++    scr->unk78 = scr->bbox_max;
+@@ -1037,2 +1037,2 @@
+-        } else if (scr->unk84.x < tbl[n].x) {
+-            scr->unk84.x = tbl[n].x;
++        } else if (scr->bbox_max.x < tbl[n].x) {
++            scr->bbox_max.x = tbl[n].x;
+@@ -1042,5 +1042,5 @@
+-        } else if (scr->unk84.z < tbl[n].z) {
+-            scr->unk84.z = tbl[n].z;
+-        }
+-        if (tbl[n].y > scr->unk84.y) {
+-            scr->unk84.y = tbl[n].y;
++        } else if (scr->bbox_max.z < tbl[n].z) {
++            scr->bbox_max.z = tbl[n].z;
++        }
++        if (tbl[n].y > scr->bbox_max.y) {
++            scr->bbox_max.y = tbl[n].y;
+@@ -1054 +1054 @@
+-        if (rec->y > scr->unk84.y)
++        if (rec->y > scr->bbox_max.y)
+@@ -1058 +1058 @@
+-        if (scr->unk84.x < rec->x)
++        if (scr->bbox_max.x < rec->x)
+@@ -1062 +1062 @@
+-        if (scr->unk84.z < rec->z)
++        if (scr->bbox_max.z < rec->z)
+@@ -1097 +1097 @@
+-        scr->unk100[0].y = (scr->unk78.y + scr->unk84.y) / 2;
++        scr->unk100[0].y = (scr->unk78.y + scr->bbox_max.y) / 2;
+@@ -1106,3 +1106,3 @@
+-    return scr->unk78.x <= scr->unk9C.x && scr->unk84.x >= scr->unk90.x &&
+-           scr->unk78.y <= scr->unk9C.y && scr->unk84.y >= scr->unk90.y &&
+-           scr->unk78.z <= scr->unk9C.z && scr->unk84.z >= scr->unk90.z;
++    return scr->unk78.x <= scr->other_bbox_max.x && scr->bbox_max.x >= scr->other_bbox_min.x &&
++           scr->unk78.y <= scr->other_bbox_max.y && scr->bbox_max.y >= scr->other_bbox_min.y &&
++           scr->unk78.z <= scr->other_bbox_max.z && scr->bbox_max.z >= scr->other_bbox_min.z;
+@@ -1252,3 +1252,3 @@
+-            scr->unk60[0] = &var_1[2];
+-            scr->unk60[1] = &var_1[3];
+-            scr->unk60[2] = &var_1[1];
++            scr->shape_points[0] = &var_1[2];
++            scr->shape_points[1] = &var_1[3];
++            scr->shape_points[2] = &var_1[1];
+@@ -1257,3 +1257,3 @@
+-            scr->unk60[0] = &var_1[0];
+-            scr->unk60[1] = &var_1[1];
+-            scr->unk60[2] = &var_1[2];
++            scr->shape_points[0] = &var_1[0];
++            scr->shape_points[1] = &var_1[1];
++            scr->shape_points[2] = &var_1[2];
+@@ -1262,3 +1262,3 @@
+-            scr->unk60[0] = &var_1[6];
+-            scr->unk60[1] = &var_1[7];
+-            scr->unk60[2] = &var_1[5];
++            scr->shape_points[0] = &var_1[6];
++            scr->shape_points[1] = &var_1[7];
++            scr->shape_points[2] = &var_1[5];
+@@ -1267,3 +1267,3 @@
+-            scr->unk60[0] = &var_1[4];
+-            scr->unk60[1] = &var_1[5];
+-            scr->unk60[2] = &var_1[6];
++            scr->shape_points[0] = &var_1[4];
++            scr->shape_points[1] = &var_1[5];
++            scr->shape_points[2] = &var_1[6];
+@@ -1276,2 +1276,2 @@
+-        scr->unk84 = *scr->unk60[0];
+-        scr->unk78 = scr->unk84;
++        scr->bbox_max = *scr->shape_points[0];
++        scr->unk78 = scr->bbox_max;
+@@ -1279,14 +1279,14 @@
+-            if (scr->unk60[k]->x < scr->unk78.x) {
+-                scr->unk78.x = scr->unk60[k]->x;
+-            } else if (scr->unk84.x < scr->unk60[k]->x) {
+-                scr->unk84.x = scr->unk60[k]->x;
+-            }
+-            if (scr->unk60[k]->y < scr->unk78.y) {
+-                scr->unk78.y = scr->unk60[k]->y;
+-            } else if (scr->unk84.y < scr->unk60[k]->y) {
+-                scr->unk84.y = scr->unk60[k]->y;
+-            }
+-            if (scr->unk60[k]->z < scr->unk78.z) {
+-                scr->unk78.z = scr->unk60[k]->z;
+-            } else if (scr->unk84.z < scr->unk60[k]->z) {
+-                scr->unk84.z = scr->unk60[k]->z;
++            if (scr->shape_points[k]->x < scr->unk78.x) {
++                scr->unk78.x = scr->shape_points[k]->x;
++            } else if (scr->bbox_max.x < scr->shape_points[k]->x) {
++                scr->bbox_max.x = scr->shape_points[k]->x;
++            }
++            if (scr->shape_points[k]->y < scr->unk78.y) {
++                scr->unk78.y = scr->shape_points[k]->y;
++            } else if (scr->bbox_max.y < scr->shape_points[k]->y) {
++                scr->bbox_max.y = scr->shape_points[k]->y;
++            }
++            if (scr->shape_points[k]->z < scr->unk78.z) {
++                scr->unk78.z = scr->shape_points[k]->z;
++            } else if (scr->bbox_max.z < scr->shape_points[k]->z) {
++                scr->bbox_max.z = scr->shape_points[k]->z;
+@@ -1298,3 +1298,3 @@
+-                scr->unk6C[0] = &var_1[10];
+-                scr->unk6C[1] = &var_1[11];
+-                scr->unk6C[2] = &var_1[9];
++                scr->other_shape_points[0] = &var_1[10];
++                scr->other_shape_points[1] = &var_1[11];
++                scr->other_shape_points[2] = &var_1[9];
+@@ -1303,3 +1303,3 @@
+-                scr->unk6C[0] = &var_1[8];
+-                scr->unk6C[1] = &var_1[9];
+-                scr->unk6C[2] = &var_1[10];
++                scr->other_shape_points[0] = &var_1[8];
++                scr->other_shape_points[1] = &var_1[9];
++                scr->other_shape_points[2] = &var_1[10];
+@@ -1308,3 +1308,3 @@
+-                scr->unk6C[0] = &var_1[14];
+-                scr->unk6C[1] = &var_1[15];
+-                scr->unk6C[2] = &var_1[13];
++                scr->other_shape_points[0] = &var_1[14];
++                scr->other_shape_points[1] = &var_1[15];
++                scr->other_shape_points[2] = &var_1[13];
+@@ -1313,3 +1313,3 @@
+-                scr->unk6C[0] = &var_1[12];
+-                scr->unk6C[1] = &var_1[13];
+-                scr->unk6C[2] = &var_1[14];
++                scr->other_shape_points[0] = &var_1[12];
++                scr->other_shape_points[1] = &var_1[13];
++                scr->other_shape_points[2] = &var_1[14];
+@@ -1318,2 +1318,2 @@
+-            scr->unk9C = *scr->unk6C[0];
+-            scr->unk90 = scr->unk9C;
++            scr->other_bbox_max = *scr->other_shape_points[0];
++            scr->other_bbox_min = scr->other_bbox_max;
+@@ -1321,4 +1321,4 @@
+-                if (scr->unk6C[k]->x < scr->unk90.x) {
+-                    scr->unk90.x = scr->unk6C[k]->x;
+-                } else if (scr->unk9C.x < scr->unk6C[k]->x) {
+-                    scr->unk9C.x = scr->unk6C[k]->x;
++                if (scr->other_shape_points[k]->x < scr->other_bbox_min.x) {
++                    scr->other_bbox_min.x = scr->other_shape_points[k]->x;
++                } else if (scr->other_bbox_max.x < scr->other_shape_points[k]->x) {
++                    scr->other_bbox_max.x = scr->other_shape_points[k]->x;
+@@ -1326,4 +1326,4 @@
+-                if (scr->unk6C[k]->y < scr->unk90.y) {
+-                    scr->unk90.y = scr->unk6C[k]->y;
+-                } else if (scr->unk9C.y < scr->unk6C[k]->y) {
+-                    scr->unk9C.y = scr->unk6C[k]->y;
++                if (scr->other_shape_points[k]->y < scr->other_bbox_min.y) {
++                    scr->other_bbox_min.y = scr->other_shape_points[k]->y;
++                } else if (scr->other_bbox_max.y < scr->other_shape_points[k]->y) {
++                    scr->other_bbox_max.y = scr->other_shape_points[k]->y;
+@@ -1331,4 +1331,4 @@
+-                if (scr->unk6C[k]->z < scr->unk90.z) {
+-                    scr->unk90.z = scr->unk6C[k]->z;
+-                } else if (scr->unk9C.z < scr->unk6C[k]->z) {
+-                    scr->unk9C.z = scr->unk6C[k]->z;
++                if (scr->other_shape_points[k]->z < scr->other_bbox_min.z) {
++                    scr->other_bbox_min.z = scr->other_shape_points[k]->z;
++                } else if (scr->other_bbox_max.z < scr->other_shape_points[k]->z) {
++                    scr->other_bbox_max.z = scr->other_shape_points[k]->z;
+@@ -1339 +1339 @@
+-                    scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
++                    scr, scr->other_shape_points[0], scr->other_shape_points[1], scr->other_shape_points[2]) != 0) {
+@@ -1357,3 +1357,3 @@
+-            scr->unk60[0] = &var_1[10];
+-            scr->unk60[1] = &var_1[11];
+-            scr->unk60[2] = &var_1[9];
++            scr->shape_points[0] = &var_1[10];
++            scr->shape_points[1] = &var_1[11];
++            scr->shape_points[2] = &var_1[9];
+@@ -1362,3 +1362,3 @@
+-            scr->unk60[0] = &var_1[8];
+-            scr->unk60[1] = &var_1[9];
+-            scr->unk60[2] = &var_1[10];
++            scr->shape_points[0] = &var_1[8];
++            scr->shape_points[1] = &var_1[9];
++            scr->shape_points[2] = &var_1[10];
+@@ -1367,3 +1367,3 @@
+-            scr->unk60[0] = &var_1[14];
+-            scr->unk60[1] = &var_1[15];
+-            scr->unk60[2] = &var_1[13];
++            scr->shape_points[0] = &var_1[14];
++            scr->shape_points[1] = &var_1[15];
++            scr->shape_points[2] = &var_1[13];
+@@ -1372,3 +1372,3 @@
+-            scr->unk60[0] = &var_1[12];
+-            scr->unk60[1] = &var_1[13];
+-            scr->unk60[2] = &var_1[14];
++            scr->shape_points[0] = &var_1[12];
++            scr->shape_points[1] = &var_1[13];
++            scr->shape_points[2] = &var_1[14];
+@@ -1380,2 +1380,2 @@
+-        scr->unk84 = *scr->unk60[0];
+-        scr->unk78 = scr->unk84;
++        scr->bbox_max = *scr->shape_points[0];
++        scr->unk78 = scr->bbox_max;
+@@ -1383,14 +1383,14 @@
+-            if (scr->unk60[k]->x < scr->unk78.x) {
+-                scr->unk78.x = scr->unk60[k]->x;
+-            } else if (scr->unk84.x < scr->unk60[k]->x) {
+-                scr->unk84.x = scr->unk60[k]->x;
+-            }
+-            if (scr->unk60[k]->y < scr->unk78.y) {
+-                scr->unk78.y = scr->unk60[k]->y;
+-            } else if (scr->unk84.y < scr->unk60[k]->y) {
+-                scr->unk84.y = scr->unk60[k]->y;
+-            }
+-            if (scr->unk60[k]->z < scr->unk78.z) {
+-                scr->unk78.z = scr->unk60[k]->z;
+-            } else if (scr->unk84.z < scr->unk60[k]->z) {
+-                scr->unk84.z = scr->unk60[k]->z;
++            if (scr->shape_points[k]->x < scr->unk78.x) {
++                scr->unk78.x = scr->shape_points[k]->x;
++            } else if (scr->bbox_max.x < scr->shape_points[k]->x) {
++                scr->bbox_max.x = scr->shape_points[k]->x;
++            }
++            if (scr->shape_points[k]->y < scr->unk78.y) {
++                scr->unk78.y = scr->shape_points[k]->y;
++            } else if (scr->bbox_max.y < scr->shape_points[k]->y) {
++                scr->bbox_max.y = scr->shape_points[k]->y;
++            }
++            if (scr->shape_points[k]->z < scr->unk78.z) {
++                scr->unk78.z = scr->shape_points[k]->z;
++            } else if (scr->bbox_max.z < scr->shape_points[k]->z) {
++                scr->bbox_max.z = scr->shape_points[k]->z;
+@@ -1405,3 +1405,3 @@
+-                scr->unk6C[0] = &var_1[2];
+-                scr->unk6C[1] = &var_1[3];
+-                scr->unk6C[2] = &var_1[1];
++                scr->other_shape_points[0] = &var_1[2];
++                scr->other_shape_points[1] = &var_1[3];
++                scr->other_shape_points[2] = &var_1[1];
+@@ -1410,3 +1410,3 @@
+-                scr->unk6C[0] = &var_1[0];
+-                scr->unk6C[1] = &var_1[1];
+-                scr->unk6C[2] = &var_1[2];
++                scr->other_shape_points[0] = &var_1[0];
++                scr->other_shape_points[1] = &var_1[1];
++                scr->other_shape_points[2] = &var_1[2];
+@@ -1415,3 +1415,3 @@
+-                scr->unk6C[0] = &var_1[6];
+-                scr->unk6C[1] = &var_1[7];
+-                scr->unk6C[2] = &var_1[5];
++                scr->other_shape_points[0] = &var_1[6];
++                scr->other_shape_points[1] = &var_1[7];
++                scr->other_shape_points[2] = &var_1[5];
+@@ -1420,3 +1420,3 @@
+-                scr->unk6C[0] = &var_1[4];
+-                scr->unk6C[1] = &var_1[5];
+-                scr->unk6C[2] = &var_1[6];
++                scr->other_shape_points[0] = &var_1[4];
++                scr->other_shape_points[1] = &var_1[5];
++                scr->other_shape_points[2] = &var_1[6];
+@@ -1425,2 +1425,2 @@
+-            scr->unk9C = *scr->unk6C[0];
+-            scr->unk90 = scr->unk9C;
++            scr->other_bbox_max = *scr->other_shape_points[0];
++            scr->other_bbox_min = scr->other_bbox_max;
+@@ -1428,4 +1428,4 @@
+-                if (scr->unk6C[k]->x < scr->unk90.x) {
+-                    scr->unk90.x = scr->unk6C[k]->x;
+-                } else if (scr->unk9C.x < scr->unk6C[k]->x) {
+-                    scr->unk9C.x = scr->unk6C[k]->x;
++                if (scr->other_shape_points[k]->x < scr->other_bbox_min.x) {
++                    scr->other_bbox_min.x = scr->other_shape_points[k]->x;
++                } else if (scr->other_bbox_max.x < scr->other_shape_points[k]->x) {
++                    scr->other_bbox_max.x = scr->other_shape_points[k]->x;
+@@ -1433,4 +1433,4 @@
+-                if (scr->unk6C[k]->y < scr->unk90.y) {
+-                    scr->unk90.y = scr->unk6C[k]->y;
+-                } else if (scr->unk9C.y < scr->unk6C[k]->y) {
+-                    scr->unk9C.y = scr->unk6C[k]->y;
++                if (scr->other_shape_points[k]->y < scr->other_bbox_min.y) {
++                    scr->other_bbox_min.y = scr->other_shape_points[k]->y;
++                } else if (scr->other_bbox_max.y < scr->other_shape_points[k]->y) {
++                    scr->other_bbox_max.y = scr->other_shape_points[k]->y;
+@@ -1438,4 +1438,4 @@
+-                if (scr->unk6C[k]->z < scr->unk90.z) {
+-                    scr->unk90.z = scr->unk6C[k]->z;
+-                } else if (scr->unk9C.z < scr->unk6C[k]->z) {
+-                    scr->unk9C.z = scr->unk6C[k]->z;
++                if (scr->other_shape_points[k]->z < scr->other_bbox_min.z) {
++                    scr->other_bbox_min.z = scr->other_shape_points[k]->z;
++                } else if (scr->other_bbox_max.z < scr->other_shape_points[k]->z) {
++                    scr->other_bbox_max.z = scr->other_shape_points[k]->z;
+@@ -1446 +1446 @@
+-                    scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
++                    scr, scr->other_shape_points[0], scr->other_shape_points[1], scr->other_shape_points[2]) != 0) {
+@@ -1513,2 +1513,2 @@
+-    scr->unk60[0] = &scr->unk00.unk00[0];
+-    scr->unk60[1] = &scr->unk00.unk00[1];
++    scr->shape_points[0] = &scr->unk00.unk00[0];
++    scr->shape_points[1] = &scr->unk00.unk00[1];
+@@ -1516,3 +1516,3 @@
+-    dx = scr->unk60[1]->x - scr->unk60[0]->x;
+-    dy = scr->unk60[1]->y - scr->unk60[0]->y;
+-    dz = scr->unk60[1]->z - scr->unk60[0]->z;
++    dx = scr->shape_points[1]->x - scr->shape_points[0]->x;
++    dy = scr->shape_points[1]->y - scr->shape_points[0]->y;
++    dz = scr->shape_points[1]->z - scr->shape_points[0]->z;
+@@ -1567,4 +1567,4 @@
+-    *scr->unk60[0] = *scr->unk60[1];
+-    scr->unk60[1]->x += qx * 4;
+-    scr->unk60[1]->y += qy * 4;
+-    scr->unk60[1]->z += qz * 4;
++    *scr->shape_points[0] = *scr->shape_points[1];
++    scr->shape_points[1]->x += qx * 4;
++    scr->shape_points[1]->y += qy * 4;
++    scr->shape_points[1]->z += qz * 4;
+@@ -1597,3 +1597,3 @@
+-    scr->unkA8.x = scr->unk60[0]->x - qx / 4;
+-    scr->unkA8.y = scr->unk60[0]->y - qy / 4;
+-    scr->unkA8.z = scr->unk60[0]->z - qz / 4;
++    scr->unkA8.x = scr->shape_points[0]->x - qx / 4;
++    scr->unkA8.y = scr->shape_points[0]->y - qy / 4;
++    scr->unkA8.z = scr->shape_points[0]->z - qz / 4;
+@@ -1601 +1601 @@
+-            &scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x, &scr->unkF8.vx,
++            &scr->unkA8.x, &scr->shape_points[1]->x, &scr->unk100[0].x, &scr->unkF8.vx,
+@@ -1605 +1605 @@
+-            p = scr->unk60[0];
++            p = scr->shape_points[0];
+@@ -1808,3 +1808,3 @@
+-                        scr->unk60[0] = &scr->unk00.unk00[2];
+-                        scr->unk60[1] = &scr->unk00.unk00[3];
+-                        scr->unk60[2] = &scr->unk00.unk00[1];
++                        scr->shape_points[0] = &scr->unk00.unk00[2];
++                        scr->shape_points[1] = &scr->unk00.unk00[3];
++                        scr->shape_points[2] = &scr->unk00.unk00[1];
+@@ -1812,3 +1812,3 @@
+-                        scr->unk60[0] = &scr->unk00.unk00[0];
+-                        scr->unk60[1] = &scr->unk00.unk00[1];
+-                        scr->unk60[2] = &scr->unk00.unk00[2];
++                        scr->shape_points[0] = &scr->unk00.unk00[0];
++                        scr->shape_points[1] = &scr->unk00.unk00[1];
++                        scr->shape_points[2] = &scr->unk00.unk00[2];
+@@ -1819,3 +1819,3 @@
+-                        scr->unk60[0] = &scr->unk00.unk00[3];
+-                        scr->unk60[1] = &scr->unk00.unk00[2];
+-                        scr->unk60[2] = &scr->unk00.unk00[5];
++                        scr->shape_points[0] = &scr->unk00.unk00[3];
++                        scr->shape_points[1] = &scr->unk00.unk00[2];
++                        scr->shape_points[2] = &scr->unk00.unk00[5];
+@@ -1824,3 +1824,3 @@
+-                        scr->unk60[0] = &scr->unk00.unk00[5];
+-                        scr->unk60[1] = &scr->unk00.unk00[4];
+-                        scr->unk60[2] = &scr->unk00.unk00[2];
++                        scr->shape_points[0] = &scr->unk00.unk00[5];
++                        scr->shape_points[1] = &scr->unk00.unk00[4];
++                        scr->shape_points[2] = &scr->unk00.unk00[2];
+@@ -1829,3 +1829,3 @@
+-                        scr->unk60[0] = &scr->unk00.unk00[5];
+-                        scr->unk60[1] = &scr->unk00.unk00[4];
+-                        scr->unk60[2] = &scr->unk00.unk00[1];
++                        scr->shape_points[0] = &scr->unk00.unk00[5];
++                        scr->shape_points[1] = &scr->unk00.unk00[4];
++                        scr->shape_points[2] = &scr->unk00.unk00[1];
+@@ -1834,3 +1834,3 @@
+-                        scr->unk60[0] = &scr->unk00.unk00[1];
+-                        scr->unk60[1] = &scr->unk00.unk00[0];
+-                        scr->unk60[2] = &scr->unk00.unk00[4];
++                        scr->shape_points[0] = &scr->unk00.unk00[1];
++                        scr->shape_points[1] = &scr->unk00.unk00[0];
++                        scr->shape_points[2] = &scr->unk00.unk00[4];
+@@ -1840,2 +1840,2 @@
+-                scr->unk84 = *scr->unk60[0];
+-                scr->unk78 = scr->unk84;
++                scr->bbox_max = *scr->shape_points[0];
++                scr->unk78 = scr->bbox_max;
+@@ -1843,4 +1843,4 @@
+-                    if (scr->unk60[j]->x < scr->unk78.x) {
+-                        scr->unk78.x = scr->unk60[j]->x;
+-                    } else if (scr->unk84.x < scr->unk60[j]->x) {
+-                        scr->unk84.x = scr->unk60[j]->x;
++                    if (scr->shape_points[j]->x < scr->unk78.x) {
++                        scr->unk78.x = scr->shape_points[j]->x;
++                    } else if (scr->bbox_max.x < scr->shape_points[j]->x) {
++                        scr->bbox_max.x = scr->shape_points[j]->x;
+@@ -1848,4 +1848,4 @@
+-                    if (scr->unk60[j]->y < scr->unk78.y) {
+-                        scr->unk78.y = scr->unk60[j]->y;
+-                    } else if (scr->unk84.y < scr->unk60[j]->y) {
+-                        scr->unk84.y = scr->unk60[j]->y;
++                    if (scr->shape_points[j]->y < scr->unk78.y) {
++                        scr->unk78.y = scr->shape_points[j]->y;
++                    } else if (scr->bbox_max.y < scr->shape_points[j]->y) {
++                        scr->bbox_max.y = scr->shape_points[j]->y;
+@@ -1853,4 +1853,4 @@
+-                    if (scr->unk60[j]->z < scr->unk78.z) {
+-                        scr->unk78.z = scr->unk60[j]->z;
+-                    } else if (scr->unk84.z < scr->unk60[j]->z) {
+-                        scr->unk84.z = scr->unk60[j]->z;
++                    if (scr->shape_points[j]->z < scr->unk78.z) {
++                        scr->unk78.z = scr->shape_points[j]->z;
++                    } else if (scr->bbox_max.z < scr->shape_points[j]->z) {
++                        scr->bbox_max.z = scr->shape_points[j]->z;
+@@ -1861 +1861 @@
+-                var_5 |= scr->unkB4;
++                var_5 |= scr->bone_hit_mask;
+@@ -1864 +1864 @@
+-                    mask_a |= scr->unkB4;
++                    mask_a |= scr->bone_hit_mask;
+@@ -1867 +1867 @@
+-                    mask_b |= scr->unkB4;
++                    mask_b |= scr->bone_hit_mask;
+@@ -1869 +1869 @@
+-                    mask_c |= scr->unkB4;
++                    mask_c |= scr->bone_hit_mask;
+@@ -2265,3 +2265,3 @@
+-    scr->unk13C.x = ((scr->unkA8.x * 3) + scr->unkB8.x) >> 4;
+-    scr->unk13C.y = ((scr->unkA8.y * 3) + scr->unkB8.y) >> 4;
+-    scr->unk13C.z = ((scr->unkA8.z * 3) + scr->unkB8.z) >> 4;
++    scr->contact_point.x = ((scr->unkA8.x * 3) + scr->unkB8.x) >> 4;
++    scr->contact_point.y = ((scr->unkA8.y * 3) + scr->unkB8.y) >> 4;
++    scr->contact_point.z = ((scr->unkA8.z * 3) + scr->unkB8.z) >> 4;
+@@ -2303 +2303 @@
+-                firstPlayer, &SPAD->unk2B8.rec.unk13C.x);
++                firstPlayer, &SPAD->unk2B8.rec.contact_point.x);
+@@ -2305 +2305 @@
+-                secondPlayer, &SPAD->unk2B8.rec.unk13C.x);
++                secondPlayer, &SPAD->unk2B8.rec.contact_point.x);
+@@ -2409 +2409 @@
+-        if (scr->unk84.x < x - r || x + r < scr->unk78.x) {
++        if (scr->bbox_max.x < x - r || x + r < scr->unk78.x) {
+@@ -2413 +2413 @@
+-            if (scr->unk84.y < y - r || y + r < scr->unk78.y) {
++            if (scr->bbox_max.y < y - r || y + r < scr->unk78.y) {
+@@ -2417 +2417 @@
+-                if (scr->unk84.z < z - r || z + r < scr->unk78.z) {
++                if (scr->bbox_max.z < z - r || z + r < scr->unk78.z) {
+@@ -2454 +2454 @@
+-    scr->unkB4 = seenMask;
++    scr->bone_hit_mask = seenMask;
+@@ -2475,6 +2475,6 @@
+-    obj->unkA8.x = obj->unk60[1]->x - obj->unk60[0]->x;
+-    obj->unkA8.y = obj->unk60[1]->y - obj->unk60[0]->y;
+-    obj->unkA8.z = obj->unk60[1]->z - obj->unk60[0]->z;
+-    obj->unkB8.x = obj->unk60[2]->x - obj->unk60[0]->x;
+-    obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
+-    obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
++    obj->unkA8.x = obj->shape_points[1]->x - obj->shape_points[0]->x;
++    obj->unkA8.y = obj->shape_points[1]->y - obj->shape_points[0]->y;
++    obj->unkA8.z = obj->shape_points[1]->z - obj->shape_points[0]->z;
++    obj->unkB8.x = obj->shape_points[2]->x - obj->shape_points[0]->x;
++    obj->unkB8.y = obj->shape_points[2]->y - obj->shape_points[0]->y;
++    obj->unkB8.z = obj->shape_points[2]->z - obj->shape_points[0]->z;
+@@ -2526,12 +2526,12 @@
+-            obj->unkD8.m[0][0] = 0x1000;
+-            obj->unkD8.m[0][1] = 0;
+-            obj->unkD8.m[0][2] = 0;
+-            obj->unkD8.m[1][0] = 0;
+-            obj->unkD8.m[1][1] = 0x1000;
+-            obj->unkD8.m[1][2] = 0;
+-            obj->unkD8.m[2][0] = 0;
+-            obj->unkD8.m[2][1] = 0;
+-            obj->unkD8.m[2][2] = 0x1000;
+-            RotMatrixY(obj->unkF8.vy, &obj->unkD8);
+-            RotMatrixX(obj->unkF8.vx, &obj->unkD8);
+-            gte_SetRotMatrix(&obj->unkD8);
++            obj->rot_matrix.m[0][0] = 0x1000;
++            obj->rot_matrix.m[0][1] = 0;
++            obj->rot_matrix.m[0][2] = 0;
++            obj->rot_matrix.m[1][0] = 0;
++            obj->rot_matrix.m[1][1] = 0x1000;
++            obj->rot_matrix.m[1][2] = 0;
++            obj->rot_matrix.m[2][0] = 0;
++            obj->rot_matrix.m[2][1] = 0;
++            obj->rot_matrix.m[2][2] = 0x1000;
++            RotMatrixY(obj->unkF8.vy, &obj->rot_matrix);
++            RotMatrixX(obj->unkF8.vx, &obj->rot_matrix);
++            gte_SetRotMatrix(&obj->rot_matrix);
+@@ -2568,12 +2568,12 @@
+-    obj->unkD8.m[0][0] = 0x1000;
+-    obj->unkD8.m[0][1] = 0;
+-    obj->unkD8.m[0][2] = 0;
+-    obj->unkD8.m[1][0] = 0;
+-    obj->unkD8.m[1][1] = 0x1000;
+-    obj->unkD8.m[1][2] = 0;
+-    obj->unkD8.m[2][0] = 0;
+-    obj->unkD8.m[2][1] = 0;
+-    obj->unkD8.m[2][2] = 0x1000;
+-    RotMatrixY(obj->unkF8.vy, &obj->unkD8);
+-    RotMatrixX(obj->unkF8.vx, &obj->unkD8);
+-    gte_SetRotMatrix(&obj->unkD8);
++    obj->rot_matrix.m[0][0] = 0x1000;
++    obj->rot_matrix.m[0][1] = 0;
++    obj->rot_matrix.m[0][2] = 0;
++    obj->rot_matrix.m[1][0] = 0;
++    obj->rot_matrix.m[1][1] = 0x1000;
++    obj->rot_matrix.m[1][2] = 0;
++    obj->rot_matrix.m[2][0] = 0;
++    obj->rot_matrix.m[2][1] = 0;
++    obj->rot_matrix.m[2][2] = 0x1000;
++    RotMatrixY(obj->unkF8.vy, &obj->rot_matrix);
++    RotMatrixX(obj->unkF8.vx, &obj->rot_matrix);
++    gte_SetRotMatrix(&obj->rot_matrix);
+@@ -2593,3 +2593,3 @@
+-        obj->unkF8.vx = pos->x - obj->unk60[0]->x;
+-        obj->unkF8.vy = pos->y - obj->unk60[0]->y;
+-        obj->unkF8.vz = pos->z - obj->unk60[0]->z;
++        obj->unkF8.vx = pos->x - obj->shape_points[0]->x;
++        obj->unkF8.vy = pos->y - obj->shape_points[0]->y;
++        obj->unkF8.vz = pos->z - obj->shape_points[0]->z;
+@@ -2784,3 +2784,3 @@
+-        obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
+-        obj->unkF8.vy = pos[1] - obj->unk60[0]->y;
+-        obj->unkF8.vz = pos[2] - obj->unk60[0]->z;
++        obj->unkF8.vx = pos[0] - obj->shape_points[0]->x;
++        obj->unkF8.vy = pos[1] - obj->shape_points[0]->y;
++        obj->unkF8.vz = pos[2] - obj->shape_points[0]->z;
+@@ -2899,7 +2899,7 @@
+-    obj->unkA8.x = obj->unk60[1]->x - obj->unk60[0]->x;
+-    obj->unkA8.y = obj->unk60[1]->y - obj->unk60[0]->y;
+-    obj->unkA8.z = obj->unk60[1]->z - obj->unk60[0]->z;
+-
+-    obj->unkB8.x = obj->unk60[2]->x - obj->unk60[0]->x;
+-    obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
+-    obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
++    obj->unkA8.x = obj->shape_points[1]->x - obj->shape_points[0]->x;
++    obj->unkA8.y = obj->shape_points[1]->y - obj->shape_points[0]->y;
++    obj->unkA8.z = obj->shape_points[1]->z - obj->shape_points[0]->z;
++
++    obj->unkB8.x = obj->shape_points[2]->x - obj->shape_points[0]->x;
++    obj->unkB8.y = obj->shape_points[2]->y - obj->shape_points[0]->y;
++    obj->unkB8.z = obj->shape_points[2]->z - obj->shape_points[0]->z;
+@@ -2943 +2943 @@
+-    mat = &obj->unkD8;
++    mat = &obj->rot_matrix;
+@@ -2946,9 +2946,9 @@
+-    obj->unkD8.m[0][0] = 0x1000;
+-    obj->unkD8.m[0][1] = 0;
+-    obj->unkD8.m[0][2] = 0;
+-    obj->unkD8.m[1][0] = 0;
+-    obj->unkD8.m[1][1] = 0x1000;
+-    obj->unkD8.m[1][2] = 0;
+-    obj->unkD8.m[2][0] = 0;
+-    obj->unkD8.m[2][1] = 0;
+-    obj->unkD8.m[2][2] = 0x1000;
++    obj->rot_matrix.m[0][0] = 0x1000;
++    obj->rot_matrix.m[0][1] = 0;
++    obj->rot_matrix.m[0][2] = 0;
++    obj->rot_matrix.m[1][0] = 0;
++    obj->rot_matrix.m[1][1] = 0x1000;
++    obj->rot_matrix.m[1][2] = 0;
++    obj->rot_matrix.m[2][0] = 0;
++    obj->rot_matrix.m[2][1] = 0;
++    obj->rot_matrix.m[2][2] = 0x1000;
+@@ -3001,3 +3001,3 @@
+-    obj->unkF8.vx = p0->x - obj->unk60[0]->x;
+-    obj->unkF8.vy = p0->y - obj->unk60[0]->y;
+-    obj->unkF8.vz = p0->z - obj->unk60[0]->z;
++    obj->unkF8.vx = p0->x - obj->shape_points[0]->x;
++    obj->unkF8.vy = p0->y - obj->shape_points[0]->y;
++    obj->unkF8.vz = p0->z - obj->shape_points[0]->z;
+@@ -3006,3 +3006,3 @@
+-    obj->unkF8.vx = p1->x - obj->unk60[0]->x;
+-    obj->unkF8.vy = p1->y - obj->unk60[0]->y;
+-    obj->unkF8.vz = p1->z - obj->unk60[0]->z;
++    obj->unkF8.vx = p1->x - obj->shape_points[0]->x;
++    obj->unkF8.vy = p1->y - obj->shape_points[0]->y;
++    obj->unkF8.vz = p1->z - obj->shape_points[0]->z;
+@@ -3012,3 +3012,3 @@
+-    obj->unkF8.vx = p2->x - obj->unk60[0]->x;
+-    obj->unkF8.vy = p2->y - obj->unk60[0]->y;
+-    obj->unkF8.vz = p2->z - obj->unk60[0]->z;
++    obj->unkF8.vx = p2->x - obj->shape_points[0]->x;
++    obj->unkF8.vy = p2->y - obj->shape_points[0]->y;
++    obj->unkF8.vz = p2->z - obj->shape_points[0]->z;
+@@ -3217,3 +3217,3 @@
+-    scr->unkA8.x = scr->unk60[1]->x - scr->unk60[0]->x;
+-    scr->unkA8.y = scr->unk60[1]->y - scr->unk60[0]->y;
+-    scr->unkA8.z = scr->unk60[1]->z - scr->unk60[0]->z;
++    scr->unkA8.x = scr->shape_points[1]->x - scr->shape_points[0]->x;
++    scr->unkA8.y = scr->shape_points[1]->y - scr->shape_points[0]->y;
++    scr->unkA8.z = scr->shape_points[1]->z - scr->shape_points[0]->z;
+@@ -3240 +3240 @@
+-    mat = &scr->unkD8;
++    mat = &scr->rot_matrix;
+@@ -3244,9 +3244,9 @@
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
+@@ -3264,3 +3264,3 @@
+-    scr->unkF8.vx = pos->x - scr->unk60[0]->x;
+-    scr->unkF8.vy = pos->y - scr->unk60[0]->y;
+-    scr->unkF8.vz = pos->z - scr->unk60[0]->z;
++    scr->unkF8.vx = pos->x - scr->shape_points[0]->x;
++    scr->unkF8.vy = pos->y - scr->shape_points[0]->y;
++    scr->unkF8.vz = pos->z - scr->shape_points[0]->z;
+@@ -3360 +3360 @@
+-    mat = &scr->unkD8;
++    mat = &scr->rot_matrix;
+@@ -3363,9 +3363,9 @@
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
+@@ -3385,9 +3385,9 @@
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
+@@ -3477 +3477 @@
+-    m = &SPAD->unk2B8.rec.unkD8;
++    m = &SPAD->unk2B8.rec.rot_matrix;
+@@ -3511,10 +3511,10 @@
+-    mat = &scr->unkD8;
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
++    mat = &scr->rot_matrix;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
+@@ -3560,17 +3560,17 @@
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
+-    RotMatrixX(x, &scr->unkD8);
+-    RotMatrixY(y, &scr->unkD8);
+-    RotMatrixZ(-z, &scr->unkD8);
+-    RotMatrixX(angles[0], &scr->unkD8);
+-    RotMatrixY(angles[1], &scr->unkD8);
+-    RotMatrixZ(angles[2], &scr->unkD8);
+-
+-    m = &scr->unkD8;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
++    RotMatrixX(x, &scr->rot_matrix);
++    RotMatrixY(y, &scr->rot_matrix);
++    RotMatrixZ(-z, &scr->rot_matrix);
++    RotMatrixX(angles[0], &scr->rot_matrix);
++    RotMatrixY(angles[1], &scr->rot_matrix);
++    RotMatrixZ(angles[2], &scr->rot_matrix);
++
++    m = &scr->rot_matrix;
+@@ -3607,10 +3607,10 @@
+-    mat = &scr->unkD8;
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
++    mat = &scr->rot_matrix;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
+@@ -4179,3 +4179,3 @@
+-        scr->unk00.x = obj->pos.x + obj->vel.x;
+-        scr->unk00.y = obj->pos.y + obj->vel.y;
+-        scr->unk00.z = obj->pos.z + obj->vel.z;
++        scr->cast_end.x = obj->pos.x + obj->vel.x;
++        scr->cast_end.y = obj->pos.y + obj->vel.y;
++        scr->cast_end.z = obj->pos.z + obj->vel.z;
+@@ -4183 +4183 @@
+-        var_7 = scr->unk30;
++        var_7 = scr->cast_normal;
+@@ -4185 +4185 @@
+-            &obj->pos.x, &scr->unk00.x, &scr->unk10.x, var_7, (s32)&scr->unk38);
++            &obj->pos.x, &scr->cast_end.x, &scr->unk10.x, var_7, (s32)&scr->cast_work);
+@@ -4210 +4210 @@
+-                if (scr->unk30[1] >= -0x7FF) {
++                if (scr->cast_normal[1] >= -0x7FF) {
+@@ -4236 +4236 @@
+-            } else if (scr->unk30[1] >= -0x7FF && kind == 0xE) {
++            } else if (scr->cast_normal[1] >= -0x7FF && kind == 0xE) {
+@@ -4256 +4256 @@
+-            obj->pos = scr->unk00;
++            obj->pos = scr->cast_end;
+@@ -4325 +4325 @@
+-    mat = &scr->unkD8;
++    mat = &scr->rot_matrix;
+@@ -4330,9 +4330,9 @@
+-    scr->unkD8.m[0][0] = 0x1000;
+-    scr->unkD8.m[0][1] = 0;
+-    scr->unkD8.m[0][2] = 0;
+-    scr->unkD8.m[1][0] = 0;
+-    scr->unkD8.m[1][1] = 0x1000;
+-    scr->unkD8.m[1][2] = 0;
+-    scr->unkD8.m[2][0] = 0;
+-    scr->unkD8.m[2][1] = 0;
+-    scr->unkD8.m[2][2] = 0x1000;
++    scr->rot_matrix.m[0][0] = 0x1000;
++    scr->rot_matrix.m[0][1] = 0;
++    scr->rot_matrix.m[0][2] = 0;
++    scr->rot_matrix.m[1][0] = 0;
++    scr->rot_matrix.m[1][1] = 0x1000;
++    scr->rot_matrix.m[1][2] = 0;
++    scr->rot_matrix.m[2][0] = 0;
++    scr->rot_matrix.m[2][1] = 0;
++    scr->rot_matrix.m[2][2] = 0x1000;
+@@ -4400,2 +4400,2 @@
+-        scr->unk60[0] = &var_4[0];
+-        scr->unk60[1] = &var_4[1];
++        scr->shape_points[0] = &var_4[0];
++        scr->shape_points[1] = &var_4[1];
+@@ -4540,3 +4540,3 @@
+-            scr->unk00.x = base->unk_04.x + base->unk_1C.x;
+-            scr->unk00.y = base->unk_04.y + base->unk_1C.y;
+-            scr->unk00.z = base->unk_04.z + base->unk_1C.z;
++            scr->cast_end.x = base->unk_04.x + base->unk_1C.x;
++            scr->cast_end.y = base->unk_04.y + base->unk_1C.y;
++            scr->cast_end.z = base->unk_04.z + base->unk_1C.z;
+@@ -4544,2 +4544,2 @@
+-                    &base->unk_04.x, &scr->unk00.x, &scr->unk10.x, scr->unk30,
+-                    (s32)&scr->unk38) != 0 ||
++                    &base->unk_04.x, &scr->cast_end.x, &scr->unk10.x, scr->cast_normal,
++                    (s32)&scr->cast_work) != 0 ||
+@@ -4549 +4549 @@
+-                base->unk_04 = scr->unk00;
++                base->unk_04 = scr->cast_end;
+--- a/src/main/43500.c
++++ b/src/main/43500.c
+@@ -51,2 +51,2 @@
+-    g_collision_segment_work->unk60 = g_collision_segment_work->unk8.vx + 32000;
+-    g_collision_segment_work->unk64 = g_collision_segment_work->unk8.vz + 32000;
++    g_collision_segment_work->unk60 = g_collision_segment_work->seg_start.vx + 32000;
++    g_collision_segment_work->unk64 = g_collision_segment_work->seg_start.vz + 32000;
+@@ -54,2 +54,2 @@
+-        g_collision_segment_work->unk18.vx + 32000;
+-    g_collision_segment_work->unk0 = 0x7FFFFFFF;
++        g_collision_segment_work->seg_end.vx + 32000;
++    g_collision_segment_work->nearest_dist_sq = 0x7FFFFFFF;
+@@ -57 +57 @@
+-        g_collision_segment_work->unk18.vz + 32000;
++        g_collision_segment_work->seg_end.vz + 32000;
+@@ -60,4 +60,4 @@
+-    g_collision_segment_work->unk88.x = g_collision_segment_work->unk60 / 2000;
+-    g_collision_segment_work->unk88.z = g_collision_segment_work->unk64 / 2000;
+-    g_collision_segment_work->unk8C.x = g_collision_segment_work->unk68 / 2000;
+-    g_collision_segment_work->unk8C.z = g_collision_segment_work->unk6C / 2000;
++    g_collision_segment_work->walk_cell.x = g_collision_segment_work->unk60 / 2000;
++    g_collision_segment_work->walk_cell.z = g_collision_segment_work->unk64 / 2000;
++    g_collision_segment_work->end_cell.x = g_collision_segment_work->unk68 / 2000;
++    g_collision_segment_work->end_cell.z = g_collision_segment_work->unk6C / 2000;
+@@ -66,10 +66,10 @@
+-    if (g_collision_segment_work->unk88.x ==
+-            g_collision_segment_work->unk8C.x &&
+-        g_collision_segment_work->unk88.z ==
+-            g_collision_segment_work->unk8C.z) {
+-        if (g_collision_segment_work->unk8.vx ==
+-                g_collision_segment_work->unk18.vx &&
+-            g_collision_segment_work->unk8.vy ==
+-                g_collision_segment_work->unk18.vy &&
+-            g_collision_segment_work->unk8.vz ==
+-                g_collision_segment_work->unk18.vz) {
++    if (g_collision_segment_work->walk_cell.x ==
++            g_collision_segment_work->end_cell.x &&
++        g_collision_segment_work->walk_cell.z ==
++            g_collision_segment_work->end_cell.z) {
++        if (g_collision_segment_work->seg_start.vx ==
++                g_collision_segment_work->seg_end.vx &&
++            g_collision_segment_work->seg_start.vy ==
++                g_collision_segment_work->seg_end.vy &&
++            g_collision_segment_work->seg_start.vz ==
++                g_collision_segment_work->seg_end.vz) {
+@@ -78,2 +78,2 @@
+-        g_collision_segment_work->unk5C(g_collision_segment_work->unk88.x,
+-                                        g_collision_segment_work->unk88.z);
++        g_collision_segment_work->cell_test(g_collision_segment_work->walk_cell.x,
++                                        g_collision_segment_work->walk_cell.z);
+@@ -82,3 +82,3 @@
+-            g_collision_segment_work->unk88.x * 2000 + 1000;
+-        g_collision_segment_work->unk84 =
+-            g_collision_segment_work->unk88.z * 2000 + 1000;
++            g_collision_segment_work->walk_cell.x * 2000 + 1000;
++        g_collision_segment_work->start_cell_center_z =
++            g_collision_segment_work->walk_cell.z * 2000 + 1000;
+@@ -86 +86 @@
+-        g_collision_segment_work->unk64 -= g_collision_segment_work->unk84;
++        g_collision_segment_work->unk64 -= g_collision_segment_work->start_cell_center_z;
+@@ -88 +88 @@
+-        g_collision_segment_work->unk6C -= g_collision_segment_work->unk84;
++        g_collision_segment_work->unk6C -= g_collision_segment_work->start_cell_center_z;
+@@ -122 +122 @@
+-        g_collision_segment_work->unk90 =
++        g_collision_segment_work->walk_steps_left =
+@@ -125 +125 @@
+-        g_collision_segment_work->unk7C =
++        g_collision_segment_work->walk_slope =
+@@ -130 +130 @@
+-             g_collision_segment_work->unk7C) >>
++             g_collision_segment_work->walk_slope) >>
+@@ -132,3 +132,3 @@
+-        g_collision_segment_work->unk78 =
+-            (g_collision_segment_work->unk7C * 2000) >> 12;
+-        while (--g_collision_segment_work->unk90 != -1) {
++        g_collision_segment_work->walk_minor_step =
++            (g_collision_segment_work->walk_slope * 2000) >> 12;
++        while (--g_collision_segment_work->walk_steps_left != -1) {
+@@ -136,3 +136,3 @@
+-                     g_collision_segment_work->unk5C(
+-                         g_collision_segment_work->unk88.x,
+-                         g_collision_segment_work->unk88.z)) != 0) {
++                     g_collision_segment_work->cell_test(
++                         g_collision_segment_work->walk_cell.x,
++                         g_collision_segment_work->walk_cell.z)) != 0) {
+@@ -142,2 +142,2 @@
+-            g_collision_segment_work->unk64 += g_collision_segment_work->unk78;
+-            if (g_collision_segment_work->unk90 == 0) {
++            g_collision_segment_work->unk64 += g_collision_segment_work->walk_minor_step;
++            if (g_collision_segment_work->walk_steps_left == 0) {
+@@ -149 +149 @@
+-                        g_collision_segment_work->unk88.x--;
++                        g_collision_segment_work->walk_cell.x--;
+@@ -151 +151 @@
+-                        g_collision_segment_work->unk88.x++;
++                        g_collision_segment_work->walk_cell.x++;
+@@ -155 +155 @@
+-                        g_collision_segment_work->unk88.z--;
++                        g_collision_segment_work->walk_cell.z--;
+@@ -157 +157 @@
+-                        g_collision_segment_work->unk88.z++;
++                        g_collision_segment_work->walk_cell.z++;
+@@ -161,3 +161,3 @@
+-                         g_collision_segment_work->unk5C(
+-                             g_collision_segment_work->unk88.x,
+-                             g_collision_segment_work->unk88.z)) != 0) {
++                         g_collision_segment_work->cell_test(
++                             g_collision_segment_work->walk_cell.x,
++                             g_collision_segment_work->walk_cell.z)) != 0) {
+@@ -169 +169 @@
+-                    g_collision_segment_work->unk88.z--;
++                    g_collision_segment_work->walk_cell.z--;
+@@ -171 +171 @@
+-                    g_collision_segment_work->unk88.z++;
++                    g_collision_segment_work->walk_cell.z++;
+@@ -175 +175 @@
+-                    g_collision_segment_work->unk88.x--;
++                    g_collision_segment_work->walk_cell.x--;
+@@ -177 +177 @@
+-                    g_collision_segment_work->unk88.x++;
++                    g_collision_segment_work->walk_cell.x++;
+@@ -182,6 +182,6 @@
+-            (g_collision_segment_work->unk88.x !=
+-                 g_collision_segment_work->unk8C.x ||
+-             g_collision_segment_work->unk88.z !=
+-                 g_collision_segment_work->unk8C.z)) {
+-            g_collision_segment_work->unk5C(g_collision_segment_work->unk8C.x,
+-                                            g_collision_segment_work->unk8C.z);
++            (g_collision_segment_work->walk_cell.x !=
++                 g_collision_segment_work->end_cell.x ||
++             g_collision_segment_work->walk_cell.z !=
++                 g_collision_segment_work->end_cell.z)) {
++            g_collision_segment_work->cell_test(g_collision_segment_work->end_cell.x,
++                                            g_collision_segment_work->end_cell.z);
+@@ -203,13 +203,13 @@
+-    D_800EF9F8.unk8 = *(VECTOR *)segment_start;
+-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
+-    if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
+-                            g_collision_segment_work->unk8.vx,
+-                        g_collision_segment_work->unk18.vy -
+-                            g_collision_segment_work->unk8.vy,
+-                        g_collision_segment_work->unk18.vz -
+-                            g_collision_segment_work->unk8.vz) <= 0x9C3F) {
+-        end_x = g_collision_segment_work->unk18.vx;
+-        start_x = g_collision_segment_work->unk8.vx;
+-        end_y = g_collision_segment_work->unk18.vy;
+-        start_y = g_collision_segment_work->unk8.vy;
+-        g_collision_segment_work->unk5C =
++    D_800EF9F8.seg_start = *(VECTOR *)segment_start;
++    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
++    if (gte_SumSquares3(g_collision_segment_work->seg_end.vx -
++                            g_collision_segment_work->seg_start.vx,
++                        g_collision_segment_work->seg_end.vy -
++                            g_collision_segment_work->seg_start.vy,
++                        g_collision_segment_work->seg_end.vz -
++                            g_collision_segment_work->seg_start.vz) <= 0x9C3F) {
++        end_x = g_collision_segment_work->seg_end.vx;
++        start_x = g_collision_segment_work->seg_start.vx;
++        end_y = g_collision_segment_work->seg_end.vy;
++        start_y = g_collision_segment_work->seg_start.vy;
++        g_collision_segment_work->cell_test =
+@@ -217,5 +217,5 @@
+-        end_z = g_collision_segment_work->unk18.vz;
+-        g_collision_segment_work->unk8.vx = start_x - ((end_x - start_x) << 1);
+-        g_collision_segment_work->unk8.vy = start_y - ((end_y - start_y) << 1);
+-        start_z = g_collision_segment_work->unk8.vz;
+-        g_collision_segment_work->unk8.vz = start_z - ((end_z - start_z) << 1);
++        end_z = g_collision_segment_work->seg_end.vz;
++        g_collision_segment_work->seg_start.vx = start_x - ((end_x - start_x) << 1);
++        g_collision_segment_work->seg_start.vy = start_y - ((end_y - start_y) << 1);
++        start_z = g_collision_segment_work->seg_start.vz;
++        g_collision_segment_work->seg_start.vz = start_z - ((end_z - start_z) << 1);
+@@ -223 +223 @@
+-        g_collision_segment_work->unk5C =
++        g_collision_segment_work->cell_test =
+@@ -235,13 +235,13 @@
+-    g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
+-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
+-    if (gte_SumSquares3(g_collision_segment_work->unk18.vx -
+-                            g_collision_segment_work->unk8.vx,
+-                        g_collision_segment_work->unk18.vy -
+-                            g_collision_segment_work->unk8.vy,
+-                        g_collision_segment_work->unk18.vz -
+-                            g_collision_segment_work->unk8.vz) <= 0x9C3F) {
+-        end_x = g_collision_segment_work->unk18.vx;
+-        start_x = g_collision_segment_work->unk8.vx;
+-        end_y = g_collision_segment_work->unk18.vy;
+-        start_y = g_collision_segment_work->unk8.vy;
+-        g_collision_segment_work->unk5C =
++    g_collision_segment_work->seg_start = *(VECTOR *)segment_start;
++    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
++    if (gte_SumSquares3(g_collision_segment_work->seg_end.vx -
++                            g_collision_segment_work->seg_start.vx,
++                        g_collision_segment_work->seg_end.vy -
++                            g_collision_segment_work->seg_start.vy,
++                        g_collision_segment_work->seg_end.vz -
++                            g_collision_segment_work->seg_start.vz) <= 0x9C3F) {
++        end_x = g_collision_segment_work->seg_end.vx;
++        start_x = g_collision_segment_work->seg_start.vx;
++        end_y = g_collision_segment_work->seg_end.vy;
++        start_y = g_collision_segment_work->seg_start.vy;
++        g_collision_segment_work->cell_test =
+@@ -249,5 +249,5 @@
+-        end_z = g_collision_segment_work->unk18.vz;
+-        g_collision_segment_work->unk8.vx = start_x - ((end_x - start_x) << 1);
+-        g_collision_segment_work->unk8.vy = start_y - ((end_y - start_y) << 1);
+-        start_z = g_collision_segment_work->unk8.vz;
+-        g_collision_segment_work->unk8.vz = start_z - ((end_z - start_z) << 1);
++        end_z = g_collision_segment_work->seg_end.vz;
++        g_collision_segment_work->seg_start.vx = start_x - ((end_x - start_x) << 1);
++        g_collision_segment_work->seg_start.vy = start_y - ((end_y - start_y) << 1);
++        start_z = g_collision_segment_work->seg_start.vz;
++        g_collision_segment_work->seg_start.vz = start_z - ((end_z - start_z) << 1);
+@@ -255 +255 @@
+-        g_collision_segment_work->unk5C =
++        g_collision_segment_work->cell_test =
+@@ -264,3 +264,3 @@
+-    D_800EF9F8.unk8 = *(VECTOR *)segment_start;
+-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
+-    g_collision_segment_work->unk5C =
++    D_800EF9F8.seg_start = *(VECTOR *)segment_start;
++    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
++    g_collision_segment_work->cell_test =
+@@ -275,3 +275,3 @@
+-    g_collision_segment_work->unk8 = *(VECTOR *)segment_start;
+-    g_collision_segment_work->unk18 = *(VECTOR *)segment_end;
+-    g_collision_segment_work->unk5C =
++    g_collision_segment_work->seg_start = *(VECTOR *)segment_start;
++    g_collision_segment_work->seg_end = *(VECTOR *)segment_end;
++    g_collision_segment_work->cell_test =
+@@ -285,10 +285,10 @@
+-    if (p->unk0 != 0x7FFFFFFF) {
+-        t = (p->unk48 * 0x7D0) - 0x7D00;
+-        hit_point[0] = p->unk38 + t;
+-        hit_point[1] = p->unk3C;
+-        t = (p->unk4A * 0x7D0) - 0x7D00;
+-        hit_point[2] = p->unk40 + t;
+-        hit_normal[0] = p->unk28 >> 2;
+-        hit_normal[1] = p->unk2C >> 2;
+-        hit_normal[2] = p->unk30 >> 2;
+-        g_collision_hit_tag = p->unk4;
++    if (p->nearest_dist_sq != 0x7FFFFFFF) {
++        t = (p->hit_cell_x * 0x7D0) - 0x7D00;
++        hit_point[0] = p->hit_local_x + t;
++        hit_point[1] = p->hit_local_y;
++        t = (p->hit_cell_z * 0x7D0) - 0x7D00;
++        hit_point[2] = p->hit_local_z + t;
++        hit_normal[0] = p->hit_nx >> 2;
++        hit_normal[1] = p->hit_ny >> 2;
++        hit_normal[2] = p->hit_nz >> 2;
++        g_collision_hit_tag = p->hit_tag;
+@@ -324,6 +324,6 @@
+-    g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
+-    g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
+-    g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
+-    g_collision_segment_work->unk54 = g_collision_segment_work->unk18.vx - x;
+-    g_collision_segment_work->unk56 = g_collision_segment_work->unk18.vy;
+-    g_collision_segment_work->unk58 = g_collision_segment_work->unk18.vz - z;
++    g_collision_segment_work->local_start_x = g_collision_segment_work->seg_start.vx - x;
++    g_collision_segment_work->local_start_y = g_collision_segment_work->seg_start.vy;
++    g_collision_segment_work->local_start_z = g_collision_segment_work->seg_start.vz - z;
++    g_collision_segment_work->local_end_x = g_collision_segment_work->seg_end.vx - x;
++    g_collision_segment_work->local_end_y = g_collision_segment_work->seg_end.vy;
++    g_collision_segment_work->local_end_z = g_collision_segment_work->seg_end.vz - z;
+@@ -334,10 +334,10 @@
+-        g_collision_segment_work->unkD0 = *data;
+-        data++;
+-        g_collision_segment_work->unkD4 = *data;
+-        data++;
+-        g_collision_segment_work->unkD8 = *data;
+-        data++;
+-        g_collision_segment_work->unkDC = (u16)*data;
+-        data++;
+-        g_collision_segment_work->unkDC =
+-            (*data << 16) | g_collision_segment_work->unkDC;
++        g_collision_segment_work->face_nx = *data;
++        data++;
++        g_collision_segment_work->face_ny = *data;
++        data++;
++        g_collision_segment_work->face_nz = *data;
++        data++;
++        g_collision_segment_work->face_plane_d = (u16)*data;
++        data++;
++        g_collision_segment_work->face_plane_d =
++            (*data << 16) | g_collision_segment_work->face_plane_d;
+@@ -346,4 +346,4 @@
+-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk4C +
+-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk4E +
+-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk50 +
+-            g_collision_segment_work->unkDC;
++            g_collision_segment_work->face_nx * g_collision_segment_work->local_start_x +
++            g_collision_segment_work->face_ny * g_collision_segment_work->local_start_y +
++            g_collision_segment_work->face_nz * g_collision_segment_work->local_start_z +
++            g_collision_segment_work->face_plane_d;
+@@ -351,4 +351,4 @@
+-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk54 +
+-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk56 +
+-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk58 +
+-            g_collision_segment_work->unkDC;
++            g_collision_segment_work->face_nx * g_collision_segment_work->local_end_x +
++            g_collision_segment_work->face_ny * g_collision_segment_work->local_end_y +
++            g_collision_segment_work->face_nz * g_collision_segment_work->local_end_z +
++            g_collision_segment_work->face_plane_d;
+@@ -374,3 +374,3 @@
+-            g_collision_segment_work->unkA8 =
+-                (g_collision_segment_work->unk54 -
+-                 g_collision_segment_work->unk4C) *
++            g_collision_segment_work->plane_cross_x =
++                (g_collision_segment_work->local_end_x -
++                 g_collision_segment_work->local_start_x) *
+@@ -379,3 +379,3 @@
+-            g_collision_segment_work->unkAC =
+-                (g_collision_segment_work->unk56 -
+-                 g_collision_segment_work->unk4E) *
++            g_collision_segment_work->plane_cross_y =
++                (g_collision_segment_work->local_end_y -
++                 g_collision_segment_work->local_start_y) *
+@@ -384,3 +384,3 @@
+-            g_collision_segment_work->unkB0 =
+-                (g_collision_segment_work->unk58 -
+-                 g_collision_segment_work->unk50) *
++            g_collision_segment_work->plane_cross_z =
++                (g_collision_segment_work->local_end_z -
++                 g_collision_segment_work->local_start_z) *
+@@ -389,5 +389,5 @@
+-            g_collision_segment_work->unkA8 =
+-                (g_collision_segment_work->unkA8 < 0 ? -1 : 1) *
+-                ((g_collision_segment_work->unkA8 >= 0
+-                      ? g_collision_segment_work->unkA8 + 1
+-                      : -g_collision_segment_work->unkA8 + 1) >>
++            g_collision_segment_work->plane_cross_x =
++                (g_collision_segment_work->plane_cross_x < 0 ? -1 : 1) *
++                ((g_collision_segment_work->plane_cross_x >= 0
++                      ? g_collision_segment_work->plane_cross_x + 1
++                      : -g_collision_segment_work->plane_cross_x + 1) >>
+@@ -395,5 +395,5 @@
+-            g_collision_segment_work->unkAC =
+-                (g_collision_segment_work->unkAC < 0 ? -1 : 1) *
+-                ((g_collision_segment_work->unkAC >= 0
+-                      ? g_collision_segment_work->unkAC + 1
+-                      : -g_collision_segment_work->unkAC + 1) >>
++            g_collision_segment_work->plane_cross_y =
++                (g_collision_segment_work->plane_cross_y < 0 ? -1 : 1) *
++                ((g_collision_segment_work->plane_cross_y >= 0
++                      ? g_collision_segment_work->plane_cross_y + 1
++                      : -g_collision_segment_work->plane_cross_y + 1) >>
+@@ -401,5 +401,5 @@
+-            g_collision_segment_work->unkB0 =
+-                (g_collision_segment_work->unkB0 < 0 ? -1 : 1) *
+-                ((g_collision_segment_work->unkB0 >= 0
+-                      ? g_collision_segment_work->unkB0 + 1
+-                      : -g_collision_segment_work->unkB0 + 1) >>
++            g_collision_segment_work->plane_cross_z =
++                (g_collision_segment_work->plane_cross_z < 0 ? -1 : 1) *
++                ((g_collision_segment_work->plane_cross_z >= 0
++                      ? g_collision_segment_work->plane_cross_z + 1
++                      : -g_collision_segment_work->plane_cross_z + 1) >>
+@@ -407,3 +407,3 @@
+-            g_collision_segment_work->unkA8 += g_collision_segment_work->unk4C;
+-            g_collision_segment_work->unkAC += g_collision_segment_work->unk4E;
+-            g_collision_segment_work->unkB0 += g_collision_segment_work->unk50;
++            g_collision_segment_work->plane_cross_x += g_collision_segment_work->local_start_x;
++            g_collision_segment_work->plane_cross_y += g_collision_segment_work->local_start_y;
++            g_collision_segment_work->plane_cross_z += g_collision_segment_work->local_start_z;
+@@ -416,8 +416,8 @@
+-            g_collision_segment_work->unk9C = *data;
+-            data++;
+-            g_collision_segment_work->unkA0 = *data;
+-            data++;
+-            g_collision_segment_work->unkA4 = *data;
+-            data++;
+-            g_collision_segment_work->unkC4 =
+-                ((g_collision_segment_work->unkA8 -
++            g_collision_segment_work->proj_axis_x = *data;
++            data++;
++            g_collision_segment_work->proj_axis_y = *data;
++            data++;
++            g_collision_segment_work->proj_axis_z = *data;
++            data++;
++            g_collision_segment_work->proj_cross_u =
++                ((g_collision_segment_work->plane_cross_x -
+@@ -425,2 +425,2 @@
+-                     g_collision_segment_work->unk9C +
+-                 (g_collision_segment_work->unkAC -
++                     g_collision_segment_work->proj_axis_x +
++                 (g_collision_segment_work->plane_cross_y -
+@@ -428,2 +428,2 @@
+-                     g_collision_segment_work->unkA0 +
+-                 (g_collision_segment_work->unkB0 -
++                     g_collision_segment_work->proj_axis_y +
++                 (g_collision_segment_work->plane_cross_z -
+@@ -431 +431 @@
+-                     g_collision_segment_work->unkA4) >>
++                     g_collision_segment_work->proj_axis_z) >>
+@@ -433,8 +433,8 @@
+-            g_collision_segment_work->unk9C = *data;
+-            data++;
+-            g_collision_segment_work->unkA0 = *data;
+-            data++;
+-            g_collision_segment_work->unkA4 = *data;
+-            data++;
+-            g_collision_segment_work->unkC8 =
+-                ((g_collision_segment_work->unkA8 -
++            g_collision_segment_work->proj_axis_x = *data;
++            data++;
++            g_collision_segment_work->proj_axis_y = *data;
++            data++;
++            g_collision_segment_work->proj_axis_z = *data;
++            data++;
++            g_collision_segment_work->proj_cross_v =
++                ((g_collision_segment_work->plane_cross_x -
+@@ -442,2 +442,2 @@
+-                     g_collision_segment_work->unk9C +
+-                 (g_collision_segment_work->unkAC -
++                     g_collision_segment_work->proj_axis_x +
++                 (g_collision_segment_work->plane_cross_y -
+@@ -445,2 +445,2 @@
+-                     g_collision_segment_work->unkA0 +
+-                 (g_collision_segment_work->unkB0 -
++                     g_collision_segment_work->proj_axis_y +
++                 (g_collision_segment_work->plane_cross_z -
+@@ -448 +448 @@
+-                     g_collision_segment_work->unkA4) >>
++                     g_collision_segment_work->proj_axis_z) >>
+@@ -453 +453 @@
+-            g_collision_segment_work->unkCC = n >> 8;
++            g_collision_segment_work->face_tag = n >> 8;
+@@ -455 +455 @@
+-            g_collision_segment_work->unkB4 = *data;
++            g_collision_segment_work->edge_from_u = *data;
+@@ -460 +460 @@
+-            g_collision_segment_work->unkB8 = y;
++            g_collision_segment_work->edge_from_v = y;
+@@ -462 +462 @@
+-                g_collision_segment_work->unkBC = *data;
++                g_collision_segment_work->edge_to_u = *data;
+@@ -464 +464 @@
+-                g_collision_segment_work->unkC0 = *data;
++                g_collision_segment_work->edge_to_v = *data;
+@@ -466,8 +466,8 @@
+-                if ((g_collision_segment_work->unkC4 -
+-                     g_collision_segment_work->unkB4) *
+-                            (g_collision_segment_work->unkC0 -
+-                             g_collision_segment_work->unkB8) -
+-                        (g_collision_segment_work->unkC8 -
+-                         g_collision_segment_work->unkB8) *
+-                            (g_collision_segment_work->unkBC -
+-                             g_collision_segment_work->unkB4) >
++                if ((g_collision_segment_work->proj_cross_u -
++                     g_collision_segment_work->edge_from_u) *
++                            (g_collision_segment_work->edge_to_v -
++                             g_collision_segment_work->edge_from_v) -
++                        (g_collision_segment_work->proj_cross_v -
++                         g_collision_segment_work->edge_from_v) *
++                            (g_collision_segment_work->edge_to_u -
++                             g_collision_segment_work->edge_from_u) >
+@@ -478,4 +478,4 @@
+-                g_collision_segment_work->unkB4 =
+-                    g_collision_segment_work->unkBC;
+-                g_collision_segment_work->unkB8 =
+-                    g_collision_segment_work->unkC0;
++                g_collision_segment_work->edge_from_u =
++                    g_collision_segment_work->edge_to_u;
++                g_collision_segment_work->edge_from_v =
++                    g_collision_segment_work->edge_to_v;
+@@ -488,24 +488,24 @@
+-                         g_collision_segment_work->unkA8 -
+-                             g_collision_segment_work->unk4C,
+-                         g_collision_segment_work->unkAC -
+-                             g_collision_segment_work->unk4E,
+-                         g_collision_segment_work->unkB0 -
+-                             g_collision_segment_work->unk50)) <
+-                    g_collision_segment_work->unk0) {
+-                    g_collision_segment_work->unk48 = cell_x;
+-                    g_collision_segment_work->unk4A = cell_z;
+-                    g_collision_segment_work->unk38 =
+-                        g_collision_segment_work->unkA8;
+-                    g_collision_segment_work->unk3C =
+-                        g_collision_segment_work->unkAC;
+-                    g_collision_segment_work->unk40 =
+-                        g_collision_segment_work->unkB0;
+-                    g_collision_segment_work->unk28 =
+-                        g_collision_segment_work->unkD0;
+-                    g_collision_segment_work->unk2C =
+-                        g_collision_segment_work->unkD4;
+-                    g_collision_segment_work->unk30 =
+-                        g_collision_segment_work->unkD8;
+-                    g_collision_segment_work->unk34 =
+-                        g_collision_segment_work->unkDC;
+-                    g_collision_segment_work->unk0 =
++                         g_collision_segment_work->plane_cross_x -
++                             g_collision_segment_work->local_start_x,
++                         g_collision_segment_work->plane_cross_y -
++                             g_collision_segment_work->local_start_y,
++                         g_collision_segment_work->plane_cross_z -
++                             g_collision_segment_work->local_start_z)) <
++                    g_collision_segment_work->nearest_dist_sq) {
++                    g_collision_segment_work->hit_cell_x = cell_x;
++                    g_collision_segment_work->hit_cell_z = cell_z;
++                    g_collision_segment_work->hit_local_x =
++                        g_collision_segment_work->plane_cross_x;
++                    g_collision_segment_work->hit_local_y =
++                        g_collision_segment_work->plane_cross_y;
++                    g_collision_segment_work->hit_local_z =
++                        g_collision_segment_work->plane_cross_z;
++                    g_collision_segment_work->hit_nx =
++                        g_collision_segment_work->face_nx;
++                    g_collision_segment_work->hit_ny =
++                        g_collision_segment_work->face_ny;
++                    g_collision_segment_work->hit_nz =
++                        g_collision_segment_work->face_nz;
++                    g_collision_segment_work->hit_plane_d =
++                        g_collision_segment_work->face_plane_d;
++                    g_collision_segment_work->nearest_dist_sq =
+@@ -513,2 +513,2 @@
+-                    g_collision_segment_work->unk4 =
+-                        g_collision_segment_work->unkCC;
++                    g_collision_segment_work->hit_tag =
++                        g_collision_segment_work->face_tag;
+@@ -525 +525 @@
+-    return g_collision_segment_work->unk0 != 0x7FFFFFFF;
++    return g_collision_segment_work->nearest_dist_sq != 0x7FFFFFFF;
+@@ -547,6 +547,6 @@
+-    g_collision_segment_work->unk4C = g_collision_segment_work->unk8.vx - x;
+-    g_collision_segment_work->unk4E = g_collision_segment_work->unk8.vy;
+-    g_collision_segment_work->unk50 = g_collision_segment_work->unk8.vz - z;
+-    g_collision_segment_work->unk54 = g_collision_segment_work->unk18.vx - x;
+-    g_collision_segment_work->unk56 = g_collision_segment_work->unk18.vy;
+-    g_collision_segment_work->unk58 = g_collision_segment_work->unk18.vz - z;
++    g_collision_segment_work->local_start_x = g_collision_segment_work->seg_start.vx - x;
++    g_collision_segment_work->local_start_y = g_collision_segment_work->seg_start.vy;
++    g_collision_segment_work->local_start_z = g_collision_segment_work->seg_start.vz - z;
++    g_collision_segment_work->local_end_x = g_collision_segment_work->seg_end.vx - x;
++    g_collision_segment_work->local_end_y = g_collision_segment_work->seg_end.vy;
++    g_collision_segment_work->local_end_z = g_collision_segment_work->seg_end.vz - z;
+@@ -557,10 +557,10 @@
+-        g_collision_segment_work->unkD0 = *data;
+-        data++;
+-        g_collision_segment_work->unkD4 = *data;
+-        data++;
+-        g_collision_segment_work->unkD8 = *data;
+-        data++;
+-        g_collision_segment_work->unkDC = (u16)*data;
+-        data++;
+-        g_collision_segment_work->unkDC =
+-            (*data << 16) | g_collision_segment_work->unkDC;
++        g_collision_segment_work->face_nx = *data;
++        data++;
++        g_collision_segment_work->face_ny = *data;
++        data++;
++        g_collision_segment_work->face_nz = *data;
++        data++;
++        g_collision_segment_work->face_plane_d = (u16)*data;
++        data++;
++        g_collision_segment_work->face_plane_d =
++            (*data << 16) | g_collision_segment_work->face_plane_d;
+@@ -569,4 +569,4 @@
+-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk4C +
+-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk4E +
+-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk50 +
+-            g_collision_segment_work->unkDC;
++            g_collision_segment_work->face_nx * g_collision_segment_work->local_start_x +
++            g_collision_segment_work->face_ny * g_collision_segment_work->local_start_y +
++            g_collision_segment_work->face_nz * g_collision_segment_work->local_start_z +
++            g_collision_segment_work->face_plane_d;
+@@ -574,4 +574,4 @@
+-            g_collision_segment_work->unkD0 * g_collision_segment_work->unk54 +
+-            g_collision_segment_work->unkD4 * g_collision_segment_work->unk56 +
+-            g_collision_segment_work->unkD8 * g_collision_segment_work->unk58 +
+-            g_collision_segment_work->unkDC;
++            g_collision_segment_work->face_nx * g_collision_segment_work->local_end_x +
++            g_collision_segment_work->face_ny * g_collision_segment_work->local_end_y +
++            g_collision_segment_work->face_nz * g_collision_segment_work->local_end_z +
++            g_collision_segment_work->face_plane_d;
+@@ -596,3 +596,3 @@
+-            g_collision_segment_work->unkA8 =
+-                (g_collision_segment_work->unk54 -
+-                 g_collision_segment_work->unk4C) *
++            g_collision_segment_work->plane_cross_x =
++                (g_collision_segment_work->local_end_x -
++                 g_collision_segment_work->local_start_x) *
+@@ -601,4 +601,4 @@
+-                g_collision_segment_work->unk4C;
+-            g_collision_segment_work->unkAC =
+-                (g_collision_segment_work->unk56 -
+-                 g_collision_segment_work->unk4E) *
++                g_collision_segment_work->local_start_x;
++            g_collision_segment_work->plane_cross_y =
++                (g_collision_segment_work->local_end_y -
++                 g_collision_segment_work->local_start_y) *
+@@ -607,4 +607,4 @@
+-                g_collision_segment_work->unk4E;
+-            g_collision_segment_work->unkB0 =
+-                (g_collision_segment_work->unk58 -
+-                 g_collision_segment_work->unk50) *
++                g_collision_segment_work->local_start_y;
++            g_collision_segment_work->plane_cross_z =
++                (g_collision_segment_work->local_end_z -
++                 g_collision_segment_work->local_start_z) *
+@@ -613 +613 @@
+-                g_collision_segment_work->unk50;
++                g_collision_segment_work->local_start_z;
+@@ -615,3 +615,3 @@
+-                (s32)data, g_collision_segment_work->unkA8,
+-                g_collision_segment_work->unkAC,
+-                g_collision_segment_work->unkB0);
++                (s32)data, g_collision_segment_work->plane_cross_x,
++                g_collision_segment_work->plane_cross_y,
++                g_collision_segment_work->plane_cross_z);
+@@ -622 +622 @@
+-            g_collision_segment_work->unkCC = n >> 8;
++            g_collision_segment_work->face_tag = n >> 8;
+@@ -624 +624 @@
+-            g_collision_segment_work->unkB4 = *data;
++            g_collision_segment_work->edge_from_u = *data;
+@@ -629,3 +629,3 @@
+-            g_collision_segment_work->unkB8 = y;
+-            gte_ReadIR1IR2Sra2(&g_collision_segment_work->unkC4,
+-                               &g_collision_segment_work->unkC8);
++            g_collision_segment_work->edge_from_v = y;
++            gte_ReadIR1IR2Sra2(&g_collision_segment_work->proj_cross_u,
++                               &g_collision_segment_work->proj_cross_v);
+@@ -633 +633 @@
+-                g_collision_segment_work->unkBC = *data;
++                g_collision_segment_work->edge_to_u = *data;
+@@ -635 +635 @@
+-                g_collision_segment_work->unkC0 = *data;
++                g_collision_segment_work->edge_to_v = *data;
+@@ -637,8 +637,8 @@
+-                if ((g_collision_segment_work->unkC4 -
+-                     g_collision_segment_work->unkB4) *
+-                            (g_collision_segment_work->unkC0 -
+-                             g_collision_segment_work->unkB8) -
+-                        (g_collision_segment_work->unkC8 -
+-                         g_collision_segment_work->unkB8) *
+-                            (g_collision_segment_work->unkBC -
+-                             g_collision_segment_work->unkB4) >
++                if ((g_collision_segment_work->proj_cross_u -
++                     g_collision_segment_work->edge_from_u) *
++                            (g_collision_segment_work->edge_to_v -
++                             g_collision_segment_work->edge_from_v) -
++                        (g_collision_segment_work->proj_cross_v -
++                         g_collision_segment_work->edge_from_v) *
++                            (g_collision_segment_work->edge_to_u -
++                             g_collision_segment_work->edge_from_u) >
+@@ -649,4 +649,4 @@
+-                g_collision_segment_work->unkB4 =
+-                    g_collision_segment_work->unkBC;
+-                g_collision_segment_work->unkB8 =
+-                    g_collision_segment_work->unkC0;
++                g_collision_segment_work->edge_from_u =
++                    g_collision_segment_work->edge_to_u;
++                g_collision_segment_work->edge_from_v =
++                    g_collision_segment_work->edge_to_v;
+@@ -659,24 +659,24 @@
+-                         g_collision_segment_work->unkA8 -
+-                             g_collision_segment_work->unk4C,
+-                         g_collision_segment_work->unkAC -
+-                             g_collision_segment_work->unk4E,
+-                         g_collision_segment_work->unkB0 -
+-                             g_collision_segment_work->unk50)) <
+-                    g_collision_segment_work->unk0) {
+-                    g_collision_segment_work->unk48 = cell_x;
+-                    g_collision_segment_work->unk4A = cell_z;
+-                    g_collision_segment_work->unk38 =
+-                        g_collision_segment_work->unkA8;
+-                    g_collision_segment_work->unk3C =
+-                        g_collision_segment_work->unkAC;
+-                    g_collision_segment_work->unk40 =
+-                        g_collision_segment_work->unkB0;
+-                    g_collision_segment_work->unk28 =
+-                        g_collision_segment_work->unkD0;
+-                    g_collision_segment_work->unk2C =
+-                        g_collision_segment_work->unkD4;
+-                    g_collision_segment_work->unk30 =
+-                        g_collision_segment_work->unkD8;
+-                    g_collision_segment_work->unk34 =
+-                        g_collision_segment_work->unkDC;
+-                    g_collision_segment_work->unk0 =
++                         g_collision_segment_work->plane_cross_x -
++                             g_collision_segment_work->local_start_x,
++                         g_collision_segment_work->plane_cross_y -
++                             g_collision_segment_work->local_start_y,
++                         g_collision_segment_work->plane_cross_z -
++                             g_collision_segment_work->local_start_z)) <
++                    g_collision_segment_work->nearest_dist_sq) {
++                    g_collision_segment_work->hit_cell_x = cell_x;
++                    g_collision_segment_work->hit_cell_z = cell_z;
++                    g_collision_segment_work->hit_local_x =
++                        g_collision_segment_work->plane_cross_x;
++                    g_collision_segment_work->hit_local_y =
++                        g_collision_segment_work->plane_cross_y;
++                    g_collision_segment_work->hit_local_z =
++                        g_collision_segment_work->plane_cross_z;
++                    g_collision_segment_work->hit_nx =
++                        g_collision_segment_work->face_nx;
++                    g_collision_segment_work->hit_ny =
++                        g_collision_segment_work->face_ny;
++                    g_collision_segment_work->hit_nz =
++                        g_collision_segment_work->face_nz;
++                    g_collision_segment_work->hit_plane_d =
++                        g_collision_segment_work->face_plane_d;
++                    g_collision_segment_work->nearest_dist_sq =
+@@ -684,2 +684,2 @@
+-                    g_collision_segment_work->unk4 =
+-                        g_collision_segment_work->unkCC;
++                    g_collision_segment_work->hit_tag =
++                        g_collision_segment_work->face_tag;
+@@ -696 +696 @@
+-    return g_collision_segment_work->unk0 != 0x7FFFFFFF;
++    return g_collision_segment_work->nearest_dist_sq != 0x7FFFFFFF;
+DRY RUN: 3 file(s) would change; nothing written
+UNRESOLVED (49): edit by hand, then re-run the keycheck
+  src/main/17AFC.c:1513: also reaches `unk00` through another type
+  src/main/17AFC.c:1514: also reaches `unk00` through another type
+  src/main/17AFC.c:1515: also reaches `unk00` through another type
+  src/main/17AFC.c:1724: also reaches `unk00` through another type
+  src/main/17AFC.c:1725: also reaches `unk00` through another type
+  src/main/17AFC.c:1743: also reaches `unk00` through another type
+  src/main/17AFC.c:1744: also reaches `unk00` through another type
+  src/main/17AFC.c:1775: also reaches `unk00` through another type
+  src/main/17AFC.c:1776: also reaches `unk00` through another type
+  src/main/17AFC.c:1777: also reaches `unk00` through another type
+  src/main/17AFC.c:1778: also reaches `unk00` through another type
+  src/main/17AFC.c:1780: also reaches `unk00` through another type
+  src/main/17AFC.c:1781: also reaches `unk00` through another type
+  src/main/17AFC.c:1782: also reaches `unk00` through another type
+  src/main/17AFC.c:1783: also reaches `unk00` through another type
+  src/main/17AFC.c:1785: also reaches `unk00` through another type
+  src/main/17AFC.c:1786: also reaches `unk00` through another type
+  src/main/17AFC.c:1787: also reaches `unk00` through another type
+  src/main/17AFC.c:1788: also reaches `unk00` through another type
+  src/main/17AFC.c:1789: also reaches `unk00` through another type
+  src/main/17AFC.c:1790: also reaches `unk00` through another type
+  src/main/17AFC.c:1791: also reaches `unk00` through another type
+  src/main/17AFC.c:1792: also reaches `unk00` through another type
+  src/main/17AFC.c:1793: also reaches `unk00` through another type
+  src/main/17AFC.c:1794: also reaches `unk00` through another type
+  src/main/17AFC.c:1795: also reaches `unk00` through another type
+  src/main/17AFC.c:1796: also reaches `unk00` through another type
+  src/main/17AFC.c:1797: also reaches `unk00` through another type
+  src/main/17AFC.c:1798: also reaches `unk00` through another type
+  src/main/17AFC.c:1799: also reaches `unk00` through another type
+  src/main/17AFC.c:1808: also reaches `unk00` through another type
+  src/main/17AFC.c:1809: also reaches `unk00` through another type
+  src/main/17AFC.c:1810: also reaches `unk00` through another type
+  src/main/17AFC.c:1812: also reaches `unk00` through another type
+  src/main/17AFC.c:1813: also reaches `unk00` through another type
+  src/main/17AFC.c:1814: also reaches `unk00` through another type
+  src/main/17AFC.c:1819: also reaches `unk00` through another type
+  src/main/17AFC.c:1820: also reaches `unk00` through another type
+  src/main/17AFC.c:1821: also reaches `unk00` through another type
+  src/main/17AFC.c:1824: also reaches `unk00` through another type
+  src/main/17AFC.c:1825: also reaches `unk00` through another type
+  src/main/17AFC.c:1826: also reaches `unk00` through another type
+  src/main/17AFC.c:1829: also reaches `unk00` through another type
+  src/main/17AFC.c:1830: also reaches `unk00` through another type
+  src/main/17AFC.c:1831: also reaches `unk00` through another type
+  src/main/17AFC.c:1834: also reaches `unk00` through another type
+  src/main/17AFC.c:1835: also reaches `unk00` through another type
+  src/main/17AFC.c:1836: also reaches `unk00` through another type
+  src/main/17AFC.c:4369: also reaches `unk00` through another type
+exit=1
