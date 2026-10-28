@@ -90,8 +90,8 @@ assigns to `g_main_loop_handler_index` itself.
 
 | Mode | Handler | Sets | What it does |
 | --- | --- | --- | --- |
-| 0 | `fight_Init` (src/main/9F9C.c:1757) | 1 | sets up the fight (fighters through `fighter_Init`, the object pool, the view) |
-| 1 | `fight_Update` (src/main/9F9C.c:2028) | | per-frame fight: `fighter_BuildCpuOrMappedPadState` / `fighter_Update` per fighter, `fight_UpdateFighterInteractionsAndPointCaches`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
+| 0 | `fight_Init` (src/main/9F9C.c:1873) | 1 | sets up the fight (fighters through `fighter_Init`, the object pool, the view) |
+| 1 | `fight_Update` (src/main/9F9C.c:2188) | | per-frame fight: `fighter_BuildCpuOrMappedPadState` / `fighter_Update` per fighter, `fight_UpdateFighterInteractionsAndPointCaches`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
 | 2 | `ResetGraphClearFrameCounterAndSetMainLoopHandler3` (src/main/17AFC.c:5273) | 3 | resets graphics, clears `g_handler_frame_counter` |
 | 3 | `menu_PrintEditAndApplyConfigWithPerPadCursors` (src/main/24F08.c:28) | | prints the `g_fight_config` settings with `font_Printf` and steps the two cursors `g_config_menu_cursors`; calls `ApplyPendingConfigAndInitializeMode` |
 | 4 | `replay_Start` (src/main/28708.c:1287) | 5 | view and fighter setup |
@@ -102,12 +102,12 @@ assigns to `g_main_loop_handler_index` itself.
 | 9 | `menu_UpdateRowMenuAndSubflows` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
 | 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
 | 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `g_saved_record` |
-| 12 | `func_8001EA04` (src/main/9F9C.c:2060) | 0xD | |
-| 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2075) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `g_fight_choice_menu_cursor` |
+| 12 | `func_8001EA04` (src/main/9F9C.c:2225) | 0xD | |
+| 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2240) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `g_fight_choice_menu_cursor` |
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
 | 15 | `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
-| 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | when gated, starts an indexed common script on fighter `g_fight_followup_fighter_index` (`fighter_StartMoveScript`) and sets its `unk_26C` |
-| 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`g_fight_mode_selector` 4 / 6, or 1 with `g_fight_followup_fighter_index != 0`), calls `fight_AdvanceOpponentOrder` (`g_fight_mode_selector` 1, `g_fight_followup_fighter_index == 0`), or sets 2 |
+| 16 | `func_8001EEB4` (src/main/9F9C.c:2339) | 0x11 | when gated, starts an indexed common script on fighter `g_fight_followup_fighter_index` (`fighter_StartMoveScript`) and sets its `unk_26C` |
+| 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2364) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`g_fight_mode_selector` 4 / 6, or 1 with `g_fight_followup_fighter_index != 0`), calls `fight_AdvanceOpponentOrder` (`g_fight_mode_selector` 1, `g_fight_followup_fighter_index == 0`), or sets 2 |
 | 18 | `fight_InitImageAndPlaybackPresentation` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `g_fight_presentation_index` |
 | 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush`, then picks the next mode |
 | 20 | `fight_TallyMatchResultsAndInitPresentation` (src/main/2B344.c:754) | 0x15 | |

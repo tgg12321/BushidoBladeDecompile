@@ -55,10 +55,10 @@ are walked by `fighter_Update`, as the comment on `MoveScript` records
 `g_motion_decoders[slot]` (`Unk800F1B18Rec`, include/game.h:1384) is one decoder per
 loaded bitstream.
 
-- `motion_InitStream(slot, stream)` (src/main/9F9C.c:64) reads the 63 initial
+- `motion_InitStream(decoder_index, stream)` (src/main/9F9C.c:65) reads the 63 initial
   12-bit channel values and their 2-bit channel codes and empties the four
   cache slots (`frame = -2`).
-- `motion_DecodeFrame(slot, n, out, work)` (src/main/9F9C.c:99) decodes frame `n`
+- `motion_DecodeFrame(decoder_index, frame_index, out, work)` (src/main/9F9C.c:101) decodes frame `frame_index`
   into a 0x84-byte `MotionFrame` (include/game.h:1327). Frames come in groups
   of eight: a 24-bit table at stream + 0x70 gives each group's bit offset;
   the group start holds three optional 16-bit root values and the 63
@@ -66,7 +66,7 @@ loaded bitstream.
   channel's 2-bit code. Four cache slots keep recent frames and the reader
   state after them: a cached frame is copied out, and the frame after a cached
   one is decoded from it instead of from the group start (the comment above the function,
-  src/main/9F9C.c:88, details it).
+  src/main/9F9C.c:89, details it).
 
 `MotionFrame.unk_00` is the root offset, `unk_02` / `unk_04` the root heading
 and distance, `unk_06..unk_0A` the root rotation angles, and `unk_0C[]` the

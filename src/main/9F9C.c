@@ -86,14 +86,15 @@ void motion_InitStream(s32 decoder_index, u32 *ptr) {
 
 extern s32 D_800A30EC;
 
-/* Decode entry `arg1` of g_motion_decoders[obj]'s stream into `out` (33 words).
-   The table at stream + 0x70 holds a 24-bit offset per group of 8 entries
-   (index arg1 >> 3), in bits from the table's start (0x380 bits past the
-   stream's); an entry is its group's start plus arg1 & 7 delta steps. rec->ctr
-   steps through the four slots; of the slot it steps to and the one before, one
-   whose ->frame is arg1 is copied out (and the step is undone), one holding
-   arg1 - 1 is continued from, and otherwise the entry is decoded from its
-   group's start. When arg1 & 7 is below 7, the entry
+/* Decode entry `frame_index` of g_motion_decoders[decoder_index]'s stream into
+   `out` (33 words). The table at stream + 0x70 holds a 24-bit offset per group
+   of 8 entries (index frame_index >> 3), in bits from the table's start (0x380
+   bits past the stream's); an entry is its group's start plus frame_index & 7
+   delta steps. rec->ctr steps through the four slots; of the slot it steps to
+   and the one before, one whose ->frame is frame_index is copied out (and the
+   step is undone), one holding frame_index - 1 is continued from, and otherwise
+   the entry is decoded from its group's start. When index_in_group is below 7,
+   the entry
    (->frame, ->pose, ->rate) and the reader state after it are kept in that
    slot. `work` holds the pose (+0x00), the rates (+0x84) and the codes
    (+0x108, copied from rec->code when D_800A30EC is 0). */
@@ -444,13 +445,14 @@ typedef struct {
     s32 unk60;    /* 0x60 */
 } CamScratch;
 
-/* Two-fighter camera for g_camera_default_view_record (arg0/arg1 = the
- * fighters' positions, arg2/arg3 = the fighter records; caller fight_Update).
- * Eases the focus toward the fighters' midpoint (or arg0's position when
- * g_fight_view_option is set); turns their separation (byte-LUT square root,
- * GTE leading-zero count for large inputs) into the value
+/* Two-fighter camera for g_camera_default_view_record (first_camera_point/
+ * second_camera_point = the fighters' positions, first_fighter/second_fighter =
+ * the fighter records; caller fight_Update).
+ * Eases the focus toward the fighters' midpoint (or first_camera_point's
+ * position when g_fight_view_option is set); turns their separation (byte-LUT
+ * square root, GTE leading-zero count for large inputs) into the value
  * g_camera_default_view_record.w18 eases 1/12 toward (0xBB8 in some
- * arg2->move_kind states), clamps w18, and sets a hysteresis flag for
+ * first_fighter->move_kind states), clamps w18, and sets a hysteresis flag for
  * func_8003F1E4; eases camera_angles.vy / vz toward the facing yaw and zero;
  * then per fighter bisects camera_angles.vx (rot_x) so the segment from its
  * collision_pos less 0xC8 in vy to the eye passes
@@ -475,9 +477,9 @@ void camera_UpdateTwoFighterView(
     s32 start_pitch;
     s32 p;
     /* work holds three values, all camera_angles.vx (rot_x) quantities: the
-     * per-fighter bisection angle (loop), the target angle max(var_14, var_15)
-     * clamped to 0x80..0x1C0, and the final eased step (Ruling 11,
-     * ordinary-c-judge-decidable). */
+     * per-fighter bisection angle (loop), the target angle
+     * max(first_fighter_pitch, second_fighter_pitch) clamped to 0x80..0x1C0,
+     * and the final eased step (Ruling 11, ordinary-c-judge-decidable). */
     s32 work;
     s32 i, j;
 
@@ -1080,8 +1082,9 @@ void fighter_BuildCpuOrMappedPadState(s32 fighter_index, PadState *pad_out) {
     s32 pad_words[4];
     s32 i;
     /* One local holds two values (Ruling 11, ordinary-c-judge-decidable):
-     * (1) arg0 * 16, the bit offset of this player's half of the pad words;
-     * (2) 0 or arg0 * 4, the bit offset of this player's config nibble.
+     * (1) fighter_index * 16, the bit offset of this player's half of the pad
+     * words; (2) 0 or fighter_index * 4, the bit offset of this player's config
+     * nibble.
      */
     s32 temp;
     s32 mapped_buttons;

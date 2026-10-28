@@ -9,11 +9,11 @@ src/main/5ED34.c).
 
 ## Pad masks
 
-`pad_Update` (src/main/87A0.c:626) builds each player's 16 button bits as
-`~((byte2 << 8) | byte3)` of the controller packet (src/main/87A0.c:659) and
+`pad_Update` (src/main/87A0.c:623) builds each player's 16 button bits as
+`~((byte2 << 8) | byte3)` of the controller packet (src/main/87A0.c:655) and
 packs the two players into one word, player 0 in the low half
-(src/main/87A0.c:674). `g_pad_state.pressed` is the newly pressed bits
-(`held & ~previous`, src/main/87A0.c:712; `PadState`, include/game.h:839).
+(src/main/87A0.c:670). `g_pad_state.pressed` is the newly pressed bits
+(`held & ~previous`, src/main/87A0.c:708; `PadState`, include/game.h:839).
 With the standard digital-pad bit order, the masks the handlers use are:
 
 | Mask | Button (either player) |
