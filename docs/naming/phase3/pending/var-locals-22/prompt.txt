@@ -1,0 +1,33 @@
+# Research (read-only): local / parameter names, variable pilot 4 wave 22 (row var-locals-22, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-15/prompt.txt` exactly (goal, rules, wave 1-14 lessons,
+freshness, output CSV format, NO_NAME list), plus the wave-15..21 lessons in
+`docs/naming/phase3/pending/var-locals-{16,17,18,19,20,21}/prompt.txt`, with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD 4f67f91e7 (read-only; wave 21's renames are applied there and are landing on main now).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-22-research.md`
+  (overrides any output file the earlier prompts name): HEAD first, then the proposed
+  `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with reasons,
+  comments citing old tokens with file:line, INCLUDING symbol_addrs.txt and include/*.h comments).
+  Cite file:line at HEAD. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. src/main/596CC.c, the functions from
+  menu_DrawOptionMenuChoices (~596CC.c:1215) onward in file order (C definitions only; wave 21
+  covered every function before it). 2. Then the next src/main/*.c game TUs in ROM-offset order
+  after 596CC.c that still have auto-named bindings (argN, var_N, a0..a3, v0_xxxx, spNN, temp_*).
+- Do not re-propose wave 8-21 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,21}/notes.txt) without new evidence, said in the row.
+- Wave 21 lessons: every old name a rename retires may be cited in symbol_addrs.txt comments and
+  include/*.h comments (R6 caught "*arg0", "[a0]", "[arg0 - 4]", "4 rows (arg1)"); list each such
+  citation in the notes with file:line. Arguments of function-like macros (gte_ApplyMatrix etc.)
+  are rejected by scoped_plan: do not propose them. A FAKE-comment-cited binding stays neutral.
+  Draw-context words accessed by byte offset are `draw_context` (`draw_context_addr` when the
+  parameter is an s32 address); a u16 * view of the DRAWENV at GpuDb start is `draw_env`.
+- Names taken in this TU by wave 21 (reuse per function only with the same meaning): work_block,
+  next_row, buffer_index, resource_root, lists_relocated, base_addr, offset_list_addr, pad_buttons,
+  positive_mask, negative_mask, direction_events, gpu_db, draw_context, tile_rect, ot_index,
+  sheet_headers, sheet_header_cursor, sheets_drawn, draw_context_addr, cursor_row_mode, draw_desc,
+  row_index, draw_env.
+- Left neutral by wave 21, do not propose: gpu_DrawWhiteTileAndSheetsTestPadMask:sp10 (FAKE
+  596CC.c:300-304), parameter names in forward declarations/prototypes, 596CC.c:1207 a0 comment.
