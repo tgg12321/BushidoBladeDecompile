@@ -1,0 +1,3751 @@
+PASS Unk80101EC8Record.unk_08=cpu_base_level, Unk80101EC8Record.unk_12=weapon_entry_id, Unk80101EC8Record.unk_14=wielded_object_kind, Unk80101EC8Record.unk_1E=base_power, Unk80101EC8Record.unk_20=power, Unk80101EC8Record.unk_46=move_frame_unchanged, Unk80101EC8Record.unk_62=frame_flags, Unk80101EC8Record.unk_64=blend_src_frame_code, Unk80101EC8Record.unk_66=blend_dst_frame_code, Unk80101EC8Record.unk_72=airborne_until_landing, Unk80101EC8Record.unk_78=blend_into_move, Unk80101EC8Record.unk_82=queued_move_command, Unk80101EC8Record.unk_84=default_variant_index, Unk80101EC8Record.unk_86=variant_index, Unk80101EC8Record.unk_88=object_variant_index, Unk80101EC8Record.unk_8A=object_variant_enabled, Unk80101EC8Record.unk_8C=wielded_object_live_state, Unk80101EC8Record.unk_92=weapon_live_state, Unk80101EC8Record.unk_94=falling_backward, Unk80101EC8Record.unk_A5=frame_window_start, Unk80101EC8Record.unk_A6=frame_window_end, Unk80101EC8Record.unk_A7=release_frame, Unk80101EC8Record.unk_AA=paired_move_hit_frame, Unk80101EC8Record.unk_AB=opponent_transition_start_frame, Unk80101EC8Record.unk_AC=weapon_reload_frame, Unk80101EC8Record.unk_AD=attack_hit_armed, Unk80101EC8Record.unk_B2=collision_hit_class, Unk80101EC8Record.unk_B3=draw_move_set, Unk80101EC8Record.unk_104=base_velocity, Unk80101EC8Record.unk_134=decaying_xz_velocity, Unk80101EC8Record.unk_156=base_velocity_damping_x, Unk80101EC8Record.unk_158=base_velocity_damping_y, Unk80101EC8Record.unk_15A=base_velocity_damping_z, Unk80101EC8Record.unk_15E=decaying_xz_velocity_damping_x, Unk80101EC8Record.unk_160=decaying_xz_velocity_damping_y, Unk80101EC8Record.unk_162=decaying_xz_velocity_damping_z, Unk80101EC8Record.unk_174=bone_hit_points_4_5_midpoint, Unk80101EC8Record.unk_180=bone_hit_point_0, Unk80101EC8Record.unk_18C=bone_hit_points_1_3_centroid, Unk80101EC8Record.unk_198=ground_probe_points, Unk80101EC8Record.unk_1B0=ground_probe_floor_ys, Unk80101EC8Record.unk_1DA=bone_triangle_cross_y_positive, Unk80101EC8Record.unk_1E6=eased_pose_bearing_offset, Unk80101EC8Record.unk_1E8=eased_pose_elevation_offset, Unk80101EC8Record.unk_1EA=opponent_elevation_offset, Unk80101EC8Record.unk_1EC=bone_y_axis, Unk80101EC8Record.unk_1F8=prev_root_offset, Unk80101EC8Record.unk_210=prev_weapon_points, Unk80101EC8Record.unk_234=prev_second_weapon_points, Unk80101EC8Record.unk_25C=opponent_elevation_origin, Unk80101EC8Record.unk_268=elevation_origin_from_weapon, Unk80101EC8Record.unk_288=weapon_hit_phases, Unk80101EC8Record.unk_28C=mash_contest_score, Unk80101EC8Record.unk_316=saved_motion_frame_id, Unk80101EC8Record.unk_31A=pose_blend_requests, Unk80101EC8Record.unk_34D=throw_charges_left, Unk80101EC8Record.unk_394=cpu_action_index, Unk80101EC8Record.unk_398=cpu_action_countdown, Unk80101EC8Record.unk_39A=cpu_action_cooldown_frames, Unk80101EC8Record.unk_39C=cpu_action_from_opponent, Unk80101EC8Record.unk_39D=cpu_orbit_route_active, Unk80101EC8Record.unk_3BC=cpu_pad_script_kind, Unk80101EC8Record.unk_3CC=cpu_decided_pad_held, Unk80101EC8Record.unk_3F0=cpu_distance_error_streak, Unk80101EC8Record.unk_3F3=cpu_threat_resolved_count, Unk80101EC8Record.unk_3F5=cpu_script_wait_frames, Unk80101EC8Record.unk_3F6=cpu_script_wait_limit, Unk80101EC8Record.unk_3F8=script_min_distances, Unk80101EC8Record.unk_3FE=script_max_distances, Unk80101EC8Record.unk_404=filtered_script_max_distances, Unk80101EC8Record.unk_414=cpu_tracked_move_tallies, Unk80101EC8Record.unk_424=cpu_tracked_move_tally_threshold, Unk80101EC8Record.unk_425=incoming_projectile_state, Unk80101EC8Record.unk_426=incoming_attack_state, Unk80101EC8Record.unk_427=opponent_snapshot_hit_start_frame, Unk80101EC8Record.unk_428=cpu_tracked_move_key, Unk80101EC8Record.unk_430=cpu_frame_flags, Unk80101EC8Record.unk_438=cpu_level, Unk80101EC8Record.unk_440=latched_motion_metadata_nibble, Unk80101EC8Record.unk_441=motion_metadata_nibble, Unk80101EC8Record.unk_442=opponent_ground_y_band
+decl Unk80101EC8Record.unk_08 -> cpu_base_level  include/game.h:1542
+decl Unk80101EC8Record.unk_12 -> weapon_entry_id  include/game.h:1548
+decl Unk80101EC8Record.unk_14 -> wielded_object_kind  include/game.h:1549
+decl Unk80101EC8Record.unk_1E -> base_power  include/game.h:1553
+decl Unk80101EC8Record.unk_20 -> power  include/game.h:1554
+decl Unk80101EC8Record.unk_46 -> move_frame_unchanged  include/game.h:1563
+decl Unk80101EC8Record.unk_62 -> frame_flags  include/game.h:1584
+decl Unk80101EC8Record.unk_64 -> blend_src_frame_code  include/game.h:1586
+decl Unk80101EC8Record.unk_66 -> blend_dst_frame_code  include/game.h:1587
+decl Unk80101EC8Record.unk_72 -> airborne_until_landing  include/game.h:1594
+decl Unk80101EC8Record.unk_78 -> blend_into_move  include/game.h:1596
+decl Unk80101EC8Record.unk_82 -> queued_move_command  include/game.h:1600
+decl Unk80101EC8Record.unk_84 -> default_variant_index  include/game.h:1601
+decl Unk80101EC8Record.unk_86 -> variant_index  include/game.h:1603
+decl Unk80101EC8Record.unk_88 -> object_variant_index  include/game.h:1604
+decl Unk80101EC8Record.unk_8A -> object_variant_enabled  include/game.h:1605
+decl Unk80101EC8Record.unk_8C -> wielded_object_live_state  include/game.h:1607
+decl Unk80101EC8Record.unk_92 -> weapon_live_state  include/game.h:1610
+decl Unk80101EC8Record.unk_94 -> falling_backward  include/game.h:1611
+decl Unk80101EC8Record.unk_A5 -> frame_window_start  include/game.h:1617
+decl Unk80101EC8Record.unk_A6 -> frame_window_end  include/game.h:1618
+decl Unk80101EC8Record.unk_A7 -> release_frame  include/game.h:1619
+decl Unk80101EC8Record.unk_AA -> paired_move_hit_frame  include/game.h:1622
+decl Unk80101EC8Record.unk_AB -> opponent_transition_start_frame  include/game.h:1623
+decl Unk80101EC8Record.unk_AC -> weapon_reload_frame  include/game.h:1624
+decl Unk80101EC8Record.unk_AD -> attack_hit_armed  include/game.h:1628
+decl Unk80101EC8Record.unk_B2 -> collision_hit_class  include/game.h:1633
+decl Unk80101EC8Record.unk_B3 -> draw_move_set  include/game.h:1634
+decl Unk80101EC8Record.unk_104 -> base_velocity  include/game.h:1644
+decl Unk80101EC8Record.unk_134 -> decaying_xz_velocity  include/game.h:1648
+decl Unk80101EC8Record.unk_156 -> base_velocity_damping_x  include/game.h:1656
+decl Unk80101EC8Record.unk_158 -> base_velocity_damping_y  include/game.h:1657
+decl Unk80101EC8Record.unk_15A -> base_velocity_damping_z  include/game.h:1658
+decl Unk80101EC8Record.unk_15E -> decaying_xz_velocity_damping_x  include/game.h:1660
+decl Unk80101EC8Record.unk_160 -> decaying_xz_velocity_damping_y  include/game.h:1661
+decl Unk80101EC8Record.unk_162 -> decaying_xz_velocity_damping_z  include/game.h:1662
+decl Unk80101EC8Record.unk_174 -> bone_hit_points_4_5_midpoint  include/game.h:1665
+decl Unk80101EC8Record.unk_180 -> bone_hit_point_0  include/game.h:1666
+decl Unk80101EC8Record.unk_18C -> bone_hit_points_1_3_centroid  include/game.h:1667
+decl Unk80101EC8Record.unk_198 -> ground_probe_points  include/game.h:1670
+decl Unk80101EC8Record.unk_1B0 -> ground_probe_floor_ys  include/game.h:1673
+decl Unk80101EC8Record.unk_1DA -> bone_triangle_cross_y_positive  include/game.h:1684
+decl Unk80101EC8Record.unk_1E6 -> eased_pose_bearing_offset  include/game.h:1687
+decl Unk80101EC8Record.unk_1E8 -> eased_pose_elevation_offset  include/game.h:1688
+decl Unk80101EC8Record.unk_1EA -> opponent_elevation_offset  include/game.h:1689
+decl Unk80101EC8Record.unk_1EC -> bone_y_axis  include/game.h:1692
+decl Unk80101EC8Record.unk_1F8 -> prev_root_offset  include/game.h:1693
+decl Unk80101EC8Record.unk_210 -> prev_weapon_points  include/game.h:1697
+decl Unk80101EC8Record.unk_234 -> prev_second_weapon_points  include/game.h:1700
+decl Unk80101EC8Record.unk_25C -> opponent_elevation_origin  include/game.h:1703
+decl Unk80101EC8Record.unk_268 -> elevation_origin_from_weapon  include/game.h:1704
+decl Unk80101EC8Record.unk_288 -> weapon_hit_phases  include/game.h:1715
+decl Unk80101EC8Record.unk_28C -> mash_contest_score  include/game.h:1716
+decl Unk80101EC8Record.unk_316 -> saved_motion_frame_id  include/game.h:1720
+decl Unk80101EC8Record.unk_31A -> pose_blend_requests  include/game.h:1722
+decl Unk80101EC8Record.unk_34D -> throw_charges_left  include/game.h:1735
+decl Unk80101EC8Record.unk_394 -> cpu_action_index  include/game.h:1747
+decl Unk80101EC8Record.unk_398 -> cpu_action_countdown  include/game.h:1748
+decl Unk80101EC8Record.unk_39A -> cpu_action_cooldown_frames  include/game.h:1749
+decl Unk80101EC8Record.unk_39C -> cpu_action_from_opponent  include/game.h:1750
+decl Unk80101EC8Record.unk_39D -> cpu_orbit_route_active  include/game.h:1751
+decl Unk80101EC8Record.unk_3BC -> cpu_pad_script_kind  include/game.h:1763
+decl Unk80101EC8Record.unk_3CC -> cpu_decided_pad_held  include/game.h:1771
+decl Unk80101EC8Record.unk_3F0 -> cpu_distance_error_streak  include/game.h:1778
+decl Unk80101EC8Record.unk_3F3 -> cpu_threat_resolved_count  include/game.h:1780
+decl Unk80101EC8Record.unk_3F5 -> cpu_script_wait_frames  include/game.h:1782
+decl Unk80101EC8Record.unk_3F6 -> cpu_script_wait_limit  include/game.h:1783
+decl Unk80101EC8Record.unk_3F8 -> script_min_distances  include/game.h:1786
+decl Unk80101EC8Record.unk_3FE -> script_max_distances  include/game.h:1787
+decl Unk80101EC8Record.unk_404 -> filtered_script_max_distances  include/game.h:1788
+decl Unk80101EC8Record.unk_414 -> cpu_tracked_move_tallies  include/game.h:1796
+decl Unk80101EC8Record.unk_424 -> cpu_tracked_move_tally_threshold  include/game.h:1797
+decl Unk80101EC8Record.unk_425 -> incoming_projectile_state  include/game.h:1798
+decl Unk80101EC8Record.unk_426 -> incoming_attack_state  include/game.h:1799
+decl Unk80101EC8Record.unk_427 -> opponent_snapshot_hit_start_frame  include/game.h:1800
+decl Unk80101EC8Record.unk_428 -> cpu_tracked_move_key  include/game.h:1801
+decl Unk80101EC8Record.unk_430 -> cpu_frame_flags  include/game.h:1805
+decl Unk80101EC8Record.unk_438 -> cpu_level  include/game.h:1807
+decl Unk80101EC8Record.unk_440 -> latched_motion_metadata_nibble  include/game.h:1811
+decl Unk80101EC8Record.unk_441 -> motion_metadata_nibble  include/game.h:1812
+decl Unk80101EC8Record.unk_442 -> opponent_ground_y_band  include/game.h:1813
+  round 0: 993 member error line(s)
+    src/main/175A4.c:59 unk_20 x1
+    src/main/175A4.c:59 unk_28C x1
+    src/main/175A4.c:62 unk_20 x1
+    src/main/175A4.c:62 unk_28C x1
+    src/main/175A4.c:74 unk_134 x1
+    src/main/175A4.c:77 unk_134 x1
+    src/main/175A4.c:90 unk_28C x2
+    src/main/175A4.c:98 unk_28C x2
+    src/main/175A4.c:107 unk_28C x1
+    src/main/175A4.c:108 unk_28C x1
+    src/main/17AFC.c:143 unk_8A x1
+    src/main/17AFC.c:240 unk_104 x1
+    src/main/17AFC.c:241 unk_104 x1
+    src/main/17AFC.c:242 unk_104 x1
+    src/main/17AFC.c:243 unk_134 x1
+    src/main/17AFC.c:244 unk_134 x1
+    src/main/17AFC.c:245 unk_134 x1
+    src/main/17AFC.c:271 unk_86 x1
+    src/main/17AFC.c:281 unk_88 x1
+    src/main/17AFC.c:311 unk_A5 x1
+    src/main/17AFC.c:311 unk_A6 x1
+    src/main/17AFC.c:312 unk_88 x1
+    src/main/17AFC.c:327 unk_86 x1
+    src/main/17AFC.c:328 unk_88 x1
+    src/main/17AFC.c:329 unk_8A x1
+    src/main/17AFC.c:333 unk_8A x1
+    src/main/17AFC.c:334 unk_84 x1
+    src/main/17AFC.c:334 unk_86 x1
+    src/main/17AFC.c:391 unk_1EC x2
+    src/main/17AFC.c:392 unk_1EC x1
+    src/main/17AFC.c:431 unk_20 x2
+    src/main/17AFC.c:467 unk_134 x1
+    src/main/17AFC.c:468 unk_134 x1
+    src/main/17AFC.c:489 unk_134 x1
+    src/main/17AFC.c:490 unk_134 x1
+    src/main/17AFC.c:503 unk_1DA x1
+    src/main/17AFC.c:507 unk_1DA x1
+    src/main/17AFC.c:561 unk_8A x1
+    src/main/17AFC.c:633 unk_8C x1
+    src/main/17AFC.c:647 unk_288 x1
+    src/main/17AFC.c:649 unk_288 x1
+    src/main/17AFC.c:667 unk_288 x1
+    src/main/17AFC.c:679 unk_288 x1
+    src/main/17AFC.c:772 unk_46 x1
+    src/main/17AFC.c:773 unk_A7 x1
+    src/main/17AFC.c:786 unk_84 x1
+    src/main/17AFC.c:786 unk_86 x1
+    src/main/17AFC.c:891 unk_20 x2
+    src/main/17AFC.c:972 unk_134 x1
+    src/main/17AFC.c:973 unk_134 x1
+    src/main/17AFC.c:974 unk_134 x1
+    src/main/17AFC.c:975 unk_134 x1
+    src/main/17AFC.c:1170 unk_210 x1
+    src/main/17AFC.c:1171 unk_210 x1
+    src/main/17AFC.c:1174 unk_210 x1
+    src/main/17AFC.c:1175 unk_210 x1
+    src/main/17AFC.c:1179 unk_210 x1
+    src/main/17AFC.c:1180 unk_210 x1
+    src/main/17AFC.c:1181 unk_8C x1
+    src/main/17AFC.c:1184 unk_234 x1
+    src/main/17AFC.c:1185 unk_234 x1
+    src/main/17AFC.c:1198 unk_8C x1
+    src/main/17AFC.c:1199 unk_AD x1
+    src/main/17AFC.c:1200 unk_8C x1
+    src/main/17AFC.c:1211 unk_AD x1
+    src/main/17AFC.c:1220 unk_210 x1
+    src/main/17AFC.c:1221 unk_210 x1
+    src/main/17AFC.c:1223 unk_92 x1
+    src/main/17AFC.c:1230 unk_8C x1
+    src/main/17AFC.c:1233 unk_234 x1
+    src/main/17AFC.c:1234 unk_234 x1
+    src/main/17AFC.c:1719 unk_92 x1
+    src/main/17AFC.c:1723 unk_8C x1
+    src/main/17AFC.c:1774 unk_8C x1
+    src/main/17AFC.c:1788 unk_210 x1
+    src/main/17AFC.c:1789 unk_210 x1
+    src/main/17AFC.c:1793 unk_234 x1
+    src/main/17AFC.c:1794 unk_234 x1
+    src/main/17AFC.c:1889 unk_210 x1
+    src/main/17AFC.c:1890 unk_210 x1
+    src/main/17AFC.c:1891 unk_210 x1
+    src/main/17AFC.c:1984 unk_134 x1
+    src/main/17AFC.c:1985 unk_134 x1
+    src/main/17AFC.c:1987 unk_134 x1
+    src/main/17AFC.c:1988 unk_134 x1
+    src/main/17AFC.c:2021 unk_8C x1
+    src/main/17AFC.c:2052 unk_AD x1
+    src/main/17AFC.c:2096 unk_134 x1
+    src/main/17AFC.c:2097 unk_134 x1
+    src/main/17AFC.c:2098 unk_134 x1
+    src/main/17AFC.c:2099 unk_134 x1
+    src/main/17AFC.c:2144 unk_134 x1
+    src/main/17AFC.c:2145 unk_134 x1
+    src/main/17AFC.c:2146 unk_134 x1
+    src/main/17AFC.c:2147 unk_134 x1
+    src/main/17AFC.c:2177 unk_AA x1
+    src/main/17AFC.c:2189 unk_AA x1
+    src/main/17AFC.c:2229 unk_234 x1
+    src/main/17AFC.c:2230 unk_234 x1
+    src/main/17AFC.c:2231 unk_234 x1
+    src/main/17AFC.c:2232 unk_234 x1
+    src/main/17AFC.c:2233 unk_234 x1
+    src/main/17AFC.c:2234 unk_234 x1
+    src/main/17AFC.c:2242 unk_210 x1
+    src/main/17AFC.c:2243 unk_210 x1
+    src/main/17AFC.c:2244 unk_210 x1
+    src/main/17AFC.c:2245 unk_210 x1
+    src/main/17AFC.c:2246 unk_210 x1
+    src/main/17AFC.c:2247 unk_210 x1
+    src/main/17AFC.c:2253 unk_234 x1
+    src/main/17AFC.c:2254 unk_234 x1
+    src/main/17AFC.c:2255 unk_234 x1
+    src/main/17AFC.c:2259 unk_234 x1
+    src/main/17AFC.c:2260 unk_234 x1
+    src/main/17AFC.c:2261 unk_234 x1
+    src/main/17AFC.c:2266 unk_210 x1
+    src/main/17AFC.c:2267 unk_210 x1
+    src/main/17AFC.c:2268 unk_210 x1
+    src/main/17AFC.c:2272 unk_210 x1
+    src/main/17AFC.c:2273 unk_210 x1
+    src/main/17AFC.c:2274 unk_210 x1
+    src/main/17AFC.c:2312 unk_AD x2
+    src/main/17AFC.c:2317 unk_AD x1
+    src/main/17AFC.c:2318 unk_AD x1
+    src/main/17AFC.c:2333 unk_28C x1
+    src/main/17AFC.c:2334 unk_28C x1
+    src/main/17AFC.c:2350 unk_210 x1
+    src/main/17AFC.c:2351 unk_210 x1
+    src/main/17AFC.c:2355 unk_234 x1
+    src/main/17AFC.c:2356 unk_234 x1
+    src/main/17AFC.c:2360 unk_18C x1
+    src/main/17AFC.c:2363 unk_18C x1
+    src/main/17AFC.c:2366 unk_18C x1
+    src/main/17AFC.c:2369 unk_174 x1
+    src/main/17AFC.c:2371 unk_174 x1
+    src/main/17AFC.c:2373 unk_174 x1
+    src/main/17AFC.c:3949 unk_88 x1
+    src/main/17AFC.c:3950 unk_14 x1
+    src/main/17AFC.c:4017 unk_12 x1
+    src/main/17AFC.c:4026 unk_14 x1
+    src/main/17AFC.c:4026 unk_88 x1
+    src/main/17AFC.c:4539 unk_B2 x1
+    src/main/17AFC.c:4630 unk_AA x1
+    src/main/17AFC.c:4631 unk_A7 x1
+    src/main/17AFC.c:4633 unk_A5 x1
+    src/main/17AFC.c:4634 unk_A6 x1
+    src/main/17AFC.c:4635 unk_AB x1
+    src/main/17AFC.c:4636 unk_AC x1
+    src/main/17AFC.c:4653 unk_A7 x1
+    src/main/17AFC.c:4662 unk_A5 x1
+    src/main/17AFC.c:4665 unk_A6 x1
+    src/main/17AFC.c:4674 unk_AA x1
+    src/main/17AFC.c:4677 unk_AB x1
+    src/main/17AFC.c:4680 unk_AC x1
+    src/main/17AFC.c:4957 unk_B2 x1
+    src/main/17AFC.c:4958 unk_B2 x1
+    src/main/17AFC.c:4959 unk_B2 x1
+    src/main/17AFC.c:4960 unk_B2 x1
+    src/main/17AFC.c:4965 unk_198 x1
+    src/main/17AFC.c:4965 unk_1B0 x1
+    src/main/17AFC.c:4966 unk_198 x1
+    src/main/17AFC.c:4967 unk_1B0 x1
+    src/main/17AFC.c:4968 unk_198 x1
+    src/main/17AFC.c:4980 unk_198 x1
+    src/main/17AFC.c:4980 unk_1B0 x1
+    src/main/17AFC.c:4981 unk_198 x1
+    src/main/17AFC.c:4982 unk_1B0 x1
+    src/main/17AFC.c:4983 unk_198 x1
+    src/main/17AFC.c:4991 unk_198 x1
+    src/main/17AFC.c:4991 unk_1B0 x1
+    src/main/17AFC.c:4992 unk_198 x1
+    src/main/17AFC.c:4993 unk_1B0 x1
+    src/main/17AFC.c:4994 unk_198 x1
+    src/main/17AFC.c:5006 unk_198 x1
+    src/main/17AFC.c:5006 unk_1B0 x1
+    src/main/17AFC.c:5007 unk_198 x1
+    src/main/17AFC.c:5008 unk_1B0 x1
+    src/main/17AFC.c:5009 unk_198 x1
+    src/main/17AFC.c:5017 unk_180 x1
+    src/main/17AFC.c:5021 unk_18C x1
+    src/main/17AFC.c:5025 unk_174 x1
+    src/main/28708.c:1258 unk_B3 x1
+    src/main/28708.c:1263 unk_1E6 x1
+    src/main/28708.c:1264 unk_1E8 x1
+    src/main/28708.c:1265 unk_1EA x1
+    src/main/28708.c:1276 unk_64 x1
+    src/main/28708.c:1277 unk_66 x1
+    src/main/28708.c:1279 unk_62 x1
+    src/main/28708.c:1317 unk_198 x2
+    src/main/28708.c:1319 unk_198 x2
+    src/main/28708.c:1321 unk_198 x2
+    src/main/28708.c:1416 unk_12 x1
+    src/main/28708.c:1420 unk_14 x1
+    src/main/28708.c:1425 unk_12 x1
+    src/main/28708.c:1429 unk_14 x1
+    src/main/28708.c:1439 unk_B2 x1
+    src/main/2B344.c:187 unk_12 x1
+    src/main/2B344.c:191 unk_14 x1
+    src/main/2B344.c:193 unk_14 x1
+    src/main/2B344.c:194 unk_14 x1
+    src/main/2B344.c:212 unk_12 x1
+    src/main/2B344.c:519 unk_12 x1
+    src/main/2B344.c:520 unk_12 x1
+    src/main/2B344.c:522 unk_12 x1
+    src/main/2B344.c:524 unk_12 x1
+    src/main/2B344.c:526 unk_12 x1
+    src/main/2B344.c:527 unk_12 x1
+    src/main/2B344.c:531 unk_12 x1
+    src/main/2B344.c:535 unk_12 x1
+    src/main/2B344.c:734 unk_12 x1
+    src/main/2B344.c:1080 unk_12 x1
+    src/main/2B344.c:1081 unk_12 x1
+    src/main/4510C.c:250 unk_414 x1
+    src/main/4510C.c:251 unk_414 x1
+    src/main/4510C.c:260 unk_414 x1
+    src/main/4510C.c:261 unk_414 x1
+    src/main/4510C.c:292 unk_08 x1
+    src/main/4510C.c:292 unk_438 x1
+    src/main/4510C.c:295 unk_438 x1
+    src/main/4510C.c:296 unk_438 x1
+    src/main/4510C.c:297 unk_438 x1
+    src/main/4510C.c:305 unk_86 x1
+    src/main/4510C.c:306 unk_424 x1
+    src/main/4510C.c:307 unk_3F6 x1
+    src/main/4510C.c:313 unk_438 x1
+    src/main/4510C.c:314 unk_438 x1
+    src/main/4510C.c:315 unk_438 x1
+    src/main/4510C.c:328 unk_438 x1
+    src/main/4510C.c:329 unk_424 x1
+    src/main/4510C.c:330 unk_3F6 x1
+    src/main/4510C.c:336 unk_438 x1
+    src/main/4510C.c:338 unk_438 x1
+    src/main/4510C.c:341 unk_438 x1
+    src/main/4510C.c:351 unk_424 x1
+    src/main/4510C.c:352 unk_3F6 x1
+    src/main/4510C.c:356 unk_438 x2
+    src/main/4510C.c:359 unk_424 x1
+    src/main/4510C.c:359 unk_438 x1
+    src/main/4510C.c:361 unk_39A x1
+    src/main/4510C.c:362 unk_438 x1
+    src/main/4510C.c:433 unk_3F8 x1
+    src/main/4510C.c:434 unk_3FE x1
+    src/main/4510C.c:435 unk_404 x1
+    src/main/4510C.c:441 unk_428 x1
+    src/main/4510C.c:442 unk_425 x1
+    src/main/4510C.c:443 unk_426 x1
+    src/main/4510C.c:448 unk_440 x1
+    src/main/4510C.c:449 unk_440 x1
+    src/main/4510C.c:450 unk_441 x1
+    src/main/4510C.c:451 unk_441 x1
+    src/main/4510C.c:457 unk_39D x1
+    src/main/4510C.c:458 unk_3F5 x1
+    src/main/4510C.c:460 unk_3F3 x1
+    src/main/4510C.c:463 unk_3F0 x1
+    src/main/4510C.c:465 unk_39C x1
+    src/main/4510C.c:466 unk_394 x1
+    src/main/4510C.c:467 unk_398 x1
+    src/main/4510C.c:472 unk_440 x1
+    src/main/4510C.c:473 unk_430 x1
+    src/main/4510C.c:487 unk_46 x1
+    src/main/4510C.c:492 unk_3BC x1
+    src/main/4510C.c:503 unk_430 x1
+    src/main/4510C.c:513 unk_430 x1
+    src/main/4510C.c:515 unk_425 x1
+    src/main/4510C.c:517 unk_442 x1
+    src/main/4510C.c:534 unk_3BC x1
+    src/main/4510C.c:536 unk_430 x1
+    src/main/4510C.c:571 unk_3BC x1
+    src/main/4510C.c:574 unk_3CC x1
+    src/main/4510C.c:620 unk_3CC x1
+    src/main/4510C.c:628 unk_441 x1
+    src/main/4510C.c:642 unk_440 x1
+    src/main/4510C.c:642 unk_441 x1
+    src/main/4510C.c:645 unk_430 x1
+    src/main/4510C.c:646 unk_430 x1
+    src/main/4510C.c:647 unk_438 x1
+    src/main/4510C.c:650 unk_3F5 x1
+    src/main/4510C.c:650 unk_3F6 x1
+    src/main/4510C.c:651 unk_438 x1
+    src/main/4510C.c:654 unk_438 x1
+    src/main/4510C.c:655 unk_438 x1
+    src/main/4510C.c:657 unk_438 x1
+    src/main/4510C.c:658 unk_438 x1
+    src/main/4510C.c:686 unk_3F5 x1
+    src/main/4510C.c:687 unk_3F5 x1
+    src/main/4510C.c:690 unk_3F5 x1
+    src/main/4510C.c:693 unk_440 x1
+    src/main/4510C.c:694 unk_438 x1
+    src/main/4510C.c:695 unk_430 x1
+    src/main/4510C.c:697 unk_430 x1
+    src/main/4510C.c:699 unk_430 x1
+    src/main/4510C.c:702 unk_3F8 x1
+    src/main/4510C.c:702 unk_86 x1
+    src/main/4510C.c:703 unk_3F8 x1
+    src/main/4510C.c:703 unk_404 x1
+    src/main/4510C.c:703 unk_86 x2
+    src/main/4510C.c:710 unk_3F0 x1
+    src/main/4510C.c:711 unk_3F0 x1
+    src/main/4510C.c:713 unk_3F0 x1
+    src/main/4510C.c:715 unk_3F0 x1
+    src/main/4510C.c:720 unk_442 x1
+    src/main/4510C.c:722 unk_442 x1
+    src/main/4510C.c:724 unk_442 x1
+    src/main/4510C.c:726 unk_430 x1
+    src/main/4510C.c:738 unk_430 x1
+    src/main/4510C.c:747 unk_430 x1
+    src/main/4510C.c:752 unk_428 x1
+    src/main/4510C.c:753 unk_424 x1
+    src/main/4510C.c:765 unk_414 x1
+    src/main/4510C.c:765 unk_428 x1
+    src/main/4510C.c:768 unk_414 x1
+    src/main/4510C.c:769 unk_414 x1
+    src/main/4510C.c:771 unk_414 x1
+    src/main/4510C.c:776 unk_414 x1
+    src/main/4510C.c:781 unk_414 x1
+    src/main/4510C.c:781 unk_428 x1
+    src/main/4510C.c:782 unk_414 x1
+    src/main/4510C.c:784 unk_414 x1
+    src/main/4510C.c:788 unk_414 x1
+    src/main/4510C.c:791 unk_428 x1
+    src/main/4510C.c:792 unk_426 x1
+    src/main/4510C.c:793 unk_430 x1
+    src/main/4510C.c:796 unk_428 x1
+    src/main/4510C.c:798 unk_428 x1
+    src/main/4510C.c:800 unk_428 x1
+    src/main/4510C.c:804 unk_427 x1
+    src/main/4510C.c:807 unk_442 x1
+    src/main/4510C.c:808 unk_430 x1
+    src/main/4510C.c:811 unk_426 x1
+    src/main/4510C.c:813 unk_426 x1
+    src/main/4510C.c:815 unk_426 x1
+    src/main/4510C.c:819 unk_426 x1
+    src/main/4510C.c:821 unk_426 x1
+    src/main/4510C.c:823 unk_426 x1
+    src/main/4510C.c:831 unk_414 x1
+    src/main/4510C.c:831 unk_428 x1
+    src/main/4510C.c:832 unk_414 x1
+    src/main/4510C.c:833 unk_414 x1
+    src/main/4510C.c:833 unk_424 x1
+    src/main/4510C.c:835 unk_414 x1
+    src/main/4510C.c:835 unk_424 x1
+    src/main/4510C.c:838 unk_430 x1
+    src/main/4510C.c:843 unk_430 x1
+    src/main/4510C.c:844 unk_430 x1
+    src/main/4510C.c:851 unk_425 x1
+    src/main/4510C.c:853 unk_425 x1
+    src/main/4510C.c:877 unk_425 x1
+    src/main/4510C.c:884 unk_430 x1
+    src/main/4510C.c:886 unk_425 x1
+    src/main/4510C.c:886 unk_426 x2
+    src/main/4510C.c:887 unk_425 x1
+    src/main/4510C.c:888 unk_430 x1
+    src/main/4510C.c:895 unk_426 x1
+    src/main/4510C.c:895 unk_430 x1
+    src/main/4510C.c:901 unk_425 x1
+    src/main/4510C.c:902 unk_425 x1
+    src/main/4510C.c:908 unk_442 x1
+    src/main/4510C.c:910 unk_430 x1
+    src/main/4510C.c:912 unk_430 x1
+    src/main/4510C.c:916 unk_430 x1
+    src/main/4510C.c:918 unk_430 x1
+    src/main/4510C.c:923 unk_430 x1
+    src/main/4510C.c:943 unk_441 x1
+    src/main/4510C.c:1086 unk_14 x1
+    src/main/4510C.c:1259 unk_398 x1
+    src/main/4510C.c:1772 unk_430 x1
+    src/main/4510C.c:1773 unk_425 x1
+    src/main/4510C.c:1773 unk_426 x1
+    src/main/4510C.c:1775 unk_426 x1
+    src/main/4510C.c:1775 unk_427 x1
+    src/main/4510C.c:1776 unk_425 x1
+    src/main/4510C.c:1777 unk_430 x1
+    src/main/4510C.c:1783 unk_430 x1
+    src/main/4510C.c:1785 unk_3F3 x1
+    src/main/4510C.c:1785 unk_438 x1
+    src/main/4510C.c:1786 unk_438 x1
+    src/main/4510C.c:1798 unk_3CC x1
+    src/main/4510C.c:1799 unk_426 x1
+    src/main/4510C.c:1800 unk_425 x1
+    src/main/4510C.c:1801 unk_3F3 x1
+    src/main/4510C.c:1808 unk_426 x1
+    src/main/4510C.c:1812 unk_3CC x1
+    src/main/4510C.c:1813 unk_426 x1
+    src/main/4510C.c:1814 unk_425 x1
+    src/main/4510C.c:1815 unk_3F3 x1
+    src/main/4510C.c:1816 unk_430 x1
+    src/main/4510C.c:1823 unk_425 x1
+    src/main/4510C.c:1824 unk_426 x1
+    src/main/4510C.c:1824 unk_441 x1
+    src/main/4510C.c:1825 unk_427 x1
+    src/main/4510C.c:1826 unk_426 x1
+    src/main/4510C.c:1827 unk_430 x1
+    src/main/4510C.c:1845 unk_426 x1
+    src/main/4510C.c:1846 unk_425 x1
+    src/main/4510C.c:1849 unk_426 x1
+    src/main/4510C.c:1850 unk_425 x1
+    src/main/4510C.c:1851 unk_3F3 x1
+    src/main/4510C.c:1857 unk_3CC x1
+    src/main/4510C.c:1861 unk_430 x1
+    src/main/4510C.c:1861 unk_441 x1
+    src/main/4510C.c:1863 unk_3CC x1
+    src/main/4510C.c:1864 unk_430 x1
+    src/main/4510C.c:1866 unk_441 x1
+    src/main/4510C.c:1875 unk_3CC x1
+    src/main/4510C.c:1879 unk_3CC x1
+    src/main/4510C.c:1883 unk_425 x2
+    src/main/4510C.c:1883 unk_426 x1
+    src/main/4510C.c:1884 unk_3CC x1
+    src/main/4510C.c:1884 unk_442 x1
+    src/main/4510C.c:1887 unk_404 x1
+    src/main/4510C.c:1887 unk_86 x1
+    src/main/4510C.c:1891 unk_3CC x1
+    src/main/4510C.c:1893 unk_3CC x1
+    src/main/4510C.c:1906 unk_3CC x1
+    src/main/4510C.c:1909 unk_438 x1
+    src/main/4510C.c:1912 unk_3CC x1
+    src/main/4510C.c:1915 unk_3CC x1
+    src/main/4510C.c:1917 unk_3CC x1
+    src/main/4510C.c:1920 unk_3CC x1
+    src/main/4510C.c:1934 unk_438 x1
+    src/main/4510C.c:1936 unk_3CC x1
+    src/main/4510C.c:1937 unk_430 x1
+    src/main/4510C.c:1938 unk_3CC x1
+    src/main/4510C.c:1950 unk_425 x1
+    src/main/4510C.c:1950 unk_426 x1
+    src/main/4510C.c:1950 unk_430 x1
+    src/main/4510C.c:1954 unk_438 x1
+    src/main/4510C.c:1988 unk_3CC x1
+    src/main/4510C.c:1992 unk_440 x2
+    src/main/4510C.c:1993 unk_3CC x1
+    src/main/4510C.c:2005 unk_3CC x1
+    src/main/4510C.c:2006 unk_3CC x1
+    src/main/4510C.c:2008 unk_430 x1
+    src/main/4510C.c:2013 unk_426 x2
+    src/main/4510C.c:2014 unk_425 x2
+    src/main/4510C.c:2015 unk_39D x1
+    src/main/4510C.c:2017 unk_398 x1
+    src/main/4510C.c:2022 unk_430 x1
+    src/main/4510C.c:2024 unk_39D x1
+    src/main/4510C.c:2048 unk_430 x1
+    src/main/4510C.c:2050 unk_442 x1
+    src/main/4510C.c:2051 unk_3F8 x1
+    src/main/4510C.c:2051 unk_86 x1
+    src/main/4510C.c:2052 unk_442 x2
+    src/main/4510C.c:2053 unk_442 x1
+    src/main/4510C.c:2055 unk_3FE x1
+    src/main/4510C.c:2055 unk_86 x1
+    src/main/4510C.c:2057 unk_404 x1
+    src/main/4510C.c:2057 unk_86 x1
+    src/main/4510C.c:2060 unk_430 x1
+    src/main/4510C.c:2061 unk_404 x1
+    src/main/4510C.c:2061 unk_86 x1
+    src/main/4510C.c:2063 unk_404 x1
+    src/main/4510C.c:2063 unk_86 x1
+    src/main/4510C.c:2064 unk_404 x1
+    src/main/4510C.c:2064 unk_86 x1
+    src/main/4510C.c:2067 unk_3FE x1
+    src/main/4510C.c:2067 unk_86 x1
+    src/main/4510C.c:2068 unk_3FE x1
+    src/main/4510C.c:2068 unk_86 x1
+    src/main/4510C.c:2069 unk_430 x1
+    src/main/4510C.c:2072 unk_3F8 x1
+    src/main/4510C.c:2072 unk_86 x1
+    src/main/4510C.c:2076 unk_404 x1
+    src/main/4510C.c:2076 unk_86 x1
+    src/main/4510C.c:2080 unk_3FE x1
+    src/main/4510C.c:2080 unk_86 x1
+    src/main/4510C.c:2118 unk_39D x1
+    src/main/4510C.c:2135 unk_404 x1
+    src/main/4510C.c:2135 unk_86 x1
+    src/main/4510C.c:2147 unk_404 x1
+    src/main/4510C.c:2147 unk_86 x1
+    src/main/4510C.c:2150 unk_404 x1
+    src/main/4510C.c:2150 unk_86 x1
+    src/main/4510C.c:2154 unk_440 x1
+    src/main/4510C.c:2164 unk_3CC x1
+    src/main/4510C.c:2165 unk_3CC x1
+    src/main/4510C.c:2201 unk_3CC x1
+    src/main/4510C.c:2204 unk_3CC x1
+    src/main/4510C.c:2235 unk_3CC x1
+    src/main/4510C.c:2236 unk_3CC x1
+    src/main/4510C.c:2240 unk_430 x1
+    src/main/4510C.c:2242 unk_404 x1
+    src/main/4510C.c:2242 unk_86 x1
+    src/main/4510C.c:2250 unk_404 x1
+    src/main/4510C.c:2250 unk_86 x1
+    src/main/4510C.c:2254 unk_404 x1
+    src/main/4510C.c:2254 unk_86 x1
+    src/main/4510C.c:2259 unk_39D x1
+    src/main/4510C.c:2288 unk_440 x1
+    src/main/4510C.c:2296 unk_394 x1
+    src/main/4510C.c:2297 unk_39C x1
+    src/main/4510C.c:2298 unk_398 x1
+    src/main/4510C.c:2298 unk_39A x1
+    src/main/4510C.c:2303 unk_398 x1
+    src/main/4510C.c:2303 unk_39A x1
+    src/main/4510C.c:2305 unk_39C x1
+    src/main/4510C.c:2306 unk_394 x1
+    src/main/4510C.c:2310 unk_441 x1
+    src/main/4510C.c:2314 unk_441 x1
+    src/main/4510C.c:2319 unk_3CC x1
+    src/main/4510C.c:2324 unk_3CC x1
+    src/main/4510C.c:2329 unk_3CC x1
+    src/main/4510C.c:2334 unk_3CC x1
+    src/main/4510C.c:2339 unk_3FE x1
+    src/main/4510C.c:2339 unk_86 x1
+    src/main/4510C.c:2345 unk_3F8 x1
+    src/main/4510C.c:2345 unk_86 x1
+    src/main/4510C.c:2351 unk_3FE x1
+    src/main/4510C.c:2351 unk_86 x1
+    src/main/4510C.c:2357 unk_3FE x1
+    src/main/4510C.c:2357 unk_86 x1
+    src/main/4510C.c:2370 unk_426 x2
+    src/main/4510C.c:2371 unk_425 x2
+    src/main/4510C.c:2372 unk_3CC x1
+    src/main/4510C.c:2373 unk_398 x1
+    src/main/4510C.c:2373 unk_39A x1
+    src/main/4510C.c:2375 unk_398 x1
+    src/main/4510C.c:2378 unk_430 x1
+    src/main/4510C.c:2378 unk_442 x1
+    src/main/4510C.c:2379 unk_3CC x1
+    src/main/4510C.c:2381 unk_3F8 x1
+    src/main/4510C.c:2381 unk_86 x1
+    src/main/4510C.c:2383 unk_398 x1
+    src/main/4510C.c:2384 unk_3CC x1
+    src/main/4510C.c:2387 unk_398 x1
+    src/main/4510C.c:2388 unk_430 x1
+    src/main/4510C.c:2392 unk_398 x1
+    src/main/4510C.c:2395 unk_440 x1
+    src/main/4510C.c:2414 unk_3F0 x1
+    src/main/4510C.c:2436 unk_430 x1
+    src/main/4510C.c:2450 unk_440 x1
+    src/main/4510C.c:2473 unk_394 x1
+    src/main/4510C.c:2474 unk_39C x1
+    src/main/4510C.c:2475 unk_398 x1
+    src/main/4510C.c:2484 unk_394 x1
+    src/main/4510C.c:2488 unk_394 x1
+    src/main/4510C.c:2490 unk_394 x1
+    src/main/4510C.c:2495 unk_394 x1
+    src/main/4510C.c:2497 unk_394 x1
+    src/main/4510C.c:2502 unk_394 x1
+    src/main/4510C.c:2504 unk_394 x1
+    src/main/4510C.c:2508 unk_394 x1
+    src/main/4510C.c:2511 unk_39C x1
+    src/main/4510C.c:2517 unk_398 x1
+    src/main/4510C.c:2518 unk_398 x1
+    src/main/4510C.c:2522 unk_398 x1
+    src/main/4510C.c:2522 unk_3CC x1
+    src/main/4510C.c:2523 unk_3CC x1
+    src/main/4510C.c:2525 unk_430 x2
+    src/main/4510C.c:2529 unk_441 x1
+    src/main/4510C.c:2531 unk_442 x1
+    src/main/4510C.c:2534 unk_438 x1
+    src/main/4510C.c:2535 unk_438 x1
+    src/main/4510C.c:2536 unk_438 x1
+    src/main/4510C.c:2538 unk_438 x1
+    src/main/4510C.c:2540 unk_86 x1
+    src/main/4510C.c:2596 unk_440 x1
+    src/main/4510C.c:2600 unk_440 x1
+    src/main/4510C.c:2622 unk_440 x1
+    src/main/4510C.c:2633 unk_86 x1
+    src/main/4510C.c:2685 unk_430 x1
+    src/main/4510C.c:2686 unk_430 x1
+    src/main/4510C.c:2700 unk_438 x1
+    src/main/4510C.c:2705 unk_430 x1
+    src/main/4510C.c:2745 unk_86 x1
+    src/main/4510C.c:2753 unk_440 x1
+    src/main/4510C.c:2757 unk_438 x1
+    src/main/4510C.c:2762 unk_442 x1
+    src/main/4510C.c:2763 unk_404 x1
+    src/main/4510C.c:2763 unk_86 x1
+    src/main/4510C.c:2771 unk_34D x1
+    src/main/4510C.c:2772 unk_3F8 x1
+    src/main/4510C.c:2772 unk_86 x1
+    src/main/4510C.c:2774 unk_404 x1
+    src/main/4510C.c:2774 unk_86 x1
+    src/main/4510C.c:2790 unk_430 x1
+    src/main/4510C.c:2790 unk_442 x1
+    src/main/4510C.c:2793 unk_8A x1
+    src/main/4510C.c:2812 unk_3CC x1
+    src/main/4510C.c:2813 unk_3CC x1
+    src/main/4510C.c:2819 unk_39C x1
+    src/main/4510C.c:2820 unk_398 x1
+    src/main/4510C.c:2822 unk_394 x1
+    src/main/4510C.c:2824 unk_394 x1
+    src/main/4510C.c:2826 unk_394 x1
+    src/main/4510C.c:2828 unk_394 x1
+    src/main/4510C.c:2833 unk_404 x1
+    src/main/4510C.c:2833 unk_86 x1
+    src/main/4510C.c:2835 unk_3CC x1
+    src/main/4510C.c:2837 unk_430 x1
+    src/main/4510C.c:2839 unk_440 x1
+    src/main/4510C.c:2840 unk_442 x2
+    src/main/4510C.c:2843 unk_430 x1
+    src/main/4510C.c:2846 unk_441 x1
+    src/main/4510C.c:2849 unk_404 x1
+    src/main/4510C.c:2849 unk_86 x1
+    src/main/4510C.c:2853 unk_3F8 x1
+    src/main/4510C.c:2853 unk_86 x1
+    src/main/4510C.c:2856 unk_440 x1
+    src/main/4510C.c:2858 unk_3F8 x1
+    src/main/4510C.c:2858 unk_86 x1
+    src/main/4510C.c:2862 unk_430 x1
+    src/main/4510C.c:2864 unk_3CC x1
+    src/main/4510C.c:2865 unk_430 x1
+    src/main/4510C.c:2869 unk_3CC x1
+    src/main/9F9C.c:746 unk_180 x1
+    src/main/9F9C.c:747 unk_180 x1
+    src/main/9F9C.c:749 unk_180 x1
+    src/main/9F9C.c:768 unk_180 x1
+    src/main/9F9C.c:768 unk_198 x2
+    src/main/9F9C.c:774 unk_180 x1
+    src/main/9F9C.c:775 unk_180 x1
+    src/main/9F9C.c:776 unk_180 x1
+    src/main/9F9C.c:915 unk_180 x1
+    src/main/9F9C.c:915 unk_198 x2
+    src/main/9F9C.c:1005 unk_174 x1
+    src/main/9F9C.c:1239 unk_1F8 x1
+    src/main/9F9C.c:1240 unk_104 x1
+    src/main/9F9C.c:1241 unk_104 x1
+    src/main/9F9C.c:1242 unk_104 x1
+    src/main/9F9C.c:1243 unk_104 x1
+    src/main/9F9C.c:1253 unk_134 x1
+    src/main/9F9C.c:1254 unk_134 x1
+    src/main/9F9C.c:1255 unk_134 x1
+    src/main/9F9C.c:1299 unk_B2 x1
+    src/main/9F9C.c:1861 unk_12 x1
+    src/main/9F9C.c:1874 unk_14 x1
+    src/main/9F9C.c:1876 unk_14 x1
+    src/main/9F9C.c:1877 unk_14 x1
+    src/main/9F9C.c:2096 unk_62 x1
+    src/main/9F9C.c:2102 unk_62 x1
+    src/main/9F9C.c:2151 unk_31A x1
+    src/main/9F9C.c:2152 unk_31A x1
+    src/main/9F9C.c:2214 unk_B3 x1
+    src/main/9F9C.c:2262 unk_72 x1
+    src/main/9F9C.c:2418 unk_180 x2
+    src/main/9F9C.c:2419 unk_180 x2
+    src/main/9F9C.c:2436 unk_180 x2
+    src/main/9F9C.c:2450 unk_1E6 x1
+    src/main/9F9C.c:2454 unk_1E6 x2
+    src/main/9F9C.c:2455 unk_1E8 x1
+    src/main/9F9C.c:2459 unk_1E8 x2
+    src/main/9F9C.c:2461 unk_1E6 x1
+    src/main/9F9C.c:2461 unk_1E8 x1
+    src/main/9F9C.c:2463 unk_1E6 x1
+    src/main/9F9C.c:2463 unk_1E8 x1
+    src/main/9F9C.c:2466 unk_8C x1
+    src/main/9F9C.c:2479 unk_1EA x1
+    src/main/9F9C.c:2488 unk_268 x1
+    src/main/9F9C.c:2489 unk_25C x1
+    src/main/9F9C.c:2490 unk_25C x1
+    src/main/9F9C.c:2491 unk_25C x1
+    src/main/9F9C.c:2493 unk_25C x1
+    src/main/9F9C.c:2494 unk_25C x1
+    src/main/9F9C.c:2511 unk_25C x1
+    src/main/9F9C.c:2521 unk_1EA x1
+    src/main/9F9C.c:2525 unk_1EA x2
+    src/main/9F9C.c:2526 unk_1EA x1
+    src/main/9F9C.c:2527 unk_1EA x1
+    src/main/9F9C.c:2745 unk_94 x1
+    src/main/9F9C.c:2748 unk_94 x1
+    src/main/9F9C.c:2755 unk_94 x1
+    src/main/9F9C.c:2810 unk_84 x1
+    src/main/9F9C.c:2810 unk_86 x1
+    src/main/9F9C.c:3020 unk_12 x1
+    src/main/9F9C.c:3033 unk_8C x1
+    src/main/9F9C.c:3036 unk_14 x1
+    src/main/9F9C.c:3050 unk_180 x1
+    src/main/9F9C.c:3051 unk_1EC x1
+    src/main/9F9C.c:3054 unk_198 x1
+    src/main/9F9C.c:3055 unk_198 x1
+    src/main/9F9C.c:3056 unk_198 x1
+    src/main/9F9C.c:3058 unk_198 x1
+    src/main/9F9C.c:3059 unk_198 x1
+    src/main/9F9C.c:3060 unk_198 x1
+    src/main/9F9C.c:3062 unk_198 x1
+    src/main/9F9C.c:3063 unk_198 x1
+    src/main/9F9C.c:3064 unk_198 x1
+    src/main/9F9C.c:3065 unk_198 x1
+    src/main/9F9C.c:3066 unk_198 x1
+    src/main/9F9C.c:3067 unk_198 x1
+    src/main/9F9C.c:3070 unk_1B0 x1
+    src/main/9F9C.c:3072 unk_1B0 x1
+    src/main/9F9C.c:3277 unk_88 x1
+    src/main/9F9C.c:3280 unk_8A x1
+    src/main/9F9C.c:3293 unk_86 x1
+    src/main/9F9C.c:3294 unk_88 x1
+    src/main/9F9C.c:3299 unk_86 x1
+    src/main/9F9C.c:3325 unk_78 x1
+    src/main/9F9C.c:3330 unk_86 x1
+    src/main/9F9C.c:3334 unk_78 x1
+    src/main/9F9C.c:3335 unk_84 x1
+    src/main/9F9C.c:3335 unk_86 x1
+    src/main/9F9C.c:3338 unk_84 x1
+    src/main/9F9C.c:3340 unk_86 x1
+    src/main/9F9C.c:3341 unk_86 x1
+    src/main/9F9C.c:3345 unk_78 x1
+    src/main/9F9C.c:3347 unk_86 x1
+    src/main/9F9C.c:3348 unk_88 x1
+    src/main/9F9C.c:3348 unk_8A x1
+    src/main/9F9C.c:3350 unk_86 x2
+    src/main/9F9C.c:3357 unk_86 x1
+    src/main/9F9C.c:3359 unk_86 x1
+    src/main/9F9C.c:3360 unk_88 x1
+    src/main/9F9C.c:3360 unk_8A x1
+    src/main/9F9C.c:3364 unk_88 x1
+    src/main/9F9C.c:3369 unk_86 x1
+    src/main/9F9C.c:3384 unk_84 x1
+    src/main/9F9C.c:3384 unk_86 x1
+    src/main/9F9C.c:3389 unk_86 x1
+    src/main/9F9C.c:3396 unk_84 x1
+    src/main/9F9C.c:3453 unk_46 x1
+    src/main/9F9C.c:3474 unk_AD x1
+    src/main/9F9C.c:3742 unk_12 x1
+    src/main/9F9C.c:3744 unk_12 x1
+    src/main/9F9C.c:3749 unk_12 x1
+    src/main/9F9C.c:3751 unk_12 x1
+    src/main/9F9C.c:3762 unk_1E x1
+    src/main/9F9C.c:3763 unk_1E x1
+    src/main/9F9C.c:3763 unk_20 x1
+    src/main/9F9C.c:3764 unk_08 x1
+    src/main/9F9C.c:3767 unk_84 x1
+    src/main/9F9C.c:3773 unk_20 x1
+    src/main/9F9C.c:3775 unk_20 x1
+    src/main/9F9C.c:3778 unk_08 x1
+    src/main/9F9C.c:3780 unk_08 x1
+    src/main/9F9C.c:3783 unk_84 x1
+    src/main/9F9C.c:3786 unk_88 x1
+    src/main/9F9C.c:3787 unk_8A x1
+    src/main/9F9C.c:3835 unk_1F8 x1
+    src/main/9F9C.c:3836 unk_104 x1
+    src/main/9F9C.c:3837 unk_104 x1
+    src/main/9F9C.c:3838 unk_104 x1
+    src/main/9F9C.c:3839 unk_104 x1
+    src/main/9F9C.c:3846 unk_134 x1
+    src/main/9F9C.c:3847 unk_134 x1
+    src/main/9F9C.c:3848 unk_134 x1
+    src/main/9F9C.c:3855 unk_156 x1
+    src/main/9F9C.c:3856 unk_158 x1
+    src/main/9F9C.c:3857 unk_15A x1
+    src/main/9F9C.c:3858 unk_15E x1
+    src/main/9F9C.c:3859 unk_160 x1
+    src/main/9F9C.c:3860 unk_162 x1
+    src/main/9F9C.c:3861 unk_1E8 x1
+    src/main/9F9C.c:3862 unk_1E6 x1
+    src/main/9F9C.c:3863 unk_1EA x1
+    src/main/9F9C.c:3864 unk_268 x1
+    src/main/9F9C.c:3866 unk_174 x1
+    src/main/9F9C.c:3867 unk_180 x1
+    src/main/9F9C.c:3868 unk_18C x1
+    src/main/9F9C.c:3891 unk_31A x1
+    src/main/9F9C.c:3893 unk_72 x1
+    src/main/9F9C.c:3896 unk_B2 x1
+    src/main/9F9C.c:3899 unk_14 x1
+    src/main/9F9C.c:3905 unk_14 x1
+    src/main/9F9C.c:3907 unk_14 x1
+    src/main/9F9C.c:3912 unk_14 x1
+    src/main/9F9C.c:3921 unk_14 x2
+    src/main/9F9C.c:3926 unk_14 x1
+    src/main/9F9C.c:3929 unk_14 x1
+    src/main/9F9C.c:3939 unk_34D x1
+    src/main/9F9C.c:3941 unk_34D x1
+    src/main/9F9C.c:3959 unk_08 x1
+    src/main/9F9C.c:3964 unk_08 x1
+    src/main/9F9C.c:4032 unk_72 x1
+    src/main/9F9C.c:4264 unk_104 x1
+    src/main/9F9C.c:4268 unk_72 x1
+    src/main/9F9C.c:4324 unk_94 x1
+    src/main/9F9C.c:4327 unk_94 x1
+    src/main/9F9C.c:4337 unk_94 x1
+    src/main/9F9C.c:4340 unk_94 x1
+    src/main/9F9C.c:4344 unk_104 x1
+    src/main/9F9C.c:4345 unk_104 x1
+    src/main/9F9C.c:4365 unk_31A x1
+    src/main/9F9C.c:4366 unk_31A x1
+    src/main/9F9C.c:4384 unk_104 x1
+    src/main/9F9C.c:4516 unk_20 x1
+    src/main/9F9C.c:4517 unk_1E x1
+    src/main/9F9C.c:4527 unk_46 x1
+    src/main/9F9C.c:4531 unk_46 x1
+    src/main/9F9C.c:4541 unk_72 x1
+    src/main/9F9C.c:4543 unk_31A x1
+    src/main/9F9C.c:4562 unk_31A x1
+    src/main/9F9C.c:4569 unk_104 x1
+    src/main/9F9C.c:4570 unk_104 x1
+    src/main/9F9C.c:4571 unk_104 x1
+    src/main/9F9C.c:4577 unk_82 x1
+    src/main/9F9C.c:4612 unk_82 x1
+    src/main/9F9C.c:4615 unk_82 x1
+    src/main/9F9C.c:4651 unk_AB x1
+    src/main/9F9C.c:4668 unk_82 x1
+    src/main/9F9C.c:4690 unk_72 x1
+    src/main/9F9C.c:4702 unk_94 x1
+    src/main/9F9C.c:4705 unk_72 x1
+    src/main/9F9C.c:4712 unk_72 x1
+    src/main/9F9C.c:4745 unk_46 x1
+    src/main/9F9C.c:4751 unk_104 x1
+    src/main/9F9C.c:4754 unk_104 x1
+    src/main/9F9C.c:4757 unk_104 x1
+    src/main/9F9C.c:4762 unk_104 x1
+    src/main/9F9C.c:4773 unk_18C x1
+    src/main/9F9C.c:4775 unk_18C x1
+    src/main/9F9C.c:4777 unk_18C x1
+    src/main/9F9C.c:4779 unk_104 x1
+    src/main/9F9C.c:4781 unk_104 x1
+    src/main/9F9C.c:4781 unk_180 x1
+    src/main/9F9C.c:4782 unk_104 x1
+    src/main/9F9C.c:4783 unk_104 x1
+    src/main/9F9C.c:4784 unk_72 x1
+    src/main/9F9C.c:4790 unk_104 x1
+    src/main/9F9C.c:4797 unk_1F8 x1
+    src/main/9F9C.c:4807 unk_84 x1
+    src/main/9F9C.c:4807 unk_86 x1
+    src/main/9F9C.c:4814 unk_78 x1
+    src/main/9F9C.c:4862 unk_64 x1
+    src/main/9F9C.c:4863 unk_66 x1
+    src/main/9F9C.c:4923 unk_31A x1
+    src/main/9F9C.c:4929 unk_64 x1
+    src/main/9F9C.c:4929 unk_66 x1
+    src/main/9F9C.c:4930 unk_316 x1
+    src/main/9F9C.c:4930 unk_64 x1
+    src/main/9F9C.c:4936 unk_31A x1
+    src/main/9F9C.c:4940 unk_1F8 x1
+    src/main/9F9C.c:4941 unk_1F8 x1
+    src/main/9F9C.c:4942 unk_1F8 x1
+    src/main/9F9C.c:4943 unk_1F8 x1
+    src/main/9F9C.c:4965 unk_31A x1
+    src/main/9F9C.c:4966 unk_1F8 x1
+    src/main/9F9C.c:4967 unk_1F8 x1
+    src/main/9F9C.c:4969 unk_1F8 x1
+    src/main/9F9C.c:4975 unk_104 x1
+    src/main/9F9C.c:4981 unk_134 x1
+    src/main/9F9C.c:4982 unk_134 x1
+    src/main/9F9C.c:4986 unk_104 x2
+    src/main/9F9C.c:4986 unk_156 x1
+    src/main/9F9C.c:4987 unk_104 x2
+    src/main/9F9C.c:4987 unk_158 x1
+    src/main/9F9C.c:4988 unk_104 x2
+    src/main/9F9C.c:4988 unk_15A x1
+    src/main/9F9C.c:4990 unk_104 x2
+    src/main/9F9C.c:4991 unk_104 x1
+    src/main/9F9C.c:4993 unk_104 x2
+    src/main/9F9C.c:4994 unk_104 x1
+    src/main/9F9C.c:4996 unk_104 x2
+    src/main/9F9C.c:4997 unk_104 x1
+    src/main/9F9C.c:4999 unk_104 x1
+    src/main/9F9C.c:5000 unk_104 x1
+    src/main/9F9C.c:5001 unk_104 x1
+    src/main/9F9C.c:5007 unk_134 x1
+    src/main/9F9C.c:5008 unk_134 x1
+    src/main/9F9C.c:5009 unk_134 x1
+    src/main/9F9C.c:5013 unk_134 x1
+    src/main/9F9C.c:5019 unk_134 x2
+    src/main/9F9C.c:5019 unk_15E x1
+    src/main/9F9C.c:5020 unk_134 x2
+    src/main/9F9C.c:5021 unk_134 x1
+    src/main/9F9C.c:5023 unk_134 x2
+    src/main/9F9C.c:5023 unk_160 x1
+    src/main/9F9C.c:5024 unk_134 x2
+    src/main/9F9C.c:5025 unk_134 x1
+    src/main/9F9C.c:5027 unk_134 x2
+    src/main/9F9C.c:5027 unk_162 x1
+    src/main/9F9C.c:5028 unk_134 x2
+    src/main/9F9C.c:5029 unk_134 x1
+    src/main/9F9C.c:5033 unk_134 x1
+    src/main/9F9C.c:5034 unk_134 x1
+    src/main/9F9C.c:5035 unk_134 x1
+    src/main/9F9C.c:5037 unk_134 x1
+    src/main/9F9C.c:5038 unk_134 x1
+    src/main/9F9C.c:5039 unk_134 x1
+    src/main/9F9C.c:5048 unk_104 x1
+    src/main/9F9C.c:5050 unk_B2 x1
+    src/main/9F9C.c:5061 unk_1F8 x1
+    src/main/9F9C.c:5073 unk_86 x1
+    src/main/9F9C.c:5078 unk_92 x1
+    src/main/9F9C.c:5080 unk_92 x2
+    src/main/9F9C.c:5082 unk_62 x1
+    src/main/9F9C.c:5084 unk_92 x1
+    src/main/9F9C.c:5085 unk_62 x1
+    src/main/9F9C.c:5092 unk_62 x1
+    src/main/9F9C.c:5094 unk_86 x1
+    src/main/9F9C.c:5094 unk_88 x1
+    src/main/9F9C.c:5094 unk_8A x1
+    src/main/9F9C.c:5096 unk_8C x2
+    src/main/9F9C.c:5097 unk_62 x1
+    src/main/9F9C.c:5099 unk_8C x1
+    src/main/9F9C.c:5107 unk_A5 x1
+    src/main/9F9C.c:5107 unk_A6 x1
+    src/main/9F9C.c:5110 unk_A5 x1
+    src/main/9F9C.c:5110 unk_A6 x1
+    src/main/9F9C.c:5111 unk_8C x2
+    src/main/9F9C.c:5112 unk_62 x1
+    src/main/9F9C.c:5114 unk_8C x1
+    src/main/9F9C.c:5125 unk_62 x1
+    src/main/9F9C.c:5134 unk_62 x1
+    src/main/9F9C.c:5139 unk_92 x1
+    src/main/9F9C.c:5140 unk_62 x1
+    src/main/9F9C.c:5143 unk_14 x1
+    src/main/9F9C.c:5143 unk_8C x1
+    src/main/9F9C.c:5144 unk_62 x1
+    src/main/9F9C.c:5151 unk_92 x1
+    src/main/9F9C.c:5152 unk_62 x2
+    src/main/9F9C.c:5155 unk_14 x1
+    src/main/9F9C.c:5155 unk_8C x1
+    src/main/9F9C.c:5156 unk_62 x2
+    src/main/9F9C.c:5158 unk_14 x1
+    src/main/9F9C.c:5161 unk_62 x1
+    src/main/9F9C.c:5163 unk_12 x1
+    src/main/9F9C.c:5165 unk_62 x1
+    src/main/9F9C.c:5167 unk_14 x1
+    src/main/9F9C.c:5169 unk_62 x1
+    src/main/9F9C.c:5171 unk_12 x1
+    src/main/9F9C.c:5171 unk_62 x1
+    src/main/9F9C.c:5173 unk_62 x1
+    src/main/9F9C.c:5175 unk_14 x1
+    src/main/9F9C.c:5176 unk_62 x1
+    src/main/9F9C.c:5180 unk_316 x1
+    src/main/9F9C.c:5180 unk_64 x1
+    src/main/9F9C.c:5181 unk_31A x1
+    src/main/9F9C.c:5182 unk_31A x1
+    src/main/9F9C.c:5183 unk_31A x1
+    src/main/9F9C.c:5187 unk_31A x1
+    src/main/9F9C.c:5190 unk_316 x1
+    src/main/9F9C.c:5190 unk_66 x1
+    src/main/9F9C.c:5191 unk_1F8 x1
+    src/main/9F9C.c:5196 unk_104 x1
+    src/main/9F9C.c:5201 unk_210 x1
+    src/main/9F9C.c:5203 unk_8C x1
+    src/main/9F9C.c:5204 unk_8C x1
+    src/main/9F9C.c:5205 unk_234 x1
+    src/main/9F9C.c:5206 unk_234 x1
+    src/main/9F9C.c:5208 unk_92 x1
+    src/main/9F9C.c:5209 unk_92 x1
+    src/main/9F9C.c:5210 unk_234 x1
+    src/main/9F9C.c:5211 unk_234 x1
+    src/main/9F9C.c:5213 unk_62 x1
+    src/main/9F9C.c:5214 unk_25C x1
+    src/main/9F9C.c:5215 unk_268 x1
+    src/main/9F9C.c:5217 unk_268 x1
+    src/main/9F9C.c:5219 unk_210 x1
+    src/main/9F9C.c:5220 unk_210 x1
+    src/main/9F9C.c:5221 unk_210 x1
+    src/main/9F9C.c:5222 unk_234 x1
+    src/main/9F9C.c:5223 unk_234 x1
+    src/main/9F9C.c:5224 unk_234 x1
+    src/main/9F9C.c:5225 unk_1DA x1
+    src/main/9F9C.c:5229 unk_AD x1
+    src/main/9F9C.c:5238 unk_288 x1
+    src/main/9F9C.c:5239 unk_288 x1
+    src/main/9F9C.c:5240 unk_AD x1
+    src/main/9F9C.c:5243 unk_288 x1
+    src/main/9F9C.c:5244 unk_288 x1
+    src/main/9F9C.c:5246 unk_288 x1
+    src/main/9F9C.c:5248 unk_288 x1
+    src/main/9F9C.c:5251 unk_288 x1
+    src/main/9F9C.c:5253 unk_288 x1
+    src/main/9F9C.c:5258 unk_15E x1
+    src/main/9F9C.c:5259 unk_160 x1
+    src/main/9F9C.c:5260 unk_162 x1
+    src/main/9F9C.c:5262 unk_15E x1
+    src/main/9F9C.c:5263 unk_160 x1
+    src/main/9F9C.c:5264 unk_162 x1
+    src/main/9F9C.c:5266 unk_15E x1
+    src/main/9F9C.c:5267 unk_160 x1
+    src/main/9F9C.c:5268 unk_162 x1
+    src/main/9F9C.c:5271 unk_156 x1
+    src/main/9F9C.c:5272 unk_158 x1
+    src/main/9F9C.c:5273 unk_15A x1
+    src/main/9F9C.c:5275 unk_156 x1
+    src/main/9F9C.c:5276 unk_158 x1
+    src/main/9F9C.c:5277 unk_15A x1
+    src/main/9F9C.c:5284 unk_AA x1
+    src/main/9F9C.c:5306 unk_34D x1
+    src/main/9F9C.c:5309 unk_46 x1
+    src/main/9F9C.c:5313 unk_A7 x1
+    src/main/9F9C.c:5315 unk_34D x1
+    src/main/9F9C.c:5316 unk_34D x1
+    src/main/9F9C.c:5319 unk_14 x1
+    src/main/9F9C.c:5320 unk_8A x1
+    src/main/9F9C.c:5325 unk_14 x1
+    src/main/9F9C.c:5326 unk_8A x1
+    src/main/9F9C.c:5331 unk_14 x1
+    src/main/9F9C.c:5332 unk_8A x1
+    src/main/9F9C.c:5334 unk_A7 x1
+    src/main/9F9C.c:5339 unk_AC x1
+    src/main/9F9C.c:5346 unk_46 x1
+    src/main/9F9C.c:5348 unk_62 x1
+    src/main/9F9C.c:5353 unk_62 x1
+    src/main/9F9C.c:5357 unk_B3 x1
+    src/main/9F9C.c:5360 unk_B3 x1
+    src/main/9F9C.c:5363 unk_B3 x1
+    src/main/9F9C.c:5365 unk_B3 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1542 +1542 @@
+-    s16 unk_08;
++    s16 cpu_base_level;
+@@ -1548,2 +1548,2 @@
+-    s16 unk_12;
+-    s16 unk_14; /* -1 == none, else index of g_resource_kind_entry_ids */
++    s16 weapon_entry_id;
++    s16 wielded_object_kind; /* -1 == none, else index of g_resource_kind_entry_ids */
+@@ -1553,2 +1553,2 @@
+-    s16 unk_1E;
+-    s16 unk_20;
++    s16 base_power;
++    s16 power;
+@@ -1563 +1563 @@
+-    s16 unk_46;
++    s16 move_frame_unchanged;
+@@ -1584 +1584 @@
+-    u8 unk_62;
++    u8 frame_flags;
+@@ -1586,2 +1586,2 @@
+-    u16 unk_64;
+-    u16 unk_66;
++    u16 blend_src_frame_code;
++    u16 blend_dst_frame_code;
+@@ -1594 +1594 @@
+-    s16 unk_72;
++    s16 airborne_until_landing;
+@@ -1596 +1596 @@
+-    s16 unk_78;
++    s16 blend_into_move;
+@@ -1600,2 +1600,2 @@
+-    u16 unk_82;
+-    s16 unk_84;
++    u16 queued_move_command;
++    s16 default_variant_index;
+@@ -1603,3 +1603,3 @@
+-    s16 unk_86;
+-    s16 unk_88;
+-    s16 unk_8A;
++    s16 variant_index;
++    s16 object_variant_index;
++    s16 object_variant_enabled;
+@@ -1607 +1607 @@
+-    s16 unk_8C;
++    s16 wielded_object_live_state;
+@@ -1610,2 +1610,2 @@
+-    s16 unk_92;
+-    s16 unk_94;
++    s16 weapon_live_state;
++    s16 falling_backward;
+@@ -1617,3 +1617,3 @@
+-    u8 unk_A5;
+-    u8 unk_A6;
+-    u8 unk_A7;
++    u8 frame_window_start;
++    u8 frame_window_end;
++    u8 release_frame;
+@@ -1622,3 +1622,3 @@
+-    u8 unk_AA;
+-    u8 unk_AB;
+-    u8 unk_AC;
++    u8 paired_move_hit_frame;
++    u8 opponent_transition_start_frame;
++    u8 weapon_reload_frame;
+@@ -1628 +1628 @@
+-    u8 unk_AD;
++    u8 attack_hit_armed;
+@@ -1633,2 +1633,2 @@
+-    u8 unk_B2;
+-    u8 unk_B3;
++    u8 collision_hit_class;
++    u8 draw_move_set;
+@@ -1644 +1644 @@
+-    VECTOR unk_104;
++    VECTOR base_velocity;
+@@ -1648 +1648 @@
+-    VECTOR unk_134;
++    VECTOR decaying_xz_velocity;
+@@ -1656,3 +1656,3 @@
+-    s16 unk_156;
+-    s16 unk_158;
+-    s16 unk_15A;
++    s16 base_velocity_damping_x;
++    s16 base_velocity_damping_y;
++    s16 base_velocity_damping_z;
+@@ -1660,3 +1660,3 @@
+-    s16 unk_15E;
+-    s16 unk_160;
+-    s16 unk_162;
++    s16 decaying_xz_velocity_damping_x;
++    s16 decaying_xz_velocity_damping_y;
++    s16 decaying_xz_velocity_damping_z;
+@@ -1665,3 +1665,3 @@
+-    Vec3i32 unk_174;
+-    Vec3i32 unk_180;
+-    Vec3i32 unk_18C;
++    Vec3i32 bone_hit_points_4_5_midpoint;
++    Vec3i32 bone_hit_point_0;
++    Vec3i32 bone_hit_points_1_3_centroid;
+@@ -1670 +1670 @@
+-    Vec3i32 unk_198[2];
++    Vec3i32 ground_probe_points[2];
+@@ -1673 +1673 @@
+-    s32 unk_1B0[2];
++    s32 ground_probe_floor_ys[2];
+@@ -1684 +1684 @@
+-    s16 unk_1DA;
++    s16 bone_triangle_cross_y_positive;
+@@ -1687,3 +1687,3 @@
+-    s16 unk_1E6;
+-    s16 unk_1E8;
+-    s16 unk_1EA;
++    s16 eased_pose_bearing_offset;
++    s16 eased_pose_elevation_offset;
++    s16 opponent_elevation_offset;
+@@ -1692,2 +1692,2 @@
+-    Vec3i32 unk_1EC;
+-    Vec3i32 unk_1F8;
++    Vec3i32 bone_y_axis;
++    Vec3i32 prev_root_offset;
+@@ -1697 +1697 @@
+-    Unk80107850Rec unk_210[3];
++    Unk80107850Rec prev_weapon_points[3];
+@@ -1700 +1700 @@
+-    Unk80107850Rec unk_234[2];
++    Unk80107850Rec prev_second_weapon_points[2];
+@@ -1703,2 +1703,2 @@
+-    Unk80107850Rec unk_25C;
+-    s32 unk_268;
++    Unk80107850Rec opponent_elevation_origin;
++    s32 elevation_origin_from_weapon;
+@@ -1715,2 +1715,2 @@
+-    s16 unk_288[2];
+-    s32 unk_28C;
++    s16 weapon_hit_phases[2];
++    s32 mash_contest_score;
+@@ -1720 +1720 @@
+-    u16 unk_316;
++    u16 saved_motion_frame_id;
+@@ -1722 +1722 @@
+-    s16 unk_31A;
++    s16 pose_blend_requests;
+@@ -1735 +1735 @@
+-    u8 unk_34D;
++    u8 throw_charges_left;
+@@ -1747,5 +1747,5 @@
+-    s32 unk_394;
+-    s16 unk_398;
+-    s16 unk_39A;
+-    u8 unk_39C;
+-    u8 unk_39D;
++    s32 cpu_action_index;
++    s16 cpu_action_countdown;
++    s16 cpu_action_cooldown_frames;
++    u8 cpu_action_from_opponent;
++    u8 cpu_orbit_route_active;
+@@ -1763 +1763 @@
+-    u8 unk_3BC;
++    u8 cpu_pad_script_kind;
+@@ -1771 +1771 @@
+-    s32 unk_3CC;
++    s32 cpu_decided_pad_held;
+@@ -1778 +1778 @@
+-    s16 unk_3F0;
++    s16 cpu_distance_error_streak;
+@@ -1780 +1780 @@
+-    u8 unk_3F3;
++    u8 cpu_threat_resolved_count;
+@@ -1782,2 +1782,2 @@
+-    u8 unk_3F5;
+-    u8 unk_3F6;
++    u8 cpu_script_wait_frames;
++    u8 cpu_script_wait_limit;
+@@ -1786,3 +1786,3 @@
+-    s16 unk_3F8[3];
+-    s16 unk_3FE[3];
+-    s16 unk_404[3];
++    s16 script_min_distances[3];
++    s16 script_max_distances[3];
++    s16 filtered_script_max_distances[3];
+@@ -1796,6 +1796,6 @@
+-    u8 unk_414[8][2];
+-    u8 unk_424;
+-    u8 unk_425;
+-    u8 unk_426;
+-    u8 unk_427;
+-    s16 unk_428;
++    u8 cpu_tracked_move_tallies[8][2];
++    u8 cpu_tracked_move_tally_threshold;
++    u8 incoming_projectile_state;
++    u8 incoming_attack_state;
++    u8 opponent_snapshot_hit_start_frame;
++    s16 cpu_tracked_move_key;
+@@ -1805 +1805 @@
+-    s32 unk_430;
++    s32 cpu_frame_flags;
+@@ -1807 +1807 @@
+-    s16 unk_438;
++    s16 cpu_level;
+@@ -1811,3 +1811,3 @@
+-    u8 unk_440;
+-    u8 unk_441;
+-    u8 unk_442;
++    u8 latched_motion_metadata_nibble;
++    u8 motion_metadata_nibble;
++    u8 opponent_ground_y_band;
+--- a/src/main/175A4.c
++++ b/src/main/175A4.c
+@@ -59 +59 @@
+-                current->unk_28C += current->unk_20;
++                current->mash_contest_score += current->power;
+@@ -62 +62 @@
+-                current->unk_28C += current->unk_20;
++                current->mash_contest_score += current->power;
+@@ -74 +74 @@
+-                current->unk_134.vx -=
++                current->decaying_xz_velocity.vx -=
+@@ -77 +77 @@
+-                current->unk_134.vz +=
++                current->decaying_xz_velocity.vz +=
+@@ -90 +90 @@
+-            if (D_80101EC8[0].unk_28C > D_80101EC8[1].unk_28C) {
++            if (D_80101EC8[0].mash_contest_score > D_80101EC8[1].mash_contest_score) {
+@@ -98 +98 @@
+-            } else if (D_80101EC8[1].unk_28C > D_80101EC8[0].unk_28C) {
++            } else if (D_80101EC8[1].mash_contest_score > D_80101EC8[0].mash_contest_score) {
+@@ -107,2 +107,2 @@
+-            var_1->unk_28C = 0;
+-            record->unk_28C = 0;
++            var_1->mash_contest_score = 0;
++            record->mash_contest_score = 0;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -143 +143 @@
+-        a0->unk_8A = 0;
++        a0->object_variant_enabled = 0;
+@@ -240,6 +240,6 @@
+-    arg0->unk_104.vx = 0;
+-    arg0->unk_104.vy = 0;
+-    arg0->unk_104.vz = 0;
+-    arg0->unk_134.vx = 0;
+-    arg0->unk_134.vy = 0;
+-    arg0->unk_134.vz = 0;
++    arg0->base_velocity.vx = 0;
++    arg0->base_velocity.vy = 0;
++    arg0->base_velocity.vz = 0;
++    arg0->decaying_xz_velocity.vx = 0;
++    arg0->decaying_xz_velocity.vy = 0;
++    arg0->decaying_xz_velocity.vz = 0;
+@@ -271 +271 @@
+-        s16 f86 = chk_obj->unk_86;
++        s16 f86 = chk_obj->variant_index;
+@@ -281 +281 @@
+-            s16 f88 = chk_obj->unk_88;
++            s16 f88 = chk_obj->object_variant_index;
+@@ -311,2 +311,2 @@
+-        a0->move_frame < a0->unk_A5 || a0->unk_A6 < a0->move_frame) {
+-        if (a0->unk_88 != -1) {
++        a0->move_frame < a0->frame_window_start || a0->frame_window_end < a0->move_frame) {
++        if (a0->object_variant_index != -1) {
+@@ -327,3 +327,3 @@
+-    s16 v1 = a0->unk_86;
+-    if (v1 == a0->unk_88) {
+-        if (a0->unk_8A) {
++    s16 v1 = a0->variant_index;
++    if (v1 == a0->object_variant_index) {
++        if (a0->object_variant_enabled) {
+@@ -333,2 +333,2 @@
+-                a0->unk_8A = 0;
+-                a0->unk_86 = a0->unk_84;
++                a0->object_variant_enabled = 0;
++                a0->variant_index = a0->default_variant_index;
+@@ -391,2 +391,2 @@
+-        dot = (arg1->unk_1EC.x * D_800A37E8 + arg1->unk_1EC.y * D_800A37EA +
+-               arg1->unk_1EC.z * D_800A37EC) >>
++        dot = (arg1->bone_y_axis.x * D_800A37E8 + arg1->bone_y_axis.y * D_800A37EA +
++               arg1->bone_y_axis.z * D_800A37EC) >>
+@@ -431 +431 @@
+-            diff = var_5->unk_20 - arg1->unk_20;
++            diff = var_5->power - arg1->power;
+@@ -467,2 +467,2 @@
+-                arg1->unk_134.vx -= vec[0] / 16;
+-                arg1->unk_134.vz -= vec[2] / 16;
++                arg1->decaying_xz_velocity.vx -= vec[0] / 16;
++                arg1->decaying_xz_velocity.vz -= vec[2] / 16;
+@@ -489,2 +489,2 @@
+-                arg1->unk_134.vx -= vec[0] / 16;
+-                arg1->unk_134.vz -= vec[2] / 16;
++                arg1->decaying_xz_velocity.vx -= vec[0] / 16;
++                arg1->decaying_xz_velocity.vz -= vec[2] / 16;
+@@ -503 +503 @@
+-            arg1->pending_move_event = arg1->unk_1DA ? 6 : 7;
++            arg1->pending_move_event = arg1->bone_triangle_cross_y_positive ? 6 : 7;
+@@ -507 +507 @@
+-        arg1->pending_move_event = arg1->unk_1DA ? 3 : 4;
++        arg1->pending_move_event = arg1->bone_triangle_cross_y_positive ? 3 : 4;
+@@ -561 +561 @@
+-        arg1->unk_8A = 0;
++        arg1->object_variant_enabled = 0;
+@@ -633 +633 @@
+-            if (arg0->unk_8C != 0) {
++            if (arg0->wielded_object_live_state != 0) {
+@@ -647 +647 @@
+-            s16 temp_v1_3 = temp_s4->unk_288[temp_s5];
++            s16 temp_v1_3 = temp_s4->weapon_hit_phases[temp_s5];
+@@ -649 +649 @@
+-                if (arg0->unk_288[temp_a1_2] > 0) {
++                if (arg0->weapon_hit_phases[temp_a1_2] > 0) {
+@@ -667 +667 @@
+-                s16 temp_v0_3 = arg0->unk_288[temp_a1_2];
++                s16 temp_v0_3 = arg0->weapon_hit_phases[temp_a1_2];
+@@ -679 +679 @@
+-                    if (arg0->unk_288[temp_a1_2] == 5) {
++                    if (arg0->weapon_hit_phases[temp_a1_2] == 5) {
+@@ -772,2 +772,2 @@
+-        if (base->character_roster_index != 0x1B || base->unk_46 != 0 ||
+-            base->move_kind != 0xB || base->move_frame != base->unk_A7) {
++        if (base->character_roster_index != 0x1B || base->move_frame_unchanged != 0 ||
++            base->move_kind != 0xB || base->move_frame != base->release_frame) {
+@@ -786 +786 @@
+-                    base->other->unk_86 = base->other->unk_84;
++                    base->other->variant_index = base->other->default_variant_index;
+@@ -891 +891 @@
+-            var_16 = (D_80101EC8[1].unk_20 - D_80101EC8[0].unk_20) / 4;
++            var_16 = (D_80101EC8[1].power - D_80101EC8[0].power) / 4;
+@@ -972,4 +972,4 @@
+-        D_80101EC8[0].unk_134.vx += var_5;
+-        D_80101EC8[0].unk_134.vz += var_6;
+-        D_80101EC8[1].unk_134.vx += var_7;
+-        D_80101EC8[1].unk_134.vz += var_8;
++        D_80101EC8[0].decaying_xz_velocity.vx += var_5;
++        D_80101EC8[0].decaying_xz_velocity.vz += var_6;
++        D_80101EC8[1].decaying_xz_velocity.vx += var_7;
++        D_80101EC8[1].decaying_xz_velocity.vz += var_8;
+@@ -1170,2 +1170,2 @@
+-            var_1[2] = rec->unk_210[0];
+-            var_1[3] = rec->unk_210[2];
++            var_1[2] = rec->prev_weapon_points[0];
++            var_1[3] = rec->prev_weapon_points[2];
+@@ -1174,2 +1174,2 @@
+-            var_1[6] = rec->unk_210[0];
+-            var_1[7] = rec->unk_210[1];
++            var_1[6] = rec->prev_weapon_points[0];
++            var_1[7] = rec->prev_weapon_points[1];
+@@ -1179,3 +1179,3 @@
+-            var_1[2] = rec->unk_210[0];
+-            var_1[3] = rec->unk_210[1];
+-            if (rec->unk_8C != 0) {
++            var_1[2] = rec->prev_weapon_points[0];
++            var_1[3] = rec->prev_weapon_points[1];
++            if (rec->wielded_object_live_state != 0) {
+@@ -1184,2 +1184,2 @@
+-                var_1[6] = rec->unk_234[0];
+-                var_1[7] = rec->unk_234[1];
++                var_1[6] = rec->prev_second_weapon_points[0];
++                var_1[7] = rec->prev_second_weapon_points[1];
+@@ -1198,3 +1198,3 @@
+-            rec->pending_move_event = rec->unk_8C != 0 ? 0x19 : 0xB;
+-            rec->unk_AD = 0;
+-        } else if (rec->unk_8C != 0 &&
++            rec->pending_move_event = rec->wielded_object_live_state != 0 ? 0x19 : 0xB;
++            rec->attack_hit_armed = 0;
++        } else if (rec->wielded_object_live_state != 0 &&
+@@ -1211 +1211 @@
+-            rec->unk_AD = 0;
++            rec->attack_hit_armed = 0;
+@@ -1220,2 +1220,2 @@
+-        dst[2] = rec->unk_210[0];
+-        dst[3] = rec->unk_210[1];
++        dst[2] = rec->prev_weapon_points[0];
++        dst[3] = rec->prev_weapon_points[1];
+@@ -1223 +1223 @@
+-        if (rec->is_defeated != 0 || rec->unk_92 == 0 ||
++        if (rec->is_defeated != 0 || rec->weapon_live_state == 0 ||
+@@ -1230 +1230 @@
+-        if (rec->unk_8C != 0) {
++        if (rec->wielded_object_live_state != 0) {
+@@ -1233,2 +1233,2 @@
+-            dst[6] = rec->unk_234[0];
+-            dst[7] = rec->unk_234[1];
++            dst[6] = rec->prev_second_weapon_points[0];
++            dst[7] = rec->prev_second_weapon_points[1];
+@@ -1719 +1719 @@
+-        if (var_3->is_defeated == 0 && var_3->unk_92 != 0 &&
++        if (var_3->is_defeated == 0 && var_3->weapon_live_state != 0 &&
+@@ -1723 +1723 @@
+-        if (var_3->unk_8C != 0) {
++        if (var_3->wielded_object_live_state != 0) {
+@@ -1774 +1774 @@
+-            } else if (var_3->unk_8C != 0) {
++            } else if (var_3->wielded_object_live_state != 0) {
+@@ -1788,2 +1788,2 @@
+-                scr->point_slots.unk00[2] = var_3->unk_210[temp1];
+-                scr->point_slots.unk00[3] = var_3->unk_210[temp2];
++                scr->point_slots.unk00[2] = var_3->prev_weapon_points[temp1];
++                scr->point_slots.unk00[3] = var_3->prev_weapon_points[temp2];
+@@ -1793,2 +1793,2 @@
+-                scr->point_slots.unk00[2] = var_3->unk_234[temp1];
+-                scr->point_slots.unk00[3] = var_3->unk_234[temp2];
++                scr->point_slots.unk00[2] = var_3->prev_second_weapon_points[temp1];
++                scr->point_slots.unk00[3] = var_3->prev_second_weapon_points[temp2];
+@@ -1889,3 +1889,3 @@
+-        scr->unkC8.x = var_3->unk_210[1].x;
+-        scr->unkC8.y = var_3->unk_210[1].y;
+-        scr->unkC8.z = var_3->unk_210[1].z;
++        scr->unkC8.x = var_3->prev_weapon_points[1].x;
++        scr->unkC8.y = var_3->prev_weapon_points[1].y;
++        scr->unkC8.z = var_3->prev_weapon_points[1].z;
+@@ -1984,2 +1984,2 @@
+-                    var_4->unk_134.vx += dx / 2;
+-                    var_4->unk_134.vz += dz / 2;
++                    var_4->decaying_xz_velocity.vx += dx / 2;
++                    var_4->decaying_xz_velocity.vz += dz / 2;
+@@ -1987,2 +1987,2 @@
+-                    var_4->unk_134.vx += dx;
+-                    var_4->unk_134.vz += dz;
++                    var_4->decaying_xz_velocity.vx += dx;
++                    var_4->decaying_xz_velocity.vz += dz;
+@@ -2021 +2021 @@
+-        if (var_3->unk_8C != 0 &&
++        if (var_3->wielded_object_live_state != 0 &&
+@@ -2052 +2052 @@
+-        var_3->unk_AD = 0;
++        var_3->attack_hit_armed = 0;
+@@ -2096,4 +2096,4 @@
+-        rec0->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
+-        rec0->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
+-        rec1->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
+-        rec1->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
++        rec0->decaying_xz_velocity.vx = (temp_a3 * var_a0) / temp_v0;
++        rec0->decaying_xz_velocity.vz = (temp_t1 * var_a0) / temp_v0;
++        rec1->decaying_xz_velocity.vx = (temp_a3 * temp_v1_3) / temp_v0;
++        rec1->decaying_xz_velocity.vz = (temp_t1 * temp_v1_3) / temp_v0;
+@@ -2144,4 +2144,4 @@
+-        rec0->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
+-        rec0->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
+-        rec1->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
+-        rec1->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
++        rec0->decaying_xz_velocity.vx = (temp_a3 * var_a0) / temp_v0;
++        rec0->decaying_xz_velocity.vz = (temp_t1 * var_a0) / temp_v0;
++        rec1->decaying_xz_velocity.vx = (temp_a3 * temp_v1_3) / temp_v0;
++        rec1->decaying_xz_velocity.vz = (temp_t1 * temp_v1_3) / temp_v0;
+@@ -2177 +2177 @@
+-                if (var_s0->unk_AA == var_s0->move_frame) {
++                if (var_s0->paired_move_hit_frame == var_s0->move_frame) {
+@@ -2189 +2189 @@
+-            if (v1 >= var_s0->unk_AA) {
++            if (v1 >= var_s0->paired_move_hit_frame) {
+@@ -2229,6 +2229,6 @@
+-        scr->unkB8.x = rec0->unk_234[0].x;
+-        scr->unkB8.y = rec0->unk_234[0].y;
+-        scr->unkB8.z = rec0->unk_234[0].z;
+-        scr->unkB8.x += rec0->unk_234[1].x;
+-        scr->unkB8.y += rec0->unk_234[1].y;
+-        scr->unkB8.z += rec0->unk_234[1].z;
++        scr->unkB8.x = rec0->prev_second_weapon_points[0].x;
++        scr->unkB8.y = rec0->prev_second_weapon_points[0].y;
++        scr->unkB8.z = rec0->prev_second_weapon_points[0].z;
++        scr->unkB8.x += rec0->prev_second_weapon_points[1].x;
++        scr->unkB8.y += rec0->prev_second_weapon_points[1].y;
++        scr->unkB8.z += rec0->prev_second_weapon_points[1].z;
+@@ -2242,6 +2242,6 @@
+-        scr->unkB8.x = rec0->unk_210[0].x;
+-        scr->unkB8.y = rec0->unk_210[0].y;
+-        scr->unkB8.z = rec0->unk_210[0].z;
+-        scr->unkB8.x += rec0->unk_210[1].x;
+-        scr->unkB8.y += rec0->unk_210[1].y;
+-        scr->unkB8.z += rec0->unk_210[1].z;
++        scr->unkB8.x = rec0->prev_weapon_points[0].x;
++        scr->unkB8.y = rec0->prev_weapon_points[0].y;
++        scr->unkB8.z = rec0->prev_weapon_points[0].z;
++        scr->unkB8.x += rec0->prev_weapon_points[1].x;
++        scr->unkB8.y += rec0->prev_weapon_points[1].y;
++        scr->unkB8.z += rec0->prev_weapon_points[1].z;
+@@ -2253,3 +2253,3 @@
+-        scr->unkB8.x += rec1->unk_234[0].x;
+-        scr->unkB8.y += rec1->unk_234[0].y;
+-        scr->unkB8.z += rec1->unk_234[0].z;
++        scr->unkB8.x += rec1->prev_second_weapon_points[0].x;
++        scr->unkB8.y += rec1->prev_second_weapon_points[0].y;
++        scr->unkB8.z += rec1->prev_second_weapon_points[0].z;
+@@ -2259,3 +2259,3 @@
+-        scr->unkB8.x += rec1->unk_234[1].x;
+-        scr->unkB8.y += rec1->unk_234[1].y;
+-        scr->unkB8.z += rec1->unk_234[1].z;
++        scr->unkB8.x += rec1->prev_second_weapon_points[1].x;
++        scr->unkB8.y += rec1->prev_second_weapon_points[1].y;
++        scr->unkB8.z += rec1->prev_second_weapon_points[1].z;
+@@ -2266,3 +2266,3 @@
+-        scr->unkB8.x += rec1->unk_210[0].x;
+-        scr->unkB8.y += rec1->unk_210[0].y;
+-        scr->unkB8.z += rec1->unk_210[0].z;
++        scr->unkB8.x += rec1->prev_weapon_points[0].x;
++        scr->unkB8.y += rec1->prev_weapon_points[0].y;
++        scr->unkB8.z += rec1->prev_weapon_points[0].z;
+@@ -2272,3 +2272,3 @@
+-        scr->unkB8.x += rec1->unk_210[1].x;
+-        scr->unkB8.y += rec1->unk_210[1].y;
+-        scr->unkB8.z += rec1->unk_210[1].z;
++        scr->unkB8.x += rec1->prev_weapon_points[1].x;
++        scr->unkB8.y += rec1->prev_weapon_points[1].y;
++        scr->unkB8.z += rec1->prev_weapon_points[1].z;
+@@ -2312 +2312 @@
+-            (firstPlayer->unk_AD != 0 || secondPlayer->unk_AD != 0)) {
++            (firstPlayer->attack_hit_armed != 0 || secondPlayer->attack_hit_armed != 0)) {
+@@ -2317,2 +2317,2 @@
+-            secondPlayer->unk_AD = 0;
+-            firstPlayer->unk_AD = 0;
++            secondPlayer->attack_hit_armed = 0;
++            firstPlayer->attack_hit_armed = 0;
+@@ -2333,2 +2333,2 @@
+-                secondPlayer->unk_28C = 0;
+-                firstPlayer->unk_28C = 0;
++                secondPlayer->mash_contest_score = 0;
++                firstPlayer->mash_contest_score = 0;
+@@ -2350,2 +2350,2 @@
+-        D_80101EC8[0].unk_210[i] = SPAD->unk00[0][i];
+-        D_80101EC8[1].unk_210[i] = SPAD->unk00[1][i];
++        D_80101EC8[0].prev_weapon_points[i] = SPAD->unk00[0][i];
++        D_80101EC8[1].prev_weapon_points[i] = SPAD->unk00[1][i];
+@@ -2355,2 +2355,2 @@
+-        D_80101EC8[0].unk_234[i] = SPAD->unk48[0][i];
+-        D_80101EC8[1].unk_234[i] = SPAD->unk48[1][i];
++        D_80101EC8[0].prev_second_weapon_points[i] = SPAD->unk48[0][i];
++        D_80101EC8[1].prev_second_weapon_points[i] = SPAD->unk48[1][i];
+@@ -2360 +2360 @@
+-        D_80101EC8[i].unk_18C.x =
++        D_80101EC8[i].bone_hit_points_1_3_centroid.x =
+@@ -2363 +2363 @@
+-        D_80101EC8[i].unk_18C.y =
++        D_80101EC8[i].bone_hit_points_1_3_centroid.y =
+@@ -2366 +2366 @@
+-        D_80101EC8[i].unk_18C.z =
++        D_80101EC8[i].bone_hit_points_1_3_centroid.z =
+@@ -2369 +2369 @@
+-        D_80101EC8[i].unk_174.x =
++        D_80101EC8[i].bone_hit_points_4_5_midpoint.x =
+@@ -2371 +2371 @@
+-        D_80101EC8[i].unk_174.y =
++        D_80101EC8[i].bone_hit_points_4_5_midpoint.y =
+@@ -2373 +2373 @@
+-        D_80101EC8[i].unk_174.z =
++        D_80101EC8[i].bone_hit_points_4_5_midpoint.z =
+@@ -3949,2 +3949,2 @@
+-    if (count >= 2 && a0->unk_88 != -1) {
+-        idx = a0->carried_object_kinds[0] == a0->unk_14;
++    if (count >= 2 && a0->object_variant_index != -1) {
++        idx = a0->carried_object_kinds[0] == a0->wielded_object_kind;
+@@ -4017 +4017 @@
+-    p->unk_0B = a0->unk_12;
++    p->unk_0B = a0->weapon_entry_id;
+@@ -4026 +4026 @@
+-    if (arg0->unk_88 != -1 && arg1 == arg0->unk_14) {
++    if (arg0->object_variant_index != -1 && arg1 == arg0->wielded_object_kind) {
+@@ -4539 +4539 @@
+-        src->unk_B2, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
++        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
+@@ -4630,2 +4630,2 @@
+-    rec->unk_AA = 0;
+-    rec->unk_A7 = 0;
++    rec->paired_move_hit_frame = 0;
++    rec->release_frame = 0;
+@@ -4633,4 +4633,4 @@
+-    rec->unk_A5 = 0;
+-    rec->unk_A6 = 0xFF;
+-    rec->unk_AB = 0xFF;
+-    rec->unk_AC = 0xFF;
++    rec->frame_window_start = 0;
++    rec->frame_window_end = 0xFF;
++    rec->opponent_transition_start_frame = 0xFF;
++    rec->weapon_reload_frame = 0xFF;
+@@ -4653 +4653 @@
+-                rec->unk_A7 = val;
++                rec->release_frame = val;
+@@ -4662 +4662 @@
+-                rec->unk_A5 = val;
++                rec->frame_window_start = val;
+@@ -4665 +4665 @@
+-                rec->unk_A6 = val;
++                rec->frame_window_end = val;
+@@ -4674 +4674 @@
+-                rec->unk_AA = val;
++                rec->paired_move_hit_frame = val;
+@@ -4677 +4677 @@
+-                rec->unk_AB = val;
++                rec->opponent_transition_start_frame = val;
+@@ -4680 +4680 @@
+-                rec->unk_AC = val;
++                rec->weapon_reload_frame = val;
+@@ -4957,4 +4957,4 @@
+-    row = base + obj->unk_B2 * 4;
+-    var_5 = obj->unk_B2 * 3;
+-    row2 = base2 + obj->other->unk_B2 * 4;
+-    var_6 = obj->other->unk_B2 * 3;
++    row = base + obj->collision_hit_class * 4;
++    var_5 = obj->collision_hit_class * 3;
++    row2 = base2 + obj->other->collision_hit_class * 4;
++    var_6 = obj->other->collision_hit_class * 3;
+@@ -4965,4 +4965,4 @@
+-            if (obj->unk_1B0[0] - 600 < obj->unk_198[0].y) {
+-                pos[0] = obj->unk_198[0].x;
+-                pos[1] = obj->unk_1B0[0];
+-                pos[2] = obj->unk_198[0].z;
++            if (obj->ground_probe_floor_ys[0] - 600 < obj->ground_probe_points[0].y) {
++                pos[0] = obj->ground_probe_points[0].x;
++                pos[1] = obj->ground_probe_floor_ys[0];
++                pos[2] = obj->ground_probe_points[0].z;
+@@ -4980,4 +4980,4 @@
+-                obj->unk_1B0[0] - 600 < obj->unk_198[0].y) {
+-                pos[0] = obj->unk_198[0].x;
+-                pos[1] = obj->unk_1B0[0];
+-                pos[2] = obj->unk_198[0].z;
++                obj->ground_probe_floor_ys[0] - 600 < obj->ground_probe_points[0].y) {
++                pos[0] = obj->ground_probe_points[0].x;
++                pos[1] = obj->ground_probe_floor_ys[0];
++                pos[2] = obj->ground_probe_points[0].z;
+@@ -4991,4 +4991,4 @@
+-            if (obj->unk_1B0[1] - 600 < obj->unk_198[1].y) {
+-                pos[0] = obj->unk_198[1].x;
+-                pos[1] = obj->unk_1B0[1];
+-                pos[2] = obj->unk_198[1].z;
++            if (obj->ground_probe_floor_ys[1] - 600 < obj->ground_probe_points[1].y) {
++                pos[0] = obj->ground_probe_points[1].x;
++                pos[1] = obj->ground_probe_floor_ys[1];
++                pos[2] = obj->ground_probe_points[1].z;
+@@ -5006,4 +5006,4 @@
+-                obj->unk_1B0[1] - 600 < obj->unk_198[1].y) {
+-                pos[0] = obj->unk_198[1].x;
+-                pos[1] = obj->unk_1B0[1];
+-                pos[2] = obj->unk_198[1].z;
++                obj->ground_probe_floor_ys[1] - 600 < obj->ground_probe_points[1].y) {
++                pos[0] = obj->ground_probe_points[1].x;
++                pos[1] = obj->ground_probe_floor_ys[1];
++                pos[2] = obj->ground_probe_points[1].z;
+@@ -5017 +5017 @@
+-            obj->index, 10, &obj->unk_180.x, 0);
++            obj->index, 10, &obj->bone_hit_point_0.x, 0);
+@@ -5021 +5021 @@
+-            obj->index, 10, &obj->unk_18C.x, 0);
++            obj->index, 10, &obj->bone_hit_points_1_3_centroid.x, 0);
+@@ -5025 +5025 @@
+-            obj->index, 10, &obj->unk_174.x, 0);
++            obj->index, 10, &obj->bone_hit_points_4_5_midpoint.x, 0);
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1258 +1258 @@
+-        u8 b = a0->unk_B3;
++        u8 b = a0->draw_move_set;
+@@ -1263,3 +1263,3 @@
+-    dest->b14 = a0->unk_1E6 >> 2;
+-    dest->b15 = a0->unk_1E8 >> 2;
+-    dest->b16 = a0->unk_1EA >> 2;
++    dest->b14 = a0->eased_pose_bearing_offset >> 2;
++    dest->b15 = a0->eased_pose_elevation_offset >> 2;
++    dest->b16 = a0->opponent_elevation_offset >> 2;
+@@ -1276,2 +1276,2 @@
+-    dest->hE = a0->unk_64;
+-    dest->h10 = a0->unk_66;
++    dest->hE = a0->blend_src_frame_code;
++    dest->h10 = a0->blend_dst_frame_code;
+@@ -1279 +1279 @@
+-    dest->b18 = a0->unk_62;
++    dest->b18 = a0->frame_flags;
+@@ -1317 +1317 @@
+-    mid_x = (s32)(arg0->unk_198[0].x + arg0->unk_198[1].x) / 2;
++    mid_x = (s32)(arg0->ground_probe_points[0].x + arg0->ground_probe_points[1].x) / 2;
+@@ -1319 +1319 @@
+-    mid_y = (s32)(arg0->unk_198[0].y + arg0->unk_198[1].y) / 2;
++    mid_y = (s32)(arg0->ground_probe_points[0].y + arg0->ground_probe_points[1].y) / 2;
+@@ -1321 +1321 @@
+-    mid_z = (s32)(arg0->unk_198[0].z + arg0->unk_198[1].z) / 2;
++    mid_z = (s32)(arg0->ground_probe_points[0].z + arg0->ground_probe_points[1].z) / 2;
+@@ -1416 +1416 @@
+-                var_11->unk_12, i * 2 + 0x8000, 0, 0);
++                var_11->weapon_entry_id, i * 2 + 0x8000, 0, 0);
+@@ -1420 +1420 @@
+-                g_resource_kind_entry_ids[var_11->unk_14], i * 2 + 0x8001, 0,
++                g_resource_kind_entry_ids[var_11->wielded_object_kind], i * 2 + 0x8001, 0,
+@@ -1425 +1425 @@
+-                var_11->unk_12, i * 2, (p->b18 >> 4) & 1);
++                var_11->weapon_entry_id, i * 2, (p->b18 >> 4) & 1);
+@@ -1429 +1429 @@
+-                g_resource_kind_entry_ids[var_11->unk_14], i * 2 | 1,
++                g_resource_kind_entry_ids[var_11->wielded_object_kind], i * 2 | 1,
+@@ -1439 +1439 @@
+-                var_11->unk_B2 = out_b2;
++                var_11->collision_hit_class = out_b2;
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -187 +187 @@
+-            D_80101EC8[i].unk_12);
++            D_80101EC8[i].weapon_entry_id);
+@@ -191 +191 @@
+-        if (D_80101EC8[i].unk_14 != -1) {
++        if (D_80101EC8[i].wielded_object_kind != -1) {
+@@ -193,2 +193,2 @@
+-                g_resource_kind_entry_ids[D_80101EC8[i].unk_14]);
+-            if (D_80101EC8[i].unk_14 == 14) {
++                g_resource_kind_entry_ids[D_80101EC8[i].wielded_object_kind]);
++            if (D_80101EC8[i].wielded_object_kind == 14) {
+@@ -212 +212 @@
+-        D_80101EC8[arg0].unk_12);
++        D_80101EC8[arg0].weapon_entry_id);
+@@ -519,2 +519,2 @@
+-            saved_first = D_80101EC8[0].unk_12;
+-            saved_44c = D_80101EC8[1].unk_12;
++            saved_first = D_80101EC8[0].weapon_entry_id;
++            saved_44c = D_80101EC8[1].weapon_entry_id;
+@@ -522 +522 @@
+-                D_80101EC8[0].unk_12 = 0x32;
++                D_80101EC8[0].weapon_entry_id = 0x32;
+@@ -524 +524 @@
+-                D_80101EC8[1].unk_12 = 0x32;
++                D_80101EC8[1].weapon_entry_id = 0x32;
+@@ -526,2 +526,2 @@
+-            D_80101EC8[0].unk_12 = saved_first;
+-            D_80101EC8[1].unk_12 = saved_44c;
++            D_80101EC8[0].weapon_entry_id = saved_first;
++            D_80101EC8[1].weapon_entry_id = saved_44c;
+@@ -531 +531 @@
+-        a3_arg = D_80101EC8[0].unk_12;
++        a3_arg = D_80101EC8[0].weapon_entry_id;
+@@ -535 +535 @@
+-        a0_arg = D_80101EC8[1].unk_12;
++        a0_arg = D_80101EC8[1].weapon_entry_id;
+@@ -734 +734 @@
+-        0x16, D_8009016C[g_fight_presentation_index], 0, D_80101EC8[0].unk_12,
++        0x16, D_8009016C[g_fight_presentation_index], 0, D_80101EC8[0].weapon_entry_id,
+@@ -1080,2 +1080,2 @@
+-            0x16, s0, result, (s32)D_80101EC8[0].unk_12,
+-            (s32)D_80101EC8[1].unk_12, -1, -1, 0);
++            0x16, s0, result, (s32)D_80101EC8[0].weapon_entry_id,
++            (s32)D_80101EC8[1].weapon_entry_id, -1, -1, 0);
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -250,2 +250,2 @@
+-        fighter_record->unk_414[tally_index][1] = 0;
+-        fighter_record->unk_414[tally_index][0] = 0;
++        fighter_record->cpu_tracked_move_tallies[tally_index][1] = 0;
++        fighter_record->cpu_tracked_move_tallies[tally_index][0] = 0;
+@@ -260,2 +260,2 @@
+-        fighter_record->unk_414[tally_index][1] =
+-            fighter_record->unk_414[tally_index][1] >> 1;
++        fighter_record->cpu_tracked_move_tallies[tally_index][1] =
++            fighter_record->cpu_tracked_move_tallies[tally_index][1] >> 1;
+@@ -292 +292 @@
+-    p->unk_438 = p->unk_08;
++    p->cpu_level = p->cpu_base_level;
+@@ -295,3 +295,3 @@
+-        p->unk_438 = (g_fight_opponent_order_cursor - 1) / 5 * 0x300 + 0x400;
+-        if (p->unk_438 > 0xD00) {
+-            p->unk_438 = 0xD00;
++        p->cpu_level = (g_fight_opponent_order_cursor - 1) / 5 * 0x300 + 0x400;
++        if (p->cpu_level > 0xD00) {
++            p->cpu_level = 0xD00;
+@@ -305,3 +305,3 @@
+-            src = &D_8009A8C8[p->unk_86][g_fight_stage_command_count - 1];
+-            p->unk_424 = src->unk0;
+-            p->unk_3F6 = src->unk1;
++            src = &D_8009A8C8[p->variant_index][g_fight_stage_command_count - 1];
++            p->cpu_tracked_move_tally_threshold = src->unk0;
++            p->cpu_script_wait_limit = src->unk1;
+@@ -313,3 +313,3 @@
+-            p->unk_438 = temp * 0x180 + 0x280;
+-            if (p->unk_438 > 0x1000) {
+-                p->unk_438 = 0x1000;
++            p->cpu_level = temp * 0x180 + 0x280;
++            if (p->cpu_level > 0x1000) {
++                p->cpu_level = 0x1000;
+@@ -328,3 +328,3 @@
+-            p->unk_438 = 0;
+-            p->unk_424 = 0;
+-            p->unk_3F6 = 0x3C - temp * 15;
++            p->cpu_level = 0;
++            p->cpu_tracked_move_tally_threshold = 0;
++            p->cpu_script_wait_limit = 0x3C - temp * 15;
+@@ -336 +336 @@
+-        p->unk_438 = base * 16 + 0x80;
++        p->cpu_level = base * 16 + 0x80;
+@@ -338 +338 @@
+-            p->unk_438 = base * 16 + 0x180;
++            p->cpu_level = base * 16 + 0x180;
+@@ -341 +341 @@
+-            p->unk_438 += 0x200;
++            p->cpu_level += 0x200;
+@@ -351,2 +351,2 @@
+-        p->unk_424 = var_2[0];
+-        p->unk_3F6 = var_2[1];
++        p->cpu_tracked_move_tally_threshold = var_2[0];
++        p->cpu_script_wait_limit = var_2[1];
+@@ -356 +356 @@
+-        p->unk_438 = p->unk_438 * 11 >> 4;
++        p->cpu_level = p->cpu_level * 11 >> 4;
+@@ -359,4 +359,4 @@
+-        p->unk_424 = 0x11 - (p->unk_438 >> 8);
+-    }
+-    p->unk_39A = 0x8000 / p->base_move_frame_step;
+-    p->unk_3BD = 0x10 - (p->unk_438 >> 8);
++        p->cpu_tracked_move_tally_threshold = 0x11 - (p->cpu_level >> 8);
++    }
++    p->cpu_action_cooldown_frames = 0x8000 / p->base_move_frame_step;
++    p->unk_3BD = 0x10 - (p->cpu_level >> 8);
+@@ -433,3 +433,3 @@
+-            rec->unk_3F8[var_5] = lo_val;
+-            rec->unk_3FE[var_5] = hi1_val;
+-            rec->unk_404[var_5] = hi2_val;
++            rec->script_min_distances[var_5] = lo_val;
++            rec->script_max_distances[var_5] = hi1_val;
++            rec->filtered_script_max_distances[var_5] = hi2_val;
+@@ -441,3 +441,3 @@
+-    p->unk_428 = -1;
+-    p->unk_425 = 0;
+-    p->unk_426 = 0;
++    p->cpu_tracked_move_key = -1;
++    p->incoming_projectile_state = 0;
++    p->incoming_attack_state = 0;
+@@ -448,4 +448,4 @@
+-    other_record->unk_440 = 0;
+-    p->unk_440 = 0;
+-    other_record->unk_441 = 0;
+-    p->unk_441 = 0;
++    other_record->latched_motion_metadata_nibble = 0;
++    p->latched_motion_metadata_nibble = 0;
++    other_record->motion_metadata_nibble = 0;
++    p->motion_metadata_nibble = 0;
+@@ -457,2 +457,2 @@
+-    p->unk_39D = 0;
+-    p->unk_3F5 = 0;
++    p->cpu_orbit_route_active = 0;
++    p->cpu_script_wait_frames = 0;
+@@ -460 +460 @@
+-    p->unk_3F3 = 0;
++    p->cpu_threat_resolved_count = 0;
+@@ -463 +463 @@
+-    p->unk_3F0 = 0;
++    p->cpu_distance_error_streak = 0;
+@@ -465,3 +465,3 @@
+-    p->unk_39C = 0;
+-    p->unk_394 = 0;
+-    p->unk_398 = 0;
++    p->cpu_action_from_opponent = 0;
++    p->cpu_action_index = 0;
++    p->cpu_action_countdown = 0;
+@@ -472,2 +472,2 @@
+-    p->unk_440 = 0;
+-    p->unk_430 = 0;
++    p->latched_motion_metadata_nibble = 0;
++    p->cpu_frame_flags = 0;
+@@ -487 +487 @@
+-        if (arg0->unk_46 == 0) {
++        if (arg0->move_frame_unchanged == 0) {
+@@ -492 +492 @@
+-    if (arg0->unk_3BC != 0) {
++    if (arg0->cpu_pad_script_kind != 0) {
+@@ -503 +503 @@
+-            if (arg0->unk_430 & 0x200) {
++            if (arg0->cpu_frame_flags & 0x200) {
+@@ -513 +513 @@
+-        if (arg0->unk_430 & 0x800)
++        if (arg0->cpu_frame_flags & 0x800)
+@@ -515 +515 @@
+-        if ((u32)(arg0->unk_425 - 1) < 2U)
++        if ((u32)(arg0->incoming_projectile_state - 1) < 2U)
+@@ -517 +517 @@
+-        if (arg0->unk_442 != 0)
++        if (arg0->opponent_ground_y_band != 0)
+@@ -534 +534 @@
+-    if (arg0->unk_3BC != 1)
++    if (arg0->cpu_pad_script_kind != 1)
+@@ -536 +536 @@
+-    if (arg0->unk_430 & 0x800) {
++    if (arg0->cpu_frame_flags & 0x800) {
+@@ -571 +571 @@
+-    fighter_record->unk_3BC = a2;
++    fighter_record->cpu_pad_script_kind = a2;
+@@ -574 +574 @@
+-    fighter_record->unk_3CC = -1;
++    fighter_record->cpu_decided_pad_held = -1;
+@@ -620 +620 @@
+-    rec->unk_3CC = 0;
++    rec->cpu_decided_pad_held = 0;
+@@ -628 +628 @@
+-    var_1->unk_441 = var_1->motion_metadata[2] & 0xF;
++    var_1->motion_metadata_nibble = var_1->motion_metadata[2] & 0xF;
+@@ -642,6 +642,6 @@
+-        var_1->unk_440 = var_1->unk_441;
+-    }
+-
+-    rec->unk_430 =
+-        (rec->unk_430 & 0x40060) |
+-        ((rand() & 0xFFF) < (rec->unk_438 >> 3) &&
++        var_1->latched_motion_metadata_nibble = var_1->motion_metadata_nibble;
++    }
++
++    rec->cpu_frame_flags =
++        (rec->cpu_frame_flags & 0x40060) |
++        ((rand() & 0xFFF) < (rec->cpu_level >> 3) &&
+@@ -650,2 +650,2 @@
+-             ? (rec->unk_3F6 < rec->unk_3F5) << 2
+-             : ((rand() & 0xFFF) < (rec->unk_438 >> 3) &&
++             ? (rec->cpu_script_wait_limit < rec->cpu_script_wait_frames) << 2
++             : ((rand() & 0xFFF) < (rec->cpu_level >> 3) &&
+@@ -654,2 +654,2 @@
+-        (((rand() & 0xFFF) < rec->unk_438 ||
+-          rec->cpu_pad_build_count < (rec->unk_438 >> 3))
++        (((rand() & 0xFFF) < rec->cpu_level ||
++          rec->cpu_pad_build_count < (rec->cpu_level >> 3))
+@@ -657,2 +657,2 @@
+-        (((rand() & 0xFFF) < (rec->unk_438 >> 1) ||
+-          rec->cpu_pad_build_count < (rec->unk_438 >> 4))
++        (((rand() & 0xFFF) < (rec->cpu_level >> 1) ||
++          rec->cpu_pad_build_count < (rec->cpu_level >> 4))
+@@ -686,2 +686,2 @@
+-        if (rec->unk_3F5 != 0xFF) {
+-            rec->unk_3F5++;
++        if (rec->cpu_script_wait_frames != 0xFF) {
++            rec->cpu_script_wait_frames++;
+@@ -690,6 +690,6 @@
+-        rec->unk_3F5 = 0;
+-    }
+-
+-    if (((D_8009A088[rec->other->weapon_id] >> rec->other->unk_440) & 1) &&
+-        rec->other->opponent_angle_from_orientation_abs < (rec->unk_438 >> 4) &&
+-        rec->weapon_id < 6 && (rec->unk_430 & 0x2000) &&
++        rec->cpu_script_wait_frames = 0;
++    }
++
++    if (((D_8009A088[rec->other->weapon_id] >> rec->other->latched_motion_metadata_nibble) & 1) &&
++        rec->other->opponent_angle_from_orientation_abs < (rec->cpu_level >> 4) &&
++        rec->weapon_id < 6 && (rec->cpu_frame_flags & 0x2000) &&
+@@ -697 +697 @@
+-        rec->unk_430 |= 0x20000;
++        rec->cpu_frame_flags |= 0x20000;
+@@ -699,5 +699,5 @@
+-        rec->unk_430 &= ~0x20000;
+-    }
+-
+-    rec->unk_43E = rec->unk_3F8[rec->unk_86] +
+-                   (((rec->unk_404[rec->unk_86] - rec->unk_3F8[rec->unk_86]) *
++        rec->cpu_frame_flags &= ~0x20000;
++    }
++
++    rec->unk_43E = rec->script_min_distances[rec->variant_index] +
++                   (((rec->filtered_script_max_distances[rec->variant_index] - rec->script_min_distances[rec->variant_index]) *
+@@ -710,4 +710,4 @@
+-        if (work != (rec->unk_3F0 >> 15)) {
+-            rec->unk_3F0 = 0;
+-        }
+-        rec->unk_3F0 += work ? -1 : 1;
++        if (work != (rec->cpu_distance_error_streak >> 15)) {
++            rec->cpu_distance_error_streak = 0;
++        }
++        rec->cpu_distance_error_streak += work ? -1 : 1;
+@@ -715 +715 @@
+-        rec->unk_3F0 = 0;
++        rec->cpu_distance_error_streak = 0;
+@@ -720 +720 @@
+-        rec->unk_442 = 1;
++        rec->opponent_ground_y_band = 1;
+@@ -722 +722 @@
+-        rec->unk_442 = 2;
++        rec->opponent_ground_y_band = 2;
+@@ -724,3 +724,3 @@
+-        rec->unk_442 = 0;
+-    }
+-    if (rec->unk_430 & 0x15500) {
++        rec->opponent_ground_y_band = 0;
++    }
++    if (rec->cpu_frame_flags & 0x15500) {
+@@ -738 +738 @@
+-    if (rec->unk_430 & 0x80) {
++    if (rec->cpu_frame_flags & 0x80) {
+@@ -747 +747 @@
+-    if (!(rec->unk_430 & 0x80) ||
++    if (!(rec->cpu_frame_flags & 0x80) ||
+@@ -752,2 +752,2 @@
+-        if (rec->unk_428 != -1) {
+-            if (rec->unk_424 != 0 &&
++        if (rec->cpu_tracked_move_key != -1) {
++            if (rec->cpu_tracked_move_tally_threshold != 0 &&
+@@ -765 +765 @@
+-                    if (rec->unk_414[i][0] == rec->unk_428) {
++                    if (rec->cpu_tracked_move_tallies[i][0] == rec->cpu_tracked_move_key) {
+@@ -768,2 +768,2 @@
+-                        temp = rec->unk_414[i][1] - 1;
+-                        if (rec->unk_414[i][1] < temp3) {
++                        temp = rec->cpu_tracked_move_tallies[i][1] - 1;
++                        if (rec->cpu_tracked_move_tallies[i][1] < temp3) {
+@@ -771 +771 @@
+-                            temp3 = rec->unk_414[i][1];
++                            temp3 = rec->cpu_tracked_move_tallies[i][1];
+@@ -776 +776 @@
+-                        rec->unk_414[i][1] = temp;
++                        rec->cpu_tracked_move_tallies[i][1] = temp;
+@@ -781,2 +781,2 @@
+-                    rec->unk_414[var_12][0] = rec->unk_428;
+-                    rec->unk_414[var_12][1] = temp;
++                    rec->cpu_tracked_move_tallies[var_12][0] = rec->cpu_tracked_move_key;
++                    rec->cpu_tracked_move_tallies[var_12][1] = temp;
+@@ -784 +784 @@
+-                    temp += rec->unk_414[var_13][1];
++                    temp += rec->cpu_tracked_move_tallies[var_13][1];
+@@ -788,6 +788,6 @@
+-                    rec->unk_414[var_13][1] = temp;
+-                }
+-            }
+-            rec->unk_428 = -1;
+-            rec->unk_426 = 0;
+-            rec->unk_430 &= ~0x60;
++                    rec->cpu_tracked_move_tallies[var_13][1] = temp;
++                }
++            }
++            rec->cpu_tracked_move_key = -1;
++            rec->incoming_attack_state = 0;
++            rec->cpu_frame_flags &= ~0x60;
+@@ -796 +796 @@
+-        if (rec->unk_428 != rec->other->motion_entry_index) {
++        if (rec->cpu_tracked_move_key != rec->other->motion_entry_index) {
+@@ -798 +798 @@
+-                rec->unk_428 = 0xFF;
++                rec->cpu_tracked_move_key = 0xFF;
+@@ -800 +800 @@
+-                rec->unk_428 = (rec->other->prev_move_kind != 0xE &&
++                rec->cpu_tracked_move_key = (rec->other->prev_move_kind != 0xE &&
+@@ -804 +804 @@
+-                rec->unk_427 = opponent_hit_start_frame;
++                rec->opponent_snapshot_hit_start_frame = opponent_hit_start_frame;
+@@ -807,2 +807,2 @@
+-                if (rec->unk_442 != 0 ||
+-                    ((rec->unk_430 & 0x100) &&
++                if (rec->opponent_ground_y_band != 0 ||
++                    ((rec->cpu_frame_flags & 0x100) &&
+@@ -811 +811 @@
+-                        rec->unk_426 = 1;
++                        rec->incoming_attack_state = 1;
+@@ -813 +813 @@
+-                        rec->unk_426 = 2;
++                        rec->incoming_attack_state = 2;
+@@ -815 +815 @@
+-                        rec->unk_426 = 3;
++                        rec->incoming_attack_state = 3;
+@@ -819 +819 @@
+-                        rec->unk_426 = 1;
++                        rec->incoming_attack_state = 1;
+@@ -821 +821 @@
+-                        rec->unk_426 = 2;
++                        rec->incoming_attack_state = 2;
+@@ -823 +823 @@
+-                        rec->unk_426 = 3;
++                        rec->incoming_attack_state = 3;
+@@ -831,3 +831,3 @@
+-                if (rec->unk_414[i][0] == rec->unk_428 &&
+-                    rec->unk_414[i][1] != 0 &&
+-                    rec->unk_414[i][1] >= rec->unk_424) {
++                if (rec->cpu_tracked_move_tallies[i][0] == rec->cpu_tracked_move_key &&
++                    rec->cpu_tracked_move_tallies[i][1] != 0 &&
++                    rec->cpu_tracked_move_tallies[i][1] >= rec->cpu_tracked_move_tally_threshold) {
+@@ -835 +835 @@
+-                    if (rec->unk_414[i][1] >= rec->unk_424 * 4) {
++                    if (rec->cpu_tracked_move_tallies[i][1] >= rec->cpu_tracked_move_tally_threshold * 4) {
+@@ -838 +838 @@
+-                    rec->unk_430 |= temp;
++                    rec->cpu_frame_flags |= temp;
+@@ -843,2 +843,2 @@
+-        if (rec->unk_430 & 0x20) {
+-            rec->unk_430 |= 0x18;
++        if (rec->cpu_frame_flags & 0x20) {
++            rec->cpu_frame_flags |= 0x18;
+@@ -851 +851 @@
+-        rec->unk_425 = 1;
++        rec->incoming_projectile_state = 1;
+@@ -853 +853 @@
+-        rec->unk_425 = 0;
++        rec->incoming_projectile_state = 0;
+@@ -877,8 +877,8 @@
+-                        rec->unk_425 = temp2 < 3000 ? 2 : 1;
+-                    }
+-                }
+-            }
+-        }
+-    }
+-
+-    if ((rec->unk_430 & 1) &&
++                        rec->incoming_projectile_state = temp2 < 3000 ? 2 : 1;
++                    }
++                }
++            }
++        }
++    }
++
++    if ((rec->cpu_frame_flags & 1) &&
+@@ -886,3 +886,3 @@
+-        rec->unk_426 != 1 && rec->unk_426 != 2 && rec->unk_425 != 1 &&
+-        rec->unk_425 != 2 &&
+-        (((rec->unk_430 & 0x80) &&
++        rec->incoming_attack_state != 1 && rec->incoming_attack_state != 2 && rec->incoming_projectile_state != 1 &&
++        rec->incoming_projectile_state != 2 &&
++        (((rec->cpu_frame_flags & 0x80) &&
+@@ -895 +895 @@
+-          (((rec->unk_430 & 0x80) && rec->unk_426 == 3) ||
++          (((rec->cpu_frame_flags & 0x80) && rec->incoming_attack_state == 3) ||
+@@ -901,2 +901,2 @@
+-            ((rec->other->carried_object_count == 0 && rec->unk_425 != 1 &&
+-              rec->unk_425 != 2) ||
++            ((rec->other->carried_object_count == 0 && rec->incoming_projectile_state != 1 &&
++              rec->incoming_projectile_state != 2) ||
+@@ -908 +908 @@
+-           (rec->other->move_kind == 0x22 && rec->unk_442 == 0) ||
++           (rec->other->move_kind == 0x22 && rec->opponent_ground_y_band == 0) ||
+@@ -910 +910 @@
+-        rec->unk_430 |= 2;
++        rec->cpu_frame_flags |= 2;
+@@ -912 +912 @@
+-        rec->unk_430 &= ~2;
++        rec->cpu_frame_flags &= ~2;
+@@ -916 +916 @@
+-        rec->unk_430 &= ~0x78;
++        rec->cpu_frame_flags &= ~0x78;
+@@ -918 +918 @@
+-            rec->unk_430 |= 0x40000;
++            rec->cpu_frame_flags |= 0x40000;
+@@ -923 +923 @@
+-        rec->unk_430 |= 0x78;
++        rec->cpu_frame_flags |= 0x78;
+@@ -943 +943 @@
+-            pad.held |= 1 << bits.bit[rec->unk_441];
++            pad.held |= 1 << bits.bit[rec->motion_metadata_nibble];
+@@ -1086 +1086 @@
+-                : D_8009A840[other_record->unk_14] * 2;
++                : D_8009A840[other_record->wielded_object_kind] * 2;
+@@ -1259 +1259 @@
+-        fighter_record->unk_398 = 0;
++        fighter_record->cpu_action_countdown = 0;
+@@ -1772,2 +1772,2 @@
+-        ((p->unk_430 & 0x15100) ||
+-         (p->move_kind == 0xD && (p->unk_426 == 4 || p->unk_425 == 4)))) {
++        ((p->cpu_frame_flags & 0x15100) ||
++         (p->move_kind == 0xD && (p->incoming_attack_state == 4 || p->incoming_projectile_state == 4)))) {
+@@ -1775,3 +1775,3 @@
+-        if ((p->unk_426 == 1 && p->other->move_frame + 1 >= p->unk_427) ||
+-            p->unk_425 == 2) {
+-            if (p->unk_430 & 8) {
++        if ((p->incoming_attack_state == 1 && p->other->move_frame + 1 >= p->opponent_snapshot_hit_start_frame) ||
++            p->incoming_projectile_state == 2) {
++            if (p->cpu_frame_flags & 8) {
+@@ -1783 +1783 @@
+-                f = p->unk_430;
++                f = p->cpu_frame_flags;
+@@ -1785,2 +1785,2 @@
+-                       ((f & 0x10) && p->unk_3F3 % ((p->unk_438 >> 8) + 2) !=
+-                                          (p->unk_438 >> 8) + 1)) &&
++                       ((f & 0x10) && p->cpu_threat_resolved_count % ((p->cpu_level >> 8) + 2) !=
++                                          (p->cpu_level >> 8) + 1)) &&
+@@ -1798,4 +1798,4 @@
+-                p->unk_3CC = 0;
+-                p->unk_426 = 4;
+-                p->unk_425 = 4;
+-                p->unk_3F3++;
++                p->cpu_decided_pad_held = 0;
++                p->incoming_attack_state = 4;
++                p->incoming_projectile_state = 4;
++                p->cpu_threat_resolved_count++;
+@@ -1808 +1808 @@
+-            if (p->unk_426 == 2) {
++            if (p->incoming_attack_state == 2) {
+@@ -1812,5 +1812,5 @@
+-                    p->unk_3CC = 0;
+-                    p->unk_426 = 4;
+-                    p->unk_425 = 4;
+-                    p->unk_3F3++;
+-                } else if (work3 && (p->unk_430 & 8) &&
++                    p->cpu_decided_pad_held = 0;
++                    p->incoming_attack_state = 4;
++                    p->incoming_projectile_state = 4;
++                    p->cpu_threat_resolved_count++;
++                } else if (work3 && (p->cpu_frame_flags & 8) &&
+@@ -1823,5 +1823,5 @@
+-            if (p->unk_425 == 1 ||
+-                (p->unk_426 == 1 && p->other->unk_441 == 2 &&
+-                 p->unk_427 - p->other->move_frame >= 6) ||
+-                (p->unk_426 == 2 && var_7 == 0)) {
+-                if ((p->unk_430 & 8) &&
++            if (p->incoming_projectile_state == 1 ||
++                (p->incoming_attack_state == 1 && p->other->motion_metadata_nibble == 2 &&
++                 p->opponent_snapshot_hit_start_frame - p->other->move_frame >= 6) ||
++                (p->incoming_attack_state == 2 && var_7 == 0)) {
++                if ((p->cpu_frame_flags & 8) &&
+@@ -1845,2 +1845,2 @@
+-                        p->unk_426 = 1;
+-                        p->unk_425 = 2;
++                        p->incoming_attack_state = 1;
++                        p->incoming_projectile_state = 2;
+@@ -1849,3 +1849,3 @@
+-                    p->unk_426 = 4;
+-                    p->unk_425 = 4;
+-                    p->unk_3F3++;
++                    p->incoming_attack_state = 4;
++                    p->incoming_projectile_state = 4;
++                    p->cpu_threat_resolved_count++;
+@@ -1857,5 +1857,5 @@
+-            return p->unk_3CC;
+-        }
+-    }
+-
+-    if ((p->unk_430 & 0x400) && p->unk_441 != 2) {
++            return p->cpu_decided_pad_held;
++        }
++    }
++
++    if ((p->cpu_frame_flags & 0x400) && p->motion_metadata_nibble != 2) {
+@@ -1863,2 +1863,2 @@
+-            p->unk_3CC = 0x2000;
+-        } else if (p->unk_430 & 8) {
++            p->cpu_decided_pad_held = 0x2000;
++        } else if (p->cpu_frame_flags & 8) {
+@@ -1866 +1866 @@
+-            if (p->unk_441 == 0) {
++            if (p->motion_metadata_nibble == 0) {
+@@ -1875 +1875 @@
+-                        p->unk_3CC = 0x4000;
++                        p->cpu_decided_pad_held = 0x4000;
+@@ -1879,6 +1879,6 @@
+-                        p->unk_3CC = 0x1000;
+-                    }
+-                }
+-            }
+-            if (!(p->unk_425 == 1 || p->unk_425 == 2) && p->unk_426 != 2 &&
+-                (p->unk_3CC == 0 || p->unk_442 != 0 ||
++                        p->cpu_decided_pad_held = 0x1000;
++                    }
++                }
++            }
++            if (!(p->incoming_projectile_state == 1 || p->incoming_projectile_state == 2) && p->incoming_attack_state != 2 &&
++                (p->cpu_decided_pad_held == 0 || p->opponent_ground_y_band != 0 ||
+@@ -1887 +1887 @@
+-                 p->other->unk_404[p->other->unk_86] <
++                 p->other->filtered_script_max_distances[p->other->variant_index] <
+@@ -1891 +1891 @@
+-                    p->unk_3CC = 0x8000;
++                    p->cpu_decided_pad_held = 0x8000;
+@@ -1893 +1893 @@
+-                    p->unk_3CC = 0x2000;
++                    p->cpu_decided_pad_held = 0x2000;
+@@ -1906 +1906 @@
+-                p->unk_3CC = 0x8000;
++                p->cpu_decided_pad_held = 0x8000;
+@@ -1909 +1909 @@
+-                if (p->cpu_pad_build_count % (0x12 - (p->unk_438 >> 8)) == 0) {
++                if (p->cpu_pad_build_count % (0x12 - (p->cpu_level >> 8)) == 0) {
+@@ -1912 +1912 @@
+-                p->unk_3CC = base_pad_buttons;
++                p->cpu_decided_pad_held = base_pad_buttons;
+@@ -1915 +1915 @@
+-                        p->unk_3CC = base_pad_buttons | 0x1000;
++                        p->cpu_decided_pad_held = base_pad_buttons | 0x1000;
+@@ -1917 +1917 @@
+-                        p->unk_3CC = base_pad_buttons | 0x4000;
++                        p->cpu_decided_pad_held = base_pad_buttons | 0x4000;
+@@ -1920 +1920 @@
+-                    p->unk_3CC = (p->cpu_profile & 1)
++                    p->cpu_decided_pad_held = (p->cpu_profile & 1)
+@@ -1934 +1934 @@
+-                work3 = (p->unk_438 * work3) >> 12;
++                work3 = (p->cpu_level * work3) >> 12;
+@@ -1936,3 +1936,3 @@
+-                    p->unk_3CC = 0x20;
+-                } else if (p->unk_430 & 0x20) {
+-                    p->unk_3CC = 0x20;
++                    p->cpu_decided_pad_held = 0x20;
++                } else if (p->cpu_frame_flags & 0x20) {
++                    p->cpu_decided_pad_held = 0x20;
+@@ -1950 +1950 @@
+-                if ((p->unk_426 == 1 || p->unk_425 == 2) && (p->unk_430 & 8)) {
++                if ((p->incoming_attack_state == 1 || p->incoming_projectile_state == 2) && (p->cpu_frame_flags & 8)) {
+@@ -1954 +1954 @@
+-                if ((rand() & 0xFFF) < (p->unk_438 >> 3)) {
++                if ((rand() & 0xFFF) < (p->cpu_level >> 3)) {
+@@ -1988 +1988 @@
+-                                    p->unk_3CC = parity_pad_buttons;
++                                    p->cpu_decided_pad_held = parity_pad_buttons;
+@@ -1992,2 +1992,2 @@
+-                                    !(p->unk_440 == 3 || p->unk_440 == 4)) {
+-                                    p->unk_3CC =
++                                    !(p->latched_motion_metadata_nibble == 3 || p->latched_motion_metadata_nibble == 4)) {
++                                    p->cpu_decided_pad_held =
+@@ -2005,4 +2005,4 @@
+-    if (p->unk_3CC != 0) {
+-        return p->unk_3CC;
+-    }
+-    if ((p->unk_430 & 0x4108) == 8) {
++    if (p->cpu_decided_pad_held != 0) {
++        return p->cpu_decided_pad_held;
++    }
++    if ((p->cpu_frame_flags & 0x4108) == 8) {
+@@ -2013,3 +2013,3 @@
+-            (p->unk_426 == 1 || p->unk_426 == 2) ||
+-            (p->unk_425 == 1 || p->unk_425 == 2)) {
+-            p->unk_39D = 0;
++            (p->incoming_attack_state == 1 || p->incoming_attack_state == 2) ||
++            (p->incoming_projectile_state == 1 || p->incoming_projectile_state == 2)) {
++            p->cpu_orbit_route_active = 0;
+@@ -2017 +2017 @@
+-            p->unk_398 = 0;
++            p->cpu_action_countdown = 0;
+@@ -2022 +2022 @@
+-    if (p->unk_430 & 0x5100) {
++    if (p->cpu_frame_flags & 0x5100) {
+@@ -2024 +2024 @@
+-        if (p->unk_39D == 0) {
++        if (p->cpu_orbit_route_active == 0) {
+@@ -2048 +2048 @@
+-                if (!(p->unk_430 & 0x800) ||
++                if (!(p->cpu_frame_flags & 0x800) ||
+@@ -2050,4 +2050,4 @@
+-                    if (p->unk_442 == 2 && !(work1 == 1 || work1 == 2)) {
+-                        lim = p->other->unk_3F8[p->other->unk_86];
+-                    } else if ((p->unk_442 == 1 || p->unk_442 == 2) ||
+-                               p->unk_442 == 3) {
++                    if (p->opponent_ground_y_band == 2 && !(work1 == 1 || work1 == 2)) {
++                        lim = p->other->script_min_distances[p->other->variant_index];
++                    } else if ((p->opponent_ground_y_band == 1 || p->opponent_ground_y_band == 2) ||
++                               p->opponent_ground_y_band == 3) {
+@@ -2055 +2055 @@
+-                            lim = p->other->unk_3FE[p->other->unk_86];
++                            lim = p->other->script_max_distances[p->other->variant_index];
+@@ -2057 +2057 @@
+-                            lim = p->other->unk_404[p->other->unk_86];
++                            lim = p->other->filtered_script_max_distances[p->other->variant_index];
+@@ -2060,2 +2060,2 @@
+-                        if (p->unk_430 & 0x200) {
+-                            lim = p->other->unk_404[p->other->unk_86];
++                        if (p->cpu_frame_flags & 0x200) {
++                            lim = p->other->filtered_script_max_distances[p->other->variant_index];
+@@ -2063,2 +2063,2 @@
+-                            lim = p->unk_404[p->unk_86] +
+-                                  p->other->unk_404[p->other->unk_86];
++                            lim = p->filtered_script_max_distances[p->variant_index] +
++                                  p->other->filtered_script_max_distances[p->other->variant_index];
+@@ -2067,3 +2067,3 @@
+-                        lim = p->unk_3FE[p->unk_86] +
+-                              p->other->unk_3FE[p->other->unk_86];
+-                        if (p->unk_430 & 0x200) {
++                        lim = p->script_max_distances[p->variant_index] +
++                              p->other->script_max_distances[p->other->variant_index];
++                        if (p->cpu_frame_flags & 0x200) {
+@@ -2072 +2072 @@
+-                                lim = p->other->unk_3F8[p->other->unk_86];
++                                lim = p->other->script_min_distances[p->other->variant_index];
+@@ -2076 +2076 @@
+-                                lim = p->other->unk_404[p->other->unk_86];
++                                lim = p->other->filtered_script_max_distances[p->other->variant_index];
+@@ -2080 +2080 @@
+-                                lim = p->other->unk_3FE[p->other->unk_86];
++                                lim = p->other->script_max_distances[p->other->variant_index];
+@@ -2118 +2118 @@
+-                    p->unk_39D = 0;
++                    p->cpu_orbit_route_active = 0;
+@@ -2135 +2135 @@
+-                                    p->other->unk_404[p->other->unk_86]) {
++                                    p->other->filtered_script_max_distances[p->other->variant_index]) {
+@@ -2147 +2147 @@
+-                                p->other->unk_404[p->other->unk_86] <
++                                p->other->filtered_script_max_distances[p->other->variant_index] <
+@@ -2150 +2150 @@
+-                                    p->other->unk_404[p->other->unk_86]) {
++                                    p->other->filtered_script_max_distances[p->other->variant_index]) {
+@@ -2154 +2154 @@
+-                                    } else if (p->unk_440 != 4) {
++                                    } else if (p->latched_motion_metadata_nibble != 4) {
+@@ -2164,2 +2164,2 @@
+-                    if (p->unk_3CC != 0) {
+-                        return p->unk_3CC;
++                    if (p->cpu_decided_pad_held != 0) {
++                        return p->cpu_decided_pad_held;
+@@ -2201 +2201 @@
+-                    p->unk_3CC = fighter_BuildCpuRoutePadWithSurfaceProbe(
++                    p->cpu_decided_pad_held = fighter_BuildCpuRoutePadWithSurfaceProbe(
+@@ -2204 +2204 @@
+-                    var_22 = p->unk_3CC & 4;
++                    var_22 = p->cpu_decided_pad_held & 4;
+@@ -2235,6 +2235,6 @@
+-            if (p->unk_3CC != 0) {
+-                return p->unk_3CC;
+-            }
+-        }
+-
+-        if ((!(p->unk_430 & 0x80) &&
++            if (p->cpu_decided_pad_held != 0) {
++                return p->cpu_decided_pad_held;
++            }
++        }
++
++        if ((!(p->cpu_frame_flags & 0x80) &&
+@@ -2242 +2242 @@
+-                 p->other->unk_404[p->other->unk_86] &&
++                 p->other->filtered_script_max_distances[p->other->variant_index] &&
+@@ -2250 +2250 @@
+-                 p->other->unk_404[p->other->unk_86] &&
++                 p->other->filtered_script_max_distances[p->other->variant_index] &&
+@@ -2254 +2254 @@
+-                 p->other->unk_404[p->other->unk_86] &&
++                 p->other->filtered_script_max_distances[p->other->variant_index] &&
+@@ -2259 +2259 @@
+-                    p->unk_39D = 2;
++                    p->cpu_orbit_route_active = 2;
+@@ -2288 +2288 @@
+-                    } else if (p->unk_440 != 4 &&
++                    } else if (p->latched_motion_metadata_nibble != 4 &&
+@@ -2296,8 +2296,8 @@
+-                    p->unk_394 = var_29;
+-                    p->unk_39C = 0;
+-                    p->unk_398 = p->unk_39A;
+-                }
+-            }
+-        }
+-
+-        if (p->unk_398 >= p->unk_39A) {
++                    p->cpu_action_index = var_29;
++                    p->cpu_action_from_opponent = 0;
++                    p->cpu_action_countdown = p->cpu_action_cooldown_frames;
++                }
++            }
++        }
++
++        if (p->cpu_action_countdown >= p->cpu_action_cooldown_frames) {
+@@ -2305,2 +2305,2 @@
+-            if (p->unk_39C != 1) {
+-                work3 = p->unk_394;
++            if (p->cpu_action_from_opponent != 1) {
++                work3 = p->cpu_action_index;
+@@ -2310 +2310 @@
+-                work3 = var_54[p->other->unk_441];
++                work3 = var_54[p->other->motion_metadata_nibble];
+@@ -2314 +2314 @@
+-                work3 = var_55[p->other->unk_441];
++                work3 = var_55[p->other->motion_metadata_nibble];
+@@ -2319 +2319 @@
+-                    p->unk_3CC = 0x8000;
++                    p->cpu_decided_pad_held = 0x8000;
+@@ -2324 +2324 @@
+-                    p->unk_3CC = 0x2000;
++                    p->cpu_decided_pad_held = 0x2000;
+@@ -2329 +2329 @@
+-                    p->unk_3CC = 0x4000;
++                    p->cpu_decided_pad_held = 0x4000;
+@@ -2334 +2334 @@
+-                    p->unk_3CC = 0x1000;
++                    p->cpu_decided_pad_held = 0x1000;
+@@ -2339 +2339 @@
+-                    g_fighter_horizontal_separation < p->unk_3FE[p->unk_86]) {
++                    g_fighter_horizontal_separation < p->script_max_distances[p->variant_index]) {
+@@ -2345 +2345 @@
+-                    p->unk_3F8[p->unk_86] < g_fighter_horizontal_separation) {
++                    p->script_min_distances[p->variant_index] < g_fighter_horizontal_separation) {
+@@ -2351 +2351 @@
+-                    g_fighter_horizontal_separation < p->unk_3FE[p->unk_86]) {
++                    g_fighter_horizontal_separation < p->script_max_distances[p->variant_index]) {
+@@ -2357 +2357 @@
+-                    g_fighter_horizontal_separation < p->unk_3FE[p->unk_86]) {
++                    g_fighter_horizontal_separation < p->script_max_distances[p->variant_index]) {
+@@ -2370,4 +2370,4 @@
+-            if ((p->unk_426 == 1 || p->unk_426 == 2) ||
+-                (p->unk_425 == 1 || p->unk_425 == 2)) {
+-                if (p->unk_3CC != 0) {
+-                    p->unk_398 = p->unk_39A + 1;
++            if ((p->incoming_attack_state == 1 || p->incoming_attack_state == 2) ||
++                (p->incoming_projectile_state == 1 || p->incoming_projectile_state == 2)) {
++                if (p->cpu_decided_pad_held != 0) {
++                    p->cpu_action_countdown = p->cpu_action_cooldown_frames + 1;
+@@ -2375 +2375 @@
+-                    p->unk_398 = 0;
++                    p->cpu_action_countdown = 0;
+@@ -2378,2 +2378,2 @@
+-            } else if ((p->unk_430 & 0x800) || p->unk_442 != 0 ||
+-                       (p->unk_3CC == 0x2000 &&
++            } else if ((p->cpu_frame_flags & 0x800) || p->opponent_ground_y_band != 0 ||
++                       (p->cpu_decided_pad_held == 0x2000 &&
+@@ -2381 +2381 @@
+-                            p->other->unk_3F8[p->other->unk_86])) {
++                            p->other->script_min_distances[p->other->variant_index])) {
+@@ -2383,2 +2383,2 @@
+-                p->unk_398 = 0;
+-                p->unk_3CC = 0;
++                p->cpu_action_countdown = 0;
++                p->cpu_decided_pad_held = 0;
+@@ -2387,2 +2387,2 @@
+-                p->unk_398 = 0;
+-                if (p->unk_430 & 0xA000) {
++                p->cpu_action_countdown = 0;
++                if (p->cpu_frame_flags & 0xA000) {
+@@ -2392 +2392 @@
+-        } else if (p->unk_398 == 0) {
++        } else if (p->cpu_action_countdown == 0) {
+@@ -2395 +2395 @@
+-            if (p->unk_440 == 4 ? r < (var_56 >> 2) : r < var_56) {
++            if (p->latched_motion_metadata_nibble == 4 ? r < (var_56 >> 2) : r < var_56) {
+@@ -2414 +2414 @@
+-                        var_23 = p->unk_3F0;
++                        var_23 = p->cpu_distance_error_streak;
+@@ -2436 +2436 @@
+-                        if (p->unk_430 & 0x20000) {
++                        if (p->cpu_frame_flags & 0x20000) {
+@@ -2450 +2450 @@
+-                            p->unk_440 == 4 || p->other->move_kind == 0x18 ||
++                            p->latched_motion_metadata_nibble == 4 || p->other->move_kind == 0x18 ||
+@@ -2473,3 +2473,3 @@
+-                    p->unk_394 = 0;
+-                    p->unk_39C = 0;
+-                    p->unk_398 =
++                    p->cpu_action_index = 0;
++                    p->cpu_action_from_opponent = 0;
++                    p->cpu_action_countdown =
+@@ -2484 +2484 @@
+-                        p->unk_394 = var_3 != 0;
++                        p->cpu_action_index = var_3 != 0;
+@@ -2488 +2488 @@
+-                            p->unk_394 = 3;
++                            p->cpu_action_index = 3;
+@@ -2490 +2490 @@
+-                            p->unk_394 = 2;
++                            p->cpu_action_index = 2;
+@@ -2495 +2495 @@
+-                            p->unk_394 = 5;
++                            p->cpu_action_index = 5;
+@@ -2497 +2497 @@
+-                            p->unk_394 = 4;
++                            p->cpu_action_index = 4;
+@@ -2502 +2502 @@
+-                            p->unk_394 = 7;
++                            p->cpu_action_index = 7;
+@@ -2504 +2504 @@
+-                            p->unk_394 = 6;
++                            p->cpu_action_index = 6;
+@@ -2508 +2508 @@
+-                        p->unk_394 = 8;
++                        p->cpu_action_index = 8;
+@@ -2511 +2511 @@
+-                        p->unk_39C = 1;
++                        p->cpu_action_from_opponent = 1;
+@@ -2517,9 +2517,9 @@
+-        if (p->unk_398 != 0) {
+-            p->unk_398--;
+-        }
+-    }
+-
+-    if (p->unk_3CC != 0 || p->unk_398 != 0) {
+-        return p->unk_3CC;
+-    }
+-    if ((p->unk_430 & 6) && !(p->unk_430 & 0x800)) {
++        if (p->cpu_action_countdown != 0) {
++            p->cpu_action_countdown--;
++        }
++    }
++
++    if (p->cpu_decided_pad_held != 0 || p->cpu_action_countdown != 0) {
++        return p->cpu_decided_pad_held;
++    }
++    if ((p->cpu_frame_flags & 6) && !(p->cpu_frame_flags & 0x800)) {
+@@ -2529 +2529 @@
+-        if (state == 0x15 || (state == 0x19 && p->unk_441 >= 2)) {
++        if (state == 0x15 || (state == 0x19 && p->motion_metadata_nibble >= 2)) {
+@@ -2531 +2531 @@
+-                if (p->unk_442 == 0 && p->cpu_probes[3] != 1 &&
++                if (p->opponent_ground_y_band == 0 && p->cpu_probes[3] != 1 &&
+@@ -2534,3 +2534,3 @@
+-                    if (p->unk_3F2 % ((p->unk_438 >> 8) + 2) ==
+-                        (p->unk_438 >> 8) + 1) {
+-                        var_6 = p->unk_438 >> 1;
++                    if (p->unk_3F2 % ((p->cpu_level >> 8) + 2) ==
++                        (p->cpu_level >> 8) + 1) {
++                        var_6 = p->cpu_level >> 1;
+@@ -2538,3 +2538,3 @@
+-                        var_6 = p->unk_438;
+-                    }
+-                    list = p->unk_3A8[p->unk_86];
++                        var_6 = p->cpu_level;
++                    }
++                    list = p->unk_3A8[p->variant_index];
+@@ -2596 +2596 @@
+-                                work3 = D_8009A928[p->unk_440][work3];
++                                work3 = D_8009A928[p->latched_motion_metadata_nibble][work3];
+@@ -2600 +2600 @@
+-                                                             [p->unk_440]]
++                                                             [p->latched_motion_metadata_nibble]]
+@@ -2622 +2622 @@
+-                                    D_8009A8C8[p->unk_440]
++                                    D_8009A8C8[p->latched_motion_metadata_nibble]
+@@ -2633 +2633 @@
+-                            p->last_chosen_script_list_index == p->unk_86 &&
++                            p->last_chosen_script_list_index == p->variant_index &&
+@@ -2685,2 +2685,2 @@
+-                                    !(p->unk_430 & 0x20000)) {
+-                                    if ((p->unk_430 & 0x200)
++                                    !(p->cpu_frame_flags & 0x20000)) {
++                                    if ((p->cpu_frame_flags & 0x200)
+@@ -2700 +2700 @@
+-                                    0x200 - ((p->unk_438 * 0x100) >> 12) &&
++                                    0x200 - ((p->cpu_level * 0x100) >> 12) &&
+@@ -2705 +2705 @@
+-                                (p->unk_430 & 0x280) != 0x280) {
++                                (p->cpu_frame_flags & 0x280) != 0x280) {
+@@ -2745 +2745 @@
+-                        p->last_chosen_script_list_index = p->unk_86;
++                        p->last_chosen_script_list_index = p->variant_index;
+@@ -2753 +2753 @@
+-                state == 0x15 && p->unk_26C != 0 && p->unk_440 != 4 &&
++                state == 0x15 && p->unk_26C != 0 && p->latched_motion_metadata_nibble != 4 &&
+@@ -2757 +2757 @@
+-                    0x200 - ((p->unk_438 * 0x100) >> 12) &&
++                    0x200 - ((p->cpu_level * 0x100) >> 12) &&
+@@ -2762,2 +2762,2 @@
+-                    ((0x78 >> p->collision_hit_tag) & 1) && p->unk_442 == 0 &&
+-                    p->other->unk_404[p->other->unk_86] <
++                    ((0x78 >> p->collision_hit_tag) & 1) && p->opponent_ground_y_band == 0 &&
++                    p->other->filtered_script_max_distances[p->other->variant_index] <
+@@ -2771,2 +2771,2 @@
+-                        var_60 = p->unk_34D;
+-                        work1 = p->other->unk_3F8[p->other->unk_86];
++                        var_60 = p->throw_charges_left;
++                        work1 = p->other->script_min_distances[p->other->variant_index];
+@@ -2774 +2774 @@
+-                        work1 = p->other->unk_404[p->other->unk_86] + 300;
++                        work1 = p->other->filtered_script_max_distances[p->other->variant_index] + 300;
+@@ -2790 +2790 @@
+-                        p->unk_442 == 0 && (p->unk_430 & 0xA002) &&
++                        p->opponent_ground_y_band == 0 && (p->cpu_frame_flags & 0xA002) &&
+@@ -2793 +2793 @@
+-                        (p->unk_8A == 0 || var_60 >= 2)) {
++                        (p->object_variant_enabled == 0 || var_60 >= 2)) {
+@@ -2812,2 +2812,2 @@
+-    if (p->unk_3CC != 0) {
+-        return p->unk_3CC;
++    if (p->cpu_decided_pad_held != 0) {
++        return p->cpu_decided_pad_held;
+@@ -2819,2 +2819,2 @@
+-            p->unk_39C = 0;
+-            p->unk_398 = 0x17000 / p->base_move_frame_step;
++            p->cpu_action_from_opponent = 0;
++            p->cpu_action_countdown = 0x17000 / p->base_move_frame_step;
+@@ -2822 +2822 @@
+-                p->unk_394 = 3;
++                p->cpu_action_index = 3;
+@@ -2824 +2824 @@
+-                p->unk_394 = 2;
++                p->cpu_action_index = 2;
+@@ -2826 +2826 @@
+-                p->unk_394 = 1;
++                p->cpu_action_index = 1;
+@@ -2828 +2828 @@
+-                p->unk_394 = 0;
++                p->cpu_action_index = 0;
+@@ -2833 +2833 @@
+-                p->other->unk_404[p->other->unk_86] <
++                p->other->filtered_script_max_distances[p->other->variant_index] <
+@@ -2835,3 +2835,3 @@
+-                p->unk_3CC = 0x80;
+-            }
+-        } else if ((p->unk_430 & 0x800) &&
++                p->cpu_decided_pad_held = 0x80;
++            }
++        } else if ((p->cpu_frame_flags & 0x800) &&
+@@ -2839,2 +2839,2 @@
+-                   g_fighter_horizontal_separation < 4000 && p->unk_440 != 4 &&
+-                   (p->unk_442 == 0 || p->unk_442 == 2)) {
++                   g_fighter_horizontal_separation < 4000 && p->latched_motion_metadata_nibble != 4 &&
++                   (p->opponent_ground_y_band == 0 || p->opponent_ground_y_band == 2)) {
+@@ -2843 +2843 @@
+-        } else if ((p->unk_430 & 0xA801) || p->other->move_kind == 0x18 ||
++        } else if ((p->cpu_frame_flags & 0xA801) || p->other->move_kind == 0x18 ||
+@@ -2846 +2846 @@
+-                   (p->other->move_kind == 0x1A && p->unk_441 == 1)) {
++                   (p->other->move_kind == 0x1A && p->motion_metadata_nibble == 1)) {
+@@ -2849 +2849 @@
+-                  p->other->unk_404[p->other->unk_86] <
++                  p->other->filtered_script_max_distances[p->other->variant_index] <
+@@ -2853 +2853 @@
+-                  p->other->unk_3F8[p->other->unk_86] <
++                  p->other->script_min_distances[p->other->variant_index] <
+@@ -2856 +2856 @@
+-                  p->unk_440 != 2) ||
++                  p->latched_motion_metadata_nibble != 2) ||
+@@ -2858 +2858 @@
+-                  p->other->unk_3F8[p->other->unk_86] <
++                  p->other->script_min_distances[p->other->variant_index] <
+@@ -2862 +2862 @@
+-                 (p->unk_430 & 0x40000))) {
++                 (p->cpu_frame_flags & 0x40000))) {
+@@ -2864,6 +2864,6 @@
+-                p->unk_3CC = 0x80;
+-                p->unk_430 &= ~0x40000;
+-            }
+-        }
+-    }
+-    return p->unk_3CC;
++                p->cpu_decided_pad_held = 0x80;
++                p->cpu_frame_flags &= ~0x40000;
++            }
++        }
++    }
++    return p->cpu_decided_pad_held;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -746,2 +746,2 @@
+-    g_camera_alternate_view_record.unk_00.x = a0->unk_180.x;
+-    g_camera_alternate_view_record.unk_00.z = a0->unk_180.z;
++    g_camera_alternate_view_record.unk_00.x = a0->bone_hit_point_0.x;
++    g_camera_alternate_view_record.unk_00.z = a0->bone_hit_point_0.z;
+@@ -749 +749 @@
+-        s32 v = a0->unk_180.y;
++        s32 v = a0->bone_hit_point_0.y;
+@@ -768 +768 @@
+-    val = (obj->unk_198[0].y + obj->unk_198[1].y) / 2 - obj->unk_180.y;
++    val = (obj->ground_probe_points[0].y + obj->ground_probe_points[1].y) / 2 - obj->bone_hit_point_0.y;
+@@ -774,3 +774,3 @@
+-        cam->unk_00.x = obj->unk_180.x;
+-        cam->unk_00.z = obj->unk_180.z;
+-        val = obj->unk_180.y;
++        cam->unk_00.x = obj->bone_hit_point_0.x;
++        cam->unk_00.z = obj->bone_hit_point_0.z;
++        val = obj->bone_hit_point_0.y;
+@@ -915 +915 @@
+-    if ((base->unk_198[0].y + base->unk_198[1].y) / 2 - base->unk_180.y <
++    if ((base->ground_probe_points[0].y + base->ground_probe_points[1].y) / 2 - base->bone_hit_point_0.y <
+@@ -1005 +1005 @@
+-    g_camera_default_view_record.unk_00 = arg0->unk_174;
++    g_camera_default_view_record.unk_00 = arg0->bone_hit_points_4_5_midpoint;
+@@ -1239,5 +1239,5 @@
+-    e->unk_1F8 = e->root_offset;
+-    e->unk_104.vx = 0;
+-    e->unk_104.vy = 0;
+-    e->unk_104.vz = 0;
+-    e->unk_24C = e->unk_104;
++    e->prev_root_offset = e->root_offset;
++    e->base_velocity.vx = 0;
++    e->base_velocity.vy = 0;
++    e->base_velocity.vz = 0;
++    e->unk_24C = e->base_velocity;
+@@ -1253,3 +1253,3 @@
+-    e->unk_134.vx = 0;
+-    e->unk_134.vy = 0;
+-    e->unk_134.vz = 0;
++    e->decaying_xz_velocity.vx = 0;
++    e->decaying_xz_velocity.vy = 0;
++    e->decaying_xz_velocity.vz = 0;
+@@ -1299 +1299 @@
+-               D_80101EC8[0].unk_B2 == 1) {
++               D_80101EC8[0].collision_hit_class == 1) {
+@@ -1861 +1861 @@
+-                D_80101EC8[i].unk_12);
++                D_80101EC8[i].weapon_entry_id);
+@@ -1874 +1874 @@
+-            if (D_80101EC8[i].unk_14 != -1) {
++            if (D_80101EC8[i].wielded_object_kind != -1) {
+@@ -1876,2 +1876,2 @@
+-                    g_resource_kind_entry_ids[D_80101EC8[i].unk_14]);
+-                if (D_80101EC8[i].unk_14 == 14) {
++                    g_resource_kind_entry_ids[D_80101EC8[i].wielded_object_kind]);
++                if (D_80101EC8[i].wielded_object_kind == 14) {
+@@ -2096 +2096 @@
+-    if (ptr->unk_62 & 1) {
++    if (ptr->frame_flags & 1) {
+@@ -2102 +2102 @@
+-        u32 flags = ptr->unk_62 & 4;
++        u32 flags = ptr->frame_flags & 4;
+@@ -2151,2 +2151,2 @@
+-    D_80101EC8[1].unk_31A = 0;
+-    D_80101EC8[0].unk_31A = 0;
++    D_80101EC8[1].pose_blend_requests = 0;
++    D_80101EC8[0].pose_blend_requests = 0;
+@@ -2214 +2214 @@
+-            D_80101EC8[g_fight_followup_fighter_index == 0].unk_B3 = 0;
++            D_80101EC8[g_fight_followup_fighter_index == 0].draw_move_set = 0;
+@@ -2262 +2262 @@
+-    if (a1 != 0xA && entry->unk_72 == 0 && a1 != 0x17 && a1 != 0x18 &&
++    if (a1 != 0xA && entry->airborne_until_landing == 0 && a1 != 0x17 && a1 != 0x18 &&
+@@ -2418,2 +2418,2 @@
+-            dx = obj->other->unk_180.x - obj->unk_180.x;
+-            dz = obj->other->unk_180.z - obj->unk_180.z;
++            dx = obj->other->bone_hit_point_0.x - obj->bone_hit_point_0.x;
++            dz = obj->other->bone_hit_point_0.z - obj->bone_hit_point_0.z;
+@@ -2436 +2436 @@
+-                0x400 - ratan2(dist, obj->other->unk_180.y - obj->unk_180.y);
++                0x400 - ratan2(dist, obj->other->bone_hit_point_0.y - obj->bone_hit_point_0.y);
+@@ -2450 +2450 @@
+-    temp = (var_2 - obj->unk_1E6) & 0xFFF;
++    temp = (var_2 - obj->eased_pose_bearing_offset) & 0xFFF;
+@@ -2454,2 +2454,2 @@
+-    obj->unk_1E6 = obj->unk_1E6 + temp / 8;
+-    temp = (temp2 - obj->unk_1E8) & 0xFFF;
++    obj->eased_pose_bearing_offset = obj->eased_pose_bearing_offset + temp / 8;
++    temp = (temp2 - obj->eased_pose_elevation_offset) & 0xFFF;
+@@ -2459 +2459 @@
+-    obj->unk_1E8 = obj->unk_1E8 + temp / 8;
++    obj->eased_pose_elevation_offset = obj->eased_pose_elevation_offset + temp / 8;
+@@ -2461 +2461 @@
+-        &a->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
++        &a->unk_0C[0x15], obj->eased_pose_bearing_offset, obj->eased_pose_elevation_offset, var_4);
+@@ -2463 +2463 @@
+-        &b->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
++        &b->unk_0C[0x15], obj->eased_pose_bearing_offset, obj->eased_pose_elevation_offset, var_4);
+@@ -2466 +2466 @@
+-    if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
++    if ((t == 0x1D || t == 0xE) && obj->wielded_object_live_state != 0) {
+@@ -2479 +2479 @@
+-        obj->unk_1EA = temp;
++        obj->opponent_elevation_offset = temp;
+@@ -2488,7 +2488,7 @@
+-        if (obj->unk_268 == 0) {
+-            obj->unk_25C.x = obj->world_pos.x;
+-            obj->unk_25C.y = obj->world_pos.y;
+-            obj->unk_25C.z = obj->world_pos.z;
+-        }
+-        dx = obj->other->world_pos.x - obj->unk_25C.x;
+-        dz = obj->other->world_pos.z - obj->unk_25C.z;
++        if (obj->elevation_origin_from_weapon == 0) {
++            obj->opponent_elevation_origin.x = obj->world_pos.x;
++            obj->opponent_elevation_origin.y = obj->world_pos.y;
++            obj->opponent_elevation_origin.z = obj->world_pos.z;
++        }
++        dx = obj->other->world_pos.x - obj->opponent_elevation_origin.x;
++        dz = obj->other->world_pos.z - obj->opponent_elevation_origin.z;
+@@ -2511 +2511 @@
+-            (ratan2(dist, obj->other->world_pos.y - obj->unk_25C.y) - 0x400) &
++            (ratan2(dist, obj->other->world_pos.y - obj->opponent_elevation_origin.y) - 0x400) &
+@@ -2521 +2521 @@
+-        temp = (temp2 - obj->unk_1EA) & 0xFFF;
++        temp = (temp2 - obj->opponent_elevation_offset) & 0xFFF;
+@@ -2525,3 +2525,3 @@
+-        obj->unk_1EA = obj->unk_1EA + temp / 8;
+-        a->unk_0C[0x33] += obj->unk_1EA;
+-        b->unk_0C[0x33] += obj->unk_1EA;
++        obj->opponent_elevation_offset = obj->opponent_elevation_offset + temp / 8;
++        a->unk_0C[0x33] += obj->opponent_elevation_offset;
++        b->unk_0C[0x33] += obj->opponent_elevation_offset;
+@@ -2745 +2745 @@
+-            rec->unk_94 = 0;
++            rec->falling_backward = 0;
+@@ -2748 +2748 @@
+-            rec->unk_94 = 1;
++            rec->falling_backward = 1;
+@@ -2755 +2755 @@
+-        rec->other->unk_94 = 0;
++        rec->other->falling_backward = 0;
+@@ -2810 +2810 @@
+-        rec->other->unk_86 = rec->other->unk_84;
++        rec->other->variant_index = rec->other->default_variant_index;
+@@ -3020 +3020 @@
+-    if (rec->unk_12 == 50) {
++    if (rec->weapon_entry_id == 50) {
+@@ -3033 +3033 @@
+-    if (rec->unk_8C != 0) {
++    if (rec->wielded_object_live_state != 0) {
+@@ -3036 +3036 @@
+-        v = D_8008D88C[rec->unk_14];
++        v = D_8008D88C[rec->wielded_object_kind];
+@@ -3050,2 +3050,2 @@
+-    rec->unk_180 = arg1[0];
+-    gte_stlvnl(&rec->unk_1EC);
++    rec->bone_hit_point_0 = arg1[0];
++    gte_stlvnl(&rec->bone_y_axis);
+@@ -3054,3 +3054,3 @@
+-    rec->unk_198[0].x = pos[0];
+-    rec->unk_198[0].y = pos[1] + ((rec->size_scale * 71) >> 11);
+-    rec->unk_198[0].z = pos[2];
++    rec->ground_probe_points[0].x = pos[0];
++    rec->ground_probe_points[0].y = pos[1] + ((rec->size_scale * 71) >> 11);
++    rec->ground_probe_points[0].z = pos[2];
+@@ -3058,3 +3058,3 @@
+-    rec->unk_198[1].x = pos[0];
+-    rec->unk_198[1].y = pos[1] + ((rec->size_scale * 71) >> 11);
+-    rec->unk_198[1].z = pos[2];
++    rec->ground_probe_points[1].x = pos[0];
++    rec->ground_probe_points[1].y = pos[1] + ((rec->size_scale * 71) >> 11);
++    rec->ground_probe_points[1].z = pos[2];
+@@ -3062,6 +3062,6 @@
+-        var_0[0] = rec->unk_198[i].x;
+-        var_0[1] = rec->unk_198[i].y - 100;
+-        var_0[2] = rec->unk_198[i].z;
+-        var_0[4] = rec->unk_198[i].x;
+-        var_0[5] = rec->unk_198[i].y + 2000;
+-        var_0[6] = rec->unk_198[i].z;
++        var_0[0] = rec->ground_probe_points[i].x;
++        var_0[1] = rec->ground_probe_points[i].y - 100;
++        var_0[2] = rec->ground_probe_points[i].z;
++        var_0[4] = rec->ground_probe_points[i].x;
++        var_0[5] = rec->ground_probe_points[i].y + 2000;
++        var_0[6] = rec->ground_probe_points[i].z;
+@@ -3070 +3070 @@
+-            rec->unk_1B0[i] = var_0[9];
++            rec->ground_probe_floor_ys[i] = var_0[9];
+@@ -3072 +3072 @@
+-            rec->unk_1B0[i] = var_0[5];
++            rec->ground_probe_floor_ys[i] = var_0[5];
+@@ -3277 +3277 @@
+-                rec->unk_88 = i;
++                rec->object_variant_index = i;
+@@ -3280 +3280 @@
+-                    rec->unk_8A = rec->unk_26C;
++                    rec->object_variant_enabled = rec->unk_26C;
+@@ -3293,2 +3293,2 @@
+-    s16 a1 = arg0->unk_86;
+-    if (a1 != arg0->unk_88) {
++    s16 a1 = arg0->variant_index;
++    if (a1 != arg0->object_variant_index) {
+@@ -3299 +3299 @@
+-    arg0->unk_86 =
++    arg0->variant_index =
+@@ -3325 +3325 @@
+-    rec->unk_78 = 0;
++    rec->blend_into_move = 0;
+@@ -3330 +3330 @@
+-                                ->f66[id - 0x7FF5][rec->unk_86]];
++                                ->f66[id - 0x7FF5][rec->variant_index]];
+@@ -3334,2 +3334,2 @@
+-        rec->unk_78 = 1;
+-        rec->unk_86 = rec->unk_84;
++        rec->blend_into_move = 1;
++        rec->variant_index = rec->default_variant_index;
+@@ -3338 +3338 @@
+-                                ->f4E[rec->unk_84]];
++                                ->f4E[rec->default_variant_index]];
+@@ -3340,2 +3340,2 @@
+-        rec->unk_86 =
+-            (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
++        rec->variant_index =
++            (rec->variant_index + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
+@@ -3345,4 +3345,4 @@
+-            rec->unk_78 = 1;
+-        }
+-        t = rec->unk_86;
+-        if ((t == rec->unk_88 && rec->unk_8A == 0) ||
++            rec->blend_into_move = 1;
++        }
++        t = rec->variant_index;
++        if ((t == rec->object_variant_index && rec->object_variant_enabled == 0) ||
+@@ -3350 +3350 @@
+-            rec->unk_86 = (rec->unk_86 + 1) %
++            rec->variant_index = (rec->variant_index + 1) %
+@@ -3357 +3357 @@
+-                                ->f4E[rec->unk_86]];
++                                ->f4E[rec->variant_index]];
+@@ -3359,2 +3359,2 @@
+-        t = (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
+-        if ((t == rec->unk_88 && rec->unk_8A == 0) ||
++        t = (rec->variant_index + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
++        if ((t == rec->object_variant_index && rec->object_variant_enabled == 0) ||
+@@ -3364 +3364 @@
+-                   (t == rec->unk_88 || t == rec->unk_8E)) {
++                   (t == rec->object_variant_index || t == rec->unk_8E)) {
+@@ -3369 +3369 @@
+-                                ->f54[rec->unk_86][t]];
++                                ->f54[rec->variant_index][t]];
+@@ -3384 +3384 @@
+-    D_80101EC8[a0].unk_86 = D_80101EC8[a0].unk_84;
++    D_80101EC8[a0].variant_index = D_80101EC8[a0].default_variant_index;
+@@ -3389 +3389 @@
+-    s16 v0 = D_80101EC8[a0].unk_86;
++    s16 v0 = D_80101EC8[a0].variant_index;
+@@ -3396 +3396 @@
+-    s16 v0 = D_80101EC8[a0].unk_84;
++    s16 v0 = D_80101EC8[a0].default_variant_index;
+@@ -3453 +3453 @@
+-                s0->unk_46 = 0;
++                s0->move_frame_unchanged = 0;
+@@ -3474 +3474 @@
+-                s0->unk_AD = a0_flag;
++                s0->attack_hit_armed = a0_flag;
+@@ -3742 +3742 @@
+-        p->unk_12 = D_8008EB38[p->weapon_id];
++        p->weapon_entry_id = D_8008EB38[p->weapon_id];
+@@ -3744 +3744 @@
+-        p->unk_12 =
++        p->weapon_entry_id =
+@@ -3749 +3749 @@
+-        p->unk_12 = 0x32;
++        p->weapon_entry_id = 0x32;
+@@ -3751 +3751 @@
+-        p->unk_12 = D_8008EB28[p->weapon_id]
++        p->weapon_entry_id = D_8008EB28[p->weapon_id]
+@@ -3762,3 +3762,3 @@
+-    p->unk_1E = D_8008DF78[p->character_data_index][p->weapon_id];
+-    p->unk_20 = p->unk_1E;
+-    p->unk_08 = 0x1000;
++    p->base_power = D_8008DF78[p->character_data_index][p->weapon_id];
++    p->power = p->base_power;
++    p->cpu_base_level = 0x1000;
+@@ -3767 +3767 @@
+-        p->unk_84 =
++        p->default_variant_index =
+@@ -3773 +3773 @@
+-            p->unk_20 = 0x1080;
++            p->power = 0x1080;
+@@ -3775 +3775 @@
+-            p->unk_20 = var_2 * 64 + 0xC00;
++            p->power = var_2 * 64 + 0xC00;
+@@ -3778 +3778 @@
+-            p->unk_08 = 0xE00;
++            p->cpu_base_level = 0xE00;
+@@ -3780 +3780 @@
+-            p->unk_08 = var_2 * 80 + 0x150;
++            p->cpu_base_level = var_2 * 80 + 0x150;
+@@ -3783,5 +3783,5 @@
+-        p->unk_84 = D_8008DD5C[p->character_data_index][p->weapon_id];
+-    }
+-
+-    p->unk_88 = -1;
+-    p->unk_8A = 0;
++        p->default_variant_index = D_8008DD5C[p->character_data_index][p->weapon_id];
++    }
++
++    p->object_variant_index = -1;
++    p->object_variant_enabled = 0;
+@@ -3835,5 +3835,5 @@
+-    p->unk_1F8 = p->root_offset;
+-    p->unk_104.vx = 0;
+-    p->unk_104.vy = 0;
+-    p->unk_104.vz = 0;
+-    p->unk_24C = p->unk_104;
++    p->prev_root_offset = p->root_offset;
++    p->base_velocity.vx = 0;
++    p->base_velocity.vy = 0;
++    p->base_velocity.vz = 0;
++    p->unk_24C = p->base_velocity;
+@@ -3846,3 +3846,3 @@
+-    p->unk_134.vx = 0;
+-    p->unk_134.vy = 0;
+-    p->unk_134.vz = 0;
++    p->decaying_xz_velocity.vx = 0;
++    p->decaying_xz_velocity.vy = 0;
++    p->decaying_xz_velocity.vz = 0;
+@@ -3855,10 +3855,10 @@
+-    p->unk_156 = 0xC00;
+-    p->unk_158 = 0xF80;
+-    p->unk_15A = 0xC00;
+-    p->unk_15E = 0xC00;
+-    p->unk_160 = 0xC00;
+-    p->unk_162 = 0xC00;
+-    p->unk_1E8 = 0;
+-    p->unk_1E6 = 0;
+-    p->unk_1EA = 0;
+-    p->unk_268 = 0;
++    p->base_velocity_damping_x = 0xC00;
++    p->base_velocity_damping_y = 0xF80;
++    p->base_velocity_damping_z = 0xC00;
++    p->decaying_xz_velocity_damping_x = 0xC00;
++    p->decaying_xz_velocity_damping_y = 0xC00;
++    p->decaying_xz_velocity_damping_z = 0xC00;
++    p->eased_pose_elevation_offset = 0;
++    p->eased_pose_bearing_offset = 0;
++    p->opponent_elevation_offset = 0;
++    p->elevation_origin_from_weapon = 0;
+@@ -3866,3 +3866,3 @@
+-    p->unk_174 = p->world_pos;
+-    p->unk_180 = p->world_pos;
+-    p->unk_18C = p->world_pos;
++    p->bone_hit_points_4_5_midpoint = p->world_pos;
++    p->bone_hit_point_0 = p->world_pos;
++    p->bone_hit_points_1_3_centroid = p->world_pos;
+@@ -3891 +3891 @@
+-    p->unk_31A = 0;
++    p->pose_blend_requests = 0;
+@@ -3893 +3893 @@
+-    p->unk_72 = 0;
++    p->airborne_until_landing = 0;
+@@ -3896 +3896 @@
+-    p->unk_B2 = 0;
++    p->collision_hit_class = 0;
+@@ -3899 +3899 @@
+-    p->unk_14 = p->carried_object_kinds[0];
++    p->wielded_object_kind = p->carried_object_kinds[0];
+@@ -3905 +3905 @@
+-            p->carried_object_kinds[0] = p->unk_14 = 0x11;
++            p->carried_object_kinds[0] = p->wielded_object_kind = 0x11;
+@@ -3907 +3907 @@
+-            p->unk_14 = -1;
++            p->wielded_object_kind = -1;
+@@ -3912 +3912 @@
+-        p->unk_14 = -1;
++        p->wielded_object_kind = -1;
+@@ -3921 +3921 @@
+-            p->carried_object_kinds[0] = p->unk_14 = p->other->unk_14;
++            p->carried_object_kinds[0] = p->wielded_object_kind = p->other->wielded_object_kind;
+@@ -3926 +3926 @@
+-            p->unk_14 = 0x1F;
++            p->wielded_object_kind = 0x1F;
+@@ -3929 +3929 @@
+-            p->unk_14 = 0x1E;
++            p->wielded_object_kind = 0x1E;
+@@ -3939 +3939 @@
+-        p->unk_34D = 0;
++        p->throw_charges_left = 0;
+@@ -3941 +3941 @@
+-        p->unk_34D = 2;
++        p->throw_charges_left = 2;
+@@ -3959 +3959 @@
+-                rec->unk_08 = g_fight_config.unk_A[i] << 4;
++                rec->cpu_base_level = g_fight_config.unk_A[i] << 4;
+@@ -3964 +3964 @@
+-                rec->unk_08 = *tbl;
++                rec->cpu_base_level = *tbl;
+@@ -4032 +4032 @@
+-                        (obj->unk_72 == 0)) {
++                        (obj->airborne_until_landing == 0)) {
+@@ -4264 +4264 @@
+-    if (arg0->unk_104.vy <= 0) {
++    if (arg0->base_velocity.vy <= 0) {
+@@ -4268 +4268 @@
+-    if (kind == 0x17 || kind == 0x18 || kind == 0xA || arg0->unk_72 != 0 ||
++    if (kind == 0x17 || kind == 0x18 || kind == 0xA || arg0->airborne_until_landing != 0 ||
+@@ -4324 +4324 @@
+-            arg0->unk_94 = 0;
++            arg0->falling_backward = 0;
+@@ -4327 +4327 @@
+-            arg0->unk_94 = 1;
++            arg0->falling_backward = 1;
+@@ -4337 +4337 @@
+-            arg0->unk_94 = 0;
++            arg0->falling_backward = 0;
+@@ -4340 +4340 @@
+-            arg0->unk_94 = 1;
++            arg0->falling_backward = 1;
+@@ -4344,2 +4344,2 @@
+-    arg0->unk_104.vx += dx_delta;
+-    arg0->unk_104.vz += dz_delta;
++    arg0->base_velocity.vx += dx_delta;
++    arg0->base_velocity.vz += dz_delta;
+@@ -4365,2 +4365,2 @@
+-    arg0->unk_31A += 1;
+-    v = arg0->unk_31A;
++    arg0->pose_blend_requests += 1;
++    v = arg0->pose_blend_requests;
+@@ -4384 +4384 @@
+-    if (arg0->unk_104.vy < 0) {
++    if (arg0->base_velocity.vy < 0) {
+@@ -4516,2 +4516,2 @@
+-    rec->unk_20 =
+-        (rec->unk_1E * D_8008E0BC[rec->character_data_index]
++    rec->power =
++        (rec->base_power * D_8008E0BC[rec->character_data_index]
+@@ -4527 +4527 @@
+-        rec->unk_46 = 0;
++        rec->move_frame_unchanged = 0;
+@@ -4531 +4531 @@
+-        rec->unk_46 = 1;
++        rec->move_frame_unchanged = 1;
+@@ -4541,3 +4541,3 @@
+-            rec->unk_72 = 1;
+-        }
+-        rec->unk_31A = 0;
++            rec->airborne_until_landing = 1;
++        }
++        rec->pose_blend_requests = 0;
+@@ -4562 +4562 @@
+-            rec->unk_31A = 0;
++            rec->pose_blend_requests = 0;
+@@ -4569,3 +4569,3 @@
+-            rec->unk_104.vx = 0;
+-            rec->unk_104.vy = 0;
+-            rec->unk_104.vz = 0;
++            rec->base_velocity.vx = 0;
++            rec->base_velocity.vy = 0;
++            rec->base_velocity.vz = 0;
+@@ -4577 +4577 @@
+-            if (rec->unk_82 & 0x1000) {
++            if (rec->queued_move_command & 0x1000) {
+@@ -4612 +4612 @@
+-                D_800A36CA = rec->unk_82;
++                D_800A36CA = rec->queued_move_command;
+@@ -4615 +4615 @@
+-                if (rec->unk_82 & 0x1000) {
++                if (rec->queued_move_command & 0x1000) {
+@@ -4651 +4651 @@
+-                        rec->other->move_frame < rec->other->unk_AB) {
++                        rec->other->move_frame < rec->other->opponent_transition_start_frame) {
+@@ -4668 +4668 @@
+-                        rec->unk_82 = var_7;
++                        rec->queued_move_command = var_7;
+@@ -4690 +4690 @@
+-    if (rec->move_kind == 0xA || rec->unk_72 != 0) {
++    if (rec->move_kind == 0xA || rec->airborne_until_landing != 0) {
+@@ -4702 +4702 @@
+-                        rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
++                        rec, table[rec->falling_backward != 0 ? 0x17 : 0x18],
+@@ -4705 +4705 @@
+-            } else if (rec->unk_72 == 0) {
++            } else if (rec->airborne_until_landing == 0) {
+@@ -4712 +4712 @@
+-            rec->unk_72 = 0;
++            rec->airborne_until_landing = 0;
+@@ -4745 +4745 @@
+-    if (rec->unk_46 == 0 && rec->move_kind == 9 &&
++    if (rec->move_frame_unchanged == 0 && rec->move_kind == 9 &&
+@@ -4751 +4751 @@
+-        rec->unk_104.vx += (Judge[rec->orientation.vy & 0xFFF] *
++        rec->base_velocity.vx += (Judge[rec->orientation.vy & 0xFFF] *
+@@ -4754 +4754 @@
+-        rec->unk_104.vz += (Judge[(rec->orientation.vy + 0x400) & 0xFFF] *
++        rec->base_velocity.vz += (Judge[(rec->orientation.vy + 0x400) & 0xFFF] *
+@@ -4757 +4757 @@
+-        rec->unk_104.vy += D_8008DA50[rec->character_data_index];
++        rec->base_velocity.vy += D_8008DA50[rec->character_data_index];
+@@ -4762 +4762 @@
+-        rec->unk_104.vy += D_8008DAD8[rec->character_data_index];
++        rec->base_velocity.vy += D_8008DAD8[rec->character_data_index];
+@@ -4773 +4773 @@
+-        var_30[0] = rec->other->unk_18C.x -
++        var_30[0] = rec->other->bone_hit_points_1_3_centroid.x -
+@@ -4775 +4775 @@
+-        var_30[1] = rec->other->unk_18C.y;
++        var_30[1] = rec->other->bone_hit_points_1_3_centroid.y;
+@@ -4777 +4777 @@
+-            rec->other->unk_18C.z -
++            rec->other->bone_hit_points_1_3_centroid.z -
+@@ -4779 +4779 @@
+-        rec->unk_104.vy -= 0xFA;
++        rec->base_velocity.vy -= 0xFA;
+@@ -4781,4 +4781,4 @@
+-            (s32 *)&rec->unk_180, var_30, rec->unk_104.vy, 0x1F, dv);
+-        rec->unk_104.vx += dv[0];
+-        rec->unk_104.vz += dv[2];
+-        rec->unk_72 = 1;
++            (s32 *)&rec->bone_hit_point_0, var_30, rec->base_velocity.vy, 0x1F, dv);
++        rec->base_velocity.vx += dv[0];
++        rec->base_velocity.vz += dv[2];
++        rec->airborne_until_landing = 1;
+@@ -4790 +4790 @@
+-            rec->unk_104.vy > 0) {
++            rec->base_velocity.vy > 0) {
+@@ -4797 +4797 @@
+-        rec->unk_1F8.y += 0x898;
++        rec->prev_root_offset.y += 0x898;
+@@ -4807 +4807 @@
+-            rec->unk_86 = rec->unk_84;
++            rec->variant_index = rec->default_variant_index;
+@@ -4814 +4814 @@
+-        if (rec->unk_78 != 0) {
++        if (rec->blend_into_move != 0) {
+@@ -4862,2 +4862,2 @@
+-    rec->unk_64 = (var_18 << 14) | var_15;
+-    rec->unk_66 = (var_18 << 14) | var_17;
++    rec->blend_src_frame_code = (var_18 << 14) | var_15;
++    rec->blend_dst_frame_code = (var_18 << 14) | var_17;
+@@ -4923 +4923 @@
+-    if (rec->unk_31A != 0) {
++    if (rec->pose_blend_requests != 0) {
+@@ -4929,2 +4929,2 @@
+-        rec->unk_66 = rec->unk_64;
+-        rec->unk_64 = rec->unk_316;
++        rec->blend_dst_frame_code = rec->blend_src_frame_code;
++        rec->blend_src_frame_code = rec->saved_motion_frame_id;
+@@ -4936 +4936 @@
+-    if (rec->unk_31A != 0) {
++    if (rec->pose_blend_requests != 0) {
+@@ -4940,4 +4940,4 @@
+-            rec->base_pos.x += rec->unk_1F8.x - v[0].x;
+-            rec->base_pos.z += rec->unk_1F8.z - v[0].z;
+-            rec->pose_blend_base_shift.x += rec->unk_1F8.x - v[0].x;
+-            rec->pose_blend_base_shift.z += rec->unk_1F8.z - v[0].z;
++            rec->base_pos.x += rec->prev_root_offset.x - v[0].x;
++            rec->base_pos.z += rec->prev_root_offset.z - v[0].z;
++            rec->pose_blend_base_shift.x += rec->prev_root_offset.x - v[0].x;
++            rec->pose_blend_base_shift.z += rec->prev_root_offset.z - v[0].z;
+@@ -4965,3 +4965,3 @@
+-    if (rec->move_started != 0 && rec->unk_31A == 0) {
+-        rec->base_pos.x += rec->unk_1F8.x - rec->root_offset.x;
+-        rec->base_pos.z += rec->unk_1F8.z - rec->root_offset.z;
++    if (rec->move_started != 0 && rec->pose_blend_requests == 0) {
++        rec->base_pos.x += rec->prev_root_offset.x - rec->root_offset.x;
++        rec->base_pos.z += rec->prev_root_offset.z - rec->root_offset.z;
+@@ -4969 +4969 @@
+-            rec->base_pos.y += rec->unk_1F8.y - rec->root_offset.y;
++            rec->base_pos.y += rec->prev_root_offset.y - rec->root_offset.y;
+@@ -4975 +4975 @@
+-        rec->unk_104.vy += 0x15;
++        rec->base_velocity.vy += 0x15;
+@@ -4981,2 +4981,2 @@
+-            rec->unk_134.vx -= rec->horizontal_probe_normal.vx / 256;
+-            rec->unk_134.vz -= rec->horizontal_probe_normal.vz / 256;
++            rec->decaying_xz_velocity.vx -= rec->horizontal_probe_normal.vx / 256;
++            rec->decaying_xz_velocity.vz -= rec->horizontal_probe_normal.vz / 256;
+@@ -4986,16 +4986,16 @@
+-        rec->unk_104.vx = (rec->unk_104.vx * rec->unk_156) >> 12;
+-        rec->unk_104.vy = (rec->unk_104.vy * rec->unk_158) >> 12;
+-        rec->unk_104.vz = (rec->unk_104.vz * rec->unk_15A) >> 12;
+-    }
+-    if (rec->unk_104.vx >= -15 && rec->unk_104.vx <= 15) {
+-        rec->unk_104.vx /= 2;
+-    }
+-    if (rec->unk_104.vy >= -15 && rec->unk_104.vy <= 15) {
+-        rec->unk_104.vy /= 2;
+-    }
+-    if (rec->unk_104.vz >= -15 && rec->unk_104.vz <= 15) {
+-        rec->unk_104.vz /= 2;
+-    }
+-    rec->base_pos.x += rec->unk_104.vx;
+-    rec->base_pos.y += rec->unk_104.vy;
+-    rec->base_pos.z += rec->unk_104.vz;
++        rec->base_velocity.vx = (rec->base_velocity.vx * rec->base_velocity_damping_x) >> 12;
++        rec->base_velocity.vy = (rec->base_velocity.vy * rec->base_velocity_damping_y) >> 12;
++        rec->base_velocity.vz = (rec->base_velocity.vz * rec->base_velocity_damping_z) >> 12;
++    }
++    if (rec->base_velocity.vx >= -15 && rec->base_velocity.vx <= 15) {
++        rec->base_velocity.vx /= 2;
++    }
++    if (rec->base_velocity.vy >= -15 && rec->base_velocity.vy <= 15) {
++        rec->base_velocity.vy /= 2;
++    }
++    if (rec->base_velocity.vz >= -15 && rec->base_velocity.vz <= 15) {
++        rec->base_velocity.vz /= 2;
++    }
++    rec->base_pos.x += rec->base_velocity.vx;
++    rec->base_pos.y += rec->base_velocity.vy;
++    rec->base_pos.z += rec->base_velocity.vz;
+@@ -5007,3 +5007,3 @@
+-            rec->unk_134.vx /= 2;
+-            rec->unk_134.vz /= 2;
+-            rec->unk_134.vx +=
++            rec->decaying_xz_velocity.vx /= 2;
++            rec->decaying_xz_velocity.vz /= 2;
++            rec->decaying_xz_velocity.vx +=
+@@ -5013 +5013 @@
+-            rec->unk_134.vz +=
++            rec->decaying_xz_velocity.vz +=
+@@ -5019,11 +5019,11 @@
+-    rec->unk_134.vx = (rec->unk_134.vx * rec->unk_15E) >> 12;
+-    if (rec->unk_134.vx >= -3 && rec->unk_134.vx <= 3) {
+-        rec->unk_134.vx = 0;
+-    }
+-    rec->unk_134.vy = (rec->unk_134.vy * rec->unk_160) >> 12;
+-    if (rec->unk_134.vy >= -3 && rec->unk_134.vy <= 3) {
+-        rec->unk_134.vy = 0;
+-    }
+-    rec->unk_134.vz = (rec->unk_134.vz * rec->unk_162) >> 12;
+-    if (rec->unk_134.vz >= -3 && rec->unk_134.vz <= 3) {
+-        rec->unk_134.vz = 0;
++    rec->decaying_xz_velocity.vx = (rec->decaying_xz_velocity.vx * rec->decaying_xz_velocity_damping_x) >> 12;
++    if (rec->decaying_xz_velocity.vx >= -3 && rec->decaying_xz_velocity.vx <= 3) {
++        rec->decaying_xz_velocity.vx = 0;
++    }
++    rec->decaying_xz_velocity.vy = (rec->decaying_xz_velocity.vy * rec->decaying_xz_velocity_damping_y) >> 12;
++    if (rec->decaying_xz_velocity.vy >= -3 && rec->decaying_xz_velocity.vy <= 3) {
++        rec->decaying_xz_velocity.vy = 0;
++    }
++    rec->decaying_xz_velocity.vz = (rec->decaying_xz_velocity.vz * rec->decaying_xz_velocity_damping_z) >> 12;
++    if (rec->decaying_xz_velocity.vz >= -3 && rec->decaying_xz_velocity.vz <= 3) {
++        rec->decaying_xz_velocity.vz = 0;
+@@ -5033,3 +5033,3 @@
+-        rec->unk_134.vx = 0;
+-        rec->unk_134.vy = 0;
+-        rec->unk_134.vz = 0;
++        rec->decaying_xz_velocity.vx = 0;
++        rec->decaying_xz_velocity.vy = 0;
++        rec->decaying_xz_velocity.vz = 0;
+@@ -5037,3 +5037,3 @@
+-        rec->base_pos.x += rec->unk_134.vx;
+-        rec->base_pos.y += rec->unk_134.vy;
+-        rec->base_pos.z += rec->unk_134.vz;
++        rec->base_pos.x += rec->decaying_xz_velocity.vx;
++        rec->base_pos.y += rec->decaying_xz_velocity.vy;
++        rec->base_pos.z += rec->decaying_xz_velocity.vz;
+@@ -5048 +5048 @@
+-    fighter_ResolveMovement(rec, &rec->collision_pos, &pos, &rec->unk_104.vx);
++    fighter_ResolveMovement(rec, &rec->collision_pos, &pos, &rec->base_velocity.vx);
+@@ -5050 +5050 @@
+-        rec->unk_B2 = ((0x2A >> rec->collision_hit_tag) ^ 1) & 1;
++        rec->collision_hit_class = ((0x2A >> rec->collision_hit_tag) ^ 1) & 1;
+@@ -5061 +5061 @@
+-    rec->unk_1F8 = rec->root_offset;
++    rec->prev_root_offset = rec->root_offset;
+@@ -5073 +5073 @@
+-    if (rec->unk_86 == rec->unk_8E &&
++    if (rec->variant_index == rec->unk_8E &&
+@@ -5078 +5078 @@
+-        rec->unk_92 = 0;
++        rec->weapon_live_state = 0;
+@@ -5080,3 +5080,3 @@
+-        rec->unk_92 = rec->unk_92 != 0 ? 1 : 2;
+-    }
+-    rec->unk_62 = 0;
++        rec->weapon_live_state = rec->weapon_live_state != 0 ? 1 : 2;
++    }
++    rec->frame_flags = 0;
+@@ -5084,2 +5084,2 @@
+-        rec->unk_92 != 0) {
+-        rec->unk_62 = 1;
++        rec->weapon_live_state != 0) {
++        rec->frame_flags = 1;
+@@ -5092,3 +5092,3 @@
+-        rec->unk_62 |= 2;
+-    }
+-    if (rec->unk_86 == rec->unk_88 && rec->unk_8A != 0) {
++        rec->frame_flags |= 2;
++    }
++    if (rec->variant_index == rec->object_variant_index && rec->object_variant_enabled != 0) {
+@@ -5096,2 +5096,2 @@
+-            rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
+-            rec->unk_62 |= 4;
++            rec->wielded_object_live_state = rec->wielded_object_live_state != 0 ? 1 : 2;
++            rec->frame_flags |= 4;
+@@ -5099 +5099 @@
+-            rec->unk_8C = 0;
++            rec->wielded_object_live_state = 0;
+@@ -5107 +5107 @@
+-         rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
++         rec->move_frame >= rec->frame_window_start && rec->move_frame <= rec->frame_window_end) ||
+@@ -5110,3 +5110,3 @@
+-         rec->move_frame >= rec->unk_A5 && rec->unk_A6 >= rec->move_frame)) {
+-        rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
+-        rec->unk_62 |= 4;
++         rec->move_frame >= rec->frame_window_start && rec->frame_window_end >= rec->move_frame)) {
++        rec->wielded_object_live_state = rec->wielded_object_live_state != 0 ? 1 : 2;
++        rec->frame_flags |= 4;
+@@ -5114 +5114 @@
+-        rec->unk_8C = 0;
++        rec->wielded_object_live_state = 0;
+@@ -5125 +5125 @@
+-                rec->unk_62 |= 8;
++                rec->frame_flags |= 8;
+@@ -5134 +5134 @@
+-                rec->unk_62 |= 8;
++                rec->frame_flags |= 8;
+@@ -5139,2 +5139,2 @@
+-        if (rec->move_kind != 4 && rec->move_kind != 0x14 && rec->unk_92 == 0) {
+-            rec->unk_62 |= 0x10;
++        if (rec->move_kind != 4 && rec->move_kind != 0x14 && rec->weapon_live_state == 0) {
++            rec->frame_flags |= 0x10;
+@@ -5143,2 +5143,2 @@
+-            rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
+-            rec->unk_62 |= 0x20;
++            rec->carried_object_kinds[0] == rec->wielded_object_kind && rec->wielded_object_live_state == 0) {
++            rec->frame_flags |= 0x20;
+@@ -5151,2 +5151,2 @@
+-            rec->move_kind != 4 && rec->move_kind != 0x14 && rec->unk_92 == 0) {
+-            rec->unk_62 = (rec->unk_62 | 2) & ~0x10;
++            rec->move_kind != 4 && rec->move_kind != 0x14 && rec->weapon_live_state == 0) {
++            rec->frame_flags = (rec->frame_flags | 2) & ~0x10;
+@@ -5155,2 +5155,2 @@
+-            rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
+-            rec->unk_62 = (rec->unk_62 | 8) & ~0x20;
++            rec->carried_object_kinds[0] == rec->wielded_object_kind && rec->wielded_object_live_state == 0) {
++            rec->frame_flags = (rec->frame_flags | 8) & ~0x20;
+@@ -5158,4 +5158,4 @@
+-                g_resource_kind_entry_ids[rec->unk_14], (arg0 * 2) | 1, 0);
+-        }
+-    }
+-    if (rec->unk_62 & 1) {
++                g_resource_kind_entry_ids[rec->wielded_object_kind], (arg0 * 2) | 1, 0);
++        }
++    }
++    if (rec->frame_flags & 1) {
+@@ -5163,3 +5163,3 @@
+-            rec->unk_12, arg0 * 2 + 0x8000, 0, 0);
+-    }
+-    if (rec->unk_62 & 4) {
++            rec->weapon_entry_id, arg0 * 2 + 0x8000, 0, 0);
++    }
++    if (rec->frame_flags & 4) {
+@@ -5167,3 +5167,3 @@
+-            g_resource_kind_entry_ids[rec->unk_14], arg0 * 2 + 0x8001, 0, 0);
+-    }
+-    if (rec->unk_62 & 2) {
++            g_resource_kind_entry_ids[rec->wielded_object_kind], arg0 * 2 + 0x8001, 0, 0);
++    }
++    if (rec->frame_flags & 2) {
+@@ -5171,3 +5171,3 @@
+-            rec->unk_12, arg0 * 2, (rec->unk_62 >> 4) & 1);
+-    }
+-    if (rec->unk_62 & 8) {
++            rec->weapon_entry_id, arg0 * 2, (rec->frame_flags >> 4) & 1);
++    }
++    if (rec->frame_flags & 8) {
+@@ -5175,2 +5175,2 @@
+-            g_resource_kind_entry_ids[rec->unk_14], (arg0 * 2) | 1,
+-            (rec->unk_62 >> 5) & 1);
++            g_resource_kind_entry_ids[rec->wielded_object_kind], (arg0 * 2) | 1,
++            (rec->frame_flags >> 5) & 1);
+@@ -5180,4 +5180,4 @@
+-    rec->unk_316 = rec->unk_64;
+-    if (rec->unk_31A != 0) {
+-        if (rec->unk_31A >= 2) {
+-            rec->unk_31A = 1;
++    rec->saved_motion_frame_id = rec->blend_src_frame_code;
++    if (rec->pose_blend_requests != 0) {
++        if (rec->pose_blend_requests >= 2) {
++            rec->pose_blend_requests = 1;
+@@ -5187 +5187 @@
+-            rec->unk_31A = 0;
++            rec->pose_blend_requests = 0;
+@@ -5190,2 +5190,2 @@
+-            rec->unk_316 = rec->unk_66;
+-            rec->unk_1F8 = v[1];
++            rec->saved_motion_frame_id = rec->blend_dst_frame_code;
++            rec->prev_root_offset = v[1];
+@@ -5196 +5196 @@
+-    rec->unk_24C = rec->unk_104;
++    rec->unk_24C = rec->base_velocity;
+@@ -5201,15 +5201,15 @@
+-        rec->unk_210[0] = SPAD->unk00[arg0][0];
+-    }
+-    if (rec->unk_8C == 2) {
+-        rec->unk_8C = 1;
+-        rec->unk_234[0] = SPAD->unk48[arg0][0];
+-        rec->unk_234[1] = SPAD->unk48[arg0][1];
+-    }
+-    if (rec->unk_92 == 2) {
+-        rec->unk_92 = 1;
+-        rec->unk_234[0] = SPAD->unk48[arg0][0];
+-        rec->unk_234[1] = SPAD->unk48[arg0][1];
+-    }
+-    if ((rec->weapon_id == 6 || rec->weapon_id == 7) && (rec->unk_62 & 1)) {
+-        rec->unk_25C = SPAD->unk00[arg0][0];
+-        rec->unk_268 = 1;
++        rec->prev_weapon_points[0] = SPAD->unk00[arg0][0];
++    }
++    if (rec->wielded_object_live_state == 2) {
++        rec->wielded_object_live_state = 1;
++        rec->prev_second_weapon_points[0] = SPAD->unk48[arg0][0];
++        rec->prev_second_weapon_points[1] = SPAD->unk48[arg0][1];
++    }
++    if (rec->weapon_live_state == 2) {
++        rec->weapon_live_state = 1;
++        rec->prev_second_weapon_points[0] = SPAD->unk48[arg0][0];
++        rec->prev_second_weapon_points[1] = SPAD->unk48[arg0][1];
++    }
++    if ((rec->weapon_id == 6 || rec->weapon_id == 7) && (rec->frame_flags & 1)) {
++        rec->opponent_elevation_origin = SPAD->unk00[arg0][0];
++        rec->elevation_origin_from_weapon = 1;
+@@ -5217,9 +5217,9 @@
+-        rec->unk_268 = 0;
+-    }
+-    rec->weapon_point_delta[0].vx = SPAD->unk00[arg0][0].x - rec->unk_210[0].x;
+-    rec->weapon_point_delta[0].vy = SPAD->unk00[arg0][0].y - rec->unk_210[0].y;
+-    rec->weapon_point_delta[0].vz = SPAD->unk00[arg0][0].z - rec->unk_210[0].z;
+-    rec->weapon_point_delta[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
+-    rec->weapon_point_delta[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
+-    rec->weapon_point_delta[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
+-    rec->unk_1DA = fighter_IsBoneTriangleCrossYPositive(rec);
++        rec->elevation_origin_from_weapon = 0;
++    }
++    rec->weapon_point_delta[0].vx = SPAD->unk00[arg0][0].x - rec->prev_weapon_points[0].x;
++    rec->weapon_point_delta[0].vy = SPAD->unk00[arg0][0].y - rec->prev_weapon_points[0].y;
++    rec->weapon_point_delta[0].vz = SPAD->unk00[arg0][0].z - rec->prev_weapon_points[0].z;
++    rec->weapon_point_delta[1].vx = SPAD->unk48[arg0][0].x - rec->prev_second_weapon_points[0].x;
++    rec->weapon_point_delta[1].vy = SPAD->unk48[arg0][0].y - rec->prev_second_weapon_points[0].y;
++    rec->weapon_point_delta[1].vz = SPAD->unk48[arg0][0].z - rec->prev_second_weapon_points[0].z;
++    rec->bone_triangle_cross_y_positive = fighter_IsBoneTriangleCrossYPositive(rec);
+@@ -5229 +5229 @@
+-        rec->unk_AD != 0) {
++        rec->attack_hit_armed != 0) {
+@@ -5238,3 +5238,3 @@
+-    rec->unk_288[0] = 0;
+-    rec->unk_288[1] = 0;
+-    if (rec->unk_AD != 0) {
++    rec->weapon_hit_phases[0] = 0;
++    rec->weapon_hit_phases[1] = 0;
++    if (rec->attack_hit_armed != 0) {
+@@ -5243,2 +5243,2 @@
+-            rec->unk_288[0] += 1;
+-            rec->unk_288[1] += 1;
++            rec->weapon_hit_phases[0] += 1;
++            rec->weapon_hit_phases[1] += 1;
+@@ -5246 +5246 @@
+-                rec->unk_288[0] += 2;
++                rec->weapon_hit_phases[0] += 2;
+@@ -5248 +5248 @@
+-                rec->unk_288[0] += 4;
++                rec->weapon_hit_phases[0] += 4;
+@@ -5251 +5251 @@
+-                rec->unk_288[1] += 2;
++                rec->weapon_hit_phases[1] += 2;
+@@ -5253 +5253 @@
+-                rec->unk_288[1] += 4;
++                rec->weapon_hit_phases[1] += 4;
+@@ -5258,3 +5258,3 @@
+-        rec->unk_15E = 0x600;
+-        rec->unk_160 = 0x600;
+-        rec->unk_162 = 0x600;
++        rec->decaying_xz_velocity_damping_x = 0x600;
++        rec->decaying_xz_velocity_damping_y = 0x600;
++        rec->decaying_xz_velocity_damping_z = 0x600;
+@@ -5262,3 +5262,3 @@
+-        rec->unk_15E = 0x100;
+-        rec->unk_160 = 0x100;
+-        rec->unk_162 = 0x100;
++        rec->decaying_xz_velocity_damping_x = 0x100;
++        rec->decaying_xz_velocity_damping_y = 0x100;
++        rec->decaying_xz_velocity_damping_z = 0x100;
+@@ -5266,3 +5266,3 @@
+-        rec->unk_15E = 0xC00;
+-        rec->unk_160 = 0xC00;
+-        rec->unk_162 = 0xC00;
++        rec->decaying_xz_velocity_damping_x = 0xC00;
++        rec->decaying_xz_velocity_damping_y = 0xC00;
++        rec->decaying_xz_velocity_damping_z = 0xC00;
+@@ -5271,3 +5271,3 @@
+-        rec->unk_156 = 0xD00;
+-        rec->unk_158 = 0xFC0;
+-        rec->unk_15A = 0xD00;
++        rec->base_velocity_damping_x = 0xD00;
++        rec->base_velocity_damping_y = 0xFC0;
++        rec->base_velocity_damping_z = 0xD00;
+@@ -5275,3 +5275,3 @@
+-        rec->unk_156 = 0xFC0;
+-        rec->unk_158 = 0xFC0;
+-        rec->unk_15A = 0xFC0;
++        rec->base_velocity_damping_x = 0xFC0;
++        rec->base_velocity_damping_y = 0xFC0;
++        rec->base_velocity_damping_z = 0xFC0;
+@@ -5284 +5284 @@
+-          rec->unk_AA == rec->move_frame))) {
++          rec->paired_move_hit_frame == rec->move_frame))) {
+@@ -5306 +5306 @@
+-        rec->move_kind == 0xB && rec->unk_34D == 0) {
++        rec->move_kind == 0xB && rec->throw_charges_left == 0) {
+@@ -5309 +5309 @@
+-    if (rec->unk_46 == 0) {
++    if (rec->move_frame_unchanged == 0) {
+@@ -5313 +5313 @@
+-            if (rec->move_kind == 0xB && rec->move_frame == rec->unk_A7) {
++            if (rec->move_kind == 0xB && rec->move_frame == rec->release_frame) {
+@@ -5315,2 +5315,2 @@
+-                    if (rec->unk_34D != 0) {
+-                        rec->unk_34D--;
++                    if (rec->throw_charges_left != 0) {
++                        rec->throw_charges_left--;
+@@ -5319,2 +5319,2 @@
+-                           object_ThrowQueuedKind(rec) == rec->unk_14) {
+-                    rec->unk_8A = 0;
++                           object_ThrowQueuedKind(rec) == rec->wielded_object_kind) {
++                    rec->object_variant_enabled = 0;
+@@ -5325,2 +5325,2 @@
+-            if (object_PickUpNearby(rec) == rec->unk_14) {
+-                rec->unk_8A = rec->unk_26C;
++            if (object_PickUpNearby(rec) == rec->wielded_object_kind) {
++                rec->object_variant_enabled = rec->unk_26C;
+@@ -5331,4 +5331,4 @@
+-                   object_PickUpNearby(rec) == rec->unk_14) {
+-            rec->unk_8A = 1;
+-        }
+-        if (rec->move_kind == 0x12 && rec->move_frame == rec->unk_A7 &&
++                   object_PickUpNearby(rec) == rec->wielded_object_kind) {
++            rec->object_variant_enabled = 1;
++        }
++        if (rec->move_kind == 0x12 && rec->move_frame == rec->release_frame &&
+@@ -5339 +5339 @@
+-        if (rec->move_kind == 0x10 && rec->move_frame == rec->unk_AC &&
++        if (rec->move_kind == 0x10 && rec->move_frame == rec->weapon_reload_frame &&
+@@ -5346 +5346 @@
+-        if (rec->unk_46 == 0 &&
++        if (rec->move_frame_unchanged == 0 &&
+@@ -5348 +5348 @@
+-            rec->unk_62 |= 0x40;
++            rec->frame_flags |= 0x40;
+@@ -5353 +5353 @@
+-        rec->unk_62 |= 0x80;
++        rec->frame_flags |= 0x80;
+@@ -5357 +5357 @@
+-            rec->unk_B3 = 4;
++            rec->draw_move_set = 4;
+@@ -5360 +5360 @@
+-        rec->unk_B3 = 0;
++        rec->draw_move_set = 0;
+@@ -5363,3 +5363,3 @@
+-        rec->unk_B3 = 4;
+-    }
+-    gpu_QueueSlotDrawMovesForSelectedSet(arg0, rec->unk_B3);
++        rec->draw_move_set = 4;
++    }
++    gpu_QueueSlotDrawMovesForSelectedSet(arg0, rec->draw_move_set);
+DRY RUN: 7 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

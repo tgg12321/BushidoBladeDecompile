@@ -1,0 +1,96 @@
+var-members-rest-8 -- draft notes (Codex research re-derived; Codex was treated as hints only)
+
+Scope: Unk80101EC8Record (the fighter record, D_80101EC8[2], stride 0x44C, include/game.h ~1535-1816, extern include/bb2.h:177).
+Research: 83 RENAME / 9 NO_NAME. Surviving: 81 rows (pairs.txt). Dropped 2, respelled 0.
+
+Re-derivation
+- All 83 research pairs were first compiled in one type-resolved dry run (naming_member_apply.py --dry-run; 1006 member error
+  lines, 0 unresolved). From its per-line report every member's access lines were listed with their source text
+  (accesses through D_80101EC8[i], rec / p / obj / base / arg pointers, ->other chains) and compared with the research
+  ACCESSES lists: every compiler-resolved line is present in the research list for that member (83/83 members). The contexts
+  of the doubtful rows were read in the source (see below).
+- Raw offsets: no (u8 *) walk or 0x44C-stride access of a fighter record pointer exists in src/ (the 0x44C hits are 17AFC.c
+  2136-2149 and 9F9C.c:1022, unrelated constants). None of the 137 remaining INCLUDE_ASM bodies names D_80101EC8, so no asm
+  access is left outside C.
+- Collisions: whole-word grep of src/ include/ finds none of the 81 new names (no member, type, macro or keyword of that
+  spelling); none repeats another new name in this wave.
+
+Dropped (2)
+  unk_3F2 cpu_script_start_count: counts only two of the five fighter_StartCpuPadScript kinds (4510C.c:2748 list script and
+    :2842 kind-1 script; kinds 2/3/4 never increment it), so "script start count" over-claims.
+  unk_3F4 cpu_move_start_count: counts only the move starts of a fixed subset (own kinds 3/0x2C at move_frame 0, opponent 0xD/
+    0x2C; 4510C.c:730-734), so "move start count" over-claims; no narrower noun is shown without naming those kinds.
+
+NO_NAME (9, from research, none contradicted, not in pairs)
+  unk_8E, unk_90 (nibble-5 variant position and its enable flag: "stowed" is not shown by any access), unk_AF (0/1 from
+  "button code != 5": meaning of code 5 unknown), unk_150 (only ever written 0), unk_24C (write-only copy of unk_104),
+  unk_26C (item/limb intact flag: "limb" inferred from bone-hit groups 6..9), unk_26E / unk_270 / unk_272 (per-bone-group hit
+  counters, told apart only by hit-record index range; unk_272 is also bumped on the partner at 9F9C.c:2811).
+  Note unk_8A / unk_86 / unk_88 rows read unk_26C and unk_8E; those two members stay unk_ and nothing in the kept names claims them.
+
+WEAK rows kept (research flags, reviewer may drop)
+  unk_08 cpu_base_level (human records also get 0x1000 but never read it; "level" rides on unk_438 cpu_level), unk_1E base_power /
+  unk_20 power ("power" is the neutral word for the relative strength used in clashes, mash scores, push skew), unk_62 frame_flags
+  (generic), unk_72 stays_airborne (wording), unk_92 weapon_live_state (first-live-frame seeds unk_234 from SPAD unk48, a copy of
+  unk_8C's code), unk_94 falling_backward (angle test s1 < 0x400 between facing and the collision displacement, 9F9C.c:4315-4340),
+  unk_A7 release_frame (verb), unk_AB opponent_transition_start_frame (single reader, 9F9C.c:4651, through rec->other; the
+  value belongs to the record whose own move_frame gates the opponent), unk_134 drift_velocity (noun), unk_174 / unk_180 / unk_18C
+  (descriptive of the computation: points come from g_fighter_bone_hit_records through fighter_UpdateBoneWorldData; "hit point"
+  follows those records), unk_198 / unk_1B0 ground_probe_points / _floor_ys (camera users only use the mean height), unk_1EA
+  opponent_elevation_offset (two writers), unk_1EC bone_y_axis (which bone left unsaid), unk_28C mash_contest_score ("mash"
+  rests on per-press accumulation, 175A4.c:58-63), unk_34D throw_charges_left (rests on move kind 0xB being the throw kind),
+  unk_3F3 cpu_threat_resolved_count ("resolved" = the state set to 4 at the same sites), unk_3F5 / unk_3F6 cpu_script_wait_frames /
+  _limit, unk_39C cpu_action_from_opponent (wording), unk_404 filtered_script_max_distances (filter fields unnamed), unk_425
+  incoming_projectile_state (fallback incoming_object_state), unk_430 cpu_decision_flags (fallback cpu_state_flags), unk_440 /
+  unk_441 latched_ / motion_metadata_nibble (data-level names).
+Polarity checked: unk_46 move_frame_unchanged is 0 on the update where move_frame advanced (9F9C.c:4527, 3453) and 1 when it did
+  not (4531); every reader acts on == 0.
+Pairs are mutually consistent siblings: base_velocity / base_velocity_damping_{x,y,z}, drift_velocity / drift_velocity_damping_{x,y,z},
+  prev_weapon_points / prev_second_weapon_points, blend_src_frame_code / blend_dst_frame_code / saved_motion_frame_id, cpu_action_*.
+
+Dry run (dry.txt, exit=0, run under WSL): 7 files change (include/game.h, src/main/175A4.c, 17AFC.c, 28708.c, 2B344.c, 4510C.c,
+9F9C.c); "OK: every member access renamed"; member error rounds 993 -> 0. 0 UNRESOLVED lines; 0 compile failures. The tool's PASS
+line (keycheck) is the first line of dry.txt. Many lines exceed 80 columns after the rename: tools/format.py lands them.
+Cross-lane: this wave touches 175A4, 17AFC, 28708, 2B344, 4510C, 9F9C; check lane claims at LAND time.
+
+R6 watch list: comments the tool does not edit (old member spelling, fighter-record meaning). Update at apply, then the keycheck.
+Same-spelled words of OTHER types stay (unk_08, unk_14, unk_20, unk_64, unk_78, unk_86, unk_12 ... recur on many game.h types;
+check the type before editing).
+- include/game.h: 1286 ("unk_210 or unk_234"), 1602 ("unk_3F8 / unk_3FE / unk_404"; unk_3A8 stays), 1606 ("unk_234 / SPAD unk48"),
+  1671 ("unk_198[i]"), 1785 ("[unk_86]"), 1970-1974 (replay record text: unk_B3, unk_64 / unk_66, unk_1E6 / unk_1E8 / unk_1EA,
+  unk_62), and the decl comments inside the Unk80101EC8Record body (~1535-1816) that mention renamed siblings.
+- include/bb2.h: 186 ("unk_12 == 50", "D_8008D88C[unk_14]", "unk_8C"), 202 ("Unk80101EC8Record.unk_84"), 207 ("unk_1E / unk_20"),
+  245 ("Unk80101EC8Record.unk_12").
+- src/main/17AFC.c: 830 (unk_134.vx / .vz), 1479 (unk_12 only if it is the fighter record; unk_10 stays), 1663-1664, 1672, 1765
+  (unk_210, unk_234, unk_8C), 2209, 2283-2285 (unk_234, unk_210, unk_18C, unk_174), 2291 (unk_AD). Line 2443 is code on a different
+  type (rec->unk_12 of a non-fighter record): not touched by the tool, check.
+- src/main/4510C.c: 1704 (unk_3F8, unk_404), 1718, 2701 (unk_438), 1721 (unk_394), 1725 (unk_39C).
+- src/main/9F9C.c: 2985-2992 (unk_12, unk_8C, unk_1EC, unk_180, unk_198, unk_1B0), 3257-3258 (unk_88, unk_8A), 4432 (unk_1E / unk_20),
+  4448 (unk_31A), 4452-4453 (unk_104, unk_62).
+- src/main/d_7D920.c: 307 and 342 (same table-description comments as bb2.h:202,207; 205/629/633/652 and the unk_14 lines belong to
+  other types, check).
+- Other TUs with hits on the same spellings (309CC, 31D3C, 4BC3C, 596CC, 5ED34 unk_64 / unk_14, d_7D920 unk_12 / unk_14) are other
+  types' members, not the fighter record: leave.
+
+PRE-APPLY REVIEW (naming-reviewer, two batches, 2026-10-28)
+68/81 PASS (A 35/42, B 33/39). 13 FAILed rows were replaced by the reviewer's
+suggested names, marked `suggested` in member_manifest.csv; R6 must judge each
+fresh at every use:
+  unk_72  stays_airborne -> airborne_until_landing (latch: launch .. landing)
+  unk_134 drift_velocity -> decaying_xz_velocity (also pad-steered circling)
+  unk_15E/160/162 drift_velocity_damping_* -> decaying_xz_velocity_damping_*
+  unk_174 hit_point_pair_midpoint -> bone_hit_points_4_5_midpoint
+  unk_180 first_hit_point -> bone_hit_point_0
+  unk_18C hit_point_trio_centroid -> bone_hit_points_1_3_centroid
+          ('hit_point' is the collision-contact point in 43500.c)
+  unk_1E6 tracked_opponent_bearing -> eased_pose_bearing_offset
+  unk_1E8 tracked_opponent_elevation -> eased_pose_elevation_offset
+  unk_414 opponent_attack_tallies -> cpu_tracked_move_tallies
+  unk_424 opponent_attack_tally_threshold -> cpu_tracked_move_tally_threshold
+  unk_428 opponent_attack_tally_key -> cpu_tracked_move_key
+          (key 0xFF for the fighter's own kind 0x11, 4510C.c:797-798)
+  unk_430 cpu_decision_flags -> cpu_frame_flags (bits are observations too)
+Reviewer corrections to the miner's evidence (names still pass): unk_3F5 -
+unk_430 bit 1 (set at 4510C.c:910) also opens the gate at 2525; unk_34D - kind
+0xB is the throw kind by 4510C.c:900-902 and 9F9C.c:5313-5320.
+Dry run re-run with the final names: PASS, 0 compile failures, 0 UNRESOLVED.
