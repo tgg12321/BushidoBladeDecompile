@@ -102,7 +102,7 @@ assigns to `g_main_loop_handler_index` itself.
 | 9 | `menu_UpdateRowMenuAndSubflows` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
 | 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
 | 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `g_saved_record` |
-| 12 | `func_8001EA04` (src/main/9F9C.c:2225) | 0xD | |
+| 12 | `fight_InitFighterFocusViewAndThreeItemMenu` (src/main/9F9C.c:2225) | 0xD | |
 | 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2240) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `g_fight_choice_menu_cursor` |
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
 | 15 | `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
