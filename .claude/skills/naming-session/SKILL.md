@@ -33,7 +33,9 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   apply and keycheck see every name another lane landed. `fresh` refuses while an earlier
   unit's commits are unlanded (its `land` still running): finish that land first; never
   `fresh --discard` here. If any claim is refused, unclaim what you took and do another unit or
-  stop; never wait for it. Claims are held until the unit's stopping point. Older row notes that
+  stop; never wait for it. After any row claim succeeds, `lanes.py fresh <lane>` and re-read the
+  row on main: go on only if its stage and note are what you picked it by (the Codex lane may
+  have just moved it). Claims are held until the unit's stopping point. Older row notes that
   say to claim TUs or types before PREPARE are superseded.
 - **Landing.** `python tools/lanes/lanes.py land <lane>` replays the lane's commits onto the current
   main in a private landing worktree, then:
@@ -80,7 +82,11 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
 - **Nothing waits on Codex (owner 2026-10-27).** Codex is a separate parallel lane (its usage may
-  run out), so naming research is done by an Opus subagent in the session (PREPARE step 1).
+  run out), so a session researches with an Opus subagent (PREPARE step 1). The Codex lane
+  researches ahead (owner 2026-10-28: use all of Codex's weekly usage): when it launches a run on an
+  `idea` row it claims the row and lands it `researching` with the run id, then `researched`
+  with `research: Codex <run id>` once the file is checked. A row it claims is
+  skipped like any claimed row; never wait for it.
 - **Tracks run in parallel, batches don't.** A track (locals, globals, members) has at most one
   open row (`idea` .. `reviewed`) at a time, and parallel lanes take different rows. Names can
   still meet across tracks (a local and a global in one TU), so two lanes never hold one
@@ -110,7 +116,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
 
 The columns are `id  kind  stage  draft  note`. `kind` is `func`, `member`, `data` or `local`.
 Each kind is one track: `local` = locals, `data` = globals, `member` = members, `func` = functions
-(blocked: `func-second-pass`).
+(the second pass over the NO_NAME functions, `func-second-pass` rows; owner 2026-10-28). Kind
+`audit` (stage `active`, the Codex lane's `name-audit` index) is never picked.
 `draft` is the tracked draft dir `docs/naming/phase3/pending/<id>/` (rows.py, member_manifest.csv,
 pairs.txt, dry.txt). Stages:
 
@@ -134,11 +141,14 @@ reviewed`.
    go on to step 3 in this unit; if the unit stops before step 5, land the row as `researched`.
    For functions, take the target list from `python tools/naming_noname.py free <tu,...>`: it
    skips every function in the NO_NAME ledger (`docs/naming/phase3/no_name.tsv`). Bring one back
-   only with new evidence (a neighbour named since, a type landed, a Q124 trace capture):
-   `--revive <addr>=<evidence>`. Put the printed `# revive` lines in the prompt and the row note.
-2. `researched` with `research: Opus`: the file is in main's `tmp/codex/` (it is untracked: if it
-   is missing, redo step 1); go to step 3. An older Codex row (`researching` / `researched` citing
-   a run id): `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`. If the run
+   only with evidence specific to it and newer than its ledger `commit`: a callee or caller, or a
+   global, member or type it touches, named since; or a newer Q124 capture or only-X row covering
+   it. Cite `file:line`. Local or parameter names are never revive evidence (naming-bar N3); a
+   landed name only points at code to re-read. `--revive <addr>=<evidence>`. Put the printed `# revive` lines in the prompt and the row note.
+2. `researched` with `research: Opus` or `research: Codex <run id>`: the file is main's
+   `tmp/codex/<id>-research.md` (it is untracked: if it is missing, extract it from the Codex run
+   or redo step 1); go to step 3. A Codex row with no research file yet (`researching`, or
+   `researched` citing a run id but no `tmp/codex/<id>-research.md`): `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`. If the run
    has no `meta.json` or ended other than `ok` (`failed` / `timeout` / `cancelled`), redo the
    research by step 1 (Opus), replacing the run id in the note with `research: Opus`, or mark the
    row `dropped` with the reason. A run still in progress: take another unit; if it is still running when its track is the
