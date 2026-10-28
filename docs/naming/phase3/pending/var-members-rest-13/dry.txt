@@ -1,0 +1,617 @@
+PASS Unk8005C8A8Rec.unk_00=chunk_tiles, Unk8005C8A8Rec.unk_4D8=chunk_draw_mode, Unk8005D814Rec.unk_00=chunk_tiles, Unk8005D814Rec.unk_2F8=chunk_draw_mode, Unk8005E54CRec.unk_00=chunk_tiles, Unk8005E54CRec.unk_898=chunk_textured_quads, Unk8005E54CRec.unk_BB8=chunk_draw_mode, Unk8005FC9CRec.unk_280=chunk_draw_mode, Unk8005FC9CRec.unk_28C=chunk_gradient_quads, Unk8005FC9CRec.unk_2D4=chunk_draw_areas, Unk800600C8Rec.unk_B4=chunk_draw_mode, Unk80060414Rec.unk_14=chunk_draw_mode, Unk80060544Rec.unk_4EC=chunk_textured_quads, Unk80060544Rec.unk_5DC=chunk_draw_mode, Unk800F0EC8Record.unk0=slot_world_x, Unk800F0EC8Record.unk4=slot_world_y, Unk800F0EC8Record.unk8=slot_world_z, Unk800F0E38Record.unk0=slot_world_x, Unk800F0E38Record.unk4=slot_world_y, Unk800F0E38Record.unk8=slot_world_z, Unk800A3D40Rec.unkC=accumulated_values, Unk8008F13CRow.unk_0=audio_file_index_offset, Unk8008F13CRow.unk_1=xa_channel, Unk8008F13CRow.unk_4=audio_end_offset, Unk80094B96Rec.unk_02=node_translation, Unk80094B96Rec.unk_08=projected_entry_index, Unk800A6690Rec.unk58=is_collected, Tbl800A3860Entry.unk_04=section_offsets, MoveScript.unk_09=move_bitfield, Unk800F62E0Rec.unk5C=light_dir_scale, Unk8006ECF4Rec.unk_0C=entry_headers, Unk8006DD94List.unk_20=confirm_sheets, CamScratch.unk60=segment_work, Tbl8008EB54Entry.unk2=height_offset, Unk8003F6D8Coll.unk00=ground_height, Unk8003F6D8Coll.unk68=volume_bounds, Unk8009A8C8Entry.unk1=script_wait_limit
+decl Unk8005C8A8Rec.unk_00 -> chunk_tiles  include/game.h:421
+decl Unk8005C8A8Rec.unk_4D8 -> chunk_draw_mode  include/game.h:423
+decl Unk8005D814Rec.unk_00 -> chunk_tiles  include/game.h:436
+decl Unk8005D814Rec.unk_2F8 -> chunk_draw_mode  include/game.h:438
+decl Unk8005E54CRec.unk_00 -> chunk_tiles  include/game.h:448
+decl Unk8005E54CRec.unk_898 -> chunk_textured_quads  include/game.h:450
+decl Unk8005E54CRec.unk_BB8 -> chunk_draw_mode  include/game.h:451
+decl Unk8005FC9CRec.unk_280 -> chunk_draw_mode  include/game.h:465
+decl Unk8005FC9CRec.unk_28C -> chunk_gradient_quads  include/game.h:466
+decl Unk8005FC9CRec.unk_2D4 -> chunk_draw_areas  include/game.h:467
+decl Unk800600C8Rec.unk_B4 -> chunk_draw_mode  include/game.h:480
+decl Unk80060414Rec.unk_14 -> chunk_draw_mode  include/game.h:490
+decl Unk80060544Rec.unk_4EC -> chunk_textured_quads  include/game.h:505
+decl Unk80060544Rec.unk_5DC -> chunk_draw_mode  include/game.h:506
+decl Unk800F0EC8Record.unk0 -> slot_world_x  include/game.h:108
+decl Unk800F0EC8Record.unk4 -> slot_world_y  include/game.h:109
+decl Unk800F0EC8Record.unk8 -> slot_world_z  include/game.h:110
+decl Unk800F0E38Record.unk0 -> slot_world_x  include/game.h:119
+decl Unk800F0E38Record.unk4 -> slot_world_y  include/game.h:120
+decl Unk800F0E38Record.unk8 -> slot_world_z  include/game.h:121
+decl Unk800A3D40Rec.unkC -> accumulated_values  include/game.h:2534
+decl Unk8008F13CRow.unk_0 -> audio_file_index_offset  include/bb2.h:266
+decl Unk8008F13CRow.unk_1 -> xa_channel  include/bb2.h:267
+decl Unk8008F13CRow.unk_4 -> audio_end_offset  include/bb2.h:269
+decl Unk80094B96Rec.unk_02 -> node_translation  include/game.h:2190
+decl Unk80094B96Rec.unk_08 -> projected_entry_index  include/game.h:2191
+decl Unk800A6690Rec.unk58 -> is_collected  include/game.h:2153
+decl Tbl800A3860Entry.unk_04 -> section_offsets  include/game.h:822
+decl MoveScript.unk_09 -> move_bitfield  include/game.h:1548
+decl Unk800F62E0Rec.unk5C -> light_dir_scale  include/game.h:2129
+decl Unk8006ECF4Rec.unk_0C -> entry_headers  include/game.h:316
+decl Unk8006DD94List.unk_20 -> confirm_sheets  include/game.h:2479
+decl CamScratch.unk60 -> segment_work  src/main/9F9C.c:445
+decl Tbl8008EB54Entry.unk2 -> height_offset  include/game.h:1914
+decl Unk8003F6D8Coll.unk00 -> ground_height  include/game.h:2437
+decl Unk8003F6D8Coll.unk68 -> volume_bounds  include/game.h:2440
+decl Unk8009A8C8Entry.unk1 -> script_wait_limit  include/game.h:1947
+  round 0: 83 member error line(s)
+    src/main/175A4.c:184 unk2 x1
+    src/main/2B344.c:1348 unkC x1
+    src/main/2B344.c:1349 unkC x1
+    src/main/2B344.c:1350 unkC x1
+    src/main/2B344.c:1351 unkC x1
+    src/main/2B344.c:1352 unkC x1
+    src/main/2B344.c:1353 unkC x1
+    src/main/2B344.c:1372 unkC x1
+    src/main/2B344.c:1375 unkC x1
+    src/main/2B344.c:2042 unk58 x1
+    src/main/2B344.c:2044 unk58 x1
+    src/main/2B344.c:2061 unk58 x1
+    src/main/2B344.c:2144 unk58 x1
+    src/main/2B344.c:2147 unk58 x1
+    src/main/2B344.c:2224 unk58 x1
+    src/main/2B344.c:2770 unk68 x1
+    src/main/2B344.c:2824 unk00 x1
+    src/main/309CC.c:330 unk_02 x1
+    src/main/309CC.c:332 unk_02 x1
+    src/main/309CC.c:334 unk_02 x1
+    src/main/309CC.c:441 unk_08 x1
+    src/main/368E4.c:2315 unk5C x1
+    src/main/368E4.c:2330 unk5C x1
+    src/main/368E4.c:2332 unk5C x1
+    src/main/368E4.c:2334 unk5C x1
+    src/main/4510C.c:309 unk1 x1
+    src/main/4D0A8.c:51 unk_00 x1
+    src/main/4D0A8.c:52 unk_00 x1
+    src/main/4D0A8.c:58 unk_4D8 x1
+    src/main/4D0A8.c:481 unk_00 x1
+    src/main/4D0A8.c:488 unk_00 x1
+    src/main/4D0A8.c:489 unk_2F8 x1
+    src/main/4D0A8.c:644 unk_00 x1
+    src/main/4D0A8.c:650 unk_00 x1
+    src/main/4D0A8.c:651 unk_2F8 x1
+    src/main/4D0A8.c:809 unk_00 x1
+    src/main/4D0A8.c:813 unk_00 x1
+    src/main/4D0A8.c:814 unk_898 x1
+    src/main/4D0A8.c:815 unk_BB8 x1
+    src/main/4D0A8.c:1097 unk_00 x1
+    src/main/4D0A8.c:1098 unk_00 x1
+    src/main/4D0A8.c:1099 unk_2F8 x1
+    src/main/4D0A8.c:1343 unk_280 x1
+    src/main/4D0A8.c:1344 unk_28C x1
+    src/main/4D0A8.c:1345 unk_2D4 x1
+    src/main/4D0A8.c:1444 unk_B4 x1
+    src/main/4D0A8.c:1533 unk_14 x1
+    src/main/4D0A8.c:1579 unk_4EC x1
+    src/main/4D0A8.c:1583 unk_5DC x1
+    src/main/51268.c:1105 unk0 x1
+    src/main/51268.c:1106 unk4 x1
+    src/main/51268.c:1107 unk8 x1
+    src/main/51268.c:1164 unk0 x1
+    src/main/51268.c:1167 unk8 x1
+    src/main/51268.c:1172 unk4 x1
+    src/main/51268.c:1181 unk4 x1
+    src/main/51268.c:1397 unk0 x1
+    src/main/51268.c:1399 unk4 x1
+    src/main/51268.c:1401 unk8 x1
+    src/main/51268.c:1423 unk0 x1
+    src/main/51268.c:1427 unk4 x1
+    src/main/51268.c:1431 unk8 x1
+    src/main/51268.c:1511 unk0 x1
+    src/main/51268.c:1513 unk4 x1
+    src/main/51268.c:1515 unk8 x1
+    src/main/596CC.c:2540 unk_20 x1
+    src/main/5ED34.c:327 unk_0C x1
+    src/main/87A0.c:56 unk00 x1
+    src/main/9F9C.c:604 unk60 x1
+    src/main/9F9C.c:629 unk60 x1
+    src/main/9F9C.c:660 unk60 x1
+    src/main/9F9C.c:3345 unk_04 x1
+    src/main/9F9C.c:3348 unk_04 x1
+    src/main/9F9C.c:3351 unk_04 x1
+    src/main/9F9C.c:3354 unk_04 x1
+    src/main/9F9C.c:3599 unk_09 x1
+    src/main/9F9C.c:4767 unk_09 x1
+    src/main/9F9C.c:4839 unk_09 x1
+    src/main/9F9C.c:5017 unk_09 x1
+    src/main/cdrom.c:112 unk_0 x1
+    src/main/cdrom.c:113 unk_1 x1
+    src/main/cdrom.c:114 unk_4 x1
+    src/main/cdrom.c:117 unk_4 x1
+  round 1: 0 member error line(s)
+PASS Unk80060414Rec.unk_00=chunk_sprite, Unk8009BCF8Record.unk0=cell_entry, Unk800EED10Entry.unk4=block_start, SelectEntryE534.unk1=grid_pick_value
+decl Unk80060414Rec.unk_00 -> chunk_sprite  include/game.h:489
+decl Unk8009BCF8Record.unk0 -> cell_entry  include/game.h:151
+decl Unk800EED10Entry.unk4 -> block_start  include/game.h:902
+decl SelectEntryE534.unk1 -> grid_pick_value  include/game.h:651
+  round 0: 10 member error line(s)
+    src/main/35000.c:368 unk4 x1
+    src/main/35000.c:378 unk4 x1
+    src/main/35000.c:439 unk4 x1
+    src/main/4D0A8.c:1548 unk_00 x1
+    src/main/5ED34.c:1045 unk1 x1
+    src/main/64FD8.c:625 unk0 x1
+    src/main/64FD8.c:633 unk0 x1
+    src/main/64FD8.c:634 unk0 x1
+    src/main/64FD8.c:645 unk0 x1
+    src/main/64FD8.c:795 unk0 x1
+  round 1: 0 member error line(s)
+PASS Unk80094B96Rec.unk_00=parent_index, MenuState.unk4=scroll_row_mask, Tbl8008EB54Entry.unk0=bearing_distance
+decl Unk80094B96Rec.unk_00 -> parent_index  include/game.h:2189
+decl MenuState.unk4 -> scroll_row_mask  include/game.h:141
+decl Tbl8008EB54Entry.unk0 -> bearing_distance  include/game.h:1913
+  round 0: 7 member error line(s)
+    src/main/175A4.c:182 unk0 x1
+    src/main/175A4.c:186 unk0 x1
+    src/main/309CC.c:323 unk_00 x1
+    src/main/596CC.c:362 unk4 x1
+    src/main/596CC.c:363 unk4 x1
+    src/main/596CC.c:366 unk4 x1
+    src/main/596CC.c:1006 unk4 x1
+  round 1: 0 member error line(s)
+PASS Unk8006ECF4Rec.unk_00=slot_cell_tables, Unk8009A8C8Entry.unk0=tracked_move_tally_threshold
+decl Unk8006ECF4Rec.unk_00 -> slot_cell_tables  include/game.h:314
+decl Unk8009A8C8Entry.unk0 -> tracked_move_tally_threshold  include/game.h:1946
+  round 0: 3 member error line(s)
+    src/main/4510C.c:308 unk0 x1
+    src/main/5ED34.c:399 unk_00 x1
+    src/main/5ED34.c:401 unk_00 x1
+  round 1: 0 member error line(s)
+PASS Unk8006DD94List.unk_00=cell_digit_set
+decl Unk8006DD94List.unk_00 -> cell_digit_set  include/game.h:2478
+  round 0: 1 member error line(s)
+    src/main/596CC.c:2551 unk_00 x1
+  round 1: 0 member error line(s)
+--- a/include/bb2.h
++++ b/include/bb2.h
+@@ -266,2 +266,2 @@
+-    u8 unk_0;
+-    u8 unk_1;
++    u8 audio_file_index_offset;
++    u8 xa_channel;
+@@ -269 +269 @@
+-    s32 unk_4;
++    s32 audio_end_offset;
+--- a/include/game.h
++++ b/include/game.h
+@@ -108,3 +108,3 @@
+-    s32 unk0;
+-    s32 unk4;
+-    s32 unk8;
++    s32 slot_world_x;
++    s32 slot_world_y;
++    s32 slot_world_z;
+@@ -119,3 +119,3 @@
+-    s32 unk0;
+-    s32 unk4;
+-    s32 unk8;
++    s32 slot_world_x;
++    s32 slot_world_y;
++    s32 slot_world_z;
+@@ -141 +141 @@
+-    s32 unk4;
++    s32 scroll_row_mask;
+@@ -151 +151 @@
+-    u8 unk0;
++    u8 cell_entry;
+@@ -314 +314 @@
+-    Unk8009B400Record *unk_00[2];
++    Unk8009B400Record *slot_cell_tables[2];
+@@ -316 +316 @@
+-    Unk8009B0E0Record unk_0C[0];
++    Unk8009B0E0Record entry_headers[0];
+@@ -421 +421 @@
+-    TILE unk_00[15];
++    TILE chunk_tiles[15];
+@@ -423 +423 @@
+-    DR_MODE unk_4D8;
++    DR_MODE chunk_draw_mode;
+@@ -436 +436 @@
+-    TILE unk_00[10];
++    TILE chunk_tiles[10];
+@@ -438 +438 @@
+-    DR_MODE unk_2F8;
++    DR_MODE chunk_draw_mode;
+@@ -448 +448 @@
+-    TILE unk_00[10];
++    TILE chunk_tiles[10];
+@@ -450,2 +450,2 @@
+-    POLY_FT4 unk_898[20];
+-    DR_MODE unk_BB8;
++    POLY_FT4 chunk_textured_quads[20];
++    DR_MODE chunk_draw_mode;
+@@ -465,3 +465,3 @@
+-    DR_MODE unk_280;
+-    POLY_G4 unk_28C[2];
+-    DR_AREA unk_2D4[3];
++    DR_MODE chunk_draw_mode;
++    POLY_G4 chunk_gradient_quads[2];
++    DR_AREA chunk_draw_areas[3];
+@@ -480 +480 @@
+-    DR_MODE unk_B4;
++    DR_MODE chunk_draw_mode;
+@@ -489,2 +489,2 @@
+-    SPRT unk_00;
+-    DR_MODE unk_14;
++    SPRT chunk_sprite;
++    DR_MODE chunk_draw_mode;
+@@ -505,2 +505,2 @@
+-    POLY_FT4 unk_4EC[6];
+-    DR_MODE unk_5DC;
++    POLY_FT4 chunk_textured_quads[6];
++    DR_MODE chunk_draw_mode;
+@@ -651 +651 @@
+-    u8 unk1;
++    u8 grid_pick_value;
+@@ -822 +822 @@
+-    s32 unk_04[4];
++    s32 section_offsets[4];
+@@ -902 +902 @@
+-    s32 unk4;
++    s32 block_start;
+@@ -1548 +1548 @@
+-    u8 unk_09;
++    u8 move_bitfield;
+@@ -1913,2 +1913,2 @@
+-    s16 unk0;
+-    s16 unk2;
++    s16 bearing_distance;
++    s16 height_offset;
+@@ -1946,2 +1946,2 @@
+-    u8 unk0;
+-    u8 unk1;
++    u8 tracked_move_tally_threshold;
++    u8 script_wait_limit;
+@@ -2129 +2129 @@
+-    s16 unk5C;                 /* +0x5C */
++    s16 light_dir_scale;                 /* +0x5C */
+@@ -2153 +2153 @@
+-    u8 unk58;               /* +0x58 */
++    u8 is_collected;               /* +0x58 */
+@@ -2189,3 +2189,3 @@
+-    s16 unk_00;
+-    s16 unk_02[3];
+-    s16 unk_08;
++    s16 parent_index;
++    s16 node_translation[3];
++    s16 projected_entry_index;
+@@ -2437 +2437 @@
+-    /* 0x00 */ s32 unk00;
++    /* 0x00 */ s32 ground_height;
+@@ -2440 +2440 @@
+-    /* 0x68 */ s32 unk68[3];
++    /* 0x68 */ s32 volume_bounds[3];
+@@ -2478,2 +2478,2 @@
+-    Unk8006D808Rec unk_00;
+-    Unk8009B0E0Record *unk_20[3];
++    Unk8006D808Rec cell_digit_set;
++    Unk8009B0E0Record *confirm_sheets[3];
+@@ -2534 +2534 @@
+-    s16 unkC[6];
++    s16 accumulated_values[6];
+--- a/src/main/175A4.c
++++ b/src/main/175A4.c
+@@ -182 +182 @@
+-                       g_fight_midpoint_effect_offsets[kind].unk0) >>
++                       g_fight_midpoint_effect_offsets[kind].bearing_distance) >>
+@@ -184 +184 @@
+-            pos[1] += g_fight_midpoint_effect_offsets[kind].unk2;
++            pos[1] += g_fight_midpoint_effect_offsets[kind].height_offset;
+@@ -186 +186 @@
+-                       g_fight_midpoint_effect_offsets[kind].unk0) >>
++                       g_fight_midpoint_effect_offsets[kind].bearing_distance) >>
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -1348,6 +1348,6 @@
+-    ptr->unkC[5] = 0;
+-    ptr->unkC[4] = 0;
+-    ptr->unkC[3] = 0;
+-    ptr->unkC[2] = 0;
+-    ptr->unkC[1] = 0;
+-    ptr->unkC[0] = 0;
++    ptr->accumulated_values[5] = 0;
++    ptr->accumulated_values[4] = 0;
++    ptr->accumulated_values[3] = 0;
++    ptr->accumulated_values[2] = 0;
++    ptr->accumulated_values[1] = 0;
++    ptr->accumulated_values[0] = 0;
+@@ -1372 +1372 @@
+-        base->unkC[i] += val;
++        base->accumulated_values[i] += val;
+@@ -1375 +1375 @@
+-    return base->unkC;
++    return base->accumulated_values;
+@@ -2042 +2042 @@
+-                            if (e2->unk58 == 0) {
++                            if (e2->is_collected == 0) {
+@@ -2044 +2044 @@
+-                                e2->unk58 = 1;
++                                e2->is_collected = 1;
+@@ -2061 +2061 @@
+-        ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
++        ((Unk800A6690Rec *)*g_draw_queue_cursor)->is_collected = 0;
+@@ -2144 +2144 @@
+-                                if (e2->unk58 == 0) {
++                                if (e2->is_collected == 0) {
+@@ -2147 +2147 @@
+-                                    e2->unk58 = 1;
++                                    e2->is_collected = 1;
+@@ -2224 +2224 @@
+-        c->unk58 = 0;
++        c->is_collected = 0;
+@@ -2770 +2770 @@
+-            in->coll.unk68[n] = *a2++;
++            in->coll.volume_bounds[n] = *a2++;
+@@ -2824 +2824 @@
+-            v1->recs[i].inner.coll.unk00 = a1;
++            v1->recs[i].inner.coll.ground_height = a1;
+--- a/src/main/309CC.c
++++ b/src/main/309CC.c
+@@ -323 +323 @@
+-            v1 = D_80094B94.recs[i].unk_00;
++            v1 = D_80094B94.recs[i].parent_index;
+@@ -330 +330 @@
+-                (D_80094B94.recs[i].unk_02[0] * a0->position_scale) >> 12;
++                (D_80094B94.recs[i].node_translation[0] * a0->position_scale) >> 12;
+@@ -332 +332 @@
+-                (D_80094B94.recs[i].unk_02[1] * a0->position_scale) >> 12;
++                (D_80094B94.recs[i].node_translation[1] * a0->position_scale) >> 12;
+@@ -334 +334 @@
+-                (D_80094B94.recs[i].unk_02[2] * a0->position_scale) >> 12;
++                (D_80094B94.recs[i].node_translation[2] * a0->position_scale) >> 12;
+@@ -441 +441 @@
+-        id = &D_80094B94.recs[i].unk_08;
++        id = &D_80094B94.recs[i].projected_entry_index;
+--- a/src/main/35000.c
++++ b/src/main/35000.c
+@@ -368 +368 @@
+-    src = g_arena_blocks[a0].unk4;
++    src = g_arena_blocks[a0].block_start;
+@@ -378 +378 @@
+-            g_arena_blocks[i].unk4 += a1;
++            g_arena_blocks[i].block_start += a1;
+@@ -439 +439 @@
+-    e->unk4 = ret;
++    e->block_start = ret;
+--- a/src/main/368E4.c
++++ b/src/main/368E4.c
+@@ -2315 +2315 @@
+-    light_setup->unk5C = *(packed_cursor + 1);
++    light_setup->light_dir_scale = *(packed_cursor + 1);
+@@ -2330 +2330 @@
+-            t = ((rsin(p->yaw) * c0) >> 12) * arg0->unk5C;
++            t = ((rsin(p->yaw) * c0) >> 12) * arg0->light_dir_scale;
+@@ -2332 +2332 @@
+-            t = rsin(p->pitch) * arg0->unk5C;
++            t = rsin(p->pitch) * arg0->light_dir_scale;
+@@ -2334 +2334 @@
+-            t = ((rcos(p->yaw) * c0) >> 12) * arg0->unk5C;
++            t = ((rcos(p->yaw) * c0) >> 12) * arg0->light_dir_scale;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -308,2 +308,2 @@
+-            p->cpu_tracked_move_tally_threshold = src->unk0;
+-            p->cpu_script_wait_limit = src->unk1;
++            p->cpu_tracked_move_tally_threshold = src->tracked_move_tally_threshold;
++            p->cpu_script_wait_limit = src->script_wait_limit;
+--- a/src/main/4D0A8.c
++++ b/src/main/4D0A8.c
+@@ -51,2 +51,2 @@
+-    tile = draw_chunk->unk_00;
+-    cur = arg2 + sizeof(draw_chunk->unk_00);
++    tile = draw_chunk->chunk_tiles;
++    cur = arg2 + sizeof(draw_chunk->chunk_tiles);
+@@ -58 +58 @@
+-    mode_off = &draw_chunk->unk_4D8;
++    mode_off = &draw_chunk->chunk_draw_mode;
+@@ -481 +481 @@
+-    tile = draw_chunk->unk_00;
++    tile = draw_chunk->chunk_tiles;
+@@ -488,2 +488,2 @@
+-    cur = arg2 + sizeof(draw_chunk->unk_00);
+-    mode_off = &draw_chunk->unk_2F8;
++    cur = arg2 + sizeof(draw_chunk->chunk_tiles);
++    mode_off = &draw_chunk->chunk_draw_mode;
+@@ -644 +644 @@
+-    tile = draw_chunk->unk_00;
++    tile = draw_chunk->chunk_tiles;
+@@ -650,2 +650,2 @@
+-    cur = arg2 + sizeof(draw_chunk->unk_00);
+-    mode_off = &draw_chunk->unk_2F8;
++    cur = arg2 + sizeof(draw_chunk->chunk_tiles);
++    mode_off = &draw_chunk->chunk_draw_mode;
+@@ -809 +809 @@
+-    tile = draw_chunk->unk_00;
++    tile = draw_chunk->chunk_tiles;
+@@ -813,3 +813,3 @@
+-    cur = arg1 + sizeof(draw_chunk->unk_00);
+-    ft4_out_addr = (s32)draw_chunk->unk_898;
+-    mode_off = &draw_chunk->unk_BB8;
++    cur = arg1 + sizeof(draw_chunk->chunk_tiles);
++    ft4_out_addr = (s32)draw_chunk->chunk_textured_quads;
++    mode_off = &draw_chunk->chunk_draw_mode;
+@@ -1097,3 +1097,3 @@
+-    tile = draw_chunk->unk_00;
+-    cur = arg2 + sizeof(draw_chunk->unk_00);
+-    mode_off = &draw_chunk->unk_2F8;
++    tile = draw_chunk->chunk_tiles;
++    cur = arg2 + sizeof(draw_chunk->chunk_tiles);
++    mode_off = &draw_chunk->chunk_draw_mode;
+@@ -1343,3 +1343,3 @@
+-    mode_off = &draw_chunk->unk_280;
+-    gradient_quad_cursor = draw_chunk->unk_28C;
+-    area = draw_chunk->unk_2D4;
++    mode_off = &draw_chunk->chunk_draw_mode;
++    gradient_quad_cursor = draw_chunk->chunk_gradient_quads;
++    area = draw_chunk->chunk_draw_areas;
+@@ -1444 +1444 @@
+-    DR_MODE *mode_off = &draw_chunk->unk_B4;
++    DR_MODE *mode_off = &draw_chunk->chunk_draw_mode;
+@@ -1533 +1533 @@
+-    mode_off = &sprite_chunk->unk_14;
++    mode_off = &sprite_chunk->chunk_draw_mode;
+@@ -1548 +1548 @@
+-    s.sprt_out = (s32)&sprite_chunk->unk_00;
++    s.sprt_out = (s32)&sprite_chunk->chunk_sprite;
+@@ -1579 +1579 @@
+-    ft4_out_addr = (s32)draw_chunk->unk_4EC;
++    ft4_out_addr = (s32)draw_chunk->chunk_textured_quads;
+@@ -1583 +1583 @@
+-    mode_off = &draw_chunk->unk_5DC;
++    mode_off = &draw_chunk->chunk_draw_mode;
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -1105,3 +1105,3 @@
+-    g_eff_billboard_pair_positions[slot_index].unk0 = src_position[0];
+-    g_eff_billboard_pair_positions[slot_index].unk4 = src_position[1];
+-    g_eff_billboard_pair_positions[slot_index].unk8 = src_position[2];
++    g_eff_billboard_pair_positions[slot_index].slot_world_x = src_position[0];
++    g_eff_billboard_pair_positions[slot_index].slot_world_y = src_position[1];
++    g_eff_billboard_pair_positions[slot_index].slot_world_z = src_position[2];
+@@ -1164 +1164 @@
+-                    g_eff_billboard_pair_positions[slot_index].unk0 -
++                    g_eff_billboard_pair_positions[slot_index].slot_world_x -
+@@ -1167 +1167 @@
+-                    g_eff_billboard_pair_positions[slot_index].unk8 -
++                    g_eff_billboard_pair_positions[slot_index].slot_world_z -
+@@ -1172 +1172 @@
+-                        g_eff_billboard_pair_positions[slot_index].unk4 -
++                        g_eff_billboard_pair_positions[slot_index].slot_world_y -
+@@ -1181 +1181 @@
+-                        g_eff_billboard_pair_positions[slot_index].unk4 -
++                        g_eff_billboard_pair_positions[slot_index].slot_world_y -
+@@ -1397 +1397 @@
+-                    .unk0 = g_eff_command_position[0];
++                    .slot_world_x = g_eff_command_position[0];
+@@ -1399 +1399 @@
+-                    .unk4 = g_eff_command_position[1];
++                    .slot_world_y = g_eff_command_position[1];
+@@ -1401 +1401 @@
+-                    .unk8 = g_eff_command_position[2];
++                    .slot_world_z = g_eff_command_position[2];
+@@ -1423 +1423 @@
+-                .unk0 = g_eff_command_position[0];
++                .slot_world_x = g_eff_command_position[0];
+@@ -1427 +1427 @@
+-                .unk4 = g_eff_command_position[1];
++                .slot_world_y = g_eff_command_position[1];
+@@ -1431 +1431 @@
+-                .unk8 = g_eff_command_position[2];
++                .slot_world_z = g_eff_command_position[2];
+@@ -1511 +1511 @@
+-        mats[i].t[0] = g_eff_yawed_quad_slot_positions[arg0][i].unk0 -
++        mats[i].t[0] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_x -
+@@ -1513 +1513 @@
+-        mats[i].t[1] = g_eff_yawed_quad_slot_positions[arg0][i].unk4 -
++        mats[i].t[1] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_y -
+@@ -1515 +1515 @@
+-        mats[i].t[2] = g_eff_yawed_quad_slot_positions[arg0][i].unk8 -
++        mats[i].t[2] = g_eff_yawed_quad_slot_positions[arg0][i].slot_world_z -
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -362,2 +362,2 @@
+-            var_0[14] = g_row_menu_row_state.unk4 & 0x80;
+-            g_row_menu_row_state.unk4 =
++            var_0[14] = g_row_menu_row_state.scroll_row_mask & 0x80;
++            g_row_menu_row_state.scroll_row_mask =
+@@ -366 +366 @@
+-            g_row_menu_row_state.unk4 = 0x9F;
++            g_row_menu_row_state.scroll_row_mask = 0x9F;
+@@ -1006 +1006 @@
+-    row_mask = g_row_menu_row_state.unk4;
++    row_mask = g_row_menu_row_state.scroll_row_mask;
+@@ -2540 +2540 @@
+-        s.dd94_00.header = q->unk_20[sheet_index];
++        s.dd94_00.header = q->confirm_sheets[sheet_index];
+@@ -2551 +2551 @@
+-        &draw_context[5], &draw_context[7], &q->unk_00, s.dd94_00.ot_idx, -1);
++        &draw_context[5], &draw_context[7], &q->cell_digit_set, s.dd94_00.ot_idx, -1);
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -327 +327 @@
+-    entry_sheet_headers = header_block->unk_0C;
++    entry_sheet_headers = header_block->entry_headers;
+@@ -399 +399 @@
+-            s.table = header_block->unk_00[1];
++            s.table = header_block->slot_cell_tables[1];
+@@ -401 +401 @@
+-            s.table = header_block->unk_00[slot_index];
++            s.table = header_block->slot_cell_tables[slot_index];
+@@ -1045 +1045 @@
+-                    g_entry_menu_grid_entries[*row][*col].unk1;
++                    g_entry_menu_grid_entries[*row][*col].grid_pick_value;
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -625 +625 @@
+-        u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0;
++        u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry;
+@@ -633,2 +633,2 @@
+-                    .unk0 ==
+-                ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0) {
++                    .cell_entry ==
++                ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry) {
+@@ -645 +645 @@
+-                    [((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].unk0] &
++                    [((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry] &
+@@ -795 +795 @@
+-                    .unk0;
++                    .cell_entry;
+--- a/src/main/87A0.c
++++ b/src/main/87A0.c
+@@ -56 +56 @@
+-    SCR->ground = ptr->unk00 << 7;
++    SCR->ground = ptr->ground_height << 7;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -445 +445 @@
+-    s32 unk60;    /* 0x60 */
++    s32 segment_work;    /* 0x60 */
+@@ -604 +604 @@
+-                (s32)&scr->unk60) &&
++                (s32)&scr->segment_work) &&
+@@ -629 +629 @@
+-                        scr->nrm, (s32)&scr->unk60) &&
++                        scr->nrm, (s32)&scr->segment_work) &&
+@@ -660 +660 @@
+-                        scr->nrm, (s32)&scr->unk60) &&
++                        scr->nrm, (s32)&scr->segment_work) &&
+@@ -3345 +3345 @@
+-                        g_motion_fighter_buffers[i]->unk_04[0]);
++                        g_motion_fighter_buffers[i]->section_offsets[0]);
+@@ -3348 +3348 @@
+-                       g_motion_fighter_buffers[i]->unk_04[1]);
++                       g_motion_fighter_buffers[i]->section_offsets[1]);
+@@ -3351 +3351 @@
+-                        g_motion_fighter_buffers[i]->unk_04[2]);
++                        g_motion_fighter_buffers[i]->section_offsets[2]);
+@@ -3354 +3354 @@
+-                        g_motion_fighter_buffers[i]->unk_04[3]);
++                        g_motion_fighter_buffers[i]->section_offsets[3]);
+@@ -3599 +3599 @@
+-            fighter_record->unk_70 = (v0_50b->unk_09) & 3;
++            fighter_record->unk_70 = (v0_50b->move_bitfield) & 3;
+@@ -4767 +4767 @@
+-                if (rec->cur_move->unk_09 & 0x20) {
++                if (rec->cur_move->move_bitfield & 0x20) {
+@@ -4839 +4839 @@
+-                    if (rec->cur_move->unk_09 & 0x80) {
++                    if (rec->cur_move->move_bitfield & 0x80) {
+@@ -5017 +5017 @@
+-    if (rec->cur_move->unk_09 & 0x40) {
++    if (rec->cur_move->move_bitfield & 0x40) {
+--- a/src/main/cdrom.c
++++ b/src/main/cdrom.c
+@@ -112,3 +112,3 @@
+-    if (cdrom_StartAudio(cdrom_GetFileIndex(5, audio_entry->unk_0),
+-                         audio_entry->unk_1) != 0) {
+-        if (audio_entry->unk_4 != -1) {
++    if (cdrom_StartAudio(cdrom_GetFileIndex(5, audio_entry->audio_file_index_offset),
++                         audio_entry->xa_channel) != 0) {
++        if (audio_entry->audio_end_offset != -1) {
+@@ -117 +117 @@
+-                audio_entry->unk_4;
++                audio_entry->audio_end_offset;
+DRY RUN: 16 file(s) would change; nothing written
+OK: every member access renamed
