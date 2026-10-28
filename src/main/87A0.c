@@ -40,14 +40,14 @@ typedef struct {
  * live counter
  * (`i < ptr->count`) for the target's empty 8-byte leaf frame
  * (phantom-slot-frame-lever). */
-void softbody_LoadColliders(Unk80017FA0Rec *a0) {
+void softbody_LoadColliders(Unk80017FA0Rec *step_desc) {
     /* FAKE: temp takes the block pointer for the null test and ptr a copy after
      * it (lw v0 / move t1,v0); tested as ptr itself the load goes straight to
      * t1 and the move drops: score 3 */
     Unk8003F6D8Coll *temp;
     Unk8003F6D8Coll *ptr;
 
-    temp = a0->colliders;
+    temp = step_desc->colliders;
     if (temp == 0) {
         goto end;
     }
@@ -89,7 +89,7 @@ void softbody_LoadColliders(Unk80017FA0Rec *a0) {
         }
     }
 
-    SCR->scr60 = a0->colliders->count;
+    SCR->scr60 = step_desc->colliders->count;
 end:;
 }
 
@@ -130,7 +130,7 @@ static inline s32 softbody_Sqrt(s32 x) {
  * derived from its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100
  * when the squared length exceeds 250000, 0 when it is negative (overflowed)),
  * copies the MATRIX to arg1->matrix and runs softbody_SolveSprings. */
-void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
+void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     s32 dx, dy, dz;
     /* the squared length, then its square root in place, as SOTN's cloaked
      * knight takes `distance = SquareRoot0(distance)` (Q51); a fresh root
@@ -144,11 +144,11 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
 
     softbody_LoadColliders(arg0);
 
-    dx = arg0->unk4->t[0] - arg1->matrix.t[0];
+    dx = arg0->unk4->t[0] - softbody->matrix.t[0];
     SCR->dpos[0] = dx;
-    dy = arg0->unk4->t[1] - arg1->matrix.t[1];
+    dy = arg0->unk4->t[1] - softbody->matrix.t[1];
     SCR->dpos[1] = dy;
-    dz = arg0->unk4->t[2] - arg1->matrix.t[2];
+    dz = arg0->unk4->t[2] - softbody->matrix.t[2];
     SCR->dpos[2] = dz;
 
     sum_sq = (dx * dx) + (dy * dy) + (dz * dz);
@@ -165,8 +165,8 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     SCR->dpos[1] = (SCR->dpos[1] * scale) >> 1;
     SCR->dpos[2] = (SCR->dpos[2] * scale) >> 1;
 
-    arg1->matrix = *arg0->unk4;
-    softbody_SolveSprings(arg1);
+    softbody->matrix = *arg0->unk4;
+    softbody_SolveSprings(softbody);
 }
 
 /* softbody_SolveSprings -- the spring-force pass over the body's edges (the
@@ -176,7 +176,7 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
  * scaled on the GTE by ((len - rest) << 14) / len into the 0x1F8000BC output
  * array (len via the byte-LUT integer sqrt, GTE LZC above 0x400). The last
  * edge is emitted after the loop without the bisection. */
-void softbody_SolveSprings(Func80017A44Output *arg0) {
+void softbody_SolveSprings(Func80017A44Output *softbody) {
     s32 *out;
     Func80017848Edge *data;
     Func80017A44Record *base;
@@ -195,9 +195,9 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
     s32 f;
 
     out = SCR->force[0];
-    count = arg0->edge_count - 1;
-    data = arg0->edges;
-    base = arg0->nodes;
+    count = softbody->edge_count - 1;
+    data = softbody->edges;
+    base = softbody->nodes;
     /* FAKE: the packed node-index word staged through the still-dead
      * `thresh` so it shares thresh's register ($t1); its own local takes $a1:
      * score 5 (staged-value-reused-variable) */
@@ -311,7 +311,7 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
  * otherwise the indexed scratchpad forces are applied, the node is pushed out
  * of the ground and out of each collision ellipsoid, and the velocity is damped
  * by 7/8 with 0x190 added to Y. */
-void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
+void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
     Func80017A44Record *node;
     s32 i;
     s32 count;
@@ -326,7 +326,7 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
      * oversized-locals) */
     s32 lz[6];
 
-    softbody_PrepareStep(arg0, arg1);
+    softbody_PrepareStep(step_desc, arg1);
     count = arg1->count;
     node = arg1->nodes;
 
@@ -419,7 +419,7 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         SCR->scr18[0] = vx;
         SCR->scr18[1] = vy;
         SCR->scr18[2] = vz;
-        if (arg0->colliders != 0) {
+        if (step_desc->colliders != 0) {
             /* Ruling 11 (reused local): Y delta, depth below the ground then
              * the delta to focus 0 */
             s32 delta;

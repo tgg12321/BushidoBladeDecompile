@@ -41,9 +41,9 @@ extern u8 g_replay_playback_frame;
 extern Unk800F34D8Save D_800F34D8; /* = g_shared_buffer + 0x100 */
 extern s32 D_800A31F0;
 
-s32 memcard_Format(s32 a0, s32 a1) {
+s32 memcard_Format(s32 port, s32 card) {
     char buf[8];
-    sprintf(buf, (char *)D_800109C8, a0, a1);
+    sprintf(buf, (char *)D_800109C8, port, card);
     return format(buf);
 }
 

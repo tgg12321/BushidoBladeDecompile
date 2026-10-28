@@ -1468,7 +1468,7 @@ Unk8006E49CRec *gpu_GetTimedSpritePrimBuffer(s32 buffer_index) {
 
 extern RECT D_800A32FC;
 
-void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
+void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;
     RECT rect;
     s16 *in;
@@ -1533,14 +1533,14 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                     s.header = *var_6;
                     s.table = table;
                     s.x = i << 7;
-                    s.sprt_out = arg0->primitive_cursors.sprite_prims;
-                    arg0->primitive_cursors.sprite_prims =
+                    s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+                    draw_context->primitive_cursors.sprite_prims =
                         gpu_AddSpriteCells(&s);
-                    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                    SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                                 gpu_GetSheetTPage(s.header, var_5), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx,
-                            arg0->primitive_cursors.unk_14);
-                    arg0->primitive_cursors.unk_14++;
+                            draw_context->primitive_cursors.unk_14);
+                    draw_context->primitive_cursors.unk_14++;
                 }
             }
             break;
@@ -1559,13 +1559,14 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                 s.header = *var_6;
                 s.x = x;
                 s.table = table;
-                s.sprt_out = arg0->primitive_cursors.sprite_prims;
-                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
-                SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+                draw_context->primitive_cursors.sprite_prims =
+                    gpu_AddSpriteCells(&s);
+                SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                             gpu_GetSheetTPage(s.header, var_5), 0);
-                AddPrim(
-                    g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
-                arg0->primitive_cursors.unk_14++;
+                AddPrim(g_gpu_ot_ptr + s.ot_idx,
+                        draw_context->primitive_cursors.unk_14);
+                draw_context->primitive_cursors.unk_14++;
             }
             /* fall through */
         case 1:
@@ -1583,13 +1584,14 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                 s.header = *var_6;
                 s.x = x;
                 s.table = table;
-                s.sprt_out = arg0->primitive_cursors.sprite_prims;
-                arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
-                SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+                draw_context->primitive_cursors.sprite_prims =
+                    gpu_AddSpriteCells(&s);
+                SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                             gpu_GetSheetTPage(s.header, var_5), 0);
-                AddPrim(
-                    g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
-                arg0->primitive_cursors.unk_14++;
+                AddPrim(g_gpu_ot_ptr + s.ot_idx,
+                        draw_context->primitive_cursors.unk_14);
+                draw_context->primitive_cursors.unk_14++;
             }
             break;
         case 3:
@@ -1614,14 +1616,14 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
                     s.header = *var_6;
                     s.table = table;
                     s.x = i << 7;
-                    s.sprt_out = arg0->primitive_cursors.sprite_prims;
-                    arg0->primitive_cursors.sprite_prims =
+                    s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+                    draw_context->primitive_cursors.sprite_prims =
                         gpu_AddSpriteCells(&s);
-                    SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+                    SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                                 gpu_GetSheetTPage(s.header, var_5), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx,
-                            arg0->primitive_cursors.unk_14);
-                    arg0->primitive_cursors.unk_14++;
+                            draw_context->primitive_cursors.unk_14);
+                    draw_context->primitive_cursors.unk_14++;
                 }
             }
             break;
@@ -1661,28 +1663,31 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
             }
             s.header = var_6[i];
             s.table = s.header->cells;
-            s.sprt_out = arg0->primitive_cursors.sprite_prims;
-            arg0->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
-            SetDrawMode(arg0->primitive_cursors.unk_14, 1, 0,
+            s.sprt_out = draw_context->primitive_cursors.sprite_prims;
+            draw_context->primitive_cursors.sprite_prims =
+                gpu_AddSpriteCells(&s);
+            SetDrawMode(draw_context->primitive_cursors.unk_14, 1, 0,
                         gpu_GetSheetTPage(s.header, var_5), 0);
-            AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->primitive_cursors.unk_14);
-            arg0->primitive_cursors.unk_14++;
+            AddPrim(g_gpu_ot_ptr + s.ot_idx,
+                    draw_context->primitive_cursors.unk_14);
+            draw_context->primitive_cursors.unk_14++;
         }
     }
 }
 
 s32 InitTimedSpriteSequence(s32 arg0) {
-    Ctx77D94 *s0;
-    s32 r;
+    Ctx77D94 *resource_root;
+    s32 prim_storage;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    s0 = (Ctx77D94 *)(arg0 + 0x58);
+    resource_root = (Ctx77D94 *)(arg0 + 0x58);
     D_800A35F4 = (Unk8006E49CRec *)arg0;
-    g_gpu_timed_sprite_resources = s0;
+    g_gpu_timed_sprite_resources = resource_root;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-        0x32, &s0->resource_head);
-    r = reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)s0);
-    gpu_InitPrimBufferPair(r, D_800A35F4);
+        0x32, &resource_root->resource_head);
+    prim_storage =
+        reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)resource_root);
+    gpu_InitPrimBufferPair(prim_storage, D_800A35F4);
     D_800A35FC = 0;
     g_gpu_timed_sprite_elapsed_frames = 0;
     g_gpu_timed_sprite_sequence_phase = 0;
@@ -1691,24 +1696,28 @@ s32 InitTimedSpriteSequence(s32 arg0) {
 
 extern void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *);
 
-s32 StepTimedSpriteSequenceWithSkip(s32 arg0) {
-    Unk8006EACCRec s;
-    Unk8006E49CRec *p;
-    s32 c;
-    c = D_800A35FC + 1;
-    D_800A35FC = c;
-    p = gpu_GetTimedSpritePrimBuffer(c & 1);
-    s.primitive_cursors.textured_quad_prims = p->textured_quad_prims;
-    s.primitive_cursors.gradient_quad_prims = p->gradient_quad_prims;
-    s.primitive_cursors.sprite_prims = p->sprite_prims;
-    s.primitive_cursors.tile_prims = p->tile_prims;
-    s.primitive_cursors.unk_14 = p->unk_14;
-    s.primitive_cursors.draw_area_prims = p->draw_area_prims;
-    s.primitive_cursors.draw_offset_prims = p->draw_offset_prims;
-    if (g_gpu_timed_sprite_elapsed_frames > 0 && (arg0 & 0x40)) {
+s32 StepTimedSpriteSequenceWithSkip(s32 pressed_buttons) {
+    Unk8006EACCRec draw_context;
+    Unk8006E49CRec *prim_buffer;
+    s32 step_count;
+    step_count = D_800A35FC + 1;
+    D_800A35FC = step_count;
+    prim_buffer = gpu_GetTimedSpritePrimBuffer(step_count & 1);
+    draw_context.primitive_cursors.textured_quad_prims =
+        prim_buffer->textured_quad_prims;
+    draw_context.primitive_cursors.gradient_quad_prims =
+        prim_buffer->gradient_quad_prims;
+    draw_context.primitive_cursors.sprite_prims = prim_buffer->sprite_prims;
+    draw_context.primitive_cursors.tile_prims = prim_buffer->tile_prims;
+    draw_context.primitive_cursors.unk_14 = prim_buffer->unk_14;
+    draw_context.primitive_cursors.draw_area_prims =
+        prim_buffer->draw_area_prims;
+    draw_context.primitive_cursors.draw_offset_prims =
+        prim_buffer->draw_offset_prims;
+    if (g_gpu_timed_sprite_elapsed_frames > 0 && (pressed_buttons & 0x40)) {
         return 1;
     }
-    gpu_DrawAndAdvanceTimedSpriteSequence(&s);
+    gpu_DrawAndAdvanceTimedSpriteSequence(&draw_context);
     {
         s16 *out = g_gpu_timed_sprite_resources->out34;
         s32 new_val = g_gpu_timed_sprite_elapsed_frames + 1;
@@ -1718,17 +1727,17 @@ s32 StepTimedSpriteSequenceWithSkip(s32 arg0) {
     }
 }
 
-s32 GetScrollingSpriteRecordWord1(Unk80078824Rec *a0) {
-    return a0->resource_head.free_ram_start;
+s32 GetScrollingSpriteRecordWord1(Unk80078824Rec *resource_root) {
+    return resource_root->resource_head.free_ram_start;
 }
 
-Unk8006E49CRec *gpu_GetScrollingSpritePrimBuffer(s32 a0) {
-    return &D_800A360C[a0];
+Unk8006E49CRec *gpu_GetScrollingSpritePrimBuffer(s32 buffer_index) {
+    return &D_800A360C[buffer_index];
 }
 
-void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *arg0) {
+void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
     Unk8007352CRec s;
-    Unk8009B0E0Record **var_s0;
+    Unk8009B0E0Record **sheet_headers;
     s32 i;
     /* FAKE: constant-holder keeps the 0 argument in a register across the
        calls; the literal: score 7 */
@@ -1742,48 +1751,51 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *arg0) {
     s.header = D_800A3610->unk_14[10];
     s.y = 0;
     s.table = s.header->cells;
-    var_s0 = D_800A3610->unk_14;
+    sheet_headers = D_800A3610->unk_14;
     if (D_800A3608 >= 0xAAA) {
         if (D_800A3608 >= 0xB04) {
-            s16 var_3;
+            s16 brightness;
             s.has_color = 1;
-            var_3 = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
-            if (var_3 < 0) {
-                var_3 = 0;
+            brightness = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            if (brightness < 0) {
+                brightness = 0;
             }
-            s.col_r = s.col_g = s.col_b = var_3;
+            s.col_r = s.col_g = s.col_b = brightness;
         }
-        s.sprt_out = arg0->sprite_prims;
-        arg0->sprite_prims = gpu_AddSpriteCells(&s);
-        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_4), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
-        arg0->unk_14++;
+        s.sprt_out = primitive_cursors->sprite_prims;
+        primitive_cursors->sprite_prims = gpu_AddSpriteCells(&s);
+        SetDrawMode(primitive_cursors->unk_14, 1, 0,
+                    gpu_GetSheetTPage(s.header, var_4), 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, primitive_cursors->unk_14);
+        primitive_cursors->unk_14++;
     }
     s.has_color = 0;
-    for (i = 0; var_s0[i + 1] != (Unk8009B0E0Record *)-1; i++) {
-        s.header = var_s0[i];
+    for (i = 0; sheet_headers[i + 1] != (Unk8009B0E0Record *)-1; i++) {
+        s.header = sheet_headers[i];
         s.table = s.header->cells;
         s.y = -D_800A3608;
-        s.sprt_out = arg0->sprite_prims;
-        arg0->sprite_prims = gpu_AddSpriteCells(&s);
-        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_4), 0);
-        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
-        arg0->unk_14++;
+        s.sprt_out = primitive_cursors->sprite_prims;
+        primitive_cursors->sprite_prims = gpu_AddSpriteCells(&s);
+        SetDrawMode(primitive_cursors->unk_14, 1, 0,
+                    gpu_GetSheetTPage(s.header, var_4), 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, primitive_cursors->unk_14);
+        primitive_cursors->unk_14++;
     }
 }
 
 extern s32 D_800A3304;
 
 s32 InitScrollingSpriteDisplay(s32 arg0) {
-    Unk80078824Rec *s0;
+    Unk80078824Rec *resource_root;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    s0 = (Unk80078824Rec *)(arg0 + 0x58);
+    resource_root = (Unk80078824Rec *)(arg0 + 0x58);
     D_800A360C = (Unk8006E49CRec *)arg0;
-    D_800A3610 = s0;
+    D_800A3610 = resource_root;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
-        0x5F, &s0->resource_head);
-    gpu_InitPrimBufferPair(GetScrollingSpriteRecordWord1(s0), D_800A360C);
+        0x5F, &resource_root->resource_head);
+    gpu_InitPrimBufferPair(
+        GetScrollingSpriteRecordWord1(resource_root), D_800A360C);
     D_800A3304 = 0;
     D_800A3608 = 0;
     D_800A3614 = 0;
@@ -1794,18 +1806,18 @@ s32 InitScrollingSpriteDisplay(s32 arg0) {
 void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *);
 
 s32 StepScrollingSpriteDisplay(void) {
-    Unk800788B0Rec buf;
-    Unk8006E49CRec *v0;
+    Unk800788B0Rec primitive_cursors;
+    Unk8006E49CRec *prim_buffer;
     D_800A3304++;
-    v0 = gpu_GetScrollingSpritePrimBuffer(D_800A3304 & 1);
-    buf.textured_quad_prims = v0->textured_quad_prims;
-    buf.gradient_quad_prims = v0->gradient_quad_prims;
-    buf.sprite_prims = v0->sprite_prims;
-    buf.tile_prims = v0->tile_prims;
-    buf.unk_14 = v0->unk_14;
-    buf.draw_area_prims = v0->draw_area_prims;
-    buf.draw_offset_prims = v0->draw_offset_prims;
-    gpu_DrawScrollingAndDelayedSheets(&buf);
+    prim_buffer = gpu_GetScrollingSpritePrimBuffer(D_800A3304 & 1);
+    primitive_cursors.textured_quad_prims = prim_buffer->textured_quad_prims;
+    primitive_cursors.gradient_quad_prims = prim_buffer->gradient_quad_prims;
+    primitive_cursors.sprite_prims = prim_buffer->sprite_prims;
+    primitive_cursors.tile_prims = prim_buffer->tile_prims;
+    primitive_cursors.unk_14 = prim_buffer->unk_14;
+    primitive_cursors.draw_area_prims = prim_buffer->draw_area_prims;
+    primitive_cursors.draw_offset_prims = prim_buffer->draw_offset_prims;
+    gpu_DrawScrollingAndDelayedSheets(&primitive_cursors);
     D_800A3608++;
     return D_800A3608 >= 0xB40;
 }

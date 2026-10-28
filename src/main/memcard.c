@@ -68,7 +68,7 @@ s32 memcard_PollSwEventsTimeout(void) {
     extern s32 g_memcard_poll_count;
     s32 result;
     s32 one;
-    s32 temp;
+    s32 previous_poll_count;
     result = (TestEvent(g_memcard_sw_event_ioe) == 1);
     one = 1;
     if (TestEvent(g_memcard_sw_event_err) == one) {
@@ -80,9 +80,9 @@ s32 memcard_PollSwEventsTimeout(void) {
     if (TestEvent(g_memcard_sw_event_new) == one) {
         result = 4;
     }
-    temp = g_memcard_poll_count;
-    g_memcard_poll_count = temp + 1;
-    if (temp >= 0x78) {
+    previous_poll_count = g_memcard_poll_count;
+    g_memcard_poll_count = previous_poll_count + 1;
+    if (previous_poll_count >= 0x78) {
         result = 2;
     }
     return result;
@@ -132,13 +132,13 @@ void memcard_AckHwEvents(void) {
     TestEvent(g_memcard_hw_event_new);
 }
 
-s32 memcard_CountFiles(s32 arg0, s32 arg1) {
+s32 memcard_CountFiles(s32 port, s32 card) {
     struct DIRENTRY *file_entry_cursor;
     s32 file_count;
     char path_pattern[32];
 
     file_entry_cursor = g_memcard_file_list;
-    sprintf(path_pattern, (char *)g_str_memcard_fmt, arg0, arg1);
+    sprintf(path_pattern, (char *)g_str_memcard_fmt, port, card);
     file_count = 0;
     if (firstfile(path_pattern, file_entry_cursor) != 0) {
         do {
@@ -240,11 +240,11 @@ s32 memcard_HasFile(u8 *requested_name) {
 }
 
 s32 memcard_ReadFile(
-    s32 arg0, s32 arg1, s32 filename, void *read_dest, s32 byte_count) {
+    s32 port, s32 card, s32 filename, void *read_dest, s32 byte_count) {
     char file_path[32];
     s32 fd;
 
-    sprintf(file_path, (char *)D_800109BC, arg0, arg1, filename);
+    sprintf(file_path, (char *)D_800109BC, port, card, filename);
     fd = open(file_path, 0x8001);
     if (fd == -1) {
         return -1;
@@ -258,14 +258,14 @@ s32 memcard_ReadFile(
 
 extern s32 write(s32, void *, s32); /* PsyQ: long write(long, void *, long) */
 
-s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 filename, void *write_src,
-                      s32 arg4, s32 byte_count, s32 arg6) {
+s32 memcard_WriteFile(s32 port, s32 card, s32 filename, void *write_src,
+                      s32 block_count, s32 byte_count, s32 create_first) {
     char file_path[32];
     s32 fd;
 
-    sprintf(file_path, (char *)D_800109BC, arg0, arg1, filename);
-    if (arg6 != 0) {
-        fd = open(file_path, (arg4 << 16) | 0x200);
+    sprintf(file_path, (char *)D_800109BC, port, card, filename);
+    if (create_first != 0) {
+        fd = open(file_path, (block_count << 16) | 0x200);
         if (fd == -1) {
             return -1;
         }

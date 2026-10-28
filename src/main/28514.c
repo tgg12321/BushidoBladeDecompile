@@ -15,13 +15,13 @@ extern s32 D_800A31EC;
 extern s32 D_800A3890;
 extern s32 D_800A37F4;
 
-s32 func_80037D14(s32 arg0, s32 arg1) {
-    s32 p = (arg0 << 4) + arg1;
+s32 func_80037D14(s32 port, s32 card) {
+    s32 channel = (port << 4) + card;
     s32 ev;
 
     switch (D_800A31EC) {
     case 0:
-        _card_info(p);
+        _card_info(channel);
         D_800A31EC = 1;
         g_memcard_poll_count = 0;
         D_800A3890 = 0;
@@ -48,7 +48,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         case 4:
             D_800A37F4 = 2;
             memcard_AckHwEvents();
-            _card_clear(p);
+            _card_clear(channel);
             memcard_WaitHwEvent();
             D_800A31EC = 2;
             D_800A31E8 = 0;
@@ -63,7 +63,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         break;
     case 2:
         memcard_AckSwEvents();
-        _card_load(p);
+        _card_load(channel);
         D_800A31EC = 3;
         g_memcard_poll_count = 0;
         break;

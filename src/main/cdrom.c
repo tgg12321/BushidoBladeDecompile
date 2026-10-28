@@ -10,16 +10,16 @@
 
 s32 cdrom_IsIdle(void) { return g_cdrom_state.rec.unk02 == 0; }
 
-s32 cdrom_StartRead(s32 a0, s32 a1) {
+s32 cdrom_StartRead(s32 file_index, s32 dest_addr) {
     s32 file_size;
 
     if (g_cdrom_state.rec.unk02 != 0) {
         return 0;
     }
 
-    g_cdrom_state.rec.unk00 = a0;
-    g_cdrom_state.rec.pair = g_cd_file_table[(s16)a0];
-    g_cdrom_state.rec.unk1C = a1;
+    g_cdrom_state.rec.unk00 = file_index;
+    g_cdrom_state.rec.pair = g_cd_file_table[(s16)file_index];
+    g_cdrom_state.rec.unk1C = dest_addr;
     g_cdrom_state.rec.unk08 = 0;
     g_cdrom_state.rec.unk02 = 2;
     file_size = g_cdrom_state.rec.pair.size;
@@ -28,17 +28,20 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     return 1;
 }
 
-s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 sector_offset, s32 arg3) {
-    if (cdrom_StartRead(arg0, arg1) == 0) {
+s32 cdrom_StartReadAt(
+    s32 file_index, s32 dest_addr, s32 sector_offset, s32 sector_count) {
+    if (cdrom_StartRead(file_index, dest_addr) == 0) {
         return 0;
     }
     CdIntToPos(CdPosToInt(&g_cdrom_state.rec.pair.loc) + sector_offset,
                &g_cdrom_state.rec.pair.loc);
-    g_cdrom_state.rec.unk18 = arg3;
+    g_cdrom_state.rec.unk18 = sector_count;
     return 1;
 }
 
-s32 cdrom_GetFileIndex(s32 arg0, s32 arg1) { return D_8008F12C[arg0] + arg1; }
+s32 cdrom_GetFileIndex(s32 file_group, s32 file_index_offset) {
+    return D_8008F12C[file_group] + file_index_offset;
+}
 
 void cdrom_Pause(void) {
     CdReadyCallback(0);
@@ -105,12 +108,13 @@ s32 cdrom_StartAudio(s32 file_index, s32 audio_channel) {
 }
 
 s32 cdrom_StartAudioEntry(s32 entry_index) {
-    Unk8008F13CRow *s0 = &D_8008F13C[entry_index];
-    if (cdrom_StartAudio(cdrom_GetFileIndex(5, s0->unk_0), s0->unk_1) != 0) {
-        if (s0->unk_4 != -1) {
+    Unk8008F13CRow *audio_entry = &D_8008F13C[entry_index];
+    if (cdrom_StartAudio(cdrom_GetFileIndex(5, audio_entry->unk_0),
+                         audio_entry->unk_1) != 0) {
+        if (audio_entry->unk_4 != -1) {
             g_cdrom_state.rec.unk14 =
                 CdPosToInt(&g_cd_file_table[g_cdrom_state.rec.unk00].loc) +
-                s0->unk_4;
+                audio_entry->unk_4;
         }
         return 1;
     }
@@ -179,34 +183,34 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
  * *dest, then reads dest->t_size bytes from the next sector to dest->t_addr.
  * Any failed read restarts from the seek. The sole caller is sys_Exec. */
 void cdrom_LoadExec(EXEC *dest) {
-    u8 sp_buf[0x800];
-    CdlLOC sp_buf2;
-    s32 index;
-    s32 v0;
+    u8 header_sector[0x800];
+    CdlLOC next_sector_loc;
+    s32 file_index;
+    s32 read_result;
     s32 pos;
     s32 mode;
 
     mode = 0x80; /* CdlModeSpeed - double-speed transfer */
-    index = cdrom_GetFileIndex(6, 0);
+    file_index = cdrom_GetFileIndex(6, 0);
 
     for (;;) {
-        CdControl(2, (u8 *)&g_cd_file_table[index].loc, 0);
-        v0 = cdrom_ReadWait(0x800, (s32)sp_buf, mode);
-        if (v0 != 0)
+        CdControl(2, (u8 *)&g_cd_file_table[file_index].loc, 0);
+        read_result = cdrom_ReadWait(0x800, (s32)header_sector, mode);
+        if (read_result != 0)
             continue;
 
-        *dest = *(EXEC *)&sp_buf[0x10];
+        *dest = *(EXEC *)&header_sector[0x10];
 
-        pos = CdPosToInt(&g_cd_file_table[index].loc);
-        CdIntToPos(pos + 1, &sp_buf2);
-        CdControl(2, (u8 *)&sp_buf2, 0);
-        v0 = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
-        if (v0 == 0)
+        pos = CdPosToInt(&g_cd_file_table[file_index].loc);
+        CdIntToPos(pos + 1, &next_sector_loc);
+        CdControl(2, (u8 *)&next_sector_loc, 0);
+        read_result = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
+        if (read_result == 0)
             break;
     }
 }
 
-void sys_Exec(s32 a0, s32 *a1, s32 a2) {
+void sys_Exec(s32 argc, s32 *argv, s32 stack_addr) {
     EXEC exec;
     VSync(0);
     SetDispMask(0);
@@ -220,17 +224,18 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     ResetGraph(0);
     StopPAD();
     StopCallback();
-    exec.s_addr = a2;
+    exec.s_addr = stack_addr;
     exec.s_size = 0;
     EnterCriticalSection();
-    Exec(&exec, a0, a1);
+    Exec(&exec, argc, argv);
     sys_Init();
     snd_InitAndLoadCommonVab();
     VSync(0);
     SetDispMask(1);
 }
 
-void sys_ExecMovieOverlay(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
+void sys_ExecMovieOverlay(
+    s32 a0, s32 a1, s32 file_index_offset, s32 a3, s32 a4) {
     /* FAKE: frame layout. The target's 0x48 frame implies a larger argv
        buffer than the 24 bytes ever written (s32 [7] and [8] are
        byte-identical; sp[6], the bytes written: score 15); oversized-locals
@@ -238,7 +243,7 @@ void sys_ExecMovieOverlay(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     s32 sp[8];
     s32 v0;
 
-    v0 = cdrom_GetFileIndex(6, a2);
+    v0 = cdrom_GetFileIndex(6, file_index_offset);
     sp[0] = (s32)&g_cd_file_table[v0];
     sp[1] = a3;
     sp[2] = a0;

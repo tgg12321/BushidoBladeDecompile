@@ -94,19 +94,19 @@ s32 pcdrv_LoadSectors(char *a0, u8 *dest, s32 sector_offset, s32 count) {
     return count << 11;
 }
 
-s32 math_FovToScreenDist(s32 a0) {
-    s32 tmp = (a0 << 12) / 360;
-    s32 v1 = tmp / 2;
-    s16 cos_val = Judge[(v1 + 0x400) & 0xFFF];
-    s16 sin_val = Judge[v1 & 0xFFF];
+s32 math_FovToScreenDist(s32 fov_degrees) {
+    s32 fov_angle = (fov_degrees << 12) / 360;
+    s32 half_fov_angle = fov_angle / 2;
+    s16 cos_val = Judge[(half_fov_angle + 0x400) & 0xFFF];
+    s16 sin_val = Judge[half_fov_angle & 0xFFF];
     return (cos_val * 320) / sin_val;
 }
 
-void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
+void gpu_SetDrawEnvBg(s32 clear_bg, s32 a1, s32 a2, s32 a3) {
     s32 i;
 
     for (i = 0; i < 2; i++) {
-        g_gpu_db[i].draw.isbg = a0;
+        g_gpu_db[i].draw.isbg = clear_bg;
         setRGB0(&g_gpu_db[i].draw, a1, a2, a3);
     }
 }
@@ -191,7 +191,7 @@ void sys_Init(void) {
 }
 
 void gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
-    u8 *arg0, void *arg1, s32 arg2) {
+    u8 *file_buffer, void *arg1, s32 arg2) {
     RECT rect;
     s32 i;
 
@@ -200,27 +200,27 @@ void gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth(
     SetDispMask(0);
     SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x140, 0xF0);
     cdrom_WaitIdle();
-    cdrom_StartRead(cdrom_GetFileIndex(2, 0x61), (s32)arg0);
+    cdrom_StartRead(cdrom_GetFileIndex(2, 0x61), (s32)file_buffer);
     cdrom_WaitIdle();
     PutDispEnv(&g_gpu_db[1].disp);
     DrawSync(0);
-    LoadImage(&rect, (u32 *)(arg0 + 0x14));
+    LoadImage(&rect, (u32 *)(file_buffer + 0x14));
     DrawSync(0);
     SetDispMask(1);
 
     for (i = 0; i < 0x96; i++) {
         if (i >= 0x79) {
-            u16 *var_2 = (u16 *)(arg0 + 0x28);
+            u16 *pixel_cursor = (u16 *)(file_buffer + 0x28);
             s32 j;
 
-            for (j = 0; j < rect.w * rect.h; j++, var_2++) {
-                u16 c = *var_2;
+            for (j = 0; j < rect.w * rect.h; j++, pixel_cursor++) {
+                u16 c = *pixel_cursor;
                 s32 r = c & 0x1F;
 
-                *var_2 = (r >> 1) + ((((c >> 5) & 0x1F) >> 1) << 5) +
-                         ((((c >> 10) & 0x1F) >> 1) << 10);
+                *pixel_cursor = (r >> 1) + ((((c >> 5) & 0x1F) >> 1) << 5) +
+                                ((((c >> 10) & 0x1F) >> 1) << 10);
             }
-            LoadImage(&rect, (u32 *)(arg0 + 0x14));
+            LoadImage(&rect, (u32 *)(file_buffer + 0x14));
         }
 
         DrawSync(0);
@@ -306,43 +306,43 @@ void func_80016D78(void) {
 void gpu_WaitDrawSync(void) { DrawSync(0); }
 
 void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
-    u32 var_0[2];
+    u32 local_ot[2];
     GpuDb *var_1;
     s32 var_2;
-    s32 var_3;
+    s32 has_toggle_rows;
     s32 limit;
-    u32 var_5;
+    u32 prim_buffer_addr;
     s32 idx;
     GpuDb *var_7;
 
     var_2 = 0;
-    var_3 = 0;
+    has_toggle_rows = 0;
     /* FAKE: pass-through handle on the parameter, used once at DrawOTag;
        moves the prologue's $s5 save/init group from first to third. Removed:
        score 4; removed with the do-while wrapper: score 25
        (pointer-alias-fake-exception) */
     var_7 = arg0;
     if (g_fight_mode_selector == 2) {
-        var_3 = D_800A389A < 1;
+        has_toggle_rows = D_800A389A < 1;
     }
     limit = 3;
-    if (var_3 != 0) {
+    if (has_toggle_rows != 0) {
         limit = 6;
     }
 
     D_800A36B0 = 1;
     snd_QueueSound(3, 0x7F, 0x7F);
-    var_5 = D_800A3770[g_gpu_presented_frame_count & 1];
+    prim_buffer_addr = D_800A3770[g_gpu_presented_frame_count & 1];
 
     while (1) {
         idx = g_gpu_presented_frame_count & 1;
-        g_prim_buf_cursor = (u32 *)(var_5 + (idx * 0x9A00));
-        g_gpu_ot_ptr = &var_0[idx];
+        g_prim_buf_cursor = (u32 *)(prim_buffer_addr + (idx * 0x9A00));
+        g_gpu_ot_ptr = &local_ot[idx];
         var_1 = &g_gpu_db[idx];
 
         ClearOTagR(g_gpu_ot_ptr, 1);
         pad_Update();
-        if (var_3 != 0) {
+        if (has_toggle_rows != 0) {
             gpu_DrawModeSizedPanelWithSelectedCellOpaque(
                 2, var_2 | (g_fight_toggle_option_bits << 16),
                 (s32)g_prim_buf_cursor, 0);
@@ -387,7 +387,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
             var_2 = (var_2 == limit - 1) ? 0 : var_2 + 1;
         }
 
-        if ((var_3 != 0) && (var_2 >= 3)) {
+        if ((has_toggle_rows != 0) && (var_2 >= 3)) {
             if (g_pad_state.pressed & 0x80008000) {
                 snd_QueueSound(0, 0x7F, 0x7F);
                 g_fight_toggle_option_bits |= 1 << (var_2 - 3);
@@ -414,7 +414,7 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
     D_800A36B0 = 1;
 }
 
-void rng_SetSeed(s32 a0) { g_rng_state = a0; }
+void rng_SetSeed(s32 seed) { g_rng_state = seed; }
 
 s32 rng_Next(void) {
     s32 var_0 = g_rng_state;
@@ -427,7 +427,7 @@ s32 rng_Next(void) {
 void main(void) {
     s32 idx;
     GpuDb *var_1;
-    u32 *var_2;
+    u32 *frame_ot;
     /* g_main_present_skip_frames (frames left to skip presenting) as read this
      * frame; the next frame passes it to pad_Update. */
     s32 var_3;
@@ -448,9 +448,9 @@ void main(void) {
     for (;;) {
         idx = g_gpu_presented_frame_count & 1;
         var_1 = &g_gpu_db[idx];
-        var_2 = var_1->ot;
-        ClearOTagR(var_2, 0x1008);
-        g_gpu_ot_ptr = var_2;
+        frame_ot = var_1->ot;
+        ClearOTagR(frame_ot, 0x1008);
+        g_gpu_ot_ptr = frame_ot;
         g_prim_buf_cursor = (u32 *)D_800A3770[idx];
         eff_SelectQuadBuffer(idx);
         font_BeginFrame();
@@ -524,18 +524,18 @@ void main(void) {
 }
 
 void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
-    u32 var_0[2];
+    u32 local_ot[2];
     DRAWENV env;
     /* holds two values: the case-1/2 fade loop's iteration count, then the
      * case-20 D_800A37A8[] code passed to gpu_DrawSpriteAtPackedTablePosition
      * (owner ruling 11) */
     s32 temp;
-    s32 var_3;
+    s32 draw_chunk_addr;
     /* holds two values: the g_local_ot_draw_mode switch selector, then the
      * case-20 g_fight_stage_command_count limit (owner ruling 11) */
     s32 temp2;
 
-    var_3 = (s32)g_shared_buffer;
+    draw_chunk_addr = (s32)g_shared_buffer;
     if (g_local_ot_draw_mode == DISP_DISABLED) {
         return;
     }
@@ -543,27 +543,29 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
         &env, 0, (g_gpu_presented_frame_count & 1) ? 0xF0 : 0, 0x280, 0xF0);
     env.isbg = 0;
     PutDrawEnv(&env);
-    g_gpu_ot_ptr = var_0;
-    ClearOTagR(var_0, 2);
+    g_gpu_ot_ptr = local_ot;
+    ClearOTagR(local_ot, 2);
     temp2 = g_local_ot_draw_mode;
     switch (temp2) {
     case 1:
     case 2:
-        var_3 = gpu_DrawFixedSpritePairWithSelectedSheets(var_3, temp2);
+        draw_chunk_addr =
+            gpu_DrawFixedSpritePairWithSelectedSheets(draw_chunk_addr, temp2);
         if (g_gpu_jitter_burst_enabled != 0) {
             s32 i;
             temp = (rand() & 3) + 4;
             for (i = 0; i < temp; i++) {
-                var_3 = gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(
-                    var_3, g_local_ot_draw_mode);
+                draw_chunk_addr =
+                    gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(
+                        draw_chunk_addr, g_local_ot_draw_mode);
             }
         } else if ((rand() & 7) == 0) {
             gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(
-                var_3, g_local_ot_draw_mode);
+                draw_chunk_addr, g_local_ot_draw_mode);
         }
         break;
     case 10:
-        gpu_DrawPackedComparisonRowsAndTotals(D_800A3784, var_3, 0);
+        gpu_DrawPackedComparisonRowsAndTotals(D_800A3784, draw_chunk_addr, 0);
         break;
     case 20: {
         u8 cur;
@@ -589,7 +591,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
             if (next == temp2) {
                 temp |= 0x8000;
             }
-            gpu_DrawSpriteAtPackedTablePosition(temp, var_3, 0);
+            gpu_DrawSpriteAtPackedTablePosition(temp, draw_chunk_addr, 0);
         }
         break;
     }
@@ -608,26 +610,28 @@ void softbody_FreeAll(void) {
     }
 }
 
-s32 softbody_GetBufferSize(s32 a0, s32 a1) { return (a0 << 6) + (a1 << 4); }
+s32 softbody_GetBufferSize(s32 node_count, s32 edge_count) {
+    return (node_count << 6) + (edge_count << 4);
+}
 
-s32 math_Distance3D(s32 *a0, s32 *a1) {
+s32 math_Distance3D(s32 *first_point, s32 *second_point) {
     s32 in[3];
     s32 out[3];
 
-    in[0] = (a0[0] - a1[0]) >> 2;
-    in[1] = (a0[1] - a1[1]) >> 2;
-    in[2] = (a0[2] - a1[2]) >> 2;
+    in[0] = (first_point[0] - second_point[0]) >> 2;
+    in[1] = (first_point[1] - second_point[1]) >> 2;
+    in[2] = (first_point[2] - second_point[2]) >> 2;
     Square12(in, out);
     return SquareRoot12(out[0] + out[1] + out[2]) << 2;
 }
 
-s32 math_Distance3D_16(s32 *a0, s32 *a1) {
+s32 math_Distance3D_16(s32 *first_point, s32 *second_point) {
     s32 in[3];
     s32 out[4];
 
-    in[0] = (a0[0] - a1[0]) >> 4;
-    in[1] = (a0[1] - a1[1]) >> 4;
-    in[2] = (a0[2] - a1[2]) >> 4;
+    in[0] = (first_point[0] - second_point[0]) >> 4;
+    in[1] = (first_point[1] - second_point[1]) >> 4;
+    in[2] = (first_point[2] - second_point[2]) >> 4;
     Square12(in, out);
     return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
@@ -635,7 +639,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
 /* Adds an edge between records a and b unless a == b, both records have a
  * non-negative field_18, or an edge a->b or b->a already exists. Returns 1
  * when an edge was added. */
-s32 softbody_AddSpring(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
+s32 softbody_AddSpring(Func80017A44Output *softbody, s32 arg1, s32 a, s32 b) {
     s32 i;
     s32 dist;
     Func80017848Edge *edge;
@@ -643,32 +647,34 @@ s32 softbody_AddSpring(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
     if (a == b) {
         return 0;
     }
-    if (out->nodes[a].field_18 >= 0 && out->nodes[b].field_18 >= 0) {
+    if (softbody->nodes[a].field_18 >= 0 && softbody->nodes[b].field_18 >= 0) {
         return 0;
     }
-    for (i = 0; i < out->nodes[a].a_edge_count; i++) {
-        if (out->edges[out->nodes[a].a_edges[i]].ends.node.b == b) {
+    for (i = 0; i < softbody->nodes[a].a_edge_count; i++) {
+        if (softbody->edges[softbody->nodes[a].a_edges[i]].ends.node.b == b) {
             return 0;
         }
     }
-    for (i = 0; i < out->nodes[a].b_edge_count; i++) {
-        if (out->edges[out->nodes[a].b_edges[i]].ends.node.a == b) {
+    for (i = 0; i < softbody->nodes[a].b_edge_count; i++) {
+        if (softbody->edges[softbody->nodes[a].b_edges[i]].ends.node.a == b) {
             return 0;
         }
     }
-    dist = math_Distance3D(out->nodes[a].pos, out->nodes[b].pos);
-    edge = &out->edges[out->edge_count];
+    dist = math_Distance3D(softbody->nodes[a].pos, softbody->nodes[b].pos);
+    edge = &softbody->edges[softbody->edge_count];
     edge->dist = dist;
     edge->field_8 = dist * 3;
     edge->group_id = arg1;
     edge->ends.pair = (a << 16) | b;
-    out->nodes[a].a_edges[out->nodes[a].a_edge_count++] = out->edge_count;
-    out->nodes[b].b_edges[out->nodes[b].b_edge_count++] = out->edge_count;
-    out->edge_count++;
+    softbody->nodes[a].a_edges[softbody->nodes[a].a_edge_count++] =
+        softbody->edge_count;
+    softbody->nodes[b].b_edges[softbody->nodes[b].b_edge_count++] =
+        softbody->edge_count;
+    softbody->edge_count++;
     return 1;
 }
 
-void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
+void softbody_Build(Func80017A44Input *input, Func80017A44Output *softbody) {
     VECTOR pos;
     VECTOR var_1;
     s32 flag;
@@ -677,7 +683,7 @@ void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
     s32 var_5;
     s32 i;
     s32 j;
-    s32 var_8;
+    s32 group_node_count;
     s32 var_9;
     s32 dist;
     s32 value;
@@ -686,13 +692,13 @@ void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
     var_1.vy = 0;
     var_1.vz = 0;
     var_5 = 0;
-    SetRotMatrix(a0->matrix);
-    SetTransMatrix(a0->matrix);
+    SetRotMatrix(input->matrix);
+    SetTransMatrix(input->matrix);
 
-    record_base = a1->nodes;
-    for (i = 0; i < a0->count; i++) {
-        record_base[i].field_18 = a0->points[i].pad;
-        RotTrans(&a0->points[i], &pos, &flag);
+    record_base = softbody->nodes;
+    for (i = 0; i < input->count; i++) {
+        record_base[i].field_18 = input->points[i].pad;
+        RotTrans(&input->points[i], &pos, &flag);
         pos.vx <<= 7;
         pos.vy <<= 7;
         pos.vz <<= 7;
@@ -716,7 +722,7 @@ void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
     var_1.vy /= var_5;
     var_1.vz /= var_5;
 
-    for (i = 0; i < a0->count; i++) {
+    for (i = 0; i < input->count; i++) {
         value = math_Distance3D_16((s32 *)&var_1, record_base[i].pos) >> 8;
         if (value > 0x100) {
             value = 0x100;
@@ -724,63 +730,63 @@ void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
         record_base[i].field_34 = value;
     }
 
-    var_4 = a0->groups;
-    while ((var_8 = *var_4++) != 0) {
+    var_4 = input->groups;
+    while ((group_node_count = *var_4++) != 0) {
         var_9 = *var_4++;
-        for (i = 0; i < var_8 - 1; i++) {
+        for (i = 0; i < group_node_count - 1; i++) {
             dist = math_Distance3D_16((s32 *)&var_1, record_base[var_4[i]].pos);
-            for (j = i + 1; j < var_8; j++) {
+            for (j = i + 1; j < group_node_count; j++) {
                 if (dist < math_Distance3D_16(
                                (s32 *)&var_1, record_base[var_4[j]].pos)) {
-                    softbody_AddSpring(a1, var_9, var_4[i], var_4[j]);
+                    softbody_AddSpring(softbody, var_9, var_4[i], var_4[j]);
                 } else {
-                    softbody_AddSpring(a1, var_9, var_4[j], var_4[i]);
+                    softbody_AddSpring(softbody, var_9, var_4[j], var_4[i]);
                 }
             }
         }
-        var_4 += var_8;
+        var_4 += group_node_count;
     }
 }
 
-s32 softbody_Create(Func80017A44Input *a0) {
-    Func80017A44Output *p;
+s32 softbody_Create(Func80017A44Input *input) {
+    Func80017A44Output *softbody;
     s32 i;
     Func80017A44Record *c;
 
-    p = g_softbody_slots;
+    softbody = g_softbody_slots;
     for (i = 0; i < 8; i++) {
-        if (p->points == 0)
+        if (softbody->points == 0)
             break;
-        p++;
+        softbody++;
     }
     if (i == 8)
         return -1;
     if (g_softbody_slot_high_water < i)
         g_softbody_slot_high_water = i;
-    p->count = a0->count;
-    p->points = a0->points;
-    p->matrix = *a0->matrix;
-    p->flags = a0->flags;
-    c = (Func80017A44Record *)a0->buf;
-    p->edge_count = 0;
-    p->nodes = c;
-    p->edges = (Func80017848Edge *)(c + p->count);
-    softbody_Build(a0, p);
+    softbody->count = input->count;
+    softbody->points = input->points;
+    softbody->matrix = *input->matrix;
+    softbody->flags = input->flags;
+    c = (Func80017A44Record *)input->buf;
+    softbody->edge_count = 0;
+    softbody->nodes = c;
+    softbody->edges = (Func80017848Edge *)(c + softbody->count);
+    softbody_Build(input, softbody);
     return i;
 }
 
-void softbody_Free(s32 a0) { g_softbody_slots[a0].points = 0; }
+void softbody_Free(s32 slot_index) { g_softbody_slots[slot_index].points = 0; }
 
-void softbody_RebaseBuffer(s32 a0, s32 a1) {
-    Func80017A44Output *ptr = &g_softbody_slots[a0];
+void softbody_RebaseBuffer(s32 slot_index, s32 byte_offset) {
+    Func80017A44Output *ptr = &g_softbody_slots[slot_index];
 
-    ptr->nodes = (Func80017A44Record *)((u8 *)ptr->nodes + a1);
+    ptr->nodes = (Func80017A44Record *)((u8 *)ptr->nodes + byte_offset);
     ptr->edges = (Func80017848Edge *)(ptr->nodes + ptr->count);
 }
 
-void softbody_RebasePoints(s32 a0, s32 a1) {
-    Func80017A44Output *ptr = &g_softbody_slots[a0];
-    ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
+void softbody_RebasePoints(s32 slot_index, s32 byte_offset) {
+    Func80017A44Output *ptr = &g_softbody_slots[slot_index];
+    ptr->points = (SVECTOR *)((u8 *)ptr->points + byte_offset);
 }
 
 void scratchpad_Save(void) {
