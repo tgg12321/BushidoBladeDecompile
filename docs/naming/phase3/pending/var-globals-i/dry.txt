@@ -1,0 +1,70 @@
+==============================================================================
+DATA WAVE — 14 addresses, 14 identifiers remapped
+  0x80094cfc: D_80094CFC -> g_node_pose_rotation_indices
+  0x80094b94: D_80094B94 -> g_node_hierarchy_templates
+  0x80094b48: D_80094B48 -> g_gpu_asset_draw_move_masks
+  0x80090600: D_80090600 -> g_gpu_latched_fog_depth_span
+  0x80090604: D_80090604 -> g_gpu_latched_fog_depth_offset
+  0x80090608: D_80090608 -> g_gpu_fog_latch_last_grid_and_fog_control
+  0x8009060c: D_8009060C -> g_gpu_fog_depth_span_limits
+  0x800906a4: D_800906A4 -> g_gpu_fog_move_settings
+  0x8008dccc: D_8008DCCC -> g_motion_fighter_data_files
+  0x800a3340: D_800A3340 -> g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count
+  0x800a3916: D_800A3916 -> g_comb_initial_pad_exchange_pending
+  0x800a31da: D_800A31DA -> g_menu_mode_subflow_init_pending
+  0x80095488: D_80095488 -> g_gpu_packed_vertex_textured_primitive_handlers
+  0x80095508: D_80095508 -> g_gpu_embedded_lit_packet_handlers
+
+-- file edits (30) --
+  asm/data/94000.bss.s  (2)
+  asm/funcs/comb_ExchangePad.s  (3)
+  asm/funcs/comb_HandshakeStep.s  (1)
+  asm/funcs/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s  (2)
+  asm/funcs/fight_UpdateRotatingViewThreeOptionChoice.s  (2)
+  asm/funcs/func_80040D48.s  (2)
+  asm/funcs/gpu_DrawQueuedNodes.s  (4)
+  asm/funcs/gpu_LatchFogDepthOnTransitionAndQueueMoves.s  (18)
+  asm/funcs/gpu_QueueDepthSpacedMovesAndLinkTerminalPacket.s  (2)
+  asm/funcs/gpu_QueueSlotDrawMovesForSelectedSet.s  (2)
+  asm/funcs/main.s  (2)
+  asm/funcs/memcard_StepSaveOverwriteAndFormatPrompts.s  (3)
+  asm/funcs/menu_InitSubflowForMode.s  (3)
+  asm/funcs/menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu.s  (1)
+  asm/funcs/menu_RunPauseMenu.s  (2)
+  asm/funcs/menu_UpdateRowMenuAndSubflows.s  (2)
+  asm/funcs/motion_LoadFighterData.s  (4)
+  asm/funcs/slot_BlendTwoPosesIntoNodeMatrices.s  (2)
+  include/bb2.h  (8)
+  src/main/25C38.c  (7)
+  src/main/28708.c  (8)
+  src/main/2B344.c  (13)
+  src/main/309CC.c  (10)
+  src/main/31548.c  (5)
+  src/main/32D04.c  (2)
+  src/main/6CF8.c  (2)
+  src/main/9F9C.c  (3)
+  src/main/d_7D920.c  (1)
+  src/main/d_80DF8.c  (5)
+  symbol_addrs.txt  (18)
+
+-- registry lines --
+  symbol_addrs.txt:217 D_8008DCCC -> g_motion_fighter_data_files
+  symbol_addrs.txt:415 D_80094B48 -> g_gpu_asset_draw_move_masks
+  symbol_addrs.txt:416 D_80094CFC -> g_node_pose_rotation_indices
+  symbol_addrs.txt:456 D_8009060C -> g_gpu_fog_depth_span_limits
+  symbol_addrs.txt:745 D_800A31DA -> g_menu_mode_subflow_init_pending
+  symbol_addrs.txt:805 D_8008DCCC -> g_motion_fighter_data_files
+  symbol_addrs.txt:906 D_80094B48 -> g_gpu_asset_draw_move_masks
+  symbol_addrs.txt:994 D_80090600 -> g_gpu_latched_fog_depth_span
+  symbol_addrs.txt:1043 D_80095488 -> g_gpu_packed_vertex_textured_primitive_handlers
+  symbol_addrs.txt:1044 D_80095508 -> g_gpu_embedded_lit_packet_handlers
+  symbol_addrs.txt:1149 D_80090604 -> g_gpu_latched_fog_depth_offset
+  symbol_addrs.txt:1150 D_80090608 -> g_gpu_fog_latch_last_grid_and_fog_control
+  symbol_addrs.txt:1151 D_8009060C -> g_gpu_fog_depth_span_limits
+  symbol_addrs.txt:1152 D_800906A4 -> g_gpu_fog_move_settings
+  symbol_addrs.txt:1153 D_80094CFC -> g_node_pose_rotation_indices
+  symbol_addrs.txt:1456 D_800A3340 -> g_memcard_save_prompt_status5_to_7_and_13_to_15_retry_count
+  symbol_addrs.txt:1570 D_800A3916 -> g_comb_initial_pad_exchange_pending
+  symbol_addrs.txt:1933 D_800A3916 -> g_comb_initial_pad_exchange_pending
+
+DRY RUN — nothing written. Re-run with --apply.
