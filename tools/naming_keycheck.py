@@ -2769,6 +2769,8 @@ def member_declarators(ts):
             parts.append(ts[start:i])
             start = i + 1
     for i, part in enumerate(parts):
+        if ":" in part:
+            part = part[:part.index(":")]  # bit-field width
         array = next((k for k, tok in enumerate(part) if tok == "["), len(part))
         prefix = " ".join(part[:array])
         pattern = (r"(?:[A-Za-z_]\w* )+(?:\* )*([A-Za-z_]\w*)" if i == 0

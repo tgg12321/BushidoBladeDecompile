@@ -14388,6 +14388,13 @@ def test_data_wave_fictional_symbols() -> None:
     eq("C9 fixtures have no live named symbols", sorted(live & set(re.findall(r"\b[A-Za-z_]\w*\b", text))), [])
 
 
+def test_keycheck_bitfield_member_declarators() -> None:
+    import naming_keycheck as nk
+    eq("bit-field declarators", nk.member_declarators(nk.ctokens("u32 unk14_0 : 4, grayscale : 1")),
+       ["unk14_0", "grayscale"])
+    eq("plain array declarator", nk.member_declarators(nk.ctokens("u8 picks[2]")), ["picks"])
+
+
 def test_keycheck_index_once() -> None:
     import naming_keycheck as nk
     from unittest.mock import patch
@@ -14964,6 +14971,7 @@ def main() -> int:
     test_data_wave_tentative_definitions()
     test_data_wave_curated_dedupe()
     test_data_wave_fictional_symbols()
+    test_keycheck_bitfield_member_declarators()
     test_keycheck_index_once()
     test_data_wave_nested_census()
     test_data_wave_retire_alias()
