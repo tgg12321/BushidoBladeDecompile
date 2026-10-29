@@ -92,7 +92,7 @@ assigns to `g_main_loop_handler_index` itself.
 | --- | --- | --- | --- |
 | 0 | `fight_Init` (src/main/9F9C.c:1874) | 1 | sets up the fight (fighters through `fighter_Init`, the object pool, the view) |
 | 1 | `fight_Update` (src/main/9F9C.c:2189) | | per-frame fight: `fighter_BuildCpuOrMappedPadState` / `fighter_Update` per fighter, `fight_UpdateFighterInteractionsAndPointCaches`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
-| 2 | `ResetGraphClearFrameCounterAndSetMainLoopHandler3` (src/main/17AFC.c:5543) | 3 | resets graphics, clears `g_handler_frame_counter` |
+| 2 | `ResetGraphClearFrameCounterAndSetMainLoopHandler3` (src/main/17AFC.c:5623) | 3 | resets graphics, clears `g_handler_frame_counter` |
 | 3 | `menu_PrintEditAndApplyConfigWithPerPadCursors` (src/main/24F08.c:28) | | prints the `g_fight_config` settings with `font_Printf` and steps the two cursors `g_config_menu_cursors`; calls `ApplyPendingConfigAndInitializeMode` |
 | 4 | `replay_Start` (src/main/28708.c:1287) | 5 | view and fighter setup |
 | 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
@@ -121,7 +121,7 @@ assigns to `g_main_loop_handler_index` itself.
 | 28 | `fight_InitNearestStartPairPlayback` (src/main/2B344.c:990) | 0x1D | view and scene setup |
 | 29 | `fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams` (src/main/2B344.c:1039) | 0x18 | frame-threshold cues on `g_handler_frame_counter` |
 | 30 | `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822) | 0x1F | stores the three clock records |
-| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:868) | | on Cross or frame 0xF1 calls `fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank` (src/main/17AFC.c:5821), which sets 0x12, 0x1A or 8 |
+| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:868) | | on Cross or frame 0xF1 calls `fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank` (src/main/17AFC.c:5901), which sets 0x12, 0x1A or 8 |
 | 32 | `fight_InitRotatingViewDecimalPresentation` (src/main/2B344.c:959) | 0x21 | |
 | 33 | `fight_UpdateRotatingViewDecimalPresentation` (src/main/2B344.c:967) | 8 | |
 

@@ -1559,12 +1559,13 @@ s32 fighter_ProcessWeaponContacts(void) {
  * opponent_bearing is under 0x400, each of character `id`'s 22 records
  * (g_fighter_bone_hit_records; records 6..9 only when obj+0x26C is set) is
  * tested: a math_TestPreparedSegmentSphere test with outer_radius / unk_0E sets
- * bit i in *arg1 and, only when the record's first halfword is nonzero, a
- * second test with inner_radius / unk_12 sets bit i in *arg2. Then
- * collision_TestSegmentWithWork casts the segment against the stage; when it
- * returns nonzero and collision_GetHitTag() != 7: if *arg1 is nonzero, the
- * function skips to the end when the cast point is no nearer the base than
- * obj+0xF4 and otherwise clears *arg1 and *arg2; then, unless `arg3`, effect
+ * bit i in *outer_hit_mask and, only when the record's first halfword is
+ * nonzero, a second test with inner_radius / unk_12 sets bit i in
+ * *inner_hit_mask. Then collision_TestSegmentWithWork casts the segment
+ * against the stage; when it returns nonzero and collision_GetHitTag() != 7:
+ * if *outer_hit_mask is nonzero, the function skips to the end when the cast
+ * point is no nearer the base than obj+0xF4 and otherwise clears
+ * *outer_hit_mask and *inner_hit_mask; then, unless `suppress_effects`, effect
  * 0xA plays at the cast point. D_800A37E8.. receive -q. GTE: gte_Lzc
  * (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h class
  * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C,
@@ -3830,7 +3831,8 @@ s32 math_TriangleNormalYawWithPositiveYHalfTurn(
     Vec3i32 *p;
     s32 ret;
 
-    /* Difference vectors (a1 - a0) and (a2 - a0) into the scratchpad
+    /* Difference vectors (second_vertex - first_vertex) and
+     * (third_vertex - first_vertex) into the scratchpad
      * collision record's unkA8 / unkB8, the GTE operands below. */
     SPAD->unk2B8.rec.unkA8.x = second_vertex->vx - first_vertex->vx;
     SPAD->unk2B8.rec.unkA8.y = second_vertex->vy - first_vertex->vy;
@@ -3874,8 +3876,8 @@ s32 fighter_IsBoneTriangleCrossYPositive(Unk80101EC8Record *fighter_record) {
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
-/* Starts the record (is_attached = 1, bone attached_bone = arg1): its matrix
- * becomes the inverse of bone attached_bone's rotation
+/* Starts the record (is_attached = 1, bone attached_bone = bone_index): its
+ * matrix becomes the inverse of bone attached_bone's rotation
  * (node_GetSlotMatrixPointerArray()'s table, inverted by math_InvertMatrix3x3)
  * times the rot[] rotation (X, Y, Z), and pos is taken into the bone's frame:
  * less the bone translation, rotated by that inverse, then halved. */
