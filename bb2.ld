@@ -70,7 +70,7 @@ SECTIONS
         build/src/main/3AB48.o(.rodata);
         build/src/main/43500.o(.rodata);
         build/src/main/4510C.o(.rodata);
-        build/src/main/4BC3C.o(.rodata);
+        build/src/main/snd.o(.rodata);
         build/src/main/4D0A8.o(.rodata);
         build/src/main/51268.o(.rodata);
         build/src/main/596CC.o(.rodata);
@@ -124,7 +124,7 @@ SECTIONS
         build/src/main/3AB48.o(.text);
         build/src/main/43500.o(.text);
         build/src/main/4510C.o(.text);
-        build/src/main/4BC3C.o(.text);
+        build/src/main/snd.o(.text);
         build/src/main/4D0A8.o(.text);
         build/src/main/51268.o(.text);
         build/src/main/596CC.o(.text);
@@ -360,7 +360,7 @@ SECTIONS
         build/src/main/43500.o(.data);
         build/src/main/4510C.o(.data);
         build/src/main/d_8A588.o(.data);
-        build/src/main/4BC3C.o(.data);
+        build/src/main/snd.o(.data);
         build/src/main/4D0A8.o(.data);
         build/src/main/d_8BC50.o(.data);
         build/src/main/51268.o(.data);
@@ -600,7 +600,7 @@ SECTIONS
         build/src/main/3AB48.o(.sdata);
         build/src/main/43500.o(.sdata);
         build/src/main/4510C.o(.sdata);
-        build/src/main/4BC3C.o(.sdata);
+        build/src/main/snd.o(.sdata);
         build/src/main/4D0A8.o(.sdata);
         build/src/main/51268.o(.sdata);
         build/src/main/596CC.o(.sdata);
@@ -621,7 +621,7 @@ SECTIONS
         build/src/main/3AB48.o(.sbss);
         build/src/main/43500.o(.sbss);
         build/src/main/4510C.o(.sbss);
-        build/src/main/4BC3C.o(.sbss);
+        build/src/main/snd.o(.sbss);
         build/src/main/4D0A8.o(.sbss);
         build/asm/data/93C1C.data.o(.data);
         build/src/main/51268.o(.sbss);
@@ -670,7 +670,7 @@ SECTIONS
         build/src/main/3AB48.o(.bss);
         build/src/main/43500.o(.bss);
         build/src/main/4510C.o(.bss);
-        build/src/main/4BC3C.o(.bss);
+        build/src/main/snd.o(.bss);
         build/src/main/4D0A8.o(.bss);
         build/src/main/51268.o(.bss);
         build/src/main/596CC.o(.bss);

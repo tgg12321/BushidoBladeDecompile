@@ -36,7 +36,6 @@
     "src/main/3AB48.c": "9c44adcde4934d6f1ed865f00e0fc07dd4c4bd6d",
     "src/main/43500.c": "e158288b48d1503c96f161b08d77b7f50725ca61",
     "src/main/4510C.c": "2a571bb9d1af777bd08ab3e11376779a13b1237a",
-    "src/main/4BC3C.c": "6f00f671fc36148e00e26feec2e1e655bf1e4a39",
     "src/main/4D0A8.c": "fc81fe23a98a7d36bb903c31da142c28af984107",
     "src/main/51268.c": "4933b4e5cb90223feca75c8cfd3c1495a31aadfd",
     "src/main/596CC.c": "7888a1f4d1bb1643f9799a6b7cf5fc0f9ed09b01",
@@ -246,7 +245,8 @@
     "src/main/psxsdk/libspu/s_stsa.c": "25975cefe25c862a00f7625cbd3f3df6089c8cd7",
     "src/main/psxsdk/libspu/s_w.c": "0e7e6ecc0cdd6ecf2e80b3a16a73244e604f7747",
     "src/main/psxsdk/libspu/spu.c": "73fc1957c7c569fb8e98da1191015c63c1a3f9b3",
-    "src/main/psxsdk/libspu/sr_gaks.c": "616f21cad55e26261e7d0d718f695c0d855733ec"
+    "src/main/psxsdk/libspu/sr_gaks.c": "616f21cad55e26261e7d0d718f695c0d855733ec",
+    "src/main/snd.c": "6f00f671fc36148e00e26feec2e1e655bf1e4a39"
   },
   "config_files": {
     "expand_lb_funcs.txt": "3e4c205282278d136b49d910beffca5402a6fad3",
