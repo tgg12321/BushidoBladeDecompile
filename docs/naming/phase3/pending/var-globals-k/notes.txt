@@ -1,0 +1,18 @@
+# var-globals-k notes (cites at 38c2d3773; worktree ln-naming-c; research tmp/codex/var-globals-k-research.md (Codex, HEAD 416704699) re-derived by the drafter; verdicts left empty for the reviewer)
+0x80094D40: PROPOSED g_gpu_asset_tim_group_load_masks. Retired: g_sprite_anim_table (symbol_addrs.txt:907 'was'); not reused. Confidence medium-high.
+0x800A36C4: PROPOSED g_comb_received_payload_check_word. Retired: g_pad_rec_validated_hash, g_pad_rec_validated_hash_plus_2 (symbol_addrs.txt:818,1019 'was'); not reused. Confidence medium-high.
+0x800A389C: PROPOSED g_fight_paired_input_tally_update_count. Retired: g_match_round_byte_b_plus_1 (symbol_addrs.txt:2124 'was'); not reused. Confidence medium.
+Names changed from research: none. Rows dropped: none.
+INTERIOR LABEL: D_800A36C6 (0x800A36C6, high half of D_800A36C4) keeps its D_ name, as D_800A36C2 did in var-globals-e (notes.txt:96 'Interior labels stay'). data_wave retires symbols at the row address only; 0x800A36C6 is its own address with its own dlabel (asm/data/93E18.data.s:219-223), extern s16 (include/bb2.h:331), used at src/main/2B344.c:92,100,113. Its registry comment at symbol_addrs.txt:1019 reads '+2 from D_800A36C4' and is handled by data_wave line-wise/R6.
+NO_NAME (from research): D_800A36C6 (interior of D_800A36C4); D_800A36C2 (high half of landed g_comb_received_pad_word); D_800A3908 (accumulated popcount, no consuming read: 2B344.c:77, 28708.c:1834,1856); D_800A3240 (j retry barred; also gates ndata_ReadChecked returned size, 35000.c:254-270); D_800A372C (no newer evidence after j failure); D_8008D070 (Sony linker .data start, g_data_start alias); D_80015840 (diagnostic string for printf, string wave, 43500.c:755,772); D_800A3264 and D_800A3270 (sheet-cell family: name parents D_8009B0C0 / D_8009B4BC first, 4D0A8.c:1888-1895, :855); D_8009B2BE (folded near unnamed panel cell-table family); D_8009BD44 (interior of g_working_record, symbol_addrs.txt:998).
+COMMENT/DOC OCCURRENCES of the old spellings for the R6 comment pass (re-enumerated at 38c2d3773):
+- src/main/31548.c:328 (D_80094D40 in a block comment).
+- symbol_addrs.txt:818,907,1019,2124 ('was' / '+2 from D_800A36C4' comments; :907 comment text 'unk_08' is now asset_index).
+- docs/foundation/backlog.tsv:9 (D_80094D40 mention).
+- docs/naming/function-names.csv:325,441,449 (D_800A36C4 in comb_WaitRead8 row, D_80094D40 in slot_GetAssetIndex / gpu_LoadRequestedAvailableTimGroupsForSlot rows).
+- docs/naming/remaining_data_classification.json:3587,9403,10333 (history, leave).
+- docs/naming/apiscan/rename_manifest.csv:11 (history).
+- docs/naming/phase3/pending/pilot-tail-a/rows.py:34,35,48,62,246,299 (D_80094D40 in notes).
+- docs/naming/phase3/pending/var-globals-e/data_manifest.csv:30, var-globals-f/data_manifest.csv:42, var-globals-f/notes.txt:88 (D_800A36C4 mentions in history).
+- docs/naming/runtime/menu-tour-values-1/report.md:261 (history).
+- asm/data/93E18.data.s:213-217 and asm/data/94000.bss.s:242-244 are dlabel definitions and asm/funcs operands, substituted by data_wave.
