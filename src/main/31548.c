@@ -325,9 +325,10 @@ void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32 a0, s32 a1) {
 
 /* .data 0x80094CFC..0x80094D40, this file's whole .data
  * (g_object_scale_factors, read by 309CC.c and 9F9C.c, ends at 0x80094CFC;
- * 31D3C.c's D_80094D40 follows): 17 node indices, a permutation of 1..17, that
- * func_80040D48 and slot_BlendTwoPosesIntoNodeMatrices step through to index
- * per-node rotation triples. Defined after every function, so no body sees a
- * definition where it saw an extern. */
+ * 31D3C.c's g_gpu_asset_tim_group_load_masks follows): 17 node indices, a
+ * permutation of 1..17, that func_80040D48 and
+ * slot_BlendTwoPosesIntoNodeMatrices step through to index per-node rotation
+ * triples. Defined after every function, so no body sees a definition where it
+ * saw an extern. */
 s32 g_node_pose_rotation_indices[17] = {
     8, 9, 14, 15, 16, 17, 10, 11, 12, 13, 1, 2, 3, 4, 5, 6, 7};
