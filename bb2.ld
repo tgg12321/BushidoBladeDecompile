@@ -47,7 +47,7 @@ SECTIONS
         build/src/main/17AFC.o(.rodata);
         build/src/main/24BF0.o(.rodata);
         build/src/main/d_1068.o(.rodata);
-        build/src/main/24F08.o(.rodata);
+        build/src/main/menu_config.o(.rodata);
         build/src/main/25788.o(.rodata);
         build/src/main/25C38.o(.rodata);
         build/src/main/cdrom_mix.o(.rodata);
@@ -103,7 +103,7 @@ SECTIONS
         build/src/main/175A4.o(.text);
         build/src/main/17AFC.o(.text);
         build/src/main/24BF0.o(.text);
-        build/src/main/24F08.o(.text);
+        build/src/main/menu_config.o(.text);
         build/src/main/25788.o(.text);
         build/src/main/25C38.o(.text);
         build/src/main/cdrom_mix.o(.text);
@@ -335,7 +335,7 @@ SECTIONS
         build/src/main/175A4.o(.data);
         build/src/main/17AFC.o(.data);
         build/src/main/24BF0.o(.data);
-        build/src/main/24F08.o(.data);
+        build/src/main/menu_config.o(.data);
         build/src/main/25788.o(.data);
         build/src/main/25C38.o(.data);
         build/src/main/cdrom_mix.o(.data);
@@ -583,7 +583,7 @@ SECTIONS
         build/asm/data/938FE.data.o(.data);
         build/src/main/17AFC.o(.sdata);
         build/asm/data/93950.data.o(.data);
-        build/src/main/24F08.o(.sdata);
+        build/src/main/menu_config.o(.sdata);
         build/src/main/25C38.o(.sdata);
         build/asm/data/939DC.data.o(.data);
         build/src/main/267A8.o(.sdata);
@@ -649,7 +649,7 @@ SECTIONS
         build/src/main/175A4.o(.bss);
         build/src/main/17AFC.o(.bss);
         build/src/main/24BF0.o(.bss);
-        build/src/main/24F08.o(.bss);
+        build/src/main/menu_config.o(.bss);
         build/src/main/25788.o(.bss);
         build/src/main/25C38.o(.bss);
         build/src/main/cdrom_mix.o(.bss);

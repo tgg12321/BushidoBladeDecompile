@@ -135,7 +135,7 @@ $(EXE): $(BIN) $(ELF) tools/make_psexe.py tools/elf32.py
 # -- Per-file GP-relative opt-in --
 # List C files (TU ids: path under src/ without .c) that need GP-relative addressing.
 # Our cc1 runs these at -G8 (gp itself is maspsx's decision on each file's own definitions).
-GP_FILES := main/309CC main/31548 main/31CFC main/31D3C main/24F08 main/cdrom_mix main/cdrom_update main/5ED34 main/368E4
+GP_FILES := main/309CC main/31548 main/31CFC main/31D3C main/menu_config main/cdrom_mix main/cdrom_update main/5ED34 main/368E4
 
 # -- Small data: maspsx -G8 except Sony library code (owner rulings Q65, Q69) --
 # maspsx runs -G8 for every file: a file uses gp for a small symbol only if it DEFINES it (Sony
