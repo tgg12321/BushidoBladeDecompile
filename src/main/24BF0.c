@@ -38,7 +38,7 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void);
 const char g_str_chanbara[] = "CHANBARA";
 const char g_str_practice[] = "PRACTICE";
 const char D_80010834[] = "%sCR%3d\n";
-const char D_80010840[] = "%sCO%3d\n";
+const char g_config_menu_saved_grayscale_fmt[] = "%sCO%3d\n";
 
 void ApplyPendingConfigAndInitializeMode(void) {
     ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests();

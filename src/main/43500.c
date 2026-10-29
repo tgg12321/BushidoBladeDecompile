@@ -752,7 +752,8 @@ s16 collision_GetHitTag(void) { return g_collision_hit_tag; }
 INCLUDE_ASM("asm/funcs", gte_ColorGroupedNormalStreamWithSelectedMatrices);
 INCLUDE_ASM("asm/funcs", func_800545F4);
 
-const char D_80015840[28] = "Destruction tiny model.\n";
+const char g_motion_playback_arena_shortfall_msg[28] =
+    "Destruction tiny model.\n";
 
 s32 motion_StartPlayback(
     s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
@@ -769,7 +770,7 @@ s32 motion_StartPlayback(
     } else {
         if (ndata_GetArenaRoomAfter(playback_file_id) < 0) {
             resource_FreeNodeAssetBlock();
-            printf(D_80015840);
+            printf(g_motion_playback_arena_shortfall_msg);
         }
         s->block_base = (s32)motion_LoadPlaybackBlock(playback_file_id);
         ret = 0;

@@ -34,8 +34,8 @@ glabel motion_StartPlayback
     /* 44E80 80054680 00000000 */   nop
     /* 44E84 80054684 451A010C */  jal        resource_FreeNodeAssetBlock
     /* 44E88 80054688 00000000 */   nop
-    /* 44E8C 8005468C 0180043C */  lui        $a0, %hi(D_80015840)
-    /* 44E90 80054690 40588424 */  addiu      $a0, $a0, %lo(D_80015840)
+    /* 44E8C 8005468C 0180043C */  lui        $a0, %hi(g_motion_playback_arena_shortfall_msg)
+    /* 44E90 80054690 40588424 */  addiu      $a0, $a0, %lo(g_motion_playback_arena_shortfall_msg)
     /* 44E94 80054694 82E4010C */  jal        printf
     /* 44E98 80054698 00000000 */   nop
   .L8005469C:

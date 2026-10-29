@@ -4037,7 +4037,8 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
         g_fight_stage_start_count < 2 || g_fight_reinit_reuses_assets != 0) {
         fighter_ResetBoneGroupHitState(p);
     }
-    p->bone_group_6_9_lost_step_scale = D_8008E3C0[p->character_data_index];
+    p->bone_group_6_9_lost_step_scale =
+        g_fighter_lost_bone_group_step_scales[p->character_data_index];
     for (i = 0; i < 4; i++) {
         p->bone_group_10_13_step_scales[i] =
             D_8008E3F8[p->character_data_index][i];
