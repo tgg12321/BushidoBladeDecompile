@@ -904,7 +904,7 @@ D_800A30FD = 0x800A30FD; /* caches D_8008E5A8[(s8)g_fight_config.unk_4[1]] for f
 D_800A3778 = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_fighter_dpad_angle_offsets = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4231, :4324) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
 g_gpu_asset_draw_move_masks = 0x80094B48; /* byte mask indexed by the object's asset_index (`mask &= D[asset_index]`); each set bit i calls gpu_AddDrawMove(a0, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
-g_gpu_asset_tim_group_load_masks = 0x80094D40; /* bit-mask table indexed by a1 (the object's unk_08) in gpu_LoadRequestedAvailableTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */
+g_gpu_asset_tim_group_load_masks = 0x80094D40; /* bit-mask table indexed by a1 (the object's asset_index) in gpu_LoadRequestedAvailableTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */
 g_object_scale_factors = 0x80094C68; /* u16 table; stored into the fighter record's +0x1A (9F9C.c:3901 / :3903) and an Unk80045878Obj's +0x12 (309CC.c) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
 D_80094B96 = 0x80094B96; /* D_80094B96[0].parent_index: s16 parent-node index, -1 for none (node_InitObjectHierarchyFromTemplates) */  /* data-wave 2026-10-08: was g_attack_scale_x */
 D_80094B98 = 0x80094B98; /* D_80094B96[0].node_translation[0]: s16, times a0->position_scale >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
@@ -1016,7 +1016,7 @@ g_pad_direction_negative_masks = 0x800A32D0; /* u32[2] bit masks {0x8000, 0x1000
 g_entry_menu_grid_pulse_shifts = 0x800A3530; /* +8 from g_menu_stored_choice_cursor */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_8 */
 g_fight_second_fighter_defeats_left = 0x800A3680; /* +8 from g_gpu_flush_rotation_angles (0x800A3678) */  /* data-wave 2026-10-08: was g_leaf_muki_buffer_plus_8 */
 D_800A36C2 = 0x800A36C2; /* +2 from g_comb_received_pad_word */  /* data-wave 2026-10-08: was g_pad_rec_validated_packed_plus_2 */
-D_800A36C6 = 0x800A36C6; /* +2 from D_800A36C4 */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash_plus_2 */
+D_800A36C6 = 0x800A36C6; /* +2 from g_comb_received_payload_check_word (its high half) */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash_plus_2 */
 g_fight_time_limit_seconds = 0x800A36CC; /* limit in units of 30 frames */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_4 */
 D_800A36D2 = 0x800A36D2; /* +2 from g_comb_prev_send_word */  /* data-wave 2026-10-08: was g_pad_rec_prev_packed_plus_2 */
 g_fight_displaced_bone_group_tim_requests = 0x800A36F4; /* saved byte, passed as slot_RequestTimGroupsAndMarkReloadOnChange's second argument */  /* data-wave 2026-10-08: was g_char_class_state_array_plus_2 */
