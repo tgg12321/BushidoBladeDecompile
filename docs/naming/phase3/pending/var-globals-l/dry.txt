@@ -1,0 +1,50 @@
+==============================================================================
+DATA WAVE — 12 addresses, 23 identifiers remapped
+  0x800a3178: D_800A3178, g_str_c777_800A3178 -> g_config_menu_unselected_color_code
+  0x800a3180: D_800A3180, g_str_c737_800A3180 -> g_config_menu_selected_color_code
+  0x800a3190: D_800A3190, g_str_pct_s3d_n_800A3190_fmt -> g_config_menu_right_pad_value_fmt
+  0x800a31a0: D_800A31A0, g_str_cl3x_800A31A0_fmt -> g_config_menu_left_cpu_base_level_fmt
+  0x800a31a8: D_800A31A8, g_str_pct_s3x_n_800A31A8_fmt -> g_config_menu_right_cpu_base_level_fmt
+  0x800a31b0: D_800A31B0, g_str_pct_s5d_n_800A31B0_fmt -> g_config_menu_pending_stage_and_mode_fmt
+  0x800a31b8: D_800A31B8, g_str_o4d_n_800A31B8_fmt -> g_config_menu_pending_view_setting_fmt
+  0x800a31d0: D_800A31D0, g_str_d4d_n_800A31D0_fmt -> g_config_menu_fight_view_option_fmt
+  0x80010840: D_80010840, g_str_co_n_80010840_fmt -> g_config_menu_saved_grayscale_fmt
+  0x800a31c0: D_800A31C0, g_str_l4d_n_800A31C0_fmt -> g_config_menu_saved_cpu_behavior_adjust_fmt
+  0x80015840: D_80015840, g_str_destruction_tiny_model_80015840 -> g_motion_playback_arena_shortfall_msg
+  0x8008e3c0: D_8008E3C0 -> g_fighter_lost_bone_group_step_scales
+
+-- file edits (10) --
+  asm/funcs/fighter_Init.s  (2)
+  asm/funcs/menu_PrintEditAndApplyConfigWithPerPadCursors.s  (20)
+  asm/funcs/motion_StartPlayback.s  (2)
+  include/bb2.h  (1)
+  src/main/24BF0.c  (1)
+  src/main/24F08.c  (32)
+  src/main/43500.c  (2)
+  src/main/9F9C.c  (1)
+  src/main/d_7D920.c  (1)
+  symbol_addrs.txt  (20)
+
+-- registry lines --
+  symbol_addrs.txt:304 D_800A3178 -> g_config_menu_unselected_color_code
+  symbol_addrs.txt:305 D_800A3180 -> g_config_menu_selected_color_code
+  symbol_addrs.txt:307 D_800A3190 -> g_config_menu_right_pad_value_fmt
+  symbol_addrs.txt:309 D_800A31A0 -> g_config_menu_left_cpu_base_level_fmt
+  symbol_addrs.txt:310 D_800A31A8 -> g_config_menu_right_cpu_base_level_fmt
+  symbol_addrs.txt:311 D_800A31B0 -> g_config_menu_pending_stage_and_mode_fmt
+  symbol_addrs.txt:312 D_800A31B8 -> g_config_menu_pending_view_setting_fmt
+  symbol_addrs.txt:313 D_800A31C0 -> g_config_menu_saved_cpu_behavior_adjust_fmt
+  symbol_addrs.txt:315 D_800A31D0 -> g_config_menu_fight_view_option_fmt
+  symbol_addrs.txt:1205 g_str_co_n_80010840_fmt -> g_config_menu_saved_grayscale_fmt
+  symbol_addrs.txt:1209 g_str_c777_800A3178 -> g_config_menu_unselected_color_code
+  symbol_addrs.txt:1210 g_str_c737_800A3180 -> g_config_menu_selected_color_code
+  symbol_addrs.txt:1212 g_str_pct_s3d_n_800A3190_fmt -> g_config_menu_right_pad_value_fmt
+  symbol_addrs.txt:1214 g_str_cl3x_800A31A0_fmt -> g_config_menu_left_cpu_base_level_fmt
+  symbol_addrs.txt:1215 g_str_pct_s3x_n_800A31A8_fmt -> g_config_menu_right_cpu_base_level_fmt
+  symbol_addrs.txt:1216 g_str_pct_s5d_n_800A31B0_fmt -> g_config_menu_pending_stage_and_mode_fmt
+  symbol_addrs.txt:1217 g_str_o4d_n_800A31B8_fmt -> g_config_menu_pending_view_setting_fmt
+  symbol_addrs.txt:1218 g_str_l4d_n_800A31C0_fmt -> g_config_menu_saved_cpu_behavior_adjust_fmt
+  symbol_addrs.txt:1220 g_str_d4d_n_800A31D0_fmt -> g_config_menu_fight_view_option_fmt
+  symbol_addrs.txt:1255 g_str_destruction_tiny_model_80015840 -> g_motion_playback_arena_shortfall_msg
+
+DRY RUN — nothing written. Re-run with --apply.
