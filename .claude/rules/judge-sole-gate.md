@@ -54,9 +54,10 @@ executes them.
    C: the body is not C-shaped, and no C or C-plus-GTE-macro-call candidate reproduces it
    (none within endgame distance). One cheat-reviewer checks (a)-(c) per function; the row
    gains `[re-audit <date>: hand-written module <lo>-<hi>]`. Owner per-function ruling
-   2026-10-16 (this function only, not a class): func_80052C10 meets (b)-(c); `$t9` is
-   reachable from C only under register pressure forcing a ~110-insn framed body
-   (memory/grind/func_80052C10/evidence.md s2). Its extra nop ends 8-aligned, not module pad.
+   2026-10-16 (this function only, not a class): sys_StoreZeroPastScratchpadOnFailedCheck
+   (0x80052C10) meets (b)-(c); `$t9` is reachable from C only under register pressure forcing
+   a ~110-insn framed body (memory/grind/sys_StoreZeroPastScratchpadOnFailedCheck/evidence.md
+   s2). Its extra nop ends 8-aligned, not module pad.
 4. **No extension requests exist (owner ruling Q91).** A construct outside the pre-cleared
    shapes in [[no-new-park-categories]] is decided directly on [[completion-bar]] item 3:
    labelled, honest, not on item 3's refused list, existing types used and the simplest
