@@ -1,0 +1,37 @@
+PASS Unk8006919CRec.unk_24=cursor_row_paired_sheets, Unk8006919CRec.unk_28=option_menu_choice_sheets
+decl Unk8006919CRec.unk_24 -> cursor_row_paired_sheets  include/game.h:2521
+decl Unk8006919CRec.unk_28 -> option_menu_choice_sheets  include/game.h:2522
+  round 0: 5 member error line(s)
+    src/main/596CC.c:1165 unk_24 x1
+    src/main/596CC.c:1183 unk_24 x1
+    src/main/596CC.c:1231 unk_28 x1
+    src/main/596CC.c:1364 unk_28 x1
+    src/main/596CC.c:1608 unk_28 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2521,2 +2521,2 @@
+-    Unk8009B0E0Record **unk_24;
+-    Unk8009B0E0Record **unk_28;
++    Unk8009B0E0Record **cursor_row_paired_sheets;
++    Unk8009B0E0Record **option_menu_choice_sheets;
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -1165 +1165 @@
+-    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->unk_24;
++    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->cursor_row_paired_sheets;
+@@ -1183 +1183 @@
+-    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->unk_24;
++    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->cursor_row_paired_sheets;
+@@ -1231 +1231 @@
+-    tbl = ((Unk8006919CRec *)draw_context[1])->unk_28;
++    tbl = ((Unk8006919CRec *)draw_context[1])->option_menu_choice_sheets;
+@@ -1364 +1364 @@
+-    tbl = ((Unk8006919CRec *)draw_context[1])->unk_28;
++    tbl = ((Unk8006919CRec *)draw_context[1])->option_menu_choice_sheets;
+@@ -1608 +1608 @@
+-    q = ((Unk8006919CRec *)draw_context[1])->unk_28;
++    q = ((Unk8006919CRec *)draw_context[1])->option_menu_choice_sheets;
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

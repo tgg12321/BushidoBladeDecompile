@@ -1,0 +1,29 @@
+var-members-rest-15 -- draft notes (research re-derived by the drafter in the lane worktree; research treated as hints only)
+
+BASIS: line numbers cite the lane worktree ln-naming-b (branch lanes/naming-b, clean at main dea278b5e). Dry run: type-resolved tools/naming_member_apply.py --dry-run from WSL (compiled), see dry.txt.
+Research: tmp/codex/var-members-rest-15-research.md, 34 rows, 2 RENAME / 32 NO_NAME. Result: 2 rows in pairs.txt, 0 DROPPED, 0 CHANGED FROM RESEARCH. The verdict column of member_manifest.csv is empty (the reviewer decides). NO_NAME rows are not in the manifest.
+Names: cursor_row_paired_sheets, option_menu_choice_sheets (distinct; both on Unk8006919CRec, the MOD.BIN root).
+
+Re-derivation
+- Every use of unk_24 / unk_28 on Unk8006919CRec was read: unk_24 at 596CC.c:1165, 1183 (menu_DrawMaskedRowList); unk_28 at 596CC.c:1231, 1364 (menu_DrawOptionMenuChoices), 1608 (menu_DrawMemCardChoices). All go through draw_context[1] / *(draw_context + 4), the copy of g_row_menu_work_block->menu_resource_root. The reloc walk (596CC.c:192-199) addresses the slots as a pointer run from &unk_14. Same-spelled members of other types (game.h:181-182, 413; 5ED34.c:273; 64FD8.c:1296) are not this type.
+- INCLUDE_ASM: 596CC.c has none remaining (only the macro define). Every asm/funcs file that mentions g_row_menu_work_block or the draw-context builder belongs to a function whose C body is linked; none is INCLUDE_ASMed in src. No raw +0x24/+0x28 read of the root exists in C either.
+- Freshness: git grep -w for both names over the tree returns nothing; no docs/naming/phase3/pending/*/pairs.txt (this lane, ln-naming-a) uses either.
+
+DRAFT (kept, 2)
+- unk_24 -> cursor_row_paired_sheets: indexed by the option-row cursor nibble at [row] and [row + 8] (a sprite run at y 0x19 and a scaled FT4 quad). Conf W.
+- unk_28 -> option_menu_choice_sheets: [0], [1..6], [7..8] are the option menu's drawn sprites; the memcard drawer reads [1] only for a tpage. Conf W.
+- Both re-propose rest-14 pre-apply FAILs with narrower wording (the reviewer's leads). If either fails, the other does not depend on it.
+
+CHANGED FROM RESEARCH (0)
+- None.
+
+DROPPED (0)
+- None. Weakest points for the reviewer: unk_24 does not show what the sheets depict (the name claims only the indexing); unk_28's memcard use of [1] is a texture-page borrow only.
+
+NO_NAME carried (32 research rows; none contradicted by my reading; none in pairs)
+Unk8006919CRec unk_14/1C/34; Unk8006EA28Rec unk_74 (rest-14 FAIL), unk_5C/60/68/6C/70/78; Unk80101EC8Record: the 22 declaration-only padding members, write-only unk_6E/144/1D0/24C/34E/3C0-3C4/3EE, selector or derived unk_8E/90/AF/B4/150/272/27E/3F4; Unk80099D88Rec unk3/4/6/7/17; function pointers Work_80053E9C.unk5C (cell_test_fn passed rest-14 pre-apply; keycheck unsupported) and Unk800948BCEntry.unk4; Work_80053E9C padding plus the multi-role unk60..80 / unkE0..E8; Unk8009BD24Block bitfields; scratchpad overlays; the rest-11..13 tails. No new evidence for any of them.
+
+R6 watch -- comments naming the old members (the tool edits no comments); line numbers as in ln-naming-b
+- src/main/596CC.c:989 (menu_DrawMaskedRowList local comment: "unk_24 twice (icon frames at [8 + frame], then FT4 frames at [frame])"); 596CC.c:1181 (FAKE comment "re-stores the unk_24 list var_3 already holds"). 596CC.c has no comment naming unk_28.
+- include/game.h:2489-2501 (Unk8006919CRec type comment: "unk_14..cursor_row_sheets" names the first slot only; no comment names unk_24 or unk_28 specifically). game.h:181-182, 404, 413 are other types.
+- docs: no file under docs/ outside historical manifests names Unk8006919CRec unk_24 / unk_28 (docs/engine checked); historical manifests are not edited.

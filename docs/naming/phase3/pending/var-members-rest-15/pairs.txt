@@ -1,0 +1,2 @@
+Unk8006919CRec.unk_24=cursor_row_paired_sheets
+Unk8006919CRec.unk_28=option_menu_choice_sheets
