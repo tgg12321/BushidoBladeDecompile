@@ -1,0 +1,28 @@
+{
+  "description": "slash-mode with the kill row g_fight_step_table_next_row (0x800A38E2) poked 01 -> 0x1E as the fight starts (8200), so the first kill is the 30th: fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags moves the row to 0x1F, the Slash arm of fight_UpdateDefeatDelayAndModeProgress sets start position pair 1 (resource_SelectRetainedSubblockOrApplyHeaderSections(1)) and re-places record 0 (func_8001C624); the fight goes on in a tatami room (30 KILLS); end 10500",
+  "covers": [
+    "mode:slash"
+  ],
+  "evidence": [
+    "docs/naming/runtime/slash-mode-room-2-1/spec.json"
+  ],
+  "extends": "slash-mode",
+  "pokes": [
+    {
+      "at": "0x800A38E2",
+      "hex": "1E",
+      "phase": "fight"
+    }
+  ],
+  "phases": [
+    "9000:room_2"
+  ],
+  "shots": [
+    "8540:fight.8540",
+    "8560:fight.8560",
+    "8580:fight.8580",
+    "8600:fight.8600",
+    "9000:room_2.first",
+    "10499:room_2.last"
+  ]
+}
