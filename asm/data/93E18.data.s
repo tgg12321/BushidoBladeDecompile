@@ -210,11 +210,11 @@ dlabel D_800A36C2
     /* 93EC2 800A36C2 */ .short 0x0000
 enddlabel D_800A36C2
 
-nonmatching D_800A36C4
+nonmatching g_comb_received_payload_check_word
 
-dlabel D_800A36C4
+dlabel g_comb_received_payload_check_word
     /* 93EC4 800A36C4 */ .short 0x0000
-enddlabel D_800A36C4
+enddlabel g_comb_received_payload_check_word
 
 nonmatching D_800A36C6
 

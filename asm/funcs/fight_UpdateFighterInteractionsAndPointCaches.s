@@ -128,8 +128,8 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1CFF8 8002C7F8 8C0220AE */  sw         $zero, 0x28C($s1)
     /* 1CFFC 8002C7FC 0A80013C */  lui        $at, %hi(g_fight_midpoint_effect_delay)
     /* 1D000 8002C800 103920A4 */  sh         $zero, %lo(g_fight_midpoint_effect_delay)($at)
-    /* 1D004 8002C804 0A80013C */  lui        $at, %hi(D_800A389C)
-    /* 1D008 8002C808 9C3820A4 */  sh         $zero, %lo(D_800A389C)($at)
+    /* 1D004 8002C804 0A80013C */  lui        $at, %hi(g_fight_paired_input_tally_update_count)
+    /* 1D008 8002C808 9C3820A4 */  sh         $zero, %lo(g_fight_paired_input_tally_update_count)($at)
   .L8002C80C:
     /* 1D00C 8002C80C 1080023C */  lui        $v0, %hi(D_80101F32)
     /* 1D010 8002C810 321F4294 */  lhu        $v0, %lo(D_80101F32)($v0)

@@ -239,9 +239,9 @@ dlabel g_fight_match_count
 enddlabel g_fight_match_count
 
 /* 800A389C */
-dlabel D_800A389C
+dlabel g_fight_paired_input_tally_update_count
     .space 0x4
-enddlabel D_800A389C
+enddlabel g_fight_paired_input_tally_update_count
 
 /* 800A38A0 */
 dlabel g_comb_local_side

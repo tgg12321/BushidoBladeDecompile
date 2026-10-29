@@ -132,12 +132,12 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
     /* 17784 80026F84 4C04C624 */   addiu     $a2, $a2, 0x44C
     /* 17788 80026F88 1080103C */  lui        $s0, %hi(D_80101EC8)
     /* 1778C 80026F8C C81E1026 */  addiu      $s0, $s0, %lo(D_80101EC8)
-    /* 17790 80026F90 0A80023C */  lui        $v0, %hi(D_800A389C)
-    /* 17794 80026F94 9C384294 */  lhu        $v0, %lo(D_800A389C)($v0)
+    /* 17790 80026F90 0A80023C */  lui        $v0, %hi(g_fight_paired_input_tally_update_count)
+    /* 17794 80026F94 9C384294 */  lhu        $v0, %lo(g_fight_paired_input_tally_update_count)($v0)
     /* 17798 80026F98 00000000 */  nop
     /* 1779C 80026F9C 01004224 */  addiu      $v0, $v0, 0x1
-    /* 177A0 80026FA0 0A80013C */  lui        $at, %hi(D_800A389C)
-    /* 177A4 80026FA4 9C3822A4 */  sh         $v0, %lo(D_800A389C)($at)
+    /* 177A0 80026FA0 0A80013C */  lui        $at, %hi(g_fight_paired_input_tally_update_count)
+    /* 177A4 80026FA4 9C3822A4 */  sh         $v0, %lo(g_fight_paired_input_tally_update_count)($at)
     /* 177A8 80026FA8 00140200 */  sll        $v0, $v0, 16
     /* 177AC 80026FAC 03140200 */  sra        $v0, $v0, 16
     /* 177B0 80026FB0 2B004228 */  slti       $v0, $v0, 0x2B
@@ -194,8 +194,8 @@ glabel fight_UpdatePairedInputTotalsEventsAndMidpointEffects
   .L8002706C:
     /* 1786C 8002706C 8C0220AE */  sw         $zero, 0x28C($s1)
     /* 17870 80027070 8C0200AE */  sw         $zero, 0x28C($s0)
-    /* 17874 80027074 0A80013C */  lui        $at, %hi(D_800A389C)
-    /* 17878 80027078 9C3820A4 */  sh         $zero, %lo(D_800A389C)($at)
+    /* 17874 80027074 0A80013C */  lui        $at, %hi(g_fight_paired_input_tally_update_count)
+    /* 17878 80027078 9C3820A4 */  sh         $zero, %lo(g_fight_paired_input_tally_update_count)($at)
   .L8002707C:
     /* 1787C 8002707C C900622A */  slti       $v0, $s3, 0xC9
     /* 17880 80027080 0B004010 */  beqz       $v0, .L800270B0

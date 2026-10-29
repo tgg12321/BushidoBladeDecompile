@@ -5,7 +5,7 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern u8 D_80094D40[];
+extern u8 g_gpu_asset_tim_group_load_masks[];
 
 Unk80045878Obj *slot_GetObject(s32 a0) { return g_slot_objects[a0]; }
 
@@ -166,7 +166,7 @@ void gpu_LoadRequestedAvailableTimGroupsForSlot(
     if ((u32)a0 >= 2) {
         return;
     }
-    mask_table = D_80094D40[a1];
+    mask_table = g_gpu_asset_tim_group_load_masks[a1];
     for (bit = 0x10, i = 0; i < 5; bit >>= 1, i++) {
         if (!(mask_table & bit) || !(a2 & bit)) {
             continue;
@@ -515,7 +515,7 @@ void gpu_SetBackgroundClearColorAndFarColor(s32 a0) {
  * -> list index map g_gpu_vram_row_list_map (0xFF: none), and
  * ApplyLightPresetRowBackgroundClearAndFarColor's 38 light rows. Defined after
  * every function, so no body sees a definition where it saw an extern. */
-u8 D_80094D40[64] = {
+u8 g_gpu_asset_tim_group_load_masks[64] = {
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1F, 0x1F, 0x0,  0x0,  0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
     0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0,  0x0,  0x1F, 0x0,  0x0,

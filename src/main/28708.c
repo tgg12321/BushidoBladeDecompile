@@ -1765,7 +1765,7 @@ ret0_tramp:
     return 0;
 match:
     g_comb_received_pad_word = a1;
-    D_800A36C4 = a0;
+    g_comb_received_payload_check_word = a0;
     return 1;
 }
 

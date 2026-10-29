@@ -84,8 +84,8 @@ glabel comb_WaitRead8
   .L8003A6D4:
     /* 2AED4 8003A6D4 01000224 */  addiu      $v0, $zero, 0x1
     /* 2AED8 8003A6D8 F40585AF */  sw         $a1, %gp_rel(g_comb_received_pad_word)($gp)
-    /* 2AEDC 8003A6DC 0A80013C */  lui        $at, %hi(D_800A36C4)
-    /* 2AEE0 8003A6E0 C43624AC */  sw         $a0, %lo(D_800A36C4)($at)
+    /* 2AEDC 8003A6DC 0A80013C */  lui        $at, %hi(g_comb_received_payload_check_word)
+    /* 2AEE0 8003A6E0 C43624AC */  sw         $a0, %lo(g_comb_received_payload_check_word)($at)
   .L8003A6E4:
     /* 2AEE4 8003A6E4 1800BF8F */  lw         $ra, 0x18($sp)
     /* 2AEE8 8003A6E8 1400B18F */  lw         $s1, 0x14($sp)

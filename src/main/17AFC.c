@@ -2438,7 +2438,7 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
                 secondPlayer->mash_contest_score = 0;
                 firstPlayer->mash_contest_score = 0;
                 g_fight_midpoint_effect_delay = 0;
-                D_800A389C = 0;
+                g_fight_paired_input_tally_update_count = 0;
             }
         }
     }

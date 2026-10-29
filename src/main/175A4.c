@@ -88,8 +88,8 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = D_80101EC8;
         var_1 = record + 1;
-        D_800A389C++;
-        if ((s16)D_800A389C >= 0x2B) {
+        g_fight_paired_input_tally_update_count++;
+        if ((s16)g_fight_paired_input_tally_update_count >= 0x2B) {
             if (D_80101EC8[0].mash_contest_score >
                 D_80101EC8[1].mash_contest_score) {
                 D_80101EC8[0].pending_move_event = 3;
@@ -111,7 +111,7 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
             }
             var_1->mash_contest_score = 0;
             record->mash_contest_score = 0;
-            D_800A389C = 0;
+            g_fight_paired_input_tally_update_count = 0;
         }
         if (separation_error > 200) {
             record->pending_move_event = 2;

@@ -15,9 +15,9 @@ glabel gpu_LoadRequestedAvailableTimGroupsForSlot
     /* 321BC 800419BC 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 321C0 800419C0 34004010 */  beqz       $v0, .L80041A94
     /* 321C4 800419C4 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 321C8 800419C8 0980013C */  lui        $at, %hi(D_80094D40)
+    /* 321C8 800419C8 0980013C */  lui        $at, %hi(g_gpu_asset_tim_group_load_masks)
     /* 321CC 800419CC 21082500 */  addu       $at, $at, $a1
-    /* 321D0 800419D0 404D3790 */  lbu        $s7, %lo(D_80094D40)($at)
+    /* 321D0 800419D0 404D3790 */  lbu        $s7, %lo(g_gpu_asset_tim_group_load_masks)($at)
     /* 321D4 800419D4 10001124 */  addiu      $s1, $zero, 0x10
     /* 321D8 800419D8 21A00000 */  addu       $s4, $zero, $zero
     /* 321DC 800419DC C0FE1624 */  addiu      $s6, $zero, -0x140

@@ -328,7 +328,7 @@ extern CdlATV g_cd_atv_target;
  * $s0), (u16) word low reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned
  * halves 4. Owner ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36C2;
-extern s32 D_800A36C4;
+extern s32 g_comb_received_payload_check_word;
 extern s16 D_800A36C6;
 extern u8 g_fight_saved_bone_group_tim_requests;
 extern u16 g_fight_paired_move_flags;
@@ -437,7 +437,7 @@ extern u8 g_motion_common_loaded;
 extern MotionFrame *g_motion_frame_buffers[2];
 extern u8 D_800A389A;
 extern u8 g_fight_match_count;
-extern u16 D_800A389C;
+extern u16 g_fight_paired_input_tally_update_count;
 extern s32 g_comb_local_side;
 extern u8 g_fight_presentation_index;
 extern s16 D_800A38A8;
