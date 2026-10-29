@@ -353,7 +353,7 @@ void arena_UpdatePeak(s32 a0) {
     }
     g_arena_peak = v1;
     if (a0 > 0x44FFF) {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
 }
 
@@ -458,7 +458,7 @@ void arena_SetBlockEnd(s32 a0, s32 a1) {
         g_arena_free_size -= amt;
         return;
     }
-    func_80052C10();
+    sys_StoreZeroPastScratchpadOnFailedCheck();
 }
 
 void arena_SetMoveCallback(s32 a0, s32 a1) {

@@ -615,7 +615,7 @@
 /* === g_resource_entry_category / g_resource_entry_request_state cluster (2026-05-17) -- 2 highs === */
 /* From resource_RequestEntryWithLinkedEntriesAndLatchCategory (368E4.c:1835-1860).  g_resource_entry_category is -1 until */
 /* its first call, then 0 for arg0 < 0x33, 1 for arg0 >= 0x33; */
-/* later calls from the other side of 0x33 call func_80052C10. */
+/* later calls from the other side of 0x33 call sys_StoreZeroPastScratchpadOnFailedCheck. */
 
 /* === g_eff_point_light_color colour word (2026-05-17) -- 1 high === */
 /* Passed to light_SetPointLight by func_80061064.  Set per command to 24-bit */

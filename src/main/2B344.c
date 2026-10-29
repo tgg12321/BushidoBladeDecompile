@@ -2257,11 +2257,13 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
             ? g_gpu_grid_cell_run_entry_peak
             : i;
     if (g_gpu_grid_cell_run_entry_peak >= 1000) {
-        /* The overflowing count is passed to the halt stub: the target loads
-         * it into $a0 for this jal (no argument puts it in $v1: score 5), as
-         * softbody_CreateForNode's call loads its message string into $a0.
-         * The stub's body ignores its arguments. */
-        func_80052C10(g_gpu_grid_cell_run_entry_peak);
+        /* The overflowing count is passed to the store-zero stub: the target
+         * loads it into $a0 for this jal (no argument puts it in $v1: score
+         * 5), as softbody_CreateForNode's call loads its message string into
+         * $a0. The stub stores zero to 0x1F800400, just past scratchpad, and
+         * returns; its body ignores its arguments. */
+        sys_StoreZeroPastScratchpadOnFailedCheck(
+            g_gpu_grid_cell_run_entry_peak);
     }
     g_gpu_flush_rotation_angles[0] = 0;
     g_gpu_flush_rotation_angles[1] = 0;
@@ -2525,7 +2527,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
     for (i = 0; *var_1 != -3; i++) {
         if (*var_1 != -2) {
             if (var_0->count >= 5) {
-                func_80052C10();
+                sys_StoreZeroPastScratchpadOnFailedCheck();
             }
             rec = &var_0->recs[var_0->count];
             obj = arg0->node_by_id[i];
@@ -2708,7 +2710,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     arena_UpdatePeak((s32)cur);
     if (*src != 0) {
-        func_80052C10(D_80010D8C);
+        sys_StoreZeroPastScratchpadOnFailedCheck(D_80010D8C);
     }
     softbody_SetAnchorWeights(init.in.points, init.in.count, cmds);
 

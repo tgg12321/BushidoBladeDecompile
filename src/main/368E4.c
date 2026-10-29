@@ -1672,7 +1672,7 @@ void gpu_InitVramScroll(s32 scroll_preset_index, s32 scroll_index) {
     s16 *dst;
     Unk800EF848Rec *base;
     if (scroll_index > 0) {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
     base = &g_gpu_vram_scrolls[scroll_index];
     base->phase = 0;
@@ -1786,10 +1786,10 @@ void resource_RequestEntryWithLinkedEntriesAndLatchCategory(s32 entry_index) {
         }
     } else {
         if (g_resource_entry_category == 0 && !(entry_index < 0x33)) {
-            func_80052C10();
+            sys_StoreZeroPastScratchpadOnFailedCheck();
         }
         if (g_resource_entry_category == 1 && entry_index < 0x33) {
-            func_80052C10();
+            sys_StoreZeroPastScratchpadOnFailedCheck();
         }
     }
     first_linked_entry_index = g_resource_entry_linked_entries[entry_index][0];
@@ -1808,10 +1808,10 @@ void resource_SetPairSelectionSlotWithBoundChecks(s32 idx, s32 val) {
         cond = val < 8;
     }
     if (!cond) {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
     if (((u32)idx) >= 2U) {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
     g_resource_pair_selection[idx] = (s16)val;
 }
@@ -1929,7 +1929,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
     Unk80045878Node *slot_transform_node;
     s32 node_bit;
     if (g_resource_entry_request_state[entry_index] < 0) {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     /* FAKE: dead store: the 0 is never read (flags == 1 skips the second
@@ -2053,7 +2053,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
         return;
     }
     if (g_resource_entry_request_state[linked_entry_index] < 0) {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
     slot_obj = slot_GetObject(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
@@ -2169,7 +2169,7 @@ s32 snd_CopySelectedPackSectionsAndLoadVabPacks(s32 arg0, s32 output_addr) {
         var_s0 = 1;
         var_s2 = 0;
     } else {
-        func_80052C10();
+        sys_StoreZeroPastScratchpadOnFailedCheck();
     }
 
     /* the entry count's header slot is reserved before the entries are

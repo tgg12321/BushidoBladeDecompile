@@ -63,7 +63,7 @@ glabel slot_FinalizeObjectLoadSoundTexturesAndArena
     /* 30E78 80040678 21800202 */  addu       $s0, $s0, $v0
     /* 30E7C 8004067C 03000016 */  bnez       $s0, .L8004068C
     /* 30E80 80040680 00000000 */   nop
-    /* 30E84 80040684 044B010C */  jal        func_80052C10
+    /* 30E84 80040684 044B010C */  jal        sys_StoreZeroPastScratchpadOnFailedCheck
     /* 30E88 80040688 00000000 */   nop
   .L8004068C:
     /* 30E8C 8004068C 0000428E */  lw         $v0, 0x0($s2)

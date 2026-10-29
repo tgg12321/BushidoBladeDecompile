@@ -198,7 +198,7 @@ after_b644:
                                   (((u32)var_0[count + 1] >> 2) << 2))));
 
         if (ptr == 0) {
-            func_80052C10();
+            sys_StoreZeroPastScratchpadOnFailedCheck();
         }
 
         a0->load_flags.word |= 2;

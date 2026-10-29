@@ -36,7 +36,7 @@ glabel reloc_KeepListedEntries
     /* 349F4 800441F4 2A101602 */  slt        $v0, $s0, $s6
     /* 349F8 800441F8 03004014 */  bnez       $v0, .L80044208
     /* 349FC 800441FC 00000000 */   nop
-    /* 34A00 80044200 044B010C */  jal        func_80052C10
+    /* 34A00 80044200 044B010C */  jal        sys_StoreZeroPastScratchpadOnFailedCheck
     /* 34A04 80044204 00000000 */   nop
   .L80044208:
     /* 34A08 80044208 FFFF5226 */  addiu      $s2, $s2, -0x1

@@ -6,7 +6,7 @@ glabel gpu_InitVramScroll
     /* 39768 80048F68 2180A000 */  addu       $s0, $a1, $zero
     /* 3976C 80048F6C 0300001A */  blez       $s0, .L80048F7C
     /* 39770 80048F70 1800BFAF */   sw        $ra, 0x18($sp)
-    /* 39774 80048F74 044B010C */  jal        func_80052C10
+    /* 39774 80048F74 044B010C */  jal        sys_StoreZeroPastScratchpadOnFailedCheck
     /* 39778 80048F78 00000000 */   nop
   .L80048F7C:
     /* 3977C 80048F7C 80101000 */  sll        $v0, $s0, 2

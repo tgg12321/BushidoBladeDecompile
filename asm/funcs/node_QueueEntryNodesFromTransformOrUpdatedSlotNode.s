@@ -19,7 +19,7 @@ glabel node_QueueEntryNodesFromTransformOrUpdatedSlotNode
     /* 39F5C 8004975C 00000000 */  nop
     /* 39F60 80049760 03004104 */  bgez       $v0, .L80049770
     /* 39F64 80049764 2188E000 */   addu      $s1, $a3, $zero
-    /* 39F68 80049768 044B010C */  jal        func_80052C10
+    /* 39F68 80049768 044B010C */  jal        sys_StoreZeroPastScratchpadOnFailedCheck
     /* 39F6C 8004976C 00000000 */   nop
   .L80049770:
     /* 39F70 80049770 0A80123C */  lui        $s2, %hi(g_prim_buf_cursor)

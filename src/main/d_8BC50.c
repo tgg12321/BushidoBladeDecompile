@@ -228,9 +228,9 @@ s32 func_80064FB4(void);
 u8 func_80065434(void);
 s32 eff_InitRateSelectedCosineScaledQuad(void);
 u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void);
-void func_8006505C(void);
+void eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay(void);
 u8 eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay(void);
-void func_800650A4(void);
+void eff_InitQuadPairNotMirroredByViewSetting(void);
 u8 eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting(void);
 void func_800650EC(void);
 u8 eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay(void);
@@ -292,9 +292,9 @@ s32 g_eff_command_handlers[62] = {
     (s32)func_80065434,
     (s32)eff_InitRateSelectedCosineScaledQuad,
     (s32)eff_DrawAndAdvanceRateSelectedCosineScaledQuad,
-    (s32)func_8006505C,
+    (s32)eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay,
     (s32)eff_DrawAndAdvanceQuadPairWithFirstMirroredByViewSettingOutsideReplay,
-    (s32)func_800650A4,
+    (s32)eff_InitQuadPairNotMirroredByViewSetting,
     (s32)eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting,
     (s32)func_800650EC,
     (s32)eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay,

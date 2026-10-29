@@ -44,7 +44,7 @@ extern u8 L800516FC[] __asm__(".L800516FC");
 extern u8 L80051894[] __asm__(".L80051894");
 
 void gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision();
-void func_80052C10();
+void sys_StoreZeroPastScratchpadOnFailedCheck();
 void gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles();
 void gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads();
 void gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles();
@@ -70,8 +70,8 @@ void * const jtbl_8001545C[5] = {
 void * const D_80015470[4] = {
     L8004B6E4,
     gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision,
-    func_80052C10,
-    func_80052C10,
+    sys_StoreZeroPastScratchpadOnFailedCheck,
+    sys_StoreZeroPastScratchpadOnFailedCheck,
 };
 
 /* g_gpu_strided_node_packet_handlers: 8 words (32B) @ 0x80015480 —

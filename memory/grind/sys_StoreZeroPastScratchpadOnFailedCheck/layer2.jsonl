@@ -1,0 +1,1 @@
+{"func": "sys_StoreZeroPastScratchpadOnFailedCheck", "addr": "80052C10", "verdict": "PASS", "body_hash": "d00664ef6cb851f8", "body_kind": "asm", "file": "main/3AB48", "reviewer": "cheat-reviewer-3a-batch2-2026-10-16", "scope": "auth", "date": "2026-10-16T07:21:34Z", "head": "827a9defc", "notes": "", "renamed_from": ["func_80052C10"]}

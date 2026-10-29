@@ -961,7 +961,7 @@ extern void gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
 /* No prototype: defined with no arguments, but
  * gpu_UnpackGridRecordsNodesAndCellRuns / softbody_CreateForNode pass it one.
  */
-extern void func_80052C10();
+extern void sys_StoreZeroPastScratchpadOnFailedCheck();
 extern s32 collision_TestSegmentExtendingShortStartWithWork(
     s32 *, s32 *, s32 *, s16 *, s32);
 extern s32 collision_TestSegment(s32 *, s32 *, s32 *, s16 *);

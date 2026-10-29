@@ -42,7 +42,7 @@ glabel softbody_SetupObject
     /* 300BC 8003F8BC 05004228 */  slti       $v0, $v0, 0x5
     /* 300C0 8003F8C0 04004014 */  bnez       $v0, .L8003F8D4
     /* 300C4 8003F8C4 21282002 */   addu      $a1, $s1, $zero
-    /* 300C8 8003F8C8 044B010C */  jal        func_80052C10
+    /* 300C8 8003F8C8 044B010C */  jal        sys_StoreZeroPastScratchpadOnFailedCheck
     /* 300CC 8003F8CC 00000000 */   nop
     /* 300D0 8003F8D0 21282002 */  addu       $a1, $s1, $zero
   .L8003F8D4:

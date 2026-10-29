@@ -1,0 +1,1 @@
+{"func": "eff_InitQuadPairNotMirroredByViewSetting", "addr": "800650A4", "verdict": "PASS", "body_hash": "59acf55e41a38012", "body_kind": "c", "file": "main/51268", "reviewer": "cheat-reviewer-fakea-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T09:41:42Z", "head": "8ccce0b12", "notes": "", "renamed_from": ["func_800650A4"]}

@@ -1828,7 +1828,7 @@ s32 eff_InitRateSelectedCosineScaledQuad(void) {
     return 1;
 }
 
-void func_8006505C(void) {
+void eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay(void) {
     g_eff_animated_quad_positions[6].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[6].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[6].world_z = g_eff_command_position[2];
@@ -1836,7 +1836,7 @@ void func_8006505C(void) {
     g_eff_animated_quad_counters[6] = 0;
 }
 
-void func_800650A4(void) {
+void eff_InitQuadPairNotMirroredByViewSetting(void) {
     g_eff_animated_quad_positions[7].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[7].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[7].world_z = g_eff_command_position[2];

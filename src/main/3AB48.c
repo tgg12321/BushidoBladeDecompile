@@ -8,7 +8,7 @@
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
 
-extern void func_80052C10(void);
+extern void sys_StoreZeroPastScratchpadOnFailedCheck(void);
 
 INCLUDE_ASM("asm/funcs", math_RotMatrixZYX);
 INCLUDE_ASM("asm/funcs", gpu_DrawQueuedNodes);
@@ -101,7 +101,7 @@ INCLUDE_ASM("asm/funcs", gte_TransformSVectorWithSeparateTranslation);
 /* Reads the far colour (cfc2 RFC/GFC/BFC) >> 4 into a0[0..2]. Hand-written asm:
  * results in $t0-$t2, a nop in the jr delay slot. */
 INCLUDE_ASM("asm/funcs", gte_ReadFarColor);
-INCLUDE_ASM("asm/funcs", func_80052C10);
+INCLUDE_ASM("asm/funcs", sys_StoreZeroPastScratchpadOnFailedCheck);
 INCLUDE_ASM("asm/funcs", gpu_DepthToOtIndex);
 INCLUDE_ASM("asm/funcs", gte_TransformPointDifferenceWithInheritedLastRow);
 INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);
