@@ -2518,8 +2518,8 @@ typedef struct {
     Unk8009B0E0Record **row_sheets;
     Unk8009B0E0Record **unk_1C;
     Unk8009B0E0Record **sheet_pairs;
-    Unk8009B0E0Record **unk_24;
-    Unk8009B0E0Record **unk_28;
+    Unk8009B0E0Record **cursor_row_paired_sheets;
+    Unk8009B0E0Record **option_menu_choice_sheets;
     Unk8009B0E0Record **memcard_choice_sheets;
     Unk8009B0E0Record **key_config_sheets;
     Unk8009B0E0Record **unk_34;

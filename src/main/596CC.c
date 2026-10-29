@@ -1162,7 +1162,7 @@ void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
     *(s32 *)(draw_context + 0x1C) += 0xC;
 
-    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->unk_24;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->cursor_row_paired_sheets;
     s.header = var_3[(g_menu_packed_cursors & 0xF) + 8];
     s.x = 0;
     s.y = 0x19;
@@ -1180,7 +1180,7 @@ void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
 
     /* FAKE: reused: re-stores the unk_24 list var_3 already holds; dropped:
      * score 3; read in place, or a second local: 2. */
-    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->unk_24;
+    var_3 = (*(Unk8006919CRec **)(draw_context + 4))->cursor_row_paired_sheets;
     s.header = var_3[g_menu_packed_cursors & 0xF];
     s.scale_x = 0x200;
     s.x = 0;
@@ -1228,7 +1228,7 @@ void menu_DrawOptionMenuChoices(s32 *draw_context) {
 
     s.has_color = 0;
     s.ot_idx = 10;
-    tbl = ((Unk8006919CRec *)draw_context[1])->unk_28;
+    tbl = ((Unk8006919CRec *)draw_context[1])->option_menu_choice_sheets;
     s.header = tbl[0];
     s.y = 0;
     s.x = 0;
@@ -1361,7 +1361,7 @@ void menu_DrawOptionMenuChoices(s32 *draw_context) {
     /* FAKE: same-value re-store of `tbl` (it already holds this list): the
      * reload shares tbl's pseudo with the loops' base; without it: score 23;
      * a second local or the list read in place: score 20 */
-    tbl = ((Unk8006919CRec *)draw_context[1])->unk_28;
+    tbl = ((Unk8006919CRec *)draw_context[1])->option_menu_choice_sheets;
     s.header = tbl[1];
     SetDrawMode(
         (DR_MODE *)draw_context[7], 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
@@ -1605,7 +1605,7 @@ void menu_DrawMemCardChoices(s32 *draw_context) {
         q++;
     }
 
-    q = ((Unk8006919CRec *)draw_context[1])->unk_28;
+    q = ((Unk8006919CRec *)draw_context[1])->option_menu_choice_sheets;
     s.header = q[1];
     SetDrawMode(
         (DR_MODE *)draw_context[7], 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
