@@ -177,6 +177,23 @@ class Phase(unittest.TestCase):
         # closed but still working on its report: not yet
         self.assertEqual(o.session_phase(slot("pins"), {"state": "working", "pid": 1}, r, NOW), "running")
 
+    def test_closed_long_ago_but_busy_is_finished(self):
+        # a leftover background agent keeps the session busy long after it closed its lane
+        old = reg(pins={"owner": None, "closed": NOW - o.RELEASED_GRACE_SECS - 1})
+        self.assertEqual(o.session_phase(slot("pins", started=NOW - 7200),
+                                         {"state": "working", "pid": 1}, old, NOW), "finished")
+        recent = reg(pins={"owner": None, "closed": NOW - 60})
+        self.assertEqual(o.session_phase(slot("pins", started=NOW - 7200),
+                                         {"state": "working", "pid": 1}, recent, NOW), "running")
+        # a lane closed before this session started is not this session's release
+        before = reg(pins={"owner": None, "closed": NOW - 7200})
+        self.assertEqual(o.session_phase(slot("pins", started=NOW - 60),
+                                         {"state": "working", "pid": 1}, before, NOW), "running")
+        # it reopened the lane: owns it again, not released
+        mine = reg(pins={"owner": "S1", "closed": NOW - 7200})
+        self.assertEqual(o.session_phase(slot("pins", started=NOW - 9000, seen_open=True),
+                                         {"state": "working", "pid": 1}, mine, NOW), "running")
+
     def test_old_close_from_a_previous_session_is_not_this_one(self):
         r = reg(pins={"owner": None, "closed": NOW - 7200})
         self.assertEqual(o.session_phase(slot("pins"), {"state": "done", "pid": 1}, r, NOW), "running")

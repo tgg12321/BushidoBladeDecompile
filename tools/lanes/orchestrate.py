@@ -498,12 +498,16 @@ def gate_queue_position(reg: dict, lane: str, now: float, session: str | None = 
     return None
 
 
+RELEASED_GRACE_SECS = 600  # closed its lane this long ago: finished even if not idle
+
+
 def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
     """running | finished | stalled | lost for one tracked session.
 
     A session has released its lane once it opened the lane (seen owning it, or the lane was
     closed after the session started) and no longer owns it. Finished = released and idle (or
-    exited). A session idle for NO_OPEN_GRACE_SECS that never opened its lane (it found no
+    exited), or released with the lane closed RELEASED_GRACE_SECS ago even if still
+    busy. A session idle for NO_OPEN_GRACE_SECS that never opened its lane (it found no
     work) is finished too. An idle session that owns its lane usually just waits on a
     background `lanes.py land`; it is only reported as stalled after STALL_SECS unless
     its lane has a fresh full-gate queue ticket enqueued under QUEUED_LAND_MAX_SECS ago."""
@@ -512,6 +516,10 @@ def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
     released = not owns and (slot.get("seen_open") or float(e.get("closed") or 0) >= slot["started"])
     if is_ended(ag):
         return "finished" if released else "lost"
+    closed = float(e.get("closed") or 0)
+    if released and closed and now - closed >= RELEASED_GRACE_SECS:
+        # its work is done; a leftover background agent can keep a session busy for hours
+        return "finished"
     if is_idle(ag):
         if released:
             return "finished"
