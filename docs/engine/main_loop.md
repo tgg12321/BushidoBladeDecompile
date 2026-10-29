@@ -106,7 +106,7 @@ assigns to `g_main_loop_handler_index` itself.
 | 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2241) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `g_fight_choice_menu_cursor` |
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
 | 15 | `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
-| 16 | `func_8001EEB4` (src/main/9F9C.c:2340) | 0x11 | when gated, starts an indexed common script on fighter `g_fight_followup_fighter_index` (`fighter_StartMoveScript`) and sets its `unk_26C` |
+| 16 | `func_8001EEB4` (src/main/9F9C.c:2340) | 0x11 | when gated, starts an indexed common script on fighter `g_fight_followup_fighter_index` (`fighter_StartMoveScript`) and sets its `bone_group_6_9_intact` |
 | 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2365) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`g_fight_mode_selector` 4 / 6, or 1 with `g_fight_followup_fighter_index != 0`), calls `fight_AdvanceOpponentOrder` (`g_fight_mode_selector` 1, `g_fight_followup_fighter_index == 0`), or sets 2 |
 | 18 | `fight_InitImageAndPlaybackPresentation` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `g_fight_presentation_index` |
 | 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush`, then picks the next mode |

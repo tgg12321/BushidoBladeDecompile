@@ -17,7 +17,6 @@ Unk80101EC8Record.unk_3A8=cpu_script_rows
 Unk80101EC8Record.unk_3BD=cpu_script_start_delay
 Unk80101EC8Record.unk_3F2=cpu_script_rotation_counter
 Unk80101EC8Record.unk_43E=cpu_preferred_distance
-Work_80053E9C.unk5C=cell_test_fn
 Unk8006919CRec.unk_20=sheet_pairs
 Unk8006919CRec.unk_2C=memcard_choice_sheets
 Unk8006919CRec.unk_30=key_config_sheets

@@ -326,11 +326,12 @@ typedef struct {
  * - selected_entry_header_block..unk_74: the nine lists
  * resource_RelocateNineOffsetListsAndLoadVabPack relocates
  * (reloc_RelocateOffsetList): selected_entry_header_block, the header block
- * gpu_UploadAndDrawSelectedEntryQuads draws (Unk8006ECF4Rec); unk_58..unk_74,
- * sprite-sheet lists. unk_78 is a further offset no code reads.
+ * gpu_UploadAndDrawSelectedEntryQuads draws (Unk8006ECF4Rec);
+ * row_choice_sheets..unk_74, sprite-sheet lists. unk_78 is a further offset no
+ * code reads.
  * - row_choice_upload_rects: per player a row of eight VRAM RECTs
- * menu_UpdateRowCursors hands LoadImage as the destination; unk_80: the bytes
- * menu_UpdateChoiceGrid reads.
+ * menu_UpdateRowCursors hands LoadImage as the destination; choice_grid_codes:
+ * the bytes menu_UpdateChoiceGrid reads.
  * - entry_upload_pixels: five pixel-run addresses (headerless, not TIM)
  * gpu_UploadAndDrawSelectedEntryQuads loads with LoadImage. */
 typedef struct {
@@ -1548,6 +1549,8 @@ typedef struct MoveScript {
     u8 first_move_frame;
     u8 last_move_frame;
     u8 last_command_frame;
+    /* bits 0-1: copied into Unk80101EC8Record.move_turn_mode by
+     * fighter_StartMoveScript */
     u8 move_bitfield;
     u16 transition_commands[1];
 } MoveScript;
@@ -1628,7 +1631,7 @@ typedef struct Unk80101EC8Record {
     s16 queued_move_is_common;
     u16 queued_move_command;
     s16 default_variant_index;
-    /* row of unk_3A8 / script_min_distances / script_max_distances /
+    /* row of cpu_script_rows / script_min_distances / script_max_distances /
      * filtered_script_max_distances */
     s16 variant_index;
     s16 object_variant_index;
@@ -1788,7 +1791,7 @@ typedef struct Unk80101EC8Record {
     s16 cpu_orbit_goal_z;
     /* script list: u16 byte offsets from its own start */
     u16 *cpu_script_list;
-    /* per-row cursor into unk_3A4 (fighter_InitCpuControl) */
+    /* per-row cursor into cpu_script_list (fighter_InitCpuControl) */
     u16 *cpu_script_rows[3];
     /* script pointer (fighter_StartCpuPadScript / fighter_StepCpuPadScript) */
     u8 *cpu_pad_script_cursor;
@@ -2473,7 +2476,8 @@ typedef struct Size2s16 {
  * character_cells, three cells per character after a first group), the digit
  * sheet and its cells (digit_sheet / digit_cell; the walker shifts the sheet's
  * ubase per digit), and per-character x offsets (character_x_offsets). 4D0A8
- * hands it D_8009B0C0, menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's unk_3C. */
+ * hands it D_8009B0C0, menu_DrawConfirmSheetsAndDigitPairs MOD.BIN's
+ * confirm_list. */
 typedef struct {
     Unk8009B0E0Record *unk_00[3];
     Unk8009B0E0Record *character_sheet;
@@ -2483,7 +2487,7 @@ typedef struct {
     s16 *character_x_offsets;
 } Unk8006D808Rec;
 
-/* MOD.BIN's unk_3C list: gpu_DrawIndexedCellsAndDecimalDigitPairs's set, then
+/* MOD.BIN's confirm_list: gpu_DrawIndexedCellsAndDecimalDigitPairs's set, then
  * the three sheets menu_DrawConfirmSheetsAndDigitPairs draws. */
 typedef struct {
     Unk8006D808Rec cell_digit_set;
@@ -2498,8 +2502,8 @@ typedef struct {
  * - unk_14..cursor_row_sheets (+0x14..+0x40): the twelve lists
  * reloc_RelocateTwelveListsAndLoadVabPack
  * relocates (reloc_RelocateOffsetList: entries up to a 0 word, -1 entries
- * skipped). Their entries are sprite sheets (unk_20 pairs each sheet with a
- * -1), except unk_3C, menu_DrawConfirmSheetsAndDigitPairs's list
+ * skipped). Their entries are sprite sheets (sheet_pairs pairs each sheet with
+ * a -1), except confirm_list, menu_DrawConfirmSheetsAndDigitPairs's list
  * (Unk8006DD94List); reloc_RelocateTwelveListsAndLoadVabPack walks the twelve
  * slots as one run of list pointers.
  * - rect_rows: the Rec_8006C21C rows

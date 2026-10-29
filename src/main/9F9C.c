@@ -3097,7 +3097,7 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
  * rec->ground_probe_points[], the end y of a down-segment from each (y - 100
  * to y + 2000): the hit y from collision_TestSegmentWithWork, or the segment's
  * lower end (y + 2000) when it finds nothing, into rec->ground_probe_end_ys[],
- * and the two bones' headings into unk_1BA / unk_1C2. */
+ * and the two bones' headings into ground_probe_0_yaw / ground_probe_1_yaw. */
 void fighter_UpdateBoneWorldData(
     Unk80101EC8Record *rec, Unk80107850Rec *bone_hit_points,
     Unk80107850Rec *weapon_points, Unk80107850Rec *second_weapon_points) {
@@ -3371,8 +3371,8 @@ void motion_InitStreams(void) {
 
 /* The record's motion_data_id -> its slot in g_motion_fighter_loaded_data_ids
  * (motion_slot); for ids below 0x2000, the nibble positions of 4 and 5
- * (object_variant_index / unk_8E), copying unk_26C into object_variant_enabled
- * / unk_90 under conditions on g_fight_mode_selector. */
+ * (object_variant_index / unk_8E), copying bone_group_6_9_intact into
+ * object_variant_enabled / unk_90 under conditions on g_fight_mode_selector. */
 void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
     s32 i = 0;
     Unk80101EC8Record *rec = &D_80101EC8[fighter_index];
@@ -4628,8 +4628,8 @@ extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);
  * 0x1000 - pose_blend_progress), integrates the velocities (base_velocity /
  * decaying_xz_velocity) into the position, resolves it
  * (fighter_ResolveMovement), then refreshes the bone points, the flags
- * frame_flags, unk_AE and weapon_hit_phases, the damping and the per-frame side
- * effects. */
+ * frame_flags, weapon_hit_window_open and weapon_hit_phases, the damping and
+ * the per-frame side effects. */
 void fighter_Update(s32 fighter_index, PadState *pad) {
     MotionFrame pose_frames[2];
     Vec3i32 v[2];

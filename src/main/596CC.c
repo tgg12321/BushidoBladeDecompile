@@ -1624,7 +1624,7 @@ extern u8 *g_sheet_pair_sprite_cursor;
 
 void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
                               s32 highlighted_cell_index) {
-    /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
+    /* sprite-sheet header pointers, two per arg0: the sheet_pairs list of the
        MOD.BIN root (g_row_menu_work_block->menu_resource_root) */
     Unk8009B0E0Record **var_0;
     /* the sheet's 8-byte cells, just past its 12-byte header */

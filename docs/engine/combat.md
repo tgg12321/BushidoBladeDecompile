@@ -55,7 +55,7 @@ target, with the opponent as the attacker:
    `move_frame == weapon_hit_start_frames[0]`, also sweep a segment with `fighter_CastWeaponSegment`
    (src/main/17AFC.c:1461, comment at :1399) while the counter `weapon_ammo`
    lasts (once it is spent they play cue 0x32 and test no quads); `character_roster_index`
-   0x1D / 0xE (with `unk_26C` set) do the same with the second blade
+   0x1D / 0xE (with `bone_group_6_9_intact` set) do the same with the second blade
    (`weapon_hit_start_frames[1]`).
 2. Each blade quad (this frame's points from the scratchpad and last frame's
    from `prev_weapon_points` / `prev_second_weapon_points`) is split into 2 or 4 triangles (4 when the tip
@@ -71,7 +71,7 @@ target, with the opponent as the attacker:
    state (2, 0x1B, 0x28, 0x26) within three frames before a window start, it
    pushes the target along x/z through
    `decaying_xz_velocity` when the facing difference is under 0x400.
-5. If the attacker's `unk_AE` is set and (with `wielded_object_live_state`) its frame `move_frame`
+5. If the attacker's `weapon_hit_window_open` is set and (with `wielded_object_live_state`) its frame `move_frame`
    is inside the window `weapon_hit_start_frames[k]..weapon_hit_end_frames[k]`, it calls
    `fighter_ResolveBoneHit(0, target, limb, facing difference, ...)`.
 
@@ -91,7 +91,7 @@ src/main/17AFC.c:2146 records both call shapes). Its branches, in order:
 - `move_kind` 4 or 0x14, or `character_roster_index == 0x1F`: `fighter_StoreBoneLocalVectorAndArmEventTrigger`
   (src/main/9F9C.c:2996) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:262); the
   latter case also sets `pending_move_event = 7`.
-- The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < unk_A0`:
+- The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < attack_early_frame_limit`:
   with `src == 0` the reaction code
   comes from `g_fighter_power_difference_move_events[math_ClassifyAbsMagnitude(power_difference)][power_difference_negative][same]`, where `power_difference` is
   the difference of the two `power` values and `same` whether their `unk_AF`

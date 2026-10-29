@@ -598,8 +598,9 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
     PadState pad;
     PadBitTable bits;
     s32 opponent_hit_start_frame, hi;
-    /* work holds two values: g_fighter_horizontal_separation - unk_43E, then
-     * its sign (work >> 31) (Ruling 11, ordinary-c-judge-decidable). */
+    /* work holds two values: g_fighter_horizontal_separation -
+     * cpu_preferred_distance, then its sign (work >> 31) (Ruling 11,
+     * ordinary-c-judge-decidable). */
     s32 work;
     /* temp holds six values: the ground_y distance, a slot count minus one
      * (clamped at 0), the slot increment (4 or 8, then plus the old count,

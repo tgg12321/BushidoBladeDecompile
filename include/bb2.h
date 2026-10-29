@@ -219,9 +219,10 @@ extern Obj80106A78 g_object_pool[12];
 /* [character_data_index][i] -> Unk80101EC8Record.carried_object_kinds[i]
  * (object_InitKindQueue) */
 extern s8 g_fighter_initial_carried_object_kinds[27][5];
-/* [character_data_index] -> Unk80101EC8Record.unk_274 */
+/* [character_data_index] -> Unk80101EC8Record.bone_group_6_9_lost_step_scale */
 extern u16 D_8008E3C0[28];
-/* [character_data_index][i] -> Unk80101EC8Record.unk_276[i] */
+/* [character_data_index][i] ->
+ * Unk80101EC8Record.bone_group_10_13_step_scales[i] */
 extern u16 D_8008E3F8[27][4];
 /* [character_data_index][i] -> Unk80101EC8Record.unk_27E[i] */
 extern u16 D_8008E4D0[27][4];
