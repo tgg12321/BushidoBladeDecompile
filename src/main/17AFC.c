@@ -139,7 +139,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 7:
     case 8:
     case 9:
-        fighter_record->unk_26C = 0;
+        fighter_record->bone_group_6_9_intact = 0;
         fighter_record->unk_90 = 0;
         fighter_record->object_variant_enabled = 0;
         break;
@@ -147,7 +147,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 11:
     case 12:
     case 13:
-        fighter_record->unk_270 += increment;
+        fighter_record->bone_group_10_13_hit_tally += increment;
         break;
     case 14:
     case 15:
@@ -157,7 +157,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 19:
     case 20:
     case 21:
-        fighter_record->unk_26E += increment;
+        fighter_record->bone_group_14_21_hit_tally += increment;
         break;
     }
 }
@@ -449,7 +449,7 @@ s32 fighter_ResolveBoneHit(
     }
     if ((current_move_kind == 2 || current_move_kind == 0x1B ||
          current_move_kind == 0x28 || current_move_kind == 0x26) &&
-        fighter_record->move_frame < fighter_record->unk_A0) {
+        fighter_record->move_frame < fighter_record->attack_early_frame_limit) {
         if (arg0 == 0) {
             power_difference = other_record->power - fighter_record->power;
             power_difference_class =
@@ -591,7 +591,7 @@ s32 fighter_ResolveBoneHit(
     case 8:
     case 9:
         if (g_fight_mode_selector != 5) {
-            fighter_record->unk_26C = 0;
+            fighter_record->bone_group_6_9_intact = 0;
         }
         fighter_record->pending_move_event = 4;
         fighter_record->unk_90 = 0;
@@ -605,7 +605,7 @@ s32 fighter_ResolveBoneHit(
     case 12:
     case 13:
         if (g_fight_mode_selector != 5) {
-            fighter_record->unk_270++;
+            fighter_record->bone_group_10_13_hit_tally++;
         }
         fighter_record->pending_move_event = 5;
         fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -621,7 +621,7 @@ s32 fighter_ResolveBoneHit(
     case 20:
     case 21:
         if (g_fight_mode_selector != 5) {
-            fighter_record->unk_26E++;
+            fighter_record->bone_group_14_21_hit_tally++;
         }
         fighter_record->pending_move_event = 3;
         fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -1646,7 +1646,7 @@ void fighter_CastWeaponSegment(
         } while (0);
         for (i = 0; i < 22; i++, rec++) {
             Unk80107850Rec *pos;
-            if (obj->unk_26C == 0 && i >= 6 && i <= 9) {
+            if (obj->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
                 continue;
             }
             pos = &SPAD->bone_hit_points[id][i];
@@ -1807,7 +1807,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         if ((var_3->character_roster_index == 0x1D ||
              var_3->character_roster_index == 0xE) &&
-            var_3->unk_26C != 0 &&
+            var_3->bone_group_6_9_intact != 0 &&
             (var_3->move_kind == 2 || var_3->move_kind == 0x1B ||
              var_3->move_kind == 0x28 || var_3->move_kind == 0x26) &&
             var_3->move_frame == var_3->weapon_hit_start_frames[1] &&
@@ -2116,7 +2116,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             ang = 0x1000 - ang;
         }
         var_12 = (mask_a & (1 << idx)) != 0;
-        if (var_3->unk_AE == 0) {
+        if (var_3->weapon_hit_window_open == 0) {
             continue;
         }
         if (var_3->wielded_object_live_state != 0 &&
@@ -2517,7 +2517,7 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         s32 r;
         s32 var_11;
 
-        if (a0->unk_26C == 0 && i >= 6 && i <= 9) {
+        if (a0->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
             continue;
         }
 
@@ -4536,7 +4536,7 @@ void object_ResolveFighterHits(void) {
         rec = g_fighter_bone_hit_records[var_6];
         for (j = 0; j < 22; j++, rec++) {
             Unk80107850Rec *pos;
-            if (var_5->unk_26C == 0 && j >= 6 && j <= 9)
+            if (var_5->bone_group_6_9_intact == 0 && j >= 6 && j <= 9)
                 continue;
             pos = &SPAD->bone_hit_points[var_6][j];
             var_10 = math_TestPreparedSegmentSphere(
@@ -5092,7 +5092,7 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[1] = obj->ground_probe_end_ys[0];
                 pos[2] = obj->ground_probe_points[0].z;
                 eff_StartYawedQuadSlotCommand(
-                    pos, obj->unk_1BA,
+                    pos, obj->ground_probe_0_yaw,
                     D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
                     obj->index);
                 if ((0x60 >> obj->collision_hit_tag) & 1) {
@@ -5120,7 +5120,7 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[1] = obj->ground_probe_end_ys[1];
                 pos[2] = obj->ground_probe_points[1].z;
                 eff_StartYawedQuadSlotCommand(
-                    pos, obj->unk_1C2,
+                    pos, obj->ground_probe_1_yaw,
                     D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
                     obj->index);
                 if ((0x60 >> obj->collision_hit_tag) & 1) {

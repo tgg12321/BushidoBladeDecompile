@@ -337,17 +337,17 @@ typedef struct {
     Unk8006E950Head resource_head;
     s32 row_choice_pixels[8][2];
     Unk8006ECF4Rec *selected_entry_header_block;
-    Unk8009B0E0Record **unk_58;
+    Unk8009B0E0Record **row_choice_sheets;
     Unk8009B0E0Record **unk_5C;
     Unk8009B0E0Record **unk_60;
-    Unk8009B0E0Record **unk_64;
+    Unk8009B0E0Record **entry_row_sheets;
     Unk8009B0E0Record **unk_68;
     Unk8009B0E0Record **unk_6C;
     Unk8009B0E0Record **unk_70;
     Unk8009B0E0Record **unk_74;
     s32 *unk_78;
     RECT *row_choice_upload_rects;
-    u8 *unk_80;
+    u8 *choice_grid_codes;
     s32 entry_upload_pixels[5];
 } Unk8006EA28Rec;
 
@@ -1619,7 +1619,7 @@ typedef struct Unk80101EC8Record {
     u16 move_kind;
     s16 prev_move_kind;
     s16 unk_6E;
-    s16 unk_70;
+    s16 move_turn_mode;
     s16 airborne_until_landing;
     s32 saved_collision_y;
     s16 blend_into_move;
@@ -1642,7 +1642,7 @@ typedef struct Unk80101EC8Record {
     s16 falling_backward;
     s16 is_defeated;
     SVec4i16 horizontal_probe_normal;
-    u8 unk_A0;
+    u8 attack_early_frame_limit;
     u8 weapon_hit_start_frames[2];
     u8 weapon_hit_end_frames[2];
     u8 frame_window_start;
@@ -1657,9 +1657,9 @@ typedef struct Unk80101EC8Record {
      * fighter_ResolveWeaponContact for both records
      */
     u8 attack_hit_armed;
-    u8 unk_AE;
+    u8 weapon_hit_window_open;
     u8 unk_AF;
-    u8 unk_B0;
+    u8 matched_transition_command_byte;
     u8 collision_hit_tag;
     u8 collision_hit_class;
     u8 draw_move_set;
@@ -1706,9 +1706,9 @@ typedef struct Unk80101EC8Record {
     u8 unk_1B8[0x1BA - 0x1B8];
     /* fighter_UpdateBoneWorldData: ratan2 heading of bone 17's matrix column 2,
      * + 0x800 */
-    s16 unk_1BA;
+    s16 ground_probe_0_yaw;
     u8 unk_1BC[0x1C2 - 0x1BC];
-    s16 unk_1C2; /* the same for bone 14 */
+    s16 ground_probe_1_yaw; /* the same for bone 14 */
     u8 unk_1C4[0x1C8 - 0x1C4];
     SVec4i16 orientation;
     SVec4i16 unk_1D0;
@@ -1735,12 +1735,12 @@ typedef struct Unk80101EC8Record {
      * weapon_points[fighter_index][0] */
     Unk80107850Rec opponent_elevation_origin;
     s32 elevation_origin_from_weapon;
-    s16 unk_26C;
-    s16 unk_26E;
-    s16 unk_270;
+    s16 bone_group_6_9_intact;
+    s16 bone_group_14_21_hit_tally;
+    s16 bone_group_10_13_hit_tally;
     s16 unk_272;
-    s16 unk_274;
-    s16 unk_276[4];
+    s16 bone_group_6_9_lost_step_scale;
+    s16 bone_group_10_13_step_scales[4];
     s16 unk_27E[4];
     s16 pending_move_event;
     /* per blade (weapon_hit_start_frames / weapon_hit_end_frames bounds),
@@ -1783,19 +1783,19 @@ typedef struct Unk80101EC8Record {
     s16 cpu_action_cooldown_frames;
     u8 cpu_action_from_opponent;
     u8 cpu_orbit_route_active;
-    s16 unk_39E;
-    s16 unk_3A0;
-    s16 unk_3A2;
+    s16 cpu_orbit_goal_kind;
+    s16 cpu_orbit_goal_x;
+    s16 cpu_orbit_goal_z;
     /* script list: u16 byte offsets from its own start */
-    u16 *unk_3A4;
+    u16 *cpu_script_list;
     /* per-row cursor into unk_3A4 (fighter_InitCpuControl) */
-    u16 *unk_3A8[3];
+    u16 *cpu_script_rows[3];
     /* script pointer (fighter_StartCpuPadScript / fighter_StepCpuPadScript) */
     u8 *cpu_pad_script_cursor;
     u8 cpu_pad_script_delay_left;
     u8 unk_3B9[0x3BC - 0x3B9];
     u8 cpu_pad_script_kind;
-    u8 unk_3BD;
+    u8 cpu_script_start_delay;
     u8 unk_3BE[0x3C0 - 0x3BE];
     u8 unk_3C0;
     u8 unk_3C1;
@@ -1810,7 +1810,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_3EA[0x3EE - 0x3EA];
     s16 unk_3EE;
     s16 cpu_distance_error_streak;
-    u8 unk_3F2;
+    u8 cpu_script_rotation_counter;
     u8 cpu_threat_resolved_count;
     u8 unk_3F4;
     u8 cpu_script_wait_frames;
@@ -1841,7 +1841,7 @@ typedef struct Unk80101EC8Record {
     s16 cpu_level;
     s16 opponent_angle_from_orientation;
     s16 opponent_angle_from_orientation_abs;
-    s16 unk_43E;
+    s16 cpu_preferred_distance;
     u8 latched_motion_metadata_nibble;
     u8 motion_metadata_nibble;
     u8 opponent_ground_y_band;
@@ -2513,14 +2513,14 @@ typedef struct {
     Unk8009B0E0Record **unk_14;
     Unk8009B0E0Record **row_sheets;
     Unk8009B0E0Record **unk_1C;
-    Unk8009B0E0Record **unk_20;
+    Unk8009B0E0Record **sheet_pairs;
     Unk8009B0E0Record **unk_24;
     Unk8009B0E0Record **unk_28;
-    Unk8009B0E0Record **unk_2C;
-    Unk8009B0E0Record **unk_30;
+    Unk8009B0E0Record **memcard_choice_sheets;
+    Unk8009B0E0Record **key_config_sheets;
     Unk8009B0E0Record **unk_34;
-    Unk8009B0E0Record **unk_38;
-    Unk8006DD94List *unk_3C;
+    Unk8009B0E0Record **stored_choice_sheets;
+    Unk8006DD94List *confirm_list;
     Unk8009B0E0Record **cursor_row_sheets;
     Rec_8006C21C *rect_rows;
     Size2s16 *sheet_pair_box_sizes;

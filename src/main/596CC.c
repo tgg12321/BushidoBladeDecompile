@@ -1575,7 +1575,7 @@ void menu_DrawMemCardChoices(s32 *draw_context) {
     s.x = 0;
     s.ot_idx = 0xA;
     s.has_color = 0;
-    q = ((Unk8006919CRec *)draw_context[1])->unk_2C;
+    q = ((Unk8006919CRec *)draw_context[1])->memcard_choice_sheets;
     {
         s.header = q[0];
         s.semi = 0;
@@ -1631,7 +1631,7 @@ void gpu_DrawIndexedSheetPair(s32 arg0, s32 y_offset, Unk8007352CRec *draw_desc,
     Unk8009B400Record *cells;
     s32 i, cell_index, cell_count;
 
-    var_0 = g_row_menu_work_block->menu_resource_root->unk_20;
+    var_0 = g_row_menu_work_block->menu_resource_root->sheet_pairs;
 
     draw_desc->col_b = 0x30;
     draw_desc->col_g = 0x30;
@@ -1821,7 +1821,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
     var_14 = 0;
     s.ot_idx = 10;
     s.has_color = 0;
-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
+    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
     s.y = ypos;
     s.x = xpos;
     s.header = table[0];
@@ -1837,7 +1837,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
 
     s.ot_idx = 9;
     s.has_color = 0;
-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
+    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
     s.y = ypos;
     for (var_15 = 0; var_15 < 2; var_15++) {
         s.x = var_15 * 280;
@@ -1866,7 +1866,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
     s.y = ypos;
     s.ot_idx = 10;
     s.has_color = 0;
-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
+    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
     s.header = table[1];
     s.semi = 0;
     cells = s.header->cells;
@@ -1887,7 +1887,7 @@ void menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads(s32 *draw_context) {
             draw_context[5] = gpu_AddSpriteCells(&s);
         }
     }
-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
+    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
     s.header = table[1];
     SetDrawMode((DR_MODE *)draw_context[7], 1, 0,
                 gpu_GetSheetTPage(s.header, var_8), 0);
@@ -2164,7 +2164,7 @@ s32 menu_DrawKeyConfigRowBitsGetEmptyRowSides(s32 *draw_context) {
     Unk8009B400Record *cells;
 
     result = 0;
-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
+    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
     s.ot_idx = 8;
     s.has_color = 0;
     s.semi = 0;
@@ -2276,7 +2276,7 @@ void menu_DrawStoredChoice(s32 *draw_context) {
     u8 var_5 = 0x40;
 
     s.ot_idx = 0xA;
-    sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_38;
+    sheet_headers = ((Unk8006919CRec *)draw_context[1])->stored_choice_sheets;
     s.x = 0;
     s.has_color = 1;
 
@@ -2516,7 +2516,7 @@ void menu_DrawConfirmSheetsAndDigitPairs(s32 *draw_context) {
     s32 var_4 = 0;
 
     s.dd94_00.ot_idx = 0xA;
-    q = ((Unk8006919CRec *)draw_context[1])->unk_3C;
+    q = ((Unk8006919CRec *)draw_context[1])->confirm_list;
     s.dd94_00.x = 0;
     s.dd94_00.semi = var_4;
 

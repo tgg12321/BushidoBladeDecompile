@@ -220,10 +220,12 @@ s32 resource_RelocateNineOffsetListsAndLoadVabPack(
     Unk8006EA28Rec *resource_root) {
     reloc_RelocateOffsetList(
         (s32 *)resource_root, (s32)resource_root->selected_entry_header_block);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_58);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root, (s32)resource_root->row_choice_sheets);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_5C);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_60);
-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_64);
+    reloc_RelocateOffsetList(
+        (s32 *)resource_root, (s32)resource_root->entry_row_sheets);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_68);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_6C);
     reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_70);
@@ -478,7 +480,7 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
     s.ot_idx = 0x13;
     s.semi = 0;
     s.has_color = 0;
-    base = g_entry_menu_resources->unk_58;
+    base = g_entry_menu_resources->row_choice_sheets;
     for (slot_index = 0;
          slot_index < 1 + g_entry_menu_init_extra_slot_count +
                           g_entry_menu_row_phase_extra_slot_count;
@@ -1180,7 +1182,7 @@ void menu_UpdateRow(Unk8006EACCRec *draw_context) {
     var_1.scale_x = 0x100;
     var_1.scale_y = 0x100;
     var_1.has_color = 0;
-    sheet_headers = g_entry_menu_resources->unk_64;
+    sheet_headers = g_entry_menu_resources->entry_row_sheets;
     /* Not a coercion: the target stores zero to both fields twice, before
      * and again after the sheet_headers load. */
     var_1.y = 0;
@@ -1613,7 +1615,7 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
     s16 dx;
     s16 dy;
 
-    base = g_entry_menu_resources->unk_58;
+    base = g_entry_menu_resources->row_choice_sheets;
     for (slot_index = 0;
          slot_index < 1 + g_entry_menu_init_extra_slot_count +
                           g_entry_menu_row_phase_extra_slot_count;
@@ -1745,7 +1747,7 @@ void menu_UpdateChoiceGrid(
     u8 code;
     u8 chosen_stage_index;
 
-    choice_table = g_entry_menu_resources->unk_80;
+    choice_table = g_entry_menu_resources->choice_grid_codes;
     s.semi = 0;
     s.has_color = 0;
     s.ot_idx = 0x11;
