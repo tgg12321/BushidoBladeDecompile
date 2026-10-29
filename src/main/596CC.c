@@ -986,8 +986,9 @@ void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
     /* Ruling 11 (ordinary-c-judge-decidable): holds five values, each a
      * sprite-sheet list of the MOD.BIN
      * root: row_sheets (option rows; first sheet, the row loop and row 7),
-     * cursor_row_sheets (a sheet list indexed by the menu cursor row), unk_24
-     * twice (icon frames at [8 + frame], then FT4 frames at [frame]). */
+     * cursor_row_sheets (a sheet list indexed by the menu cursor row),
+     * cursor_row_paired_sheets twice (icon frames at [8 + frame], then FT4
+     * frames at [frame]). */
     Unk8009B0E0Record **var_3;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        g_row_menu_row_state.scroll_row_mask (scanned for the first row drawn)
@@ -1178,8 +1179,8 @@ void menu_DrawMaskedRowList(u8 *draw_context, u16 *draw_env, s32 arg2) {
     AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(draw_context + 0x1C));
     *(s32 *)(draw_context + 0x1C) += 0xC;
 
-    /* FAKE: reused: re-stores the unk_24 list var_3 already holds; dropped:
-     * score 3; read in place, or a second local: 2. */
+    /* FAKE: reused: re-stores the cursor_row_paired_sheets list var_3 already
+     * holds; dropped: score 3; read in place, or a second local: 2. */
     var_3 = (*(Unk8006919CRec **)(draw_context + 4))->cursor_row_paired_sheets;
     s.header = var_3[g_menu_packed_cursors & 0xF];
     s.scale_x = 0x200;
