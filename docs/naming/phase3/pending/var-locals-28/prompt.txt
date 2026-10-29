@@ -1,0 +1,26 @@
+# Research (read-only): local / parameter names, wave 28 (row var-locals-28, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-26/prompt.txt` (which chains to var-locals-15 and the
+wave-15..25 lessons) exactly, plus `pending/var-locals-26/notes.txt` and `pending/var-locals-27/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD f0eefac51 (read-only; equals main, wave 27 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-28-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 26: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not edited). Return only a
+  one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): 1. src/main/17AFC.c from fighter_ResolveWeaponContact
+  (the definition after fighter_ResolveBoneHit) onward, every C definition in file order. 2. Then the
+  later game TUs in ROM-offset order (24BF0.c / 25C38.c / ..., whatever follows 17AFC.c in
+  `ls src/main`) that still have auto-named bindings (argN, var_N, a0..a3, v0_xxxx, spNN, temp_*, s, p,
+  ...) not on any NO_NAME / neutral list. Skip psxsdk/.
+- Do not re-propose wave 8-27 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,27}/notes.txt) without new evidence, said in the row.
+- Wave-27 lessons: apply is naming_keycheck.scoped_plan(base, pairs, {}), so every row must be a
+  binding scoped_plan can resolve (no function-like macro arguments); a new name must not equal a
+  member the same function accesses; a binding with two roles in one body stays neutral; list stale
+  docs/engine cites (ai.md / combat.md into 17AFC.c) for the touched functions in one pass.

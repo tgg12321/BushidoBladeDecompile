@@ -1,0 +1,91 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-27); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_working_tree() with NAMING_KEYCHECK_ROOT = cwd = the lane worktree ln-naming-b, HEAD f0eefac51 = main; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 80 pairs
+(621 token substitutions: src/main/17AFC.c 621; no include/ file touched; the comment edits listed in notes.txt
+R6 WATCH are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 621. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch. The run modified no file in the worktree.
+Per-pair substitutions (function:old=new count):
+  fighter_ResolveWeaponContact:arg0=fighter_record 22
+  fighter_ResolveWeaponContact:arg1=contact_point 7
+  fighter_ResolveWeaponContact:temp_s4=other_record 10
+  fighter_ResolveWeaponContact:temp_a1_2=blade_index 6
+  fighter_ResolveWeaponContact:temp_s5=other_blade_index 6
+  fighter_ResolveWeaponContact:temp_v0=other_move_kind 3
+  fighter_ResolveWeaponContact:temp_v1_2=roster_index 3
+  fighter_ResolveWeaponContact:temp_v1_3=other_hit_phase 4
+  fighter_ResolveWeaponContact:temp_v0_3=hit_phase 3
+  fighter_ResolveWeaponContact:temp_v1_4=negated_heading 3
+  fighter_ResolveWeaponContact:temp_v1_5=rotated_other_blade_delta_x 5
+  fighter_ResolveWeaponContact:temp_a0_2=other_blade_delta_y 5
+  fighter_ResolveWeaponContact:var_a1=abs_other_blade_delta_y 3
+  fighter_ResolveWeaponContact:var_v0_3=abs_rotated_other_blade_delta_x 4
+  fighter_TriggerOpponentResponseOnMoveFrame:base=fighter_record 13
+  fighter_ResolveBodyOverlap:var_5=first_push_x 4
+  fighter_ResolveBodyOverlap:var_6=first_push_z 4
+  fighter_ResolveBodyOverlap:var_7=second_push_x 4
+  fighter_ResolveBodyOverlap:var_8=second_push_z 4
+  fighter_ResolveBodyOverlap:var_12=radius_sum 11
+  fighter_ResolveBodyOverlap:var_15=overlap_depth 8
+  fighter_ResolveBodyOverlap:var_16=quarter_power_difference 6
+  fighter_ResolveBodyOverlap:var_19=heading_difference 10
+  fighter_ProcessWeaponContacts:var_1=blade_sweep_points 69
+  fighter_CastWeaponSegment:var_2=other_record 2
+  fighter_CastWeaponSegment:arg1=outer_hit_mask 4
+  fighter_CastWeaponSegment:arg2=inner_hit_mask 3
+  fighter_CastWeaponSegment:arg3=suppress_effects 3
+  fighter_CastWeaponSegment:var_14=cast_distance_sq 3
+  fighter_ProcessWeaponBodyHits:var_3=other_record 97
+  fighter_ProcessWeaponBodyHits:var_4=fighter_record 17
+  fighter_ProcessWeaponBodyHits:var_5=outer_hit_mask 9
+  fighter_ProcessWeaponBodyHits:var_6=inner_hit_mask 6
+  fighter_ProcessWeaponBodyHits:var_10=blade_quad_count 8
+  fighter_ProcessWeaponBodyHits:var_11=blade_quad_index 6
+  fighter_ProcessWeaponBodyHits:var_15=triangle_count 5
+  fighter_ProcessWeaponBodyHits:var_24=just_before_hit_start 4
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance:arg0=target_separation 5
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_a3=separation_x 6
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_t1=separation_z 6
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance:var_t0=distance 7
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance:var_a0=correction 6
+  fighter_SetBasePositionSeparationCorrectionsAndGetDistance:temp_v1_3=negated_correction 3
+  fighter_CalcSeparationErrorAndOpposedOffsets:temp_a3=separation_x 6
+  fighter_CalcSeparationErrorAndOpposedOffsets:temp_t1=separation_z 6
+  fighter_CalcSeparationErrorAndOpposedOffsets:var_t0=distance 7
+  fighter_CalcSeparationErrorAndOpposedOffsets:var_a0=correction 6
+  fighter_CalcSeparationErrorAndOpposedOffsets:temp_v1_3=negated_correction 3
+  fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:var_s0=initiator_record 8
+  fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:temp_s2=separation 3
+  fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:arg1=dx 2
+  fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:arg2=dz 2
+  fighter_TestTriangleBoneHits:a0=fighter_record 3
+  fighter_TestTriangleBoneHits:a2=test_inner_spheres 3
+  fighter_TestTriangleBoneHits:var_4=inner_hit_mask 4
+  math_ScaleVectorInDirectionFrame:arg1=hit_normal 8
+  math_InvertMatrix3x3:temp_v1_2=negated_determinant 11
+  math_MatrixToAngles:a0=matrix 2
+  math_MatrixToAngles:a1=angles_out 4
+  math_TriangleNormalYawWithPositiveYHalfTurn:a0=first_vertex 7
+  math_TriangleNormalYawWithPositiveYHalfTurn:a1=second_vertex 4
+  math_TriangleNormalYawWithPositiveYHalfTurn:a2=third_vertex 4
+  fighter_IsBoneTriangleCrossYPositive:arg0=fighter_record 2
+  fighter_IsBoneTriangleCrossYPositive:var_0=bone_points 14
+  object_AttachToOpponentBone:arg1=bone_index 2
+  object_AttachToOpponentBone:s2_ptr=bone_matrix 6
+  object_SubmitAttachedTransform:var_1=angles 4
+  object_InitKindQueue:a0=fighter_record 7
+  object_InitKindQueue:val=object_kind 4
+  object_SpawnFromFighter:arg0=fighter_record 9
+  object_SpawnFromFighter:arg1=object_kind 3
+  object_SpawnFromFighter:tbl=kind_params 11
+  object_ThrowQueuedKind:a0=fighter_record 11
+  object_ThrowQueuedKind:idx=carried_index 5
+  object_ThrowQueuedKind:id=thrown_kind 4
+  object_DropQueuedHeadAt:a0=fighter_record 7
+  object_DropQueuedHeadAt:a1=drop_position 2
+  object_DropQueuedHeadAt:p=pool_object 12
+  object_DropQueuedHeadAt:var_1=random_value 5
+  object_SpawnScatteredAt:a0=fighter_record 3
