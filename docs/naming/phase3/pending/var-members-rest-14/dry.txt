@@ -1,0 +1,515 @@
+PASS Unk80101EC8Record.unk_70=move_turn_mode, Unk80101EC8Record.unk_A0=attack_early_frame_limit, Unk80101EC8Record.unk_AE=weapon_hit_window_open, Unk80101EC8Record.unk_B0=matched_transition_command_byte, Unk80101EC8Record.unk_1BA=ground_probe_0_yaw, Unk80101EC8Record.unk_1C2=ground_probe_1_yaw, Unk80101EC8Record.unk_26C=bone_group_6_9_intact, Unk80101EC8Record.unk_26E=bone_group_14_21_hit_tally, Unk80101EC8Record.unk_270=bone_group_10_13_hit_tally, Unk80101EC8Record.unk_274=bone_group_6_9_lost_step_scale, Unk80101EC8Record.unk_276=bone_group_10_13_step_scales, Unk80101EC8Record.unk_39E=cpu_orbit_goal_kind, Unk80101EC8Record.unk_3A0=cpu_orbit_goal_x, Unk80101EC8Record.unk_3A2=cpu_orbit_goal_z, Unk80101EC8Record.unk_3A4=cpu_script_list, Unk80101EC8Record.unk_3A8=cpu_script_rows, Unk80101EC8Record.unk_3BD=cpu_script_start_delay, Unk80101EC8Record.unk_3F2=cpu_script_rotation_counter, Unk80101EC8Record.unk_43E=cpu_preferred_distance, Work_80053E9C.unk5C=cell_test_fn, Unk8006919CRec.unk_20=sheet_pairs, Unk8006919CRec.unk_2C=memcard_choice_sheets, Unk8006919CRec.unk_30=key_config_sheets, Unk8006919CRec.unk_38=stored_choice_sheets, Unk8006919CRec.unk_3C=confirm_list, Unk8006EA28Rec.unk_58=row_choice_sheets, Unk8006EA28Rec.unk_64=entry_row_sheets, Unk8006EA28Rec.unk_80=choice_grid_codes
+decl Unk80101EC8Record.unk_70 -> move_turn_mode  include/game.h:1619
+decl Unk80101EC8Record.unk_A0 -> attack_early_frame_limit  include/game.h:1642
+decl Unk80101EC8Record.unk_AE -> weapon_hit_window_open  include/game.h:1657
+decl Unk80101EC8Record.unk_B0 -> matched_transition_command_byte  include/game.h:1659
+decl Unk80101EC8Record.unk_1BA -> ground_probe_0_yaw  include/game.h:1706
+decl Unk80101EC8Record.unk_1C2 -> ground_probe_1_yaw  include/game.h:1708
+decl Unk80101EC8Record.unk_26C -> bone_group_6_9_intact  include/game.h:1735
+decl Unk80101EC8Record.unk_26E -> bone_group_14_21_hit_tally  include/game.h:1736
+decl Unk80101EC8Record.unk_270 -> bone_group_10_13_hit_tally  include/game.h:1737
+decl Unk80101EC8Record.unk_274 -> bone_group_6_9_lost_step_scale  include/game.h:1739
+decl Unk80101EC8Record.unk_276 -> bone_group_10_13_step_scales  include/game.h:1740
+decl Unk80101EC8Record.unk_39E -> cpu_orbit_goal_kind  include/game.h:1783
+decl Unk80101EC8Record.unk_3A0 -> cpu_orbit_goal_x  include/game.h:1784
+decl Unk80101EC8Record.unk_3A2 -> cpu_orbit_goal_z  include/game.h:1785
+decl Unk80101EC8Record.unk_3A4 -> cpu_script_list  include/game.h:1787
+decl Unk80101EC8Record.unk_3A8 -> cpu_script_rows  include/game.h:1789
+decl Unk80101EC8Record.unk_3BD -> cpu_script_start_delay  include/game.h:1795
+decl Unk80101EC8Record.unk_3F2 -> cpu_script_rotation_counter  include/game.h:1810
+decl Unk80101EC8Record.unk_43E -> cpu_preferred_distance  include/game.h:1841
+decl Work_80053E9C.unk5C -> cell_test_fn  include/game.h:1260
+decl Unk8006919CRec.unk_20 -> sheet_pairs  include/game.h:2513
+decl Unk8006919CRec.unk_2C -> memcard_choice_sheets  include/game.h:2516
+decl Unk8006919CRec.unk_30 -> key_config_sheets  include/game.h:2517
+decl Unk8006919CRec.unk_38 -> stored_choice_sheets  include/game.h:2519
+decl Unk8006919CRec.unk_3C -> confirm_list  include/game.h:2520
+decl Unk8006EA28Rec.unk_58 -> row_choice_sheets  include/game.h:340
+decl Unk8006EA28Rec.unk_64 -> entry_row_sheets  include/game.h:343
+decl Unk8006EA28Rec.unk_80 -> choice_grid_codes  include/game.h:350
+  round 0: 100 member error line(s)
+    src/main/17AFC.c:142 unk_26C x1
+    src/main/17AFC.c:150 unk_270 x1
+    src/main/17AFC.c:160 unk_26E x1
+    src/main/17AFC.c:452 unk_A0 x1
+    src/main/17AFC.c:594 unk_26C x1
+    src/main/17AFC.c:608 unk_270 x1
+    src/main/17AFC.c:624 unk_26E x1
+    src/main/17AFC.c:1649 unk_26C x1
+    src/main/17AFC.c:1810 unk_26C x1
+    src/main/17AFC.c:2119 unk_AE x1
+    src/main/17AFC.c:2520 unk_26C x1
+    src/main/17AFC.c:4539 unk_26C x1
+    src/main/17AFC.c:5095 unk_1BA x1
+    src/main/17AFC.c:5123 unk_1C2 x1
+    src/main/43500.c:84 unk5C x1
+    src/main/43500.c:144 unk5C x1
+    src/main/43500.c:170 unk5C x1
+    src/main/43500.c:195 unk5C x1
+    src/main/43500.c:225 unk5C x1
+    src/main/43500.c:236 unk5C x1
+    src/main/43500.c:260 unk5C x1
+    src/main/43500.c:271 unk5C x1
+    src/main/43500.c:282 unk5C x1
+    src/main/43500.c:293 unk5C x1
+    src/main/4510C.c:366 unk_3BD x1
+    src/main/4510C.c:373 unk_3A4 x1
+    src/main/4510C.c:393 unk_3A8 x1
+    src/main/4510C.c:465 unk_3F2 x1
+    src/main/4510C.c:709 unk_43E x1
+    src/main/4510C.c:716 unk_43E x1
+    src/main/4510C.c:913 unk_26C x1
+    src/main/4510C.c:916 unk_26C x1
+    src/main/4510C.c:921 unk_26C x1
+    src/main/4510C.c:938 unk_3F2 x1
+    src/main/4510C.c:1279 unk_3A0 x1
+    src/main/4510C.c:1280 unk_3A2 x1
+    src/main/4510C.c:1281 unk_39E x1
+    src/main/4510C.c:1959 unk_26E x1
+    src/main/4510C.c:1960 unk_270 x1
+    src/main/4510C.c:1963 unk_26C x1
+    src/main/4510C.c:2064 unk_3A0 x1
+    src/main/4510C.c:2065 unk_3A2 x1
+    src/main/4510C.c:2066 unk_39E x1
+    src/main/4510C.c:2603 unk_3F2 x1
+    src/main/4510C.c:2609 unk_3A8 x1
+    src/main/4510C.c:2628 unk_3A4 x1
+    src/main/4510C.c:2687 unk_3F2 x1
+    src/main/4510C.c:2717 unk_26C x1
+    src/main/4510C.c:2821 unk_3F2 x1
+    src/main/4510C.c:2826 unk_26C x1
+    src/main/4510C.c:2915 unk_26C x1
+    src/main/4510C.c:2927 unk_3BD x1
+    src/main/4510C.c:2928 unk_3F2 x1
+    src/main/596CC.c:1578 unk_2C x1
+    src/main/596CC.c:1634 unk_20 x1
+    src/main/596CC.c:1824 unk_30 x1
+    src/main/596CC.c:1840 unk_30 x1
+    src/main/596CC.c:1869 unk_30 x1
+    src/main/596CC.c:1890 unk_30 x1
+    src/main/596CC.c:2167 unk_30 x1
+    src/main/596CC.c:2279 unk_38 x1
+    src/main/596CC.c:2519 unk_3C x1
+    src/main/5ED34.c:223 unk_58 x1
+    src/main/5ED34.c:226 unk_64 x1
+    src/main/5ED34.c:481 unk_58 x1
+    src/main/5ED34.c:1183 unk_64 x1
+    src/main/5ED34.c:1616 unk_58 x1
+    src/main/5ED34.c:1748 unk_80 x1
+    src/main/9F9C.c:2357 unk_26C x1
+    src/main/9F9C.c:2482 unk_26C x1
+    src/main/9F9C.c:2622 unk_26E x1
+    src/main/9F9C.c:2726 unk_26C x1
+    src/main/9F9C.c:2727 unk_274 x1
+    src/main/9F9C.c:2731 unk_270 x1
+    src/main/9F9C.c:2737 unk_276 x1
+    src/main/9F9C.c:2740 unk_26E x1
+    src/main/9F9C.c:2796 unk_26C x1
+    src/main/9F9C.c:3184 unk_1BA x1
+    src/main/9F9C.c:3186 unk_1C2 x1
+    src/main/9F9C.c:3394 unk_26C x1
+    src/main/9F9C.c:3400 unk_26C x1
+    src/main/9F9C.c:3599 unk_70 x1
+    src/main/9F9C.c:3642 unk_B0 x1
+    src/main/9F9C.c:3857 unk_26C x1
+    src/main/9F9C.c:3858 unk_26E x1
+    src/main/9F9C.c:3859 unk_270 x1
+    src/main/9F9C.c:4037 unk_274 x1
+    src/main/9F9C.c:4039 unk_276 x1
+    src/main/9F9C.c:4042 unk_A0 x1
+    src/main/9F9C.c:4857 unk_26C x1
+    src/main/9F9C.c:4863 unk_B0 x1
+    src/main/9F9C.c:4944 unk_70 x1
+    src/main/9F9C.c:5463 unk_26C x1
+    src/main/9F9C.c:5642 unk_AE x1
+    src/main/9F9C.c:5737 unk_26C x1
+    src/main/9F9C.c:5748 unk_26C x1
+    src/main/9F9C.c:5751 unk_26C x1
+    src/main/9F9C.c:5762 unk_26C x1
+    src/main/9F9C.c:5769 unk_26C x1
+    src/main/9F9C.c:5783 unk_26C x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -340 +340 @@
+-    Unk8009B0E0Record **unk_58;
++    Unk8009B0E0Record **row_choice_sheets;
+@@ -343 +343 @@
+-    Unk8009B0E0Record **unk_64;
++    Unk8009B0E0Record **entry_row_sheets;
+@@ -350 +350 @@
+-    u8 *unk_80;
++    u8 *choice_grid_codes;
+@@ -1260 +1260 @@
+-    s32 (*unk5C)(s32, s32);
++    s32 (*cell_test_fn)(s32, s32);
+@@ -1619 +1619 @@
+-    s16 unk_70;
++    s16 move_turn_mode;
+@@ -1642 +1642 @@
+-    u8 unk_A0;
++    u8 attack_early_frame_limit;
+@@ -1657 +1657 @@
+-    u8 unk_AE;
++    u8 weapon_hit_window_open;
+@@ -1659 +1659 @@
+-    u8 unk_B0;
++    u8 matched_transition_command_byte;
+@@ -1706 +1706 @@
+-    s16 unk_1BA;
++    s16 ground_probe_0_yaw;
+@@ -1708 +1708 @@
+-    s16 unk_1C2; /* the same for bone 14 */
++    s16 ground_probe_1_yaw; /* the same for bone 14 */
+@@ -1735,3 +1735,3 @@
+-    s16 unk_26C;
+-    s16 unk_26E;
+-    s16 unk_270;
++    s16 bone_group_6_9_intact;
++    s16 bone_group_14_21_hit_tally;
++    s16 bone_group_10_13_hit_tally;
+@@ -1739,2 +1739,2 @@
+-    s16 unk_274;
+-    s16 unk_276[4];
++    s16 bone_group_6_9_lost_step_scale;
++    s16 bone_group_10_13_step_scales[4];
+@@ -1783,3 +1783,3 @@
+-    s16 unk_39E;
+-    s16 unk_3A0;
+-    s16 unk_3A2;
++    s16 cpu_orbit_goal_kind;
++    s16 cpu_orbit_goal_x;
++    s16 cpu_orbit_goal_z;
+@@ -1787 +1787 @@
+-    u16 *unk_3A4;
++    u16 *cpu_script_list;
+@@ -1789 +1789 @@
+-    u16 *unk_3A8[3];
++    u16 *cpu_script_rows[3];
+@@ -1795 +1795 @@
+-    u8 unk_3BD;
++    u8 cpu_script_start_delay;
+@@ -1810 +1810 @@
+-    u8 unk_3F2;
++    u8 cpu_script_rotation_counter;
+@@ -1841 +1841 @@
+-    s16 unk_43E;
++    s16 cpu_preferred_distance;
+@@ -2513 +2513 @@
+-    Unk8009B0E0Record **unk_20;
++    Unk8009B0E0Record **sheet_pairs;
+@@ -2516,2 +2516,2 @@
+-    Unk8009B0E0Record **unk_2C;
+-    Unk8009B0E0Record **unk_30;
++    Unk8009B0E0Record **memcard_choice_sheets;
++    Unk8009B0E0Record **key_config_sheets;
+@@ -2519,2 +2519,2 @@
+-    Unk8009B0E0Record **unk_38;
+-    Unk8006DD94List *unk_3C;
++    Unk8009B0E0Record **stored_choice_sheets;
++    Unk8006DD94List *confirm_list;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -142 +142 @@
+-        fighter_record->unk_26C = 0;
++        fighter_record->bone_group_6_9_intact = 0;
+@@ -150 +150 @@
+-        fighter_record->unk_270 += increment;
++        fighter_record->bone_group_10_13_hit_tally += increment;
+@@ -160 +160 @@
+-        fighter_record->unk_26E += increment;
++        fighter_record->bone_group_14_21_hit_tally += increment;
+@@ -452 +452 @@
+-        fighter_record->move_frame < fighter_record->unk_A0) {
++        fighter_record->move_frame < fighter_record->attack_early_frame_limit) {
+@@ -594 +594 @@
+-            fighter_record->unk_26C = 0;
++            fighter_record->bone_group_6_9_intact = 0;
+@@ -608 +608 @@
+-            fighter_record->unk_270++;
++            fighter_record->bone_group_10_13_hit_tally++;
+@@ -624 +624 @@
+-            fighter_record->unk_26E++;
++            fighter_record->bone_group_14_21_hit_tally++;
+@@ -1649 +1649 @@
+-            if (obj->unk_26C == 0 && i >= 6 && i <= 9) {
++            if (obj->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
+@@ -1810 +1810 @@
+-            var_3->unk_26C != 0 &&
++            var_3->bone_group_6_9_intact != 0 &&
+@@ -2119 +2119 @@
+-        if (var_3->unk_AE == 0) {
++        if (var_3->weapon_hit_window_open == 0) {
+@@ -2520 +2520 @@
+-        if (a0->unk_26C == 0 && i >= 6 && i <= 9) {
++        if (a0->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
+@@ -4539 +4539 @@
+-            if (var_5->unk_26C == 0 && j >= 6 && j <= 9)
++            if (var_5->bone_group_6_9_intact == 0 && j >= 6 && j <= 9)
+@@ -5095 +5095 @@
+-                    pos, obj->unk_1BA,
++                    pos, obj->ground_probe_0_yaw,
+@@ -5123 +5123 @@
+-                    pos, obj->unk_1C2,
++                    pos, obj->ground_probe_1_yaw,
+--- a/src/main/43500.c
++++ b/src/main/43500.c
+@@ -84 +84 @@
+-        g_collision_segment_work->unk5C(g_collision_segment_work->walk_cell.x,
++        g_collision_segment_work->cell_test_fn(g_collision_segment_work->walk_cell.x,
+@@ -144 +144 @@
+-                     g_collision_segment_work->unk5C(
++                     g_collision_segment_work->cell_test_fn(
+@@ -170 +170 @@
+-                         g_collision_segment_work->unk5C(
++                         g_collision_segment_work->cell_test_fn(
+@@ -195 +195 @@
+-            g_collision_segment_work->unk5C(
++            g_collision_segment_work->cell_test_fn(
+@@ -225 +225 @@
+-        g_collision_segment_work->unk5C =
++        g_collision_segment_work->cell_test_fn =
+@@ -236 +236 @@
+-        g_collision_segment_work->unk5C =
++        g_collision_segment_work->cell_test_fn =
+@@ -260 +260 @@
+-        g_collision_segment_work->unk5C =
++        g_collision_segment_work->cell_test_fn =
+@@ -271 +271 @@
+-        g_collision_segment_work->unk5C =
++        g_collision_segment_work->cell_test_fn =
+@@ -282 +282 @@
+-    g_collision_segment_work->unk5C =
++    g_collision_segment_work->cell_test_fn =
+@@ -293 +293 @@
+-    g_collision_segment_work->unk5C =
++    g_collision_segment_work->cell_test_fn =
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -366 +366 @@
+-    p->unk_3BD = 0x10 - (p->cpu_level >> 8);
++    p->cpu_script_start_delay = 0x10 - (p->cpu_level >> 8);
+@@ -373 +373 @@
+-    p->unk_3A4 = arg1;
++    p->cpu_script_list = arg1;
+@@ -393 +393 @@
+-                p->unk_3A8[var_5] = cursor;
++                p->cpu_script_rows[var_5] = cursor;
+@@ -465 +465 @@
+-    p->unk_3F2 = 0;
++    p->cpu_script_rotation_counter = 0;
+@@ -709 +709 @@
+-    rec->unk_43E =
++    rec->cpu_preferred_distance =
+@@ -716 +716 @@
+-    work = g_fighter_horizontal_separation - rec->unk_43E;
++    work = g_fighter_horizontal_separation - rec->cpu_preferred_distance;
+@@ -913 +913 @@
+-           (rec->other->move_kind == 0x2A && rec->other->unk_26C == 0) ||
++           (rec->other->move_kind == 0x2A && rec->other->bone_group_6_9_intact == 0) ||
+@@ -916 +916 @@
+-             rec->other->unk_26C == 0)) ||
++             rec->other->bone_group_6_9_intact == 0)) ||
+@@ -921 +921 @@
+-             rec->other->unk_26C == 0)))) ||
++             rec->other->bone_group_6_9_intact == 0)))) ||
+@@ -938 +938 @@
+-            rec->unk_3F2 = 0;
++            rec->cpu_script_rotation_counter = 0;
+@@ -1279,3 +1279,3 @@
+-        fighter_record->unk_3A0 = fighter_record->cpu_route.node[0].x;
+-        fighter_record->unk_3A2 = fighter_record->cpu_route.node[0].z;
+-        fighter_record->unk_39E = fighter_record->cpu_route.node[0].kind;
++        fighter_record->cpu_orbit_goal_x = fighter_record->cpu_route.node[0].x;
++        fighter_record->cpu_orbit_goal_z = fighter_record->cpu_route.node[0].z;
++        fighter_record->cpu_orbit_goal_kind = fighter_record->cpu_route.node[0].kind;
+@@ -1959,2 +1959,2 @@
+-                a = p->unk_26E;
+-                b = p->unk_270;
++                a = p->bone_group_14_21_hit_tally;
++                b = p->bone_group_10_13_hit_tally;
+@@ -1963 +1963 @@
+-                    0x1000 - (((p->unk_26C == 0 ? a + 4 + b : a + b) + c) << 8);
++                    0x1000 - (((p->bone_group_6_9_intact == 0 ? a + 4 + b : a + b) + c) << 8);
+@@ -2064,3 +2064,3 @@
+-            tx = p->unk_3A0;
+-            tz = p->unk_3A2;
+-            var_38 = p->unk_39E;
++            tx = p->cpu_orbit_goal_x;
++            tz = p->cpu_orbit_goal_z;
++            var_38 = p->cpu_orbit_goal_kind;
+@@ -2603 +2603 @@
+-                    if (p->unk_3F2 % ((p->cpu_level >> 8) + 2) ==
++                    if (p->cpu_script_rotation_counter % ((p->cpu_level >> 8) + 2) ==
+@@ -2609 +2609 @@
+-                    list = p->unk_3A8[p->variant_index];
++                    list = p->cpu_script_rows[p->variant_index];
+@@ -2628 +2628 @@
+-                        var_32 = off + (u8 *)p->unk_3A4;
++                        var_32 = off + (u8 *)p->cpu_script_list;
+@@ -2687 +2687 @@
+-                                            (p->unk_3F2 / 3 % work2) * 4 + 4;
++                                            (p->cpu_script_rotation_counter / 3 % work2) * 4 + 4;
+@@ -2717 +2717 @@
+-                        if ((e[0] & 0x80) && p->unk_26C == 0) {
++                        if ((e[0] & 0x80) && p->bone_group_6_9_intact == 0) {
+@@ -2821 +2821 @@
+-                        p->unk_3F2++;
++                        p->cpu_script_rotation_counter++;
+@@ -2826 +2826 @@
+-                state == 0x15 && p->unk_26C != 0 &&
++                state == 0x15 && p->bone_group_6_9_intact != 0 &&
+@@ -2915 +2915 @@
+-                p->unk_26C != 0 &&
++                p->bone_group_6_9_intact != 0 &&
+@@ -2927,2 +2927,2 @@
+-            fighter_StartCpuPadScript(p, D_8009A898, 1, p->unk_3BD);
+-            p->unk_3F2++;
++            fighter_StartCpuPadScript(p, D_8009A898, 1, p->cpu_script_start_delay);
++            p->cpu_script_rotation_counter++;
+--- a/src/main/596CC.c
++++ b/src/main/596CC.c
+@@ -1578 +1578 @@
+-    q = ((Unk8006919CRec *)draw_context[1])->unk_2C;
++    q = ((Unk8006919CRec *)draw_context[1])->memcard_choice_sheets;
+@@ -1634 +1634 @@
+-    var_0 = g_row_menu_work_block->menu_resource_root->unk_20;
++    var_0 = g_row_menu_work_block->menu_resource_root->sheet_pairs;
+@@ -1824 +1824 @@
+-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
++    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
+@@ -1840 +1840 @@
+-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
++    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
+@@ -1869 +1869 @@
+-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
++    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
+@@ -1890 +1890 @@
+-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
++    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
+@@ -2167 +2167 @@
+-    table = ((Unk8006919CRec *)draw_context[1])->unk_30;
++    table = ((Unk8006919CRec *)draw_context[1])->key_config_sheets;
+@@ -2279 +2279 @@
+-    sheet_headers = ((Unk8006919CRec *)draw_context[1])->unk_38;
++    sheet_headers = ((Unk8006919CRec *)draw_context[1])->stored_choice_sheets;
+@@ -2519 +2519 @@
+-    q = ((Unk8006919CRec *)draw_context[1])->unk_3C;
++    q = ((Unk8006919CRec *)draw_context[1])->confirm_list;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -223 +223 @@
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_58);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->row_choice_sheets);
+@@ -226 +226 @@
+-    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->unk_64);
++    reloc_RelocateOffsetList((s32 *)resource_root, (s32)resource_root->entry_row_sheets);
+@@ -481 +481 @@
+-    base = g_entry_menu_resources->unk_58;
++    base = g_entry_menu_resources->row_choice_sheets;
+@@ -1183 +1183 @@
+-    sheet_headers = g_entry_menu_resources->unk_64;
++    sheet_headers = g_entry_menu_resources->entry_row_sheets;
+@@ -1616 +1616 @@
+-    base = g_entry_menu_resources->unk_58;
++    base = g_entry_menu_resources->row_choice_sheets;
+@@ -1748 +1748 @@
+-    choice_table = g_entry_menu_resources->unk_80;
++    choice_table = g_entry_menu_resources->choice_grid_codes;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -2357 +2357 @@
+-        entry->unk_26C = 1;
++        entry->bone_group_6_9_intact = 1;
+@@ -2482 +2482 @@
+-    if (obj->unk_26C == 0) {
++    if (obj->bone_group_6_9_intact == 0) {
+@@ -2622 +2622 @@
+-    if (obj->unk_26E != 0 && obj->is_defeated == 0) {
++    if (obj->bone_group_14_21_hit_tally != 0 && obj->is_defeated == 0) {
+@@ -2726,2 +2726,2 @@
+-    if (fighter_record->unk_26C == 0) {
+-        s32 f = fighter_record->unk_274;
++    if (fighter_record->bone_group_6_9_intact == 0) {
++        s32 f = fighter_record->bone_group_6_9_lost_step_scale;
+@@ -2731 +2731 @@
+-        s16 var_7 = fighter_record->unk_270;
++        s16 var_7 = fighter_record->bone_group_10_13_hit_tally;
+@@ -2737 +2737 @@
+-    factor = fighter_record->unk_276[idx];
++    factor = fighter_record->bone_group_10_13_step_scales[idx];
+@@ -2740 +2740 @@
+-    s32 var_8 = fighter_record->unk_26E;
++    s32 var_8 = fighter_record->bone_group_14_21_hit_tally;
+@@ -2796 +2796 @@
+-        return fighter_record->unk_26C != 0;
++        return fighter_record->bone_group_6_9_intact != 0;
+@@ -3184 +3184 @@
+-    rec->unk_1BA = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
++    rec->ground_probe_0_yaw = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
+@@ -3186 +3186 @@
+-    rec->unk_1C2 = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
++    rec->ground_probe_1_yaw = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
+@@ -3394 +3394 @@
+-                    rec->object_variant_enabled = rec->unk_26C;
++                    rec->object_variant_enabled = rec->bone_group_6_9_intact;
+@@ -3400 +3400 @@
+-                    rec->unk_90 = rec->unk_26C;
++                    rec->unk_90 = rec->bone_group_6_9_intact;
+@@ -3599 +3599 @@
+-            fighter_record->unk_70 = (v0_50b->move_bitfield) & 3;
++            fighter_record->move_turn_mode = (v0_50b->move_bitfield) & 3;
+@@ -3642 +3642 @@
+-                        ((fighter_record->unk_B0) & 0xF) != 5;
++                        ((fighter_record->matched_transition_command_byte) & 0xF) != 5;
+@@ -3857,3 +3857,3 @@
+-    fighter_record->unk_26C = 1;
+-    fighter_record->unk_26E = 0;
+-    fighter_record->unk_270 = 0;
++    fighter_record->bone_group_6_9_intact = 1;
++    fighter_record->bone_group_14_21_hit_tally = 0;
++    fighter_record->bone_group_10_13_hit_tally = 0;
+@@ -4037 +4037 @@
+-    p->unk_274 = D_8008E3C0[p->character_data_index];
++    p->bone_group_6_9_lost_step_scale = D_8008E3C0[p->character_data_index];
+@@ -4039 +4039 @@
+-        p->unk_276[i] = D_8008E3F8[p->character_data_index][i];
++        p->bone_group_10_13_step_scales[i] = D_8008E3F8[p->character_data_index][i];
+@@ -4042 +4042 @@
+-    p->unk_A0 = 8;
++    p->attack_early_frame_limit = 8;
+@@ -4857 +4857 @@
+-                    if (fighter_record->unk_26C == 0) {
++                    if (fighter_record->bone_group_6_9_intact == 0) {
+@@ -4863 +4863 @@
+-                    fighter_record->unk_B0 = transition_command;
++                    fighter_record->matched_transition_command_byte = transition_command;
+@@ -4944 +4944 @@
+-    if (fighter_record->unk_70 == 1) {
++    if (fighter_record->move_turn_mode == 1) {
+@@ -5463 +5463 @@
+-         fighter_record->unk_26C != 0 &&
++         fighter_record->bone_group_6_9_intact != 0 &&
+@@ -5642 +5642 @@
+-    fighter_record->unk_AE = weapon_hit_window_active;
++    fighter_record->weapon_hit_window_open = weapon_hit_window_active;
+@@ -5737 +5737 @@
+-                } else if (fighter_record->unk_26C != 0 &&
++                } else if (fighter_record->bone_group_6_9_intact != 0 &&
+@@ -5748 +5748 @@
+-                    fighter_record->unk_26C;
++                    fighter_record->bone_group_6_9_intact;
+@@ -5751 +5751 @@
+-            fighter_record->unk_26C != 0 &&
++            fighter_record->bone_group_6_9_intact != 0 &&
+@@ -5762 +5762 @@
+-            fighter_record->unk_26C != 0) {
++            fighter_record->bone_group_6_9_intact != 0) {
+@@ -5769 +5769 @@
+-            fighter_record->unk_26C != 0 &&
++            fighter_record->bone_group_6_9_intact != 0 &&
+@@ -5783 +5783 @@
+-    if (fighter_record->unk_26C != 0) {
++    if (fighter_record->bone_group_6_9_intact != 0) {
+DRY RUN: 7 file(s) would change; nothing written
+OK: every member access renamed

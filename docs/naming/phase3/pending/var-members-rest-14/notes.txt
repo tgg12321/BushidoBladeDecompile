@@ -1,0 +1,64 @@
+var-members-rest-14 -- draft notes (research re-derived by the drafter in the lane worktree; research treated as hints only)
+
+BASIS: line numbers cite the lane worktree ln-naming-c (branch lanes/naming-c, clean at main 72476e68b). Dry run: type-resolved tools/naming_member_apply.py --dry-run from WSL (compiled), see dry.txt: exit=0, "OK: every member access renamed", 0 UNRESOLVED, 7 files would change, 31 decl lines.
+Research: tmp/codex/var-members-rest-14-research.md, 62 rows, 31 RENAME / 31 NO_NAME. Result: 31 rows in pairs.txt, 0 DROPPED, 5 CHANGED FROM RESEARCH (in the 31). The verdict column of member_manifest.csv is empty (the reviewer decides). NO_NAME rows are not in the manifest.
+Names: 31 distinct, no sharing: move_turn_mode, attack_early_frame_limit, weapon_hit_window_open, matched_transition_command_byte, ground_probe_0_yaw, ground_probe_1_yaw, bone_group_6_9_intact, bone_group_14_21_hit_tally, bone_group_10_13_hit_tally, bone_group_6_9_lost_step_scale, bone_group_10_13_step_scales, cpu_orbit_goal_kind, cpu_orbit_goal_x, cpu_orbit_goal_z, cpu_script_list, cpu_script_rows, cpu_script_start_delay, cpu_script_rotation_counter, cpu_preferred_distance, cell_test_fn, sheet_pairs, masked_row_sheets, menu_choice_sheets, memcard_choice_sheets, key_config_sheets, stored_choice_sheets, confirm_list, row_choice_sheets, entry_row_sheets, entry_cursor_sheets, choice_grid_codes.
+Types: Unk80101EC8Record 19 (the fighter record), Work_80053E9C 1, Unk8006919CRec 7, Unk8006EA28Rec 4.
+
+Re-derivation
+- Every access of every kept member was read in context (src/main/9F9C.c, 17AFC.c, 4510C.c, 43500.c, 596CC.c, 5ED34.c, include/game.h). The type-resolved dry run lists exactly the accesses read (31 decls; per-name access counts match my greps; same-spelled members of other types, e.g. unk_70/unk_20/unk_24/unk_58, are untouched).
+- INCLUDE_ASM: 137 bodies remain. Offset scan of those asm/funcs files: no body reaches the fighter-record offsets 0x1BA..0x43E (zero hits); the small offsets (0x70, 0xA0, 0xAE, 0xB0, 0x5C, 0x20..0x3C, 0x58, 0x64, 0x74, 0x80) only hit $sp spills and renderer bodies (gpu_Emit*, func_8004A940 / func_8004C404 light setups, func_8004DDB4, gpu_ProjectStridedNodeVerticesAndDispatchPackets), none of which handles the fighter record, the segment work, MOD.BIN's root or the entry-menu root. The asm/funcs files reloc_RelocateTwelveListsAndLoadVabPack and resource_RelocateNineOffsetListsAndLoadVabPack exist in the folder but are not linked (their C bodies are, 596CC.c:192, 5ED34.c:220); they walk the lists as pointer runs, which agrees with the names.
+- Raw (untyped) access: none for the fighter record (no 0x26C / 0x3A0 style offsets in src); the only raw reads are the list walks above.
+- Freshness: grep -rw over src/, include/, tools/, Makefile, *.ld and every docs/naming/phase3/pending/*/pairs.txt (this lane, plus ln-naming-b's pending dirs) finds none of the 31 names; docs/ has none either.
+
+DRAFT (kept, 31)
+- Fighter record: move / attack (move_turn_mode, attack_early_frame_limit, weapon_hit_window_open, matched_transition_command_byte); ground probe yaws; bone-group damage (bone_group_6_9_intact, the two hit tallies, the two step-scale members); CPU (cpu_orbit_goal_kind/x/z, cpu_script_list/rows/start_delay/rotation_counter, cpu_preferred_distance).
+- Work_80053E9C.cell_test_fn; Unk8006919CRec's seven sheet lists named by their drawer; Unk8006EA28Rec's four lists / codes.
+- Confidence M or weaker: all but weapon_hit_window_open, cpu_script_list, cpu_script_rows, cpu_preferred_distance, cell_test_fn, key_config_sheets (H).
+
+CHANGED FROM RESEARCH (5)
+- Unk80101EC8Record.unk_A0: power_contest_frame_limit -> attack_early_frame_limit. The move_frame < unk_A0 gate (17AFC.c:450-452) opens a block that handles arg0 == 0 (power-difference event) AND arg0 == 1 (var_0->unkC cases, no power comparison), so "power contest" covers only one half of the use.
+- unk_B0: matched_transition_command -> matched_transition_command_byte. The member is u8; the stored transition_command is a u16 (9F9C.c:4637, 4863), truncated; only the low nibble is read. Width must agree (N1); queued_move_command is the full-word holder.
+- unk_26E / unk_270: ..._hit_count -> ..._hit_tally. The writes add `increment`, which is 2 for var_0->unkD == 2 (17AFC.c:548), so they are weighted tallies, not counts.
+- unk_3F2: cpu_script_start_count -> cpu_script_rotation_counter. Only two of the script starts increment it (4510C.c:2821, 2928; the starts at 1881, 2213, 2455, 2889 do not), and every read is a modulo rotation index (2603, 2687).
+
+DROPPED (0)
+- None. Weakest kept, flagged for the reviewer (Conf W): move_turn_mode (values 2 and 3 never tested), attack_early_frame_limit (one reader, constant 8), cpu_script_start_delay (one reader, one script), menu_choice_sheets (two drawers), entry_cursor_sheets (5ED34.c:1771 draws a highlight cell rather than a named cursor). If any fails review the other rows do not depend on it, except the interdependent pairs: ground_probe_0/1_yaw; cpu_orbit_goal_kind/x/z; bone_group_10_13_hit_tally with bone_group_10_13_step_scales (the tally indexes the scales); bone_group_6_9_intact with bone_group_6_9_lost_step_scale.
+
+NO_NAME carried (31 research rows; none contradicted by my reading; none in pairs)
+- Unk80101EC8Record: the 22 declaration-only padding members (unk_10/16/22/4E/63/B5/E4/100/15C/164/1B8/1BC/1C4/1DE/204/31E/32C/34F/3B9/3BE/3EA/3F7, one row); unk_6E (write-only 9F9C.c:3593); unk_8E / unk_90 (nibble-5 variant selector and its enable flag, role of nibble 5 not shown); unk_AF / unk_B4 (a button-index != 5 class bit and its equality product, selector-valued); unk_144 / unk_150 (zero-only writes); unk_1D0 / unk_24C / unk_34E (write-only); unk_272 (9F9C.c:2907 bumps it with no bone involved, so a bone_group_0_5 name would be false); unk_27E (indexed by unk_26E + unk_272, neutral with unk_272); unk_3C0..3C4 / unk_3EE (zero-init only); unk_3F4 (thresholded by the neutral g_cpu_profiles.unk3).
+- Work_80053E9C: unk6/44/52/5A/92 padding; unk60..6C, unk70/74, unk80, unkE0..E8 (DDA and plane scratch whose roles change within the walk).
+- Unk8006919CRec: unk_14 (only consumer func_80069E18 is unnamed), unk_1C (five unrelated drawers), unk_34 (the sheets' role is not shown).
+- Unk8006EA28Rec: unk_5C, unk_60 (two unrelated drawers each), unk_68 / unk_6C / unk_70 (told apart only by menu_UpdateChoiceGrid's mode argument), unk_78 (no reader).
+- The three carry-over rows (rest-13 NO_NAME list, rest-12 list, rest-11 carry-overs and chunk_sprites): unchanged roles, no new evidence.
+
+KEPT AFTER A CHECK
+- bone_group_6_9_intact: every read and write was read in context; all treat the value as an intact test (set to 1 at reset and at 9F9C.c:2357, cleared only by hits on records 6..9, copied into object_variant_enabled at 9F9C.c:3394 and 5748). "bone group" follows the existing fighter_AccumulateOrClearByBoneGroup / fighter_ResetBoneGroupHitState; which body part 6..9 are is not claimed.
+- cpu_orbit_goal_*: node[0] is the last waypoint (walked back to front); the saved copy is read only while cpu_orbit_route_active != 0, which is set (to 2) only after fighter_BuildCpuOrbitRoute returns a nonzero count (4510C.c:2316-2317).
+- cell_test_fn: all six stores (43500.c:225-293) are one of two cell-test functions and all four reads (84, 144, 170, 195) call it with a walk cell x, z; the rest-13 enumeration missed it because of the function-pointer declarator.
+- row_choice_sheets: the research dry run used the placeholder rotated_entry_sheets (same lines); the proposed name follows row_choice_pixels / row_choice_upload_rects (both readers index it with rec.row_pick, 5ED34.c:481, 1616).
+
+Item 3 (wording, report only; not in pairs): Unk1F8002B8Rec.point_slots -> shape_point_pool stays fresh by grep, but shape_points[] also aim into SPAD->bone_hit_points (fighter_ProcessWeaponContacts), so point_slots is not "the" pool. The game.h MoveScript comment (~1522-1531) should say move_bitfield bits 0-1 are the 2-bit value fighter_StartMoveScript copies into the fighter record (move_turn_mode after this wave). Not applied here.
+
+R6 watch -- comments naming old members (the tool edits no comments); for the applier's comment pass, line numbers as in the lane worktree
+Fighter record (Unk80101EC8Record):
+- include/game.h: 1628 (variant_index comment, "row of unk_3A8 / script_min_distances ..."); 1788 ("per-row cursor into unk_3A4"); 1704-1705 and 1708 (unk_1BA / unk_1C2 comments, "the same for bone 14"; they name no member spelling, keep or reword); 1735-1741, 1783-1795 and 1810 carry no comments naming members.
+- include/bb2.h: 222 and 224 ("-> Unk80101EC8Record.unk_274", "...unk_276[i]"); src/main/d_7D920.c: 429 and 435 (the same two comments).
+- src/main/9F9C.c: 3098 (fighter_UpdateBoneWorldData header: "into unk_1BA / unk_1C2"); 3372 (fighter_AssignMotionSlotAndScanDataIdNibbles header: "copying unk_26C into object_variant_enabled"; its unk_8E and unk_90 stay); 4627 (comment "frame_flags, unk_AE and weapon_hit_phases").
+- src/main/4510C.c: 601 (fighter_BuildCpuPad local comment "g_fighter_horizontal_separation - unk_43E").
+- docs/engine/combat.md: 58 ("0x1D / 0xE (with `unk_26C` set)"), 74 ("the attacker's `unk_AE` is set"), 94 ("`move_frame < unk_A0`"). docs/engine/main_loop.md: 109 (func_8001EEB4 row, "sets its `unk_26C`"). docs/engine/ai.md and the other engine docs name none of the 19 (checked by spelling and by raw hex offset).
+- docs/naming/phase3/no_name.tsv:8 (func_8001EEB4 row: "still has no name for unk_26C" -- stale after this wave; revise the reason).
+- tools/trace/movegraph.py: 91 (docstring), 221 (self.unk_26C = m.s16(b + 0x26C), reads memory by offset), 354, 410, 577 (strings "needs unk_26C", "unk_26C {r.unk_26C}"); rename the Python attribute and strings to bone_group_6_9_intact if the harness is touched, else leave (the offset read is unaffected). docs/naming/runtime/versus-2p-kimigaura-throw-1/movegraph.txt:2 and :19 is captured output ("unk_26C 1"); leave as a dated capture.
+- symbol_addrs.txt and named_syms.txt: no note names any of the 19 spellings, and no absolute symbol at 0x80101EC8 + 0x44C * k + offset (k 0..1) falls on these offsets (all 38 addresses checked).
+- Historical, do not edit: docs/naming/phase3/m10/member_manifest.csv, wave*/ manifests, docs/naming/function-names.csv notes, pending/* manifests of earlier waves.
+Work_80053E9C:
+- src/main/43500.c:36-45 (collision_WalkSegmentGrid header names the cell test by "+0x5C"; no edit needed, may gain "cell_test_fn"); symbol_addrs.txt:1401 and 1949 (g_collision_segment_work / g_collision_static_segment_work notes name the type, no member spelling).
+Unk8006919CRec:
+- include/game.h: 2489-2501 (type comment: "unk_14..cursor_row_sheets", "unk_20 pairs each sheet with a -1", "except unk_3C, menu_DrawConfirmSheetsAndDigitPairs's list"); 2473 ("MOD.BIN's unk_3C"); 2483 ("MOD.BIN's unk_3C list").
+- src/main/596CC.c: 989 (menu_DrawMaskedRowList local comment: "unk_24 twice"); 1181 (FAKE comment "re-stores the unk_24 list"); 1627 (gpu_DrawIndexedSheetPair: "the unk_20 list"). 596CC.c:2707 / 2718 `.unk_20` is another type (prim_buffer_pair), not this one.
+Unk8006EA28Rec:
+- include/game.h: 322-334 (type comment: "selected_entry_header_block..unk_74", "unk_58..unk_74, sprite-sheet lists", "unk_78 is a further offset", "unk_80: the bytes menu_UpdateChoiceGrid reads"); game.h:356 / 368-370 and 403 / 412 (unk_14..unk_38, unk_24) belong to other types, not these.
+- src/main/5ED34.c: 1256-1257 (menu_UpdateRowCursors comment: "g_entry_menu_resources->unk_74 ... and ...->unk_60"; unk_60 stays); 1442 (FAKE comment "re-stores the unk_74 table").
+- docs/naming/phase3/no_name.tsv:113 (func_800720D4 row mentions unk_70 of the same type, which stays neutral; no edit).
+After the apply, `grep -rnw` each old spelling next to its type name once more (unk_20 / unk_24 / unk_28 / unk_58 / unk_70 / unk_74 / unk_80 are common spellings: only the same-type ones change).
+PRE-APPLY REVIEW (naming-reviewer, one batch, 2026-10-28): 28/31 PASS, all CONFIRM. FAIL, dropped (stay neutral): Unk8006919CRec.unk_24 masked_row_sheets (both reads 596CC.c:1165, 1183 index by g_menu_packed_cursors & 0xF; reviewer suggestion packed_cursor_frame_sheets, for a later wave), Unk8006919CRec.unk_28 menu_choice_sheets (R4 sibling test: every list in the MOD.BIN root is a menu sheet list; suggestion option_and_memcard_choice_sheets or neutral), Unk8006EA28Rec.unk_74 entry_cursor_sheets (5ED34.c:1771-1797 draws the other six choice-grid cells from it, not a cursor; neutral). Numbers in names: bone_group_6_9/10_13/14_21 are the hit_record_index case ranges, ground_probe_0/1 the ground_probe_points indices (reviewer: identity, follows bone_hit_point_0 etc.). dry.txt re-run on the 28 pairs. R6 watch entries for the three dropped rows no longer apply.
