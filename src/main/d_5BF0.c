@@ -141,7 +141,7 @@ void * const g_color_immediate_patch_sites[8] = {
 };
 
 /* The cluster continues in 43500.c's rodata: motion_StartPlayback's string
- * D_80015840 at 0x80015840; then 4510C.c's:
+ * g_motion_playback_arena_shortfall_msg at 0x80015840; then 4510C.c's:
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's three switch tables at
  * 0x8001585C (rodata-object-alignment ruling 2026-09-30); then 4BC3C.c's: the
  * sound-bank loader's two strings at 0x800158B4. */

@@ -16,9 +16,9 @@
  * collision_TestCellKeepingNearestHitScalarProjection) does not byte-match: the
  * shared statics lose gp access. End: before motion_UpdatePlayback (seam #85,
  * moved there from motion_StartPlayback), so motion_StartPlayback's printf
- * string D_80015840 is this file's .rodata (0x80015840+0x1C) and 4510C.o's
- * starts with fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's tables at
- * offset 0. */
+ * string g_motion_playback_arena_shortfall_msg is this file's .rodata
+ * (0x80015840+0x1C) and 4510C.o's starts with
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's tables at offset 0. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"

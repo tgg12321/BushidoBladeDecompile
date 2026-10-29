@@ -4,11 +4,12 @@
  * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput, ...). .text 0x8005490C
  * (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #85,
  * placed before motion_UpdatePlayback rather than motion_StartPlayback so the
- * string D_80015840 belongs to its user's object): no static crosses the cut;
- * the .sdata g_motion_null_stream_tag..D_800A3263 belongs to these functions,
- * and fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's jump tables start
- * this file's .rodata at 0x8001585C, right after 43500.o's string; the only
- * calls back are to 43500.c's collision API collision_TestSegmentWithWork. */
+ * string g_motion_playback_arena_shortfall_msg belongs to its user's object):
+ * no static crosses the cut; the .sdata g_motion_null_stream_tag..D_800A3263
+ * belongs to these functions, and
+ * fighter_UpdateCpuNavigationChooseScriptsAndHeldInput's jump tables start this
+ * file's .rodata at 0x8001585C, right after 43500.o's string; the only calls
+ * back are to 43500.c's collision API collision_TestSegmentWithWork. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
