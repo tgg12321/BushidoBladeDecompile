@@ -139,7 +139,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
 The columns are `id  kind  stage  draft  note`. `kind` is `func`, `member`, `data` or `local`.
 Each kind is one track: `local` = locals, `data` = globals, `member` = members, `func` = functions
 (the second pass over the NO_NAME functions, `func-second-pass` rows; owner 2026-10-28). Kind
-`audit` (stage `active`, the Codex lane's `name-audit` index) is never picked.
+`audit` (stage `active`, the Codex lane's `name-audit` index) is never picked. Kind `file` =
+file names (naming-bar N6), §File waves.
 `draft` is the tracked draft dir `docs/naming/phase3/pending/<id>/` (rows.py, member_manifest.csv,
 pairs.txt, dry.txt). Stages:
 
@@ -147,6 +148,35 @@ pairs.txt, dry.txt). Stages:
 
 Commit a stage change with the files that justify it, for example `docs: naming backlog -- m09
 reviewed`.
+
+## File waves (kind `file`, naming-bar N6; owner 2026-10-28)
+
+An address-named game TU takes a subsystem name only when every function's admitted name and
+every datum it defines agree on that subsystem; a mixed file keeps its ROM-offset name.
+- PREPARE: research lists, per candidate TU, every function (docs/naming/function-names.csv)
+  and every symbol it defines (build/bb2.map of a fresh lane build), and proposes a name in the
+  `cdrom.c` / `memcard.c` style, narrower when the subsystem spans several files
+  (`cdrom_mix.c`). `tools/move_tu.py` refuses on a dirty tree, so run every dry run first, on
+  the clean worktree, with output under `tmp/`; then write the draft: `pending/<id>/moves.tsv`
+  (`old_id  new_id  evidence`, TU ids as in AGENTS.md, `main/<OFF>`) and `dry.txt` (the copied
+  dry runs and, per moved TU, the git-grep hits below). `naming-reviewer` pre-apply judges each row against N6 (every function and datum
+  agrees; the name claims nothing the code doesn't show; no clash with an existing file).
+- LAND: claim, in one `lanes.py claim` call, `topic:tu:<old>` for every row and `topic:tu:<id>`
+  for every other `src/` TU in `dry.txt`'s grep hits; `lanes.py fresh`; then per row: `python
+  tools/move_tu.py <old> <new> --apply` and commit at once, rename only (`naming: <id> -- <old>
+  -> <new>`, so git follows the file). Then one comment commit: `move_tu`'s leftover list
+  misses the usual citation form, so also run `git grep -n -w -E "<OFF>(\.c)?" -- src include
+  symbol_addrs.txt named_syms.txt .claude/rules` per moved TU and rewrite each live citation of
+  the file to its new name (other files' boundary evidence included); leave ROM-offset
+  mentions (`ROM 0x<OFF>`, asm byte comments) and `docs/` / `memory/` history as written; keep
+  each moved TU's top comment and its own boundary evidence (`ROM 0x<OFF>` stays), but rewrite
+  its citations of other moved files like any other. Handle `move_tu`'s own leftover list too.
+  Then `python tools/format.py` on the C files you edited; if a file's line count changed,
+  re-point every `<file>:<line>` citation into it (`git grep -n "<newname>.c:"` over the same
+  paths). The row still moves `reviewed` -> `landed`; `naming_keycheck`, `naming_wavefollow`
+  and `naming_noname add` do not apply. Gates once on the final tree
+  (`verify-oracle --rebuild` SHA1 unchanged, `tus-check`, integrity, `engine test`), R6 on the
+  wave's diff, land all its commits together.
 
 ## Unit PREPARE (idea or researched -> reviewed)
 
