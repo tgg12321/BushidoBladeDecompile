@@ -458,7 +458,7 @@
 /* Lines from a consumer-role pass; each tail now cites its accesses. */
 /* See pre-slim-2026-10-01:docs/naming/RODATA_RECORD_SCHEMA.md */
 /* for that pass's multiplier analysis. */
-/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
+/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (cdrom_mix.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (cdrom_update.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
 
 /* === Cluster at 0x800A34F8-3514 (2026-05-17) -- 4 highs === */
 /* Discovered via cluster-consumer analysis: g_menu_packed_cursors/350C/3514 are */

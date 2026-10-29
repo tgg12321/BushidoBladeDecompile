@@ -6,7 +6,7 @@
 #include "bb2.h"
 
 /* Unprototyped: slot_FinalizeObjectLoadSoundTexturesAndArena passes arena_id *
- * 3 + 1 as an int; the s16 prototype 4BC3C defines it with narrows that
+ * 3 + 1 as an int; the s16 prototype snd.c defines it with narrows that
  * argument before the call. */
 extern s32 snd_LoadVabPack();
 extern s32 g_gpu_draw_move_bank;

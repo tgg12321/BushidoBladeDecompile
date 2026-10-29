@@ -369,7 +369,7 @@ extern u8 g_fight_missing_support_fighter_index;
 
 /* The 8-byte CD status/result buffer CdSync / CdReady fill: result[0] is the
  * status byte; cdrom_UpdateAudio hands &result[3] / &result[5] (the reported
- * position) to CdPosToInt. Tentative definition in src/main/26940.c (Q62
+ * position) to CdPosToInt. Tentative definition in src/main/cdrom_update.c (Q62
  * global COMMON model). */
 extern u8 g_cd_result[8];
 

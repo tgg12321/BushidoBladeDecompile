@@ -1,7 +1,7 @@
 /* menu_PrintEditAndApplyConfigWithPerPadCursors alone. .text 0x80034708 (ROM
  * 0x24F08). Start boundary: G8: compiled -G8, as the gp-relative reads of the
  * cursor array g_config_menu_cursors show; so the <=8-byte strings sit in
- * .sdata, the 9-byte ones in .rodata. */
+ * .sdata; its .rodata is only its two 12-entry switch jump tables. */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"

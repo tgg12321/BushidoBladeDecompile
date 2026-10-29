@@ -6,7 +6,7 @@
  * 0x4D0A8). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #136): no
  * direct call crosses the cut; the static g_gpu_jitter_random_state and the
  * .sdata D_800A3264..g_gpu_fixed_bar_progress (RECTs and draw records) are used
- * only here and follow 4BC3C.c's .sbss and 4510C.c's .sdata in address order.
+ * only here and follow snd.c's .sbss and 4510C.c's .sdata in address order.
  */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
@@ -1741,7 +1741,7 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
 }
 
 /* .data 0x8009ADB4..0x8009B450, this file's .data (d_8A588.c's g_vab_id_list
- * and 4BC3C.c's g_snd_stage_reverb_types precede; the data-only d_8BC50.c's
+ * and snd.c's g_snd_stage_reverb_types precede; the data-only d_8BC50.c's
  * g_gpu_time_field_line_origins .. follow). D_8009ADB4 is the 3-cell sheet
  * header whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
  * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's bd0,

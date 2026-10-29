@@ -83,7 +83,7 @@ C_O_FILES    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/$(SRC_DIR)/%.o,$(C_FILES)
 # (GP_FILES) cc1 buffers function bodies to a temp file (TARGET_FILE_SWITCHING),
 # so a file-scope __asm__ floats to the top of the TU instead of staying in
 # place. Empty since 2026-10-01: save_vc_ctrl (the only member) moved to its own
-# one-function TU (src/main/31CFC.c) when it was de-authorized and re-queued.
+# one-function TU (src/main/node_rebase_parents.c) when it was de-authorized and re-queued.
 # Kept for any future raw-asm object.
 LINKED_ASM_FUNCS :=
 ASM_FUNC_O_FILES := $(patsubst %,$(BUILD_DIR)/$(ASM_DIR)/funcs/%.o,$(LINKED_ASM_FUNCS))

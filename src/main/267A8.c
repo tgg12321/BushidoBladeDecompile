@@ -1,6 +1,6 @@
 /* CD and sound start-up: snd_SerialMixOn, cdrom_Init, cdrom_FlushInit,
  * cdrom_ReadyCallback. .text 0x80035FA8 (ROM 0x267A8). Start boundary: G8 (the
- * end of 26730.c's -G8 unit). */
+ * end of cdrom_mix.c's -G8 unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"

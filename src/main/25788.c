@@ -1,6 +1,6 @@
 /* The 4 game functions after menu_PrintEditAndApplyConfigWithPerPadCursors.
- * .text 0x80034F88 (ROM 0x25788). Start boundary: G8 (the end of 24F08.c's -G8
- * unit). */
+ * .text 0x80034F88 (ROM 0x25788). Start boundary: G8 (the end of
+ * menu_config.c's -G8 unit). */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"

@@ -18,8 +18,8 @@
  * g_fight_time_limit_seconds per setting; the run's end). Under -G8 the
  * original compiler puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours: before it, d_7D870.c's .text (game data words, no small
- *    data, none pointing into the run) and in .data link order 26940.o's
- *    empty .data (26940.c is -G8, gp accesses). After it, cdrom.o, a
+ *    data, none pointing into the run) and in .data link order cdrom_update.o's
+ *    empty .data (cdrom_update.c is -G8, gp accesses). After it, cdrom.o, a
  *    game module with no small data that references no object in the run (Q123:
  * not an owner candidate). Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c,
  * 28708.c, 2B344.c, 4510C.c (interleaved against .data link order, so no reader

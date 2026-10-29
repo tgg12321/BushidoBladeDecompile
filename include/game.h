@@ -949,7 +949,7 @@ typedef struct PadState {
     u32 unheld;   /* 0x14 */
 } PadState;       /* sizeof == 0x18 */
 
-/* The 24-entry pending-sound pool (4BC3C): snd_QueueSound queues a request (an
+/* The 24-entry pending-sound pool (snd): snd_QueueSound queues a request (an
  * entry of g_snd_sound_vab_entries) with its volumes in the first free entry;
  * snd_FlushSoundQueue keys each queued note on via SsUtKeyOnV(.., voll, volr)
  * and clears the entry; snd_Init / snd_ResetVoicesAndQueue reset all 24. */

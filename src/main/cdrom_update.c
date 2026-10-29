@@ -2,8 +2,8 @@
  * cdrom_Update. .text 0x80036140 (ROM 0x26940). Start boundary: G8. Compiled
  * -G8 (owner ruling 2026-09-26, Q10): both read g_cd_result (and
  * cdrom_UpdateAudio the ATV/fade state) off $gp. Those globals are tentative
- * definitions (COMMON, zero bytes), as in 26730.c; gp-relative at their base
- * only (owner ruling Q62, 2026-09-30, global COMMON model). */
+ * definitions (COMMON, zero bytes), as in cdrom_mix.c; gp-relative at their
+ * base only (owner ruling Q62, 2026-09-30, global COMMON model). */
 #include "common.h"
 #include "bb2.h"
 

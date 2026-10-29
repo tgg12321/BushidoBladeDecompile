@@ -1,8 +1,8 @@
 /* Data-only file: .data 0x8009A088..0x8009AD1C (ROM 0x8A588): 4510C.c's CPU
  * fighter tables (the stage navigation sets and their polygons, the probe,
- * distance and pad-script tables), then 4BC3C.c's sound tables.
+ * distance and pad-script tables), then snd.c's sound tables.
  * Owner ruling Q122 (data-only-no-sdata):
- * 1. One run: 4510C.c's g_cpu_profiles ends at 0x8009A088 and 4BC3C.c's
+ * 1. One run: 4510C.c's g_cpu_profiles ends at 0x8009A088 and snd.c's
  * g_snd_stage_reverb_types starts at 0x8009AD1C. No uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or by the pointer
  *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
@@ -14,11 +14,11 @@
  * D_8009A870 .. D_8009A8C0 (0x80 ends a script, fighter_StepCpuPadScript);
  * g_vab_id_list (u8[4], the run's end). Under -G8 the original compiler puts
  * them in .sdata, so no -G8 file defined them.
- * 3. Neighbours in .data link order: 4510C.c and 4BC3C.c, -G8 code modules
+ * 3. Neighbours in .data link order: 4510C.c and snd.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005490C + 0x6B30 = 0x8005B43C); so no code module owns them.
  * Readers: 4510C.c (D_8009A088 .. g_cpu_route_sector_dpad_masks; the vertex
- * tables and polygon arrays only through g_cpu_stage_nav_sets), 4BC3C.c
+ * tables and polygon arrays only through g_cpu_stage_nav_sets), snd.c
  * (g_snd_sound_vab_entries, g_vab_id_list) and 4D0A8.c (g_vab_id_list). */
 #include "common.h"
 #include "bb2.h"
@@ -299,7 +299,7 @@ s32 D_8009A9F0[3][8] = {
 s32 g_cpu_route_sector_dpad_masks[8] = {
     0x3000, 0x1000, 0x9000, 0x8000, 0xC000, 0x4000, 0x6000, 0x2000};
 
-/* 4BC3C.c's. */
+/* snd.c's. */
 u16 g_snd_sound_vab_entries[170][2] = {
     {0x0, 0x0},  {0x0, 0x1},  {0x0, 0x2},  {0x0, 0x3},  {0x0, 0x4},
     {0x1, 0x0},  {0x1, 0x1},  {0x1, 0x2},  {0x1, 0x3},  {0x1, 0x4},

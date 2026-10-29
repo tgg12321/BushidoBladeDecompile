@@ -2,7 +2,7 @@
  * cdrom_StartReadAt, cdrom_Pause, cdrom_GetFileSize, cdrom_StartAudio,
  * cdrom_ReadWait, cdrom_LoadExec, and sys_Exec, which runs the executable
  * cdrom_LoadExec reads. .text 0x80036D88 (ROM 0x27588). Start boundary: G8 (the
- * end of 26940.c's -G8 unit). */
+ * end of cdrom_update.c's -G8 unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
