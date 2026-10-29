@@ -1,0 +1,34 @@
+BASIS
+Re-derived 2026-10-28 in the lane worktree (lanes/naming-b at c21cfc273, clean). Per row: every function read from src/main/<OFF>.c (C bodies and INCLUDE_ASM lines; the 7 TUs hold only C bodies) against docs/naming/function-names.csv (all CORROBORATED, snd_LoadCommonVab VERIFIED); data read from the source's definitions (statics, COMMON tentative defs, .data/.sdata/.rodata definitions) and checked against the research's build/bb2.map + objdump listing (file-names-1-research.md; spot checks agree). No existing src/ or include/ file named snd.*, gpu_ui.*, cdrom_mix/cdrom_update.*, menu_config.*, node_rebase*.*, fight_pair.* (git ls-files checked). Dry runs and git-grep hits are in dry.txt.
+
+PER-ROW LISTING (brief)
+4BC3C -> snd: 28 snd_ fns (Init, Quit, StopAllVoices*, CloseVab*, LoadCommonVab, ClosePairedFileVabs*, VabFakeOpen*, ReloadListedVabs..., RebaseListedVabs, CloseListedVabs, SetReverb, StopVoicesAndReverb, MoveVabBody, CompactVabBodies, LoadVabPack, VabOpen, StopVoicesSetMaxMasterVolume..., QueueSound, FlushSoundQueue). Data: .rodata D_800158B4 ("common_vab start:%08x\n"), D_800158CC ("vab id:%d mistake\n"); .data g_snd_stage_reverb_types; static .sbss D_800A3400, g_vab_sticky_sbaddr, g_vab_sb_used_bytes, g_vab_pack_base_sbaddr, D_800A3410[2] (no reader).
+4D0A8 -> gpu_ui: 17 gpu_ fns (panel, sprite pairs, jittered quad pairs, time fields/decimal counter, two-digit counters, comparison rows/totals, mark rows, stretched pair, split wipe + the two gpu_ReadCdFile* that load the wipe images, digit/shifted sprite, packed-table sprite, fixed cells, growing bars). Data: 31 .data sheet headers/cells/tables, 13 .sdata RECTs/cycle/progress words, static g_gpu_jitter_random_state; all read only by these fns or via D_8009B0C0/D_8009B2AC; d_8BC50.c cites g_gpu_decimal_digit_cells as the sheet data of this file.
+26730 -> cdrom_mix: cdrom_SetMix, cdrom_StartMixFade. Data: COMMON g_cd_atv, g_cd_atv_target, g_cd_fade_step, g_cd_fade_len.
+26940 -> cdrom_update: cdrom_UpdateAudio, cdrom_Update. Data: two jump tables (.rodata 0x78, no symbols); COMMON g_cd_atv, g_cd_atv_target, g_cd_result[8], g_cd_fade_step, g_cd_fade_len.
+24F08 -> menu_config: menu_PrintEditAndApplyConfigWithPerPadCursors. Data: .sdata g_config_menu_cursors[2], D_800A3178..D_800A31D0 (12 colour/format strings); .rodata jump table.
+31CFC -> node_rebase_parents: node_RebaseParents. No data.
+175A4 -> fight_pair: fight_UpdatePairedInputTotalsEventsAndMidpointEffects. .rodata jump table only.
+
+CHANGED FROM RESEARCH
+- 31CFC: node_rebase -> node_rebase_parents. node_RebaseRetainedDrawNodeBuffer (368E4) is another node-rebase function, so "node_rebase" would claim the whole family; the research's own fallback names exactly what the file holds.
+- Others kept as researched. Reviewer attention (judgement calls, not changed): bare "snd" for 4BC3C (snd_ also lives in 17AFC, 267A8, 368E4, 6CF8, 9F9C; fallback snd_bank), as the cdrom.c precedent; "gpu_ui" for 4D0A8 (the split wipe / CD-image loaders / jittered quad pairs are screen drawing the file's own top comment calls "UI drawing"; fallback keep offset name if the reviewer reads "ui" as too broad); cdrom_update (cdrom_UpdateAudio also steps the mix fade; name claims only "update").
+
+DROPPED
+None. (Research already dropped the mixed TUs below.)
+
+KEPT OFFSET-NAMED (N6: mixed, or admitted names state no subsystem)
+267A8 (cdrom_Init, cdrom_FlushInit, cdrom_ReadyCallback + snd_SerialMixOn); 63D2C (gpu_Add*/gpu_Draw* + menu_DrawSheets...); 24BF0 and 25788 (unprefixed config/record helpers, 25788 also func_80035430); every other mixed offset TU per the research census (17AFC, 25C38, 28514, 28708, 2B344, 309CC, 31548, 31D3C, 32D04, 35000, 368E4, 3AB48, 43500, 4510C, 51268, 596CC, 5ED34, 64FD8, 6CF8, 87A0, 9F9C). d_<off>.c data-only files not in scope.
+
+OTHER src/ TUs CITING A MOVED TU (claim topic:tu:<id> for each at LAND, with the 7 rows' old ids)
+309CC (4BC3C), d_5BF0 (4BC3C), d_8A588 (4BC3C, 4D0A8), d_8BC50 (4D0A8), d_8C4E4 (4D0A8), 267A8 (26730), cdrom (26940), d_7D920 (26940, 175A4), 25788 (24F08), d_1068 (24F08). Among moved TUs: 4D0A8 cites 4BC3C.c and 4BC3C.c cites 4D0A8.c (lines 9, 1744 / 604); 26940.c cites 26730.c (line 5). Non-src hits to rewrite in the comment commit: include/game.h (4BC3C:952; 4D0A8: 416, 428, 442, 455, 471, 484, 495, 2478), include/bb2.h (26940:372, 175A4:737), symbol_addrs.txt (4D0A8:935; 26730/26940: 813, 2072, 2073, 1179; 175A4: 2057, 2060), named_syms.txt:461 (26730, 26940), .claude/rules/rodata-object-alignment.md:3 (move_tu rewrites rule paths) and :51 (prose list, by hand), tools/repack_stage.py:14 (move_tu leftover; a tool comment, 4BC3C). 267A8.c:3 (26730) and cdrom.c:5 (26940) are "end of ...'s -G8 unit" boundary citations of the moved file: rewrite to the new name.
+
+R6 WATCH LIST
+- 24F08 top comment claims the <=8-byte strings sit in .sdata and "the 9-byte ones in .rodata", but the object's .rodata (0x60) is only a 24-entry jump table; D_80010834/D_80010840 are externs defined elsewhere. Correct the claim when the file moves (comment-only; keep ROM 0x24F08 boundary evidence).
+- Citations of moved files in other files' boundary evidence (list above) must follow the new names; ROM-offset mentions (ROM 0x<OFF>, asm byte comments) and docs/memory history stay.
+- file:line citations into moved files (e.g. 26730.c:14-18, 26940.c:17-35, 4D0A8.c:376-447, 175A4.c:34/52/91/148 in symbol_addrs.txt and d_7D920.c) must be re-pointed after any line-count change from format.py (git grep -n "<newname>.c:").
+- 175A4 source comment says "practice modes": not claimed by the file name; leave.
+- Flag lists touched by move_tu: GP_FILES (26730, 26940, 24F08, 31CFC), NOWARN_FILES (175A4); Makefile and engine/buildconfig.py rewritten.
+- The node_RebaseParents top comment's phantom-slot-frame-lever mention is unaffected.
+
+PRE-APPLY REVIEW (naming-reviewer, one batch, 2026-10-28, naming-b): 5/7 PASS, VERDICT CONFIRM on 4BC3C->snd, 26730->cdrom_mix, 26940->cdrom_update, 24F08->menu_config, 31CFC->node_rebase_parents (moves.tsv now holds only these). FAIL, dropped (stay offset-named): 4D0A8->gpu_ui ('ui' rests only on the top comment, N3; the CD image loaders 4D0A8.c:1302, 1492 and the split-wipe image draw :1322 are not interface elements; lead: a mechanical narrowing the code shows for all 17, or keep), 175A4->fight_pair ('pair' is shared with 9F9C's fight_UpdatePairedMoves / fight_UpdateSeparationAndPairedMoves, 9F9C.c:2805, 2918; lead: a name for the one body, e.g. fight_paired_input_totals). Their dry runs and grep hits stay in dry.txt for reference; at LAND skip them and drop their entries from the claim list (d_8BC50, d_8C4E4 and the 175A4-only d_7D920 / bb2.h:737 / symbol_addrs.txt:2057, 2060 hits no longer apply, except where another moved TU is cited).

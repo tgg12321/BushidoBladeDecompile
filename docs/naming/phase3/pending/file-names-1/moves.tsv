@@ -1,0 +1,6 @@
+old_id	new_id	evidence
+main/4BC3C	main/snd	28 fns all snd_ (27 CORROBORATED, snd_LoadCommonVab VERIFIED): sound core snd_Init/snd_Quit, VAB bank load/close, reverb, sound queue; data = D_800158B4/D_800158CC VAB strings, g_snd_stage_reverb_types, .sbss VAB/sound statics, all read only by its snd_ fns; bare name as cdrom.c; no snd.* file
+main/26730	main/cdrom_mix	2 fns cdrom_SetMix + cdrom_StartMixFade (CORROBORATED); data only COMMON CD-audio mix state g_cd_atv, g_cd_atv_target, g_cd_fade_step, g_cd_fade_len
+main/26940	main/cdrom_update	2 fns cdrom_UpdateAudio + cdrom_Update, the per-frame CD steppers (CORROBORATED); data = two switch jump tables (no symbols) + COMMON g_cd_atv, g_cd_atv_target, g_cd_result, g_cd_fade_step, g_cd_fade_len
+main/24F08	main/menu_config	1 fn menu_PrintEditAndApplyConfigWithPerPadCursors (CORROBORATED); data g_config_menu_cursors + colour/format strings D_800A3178..D_800A31D0 read only by it; .rodata = its jump table
+main/31CFC	main/node_rebase_parents	1 fn node_RebaseParents (CORROBORATED); defines no data; name narrowed to the one thing the file does

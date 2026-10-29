@@ -1,0 +1,165 @@
+Dry runs re-run 2026-10-28 from cwd the clean lane worktree (git status --short empty before and after), move_tu.py without --apply. node_rebase_parents replaces the researched node_rebase (see notes.txt). Each block: dry run output (incl. move_tu leftover list), then git-grep hits verbatim.
+
+### python tools/move_tu.py main/4BC3C main/snd (dry run)
+move_tu: src/main/4BC3C.c -> src/main/snd.c (dry run)
+  bb2.ld: 6 section line(s)
+  flag lists: none
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 1 file(s)
+  files rewritten: .claude/rules/rodata-object-alignment.md, bb2.ld, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  other tracked references to the old id (review by hand; not rewritten):
+    tools/repack_stage.py:14:(src/main/4BC3C.c) loads record 0 and two of records 1..5 with
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "4BC3C(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+.claude/rules/rodata-object-alignment.md:3:paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/**/*rodata*.c", "src/main/psxsdk/libgpu/sys.c", "src/main/64FD8.c", "src/main/43500.c", "src/main/4510C.c", "src/main/4BC3C.c"]
+.claude/rules/rodata-object-alignment.md:51:instead of condition 1: 51268 | 596CC at func_80068ECC; 3AB48 | 43500 | 4510C | 4BC3C | 4D0A8 at func_80052D00,
+include/game.h:952:/* The 24-entry pending-sound pool (4BC3C): snd_QueueSound queues a request (an
+src/main/309CC.c:9: * 3 + 1 as an int; the s16 prototype 4BC3C defines it with narrows that
+src/main/4D0A8.c:9: * only here and follow 4BC3C.c's .sbss and 4510C.c's .sdata in address order.
+src/main/4D0A8.c:1744: * and 4BC3C.c's g_snd_stage_reverb_types precede; the data-only d_8BC50.c's
+src/main/d_5BF0.c:146: * 0x8001585C (rodata-object-alignment ruling 2026-09-30); then 4BC3C.c's: the
+src/main/d_8A588.c:3: * distance and pad-script tables), then 4BC3C.c's sound tables.
+src/main/d_8A588.c:5: * 1. One run: 4510C.c's g_cpu_profiles ends at 0x8009A088 and 4BC3C.c's
+src/main/d_8A588.c:17: * 3. Neighbours in .data link order: 4510C.c and 4BC3C.c, -G8 code modules
+src/main/d_8A588.c:21: * tables and polygon arrays only through g_cpu_stage_nav_sets), 4BC3C.c
+src/main/d_8A588.c:302:/* 4BC3C.c's. */
+
+### python tools/move_tu.py main/4D0A8 main/gpu_ui (dry run)
+move_tu: src/main/4D0A8.c -> src/main/gpu_ui.c (dry run)
+  bb2.ld: 6 section line(s)
+  flag lists: none
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: bb2.ld, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "4D0A8(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+.claude/rules/rodata-object-alignment.md:51:instead of condition 1: 51268 | 596CC at func_80068ECC; 3AB48 | 43500 | 4510C | 4BC3C | 4D0A8 at func_80052D00,
+include/game.h:416:/* The draw chunk 4D0A8 gpu_DrawModeSizedPanelWithSelectedCellOpaque builds at
+include/game.h:428:/* The draw chunk 4D0A8 gpu_DrawTimeFieldsAndDecimalCounter,
+include/game.h:442:/* The draw chunk 4D0A8 gpu_DrawPackedComparisonRowsAndTotals builds at the
+include/game.h:455:/* The draw chunk 4D0A8 gpu_DrawImageAndAdvanceSplitWipe builds at the address
+include/game.h:471:/* The draw chunk 4D0A8 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite
+include/game.h:484:/* The draw chunk 4D0A8 gpu_DrawSpriteAtPackedTablePosition builds at the
+include/game.h:495:/* The draw chunk 4D0A8 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells
+include/game.h:2478: * ubase per digit), and per-character x offsets (character_x_offsets). 4D0A8
+src/main/4BC3C.c:604: * rows, picked by its argument (38, the size up to 4D0A8.c's .data); [0] is
+src/main/d_8A588.c:22: * (g_snd_sound_vab_entries, g_vab_id_list) and 4D0A8.c (g_vab_id_list). */
+src/main/d_8BC50.c:2: * sheets of 4D0A8.c's HUD and result screens, then 51268.c's effect texture
+src/main/d_8BC50.c:5: * 1. One run: 4D0A8.c's g_gpu_decimal_digit_cells ends at 0x8009B450 and
+src/main/d_8BC50.c:11: * .. D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the one-record
+src/main/d_8BC50.c:15: * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules
+src/main/d_8BC50.c:18: * Readers: g_gpu_time_field_line_origins .. D_8009B850 (4D0A8.c), D_8009B890 ..
+src/main/d_8BC50.c:24:/* 4D0A8.c's sheets (its .data head, 0x8009ADB4..0x8009B450, is in 4D0A8.c). */
+src/main/d_8C4E4.c:16: * (63D2C.c, 64FD8.c), g_working_record (4D0A8.c, 51268.c, 64FD8.c). */
+symbol_addrs.txt:935:g_gpu_jittered_quad_pair_cycle = 0x800A326C; /* rising cyclic count: wrapped to 0..3 (% 4) on entry and incremented on exit; the call draws (it + 1) * 2 randomly placed sprite pairs (4D0A8.c:376-447) */  /* data-wave 2026-10-08: was g_eff_particle_remaining */
+
+### python tools/move_tu.py main/26730 main/cdrom_mix (dry run)
+move_tu: src/main/26730.c -> src/main/cdrom_mix.c (dry run)
+  bb2.ld: 4 section line(s)
+  flag lists: GP_FILES
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: Makefile, bb2.ld, engine/buildconfig.py, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "26730(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+named_syms.txt:461:/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
+src/main/267A8.c:3: * end of 26730.c's -G8 unit). */
+src/main/26940.c:5: * definitions (COMMON, zero bytes), as in 26730.c; gp-relative at their base
+symbol_addrs.txt:813:g_cd_atv = 0x800A3718; /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to g_cd_atv_target (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
+symbol_addrs.txt:2072:g_cd_fade_len = 0x800A3854; /* length of a CD-audio mix fade, set by cdrom_StartMixFade (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
+
+### python tools/move_tu.py main/26940 main/cdrom_update (dry run)
+move_tu: src/main/26940.c -> src/main/cdrom_update.c (dry run)
+  bb2.ld: 4 section line(s)
+  flag lists: GP_FILES
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: Makefile, bb2.ld, engine/buildconfig.py, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  other tracked references to the old id (review by hand; not rewritten):
+    include/bb2.h:372: * position) to CdPosToInt. Tentative definition in src/main/26940.c (Q62
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "26940(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+include/bb2.h:372: * position) to CdPosToInt. Tentative definition in src/main/26940.c (Q62
+named_syms.txt:461:/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
+src/main/cdrom.c:5: * end of 26940.c's -G8 unit). */
+src/main/d_7D920.c:21: *    data, none pointing into the run) and in .data link order 26940.o's
+src/main/d_7D920.c:22: *    empty .data (26940.c is -G8, gp accesses). After it, cdrom.o, a
+symbol_addrs.txt:813:g_cd_atv = 0x800A3718; /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to g_cd_atv_target (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
+symbol_addrs.txt:1179:g_cd_result = 0x800A3760; /* u8[8] result buffer of CdSync(1, .) / CdReady(1, .) in 26940.c (e.g. :47, :105) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
+symbol_addrs.txt:2072:g_cd_fade_len = 0x800A3854; /* length of a CD-audio mix fade, set by cdrom_StartMixFade (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
+symbol_addrs.txt:2073:g_cd_fade_step = 0x800A3840; /* fade step counter: zeroed by cdrom_StartMixFade, incremented by cdrom_UpdateAudio until it reaches g_cd_fade_len (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
+
+### python tools/move_tu.py main/24F08 main/menu_config (dry run)
+move_tu: src/main/24F08.c -> src/main/menu_config.c (dry run)
+  bb2.ld: 5 section line(s)
+  flag lists: GP_FILES
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: Makefile, bb2.ld, engine/buildconfig.py, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "24F08(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+src/main/25788.c:2: * .text 0x80034F88 (ROM 0x25788). Start boundary: G8 (the end of 24F08.c's -G8
+src/main/d_1068.c:2: * 24BF0.o's and 24F08.o's .rodata. Layout debt (Q101/Q102): one object holding
+src/main/d_1068.c:3: * both files' rodata would emit it as the .align 3 pad of 24F08.c's first jump
+src/main/d_1068.c:4: * table, but 24F08.c is cc1 -G8 by proof and 24BF0.c is not, so no byte-neutral
+
+### python tools/move_tu.py main/31CFC main/node_rebase_parents (dry run)
+move_tu: src/main/31CFC.c -> src/main/node_rebase_parents.c (dry run)
+  bb2.ld: 4 section line(s)
+  flag lists: GP_FILES
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: Makefile, bb2.ld, engine/buildconfig.py, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "31CFC(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+
+
+### python tools/move_tu.py main/175A4 main/fight_pair (dry run)
+move_tu: src/main/175A4.c -> src/main/fight_pair.c (dry run)
+  bb2.ld: 4 section line(s)
+  flag lists: NOWARN_FILES
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: Makefile, bb2.ld, engine/buildconfig.py, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+### git grep -n -w -E "175A4(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+include/bb2.h:737: * declaration: 175A4.c calls it implicitly, and any truthful declaration
+src/main/d_7D920.c:24: * not an owner candidate). Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c,
+symbol_addrs.txt:2057:D_80101F32 = 0x80101F32; /* D_80101EC8[0].unk_6A (u16, include/game.h:1424); compared with many constants (9F9C.c:1656, :2046; 175A4.c:34, :52, :148; 17AFC.c:951, :1020, :2447) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_6A */
+symbol_addrs.txt:2060:D_8010237E = 0x8010237E; /* D_80101EC8[1].unk_6A (D_80101F32 + 0x44C); compared with many constants (9F9C.c:1656, :2047; 175A4.c:91; 17AFC.c:951, :1027, :1048) */  /* data-wave 2026-10-09: was g_char_struct_p2_field_6A */
+
