@@ -807,10 +807,10 @@ void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32 a0, s32 a1) {
  * length} per file, read over from disc by ndata_StartReadInf; trailing zero
  * entries implicit), ndata_ReadFromPack's pack index, the 0x1000-step sine
  * table Judge (bb2.h), and resource_LoadSelectedEntriesTexturesAndSound's index
- * list D_800993FC. D_800955E0 sits between 32D04.c's .data and this file's with
- * no reorder either way; it is this file's by subsystem (the NDATA file names,
- * next to the NDATA file table; 899 is also g_ndata_inf's explicit entry count,
- * 760 packed
+ * list g_resource_entry_texture_groups. D_800955E0 sits between 32D04.c's .data
+ * and this file's with no reorder either way; it is this file's by subsystem
+ * (the NDATA file names, next to the NDATA file table; 899 is also
+ * g_ndata_inf's explicit entry count, 760 packed
  * + 139 {-1, -1}). Defined after every function, so no body sees a definition
  * where it saw an extern. */
 extern const char D_80010DEC[];

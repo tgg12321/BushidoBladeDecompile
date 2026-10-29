@@ -1291,7 +1291,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     and "canary_hit" not in args.result:
                 # At the EXE entry no game code has run yet: the disc's EXE
                 # must be in RAM as built. (Later the game patches its own
-                # code, e.g. the sites listed at D_80015820.)
+                # code, e.g. the sites listed at g_color_immediate_patch_sites.)
                 args.result["exe_in_memory"] = compare_memory(
                     gdb, EXE_LOAD, args.expect.get("exe"))
                 apply_stubs(gdb, stubs, "entry", regs,

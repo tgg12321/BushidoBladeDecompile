@@ -61,7 +61,7 @@ Handlers that the script's modes reach:
   (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
   display on.
 - `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
-  player 0) or `StepScrollingSpriteDisplay()`, merges `D_800A37A4` into
+  player 0) or `StepScrollingSpriteDisplay()`, merges `g_fight_pending_unlock_mask_bits` into
   `g_saved_record.unlock_mask` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
 - `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651, mode 15) runs the FMV overlay

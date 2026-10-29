@@ -384,7 +384,7 @@
 /* Animation emit / text1b family (1) */
 /* RESET 0x80061658: retired name 'anim_emit_21000CD_80061658' — preserved note: 2-variant opcode emitter (0x21000C/D) with cyan tint; sibling of anim_emit_210009 */
 /* AI + utility (5) */
-/* RESET 0x80057094: retired name 'ai_compute_target_direction_80057094' — note: pad word for a non-pad-driven player: D_8009AA50 d-pad direction from the ratan2 sector toward D_800F6608, plus bit 4 (a3 == 1) and bit 8 (func_800233AC succeeds) */
+/* RESET 0x80057094: retired name 'ai_compute_target_direction_80057094' — note: pad word for a non-pad-driven player: g_cpu_route_sector_dpad_masks d-pad direction from the ratan2 sector toward D_800F6608, plus bit 4 (a3 == 1) and bit 8 (func_800233AC succeeds) */
 /* RESET 0x80019488: retired name 'pack_status_nibble_triplet_80019488' — preserved note: returns 12-bit packed status: (D_80106A70/71/72 & 0xF) << {0,4,8} */
 /* RESET 0x80022224: retired name 'stage_find_far_corners_with_rand_80022224' — preserved note: picks 1 of 2 furthest stage corners; uses bb2_rand */
 /* RESET 0x80033898: retired name 'gpu_enable_and_state_reset_80033898' — preserved note: mode-transition hook: gpu_EnableDisplay + reset frame_counter + mode=3 */
@@ -487,13 +487,13 @@
 /* Source: code6cac_b.c:3709 (fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags) and 3787 (fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank). */
 /* */
 /* fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags steps g_fight_step_table_next_row through a table; at 0x64 it sets */
-/* D_800A36F0 / D_800A3781 to whether a chosen bit of the bitmap at */
+/* g_fight_timer_unlock_bit_newly_set / g_fight_no_restart_unlock_bit_newly_set to whether a chosen bit of the bitmap at */
 /* &g_saved_record */
 /* (g_file_disc_size -- MISNOMER, see MISNOMERS.md) was still clear, */
 /* then sets that bit. */
 /* */
-/* fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank then sets g_fight_presentation_index = 6/7 (D_800A36F0) or 8/9 */
-/* (D_800A3781) and g_main_loop_handler_index = 0x12. */
+/* fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank then sets g_fight_presentation_index = 6/7 (g_fight_timer_unlock_bit_newly_set) or 8/9 */
+/* (g_fight_no_restart_unlock_bit_newly_set) and g_main_loop_handler_index = 0x12. */
 
 /* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
 /* Functions whose debug_printf strings reveal their purpose. */
@@ -1014,7 +1014,7 @@
 /* From text1a.c around lines 317, 347, 353-354: fixed-point scale */
 /* factors and dispatch tables for attack/animation. */
 
-/* === StoreCompactedBits packed value, D_8009BD58 byte, g_resource_last_selection_index cache (2026-05-17) -- 3 highs === */
+/* === StoreCompactedBits packed value, g_menu_mode_selector_and_extra_slot_counts byte, g_resource_last_selection_index cache (2026-05-17) -- 3 highs === */
 
 /* === GPU MoveImage packet buffer + ordering-table slot cache (2026-05-17) -- 3 highs === */
 /* RENAME 0x800905F8: retired name 'D_800905F8' — preserved note: 0xFFFF (func_8003DA8C) or the ordering-table slot of the last DR_MOVE packet func_8003DBE4 inserted; read by gpu_GetLastFogOtIndex */  /* data-wave 2026-10-08: was g_status_up_cached_idx */
@@ -1051,7 +1051,7 @@
 
 /* === func_80016D78 reset cluster (2026-05-17) -- 6 highs === */
 /* From 6CF8.c func_80016D78 (:300-304): state cells reset */
-/* during start-up init (D_800A30D4 excepted, see its line). */
+/* during start-up init (g_gpu_cd_file_image_rect excepted, see its line). */
 
 /* === SPU transfer single-slot state (2026-05-17) -- 5 highs === */
 /* From main.c around line 2871-2924: a single-slot SPU transfer */
@@ -1125,7 +1125,7 @@
 /* === Instruction words of func_800545F4 (2026-05-17) -- 3 highs === */
 /* func_800545F4 (43500.c:562) is two lui/ori pairs; PatchColorImmediatesAtListedCodeSites copies */
 /* them, with new immediates, over the renderers' code at the eight */
-/* addresses in D_80015820 (31548.c:274-298).  Nothing runs them in place. */
+/* addresses in g_color_immediate_patch_sites (31548.c:274-298).  Nothing runs them in place. */
 
 /* === Kengo-MED function name promotions (2026-05-17) -- 18 highs === */
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
@@ -1187,7 +1187,7 @@ D_1F800110                                       = 0x1F800110;  /* data-wave 202
 /* RENAME 0x8009A820: retired name 'D_8009A820' — preserved note: data-wave 2026-10-08: was g_text1b_addr_8009A820 */
 /* 2026-10-16: D_8009A821 retired -- D_8009A820[i][1] (u8 D_8009A820[8][2], src/main/4510C.c:884); its dlabel is folded into D_8009A820's. */
 /* 2026-10-16: D_8009BC08, D_8009BC0C, D_8009BC0D retired -- MenuState g_row_menu_row_state's unk4 / opt[0].state / opt[0].mode (include/game.h, 1f0af23f2); the asm/data dlabels remain. */
-/* 2026-10-16: D_8009BCC6, D_8009BCD2, D_8009BD21, D_8009BD59 retired -- elements of g_entry_menu_choice_grid_draw_offsets (s16 [3][2]), g_entry_menu_transition_offsets (s16 [2]), g_sel_sheet_code_pairs (u8 [2][2]), D_8009BD58 (u8 [8][2]) (include/bb2.h); the asm/data dlabels of the first three remain. */
+/* 2026-10-16: D_8009BCC6, D_8009BCD2, D_8009BD21, D_8009BD59 retired -- elements of g_entry_menu_choice_grid_draw_offsets (s16 [3][2]), g_entry_menu_transition_offsets (s16 [2]), g_sel_sheet_code_pairs (u8 [2][2]), g_menu_mode_selector_and_extra_slot_counts (u8 [8][2]) (include/bb2.h); the asm/data dlabels of the first three remain. */
 /* 2026-10-16: D_800F10F8, D_800F1110, D_800F1114 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */

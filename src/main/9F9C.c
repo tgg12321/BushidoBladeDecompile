@@ -97,7 +97,7 @@ extern s32 g_motion_decode_skip_code_copy;
    the entry
    (->frame, ->pose, ->rate) and the reader state after it are kept in that
    slot. `work` holds the pose (+0x00), the rates (+0x84) and the codes
-   (+0x108, copied from rec->code when D_800A30EC is 0). */
+   (+0x108, copied from rec->code when g_motion_decode_skip_code_copy is 0). */
 void motion_DecodeFrame(
     s32 decoder_index, s32 frame_index, MotionFrame *out, u16 *work) {
     Unk800F1B18Rec *rec;

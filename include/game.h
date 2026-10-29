@@ -982,17 +982,17 @@ typedef struct {
  * g_eff_command_handler_bases index.
  * - bound_rotation_src / bound_position_src: the three halfwords / three words
  * eff_StepCommand and eff_DrawBillboardList copy into the scratchpad block's
- * vector_copy / position_copy (through D_800A346C / g_eff_view_origin). Only
- * the scratchpad block's are set: eff_BindScratchpad stores its two arguments
- * there.
+ * vector_copy / position_copy (through g_eff_view_angles / g_eff_view_origin).
+ * Only the scratchpad block's are set: eff_BindScratchpad stores its two
+ * arguments there.
  * - start_position_src / start_vector_src: the three words / three halfwords
  * eff_StartCommand copies into position_copy / vector_copy. Set only in the
  * g_eff_command_block block (through g_eff_active_command_block or
  * g_eff_command_block directly).
  * - status_dest: the byte eff_StartCommand / eff_StepCommand store the called
  * function's result to (`sb`).
- * - vector_copy / position_copy: the copies. D_800A346C / g_eff_view_origin
- * point at the scratchpad block's, g_eff_command_vector /
+ * - vector_copy / position_copy: the copies. g_eff_view_angles /
+ * g_eff_view_origin point at the scratchpad block's, g_eff_command_vector /
  * g_eff_command_position at the g_eff_command_block block's (eff_StartCommand).
  * vector_copy is s16 like its sources (bound_rotation_src / start_vector_src)
  * and every consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix,
@@ -1169,8 +1169,8 @@ typedef union {
  * from its own two stores to default_command_block.bound_rotation_src /
  * bound_position_src, the code reaches them only through those globals:
  * - default_command_block: the command block g_eff_active_command_block points
- * at until a function retargets it; D_800A346C / g_eff_view_origin point at its
- * vector_copy / position_copy.
+ * at until a function retargets it; g_eff_view_angles / g_eff_view_origin point
+ * at its vector_copy / position_copy.
  * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of g_eff_current_tex_rec /
  * g_eff_clut_tex_rec (TexRec). eff_DrawBillboardList retargets them only in its
@@ -1535,7 +1535,7 @@ typedef struct Unk800F1B18Rec {
  * g_fight_paired_move_separation: the distance
  * fighter_SetBasePositionSeparationCorrectionsAndGetDistance pulls the two
  * fighters toward) and a flags byte (bit 7 tested; the low 7 bits, stored to
- * D_800A38E8, are a frame threshold for
+ * g_fight_paired_move_event_min_frame, are a frame threshold for
  * fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents;
  * fight_UpdatePairedMoves). */
 typedef struct MoveScript {
@@ -1565,10 +1565,13 @@ typedef struct Unk80101EC8Record {
      * fighter_BuildCpuPad */
     s16 cpu_controlled;
     s16 cpu_base_level;
-    /* row of D_8008E5CC / D_8008E6A4, index of g_fighter_group_flags */
+    /* row of g_resource_default_pair_selections /
+     * g_resource_alternate_pair_selections, index of g_fighter_group_flags */
     s16 character_data_index;
     s16 character_roster_index;
-    s16 weapon_id; /* column of D_8008E5CC / D_8008E6A4 */
+    /* column of g_resource_default_pair_selections /
+     * g_resource_alternate_pair_selections */
+    s16 weapon_id;
     u8 unk_10[0x12 - 0x10];
     s16 weapon_entry_id;
     /* -1 == none, else index of g_resource_kind_entry_ids */

@@ -112,7 +112,7 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
    `g_view_camera_root_node`, builds its matrix through `g_math_rot_matrix_funcs[0]`, and sets the
    record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
    from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&g_view_camera_root_node)`,
-   `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `a2` in `D_800A33C0`.
+   `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `a2` in `g_gpu_view_eye_distance`.
 3. Recomputes the light matrices of `g_light_setups[0]`, `[1]`, `[4]`
    (`calc_LightMatrix`) and runs `light_ResetPointLight`, `ClearSavedWordPairsAndTwoWriteOnlyWords`,
    `func_8003F5CC`.

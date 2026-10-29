@@ -211,8 +211,8 @@ extern u16 g_fighter_base_powers[27][6];
 extern Tbl8008E194 g_object_kind_params[];
 
 /* 8 byte pairs ({0,0} {1,0} {2,0} {3,0} {4,1} {5,1} {6,1} {7,0});
- * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in D_800A35E0,
- * n = g_working_record.fight_mode. */
+ * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in
+ * g_menu_pending_entry_extra_slot_count, n = g_working_record.fight_mode. */
 extern u8 g_menu_mode_selector_and_extra_slot_counts[8][2];
 
 extern Obj80106A78 g_object_pool[12];

@@ -17,9 +17,9 @@
  * 3. Neighbours in .data link order: 4510C.c and 4BC3C.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005490C + 0x6B30 = 0x8005B43C); so no code module owns them.
- * Readers: 4510C.c (D_8009A088 .. D_8009AA50; the vertex tables and polygon
- * arrays only through g_cpu_stage_nav_sets), 4BC3C.c (g_snd_sound_vab_entries,
- * g_vab_id_list) and 4D0A8.c (g_vab_id_list). */
+ * Readers: 4510C.c (D_8009A088 .. g_cpu_route_sector_dpad_masks; the vertex
+ * tables and polygon arrays only through g_cpu_stage_nav_sets), 4BC3C.c
+ * (g_snd_sound_vab_entries, g_vab_id_list) and 4D0A8.c (g_vab_id_list). */
 #include "common.h"
 #include "bb2.h"
 

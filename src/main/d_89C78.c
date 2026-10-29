@@ -1,9 +1,10 @@
 /* Data-only file: .data 0x80099478..0x80099D54 (ROM 0x89C78), 368E4.c's
  * loaded-resource state, start positions and lookup tables.
  * Owner rulings Q122 / Q123 (data-only-no-sdata):
- * 1. One run: 35000.c's D_800993FC ends at 0x80099478 (368E4.o and 3AB48.o
- *    have no .data) and 43500.c's g_motion_playback_file_id_bases starts at
- * 0x80099D54. No uninitialized objects.
+ * 1. One run: 35000.c's g_resource_entry_texture_groups ends at 0x80099478
+ * (368E4.o and 3AB48.o have no .data) and 43500.c's
+ * g_motion_playback_file_id_bases starts at 0x80099D54. No uninitialized
+ * objects.
  * 2. Small objects in .data: g_loaded_resource_selector and
  * g_resource_has_retained_subblocks (s16 each, each with its own lh / sh
  * readers; g_fight_start_position_pairs after them has its own reader) and
@@ -196,7 +197,7 @@ Unk80099B9CRec D_80099B9C = {
     {{-9300, -6000, 8000}, {500, -6000, 8000}, {10700, -6000, 8000}}};
 
 /* 70 retained-draw asset ids (0xFF: none); the 2 zero bytes after it align
- * D_80099C14. */
+ * g_node_retained_draw_matrix_indices. */
 u8 g_node_retained_draw_asset_ids[70] = {
     0x15, 0x16, 0x17, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
     0x09, 0xFF, 0xFF, 0x18, 0x19, 0x1A, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,

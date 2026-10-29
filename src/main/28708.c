@@ -1943,11 +1943,13 @@ end:
 
 /* .data 0x8008F19C..0x8008F220 (cdrom.c's .data precedes; 2B344.c's
  * D_8008F220.. follows), in address order:
- * memcard_BuildFileHeader's full-width Shift-JIS digit tables D_8008F19C
- * ("0".."4") and D_8008F1A8 ("0".."9"), the full-width save title
- * g_memcard_save_title
+ * memcard_BuildFileHeader's full-width Shift-JIS digit tables
+ * g_memcard_title_sjis_digits_0_to_4
+ * ("0".."4") and g_memcard_title_sjis_digits ("0".."9"), the full-width save
+ * title g_memcard_save_title
  * ("BB2 Narukagami:? VS Shainto:?", the two "?" overwritten with digits) and
- * the per-character class bytes D_8008F204 (27 used; the 28th byte is zero).
+ * the per-unlock-bit title-counter selectors
+ * g_memcard_title_count_class_by_unlock_bit (27 used; the 28th byte is zero).
  * Only this file reads them. Defined after every function, so no body sees a
  * definition where it saw an extern. */
 u8 g_memcard_title_sjis_digits_0_to_4[12] = {

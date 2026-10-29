@@ -258,8 +258,8 @@ void sys_ExecMovieOverlay(
 }
 
 /* .data 0x8008EC34..0x8008F19C (d_7D920.c's g_fight_time_limit_choices
- * precedes, 28708.c's D_8008F19C follows), in address order: the disc file
- * table g_cd_file_table
+ * precedes, 28708.c's g_memcard_title_sjis_digits_0_to_4 follows), in address
+ * order: the disc file table g_cd_file_table
  * ({CdlLOC, size} per file), cdrom_GetFileIndex's per-group first-file index
  * g_cdrom_file_group_bases, and cdrom_StartAudioEntry's rows
  * g_cdrom_audio_entries. Only this file reads them. Defined after every
