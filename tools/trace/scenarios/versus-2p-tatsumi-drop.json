@@ -1,0 +1,63 @@
+{
+  "description": "versus-2p flow with P1 cursor DOWN x2 to TATSUMI (TATSUMI vs GENGORO, Katana both; TATSUMI's motion_data_id 0x431 has a nibble 4 at position 2, so fighter_AssignMotionSlotAndScanDataIdNibbles sets object_variant_index 2 and object_variant_enabled 1), Bamboo Thicket; P1 SQUARE at 8450 and 8650 (variant_index 0 -> 1 -> 2), then P2 LEFT + CIRCLE every 100 frames from 9000: P2's cut on TATSUMI at 9274 takes fighter_TryDropQueuedHeadAtBone's drop, object_DropQueuedHeadAt (capture by the trace lane)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:bamboo_thicket",
+    "char:tatsumi",
+    "char:gengoro",
+    "event:round_start",
+    "event:hit"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-tatsumi-drop-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 10680,
+  "inputs": [
+    "6560:DOWN",
+    "6590:DOWN",
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:RIGHT",
+    "7500:CROSS",
+    "8450:SQUARE",
+    "8650:SQUARE"
+  ],
+  "repeat": [
+    {
+      "from": 9000,
+      "every": 100,
+      "count": 17,
+      "steps": [
+        "+0:LEFT/40@2",
+        "+50:CIRCLE@2"
+      ]
+    }
+  ],
+  "phases": [
+    "7525:t_load",
+    "8350:fight"
+  ],
+  "shots": [
+    "6650:char_select.tatsumi",
+    "8350:fight.first",
+    "8460:fight.8460",
+    "8660:fight.8660",
+    "9000:fight.9000",
+    "9250:fight.9250",
+    "9270:fight.9270",
+    "9274:fight.9274",
+    "9280:fight.9280",
+    "9290:fight.9290",
+    "9300:fight.9300",
+    "9330:fight.9330",
+    "9400:fight.9400",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10679:fight.last"
+  ]
+}
