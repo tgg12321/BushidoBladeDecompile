@@ -65,3 +65,4 @@ main/psxsdk/libsnd/76240	main/psxsdk/libsnd/ut_keyv	after:5d9746199420
 main/psxsdk/libspu/7A248	main/psxsdk/libspu/s_sav	after:b7916331a520
 main/4BC3C	main/snd	after:4531ff6fae7a
 main/26730	main/cdrom_mix	after:b2eae6daceae
+main/26940	main/cdrom_update	after:c34f16579289

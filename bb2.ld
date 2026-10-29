@@ -52,7 +52,7 @@ SECTIONS
         build/src/main/25C38.o(.rodata);
         build/src/main/cdrom_mix.o(.rodata);
         build/src/main/267A8.o(.rodata);
-        build/src/main/26940.o(.rodata);
+        build/src/main/cdrom_update.o(.rodata);
         build/src/main/cdrom.o(.rodata);
         build/src/main/memcard.o(.rodata);
         build/src/main/28514.o(.rodata);
@@ -108,7 +108,7 @@ SECTIONS
         build/src/main/25C38.o(.text);
         build/src/main/cdrom_mix.o(.text);
         build/src/main/267A8.o(.text);
-        build/src/main/26940.o(.text);
+        build/src/main/cdrom_update.o(.text);
         build/src/main/cdrom.o(.text);
         build/src/main/memcard.o(.text);
         build/src/main/28514.o(.text);
@@ -340,7 +340,7 @@ SECTIONS
         build/src/main/25C38.o(.data);
         build/src/main/cdrom_mix.o(.data);
         build/src/main/267A8.o(.data);
-        build/src/main/26940.o(.data);
+        build/src/main/cdrom_update.o(.data);
         build/src/main/d_7D920.o(.data);
         build/src/main/cdrom.o(.data);
         build/src/main/memcard.o(.data);
@@ -654,7 +654,7 @@ SECTIONS
         build/src/main/25C38.o(.bss);
         build/src/main/cdrom_mix.o(.bss);
         build/src/main/267A8.o(.bss);
-        build/src/main/26940.o(.bss);
+        build/src/main/cdrom_update.o(.bss);
         build/src/main/cdrom.o(.bss);
         build/src/main/memcard.o(.bss);
         build/src/main/28514.o(.bss);
