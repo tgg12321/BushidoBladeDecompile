@@ -64,3 +64,4 @@ main/psxsdk/libsnd/75174	main/psxsdk/libsnd/midiread	after:11f552960c68
 main/psxsdk/libsnd/76240	main/psxsdk/libsnd/ut_keyv	after:5d9746199420
 main/psxsdk/libspu/7A248	main/psxsdk/libspu/s_sav	after:b7916331a520
 main/4BC3C	main/snd	after:4531ff6fae7a
+main/26730	main/cdrom_mix	after:b2eae6daceae
