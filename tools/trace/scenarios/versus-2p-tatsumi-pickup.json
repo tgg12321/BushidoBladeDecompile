@@ -1,0 +1,109 @@
+{
+  "description": "versus-2p flow with P1 cursor DOWN x2 to TATSUMI (TATSUMI vs GENGORO, Katana both, Bamboo Thicket; P1 SQUARE at 8450 and 8650, variant_index 0 -> 1 -> 2 as in versus-2p-tatsumi-drop); from 8800 both hold L1 and run at each other (P1 RIGHT, P2 LEFT: movegraph kind 0x30): the head-on collision of two running fighters (17AFC.c:1003-1011) knocks both down and fighter_TryDropQueuedHeadAtBone drops TATSUMI's stick with no cut (object_DropQueuedHeadAt); from 9020 both roll on the ground (P1 UP, P2 DOWN: common kind 6 from the down move), and kind 6 calls object_PickUpNearby every frame (9F9C.c:5780-5785), which takes the stick through object_QueueKind (capture by the trace lane)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:bamboo_thicket",
+    "char:tatsumi",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-tatsumi-pickup-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 10000,
+  "inputs": [
+    "6560:DOWN",
+    "6590:DOWN",
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:RIGHT",
+    "7500:CROSS",
+    "8450:SQUARE",
+    "8650:SQUARE",
+    "8800:L1/200",
+    "8806:RIGHT/194",
+    "8800:L1/200@2",
+    "8806:LEFT/194@2"
+  ],
+  "repeat": [
+    {
+      "from": 9020,
+      "every": 50,
+      "count": 19,
+      "steps": [
+        "+0:UP/30",
+        "+0:DOWN/30@2"
+      ]
+    }
+  ],
+  "phases": [
+    "7525:t_load",
+    "8350:fight"
+  ],
+  "shots": [
+    "6650:char_select.tatsumi",
+    "8350:fight.first",
+    "8660:fight.8660",
+    "8790:fight.8790",
+    "8810:fight.8810",
+    "8820:fight.8820",
+    "8830:fight.8830",
+    "8840:fight.8840",
+    "8850:fight.8850",
+    "8860:fight.8860",
+    "8870:fight.8870",
+    "8880:fight.8880",
+    "8890:fight.8890",
+    "8900:fight.8900",
+    "8910:fight.8910",
+    "8920:fight.8920",
+    "8930:fight.8930",
+    "8940:fight.8940",
+    "8950:fight.8950",
+    "8960:fight.8960",
+    "8970:fight.8970",
+    "8980:fight.8980",
+    "8990:fight.8990",
+    "9000:fight.9000",
+    "9010:fight.9010",
+    "9020:fight.9020",
+    "9030:fight.9030",
+    "9060:fight.9060",
+    "9090:fight.9090",
+    "9120:fight.9120",
+    "9150:fight.9150",
+    "9180:fight.9180",
+    "9210:fight.9210",
+    "9240:fight.9240",
+    "9270:fight.9270",
+    "9300:fight.9300",
+    "9330:fight.9330",
+    "9360:fight.9360",
+    "9390:fight.9390",
+    "9420:fight.9420",
+    "9450:fight.9450",
+    "9480:fight.9480",
+    "9510:fight.9510",
+    "9540:fight.9540",
+    "9570:fight.9570",
+    "9600:fight.9600",
+    "9630:fight.9630",
+    "9660:fight.9660",
+    "9690:fight.9690",
+    "9720:fight.9720",
+    "9750:fight.9750",
+    "9780:fight.9780",
+    "9810:fight.9810",
+    "9840:fight.9840",
+    "9870:fight.9870",
+    "9900:fight.9900",
+    "9930:fight.9930",
+    "9960:fight.9960",
+    "9999:fight.last"
+  ]
+}
