@@ -678,7 +678,8 @@ u16 g_object_bone_hit_deflect_angles[22] = {
     0xFF00, 0xFF80, 0x300,  0x280, 0x100,  0x80};
 
 /* fighter_DispatchFrameEvent / fight_RecordReplayEventAndDispatchSoundOrEffect;
- * g_fight_step_row_sound_offsets and D_8008EBE0 sized from the gaps. */
+ * g_fight_step_row_sound_offsets and g_eff_yawed_quad_tex_selector_command_bits
+ * sized from the gaps. */
 s32 g_fight_step_row_sound_offsets[5] = {0, 51, 58, 65, 72};
 
 s32 g_eff_yawed_quad_tex_selector_command_bits[5] = {
