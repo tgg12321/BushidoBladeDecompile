@@ -1,0 +1,58 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-33); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_base_tree("HEAD") of the lane worktree ln-naming-a, HEAD 8bab26f8d = main; NAMING_KEYCHECK_ROOT = cwd = the worktree; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 46 pairs
+(336 token substitutions: 51268.c 7, 596CC.c 16, 5ED34.c 12, 64FD8.c 301; no include/ file touched, 6CF8.c 0 after the main:var_3 drop; the comment edits listed in notes.txt
+R6 WATCH are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 336. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; ./-> member tokens excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch (the scan is a separate tokenizer, not the plan's). The dropped main:var_3=present_skip_frames (5 substitutions in 6CF8.c; research total 341 with it)
+was not part of the run. The run modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  eff_SpawnParticles:var_5=emitter_vector 7
+  menu_LoadResourcesInitStateSelectFirstEnabledRow:arg0=prim_buffer_pair_addr 4
+  gpu_DrawIndexedCellsAndDecimalDigitPairs:arg2=cell_digit_set 12
+  InitDisplayStateLoadPackAndSetEntryFlags:arg0=prim_buffer_pair_addr 4
+  InitDisplayStateLoadPackAndSetEntryFlags:arg1=extra_slot_count 2
+  InitDisplayStateLoadPackAndSetEntryFlags:arg2=working_record 3
+  InitDisplayStateLoadPackAndSetEntryFlags:arg3=compacted_unlock_mask 3
+  menu_HandleSelPhase0CursorInput:arg0=pressed_buttons 7
+  menu_HandleSelPhase0CursorInput:sp10=merged_pressed_buttons 3
+  menu_DrawSelRowTiles:arg1=player_index 4
+  menu_DrawSelPhaseSheet:arg1=player_index 3
+  menu_DrawSelPanel:arg1=player_index 10
+  menu_DrawSelOpposedChoice:arg1=player_index 9
+  menu_HandleSelOpposedChoice:arg0=pressed_buttons 4
+  menu_HandleSelOpposedChoice:arg1=player_index 14
+  menu_DrawSelGridCellOverlay:arg2=player_index 5
+  menu_DrawSelGrid:arg1=grid_page 5
+  menu_DrawSelGrid:arg2=pick_slots 3
+  menu_DrawSelGrid:arg3=player_index 18
+  menu_UpdateSelGridPicks:arg0=pressed_buttons 7
+  menu_UpdateSelGridPicks:arg1=grid_page 3
+  menu_UpdateSelGridPicks:arg2=pick_slots 6
+  menu_UpdateSelGridPicks:arg3=player_index 38
+  menu_DrawSelListPicks:arg2=pick_slots 2
+  menu_DrawSelListPicks:arg3=player_index 23
+  menu_UpdateSelListPicks:arg0=pressed_buttons 5
+  menu_UpdateSelListPicks:arg1=grid_page 2
+  menu_UpdateSelListPicks:arg2=pick_slots 2
+  menu_UpdateSelListPicks:arg3=player_index 56
+  menu_InitSelScreen:arg0=prim_buffer_pair_addr 3
+  menu_InitSelScreen:arg1=working_record 2
+  menu_InitSelScreen:arg2=compacted_unlock_mask 2
+  menu_RunSelPhases:arg0=pressed_buttons 6
+  menu_StepSelScreen:arg1=pressed_buttons 2
+  InitRowMenuBlackBgResetFlow:a0=prim_buffer_pair_addr 2
+  menu_UpdateRowMenuStoreResult:arg1=pressed_buttons 2
+  StoreCompactedBits:arg0=unlock_mask 5
+  InitWithCachedValueAndStoredBitsBlackBg:a0=prim_buffer_pair_addr 2
+  StepThenCloseVab1OnNonzero:arg1=pressed_buttons 2
+  menu_ResetFlowThenRunUpdate:a1=pressed_buttons 2
+  menu_InitSelWithStoredBits:a0=prim_buffer_pair_addr 2
+  menu_RunOptionModeFlowStateWithRowBitEdit:arg1=pressed_buttons 4
+  menu_RunOptionModeFlowStateWithRowBitEdit:s2=return_value 8
+  InitTimedSpriteSequence:arg0=prim_buffer_pair_addr 3
+  InitScrollingSpriteDisplay:arg0=prim_buffer_pair_addr 3
+PRE-APPLY: menu_InitSelScreen:t0=player_index (22 substitutions, 64FD8.c) FAILed pre-apply and is removed; kept set 45 pairs, 314 substitutions (64FD8.c 279).

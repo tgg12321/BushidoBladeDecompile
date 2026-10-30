@@ -1,0 +1,32 @@
+# Research (read-only): local / parameter names, parallel batch p1 (row var-locals-p1, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-33/prompt.txt` (which chains to var-locals-32 / 31 / 30 /
+29 / 26 / 15 and the wave-15..33 lessons) exactly, plus `pending/var-locals-{31,32,33}/notes.txt`, with
+these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD 8bab26f8d (read-only; equals main; re-derive every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-p1-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 33: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-33/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not
+  edited), ending with a "### LEADS for var-locals-p2" section. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs): auto-named bindings (a0..a3, arg<N>, var_<N>, v0, s<N>,
+  sp<N>, temp_*) of functions with admitted names, not on any NO_NAME / neutral list, in
+  src/main/51268.c, then 596CC.c, 5ED34.c, 64FD8.c, 6CF8.c, 87A0.c, 9F9C.c, in that order.
+  NEVER touch src/main/17AFC.c .. 4510C.c (the sequential var-locals-34 track, run in parallel by
+  another lane, owns them); a prototype of an in-scope function declared in a header is fine to list
+  as a comment-pass prototype edit.
+- Left neutral on purpose, do not re-propose without new evidence: as var-locals-33's prompt.
+- Do not re-propose wave 8-33 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,33}/notes.txt) without new evidence, said in the row.
+- Prototype parameter edits (a prototype elsewhere naming the same parameter) go in the comment
+  list; they land in the comment commit.
+- Lessons (unchanged from var-locals-33's prompt): scoped_plan-resolvable bindings only; no collision
+  with a member, global, macro or function the same function references; two roles in one body =
+  neutral; own vs opponent distinguished; true before AND after every in-place rewrite;
+  fighter_index for the 0/1 fight side; FAKE-labelled temporaries neutral unless true at every use;
+  no word the code doesn't show; units only where the code shows the scale.
