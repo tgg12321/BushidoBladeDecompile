@@ -133,7 +133,7 @@ void InitSavedRecordAndResetCameraDistanceOffset(void) {
     g_camera_distance_offset = 0;
     var_1->flags = 0;
     var_1->unlock_mask = 0x7007;
-    var_1->unk_04 = 0;
+    var_1->staff_roll_character_mask = 0;
     for (i = 0; i < 3; i++) {
         var_1->times[i].holder_character_index = 0;
         var_1->times[i].holder_weapon_id = 0;

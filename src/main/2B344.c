@@ -666,8 +666,8 @@ void fight_UpdateScrollingSpriteDisplayAndMergeBitFlags(void) {
             if (bit >= 0xC) {
                 bit -= 9;
             }
-            if (!((g_saved_record.unk_04 >> bit) & 1)) {
-                g_saved_record.unk_04 |= 1 << bit;
+            if (!((g_saved_record.staff_roll_character_mask >> bit) & 1)) {
+                g_saved_record.staff_roll_character_mask |= 1 << bit;
                 changed = 1;
             }
         }

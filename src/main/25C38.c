@@ -21,7 +21,7 @@ void menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows(void) {
     s32 a0;
     g_row_menu_subflow_state = 1;
     CopySavedFlagsButtonMappingsAndTimesToWorkingRecord();
-    if (g_saved_record.unk_04 == 0x3F) {
+    if (g_saved_record.staff_roll_character_mask == 0x3F) {
         a0 = 0xFF;
     } else {
         a0 = 0xF7;
@@ -287,7 +287,7 @@ void menu_UpdateRowMenuAndSubflows(void) {
             g_row_menu_subflow_state = 1;
             CopyWorkingFlagsAndButtonMappingsToSavedRecord();
             g_handler_frame_counter = 0;
-            if (g_saved_record.unk_04 == 0x3F) {
+            if (g_saved_record.staff_roll_character_mask == 0x3F) {
                 menu_SetEnabledRows(0xFF);
             } else {
                 menu_SetEnabledRows(0xF7);

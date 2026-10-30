@@ -28,8 +28,8 @@ typedef struct {
 } TimeRec;
 
 typedef struct {
-    s32 unlock_mask; /* 0x80106A50 */
-    u8 unk_04;       /* 0x80106A54 */
+    s32 unlock_mask;              /* 0x80106A50 */
+    u8 staff_roll_character_mask; /* 0x80106A54 */
     u8 unk_05[3];
     TimeRec times[3]; /* 0x80106A58 */
     u8 frec20[3];     /* 0x80106A70 */
