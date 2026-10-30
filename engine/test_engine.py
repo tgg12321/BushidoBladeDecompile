@@ -7286,8 +7286,9 @@ def test_naming_keycheck_scoped_pairs() -> None:
     for macro_path in ["include/macros.h", "src/macros.h", "src/macros.c"]:
         ok, why = proof("f:l=fresh", {"src/a.c": local,
                         macro_path: "#define GET(p) ((p)->l)\n"}, {"src/a.c": local_new})
-        check("keycheck: local rejects visible macro " + macro_path,
-              not ok and macro_path in why and "#define body" in why)
+        # A .c nothing includes is not visible to f's TU (scoped-plan-bindings).
+        check("keycheck: local rejects visible macro " + macro_path, ok if macro_path.endswith(".c")
+              else not ok and macro_path in why and "#define body" in why)
     text = 'int f(int l) { __asm__("add %[l], %[l]" : [l] "+r"(l)); return l; }'
     check("keycheck: asm string substitution forbidden", not proof("f:l=fresh", {"src/a.c": text},
           {"src/a.c": text.replace("[l]", "[fresh]").replace("int l", "int fresh")
@@ -7789,12 +7790,15 @@ def test_naming_keycheck_scoped_pairs() -> None:
         ok, why = proof("f:l=n", files, {"src/a.c": after}, cpp=namespace_cpp)
         reason = ("call opener" if probe in ("j1", "j1b", "OPENF-DROP", "k2") else
                   "argument of function-like macro" if probe in ("j2", "j2b") else "adjacent to cpp macro")
-        check("keycheck: round-10 macro namespace " + probe, not ok and reason in why)
+        check("keycheck: round-10 macro namespace " + probe,
+              not ok and (reason in why or ".inc" in str(files) and "outside the .c / .h" in why))
         # Namespace proof independently kills keeping macros; discarders are
         # rejected by the sentinel proof even with all static guards disabled.
         with patch.object(nk, "closure_macro_checks", lambda *a: None), \
+                patch.object(nk, "c_sources_closed", lambda *a: True), \
                 patch.object(nk, "cpp_source_guards", lambda *a: None), \
-                patch.object(nk, "reject_macro_arguments", lambda *a, **kw: None):
+                patch.object(nk, "reject_macro_arguments", lambda *a, **kw: None), \
+                patch.object(nk, "reject_unexpanded_macro_arguments", lambda *a, **kw: None):
             ok, why = proof("f:l=n", files, {"src/a.c": after}, cpp=namespace_cpp)
         check("keycheck: round-10 primary cpp namespace " + probe,
               not ok and ("namespace" in why if probe != "OPENF-DROP" else "sentinel discarded" in why))
@@ -7983,7 +7987,8 @@ def test_naming_keycheck_scoped_pairs() -> None:
         why = str(e)
     check("keycheck: shadowed typedef cpp guard independently rejects", "shadowed typedef" in why)
     text = '#include "u.inc"\nint f(int l){return l;}\n'
-    with patch.object(nk, "local_freshness", lambda *a: None):
+    with patch.object(nk, "local_freshness", lambda *a: None), \
+            patch.object(nk, "c_sources_closed", lambda *a: True):
         ok, why = proof("f:l=n", {"src/a.c": text, "include/u.inc": "enum {n=5};\n"},
                         {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")}, cpp=scope_cpp)
     check("keycheck: local freshness sees inc enum independently", not ok and "outside f in cpp" in why)
@@ -8155,6 +8160,257 @@ def test_naming_keycheck_scoped_pairs() -> None:
         check("keycheck: cpp guards exclude macro own parameter " + param, proof("f:l=n",
               {"src/a.c": text, "include/params.h": "#define COPY(" + param + ") (" + param + ")\n"},
               {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})[0])
+    # scoped-plan-bindings: a #define body in a .c nothing includes cannot reach f;
+    # the same body in an included header still fails.
+    text = "int f(int l){return l;}\n"
+    other = "#define GET(x) { int l = 32 - (x); x = l; }\n"
+    check("keycheck: local pair ignores a #define body in an unincluded .c", proof("f:l=n",
+          {"src/a.c": text, "src/b.c": other}, {"src/a.c": text.replace("l", "n")})[0])
+    ok, why = proof("f:l=n", {"src/a.c": '#include "b.h"\n' + text, "include/b.h": other},
+                    {"src/a.c": '#include "b.h"\n' + text.replace("l", "n")})
+    check("keycheck: local pair still refuses a #define body in an included header",
+          not ok and "#define body" in why)
+    ok, why = proof("f:l=n", {"src/a.c": '#include "b.c"\n' + text, "src/b.c": other},
+                    {"src/a.c": '#include "b.c"\n' + text.replace("l", "n")})
+    check("keycheck: local pair still refuses a #define body in an included .c",
+          not ok and "#define body" in why)
+    # A local passed to a plainly expanding macro is renamed in place; a macro
+    # that stringizes, drops or moves it into a member/tag/label namespace fails.
+    for body, reason in [("(((x) >> 2) << 2)", None), ("((s)->x)", "member/tag/label"),
+                         ("#x", "member/tag/label"), ("(0)", "drops a parameter"),
+                         ("(s.x)", "member/tag/label"), ("(s x)", "outside an operand position")]:
+        text = "#define A4(x) " + body + "\nint s;\nint f(int l){return A4(l) + l;}\n"
+        ok, why = proof("f:l=n", {"src/a.c": text},
+                        {"src/a.c": text.replace("int l", "int n").replace("A4(l) + l", "A4(n) + n")})
+        check("keycheck: local macro argument " + body,
+              ok if reason is None else not ok and reason in why)
+    # Review probes: a parameter forwarded into another macro, or an identity
+    # macro invoked where its expansion is a member, tag or label, fails; so does
+    # a #define reached through a ../ or #import include.
+    struct = "struct S{int l;int n;}; struct S s; int l_tab, n_tab;\n"
+    for label, text in [
+            ("forwarded to a member macro", "#define B(y) (s.y)\n#define A(x) B(x)\n" + struct
+             + "int f(int l){ return A(l) + l; }\n"),
+            ("forwarded to a paste macro", "#define B(y) y##_tab\n#define A(x) B(x)\n" + struct
+             + "int f(int l){ return A(l) + l; }\n"),
+            ("forwarded to a stringizing macro", "#define B(y) #y\n#define A(x) B(x)\nint g(char *);\n"
+             "int f(int l){ g(A(l)); return l; }\n"),
+            ("identity after ->", "#define ID(x) x\n" + struct + "int f(struct S *p, int l){ return p->ID(l) + l; }\n"),
+            ("identity as a label", "#define ID(x) x\nint f(int l){ if (l) goto l; ID(l): return l; }\n")]:
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": text})
+        check("keycheck: local macro argument review probe: " + label, not ok and "macro" in why)
+    struct = "struct S{int l;int a;} s, *p;\n"
+    for label, text in [
+            ("adjacent parameters", "#define PAIR(a, b) a b\n" + struct + "int f(int l){ return PAIR(s., l) + l; }\n"),
+            ("macro name as an argument", "#define MEMBER(x) s.x\n#define APPLY(m, x) m(x)\n" + struct
+             + "int f(int l){ return APPLY(MEMBER, l) + l; }\n"),
+            ("parameter declares a member", "#define SD(x) struct { int x; } q\n"
+             "int f(int l){ SD(l); q.l = l; return q.l; }\n"),
+            ("object macro before the call", "#define DOT .\n#define ID(x) x\nint g(int);\n" + struct
+             + "int f(int l){ return g(s DOT ID(l)) + l; }\n"),
+            ("label address after a cast", "#define ID(x) x\n"
+             "void *f(int l){ void *q = (void *)&&ID(l); l: return l ? q : 0; }\n")]:
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: local macro argument second review probe: " + label, why != "")
+    files = {"src/a.c": "#ifndef M\n#define M 1\n#endif\nint f(int l){ return M + l; }\n",
+             "src/b.c": "#define M (l + 1)\n#include \"a.c\"\n"}
+    try:
+        nk.scoped_plan(files, {"f:l": "n"}, {})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: a .c that includes f's file keeps its #define bodies visible", "#define body" in why)
+    # Third review: the reverse include may be spelled through a macro, a line
+    # splice or a comment; each still keeps the including file's macros visible.
+    a_c = "#ifndef G\n#define G(x) (x)\n#endif\nint l;\nint f(int l){ return G(1) + l; }\n"
+    for include in ('#define A_C "a.c"\n#include A_C\n', '#include \\\n"a.c"\n',
+                    '#include "a.\\\nc"\n', '#include /*\n*/ "a.c"\n'):
+        try:
+            nk.scoped_plan({"src/a.c": a_c, "src/b.c": "#define G(x) ((x) + l)\n" + include},
+                           {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: reverse include spelled " + repr(include), "#define body" in why)
+    for include in ('#include "../b.c"\n', '#import "b.c"\n'):
+        files = {"src/main/a.c": include + "int f(int l){ return G + l; }\n",
+                 "src/b.c": "int l;\n#define G (l + 1)\n"}
+        try:
+            nk.scoped_plan(files, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: include closure follows " + include.strip(), "#define body" in why)
+    # Fourth review: cpp on /mnt/c matches include paths case-insensitively, and an
+    # absolute or unmatched target may name any file; each keeps b.c's macros visible.
+    for include in ('#include "B.c"\n', '#include "b.C"\n', '#include "../Main/b.c"\n',
+                    '#include <MAIN/B.C>\n', '#include "/mnt/c/repo/src/main/b.c"\n',
+                    '#include "C:/repo/src/main/b.c"\n', '#include "gone/q.inc"\n',
+                    '\ufeff#include "b.c"\n', '#inc\\ \nlude "b.c"\n',
+                    "#define Q don't /*\n#include \"b.c\"\n/* */\n",
+                    '#define Q " /*\n#include "b.c"\n/* */\n', '// note\r#include "b.c"\n',
+                    'char *s = "a\r"; /*\n#include "b.c"\n*/\n', '#/*\n*/include "b.c"\n',
+                    '#\vinclude "b.c"\n', '#\finclude "b.c"\n', '#\0include "b.c"\n',
+                    '\0#include "b.c"\n', 'char *s = R"(" /* )";\n#include "b.c"\n/* */\n'):
+        files = {"src/main/a.c": include + "int f(int l){ return G + l; }\n",
+                 "src/main/b.c": "int l;\n#define G (l + 1)\n"}
+        try:
+            nk.scoped_plan(files, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: include closure casefolds / falls back " + include.strip(), "#define body" in why)
+    for include in ('#include "A.C"\n', '#include "/abs/a.c"\n', '#include "gone/q.inc"\n',
+                    '﻿#include "a.c"\n', '#inc\\ \nlude "a.c"\n',
+                    "#define Q don't /*\n#include \"a.c\"\n/* */\n", '// c\r#include "a.c"\n',
+                    '#/*\n*/include "a.c"\n', '#\vinclude "a.c"\n', '#\0include "a.c"\n'):
+        try:
+            nk.scoped_plan({"src/a.c": a_c, "src/b.c": include + "#define G(x) ((x) + l)\n"},
+                           {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: reverse include casefolds / falls back " + include.strip(), "#define body" in why)
+    # Seventh to ninth reviews: cpp ends an unterminated ' or " at the newline (a
+    # later /* is code), ends a line at a lone CR, drops NULs and continues a
+    # directive across a multi-line comment; include_closure gives up on each.
+    # Quotes inside comments, closed literals and multi-line comments away from
+    # directives keep the closure exact.
+    for text, expected in (("don't /*\n", True), ('x = "a\n', True), ("c = '\\'';\n", False),
+                           ("/* don't */ // it's\n", False), ('s = "it\'s \\"q\\"";\n', False),
+                           ("x;\r#y\n", True), ("a\0b\n", True), ("x;\r\n", False),
+                           ("#/*\n*/include\n", True), ("/*\n*/ #include\n", True),
+                           ("%: /*\n*/\n", True), ('s = u8R"x(a)x";\n', True), ('s = LR"(a)";\n', True),
+                           ('s = BAR "a";\n', False),("/*\n * banner\n */\nint x;\n#define A 1\n", False)):
+        eq("keycheck: directive hazard " + repr(text), nk.directive_hazard(text), expected)
+    check("keycheck: a comment apostrophe keeps the include closure exact",
+          nk.include_closure({"src/a.c": "/* don't */\n// it's\nint f;\n", "src/b.c": ""}, "src/a.c")
+          == {"src/a.c"})
+    # Eleventh review: macro_analysis reads #define lines with its own lexer, so a
+    # body cut by a blank-trailing splice, \f / \v or a comment split could hide a
+    # stringize; such a tree trusts no call argument naming the local.
+    for header in ("#define M(x) (x) \\ \n + #x[0]\n", "#define M(x) (x) \f + #x[0]\n",
+                   "#define M(x) (x) \v + #x[0]\n", "#/*\n*/define M(x) (x) + #x[0]\n",
+                   "#define M(x) (x) + #x[0]\n"):
+        try:
+            nk.scoped_plan({"src/a.c": '#include "m.h"\nint f(int l){ return M(l); }\n',
+                            "include/m.h": header}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: macro argument refused under " + repr(header), why != "")
+    for text, expected in (("#define A \\ \n 1\n", True), ("int x;\f\n", True), ("int x;\n", False)):
+        eq("keycheck: macro source hazard " + repr(text), nk.macro_source_hazard(text), expected)
+    check("keycheck: include closure gives up on a form feed (not plain)",
+          nk.include_closure({"src/a.c": 'int x;\f\n#include "b.c"\n', "src/b.c": ""}, "src/a.c") is None)
+    # Thirteenth review: an included .inc (or any non-.c/.h target) can define a
+    # macro no check reads; every local pair refuses while one is included.
+    for label, inc, body in (("macro body naming l", "#define Q 0 + l\n",
+                              "#define M(a) (a + Q)\nint f(void){ int l = 1; return M(l); }\n"),
+                             ("stringizing macro", "#define M(a) #a\n",
+                              "int g(char *);\nint f(void){ int l = 1; return g(M(l)); }\n"),
+                             ("object macro naming l", "#define K l\n",
+                              "int f(void){ int l = 1; return l + K; }\n")):
+        try:
+            nk.scoped_plan({"src/a.c": '#include "m.inc"\n' + body, "src/m.inc": inc}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: local pair refuses with an included .inc: " + label, "outside the .c / .h" in why)
+    # Fourteenth review: a token paste builds the destination (int CAT(n, v) is nv).
+    paste = "#define CAT(x, y) x##y\n"
+    for label, files in (("same file", {"src/a.c": paste + "int CAT(n, v) = 5;\nint f(int l){ return l + CAT(n, v); }\n"}),
+                         ("header", {"include/b.h": paste + "extern int CAT(n, v);\n",
+                                     "src/a.c": '#include "b.h"\nint f(int l){ return l + CAT(n, v); }\n'})):
+        try:
+            nk.scoped_plan(files, {"f:l": "nv"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: local pair refuses a token paste (" + label + ")", "pastes tokens" in why)
+    # Allowlist (attempt 4): plain_source admits only the shapes the tree uses;
+    # one refusal per hazard class, and the accepted shapes.
+    for text, why in (("int x;\r\n", "CR"), ("a\0b\n", "NUL"), ("\ufeffint x;\n", "BOM"),
+                      ("int x;\f\n", "form feed"), ("int x;\v\n", "vertical tab"),
+                      ("#define A \\ \n 1\n", "directive hazard"), ('s = R"(a)";\n', "directive hazard"),
+                      ('x = "a\n', "directive hazard"), ("#/*\n*/include \"b.c\"\n", "directive hazard"),
+                      ("int x = 1 + \\\n 2;\n", "line splice"), ('#include \\\n"b.c"\n', "line splice"),
+                      ("#define AB(x) (x) + A\\\nB\n", "line splice"), ("#def\\\nine A 1\n", "line splice"),
+                      ("#define A 1 // c \\\nB\n", "line splice inside a comment"),
+                      ("/* c \\\n */ int x;\n", "line splice inside a comment"),
+                      ('#define S "a \\\n b"\n', "literal spanning lines"),
+                      ('#/* c */include "b.c"\n', "comment before a directive name"),
+                      ('#include /* c */ "b.c"\n', "comment inside a directive"),
+                      ("#define A(x) /* c */ (x)\n", "comment inside a directive"),
+                      ("#define A 1 /* c\n */\n", "directive hazard")):
+        got = nk.plain_source(text)
+        check("keycheck: plain_source refuses " + repr(text), got is not None and got.startswith(why))
+    for text in ("#ifndef A\n#define A 1 /* one */\n#endif // A\n",
+                 "#define M(x) \\\n    (x);\\\n    (x)\n", "/* a\n * b\n */\nint x; // it's\n",
+                 "char c = '\\'';\nchar *s = \"q\\\"\";\n", "#include \"b.c\" /* trailing */\n"):
+        eq("keycheck: plain_source accepts " + repr(text), nk.plain_source(text), None)
+    # A call argument naming the local is planned only over an exact closure.
+    for header in ('#include /* c */ "n.h"\n#define M(x) (x)\n', "#define M(x) (x) /* c */ + 0\n",
+                   "#define M(x) (x)\r\n", "#define M(x) (x)\n#if 0\nit's\n#endif\n"):
+        try:
+            nk.scoped_plan({"src/a.c": '#include "m.h"\nint f(int l){ return M(l); }\n',
+                            "include/m.h": header, "include/n.h": ""}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: call argument refused over non-plain " + repr(header), why != "")
+    eq("keycheck: call argument planned over a plain closure",
+       sorted(nk.scoped_plan({"src/a.c": '#include "m.h"\nint f(int l){ return M(l); }\n',
+                              "include/m.h": "#define M(x) (((unsigned)(x) >> 2) << 2) /* c */\n"},
+                             {"f:l": "n"}, {})["src/a.c"].values()), [("n", False)] * 2)
+    # Review 12: a macro body that is not a plain expression of its parameters
+    # (attribute, keyword, a name applied to `(`) refuses; so does a local inside
+    # __attribute__ parentheses, an aggregate inside parentheses, and a function
+    # definition inside a macro call's parentheses.
+    for body in ("__attribute__((mode(x)))", "(sizeof(x))", "(g(x))", "(__typeof__(x))0",
+                 "(__extension__ (x))", "(G (x))"):
+        text = "int g(int);\n#define M(x) " + body + "\nint f(int l){ return M(l) + l; }\n"
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: local macro argument refused for body " + body, why != "")
+    for label, text in (
+            ("attribute call site", "#define A4(x) ((x) + 3)\n"
+             "int f(int l){ int y __attribute__((aligned(A4(l)))) = l; return y; }\n"),
+            ("attribute operand", "int f(int l){ int y __attribute__((aligned(l))) = 0; return y + l; }\n"),
+            ("aggregate in sizeof", "int f(int l){ return sizeof(struct { int a; }) + l; }\n"),
+            ("aggregate in a statement expression",
+             "int f(int l){ return ({ struct { int a; } s; s.a = l; s.a; }); }\n"),
+            ("definition inside a macro call", "#define STR(x) #x\nchar *s = STR(int f(int l){return l;});\n"
+             "int f(int l){ return l; }\n")):
+        try:
+            nk.scoped_plan({"src/a.c": text}, {"f:l": "n"}, {})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: allowlist refuses " + label, why != "")
+    check("keycheck: function definitions only at paren depth 0",
+          [d[0] for d in nk.function_definitions("int (g)(void){ return 0; }\nint h(void){ return 1; }\n")]
+          == ["g", "h"])
+    # A function-local struct/union that mentions neither old nor new leaves the
+    # binding exact; one naming either (member, declarator, bound) fails.
+    for label, body, good in [
+            ("unrelated aggregate", "struct { int a; int b[2]; } s; s.a = l; return s.a + l;", True),
+            ("unrelated tagged union", "union U { int a; short h; } s; s.a = l; return s.h + l;", True),
+            ("member named old", "struct { int l; } s; s.l = l; return s.l;", False),
+            ("declarator named old", "{ struct { int a; } l; l.a = 1; } return l;", False),
+            ("bound naming old", "struct { int a[sizeof l]; } s; s.a[0] = l; return l;", False)]:
+        text = "int f(int l){ " + body + " }\n"
+        after = re.sub(r"(?<![.])\bl\b", "n", text)
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: local pair with in-body aggregate: " + label,
+              ok if good else not ok and ("aggregate" in why or "found" in why))
     records = nk.macro_analysis("#define FN(x) (x)\n#define COPY(FN) FN\n")[0]
     nk.closure_macro_checks(records, {"f:l": "n"})
     check("keycheck: opener guard excludes macro own function-name parameter", True)
@@ -8379,7 +8635,8 @@ def test_naming_keycheck_scoped_pairs() -> None:
             ("digraph paste", '%:define JOIN(a,b) a %:%: b\nstruct T{int m;};\n', "T.m=fresh")]:
         after = text.replace("int m;", "int fresh;").replace("int l", "int fresh").replace("return l", "return fresh")
         ok, why = proof(spec, {"src/a.c": text}, {"src/a.c": after})
-        check("keycheck: round-7 closure paste/digraph " + label, not ok and "token paste or digraph" in why)
+        check("keycheck: round-7 closure paste/digraph " + label,
+              not ok and ("token paste or digraph" in why or "pastes tokens" in why))
     fixture_make = ('CPP := missing-keycheck-cpp\nCPP_FLAGS := -Iinclude\nCPP_DEFS := -Dmips\n'
                     '\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n')
     eq("keycheck: separated -D form exposes macro body", nk.command_line_macros(
@@ -8594,7 +8851,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
               {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
     text = "#define GET(p,f) ((p)->f)\n#define ALIAS GET\nint f(int l){return ALIAS(s,l)+l;}"
     ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})
-    check("keycheck: object alias cannot hide macro argument", not ok and "macro ALIAS" in why)
+    check("keycheck: object alias cannot hide macro argument", not ok and "macro alias ALIAS" in why)
     for label in ["if(c) l:", "else l:", "do l:"]:
         text = "int f(int l){ " + label + " x++; return l; }"
         check("keycheck: ambiguous non-start label " + label, not proof("f:l=n",
@@ -9194,8 +9451,11 @@ def test_naming_keycheck_scoped_pairs() -> None:
                 # trap; markers here reproduce that compiler-selected closure.
                 view[tu] = 'int T;int l;\n#include "n.def"\n#define IN_A\n#include "../' + owner + '"\n'
             return fake_cpp(view, tu)
-        ok, why = proof("f:l=n", files, {owner: re.sub(r"\bl\b", "n", fn)},
-                        compile_headers=False, cpp=vector_cpp, deps=vector_deps)
+        # The static .c / .h gate would refuse n.def first; this vector proves
+        # the dependency layer on its own.
+        with patch.object(nk, "c_sources_closed", lambda *a: True):
+            ok, why = proof("f:l=n", files, {owner: re.sub(r"\bl\b", "n", fn)},
+                            compile_headers=False, cpp=vector_cpp, deps=vector_deps)
         check("keycheck cpp dependency vector " + label, not ok and
               (("base", "src/a.c") in queries or label == "h_case" and "case-alias" in why))
     # Physical identity handles case-insensitive aliases even on a sensitive host.
