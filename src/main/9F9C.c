@@ -485,12 +485,12 @@ void camera_UpdateTwoFighterView(
 
     scr = (CamScratch *)0x1F800000;
     view_record = &g_camera_default_view_record;
-    view_record->h30[0][0] = 0x64;
-    view_record->h30[0][1] = 0;
-    view_record->h30[0][2] = 0x64;
-    view_record->h30[1][0] = 0x64;
-    view_record->h30[1][1] = 0;
-    view_record->h30[1][2] = 0x64;
+    view_record->forced_cell_coordinates[0][0] = 0x64;
+    view_record->forced_cell_coordinates[0][1] = 0;
+    view_record->forced_cell_coordinates[0][2] = 0x64;
+    view_record->forced_cell_coordinates[1][0] = 0x64;
+    view_record->forced_cell_coordinates[1][1] = 0;
+    view_record->forced_cell_coordinates[1][2] = 0x64;
     dx = second_camera_point->x - first_camera_point->x;
     dy = second_camera_point->y - first_camera_point->y;
     dz = second_camera_point->z - first_camera_point->z;
@@ -605,7 +605,8 @@ void camera_UpdateTwoFighterView(
                 scr->nrm, (s32)&scr->segment_work) &&
             scr->nrm[1] < -0x320) {
             math_StoreFloorDiv2000XZOfPointStepTowards(
-                view_record->h30[p], (s32 *)&scr->eye, scr->hit);
+                view_record->forced_cell_coordinates[p], (s32 *)&scr->eye,
+                scr->hit);
             if (g_camera_eye_blocked_flags[p]) {
                 g_camera_pitch_search_steps[p] += 0x20;
             } else {
@@ -661,7 +662,8 @@ void camera_UpdateTwoFighterView(
                         scr->hit, scr->nrm, (s32)&scr->segment_work) &&
                     scr->nrm[1] < -0x320) {
                     math_StoreFloorDiv2000XZOfPointStepTowards(
-                        view_record->h30[p], (s32 *)&scr->eye, scr->hit);
+                        view_record->forced_cell_coordinates[p],
+                        (s32 *)&scr->eye, scr->hit);
                     bound = view_record->camera_angles.vx;
                 } else {
                     work = view_record->camera_angles.vx;
@@ -729,12 +731,12 @@ void camera_UpdatePadOffset(s32 *held_bits) {
 void camera_InitTwoFighterView(
     Unk80101EC8Record *first_fighter, Unk80101EC8Record *second_fighter) {
     g_camera_fight_view_mode = 0;
-    g_camera_default_view_record.h30[0][0] = 0x64;
-    g_camera_default_view_record.h30[0][1] = 0;
-    g_camera_default_view_record.h30[0][2] = 0x64;
-    g_camera_default_view_record.h30[1][0] = 0x64;
-    g_camera_default_view_record.h30[1][1] = 0;
-    g_camera_default_view_record.h30[1][2] = 0x64;
+    g_camera_default_view_record.forced_cell_coordinates[0][0] = 0x64;
+    g_camera_default_view_record.forced_cell_coordinates[0][1] = 0;
+    g_camera_default_view_record.forced_cell_coordinates[0][2] = 0x64;
+    g_camera_default_view_record.forced_cell_coordinates[1][0] = 0x64;
+    g_camera_default_view_record.forced_cell_coordinates[1][1] = 0;
+    g_camera_default_view_record.forced_cell_coordinates[1][2] = 0x64;
     func_8003F1E4(0);
     g_camera_default_view_record.focus_point.x =
         (first_fighter->world_pos.x + second_fighter->world_pos.x) / 2;
@@ -755,12 +757,12 @@ void camera_InitTwoFighterView(
 void camera_InitTrackedFighterFocus(
     Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     g_camera_fight_view_mode = 0;
-    g_camera_alternate_view_record.h30[0][0] = 0x64;
-    g_camera_alternate_view_record.h30[0][1] = 0;
-    g_camera_alternate_view_record.h30[0][2] = 0x64;
-    g_camera_alternate_view_record.h30[1][0] = 0x64;
-    g_camera_alternate_view_record.h30[1][1] = 0;
-    g_camera_alternate_view_record.h30[1][2] = 0x64;
+    g_camera_alternate_view_record.forced_cell_coordinates[0][0] = 0x64;
+    g_camera_alternate_view_record.forced_cell_coordinates[0][1] = 0;
+    g_camera_alternate_view_record.forced_cell_coordinates[0][2] = 0x64;
+    g_camera_alternate_view_record.forced_cell_coordinates[1][0] = 0x64;
+    g_camera_alternate_view_record.forced_cell_coordinates[1][1] = 0;
+    g_camera_alternate_view_record.forced_cell_coordinates[1][2] = 0x64;
     func_8003F1E4(0);
     if (g_fight_tracked_fighter_index != 0) {
         a0 = a1;
@@ -992,12 +994,12 @@ void camera_UpdateReplayView(
         distance_delta += 0xF;
     }
     dst->eye_distance = cur + (distance_delta >> 4);
-    dst->h30[0][0] = 0x64;
-    dst->h30[0][1] = 0;
-    dst->h30[0][2] = 0x64;
-    dst->h30[1][0] = 0x64;
-    dst->h30[1][1] = 0;
-    dst->h30[1][2] = 0x64;
+    dst->forced_cell_coordinates[0][0] = 0x64;
+    dst->forced_cell_coordinates[0][1] = 0;
+    dst->forced_cell_coordinates[0][2] = 0x64;
+    dst->forced_cell_coordinates[1][0] = 0x64;
+    dst->forced_cell_coordinates[1][1] = 0;
+    dst->forced_cell_coordinates[1][2] = 0x64;
 }
 
 void camera_UpdateReplayViewWithSineYawOffset(
@@ -2138,8 +2140,8 @@ void camera_ApplyFightView(void) {
         camera_CalcEye(&local, &view_record->eye_x);
         func_80061064(&local.camera_angles.vx, &view_record->eye_x);
     }
-    gpu_SetCellForceBit(view_record->h30[0]);
-    gpu_SetCellForceBit(view_record->h30[1]);
+    gpu_SetCellForceBit(view_record->forced_cell_coordinates[0]);
+    gpu_SetCellForceBit(view_record->forced_cell_coordinates[1]);
     g_listener_cam = view_record;
 }
 
@@ -3431,8 +3433,8 @@ void motion_AdvanceVariantIfAtNibble4Or5Position(
         }
     }
     fighter_record->variant_index =
-        (s16)((a1 + 1) %
-              g_motion_fighter_buffers[fighter_record->motion_slot]->f14);
+        (s16)((a1 + 1) % g_motion_fighter_buffers[fighter_record->motion_slot]
+                             ->variant_count);
 }
 
 /* The 66-name animation/asset table (12-byte stride: 8 chars + null + pad).
@@ -3471,10 +3473,12 @@ void *motion_ResolveMoveData(
         rec->variant_index = rec->default_variant_index;
         return &g_motion_fighter_sections[rec->motion_slot]
                     .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
-                                      ->f4E[rec->default_variant_index]];
+                                      ->variant_move_script_index
+                                          [rec->default_variant_index]];
     case 0x7FF1:
-        rec->variant_index = (rec->variant_index + 1) %
-                             g_motion_fighter_buffers[rec->motion_slot]->f14;
+        rec->variant_index =
+            (rec->variant_index + 1) %
+            g_motion_fighter_buffers[rec->motion_slot]->variant_count;
     case 0x7FF2:
     case 0x7FF4:
         if (id == 0x7FF4) {
@@ -3486,27 +3490,30 @@ void *motion_ResolveMoveData(
             (t == rec->unk_8E && rec->unk_90 == 0)) {
             rec->variant_index =
                 (rec->variant_index + 1) %
-                g_motion_fighter_buffers[rec->motion_slot]->f14;
+                g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0) {
             motion_AdvanceVariantIfAtNibble4Or5Position(rec);
         }
-        return &g_motion_fighter_sections[rec->motion_slot]
-                    .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
-                                      ->f4E[rec->variant_index]];
+        return &g_motion_fighter_sections[rec->motion_slot].move_scripts
+                    [g_motion_fighter_buffers[rec->motion_slot]
+                         ->variant_move_script_index[rec->variant_index]];
     case 0x7FF3:
         t = (rec->variant_index + 1) %
-            g_motion_fighter_buffers[rec->motion_slot]->f14;
+            g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         if ((t == rec->object_variant_index &&
              rec->object_variant_enabled == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
-            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
+            t = (t + 1) %
+                g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0 &&
                    (t == rec->object_variant_index || t == rec->unk_8E)) {
-            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
+            t = (t + 1) %
+                g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         }
         return &g_motion_fighter_sections[rec->motion_slot]
                     .move_scripts[g_motion_fighter_buffers[rec->motion_slot]
-                                      ->f54[rec->variant_index][t]];
+                                      ->next_variant_move_script_index
+                                          [rec->variant_index][t]];
     }
     if (id & 0x8000) {
         if (rec->borrow_other_motion != 0) {
@@ -3529,27 +3536,28 @@ void motion_ResetVariantIndex(s32 fighter_index) {
 MoveScript *motion_GetCurrentVariantScript(s32 fighter_index) {
     s16 v1 = D_80101EC8[fighter_index].motion_slot;
     s16 v0 = D_80101EC8[fighter_index].variant_index;
-    return (MoveScript *)&g_motion_fighter_sections[v1]
-        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
+    return (MoveScript *)&g_motion_fighter_sections[v1].move_scripts
+        [g_motion_fighter_buffers[v1]->variant_move_script_index[v0]];
 }
 
 MoveScript *motion_GetDefaultVariantScript(s32 fighter_index) {
     s16 v1 = D_80101EC8[fighter_index].motion_slot;
     s16 v0 = D_80101EC8[fighter_index].default_variant_index;
-    return (MoveScript *)&g_motion_fighter_sections[v1]
-        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
+    return (MoveScript *)&g_motion_fighter_sections[v1].move_scripts
+        [g_motion_fighter_buffers[v1]->variant_move_script_index[v0]];
 }
 
 MoveScript *motion_GetCommonScriptAtFighterBufferOffset(s32 fighter_index) {
     return (MoveScript *)&g_motion_common_sections.move_scripts
-        [g_motion_fighter_buffers[D_80101EC8[fighter_index].motion_slot]->f16];
+        [g_motion_fighter_buffers[D_80101EC8[fighter_index].motion_slot]
+             ->common_move_script_index];
 }
 
 MoveScript *motion_GetCommonScriptAtFighterBufferIndexedOffset(
     s32 fighter_index, s32 character_data_index) {
     return (MoveScript *)&g_motion_common_sections.move_scripts
         [g_motion_fighter_buffers[D_80101EC8[fighter_index].motion_slot]
-             ->f18[character_data_index]];
+             ->common_move_script_index_by_character[character_data_index]];
 }
 
 void fighter_StartMoveScript(

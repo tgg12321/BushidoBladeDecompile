@@ -374,8 +374,10 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
     s16 tile_rect[4];
 
     sheet_index = 0;
-    mask = (1 << SELWORK->f3C[0]) + (1 << (SELWORK->f65 + 5)) +
-           (1 << (SELWORK->f67 + 8)) + (1 << (SELWORK->f66 + 9));
+    mask = (1 << SELWORK->f3C[0]) +
+           (1 << (SELWORK->selected_match_count_index + 5)) +
+           (1 << (SELWORK->selected_win_target_index + 8)) +
+           (1 << (SELWORK->selected_time_sheet_code + 9));
     s.ot_idx = 2;
     table = draw_context->resource_root.v80076FF8->unk_34;
     do {
@@ -385,39 +387,48 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
         if ((mask >> sheet_index) & 1) {
             if (sheet_index < 5) {
                 s.col_b =
-                    ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) -
+                    ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) +
+                           0x1FF)
+                      << 5) >>
+                     12) -
                     0x80;
-                s.y = SELWORK->f40[0][1];
+                s.y = SELWORK->direction_nudge_offsets[0][1];
             } else if (sheet_index < 8) {
                 if (SELWORK->f3C[0] == 0) {
                     s.col_b =
-                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
+                        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) +
+                               0x1FF)
+                          << 5) >>
                          12) -
                         0x80;
-                    s.x = SELWORK->f40[0][0];
-                    s.y = SELWORK->f40[0][1];
+                    s.x = SELWORK->direction_nudge_offsets[0][0];
+                    s.y = SELWORK->direction_nudge_offsets[0][1];
                 } else {
                     s.col_b = 0x80;
                 }
             } else if (sheet_index < 10) {
                 if (SELWORK->f3C[0] == 1) {
                     s.col_b =
-                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
+                        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) +
+                               0x1FF)
+                          << 5) >>
                          12) -
                         0x80;
-                    s.x = SELWORK->f40[0][0];
-                    s.y = SELWORK->f40[0][1];
+                    s.x = SELWORK->direction_nudge_offsets[0][0];
+                    s.y = SELWORK->direction_nudge_offsets[0][1];
                 } else {
                     s.col_b = 0x80;
                 }
             } else if (sheet_index < 14) {
                 if (SELWORK->f3C[0] == 2) {
                     s.col_b =
-                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
+                        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) +
+                               0x1FF)
+                          << 5) >>
                          12) -
                         0x80;
-                    s.x = SELWORK->f40[0][0];
-                    s.y = SELWORK->f40[0][1];
+                    s.x = SELWORK->direction_nudge_offsets[0][0];
+                    s.y = SELWORK->direction_nudge_offsets[0][1];
                 } else {
                     s.col_b = 0x80;
                 }
@@ -439,8 +450,10 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
             }
         }
         if ((u16)(sheet_index - 10) >= 4 ||
-            g_sel_sheet_code_pairs[SELWORK->f67][0] + 9 == sheet_index ||
-            g_sel_sheet_code_pairs[SELWORK->f67][1] + 9 == sheet_index) {
+            g_sel_sheet_code_pairs[SELWORK->selected_win_target_index][0] + 9 ==
+                sheet_index ||
+            g_sel_sheet_code_pairs[SELWORK->selected_win_target_index][1] + 9 ==
+                sheet_index) {
             s.header = table[sheet_index];
             s.table = s.header->cells;
             s.sprt_out = draw_context->primitive_cursors.sprite_prims;

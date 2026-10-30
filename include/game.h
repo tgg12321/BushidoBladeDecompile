@@ -588,52 +588,52 @@ typedef struct {
  * members make the struct 4-aligned: sizeof is 0x94 (members end at 0x92; Q57).
  */
 typedef struct {
-    Unk8009BD24Block *f00;
-    Unk80076FF8Rec *f04;
-    s16 f08[2];
-    s16 f0C[2];
+    Unk8009BD24Block *sel_result_record;
+    Unk80076FF8Rec *sel_resource_table;
+    s16 panel_draw_offset_y[2];
+    s16 panel_slide_amount[2];
 
     union {
         s16 half[2];
         s32 word;
-    } f10;
+    } panel_slide_state;
 
     union {
         s16 half[2];
         s32 word;
-    } f14;
+    } selection_phase;
 
-    s16 f18[2];
-
-    union {
-        s16 half[2];
-        s32 word;
-    } f1C;
+    s16 pending_selection_phase[2];
 
     union {
         s16 half[2];
         s32 word;
-    } f20;
+    } grid_cursor_column;
 
-    GpuDb *f24;
+    union {
+        s16 half[2];
+        s32 word;
+    } grid_cursor_row;
+
+    GpuDb *frame_gpu_db;
     u8 pad28[4];
     Unk8006E49CRec *f2C;
-    s32 f30;
-    u16 f34;
-    u16 f36;
-    s16 f38[2];
+    s32 prim_buffer_flip_count;
+    u16 selection_pulse_frames;
+    u16 selection_fade_shade;
+    s16 pending_selection_cursor[2];
     s16 f3C[2];
-    s16 f40[2][2];
-    s16 f48[2][5];
-    s16 f5C[2];
-    s16 f60[2];
-    u8 f64;
-    u8 f65;
-    u8 f66;
-    u8 f67;
-    u8 f68[2];
-    s16 f6A[2][5];
-    s16 f7E[2][5];
+    s16 direction_nudge_offsets[2][2];
+    s16 remaining_list_entries[2][5];
+    s16 remaining_list_cursor[2];
+    s16 remaining_list_count[2];
+    u8 maximum_match_count_index;
+    u8 selected_match_count_index;
+    u8 selected_time_sheet_code;
+    u8 selected_win_target_index;
+    u8 selected_grid_page[2];
+    s16 grid_pick_slots[2][5];
+    s16 picked_list_entries[2][5];
 } SelWork;
 
 /* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
@@ -823,11 +823,11 @@ typedef struct {
     /* g_motion_fighter_sections[slot].motion_entries .. motion_bitstream =
      * record + section_offsets[k] (motion_LoadFighterData) */
     s32 section_offsets[4];
-    s16 f14;
-    u16 f16;
-    u16 f18[27];
-    u16 f4E[3];
-    u16 f54[3][3];
+    s16 variant_count;
+    u16 common_move_script_index;
+    u16 common_move_script_index_by_character[27];
+    u16 variant_move_script_index[3];
+    u16 next_variant_move_script_index[3][3];
     u16 f66[11][3];
 } Tbl800A3860Entry;
 
@@ -1982,7 +1982,7 @@ typedef struct Rec44 {
     /* per-fighter grid cell coordinates written by
      * math_StoreFloorDiv2000XZOfPointStepTowards (camera_UpdateTwoFighterView
      * passes h30[p]) */
-    s16 h30[2][4];
+    s16 forced_cell_coordinates[2][4];
     u8 b40;
     u8 b41;
     u8 b42;

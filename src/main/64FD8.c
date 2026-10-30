@@ -45,13 +45,14 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
 
     base = SELWORK;
     result = 0;
-    if (base->f10.word == 0) {
+    if (base->panel_slide_state.word == 0) {
         sp10 = (arg0 & 0xFFFF) | (arg0 >> 16);
         ret = pad_StepOffsetsGetDirectionEvents(
-            (u32 *)&sp10, 0, base->f40[0], g_sel_offset_steps[0]);
+            (u32 *)&sp10, 0, base->direction_nudge_offsets[0],
+            g_sel_offset_steps[0]);
         switch (ret >> 16) {
         case 1:
-            SELWORK->f34 = 0;
+            SELWORK->selection_pulse_frames = 0;
             SELWORK->f3C[0] += 1;
             if (SELWORK->f3C[0] >= 5) {
                 SELWORK->f3C[0] = 0;
@@ -59,7 +60,7 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
             snd_QueueSound(0, 0x7F, 0x7F);
             break;
         case 2:
-            SELWORK->f34 = 0;
+            SELWORK->selection_pulse_frames = 0;
             SELWORK->f3C[0] -= 1;
             if (SELWORK->f3C[0] < 0) {
                 SELWORK->f3C[0] = 4;
@@ -73,10 +74,11 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
         case 0:
             switch (ret & 0xFF) {
             case 1:
-                if (SELWORK->f65 == SELWORK->f64) {
-                    SELWORK->f65 = 0;
+                if (SELWORK->selected_match_count_index ==
+                    SELWORK->maximum_match_count_index) {
+                    SELWORK->selected_match_count_index = 0;
                 } else {
-                    SELWORK->f65 += 1;
+                    SELWORK->selected_match_count_index += 1;
                 }
                 /* FAKE: `var_7 = 4;` in both arms instead of once after the
                  * label keeps jump.c from the branchless sltiu/sll store-flag
@@ -85,10 +87,11 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
                 var_7 = 4;
                 goto selection_sound;
             case 2:
-                if (SELWORK->f65 == 0) {
-                    SELWORK->f65 = SELWORK->f64;
+                if (SELWORK->selected_match_count_index == 0) {
+                    SELWORK->selected_match_count_index =
+                        SELWORK->maximum_match_count_index;
                 } else {
-                    SELWORK->f65 -= 1;
+                    SELWORK->selected_match_count_index -= 1;
                 }
                 /* FAKE: `var_7 = 4;` in both arms instead of once after the
                  * label keeps jump.c from the branchless sltiu/sll store-flag
@@ -99,26 +102,26 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
             }
             goto confirm;
         selection_sound:
-            if (SELWORK->f64 != 0) {
+            if (SELWORK->maximum_match_count_index != 0) {
                 var_7 = 0;
             }
             snd_QueueSound(var_7, 0x7F, 0x7F);
             goto confirm;
         case 1:
             if ((ret & 0xFF) != 0) {
-                SELWORK->f67 += 1;
-                SELWORK->f67 &= 1;
-                SELWORK->f66 =
-                    g_sel_sheet_code_pairs[SELWORK->f67]
+                SELWORK->selected_win_target_index += 1;
+                SELWORK->selected_win_target_index &= 1;
+                SELWORK->selected_time_sheet_code =
+                    g_sel_sheet_code_pairs[SELWORK->selected_win_target_index]
                                           [g_sel_sheet_code_column_cursor & 1];
                 snd_QueueSound(0, 0x7F, 0x7F);
             }
             goto confirm;
         case 2:
             if ((ret & 0xFF) != 0) {
-                row = SELWORK->f67;
+                row = SELWORK->selected_win_target_index;
                 g_sel_sheet_code_column_cursor += 1;
-                SELWORK->f66 =
+                SELWORK->selected_time_sheet_code =
                     g_sel_sheet_code_pairs[row]
                                           [g_sel_sheet_code_column_cursor & 1];
                 snd_QueueSound(0, 0x7F, 0x7F);
@@ -133,9 +136,9 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
             if (arg0 & 0x400040) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (i = 0; i < 2; i++) {
-                    SELWORK->f10.half[i] = 3;
-                    SELWORK->f18[i] = 1;
-                    SELWORK->f38[i] = 0;
+                    SELWORK->panel_slide_state.half[i] = 3;
+                    SELWORK->pending_selection_phase[i] = 1;
+                    SELWORK->pending_selection_cursor[i] = 0;
                 }
             }
             break;
@@ -167,8 +170,8 @@ void menu_DrawSelRowTiles(Unk8006EACCRec *draw_context, s32 arg1, s32 arg2) {
         n = 8;
     }
     p = draw_context->primitive_cursors.tile_prims;
-    for (i = 0; i < SELWORK->f65 + 3; i++) {
-        t = SELWORK->f04->row_tile_rects;
+    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
+        t = SELWORK->sel_resource_table->row_tile_rects;
         for (j = 0; j < n; j++) {
             SetTile(p);
             p->r0 = t->r;
@@ -260,7 +263,7 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
     s.ot_idx = 2;
     i = 0;
     do {
-        s.y = (0xD2 - SELWORK->f0C[arg1]) * i;
+        s.y = (0xD2 - SELWORK->panel_slide_amount[arg1]) * i;
         s.header = records[3];
         cells = s.header->cells;
         s.table = cells;
@@ -311,33 +314,34 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
         var_5 = 4;
         var_6 = 0x5E;
     }
-    rect.x = SELWORK->f24->draw.clip.x + var_6;
-    rect.y = SELWORK->f24->draw.clip.y + 0x14;
+    rect.x = SELWORK->frame_gpu_db->draw.clip.x + var_6;
+    rect.y = SELWORK->frame_gpu_db->draw.clip.y + 0x14;
     rect.w = 0xD4;
-    rect.h = 0xC8 - SELWORK->f0C[arg1];
+    rect.h = 0xC8 - SELWORK->panel_slide_amount[arg1];
     SetDrawArea(draw_context->primitive_cursors.draw_area_prims, &rect);
     AddPrim(g_gpu_ot_ptr + var_5 + 9,
             draw_context->primitive_cursors.draw_area_prims);
     draw_context->primitive_cursors.draw_area_prims++;
 
-    rect.x = SELWORK->f24->draw.clip.x;
-    rect.y = SELWORK->f24->draw.clip.y;
-    rect.w = SELWORK->f24->draw.clip.w;
-    rect.h = SELWORK->f24->draw.clip.h;
+    rect.x = SELWORK->frame_gpu_db->draw.clip.x;
+    rect.y = SELWORK->frame_gpu_db->draw.clip.y;
+    rect.w = SELWORK->frame_gpu_db->draw.clip.w;
+    rect.h = SELWORK->frame_gpu_db->draw.clip.h;
     SetDrawArea(draw_context->primitive_cursors.draw_area_prims, &rect);
     AddPrim(
         g_gpu_ot_ptr + var_5, draw_context->primitive_cursors.draw_area_prims);
     draw_context->primitive_cursors.draw_area_prims++;
 
-    offset[0] = SELWORK->f24->draw.ofs[0];
-    offset[1] = SELWORK->f24->draw.ofs[1] - SELWORK->f08[arg1];
+    offset[0] = SELWORK->frame_gpu_db->draw.ofs[0];
+    offset[1] =
+        SELWORK->frame_gpu_db->draw.ofs[1] - SELWORK->panel_draw_offset_y[arg1];
     SetDrawOffset(draw_context->primitive_cursors.draw_offset_prims, offset);
     AddPrim(g_gpu_ot_ptr + var_5 + 9,
             draw_context->primitive_cursors.draw_offset_prims);
     draw_context->primitive_cursors.draw_offset_prims++;
 
-    offset[0] = SELWORK->f24->draw.ofs[0];
-    offset[1] = SELWORK->f24->draw.ofs[1];
+    offset[0] = SELWORK->frame_gpu_db->draw.ofs[0];
+    offset[1] = SELWORK->frame_gpu_db->draw.ofs[1];
     SetDrawOffset(draw_context->primitive_cursors.draw_offset_prims, offset);
     AddPrim(g_gpu_ot_ptr + var_5,
             draw_context->primitive_cursors.draw_offset_prims);
@@ -351,47 +355,49 @@ void menu_StepSelPanelSlides(void) {
     base = SELWORK;
     i = 0;
     do {
-        switch ((u8)base->f10.half[i]) {
+        switch ((u8)base->panel_slide_state.half[i]) {
         case 1:
-            base->f08[i] += 0xA;
-            base->f0C[i] += 0xA;
-            if (base->f0C[i] >= 0xC8) {
-                if (((u16)base->f10.half[i] >> 8) == 0) {
-                    base->f10.half[i] += 1;
+            base->panel_draw_offset_y[i] += 0xA;
+            base->panel_slide_amount[i] += 0xA;
+            if (base->panel_slide_amount[i] >= 0xC8) {
+                if (((u16)base->panel_slide_state.half[i] >> 8) == 0) {
+                    base->panel_slide_state.half[i] += 1;
                 }
-                base->f08[i] = 0;
-                base->f0C[i] = 0xC8;
-                base->f14.half[i] = base->f18[i];
-                base->f3C[i] = base->f38[i];
+                base->panel_draw_offset_y[i] = 0;
+                base->panel_slide_amount[i] = 0xC8;
+                base->selection_phase.half[i] =
+                    base->pending_selection_phase[i];
+                base->f3C[i] = base->pending_selection_cursor[i];
             }
             break;
         case 3:
-            base->f0C[i] += 0xA;
-            if (base->f0C[i] >= 0xC8) {
-                base->f08[i] = 0xC8;
-                base->f0C[i] = 0xC8;
-                base->f14.half[i] = base->f18[i];
-                base->f3C[i] = base->f38[i];
-                if (((u16)base->f10.half[i] >> 8) == 0) {
-                    base->f10.half[i] += 1;
+            base->panel_slide_amount[i] += 0xA;
+            if (base->panel_slide_amount[i] >= 0xC8) {
+                base->panel_draw_offset_y[i] = 0xC8;
+                base->panel_slide_amount[i] = 0xC8;
+                base->selection_phase.half[i] =
+                    base->pending_selection_phase[i];
+                base->f3C[i] = base->pending_selection_cursor[i];
+                if (((u16)base->panel_slide_state.half[i] >> 8) == 0) {
+                    base->panel_slide_state.half[i] += 1;
                 }
             }
             break;
         case 2:
-            base->f0C[i] -= 0xA;
-            if (base->f0C[i] <= 0) {
-                base->f08[i] = 0;
-                base->f0C[i] = 0;
-                base->f10.half[i] = 0;
+            base->panel_slide_amount[i] -= 0xA;
+            if (base->panel_slide_amount[i] <= 0) {
+                base->panel_draw_offset_y[i] = 0;
+                base->panel_slide_amount[i] = 0;
+                base->panel_slide_state.half[i] = 0;
             }
             break;
         case 4:
-            base->f08[i] -= 0xA;
-            base->f0C[i] -= 0xA;
-            if (base->f0C[i] <= 0) {
-                base->f08[i] = 0;
-                base->f0C[i] = 0;
-                base->f10.half[i] = 0;
+            base->panel_draw_offset_y[i] -= 0xA;
+            base->panel_slide_amount[i] -= 0xA;
+            if (base->panel_slide_amount[i] <= 0) {
+                base->panel_draw_offset_y[i] = 0;
+                base->panel_slide_amount[i] = 0;
+                base->panel_slide_state.half[i] = 0;
             }
             break;
         }
@@ -429,9 +435,12 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
     s.x = arg1 * 240;
     var_3 = s.header->cells;
     s.table = var_3;
-    s.y = SELWORK->f68[arg1] * 90 + SELWORK->f40[arg1][1];
+    s.y = SELWORK->selected_grid_page[arg1] * 90 +
+          SELWORK->direction_nudge_offsets[arg1][1];
     s.col_r = s.col_g = s.col_b =
-        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
+         12) -
+        0x80;
     s.has_color = 1;
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
     draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
@@ -482,35 +491,38 @@ void menu_HandleSelOpposedChoice(s32 arg0, s32 arg1) {
     SelWork *work;
 
     base = SELWORK;
-    if (base->f10.word != 0) {
+    if (base->panel_slide_state.word != 0) {
         return;
     }
     if ((pad_StepOffsetsGetDirectionEvents(
-             &arg0, arg1, base->f40[arg1], g_sel_offset_steps[arg1]) >>
+             &arg0, arg1, base->direction_nudge_offsets[arg1],
+             g_sel_offset_steps[arg1]) >>
          16) != 0) {
-        SELWORK->f34 = 0;
-        SELWORK->f68[arg1] = SELWORK->f68[arg1] + 1;
-        SELWORK->f68[arg1] &= 1;
+        SELWORK->selection_pulse_frames = 0;
+        SELWORK->selected_grid_page[arg1] =
+            SELWORK->selected_grid_page[arg1] + 1;
+        SELWORK->selected_grid_page[arg1] &= 1;
         snd_QueueSound(0, 0x7F, 0x7F);
     }
     work = SELWORK;
-    work->f3C[arg1] = work->f68[arg1];
+    work->f3C[arg1] = work->selected_grid_page[arg1];
     if (arg0 & (0x40 << (arg1 * 16))) {
         for (i = 0; i < 2; i++) {
-            work->f38[i] = 0;
-            work->f10.half[i] = 1;
-            work->f18[i] = 2;
+            work->pending_selection_cursor[i] = 0;
+            work->panel_slide_state.half[i] = 1;
+            work->pending_selection_phase[i] = 2;
         }
-        SELWORK->f68[(arg1 + 1) & 1] = (SELWORK->f68[arg1] + 1) & 1;
+        SELWORK->selected_grid_page[(arg1 + 1) & 1] =
+            (SELWORK->selected_grid_page[arg1] + 1) & 1;
         snd_QueueSound(1, 0x7F, 0x7F);
         return;
     }
     if (arg0 & (0x10 << (arg1 * 16))) {
-        if (work->f14.half[(arg1 != 0) ? 0 : 1] == 1) {
+        if (work->selection_phase.half[(arg1 != 0) ? 0 : 1] == 1) {
             for (i = 0; i < 2; i++) {
-                work->f38[i] = 0;
-                work->f10.half[i] = 3;
-                work->f18[i] = 0;
+                work->pending_selection_cursor[i] = 0;
+                work->panel_slide_state.half[i] = 3;
+                work->pending_selection_phase[i] = 0;
             }
             snd_QueueSound(2, 0x7F, 0x7F);
         } else {
@@ -526,7 +538,10 @@ void menu_DrawSelGridCellOverlay(
     s16 cell_row;
     s.semi = arg3;
     s.col_r = s.col_g = s.col_b =
-        ((s32)(rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) * 0x30) >> 12) - 0x40;
+        ((s32)(rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) *
+               0x30) >>
+         12) -
+        0x40;
     s.header = draw_context->resource_root.v80076FF8->unk_14[21];
     s.table = s.header->cells;
     if (cell_index < 0xA) {
@@ -536,8 +551,8 @@ void menu_DrawSelGridCellOverlay(
         cell_column = (cell_index - 0xA) / 5;
         cell_row = (cell_index - 0xA) % 5;
     }
-    if (SELWORK->f1C.half[arg2] == cell_column &&
-        SELWORK->f20.half[arg2] == cell_row) {
+    if (SELWORK->grid_cursor_column.half[arg2] == cell_column &&
+        SELWORK->grid_cursor_row.half[arg2] == cell_row) {
         s.has_color = 1;
     } else {
         s.has_color = 0;
@@ -604,7 +619,9 @@ void menu_DrawSelGrid(
     draw_context->primitive_cursors.unk_14++;
 
     s.col_r = s.col_g = s.col_b =
-        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
+        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
+         12) -
+        0x50;
     if (arg3 != 0) {
         s.ot_idx = 0x14;
     } else {
@@ -630,9 +647,10 @@ void menu_DrawSelGrid(
             s.header = table[entry + 1];
             cells = s.header[2].cells;
             s.table = cells;
-            if (g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
-                                            SELWORK->f20.half[arg3]]
-                    .cell_entry ==
+            if (g_sel_grid_page_cells
+                    [arg1][SELWORK->grid_cursor_column.half[arg3] * 5 +
+                           SELWORK->grid_cursor_row.half[arg3]]
+                        .cell_entry ==
                 ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry) {
                 s.has_color = 1;
                 s.header += 1 + arg3;
@@ -674,9 +692,9 @@ void menu_DrawSelGrid(
     }
 
     s.has_color = 0;
-    for (i = 0; i < SELWORK->f65 + 3; i++) {
+    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
         table = draw_context->resource_root.v80076FF8
-                    ->pick_slot_sheets[SELWORK->f65];
+                    ->pick_slot_sheets[SELWORK->selected_match_count_index];
         s.header = table[i];
         cells = s.header[2].cells;
         if (i == SELWORK->f3C[arg3]) {
@@ -727,7 +745,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s32 bit;
     s32 i;
 
-    if (SELWORK->f10.half[arg3] != 0) {
+    if (SELWORK->panel_slide_state.half[arg3] != 0) {
         return;
     }
 
@@ -744,17 +762,18 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
             return;
         }
-        if (SELWORK->f14.half[(arg3 != 0) ? 0 : 1] == 2) {
-            SELWORK->f10.half[1] = 3;
-            SELWORK->f10.half[0] = 3;
-            SELWORK->f18[1] = 1;
-            SELWORK->f18[0] = 1;
+        if (SELWORK->selection_phase.half[(arg3 != 0) ? 0 : 1] == 2) {
+            SELWORK->panel_slide_state.half[1] = 3;
+            SELWORK->panel_slide_state.half[0] = 3;
+            SELWORK->pending_selection_phase[1] = 1;
+            SELWORK->pending_selection_phase[0] = 1;
         }
         return;
     }
 
     result = pad_StepOffsetsGetDirectionEvents(
-        &arg0, arg3, SELWORK->f40[arg3], g_sel_offset_steps[arg3]);
+        &arg0, arg3, SELWORK->direction_nudge_offsets[arg3],
+        g_sel_offset_steps[arg3]);
     if (arg0 & (0xF000 << (arg3 * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
@@ -763,7 +782,8 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
         low = result & 0xFF;
         if (low < 3 && low != 0) {
-            SELWORK->f1C.half[arg3] = (SELWORK->f1C.half[arg3] + 1) & 1;
+            SELWORK->grid_cursor_column.half[arg3] =
+                (SELWORK->grid_cursor_column.half[arg3] + 1) & 1;
         }
     }
 
@@ -771,21 +791,21 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     case 1: {
         s16 value;
 
-        value = SELWORK->f20.half[arg3];
+        value = SELWORK->grid_cursor_row.half[arg3];
         if (value == 4) {
-            SELWORK->f20.half[arg3] = 0;
+            SELWORK->grid_cursor_row.half[arg3] = 0;
         } else {
-            SELWORK->f20.half[arg3] = value + 1;
+            SELWORK->grid_cursor_row.half[arg3] = value + 1;
         }
     } break;
     case 2: {
         s16 value;
 
-        value = SELWORK->f20.half[arg3];
+        value = SELWORK->grid_cursor_row.half[arg3];
         if (value == 0) {
-            SELWORK->f20.half[arg3] = 4;
+            SELWORK->grid_cursor_row.half[arg3] = 4;
         } else {
-            SELWORK->f20.half[arg3] = value - 1;
+            SELWORK->grid_cursor_row.half[arg3] = value - 1;
         }
     } break;
     }
@@ -793,9 +813,11 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     {
         u8 entry;
 
-        entry = g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
-                                            SELWORK->f20.half[arg3]]
-                    .cell_entry;
+        entry =
+            g_sel_grid_page_cells[arg1]
+                                 [SELWORK->grid_cursor_column.half[arg3] * 5 +
+                                  SELWORK->grid_cursor_row.half[arg3]]
+                                     .cell_entry;
         flag = &g_sel_entry_availability_and_claims[entry];
         if ((*flag & 1) != 0) {
             bit = 4 << arg3;
@@ -808,16 +830,18 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
                     *flag |= bit;
                     count = SELWORK->f3C[arg3];
                     SELWORK->f3C[arg3] = count + 1;
-                    if (SELWORK->f3C[arg3] == SELWORK->f65 + 3) {
-                        SELWORK->f10.half[arg3] = 1;
+                    if (SELWORK->f3C[arg3] ==
+                        SELWORK->selected_match_count_index + 3) {
+                        SELWORK->panel_slide_state.half[arg3] = 1;
                         SELWORK->f3C[arg3] = count;
-                        SELWORK->f38[arg3] = 0;
-                        SELWORK->f18[arg3] = 3;
-                        for (i = 0; i < SELWORK->f60[arg3]; i++) {
-                            SELWORK->f48[arg3][i] = i;
+                        SELWORK->pending_selection_cursor[arg3] = 0;
+                        SELWORK->pending_selection_phase[arg3] = 3;
+                        for (i = 0; i < SELWORK->remaining_list_count[arg3];
+                             i++) {
+                            SELWORK->remaining_list_entries[arg3][i] = i;
                         }
                         if (arg1 != 0) {
-                            SELWORK->f48[arg3][4] = 5;
+                            SELWORK->remaining_list_entries[arg3][4] = 5;
                         }
                     }
                 }
@@ -853,7 +877,7 @@ void menu_DrawSelListPicks(
         ot_index = 20;
     }
     table = draw_context->resource_root.v80076FF8->unk_30;
-    if (SELWORK->f14.half[arg3] < 4) {
+    if (SELWORK->selection_phase.half[arg3] < 4) {
         s.header = table[12];
         s.has_color = 0;
         s.x = arg3 * 240;
@@ -872,13 +896,16 @@ void menu_DrawSelListPicks(
 
     s.has_color = 0;
     s.col_r = s.col_g = s.col_b =
-        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
+        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
+         12) -
+        0x50;
     table = draw_context->resource_root.v80076FF8->unk_14;
-    for (i = 0; i < SELWORK->f65 + 3; i++) {
+    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
         s.has_color = 0;
         s.header = table[arg2[i] + 1];
         var_3 = s.header[2].cells;
-        if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
+        if (SELWORK->f3C[arg3] == i ||
+            SELWORK->selection_phase.half[arg3] >= 4) {
             s.header += 1 + arg3;
         }
         s.table = var_3;
@@ -892,16 +919,19 @@ void menu_DrawSelListPicks(
 
     table = draw_context->resource_root.v80076FF8->unk_30;
     for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
-        if (SELWORK->f3C[arg3] != i || SELWORK->f14.half[arg3] >= 4) {
-            idx = SELWORK->f7E[arg3][i];
+        if (SELWORK->f3C[arg3] != i ||
+            SELWORK->selection_phase.half[arg3] >= 4) {
+            idx = SELWORK->picked_list_entries[arg3][i];
             s.has_color = 0;
         } else {
-            idx = SELWORK->f48[arg3][SELWORK->f5C[arg3]];
+            idx = SELWORK->remaining_list_entries
+                      [arg3][SELWORK->remaining_list_cursor[arg3]];
             s.has_color = 1;
         }
         s.header = table[(s16)idx * 2];
         var_3 = s.header[2].cells;
-        if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
+        if (SELWORK->f3C[arg3] == i ||
+            SELWORK->selection_phase.half[arg3] >= 4) {
             s.header += 1 + arg3;
         }
         s.x = arg3 * 240;
@@ -918,13 +948,14 @@ void menu_DrawSelListPicks(
         draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
     }
 
-    table =
-        draw_context->resource_root.v80076FF8->pick_slot_sheets[SELWORK->f65];
-    for (i = 0; i < SELWORK->f65 + 3; i++) {
+    table = draw_context->resource_root.v80076FF8
+                ->pick_slot_sheets[SELWORK->selected_match_count_index];
+    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
         s.has_color = 0;
         s.header = table[i];
         var_3 = s.header[2].cells;
-        if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
+        if (SELWORK->f3C[arg3] == i ||
+            SELWORK->selection_phase.half[arg3] >= 4) {
             s.header += 1 + arg3;
         }
         s.table = var_3;
@@ -947,80 +978,87 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s16 i;
     s16 j;
 
-    if (SELWORK->f10.half[arg3] != 0) {
+    if (SELWORK->panel_slide_state.half[arg3] != 0) {
         return;
     }
     if (arg0 & (0xA000 << (arg3 * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
-    switch (
-        pad_StepOffsetsGetDirectionEvents(
-            (u32 *)&arg0, arg3, SELWORK->f40[arg3], g_sel_offset_steps[arg3]) &
-        0xFF) {
+    switch (pad_StepOffsetsGetDirectionEvents(
+                (u32 *)&arg0, arg3, SELWORK->direction_nudge_offsets[arg3],
+                g_sel_offset_steps[arg3]) &
+            0xFF) {
     case 1:
-        SELWORK->f5C[arg3]++;
-        if (SELWORK->f5C[arg3] >= SELWORK->f60[arg3]) {
-            SELWORK->f5C[arg3] = 0;
+        SELWORK->remaining_list_cursor[arg3]++;
+        if (SELWORK->remaining_list_cursor[arg3] >=
+            SELWORK->remaining_list_count[arg3]) {
+            SELWORK->remaining_list_cursor[arg3] = 0;
         }
         break;
     case 2:
-        SELWORK->f5C[arg3]--;
-        if (SELWORK->f5C[arg3] < 0) {
-            SELWORK->f5C[arg3] = SELWORK->f60[arg3] - 1;
+        SELWORK->remaining_list_cursor[arg3]--;
+        if (SELWORK->remaining_list_cursor[arg3] < 0) {
+            SELWORK->remaining_list_cursor[arg3] =
+                SELWORK->remaining_list_count[arg3] - 1;
         }
         break;
     }
 
     if (arg0 & (0x40 << (arg3 * 16))) {
-        if (SELWORK->f3C[arg3] < SELWORK->f65 + 3) {
+        if (SELWORK->f3C[arg3] < SELWORK->selected_match_count_index + 3) {
             snd_QueueSound(1, 0x7F, 0x7F);
-            SELWORK->f7E[arg3][SELWORK->f3C[arg3]] =
-                SELWORK->f48[arg3][SELWORK->f5C[arg3]];
-            if (SELWORK->f3C[arg3] == SELWORK->f65 + 2) {
-                SELWORK->f14.half[arg3] = 4;
+            SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3]] =
+                SELWORK->remaining_list_entries
+                    [arg3][SELWORK->remaining_list_cursor[arg3]];
+            if (SELWORK->f3C[arg3] == SELWORK->selected_match_count_index + 2) {
+                SELWORK->selection_phase.half[arg3] = 4;
                 return;
             }
-            SELWORK->f60[arg3]--;
-            for (i = SELWORK->f5C[arg3]; i < SELWORK->f60[arg3]; i++) {
-                SELWORK->f48[arg3][i] = SELWORK->f48[arg3][i + 1];
+            SELWORK->remaining_list_count[arg3]--;
+            for (i = SELWORK->remaining_list_cursor[arg3];
+                 i < SELWORK->remaining_list_count[arg3]; i++) {
+                SELWORK->remaining_list_entries[arg3][i] =
+                    SELWORK->remaining_list_entries[arg3][i + 1];
             }
-            SELWORK->f5C[arg3] = 0;
+            SELWORK->remaining_list_cursor[arg3] = 0;
             SELWORK->f3C[arg3]++;
         }
     } else if (arg0 & (0x10 << (arg3 * 16))) {
         snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[arg3] == 0) {
-            SELWORK->f10.half[arg3] = 3;
-            SELWORK->f18[arg3] = 2;
-            SELWORK->f38[arg3] = SELWORK->f65 + 2;
-            g_sel_entry_availability_and_claims[arg2[SELWORK->f38[arg3]]] &=
-                ~(4 << arg3);
-            SELWORK->f60[arg3] = 5;
-            for (i = 0; i < SELWORK->f60[arg3]; i++) {
-                SELWORK->f48[arg3][i] = i;
+            SELWORK->panel_slide_state.half[arg3] = 3;
+            SELWORK->pending_selection_phase[arg3] = 2;
+            SELWORK->pending_selection_cursor[arg3] =
+                SELWORK->selected_match_count_index + 2;
+            g_sel_entry_availability_and_claims
+                [arg2[SELWORK->pending_selection_cursor[arg3]]] &= ~(4 << arg3);
+            SELWORK->remaining_list_count[arg3] = 5;
+            for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
+                SELWORK->remaining_list_entries[arg3][i] = i;
             }
             if (arg1 != 0) {
-                SELWORK->f48[arg3][4] = 5;
+                SELWORK->remaining_list_entries[arg3][4] = 5;
             }
             return;
         }
         /* Put the last taken entry back into the list in sorted position. */
-        for (i = 0; i < SELWORK->f60[arg3]; i++) {
-            if (SELWORK->f48[arg3][i] >
-                SELWORK->f7E[arg3][SELWORK->f3C[arg3] - 1]) {
-                for (j = SELWORK->f60[arg3] - 1; j >= i; j--) {
-                    SELWORK->f48[arg3][j + 1] = SELWORK->f48[arg3][j];
+        for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
+            if (SELWORK->remaining_list_entries[arg3][i] >
+                SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1]) {
+                for (j = SELWORK->remaining_list_count[arg3] - 1; j >= i; j--) {
+                    SELWORK->remaining_list_entries[arg3][j + 1] =
+                        SELWORK->remaining_list_entries[arg3][j];
                 }
-                SELWORK->f48[arg3][i] =
-                    SELWORK->f7E[arg3][SELWORK->f3C[arg3] - 1];
+                SELWORK->remaining_list_entries[arg3][i] =
+                    SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1];
                 break;
             }
-            if (i == SELWORK->f60[arg3] - 1) {
-                SELWORK->f48[arg3][i + 1] =
-                    SELWORK->f7E[arg3][SELWORK->f3C[arg3] - 1];
+            if (i == SELWORK->remaining_list_count[arg3] - 1) {
+                SELWORK->remaining_list_entries[arg3][i + 1] =
+                    SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1];
             }
         }
-        SELWORK->f60[arg3]++;
+        SELWORK->remaining_list_count[arg3]++;
         SELWORK->f3C[arg3]--;
     }
 }
@@ -1039,29 +1077,32 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
     s32 ret;
 
     ret = 0;
-    cnt = &SELWORK->f36;
+    cnt = &SELWORK->selection_fade_shade;
     v = *cnt + 8;
     *cnt = v;
     if (v >= 0xFF) {
         *cnt = 0xFF;
-        working_record = SELWORK->f00;
-        working_record->match_count_index = SELWORK->f65;
+        working_record = SELWORK->sel_result_record;
+        working_record->match_count_index = SELWORK->selected_match_count_index;
         ret = 1;
-        if (SELWORK->f66 < 3) {
-            var_6 = SELWORK->f66 - 1;
+        if (SELWORK->selected_time_sheet_code < 3) {
+            var_6 = SELWORK->selected_time_sheet_code - 1;
         } else {
-            var_6 = SELWORK->f66 - 2;
+            var_6 = SELWORK->selected_time_sheet_code - 2;
         }
         working_record->time_limit_index = var_6;
-        working_record->win_target_index = SELWORK->f67;
-        working_record->unk14_15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
+        working_record->win_target_index = SELWORK->selected_win_target_index;
+        working_record->unk14_15 =
+            SELWORK->selected_grid_page[0] + SELWORK->selected_grid_page[1] * 2;
         for (i = 0; i < 2; i++) {
-            for (j = 0; j < SELWORK->f65 + 3; j++) {
+            for (j = 0; j < SELWORK->selected_match_count_index + 3; j++) {
                 /* flat index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
                 working_record->match_picks[i][j].bd0 =
-                    g_sel_grid_page_cells[0][SELWORK->f6A[i][j]].unk1;
-                working_record->match_picks[i][j].unk1 = SELWORK->f7E[i][j];
+                    g_sel_grid_page_cells[0][SELWORK->grid_pick_slots[i][j]]
+                        .unk1;
+                working_record->match_picks[i][j].unk1 =
+                    SELWORK->picked_list_entries[i][j];
             }
         }
     }
@@ -1123,13 +1164,13 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
         Unk80076FF8Rec *list = work;
         work = (void *)gpu_InitPrimBufferPair(r, g_sel_prim_buffers);
         g_sel_screen_work = work;
-        SELWORK->f04 = list;
+        SELWORK->sel_resource_table = list;
         /* FAKE: dead store (never read) takes work out of the call result's
            cse class so the 0x30/0x34 clears use $v0, not $s1
            (dead-store-fake-exception, Q78); without it: score 2 */
         work = list;
-        SELWORK->f30 = 0;
-        SELWORK->f34 = 0;
+        SELWORK->prim_buffer_flip_count = 0;
+        SELWORK->selection_pulse_frames = 0;
     }
     t0 = 0;
     do {
@@ -1139,24 +1180,24 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
            g_sel_offset_steps with no re-set: score 19 */
         s16(*row)[2];
         a2 = 0;
-        base->f10.half[t0] = 0;
-        base->f08[t0] = 0;
-        base->f0C[t0] = 0;
-        base->f14.half[t0] = 0;
+        base->panel_slide_state.half[t0] = 0;
+        base->panel_draw_offset_y[t0] = 0;
+        base->panel_slide_amount[t0] = 0;
+        base->selection_phase.half[t0] = 0;
         base->f3C[t0] = 0;
         row = g_sel_offset_steps;
         row[t0][1] = 0;
         row[t0][0] = 0;
-        base->f40[t0][1] = 0;
-        base->f40[t0][0] = 0;
-        base->f68[t0] = t0;
+        base->direction_nudge_offsets[t0][1] = 0;
+        base->direction_nudge_offsets[t0][0] = 0;
+        base->selected_grid_page[t0] = t0;
         do {
-            SELWORK->f6A[t0][a2] = -1;
-            SELWORK->f7E[t0][a2] = 0;
+            SELWORK->grid_pick_slots[t0][a2] = -1;
+            SELWORK->picked_list_entries[t0][a2] = 0;
             a2 = (s16)(a2 + 1);
         } while (a2 < 5);
-        SELWORK->f5C[t0] = 0;
-        SELWORK->f60[t0] = 5;
+        SELWORK->remaining_list_cursor[t0] = 0;
+        SELWORK->remaining_list_count[t0] = 5;
         for (a2 = 0; a2 < 0xA; a2 = (s16)(a2 + 1)) {
             s16 idx = (s16)(a2 + (t0 * 10));
             s32 mask = 1 << idx;
@@ -1176,24 +1217,25 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     } while (t0 < 2);
     {
         SelWork *p = SELWORK;
-        p->f20.word = 0;
-        p->f1C.word = 0;
+        p->grid_cursor_row.word = 0;
+        p->grid_cursor_column.word = 0;
         if (sp[0] < sp[1]) {
-            p->f64 = sp[0] - 3;
+            p->maximum_match_count_index = sp[0] - 3;
         } else {
-            p->f64 = sp[1] - 3;
+            p->maximum_match_count_index = sp[1] - 3;
         }
     }
-    if (SELWORK->f64 >= 3) {
-        SELWORK->f64 = 2;
+    if (SELWORK->maximum_match_count_index >= 3) {
+        SELWORK->maximum_match_count_index = 2;
     }
     {
         SelWork *q = SELWORK;
-        q->f00 = arg1;
-        q->f65 = 0;
+        q->sel_result_record = arg1;
+        q->selected_match_count_index = 0;
     }
-    SELWORK->f67 = 1;
-    SELWORK->f66 = g_sel_sheet_code_pairs[SELWORK->f67][1];
+    SELWORK->selected_win_target_index = 1;
+    SELWORK->selected_time_sheet_code =
+        g_sel_sheet_code_pairs[SELWORK->selected_win_target_index][1];
     g_sel_sheet_code_column_cursor = 1;
     return 1;
 }
@@ -1206,19 +1248,19 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
     s16 i;
 
     ret = 0;
-    if (SELWORK->f14.word == 0x40004) {
-        SELWORK->f14.half[1] = 5;
-        SELWORK->f14.half[0] = 5;
-        SELWORK->f36 = 0;
+    if (SELWORK->selection_phase.word == 0x40004) {
+        SELWORK->selection_phase.half[1] = 5;
+        SELWORK->selection_phase.half[0] = 5;
+        SELWORK->selection_fade_shade = 0;
     }
     gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
-        draw_context, SELWORK->f14.half[0]);
-    if (SELWORK->f14.half[0] != 5) {
+        draw_context, SELWORK->selection_phase.half[0]);
+    if (SELWORK->selection_phase.half[0] != 5) {
         menu_StepSelPanelSlides();
     }
 
     for (i = 0; i < 2; i++) {
-        switch (SELWORK->f14.half[i]) {
+        switch (SELWORK->selection_phase.half[i]) {
         case 0:
             if (i == 0) {
                 ret = menu_HandleSelPhase0CursorInput(arg0);
@@ -1229,43 +1271,46 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
         case 1:
             menu_HandleSelOpposedChoice(arg0, i);
             menu_DrawSelPhaseSheet(
-                draw_context, i, (s16)(SELWORK->f14.half[i] - 1));
+                draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelOpposedChoice(draw_context, i);
             menu_DrawSelPanel(draw_context, i);
             break;
         case 2:
-            menu_UpdateSelGridPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_UpdateSelGridPicks(arg0, SELWORK->selected_grid_page[i],
+                                    SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPhaseSheet(
-                draw_context, i, (s16)(SELWORK->f14.half[i] - 1));
+                draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelRowTiles(draw_context, i, 0);
-            menu_DrawSelGrid(draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelGrid(draw_context, SELWORK->selected_grid_page[i],
+                             SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
             break;
         case 3:
-            menu_UpdateSelListPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_UpdateSelListPicks(arg0, SELWORK->selected_grid_page[i],
+                                    SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPhaseSheet(
-                draw_context, i, (s16)(SELWORK->f14.half[i] - 1));
+                draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelRowTiles(draw_context, i, 1);
-            menu_DrawSelListPicks(
-                draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
+                                  SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
             break;
         case 4:
             menu_DrawSelPhaseSheet(draw_context, i, 2);
             menu_DrawSelRowTiles(draw_context, i, 1);
-            menu_DrawSelListPicks(
-                draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
+                                  SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
             if (arg0 & (0x10 << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
-                SELWORK->f14.half[i] = 3;
+                SELWORK->selection_phase.half[i] = 3;
             }
             break;
         case 5:
             menu_DrawSelPhaseSheet(draw_context, i, 2);
             menu_DrawSelRowTiles(draw_context, i, 1);
-            menu_DrawSelListPicks(
-                draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
+                                  SELWORK->grid_pick_slots[i], i);
             ret = menu_FadeOutSelAndWriteResult(draw_context);
             menu_DrawSelPanel(draw_context, i);
             break;
@@ -1278,13 +1323,13 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
     Unk8006EACCRec s;
     Unk8006E49CRec *p;
     s32 temp_v1;
-    SELWORK->f24 = &g_gpu_db[g_gpu_presented_frame_count & 1];
-    temp_v1 = SELWORK->f30 + 1;
-    SELWORK->f34 = SELWORK->f34 + 1;
-    SELWORK->f30 = temp_v1;
+    SELWORK->frame_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
+    temp_v1 = SELWORK->prim_buffer_flip_count + 1;
+    SELWORK->selection_pulse_frames = SELWORK->selection_pulse_frames + 1;
+    SELWORK->prim_buffer_flip_count = temp_v1;
     p = menu_GetSelPrimBuffer(temp_v1 & 1);
     SELWORK->f2C = p;
-    s.resource_root.v80076FF8 = SELWORK->f04;
+    s.resource_root.v80076FF8 = SELWORK->sel_resource_table;
     s.primitive_cursors.textured_quad_prims = p->textured_quad_prims;
     s.primitive_cursors.flat_quad_prims = p->flat_quad_prims;
     s.primitive_cursors.gradient_quad_prims = p->gradient_quad_prims;
