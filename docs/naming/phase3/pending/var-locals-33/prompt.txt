@@ -1,0 +1,47 @@
+# Research (read-only): local / parameter names, wave 33 (row var-locals-33, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-32/prompt.txt` (which chains to var-locals-31 / 30 / 29 /
+26 / 15 and the wave-15..31 lessons) exactly, plus `pending/var-locals-{30,31,32}/notes.txt`, with
+these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD 30183e247 (read-only; equals main, wave 32 applied and its comment pass landed; re-derive
+  every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-33-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 32: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-32/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not
+  edited), ending with a "### LEADS for var-locals-34" section. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  1. var-locals-32's 10 CAP-CUT rows (pending/var-locals-32/notes.txt "CAP-CUT": math_MatrixToAnglesYXZ
+     a0 / a1, gpu_RemapDepthToOtIndex a0, gpu_OffsetBlockTexPrimStreams arg0..arg4 / arg4_lo,
+     gpu_OffsetBlockTexPrimStreamsByPages a0): re-derive against the current source.
+  2. pending/var-locals-32/notes.txt LEADS in order: 32D04.c gpu_OffsetBlockTexPrimStreamsByPages a1 / a2,
+     gpu_OffsetTexPrimStream, gpu_OffsetTPageClutAt0And4 / At6And2, gpu_OffsetTPage, gpu_OffsetClut,
+     reloc_*, gpu_PrepareViewAndFlushDrawQueue:a0, node_BindFrameDataAndReserveEntryBuffer,
+     node_GetSlotNodeById:base, math_MatrixToAnglesYXZ:var_7; the R6-32 lead 31548.c
+     PatchColorImmediatesAtListedCodeSites local a0lo (= color & 0xFFFF; candidate color_low_half,
+     judge it); then 35000.c and later game TUs in ROM-offset order (`ls src/main`, skip psxsdk/)
+     with auto-named bindings (a0..a3, arg<N>, var_<N>, v0, sp<N>, temp_*) not on any NO_NAME /
+     neutral list.
+- Left neutral on purpose, do not re-propose without new evidence: as var-locals-32's prompt
+  (replay_PlayFrame:var_19, comb_WaitRead8:v0, fight_RunCommandStream:var_0,
+  snd_QueuePositionalSound var_7 / var_9 / var_10, fight_BuildOpponentOrder:dir), plus
+  softbody_CreateForNode point_count / cmds (scoped_plan has no function-local aggregate support:
+  still blocked on tooling).
+- Do not re-propose wave 8-32 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,32}/notes.txt) without new evidence, said in the row.
+- Prototype parameter edits (a prototype elsewhere naming the same parameter) go in the comment
+  list; they land in the comment commit (keycheck counts them as non-pair changes).
+- Lessons (unchanged): apply is naming_keycheck.scoped_plan(base, pairs, {}), so every row must be a
+  binding scoped_plan can resolve (no function-like macro arguments, no token inside a #define body,
+  no function-local aggregates); a new name must not equal a member, global, macro or function the
+  same function references; a binding with two roles in one body stays neutral; own vs opponent
+  values must be distinguished; a name is true before AND after every in-place rewrite; 'player'
+  needs player evidence, the tree's spelling for the 0/1 fight side is fighter_index;
+  FAKE-labelled temporaries stay neutral unless the name is true of the value at every use; no
+  word the code doesn't show; units (pixels, pages, 64-px tpage units) only where the code shows
+  the scale.
