@@ -451,11 +451,11 @@ typedef struct {
  * Eases the focus toward the fighters' midpoint (or first_camera_point's
  * position when g_fight_view_option is set); turns their separation (byte-LUT
  * square root, GTE leading-zero count for large inputs) into the value
- * g_camera_default_view_record.w18 eases 1/12 toward (0xBB8 in some
- * first_fighter->move_kind states), clamps w18, and sets a hysteresis flag for
- * func_8003F1E4; eases camera_angles.vy / vz toward the facing yaw and zero;
- * then per fighter bisects camera_angles.vx (rot_x) so the segment from its
- * collision_pos less 0xC8 in vy to the eye passes
+ * g_camera_default_view_record.eye_distance eases 1/12 toward (0xBB8 in some
+ * first_fighter->move_kind states), clamps eye_distance, and sets a hysteresis
+ * flag for func_8003F1E4; eases camera_angles.vy / vz toward the facing yaw and
+ * zero; then per fighter bisects camera_angles.vx (rot_x) so the segment from
+ * its collision_pos less 0xC8 in vy to the eye passes
  * collision_TestSegmentWithWork's camera-collision test (step in
  * g_camera_pitch_search_steps[], blocked flag in g_camera_eye_blocked_flags[]),
  * and eases camera_angles.vx toward the larger result, clamped to 0x80..0x1C0.
@@ -777,9 +777,9 @@ void camera_InitTrackedFighterFocus(
 void camera_UpdateTrackedFighterView(Unk80101EC8Record *tracked_fighter) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
      * the tracked camera target's height and rotation are read, eased toward
-     * the fighter and stored back through cam, and h1C is read, decayed by
-     * 3/4 and stored back; through the symbol each access re-forms the
-     * address (score 34). */
+     * the fighter and stored back through cam, and turn_easing_angle is read,
+     * decayed by 3/4 and stored back; through the symbol each access re-forms
+     * the address (score 34). */
     Rec44 *cam = &g_camera_alternate_view_record;
     s32 focus_y;
     s32 val;
@@ -918,9 +918,9 @@ void camera_UpdateReplayView(
     s32 dy;
     s32 dz;
     /* cur / t are the current and target value of each eased step (x, y, z,
-     * then the pitch target and the w18 step), reused component to component
-     * the way SOTN's white-dragon segment update reuses var_s2 for posX
-     * then posY (Q51) */
+     * then the pitch target and the eye_distance step), reused component to
+     * component the way SOTN's white-dragon segment update reuses var_s2 for
+     * posX then posY (Q51) */
     /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
     s32 cur;
     s32 var_8;

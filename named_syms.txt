@@ -423,7 +423,7 @@
 /* +0x210 / +0x234 are Unk80101EC8Record.prev_weapon_points / prev_second_weapon_points (include/game.h). */
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2238-2242) */
-/* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
+/* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1314-1316) or to unk_D8 + unk_E8 (:4077, :5303) */
 /* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, motion_AdvanceVariantIfAtNibble4Or5Position, motion_ResolveMoveData) */
 
 /* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h; */
@@ -631,11 +631,11 @@
 /* === code6cac.c game-state cluster (2026-05-17) -- 9 highs === */
 /* From code6cac.c around lines 827-1500: various game/audio/stage state */
 /* globals discovered through usage-pattern analysis. */
-/* RENAME 0x800A36FA: retired name 'D_800A36FA' — preserved note: three values (0 / 1 / 2): camera_ApplyFightView picks its view record (D_800F6608 or D_800F5328), FOV and func_8003F218 argument by it (9F9C.c:2038-2066) */  /* data-wave 2026-10-08: was g_gnd_init_flag */
+/* RENAME 0x800A36FA: retired name 'D_800A36FA' — preserved note: three values (0 / 1 / 2): camera_ApplyFightView picks its view record (D_800F6608 or D_800F5328), FOV and func_8003F218 argument by it (9F9C.c:2047-2075) */  /* data-wave 2026-10-08: was g_gnd_init_flag */
 
 /* === Byte tables g_fight_config_id_data_rows / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
 /* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:5743, 5830, 5993, 2B344.c:247, 283) */
-/* or fighter_Init's roster_index (9F9C.c:3878-3879); D_8008D55C maps a table index */
+/* or fighter_Init's roster_index (9F9C.c:3895-3896); D_8008D55C maps a table index */
 /* into the g_fight_config.unk_4 id space.  g_listener_cam, g_fight_weapon_contact_result and */
 /* g_fight_opponent_order: see their lines. */
 
@@ -663,7 +663,7 @@
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
 
 /* === g_camera_alternate_view_record (Rec44) record fields (2026-05-17) -- 9 highs === */
-/* camera_InitTrackedFighterFocus (9F9C.c:746-749) copies a fighter's bone_hit_point_0 position */
+/* camera_InitTrackedFighterFocus (9F9C.c:747-750) copies a fighter's bone_hit_point_0 position */
 /* into g_camera_alternate_view_record and sets h30[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
 /* reads h30[i][0] / h30[i][2] as 32x32 grid cell coordinates. */
 
@@ -1105,7 +1105,7 @@
 
 /* === D_80101EC8[0] unk_B8 / unk_C8 / prev_root_offset words (2026-05-17) -- 4 highs === */
 /* func_8001C624 sets unk_B8 from unk_D8, then copies unk_C8 = unk_B8 */
-/* and prev_root_offset = unk_E8 (9F9C.c:1308-1312; also :4068-4069, :5274, :5288). */
+/* and prev_root_offset = unk_E8 (9F9C.c:1317-1321; also :4085-4086, :5291, :5305). */
 
 /* === Sound voice-init block byte fields + callback ptr (2026-05-17) -- 6 highs === */
 /* Fields within g_snd_voice_init_block (0x800EF070), accessed by */

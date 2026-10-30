@@ -1979,8 +1979,9 @@ typedef struct Rec44 {
     s32 eye_y;
     s32 eye_z;
     s32 w2C;
-    /* two limit vectors; camera_UpdateTwoFighterView passes h30[p] to
-     * math_StoreFloorDiv2000XZOfPointStepTowards */
+    /* per-fighter grid cell coordinates written by
+     * math_StoreFloorDiv2000XZOfPointStepTowards (camera_UpdateTwoFighterView
+     * passes h30[p]) */
     s16 h30[2][4];
     u8 b40;
     u8 b41;
@@ -1990,8 +1991,9 @@ typedef struct Rec44 {
 
 /* The camera-target offset at 0x800FF5C8: camera_ApplyFightView /
  * camera_ApplyReplayView add its fields to a Rec44's focus_point, camera_angles
- * and w18, and camera_UpdatePadOffset zeroes them. The fields sit at Rec44's
- * offsets; +0x0C and the SVECTOR pad are never accessed. */
+ * and eye_distance (focus_point_offset, camera_angles_offset,
+ * eye_distance_offset), and camera_UpdatePadOffset zeroes them. The fields sit
+ * at Rec44's offsets; +0x0C and the SVECTOR pad are never accessed. */
 typedef struct Unk800FF5C8Rec {
     Vec3i32 focus_point_offset;
     u8 unk_0C[4];
@@ -2005,15 +2007,21 @@ typedef struct Unk800FF5C8Rec {
  * g_replay_write_frame from the character record, replay_PlayFrame reads both
  * back and passes two of them to camera_UpdateReplayViewWithSineYawOffset /
  * camera_UpdateReplayViewWithConstantYawOffset,
- * motion_ApplyRecordedPoseAdjustments reads b14..b16 / b18).
- * - w0: the character's current move (Unk80101EC8Record.cur_move);
+ * motion_ApplyRecordedPoseAdjustments reads replay_pose_bearing_offset,
+ * replay_pose_elevation_offset, replay_opponent_elevation_offset and
+ * replay_frame_flags).
+ * - replay_cur_move: the character's current move (Unk80101EC8Record.cur_move);
  * replay_PlayFrame reads its motion_bank_entry_index.
- * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with
- * draw_move_set in the top four bits; hC: ground_y; hE / h10 / h12:
+ * - replay_pos_x / _y / _z: world_pos x / y / z; replay_yaw_and_draw_move_set:
+ * orientation.vy & 0xFFF with draw_move_set in the top four bits;
+ * replay_ground_y: ground_y; replay_blend_src_frame_code /
+ * replay_blend_dst_frame_code / replay_pose_interp_weight: the character's
  * blend_src_frame_code / blend_dst_frame_code / pose_interp_weight.
- * - b14..b16: eased_pose_bearing_offset / eased_pose_elevation_offset /
- * opponent_elevation_offset >> 2, read back signed; b17: bit 0 =
- * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: frame_flags; b19:
+ * - replay_pose_bearing_offset / replay_pose_elevation_offset /
+ * replay_opponent_elevation_offset: eased_pose_bearing_offset /
+ * eased_pose_elevation_offset / opponent_elevation_offset >> 2, read back
+ * signed; replay_move_section_bits: bit 0 = cur_move_is_common != 0, bit 1 =
+ * cur_move_slot != 0; replay_frame_flags: frame_flags; replay_move_frame:
  * move_frame. */
 typedef struct Rec1C {
     MoveScript *replay_cur_move;

@@ -67,7 +67,7 @@ Large objects named elsewhere in these pages:
 
 - `GpuDb g_gpu_db[2]` at 0x800F7438: two 0x4090-byte records holding
   DRAWENV, DISPENV and OT (include/game.h:54-63).
-- `CdState g_cdrom_state`: the CD state block (include/game.h:2084).
+- `CdState g_cdrom_state`: the CD state block (include/game.h:2092).
   `g_cd_file_table` (0x8008EC34, include/bb2.h:474) holds the disc file
   records. See [file_io.md](file_io.md).
 - `g_shared_buffer`: the 0x200-byte memory-card image. Its second half is
@@ -77,7 +77,7 @@ Large objects named elsewhere in these pages:
 - `g_scratchpad_save` (0x800F5370): `scratchpad_Save` /
   `scratchpad_Restore` copy 0xF8 words (992 bytes) between it and
   0x1F800000 (src/main/6CF8.c:782, :791). The one caller pair is in
-  `fighter_Update` (src/main/9F9C.c:5418, :5422), around `func_80040D48`.
+  `fighter_Update` (src/main/9F9C.c:5435, :5439), around `func_80040D48`.
 - `CdlREAD D_800A14D0`: libcd `CdRead` state (include/psxsdk/libcd.h:41-57).
 
 ## The `$gp` window

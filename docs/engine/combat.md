@@ -9,7 +9,7 @@ stated, otherwise only its use is described.
 ## Per-frame entry: `fight_UpdateFighterInteractionsAndPointCaches`
 
 `fight_UpdateFighterInteractionsAndPointCaches` (src/main/17AFC.c:2466) runs once per frame; its callers are
-src/main/9F9C.c:2207, :2256 and :2381, each followed by `object_UpdatePool` (the
+src/main/9F9C.c:2218, :2267 and :2392, each followed by `object_UpdatePool` (the
 object-pool update, src/main/17AFC.c:4110). It branches on fighter 0's state
 `move_kind`:
 
@@ -89,7 +89,7 @@ src/main/17AFC.c:2215 records both call shapes). Its branches, in order:
 - `rec->character_roster_index == 0xD` (outside state 0x2E): `fighter_RelocateAndStartEventMove`, see
   [ai.md](ai.md).
 - `move_kind` 4 or 0x14, or `character_roster_index == 0x1F`: `fighter_StoreBoneLocalVectorAndArmEventTrigger`
-  (src/main/9F9C.c:2996) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:262); the
+  (src/main/9F9C.c:3013) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:262); the
   latter case also sets `pending_move_event = 7`.
 - The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < attack_early_frame_limit`:
   with `src == 0` the reaction code
@@ -107,7 +107,7 @@ src/main/17AFC.c:2215 records both call shapes). Its branches, in order:
 
 Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 
-- `fighter_ReadFrameMetadata` (src/main/17AFC.c:4845; called at src/main/9F9C.c:3607)
+- `fighter_ReadFrameMetadata` (src/main/17AFC.c:4845; called at src/main/9F9C.c:3624)
   resets the window fields and reads: 0xFF skips six bytes, a byte below 0x80
   skips one, and 0x80..0x8B take the next byte into `weapon_hit_start_frames[0]`,
   `weapon_hit_end_frames[0]`, `release_frame`, `object_pickup_frame`,
@@ -115,8 +115,8 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
   `weapon_hit_end_frames[1]`, `paired_move_hit_frame`, `opponent_transition_start_frame`, `weapon_reload_frame`
   (src/main/17AFC.c:4863-4909). `weapon_hit_start_frames[k]` /
   `weapon_hit_end_frames[k]` are the frame windows the contact tests compare `move_frame` with.
-- `fighter_ProcessFrameEvents` (src/main/17AFC.c:5538; called at src/main/9F9C.c:5785 and
-  src/main/28708.c:1486) reads the same stream: 0xFF tests a 32-bit mask
+- `fighter_ProcessFrameEvents` (src/main/17AFC.c:5538; called at src/main/9F9C.c:5802 and
+  src/main/28708.c:1498) reads the same stream: 0xFF tests a 32-bit mask
   against `1 << rec->character_data_index` and skips 4 or 6 bytes; a byte `c` below 0x80
   is followed by a frame number, and when that equals `move_frame` it calls
   `fighter_DispatchFrameEvent(rec, c - 1)` (src/main/17AFC.c:5156); it stops at the first
@@ -136,7 +136,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
   positive). `fighter_IsBoneTriangleCrossYPositive` (src/main/17AFC.c:3866) takes the same cross
   product for a fighter's scratchpad points 2 and 3 about point 1 and returns
   1 when its y is positive, else 0; the result is stored in `bone_triangle_cross_y_positive`
-  (src/main/9F9C.c:5623).
+  (src/main/9F9C.c:5640).
 
 ## Cues
 

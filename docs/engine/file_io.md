@@ -10,15 +10,15 @@ third, separate path. Disc contents and file formats are in
 ## The CD file table
 
 `g_cd_file_table` (`CdFileEntry[159]`, include/bb2.h:474) gives each disc
-file a `CdlLOC` start position and a byte size (include/game.h:2039-2042).
+file a `CdlLOC` start position and a byte size (include/game.h:2047-2050).
 Code names a file by group and index:
 `cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:42) returns
 `(&g_cdrom_file_group_bases)[group] + i`, a group base from the s16 table `g_cdrom_file_group_bases`
 plus an offset. The groups that appear in calls:
 
 - group 1: `motion_LoadCommonData` reads `cdrom_GetFileIndex(1, 1)` into the buffer
-  at `g_motion_common_buffer` (src/main/9F9C.c:3227), and the motion data `(1, 0)` /
-  `(1, j + 2)` (9F9C.c:3281, :3335).
+  at `g_motion_common_buffer` (src/main/9F9C.c:3244), and the motion data `(1, 0)` /
+  `(1, j + 2)` (9F9C.c:3298, :3352).
 - group 2: image and data files. Readers include `eff_LoadImagesAndSetup`,
   `gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
@@ -36,8 +36,8 @@ plus an offset. The groups that appear in calls:
 ## The CD state block and its two steppers
 
 All game CD work runs through one object, `CdState g_cdrom_state`
-(include/game.h:2084-2089; its `rec` member is `Unk80101E60Rec`,
-include/game.h:2054-2077). `rec.io_state` is the state. 0 means idle.
+(include/game.h:2092-2097; its `rec` member is `Unk80101E60Rec`,
+include/game.h:2062-2085). `rec.io_state` is the state. 0 means idle.
 States 2..0xD are the data read. States 0x10..0x1E are CD audio.
 
 Requests:

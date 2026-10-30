@@ -31,7 +31,7 @@ Its only caller is `sys_Exec` (below).
 
 `cdrom_StartRead(file_index, dest_addr)` (src/main/cdrom.c:13) queues a read of
 file `file_index`
-into the CD state block `g_cdrom_state` (`CdState`, include/game.h:2079; its `rec`
+into the CD state block `g_cdrom_state` (`CdState`, include/game.h:2087; its `rec`
 member is `Unk80101E60Rec`):
 
 1. If a request is pending (`rec.io_state != 0`), return 0.

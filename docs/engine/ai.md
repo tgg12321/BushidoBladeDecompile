@@ -17,7 +17,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 - `object_InitKindQueue(rec)` (src/main/17AFC.c:4034) seeds the queue: it copies the five entries of
   `g_fighter_initial_carried_object_kinds[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
-  src/main/9F9C.c:4050.
+  src/main/9F9C.c:4067.
 - `object_QueueKind(fighter_record, object_kind)` (src/main/17AFC.c:4223) appends a kind, or puts it
   first when `fighter_record->object_variant_index != -1` and `object_kind == fighter_record->wielded_object_kind`; it returns 0 when
   the queue already holds 12.
@@ -40,14 +40,14 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   vertically and within a squared horizontal distance of 0xF423F of
   `world_pos`. It frees the slot and returns the kind (-1 if none, or if the
   queue is full).
-- The fighter update calls these at src/main/9F9C.c:5714 (`object_SpawnScatteredAt`),
+- The fighter update calls these at src/main/9F9C.c:5731 (`object_SpawnScatteredAt`),
   :5743 (`object_ThrowQueuedKind`) and :5750 / :5760 (`object_PickUpNearby`), gated on the
   record's `move_kind` / `move_frame` values.
 - Pool cleanup: `object_ResetPool` (src/main/17AFC.c:4025) frees all twelve
-  slots (called at src/main/9F9C.c:1769); `object_FreeAttachedObjects`
+  slots (called at src/main/9F9C.c:1778); `object_FreeAttachedObjects`
   (src/main/17AFC.c:3880) frees objects with `is_attached != 0` and `object_ClearFixedKindRange`
   (src/main/17AFC.c:4085) frees kinds 0x12..0x1D (both called at
-  src/main/9F9C.c:1180-1181).
+  src/main/9F9C.c:1189-1190).
 
 ## The shuffled ID list `g_fight_opponent_order`
 
@@ -102,7 +102,7 @@ an opponent order; the code does not name it.
   `cur_move->event_move_table_id` and that record's halfword 0x1D, made current by
   `fighter_StartMoveScript`) and plays
   cue 0x30.
-- `camera_SetFighterFocusView(fighter_record, yaw)` (src/main/9F9C.c:1035) sets the view target
+- `camera_SetFighterFocusView(fighter_record, yaw)` (src/main/9F9C.c:1043) sets the view target
   `g_camera_default_view_record.focus_point` to `fighter_record->bone_hit_points_4_5_midpoint`, its rotation to `(0x120, yaw, 0)` and
-  its distance `w18` to 0x1162. Its caller is `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange`
-  (src/main/9F9C.c:2240).
+  its distance `eye_distance` to 0x1162. Its caller is `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange`
+  (src/main/9F9C.c:2251).

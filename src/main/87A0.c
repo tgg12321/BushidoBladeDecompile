@@ -22,9 +22,9 @@ typedef struct {
     s32 pos[3];              /* 0x3C node position */
     s32 cpos[3];             /* 0x48 node position >> 5 */
     s32 unk54[3];            /* 0x54 */
-    s32 collider_count;      /* 0x60 ellipsoid count */
-    s32 collider_foci[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
-    /* 0xAC ellipsoid bounds (sum of the two focus distances) */
+    s32 collider_count;      /* 0x60 collider count */
+    s32 collider_foci[3][6]; /* 0x64 collider foci */
+    /* 0xAC collider bounds (sum of the two focus distances) */
     s32 collider_bounds[3];
     s32 ground;      /* 0xB8 ground height */
     s32 force[0][3]; /* 0xBC force table, indexed by the node's packed bytes */
