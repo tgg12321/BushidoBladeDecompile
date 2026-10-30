@@ -745,7 +745,7 @@ g_str_sio_800A3210 = 0x800A3210; /* 'sio:' serial-port device opened by comb_Ini
 g_menu_mode_subflow_init_pending = 0x800A31DA; /* ref: menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu */  /* data-wave 2026-10-08: was g_game_session_running */
 g_memcard_validation_load_active = 0x800A31FC; /* 0/1 flag of the memory-card status flow (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress / memcard_StepSaveOverwriteAndFormatPrompts) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
 g_memcard_load_request_armed = 0x800A3203; /* one-shot latch that re-arms the memory-card status poll through memcard_RequestLoad (28708.c:511-512, 559) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
-g_gpu_flush_rotation_angles = 0x800A3678; /* ref: math_RotMatrixZXY (gpu_PrepareViewAndFlushDrawQueue, 32D04.c:1136) */  /* data-wave 2026-10-08: was g_leaf_muki_buffer */
+g_gpu_flush_rotation_angles = 0x800A3678; /* ref: math_RotMatrixZXY (gpu_PrepareViewAndFlushDrawQueue, 32D04.c:1133) */  /* data-wave 2026-10-08: was g_leaf_muki_buffer */
 g_view_identity_root_ptr = 0x800A370C; /* = &g_view_identity_root_node (node_InitRootNodePairWithNegatedRotationMatrices); read by gpu_PrepareViewAndFlushDrawQueue */  /* data-wave 2026-10-08: was g_replay_camera_target_ptr_b */
 g_gpu_ot_ptr = 0x800A374C; /* ref: tslDrTex1Init2 */  /* data-wave 2026-09-24: was g_dma_buf_base */
 g_fight_bone_group_tim_requests = 0x800A376A; /* refs: fighter_AccumulateBoneGroupFlagWhenGameModeZero, ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState, fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields, fight_InitCommandStreamImageLoad */  /* data-wave 2026-10-08: was g_tslTm_loaded_flags */
@@ -983,7 +983,7 @@ def_cbready = 0x8008003C; /* MISNAMED: not motion-pre-calc; calls bios_DeliverEv
 def_cbread = 0x80080064; /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
 // RENAME 0x80077B20: retired name 'func_80077B20' — preserved note: MISNAMED: not gauge init; 1-line D_800A35E4 = 1
 // RENAME 0x80077D00: retired name 'func_80077D00' — preserved note: MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr)
-func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
+func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, dest_addr) */
 func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateMemCardChoices(a0, pressed_buttons) */
 func_80077A60 = 0x80077A60; /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateConfirmMenu() */
 func_80077AC0 = 0x80077AC0; /* 1-line wrapper of menu_StepSelScreen() */
@@ -2074,7 +2074,7 @@ g_cd_fade_step = 0x800A3840; /* fade step counter: zeroed by cdrom_StartMixFade,
 g_memcard_op_completion_code = 0x800A3890; /* copy of g_memcard_info_load_pending_result at end (caller reads this) */
 CombWaitCallback = 0x800F1AE8; /* SPU transfer callback fn pointer */  /* data-wave 2026-09-25: was g_spu_xfer_callback */
 sen = 0x800F1AEC; /* != 0 = busy (caller returns -1); set to 1 when starting */  /* data-wave 2026-09-25: was g_spu_xfer_busy_flag */
-g_node_frame_animation_context = 0x800A9CF8; /* 0x18-byte header: reloc_block_id = a1, anim_frame_count = *a0++, frame_data = a0, frame_entries = a2, resource_selector = resource_GetLoadedSelector(), frame_entry_count = entry count, paired_grid_nodes = gpu_GetGridNodeRecordTable()'s table */  /* data-wave 2026-10-08: was g_motion_table_arg1_saved */
+g_node_frame_animation_context = 0x800A9CF8; /* 0x18-byte header: reloc_block_id = block_id, anim_frame_count = *a0++, frame_data = a0, frame_entries = entry_cursor, resource_selector = resource_GetLoadedSelector(), frame_entry_count = entry count, paired_grid_nodes = gpu_GetGridNodeRecordTable()'s table */  /* data-wave 2026-10-08: was g_motion_table_arg1_saved */
 D_800A9D00 = 0x800A9D00; /* a0 advanced past its first halfword; base of 12-byte stride array; resource_RebaseFrameAnimatedEntryBlockAndPointers shifts it */  /* data-wave 2026-10-08: was g_motion_table_arg0_saved */
 D_800F6650 = 0x800F6650; /* set / clear / get flag */  /* data-wave 2026-10-08: was g_motion_table_flag */
 D_800EED18 = 0x800EED18; /* +8 of each g_arena_blocks block entry: the block's byte amount */  /* data-wave 2026-10-08: was g_snd_stream_slot_field_8 */
@@ -2157,7 +2157,7 @@ D_800F1AFC = 0x800F1AFC; /* +4 from g_spu_xfer_status_snapshot (0x800F1AF8) */  
 _svm_voice_plus_0x1D = 0x800F4E35; /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h); retire with _SsVmFlush */
 D_800F6627 = 0x800F6627; /* +1 from D_800F6626 (0x800F6626) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag_plus_1 */
 D_800F665A = 0x800F665A; /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
-g_gpu_flush_work_matrix = 0x80101BD0; /* MATRIX, 4 bytes past LIBSND's 1-byte _SsVmMaxVoice (0x80101BCC): gpu_PrepareViewAndFlushDrawQueue's math_RotMatrixZXY output, then a MulMatrix / MulMatrix2 operand (32D04.c:1136-1138) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
+g_gpu_flush_work_matrix = 0x80101BD0; /* MATRIX, 4 bytes past LIBSND's 1-byte _SsVmMaxVoice (0x80101BCC): gpu_PrepareViewAndFlushDrawQueue's math_RotMatrixZXY output, then a MulMatrix / MulMatrix2 operand (32D04.c:1133-1135) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
 D_80101F88 = 0x80101F88; /* D_80101EC8[0].unk_B8.vz (D_80101F84 + 4) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_BC_plus_4 */
 D_80101FB0 = 0x80101FB0; /* +0xE8 of D_80101EC8[0]: x of VECTOR unk_E8, set to (0, -0x384, 0) */  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8 */
 D_80101FCC = 0x80101FCC; /* D_80101EC8[0].base_velocity.vx (D_80101FC4 + 8; VECTOR base_velocity, include/game.h:1476) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8 */

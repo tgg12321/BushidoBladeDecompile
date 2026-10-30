@@ -910,10 +910,10 @@ typedef struct Unk80104E88Rec {
 
 /* The 10-entry block table over the 0x45000-byte buffer at g_arena
  * (arena_Reset .. arena_FindBlock; g_arena_block_count live entries).
- * arena_Reset clears id in all 10. arena_ShiftBlocks(a0, a1) hands
- * mem_MoveBlockRoundedUpToWords entry a0's block_start, block_start + a1 and
- * the summed amt of entries a0.., then adds a1 to their block_start and calls
- * each fn(id, a1). */
+ * arena_Reset clears id in all 10. arena_ShiftBlocks(first_block_index,
+ * byte_offset) moves the summed amt of entries first_block_index.. from that
+ * entry's block_start by byte_offset (mem_MoveBlockRoundedUpToWords), adds
+ * byte_offset to their block_start and calls each fn(id, byte_offset). */
 typedef struct {
     s16 id;
     s16 unk2;

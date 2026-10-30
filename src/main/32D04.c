@@ -569,14 +569,14 @@ extern void gpu_OffsetTexPolyFT3();
 extern void gpu_OffsetTexPolyFT4();
 extern void gpu_OffsetTexPolyGT3();
 extern void gpu_OffsetTexPolyGT4();
-void gpu_OffsetTPageClutAt0And4(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
-void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
+void gpu_OffsetTPageClutAt0And4(s16 *prim, s16 du, s16 dv, s16 dcx, s16 dcy);
+void gpu_OffsetTPageClutAt6And2(s16 *prim, s16 du, s16 dv, s16 dcx, s16 dcy);
 /* Read cursor into the primitive packet stream, kept in scratchpad word 0. */
 #define SCRATCH_PTR (*(u16 **)0x1F800000)
 
 /* Walk a packet stream of primitive groups (the cursor starts at the
  * scratchpad word) and shift every textured primitive's texture source by
- * (arg0, arg1) and its CLUT by (arg2, arg3): via gpu_OffsetTexPoly* for
+ * (du, dv) and its CLUT by (dcx, dcy): via gpu_OffsetTexPoly* for
  * mode-0 groups, via gpu_OffsetTPageClutAt0And4 / gpu_OffsetTPageClutAt6And2
  * plus a per-vertex v shift for mode-1 / mode-2 groups.  Untextured groups are
  * skipped using the per-type halfword sizes in g_gpu_prim_type_halfword_sizes.
@@ -888,8 +888,8 @@ s16 gpu_OffsetClut(s16 clut, s16 dcx, s32 dcy) {
 /* Relocates a block of pointer words in place. p[0] holds the word count in
  * its low 15 bits, bit 15 set once the block is relocated. Marks the block
  * relocated (keeping the low halfword), records its first word (p + 1) and
- * count in g_reloc_block_entry_tables / g_reloc_block_slot_counts [arg1], and,
- * if it was not relocated yet, turns each word's block-relative offset into an
+ * count in g_reloc_block_entry_tables / g_reloc_block_slot_counts [block_id],
+ * and, if not relocated yet, turns each word's block-relative offset into an
  * address by adding the block's base. reloc_UnrelocateBlock is the inverse. */
 void reloc_RelocateBlock(s32 *p, s16 block_id) {
     s32 *base = p;

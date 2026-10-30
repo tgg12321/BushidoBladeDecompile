@@ -389,7 +389,7 @@ void arena_ShiftBlocks(s32 first_block_index, s32 byte_offset) {
     g_arena_free_size -= byte_offset;
 }
 
-/* Remove the table entry whose id == a0: undo its contribution via
+/* Remove the table entry whose id == block_id: undo its contribution via
    arena_ShiftBlocks(index + 1, -amt), shift the following records down one
    slot, clear the freed tail slot, decrement the count. */
 void arena_Free(s32 block_id) {

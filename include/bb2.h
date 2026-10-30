@@ -546,11 +546,11 @@ extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
  * slot count). Each slot is a word holding a block-relative offset that
  * reloc_RelocateBlock turns into an address by adding the block's base, unless
  * header bit 15 marks the block relocated; reloc_UnrelocateBlock subtracts the
- * base again (and clears bit 15), and reloc_RebaseBlock moves [i] by a1 / 4
- * words and adds a1 to each slot.  gpu_OffsetBlockTexPrimStreams /
- * gpu_OffsetBlockTexPrimStream store a slot to scratchpad word 0, the u16 *
- * cursor gpu_OffsetTexPrimStream reads, and softbody_CreateForNode reads u16
- * data through one.
+ * base again (and clears bit 15), and reloc_RebaseBlock moves [i] by
+ * byte_offset / 4 words and adds byte_offset to each slot.
+ * gpu_OffsetBlockTexPrimStreams / gpu_OffsetBlockTexPrimStream store a slot to
+ * scratchpad word 0, the u16 * cursor gpu_OffsetTexPrimStream reads, and
+ * softbody_CreateForNode reads u16 data through one.
  */
 extern s32 *g_reloc_block_entry_tables[];
 extern Unk80104E88Rec g_fight_ballistic_records[];
