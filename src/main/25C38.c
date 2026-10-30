@@ -418,7 +418,7 @@ void DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit(void) {
     }
 }
 
-s32 bits_ExtractMask3F83F8(s32 a0) {
+s32 bits_ExtractMask3F83F8(s32 scattered_bits) {
     s32 result = 0;
     s32 i = 0;
     s32 j = 0;
@@ -426,7 +426,7 @@ s32 bits_ExtractMask3F83F8(s32 a0) {
     s32 one = 1;
     do {
         if ((mask >> i) & 1) {
-            if (a0 & (one << i)) {
+            if (scattered_bits & (one << i)) {
                 result |= (one << j);
             }
             j++;
@@ -436,7 +436,7 @@ s32 bits_ExtractMask3F83F8(s32 a0) {
     return result;
 }
 
-s32 bits_DepositMask3F83F8(s32 a0) {
+s32 bits_DepositMask3F83F8(s32 packed_bits) {
     s32 result = 0;
     s32 i = 0;
     s32 j = 0;
@@ -444,7 +444,7 @@ s32 bits_DepositMask3F83F8(s32 a0) {
     s32 one = 1;
     do {
         if ((mask >> i) & 1) {
-            if (a0 & (one << j)) {
+            if (packed_bits & (one << j)) {
                 result |= (one << i);
             }
             j++;

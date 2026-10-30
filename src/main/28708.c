@@ -177,14 +177,14 @@ extern u8 D_800A3200;
 extern u8 D_800A3201;
 
 void memcard_BuildFileHeader(u8 *out) {
-    s32 s1, s2, s3;
+    s32 first_class_count, second_class_count, third_class_count;
     s32 i;
     s32 mask;
     s32 bit;
 
-    s3 = 0;
-    s2 = 0;
-    s1 = 0;
+    third_class_count = 0;
+    second_class_count = 0;
+    first_class_count = 0;
     mask = g_saved_record.unlock_mask;
 
     for (i = 0; i < 0x1B; i++) {
@@ -193,13 +193,13 @@ void memcard_BuildFileHeader(u8 *out) {
             s32 v = g_memcard_title_count_class_by_unlock_bit[i];
             switch (v) {
             case 0:
-                s1++;
+                first_class_count++;
                 break;
             case 1:
-                s2++;
+                second_class_count++;
                 break;
             case 2:
-                s3++;
+                third_class_count++;
                 break;
             }
         }
@@ -222,16 +222,18 @@ void memcard_BuildFileHeader(u8 *out) {
 
     strcpy(out + 4, g_memcard_save_title);
 
-    out[0x22] = g_memcard_title_sjis_digits[s1 * 2 + 0];
-    out[0x23] = g_memcard_title_sjis_digits[s1 * 2 + 1];
-    out[0x3C] = g_memcard_title_sjis_digits[s2 * 2 + 0];
-    out[0x3D] = g_memcard_title_sjis_digits[s2 * 2 + 1];
+    out[0x22] = g_memcard_title_sjis_digits[first_class_count * 2 + 0];
+    out[0x23] = g_memcard_title_sjis_digits[first_class_count * 2 + 1];
+    out[0x3C] = g_memcard_title_sjis_digits[second_class_count * 2 + 0];
+    out[0x3D] = g_memcard_title_sjis_digits[second_class_count * 2 + 1];
 
-    if (s3 > 0) {
+    if (third_class_count > 0) {
         out[0x40] = D_800A3200;
         out[0x41] = D_800A3201;
-        out[0x42] = g_memcard_title_sjis_digits_0_to_4[s3 * 2 + 0];
-        out[0x43] = g_memcard_title_sjis_digits_0_to_4[s3 * 2 + 1];
+        out[0x42] =
+            g_memcard_title_sjis_digits_0_to_4[third_class_count * 2 + 0];
+        out[0x43] =
+            g_memcard_title_sjis_digits_0_to_4[third_class_count * 2 + 1];
     }
 
     i = 0x1B;
@@ -258,21 +260,21 @@ void memcard_BuildFileHeader(u8 *out) {
 
     i = 0;
     {
-        const u8 *var_11 = D_80010A2C;
-        u8 *var_12 = out;
+        const u8 *src_icon_cursor = D_80010A2C;
+        u8 *icon_out_cursor = out;
         do {
             s32 j = 0;
-            u16 *dst = (u16 *)(var_12 + 0x80);
-            const u16 *src = (const u16 *)var_11;
+            u16 *dst = (u16 *)(icon_out_cursor + 0x80);
+            const u16 *src = (const u16 *)src_icon_cursor;
             do {
                 *dst = *src;
                 src++;
                 j++;
                 dst++;
             } while (j < 0x40);
-            var_11 += 0x80;
+            src_icon_cursor += 0x80;
             i++;
-            var_12 += 0x80;
+            icon_out_cursor += 0x80;
         } while (i <= 0);
     }
 }
@@ -280,9 +282,9 @@ void memcard_BuildFileHeader(u8 *out) {
 void memcard_StepRequest(void) {
     s32 var_v1;
     s32 var_v0;
-    s32 temp_s0;
-    s32 var_s1;
-    u16 temp_v0;
+    s32 free_blocks;
+    s32 create_first;
+    u16 retry_count;
 
     var_v1 = g_memcard_request_state;
     if (var_v1 != 1)
@@ -324,9 +326,9 @@ neg2_else:
     return;
 
 sub_inc:
-    temp_v0 = (u16)g_memcard_request_retry_count + 1;
-    g_memcard_request_retry_count = temp_v0;
-    if ((s16)temp_v0 < 4)
+    retry_count = (u16)g_memcard_request_retry_count + 1;
+    g_memcard_request_retry_count = retry_count;
+    if ((s16)retry_count < 4)
         return;
     var_v0 = 8;
     goto finish;
@@ -349,17 +351,17 @@ state_other:
 state_3:
     g_memcard_request_status = 1;
     memcard_CountFiles(0, 0);
-    temp_s0 = memcard_CountFreeBlocks();
+    free_blocks = memcard_CountFreeBlocks();
     if (memcard_HasFile((u8 *)g_memcard_save_file_name) != 0) {
-        var_s1 = 0;
+        create_first = 0;
         if (g_memcard_request_operation == 1) {
             var_v0 = 0xD;
             goto finish;
         }
         goto setup_load;
     }
-    var_s1 = 1;
-    if (temp_s0 == 0) {
+    create_first = 1;
+    if (free_blocks == 0) {
         var_v0 = 7;
         goto finish;
     }
@@ -369,7 +371,7 @@ setup_load:
     memcard_BuildFileHeader(g_shared_buffer);
     memcard_BuildSaveBlock(g_shared_buffer + 0x100);
     if (memcard_WriteFile(0, 0, g_memcard_save_file_name, g_shared_buffer, 1,
-                          0x200, var_s1) != 0) {
+                          0x200, create_first) != 0) {
         close(g_memcard_fd);
         var_v0 = 3;
         goto finish;
@@ -416,13 +418,13 @@ extern s32 memcard_RestoreSaveBlock(Unk800F34D8Save *);
  * label (the shared-end-label recipe, .claude/rules/shared-end-label.md). */
 void memcard_PollFileCompletion(void) {
     s32 ret;
-    s32 var_1;
+    s32 in_progress_status;
 
     switch (g_memcard_request_state) {
     case 4:
         ret = memcard_PollSwEvents();
         if (ret == 0) {
-            var_1 = 1;
+            in_progress_status = 1;
             goto fail_store;
         }
         close(g_memcard_fd);
@@ -436,7 +438,7 @@ void memcard_PollFileCompletion(void) {
     case 6:
         ret = memcard_PollSwEvents();
         if (ret == 0) {
-            var_1 = 4;
+            in_progress_status = 4;
             goto fail_store;
         }
         close(g_memcard_fd);
@@ -454,7 +456,7 @@ void memcard_PollFileCompletion(void) {
     return;
 
 fail_store:
-    g_memcard_request_status = var_1;
+    g_memcard_request_status = in_progress_status;
 }
 
 s32 memcard_Update(void) {
@@ -502,62 +504,62 @@ extern void memcard_RequestLoad(void);
 extern s32 memcard_Update(void);
 
 s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
-    s32 s0;
-    s32 v0;
+    s32 result;
+    s32 request_status;
 
-    s0 = 0;
+    result = 0;
     if (g_memcard_load_request_armed) {
         g_memcard_load_request_armed = 0;
         g_memcard_validation_load_active = 1;
         memcard_RequestLoad();
     }
-    v0 = memcard_Update();
-    switch (v0 - 4) {
+    request_status = memcard_Update();
+    switch (request_status - 4) {
     case 0:
         break;
     case 1:
-        s0 = 1;
+        result = 1;
         break;
     case 2:
-        s0 = -1;
+        result = -1;
         break;
     case 3:
-        s0 = -1;
+        result = -1;
         break;
     case 4:
-        s0 = -1;
+        result = -1;
         break;
     case 5:
-        s0 = -1;
+        result = -1;
         break;
     case 6:
-        s0 = -1;
+        result = -1;
         break;
     case 7:
-        s0 = -1;
+        result = -1;
         break;
     case 8:
-        s0 = -1;
+        result = -1;
         break;
     case 9:
-        s0 = -1;
+        result = -1;
         break;
     case 10:
-        s0 = -1;
+        result = -1;
         break;
     case 11:
-        s0 = -1;
+        result = -1;
         break;
     default:
-        s0 = -1;
+        result = -1;
         break;
     }
     gpu_DrawSheetPairCenteredTileWithOptionalSelection(0, -1);
-    if (s0) {
+    if (result) {
         g_memcard_load_request_armed = 1;
         g_memcard_validation_load_active = 0;
     }
-    return s0;
+    return result;
 }
 
 /* Q65: this file's statics (.sbss), in address order. */

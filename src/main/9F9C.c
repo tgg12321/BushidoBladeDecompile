@@ -4428,7 +4428,7 @@ void fighter_HandleMissingSupportWhileDescending(
     s32 dx_delta;
     s32 dz_delta;
     s32 scratchpad;
-    s32 missing_support;
+    s32 support_response_needed;
     u16 kind;
     if (fighter_record->base_velocity.vy <= 0) {
         return;
@@ -4447,20 +4447,21 @@ void fighter_HandleMissingSupportWhileDescending(
     dst[1] = fighter_record->collision_pos.vy + 0x514;
     dst[2] = fighter_record->collision_pos.vz;
     s1 = collision_TestSegmentWithWork(src, dst, out, offsets, scratchpad);
-    missing_support = 1;
+    support_response_needed = 1;
     if (s1 != 0) {
         if (out[1] - src[1] > 0x190) {
-            missing_support = fighter_record->move_kind != 0x22;
+            support_response_needed = fighter_record->move_kind != 0x22;
         } else if (offsets[1] >= -0x7FF) {
             dst[0] += offsets[0] / 8;
             dst[2] += offsets[2] / 8;
-            missing_support = collision_TestSegmentWithWork(
-                                  src, dst, out, offsets2, scratchpad) == 0;
+            support_response_needed =
+                collision_TestSegmentWithWork(
+                    src, dst, out, offsets2, scratchpad) == 0;
         } else {
-            missing_support = 0;
+            support_response_needed = 0;
         }
     }
-    if (!missing_support) {
+    if (!support_response_needed) {
         return;
     }
     if (s1 == 0) {

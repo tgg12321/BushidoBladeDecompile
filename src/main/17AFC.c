@@ -4190,93 +4190,98 @@ void object_DropQueuedHeadAt(
     fighter_record->carried_object_count--;
 }
 
-void object_SpawnScatteredAt(
-    Unk80101EC8Record *fighter_record, s32 a1, Vec3i32 *a2) {
-    Obj80106A78 *p;
-    s32 var_1;
+void object_SpawnScatteredAt(Unk80101EC8Record *fighter_record, s32 object_kind,
+                             Vec3i32 *drop_position) {
+    Obj80106A78 *pool_object;
+    s32 random_value;
 
-    p = object_SpawnFromFighter(fighter_record, a1);
-    p->can_hit_fighter = 0;
-    p->pos = *a2;
-    p->vel.x = (rng_Next() & 0xFF) - 0x80;
-    p->vel.y = -(rng_Next() & 0x3F) - 0x80;
-    p->vel.z = (rng_Next() & 0xFF) - 0x80;
-    var_1 = rng_Next();
-    if (var_1 & 0x1000) {
-        p->rot_vel[0] = (var_1 & 0x3FF) + 0x200;
+    pool_object = object_SpawnFromFighter(fighter_record, object_kind);
+    pool_object->can_hit_fighter = 0;
+    pool_object->pos = *drop_position;
+    pool_object->vel.x = (rng_Next() & 0xFF) - 0x80;
+    pool_object->vel.y = -(rng_Next() & 0x3F) - 0x80;
+    pool_object->vel.z = (rng_Next() & 0xFF) - 0x80;
+    random_value = rng_Next();
+    if (random_value & 0x1000) {
+        pool_object->rot_vel[0] = (random_value & 0x3FF) + 0x200;
     } else {
-        p->rot_vel[0] = -(var_1 & 0x3FF) - 0x200;
+        pool_object->rot_vel[0] = -(random_value & 0x3FF) - 0x200;
     }
-    p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
-    p->rot_vel[2] = 0;
-    p->drop_state = 1;
-    p->model_entry_id = fighter_record->weapon_entry_id;
+    pool_object->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
+    pool_object->rot_vel[2] = 0;
+    pool_object->drop_state = 1;
+    pool_object->model_entry_id = fighter_record->weapon_entry_id;
 }
 
-s32 object_QueueKind(Unk80101EC8Record *arg0, s32 arg1) {
+s32 object_QueueKind(Unk80101EC8Record *fighter_record, s32 object_kind) {
     s32 i;
 
-    if (arg0->carried_object_count == 0xC) {
+    if (fighter_record->carried_object_count == 0xC) {
         return 0;
     }
-    if (arg0->object_variant_index != -1 && arg1 == arg0->wielded_object_kind) {
-        for (i = arg0->carried_object_count; i > 0; i--) {
-            arg0->carried_object_kinds[i] = arg0->carried_object_kinds[i - 1];
+    if (fighter_record->object_variant_index != -1 &&
+        object_kind == fighter_record->wielded_object_kind) {
+        for (i = fighter_record->carried_object_count; i > 0; i--) {
+            fighter_record->carried_object_kinds[i] =
+                fighter_record->carried_object_kinds[i - 1];
         }
-        arg0->carried_object_kinds[0] = arg1;
-        arg0->carried_object_count++;
+        fighter_record->carried_object_kinds[0] = object_kind;
+        fighter_record->carried_object_count++;
     } else {
-        arg0->carried_object_kinds[arg0->carried_object_count++] = arg1;
+        fighter_record
+            ->carried_object_kinds[fighter_record->carried_object_count++] =
+            object_kind;
     }
     return 1;
 }
 
-s32 object_PickUpNearby(Unk80101EC8Record *arg0) {
-    Obj80106A78 *p;
+s32 object_PickUpNearby(Unk80101EC8Record *fighter_record) {
+    Obj80106A78 *pool_cursor;
     s32 i;
-    s32 old_val;
+    s32 picked_kind;
 
-    for (i = 0, p = g_object_pool; i < 12; i++, p++) {
-        s16 kind = p->kind;
+    for (i = 0, pool_cursor = g_object_pool; i < 12; i++, pool_cursor++) {
+        s16 kind = pool_cursor->kind;
         if (kind >= 0x12 && kind < 0x1E) {
             continue;
         }
         if (kind == -1) {
             continue;
         }
-        if (p->is_moving != 0) {
+        if (pool_cursor->is_moving != 0) {
             continue;
         }
         {
-            s32 var_4 = arg0->collision_pos.vy;
-            s32 py = p->pos.y;
-            if (var_4 - 0x64 >= py) {
+            s32 collision_y = fighter_record->collision_pos.vy;
+            s32 py = pool_cursor->pos.y;
+            if (collision_y - 0x64 >= py) {
                 continue;
             }
-            if (py >= var_4 + 0x64) {
+            if (py >= collision_y + 0x64) {
                 continue;
             }
         }
         {
-            s32 dx = arg0->world_pos.x - p->pos.x;
-            s32 dz = arg0->world_pos.z - p->pos.z;
+            s32 dx = fighter_record->world_pos.x - pool_cursor->pos.x;
+            s32 dz = fighter_record->world_pos.z - pool_cursor->pos.z;
             if (dx * dx + dz * dz > 0xF423F) {
                 continue;
             }
         }
-        if (object_QueueKind(arg0, kind) == 0) {
+        if (object_QueueKind(fighter_record, kind) == 0) {
             return -1;
         }
-        old_val = p->kind;
-        p->kind = -1;
-        if (old_val == 0xE) {
+        picked_kind = pool_cursor->kind;
+        pool_cursor->kind = -1;
+        if (picked_kind == 0xE) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &arg0->world_pos.x, 0);
+                (D_800A36F2[0] ^ 0xE) != 0, 0x2F, &fighter_record->world_pos.x,
+                0);
         } else {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                arg0->index, 0x11, &arg0->world_pos.x, 0);
+                fighter_record->index, 0x11, &fighter_record->world_pos.x, 0);
         }
-        return old_val;
+        return picked_kind;
     }
     return -1;
 }
@@ -4292,12 +4297,12 @@ void object_ClearFixedKindRange(void) {
 
 void func_80030D48(void) {}
 
-s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
-    arg0 = (arg0 - arg1) & 0xFFF;
+s32 math_LerpAngle(s32 arg0, s32 target_angle, s32 retained_fraction) {
+    arg0 = (arg0 - target_angle) & 0xFFF;
     if (arg0 >= 0x800) {
         arg0 -= 0x1000;
     }
-    return arg1 + ((arg0 * arg2) >> 12);
+    return target_angle + ((arg0 * retained_fraction) >> 12);
 }
 
 /* Per-frame update of the twelve 0x64-byte records at g_object_pool: velocity
@@ -4312,9 +4317,9 @@ void object_UpdatePool(void) {
     s32 i;
     s32 half;
     s32 dot;
-    s32 var_5;
+    s32 horizontal_speed_sq;
     s16 kind;
-    s16 *var_7;
+    s16 *hit_normal;
 
     scr = &SPAD->unk2B8.v8005344C;
     obj = g_object_pool;
@@ -4389,9 +4394,9 @@ void object_UpdatePool(void) {
         scr->cast_end.y = obj->pos.y + obj->vel.y;
         scr->cast_end.z = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
-        var_7 = scr->cast_normal;
+        hit_normal = scr->cast_normal;
         temp = collision_TestSegmentExtendingShortStartWithWork(
-            &obj->pos.x, &scr->cast_end.x, &scr->unk10.x, var_7,
+            &obj->pos.x, &scr->cast_end.x, &scr->unk10.x, hit_normal,
             (s32)&scr->cast_work);
         if (temp != 0 && collision_GetHitTag() == 7) {
             temp = 0;
@@ -4399,16 +4404,16 @@ void object_UpdatePool(void) {
         if (temp != 0) {
             if (obj->kind == 0xF) {
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    obj->owner, 0xE, &scr->unk10.x, var_7);
+                    obj->owner, 0xE, &scr->unk10.x, hit_normal);
                 obj->kind = -1;
                 continue;
             }
-            dot = (obj->vel.x * var_7[0] + obj->vel.y * var_7[1] +
-                   obj->vel.z * var_7[2]) /
+            dot = (obj->vel.x * hit_normal[0] + obj->vel.y * hit_normal[1] +
+                   obj->vel.z * hit_normal[2]) /
                   2048;
-            obj->vel.x -= var_7[0] * dot / 4096;
-            obj->vel.y -= var_7[1] * dot / 4096;
-            obj->vel.z -= var_7[2] * dot / 4096;
+            obj->vel.x -= hit_normal[0] * dot / 4096;
+            obj->vel.y -= hit_normal[1] * dot / 4096;
+            obj->vel.z -= hit_normal[2] * dot / 4096;
             obj->pos = scr->unk10;
             kind = obj->kind;
             work = g_object_kind_params[kind].bounce_restitution;
@@ -4416,10 +4421,12 @@ void object_UpdatePool(void) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
                 obj->vel.z = obj->vel.z * work / 4096;
-                var_5 = obj->vel.x * obj->vel.x + obj->vel.z * obj->vel.z;
+                horizontal_speed_sq =
+                    obj->vel.x * obj->vel.x + obj->vel.z * obj->vel.z;
                 if (scr->cast_normal[1] >= -0x7FF) {
                     obj->rot_vel[1] +=
-                        (rng_Next() & 1) ? var_5 / 64 : -var_5 / 64;
+                        (rng_Next() & 1) ? horizontal_speed_sq / 64
+                                         : -horizontal_speed_sq / 64;
                     if (obj->kind != 0xE && obj->can_hit_fighter != 0) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
                             obj->owner, 1, &obj->pos.x, 0);
@@ -4432,13 +4439,13 @@ void object_UpdatePool(void) {
                             0);
                     }
                 } else if (obj->kind < 0x12) {
-                    if (var_5 > 0x10) {
+                    if (horizontal_speed_sq > 0x10) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
                             (obj->kind ^ D_800A36F2[0]) != 0, 0x2C, &obj->pos.x,
                             0);
                     }
                 } else if (obj->kind >= 0x12 && obj->kind < 0x1E) {
-                    if (var_5 > 0x10) {
+                    if (horizontal_speed_sq > 0x10) {
                         fight_RecordReplayEventAndDispatchSoundOrEffect(
                             obj->owner, 0x29, &obj->pos.x, 0);
                     }
@@ -4513,12 +4520,12 @@ void object_UpdatePool(void) {
 /* GTE rotate-velocity-by-table-angle (sibling of
  * math_PrepareSegmentCollisionFrame) */
 void object_DeflectFromFighterHit(
-    Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
+    Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 hit_record_index) {
     MATRIX *mat;
     s32 angle1;
     s32 angle2;
     s32 sum_sq;
-    s32 var_5;
+    s32 spin_delta;
 
     if (ent->kind != 0xE) {
         s32 vx = ent->vel.x;
@@ -4526,15 +4533,15 @@ void object_DeflectFromFighterHit(
         s32 var_8 = ent->rot_vel[1];
         sum_sq = vx * vx + vz * vz;
         if (rng_Next() & 1) {
-            var_5 = sum_sq / 64;
+            spin_delta = sum_sq / 64;
         } else {
-            var_5 = -sum_sq / 64;
+            spin_delta = -sum_sq / 64;
         }
-        ent->rot_vel[1] = var_8 + var_5;
+        ent->rot_vel[1] = var_8 + spin_delta;
     }
 
     mat = &scr->rot_matrix;
-    angle1 = g_object_bone_hit_deflect_angles[idx] & 0xFFF;
+    angle1 = g_object_bone_hit_deflect_angles[hit_record_index] & 0xFFF;
     angle2 =
         (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
     /* identity 3x3 rotation matrix at scr->rot_matrix */
@@ -4575,15 +4582,15 @@ extern s32 fighter_ResolveBoneHit(
 void object_ResolveFighterHits(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 i;
-    s32 var_2;
+    s32 inner_sphere_hit;
     Obj80106A78 *obj;
-    Vec3i32 *var_4 = scr->point_slots.work_points;
-    Unk80101EC8Record *var_5;
-    s32 var_6;
-    u16 var_7;
+    Vec3i32 *segment_points = scr->point_slots.work_points;
+    Unk80101EC8Record *target_fighter;
+    s32 target_fighter_index;
+    u16 target_move_kind;
     BoneHitRec *rec;
     s32 j;
-    s32 var_10;
+    s32 outer_sphere_hit;
     s32 diff;
     s32 r;
     s32 kind;
@@ -4597,44 +4604,49 @@ void object_ResolveFighterHits(void) {
             continue;
         if (obj->is_moving == 0)
             continue;
-        var_6 = obj->owner == 0;
-        var_5 = &D_80101EC8[var_6];
-        var_7 = var_5->move_kind;
-        if (var_7 == 4 || var_7 == 0x14 || var_7 == 0xF || var_7 == 0x1C ||
-            var_7 == 0x1D || var_7 == 0x1E || var_7 == 0x1F || var_7 == 0x20 ||
-            var_7 == 0x21 || var_7 == 0x11) {
+        target_fighter_index = obj->owner == 0;
+        target_fighter = &D_80101EC8[target_fighter_index];
+        target_move_kind = target_fighter->move_kind;
+        if (target_move_kind == 4 || target_move_kind == 0x14 ||
+            target_move_kind == 0xF || target_move_kind == 0x1C ||
+            target_move_kind == 0x1D || target_move_kind == 0x1E ||
+            target_move_kind == 0x1F || target_move_kind == 0x20 ||
+            target_move_kind == 0x21 || target_move_kind == 0x11) {
             continue;
         }
 
-        var_4[0] = obj->prev_pos;
-        var_4[1] = obj->pos;
-        scr->shape_points[0] = &var_4[0];
-        scr->shape_points[1] = &var_4[1];
+        segment_points[0] = obj->prev_pos;
+        segment_points[1] = obj->pos;
+        scr->shape_points[0] = &segment_points[0];
+        scr->shape_points[1] = &segment_points[1];
         math_PrepareSegmentCollisionFrame(scr);
 
-        var_10 = 0;
-        rec = g_fighter_bone_hit_records[var_6];
+        outer_sphere_hit = 0;
+        rec = g_fighter_bone_hit_records[target_fighter_index];
         for (j = 0; j < 22; j++, rec++) {
             Unk80107850Rec *pos;
-            if (var_5->bone_group_6_9_intact == 0 && j >= 6 && j <= 9)
+            if (target_fighter->bone_group_6_9_intact == 0 && j >= 6 && j <= 9)
                 continue;
-            pos = &SPAD->bone_hit_points[var_6][j];
-            var_10 = math_TestPreparedSegmentSphere(
+            pos = &SPAD->bone_hit_points[target_fighter_index][j];
+            outer_sphere_hit = math_TestPreparedSegmentSphere(
                 scr, pos, rec->outer_radius, rec->unk_0E);
-            if (var_10 != 0) {
-                var_2 = 0;
+            if (outer_sphere_hit != 0) {
+                inner_sphere_hit = 0;
                 if (rec->has_inner_sphere != 0 &&
                     g_object_kind_params[obj->kind].unkD == 0) {
-                    var_2 = math_TestPreparedSegmentSphere(
-                                scr, pos, rec->inner_radius, rec->unk_12) != 0;
+                    inner_sphere_hit =
+                        math_TestPreparedSegmentSphere(
+                            scr, pos, rec->inner_radius, rec->unk_12) != 0;
                 }
                 break;
             }
         }
-        if (var_10 == 0)
+        if (outer_sphere_hit == 0)
             continue;
 
-        diff = (var_5->orientation.vy - ratan2(obj->vel.x, obj->vel.z)) & 0xFFF;
+        diff =
+            (target_fighter->orientation.vy - ratan2(obj->vel.x, obj->vel.z)) &
+            0xFFF;
         if (diff >= 0x800)
             diff = 0x1000 - diff;
         math_NegNormalize3D(
@@ -4646,18 +4658,18 @@ void object_ResolveFighterHits(void) {
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
-        r = fighter_ResolveBoneHit(1, var_5, j, diff, var_2,
+        r = fighter_ResolveBoneHit(1, target_fighter, j, diff, inner_sphere_hit,
                                    &g_object_kind_params[obj->kind], 0, &flag);
         if (r == 2)
             continue;
         if (r != 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 (obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
-                &SPAD->bone_hit_points[var_6][j].x, 0);
+                &SPAD->bone_hit_points[target_fighter_index][j].x, 0);
             object_AttachToOpponentBone(obj, rec->bone);
             obj->can_hit_fighter = 0;
-            var_7 = var_5->move_kind;
-            if (var_7 == 8 || var_7 == 0x23) {
+            target_move_kind = target_fighter->move_kind;
+            if (target_move_kind == 8 || target_move_kind == 0x23) {
                 g_gpu_jitter_burst_enabled = 1;
             }
             continue;
@@ -4665,7 +4677,8 @@ void object_ResolveFighterHits(void) {
         kind = obj->kind;
         if (kind == 0xF) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                var_6 ^ 1, 0xE, &SPAD->bone_hit_points[var_6][j].x,
+                target_fighter_index ^ 1, 0xE,
+                &SPAD->bone_hit_points[target_fighter_index][j].x,
                 /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
                  * by the first's address, passed to
                  * fight_RecordReplayEventAndDispatchSoundOrEffect (Q96 / Q117;
@@ -4680,7 +4693,7 @@ void object_ResolveFighterHits(void) {
         } else if (flag == 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 (kind ^ D_800A36F2[0]) != 0, 0x2B,
-                &SPAD->bone_hit_points[var_6][j].x, 0);
+                &SPAD->bone_hit_points[target_fighter_index][j].x, 0);
         }
         object_DeflectFromFighterHit(scr, obj, j);
         obj->can_hit_fighter = 0;
@@ -4703,42 +4716,42 @@ Unk80104E88Rec *fight_CreateBallisticRecordAndDispatchEvent(
     s32 var_1 = -0xC8;
     s32 i = 0;
     Unk80104E88Rec *ptr = g_fight_ballistic_records;
-    Unk80104E88Rec *s0;
-    s16 var_5[3];
+    Unk80104E88Rec *ballistic_record;
+    s16 command_vector[3];
 
     for (; i < 4; i++) {
-        s0 = ptr;
-        if (s0->ballistic_kind == 0)
+        ballistic_record = ptr;
+        if (ballistic_record->ballistic_kind == 0)
             break;
-        ptr = s0 + 1;
+        ptr = ballistic_record + 1;
     }
     if (i == 4)
         return 0;
 
-    s0->ballistic_kind = type;
-    s0->unk_01 = 1;
-    s0->flight_frames = 0;
-    s0->owner_index = src->index;
-    s0->ballistic_pos.x = src->world_pos.x;
+    ballistic_record->ballistic_kind = type;
+    ballistic_record->unk_01 = 1;
+    ballistic_record->flight_frames = 0;
+    ballistic_record->owner_index = src->index;
+    ballistic_record->ballistic_pos.x = src->world_pos.x;
     {
         s32 v1 = src->size_scale;
         if (v1 < 0)
             v1 += 0x1F;
-        s0->ballistic_pos.y = src->collision_pos.vy - (v1 >> 5);
+        ballistic_record->ballistic_pos.y = src->collision_pos.vy - (v1 >> 5);
     }
-    s0->ballistic_pos.z = src->world_pos.z;
-    s0->ballistic_velocity.x =
+    ballistic_record->ballistic_pos.z = src->world_pos.z;
+    ballistic_record->ballistic_velocity.x =
         ((s32)Judge[src->orientation.vy & 0xFFF] * speed) >> 12;
-    s0->ballistic_velocity.y = var_1;
-    s0->ballistic_velocity.z =
+    ballistic_record->ballistic_velocity.y = var_1;
+    ballistic_record->ballistic_velocity.z =
         ((s32)Judge[(src->orientation.vy + 0x400) & 0xFFF] * speed) >> 12;
-    s0->prev_ballistic_pos = s0->ballistic_pos;
-    s0->launcher_collision_y = src->collision_pos.vy;
-    var_5[1] = src->orientation.vy;
+    ballistic_record->prev_ballistic_pos = ballistic_record->ballistic_pos;
+    ballistic_record->launcher_collision_y = src->collision_pos.vy;
+    command_vector[1] = src->orientation.vy;
     fight_RecordReplayEventAndDispatchSoundOrEffect(
-        src->collision_hit_class, type == 1 ? 0xC : 0xD, &s0->ballistic_pos.x,
-        var_5);
-    return s0;
+        src->collision_hit_class, type == 1 ? 0xC : 0xD,
+        &ballistic_record->ballistic_pos.x, command_vector);
+    return ballistic_record;
 }
 
 void fight_UpdateBallisticRecords(void) {
@@ -4821,67 +4834,67 @@ void fight_TriggerOpposingFighterEventFromNearBallisticRecords(void) {
     }
 }
 
-void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
+void fighter_ReadFrameMetadata(Unk80101EC8Record *fighter_record) {
     u8 *ptr;
-    u8 c;
-    u8 val;
+    u8 command;
+    u8 command_frame;
 
-    ptr = rec->motion_metadata + 4;
-    rec->weapon_hit_start_frames[0] = 0xFF;
-    rec->weapon_hit_end_frames[0] = 0xFF;
-    rec->weapon_hit_start_frames[1] = 0xFF;
-    rec->weapon_hit_end_frames[1] = 0xFF;
-    rec->paired_move_hit_frame = 0;
-    rec->release_frame = 0;
-    rec->object_pickup_frame = 0;
-    rec->frame_window_start = 0;
-    rec->frame_window_end = 0xFF;
-    rec->opponent_transition_start_frame = 0xFF;
-    rec->weapon_reload_frame = 0xFF;
+    ptr = fighter_record->motion_metadata + 4;
+    fighter_record->weapon_hit_start_frames[0] = 0xFF;
+    fighter_record->weapon_hit_end_frames[0] = 0xFF;
+    fighter_record->weapon_hit_start_frames[1] = 0xFF;
+    fighter_record->weapon_hit_end_frames[1] = 0xFF;
+    fighter_record->paired_move_hit_frame = 0;
+    fighter_record->release_frame = 0;
+    fighter_record->object_pickup_frame = 0;
+    fighter_record->frame_window_start = 0;
+    fighter_record->frame_window_end = 0xFF;
+    fighter_record->opponent_transition_start_frame = 0xFF;
+    fighter_record->weapon_reload_frame = 0xFF;
 
-    while ((c = *ptr++) != 0) {
-        if (c == 0xFF) {
+    while ((command = *ptr++) != 0) {
+        if (command == 0xFF) {
             ptr += 6;
-        } else if (c < 0x80) {
+        } else if (command < 0x80) {
             ptr++;
         } else {
-            val = *ptr++;
-            switch (c) {
+            command_frame = *ptr++;
+            switch (command) {
             case 0x80:
-                rec->weapon_hit_start_frames[0] = val;
+                fighter_record->weapon_hit_start_frames[0] = command_frame;
                 break;
             case 0x81:
-                rec->weapon_hit_end_frames[0] = val;
+                fighter_record->weapon_hit_end_frames[0] = command_frame;
                 break;
             case 0x82:
-                rec->release_frame = val;
+                fighter_record->release_frame = command_frame;
                 break;
             case 0x83:
-                rec->object_pickup_frame = val;
+                fighter_record->object_pickup_frame = command_frame;
                 break;
             case 0x84:
-                rec->opponent_turn_frame = val;
+                fighter_record->opponent_turn_frame = command_frame;
                 break;
             case 0x85:
-                rec->frame_window_start = val;
+                fighter_record->frame_window_start = command_frame;
                 break;
             case 0x86:
-                rec->frame_window_end = val;
+                fighter_record->frame_window_end = command_frame;
                 break;
             case 0x87:
-                rec->weapon_hit_start_frames[1] = val;
+                fighter_record->weapon_hit_start_frames[1] = command_frame;
                 break;
             case 0x88:
-                rec->weapon_hit_end_frames[1] = val;
+                fighter_record->weapon_hit_end_frames[1] = command_frame;
                 break;
             case 0x89:
-                rec->paired_move_hit_frame = val;
+                fighter_record->paired_move_hit_frame = command_frame;
                 break;
             case 0x8A:
-                rec->opponent_transition_start_frame = val;
+                fighter_record->opponent_transition_start_frame = command_frame;
                 break;
             case 0x8B:
-                rec->weapon_reload_frame = val;
+                fighter_record->weapon_reload_frame = command_frame;
                 break;
             }
         }
@@ -4892,27 +4905,27 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
  * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (gte_Lzc
  * for >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to
  * 0x7F, sent to snd_QueueSound(arg0, R, L). */
-void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
+void snd_QueuePositionalSound(s32 sound_index, s32 *sound_position) {
     s32 sp_tmp;
     s32 dx, dy, dz;
-    u32 var_4;
+    u32 distance;
     s32 distance_scale;
-    s16 var_6;
+    s16 listener_yaw;
     s32 var_7;
-    u32 var_8;
+    u32 swap_channels;
     s32 var_9;
     s32 var_10;
 
-    dx = g_listener_cam->w20 - arg1[0];
-    dy = g_listener_cam->w24 - arg1[1];
-    dz = g_listener_cam->w28 - arg1[2];
+    dx = g_listener_cam->w20 - sound_position[0];
+    dy = g_listener_cam->w24 - sound_position[1];
+    dz = g_listener_cam->w28 - sound_position[2];
 
     if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
-        var_4 = 0x9C40;
+        distance = 0x9C40;
     } else {
         u32 dist_sq = (u32)((dx * dx) + (dy * dy) + (dz * dz));
         if (dist_sq < 0x400U) {
-            var_4 = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
+            distance = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
         } else {
             gte_Lzc(dist_sq, &sp_tmp);
             {
@@ -4927,22 +4940,22 @@ void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
                 /* Halve the table-index shift for the result scale. */
                 shift = shift >> 1;
                 hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-                var_4 = (hi << 16) >> (0x13 - shift);
+                distance = (hi << 16) >> (0x13 - shift);
             }
         }
     }
 
-    distance_scale = (s32)((0x9C40 - var_4) << 11) / 32000;
+    distance_scale = (s32)((0x9C40 - distance) << 11) / 32000;
     if (distance_scale < 0) {
         distance_scale = 0;
     }
 
-    var_6 = g_listener_cam->camera_angles.vy;
-    var_7 = (s32)((dx * (s32)Judge[(var_6 + 0x400) & 0xFFF]) +
-                  (dz * (s32)Judge[var_6 & 0xFFF])) >>
+    listener_yaw = g_listener_cam->camera_angles.vy;
+    var_7 = (s32)((dx * (s32)Judge[(listener_yaw + 0x400) & 0xFFF]) +
+                  (dz * (s32)Judge[listener_yaw & 0xFFF])) >>
             12;
-    var_8 = ~(u32)var_7;
-    var_8 >>= 31;
+    swap_channels = ~(u32)var_7;
+    swap_channels >>= 31;
     if (var_7 < 0) {
         var_7 = -var_7;
     }
@@ -4956,7 +4969,7 @@ void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
 
     {
         s32 tmp = var_9;
-        if (var_8 != 0) {
+        if (swap_channels != 0) {
             var_9 = var_10;
             var_10 = tmp;
         }
@@ -4969,468 +4982,543 @@ void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
     if (var_10 >= 0x80)
         var_10 = 0x7F;
 
-    snd_QueueSound(arg0, var_9, var_10);
+    snd_QueueSound(sound_index, var_9, var_10);
 }
 
 void fight_RecordReplayEventAndDispatchSoundOrEffect(
-    s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
-    s32 s0;
-    s32 s4;
+    s32 arg0, s32 event_kind, s32 *src_position, s16 *src_command_vector) {
+    s32 sound_offset;
+    s32 second_sound_offset;
 
     if (g_fight_mode_selector == 3 && arg0 == 1 &&
-        ((u32)(arg1 - 0x22) < 2 || (u32)(arg1 - 0x24) < 2 ||
-         (u32)(arg1 - 0x26) < 2 || (u32)(arg1 - 0x28) < 2)) {
-        s4 = 0;
-        s0 = 0;
+        ((u32)(event_kind - 0x22) < 2 || (u32)(event_kind - 0x24) < 2 ||
+         (u32)(event_kind - 0x26) < 2 || (u32)(event_kind - 0x28) < 2)) {
+        second_sound_offset = 0;
+        sound_offset = 0;
     } else {
-        s0 = arg0 * 40;
-        s4 = 0x28;
+        sound_offset = arg0 * 40;
+        second_sound_offset = 0x28;
     }
 
-    if (g_fight_mode_selector == 3 && arg0 == 1 && (u32)(arg1 - 0x2D) < 2) {
-        s0 += g_fight_step_row_sound_offsets[g_fight_step_row_column];
+    if (g_fight_mode_selector == 3 && arg0 == 1 &&
+        (u32)(event_kind - 0x2D) < 2) {
+        sound_offset += g_fight_step_row_sound_offsets[g_fight_step_row_column];
     }
 
-    replay_RecordEvent(arg0, arg1, arg2, arg3);
+    replay_RecordEvent(arg0, event_kind, src_position, src_command_vector);
 
-    switch (arg1) {
+    switch (event_kind) {
     case 4:
         if (g_fight_mode_selector == 2 && D_800A389A == 0) {
-            eff_StartRecycledCommandWithOrangeLight(arg2);
+            eff_StartRecycledCommandWithOrangeLight(src_position);
             break;
         }
         if (g_fight_mode_selector == 5) {
-            eff_StartRecycledCommandWithOrangeLight(arg2);
+            eff_StartRecycledCommandWithOrangeLight(src_position);
             break;
         }
-        eff_StartRecycledVectorCommandWithRedLight(arg2, arg3);
+        eff_StartRecycledVectorCommandWithRedLight(
+            src_position, src_command_vector);
         break;
     case 3:
-        eff_StartRecycledCommandWithRoseLight(arg2);
+        eff_StartRecycledCommandWithRoseLight(src_position);
         break;
     case 2:
-        eff_StartArgSelectedCommandWithCyanLight(arg2, arg0);
+        eff_StartArgSelectedCommandWithCyanLight(src_position, arg0);
         break;
     case 15:
-        eff_StartArgSelectedCommandWithGreenLight(arg2, arg0);
+        eff_StartArgSelectedCommandWithGreenLight(src_position, arg0);
         break;
     case 1:
-        eff_StartRecycledCommandWithPaleRedLight(arg2);
+        eff_StartRecycledCommandWithPaleRedLight(src_position);
         break;
     case 5:
-        snd_QueuePositionalSound(0x3C, arg2);
-        snd_QueuePositionalSound(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, src_position);
+        snd_QueuePositionalSound(second_sound_offset + 0x3C, src_position);
         g_fight_midpoint_effect_delay =
-            eff_StartCosineScaledQuadWithPaleBlueLight(arg2);
+            eff_StartCosineScaledQuadWithPaleBlueLight(src_position);
         break;
     case 6:
-        snd_QueuePositionalSound(0x3C, arg2);
-        snd_QueuePositionalSound(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, src_position);
+        snd_QueuePositionalSound(second_sound_offset + 0x3C, src_position);
         g_fight_midpoint_effect_delay =
-            eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(arg2);
+            eff_StartSlowRateCosineScaledQuadWithPaleBlueLight(src_position);
         break;
     case 7:
-        snd_QueuePositionalSound(0x3C, arg2);
-        snd_QueuePositionalSound(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, src_position);
+        snd_QueuePositionalSound(second_sound_offset + 0x3C, src_position);
         g_fight_midpoint_effect_delay =
-            eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(arg2);
+            eff_StartMediumRateCosineScaledQuadWithPaleBlueLight(src_position);
         break;
     case 8:
-        snd_QueuePositionalSound(0x3C, arg2);
-        snd_QueuePositionalSound(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, src_position);
+        snd_QueuePositionalSound(second_sound_offset + 0x3C, src_position);
         g_fight_midpoint_effect_delay =
-            eff_StartFastRateCosineScaledQuadWithPaleBlueLight(arg2);
+            eff_StartFastRateCosineScaledQuadWithPaleBlueLight(src_position);
         break;
     case 9:
-        eff_StartBillboardPairCommand(arg2);
+        eff_StartBillboardPairCommand(src_position);
         break;
     case 10:
-        eff_StartJitteredBillboardsCommand(arg2);
+        eff_StartJitteredBillboardsCommand(src_position);
         break;
     case 11:
-        snd_QueuePositionalSound(s0 + 0x31, arg2);
-        eff_StartRotatedQuadClusterWithNearWhiteLight(arg2, arg3);
+        snd_QueuePositionalSound(sound_offset + 0x31, src_position);
+        eff_StartRotatedQuadClusterWithNearWhiteLight(
+            src_position, src_command_vector);
         break;
     case 12:
-        snd_QueuePositionalSound(0x78, arg2);
-        eff_StartRecycledYawedParticlesWithTextureSelection(arg2, arg3[1]);
+        snd_QueuePositionalSound(0x78, src_position);
+        eff_StartRecycledYawedParticlesWithTextureSelection(
+            src_position, src_command_vector[1]);
         break;
     case 13:
-        snd_QueuePositionalSound(0x79, arg2);
-        eff_StartRecycledYawedParticles(arg2, arg3[1]);
+        snd_QueuePositionalSound(0x79, src_position);
+        eff_StartRecycledYawedParticles(src_position, src_command_vector[1]);
         break;
     case 14:
-        snd_QueuePositionalSound(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x22, src_position);
         eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight(
-            arg2, arg3);
+            src_position, src_command_vector);
         break;
     case 17:
-        snd_QueuePositionalSound(s0 + 0x39, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x39, src_position);
         break;
     case 18:
-        eff_StartRecycledCommandWithMagentaLight(arg2);
-        snd_QueuePositionalSound(s0 + 0x22, arg2);
+        eff_StartRecycledCommandWithMagentaLight(src_position);
+        snd_QueuePositionalSound(sound_offset + 0x22, src_position);
         break;
     case 33:
-        snd_QueuePositionalSound(0x7A, arg2);
+        snd_QueuePositionalSound(0x7A, src_position);
         break;
     case 34:
-        snd_QueuePositionalSound(s0 + 0x35, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x35, src_position);
         break;
     case 35:
-        snd_QueuePositionalSound(s0 + 0x35, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x35, src_position);
         break;
     case 36:
-        snd_QueuePositionalSound(s0 + 0x34, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x34, src_position);
         break;
     case 37:
-        snd_QueuePositionalSound(s0 + 0x3A, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x3A, src_position);
         break;
     case 38:
-        snd_QueuePositionalSound(s0 + 0x3B, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x3B, src_position);
         break;
     case 39:
-        snd_QueuePositionalSound(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x22, src_position);
         break;
     case 40:
-        snd_QueuePositionalSound(s0 + 0x3E, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x3E, src_position);
         break;
     case 41:
-        snd_QueuePositionalSound(s0 + 0x40, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x40, src_position);
         break;
     case 42:
-        snd_QueuePositionalSound(s0 + 0x21, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x21, src_position);
         break;
     case 43:
-        snd_QueuePositionalSound(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x22, src_position);
         break;
     case 44:
-        snd_QueuePositionalSound(s0 + 0x23, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x23, src_position);
         break;
     case 45:
-        snd_QueuePositionalSound(s0 + 0x29, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x29, src_position);
         break;
     case 46:
-        snd_QueuePositionalSound(s0 + 0x2B, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x2B, src_position);
         break;
     case 47:
-        snd_QueuePositionalSound(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x22, src_position);
         break;
     case 48:
-        snd_QueuePositionalSound(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x22, src_position);
         break;
     case 49:
-        snd_QueuePositionalSound(s0 + 0x32, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x32, src_position);
         break;
     case 50:
-        snd_QueuePositionalSound(s0 + 0x33, arg2);
+        snd_QueuePositionalSound(sound_offset + 0x33, src_position);
         break;
     }
 }
 
-void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
+void fighter_DispatchFrameEvent(
+    Unk80101EC8Record *fighter_record, s32 frame_event) {
     s32 pos[3];
-    s32 base;
-    s32 base2;
-    s32 row;
-    s32 row2;
-    s32 var_5;
-    s32 var_6;
+    s32 sound_offset;
+    s32 other_sound_offset;
+    s32 hit_class_sound_offset;
+    s32 other_hit_class_sound_offset;
+    s32 hit_class_offset;
+    s32 other_hit_class_offset;
 
-    if (g_fight_mode_selector == 3 && obj->index == 1 &&
-        ((u32)(kind - 7) < 2 || (u32)(kind - 9) < 2 || (u32)(kind - 11) < 2 ||
-         (u32)(kind - 13) < 2 || (u32)(kind - 15) < 2 || kind == 17)) {
-        base2 = 0;
-        base = 0;
+    if (g_fight_mode_selector == 3 && fighter_record->index == 1 &&
+        ((u32)(frame_event - 7) < 2 || (u32)(frame_event - 9) < 2 ||
+         (u32)(frame_event - 11) < 2 || (u32)(frame_event - 13) < 2 ||
+         (u32)(frame_event - 15) < 2 || frame_event == 17)) {
+        other_sound_offset = 0;
+        sound_offset = 0;
     } else {
-        base = obj->index * 40;
-        base2 = obj->other->index * 40;
+        sound_offset = fighter_record->index * 40;
+        other_sound_offset = fighter_record->other->index * 40;
     }
 
     if (g_fight_mode_selector == 3 &&
-        ((u32)(kind - 0x15) < 2 || (u32)(kind - 0x17) < 2 ||
-         (u32)(kind - 0x19) < 2 || kind == 0x26 || (u32)(kind - 0x36) < 2 ||
-         (u32)(kind - 0x38) < 2 || (u32)(kind - 0x3A) < 2 || kind == 0x47)) {
-        if (obj->index == 1) {
-            base += g_fight_step_row_sound_offsets[g_fight_step_row_column];
+        ((u32)(frame_event - 0x15) < 2 || (u32)(frame_event - 0x17) < 2 ||
+         (u32)(frame_event - 0x19) < 2 || frame_event == 0x26 ||
+         (u32)(frame_event - 0x36) < 2 || (u32)(frame_event - 0x38) < 2 ||
+         (u32)(frame_event - 0x3A) < 2 || frame_event == 0x47)) {
+        if (fighter_record->index == 1) {
+            sound_offset +=
+                g_fight_step_row_sound_offsets[g_fight_step_row_column];
         } else {
-            base2 += g_fight_step_row_sound_offsets[g_fight_step_row_column];
+            other_sound_offset +=
+                g_fight_step_row_sound_offsets[g_fight_step_row_column];
         }
     }
 
-    row = base + obj->collision_hit_class * 4;
-    var_5 = obj->collision_hit_class * 3;
-    row2 = base2 + obj->other->collision_hit_class * 4;
-    var_6 = obj->other->collision_hit_class * 3;
+    hit_class_sound_offset =
+        sound_offset + fighter_record->collision_hit_class * 4;
+    hit_class_offset = fighter_record->collision_hit_class * 3;
+    other_hit_class_sound_offset =
+        other_sound_offset + fighter_record->other->collision_hit_class * 4;
+    other_hit_class_offset = fighter_record->other->collision_hit_class * 3;
 
-    switch (kind) {
+    switch (frame_event) {
     case 0:
         if (g_fight_stage_index == 11) {
-            if (obj->ground_probe_end_ys[0] - 600 <
-                obj->ground_probe_points[0].y) {
-                pos[0] = obj->ground_probe_points[0].x;
-                pos[1] = obj->ground_probe_end_ys[0];
-                pos[2] = obj->ground_probe_points[0].z;
+            if (fighter_record->ground_probe_end_ys[0] - 600 <
+                fighter_record->ground_probe_points[0].y) {
+                pos[0] = fighter_record->ground_probe_points[0].x;
+                pos[1] = fighter_record->ground_probe_end_ys[0];
+                pos[2] = fighter_record->ground_probe_points[0].z;
                 eff_StartYawedQuadSlotCommand(
-                    pos, obj->ground_probe_0_yaw,
+                    pos, fighter_record->ground_probe_0_yaw,
                     g_eff_yawed_quad_tex_selector_command_bits
-                        [D_8008E5A8[obj->character_roster_index]],
-                    obj->index);
-                if ((0x60 >> obj->collision_hit_tag) & 1) {
+                        [D_8008E5A8[fighter_record->character_roster_index]],
+                    fighter_record->index);
+                if ((0x60 >> fighter_record->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
-                        obj->index, 9, pos, 0);
+                        fighter_record->index, 9, pos, 0);
                 }
             }
         } else if (g_fight_stage_index == 14) {
-            if (((0x60 >> obj->collision_hit_tag) & 1) &&
-                obj->ground_probe_end_ys[0] - 600 <
-                    obj->ground_probe_points[0].y) {
-                pos[0] = obj->ground_probe_points[0].x;
-                pos[1] = obj->ground_probe_end_ys[0];
-                pos[2] = obj->ground_probe_points[0].z;
+            if (((0x60 >> fighter_record->collision_hit_tag) & 1) &&
+                fighter_record->ground_probe_end_ys[0] - 600 <
+                    fighter_record->ground_probe_points[0].y) {
+                pos[0] = fighter_record->ground_probe_points[0].x;
+                pos[1] = fighter_record->ground_probe_end_ys[0];
+                pos[2] = fighter_record->ground_probe_points[0].z;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    obj->index, 9, pos, 0);
+                    fighter_record->index, 9, pos, 0);
             }
         }
         break;
     case 1:
         if (g_fight_stage_index == 11) {
-            if (obj->ground_probe_end_ys[1] - 600 <
-                obj->ground_probe_points[1].y) {
-                pos[0] = obj->ground_probe_points[1].x;
-                pos[1] = obj->ground_probe_end_ys[1];
-                pos[2] = obj->ground_probe_points[1].z;
+            if (fighter_record->ground_probe_end_ys[1] - 600 <
+                fighter_record->ground_probe_points[1].y) {
+                pos[0] = fighter_record->ground_probe_points[1].x;
+                pos[1] = fighter_record->ground_probe_end_ys[1];
+                pos[2] = fighter_record->ground_probe_points[1].z;
                 eff_StartYawedQuadSlotCommand(
-                    pos, obj->ground_probe_1_yaw,
+                    pos, fighter_record->ground_probe_1_yaw,
                     g_eff_yawed_quad_tex_selector_command_bits
-                        [D_8008E5A8[obj->character_roster_index]],
-                    obj->index);
-                if ((0x60 >> obj->collision_hit_tag) & 1) {
+                        [D_8008E5A8[fighter_record->character_roster_index]],
+                    fighter_record->index);
+                if ((0x60 >> fighter_record->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
-                        obj->index, 9, pos, 0);
+                        fighter_record->index, 9, pos, 0);
                 }
             }
         } else if (g_fight_stage_index == 14) {
-            if (((0x60 >> obj->collision_hit_tag) & 1) &&
-                obj->ground_probe_end_ys[1] - 600 <
-                    obj->ground_probe_points[1].y) {
-                pos[0] = obj->ground_probe_points[1].x;
-                pos[1] = obj->ground_probe_end_ys[1];
-                pos[2] = obj->ground_probe_points[1].z;
+            if (((0x60 >> fighter_record->collision_hit_tag) & 1) &&
+                fighter_record->ground_probe_end_ys[1] - 600 <
+                    fighter_record->ground_probe_points[1].y) {
+                pos[0] = fighter_record->ground_probe_points[1].x;
+                pos[1] = fighter_record->ground_probe_end_ys[1];
+                pos[2] = fighter_record->ground_probe_points[1].z;
                 fight_RecordReplayEventAndDispatchSoundOrEffect(
-                    obj->index, 9, pos, 0);
+                    fighter_record->index, 9, pos, 0);
             }
         }
         break;
     case 2:
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            obj->index, 10, &obj->bone_hit_point_0.x, 0);
+            fighter_record->index, 10, &fighter_record->bone_hit_point_0.x, 0);
         break;
     case 3:
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            obj->index, 10, &obj->bone_hit_points_1_3_centroid.x, 0);
+            fighter_record->index, 10,
+            &fighter_record->bone_hit_points_1_3_centroid.x, 0);
         break;
     case 4:
         fight_RecordReplayEventAndDispatchSoundOrEffect(
-            obj->index, 10, &obj->bone_hit_points_4_5_midpoint.x, 0);
+            fighter_record->index, 10,
+            &fighter_record->bone_hit_points_4_5_midpoint.x, 0);
         break;
     case 7:
-        snd_QueuePositionalSound(base + 0x31, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x31, &fighter_record->world_pos.x);
         break;
     case 8:
-        snd_QueuePositionalSound(base + 0x32, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x32, &fighter_record->world_pos.x);
         break;
     case 9:
-        snd_QueuePositionalSound(base + 0x33, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x33, &fighter_record->world_pos.x);
         break;
     case 10:
-        snd_QueuePositionalSound(base + 0x37, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x37, &fighter_record->world_pos.x);
         break;
     case 11:
-        snd_QueuePositionalSound(base + 0x38, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x38, &fighter_record->world_pos.x);
         break;
     case 12:
-        snd_QueuePositionalSound(base + 0x39, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x39, &fighter_record->world_pos.x);
         break;
     case 13:
-        snd_QueuePositionalSound(base + 0x3D, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x3D, &fighter_record->world_pos.x);
         break;
     case 14:
-        snd_QueuePositionalSound(base + 0x3E, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x3E, &fighter_record->world_pos.x);
         break;
     case 15:
-        snd_QueuePositionalSound(base + 0x3D, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x3D, &fighter_record->world_pos.x);
         break;
     case 16:
-        snd_QueuePositionalSound(base + 0x3F, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x3F, &fighter_record->world_pos.x);
         break;
     case 17:
-        snd_QueuePositionalSound(base + 0x40, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x40, &fighter_record->world_pos.x);
         break;
     case 18:
-        snd_QueuePositionalSound(base + 0x22, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x22, &fighter_record->world_pos.x);
         break;
     case 19:
-        snd_QueuePositionalSound(base + 0x23, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x23, &fighter_record->world_pos.x);
         break;
     case 20:
-        snd_QueuePositionalSound(base + 0x24, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x24, &fighter_record->world_pos.x);
         break;
     case 21:
-        snd_QueuePositionalSound(base + 0x25, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x25, &fighter_record->world_pos.x);
         break;
     case 22:
-        snd_QueuePositionalSound(base + 0x26, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x26, &fighter_record->world_pos.x);
         break;
     case 23:
-        snd_QueuePositionalSound(base + 0x27, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x27, &fighter_record->world_pos.x);
         break;
     case 24:
-        snd_QueuePositionalSound(base + 0x28, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x28, &fighter_record->world_pos.x);
         break;
     case 25:
-        snd_QueuePositionalSound(base + 0x29, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x29, &fighter_record->world_pos.x);
         break;
     case 26:
-        snd_QueuePositionalSound(base + 0x2A, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x2A, &fighter_record->world_pos.x);
         break;
     case 27:
-        snd_QueuePositionalSound(row + 0x41, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_sound_offset + 0x41, &fighter_record->world_pos.x);
         break;
     case 28:
-        snd_QueuePositionalSound(row + 0x42, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_sound_offset + 0x42, &fighter_record->world_pos.x);
         break;
     case 29:
-        snd_QueuePositionalSound(row + 0x43, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_sound_offset + 0x43, &fighter_record->world_pos.x);
         break;
     case 30:
-        snd_QueuePositionalSound(row + 0x44, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_sound_offset + 0x44, &fighter_record->world_pos.x);
         break;
     case 31:
-        snd_QueuePositionalSound(var_5 + 0x71, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_offset + 0x71, &fighter_record->world_pos.x);
         break;
     case 32:
-        snd_QueuePositionalSound(var_5 + 0x72, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_offset + 0x72, &fighter_record->world_pos.x);
         break;
     case 33:
-        snd_QueuePositionalSound(var_5 + 0x73, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            hit_class_offset + 0x73, &fighter_record->world_pos.x);
         break;
     case 34:
-        snd_QueuePositionalSound(0x77, &obj->world_pos.x);
+        snd_QueuePositionalSound(0x77, &fighter_record->world_pos.x);
         break;
     case 35:
-        snd_QueuePositionalSound(0x7A, &obj->world_pos.x);
+        snd_QueuePositionalSound(0x7A, &fighter_record->world_pos.x);
         break;
     case 36:
-        snd_QueuePositionalSound(base + 0x3A, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x3A, &fighter_record->world_pos.x);
         break;
     case 37:
-        snd_QueuePositionalSound(base + 0x36, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x36, &fighter_record->world_pos.x);
         break;
     case 38:
-        snd_QueuePositionalSound(base + 0x2B, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x2B, &fighter_record->world_pos.x);
         break;
     case 39:
-        snd_QueuePositionalSound(base + 0x2C, &obj->world_pos.x);
+        snd_QueuePositionalSound(
+            sound_offset + 0x2C, &fighter_record->world_pos.x);
         break;
     case 40:
-        snd_QueuePositionalSound(base2 + 0x31, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x31, &fighter_record->other->world_pos.x);
         break;
     case 41:
-        snd_QueuePositionalSound(base2 + 0x32, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x32, &fighter_record->other->world_pos.x);
         break;
     case 42:
-        snd_QueuePositionalSound(base2 + 0x33, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x33, &fighter_record->other->world_pos.x);
         break;
     case 43:
-        snd_QueuePositionalSound(base2 + 0x37, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x37, &fighter_record->other->world_pos.x);
         break;
     case 44:
-        snd_QueuePositionalSound(base2 + 0x38, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x38, &fighter_record->other->world_pos.x);
         break;
     case 45:
-        snd_QueuePositionalSound(base2 + 0x39, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x39, &fighter_record->other->world_pos.x);
         break;
     case 46:
-        snd_QueuePositionalSound(base2 + 0x3D, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x3D, &fighter_record->other->world_pos.x);
         break;
     case 47:
-        snd_QueuePositionalSound(base2 + 0x3E, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x3E, &fighter_record->other->world_pos.x);
         break;
     case 48:
-        snd_QueuePositionalSound(base2 + 0x3D, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x3D, &fighter_record->other->world_pos.x);
         break;
     case 49:
-        snd_QueuePositionalSound(base2 + 0x3F, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x3F, &fighter_record->other->world_pos.x);
         break;
     case 50:
-        snd_QueuePositionalSound(base2 + 0x40, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x40, &fighter_record->other->world_pos.x);
         break;
     case 51:
-        snd_QueuePositionalSound(base2 + 0x22, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x22, &fighter_record->other->world_pos.x);
         break;
     case 52:
-        snd_QueuePositionalSound(base2 + 0x23, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x23, &fighter_record->other->world_pos.x);
         break;
     case 53:
-        snd_QueuePositionalSound(base2 + 0x24, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x24, &fighter_record->other->world_pos.x);
         break;
     case 54:
-        snd_QueuePositionalSound(base2 + 0x25, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x25, &fighter_record->other->world_pos.x);
         break;
     case 55:
-        snd_QueuePositionalSound(base2 + 0x26, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x26, &fighter_record->other->world_pos.x);
         break;
     case 56:
-        snd_QueuePositionalSound(base2 + 0x27, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x27, &fighter_record->other->world_pos.x);
         break;
     case 57:
-        snd_QueuePositionalSound(base2 + 0x28, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x28, &fighter_record->other->world_pos.x);
         break;
     case 58:
-        snd_QueuePositionalSound(base2 + 0x29, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x29, &fighter_record->other->world_pos.x);
         break;
     case 59:
-        snd_QueuePositionalSound(base2 + 0x2A, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x2A, &fighter_record->other->world_pos.x);
         break;
     case 60:
-        snd_QueuePositionalSound(row2 + 0x41, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(other_hit_class_sound_offset + 0x41,
+                                 &fighter_record->other->world_pos.x);
         break;
     case 61:
-        snd_QueuePositionalSound(row2 + 0x42, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(other_hit_class_sound_offset + 0x42,
+                                 &fighter_record->other->world_pos.x);
         break;
     case 62:
-        snd_QueuePositionalSound(row2 + 0x43, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(other_hit_class_sound_offset + 0x43,
+                                 &fighter_record->other->world_pos.x);
         break;
     case 63:
-        snd_QueuePositionalSound(row2 + 0x44, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(other_hit_class_sound_offset + 0x44,
+                                 &fighter_record->other->world_pos.x);
         break;
     case 64:
-        snd_QueuePositionalSound(var_6 + 0x71, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_hit_class_offset + 0x71, &fighter_record->other->world_pos.x);
         break;
     case 65:
-        snd_QueuePositionalSound(var_6 + 0x72, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_hit_class_offset + 0x72, &fighter_record->other->world_pos.x);
         break;
     case 66:
-        snd_QueuePositionalSound(var_6 + 0x73, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_hit_class_offset + 0x73, &fighter_record->other->world_pos.x);
         break;
     case 67:
-        snd_QueuePositionalSound(0x77, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(0x77, &fighter_record->other->world_pos.x);
         break;
     case 68:
-        snd_QueuePositionalSound(0x7A, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(0x7A, &fighter_record->other->world_pos.x);
         break;
     case 69:
-        snd_QueuePositionalSound(base2 + 0x3A, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x3A, &fighter_record->other->world_pos.x);
         break;
     case 70:
-        snd_QueuePositionalSound(base2 + 0x36, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x36, &fighter_record->other->world_pos.x);
         break;
     case 71:
-        snd_QueuePositionalSound(base2 + 0x2B, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x2B, &fighter_record->other->world_pos.x);
         break;
     case 72:
-        snd_QueuePositionalSound(base2 + 0x2C, &obj->other->world_pos.x);
+        snd_QueuePositionalSound(
+            other_sound_offset + 0x2C, &fighter_record->other->world_pos.x);
         break;
     }
 }
@@ -5439,29 +5527,30 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
  * switch table. */
 const u32 D_800107BC[1] = {0x00000000};
 
-void fighter_ProcessFrameEvents(Unk80101EC8Record *base) {
-    u8 *s0 = base->motion_metadata + 5;
-    u8 command = s0[-1];
+void fighter_ProcessFrameEvents(Unk80101EC8Record *fighter_record) {
+    u8 *metadata_cursor = fighter_record->motion_metadata + 5;
+    u8 command = metadata_cursor[-1];
     while (command != 0) {
         if (command == 0xFF) {
-            u32 bits = s0[0] | (s0[1] << 8) | (s0[2] << 16) | (s0[3] << 24);
-            if (bits & (1 << base->character_data_index)) {
-                s0 += 4;
+            u32 bits = metadata_cursor[0] | (metadata_cursor[1] << 8) |
+                       (metadata_cursor[2] << 16) | (metadata_cursor[3] << 24);
+            if (bits & (1 << fighter_record->character_data_index)) {
+                metadata_cursor += 4;
             } else {
-                s0 += 6;
+                metadata_cursor += 6;
             }
         } else if (command < 0x80) {
-            u8 val = *s0++;
-            s16 var_11 = base->move_frame;
-            if (val == var_11) {
-                fighter_DispatchFrameEvent(base, command - 1);
-            } else if (var_11 < val) {
+            u8 event_frame = *metadata_cursor++;
+            s16 current_frame = fighter_record->move_frame;
+            if (event_frame == current_frame) {
+                fighter_DispatchFrameEvent(fighter_record, command - 1);
+            } else if (current_frame < event_frame) {
                 return;
             }
         } else {
-            s0++;
+            metadata_cursor++;
         }
-        command = *s0++;
+        command = *metadata_cursor++;
     }
 }
 
@@ -5487,24 +5576,24 @@ s32 snd_GetStageSoundIndex(void) {
 
 void snd_ResetStageSoundState(void) {
     s32 i = 3;
-    s16 *p1 = &g_snd_stage_sound_state[3];
+    s16 *sound_state_cursor = &g_snd_stage_sound_state[3];
     do {
-        *p1 = 0;
+        *sound_state_cursor = 0;
         i--;
-        p1--;
+        sound_state_cursor--;
     } while (i >= 0);
     i = 5;
     {
-        u8 *p2 = &g_snd_sequence_ticks[5];
+        u8 *sequence_ticks_cursor = &g_snd_sequence_ticks[5];
         do {
-            *p2 = 0;
+            *sequence_ticks_cursor = 0;
             i--;
-            p2--;
+            sequence_ticks_cursor--;
         } while (i >= 0);
     }
 }
 
-void snd_QueuePositionSequence(Unk80107850Rec *arg0) {
+void snd_QueuePositionSequence(Unk80107850Rec *position) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
@@ -5516,36 +5605,38 @@ void snd_QueuePositionSequence(Unk80107850Rec *arg0) {
         return;
     }
     g_snd_sequence_ticks[i] = 1;
-    g_snd_sequence_positions[i] = *arg0;
+    g_snd_sequence_positions[i] = *position;
 }
 
 void snd_UpdateStageSounds(void) {
     s32 i;
-    u8 *tbl = g_snd_stage_sound_slot_specs[g_fight_stage_index];
+    u8 *slot_spec_cursor = g_snd_stage_sound_slot_specs[g_fight_stage_index];
 
     for (i = 0; i < 6; i++) {
         if (g_snd_sequence_ticks[i] != 0) {
-            s32 var_2 = snd_GetStageSoundIndex();
+            s32 stage_sound_index = snd_GetStageSoundIndex();
             u8 cur = g_snd_sequence_ticks[i];
 
             if (cur == 1) {
                 snd_QueuePositionalSound(
-                    g_snd_stage_sequence_base_sounds[var_2],
+                    g_snd_stage_sequence_base_sounds[stage_sound_index],
                     &g_snd_sequence_positions[i].x);
-            } else if (cur == g_snd_stage_sequence_cue_ticks[var_2].a) {
+            } else if (
+                cur == g_snd_stage_sequence_cue_ticks[stage_sound_index].a) {
                 snd_QueuePositionalSound(
-                    g_snd_stage_sequence_base_sounds[var_2] + 1,
+                    g_snd_stage_sequence_base_sounds[stage_sound_index] + 1,
                     &g_snd_sequence_positions[i].x);
-            } else if (cur == g_snd_stage_sequence_cue_ticks[var_2].b) {
+            } else if (
+                cur == g_snd_stage_sequence_cue_ticks[stage_sound_index].b) {
                 snd_QueuePositionalSound(
-                    g_snd_stage_sequence_base_sounds[var_2] + 2,
+                    g_snd_stage_sequence_base_sounds[stage_sound_index] + 2,
                     &g_snd_sequence_positions[i].x);
             }
 
             {
                 s32 val = g_snd_sequence_ticks[i] + 1;
                 g_snd_sequence_ticks[i] = val;
-                if ((u32)g_snd_stage_sequence_cue_ticks[var_2].b <
+                if ((u32)g_snd_stage_sequence_cue_ticks[stage_sound_index].b <
                     (u32)(val & 0xFF)) {
                     g_snd_sequence_ticks[i] = 0;
                 }
@@ -5556,15 +5647,15 @@ void snd_UpdateStageSounds(void) {
     if (snd_ShouldUpdateStageSoundSlots() != 0) {
         s16 *buf = g_snd_stage_sound_state;
 
-        for (i = 0; i < 4; i++, tbl += 2) {
-            u8 *data = tbl + 1;
-            s32 var_7;
+        for (i = 0; i < 4; i++, slot_spec_cursor += 2) {
+            u8 *data = slot_spec_cursor + 1;
+            s32 random_value;
             s32 type;
-            s32 var_9;
+            s32 random_roll;
 
-            var_7 = rng_Next();
-            var_9 = var_7 & 0x3FF;
-            type = *tbl;
+            random_value = rng_Next();
+            random_roll = random_value & 0x3FF;
+            type = *slot_spec_cursor;
 
             if (type == 1)
                 goto handle_type_1;
@@ -5581,7 +5672,7 @@ void snd_UpdateStageSounds(void) {
             goto call_default;
 
         handle_type_2_6: {
-            s32 var_10 = type - 2;
+            s32 trigger_delay_index = type - 2;
             s32 count;
             s32 scount;
             s32 thresh;
@@ -5590,17 +5681,20 @@ void snd_UpdateStageSounds(void) {
             count = (u16)buf[i] + 1;
             buf[i] = count;
             scount = (s16)count;
-            thresh = g_snd_stage_sound_slot_trigger_delays[var_10].a;
+            thresh =
+                g_snd_stage_sound_slot_trigger_delays[trigger_delay_index].a;
             limit = thresh * 30;
 
             if (limit < scount) {
                 s32 ratio =
                     ((scount - limit) << 10) /
-                    (g_snd_stage_sound_slot_trigger_delays[var_10].b * 30);
+                    (g_snd_stage_sound_slot_trigger_delays[trigger_delay_index]
+                         .b *
+                     30);
 
-                if (var_9 < ratio) {
+                if (random_roll < ratio) {
                     buf[i] = 0;
-                    type = *tbl;
+                    type = *slot_spec_cursor;
                     if ((u32)(type - 5) < 2) {
                         snd_QueuePositionalSound(
                             0x7B + i,
@@ -5712,14 +5806,14 @@ void fight_BuildOpponentOrder(void) {
         }
         count++;
         if (sp[1] != 0) {
-            u8 *a1 = &g_fight_opponent_order[count];
+            u8 *order_slot = &g_fight_opponent_order[count];
             count++;
             {
                 s32 dir = 0x10;
                 if (sp[1] & 0x20) {
                     dir = 5;
                 }
-                *a1 = dir;
+                *order_slot = dir;
             }
         }
     }
@@ -5750,13 +5844,13 @@ set_count:
 }
 
 void fight_AdvanceOpponentOrder(void) {
-    u8 a0 = g_fight_opponent_order_cursor;
-    u8 b = g_fight_opponent_order_count;
+    u8 order_cursor = g_fight_opponent_order_cursor;
+    u8 order_count = g_fight_opponent_order_count;
 
-    if (a0 == b) {
+    if (order_cursor == order_count) {
         g_local_ot_draw_mode = DISP_DISABLED;
         g_gpu_jitter_burst_enabled = 0;
-        if (a0 == 0x14) {
+        if (order_cursor == 0x14) {
             u8 z = g_fighter_group_flags[D_80101EC8[0].character_data_index];
             s32 val = 2;
             if (z != 0)
@@ -5767,23 +5861,23 @@ void fight_AdvanceOpponentOrder(void) {
             g_main_loop_handler_index = 0x20;
         }
     } else {
-        u8 a1;
+        u8 opponent_character_index;
         D_800A376B = 0;
-        g_fight_opponent_order_cursor = a0 + 1;
-        a1 = g_fight_opponent_order[a0];
-        g_fight_config.unk_4[1] = (&D_8008D55C)[a1];
-        if (a1 == 5) {
+        g_fight_opponent_order_cursor = order_cursor + 1;
+        opponent_character_index = g_fight_opponent_order[order_cursor];
+        g_fight_config.unk_4[1] = (&D_8008D55C)[opponent_character_index];
+        if (opponent_character_index == 5) {
             g_fight_config.unk_4[3] = 6;
-        } else if (a1 == 0x10) {
+        } else if (opponent_character_index == 0x10) {
             g_fight_config.unk_4[3] = 7;
         } else {
             u8 x = D_800A37BC;
-            s8 y;
+            s8 opponent_weapon_id;
             D_800A37BC = x + 1;
-            y = (&D_8008E748)[x];
-            g_fight_config.unk_4[3] = y;
-            if (y == 4) {
-                u8 v = g_fighter_group_flags[a1];
+            opponent_weapon_id = (&D_8008E748)[x];
+            g_fight_config.unk_4[3] = opponent_weapon_id;
+            if (opponent_weapon_id == 4) {
+                u8 v = g_fighter_group_flags[opponent_character_index];
                 if (v != 0) {
                     g_fight_config.unk_4[3] = 5;
                 }
@@ -5791,7 +5885,7 @@ void fight_AdvanceOpponentOrder(void) {
         }
         g_fight_config.cpu_base_levels[1] = 0x800;
         {
-            s16 v = (&g_fight_opponent_stage_indices)[a1];
+            s16 v = (&g_fight_opponent_stage_indices)[opponent_character_index];
             g_main_loop_handler_index = 0;
             g_fight_stage_index = v;
         }
@@ -5901,22 +5995,22 @@ s32 fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags(void) {
 }
 
 void fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank(void) {
-    s32 v1;
+    s32 presentation_index;
     if (g_fight_timer_unlock_bit_newly_set != 0) {
-        v1 = 6;
+        presentation_index = 6;
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
-            v1 = 7;
+            presentation_index = 7;
         }
-        g_fight_presentation_index = v1;
+        g_fight_presentation_index = presentation_index;
         g_main_loop_handler_index = 0x12;
         return;
     }
     if (g_fight_no_restart_unlock_bit_newly_set != 0) {
-        v1 = 8;
+        presentation_index = 8;
         if (g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) {
-            v1 = 9;
+            presentation_index = 9;
         }
-        g_fight_presentation_index = v1;
+        g_fight_presentation_index = presentation_index;
         g_main_loop_handler_index = 0x12;
         return;
     }
@@ -5978,13 +6072,13 @@ void fight_PackMatchScores(void) {
     if (i < n) {
         recorded_match_count = g_fight_match_cursor;
         do {
-            s32 var_6;
+            s32 match_recorded;
             s32 j;
             base = g_fight_match_scores[i];
-            var_6 = (i < recorded_match_count);
+            match_recorded = (i < recorded_match_count);
             j = 0;
             do {
-                if (var_6) {
+                if (match_recorded) {
                     acc |= base[j] << shift;
                 } else {
                     acc |= 3 << shift;
@@ -6009,7 +6103,7 @@ void fight_AdvanceMatch(void) {
         g_gpu_jitter_burst_enabled = 0;
         g_main_loop_handler_index = 0x14;
     } else {
-        s32 v1;
+        s32 fighter_index;
         g_fight_time_limit_elapsed_frames = 0;
         D_800A3899 = 0;
         D_800A3898 = 0;
@@ -6022,9 +6116,11 @@ void fight_AdvanceMatch(void) {
         g_fight_match_result_timer = 0;
         g_fight_mark_tally_phase_timer = 0;
         g_fight_point_award_phase_timer = 0;
-        for (v1 = 0; v1 < 2; v1++) {
-            g_fight_config.unk_4[v1] = D_801027A0[g_fight_match_cursor][v1];
-            g_fight_config.unk_4[2 + v1] = D_801027D8[g_fight_match_cursor][v1];
+        for (fighter_index = 0; fighter_index < 2; fighter_index++) {
+            g_fight_config.unk_4[fighter_index] =
+                D_801027A0[g_fight_match_cursor][fighter_index];
+            g_fight_config.unk_4[2 + fighter_index] =
+                D_801027D8[g_fight_match_cursor][fighter_index];
         }
         gpu_HideResetAndClear();
         cdrom_PauseAndWait();

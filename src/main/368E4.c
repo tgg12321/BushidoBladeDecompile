@@ -1840,20 +1840,20 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
        as in the target; a separate `total`: score 12 (Q129) */
     /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 i;
-    s32 inputs_unchanged;
+    s32 requested_set_and_pair_unchanged;
     s32 next_rank;
     s32 step;
     s32 lo;
     s32 hi;
 
-    inputs_unchanged = 1;
+    requested_set_and_pair_unchanged = 1;
     i = 0;
     dst = g_resource_prev_entry_request_state;
     src = g_resource_entry_request_state;
     do {
         s16 v = *src;
         if ((v >= 0) != ((*dst) >= 0)) {
-            inputs_unchanged = 0;
+            requested_set_and_pair_unchanged = 0;
         }
         *dst = v;
         dst++;
@@ -1901,9 +1901,9 @@ void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
 end:
     if (g_resource_last_selection_index != i) {
         g_resource_last_selection_index = i;
-        inputs_unchanged = 0;
+        requested_set_and_pair_unchanged = 0;
     }
-    if (inputs_unchanged == 0) {
+    if (requested_set_and_pair_unchanged == 0) {
         resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
         resource_LoadSelectedEntriesTexturesAndSound(
             g_resource_entry_category, i, g_resource_entry_request_state, arg0);
