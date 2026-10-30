@@ -1,0 +1,13 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; not viewed	5200:START	capture.boot_intro.last.png
+t_menu	5490	6059	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6060	6099	top menu; not viewed; the poke at this phase start (frame 6060; a modified game): 0x8008F92C orig 01 02 10 05 10 50 11 2D 13 00 17 0B 00 12 13 01 16 -> 03 1F FF 14 18 23 02 13 19 1A 08 93 1A 19 0E 93 00	-	capture.top_menu.first.png
+t_story	6100	6809	transition; no screen claim	6100:CROSS,6400:START,6700:CROSS	-
+story_text	6810	6909	not viewed; no screenshot	-	-
+t_char	6910	6949	transition; no screen claim	-	-
+char_select	6950	7299	not viewed	6960:LEFT,6980:LEFT,7000:START	capture.char_select.first.png
+t_weapon	7300	7359	transition; no screen claim	7300:CROSS	-
+weapon_select	7360	7899	weapon_select.first viewed: Select Weapon, Katana, the LEFT x2 fighter's portrait	7600:START	capture.weapon_select.first.png
+t_load	7900	8498	fight_InitCommandStream(12) at 8149, fight_RunCommandStream at 8288: op 3, then op 20 stores D_800A385C 0x8008F930 and calls fight_SetFixedFighterBytesAndLoadBothFighters (8420); not viewed	7900:CROSS,8200:START	capture.t_load.8000.png,capture.t_load.8400.png
+playback	8499	8633	func_8003B56C(1) at 8499 (ra 0x8003B848, op 20's arm of fight_RunCommandStream): D_800A390C 1, g_main_loop_handler_index 6; fight_StartDescriptorPlaybackAndAudio from 8500 (D_800A390F cleared 8500, 2B344.c:551; D_800A390C stays 1); playback.8580 viewed: black	8500:CROSS	capture.playback.8520.png,capture.playback.8580.png,capture.playback.last.png
+after_playback	8634	9299	g_main_loop_handler_index 7 at 8634, fight_HandleDescriptorPlaybackCompletion entered at 8635 (1 breakpoint hit of 50 allowed: not re-entered); no handler write after 8634; after_playback.last (9299) viewed: black, 256 wide; the run stays here (an uncommitted exploratory run of the same inputs to 26000: handler 7 throughout, every screenshot from 8900 identical)	8800:START,8900:TRIANGLE,8920:CROSS,... (26 presses, TRIANGLE/CROSS every 20 from 8900, SQUARE every 60 from 9000)	capture.after_playback.8700.png,capture.after_playback.last.png

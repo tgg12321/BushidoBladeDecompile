@@ -1,0 +1,402 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 9300,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6100,
+        "name": "t_story"
+      },
+      {
+        "frame": 6810,
+        "name": "story_text"
+      },
+      {
+        "frame": 6910,
+        "name": "t_char"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select"
+      },
+      {
+        "frame": 7300,
+        "name": "t_weapon"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7900,
+        "name": "t_load"
+      },
+      {
+        "frame": 8499,
+        "name": "playback"
+      },
+      {
+        "frame": 8634,
+        "name": "after_playback"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6100,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6400,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6700,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6960,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6980,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7000,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7600,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8900,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8920,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8940,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8960,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8980,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9000,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9020,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9040,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9060,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9060,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9100,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9120,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9120,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9140,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9160,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9180,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9180,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9200,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9220,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9240,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9240,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9260,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9280,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6060,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6950,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 7360,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 8000,
+        "name": "t_load.8000"
+      },
+      {
+        "frame": 8400,
+        "name": "t_load.8400"
+      },
+      {
+        "frame": 8520,
+        "name": "playback.8520"
+      },
+      {
+        "frame": 8580,
+        "name": "playback.8580"
+      },
+      {
+        "frame": 8633,
+        "name": "playback.last"
+      },
+      {
+        "frame": 8700,
+        "name": "after_playback.8700"
+      },
+      {
+        "frame": 9299,
+        "name": "after_playback.last"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x8008F92C",
+      "hex": "031FFF1418230213191A08931A190E9300",
+      "phase": "top_menu"
+    }
+  ]
+}

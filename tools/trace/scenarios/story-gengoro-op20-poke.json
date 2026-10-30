@@ -1,0 +1,80 @@
+{
+  "description": "Story Mode with the LEFT x2 fighter (character id 15, command stream D_800900EC[D_8008D538[15] = 12], as story-gengoro-stage-0e) with the stream's last three ops (op 3 1F FF, op 20 and its 12 operand bytes, op 0; 17 bytes from 0x8008F9FB) poked over the stream head at 0x8008F92C when top_menu starts (a modified game): fight_RunCommandStream's op 3 configures fighter 1 as 0x1F and op 20 (2B344.c:429-435) stores D_800A385C, loads both fighters and calls func_8003B56C(1), which sets g_main_loop_handler_index 6 (descriptor playback); the playback ends in handler 7 and the screen stays black (cause not established); cut at 9300",
+  "covers": [
+    "mode:story",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-gengoro-op20-poke-1/spec.json",
+    "docs/naming/runtime/cmd-story-gengoro-op20-poke-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 9300,
+  "pokes": [
+    {
+      "at": "0x8008F92C",
+      "hex": "031FFF1418230213191A08931A190E9300",
+      "phase": "top_menu"
+    }
+  ],
+  "inputs": [
+    "6100:CROSS",
+    "6400:START",
+    "6700:CROSS",
+    "6960:LEFT",
+    "6980:LEFT",
+    "7000:START",
+    "7300:CROSS",
+    "7600:START",
+    "7900:CROSS",
+    "8200:START",
+    "8500:CROSS",
+    "8800:START"
+  ],
+  "repeat": [
+    {
+      "from": 9000,
+      "every": 60,
+      "count": 5,
+      "steps": [
+        "+0:SQUARE"
+      ]
+    },
+    {
+      "from": 8900,
+      "every": 20,
+      "count": 20,
+      "steps": [
+        "+0:TRIANGLE|CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6060:top_menu",
+    "6100:t_story",
+    "6810:story_text",
+    "6910:t_char",
+    "6950:char_select",
+    "7300:t_weapon",
+    "7360:weapon_select",
+    "7900:t_load",
+    "8499:playback",
+    "8634:after_playback"
+  ],
+  "shots": [
+    "6060:top_menu.first",
+    "6950:char_select.first",
+    "7360:weapon_select.first",
+    "8000:t_load.8000",
+    "8400:t_load.8400",
+    "8520:playback.8520",
+    "8580:playback.8580",
+    "8633:playback.last",
+    "8700:after_playback.8700",
+    "9299:after_playback.last"
+  ]
+}
