@@ -1,0 +1,24 @@
+{
+  "description": "versus-2p-bamboo with g_saved_record.flags (0x80106A73) poked to 01 at the top menu (a modified game): bit 0 is the Option Menu's Monitor B&W (menu_HandleOptionMenuChoices row 0 toggles g_working_record.grayscale, 596CC.c:1416-1420; Return to Top Menu copies it to flags bit 0 through CopyWorkingFlagsAndButtonMappingsToSavedRecord, 25C38.c:288 / 25788.c:20); InitSavedRecordAndResetCameraDistanceOffset zeroes flags (6CF8.c:134), so 01 is B&W with bits 1 and 2 at their defaults. gpu_RefreshGrayscaleMode reads bit 0 (368E4.c:1431-1438): gpu_LoadTim converts CLUTs through math_GrayscaleRgb555 and node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor patches colours through math_Grayscale3; the fight draws in grayscale. The flag is poked because every run that entered the Option Menu crashed PCSX-Redux (headless and windowed, 5 of 5, at differing frames after the Option Menu)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:bamboo_thicket",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-monochrome-poke-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "pokes": [
+    {
+      "at": "0x80106A73",
+      "hex": "01",
+      "phase": "top_menu"
+    }
+  ]
+}
