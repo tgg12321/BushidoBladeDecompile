@@ -1,0 +1,20 @@
+{
+  "description": "versus-2p-bamboo with column 1 of g_gpu_fog_move_settings (0x800906A4, d_80DF8.c:59, 38 rows {1, 0} and a {0, 0} terminator) poked to 1 in all 38 rows at the top menu (a modified game; column 0 stays 1): gpu_LatchFogDepthOnTransitionAndQueueMoves (2B344.c:1515-1521) passes it as link_last_depth_entry to gpu_QueueDepthSpacedMovesAndLinkTerminalPacket, which then queues one more DR_MOVE and calls gpu_SetLastDepthIndexOtEntryLinkToPacket (2B344.c:1576-1577) instead of adding the terminal packet at OT entry 0xFFB; every screen from the fight load on is black",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "char:kannuki",
+    "char:gengoro"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-fog-link-poke-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "pokes": [
+    {
+      "at": "0x800906A4",
+      "hex": "0100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100",
+      "phase": "top_menu"
+    }
+  ]
+}
