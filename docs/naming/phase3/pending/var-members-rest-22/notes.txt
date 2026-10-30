@@ -1,0 +1,77 @@
+var-members-rest-22 -- draft notes (research tmp/codex/var-members-rest-22-research.md at 6ff365cbf, treated as hints; drafter re-derived in lane worktree ln-naming-a at 6ff365cbf)
+
+BASIS: research 52 rows (2 RENAME, 50 NO_NAME). Result: 1 row in pairs.txt / member_manifest.csv (FileRecord.unk_04=staff_roll_character_mask), 1 DROPPED/blocked (VabEnt.off), 50 NO_NAME carried, 0 name changes against the research. verdict / verifier_note are empty (the reviewer decides). Dry run: dry.txt, exit 0, "OK: every member access renamed", 4 files change (include/game.h, src/main/25C38.c, 2B344.c, 6CF8.c), no hand edit; round 0 listed 5 access lines, round 1 none. Run in WSL via a temporary script (wsl bash <script> -> python3 tools/naming_member_apply.py --dry-run docs/naming/phase3/pending/var-members-rest-22/pairs.txt); the script and output were removed from tmp/ afterwards.
+
+Re-derivation (FileRecord.unk_04)
+- git grep -nw unk_04 (src include asm tools symbol files): the FileRecord accesses are exactly 6CF8.c:136 (W = 0, InitSavedRecordAndResetCameraDistanceOffset), 2B344.c:669 (R), 670 (R+W) (fight_UpdateScrollingSpriteDisplayAndMergeBitFlags), 25C38.c:24 and 290 (R == 0x3F) plus the decl game.h:32. FileRecord is the only type with a member unk_04 left (other hits: bb2.h:349, game.h:271, 849 and symbol_addrs.txt:1432 are comments about other things). Whole-record users read no byte by name: memcard_BuildSaveBlock/RestoreSaveBlock (28708.c:50-69, 120-123), 17AFC.c:5909 (times[] only).
+- Role at every access: one bit per character (index 0,1,2,0xC,0xD,0xE of fighter 0, minus 9 for the last three), set at the end of the scrolling display, tested only against 0x3F to enable menu rows. The setter's other merge (g_fight_pending_unlock_mask_bits into unlock_mask) is the sibling word; the old rest-12 reason ('the setter is unnamed') is void, the function has been named since wave87.
+- Name evidence: code gives 'scrolling display' (function names) + 'character mask'. 'staff_roll' comes from runtime evidence found by the drafter: docs/naming/runtime/story-ending-poke-1/phases.tsv:18-19 (the credits phase: STAFF text, scrolling credits, byte 0x80106A54 <- 1 at the roll's end, pc 0x8003BF94) plus game.h:290 (file 0x5F = STAFF.BIN). Research flagged it weak; the drafter kept the research name because of that runtime phase. If the reviewer will not rely on it, use scrolling_display_character_mask (clean in an earlier dry run of this draft, same sites); no other change.
+- INCLUDE_ASM: the 137 live bodies (names from the INCLUDE_ASM lines in src) scanned for g_saved_record, D_80106A, 6A5x, %hi(0x8010): no hit. InitSavedRecordAndResetCameraDistanceOffset.s (writes g_saved_record+4) is a reference listing of a C body, not live.
+- Freshness: git grep -w staff_roll_character_mask = 0 over the whole tree at 6ff365cbf; in no pending pairs.txt of ln-naming-a or ln-naming-b (the ln-naming-b listing was checked).
+
+BLOCKED / DROPPED for this wave (next wave)
+- VabEnt.off -> vab_pack_pos: not in pairs. Still blocked at apply time (not evidence): naming_keycheck refuses because the local `s32 off` of resource_LoadOrReuseSelectedBlock (src/main/368E4.c:61, passed as PTR_OFF(s0, off) at 368E4.c:63) carries the old spelling into a macro argument ('unchanged member name in a macro argument does not expand to a member access'). Rest-21 pre-apply was PASS 4/4 and the row was reverted at apply. Unblock: a var-locals wave renames that local (a name for ALIGN4(s0[s3 - 1])), or keycheck learns the macro-argument case; then re-propose VabEnt.off=vab_pack_pos (snd.c:277-300 only; 'off' false from 286 on, 'pos' holds at all three stages; weakness: 'pos' generic). Confirm the macro parameter (368E4.c:19 #define PTR_OFF(base, off)) does not trip the rule. var-locals-33 (ln-naming-b) does not touch 368E4.c:61/63. Other `off` tokens (Unk80077D94Entry.off game.h:378; locals at 25788.c:91, 309CC.c:164, 35000.c:784, 368E4.c:113/1268/1333, 4510C.c:1779, 4D0A8.c:1338, 9F9C.c:121/4244) are in no macro argument.
+- VabEnt.size and Unk80099B9CRec.pos stay dropped (rest-21: not shown false; no new evidence).
+
+NO_NAME rows carried (not in pairs; 50, copied from the research; no new evidence unless stated)
+- SelWork.f2C (+0x2C): Carried from rest-21 (write-only, 64FD8.c:1334). No evidence newer than 4871564c1.
+- SelWork.f3C (+0x3C): Carried from rest-21 (three roles: phase-0 option row, opposed-choice mirror, grid / list pick slot and count). No new evidence.
+- Tbl800A3860Entry.f66 (+0x66): Carried from rest-21 (pseudo move ids 0x7FF5..0x7FFF only, 9F9C.c:3470). No new evidence.
+- Unk80101EC8Record.unk_272 (+0x272): Carried from rest-21 (mixed writers incl. the paired-move bump 9F9C.c:2928). No new evidence.
+- Unk80101EC8Record.unk_27E (+0x27E): Carried from rest-21 (waits on unk_272). No new evidence.
+- Unk80102778Rec.unk_4 (+0x04): Carried from rest-21 (u8[6] of three per-player pairs; needs a types-task split). No new evidence.
+- Unk80102778Rec.unk_F (+0x0F): Carried from rest-21 (forces fighter_ResolveBoneHit's unnamed flag operand). No new evidence.
+- Unk8009BD24Record.unk1 (+0x01): Carried from rest-21 (write-only 5ED34.c:1711, 64FD8.c:1107). No new evidence.
+- Unk1F8000B8_80063084.unk38 (+0x38): Carried from rest-21 (one-block formula temporary). No new evidence.
+- Unk1F8000B8_80065800.unk14 (+0x14): Carried from rest-21 (two roles). No new evidence.
+- Unk1F8000B8_80065800.unk64 (+0x64): Carried from rest-21 (three roles). No new evidence.
+- Unk1F8000B8_800678A8.unk6E (+0x6E): Carried from rest-21 (loop index in two functions). No new evidence.
+- Unk1F8000B8_800678A8.unk70 (+0x70): Carried from rest-21 (two unrelated values). No new evidence.
+- Func80017848Edge.field_8 (+0x08): Carried from rest-21 (write-only 6CF8.c:668). No new evidence.
+- Func80017A44Record.field_38 (+0x38): Carried from rest-21 (no access; decl game.h:2417). No new evidence.
+- Unk800FF5C8Rec.unk_0C (+0x0C): Carried from rest-21 (no access; decl game.h:2014). No new evidence.
+- Unk80101EC8Record.unk_AF (+0xAF): Carried from rest-21 (class bit of an unnamed nibble). No new evidence.
+- Unk80101EC8Record.unk_B4 (+0xB4): Carried from rest-21 (follows unk_AF). No new evidence.
+- Unk80101EC8Record.unk_150 (+0x150): Carried from rest-21 (only ever written 0). No new evidence.
+- Unk800EFAE8Rec.unk44 (+0x44): Carried from rest-21 (meaning only from caller arguments). No new evidence.
+- Unk800EFAE8Rec.unk48 (+0x48): Carried from rest-21 (as unk44, slot parity). No new evidence.
+- Unk8006919CRec.unk_14 (+0x14): Carried from rest-21 (sole consumer func_80069E18 unnamed). g_row_menu_resource_root (var-globals-m 2815f9649) is the s32 arena cursor at 596CC.c:82/184, not this list. No new evidence.
+- Unk1F8002B8Rec.unk78 (+0x78): Carried from rest-21 ('bbox_min' false at 17AFC.c:1113 / 1181). rest-21's inner_bone_hit_mask (game.h:1376) is a different word and says nothing about it. No new evidence.
+- Unk80045878Node.unk58 (+0x58): Carried from rest-21 (mixed roles). Re-read after var-locals-32 (e6076c142) touched every line: 309CC.c:109, 123 (ground value), 432, 437, 467 (duplicate source node, 0 ends), 31548.c:132 (= unk_18F4 table, FAKE p58), 161 (read as node pointer), 308-310 (rebased by byte_offset), 32D04.c:1218 (= -1, Unk800A9CF8Entry, other type), 368E4.c:2012, 2100. Same three roles, and the local renames add nothing.
+- Unk80045878Node.unk5C (+0x5C): Carried from rest-21 (no access as this type). No new evidence.
+- Unk80045878Node.unk64 (+0x64): Carried from rest-21 (no access as this type). No new evidence.
+- Unk8006E49CRec.unk_14 (+0x14): Carried from rest-21 (DR_MODE cursor also used as TILE cursor). No new evidence.
+- Unk800788B0Rec.unk_14 (+0x14): Carried from rest-21 (same objection; 64FD8.c:1877 copy). No new evidence.
+- BoneHitRec.unk_0E (+0x0E): Carried from rest-21 (square in template, scaled linearly 9F9C.c:3098). No new evidence.
+- BoneHitRec.unk_12 (+0x12): Carried from rest-21 (inner twin of unk_0E). rest-21's inner_bone_hit_mask names the mask the test produces; the linear-scaling objection to this operand stands.
+- Unk80101EC8Record.unk_24C (+0x24C): Carried from rest-21 (write-only). No new evidence.
+- Unk80076FF8Rec.unk_14 (+0x14): Carried from rest-21 (mixed fixed / list-entry indices). rest-21's sel_option_sheets (unk_34) does not reach these readers. No new evidence.
+- Unk80076FF8Rec.unk_1C (+0x1C): Carried from rest-21 (one reader keyed by an argument, 64FD8.c:210). No new evidence.
+- Unk80076FF8Rec.unk_30 (+0x30): Carried from rest-21 (waits on SelWork.f3C). No new evidence.
+- Unk80076FF8Rec.unk_38 (+0x38): Carried from rest-21 (three sheets at origin, 63D2C.c:307). No new evidence.
+- Unk8006919CRec.unk_34 (+0x34): Carried from rest-21 (596CC.c:555; role not shown). No new evidence.
+- FaceTri.unk0 (+0x00): Carried from rest-21 (layout filler; decl now src/main/2B344.c:2586). No new evidence.
+- FaceTri.unk8 (+0x10): Carried (filler; 2B344.c:2588).
+- FaceQuad.unk0 (+0x00): Carried (filler; 2B344.c:2592).
+- FaceQuad.unk9 (+0x12): Carried (filler; 2B344.c:2594).
+- FaceTriLong.unk0 (+0x00): Carried (filler; 2B344.c:2598).
+- FaceTriLong.unk8 (+0x10): Carried (filler; 2B344.c:2600).
+- FaceQuadLong.unk0 (+0x00): Carried (filler; 2B344.c:2604).
+- FaceQuadLong.unk10 (+0x14): Carried (filler; 2B344.c:2606).
+- Unk8003F62CRec.unk4 (+0x04): Carried (write-only = 0, now 2B344.c:2539).
+- Unk8003F824Rec.unk2 (+0x02): Carried (padding, 2B344.c:2452). The neighbour Func8003F6D8Inner.node_local_foci (rest-21) is in the embedded inner record, not this word.
+- Unk800A9CF8Entry.unk58 (+0x58): Carried from rest-21 (frame index plus -1 / -2 sentinels; 32D04.c:1218 untouched by var-locals-32 except context). No new evidence.
+- Unk800A9CF8Entry.unk60 (+0x60): Carried from rest-21 (Q12 colour scale / fade). No new evidence.
+- Tbl8008E194.unkC (+0x0C): Carried from rest-21 (selector over unnamed move kinds). No new evidence.
+- Tbl8008E194.unkD (+0x0D): Carried from rest-21 (level 0..2, no single role). No new evidence.
+
+Rows looked at and not proposed (research notes): Unk80045878Obj.unk_18F4 (table of &transform_nodes[k].node.xf.mat, only consumer node.unk58 still mixed); Unk1F8002B8Rec unkA8/unkB8/unkC8/unkF8/unk100/unk118 (Vec3i32 with several roles in 17AFC.c, rest-5 'mixed' holds); settled audit leads (audit-1, -43, -64, -67, -7, -68, -91) are not re-proposed.
+
+R6 WATCH list (comment pass; verified at 6ff365cbf)
+- FileRecord.unk_04: no source comment cites the byte. Optional: extend the game.h:22-23 comment (the FileRecord block) with a line naming the roll's setter. Text mentions of `D_80106A50.unk_04` (old spelling of record and member) are in docs/naming/runtime/slash-mode-1/phases.tsv:4, slash-mode-clear-1/phases.tsv:4, story-ending-poke-1/phases.tsv:19, docs/foundation/backlog.tsv:18, and tools/trace/scenarios/{slash-mode,story-ending-poke,targets}.json (tools never change under naming_keycheck, and D_80106A50 is already stale there). Leave them, and the historic docs/naming/phase3 files. Do NOT touch the other unk_04 comment tokens: bb2.h:349, game.h:271, game.h:849, symbol_addrs.txt:1432.
+- Post-apply survival grep: word unk_04 over src/main/25C38.c, 2B344.c, 6CF8.c (0) and in the FileRecord block of game.h (0). Clang-format: 2B344.c:669 (`if (!((g_saved_record.staff_roll_character_mask >> bit) & 1)) {`) goes over 80 columns and the game.h member comment alignment changes; run `python tools/format.py` on the four files.
+
+Weakest rows for the reviewer
+- FileRecord.unk_04 staff_roll_character_mask: 'staff_roll' rests on the runtime phases.tsv credits phase and file 0x5F = STAFF.BIN, not on a function name; the pad skip also sets the bit; 'character' rests on fighter 0's character_data_index. Neutral fallback scrolling_display_character_mask.
+
+LAND claim list: topic:type:FileRecord; topic:tu:main/6CF8, topic:tu:main/2B344, topic:tu:main/25C38 (+ any TU the comment pass edits)

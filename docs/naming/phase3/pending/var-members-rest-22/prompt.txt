@@ -1,0 +1,11 @@
+var-members-rest-22 -- applier notes (drafter, ln-naming-a, 6ff365cbf)
+
+Research: tmp/codex/var-members-rest-22-research.md (Codex, 52 rows). Draft: 1 RENAME pair (pairs.txt: FileRecord.unk_04=staff_roll_character_mask), VabEnt.off=vab_pack_pos dropped (still blocked by the 368E4.c:61/63 macro-argument local), 50 NO_NAME carried, 0 name changes against the research. Details in notes.txt.
+
+Apply (clean tree, Grinder stopped, WSL toolchain):
+  python3 tools/naming_member_apply.py docs/naming/phase3/pending/var-members-rest-22/pairs.txt
+Expected: exit 0, no unresolved lines, 4 files (include/game.h, src/main/25C38.c, 2B344.c, 6CF8.c), as dry.txt. Then run `python tools/format.py` on those 4 files (2B344.c:669 and the game.h member comment change), the comment pass from notes.txt (R6 WATCH list: no source comment cites the byte; optional game.h:22-23 line), then the gates in naming-bar step 5: verify-oracle --rebuild, tus-check, check_completion_integrity.py, engine test, naming_keycheck.
+
+Review focus (weakest row): FileRecord.unk_04 staff_roll_character_mask -- runtime evidence for 'staff_roll' (docs/naming/runtime/story-ending-poke-1/phases.tsv:18-19); if rejected, swap to scrolling_display_character_mask (edit pairs.txt and the manifest, rerun the dry run).
+
+Lane claim for LAND: topic:type:FileRecord and topic:tu main/6CF8, main/2B344, main/25C38 (+ any TU the comment pass edits).

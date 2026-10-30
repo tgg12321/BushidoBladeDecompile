@@ -1,0 +1,37 @@
+PASS FileRecord.unk_04=staff_roll_character_mask
+decl FileRecord.unk_04 -> staff_roll_character_mask  include/game.h:32
+  round 0: 5 member error line(s)
+    src/main/25C38.c:24 unk_04 x1
+    src/main/25C38.c:290 unk_04 x1
+    src/main/2B344.c:669 unk_04 x1
+    src/main/2B344.c:670 unk_04 x1
+    src/main/6CF8.c:136 unk_04 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -32 +32 @@
+-    u8 unk_04;       /* 0x80106A54 */
++    u8 staff_roll_character_mask;       /* 0x80106A54 */
+--- a/src/main/25C38.c
++++ b/src/main/25C38.c
+@@ -24 +24 @@
+-    if (g_saved_record.unk_04 == 0x3F) {
++    if (g_saved_record.staff_roll_character_mask == 0x3F) {
+@@ -290 +290 @@
+-            if (g_saved_record.unk_04 == 0x3F) {
++            if (g_saved_record.staff_roll_character_mask == 0x3F) {
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -669,2 +669,2 @@
+-            if (!((g_saved_record.unk_04 >> bit) & 1)) {
+-                g_saved_record.unk_04 |= 1 << bit;
++            if (!((g_saved_record.staff_roll_character_mask >> bit) & 1)) {
++                g_saved_record.staff_roll_character_mask |= 1 << bit;
+--- a/src/main/6CF8.c
++++ b/src/main/6CF8.c
+@@ -136 +136 @@
+-    var_1->unk_04 = 0;
++    var_1->staff_roll_character_mask = 0;
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed
+EXIT=0

@@ -1,0 +1,1 @@
+FileRecord.unk_04=staff_roll_character_mask
