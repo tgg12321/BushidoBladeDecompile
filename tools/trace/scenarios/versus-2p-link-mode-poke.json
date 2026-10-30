@@ -1,0 +1,27 @@
+{
+  "description": "versus-2p-bamboo with g_fight_mode_selector (0x800A38DC, s16) poked 4 -> 6 at frame 7535, the t_init phase (a modified game): mode 6 is the link-cable mode (ApplyPendingConfigAndInitializeMode's case 6, 24BF0.c:46-52), which needs a second console; ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests writes 4 at 7534 and fight_Init runs at 7535 (a write watch and a fight_Init breakpoint in an exploratory run), so the poke lands between the two; fight_Init's last statement (9F9C.c:2067-2069) calls rng_SetSeed(g_fight_rng_seed) in mode 6, and snd_StartFightCdAudio (9F9C.c:1800-1832) starts no stage CD audio; the WINS counters are drawn only in mode 4 (9F9C.c:1547-1552), so the fight draws none and still ends in a KO and the Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:bamboo_thicket",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-link-mode-poke-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "phases": [
+    "7535:t_init"
+  ],
+  "pokes": [
+    {
+      "at": "0x800A38DC",
+      "hex": "0600",
+      "phase": "t_init"
+    }
+  ]
+}
