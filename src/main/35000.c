@@ -107,40 +107,41 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     }
 }
 
-void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
+void node_StartFrameAnimatedEntryAndInitPairedNode(s32 entry_index, s32 yaw) {
     Unk800A9CF8Entry *p;
 
-    if (a0 >= g_node_frame_animation_context.frame_entry_count)
+    if (entry_index >= g_node_frame_animation_context.frame_entry_count)
         return;
 
-    p = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries + a0;
+    p = (Unk800A9CF8Entry *)g_node_frame_animation_context.frame_entries +
+        entry_index;
     if (p->unk58 != -1)
         return;
 
     switch (g_node_frame_animation_context.resource_selector) {
     case 4:
-        if (a0 == 0) {
-            a1 = 0x800;
+        if (entry_index == 0) {
+            yaw = 0x800;
         }
-        if (a0 == 1) {
-            a1 = 0;
+        if (entry_index == 1) {
+            yaw = 0;
         }
         break;
     case 0x12:
-        a1 = 0;
+        yaw = 0;
         break;
     }
-    p->anim_yaw = a1;
+    p->anim_yaw = yaw;
     p->unk58 = 0;
     /* FAKE: p is reused for the paired gpu_GetGridNodeRecordTable entry, an
      * Unk800A6690Rec reached only through its node member (both records start
      * with the node); a separate Unk80101DF0Record * local scores 4. */
     p = (Unk800A9CF8Entry *)((Unk800A6690Rec *)g_node_frame_animation_context
                                  .paired_grid_nodes +
-                             a0);
+                             entry_index);
     p->node.reloc_entry_index = 1;
     p->node.reloc_block_id = g_node_frame_animation_context.reloc_block_id;
-    p->node.xf.rot.vy = a1;
+    p->node.xf.rot.vy = yaw;
     p->node.node_kind = 0;
     p->node.parent_node = 0;
     p->node.xf.rot.vx = 0;
@@ -155,39 +156,42 @@ void node_StartFrameAnimatedEntryAndInitPairedNode(s32 a0, s32 a1) {
     }
 }
 
-void resource_RebaseFrameAnimatedEntryBlockAndPointers(s32 a0) {
-    reloc_RebaseBlock((s32)g_node_frame_animation_context.reloc_block_id, a0);
-    g_node_frame_animation_context.frame_entries += a0;
-    g_node_frame_animation_context.frame_data += a0;
+void resource_RebaseFrameAnimatedEntryBlockAndPointers(s32 byte_offset) {
+    reloc_RebaseBlock(
+        (s32)g_node_frame_animation_context.reloc_block_id, byte_offset);
+    g_node_frame_animation_context.frame_entries += byte_offset;
+    g_node_frame_animation_context.frame_data += byte_offset;
 }
 
 void math_BlendCylindricalPositionsWithNegatedYZ(
-    s16 *a0, s16 *a1, s32 a2, s32 a3) {
+    s16 *first_position, s16 *second_position, s32 interp_weight,
+    s32 out_addr) {
     s32 sp18[3];
     s32 sp28[3];
     s32 angle;
-    s32 var_3;
+    s32 radius;
 
-    sp18[1] = a0[0];
-    angle = a0[1];
-    var_3 = a0[2];
-    sp18[0] = (rsin(angle) * var_3) >> 12;
-    sp18[2] = (rcos(angle) * var_3) >> 12;
+    sp18[1] = first_position[0];
+    angle = first_position[1];
+    radius = first_position[2];
+    sp18[0] = (rsin(angle) * radius) >> 12;
+    sp18[2] = (rcos(angle) * radius) >> 12;
     sp18[1] = -sp18[1];
     sp18[2] = -sp18[2];
 
-    sp28[1] = a1[0];
-    angle = a1[1];
-    var_3 = a1[2];
-    sp28[0] = (rsin(angle) * var_3) >> 12;
-    sp28[2] = (rcos(angle) * var_3) >> 12;
+    sp28[1] = second_position[0];
+    angle = second_position[1];
+    radius = second_position[2];
+    sp28[0] = (rsin(angle) * radius) >> 12;
+    sp28[2] = (rcos(angle) * radius) >> 12;
     sp28[1] = -sp28[1];
     sp28[2] = -sp28[2];
 
-    LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
+    LoadAverage12(sp18, sp28, 0x1000 - interp_weight, interp_weight, out_addr);
 }
 
-void math_LerpShortVectorsNegateYZ(s16 *a0, s16 *a1, s32 a2, s32 a3) {
+void math_LerpShortVectorsNegateYZ(
+    s16 *a0, s16 *a1, s32 interp_weight, s32 out_addr) {
     s32 sp18[3];
     s32 sp28[3];
     sp18[0] = a0[0];
@@ -198,7 +202,7 @@ void math_LerpShortVectorsNegateYZ(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     a1++;
     sp28[1] = -a1[0];
     sp28[2] = -a1[1];
-    LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
+    LoadAverage12(sp18, sp28, 0x1000 - interp_weight, interp_weight, out_addr);
 }
 
 s32 func_80044E64(void) { return 0x25; }
@@ -212,68 +216,68 @@ typedef struct {
 
 extern NdataInfEntry g_ndata_inf[];
 
-void ndata_Read(s32 a0, s32 a1) {
+void ndata_Read(s32 ndata_index, s32 dest_addr) {
     cdrom_WaitIdle();
-    cdrom_StartReadAt(
-        0, a1, g_ndata_inf[a0].start_sector, g_ndata_inf[a0].length_sectors);
+    cdrom_StartReadAt(0, dest_addr, g_ndata_inf[ndata_index].start_sector,
+                      g_ndata_inf[ndata_index].length_sectors);
     cdrom_WaitIdle();
 }
 
-void ndata_ReadRemappedIndexPackFirstElseRead(s32 a0, s32 a1) {
+void ndata_ReadRemappedIndexPackFirstElseRead(s32 a0, s32 dest_addr) {
     if (a0 >= 0x1F) {
         a0 -= 0x1B;
     }
-    if (!ndata_ReadFromPack(a0, a1)) {
-        ndata_Read(a0, a1);
+    if (!ndata_ReadFromPack(a0, dest_addr)) {
+        ndata_Read(a0, dest_addr);
     }
 }
 
 extern void ndata_Read(s32, s32);
 
-void func_80044F30(s32 a0, s32 a1) { ndata_Read(a0 + 0x27, a1); }
+void func_80044F30(s32 a0, s32 dest_addr) { ndata_Read(a0 + 0x27, dest_addr); }
 
-void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 a2) {
+void ndata_ReadIndexInRangeSelectedByFlag(s32 a0, s32 a1, s32 dest_addr) {
     if (!a0) {
-        ndata_Read(a1 + 0x83, a2);
+        ndata_Read(a1 + 0x83, dest_addr);
     } else {
-        ndata_Read(a1 + 0x10C, a2);
+        ndata_Read(a1 + 0x10C, dest_addr);
     }
 }
 
-void func_80044F80(s32 a0, s32 a1) { ndata_Read(a0 + 0x4D, a1); }
+void func_80044F80(s32 a0, s32 dest_addr) { ndata_Read(a0 + 0x4D, dest_addr); }
 
 extern s32 D_800A3240;
 extern char D_8001528C[];
 
-s32 ndata_ReadChecked(s32 a0, s32 a1) {
+s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
     s32 size;
     s32 len;
 
-    size = a1 - (s32)arena_GetBase();
+    size = dest_addr - (s32)arena_GetBase();
     if (size >= 0 && size < arena_GetSize()) {
         if (D_800A3240 != 0) {
-            size = g_ndata_inf[a0].length_sectors << 11;
+            size = g_ndata_inf[ndata_index].length_sectors << 11;
         } else {
             size = 0;
         }
         len = arena_GetFreeSize();
         if (len < size) {
-            printf(D_8001528C, a0, size - len);
+            printf(D_8001528C, ndata_index, size - len);
             while (1) {
                 func_800164F8();
             }
         }
     } else {
-        size = g_ndata_inf[a0].length_sectors << 11;
+        size = g_ndata_inf[ndata_index].length_sectors << 11;
     }
-    ndata_Read(a0, a1);
+    ndata_Read(ndata_index, dest_addr);
     return size;
 }
 
 extern s32 arena_GetFreeSize(void);
 
-s32 ndata_GetArenaRoomAfter(s32 a0) {
-    s32 val = g_ndata_inf[a0].length_sectors << 11;
+s32 ndata_GetArenaRoomAfter(s32 ndata_index) {
+    s32 val = g_ndata_inf[ndata_index].length_sectors << 11;
     return arena_GetFreeSize() - val;
 }
 
@@ -285,18 +289,18 @@ static s32 g_arena_free_size;
 static s32 g_arena_peak;
 static s32 g_arena_block_count;
 
-void ndata_LoadPack(s32 a0, s32 a1) {
-    ndata_Read(a0 + 0x25, a1);
-    g_ndata_pack = a1;
+void ndata_LoadPack(s32 a0, s32 pack_addr) {
+    ndata_Read(a0 + 0x25, pack_addr);
+    g_ndata_pack = pack_addr;
     g_ndata_pack_loaded = 1;
 }
 
 extern s16 g_ndata_pack_index[];
 
-s32 ndata_ReadFromPack(s32 a0, s32 a1) {
-    s32 *a2_ptr;
-    s32 v1;
-    s32 *v0_ptr;
+s32 ndata_ReadFromPack(s32 a0, s32 dest_addr) {
+    s32 *pack_base;
+    s32 entry_start;
+    s32 *entry_offset_ptr;
     if (g_ndata_pack_loaded == 0) {
         return 0;
     }
@@ -308,17 +312,17 @@ s32 ndata_ReadFromPack(s32 a0, s32 a1) {
     if (a0 == -1) {
         return 0;
     }
-    a2_ptr = (s32 *)g_ndata_pack;
-    if (*a2_ptr != 5) {
+    pack_base = (s32 *)g_ndata_pack;
+    if (*pack_base != 5) {
         g_ndata_pack_loaded = 0;
         return 0;
     }
-    v0_ptr = (s32 *)(a0 * 4 + (s32)a2_ptr + 4);
-    v1 = *v0_ptr;
+    entry_offset_ptr = (s32 *)(a0 * 4 + (s32)pack_base + 4);
+    entry_start = *entry_offset_ptr;
     {
-        s32 a0_new = (s32)a2_ptr + (((u32)v1 >> 2) << 2);
-        s32 a2_val = v0_ptr[1] - v1;
-        mem_MoveBlockRoundedUpToWords(a0_new, a1, a2_val);
+        s32 src_addr = (s32)pack_base + (((u32)entry_start >> 2) << 2);
+        s32 entry_size = entry_offset_ptr[1] - entry_start;
+        mem_MoveBlockRoundedUpToWords(src_addr, dest_addr, entry_size);
     }
     return 1;
 }
@@ -342,22 +346,22 @@ void arena_Reset(void) {
 }
 
 void arena_UpdatePeak(s32 a0) {
-    s32 v1;
+    s32 new_peak;
     if (!a0) {
         a0 = g_arena_free_ptr;
     }
     a0 -= (s32)&g_arena;
-    v1 = a0;
+    new_peak = a0;
     if (a0 < g_arena_peak) {
-        v1 = g_arena_peak;
+        new_peak = g_arena_peak;
     }
-    g_arena_peak = v1;
+    g_arena_peak = new_peak;
     if (a0 > 0x44FFF) {
         sys_StoreZeroPastScratchpadOnFailedCheck();
     }
 }
 
-void arena_ShiftBlocks(s32 a0, s32 a1) {
+void arena_ShiftBlocks(s32 first_block_index, s32 byte_offset) {
     s32 sum;
     s32 i;
     s32 src;
@@ -365,36 +369,36 @@ void arena_ShiftBlocks(s32 a0, s32 a1) {
     s32 count;
 
     sum = 0;
-    src = g_arena_blocks[a0].block_start;
+    src = g_arena_blocks[first_block_index].block_start;
     count = g_arena_block_count;
-    dst = src + a1;
-    for (i = a0; i < count; i++) {
+    dst = src + byte_offset;
+    for (i = first_block_index; i < count; i++) {
         sum += g_arena_blocks[i].amt;
     }
     if (sum != 0) {
         DrawSync(0);
         mem_MoveBlockRoundedUpToWords(src, dst, sum);
-        for (i = a0; i < g_arena_block_count; i++) {
-            g_arena_blocks[i].block_start += a1;
+        for (i = first_block_index; i < g_arena_block_count; i++) {
+            g_arena_blocks[i].block_start += byte_offset;
             if (g_arena_blocks[i].fn != 0) {
-                g_arena_blocks[i].fn(g_arena_blocks[i].id, a1);
+                g_arena_blocks[i].fn(g_arena_blocks[i].id, byte_offset);
             }
         }
     }
-    g_arena_free_ptr += a1;
-    g_arena_free_size -= a1;
+    g_arena_free_ptr += byte_offset;
+    g_arena_free_size -= byte_offset;
 }
 
 /* Remove the table entry whose id == a0: undo its contribution via
    arena_ShiftBlocks(index + 1, -amt), shift the following records down one
    slot, clear the freed tail slot, decrement the count. */
-void arena_Free(s32 a0) {
+void arena_Free(s32 block_id) {
     s32 i;
     s32 j;
     s32 last;
 
     for (i = 0; i < g_arena_block_count; i++) {
-        if (g_arena_blocks[i].id == a0) {
+        if (g_arena_blocks[i].id == block_id) {
             arena_ShiftBlocks(i + 1, -g_arena_blocks[i].amt);
             if (i < g_arena_block_count - 1) {
                 for (j = i + 1; j < g_arena_block_count; j++) {
@@ -410,17 +414,17 @@ void arena_Free(s32 a0) {
     }
 }
 
-void arena_Resize(s32 a0, s32 a1) {
+void arena_Resize(s32 block_id, s32 new_size) {
     s32 i;
     s32 diff;
 
     for (i = 0; i < g_arena_block_count; i++) {
-        if (g_arena_blocks[i].id == a0) {
-            diff = a1 - g_arena_blocks[i].amt;
+        if (g_arena_blocks[i].id == block_id) {
+            diff = new_size - g_arena_blocks[i].amt;
             if (diff == 0)
                 return;
             arena_ShiftBlocks(i + 1, diff);
-            g_arena_blocks[i].amt = a1;
+            g_arena_blocks[i].amt = new_size;
             return;
         }
     }

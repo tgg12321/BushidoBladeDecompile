@@ -271,11 +271,11 @@ void PatchColorImmediatesAtListedCodeSites(s32 color) {
     s32 mask8 = ~0xFF;
     s32 a1 = (color >> 16) & 0xFF;
     s32 mask16 = (s32)0xFFFF0000;
-    s32 a0lo = color & 0xFFFF;
+    s32 color_low_half = color & 0xFFFF;
     s32 t3 = (func_800545F4 & mask8) | a1;
-    s32 t2 = (D_800545F8 & mask16) | a0lo;
+    s32 t2 = (D_800545F8 & mask16) | color_low_half;
     s32 v1 = (D_800545FC & mask8) | a1;
-    s32 a4 = (D_80054600 & mask16) | a0lo;
+    s32 a4 = (D_80054600 & mask16) | color_low_half;
     do {
         s32 *v0 = *site_cursor;
         site_cursor++;

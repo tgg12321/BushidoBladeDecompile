@@ -433,34 +433,34 @@ void math_Rotate2D(s32 *a0, s32 *a1, s32 angle) {
     *a0 = (sin_x - cos_y) >> 12;
 }
 
-void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
+void math_MatrixToAnglesYXZ(MATRIX *matrix, SVECTOR *angles) {
     SVECTOR rot;
     VECTOR result;
     MATRIX sp28;
     s16 angle1;
     s32 cos_val, sin_val;
     s16 neg_angle2;
-    s32 var_7;
+    s32 rotated_z;
 
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x1000;
-    ApplyMatrix(a0, &rot, &result);
+    ApplyMatrix(matrix, &rot, &result);
 
     angle1 = ratan2(result.vx, result.vz);
 
     cos_val = rcos((s16)angle1);
     sin_val = rsin((s16)angle1);
 
-    var_7 = (cos_val * result.vz + sin_val * result.vx) >> 12;
-    neg_angle2 = -ratan2(result.vy, var_7);
+    rotated_z = (cos_val * result.vz + sin_val * result.vx) >> 12;
+    neg_angle2 = -ratan2(result.vy, rotated_z);
 
     rot.vx = -neg_angle2;
     rot.vy = -angle1;
     rot.vz = 0;
     math_RotMatrixXYZ((u16 *)&rot, &sp28);
 
-    MulMatrix(&sp28, a0);
+    MulMatrix(&sp28, matrix);
 
     rot.vx = 0;
     rot.vy = 0x1000;
@@ -470,9 +470,9 @@ void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
     {
         s16 angle3;
         angle3 = ratan2(result.vx, result.vy);
-        a1->vx = neg_angle2;
-        a1->vy = angle1;
-        a1->vz = -angle3;
+        angles->vx = neg_angle2;
+        angles->vy = angle1;
+        angles->vz = -angle3;
     }
 }
 
@@ -522,8 +522,8 @@ s32 math_ClassifyThresholdBand(s32 a0) {
     return ret;
 }
 
-s32 gpu_RemapDepthToOtIndex(s32 a0) {
-    s32 v0 = a0 >> *(s32 *)0x1F800008;
+s32 gpu_RemapDepthToOtIndex(s32 depth) {
+    s32 v0 = depth >> *(s32 *)0x1F800008;
     s32 shift = v0 >> 11;
     s32 mant = (v0 & 0x7FF) | -0x1000;
     return (mant >> shift) & 0xFFF;
@@ -533,20 +533,21 @@ extern u16 g_reloc_block_slot_counts[];
 extern void gpu_OffsetTexPrimStream(s16, s16, s16, s16);
 
 void gpu_OffsetBlockTexPrimStreams(
-    s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
-    u16 arg4_lo = arg4;
+    s16 block_id, s16 du, s16 dv, s16 dcx, s32 dcy) {
+    u16 dcy_lo = dcy;
     s16 i;
 
-    for (i = 0; i < g_reloc_block_slot_counts[arg0]; i++) {
-        *(s32 *)0x1F800000 = g_reloc_block_entry_tables[arg0][i];
-        gpu_OffsetTexPrimStream(arg1, arg2, arg3, arg4_lo);
+    for (i = 0; i < g_reloc_block_slot_counts[block_id]; i++) {
+        *(s32 *)0x1F800000 = g_reloc_block_entry_tables[block_id][i];
+        gpu_OffsetTexPrimStream(du, dv, dcx, dcy_lo);
     }
 }
 
 void gpu_OffsetBlockTexPrimStreamsByPages(
-    s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+    s16 block_id, s16 du_pages, s16 dv_pages, s16 dcx_pages, s16 dcy_pages) {
     gpu_OffsetBlockTexPrimStreams(
-        a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
+        block_id, (s16)(du_pages << 6), (s16)(dv_pages << 8),
+        (s16)(dcx_pages << 6), (s16)(dcy_pages << 8));
 }
 
 /* Old-style definition: the only caller,
@@ -580,7 +581,7 @@ void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
  * plus a per-vertex v shift for mode-1 / mode-2 groups.  Untextured groups are
  * skipped using the per-type halfword sizes in g_gpu_prim_type_halfword_sizes.
  */
-void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
+void gpu_OffsetTexPrimStream(s16 du, s16 dv, s16 dcx, s16 dcy) {
     s32 count;
     s32 mode;
     s32 type;
@@ -631,28 +632,24 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     while (--count != -1) {
                         switch (kind) {
                         case 0:
+                            gpu_OffsetTexPolyFT3(SCRATCH_PTR, du, dv, dcx, dcy);
                             gpu_OffsetTexPolyFT3(
-                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyFT3((POLY_FT3 *)SCRATCH_PTR + 1,
-                                                 arg0, arg1, arg2, arg3);
+                                (POLY_FT3 *)SCRATCH_PTR + 1, du, dv, dcx, dcy);
                             break;
                         case 1:
+                            gpu_OffsetTexPolyFT4(SCRATCH_PTR, du, dv, dcx, dcy);
                             gpu_OffsetTexPolyFT4(
-                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyFT4((POLY_FT4 *)SCRATCH_PTR + 1,
-                                                 arg0, arg1, arg2, arg3);
+                                (POLY_FT4 *)SCRATCH_PTR + 1, du, dv, dcx, dcy);
                             break;
                         case 2:
+                            gpu_OffsetTexPolyGT3(SCRATCH_PTR, du, dv, dcx, dcy);
                             gpu_OffsetTexPolyGT3(
-                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyGT3((POLY_GT3 *)SCRATCH_PTR + 1,
-                                                 arg0, arg1, arg2, arg3);
+                                (POLY_GT3 *)SCRATCH_PTR + 1, du, dv, dcx, dcy);
                             break;
                         case 3:
+                            gpu_OffsetTexPolyGT4(SCRATCH_PTR, du, dv, dcx, dcy);
                             gpu_OffsetTexPolyGT4(
-                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyGT4((POLY_GT4 *)SCRATCH_PTR + 1,
-                                                 arg0, arg1, arg2, arg3);
+                                (POLY_GT4 *)SCRATCH_PTR + 1, du, dv, dcx, dcy);
                             break;
                         }
                         SCRATCH_PTR += g_gpu_prim_type_halfword_sizes[type];
@@ -661,33 +658,33 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                 case 1:
                     while (--count != -1) {
                         gpu_OffsetTPageClutAt0And4(
-                            (s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            (s16 *)SCRATCH_PTR, du, dv, dcx, dcy);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
-                            b[7] += arg1;
-                            b[9] += arg1;
-                            b[11] += arg1;
+                            b[7] += dv;
+                            b[9] += dv;
+                            b[11] += dv;
                             SCRATCH_PTR += 12;
                             break;
                         case 1:
-                            b[7] += arg1;
-                            b[9] += arg1;
-                            b[11] += arg1;
-                            b[13] += arg1;
+                            b[7] += dv;
+                            b[9] += dv;
+                            b[11] += dv;
+                            b[13] += dv;
                             SCRATCH_PTR += 12;
                             break;
                         case 2:
-                            b[7] += arg1;
-                            b[9] += arg1;
-                            b[11] += arg1;
+                            b[7] += dv;
+                            b[9] += dv;
+                            b[11] += dv;
                             SCRATCH_PTR += 18;
                             break;
                         case 3:
-                            b[7] += arg1;
-                            b[9] += arg1;
-                            b[11] += arg1;
-                            b[13] += arg1;
+                            b[7] += dv;
+                            b[9] += dv;
+                            b[11] += dv;
+                            b[13] += dv;
                             SCRATCH_PTR += 22;
                             break;
                         default:
@@ -699,20 +696,20 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                 case 2:
                     while (--count != -1) {
                         gpu_OffsetTPageClutAt6And2(
-                            (s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            (s16 *)SCRATCH_PTR, du, dv, dcx, dcy);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
-                            b[1] += arg1;
-                            b[5] += arg1;
-                            b[9] += arg1;
+                            b[1] += dv;
+                            b[5] += dv;
+                            b[9] += dv;
                             SCRATCH_PTR += 10;
                             break;
                         case 1:
-                            b[1] += arg1;
-                            b[5] += arg1;
-                            b[9] += arg1;
-                            b[13] += arg1;
+                            b[1] += dv;
+                            b[5] += dv;
+                            b[9] += dv;
+                            b[13] += dv;
                             SCRATCH_PTR += 12;
                             break;
                         case 2:
@@ -720,16 +717,16 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                                1: in this layout the GT3 / GT4 offsets equal
                                the FT3 / FT4 ones (cross-jump merges the
                                copies; shared labels: score 109). */
-                            b[1] += arg1;
-                            b[5] += arg1;
-                            b[9] += arg1;
+                            b[1] += dv;
+                            b[5] += dv;
+                            b[9] += dv;
                             SCRATCH_PTR += 10;
                             break;
                         case 3:
-                            b[1] += arg1;
-                            b[5] += arg1;
-                            b[9] += arg1;
-                            b[13] += arg1;
+                            b[1] += dv;
+                            b[5] += dv;
+                            b[9] += dv;
+                            b[13] += dv;
                             SCRATCH_PTR += 12;
                             break;
                         default:
@@ -854,38 +851,38 @@ void gpu_OffsetTexPolyGT4(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     p->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
-void gpu_OffsetTPageClutAt0And4(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+void gpu_OffsetTPageClutAt0And4(s16 *prim, s16 du, s16 dv, s16 dcx, s16 dcy) {
     s16 r1;
-    r1 = gpu_OffsetTPage(a0[0], a1, a2);
-    a0[0] = r1;
-    a0[2] = gpu_OffsetClut(a0[2], a3, a4);
+    r1 = gpu_OffsetTPage(prim[0], du, dv);
+    prim[0] = r1;
+    prim[2] = gpu_OffsetClut(prim[2], dcx, dcy);
 }
 
 extern s16 gpu_OffsetTPage(s16, s16, s16);
 extern s16 gpu_OffsetClut(s16, s16, s32);
 
-void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+void gpu_OffsetTPageClutAt6And2(s16 *prim, s16 du, s16 dv, s16 dcx, s16 dcy) {
     s16 r1;
-    r1 = gpu_OffsetTPage(a0[3], a1, a2);
-    a0[3] = r1;
-    a0[1] = gpu_OffsetClut(a0[1], a3, a4);
+    r1 = gpu_OffsetTPage(prim[3], du, dv);
+    prim[3] = r1;
+    prim[1] = gpu_OffsetClut(prim[1], dcx, dcy);
 }
 
-s16 gpu_OffsetTPage(s16 a0, s16 a1, s16 a2) {
-    s32 low = (a0 & 0xF) + (a1 >> 6);
+s16 gpu_OffsetTPage(s16 tpage, s16 du, s16 dv) {
+    s32 low = (tpage & 0xF) + (du >> 6);
     s32 mid;
     low &= 0xF;
-    mid = ((a0 >> 4) & 1) + (a2 >> 8);
+    mid = ((tpage >> 4) & 1) + (dv >> 8);
     mid &= 1;
-    return (s16)(low | ((a0 & ~0x1F) | (mid << 4)));
+    return (s16)(low | ((tpage & ~0x1F) | (mid << 4)));
 }
 
-s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
-    s32 low = (a1 >> 4) + (a0 & 0x3F);
+s16 gpu_OffsetClut(s16 clut, s16 dcx, s32 dcy) {
+    s32 low = (dcx >> 4) + (clut & 0x3F);
     s32 mid;
     low &= 0x3F;
-    mid = (a2 + (((u32)(a0 << 17)) >> 23)) & 0x1FF;
-    return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
+    mid = (dcy + (((u32)(clut << 17)) >> 23)) & 0x1FF;
+    return (s16)(low | ((clut & (s16)0x8000) | (mid << 6)));
 }
 
 /* Relocates a block of pointer words in place. p[0] holds the word count in
@@ -894,7 +891,7 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
  * count in g_reloc_block_entry_tables / g_reloc_block_slot_counts [arg1], and,
  * if it was not relocated yet, turns each word's block-relative offset into an
  * address by adding the block's base. reloc_UnrelocateBlock is the inverse. */
-void reloc_RelocateBlock(s32 *p, s16 arg1) {
+void reloc_RelocateBlock(s32 *p, s16 block_id) {
     s32 *base = p;
     s32 block_header;
     s32 i;
@@ -903,8 +900,8 @@ void reloc_RelocateBlock(s32 *p, s16 arg1) {
     block_header = *p;
     *p = (block_header | 0x8000) & 0xFFFF;
     p++;
-    g_reloc_block_entry_tables[arg1] = p;
-    g_reloc_block_slot_counts[arg1] = block_header & 0x7FFF;
+    g_reloc_block_entry_tables[block_id] = p;
+    g_reloc_block_slot_counts[block_id] = block_header & 0x7FFF;
     if (!(block_header & 0x8000)) {
         n = block_header;
         for (i = 0; i < n; i++) {
@@ -913,21 +910,21 @@ void reloc_RelocateBlock(s32 *p, s16 arg1) {
     }
 }
 
-void reloc_UnrelocateBlock(s16 a0) {
+void reloc_UnrelocateBlock(s16 block_id) {
     s32 *v1;
     s32 a4;
-    s32 *a6;
+    s32 *block_base;
 
-    v1 = g_reloc_block_entry_tables[a0];
+    v1 = g_reloc_block_entry_tables[block_id];
     a4 = *(v1 - 1);
-    a6 = v1 - 1;
+    block_base = v1 - 1;
     if (a4 & 0x8000) {
         a4 = a4 & 0x7FFF;
         *(v1 - 1) = a4;
         a4 = a4 - 1;
         if (a4 != -1) {
             do {
-                *v1 -= (s32)a6;
+                *v1 -= (s32)block_base;
                 /* FAKE: `v1++; v1--;` cancellation pair adds loop-weighted refs
                    so the pointer gets $v1 and the counter $a0 (F6 cancellation
                    pair, no-new-park-categories); without it: score 13 */
@@ -940,14 +937,14 @@ void reloc_UnrelocateBlock(s16 a0) {
     }
 }
 
-void reloc_RebaseBlock(s32 a0, s32 a1) {
-    s32 *ptr = g_reloc_block_entry_tables[a0];
-    s32 count = g_reloc_block_slot_counts[a0];
-    g_reloc_block_entry_tables[a0] = (ptr = ptr + (a1 / 4));
+void reloc_RebaseBlock(s32 block_id, s32 byte_offset) {
+    s32 *ptr = g_reloc_block_entry_tables[block_id];
+    s32 count = g_reloc_block_slot_counts[block_id];
+    g_reloc_block_entry_tables[block_id] = (ptr = ptr + (byte_offset / 4));
     count--;
     if (count != -1) {
         do {
-            *ptr += a1;
+            *ptr += byte_offset;
             ptr++;
             count--;
         } while (count != -1);
@@ -962,7 +959,7 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
     s32 *base;
     s32 old_first;
     s32 count;
-    s32 *var_3;
+    s32 *offset_cursor;
     s32 dest;
     s32 entry;
     s32 size;
@@ -973,8 +970,8 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
     va_start(ap, a0);
     count = va_arg(ap, s32);
     *base = count;
-    var_3 = a0;
-    dest = (s32)base + *var_3;
+    offset_cursor = a0;
+    dest = (s32)base + *offset_cursor;
     count--;
     if (count != -1) {
         do {
@@ -987,15 +984,15 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
             count--;
             cur_off = a0[entry];
             size = a0[entry + 1];
-            *var_3 = dest - (s32)base;
-            var_3++;
+            *offset_cursor = dest - (s32)base;
+            offset_cursor++;
             size = size - cur_off;
             mem_MoveBlockRoundedUpToWords((s32)base + cur_off, dest, size);
             size = (s32)(((u32)size >> 2) * 4);
             dest += size;
         } while (count != -1);
     }
-    *var_3 = dest - (s32)base;
+    *offset_cursor = dest - (s32)base;
     return dest;
 }
 
@@ -1003,7 +1000,7 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
     /* FAKE: param alias gives the target's prologue save order
        (pointer-alias-fake-exception); base used directly: score 4 */
     s32 *b = base;
-    s32 *var_1 = b + 1;
+    s32 *offset_cursor = b + 1;
     s32 count = 0;
     s32 *dest = (s32 *)((s32)b + b[1]);
     s32 v1;
@@ -1020,14 +1017,14 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
         goto done;
     }
 
-    entries = var_1;
+    entries = offset_cursor;
     i = 0;
     do {
         if (v1 >= 0) {
             size = entries[i + 1];
             cur_off = entries[i];
-            *var_1 = (s32)dest - (s32)b;
-            var_1++;
+            *offset_cursor = (s32)dest - (s32)b;
+            offset_cursor++;
             count++;
             size = size - cur_off;
             mem_MoveBlockRoundedUpToWords((s32)b + cur_off, (s32)dest, size);
@@ -1044,7 +1041,7 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
 done:
     v1 = ret - (s32)b;
     *b = count;
-    *var_1 = v1;
+    *offset_cursor = v1;
     return ret;
 }
 
@@ -1132,7 +1129,7 @@ extern MATRIX g_gpu_flush_work_matrix;
 
 extern void gpu_DrawQueuedNodes(void);
 
-void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
+void gpu_PrepareViewAndFlushDrawQueue(u32 *ot) {
     math_RotMatrixZXY(g_gpu_flush_rotation_angles, &g_gpu_flush_work_matrix);
     MulMatrix(&g_gpu_flush_work_matrix, &g_view_camera_root_ptr->xf.mat);
     MulMatrix2(&g_view_identity_root_ptr->xf.mat, &g_gpu_flush_work_matrix);
@@ -1145,7 +1142,7 @@ void gpu_PrepareViewAndFlushDrawQueue(u32 *a0) {
     }
     math_SetLightPlaneProjection();
     *(s32 *)0x1F80001C = (s32)&g_gpu_default_primitive_handlers;
-    *(s32 *)0x1F80000C = (s32)a0;
+    *(s32 *)0x1F80000C = (s32)ot;
     if (D_800A3790 & 8) {
         *(s32 *)0x1F800010 = gpu_GetLastFogOtIndex();
     } else {
@@ -1167,15 +1164,16 @@ void gpu_FailCheckOnUnhandledPrimitiveType(void) {
     sys_StoreZeroPastScratchpadOnFailedCheck();
 }
 
-s32 node_BindFrameDataAndReserveEntryBuffer(s16 *a0, s16 a1, s32 a2) {
-    s32 v0;
-    g_node_frame_animation_context.reloc_block_id = a1;
+s32 node_BindFrameDataAndReserveEntryBuffer(
+    s16 *a0, s16 block_id, s32 entry_cursor) {
+    s32 selector;
+    g_node_frame_animation_context.reloc_block_id = block_id;
     g_node_frame_animation_context.anim_frame_count = *a0++;
     g_node_frame_animation_context.frame_data = (s32)a0;
-    g_node_frame_animation_context.frame_entries = a2;
-    v0 = resource_GetLoadedSelector();
-    g_node_frame_animation_context.resource_selector = v0;
-    switch ((s16)v0) {
+    g_node_frame_animation_context.frame_entries = entry_cursor;
+    selector = resource_GetLoadedSelector();
+    g_node_frame_animation_context.resource_selector = selector;
+    switch ((s16)selector) {
     case 7:
         g_node_frame_animation_context.frame_entry_count = 0x11;
         break;
@@ -1186,8 +1184,8 @@ s32 node_BindFrameDataAndReserveEntryBuffer(s16 *a0, s16 a1, s32 a2) {
         g_node_frame_animation_context.frame_entry_count = 0xA;
         break;
     }
-    a2 += g_node_frame_animation_context.frame_entry_count * 104;
-    return a2;
+    entry_cursor += g_node_frame_animation_context.frame_entry_count * 104;
+    return entry_cursor;
 }
 
 void node_InitFrameEntriesFromWorldTranslations(void) {

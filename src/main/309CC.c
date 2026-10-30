@@ -111,8 +111,8 @@ void node_AppendProjectedNodeToList(
 }
 
 Unk80045878Node *node_GetSlotNodeById(s32 slot_index, s32 node_id) {
-    Unk80045878Obj *base = slot_GetObject(slot_index);
-    return base->node_by_id[node_id];
+    Unk80045878Obj *slot_object = slot_GetObject(slot_index);
+    return slot_object->node_by_id[node_id];
 }
 
 void node_SetWordOnAllListedNodes(Unk80045878Node *node_cursor, s32 a1) {
