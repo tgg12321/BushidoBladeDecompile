@@ -1,0 +1,44 @@
+# Research (read-only): member naming wave var-members-rest-18 (BB2 decomp)
+
+Work tree (read from here, absolute paths): `C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b`
+(branch lanes/naming-b, == main after var-members-rest-17 landed). Do NOT edit any tracked file in
+either tree. Write ONLY main's
+`C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-members-rest-18-research.md`.
+
+Rules: read `.claude/rules/naming-bar.md` (N1-N6, step 5 `T.m=n`, Q120 RESET spelling) and
+`.claude/rules/naming-runtime-evidence.md`. A member name must be supported by EVERY read and write
+of that member in src/ (C, including pointer aliases and casts) and by the asm of any remaining
+INCLUDE_ASM body that touches the record at that offset. Never guess a role; prefer NO_NAME when
+thin; no numbers / flags / selector values in names unless they are the thing's identity. Local or
+parameter names are never evidence (N3); a landed name only points at code to re-read. The new name
+must be no member, type, macro or keyword anywhere in src/ or include/ (`git -C "<wt>" grep -w`),
+and not a new name in any other pending pairs.txt (`docs/naming/phase3/pending/*/pairs.txt`) — in
+particular not one var-locals-30 (lane naming-a) is proposing. Use `git -C "<wt>" grep -n`.
+
+Earlier results to respect (don't re-propose without NEW evidence, said in the row):
+- pending/var-members-rest-17/notes.txt NO_NAME: Unk80102778Rec.unk_4 (three per-player u8 pairs:
+  needs a layout split, not a name — at most say so), unk_F (with D_800A3140), Unk80101EC8Record
+  unk_272 / unk_27E; Func80017A44Record.field_18 / field_34 FAILed pre-apply (field_18 is a mode
+  code). Re-check each only for evidence newer than that note.
+- pending/var-members-rest-{1..16}/notes.txt NO_NAME / dropped lists.
+
+Rows to research (up to ~40; quality over count):
+1. Any `unk*` / `field_*` / `unkXX` member whose accessing function, neighbouring member, or the
+   global holding the record was named since 2026-10-29 (`git -C "<wt>" log --since=2026-10-29
+   --format="%h %s" | grep -E "naming:"` lists the recent waves; read their diffs for touched types).
+   Cite file:line for every access.
+2. Open name-audit member findings: read the `name-audit` row of
+   docs/naming/phase3/backlog.tsv for "Open (...)" items that are members and not yet landed
+   (e.g. a members-track hand-off), re-derive each, propose or NO_NAME.
+3. Then unnamed members of the most-used game types in include/game.h (Unk80101EC8Record, ScrPad,
+   Unk80102778Rec, Unk1F8002B8Rec, ...) in declaration order, where every access shows one role.
+
+Output file shape (markdown):
+- First line: tree HEAD and a summary.
+- `# candidates.csv` with a ```csv block, columns `type,member,offset,proposed_name,action,evidence`;
+  action RENAME, RESET or NO_NAME; evidence = ACCESSES (every file:line, R/W), BODY summary, WHY,
+  COUNTER-EVIDENCE, INCLUDE_ASM check, FRESH check.
+- `# notes.md`: per row, every comment / doc / symbol_addrs.txt / named_syms.txt / docs/engine line
+  citing the old token (the comment pass needs them), and tools/trace/** hits (listed only).
+
+Return a one-line summary (rows by action) and the output path.

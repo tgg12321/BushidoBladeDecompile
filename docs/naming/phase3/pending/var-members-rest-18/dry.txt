@@ -1,0 +1,659 @@
+PASS Rec44.w18=eye_distance, Rec44.h1C=turn_easing_angle, Rec44.b1E=is_far_view, Rec44.b1F=replay_view_started, Rec44.w20=eye_x, Rec44.w24=eye_y, Rec44.w28=eye_z, Rec44.h30=eye_blocking_cells, Rec1C.w0=replay_cur_move, Rec1C.h4=replay_pos_x, Rec1C.h6=replay_pos_y, Rec1C.h8=replay_pos_z, Rec1C.hA=replay_yaw_and_draw_move_set, Rec1C.hC=replay_ground_y, Rec1C.hE=replay_blend_src_frame_code, Rec1C.h10=replay_blend_dst_frame_code, Rec1C.h12=replay_pose_interp_weight, Rec1C.b14=replay_pose_bearing_offset, Rec1C.b15=replay_pose_elevation_offset, Rec1C.b16=replay_opponent_elevation_offset, Rec1C.b17=replay_move_section_bits, Rec1C.b18=replay_frame_flags, Rec1C.b19=replay_move_frame, Scr1F800000.scr60=collider_count, Scr1F800000.scr64=collider_foci, Scr1F800000.scrAC=collider_bounds, CamScratch.scr04=target_vz, CamScratch.scr28=fighter_segment_start
+decl Rec44.w18 -> eye_distance  include/game.h:1974
+decl Rec44.h1C -> turn_easing_angle  include/game.h:1975
+decl Rec44.b1E -> is_far_view  include/game.h:1976
+decl Rec44.b1F -> replay_view_started  include/game.h:1977
+decl Rec44.w20 -> eye_x  include/game.h:1978
+decl Rec44.w24 -> eye_y  include/game.h:1979
+decl Rec44.w28 -> eye_z  include/game.h:1980
+decl Rec44.h30 -> eye_blocking_cells  include/game.h:1984
+decl Rec1C.w0 -> replay_cur_move  include/game.h:2019
+decl Rec1C.h4 -> replay_pos_x  include/game.h:2020
+decl Rec1C.h6 -> replay_pos_y  include/game.h:2021
+decl Rec1C.h8 -> replay_pos_z  include/game.h:2022
+decl Rec1C.hA -> replay_yaw_and_draw_move_set  include/game.h:2023
+decl Rec1C.hC -> replay_ground_y  include/game.h:2024
+decl Rec1C.hE -> replay_blend_src_frame_code  include/game.h:2025
+decl Rec1C.h10 -> replay_blend_dst_frame_code  include/game.h:2026
+decl Rec1C.h12 -> replay_pose_interp_weight  include/game.h:2027
+decl Rec1C.b14 -> replay_pose_bearing_offset  include/game.h:2028
+decl Rec1C.b15 -> replay_pose_elevation_offset  include/game.h:2029
+decl Rec1C.b16 -> replay_opponent_elevation_offset  include/game.h:2030
+decl Rec1C.b17 -> replay_move_section_bits  include/game.h:2031
+decl Rec1C.b18 -> replay_frame_flags  include/game.h:2032
+decl Rec1C.b19 -> replay_move_frame  include/game.h:2033
+decl Scr1F800000.scr60 -> collider_count  src/main/87A0.c:25
+decl Scr1F800000.scr64 -> collider_foci  src/main/87A0.c:26
+decl Scr1F800000.scrAC -> collider_bounds  src/main/87A0.c:28
+decl CamScratch.scr04 -> target_vz  src/main/9F9C.c:438
+decl CamScratch.scr28 -> fighter_segment_start  src/main/9F9C.c:442
+  round 0: 146 member error line(s)
+    src/main/17AFC.c:4920 w20 x1
+    src/main/17AFC.c:4921 w24 x1
+    src/main/17AFC.c:4922 w28 x1
+    src/main/28708.c:1261 h4 x1
+    src/main/28708.c:1262 h8 x1
+    src/main/28708.c:1263 h6 x1
+    src/main/28708.c:1268 hA x1
+    src/main/28708.c:1271 hC x1
+    src/main/28708.c:1272 b14 x1
+    src/main/28708.c:1273 b15 x1
+    src/main/28708.c:1274 b16 x1
+    src/main/28708.c:1275 w0 x1
+    src/main/28708.c:1276 b17 x1
+    src/main/28708.c:1279 b17 x1
+    src/main/28708.c:1282 b17 x1
+    src/main/28708.c:1285 hE x1
+    src/main/28708.c:1286 h10 x1
+    src/main/28708.c:1287 h12 x1
+    src/main/28708.c:1288 b18 x1
+    src/main/28708.c:1289 b19 x1
+    src/main/28708.c:1416 hE x2
+    src/main/28708.c:1418 h10 x2
+    src/main/28708.c:1421 h12 x1
+    src/main/28708.c:1422 h4 x1
+    src/main/28708.c:1423 h6 x1
+    src/main/28708.c:1424 h8 x1
+    src/main/28708.c:1426 hA x1
+    src/main/28708.c:1428 hC x1
+    src/main/28708.c:1429 b18 x1
+    src/main/28708.c:1433 b18 x1
+    src/main/28708.c:1438 b18 x1
+    src/main/28708.c:1440 b18 x1
+    src/main/28708.c:1442 b18 x1
+    src/main/28708.c:1445 b18 x1
+    src/main/28708.c:1459 b19 x1
+    src/main/28708.c:1461 b17 x1
+    src/main/28708.c:1463 w0 x1
+    src/main/28708.c:1467 b17 x1
+    src/main/28708.c:1469 w0 x1
+    src/main/28708.c:1473 b18 x1
+    src/main/28708.c:1478 hA x1
+    src/main/2B344.c:951 w18 x1
+    src/main/2B344.c:1041 w18 x1
+    src/main/87A0.c:92 scr60 x1
+    src/main/87A0.c:440 scr60 x1
+    src/main/87A0.c:450 scrAC x1
+    src/main/87A0.c:451 scr64 x1
+    src/main/87A0.c:456 scr64 x1
+    src/main/87A0.c:461 scr64 x1
+    src/main/87A0.c:485 scr64 x1
+    src/main/87A0.c:490 scr64 x1
+    src/main/87A0.c:495 scr64 x1
+    src/main/9F9C.c:370 w18 x1
+    src/main/9F9C.c:372 w18 x1
+    src/main/9F9C.c:374 w18 x1
+    src/main/9F9C.c:488 h30 x1
+    src/main/9F9C.c:489 h30 x1
+    src/main/9F9C.c:490 h30 x1
+    src/main/9F9C.c:491 h30 x1
+    src/main/9F9C.c:492 h30 x1
+    src/main/9F9C.c:493 h30 x1
+    src/main/9F9C.c:555 w18 x2
+    src/main/9F9C.c:562 w18 x1
+    src/main/9F9C.c:563 w18 x1
+    src/main/9F9C.c:565 w18 x1
+    src/main/9F9C.c:566 w18 x1
+    src/main/9F9C.c:568 b1E x1
+    src/main/9F9C.c:569 b1E x1
+    src/main/9F9C.c:569 w18 x1
+    src/main/9F9C.c:571 b1E x1
+    src/main/9F9C.c:571 w18 x1
+    src/main/9F9C.c:573 b1E x1
+    src/main/9F9C.c:580 scr04 x1
+    src/main/9F9C.c:584 scr04 x1
+    src/main/9F9C.c:597 scr28 x1
+    src/main/9F9C.c:599 scr28 x1
+    src/main/9F9C.c:601 scr28 x1
+    src/main/9F9C.c:603 scr28 x1
+    src/main/9F9C.c:607 h30 x1
+    src/main/9F9C.c:628 scr28 x1
+    src/main/9F9C.c:659 scr28 x1
+    src/main/9F9C.c:663 h30 x1
+    src/main/9F9C.c:731 h30 x1
+    src/main/9F9C.c:732 h30 x1
+    src/main/9F9C.c:733 h30 x1
+    src/main/9F9C.c:734 h30 x1
+    src/main/9F9C.c:735 h30 x1
+    src/main/9F9C.c:736 h30 x1
+    src/main/9F9C.c:750 w18 x1
+    src/main/9F9C.c:751 b1E x1
+    src/main/9F9C.c:757 h30 x1
+    src/main/9F9C.c:758 h30 x1
+    src/main/9F9C.c:759 h30 x1
+    src/main/9F9C.c:760 h30 x1
+    src/main/9F9C.c:761 h30 x1
+    src/main/9F9C.c:762 h30 x1
+    src/main/9F9C.c:867 h1C x1
+    src/main/9F9C.c:871 h1C x1
+    src/main/9F9C.c:875 h1C x1
+    src/main/9F9C.c:878 w18 x1
+    src/main/9F9C.c:895 h1C x1
+    src/main/9F9C.c:903 b1F x1
+    src/main/9F9C.c:904 b1F x1
+    src/main/9F9C.c:928 b1F x1
+    src/main/9F9C.c:929 b1F x1
+    src/main/9F9C.c:930 h4 x2
+    src/main/9F9C.c:932 h6 x2
+    src/main/9F9C.c:934 h8 x2
+    src/main/9F9C.c:938 w18 x1
+    src/main/9F9C.c:948 h4 x2
+    src/main/9F9C.c:955 h6 x2
+    src/main/9F9C.c:962 h8 x2
+    src/main/9F9C.c:983 w18 x1
+    src/main/9F9C.c:988 w18 x1
+    src/main/9F9C.c:989 h30 x1
+    src/main/9F9C.c:990 h30 x1
+    src/main/9F9C.c:991 h30 x1
+    src/main/9F9C.c:992 h30 x1
+    src/main/9F9C.c:993 h30 x1
+    src/main/9F9C.c:994 h30 x1
+    src/main/9F9C.c:1009 h4 x2
+    src/main/9F9C.c:1010 h8 x2
+    src/main/9F9C.c:1031 h4 x2
+    src/main/9F9C.c:1032 h8 x2
+    src/main/9F9C.c:1042 w18 x1
+    src/main/9F9C.c:1065 w18 x1
+    src/main/9F9C.c:2120 w18 x3
+    src/main/9F9C.c:2126 w18 x1
+    src/main/9F9C.c:2128 w20 x1
+    src/main/9F9C.c:2129 w20 x1
+    src/main/9F9C.c:2131 h30 x1
+    src/main/9F9C.c:2132 h30 x1
+    src/main/9F9C.c:2163 w18 x3
+    src/main/9F9C.c:2165 w18 x1
+    src/main/9F9C.c:2168 w20 x1
+    src/main/9F9C.c:2169 w20 x1
+    src/main/9F9C.c:2187 h1C x1
+    src/main/9F9C.c:2425 b18 x1
+    src/main/9F9C.c:2430 b14 x1
+    src/main/9F9C.c:2431 b15 x1
+    src/main/9F9C.c:2433 b14 x1
+    src/main/9F9C.c:2434 b15 x1
+    src/main/9F9C.c:2437 b16 x1
+    src/main/9F9C.c:2438 b16 x1
+    src/main/9F9C.c:2441 b16 x1
+    src/main/9F9C.c:2442 b16 x1
+  round 1: 2 member error line(s)
+  round 2: 0 member error line(s)
+PASS Unk800FF5C8Rec.w18=eye_distance_offset
+decl Unk800FF5C8Rec.w18 -> eye_distance_offset  include/game.h:1999
+  round 0: 2 member error line(s)
+    src/main/9F9C.c:698 w18 x1
+    src/main/9F9C.c:722 w18 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1974,7 +1974,7 @@
+-    s32 w18;
+-    s16 h1C;
+-    u8 b1E;
+-    u8 b1F;
+-    s32 w20;
+-    s32 w24;
+-    s32 w28;
++    s32 eye_distance;
++    s16 turn_easing_angle;
++    u8 is_far_view;
++    u8 replay_view_started;
++    s32 eye_x;
++    s32 eye_y;
++    s32 eye_z;
+@@ -1984 +1984 @@
+-    s16 h30[2][4];
++    s16 eye_blocking_cells[2][4];
+@@ -1999 +1999 @@
+-    s32 w18;
++    s32 eye_distance_offset;
+@@ -2019,15 +2019,15 @@
+-    MoveScript *w0;
+-    s16 h4;
+-    s16 h6;
+-    s16 h8;
+-    u16 hA;
+-    s16 hC;
+-    s16 hE;
+-    s16 h10;
+-    s16 h12;
+-    s8 b14;
+-    s8 b15;
+-    s8 b16;
+-    u8 b17;
+-    u8 b18;
+-    u8 b19;
++    MoveScript *replay_cur_move;
++    s16 replay_pos_x;
++    s16 replay_pos_y;
++    s16 replay_pos_z;
++    u16 replay_yaw_and_draw_move_set;
++    s16 replay_ground_y;
++    s16 replay_blend_src_frame_code;
++    s16 replay_blend_dst_frame_code;
++    s16 replay_pose_interp_weight;
++    s8 replay_pose_bearing_offset;
++    s8 replay_pose_elevation_offset;
++    s8 replay_opponent_elevation_offset;
++    u8 replay_move_section_bits;
++    u8 replay_frame_flags;
++    u8 replay_move_frame;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -4920,3 +4920,3 @@
+-    dx = g_listener_cam->w20 - sound_position[0];
+-    dy = g_listener_cam->w24 - sound_position[1];
+-    dz = g_listener_cam->w28 - sound_position[2];
++    dx = g_listener_cam->eye_x - sound_position[0];
++    dy = g_listener_cam->eye_y - sound_position[1];
++    dz = g_listener_cam->eye_z - sound_position[2];
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1261,3 +1261,3 @@
+-    dest->h4 = a0->world_pos.x;
+-    dest->h8 = a0->world_pos.z;
+-    dest->h6 = a0->world_pos.y;
++    dest->replay_pos_x = a0->world_pos.x;
++    dest->replay_pos_z = a0->world_pos.z;
++    dest->replay_pos_y = a0->world_pos.y;
+@@ -1268,9 +1268,9 @@
+-        dest->hA = (v & 0xFFF) | (b << 12);
+-    }
+-
+-    dest->hC = a0->ground_y;
+-    dest->b14 = a0->eased_pose_bearing_offset >> 2;
+-    dest->b15 = a0->eased_pose_elevation_offset >> 2;
+-    dest->b16 = a0->opponent_elevation_offset >> 2;
+-    dest->w0 = a0->cur_move;
+-    dest->b17 = 0;
++        dest->replay_yaw_and_draw_move_set = (v & 0xFFF) | (b << 12);
++    }
++
++    dest->replay_ground_y = a0->ground_y;
++    dest->replay_pose_bearing_offset = a0->eased_pose_bearing_offset >> 2;
++    dest->replay_pose_elevation_offset = a0->eased_pose_elevation_offset >> 2;
++    dest->replay_opponent_elevation_offset = a0->opponent_elevation_offset >> 2;
++    dest->replay_cur_move = a0->cur_move;
++    dest->replay_move_section_bits = 0;
+@@ -1279 +1279 @@
+-        dest->b17 = 1;
++        dest->replay_move_section_bits = 1;
+@@ -1282,8 +1282,8 @@
+-        dest->b17 |= 2;
+-    }
+-
+-    dest->hE = a0->blend_src_frame_code;
+-    dest->h10 = a0->blend_dst_frame_code;
+-    dest->h12 = a0->pose_interp_weight;
+-    dest->b18 = a0->frame_flags;
+-    dest->b19 = a0->move_frame;
++        dest->replay_move_section_bits |= 2;
++    }
++
++    dest->replay_blend_src_frame_code = a0->blend_src_frame_code;
++    dest->replay_blend_dst_frame_code = a0->blend_dst_frame_code;
++    dest->replay_pose_interp_weight = a0->pose_interp_weight;
++    dest->replay_frame_flags = a0->frame_flags;
++    dest->replay_move_frame = a0->move_frame;
+@@ -1416 +1416 @@
+-        motion_DecodeFrame((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
++        motion_DecodeFrame((p->replay_blend_src_frame_code >> 14) & 3, p->replay_blend_src_frame_code & 0x3FFF, &work[0], sp1C0);
+@@ -1418 +1418 @@
+-            (p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
++            (p->replay_blend_dst_frame_code >> 14) & 3, p->replay_blend_dst_frame_code & 0x3FFF, &work[1], sp1C0);
+@@ -1421,4 +1421,4 @@
+-            i, (u8 *)&work[0], (u8 *)&work[1], p->h12, (MATRIX *)sp120);
+-        pos[0] = p->h4;
+-        pos[1] = p->h6;
+-        pos[2] = p->h8;
++            i, (u8 *)&work[0], (u8 *)&work[1], p->replay_pose_interp_weight, (MATRIX *)sp120);
++        pos[0] = p->replay_pos_x;
++        pos[1] = p->replay_pos_y;
++        pos[2] = p->replay_pos_z;
+@@ -1426 +1426 @@
+-        rot[1] = p->hA;
++        rot[1] = p->replay_yaw_and_draw_move_set;
+@@ -1428,2 +1428,2 @@
+-        func_80040D48(i, 1, pos, rot, 0, p->hC);
+-        if (p->b18 & 1) {
++        func_80040D48(i, 1, pos, rot, 0, p->replay_ground_y);
++        if (p->replay_frame_flags & 1) {
+@@ -1433 +1433 @@
+-        if (p->b18 & 4) {
++        if (p->replay_frame_flags & 4) {
+@@ -1438 +1438 @@
+-        if (p->b18 & 2) {
++        if (p->replay_frame_flags & 2) {
+@@ -1440,3 +1440,3 @@
+-                var_11->weapon_entry_id, i * 2, (p->b18 >> 4) & 1);
+-        }
+-        if (p->b18 & 8) {
++                var_11->weapon_entry_id, i * 2, (p->replay_frame_flags >> 4) & 1);
++        }
++        if (p->replay_frame_flags & 8) {
+@@ -1445 +1445 @@
+-                i * 2 | 1, (p->b18 >> 5) & 1);
++                i * 2 | 1, (p->replay_frame_flags >> 5) & 1);
+@@ -1459 +1459 @@
+-        var_11->move_frame = p->b19;
++        var_11->move_frame = p->replay_move_frame;
+@@ -1461 +1461 @@
+-        if (p->b17 & 1) {
++        if (p->replay_move_section_bits & 1) {
+@@ -1463 +1463 @@
+-                         .motion_entries[p->w0->motion_bank_entry_index * 2];
++                         .motion_entries[p->replay_cur_move->motion_bank_entry_index * 2];
+@@ -1467 +1467 @@
+-            temp = (p->b17 >> 1) & 1;
++            temp = (p->replay_move_section_bits >> 1) & 1;
+@@ -1469 +1469 @@
+-                         .motion_entries[p->w0->motion_bank_entry_index * 2];
++                         .motion_entries[p->replay_cur_move->motion_bank_entry_index * 2];
+@@ -1473 +1473 @@
+-        if (p->b18 & 0x40) {
++        if (p->replay_frame_flags & 0x40) {
+@@ -1478 +1478 @@
+-        gpu_QueueSlotDrawMovesForSelectedSet(i, (p->hA >> 12) & 7);
++        gpu_QueueSlotDrawMovesForSelectedSet(i, (p->replay_yaw_and_draw_move_set >> 12) & 7);
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -951 +951 @@
+-    g_camera_default_view_record.w18 = 0x2710;
++    g_camera_default_view_record.eye_distance = 0x2710;
+@@ -1041 +1041 @@
+-    g_camera_default_view_record.w18 = 0x2710;
++    g_camera_default_view_record.eye_distance = 0x2710;
+--- a/src/main/87A0.c
++++ b/src/main/87A0.c
+@@ -25,2 +25,2 @@
+-    s32 scr60;       /* 0x60 ellipsoid count */
+-    s32 scr64[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
++    s32 collider_count;       /* 0x60 ellipsoid count */
++    s32 collider_foci[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
+@@ -28 +28 @@
+-    s32 scrAC[3];
++    s32 collider_bounds[3];
+@@ -92 +92 @@
+-    SCR->scr60 = step_desc->colliders->count;
++    SCR->collider_count = step_desc->colliders->count;
+@@ -440 +440 @@
+-            for (idx = 0; idx < SCR->scr60; idx++) {
++            for (idx = 0; idx < SCR->collider_count; idx++) {
+@@ -450,2 +450,2 @@
+-                r = SCR->scrAC[idx];
+-                delta = SCR->cpos[1] - SCR->scr64[idx][1];
++                r = SCR->collider_bounds[idx];
++                delta = SCR->cpos[1] - SCR->collider_foci[idx][1];
+@@ -456 +456 @@
+-                dx0 = SCR->cpos[0] - SCR->scr64[idx][0];
++                dx0 = SCR->cpos[0] - SCR->collider_foci[idx][0];
+@@ -461 +461 @@
+-                dz0 = SCR->cpos[2] - SCR->scr64[idx][2];
++                dz0 = SCR->cpos[2] - SCR->collider_foci[idx][2];
+@@ -485 +485 @@
+-                dy1 = SCR->cpos[1] - SCR->scr64[idx][4];
++                dy1 = SCR->cpos[1] - SCR->collider_foci[idx][4];
+@@ -490 +490 @@
+-                dx1 = SCR->cpos[0] - SCR->scr64[idx][3];
++                dx1 = SCR->cpos[0] - SCR->collider_foci[idx][3];
+@@ -495 +495 @@
+-                dz1 = SCR->cpos[2] - SCR->scr64[idx][5];
++                dz1 = SCR->cpos[2] - SCR->collider_foci[idx][5];
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -370 +370 @@
+-                 ((s32)(m.m[0][2] * view_record->w18) >> 12);
++                 ((s32)(m.m[0][2] * view_record->eye_distance) >> 12);
+@@ -372 +372 @@
+-                 ((s32)(m.m[1][2] * view_record->w18) >> 12);
++                 ((s32)(m.m[1][2] * view_record->eye_distance) >> 12);
+@@ -374 +374 @@
+-                 ((s32)(m.m[2][2] * view_record->w18) >> 12);
++                 ((s32)(m.m[2][2] * view_record->eye_distance) >> 12);
+@@ -438 +438 @@
+-    s16 scr04;        /* 0x04 */
++    s16 target_vz;        /* 0x04 */
+@@ -442 +442 @@
+-    CamVec scr28;     /* 0x28 */
++    CamVec fighter_segment_start;     /* 0x28 */
+@@ -488,6 +488,6 @@
+-    view_record->h30[0][0] = 0x64;
+-    view_record->h30[0][1] = 0;
+-    view_record->h30[0][2] = 0x64;
+-    view_record->h30[1][0] = 0x64;
+-    view_record->h30[1][1] = 0;
+-    view_record->h30[1][2] = 0x64;
++    view_record->eye_blocking_cells[0][0] = 0x64;
++    view_record->eye_blocking_cells[0][1] = 0;
++    view_record->eye_blocking_cells[0][2] = 0x64;
++    view_record->eye_blocking_cells[1][0] = 0x64;
++    view_record->eye_blocking_cells[1][1] = 0;
++    view_record->eye_blocking_cells[1][2] = 0x64;
+@@ -555 +555 @@
+-    view_record->w18 += (target_distance - view_record->w18) / 12;
++    view_record->eye_distance += (target_distance - view_record->eye_distance) / 12;
+@@ -562,8 +562,8 @@
+-        view_record->w18 < 0x1770) {
+-        view_record->w18 = 0x1770;
+-    }
+-    if (view_record->w18 > 100000) {
+-        view_record->w18 = 100000;
+-    }
+-    if (view_record->b1E) {
+-        view_record->b1E = view_record->w18 >= 0x558D;
++        view_record->eye_distance < 0x1770) {
++        view_record->eye_distance = 0x1770;
++    }
++    if (view_record->eye_distance > 100000) {
++        view_record->eye_distance = 100000;
++    }
++    if (view_record->is_far_view) {
++        view_record->is_far_view = view_record->eye_distance >= 0x558D;
+@@ -571,3 +571,3 @@
+-        view_record->b1E = view_record->w18 >= 0x55F1;
+-    }
+-    func_8003F1E4(view_record->b1E);
++        view_record->is_far_view = view_record->eye_distance >= 0x55F1;
++    }
++    func_8003F1E4(view_record->is_far_view);
+@@ -580 +580 @@
+-    scr->scr04 = 0;
++    scr->target_vz = 0;
+@@ -584 +584 @@
+-        math_SignExt12Div(scr->scr04 - view_record->camera_angles.vz, 8);
++        math_SignExt12Div(scr->target_vz - view_record->camera_angles.vz, 8);
+@@ -597 +597 @@
+-            scr->scr28 = second_fighter->collision_pos;
++            scr->fighter_segment_start = second_fighter->collision_pos;
+@@ -599,3 +599,3 @@
+-            scr->scr28 = first_fighter->collision_pos;
+-        }
+-        scr->scr28.vy -= 0xC8;
++            scr->fighter_segment_start = first_fighter->collision_pos;
++        }
++        scr->fighter_segment_start.vy -= 0xC8;
+@@ -603 +603 @@
+-                (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit, scr->nrm,
++                (s32 *)&scr->fighter_segment_start, (s32 *)&scr->eye, scr->hit, scr->nrm,
+@@ -607 +607 @@
+-                view_record->h30[p], (s32 *)&scr->eye, scr->hit);
++                view_record->eye_blocking_cells[p], (s32 *)&scr->eye, scr->hit);
+@@ -628 +628 @@
+-                        (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
++                        (s32 *)&scr->fighter_segment_start, (s32 *)&scr->eye, scr->hit,
+@@ -659 +659 @@
+-                        (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
++                        (s32 *)&scr->fighter_segment_start, (s32 *)&scr->eye, scr->hit,
+@@ -663 +663 @@
+-                        view_record->h30[p], (s32 *)&scr->eye, scr->hit);
++                        view_record->eye_blocking_cells[p], (s32 *)&scr->eye, scr->hit);
+@@ -698 +698 @@
+-    g_camera_view_offset.w18 = 0;
++    g_camera_view_offset.eye_distance_offset = 0;
+@@ -722 +722 @@
+-            g_camera_view_offset.w18 = v >> 4;
++            g_camera_view_offset.eye_distance_offset = v >> 4;
+@@ -731,6 +731,6 @@
+-    g_camera_default_view_record.h30[0][0] = 0x64;
+-    g_camera_default_view_record.h30[0][1] = 0;
+-    g_camera_default_view_record.h30[0][2] = 0x64;
+-    g_camera_default_view_record.h30[1][0] = 0x64;
+-    g_camera_default_view_record.h30[1][1] = 0;
+-    g_camera_default_view_record.h30[1][2] = 0x64;
++    g_camera_default_view_record.eye_blocking_cells[0][0] = 0x64;
++    g_camera_default_view_record.eye_blocking_cells[0][1] = 0;
++    g_camera_default_view_record.eye_blocking_cells[0][2] = 0x64;
++    g_camera_default_view_record.eye_blocking_cells[1][0] = 0x64;
++    g_camera_default_view_record.eye_blocking_cells[1][1] = 0;
++    g_camera_default_view_record.eye_blocking_cells[1][2] = 0x64;
+@@ -750,2 +750,2 @@
+-    g_camera_default_view_record.w18 = 0x1388;
+-    g_camera_default_view_record.b1E = 0;
++    g_camera_default_view_record.eye_distance = 0x1388;
++    g_camera_default_view_record.is_far_view = 0;
+@@ -757,6 +757,6 @@
+-    g_camera_alternate_view_record.h30[0][0] = 0x64;
+-    g_camera_alternate_view_record.h30[0][1] = 0;
+-    g_camera_alternate_view_record.h30[0][2] = 0x64;
+-    g_camera_alternate_view_record.h30[1][0] = 0x64;
+-    g_camera_alternate_view_record.h30[1][1] = 0;
+-    g_camera_alternate_view_record.h30[1][2] = 0x64;
++    g_camera_alternate_view_record.eye_blocking_cells[0][0] = 0x64;
++    g_camera_alternate_view_record.eye_blocking_cells[0][1] = 0;
++    g_camera_alternate_view_record.eye_blocking_cells[0][2] = 0x64;
++    g_camera_alternate_view_record.eye_blocking_cells[1][0] = 0x64;
++    g_camera_alternate_view_record.eye_blocking_cells[1][1] = 0;
++    g_camera_alternate_view_record.eye_blocking_cells[1][2] = 0x64;
+@@ -867 +867 @@
+-                s32 var_12 = cam->h1C * 3;
++                s32 var_12 = cam->turn_easing_angle * 3;
+@@ -871 +871 @@
+-                cam->h1C = var_12 >> 2;
++                cam->turn_easing_angle = var_12 >> 2;
+@@ -875,4 +875,4 @@
+-            cam->h1C = 0;
+-        }
+-    }
+-    cam->w18 = 0;
++            cam->turn_easing_angle = 0;
++        }
++    }
++    cam->eye_distance = 0;
+@@ -895 +895 @@
+-        g_camera_alternate_view_record.h1C = 0x800;
++        g_camera_alternate_view_record.turn_easing_angle = 0x800;
+@@ -903,2 +903,2 @@
+-    g_camera_default_view_record.b1F = 0;
+-    g_camera_alternate_view_record.b1F = 0;
++    g_camera_default_view_record.replay_view_started = 0;
++    g_camera_alternate_view_record.replay_view_started = 0;
+@@ -928,3 +928,3 @@
+-    if (dst->b1F == 0) {
+-        dst->b1F = 1;
+-        dst->focus_point.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
++    if (dst->replay_view_started == 0) {
++        dst->replay_view_started = 1;
++        dst->focus_point.x = ((frac * (a->replay_pos_x)) + (inv_frac * (b->replay_pos_x))) >> 12;
+@@ -932 +932 @@
+-            (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
++            (((frac * (a->replay_pos_y)) + (inv_frac * (b->replay_pos_y))) >> 12) - 0x12C;
+@@ -934 +934 @@
+-        dst->focus_point.z = ((frac * a->h8) + (inv_frac * b->h8)) >> 12;
++        dst->focus_point.z = ((frac * a->replay_pos_z) + (inv_frac * b->replay_pos_z)) >> 12;
+@@ -938 +938 @@
+-        dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
++        dst->eye_distance = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
+@@ -948 +948 @@
+-    t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
++    t = ((frac * (a->replay_pos_x)) + (inv_frac * (b->replay_pos_x))) >> 12;
+@@ -955 +955 @@
+-    t = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
++    t = (((frac * (a->replay_pos_y)) + (inv_frac * (b->replay_pos_y))) >> 12) - 0x12C;
+@@ -962 +962 @@
+-    t = ((frac * (a->h8)) + (inv_frac * (b->h8))) >> 12;
++    t = ((frac * (a->replay_pos_z)) + (inv_frac * (b->replay_pos_z))) >> 12;
+@@ -983 +983 @@
+-    cur = dst->w18;
++    cur = dst->eye_distance;
+@@ -988,7 +988,7 @@
+-    dst->w18 = cur + (distance_delta >> 4);
+-    dst->h30[0][0] = 0x64;
+-    dst->h30[0][1] = 0;
+-    dst->h30[0][2] = 0x64;
+-    dst->h30[1][0] = 0x64;
+-    dst->h30[1][1] = 0;
+-    dst->h30[1][2] = 0x64;
++    dst->eye_distance = cur + (distance_delta >> 4);
++    dst->eye_blocking_cells[0][0] = 0x64;
++    dst->eye_blocking_cells[0][1] = 0;
++    dst->eye_blocking_cells[0][2] = 0x64;
++    dst->eye_blocking_cells[1][0] = 0x64;
++    dst->eye_blocking_cells[1][1] = 0;
++    dst->eye_blocking_cells[1][2] = 0x64;
+@@ -1009,2 +1009,2 @@
+-    bearing_to_other = ratan2(other_frame->h4 - followup_frame->h4,
+-                              other_frame->h8 - followup_frame->h8);
++    bearing_to_other = ratan2(other_frame->replay_pos_x - followup_frame->replay_pos_x,
++                              other_frame->replay_pos_z - followup_frame->replay_pos_z);
+@@ -1031,2 +1031,2 @@
+-        -0x200 - ratan2(other_frame->h4 - followup_frame->h4,
+-                        other_frame->h8 - followup_frame->h8));
++        -0x200 - ratan2(other_frame->replay_pos_x - followup_frame->replay_pos_x,
++                        other_frame->replay_pos_z - followup_frame->replay_pos_z));
+@@ -1042 +1042 @@
+-    g_camera_default_view_record.w18 = 0x1162;
++    g_camera_default_view_record.eye_distance = 0x1162;
+@@ -1065 +1065 @@
+-        g_camera_default_view_record.w18 = (arg1 * 3000 + diff * 8000) >> 12;
++        g_camera_default_view_record.eye_distance = (arg1 * 3000 + diff * 8000) >> 12;
+@@ -2126 +2126 @@
+-        &local.focus_point, &local.camera_angles, local.w18);
++        &local.focus_point, &local.camera_angles, local.eye_distance);
+@@ -2128,5 +2128,5 @@
+-        camera_CalcEye(&local, &view_record->w20);
+-        func_80061064(&local.camera_angles.vx, &view_record->w20);
+-    }
+-    gpu_SetCellForceBit(view_record->h30[0]);
+-    gpu_SetCellForceBit(view_record->h30[1]);
++        camera_CalcEye(&local, &view_record->eye_x);
++        func_80061064(&local.camera_angles.vx, &view_record->eye_x);
++    }
++    gpu_SetCellForceBit(view_record->eye_blocking_cells[0]);
++    gpu_SetCellForceBit(view_record->eye_blocking_cells[1]);
+@@ -2165 +2165 @@
+-        &local.focus_point, &local.camera_angles, local.w18);
++        &local.focus_point, &local.camera_angles, local.eye_distance);
+@@ -2168,2 +2168,2 @@
+-        camera_CalcEye(&local, &view_record->w20);
+-        func_80061064(&local.camera_angles.vx, &view_record->w20);
++        camera_CalcEye(&local, &view_record->eye_x);
++        func_80061064(&local.camera_angles.vx, &view_record->eye_x);
+@@ -2187 +2187 @@
+-            g_camera_alternate_view_record.h1C, a1, flags > 0);
++            g_camera_alternate_view_record.turn_easing_angle, a1, flags > 0);
+@@ -2425 +2425 @@
+-    if (!(replay_frame->b18 & 0x80)) {
++    if (!(replay_frame->replay_frame_flags & 0x80)) {
+@@ -2430,2 +2430,2 @@
+-        &first_frame->node_channels[0x15], replay_frame->b14 * 4,
+-        replay_frame->b15 * 4, 0);
++        &first_frame->node_channels[0x15], replay_frame->replay_pose_bearing_offset * 4,
++        replay_frame->replay_pose_elevation_offset * 4, 0);
+@@ -2433,2 +2433,2 @@
+-        &second_frame->node_channels[0x15], replay_frame->b14 * 4,
+-        replay_frame->b15 * 4, 0);
++        &second_frame->node_channels[0x15], replay_frame->replay_pose_bearing_offset * 4,
++        replay_frame->replay_pose_elevation_offset * 4, 0);
+@@ -2437,2 +2437,2 @@
+-        first_frame->node_channels[0x39] += replay_frame->b16 * 4;
+-        second_frame->node_channels[0x39] += replay_frame->b16 * 4;
++        first_frame->node_channels[0x39] += replay_frame->replay_opponent_elevation_offset * 4;
++        second_frame->node_channels[0x39] += replay_frame->replay_opponent_elevation_offset * 4;
+@@ -2441,2 +2441,2 @@
+-        first_frame->node_channels[0x33] += replay_frame->b16 * 4;
+-        second_frame->node_channels[0x33] += replay_frame->b16 * 4;
++        first_frame->node_channels[0x33] += replay_frame->replay_opponent_elevation_offset * 4;
++        second_frame->node_channels[0x33] += replay_frame->replay_opponent_elevation_offset * 4;
+DRY RUN: 6 file(s) would change; nothing written
+UNRESOLVED (2): edit by hand, then re-run the keycheck
+  src/main/9F9C.c:2120: also reaches `w18` through another type
+  src/main/9F9C.c:2163: also reaches `w18` through another type
+exit 1

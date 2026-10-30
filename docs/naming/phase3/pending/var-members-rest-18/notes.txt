@@ -1,0 +1,69 @@
+var-members-rest-18 -- draft notes (research re-derived by the drafter in the lane worktree ln-naming-b at 90588a549; research treated as hints only)
+
+BASIS: research tmp/var-members-rest-18-research.md, 38 rows (29 RENAME, 9 NO_NAME). Result: 29 rows in pairs.txt/member_manifest.csv, 0 DROPPED, 2 name changes (Rec1C.hA, CamScratch.scr28), 9 NO_NAME carried. The verdict column is empty (the reviewer decides). Dry run (type-resolved tools/naming_member_apply.py --dry-run, run under WSL): see dry.txt; exit 1 with two unresolved lines, see HAND EDIT. git status after the dry run shows only the new pending dir.
+
+Re-derivation
+- Every use of each member re-read in src/ and include/ (git grep of the token plus reading each site by type): Rec44 in 9F9C.c (camera_CalcEye 355-374, camera_UpdateTwoFighterView 450-690, camera_UpdateTrackedFighterView 776-880, camera_StartTurnEasingOnLargeHeadingChange, func_8001B6F4, camera_UpdateReplayView 910-995, camera_ApplyFightView/ReplayView 2105-2175), 2B344.c:946-956/1036-1046/2285-2300/2367-2373, 17AFC.c:4905-4922 (listener), 51268.c:132-134/221-290/783-786 (bound_position_src), 368E4.c:440-500/1595-1640; Rec1C in 28708.c:1255-1290/1370-1480 and 9F9C.c:910-1035/2422-2445; Scr1F800000 in 87A0.c (whole file, raw 0x1F800064/68/6C stores and var_4[0x2B]); CamScratch in 9F9C.c:422-690. No pointer alias or cast reaches these offsets beyond the ones listed in the manifest rows (&view_record->w20 as an s32 eye vector is the only one; all three of its words are named). Short tokens (w0, h4, ... b19, w18, w20...) are declared only by Rec44 / Unk800FF5C8Rec / Rec1C (grep of declarations in include/ and src/), every access of them is by those types.
+- INCLUDE_ASM: the 137 live bodies were scanned for the camera/replay/softbody globals and scratchpad addresses; the only hits are gpu emitters and gte helpers that use 0x1F800000+ as their own render overlay (0x1F800008, 0x1F800020, 0x1F8001B0, 0x1F8002B4 ...), not as CamScratch / Scr1F800000, plus D_800F6658 (func_8003F1E4's shift word, not a Rec44 member). collision_TestSegmentWithWork (43500.c:287) and softbody_* / camera_* / replay_* are C.
+- Freshness: all 29 new names have 0 hits in the whole tracked tree (git grep -w over src include asm tools symbol_addrs.txt named_syms.txt docs) and in no docs/naming/phase3/pending/*/pairs.txt of ln-naming-b or ln-naming-a (incl. var-locals-30: segment_start, saved_move_frame, hit_tag_out avoided on purpose).
+- Types defined in .c files: naming_member_apply.py handles them (decl_files = every .c/.h that holds the declaration); the dry run resolved Scr1F800000 at src/main/87A0.c:25-28 and CamScratch at src/main/9F9C.c:438-442 with no hand edit.
+
+Name changes against the research
+- Rec1C.hA: replay_yaw_and_move_set -> replay_yaw_and_draw_move_set (the packed bits are Unk80101EC8Record.draw_move_set; "move set" alone reads like cur_move).
+- CamScratch.scr28: eye_segment_start -> fighter_segment_start (the point is a fighter's collision_pos less 0xC8, the eye is the other end).
+
+DROPPED
+- none. Rows with weaker evidence, for the reviewer: Rec44.h30 eye_blocking_cells (Conf M; [p][1] / [p][3] unused, surface kind not claimed), Rec44.h1C turn_easing_angle (M; consumer's role unnamed), Rec44.b1E is_far_view (M; func_8003F1E4 unnamed), Rec1C.hC replay_ground_y (M; func_80040D48 unnamed), CamScratch.scr04 target_vz (always 0).
+
+NO_NAME rows carried (not in pairs)
+- Rec44.b40 (+0x40): single write 0 at 9F9C.c:771 (camera_InitTrackedFighterFocus); no reader (whole-record copy 9F9C.c:2122 only). Write-only, no role shown.
+- Rec44.wC / w2C / b41 / b42 / b43: declaration only (game.h:1972, 1981, 1986-1988); no access beyond the whole-record copy at 9F9C.c:2122. Padding, neutral.
+- Scr1F800000.scr18 (+0x18, s32[3]): 87A0.c:348-385 holds the transformed anchor target, 420-545 the velocity accumulator: two roles in one function (the reason for the wave21 RESET vel -> scr18).
+- Unk80102778Rec.unk_4 (u8[6]): three per-player u8 pairs in one array (17AFC.c:5736, 5823, 5869-5883, 6121, 6123; d_7D920.c); needs a layout split into three u8[2] members (types task) before names. No new evidence since rest-17 (no src change since f0403e6ed).
+- Unk80102778Rec.unk_F: copied to D_800A3140 (24BF0.c:19, 24), 9F9C.c:1224 W 0, menu_config.c:85, 143, 183; D_800A3140 read only at 17AFC.c:2200 (fighter_ResolveBoneHit 5th argument), still unnamed. No new evidence.
+- Unk80101EC8Record.unk_272: mixed writers (17AFC.c:136, 363, 366; 4510C.c:1965; 9F9C.c:2743, 2909, 3862, 4702); wait for the move_kind 0x15/0x2C/0xE/0x19 names. No new evidence.
+- Unk80101EC8Record.unk_27E: indexed with unk_272 (9F9C.c:2748, 4044); follows unk_272.
+- Func80017A44Record.field_18 / field_34: rest-17 pre-apply FAIL (field_18 is a sign-and-magnitude mode code, 87A0.c:347-386; field_34 a write-only clamped distance, 6CF8.c:~732). Unchanged at this HEAD; a mode-code name needs a fresh row with the three ranges explained.
+
+HAND EDIT (dry-run exit 1, 2 unresolved lines, both the same statement)
+- src/main/9F9C.c:2120 and 9F9C.c:2163: `local.w18 = view_record->w18 + g_camera_view_offset.w18;` reaches w18 through both Rec44 and Unk800FF5C8Rec, so the tool leaves it. At apply time hand-edit both to
+  `local.eye_distance = view_record->eye_distance + g_camera_view_offset.eye_distance_offset;`
+  then run the keycheck. The new line is over 80 columns: run `python tools/format.py src/main/9F9C.c` (token-preserving). The tool's other renames also lengthen lines (e.g. 9F9C.c:555, 9F9C.c:2437-2442); the format guard needs the formatter run on all 6 touched files (include/game.h, 17AFC.c, 28708.c, 2B344.c, 87A0.c, 9F9C.c).
+
+R6 WATCH list (comment pass must rewrite; verified at 90588a549)
+Rec44.w18 -> eye_distance:
+- src/main/9F9C.c:454 ("g_camera_default_view_record.w18 eases"), 455 ("clamps w18"), 920 ("the w18 step").
+- include/game.h:1993 (Unk800FF5C8Rec comment "camera_angles and w18").
+- symbol_addrs.txt:1980 (D_800F6620 "g_camera_default_view_record.w18: the eye's distance ..."; its "9F9C.c:430-432" cite is stale, camera_CalcEye is 9F9C.c:355-374), 1981 ("hysteresis flag on w18").
+- docs/engine/ai.md:107 ("its distance `w18` to 0x1162").
+Unk800FF5C8Rec.w18 -> eye_distance_offset:
+- symbol_addrs.txt:178 (g_camera_distance_offset "sets g_camera_view_offset.w18").
+- include/game.h:1992-1994 comment lists the fields by role (focus_point, camera_angles, "w18"): the "w18" there is the Rec44 member and the offset's own, rewrite to eye_distance / eye_distance_offset.
+Rec44.h1C -> turn_easing_angle: src/main/9F9C.c:779 ("h1C is read, decayed by 3/4").
+Rec44.b1E -> is_far_view: symbol_addrs.txt:1981 (D_800F6626 "g_camera_default_view_record.b1E"). 9F9C.c:455 "sets a hysteresis flag" names no token; symbol_addrs.txt:2158 (D_800F6627 "+1 from D_800F6626") names no member token, leave.
+Rec44.b1F -> replay_view_started: no comment hit (symbol_addrs.txt:1729 / 2158 are bare/offset lines).
+Rec44.w20 / w24 / w28 -> eye_x / eye_y / eye_z: no comment hit (symbol_addrs.txt:340 and bb2.h:321 g_listener_cam comments name no token).
+Rec44.h30 -> eye_blocking_cells:
+- include/game.h:1982-1983 ("two limit vectors; camera_UpdateTwoFighterView passes h30[p] to math_StoreFloorDiv2000XZOfPointStepTowards"): the "limit vectors" wording is wrong (each entry is a grid cell x / z written from the eye-segment hit), rewrite as the per-fighter cell of the blocked fighter-to-eye segment.
+- named_syms.txt:667-668 ("sets h30[2][4] to 0x64 / 0 pairs", "reads h30[i][0] / h30[i][2] as 32x32 grid cell coordinates").
+- symbol_addrs.txt:1982-1987 (D_800F6638 .. D_800F6644 ".h30[..][..]").
+Rec1C (15 members): include/game.h:2002-2017 block comment (w0 2009, h4 / h6 / h8 / hA 2011-2012, hC / hE / h10 / h12 2012-2013, b14..b16 2014-2015 and "reads b14..b16 / b18" at 2008, b17 2015-2016, b18 2016, b19 2016). docs/engine/motion.md:113 names only the type Rec1C (and a stale game.h:1807 cite): leave.
+Scr1F800000 scr60 / scr64 / scrAC: the declaration comments 87A0.c:25-27 ("ellipsoid count", "ellipsoid foci 0 and 1", "ellipsoid bounds") carry no old token and say "ellipsoid", which the collider_* names do not contradict; leave. No registry or doc hit. History (leave): docs/naming/phase3/m06/dry.txt:280-281, wave21 manifest/pairs (bf769cb45), var-members-rest-13 notes / member_manifest (scrAC).
+CamScratch scr04 / scr28: the declaration comments 9F9C.c:438, 442 hold only offsets and the type comment 9F9C.c:422-427 names roles without a token; leave.
+Everything else is history, leave: docs/naming/function-names.csv rows, docs/naming/phase3/d01/data_manifest.csv:22-23, memory/grind/** (layer-2 records, casts.tsv, scan files, w2b*.py probes), docs/grind/handoff-2026-09-30.md:36, docs/foundation/backlog.tsv:13, tools/mar_probe_kit.py (unrelated w18/w20/w24 tags). tools/trace/**: no hit for any old token or for Rec44 / Rec1C / CamScratch / Scr1F800000 / Unk800FF5C8Rec.
+Post-apply survival grep: `\b(w18|h1C|b1E|b1F|w20|w24|w28|h30|scr60|scr64|scrAC|scr04|scr28)\b` and the Rec1C tokens (`->|\.` + w0|h4|h6|h8|hA|hC|hE|h10|h12|b14..b19) over src/ include/ symbol_addrs.txt named_syms.txt docs/engine.
+
+PRE-APPLY (naming-reviewer 2026-10-30): 28/29 PASS. FAIL Rec44.h30=eye_blocking_cells (R4/N1:
+math_StoreFloorDiv2000XZOfPointStepTowards stores the cell of a point stepped 1024 off the segment
+hit toward a trial eye (9F9C.c:607 start pitch, :663 bisection eye), the pitch is re-chosen and eased
+after (684-688), and the sole reader gpu_SetCellForceBit only sets bit 0x8 of
+g_gpu_cell_draw_attributes; 'blocking' not shown). Dropped from pairs.txt (h30 stays; reviewer's
+suggestion segment_hit_step_cells not taken). dry.txt predates the drop: its h30 lines don't apply.
+R6 WATCH (reviewer, in addition):
+  include/game.h:1982-1983 'two limit vectors' (h30 comment) is already wrong; standing defect, h30 not renamed.
+  include/game.h:2008, 2014 'b14..b16' ranges: rewrite readably; 2009-2016 Rec1C header must still map each new name to its source member.
+  include/game.h:1991-1995 Unk800FF5C8Rec comment 'and w18' means Rec44.w18 -> eye_distance (not eye_distance_offset).
+  src/main/9F9C.c:454-455, 920 (w18), 779 (h1C): Rec44 members. 9F9C.c:427-434 CamScratch header must agree with target_vz / fighter_segment_start.
+  src/main/87A0.c:25-28 field comments 'ellipsoid count / foci / bounds' keep wave21's rejected shape claim: reword to collider/volume.
+  symbol_addrs.txt:178, 1980-1981; docs/engine/ai.md:107: check each names the right type. named_syms.txt:667-668, symbol_addrs.txt:1982-1987 (h30) unchanged.
+VERDICT CONFIRM (verifier: naming-b session 2026-10-30): 28 rows CONFIRM, pairs.txt = those 28.
