@@ -590,10 +590,10 @@
 /* otherwise set handler = collision_TestCellKeepingNearestHitGteProjection. */
 
 /* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
-/* menu_InitSelScreen saves its arg0 in g_sel_prim_buffers, passes it to */
-/* gpu_InitPrimBufferPair and stores the result in g_sel_screen_work (64FD8.c:1076-1083), */
+/* menu_InitSelScreen saves its prim_buffer_pair_addr in g_sel_prim_buffers, passes it to */
+/* gpu_InitPrimBufferPair and stores the result in g_sel_screen_work (64FD8.c:1188-1195), */
 /* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with g_row_menu_prim_buffers / g_row_menu_work_block */
-/* (596CC.c:56-74). */
+/* (596CC.c:76-91). */
 /* See each line. */
 
 /* === Fade/transition state machine (2026-05-17) -- 4 highs === */

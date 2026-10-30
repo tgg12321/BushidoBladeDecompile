@@ -78,13 +78,13 @@ Cited by function name.
 
 - `menu_LoadResourcesInitStateSelectFirstEnabledRow` sets up the menu block `g_row_menu_work_block`, clears the row index,
   steps it to the first enabled row, and sets the cursor field to 4 (its
-  caller is `InitRowMenuBlackBgResetFlow`, src/main/64FD8.c:1258).
+  caller is `InitRowMenuBlackBgResetFlow`, src/main/64FD8.c:1378).
 - `g_menu_packed_cursors` packs three cursors: bits 0-3 the row index 0..7, which skips
   rows whose bit in `g_row_menu_row_state.rows_on` is clear; bits 10-12 a cursor
   0..5; bits 13-15 a cursor 0..2.
 - `pad_StepOffsetsGetDirectionEvents` reads the pad word and returns, in its high half, 1 or 2
   for a step one way or the other.
-- `menu_UpdateRowMenu` (called from `menu_UpdateRowMenuStoreResult`, src/main/64FD8.c:1273) moves
+- `menu_UpdateRowMenu` (called from `menu_UpdateRowMenuStoreResult`, src/main/64FD8.c:1397) moves
   the row index with that result, applies the row's `opt[].mode` to
   `g_row_menu_working_record_ptr->view_setting`, and on Cross (with per-player conditions on the
   row's `state`) returns that `state`; Triangle returns -2, otherwise -1.

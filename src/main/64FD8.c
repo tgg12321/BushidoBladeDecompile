@@ -407,12 +407,12 @@ void menu_StepSelPanelSlides(void) {
     } while (i < 2);
 }
 
-/* Per-player draw of the opposed choice: the 0x2C table's sheet arg1 + 2 at
-   y = selected_grid_page[arg1] * 90 plus the direction_nudge_offsets offset,
-   two fixed sub-elements from the 0x14 table and two layered elements from the
-   0x2C table, a SetDrawMode prim after each group. Player 1 sits one
-   screen-half right; the first sheet's colour breathes with rsin of the 5-bit
-   timer selection_pulse_frames. */
+/* Per-player draw of the opposed choice: the 0x2C table's sheet player_index +
+   2 at y = selected_grid_page[player_index] * 90 plus the
+   direction_nudge_offsets offset, two fixed sub-elements from the 0x14 table
+   and two layered elements from the 0x2C table, a SetDrawMode prim after each
+   group. Player 1 sits one screen-half right; the first sheet's colour breathes
+   with rsin of the 5-bit timer selection_pulse_frames. */
 void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 player_index) {
     Unk8007352CRec s;
     Unk8009B0E0Record **tbl;
@@ -573,10 +573,10 @@ void menu_DrawSelGridCellOverlay(
 }
 
 /* Character-select grid renderer (the draw half of menu_UpdateSelGridPicks),
- * once per player per frame: arg1 = page into g_sel_grid_page_cells, arg2 =
- * pick list (-1 = cleared), arg3 = player. Draws the page frame, the page's 10
- * character cells, the picks so far and the selected_match_count_index+3 slot
- * sprites. */
+ * once per player per frame: grid_page = page into g_sel_grid_page_cells,
+ * pick_slots = pick list (-1 = cleared), player_index = player. Draws the page
+ * frame, the page's 10 character cells, the picks so far and the
+ * selected_match_count_index+3 slot sprites. */
 void menu_DrawSelGrid(Unk8006EACCRec *draw_context, s32 grid_page,
                       s16 *pick_slots, s32 player_index) {
     Unk8007352CRec s;
@@ -634,18 +634,16 @@ void menu_DrawSelGrid(Unk8006EACCRec *draw_context, s32 grid_page,
     }
     s.x = player_index * 240;
     for (i = grid_page * 10; i < grid_page * 10 + 10; i++) {
-        /* i indexes the whole table flat (arg1 * 10 + cell). */
+        /* i indexes the whole table flat (grid_page * 10 + cell). */
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
         /* The flat read through the element pointer (the target adds i * 2
          * to the hoisted table base). Subscripted instead:
          * g_sel_grid_page_cells[0][i].cell_entry at all three reads -> score 44
-         * (Q53); g_sel_grid_page_cells[arg1][i - arg1 * 10].cell_entry ->
-         * score 51;
-         * same row read once into entry, reused -> score 58.
-         * Column loop (i = 0; i < 10; i++), passing arg1 * 10 + i:
-         * g_sel_grid_page_cells[arg1][i].cell_entry at all three reads ->
-         * score 53;
-         * same column read once into entry, reused -> score 69. */
+         * (Q53); g_sel_grid_page_cells[grid_page][i - grid_page *
+         * 10].cell_entry -> score 51; same row read once into entry, reused ->
+         * score 58. Column loop (i = 0; i < 10; i++), passing grid_page * 10 +
+         * i: g_sel_grid_page_cells[grid_page][i].cell_entry at all three reads
+         * -> score 53; same column read once into entry, reused -> score 69. */
         u8 entry = ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry;
 
         if (g_sel_entry_availability_and_claims[entry] & 1) {
@@ -741,10 +739,12 @@ static inline void selgrid_StorePlaceholder(s32 pad, s16 *picks, s32 player) {
 }
 
 /* Character-select cursor / pick handler, once per player per frame.
- *   arg0 = pad bits, both players packed (player N in bits N*16)
- *   arg1 = select page into g_sel_grid_page_cells (2 columns x 5 rows per page)
- *   arg2 = this player's pick list (character ids, -1 = cleared slot)
- *   arg3 = player index (0/1) */
+ *   pressed_buttons = pressed pad bits, both players packed (player N in
+ *   bits N*16)
+ *   grid_page = select page into g_sel_grid_page_cells (2 columns x 5 rows
+ *   per page)
+ *   pick_slots = this player's pick list (character ids, -1 = cleared slot)
+ *   player_index = player (0/1) */
 void menu_UpdateSelGridPicks(
     s32 pressed_buttons, s32 grid_page, s16 *pick_slots, s32 player_index) {
     u8 *flag;
@@ -1176,8 +1176,8 @@ s32 menu_InitSelScreen(
     s32 prim_buffer_pair_addr, Unk8009BD24Block *working_record,
     s32 compacted_unlock_mask) {
     s16 sp[2] = {0, 0};
-    /* work: the entry list pointer (arg0 + 0x58), then the work area
-       gpu_InitPrimBufferPair returns (Ruling 11, Q78) */
+    /* work: the entry list pointer (prim_buffer_pair_addr + 0x58), then the
+       work area gpu_InitPrimBufferPair returns (Ruling 11, Q78) */
     void *work;
     s32 r;
     s16 t0;
