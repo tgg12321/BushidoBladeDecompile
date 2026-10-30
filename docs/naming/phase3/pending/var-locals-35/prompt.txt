@@ -1,0 +1,46 @@
+# Research (read-only): local / parameter names, wave 35 (row var-locals-35, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-34/prompt.txt` (which chains to var-locals-33 / 32 /
+31 / 30 / 29 / 26 / 15 and the wave-15..34 lessons) exactly, plus `pending/var-locals-{32,33,34}/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD 884152bf2 (read-only; equals main, wave 34 applied and its comment pass landed; 35000.c and
+  368E4.c lines moved in wave 34's reflow, so re-derive every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-35-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 34: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-34/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not
+  edited), ending with a "### LEADS for var-locals-36" section. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  1. var-locals-34's 9 CAP-CUT rows (pending/var-locals-34/notes.txt "CAP-CUT":
+     wave_SampleLastRowStepsAtCachedIndex v1 / v0 / a0 / v3, wave_MoveCellBuffer:a0,
+     gpu_LoadTimGroup:arg1, gpu_LoadTimGroupOffset arg1 / arg2 / arg3): re-derive against the
+     current source. The 368E4.c comment naming wave_SampleLastRowStepsAtCachedIndex's [v1 + 1] /
+     v1 == 17 (was 304-306 at ae91a4755) goes in this wave's comment list.
+  2. pending/var-locals-34/notes.txt "LEADS for var-locals-35" in order (368E4.c past the cap:
+     gpu_LoadTimGroupSplitOffset and the gpu_LoadTimGroupWi.. functions, snd_CopySelectedPackSectionsAndLoadVabPacks,
+     reloc_KeepSelectedEntries' `offsets` (select-flag list), func_80048744:a0, wave_Update:a0
+     spacing_error); then 3AB48.c, 43500.c, 4510C.c, 4D0A8.c and later game TUs in ROM-offset order
+     (`ls src/main`, skip psxsdk/), STOPPING BEFORE src/main/51268.c (lane naming-a's var-locals-p1
+     works 51268.c onward), with auto-named bindings (a0..a3, arg<N>, var_<N>, v0, s<N>, sp<N>,
+     temp_*) not on any NO_NAME / neutral list.
+  3. Tooling probe: softbody_CreateForNode point_count / cmds (struct-typed locals). Say whether
+     naming_keycheck.scoped_plan accepts them (run it read-only from a script under main's tmp/);
+     if it does, propose point_count -> edge_count and cmds -> params (wave-31 reviewer leads)
+     only if every use bears them out.
+- Still blocked on tooling, do not propose: resource_LoadOrReuseSelectedBlock:arg1 (ALIGN4 macro argument).
+- Left neutral on purpose, do not re-propose without new evidence: as var-locals-34's prompt and
+  its notes.txt NO_NAME list.
+- Do not re-propose wave 8-34 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,34}/notes.txt) without new evidence, said in the row.
+- Prototype parameter edits (a prototype elsewhere naming the same parameter, e.g. include/game.h)
+  go in the comment list; they land in the comment commit.
+- Lessons (unchanged from var-locals-34's prompt), plus from wave 34's R6: (a) a comment edit
+  that replaces a function name with "that function" must keep an unambiguous antecedent (R6
+  failed game.h when the nearest named function was another one); (b) when listing file:line
+  cites to re-point after a reflow, verify each was correct at base (one at :1618 was already one
+  line off and the re-point carried it forward).
