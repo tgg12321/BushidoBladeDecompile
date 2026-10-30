@@ -181,7 +181,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     }
 
     node_SetWordOnAllListedNodes(s4->projected_nodes, arg5);
-    s4->unk_1A84 = arg5;
+    s4->object_ground_y = arg5;
     softbody_SetObjectGround(s4, arg5);
     softbody_UpdateObject(s4);
     light_SetPointLightTarget(a0, (s32)s3->node.xf.mat.t);

@@ -1101,9 +1101,9 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
             for (j = 0; j < SELWORK->selected_match_count_index + 3; j++) {
                 /* flat index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
-                working_record->match_picks[i][j].bd0 =
+                working_record->match_picks[i][j].round_grid_pick =
                     g_sel_grid_page_cells[0][SELWORK->grid_pick_slots[i][j]]
-                        .unk1;
+                        .cell_pick_value;
                 working_record->match_picks[i][j].unk1 =
                     SELWORK->picked_list_entries[i][j];
             }
@@ -1806,10 +1806,10 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
     s.has_color = 0;
     s.semi = 0;
     s.x = 0;
-    s.header = g_gpu_scrolling_sprite_resources->unk_14[10];
+    s.header = g_gpu_scrolling_sprite_resources->sheet_header_list[10];
     s.y = 0;
     s.table = s.header->cells;
-    sheet_headers = g_gpu_scrolling_sprite_resources->unk_14;
+    sheet_headers = g_gpu_scrolling_sprite_resources->sheet_header_list;
     if (g_gpu_scrolling_display_frame >= 0xAAA) {
         if (g_gpu_scrolling_display_frame >= 0xB04) {
             s16 brightness;

@@ -1650,9 +1650,9 @@ s32 eff_DrawAndAdvanceJitteredBillboards(void) {
     frame_index = &base->billboard_frame_index;
     var_5 = &base->rotated_position;
     relative_position = &base->view_relative_position;
-    local_origin = &base->unk38;
-    p = &base->unk40;
-    quads_end = &base->unk44;
+    local_origin = &base->billboard_zero_vector;
+    p = &base->billboard_depth_cue;
+    quads_end = &base->billboard_quads_end;
     prim = g_eff_quad_cursor;
     gte_SetRotMatrix(g_eff_view_rotation_matrix);
     local_origin->vx = local_origin->vy = local_origin->vz = 0;

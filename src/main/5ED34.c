@@ -173,9 +173,9 @@ void gpu_LoadVramBottomStrip(Unk8006E950Head *resource_root) {
     RECT rect;
     p = GetWorkingRecord();
     if (p->grayscale) {
-        data = resource_root->unk_10;
+        data = resource_root->grayscale_bottom_strip_pixels;
     } else {
-        data = resource_root->unk_0C;
+        data = resource_root->bottom_strip_pixels;
     }
     rect.x = 0;
     rect.y = 0x1E0;
@@ -1700,7 +1700,8 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
              slot_index < 1 + g_entry_menu_init_extra_slot_count +
                               g_entry_menu_grid_phase_extra_slot_count;
              slot_index++) {
-            g_entry_menu_working_record_ptr->match_picks[slot_index][0].bd0 =
+            g_entry_menu_working_record_ptr->match_picks[slot_index][0]
+                .round_grid_pick =
                 g_entry_menu_slot_records.rec[slot_index].grid_pick;
         }
         for (slot_index = 0;

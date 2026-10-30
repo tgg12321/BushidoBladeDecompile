@@ -3414,10 +3414,11 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
                         rec->hit_record_group_6_9_intact;
                 }
             } else if (nibble == 5) {
-                rec->unk_8E = i;
+                rec->nibble5_variant_index = i;
                 if (g_fight_mode_selector != 0 || D_800A385C == 0 ||
                     fighter_index != 0) {
-                    rec->unk_90 = rec->hit_record_group_6_9_intact;
+                    rec->nibble5_variant_enabled =
+                        rec->hit_record_group_6_9_intact;
                 }
             }
         }
@@ -3428,7 +3429,7 @@ void motion_AdvanceVariantIfAtNibble4Or5Position(
     Unk80101EC8Record *fighter_record) {
     s16 a1 = fighter_record->variant_index;
     if (a1 != fighter_record->object_variant_index) {
-        if (a1 != fighter_record->unk_8E) {
+        if (a1 != fighter_record->nibble5_variant_index) {
             return;
         }
     }
@@ -3487,7 +3488,8 @@ void *motion_ResolveMoveData(
         t = rec->variant_index;
         if ((t == rec->object_variant_index &&
              rec->object_variant_enabled == 0) ||
-            (t == rec->unk_8E && rec->unk_90 == 0)) {
+            (t == rec->nibble5_variant_index &&
+             rec->nibble5_variant_enabled == 0)) {
             rec->variant_index =
                 (rec->variant_index + 1) %
                 g_motion_fighter_buffers[rec->motion_slot]->variant_count;
@@ -3502,11 +3504,13 @@ void *motion_ResolveMoveData(
             g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         if ((t == rec->object_variant_index &&
              rec->object_variant_enabled == 0) ||
-            (t == rec->unk_8E && rec->unk_90 == 0)) {
+            (t == rec->nibble5_variant_index &&
+             rec->nibble5_variant_enabled == 0)) {
             t = (t + 1) %
                 g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         } else if (g_fight_mode_selector == 3 && rec->cpu_controlled != 0 &&
-                   (t == rec->object_variant_index || t == rec->unk_8E)) {
+                   (t == rec->object_variant_index ||
+                    t == rec->nibble5_variant_index)) {
             t = (t + 1) %
                 g_motion_fighter_buffers[rec->motion_slot]->variant_count;
         }
@@ -3961,8 +3965,8 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
 
     p->object_variant_index = -1;
     p->object_variant_enabled = 0;
-    p->unk_8E = -1;
-    p->unk_90 = 0;
+    p->nibble5_variant_index = -1;
+    p->nibble5_variant_enabled = 0;
     pair_index = (g_fight_reinit_reuses_assets != 0)
                      ? g_fight_nearest_start_pair_index
                      : 0;
@@ -5448,7 +5452,8 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         fighter_index, 1, (s32 *)&fighter_record->world_pos,
         (s16 *)&fighter_record->orientation, 0, fighter_record->ground_y);
     scratchpad_Restore();
-    if (fighter_record->variant_index == fighter_record->unk_8E &&
+    if (fighter_record->variant_index ==
+            fighter_record->nibble5_variant_index &&
         (fighter_record->move_kind == 0x15 ||
          fighter_record->move_kind == 0x19 ||
          fighter_record->move_kind == 0x1A ||

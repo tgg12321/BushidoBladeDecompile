@@ -149,7 +149,7 @@ typedef struct {
  * unk1 flat. Data: unk1 is 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). */
 typedef struct {
     u8 cell_entry;
-    u8 unk1;
+    u8 cell_pick_value;
 } Unk8009BCF8Record;
 
 /* The 0x2C-byte record gpu_InitPrimBufferPair fills, two at a time (596CC /
@@ -282,8 +282,8 @@ typedef struct {
     Unk8005C2A8Pack *sound_pack;
     s32 free_ram_start;
     s32 vram_image_pixels;
-    s32 unk_0C;
-    s32 unk_10;
+    s32 bottom_strip_pixels;
+    s32 grayscale_bottom_strip_pixels;
 } Unk8006E950Head;
 
 /* STAFF.BIN (resource file 0x5F), the root 64FD8's InitScrollingSpriteDisplay
@@ -294,7 +294,7 @@ typedef struct {
  * onward while the next entry is not -1. */
 typedef struct {
     Unk8006E950Head resource_head;
-    Unk8009B0E0Record *unk_14[0];
+    Unk8009B0E0Record *sheet_header_list[0];
 } Unk80078824Rec;
 
 /* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's rect_rows
@@ -515,7 +515,7 @@ typedef struct {
    gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0).
    Unk8009BD24Block.match_picks. */
 typedef struct {
-    u8 bd0;
+    u8 round_grid_pick;
     u8 unk1;
 } Unk8009BD24Record;
 
@@ -1086,9 +1086,9 @@ typedef struct {
     s32 billboard_frame_index;     /* frame */
     VECTOR rotated_position;       /* ApplyRotMatrixLV out */
     VECTOR view_relative_position; /* ApplyRotMatrixLV in */
-    SVECTOR unk38;                 /* RotTransPers in */
-    s32 unk40;                     /* RotTransPers' p */
-    POLY_FT4 *unk44;               /* the end of the quads */
+    SVECTOR billboard_zero_vector; /* RotTransPers in */
+    s32 billboard_depth_cue;       /* RotTransPers' p */
+    POLY_FT4 *billboard_quads_end; /* the end of the quads */
     u32 quad_ot_index_table[16];   /* per kept quad, its OT index */
 } Unk1F8000B8_800646E8;
 
@@ -1652,8 +1652,8 @@ typedef struct Unk80101EC8Record {
     /* != 0: the second blade (prev_second_weapon_points / SPAD
      * second_weapon_points points) is live */
     s16 wielded_object_live_state;
-    s16 unk_8E;
-    s16 unk_90;
+    s16 nibble5_variant_index;
+    s16 nibble5_variant_enabled;
     s16 weapon_live_state;
     s16 falling_backward;
     s16 is_defeated;
@@ -2310,7 +2310,7 @@ typedef struct Unk80045878Obj {
     MATRIX *node_matrix_ptrs[20];        /* +0x1994 */
     u8 pad19E4[0x50];                    /* +0x19E4 */
     Unk80045878Node *node_by_id[20];     /* +0x1A34 */
-    s16 unk_1A84;                        /* +0x1A84 */
+    s16 object_ground_y;                 /* +0x1A84 */
     u8 pad1A86[2];                       /* +0x1A86 */
 } Unk80045878Obj;                        /* 0x1A88 */
 

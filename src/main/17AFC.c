@@ -140,7 +140,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 8:
     case 9:
         fighter_record->hit_record_group_6_9_intact = 0;
-        fighter_record->unk_90 = 0;
+        fighter_record->nibble5_variant_enabled = 0;
         fighter_record->object_variant_enabled = 0;
         break;
     case 10:
@@ -277,7 +277,7 @@ void fighter_DispatchBoneHitSoundEvent(
     other_record = ptr->other;
     {
         s16 current_variant = other_record->variant_index;
-        s16 f8E = other_record->unk_8E;
+        s16 f8E = other_record->nibble5_variant_index;
 
         if (current_variant == f8E) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -594,7 +594,7 @@ s32 fighter_ResolveBoneHit(
             fighter_record->hit_record_group_6_9_intact = 0;
         }
         fighter_record->pending_move_event = 4;
-        fighter_record->unk_90 = 0;
+        fighter_record->nibble5_variant_enabled = 0;
         fight_RecordReplayEventAndDispatchSoundOrEffect(
             fighter_index, 3, hit_point, 0);
         fighter_TryDropQueuedHeadAtBone(fighter_record);

@@ -958,7 +958,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
                 }
                 s.has_color = 0;
             }
-            c = g_working_record.match_picks[j][i].bd0;
+            c = g_working_record.match_picks[j][i].round_grid_pick;
             if (c >= 12) {
                 c -= 2;
             }
@@ -973,7 +973,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             }
             s.sprt_out = cur;
             cur = gpu_AddSpriteCells(&s);
-            if (g_working_record.match_picks[j][i].bd0 == 8) {
+            if (g_working_record.match_picks[j][i].round_grid_pick == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
                 cur = gpu_AddSpriteCells(&s);
@@ -1539,7 +1539,7 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     s.y = (D_8009B850[flagged_position_index & 0x7FFF] & 0x7F) + 0x2A;
     if (flagged_position_index & 0x8000) {
         s.header = &D_8009B7AC[0];
-    } else if (g_working_record.match_picks[0][0].bd0 < 0xC) {
+    } else if (g_working_record.match_picks[0][0].round_grid_pick < 0xC) {
         s.header = &D_8009B7AC[1];
     } else {
         s.header = &D_8009B7AC[2];

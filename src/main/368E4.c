@@ -1993,7 +1993,7 @@ void node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
             /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
             slot_transform_node->node.xf.mat = obj->node.xf.mat;
-            val58 = slot_obj->unk_1A84;
+            val58 = slot_obj->object_ground_y;
         }
         {
             void **list = g_draw_queue_cursor;
@@ -2098,7 +2098,7 @@ void node_QueueTableEntryNodePairUnderSlotNode(s32 arg0, s32 arg1, s32 arg2) {
        the g_draw_queue_cursor reload above the node's stores (score 17). */
     {
         s32 *p58 = &obj->unk58;
-        *p58 = slot_obj->unk_1A84;
+        *p58 = slot_obj->object_ground_y;
     }
     list = g_draw_queue_cursor;
     g_draw_queue_cursor = list + 1;
