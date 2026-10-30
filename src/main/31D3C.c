@@ -162,16 +162,16 @@ void node_SetMatrixFromNegatedRot(Unk80101DF0Record *node) {
 
 void gpu_LoadRequestedAvailableTimGroupsForSlot(
     s32 slot_index, s32 asset_index, s32 tim_group_request, s32 tim_groups) {
-    s32 mask_table;
+    s32 load_mask;
     s32 bit;
     s32 i;
 
     if ((u32)slot_index >= 2) {
         return;
     }
-    mask_table = g_gpu_asset_tim_group_load_masks[asset_index];
+    load_mask = g_gpu_asset_tim_group_load_masks[asset_index];
     for (bit = 0x10, i = 0; i < 5; bit >>= 1, i++) {
-        if (!(mask_table & bit) || !(tim_group_request & bit)) {
+        if (!(load_mask & bit) || !(tim_group_request & bit)) {
             continue;
         }
         switch (slot_index) {

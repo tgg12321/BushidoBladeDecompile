@@ -251,28 +251,28 @@ extern s32 D_800A3240;
 extern char D_8001528C[];
 
 s32 ndata_ReadChecked(s32 ndata_index, s32 dest_addr) {
-    s32 size;
+    s32 var_0;
     s32 len;
 
-    size = dest_addr - (s32)arena_GetBase();
-    if (size >= 0 && size < arena_GetSize()) {
+    var_0 = dest_addr - (s32)arena_GetBase();
+    if (var_0 >= 0 && var_0 < arena_GetSize()) {
         if (D_800A3240 != 0) {
-            size = g_ndata_inf[ndata_index].length_sectors << 11;
+            var_0 = g_ndata_inf[ndata_index].length_sectors << 11;
         } else {
-            size = 0;
+            var_0 = 0;
         }
         len = arena_GetFreeSize();
-        if (len < size) {
-            printf(D_8001528C, ndata_index, size - len);
+        if (len < var_0) {
+            printf(D_8001528C, ndata_index, var_0 - len);
             while (1) {
                 func_800164F8();
             }
         }
     } else {
-        size = g_ndata_inf[ndata_index].length_sectors << 11;
+        var_0 = g_ndata_inf[ndata_index].length_sectors << 11;
     }
     ndata_Read(ndata_index, dest_addr);
-    return size;
+    return var_0;
 }
 
 extern s32 arena_GetFreeSize(void);
@@ -639,7 +639,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     s16 sp108[32];
     s32 *p;
     s32 *block_base;
-    s32 last;
+    s32 first_section_addr;
     s32 prev;
     s32 end_addr;
     s32 tim_groups;
@@ -660,7 +660,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     ndata_ReadIndexInRangeSelectedByFlag(
         entry_category, selection_index, (s32)block_base);
 
-    last = (s32)block_base + (((u32)block_base[1] >> 2) << 2);
+    first_section_addr = (s32)block_base + (((u32)block_base[1] >> 2) << 2);
     n = block_base[0];
     tim_groups = (s32)block_base + (((u32)block_base[n] >> 2) << 2);
     if (n >= 3) {
@@ -732,11 +732,13 @@ void resource_LoadSelectedEntriesTexturesAndSound(
 
     if (staging_addr != 0) {
         dst = (s32 *)((s32)p + 4);
-        end_addr = reloc_CopySelectedEntries(last, dst, select_flags);
+        end_addr =
+            reloc_CopySelectedEntries(first_section_addr, dst, select_flags);
         reloc_RelocateBlock(dst, 6);
     } else {
-        end_addr = reloc_KeepSelectedEntries((s32 *)last, select_flags);
-        reloc_RelocateBlock((s32 *)last, 6);
+        end_addr =
+            reloc_KeepSelectedEntries((s32 *)first_section_addr, select_flags);
+        reloc_RelocateBlock((s32 *)first_section_addr, 6);
     }
     arena_UpdatePeak(end_addr);
 

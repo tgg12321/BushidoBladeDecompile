@@ -243,14 +243,14 @@ void sys_Panic(void) {
 void eff_ClearInitFlag(void) { g_eff_initialized = 0; }
 
 void eff_Init(void) {
-    s32 size;
+    s32 end_addr;
 
     if (g_eff_initialized != 0) {
         return;
     }
-    size = eff_LoadImagesAndSetup(0x801D8800, 0x8010E800);
-    printf(g_str_eff_init, 0x8010E800, size);
-    if (0xA000 < size) {
+    end_addr = eff_LoadImagesAndSetup(0x801D8800, 0x8010E800);
+    printf(g_str_eff_init, 0x8010E800, end_addr);
+    if (0xA000 < end_addr) {
         sys_Panic();
     }
     g_eff_initialized = 1;

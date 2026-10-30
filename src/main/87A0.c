@@ -137,7 +137,7 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
      * knight takes `distance = SquareRoot0(distance)` (Q51); a fresh root
      * local: score 7 */
     /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
-    s32 sum_sq;
+    s32 var_3;
     s32 scale;
 
     gte_SetRotMatrix(arg0->object_matrix);
@@ -152,15 +152,15 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *softbody) {
     dz = arg0->object_matrix->t[2] - softbody->matrix.t[2];
     SCR->dpos[2] = dz;
 
-    sum_sq = (dx * dx) + (dy * dy) + (dz * dz);
+    var_3 = (dx * dx) + (dy * dy) + (dz * dz);
 
-    if (sum_sq > 250000) {
+    if (var_3 > 250000) {
         scale = 0x100;
-    } else if (sum_sq < 0) {
+    } else if (var_3 < 0) {
         scale = 0;
     } else {
-        sum_sq = softbody_Sqrt(sum_sq);
-        scale = ((sum_sq << 6) / 500) + 0xC0;
+        var_3 = softbody_Sqrt(var_3);
+        scale = ((var_3 << 6) / 500) + 0xC0;
     }
     SCR->dpos[0] = (SCR->dpos[0] * scale) >> 1;
     SCR->dpos[1] = (SCR->dpos[1] * scale) >> 1;

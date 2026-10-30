@@ -418,19 +418,19 @@ void math_TransposeMatrixInPlace(MATRIX *matrix) {
 }
 
 void math_Rotate2D(s32 *a0, s32 *a1, s32 angle) {
-    s16 sin_val, cos_val;
+    s16 cosine, sine;
     s32 x, y;
-    s32 sin_x, cos_x, sin_y, cos_y;
-    sin_val = Judge[(angle + 0x400) & 0xFFF];
+    s32 x_cosine, x_sine, y_cosine, y_sine;
+    cosine = Judge[(angle + 0x400) & 0xFFF];
     x = *a0;
-    cos_val = Judge[angle & 0xFFF];
+    sine = Judge[angle & 0xFFF];
     y = *a1;
-    sin_x = sin_val * x;
-    cos_x = cos_val * x;
-    sin_y = sin_val * y;
-    cos_y = cos_val * y;
-    *a1 = (cos_x + sin_y) >> 12;
-    *a0 = (sin_x - cos_y) >> 12;
+    x_cosine = cosine * x;
+    x_sine = sine * x;
+    y_cosine = cosine * y;
+    y_sine = sine * y;
+    *a1 = (x_sine + y_cosine) >> 12;
+    *a0 = (x_cosine - y_sine) >> 12;
 }
 
 void math_MatrixToAnglesYXZ(MATRIX *matrix, SVECTOR *angles) {
@@ -962,7 +962,7 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
     s32 *offset_cursor;
     s32 dest;
     s32 entry;
-    s32 size;
+    s32 var_6;
     va_list ap;
 
     base = a0;
@@ -983,13 +983,13 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
             }
             count--;
             cur_off = a0[entry];
-            size = a0[entry + 1];
+            var_6 = a0[entry + 1];
             *offset_cursor = dest - (s32)base;
             offset_cursor++;
-            size = size - cur_off;
-            mem_MoveBlockRoundedUpToWords((s32)base + cur_off, dest, size);
-            size = (s32)(((u32)size >> 2) * 4);
-            dest += size;
+            var_6 = var_6 - cur_off;
+            mem_MoveBlockRoundedUpToWords((s32)base + cur_off, dest, var_6);
+            var_6 = (s32)(((u32)var_6 >> 2) * 4);
+            dest += var_6;
         } while (count != -1);
     }
     *offset_cursor = dest - (s32)base;
@@ -1005,7 +1005,7 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *select_cursor) {
     s32 *dest = (s32 *)((s32)b + b[1]);
     s32 v1;
     s32 *entries;
-    s32 size;
+    s32 var_6;
     s32 cur_off;
     s32 ret;
     s32 i;
@@ -1021,16 +1021,16 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *select_cursor) {
     i = 0;
     do {
         if (v1 >= 0) {
-            size = entries[i + 1];
+            var_6 = entries[i + 1];
             cur_off = entries[i];
             *offset_cursor = (s32)dest - (s32)b;
             offset_cursor++;
             count++;
-            size = size - cur_off;
-            mem_MoveBlockRoundedUpToWords((s32)b + cur_off, (s32)dest, size);
-            size = (u32)size >> 2;
-            size = size << 2;
-            dest = (s32 *)((s32)dest + size);
+            var_6 = var_6 - cur_off;
+            mem_MoveBlockRoundedUpToWords((s32)b + cur_off, (s32)dest, var_6);
+            var_6 = (u32)var_6 >> 2;
+            var_6 = var_6 << 2;
+            dest = (s32 *)((s32)dest + var_6);
         }
         i++;
         v1 = *select_cursor;
@@ -1056,7 +1056,7 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *select_flags) {
     s32 count;
     s32 *src_ptr;
     s32 start;
-    s32 size;
+    s32 var_10;
 
     select_cursor = select_flags;
     count = 0;
@@ -1087,15 +1087,16 @@ s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *select_flags) {
         src_ptr = (s32 *)src_base;
         do {
             if (val >= 0) {
-                size = src_ptr[1];
+                var_10 = src_ptr[1];
                 start = *src_ptr;
                 *dest_arr = data_ptr - (s32)orig_dest;
                 dest_arr++;
-                size = size - start;
-                mem_MoveBlockRoundedUpToWords(src_orig + start, data_ptr, size);
-                size = (u32)size >> 2;
-                size = size << 2;
-                data_ptr += size;
+                var_10 = var_10 - start;
+                mem_MoveBlockRoundedUpToWords(
+                    src_orig + start, data_ptr, var_10);
+                var_10 = (u32)var_10 >> 2;
+                var_10 = var_10 << 2;
+                data_ptr += var_10;
             }
             src_ptr++;
             val = *select_cursor;

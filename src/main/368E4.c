@@ -1075,7 +1075,7 @@ void gpu_LoadTimGroup(u32 *p, s32 group_index) {
             s16 image_y;
             s16 clut_x;
             s16 clut_y;
-            s32 first;
+            s32 tim_addr;
             word = *p;
             p = (u32 *)(((s32)p) + 4);
             image_x = (s16)(*((u16 *)p));
@@ -1086,10 +1086,10 @@ void gpu_LoadTimGroup(u32 *p, s32 group_index) {
             p = (u32 *)(((s32)p) + 2);
             new_var = image_x;
             new_var2 = word >> 2;
-            first = saved + (new_var2 << 2);
+            tim_addr = saved + (new_var2 << 2);
             clut_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            gpu_LoadTim(first, new_var, image_y, clut_x, clut_y);
+            gpu_LoadTim(tim_addr, new_var, image_y, clut_x, clut_y);
         } while ((count--) != 0);
     }
 }

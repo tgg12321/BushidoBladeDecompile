@@ -404,9 +404,9 @@ void math_StoreFloorDiv2000XZOfPointStepTowards(
         gte_Lzc(dist_sq, &sp_tmp);
         {
             /* Ruling 4 split; one expression: score 3. */
-            s32 lzc_even = -2;
-            lzc_even &= sp_tmp;
-            shift_a = 0x16 - lzc_even;
+            s32 var_7 = -2;
+            var_7 &= sp_tmp;
+            shift_a = 0x16 - var_7;
         }
         shift_b = shift_a >> 1;
         distance = (((u32)((u8)(g_sqrt_table_u8[dist_sq >> shift_a]))) << 16) >>
@@ -3792,7 +3792,7 @@ void fight_SearchRadialFlatSurfacePointOrUseStartPositionPair(
 
 void fight_PickRandomStartPositionExcludingNearestAndFarthest(
     s32 arg0, s32 *position_out, s32 *other_position) {
-    s32 dists[4];
+    s32 dist_sq[4];
     s32 picks[2];
     s16 *base;
     s32 dx;
@@ -3806,27 +3806,27 @@ void fight_PickRandomStartPositionExcludingNearestAndFarthest(
     for (i = 0; i < 4; i++) {
         dx = base[i * 6 + 3] - other_position[0];
         dz = base[i * 6 + 5] - other_position[2];
-        dists[i] = dx * dx + dz * dz;
+        dist_sq[i] = dx * dx + dz * dz;
     }
 
     best = 0;
     for (i = 1; i < 4; i++) {
-        if (dists[i] < dists[best]) {
+        if (dist_sq[i] < dist_sq[best]) {
             best = i;
         }
     }
-    dists[best] = -1;
+    dist_sq[best] = -1;
 
     best = 0;
     for (i = 1; i < 4; i++) {
-        if (dists[i] > dists[best]) {
+        if (dist_sq[i] > dist_sq[best]) {
             best = i;
         }
     }
-    dists[best] = -1;
+    dist_sq[best] = -1;
 
     for (i = 0, j = 0; i < 4; i++) {
-        if (dists[i] != -1) {
+        if (dist_sq[i] != -1) {
             picks[j++] = i;
         }
     }
@@ -3840,25 +3840,25 @@ void fight_PickRandomStartPositionExcludingNearestAndFarthest(
 s32 fight_FindNearestStartPair(Vec3i32 *position) {
     s16 *p;
     s32 i;
-    s32 best_dist;
+    s32 best_dist_sq;
     s32 best;
     s32 x;
     s32 z;
     s32 dx;
     s32 dz;
-    s32 dist;
+    s32 dist_sq;
 
     p = fight_GetStartPositionPairTable();
-    best_dist = 0x7FFFFFFF;
+    best_dist_sq = 0x7FFFFFFF;
     x = position->x;
     z = position->z;
     p += g_fight_stage_index * 24;
     for (i = 0; i < 4; i++) {
         dx = (p[i * 6 + 0] + p[i * 6 + 3]) / 2 - x;
         dz = (p[i * 6 + 2] + p[i * 6 + 5]) / 2 - z;
-        dist = dx * dx + dz * dz;
-        if (dist < best_dist) {
-            best_dist = dist;
+        dist_sq = dx * dx + dz * dz;
+        if (dist_sq < best_dist_sq) {
+            best_dist_sq = dist_sq;
             best = i;
         }
     }
@@ -4451,8 +4451,8 @@ void fighter_HandleMissingSupportWhileDescending(
     s32 src[4];
     s32 dst[4];
     s32 out[4];
-    s16 offsets[4];
-    s16 offsets2[4];
+    s16 var_3[4];
+    s16 second_hit_normal[4];
     s32 s1;
     s32 dx_delta;
     s32 dz_delta;
@@ -4475,17 +4475,17 @@ void fighter_HandleMissingSupportWhileDescending(
     dst[0] = fighter_record->collision_pos.vx;
     dst[1] = fighter_record->collision_pos.vy + 0x514;
     dst[2] = fighter_record->collision_pos.vz;
-    s1 = collision_TestSegmentWithWork(src, dst, out, offsets, scratchpad);
+    s1 = collision_TestSegmentWithWork(src, dst, out, var_3, scratchpad);
     support_response_needed = 1;
     if (s1 != 0) {
         if (out[1] - src[1] > 0x190) {
             support_response_needed = fighter_record->move_kind != 0x22;
-        } else if (offsets[1] >= -0x7FF) {
-            dst[0] += offsets[0] / 8;
-            dst[2] += offsets[2] / 8;
+        } else if (var_3[1] >= -0x7FF) {
+            dst[0] += var_3[0] / 8;
+            dst[2] += var_3[2] / 8;
             support_response_needed =
                 collision_TestSegmentWithWork(
-                    src, dst, out, offsets2, scratchpad) == 0;
+                    src, dst, out, second_hit_normal, scratchpad) == 0;
         } else {
             support_response_needed = 0;
         }
@@ -4494,28 +4494,27 @@ void fighter_HandleMissingSupportWhileDescending(
         return;
     }
     if (s1 == 0) {
-        offsets[0] = fighter_record->collision_pos.vx -
-                     fighter_record->prev_collision_pos.vx;
-        offsets[2] = fighter_record->collision_pos.vz -
-                     fighter_record->prev_collision_pos.vz;
-        if (offsets[0] < -0x40) {
-            offsets[0] = -0x40;
-        } else if (offsets[0] > 0x40) {
-            offsets[0] = 0x40;
+        var_3[0] = fighter_record->collision_pos.vx -
+                   fighter_record->prev_collision_pos.vx;
+        var_3[2] = fighter_record->collision_pos.vz -
+                   fighter_record->prev_collision_pos.vz;
+        if (var_3[0] < -0x40) {
+            var_3[0] = -0x40;
+        } else if (var_3[0] > 0x40) {
+            var_3[0] = 0x40;
         }
-        if (offsets[2] < -0x40) {
-            offsets[2] = -0x40;
-        } else if (offsets[2] > 0x40) {
-            offsets[2] = 0x40;
+        if (var_3[2] < -0x40) {
+            var_3[2] = -0x40;
+        } else if (var_3[2] > 0x40) {
+            var_3[2] = 0x40;
         }
-        dx_delta = offsets[0];
-        dz_delta = offsets[2];
+        dx_delta = var_3[0];
+        dz_delta = var_3[2];
     } else {
-        dx_delta = offsets[0] / 64;
-        dz_delta = offsets[2] / 64;
+        dx_delta = var_3[0] / 64;
+        dz_delta = var_3[2] / 64;
     }
-    s1 = (fighter_record->orientation.vy - ratan2(offsets[0], offsets[2])) &
-         0xFFF;
+    s1 = (fighter_record->orientation.vy - ratan2(var_3[0], var_3[2])) & 0xFFF;
     if (s1 >= 0x800) {
         s1 = 0x1000 - s1;
     }

@@ -1508,10 +1508,10 @@ void fighter_GetNavCornerPoint(
 void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
                              NavPolySet *nav_set, s32 target_x, s32 target_z) {
     CpuRoute detour_routes[2];
-    s16 ofs0_x;
-    s16 ofs0_z;
-    s16 ofs1_x;
-    s16 ofs1_z;
+    s16 start_corner_x;
+    s16 start_corner_z;
+    s16 end_corner_x;
+    s16 end_corner_z;
     s32 var_5;
     s32 var_6;
     s16 backward_point_x;
@@ -1587,16 +1587,17 @@ void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
             var_29 = poly->vtx[i];
             ax = var_29[0];
             az = var_29[1];
-            fighter_GetNavCornerPoint(poly, i, &ofs0_x, &ofs0_z);
+            fighter_GetNavCornerPoint(
+                poly, i, &start_corner_x, &start_corner_z);
             var_29 = poly->vtx[next];
             bx = var_29[0];
             bz = var_29[1];
-            fighter_GetNavCornerPoint(poly, next, &ofs1_x, &ofs1_z);
+            fighter_GetNavCornerPoint(poly, next, &end_corner_x, &end_corner_z);
             if (backward_active && !backward_crosses_edge) {
-                if ((backward_point_x != ofs0_x ||
-                     backward_point_z != ofs0_z) &&
-                    (backward_point_x != ofs1_x ||
-                     backward_point_z != ofs1_z)) {
+                if ((backward_point_x != start_corner_x ||
+                     backward_point_z != start_corner_z) &&
+                    (backward_point_x != end_corner_x ||
+                     backward_point_z != end_corner_z)) {
                     if (math_IntersectSegments(
                             backward_point_x, backward_point_z, target_x,
                             target_z, ax, az, bx, bz, &var_5, &var_6)) {
@@ -1605,8 +1606,10 @@ void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
                 }
             }
             if (forward_active && !forward_crosses_edge) {
-                if ((forward_point_x != ofs0_x || forward_point_z != ofs0_z) &&
-                    (forward_point_x != ofs1_x || forward_point_z != ofs1_z)) {
+                if ((forward_point_x != start_corner_x ||
+                     forward_point_z != start_corner_z) &&
+                    (forward_point_x != end_corner_x ||
+                     forward_point_z != end_corner_z)) {
                     if (math_IntersectSegments(
                             forward_point_x, forward_point_z, target_x,
                             target_z, ax, az, bx, bz, &var_5, &var_6)) {

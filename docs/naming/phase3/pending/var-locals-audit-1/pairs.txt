@@ -29,7 +29,6 @@ eff_Init:size=end_addr
 fighter_CastWeaponSegment:hlen=var_11
 snd_QueuePositionalSound:lzc_even=var_12
 gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:step=var_1
-gpu_DrawPackedComparisonRowsAndTotals:digit=var_4
 softbody_PrepareStep:sum_sq=var_3
 math_StoreFloorDiv2000XZOfPointStepTowards:lzc_even=var_7
 fighter_HandleMissingSupportWhileDescending:offsets=var_3

@@ -374,7 +374,7 @@ static inline s32 fighter_ResolveBoneHitTail(
 
 s32 fighter_ResolveBoneHit(
     s32 arg0, Unk80101EC8Record *fighter_record, s32 hit_record_index,
-    s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
+    s32 heading_difference, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: var_0, var_1: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
      * directly: score 78 (Ruling 12) */
@@ -555,7 +555,8 @@ s32 fighter_ResolveBoneHit(
     switch (hit_record_index) {
     case 0:
         if (flag) {
-            fighter_record->pending_move_event = thresh > 0x400 ? 6 : 9;
+            fighter_record->pending_move_event =
+                heading_difference > 0x400 ? 6 : 9;
             fighter_StoreBoneLocalVectorAndArmEventTrigger(
                 fighter_record, hit_record_index, vec);
             fighter_TryDropQueuedHeadAtBone(fighter_record);
@@ -567,7 +568,8 @@ s32 fighter_ResolveBoneHit(
     case 2:
     case 3:
         if (flag) {
-            fighter_record->pending_move_event = thresh > 0x400 ? 7 : 9;
+            fighter_record->pending_move_event =
+                heading_difference > 0x400 ? 7 : 9;
             fighter_StoreBoneLocalVectorAndArmEventTrigger(
                 fighter_record, hit_record_index, vec);
             fighter_TryDropQueuedHeadAtBone(fighter_record);
@@ -581,7 +583,7 @@ s32 fighter_ResolveBoneHit(
             return fighter_ResolveBoneHitTail(
                 arg0, var_0, fighter_record, fighter_index, hit_point);
         }
-        fighter_record->pending_move_event = thresh > 0x400 ? 8 : 9;
+        fighter_record->pending_move_event = heading_difference > 0x400 ? 8 : 9;
         fighter_StoreBoneLocalVectorAndArmEventTrigger(
             fighter_record, hit_record_index, vec);
         fighter_TryDropQueuedHeadAtBone(fighter_record);
@@ -1596,7 +1598,7 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
     /* temp: the squared horizontal length, then the segment length
      * (Ruling 11) */
     s32 temp;
-    s32 hlen;
+    s32 var_11;
     /* FAKE: two values -- the first gte_Lzc input copy of `temp`, then the
      * g_sqrt_table_u8 byte; calling gte_Lzc(temp, ...) directly: score 2
      * (Ruling 11, Q28) */
@@ -1627,7 +1629,7 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
     }
     temp2 = temp;
     if ((u32)temp < 0x400) {
-        hlen = (u32)g_sqrt_table_u8[temp] >> 3;
+        var_11 = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
         gte_Lzc(temp2, &sp_tmp);
         {
@@ -1636,10 +1638,10 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
             lz &= sp_tmp;
             shift = 0x16 - lz;
             temp2 = g_sqrt_table_u8[(u32)temp >> shift];
-            hlen = (u32)(temp2 << 16) >> (0x13 - ((u32)shift >> 1));
+            var_11 = (u32)(temp2 << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
-    scr->unkF8.vx = -ratan2(dy, hlen);
+    scr->unkF8.vx = -ratan2(dy, var_11);
     scr->unkF8.vy = ratan2(dx, dz);
     scr->unkF8.vz = 0;
     if (suppress_effects == 0) {
@@ -4940,12 +4942,12 @@ void snd_QueuePositionalSound(s32 sound_index, s32 *sound_position) {
             gte_Lzc(dist_sq, &sp_tmp);
             {
                 /* Ruling 4 split; one expression: score 3. */
-                u32 lzc_even = (u32)-2;
+                u32 var_12 = (u32)-2;
                 u32 shift;
                 u32 idx;
                 u32 hi;
-                lzc_even &= sp_tmp;
-                shift = 0x16 - lzc_even;
+                var_12 &= sp_tmp;
+                shift = 0x16 - var_12;
                 idx = dist_sq >> shift;
                 /* Halve the table-index shift for the result scale. */
                 shift = shift >> 1;

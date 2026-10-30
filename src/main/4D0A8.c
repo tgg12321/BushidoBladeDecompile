@@ -468,7 +468,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     s16 var_2[3];
     TILE *tile;
     s32 cur;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 76 (Q129). */
@@ -486,7 +486,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
     s.semi = 0;
     s.header = &D_8009B398[0];
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg2 + sizeof(Unk8005D814Rec);
     for (i = 0; i < 3; i++) {
         s.table = &g_gpu_time_field_cells[i];
@@ -619,8 +619,8 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg2;
 }
 
@@ -633,7 +633,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     s16 d[2];
     TILE *tile;
     s32 cur;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 53 (Q129). */
@@ -648,7 +648,7 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
     s.semi = 0;
     s.header = &D_8009B398[1];
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg2 + sizeof(Unk8005D814Rec);
     s.ot_idx = ot_index;
     for (i = 0; i < 2; i++) {
@@ -737,8 +737,8 @@ s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(
             break;
         }
     }
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg2;
 }
 
@@ -788,7 +788,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     TILE *tile;
     s32 cur;
     s32 ft4_out_addr;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk8005E54CRec) directly:
      * score 75 (Q129). */
@@ -812,7 +812,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     s.y = 0;
     cur = arg1 + sizeof(draw_chunk->chunk_tiles);
     ft4_out_addr = (s32)draw_chunk->chunk_textured_quads;
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg1 + sizeof(Unk8005E54CRec);
     s.ot_idx = ot_index;
     for (i = 0; i < 2; i++) {
@@ -929,13 +929,13 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
             cur = gpu_AddSpriteCells(&s);
         }
     }
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B524, 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B524, 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     /* The second DR_MODE goes at the record's end, past the size this function
      * returns (2B344 fight_UpdateMatchTallyPresentation advances its cursor
      * g_prim_buf_cursor by that size; 6CF8 gpu_DrawDisplayModeOnLocalOtAndSync
      * ignores it). */
-    mode_off++;
+    dr_mode++;
 
     s.ot_idx = ot_index;
     higher_score_match_counts[0] = higher_score_match_counts[1] = 0;
@@ -1056,8 +1056,8 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     tile->h = 1;
     SetSemiTrans(tile, 0);
     AddPrim(g_gpu_ot_ptr + ot_index, tile);
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009ADB4, 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009ADB4, 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg1;
 }
 
@@ -1074,7 +1074,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     s16 d[3];
     TILE *tile;
     s32 cur;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
      * score 97 (Q129). */
@@ -1097,7 +1097,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     s.semi = 0;
     tile = draw_chunk->chunk_tiles;
     cur = arg2 + sizeof(draw_chunk->chunk_tiles);
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg2 + sizeof(Unk8005D814Rec);
     s.ot_idx = ot_index;
     for (mark_group_index = 0; mark_group_index < 2; mark_group_index++) {
@@ -1127,12 +1127,12 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             }
         }
     }
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B5A0[0], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B5A0[0], 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     /* The second DR_MODE goes at the record's end, past the size this function
      * returns (its caller, 9F9C fight_UpdateModeDisplaysAndMatchProgress,
      * advances its cursor g_prim_buf_cursor by that size). */
-    mode_off++;
+    dr_mode++;
 
     s.has_color = 0;
     s.y = 0;
@@ -1244,8 +1244,8 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);
     }
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[1], 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(&D_8009B398[1], 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg2;
 }
 
@@ -1327,7 +1327,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     RECT *draw_clip;
     GpuDb *gpu_db;
     s32 cur;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     POLY_G4 *gradient_quad_cursor;
     DR_AREA *area;
     /* FAKE: the returned size is computed as the chunk end minus its start
@@ -1341,7 +1341,7 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
     u8 c;
 
     cur = arg0;
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     gradient_quad_cursor = draw_chunk->chunk_gradient_quads;
     area = draw_chunk->chunk_draw_areas;
     end_off = arg0 + sizeof(Unk8005FC9CRec);
@@ -1422,8 +1422,8 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 ot_index) {
         }
         side_index++;
     } while (side_index < 2);
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(D_8009B698, 0x20), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(D_8009B698, 0x20), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     if (off <= 0x140) {
         g_gpu_split_wipe_frame++;
     }
@@ -1442,7 +1442,7 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
     Unk8007352CRec s;
     s16 d[2];
     Unk800600C8Rec *draw_chunk = (Unk800600C8Rec *)arg1;
-    DR_MODE *mode_off = &draw_chunk->chunk_draw_mode;
+    DR_MODE *dr_mode = &draw_chunk->chunk_draw_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk800600C8Rec) directly:
      * score 20 (Q129). */
@@ -1480,8 +1480,8 @@ s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(
             break;
         }
     }
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(D_8009B6F0, 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(D_8009B6F0, 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg1;
 }
 
@@ -1526,12 +1526,12 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     s16 flagged_position_index, s32 arg1, s32 ot_index) {
     Unk8007352CRec s;
     Unk80060414Rec *sprite_chunk = (Unk80060414Rec *)arg1;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     /* FAKE: the returned size is computed as the chunk end minus its start
      * (end_off - arg1); returning sizeof(Unk80060414Rec) directly:
      * score 22 (Q129). */
     s32 end_off;
-    mode_off = &sprite_chunk->chunk_draw_mode;
+    dr_mode = &sprite_chunk->chunk_draw_mode;
     end_off = arg1 + sizeof(Unk80060414Rec);
     s.has_color = 0;
     s.semi = 0;
@@ -1548,8 +1548,8 @@ s32 gpu_DrawSpriteAtPackedTablePosition(
     s.table = &D_800A328C;
     s.sprt_out = (s32)&sprite_chunk->chunk_sprite;
     gpu_AddSpriteCells(&s);
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg1;
 }
 
@@ -1575,13 +1575,13 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
     s32 cur;
     Unk8009B0E0Record *p0;
     Unk8009B400Record *p1;
-    DR_MODE *mode_off;
+    DR_MODE *dr_mode;
     cur = arg0;
     ft4_out_addr = (s32)draw_chunk->chunk_textured_quads;
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = ot_index;
-    mode_off = &draw_chunk->chunk_draw_mode;
+    dr_mode = &draw_chunk->chunk_draw_mode;
     end_off = arg0 + sizeof(Unk80060544Rec);
     s.scale_x = 0x200;
     s.scale_y = 0x100;
@@ -1630,8 +1630,8 @@ s32 gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells(
         tinted_draw_count += 1;
         p0++;
     } while (tinted_draw_count < 2);
-    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
-    AddPrim(g_gpu_ot_ptr + ot_index, mode_off);
+    SetDrawMode(dr_mode, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
+    AddPrim(g_gpu_ot_ptr + ot_index, dr_mode);
     return end_off - arg0;
 }
 

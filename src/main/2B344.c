@@ -1527,7 +1527,7 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     s32 move_depth, s32 move_count, DR_MOVE (*arg2)[2], s32 depth_span_limit,
     s32 link_last_depth_entry) {
     s32 limit;
-    s32 step;
+    s32 var_1;
     DR_MOVE *pkt;
     s32 i;
 
@@ -1540,23 +1540,23 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     }
 
     if (g_gpu_grid_and_fog_control & 1) {
-        step = g_gpu_latched_fog_depth_span;
+        var_1 = g_gpu_latched_fog_depth_span;
     } else {
         if (func_8003F268() == 0) {
-            step = 0x6590 - move_depth;
+            var_1 = 0x6590 - move_depth;
         } else {
-            step = 0x55F0 - move_depth;
+            var_1 = 0x55F0 - move_depth;
         }
     }
 
-    if (step < 0) {
+    if (var_1 < 0) {
         return;
     }
 
-    if ((u32)depth_span_limit < (u32)step) {
-        step = (s32)((u32)depth_span_limit / (u32)move_count);
+    if ((u32)depth_span_limit < (u32)var_1) {
+        var_1 = (s32)((u32)depth_span_limit / (u32)move_count);
     } else {
-        step = step / move_count;
+        var_1 = var_1 / move_count;
     }
 
     pkt += g_gpu_presented_frame_count & 1;
@@ -1570,7 +1570,7 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
                 g_gpu_last_fog_ot_index = idx;
             }
         }
-        move_depth += step;
+        move_depth += var_1;
     }
 
     if (link_last_depth_entry != 0) {
@@ -1664,7 +1664,7 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             s32 green;
                             /* the source blue, weighted, then blended in
                              * place */
-                            s32 b_src;
+                            s32 blue;
                             src++;
                             /* FAKE: r_src / g_src reused for the far-colour
                              * term (r * factor, g * factor) between the
@@ -1679,13 +1679,13 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             g_src = g * factor;
                             sum = var_23 + g_src;
                             g_src = sum >> 10;
-                            b_src = ((u32)px >> 7) & 0xF8;
-                            b_src = b_src * (0x1000 - factor);
-                            sum = b_src + b * factor;
-                            b_src = sum >> 5;
+                            blue = ((u32)px >> 7) & 0xF8;
+                            blue = blue * (0x1000 - factor);
+                            sum = blue + b * factor;
+                            blue = sum >> 5;
                             green = g_src & 0x3E0;
                             *dst = (pixel & 0x8000) | r_src | green |
-                                   (b_src & 0x7C00);
+                                   (blue & 0x7C00);
                         }
                     }
                     dst++;
