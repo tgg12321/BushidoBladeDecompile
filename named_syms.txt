@@ -664,8 +664,8 @@
 
 /* === g_camera_alternate_view_record (Rec44) record fields (2026-05-17) -- 9 highs === */
 /* camera_InitTrackedFighterFocus (9F9C.c:747-750) copies a fighter's bone_hit_point_0 position */
-/* into g_camera_alternate_view_record and sets h30[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
-/* reads h30[i][0] / h30[i][2] as 32x32 grid cell coordinates. */
+/* into g_camera_alternate_view_record and sets forced_cell_coordinates[2][4] to 0x64 / 0 pairs; gpu_SetCellForceBit */
+/* reads forced_cell_coordinates[i][0] / [i][2] as 32x32 grid cell coordinates. */
 
 /* === Ground/arena init cluster (2026-05-17) -- 14 highs === */
 /* From code6cac.c:1067 gnd_init_8001B294(p1_char_ptr, p2_char_ptr). */

@@ -14,7 +14,7 @@ extern void AddPrim(void *, void *);
  * (duplicated-statement-into-arms) carries its FAKE label inline. */
 /* Q65: this file's statics (.sbss), in address order. g_sel_offset_steps: one
  * {s16, s16} pair per player, passed to pad_StepOffsetsGetDirectionEvents
- * beside SelWork f40[player]. */
+ * beside SelWork direction_nudge_offsets[player]. */
 static s16 g_sel_offset_steps[2][2];
 static Unk8006E49CRec *g_sel_prim_buffers;
 static s8 g_sel_sheet_code_column_cursor;
@@ -406,10 +406,11 @@ void menu_StepSelPanelSlides(void) {
 }
 
 /* Per-player draw of the opposed choice: the 0x2C table's sheet arg1 + 2 at
-   y = f68[arg1] * 90 plus the f40 offset, two fixed sub-elements from the 0x14
-   table and two layered elements from the 0x2C table, a SetDrawMode prim after
-   each group. Player 1 sits one screen-half right; the first sheet's colour
-   breathes with rsin of the 5-bit timer at 0x34. */
+   y = selected_grid_page[arg1] * 90 plus the direction_nudge_offsets offset,
+   two fixed sub-elements from the 0x14 table and two layered elements from the
+   0x2C table, a SetDrawMode prim after each group. Player 1 sits one
+   screen-half right; the first sheet's colour breathes with rsin of the 5-bit
+   timer selection_pulse_frames. */
 void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
     Unk8007352CRec s;
     Unk8009B0E0Record **tbl;
@@ -571,7 +572,8 @@ void menu_DrawSelGridCellOverlay(
 /* Character-select grid renderer (the draw half of menu_UpdateSelGridPicks),
  * once per player per frame: arg1 = page into g_sel_grid_page_cells, arg2 =
  * pick list (-1 = cleared), arg3 = player. Draws the page frame, the page's 10
- * character cells, the picks so far and the f65+3 slot sprites. */
+ * character cells, the picks so far and the selected_match_count_index+3 slot
+ * sprites. */
 void menu_DrawSelGrid(
     Unk8006EACCRec *draw_context, s32 arg1, s16 *arg2, s32 arg3) {
     Unk8007352CRec s;
@@ -1063,9 +1065,10 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 }
 
-/* Select-screen fade-out: raises SELWORK->f36 by 8 per frame and, once it
- * reaches 0xFF, fills the result record at SELWORK->f00. Draws the full-screen
- * TILE with f36 as its colour. */
+/* Select-screen fade-out: raises SELWORK->selection_fade_shade by 8 per frame
+ * and, once it reaches 0xFF, fills the result record at
+ * SELWORK->sel_result_record. Draws the full-screen TILE with
+ * selection_fade_shade as its colour. */
 s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *draw_context) {
     TILE *p;
     Unk8009BD24Block *working_record;

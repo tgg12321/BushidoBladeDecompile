@@ -353,11 +353,12 @@ typedef struct {
 } Unk8006EA28Rec;
 
 /* D_SEL.BIN (resource file 6), the root 64FD8's menu_InitSelScreen loads at its
- * work area + 0x58 and keeps in SelWork.f04 (menu_StepSelScreen hands it to the
- * handlers as Unk8006EACCRec.resource_root). After the head: unk_14..unk_38,
- * the ten lists menu_RelocateSelLists relocates, each a list of sprite sheets
- * (pick_slot_sheets is indexed by SelWork.f65); row_tile_rects, the rectangle
- * rows menu_DrawSelRowTiles draws.
+ * work area + 0x58 and keeps in SelWork.sel_resource_table (menu_StepSelScreen
+ * hands it to the handlers as Unk8006EACCRec.resource_root). After the head:
+ * unk_14..unk_38, the ten lists menu_RelocateSelLists relocates, each a list of
+ * sprite sheets (pick_slot_sheets is indexed by
+ * SelWork.selected_match_count_index); row_tile_rects, the rectangle rows
+ * menu_DrawSelRowTiles draws.
  */
 typedef struct {
     Unk8006E950Head resource_head;
@@ -533,8 +534,8 @@ typedef struct {
    64FD8 hands to menu_LoadResourcesInitStateSelectFirstEnabledRow /
    InitDisplayStateLoadPackAndSetEntryFlags / menu_InitSelScreen, whose callees
    reach every field off that one base (596CC g_row_menu_working_record_ptr,
-   5ED34 g_entry_menu_working_record_ptr, SelWork.f00). Bit fields are named by
-   bit offset until named.
+   5ED34 g_entry_menu_working_record_ptr, SelWork.sel_result_record). Bit fields
+   are named by bit offset until named.
    - unk14_*: the word at +0x14. fight_mode (`& 0xF`;
    menu_UpdateRowMenuStoreResult stores it), stage_index (6 bits),
    match_count_index (the round count - 3; also picks the results-screen
@@ -574,18 +575,24 @@ typedef struct {
 
 /* The select-screen work area g_sel_screen_work points at (menu_InitSelScreen
  * places it at the end of the buffers gpu_InitPrimBufferPair lays out).
- * Two-element arrays are per player. Per player, f48 is a list of f60 entries
- * with cursor f5C; confirming moves the entry under the cursor to f7E[f3C++],
- * cancelling moves f7E[--f3C] back into f48 in sorted order; f6A holds the
- * picked entries menu_FadeOutSelAndWriteResult reports. f00 is the result
- * record menu_FadeOutSelAndWriteResult writes; f04 is the resource table the
- * select draw functions receive as draw_context[0] (menu_StepSelScreen passes
- * it as the first word of that context). f10, f14, f1C and f20 are per-player
- * s16 pairs the code also accesses as one word (union word views, Q33/Q46):
- * menu_HandleSelPhase0CursorInput and menu_HandleSelOpposedChoice read f10
- * whole, menu_RunSelPhases reads f14 whole, menu_InitSelScreen clears f1C / f20
- * whole (menu_UpdateSelGridPicks reads and writes their halves). The s32
- * members make the struct 4-aligned: sizeof is 0x94 (members end at 0x92; Q57).
+ * Two-element arrays are per player. Per player, remaining_list_entries is a
+ * list of remaining_list_count entries with cursor remaining_list_cursor;
+ * confirming moves the entry under the cursor to picked_list_entries[f3C++],
+ * cancelling moves picked_list_entries[--f3C] back into
+ * remaining_list_entries in sorted order; grid_pick_slots holds the grid slots
+ * menu_FadeOutSelAndWriteResult reports (the slot at f3C holds the hovered
+ * preview). sel_result_record is the result
+ * record menu_FadeOutSelAndWriteResult writes; sel_resource_table is the
+ * resource table the select draw functions receive as draw_context[0]
+ * (menu_StepSelScreen passes it as the first word of that context).
+ * panel_slide_state, selection_phase, grid_cursor_column and grid_cursor_row
+ * are per-player s16 pairs the code also accesses as one word (union word
+ * views, Q33/Q46): menu_HandleSelPhase0CursorInput and
+ * menu_HandleSelOpposedChoice read panel_slide_state whole, menu_RunSelPhases
+ * reads selection_phase whole, menu_InitSelScreen clears grid_cursor_column /
+ * grid_cursor_row whole (menu_UpdateSelGridPicks reads and writes their
+ * halves). The s32 members make the struct 4-aligned: sizeof is 0x94 (members
+ * end at 0x92; Q57).
  */
 typedef struct {
     Unk8009BD24Block *sel_result_record;
@@ -802,18 +809,22 @@ typedef struct {
 
 /* The file motion_LoadFighterData loads into g_motion_fighter_buffers[slot]
  * (slot = rec+0x4A, the load slot fighter_AssignMotionSlotAndScanDataIdNibbles
- * sets; fighters with the same model id share it). f14 is the modulus
+ * sets; fighters with the same model id share it). variant_count is the modulus
  * motion_AdvanceVariantIfAtNibble4Or5Position / motion_ResolveMoveData wrap
  * rec+0x86 with. The u16 fields at +0x4E are indices into
  * g_motion_fighter_sections[slot].move_scripts as motion_ResolveMoveData reads:
- * f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4), f54[rec+0x86][t]
- * (id 0x7FF3), and f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16
- * (motion_GetCommonScriptAtFighterBufferOffset) and f18[character_data_index]
+ * variant_move_script_index[rec+0x84] (id 0x7FF0) /
+ * variant_move_script_index[rec+0x86] (ids 0x7FF1/2/4),
+ * next_variant_move_script_index[rec+0x86][t] (id 0x7FF3), and
+ * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). common_move_script_index
+ * (motion_GetCommonScriptAtFighterBufferOffset) and
+ * common_move_script_index_by_character[character_data_index]
  * (motion_GetCommonScriptAtFighterBufferIndexedOffset;
  * Unk80101EC8Record.character_data_index, 0..26 as g_fight_config_id_data_rows
  * holds and as the [27][6] tables g_fighter_base_move_frame_steps /
- * g_fighter_base_powers are sized; 27 halfwords end exactly at f4E) are indices
- * into g_motion_common_sections.move_scripts; both readers load them with lhu.
+ * g_fighter_base_powers are sized; 27 halfwords end exactly at
+ * variant_move_script_index) are indices into
+ * g_motion_common_sections.move_scripts; both readers load them with lhu.
  */
 typedef struct {
     u8 pad00[3];
@@ -838,11 +849,13 @@ typedef struct {
  * g_motion_common_sections for the common file (motion_LoadCommonData:
  * move_scripts = file + 0x14, the others file + its header words 1 / 2 / 4;
  * cpu_script_table unset). move_scripts: halfword streams
- * motion_ResolveMoveData indexes (the f4E / f54 / f66 / f16 / f18 entries);
- * motion_entries: 4-byte entries whose second halfword offsets
- * motion_metadata_base (fighter_StartMoveScript, replay_PlayFrame);
- * cpu_script_table: fighter_InitCpuControl's table; motion_bitstream:
- * motion_InitStream's motion bitstream. */
+ * motion_ResolveMoveData indexes (the variant_move_script_index /
+ * next_variant_move_script_index / f66 / common_move_script_index /
+ * common_move_script_index_by_character entries); motion_entries: 4-byte
+ * entries whose second halfword offsets motion_metadata_base
+ * (fighter_StartMoveScript, replay_PlayFrame); cpu_script_table:
+ * fighter_InitCpuControl's table; motion_bitstream: motion_InitStream's motion
+ * bitstream. */
 typedef struct Unk801027B0Rec {
     u16 *move_scripts;
     u16 *motion_entries;
@@ -1981,7 +1994,7 @@ typedef struct Rec44 {
     s32 w2C;
     /* per-fighter grid cell coordinates written by
      * math_StoreFloorDiv2000XZOfPointStepTowards (camera_UpdateTwoFighterView
-     * passes h30[p]) */
+     * passes forced_cell_coordinates[p]) */
     s16 forced_cell_coordinates[2][4];
     u8 b40;
     u8 b41;
@@ -2594,7 +2607,8 @@ typedef struct {
  * (menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads,
  * menu_SetExclusiveRowBit, menu_HandleRowBitInput); menu_HandleRowBitInput and
  * menu_DrawKeyConfigRowBitsGetEmptyRowSides also test the pair as one word (==
- * 0x50005: both 5), as SelWork's f1C / f20. No code touches the other bytes. */
+ * 0x50005: both 5), as SelWork's grid_cursor_column / grid_cursor_row. No code
+ * touches the other bytes. */
 typedef struct {
     u8 pad00[0xC];
     s16 menu_draw_offsets[2];

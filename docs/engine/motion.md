@@ -29,9 +29,9 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 `motion_ResolveMoveData(rec, id, is_common_out)` (src/main/9F9C.c:3454) turns a move id into a
 `MoveScript *`:
 
-- ids 0x7FF0..0x7FFF select through the character file's tables (`f4E`,
-  `f54`, `f66` of `g_motion_fighter_buffers[rec->motion_slot]`) using the record's cycling index
-  `variant_index` (wrapped by `f14`; for some ids it skips the entries `object_variant_index` /
+- ids 0x7FF0..0x7FFF select through the character file's tables (`variant_move_script_index`,
+  `next_variant_move_script_index`, `f66` of `g_motion_fighter_buffers[rec->motion_slot]`) using the record's cycling index
+  `variant_index` (wrapped by `variant_count`; for some ids it skips the entries `object_variant_index` /
   `unk_8E` while their flags `object_variant_enabled` / `unk_90` are clear);
 - other ids with bit 15 set index the character file's streams (the
   opponent's when `borrow_other_motion` is set);

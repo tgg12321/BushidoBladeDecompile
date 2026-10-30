@@ -1913,8 +1913,8 @@ D_80101FA4 = 0x80101FA4; /* D_80101EC8[0].unk_D8.y */  /* data-wave 2026-10-09: 
 D_80101FA8 = 0x80101FA8; /* D_80101EC8[0].unk_D8.z */  /* data-wave 2026-10-09: was g_char_world_pos_z */
 D_80101FC0 = 0x80101FC0; /* D_80101EC8[0].unk_F4.y */  /* data-wave 2026-10-09: was g_char_stored_pos_y */
 D_80101F12 = 0x80101F12; /* +0x4A of D_80101EC8[0] (s16): load slot of the record's motion_data_id in g_motion_fighter_loaded_data_ids (fighter_AssignMotionSlotAndScanDataIdNibbles); indexes g_motion_fighter_buffers */  /* data-wave 2026-10-08: was g_char_id */
-D_80101F4C = 0x80101F4C; /* +0x84 of D_80101EC8[0] (s16): set at record setup; row of the loaded block's f4E table and the reset value of variant_index */  /* data-wave 2026-10-08: was g_char_curr_keyframe_idx */
-D_80101F4E = 0x80101F4E; /* +0x86 of D_80101EC8[0]: advances on its own modulo f14 (motion_AdvanceVariantIfAtNibble4Or5Position / motion_ResolveMoveData) */  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx */
+D_80101F4C = 0x80101F4C; /* +0x84 of D_80101EC8[0] (s16): set at record setup; row of the loaded block's variant_move_script_index table and the reset value of variant_index */  /* data-wave 2026-10-08: was g_char_curr_keyframe_idx */
+D_80101F4E = 0x80101F4E; /* +0x86 of D_80101EC8[0]: advances on its own modulo variant_count (motion_AdvanceVariantIfAtNibble4Or5Position / motion_ResolveMoveData) */  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx */
 _svm_voice_plus_0x6 = 0x800F4E1E; /* +0x04 -- counter (max 0x7FFF) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_4 */  /* alias of _svm_voice+0x6 (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h); retire with _SsVmFlush */
 g_bitstream_delta_accumulators = 0x800A3D40; /* 24-byte stride per slot; 3 s32 + 6 s16 layout; delta-decoder state: bitstream_InitDeltaAccumulator points it at a bit stream, bitstream_AccumulateDeltas accumulates into it */  /* data-wave 2026-10-08: was g_sleep_menu_cursor_state_table */
 g_gpu_draw_move_packets = 0x800A9830; /* bank 0 of ten DR_MOVE packets (240 bytes), picked by frame parity for gpu_AddDrawMove */  /* data-wave 2026-10-08: was g_shadow_record_a_table_240 */
@@ -1979,12 +1979,12 @@ D_800F661A = 0x800F661A; /* g_camera_default_view_record.camera_angles.vy: the Y
 D_800F661C = 0x800F661C; /* g_camera_default_view_record.camera_angles.vz: the Z rotation camera_CalcEye applies (9F9C.c:429); written 0 */  /* data-wave 2026-10-08: was g_gnd_misc_counter */
 D_800F6620 = 0x800F6620; /* g_camera_default_view_record.eye_distance: the eye's distance from focus_point in camera_CalcEye (9F9C.c:355-374) */  /* data-wave 2026-10-08: was g_gnd_round_time_max */
 D_800F6626 = 0x800F6626; /* g_camera_default_view_record.is_far_view: hysteresis flag on eye_distance, recomputed by camera_UpdateTwoFighterView on every call and passed to func_8003F1E4 (9F9C.c:569-574) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag */
-D_800F6638 = 0x800F6638; /* g_camera_default_view_record.h30[0][0]: a cell x (gpu_SetCellForceBit's column); 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_a_max */
-D_800F663A = 0x800F663A; /* g_camera_default_view_record.h30[0][1]: written 0, read only by camera_ApplyFightView's whole-record copy */  /* data-wave 2026-10-08: was g_gnd_gauge_a_cur */
-D_800F663C = 0x800F663C; /* g_camera_default_view_record.h30[0][2]: a cell z (gpu_SetCellForceBit's row); 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_b_max */
-D_800F6640 = 0x800F6640; /* g_camera_default_view_record.h30[1][0]: a cell x; 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_c_max */
-D_800F6642 = 0x800F6642; /* g_camera_default_view_record.h30[1][1]: written 0, read only by camera_ApplyFightView's whole-record copy */  /* data-wave 2026-10-08: was g_gnd_gauge_c_cur */
-D_800F6644 = 0x800F6644; /* g_camera_default_view_record.h30[1][2]: a cell z; 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_d_max */
+D_800F6638 = 0x800F6638; /* g_camera_default_view_record.forced_cell_coordinates[0][0]: a cell x (gpu_SetCellForceBit's column); 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_a_max */
+D_800F663A = 0x800F663A; /* g_camera_default_view_record.forced_cell_coordinates[0][1]: written 0, read only by camera_ApplyFightView's whole-record copy */  /* data-wave 2026-10-08: was g_gnd_gauge_a_cur */
+D_800F663C = 0x800F663C; /* g_camera_default_view_record.forced_cell_coordinates[0][2]: a cell z (gpu_SetCellForceBit's row); 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_b_max */
+D_800F6640 = 0x800F6640; /* g_camera_default_view_record.forced_cell_coordinates[1][0]: a cell x; 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_c_max */
+D_800F6642 = 0x800F6642; /* g_camera_default_view_record.forced_cell_coordinates[1][1]: written 0, read only by camera_ApplyFightView's whole-record copy */  /* data-wave 2026-10-08: was g_gnd_gauge_c_cur */
+D_800F6644 = 0x800F6644; /* g_camera_default_view_record.forced_cell_coordinates[1][2]: a cell z; 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_d_max */
 g_camera_view_offset = 0x800FF5C8; /* Unk800FF5C8Rec: camera-target offset added to a Rec44 (camera_ApplyFightView / camera_ApplyReplayView), zeroed by camera_UpdatePadOffset */  /* data-wave 2026-09-25: was g_voice_state_word_a */
 _svm_vab_pg = 0x800F6660; /* per-channel base ptr to texture data */  /* data-wave 2026-09-07: was g_snd_ch_texture_base_ptr */
 _svm_vab_vh = 0x800F66B8; /* per-channel TPage/u32 value */  /* data-wave 2026-09-07: was g_snd_ch_texture_tpage */
