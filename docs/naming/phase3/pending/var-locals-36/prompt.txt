@@ -1,0 +1,40 @@
+# Research (read-only): local / parameter names, wave 36 (row var-locals-36, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-34/prompt.txt` (which chains to var-locals-33 / 32 /
+... / 15 and the wave-15..34 lessons) exactly, plus `pending/var-locals-{34,35,p1,p2}/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD edc3ebfe0 (read-only; equals main: var-locals-35 and var-locals-p2 applied, comment passes
+  landed; 368E4.c, 43500.c, 4510C.c, 4D0A8.c, cdrom.c lines moved, so re-derive every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-36-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 35: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-35/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; FAKE comments that would need changing make
+  the row NO_NAME), ending with a "### LEADS for var-locals-37" section. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs, but only names borne out at every use;
+  an empty or small manifest is a valid result (say so plainly).
+- Scope: the two local tracks are merged now (the sequential 17AFC.c .. 4510C.c track and the
+  parallel p-track both report their scope used up apart from NO_NAME lists). In this order:
+  1. pending/var-locals-35/notes.txt "LEADS for var-locals-36" in order: 4D0A8.c
+     gpu_DrawFixedSpritePairWithSelectedSheets:arg1 and gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle:arg1
+     (one name for the one-based sheet row selector before its > 0 decrement, or NO_NAME);
+     gpu_DrawPackedComparisonRowsAndTotals:var_2 (what it counts: read fight_PackMatchScores in
+     17AFC.c and g_fight_packed_match_scores' fill, per var-locals-p2 LEADS); 4510C.c
+     fighter_BuildCpuOrbitRoute var_3 together with a RENAME of the landed `left`
+     (plus_side_point / minus_side_point); fighter_UpdateCpuNavigationChooseScriptsAndHeldInput
+     var_7 / var_9 / var_10 (script pointers handed to fighter_StartCpuPadScript's script_cursor).
+  2. pending/var-locals-p2/notes.txt "LEADS for var-locals-p3": take any whose prerequisite is now
+     met (check whether D_800A37D2 / D_800A37D3, D_8008E5A8 are named on main; CdMix body in
+     src/main/psxsdk/libcd/ for cdrom_SetMix / cdrom_StartMixFade routing).
+  3. A full scan of every game TU (src/main/*.c, not psxsdk/) for auto-named bindings (a0..a3,
+     arg<N>, var_<N>, v0, s<N>, sp<N>, temp_*, new_var*) NOT on any var-locals-8..35 / p1 / p2
+     NO_NAME / neutral / dropped list; list the count per TU in the notes, and propose those with a
+     name true at every use.
+- Still blocked (do not propose): softbody_CreateForNode point_count / cmds (scoped_plan refuses
+  in-body aggregate), resource_LoadOrReuseSelectedBlock:arg1 (ALIGN4 macro argument),
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_60, motion_StartPlayback a2 .. a5.
+- Do not re-propose NO_NAME / dropped / reverted bindings without new evidence newer than the
+  wave that left them, said in the row (local or parameter names are never evidence, naming-bar N3).

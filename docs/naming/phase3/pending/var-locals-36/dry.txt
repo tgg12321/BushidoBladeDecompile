@@ -1,0 +1,25 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-35); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h file plus Makefile read from the lane worktree ln-naming-b, HEAD edc3ebfe0 = main; NAMING_KEYCHECK_ROOT = the worktree)
+accepted all 14 pairs (55 token substitutions: 17AFC.c 7, 368E4.c 2, 4510C.c 24, 4D0A8.c 6, cdrom_mix.c 16; no include/ file touched; the comment edits listed in notes.txt
+R6 WATCH: none required). Each pair was also run alone: all accepted, none rejected (alone-counts sum to 55, equal to the together total).
+The count of every pair equals a token scan of the binding in its definition (signature and body, comments and strings excluded, ./-> member tokens excluded; separate
+tokenizer, not the plan), pair by pair, line list and count: no mismatch. The runs modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  gpu_DrawPackedComparisonRowsAndTotals:var_2=higher_score_match_counts 6
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_7=threat_response_script 13
+  fighter_UpdateCpuNavigationChooseScriptsAndHeldInput:var_9=action_script 11
+  cdrom_SetMix:arg0=left_to_left_volume 2
+  cdrom_SetMix:arg1=left_to_right_volume 2
+  cdrom_SetMix:arg2=right_to_right_volume 2
+  cdrom_SetMix:arg3=right_to_left_volume 2
+  cdrom_StartMixFade:arg1=left_to_left_volume 2
+  cdrom_StartMixFade:arg2=left_to_right_volume 2
+  cdrom_StartMixFade:arg3=right_to_right_volume 2
+  cdrom_StartMixFade:arg4=right_to_left_volume 2
+  resource_RankRequestedEntriesAndReloadOnChange:arg0=staging_addr 2
+  fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:v1=initiator_move_frame 4
+  fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents:v1ptr=other_record 3
+Total 55 (together) = 55 (sum alone). Per file together: src/main/17AFC.c 7, src/main/368E4.c 2, src/main/4510C.c 24, src/main/4D0A8.c 6, src/main/cdrom_mix.c 16.
