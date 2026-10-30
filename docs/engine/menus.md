@@ -28,7 +28,7 @@ With the standard digital-pad bit order, the masks the handlers use are:
 
 ## Mode handlers and the scene script (src/main/2B344.c)
 
-`fight_RunCommandStream` (src/main/2B344.c:321) steps a byte script at `g_fight_command_stream_cursor`
+`fight_RunCommandStream` (src/main/2B344.c:320) steps a byte script at `g_fight_command_stream_cursor`
 until an opcode ends the step. The opcodes and what they do:
 
 - 0: mode 18 (with `g_fight_presentation_index` from `g_fighter_group_flags[fighter 0's character_data_index]`), or
@@ -48,29 +48,29 @@ until an opcode ends the step. The opcodes and what they do:
 
 Handlers that the script's modes reach:
 
-- `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:478, mode 6) loads the scene the
+- `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:477, mode 6) loads the scene the
   `g_fight_active_playback_descriptor` block describes (`motion_StartPlaybackAtIndexedBasePlusOffset` with its byte 0 and the
   fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1])`) and sets mode 7.
-- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:550, mode 7) counts `g_handler_frame_counter`; while
+- `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:549, mode 7) counts `g_handler_frame_counter`; while
   `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
   or calls `fight_RunCommandStream` for the next script step.
-- `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:595, mode 10) resets the scene state
+- `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:594, mode 10) resets the scene state
   (`motion_InvalidateMarkedNdataPackAndResetLoadCaches`, `slot_ReleaseObjectAndResources`, `eff_ClearInitFlag`, `snd_CloseNonCommonVabsAndResetVoicesQueueAndReverb`,
   `InitScrollingSpriteDisplay(0x80118800)`), starts CD audio
   (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
   display on.
-- `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
+- `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:613, mode 11) waits for Cross (0x40,
   player 0) or `StepScrollingSpriteDisplay()`, merges `g_fight_pending_unlock_mask_bits` into
   `g_saved_record.unlock_mask` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
-- `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:651, mode 15) runs the FMV overlay
+- `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:650, mode 15) runs the FMV overlay
   through `sys_ExecMovieOverlay` and sets mode 8.
-- `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:786, mode 21) plays sounds at frames
+- `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:788, mode 21) plays sounds at frames
   0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
-- `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:822, mode 30) copies the three clock
+- `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:824, mode 30) copies the three clock
   records `g_saved_record.times` into the record `GetWorkingRecord()` returns, as
-  minutes, seconds and hundredths (its comment, src/main/2B344.c:817).
+  minutes, seconds and hundredths (its comment, src/main/2B344.c:819).
 
 ## The row menu (src/main/596CC.c)
 

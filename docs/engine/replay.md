@@ -54,10 +54,10 @@ over a 5-row table
 (`g_entry_menu_entry_flags` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
 choice, and draws the cells with `gpu_AddSpriteCells`.
 
-`gpu_SetSegmentCellsGateBit(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
+`gpu_SetSegmentCellsGateBit(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1717) walks the cells
 of a 32 x 32 grid of 2000-unit squares crossed by the line from (arg0, arg1)
 to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
-`gpu_SetCellGateBit` (src/main/2B344.c:2257) for each cell inside the grid.
+`gpu_SetCellGateBit` (src/main/2B344.c:2261) for each cell inside the grid.
 
 ## CD and system routines once named `special_camera_*` / `marionation_camera_*`
 

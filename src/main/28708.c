@@ -851,9 +851,9 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     case 0:
         sheet_pair_index = 0x11;
         /* each case that passes g_memcard_prompt_choice to
-           gpu_DrawSheetPairCenteredTileWithOptionalSelection sets var_1 in its
-           own body (cross-jump merges the stores; one shared store reached by
-           goto: score 13) */
+           gpu_DrawSheetPairCenteredTileWithOptionalSelection sets
+           highlighted_cell_index in its own body (cross-jump merges the stores;
+           one shared store reached by goto: score 13) */
         highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 13:
@@ -1798,13 +1798,13 @@ extern s32 g_comb_prev_send_word;
 
 /* Clears g_comb_wait_state while g_comb_events_enabled is 0. Otherwise packs
  * bits of g_comb_local_side, g_comb_close_request and g_comb_wait_state,
- * a0->type[0] and the low half of a0->held into g_comb_send_buf, puts
- * g_comb_send_payload and a 16-bit xor check in g_comb_send_buf_plus_0x4, and
- * calls comb_Write8, comb_Read8 or comb_WaitRead8 as
+ * pad_state->type[0] and the low half of pad_state->held into g_comb_send_buf,
+ * puts g_comb_send_payload and a 16-bit xor check in g_comb_send_buf_plus_0x4,
+ * and calls comb_Write8, comb_Read8 or comb_WaitRead8 as
  * g_comb_initial_pad_exchange_pending and g_comb_local_side select, returning
  * early when a transfer fails or after comb_ResetClose. If
  * g_comb_initial_pad_exchange_pending is then 0, it stores new values to
- * a0->held and a0->type. */
+ * pad_state->held and pad_state->type. */
 void comb_ExchangePad(PadState *pad_state) {
     /* buttons holds the input pad button word, then an outgoing button
      * halfword (this exchange's, or the previous one's from

@@ -2001,7 +2001,7 @@ typedef struct Unk800FF5C8Rec {
 
 /* 0x1C-byte record: one player's state in one frame of the replay buffer
  * g_replay_fighter_frames (frames of two, Rec1C[2] = 0x38 bytes;
- * replay_RecordFighter writes player a0->index's record of frame
+ * replay_RecordFighter writes player fighter_record->index's record of frame
  * g_replay_write_frame from the character record, replay_PlayFrame reads both
  * back and passes two of them to camera_UpdateReplayViewWithSineYawOffset /
  * camera_UpdateReplayViewWithConstantYawOffset,
@@ -2038,9 +2038,9 @@ typedef struct Rec1C {
  * (replay_Reset clears draw_age to -1, replay_BeginFrame ages them,
  * replay_RecordModelDraw adds or refreshes one, replay_PlayFrame replays them).
  * draw_age: -1 = free, else a frame counter; draw_span: frames seen;
- * model_entry_index: replay_RecordModelDraw's arg1; draw_pos: the s16 x / y / z
- * of arg2; slot_rot_x: arg3[0] & 0xFFF with arg0 in the top four bits;
- * draw_rot_y / draw_rot_z: arg3[1] / arg3[2]. */
+ * model_entry_index: replay_RecordModelDraw's entry_index; draw_pos: the s16 x
+ * / y / z of position; slot_rot_x: angles[0] & 0xFFF with pool_index in the top
+ * four bits; draw_rot_y / draw_rot_z: angles[1] / angles[2]. */
 typedef struct Unk800F68E0Rec {
     s16 draw_age;
     u8 draw_span;
@@ -2055,8 +2055,9 @@ typedef struct Unk800F68E0Rec {
  * sets event_frame to 0xFF = free, replay_BeginFrame frees the current frame's,
  * replay_RecordEvent fills one, replay_PlayFrame replays those whose
  * event_frame is the frame index). event_frame: the frame
- * (g_replay_write_frame); unk_1 / event_kind: replay_RecordEvent's arg0 / arg1;
- * event_pos: the s16 x / y / z of arg2; event_vector: arg3[0..2]. */
+ * (g_replay_write_frame); unk_1 / event_kind: replay_RecordEvent's arg0 / kind;
+ * event_pos: the s16 x / y / z of src_position; event_vector:
+ * src_command_vector[0..2]. */
 typedef struct Unk80101BF0Rec {
     u8 event_frame;
     u8 unk_1;

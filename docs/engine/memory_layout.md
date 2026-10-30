@@ -77,7 +77,7 @@ Large objects named elsewhere in these pages:
 - `g_scratchpad_save` (0x800F5370): `scratchpad_Save` /
   `scratchpad_Restore` copy 0xF8 words (992 bytes) between it and
   0x1F800000 (src/main/6CF8.c:782, :791). The one caller pair is in
-  `fighter_Update` (src/main/9F9C.c:5412, :5416), around `func_80040D48`.
+  `fighter_Update` (src/main/9F9C.c:5418, :5422), around `func_80040D48`.
 - `CdlREAD D_800A14D0`: libcd `CdRead` state (include/psxsdk/libcd.h:41-57).
 
 ## The `$gp` window
