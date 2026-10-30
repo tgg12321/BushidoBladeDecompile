@@ -1,0 +1,2 @@
+D_800A3140=g_fight_force_weapon_inner_bone_hits
+D_80010834=g_config_menu_force_weapon_inner_bone_hits_fmt

@@ -1,0 +1,20 @@
+==============================================================================
+DATA WAVE — 2 addresses, 3 identifiers remapped
+  0x800a3140: D_800A3140 -> g_fight_force_weapon_inner_bone_hits
+  0x80010834: D_80010834, g_str_cr_n_80010834_fmt -> g_config_menu_force_weapon_inner_bone_hits_fmt
+
+-- file edits (8) --
+  asm/funcs/ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests.s  (2)
+  asm/funcs/fighter_ProcessWeaponBodyHits.s  (1)
+  asm/funcs/menu_PrintEditAndApplyConfigWithPerPadCursors.s  (2)
+  include/bb2.h  (1)
+  src/main/17AFC.c  (2)
+  src/main/24BF0.c  (2)
+  src/main/menu_config.c  (2)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:1166 D_800A3140 -> g_fight_force_weapon_inner_bone_hits
+  symbol_addrs.txt:1204 g_str_cr_n_80010834_fmt -> g_config_menu_force_weapon_inner_bone_hits_fmt
+
+DRY RUN — nothing written. Re-run with --apply.
