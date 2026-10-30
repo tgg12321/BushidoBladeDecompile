@@ -1580,10 +1580,10 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     }
 }
 
-void gpu_SetLastDepthIndexOtEntryLinkToPacket(u32 arg0) {
+void gpu_SetLastDepthIndexOtEntryLinkToPacket(u32 packet_addr) {
     u32 *ptr = g_gpu_ot_offset_ptr;
-    arg0 &= 0xFFFFFF;
-    ptr[0x3FFC / 4] = arg0;
+    packet_addr &= 0xFFFFFF;
+    ptr[0x3FFC / 4] = packet_addr;
 }
 
 /* Builds count-1 progressively fogged copies of the VRAM rectangle `rect`.
@@ -1606,7 +1606,7 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     s32 r;
     s32 g;
     s32 b;
-    s32 var_8;
+    s32 far_color_pixel;
 
     DrawSync(0);
     count--;
@@ -1621,7 +1621,7 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     r = var_2[0];
     g = var_2[1];
     b = var_2[2];
-    var_8 =
+    far_color_pixel =
         (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7);
 
     i = 0;
@@ -1642,7 +1642,7 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             dst++;
                             goto loop_check;
                         }
-                        *dst++ = var_8;
+                        *dst++ = far_color_pixel;
                         src++;
                         goto loop_check;
                     }
@@ -1736,15 +1736,15 @@ void gpu_BuildFogBlockLevels(void) {
 
 extern s32 g_gpu_fog_clut_object;
 
-void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
+void gpu_MoveObjectClutsToFogBlock(s32 slot_index) {
     RECT buf;
     Unk80045878Obj *obj;
 
-    if (g_gpu_fog_clut_object != arg0) {
+    if (g_gpu_fog_clut_object != slot_index) {
         gpu_RestoreObjectClutOffsets();
-        obj = slot_GetObject(arg0);
+        obj = slot_GetObject(slot_index);
         if (obj != 0) {
-            if (arg0 != 0) {
+            if (slot_index != 0) {
                 buf.x = 0x300;
             } else {
                 buf.x = 0x280;
@@ -1753,7 +1753,7 @@ void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
             buf.w = 0x40;
             buf.h = 6;
             MoveImage(&buf, 0x140, 0x1E8);
-            if (arg0 == 0) {
+            if (slot_index == 0) {
                 gpu_OffsetBlockTexPrimStreams(
                     obj->transform_block_id, 0, 0, -0x140, 0xE8);
             } else {
@@ -1764,21 +1764,21 @@ void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
             gpu_BuildFogBlockLevels();
         }
     }
-    g_gpu_fog_clut_object = arg0;
+    g_gpu_fog_clut_object = slot_index;
 }
 
 void gpu_RestoreObjectClutOffsets(void) {
-    Unk80045878Obj *v1;
+    Unk80045878Obj *slot_object;
 
     if (g_gpu_fog_clut_object != -1) {
-        v1 = slot_GetObject(g_gpu_fog_clut_object);
-        if (v1 != 0) {
+        slot_object = slot_GetObject(g_gpu_fog_clut_object);
+        if (slot_object != 0) {
             if (g_gpu_fog_clut_object == 0) {
                 gpu_OffsetBlockTexPrimStreams(
-                    v1->transform_block_id, 0, 0, 0x140, -0xE8);
+                    slot_object->transform_block_id, 0, 0, 0x140, -0xE8);
             } else {
                 gpu_OffsetBlockTexPrimStreams(
-                    v1->transform_block_id, 0, 0, 0x1C0, -0xE8);
+                    slot_object->transform_block_id, 0, 0, 0x1C0, -0xE8);
             }
         }
         g_gpu_fog_clut_object = -1;
@@ -1798,63 +1798,63 @@ u32 gpu_GetLastFogOtIndex(void) { return g_gpu_last_fog_ot_index; }
 
 extern void gpu_SetCellGateBit(s16 *arg0);
 
-void gpu_SetSegmentCellsGateBit(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    s16 sp10[4];
-    s16 sp18[4];
-    s32 sp20;
+void gpu_SetSegmentCellsGateBit(s32 arg0, s32 arg1, s32 end_x, s32 end_z) {
+    s16 cell_pos[4];
+    s16 minor_step_cell_pos[4];
+    s32 minor_step;
     s32 temp_a2;
     s32 temp_a3;
-    s32 temp_fp;
-    s32 temp_lo;
+    s32 end_cell_x;
+    s32 slope;
     s32 temp_s2;
-    s32 temp_s7;
+    s32 end_cell_z;
     s32 temp_t0;
-    s32 temp_v0;
+    s32 start_cell_center_z;
     s32 temp_v0_2;
     s32 temp_v0_3;
-    s32 temp_v1;
-    s32 var_s0;
-    s32 var_s1;
-    s32 var_s3;
-    s32 var_s4;
-    s32 var_s5;
-    s32 var_s6;
+    s32 start_cell_center_x;
+    s32 cell_z;
+    s32 cell_x;
+    s32 steps_left;
+    s32 z_is_major;
+    s32 z_direction;
+    s32 x_direction;
 
     temp_t0 = arg0 + 0x7D00;
     temp_s2 = arg1 + 0x7D00;
-    temp_a2 = arg2 + 0x7D00;
-    temp_a3 = arg3 + 0x7D00;
+    temp_a2 = end_x + 0x7D00;
+    temp_a3 = end_z + 0x7D00;
     arg0 = temp_a2 - temp_t0;
     arg1 = temp_a3 - temp_s2;
-    var_s1 = temp_t0 / 2000;
-    var_s0 = temp_s2 / 2000;
-    temp_fp = temp_a2 / 2000;
-    temp_s7 = temp_a3 / 2000;
+    cell_x = temp_t0 / 2000;
+    cell_z = temp_s2 / 2000;
+    end_cell_x = temp_a2 / 2000;
+    end_cell_z = temp_a3 / 2000;
     if ((arg0 == 0) && (arg1 == 0)) {
-        if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) &&
-            (var_s0 < 0x20)) {
-            sp10[0] = var_s1 - 0x10;
-            sp10[2] = var_s0 - 0x10;
-            gpu_SetCellGateBit(sp10);
+        if ((cell_x >= 0) && (cell_z >= 0) && (cell_x < 0x20) &&
+            (cell_z < 0x20)) {
+            cell_pos[0] = cell_x - 0x10;
+            cell_pos[2] = cell_z - 0x10;
+            gpu_SetCellGateBit(cell_pos);
         }
     } else {
-        temp_v1 = (var_s1 * 0x7D0) + 0x3E8;
-        temp_t0 -= temp_v1;
-        temp_v0 = (var_s0 * 0x7D0) + 0x3E8;
-        temp_s2 -= temp_v0;
-        temp_a2 -= temp_v1;
-        temp_a3 -= temp_v0;
+        start_cell_center_x = (cell_x * 0x7D0) + 0x3E8;
+        temp_t0 -= start_cell_center_x;
+        start_cell_center_z = (cell_z * 0x7D0) + 0x3E8;
+        temp_s2 -= start_cell_center_z;
+        temp_a2 -= start_cell_center_x;
+        temp_a3 -= start_cell_center_z;
         if (arg0 < 0) {
-            var_s6 = -1;
+            x_direction = -1;
             arg0 = -arg0;
             temp_t0 = -temp_t0;
             temp_a2 = -temp_a2;
         } else {
-            var_s6 = 1;
+            x_direction = 1;
         }
-        var_s5 = 1;
+        z_direction = 1;
         if (arg1 < 0) {
-            var_s5 = -1;
+            z_direction = -1;
             arg1 = -arg1;
             temp_s2 = -temp_s2;
             temp_a3 = -temp_a3;
@@ -1867,73 +1867,73 @@ void gpu_SetSegmentCellsGateBit(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             temp_t0 = temp_s2;
             temp_s2 = temp_v0_3;
             temp_a2 = temp_a3;
-            var_s4 = 1;
+            z_is_major = 1;
         } else {
-            var_s4 = 0;
+            z_is_major = 0;
         }
-        temp_lo = (s32)(arg1 << 0xC) / arg0;
+        slope = (s32)(arg1 << 0xC) / arg0;
         temp_a2 += 0x3E8;
         temp_t0 += 0x3E8;
-        var_s3 = (temp_a2 / 2000) - (temp_t0 / 2000);
+        steps_left = (temp_a2 / 2000) - (temp_t0 / 2000);
         temp_s2 += 0x3E8;
-        temp_s2 -= (s32)(temp_t0 * temp_lo) >> 0xC;
-        sp20 = (s32)(temp_lo * 0x7D0) >> 0xC;
-        for (; var_s3 != -1; var_s3--) {
-            if (var_s1 >= 0) {
-                if ((var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
-                    sp10[0] = var_s1 - 0x10;
-                    sp10[2] = var_s0 - 0x10;
-                    gpu_SetCellGateBit(sp10);
+        temp_s2 -= (s32)(temp_t0 * slope) >> 0xC;
+        minor_step = (s32)(slope * 0x7D0) >> 0xC;
+        for (; steps_left != -1; steps_left--) {
+            if (cell_x >= 0) {
+                if ((cell_z >= 0) && (cell_x < 0x20) && (cell_z < 0x20)) {
+                    cell_pos[0] = cell_x - 0x10;
+                    cell_pos[2] = cell_z - 0x10;
+                    gpu_SetCellGateBit(cell_pos);
                 }
             }
             temp_s2 %= 2000;
-            temp_s2 += sp20;
-            if (var_s3 == 0) {
+            temp_s2 += minor_step;
+            if (steps_left == 0) {
                 break;
             }
             if (temp_s2 >= 0x7D1) {
-                if (var_s4 != 0) {
-                    if (var_s6 < 0) {
-                        var_s1 -= 1;
+                if (z_is_major != 0) {
+                    if (x_direction < 0) {
+                        cell_x -= 1;
                     } else {
-                        var_s1 += 1;
+                        cell_x += 1;
                     }
-                } else if (var_s5 < 0) {
-                    var_s0 -= 1;
+                } else if (z_direction < 0) {
+                    cell_z -= 1;
                 } else {
-                    var_s0 += 1;
+                    cell_z += 1;
                 }
-                if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) &&
-                    (var_s0 < 0x20)) {
-                    sp18[0] = var_s1 - 0x10;
-                    sp18[2] = var_s0 - 0x10;
-                    gpu_SetCellGateBit(sp18);
+                if ((cell_x >= 0) && (cell_z >= 0) && (cell_x < 0x20) &&
+                    (cell_z < 0x20)) {
+                    minor_step_cell_pos[0] = cell_x - 0x10;
+                    minor_step_cell_pos[2] = cell_z - 0x10;
+                    gpu_SetCellGateBit(minor_step_cell_pos);
                 }
             }
-            if (var_s4 != 0) {
-                if (var_s5 < 0) {
-                    var_s0 -= 1;
+            if (z_is_major != 0) {
+                if (z_direction < 0) {
+                    cell_z -= 1;
                 } else {
-                    var_s0 += 1;
+                    cell_z += 1;
                 }
-            } else if (var_s6 < 0) {
-                var_s1 -= 1;
+            } else if (x_direction < 0) {
+                cell_x -= 1;
             } else {
-                var_s1 += 1;
+                cell_x += 1;
             }
         }
-        if ((temp_fp >= 0) && (temp_s7 >= 0) && (temp_fp < 0x20) &&
-            (temp_s7 < 0x20)) {
-            sp10[0] = temp_fp - 0x10;
-            sp10[2] = temp_s7 - 0x10;
-            gpu_SetCellGateBit(sp10);
+        if ((end_cell_x >= 0) && (end_cell_z >= 0) && (end_cell_x < 0x20) &&
+            (end_cell_z < 0x20)) {
+            cell_pos[0] = end_cell_x - 0x10;
+            cell_pos[2] = end_cell_z - 0x10;
+            gpu_SetCellGateBit(cell_pos);
         }
     }
 }
 
-void gpu_SetViewOriginSegmentCellsGateBit(s32 arg0, s32 arg1) {
+void gpu_SetViewOriginSegmentCellsGateBit(s32 end_x, s32 end_z) {
     gpu_SetSegmentCellsGateBit(g_view_camera_root_node.work.t[0],
-                               g_view_camera_root_node.work.t[2], arg0, arg1);
+                               g_view_camera_root_node.work.t[2], end_x, end_z);
 }
 
 extern s32 D_800A322C;
@@ -1970,9 +1970,9 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
     s16 row;
     s16 col;
     s16 vidx;
-    u16 t0;
-    s32 v1;
-    s32 a3;
+    u16 run_entry;
+    s32 record_id;
+    s32 cell_attributes;
     Unk800A4750Rec *e;
     Unk800A6690Rec *e2;
     void **list;
@@ -2035,14 +2035,17 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
             if (bits < 0) {
                 vidx = g_gpu_grid_cell_run_starts[row][col];
                 if (vidx >= 0) {
-                    a3 = g_gpu_cell_draw_attributes[row * 0x20 + col];
+                    cell_attributes =
+                        g_gpu_cell_draw_attributes[row * 0x20 + col];
                     do {
-                        t0 = g_gpu_grid_cell_run_entries[vidx++];
-                        v1 = t0 & 0x7FFF;
-                        if (v1 < g_gpu_grid_cell_record_count) {
-                            e = &g_gpu_grid_cell_records[v1];
-                            e->unk6 = a3 & 3;
-                            if ((a3 & 8) || ((a3 & 4) && (e->draw_flags & 8))) {
+                        run_entry = g_gpu_grid_cell_run_entries[vidx++];
+                        record_id = run_entry & 0x7FFF;
+                        if (record_id < g_gpu_grid_cell_record_count) {
+                            e = &g_gpu_grid_cell_records[record_id];
+                            e->unk6 = cell_attributes & 3;
+                            if ((cell_attributes & 8) ||
+                                ((cell_attributes & 4) &&
+                                 (e->draw_flags & 8))) {
                                 e->draw_flags |= 1;
                             } else {
                                 e->draw_flags &= 0xFE;
@@ -2052,13 +2055,13 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
                             *list = e;
                         } else {
                             e2 = &g_gpu_grid_node_records
-                                     [v1 - g_gpu_grid_cell_record_count];
+                                     [record_id - g_gpu_grid_cell_record_count];
                             if (e2->is_collected == 0) {
                                 *out++ = e2;
                                 e2->is_collected = 1;
                             }
                         }
-                    } while (!(t0 & 0x8000));
+                    } while (!(run_entry & 0x8000));
                 }
             }
             bits <<= 1;
@@ -2086,65 +2089,67 @@ void gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
 
 Unk800A6690Rec **
 gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes(
-    s32 a0, s32 a1, Unk800A6690Rec **out) {
-    s32 sp[0x20];
+    s32 window_first_col, s32 window_first_row, Unk800A6690Rec **out) {
+    s32 row_masks[0x20];
     s32 mask;
     s32 i;
-    s32 t4;
-    s32 t1;
-    s32 t2;
+    s32 row;
+    s32 col;
+    s32 column_bits;
     s16 vidx;
-    u16 t0;
-    s32 v1;
-    s32 a3;
+    u16 run_entry;
+    s32 record_id;
+    s32 cell_attributes;
     Unk800A4750Rec *e;
     Unk800A6690Rec *e2;
     void **list;
 
-    if (a0 >= 0) {
+    if (window_first_col >= 0) {
         mask = -1;
-        if (a0 >= 0x20) {
+        if (window_first_col >= 0x20) {
             goto skip;
         }
         goto calc;
     } else {
         mask = -1;
-        if (-a0 < 0x20) {
+        if (-window_first_col < 0x20) {
         calc:
-            if (a0 < 0) {
-                mask = -1U >> (a0 + 0x1F);
-            } else if (a0 == 0) {
+            if (window_first_col < 0) {
+                mask = -1U >> (window_first_col + 0x1F);
+            } else if (window_first_col == 0) {
                 mask = 0;
             } else {
-                mask = -1 << (0x20 - a0);
+                mask = -1 << (0x20 - window_first_col);
             }
         }
     }
 skip:
     for (i = 0; i < 0x20; i++) {
-        if (i >= a1 && i < a1 + 0x1F) {
-            sp[i] = mask;
+        if (i >= window_first_row && i < window_first_row + 0x1F) {
+            row_masks[i] = mask;
         } else {
-            sp[i] = -1;
+            row_masks[i] = -1;
         }
     }
 
-    for (t4 = 0; t4 < 0x20; t4++) {
-        t2 = sp[t4];
-        if (t2 != 0) {
-            for (t1 = 0; t1 < 0x20; t1++) {
-                if (t2 < 0) {
-                    vidx = g_gpu_grid_cell_run_starts[t4][t1];
+    for (row = 0; row < 0x20; row++) {
+        column_bits = row_masks[row];
+        if (column_bits != 0) {
+            for (col = 0; col < 0x20; col++) {
+                if (column_bits < 0) {
+                    vidx = g_gpu_grid_cell_run_starts[row][col];
                     if (vidx >= 0) {
-                        a3 = g_gpu_cell_draw_attributes[t4 * 0x20 + t1];
+                        cell_attributes =
+                            g_gpu_cell_draw_attributes[row * 0x20 + col];
                         do {
-                            t0 = g_gpu_grid_cell_run_entries[vidx++];
-                            v1 = t0 & 0x7FFF;
-                            if (v1 < g_gpu_grid_cell_record_count) {
-                                e = &g_gpu_grid_cell_records[v1];
-                                e->unk6 = a3 & 3;
-                                if ((a3 & 8) ||
-                                    ((a3 & 4) && (e->draw_flags & 8))) {
+                            run_entry = g_gpu_grid_cell_run_entries[vidx++];
+                            record_id = run_entry & 0x7FFF;
+                            if (record_id < g_gpu_grid_cell_record_count) {
+                                e = &g_gpu_grid_cell_records[record_id];
+                                e->unk6 = cell_attributes & 3;
+                                if ((cell_attributes & 8) ||
+                                    ((cell_attributes & 4) &&
+                                     (e->draw_flags & 8))) {
                                     e->draw_flags |= 1;
                                 } else {
                                     e->draw_flags &= 0xFE;
@@ -2154,17 +2159,18 @@ skip:
                                 *list = e;
                             } else {
                                 e2 = &g_gpu_grid_node_records
-                                         [v1 - g_gpu_grid_cell_record_count];
+                                         [record_id -
+                                          g_gpu_grid_cell_record_count];
                                 if (e2->is_collected == 0) {
                                     *out = e2;
                                     out += 1;
                                     e2->is_collected = 1;
                                 }
                             }
-                        } while (!(t0 & 0x8000));
+                        } while (!(run_entry & 0x8000));
                     }
                 }
-                t2 = t2 << 1;
+                column_bits = column_bits << 1;
             }
         }
     }
@@ -2181,7 +2187,7 @@ extern s32 g_gpu_grid_cell_run_entry_peak;
  * g_math_rot_matrix_funcs handler), then the 32x32 cell grid, each listed cell
  * indexing a run of record ids (bit 15 ends a run) in the run table. Cells are
  * numbered row * 32 + column. */
-void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
+void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *stream_cursor, s32 block_id) {
     Unk800A4750Rec *r;
     Unk800A6690Rec *c;
     s32 i;
@@ -2190,44 +2196,44 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
     s16 w; /* the stream word just read */
     s16 x;
     s16 z;
-    u16 var_8;
+    u16 entry_word;
 
     n = 0;
-    while ((w = *p++) != -1) {
+    while ((w = *stream_cursor++) != -1) {
         r = &g_gpu_grid_cell_records[n++];
-        var_8 = *p++;
-        r->cell_reloc_entry_index = var_8;
-        if (var_8 & 0x8000) {
-            r->cell_reloc_entry_index = var_8 & 0x7FFF;
+        entry_word = *stream_cursor++;
+        r->cell_reloc_entry_index = entry_word;
+        if (entry_word & 0x8000) {
+            r->cell_reloc_entry_index = entry_word & 0x7FFF;
             r->draw_flags = 8;
         } else {
             r->draw_flags = 0;
         }
         r->draw_kind = 0xC;
         r->unk6 = 0;
-        r->cell_reloc_block_id = arg1;
+        r->cell_reloc_block_id = block_id;
         r->cell_world_x = (w % 32) * 2000 - 32000;
         r->cell_world_z = (w / 32) * 2000 - 32000;
     }
     g_gpu_grid_cell_record_count = n;
     n = 0;
-    while ((w = *p++) != -1) {
+    while ((w = *stream_cursor++) != -1) {
         c = &g_gpu_grid_node_records[n++];
         c->node.primitive_table_select = 0;
         c->node.parent_node = 0;
         c->node.rotation_order = 0;
         c->node.light_setup_index = 4;
         c->node.reloc_entry_index = w;
-        c->node.reloc_block_id = arg1;
-        c->node.xf.mat.t[0] = *p++;
-        c->node.xf.mat.t[0] |= *p++ << 16;
-        c->node.xf.mat.t[1] = *p++;
-        c->node.xf.mat.t[1] |= *p++ << 16;
-        c->node.xf.mat.t[2] = *p++;
-        c->node.xf.mat.t[2] |= *p++ << 16;
-        c->node.xf.rot.vx = *p++;
-        c->node.xf.rot.vy = *p++;
-        c->node.xf.rot.vz = *p++;
+        c->node.reloc_block_id = block_id;
+        c->node.xf.mat.t[0] = *stream_cursor++;
+        c->node.xf.mat.t[0] |= *stream_cursor++ << 16;
+        c->node.xf.mat.t[1] = *stream_cursor++;
+        c->node.xf.mat.t[1] |= *stream_cursor++ << 16;
+        c->node.xf.mat.t[2] = *stream_cursor++;
+        c->node.xf.mat.t[2] |= *stream_cursor++ << 16;
+        c->node.xf.rot.vx = *stream_cursor++;
+        c->node.xf.rot.vy = *stream_cursor++;
+        c->node.xf.rot.vz = *stream_cursor++;
         if (c->node.xf.rot.vz != (c->node.xf.rot.vx == c->node.xf.rot.vy)) {
             c->node.node_kind = 1;
         } else {
@@ -2247,12 +2253,12 @@ void gpu_UnpackGridRecordsNodesAndCellRuns(u16 *p, s32 arg1) {
      * reuses its i loop to loop (Q51) */
     /* SOTN: src/dra/42398.c:75 @aa53500 */
     i = 0;
-    while ((w = *p++) != -1) {
+    while ((w = *stream_cursor++) != -1) {
         x = w % 32;
         z = w / 32;
         g_gpu_grid_cell_run_starts[z][x] = i;
         do {
-            w = *p++;
+            w = *stream_cursor++;
             g_gpu_grid_cell_run_entries[i++] = w;
         } while (!(w & 0x8000));
     }
@@ -2321,10 +2327,10 @@ s32 func_8003F268(void) { return D_800A322C; }
 
 void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     s32 i, j;
-    s32 var_2, var_3;
+    s32 view_cell_x, view_cell_z;
     s32 data;
-    s32 var_5;
-    s32 var_6;
+    s32 row_offset;
+    s32 col_offset;
     s32 *ptr = (s32 *)g_gpu_cell_draw_attributes;
 
     i = 0xFF;
@@ -2336,19 +2342,19 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
 
     func_8003F268();
 
-    var_2 = (g_view_camera_root_ptr->work.t[0] + 0x7D00) / 2000;
-    var_3 = (g_view_camera_root_ptr->work.t[2] + 0x7D00) / 2000;
+    view_cell_x = (g_view_camera_root_ptr->work.t[0] + 0x7D00) / 2000;
+    view_cell_z = (g_view_camera_root_ptr->work.t[2] + 0x7D00) / 2000;
 
     for (i = 0; i < 16; i++) {
-        var_5 = i - 8;
+        row_offset = i - 8;
         {
-            u32 y = (u32)(var_3 + var_5);
+            u32 y = (u32)(view_cell_z + row_offset);
             if (y < 0x20) {
                 data = g_gpu_view_centered_cell_attribute_pattern[i];
                 for (j = 0; j < 16; j++) {
-                    var_6 = j - 8;
+                    col_offset = j - 8;
                     {
-                        u32 x = (u32)(var_2 + var_6);
+                        u32 x = (u32)(view_cell_x + col_offset);
                         if (x < 0x20) {
                             s32 bits = (data >> ((15 - j) * 2)) & 3;
                             g_gpu_cell_draw_attributes[(y << 5) + x] |= bits;
@@ -2360,32 +2366,32 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     }
 }
 
-void gpu_SetCellGateBit(s16 *a0) {
-    s32 x = a0[0] + 0x10;
-    s32 y = a0[2] + 0x10;
+void gpu_SetCellGateBit(s16 *cell_pos) {
+    s32 x = cell_pos[0] + 0x10;
+    s32 y = cell_pos[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
         g_gpu_cell_draw_attributes[y * 32 + x] |= 0x4;
     }
 }
 
-void gpu_SetCellForceBit(s16 *a0) {
-    s32 x = a0[0] + 0x10;
-    s32 y = a0[2] + 0x10;
+void gpu_SetCellForceBit(s16 *cell_pos) {
+    s32 x = cell_pos[0] + 0x10;
+    s32 y = cell_pos[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
         g_gpu_cell_draw_attributes[y * 32 + x] |= 0x8;
     }
 }
 
 void gpu_ReplaceCellAttributesInNearest2x2Block(s32 a0, s32 a1) {
-    s32 s3, s2, s1;
+    s32 cell_x, cell_z, s1;
     s32 s0;
     a0 += 0x7D00;
     a1 += 0x7D00;
-    s3 = a0 / 2000;
-    s1 = a0 - s3 * 2000;
+    cell_x = a0 / 2000;
+    s1 = a0 - cell_x * 2000;
     s0 = a1 / 2000;
-    s2 = s0;
-    s0 = a1 - s2 * 2000;
+    cell_z = s0;
+    s0 = a1 - cell_z * 2000;
     if (s1 < 1000) {
         s1 = -1;
     } else {
@@ -2396,18 +2402,19 @@ void gpu_ReplaceCellAttributesInNearest2x2Block(s32 a0, s32 a1) {
     } else {
         s0 = 1;
     }
-    gpu_ReplaceCellAttributesWithMaskedValue(s3, s2, 2);
-    gpu_ReplaceCellAttributesWithMaskedValue(s3 + s1, s2, 2);
-    gpu_ReplaceCellAttributesWithMaskedValue(s3, s2 + s0, 2);
-    gpu_ReplaceCellAttributesWithMaskedValue(s3 + s1, s2 + s0, 2);
+    gpu_ReplaceCellAttributesWithMaskedValue(cell_x, cell_z, 2);
+    gpu_ReplaceCellAttributesWithMaskedValue(cell_x + s1, cell_z, 2);
+    gpu_ReplaceCellAttributesWithMaskedValue(cell_x, cell_z + s0, 2);
+    gpu_ReplaceCellAttributesWithMaskedValue(cell_x + s1, cell_z + s0, 2);
 }
 
-void gpu_ReplaceCellAttributesWithMaskedValue(s32 a0, s32 a1, s32 a2) {
-    g_gpu_cell_draw_attributes[a1 * 32 + a0] = a2 & 3;
+void gpu_ReplaceCellAttributesWithMaskedValue(
+    s32 cell_x, s32 cell_z, s32 attributes) {
+    g_gpu_cell_draw_attributes[cell_z * 32 + cell_x] = attributes & 3;
 }
 
-u32 gpu_GetCellAttributes(s32 a0, s32 a1) {
-    return g_gpu_cell_draw_attributes[a1 * 32 + a0];
+u32 gpu_GetCellAttributes(s32 cell_x, s32 cell_z) {
+    return g_gpu_cell_draw_attributes[cell_z * 32 + cell_x];
 }
 
 void ClearSavedWordPairsAndTwoWriteOnlyWords(void) {
@@ -2463,32 +2470,32 @@ extern void softbody_UpdateColliders(Unk8003F62CRec *);
 extern void softbody_SetObjectSnap(Unk8003F62CRec *);
 extern void softbody_ClearObjectSnap(Unk8003F62CRec *);
 
-void softbody_UpdateObject(Unk80045878Obj *a0) {
-    Unk8003F62CRec *s0;
-    s0 = a0->softbody_block;
-    if (s0 == 0)
+void softbody_UpdateObject(Unk80045878Obj *slot_object) {
+    Unk8003F62CRec *softbody_set;
+    softbody_set = slot_object->softbody_block;
+    if (softbody_set == 0)
         return;
-    if (s0->rebuild_request) {
-        softbody_FreeObjectById(a0->arena_id);
-        softbody_SetupObject(a0, 0);
+    if (softbody_set->rebuild_request) {
+        softbody_FreeObjectById(slot_object->arena_id);
+        softbody_SetupObject(slot_object, 0);
     }
-    if (s0->snap_request) {
-        softbody_SetObjectSnap(s0);
+    if (softbody_set->snap_request) {
+        softbody_SetObjectSnap(softbody_set);
     }
-    softbody_UpdateColliders(s0);
-    softbody_UpdateList(s0->step_descs, s0->count);
-    if (s0->snap_request) {
-        softbody_ClearObjectSnap(s0);
-        s0->snap_request = 0;
+    softbody_UpdateColliders(softbody_set);
+    softbody_UpdateList(softbody_set->step_descs, softbody_set->count);
+    if (softbody_set->snap_request) {
+        softbody_ClearObjectSnap(softbody_set);
+        softbody_set->snap_request = 0;
     }
 }
 
-void softbody_UpdateColliders(Unk8003F62CRec *arg0) {
+void softbody_UpdateColliders(Unk8003F62CRec *softbody_set) {
     s32 i;
     s32 j;
 
-    for (i = 0; i < arg0->count; i++) {
-        Func8003F6D8Inner *in = &arg0->recs[i].inner;
+    for (i = 0; i < softbody_set->count; i++) {
+        Func8003F6D8Inner *in = &softbody_set->recs[i].inner;
         for (j = 0; j < in->count; j++) {
             MATRIX *mat = &in->objs[j]->node.xf.mat;
             gte_SetMatrixRotTransIR(mat, &in->f84[j][0], &in->coll.foci[j][0]);
@@ -2507,40 +2514,40 @@ void softbody_FreeAllAndClearWriteOnlyWords(void) {
 extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
 void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2);
 
-void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
-    Unk8003F62CRec *var_0;
+void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
+    Unk8003F62CRec *softbody_set;
     s16 *var_1;
     u8 *cur;
     Unk8003F824Rec *rec;
     Unk80045878Node *obj;
     s32 i;
 
-    var_0 = arg0->softbody_block;
-    if (var_0 == 0)
+    softbody_set = slot_object->softbody_block;
+    if (softbody_set == 0)
         return;
-    var_1 = (s16 *)arg0->softbody_params;
-    cur = var_0->data;
+    var_1 = (s16 *)slot_object->softbody_params;
+    cur = softbody_set->data;
     if (*var_1 == -3) {
-        arg0->softbody_block = 0;
+        slot_object->softbody_block = 0;
         return;
     }
-    var_0->count = 0;
-    var_0->snap_request = 0;
-    var_0->unk4 = 0;
-    var_0->rebuild_request = 0;
+    softbody_set->count = 0;
+    softbody_set->snap_request = 0;
+    softbody_set->unk4 = 0;
+    softbody_set->rebuild_request = 0;
     for (i = 0; *var_1 != -3; i++) {
         if (*var_1 != -2) {
-            if (var_0->count >= 5) {
+            if (softbody_set->count >= 5) {
                 sys_StoreZeroPastScratchpadOnFailedCheck();
             }
-            rec = &var_0->recs[var_0->count];
-            obj = arg0->node_by_id[i];
+            rec = &softbody_set->recs[softbody_set->count];
+            obj = slot_object->node_by_id[i];
             rec->cur = cur;
             rec->obj = obj;
             cur = softbody_CreateForNode(rec, var_1, cur);
-            var_0->step_descs[var_0->count] = rec->step_desc;
+            softbody_set->step_descs[softbody_set->count] = rec->step_desc;
             obj->node.node_kind = 0xD;
-            var_0->count++;
+            softbody_set->count++;
             if (*var_1 >= 0) {
                 var_1++;
                 while (*var_1 >= 0) {
@@ -2549,15 +2556,15 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
             }
             if (*var_1 == -1) {
                 var_1++;
-                softbody_AddColliders(arg0, rec, var_1);
+                softbody_AddColliders(slot_object, rec, var_1);
             }
         }
         while (*var_1++ != -2) {
         }
     }
-    if (arg1) {
+    if (resize_asset_block) {
         slot_ResizeAssetBlockAndUpdatePeak(
-            arg0->arena_id, cur - (u8 *)arg0->asset_block);
+            slot_object->arena_id, cur - (u8 *)slot_object->asset_block);
     }
 }
 
@@ -2734,14 +2741,14 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     return cur;
 }
 
-s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2) {
+s16 *softbody_SetAnchorWeights(SVECTOR *points, s32 point_count, s16 *a2) {
     /* the point loop counter, then each point index read from a2, the way
      * SOTN's EntityBladeMaster runs its i as a loop counter and then reads it
      * from a table as a subscript (Q51) */
     /* SOTN: src/st/are/e_blade_master.c:485 @db41b28 */
     s32 i;
-    for (i = 0; i < a1; i++) {
-        a0[i].pad = -256;
+    for (i = 0; i < point_count; i++) {
+        points[i].pad = -256;
     }
 
     {
@@ -2758,7 +2765,7 @@ s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2) {
                     i = a2[0];
                     a2++;
                     count--;
-                    a0[i].pad = val;
+                    points[i].pad = val;
                 }
                 count = a2[0];
                 a2++;
@@ -2768,7 +2775,8 @@ s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2) {
     return a2;
 }
 
-void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
+void softbody_AddColliders(
+    Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *a2) {
     Func8003F6D8Inner *in = &rec->inner;
     s32 n = in->count;
     s16 id = a2[0];
@@ -2776,7 +2784,7 @@ void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
     if (id != -2) {
         do {
             a2++;
-            in->objs[n] = &a0->transform_nodes[id + 1];
+            in->objs[n] = &slot_object->transform_nodes[id + 1];
             in->f84[n][0].vx = *a2++;
             in->f84[n][0].vy = *a2++;
             in->f84[n][0].vz = *a2++;
@@ -2799,73 +2807,74 @@ s32 math_AlignUp4(s32 a0) {
     return a0;
 }
 
-void softbody_RequestRebuild(Unk80045878Obj *a0) {
-    Unk8003F62CRec *v1 = a0->softbody_block;
-    if (v1) {
-        v1->rebuild_request = 1;
+void softbody_RequestRebuild(Unk80045878Obj *slot_object) {
+    Unk8003F62CRec *softbody_set = slot_object->softbody_block;
+    if (softbody_set) {
+        softbody_set->rebuild_request = 1;
     }
 }
 
-void softbody_RequestSnap(s32 a0) {
-    Unk80045878Obj *v0 = slot_GetObject(a0);
-    if (v0) {
-        Unk8003F62CRec *v1 = v0->softbody_block;
-        if (v1) {
-            v1->snap_request = 1;
+void softbody_RequestSnap(s32 slot_index) {
+    Unk80045878Obj *slot_object = slot_GetObject(slot_index);
+    if (slot_object) {
+        Unk8003F62CRec *softbody_set = slot_object->softbody_block;
+        if (softbody_set) {
+            softbody_set->snap_request = 1;
         }
     }
 }
 
-void softbody_SetObjectSnap(Unk8003F62CRec *a0) {
+void softbody_SetObjectSnap(Unk8003F62CRec *softbody_set) {
     s32 i;
-    for (i = 0; i < a0->count; i++) {
-        a0->step_descs[i].snap = 1;
-        a0->recs[i].step_desc.snap = 1;
+    for (i = 0; i < softbody_set->count; i++) {
+        softbody_set->step_descs[i].snap = 1;
+        softbody_set->recs[i].step_desc.snap = 1;
     }
 }
 
-void softbody_ClearObjectSnap(Unk8003F62CRec *a0) {
+void softbody_ClearObjectSnap(Unk8003F62CRec *softbody_set) {
     s32 i;
-    for (i = 0; i < a0->count; i++) {
-        a0->step_descs[i].snap = 0;
-        a0->recs[i].step_desc.snap = 0;
+    for (i = 0; i < softbody_set->count; i++) {
+        softbody_set->step_descs[i].snap = 0;
+        softbody_set->recs[i].step_desc.snap = 0;
     }
 }
 
-void softbody_SetObjectGround(Unk80045878Obj *a0, s32 a1) {
-    Unk8003F62CRec *v1 = a0->softbody_block;
-    if (v1) {
+void softbody_SetObjectGround(Unk80045878Obj *slot_object, s32 height) {
+    Unk8003F62CRec *softbody_set = slot_object->softbody_block;
+    if (softbody_set) {
         s32 i;
-        for (i = 0; i < v1->count; i++) {
-            v1->recs[i].inner.coll.ground_height = a1;
+        for (i = 0; i < softbody_set->count; i++) {
+            softbody_set->recs[i].inner.coll.ground_height = height;
         }
     }
 }
 
-void softbody_FreeObject(Unk80045878Obj *a0) {
-    Unk8003F62CRec *s2;
-    s32 s0;
-    s2 = a0->softbody_block;
-    if (s2 != 0) {
-        for (s0 = 0; s0 < s2->count; s0++) {
-            softbody_Free(s2->recs[s0].slot_index);
+void softbody_FreeObject(Unk80045878Obj *slot_object) {
+    Unk8003F62CRec *softbody_set;
+    s32 rec_index;
+    softbody_set = slot_object->softbody_block;
+    if (softbody_set != 0) {
+        for (rec_index = 0; rec_index < softbody_set->count; rec_index++) {
+            softbody_Free(softbody_set->recs[rec_index].slot_index);
         }
     }
 }
 
-void softbody_FreeObjectById(s32 a0) {
-    Unk80045878Obj *v0 = slot_GetObject(a0);
-    if (v0) {
-        softbody_FreeObject(v0);
+void softbody_FreeObjectById(s32 slot_index) {
+    Unk80045878Obj *slot_object = slot_GetObject(slot_index);
+    if (slot_object) {
+        softbody_FreeObject(slot_object);
     }
 }
 
-void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
-    Unk8003F62CRec *v1 = a0->softbody_block;
+void softbody_RebaseObject(Unk80045878Obj *slot_object, s32 byte_offset) {
+    Unk8003F62CRec *v1 = slot_object->softbody_block;
     if (v1) {
-        v1 = (Unk8003F62CRec *)((u8 *)v1 + a1);
-        a0->softbody_block = v1;
-        a0->softbody_params = a0->softbody_params + a1;
+        v1 = (Unk8003F62CRec *)((u8 *)v1 + byte_offset);
+        slot_object->softbody_block = v1;
+        slot_object->softbody_params =
+            slot_object->softbody_params + byte_offset;
         v1->rebuild_request = 1;
     }
 }

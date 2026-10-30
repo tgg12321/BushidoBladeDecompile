@@ -19,7 +19,7 @@ extern u8 g_gpu_asset_draw_move_masks[];
  * g_gpu_draw_move_packets[g_gpu_presented_frame_count & 1]. */
 static DR_MOVE *g_gpu_draw_move_cursor;
 
-void gpu_AddDrawMove(s32 a0, s32 a1) {
+void gpu_AddDrawMove(s32 slot_index, s32 a1) {
     s32 var_0;
     RECT buf;
     u16 *tbl;
@@ -39,7 +39,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
         buf.h = *tbl++;
         u = *tbl++;
         v = *tbl;
-        if (a0 != 0) {
+        if (slot_index != 0) {
             buf.x = buf.x + 0x80;
             u = u + 0x80;
         }
