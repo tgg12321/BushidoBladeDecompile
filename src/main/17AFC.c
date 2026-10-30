@@ -5173,7 +5173,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[2] = obj->ground_probe_points[0].z;
                 eff_StartYawedQuadSlotCommand(
                     pos, obj->ground_probe_0_yaw,
-                    D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
+                    g_eff_yawed_quad_tex_selector_command_bits
+                        [D_8008E5A8[obj->character_roster_index]],
                     obj->index);
                 if ((0x60 >> obj->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -5201,7 +5202,8 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
                 pos[2] = obj->ground_probe_points[1].z;
                 eff_StartYawedQuadSlotCommand(
                     pos, obj->ground_probe_1_yaw,
-                    D_8008EBE0[D_8008E5A8[obj->character_roster_index]],
+                    g_eff_yawed_quad_tex_selector_command_bits
+                        [D_8008E5A8[obj->character_roster_index]],
                     obj->index);
                 if ((0x60 >> obj->collision_hit_tag) & 1) {
                     fight_RecordReplayEventAndDispatchSoundOrEffect(

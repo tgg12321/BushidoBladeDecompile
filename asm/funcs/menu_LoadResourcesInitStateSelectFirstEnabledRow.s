@@ -15,7 +15,7 @@ glabel menu_LoadResourcesInitStateSelectFirstEnabledRow
     /* 597A4 80068FA4 02000424 */   addiu     $a0, $zero, 0x2
     /* 597A8 80068FA8 3404848F */  lw         $a0, %gp_rel(g_menu_arena_cursor)($gp)
     /* 597AC 80068FAC 00000000 */  nop
-    /* 597B0 80068FB0 600684AF */  sw         $a0, %gp_rel(D_800A372C)($gp)
+    /* 597B0 80068FB0 600684AF */  sw         $a0, %gp_rel(g_row_menu_resource_root)($gp)
     /* 597B4 80068FB4 67A4010C */  jal        reloc_RelocateTwelveListsAndLoadVabPack
     /* 597B8 80068FB8 00000000 */   nop
     /* 597BC 80068FBC 5004858F */  lw         $a1, %gp_rel(g_row_menu_prim_buffers)($gp)

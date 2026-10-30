@@ -147,9 +147,9 @@ glabel fighter_DispatchFrameEvent
     /* 23674 80032E74 A8E52290 */  lbu        $v0, %lo(D_8008E5A8)($at)
     /* 23678 80032E78 04000786 */  lh         $a3, 0x4($s0)
     /* 2367C 80032E7C 80100200 */  sll        $v0, $v0, 2
-    /* 23680 80032E80 0980013C */  lui        $at, %hi(D_8008EBE0)
+    /* 23680 80032E80 0980013C */  lui        $at, %hi(g_eff_yawed_quad_tex_selector_command_bits)
     /* 23684 80032E84 21082200 */  addu       $at, $at, $v0
-    /* 23688 80032E88 E0EB268C */  lw         $a2, %lo(D_8008EBE0)($at)
+    /* 23688 80032E88 E0EB268C */  lw         $a2, %lo(g_eff_yawed_quad_tex_selector_command_bits)($at)
     /* 2368C 80032E8C 8F86010C */  jal        eff_StartYawedQuadSlotCommand
     /* 23690 80032E90 1000A427 */   addiu     $a0, $sp, 0x10
     /* 23694 80032E94 B1000392 */  lbu        $v1, 0xB1($s0)
@@ -216,9 +216,9 @@ glabel fighter_DispatchFrameEvent
     /* 23780 80032F80 A8E52290 */  lbu        $v0, %lo(D_8008E5A8)($at)
     /* 23784 80032F84 04000786 */  lh         $a3, 0x4($s0)
     /* 23788 80032F88 80100200 */  sll        $v0, $v0, 2
-    /* 2378C 80032F8C 0980013C */  lui        $at, %hi(D_8008EBE0)
+    /* 2378C 80032F8C 0980013C */  lui        $at, %hi(g_eff_yawed_quad_tex_selector_command_bits)
     /* 23790 80032F90 21082200 */  addu       $at, $at, $v0
-    /* 23794 80032F94 E0EB268C */  lw         $a2, %lo(D_8008EBE0)($at)
+    /* 23794 80032F94 E0EB268C */  lw         $a2, %lo(g_eff_yawed_quad_tex_selector_command_bits)($at)
     /* 23798 80032F98 8F86010C */  jal        eff_StartYawedQuadSlotCommand
     /* 2379C 80032F9C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 237A0 80032FA0 B1000392 */  lbu        $v1, 0xB1($s0)

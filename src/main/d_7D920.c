@@ -681,7 +681,8 @@ u16 g_object_bone_hit_deflect_angles[22] = {
  * g_fight_step_row_sound_offsets and D_8008EBE0 sized from the gaps. */
 s32 g_fight_step_row_sound_offsets[5] = {0, 51, 58, 65, 72};
 
-s32 D_8008EBE0[5] = {0, 262144, 131072, 393216, 0};
+s32 g_eff_yawed_quad_tex_selector_command_bits[5] = {
+    0, 262144, 131072, 393216, 0};
 
 /* Per snd_GetStageSoundIndex category: the first of three sound ids. */
 u8 g_snd_stage_sequence_base_sounds[6] = {0x7C, 0x7D, 0x7D, 0x7E, 0x7C, 0x7D};

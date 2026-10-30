@@ -564,7 +564,7 @@ g_sel_screen_work = 0x800A36A0;  // data-wave 2026-10-27: was D_800A36A0
 D_800A36B0 = 0x800A36B0;
 g_comb_received_pad_word = 0x800A36C0;  // data-wave 2026-10-28: was D_800A36C0
 g_comb_prev_send_word = 0x800A36D0;  // data-wave 2026-10-28: was D_800A36D0
-D_800A372C = 0x800A372C;
+g_row_menu_resource_root = 0x800A372C;  // data-wave 2026-10-29: was D_800A372C
 g_comb_read_fd = 0x800A3734; /* data-wave 2026-09-24: was D_800A3734 */
 g_comb_event_ioer = 0x800A3738; /* data-wave 2026-09-24: was D_800A3738 */
 g_comb_write_fd = 0x800A373C; /* data-wave 2026-09-24: was D_800A373C */
@@ -883,7 +883,7 @@ DMA6_BCR = 0x8009BF5C; /* -> 0x1F8010E4 DMA6 (OTC) block control; _otc writes th
 g_vsync_rcnt1_count_reg = 0x800A1514; /* libetc VSync static: .word 0x1F801110 (root counter 1 count pointer) */  /* data-wave 2026-10-03: was g_vsync_counter_ptr */
 Hcount = 0x800A1518; /* snapshot of *g_vsync_rcnt1_count_reg from prev call (for delta calc) */  /* data-wave 2026-09-29: was g_vsync_counter_snapshot */
 prevVcount = 0x800A151C; /* snapshot of Vcount at the end of the last VSync */  /* data-wave 2026-10-08: was g_vsync_dma_region_snapshot */
-D_800A372C = 0x800A372C; /* arena pointer arg0 + 0x58 stored in init */  /* data-wave 2026-10-08: was g_menuctl_effect_handle */
+g_row_menu_resource_root = 0x800A372C; /* arena pointer arg0 + 0x58 stored in init */  /* data-wave 2026-10-08: was g_menuctl_effect_handle */
 g_eff_point_light_countdown = 0x800A32BC; /* set to 0xA by eff_StartCommand when the command word has bit 0x200000; func_80061064 decrements it (calling light_SetPointLight) while >= 2, calls light_DisablePointLight and clears it at 1 */  /* data-wave 2026-10-08: was g_text1b_post_render_countdown */
 is_pad_init = 0x8009BD80; /* PAD-initialised flag: 1 by PAD_init / InitPAD, 0 by StopPAD; set by SetInitPadFlag, returned by ReadInitPadFlag (libapi/pad.c:15-68) */  /* data-wave 2026-10-09: was g_intro_get_set_value */
 g_gpu_scrolling_sprite_step_count = 0x800A3304; /* incremented & ANDed with 1 to select alternating buffer in gpu_GetScrollingSpritePrimBuffer */  /* data-wave 2026-10-08: was g_intro_dbuf_parity */

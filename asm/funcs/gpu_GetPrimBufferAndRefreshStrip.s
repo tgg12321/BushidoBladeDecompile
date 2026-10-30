@@ -9,7 +9,7 @@ glabel gpu_GetPrimBufferAndRefreshStrip
     /* 5993C 8006913C 01004230 */  andi       $v0, $v0, 0x1
     /* 59940 80069140 04006210 */  beq        $v1, $v0, .L80069154
     /* 59944 80069144 21808000 */   addu      $s0, $a0, $zero
-    /* 59948 80069148 6006848F */  lw         $a0, %gp_rel(D_800A372C)($gp)
+    /* 59948 80069148 6006848F */  lw         $a0, %gp_rel(g_row_menu_resource_root)($gp)
     /* 5994C 8006914C 33BA010C */  jal        gpu_LoadVramBottomStrip
     /* 59950 80069150 00000000 */   nop
   .L80069154:

@@ -256,7 +256,7 @@ extern u8 g_resource_kind_entry_ids[];
 /* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
 extern u16 g_object_bone_hit_deflect_angles[22];
 extern s32 g_fight_step_row_sound_offsets[];
-extern s32 D_8008EBE0[];
+extern s32 g_eff_yawed_quad_tex_selector_command_bits[];
 extern u8 g_snd_stage_sequence_base_sounds[6];
 extern Unk8008EA44Entry g_snd_stage_sequence_cue_ticks[6];
 extern u8 g_fight_time_limit_choices[4];

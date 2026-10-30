@@ -443,11 +443,11 @@ dlabel g_fight_start_position_pair_changed
     /* 93F2B 800A372B */ .byte 0x00
 enddlabel g_fight_start_position_pair_changed
 
-nonmatching D_800A372C
+nonmatching g_row_menu_resource_root
 
-dlabel D_800A372C
+dlabel g_row_menu_resource_root
     /* 93F2C 800A372C 00000000 */ .word 0x00000000
-enddlabel D_800A372C
+enddlabel g_row_menu_resource_root
 
 nonmatching g_comb_close_request
 

@@ -62,7 +62,7 @@ void menu_SetEnabledRows(s32 arg0) {
     *p = v;
 }
 
-extern s32 D_800A372C;
+extern s32 g_row_menu_resource_root;
 extern u8 g_row_menu_vram_copy_source_rect[8];
 
 s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
@@ -79,7 +79,7 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
         2, (Unk8006E950Head *)g_menu_arena_cursor);
-    D_800A372C = g_menu_arena_cursor;
+    g_row_menu_resource_root = g_menu_arena_cursor;
     var_2 = reloc_RelocateTwelveListsAndLoadVabPack(g_menu_arena_cursor);
     g_menu_arena_cursor = var_2;
     work_block = (Unk800A34FCRec *)gpu_InitPrimBufferPair(
@@ -181,7 +181,7 @@ Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 buffer_index) {
     Unk8009BD24Block *v0 = g_row_menu_working_record_ptr;
     Unk800A34FCRec *v1 = g_row_menu_work_block;
     if (v1->strip_refresh_snapshot != v0->grayscale) {
-        gpu_LoadVramBottomStrip(D_800A372C);
+        gpu_LoadVramBottomStrip(g_row_menu_resource_root);
     }
     v0 = g_row_menu_working_record_ptr;
     v1 = g_row_menu_work_block;
@@ -2736,7 +2736,7 @@ RECT g_gpu_fullscreen_image_end_clear_rect = {0, 0, 640, 480};
 TILE *g_sheet_pair_panel_tile_cursor;
 DR_MODE *g_sheet_pair_draw_mode_cursor;
 u8 *g_sheet_pair_sprite_cursor;
-s32 D_800A372C;
+s32 g_row_menu_resource_root;
 s32 g_sheet_pair_selection_y_offset;
 
 /* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
