@@ -1,0 +1,24 @@
+{
+  "description": "versus-2p-bamboo with D_800A3790 (0x800A3790) poked 0x23 -> 0x2B at the top menu (a modified game): the only stores are 0x23, by func_80046B44 (boot and every reinit) and func_80046E8C (no caller), so bit 3 is never set in retail; gpu_PrepareViewAndFlushDrawQueue (32D04.c:1146-1150) then calls gpu_GetLastFogOtIndex and puts the last fog-move OT index in scratchpad 0x1F800010 instead of 0x7FFFFFFF",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:bamboo_thicket",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-fog-cutoff-poke-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "pokes": [
+    {
+      "at": "0x800A3790",
+      "hex": "2b000000",
+      "phase": "top_menu"
+    }
+  ]
+}
