@@ -1,0 +1,9 @@
+main:var_3=present_skip_frames
+gpu_DrawFixedSpritePairWithSelectedSheets:arg1=draw_mode
+gpu_DrawTimeFieldsAndDecimalCounter:arg0=time_fields
+gpu_DrawPairedMarkRowsAndTimeFields:arg0=time_fields
+gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads:arg1=first_selection_phase
+cdrom_SetAudioRepeat:arg0=repeat
+snd_StopAllVoicesAndCloseSlotVab:a0=arena_id
+snd_ReloadListedVabsFromFileAndInstallBillboards:arg1=stage_index
+snd_QueueSound:var_1=sound_vab_entry

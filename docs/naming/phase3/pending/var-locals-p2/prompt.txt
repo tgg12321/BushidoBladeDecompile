@@ -1,0 +1,40 @@
+# Research (read-only): local / parameter names, parallel batch p2 (row var-locals-p2, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-p1/prompt.txt` (which chains to var-locals-33 / 32 / 31 / 30 /
+29 / 26 / 15 and the wave-15..33 lessons) exactly, plus `pending/var-locals-{32,33,p1}/notes.txt`, with
+these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD 032e2c568 (read-only; equals main; re-derive every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-p2-research.md`
+  (overrides any output file the earlier prompts name), same shape as var-locals-p1: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-p1/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not
+  edited), ending with a "### LEADS for var-locals-p3" section. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  1. 6CF8.c main:var_3=present_skip_frames: dropped by the p1 drafter because the first read
+     (pad_Update(var_3), 6CF8.c:458) precedes any store; the p1 pre-apply reviewer judged that ground
+     weak (the only definition, 6CF8.c:484, is the g_main_present_skip_frames snapshot every later use
+     reads). Re-derive and judge it alone; say in the row why it is (or is not) true at the first read.
+  2. auto-named bindings (a0..a3, arg<N>, var_<N>, v0, s<N>, sp<N>, temp_*) of functions with admitted
+     names, not on any NO_NAME / neutral list, in src/main/4D0A8.c (waves 15-17 worked it: check
+     pending/var-locals-15..24/notes.txt NO_NAME lists first), then 63D2C.c, cdrom.c, cdrom_mix.c,
+     memcard.c, snd.c, then any other game TU (ls src/main, skip psxsdk/) not in p1's scope
+     (51268.c, 596CC.c, 5ED34.c, 64FD8.c, 6CF8.c, 87A0.c, 9F9C.c: used up) and not in 17AFC.c .. 4510C.c.
+  NEVER touch src/main/17AFC.c .. 4510C.c (the sequential var-locals-34/35 track, run in parallel by
+  another lane, owns them); a prototype of an in-scope function declared in a header is fine to list
+  as a comment-pass prototype edit.
+- Left neutral on purpose, do not re-propose without new evidence: as var-locals-33's prompt, plus
+  menu_InitSelScreen:t0 (p1 pre-apply FAIL, two roles).
+- Do not re-propose wave 8-33 and p1 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,33,p1}/notes.txt) without new evidence, said in the row.
+- Prototype parameter edits (a prototype elsewhere naming the same parameter) go in the comment
+  list; they land in the comment commit.
+- Lessons (unchanged from var-locals-33's prompt): scoped_plan-resolvable bindings only; no collision
+  with a member, global, macro or function the same function references; two roles in one body =
+  neutral; own vs opponent distinguished; true before AND after every in-place rewrite;
+  fighter_index for the 0/1 fight side; FAKE-labelled temporaries neutral unless true at every use;
+  no word the code doesn't show; units only where the code shows the scale.

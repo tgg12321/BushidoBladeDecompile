@@ -1,0 +1,21 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-33 and var-locals-p1); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_base_tree("HEAD") of the lane worktree ln-naming-a, HEAD 032e2c568 = main; NAMING_KEYCHECK_ROOT = cwd = the worktree; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 9 pairs
+(27 token substitutions: 4D0A8.c 11, 63D2C.c 2, 6CF8.c 5, cdrom.c 2, snd.c 7; no include/ file touched; the comment edits listed in notes.txt
+R6 WATCH are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 27. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; ./-> member tokens excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch (the scan is a separate tokenizer pass over naming_keycheck.code_spans, not the plan's substitution list), and the new name has zero raw-text occurrences in its function span and in its file.
+The run modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  main:var_3=present_skip_frames 5
+  gpu_DrawFixedSpritePairWithSelectedSheets:arg1=draw_mode 4
+  gpu_DrawTimeFieldsAndDecimalCounter:arg0=time_fields 4
+  gpu_DrawPairedMarkRowsAndTimeFields:arg0=time_fields 3
+  gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads:arg1=first_selection_phase 2
+  cdrom_SetAudioRepeat:arg0=repeat 2
+  snd_StopAllVoicesAndCloseSlotVab:a0=arena_id 3
+  snd_ReloadListedVabsFromFileAndInstallBillboards:arg1=stage_index 2
+  snd_QueueSound:var_1=sound_vab_entry 2
