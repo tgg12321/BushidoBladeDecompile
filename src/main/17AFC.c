@@ -1198,7 +1198,7 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
 /* Blade contact test between the two D_80101EC8 records (called by
  * fight_UpdateFighterInteractionsAndPointCaches; the result goes to
  * g_fight_weapon_contact_result). Returns -1 unless both records' +0x3C are at
- * least 4. Borrows the first 16 SPAD->bone_hit_points points as two 2x2 grids
+ * least 4. Borrows the first 16 SPAD->spadA8 points as two 2x2 grids
  * per record (fight_ProcessPositionRecordsInQuad's layout). A record whose +0xE
  * is not 6 or 7, in +0x6A state 2, 0x1B, 0x28 or 0x26, whose grid
  * fight_ProcessPositionRecordsInQuad hits plays effects 1, 0x26 and 0x2D and
@@ -2454,8 +2454,8 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
  * SPAD->second_weapon_points are copied into each record's prev_weapon_points /
  * prev_second_weapon_points (fighter_BlendCurrentAndPreviousContactPoints reads
  * them back); bone_hit_points_1_3_centroid is the centroid of
- * SPAD->bone_hit_points[k][1..3] and bone_hit_points_4_5_midpoint the midpoint
- * of SPAD->bone_hit_points[k][4..5]. */
+ * SPAD->spadA8[k][1..3] and bone_hit_points_4_5_midpoint the midpoint
+ * of SPAD->spadA8[k][4..5]. */
 void fight_UpdateFighterInteractionsAndPointCaches(void) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
      * both players' pending_move_event values are tested before the clash

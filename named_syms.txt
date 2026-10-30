@@ -422,7 +422,7 @@
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
 /* +0x210 / +0x234 are Unk80101EC8Record.prev_weapon_points / prev_second_weapon_points (include/game.h). */
 
-/* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2234-2238) */
+/* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2231-2235) */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
 /* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, motion_AdvanceVariantIfAtNibble4Or5Position, motion_ResolveMoveData) */
 
@@ -635,7 +635,7 @@
 
 /* === Byte tables g_fight_config_id_data_rows / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
 /* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:6372, 2B344.c:235) */
-/* or fighter_Init's roster_index (9F9C.c:3879-3880); D_8008D55C maps a table index */
+/* or fighter_Init's roster_index (9F9C.c:3878-3879); D_8008D55C maps a table index */
 /* into the g_fight_config.unk_4 id space.  g_listener_cam, g_fight_weapon_contact_result and */
 /* g_fight_opponent_order: see their lines. */
 

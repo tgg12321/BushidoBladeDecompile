@@ -861,7 +861,7 @@ typedef struct {
 
 /* A position (g_snd_sequence_positions: 12-byte stride, 6 entries, one per
    g_snd_sequence_ticks slot): the same s32 x/y/z triple as Vec3i32;
-   fighter_UpdateBoneWorldData copies a scratchpad point (SPAD->bone_hit_points)
+   fighter_UpdateBoneWorldData copies a scratchpad point (SPAD->spadA8)
    into Unk80101EC8Record.bone_hit_point_0 as one 12-byte object. */
 typedef Vec3i32 Unk80107850Rec;
 
@@ -909,7 +909,7 @@ typedef struct {
 } Unk800EED10Entry;
 
 /* A hit record: one of the 22 test points of a character.
- * fighter_UpdateBoneWorldData places point i at SPAD->bone_hit_points[ch][i]
+ * fighter_UpdateBoneWorldData places point i at SPAD->spadA8[ch][i]
  * (`ofs` rotated by node_GetSlotMatrixPointerArray()'s matrix `bone`, plus that
  * matrix's translation); the hit tests (fighter_CastWeaponSegment,
  * fighter_TestTriangleBoneHits, object_ResolveFighterHits) take outer_radius /
@@ -1408,11 +1408,11 @@ typedef union {
  * character (fight_UpdateFighterInteractionsAndPointCaches copies [0][0..2] and
  * [1][0..2] to the two records' +0x210); second_weapon_points: two more per
  * character (copied to +0x234); body_overlap_points: two body points per
- * character (fighter_ResolveBodyOverlap builds them from bone_hit_points joint
- * 1 and the midpoint of joints 15 and 19); bone_hit_points: 22 points per
+ * character (fighter_ResolveBodyOverlap builds them from spadA8 joint
+ * 1 and the midpoint of joints 15 and 19); spadA8: 22 points per
  * character (fighter_CastWeaponSegment reads 0x1F8000A8 + id * 0x108 + i * 0xC,
  * i < 22). fighter_Update hands fighter_UpdateBoneWorldData its character's
- * bone_hit_points / weapon_points / second_weapon_points. unk2B8: the area at
+ * spadA8 / weapon_points / second_weapon_points. unk2B8: the area at
  * 0x1F8002B8 (Unk1F8002B8Union), to the end of the scratchpad; the scratchpad
  * is shared scratch that other code also uses with its own views (see
  * Unk1F8002B8Rec). */
@@ -1774,7 +1774,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_34F[0x350 - 0x34F];
     s16 bone_event_counter;
     /* index into node_GetSlotMatrixPointerArray()'s MATRIX * table and
-     * SPAD->bone_hit_points[] (fighter_DispatchArmedBoneVectorEventAndDisarm)
+     * SPAD->spadA8[] (fighter_DispatchArmedBoneVectorEventAndDisarm)
      */
     s16 bone_event_bone_index;
     /* fighter_StoreBoneLocalVectorAndArmEventTrigger's gte_stlvnl output;
@@ -2413,9 +2413,9 @@ typedef struct {
  * softbody_Create fills a free one from a Func80017A44Input and softbody_Build
  * builds its node / edge graph; 87A0 steps it (softbody_UpdateList by each
  * Unk80017FA0Rec's slot_index). points: the input's point table, 0 = free
- * (softbody_Free); count: its node count; flags: the input's flags; nodes /
- * edges: the node and edge tables (edges right after the count 0x40-byte
- * nodes); matrix: a copy of the input's matrix. */
+ * (softbody_Free); count: its node count; a44out_08: a copy of the input's
+ * field_2; nodes / edges: the node and edge tables (edges right after the
+ * count 0x40-byte nodes); matrix: a copy of the input's matrix. */
 typedef struct {
     SVECTOR *points;
     s16 count;
@@ -2455,8 +2455,9 @@ typedef struct Unk8003F6D8Coll {
 } Unk8003F6D8Coll;
 
 /* softbody_Create's argument (2B344 softbody_CreateForNode builds it on its
- * stack): the point table and its count, the flags, the group list, the
- * object's matrix and the buffer the node / edge tables go to. */
+ * stack): the point table and its count, field_2 (softbody_CreateForNode stores
+ * 0xE00; softbody_Create copies it to a44out_08), the group list, the object's
+ * matrix and the buffer the node / edge tables go to. */
 typedef struct {
     s16 count;
     s16 field_2;

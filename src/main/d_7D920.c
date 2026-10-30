@@ -426,14 +426,15 @@ s8 g_fighter_initial_carried_object_kinds[27][5] = {
     {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1},
     {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1}, {-1, -1, -1, -1, -1}};
 
-/* [character_data_index] -> Unk80101EC8Record.bone_group_6_9_lost_step_scale */
+/* [character_data_index] ->
+ * Unk80101EC8Record.hit_record_group_6_9_lost_step_scale */
 u16 g_fighter_lost_bone_group_step_scales[28] = {
     0xFE0, 0xFB0, 0xFA0, 0xFE0, 0xF98, 0xFB0, 0xFE0, 0xFB0, 0xFA0, 0xFA0,
     0xFE0, 0xF40, 0xFE0, 0xFB0, 0xFA0, 0xFA0, 0xFB0, 0xFB0, 0xFA0, 0xFA0,
     0xFE0, 0xFB0, 0xFE0, 0xF40, 0xFE0, 0xFE0, 0xFE0, 0x0};
 
 /* [character_data_index][i] ->
- * Unk80101EC8Record.bone_group_10_13_step_scales[i] */
+ * Unk80101EC8Record.hit_record_group_10_13_step_scales[i] */
 u16 D_8008E3F8[27][4] = {
     {0x1000, 0xFE0, 0xFC0, 0xFA0}, {0x1000, 0xFC0, 0xF80, 0xF40},
     {0x1000, 0xFA0, 0xF60, 0xF20}, {0x1000, 0xFE0, 0xFC0, 0xFA0},

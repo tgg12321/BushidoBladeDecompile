@@ -3024,7 +3024,7 @@ void fighter_StoreBoneLocalVectorAndArmEventTrigger(
  * (GTE MVMVA), scaled by (150 - counter) / 150, negated when its y exceeds
  * 0x800, and handed to fight_RecordReplayEventAndDispatchSoundOrEffect with
  * scratchpad point
- * SPAD->bone_hit_points[fighter_index][rec->bone_event_bone_index]. The counter
+ * SPAD->spadA8[fighter_index][rec->bone_event_bone_index]. The counter
  * is cleared on every call that finds it running (the original stores 0 under
  * `>= 150` and then again unconditionally). */
 void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
@@ -3085,7 +3085,7 @@ void fighter_ScaleBoneHitRecords(s32 fighter_index, s32 size_scale) {
 /* Places character rec->index's points in world space with its bone matrices
  * (node_GetSlotMatrixPointerArray()): each of the 22 hit records' offsets
  * through its bone into bone_hit_points (the callers pass
- * SPAD->bone_hit_points[i]); the point set D_8008D86C[weapon_id] (D_8008D774
+ * SPAD->spadA8[i]); the point set D_8008D86C[weapon_id] (D_8008D774
  * when weapon_entry_id == 50) through bone 18 into weapon_points; when
  * wielded_object_live_state != 0, the pair D_8008D88C[wielded_object_kind]
  * through bone 19 into second_weapon_points. A point is the GTE MVMVA rotation
@@ -3369,7 +3369,7 @@ void motion_InitStreams(void) {
 
 /* The record's motion_data_id -> its slot in g_motion_fighter_loaded_data_ids
  * (motion_slot); for ids below 0x2000, the nibble positions of 4 and 5
- * (object_variant_index / unk_8E), copying bone_group_6_9_intact into
+ * (object_variant_index / unk_8E), copying hit_record_group_6_9_intact into
  * object_variant_enabled / unk_90 under conditions on g_fight_mode_selector. */
 void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
     s32 i = 0;
