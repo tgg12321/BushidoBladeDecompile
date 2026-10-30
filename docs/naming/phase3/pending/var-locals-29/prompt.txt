@@ -1,0 +1,41 @@
+# Research (read-only): local / parameter names, wave 29 (row var-locals-29, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-26/prompt.txt` (which chains to var-locals-15 and the
+wave-15..25 lessons) exactly, plus `pending/var-locals-{26,27,28}/notes.txt` and
+`pending/var-locals-28/prompt.txt` (its wave-27 lessons still hold), with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD 28bc25e54 (read-only; equals main, wave 28 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-29-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 28: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block, then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not edited). Return only a
+  one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  0. Two name-audit findings on already-landed local names (rows that RENAME a landed name; judge them
+     against every use, propose the audit's suggestion or a better one, or NO_NAME with the reason):
+     - resource_RankRequestedEntriesAndReloadOnChange:inputs_unchanged (audit: overclaims; 368E4.c
+       ~1853-1856 compares only request-state signs, ~1900-1904 adds the pair index; suggested
+       request_membership_and_pair_unchanged).
+     - fighter_HandleMissingSupportWhileDescending:missing_support (audit: overclaims; 9F9C.c ~4448
+       after a distant hit the flag follows move_kind, not support geometry, and ~4452 clears it on any
+       second segment hit without checking its normal; suggested support_response_needed).
+  1. var-locals-28's cap-cut rows: the RENAMEs in tmp/codex/var-locals-28-research.md that are absent
+     from pending/var-locals-28/local_manifest.csv and not explained as dropped in its notes / the
+     backlog row (the backlog says 4 were cap-cut). Re-derive them against the current source.
+  2. src/main/17AFC.c from object_QueueKind (~17AFC.c:4136) onward, every C definition in file order.
+  3. Then 24BF0.c, 25788.c, 25C38.c, 267A8.c, ... (ROM-offset order of `ls src/main`) that still have
+     auto-named bindings (argN, var_N, a0..a3, v0_xxxx, spNN, temp_*, s, p, ...) not on any NO_NAME /
+     neutral list. Skip psxsdk/.
+- Do not re-propose wave 8-28 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,28}/notes.txt) without new evidence, said in the row.
+- Also list, for the comment pass: stale old parameter names in 17AFC.c's separate prototypes
+  (~1080, ~1727, ~3650 -- prototypes whose parameter names differ from the definitions renamed in
+  waves 26-28) and pre-existing stale 17AFC.c cites (symbol_addrs.txt entries g_fighter_body_overlap_radii,
+  D_80102092, D_80101F32, D_8010237E; docs/engine/combat.md:22,25,66), each with file:line and the fix.
+- Lessons: apply is naming_keycheck.scoped_plan(base, pairs, {}), so every row must be a binding
+  scoped_plan can resolve (no function-like macro arguments); a new name must not equal a member,
+  global, or function the same function references; a binding with two roles in one body stays neutral;
+  own vs opponent values must be distinguished (wave 28 FAIL: opponent deltas named bare).

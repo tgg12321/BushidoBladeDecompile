@@ -1,0 +1,91 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-28); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_working_tree() with NAMING_KEYCHECK_ROOT = cwd = the lane worktree ln-naming-b, HEAD 28bc25e54 = main; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 80 pairs
+(689 token substitutions: src/main/17AFC.c 618, src/main/28708.c 56, src/main/9F9C.c 6, src/main/368E4.c 5, src/main/25C38.c 4; no include/ file touched; the comment edits listed in notes.txt
+R6 WATCH are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 689. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch. The run modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  resource_RankRequestedEntriesAndReloadOnChange:inputs_unchanged=requested_set_and_pair_unchanged 5
+  fighter_HandleMissingSupportWhileDescending:missing_support=support_response_needed 6
+  object_SpawnScatteredAt:a1=object_kind 2
+  object_SpawnScatteredAt:a2=drop_position 2
+  object_SpawnScatteredAt:p=pool_object 13
+  object_SpawnScatteredAt:var_1=random_value 5
+  object_QueueKind:arg0=fighter_record 11
+  object_QueueKind:arg1=object_kind 4
+  object_PickUpNearby:arg0=fighter_record 8
+  object_PickUpNearby:p=pool_cursor 10
+  object_PickUpNearby:var_4=collision_y 3
+  object_PickUpNearby:old_val=picked_kind 4
+  math_LerpAngle:arg1=target_angle 3
+  math_LerpAngle:arg2=retained_fraction 2
+  object_UpdatePool:var_5=horizontal_speed_sq 6
+  object_UpdatePool:var_7=hit_normal 10
+  object_DeflectFromFighterHit:var_5=spin_delta 4
+  object_DeflectFromFighterHit:idx=hit_record_index 2
+  object_ResolveFighterHits:var_2=inner_sphere_hit 4
+  object_ResolveFighterHits:var_4=segment_points 5
+  object_ResolveFighterHits:var_5=target_fighter 7
+  object_ResolveFighterHits:var_6=target_fighter_index 9
+  object_ResolveFighterHits:var_7=target_move_kind 15
+  object_ResolveFighterHits:var_10=outer_sphere_hit 5
+  fight_CreateBallisticRecordAndDispatchEvent:var_5=command_vector 3
+  fight_CreateBallisticRecordAndDispatchEvent:s0=ballistic_record 19
+  fighter_ReadFrameMetadata:rec=fighter_record 25
+  fighter_ReadFrameMetadata:c=command 5
+  fighter_ReadFrameMetadata:val=command_frame 14
+  snd_QueuePositionalSound:arg0=sound_index 2
+  snd_QueuePositionalSound:arg1=sound_position 4
+  snd_QueuePositionalSound:var_4=distance 5
+  snd_QueuePositionalSound:var_6=listener_yaw 4
+  snd_QueuePositionalSound:var_8=swap_channels 4
+  fight_RecordReplayEventAndDispatchSoundOrEffect:arg1=event_kind 8
+  fight_RecordReplayEventAndDispatchSoundOrEffect:arg2=src_position 52
+  fight_RecordReplayEventAndDispatchSoundOrEffect:arg3=src_command_vector 7
+  fight_RecordReplayEventAndDispatchSoundOrEffect:s0=sound_offset 25
+  fight_RecordReplayEventAndDispatchSoundOrEffect:s4=second_sound_offset 7
+  fighter_DispatchFrameEvent:obj=fighter_record 115
+  fighter_DispatchFrameEvent:kind=frame_event 16
+  fighter_DispatchFrameEvent:base=sound_offset 29
+  fighter_DispatchFrameEvent:base2=other_sound_offset 29
+  fighter_DispatchFrameEvent:row=hit_class_sound_offset 6
+  fighter_DispatchFrameEvent:row2=other_hit_class_sound_offset 6
+  fighter_DispatchFrameEvent:var_5=hit_class_offset 5
+  fighter_DispatchFrameEvent:var_6=other_hit_class_offset 5
+  fighter_ProcessFrameEvents:base=fighter_record 5
+  fighter_ProcessFrameEvents:s0=metadata_cursor 11
+  fighter_ProcessFrameEvents:val=event_frame 3
+  fighter_ProcessFrameEvents:var_11=current_frame 3
+  snd_ResetStageSoundState:p1=sound_state_cursor 3
+  snd_ResetStageSoundState:p2=sequence_ticks_cursor 3
+  snd_QueuePositionSequence:arg0=position 2
+  snd_UpdateStageSounds:var_2=stage_sound_index 7
+  snd_UpdateStageSounds:var_7=random_value 3
+  snd_UpdateStageSounds:var_9=random_roll 3
+  snd_UpdateStageSounds:var_10=trigger_delay_index 3
+  snd_UpdateStageSounds:tbl=slot_spec_cursor 5
+  fight_BuildOpponentOrder:a1=order_slot 2
+  fight_AdvanceOpponentOrder:a0=order_cursor 5
+  fight_AdvanceOpponentOrder:b=order_count 2
+  fight_AdvanceOpponentOrder:a1=opponent_character_index 7
+  fight_AdvanceOpponentOrder:y=opponent_weapon_id 4
+  fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank:v1=presentation_index 7
+  fight_PackMatchScores:var_6=match_recorded 3
+  fight_AdvanceMatch:v1=fighter_index 8
+  bits_ExtractMask3F83F8:a0=scattered_bits 2
+  bits_DepositMask3F83F8:a0=packed_bits 2
+  memcard_BuildFileHeader:s1=first_class_count 5
+  memcard_BuildFileHeader:s2=second_class_count 5
+  memcard_BuildFileHeader:s3=third_class_count 6
+  memcard_BuildFileHeader:var_11=src_icon_cursor 3
+  memcard_BuildFileHeader:var_12=icon_out_cursor 3
+  memcard_StepRequest:temp_s0=free_blocks 3
+  memcard_StepRequest:var_s1=create_first 4
+  memcard_StepRequest:temp_v0=retry_count 4
+  memcard_PollFileCompletion:var_1=in_progress_status 4
+  memcard_StartLoadOnceStepAndDrawSheetPair:s0=result 16
+  memcard_StartLoadOnceStepAndDrawSheetPair:v0=request_status 3

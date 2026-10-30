@@ -1,0 +1,42 @@
+Drafter (Sonnet) re-derivation of the Opus research (87 rows) at 28bc25e54 = main: declaration, every use (token scan of each definition, 87/87 counts equal the research USES counts), whole bodies read for 17AFC.c 4193-6031, 25C38.c 421-455, 28708.c 179-1105, 368E4.c 1834-1912, 9F9C.c 4420-4519. No kept row's name was changed from the research. Rows 1-2 are the two name-audit rows (they rename the landed names inputs_unchanged / missing_support; old token = the current name) and stay first.
+Result: 87 research rows, 2 dropped, 5 cap-cut, 80 kept (689 token substitutions).
+
+DROPPED (2), two roles / not shown at every use:
+  snd_QueuePositionalSound:var_9=right_volume and :var_10=left_volume. Before the swap at 4958-4962 they hold the wide (30000) and narrow (10000) falloff of the same offset, channel-neutral; only after the conditional swap are they the right / left volume passed to snd_QueueSound. The name is not true at every use (the research itself marked them its weakest). Keep neutral. snd_QueuePositionalSound:var_8=swap_channels (flag read once, effect named) and the other six bindings of that function stay in the wave.
+
+CAP-CUT (5; the file-order tail beyond 80 rows; re-derived and clean, usable by var-locals-30 without new research):
+  menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult:var_1=pressed_buttons
+  memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress:v0=request_status
+  memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress:var_2=sheet_pair_index
+  memcard_StepSaveOverwriteAndFormatPrompts:var_1=highlighted_cell_index (comment 28708.c:850-853 "sets var_1 in its own body" needs the hand edit when this lands; it is a score note, not FAKE-labelled)
+  memcard_StepSaveOverwriteAndFormatPrompts:var_3=sheet_pair_index
+
+NO_NAME (carried from the research, bindings looked at; no new proposal):
+  fighter_ReadFrameMetadata:ptr: scoped_plan rejects it (old token in a #define body / paste in 9F9C.c); role is the metadata byte cursor.
+  fighter_ResolveBodyOverlap:var_1: dropped by wave 28 (two roles).
+  Loop counters i / j / k / n of the functions in scope; object_PickUpNearby kind / py / dx / dz named already.
+  math_LerpAngle:arg0 (rewritten in place: two roles); object_UpdatePool work / temp (two roles, Ruling 11 notes 4322-4330).
+  object_DeflectFromFighterHit var_8 (copy of one member), vx / vz (old tokens in libgpu.h macro bodies).
+  fight_CreateBallisticRecordAndDispatchEvent:var_1 (FAKE constant holder 4700-4703), :v1 (rounding temp).
+  snd_QueuePositionalSound:var_7 (two representations: signed then absolute), :sp_tmp (gte_Lzc macro argument), :hi.
+  fight_RecordReplayEventAndDispatchSoundOrEffect:arg0 (fighter index / owner / collision class / 0-1 flag across callers).
+  fight_BuildOpponentOrder:var_5 (FAKE 5645-5648), :sp, :v0, :v1, :t1, :t2, :dir (declared three times).
+  fight_AdvanceOpponentOrder:x (copy of unnamed D_800A37BC), :z, :v (declared twice).
+  fight_RecordMatchResult:p1 / p2 (copies of unnamed globals). fight_AdvanceStepTableRowOrInsertBestTimeAndSetFlags locals (no role study).
+  25C38.c menu_ResetSubflowCopySavedToWorkingAndSetEnabledRows:a0, menu_InitSubflowForMode:arg0; 25788.c and 267A8.c bindings: earlier NO_NAME.
+  28708.c memcard_BuildSaveBlock:a0 (cited by FAKE 64-66), memcard_StepRequest:var_v1 / var_v0 (several roles), memcard_StepSaveOverwriteAndFormatPrompts:v0 (two roles).
+
+R6 WATCH (comment pass, hand edits in the wave; reflow with format.py; FAKE comments stay byte-unchanged):
+  Comments citing kept old tokens: src/main/17AFC.c:4891 `*arg1` -> `*sound_position`; 17AFC.c:4894 `snd_QueueSound(arg0, R, L)` -> `snd_QueueSound(sound_index, R, L)`; include/game.h:1922 and src/main/d_7D920.c:657 `fight_RecordReplayEventAndDispatchSoundOrEffect's arg1` -> `event_kind`; symbol_addrs.txt:858 (D_8008E5A8) `obj->character_roster_index` -> `fighter_record->character_roster_index`.
+  Stale separate prototypes (parameter names are not bindings; edit or drop the names): src/main/17AFC.c:1079 math_PointInTriangleXZ(arg0..arg3) (definition 3364-3365); 17AFC.c:1080-1081 math_TriangleNormalYawWithPositiveYHalfTurn(a0, a1, a2) -> first_vertex / second_vertex / third_vertex (wave 28); 17AFC.c:1082 snd_QueuePositionSequence(arg0) -> position (this wave); 17AFC.c:1727 fighter_TestTriangleBoneHits(a0, a1, a2) -> fighter_record, a1, test_inner_spheres (wave 28; a1 stays neutral); 17AFC.c:3650 math_MatrixToAngles(a0, a1) -> matrix, angles_out (wave 28).
+  Wrong-content comments (optional, same pass): src/main/9F9C.c:4613-4614 and src/main/d_7D920.c:219 call D_8008D90C's value "the move command fighter_Update hands object_SpawnScatteredAt"; it is passed as object_SpawnScatteredAt's object_kind.
+  Stale 17AFC.c cites (the applier refreshes): symbol_addrs.txt:1175 `17AFC.c:990-998` -> 940-947; :1931 (D_80102092) `unk_1C8.vy ... 17AFC.c:1060` -> orientation.vy, 996-997; :2057 (D_80101F32) unk_6A is now move_kind, cites `:977, :1020, :2447` -> 913, 983-984, 1034, 1038, 2470, 2515; :2060 (D_8010237E) unk_6A -> move_kind, `:977, :1027, :1048` -> 913, 990-991, 1013, 1017, 2518; :866 `6268-6277` -> 5530-5541; :1993 `6249-6284` -> 5505-5552; :860 `6372` -> 5638-5640; :913 `6479-6499` -> 5750-5771; :914 `6505-6509` -> 5778-5780. docs/engine/combat.md:22 `comment at :766` -> :881; :25-26 `comment at :1065` -> :1200; :66 `1882-1899` -> 2016-2037; :118-119 `9F9C.c:5780 and 28708.c:1434` -> 9F9C.c:5786, 28708.c:1472; docs/engine/file_io.md:252 `28708.c:277` -> 280 and :261 `28708.c:413` -> 417.
+  Optional prose agreement: docs/engine/combat.md:143 `(who, cue, pos, dir)` -> `(who, event_kind, src_position, src_command_vector)`; combat.md:118-123 `rec`, `c`; docs/engine/ai.md:21, 33, 37 object_QueueKind(rec, kind) / object_DropQueuedHeadAt(rec, pos) / object_PickUpNearby(rec).
+  Name-audit rows: no live doc or comment outside the function cites inputs_unchanged / missing_support (grep of src, include, symbol_addrs.txt, docs/engine).
+  tools/trace/scenarios/** (listed, not edited): memory-card-boot-load.json:2, targets.json:171-172, versus-cpu-clear-retail.json:2, versus-cpu-clear.json:2, versus-cpu-ending.json:2 (stale `17AFC.c:5427-5433` -> 5757-5763), versus-cpu-tatsumi.json:2 (stale `17AFC.c:5466-5468` -> 5778-5782) mention fight_BuildOpponentOrder / fight_AdvanceOpponentOrder / memcard_StartLoadOnceStepAndDrawSheetPair without a renamed binding.
+  FAKE comments unchanged: 368E4.c:1838-1840 (i); 17AFC.c:4642-4644, 4669-4672 (D_800A37E8), 4700-4702 (var_1), 5645-5647 (var_5); snd.c:540-542 cites snd_QueuePositionalSound's var_7 (not renamed).
+
+LEADS for var-locals-30 (where the scope stopped): the 5 cap-cut rows above (28708.c menu_StepTwoChoice / memcard_RetryLoad / memcard_StepSaveOverwrite), then 28708.c onward: replay_RecordModelDraw (arg0-arg3, var_0), replay_RecordEvent (arg0-arg3, var_0), replay_RecordFighter (a0), fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass (arg0-arg2, sp10-sp40), replay_PlayFrame (sp120, sp1C0, var_8, var_11, var_15, var_16, var_19), comb_WriteWaitCallback (a0, a1), comb_Write8 (s0, s1), comb_WaitRead8 (a0, a1, s0, s1, v0), math_Popcount32 (arg0), comb_ExchangePad (a0), then 2B344.c onward. Also: the snd_QueuePositionalSound var_9 / var_10 pair if a reviewer accepts channel-role names; fight_BuildOpponentOrder :dir (three declarations) as one function-scope local.
+
+PRE-APPLY (naming-reviewer 2026-10-29): batch A (pairs 1-34) 34/34 PASS, batch B (pairs 35-80) 45/46 PASS. The FAIL fight_AdvanceMatch:v1=player_index ('player' unsupported: 17AFC.c:6023-6025 index the 0/1 fight side; the tree's spelling is fighter_index, 175A4.c:28-57, 17AFC.c:196-233) is replaced by the reviewer's suggested fighter_index, marked suggested in the manifest; R6 must judge it fresh.
+R6 WATCH (pre-apply reviewers, in addition): 17AFC.c:4891 `*arg1` -> `*sound_position`, 17AFC.c:4894 `snd_QueueSound(arg0, R, L)` arg0 -> sound_index; include/game.h:1922 and src/main/d_7D920.c:657 'arg1' -> event_kind (fight_RecordReplayEventAndDispatchSoundOrEffect); symbol_addrs.txt:858 'obj->character_roster_index' -> fighter_record->; stale prototype 17AFC.c:1082 snd_QueuePositionSequence(arg0) -> position. Optional: 9F9C.c:4613-4614 and d_7D920.c:219 call D_8008D90C's value a move command but it is object_SpawnScatteredAt's object_kind; docs/engine/ai.md:21,34,37 (rec, kind, pos) prose; docs/engine/combat.md:143 (who, cue, pos, dir) prose. No live comment outside the two functions names inputs_unchanged or missing_support.
