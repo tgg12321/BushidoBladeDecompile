@@ -367,11 +367,11 @@ void camera_CalcEye(Rec44 *view_record, s32 *eye_out) {
     RotMatrixY(-view_record->camera_angles.vy, &m);
     RotMatrixZ(-view_record->camera_angles.vz, &m);
     eye_out[0] = view_record->focus_point.x -
-                 ((s32)(m.m[0][2] * view_record->w18) >> 12);
+                 ((s32)(m.m[0][2] * view_record->eye_distance) >> 12);
     eye_out[1] = view_record->focus_point.y -
-                 ((s32)(m.m[1][2] * view_record->w18) >> 12);
+                 ((s32)(m.m[1][2] * view_record->eye_distance) >> 12);
     eye_out[2] = view_record->focus_point.z -
-                 ((s32)(m.m[2][2] * view_record->w18) >> 12);
+                 ((s32)(m.m[2][2] * view_record->eye_distance) >> 12);
 }
 
 s32 math_FloorDiv2000(s32 dividend) {
@@ -433,16 +433,16 @@ typedef VECTOR CamVec;
  * collision_TestSegmentWithWork is given (its 3rd/4th/5th arguments; its other
  * callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
-    s16 unk0;         /* 0x00 */
-    s16 yaw;          /* 0x02 */
-    s16 scr04;        /* 0x04 */
-    s16 unk6;         /* 0x06 */
-    CamVec focus;     /* 0x08 */
-    CamVec eye;       /* 0x18 */
-    CamVec scr28;     /* 0x28 */
-    s32 hit[8];       /* 0x38 */
-    s16 nrm[4];       /* 0x58 */
-    s32 segment_work; /* 0x60 */
+    s16 unk0;                     /* 0x00 */
+    s16 yaw;                      /* 0x02 */
+    s16 target_vz;                /* 0x04 */
+    s16 unk6;                     /* 0x06 */
+    CamVec focus;                 /* 0x08 */
+    CamVec eye;                   /* 0x18 */
+    CamVec fighter_segment_start; /* 0x28 */
+    s32 hit[8];                   /* 0x38 */
+    s16 nrm[4];                   /* 0x58 */
+    s32 segment_work;             /* 0x60 */
 } CamScratch;
 
 /* Two-fighter camera for g_camera_default_view_record (first_camera_point/
@@ -552,36 +552,37 @@ void camera_UpdateTwoFighterView(
         first_fighter->move_kind == 0x21) {
         target_distance = 0xBB8;
     }
-    view_record->w18 += (target_distance - view_record->w18) / 12;
+    view_record->eye_distance +=
+        (target_distance - view_record->eye_distance) / 12;
     if (!(first_fighter->move_kind == 0xF || first_fighter->move_kind == 0x1C ||
           first_fighter->move_kind == 0x1D ||
           first_fighter->move_kind == 0x1E ||
           first_fighter->move_kind == 0x1F ||
           first_fighter->move_kind == 0x20 ||
           first_fighter->move_kind == 0x21) &&
-        view_record->w18 < 0x1770) {
-        view_record->w18 = 0x1770;
+        view_record->eye_distance < 0x1770) {
+        view_record->eye_distance = 0x1770;
     }
-    if (view_record->w18 > 100000) {
-        view_record->w18 = 100000;
+    if (view_record->eye_distance > 100000) {
+        view_record->eye_distance = 100000;
     }
-    if (view_record->b1E) {
-        view_record->b1E = view_record->w18 >= 0x558D;
+    if (view_record->is_far_view) {
+        view_record->is_far_view = view_record->eye_distance >= 0x558D;
     } else {
-        view_record->b1E = view_record->w18 >= 0x55F1;
+        view_record->is_far_view = view_record->eye_distance >= 0x55F1;
     }
-    func_8003F1E4(view_record->b1E);
+    func_8003F1E4(view_record->is_far_view);
 
     if (first_fighter->move_kind == 0x11) {
         scr->yaw = view_record->camera_angles.vy;
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
     }
-    scr->scr04 = 0;
+    scr->target_vz = 0;
     view_record->camera_angles.vy +=
         math_SignExt12Div(scr->yaw - view_record->camera_angles.vy, 8);
     view_record->camera_angles.vz +=
-        math_SignExt12Div(scr->scr04 - view_record->camera_angles.vz, 8);
+        math_SignExt12Div(scr->target_vz - view_record->camera_angles.vz, 8);
     start_pitch = view_record->camera_angles.vx;
 
     for (p = 0; p < 2; p++) {
@@ -594,14 +595,14 @@ void camera_UpdateTwoFighterView(
         view_record->camera_angles.vx = work;
         camera_CalcEye(view_record, &scr->eye.vx);
         if (p != 0) {
-            scr->scr28 = second_fighter->collision_pos;
+            scr->fighter_segment_start = second_fighter->collision_pos;
         } else {
-            scr->scr28 = first_fighter->collision_pos;
+            scr->fighter_segment_start = first_fighter->collision_pos;
         }
-        scr->scr28.vy -= 0xC8;
+        scr->fighter_segment_start.vy -= 0xC8;
         if (collision_TestSegmentWithWork(
-                (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit, scr->nrm,
-                (s32)&scr->segment_work) &&
+                (s32 *)&scr->fighter_segment_start, (s32 *)&scr->eye, scr->hit,
+                scr->nrm, (s32)&scr->segment_work) &&
             scr->nrm[1] < -0x320) {
             math_StoreFloorDiv2000XZOfPointStepTowards(
                 view_record->h30[p], (s32 *)&scr->eye, scr->hit);
@@ -625,8 +626,8 @@ void camera_UpdateTwoFighterView(
                 view_record->camera_angles.vx = bound + d / 2;
                 camera_CalcEye(view_record, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
-                        (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
-                        scr->nrm, (s32)&scr->segment_work) &&
+                        (s32 *)&scr->fighter_segment_start, (s32 *)&scr->eye,
+                        scr->hit, scr->nrm, (s32)&scr->segment_work) &&
                     scr->nrm[1] < -0x320) {
                     work = view_record->camera_angles.vx;
                 } else {
@@ -656,8 +657,8 @@ void camera_UpdateTwoFighterView(
                 view_record->camera_angles.vx = bound + d / 2;
                 camera_CalcEye(view_record, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
-                        (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
-                        scr->nrm, (s32)&scr->segment_work) &&
+                        (s32 *)&scr->fighter_segment_start, (s32 *)&scr->eye,
+                        scr->hit, scr->nrm, (s32)&scr->segment_work) &&
                     scr->nrm[1] < -0x320) {
                     math_StoreFloorDiv2000XZOfPointStepTowards(
                         view_record->h30[p], (s32 *)&scr->eye, scr->hit);
@@ -695,7 +696,7 @@ void camera_UpdatePadOffset(s32 *held_bits) {
     g_camera_view_offset.camera_angles_offset.vx = 0;
     g_camera_view_offset.camera_angles_offset.vy = 0;
     g_camera_view_offset.camera_angles_offset.vz = 0;
-    g_camera_view_offset.w18 = 0;
+    g_camera_view_offset.eye_distance_offset = 0;
     if (g_fight_tracked_view_setting != 0 && g_main_loop_handler_index == 1) {
         if (*held_bits & 1) {
             D_800A37E0 = 1;
@@ -719,7 +720,7 @@ void camera_UpdatePadOffset(s32 *held_bits) {
             if (v < 0) {
                 v = v + 0xF;
             }
-            g_camera_view_offset.w18 = v >> 4;
+            g_camera_view_offset.eye_distance_offset = v >> 4;
         }
     }
     *held_bits = *held_bits & (s32)0xFFFEFFFE;
@@ -747,8 +748,8 @@ void camera_InitTwoFighterView(
         ratan2(second_fighter->world_pos.x - first_fighter->world_pos.x,
                second_fighter->world_pos.z - first_fighter->world_pos.z);
     g_camera_default_view_record.camera_angles.vz = 0;
-    g_camera_default_view_record.w18 = 0x1388;
-    g_camera_default_view_record.b1E = 0;
+    g_camera_default_view_record.eye_distance = 0x1388;
+    g_camera_default_view_record.is_far_view = 0;
 }
 
 void camera_InitTrackedFighterFocus(
@@ -864,18 +865,18 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *tracked_fighter) {
             }
 
             {
-                s32 var_12 = cam->h1C * 3;
+                s32 var_12 = cam->turn_easing_angle * 3;
                 if (var_12 < 0) {
                     var_12 += 3;
                 }
-                cam->h1C = var_12 >> 2;
+                cam->turn_easing_angle = var_12 >> 2;
             }
         } else {
             cam->camera_angles.vy = val;
-            cam->h1C = 0;
+            cam->turn_easing_angle = 0;
         }
     }
-    cam->w18 = 0;
+    cam->eye_distance = 0;
 }
 
 void camera_StartTurnEasingOnLargeHeadingChange(
@@ -892,7 +893,7 @@ void camera_StartTurnEasingOnLargeHeadingChange(
     }
     if (heading_change >= 0x401) {
         g_camera_turn_easing_countdown = 0x19;
-        g_camera_alternate_view_record.h1C = 0x800;
+        g_camera_alternate_view_record.turn_easing_angle = 0x800;
     }
 }
 
@@ -900,8 +901,8 @@ void func_8001B6F4(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     g_camera_fight_view_mode = 1;
-    g_camera_default_view_record.b1F = 0;
-    g_camera_alternate_view_record.b1F = 0;
+    g_camera_default_view_record.replay_view_started = 0;
+    g_camera_alternate_view_record.replay_view_started = 0;
     func_8003F1E4(0);
 }
 
@@ -925,17 +926,21 @@ void camera_UpdateReplayView(
     s32 var_8;
     s32 t;
     s32 distance_delta;
-    if (dst->b1F == 0) {
-        dst->b1F = 1;
-        dst->focus_point.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
+    if (dst->replay_view_started == 0) {
+        dst->replay_view_started = 1;
+        dst->focus_point.x =
+            ((frac * (a->replay_pos_x)) + (inv_frac * (b->replay_pos_x))) >> 12;
         dst->focus_point.y =
-            (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
+            (((frac * (a->replay_pos_y)) + (inv_frac * (b->replay_pos_y))) >>
+             12) -
+            0x12C;
         g_camera_replay_low_probe_gap_count = 0;
-        dst->focus_point.z = ((frac * a->h8) + (inv_frac * b->h8)) >> 12;
+        dst->focus_point.z =
+            ((frac * a->replay_pos_z) + (inv_frac * b->replay_pos_z)) >> 12;
         dst->camera_angles.vy = val;
         dst->camera_angles.vx = 0x80;
         dst->camera_angles.vz = 0;
-        dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
+        dst->eye_distance = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
         return;
     }
     if ((base->ground_probe_points[0].y + base->ground_probe_points[1].y) / 2 -
@@ -945,21 +950,22 @@ void camera_UpdateReplayView(
     }
     var_8 = ((s16)g_camera_replay_low_probe_gap_count) >= 0xB;
     cur = dst->focus_point.x;
-    t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
+    t = ((frac * (a->replay_pos_x)) + (inv_frac * (b->replay_pos_x))) >> 12;
     dx = t - cur;
     if (dx < 0) {
         dx += 0xF;
     }
     dst->focus_point.x = cur + (dx >> 4);
     cur = dst->focus_point.y;
-    t = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
+    t = (((frac * (a->replay_pos_y)) + (inv_frac * (b->replay_pos_y))) >> 12) -
+        0x12C;
     dy = t - cur;
     if (dy < 0) {
         dy += 0xF;
     }
     dst->focus_point.y = cur + (dy >> 4);
     cur = dst->focus_point.z;
-    t = ((frac * (a->h8)) + (inv_frac * (b->h8))) >> 12;
+    t = ((frac * (a->replay_pos_z)) + (inv_frac * (b->replay_pos_z))) >> 12;
     dz = t - cur;
     if (dz < 0) {
         dz += 0xF;
@@ -980,12 +986,12 @@ void camera_UpdateReplayView(
     } else {
         t = ((frac_s1 * 0x1F4) + (inv_s1 * 0x2EE0)) >> 12;
     }
-    cur = dst->w18;
+    cur = dst->eye_distance;
     distance_delta = t - cur;
     if (distance_delta < 0) {
         distance_delta += 0xF;
     }
-    dst->w18 = cur + (distance_delta >> 4);
+    dst->eye_distance = cur + (distance_delta >> 4);
     dst->h30[0][0] = 0x64;
     dst->h30[0][1] = 0;
     dst->h30[0][2] = 0x64;
@@ -1006,8 +1012,9 @@ void camera_UpdateReplayViewWithSineYawOffset(
     } else {
         var_s3 = 0x1000;
     }
-    bearing_to_other = ratan2(other_frame->h4 - followup_frame->h4,
-                              other_frame->h8 - followup_frame->h8);
+    bearing_to_other =
+        ratan2(other_frame->replay_pos_x - followup_frame->replay_pos_x,
+               other_frame->replay_pos_z - followup_frame->replay_pos_z);
     var_v1 = playback_fraction;
     if (playback_fraction < 0) {
         var_v1 = playback_fraction + 3;
@@ -1028,8 +1035,9 @@ void camera_UpdateReplayViewWithConstantYawOffset(
     camera_UpdateReplayView(
         &g_camera_alternate_view_record, followup_frame, other_frame,
         playback_fraction, temp_s0,
-        -0x200 - ratan2(other_frame->h4 - followup_frame->h4,
-                        other_frame->h8 - followup_frame->h8));
+        -0x200 -
+            ratan2(other_frame->replay_pos_x - followup_frame->replay_pos_x,
+                   other_frame->replay_pos_z - followup_frame->replay_pos_z));
 }
 
 void camera_SetFighterFocusView(Unk80101EC8Record *fighter_record, s32 yaw) {
@@ -1039,7 +1047,7 @@ void camera_SetFighterFocusView(Unk80101EC8Record *fighter_record, s32 yaw) {
     g_camera_default_view_record.camera_angles.vx = 0x120;
     g_camera_default_view_record.camera_angles.vy = yaw;
     g_camera_default_view_record.camera_angles.vz = 0;
-    g_camera_default_view_record.w18 = 0x1162;
+    g_camera_default_view_record.eye_distance = 0x1162;
 }
 
 void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
@@ -1062,7 +1070,8 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
         s32 div4 = arg1 / 4;
         u16 rot_y = arg0->orientation.vy;
         s32 val;
-        g_camera_default_view_record.w18 = (arg1 * 3000 + diff * 8000) >> 12;
+        g_camera_default_view_record.eye_distance =
+            (arg1 * 3000 + diff * 8000) >> 12;
         val = 0xB00 - div4;
         g_camera_default_view_record.camera_angles.vz = 0;
         g_camera_default_view_record.camera_angles.vy = val - rot_y;
@@ -2117,16 +2126,17 @@ void camera_ApplyFightView(void) {
                                  g_camera_view_offset.camera_angles_offset.vy;
         local.camera_angles.vz = view_record->camera_angles.vz +
                                  g_camera_view_offset.camera_angles_offset.vz;
-        local.w18 = view_record->w18 + g_camera_view_offset.w18;
+        local.eye_distance = view_record->eye_distance +
+                             g_camera_view_offset.eye_distance_offset;
     } else {
         local = *view_record;
     }
 
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
-        &local.focus_point, &local.camera_angles, local.w18);
+        &local.focus_point, &local.camera_angles, local.eye_distance);
     {
-        camera_CalcEye(&local, &view_record->w20);
-        func_80061064(&local.camera_angles.vx, &view_record->w20);
+        camera_CalcEye(&local, &view_record->eye_x);
+        func_80061064(&local.camera_angles.vx, &view_record->eye_x);
     }
     gpu_SetCellForceBit(view_record->h30[0]);
     gpu_SetCellForceBit(view_record->h30[1]);
@@ -2160,13 +2170,14 @@ void camera_ApplyReplayView(s32 playback_fraction) {
     local.camera_angles.vz = view_record->camera_angles.vz +
                              g_camera_view_offset.camera_angles_offset.vz;
 
-    local.w18 = view_record->w18 + g_camera_view_offset.w18;
+    local.eye_distance =
+        view_record->eye_distance + g_camera_view_offset.eye_distance_offset;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
-        &local.focus_point, &local.camera_angles, local.w18);
+        &local.focus_point, &local.camera_angles, local.eye_distance);
 
     {
-        camera_CalcEye(&local, &view_record->w20);
-        func_80061064(&local.camera_angles.vx, &view_record->w20);
+        camera_CalcEye(&local, &view_record->eye_x);
+        func_80061064(&local.camera_angles.vx, &view_record->eye_x);
     }
 
     g_listener_cam = view_record;
@@ -2184,7 +2195,7 @@ void fight_QueueTrackedFighterNodesFromRecordFlagsAndInitOt(void) {
     {
         u32 flags = ptr->frame_flags & 4;
         node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
-            g_camera_alternate_view_record.h1C, a1, flags > 0);
+            g_camera_alternate_view_record.turn_easing_angle, a1, flags > 0);
     }
 }
 
@@ -2422,24 +2433,30 @@ void motion_ApplyRecordedPoseAdjustments(
     Unk80101EC8Record *fighter_record, Rec1C *replay_frame,
     MotionFrame *first_frame, MotionFrame *second_frame) {
     s16 temp_v1;
-    if (!(replay_frame->b18 & 0x80)) {
+    if (!(replay_frame->replay_frame_flags & 0x80)) {
         motion_SetFixedChannelBlock(first_frame);
         motion_SetFixedChannelBlock(second_frame);
     }
     math_ComposeAxisRotationsAndRewriteAngles(
-        &first_frame->node_channels[0x15], replay_frame->b14 * 4,
-        replay_frame->b15 * 4, 0);
+        &first_frame->node_channels[0x15],
+        replay_frame->replay_pose_bearing_offset * 4,
+        replay_frame->replay_pose_elevation_offset * 4, 0);
     math_ComposeAxisRotationsAndRewriteAngles(
-        &second_frame->node_channels[0x15], replay_frame->b14 * 4,
-        replay_frame->b15 * 4, 0);
+        &second_frame->node_channels[0x15],
+        replay_frame->replay_pose_bearing_offset * 4,
+        replay_frame->replay_pose_elevation_offset * 4, 0);
     temp_v1 = fighter_record->character_roster_index;
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
-        first_frame->node_channels[0x39] += replay_frame->b16 * 4;
-        second_frame->node_channels[0x39] += replay_frame->b16 * 4;
+        first_frame->node_channels[0x39] +=
+            replay_frame->replay_opponent_elevation_offset * 4;
+        second_frame->node_channels[0x39] +=
+            replay_frame->replay_opponent_elevation_offset * 4;
     }
     if ((u32)((u16)fighter_record->weapon_id - 6) < 2U) {
-        first_frame->node_channels[0x33] += replay_frame->b16 * 4;
-        second_frame->node_channels[0x33] += replay_frame->b16 * 4;
+        first_frame->node_channels[0x33] +=
+            replay_frame->replay_opponent_elevation_offset * 4;
+        second_frame->node_channels[0x33] +=
+            replay_frame->replay_opponent_elevation_offset * 4;
     }
 }
 

@@ -1264,35 +1264,38 @@ void replay_RecordFighter(Unk80101EC8Record *fighter_record) {
     idx = fighter_record->index;
     dest = &g_replay_fighter_frames[g_replay_write_frame][idx];
 
-    dest->h4 = fighter_record->world_pos.x;
-    dest->h8 = fighter_record->world_pos.z;
-    dest->h6 = fighter_record->world_pos.y;
+    dest->replay_pos_x = fighter_record->world_pos.x;
+    dest->replay_pos_z = fighter_record->world_pos.z;
+    dest->replay_pos_y = fighter_record->world_pos.y;
 
     {
         u16 v = fighter_record->orientation.vy;
         u8 b = fighter_record->draw_move_set;
-        dest->hA = (v & 0xFFF) | (b << 12);
+        dest->replay_yaw_and_draw_move_set = (v & 0xFFF) | (b << 12);
     }
 
-    dest->hC = fighter_record->ground_y;
-    dest->b14 = fighter_record->eased_pose_bearing_offset >> 2;
-    dest->b15 = fighter_record->eased_pose_elevation_offset >> 2;
-    dest->b16 = fighter_record->opponent_elevation_offset >> 2;
-    dest->w0 = fighter_record->cur_move;
-    dest->b17 = 0;
+    dest->replay_ground_y = fighter_record->ground_y;
+    dest->replay_pose_bearing_offset =
+        fighter_record->eased_pose_bearing_offset >> 2;
+    dest->replay_pose_elevation_offset =
+        fighter_record->eased_pose_elevation_offset >> 2;
+    dest->replay_opponent_elevation_offset =
+        fighter_record->opponent_elevation_offset >> 2;
+    dest->replay_cur_move = fighter_record->cur_move;
+    dest->replay_move_section_bits = 0;
 
     if (fighter_record->cur_move_is_common != 0) {
-        dest->b17 = 1;
+        dest->replay_move_section_bits = 1;
     }
     if (fighter_record->cur_move_slot != 0) {
-        dest->b17 |= 2;
+        dest->replay_move_section_bits |= 2;
     }
 
-    dest->hE = fighter_record->blend_src_frame_code;
-    dest->h10 = fighter_record->blend_dst_frame_code;
-    dest->h12 = fighter_record->pose_interp_weight;
-    dest->b18 = fighter_record->frame_flags;
-    dest->b19 = fighter_record->move_frame;
+    dest->replay_blend_src_frame_code = fighter_record->blend_src_frame_code;
+    dest->replay_blend_dst_frame_code = fighter_record->blend_dst_frame_code;
+    dest->replay_pose_interp_weight = fighter_record->pose_interp_weight;
+    dest->replay_frame_flags = fighter_record->frame_flags;
+    dest->replay_move_frame = fighter_record->move_frame;
 }
 
 void replay_AdvanceFrame(void) {
@@ -1422,39 +1425,44 @@ void replay_PlayFrame(void) {
 
         fighter_frame = &g_replay_fighter_frames[frame_index][i];
         fighter_record = &D_80101EC8[i];
-        motion_DecodeFrame((fighter_frame->hE >> 14) & 3,
-                           fighter_frame->hE & 0x3FFF, &work[0], decode_work);
-        motion_DecodeFrame((fighter_frame->h10 >> 14) & 3,
-                           fighter_frame->h10 & 0x3FFF, &work[1], decode_work);
+        motion_DecodeFrame(
+            (fighter_frame->replay_blend_src_frame_code >> 14) & 3,
+            fighter_frame->replay_blend_src_frame_code & 0x3FFF, &work[0],
+            decode_work);
+        motion_DecodeFrame(
+            (fighter_frame->replay_blend_dst_frame_code >> 14) & 3,
+            fighter_frame->replay_blend_dst_frame_code & 0x3FFF, &work[1],
+            decode_work);
         motion_ApplyRecordedPoseAdjustments(
             fighter_record, fighter_frame, &work[0], &work[1]);
-        slot_BlendTwoPosesIntoNodeMatrices(i, (u8 *)&work[0], (u8 *)&work[1],
-                                           fighter_frame->h12, (MATRIX *)sp120);
-        pos[0] = fighter_frame->h4;
-        pos[1] = fighter_frame->h6;
-        pos[2] = fighter_frame->h8;
+        slot_BlendTwoPosesIntoNodeMatrices(
+            i, (u8 *)&work[0], (u8 *)&work[1],
+            fighter_frame->replay_pose_interp_weight, (MATRIX *)sp120);
+        pos[0] = fighter_frame->replay_pos_x;
+        pos[1] = fighter_frame->replay_pos_y;
+        pos[2] = fighter_frame->replay_pos_z;
         rot[0] = 0;
-        rot[1] = fighter_frame->hA;
+        rot[1] = fighter_frame->replay_yaw_and_draw_move_set;
         rot[2] = 0;
-        func_80040D48(i, 1, pos, rot, 0, fighter_frame->hC);
-        if (fighter_frame->b18 & 1) {
+        func_80040D48(i, 1, pos, rot, 0, fighter_frame->replay_ground_y);
+        if (fighter_frame->replay_frame_flags & 1) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
                 fighter_record->weapon_entry_id, i * 2 + 0x8000, 0, 0);
         }
-        if (fighter_frame->b18 & 4) {
+        if (fighter_frame->replay_frame_flags & 4) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
                 g_resource_kind_entry_ids[fighter_record->wielded_object_kind],
                 i * 2 + 0x8001, 0, 0);
         }
-        if (fighter_frame->b18 & 2) {
+        if (fighter_frame->replay_frame_flags & 2) {
             node_QueueTableEntryNodePairUnderSlotNode(
                 fighter_record->weapon_entry_id, i * 2,
-                (fighter_frame->b18 >> 4) & 1);
+                (fighter_frame->replay_frame_flags >> 4) & 1);
         }
-        if (fighter_frame->b18 & 8) {
+        if (fighter_frame->replay_frame_flags & 8) {
             node_QueueTableEntryNodePairUnderSlotNode(
                 g_resource_kind_entry_ids[fighter_record->wielded_object_kind],
-                i * 2 | 1, (fighter_frame->b18 >> 5) & 1);
+                i * 2 | 1, (fighter_frame->replay_frame_flags >> 5) & 1);
         }
         fighter_UpdateBoneWorldData(
             fighter_record, SPAD->spadA8[i], SPAD->weapon_points[i],
@@ -1468,26 +1476,31 @@ void replay_PlayFrame(void) {
             }
         }
         saved_move_frame = fighter_record->move_frame;
-        fighter_record->move_frame = fighter_frame->b19;
+        fighter_record->move_frame = fighter_frame->replay_move_frame;
         saved_motion_metadata = fighter_record->motion_metadata;
-        if (fighter_frame->b17 & 1) {
-            entry = &g_motion_common_sections.motion_entries
-                         [fighter_frame->w0->motion_bank_entry_index * 2];
+        if (fighter_frame->replay_move_section_bits & 1) {
+            entry =
+                &g_motion_common_sections.motion_entries
+                     [fighter_frame->replay_cur_move->motion_bank_entry_index *
+                      2];
             fighter_record->motion_metadata =
                 g_motion_common_sections.motion_metadata_base + entry[1];
         } else {
-            temp = (fighter_frame->b17 >> 1) & 1;
-            entry = &g_motion_fighter_sections[temp].motion_entries
-                         [fighter_frame->w0->motion_bank_entry_index * 2];
+            temp = (fighter_frame->replay_move_section_bits >> 1) & 1;
+            entry =
+                &g_motion_fighter_sections[temp].motion_entries
+                     [fighter_frame->replay_cur_move->motion_bank_entry_index *
+                      2];
             fighter_record->motion_metadata =
                 g_motion_fighter_sections[temp].motion_metadata_base + entry[1];
         }
-        if (fighter_frame->b18 & 0x40) {
+        if (fighter_frame->replay_frame_flags & 0x40) {
             fighter_ProcessFrameEvents(fighter_record);
         }
         fighter_record->move_frame = saved_move_frame;
         fighter_record->motion_metadata = saved_motion_metadata;
-        gpu_QueueSlotDrawMovesForSelectedSet(i, (fighter_frame->hA >> 12) & 7);
+        gpu_QueueSlotDrawMovesForSelectedSet(
+            i, (fighter_frame->replay_yaw_and_draw_move_set >> 12) & 7);
     }
 
     event_cursor = g_replay_events;

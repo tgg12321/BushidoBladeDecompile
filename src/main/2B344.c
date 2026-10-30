@@ -950,7 +950,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
     g_camera_default_view_record.focus_point.z = 0;
     g_camera_default_view_record.camera_angles.vx = 0x20;
     g_camera_default_view_record.camera_angles.vz = 0;
-    g_camera_default_view_record.w18 = 0x2710;
+    g_camera_default_view_record.eye_distance = 0x2710;
     g_camera_default_view_record.camera_angles.vy =
         g_gpu_presented_frame_count << 2;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(
@@ -1040,7 +1040,7 @@ void fight_UpdateRotatingViewDecimalPresentation(void) {
     g_camera_default_view_record.focus_point.z = 0;
     g_camera_default_view_record.camera_angles.vx = 0x20;
     g_camera_default_view_record.camera_angles.vz = 0;
-    g_camera_default_view_record.w18 = 0x2710;
+    g_camera_default_view_record.eye_distance = 0x2710;
     g_camera_default_view_record.camera_angles.vy =
         g_gpu_presented_frame_count << 2;
     gpu_ResetDrawQueueAndPrepareViewAndLighting(

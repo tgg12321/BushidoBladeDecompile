@@ -1971,13 +1971,13 @@ typedef struct Rec44 {
     Vec3i32 focus_point;
     s32 wC;
     SVECTOR camera_angles;
-    s32 w18;
-    s16 h1C;
-    u8 b1E;
-    u8 b1F;
-    s32 w20;
-    s32 w24;
-    s32 w28;
+    s32 eye_distance;
+    s16 turn_easing_angle;
+    u8 is_far_view;
+    u8 replay_view_started;
+    s32 eye_x;
+    s32 eye_y;
+    s32 eye_z;
     s32 w2C;
     /* two limit vectors; camera_UpdateTwoFighterView passes h30[p] to
      * math_StoreFloorDiv2000XZOfPointStepTowards */
@@ -1996,7 +1996,7 @@ typedef struct Unk800FF5C8Rec {
     Vec3i32 focus_point_offset;
     u8 unk_0C[4];
     SVECTOR camera_angles_offset;
-    s32 w18;
+    s32 eye_distance_offset;
 } Unk800FF5C8Rec;
 
 /* 0x1C-byte record: one player's state in one frame of the replay buffer
@@ -2016,21 +2016,21 @@ typedef struct Unk800FF5C8Rec {
  * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: frame_flags; b19:
  * move_frame. */
 typedef struct Rec1C {
-    MoveScript *w0;
-    s16 h4;
-    s16 h6;
-    s16 h8;
-    u16 hA;
-    s16 hC;
-    s16 hE;
-    s16 h10;
-    s16 h12;
-    s8 b14;
-    s8 b15;
-    s8 b16;
-    u8 b17;
-    u8 b18;
-    u8 b19;
+    MoveScript *replay_cur_move;
+    s16 replay_pos_x;
+    s16 replay_pos_y;
+    s16 replay_pos_z;
+    u16 replay_yaw_and_draw_move_set;
+    s16 replay_ground_y;
+    s16 replay_blend_src_frame_code;
+    s16 replay_blend_dst_frame_code;
+    s16 replay_pose_interp_weight;
+    s8 replay_pose_bearing_offset;
+    s8 replay_pose_elevation_offset;
+    s8 replay_opponent_elevation_offset;
+    u8 replay_move_section_bits;
+    u8 replay_frame_flags;
+    u8 replay_move_frame;
     u8 pad1A[2];
 } Rec1C;
 

@@ -14,18 +14,18 @@ extern s32 collision_GetHitTag(void);
 extern void softbody_SolveSprings(Func80017A44Output *);
 
 typedef struct {
-    s32 d0[3];       /* 0x00 focus-0 or spring delta (GTE input) */
-    s32 d1[3];       /* 0x0C focus-1 delta or spring GTE squares */
-    s32 scr18[3];    /* 0x18 transformed anchor, then the velocity */
-    s32 dpos[3];     /* 0x24 displacement added to every node */
-    s32 sq[3];       /* 0x30 GTE squares */
-    s32 pos[3];      /* 0x3C node position */
-    s32 cpos[3];     /* 0x48 node position >> 5 */
-    s32 unk54[3];    /* 0x54 */
-    s32 scr60;       /* 0x60 ellipsoid count */
-    s32 scr64[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
+    s32 d0[3];               /* 0x00 focus-0 or spring delta (GTE input) */
+    s32 d1[3];               /* 0x0C focus-1 delta or spring GTE squares */
+    s32 scr18[3];            /* 0x18 transformed anchor, then the velocity */
+    s32 dpos[3];             /* 0x24 displacement added to every node */
+    s32 sq[3];               /* 0x30 GTE squares */
+    s32 pos[3];              /* 0x3C node position */
+    s32 cpos[3];             /* 0x48 node position >> 5 */
+    s32 unk54[3];            /* 0x54 */
+    s32 collider_count;      /* 0x60 ellipsoid count */
+    s32 collider_foci[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
     /* 0xAC ellipsoid bounds (sum of the two focus distances) */
-    s32 scrAC[3];
+    s32 collider_bounds[3];
     s32 ground;      /* 0xB8 ground height */
     s32 force[0][3]; /* 0xBC force table, indexed by the node's packed bytes */
 } Scr1F800000;
@@ -89,7 +89,7 @@ void softbody_LoadColliders(Unk80017FA0Rec *step_desc) {
         }
     }
 
-    SCR->scr60 = step_desc->colliders->count;
+    SCR->collider_count = step_desc->colliders->count;
 end:;
 }
 
@@ -437,7 +437,7 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
             SCR->cpos[0] = SCR->pos[0] >> 5;
             SCR->cpos[1] = SCR->pos[1] >> 5;
             SCR->cpos[2] = SCR->pos[2] >> 5;
-            for (idx = 0; idx < SCR->scr60; idx++) {
+            for (idx = 0; idx < SCR->collider_count; idx++) {
                 s32 dx0, dz0, dy1, dx1, dz1;
                 s32 sq2, dist2;
                 /* Ruling 11 (reused local): the squared length copied for
@@ -447,18 +447,18 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
                  * distance (scaled to its push factor below) */
                 s32 work;
 
-                r = SCR->scrAC[idx];
-                delta = SCR->cpos[1] - SCR->scr64[idx][1];
+                r = SCR->collider_bounds[idx];
+                delta = SCR->cpos[1] - SCR->collider_foci[idx][1];
                 if (delta < -r || r < delta) {
                     continue;
                 }
                 SCR->d0[1] = delta;
-                dx0 = SCR->cpos[0] - SCR->scr64[idx][0];
+                dx0 = SCR->cpos[0] - SCR->collider_foci[idx][0];
                 if (dx0 < -r || r < dx0) {
                     continue;
                 }
                 SCR->d0[0] = dx0;
-                dz0 = SCR->cpos[2] - SCR->scr64[idx][2];
+                dz0 = SCR->cpos[2] - SCR->collider_foci[idx][2];
                 if (dz0 < -r || r < dz0) {
                     continue;
                 }
@@ -482,17 +482,17 @@ void softbody_Step(Unk80017FA0Rec *step_desc, Func80017A44Output *arg1) {
                 if (work >= r) {
                     continue;
                 }
-                dy1 = SCR->cpos[1] - SCR->scr64[idx][4];
+                dy1 = SCR->cpos[1] - SCR->collider_foci[idx][4];
                 if (dy1 < -r || r < dy1) {
                     continue;
                 }
                 SCR->d1[1] = dy1;
-                dx1 = SCR->cpos[0] - SCR->scr64[idx][3];
+                dx1 = SCR->cpos[0] - SCR->collider_foci[idx][3];
                 if (dx1 < -r || r < dx1) {
                     continue;
                 }
                 SCR->d1[0] = dx1;
-                dz1 = SCR->cpos[2] - SCR->scr64[idx][5];
+                dz1 = SCR->cpos[2] - SCR->collider_foci[idx][5];
                 if (dz1 < -r || r < dz1) {
                     continue;
                 }

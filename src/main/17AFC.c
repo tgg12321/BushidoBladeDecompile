@@ -4924,9 +4924,9 @@ void snd_QueuePositionalSound(s32 sound_index, s32 *sound_position) {
     s32 var_9;
     s32 var_10;
 
-    dx = g_listener_cam->w20 - sound_position[0];
-    dy = g_listener_cam->w24 - sound_position[1];
-    dz = g_listener_cam->w28 - sound_position[2];
+    dx = g_listener_cam->eye_x - sound_position[0];
+    dy = g_listener_cam->eye_y - sound_position[1];
+    dz = g_listener_cam->eye_z - sound_position[2];
 
     if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
         distance = 0x9C40;
