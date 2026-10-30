@@ -1,0 +1,11 @@
+var-members-rest-19 -- applier notes (drafter, ln-naming-a, 26f920190)
+
+Research: tmp/codex/var-members-rest-19-research.md (Codex, 38 rows). Draft: 33 RENAME pairs (pairs.txt), 5 NO_NAME carried, 0 dropped; names changed against the research are listed in notes.txt.
+
+Apply (clean tree, Grinder stopped, WSL toolchain):
+  python3 tools/naming_member_apply.py docs/naming/phase3/pending/var-members-rest-19/pairs.txt
+Expected: exit 0, no unresolved lines, 4 files (include/game.h, src/main/63D2C.c, 64FD8.c, 9F9C.c), as dry.txt. Then run `python tools/format.py` on those 4 files (longer names), do the comment pass from notes.txt (R6 WATCH list), then the gates in naming-bar step 5: verify-oracle --rebuild, tus-check, check_completion_integrity.py, engine test, naming_keycheck.
+
+Review focus (weakest rows): SelWork.f68 selected_grid_page, f6A picked_grid_entries, f0C panel_slide_amount, Rec44.h30 forced_cell_coordinates (rest-18 FAILed eye_blocking_cells; this name claims no blocking), Unk80101EC8Record.unk_27E hit_tally_sum_step_scales.
+
+Lane claim for LAND: topic:type:SelWork, Tbl800A3860Entry, Rec44, Unk80101EC8Record and topic:tu main/63D2C, main/64FD8, main/9F9C (+ any TU the comment pass edits).

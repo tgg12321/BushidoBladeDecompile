@@ -1,0 +1,1105 @@
+PASS SelWork.f00=sel_result_record, SelWork.f04=sel_resource_table, SelWork.f08=panel_draw_offset_y, SelWork.f0C=panel_slide_amount, SelWork.f10=panel_slide_state, SelWork.f14=selection_phase, SelWork.f18=pending_selection_phase, SelWork.f1C=grid_cursor_column, SelWork.f20=grid_cursor_row, SelWork.f24=frame_gpu_db, SelWork.f30=prim_buffer_flip_count, SelWork.f34=selection_pulse_frames, SelWork.f36=selection_fade_shade, SelWork.f38=pending_selection_cursor, SelWork.f40=direction_nudge_offsets, SelWork.f48=remaining_list_entries, SelWork.f5C=remaining_list_cursor, SelWork.f60=remaining_list_count, SelWork.f64=maximum_match_count_index, SelWork.f65=selected_match_count_index, SelWork.f66=selected_time_sheet_code, SelWork.f67=selected_win_target_index, SelWork.f68=selected_grid_page, SelWork.f6A=grid_pick_slots, SelWork.f7E=picked_list_entries, Tbl800A3860Entry.f16=common_move_script_index, Tbl800A3860Entry.f4E=variant_move_script_index, Tbl800A3860Entry.f54=next_variant_move_script_index, Rec44.h30=forced_cell_coordinates
+decl SelWork.f00 -> sel_result_record  include/game.h:591
+decl SelWork.f04 -> sel_resource_table  include/game.h:592
+decl SelWork.f08 -> panel_draw_offset_y  include/game.h:593
+decl SelWork.f0C -> panel_slide_amount  include/game.h:594
+decl SelWork.f10 -> panel_slide_state  include/game.h:599
+decl SelWork.f14 -> selection_phase  include/game.h:604
+decl SelWork.f18 -> pending_selection_phase  include/game.h:606
+decl SelWork.f1C -> grid_cursor_column  include/game.h:611
+decl SelWork.f20 -> grid_cursor_row  include/game.h:616
+decl SelWork.f24 -> frame_gpu_db  include/game.h:618
+decl SelWork.f30 -> prim_buffer_flip_count  include/game.h:621
+decl SelWork.f34 -> selection_pulse_frames  include/game.h:622
+decl SelWork.f36 -> selection_fade_shade  include/game.h:623
+decl SelWork.f38 -> pending_selection_cursor  include/game.h:624
+decl SelWork.f40 -> direction_nudge_offsets  include/game.h:626
+decl SelWork.f48 -> remaining_list_entries  include/game.h:627
+decl SelWork.f5C -> remaining_list_cursor  include/game.h:628
+decl SelWork.f60 -> remaining_list_count  include/game.h:629
+decl SelWork.f64 -> maximum_match_count_index  include/game.h:630
+decl SelWork.f65 -> selected_match_count_index  include/game.h:631
+decl SelWork.f66 -> selected_time_sheet_code  include/game.h:632
+decl SelWork.f67 -> selected_win_target_index  include/game.h:633
+decl SelWork.f68 -> selected_grid_page  include/game.h:634
+decl SelWork.f6A -> grid_pick_slots  include/game.h:635
+decl SelWork.f7E -> picked_list_entries  include/game.h:636
+decl Tbl800A3860Entry.f16 -> common_move_script_index  include/game.h:827
+decl Tbl800A3860Entry.f4E -> variant_move_script_index  include/game.h:829
+decl Tbl800A3860Entry.f54 -> next_variant_move_script_index  include/game.h:830
+decl Rec44.h30 -> forced_cell_coordinates  include/game.h:1985
+  round 0: 283 member error line(s)
+    src/main/63D2C.c:377 f65 x1
+    src/main/63D2C.c:378 f66 x1
+    src/main/63D2C.c:378 f67 x1
+    src/main/63D2C.c:388 f34 x1
+    src/main/63D2C.c:390 f40 x1
+    src/main/63D2C.c:394 f34 x1
+    src/main/63D2C.c:397 f40 x1
+    src/main/63D2C.c:398 f40 x1
+    src/main/63D2C.c:405 f34 x1
+    src/main/63D2C.c:408 f40 x1
+    src/main/63D2C.c:409 f40 x1
+    src/main/63D2C.c:416 f34 x1
+    src/main/63D2C.c:419 f40 x1
+    src/main/63D2C.c:420 f40 x1
+    src/main/63D2C.c:442 f67 x1
+    src/main/63D2C.c:443 f67 x1
+    src/main/64FD8.c:48 f10 x1
+    src/main/64FD8.c:51 f40 x1
+    src/main/64FD8.c:54 f34 x1
+    src/main/64FD8.c:62 f34 x1
+    src/main/64FD8.c:76 f64 x1
+    src/main/64FD8.c:76 f65 x1
+    src/main/64FD8.c:77 f65 x1
+    src/main/64FD8.c:79 f65 x1
+    src/main/64FD8.c:88 f65 x1
+    src/main/64FD8.c:89 f64 x1
+    src/main/64FD8.c:89 f65 x1
+    src/main/64FD8.c:91 f65 x1
+    src/main/64FD8.c:102 f64 x1
+    src/main/64FD8.c:109 f67 x1
+    src/main/64FD8.c:110 f67 x1
+    src/main/64FD8.c:111 f66 x1
+    src/main/64FD8.c:112 f67 x1
+    src/main/64FD8.c:119 f67 x1
+    src/main/64FD8.c:121 f66 x1
+    src/main/64FD8.c:136 f10 x1
+    src/main/64FD8.c:137 f18 x1
+    src/main/64FD8.c:138 f38 x1
+    src/main/64FD8.c:170 f65 x1
+    src/main/64FD8.c:171 f04 x1
+    src/main/64FD8.c:263 f0C x1
+    src/main/64FD8.c:314 f24 x1
+    src/main/64FD8.c:315 f24 x1
+    src/main/64FD8.c:317 f0C x1
+    src/main/64FD8.c:323 f24 x1
+    src/main/64FD8.c:324 f24 x1
+    src/main/64FD8.c:325 f24 x1
+    src/main/64FD8.c:326 f24 x1
+    src/main/64FD8.c:332 f24 x1
+    src/main/64FD8.c:333 f08 x1
+    src/main/64FD8.c:333 f24 x1
+    src/main/64FD8.c:339 f24 x1
+    src/main/64FD8.c:340 f24 x1
+    src/main/64FD8.c:354 f10 x1
+    src/main/64FD8.c:356 f08 x1
+    src/main/64FD8.c:357 f0C x1
+    src/main/64FD8.c:358 f0C x1
+    src/main/64FD8.c:359 f10 x1
+    src/main/64FD8.c:360 f10 x1
+    src/main/64FD8.c:362 f08 x1
+    src/main/64FD8.c:363 f0C x1
+    src/main/64FD8.c:364 f14 x1
+    src/main/64FD8.c:364 f18 x1
+    src/main/64FD8.c:365 f38 x1
+    src/main/64FD8.c:369 f0C x1
+    src/main/64FD8.c:370 f0C x1
+    src/main/64FD8.c:371 f08 x1
+    src/main/64FD8.c:372 f0C x1
+    src/main/64FD8.c:373 f14 x1
+    src/main/64FD8.c:373 f18 x1
+    src/main/64FD8.c:374 f38 x1
+    src/main/64FD8.c:375 f10 x1
+    src/main/64FD8.c:376 f10 x1
+    src/main/64FD8.c:381 f0C x1
+    src/main/64FD8.c:382 f0C x1
+    src/main/64FD8.c:383 f08 x1
+    src/main/64FD8.c:384 f0C x1
+    src/main/64FD8.c:385 f10 x1
+    src/main/64FD8.c:389 f08 x1
+    src/main/64FD8.c:390 f0C x1
+    src/main/64FD8.c:391 f0C x1
+    src/main/64FD8.c:392 f08 x1
+    src/main/64FD8.c:393 f0C x1
+    src/main/64FD8.c:394 f10 x1
+    src/main/64FD8.c:432 f40 x1
+    src/main/64FD8.c:432 f68 x1
+    src/main/64FD8.c:434 f34 x1
+    src/main/64FD8.c:485 f10 x1
+    src/main/64FD8.c:489 f40 x1
+    src/main/64FD8.c:491 f34 x1
+    src/main/64FD8.c:492 f68 x2
+    src/main/64FD8.c:493 f68 x1
+    src/main/64FD8.c:497 f68 x1
+    src/main/64FD8.c:500 f38 x1
+    src/main/64FD8.c:501 f10 x1
+    src/main/64FD8.c:502 f18 x1
+    src/main/64FD8.c:504 f68 x2
+    src/main/64FD8.c:509 f14 x1
+    src/main/64FD8.c:511 f38 x1
+    src/main/64FD8.c:512 f10 x1
+    src/main/64FD8.c:513 f18 x1
+    src/main/64FD8.c:529 f34 x1
+    src/main/64FD8.c:539 f1C x1
+    src/main/64FD8.c:540 f20 x1
+    src/main/64FD8.c:607 f34 x1
+    src/main/64FD8.c:633 f1C x1
+    src/main/64FD8.c:634 f20 x1
+    src/main/64FD8.c:677 f65 x1
+    src/main/64FD8.c:679 f65 x1
+    src/main/64FD8.c:730 f10 x1
+    src/main/64FD8.c:747 f14 x1
+    src/main/64FD8.c:748 f10 x1
+    src/main/64FD8.c:749 f10 x1
+    src/main/64FD8.c:750 f18 x1
+    src/main/64FD8.c:751 f18 x1
+    src/main/64FD8.c:757 f40 x1
+    src/main/64FD8.c:766 f1C x2
+    src/main/64FD8.c:774 f20 x1
+    src/main/64FD8.c:776 f20 x1
+    src/main/64FD8.c:778 f20 x1
+    src/main/64FD8.c:784 f20 x1
+    src/main/64FD8.c:786 f20 x1
+    src/main/64FD8.c:788 f20 x1
+    src/main/64FD8.c:796 f1C x1
+    src/main/64FD8.c:797 f20 x1
+    src/main/64FD8.c:811 f65 x1
+    src/main/64FD8.c:812 f10 x1
+    src/main/64FD8.c:814 f38 x1
+    src/main/64FD8.c:815 f18 x1
+    src/main/64FD8.c:816 f60 x1
+    src/main/64FD8.c:817 f48 x1
+    src/main/64FD8.c:820 f48 x1
+    src/main/64FD8.c:856 f14 x1
+    src/main/64FD8.c:875 f34 x1
+    src/main/64FD8.c:877 f65 x1
+    src/main/64FD8.c:881 f14 x1
+    src/main/64FD8.c:895 f14 x1
+    src/main/64FD8.c:896 f7E x1
+    src/main/64FD8.c:899 f48 x1
+    src/main/64FD8.c:899 f5C x1
+    src/main/64FD8.c:904 f14 x1
+    src/main/64FD8.c:922 f65 x1
+    src/main/64FD8.c:923 f65 x1
+    src/main/64FD8.c:927 f14 x1
+    src/main/64FD8.c:950 f10 x1
+    src/main/64FD8.c:958 f40 x1
+    src/main/64FD8.c:961 f5C x1
+    src/main/64FD8.c:962 f5C x1
+    src/main/64FD8.c:962 f60 x1
+    src/main/64FD8.c:963 f5C x1
+    src/main/64FD8.c:967 f5C x1
+    src/main/64FD8.c:968 f5C x1
+    src/main/64FD8.c:969 f5C x1
+    src/main/64FD8.c:969 f60 x1
+    src/main/64FD8.c:975 f65 x1
+    src/main/64FD8.c:977 f7E x1
+    src/main/64FD8.c:978 f48 x1
+    src/main/64FD8.c:978 f5C x1
+    src/main/64FD8.c:979 f65 x1
+    src/main/64FD8.c:980 f14 x1
+    src/main/64FD8.c:983 f60 x1
+    src/main/64FD8.c:984 f5C x1
+    src/main/64FD8.c:984 f60 x1
+    src/main/64FD8.c:985 f48 x2
+    src/main/64FD8.c:987 f5C x1
+    src/main/64FD8.c:993 f10 x1
+    src/main/64FD8.c:994 f18 x1
+    src/main/64FD8.c:995 f38 x1
+    src/main/64FD8.c:995 f65 x1
+    src/main/64FD8.c:996 f38 x1
+    src/main/64FD8.c:998 f60 x1
+    src/main/64FD8.c:999 f60 x1
+    src/main/64FD8.c:1000 f48 x1
+    src/main/64FD8.c:1003 f48 x1
+    src/main/64FD8.c:1008 f60 x1
+    src/main/64FD8.c:1009 f48 x1
+    src/main/64FD8.c:1010 f7E x1
+    src/main/64FD8.c:1011 f60 x1
+    src/main/64FD8.c:1012 f48 x2
+    src/main/64FD8.c:1014 f48 x1
+    src/main/64FD8.c:1015 f7E x1
+    src/main/64FD8.c:1018 f60 x1
+    src/main/64FD8.c:1019 f48 x1
+    src/main/64FD8.c:1020 f7E x1
+    src/main/64FD8.c:1023 f60 x1
+    src/main/64FD8.c:1042 f36 x1
+    src/main/64FD8.c:1047 f00 x1
+    src/main/64FD8.c:1048 f65 x1
+    src/main/64FD8.c:1050 f66 x1
+    src/main/64FD8.c:1051 f66 x1
+    src/main/64FD8.c:1053 f66 x1
+    src/main/64FD8.c:1056 f67 x1
+    src/main/64FD8.c:1057 f68 x2
+    src/main/64FD8.c:1059 f65 x1
+    src/main/64FD8.c:1063 f6A x1
+    src/main/64FD8.c:1064 f7E x1
+    src/main/64FD8.c:1126 f04 x1
+    src/main/64FD8.c:1131 f30 x1
+    src/main/64FD8.c:1132 f34 x1
+    src/main/64FD8.c:1142 f10 x1
+    src/main/64FD8.c:1143 f08 x1
+    src/main/64FD8.c:1144 f0C x1
+    src/main/64FD8.c:1145 f14 x1
+    src/main/64FD8.c:1150 f40 x1
+    src/main/64FD8.c:1151 f40 x1
+    src/main/64FD8.c:1152 f68 x1
+    src/main/64FD8.c:1154 f6A x1
+    src/main/64FD8.c:1155 f7E x1
+    src/main/64FD8.c:1158 f5C x1
+    src/main/64FD8.c:1159 f60 x1
+    src/main/64FD8.c:1179 f20 x1
+    src/main/64FD8.c:1180 f1C x1
+    src/main/64FD8.c:1182 f64 x1
+    src/main/64FD8.c:1184 f64 x1
+    src/main/64FD8.c:1187 f64 x1
+    src/main/64FD8.c:1188 f64 x1
+    src/main/64FD8.c:1192 f00 x1
+    src/main/64FD8.c:1193 f65 x1
+    src/main/64FD8.c:1195 f67 x1
+    src/main/64FD8.c:1196 f66 x1
+    src/main/64FD8.c:1196 f67 x1
+    src/main/64FD8.c:1209 f14 x1
+    src/main/64FD8.c:1210 f14 x1
+    src/main/64FD8.c:1211 f14 x1
+    src/main/64FD8.c:1212 f36 x1
+    src/main/64FD8.c:1215 f14 x1
+    src/main/64FD8.c:1216 f14 x1
+    src/main/64FD8.c:1221 f14 x1
+    src/main/64FD8.c:1232 f14 x1
+    src/main/64FD8.c:1237 f68 x1
+    src/main/64FD8.c:1237 f6A x1
+    src/main/64FD8.c:1239 f14 x1
+    src/main/64FD8.c:1241 f68 x1
+    src/main/64FD8.c:1241 f6A x1
+    src/main/64FD8.c:1245 f68 x1
+    src/main/64FD8.c:1245 f6A x1
+    src/main/64FD8.c:1247 f14 x1
+    src/main/64FD8.c:1250 f68 x1
+    src/main/64FD8.c:1250 f6A x1
+    src/main/64FD8.c:1257 f68 x1
+    src/main/64FD8.c:1257 f6A x1
+    src/main/64FD8.c:1261 f14 x1
+    src/main/64FD8.c:1268 f68 x1
+    src/main/64FD8.c:1268 f6A x1
+    src/main/64FD8.c:1281 f24 x1
+    src/main/64FD8.c:1282 f30 x1
+    src/main/64FD8.c:1283 f34 x2
+    src/main/64FD8.c:1284 f30 x1
+    src/main/64FD8.c:1287 f04 x1
+    src/main/9F9C.c:488 h30 x1
+    src/main/9F9C.c:489 h30 x1
+    src/main/9F9C.c:490 h30 x1
+    src/main/9F9C.c:491 h30 x1
+    src/main/9F9C.c:492 h30 x1
+    src/main/9F9C.c:493 h30 x1
+    src/main/9F9C.c:608 h30 x1
+    src/main/9F9C.c:664 h30 x1
+    src/main/9F9C.c:732 h30 x1
+    src/main/9F9C.c:733 h30 x1
+    src/main/9F9C.c:734 h30 x1
+    src/main/9F9C.c:735 h30 x1
+    src/main/9F9C.c:736 h30 x1
+    src/main/9F9C.c:737 h30 x1
+    src/main/9F9C.c:758 h30 x1
+    src/main/9F9C.c:759 h30 x1
+    src/main/9F9C.c:760 h30 x1
+    src/main/9F9C.c:761 h30 x1
+    src/main/9F9C.c:762 h30 x1
+    src/main/9F9C.c:763 h30 x1
+    src/main/9F9C.c:995 h30 x1
+    src/main/9F9C.c:996 h30 x1
+    src/main/9F9C.c:997 h30 x1
+    src/main/9F9C.c:998 h30 x1
+    src/main/9F9C.c:999 h30 x1
+    src/main/9F9C.c:1000 h30 x1
+    src/main/9F9C.c:2141 h30 x1
+    src/main/9F9C.c:2142 h30 x1
+    src/main/9F9C.c:3474 f4E x1
+    src/main/9F9C.c:3495 f4E x1
+    src/main/9F9C.c:3509 f54 x1
+    src/main/9F9C.c:3533 f4E x1
+    src/main/9F9C.c:3540 f4E x1
+    src/main/9F9C.c:3545 f16 x1
+  round 1: 0 member error line(s)
+PASS Tbl800A3860Entry.f14=variant_count, Tbl800A3860Entry.f18=common_move_script_index_by_character
+decl Tbl800A3860Entry.f14 -> variant_count  include/game.h:826
+decl Tbl800A3860Entry.f18 -> common_move_script_index_by_character  include/game.h:828
+  round 0: 7 member error line(s)
+    src/main/9F9C.c:3435 f14 x1
+    src/main/9F9C.c:3477 f14 x1
+    src/main/9F9C.c:3489 f14 x1
+    src/main/9F9C.c:3498 f14 x1
+    src/main/9F9C.c:3502 f14 x1
+    src/main/9F9C.c:3505 f14 x1
+    src/main/9F9C.c:3552 f18 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -591,4 +591,4 @@
+-    Unk8009BD24Block *f00;
+-    Unk80076FF8Rec *f04;
+-    s16 f08[2];
+-    s16 f0C[2];
++    Unk8009BD24Block *sel_result_record;
++    Unk80076FF8Rec *sel_resource_table;
++    s16 panel_draw_offset_y[2];
++    s16 panel_slide_amount[2];
+@@ -599 +599 @@
+-    } f10;
++    } panel_slide_state;
+@@ -604,3 +604,3 @@
+-    } f14;
+-
+-    s16 f18[2];
++    } selection_phase;
++
++    s16 pending_selection_phase[2];
+@@ -611 +611 @@
+-    } f1C;
++    } grid_cursor_column;
+@@ -616,3 +616,3 @@
+-    } f20;
+-
+-    GpuDb *f24;
++    } grid_cursor_row;
++
++    GpuDb *frame_gpu_db;
+@@ -621,4 +621,4 @@
+-    s32 f30;
+-    u16 f34;
+-    u16 f36;
+-    s16 f38[2];
++    s32 prim_buffer_flip_count;
++    u16 selection_pulse_frames;
++    u16 selection_fade_shade;
++    s16 pending_selection_cursor[2];
+@@ -626,11 +626,11 @@
+-    s16 f40[2][2];
+-    s16 f48[2][5];
+-    s16 f5C[2];
+-    s16 f60[2];
+-    u8 f64;
+-    u8 f65;
+-    u8 f66;
+-    u8 f67;
+-    u8 f68[2];
+-    s16 f6A[2][5];
+-    s16 f7E[2][5];
++    s16 direction_nudge_offsets[2][2];
++    s16 remaining_list_entries[2][5];
++    s16 remaining_list_cursor[2];
++    s16 remaining_list_count[2];
++    u8 maximum_match_count_index;
++    u8 selected_match_count_index;
++    u8 selected_time_sheet_code;
++    u8 selected_win_target_index;
++    u8 selected_grid_page[2];
++    s16 grid_pick_slots[2][5];
++    s16 picked_list_entries[2][5];
+@@ -826,5 +826,5 @@
+-    s16 f14;
+-    u16 f16;
+-    u16 f18[27];
+-    u16 f4E[3];
+-    u16 f54[3][3];
++    s16 variant_count;
++    u16 common_move_script_index;
++    u16 common_move_script_index_by_character[27];
++    u16 variant_move_script_index[3];
++    u16 next_variant_move_script_index[3][3];
+@@ -1985 +1985 @@
+-    s16 h30[2][4];
++    s16 forced_cell_coordinates[2][4];
+--- a/src/main/63D2C.c
++++ b/src/main/63D2C.c
+@@ -377,2 +377,2 @@
+-    mask = (1 << SELWORK->f3C[0]) + (1 << (SELWORK->f65 + 5)) +
+-           (1 << (SELWORK->f67 + 8)) + (1 << (SELWORK->f66 + 9));
++    mask = (1 << SELWORK->f3C[0]) + (1 << (SELWORK->selected_match_count_index + 5)) +
++           (1 << (SELWORK->selected_win_target_index + 8)) + (1 << (SELWORK->selected_time_sheet_code + 9));
+@@ -388 +388 @@
+-                    ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) -
++                    ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >> 12) -
+@@ -390 +390 @@
+-                s.y = SELWORK->f40[0][1];
++                s.y = SELWORK->direction_nudge_offsets[0][1];
+@@ -394 +394 @@
+-                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
++                        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
+@@ -397,2 +397,2 @@
+-                    s.x = SELWORK->f40[0][0];
+-                    s.y = SELWORK->f40[0][1];
++                    s.x = SELWORK->direction_nudge_offsets[0][0];
++                    s.y = SELWORK->direction_nudge_offsets[0][1];
+@@ -405 +405 @@
+-                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
++                        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
+@@ -408,2 +408,2 @@
+-                    s.x = SELWORK->f40[0][0];
+-                    s.y = SELWORK->f40[0][1];
++                    s.x = SELWORK->direction_nudge_offsets[0][0];
++                    s.y = SELWORK->direction_nudge_offsets[0][1];
+@@ -416 +416 @@
+-                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
++                        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
+@@ -419,2 +419,2 @@
+-                    s.x = SELWORK->f40[0][0];
+-                    s.y = SELWORK->f40[0][1];
++                    s.x = SELWORK->direction_nudge_offsets[0][0];
++                    s.y = SELWORK->direction_nudge_offsets[0][1];
+@@ -442,2 +442,2 @@
+-            g_sel_sheet_code_pairs[SELWORK->f67][0] + 9 == sheet_index ||
+-            g_sel_sheet_code_pairs[SELWORK->f67][1] + 9 == sheet_index) {
++            g_sel_sheet_code_pairs[SELWORK->selected_win_target_index][0] + 9 == sheet_index ||
++            g_sel_sheet_code_pairs[SELWORK->selected_win_target_index][1] + 9 == sheet_index) {
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -48 +48 @@
+-    if (base->f10.word == 0) {
++    if (base->panel_slide_state.word == 0) {
+@@ -51 +51 @@
+-            (u32 *)&sp10, 0, base->f40[0], g_sel_offset_steps[0]);
++            (u32 *)&sp10, 0, base->direction_nudge_offsets[0], g_sel_offset_steps[0]);
+@@ -54 +54 @@
+-            SELWORK->f34 = 0;
++            SELWORK->selection_pulse_frames = 0;
+@@ -62 +62 @@
+-            SELWORK->f34 = 0;
++            SELWORK->selection_pulse_frames = 0;
+@@ -76,2 +76,2 @@
+-                if (SELWORK->f65 == SELWORK->f64) {
+-                    SELWORK->f65 = 0;
++                if (SELWORK->selected_match_count_index == SELWORK->maximum_match_count_index) {
++                    SELWORK->selected_match_count_index = 0;
+@@ -79 +79 @@
+-                    SELWORK->f65 += 1;
++                    SELWORK->selected_match_count_index += 1;
+@@ -88,2 +88,2 @@
+-                if (SELWORK->f65 == 0) {
+-                    SELWORK->f65 = SELWORK->f64;
++                if (SELWORK->selected_match_count_index == 0) {
++                    SELWORK->selected_match_count_index = SELWORK->maximum_match_count_index;
+@@ -91 +91 @@
+-                    SELWORK->f65 -= 1;
++                    SELWORK->selected_match_count_index -= 1;
+@@ -102 +102 @@
+-            if (SELWORK->f64 != 0) {
++            if (SELWORK->maximum_match_count_index != 0) {
+@@ -109,4 +109,4 @@
+-                SELWORK->f67 += 1;
+-                SELWORK->f67 &= 1;
+-                SELWORK->f66 =
+-                    g_sel_sheet_code_pairs[SELWORK->f67]
++                SELWORK->selected_win_target_index += 1;
++                SELWORK->selected_win_target_index &= 1;
++                SELWORK->selected_time_sheet_code =
++                    g_sel_sheet_code_pairs[SELWORK->selected_win_target_index]
+@@ -119 +119 @@
+-                row = SELWORK->f67;
++                row = SELWORK->selected_win_target_index;
+@@ -121 +121 @@
+-                SELWORK->f66 =
++                SELWORK->selected_time_sheet_code =
+@@ -136,3 +136,3 @@
+-                    SELWORK->f10.half[i] = 3;
+-                    SELWORK->f18[i] = 1;
+-                    SELWORK->f38[i] = 0;
++                    SELWORK->panel_slide_state.half[i] = 3;
++                    SELWORK->pending_selection_phase[i] = 1;
++                    SELWORK->pending_selection_cursor[i] = 0;
+@@ -170,2 +170,2 @@
+-    for (i = 0; i < SELWORK->f65 + 3; i++) {
+-        t = SELWORK->f04->row_tile_rects;
++    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
++        t = SELWORK->sel_resource_table->row_tile_rects;
+@@ -263 +263 @@
+-        s.y = (0xD2 - SELWORK->f0C[arg1]) * i;
++        s.y = (0xD2 - SELWORK->panel_slide_amount[arg1]) * i;
+@@ -314,2 +314,2 @@
+-    rect.x = SELWORK->f24->draw.clip.x + var_6;
+-    rect.y = SELWORK->f24->draw.clip.y + 0x14;
++    rect.x = SELWORK->frame_gpu_db->draw.clip.x + var_6;
++    rect.y = SELWORK->frame_gpu_db->draw.clip.y + 0x14;
+@@ -317 +317 @@
+-    rect.h = 0xC8 - SELWORK->f0C[arg1];
++    rect.h = 0xC8 - SELWORK->panel_slide_amount[arg1];
+@@ -323,4 +323,4 @@
+-    rect.x = SELWORK->f24->draw.clip.x;
+-    rect.y = SELWORK->f24->draw.clip.y;
+-    rect.w = SELWORK->f24->draw.clip.w;
+-    rect.h = SELWORK->f24->draw.clip.h;
++    rect.x = SELWORK->frame_gpu_db->draw.clip.x;
++    rect.y = SELWORK->frame_gpu_db->draw.clip.y;
++    rect.w = SELWORK->frame_gpu_db->draw.clip.w;
++    rect.h = SELWORK->frame_gpu_db->draw.clip.h;
+@@ -332,2 +332,2 @@
+-    offset[0] = SELWORK->f24->draw.ofs[0];
+-    offset[1] = SELWORK->f24->draw.ofs[1] - SELWORK->f08[arg1];
++    offset[0] = SELWORK->frame_gpu_db->draw.ofs[0];
++    offset[1] = SELWORK->frame_gpu_db->draw.ofs[1] - SELWORK->panel_draw_offset_y[arg1];
+@@ -339,2 +339,2 @@
+-    offset[0] = SELWORK->f24->draw.ofs[0];
+-    offset[1] = SELWORK->f24->draw.ofs[1];
++    offset[0] = SELWORK->frame_gpu_db->draw.ofs[0];
++    offset[1] = SELWORK->frame_gpu_db->draw.ofs[1];
+@@ -354 +354 @@
+-        switch ((u8)base->f10.half[i]) {
++        switch ((u8)base->panel_slide_state.half[i]) {
+@@ -356,5 +356,5 @@
+-            base->f08[i] += 0xA;
+-            base->f0C[i] += 0xA;
+-            if (base->f0C[i] >= 0xC8) {
+-                if (((u16)base->f10.half[i] >> 8) == 0) {
+-                    base->f10.half[i] += 1;
++            base->panel_draw_offset_y[i] += 0xA;
++            base->panel_slide_amount[i] += 0xA;
++            if (base->panel_slide_amount[i] >= 0xC8) {
++                if (((u16)base->panel_slide_state.half[i] >> 8) == 0) {
++                    base->panel_slide_state.half[i] += 1;
+@@ -362,4 +362,4 @@
+-                base->f08[i] = 0;
+-                base->f0C[i] = 0xC8;
+-                base->f14.half[i] = base->f18[i];
+-                base->f3C[i] = base->f38[i];
++                base->panel_draw_offset_y[i] = 0;
++                base->panel_slide_amount[i] = 0xC8;
++                base->selection_phase.half[i] = base->pending_selection_phase[i];
++                base->f3C[i] = base->pending_selection_cursor[i];
+@@ -369,8 +369,8 @@
+-            base->f0C[i] += 0xA;
+-            if (base->f0C[i] >= 0xC8) {
+-                base->f08[i] = 0xC8;
+-                base->f0C[i] = 0xC8;
+-                base->f14.half[i] = base->f18[i];
+-                base->f3C[i] = base->f38[i];
+-                if (((u16)base->f10.half[i] >> 8) == 0) {
+-                    base->f10.half[i] += 1;
++            base->panel_slide_amount[i] += 0xA;
++            if (base->panel_slide_amount[i] >= 0xC8) {
++                base->panel_draw_offset_y[i] = 0xC8;
++                base->panel_slide_amount[i] = 0xC8;
++                base->selection_phase.half[i] = base->pending_selection_phase[i];
++                base->f3C[i] = base->pending_selection_cursor[i];
++                if (((u16)base->panel_slide_state.half[i] >> 8) == 0) {
++                    base->panel_slide_state.half[i] += 1;
+@@ -381,5 +381,5 @@
+-            base->f0C[i] -= 0xA;
+-            if (base->f0C[i] <= 0) {
+-                base->f08[i] = 0;
+-                base->f0C[i] = 0;
+-                base->f10.half[i] = 0;
++            base->panel_slide_amount[i] -= 0xA;
++            if (base->panel_slide_amount[i] <= 0) {
++                base->panel_draw_offset_y[i] = 0;
++                base->panel_slide_amount[i] = 0;
++                base->panel_slide_state.half[i] = 0;
+@@ -389,6 +389,6 @@
+-            base->f08[i] -= 0xA;
+-            base->f0C[i] -= 0xA;
+-            if (base->f0C[i] <= 0) {
+-                base->f08[i] = 0;
+-                base->f0C[i] = 0;
+-                base->f10.half[i] = 0;
++            base->panel_draw_offset_y[i] -= 0xA;
++            base->panel_slide_amount[i] -= 0xA;
++            if (base->panel_slide_amount[i] <= 0) {
++                base->panel_draw_offset_y[i] = 0;
++                base->panel_slide_amount[i] = 0;
++                base->panel_slide_state.half[i] = 0;
+@@ -432 +432 @@
+-    s.y = SELWORK->f68[arg1] * 90 + SELWORK->f40[arg1][1];
++    s.y = SELWORK->selected_grid_page[arg1] * 90 + SELWORK->direction_nudge_offsets[arg1][1];
+@@ -434 +434 @@
+-        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
++        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+@@ -485 +485 @@
+-    if (base->f10.word != 0) {
++    if (base->panel_slide_state.word != 0) {
+@@ -489 +489 @@
+-             &arg0, arg1, base->f40[arg1], g_sel_offset_steps[arg1]) >>
++             &arg0, arg1, base->direction_nudge_offsets[arg1], g_sel_offset_steps[arg1]) >>
+@@ -491,3 +491,3 @@
+-        SELWORK->f34 = 0;
+-        SELWORK->f68[arg1] = SELWORK->f68[arg1] + 1;
+-        SELWORK->f68[arg1] &= 1;
++        SELWORK->selection_pulse_frames = 0;
++        SELWORK->selected_grid_page[arg1] = SELWORK->selected_grid_page[arg1] + 1;
++        SELWORK->selected_grid_page[arg1] &= 1;
+@@ -497 +497 @@
+-    work->f3C[arg1] = work->f68[arg1];
++    work->f3C[arg1] = work->selected_grid_page[arg1];
+@@ -500,5 +500,5 @@
+-            work->f38[i] = 0;
+-            work->f10.half[i] = 1;
+-            work->f18[i] = 2;
+-        }
+-        SELWORK->f68[(arg1 + 1) & 1] = (SELWORK->f68[arg1] + 1) & 1;
++            work->pending_selection_cursor[i] = 0;
++            work->panel_slide_state.half[i] = 1;
++            work->pending_selection_phase[i] = 2;
++        }
++        SELWORK->selected_grid_page[(arg1 + 1) & 1] = (SELWORK->selected_grid_page[arg1] + 1) & 1;
+@@ -509 +509 @@
+-        if (work->f14.half[(arg1 != 0) ? 0 : 1] == 1) {
++        if (work->selection_phase.half[(arg1 != 0) ? 0 : 1] == 1) {
+@@ -511,3 +511,3 @@
+-                work->f38[i] = 0;
+-                work->f10.half[i] = 3;
+-                work->f18[i] = 0;
++                work->pending_selection_cursor[i] = 0;
++                work->panel_slide_state.half[i] = 3;
++                work->pending_selection_phase[i] = 0;
+@@ -529 +529 @@
+-        ((s32)(rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) * 0x30) >> 12) - 0x40;
++        ((s32)(rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) * 0x30) >> 12) - 0x40;
+@@ -539,2 +539,2 @@
+-    if (SELWORK->f1C.half[arg2] == cell_column &&
+-        SELWORK->f20.half[arg2] == cell_row) {
++    if (SELWORK->grid_cursor_column.half[arg2] == cell_column &&
++        SELWORK->grid_cursor_row.half[arg2] == cell_row) {
+@@ -607 +607 @@
+-        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
++        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
+@@ -633,2 +633,2 @@
+-            if (g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
+-                                            SELWORK->f20.half[arg3]]
++            if (g_sel_grid_page_cells[arg1][SELWORK->grid_cursor_column.half[arg3] * 5 +
++                                            SELWORK->grid_cursor_row.half[arg3]]
+@@ -677 +677 @@
+-    for (i = 0; i < SELWORK->f65 + 3; i++) {
++    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
+@@ -679 +679 @@
+-                    ->pick_slot_sheets[SELWORK->f65];
++                    ->pick_slot_sheets[SELWORK->selected_match_count_index];
+@@ -730 +730 @@
+-    if (SELWORK->f10.half[arg3] != 0) {
++    if (SELWORK->panel_slide_state.half[arg3] != 0) {
+@@ -747,5 +747,5 @@
+-        if (SELWORK->f14.half[(arg3 != 0) ? 0 : 1] == 2) {
+-            SELWORK->f10.half[1] = 3;
+-            SELWORK->f10.half[0] = 3;
+-            SELWORK->f18[1] = 1;
+-            SELWORK->f18[0] = 1;
++        if (SELWORK->selection_phase.half[(arg3 != 0) ? 0 : 1] == 2) {
++            SELWORK->panel_slide_state.half[1] = 3;
++            SELWORK->panel_slide_state.half[0] = 3;
++            SELWORK->pending_selection_phase[1] = 1;
++            SELWORK->pending_selection_phase[0] = 1;
+@@ -757 +757 @@
+-        &arg0, arg3, SELWORK->f40[arg3], g_sel_offset_steps[arg3]);
++        &arg0, arg3, SELWORK->direction_nudge_offsets[arg3], g_sel_offset_steps[arg3]);
+@@ -766 +766 @@
+-            SELWORK->f1C.half[arg3] = (SELWORK->f1C.half[arg3] + 1) & 1;
++            SELWORK->grid_cursor_column.half[arg3] = (SELWORK->grid_cursor_column.half[arg3] + 1) & 1;
+@@ -774 +774 @@
+-        value = SELWORK->f20.half[arg3];
++        value = SELWORK->grid_cursor_row.half[arg3];
+@@ -776 +776 @@
+-            SELWORK->f20.half[arg3] = 0;
++            SELWORK->grid_cursor_row.half[arg3] = 0;
+@@ -778 +778 @@
+-            SELWORK->f20.half[arg3] = value + 1;
++            SELWORK->grid_cursor_row.half[arg3] = value + 1;
+@@ -784 +784 @@
+-        value = SELWORK->f20.half[arg3];
++        value = SELWORK->grid_cursor_row.half[arg3];
+@@ -786 +786 @@
+-            SELWORK->f20.half[arg3] = 4;
++            SELWORK->grid_cursor_row.half[arg3] = 4;
+@@ -788 +788 @@
+-            SELWORK->f20.half[arg3] = value - 1;
++            SELWORK->grid_cursor_row.half[arg3] = value - 1;
+@@ -796,2 +796,2 @@
+-        entry = g_sel_grid_page_cells[arg1][SELWORK->f1C.half[arg3] * 5 +
+-                                            SELWORK->f20.half[arg3]]
++        entry = g_sel_grid_page_cells[arg1][SELWORK->grid_cursor_column.half[arg3] * 5 +
++                                            SELWORK->grid_cursor_row.half[arg3]]
+@@ -811,2 +811,2 @@
+-                    if (SELWORK->f3C[arg3] == SELWORK->f65 + 3) {
+-                        SELWORK->f10.half[arg3] = 1;
++                    if (SELWORK->f3C[arg3] == SELWORK->selected_match_count_index + 3) {
++                        SELWORK->panel_slide_state.half[arg3] = 1;
+@@ -814,4 +814,4 @@
+-                        SELWORK->f38[arg3] = 0;
+-                        SELWORK->f18[arg3] = 3;
+-                        for (i = 0; i < SELWORK->f60[arg3]; i++) {
+-                            SELWORK->f48[arg3][i] = i;
++                        SELWORK->pending_selection_cursor[arg3] = 0;
++                        SELWORK->pending_selection_phase[arg3] = 3;
++                        for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
++                            SELWORK->remaining_list_entries[arg3][i] = i;
+@@ -820 +820 @@
+-                            SELWORK->f48[arg3][4] = 5;
++                            SELWORK->remaining_list_entries[arg3][4] = 5;
+@@ -856 +856 @@
+-    if (SELWORK->f14.half[arg3] < 4) {
++    if (SELWORK->selection_phase.half[arg3] < 4) {
+@@ -875 +875 @@
+-        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
++        ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x50;
+@@ -877 +877 @@
+-    for (i = 0; i < SELWORK->f65 + 3; i++) {
++    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
+@@ -881 +881 @@
+-        if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
++        if (SELWORK->f3C[arg3] == i || SELWORK->selection_phase.half[arg3] >= 4) {
+@@ -895,2 +895,2 @@
+-        if (SELWORK->f3C[arg3] != i || SELWORK->f14.half[arg3] >= 4) {
+-            idx = SELWORK->f7E[arg3][i];
++        if (SELWORK->f3C[arg3] != i || SELWORK->selection_phase.half[arg3] >= 4) {
++            idx = SELWORK->picked_list_entries[arg3][i];
+@@ -899 +899 @@
+-            idx = SELWORK->f48[arg3][SELWORK->f5C[arg3]];
++            idx = SELWORK->remaining_list_entries[arg3][SELWORK->remaining_list_cursor[arg3]];
+@@ -904 +904 @@
+-        if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
++        if (SELWORK->f3C[arg3] == i || SELWORK->selection_phase.half[arg3] >= 4) {
+@@ -922,2 +922,2 @@
+-        draw_context->resource_root.v80076FF8->pick_slot_sheets[SELWORK->f65];
+-    for (i = 0; i < SELWORK->f65 + 3; i++) {
++        draw_context->resource_root.v80076FF8->pick_slot_sheets[SELWORK->selected_match_count_index];
++    for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
+@@ -927 +927 @@
+-        if (SELWORK->f3C[arg3] == i || SELWORK->f14.half[arg3] >= 4) {
++        if (SELWORK->f3C[arg3] == i || SELWORK->selection_phase.half[arg3] >= 4) {
+@@ -950 +950 @@
+-    if (SELWORK->f10.half[arg3] != 0) {
++    if (SELWORK->panel_slide_state.half[arg3] != 0) {
+@@ -958 +958 @@
+-            (u32 *)&arg0, arg3, SELWORK->f40[arg3], g_sel_offset_steps[arg3]) &
++            (u32 *)&arg0, arg3, SELWORK->direction_nudge_offsets[arg3], g_sel_offset_steps[arg3]) &
+@@ -961,3 +961,3 @@
+-        SELWORK->f5C[arg3]++;
+-        if (SELWORK->f5C[arg3] >= SELWORK->f60[arg3]) {
+-            SELWORK->f5C[arg3] = 0;
++        SELWORK->remaining_list_cursor[arg3]++;
++        if (SELWORK->remaining_list_cursor[arg3] >= SELWORK->remaining_list_count[arg3]) {
++            SELWORK->remaining_list_cursor[arg3] = 0;
+@@ -967,3 +967,3 @@
+-        SELWORK->f5C[arg3]--;
+-        if (SELWORK->f5C[arg3] < 0) {
+-            SELWORK->f5C[arg3] = SELWORK->f60[arg3] - 1;
++        SELWORK->remaining_list_cursor[arg3]--;
++        if (SELWORK->remaining_list_cursor[arg3] < 0) {
++            SELWORK->remaining_list_cursor[arg3] = SELWORK->remaining_list_count[arg3] - 1;
+@@ -975 +975 @@
+-        if (SELWORK->f3C[arg3] < SELWORK->f65 + 3) {
++        if (SELWORK->f3C[arg3] < SELWORK->selected_match_count_index + 3) {
+@@ -977,4 +977,4 @@
+-            SELWORK->f7E[arg3][SELWORK->f3C[arg3]] =
+-                SELWORK->f48[arg3][SELWORK->f5C[arg3]];
+-            if (SELWORK->f3C[arg3] == SELWORK->f65 + 2) {
+-                SELWORK->f14.half[arg3] = 4;
++            SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3]] =
++                SELWORK->remaining_list_entries[arg3][SELWORK->remaining_list_cursor[arg3]];
++            if (SELWORK->f3C[arg3] == SELWORK->selected_match_count_index + 2) {
++                SELWORK->selection_phase.half[arg3] = 4;
+@@ -983,5 +983,5 @@
+-            SELWORK->f60[arg3]--;
+-            for (i = SELWORK->f5C[arg3]; i < SELWORK->f60[arg3]; i++) {
+-                SELWORK->f48[arg3][i] = SELWORK->f48[arg3][i + 1];
+-            }
+-            SELWORK->f5C[arg3] = 0;
++            SELWORK->remaining_list_count[arg3]--;
++            for (i = SELWORK->remaining_list_cursor[arg3]; i < SELWORK->remaining_list_count[arg3]; i++) {
++                SELWORK->remaining_list_entries[arg3][i] = SELWORK->remaining_list_entries[arg3][i + 1];
++            }
++            SELWORK->remaining_list_cursor[arg3] = 0;
+@@ -993,4 +993,4 @@
+-            SELWORK->f10.half[arg3] = 3;
+-            SELWORK->f18[arg3] = 2;
+-            SELWORK->f38[arg3] = SELWORK->f65 + 2;
+-            g_sel_entry_availability_and_claims[arg2[SELWORK->f38[arg3]]] &=
++            SELWORK->panel_slide_state.half[arg3] = 3;
++            SELWORK->pending_selection_phase[arg3] = 2;
++            SELWORK->pending_selection_cursor[arg3] = SELWORK->selected_match_count_index + 2;
++            g_sel_entry_availability_and_claims[arg2[SELWORK->pending_selection_cursor[arg3]]] &=
+@@ -998,3 +998,3 @@
+-            SELWORK->f60[arg3] = 5;
+-            for (i = 0; i < SELWORK->f60[arg3]; i++) {
+-                SELWORK->f48[arg3][i] = i;
++            SELWORK->remaining_list_count[arg3] = 5;
++            for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
++                SELWORK->remaining_list_entries[arg3][i] = i;
+@@ -1003 +1003 @@
+-                SELWORK->f48[arg3][4] = 5;
++                SELWORK->remaining_list_entries[arg3][4] = 5;
+@@ -1008,5 +1008,5 @@
+-        for (i = 0; i < SELWORK->f60[arg3]; i++) {
+-            if (SELWORK->f48[arg3][i] >
+-                SELWORK->f7E[arg3][SELWORK->f3C[arg3] - 1]) {
+-                for (j = SELWORK->f60[arg3] - 1; j >= i; j--) {
+-                    SELWORK->f48[arg3][j + 1] = SELWORK->f48[arg3][j];
++        for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
++            if (SELWORK->remaining_list_entries[arg3][i] >
++                SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1]) {
++                for (j = SELWORK->remaining_list_count[arg3] - 1; j >= i; j--) {
++                    SELWORK->remaining_list_entries[arg3][j + 1] = SELWORK->remaining_list_entries[arg3][j];
+@@ -1014,2 +1014,2 @@
+-                SELWORK->f48[arg3][i] =
+-                    SELWORK->f7E[arg3][SELWORK->f3C[arg3] - 1];
++                SELWORK->remaining_list_entries[arg3][i] =
++                    SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1];
+@@ -1018,6 +1018,6 @@
+-            if (i == SELWORK->f60[arg3] - 1) {
+-                SELWORK->f48[arg3][i + 1] =
+-                    SELWORK->f7E[arg3][SELWORK->f3C[arg3] - 1];
+-            }
+-        }
+-        SELWORK->f60[arg3]++;
++            if (i == SELWORK->remaining_list_count[arg3] - 1) {
++                SELWORK->remaining_list_entries[arg3][i + 1] =
++                    SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1];
++            }
++        }
++        SELWORK->remaining_list_count[arg3]++;
+@@ -1042 +1042 @@
+-    cnt = &SELWORK->f36;
++    cnt = &SELWORK->selection_fade_shade;
+@@ -1047,2 +1047,2 @@
+-        working_record = SELWORK->f00;
+-        working_record->match_count_index = SELWORK->f65;
++        working_record = SELWORK->sel_result_record;
++        working_record->match_count_index = SELWORK->selected_match_count_index;
+@@ -1050,2 +1050,2 @@
+-        if (SELWORK->f66 < 3) {
+-            var_6 = SELWORK->f66 - 1;
++        if (SELWORK->selected_time_sheet_code < 3) {
++            var_6 = SELWORK->selected_time_sheet_code - 1;
+@@ -1053 +1053 @@
+-            var_6 = SELWORK->f66 - 2;
++            var_6 = SELWORK->selected_time_sheet_code - 2;
+@@ -1056,2 +1056,2 @@
+-        working_record->win_target_index = SELWORK->f67;
+-        working_record->unk14_15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
++        working_record->win_target_index = SELWORK->selected_win_target_index;
++        working_record->unk14_15 = SELWORK->selected_grid_page[0] + SELWORK->selected_grid_page[1] * 2;
+@@ -1059 +1059 @@
+-            for (j = 0; j < SELWORK->f65 + 3; j++) {
++            for (j = 0; j < SELWORK->selected_match_count_index + 3; j++) {
+@@ -1063,2 +1063,2 @@
+-                    g_sel_grid_page_cells[0][SELWORK->f6A[i][j]].unk1;
+-                working_record->match_picks[i][j].unk1 = SELWORK->f7E[i][j];
++                    g_sel_grid_page_cells[0][SELWORK->grid_pick_slots[i][j]].unk1;
++                working_record->match_picks[i][j].unk1 = SELWORK->picked_list_entries[i][j];
+@@ -1126 +1126 @@
+-        SELWORK->f04 = list;
++        SELWORK->sel_resource_table = list;
+@@ -1131,2 +1131,2 @@
+-        SELWORK->f30 = 0;
+-        SELWORK->f34 = 0;
++        SELWORK->prim_buffer_flip_count = 0;
++        SELWORK->selection_pulse_frames = 0;
+@@ -1142,4 +1142,4 @@
+-        base->f10.half[t0] = 0;
+-        base->f08[t0] = 0;
+-        base->f0C[t0] = 0;
+-        base->f14.half[t0] = 0;
++        base->panel_slide_state.half[t0] = 0;
++        base->panel_draw_offset_y[t0] = 0;
++        base->panel_slide_amount[t0] = 0;
++        base->selection_phase.half[t0] = 0;
+@@ -1150,3 +1150,3 @@
+-        base->f40[t0][1] = 0;
+-        base->f40[t0][0] = 0;
+-        base->f68[t0] = t0;
++        base->direction_nudge_offsets[t0][1] = 0;
++        base->direction_nudge_offsets[t0][0] = 0;
++        base->selected_grid_page[t0] = t0;
+@@ -1154,2 +1154,2 @@
+-            SELWORK->f6A[t0][a2] = -1;
+-            SELWORK->f7E[t0][a2] = 0;
++            SELWORK->grid_pick_slots[t0][a2] = -1;
++            SELWORK->picked_list_entries[t0][a2] = 0;
+@@ -1158,2 +1158,2 @@
+-        SELWORK->f5C[t0] = 0;
+-        SELWORK->f60[t0] = 5;
++        SELWORK->remaining_list_cursor[t0] = 0;
++        SELWORK->remaining_list_count[t0] = 5;
+@@ -1179,2 +1179,2 @@
+-        p->f20.word = 0;
+-        p->f1C.word = 0;
++        p->grid_cursor_row.word = 0;
++        p->grid_cursor_column.word = 0;
+@@ -1182 +1182 @@
+-            p->f64 = sp[0] - 3;
++            p->maximum_match_count_index = sp[0] - 3;
+@@ -1184,5 +1184,5 @@
+-            p->f64 = sp[1] - 3;
+-        }
+-    }
+-    if (SELWORK->f64 >= 3) {
+-        SELWORK->f64 = 2;
++            p->maximum_match_count_index = sp[1] - 3;
++        }
++    }
++    if (SELWORK->maximum_match_count_index >= 3) {
++        SELWORK->maximum_match_count_index = 2;
+@@ -1192,5 +1192,5 @@
+-        q->f00 = arg1;
+-        q->f65 = 0;
+-    }
+-    SELWORK->f67 = 1;
+-    SELWORK->f66 = g_sel_sheet_code_pairs[SELWORK->f67][1];
++        q->sel_result_record = arg1;
++        q->selected_match_count_index = 0;
++    }
++    SELWORK->selected_win_target_index = 1;
++    SELWORK->selected_time_sheet_code = g_sel_sheet_code_pairs[SELWORK->selected_win_target_index][1];
+@@ -1209,4 +1209,4 @@
+-    if (SELWORK->f14.word == 0x40004) {
+-        SELWORK->f14.half[1] = 5;
+-        SELWORK->f14.half[0] = 5;
+-        SELWORK->f36 = 0;
++    if (SELWORK->selection_phase.word == 0x40004) {
++        SELWORK->selection_phase.half[1] = 5;
++        SELWORK->selection_phase.half[0] = 5;
++        SELWORK->selection_fade_shade = 0;
+@@ -1215,2 +1215,2 @@
+-        draw_context, SELWORK->f14.half[0]);
+-    if (SELWORK->f14.half[0] != 5) {
++        draw_context, SELWORK->selection_phase.half[0]);
++    if (SELWORK->selection_phase.half[0] != 5) {
+@@ -1221 +1221 @@
+-        switch (SELWORK->f14.half[i]) {
++        switch (SELWORK->selection_phase.half[i]) {
+@@ -1232 +1232 @@
+-                draw_context, i, (s16)(SELWORK->f14.half[i] - 1));
++                draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
+@@ -1237 +1237 @@
+-            menu_UpdateSelGridPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
++            menu_UpdateSelGridPicks(arg0, SELWORK->selected_grid_page[i], SELWORK->grid_pick_slots[i], i);
+@@ -1239 +1239 @@
+-                draw_context, i, (s16)(SELWORK->f14.half[i] - 1));
++                draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
+@@ -1241 +1241 @@
+-            menu_DrawSelGrid(draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
++            menu_DrawSelGrid(draw_context, SELWORK->selected_grid_page[i], SELWORK->grid_pick_slots[i], i);
+@@ -1245 +1245 @@
+-            menu_UpdateSelListPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
++            menu_UpdateSelListPicks(arg0, SELWORK->selected_grid_page[i], SELWORK->grid_pick_slots[i], i);
+@@ -1247 +1247 @@
+-                draw_context, i, (s16)(SELWORK->f14.half[i] - 1));
++                draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
+@@ -1250 +1250 @@
+-                draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
++                draw_context, SELWORK->selected_grid_page[i], SELWORK->grid_pick_slots[i], i);
+@@ -1257 +1257 @@
+-                draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
++                draw_context, SELWORK->selected_grid_page[i], SELWORK->grid_pick_slots[i], i);
+@@ -1261 +1261 @@
+-                SELWORK->f14.half[i] = 3;
++                SELWORK->selection_phase.half[i] = 3;
+@@ -1268 +1268 @@
+-                draw_context, SELWORK->f68[i], SELWORK->f6A[i], i);
++                draw_context, SELWORK->selected_grid_page[i], SELWORK->grid_pick_slots[i], i);
+@@ -1281,4 +1281,4 @@
+-    SELWORK->f24 = &g_gpu_db[g_gpu_presented_frame_count & 1];
+-    temp_v1 = SELWORK->f30 + 1;
+-    SELWORK->f34 = SELWORK->f34 + 1;
+-    SELWORK->f30 = temp_v1;
++    SELWORK->frame_gpu_db = &g_gpu_db[g_gpu_presented_frame_count & 1];
++    temp_v1 = SELWORK->prim_buffer_flip_count + 1;
++    SELWORK->selection_pulse_frames = SELWORK->selection_pulse_frames + 1;
++    SELWORK->prim_buffer_flip_count = temp_v1;
+@@ -1287 +1287 @@
+-    s.resource_root.v80076FF8 = SELWORK->f04;
++    s.resource_root.v80076FF8 = SELWORK->sel_resource_table;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -488,6 +488,6 @@
+-    view_record->h30[0][0] = 0x64;
+-    view_record->h30[0][1] = 0;
+-    view_record->h30[0][2] = 0x64;
+-    view_record->h30[1][0] = 0x64;
+-    view_record->h30[1][1] = 0;
+-    view_record->h30[1][2] = 0x64;
++    view_record->forced_cell_coordinates[0][0] = 0x64;
++    view_record->forced_cell_coordinates[0][1] = 0;
++    view_record->forced_cell_coordinates[0][2] = 0x64;
++    view_record->forced_cell_coordinates[1][0] = 0x64;
++    view_record->forced_cell_coordinates[1][1] = 0;
++    view_record->forced_cell_coordinates[1][2] = 0x64;
+@@ -608 +608 @@
+-                view_record->h30[p], (s32 *)&scr->eye, scr->hit);
++                view_record->forced_cell_coordinates[p], (s32 *)&scr->eye, scr->hit);
+@@ -664 +664 @@
+-                        view_record->h30[p], (s32 *)&scr->eye, scr->hit);
++                        view_record->forced_cell_coordinates[p], (s32 *)&scr->eye, scr->hit);
+@@ -732,6 +732,6 @@
+-    g_camera_default_view_record.h30[0][0] = 0x64;
+-    g_camera_default_view_record.h30[0][1] = 0;
+-    g_camera_default_view_record.h30[0][2] = 0x64;
+-    g_camera_default_view_record.h30[1][0] = 0x64;
+-    g_camera_default_view_record.h30[1][1] = 0;
+-    g_camera_default_view_record.h30[1][2] = 0x64;
++    g_camera_default_view_record.forced_cell_coordinates[0][0] = 0x64;
++    g_camera_default_view_record.forced_cell_coordinates[0][1] = 0;
++    g_camera_default_view_record.forced_cell_coordinates[0][2] = 0x64;
++    g_camera_default_view_record.forced_cell_coordinates[1][0] = 0x64;
++    g_camera_default_view_record.forced_cell_coordinates[1][1] = 0;
++    g_camera_default_view_record.forced_cell_coordinates[1][2] = 0x64;
+@@ -758,6 +758,6 @@
+-    g_camera_alternate_view_record.h30[0][0] = 0x64;
+-    g_camera_alternate_view_record.h30[0][1] = 0;
+-    g_camera_alternate_view_record.h30[0][2] = 0x64;
+-    g_camera_alternate_view_record.h30[1][0] = 0x64;
+-    g_camera_alternate_view_record.h30[1][1] = 0;
+-    g_camera_alternate_view_record.h30[1][2] = 0x64;
++    g_camera_alternate_view_record.forced_cell_coordinates[0][0] = 0x64;
++    g_camera_alternate_view_record.forced_cell_coordinates[0][1] = 0;
++    g_camera_alternate_view_record.forced_cell_coordinates[0][2] = 0x64;
++    g_camera_alternate_view_record.forced_cell_coordinates[1][0] = 0x64;
++    g_camera_alternate_view_record.forced_cell_coordinates[1][1] = 0;
++    g_camera_alternate_view_record.forced_cell_coordinates[1][2] = 0x64;
+@@ -995,6 +995,6 @@
+-    dst->h30[0][0] = 0x64;
+-    dst->h30[0][1] = 0;
+-    dst->h30[0][2] = 0x64;
+-    dst->h30[1][0] = 0x64;
+-    dst->h30[1][1] = 0;
+-    dst->h30[1][2] = 0x64;
++    dst->forced_cell_coordinates[0][0] = 0x64;
++    dst->forced_cell_coordinates[0][1] = 0;
++    dst->forced_cell_coordinates[0][2] = 0x64;
++    dst->forced_cell_coordinates[1][0] = 0x64;
++    dst->forced_cell_coordinates[1][1] = 0;
++    dst->forced_cell_coordinates[1][2] = 0x64;
+@@ -2141,2 +2141,2 @@
+-    gpu_SetCellForceBit(view_record->h30[0]);
+-    gpu_SetCellForceBit(view_record->h30[1]);
++    gpu_SetCellForceBit(view_record->forced_cell_coordinates[0]);
++    gpu_SetCellForceBit(view_record->forced_cell_coordinates[1]);
+@@ -3435 +3435 @@
+-              g_motion_fighter_buffers[fighter_record->motion_slot]->f14);
++              g_motion_fighter_buffers[fighter_record->motion_slot]->variant_count);
+@@ -3474 +3474 @@
+-                                      ->f4E[rec->default_variant_index]];
++                                      ->variant_move_script_index[rec->default_variant_index]];
+@@ -3477 +3477 @@
+-                             g_motion_fighter_buffers[rec->motion_slot]->f14;
++                             g_motion_fighter_buffers[rec->motion_slot]->variant_count;
+@@ -3489 +3489 @@
+-                g_motion_fighter_buffers[rec->motion_slot]->f14;
++                g_motion_fighter_buffers[rec->motion_slot]->variant_count;
+@@ -3495 +3495 @@
+-                                      ->f4E[rec->variant_index]];
++                                      ->variant_move_script_index[rec->variant_index]];
+@@ -3498 +3498 @@
+-            g_motion_fighter_buffers[rec->motion_slot]->f14;
++            g_motion_fighter_buffers[rec->motion_slot]->variant_count;
+@@ -3502 +3502 @@
+-            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
++            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->variant_count;
+@@ -3505 +3505 @@
+-            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
++            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->variant_count;
+@@ -3509 +3509 @@
+-                                      ->f54[rec->variant_index][t]];
++                                      ->next_variant_move_script_index[rec->variant_index][t]];
+@@ -3533 +3533 @@
+-        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
++        .move_scripts[g_motion_fighter_buffers[v1]->variant_move_script_index[v0]];
+@@ -3540 +3540 @@
+-        .move_scripts[g_motion_fighter_buffers[v1]->f4E[v0]];
++        .move_scripts[g_motion_fighter_buffers[v1]->variant_move_script_index[v0]];
+@@ -3545 +3545 @@
+-        [g_motion_fighter_buffers[D_80101EC8[fighter_index].motion_slot]->f16];
++        [g_motion_fighter_buffers[D_80101EC8[fighter_index].motion_slot]->common_move_script_index];
+@@ -3552 +3552 @@
+-             ->f18[character_data_index]];
++             ->common_move_script_index_by_character[character_data_index]];
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed

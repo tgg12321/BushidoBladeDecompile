@@ -1,0 +1,49 @@
+var-members-rest-19 -- draft notes (research re-derived by the drafter in the lane worktree ln-naming-a at 26f920190; research treated as hints only)
+
+BASIS: research tmp/codex/var-members-rest-19-research.md (HEAD c7d208fb4), 38 rows (32 RENAME, 6 NO_NAME). Result: 33 rows in pairs.txt / member_manifest.csv (SelWork 25, Tbl800A3860Entry 6, Rec44.h30, Unk80101EC8Record.unk_27E), 0 DROPPED, 5 NO_NAME carried, 1 NO_NAME promoted (SelWork.f30), 10 name changes against the research. The verdict / verifier_note columns are empty (the reviewer decides). Dry run: dry.txt, exit 0, "OK: every member access renamed", 4 files change (include/game.h, src/main/63D2C.c, 64FD8.c, 9F9C.c), no hand edit. NOTE: tools/naming_member_apply.py needs the WSL toolchain (mipsel cpp/cc1); run from plain PowerShell it dies with FileNotFoundError, so dry.txt was produced as `wsl bash <script>` -> `python3 tools/naming_member_apply.py --dry-run docs/naming/phase3/pending/var-members-rest-19/pairs.txt` in the worktree (same as rest-18 "run under WSL"). The dry run leaves nothing behind; git status shows only the new pending dir.
+
+Re-derivation
+- Every use of every member re-read in the worktree. SelWork: all of src/main/64FD8.c (SELWORK macro, locals base / work / p / q / cnt, passed arrays arg2 / picks) and 63D2C.c:370-445; the only other mentions of g_sel_screen_work are the definition (63D2C.c:470) and include/bb2.h:65-66. pad_StepOffsetsGetDirectionEvents (596CC.c:234-289) for f40. Tbl800A3860Entry: 9F9C.c:3239-3240 (buffers), 3355-3371 (file load), 3425-3555 (all readers); the other 0x80190800 uses are raw load addresses. Rec44.h30: 9F9C.c:384-418, 488-493, 608, 664, 732-737, 758-763, 995-1000, 2141-2142, 2B344.c:2371-2377. unk_27E: 9F9C.c:2697-2766, 4061.
+- INCLUDE_ASM: the 137 live bodies were scanned for g_sel_screen_work, g_motion_fighter_buffers, D_800A3860, the camera view records, D_800F66xx and offset 0x27E: only func_8004A940 / func_8004C404 read D_800F6658 (a controller-port word, not a Rec44 member). asm/funcs/menu_*Sel*.s are leftovers of C-landed functions.
+- Freshness: all 33 new names have 0 hits (git grep -w over src include asm tools symbol_addrs.txt named_syms.txt) and appear in no pending/*/pairs.txt of ln-naming-a, ln-naming-b or main. Names are distinct inside SelWork and inside Tbl800A3860Entry. The short tokens f14 / f18 / f66 are declared by both SelWork and Tbl800A3860Entry; the tool resolves them by type and the dry run was clean (second pass for those three).
+
+Name changes against the research
+- SelWork.f0C: panel_slide_progress -> panel_slide_amount (the value rises on the way out and falls on the way back, 64FD8.c:357/369 vs 381/390; 'progress' overclaims a direction).
+- SelWork.f24: sel_draw_buffer -> frame_gpu_db (it is &g_gpu_db[frame parity], 1281).
+- SelWork.f40: direction_pulse_offsets -> direction_nudge_offsets ('pulse' is f34's word; f40 is the x/y nudge pad_StepOffsetsGetDirectionEvents accumulates).
+- SelWork.f30: NO_NAME -> prim_buffer_flip_count (the research said no consuming read; 64FD8.c:1285 passes (f30 + 1) & 1 to menu_GetSelPrimBuffer).
+- Tbl800A3860Entry f16 / f18 / f4E / f54 / f66: *_offset(s) -> *_index (include/game.h:810-815 says these halfwords are indices into move_scripts, read with lhu): common_move_script_index, common_move_script_index_by_character, variant_move_script_index, variant_transition_move_script_index, special_variant_move_script_index.
+- Unk80101EC8Record.unk_27E: combined_hit_tally_step_scales -> hit_tally_sum_step_scales (states only the index formula min(hit_record_group_14_21_hit_tally + unk_272, 3), 9F9C.c:2759-2765; unk_272 stays unnamed). Earlier waves (rest-14, rest-17) listed it neutral because unk_272 is unnamed; weakest row for the reviewer.
+
+DROPPED
+- none. Rows with weaker evidence, for the reviewer: SelWork.f68 selected_grid_page (the choice is made on the opposed-choice screen and also stored as unk14_15 bits; the name states the page reading the later phases give it), SelWork.f6A picked_grid_entries (-1 and the 0x14 placeholder share the array), SelWork.f0C, Rec44.h30 forced_cell_coordinates (rest-18 FAILed eye_blocking_cells for the blocking claim; this one states only that the consumer applies the force bit to those cells, 'forced' echoes gpu_SetCellForceBit), unk_27E.
+
+NO_NAME rows carried (not in pairs)
+- SelWork.f2C (+0x2C): single write, 64FD8.c:1286 (the selected primitive buffer); never read. Write-only.
+- SelWork.f3C: several roles -- setup-menu row (menu_HandleSelPhase0CursorInput 55-65, 71, 129; 63D2C.c:377, 392-414), opposed-choice mirror of f68 (497), pick insertion position / count in the grid and list phases (657-661, 682, 713, 736-739, 805-813, 862-895, 975-1024). One name cannot cover them.
+- Unk80102778Rec.unk_4 (u8[6]): three per-player u8 pairs; needs a layout split first (types task). No new evidence.
+- Unk80102778Rec.unk_F: copied to D_800A3140 (24BF0.c:19, 24), 9F9C.c:1233 W, menu_config.c:85/143/183/208; D_800A3140's only read is the unnamed 5th argument of fighter_ResolveBoneHit (17AFC.c:2207). No new evidence.
+- Unk80101EC8Record.unk_272: mixed writers (17AFC.c:136, 363, 366 group tally; 9F9C.c:2926 paired-move start; 3879 reset); readers 4510C.c:1965, 9F9C.c:2760, 4719. A tally name is not shown by every write.
+
+R6 WATCH list (comment pass the applier must rewrite; verified at 26f920190; apply the new names in these comments)
+SelWork:
+- include/game.h:575-589 block comment: f48 / f60 / f5C / f7E / f3C (kept) / f6A / f00 / f04 / f10 / f14 / f1C / f20 -> new names; "f7E[f3C++]" keeps f3C.
+- include/game.h:356 ("SelWork.f04"), 359 ("SelWork.f65"), 536 ("SelWork.f00"), 2597 ("SelWork's f1C / f20"). include/game.h:2590-2597 menu_draw_offsets prose is a different type; leave.
+- src/main/64FD8.c:17 ("SelWork f40[player]"), 402-406 (opposed-choice header: "y = f68[arg1] * 90 plus the f40 offset ... 5-bit timer at 0x34" -> selected_grid_page / direction_nudge_offsets / selection_pulse_frames), 559 ("f65+3 slot sprites"), 1028-1030 ("SELWORK->f36", "SELWORK->f00", "f36 as its colour"), 1128 ("0x30/0x34 clears": offsets, leave or add names).
+- named_syms.txt:594 names g_sel_screen_work only; symbol_addrs.txt:563/853 name SelWork generically: no old token.
+- docs/engine/README.md:125 names the type only. tools/trace: no SelWork hit.
+Tbl800A3860Entry:
+- include/game.h:803-816 (f14 modulus, f4E / f54 / f66 / f16 / f18 and "27 halfwords end exactly at f4E") and 841 ("the f4E / f54 / f66 / f16 / f18 entries").
+- docs/engine/motion.md:32-34 (`f4E`, `f54`, `f66`, `f14`); symbol_addrs.txt:1916 ("f4E table"), 1917 ("modulo f14").
+- tools/trace/movegraph.py:282-294, 500 build output strings "f66[..]", "variant f4E[..]", "variant f54[..]" and use local f14 / f00: tool labels, decide whether to rename the label strings; the locals f00 / f14 there are not these members (leave).
+Rec44.h30:
+- include/game.h:1982-1984 (declaration comment, "passes h30[p]"); named_syms.txt:667-668 ("sets h30[2][4] to 0x64 / 0 pairs", "reads h30[i][0] / h30[i][2]"); symbol_addrs.txt:1982-1987 (D_800F6638..D_800F6644 ".h30[..][..]"). History (leave): docs/naming/phase3/pending/var-members-rest-18/*.
+Unk80101EC8Record.unk_27E: include/bb2.h:228 and src/main/d_7D920.c:454 ("-> Unk80101EC8Record.unk_27E[i]"). Also docs/naming/phase3/pending/m13/*, var-fighter-members/dry.txt, var-globals-h/l notes cite it as history (leave).
+Post-apply survival grep: `(->|\.)(f00|f04|f08|f0C|f10|f14|f18|f1C|f20|f24|f30|f34|f36|f38|f40|f48|f5C|f60|f64|f65|f66|f67|f68|f6A|f7E)\b` over src/main/64FD8.c and 63D2C.c (f3C stays), `->(f14|f16|f18|f4E|f54|f66)\b` over src/main/9F9C.c, and `\b(h30|unk_27E)\b` over src include symbol_addrs.txt named_syms.txt. Clang-format: the lengthened names push lines over 80 columns in 64FD8.c and 9F9C.c; run `python tools/format.py` on the 4 touched files.
+
+PRE-APPLY (naming-reviewer, 2026-10-30): 29 PASS, 4 FAIL -> 31 pairs.
+- SelWork.f6A: SUGGESTED grid_pick_slots (suggested by pre-apply reviewer after picked_grid_entries FAILed (64FD8.c:805/713 store the hovered entry / 0x14 placeholder into slot f3C before the confirm test); R6 must judge it fresh at every use).
+- Tbl800A3860Entry.f54: SUGGESTED next_variant_move_script_index (suggested by pre-apply reviewer after variant_transition_move_script_index FAILed (9F9C.c:3498-3509 show only the (current variant, next eligible variant) keying, no transition purpose); R6 must judge it fresh at every use).
+- Tbl800A3860Entry.f66: DROPPED (special_variant_move_script_index FAILed N4: 'special' unsupported (ids 0x7FF0..0x7FF4 are equally pseudo-ids); reviewer suggestion id_7FF5_variant_move_script_index not taken (spells a constant, not a role); stays f66).
+- Unk80101EC8Record.unk_27E: DROPPED (hit_tally_sum_step_scales FAILed N1/N4: characterises unnamed unk_272 as a hit tally, but 9F9C.c:2926 increments it on a paired-move start; keep unk_27E until unk_272 is named).
+- Comment pass: f66 and unk_27E keep their names; their R6 WATCH lines above stay as written. Use grid_pick_slots for f6A and next_variant_move_script_index for f54 in comments (no 'picked' / 'transition' wording for them).
