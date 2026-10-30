@@ -16,7 +16,7 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
     s32 i;
     s32 var_5;
     s32 angle;
-    s16 *var_7;
+    s16 *frame_cursor;
     s16 cos_val;
     s16 sin_val;
     s32 cz;
@@ -37,16 +37,16 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
             var_0.vx = 0;
             angle = rec->anim_yaw;
             var_0.vz = 0;
-            var_7 =
+            frame_cursor =
                 (s16 *)(g_node_frame_animation_context.frame_data + var_5 * 12);
             var_0.vy = angle;
             math_RotMatrixZYX(&var_0, &mat);
-            var_0.vx = *var_7++;
-            var_0.vy = *var_7++;
-            var_0.vz = *var_7++;
-            rec->node.xf.rot.vx = *var_7++;
-            rec->node.xf.rot.vy = *var_7++;
-            rec->node.xf.rot.vz = *var_7++;
+            var_0.vx = *frame_cursor++;
+            var_0.vy = *frame_cursor++;
+            var_0.vz = *frame_cursor++;
+            rec->node.xf.rot.vx = *frame_cursor++;
+            rec->node.xf.rot.vy = *frame_cursor++;
+            rec->node.xf.rot.vz = *frame_cursor++;
             rec->node.matrix_state = 0;
             node_UpdateWorldMatrix(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
@@ -75,14 +75,15 @@ void node_AdvanceFrameAnimatedEntriesAndQueueDraws(void) {
                                                    .paired_grid_nodes +
                                            i);
                 last = g_node_frame_animation_context.anim_frame_count - 1;
-                var_7 = (s16 *)(g_node_frame_animation_context.frame_data +
-                                (var_5 + last) * 12);
-                var_0.vx = *var_7++;
-                var_0.vy = *var_7++;
-                var_0.vz = *var_7++;
-                rec->node.xf.rot.vx = *var_7++;
-                rec->node.xf.rot.vy = *var_7++;
-                rec->node.xf.rot.vz = *var_7++;
+                frame_cursor =
+                    (s16 *)(g_node_frame_animation_context.frame_data +
+                            (var_5 + last) * 12);
+                var_0.vx = *frame_cursor++;
+                var_0.vy = *frame_cursor++;
+                var_0.vz = *frame_cursor++;
+                rec->node.xf.rot.vx = *frame_cursor++;
+                rec->node.xf.rot.vy = *frame_cursor++;
+                rec->node.xf.rot.vz = *frame_cursor++;
                 rec->node.matrix_state = 0;
                 node_UpdateWorldMatrix(&rec->node);
                 rec->node.xf.mat.t[0] += var_0.vx;
@@ -430,33 +431,33 @@ void arena_Resize(s32 block_id, s32 new_size) {
     }
 }
 
-s32 *arena_OpenBlock(s32 a0) {
+s32 *arena_OpenBlock(s32 block_id) {
     Unk800EED10Entry *e;
     s32 idx;
     s32 ret;
 
-    arena_Free(a0);
+    arena_Free(block_id);
     idx = g_arena_block_count;
     e = &g_arena_blocks[idx];
     g_arena_block_count = idx + 1;
     ret = g_arena_free_ptr;
     e->block_start = ret;
-    e->id = a0;
+    e->id = block_id;
     e->fn = 0;
     return (s32 *)ret;
 }
 
-void arena_SetBlockEnd(s32 a0, s32 a1) {
+void arena_SetBlockEnd(s32 block_id, s32 end_addr) {
     s32 i;
     Unk800EED10Entry *e;
 
     for (i = 0; i < g_arena_block_count; i++) {
         e = &g_arena_blocks[i];
-        if (e->id == a0)
+        if (e->id == block_id)
             break;
     }
     if (i < g_arena_block_count) {
-        s32 amt = a1 - g_arena_free_ptr;
+        s32 amt = end_addr - g_arena_free_ptr;
         e->amt = amt;
         g_arena_free_ptr += amt;
         g_arena_free_size -= amt;
@@ -465,22 +466,22 @@ void arena_SetBlockEnd(s32 a0, s32 a1) {
     sys_StoreZeroPastScratchpadOnFailedCheck();
 }
 
-void arena_SetMoveCallback(s32 a0, s32 a1) {
+void arena_SetMoveCallback(s32 block_id, s32 move_callback) {
     s32 i;
     s32 count = g_arena_block_count;
     for (i = 0; i < count; i++) {
-        if (g_arena_blocks[i].id == a0) {
-            g_arena_blocks[i].fn = (void (*)(s16, s32))a1;
+        if (g_arena_blocks[i].id == block_id) {
+            g_arena_blocks[i].fn = (void (*)(s16, s32))move_callback;
             return;
         }
     }
 }
 
-void arena_ClearMoveCallback(s32 a0) {
+void arena_ClearMoveCallback(s32 block_id) {
     s32 i;
     s32 count = g_arena_block_count;
     for (i = 0; i < count; i++) {
-        if (g_arena_blocks[i].id == a0) {
+        if (g_arena_blocks[i].id == block_id) {
             g_arena_blocks[i].fn = 0;
             return;
         }
@@ -498,10 +499,10 @@ s32 *arena_FindBlock(s32 block_id) {
     return NULL;
 }
 
-s32 arena_GetBlockAddr(s32 a0) {
-    s32 *v0 = arena_FindBlock(a0);
-    if (v0) {
-        return v0[1];
+s32 arena_GetBlockAddr(s32 block_id) {
+    s32 *block_entry = arena_FindBlock(block_id);
+    if (block_entry) {
+        return block_entry[1];
     }
     return 0;
 }
@@ -518,80 +519,83 @@ s32 arena_GetSize(void) { return 0x45000; }
 
 void *arena_GetBase(void) { return &g_arena; }
 
-void arena_Copy(s32 a0, s32 a1, s32 a2) {
-    arena_UpdatePeak(a1 + a2);
-    mem_MoveBlockRoundedUpToWords(a0, a1, a2);
+void arena_Copy(s32 src_addr, s32 dest_addr, s32 byte_count) {
+    arena_UpdatePeak(dest_addr + byte_count);
+    mem_MoveBlockRoundedUpToWords(src_addr, dest_addr, byte_count);
 }
 
 extern void ndata_ReadRemappedIndexPackFirstElseRead(s32, s32);
 extern void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32, s32);
 
 Unk80045878Obj *slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
-    s32 a0, s32 a1, s32 a2) {
-    s32 s3;
-    s32 *v0;
-    Unk80045878Obj *s1;
+    s32 slot_index, s32 asset_id, s32 staging_addr) {
+    s32 asset_block_id;
+    s32 *block_entry;
+    Unk80045878Obj *slot_object;
     s32 s0;
-    v0 = arena_FindBlock(a0);
-    if (v0 != 0) {
-        s1 = (Unk80045878Obj *)v0[1];
+    block_entry = arena_FindBlock(slot_index);
+    if (block_entry != 0) {
+        slot_object = (Unk80045878Obj *)block_entry[1];
     } else {
-        s1 = (Unk80045878Obj *)arena_OpenBlock(a0);
-        arena_SetBlockEnd(a0, sizeof(Unk80045878Obj) + ((s32)s1));
+        slot_object = (Unk80045878Obj *)arena_OpenBlock(slot_index);
+        arena_SetBlockEnd(
+            slot_index, sizeof(Unk80045878Obj) + ((s32)slot_object));
         arena_UpdatePeak(0);
         arena_SetMoveCallback(
-            a0, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
-        s1->asset_index = -1;
-        s1->load_status = 0;
+            slot_index, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
+        slot_object->asset_index = -1;
+        slot_object->load_status = 0;
     }
-    s3 = a0 + 3;
-    if (arena_FindBlock(s3) != 0) {
-        softbody_FreeObject(s1);
+    asset_block_id = slot_index + 3;
+    if (arena_FindBlock(asset_block_id) != 0) {
+        softbody_FreeObject(slot_object);
     }
-    if (((arena_FindBlock(s3) != 0) && (s1->asset_index == a1)) &&
-        (s1->load_status != (-2))) {
-        s1->load_status = 0;
+    if (((arena_FindBlock(asset_block_id) != 0) &&
+         (slot_object->asset_index == asset_id)) &&
+        (slot_object->load_status != (-2))) {
+        slot_object->load_status = 0;
     } else {
-        s1->staging_buffer = a2;
-        s0 = (s32)arena_OpenBlock(s3);
-        s1->asset_block = s0;
-        if (a2 != 0) {
-            ndata_ReadRemappedIndexPackFirstElseRead(a1, a2);
+        slot_object->staging_buffer = staging_addr;
+        s0 = (s32)arena_OpenBlock(asset_block_id);
+        slot_object->asset_block = s0;
+        if (staging_addr != 0) {
+            ndata_ReadRemappedIndexPackFirstElseRead(asset_id, staging_addr);
         } else {
-            ndata_ReadRemappedIndexPackFirstElseRead(a1, s0);
+            ndata_ReadRemappedIndexPackFirstElseRead(asset_id, s0);
             s0 = s0 + ((((u32)((s32 *)s0)[*((s32 *)s0)]) >> 2) << 2);
             arena_UpdatePeak(s0);
         }
-        arena_SetBlockEnd(s3, s0);
+        arena_SetBlockEnd(asset_block_id, s0);
         arena_SetMoveCallback(
-            s3, (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
-        s1->load_status = 1;
-        s1->softbody_block = 0;
-        s1->load_flags.word = 0;
+            asset_block_id,
+            (s32)(&slot_RebaseObjectOrAssetBlockAndFakeOpenVab));
+        slot_object->load_status = 1;
+        slot_object->softbody_block = 0;
+        slot_object->load_flags.word = 0;
     }
-    s1->arena_id = a0;
-    s1->asset_index = a1;
-    s1->transform_block_id = a0;
-    s1->node_light_setup_index = a0;
-    s1->projected_block_id = a0 + 3;
-    s1->patch_color.word = 0x8000;
-    return s1;
+    slot_object->arena_id = slot_index;
+    slot_object->asset_index = asset_id;
+    slot_object->transform_block_id = slot_index;
+    slot_object->node_light_setup_index = slot_index;
+    slot_object->projected_block_id = slot_index + 3;
+    slot_object->patch_color.word = 0x8000;
+    return slot_object;
 }
 
-void slot_ResizeAssetBlockAndUpdatePeak(s32 a0, s32 a1) {
-    arena_Resize(a0 + 3, a1);
+void slot_ResizeAssetBlockAndUpdatePeak(s32 slot_index, s32 new_size) {
+    arena_Resize(slot_index + 3, new_size);
     arena_UpdatePeak(0);
 }
 
 extern void arena_ClearMoveCallback(s32);
 
-void slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(s32 a0) {
-    s32 a0p3 = a0 + 3;
-    snd_StopAllVoicesAndCloseSlotVab(a0);
-    arena_ClearMoveCallback(a0p3);
-    arena_ClearMoveCallback(a0);
-    arena_Free(a0p3);
-    arena_Free(a0);
+void slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(s32 slot_index) {
+    s32 asset_block_id = slot_index + 3;
+    snd_StopAllVoicesAndCloseSlotVab(slot_index);
+    arena_ClearMoveCallback(asset_block_id);
+    arena_ClearMoveCallback(slot_index);
+    arena_Free(asset_block_id);
+    arena_Free(slot_index);
 }
 
 /* Not the definition's spelling: snd_VabFakeOpen takes an s16 second
@@ -600,26 +604,27 @@ void slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(s32 a0) {
  * resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs). */
 extern s32 snd_VabFakeOpen(s32, s32);
 
-void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 a1) {
+void slot_RebaseObjectOrAssetBlockAndFakeOpenVab(s32 a0, s32 byte_offset) {
     Unk80045878Obj *ptr;
     s32 idx;
     if (a0 < 3) {
-        slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(a0, a1);
+        slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(
+            a0, byte_offset);
         return;
     }
     idx = a0 - 3;
-    reloc_RebaseBlock(idx, a1);
-    reloc_RebaseBlock(a0, a1);
+    reloc_RebaseBlock(idx, byte_offset);
+    reloc_RebaseBlock(a0, byte_offset);
     ptr = (Unk80045878Obj *)arena_GetBlockAddr(idx);
     if (ptr == 0)
         return;
-    ptr->asset_block = ptr->asset_block + a1;
-    softbody_RebaseObject(ptr, a1);
+    ptr->asset_block = ptr->asset_block + byte_offset;
+    softbody_RebaseObject(ptr, byte_offset);
     if ((ptr->load_flags.word >> 1) & 1) {
         /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
          * the s0 / s1 seats (score 8) (Q129) */
         idx = 3 * ptr->arena_id + 1;
-        snd_VabFakeOpen(a1, idx);
+        snd_VabFakeOpen(byte_offset, idx);
     }
 }
 
@@ -628,15 +633,16 @@ extern void ndata_ReadIndexInRangeSelectedByFlag(s32, s32, s32);
 extern void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32, s32);
 
 void resource_LoadSelectedEntriesTexturesAndSound(
-    s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
-    s16 sp18[120];
+    s32 entry_category, s32 selection_index, s16 *entry_request_state,
+    s32 staging_addr) {
+    s16 select_flags[120];
     s16 sp108[32];
     s32 *p;
-    s32 *var_3;
+    s32 *block_base;
     s32 last;
     s32 prev;
-    s32 var_6;
-    s32 var_7;
+    s32 end_addr;
+    s32 tim_groups;
     s32 n;
     s32 i;
     s32 y;
@@ -646,18 +652,19 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     s32 *dst;
 
     p = arena_OpenBlock(6);
-    if (arg3 != 0) {
-        var_3 = (s32 *)arg3;
+    if (staging_addr != 0) {
+        block_base = (s32 *)staging_addr;
     } else {
-        var_3 = p;
+        block_base = p;
     }
-    ndata_ReadIndexInRangeSelectedByFlag(arg0, arg1, (s32)var_3);
+    ndata_ReadIndexInRangeSelectedByFlag(
+        entry_category, selection_index, (s32)block_base);
 
-    last = (s32)var_3 + (((u32)var_3[1] >> 2) << 2);
-    n = var_3[0];
-    var_7 = (s32)var_3 + (((u32)var_3[n] >> 2) << 2);
+    last = (s32)block_base + (((u32)block_base[1] >> 2) << 2);
+    n = block_base[0];
+    tim_groups = (s32)block_base + (((u32)block_base[n] >> 2) << 2);
     if (n >= 3) {
-        prev = (s32)var_3 + (((u32)var_3[n - 1] >> 2) << 2);
+        prev = (s32)block_base + (((u32)block_base[n - 1] >> 2) << 2);
     } else {
         prev = 0;
     }
@@ -666,7 +673,7 @@ void resource_LoadSelectedEntriesTexturesAndSound(
         sp108[i] = -1;
     }
 
-    q = arg2;
+    q = entry_request_state;
     t = *q++;
     i = 0;
     while ((s16)t != -2) {
@@ -683,19 +690,19 @@ void resource_LoadSelectedEntriesTexturesAndSound(
             switch (n) {
             case 0:
                 gpu_LoadTimGroupSplitOffset(
-                    (u32 *)var_7, i, 0, 0, -0x180, 0xF0);
+                    (u32 *)tim_groups, i, 0, 0, -0x180, 0xF0);
                 break;
             case 1:
                 gpu_LoadTimGroupSplitOffset(
-                    (u32 *)var_7, i, 0, 0x40, -0x180, 0xF1);
+                    (u32 *)tim_groups, i, 0, 0x40, -0x180, 0xF1);
                 break;
             case 2:
                 gpu_LoadTimGroupSplitOffset(
-                    (u32 *)var_7, i, 0x80, 0, -0x160, 0xF0);
+                    (u32 *)tim_groups, i, 0x80, 0, -0x160, 0xF0);
                 break;
             case 3:
                 gpu_LoadTimGroupSplitOffset(
-                    (u32 *)var_7, i, 0x80, 0x40, -0x160, 0xF1);
+                    (u32 *)tim_groups, i, 0x80, 0x40, -0x160, 0xF1);
                 break;
             }
             sp108[i] = n;
@@ -705,11 +712,11 @@ void resource_LoadSelectedEntriesTexturesAndSound(
 
     DrawSync(0);
 
-    q = sp18;
-    if (arg0 == 0) {
-        r = arg2;
+    q = select_flags;
+    if (entry_category == 0) {
+        r = entry_request_state;
     } else {
-        r = arg2 + 0x33;
+        r = entry_request_state + 0x33;
     }
     while (*r != -2) {
         if (*r >= 0) {
@@ -723,17 +730,17 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     }
     *q = -2;
 
-    if (arg3 != 0) {
+    if (staging_addr != 0) {
         dst = (s32 *)((s32)p + 4);
-        var_6 = reloc_CopySelectedEntries(last, dst, sp18);
+        end_addr = reloc_CopySelectedEntries(last, dst, select_flags);
         reloc_RelocateBlock(dst, 6);
     } else {
-        var_6 = reloc_KeepSelectedEntries((s32 *)last, sp18);
+        end_addr = reloc_KeepSelectedEntries((s32 *)last, select_flags);
         reloc_RelocateBlock((s32 *)last, 6);
     }
-    arena_UpdatePeak(var_6);
+    arena_UpdatePeak(end_addr);
 
-    q = sp18;
+    q = select_flags;
     y = 0;
     i = 0;
     while (*q != -2) {
@@ -760,13 +767,13 @@ void resource_LoadSelectedEntriesTexturesAndSound(
     }
 
     if (prev != 0) {
-        *p = var_6 - (s32)p;
-        var_6 = snd_CopySelectedPackSectionsAndLoadVabPacks(prev, var_6);
-        arena_UpdatePeak(var_6);
+        *p = end_addr - (s32)p;
+        end_addr = snd_CopySelectedPackSectionsAndLoadVabPacks(prev, end_addr);
+        arena_UpdatePeak(end_addr);
     } else {
         *p = 0;
     }
-    arena_SetBlockEnd(6, var_6);
+    arena_SetBlockEnd(6, end_addr);
     arena_SetMoveCallback(
         6, (s32)&resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs);
 }
@@ -776,10 +783,11 @@ void resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs(void) {
     snd_StopAllVoicesAndCloseSelectedEntryVabs();
 }
 
-void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32 a0, s32 a1) {
+void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(
+    s32 a0, s32 byte_offset) {
     s32 *s0;
     s32 count;
-    reloc_RebaseBlock(6, a1);
+    reloc_RebaseBlock(6, byte_offset);
     s0 = (s32 *)arena_GetBlockAddr(6);
     if (s0 == NULL) {
         return;
@@ -798,7 +806,7 @@ void resource_RebaseSelectedEntryBlockAndFakeOpenListedVabs(s32 a0, s32 a1) {
     }
     s0++;
     do {
-        snd_VabFakeOpen(a1, *s0++);
+        snd_VabFakeOpen(byte_offset, *s0++);
         count--;
     } while (count != -1);
 }

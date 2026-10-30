@@ -141,10 +141,10 @@ extern void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *);
 extern s32 snd_VabFakeOpen(s32, s32);
 
 Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
-    s32 slot_index, s32 a1, s32 a2) {
+    s32 slot_index, s32 asset_id, s32 staging_addr) {
     Unk80045878Obj *ptr;
     ptr = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
-        slot_index, a1, a2);
+        slot_index, asset_id, staging_addr);
     g_slot_objects[slot_index] = ptr;
     slot_FinalizeObjectLoadSoundTexturesAndArena(ptr);
     node_InitObjectHierarchyFromTemplates(ptr);

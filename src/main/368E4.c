@@ -37,7 +37,7 @@ static s32 g_node_retained_draw_node_buffer;
 static s16 g_resource_pair_selection[2];
 static s32 g_resource_entry_category;
 
-void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
+void resource_LoadOrReuseSelectedBlock(s32 selector, s32 arg1) {
     s32 *s0;
     s32 s7;
     s32 *s6, *s4, *s2;
@@ -48,9 +48,9 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
 
     s0 = (s32 *)arena_GetBlockAddr(7);
     if (s0 != NULL) {
-        if (g_loaded_resource_selector == arg0) {
+        if (g_loaded_resource_selector == selector) {
             s7 = 1;
-            switch (arg0) {
+            switch (selector) {
             case 3:
                 break;
             case 4:
@@ -74,7 +74,7 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
         }
     }
 
-    g_loaded_resource_selector = (s16)arg0;
+    g_loaded_resource_selector = (s16)selector;
     /* FAKE: s7 (the early-return flag above) reused as slot id 7 for
      * arena_SetBlockEnd / arena_SetMoveCallback; the literal or a separate
      * local scores 37.
@@ -83,9 +83,9 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     s0 = arena_OpenBlock(7);
 
     if (arg1 != 0) {
-        func_80044F30(arg0, arg1);
+        func_80044F30(selector, arg1);
     } else {
-        func_80044F30(arg0, (s32)s0);
+        func_80044F30(selector, (s32)s0);
     }
 
     if (arg1 != 0) {
@@ -132,7 +132,7 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
        the s2 pointer, as in the target; plain s1 = s4: score 32 */
     s1 = (s32 *)((s32)s4 - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
-    switch (arg0) {
+    switch (selector) {
     case 3: {
         /* FAKE: once-written pointer to s0[s3 - 1]; it fixes the sched1
          * load/store order; s0[s3 - 1] inline: score 9 */
@@ -180,50 +180,50 @@ void resource_LoadOrReuseSelectedBlock(s32 arg0, s32 arg1) {
     arena_SetMoveCallback(s7, (s32)resource_RebaseLoadedBlockSections);
     resource_InvokeLoadedSelectorInitCallback();
     if (g_fight_mode_selector != 0) {
-        if (arg0 != 0x22) {
+        if (selector != 0x22) {
             resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
         }
     }
 }
 
 void resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks(void) {
-    s32 *s0;
-    s32 *s1;
-    s32 *a0;
-    s32 v0;
+    s32 *block_base;
+    s32 *grid_stream;
+    s32 *reloc_section;
+    s32 section_offset;
 
     if (g_resource_has_retained_subblocks == 0) {
         return;
     }
-    s0 = (s32 *)arena_GetBlockAddr(7);
-    v0 = ((u32)s0[1] >> 2) << 2;
-    a0 = (s32 *)((u8 *)s0 + v0);
+    block_base = (s32 *)arena_GetBlockAddr(7);
+    section_offset = ((u32)block_base[1] >> 2) << 2;
+    reloc_section = (s32 *)((u8 *)block_base + section_offset);
     switch (g_loaded_resource_selector) {
     case 0xD:
-        v0 = ((u32)s0[6] >> 2) << 2;
-        s1 = (s32 *)((u8 *)s0 + v0);
+        section_offset = ((u32)block_base[6] >> 2) << 2;
+        grid_stream = (s32 *)((u8 *)block_base + section_offset);
         break;
     case 3:
     case 0x22:
-        v0 = ((u32)s0[5] >> 2) << 2;
-        s1 = (s32 *)((u8 *)s0 + v0);
+        section_offset = ((u32)block_base[5] >> 2) << 2;
+        grid_stream = (s32 *)((u8 *)block_base + section_offset);
         break;
     }
-    reloc_RelocateBlock(a0, 7);
-    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s1, 7);
-    arena_Resize(7, (s32)((u8 *)s1 - (u8 *)s0));
+    reloc_RelocateBlock(reloc_section, 7);
+    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)grid_stream, 7);
+    arena_Resize(7, (s32)((u8 *)grid_stream - (u8 *)block_base));
     g_resource_has_retained_subblocks = 0;
 }
 
-void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
-    s32 *s0;
-    s32 *s2;
-    s32 *s3;
+void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 subblock_index) {
+    s32 *block_base;
+    s32 *reloc_section;
+    s32 *collision_grid;
     s32 *s4p;
     s32 *s1p;
-    s32 *s0p;
+    s32 *grid_stream;
     s32 v0;
-    if (a0 < 0) {
+    if (subblock_index < 0) {
         resource_ApplyHeaderSectionsResizeBlockAndClearRetainedSubblocks();
         return;
     }
@@ -231,23 +231,23 @@ void resource_SelectRetainedSubblockOrApplyHeaderSections(s32 a0) {
         return;
     }
     v0 = arena_GetBlockAddr(7);
-    s0 = (s32 *)v0;
+    block_base = (s32 *)v0;
     v0 += 4;
-    v0 = v0 + a0 * 20;
-    s2 = (s32 *)((u8 *)s0 + *(s32 *)v0);
+    v0 = v0 + subblock_index * 20;
+    reloc_section = (s32 *)((u8 *)block_base + *(s32 *)v0);
     v0 += 4;
-    s3 = (s32 *)((u8 *)s0 + *(s32 *)v0);
+    collision_grid = (s32 *)((u8 *)block_base + *(s32 *)v0);
     v0 += 4;
-    s4p = (s32 *)((u8 *)s0 + *(s32 *)v0);
+    s4p = (s32 *)((u8 *)block_base + *(s32 *)v0);
     v0 += 4;
-    s1p = (s32 *)((u8 *)s0 + *(s32 *)v0);
-    s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
+    s1p = (s32 *)((u8 *)block_base + *(s32 *)v0);
+    grid_stream = (s32 *)((u8 *)block_base + *(s32 *)(v0 + 4));
     reloc_UnrelocateBlock(7);
-    reloc_RelocateBlock(s2, 7);
-    collision_SetGrid((s32)s3);
+    reloc_RelocateBlock(reloc_section, 7);
+    collision_SetGrid((s32)collision_grid);
     D_800A33B0 = (s32)s4p;
     g_fight_position_records = (s32)s1p;
-    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)s0p, 7);
+    gpu_UnpackGridRecordsNodesAndCellRuns((u16 *)grid_stream, 7);
 }
 
 void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
@@ -259,24 +259,24 @@ void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void wave_MoveCellBuffer(s32);
 
-void resource_RebaseLoadedBlockSections(s32 a0, s32 a1) {
+void resource_RebaseLoadedBlockSections(s32 a0, s32 byte_offset) {
     s32 rebase_delta;
-    reloc_RebaseBlock(7, a1);
-    collision_RebaseGrid(a1);
-    rebase_delta = (a1 / 4) * 4;
+    reloc_RebaseBlock(7, byte_offset);
+    collision_RebaseGrid(byte_offset);
+    rebase_delta = (byte_offset / 4) * 4;
     D_800A33B0 += rebase_delta;
     g_fight_position_records += rebase_delta;
     switch (g_loaded_resource_selector) {
     case 4:
     case 7:
     case 18:
-        resource_RebaseFrameAnimatedEntryBlockAndPointers(a1);
+        resource_RebaseFrameAnimatedEntryBlockAndPointers(byte_offset);
         break;
     case 13:
         reloc_RebaseBlock(8);
         break;
     case 11:
-        wave_MoveCellBuffer(a1);
+        wave_MoveCellBuffer(byte_offset);
         break;
     }
 }
@@ -327,47 +327,47 @@ s32 resource_HasRetainedSubblocks(void) {
     return g_resource_has_retained_subblocks;
 }
 
-s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 a0) {
-    s32 arg = a0;
+s32 *resource_LoadOrReuseGrayscaleAdjustedNodeAsset(s32 node_asset_id) {
+    s32 arg = node_asset_id;
     s32 arena_block_id = 8;
-    s32 *s2;
+    s32 *block_base;
 
     if (gpu_RefreshGrayscaleMode()) {
         arg = arg + 0x1B;
     }
     {
-        s32 *a1 = arena_FindBlock(8);
-        if (a1 && g_resource_cached_node_asset_id == arg) {
-            s2 = (s32 *)a1[1];
+        s32 *block_entry = arena_FindBlock(8);
+        if (block_entry && g_resource_cached_node_asset_id == arg) {
+            block_base = (s32 *)block_entry[1];
         } else {
-            s32 *s1;
-            s32 *s0;
-            s2 = arena_OpenBlock(arena_block_id);
-            func_80044F80(arg, (s32)s2);
+            s32 *end_addr;
+            s32 *reloc_section;
+            block_base = arena_OpenBlock(arena_block_id);
+            func_80044F80(arg, (s32)block_base);
             {
-                s32 off1 = (u32)s2[2] >> 2 << 2;
-                s32 off0 = (u32)s2[1] >> 2 << 2;
-                s1 = (s32 *)((u8 *)s2 + off1);
-                s0 = (s32 *)((u8 *)s2 + off0);
+                s32 off1 = (u32)block_base[2] >> 2 << 2;
+                s32 off0 = (u32)block_base[1] >> 2 << 2;
+                end_addr = (s32 *)((u8 *)block_base + off1);
+                reloc_section = (s32 *)((u8 *)block_base + off0);
             }
-            arena_UpdatePeak((s32)s1);
-            reloc_RelocateBlock(s0, 9);
-            arena_SetBlockEnd(arena_block_id, (s32)s1);
+            arena_UpdatePeak((s32)end_addr);
+            reloc_RelocateBlock(reloc_section, 9);
+            arena_SetBlockEnd(arena_block_id, (s32)end_addr);
             g_resource_cached_node_asset_id = arg;
         }
     }
     arena_SetMoveCallback(arena_block_id, (s32)resource_RebaseNodeAssetBlock);
-    return s2;
+    return block_base;
 }
 
-void resource_ResizeNodeAssetBlockAndUpdatePeak(s32 a0) {
-    arena_Resize(8, a0);
+void resource_ResizeNodeAssetBlockAndUpdatePeak(s32 new_size) {
+    arena_Resize(8, new_size);
     arena_UpdatePeak(0);
 }
 
-void resource_RebaseNodeAssetBlock(s32 a0, s32 a1) {
-    node_RebaseRetainedDrawNodeBuffer(a1);
-    reloc_RebaseBlock(9, a1);
+void resource_RebaseNodeAssetBlock(s32 a0, s32 byte_offset) {
+    node_RebaseRetainedDrawNodeBuffer(byte_offset);
+    reloc_RebaseBlock(9, byte_offset);
 }
 
 void resource_FreeNodeAssetBlock(void) { arena_Free(8); }
@@ -376,36 +376,38 @@ void func_80046934(void) { arena_OpenBlock(9); }
 
 void func_80046954(void) {}
 
-void func_8004695C(s32 a0) {
-    arena_UpdatePeak(a0);
-    arena_SetBlockEnd(9, a0);
+void func_8004695C(s32 end_addr) {
+    arena_UpdatePeak(end_addr);
+    arena_SetBlockEnd(9, end_addr);
     arena_SetMoveCallback(9, (s32)func_80046954);
 }
 
-void func_800469A0(s32 a0) { arena_Resize(9, a0); }
+void func_800469A0(s32 new_size) { arena_Resize(9, new_size); }
 
 void func_80046A80(s32, s32);
 
-s32 *motion_LoadPlaybackBlock(s32 a0) {
-    s32 *v0;
+s32 *motion_LoadPlaybackBlock(s32 playback_file_id) {
+    s32 *block_base;
     s32 offset;
 
-    v0 = arena_OpenBlock(0xA);
-    ndata_ReadChecked(a0, (s32)v0);
-    offset = (u32)v0[v0[0] + 1] >> 2 << 2;
+    block_base = arena_OpenBlock(0xA);
+    ndata_ReadChecked(playback_file_id, (s32)block_base);
+    offset = (u32)block_base[block_base[0] + 1] >> 2 << 2;
     {
-        s32 *s0 = (s32 *)((u8 *)v0 + offset);
-        arena_UpdatePeak((s32)s0);
-        arena_SetBlockEnd(0xA, (s32)s0);
+        s32 *end_addr = (s32 *)((u8 *)block_base + offset);
+        arena_UpdatePeak((s32)end_addr);
+        arena_SetBlockEnd(0xA, (s32)end_addr);
     }
-    D_800A324A = (s16)a0;
+    D_800A324A = (s16)playback_file_id;
     arena_SetMoveCallback(0xA, (s32)func_80046A80);
-    return v0;
+    return block_base;
 }
 
 void motion_FreePlaybackBlock(void) { arena_Free(0xA); }
 
-void func_80046A80(s32 a0, s32 a1) { motion_RebasePlayback(a1); }
+void func_80046A80(s32 a0, s32 byte_offset) {
+    motion_RebasePlayback(byte_offset);
+}
 
 void resource_FreeSlotsAndBlocksAndInvalidateEntryCache(void) {
     slot_ReleaseObjectAndResources(0);
@@ -445,7 +447,7 @@ void func_80046B44(void) {
 }
 
 void gpu_ResetDrawQueueAndPrepareViewAndLighting(
-    Vec3i32 *a0, SVECTOR *a1, s32 a2) {
+    Vec3i32 *focus_point, SVECTOR *camera_angles, s32 eye_distance) {
     s32 result[3];
     s32 view_offset[3];
     SVECTOR rot;
@@ -456,34 +458,34 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
     D_800A38D6++;
     g_gpu_ot_offset_ptr = g_gpu_ot_ptr + 4;
 
-    if (a0 != 0) {
-        g_view_camera_root_node.xf.rot.vx = -a1->vx;
-        g_view_camera_root_node.xf.rot.vy = -a1->vy;
-        g_view_camera_root_node.xf.rot.vz = -a1->vz;
+    if (focus_point != 0) {
+        g_view_camera_root_node.xf.rot.vx = -camera_angles->vx;
+        g_view_camera_root_node.xf.rot.vy = -camera_angles->vy;
+        g_view_camera_root_node.xf.rot.vz = -camera_angles->vz;
 
         view_offset[0] = 0;
         view_offset[1] = 0;
-        view_offset[2] = -a2;
+        view_offset[2] = -eye_distance;
 
-        rot.vx = -a1->vx;
-        rot.vy = -a1->vy;
-        rot.vz = -a1->vz;
+        rot.vx = -camera_angles->vx;
+        rot.vy = -camera_angles->vy;
+        rot.vz = -camera_angles->vz;
 
         g_math_rot_matrix_funcs[0](&rot, &matrix_buf);
 
         ApplyMatrixLV(&matrix_buf, view_offset, result);
 
         {
-            g_view_camera_root_node.work.t[0] = result[0] + a0->x;
-            g_view_camera_root_node.work.t[1] = result[1] + a0->y;
-            g_view_camera_root_node.work.t[2] = result[2] + a0->z;
+            g_view_camera_root_node.work.t[0] = result[0] + focus_point->x;
+            g_view_camera_root_node.work.t[1] = result[1] + focus_point->y;
+            g_view_camera_root_node.work.t[2] = result[2] + focus_point->z;
         }
 
         node_SetMatrixFromNegatedRot(&g_view_camera_root_node);
         camera_CopyViewMatrixWithHalvedMiddleRow();
         gpu_ResetAndStampViewCenteredCellAttributes();
 
-        g_gpu_view_eye_distance = a2;
+        g_gpu_view_eye_distance = eye_distance;
     }
 
     calc_LightMatrix(&g_light_setups[0]);
@@ -495,8 +497,8 @@ void gpu_ResetDrawQueueAndPrepareViewAndLighting(
 }
 
 void gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
-    s32 a0) {
-    if (a0 & 1) {
+    s32 run_grid_pass) {
+    if (run_grid_pass & 1) {
         gpu_RunGridDrawPassAndQueueFogMoves(g_gpu_view_eye_distance);
     }
     light_ApplyPointLightTargets();
@@ -505,18 +507,18 @@ void gpu_RunOptionalGridDrawAndFogPassApplyPointLightTargetsAndFlushDrawQueue(
 
 s32 func_80046DE4(void) { return 0; }
 
-void *node_GetSlotMatrixPointerArray(s32 a0) {
-    Unk80045878Obj *v0 = slot_GetObject(a0);
-    if (v0) {
-        return v0->node_matrix_ptrs;
+void *node_GetSlotMatrixPointerArray(s32 slot_index) {
+    Unk80045878Obj *slot_object = slot_GetObject(slot_index);
+    if (slot_object) {
+        return slot_object->node_matrix_ptrs;
     }
     return NULL;
 }
 
-void *node_GetSlotTransformNodes(s32 a0) {
-    Unk80045878Obj *v0 = slot_GetObject(a0);
-    if (v0) {
-        return v0->transform_nodes;
+void *node_GetSlotTransformNodes(s32 slot_index) {
+    Unk80045878Obj *slot_object = slot_GetObject(slot_index);
+    if (slot_object) {
+        return slot_object->transform_nodes;
     }
     return NULL;
 }
@@ -525,8 +527,8 @@ void gpu_ClearRaisedOtCutoffRequest(void) {
     g_gpu_raised_ot_cutoff_requested = 0;
 }
 
-void gpu_SetRaisedOtCutoffRequested(s32 a0) {
-    if (a0) {
+void gpu_SetRaisedOtCutoffRequested(s32 requested) {
+    if (requested) {
         g_gpu_raised_ot_cutoff_requested = 1;
     } else {
         g_gpu_raised_ot_cutoff_requested = 0;
@@ -539,18 +541,19 @@ s32 gpu_GetRaisedOtCutoffRequested(void) {
 
 void func_80046E8C(void) { D_800A3790 = 0x23; }
 
-void gpu_RunGridDrawPassAndQueueFogMoves(s32 a0) {
-    gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(a0);
+void gpu_RunGridDrawPassAndQueueFogMoves(s32 eye_distance) {
+    gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
+        eye_distance);
     {
-        s32 v0 = resource_GetLoadedSelector();
-        gpu_LatchFogDepthOnTransitionAndQueueMoves(v0, a0);
+        s32 selector = resource_GetLoadedSelector();
+        gpu_LatchFogDepthOnTransitionAndQueueMoves(selector, eye_distance);
     }
 }
 
 void resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
-    s32 a0, s32 a1) {
-    resource_LoadOrReuseSelectedBlock(a0, a1);
-    ApplyLightPresetRowBackgroundClearAndFarColor(a0);
+    s32 selector, s32 staging_addr) {
+    resource_LoadOrReuseSelectedBlock(selector, staging_addr);
+    ApplyLightPresetRowBackgroundClearAndFarColor(selector);
     gpu_BuildFogRowLevels();
 }
 
@@ -576,15 +579,19 @@ void math_SetLightPlaneProjection(void) {
     g_math_light_plane_projection.m[2][1] = v1;
 }
 
-void math_ApplyLightPlaneProjection(MATRIX *a0, MATRIX *a1, s32 a2) {
-    gte_MulMatrix0ClearTrans(&g_math_light_plane_projection, a0, a1);
-    a1->t[0] =
-        a0->t[0] +
-        (((a0->t[1] - a2) * g_math_light_plane_projection.m[0][1]) >> 12);
-    a1->t[1] = a2;
-    a1->t[2] =
-        a0->t[2] +
-        (((a0->t[1] - a2) * g_math_light_plane_projection.m[2][1]) >> 12);
+void math_ApplyLightPlaneProjection(
+    MATRIX *src_matrix, MATRIX *projected_matrix_out, s32 plane_y) {
+    gte_MulMatrix0ClearTrans(
+        &g_math_light_plane_projection, src_matrix, projected_matrix_out);
+    projected_matrix_out->t[0] =
+        src_matrix->t[0] + (((src_matrix->t[1] - plane_y) *
+                             g_math_light_plane_projection.m[0][1]) >>
+                            12);
+    projected_matrix_out->t[1] = plane_y;
+    projected_matrix_out->t[2] =
+        src_matrix->t[2] + (((src_matrix->t[1] - plane_y) *
+                             g_math_light_plane_projection.m[2][1]) >>
+                            12);
 }
 
 void math_LightPlaneProject(s32 light_setup_index, MATRIX *src_matrix,
@@ -753,7 +760,9 @@ void func_800477CC(void) {}
 
 void func_800477D4(void) {}
 
-void wave_SetCellBuffer(s32 a0) { g_wave_cell_buffer = (s16 *)a0; }
+void wave_SetCellBuffer(s32 cell_buffer_addr) {
+    g_wave_cell_buffer = (s16 *)cell_buffer_addr;
+}
 
 /* 17 phases and the 9 x 17 table wave_Update steps from them
  * (g_wave_last_row_steps takes the last row's deltas) */
@@ -761,7 +770,7 @@ extern s32 g_wave_column_phases[17];
 extern s32 g_wave_vertex_grid[9][17];
 
 s32 wave_Init(void) {
-    s16 *s0;
+    s16 *cell_cursor;
     s32 s3val;
     s32 s2val;
     u16 s1val;
@@ -779,7 +788,7 @@ s32 wave_Init(void) {
     s32 w;
     s32 val;
 
-    s0 = g_wave_cell_buffer;
+    cell_cursor = g_wave_cell_buffer;
     s3val = GetTPage(0, 0, 0x2C0, 0x1C0);
     s2val = GetTPage(0, 0, 0x2C0, 0x180);
     s1val = GetClut(0x10, 0x1E0);
@@ -794,62 +803,62 @@ s32 wave_Init(void) {
         v1 = 1;
         do {
             if (a3 >= 5) {
-                *s0 = s3val;
-                s0 += 1;
-                *s0 = t2;
-                s0 += 1;
-                *s0 = s1val;
-                s0 += 1;
+                *cell_cursor = s3val;
+                cell_cursor += 1;
+                *cell_cursor = t2;
+                cell_cursor += 1;
+                *cell_cursor = s1val;
+                cell_cursor += 1;
                 v0 = -0xC1;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = -0x100;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = -0x3FC1;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = -0x4000;
             } else {
-                *s0 = s2val;
-                s0 += 1;
-                *s0 = t2;
-                s0 += 1;
-                *s0 = t1val;
-                s0 += 1;
+                *cell_cursor = s2val;
+                cell_cursor += 1;
+                *cell_cursor = t2;
+                cell_cursor += 1;
+                *cell_cursor = t1val;
+                cell_cursor += 1;
                 v0 = -0x40C1;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = -0x4100;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = -0x7FC1;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = -0x8000;
             }
-            *s0 = v0;
-            s0 += 1;
+            *cell_cursor = v0;
+            cell_cursor += 1;
             if (a3 & 1) {
                 v0 = a2 | t0;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = v1 | a1;
             } else {
                 v0 = v1 | a1;
-                *s0 = v0;
-                s0 += 1;
+                *cell_cursor = v0;
+                cell_cursor += 1;
                 v0 = a2 | t0;
             }
-            *s0 = v0;
-            s0 += 1;
-            *s0 = 0;
-            s0 += 1;
-            *s0 = 0;
-            s0 += 1;
+            *cell_cursor = v0;
+            cell_cursor += 1;
+            *cell_cursor = 0;
+            cell_cursor += 1;
+            *cell_cursor = 0;
+            cell_cursor += 1;
             v0 = -0x1000;
-            *s0 = v0;
-            s0 += 1;
+            *cell_cursor = v0;
+            cell_cursor += 1;
             t0 += 0x100;
             a2 += 1;
             a1 += 0x100;
@@ -898,14 +907,14 @@ loop3:
     if (0x11 > a0)
         goto loop3;
 
-    return (s32)s0 - (s32)g_wave_cell_buffer;
+    return (s32)cell_cursor - (s32)g_wave_cell_buffer;
 }
 
 void wave_Update(void) {
     s32 i;
     s32 j;
     s32 a0;
-    s32 v1;
+    s32 step;
     void **temp;
 
     for (i = 0; i < 17; i++) {
@@ -918,13 +927,13 @@ void wave_Update(void) {
             a0 = 0x7D0 -
                  (g_wave_vertex_grid[i][j] - g_wave_vertex_grid[i - 1][j]);
             if (a0 < 0) {
-                v1 = (a0 + 0xF) >> 4;
+                step = (a0 + 0xF) >> 4;
             } else {
-                v1 = a0 / 10;
+                step = a0 / 10;
             }
-            g_wave_vertex_grid[i][j] += v1;
+            g_wave_vertex_grid[i][j] += step;
             if (i == 8) {
-                g_wave_last_row_steps[j] = v1;
+                g_wave_last_row_steps[j] = step;
             }
         }
     }
@@ -939,7 +948,7 @@ extern SVECTOR g_wave_odd_row_vertices[17];
 void wave_Draw(void) {
     s32 sxy0, sxy1, sxy2, var_3, flag;
     s32 sz0, sz1, sz2;
-    s16 *s7val;
+    s16 *cell_cursor;
     s32 i, j;
     s32 *src;
     SVECTOR *base;
@@ -948,7 +957,7 @@ void wave_Draw(void) {
     s16 *dst16;
     s16 z;
 
-    s7val = g_wave_cell_buffer;
+    cell_cursor = g_wave_cell_buffer;
     i = 0;
     src = g_wave_vertex_grid[0];
     while (i < 9) {
@@ -988,8 +997,9 @@ void wave_Draw(void) {
             j++;
         }
         if (i != 0) {
-            s7val = gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision(
-                0x10, (s16 *)base, s7val, 0);
+            cell_cursor =
+                gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision(
+                    0x10, (s16 *)base, cell_cursor, 0);
         }
         i++;
         src += 17;
@@ -997,20 +1007,21 @@ void wave_Draw(void) {
 }
 
 s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
-    s32 a1 = (a0 + 0x7D00) / 3200;
+    s32 column_index = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
-    s32 var_3 = remainder & 1;
-    g_wave_cached_column_index = a1;
-    g_wave_cached_remainder_parity = var_3;
-    if ((u32)a1 >= 18) {
+    s32 remainder_parity = remainder & 1;
+    g_wave_cached_column_index = column_index;
+    g_wave_cached_remainder_parity = remainder_parity;
+    if ((u32)column_index >= 18) {
         return (s32)0xFFFE7960;
     }
     {
         /* row 8 of the table; a1 + 1 == 17 / 18 reads on into
          * g_wave_last_row_steps, which follows the table */
-        s32 val1 = g_wave_vertex_grid[8][a1] * var_3;
-        s32 val2 = g_wave_vertex_grid[8][a1 + 1] * (0x1000 - var_3);
+        s32 val1 = g_wave_vertex_grid[8][column_index] * remainder_parity;
+        s32 val2 = g_wave_vertex_grid[8][column_index + 1] *
+                   (0x1000 - remainder_parity);
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
