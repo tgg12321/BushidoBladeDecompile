@@ -171,7 +171,16 @@ shared only by member pairs of distinct aggregates (naming-bar §5: the code sho
 the same thing, and all of those pairs are in the wave); the aggregate is the resolved outer
 definition (a tag and its typedef are one; T.u.m is T's), and n must still be fresh against
 every other member, type and macro. Local destinations may be shared only across distinct functions. For local pairs,
-macro arguments containing the old name fail even when unchanged. For member pairs, a macro
+a macro argument naming l in f is renamed only when every definition of that macro expands all
+its parameters plainly (as below), operand-only: the call sits between expression operators
+or brackets, its arguments name no macro, and each definition holds no macro name, brace,
+. -> : # ## or tag/goto/typedef/asm keyword, with every parameter bordered only by operators
+or brackets. A #define body naming l counts only
+when its file can reach f's TU (f's file, any header, or a .c an #include names, resolved
+relative to the includer and by suffix; #import / #include_next, or any file that includes f's
+file, fall back to every file). A function-local struct/union
+definition is allowed when neither l nor n occurs from its keyword to the `;` ending its
+declaration; local enums and typedefs still fail. For member pairs, a macro
 argument naming m (edited to n or unchanged) is allowed only when every definition of that
 macro expands all its parameters plainly (no dropped, stringized, pasted or variadic parameter;
 not an object-like alias; not chained), and its cpp sentinel proves it: emitted by a compiled
@@ -1849,8 +1858,8 @@ def cpp_scope_checks(output, scoped, global_pairs, label, source_tree=None):
             binding_texts[scope] = " ".join(t for k, t in enumerate(ts) if k not in excluded)
         binding_text = binding_texts[scope]
         _scoped_plan({"src/cpp.c": binding_text}, {scope + ":" + binding: scratch}, uncertain_types=frozenset(uncertain))
-        if any(t in ("struct", "union", "enum") and "{" in region[k + 1:k + 3]
-               for k, t in enumerate(region)):
+        if (any(t == "enum" and "{" in region[k + 1:k + 3] for k, t in enumerate(region))
+                or local_aggregate_hazard(ts, start, end, (old, dest))):
             raise ValueError(f"{spec}: local in cpp aggregate/enum body")
     return functions
 
@@ -1982,7 +1991,7 @@ def cpp_source_guards(output, tree, scoped):
             for func, start, _, end in function_definitions(text):
                 if func != scope:
                     continue
-                reject_macro_arguments(text, old, functions, path, range(start, end + 1))
+                reject_unexpanded_macro_arguments(text, old, output.macros, path, range(start, end + 1), local=True)
                 for k in range(start, end + 1):
                     if ts[k] not in (old, dest):
                         continue
@@ -2517,13 +2526,82 @@ def reject_macro_arguments(text, old, functions, path, indices=None, member_acce
                     raise ValueError(f"{path}: {old} is an argument of chained function-like macro {ts[k]}")
 
 
-def reject_unexpanded_macro_arguments(text, old, records, path):
+# Tokens that may border a local's macro argument (at the call site or a parameter
+# inside the body): expression operators and brackets only. Names, `)` before,
+# `(` / `[` / `.` / `->` after, `:`, `&&` before (GNU label address), `#`, `##`
+# and braces are refused, so an expansion can only be an ordinary operand.
+_BINARY = ("+", "-", "*", "/", "%", "<<", ">>", "<", ">", "<=", ">=", "==", "!=", "&", "|", "^",
+           "||", "?", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^=", ",")
+LOCAL_MACRO_BEFORE = frozenset(_BINARY + ("(", "[", "!", "~", "return", ";", "{", "}"))
+LOCAL_MACRO_AFTER = frozenset(_BINARY + (")", "]", ";", "&&"))
+LOCAL_MACRO_BODY_BANNED = frozenset(("struct", "union", "enum", "goto", "__label__", "typedef", "{", "}",
+                                     ".", "->", "#", "##", ":", "asm", "__asm", "__asm__"))
+
+
+def include_closure(files, path):
+    """Paths whose #define lines can reach a TU rooted at path: itself plus every file
+    an #include of it names, transitively. An include matches the target resolved
+    against the including file's directory and every file whose path ends in the
+    target with its leading ../ steps dropped (over-approximate). None when a directive
+    is not a literal #include, or is #import / #include_next (the caller then falls
+    back to every file)."""
+    seen, todo = set(), [path]
+    while todo:
+        current = todo.pop()
+        if current in seen or current not in files:
+            continue
+        seen.add(current)
+        for line in blank_comments(re.sub(r"\\\r?\n", "", files[current])).splitlines():
+            if not re.match(r"\s*(?:#|%:)\s*(?:include|import)", line):
+                continue
+            m = re.fullmatch(r'\s*(?:#|%:)\s*include\s*(?:"([^"]+)"|<([^>]+)>)\s*', line)
+            if not m:
+                return None
+            raw = (m[1] or m[2]).replace("\\", "/")
+            relative = normpath(current.rsplit("/", 1)[0] + "/" + raw) if "/" in current else normpath(raw)
+            tail = normpath(raw)
+            while tail.startswith("../"):
+                tail = tail[3:]
+            if tail in ("", ".", ".."):
+                return None
+            todo.extend(q for q in files if q in (relative, tail) or q.endswith("/" + tail))
+    return seen
+
+
+def local_aggregate_hazard(ts, start, end, names):
+    """True when a struct/union definition in ts[start..end] mentions one of names
+    anywhere from its keyword to the `;` that ends its declaration (tag, member,
+    bound, declarator or initializer): only an aggregate that mentions neither old
+    nor new leaves a local pair's tokens unambiguous."""
+    for k in range(start, end + 1):
+        if ts[k] not in ("struct", "union"):
+            continue
+        j = k + 1 + bool(k + 1 <= end and IDENT.fullmatch(ts[k + 1]) and ts[k + 1] not in C_KEYWORDS)
+        if j > end or ts[j] != "{":
+            continue
+        stop, depth = balanced(ts, j, "{", "}"), 0
+        while stop <= end and not (ts[stop] == ";" and depth <= 0):
+            depth += (ts[stop] in ("(", "[", "{")) - (ts[stop] in (")", "]", "}"))
+            stop += 1
+        if any(t in names for t in ts[k:stop + 1]):
+            return True
+    return False
+
+
+def reject_unexpanded_macro_arguments(text, old, records, path, indices=None, local=False):
     """Member pairs keep an unchanged macro argument naming m only when every
     definition of that macro expands all of its parameters plainly (each occurs in
     the body, never stringized or pasted): then a stale m that reached the renamed
     T.m would fail to compile, which the required oracle build catches. A macro that
     may drop, stringize or paste an argument, an object-like alias of a function-like
-    macro, and chained invocations still fail."""
+    macro, and chained invocations still fail. Local pairs use the same test over f's
+    tokens (indices, local=True): a plainly expanded argument is pasted at the call
+    site in f's scope, so renaming it renames exactly that use. There a parameter must
+    also stay an operand: after . -> goto struct union enum or before : (a member, tag
+    or label) it fails; a body that names any macro fails (the parameter could be
+    forwarded into one); and an invocation after . -> struct union enum goto # ## or a
+    label-address &&, or before : or ##, fails (its expansion's edge would sit there).
+    So no macro moves the local into another namespace."""
     forms = {}
     for name, params, body in records:
         forms.setdefault(name, []).append((params, body))
@@ -2531,7 +2609,7 @@ def reject_unexpanded_macro_arguments(text, old, records, path):
     ms = code_spans(text)
     ts = [m[0] for m in ms]
     directives, _ = pp_regions(text)
-    for k in range(len(ts)):
+    for k in range(len(ts)) if indices is None else indices:
         if any(a <= ms[k].start() < b for a, b in directives):
             continue
         if ts[k] not in functions or ts[k + 1:k + 2] != ["("]:
@@ -2544,6 +2622,27 @@ def reject_unexpanded_macro_arguments(text, old, records, path):
         defs = forms.get(ts[k], [])
         if not defs or any(params is None for params, _ in defs):
             raise ValueError(f"{path}: {old} is an argument of function-like macro alias {ts[k]}")
+        if local:
+            # Operand-only: the call sits between expression operators, its
+            # arguments name no macro, and every definition is an expression whose
+            # parameters sit only between operators/brackets (never next to a name,
+            # a parameter, a member/tag/label/paste token, a brace or a macro).
+            if (ts[k - 1:k] and ts[k - 1] not in LOCAL_MACRO_BEFORE
+                    or ts[end + 1:end + 2] and ts[end + 1] not in LOCAL_MACRO_AFTER):
+                raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
+                                 "invoked outside an expression operand position")
+            if any(tok in forms or tok in functions for tok in ts[k + 2:end]):
+                raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
+                                 "beside a macro name in its arguments")
+            for params, body in defs:
+                if any(tok in forms or tok in LOCAL_MACRO_BODY_BANNED for tok in body):
+                    raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
+                                     "whose body names a macro or a member/tag/label/brace token")
+                for j, tok in enumerate(body):
+                    if IDENT.fullmatch(tok) and tok in params and ((j and body[j - 1] not in LOCAL_MACRO_BEFORE)
+                                          or body[j + 1:j + 2] and body[j + 1] not in LOCAL_MACRO_AFTER):
+                        raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, "
+                                         "whose body uses a parameter outside an operand position")
         for params, body in defs:
             names = [p for p in params if IDENT.fullmatch(p)]
             if "..." in params or "__VA_ARGS__" in body:
@@ -2554,6 +2653,9 @@ def reject_unexpanded_macro_arguments(text, old, records, path):
                 for j, tok in enumerate(body):
                     if tok == p and ((j and body[j - 1] in ("#", "##")) or body[j + 1:j + 2] == ("##",)):
                         raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, which stringizes or pastes a parameter")
+                    if local and tok == p and ((j and body[j - 1] in (".", "->", "goto", "struct", "union", "enum"))
+                                               or body[j + 1:j + 2] == (":",)):
+                        raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, which uses a parameter as a member, tag or label")
 
 
 def macro_invocations(text, functions):
@@ -2627,7 +2729,8 @@ def statement_starts(ts, body, end, types):
     """Forward scan of a function body `ts[body..end]` (body is its `{`): the
     statement start of each token, and the tokens inside GNU statement
     expressions. Each `{` is a block, a brace expression (an initializer list,
-    a compound literal after a cast) or a statement expression `({`; a brace
+    a compound literal after a cast), a struct/union body (part of its
+    declaration statement) or a statement expression `({`; a brace
     that fits none fails, so no declaration can hide inside a misread brace."""
     starts, in_stmt_expr, stack, start = {}, set(), [], body + 1
 
@@ -2655,6 +2758,8 @@ def statement_starts(ts, body, end, types):
             inner = stack[-1][0] if stack else None
             if k == body:
                 kind = "block"
+            elif prev in ("struct", "union") or ts[k - 2] in ("struct", "union") and IDENT.fullmatch(prev):
+                kind = "aggregate"   # a function-local struct/union body: one declaration
             elif prev == "(":
                 kind = "stmtexpr"
             elif inner in ("block", "stmtexpr") and prev in (";", "{", "}", "else", "do", ":"):
@@ -3150,6 +3255,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                for text in macro_sources.values()):
             raise ValueError(f"{spec}={new}: scoped names are not fresh in macros (#define name)")
     outer_defs = {}  # member spec -> (path, token index of its outer aggregate's "{")
+    included = None  # paths some other file's include closure reaches (None: not computed)
     for spec, new in pairs.items():
         member = "." in spec
         scope, member_path, old = scoped_parts(spec)
@@ -3238,13 +3344,29 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         if not member:
             if new in ts[indices[0]:indices[-1] + 1]:
                 raise ValueError(f"{spec}: destination {new} already occurs in f")
+            # Only a macro f's TU can see may capture or produce old: one defined
+            # in another .c file that nothing includes never expands in f.
+            closure = include_closure(base, path)
+            # A file that includes f's file (or whose includes cannot be parsed)
+            # may define macros before f: then every file counts.
+            if closure is not None:
+                if included is None:   # once per plan: every file some other file includes
+                    included = set()
+                    for q in base:
+                        if q.endswith((".c", ".h", ".inc")):
+                            reach = include_closure(base, q)
+                            included |= {None} if reach is None else reach - {q}
+                if None in included or path in included:
+                    closure = None
             for macro_path, macro_text in cfiles.items():
+                if closure is not None and macro_path not in closure and macro_path.endswith(".c"):
+                    continue
                 if (macro_uses(macro_text, old, body_only=True)
                         or macro_uses(macro_text, old, name_only=True)):
                     raise ValueError(f"{spec}: {old} occurs in a #define body or token paste in {macro_path}")
             if macro_uses(text, old):
                 raise ValueError(f"{spec}: {old} occurs in a #define in {path}")
-            reject_macro_arguments(text, old, macros, path, indices)
+            reject_unexpanded_macro_arguments(text, old, macro_records, path, indices, local=True)
             for k in indices:
                 if ts[k] == old and (ts[k - 1] in object_macros or ts[k + 1:k + 2] and ts[k + 1] in object_macros):
                     raise ValueError(f"{spec}: local token adjacent to object-like macro")
@@ -3254,9 +3376,8 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             if "typedef" in region or any(region[k] == "enum" and "{" in region[k + 1:k + 3]
                                           for k in range(len(region))):
                 raise ValueError(f"{spec}: function-local enum/typedef bindings are unsupported")
-            if any(region[k] in ("struct", "union") and "{" in region[k + 1:k + 3]
-                   for k in range(len(region))):
-                raise ValueError(f"{spec}: function-local aggregate definitions are unsupported")
+            if local_aggregate_hazard(ts, indices[0], indices[-1], (old, new)):
+                raise ValueError(f"{spec}: name in a function-local aggregate definition is unsupported")
             # Each candidate declaration is limited to a simple type/pointer
             # prefix at a parameter/statement boundary. Reject multiple bindings
             # (including nested shadowing) and uncertain uses in other namespaces.
