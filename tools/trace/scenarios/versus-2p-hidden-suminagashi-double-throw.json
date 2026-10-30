@@ -1,0 +1,36 @@
+{
+  "description": "versus-2p-hidden-suminagashi with two extra P1 R2+CIRCLE inputs (8950, 8980): a second throw (event 42 at 9019) lands at 9029 while the first impact's pale-red effect (g_eff_command_status[20], 0x800F1164, set at 8949) is still running, so eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight takes its second slot, command 0x15 (handlers func_80066FF8, func_8006702C, func_8006777C); retail inputs, no poke; cut at 9300, before the fight ends",
+  "covers": [
+    "mode:vs_2p",
+    "stage:building_rooftop",
+    "char:suminagashi",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-double-throw-1/spec.json",
+    "docs/naming/runtime/eff-slot-versus-2p-hidden-suminagashi-double-throw-1/spec.json"
+  ],
+  "extends": "versus-2p-hidden-suminagashi",
+  "end_frame": 9300,
+  "inputs": [
+    "8950:R2/4",
+    "8953:CIRCLE/4",
+    "8980:R2/4",
+    "8983:CIRCLE/4"
+  ],
+  "phases": [
+    "9020:second_impact"
+  ],
+  "shots": [
+    "9030:second_impact.9030",
+    "9040:second_impact.9040",
+    "9070:second_impact.9070",
+    "9100:second_impact.9100",
+    "9299:second_impact.last"
+  ],
+  "shots_drop": [
+    "fight.9070",
+    "fight.9100"
+  ]
+}

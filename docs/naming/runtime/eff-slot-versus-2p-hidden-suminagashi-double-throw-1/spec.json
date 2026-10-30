@@ -1,0 +1,418 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "breakpoints": [
+    {
+      "at": "fight_RecordReplayEventAndDispatchSoundOrEffect",
+      "max_hits": 400
+    },
+    {
+      "at": "eff_StartRecycledVectorCommandAndJitteredBillboardsWithPaleRedLight",
+      "max_hits": 50,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "eff_StartRecycledCommandWithRoseLight",
+      "max_hits": 50,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "func_80066F90",
+      "max_hits": 300,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "func_80066FF8",
+      "max_hits": 300,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "func_8006702C",
+      "max_hits": 300,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "func_8006777C",
+      "max_hits": 300,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "func_80064FB4",
+      "max_hits": 300,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    },
+    {
+      "at": "func_80065434",
+      "max_hits": 300,
+      "dump": [
+        {
+          "base": "0x800F1150",
+          "len": 28
+        }
+      ]
+    }
+  ],
+  "script": {
+    "end_frame": 9300,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6260,
+        "name": "t_char"
+      },
+      {
+        "frame": 6550,
+        "name": "char_select"
+      },
+      {
+        "frame": 7380,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7680,
+        "name": "t_stage"
+      },
+      {
+        "frame": 7850,
+        "name": "stage_select"
+      },
+      {
+        "frame": 8040,
+        "name": "t_load"
+      },
+      {
+        "frame": 8805,
+        "name": "fight"
+      },
+      {
+        "frame": 9020,
+        "name": "second_impact"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6630,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7290,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7330,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 7590,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7630,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8040,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8900,
+        "press": [
+          "R2"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 8903,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 8950,
+        "press": [
+          "R2"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 8953,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 8980,
+        "press": [
+          "R2"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 8983,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 9020,
+        "press": [
+          "R2"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 9023,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 9140,
+        "press": [
+          "R2"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 9143,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 4
+      },
+      {
+        "frame": 9180,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 40
+      },
+      {
+        "frame": 9230,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6259,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6550,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 7285,
+        "name": "char_select.pick"
+      },
+      {
+        "frame": 7374,
+        "name": "char_select.last"
+      },
+      {
+        "frame": 7380,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 7650,
+        "name": "weapon_select.7650"
+      },
+      {
+        "frame": 7679,
+        "name": "weapon_select.last"
+      },
+      {
+        "frame": 7780,
+        "name": "t_stage.mid"
+      },
+      {
+        "frame": 7850,
+        "name": "stage_select.first"
+      },
+      {
+        "frame": 8039,
+        "name": "stage_select.last"
+      },
+      {
+        "frame": 8400,
+        "name": "t_load.mid"
+      },
+      {
+        "frame": 8799,
+        "name": "t_load.last"
+      },
+      {
+        "frame": 8805,
+        "name": "fight.first"
+      },
+      {
+        "frame": 8950,
+        "name": "fight.8950"
+      },
+      {
+        "frame": 9030,
+        "name": "second_impact.9030"
+      },
+      {
+        "frame": 9040,
+        "name": "second_impact.9040"
+      },
+      {
+        "frame": 9070,
+        "name": "second_impact.9070"
+      },
+      {
+        "frame": 9100,
+        "name": "second_impact.9100"
+      },
+      {
+        "frame": 9299,
+        "name": "second_impact.last"
+      }
+    ]
+  },
+  "pokes": [
+    {
+      "at": "0x80106A50",
+      "hex": "FFF33F05",
+      "phase": "top_menu"
+    }
+  ]
+}
