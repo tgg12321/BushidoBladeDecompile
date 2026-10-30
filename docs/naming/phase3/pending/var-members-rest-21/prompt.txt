@@ -1,0 +1,11 @@
+var-members-rest-21 -- applier notes (drafter, ln-naming-b, 9ae369330)
+
+Research: tmp/codex/var-members-rest-21-research.md (Codex, 56 rows). Draft: 4 RENAME pairs (pairs.txt), 50 NO_NAME carried, 2 dropped (VabEnt.size and Unk80099B9CRec.pos resets: not shown false), 0 name changes against the research. Details in notes.txt.
+
+Apply (clean tree, Grinder stopped, WSL toolchain):
+  python3 tools/naming_member_apply.py docs/naming/phase3/pending/var-members-rest-21/pairs.txt
+Expected: exit 0, no unresolved lines, 5 files (include/game.h, src/main/17AFC.c, 2B344.c, 63D2C.c, snd.c), as dry.txt. Then run `python tools/format.py` on those 5 files (longer names), do the comment pass from notes.txt (R6 WATCH list: include/game.h:1356 unkC4 comment), then the gates in naming-bar step 5: verify-oracle --rebuild, tus-check, check_completion_integrity.py, engine test, naming_keycheck.
+
+Review focus (weakest rows): Unk80076FF8Rec.unk_34 sel_option_sheets, Unk1F8002B8Rec.unkC4 inner_bone_hit_mask, Func8003F6D8Inner.f84 node_local_foci, VabEnt.off vab_pack_pos.
+
+Lane claim for LAND: topic:type:Unk1F8002B8Rec, Func8003F6D8Inner, Unk80076FF8Rec, VabEnt and topic:tu main/17AFC, main/2B344, main/63D2C, main/snd (+ any TU the comment pass edits).

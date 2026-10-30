@@ -1,0 +1,102 @@
+PASS Unk1F8002B8Rec.unkC4=inner_bone_hit_mask, Func8003F6D8Inner.f84=node_local_foci, Unk80076FF8Rec.unk_34=sel_option_sheets, VabEnt.off=vab_pack_pos
+decl Unk1F8002B8Rec.unkC4 -> inner_bone_hit_mask  include/game.h:1375
+decl Func8003F6D8Inner.f84 -> node_local_foci  src/main/2B344.c:2446
+decl Unk80076FF8Rec.unk_34 -> sel_option_sheets  include/game.h:372
+decl VabEnt.off -> vab_pack_pos  src/main/snd.c:236
+  round 0: 19 member error line(s)
+    src/main/17AFC.c:2008 unkC4 x1
+    src/main/17AFC.c:2655 unkC4 x1
+    src/main/2B344.c:2501 f84 x1
+    src/main/2B344.c:2502 f84 x1
+    src/main/2B344.c:2789 f84 x1
+    src/main/2B344.c:2790 f84 x1
+    src/main/2B344.c:2791 f84 x1
+    src/main/2B344.c:2792 f84 x1
+    src/main/2B344.c:2793 f84 x1
+    src/main/2B344.c:2794 f84 x1
+    src/main/63D2C.c:382 unk_34 x1
+    src/main/snd.c:277 off x2
+    src/main/snd.c:279 off x2
+    src/main/snd.c:282 off x2
+    src/main/snd.c:286 off x1
+    src/main/snd.c:288 off x1
+    src/main/snd.c:296 off x1
+    src/main/snd.c:298 off x1
+    src/main/snd.c:300 off x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -372 +372 @@
+-    Unk8009B0E0Record **unk_34;
++    Unk8009B0E0Record **sel_option_sheets;
+@@ -1375 +1375 @@
+-    s32 unkC4;
++    s32 inner_bone_hit_mask;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -2008 +2008 @@
+-                inner_hit_mask |= scr->unkC4;
++                inner_hit_mask |= scr->inner_bone_hit_mask;
+@@ -2655 +2655 @@
+-    scr->unkC4 = inner_hit_mask;
++    scr->inner_bone_hit_mask = inner_hit_mask;
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -2446 +2446 @@
+-    /* 0x84 */ SVECTOR f84[3][2];
++    /* 0x84 */ SVECTOR node_local_foci[3][2];
+@@ -2501,2 +2501,2 @@
+-            gte_SetMatrixRotTransIR(mat, &in->f84[j][0], &in->coll.foci[j][0]);
+-            gte_SetMatrixRotTransIR(mat, &in->f84[j][1], &in->coll.foci[j][1]);
++            gte_SetMatrixRotTransIR(mat, &in->node_local_foci[j][0], &in->coll.foci[j][0]);
++            gte_SetMatrixRotTransIR(mat, &in->node_local_foci[j][1], &in->coll.foci[j][1]);
+@@ -2789,6 +2789,6 @@
+-            in->f84[n][0].vx = *a2++;
+-            in->f84[n][0].vy = *a2++;
+-            in->f84[n][0].vz = *a2++;
+-            in->f84[n][1].vx = *a2++;
+-            in->f84[n][1].vy = *a2++;
+-            in->f84[n][1].vz = *a2++;
++            in->node_local_foci[n][0].vx = *a2++;
++            in->node_local_foci[n][0].vy = *a2++;
++            in->node_local_foci[n][0].vz = *a2++;
++            in->node_local_foci[n][1].vx = *a2++;
++            in->node_local_foci[n][1].vy = *a2++;
++            in->node_local_foci[n][1].vz = *a2++;
+--- a/src/main/63D2C.c
++++ b/src/main/63D2C.c
+@@ -382 +382 @@
+-    table = draw_context->resource_root.v80076FF8->unk_34;
++    table = draw_context->resource_root.v80076FF8->sel_option_sheets;
+--- a/src/main/snd.c
++++ b/src/main/snd.c
+@@ -236 +236 @@
+-    s32 off;
++    s32 vab_pack_pos;
+@@ -277 +277 @@
+-    vab_load.ent[0].off = ((VabEnt *)p)[0].off;
++    vab_load.ent[0].vab_pack_pos = ((VabEnt *)p)[0].vab_pack_pos;
+@@ -279 +279 @@
+-    vab_load.ent[1].off = ((VabEnt *)p)[arg2 + 1].off;
++    vab_load.ent[1].vab_pack_pos = ((VabEnt *)p)[arg2 + 1].vab_pack_pos;
+@@ -282 +282 @@
+-        vab_load.ent[2].off = ((VabEnt *)p)[arg3 + 1].off;
++        vab_load.ent[2].vab_pack_pos = ((VabEnt *)p)[arg3 + 1].vab_pack_pos;
+@@ -286 +286 @@
+-        vab_load.ent[vab_list_index].off += (s32)p;
++        vab_load.ent[vab_list_index].vab_pack_pos += (s32)p;
+@@ -288 +288 @@
+-            snd_LoadVabPack((Unk8005C2A8Pack *)vab_load.ent[vab_list_index].off,
++            snd_LoadVabPack((Unk8005C2A8Pack *)vab_load.ent[vab_list_index].vab_pack_pos,
+@@ -296,3 +296,3 @@
+-                ((u8 *)vab_load.ent[vab_list_index].off)[copy_byte_index];
+-        }
+-        snd_VabFakeOpen((s32)p - vab_load.ent[vab_list_index].off,
++                ((u8 *)vab_load.ent[vab_list_index].vab_pack_pos)[copy_byte_index];
++        }
++        snd_VabFakeOpen((s32)p - vab_load.ent[vab_list_index].vab_pack_pos,
+@@ -300 +300 @@
+-        vab_load.ent[vab_list_index].off = (s32)p;
++        vab_load.ent[vab_list_index].vab_pack_pos = (s32)p;
+DRY RUN: 5 file(s) would change; nothing written
+OK: every member access renamed

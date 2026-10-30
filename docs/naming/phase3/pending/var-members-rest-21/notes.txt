@@ -1,0 +1,82 @@
+var-members-rest-21 -- draft notes (research re-derived by the drafter in the lane worktree ln-naming-b at 9ae369330; research treated as hints only)
+
+BASIS: research tmp/codex/var-members-rest-21-research.md (HEAD 9ae369330), 56 rows (6 RENAME, 50 NO_NAME). Result: 4 rows in pairs.txt / member_manifest.csv (Unk1F8002B8Rec 1, Func8003F6D8Inner 1, Unk80076FF8Rec 1, VabEnt 1), 2 DROPPED, 50 NO_NAME carried, 0 name changes against the research. The verdict / verifier_note columns are empty (the reviewer decides). Dry run: dry.txt, exit 0, "OK: every member access renamed", 5 files change (include/game.h, src/main/17AFC.c, 2B344.c, 63D2C.c, snd.c), no hand edit; round 0 listed 19 access lines, round 1 none. Run as `wsl bash tmp/naming-b/dry21.sh` -> `python3 tools/naming_member_apply.py --dry-run docs/naming/phase3/pending/var-members-rest-21/pairs.txt` (needs the WSL mipsel toolchain). The dry run leaves nothing behind; git status shows only the new pending dir.
+
+Re-derivation
+- Every use re-read in the worktree (git grep -nw of the member token, type of each access checked). Unk1F8002B8Rec.unkC4: 17AFC.c:2008 (fighter_ProcessWeaponBodyHits, scr = &SPAD->unk2B8.rec) and 2655 (fighter_TestTriangleBoneHits); the sibling path fighter_CastWeaponSegment (1583-1692) produces the same pair of masks through output pointers. Func8003F6D8Inner.f84: 2B344.c:2446 decl, 2501-2502 read (softbody_UpdateColliders), 2789-2794 write (softbody_AddColliders); softbody_LoadColliders (87A0.c) reads the resulting coll.foci, never f84. Unk80076FF8Rec.unk_34: 63D2C.c:382 only (the 596CC.c:555 unk_34 is Unk8006919CRec's). VabEnt.off: snd.c:277-300 only (the only user of VabEnt).
+- INCLUDE_ASM: the 137 live bodies (names from `INCLUDE_ASM("asm/funcs", ...)` in src, files in asm/funcs) were scanned for 0xC4( / 0x37C / 0x1F8002B8 / 0x1F80037C (only func_8004DDB4 0x37C($s6), s6 = 0x1F800020 -> 0x1F80039C, another record), 0x84( (stack slot and a node-data pointer in gpu_ProjectStridedNodeVerticesAndDispatchPackets), 0x34( (node, stack and memory-move leaf code), 80076FF8 / g_sel_ / SELWORK / 8009B0E0 / 0x8006E / g_working_record / 80099B9C (none), and vab/Vab/snd_ (none). No live body touches any renamed member.
+- Freshness: all four new names have 0 hits (git grep -w over src include asm tools symbol_addrs.txt named_syms.txt docs) and appear in no docs/naming/phase3/pending/*/pairs.txt of ln-naming-b or ln-naming-a (main is the same commit). Names distinct inside each type. The tokens unk_34 and off are declared by several types (Unk8006919CRec.unk_34; Unk80077D94Entry.off at game.h:378); the tool resolves by type and the dry run was clean on the first pass.
+
+Name changes against the research
+- none.
+
+DROPPED
+- VabEnt.size -> field_4 (N5 reset): not shown false. The only accesses (snd.c:278, 280, 283) copy the word into vab_load.ent[k].size and nothing reads it, so the code neither bears the name out nor contradicts it; docs/formats/STAGE_BIN.md:75-84 (from the disc files) shows the header word really is each record's size, and the copy-length source vab_load.len[] (287-293) is a different word. A name that is true of the data and contradicted by no use stays (N5: reset only on an N1 failure).
+- Unk80099B9CRec.pos -> field_0C (N5 reset): not shown false. There is no access in C or live asm (d_89C78.c:195-197 initializer only), the type comment (d_89C78.c:24-25) types the three triples from their values as (x, y, z), and nothing shows the claim wrong. A no-access name is unproven, not contradicted; with no code to show it false the row is dropped (a later wave with a reader can re-judge it).
+
+NO_NAME rows carried (not in pairs; 50, reasons from the research; the 14 rest-20 leftovers were re-checked by the researcher with no new evidence)
+- SelWork.f2C (+0x2C): write-only (64FD8.c:1334); no reader in C or live asm.
+- SelWork.f3C: at least three roles (phase-0 option row, opposed-choice mirror of selected_grid_page, grid / list-phase pick slot and count); one name cannot cover them.
+- Tbl800A3860Entry.f66: read only by motion_ResolveMoveData for pseudo ids 0x7FF5..0x7FFF (9F9C.c:3470); no code issues or names those ids; rest-19 FAILed special_*.
+- Unk80101EC8Record.unk_272: mixed writers (17AFC.c:136, 363, 366; 9F9C.c:2928 paired-move bump; 3892 reset), a tally name is false for the bump.
+- Unk80101EC8Record.unk_27E: indexed by min(hit_record_group_14_21_hit_tally + unk_272, 3); waits on unk_272 (rest-19 FAILed hit_tally_sum_step_scales).
+- Unk80102778Rec.unk_4: u8[6] holding three per-player pairs; needs a layout split (types task).
+- Unk80102778Rec.unk_F: forces fighter_ResolveBoneHit's flag argument, whose role is unnamed; a name would characterise an unnamed operand.
+- Unk8009BD24Record.unk1: write-only (5ED34.c:1711, 64FD8.c:1107); no C or live-asm reader, though sibling bd0 became round_grid_pick.
+- Unk1F8000B8_80063084.unk38: one-block temporary of a formula (51268.c:1145, 1286-1290); a name would restate '- 15'.
+- Unk1F8000B8_80065800.unk14: two roles in one function (projected centre translation, then four rotated corner offsets).
+- Unk1F8000B8_80065800.unk64: three roles (zero origin, rotation angles, corner vector).
+- Unk1F8000B8_800678A8.unk6E: loop index over particles in one function and over quads in another.
+- Unk1F8000B8_800678A8.unk70: two unrelated values in two functions (texture-record index, particle frame_age).
+- Func80017848Edge.field_8: write-only (6CF8.c:668); softbody_SolveSprings recomputes dist * 3.
+- Func80017A44Record.field_38: no access (padding).
+- Unk800FF5C8Rec.unk_0C: no access (padding).
+- Unk80101EC8Record.unk_AF: class bit of an unnamed command-byte nibble value; a name would only spell the test.
+- Unk80101EC8Record.unk_B4: follows unk_AF (equality of two fighters' unnamed class).
+- Unk80101EC8Record.unk_150: only ever written 0; the read subtracts 0, no role shown.
+- Unk800EFAE8Rec.unk44: per-player resource entry index whose meaning comes only from the caller's arguments.
+- Unk800EFAE8Rec.unk48: as unk44, told apart only by slot parity.
+- Unk8006919CRec.unk_14: sole consumer func_80069E18 is unnamed.
+- Unk1F8002B8Rec.unk78: 'bbox_min' is false at 17AFC.c:1113 / 1181 (y only the first corner's, averaged).
+- Unk80045878Node.unk58: mixed roles (ground value, node pointer, matrix pointer; 309CC.c, 31548.c, 368E4.c).
+- Unk80045878Node.unk5C: no access as this type.
+- Unk80045878Node.unk64: no access as this type.
+- Unk8006E49CRec.unk_14: pool word seeded as a DR_MODE cursor but also read as a TILE cursor by gpu_AddThreeGreyTilesStackedUp; not single-kind.
+- Unk800788B0Rec.unk_14: same objection as Unk8006E49CRec.unk_14 (DR_MODE use plus TILE use through cast contexts).
+- BoneHitRec.unk_0E: templates hold a square radius but 9F9C.c:3098 scales it linearly, so a _sq name breaks after scaling.
+- BoneHitRec.unk_12: inner-sphere twin of unk_0E, same objection.
+- Unk80101EC8Record.unk_24C: write-only (9F9C.c:1304, 4024, 5611).
+- Unk80076FF8Rec.unk_14: fixed indices and list-entry indices mix in one table (64FD8.c:449, 546, 602, 717, 904, 971).
+- Unk80076FF8Rec.unk_1C: one reader keyed by an argument whose role is not shown (64FD8.c:210).
+- Unk80076FF8Rec.unk_30: entry 12 at the neutral f3C row does not fit the list-entry reading (64FD8.c:881, 922); waits on f3C.
+- Unk80076FF8Rec.unk_38: only 'three sheets drawn at the origin' is shown (63D2C.c:307).
+- Unk8006919CRec.unk_34: same pattern as Unk80076FF8Rec.unk_38 (596CC.c:555); role not shown.
+- FaceTri.unk0: layout filler, no access (2B344.c:2584).
+- FaceTri.unk8: layout filler, no access (2B344.c:2586).
+- FaceQuad.unk0: layout filler, no access (2B344.c:2590).
+- FaceQuad.unk9: layout filler, no access (2B344.c:2592).
+- FaceTriLong.unk0: layout filler, no access (2B344.c:2596).
+- FaceTriLong.unk8: layout filler, no access (2B344.c:2598).
+- FaceQuadLong.unk0: layout filler, no access (2B344.c:2602).
+- FaceQuadLong.unk10: layout filler, no access (2B344.c:2604).
+- Unk8003F62CRec.unk4: write-only (= 0, 2B344.c:2537).
+- Unk8003F824Rec.unk2: padding, no access (2B344.c:2452).
+- Unk800A9CF8Entry.unk58: frame index that also holds -1 idle / -2 done sentinels, a state as much as a frame (anim_frame FAILed in rest-12).
+- Unk800A9CF8Entry.unk60: Q12 colour scale or fade; finish_countdown dropped in rest-12, needs asset data.
+- Tbl8008E194.unkC: per-kind reaction selector whose move kinds are unnamed (rest-12).
+- Tbl8008E194.unkD: level 0..2 with no single shown role (17AFC.c:362, 499, 548, 4644).
+
+R6 WATCH list (comment pass the applier must rewrite; verified at 9ae369330; apply the new names in these comments)
+- Unk1F8002B8Rec.unkC4: include/game.h:1356 ("bone_hit_mask / unkC4 are fighter_TestTriangleBoneHits's two hit masks"). No other comment, symbol_addrs.txt, named_syms.txt, docs/engine or tools line cites it (git grep -w unkC4 over those = 0). 17AFC.c:1567-1572 comment talks about *inner_hit_mask, not the member.
+- Func8003F6D8Inner.f84: only the declaration (src/main/2B344.c:2446). No comment, doc or registry line cites it.
+- Unk80076FF8Rec.unk_34: include/game.h:358 ("unk_14..unk_38, the ten lists" stays true as a range; optionally list the new name). Leave Unk8006919CRec.unk_34 (game.h:2549, 596CC.c:555): a different type.
+- VabEnt.off: no comment cites the member. Leave docs/formats/STAGE_BIN.md:75-84 (header 'off, size' of the file format, not the member) and Unk80077D94Entry.off (game.h:378, another type).
+- Post-apply survival grep: `\bunkC4\b` and `\bf84\b` over src include (0), `unk_34` over src/main/63D2C.c (0), `\.off\b` over src/main/snd.c (0). Clang-format: the lengthened names push lines over 80 columns (2B344.c:2501-2502, snd.c:288, 296 at least); run `python tools/format.py` on the 5 touched files.
+
+Weakest rows for the reviewer
+- Unk80076FF8Rec.unk_34 sel_option_sheets: 'option' is generic, rows 0..4 are told apart only by the neutral SelWork.f3C[0], and sheet 14 is never highlighted; a reviewer may prefer neutral.
+- Unk1F8002B8Rec.unkC4 inner_bone_hit_mask: depends on rest-12's has_inner_sphere / inner_radius names for 'inner'; rest-5 ruled it neutral before they existed. The bit is set only when the outer test also hit.
+- Func8003F6D8Inner.f84 node_local_foci: 'local' rests on the node-matrix transform at 2500-2502 (the stored points are the matrix input, the foci the output); no other evidence of the frame.
+- VabEnt.off vab_pack_pos: 'pos' is generic; the justification is that 'off' is false from snd.c:286 on, while it is right for 277-282 in the file view.
+
+LAND claim list: topic:type:Unk1F8002B8Rec, topic:type:Func8003F6D8Inner, topic:type:Unk80076FF8Rec, topic:type:VabEnt; topic:tu:main/17AFC, topic:tu:main/2B344, topic:tu:main/63D2C, topic:tu:main/snd (+ any TU the comment pass edits; include/game.h is edited by the apply).
