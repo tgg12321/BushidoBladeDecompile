@@ -1919,7 +1919,7 @@ typedef struct {
  * D_80101EC8[0].move_kind mode (row 0..5): bearing_distance scales the Judge
  * sin/cos offset, height_offset is added to y;
  * g_fight_midpoint_effect_event_ids[row] is passed
- * as fight_RecordReplayEventAndDispatchSoundOrEffect's arg1. */
+ * as fight_RecordReplayEventAndDispatchSoundOrEffect's event_kind. */
 typedef struct {
     s16 bearing_distance;
     s16 height_offset;

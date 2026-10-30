@@ -249,7 +249,7 @@ or clears the channel's enable bit (16 + ch).
   `memcard_WriteFile` first creates the file (`open(name, (blocks << 16) |
   0x200)`) when its last argument is set.
 
-The save flow is `memcard_StepRequest` (28708.c:277), stepped on `g_memcard_request_state`:
+The save flow is `memcard_StepRequest` (28708.c:282), stepped on `g_memcard_request_state`:
 
 - **Save (state 3):** it checks for the save file `D_80010AAC`
   (`"BASLUS-00663BUSHIDO2"`, through `g_memcard_save_file_name`) and for free blocks. It
@@ -258,7 +258,7 @@ The save flow is `memcard_StepRequest` (28708.c:277), stepped on `g_memcard_requ
   save block at `+0x100` (`memcard_BuildSaveBlock`, an `Unk800F34D8Save`,
   include/game.h:40-52), then writes 0x200 bytes.
 - **Load (state 5):** it reads the file into the same buffer.
-- **Completion:** `memcard_PollFileCompletion` (28708.c:413) reaps the
+- **Completion:** `memcard_PollFileCompletion` (28708.c:419) reaps the
   result through `memcard_PollSwEvents` and closes the file. After a load it
   restores the save block with `memcard_RestoreSaveBlock(&D_800F34D8)`. It posts a
   result code to `g_memcard_request_status`.

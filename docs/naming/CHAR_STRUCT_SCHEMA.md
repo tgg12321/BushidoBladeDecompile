@@ -48,16 +48,16 @@ which only has record-2 references).
 | +0x04C | s32 | 0,3   | 4  | (asm-only refs) | -- |
 | +0x054 | s32 | 2,3   | 24 | `s32 v0 = (&D_801027B4)[idx] + (v1 * 4);` | base of indexed table |
 | +0x05E | ?   | 0,1   | 22 | `D_80101F26 = 0;` and `s0 = &D_80102372` | cleared cell + base-of-array |
-| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].move_kind == 0x11 \|\| (u16)D_80101EC8[1].move_kind == 0x11)` (9F9C.c:2046-2047) | `move_kind` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:91, 17AFC.c:977/:1046/:1074/:2516); byte 0 of the current move's metadata, written only by fighter_StartMoveScript |
+| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].move_kind == 0x11 \|\| (u16)D_80101EC8[1].move_kind == 0x11)` (9F9C.c:2046-2047) | `move_kind` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:91, 17AFC.c:913/:983/:1034/:2517); byte 0 of the current move's metadata, written only by fighter_StartMoveScript |
 | +0x07A | ?   | 0,1   | 4  | (asm-only refs) | -- |
 | +0x084 | s16 | 0,2   | 12 | `*(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);` | **previous-frame keyframe field** (copy-old-to-new pattern) |
 | +0x096 | s16 | 0,1,2 | 55 | `if (D_80101F5E != 0 \|\| D_801023AA != 0)` | flag tested across records (player-1 vs player-2 OR) |
 | +0x0AD | s8  | 0,1   | 12 | `if (D_80101F75 != 0 \|\| D_801023C1 != 0); D_801023C1 = 0; D_80101F75 = 0;` | one-shot trigger flag |
 | +0x0B1 | s8  | 0,1   | 4  | (asm-only refs) | -- |
-| +0x0D8 | s32 | 0,1   | 6  | `separation_x = rec0->base_pos.x - rec1->base_pos.x` (17AFC.c:2232) | `base_pos.x`, differenced between records 0 and 1 |
-| +0x0E0 | s32 | 0,1   | 7  | `separation_z = rec0->base_pos.z - rec1->base_pos.z` (17AFC.c:2233) | `base_pos.z`, differenced between records 0 and 1 |
+| +0x0D8 | s32 | 0,1   | 6  | `separation_x = rec0->base_pos.x - rec1->base_pos.x` (17AFC.c:2234) | `base_pos.x`, differenced between records 0 and 1 |
+| +0x0E0 | s32 | 0,1   | 7  | `separation_z = rec0->base_pos.z - rec1->base_pos.z` (17AFC.c:2235) | `base_pos.z`, differenced between records 0 and 1 |
 | **+0x0F4** | s32 | 0,1   | 36 | `e->world_pos.x = x;` (9F9C.c:1305); `gpu_SetViewOriginSegmentCellsGateBit(D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z)` (:2174) | `world_pos.x` of the Vec3i32 `world_pos` (include/game.h:1474): base_pos + root_offset |
-| **+0x0FC** | s32 | 0,1   | 21 | `e->world_pos.z = z;` (9F9C.c:1307); the same `gpu_SetViewOriginSegmentCellsGateBit` call (:2174) | `world_pos.z`; one read of many (9F9C.c:2580, 175A4.c:174, 17AFC.c:2273) |
+| **+0x0FC** | s32 | 0,1   | 21 | `e->world_pos.z = z;` (9F9C.c:1307); the same `gpu_SetViewOriginSegmentCellsGateBit` call (:2174) | `world_pos.z`; one read of many (9F9C.c:2580, 175A4.c:174, 17AFC.c:2275) |
 | +0x134 | s32 | 0,1   | 7  | `D_80101FFC = 0;` | cleared cell |
 | +0x13C | s32 | 0,1   | 9  | `D_80102004 = 0;` | cleared cell |
 | +0x14E | s16 | 0,1   | 5  | `D_80102016 = 0;` | cleared cell |
@@ -85,7 +85,7 @@ record 0 to one player.
 
 ### 2. Triples at +0xD8 (`base_pos`) and +0xF4 (`world_pos`)
 
-src/main/17AFC.c:2232-2236 (fighter_SetBasePositionSeparationCorrectionsAndGetDistance) differences records 0 and 1:
+src/main/17AFC.c:2234-2238 (fighter_SetBasePositionSeparationCorrectionsAndGetDistance) differences records 0 and 1:
 
 ```c
 rec0 = &D_80101EC8[0];
@@ -121,11 +121,11 @@ e->world_pos.z = z;
 | +0xFC | `world_pos.z` | `D_80101FC4` |
 
 `base_pos` + `root_offset` = `world_pos`: fighter_Init and fighter_Update
-(9F9C.c:3977, :5396) sum them. `collision_pos` (+0xB8) is the collision-space
+(9F9C.c:3977, :5397) sum them. `collision_pos` (+0xB8) is the collision-space
 position. `base_pos` is also passed by address to fight_GetStartPosition /
 fight_SearchRadialFlatSurfacePointOrUseStartPositionPair / fight_PickRandomStartPositionExcludingNearestAndFarthest (9F9C.c:1201, :3946-3969), stepped by `base_velocity`
 and `decaying_xz_velocity` (:5179-5181, :5226-5228) and differenced between records 0 and 1
-(17AFC.c:2232-2233, :2332-2333).
+(17AFC.c:2234-2235, :2334-2335).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
 
@@ -176,7 +176,7 @@ structure to identify several sub-fields and clusters:
 ### Vec3i32 members at +0x174 and +0x18C
 
 Two adjacent Vec3i32 members that fight_UpdateFighterInteractionsAndPointCaches fills with averages of
-scratchpad points (17AFC.c:2536-2553) and func_80022580 sets to `unk_F4`
+scratchpad points (17AFC.c:2538-2555) and func_80022580 sets to `unk_F4`
 (9F9C.c:4018, :4020):
 
 | Offset | Member (rec[0] address) | fight_UpdateFighterInteractionsAndPointCaches computation (record i) |

@@ -215,7 +215,7 @@ SVec4i16 *D_8008D88C[32] = {
     NULL,       NULL,       NULL, NULL,       NULL,       NULL,
     D_8008D844, D_8008D854};
 
-/* [g_fighter_group_flags[character_data_index]][weapon_id]: the move command
+/* [g_fighter_group_flags[character_data_index]][weapon_id]: the object_kind
  * fighter_Update hands object_SpawnScatteredAt; g_fighter_group_flags holds
  * only 0 and 1, so two rows. */
 u8 D_8008D90C[2][8] = {{0x12, 0x14, 0x16, 0x18, 0x1A, 0x1A, 0x1C, 0x1C},
@@ -654,7 +654,7 @@ Tbl8008EB54Entry g_fight_midpoint_effect_offsets[6] = {
     {0, -1280}, {-149, -680}, {-112, -1280},
     {0, -1280}, {112, -1280}, {149, -680}};
 
-/* fight_RecordReplayEventAndDispatchSoundOrEffect's arg1 per
+/* fight_RecordReplayEventAndDispatchSoundOrEffect's event_kind per
  * g_fight_midpoint_effect_offsets row. */
 u8 g_fight_midpoint_effect_event_ids[6] = {5, 8, 7, 6, 7, 8};
 

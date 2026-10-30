@@ -1076,10 +1076,11 @@ void fight_ClearPositionRecordUsage(void) {
     }
 }
 
-s32 math_PointInTriangleXZ(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
+s32 math_PointInTriangleXZ(
+    s32 *vertex_a, s32 *vertex_b, s32 *vertex_c, s32 *test_point);
 s32 math_TriangleNormalYawWithPositiveYHalfTurn(
-    VECTOR *a0, VECTOR *a1, VECTOR *a2);
-void snd_QueuePositionSequence(Unk80107850Rec *arg0);
+    VECTOR *first_vertex, VECTOR *second_vertex, VECTOR *third_vertex);
+void snd_QueuePositionSequence(Unk80107850Rec *position);
 
 /* Tests the unused PosRec entries inside grid `idx`'s x/z bounds against the
  * grid's two triangles (points 0,1,2 and 1,2,3) with math_PointInTriangleXZ.
@@ -1724,7 +1725,8 @@ done:
     D_800A37EC = -qz;
 }
 
-extern void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2);
+extern void fighter_TestTriangleBoneHits(
+    Unk80101EC8Record *fighter_record, s32 a1, s32 test_inner_spheres);
 extern s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj);
 
 void fighter_ProcessWeaponBodyHits(s32 mode) {
@@ -3647,7 +3649,7 @@ void math_InvertMatrix3x3(void *arg0, void *arg1) {
          negated_determinant);
 }
 
-void math_MatrixToAngles(MATRIX *a0, s16 *a1);
+void math_MatrixToAngles(MATRIX *matrix, s16 *angles_out);
 
 void math_MatrixToAngles(MATRIX *matrix, s16 *angles_out) {
     MATRIX *m;
@@ -4901,10 +4903,10 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *fighter_record) {
     }
 }
 
-/* 3D positional sound pan/volume: listener-relative delta of *arg1,
+/* 3D positional sound pan/volume: listener-relative delta of *sound_position,
  * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (gte_Lzc
  * for >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to
- * 0x7F, sent to snd_QueueSound(arg0, R, L). */
+ * 0x7F, sent to snd_QueueSound(sound_index, R, L). */
 void snd_QueuePositionalSound(s32 sound_index, s32 *sound_position) {
     s32 sp_tmp;
     s32 dx, dy, dz;

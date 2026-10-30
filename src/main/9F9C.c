@@ -4611,7 +4611,7 @@ void fighter_UpdateGroundYByMoveKind(Unk80101EC8Record *fighter_record) {
  * (fighter_Update).
  */
 extern s16 g_fighter_power_scales[27][4];
-/* [g_fighter_group_flags[character_data_index]][weapon_id]: the move command
+/* [g_fighter_group_flags[character_data_index]][weapon_id]: the object_kind
  * fighter_Update hands object_SpawnScatteredAt. */
 extern u8 D_8008D90C[2][8];
 extern void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *);

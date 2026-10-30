@@ -422,7 +422,7 @@
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
 /* +0x210 / +0x234 are Unk80101EC8Record.prev_weapon_points / prev_second_weapon_points (include/game.h). */
 
-/* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2232-2236) */
+/* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2234-2238) */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
 /* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, motion_AdvanceVariantIfAtNibble4Or5Position, motion_ResolveMoveData) */
 
@@ -991,8 +991,8 @@
 /* census estimate); per-word names retired 2026-09-23. */
 
 /* === code6cac_c_mid SE slot + link-word + other state (2026-05-17) -- 7 highs === */
-/* RENAME 0x800A379C: retired name 'D_800A379C' — preserved note: free-entry search cursor of the 0x20-entry event table D_80101BF0 (28708.c:1210-1247); reset 0 */  /* data-wave 2026-10-08: was g_se_slot_next_idx */
-/* RENAME 0x800A3714: retired name 'D_800A3714' — preserved note: s16 free-entry search cursor of D_800F68E0, compared with its size 0xB4 (28708.c:1182-1197) */  /* data-wave 2026-10-08: was g_se_slot_cached_state */
+/* RENAME 0x800A379C: retired name 'D_800A379C' — preserved note: free-entry search cursor of the 0x20-entry event table D_80101BF0 (28708.c:1212-1249); reset 0 */  /* data-wave 2026-10-08: was g_se_slot_next_idx */
+/* RENAME 0x800A3714: retired name 'D_800A3714' — preserved note: s16 free-entry search cursor of D_800F68E0, compared with its size 0xB4 (28708.c:1184-1199) */  /* data-wave 2026-10-08: was g_se_slot_cached_state */
 /* RENAME 0x800A3730: retired name 'D_800A3730' — preserved note: bit 30 of the link word: a link-close request (a side that sees it calls comb_ResetClose) */  /* data-wave 2026-10-08: was g_pad_rec_record_flag */
 
 /* === Practice-lesson arg dispatch state (2026-05-17) -- 6 highs === */

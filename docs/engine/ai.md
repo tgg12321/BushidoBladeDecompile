@@ -14,39 +14,39 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 (include/bb2.h:191) is a pool of 0x64-byte `Obj80106A78` objects
 (include/game.h:1695); a free slot has `kind == -1` and `slot == 0xFF`.
 
-- `object_InitKindQueue(rec)` (src/main/17AFC.c:4027) seeds the queue: it copies the five entries of
+- `object_InitKindQueue(rec)` (src/main/17AFC.c:4029) seeds the queue: it copies the five entries of
   `g_fighter_initial_carried_object_kinds[rec->character_data_index]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
   src/main/9F9C.c:4051.
-- `object_QueueKind(rec, kind)` (src/main/17AFC.c:4216) appends a kind, or puts it
-  first when `rec->object_variant_index != -1` and `kind == rec->wielded_object_kind`; it returns 0 when
+- `object_QueueKind(fighter_record, object_kind)` (src/main/17AFC.c:4218) appends a kind, or puts it
+  first when `fighter_record->object_variant_index != -1` and `object_kind == fighter_record->wielded_object_kind`; it returns 0 when
   the queue already holds 12.
-- `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:4058) allocates the first free
+- `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:4060) allocates the first free
   pool slot and places the object at the fighter (`world_pos`, raised by
   `size_scale / 32`). Its velocity comes from `g_object_kind_params[kind]`
   (`Tbl8008E194`, include/game.h:1858): the horizontal speed `launch_speed`
   along the fighter's heading `orientation.vy`, the vertical speed
   `launch_vel_y`, and a spin `spin_rate` about Y or X by `unk0`.
-- `object_ThrowQueuedKind(rec)` (src/main/17AFC.c:4126) takes an entry off the queue
+- `object_ThrowQueuedKind(rec)` (src/main/17AFC.c:4128) takes an entry off the queue
   (index 1 instead of 0 when it holds two or more, the head equals
   `rec->wielded_object_kind` and `rec->object_variant_index != -1`), spawns it through `object_SpawnFromFighter`, and plays a cue
-  through `fight_RecordReplayEventAndDispatchSoundOrEffect`. `object_DropQueuedHeadAt(rec, pos)` (src/main/17AFC.c:4164)
-  spawns the head entry at `pos`, and `object_SpawnScatteredAt(rec, kind, pos)`
-  (src/main/17AFC.c:3988) spawns `kind` at `pos`; both give the object a
+  through `fight_RecordReplayEventAndDispatchSoundOrEffect`. `object_DropQueuedHeadAt(fighter_record, drop_position)` (src/main/17AFC.c:4166)
+  spawns the head entry at `drop_position`, and `object_SpawnScatteredAt(fighter_record, object_kind, drop_position)`
+  (src/main/17AFC.c:4195) spawns `object_kind` at `drop_position`; both give the object a
   random velocity and spin from `rng_Next`.
-- `object_PickUpNearby(rec)` (src/main/17AFC.c:4234) takes a pool object back into
+- `object_PickUpNearby(fighter_record)` (src/main/17AFC.c:4240) takes a pool object back into
   the queue: the first object whose kind is not -1 or 0x12..0x1D, whose
   `unk_50` is 0, which lies within 100 units of the fighter's `collision_pos.vy`
   vertically and within a squared horizontal distance of 0xF423F of
   `world_pos`. It frees the slot and returns the kind (-1 if none, or if the
   queue is full).
-- The fighter update calls these at src/main/9F9C.c:5709 (`object_SpawnScatteredAt`),
+- The fighter update calls these at src/main/9F9C.c:5710 (`object_SpawnScatteredAt`),
   :5738 (`object_ThrowQueuedKind`) and :5745 / :5755 (`object_PickUpNearby`), gated on the
   record's `move_kind` / `move_frame` values.
-- Pool cleanup: `object_ResetPool` (src/main/17AFC.c:4018) frees all twelve
+- Pool cleanup: `object_ResetPool` (src/main/17AFC.c:4020) frees all twelve
   slots (called at src/main/9F9C.c:1769); `object_FreeAttachedObjects`
-  (src/main/17AFC.c:3873) frees objects with `is_attached != 0` and `object_ClearFixedKindRange`
-  (src/main/17AFC.c:4078) frees kinds 0x12..0x1D (both called at
+  (src/main/17AFC.c:3875) frees objects with `is_attached != 0` and `object_ClearFixedKindRange`
+  (src/main/17AFC.c:4080) frees kinds 0x12..0x1D (both called at
   src/main/9F9C.c:1180-1181).
 
 ## The shuffled ID list `g_fight_opponent_order`
@@ -54,13 +54,13 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
 `ApplyPendingConfigAndInitializeMode` case 1 (src/main/24BF0.c:54) calls `fight_BuildOpponentOrder` and then
 `fight_AdvanceOpponentOrder`.
 
-`fight_BuildOpponentOrder` (src/main/17AFC.c:5629):
+`fight_BuildOpponentOrder` (src/main/17AFC.c:5727):
 
 1. Collects the IDs `i` in 0..26 whose bit is set in
    `g_saved_record.unlock_mask & 0x3EF3DF`, minus the bit
-   `g_fight_config_id_data_rows[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5406), into
+   `g_fight_config_id_data_rows[g_fight_config.unk_4[0]]` (src/main/17AFC.c:5737-5738), into
    `g_fight_opponent_order`.
-2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5427).
+2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5758-5768).
 3. If bit 0x20 or 0x10000 of `g_saved_record.unlock_mask` is set, adds ID 5 (bit 0x20)
    and / or ID 0x10 (bit 0x10000), in random order when both are set: the first
    goes to position 10, shifting the rest up (or at the end of a shorter list),
@@ -69,7 +69,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
    is tested depends on `g_fighter_group_flags`), stores the count in `g_fight_opponent_order_count`, and
    clears the cursor `g_fight_opponent_order_cursor`.
 
-`fight_AdvanceOpponentOrder` (src/main/17AFC.c:5750) steps the cursor: it sets
+`fight_AdvanceOpponentOrder` (src/main/17AFC.c:5848) steps the cursor: it sets
 `g_fight_config.unk_4[1] = D_8008D55C[g_fight_opponent_order[cursor]]`, or, once the cursor
 reaches the count, sets the mode `g_main_loop_handler_index` to 0x12 (count 20) or 0x20.
 The 27 IDs match the row count of the per-character tables (`g_fighter_initial_carried_object_kinds`,
@@ -86,7 +86,7 @@ an opponent order; the code does not name it.
 
 ## Standalone helpers
 
-- `math_ReflectAndDampRecordVector(a0, a1)` (src/main/17AFC.c:3993) takes the angle
+- `math_ReflectAndDampRecordVector(a0, a1)` (src/main/17AFC.c:3995) takes the angle
   `ratan2(a1[0], a1[2])`, rotates the X/Z pair at `a0[0x11]` / `a0[0x13]`
   into that angle's frame (`>> 12`), negates the second component, rotates back
   with `>> 15` (an eighth of the magnitude), and divides `a0[0x12]` by four. No direct caller appears in `src/`.
