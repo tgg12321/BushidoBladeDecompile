@@ -10,11 +10,12 @@
 
 CdlATV g_cd_atv;
 
-void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    g_cd_atv.val0 = (u8)arg0;
-    g_cd_atv.val1 = (u8)arg1;
-    g_cd_atv.val2 = (u8)arg2;
-    g_cd_atv.val3 = (u8)arg3;
+void cdrom_SetMix(s32 left_to_left_volume, s32 left_to_right_volume,
+                  s32 right_to_right_volume, s32 right_to_left_volume) {
+    g_cd_atv.val0 = (u8)left_to_left_volume;
+    g_cd_atv.val1 = (u8)left_to_right_volume;
+    g_cd_atv.val2 = (u8)right_to_right_volume;
+    g_cd_atv.val3 = (u8)right_to_left_volume;
     CdMix(&g_cd_atv);
     g_cd_fade_len = 0;
 }
@@ -22,13 +23,14 @@ void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 CdlATV g_cd_atv_target;
 
 void cdrom_StartMixFade(
-    s16 fade_length, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    g_cd_atv_target.val0 = (u8)arg1;
-    g_cd_atv_target.val1 = (u8)arg2;
-    g_cd_atv_target.val2 = (u8)arg3;
+    s16 fade_length, s32 left_to_left_volume, s32 left_to_right_volume,
+    s32 right_to_right_volume, s32 right_to_left_volume) {
+    g_cd_atv_target.val0 = (u8)left_to_left_volume;
+    g_cd_atv_target.val1 = (u8)left_to_right_volume;
+    g_cd_atv_target.val2 = (u8)right_to_right_volume;
     g_cd_fade_len = fade_length;
     g_cd_fade_step = 0;
-    g_cd_atv_target.val3 = (u8)arg4;
+    g_cd_atv_target.val3 = (u8)right_to_left_volume;
 }
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches

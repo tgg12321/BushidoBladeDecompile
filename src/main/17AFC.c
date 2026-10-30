@@ -2357,22 +2357,24 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
         }
 
         {
-            s32 v1;
-            v1 = initiator_record->move_frame;
-            if (v1 < (s32)g_fight_paired_move_event_min_frame) {
+            s32 initiator_move_frame;
+            initiator_move_frame = initiator_record->move_frame;
+            if (initiator_move_frame <
+                (s32)g_fight_paired_move_event_min_frame) {
                 return;
             }
-            if (v1 >= initiator_record->paired_move_hit_frame) {
+            if (initiator_move_frame >=
+                initiator_record->paired_move_hit_frame) {
                 return;
             }
             if (g_fight_paired_move_separation + 0xC8 >= separation) {
                 return;
             }
             {
-                Unk80101EC8Record *v1ptr;
-                v1ptr = initiator_record->other;
+                Unk80101EC8Record *other_record;
+                other_record = initiator_record->other;
                 initiator_record->pending_move_event = 4;
-                v1ptr->pending_move_event = 5;
+                other_record->pending_move_event = 5;
             }
         }
     }

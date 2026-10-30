@@ -777,7 +777,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
        target addresses both through the one frame slot sp+0x18 (a separate
        totals array does not match). */
     s16 var_1[2];
-    s16 var_2[2];
+    s16 higher_score_match_counts[2];
     Unk8007352CRec s;
     /* FAKE: frame layout: unused; keeps the 8 untouched bytes at sp+0x58 where
      * the siblings gpu_DrawTimeFieldsAndDecimalCounter and
@@ -938,7 +938,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     mode_off++;
 
     s.ot_idx = ot_index;
-    var_2[0] = var_2[1] = 0;
+    higher_score_match_counts[0] = higher_score_match_counts[1] = 0;
     for (i = 0; i < g_working_record.match_count_index + 3; i++) {
         s.header = &D_8009ADB4;
         s.semi = 0;
@@ -954,7 +954,7 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
                 }
             } else {
                 if (var_1[j] != 3) {
-                    var_2[j]++;
+                    higher_score_match_counts[j]++;
                 }
                 s.has_color = 0;
             }
@@ -1010,10 +1010,10 @@ s32 gpu_DrawPackedComparisonRowsAndTotals(
     }
     for (j = 0; j < 2; j++) {
         s.x = j * 70 + 0x113;
-        if (var_2[j] == 1) {
+        if (higher_score_match_counts[j] == 1) {
             s.x += 3;
         }
-        s.table = &g_gpu_decimal_digit_cells[var_2[j]];
+        s.table = &g_gpu_decimal_digit_cells[higher_score_match_counts[j]];
         s.table->x = s.table->y = 0;
         s.sprt_out = cur;
         cur = gpu_AddSpriteCells(&s);

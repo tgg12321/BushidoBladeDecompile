@@ -1847,7 +1847,7 @@ extern s16 g_resource_prev_entry_request_state[];
 extern s32 g_resource_last_selection_index;
 extern s32 math_UnorderedPairIndex(s32, s32, s32);
 
-void resource_RankRequestedEntriesAndReloadOnChange(s32 arg0) {
+void resource_RankRequestedEntriesAndReloadOnChange(s32 staging_addr) {
     s16 *dst;
     s16 *src;
     s16 *p;
@@ -1922,7 +1922,8 @@ end:
     if (requested_set_and_pair_unchanged == 0) {
         resource_FreeSelectedEntryBlockStopAllVoicesAndCloseVabs();
         resource_LoadSelectedEntriesTexturesAndSound(
-            g_resource_entry_category, i, g_resource_entry_request_state, arg0);
+            g_resource_entry_category, i, g_resource_entry_request_state,
+            staging_addr);
         gpu_BuildFogBlockLevels();
     }
 }

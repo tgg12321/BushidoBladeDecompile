@@ -1740,9 +1740,9 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s16 chosen_script_index;
     s32 chosen_script_max_distance;
     s32 var_6;
-    u8 *var_7;
+    u8 *threat_response_script;
     u8 *var_8;
-    u8 *var_9;
+    u8 *action_script;
     u8 *var_10;
     u8 mode;
     /* work1 holds nine values in turn, each read before the next write: the
@@ -1824,7 +1824,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
         ((p->cpu_state_flags & 0x15100) ||
          (p->move_kind == 0xD && (p->incoming_attack_state == 4 ||
                                   p->incoming_projectile_state == 4)))) {
-        var_7 = 0;
+        threat_response_script = 0;
         if ((p->incoming_attack_state == 1 &&
              p->other->move_frame + 1 >=
                  p->opponent_snapshot_hit_start_frame) ||
@@ -1846,11 +1846,11 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                      g_fight_mode_selector != 3)) {
                     work3 = !work3;
                 }
-                var_7 = tbl[work3];
+                threat_response_script = tbl[work3];
                 mode = 3;
             }
             if (p->move_kind == 0xD) {
-                var_7 = 0;
+                threat_response_script = 0;
                 p->cpu_decided_pad_held = 0;
                 p->incoming_attack_state = 4;
                 p->incoming_projectile_state = 4;
@@ -1873,7 +1873,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                            (!(g_cpu_profiles[p->cpu_profile].flags & 0x8F00) ||
                             ((g_cpu_profiles[p->cpu_profile].flags & 0x300) &&
                              g_fight_stage_command_count >= 6))) {
-                    var_7 = D_8009A890;
+                    threat_response_script = D_8009A890;
                 }
             }
             if (p->incoming_projectile_state == 1 ||
@@ -1881,25 +1881,26 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                  p->other->motion_metadata_nibble == 2 &&
                  p->opponent_snapshot_hit_start_frame - p->other->move_frame >=
                      6) ||
-                (p->incoming_attack_state == 2 && var_7 == 0)) {
+                (p->incoming_attack_state == 2 &&
+                 threat_response_script == 0)) {
                 if ((p->cpu_state_flags & 8) &&
                     (!(g_cpu_profiles[p->cpu_profile].flags & 0xBF00) ||
                      ((g_cpu_profiles[p->cpu_profile].flags & 0x300) &&
                       g_fight_stage_command_count >= 7))) {
                     if (p->other->opponent_angle_from_orientation > 0) {
                         if (work1) {
-                            var_7 = D_8009A880;
+                            threat_response_script = D_8009A880;
                         } else if (work2) {
-                            var_7 = D_8009A878;
+                            threat_response_script = D_8009A878;
                         }
                     } else {
                         if (work2) {
-                            var_7 = D_8009A878;
+                            threat_response_script = D_8009A878;
                         } else if (work1) {
-                            var_7 = D_8009A880;
+                            threat_response_script = D_8009A880;
                         }
                     }
-                    if (var_7 == 0) {
+                    if (threat_response_script == 0) {
                         p->incoming_attack_state = 1;
                         p->incoming_projectile_state = 2;
                         return -1;
@@ -1910,8 +1911,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 }
             }
         }
-        if (var_7 != 0) {
-            fighter_StartCpuPadScript(p, var_7, mode, 0);
+        if (threat_response_script != 0) {
+            fighter_StartCpuPadScript(p, threat_response_script, mode, 0);
             return p->cpu_decided_pad_held;
         }
     }
@@ -2395,7 +2396,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
         }
 
         if (p->cpu_action_countdown >= p->cpu_action_cooldown_frames) {
-            var_9 = 0;
+            action_script = 0;
             if (p->cpu_action_from_opponent != 1) {
                 work3 = p->cpu_action_index;
             } else if (p->other->move_kind == 0x19) {
@@ -2432,28 +2433,28 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 if (p->cpu_probes[3] == 0 &&
                     g_fighter_horizontal_separation <
                         p->script_max_distances[p->variant_index]) {
-                    var_9 = D_8009A890;
+                    action_script = D_8009A890;
                 }
                 break;
             case 5:
                 if (p->cpu_probes[0] == 0 &&
                     p->script_min_distances[p->variant_index] <
                         g_fighter_horizontal_separation) {
-                    var_9 = D_8009A888;
+                    action_script = D_8009A888;
                 }
                 break;
             case 6:
                 if (p->cpu_probes[1] == 0 &&
                     g_fighter_horizontal_separation <
                         p->script_max_distances[p->variant_index]) {
-                    var_9 = D_8009A878;
+                    action_script = D_8009A878;
                 }
                 break;
             case 7:
                 if (p->cpu_probes[5] == 0 &&
                     g_fighter_horizontal_separation <
                         p->script_max_distances[p->variant_index]) {
-                    var_9 = D_8009A880;
+                    action_script = D_8009A880;
                 }
                 break;
             case 8:
@@ -2461,7 +2462,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     g_fighter_horizontal_separation > 3000 &&
                     g_fighter_horizontal_separation < 5000 &&
                     p->opponent_angle_from_orientation_abs < 0x200) {
-                    var_9 = D_8009A89C;
+                    action_script = D_8009A89C;
                 }
                 break;
             }
@@ -2473,7 +2474,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     p->cpu_action_countdown = p->cpu_action_cooldown_frames + 1;
                 } else {
                     p->cpu_action_countdown = 0;
-                    var_9 = 0;
+                    action_script = 0;
                 }
             } else if (
                 (p->cpu_state_flags & 0x800) ||
@@ -2481,14 +2482,14 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                 (p->cpu_decided_pad_held == 0x2000 &&
                  g_fighter_horizontal_separation <
                      p->other->script_min_distances[p->other->variant_index])) {
-                var_9 = 0;
+                action_script = 0;
                 p->cpu_action_countdown = 0;
                 p->cpu_decided_pad_held = 0;
             }
-            if (var_9 != 0) {
+            if (action_script != 0) {
                 p->cpu_action_countdown = 0;
                 if (p->cpu_state_flags & 0xA000) {
-                    fighter_StartCpuPadScript(p, var_9, 4, 0);
+                    fighter_StartCpuPadScript(p, action_script, 4, 0);
                 }
             }
         } else if (p->cpu_action_countdown == 0) {
