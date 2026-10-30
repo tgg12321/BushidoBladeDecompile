@@ -1,0 +1,31 @@
+var-members-rest-16 -- draft notes (research re-derived by the drafter in the lane worktree; research treated as hints only)
+
+BASIS: line numbers cite the lane worktree ln-naming-b (branch lanes/naming-b, clean at main 2b029240a). Research: tmp/codex/var-members-rest-16-research.md, 3 rows (1 RESET, 2 RENAME). Result: 2 rows in pairs.txt, 1 DROPPED, 1 CHANGED FROM RESEARCH. The verdict column of member_manifest.csv is empty (the reviewer decides). Dry run: type-resolved tools/naming_member_apply.py --dry-run, see dry.txt.
+
+Re-derivation
+- ScrPad.bone_hit_points: every src/ access (17AFC.c, 28708.c:1446, 9F9C.c:3057, 5583) read; see the manifest row. Offset 0xA8 confirmed from the preceding members (3*2*12 + 2*2*12 + 2*2*12). Only fighter_ProcessWeaponContacts stores non-bone data there, bracketed by a save/restore of 16 points (1236 / 1432, 1440, 1543, 1550).
+- Unk1F8002B8Unk00.slot_points: every use is in 17AFC.c (1610-1612, 1826-1975, 4580-4612); all three consumers feed shape_points.
+- INCLUDE_ASM: 137 INCLUDE_ASM bodies remain in src. None touches 0x1F8002B8-0x1F800317 except 0x1F8002B4 reads (GPU emitters, outside the type). For the ScrPad +0xA8..0x2B7 range only func_8004A940, gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision and func_8004C404 use it, as their own scratch (register saves / work words), not as fight bone points. No INCLUDE_ASM touches Unk80101EC8Record +0x3F3.
+- Freshness: git grep -w unkA8 / work_points / cpu_threat_response_count over src/ include/ = 0 (docs hits for unkA8 are historical rest-10 rows). The new names are in no other pending pairs.txt.
+
+CHANGED FROM RESEARCH (1)
+- ScrPad reset spelling unk_A8 -> unkA8. ScrPad's neighbour uses the no-underscore form (unk2B8) and rest-10's pairs.txt shows this member was ScrPad.unkA8 before it was named; Q120 says the struct's own convention. (Unk80101EC8Record uses unk_XX; ScrPad does not.)
+
+DROPPED (1)
+- Unk80101EC8Record.cpu_threat_resolved_count -> cpu_threat_response_count. The increments (4510C.c:1828, 1842, 1880) each come with incoming_attack_state = incoming_projectile_state = 4; 1828 clears the held input with no script (var_7 = 0), 1842 handles an attack out of radius (opponent_snapshot_radius^2 < distance^2) with no response at all, and 1880 follows a chosen script. So 'response' overclaims at 1842 (the same objection var-members-rest-12 recorded), and the existing 'resolved' matches the shared bookkeeping (threat state closed to 4). 1811 uses it only as the modulo that alternates a behaviour choice. No better name than the existing one is shown; keep. All users: 4510C.c 465 (init to 0), 1811, 1828, 1842, 1880; game.h:1817 decl.
+
+DRAFT (kept, 2)
+- ScrPad.bone_hit_points -> unkA8 (RESET). WEAK: the rest-12 reviewer KEPT the name as a bracketed borrow; the derived bone_hit_points_1_3_centroid / _4_5_midpoint names (Unk80101EC8Record) and the 9F9C.c:3102 parameter would stay spelled 'bone'. If the reviewer FAILs it, nothing else depends on it.
+- Unk1F8002B8Unk00.slot_points -> work_points (RENAME). Conf W; reads as point_slots.work_points.
+
+R6 watch -- comments/docs naming the old tokens (the tool edits no comments); verified at these current line numbers
+ScrPad.bone_hit_points (only if the row is kept):
+- src/main/17AFC.c:1203 ("Borrows the first 16 SPAD->bone_hit_points points"), 2458, 2459 (centroid/midpoint inputs; the identifiers bone_hit_points_4_5_midpoint / _1_3_centroid are distinct, not renamed here).
+- src/main/9F9C.c:3027 (member), 3090 (member: callers pass SPAD->bone_hit_points[i]); 3089, 3095 name the fighter_UpdateBoneWorldData PARAMETER bone_hit_points (keep). Code uses of the parameter: 9F9C.c:3102, 3117, 3158 (keep).
+- include/game.h:864 and 912 (fighter_UpdateBoneWorldData comments), 1411, 1412, 1415 (ScrPad table comment; 1412 'bone_hit_points: 22 points per character'), 1777 (bone-event scratchpad access).
+- symbol_addrs.txt:1904, 1907 (SPAD->bone_hit_points[i][...] inside the comments of D_8010203C / D_80102054).
+- docs/naming/CHAR_STRUCT_SCHEMA.md:184, 187, 191 (SPAD->bone_hit_points[i][k] and the two derived identifiers).
+- Other bone_hit_points tokens under docs/naming/phase3/pending/ (var-locals-26..29, var-members-rest-10..14) are historical manifests; not edited.
+Unk1F8002B8Unk00.slot_points: no comment or doc names it (only the game.h:1317 declaration).
+
+NO_NAME carried: none.

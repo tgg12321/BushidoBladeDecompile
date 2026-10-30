@@ -1,0 +1,215 @@
+PASS Unk1F8002B8Unk00.slot_points=work_points
+decl Unk1F8002B8Unk00.slot_points -> work_points  include/game.h:1317
+  round 0: 58 member error line(s)
+    src/main/17AFC.c:1610 slot_points x1
+    src/main/17AFC.c:1611 slot_points x1
+    src/main/17AFC.c:1612 slot_points x1
+    src/main/17AFC.c:1826 slot_points x1
+    src/main/17AFC.c:1828 slot_points x1
+    src/main/17AFC.c:1852 slot_points x1
+    src/main/17AFC.c:1854 slot_points x1
+    src/main/17AFC.c:1891 slot_points x1
+    src/main/17AFC.c:1893 slot_points x1
+    src/main/17AFC.c:1895 slot_points x1
+    src/main/17AFC.c:1897 slot_points x1
+    src/main/17AFC.c:1900 slot_points x1
+    src/main/17AFC.c:1902 slot_points x1
+    src/main/17AFC.c:1904 slot_points x1
+    src/main/17AFC.c:1906 slot_points x1
+    src/main/17AFC.c:1909 slot_points x1
+    src/main/17AFC.c:1910 slot_points x1
+    src/main/17AFC.c:1911 slot_points x1
+    src/main/17AFC.c:1913 slot_points x1
+    src/main/17AFC.c:1914 slot_points x1
+    src/main/17AFC.c:1915 slot_points x1
+    src/main/17AFC.c:1917 slot_points x1
+    src/main/17AFC.c:1918 slot_points x1
+    src/main/17AFC.c:1919 slot_points x1
+    src/main/17AFC.c:1921 slot_points x1
+    src/main/17AFC.c:1922 slot_points x1
+    src/main/17AFC.c:1923 slot_points x1
+    src/main/17AFC.c:1925 slot_points x1
+    src/main/17AFC.c:1926 slot_points x1
+    src/main/17AFC.c:1927 slot_points x1
+    src/main/17AFC.c:1929 slot_points x1
+    src/main/17AFC.c:1930 slot_points x1
+    src/main/17AFC.c:1931 slot_points x1
+    src/main/17AFC.c:1933 slot_points x1
+    src/main/17AFC.c:1934 slot_points x1
+    src/main/17AFC.c:1935 slot_points x1
+    src/main/17AFC.c:1936 slot_points x1
+    src/main/17AFC.c:1937 slot_points x1
+    src/main/17AFC.c:1938 slot_points x1
+    src/main/17AFC.c:1947 slot_points x1
+    src/main/17AFC.c:1948 slot_points x1
+    src/main/17AFC.c:1949 slot_points x1
+    src/main/17AFC.c:1951 slot_points x1
+    src/main/17AFC.c:1952 slot_points x1
+    src/main/17AFC.c:1953 slot_points x1
+    src/main/17AFC.c:1958 slot_points x1
+    src/main/17AFC.c:1959 slot_points x1
+    src/main/17AFC.c:1960 slot_points x1
+    src/main/17AFC.c:1963 slot_points x1
+    src/main/17AFC.c:1964 slot_points x1
+    src/main/17AFC.c:1965 slot_points x1
+    src/main/17AFC.c:1968 slot_points x1
+    src/main/17AFC.c:1969 slot_points x1
+    src/main/17AFC.c:1970 slot_points x1
+    src/main/17AFC.c:1973 slot_points x1
+    src/main/17AFC.c:1974 slot_points x1
+    src/main/17AFC.c:1975 slot_points x1
+    src/main/17AFC.c:4580 slot_points x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1317 +1317 @@
+-    Unk80107850Rec slot_points[6];
++    Unk80107850Rec work_points[6];
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -1610,3 +1610,3 @@
+-    scr->shape_points[0] = &scr->point_slots.slot_points[0];
+-    scr->shape_points[1] = &scr->point_slots.slot_points[1];
+-    scr->unkC8 = scr->point_slots.slot_points[1];
++    scr->shape_points[0] = &scr->point_slots.work_points[0];
++    scr->shape_points[1] = &scr->point_slots.work_points[1];
++    scr->unkC8 = scr->point_slots.work_points[1];
+@@ -1826 +1826 @@
+-                scr->point_slots.slot_points[0] =
++                scr->point_slots.work_points[0] =
+@@ -1828 +1828 @@
+-                scr->point_slots.slot_points[1] =
++                scr->point_slots.work_points[1] =
+@@ -1852 +1852 @@
+-            scr->point_slots.slot_points[0] =
++            scr->point_slots.work_points[0] =
+@@ -1854 +1854 @@
+-            scr->point_slots.slot_points[1] =
++            scr->point_slots.work_points[1] =
+@@ -1891 +1891 @@
+-                scr->point_slots.slot_points[0] =
++                scr->point_slots.work_points[0] =
+@@ -1893 +1893 @@
+-                scr->point_slots.slot_points[1] =
++                scr->point_slots.work_points[1] =
+@@ -1895 +1895 @@
+-                scr->point_slots.slot_points[2] =
++                scr->point_slots.work_points[2] =
+@@ -1897 +1897 @@
+-                scr->point_slots.slot_points[3] =
++                scr->point_slots.work_points[3] =
+@@ -1900 +1900 @@
+-                scr->point_slots.slot_points[0] =
++                scr->point_slots.work_points[0] =
+@@ -1902 +1902 @@
+-                scr->point_slots.slot_points[1] =
++                scr->point_slots.work_points[1] =
+@@ -1904 +1904 @@
+-                scr->point_slots.slot_points[2] =
++                scr->point_slots.work_points[2] =
+@@ -1906 +1906 @@
+-                scr->point_slots.slot_points[3] =
++                scr->point_slots.work_points[3] =
+@@ -1909,3 +1909,3 @@
+-            scr->point_slots.slot_points[4].x =
+-                (scr->point_slots.slot_points[0].x +
+-                 scr->point_slots.slot_points[2].x) /
++            scr->point_slots.work_points[4].x =
++                (scr->point_slots.work_points[0].x +
++                 scr->point_slots.work_points[2].x) /
+@@ -1913,3 +1913,3 @@
+-            scr->point_slots.slot_points[4].y =
+-                (scr->point_slots.slot_points[0].y +
+-                 scr->point_slots.slot_points[2].y) /
++            scr->point_slots.work_points[4].y =
++                (scr->point_slots.work_points[0].y +
++                 scr->point_slots.work_points[2].y) /
+@@ -1917,3 +1917,3 @@
+-            scr->point_slots.slot_points[4].z =
+-                (scr->point_slots.slot_points[0].z +
+-                 scr->point_slots.slot_points[2].z) /
++            scr->point_slots.work_points[4].z =
++                (scr->point_slots.work_points[0].z +
++                 scr->point_slots.work_points[2].z) /
+@@ -1921,3 +1921,3 @@
+-            scr->point_slots.slot_points[5].x =
+-                (scr->point_slots.slot_points[1].x +
+-                 scr->point_slots.slot_points[3].x) /
++            scr->point_slots.work_points[5].x =
++                (scr->point_slots.work_points[1].x +
++                 scr->point_slots.work_points[3].x) /
+@@ -1925,3 +1925,3 @@
+-            scr->point_slots.slot_points[5].y =
+-                (scr->point_slots.slot_points[1].y +
+-                 scr->point_slots.slot_points[3].y) /
++            scr->point_slots.work_points[5].y =
++                (scr->point_slots.work_points[1].y +
++                 scr->point_slots.work_points[3].y) /
+@@ -1929,3 +1929,3 @@
+-            scr->point_slots.slot_points[5].z =
+-                (scr->point_slots.slot_points[1].z +
+-                 scr->point_slots.slot_points[3].z) /
++            scr->point_slots.work_points[5].z =
++                (scr->point_slots.work_points[1].z +
++                 scr->point_slots.work_points[3].z) /
+@@ -1933,6 +1933,6 @@
+-            dx = scr->point_slots.slot_points[1].x -
+-                 scr->point_slots.slot_points[3].x;
+-            dy = scr->point_slots.slot_points[1].y -
+-                 scr->point_slots.slot_points[3].y;
+-            dz = scr->point_slots.slot_points[1].z -
+-                 scr->point_slots.slot_points[3].z;
++            dx = scr->point_slots.work_points[1].x -
++                 scr->point_slots.work_points[3].x;
++            dy = scr->point_slots.work_points[1].y -
++                 scr->point_slots.work_points[3].y;
++            dz = scr->point_slots.work_points[1].z -
++                 scr->point_slots.work_points[3].z;
+@@ -1947,3 +1947,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.slot_points[2];
+-                        scr->shape_points[1] = &scr->point_slots.slot_points[3];
+-                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
++                        scr->shape_points[0] = &scr->point_slots.work_points[2];
++                        scr->shape_points[1] = &scr->point_slots.work_points[3];
++                        scr->shape_points[2] = &scr->point_slots.work_points[1];
+@@ -1951,3 +1951,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.slot_points[0];
+-                        scr->shape_points[1] = &scr->point_slots.slot_points[1];
+-                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
++                        scr->shape_points[0] = &scr->point_slots.work_points[0];
++                        scr->shape_points[1] = &scr->point_slots.work_points[1];
++                        scr->shape_points[2] = &scr->point_slots.work_points[2];
+@@ -1958,3 +1958,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.slot_points[3];
+-                        scr->shape_points[1] = &scr->point_slots.slot_points[2];
+-                        scr->shape_points[2] = &scr->point_slots.slot_points[5];
++                        scr->shape_points[0] = &scr->point_slots.work_points[3];
++                        scr->shape_points[1] = &scr->point_slots.work_points[2];
++                        scr->shape_points[2] = &scr->point_slots.work_points[5];
+@@ -1963,3 +1963,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
+-                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
+-                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
++                        scr->shape_points[0] = &scr->point_slots.work_points[5];
++                        scr->shape_points[1] = &scr->point_slots.work_points[4];
++                        scr->shape_points[2] = &scr->point_slots.work_points[2];
+@@ -1968,3 +1968,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
+-                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
+-                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
++                        scr->shape_points[0] = &scr->point_slots.work_points[5];
++                        scr->shape_points[1] = &scr->point_slots.work_points[4];
++                        scr->shape_points[2] = &scr->point_slots.work_points[1];
+@@ -1973,3 +1973,3 @@
+-                        scr->shape_points[0] = &scr->point_slots.slot_points[1];
+-                        scr->shape_points[1] = &scr->point_slots.slot_points[0];
+-                        scr->shape_points[2] = &scr->point_slots.slot_points[4];
++                        scr->shape_points[0] = &scr->point_slots.work_points[1];
++                        scr->shape_points[1] = &scr->point_slots.work_points[0];
++                        scr->shape_points[2] = &scr->point_slots.work_points[4];
+@@ -4580 +4580 @@
+-    Vec3i32 *var_4 = scr->point_slots.slot_points;
++    Vec3i32 *var_4 = scr->point_slots.work_points;
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
