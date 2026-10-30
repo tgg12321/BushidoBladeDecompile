@@ -1607,9 +1607,9 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
     BoneHitRec *rec;
     s32 i;
 
-    scr->shape_points[0] = &scr->point_slots.slot_points[0];
-    scr->shape_points[1] = &scr->point_slots.slot_points[1];
-    scr->unkC8 = scr->point_slots.slot_points[1];
+    scr->shape_points[0] = &scr->point_slots.work_points[0];
+    scr->shape_points[1] = &scr->point_slots.work_points[1];
+    scr->unkC8 = scr->point_slots.work_points[1];
     dx = scr->shape_points[1]->x - scr->shape_points[0]->x;
     dy = scr->shape_points[1]->y - scr->shape_points[0]->y;
     dz = scr->shape_points[1]->z - scr->shape_points[0]->z;
@@ -1823,9 +1823,9 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 other_record->weapon_hit_start_frames[0]) {
             if (other_record->weapon_ammo != 0) {
                 other_record->weapon_ammo -= 1;
-                scr->point_slots.slot_points[0] =
+                scr->point_slots.work_points[0] =
                     SPAD->weapon_points[i == 0][1];
-                scr->point_slots.slot_points[1] =
+                scr->point_slots.work_points[1] =
                     SPAD->weapon_points[i == 0][0];
                 fighter_CastWeaponSegment(
                     fighter_record, &outer_hit_mask, &inner_hit_mask, 0);
@@ -1849,9 +1849,9 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 other_record->weapon_hit_start_frames[1] &&
             other_record->weapon_ammo != 0) {
             other_record->weapon_ammo -= 1;
-            scr->point_slots.slot_points[0] =
+            scr->point_slots.work_points[0] =
                 SPAD->second_weapon_points[i == 0][1];
-            scr->point_slots.slot_points[1] =
+            scr->point_slots.work_points[1] =
                 SPAD->second_weapon_points[i == 0][0];
             fighter_CastWeaponSegment(
                 fighter_record, &outer_hit_mask, &inner_hit_mask,
@@ -1888,54 +1888,54 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 var_32 = 0;
             }
             if (var_12 == 0) {
-                scr->point_slots.slot_points[0] =
+                scr->point_slots.work_points[0] =
                     SPAD->weapon_points[i == 0][temp1];
-                scr->point_slots.slot_points[1] =
+                scr->point_slots.work_points[1] =
                     SPAD->weapon_points[i == 0][temp2];
-                scr->point_slots.slot_points[2] =
+                scr->point_slots.work_points[2] =
                     other_record->prev_weapon_points[temp1];
-                scr->point_slots.slot_points[3] =
+                scr->point_slots.work_points[3] =
                     other_record->prev_weapon_points[temp2];
             } else {
-                scr->point_slots.slot_points[0] =
+                scr->point_slots.work_points[0] =
                     SPAD->second_weapon_points[i == 0][temp1];
-                scr->point_slots.slot_points[1] =
+                scr->point_slots.work_points[1] =
                     SPAD->second_weapon_points[i == 0][temp2];
-                scr->point_slots.slot_points[2] =
+                scr->point_slots.work_points[2] =
                     other_record->prev_second_weapon_points[temp1];
-                scr->point_slots.slot_points[3] =
+                scr->point_slots.work_points[3] =
                     other_record->prev_second_weapon_points[temp2];
             }
-            scr->point_slots.slot_points[4].x =
-                (scr->point_slots.slot_points[0].x +
-                 scr->point_slots.slot_points[2].x) /
+            scr->point_slots.work_points[4].x =
+                (scr->point_slots.work_points[0].x +
+                 scr->point_slots.work_points[2].x) /
                 2;
-            scr->point_slots.slot_points[4].y =
-                (scr->point_slots.slot_points[0].y +
-                 scr->point_slots.slot_points[2].y) /
+            scr->point_slots.work_points[4].y =
+                (scr->point_slots.work_points[0].y +
+                 scr->point_slots.work_points[2].y) /
                 2;
-            scr->point_slots.slot_points[4].z =
-                (scr->point_slots.slot_points[0].z +
-                 scr->point_slots.slot_points[2].z) /
+            scr->point_slots.work_points[4].z =
+                (scr->point_slots.work_points[0].z +
+                 scr->point_slots.work_points[2].z) /
                 2;
-            scr->point_slots.slot_points[5].x =
-                (scr->point_slots.slot_points[1].x +
-                 scr->point_slots.slot_points[3].x) /
+            scr->point_slots.work_points[5].x =
+                (scr->point_slots.work_points[1].x +
+                 scr->point_slots.work_points[3].x) /
                 2;
-            scr->point_slots.slot_points[5].y =
-                (scr->point_slots.slot_points[1].y +
-                 scr->point_slots.slot_points[3].y) /
+            scr->point_slots.work_points[5].y =
+                (scr->point_slots.work_points[1].y +
+                 scr->point_slots.work_points[3].y) /
                 2;
-            scr->point_slots.slot_points[5].z =
-                (scr->point_slots.slot_points[1].z +
-                 scr->point_slots.slot_points[3].z) /
+            scr->point_slots.work_points[5].z =
+                (scr->point_slots.work_points[1].z +
+                 scr->point_slots.work_points[3].z) /
                 2;
-            dx = scr->point_slots.slot_points[1].x -
-                 scr->point_slots.slot_points[3].x;
-            dy = scr->point_slots.slot_points[1].y -
-                 scr->point_slots.slot_points[3].y;
-            dz = scr->point_slots.slot_points[1].z -
-                 scr->point_slots.slot_points[3].z;
+            dx = scr->point_slots.work_points[1].x -
+                 scr->point_slots.work_points[3].x;
+            dy = scr->point_slots.work_points[1].y -
+                 scr->point_slots.work_points[3].y;
+            dz = scr->point_slots.work_points[1].z -
+                 scr->point_slots.work_points[3].z;
             work = dx * dx + dy * dy + dz * dz;
             triangle_count = 2;
             if (work > 6249999) {
@@ -1944,35 +1944,35 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             for (idx = 0; idx < triangle_count; idx++) {
                 if (triangle_count == 2) {
                     if (idx == 0) {
-                        scr->shape_points[0] = &scr->point_slots.slot_points[2];
-                        scr->shape_points[1] = &scr->point_slots.slot_points[3];
-                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
+                        scr->shape_points[0] = &scr->point_slots.work_points[2];
+                        scr->shape_points[1] = &scr->point_slots.work_points[3];
+                        scr->shape_points[2] = &scr->point_slots.work_points[1];
                     } else {
-                        scr->shape_points[0] = &scr->point_slots.slot_points[0];
-                        scr->shape_points[1] = &scr->point_slots.slot_points[1];
-                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
+                        scr->shape_points[0] = &scr->point_slots.work_points[0];
+                        scr->shape_points[1] = &scr->point_slots.work_points[1];
+                        scr->shape_points[2] = &scr->point_slots.work_points[2];
                     }
                 } else {
                     switch (idx) {
                     case 0:
-                        scr->shape_points[0] = &scr->point_slots.slot_points[3];
-                        scr->shape_points[1] = &scr->point_slots.slot_points[2];
-                        scr->shape_points[2] = &scr->point_slots.slot_points[5];
+                        scr->shape_points[0] = &scr->point_slots.work_points[3];
+                        scr->shape_points[1] = &scr->point_slots.work_points[2];
+                        scr->shape_points[2] = &scr->point_slots.work_points[5];
                         break;
                     case 1:
-                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
-                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
-                        scr->shape_points[2] = &scr->point_slots.slot_points[2];
+                        scr->shape_points[0] = &scr->point_slots.work_points[5];
+                        scr->shape_points[1] = &scr->point_slots.work_points[4];
+                        scr->shape_points[2] = &scr->point_slots.work_points[2];
                         break;
                     case 2:
-                        scr->shape_points[0] = &scr->point_slots.slot_points[5];
-                        scr->shape_points[1] = &scr->point_slots.slot_points[4];
-                        scr->shape_points[2] = &scr->point_slots.slot_points[1];
+                        scr->shape_points[0] = &scr->point_slots.work_points[5];
+                        scr->shape_points[1] = &scr->point_slots.work_points[4];
+                        scr->shape_points[2] = &scr->point_slots.work_points[1];
                         break;
                     case 3:
-                        scr->shape_points[0] = &scr->point_slots.slot_points[1];
-                        scr->shape_points[1] = &scr->point_slots.slot_points[0];
-                        scr->shape_points[2] = &scr->point_slots.slot_points[4];
+                        scr->shape_points[0] = &scr->point_slots.work_points[1];
+                        scr->shape_points[1] = &scr->point_slots.work_points[0];
+                        scr->shape_points[2] = &scr->point_slots.work_points[4];
                         break;
                     }
                 }
@@ -4577,7 +4577,7 @@ void object_ResolveFighterHits(void) {
     s32 i;
     s32 var_2;
     Obj80106A78 *obj;
-    Vec3i32 *var_4 = scr->point_slots.slot_points;
+    Vec3i32 *var_4 = scr->point_slots.work_points;
     Unk80101EC8Record *var_5;
     s32 var_6;
     u16 var_7;

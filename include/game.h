@@ -1314,7 +1314,7 @@ typedef struct {
  * Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
-    Unk80107850Rec slot_points[6];
+    Unk80107850Rec work_points[6];
 } Unk1F8002B8Unk00;
 
 /* 17AFC's view of the last 0x148 bytes of the scratchpad,
