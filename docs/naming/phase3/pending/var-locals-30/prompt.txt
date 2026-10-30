@@ -1,0 +1,51 @@
+# Research (read-only): local / parameter names, wave 30 (row var-locals-30, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-29/prompt.txt` (which chains to var-locals-26 /
+var-locals-15 and the wave-15..28 lessons) exactly, plus `pending/var-locals-{27,28,29}/notes.txt`,
+with these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at
+  HEAD 9ecafbd25 (read-only; equals main, wave 29 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-30-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 29: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-29/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not edited). Return only a
+  one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  0. name-audit-69's open local family: the blade_* locals/parameters of fighter_ResolveWeaponContact
+     and fighter_ProcessWeaponBodyHits (audit: they hold weapon points/segments, suggest weapon_*).
+     Bindings (audit text in docs/naming/phase3/backlog.tsv, "Open (audit-69"): fighter_ResolveWeaponContact
+     blade_index, other_blade_index, rotated_other_blade_delta_x, other_blade_delta_y,
+     abs_other_blade_delta_y, abs_rotated_other_blade_delta_x; fighter_ProcessWeaponBodyHits
+     blade_quad_count, blade_quad_index (17AFC.c ~724-728, ~1818-1831 also handle weapon ids 6/7, the
+     ammunition/cast path, on the same operands). Judge each against every use; propose weapon_* or a
+     better name, or NO_NAME with the reason. These rows RENAME a landed name (old token = current name).
+  1. var-locals-29's 5 CAP-CUT rows (pending/var-locals-29/notes.txt "CAP-CUT"): re-derive against the
+     current source. memcard_StepSaveOverwriteAndFormatPrompts:var_1 needs the 28708.c score-note
+     comment (~850-853, "sets var_1 in its own body") listed for the comment pass.
+  2. 28708.c onward from there in file order: replay_RecordModelDraw, replay_RecordEvent,
+     replay_RecordFighter, fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass,
+     replay_PlayFrame, comb_WriteWaitCallback, comb_Write8, comb_WaitRead8, math_Popcount32,
+     comb_ExchangePad (bindings listed in var-locals-29 notes LEADS).
+  3. Then 2B344.c and the following game TUs in ROM-offset order (`ls src/main`, skip psxsdk/) that
+     still have auto-named bindings (argN, var_N, a0..a3, v0_xxxx, spNN, temp_*, s, p, ...) not on any
+     NO_NAME / neutral list.
+- Left neutral on purpose in wave 29, do not re-propose without new evidence: snd_QueuePositionalSound
+  var_7 / var_9 / var_10 (two roles), fight_BuildOpponentOrder:dir (three declarations).
+- Do not re-propose wave 8-29 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,29}/notes.txt) without new evidence, said in the row.
+- Also list, for the comment pass, the R6-29 non-blocking stale cites, each with file:line and the fix
+  against the current tree (the full list is in the body of the var-locals-29 comment commit,
+  `git log -1 --grep "var-locals-29 comment pass"`): named_syms.txt:637, symbol_addrs.txt:799/916/2065
+  (cites past 17AFC.c EOF); docs/engine/ai.md:39 unk_50 -> is_moving; ai.md:43-44, docs/engine/motion.md,
+  docs/engine/memory_layout.md 9F9C.c cites; 28708.c registry cites.
+- Lessons: apply is naming_keycheck.scoped_plan(base, pairs, {}), so every row must be a binding
+  scoped_plan can resolve (no function-like macro arguments, no token inside a #define body); a new
+  name must not equal a member, global, macro or function the same function references; a binding
+  with two roles in one body stays neutral; own vs opponent values must be distinguished; a name is
+  true before AND after every in-place rewrite (wave 29 FAIL class: values that change channel/role
+  after a swap); 'player' needs player evidence, the tree's spelling for the 0/1 fight side is
+  fighter_index.

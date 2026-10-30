@@ -1,0 +1,92 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-29); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_working_tree() with NAMING_KEYCHECK_ROOT = cwd = the lane worktree ln-naming-a, HEAD 9ecafbd25 = main; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 80 pairs
+(494 token substitutions: src/main/28708.c 314, src/main/2B344.c 137, src/main/17AFC.c 43; no include/ file touched; the comment edits listed in notes.txt
+R6 WATCH are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 494. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch (the scan is a separate tokenizer, not the plan's). The 84 research pairs together were also accepted (516 substitutions); the 3 dropped and 1 cap-cut
+pairs account for the 22 difference (see notes.txt). The run modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  fighter_ResolveWeaponContact:blade_index=weapon_set_index 6
+  fighter_ResolveWeaponContact:other_blade_index=other_weapon_set_index 6
+  fighter_ResolveWeaponContact:rotated_other_blade_delta_x=rotated_other_weapon_delta_x 5
+  fighter_ResolveWeaponContact:other_blade_delta_y=other_weapon_delta_y 5
+  fighter_ResolveWeaponContact:abs_other_blade_delta_y=abs_other_weapon_delta_y 3
+  fighter_ResolveWeaponContact:abs_rotated_other_blade_delta_x=abs_rotated_other_weapon_delta_x 4
+  fighter_ProcessWeaponBodyHits:blade_quad_count=other_weapon_quad_count 8
+  fighter_ProcessWeaponBodyHits:blade_quad_index=other_weapon_quad_index 6
+  menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult:var_1=pressed_buttons 5
+  memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress:v0=request_status 6
+  memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress:var_2=sheet_pair_index 17
+  memcard_StepSaveOverwriteAndFormatPrompts:var_1=highlighted_cell_index 5
+  memcard_StepSaveOverwriteAndFormatPrompts:var_3=sheet_pair_index 17
+  replay_BeginFrame:q=model_draw_cursor 7
+  replay_RecordModelDraw:arg0=pool_index 3
+  replay_RecordModelDraw:arg1=entry_index 2
+  replay_RecordModelDraw:arg2=position 7
+  replay_RecordModelDraw:arg3=angles 7
+  replay_RecordModelDraw:var_0=model_draw_cursor 24
+  replay_RecordEvent:arg1=kind 2
+  replay_RecordEvent:arg2=src_position 4
+  replay_RecordEvent:arg3=src_command_vector 5
+  replay_RecordEvent:var_0=event_cursor 13
+  replay_RecordFighter:a0=fighter_record 19
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:arg0=fighter_record 7
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:arg1=hit_tag_out 3
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:arg2=hit_class_out 3
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:sp10=segment_start 5
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:sp20=segment_end 5
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:sp30=hit_point 2
+  fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass:sp40=hit_normal 2
+  replay_PlayFrame:sp1C0=decode_work 3
+  replay_PlayFrame:var_8=playback_fraction 6
+  replay_PlayFrame:var_11=fighter_record 19
+  replay_PlayFrame:var_15=saved_move_frame 3
+  replay_PlayFrame:var_16=saved_motion_metadata 3
+  replay_PlayFrame:idx=frame_index 12
+  replay_PlayFrame:out_b1=hit_tag 4
+  replay_PlayFrame:out_b2=hit_class 4
+  replay_PlayFrame:p=fighter_frame 26
+  replay_PlayFrame:e=event_cursor 12
+  replay_PlayFrame:s=model_draw_cursor 13
+  comb_Write8:s1=start_ticks 5
+  comb_Write8:s0=cts_asserted_polls 5
+  comb_WaitRead8:s0=start_ticks 6
+  comb_WaitRead8:s1=retry_count 6
+  comb_WaitRead8:a1=received_pad_word 5
+  comb_WaitRead8:a0=received_payload_check_word 5
+  math_Popcount32:arg0=input_word 2
+  comb_ExchangePad:a0=pad_state 5
+  comb_Connect:temp_s0=handshake_result 4
+  comb_Connect:var_v0=rng_seed 4
+  fight_FillMissingConfigInitFighterAndLoadObject:arg0=fighter_index 10
+  fight_RequestOneFighterEntriesAndReloadOnChange:arg0=fighter_index 8
+  fight_InitCommandStream:arg0=stream_index 2
+  fight_ConfigureFighter1FromLookupAndOperandsAndLoad:arg0=operands 6
+  fight_ConfigureFighter1FromLookupAndOperandsAndLoad:a1=group_flag 5
+  fight_ConfigureFighter1FromOperandsAndLoad:arg0=operands 4
+  fight_RunCommandStream:var_3=command_byte 3
+  fight_StartDescriptorPlaybackAndAudio:var_4=dest_addr 4
+  fight_StartDescriptorPlaybackAndAudio:v0=file_index 3
+  fight_InitScrollingSpriteDisplayAndAudio:v0=file_index 2
+  ExecMovieOverlayAndReinitialize:v=arena_base 3
+  fight_InitImageAndPlaybackPresentation:var_1=file_index_offset 4
+  fight_InitImageAndPlaybackPresentation:p=cd_audio_entry 5
+  fight_PackTimeRecordsAndInitPresentation:s0=working_record 10
+  fight_InitNearestStartPairPlayback:s0=playback_file_offset 6
+  fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams:a=view_angles 3
+  fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams:b=root_translation 3
+  font_Printf:var_4=percent_seen 4
+  gpu_SetDrawMoveArray:a0=src_rect 11
+  gpu_SetDrawMoveArray:a1=move_count 2
+  gpu_SetDrawMoveArray:s4=start_x 3
+  gpu_SetDrawMoveArray:s3=start_y 4
+  gpu_SetDrawMoveArray:s2=moves_left 4
+  gpu_SetDrawMoveArray:v0=next_y 4
+  gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:arg0=move_depth 5
+  gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:arg1=move_count 5
+  gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:arg3=depth_span_limit 3
+  gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:arg4=link_last_depth_entry 3
