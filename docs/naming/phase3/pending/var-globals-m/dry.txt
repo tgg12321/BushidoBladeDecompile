@@ -1,0 +1,21 @@
+==============================================================================
+DATA WAVE — 2 addresses, 2 identifiers remapped
+  0x8008ebe0: D_8008EBE0 -> g_eff_yawed_quad_tex_selector_command_bits
+  0x800a372c: D_800A372C -> g_row_menu_resource_root
+
+-- file edits (9) --
+  asm/data/93E18.data.s  (3)
+  asm/funcs/fighter_DispatchFrameEvent.s  (4)
+  asm/funcs/gpu_GetPrimBufferAndRefreshStrip.s  (1)
+  asm/funcs/menu_LoadResourcesInitStateSelectFirstEnabledRow.s  (1)
+  include/bb2.h  (1)
+  src/main/17AFC.c  (2)
+  src/main/596CC.c  (4)
+  src/main/d_7D920.c  (1)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:567 D_800A372C -> g_row_menu_resource_root
+  symbol_addrs.txt:886 D_800A372C -> g_row_menu_resource_root
+
+DRY RUN — nothing written. Re-run with --apply.

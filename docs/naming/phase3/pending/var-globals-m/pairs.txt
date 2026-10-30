@@ -1,0 +1,2 @@
+D_8008EBE0=g_eff_yawed_quad_tex_selector_command_bits
+D_800A372C=g_row_menu_resource_root
