@@ -1,0 +1,51 @@
+# Research (read-only): local / parameter names, wave 32 (row var-locals-32, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-31/prompt.txt` (which chains to var-locals-30 / 29 / 26 / 15
+and the wave-15..30 lessons) exactly, plus `pending/var-locals-{29,30,31}/notes.txt`, with these
+changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD 5323e0cef (read-only; equals main, wave 31 applied; 2B344.c line numbers moved by +9 from
+  ~1583 on after the wave's reflow, so re-derive every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-32-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 31: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-31/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not
+  edited). Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  1. var-locals-31's 10 CAP-CUT rows (pending/var-locals-31/notes.txt "CAP-CUT", gpu_AddDrawMove:a1 ..
+     slot_LoadObjectBuildNodesSoftbodyAndFogLevels:a0): re-derive against the current source; their
+     carried cites symbol_addrs.txt ~906 / ~1408 and named_syms.txt ~1011 go in the comment list.
+  2. The three wave-31 pre-apply FAILs as fresh rows: softbody_SetupObject:var_1, softbody_SetAnchorWeights:a2,
+     softbody_AddColliders:a2. The reviewer rejected cmd_cursor (R4/N2: the stream is the object's
+     softbody_params s16 list of anchor-weight groups and -1-prefixed collider records, ended by -2 / -3;
+     "cmd" rests only on softbody_CreateForNode's parameter spelling cmds, which N3 excludes) and
+     suggested param_cursor. Judge param_cursor or better at every use, and judge renaming
+     softbody_CreateForNode:cmds with them (it is a landed name: old token = current name). The Q51
+     comment "read from a2" in softbody_SetAnchorWeights (2B344.c ~2746) goes in the comment list.
+     Also judge softbody_CreateForNode:point_count (landed name; reviewer lead: it is the face-derived
+     count passed as softbody_GetBufferSize's edge_count, 6CF8.c:615; the true point count is
+     init.in.count).
+  3. Then pending/var-locals-31/notes.txt LEADS in order: 309CC.c slot_FinalizeObjectLoadSoundTexturesAndArena,
+     node_InitObjectHierarchyFromTemplates, node_RefreshObjectMatrixPointerTables,
+     node_BuildIdToNodeMapWithDuplicates, node_BuildProjectedNodeList; 31548.c; 31D3C.c (slot_GetObject:a0
+     first); 32D04.c; 35000.c; then later game TUs in ROM-offset order (`ls src/main`, skip psxsdk/)
+     with auto-named bindings not on any NO_NAME / neutral list.
+- Left neutral on purpose, do not re-propose without new evidence: replay_PlayFrame:var_19,
+  comb_WaitRead8:v0, fight_RunCommandStream:var_0, snd_QueuePositionalSound var_7 / var_9 / var_10,
+  fight_BuildOpponentOrder:dir.
+- Do not re-propose wave 8-31 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,31}/notes.txt) without new evidence, said in the row.
+- Comment-pass hygiene to list: 2B344.c softbody_SetAnchorWeights prototype (~2607) a0/a1 ->
+  points/point_count (prototype parameter edits belong in the naming commit, R6-31 note);
+  docs/engine/main_loop.md:96 cites the deleted src/main/24F08.c (find where that code lives now).
+- Lessons (unchanged): apply is naming_keycheck.scoped_plan(base, pairs, {}), so every row must be a
+  binding scoped_plan can resolve (no function-like macro arguments, no token inside a #define body);
+  a new name must not equal a member, global, macro or function the same function references; a
+  binding with two roles in one body stays neutral; own vs opponent values must be distinguished; a
+  name is true before AND after every in-place rewrite; 'player' needs player evidence, the tree's
+  spelling for the 0/1 fight side is fighter_index; FAKE-labelled temporaries stay neutral unless
+  the name is true of the value at every use; no word the code doesn't show (wave 31's "cmd").
