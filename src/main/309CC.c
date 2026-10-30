@@ -19,20 +19,20 @@ extern u8 g_gpu_asset_draw_move_masks[];
  * g_gpu_draw_move_packets[g_gpu_presented_frame_count & 1]. */
 static DR_MOVE *g_gpu_draw_move_cursor;
 
-void gpu_AddDrawMove(s32 slot_index, s32 a1) {
-    s32 var_0;
+void gpu_AddDrawMove(s32 slot_index, s32 move_index) {
+    s32 bank_index;
     RECT buf;
     u16 *tbl;
     s16 u, v;
 
-    var_0 = g_gpu_presented_frame_count & 1;
-    if (var_0 != g_gpu_draw_move_bank) {
-        g_gpu_draw_move_cursor = g_gpu_draw_move_packets[var_0];
-        g_gpu_draw_move_bank = var_0;
+    bank_index = g_gpu_presented_frame_count & 1;
+    if (bank_index != g_gpu_draw_move_bank) {
+        g_gpu_draw_move_cursor = g_gpu_draw_move_packets[bank_index];
+        g_gpu_draw_move_bank = bank_index;
     }
     if (g_gpu_draw_move_cursor !=
         g_gpu_draw_move_packets[g_gpu_draw_move_bank] + 10) {
-        tbl = g_gpu_draw_move_table + a1 * 6;
+        tbl = g_gpu_draw_move_table + move_index * 6;
         buf.x = *tbl++;
         buf.y = *tbl++;
         buf.w = *tbl++;
@@ -49,14 +49,14 @@ void gpu_AddDrawMove(s32 slot_index, s32 a1) {
     }
 }
 
-void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
+void gpu_QueueSlotDrawMovesForSelectedSet(s32 slot_index, s32 draw_move_set) {
     Unk80045878Obj *ptr;
     s32 mask;
     s32 i;
 
-    ptr = slot_GetObject(a0);
+    ptr = slot_GetObject(slot_index);
     if (ptr != 0) {
-        switch (a1) {
+        switch (draw_move_set) {
         case 0:
             mask = 0x05;
             break;
@@ -76,8 +76,8 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
             mask = 0x12;
             break;
         case 6:
-            gpu_AddDrawMove(a0, 5);
-            gpu_AddDrawMove(a0, 6);
+            gpu_AddDrawMove(slot_index, 5);
+            gpu_AddDrawMove(slot_index, 6);
             mask = 0;
             break;
         }
@@ -85,7 +85,7 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
         i = 0;
         do {
             if (mask & 1) {
-                gpu_AddDrawMove(a0, 4 - i);
+                gpu_AddDrawMove(slot_index, 4 - i);
             }
             i++;
             mask >>= 1;
@@ -94,35 +94,35 @@ void gpu_QueueSlotDrawMovesForSelectedSet(s32 a0, s32 a1) {
 }
 
 void node_AppendProjectedNodeToList(
-    Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
-    while (a1->node.reloc_entry_index != -1) {
-        a1++;
+    Unk80045878Node *a0, Unk80045878Node *node_cursor, s16 block_id) {
+    while (node_cursor->node.reloc_entry_index != -1) {
+        node_cursor++;
     }
-    a1->node.reloc_entry_index = 2;
-    a1->node.node_kind = 3;
-    a1->node.primitive_table_select = 0;
-    a1->node.parent_node = &a0[6].node;
-    a1->node.matrix_state = 1;
-    a1->node.rotation_order = 0;
-    a1->node.light_setup_index = 0;
-    a1->node.reloc_block_id = a2;
-    a1->unk58 = 0;
-    a1[1].node.reloc_entry_index = -1;
+    node_cursor->node.reloc_entry_index = 2;
+    node_cursor->node.node_kind = 3;
+    node_cursor->node.primitive_table_select = 0;
+    node_cursor->node.parent_node = &a0[6].node;
+    node_cursor->node.matrix_state = 1;
+    node_cursor->node.rotation_order = 0;
+    node_cursor->node.light_setup_index = 0;
+    node_cursor->node.reloc_block_id = block_id;
+    node_cursor->unk58 = 0;
+    node_cursor[1].node.reloc_entry_index = -1;
 }
 
-Unk80045878Node *node_GetSlotNodeById(s32 a0, s32 a1) {
-    Unk80045878Obj *base = slot_GetObject(a0);
-    return base->node_by_id[a1];
+Unk80045878Node *node_GetSlotNodeById(s32 slot_index, s32 node_id) {
+    Unk80045878Obj *base = slot_GetObject(slot_index);
+    return base->node_by_id[node_id];
 }
 
-void node_SetWordOnAllListedNodes(Unk80045878Node *a0, s32 a1) {
-    if (a0->node.reloc_entry_index == -1) {
+void node_SetWordOnAllListedNodes(Unk80045878Node *node_cursor, s32 a1) {
+    if (node_cursor->node.reloc_entry_index == -1) {
         return;
     }
     do {
-        a0->unk58 = a1;
-        a0++;
-    } while (a0->node.reloc_entry_index != -1);
+        node_cursor->unk58 = a1;
+        node_cursor++;
+    } while (node_cursor->node.reloc_entry_index != -1);
 }
 
 void slot_ClearObjectPointersAndTextureRequests(void) {
@@ -141,10 +141,11 @@ extern void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *);
 extern s32 snd_VabFakeOpen(s32, s32);
 
 Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
-    s32 a0, s32 a1, s32 a2) {
+    s32 slot_index, s32 a1, s32 a2) {
     Unk80045878Obj *ptr;
-    ptr = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(a0, a1, a2);
-    g_slot_objects[a0] = ptr;
+    ptr = slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock(
+        slot_index, a1, a2);
+    g_slot_objects[slot_index] = ptr;
     slot_FinalizeObjectLoadSoundTexturesAndArena(ptr);
     node_InitObjectHierarchyFromTemplates(ptr);
     node_BuildIdToNodeMapWithDuplicates(ptr);
@@ -155,129 +156,135 @@ Unk80045878Obj *slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
     return ptr;
 }
 
-void slot_FinalizeObjectLoadSoundTexturesAndArena(Unk80045878Obj *a0) {
-    s32 *var_0;
-    s32 *var_1;
+void slot_FinalizeObjectLoadSoundTexturesAndArena(Unk80045878Obj *slot_object) {
+    s32 *block_base;
+    s32 *tim_groups;
     s32 count;
     s32 *ptr;
     s32 off;
 
-    if (a0->load_status == 0) {
+    if (slot_object->load_status == 0) {
         return;
     }
 
-    a0->load_status = 0;
+    slot_object->load_status = 0;
 
-    if (a0->staging_buffer != 0) {
-        var_0 = (s32 *)a0->staging_buffer;
+    if (slot_object->staging_buffer != 0) {
+        block_base = (s32 *)slot_object->staging_buffer;
     } else {
-        var_0 = (s32 *)a0->asset_block;
+        block_base = (s32 *)slot_object->asset_block;
     }
 
-    count = var_0[0];
-    var_1 = (s32 *)((s32)var_0 + (((u32)var_0[count] >> 2) << 2));
+    count = block_base[0];
+    tim_groups =
+        (s32 *)((s32)block_base + (((u32)block_base[count] >> 2) << 2));
 
     if (ndata_IsPackLoaded() == 0)
         goto call_b644;
-    if (a0->arena_id == 1)
+    if (slot_object->arena_id == 1)
         goto after_b644;
 
 call_b644:
-    snd_StopAllVoicesAndCloseSlotVab(a0->arena_id);
+    snd_StopAllVoicesAndCloseSlotVab(slot_object->arena_id);
 
 after_b644:
     if (count < 6)
         goto simple;
 
     {
-        ptr = (s32 *)((s32)var_0 + (((u32)var_0[count - 1] >> 2) << 2));
+        ptr =
+            (s32 *)((s32)block_base + (((u32)block_base[count - 1] >> 2) << 2));
         ptr = (s32 *)((s32)ptr +
                       snd_LoadVabPack(
-                          ptr, a0->arena_id * 3 + 1,
-                          (s32 *)((s32)var_0 +
-                                  (((u32)var_0[count + 1] >> 2) << 2))));
+                          ptr, slot_object->arena_id * 3 + 1,
+                          (s32 *)((s32)block_base +
+                                  (((u32)block_base[count + 1] >> 2) << 2))));
 
         if (ptr == 0) {
             sys_StoreZeroPastScratchpadOnFailedCheck();
         }
 
-        a0->load_flags.word |= 2;
+        slot_object->load_flags.word |= 2;
         goto after_select;
     }
 
 simple:
-    ptr = var_1;
+    ptr = tim_groups;
 
 after_select:
-    off = (s32)ptr - (s32)var_0;
+    off = (s32)ptr - (s32)block_base;
 
-    if (a0->staging_buffer != 0) {
-        mem_MoveBlockRoundedUpToWords(a0->staging_buffer, a0->asset_block, off);
-        var_0 = (s32 *)a0->asset_block;
-        if ((a0->load_flags.word >> 1) & 1) {
-            snd_VabFakeOpen(
-                (s32)var_0 - a0->staging_buffer, a0->arena_id * 3 + 1);
+    if (slot_object->staging_buffer != 0) {
+        mem_MoveBlockRoundedUpToWords(
+            slot_object->staging_buffer, slot_object->asset_block, off);
+        block_base = (s32 *)slot_object->asset_block;
+        if ((slot_object->load_flags.word >> 1) & 1) {
+            snd_VabFakeOpen((s32)block_base - slot_object->staging_buffer,
+                            slot_object->arena_id * 3 + 1);
         }
     }
 
     {
-        s32 *block_1 = (s32 *)((s32)var_0 + (((u32)var_0[1] >> 2) << 2));
+        s32 *block_1 =
+            (s32 *)((s32)block_base + (((u32)block_base[1] >> 2) << 2));
         s32 *block_4;
-        block_4 = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
-        a0->softbody_params = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
-        reloc_RelocateBlock(block_1, a0->transform_block_id);
-        reloc_RelocateBlock(block_4, a0->projected_block_id);
+        block_4 = (s32 *)((s32)block_base + (((u32)block_base[4] >> 2) << 2));
+        slot_object->softbody_params =
+            (s32)block_base + (((u32)block_base[3] >> 2) << 2);
+        reloc_RelocateBlock(block_1, slot_object->transform_block_id);
+        reloc_RelocateBlock(block_4, slot_object->projected_block_id);
     }
 
     {
-        if (a0->arena_id == 1)
+        if (slot_object->arena_id == 1)
             goto case_1;
-        if (a0->arena_id >= 2)
+        if (slot_object->arena_id >= 2)
             goto done_cases;
-        if (a0->arena_id != 0)
+        if (slot_object->arena_id != 0)
             goto done_cases;
 
-        gpu_LoadTimGroup((u32 *)var_1, 0);
+        gpu_LoadTimGroup((u32 *)tim_groups, 0);
         if (gpu_GetFogClutObject() != 0)
             goto done_cases;
         gpu_OffsetBlockTexPrimStreams(
-            a0->transform_block_id, 0, 0, -0x140, 0xE8);
-        gpu_LoadTimGroupSplitOffset((u32 *)var_1, 0, 0, 0, -0x140, 0xF0);
+            slot_object->transform_block_id, 0, 0, -0x140, 0xE8);
+        gpu_LoadTimGroupSplitOffset((u32 *)tim_groups, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
-        gpu_LoadTimGroupOffset((u32 *)var_1, 0, 0x80, 0);
+        gpu_LoadTimGroupOffset((u32 *)tim_groups, 0, 0x80, 0);
         if (gpu_GetFogClutObject() != 1)
             goto case_1_else;
         gpu_OffsetBlockTexPrimStreams(
-            a0->transform_block_id, 0x80, 0, -0x140, 0xE8);
-        gpu_LoadTimGroupSplitOffset((u32 *)var_1, 0, 0x80, 0, -0x140, 0xF0);
+            slot_object->transform_block_id, 0x80, 0, -0x140, 0xE8);
+        gpu_LoadTimGroupSplitOffset(
+            (u32 *)tim_groups, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
         gpu_OffsetBlockTexPrimStreamsByPages(
-            a0->transform_block_id, 2, 0, 2, 0);
+            slot_object->transform_block_id, 2, 0, 2, 0);
 
     case_1_done:
-        gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(a0);
+        gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(slot_object);
     }
 
 done_cases:
     DrawSync(0);
     gpu_LoadRequestedAvailableTimGroupsForSlot(
-        a0->arena_id, a0->asset_index, g_slot_tim_group_requests[a0->arena_id],
-        (s32)var_1);
+        slot_object->arena_id, slot_object->asset_index,
+        g_slot_tim_group_requests[slot_object->arena_id], (s32)tim_groups);
 
     {
-        a0->load_flags.word =
-            (a0->load_flags.word & 0xFFE0FFFF) |
-            ((g_slot_tim_group_requests[a0->arena_id] & 0x1F) << 16);
-        g_slot_tim_group_requests[a0->arena_id] = 0;
+        slot_object->load_flags.word =
+            (slot_object->load_flags.word & 0xFFE0FFFF) |
+            ((g_slot_tim_group_requests[slot_object->arena_id] & 0x1F) << 16);
+        g_slot_tim_group_requests[slot_object->arena_id] = 0;
     }
 
     DrawSync(0);
-    a0->softbody_block = (void *)(a0->asset_block + off);
-    slot_ResizeAssetBlockAndUpdatePeak(a0->arena_id, off);
+    slot_object->softbody_block = (void *)(slot_object->asset_block + off);
+    slot_ResizeAssetBlockAndUpdatePeak(slot_object->arena_id, off);
 }
 
 /* The 21 node-template records at 0x80094B96 follow an s16 -1 at 0x80094B94
@@ -292,10 +299,10 @@ typedef struct {
 
 extern Unk80094B94Table g_node_hierarchy_templates;
 
-void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
+void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *slot_object) {
     s16 *tbl;
     s32 count;
-    s16 idx;
+    s16 scale_index;
 
     tbl = g_object_scale_factors;
     count = 0;
@@ -303,101 +310,102 @@ void node_InitObjectHierarchyFromTemplates(Unk80045878Obj *a0) {
         count++;
     }
 
-    idx = a0->asset_index;
-    if (idx < count) {
-        a0->position_scale = g_object_scale_factors[idx];
+    scale_index = slot_object->asset_index;
+    if (scale_index < count) {
+        slot_object->position_scale = g_object_scale_factors[scale_index];
     } else {
-        a0->position_scale = 0x1000;
+        slot_object->position_scale = 0x1000;
     }
 
     {
-        Unk80045878Node *nodes = a0->transform_nodes;
-        Unk80045878Node *p = a0->transform_nodes;
+        Unk80045878Node *nodes = slot_object->transform_nodes;
+        Unk80045878Node *node_cursor = slot_object->transform_nodes;
         s32 i = 0;
 
         do {
-            s16 v1;
-            p->node.node_kind = 0;
-            p->node.primitive_table_select = 0;
-            p->node.rotation_order = 0;
-            p->node.reloc_entry_index = -1;
-            v1 = g_node_hierarchy_templates.recs[i].parent_index;
-            if (v1 != -1) {
-                p->node.parent_node = &nodes[v1].node;
+            s16 parent_node_index;
+            node_cursor->node.node_kind = 0;
+            node_cursor->node.primitive_table_select = 0;
+            node_cursor->node.rotation_order = 0;
+            node_cursor->node.reloc_entry_index = -1;
+            parent_node_index = g_node_hierarchy_templates.recs[i].parent_index;
+            if (parent_node_index != -1) {
+                node_cursor->node.parent_node = &nodes[parent_node_index].node;
             } else {
-                p->node.parent_node = 0;
+                node_cursor->node.parent_node = 0;
             }
-            p->node.work.t[0] =
+            node_cursor->node.work.t[0] =
                 (g_node_hierarchy_templates.recs[i].node_translation[0] *
-                 a0->position_scale) >>
+                 slot_object->position_scale) >>
                 12;
-            p->node.work.t[1] =
+            node_cursor->node.work.t[1] =
                 (g_node_hierarchy_templates.recs[i].node_translation[1] *
-                 a0->position_scale) >>
+                 slot_object->position_scale) >>
                 12;
-            p->node.work.t[2] =
+            node_cursor->node.work.t[2] =
                 (g_node_hierarchy_templates.recs[i].node_translation[2] *
-                 a0->position_scale) >>
+                 slot_object->position_scale) >>
                 12;
-            p->node.xf.rot.vx = 0;
-            p->node.xf.rot.vy = 0;
-            p->node.xf.rot.vz = 0;
-            p->node.matrix_state = 0;
-            p->node.light_setup_index = a0->node_light_setup_index;
-            p->node.reloc_block_id = a0->transform_block_id;
-            p++;
+            node_cursor->node.xf.rot.vx = 0;
+            node_cursor->node.xf.rot.vy = 0;
+            node_cursor->node.xf.rot.vz = 0;
+            node_cursor->node.matrix_state = 0;
+            node_cursor->node.light_setup_index =
+                slot_object->node_light_setup_index;
+            node_cursor->node.reloc_block_id = slot_object->transform_block_id;
+            node_cursor++;
             i++;
         } while (i < 21);
     }
 
-    node_RefreshObjectMatrixPointerTables(a0);
+    node_RefreshObjectMatrixPointerTables(slot_object);
 }
 
-void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *arg0) {
+void node_RefreshObjectMatrixPointerTables(Unk80045878Obj *slot_object) {
     s32 matrix_ptr_index;
     Unk80045878Node *n;
 
     matrix_ptr_index = 0;
-    arg0->unk_18F4[0] = &arg0->transform_nodes[6].node.xf.mat;
-    arg0->unk_18F4[1] = &arg0->transform_nodes[5].node.xf.mat;
-    arg0->unk_18F4[2] = &arg0->transform_nodes[4].node.xf.mat;
-    arg0->unk_18F4[3] = &arg0->transform_nodes[10].node.xf.mat;
-    arg0->unk_18F4[4] = &arg0->transform_nodes[9].node.xf.mat;
-    arg0->unk_18F4[5] = &arg0->transform_nodes[8].node.xf.mat;
-    arg0->unk_18F4[6] = &arg0->transform_nodes[3].node.xf.mat;
-    arg0->unk_18F4[7] = &arg0->transform_nodes[2].node.xf.mat;
-    arg0->unk_18F4[8] = &arg0->transform_nodes[17].node.xf.mat;
-    arg0->unk_18F4[9] = &arg0->transform_nodes[16].node.xf.mat;
-    arg0->unk_18F4[10] = &arg0->transform_nodes[14].node.xf.mat;
-    arg0->unk_18F4[11] = &arg0->transform_nodes[13].node.xf.mat;
-    arg0->unk_18F4[12] = &arg0->transform_nodes[12].node.xf.mat;
-    arg0->unk_18F4[13] = &arg0->transform_nodes[1].node.xf.mat;
-    arg0->unk_18F4[14] = &arg0->transform_nodes[7].node.xf.mat;
-    arg0->unk_18F4[15] = &arg0->transform_nodes[11].node.xf.mat;
-    arg0->unk_18F4[16] = &arg0->transform_nodes[18].node.xf.mat;
-    arg0->unk_18F4[17] = &arg0->transform_nodes[15].node.xf.mat;
-    arg0->unk_18F4[18] = &arg0->transform_nodes[19].node.xf.mat;
-    arg0->unk_18F4[19] = &arg0->transform_nodes[20].node.xf.mat;
-    n = &arg0->transform_nodes[1];
+    slot_object->unk_18F4[0] = &slot_object->transform_nodes[6].node.xf.mat;
+    slot_object->unk_18F4[1] = &slot_object->transform_nodes[5].node.xf.mat;
+    slot_object->unk_18F4[2] = &slot_object->transform_nodes[4].node.xf.mat;
+    slot_object->unk_18F4[3] = &slot_object->transform_nodes[10].node.xf.mat;
+    slot_object->unk_18F4[4] = &slot_object->transform_nodes[9].node.xf.mat;
+    slot_object->unk_18F4[5] = &slot_object->transform_nodes[8].node.xf.mat;
+    slot_object->unk_18F4[6] = &slot_object->transform_nodes[3].node.xf.mat;
+    slot_object->unk_18F4[7] = &slot_object->transform_nodes[2].node.xf.mat;
+    slot_object->unk_18F4[8] = &slot_object->transform_nodes[17].node.xf.mat;
+    slot_object->unk_18F4[9] = &slot_object->transform_nodes[16].node.xf.mat;
+    slot_object->unk_18F4[10] = &slot_object->transform_nodes[14].node.xf.mat;
+    slot_object->unk_18F4[11] = &slot_object->transform_nodes[13].node.xf.mat;
+    slot_object->unk_18F4[12] = &slot_object->transform_nodes[12].node.xf.mat;
+    slot_object->unk_18F4[13] = &slot_object->transform_nodes[1].node.xf.mat;
+    slot_object->unk_18F4[14] = &slot_object->transform_nodes[7].node.xf.mat;
+    slot_object->unk_18F4[15] = &slot_object->transform_nodes[11].node.xf.mat;
+    slot_object->unk_18F4[16] = &slot_object->transform_nodes[18].node.xf.mat;
+    slot_object->unk_18F4[17] = &slot_object->transform_nodes[15].node.xf.mat;
+    slot_object->unk_18F4[18] = &slot_object->transform_nodes[19].node.xf.mat;
+    slot_object->unk_18F4[19] = &slot_object->transform_nodes[20].node.xf.mat;
+    n = &slot_object->transform_nodes[1];
     do {
-        arg0->node_matrix_ptrs[matrix_ptr_index] = &n->node.xf.mat;
+        slot_object->node_matrix_ptrs[matrix_ptr_index] = &n->node.xf.mat;
         n++;
         matrix_ptr_index += 1;
     } while (matrix_ptr_index < 0x14);
 }
 
-void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
+void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *slot_object) {
     s32 node_used[18];
-    Unk80045878Node *t5;
-    Unk80045878Node *t7;
-    s32 *v1;
-    u16 *t3;
+    Unk80045878Node *duplicate_cursor;
+    Unk80045878Node *mapped_nodes;
+    s32 *block_base;
+    u16 *pair_cursor;
     s32 i;
 
-    t5 = arg0->duplicate_nodes;
-    t7 = &arg0->transform_nodes[1];
-    v1 = (s32 *)arg0->asset_block;
-    t3 = (u16 *)((u8 *)v1 + v1[2]);
+    duplicate_cursor = slot_object->duplicate_nodes;
+    mapped_nodes = &slot_object->transform_nodes[1];
+    block_base = (s32 *)slot_object->asset_block;
+    pair_cursor = (u16 *)((u8 *)block_base + block_base[2]);
 
     i = 0x11;
     do {
@@ -406,32 +414,32 @@ void node_BuildIdToNodeMapWithDuplicates(Unk80045878Obj *arg0) {
     } while (i >= 0);
     i = 0x13;
     do {
-        arg0->node_by_id[i] = 0;
+        slot_object->node_by_id[i] = 0;
         i--;
     } while (i >= 0);
 
-    while (*t3 != 0xFFFF) {
-        s32 id = *t3++;
-        s32 a3 = *t3++;
+    while (*pair_cursor != 0xFFFF) {
+        s32 id = *pair_cursor++;
+        s32 node_index = *pair_cursor++;
 
-        if (node_used[a3] == 0) {
-            t7[a3].node.reloc_entry_index = id;
-            node_used[a3] = 1;
-            arg0->node_by_id[id] = &t7[a3];
+        if (node_used[node_index] == 0) {
+            mapped_nodes[node_index].node.reloc_entry_index = id;
+            node_used[node_index] = 1;
+            slot_object->node_by_id[id] = &mapped_nodes[node_index];
         } else {
-            *t5 = t7[a3];
-            t5->node.reloc_entry_index = id;
-            t5->unk58 = (s32)&t7[a3];
-            arg0->node_by_id[id] = t5;
-            t5++;
+            *duplicate_cursor = mapped_nodes[node_index];
+            duplicate_cursor->node.reloc_entry_index = id;
+            duplicate_cursor->unk58 = (s32)&mapped_nodes[node_index];
+            slot_object->node_by_id[id] = duplicate_cursor;
+            duplicate_cursor++;
         }
     }
-    t5->unk58 = 0;
+    duplicate_cursor->unk58 = 0;
 }
 
-void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
+void node_BuildProjectedNodeList(Unk80045878Obj *slot_object) {
     s32 i;
-    Unk80045878Node *p;
+    Unk80045878Node *node_cursor;
     /* Once-written named intermediate (no-new-park-categories entry 6):
      * parents[i].node is transform_nodes[i + 1].node, used as parent_node.
      * &arg0->transform_nodes[i + 1].node in place: score 3. */
@@ -443,24 +451,24 @@ void node_BuildProjectedNodeList(Unk80045878Obj *arg0) {
      * score 5. */
     s16 *id;
 
-    p = arg0->projected_nodes;
-    parents = &arg0->transform_nodes[1];
+    node_cursor = slot_object->projected_nodes;
+    parents = &slot_object->transform_nodes[1];
     for (i = 0; i < 18; i++) {
         id = &g_node_hierarchy_templates.recs[i].projected_entry_index;
         if (*id != -1) {
-            p->node.reloc_entry_index = *id;
-            p->node.node_kind = 3;
-            p->node.primitive_table_select = 0;
-            p->node.rotation_order = 0;
-            p->node.parent_node = &parents[i].node;
-            p->node.matrix_state = 1;
-            p->node.light_setup_index = 0;
-            p->node.reloc_block_id = arg0->projected_block_id;
-            p->unk58 = 0;
-            p++;
+            node_cursor->node.reloc_entry_index = *id;
+            node_cursor->node.node_kind = 3;
+            node_cursor->node.primitive_table_select = 0;
+            node_cursor->node.rotation_order = 0;
+            node_cursor->node.parent_node = &parents[i].node;
+            node_cursor->node.matrix_state = 1;
+            node_cursor->node.light_setup_index = 0;
+            node_cursor->node.reloc_block_id = slot_object->projected_block_id;
+            node_cursor->unk58 = 0;
+            node_cursor++;
         }
     }
-    p->node.reloc_entry_index = -1;
+    node_cursor->node.reloc_entry_index = -1;
 }
 
 /* .data 0x80094AF4..0x80094CFC, this file's whole .data (d_80DF8.c's

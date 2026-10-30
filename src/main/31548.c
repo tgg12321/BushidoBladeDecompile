@@ -7,7 +7,8 @@
 
 extern s32 g_node_pose_rotation_indices[];
 
-void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
+void func_80040D48(
+    s32 slot_index, s32 a1, s32 *position, s16 *rotation, s16 *arg4, s32 arg5) {
     Unk80045878Obj *s4;
     Unk80045878Node *s5;
     Unk80045878Node *s3;
@@ -15,22 +16,22 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s32 s0;
     s16 *s1;
 
-    if (g_slot_objects[a0] == 0) {
+    if (g_slot_objects[slot_index] == 0) {
         return;
     }
-    s4 = g_slot_objects[a0];
+    s4 = g_slot_objects[slot_index];
 
-    s4->transform_nodes[0].node.xf.rot.vx = a3[0];
-    s4->transform_nodes[0].node.xf.rot.vy = a3[1];
-    s4->transform_nodes[0].node.xf.rot.vz = a3[2];
+    s4->transform_nodes[0].node.xf.rot.vx = rotation[0];
+    s4->transform_nodes[0].node.xf.rot.vy = rotation[1];
+    s4->transform_nodes[0].node.xf.rot.vz = rotation[2];
 
-    s4->transform_nodes[0].node.work.t[0] = a2[0];
+    s4->transform_nodes[0].node.work.t[0] = position[0];
     /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy
      * loop below; a fresh loop local scores 35, dropping this first role 46. */
     s5 = s4->transform_nodes;
-    s4->transform_nodes[0].node.work.t[1] = a2[1];
+    s4->transform_nodes[0].node.work.t[1] = position[1];
     s3 = &s4->transform_nodes[1];
-    s4->transform_nodes[0].node.work.t[2] = a2[2];
+    s4->transform_nodes[0].node.work.t[2] = position[2];
 
     s2 = &s4->transform_nodes[19];
 
@@ -184,23 +185,23 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s4->object_ground_y = arg5;
     softbody_SetObjectGround(s4, arg5);
     softbody_UpdateObject(s4);
-    light_SetPointLightTarget(a0, (s32)s3->node.xf.mat.t);
+    light_SetPointLightTarget(slot_index, (s32)s3->node.xf.mat.t);
 }
 
 extern s32 g_node_pose_rotation_indices[];
 
 void slot_BlendTwoPosesIntoNodeMatrices(
-    s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
+    s32 slot_index, u8 *a1, u8 *a2, s32 interp_weight, MATRIX *a4) {
     s32 i = 1;
     s32 *tbl = g_node_pose_rotation_indices;
-    Unk80045878Obj *base = g_slot_objects[a0];
+    Unk80045878Obj *slot_object = g_slot_objects[slot_index];
     SVECTOR buf;
     Unk80045878Node *ents;
     MATRIX *out2;
     s32 offset;
     u16 *p;
     Unk80045878Node *var_9;
-    ents = &base->transform_nodes[1];
+    ents = &slot_object->transform_nodes[1];
     do {
         offset = (*tbl) * 6;
         p = (u16 *)(offset + (s32)a1);
@@ -218,7 +219,7 @@ void slot_BlendTwoPosesIntoNodeMatrices(
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, a4 + 1);
         gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
-            a4, a4 + 1, a3, &ents[i].node.work);
+            a4, a4 + 1, interp_weight, &ents[i].node.work);
         ents[i].node.matrix_state = 2;
         i++;
     } while (i < 0x12);
@@ -231,7 +232,7 @@ void slot_BlendTwoPosesIntoNodeMatrices(
     out2 = a4 + 1;
 loop2:
     math_LerpShortVectorsNegateYZ(
-        (s16 *)a1, (s16 *)a2, a3, (s32)var_9->node.work.t);
+        (s16 *)a1, (s16 *)a2, interp_weight, (s32)var_9->node.work.t);
     a1 += 6;
     a2 += 6;
     buf.vx = *((u16 *)a1);
@@ -249,7 +250,7 @@ loop2:
     a2 += 2;
     math_RotMatrixZYX(&buf, out2);
     gte_LerpMatrixRowsAndRebuildOrthonormalBasis(
-        a4, out2, a3, &var_9->node.work);
+        a4, out2, interp_weight, &var_9->node.work);
     var_9->node.matrix_state = 1;
     var_9++;
     i++;
@@ -264,48 +265,49 @@ extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
 
-void PatchColorImmediatesAtListedCodeSites(s32 a0) {
-    s32 **t0 = g_color_immediate_patch_sites;
+void PatchColorImmediatesAtListedCodeSites(s32 color) {
+    s32 **site_cursor = g_color_immediate_patch_sites;
     s32 t1 = 0;
     s32 mask8 = ~0xFF;
-    s32 a1 = (a0 >> 16) & 0xFF;
+    s32 a1 = (color >> 16) & 0xFF;
     s32 mask16 = (s32)0xFFFF0000;
-    s32 a0lo = a0 & 0xFFFF;
+    s32 a0lo = color & 0xFFFF;
     s32 t3 = (func_800545F4 & mask8) | a1;
     s32 t2 = (D_800545F8 & mask16) | a0lo;
     s32 v1 = (D_800545FC & mask8) | a1;
     s32 a4 = (D_80054600 & mask16) | a0lo;
     do {
-        s32 *v0 = *t0;
-        t0++;
+        s32 *v0 = *site_cursor;
+        site_cursor++;
         t1++;
         v0[0] = t3;
         v0[1] = t2;
         {
-            s32 *v0b = *t0;
+            s32 *v0b = *site_cursor;
             v0b[0] = v1;
             v0b[1] = a4;
         }
-        t0++;
+        site_cursor++;
     } while (t1 < 4);
 }
 
-void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32 a0, s32 a1) {
-    Unk80045878Obj **base;
-    Unk80045878Obj *s0;
+void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(
+    s32 slot_index, s32 byte_offset) {
+    Unk80045878Obj **slot_entry;
+    Unk80045878Obj *slot_object;
     s32 i;
-    base = &g_slot_objects[a0];
-    s0 = (Unk80045878Obj *)((u8 *)*base + a1);
-    *base = s0;
-    node_RebaseParents(a1, s0->transform_nodes, 0x15);
-    node_RebaseParents(a1, s0->projected_nodes, 0x14);
-    node_RebaseParents(a1, s0->duplicate_nodes, 0x14);
+    slot_entry = &g_slot_objects[slot_index];
+    slot_object = (Unk80045878Obj *)((u8 *)*slot_entry + byte_offset);
+    *slot_entry = slot_object;
+    node_RebaseParents(byte_offset, slot_object->transform_nodes, 0x15);
+    node_RebaseParents(byte_offset, slot_object->projected_nodes, 0x14);
+    node_RebaseParents(byte_offset, slot_object->duplicate_nodes, 0x14);
     {
-        Unk80045878Node *c = s0->duplicate_nodes;
+        Unk80045878Node *c = slot_object->duplicate_nodes;
         do {
             s32 val = c->unk58;
             if (val) {
-                c->unk58 = val + a1;
+                c->unk58 = val + byte_offset;
             } else {
                 break;
             }
@@ -314,13 +316,14 @@ void slot_RebaseObjectPointerNodeLinksAndRefreshMatrixPointers(s32 a0, s32 a1) {
     }
     i = 0;
     do {
-        Unk80045878Node *val = s0->node_by_id[i];
+        Unk80045878Node *val = slot_object->node_by_id[i];
         if (val) {
-            s0->node_by_id[i] = (Unk80045878Node *)((u8 *)val + a1);
+            slot_object->node_by_id[i] =
+                (Unk80045878Node *)((u8 *)val + byte_offset);
         }
         i++;
     } while (i < 0x14);
-    node_RefreshObjectMatrixPointerTables(s0);
+    node_RefreshObjectMatrixPointerTables(slot_object);
 }
 
 /* .data 0x80094CFC..0x80094D40, this file's whole .data

@@ -2517,7 +2517,7 @@ void softbody_AddColliders(
 
 void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
     Unk8003F62CRec *softbody_set;
-    s16 *var_1;
+    s16 *param_cursor;
     u8 *cur;
     Unk8003F824Rec *rec;
     Unk80045878Node *obj;
@@ -2526,9 +2526,9 @@ void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
     softbody_set = slot_object->softbody_block;
     if (softbody_set == 0)
         return;
-    var_1 = (s16 *)slot_object->softbody_params;
+    param_cursor = (s16 *)slot_object->softbody_params;
     cur = softbody_set->data;
-    if (*var_1 == -3) {
+    if (*param_cursor == -3) {
         slot_object->softbody_block = 0;
         return;
     }
@@ -2536,8 +2536,8 @@ void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
     softbody_set->snap_request = 0;
     softbody_set->unk4 = 0;
     softbody_set->rebuild_request = 0;
-    for (i = 0; *var_1 != -3; i++) {
-        if (*var_1 != -2) {
+    for (i = 0; *param_cursor != -3; i++) {
+        if (*param_cursor != -2) {
             if (softbody_set->count >= 5) {
                 sys_StoreZeroPastScratchpadOnFailedCheck();
             }
@@ -2545,22 +2545,22 @@ void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
             obj = slot_object->node_by_id[i];
             rec->cur = cur;
             rec->obj = obj;
-            cur = softbody_CreateForNode(rec, var_1, cur);
+            cur = softbody_CreateForNode(rec, param_cursor, cur);
             softbody_set->step_descs[softbody_set->count] = rec->step_desc;
             obj->node.node_kind = 0xD;
             softbody_set->count++;
-            if (*var_1 >= 0) {
-                var_1++;
-                while (*var_1 >= 0) {
-                    var_1++;
+            if (*param_cursor >= 0) {
+                param_cursor++;
+                while (*param_cursor >= 0) {
+                    param_cursor++;
                 }
             }
-            if (*var_1 == -1) {
-                var_1++;
-                softbody_AddColliders(slot_object, rec, var_1);
+            if (*param_cursor == -1) {
+                param_cursor++;
+                softbody_AddColliders(slot_object, rec, param_cursor);
             }
         }
-        while (*var_1++ != -2) {
+        while (*param_cursor++ != -2) {
         }
     }
     if (resize_asset_block) {
@@ -2742,7 +2742,8 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     return cur;
 }
 
-s16 *softbody_SetAnchorWeights(SVECTOR *points, s32 point_count, s16 *a2) {
+s16 *softbody_SetAnchorWeights(
+    SVECTOR *points, s32 point_count, s16 *param_cursor) {
     /* the point loop counter, then each point index read from a2, the way
      * SOTN's EntityBladeMaster runs its i as a loop counter and then reads it
      * from a table as a subscript (Q51) */
@@ -2754,47 +2755,47 @@ s16 *softbody_SetAnchorWeights(SVECTOR *points, s32 point_count, s16 *a2) {
 
     {
         s32 count;
-        count = a2[0];
-        a2++;
+        count = param_cursor[0];
+        param_cursor++;
         if (count >= 0) {
             do {
                 int val;
-                val = a2[0];
-                a2++;
+                val = param_cursor[0];
+                param_cursor++;
                 count--;
                 while (count != -1) {
-                    i = a2[0];
-                    a2++;
+                    i = param_cursor[0];
+                    param_cursor++;
                     count--;
                     points[i].pad = val;
                 }
-                count = a2[0];
-                a2++;
+                count = param_cursor[0];
+                param_cursor++;
             } while (count >= 0);
         }
     }
-    return a2;
+    return param_cursor;
 }
 
 void softbody_AddColliders(
-    Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *a2) {
+    Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *param_cursor) {
     Func8003F6D8Inner *in = &rec->inner;
     s32 n = in->count;
-    s16 id = a2[0];
+    s16 id = param_cursor[0];
 
     if (id != -2) {
         do {
-            a2++;
+            param_cursor++;
             in->objs[n] = &slot_object->transform_nodes[id + 1];
-            in->f84[n][0].vx = *a2++;
-            in->f84[n][0].vy = *a2++;
-            in->f84[n][0].vz = *a2++;
-            in->f84[n][1].vx = *a2++;
-            in->f84[n][1].vy = *a2++;
-            in->f84[n][1].vz = *a2++;
-            in->coll.volume_bounds[n] = *a2++;
+            in->f84[n][0].vx = *param_cursor++;
+            in->f84[n][0].vy = *param_cursor++;
+            in->f84[n][0].vz = *param_cursor++;
+            in->f84[n][1].vx = *param_cursor++;
+            in->f84[n][1].vy = *param_cursor++;
+            in->f84[n][1].vz = *param_cursor++;
+            in->coll.volume_bounds[n] = *param_cursor++;
             n++;
-            id = *a2;
+            id = *param_cursor;
         } while (id != -2);
     }
     in->count = n;

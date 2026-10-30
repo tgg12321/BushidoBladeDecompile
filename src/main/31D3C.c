@@ -7,10 +7,12 @@
 
 extern u8 g_gpu_asset_tim_group_load_masks[];
 
-Unk80045878Obj *slot_GetObject(s32 a0) { return g_slot_objects[a0]; }
+Unk80045878Obj *slot_GetObject(s32 slot_index) {
+    return g_slot_objects[slot_index];
+}
 
-s32 slot_GetAssetIndex(s32 a0) {
-    Unk80045878Obj *ptr = g_slot_objects[a0];
+s32 slot_GetAssetIndex(s32 slot_index) {
+    Unk80045878Obj *ptr = g_slot_objects[slot_index];
     if (ptr) {
         return ptr->asset_index;
     }
@@ -29,24 +31,25 @@ s32 slot_FindEmpty(void) {
     return ret;
 }
 
-void slot_ReleaseObjectAndResources(s32 a0) {
-    softbody_FreeObjectById(a0);
-    slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(a0);
-    g_slot_objects[a0] = 0;
+void slot_ReleaseObjectAndResources(s32 slot_index) {
+    softbody_FreeObjectById(slot_index);
+    slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks(slot_index);
+    g_slot_objects[slot_index] = 0;
 }
 
-void slot_RequestTimGroupsAndMarkReloadOnChange(s32 a0, s32 a1) {
-    Unk80045878Obj *ptr = g_slot_objects[a0];
+void slot_RequestTimGroupsAndMarkReloadOnChange(
+    s32 slot_index, s32 tim_group_request) {
+    Unk80045878Obj *ptr = g_slot_objects[slot_index];
     if (ptr) {
-        if (((ptr->load_flags.word >> 16) & 0x1F) != a1) {
+        if (((ptr->load_flags.word >> 16) & 0x1F) != tim_group_request) {
             ptr->load_status = -2;
         }
     }
-    g_slot_tim_group_requests[a0] = a1;
+    g_slot_tim_group_requests[slot_index] = tim_group_request;
 }
 
-s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
-    Unk80045878Obj *ptr = g_slot_objects[a0];
+s32 slot_GetLastLoadTimGroupRequest(s32 slot_index) {
+    Unk80045878Obj *ptr = g_slot_objects[slot_index];
     if (ptr) {
         return (ptr->load_flags.word >> 16) & 0x1F;
     }
@@ -58,40 +61,40 @@ s32 slot_GetLastLoadTimGroupRequest(s32 a0) {
  * gpu_RefreshGrayscaleMode() is set) through
  * PatchColorImmediatesAtListedCodeSites. */
 void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(
-    s32 arg0, s32 arg1) {
+    s32 slot_index, s32 set_select_bit) {
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
        untouched (phantom-frame pad); without it: score 6 */
     volatile u32 pre_pad[8];
     Unk80045878Obj *slot_object;
     s32 i;
-    Unk80045878Node *p;
+    Unk80045878Node *node_cursor;
     u8 *q;
     s32 b, r, g, v;
 
-    slot_object = g_slot_objects[arg0];
+    slot_object = g_slot_objects[slot_index];
     if (slot_object == NULL)
         return;
 
-    p = &slot_object->transform_nodes[1];
-    if (arg1) {
-        p->node.primitive_table_select |= 1;
+    node_cursor = &slot_object->transform_nodes[1];
+    if (set_select_bit) {
+        node_cursor->node.primitive_table_select |= 1;
     } else {
-        p->node.primitive_table_select &= ~1;
+        node_cursor->node.primitive_table_select &= ~1;
     }
 
     i = 1;
 loop1:
-    p++;
+    node_cursor++;
     /* FAKE: guard staged through the existing local b (dead before b's real
        colour use); the second set of b changes the scheduler's load order
        to the target's [b,r,g]; without it: score 2
        (staged-value-reused-variable) */
-    b = p->node.reloc_entry_index >= 0;
+    b = node_cursor->node.reloc_entry_index >= 0;
     if (b) {
-        if (arg1)
-            p->node.primitive_table_select |= 1;
+        if (set_select_bit)
+            node_cursor->node.primitive_table_select |= 1;
         else
-            p->node.primitive_table_select &= ~1;
+            node_cursor->node.primitive_table_select &= ~1;
     }
     i++;
     if (i < 18)
@@ -101,7 +104,7 @@ loop1:
 loop2:
     if (*(s32 *)(q + 0x57) == 0)
         goto after2;
-    if (arg1)
+    if (set_select_bit)
         *q |= 1;
     else
         *q &= ~1;
@@ -124,68 +127,68 @@ after2:
 
 extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 
-void node_UpdateWorldMatrix(Unk80101DF0Record *a0) {
+void node_UpdateWorldMatrix(Unk80101DF0Record *node) {
     RotMatrixFunc func;
 
-    if (a0->matrix_state == 1) {
+    if (node->matrix_state == 1) {
         return;
     }
-    if (a0->matrix_state != 2) {
-        func = g_math_rot_matrix_funcs[a0->rotation_order];
-        func(&a0->xf.rot, &a0->work);
+    if (node->matrix_state != 2) {
+        func = g_math_rot_matrix_funcs[node->rotation_order];
+        func(&node->xf.rot, &node->work);
     }
-    if (a0->parent_node != 0) {
-        if (a0->parent_node->matrix_state == 0) {
-            node_UpdateWorldMatrix(a0->parent_node);
+    if (node->parent_node != 0) {
+        if (node->parent_node->matrix_state == 0) {
+            node_UpdateWorldMatrix(node->parent_node);
         }
         gte_MulMatrix0ClearTrans(
-            &a0->parent_node->xf.mat, &a0->work, &a0->xf.mat);
+            &node->parent_node->xf.mat, &node->work, &node->xf.mat);
         gte_SetMatrixRotTransIRVec(
-            &a0->parent_node->xf.mat, a0->work.t, a0->xf.mat.t);
+            &node->parent_node->xf.mat, node->work.t, node->xf.mat.t);
     } else {
-        a0->xf.mat = a0->work;
+        node->xf.mat = node->work;
     }
-    a0->matrix_state = 1;
+    node->matrix_state = 1;
 }
 
-void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
+void node_SetMatrixFromNegatedRot(Unk80101DF0Record *node) {
     SVECTOR neg_rot;
-    neg_rot.vx = -(u16)a0->xf.rot.vx;
-    neg_rot.vy = -(u16)a0->xf.rot.vy;
-    neg_rot.vz = -(u16)a0->xf.rot.vz;
-    g_math_rot_matrix_funcs[a0->rotation_order](&neg_rot, &a0->work);
-    a0->xf.mat = a0->work;
+    neg_rot.vx = -(u16)node->xf.rot.vx;
+    neg_rot.vy = -(u16)node->xf.rot.vy;
+    neg_rot.vz = -(u16)node->xf.rot.vz;
+    g_math_rot_matrix_funcs[node->rotation_order](&neg_rot, &node->work);
+    node->xf.mat = node->work;
 }
 
 void gpu_LoadRequestedAvailableTimGroupsForSlot(
-    s32 a0, s32 a1, s32 a2, s32 a3) {
+    s32 slot_index, s32 asset_index, s32 tim_group_request, s32 tim_groups) {
     s32 mask_table;
     s32 bit;
     s32 i;
 
-    if ((u32)a0 >= 2) {
+    if ((u32)slot_index >= 2) {
         return;
     }
-    mask_table = g_gpu_asset_tim_group_load_masks[a1];
+    mask_table = g_gpu_asset_tim_group_load_masks[asset_index];
     for (bit = 0x10, i = 0; i < 5; bit >>= 1, i++) {
-        if (!(mask_table & bit) || !(a2 & bit)) {
+        if (!(mask_table & bit) || !(tim_group_request & bit)) {
             continue;
         }
-        switch (a0) {
+        switch (slot_index) {
         case 0:
             if (gpu_GetFogClutObject() == 0) {
                 gpu_LoadTimGroupSplitOffset(
-                    (u32 *)a3, i + 1, 0, 0, -0x140, 0xE8);
+                    (u32 *)tim_groups, i + 1, 0, 0, -0x140, 0xE8);
             } else {
-                gpu_LoadTimGroup((u32 *)a3, i + 1);
+                gpu_LoadTimGroup((u32 *)tim_groups, i + 1);
             }
             break;
         case 1:
-            if (gpu_GetFogClutObject() == a0) {
+            if (gpu_GetFogClutObject() == slot_index) {
                 gpu_LoadTimGroupSplitOffset(
-                    (u32 *)a3, i + 1, 0x80, 0, -0x140, 0xE8);
+                    (u32 *)tim_groups, i + 1, 0x80, 0, -0x140, 0xE8);
             } else {
-                gpu_LoadTimGroupOffset((u32 *)a3, i + 1, 0x80, 0);
+                gpu_LoadTimGroupOffset((u32 *)tim_groups, i + 1, 0x80, 0);
             }
             break;
         }
@@ -237,7 +240,7 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
 }
 
 void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
-    s32 a0, s32 a1, s32 a2) {
+    s32 tint_red, s32 tint_green, s32 tint_blue) {
     Unk80045878Obj *obj;
     s32 r;
     s32 g;
@@ -260,9 +263,9 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
     if (g_gpu_vram_row_list_map[obj->asset_index] == 0xFF) {
         return;
     }
-    r = (a0 << 12) / 255;
-    g = (a1 << 12) / 255;
-    b = (a2 << 12) / 255;
+    r = (tint_red << 12) / 255;
+    g = (tint_green << 12) / 255;
+    b = (tint_blue << 12) / 255;
     if (gpu_RefreshGrayscaleMode()) {
         r = g = b = math_Grayscale3(r, g, b);
     }
@@ -293,14 +296,14 @@ void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
 extern s16 g_light_point_color[3];
 extern VECTOR g_light_point_position;
 
-void light_SetPointLight(VECTOR *a0, s32 a1) {
-    g_light_point_color[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
-    g_light_point_color[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
-    g_light_point_color[2] = (s16)(((a1 & 0xFF) << 12) / 255);
-    g_light_point_position = *a0;
+void light_SetPointLight(VECTOR *position, s32 color) {
+    g_light_point_color[0] = (s16)((((color >> 16) & 0xFF) << 12) / 255);
+    g_light_point_color[1] = (s16)((((color >> 8) & 0xFF) << 12) / 255);
+    g_light_point_color[2] = (s16)(((color & 0xFF) << 12) / 255);
+    g_light_point_position = *position;
 }
 
-void light_ApplyPointLight(s32 a0, s32 a1) {
+void light_ApplyPointLight(s32 target0_addr, s32 target1_addr) {
     Unk800F62E0Rec *var_0;
     s32 var_1;
     Unk800F62E0Rec *tbl;
@@ -317,9 +320,9 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
     for (var_1 = 0; var_1 < 2; var_1++) {
         tbl = var_0;
         if (var_1 == 0) {
-            ptr = (s32 *)a0;
+            ptr = (s32 *)target0_addr;
         } else {
-            ptr = (s32 *)a1;
+            ptr = (s32 *)target1_addr;
             tbl = &g_light_setups[1];
         }
 
@@ -397,10 +400,10 @@ void light_ResetPointLight(void) {
     g_light_point_color[0] = -1;
 }
 
-void light_SetPointLightTarget(s32 a0, s32 a1) {
-    if (a0 < 2) {
-        g_light_point_target_flags[a0] = 1;
-        g_light_point_targets[a0] = a1;
+void light_SetPointLightTarget(s32 slot_index, s32 target_addr) {
+    if (slot_index < 2) {
+        g_light_point_target_flags[slot_index] = 1;
+        g_light_point_targets[slot_index] = target_addr;
     }
 }
 
@@ -430,30 +433,34 @@ extern void gpu_SetBackgroundClearColorAndFarColor(s32);
 /* 0x18-byte rows: four colour words, the angle word, a parameter */
 extern s32 g_light_preset_rows[][6];
 
-void ApplyLightPresetRowBackgroundClearAndFarColor(s32 a0) {
-    s32 *p = g_light_preset_rows[a0];
+void ApplyLightPresetRowBackgroundClearAndFarColor(s32 preset_index) {
+    s32 *row_cursor = g_light_preset_rows[preset_index];
     s32 var_1;
     s32 var_2;
-    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 0, 0);
-    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 0, 1);
-    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 1, 0);
-    light_SetLightOrBackColorOfSelectedSetups(a0, *p++, 1, 1);
-    var_1 = *p;
+    light_SetLightOrBackColorOfSelectedSetups(
+        preset_index, *row_cursor++, 0, 0);
+    light_SetLightOrBackColorOfSelectedSetups(
+        preset_index, *row_cursor++, 0, 1);
+    light_SetLightOrBackColorOfSelectedSetups(
+        preset_index, *row_cursor++, 1, 0);
+    light_SetLightOrBackColorOfSelectedSetups(
+        preset_index, *row_cursor++, 1, 1);
+    var_1 = *row_cursor;
     g_light_setups[4].light[0].yaw = var_1 & 0xFFF;
     g_light_setups[1].light[0].yaw = var_1 & 0xFFF;
     g_light_setups[0].light[0].yaw = var_1 & 0xFFF;
-    var_2 = *p >> 16;
+    var_2 = *row_cursor >> 16;
     g_light_setups[4].light[0].pitch = var_2 & 0xFFF;
     g_light_setups[1].light[0].pitch = var_2 & 0xFFF;
     g_light_setups[0].light[0].pitch = var_2 & 0xFFF;
-    gpu_SetBackgroundClearColorAndFarColor(p[1]);
+    gpu_SetBackgroundClearColorAndFarColor(row_cursor[1]);
 }
 
 void light_SetLightOrBackColorOfSelectedSetups(
-    s32 a0, s32 arg1, s32 a2, s32 a3) {
-    s32 r = (arg1 >> 16) & 0xFF;
-    s32 g = (arg1 >> 8) & 0xFF;
-    s32 b = arg1 & 0xFF;
+    s32 a0, s32 color, s32 a2, s32 set_back_color) {
+    s32 r = (color >> 16) & 0xFF;
+    s32 g = (color >> 8) & 0xFF;
+    s32 b = color & 0xFF;
     s16 r2;
     s16 g2;
     s16 b2;
@@ -461,7 +468,7 @@ void light_SetLightOrBackColorOfSelectedSetups(
     if (gpu_RefreshGrayscaleMode()) {
         r = g = b = math_Grayscale3(r, g, b);
     }
-    if (a3 == 0) {
+    if (set_back_color == 0) {
         r2 = (r << 12) / 255;
         g2 = (g << 12) / 255;
         b2 = (b << 12) / 255;
@@ -494,10 +501,10 @@ void light_SetLightOrBackColorOfSelectedSetups(
     }
 }
 
-void gpu_SetBackgroundClearColorAndFarColor(s32 a0) {
-    s32 r = (a0 >> 16) & 0xFF;
-    s32 g = (a0 >> 8) & 0xFF;
-    s32 b = a0 & 0xFF;
+void gpu_SetBackgroundClearColorAndFarColor(s32 color) {
+    s32 r = (color >> 16) & 0xFF;
+    s32 g = (color >> 8) & 0xFF;
+    s32 b = color & 0xFF;
     if (gpu_RefreshGrayscaleMode()) {
         b = math_Grayscale3(r, g, b);
         g = b;

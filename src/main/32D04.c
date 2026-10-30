@@ -81,7 +81,7 @@ out:
  * Outputs a1[] = { H, S, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the (max - min)
  * deltas / max-channel compares. */
-void math_RgbToHsv(s32 *a0, s32 *a1) {
+void math_RgbToHsv(s32 *rgb_input, s32 *hsv_output) {
     s32 r, g, b;
     s32 max_val, min_val;
     s32 chroma;
@@ -90,9 +90,9 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
     s32 dR, dG, dB;
     s32 val;
 
-    r = a0[0];
-    g = a0[1];
-    b = a0[2];
+    r = rgb_input[0];
+    g = rgb_input[1];
+    b = rgb_input[2];
 
     /* find max */
     if (r >= g) {
@@ -158,9 +158,9 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
         hue = 0;
     }
 
-    a1[0] = hue;
-    a1[1] = saturation;
-    a1[2] = val;
+    hsv_output[0] = hue;
+    hsv_output[1] = saturation;
+    hsv_output[2] = val;
 }
 
 void func_8004283C(s32 a0) {
@@ -173,7 +173,7 @@ void func_8004283C(s32 a0) {
 
 s32 func_80042864(void) { return D_800F6650; }
 
-void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
+void math_RotMatrixZXY(u16 *angles, MATRIX *matrix) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -199,8 +199,8 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     s32 idxB;
     u16 rawA;
 
-    angA = a0[0];
-    angB = a0[1];
+    angA = angles[0];
+    angB = angles[1];
 
     sinA = Judge[angA & 0xFFF];
     sinB = Judge[angB & 0xFFF];
@@ -209,7 +209,7 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
 
     negSinAxsinB_12 = (sinA * -sinB) >> 12;
 
-    angC = a0[2];
+    angC = angles[2];
     sinC = Judge[angC & 0xFFF];
 
     prod_sinC = negSinAxsinB_12 * sinC;
@@ -222,7 +222,7 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     sinAxcosB = sinA * cosB;
 
     rawA = Judge[((s16)angA + 0x400) & 0xFFF];
-    a1->m[2][1] = sinA;
+    matrix->m[2][1] = sinA;
     cosA = (s16)rawA;
 
     cosA_negSinC = cosA * -sinC;
@@ -249,23 +249,23 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
 
     cosA_cosB = cosA * cosB;
 
-    a1->m[0][1] = cosA_negSinC >> 12;
-    a1->m[1][1] = cosA_cosC >> 12;
-    a1->m[2][0] = cosA_negSinB >> 12;
-    a1->m[2][2] = cosA_cosB >> 12;
-    a1->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
-    a1->m[0][2] = (prod2_sinC + sinB_cosC) >> 12;
-    a1->m[1][0] = (sinAxsinB_12_cosC + cosB_sinC) >> 12;
+    matrix->m[0][1] = cosA_negSinC >> 12;
+    matrix->m[1][1] = cosA_cosC >> 12;
+    matrix->m[2][0] = cosA_negSinB >> 12;
+    matrix->m[2][2] = cosA_cosB >> 12;
+    matrix->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
+    matrix->m[0][2] = (prod2_sinC + sinB_cosC) >> 12;
+    matrix->m[1][0] = (sinAxsinB_12_cosC + cosB_sinC) >> 12;
 
     sinB_sinC = sinB * sinC;
-    a1->m[1][2] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
+    matrix->m[1][2] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
 
 /* Euler angles (a0[0..2], 12-bit) -> the 3x3 rotation part of *a1, Y-X-Z
  * order. cosA is read through a u16 local and sign-extended with an (s16)
  * cast, the -sinA store between them, which keeps the lhu + sll + sra shape.
  */
-void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
+void math_RotMatrixYXZ(u16 *angles, MATRIX *matrix) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -283,8 +283,8 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     u16 rawA;
     s32 angC;
 
-    angA = a0[0];
-    angB = a0[1];
+    angA = angles[0];
+    angB = angles[1];
 
     sinA = Judge[angA & 0xFFF];
     sinB = Judge[angB & 0xFFF];
@@ -292,7 +292,7 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
 
     sinAxsinB_12 = (sinA * sinB) >> 12;
 
-    angC = a0[2];
+    angC = angles[2];
     sinC = Judge[angC & 0xFFF];
 
     prod_sinC = sinAxsinB_12 * sinC;
@@ -304,7 +304,7 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     prod_cosC = sinAxsinB_12 * cosC;
 
     rawA = Judge[((s16)angA + 0x400) & 0xFFF];
-    a1->m[1][2] = -sinA;
+    matrix->m[1][2] = -sinA;
     cosA = (s16)rawA;
 
     cosB_negsinC = cosB * -sinC;
@@ -324,19 +324,19 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
 
     cosA_cosB = cosA * cosB;
 
-    a1->m[0][2] = cosA_sinB >> 12;
-    a1->m[1][0] = cosA_sinC >> 12;
-    a1->m[1][1] = cosA_cosC >> 12;
-    a1->m[2][2] = cosA_cosB >> 12;
-    a1->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
-    a1->m[0][1] = (prod_cosC + cosB_negsinC) >> 12;
-    a1->m[2][0] = (var_19 + neg_sinB_cosC) >> 12;
+    matrix->m[0][2] = cosA_sinB >> 12;
+    matrix->m[1][0] = cosA_sinC >> 12;
+    matrix->m[1][1] = cosA_cosC >> 12;
+    matrix->m[2][2] = cosA_cosB >> 12;
+    matrix->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
+    matrix->m[0][1] = (prod_cosC + cosB_negsinC) >> 12;
+    matrix->m[2][0] = (var_19 + neg_sinB_cosC) >> 12;
 
     sinB_sinC = sinB * sinC;
-    a1->m[2][1] = (var_21 + sinB_sinC) >> 12;
+    matrix->m[2][1] = (var_21 + sinB_sinC) >> 12;
 }
 
-void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
+void math_RotMatrixXYZ(u16 *angles, MATRIX *matrix) {
     s32 angA, angB, angC;
     s16 sinA, sinB, sinC, cosA;
     s32 cosB, cosC;
@@ -353,10 +353,10 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     s32 cosA_cosB;
     s32 sinA_cosC;
 
-    angB = a0[1];
-    angC = a0[2];
+    angB = angles[1];
+    angC = angles[2];
     sinB = Judge[angB & 0xFFF];
-    angA = a0[0];
+    angA = angles[0];
     sinA = Judge[angA & 0xFFF];
     sinC = Judge[angC & 0xFFF];
     cosA = Judge[((s16)angA + 0x400) & 0xFFF];
@@ -365,7 +365,7 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     cosC = Judge[((s16)angC + 0x400) & 0xFFF];
 
     cosB_cosC = cosB * cosC;
-    a1->m[0][2] = sinB;
+    matrix->m[0][2] = sinB;
     var_11 = sinA * sinB;
     cosB_negsinC = cosB * -sinC;
     var_12 = var_11 >> 12;
@@ -382,15 +382,15 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     var_23 = (cosA_sinB >> 12) * sinC;
     cosA_cosB = cosA * cosB;
 
-    a1->m[0][0] = cosB_cosC >> 12;
-    a1->m[0][1] = cosB_negsinC >> 12;
-    a1->m[1][2] = negsinA_cosB >> 12;
+    matrix->m[0][0] = cosB_cosC >> 12;
+    matrix->m[0][1] = cosB_negsinC >> 12;
+    matrix->m[1][2] = negsinA_cosB >> 12;
     sinA_cosC = sinA * cosC;
-    a1->m[2][2] = cosA_cosB >> 12;
-    a1->m[1][0] = (var_13 + cosA_sinC) >> 12;
-    a1->m[1][1] = (var_14 + cosA_cosC) >> 12;
-    a1->m[2][0] = (var_20 + sinA_sinC) >> 12;
-    a1->m[2][1] = (var_23 + sinA_cosC) >> 12;
+    matrix->m[2][2] = cosA_cosB >> 12;
+    matrix->m[1][0] = (var_13 + cosA_sinC) >> 12;
+    matrix->m[1][1] = (var_14 + cosA_cosC) >> 12;
+    matrix->m[2][0] = (var_20 + sinA_sinC) >> 12;
+    matrix->m[2][1] = (var_23 + sinA_cosC) >> 12;
 }
 
 extern void math_RotMatrixXYZ();
@@ -403,27 +403,27 @@ void math_InitRotMatrixFuncs(void) {
     g_math_rot_matrix_funcs[5] = (RotMatrixFunc)math_RotMatrixXYZ;
 }
 
-void math_TransposeMatrixInPlace(MATRIX *a0) {
+void math_TransposeMatrixInPlace(MATRIX *matrix) {
     s16 temp;
 
-    temp = a0->m[2][0];
-    a0->m[2][0] = a0->m[0][2];
-    a0->m[0][2] = temp;
-    temp = a0->m[1][0];
-    a0->m[1][0] = a0->m[0][1];
-    a0->m[0][1] = temp;
-    temp = a0->m[2][1];
-    a0->m[2][1] = a0->m[1][2];
-    a0->m[1][2] = temp;
+    temp = matrix->m[2][0];
+    matrix->m[2][0] = matrix->m[0][2];
+    matrix->m[0][2] = temp;
+    temp = matrix->m[1][0];
+    matrix->m[1][0] = matrix->m[0][1];
+    matrix->m[0][1] = temp;
+    temp = matrix->m[2][1];
+    matrix->m[2][1] = matrix->m[1][2];
+    matrix->m[1][2] = temp;
 }
 
-void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
+void math_Rotate2D(s32 *a0, s32 *a1, s32 angle) {
     s16 sin_val, cos_val;
     s32 x, y;
     s32 sin_x, cos_x, sin_y, cos_y;
-    sin_val = Judge[(a2 + 0x400) & 0xFFF];
+    sin_val = Judge[(angle + 0x400) & 0xFFF];
     x = *a0;
-    cos_val = Judge[a2 & 0xFFF];
+    cos_val = Judge[angle & 0xFFF];
     y = *a1;
     sin_x = sin_val * x;
     cos_x = cos_val * x;
