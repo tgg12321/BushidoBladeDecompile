@@ -369,7 +369,7 @@ typedef struct {
     Unk8009B0E0Record **pick_slot_sheets[3];
     Unk8009B0E0Record **opposed_choice_sheets;
     Unk8009B0E0Record **unk_30;
-    Unk8009B0E0Record **unk_34;
+    Unk8009B0E0Record **sel_option_sheets;
     Unk8009B0E0Record **unk_38;
     Rec_8006C21C *row_tile_rects;
 } Unk80076FF8Rec;
@@ -1372,7 +1372,7 @@ typedef struct {
     Vec3i32 unkA8;
     s32 bone_hit_mask;
     Vec3i32 unkB8;
-    s32 unkC4;
+    s32 inner_bone_hit_mask;
     Vec3i32 unkC8;
     s32 unkD4;
     MATRIX rot_matrix;

@@ -2443,7 +2443,7 @@ typedef struct {
     /* 0x00 */ s32 count;
     /* 0x04 */ Unk80045878Node *objs[3];
     /* 0x10 */ Unk8003F6D8Coll coll;
-    /* 0x84 */ SVECTOR f84[3][2];
+    /* 0x84 */ SVECTOR node_local_foci[3][2];
 } Func8003F6D8Inner; /* size 0xB4; sits at +0x1C of each 0xD0-byte record,
                         records start at arg0+8 */
 
@@ -2498,8 +2498,10 @@ void softbody_UpdateColliders(Unk8003F62CRec *softbody_set) {
         Func8003F6D8Inner *in = &softbody_set->recs[i].inner;
         for (j = 0; j < in->count; j++) {
             MATRIX *mat = &in->objs[j]->node.xf.mat;
-            gte_SetMatrixRotTransIR(mat, &in->f84[j][0], &in->coll.foci[j][0]);
-            gte_SetMatrixRotTransIR(mat, &in->f84[j][1], &in->coll.foci[j][1]);
+            gte_SetMatrixRotTransIR(
+                mat, &in->node_local_foci[j][0], &in->coll.foci[j][0]);
+            gte_SetMatrixRotTransIR(
+                mat, &in->node_local_foci[j][1], &in->coll.foci[j][1]);
         }
     }
 }
@@ -2788,12 +2790,12 @@ void softbody_AddColliders(
         do {
             param_cursor++;
             in->objs[n] = &slot_object->transform_nodes[id + 1];
-            in->f84[n][0].vx = *param_cursor++;
-            in->f84[n][0].vy = *param_cursor++;
-            in->f84[n][0].vz = *param_cursor++;
-            in->f84[n][1].vx = *param_cursor++;
-            in->f84[n][1].vy = *param_cursor++;
-            in->f84[n][1].vz = *param_cursor++;
+            in->node_local_foci[n][0].vx = *param_cursor++;
+            in->node_local_foci[n][0].vy = *param_cursor++;
+            in->node_local_foci[n][0].vz = *param_cursor++;
+            in->node_local_foci[n][1].vx = *param_cursor++;
+            in->node_local_foci[n][1].vy = *param_cursor++;
+            in->node_local_foci[n][1].vz = *param_cursor++;
             in->coll.volume_bounds[n] = *param_cursor++;
             n++;
             id = *param_cursor;

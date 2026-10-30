@@ -379,7 +379,7 @@ void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
            (1 << (SELWORK->selected_win_target_index + 8)) +
            (1 << (SELWORK->selected_time_sheet_code + 9));
     s.ot_idx = 2;
-    table = draw_context->resource_root.v80076FF8->unk_34;
+    table = draw_context->resource_root.v80076FF8->sel_option_sheets;
     do {
         s.x = 0;
         s.y = 0;

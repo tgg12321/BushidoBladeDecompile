@@ -2005,7 +2005,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                     fighter_record, math_PrepareTriangleCollisionFrame(scr),
                     var_32);
                 outer_hit_mask |= scr->bone_hit_mask;
-                inner_hit_mask |= scr->unkC4;
+                inner_hit_mask |= scr->inner_bone_hit_mask;
                 if (var_12 != 0) {
                     mask_a |= scr->bone_hit_mask;
                 }
@@ -2652,7 +2652,7 @@ void fighter_TestTriangleBoneHits(
     }
 
     scr->bone_hit_mask = seenMask;
-    scr->unkC4 = inner_hit_mask;
+    scr->inner_bone_hit_mask = inner_hit_mask;
 }
 
 /* Orients a triangle's local frame. The vertices obj->shape_points[0..2] give

@@ -1,4 +1,3 @@
 Unk1F8002B8Rec.unkC4=inner_bone_hit_mask
 Func8003F6D8Inner.f84=node_local_foci
 Unk80076FF8Rec.unk_34=sel_option_sheets
-VabEnt.off=vab_pack_pos
