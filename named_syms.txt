@@ -390,8 +390,8 @@
 /* RESET 0x80033898: retired name 'gpu_enable_and_state_reset_80033898' — preserved note: mode-transition hook: gpu_EnableDisplay + reset frame_counter + mode=3 */
 /* RESET 0x80069120: retired name 'sync_flag_check_advance_80069120' — preserved note: 44-byte record table accessor with dirty-bit sync side-effect */
 /* Misc (2) */
-/* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears g_reloc_block_slot_counts[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1152-1158) */
-/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, byte_offset), then snd_VabFakeOpen(byte_offset, ...) per entry of the arena_GetBlockAddr(6) list (35000.c:786-809) */
+/* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears g_reloc_block_slot_counts[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1153-1159) */
+/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, byte_offset), then snd_VabFakeOpen(byte_offset, ...) per entry of the arena_GetBlockAddr(6) list (35000.c:788-811) */
 
 /* === rodata constant-table pass (2026-05-17) -- 19 entries, 2 retired === */
 /* D_* labels in rodata + .data sections, first classified by pattern; each */
@@ -422,7 +422,7 @@
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
 /* +0x210 / +0x234 are Unk80101EC8Record.prev_weapon_points / prev_second_weapon_points (include/game.h). */
 
-/* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2238-2242) */
+/* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2240-2244) */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1314-1316) or to unk_D8 + unk_E8 (:4077, :5303) */
 /* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, motion_AdvanceVariantIfAtNibble4Or5Position, motion_ResolveMoveData) */
 
@@ -634,7 +634,7 @@
 /* RENAME 0x800A36FA: retired name 'D_800A36FA' — preserved note: three values (0 / 1 / 2): camera_ApplyFightView picks its view record (D_800F6608 or D_800F5328), FOV and func_8003F218 argument by it (9F9C.c:2047-2075) */  /* data-wave 2026-10-08: was g_gnd_init_flag */
 
 /* === Byte tables g_fight_config_id_data_rows / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
-/* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:5745, 5832, 5995, 2B344.c:247, 283) */
+/* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:5747, 5834, 5997, 2B344.c:247, 283) */
 /* or fighter_Init's roster_index (9F9C.c:3895-3896); D_8008D55C maps a table index */
 /* into the g_fight_config.unk_4 id space.  g_listener_cam, g_fight_weapon_contact_result and */
 /* g_fight_opponent_order: see their lines. */

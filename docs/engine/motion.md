@@ -77,22 +77,22 @@ per-joint channels (the comment at include/game.h:1469).
 The fighter loop calls `fighter_BuildCpuOrMappedPadState(fighter_index, pad)` and then `fighter_Update(fighter_index, pad)`
 for each fighter (src/main/9F9C.c:2214-2217); the variants at :2265 and :2390
 call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
-`fighter_Update` (src/main/9F9C.c:4651; its comment lists the whole sequence):
+`fighter_Update` (src/main/9F9C.c:4650; its comment lists the whole sequence):
 
 1. converts the pad bits, advances the frame `move_frame` and runs the move
    script's command list, switching moves through `motion_ResolveMoveData` /
    `fighter_StartMoveScript`;
 2. decodes the frames at `move_frame` and the next one with `motion_DecodeFrame`
-   (src/main/9F9C.c:5140-5149), or copies `g_motion_frame_buffers[fighter_index][move_frame]` in state
+   (src/main/9F9C.c:5139-5148), or copies `g_motion_frame_buffers[fighter_index][move_frame]` in state
    0x33; the frame keys go to `blend_src_frame_code` / `blend_dst_frame_code` as `(slot << 14) | frame`
-   (src/main/9F9C.c:5136-5139);
+   (src/main/9F9C.c:5135-5138);
 3. turns the two root offsets into a position delta (heading and distance
    through `Judge`, scaled by `size_scale`), blended by `move_frame_frac` or by
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
 4. integrates the velocities `base_velocity` / `decaying_xz_velocity`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:4164), and builds the pose:
-   `slot_BlendTwoPosesIntoNodeMatrices(fighter_index, &pose_frames[0], &pose_frames[1], pose_interp_weight, ...)` (src/main/9F9C.c:5435) and
-   `func_80040D48` (src/main/9F9C.c:5439).
+   `slot_BlendTwoPosesIntoNodeMatrices(fighter_index, &pose_frames[0], &pose_frames[1], pose_interp_weight, ...)` (src/main/9F9C.c:5434) and
+   `func_80040D48` (src/main/9F9C.c:5438).
 
 ## Building the pose
 
