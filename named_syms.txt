@@ -1008,7 +1008,7 @@
 /* From text1a.c around line 55-77: sprite/texture loading.  g_gpu_draw_move_table */
 /* is a 6-u16-per-row RECT + destination table.  g_gpu_draw_move_packets / D_800A9920 are 240- */
 /* byte-stride sprite-data banks. */
-/* RENAME 0x80094AF4: retired name 'D_80094AF4' — preserved note: rows of u16 RECT x / y / w / h and destination x / y for gpu_AddDrawMove's SetDrawMove; row a1 = 0..6 */  /* data-wave 2026-10-08: was g_sprite_rect_table */
+/* RENAME 0x80094AF4: retired name 'D_80094AF4' — preserved note: rows of u16 RECT x / y / w / h and destination x / y for gpu_AddDrawMove's SetDrawMove; row move_index = 0..6 */  /* data-wave 2026-10-08: was g_sprite_rect_table */
 
 /* === Attack scale factors + lookup tables (2026-05-17) -- 7 highs === */
 /* From text1a.c around lines 317, 347, 353-354: fixed-point scale */

@@ -57,7 +57,7 @@ s32 slot_GetLastLoadTimGroupRequest(s32 slot_index) {
 }
 
 /* Sets or clears bit 0 of the flag byte in every bone record of
- * g_slot_objects[arg0], then pushes its colour (greyscaled when
+ * g_slot_objects[slot_index], then pushes its colour (greyscaled when
  * gpu_RefreshGrayscaleMode() is set) through
  * PatchColorImmediatesAtListedCodeSites. */
 void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(

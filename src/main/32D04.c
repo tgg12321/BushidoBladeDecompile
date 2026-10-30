@@ -78,7 +78,7 @@ out:
 }
 
 /* RGB -> HSV (4.12 fixed point). Inverse of math_HsvToRgb above.
- * Outputs a1[] = { H, S, val }; val (V) = max(r,g,b) is the third
+ * Outputs hsv_output[] = { H, S, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the (max - min)
  * deltas / max-channel compares. */
 void math_RgbToHsv(s32 *rgb_input, s32 *hsv_output) {
@@ -261,8 +261,8 @@ void math_RotMatrixZXY(u16 *angles, MATRIX *matrix) {
     matrix->m[1][2] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
 
-/* Euler angles (a0[0..2], 12-bit) -> the 3x3 rotation part of *a1, Y-X-Z
- * order. cosA is read through a u16 local and sign-extended with an (s16)
+/* Euler angles (angles[0..2], 12-bit) -> the 3x3 rotation part of *matrix,
+ * Y-X-Z order. cosA is read through a u16 local and sign-extended with an (s16)
  * cast, the -sinA store between them, which keeps the lhu + sll + sra shape.
  */
 void math_RotMatrixYXZ(u16 *angles, MATRIX *matrix) {

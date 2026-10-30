@@ -2513,7 +2513,7 @@ void softbody_FreeAllAndClearWriteOnlyWords(void) {
 
 extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
 void softbody_AddColliders(
-    Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *a2);
+    Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *param_cursor);
 
 void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
     Unk8003F62CRec *softbody_set;
@@ -2604,7 +2604,8 @@ typedef struct {
     u16 unk10[12];
 } FaceQuadLong; /* mode 3 */
 
-s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2);
+s16 *softbody_SetAnchorWeights(
+    SVECTOR *points, s32 point_count, s16 *param_cursor);
 
 u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     /* FAKE: frame layout (oversized live object): softbody_Create's argument
@@ -2744,9 +2745,9 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
 
 s16 *softbody_SetAnchorWeights(
     SVECTOR *points, s32 point_count, s16 *param_cursor) {
-    /* the point loop counter, then each point index read from a2, the way
-     * SOTN's EntityBladeMaster runs its i as a loop counter and then reads it
-     * from a table as a subscript (Q51) */
+    /* the point loop counter, then each point index read from param_cursor, the
+     * way SOTN's EntityBladeMaster runs its i as a loop counter and then reads
+     * it from a table as a subscript (Q51) */
     /* SOTN: src/st/are/e_blade_master.c:485 @db41b28 */
     s32 i;
     for (i = 0; i < point_count; i++) {
