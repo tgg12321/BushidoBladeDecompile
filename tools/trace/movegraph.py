@@ -285,13 +285,13 @@ class Fight:
             k = r.u84 if mid == 0x7FF0 else \
                 (u86 + 1) % f14 if mid == 0x7FF1 else u86
             return f00 + 2 * m.u16(buf + 0x4E + 2 * k), r.slot, \
-                f"variant f4E[{k}] (" + ("default_variant_index" if mid == 0x7FF0 else
+                f"variant variant_move_script_index[{k}] (" + ("default_variant_index" if mid == 0x7FF0 else
                                          "variant_index + 1" if mid == 0x7FF1 else
                                          "variant_index") + ")"
         if mid == 0x7FF3:
             t = (u86 + 1) % f14
             return f00 + 2 * m.u16(buf + 0x54 + (u86 * 3 + t) * 2), \
-                r.slot, f"variant f54[{u86}][{t}]"
+                r.slot, f"variant next_variant_move_script_index[{u86}][{t}]"
         if mid & 0x8000:
             slot = self.recs[1 - ex].slot if borrow else r.slot
             return self.sections(slot)[0] + 2 * (mid & 0x7FFF), slot, \
@@ -497,7 +497,7 @@ class Fight:
         roots = [((r.cur, r.slot, idx, self.ae, False), "cur_move")]
         for k in range(3):
             a = self.sections(r.slot)[0] + 2 * self.m.u16(r.buf + 0x4E + 2 * k)
-            roots.append(((a, r.slot, idx, self.ae, False), f"root f4E[{k}]"))
+            roots.append(((a, r.slot, idx, self.ae, False), f"root variant_move_script_index[{k}]"))
         seen, q = {}, collections.deque()
         for node, lab in roots:
             if node not in seen:
