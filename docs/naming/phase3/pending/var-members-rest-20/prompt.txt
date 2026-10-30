@@ -1,0 +1,11 @@
+var-members-rest-20 -- applier notes (drafter, ln-naming-a, a6c9127e4)
+
+Research: tmp/codex/var-members-rest-20-research.md (Codex, 34 rows). Draft: 11 RENAME pairs (pairs.txt), 23 NO_NAME carried, 0 dropped; the one name changed against the research is listed in notes.txt.
+
+Apply (clean tree, Grinder stopped, WSL toolchain):
+  python3 tools/naming_member_apply.py docs/naming/phase3/pending/var-members-rest-20/pairs.txt
+Expected: exit 0, no unresolved lines, 9 files (include/game.h, src/main/17AFC.c, 31548.c, 368E4.c, 4D0A8.c, 51268.c, 5ED34.c, 64FD8.c, 9F9C.c), as dry.txt. Then run `python tools/format.py` on those 9 files (longer names), do the comment pass from notes.txt (R6 WATCH list), then the gates in naming-bar step 5: verify-oracle --rebuild, tus-check, check_completion_integrity.py, engine test, naming_keycheck.
+
+Review focus (weakest rows): Unk8009BD24Record.bd0 round_grid_pick with Unk8009BCF8Record.unk1 cell_pick_value (drop together), Unk80101EC8Record.unk_8E nibble5_variant_index with unk_90 nibble5_variant_enabled (drop together), Unk80045878Obj.unk_1A84 object_ground_y, Unk8006E950Head.unk_10 grayscale_bottom_strip_pixels, Unk80078824Rec.unk_14 sheet_header_list, Unk1F8000B8_800646E8.unk40 billboard_depth_cue.
+
+Lane claim for LAND: topic:type:Unk1F8000B8_800646E8, Unk8006E950Head, Unk80078824Rec, Unk8009BD24Record, Unk8009BCF8Record, Unk80101EC8Record, Unk80045878Obj and topic:tu main/17AFC, main/31548, main/368E4, main/4D0A8, main/51268, main/5ED34, main/64FD8, main/9F9C (+ any TU the comment pass edits).

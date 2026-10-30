@@ -1,0 +1,11 @@
+Unk1F8000B8_800646E8.unk38=billboard_zero_vector
+Unk1F8000B8_800646E8.unk40=billboard_depth_cue
+Unk1F8000B8_800646E8.unk44=billboard_quads_end
+Unk8006E950Head.unk_0C=bottom_strip_pixels
+Unk8006E950Head.unk_10=grayscale_bottom_strip_pixels
+Unk80078824Rec.unk_14=sheet_header_list
+Unk8009BD24Record.bd0=round_grid_pick
+Unk8009BCF8Record.unk1=cell_pick_value
+Unk80101EC8Record.unk_8E=nibble5_variant_index
+Unk80101EC8Record.unk_90=nibble5_variant_enabled
+Unk80045878Obj.unk_1A84=object_ground_y

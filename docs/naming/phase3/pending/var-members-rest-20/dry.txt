@@ -1,0 +1,174 @@
+PASS Unk1F8000B8_800646E8.unk38=billboard_zero_vector, Unk1F8000B8_800646E8.unk40=billboard_depth_cue, Unk1F8000B8_800646E8.unk44=billboard_quads_end, Unk8006E950Head.unk_0C=bottom_strip_pixels, Unk8006E950Head.unk_10=grayscale_bottom_strip_pixels, Unk80078824Rec.unk_14=sheet_header_list, Unk8009BD24Record.bd0=round_grid_pick, Unk8009BCF8Record.unk1=cell_pick_value, Unk80101EC8Record.unk_8E=nibble5_variant_index, Unk80101EC8Record.unk_90=nibble5_variant_enabled, Unk80045878Obj.unk_1A84=object_ground_y
+decl Unk1F8000B8_800646E8.unk38 -> billboard_zero_vector  include/game.h:1089
+decl Unk1F8000B8_800646E8.unk40 -> billboard_depth_cue  include/game.h:1090
+decl Unk1F8000B8_800646E8.unk44 -> billboard_quads_end  include/game.h:1091
+decl Unk8006E950Head.unk_0C -> bottom_strip_pixels  include/game.h:285
+decl Unk8006E950Head.unk_10 -> grayscale_bottom_strip_pixels  include/game.h:286
+decl Unk80078824Rec.unk_14 -> sheet_header_list  include/game.h:297
+decl Unk8009BD24Record.bd0 -> round_grid_pick  include/game.h:518
+decl Unk8009BCF8Record.unk1 -> cell_pick_value  include/game.h:152
+decl Unk80101EC8Record.unk_8E -> nibble5_variant_index  include/game.h:1655
+decl Unk80101EC8Record.unk_90 -> nibble5_variant_enabled  include/game.h:1656
+decl Unk80045878Obj.unk_1A84 -> object_ground_y  include/game.h:2313
+  round 0: 30 member error line(s)
+    src/main/17AFC.c:143 unk_90 x1
+    src/main/17AFC.c:280 unk_8E x1
+    src/main/17AFC.c:597 unk_90 x1
+    src/main/31548.c:184 unk_1A84 x1
+    src/main/368E4.c:1996 unk_1A84 x1
+    src/main/368E4.c:2101 unk_1A84 x1
+    src/main/4D0A8.c:961 bd0 x1
+    src/main/4D0A8.c:976 bd0 x1
+    src/main/4D0A8.c:1542 bd0 x1
+    src/main/51268.c:1653 unk38 x1
+    src/main/51268.c:1654 unk40 x1
+    src/main/51268.c:1655 unk44 x1
+    src/main/5ED34.c:176 unk_10 x1
+    src/main/5ED34.c:178 unk_0C x1
+    src/main/5ED34.c:1703 bd0 x1
+    src/main/64FD8.c:1104 bd0 x1
+    src/main/64FD8.c:1106 unk1 x1
+    src/main/64FD8.c:1809 unk_14 x1
+    src/main/64FD8.c:1812 unk_14 x1
+    src/main/9F9C.c:3417 unk_8E x1
+    src/main/9F9C.c:3420 unk_90 x1
+    src/main/9F9C.c:3431 unk_8E x1
+    src/main/9F9C.c:3490 unk_8E x1
+    src/main/9F9C.c:3490 unk_90 x1
+    src/main/9F9C.c:3505 unk_8E x1
+    src/main/9F9C.c:3505 unk_90 x1
+    src/main/9F9C.c:3509 unk_8E x1
+    src/main/9F9C.c:3964 unk_8E x1
+    src/main/9F9C.c:3965 unk_90 x1
+    src/main/9F9C.c:5451 unk_8E x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -152 +152 @@
+-    u8 unk1;
++    u8 cell_pick_value;
+@@ -285,2 +285,2 @@
+-    s32 unk_0C;
+-    s32 unk_10;
++    s32 bottom_strip_pixels;
++    s32 grayscale_bottom_strip_pixels;
+@@ -297 +297 @@
+-    Unk8009B0E0Record *unk_14[0];
++    Unk8009B0E0Record *sheet_header_list[0];
+@@ -518 +518 @@
+-    u8 bd0;
++    u8 round_grid_pick;
+@@ -1089,3 +1089,3 @@
+-    SVECTOR unk38;                 /* RotTransPers in */
+-    s32 unk40;                     /* RotTransPers' p */
+-    POLY_FT4 *unk44;               /* the end of the quads */
++    SVECTOR billboard_zero_vector;                 /* RotTransPers in */
++    s32 billboard_depth_cue;                     /* RotTransPers' p */
++    POLY_FT4 *billboard_quads_end;               /* the end of the quads */
+@@ -1655,2 +1655,2 @@
+-    s16 unk_8E;
+-    s16 unk_90;
++    s16 nibble5_variant_index;
++    s16 nibble5_variant_enabled;
+@@ -2313 +2313 @@
+-    s16 unk_1A84;                        /* +0x1A84 */
++    s16 object_ground_y;                        /* +0x1A84 */
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -143 +143 @@
+-        fighter_record->unk_90 = 0;
++        fighter_record->nibble5_variant_enabled = 0;
+@@ -280 +280 @@
+-        s16 f8E = other_record->unk_8E;
++        s16 f8E = other_record->nibble5_variant_index;
+@@ -597 +597 @@
+-        fighter_record->unk_90 = 0;
++        fighter_record->nibble5_variant_enabled = 0;
+--- a/src/main/31548.c
++++ b/src/main/31548.c
+@@ -184 +184 @@
+-    s4->unk_1A84 = arg5;
++    s4->object_ground_y = arg5;
+--- a/src/main/368E4.c
++++ b/src/main/368E4.c
+@@ -1996 +1996 @@
+-            val58 = slot_obj->unk_1A84;
++            val58 = slot_obj->object_ground_y;
+@@ -2101 +2101 @@
+-        *p58 = slot_obj->unk_1A84;
++        *p58 = slot_obj->object_ground_y;
+--- a/src/main/4D0A8.c
++++ b/src/main/4D0A8.c
+@@ -961 +961 @@
+-            c = g_working_record.match_picks[j][i].bd0;
++            c = g_working_record.match_picks[j][i].round_grid_pick;
+@@ -976 +976 @@
+-            if (g_working_record.match_picks[j][i].bd0 == 8) {
++            if (g_working_record.match_picks[j][i].round_grid_pick == 8) {
+@@ -1542 +1542 @@
+-    } else if (g_working_record.match_picks[0][0].bd0 < 0xC) {
++    } else if (g_working_record.match_picks[0][0].round_grid_pick < 0xC) {
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -1653,3 +1653,3 @@
+-    local_origin = &base->unk38;
+-    p = &base->unk40;
+-    quads_end = &base->unk44;
++    local_origin = &base->billboard_zero_vector;
++    p = &base->billboard_depth_cue;
++    quads_end = &base->billboard_quads_end;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -176 +176 @@
+-        data = resource_root->unk_10;
++        data = resource_root->grayscale_bottom_strip_pixels;
+@@ -178 +178 @@
+-        data = resource_root->unk_0C;
++        data = resource_root->bottom_strip_pixels;
+@@ -1703 +1703 @@
+-            g_entry_menu_working_record_ptr->match_picks[slot_index][0].bd0 =
++            g_entry_menu_working_record_ptr->match_picks[slot_index][0].round_grid_pick =
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -1104 +1104 @@
+-                working_record->match_picks[i][j].bd0 =
++                working_record->match_picks[i][j].round_grid_pick =
+@@ -1106 +1106 @@
+-                        .unk1;
++                        .cell_pick_value;
+@@ -1809 +1809 @@
+-    s.header = g_gpu_scrolling_sprite_resources->unk_14[10];
++    s.header = g_gpu_scrolling_sprite_resources->sheet_header_list[10];
+@@ -1812 +1812 @@
+-    sheet_headers = g_gpu_scrolling_sprite_resources->unk_14;
++    sheet_headers = g_gpu_scrolling_sprite_resources->sheet_header_list;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -3417 +3417 @@
+-                rec->unk_8E = i;
++                rec->nibble5_variant_index = i;
+@@ -3420 +3420 @@
+-                    rec->unk_90 = rec->hit_record_group_6_9_intact;
++                    rec->nibble5_variant_enabled = rec->hit_record_group_6_9_intact;
+@@ -3431 +3431 @@
+-        if (a1 != fighter_record->unk_8E) {
++        if (a1 != fighter_record->nibble5_variant_index) {
+@@ -3490 +3490 @@
+-            (t == rec->unk_8E && rec->unk_90 == 0)) {
++            (t == rec->nibble5_variant_index && rec->nibble5_variant_enabled == 0)) {
+@@ -3505 +3505 @@
+-            (t == rec->unk_8E && rec->unk_90 == 0)) {
++            (t == rec->nibble5_variant_index && rec->nibble5_variant_enabled == 0)) {
+@@ -3509 +3509 @@
+-                   (t == rec->object_variant_index || t == rec->unk_8E)) {
++                   (t == rec->object_variant_index || t == rec->nibble5_variant_index)) {
+@@ -3964,2 +3964,2 @@
+-    p->unk_8E = -1;
+-    p->unk_90 = 0;
++    p->nibble5_variant_index = -1;
++    p->nibble5_variant_enabled = 0;
+@@ -5451 +5451 @@
+-    if (fighter_record->variant_index == fighter_record->unk_8E &&
++    if (fighter_record->variant_index == fighter_record->nibble5_variant_index &&
+DRY RUN: 9 file(s) would change; nothing written
+OK: every member access renamed
