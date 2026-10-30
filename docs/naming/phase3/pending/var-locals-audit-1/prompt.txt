@@ -1,0 +1,100 @@
+# Research (read-only): local / parameter correction batch (row var-locals-audit-1, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-36/prompt.txt` (which chains to var-locals-34 / 33 /
+... and the wave-15..36 lessons) for method, rigor, evidence format and output shape, plus
+`pending/var-locals-{35,36,p1,p2}/notes.txt` and `.claude/rules/naming-bar.md`, with these changes:
+
+- Source tree: the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at HEAD
+  97ed15730 (read-only; equals main, var-locals-36 applied). Re-derive every line you cite; the
+  audit line numbers below may have drifted.
+- Output: write ONE file, main's
+  `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-audit-1-research.md`,
+  same shape as var-locals-36: HEAD first, then the proposed `local_manifest.csv` in a ```csv block
+  (columns exactly as pending/var-locals-36/local_manifest.csv), then the notes (rows NOT proposed
+  with reasons; comments citing old tokens with file:line, including symbol_addrs.txt,
+  named_syms.txt, include/*.h, docs/engine/*.md and other live docs; FAKE comments that would need
+  changing make the row NO_NAME), ending with "### LEADS for var-locals-audit-2" (findings left
+  open, if any). Return only a one-line summary.
+- This is a CORRECTION batch: every target is an already-landed local / parameter name that the
+  blind Codex audit judged wrong or overclaiming. Each audit finding is a lead, not a verdict:
+  re-derive the binding from every use. Outcomes per binding:
+  * RENAME to a name true at every use, where the binding has one true role (the audit's
+    suggestion is a candidate only; pick the plainest true name in the file's vocabulary).
+  * RESET to a neutral spelling where the binding has two or more roles (the house neutral form
+    for locals: see how earlier waves spelled neutral resets in pending/var-locals-*/
+    local_manifest.csv and naming-bar.md; use the `kind` / `verdict` values those manifests use).
+  * KEEP (not a row; list it in the notes with the reason) when the landed name is in fact true at
+    every use and the audit is mistaken.
+  Skip any finding a later wave already applied (check the current source).
+- Targets: the local findings below, copied from the name-audit backlog row (audit-NN numbers;
+  the full audit files are main's tmp/codex/audit-<NN>.md if you need the auditor's reasoning).
+  Member, type and function-name findings are out of scope.
+
+  audit-69 (overclaims, one family): fighter_ResolveWeaponContact:blade_index, other_blade_index,
+    rotated_other_blade_delta_x, other_blade_delta_y, abs_other_blade_delta_y,
+    abs_rotated_other_blade_delta_x and fighter_ProcessWeaponBodyHits:blade_quad_count,
+    blade_quad_index (17AFC.c ~724-728, ~1818-1831 also handle weapon ids 6/7 on the same operands;
+    suggested weapon for blade). Check first whether a later wave already handled them.
+  audit-74: fighter_ResolveBoneHit:thresh (17AFC.c ~558,570,584; callers pass folded heading
+    differences; suggested heading_difference); fighter_CastWeaponSegment:hlen (17AFC.c ~1623-1639
+    sqrt(dx^2 + dz^2 - dy^2); suggested neutral).
+  audit-75: math_TestPreparedTriangleSphere:dist (17AFC.c ~3037 r_sq - y*y, a squared radius;
+    suggested circle_radius_sq); math_TryPrepareTriangleNormalFrame:dist (two roles; neutral).
+  audit-76: snd_QueuePositionalSound:lzc_even (17AFC.c ~4941 mask first, then even lzc: neutral);
+    gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:step (2B344.c ~1543-1559 span then step: neutral).
+  audit-77: gpu_BuildFogImageLevels:r_src, g_src, b_src (2B344.c ~1674-1685 source then blended
+    output; suggested red/green/blue); softbody_CreateForNode:point_count (2B344.c ~2652-2661 edge
+    capacity; NOTE earlier waves record scoped_plan refusing this binding (in-body aggregate):
+    propose only if the tool now accepts it, else list it as blocked);
+    gpu_LoadRequestedAvailableTimGroupsForSlot:mask_table (31D3C.c ~169,171 one scalar; mask).
+  audit-78 (one family): math_Rotate2D:sin_val, cos_val, sin_x, cos_x, sin_y, cos_y swapped
+    (32D04.c ~424-431: sin_val reads the quarter-turn-shifted entry, i.e. the cosine). Verify the
+    table really is a sine table (its name and other readers) before swapping.
+  audit-79: reloc_KeepSelectedEntries:offsets (32D04.c ~1016-1041 selection flags; select_flags);
+    resource_LoadSelectedEntriesTexturesAndSound:last (35000.c ~652 header offset [1], first
+    section; first_section_addr); gpu_LoadTimGroup:first (368E4.c ~1078,1081 recomputed per record;
+    tim_addr).
+  audit-80/81: 4D0A8.c mode_off family (a DR_MODE * passed to SetDrawMode/AddPrim; draw_mode) in
+    gpu_DrawModeSizedPanelWithSelectedCellOpaque, gpu_DrawTimeFieldsAndDecimalCounter,
+    gpu_DrawTwoDigitCounterWithOptionalSecondSide, gpu_DrawPackedComparisonRowsAndTotals,
+    gpu_DrawPairedMarkRowsAndTimeFields, gpu_DrawImageAndAdvanceSplitWipe,
+    gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite, gpu_DrawSpriteAtPackedTablePosition,
+    gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells; end_off family (absolute chunk-end
+    address returned as end_off - arg2; end_addr) in the same functions after the first plus
+    gpu_DrawIndexedCellsDigitPairsAndGrowingBars. Check every function's binding separately; where
+    a FAKE comment cites mode_off / end_off, apply the house rule (earlier notes: a FAKE comment
+    that would need changing makes the row NO_NAME) and say which rows that hits.
+    fighter_AppendNavDetour:ofs0_x/ofs0_z/ofs1_x/ofs1_z (4510C.c ~1571-1588 absolute corner
+    coordinates; corner0_x ...); fighter_InitCpuControl:hi2_val (two roles; neutral);
+    fighter_BuildCpuOrbitRoute:left (overclaims; previous accepted probe; var-locals-36 notes may
+    hold a plan for it - check); gpu_DrawPackedComparisonRowsAndTotals:digit (never used; neutral).
+  audit-82: softbody_PrepareStep:sum_sq (87A0.c ~162 overwritten by its sqrt; neutral);
+    softbody_SolveSprings:thresh (87A0.c ~205,246 packed endpoint indices; neutral or a true name);
+    softbody_Step:dist2 (87A0.c ~533 replaced by a quotient used as a GTE scale; neutral).
+  audit-83: math_StoreFloorDiv2000XZOfPointStepTowards:lzc_even (9F9C.c ~407 as audit-76; neutral);
+    fight_PickRandomStartPositionExcludingNearestAndFarthest:dists (9F9C.c ~3796 squared distances
+    plus -1 exclusion sentinel); fight_FindNearestStartPair:best_dist, dist (squared; best_dist_sq /
+    dist_sq); fighter_UpdateInputSteeredForwardMotion:sub_result (reassigned from size_scale;
+    neutral); fighter_HandleMissingSupportWhileDescending:offsets, offsets2 (surface normals, later
+    displacement reuse; neutral / hit_normal2).
+  audit-84: math_TestPreparedTriangleSphere:flag (17AFC.c ~3024 overwritten with z2 - z0; neutral).
+  audit-86 (two-role temporaries; neutral): slot_BlendTwoPosesIntoNodeMatrices:offset (31548.c
+    ~205,214-215); reloc_KeepListedEntries:size (32D04.c ~989,992); reloc_KeepSelectedEntries:size
+    (~1027,1032); reloc_CopySelectedEntries:size (~1093,1097); ndata_ReadChecked:size (35000.c
+    ~252-255,267).
+  audit-88: fighter_UpdateCpuProbes:flags (4510C.c ~1009-1066 angle sum then probe result; neutral);
+    eff_DrawAndAdvanceRotatedQuadClusters:prim (51268.c ~967-976 work-area base then prim cursor;
+    neutral); eff_DrawYawedSlotQuads:prim (51268.c ~1469-1483; neutral);
+    menu_LoadResourcesInitStateSelectFirstEnabledRow:flags (596CC.c ~115-164 several roles;
+    neutral); menu_UpdateRowMenu:flags (596CC.c ~323,336-340 packed cursors; packed_cursors).
+  audit-89: eff_Init:size (6CF8.c ~246-253 receives an end address; buffer_end_addr).
+
+- House constraints from the earlier notes: scoped_plan must accept each pair (run
+  `naming_keycheck.scoped_plan` as var-locals-36's dry.txt describes, from the worktree, writing
+  nothing); a new name must be fresh in its function (not a token, member, macro or file-scope
+  name there); one binding = one row; a name family stays consistent across its functions.
+- Wave size: up to 80 rows; an honest smaller manifest is fine.
+- As your very last step, after all other files are written, write
+  `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\naming-a-done\research.tmp` in one
+  write, then rename it to `research.done` in that folder, containing your one-line result and the
+  research file's path.

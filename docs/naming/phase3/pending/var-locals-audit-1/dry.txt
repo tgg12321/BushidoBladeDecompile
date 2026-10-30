@@ -1,0 +1,50 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-36); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h/.inc file plus Makefile read from the lane worktree ln-naming-a, HEAD 97ed15730 = main at queue time; NAMING_KEYCHECK_ROOT = the worktree)
+accepted all 39 pairs (205 token substitutions: 17AFC.c 11, 2B344.c 17, 31D3C.c 3, 32D04.c 48, 35000.c 15, 368E4.c 3, 4510C.c 16, 4D0A8.c 38, 6CF8.c 4, 87A0.c 7, 9F9C.c 43; no include/ file touched; the comment edit listed in notes.txt
+R6 WATCH: docs/engine/combat.md:80 only). Each pair was also run alone: all accepted, none rejected (alone-counts sum to 205, equal to the together total).
+The count of every pair equals a token scan of the binding in its definition (signature and body, comments and strings excluded, ./-> member tokens excluded; separate
+tokenizer, not the plan), pair by pair, line list and count: no mismatch (39/39 line lists also equal the research USES lists). The runs modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  fighter_ResolveBoneHit:thresh=heading_difference 4
+  gpu_BuildFogImageLevels:b_src=blue 7
+  gpu_LoadRequestedAvailableTimGroupsForSlot:mask_table=load_mask 3
+  math_Rotate2D:sin_val=cosine 4
+  math_Rotate2D:cos_val=sine 4
+  math_Rotate2D:sin_x=x_cosine 3
+  math_Rotate2D:cos_x=x_sine 3
+  math_Rotate2D:sin_y=y_cosine 3
+  math_Rotate2D:cos_y=y_sine 3
+  resource_LoadSelectedEntriesTexturesAndSound:last=first_section_addr 5
+  gpu_LoadTimGroup:first=tim_addr 3
+  gpu_DrawTimeFieldsAndDecimalCounter:mode_off=dr_mode 4
+  gpu_DrawTwoDigitCounterWithOptionalSecondSide:mode_off=dr_mode 4
+  gpu_DrawPackedComparisonRowsAndTotals:mode_off=dr_mode 7
+  gpu_DrawPairedMarkRowsAndTimeFields:mode_off=dr_mode 7
+  gpu_DrawImageAndAdvanceSplitWipe:mode_off=dr_mode 4
+  gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite:mode_off=dr_mode 3
+  gpu_DrawSpriteAtPackedTablePosition:mode_off=dr_mode 4
+  gpu_DrawFixedSpriteCellsStretchedQuadAndRedTintedCells:mode_off=dr_mode 4
+  fighter_AppendNavDetour:ofs0_x=start_corner_x 4
+  fighter_AppendNavDetour:ofs0_z=start_corner_z 4
+  fighter_AppendNavDetour:ofs1_x=end_corner_x 4
+  fighter_AppendNavDetour:ofs1_z=end_corner_z 4
+  fight_PickRandomStartPositionExcludingNearestAndFarthest:dists=dist_sq 9
+  fight_FindNearestStartPair:best_dist=best_dist_sq 4
+  fight_FindNearestStartPair:dist=dist_sq 4
+  fighter_HandleMissingSupportWhileDescending:offsets2=second_hit_normal 2
+  eff_Init:size=end_addr 4
+  fighter_CastWeaponSegment:hlen=var_11 4
+  snd_QueuePositionalSound:lzc_even=var_12 3
+  gpu_QueueDepthSpacedMovesAndLinkTerminalPacket:step=var_1 10
+  gpu_DrawPackedComparisonRowsAndTotals:digit=var_4 1
+  softbody_PrepareStep:sum_sq=var_3 7
+  math_StoreFloorDiv2000XZOfPointStepTowards:lzc_even=var_7 3
+  fighter_HandleMissingSupportWhileDescending:offsets=var_3 21
+  reloc_KeepListedEntries:size=var_6 8
+  reloc_KeepSelectedEntries:size=var_6 10
+  reloc_CopySelectedEntries:size=var_10 10
+  ndata_ReadChecked:size=var_0 10
+Total 205 (together) = 205 (sum alone). Per file together: src/main/17AFC.c 11, src/main/2B344.c 17, src/main/31D3C.c 3, src/main/32D04.c 48, src/main/35000.c 15, src/main/368E4.c 3, src/main/4510C.c 16, src/main/4D0A8.c 38, src/main/6CF8.c 4, src/main/87A0.c 7, src/main/9F9C.c 43.
