@@ -1,0 +1,388 @@
+PASS ScrPad.bone_hit_points=spadA8, Unk80101EC8Record.bone_group_6_9_intact=hit_record_group_6_9_intact, Unk80101EC8Record.bone_group_14_21_hit_tally=hit_record_group_14_21_hit_tally, Unk80101EC8Record.bone_group_10_13_hit_tally=hit_record_group_10_13_hit_tally, Unk80101EC8Record.bone_group_6_9_lost_step_scale=hit_record_group_6_9_lost_step_scale, Unk80101EC8Record.bone_group_10_13_step_scales=hit_record_group_10_13_step_scales, Func80017848Edge.group_id=field_C, Func80017A44Output.flags=a44out_08
+decl ScrPad.bone_hit_points -> spadA8  include/game.h:1423
+decl Unk80101EC8Record.bone_group_6_9_intact -> hit_record_group_6_9_intact  include/game.h:1741
+decl Unk80101EC8Record.bone_group_14_21_hit_tally -> hit_record_group_14_21_hit_tally  include/game.h:1742
+decl Unk80101EC8Record.bone_group_10_13_hit_tally -> hit_record_group_10_13_hit_tally  include/game.h:1743
+decl Unk80101EC8Record.bone_group_6_9_lost_step_scale -> hit_record_group_6_9_lost_step_scale  include/game.h:1745
+decl Unk80101EC8Record.bone_group_10_13_step_scales -> hit_record_group_10_13_step_scales  include/game.h:1746
+decl Func80017848Edge.group_id -> field_C  include/game.h:2409
+decl Func80017A44Output.flags -> a44out_08  include/game.h:2423
+  round 0: 85 member error line(s)
+    src/main/17AFC.c:142 bone_group_6_9_intact x1
+    src/main/17AFC.c:150 bone_group_10_13_hit_tally x1
+    src/main/17AFC.c:160 bone_group_14_21_hit_tally x1
+    src/main/17AFC.c:405 bone_hit_points x1
+    src/main/17AFC.c:594 bone_group_6_9_intact x1
+    src/main/17AFC.c:608 bone_group_10_13_hit_tally x1
+    src/main/17AFC.c:624 bone_group_14_21_hit_tally x1
+    src/main/17AFC.c:917 bone_hit_points x1
+    src/main/17AFC.c:918 bone_hit_points x1
+    src/main/17AFC.c:919 bone_hit_points x1
+    src/main/17AFC.c:921 bone_hit_points x2
+    src/main/17AFC.c:924 bone_hit_points x2
+    src/main/17AFC.c:927 bone_hit_points x2
+    src/main/17AFC.c:1215 bone_hit_points x1
+    src/main/17AFC.c:1236 bone_hit_points x1
+    src/main/17AFC.c:1432 bone_hit_points x1
+    src/main/17AFC.c:1440 bone_hit_points x1
+    src/main/17AFC.c:1543 bone_hit_points x1
+    src/main/17AFC.c:1550 bone_hit_points x1
+    src/main/17AFC.c:1678 bone_group_6_9_intact x1
+    src/main/17AFC.c:1681 bone_hit_points x1
+    src/main/17AFC.c:1844 bone_group_6_9_intact x1
+    src/main/17AFC.c:2023 bone_hit_points x1
+    src/main/17AFC.c:2024 bone_hit_points x1
+    src/main/17AFC.c:2025 bone_hit_points x1
+    src/main/17AFC.c:2036 bone_hit_points x1
+    src/main/17AFC.c:2537 bone_hit_points x2
+    src/main/17AFC.c:2538 bone_hit_points x1
+    src/main/17AFC.c:2541 bone_hit_points x2
+    src/main/17AFC.c:2542 bone_hit_points x1
+    src/main/17AFC.c:2545 bone_hit_points x2
+    src/main/17AFC.c:2546 bone_hit_points x1
+    src/main/17AFC.c:2549 bone_hit_points x2
+    src/main/17AFC.c:2551 bone_hit_points x2
+    src/main/17AFC.c:2553 bone_hit_points x2
+    src/main/17AFC.c:2590 bone_group_6_9_intact x1
+    src/main/17AFC.c:2599 bone_hit_points x1
+    src/main/17AFC.c:2603 bone_hit_points x1
+    src/main/17AFC.c:2607 bone_hit_points x1
+    src/main/17AFC.c:2619 bone_hit_points x1
+    src/main/17AFC.c:2631 bone_hit_points x1
+    src/main/17AFC.c:3865 bone_hit_points x1
+    src/main/17AFC.c:4619 bone_group_6_9_intact x1
+    src/main/17AFC.c:4621 bone_hit_points x1
+    src/main/17AFC.c:4656 bone_hit_points x1
+    src/main/17AFC.c:4668 bone_hit_points x1
+    src/main/17AFC.c:4683 bone_hit_points x1
+    src/main/28708.c:1446 bone_hit_points x1
+    src/main/4510C.c:916 bone_group_6_9_intact x1
+    src/main/4510C.c:919 bone_group_6_9_intact x1
+    src/main/4510C.c:924 bone_group_6_9_intact x1
+    src/main/4510C.c:1963 bone_group_14_21_hit_tally x1
+    src/main/4510C.c:1964 bone_group_10_13_hit_tally x1
+    src/main/4510C.c:1968 bone_group_6_9_intact x1
+    src/main/4510C.c:2727 bone_group_6_9_intact x1
+    src/main/4510C.c:2836 bone_group_6_9_intact x1
+    src/main/4510C.c:2925 bone_group_6_9_intact x1
+    src/main/6CF8.c:669 group_id x1
+    src/main/6CF8.c:771 flags x2
+    src/main/9F9C.c:2359 bone_group_6_9_intact x1
+    src/main/9F9C.c:2484 bone_group_6_9_intact x1
+    src/main/9F9C.c:2624 bone_group_14_21_hit_tally x1
+    src/main/9F9C.c:2728 bone_group_6_9_intact x1
+    src/main/9F9C.c:2729 bone_group_6_9_lost_step_scale x1
+    src/main/9F9C.c:2733 bone_group_10_13_hit_tally x1
+    src/main/9F9C.c:2739 bone_group_10_13_step_scales x1
+    src/main/9F9C.c:2742 bone_group_14_21_hit_tally x1
+    src/main/9F9C.c:2798 bone_group_6_9_intact x1
+    src/main/9F9C.c:3057 bone_hit_points x1
+    src/main/9F9C.c:3396 bone_group_6_9_intact x1
+    src/main/9F9C.c:3402 bone_group_6_9_intact x1
+    src/main/9F9C.c:3860 bone_group_6_9_intact x1
+    src/main/9F9C.c:3861 bone_group_14_21_hit_tally x1
+    src/main/9F9C.c:3862 bone_group_10_13_hit_tally x1
+    src/main/9F9C.c:4040 bone_group_6_9_lost_step_scale x1
+    src/main/9F9C.c:4043 bone_group_10_13_step_scales x1
+    src/main/9F9C.c:4862 bone_group_6_9_intact x1
+    src/main/9F9C.c:5469 bone_group_6_9_intact x1
+    src/main/9F9C.c:5583 bone_hit_points x1
+    src/main/9F9C.c:5743 bone_group_6_9_intact x1
+    src/main/9F9C.c:5754 bone_group_6_9_intact x1
+    src/main/9F9C.c:5757 bone_group_6_9_intact x1
+    src/main/9F9C.c:5768 bone_group_6_9_intact x1
+    src/main/9F9C.c:5775 bone_group_6_9_intact x1
+    src/main/9F9C.c:5789 bone_group_6_9_intact x1
+  round 1: 1 member error line(s)
+  round 2: 0 member error line(s)
+PASS Func80017A44Input.flags=field_2
+decl Func80017A44Input.flags -> field_2  include/game.h:2462
+  round 0: 1 member error line(s)
+    src/main/2B344.c:2718 flags x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1423 +1423 @@
+-    Unk80107850Rec bone_hit_points[2][22];
++    Unk80107850Rec spadA8[2][22];
+@@ -1741,3 +1741,3 @@
+-    s16 bone_group_6_9_intact;
+-    s16 bone_group_14_21_hit_tally;
+-    s16 bone_group_10_13_hit_tally;
++    s16 hit_record_group_6_9_intact;
++    s16 hit_record_group_14_21_hit_tally;
++    s16 hit_record_group_10_13_hit_tally;
+@@ -1745,2 +1745,2 @@
+-    s16 bone_group_6_9_lost_step_scale;
+-    s16 bone_group_10_13_step_scales[4];
++    s16 hit_record_group_6_9_lost_step_scale;
++    s16 hit_record_group_10_13_step_scales[4];
+@@ -2409 +2409 @@
+-    s32 group_id;
++    s32 field_C;
+@@ -2423 +2423 @@
+-    s32 flags;
++    s32 a44out_08;
+@@ -2462 +2462 @@
+-    s16 flags;
++    s16 field_2;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -142 +142 @@
+-        fighter_record->bone_group_6_9_intact = 0;
++        fighter_record->hit_record_group_6_9_intact = 0;
+@@ -150 +150 @@
+-        fighter_record->bone_group_10_13_hit_tally += increment;
++        fighter_record->hit_record_group_10_13_hit_tally += increment;
+@@ -160 +160 @@
+-        fighter_record->bone_group_14_21_hit_tally += increment;
++        fighter_record->hit_record_group_14_21_hit_tally += increment;
+@@ -405 +405 @@
+-    hit_point = &SPAD->bone_hit_points[fighter_index][hit_record_index].x;
++    hit_point = &SPAD->spadA8[fighter_index][hit_record_index].x;
+@@ -594 +594 @@
+-            fighter_record->bone_group_6_9_intact = 0;
++            fighter_record->hit_record_group_6_9_intact = 0;
+@@ -608 +608 @@
+-            fighter_record->bone_group_10_13_hit_tally++;
++            fighter_record->hit_record_group_10_13_hit_tally++;
+@@ -624 +624 @@
+-            fighter_record->bone_group_14_21_hit_tally++;
++            fighter_record->hit_record_group_14_21_hit_tally++;
+@@ -917,3 +917,3 @@
+-        SPAD->body_overlap_points[c][0].x = SPAD->bone_hit_points[c][1].x;
+-        SPAD->body_overlap_points[c][0].y = SPAD->bone_hit_points[c][1].y;
+-        SPAD->body_overlap_points[c][0].z = SPAD->bone_hit_points[c][1].z;
++        SPAD->body_overlap_points[c][0].x = SPAD->spadA8[c][1].x;
++        SPAD->body_overlap_points[c][0].y = SPAD->spadA8[c][1].y;
++        SPAD->body_overlap_points[c][0].z = SPAD->spadA8[c][1].z;
+@@ -921 +921 @@
+-            (SPAD->bone_hit_points[c][15].x + SPAD->bone_hit_points[c][19].x) /
++            (SPAD->spadA8[c][15].x + SPAD->spadA8[c][19].x) /
+@@ -924 +924 @@
+-            (SPAD->bone_hit_points[c][15].y + SPAD->bone_hit_points[c][19].y) /
++            (SPAD->spadA8[c][15].y + SPAD->spadA8[c][19].y) /
+@@ -927 +927 @@
+-            (SPAD->bone_hit_points[c][15].z + SPAD->bone_hit_points[c][19].z) /
++            (SPAD->spadA8[c][15].z + SPAD->spadA8[c][19].z) /
+@@ -1215 +1215 @@
+-    Unk80107850Rec *blade_sweep_points = SPAD->bone_hit_points[0];
++    Unk80107850Rec *blade_sweep_points = SPAD->spadA8[0];
+@@ -1236 +1236 @@
+-        saved[k] = SPAD->bone_hit_points[0][k];
++        saved[k] = SPAD->spadA8[0][k];
+@@ -1432 +1432 @@
+-                    SPAD->bone_hit_points[0][k] = saved[k];
++                    SPAD->spadA8[0][k] = saved[k];
+@@ -1440 +1440 @@
+-            SPAD->bone_hit_points[0][k] = saved[k];
++            SPAD->spadA8[0][k] = saved[k];
+@@ -1543 +1543 @@
+-                    SPAD->bone_hit_points[0][k] = saved[k];
++                    SPAD->spadA8[0][k] = saved[k];
+@@ -1550 +1550 @@
+-        SPAD->bone_hit_points[0][k] = saved[k];
++        SPAD->spadA8[0][k] = saved[k];
+@@ -1678 +1678 @@
+-            if (obj->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
++            if (obj->hit_record_group_6_9_intact == 0 && i >= 6 && i <= 9) {
+@@ -1681 +1681 @@
+-            pos = &SPAD->bone_hit_points[id][i];
++            pos = &SPAD->spadA8[id][i];
+@@ -1844 +1844 @@
+-            other_record->bone_group_6_9_intact != 0 &&
++            other_record->hit_record_group_6_9_intact != 0 &&
+@@ -2023,3 +2023,3 @@
+-                dx = SPAD->bone_hit_points[i][temp3].x - scr->unkC8.x;
+-                dy = SPAD->bone_hit_points[i][temp3].y - scr->unkC8.y;
+-                dz = SPAD->bone_hit_points[i][temp3].z - scr->unkC8.z;
++                dx = SPAD->spadA8[i][temp3].x - scr->unkC8.x;
++                dy = SPAD->spadA8[i][temp3].y - scr->unkC8.y;
++                dz = SPAD->spadA8[i][temp3].z - scr->unkC8.z;
+@@ -2036 +2036 @@
+-                i, 4, &SPAD->bone_hit_points[i][idx].x, var_1);
++                i, 4, &SPAD->spadA8[i][idx].x, var_1);
+@@ -2537,2 +2537,2 @@
+-            (SPAD->bone_hit_points[i][1].x + SPAD->bone_hit_points[i][2].x +
+-             SPAD->bone_hit_points[i][3].x) /
++            (SPAD->spadA8[i][1].x + SPAD->spadA8[i][2].x +
++             SPAD->spadA8[i][3].x) /
+@@ -2541,2 +2541,2 @@
+-            (SPAD->bone_hit_points[i][1].y + SPAD->bone_hit_points[i][2].y +
+-             SPAD->bone_hit_points[i][3].y) /
++            (SPAD->spadA8[i][1].y + SPAD->spadA8[i][2].y +
++             SPAD->spadA8[i][3].y) /
+@@ -2545,2 +2545,2 @@
+-            (SPAD->bone_hit_points[i][1].z + SPAD->bone_hit_points[i][2].z +
+-             SPAD->bone_hit_points[i][3].z) /
++            (SPAD->spadA8[i][1].z + SPAD->spadA8[i][2].z +
++             SPAD->spadA8[i][3].z) /
+@@ -2549 +2549 @@
+-            (SPAD->bone_hit_points[i][4].x + SPAD->bone_hit_points[i][5].x) / 2;
++            (SPAD->spadA8[i][4].x + SPAD->spadA8[i][5].x) / 2;
+@@ -2551 +2551 @@
+-            (SPAD->bone_hit_points[i][4].y + SPAD->bone_hit_points[i][5].y) / 2;
++            (SPAD->spadA8[i][4].y + SPAD->spadA8[i][5].y) / 2;
+@@ -2553 +2553 @@
+-            (SPAD->bone_hit_points[i][4].z + SPAD->bone_hit_points[i][5].z) / 2;
++            (SPAD->spadA8[i][4].z + SPAD->spadA8[i][5].z) / 2;
+@@ -2590 +2590 @@
+-        if (fighter_record->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
++        if (fighter_record->hit_record_group_6_9_intact == 0 && i >= 6 && i <= 9) {
+@@ -2599 +2599 @@
+-        x = SPAD->bone_hit_points[id][i].x;
++        x = SPAD->spadA8[id][i].x;
+@@ -2603 +2603 @@
+-            y = SPAD->bone_hit_points[id][i].y;
++            y = SPAD->spadA8[id][i].y;
+@@ -2607 +2607 @@
+-                z = SPAD->bone_hit_points[id][i].z;
++                z = SPAD->spadA8[id][i].z;
+@@ -2619 +2619 @@
+-                0, scr, (s32 *)&SPAD->bone_hit_points[id][i], r, rec->unk_0E);
++                0, scr, (s32 *)&SPAD->spadA8[id][i], r, rec->unk_0E);
+@@ -2631 +2631 @@
+-                0, scr, &SPAD->bone_hit_points[id][i], r, rec->unk_0E);
++                0, scr, &SPAD->spadA8[id][i], r, rec->unk_0E);
+@@ -3865 +3865 @@
+-    bone_points = SPAD->bone_hit_points[fighter_record->index];
++    bone_points = SPAD->spadA8[fighter_record->index];
+@@ -4619 +4619 @@
+-            if (var_5->bone_group_6_9_intact == 0 && j >= 6 && j <= 9)
++            if (var_5->hit_record_group_6_9_intact == 0 && j >= 6 && j <= 9)
+@@ -4621 +4621 @@
+-            pos = &SPAD->bone_hit_points[var_6][j];
++            pos = &SPAD->spadA8[var_6][j];
+@@ -4656 +4656 @@
+-                &SPAD->bone_hit_points[var_6][j].x, 0);
++                &SPAD->spadA8[var_6][j].x, 0);
+@@ -4668 +4668 @@
+-                var_6 ^ 1, 0xE, &SPAD->bone_hit_points[var_6][j].x,
++                var_6 ^ 1, 0xE, &SPAD->spadA8[var_6][j].x,
+@@ -4683 +4683 @@
+-                &SPAD->bone_hit_points[var_6][j].x, 0);
++                &SPAD->spadA8[var_6][j].x, 0);
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1446 +1446 @@
+-            var_11, SPAD->bone_hit_points[i], SPAD->weapon_points[i],
++            var_11, SPAD->spadA8[i], SPAD->weapon_points[i],
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -2718 +2718 @@
+-    init.in.flags = 0xE00;
++    init.in.field_2 = 0xE00;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -916 +916 @@
+-            rec->other->bone_group_6_9_intact == 0) ||
++            rec->other->hit_record_group_6_9_intact == 0) ||
+@@ -919 +919 @@
+-             rec->other->bone_group_6_9_intact == 0)) ||
++             rec->other->hit_record_group_6_9_intact == 0)) ||
+@@ -924 +924 @@
+-             rec->other->bone_group_6_9_intact == 0)))) ||
++             rec->other->hit_record_group_6_9_intact == 0)))) ||
+@@ -1963,2 +1963,2 @@
+-                a = p->bone_group_14_21_hit_tally;
+-                b = p->bone_group_10_13_hit_tally;
++                a = p->hit_record_group_14_21_hit_tally;
++                b = p->hit_record_group_10_13_hit_tally;
+@@ -1968 +1968 @@
+-                    (((p->bone_group_6_9_intact == 0 ? a + 4 + b : a + b) + c)
++                    (((p->hit_record_group_6_9_intact == 0 ? a + 4 + b : a + b) + c)
+@@ -2727 +2727 @@
+-                        if ((e[0] & 0x80) && p->bone_group_6_9_intact == 0) {
++                        if ((e[0] & 0x80) && p->hit_record_group_6_9_intact == 0) {
+@@ -2836 +2836 @@
+-                state == 0x15 && p->bone_group_6_9_intact != 0 &&
++                state == 0x15 && p->hit_record_group_6_9_intact != 0 &&
+@@ -2925 +2925 @@
+-                p->bone_group_6_9_intact != 0 &&
++                p->hit_record_group_6_9_intact != 0 &&
+--- a/src/main/6CF8.c
++++ b/src/main/6CF8.c
+@@ -669 +669 @@
+-    edge->group_id = arg1;
++    edge->field_C = arg1;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -2359 +2359 @@
+-        entry->bone_group_6_9_intact = 1;
++        entry->hit_record_group_6_9_intact = 1;
+@@ -2484 +2484 @@
+-    if (obj->bone_group_6_9_intact == 0) {
++    if (obj->hit_record_group_6_9_intact == 0) {
+@@ -2624 +2624 @@
+-    if (obj->bone_group_14_21_hit_tally != 0 && obj->is_defeated == 0) {
++    if (obj->hit_record_group_14_21_hit_tally != 0 && obj->is_defeated == 0) {
+@@ -2728,2 +2728,2 @@
+-    if (fighter_record->bone_group_6_9_intact == 0) {
+-        s32 f = fighter_record->bone_group_6_9_lost_step_scale;
++    if (fighter_record->hit_record_group_6_9_intact == 0) {
++        s32 f = fighter_record->hit_record_group_6_9_lost_step_scale;
+@@ -2733 +2733 @@
+-        s16 var_7 = fighter_record->bone_group_10_13_hit_tally;
++        s16 var_7 = fighter_record->hit_record_group_10_13_hit_tally;
+@@ -2739 +2739 @@
+-    factor = fighter_record->bone_group_10_13_step_scales[idx];
++    factor = fighter_record->hit_record_group_10_13_step_scales[idx];
+@@ -2742 +2742 @@
+-    s32 var_8 = fighter_record->bone_group_14_21_hit_tally;
++    s32 var_8 = fighter_record->hit_record_group_14_21_hit_tally;
+@@ -2798 +2798 @@
+-        return fighter_record->bone_group_6_9_intact != 0;
++        return fighter_record->hit_record_group_6_9_intact != 0;
+@@ -3057 +3057 @@
+-                &SPAD->bone_hit_points[fighter_index]
++                &SPAD->spadA8[fighter_index]
+@@ -3396 +3396 @@
+-                    rec->object_variant_enabled = rec->bone_group_6_9_intact;
++                    rec->object_variant_enabled = rec->hit_record_group_6_9_intact;
+@@ -3402 +3402 @@
+-                    rec->unk_90 = rec->bone_group_6_9_intact;
++                    rec->unk_90 = rec->hit_record_group_6_9_intact;
+@@ -3860,3 +3860,3 @@
+-    fighter_record->bone_group_6_9_intact = 1;
+-    fighter_record->bone_group_14_21_hit_tally = 0;
+-    fighter_record->bone_group_10_13_hit_tally = 0;
++    fighter_record->hit_record_group_6_9_intact = 1;
++    fighter_record->hit_record_group_14_21_hit_tally = 0;
++    fighter_record->hit_record_group_10_13_hit_tally = 0;
+@@ -4040 +4040 @@
+-    p->bone_group_6_9_lost_step_scale =
++    p->hit_record_group_6_9_lost_step_scale =
+@@ -4043 +4043 @@
+-        p->bone_group_10_13_step_scales[i] =
++        p->hit_record_group_10_13_step_scales[i] =
+@@ -4862 +4862 @@
+-                    if (fighter_record->bone_group_6_9_intact == 0) {
++                    if (fighter_record->hit_record_group_6_9_intact == 0) {
+@@ -5469 +5469 @@
+-         fighter_record->bone_group_6_9_intact != 0 &&
++         fighter_record->hit_record_group_6_9_intact != 0 &&
+@@ -5583 +5583 @@
+-        fighter_record, SPAD->bone_hit_points[fighter_index],
++        fighter_record, SPAD->spadA8[fighter_index],
+@@ -5743 +5743 @@
+-                } else if (fighter_record->bone_group_6_9_intact != 0 &&
++                } else if (fighter_record->hit_record_group_6_9_intact != 0 &&
+@@ -5754 +5754 @@
+-                    fighter_record->bone_group_6_9_intact;
++                    fighter_record->hit_record_group_6_9_intact;
+@@ -5757 +5757 @@
+-            fighter_record->bone_group_6_9_intact != 0 &&
++            fighter_record->hit_record_group_6_9_intact != 0 &&
+@@ -5768 +5768 @@
+-            fighter_record->bone_group_6_9_intact != 0) {
++            fighter_record->hit_record_group_6_9_intact != 0) {
+@@ -5775 +5775 @@
+-            fighter_record->bone_group_6_9_intact != 0 &&
++            fighter_record->hit_record_group_6_9_intact != 0 &&
+@@ -5789 +5789 @@
+-    if (fighter_record->bone_group_6_9_intact != 0) {
++    if (fighter_record->hit_record_group_6_9_intact != 0) {
+DRY RUN: 7 file(s) would change; nothing written
+UNRESOLVED (1): edit by hand, then re-run the keycheck
+  src/main/6CF8.c:771: also reaches `flags` through another type
+exit 1

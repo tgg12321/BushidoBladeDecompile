@@ -1,0 +1,58 @@
+# Research (read-only): member naming wave var-members-rest-17 (BB2 decomp)
+
+Work tree (read from here, absolute paths): `C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a`
+(branch lanes/naming-a, == main e2345a59f). Do NOT edit any tracked file in either tree. Write ONLY
+`C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a\tmp\vmr17\var-members-rest-17-research.md`
+(the session copies it to main's tmp/codex afterwards).
+
+Rules: read `.claude/rules/naming-bar.md` (N1-N6, step 5 `T.m=n`, Q120 RESET spelling). A member
+name must be supported by EVERY read and write of that member in src/ (C, including pointer aliases
+and casts) and by the asm of any remaining INCLUDE_ASM body that touches the record at that offset.
+Never guess a role; prefer NO_NAME when thin; no numbers / flags / selector values in names unless
+they are the thing's identity. Local or parameter names are never evidence (N3); a landed name only
+points at code to re-read. The new name must be no member, type, macro or keyword anywhere in src/
+or include/ (`git -C "<wt>" grep -w`), and not a new name in any other pending pairs.txt
+(`docs/naming/phase3/pending/*/pairs.txt`). Use `git -C "<wt>" grep -n` for searches.
+
+Rows to research (up to ~20; quality over count):
+
+1. **ScrPad.bone_hit_points RESET** (include/game.h ~1423, ScrPad +0xA8). Ground already accepted
+   by a reviewer: fighter_ProcessWeaponContacts (17AFC.c ~1215-1551) stores weapon endpoints in the
+   first 16 points (saved and restored), so "bone" is not true of every use. The previous attempt
+   failed R5 only: the spelling `unkA8` clashes with live `Unk1F8002B8Rec.unkA8` (game.h ~1358,
+   reached inside ScrPad via unk2B8.rec). Find the Q120 / naming-bar rule for a fresh type-tag+offset
+   neutral spelling (look at how earlier RESETs were spelled: `git -C "<wt>" log --grep RESET`,
+   docs/naming/phase3/pending/*/member_manifest.csv rows with action RESET) and propose a spelling
+   that is fresh by grep -w. Re-verify the access list (previous list:
+   `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-members-rest-16-research.md`
+   and docs/naming/phase3/pending/var-members-rest-16/member_manifest.csv) and list every
+   comment/doc citing `bone_hit_points` the member (not the 9F9C.c parameter of the same spelling
+   or the derived bone_hit_points_1_3_centroid / _4_5_midpoint identifiers).
+   Alternatively, if every use supports a truthful non-neutral name (e.g. a shared bone/weapon
+   "contact points" role), propose it as RENAME instead, with the argument.
+2. **Name-audit audit-64 (wrong, one family)**: Unk80101EC8Record.bone_group_6_9_intact,
+   bone_group_14_21_hit_tally, bone_group_10_13_hit_tally, bone_group_6_9_lost_step_scale,
+   bone_group_10_13_step_scales. Audit claim: the numbers are hit-record indices (17AFC.c:603-624,
+   1678; 9F9C.c:2728-2739) and d_7D920.c:150-158 maps those records to bones 8/9, 4/5, 12/13/15/16,
+   not bones 6-21; suggested hit_record_group_* with the same suffixes. Re-derive from every access;
+   confirm or refute; propose the names (or a better truthful family).
+3. **Name-audit audit-67 (overclaims)**: Func80017848Edge.group_id (6CF8.c:669 only stores the
+   header value passed at :743/:745; the one producer 2B344.c:2683,2700 always supplies 2; suggested
+   group_value), Func80017A44Output.flags and Func80017A44Input.flags (2B344.c:2718 assigns 0xE00,
+   6CF8.c:771 only copies it; no read tests bits; suggested neutral RESET). Re-derive each.
+4. **Leads**: g_fight_config.unk_4 and unk_F (find the type in include/; per-player pairs via
+   fighter_Init; see docs/naming/phase3/pending/var-globals-m/notes.txt:8). Name only what every
+   access shows.
+5. Any other `unk*` / `field_*` member whose accessing function or neighbouring member was named
+   since 2026-10-28 (`git -C "<wt>" log --since=2026-10-28 --format="%h %s" | grep naming:` lists
+   recent naming commits; cite file:line). Only add rows with real evidence.
+
+Output file shape (markdown):
+- A first line with tree HEAD and a summary.
+- `# candidates.csv` with a ```csv block, columns `type,member,offset,proposed_name,action,evidence`;
+  action RENAME, RESET or NO_NAME; evidence = ACCESSES (every file:line, R/W), BODY summary, WHY,
+  COUNTER-EVIDENCE, INCLUDE_ASM check, FRESH check.
+- `# notes.md`: per row, every comment / doc / symbol_addrs.txt / named_syms.txt / docs/engine
+  line citing the old token (the comment pass needs them), and tools/trace/** hits (listed only).
+
+Return a one-line summary (rows by action) and the output path.

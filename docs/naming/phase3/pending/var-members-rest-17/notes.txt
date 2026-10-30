@@ -1,0 +1,59 @@
+var-members-rest-17 -- draft notes (research re-derived by the drafter in the lane worktree ln-naming-a at e2345a59f; research treated as hints only)
+
+BASIS: research tmp/vmr17/var-members-rest-17-research.md, 15 rows (7 RENAME, 4 RESET, 4 NO_NAME). Result: 11 rows in pairs.txt/member_manifest.csv, 0 DROPPED, 0 name changes, 4 NO_NAME carried. The verdict column is empty (the reviewer decides). Dry run (type-resolved tools/naming_member_apply.py --dry-run, run under WSL because it needs the mipsel cpp/cc1): see dry.txt; exit 1 with one unresolved line, see HAND EDIT.
+
+Re-derivation
+- Every use of each member re-read in src/ and include/ (git grep -w equivalents), including the record-index switches (17AFC.c:129-161, 589-625) and the template table (d_7D920.c:143-165) behind the hit_record_group_* rows, 6CF8.c:641-778 and 87A0.c:205-234, 335-390, 567-589 behind the softbody rows. No pointer alias or cast reaches these offsets beyond the ones listed in the manifest rows. The 137 live INCLUDE_ASM functions (libgte/libapi/libsn/libcard, 3AB48.c gpu/gte helpers, 43500.c) do not address the fighter record or the softbody types; asm/funcs/softbody_*.s are leftovers of C-landed functions.
+- Freshness: spadA8, hit_record_group_6_9_intact, hit_record_group_14_21_hit_tally, hit_record_group_10_13_hit_tally, hit_record_group_6_9_lost_step_scale, hit_record_group_10_13_step_scales, field_C, a44out_08, field_2, anchor_weight, anchor_centroid_distance: 0 hits in src/ include/ and none appears in any docs/naming/phase3/pending/*/pairs.txt.
+- field_34 (anchor_centroid_distance) depends on field_18 (anchor_weight) passing: adjacent in pairs.txt. field_18 caveat: for values in [-0xFF,-1] (87A0.c:376-386) it is a pull on a free node; the name rests on the >= 0 anchored case plus the weight role; fallback rest_pull_weight / centroid_distance.
+- Weak rows for the reviewer: ScrPad.bone_hit_points (rest-12 KEEP-as-borrow vs rest-16 FAIL on spelling), Output/Input flags (generic word, Q119), field_18/field_34 (Conf M).
+
+HAND EDIT (dry-run exit 1): src/main/6CF8.c:771 `softbody->flags = input->flags;` reaches `flags` through both Func80017A44Output and Func80017A44Input, so the tool cannot settle it. At apply time, hand-edit to `softbody->a44out_08 = input->field_2;` then run the keycheck. All other 7 touched files apply cleanly.
+
+NO_NAME rows carried (not in pairs)
+- Unk80102778Rec.unk_4 (u8[6], +0x04): three per-player pairs in one array: [0..1] roster index, [2..3] fighter_Init 4th argument, [4..5] is_cpu_controlled; a single name is false for two thirds of uses. Lead: split into three u8[2] members (layout task), then name each. Comments citing it: d_7D920.c:124,134; include/game.h:2366-2370.
+- Unk80102778Rec.unk_F (u8, +0x0F): 0/1 config toggle copied to D_800A3140 (24BF0.c:19); role is D_800A3140's, unnamed; CR is a printed string only (menu_config.c:85, N3). Lead: name both in one wave once the fighter_ResolveBoneHit fifth-argument effect (17AFC.c:2201) is named.
+- Unk80101EC8Record.unk_272 (+0x272): writers 17AFC.c:136 (records 0-5), 363/366 (double increment), 9F9C.c:2909 (other->unk_272 += 1 on a paired-move start, no hit), 3863; no single role. Lead after move_kind 0x15/0x2C/0xE/0x19 are named.
+- Unk80101EC8Record.unk_27E (s16[4], +0x27E): index mixes the 14-21 tally with unk_272; follows unk_272. Comments citing old tokens (only if named later): 9F9C.c:4609, include/bb2.h:227, d_7D920.c:453.
+
+R6 WATCH list (comment pass must rewrite; re-verified at e2345a59f)
+ScrPad.bone_hit_points -> spadA8 (member only):
+- src/main/17AFC.c:1203; 2458, 2459 (the SPAD->bone_hit_points[k] citations; 2457's bone_hit_points_1_3_centroid is a separate member, leave).
+- src/main/9F9C.c:3027 and 3090 (SPAD->bone_hit_points[...]). 9F9C.c:3089, 3095 name the fighter_UpdateBoneWorldData parameter (declared 3102, used 3117, 3158): leave.
+- include/game.h:864, 912, 1411, 1412, 1415, 1777.
+- symbol_addrs.txt:1904, 1907 (SPAD->bone_hit_points[i][4] / [1]). Lines 1905, 1906, 1908, 1909 cite only the derived centroid/midpoint members: leave.
+- named_syms.txt, docs/engine, tools/trace: no hit for the member (docs/engine/ai.md:106, combat.md:36-37 cite only bone_hit_points_4_5_midpoint / _1_3_centroid: leave).
+Unk80101EC8Record bone_group_* -> hit_record_group_*:
+- include/bb2.h:222 (bone_group_6_9_lost_step_scale), 225 (bone_group_10_13_step_scales).
+- src/main/d_7D920.c:429, 436 (same two).
+- src/main/9F9C.c:3374 ("copying bone_group_6_9_intact into").
+- docs/engine/combat.md:58 and docs/engine/main_loop.md:109 (bone_group_6_9_intact).
+- docs/naming/phase3/no_name.tsv:8 (func_8001EEB4 row, entry->bone_group_6_9_intact; also the text "unk_26C (now bone_group_6_9_intact)" and "bone-group 6..9" wording).
+- symbol_addrs.txt / named_syms.txt: no member-token hit.
+- History, leave: pending/var-members-rest-14/*, var-globals-l/{data_manifest.csv:13, notes.txt:14}, var-globals-m/notes.txt:20, backlog.tsv:64.
+- tools/trace/movegraph.py:91, 221, 354, 410, 577 use the pre-rest-14 spelling unk_26C (offset read m.s16(b + 0x26C)); stale already, listed only.
+Func80017848Edge.group_id -> field_C: no comment names group_id (include/game.h:2464 groups and the 2458 comment name the input list, not this member).
+Func80017A44Output.flags -> a44out_08, Func80017A44Input.flags -> field_2:
+- include/game.h:2416 ("flags: the input's flags", Output comment) and include/game.h:2458 ("the flags", Input comment): rewrite to the new spellings. include/game.h:2432 ("its flags (snap ...") is Unk80017FA0Rec.snap: leave.
+- symbol_addrs.txt:180, 679, 680 and named_syms.txt:198 cite only g_softbody_slots / .points: no change.
+Func80017A44Record.field_18 -> anchor_weight, field_34 -> anchor_centroid_distance:
+- src/main/6CF8.c:642 (softbody_AddSpring header: "non-negative field_18"). No comment names field_34. docs/engine, registries, tools/trace: none. History: wave21 pair Func80017A44Record.index=field_18 (bf769cb45).
+
+FOLLOW-UP LEAD (out of scope here): the same wrong bone-group wording survives in function and global names: fighter_AccumulateOrClearByBoneGroup (17AFC.c:119, switch on hit_record_index), fighter_ResetBoneGroupHitState (9F9C.c:3859, bb2.h:728), fighter_AccumulateBoneGroupFlagWhenGameModeZero (17AFC.c:78), g_fighter_lost_bone_group_step_scales (d_7D920.c:430, bb2.h:223), and g_fight_bone_group_tim_requests / g_fight_saved_bone_group_tim_requests / g_fight_displaced_bone_group_tim_requests (symbol_addrs.txt:285, 342, 348, 751, 939, 1022; bits set from hit_record_index at 17AFC.c:71-115). They need a func/data wave or the audit list.
+
+PRE-APPLY (naming-reviewer 2026-10-30, naming-a): 9 PASS, 2 FAIL. Dropped: Func80017A44Record.field_18=anchor_weight
+(N1/N4: a sign-and-magnitude mode code, not a weight; 0 snaps rigidly at 87A0.c:360-366, -1..-0xFF pull free nodes at
+376-385, the -0x100 default pulls nothing; suggested keep field_18 or a fresh mode-code row) and
+Func80017A44Record.field_34=anchor_centroid_distance (N3: 'anchor' rested on the failed row; write-only >>8 distance
+clamped at 0x100, 6CF8.c:732; suggested centroid_distance or neutral as a fresh row). dry.txt re-run on the 9 kept
+pairs (7 files; exit 1 = the one planned hand edit).
+R6 WATCH (reviewer, in addition to the list above):
+  9F9C.c:3089 first 'bone_hit_points' and 3095 'bone_hit_points[0]' name the fighter_UpdateBoneWorldData parameter
+  (3102): do NOT swap; 9F9C.c:3090 and 3027 are the member: swap. bone_hit_points_1_3_centroid / _4_5_midpoint /
+  bone_hit_point_0 are distinct tokens: keep.
+  'flags' / 'group_id' comment pass is narrow: only game.h:2416 (Output comment) and game.h:2458 (Input comment);
+  leave 2B344.c softbody_CreateForNode FAKE comments, its local u16 flags, and game.h:2432 (Unk80017FA0Rec) alone.
+  Hand edit 6CF8.c:771 -> softbody->a44out_08 = input->field_2; then the keycheck.
+  Rewrite: d_7D920.c:429,436; bb2.h:222,225; 9F9C.c:3374; 17AFC.c:1203; game.h:864,912,1411,1412,1415,1777;
+  symbol_addrs.txt:1904,1907; docs/engine/combat.md:58; docs/engine/main_loop.md:109; no_name.tsv:8.
+  Post-apply survival grep: bone_group_* member tokens, the ScrPad bone_hit_points member, group_id, old flags wording.
