@@ -1,0 +1,36 @@
+{
+  "description": "versus-2p-kimigaura's fight on Kimigaura Coast, then the Rematch menu's DOWN + CROSS on Return to Sub Menu (12300) ends on Select Character: the menu return frees the fight blocks and the arena moves the loaded Kimigaura stage block, so resource_RebaseLoadedBlockSections takes its selector-11 arm, wave_MoveCellBuffer",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "menu:char_select",
+    "stage:kimigaura_coast",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:rematch_sub_menu"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-sub-menu-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura",
+  "end_frame": 13300,
+  "inputs": [
+    "12200:DOWN",
+    "12300:CROSS"
+  ],
+  "phases": [
+    "12300:t_sub_menu",
+    "12900:char_select_2"
+  ],
+  "shots": [
+    "12250:rematch_menu.down",
+    "12299:rematch_menu.cross",
+    "12300:t_sub_menu.first",
+    "12600:t_sub_menu.mid",
+    "12899:t_sub_menu.last",
+    "12900:char_select_2.first",
+    "13299:char_select_2.last"
+  ]
+}
