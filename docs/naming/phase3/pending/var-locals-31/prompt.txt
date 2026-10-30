@@ -1,0 +1,48 @@
+# Research (read-only): local / parameter names, wave 31 (row var-locals-31, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-30/prompt.txt` (which chains to var-locals-29 / 26 / 15
+and the wave-15..29 lessons) exactly, plus `pending/var-locals-{28,29,30}/notes.txt`, with these
+changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD 180c6ed47 (read-only; equals main, wave 30 applied).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-31-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 30: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-30/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, include/*.h and
+  docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not edited). Return only a
+  one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  1. var-locals-30's CAP-CUT row gpu_SetLastDepthIndexOtEntryLinkToPacket:arg0=packet_addr
+     (pending/var-locals-30/notes.txt "CAP-CUT"): re-derive against the current source.
+  2. 2B344.c from font_AddTpage:p / font_DrawChar:p / font_Printf:p / bitstream_InitDeltaAccumulator:ptr
+     (check #define-body hits first: a p / ptr token inside a macro body cannot be a row) and
+     gpu_BuildFogImageLevels (2B344.c ~1594; var_2 is FAKE) onward: gpu_MoveObjectClutsToFogBlock,
+     gpu_RestoreObjectClutOffsets, gpu_SetSegmentCellsGateBit, the grid functions (~1951-2290),
+     gpu_*Cell* (~2359-2420), softbody_* (~2462-2859).
+  3. Then 309CC.c, 31548.c, 31D3C.c, 32D04.c, 35000.c and the following game TUs in ROM-offset order
+     (`ls src/main`, skip psxsdk/) that still have auto-named bindings (argN, var_N, a0..a3, v0_xxxx,
+     spNN, temp_*, s, p, ...) not on any NO_NAME / neutral list.
+- Left neutral on purpose, do not re-propose without new evidence: wave 30's replay_PlayFrame:var_19
+  (snapshot of a cleared global), comb_WaitRead8:v0 (16-bit check only after masking),
+  fight_RunCommandStream:var_0 (dispatch-pass flag); wave 29's snd_QueuePositionalSound
+  var_7 / var_9 / var_10 and fight_BuildOpponentOrder:dir.
+- Do not re-propose wave 8-30 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,30}/notes.txt) without new evidence, said in the row.
+- Also list, for the comment pass, the R6-30 non-blocking stale cites, each with file:line and the fix
+  against the current tree: pre-existing stale 2B344.c / 17AFC.c function cites in docs/engine
+  main_loop.md, menus.md, file_io.md, replay.md, combat.md and symbol_addrs.txt
+  g_fight_displaced_first_fighter_selection (:226/:257/:368); the optional 'blade' prose in 17AFC.c
+  ~1751-1778, include/game.h ~1639/1679-1680/1749-1751 and combat.md (the wave-30 weapon_* renames);
+  the 28708.c replay_PlayFrame comment calling the cur_move_slot bit a weapon-set selector (judge it
+  against the code, propose the true wording). Full list: body of the var-locals-30 comment commit,
+  `git log -1 --grep "var-locals-30 comment pass"`.
+- Lessons (unchanged): apply is naming_keycheck.scoped_plan(base, pairs, {}), so every row must be a
+  binding scoped_plan can resolve (no function-like macro arguments, no token inside a #define body);
+  a new name must not equal a member, global, macro or function the same function references; a
+  binding with two roles in one body stays neutral; own vs opponent values must be distinguished; a
+  name is true before AND after every in-place rewrite; 'player' needs player evidence, the tree's
+  spelling for the 0/1 fight side is fighter_index; FAKE-labelled temporaries (/* FAKE */) stay
+  neutral unless the name is true of the value at every use.

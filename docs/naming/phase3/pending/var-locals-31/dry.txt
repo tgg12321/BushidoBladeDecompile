@@ -1,0 +1,93 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-30); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(read_working_tree() with NAMING_KEYCHECK_ROOT = cwd = the lane worktree ln-naming-b, HEAD 180c6ed47 = main; the virtual
+include/.keycheck-cpp-defs.h entry removed from base and ignored in the plan) accepted all 80 pairs
+(384 token substitutions: src/main/2B344.c 382, src/main/309CC.c 2; no include/ file touched; the comment edits listed in notes.txt
+R6 WATCH are hand edits). Each pair was also run alone: all accepted, none rejected; the per-pair counts below sum to 384. The count of every pair equals
+a token scan of the binding in its definition (signature and body, comments and strings excluded; forward declarations are not in the count and are not substituted),
+pair by pair, no mismatch (the scan is a separate tokenizer, not the plan's). The 90 research pairs together were also accepted (425 substitutions with the research's record_index spelling); the 10 cap-cut
+pairs account for the difference (see notes.txt). The run modified no file in the worktree (git status shows only the new pending dir).
+Per-pair substitutions (function:old=new count):
+  gpu_SetLastDepthIndexOtEntryLinkToPacket:arg0=packet_addr 3
+  gpu_BuildFogImageLevels:var_8=far_color_pixel 3
+  gpu_MoveObjectClutsToFogBlock:arg0=slot_index 6
+  gpu_RestoreObjectClutOffsets:v1=slot_object 5
+  gpu_SetSegmentCellsGateBit:arg2=end_x 2
+  gpu_SetSegmentCellsGateBit:arg3=end_z 2
+  gpu_SetSegmentCellsGateBit:temp_fp=end_cell_x 5
+  gpu_SetSegmentCellsGateBit:temp_s7=end_cell_z 5
+  gpu_SetSegmentCellsGateBit:var_s1=cell_x 16
+  gpu_SetSegmentCellsGateBit:var_s0=cell_z 16
+  gpu_SetSegmentCellsGateBit:var_s6=x_direction 5
+  gpu_SetSegmentCellsGateBit:var_s5=z_direction 5
+  gpu_SetSegmentCellsGateBit:var_s4=z_is_major 5
+  gpu_SetSegmentCellsGateBit:var_s3=steps_left 5
+  gpu_SetSegmentCellsGateBit:temp_lo=slope 4
+  gpu_SetSegmentCellsGateBit:sp20=minor_step 3
+  gpu_SetSegmentCellsGateBit:temp_v1=start_cell_center_x 4
+  gpu_SetSegmentCellsGateBit:temp_v0=start_cell_center_z 4
+  gpu_SetSegmentCellsGateBit:sp10=cell_pos 10
+  gpu_SetSegmentCellsGateBit:sp18=minor_step_cell_pos 4
+  gpu_SetViewOriginSegmentCellsGateBit:arg0=end_x 2
+  gpu_SetViewOriginSegmentCellsGateBit:arg1=end_z 2
+  gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards:t0=run_entry 4
+  gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards:v1=record_id 5
+  gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards:a3=cell_attributes 5
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:a0=window_first_col 8
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:a1=window_first_row 3
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:sp=row_masks 4
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:t4=row 7
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:t1=col 6
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:t2=column_bits 6
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:t0=run_entry 4
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:v1=record_id 5
+  gpu_QueueMaskedGridRecordsWithCellAttributesAndCollectUniqueNodes:a3=cell_attributes 5
+  gpu_UnpackGridRecordsNodesAndCellRuns:p=stream_cursor 15
+  gpu_UnpackGridRecordsNodesAndCellRuns:arg1=block_id 3
+  gpu_UnpackGridRecordsNodesAndCellRuns:var_8=entry_word 5
+  gpu_ResetAndStampViewCenteredCellAttributes:var_2=view_cell_x 3
+  gpu_ResetAndStampViewCenteredCellAttributes:var_3=view_cell_z 3
+  gpu_ResetAndStampViewCenteredCellAttributes:var_5=row_offset 3
+  gpu_ResetAndStampViewCenteredCellAttributes:var_6=col_offset 3
+  gpu_SetCellGateBit:a0=cell_pos 3
+  gpu_SetCellForceBit:a0=cell_pos 3
+  gpu_ReplaceCellAttributesInNearest2x2Block:s3=cell_x 7
+  gpu_ReplaceCellAttributesInNearest2x2Block:s2=cell_z 7
+  gpu_ReplaceCellAttributesWithMaskedValue:a0=cell_x 2
+  gpu_ReplaceCellAttributesWithMaskedValue:a1=cell_z 2
+  gpu_ReplaceCellAttributesWithMaskedValue:a2=attributes 2
+  gpu_GetCellAttributes:a0=cell_x 2
+  gpu_GetCellAttributes:a1=cell_z 2
+  softbody_UpdateObject:a0=slot_object 4
+  softbody_UpdateObject:s0=softbody_set 12
+  softbody_UpdateColliders:arg0=softbody_set 3
+  softbody_SetupObject:arg0=slot_object 8
+  softbody_SetupObject:arg1=resize_asset_block 2
+  softbody_SetupObject:var_0=softbody_set 14
+  softbody_SetupObject:var_1=cmd_cursor 14
+  softbody_SetAnchorWeights:a0=points 3
+  softbody_SetAnchorWeights:a1=point_count 2
+  softbody_SetAnchorWeights:a2=cmd_cursor 10
+  softbody_AddColliders:a0=slot_object 2
+  softbody_AddColliders:a2=cmd_cursor 11
+  softbody_RequestRebuild:a0=slot_object 2
+  softbody_RequestRebuild:v1=softbody_set 3
+  softbody_RequestSnap:a0=slot_index 2
+  softbody_RequestSnap:v0=slot_object 3
+  softbody_RequestSnap:v1=softbody_set 3
+  softbody_SetObjectSnap:a0=softbody_set 4
+  softbody_ClearObjectSnap:a0=softbody_set 4
+  softbody_SetObjectGround:a0=slot_object 2
+  softbody_SetObjectGround:a1=height 2
+  softbody_SetObjectGround:v1=softbody_set 4
+  softbody_FreeObject:a0=slot_object 2
+  softbody_FreeObject:s2=softbody_set 5
+  softbody_FreeObject:s0=rec_index 5
+  softbody_FreeObjectById:a0=slot_index 2
+  softbody_FreeObjectById:v0=slot_object 3
+  softbody_RebaseObject:a0=slot_object 5
+  softbody_RebaseObject:a1=byte_offset 3
+  gpu_AddDrawMove:a0=slot_index 2
+PRE-APPLY: 3 cmd_cursor pairs dropped (softbody_SetupObject:var_1 14, softbody_SetAnchorWeights:a2 10, softbody_AddColliders:a2 11 = 35 substitutions); the 77 CONFIRMed pairs account for 384 - 35 = 349 substitutions (each pair was accepted alone above, so the subset plan is the sum).
