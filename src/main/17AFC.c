@@ -2206,7 +2206,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                     &other_record->weapon_point_delta[var_12].vx, var_1);
             }
         }
-        if (D_800A3140 == 0) {
+        if (g_fight_force_weapon_inner_bone_hits == 0) {
             var_31 = inner_hit_mask & (1 << idx);
         } else {
             var_31 = 1;
@@ -6142,7 +6142,7 @@ void fight_AdvanceMatch(void) {
 
 /* Q65: this file's initialized small data (.sdata), in address order; values
  * from the original EXE. */
-s32 D_800A3140 = 0;
+s32 g_fight_force_weapon_inner_bone_hits = 0;
 /* address taken (lui/addiu) in fighter_ResolveBodyOverlap: size from the blob
  * label */
 s32 g_fighter_body_overlap_radii[2] = {0x15e, 0x172};

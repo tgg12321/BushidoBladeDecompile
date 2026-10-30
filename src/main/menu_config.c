@@ -23,7 +23,7 @@ extern u8 g_config_menu_pending_view_setting_fmt[];
 extern u8 g_config_menu_saved_cpu_behavior_adjust_fmt[];
 extern u8 D_800A31C8[];
 extern u8 g_config_menu_fight_view_option_fmt[];
-extern const char D_80010834[];
+extern const char g_config_menu_force_weapon_inner_bone_hits_fmt[];
 extern const char g_config_menu_saved_grayscale_fmt[];
 
 void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
@@ -79,7 +79,7 @@ void menu_PrintEditAndApplyConfigWithPerPadCursors(void) {
                 (s32)(g_config_menu_cursors[0] == 6 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.pending_view_setting);
-    font_Printf((u8 *)D_80010834,
+    font_Printf((u8 *)g_config_menu_force_weapon_inner_bone_hits_fmt,
                 (s32)(g_config_menu_cursors[0] == 7 ? selected_prefix
                                                     : unselected_prefix),
                 (s8)g_fight_config.unk_F);

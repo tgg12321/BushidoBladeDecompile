@@ -303,7 +303,7 @@ extern u8 D_8009A9B4[][2]; /* byte pairs (fighter_InitCpuControl) */
 extern u8 g_fight_group_tint_colors[][4];
 extern s16 g_fighter_forward_move_rate_limits[4];
 extern s32 g_fighter_opponent_response_max_separation;
-extern s32 D_800A3140;
+extern s32 g_fight_force_weapon_inner_bone_hits;
 extern u8 g_menu_mode_subflow_init_pending;
 extern u8 g_fight_reinit_reuses_assets;
 extern u8 g_fight_second_fighter_initial_defeats_left;

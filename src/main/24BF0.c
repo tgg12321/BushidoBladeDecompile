@@ -21,7 +21,7 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void) {
     g_fight_tracked_fighter_index = 0;
     g_fight_mode_selector = val_85;
     g_fight_tracked_view_setting = val_86;
-    D_800A3140 = val_87;
+    g_fight_force_weapon_inner_bone_hits = val_87;
     g_fight_stage_index = val_84;
     slot_RequestTimGroupsAndMarkReloadOnChange(0, 0);
     slot_RequestTimGroupsAndMarkReloadOnChange(1, 0);
@@ -37,7 +37,7 @@ void ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests(void);
 
 const char g_str_chanbara[] = "CHANBARA";
 const char g_str_practice[] = "PRACTICE";
-const char D_80010834[] = "%sCR%3d\n";
+const char g_config_menu_force_weapon_inner_bone_hits_fmt[] = "%sCR%3d\n";
 const char g_config_menu_saved_grayscale_fmt[] = "%sCO%3d\n";
 
 void ApplyPendingConfigAndInitializeMode(void) {

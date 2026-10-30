@@ -150,8 +150,8 @@ glabel menu_PrintEditAndApplyConfigWithPerPadCursors
     /* 2512C 8003492C 21282002 */  addu       $a1, $s1, $zero
   .L80034930:
     /* 25130 80034930 0B00A682 */  lb         $a2, 0xB($s5)
-    /* 25134 80034934 0180043C */  lui        $a0, %hi(D_80010834)
-    /* 25138 80034938 34088424 */  addiu      $a0, $a0, %lo(D_80010834)
+    /* 25134 80034934 0180043C */  lui        $a0, %hi(g_config_menu_force_weapon_inner_bone_hits_fmt)
+    /* 25138 80034938 34088424 */  addiu      $a0, $a0, %lo(g_config_menu_force_weapon_inner_bone_hits_fmt)
     /* 2513C 8003493C 4BF5000C */  jal        font_Printf
     /* 25140 80034940 00000000 */   nop
     /* 25144 80034944 A8008387 */  lh         $v1, %gp_rel(g_config_menu_cursors)($gp)

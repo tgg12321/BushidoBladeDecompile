@@ -1149,7 +1149,7 @@ glabel fighter_ProcessWeaponBodyHits
     /* 1C3A8 8002BBA8 2F9D000C */  jal        math_NegNormalize3D
     /* 1C3AC 8002BBAC 21206402 */   addu      $a0, $s3, $a0
   .L8002BBB0:
-    /* 1C3B0 8002BBB0 7400828F */  lw         $v0, %gp_rel(D_800A3140)($gp)
+    /* 1C3B0 8002BBB0 7400828F */  lw         $v0, %gp_rel(g_fight_force_weapon_inner_bone_hits)($gp)
     /* 1C3B4 8002BBB4 00000000 */  nop
     /* 1C3B8 8002BBB8 05004014 */  bnez       $v0, .L8002BBD0
     /* 1C3BC 8002BBBC 01000824 */   addiu     $t0, $zero, 0x1
