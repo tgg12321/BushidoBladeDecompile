@@ -431,7 +431,7 @@ void main(void) {
     u32 *frame_ot;
     /* g_main_present_skip_frames (frames left to skip presenting) as read this
      * frame; the next frame passes it to pad_Update. */
-    s32 var_3;
+    s32 present_skip_frames;
 
     __main();
     SetSp(0x801FFF00);
@@ -455,7 +455,7 @@ void main(void) {
         g_prim_buf_cursor = (u32 *)D_800A3770[idx];
         eff_SelectQuadBuffer(idx);
         font_BeginFrame();
-        pad_Update(var_3);
+        pad_Update(present_skip_frames);
         cdrom_Update();
         snd_FlushSoundQueue();
 
@@ -481,8 +481,8 @@ void main(void) {
         VSync(0);
         ResetRCnt(0xF2000001u);
 
-        var_3 = g_main_present_skip_frames;
-        if (var_3 == 0) {
+        present_skip_frames = g_main_present_skip_frames;
+        if (present_skip_frames == 0) {
             PutDispEnv(&var_1->disp);
             PutDrawEnv(&var_1->draw);
         }
@@ -509,7 +509,7 @@ void main(void) {
 
         if (g_main_loop_handler_index != 1)
             continue;
-        if (var_3 != 0)
+        if (present_skip_frames != 0)
             continue;
         if (!(g_pad_state.pressed & 0x08000800u)) {
             if (g_fight_mode_selector != 2)

@@ -98,10 +98,10 @@ void snd_ResetVoicesAndQueue(void) {
     }
 }
 
-void snd_StopAllVoicesAndCloseSlotVab(s32 a0) {
+void snd_StopAllVoicesAndCloseSlotVab(s32 arena_id) {
     s32 v;
     func_800858D0(0);
-    v = a0 * 2 + a0 + 1;
+    v = arena_id * 2 + arena_id + 1;
     SsVabClose(v);
     g_vab_rec_ptr[v] = 0;
     g_vab_vb_sbaddr[v] = 0;
@@ -245,7 +245,7 @@ typedef struct {
 extern u8 g_vab_id_list[];
 
 s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
-    s32 load_addr, s32 arg1, s32 arg2, s32 arg3) {
+    s32 load_addr, s32 stage_index, s32 arg2, s32 arg3) {
     VabLoad vab_load;
     u8 *p;
     s32 base;
@@ -262,7 +262,7 @@ s32 snd_ReloadListedVabsFromFileAndInstallBillboards(
         g_vab_rec_ptr[g_vab_id_list[vab_list_index]] = 0;
         g_vab_vb_sbaddr[g_vab_id_list[vab_list_index]] = 0;
     }
-    file_index = cdrom_GetFileIndex(2, arg1 + 9);
+    file_index = cdrom_GetFileIndex(2, stage_index + 9);
     cdrom_WaitIdle();
     cdrom_StartRead(file_index, (s32)p);
     size = cdrom_GetFileSize(file_index);
@@ -542,10 +542,10 @@ extern u16 g_snd_sound_vab_entries[][2];
  * sets no $v0, so reload re-places the var_7 product in $v0 there (score 2). */
 s32 snd_QueueSound(s32 sound_index, s32 right_volume, s32 left_volume) {
     s16 queue_index = 0;
-    u16 *var_1 = g_snd_sound_vab_entries[sound_index];
+    u16 *sound_vab_entry = g_snd_sound_vab_entries[sound_index];
     do {
         if (g_snd_queue[queue_index].req == 0) {
-            g_snd_queue[queue_index].req = var_1;
+            g_snd_queue[queue_index].req = sound_vab_entry;
             g_snd_queue[queue_index].volr = right_volume;
             g_snd_queue[queue_index].voll = left_volume;
             return;

@@ -331,12 +331,12 @@ extern Unk8009B0E0Record D_8009B2C8[2][5];
 extern Unk8009B400Record D_8009B340[3];
 extern Unk8009B400Record D_8009B358[6];
 
-s32 gpu_DrawFixedSpritePairWithSelectedSheets(s32 ft4_out_addr, s32 arg1) {
+s32 gpu_DrawFixedSpritePairWithSelectedSheets(s32 ft4_out_addr, s32 draw_mode) {
     Unk8007352CRec s;
     s32 sheet_row_index;
-    sheet_row_index = arg1;
-    if (arg1 > 0) {
-        sheet_row_index = arg1 - 1;
+    sheet_row_index = draw_mode;
+    if (draw_mode > 0) {
+        sheet_row_index = draw_mode - 1;
     }
     s.has_color = 0;
     s.header = &D_8009B2C8[sheet_row_index][0];
@@ -462,7 +462,7 @@ s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32 ft4_out_addr, s32 arg1) {
 extern Unk8009B400Record g_gpu_time_field_cells[7];
 
 s32 gpu_DrawTimeFieldsAndDecimalCounter(
-    Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 ot_index) {
+    Unk8001CD68Rec *time_fields, s32 arg1, s32 arg2, s32 ot_index) {
     Unk8005D814Rec *draw_chunk = (Unk8005D814Rec *)arg2;
     Unk8007352CRec s;
     s16 var_2[3];
@@ -517,7 +517,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         for (i = 0; i < 2; i++) {
             switch (j) {
             case 0:
-                var_2[i] = arg0->time_minutes;
+                var_2[i] = time_fields->time_minutes;
                 if (i != 0) {
                     var_2[i] = var_2[i] % 10;
                 } else {
@@ -532,7 +532,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 s.table->x = 0x1A2;
                 break;
             case 1:
-                var_2[i] = arg0->time_seconds;
+                var_2[i] = time_fields->time_seconds;
                 if (i != 0) {
                     var_2[i] = var_2[i] % 10;
                 } else {
@@ -547,7 +547,7 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
                 s.table->x = 0x1D3;
                 break;
             case 2:
-                var_2[i] = arg0->time_hundredths;
+                var_2[i] = time_fields->time_hundredths;
                 if (i != 0) {
                     var_2[i] = var_2[i] % 10;
                 } else {
@@ -1067,7 +1067,8 @@ extern Unk8009B400Record D_8009B5D8[2];
 extern Unk8009B400Record D_8009B5E8;
 
 s32 gpu_DrawPairedMarkRowsAndTimeFields(
-    Unk8001CD68Rec *arg0, s32 packed_mark_counts, s32 arg2, s32 ot_index) {
+    Unk8001CD68Rec *time_fields, s32 packed_mark_counts, s32 arg2,
+    s32 ot_index) {
     Unk8005D814Rec *draw_chunk = (Unk8005D814Rec *)arg2;
     Unk8007352CRec s;
     s16 d[3];
@@ -1189,7 +1190,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
             switch (j) {
             case 0:
                 if (k < 2 || g_working_record.time_limit_index == 2) {
-                    d[k] = arg0->time_seconds;
+                    d[k] = time_fields->time_seconds;
                     if (k == 0 && g_working_record.time_limit_index == 2) {
                         d[k] = d[k] / 100;
                     } else if (
@@ -1208,7 +1209,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
                 break;
             case 1:
                 if (k < 2) {
-                    d[k] = arg0->time_hundredths;
+                    d[k] = time_fields->time_hundredths;
                     if (k != 0) {
                         d[k] = d[k] % 10;
                     } else {

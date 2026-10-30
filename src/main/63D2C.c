@@ -281,14 +281,14 @@ s32 mode;
 }
 
 void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
-    Unk8006EACCRec *draw_context, s32 arg1) {
+    Unk8006EACCRec *draw_context, s32 first_selection_phase) {
     Unk8007352CRec s;
     s32 sheet_index;
     Unk8009B0E0Record **sheet_headers;
     TILE *tile_cursor;
     POLY_F4 *flat_quad_cursor;
 
-    if (arg1 == 0) {
+    if (first_selection_phase == 0) {
         tile_cursor = draw_context->primitive_cursors.tile_prims;
         SetTile(tile_cursor);
         gpu_SetTileRgbFromBlockFlag(tile_cursor);

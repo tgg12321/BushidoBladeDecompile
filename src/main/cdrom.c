@@ -131,7 +131,9 @@ s32 cdrom_StartAudioEntryHeld(void) {
     return 0;
 }
 
-void cdrom_SetAudioRepeat(s16 arg0) { g_cdrom_state.rec.audio_repeat = arg0; }
+void cdrom_SetAudioRepeat(s16 repeat) {
+    g_cdrom_state.rec.audio_repeat = repeat;
+}
 
 s32 cdrom_StartAudioHeld(void) {
     if (((s32(*)())cdrom_StartAudio)() != 0) {
