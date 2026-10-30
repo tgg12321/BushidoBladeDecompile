@@ -263,7 +263,8 @@ void fighter_HalveCpuTally(s32 fighter_index) {
     } while (++tally_index < 8);
 }
 
-void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
+void fighter_InitCpuControl(
+    s32 fighter_index, u16 *script_table, u16 *other_script_table) {
     Unk80101EC8Record *p = &D_80101EC8[fighter_index];
     Unk8009A8C8Entry *src;
     u8 *var_2;
@@ -371,17 +372,17 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
     for (idx = 0; idx < sizeof(p->cpu_probes); idx++) {
         p->cpu_probes[idx] = 0;
     }
-    p->cpu_script_list = arg1;
+    p->cpu_script_list = script_table;
     for (idx = 0; idx < 2; idx++) {
         if (idx) {
             rec = p->other;
-            cursor = arg2;
-            list = arg2;
+            cursor = other_script_table;
+            list = other_script_table;
             var_9 = rec->character_data_index;
         } else {
             rec = p;
-            cursor = arg1;
-            list = arg1;
+            cursor = script_table;
+            list = script_table;
             var_9 = p->cpu_profile;
         }
         rec->scale_distance_offset = (rec->size_scale - 0x1000) * 225 >> 11;
@@ -479,56 +480,59 @@ void fighter_InitCpuControl(s32 fighter_index, u16 *arg1, u16 *arg2) {
     p->last_cpu_pad.unheld = -1;
 }
 
-s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
+s32 fighter_StepCpuPadScript(Unk80101EC8Record *fighter_record) {
     u8 *script_cursor;
     u8 script_delay_left;
     s32 script_byte;
     s32 pad_button_mask;
     s32 opponent_start_dx, dy, dz;
 
-    script_delay_left = arg0->cpu_pad_script_delay_left;
-    script_cursor = arg0->cpu_pad_script_cursor;
+    script_delay_left = fighter_record->cpu_pad_script_delay_left;
+    script_cursor = fighter_record->cpu_pad_script_cursor;
     if (script_delay_left != 0) {
-        if (arg0->move_frame_unchanged == 0) {
-            arg0->cpu_pad_script_delay_left = script_delay_left - 1;
+        if (fighter_record->move_frame_unchanged == 0) {
+            fighter_record->cpu_pad_script_delay_left = script_delay_left - 1;
         }
         goto ret_3c8;
     }
-    if (arg0->cpu_pad_script_kind != 0) {
+    if (fighter_record->cpu_pad_script_kind != 0) {
         goto check_loop;
     }
     {
-        u8 cpu_profile_index = arg0->cpu_profile;
+        u8 cpu_profile_index = fighter_record->cpu_profile;
         if (cpu_profile_index == 22)
             goto check_loop;
         if ((g_cpu_profiles[cpu_profile_index].flags & 0xBF00) != 0)
             goto check_loop;
         {
             s32 angle_in_range;
-            if (arg0->cpu_state_flags & 0x200) {
+            if (fighter_record->cpu_state_flags & 0x200) {
                 angle_in_range =
-                    (arg0->opponent_angle_from_orientation_abs < 0x801);
+                    (fighter_record->opponent_angle_from_orientation_abs <
+                     0x801);
             } else {
                 angle_in_range =
-                    (arg0->opponent_angle_from_orientation_abs < 0x401);
+                    (fighter_record->opponent_angle_from_orientation_abs <
+                     0x401);
             }
             if (angle_in_range == 0)
                 goto reset_ret_neg1;
         }
-        if (arg0->cpu_state_flags & 0x800)
+        if (fighter_record->cpu_state_flags & 0x800)
             goto reset_ret_neg1;
-        if ((u32)(arg0->incoming_projectile_state - 1) < 2U)
+        if ((u32)(fighter_record->incoming_projectile_state - 1) < 2U)
             goto reset_ret_neg1;
-        if (arg0->opponent_ground_y_band != 0)
+        if (fighter_record->opponent_ground_y_band != 0)
             goto reset_ret_neg1;
         {
-            Unk80101EC8Record *other_record = arg0->other;
+            Unk80101EC8Record *other_record = fighter_record->other;
             if (other_record->move_kind == 0x2D)
                 goto reset_ret_neg1;
-            opponent_start_dx =
-                other_record->world_pos.x - arg0->chosen_script_start_x;
-            dy = other_record->world_pos.z - arg0->chosen_script_start_z;
-            dz = arg0->chosen_script_radius;
+            opponent_start_dx = other_record->world_pos.x -
+                                fighter_record->chosen_script_start_x;
+            dy = other_record->world_pos.z -
+                 fighter_record->chosen_script_start_z;
+            dz = fighter_record->chosen_script_radius;
             if ((dz * dz) >=
                 ((opponent_start_dx * opponent_start_dx) + (dy * dy)))
                 goto loop;
@@ -536,16 +540,16 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
     }
     goto reset_ret_neg1;
 check_loop:
-    if (arg0->cpu_pad_script_kind != 1)
+    if (fighter_record->cpu_pad_script_kind != 1)
         goto loop;
-    if (arg0->cpu_state_flags & 0x800) {
+    if (fighter_record->cpu_state_flags & 0x800) {
         goto loop;
     }
 reset_ret_neg1:
-    arg0->cpu_pad_script_cursor = 0;
+    fighter_record->cpu_pad_script_cursor = 0;
     return -1;
 sentinel_reset:
-    arg0->cpu_pad_script_cursor = 0;
+    fighter_record->cpu_pad_script_cursor = 0;
     goto ret_3c8;
 loop:
     while (1) {
@@ -554,26 +558,27 @@ loop:
         if (script_byte & 0x80) {
             if (script_byte == 0x80)
                 goto sentinel_reset;
-            arg0->cpu_pad_script_cursor = script_cursor;
-            arg0->cpu_pad_script_delay_left = (script_byte & 0x7F) - 1;
+            fighter_record->cpu_pad_script_cursor = script_cursor;
+            fighter_record->cpu_pad_script_delay_left =
+                (script_byte & 0x7F) - 1;
             goto ret_3c8;
         }
         pad_button_mask = 1 << (script_byte & 0xF);
         if (script_byte & 0x10) {
-            arg0->cpu_pad_script_held &= ~pad_button_mask;
+            fighter_record->cpu_pad_script_held &= ~pad_button_mask;
         } else {
-            arg0->cpu_pad_script_held |= pad_button_mask;
+            fighter_record->cpu_pad_script_held |= pad_button_mask;
         }
     }
 ret_3c8:
-    return arg0->cpu_pad_script_held;
+    return fighter_record->cpu_pad_script_held;
 }
 
 void fighter_StartCpuPadScript(
-    Unk80101EC8Record *fighter_record, u8 *script_cursor, s32 a2,
+    Unk80101EC8Record *fighter_record, u8 *script_cursor, s32 script_kind,
     s32 script_delay_left) {
     fighter_record->cpu_pad_script_cursor = script_cursor;
-    fighter_record->cpu_pad_script_kind = a2;
+    fighter_record->cpu_pad_script_kind = script_kind;
     fighter_record->cpu_pad_script_delay_left = script_delay_left;
     fighter_record->cpu_pad_script_held = 0;
     fighter_record->cpu_decided_pad_held = -1;
@@ -764,22 +769,22 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
             if (rec->cpu_tracked_move_tally_threshold != 0 &&
                 (fighter_GetSavedCpuBehaviorAdjustFlag() == 0 ||
                  g_fight_mode_selector == 3)) {
-                s32 var_12;
-                s32 var_13;
+                s32 lowest_count_tally_index;
+                s32 matching_tally_index;
 
                 temp3 = 0x100;
                 i = 0;
-                var_12 = -1;
-                var_13 = -1;
+                lowest_count_tally_index = -1;
+                matching_tally_index = -1;
 
                 for (; i < 8; i++) {
                     if (rec->cpu_tracked_move_tallies[i][0] ==
                         rec->cpu_tracked_move_key) {
-                        var_13 = i;
+                        matching_tally_index = i;
                     } else {
                         temp = rec->cpu_tracked_move_tallies[i][1] - 1;
                         if (rec->cpu_tracked_move_tallies[i][1] < temp3) {
-                            var_12 = i;
+                            lowest_count_tally_index = i;
                             temp3 = rec->cpu_tracked_move_tallies[i][1];
                         }
                         if (temp < 0) {
@@ -789,16 +794,19 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
                     }
                 }
                 temp = rec->move_kind == 0x11 ? 8 : 4;
-                if (var_13 == -1) {
-                    rec->cpu_tracked_move_tallies[var_12][0] =
+                if (matching_tally_index == -1) {
+                    rec->cpu_tracked_move_tallies[lowest_count_tally_index][0] =
                         rec->cpu_tracked_move_key;
-                    rec->cpu_tracked_move_tallies[var_12][1] = temp;
+                    rec->cpu_tracked_move_tallies[lowest_count_tally_index][1] =
+                        temp;
                 } else {
-                    temp += rec->cpu_tracked_move_tallies[var_13][1];
+                    temp +=
+                        rec->cpu_tracked_move_tallies[matching_tally_index][1];
                     if (temp > 0xFF) {
                         temp = 0xFF;
                     }
-                    rec->cpu_tracked_move_tallies[var_13][1] = temp;
+                    rec->cpu_tracked_move_tallies[matching_tally_index][1] =
+                        temp;
                 }
             }
             rec->cpu_tracked_move_key = -1;
@@ -979,16 +987,16 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
 /* 8 {distance, direction} byte pairs (fighter_UpdateCpuProbes) */
 extern u8 g_fighter_cpu_probes[8][2];
 
-void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
+void fighter_UpdateCpuProbes(Unk80101EC8Record *fighter_record) {
     s32 segment_start[4];
     s32 segment_end[4];
-    s32 var_2[4];
-    s32 var_3[4];
+    s32 horizontal_hit_point[4];
+    s32 vertical_hit_point[4];
     s16 work[4];
     s32 first_probe_index;
     s32 probe_index;
 
-    first_probe_index = (arg0->cpu_pad_build_count & 3) * 2;
+    first_probe_index = (fighter_record->cpu_pad_build_count & 3) * 2;
     for (probe_index = first_probe_index; probe_index < first_probe_index + 2;
          probe_index++) {
         Unk80101EC8Record *probe_origin_fighter;
@@ -999,13 +1007,14 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         s32 x;
         s32 probe_z;
 
-        probe_origin_fighter = arg0;
+        probe_origin_fighter = fighter_record;
         flags = g_fighter_cpu_probes[probe_index][1] << 8;
         if ((flags & 0x1000) != 0) {
-            probe_origin_fighter = arg0->other;
+            probe_origin_fighter = fighter_record->other;
         }
 
-        if (arg0->move_kind == 0x13 || arg0->move_kind == 6) {
+        if (fighter_record->move_kind == 0x13 ||
+            fighter_record->move_kind == 6) {
             flags += probe_origin_fighter->orientation.vy;
         } else {
             flags += ratan2(g_camera_default_view_record.focus_point.x -
@@ -1029,7 +1038,7 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         segment_end[2] = probe_z;
 
         flags = collision_TestSegmentWithWork(
-            segment_start, segment_end, var_2, work, 0x1F8002B8);
+            segment_start, segment_end, horizontal_hit_point, work, 0x1F8002B8);
         if (flags != 0) {
             x += (*probe_sine_ptr * 0x7D) >> 8;
             probe_z += (*probe_cosine_ptr * 0x7D) >> 8;
@@ -1042,28 +1051,31 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         segment_end[1] = probe_origin_fighter->collision_pos.vy + 0x1004;
         segment_end[2] = probe_z;
 
-        flags |= collision_TestSegmentWithWork(
-                     segment_start, segment_end, var_3, work, 0x1F8002B8)
-                 << 1;
+        flags |=
+            collision_TestSegmentWithWork(segment_start, segment_end,
+                                          vertical_hit_point, work, 0x1F8002B8)
+            << 1;
         flags += 1;
         if (flags == 3 &&
-            var_3[1] - probe_origin_fighter->collision_pos.vy < 5) {
+            vertical_hit_point[1] - probe_origin_fighter->collision_pos.vy <
+                5) {
             flags = 0;
         } else if (flags == 4) {
-            s32 horizontal_hit_dx =
-                var_2[0] - probe_origin_fighter->collision_pos.vx;
-            s32 horizontal_hit_dz =
-                var_2[2] - probe_origin_fighter->collision_pos.vz;
+            s32 horizontal_hit_dx = horizontal_hit_point[0] -
+                                    probe_origin_fighter->collision_pos.vx;
+            s32 horizontal_hit_dz = horizontal_hit_point[2] -
+                                    probe_origin_fighter->collision_pos.vz;
             if (0x3D0900 < horizontal_hit_dx * horizontal_hit_dx +
                                horizontal_hit_dz * horizontal_hit_dz) {
                 s32 y = probe_origin_fighter->collision_pos.vy;
-                if ((y - var_3[1] >= 0 ? y - var_3[1] : var_3[1] - y) >=
-                    0x3E9) {
+                if ((y - vertical_hit_point[1] >= 0
+                         ? y - vertical_hit_point[1]
+                         : vertical_hit_point[1] - y) >= 0x3E9) {
                     flags = 5;
                 }
             }
         }
-        arg0->cpu_probes[probe_index] = flags;
+        fighter_record->cpu_probes[probe_index] = flags;
     }
 }
 
@@ -1097,39 +1109,43 @@ extern u8 D_8009A840[];
  * D_8009A838 (by arg0->move_is_common) or D_8009A840 (when
  * weapon_hit_end_frames[0] is 0xFF) term, plus its scale_distance_offset and
  * 300. */
-s32 fighter_CalcOpponentDistanceThresholdFromTables(Unk80101EC8Record *arg0) {
-    Unk80101EC8Record *other_record = arg0->other;
+s32 fighter_CalcOpponentDistanceThresholdFromTables(
+    Unk80101EC8Record *fighter_record) {
+    Unk80101EC8Record *other_record = fighter_record->other;
     s32 base = other_record->motion_metadata[3] * 40;
 
     base += other_record->weapon_hit_end_frames[0] != 0xFF
-                ? (arg0->move_is_common == 0
+                ? (fighter_record->move_is_common == 0
                        ? D_8009A830[other_record->weapon_id] * 2
                        : D_8009A838[other_record->weapon_id] * 8)
                 : D_8009A840[other_record->wielded_object_kind] * 2;
-    return base + arg0->other->scale_distance_offset + 0x12C;
+    return base + fighter_record->other->scale_distance_offset + 0x12C;
 }
 
 extern s32 g_cpu_route_sector_dpad_masks[];
 
 s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
-    Unk80101EC8Record *arg0, s32 route_target_x, s32 route_target_z, s32 arg3) {
+    Unk80101EC8Record *fighter_record, s32 route_target_x, s32 route_target_z,
+    s32 arg3) {
     s32 sp10;
     s32 focus_bearing;
     s32 angle_sector;
     s32 sector_index;
     s32 var_v0;
 
-    focus_bearing =
-        ratan2(g_camera_default_view_record.focus_point.x - arg0->world_pos.x,
-               g_camera_default_view_record.focus_point.z - arg0->world_pos.z);
-    var_v0 = focus_bearing - ratan2(route_target_x - arg0->world_pos.x,
-                                    route_target_z - arg0->world_pos.z);
+    focus_bearing = ratan2(g_camera_default_view_record.focus_point.x -
+                               fighter_record->world_pos.x,
+                           g_camera_default_view_record.focus_point.z -
+                               fighter_record->world_pos.z);
+    var_v0 =
+        focus_bearing - ratan2(route_target_x - fighter_record->world_pos.x,
+                               route_target_z - fighter_record->world_pos.z);
     var_v0 -= 0x100;
     angle_sector = (s32)var_v0 >> 9;
     sector_index = angle_sector & 7;
     sp10 = sector_index;
     if ((arg3 == 0) && !(angle_sector & 1)) {
-        if (arg0->cpu_pad_build_count & 0x10) {
+        if (fighter_record->cpu_pad_build_count & 0x10) {
             sp10 = sector_index + 1;
             if (sp10 >= 8) {
                 sp10 = 0;
@@ -1146,7 +1162,7 @@ s32 fighter_BuildCpuRoutePadWithSurfaceProbe(
         var_v0 |= 4;
     }
     if (fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
-            arg0, &sp10) != 0) {
+            fighter_record, &sp10) != 0) {
         var_v0 |= 8;
     }
     return var_v0;
@@ -1157,7 +1173,7 @@ typedef struct {
 } Vec4_571C0;
 
 s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
-    Vec4_571C0 var_0;
+    Vec4_571C0 candidate_point;
     Vec4_571C0 top;
     Vec4_571C0 left;
     Vec4_571C0 var_3;
@@ -1173,10 +1189,10 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
      * 1: var_7's, by +orbit_angle_offset; per-branch constants, Q20)
      * (Ruling 11, ordinary-c-judge-decidable). */
     s8 temp;
-    u8 var_9;
-    u8 var_10;
+    u8 plus_side_active;
+    u8 minus_side_active;
     s32 orbit_angle_offset;
-    s32 var_12;
+    s32 probe_radius;
     s32 a;
     Unk80101EC8Record *p;
     s32 probe_dx_scaled;
@@ -1186,61 +1202,63 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
 
     temp = 0;
     var_7 = 0;
-    var_10 = 1;
-    var_9 = 1;
+    minus_side_active = 1;
+    plus_side_active = 1;
     route_node_count = 0;
     left.x = fighter_record->collision_pos.vx;
     left.y = fighter_record->collision_pos.vy - 5;
-    var_12 = g_fighter_horizontal_separation + 800;
+    probe_radius = g_fighter_horizontal_separation + 800;
     left.z = fighter_record->collision_pos.vz;
     var_3 = left;
     for (orbit_angle_offset = 0x200; orbit_angle_offset <= 0x800;
          orbit_angle_offset += 0x200) {
-        if (var_9) {
+        if (plus_side_active) {
             p = fighter_record->other;
             a = p->opponent_bearing + orbit_angle_offset;
-            var_9 = 0;
-            probe_dx_scaled = var_12 * Judge[a & 0xFFF];
-            probe_dz_scaled = var_12 * Judge[(a + 0x400) & 0xFFF];
+            plus_side_active = 0;
+            probe_dx_scaled = probe_radius * Judge[a & 0xFFF];
+            probe_dz_scaled = probe_radius * Judge[(a + 0x400) & 0xFFF];
             x = p->collision_pos.vx + (probe_dx_scaled >> 12);
             probe_z = p->collision_pos.vz + (probe_dz_scaled >> 12);
-            var_0.x = x;
-            var_0.y = fighter_record->collision_pos.vy - 5;
-            var_0.z = probe_z;
+            candidate_point.x = x;
+            candidate_point.y = fighter_record->collision_pos.vy - 5;
+            candidate_point.z = probe_z;
             top.x = x;
             top.y = fighter_record->collision_pos.vy + 5;
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
-                    &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
-                var_9 = collision_TestSegmentWithWork(
-                            &left.x, &var_0.x, var_4, work, 0x1F8002B8) == 0;
+                    &candidate_point.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
+                plus_side_active =
+                    collision_TestSegmentWithWork(&left.x, &candidate_point.x,
+                                                  var_4, work, 0x1F8002B8) == 0;
             }
-            if (var_9) {
-                left = var_0;
+            if (plus_side_active) {
+                left = candidate_point;
                 var_7++;
             }
         }
-        if (var_10) {
+        if (minus_side_active) {
             p = fighter_record->other;
             a = p->opponent_bearing - orbit_angle_offset;
-            var_10 = 0;
-            probe_dx_scaled = var_12 * Judge[a & 0xFFF];
-            probe_dz_scaled = var_12 * Judge[(a + 0x400) & 0xFFF];
+            minus_side_active = 0;
+            probe_dx_scaled = probe_radius * Judge[a & 0xFFF];
+            probe_dz_scaled = probe_radius * Judge[(a + 0x400) & 0xFFF];
             x = p->collision_pos.vx + (probe_dx_scaled >> 12);
             probe_z = p->collision_pos.vz + (probe_dz_scaled >> 12);
-            var_0.x = x;
-            var_0.y = fighter_record->collision_pos.vy - 5;
-            var_0.z = probe_z;
+            candidate_point.x = x;
+            candidate_point.y = fighter_record->collision_pos.vy - 5;
+            candidate_point.z = probe_z;
             top.x = x;
             top.y = fighter_record->collision_pos.vy + 5;
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
-                    &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
-                var_10 = collision_TestSegmentWithWork(
-                             &var_3.x, &var_0.x, var_4, work, 0x1F8002B8) == 0;
+                    &candidate_point.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
+                minus_side_active =
+                    collision_TestSegmentWithWork(&var_3.x, &candidate_point.x,
+                                                  var_4, work, 0x1F8002B8) == 0;
             }
-            if (var_10) {
-                var_3 = var_0;
+            if (minus_side_active) {
+                var_3 = candidate_point;
                 temp++;
             }
         }
@@ -1394,7 +1412,8 @@ extern s32 math_IntersectSegments(
     s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
 
 s32 fighter_FindNearestNavCrossing(
-    Unk80101EC8Record *arg0, NavPolySet *nav_set, s32 target_x, s32 target_z) {
+    Unk80101EC8Record *fighter_record, NavPolySet *nav_set, s32 target_x,
+    s32 target_z) {
     s32 crossing_x;
     s32 crossing_z;
     s32 nearest_crossing_distance;
@@ -1421,17 +1440,17 @@ s32 fighter_FindNearestNavCrossing(
                 k = 0;
             }
             if (math_IntersectSegments(
-                    arg0->world_pos.x, arg0->world_pos.z, target_x, target_z,
-                    nav_poly->vtx[edge_vertex_index][0],
+                    fighter_record->world_pos.x, fighter_record->world_pos.z,
+                    target_x, target_z, nav_poly->vtx[edge_vertex_index][0],
                     nav_poly->vtx[edge_vertex_index][1], nav_poly->vtx[k][0],
                     nav_poly->vtx[k][1], &crossing_x, &crossing_z) != 0) {
-                dx = crossing_x - arg0->world_pos.x;
-                dy = crossing_z - arg0->world_pos.z;
+                dx = crossing_x - fighter_record->world_pos.x;
+                dy = crossing_z - fighter_record->world_pos.z;
                 d = SquareRoot0(dx * dx + dy * dy);
                 if (d < nearest_crossing_distance) {
                     nearest_crossing_distance = d;
-                    arg0->cpu_route.poly = polygon_index;
-                    arg0->cpu_route.vtx = edge_vertex_index;
+                    fighter_record->cpu_route.poly = polygon_index;
+                    fighter_record->cpu_route.vtx = edge_vertex_index;
                 }
             }
         }
@@ -1486,8 +1505,8 @@ void fighter_GetNavCornerPoint(
  * CpuRoute and adds the step's SquareRoot0 length to its sum; a clear segment
  * adds that segment's length and ends the way. The way with the smaller sum is
  * appended, last point first, to arg0->cpu_route. */
-void fighter_AppendNavDetour(
-    Unk80101EC8Record *arg0, NavPolySet *nav_set, s32 target_x, s32 target_z) {
+void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
+                             NavPolySet *nav_set, s32 target_x, s32 target_z) {
     CpuRoute detour_routes[2];
     s16 ofs0_x;
     s16 ofs0_z;
@@ -1495,20 +1514,20 @@ void fighter_AppendNavDetour(
     s16 ofs1_z;
     s32 var_5;
     s32 var_6;
-    s16 var_7;
-    s16 var_8;
-    s16 var_9;
-    s16 var_10;
-    u8 var_11;
-    s8 var_12;
-    s8 var_13;
+    s16 backward_point_x;
+    s16 backward_point_z;
+    s16 forward_point_x;
+    s16 forward_point_z;
+    u8 backward_active;
+    s8 backward_vertex_index;
+    s8 forward_vertex_index;
     s16 iter;
     s16 polygon_edge_count;
     s32 var_16;
     s32 var_17;
-    u8 var_18;
-    u8 var_19;
-    u8 var_20;
+    u8 forward_active;
+    u8 backward_crosses_edge;
+    u8 forward_crosses_edge;
     /* the counter of the edge scan and the route copy, reused loop to loop
      * the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
      * and its row countdown (Q51) */
@@ -1524,22 +1543,22 @@ void fighter_AppendNavDetour(
      * for the copy loop (Ruling 11, reused-local-necessity). */
     CpuRoute *route;
 
-    var_11 = 1;
-    var_18 = 1;
-    poly = &nav_set->polys[arg0->cpu_route.poly];
-    var_7 = var_9 = arg0->world_pos.x;
-    var_8 = var_10 = arg0->world_pos.z;
+    backward_active = 1;
+    forward_active = 1;
+    poly = &nav_set->polys[fighter_record->cpu_route.poly];
+    backward_point_x = forward_point_x = fighter_record->world_pos.x;
+    backward_point_z = forward_point_z = fighter_record->world_pos.z;
     detour_routes[1].count = 0;
     detour_routes[0].count = 0;
     var_17 = 0;
     var_16 = 0;
-    var_12 = arg0->cpu_route.vtx;
-    var_13 = var_12 + 1;
-    if (!(var_13 < poly->nvtx)) {
+    backward_vertex_index = fighter_record->cpu_route.vtx;
+    forward_vertex_index = backward_vertex_index + 1;
+    if (!(forward_vertex_index < poly->nvtx)) {
         if (poly->flags & 0x80) {
-            var_18 = 0;
+            forward_active = 0;
         } else {
-            var_13 = 0;
+            forward_vertex_index = 0;
         }
     }
     polygon_edge_count = poly->nvtx;
@@ -1558,8 +1577,8 @@ void fighter_AppendNavDetour(
          */
         CpuWaypoint *node;
 
-        var_20 = 0;
-        var_19 = 0;
+        forward_crosses_edge = 0;
+        backward_crosses_edge = 0;
         for (i = 0; i < polygon_edge_count; i++) {
             next = i + 1;
             if (!(next < poly->nvtx)) {
@@ -1573,98 +1592,107 @@ void fighter_AppendNavDetour(
             bx = var_29[0];
             bz = var_29[1];
             fighter_GetNavCornerPoint(poly, next, &ofs1_x, &ofs1_z);
-            if (var_11 && !var_19) {
-                if ((var_7 != ofs0_x || var_8 != ofs0_z) &&
-                    (var_7 != ofs1_x || var_8 != ofs1_z)) {
+            if (backward_active && !backward_crosses_edge) {
+                if ((backward_point_x != ofs0_x ||
+                     backward_point_z != ofs0_z) &&
+                    (backward_point_x != ofs1_x ||
+                     backward_point_z != ofs1_z)) {
                     if (math_IntersectSegments(
-                            var_7, var_8, target_x, target_z, ax, az, bx, bz,
-                            &var_5, &var_6)) {
-                        var_19 = 1;
+                            backward_point_x, backward_point_z, target_x,
+                            target_z, ax, az, bx, bz, &var_5, &var_6)) {
+                        backward_crosses_edge = 1;
                     }
                 }
             }
-            if (var_18 && !var_20) {
-                if ((var_9 != ofs0_x || var_10 != ofs0_z) &&
-                    (var_9 != ofs1_x || var_10 != ofs1_z)) {
+            if (forward_active && !forward_crosses_edge) {
+                if ((forward_point_x != ofs0_x || forward_point_z != ofs0_z) &&
+                    (forward_point_x != ofs1_x || forward_point_z != ofs1_z)) {
                     if (math_IntersectSegments(
-                            var_9, var_10, target_x, target_z, ax, az, bx, bz,
-                            &var_5, &var_6)) {
-                        var_20 = 1;
+                            forward_point_x, forward_point_z, target_x,
+                            target_z, ax, az, bx, bz, &var_5, &var_6)) {
+                        forward_crosses_edge = 1;
                     }
                 }
             }
-            if (var_19 && var_20) {
+            if (backward_crosses_edge && forward_crosses_edge) {
                 break;
             }
         }
-        if (var_11) {
-            if (var_19) {
+        if (backward_active) {
+            if (backward_crosses_edge) {
                 s32 c;
 
-                var_29 = poly->vtx[var_12];
-                var_16 +=
-                    SquareRoot0((var_29[0] - var_7) * (var_29[0] - var_7) +
-                                (var_29[1] - var_8) * (var_29[1] - var_8));
-                fighter_GetNavCornerPoint(poly, var_12, &var_7, &var_8);
+                var_29 = poly->vtx[backward_vertex_index];
+                var_16 += SquareRoot0((var_29[0] - backward_point_x) *
+                                          (var_29[0] - backward_point_x) +
+                                      (var_29[1] - backward_point_z) *
+                                          (var_29[1] - backward_point_z));
+                fighter_GetNavCornerPoint(poly, backward_vertex_index,
+                                          &backward_point_x, &backward_point_z);
                 route = &detour_routes[0];
                 c = route->count;
                 route->count = c + 1;
                 if (c >= 7) {
-                    var_11 = 0;
+                    backward_active = 0;
                 }
                 node = &route->node[c];
-                node->x = var_7;
-                node->z = var_8;
+                node->x = backward_point_x;
+                node->z = backward_point_z;
                 node->kind = poly->kind;
-                if (--var_12 < 0) {
+                if (--backward_vertex_index < 0) {
                     if (poly->flags & 0x80) {
-                        var_11 = 0;
+                        backward_active = 0;
                         var_16 = 100000;
                     } else {
-                        var_12 = poly->nvtx - 1;
+                        backward_vertex_index = poly->nvtx - 1;
                     }
                 }
             } else {
-                var_16 += SquareRoot0((target_x - var_7) * (target_x - var_7) +
-                                      (target_z - var_8) * (target_z - var_8));
-                var_11 = 0;
+                var_16 += SquareRoot0((target_x - backward_point_x) *
+                                          (target_x - backward_point_x) +
+                                      (target_z - backward_point_z) *
+                                          (target_z - backward_point_z));
+                backward_active = 0;
             }
         }
-        if (var_18) {
-            if (var_20) {
+        if (forward_active) {
+            if (forward_crosses_edge) {
                 s32 c;
 
-                var_29 = poly->vtx[var_13];
-                var_17 +=
-                    SquareRoot0((var_29[0] - var_9) * (var_29[0] - var_9) +
-                                (var_29[1] - var_10) * (var_29[1] - var_10));
-                fighter_GetNavCornerPoint(poly, var_13, &var_9, &var_10);
+                var_29 = poly->vtx[forward_vertex_index];
+                var_17 += SquareRoot0((var_29[0] - forward_point_x) *
+                                          (var_29[0] - forward_point_x) +
+                                      (var_29[1] - forward_point_z) *
+                                          (var_29[1] - forward_point_z));
+                fighter_GetNavCornerPoint(poly, forward_vertex_index,
+                                          &forward_point_x, &forward_point_z);
                 route = &detour_routes[1];
                 c = route->count;
                 route->count = c + 1;
                 if (c >= 7) {
-                    var_18 = 0;
+                    forward_active = 0;
                 }
                 node = &route->node[c];
-                node->x = var_9;
-                node->z = var_10;
+                node->x = forward_point_x;
+                node->z = forward_point_z;
                 node->kind = poly->kind;
-                if (!(++var_13 < poly->nvtx)) {
+                if (!(++forward_vertex_index < poly->nvtx)) {
                     if (poly->flags & 0x80) {
-                        var_18 = 0;
+                        forward_active = 0;
                         var_17 = 100000;
                     } else {
-                        var_13 = 0;
+                        forward_vertex_index = 0;
                     }
                 }
             } else {
-                var_17 +=
-                    SquareRoot0((target_x - var_9) * (target_x - var_9) +
-                                (target_z - var_10) * (target_z - var_10));
-                var_18 = 0;
+                var_17 += SquareRoot0((target_x - forward_point_x) *
+                                          (target_x - forward_point_x) +
+                                      (target_z - forward_point_z) *
+                                          (target_z - forward_point_z));
+                forward_active = 0;
             }
         }
-        if (!var_11 && !var_18) {
+        if (!backward_active && !forward_active) {
             break;
         }
     }
@@ -1674,8 +1702,9 @@ void fighter_AppendNavDetour(
         route = &detour_routes[1];
     }
     for (i = route->count - 1; i >= 0; i--) {
-        arg0->cpu_route.node[arg0->cpu_route.count] = route->node[i];
-        arg0->cpu_route.count++;
+        fighter_record->cpu_route.node[fighter_record->cpu_route.count] =
+            route->node[i];
+        fighter_record->cpu_route.count++;
     }
 }
 

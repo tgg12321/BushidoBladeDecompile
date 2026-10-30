@@ -755,18 +755,18 @@ INCLUDE_ASM("asm/funcs", func_800545F4);
 const char g_motion_playback_arena_shortfall_msg[28] =
     "Destruction tiny model.\n";
 
-s32 motion_StartPlayback(
-    s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
+s32 motion_StartPlayback(s32 playback_index, s32 start_pair, s32 a2, s32 a3,
+                         s32 a4, s32 a5, s32 dest_addr) {
     Unk800EFAE8Rec *s = &g_motion_playback_record;
-    s32 playback_file_id = a0 + 0x131;
+    s32 playback_file_id = playback_index + 0x131;
     s32 ret;
     s16 *start_position_cursor;
     Unk80045878Obj *slot_object;
     s32 n;
 
-    if (a6 != 0) {
-        ret = ndata_ReadChecked(playback_file_id, a6);
-        s->block_base = a6;
+    if (dest_addr != 0) {
+        ret = ndata_ReadChecked(playback_file_id, dest_addr);
+        s->block_base = dest_addr;
     } else {
         if (ndata_GetArenaRoomAfter(playback_file_id) < 0) {
             resource_FreeNodeAssetBlock();
@@ -783,7 +783,7 @@ s32 motion_StartPlayback(
                  s->block_base);
     s->current_frame = 0;
     start_position_cursor = fight_GetStartPositionPairTable();
-    start_position_cursor += resource_GetLoadedSelector() * 24 + a1 * 6;
+    start_position_cursor += resource_GetLoadedSelector() * 24 + start_pair * 6;
     s->origin_x = *start_position_cursor++;
     s->origin_y = *start_position_cursor++;
     s->origin_z = *start_position_cursor++;
@@ -808,15 +808,15 @@ s32 motion_StartPlayback(
     if (slot_object != 0) {
         softbody_RequestRebuild(slot_object);
     }
-    s->start_pair_index = a1;
+    s->start_pair_index = start_pair;
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     if (s->control_word & 0x3F) {
         n = (s->control_word & 0x3F) - 1;
-        if (a6 != 0) {
-            a6 += ret;
+        if (dest_addr != 0) {
+            dest_addr += ret;
             resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
-                n, a6);
+                n, dest_addr);
         } else {
             gpu_ResetGraphMode1();
             resource_LoadOrReuseSelectedBlockSetLightingAndBuildFogImageLevels(
@@ -832,9 +832,11 @@ s32 motion_StartPlayback(
 extern s16 g_motion_playback_file_id_bases[];
 
 void motion_StartPlaybackAtIndexedBasePlusOffset(
-    s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
-    motion_StartPlayback(g_motion_playback_file_id_bases[a0] + a1 - 0x131, a2,
-                         a3, a4, a5, a6, a7);
+    s32 file_base_index, s32 file_id_offset, s32 start_pair, s32 a3, s32 a4,
+    s32 a5, s32 a6, s32 dest_addr) {
+    motion_StartPlayback(g_motion_playback_file_id_bases[file_base_index] +
+                             file_id_offset - 0x131,
+                         start_pair, a3, a4, a5, a6, dest_addr);
 }
 
 void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void) {

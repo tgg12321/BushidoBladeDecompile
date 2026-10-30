@@ -913,7 +913,7 @@ loop3:
 void wave_Update(void) {
     s32 i;
     s32 j;
-    s32 a0;
+    s32 spacing_error;
     s32 step;
     void **temp;
 
@@ -924,12 +924,12 @@ void wave_Update(void) {
     }
     for (i = 1; i < 9; i++) {
         for (j = 0; j < 17; j++) {
-            a0 = 0x7D0 -
-                 (g_wave_vertex_grid[i][j] - g_wave_vertex_grid[i - 1][j]);
-            if (a0 < 0) {
-                step = (a0 + 0xF) >> 4;
+            spacing_error = 0x7D0 - (g_wave_vertex_grid[i][j] -
+                                     g_wave_vertex_grid[i - 1][j]);
+            if (spacing_error < 0) {
+                step = (spacing_error + 0xF) >> 4;
             } else {
-                step = a0 / 10;
+                step = spacing_error / 10;
             }
             g_wave_vertex_grid[i][j] += step;
             if (i == 8) {
@@ -1027,16 +1027,16 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
 }
 
 s32 wave_SampleLastRowStepsAtCachedIndex(void) {
-    s32 v1 = g_wave_cached_column_index;
-    if ((u32)v1 >= 18) {
+    s32 column_index = g_wave_cached_column_index;
+    if ((u32)column_index >= 18) {
         return 0;
     }
     {
-        s32 v0 = g_wave_last_row_steps[v1];
-        s32 a0 = g_wave_cached_remainder_parity;
-        s32 val1 = v0 * a0;
-        s32 v3 = g_wave_last_row_steps[v1 + 1];
-        s32 val2 = v3 * (0x1000 - a0);
+        s32 step = g_wave_last_row_steps[column_index];
+        s32 remainder_parity = g_wave_cached_remainder_parity;
+        s32 val1 = step * remainder_parity;
+        s32 next_step = g_wave_last_row_steps[column_index + 1];
+        s32 val2 = next_step * (0x1000 - remainder_parity);
         return (val1 + val2) >> 12;
     }
 }
@@ -1046,11 +1046,11 @@ s32 wave_GetCellBufferSize(void) { return 0xD00; }
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 
-void wave_MoveCellBuffer(s32 a0) {
-    g_wave_cell_buffer = (s16 *)((u8 *)g_wave_cell_buffer + a0);
+void wave_MoveCellBuffer(s32 byte_offset) {
+    g_wave_cell_buffer = (s16 *)((u8 *)g_wave_cell_buffer + byte_offset);
 }
 
-void gpu_LoadTimGroup(u32 *p, s32 arg1) {
+void gpu_LoadTimGroup(u32 *p, s32 group_index) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37) (phantom-frame pad; without it: score
      * 10). SOTN precedent:
@@ -1063,7 +1063,7 @@ void gpu_LoadTimGroup(u32 *p, s32 arg1) {
     u32 v_off;
     unsigned int new_var2;
     saved = (s32)p;
-    p += (s16)arg1;
+    p += (s16)group_index;
     v_off = *p;
     p = (u32 *)(saved + ((v_off >> 2) << 2));
     count = *(p++);
@@ -1071,30 +1071,31 @@ void gpu_LoadTimGroup(u32 *p, s32 arg1) {
         count--;
         do {
             u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            s16 v0v;
+            s16 image_x;
+            s16 image_y;
+            s16 clut_x;
+            s16 clut_y;
             s32 first;
             word = *p;
             p = (u32 *)(((s32)p) + 4);
-            a1v = (s16)(*((u16 *)p));
+            image_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            a2v = (s16)(*((u16 *)p));
+            image_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            a3v = (s16)(*((u16 *)p));
+            clut_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            new_var = a1v;
+            new_var = image_x;
             new_var2 = word >> 2;
             first = saved + (new_var2 << 2);
-            v0v = (s16)(*((u16 *)p));
+            clut_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            gpu_LoadTim(first, new_var, a2v, a3v, v0v);
+            gpu_LoadTim(first, new_var, image_y, clut_x, clut_y);
         } while ((count--) != 0);
     }
 }
 
-void gpu_LoadTimGroupOffset(u32 *p, s32 arg1, s16 arg2, s16 arg3) {
+void gpu_LoadTimGroupOffset(
+    u32 *p, s32 group_index, s16 x_offset, s16 y_offset) {
     // !FAKE: phantom-frame-slot pad, without it: score 14
     // (no-new-park-categories): target reserves 32 locals bytes at
     // sp+0x18..sp+0x37 that no instruction touches
@@ -1103,40 +1104,41 @@ void gpu_LoadTimGroupOffset(u32 *p, s32 arg1, s16 arg2, s16 arg3) {
     s32 count;
     s32 new_var;
     base_addr = (s32)p;
-    p += (s16)arg1;
+    p += (s16)group_index;
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
     if (count != 0) {
         s32 sx_arg2;
         s32 sx_arg3;
         count--;
-        sx_arg2 = arg2;
-        sx_arg3 = arg3;
+        sx_arg2 = x_offset;
+        sx_arg3 = y_offset;
         do {
             u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            s16 v0v;
+            s16 image_x;
+            s16 image_y;
+            s16 clut_x;
+            s16 clut_y;
             word = *p;
             p = (u32 *)(((s32)p) + 4);
-            a1v = (s16)(*((u16 *)p));
+            image_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            a2v = (s16)(*((u16 *)p));
+            image_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
             new_var = base_addr + (((u32)word >> 2) << 2);
-            a3v = (s16)(*((u16 *)p));
+            clut_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            v0v = (s16)(*((u16 *)p));
+            clut_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            gpu_LoadTim(new_var, (s32)a1v + sx_arg2, (s32)a2v + sx_arg3,
-                        (s32)a3v + sx_arg2, (s32)v0v + sx_arg3);
+            gpu_LoadTim(new_var, (s32)image_x + sx_arg2, (s32)image_y + sx_arg3,
+                        (s32)clut_x + sx_arg2, (s32)clut_y + sx_arg3);
         } while ((count--) != 0);
     }
 }
 
 void gpu_LoadTimGroupSplitOffset(
-    u32 *p, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
+    u32 *p, s32 group_index, s16 image_x_offset, s16 image_y_offset,
+    s16 clut_x_offset, s16 clut_y_offset) {
     // !FAKE: phantom-frame-slot pad (without it: score 20): target
     // reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
@@ -1144,7 +1146,7 @@ void gpu_LoadTimGroupSplitOffset(
     s32 count;
     s32 new_var;
     base_addr = (s32)p;
-    p += (s16)arg1;
+    p += (s16)group_index;
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
     if (count != 0) {
@@ -1153,34 +1155,34 @@ void gpu_LoadTimGroupSplitOffset(
         s32 sx_arg4;
         s32 sx_arg5;
         count--;
-        sx_arg2 = arg2;
-        sx_arg3 = arg3;
-        sx_arg4 = arg4;
-        sx_arg5 = arg5;
+        sx_arg2 = image_x_offset;
+        sx_arg3 = image_y_offset;
+        sx_arg4 = clut_x_offset;
+        sx_arg5 = clut_y_offset;
         do {
             u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            s16 v0v;
+            s16 image_x;
+            s16 image_y;
+            s16 clut_x;
+            s16 clut_y;
             word = *p;
             p = (u32 *)(((s32)p) + 4);
-            a1v = (s16)(*((u16 *)p));
+            image_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            a2v = (s16)(*((u16 *)p));
+            image_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
             new_var = base_addr + (((u32)word >> 2) << 2);
-            a3v = (s16)(*((u16 *)p));
+            clut_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            v0v = (s16)(*((u16 *)p));
+            clut_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            gpu_LoadTim(new_var, (s32)a1v + sx_arg2, (s32)a2v + sx_arg3,
-                        (s32)a3v + sx_arg4, (s32)v0v + sx_arg5);
+            gpu_LoadTim(new_var, (s32)image_x + sx_arg2, (s32)image_y + sx_arg3,
+                        (s32)clut_x + sx_arg4, (s32)clut_y + sx_arg5);
         } while ((count--) != 0);
     }
 }
 
-void gpu_LoadTimGroupWithConditionalClutRowAdvance(u32 *p, s32 arg1) {
+void gpu_LoadTimGroupWithConditionalClutRowAdvance(u32 *p, s32 group_index) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37), as the FAKE pads of gpu_LoadTimGroup /
      * gpu_LoadTimGroupOffset (phantom-frame pad; without it: score 10). SOTN
@@ -1190,37 +1192,38 @@ void gpu_LoadTimGroupWithConditionalClutRowAdvance(u32 *p, s32 arg1) {
     volatile u32 pre_pad[8];
     u32 *base;
     s32 count;
-    s32 var_4;
+    s32 tim_addr;
     base = p;
-    p += (s16)arg1;
+    p += (s16)group_index;
     p = (u32 *)((s32)base + (((*p) >> 2) << 2));
     count = *(p++);
     if (count != 0) {
         count--;
         do {
             u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            u16 v0v;
+            s16 image_x;
+            s16 image_y;
+            s16 clut_x;
+            u16 clut_y;
             unsigned int new_var2;
             word = *p;
             p = (u32 *)(((s32)p) + 4);
-            a1v = (s16)(*((u16 *)p));
+            image_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            a2v = (s16)(*((u16 *)p));
+            image_y = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            a3v = (s16)(*((u16 *)p));
+            clut_x = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            v0v = *((u16 *)p);
+            clut_y = *((u16 *)p);
             new_var2 = word >> 2;
             /* compute early (target sched) */
-            var_4 = (s32)base + (new_var2 << 2);
+            tim_addr = (s32)base + (new_var2 << 2);
             p = (u32 *)(((s32)p) + 2); /* always advance (target delay slot) */
-            if ((s32)a3v < 0x280) {
-                v0v += 1;
+            if ((s32)clut_x < 0x280) {
+                clut_y += 1;
             }
-            gpu_LoadTim(var_4, (s32)a1v, (s32)a2v, (s32)a3v, (s32)(s16)v0v);
+            gpu_LoadTim(tim_addr, (s32)image_x, (s32)image_y, (s32)clut_x,
+                        (s32)(s16)clut_y);
         } while ((count--) != 0);
     }
 }
@@ -1273,7 +1276,8 @@ u16 arg4;
     LoadImage(&rect, (u32 *)var_2);
 }
 
-void gpu_LoadTimGroupClutsOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
+void gpu_LoadTimGroupClutsOffset(
+    s32 arg0, s32 arg1, s16 clut_x_offset, s16 clut_y_offset) {
     s32 base;
     s32 count;
     s32 off;
@@ -1287,8 +1291,8 @@ void gpu_LoadTimGroupClutsOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
         s32 sx_arg2;
         s32 sx_arg3;
         count--;
-        sx_arg2 = arg2;
-        sx_arg3 = arg3;
+        sx_arg2 = clut_x_offset;
+        sx_arg3 = clut_y_offset;
         do {
             s32 entry;
             u32 dx_u;
@@ -1340,18 +1344,19 @@ s16 arg2;
 
 extern void gpu_ReadTim();
 
-s32 gpu_ReadTimGroupEntry(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
+s32 gpu_ReadTimGroupEntry(
+    s32 arg0, s32 group_index, u32 entry_index, s32 tim_image_out) {
     s32 base, count, entry, a, b, c, d, off;
-    off = ((s32 *)arg0)[arg1];
+    off = ((s32 *)arg0)[group_index];
     base = arg0;
     /* the group's offset relocated against the file base, written as
      * `entry += base` relocates the entry's offset below */
     arg0 = off + base;
     count = *(s32 *)arg0;
     arg0 += 4;
-    if (arg2 >= (u32)count)
+    if (entry_index >= (u32)count)
         return -1;
-    arg0 += arg2 * 0xC;
+    arg0 += entry_index * 0xC;
     entry = *(s32 *)arg0;
     arg0 += 4;
     a = (s32) * (u16 *)arg0;
@@ -1362,7 +1367,7 @@ s32 gpu_ReadTimGroupEntry(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     arg0 += 2;
     d = (s32) * (u16 *)arg0;
     entry += base;
-    gpu_ReadTim(entry, arg3, (s16)a, (s16)b, (s16)c, (s16)d);
+    gpu_ReadTim(entry, tim_image_out, (s16)a, (s16)b, (s16)c, (s16)d);
     return count;
 }
 
@@ -1432,8 +1437,8 @@ s32 gpu_RefreshGrayscaleMode(void) {
     return g_color_mode;
 }
 
-void func_80048744(s32 a0) {
-    if (a0) {
+void func_80048744(s32 grayscale_flag) {
+    if (grayscale_flag) {
         g_color_mode = 1;
     } else {
         g_color_mode = 0;

@@ -996,7 +996,7 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
     return dest;
 }
 
-s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
+s32 reloc_KeepSelectedEntries(s32 *base, s16 *select_cursor) {
     /* FAKE: param alias gives the target's prologue save order
        (pointer-alias-fake-exception); base used directly: score 4 */
     s32 *b = base;
@@ -1010,8 +1010,8 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
     s32 ret;
     s32 i;
 
-    v1 = *offsets;
-    offsets++;
+    v1 = *select_cursor;
+    select_cursor++;
     if (v1 == -2) {
         ret = (s32)dest;
         goto done;
@@ -1033,8 +1033,8 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
             dest = (s32 *)((s32)dest + size);
         }
         i++;
-        v1 = *offsets;
-        offsets++;
+        v1 = *select_cursor;
+        select_cursor++;
     } while (v1 != -2);
     ret = (s32)dest;
 
