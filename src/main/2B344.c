@@ -67,7 +67,7 @@ s32 comb_HandshakeStep(void) {
 }
 
 s32 comb_Connect(void) {
-    s32 temp_s0;
+    s32 handshake_result;
 
     func_80077AE0();
     SetDispMask(0);
@@ -80,9 +80,9 @@ s32 comb_Connect(void) {
     do {
         pad_Update(1);
         snd_FlushSoundQueue();
-        temp_s0 = comb_HandshakeStep();
+        handshake_result = comb_HandshakeStep();
         VSync(2);
-    } while (temp_s0 == 0);
+    } while (handshake_result == 0);
     func_80077B00();
     pad_ResetState();
     g_comb_send_payload = bits_ExtractMask3F83F8(g_saved_record.unlock_mask);
@@ -106,18 +106,18 @@ s32 comb_Connect(void) {
     VSync(1);
     comb_ExchangeEmptyPad();
     {
-        s32 var_v0;
+        s32 rng_seed;
         if (g_comb_local_side == 0) {
-            var_v0 = (u16)g_comb_send_payload;
+            rng_seed = (u16)g_comb_send_payload;
         } else {
-            var_v0 = D_800A36C6;
+            rng_seed = D_800A36C6;
         }
-        g_fight_rng_seed = var_v0;
+        g_fight_rng_seed = rng_seed;
     }
     gpu_HideResetAndClear();
     gpu_SetDispMaskOn();
     ResetRCnt(0xF2000001);
-    return temp_s0;
+    return handshake_result;
 }
 
 void fight_ScanCommandStreamAndLoadImage(u8 *command_cursor) {
@@ -161,18 +161,19 @@ void fight_ScanCommandStreamAndLoadImage(u8 *command_cursor) {
     }
 }
 
-void fight_FillMissingConfigInitFighterAndLoadObject(s32 arg0) {
-    if (g_fight_config.unk_4[2 + arg0] == 0xFF) {
-        g_fight_config.unk_4[2 + arg0] =
-            (&g_fight_config.unk_4[2])[(u32)arg0 < 1u];
+void fight_FillMissingConfigInitFighterAndLoadObject(s32 fighter_index) {
+    if (g_fight_config.unk_4[2 + fighter_index] == 0xFF) {
+        g_fight_config.unk_4[2 + fighter_index] =
+            (&g_fight_config.unk_4[2])[(u32)fighter_index < 1u];
     }
-    fighter_Init(
-        arg0, (s8)g_fight_config.unk_4[4 + arg0],
-        (s8)g_fight_config.unk_4[arg0], (s8)g_fight_config.unk_4[2 + arg0], 0);
+    fighter_Init(fighter_index, (s8)g_fight_config.unk_4[4 + fighter_index],
+                 (s8)g_fight_config.unk_4[fighter_index],
+                 (s8)g_fight_config.unk_4[2 + fighter_index], 0);
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndClearSlot1Id();
     slot_LoadObjectBuildNodesSoftbodyAndFogLevels(
-        arg0, g_fight_selection_object_ids[(s8)g_fight_config.unk_4[arg0]],
+        fighter_index,
+        g_fight_selection_object_ids[(s8)g_fight_config.unk_4[fighter_index]],
         (s32)0x80190800);
 }
 
@@ -204,7 +205,7 @@ void fight_RequestBothFightersEntriesAndReloadOnChange(void) {
     resource_RankRequestedEntriesAndReloadOnChange(addr);
 }
 
-void fight_RequestOneFighterEntriesAndReloadOnChange(s32 arg0) {
+void fight_RequestOneFighterEntriesAndReloadOnChange(s32 fighter_index) {
     s32 addr = (s32)0x80190800;
 
     gpu_ResetGraphMode1();
@@ -212,25 +213,23 @@ void fight_RequestOneFighterEntriesAndReloadOnChange(s32 arg0) {
     ResetEntrySelectionState();
 
     resource_RequestEntryWithLinkedEntriesAndLatchCategory(
-        D_80101EC8[arg0].weapon_entry_id);
+        D_80101EC8[fighter_index].weapon_entry_id);
 
     if (g_fight_mode_selector == 5) {
         resource_SetPairSelectionSlotWithBoundChecks(
-            arg0,
-            g_resource_alternate_pair_selections[D_80101EC8[arg0]
-                                                     .character_data_index]
-                                                [D_80101EC8[arg0].weapon_id]);
+            fighter_index, g_resource_alternate_pair_selections
+                               [D_80101EC8[fighter_index].character_data_index]
+                               [D_80101EC8[fighter_index].weapon_id]);
     } else {
         resource_SetPairSelectionSlotWithBoundChecks(
-            arg0,
-            g_resource_default_pair_selections[D_80101EC8[arg0]
-                                                   .character_data_index]
-                                              [D_80101EC8[arg0].weapon_id]);
+            fighter_index, g_resource_default_pair_selections
+                               [D_80101EC8[fighter_index].character_data_index]
+                               [D_80101EC8[fighter_index].weapon_id]);
     }
     resource_RankRequestedEntriesAndReloadOnChange(addr);
 }
 
-void fight_InitCommandStream(s32 arg0) {
+void fight_InitCommandStream(s32 stream_index) {
     g_fight_config.unk_4[4] = 0;
     g_fight_config.unk_4[5] = 1;
     D_800A3894 = 0;
@@ -240,7 +239,7 @@ void fight_InitCommandStream(s32 arg0) {
     g_fight_skip_first_defeats_left_expiry = 1;
     g_fight_stage_command_count = 0;
     g_fight_pending_unlock_mask_bits = 0;
-    g_fight_command_stream_cursor = g_fight_command_streams[arg0];
+    g_fight_command_stream_cursor = g_fight_command_streams[stream_index];
     eff_Init();
     fight_ScanCommandStreamAndLoadImage(g_fight_command_stream_cursor);
     fight_FillMissingConfigInitFighterAndLoadObject(0);
@@ -277,36 +276,36 @@ void fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0F
     fighter_ResetBoneGroupHitState(D_80101EC8);
 }
 
-s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *arg0) {
+s32 fight_ConfigureFighter1FromLookupAndOperandsAndLoad(u8 *operands) {
     u8 idx;
-    u8 a1;
+    u8 group_flag;
     D_800A3712 = 0;
     idx = g_fight_config_id_data_rows[(s8)g_fight_config.unk_4[0]];
-    a1 = g_fighter_group_flags[idx];
-    if (a1 != 0 && g_fight_stage_command_count == 1) {
-        a1 = 0;
+    group_flag = g_fighter_group_flags[idx];
+    if (group_flag != 0 && g_fight_stage_command_count == 1) {
+        group_flag = 0;
     }
-    g_fight_config.unk_4[1] = a1 != 0 ? 0xE : 0x1D;
+    g_fight_config.unk_4[1] = group_flag != 0 ? 0xE : 0x1D;
     g_fight_config.unk_4[3] = 0;
     {
-        u8 v = arg0[0];
+        u8 v = operands[0];
         g_fight_second_fighter_defeats_left = v;
         g_fight_second_fighter_initial_defeats_left = v;
     }
-    g_fight_config.operand_cpu_base_levels[1] = arg0[1];
-    g_fight_operand_tint_red = arg0[2];
-    g_fight_operand_tint_green = arg0[3];
-    g_fight_operand_tint_blue = arg0[4];
+    g_fight_config.operand_cpu_base_levels[1] = operands[1];
+    g_fight_operand_tint_red = operands[2];
+    g_fight_operand_tint_green = operands[3];
+    g_fight_operand_tint_blue = operands[4];
     fight_FillMissingConfigInitFighterAndLoadObject(1);
     fight_RequestBothFightersEntriesAndReloadOnChange();
     return 5;
 }
 
-s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *arg0) {
+s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *operands) {
     D_800A3712 = 1;
-    g_fight_config.unk_4[1] = arg0[0];
-    g_fight_config.unk_4[3] = arg0[1];
-    g_fight_config.operand_cpu_base_levels[1] = arg0[2];
+    g_fight_config.unk_4[1] = operands[0];
+    g_fight_config.unk_4[3] = operands[1];
+    g_fight_config.operand_cpu_base_levels[1] = operands[2];
     fight_FillMissingConfigInitFighterAndLoadObject(1);
     fight_RequestBothFightersEntriesAndReloadOnChange();
     return 3;
@@ -344,11 +343,11 @@ void fight_RunCommandStream(void) {
 
     do {
         u8 *ptr = g_fight_command_stream_cursor;
-        s32 var_3;
+        s32 command_byte;
         g_fight_command_stream_cursor = ptr + 1;
-        var_3 = *ptr;
+        command_byte = *ptr;
 
-        switch (var_3) {
+        switch (command_byte) {
         case 16: {
             s32 ret = fight_ConfigureFighter1FromLookupAndOperandsAndLoad(
                 g_fight_command_stream_cursor);
@@ -503,11 +502,11 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     s32 saved_44c;
     s32 a3_arg;
     s32 a0_arg;
-    s32 var_4;
-    s32 v0;
+    s32 dest_addr;
+    s32 file_index;
     u8 flags;
 
-    var_4 = 0x80190800;
+    dest_addr = 0x80190800;
     snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
     eff_StopCommands();
     if (g_local_ot_draw_mode != DISP_ACTIVE)
@@ -520,7 +519,7 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     if (g_fight_active_playback_descriptor[3] & 0x80) {
         motion_InvalidateMarkedNdataPackAndResetLoadCaches();
-        var_4 = 0x80118800;
+        dest_addr = 0x80118800;
     }
     {
         u8 var_7 = g_fight_active_playback_descriptor[3];
@@ -552,7 +551,7 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     D_800A390F = 0;
     motion_StartPlaybackAtIndexedBasePlusOffset(
         g_fight_playback_file_base_index, g_fight_active_playback_descriptor[0],
-        0, a3_arg, a0_arg, -1, -1, var_4);
+        0, a3_arg, a0_arg, -1, -1, dest_addr);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     if (g_fight_active_playback_descriptor[3] & 0x40)
@@ -567,8 +566,8 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
     g_local_ot_draw_mode = DISP_DISABLED;
     g_gpu_jitter_burst_enabled = 0;
     snd_SerialMixOn();
-    v0 = cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1]);
-    cdrom_StartAudio(v0, g_fight_active_playback_descriptor[2]);
+    file_index = cdrom_GetFileIndex(5, g_fight_active_playback_descriptor[1]);
+    cdrom_StartAudio(file_index, g_fight_active_playback_descriptor[2]);
     cdrom_WaitAudioStarted();
     g_handler_frame_counter = 0;
     g_main_loop_handler_index = 7;
@@ -632,8 +631,8 @@ void fight_InitScrollingSpriteDisplayAndAudio(void) {
     InitScrollingSpriteDisplay((s32)0x80118800);
     snd_SerialMixOn();
     {
-        s32 v0 = cdrom_GetFileIndex(5, 0x20);
-        cdrom_StartAudio(v0, 4);
+        s32 file_index = cdrom_GetFileIndex(5, 0x20);
+        cdrom_StartAudio(file_index, 4);
     }
     cdrom_WaitAudioStarted();
     g_main_loop_handler_index = 0xB;
@@ -681,14 +680,14 @@ void fight_UpdateScrollingSpriteDisplayAndMergeBitFlags(void) {
 }
 
 void ExecMovieOverlayAndReinitialize(void) {
-    s32 v;
+    s32 arena_base;
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
     slot_ReleaseObjectAndResources(0);
     slot_ReleaseObjectAndResources(1);
     eff_ClearInitFlag();
-    v = (s32)arena_GetBase();
-    sys_ExecMovieOverlay(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
+    arena_base = (s32)arena_GetBase();
+    sys_ExecMovieOverlay(arena_base, (s32)0x80118000, 1, 0xCF8, 0xB01);
     func_80046B44();
     g_main_loop_handler_index = 8;
 }
@@ -696,8 +695,8 @@ void ExecMovieOverlayAndReinitialize(void) {
 extern void fight_RequestOneFighterEntriesAndReloadOnChange(s32);
 
 void fight_InitImageAndPlaybackPresentation(void) {
-    s32 var_1;
-    s8 *p;
+    s32 file_index_offset;
+    s8 *cd_audio_entry;
     gpu_HideResetAndClear();
     gpu_ResetGraphMode1();
     motion_InvalidateMarkedNdataPackAndResetLoadCaches();
@@ -726,11 +725,12 @@ void fight_InitImageAndPlaybackPresentation(void) {
         fight_RequestOneFighterEntriesAndReloadOnChange(0);
     }
     if (g_fight_presentation_index != 9) {
-        var_1 = g_fight_presentation_index;
+        file_index_offset = g_fight_presentation_index;
     } else {
-        var_1 = 8;
+        file_index_offset = 8;
     }
-    gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(var_1, (u8 *)0x80118800);
+    gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(
+        file_index_offset, (u8 *)0x80118800);
     if ((g_fight_presentation_index == 4 &&
          g_fighter_group_flags[D_80101EC8[0].character_data_index] != 0) ||
         (g_fight_presentation_index == 5 &&
@@ -748,10 +748,12 @@ void fight_InitImageAndPlaybackPresentation(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     eff_StopCommands();
-    p = g_fight_presentation_cd_audio_entries[g_fight_presentation_index];
-    if (p[0] >= 0) {
+    cd_audio_entry =
+        g_fight_presentation_cd_audio_entries[g_fight_presentation_index];
+    if (cd_audio_entry[0] >= 0) {
         snd_SerialMixOn();
-        cdrom_StartAudio(cdrom_GetFileIndex(5, p[0]), (u8)p[1]);
+        cdrom_StartAudio(
+            cdrom_GetFileIndex(5, cd_audio_entry[0]), (u8)cd_audio_entry[1]);
         cdrom_WaitAudioStarted();
     }
     g_handler_frame_counter = 0;
@@ -876,13 +878,13 @@ void fight_UpdateMatchTallyPresentation(void) {
  */
 void fight_PackTimeRecordsAndInitPresentation(void) {
     Unk8001CD68Rec buf;
-    Unk8009BD24Block *s0;
+    Unk8009BD24Block *working_record;
     s32 i;
     s32 a, b, c, v;
     TimeRec *base;
     TimeRec *src;
 
-    s0 = GetWorkingRecord();
+    working_record = GetWorkingRecord();
     cdrom_PauseAndWait();
     gpu_HideResetAndClear();
     gpu_ResetGrowingBarProgress();
@@ -892,28 +894,28 @@ void fight_PackTimeRecordsAndInitPresentation(void) {
         src = &base[i];
         a = src->time_frames;
         a = a / 1800;
-        s0->time_records[i].minutes = a;
+        working_record->time_records[i].minutes = a;
         b = src->time_frames;
         b = b / 30;
         b = b % 60;
-        s0->time_records[i].seconds = b;
+        working_record->time_records[i].seconds = b;
         c = src->time_frames;
         c = c % 30;
         c = c * 100;
         c = c / 30;
-        s0->time_records[i].hundredths = c;
+        working_record->time_records[i].hundredths = c;
         v = src->holder_character_index;
-        s0->time_records[i].character_index = v;
+        working_record->time_records[i].character_index = v;
         i += 1;
         if (i >= 3) {
             break;
         }
     } while (1);
     fight_SplitFrameCounterIntoMinutesSecondsHundredths(&buf);
-    s0->fight_time[0] = buf.time_minutes;
-    s0->fight_time[1] = buf.time_seconds;
-    s0->fight_time[2] = buf.time_hundredths;
-    s0->fight_character_index = D_80101EC8[0].character_data_index;
+    working_record->fight_time[0] = buf.time_minutes;
+    working_record->fight_time[1] = buf.time_seconds;
+    working_record->fight_time[2] = buf.time_hundredths;
+    working_record->fight_character_index = D_80101EC8[0].character_data_index;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_handler_frame_counter = 0;
     g_main_loop_handler_index = 0x1F;
@@ -1060,7 +1062,7 @@ void fight_UpdateRotatingViewDecimalPresentation(void) {
 extern s32 g_fight_followup_playback_start_pair;
 
 void fight_InitNearestStartPairPlayback(void) {
-    s32 s0;
+    s32 playback_file_offset;
     s8 var_1;
 
     snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
@@ -1074,14 +1076,14 @@ void fight_InitNearestStartPairPlayback(void) {
     var_1 = g_fight_followup_fighter_index;
     {
         if ((u16)(D_80101EC8[var_1].weapon_id - 6) < 2) {
-            s0 = 8;
+            playback_file_offset = 8;
             if (var_1 != 0) {
-                s0 = 9;
+                playback_file_offset = 9;
             }
         } else {
-            s0 = 6;
+            playback_file_offset = 6;
             if (var_1 != 0) {
-                s0 = 7;
+                playback_file_offset = 7;
             }
         }
     }
@@ -1094,7 +1096,8 @@ void fight_InitNearestStartPairPlayback(void) {
         result = fight_FindNearestStartPair(addr);
         g_fight_followup_playback_start_pair = result;
         motion_StartPlaybackAtIndexedBasePlusOffset(
-            0x16, s0, result, (s32)D_80101EC8[0].weapon_entry_id,
+            0x16, playback_file_offset, result,
+            (s32)D_80101EC8[0].weapon_entry_id,
             (s32)D_80101EC8[1].weapon_entry_id, -1, -1, 0);
     }
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
@@ -1123,8 +1126,8 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
      * 8-byte object above vec (owner ruling 2026-08-18, this function only);
      * without it: score 8 */
     volatile u32 pad2[2];
-    s16 *a;
-    s32 *b;
+    s16 *view_angles;
+    s32 *root_translation;
     s32 flag = 0;
     s8 p;
     s16 var_7;
@@ -1158,9 +1161,9 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
         vec[2] += D_8008EB18;
         eff_StartRecycledVectorCommandWithRedLight(vec, &D_800A312C.vx);
     }
-    a = motion_GetPlaybackViewAngles();
-    b = node_GetRootNodeMatrixTranslation();
-    func_80061064(a, b);
+    view_angles = motion_GetPlaybackViewAngles();
+    root_translation = node_GetRootNodeMatrixTranslation();
+    func_80061064(view_angles, root_translation);
     if (motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush() == 0) {
         flag = 1;
     }
@@ -1280,20 +1283,20 @@ void font_Printf(u8 *format_cursor, s32 first_arg, ...) {
     char format_chunk[0x100];
     va_list ap;
     s32 cur_arg;
-    s32 var_4;
+    s32 percent_seen;
     char *p;
     s32 var_6;
 
     cur_arg = first_arg;
-    var_4 = 0;
+    percent_seen = 0;
     p = format_chunk;
     va_start(ap, first_arg);
     buf[0] = 0;
 
     while ((var_6 = *format_cursor++) != 0) {
         if (var_6 == '%') {
-            if (var_4 == 0) {
-                var_4 = 1;
+            if (percent_seen == 0) {
+                percent_seen = 1;
             } else {
                 *p = 0;
                 sprintf(buf + strlen(buf), format_chunk, cur_arg);
@@ -1434,27 +1437,27 @@ void gpu_InitFogDrawMoves(void) {
     gpu_SetDrawMoveArray(&buf, 0x13, g_gpu_fog_block_moves);
 }
 
-void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
-    s32 s4, s3;
-    s32 s2;
+void gpu_SetDrawMoveArray(RECT *src_rect, s32 move_count, DR_MOVE (*a2)[2]) {
+    s32 start_x, start_y;
+    s32 moves_left;
 
-    s4 = a0->x;
-    s3 = a0->y;
+    start_x = src_rect->x;
+    start_y = src_rect->y;
 
-    s2 = a1 - 1;
-    if (s2 != -1) {
+    moves_left = move_count - 1;
+    if (moves_left != -1) {
         do {
-            s16 v0;
-            v0 = a0->y + a0->h;
-            a0->y = v0;
-            if (v0 >= 0x200) {
-                a0->y = s3;
-                a0->x = a0->x + a0->w;
+            s16 next_y;
+            next_y = src_rect->y + src_rect->h;
+            src_rect->y = next_y;
+            if (next_y >= 0x200) {
+                src_rect->y = start_y;
+                src_rect->x = src_rect->x + src_rect->w;
             }
-            SetDrawMove(&(*a2)[0], a0, s4, s3);
+            SetDrawMove(&(*a2)[0], src_rect, start_x, start_y);
             (*a2)[1] = (*a2)[0];
             a2++;
-        } while (--s2 != -1);
+        } while (--moves_left != -1);
     }
 }
 
@@ -1521,7 +1524,8 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
 }
 
 void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
-    s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
+    s32 move_depth, s32 move_count, DR_MOVE (*arg2)[2], s32 depth_span_limit,
+    s32 link_last_depth_entry) {
     s32 limit;
     s32 step;
     DR_MOVE *pkt;
@@ -1529,19 +1533,19 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
 
     pkt = *arg2;
 
-    if (arg4 != 0) {
-        limit = arg1;
+    if (link_last_depth_entry != 0) {
+        limit = move_count;
     } else {
-        limit = arg1 - 1;
+        limit = move_count - 1;
     }
 
     if (g_gpu_grid_and_fog_control & 1) {
         step = g_gpu_latched_fog_depth_span;
     } else {
         if (func_8003F268() == 0) {
-            step = 0x6590 - arg0;
+            step = 0x6590 - move_depth;
         } else {
-            step = 0x55F0 - arg0;
+            step = 0x55F0 - move_depth;
         }
     }
 
@@ -1549,16 +1553,16 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
         return;
     }
 
-    if ((u32)arg3 < (u32)step) {
-        step = (s32)((u32)arg3 / (u32)arg1);
+    if ((u32)depth_span_limit < (u32)step) {
+        step = (s32)((u32)depth_span_limit / (u32)move_count);
     } else {
-        step = step / arg1;
+        step = step / move_count;
     }
 
     pkt += g_gpu_presented_frame_count & 1;
 
     for (i = 0; i < limit; i++) {
-        s32 idx = gpu_DepthToOtIndex((u32)arg0 >> 2, 2);
+        s32 idx = gpu_DepthToOtIndex((u32)move_depth >> 2, 2);
         if (idx < 0x1000) {
             addPrim(&g_gpu_ot_offset_ptr[idx], pkt);
             pkt += 2;
@@ -1566,10 +1570,10 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
                 g_gpu_last_fog_ot_index = idx;
             }
         }
-        arg0 += step;
+        move_depth += step;
     }
 
-    if (arg4 != 0) {
+    if (link_last_depth_entry != 0) {
         gpu_SetLastDepthIndexOtEntryLinkToPacket((u32)pkt);
     } else {
         addPrim(&g_gpu_ot_offset_ptr[0xFFB], pkt);

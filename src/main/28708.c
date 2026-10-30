@@ -583,23 +583,23 @@ static u8 D_800A3354;
 s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
     extern u8 g_menu_prompt_rearm;
     s32 result = 0;
-    u32 var_1;
+    u32 pressed_buttons;
     if (g_menu_prompt_rearm != 0) {
         g_menu_prompt_rearm = 0;
         g_menu_two_choice_prompt_cursor = 0;
     }
-    var_1 = g_pad_state.pressed;
-    if (var_1 & 0x400040) {
+    pressed_buttons = g_pad_state.pressed;
+    if (pressed_buttons & 0x400040) {
         snd_QueueSound(1, 0x7F, 0x7F);
         if (g_menu_two_choice_prompt_cursor == 0) {
             result = 1;
         } else {
             result = -1;
         }
-    } else if (var_1 & (u32)0x80008000) {
+    } else if (pressed_buttons & (u32)0x80008000) {
         snd_QueueSound(0, 0x7F, 0x7F);
         g_menu_two_choice_prompt_cursor = 0;
-    } else if (var_1 & 0x20002000) {
+    } else if (pressed_buttons & 0x20002000) {
         snd_QueueSound(0, 0x7F, 0x7F);
         g_menu_two_choice_prompt_cursor = 1;
     }
@@ -614,8 +614,8 @@ s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
 s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     extern u8 D_800A3205;
     s32 result = 0;
-    s32 v0;
-    s32 var_2;
+    s32 request_status;
+    s32 sheet_pair_index;
 
     if (D_800A3205) {
         g_memcard_status8_retry_count = 0;
@@ -632,72 +632,73 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
         g_memcard_retry_load_status8_latched = 0;
     }
 
-    v0 = memcard_Update();
+    request_status = memcard_Update();
 
     if (g_memcard_retry_load_status8_latched != 0) {
         gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
         goto timer;
     }
 
-    var_2 = 0;
+    sheet_pair_index = 0;
     if (g_memcard_validation_load_active == 0) {
         if (g_memcard_status5_retries_exhausted == 1) {
-            switch (v0 - 4) {
+            switch (request_status - 4) {
             case 0:
-                var_2 = 2;
+                sheet_pair_index = 2;
                 break;
             case 1:
-                var_2 = 3;
+                sheet_pair_index = 3;
                 break;
             case 2:
             case 6:
             case 10:
             case 11:
-                var_2 = 4;
+                sheet_pair_index = 4;
                 break;
             case 4:
-                var_2 = -1;
+                sheet_pair_index = -1;
                 break;
             default:
-                var_2 = 0;
+                sheet_pair_index = 0;
                 break;
             }
         } else {
-            switch (v0 - 4) {
+            switch (request_status - 4) {
             case 0:
-                var_2 = 2;
+                sheet_pair_index = 2;
                 break;
             case 1:
-                var_2 = 3;
+                sheet_pair_index = 3;
                 break;
             case 2:
-                var_2 = 4;
+                sheet_pair_index = 4;
                 break;
             case 10:
-                var_2 = 1;
+                sheet_pair_index = 1;
                 break;
             case 11:
-                var_2 = 0xB;
+                sheet_pair_index = 0xB;
                 break;
             case 4:
-                var_2 = -1;
+                sheet_pair_index = -1;
                 break;
             case 6:
-                var_2 = 0x14;
+                sheet_pair_index = 0x14;
                 break;
             default:
-                var_2 = 0;
+                sheet_pair_index = 0;
                 break;
             }
         }
     }
 
-    if (var_2 >= 0) {
-        gpu_DrawSheetPairCenteredTileWithOptionalSelection(var_2, -1);
+    if (sheet_pair_index >= 0) {
+        gpu_DrawSheetPairCenteredTileWithOptionalSelection(
+            sheet_pair_index, -1);
     }
 
     if (g_memcard_validation_load_active != 0) {
-        switch (v0 - 4) {
+        switch (request_status - 4) {
         case 0:
             break;
         case 4:
@@ -748,7 +749,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
             break;
         }
     } else {
-        switch (v0 - 5) {
+        switch (request_status - 5) {
         case 0:
         case 1:
         case 5:
@@ -789,9 +790,9 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     extern void memcard_RequestOverwrite(void);
     extern void memcard_RequestFormat(void);
     s32 result = 0;
-    s32 var_1 = -1;
+    s32 highlighted_cell_index = -1;
     s32 v0;
-    s32 var_3;
+    s32 sheet_pair_index;
 
     if (!D_800A3207) {
         D_800A3207 = 1;
@@ -831,7 +832,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         v0 = 0x11;
     }
 
-    var_3 = 0;
+    sheet_pair_index = 0;
     if (g_memcard_validation_load_active != 0) {
         goto sel_dispatch;
     }
@@ -848,33 +849,33 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
 
     switch (v0) {
     case 0:
-        var_3 = 0x11;
+        sheet_pair_index = 0x11;
         /* each case that passes g_memcard_prompt_choice to
            gpu_DrawSheetPairCenteredTileWithOptionalSelection sets var_1 in its
            own body (cross-jump merges the stores; one shared store reached by
            goto: score 13) */
-        var_1 = g_memcard_prompt_choice;
+        highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 13:
     case 17:
-        var_3 = 6;
-        var_1 = g_memcard_prompt_choice;
+        sheet_pair_index = 6;
+        highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 1:
-        var_3 = (-(g_memcard_request_write_started != 0)) & 7;
+        sheet_pair_index = (-(g_memcard_request_write_started != 0)) & 7;
         goto sel_dispatch;
     case 2:
-        var_3 = 8;
+        sheet_pair_index = 8;
         goto sel_dispatch;
     case 3:
-        var_3 = 9;
+        sheet_pair_index = 9;
         goto sel_dispatch;
     case 8:
     case8_sel:
-        var_3 = -1;
+        sheet_pair_index = -1;
         goto sel_dispatch;
     case 7:
-        var_3 = 5;
+        sheet_pair_index = 5;
         goto sel_dispatch;
     case 10:
         if (D_800A3206 == 0) {
@@ -883,7 +884,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
         if (g_pad_state.pressed & 0x400040) {
             D_800A3206 = 0;
             snd_QueueSound(1, 0x7F, 0x7F);
-            var_3 = 0xD;
+            sheet_pair_index = 0xD;
             if (g_memcard_prompt_choice == 0) {
                 memcard_RequestFormat();
                 goto sel_dispatch;
@@ -892,32 +893,33 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
             D_800A3207 = 5;
             g_memcard_message_countdown = 0x5A;
             g_memcard_prompt_choice = 0;
-            var_3 = -1;
+            sheet_pair_index = -1;
             goto sel_dispatch;
         }
-        var_3 = 0xC;
+        sheet_pair_index = 0xC;
         if ((g_pad_state.pressed & 0xA000A000U) != 0) {
             D_800A3206 = 1;
         }
-        var_1 = g_memcard_prompt_choice;
+        highlighted_cell_index = g_memcard_prompt_choice;
         goto sel_dispatch;
     case 9:
     case 11:
     case9_11_sel:
-        var_3 = 0xD;
+        sheet_pair_index = 0xD;
         goto sel_dispatch;
     case 12:
     case12_sel:
-        var_3 = 0xF;
+        sheet_pair_index = 0xF;
         goto sel_dispatch;
     default:
-        var_3 = 0;
+        sheet_pair_index = 0;
         goto sel_dispatch;
     }
 
 sel_dispatch:
-    if (var_3 >= 0) {
-        gpu_DrawSheetPairCenteredTileWithOptionalSelection(var_3, var_1);
+    if (sheet_pair_index >= 0) {
+        gpu_DrawSheetPairCenteredTileWithOptionalSelection(
+            sheet_pair_index, highlighted_cell_index);
     }
 
     if (g_memcard_validation_load_active != 0) {
@@ -1127,7 +1129,7 @@ void replay_BeginFrame(void) {
     extern u8 g_replay_event_search_cursor;
     extern s16 g_replay_model_draw_search_cursor;
     s32 i;
-    Unk800F68E0Rec *q;
+    Unk800F68E0Rec *model_draw_cursor;
     s16 val;
     s16 newval;
     for (i = 0; i < 0x20; i++) {
@@ -1136,29 +1138,30 @@ void replay_BeginFrame(void) {
         }
     }
 
-    q = g_replay_model_draws;
+    model_draw_cursor = g_replay_model_draws;
     i = 0;
     do {
-        val = q->draw_age;
+        val = model_draw_cursor->draw_age;
         if (val != -1) {
             newval = val + 1;
-            q->draw_age = newval;
-            if (newval - q->draw_span >= 0x101) {
-                q->draw_age = -1;
+            model_draw_cursor->draw_age = newval;
+            if (newval - model_draw_cursor->draw_span >= 0x101) {
+                model_draw_cursor->draw_age = -1;
             }
         }
         i++;
-        q++;
+        model_draw_cursor++;
     } while (i < 0xB4);
 
     g_replay_event_search_cursor = 0;
     g_replay_model_draw_search_cursor = 0;
 }
 
-void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
+void replay_RecordModelDraw(
+    s32 pool_index, s32 entry_index, s32 *position, s16 *angles) {
     extern s16 g_replay_model_draw_search_cursor;
     extern u8 D_800A3209;
-    Unk800F68E0Rec *var_0;
+    Unk800F68E0Rec *model_draw_cursor;
     s32 i;
     s16 idx;
     s16 cur;
@@ -1167,40 +1170,42 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     s32 raw;
     s32 rot;
 
-    var_0 = g_replay_model_draws;
+    model_draw_cursor = g_replay_model_draws;
     i = 0;
     do {
-        state = var_0->draw_age;
+        state = model_draw_cursor->draw_age;
         if (state != -1) {
-            seen = var_0->draw_span;
+            seen = model_draw_cursor->draw_span;
             if (seen == state - 1 && seen < 0xFF) {
-                raw = var_0->slot_rot_x << 16;
+                raw = model_draw_cursor->slot_rot_x << 16;
                 rot = raw >> 16;
-                if ((s32)((u32)raw >> 28) == arg0 &&
-                    var_0->draw_pos[0] == arg2[0] &&
-                    var_0->draw_pos[1] == arg2[1] &&
-                    var_0->draw_pos[2] == arg2[2] &&
-                    ((rot - arg3[0]) & 0xFFF) == 0 &&
-                    ((var_0->draw_rot_y - arg3[1]) & 0xFFF) == 0 &&
-                    ((var_0->draw_rot_z - arg3[2]) & 0xFFF) == 0) {
-                    var_0->draw_span = seen + 1;
+                if ((s32)((u32)raw >> 28) == pool_index &&
+                    model_draw_cursor->draw_pos[0] == position[0] &&
+                    model_draw_cursor->draw_pos[1] == position[1] &&
+                    model_draw_cursor->draw_pos[2] == position[2] &&
+                    ((rot - angles[0]) & 0xFFF) == 0 &&
+                    ((model_draw_cursor->draw_rot_y - angles[1]) & 0xFFF) ==
+                        0 &&
+                    ((model_draw_cursor->draw_rot_z - angles[2]) & 0xFFF) ==
+                        0) {
+                    model_draw_cursor->draw_span = seen + 1;
                     return;
                 }
             }
         }
         i++;
-        var_0++;
+        model_draw_cursor++;
     } while (i < 0xB4);
 
     idx = g_replay_model_draw_search_cursor;
-    var_0 = &g_replay_model_draws[idx];
+    model_draw_cursor = &g_replay_model_draws[idx];
     while (idx < 0xB4) {
-        if (var_0->draw_age == -1) {
+        if (model_draw_cursor->draw_age == -1) {
             break;
         }
         cur = idx + 1;
         g_replay_model_draw_search_cursor = cur;
-        var_0++;
+        model_draw_cursor++;
         idx = cur;
     }
 
@@ -1209,84 +1214,85 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         return;
     }
 
-    var_0->draw_age = 0;
-    var_0->model_entry_index = arg1;
-    var_0->draw_span = 0;
-    var_0->draw_pos[0] = arg2[0];
-    var_0->draw_pos[1] = arg2[1];
-    var_0->draw_pos[2] = arg2[2];
-    var_0->slot_rot_x = (arg3[0] & 0xFFF) | (arg0 << 12);
-    var_0->draw_rot_y = arg3[1];
-    var_0->draw_rot_z = arg3[2];
+    model_draw_cursor->draw_age = 0;
+    model_draw_cursor->model_entry_index = entry_index;
+    model_draw_cursor->draw_span = 0;
+    model_draw_cursor->draw_pos[0] = position[0];
+    model_draw_cursor->draw_pos[1] = position[1];
+    model_draw_cursor->draw_pos[2] = position[2];
+    model_draw_cursor->slot_rot_x = (angles[0] & 0xFFF) | (pool_index << 12);
+    model_draw_cursor->draw_rot_y = angles[1];
+    model_draw_cursor->draw_rot_z = angles[2];
 }
 
-void replay_RecordEvent(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
+void replay_RecordEvent(
+    u8 arg0, u8 kind, s32 *src_position, u16 *src_command_vector) {
     extern u8 g_replay_replaying_event;
     extern u8 g_replay_event_search_cursor;
-    Unk80101BF0Rec *var_0;
+    Unk80101BF0Rec *event_cursor;
     u8 idx;
     if (g_replay_replaying_event == 0) {
         idx = g_replay_event_search_cursor;
-        var_0 = &g_replay_events[idx];
-        for (; idx < 0x20; idx++, var_0++) {
-            if (var_0->event_frame == 0xFF) {
+        event_cursor = &g_replay_events[idx];
+        for (; idx < 0x20; idx++, event_cursor++) {
+            if (event_cursor->event_frame == 0xFF) {
                 break;
             }
             g_replay_event_search_cursor = idx + 1;
         }
         if (g_replay_event_search_cursor != 0x20) {
             u8 tmp = g_replay_write_frame;
-            var_0->unk_1 = arg0;
-            var_0->event_kind = arg1;
-            var_0->event_frame = tmp;
-            var_0->event_pos[0] = arg2[0];
-            var_0->event_pos[1] = arg2[1];
-            var_0->event_pos[2] = arg2[2];
-            if (arg3 != NULL) {
-                var_0->event_vector[0] = arg3[0];
-                var_0->event_vector[1] = arg3[1];
-                var_0->event_vector[2] = arg3[2];
+            event_cursor->unk_1 = arg0;
+            event_cursor->event_kind = kind;
+            event_cursor->event_frame = tmp;
+            event_cursor->event_pos[0] = src_position[0];
+            event_cursor->event_pos[1] = src_position[1];
+            event_cursor->event_pos[2] = src_position[2];
+            if (src_command_vector != NULL) {
+                event_cursor->event_vector[0] = src_command_vector[0];
+                event_cursor->event_vector[1] = src_command_vector[1];
+                event_cursor->event_vector[2] = src_command_vector[2];
             }
         }
     }
 }
 
-void replay_RecordFighter(Unk80101EC8Record *a0) {
+void replay_RecordFighter(Unk80101EC8Record *fighter_record) {
     s16 idx;
     Rec1C *dest;
 
-    idx = a0->index;
+    idx = fighter_record->index;
     dest = &g_replay_fighter_frames[g_replay_write_frame][idx];
 
-    dest->h4 = a0->world_pos.x;
-    dest->h8 = a0->world_pos.z;
-    dest->h6 = a0->world_pos.y;
+    dest->h4 = fighter_record->world_pos.x;
+    dest->h8 = fighter_record->world_pos.z;
+    dest->h6 = fighter_record->world_pos.y;
 
     {
-        u16 v = a0->orientation.vy;
-        u8 b = a0->draw_move_set;
+        u16 v = fighter_record->orientation.vy;
+        u8 b = fighter_record->draw_move_set;
         dest->hA = (v & 0xFFF) | (b << 12);
     }
 
-    dest->hC = a0->ground_y;
-    dest->b14 = a0->eased_pose_bearing_offset >> 2;
-    dest->b15 = a0->eased_pose_elevation_offset >> 2;
-    dest->b16 = a0->opponent_elevation_offset >> 2;
-    dest->w0 = a0->cur_move;
+    dest->hC = fighter_record->ground_y;
+    dest->b14 = fighter_record->eased_pose_bearing_offset >> 2;
+    dest->b15 = fighter_record->eased_pose_elevation_offset >> 2;
+    dest->b16 = fighter_record->opponent_elevation_offset >> 2;
+    dest->w0 = fighter_record->cur_move;
     dest->b17 = 0;
 
-    if (a0->cur_move_is_common != 0) {
+    if (fighter_record->cur_move_is_common != 0) {
         dest->b17 = 1;
     }
-    if (a0->cur_move_slot != 0) {
+    if (fighter_record->cur_move_slot != 0) {
         dest->b17 |= 2;
     }
 
-    dest->hE = a0->blend_src_frame_code;
-    dest->h10 = a0->blend_dst_frame_code;
-    dest->h12 = a0->pose_interp_weight;
-    dest->b18 = a0->frame_flags;
-    dest->b19 = a0->move_frame;
+    dest->hE = fighter_record->blend_src_frame_code;
+    dest->h10 = fighter_record->blend_dst_frame_code;
+    dest->h12 = fighter_record->pose_interp_weight;
+    dest->b18 = fighter_record->frame_flags;
+    dest->b19 = fighter_record->move_frame;
 }
 
 void replay_AdvanceFrame(void) {
@@ -1315,43 +1321,44 @@ void replay_Start(void) {
 extern s32 collision_GetHitTag(void);
 
 void fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
-    Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
-    s32 sp10[3];
-    s32 sp20[3];
-    s32 sp30[4];
-    s16 sp40[4];
+    Unk80101EC8Record *fighter_record, s32 *hit_tag_out, s32 *hit_class_out) {
+    s32 segment_start[3];
+    s32 segment_end[3];
+    s32 hit_point[4];
+    s16 hit_normal[4];
     s32 mid_x, mid_y, mid_z;
     s32 result;
 
-    mid_x =
-        (s32)(arg0->ground_probe_points[0].x + arg0->ground_probe_points[1].x) /
-        2;
-    sp10[0] = mid_x;
-    mid_y =
-        (s32)(arg0->ground_probe_points[0].y + arg0->ground_probe_points[1].y) /
-        2;
-    sp10[1] = mid_y - 0x190;
-    mid_z =
-        (s32)(arg0->ground_probe_points[0].z + arg0->ground_probe_points[1].z) /
-        2;
-    sp20[0] = mid_x;
-    sp20[1] = mid_y + 0x190;
-    sp10[2] = mid_z;
-    sp20[2] = mid_z;
-    if (collision_TestSegment(sp10, sp20, sp30, sp40) != 0) {
+    mid_x = (s32)(fighter_record->ground_probe_points[0].x +
+                  fighter_record->ground_probe_points[1].x) /
+            2;
+    segment_start[0] = mid_x;
+    mid_y = (s32)(fighter_record->ground_probe_points[0].y +
+                  fighter_record->ground_probe_points[1].y) /
+            2;
+    segment_start[1] = mid_y - 0x190;
+    mid_z = (s32)(fighter_record->ground_probe_points[0].z +
+                  fighter_record->ground_probe_points[1].z) /
+            2;
+    segment_end[0] = mid_x;
+    segment_end[1] = mid_y + 0x190;
+    segment_start[2] = mid_z;
+    segment_end[2] = mid_z;
+    if (collision_TestSegment(
+            segment_start, segment_end, hit_point, hit_normal) != 0) {
         result = collision_GetHitTag();
-        *arg1 = result;
+        *hit_tag_out = result;
         if (result == 7) {
             goto neg;
         }
         if (result == 0) {
             goto neg;
         }
-        *arg2 = ((0x2A >> result) ^ 1) & 1;
+        *hit_class_out = ((0x2A >> result) ^ 1) & 1;
     } else {
-        *arg1 = -1;
+        *hit_tag_out = -1;
     neg:
-        *arg2 = -1;
+        *hit_class_out = -1;
     }
 }
 
@@ -1365,45 +1372,47 @@ void replay_PlayFrame(void) {
     s32 sp120[34];
     s32 pos[3];
     s16 rot[3];
-    u16 sp1C0[200];
-    s32 out_b1;
-    s32 out_b2;
-    s32 idx;
-    s32 var_8;
+    u16 decode_work[200];
+    s32 hit_tag;
+    s32 hit_class;
+    s32 frame_index;
+    s32 playback_fraction;
     s32 i;
-    Rec1C *p;
-    Unk80101EC8Record *var_11;
-    Unk80101BF0Rec *e;
-    Unk800F68E0Rec *s;
+    Rec1C *fighter_frame;
+    Unk80101EC8Record *fighter_record;
+    Unk80101BF0Rec *event_cursor;
+    Unk800F68E0Rec *model_draw_cursor;
     /* temp: the 0/1 weapon-set selector in the per-player loop, then the
      * replay window of the event loop (Ruling 11, ordinary-c-judge-decidable)
      */
     s32 temp;
-    u8 var_15;
-    u8 *var_16;
+    u8 saved_move_frame;
+    u8 *saved_motion_metadata;
 
     if (g_replay_ring_wrapped != 0) {
-        idx = (g_replay_write_frame + g_replay_playback_frame) % 120;
-        var_8 = (g_replay_playback_frame << 12) / 120;
+        frame_index = (g_replay_write_frame + g_replay_playback_frame) % 120;
+        playback_fraction = (g_replay_playback_frame << 12) / 120;
     } else {
-        idx = g_replay_playback_frame;
-        var_8 = (idx << 12) / g_replay_write_frame;
+        frame_index = g_replay_playback_frame;
+        playback_fraction = (frame_index << 12) / g_replay_write_frame;
     }
     D_800A3778 = camera_GetViewMatrixWithHalvedMiddleRow();
     /* The frame record's address is written out at each argument (F3
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */
     camera_UpdateReplayViewWithSineYawOffset(
-        &g_replay_fighter_frames[idx][g_fight_followup_fighter_index],
-        g_fight_followup_fighter_index == 0 ? &g_replay_fighter_frames[idx][1]
-                                            : &g_replay_fighter_frames[idx][0],
-        var_8);
+        &g_replay_fighter_frames[frame_index][g_fight_followup_fighter_index],
+        g_fight_followup_fighter_index == 0
+            ? &g_replay_fighter_frames[frame_index][1]
+            : &g_replay_fighter_frames[frame_index][0],
+        playback_fraction);
     camera_UpdateReplayViewWithConstantYawOffset(
-        &g_replay_fighter_frames[idx][g_fight_followup_fighter_index],
-        g_fight_followup_fighter_index == 0 ? &g_replay_fighter_frames[idx][1]
-                                            : &g_replay_fighter_frames[idx][0],
-        var_8);
-    camera_ApplyReplayView(var_8);
+        &g_replay_fighter_frames[frame_index][g_fight_followup_fighter_index],
+        g_fight_followup_fighter_index == 0
+            ? &g_replay_fighter_frames[frame_index][1]
+            : &g_replay_fighter_frames[frame_index][0],
+        playback_fraction);
+    camera_ApplyReplayView(playback_fraction);
 
     for (i = 0; i < 2; i++) {
         /* entry: the frame's entry in the practice weapon table (if arm) or
@@ -1411,85 +1420,88 @@ void replay_PlayFrame(void) {
          * ordinary-c-judge-decidable) */
         u16 *entry;
 
-        p = &g_replay_fighter_frames[idx][i];
-        var_11 = &D_80101EC8[i];
-        motion_DecodeFrame((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
-        motion_DecodeFrame(
-            (p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
-        motion_ApplyRecordedPoseAdjustments(var_11, p, &work[0], &work[1]);
-        slot_BlendTwoPosesIntoNodeMatrices(
-            i, (u8 *)&work[0], (u8 *)&work[1], p->h12, (MATRIX *)sp120);
-        pos[0] = p->h4;
-        pos[1] = p->h6;
-        pos[2] = p->h8;
+        fighter_frame = &g_replay_fighter_frames[frame_index][i];
+        fighter_record = &D_80101EC8[i];
+        motion_DecodeFrame((fighter_frame->hE >> 14) & 3,
+                           fighter_frame->hE & 0x3FFF, &work[0], decode_work);
+        motion_DecodeFrame((fighter_frame->h10 >> 14) & 3,
+                           fighter_frame->h10 & 0x3FFF, &work[1], decode_work);
+        motion_ApplyRecordedPoseAdjustments(
+            fighter_record, fighter_frame, &work[0], &work[1]);
+        slot_BlendTwoPosesIntoNodeMatrices(i, (u8 *)&work[0], (u8 *)&work[1],
+                                           fighter_frame->h12, (MATRIX *)sp120);
+        pos[0] = fighter_frame->h4;
+        pos[1] = fighter_frame->h6;
+        pos[2] = fighter_frame->h8;
         rot[0] = 0;
-        rot[1] = p->hA;
+        rot[1] = fighter_frame->hA;
         rot[2] = 0;
-        func_80040D48(i, 1, pos, rot, 0, p->hC);
-        if (p->b18 & 1) {
+        func_80040D48(i, 1, pos, rot, 0, fighter_frame->hC);
+        if (fighter_frame->b18 & 1) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                var_11->weapon_entry_id, i * 2 + 0x8000, 0, 0);
+                fighter_record->weapon_entry_id, i * 2 + 0x8000, 0, 0);
         }
-        if (p->b18 & 4) {
+        if (fighter_frame->b18 & 4) {
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                g_resource_kind_entry_ids[var_11->wielded_object_kind],
+                g_resource_kind_entry_ids[fighter_record->wielded_object_kind],
                 i * 2 + 0x8001, 0, 0);
         }
-        if (p->b18 & 2) {
+        if (fighter_frame->b18 & 2) {
             node_QueueTableEntryNodePairUnderSlotNode(
-                var_11->weapon_entry_id, i * 2, (p->b18 >> 4) & 1);
+                fighter_record->weapon_entry_id, i * 2,
+                (fighter_frame->b18 >> 4) & 1);
         }
-        if (p->b18 & 8) {
+        if (fighter_frame->b18 & 8) {
             node_QueueTableEntryNodePairUnderSlotNode(
-                g_resource_kind_entry_ids[var_11->wielded_object_kind],
-                i * 2 | 1, (p->b18 >> 5) & 1);
+                g_resource_kind_entry_ids[fighter_record->wielded_object_kind],
+                i * 2 | 1, (fighter_frame->b18 >> 5) & 1);
         }
         fighter_UpdateBoneWorldData(
-            var_11, SPAD->spadA8[i], SPAD->weapon_points[i],
+            fighter_record, SPAD->spadA8[i], SPAD->weapon_points[i],
             SPAD->second_weapon_points[i]);
         fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
-            var_11, &out_b1, &out_b2);
-        if (out_b1 != 1) {
-            var_11->collision_hit_tag = out_b1;
-            if (out_b2 != -1) {
-                var_11->collision_hit_class = out_b2;
+            fighter_record, &hit_tag, &hit_class);
+        if (hit_tag != 1) {
+            fighter_record->collision_hit_tag = hit_tag;
+            if (hit_class != -1) {
+                fighter_record->collision_hit_class = hit_class;
             }
         }
-        var_15 = var_11->move_frame;
-        var_11->move_frame = p->b19;
-        var_16 = var_11->motion_metadata;
-        if (p->b17 & 1) {
-            entry = &g_motion_common_sections
-                         .motion_entries[p->w0->motion_bank_entry_index * 2];
-            var_11->motion_metadata =
+        saved_move_frame = fighter_record->move_frame;
+        fighter_record->move_frame = fighter_frame->b19;
+        saved_motion_metadata = fighter_record->motion_metadata;
+        if (fighter_frame->b17 & 1) {
+            entry = &g_motion_common_sections.motion_entries
+                         [fighter_frame->w0->motion_bank_entry_index * 2];
+            fighter_record->motion_metadata =
                 g_motion_common_sections.motion_metadata_base + entry[1];
         } else {
-            temp = (p->b17 >> 1) & 1;
-            entry = &g_motion_fighter_sections[temp]
-                         .motion_entries[p->w0->motion_bank_entry_index * 2];
-            var_11->motion_metadata =
+            temp = (fighter_frame->b17 >> 1) & 1;
+            entry = &g_motion_fighter_sections[temp].motion_entries
+                         [fighter_frame->w0->motion_bank_entry_index * 2];
+            fighter_record->motion_metadata =
                 g_motion_fighter_sections[temp].motion_metadata_base + entry[1];
         }
-        if (p->b18 & 0x40) {
-            fighter_ProcessFrameEvents(var_11);
+        if (fighter_frame->b18 & 0x40) {
+            fighter_ProcessFrameEvents(fighter_record);
         }
-        var_11->move_frame = var_15;
-        var_11->motion_metadata = var_16;
-        gpu_QueueSlotDrawMovesForSelectedSet(i, (p->hA >> 12) & 7);
+        fighter_record->move_frame = saved_move_frame;
+        fighter_record->motion_metadata = saved_motion_metadata;
+        gpu_QueueSlotDrawMovesForSelectedSet(i, (fighter_frame->hA >> 12) & 7);
     }
 
-    e = g_replay_events;
-    for (i = 0; i < 0x20; i++, e++) {
-        if (e->event_frame == idx) {
-            pos[0] = e->event_pos[0];
-            pos[1] = e->event_pos[1];
-            pos[2] = e->event_pos[2];
-            rot[0] = e->event_vector[0];
-            rot[1] = e->event_vector[1];
-            rot[2] = e->event_vector[2];
+    event_cursor = g_replay_events;
+    for (i = 0; i < 0x20; i++, event_cursor++) {
+        if (event_cursor->event_frame == frame_index) {
+            pos[0] = event_cursor->event_pos[0];
+            pos[1] = event_cursor->event_pos[1];
+            pos[2] = event_cursor->event_pos[2];
+            rot[0] = event_cursor->event_vector[0];
+            rot[1] = event_cursor->event_vector[1];
+            rot[2] = event_cursor->event_vector[2];
             g_replay_replaying_event = 1;
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                e->unk_1, e->event_kind, pos, rot);
+                event_cursor->unk_1, event_cursor->event_kind, pos, rot);
             g_replay_replaying_event = 0;
         }
     }
@@ -1500,17 +1512,19 @@ void replay_PlayFrame(void) {
         s32 next_count = g_replay_playback_frame + 1;
         temp = g_replay_write_frame - next_count;
     }
-    s = g_replay_model_draws;
-    for (i = 0; i < 0xB4; i++, s++) {
-        if (s->draw_age >= temp && s->draw_age - s->draw_span <= temp) {
-            pos[0] = s->draw_pos[0];
-            pos[1] = s->draw_pos[1];
-            pos[2] = s->draw_pos[2];
-            rot[0] = s->slot_rot_x;
-            rot[1] = s->draw_rot_y;
-            rot[2] = s->draw_rot_z;
+    model_draw_cursor = g_replay_model_draws;
+    for (i = 0; i < 0xB4; i++, model_draw_cursor++) {
+        if (model_draw_cursor->draw_age >= temp &&
+            model_draw_cursor->draw_age - model_draw_cursor->draw_span <=
+                temp) {
+            pos[0] = model_draw_cursor->draw_pos[0];
+            pos[1] = model_draw_cursor->draw_pos[1];
+            pos[2] = model_draw_cursor->draw_pos[2];
+            rot[0] = model_draw_cursor->slot_rot_x;
+            rot[1] = model_draw_cursor->draw_rot_y;
+            rot[2] = model_draw_cursor->draw_rot_z;
             node_QueueEntryNodesFromTransformOrUpdatedSlotNode(
-                s->model_entry_index, 1, pos, rot);
+                model_draw_cursor->model_entry_index, 1, pos, rot);
         }
     }
 
@@ -1666,13 +1680,13 @@ s32 comb_WriteWaitCallback(s32 a0, u32 a1) {
 }
 
 s32 comb_Write8(void *buf) {
-    s32 s1;
-    s32 s0;
+    s32 start_ticks;
+    s32 cts_asserted_polls;
 
-    s1 = GetRCnt(0xF2000001);
-    if (s1 >= 0x401) {
+    start_ticks = GetRCnt(0xF2000001);
+    if (start_ticks >= 0x401) {
         ResetRCnt(0xF2000001);
-        s1 = 0;
+        start_ticks = 0;
     }
 
     while (1) {
@@ -1680,20 +1694,20 @@ s32 comb_Write8(void *buf) {
             if (_comb_control(3, 1, 0) != 0) {
                 break;
             }
-            if (GetRCnt(0xF2000001) - s1 >= 0x7801) {
+            if (GetRCnt(0xF2000001) - start_ticks >= 0x7801) {
                 return 0;
             }
         }
 
-        s0 = 0;
+        cts_asserted_polls = 0;
         do {
             if (_comb_control(3, 1, 0) == 0) {
                 break;
             }
-            s0++;
-        } while (s0 < 1000);
+            cts_asserted_polls++;
+        } while (cts_asserted_polls < 1000);
 
-        if (s0 >= 1000) {
+        if (cts_asserted_polls >= 1000) {
             break;
         }
     }
@@ -1710,21 +1724,21 @@ s32 comb_Write8(void *buf) {
 void comb_Read8(void) { read(g_comb_read_fd, g_comb_recv_buf, 8); }
 
 s32 comb_WaitRead8(void) {
-    s32 s0;
-    s32 s1;
-    s32 a1;
-    s32 a0;
+    s32 start_ticks;
+    s32 retry_count;
+    s32 received_pad_word;
+    s32 received_payload_check_word;
     s32 v0;
 
-    s1 = 0;
-    s0 = GetRCnt(0xF2000001);
-    if (s0 >= 0x401) {
+    retry_count = 0;
+    start_ticks = GetRCnt(0xF2000001);
+    if (start_ticks >= 0x401) {
         goto overflow;
     }
     goto loop_check;
 overflow:
     ResetRCnt(0xF2000001);
-    s0 = 0;
+    start_ticks = 0;
 loop_check:
     if (TestEvent(g_comb_event_ioer) != 0) {
         goto success;
@@ -1732,33 +1746,33 @@ loop_check:
     if (TestEvent(g_comb_event_error) == 0) {
         goto poll;
     }
-    s1 += 1;
-    if (s1 >= 5) {
+    retry_count += 1;
+    if (retry_count >= 5) {
         goto ret0_tramp;
     }
     _comb_control(2, 0, 0);
-    s0 = 0;
+    start_ticks = 0;
     comb_Read8();
     ResetRCnt(0xF2000001);
 poll:
     if (((_comb_control(0, 0, 0) >> 7) & 3) == 1) {
         goto loop_check;
     }
-    if (GetRCnt(0xF2000001) - s0 < 0x3C01) {
+    if (GetRCnt(0xF2000001) - start_ticks < 0x3C01) {
         goto loop_check;
     }
-    s1 += 1;
-    if (s1 >= 5) {
+    retry_count += 1;
+    if (retry_count >= 5) {
         goto ret0_tramp;
     }
     goto overflow;
 success:
-    a1 = g_comb_recv_buf[0];
-    a0 = g_comb_recv_buf[1];
-    v0 = a1 ^ (a1 >> 16);
-    v0 = v0 ^ (a0 >> 16);
+    received_pad_word = g_comb_recv_buf[0];
+    received_payload_check_word = g_comb_recv_buf[1];
+    v0 = received_pad_word ^ (received_pad_word >> 16);
+    v0 = v0 ^ (received_payload_check_word >> 16);
     v0 = v0 & 0xFFFF;
-    if ((a0 & 0xFFFF) == v0) {
+    if ((received_payload_check_word & 0xFFFF) == v0) {
         goto match;
     }
     D_800A38D0 += 1;
@@ -1766,16 +1780,16 @@ success:
 ret0_tramp:
     return 0;
 match:
-    g_comb_received_pad_word = a1;
-    g_comb_received_payload_check_word = a0;
+    g_comb_received_pad_word = received_pad_word;
+    g_comb_received_payload_check_word = received_payload_check_word;
     return 1;
 }
 
-s32 math_Popcount32(u32 arg0) {
+s32 math_Popcount32(u32 input_word) {
     s32 count = 0;
     s32 i;
     for (i = 0; i < 32; i++) {
-        count += (arg0 >> i) & 1;
+        count += (input_word >> i) & 1;
     }
     return count;
 }
@@ -1791,7 +1805,7 @@ extern s32 g_comb_prev_send_word;
  * early when a transfer fails or after comb_ResetClose. If
  * g_comb_initial_pad_exchange_pending is then 0, it stores new values to
  * a0->held and a0->type. */
-void comb_ExchangePad(PadState *a0) {
+void comb_ExchangePad(PadState *pad_state) {
     /* buttons holds the input pad button word, then an outgoing button
      * halfword (this exchange's, or the previous one's from
      * g_comb_prev_send_word) being packed into held, as SOTN's
@@ -1810,11 +1824,11 @@ void comb_ExchangePad(PadState *a0) {
     s32 var_7;
 
     if (g_comb_events_enabled != 0) {
-        buttons = a0->held;
+        buttons = pad_state->held;
         var_4 = g_comb_local_side;
         var_7 = 0;
         var_1 = (var_4 << 31) | (g_comb_close_request << 30) |
-                ((g_comb_wait_state & 3) << 28) | (a0->type[0] << 16) |
+                ((g_comb_wait_state & 3) << 28) | (pad_state->type[0] << 16) |
                 (buttons & 0xFFFF);
         g_comb_send_buf = var_1;
         hi16 = g_comb_send_payload << 16;
@@ -1870,8 +1884,8 @@ void comb_ExchangePad(PadState *a0) {
             /* FAKE: the record's held / type stores go through pointers; stored
                as members (in-struct memory) sched moves the D_800A36C2 /
                D_800A36D2 loads above them (score 22). */
-            u32 *var_8 = &a0->held;
-            s16 *type = a0->type;
+            u32 *var_8 = &pad_state->held;
+            s16 *type = pad_state->type;
 
             D_800A38FC += math_Popcount32((u16)g_comb_received_pad_word);
             c0lo = (u16)g_comb_received_pad_word;

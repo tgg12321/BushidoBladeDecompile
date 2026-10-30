@@ -658,8 +658,8 @@ s32 fighter_ResolveWeaponContact(
         }
         {
             s32 d_val;
-            s32 blade_index;
-            s32 other_blade_index;
+            s32 weapon_set_index;
+            s32 other_weapon_set_index;
 
             if (state != 0x13) {
                 if (state != 0x19 && state != 0x1A && state != 2 &&
@@ -671,10 +671,10 @@ s32 fighter_ResolveWeaponContact(
             }
             var_s1 = 0;
             d_val = g_fight_weapon_contact_result;
-            blade_index = (d_val >> fighter_record->index) & 1;
-            other_blade_index = (d_val >> other_record->index) & 1;
+            weapon_set_index = (d_val >> fighter_record->index) & 1;
+            other_weapon_set_index = (d_val >> other_record->index) & 1;
             if (fighter_record->wielded_object_live_state != 0) {
-                var_s1 = blade_index == 0;
+                var_s1 = weapon_set_index == 0;
             }
             if (var_s1 != 0) {
                 s16 roster_index = fighter_record->character_roster_index;
@@ -688,9 +688,9 @@ s32 fighter_ResolveWeaponContact(
             }
         block_20: {
             s16 other_hit_phase =
-                other_record->weapon_hit_phases[other_blade_index];
+                other_record->weapon_hit_phases[other_weapon_set_index];
             if (other_hit_phase == 0) {
-                if (fighter_record->weapon_hit_phases[blade_index] > 0) {
+                if (fighter_record->weapon_hit_phases[weapon_set_index] > 0) {
                     var_v0 = 0x19;
                     if (var_s1 == 0) {
                     set_0xB:
@@ -708,7 +708,8 @@ s32 fighter_ResolveWeaponContact(
                 goto block_49;
             }
             {
-                s16 hit_phase = fighter_record->weapon_hit_phases[blade_index];
+                s16 hit_phase =
+                    fighter_record->weapon_hit_phases[weapon_set_index];
                 s16 var_v0_2;
                 if (hit_phase == other_hit_phase) {
                     /* FAKE: do-while(0) loop depth weights these refs in
@@ -721,7 +722,8 @@ s32 fighter_ResolveWeaponContact(
                             fighter_record->index, 0x25, contact_point,
                             (s16 *)0);
                     } while (0);
-                    if (fighter_record->weapon_hit_phases[blade_index] == 5) {
+                    if (fighter_record->weapon_hit_phases[weapon_set_index] ==
+                        5) {
                         if (fighter_record->weapon_id == 6 ||
                             fighter_record->weapon_id == 7 ||
                             other_record->weapon_id == 6 ||
@@ -770,38 +772,41 @@ s32 fighter_ResolveWeaponContact(
                 var_v0_2 = 0x1A;
                 if (var_s1 == 0) {
                     s32 negated_heading = -fighter_record->orientation.vy;
-                    s32 rotated_other_blade_delta_x =
+                    s32 rotated_other_weapon_delta_x =
                         (s32)(Judge[(negated_heading + 0x400) & 0xFFF] *
                                   other_record
-                                      ->weapon_point_delta[other_blade_index]
+                                      ->weapon_point_delta
+                                          [other_weapon_set_index]
                                       .vx +
                               Judge[negated_heading & 0xFFF] *
                                   other_record
-                                      ->weapon_point_delta[other_blade_index]
+                                      ->weapon_point_delta
+                                          [other_weapon_set_index]
                                       .vz) >>
                         0xC;
-                    s32 other_blade_delta_y =
-                        other_record->weapon_point_delta[other_blade_index].vy;
-                    s32 abs_other_blade_delta_y = other_blade_delta_y;
-                    s32 abs_rotated_other_blade_delta_x;
-                    if (other_blade_delta_y < 0) {
-                        abs_other_blade_delta_y = -other_blade_delta_y;
+                    s32 other_weapon_delta_y =
+                        other_record->weapon_point_delta[other_weapon_set_index]
+                            .vy;
+                    s32 abs_other_weapon_delta_y = other_weapon_delta_y;
+                    s32 abs_rotated_other_weapon_delta_x;
+                    if (other_weapon_delta_y < 0) {
+                        abs_other_weapon_delta_y = -other_weapon_delta_y;
                     }
-                    abs_rotated_other_blade_delta_x =
-                        rotated_other_blade_delta_x;
-                    if (rotated_other_blade_delta_x < 0) {
-                        abs_rotated_other_blade_delta_x =
-                            -rotated_other_blade_delta_x;
+                    abs_rotated_other_weapon_delta_x =
+                        rotated_other_weapon_delta_x;
+                    if (rotated_other_weapon_delta_x < 0) {
+                        abs_rotated_other_weapon_delta_x =
+                            -rotated_other_weapon_delta_x;
                     }
-                    if (abs_rotated_other_blade_delta_x <
-                        abs_other_blade_delta_y) {
+                    if (abs_rotated_other_weapon_delta_x <
+                        abs_other_weapon_delta_y) {
                         var_v0_2 = 0x14;
-                        if (other_blade_delta_y > 0) {
+                        if (other_weapon_delta_y > 0) {
                             var_v0_2 = 0x13;
                         }
                     } else {
                         var_v0_2 = 0x15;
-                        if (rotated_other_blade_delta_x <= 0) {
+                        if (rotated_other_weapon_delta_x <= 0) {
                             var_v0_2 = 0x16;
                         }
                     }
@@ -1743,8 +1748,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         u32 mask_a;
         u32 mask_b;
         u32 mask_c;
-        s32 blade_quad_count;
-        s32 blade_quad_index;
+        s32 other_weapon_quad_count;
+        s32 other_weapon_quad_index;
         /* var_12: the iteration's blade (0: the weapon_points /
          * prev_weapon_points points, 1: the second_weapon_points /
          * prev_second_weapon_points points; the knockback reads the last
@@ -1799,20 +1804,21 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         mask_a = 0;
         mask_b = 0;
         mask_c = 0;
-        blade_quad_count = 0;
+        other_weapon_quad_count = 0;
         outer_hit_mask = 0;
         inner_hit_mask = 0;
         if (other_record->is_defeated == 0 &&
             other_record->weapon_live_state != 0 &&
             other_record->update_count != 0) {
-            blade_quad_count = other_record->character_roster_index != 0x1F;
+            other_weapon_quad_count =
+                other_record->character_roster_index != 0x1F;
         }
         if (other_record->wielded_object_live_state != 0) {
-            blade_quad_count++;
+            other_weapon_quad_count++;
         }
-        if (blade_quad_count != 0 &&
+        if (other_weapon_quad_count != 0 &&
             (other_record->weapon_id == 4 || other_record->weapon_id == 5)) {
-            blade_quad_count++;
+            other_weapon_quad_count++;
         }
         if ((other_record->weapon_id == 6 || other_record->weapon_id == 7) &&
             (other_record->move_kind == 2 || other_record->move_kind == 0x1B ||
@@ -1835,7 +1841,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                     i == 0 ? &SPAD->weapon_points[1][1].x
                            : &SPAD->weapon_points[0][1].x,
                     0);
-                blade_quad_count = 0;
+                other_weapon_quad_count = 0;
             }
         }
         if ((other_record->character_roster_index == 0x1D ||
@@ -1862,14 +1868,15 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 0);
             mask_a |= outer_hit_mask;
         }
-        for (blade_quad_index = 0; blade_quad_index < blade_quad_count;
-             blade_quad_index++) {
+        for (other_weapon_quad_index = 0;
+             other_weapon_quad_index < other_weapon_quad_count;
+             other_weapon_quad_index++) {
             /* var_32: fighter_TestTriangleBoneHits's third argument, per-branch
              * constants 1 / 1 / 0 (Q20); the wielded_object_live_state arm's
              * store is shared with the first iteration (Q85, Ruling 11) */
             s32 var_32;
 
-            if (blade_quad_index == 0) {
+            if (other_weapon_quad_index == 0) {
                 var_12 = 0;
                 temp1 = 0;
                 temp2 = 1;
@@ -2002,7 +2009,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 if (var_12 != 0) {
                     mask_a |= scr->bone_hit_mask;
                 }
-                if (blade_quad_index == 1 && var_12 == 0) {
+                if (other_weapon_quad_index == 1 && var_12 == 0) {
                     mask_b |= scr->bone_hit_mask;
                 } else {
                     mask_c |= scr->bone_hit_mask;
