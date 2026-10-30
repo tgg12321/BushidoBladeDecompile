@@ -2240,16 +2240,16 @@ typedef struct {
  * 0x1F) in bits 16..20, which slot_RequestTimGroupsAndMarkReloadOnChange /
  * slot_GetLastLoadTimGroupRequest read as (word >> 16) & 0x1F; no code reads it
  * through half[].
- * - arena_id: slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0,
- * the arena_OpenBlock id and the g_slot_objects index; load_status: 0, 1 after
- * a fresh load (slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock), -2
+ * - arena_id: slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's
+ * slot_index, the arena_OpenBlock id and the g_slot_objects index;
+ * load_status: 0, 1 after a fresh load (that function), -2
  * to request a reload (slot_RequestTimGroupsAndMarkReloadOnChange);
  * slot_FinalizeObjectLoadSoundTexturesAndArena returns at once when it is 0,
  * else clears it and runs its setup; asset_index:
- * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a1, indexing the
- * g_object_scale_factors / g_gpu_asset_draw_move_masks tables.
- * - node_light_setup_index / transform_block_id / projected_block_id:
- * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's a0 / a0 / a0 + 3
+ * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock's asset_id,
+ * indexing the g_object_scale_factors / g_gpu_asset_draw_move_masks tables.
+ * - node_light_setup_index / transform_block_id / projected_block_id: the
+ * same function's slot_index / slot_index / slot_index + 3
  * (transform_block_id / projected_block_id are the reloc_RelocateBlock /
  * gpu_OffsetBlockTexPrimStreams ids); position_scale: the Q12 scale
  * node_InitObjectHierarchyFromTemplates sets from g_object_scale_factors.

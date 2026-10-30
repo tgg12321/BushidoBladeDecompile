@@ -391,7 +391,7 @@
 /* RESET 0x80069120: retired name 'sync_flag_check_advance_80069120' — preserved note: 44-byte record table accessor with dirty-bit sync side-effect */
 /* Misc (2) */
 /* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears g_reloc_block_slot_counts[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1152-1158) */
-/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, a1), then snd_VabFakeOpen(a1, ...) per entry of the func_800457A0(6) list (35000.c:787-811) */
+/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, byte_offset), then snd_VabFakeOpen(byte_offset, ...) per entry of the arena_GetBlockAddr(6) list (35000.c:786-809) */
 
 /* === rodata constant-table pass (2026-05-17) -- 19 entries, 2 retired === */
 /* D_* labels in rodata + .data sections, first classified by pattern; each */
@@ -831,7 +831,7 @@
 /* pass field 0x12 of fighter 0 / 1 to the playback start (else -1).  0x80 invalidates */
 /* the marked ndata pack, resets the load caches and passes base 0x80118800 to the */
 /* playback start; 0x40 calls resource_SelectRetainedSubblockOrApplyHeaderSections(-1), */
-/* whose a0 < 0 path applies the header sections and clears the retained subblocks. */
+/* whose subblock_index < 0 path applies the header sections and clears the retained subblocks. */
 /* D_80101EDA / D_80102326 are the same field at offset */
 /* +0x12 in P1/P2 entries of D_80101EC8 (stride 0x44C). */
 

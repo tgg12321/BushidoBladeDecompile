@@ -151,11 +151,11 @@ D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_time
 // === Sound Config ===
 D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
 g_fight_position_records = 0x800A33B4; // pointer into the loaded block's 16-byte position-record list; read via fight_GetPositionRecordList  // data-wave 2026-09-25: was g_snd_se_id
-g_gpu_view_eye_distance = 0x800A33C0; // camera eye distance: a2 of gpu_ResetDrawQueueAndPrepareViewAndLighting, the view offset -a2 along the view axis  // data-wave 2026-09-25: was g_snd_stage_bgm
+g_gpu_view_eye_distance = 0x800A33C0; // camera eye distance: eye_distance of gpu_ResetDrawQueueAndPrepareViewAndLighting, the view offset -eye_distance along the view axis  // data-wave 2026-09-25: was g_snd_stage_bgm
 g_wave_cell_buffer = 0x800A33D0; // the wave grid's cell buffer (wave_SetCellBuffer, 368E4.c:733)  // data-wave 2026-09-25: was g_snd_volume
 g_wave_cached_column_index = 0x800A33D4; // data-wave 2026-09-25: was g_snd_fade_pos
 g_wave_cached_remainder_parity = 0x800A33D8; // data-wave 2026-09-25: was g_snd_fade_amt
-g_node_retained_draw_node_buffer = 0x800A33E4; // address of the retained draw-node records: set by node_LoadSlotMappedAssetAndInitRetainedDrawNodes, += delta in node_RebaseRetainedDrawNodeBuffer, read by node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable (368E4.c:1561, :1587, :1618)  // data-wave 2026-09-25: was g_snd_play_count
+g_node_retained_draw_node_buffer = 0x800A33E4; // address of the retained draw-node records: set by node_LoadSlotMappedAssetAndInitRetainedDrawNodes, += delta in node_RebaseRetainedDrawNodeBuffer, read by node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable (368E4.c:1572, :1599, :1630)  // data-wave 2026-09-25: was g_snd_play_count
 g_gpu_vram_scroll_presets = 0x80099C34;  // data-wave 2026-09-29: was g_snd_se_bank
 g_gpu_vram_scrolls = 0x800EF848;  // data-wave 2026-09-29: was g_snd_ch_data
 g_wave_last_row_steps = 0x800EF800; // row 8's last deltas (wave_Update, 368E4.c:901-903)  // data-wave 2026-09-25: was g_snd_fade_curve

@@ -315,7 +315,7 @@ extern s16 g_color_mode;
 extern s16 D_800F665A;
 extern s16 g_resource_cached_node_asset_id;
 
-void resource_RebaseNodeAssetBlock(s32 a0, s32 a1);
+void resource_RebaseNodeAssetBlock(s32 a0, s32 byte_offset);
 
 s32 func_80046780(void) { return D_800A33B0; }
 
@@ -1017,7 +1017,7 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
         return (s32)0xFFFE7960;
     }
     {
-        /* row 8 of the table; a1 + 1 == 17 / 18 reads on into
+        /* row 8 of the table; column_index + 1 == 17 / 18 reads on into
          * g_wave_last_row_steps, which follows the table */
         s32 val1 = g_wave_vertex_grid[8][column_index] * remainder_parity;
         s32 val2 = g_wave_vertex_grid[8][column_index + 1] *

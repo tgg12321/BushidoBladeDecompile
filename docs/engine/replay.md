@@ -104,15 +104,15 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 
 ## `gpu_ResetDrawQueueAndPrepareViewAndLighting`: the view transform (once `replay_camera_rob_back_win_near`)
 
-`gpu_ResetDrawQueueAndPrepareViewAndLighting(a0, a1, a2)` (src/main/368E4.c:448) sets up the frame's view and draw state:
+`gpu_ResetDrawQueueAndPrepareViewAndLighting(focus_point, camera_angles, eye_distance)` (src/main/368E4.c:450) sets up the frame's view and draw state:
 
 1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
    `g_gpu_ot_offset_ptr`) and increments `D_800A38D6`.
-2. If `a0` is given: stores `-a1` as the rotation of the view record
+2. If `focus_point` is given: stores `-camera_angles` as the rotation of the view record
    `g_view_camera_root_node`, builds its matrix through `g_math_rot_matrix_funcs[0]`, and sets the
-   record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
-   from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&g_view_camera_root_node)`,
-   `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `a2` in `g_gpu_view_eye_distance`.
+   record's translation to `focus_point + M * (0, 0, -eye_distance)`, a point `eye_distance` units back
+   from `focus_point` along the view direction; then `node_SetMatrixFromNegatedRot(&g_view_camera_root_node)`,
+   `camera_CopyViewMatrixWithHalvedMiddleRow()`, `gpu_ResetAndStampViewCenteredCellAttributes()`, and keeps `eye_distance` in `g_gpu_view_eye_distance`.
 3. Recomputes the light matrices of `g_light_setups[0]`, `[1]`, `[4]`
    (`calc_LightMatrix`) and runs `light_ResetPointLight`, `ClearSavedWordPairsAndTwoWriteOnlyWords`,
    `func_8003F5CC`.
