@@ -24,7 +24,7 @@ paired start reset that record's variant_index to default_variant_index:
     0x1000, a fallback of a move with unk_09 & 0x20 (fighter_StartMoveScript clears
     it on every install); 0x7FF0..0x7FFF the executing record's variant
     roots (default_variant_index / variant_index as read, or default_variant_index after a paired start; 0x7FF1
-    first advances variant_index). Not modelled: the variant skip on object_variant_index/object_variant_enabled/unk_8E/unk_90
+    first advances variant_index). Not modelled: the variant skip on object_variant_index/object_variant_enabled/nibble5_variant_index/nibble5_variant_enabled
     and the mode-3 CPU branch, 0x7FF0's lasting variant_index = default_variant_index, variant_index
     changes along a path; move_kind is read from the script's file, while
     fighter_StartMoveScript reads the borrow-selected one (they differ only for a

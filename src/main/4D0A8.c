@@ -1744,9 +1744,9 @@ s32 gpu_DrawIndexedCellsDigitPairsAndGrowingBars(
  * and snd.c's g_snd_stage_reverb_types precede; the data-only d_8BC50.c's
  * g_gpu_time_field_line_origins .. follow). D_8009ADB4 is the 3-cell sheet
  * header whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
- * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's bd0,
- * less 2 from 12; the old D_8009AF94 label inside row 18 was only sin_1's
- * folded rsin_tbl base), D_8009AFB8 20 x offsets
+ * (gpu_DrawPackedComparisonRowsAndTotals picks a row by g_working_record's
+ * round_grid_pick, less 2 from 12; the old D_8009AF94 label inside row 18 was
+ * only sin_1's folded rsin_tbl base), D_8009AFB8 20 x offsets
  * (D_8009B0C0.character_x_offsets). D_8009ADD8 must follow D_8009ADC0:
  * gpu_DrawIndexedCellsAndDecimalDigitPairs reaches row idx as
  * D_8009B0C0.character_cells + 3 + idx * 3, so the two read as one table of a

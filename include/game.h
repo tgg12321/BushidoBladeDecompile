@@ -146,7 +146,8 @@ typedef struct {
  * g_sel_sheet_code_pairs follows), one page per character-select page, 2 rows x
  * 5 columns of cells (cell = row * 5 + col). menu_UpdateSelGridPicks /
  * menu_DrawSelGrid index it [page][cell]; menu_FadeOutSelAndWriteResult reads
- * unk1 flat. Data: unk1 is 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). */
+ * cell_pick_value flat. Data: cell_pick_value is 0x00..0x09 (page 0) then
+ * 0x0C..0x15 (page 1). */
 typedef struct {
     u8 cell_entry;
     u8 cell_pick_value;
@@ -272,8 +273,8 @@ typedef struct {
  * is empty),
  * gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip loads the image at
  * vram_image_pixels into VRAM, and gpu_LoadVramBottomStrip loads the 640x32
- * strip at unk_0C or unk_10. The four per-file relocators
- * (reloc_RelocateTwelveListsAndLoadVabPack,
+ * strip at bottom_strip_pixels or grayscale_bottom_strip_pixels. The four
+ * per-file relocators (reloc_RelocateTwelveListsAndLoadVabPack,
  * resource_RelocateNineOffsetListsAndLoadVabPack, menu_RelocateSelLists,
  * reloc_RelocateFiveOffsetListsAndGetWord1) return free_ram_start, where the
  * caller's gpu_InitPrimBufferPair buffer starts: it equals the image start, RAM
@@ -290,8 +291,8 @@ typedef struct {
  * loads at its work area + 0x58 (g_gpu_scrolling_sprite_resources). After the
  * head, one offset list (relocated with the head by reloc_RelocateSelfOffsets,
  * so it ends in -1 like the head's own list): the sprite sheets
- * gpu_DrawScrollingAndDelayedSheets draws: unk_14[10] first, then unk_14[0]
- * onward while the next entry is not -1. */
+ * gpu_DrawScrollingAndDelayedSheets draws: sheet_header_list[10] first, then
+ * sheet_header_list[0] onward while the next entry is not -1. */
 typedef struct {
     Unk8006E950Head resource_head;
     Unk8009B0E0Record *sheet_header_list[0];
@@ -510,7 +511,7 @@ typedef struct {
 } Unk80060544Rec;
 
 /* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is an
-   index (gpu_DrawPackedComparisonRowsAndTotals reads it at
+   index (round_grid_pick; gpu_DrawPackedComparisonRowsAndTotals reads it at
    j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it;
    gpu_DrawSpriteAtPackedTablePosition reads player 0 round 0).
    Unk8009BD24Block.match_picks. */
@@ -2267,8 +2268,8 @@ typedef struct {
  * duplicate_nodes[] (unk58 = the source node; 0 ends it).
  * - unk_18F4[] / node_matrix_ptrs[]: &node.xf.mat of transform_nodes[] nodes
  * (node_RefreshObjectMatrixPointerTables); node_by_id[]: the node each id
- * selects (node_BuildIdToNodeMapWithDuplicates); unk_1A84: func_80040D48's
- * arg5. */
+ * selects (node_BuildIdToNodeMapWithDuplicates); object_ground_y:
+ * func_80040D48's arg5. */
 typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */

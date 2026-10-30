@@ -3388,8 +3388,9 @@ void motion_InitStreams(void) {
 
 /* The record's motion_data_id -> its slot in g_motion_fighter_loaded_data_ids
  * (motion_slot); for ids below 0x2000, the nibble positions of 4 and 5
- * (object_variant_index / unk_8E), copying hit_record_group_6_9_intact into
- * object_variant_enabled / unk_90 under conditions on g_fight_mode_selector. */
+ * (object_variant_index / nibble5_variant_index), copying
+ * hit_record_group_6_9_intact into object_variant_enabled /
+ * nibble5_variant_enabled under conditions on g_fight_mode_selector. */
 void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
     s32 i = 0;
     Unk80101EC8Record *rec = &D_80101EC8[fighter_index];

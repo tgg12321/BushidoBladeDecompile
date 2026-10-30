@@ -32,7 +32,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 - ids 0x7FF0..0x7FFF select through the character file's tables (`variant_move_script_index`,
   `next_variant_move_script_index`, `f66` of `g_motion_fighter_buffers[rec->motion_slot]`) using the record's cycling index
   `variant_index` (wrapped by `variant_count`; for some ids it skips the entries `object_variant_index` /
-  `unk_8E` while their flags `object_variant_enabled` / `unk_90` are clear);
+  `nibble5_variant_index` while their flags `object_variant_enabled` / `nibble5_variant_enabled` are clear);
 - other ids with bit 15 set index the character file's streams (the
   opponent's when `borrow_other_motion` is set);
 - the rest index the common file's streams, and `*is_common_out` is set to 1.
