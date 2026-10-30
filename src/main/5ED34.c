@@ -60,21 +60,22 @@ static Unk800A35C4Rec *g_entry_menu_work_block;
 static s16 g_entry_menu_selection_offset_countdowns[2];
 
 s32 InitDisplayStateLoadPackAndSetEntryFlags(
-    s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
+    s32 prim_buffer_pair_addr, s32 extra_slot_count,
+    Unk8009BD24Block *working_record, u32 compacted_unlock_mask) {
     RECT rect;
     s16 i;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     g_entry_menu_last_grid_pass_second_slot_entry_value = 0x7F;
-    g_entry_menu_fight_mode = arg2->fight_mode;
-    g_entry_menu_prim_buffers = (Unk8006E49CRec *)arg0;
-    g_entry_menu_working_record_ptr = arg2;
+    g_entry_menu_fight_mode = working_record->fight_mode;
+    g_entry_menu_prim_buffers = (Unk8006E49CRec *)prim_buffer_pair_addr;
+    g_entry_menu_working_record_ptr = working_record;
     g_entry_menu_row_phase_extra_slot_count = 0;
     g_entry_menu_grid_phase_extra_slot_count = 0;
     g_entry_menu_last_grid_pass_extra_slot_count = 0;
-    g_entry_menu_init_extra_slot_count = arg1;
-    g_entry_menu_arena_cursor = arg0 + 0x58;
-    g_entry_menu_resources = (Unk8006EA28Rec *)(arg0 + 0x58);
+    g_entry_menu_init_extra_slot_count = extra_slot_count;
+    g_entry_menu_arena_cursor = prim_buffer_pair_addr + 0x58;
+    g_entry_menu_resources = (Unk8006EA28Rec *)(prim_buffer_pair_addr + 0x58);
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
 
     switch (g_entry_menu_fight_mode) {
@@ -124,7 +125,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
 
     for (i = 0; i < 0x16; i++) {
         g_entry_menu_entry_flags[i] &= 0xFA;
-        if (arg3 & (1 << i)) {
+        if (compacted_unlock_mask & (1 << i)) {
             g_entry_menu_entry_flags[i] |= 1;
         }
     }
@@ -137,7 +138,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
                 4;
         }
     }
-    D_800A35B8 = (arg3 >> 20) & 3;
+    D_800A35B8 = (compacted_unlock_mask >> 20) & 3;
     g_entry_menu_grid_last_column = 5;
     g_entry_menu_entry_flags
         [g_entry_menu_grid_entries[g_entry_menu_grid_row_cursors[0]]

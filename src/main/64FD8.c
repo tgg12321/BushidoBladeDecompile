@@ -33,9 +33,9 @@ static Unk8006E49CRec *g_gpu_scrolling_sprite_prim_buffers;
 static Unk80078824Rec *g_gpu_scrolling_sprite_resources;
 static s32 D_800A3614;
 
-s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
+s32 menu_HandleSelPhase0CursorInput(u32 pressed_buttons) {
     SelWork *base;
-    s32 sp10;
+    s32 merged_pressed_buttons;
     s32 ret;
     s32 state;
     s32 result;
@@ -46,9 +46,10 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
     base = SELWORK;
     result = 0;
     if (base->panel_slide_state.word == 0) {
-        sp10 = (arg0 & 0xFFFF) | (arg0 >> 16);
+        merged_pressed_buttons =
+            (pressed_buttons & 0xFFFF) | (pressed_buttons >> 16);
         ret = pad_StepOffsetsGetDirectionEvents(
-            (u32 *)&sp10, 0, base->direction_nudge_offsets[0],
+            (u32 *)&merged_pressed_buttons, 0, base->direction_nudge_offsets[0],
             g_sel_offset_steps[0]);
         switch (ret >> 16) {
         case 1:
@@ -127,13 +128,13 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
                 snd_QueueSound(0, 0x7F, 0x7F);
             }
         confirm:
-            if (arg0 & 0x400040) {
+            if (pressed_buttons & 0x400040) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 SELWORK->f3C[0] = 3;
             }
             break;
         case 3:
-            if (arg0 & 0x400040) {
+            if (pressed_buttons & 0x400040) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 for (i = 0; i < 2; i++) {
                     SELWORK->panel_slide_state.half[i] = 3;
@@ -143,13 +144,13 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
             }
             break;
         case 4:
-            if (arg0 & 0x400040) {
+            if (pressed_buttons & 0x400040) {
                 snd_QueueSound(1, 0x7F, 0x7F);
                 result = -1;
             }
             break;
         }
-        if (arg0 & 0x100010) {
+        if (pressed_buttons & 0x100010) {
             snd_QueueSound(2, 0x7F, 0x7F);
             result = -1;
         }
@@ -157,7 +158,8 @@ s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
     return result;
 }
 
-void menu_DrawSelRowTiles(Unk8006EACCRec *draw_context, s32 arg1, s32 arg2) {
+void menu_DrawSelRowTiles(
+    Unk8006EACCRec *draw_context, s32 player_index, s32 arg2) {
     TILE *p;
     Rec_8006C21C *t;
     s16 i;
@@ -181,14 +183,14 @@ void menu_DrawSelRowTiles(Unk8006EACCRec *draw_context, s32 arg1, s32 arg2) {
             p->h = t->h;
             SetSemiTrans(p, 0);
             if (arg2 != 0) {
-                p->x0 = t->x + arg1 * 240;
+                p->x0 = t->x + player_index * 240;
                 p->y0 = t->y + i * 34 + 0x2B;
             } else {
-                p->x0 = t->x + arg1 * 240;
+                p->x0 = t->x + player_index * 240;
                 p->y0 = t->y + i * 17 + 0x7C;
             }
             ot_index = 0xB;
-            if (arg1 != 0) {
+            if (player_index != 0) {
                 ot_index = 0x15;
             }
             AddPrim(g_gpu_ot_ptr + ot_index, p);
@@ -200,7 +202,7 @@ void menu_DrawSelRowTiles(Unk8006EACCRec *draw_context, s32 arg1, s32 arg2) {
 }
 
 void menu_DrawSelPhaseSheet(
-    Unk8006EACCRec *draw_context, s32 arg1, s32 sheet_index) {
+    Unk8006EACCRec *draw_context, s32 player_index, s32 sheet_index) {
     Unk8007352CRec s;
     s32 ot_index;
 
@@ -208,10 +210,10 @@ void menu_DrawSelPhaseSheet(
     s.semi = 0;
     s.has_color = 0;
     s.header = draw_context->resource_root.v80076FF8->unk_1C[(s16)sheet_index];
-    s.x = arg1 * 0xF0;
+    s.x = player_index * 0xF0;
     s.y = 0;
     s.table = s.header->cells;
-    if (arg1 != 0) {
+    if (player_index != 0) {
         ot_index = 0x16;
     }
     s.ot_idx = ot_index;
@@ -223,7 +225,7 @@ void menu_DrawSelPhaseSheet(
     draw_context->primitive_cursors.unk_14++;
 }
 
-void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
+void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 player_index) {
     Unk8007352CRec s;
     RECT rect;
     u16 offset[2];
@@ -243,11 +245,11 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
     prim->r0 = 0xD0;
     prim->g0 = 0xC8;
     prim->b0 = 0xB8;
-    prim->x0 = arg1 * 0xF0 + 0x62;
+    prim->x0 = player_index * 0xF0 + 0x62;
     prim->y0 = 0x14;
     prim->w = 0xCC;
     prim->h = 0xC8;
-    if (arg1 != 0) {
+    if (player_index != 0) {
         var_5 = 0xE;
     } else {
         var_5 = 4;
@@ -259,11 +261,11 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
     records = draw_context->resource_root.v80076FF8->sel_panel_sheets;
     s.semi = 0;
     s.has_color = 0;
-    s.x = arg1 * 0xF0;
+    s.x = player_index * 0xF0;
     s.ot_idx = 2;
     i = 0;
     do {
-        s.y = (0xD2 - SELWORK->panel_slide_amount[arg1]) * i;
+        s.y = (0xD2 - SELWORK->panel_slide_amount[player_index]) * i;
         s.header = records[3];
         cells = s.header->cells;
         s.table = cells;
@@ -283,12 +285,12 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
         i++;
     } while (i < 2);
 
-    s.x = arg1 * 0xF0;
+    s.x = player_index * 0xF0;
     s.y = 0;
     s.header = records[0];
     cells = s.header->cells;
     s.table = cells;
-    if (arg1 != 0) {
+    if (player_index != 0) {
         s.ot_idx = 0x16;
     } else {
         s.ot_idx = 0xC;
@@ -307,7 +309,7 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
 
     /* FAKE: var_5 is set again (the same value) beside var_6; set once,
      * above: score 26. */
-    if (arg1 != 0) {
+    if (player_index != 0) {
         var_5 = 0xE;
         var_6 = 0x14E;
     } else {
@@ -317,7 +319,7 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
     rect.x = SELWORK->frame_gpu_db->draw.clip.x + var_6;
     rect.y = SELWORK->frame_gpu_db->draw.clip.y + 0x14;
     rect.w = 0xD4;
-    rect.h = 0xC8 - SELWORK->panel_slide_amount[arg1];
+    rect.h = 0xC8 - SELWORK->panel_slide_amount[player_index];
     SetDrawArea(draw_context->primitive_cursors.draw_area_prims, &rect);
     AddPrim(g_gpu_ot_ptr + var_5 + 9,
             draw_context->primitive_cursors.draw_area_prims);
@@ -333,8 +335,8 @@ void menu_DrawSelPanel(Unk8006EACCRec *draw_context, s32 arg1) {
     draw_context->primitive_cursors.draw_area_prims++;
 
     offset[0] = SELWORK->frame_gpu_db->draw.ofs[0];
-    offset[1] =
-        SELWORK->frame_gpu_db->draw.ofs[1] - SELWORK->panel_draw_offset_y[arg1];
+    offset[1] = SELWORK->frame_gpu_db->draw.ofs[1] -
+                SELWORK->panel_draw_offset_y[player_index];
     SetDrawOffset(draw_context->primitive_cursors.draw_offset_prims, offset);
     AddPrim(g_gpu_ot_ptr + var_5 + 9,
             draw_context->primitive_cursors.draw_offset_prims);
@@ -411,7 +413,7 @@ void menu_StepSelPanelSlides(void) {
    0x2C table, a SetDrawMode prim after each group. Player 1 sits one
    screen-half right; the first sheet's colour breathes with rsin of the 5-bit
    timer selection_pulse_frames. */
-void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
+void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 player_index) {
     Unk8007352CRec s;
     Unk8009B0E0Record **tbl;
     s16 i;
@@ -426,18 +428,18 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
 
     zero = 0;
     s.semi = 0;
-    if (arg1 != 0) {
+    if (player_index != 0) {
         s.ot_idx = 0x16;
     } else {
         s.ot_idx = 0xC;
     }
     tbl = draw_context->resource_root.v80076FF8->opposed_choice_sheets;
-    s.header = tbl[arg1 + 2];
-    s.x = arg1 * 240;
+    s.header = tbl[player_index + 2];
+    s.x = player_index * 240;
     var_3 = s.header->cells;
     s.table = var_3;
-    s.y = SELWORK->selected_grid_page[arg1] * 90 +
-          SELWORK->direction_nudge_offsets[arg1][1];
+    s.y = SELWORK->selected_grid_page[player_index] * 90 +
+          SELWORK->direction_nudge_offsets[player_index][1];
     s.col_r = s.col_g = s.col_b =
         ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
          12) -
@@ -449,7 +451,7 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
     tbl = draw_context->resource_root.v80076FF8->unk_14;
     i = 0;
     s.header = tbl[0];
-    s.x = arg1 * 240 + 0x9D;
+    s.x = player_index * 240 + 0x9D;
     s.y = 0x36;
     var_3 = s.header->cells;
     s.table = var_3;
@@ -466,10 +468,10 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
     tbl = draw_context->resource_root.v80076FF8->opposed_choice_sheets;
     do {
         s.header = tbl[i];
-        s.x = arg1 * 240;
+        s.x = player_index * 240;
         s.y = 0;
         var_3 = s.header->cells;
-        if (arg1 != 0) {
+        if (player_index != 0) {
             s.ot_idx = 0x16;
         } else {
             s.ot_idx = 0xC;
@@ -486,7 +488,7 @@ void menu_DrawSelOpposedChoice(Unk8006EACCRec *draw_context, s32 arg1) {
     } while (i < 2);
 }
 
-void menu_HandleSelOpposedChoice(s32 arg0, s32 arg1) {
+void menu_HandleSelOpposedChoice(s32 pressed_buttons, s32 player_index) {
     s16 i;
     SelWork *base;
     SelWork *work;
@@ -496,30 +498,31 @@ void menu_HandleSelOpposedChoice(s32 arg0, s32 arg1) {
         return;
     }
     if ((pad_StepOffsetsGetDirectionEvents(
-             &arg0, arg1, base->direction_nudge_offsets[arg1],
-             g_sel_offset_steps[arg1]) >>
+             &pressed_buttons, player_index,
+             base->direction_nudge_offsets[player_index],
+             g_sel_offset_steps[player_index]) >>
          16) != 0) {
         SELWORK->selection_pulse_frames = 0;
-        SELWORK->selected_grid_page[arg1] =
-            SELWORK->selected_grid_page[arg1] + 1;
-        SELWORK->selected_grid_page[arg1] &= 1;
+        SELWORK->selected_grid_page[player_index] =
+            SELWORK->selected_grid_page[player_index] + 1;
+        SELWORK->selected_grid_page[player_index] &= 1;
         snd_QueueSound(0, 0x7F, 0x7F);
     }
     work = SELWORK;
-    work->f3C[arg1] = work->selected_grid_page[arg1];
-    if (arg0 & (0x40 << (arg1 * 16))) {
+    work->f3C[player_index] = work->selected_grid_page[player_index];
+    if (pressed_buttons & (0x40 << (player_index * 16))) {
         for (i = 0; i < 2; i++) {
             work->pending_selection_cursor[i] = 0;
             work->panel_slide_state.half[i] = 1;
             work->pending_selection_phase[i] = 2;
         }
-        SELWORK->selected_grid_page[(arg1 + 1) & 1] =
-            (SELWORK->selected_grid_page[arg1] + 1) & 1;
+        SELWORK->selected_grid_page[(player_index + 1) & 1] =
+            (SELWORK->selected_grid_page[player_index] + 1) & 1;
         snd_QueueSound(1, 0x7F, 0x7F);
         return;
     }
-    if (arg0 & (0x10 << (arg1 * 16))) {
-        if (work->selection_phase.half[(arg1 != 0) ? 0 : 1] == 1) {
+    if (pressed_buttons & (0x10 << (player_index * 16))) {
+        if (work->selection_phase.half[(player_index != 0) ? 0 : 1] == 1) {
             for (i = 0; i < 2; i++) {
                 work->pending_selection_cursor[i] = 0;
                 work->panel_slide_state.half[i] = 3;
@@ -533,7 +536,7 @@ void menu_HandleSelOpposedChoice(s32 arg0, s32 arg1) {
 }
 
 void menu_DrawSelGridCellOverlay(
-    Unk8006EACCRec *draw_context, s32 cell_index, s32 arg2, s32 arg3) {
+    Unk8006EACCRec *draw_context, s32 cell_index, s32 player_index, s32 arg3) {
     Unk8007352CRec s;
     s16 cell_column;
     s16 cell_row;
@@ -552,15 +555,15 @@ void menu_DrawSelGridCellOverlay(
         cell_column = (cell_index - 0xA) / 5;
         cell_row = (cell_index - 0xA) % 5;
     }
-    if (SELWORK->grid_cursor_column.half[arg2] == cell_column &&
-        SELWORK->grid_cursor_row.half[arg2] == cell_row) {
+    if (SELWORK->grid_cursor_column.half[player_index] == cell_column &&
+        SELWORK->grid_cursor_row.half[player_index] == cell_row) {
         s.has_color = 1;
     } else {
         s.has_color = 0;
     }
-    s.x = arg2 * 0xF0 + cell_column * 0x64;
+    s.x = player_index * 0xF0 + cell_column * 0x64;
     s.y = cell_row * 16;
-    if (arg2 != 0) {
+    if (player_index != 0) {
         s.ot_idx = 0x13;
     } else {
         s.ot_idx = 9;
@@ -574,8 +577,8 @@ void menu_DrawSelGridCellOverlay(
  * pick list (-1 = cleared), arg3 = player. Draws the page frame, the page's 10
  * character cells, the picks so far and the selected_match_count_index+3 slot
  * sprites. */
-void menu_DrawSelGrid(
-    Unk8006EACCRec *draw_context, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_DrawSelGrid(Unk8006EACCRec *draw_context, s32 grid_page,
+                      s16 *pick_slots, s32 player_index) {
     Unk8007352CRec s;
     /* the current sprite-sheet pointer table: the page table, then the slot
      * table in loop 3, then the page table again (Ruling 11) */
@@ -601,16 +604,16 @@ void menu_DrawSelGrid(
     s.has_color = 0;
     table = draw_context->resource_root.v80076FF8->unk_14;
     s.header = table[0];
-    s.x = arg3 * 240 + 0x88;
+    s.x = player_index * 240 + 0x88;
     s.y = 0x33;
     cells = s.header->cells;
     s.table = cells;
-    if (arg3 != 0) {
+    if (player_index != 0) {
         s.ot_idx = 0x16;
     } else {
         s.ot_idx = 0xC;
     }
-    if (arg1 != 0) {
+    if (grid_page != 0) {
         s.table += s.header->count;
     }
     s.sprt_out = draw_context->primitive_cursors.sprite_prims;
@@ -624,13 +627,13 @@ void menu_DrawSelGrid(
         ((rsin(((SELWORK->selection_pulse_frames & 0x1F) << 7) + 0x1FF) << 5) >>
          12) -
         0x50;
-    if (arg3 != 0) {
+    if (player_index != 0) {
         s.ot_idx = 0x14;
     } else {
         s.ot_idx = 0xA;
     }
-    s.x = arg3 * 240;
-    for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
+    s.x = player_index * 240;
+    for (i = grid_page * 10; i < grid_page * 10 + 10; i++) {
         /* i indexes the whole table flat (arg1 * 10 + cell). */
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
         /* The flat read through the element pointer (the target adds i * 2
@@ -650,12 +653,13 @@ void menu_DrawSelGrid(
             cells = s.header[2].cells;
             s.table = cells;
             if (g_sel_grid_page_cells
-                    [arg1][SELWORK->grid_cursor_column.half[arg3] * 5 +
-                           SELWORK->grid_cursor_row.half[arg3]]
+                    [grid_page]
+                    [SELWORK->grid_cursor_column.half[player_index] * 5 +
+                     SELWORK->grid_cursor_row.half[player_index]]
                         .cell_entry ==
                 ((Unk8009BCF8Record *)g_sel_grid_page_cells)[i].cell_entry) {
                 s.has_color = 1;
-                s.header += 1 + arg3;
+                s.header += 1 + player_index;
             } else {
                 s.has_color = 0;
             }
@@ -666,23 +670,23 @@ void menu_DrawSelGrid(
             if (g_sel_entry_availability_and_claims[((
                     Unk8009BCF8Record *)g_sel_grid_page_cells)[i]
                                                         .cell_entry] &
-                (4 << arg3)) {
-                menu_DrawSelGridCellOverlay(draw_context, i, arg3, 1);
+                (4 << player_index)) {
+                menu_DrawSelGridCellOverlay(draw_context, i, player_index, 1);
             }
         } else {
-            menu_DrawSelGridCellOverlay(draw_context, i, arg3, 0);
+            menu_DrawSelGridCellOverlay(draw_context, i, player_index, 0);
         }
     }
 
-    for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
-        if (arg2[i] >= 0) {
-            s.header = table[arg2[i] + 1];
+    for (i = 0; i < SELWORK->f3C[player_index] + 1; i++) {
+        if (pick_slots[i] >= 0) {
+            s.header = table[pick_slots[i] + 1];
             cells = s.header[2].cells;
-            if (i != SELWORK->f3C[arg3]) {
+            if (i != SELWORK->f3C[player_index]) {
                 s.has_color = 0;
             } else {
                 s.has_color = 1;
-                s.header += 1 + arg3;
+                s.header += 1 + player_index;
             }
             s.y = i * 17;
             s.table = cells;
@@ -699,13 +703,13 @@ void menu_DrawSelGrid(
                     ->pick_slot_sheets[SELWORK->selected_match_count_index];
         s.header = table[i];
         cells = s.header[2].cells;
-        if (i == SELWORK->f3C[arg3]) {
-            s.header += 1 + arg3;
+        if (i == SELWORK->f3C[player_index]) {
+            s.header += 1 + player_index;
         }
         s.table = cells;
-        s.x = arg3 * 240;
+        s.x = player_index * 240;
         s.y = i * 17;
-        if (arg3 != 0) {
+        if (player_index != 0) {
             s.ot_idx = 0x14;
         } else {
             s.ot_idx = 0xA;
@@ -741,30 +745,32 @@ static inline void selgrid_StorePlaceholder(s32 pad, s16 *picks, s32 player) {
  *   arg1 = select page into g_sel_grid_page_cells (2 columns x 5 rows per page)
  *   arg2 = this player's pick list (character ids, -1 = cleared slot)
  *   arg3 = player index (0/1) */
-void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_UpdateSelGridPicks(
+    s32 pressed_buttons, s32 grid_page, s16 *pick_slots, s32 player_index) {
     u8 *flag;
     s32 result;
     s32 bit;
     s32 i;
 
-    if (SELWORK->panel_slide_state.half[arg3] != 0) {
+    if (SELWORK->panel_slide_state.half[player_index] != 0) {
         return;
     }
 
-    if (arg0 & (0x10 << (arg3 * 16))) {
+    if (pressed_buttons & (0x10 << (player_index * 16))) {
         snd_QueueSound(2, 0x7F, 0x7F);
-        if (SELWORK->f3C[arg3] != 0) {
-            arg2[SELWORK->f3C[arg3]] = -1;
-            SELWORK->f3C[arg3]--;
-            g_sel_entry_availability_and_claims[arg2[SELWORK->f3C[arg3]]] &=
-                ~(4 << arg3);
+        if (SELWORK->f3C[player_index] != 0) {
+            pick_slots[SELWORK->f3C[player_index]] = -1;
+            SELWORK->f3C[player_index]--;
+            g_sel_entry_availability_and_claims
+                [pick_slots[SELWORK->f3C[player_index]]] &=
+                ~(4 << player_index);
             return;
         }
         /* Neither player has a pick yet (folded into one word test). */
         if (SELWORK->f3C[0] != 0 || SELWORK->f3C[1] != 0) {
             return;
         }
-        if (SELWORK->selection_phase.half[(arg3 != 0) ? 0 : 1] == 2) {
+        if (SELWORK->selection_phase.half[(player_index != 0) ? 0 : 1] == 2) {
             SELWORK->panel_slide_state.half[1] = 3;
             SELWORK->panel_slide_state.half[0] = 3;
             SELWORK->pending_selection_phase[1] = 1;
@@ -774,9 +780,10 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 
     result = pad_StepOffsetsGetDirectionEvents(
-        &arg0, arg3, SELWORK->direction_nudge_offsets[arg3],
-        g_sel_offset_steps[arg3]);
-    if (arg0 & (0xF000 << (arg3 * 16))) {
+        &pressed_buttons, player_index,
+        SELWORK->direction_nudge_offsets[player_index],
+        g_sel_offset_steps[player_index]);
+    if (pressed_buttons & (0xF000 << (player_index * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
     {
@@ -784,8 +791,8 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
         low = result & 0xFF;
         if (low < 3 && low != 0) {
-            SELWORK->grid_cursor_column.half[arg3] =
-                (SELWORK->grid_cursor_column.half[arg3] + 1) & 1;
+            SELWORK->grid_cursor_column.half[player_index] =
+                (SELWORK->grid_cursor_column.half[player_index] + 1) & 1;
         }
     }
 
@@ -793,21 +800,21 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     case 1: {
         s16 value;
 
-        value = SELWORK->grid_cursor_row.half[arg3];
+        value = SELWORK->grid_cursor_row.half[player_index];
         if (value == 4) {
-            SELWORK->grid_cursor_row.half[arg3] = 0;
+            SELWORK->grid_cursor_row.half[player_index] = 0;
         } else {
-            SELWORK->grid_cursor_row.half[arg3] = value + 1;
+            SELWORK->grid_cursor_row.half[player_index] = value + 1;
         }
     } break;
     case 2: {
         s16 value;
 
-        value = SELWORK->grid_cursor_row.half[arg3];
+        value = SELWORK->grid_cursor_row.half[player_index];
         if (value == 0) {
-            SELWORK->grid_cursor_row.half[arg3] = 4;
+            SELWORK->grid_cursor_row.half[player_index] = 4;
         } else {
-            SELWORK->grid_cursor_row.half[arg3] = value - 1;
+            SELWORK->grid_cursor_row.half[player_index] = value - 1;
         }
     } break;
     }
@@ -816,48 +823,51 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         u8 entry;
 
         entry =
-            g_sel_grid_page_cells[arg1]
-                                 [SELWORK->grid_cursor_column.half[arg3] * 5 +
-                                  SELWORK->grid_cursor_row.half[arg3]]
-                                     .cell_entry;
+            g_sel_grid_page_cells
+                [grid_page][SELWORK->grid_cursor_column.half[player_index] * 5 +
+                            SELWORK->grid_cursor_row.half[player_index]]
+                    .cell_entry;
         flag = &g_sel_entry_availability_and_claims[entry];
         if ((*flag & 1) != 0) {
-            bit = 4 << arg3;
+            bit = 4 << player_index;
             if ((*flag & bit) == 0) {
                 u16 count;
 
-                arg2[SELWORK->f3C[arg3]] = entry;
-                if (arg0 & (0x40 << (arg3 * 16))) {
+                pick_slots[SELWORK->f3C[player_index]] = entry;
+                if (pressed_buttons & (0x40 << (player_index * 16))) {
                     snd_QueueSound(1, 0x7F, 0x7F);
                     *flag |= bit;
-                    count = SELWORK->f3C[arg3];
-                    SELWORK->f3C[arg3] = count + 1;
-                    if (SELWORK->f3C[arg3] ==
+                    count = SELWORK->f3C[player_index];
+                    SELWORK->f3C[player_index] = count + 1;
+                    if (SELWORK->f3C[player_index] ==
                         SELWORK->selected_match_count_index + 3) {
-                        SELWORK->panel_slide_state.half[arg3] = 1;
-                        SELWORK->f3C[arg3] = count;
-                        SELWORK->pending_selection_cursor[arg3] = 0;
-                        SELWORK->pending_selection_phase[arg3] = 3;
-                        for (i = 0; i < SELWORK->remaining_list_count[arg3];
+                        SELWORK->panel_slide_state.half[player_index] = 1;
+                        SELWORK->f3C[player_index] = count;
+                        SELWORK->pending_selection_cursor[player_index] = 0;
+                        SELWORK->pending_selection_phase[player_index] = 3;
+                        for (i = 0;
+                             i < SELWORK->remaining_list_count[player_index];
                              i++) {
-                            SELWORK->remaining_list_entries[arg3][i] = i;
+                            SELWORK->remaining_list_entries[player_index][i] =
+                                i;
                         }
-                        if (arg1 != 0) {
-                            SELWORK->remaining_list_entries[arg3][4] = 5;
+                        if (grid_page != 0) {
+                            SELWORK->remaining_list_entries[player_index][4] =
+                                5;
                         }
                     }
                 }
                 return;
             }
-            selgrid_StorePlaceholder(arg0, arg2, arg3);
+            selgrid_StorePlaceholder(pressed_buttons, pick_slots, player_index);
         } else {
-            selgrid_StorePlaceholder(arg0, arg2, arg3);
+            selgrid_StorePlaceholder(pressed_buttons, pick_slots, player_index);
         }
     }
 }
 
 void menu_DrawSelListPicks(
-    Unk8006EACCRec *draw_context, s32 arg1, s16 *arg2, s32 arg3) {
+    Unk8006EACCRec *draw_context, s32 arg1, s16 *pick_slots, s32 player_index) {
     Unk8007352CRec s;
     s32 ot_index;
     Unk8009B0E0Record **table;
@@ -875,17 +885,17 @@ void menu_DrawSelListPicks(
     var_5 = 0;
     ot_index = 10;
     s.semi = 0;
-    if (arg3 != 0) {
+    if (player_index != 0) {
         ot_index = 20;
     }
     table = draw_context->resource_root.v80076FF8->unk_30;
-    if (SELWORK->selection_phase.half[arg3] < 4) {
+    if (SELWORK->selection_phase.half[player_index] < 4) {
         s.header = table[12];
         s.has_color = 0;
-        s.x = arg3 * 240;
+        s.x = player_index * 240;
         var_3 = s.header->cells;
         s.table = var_3;
-        s.y = SELWORK->f3C[arg3] * 34;
+        s.y = SELWORK->f3C[player_index] * 34;
         s.ot_idx = ot_index;
         s.sprt_out = draw_context->primitive_cursors.sprite_prims;
         draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
@@ -904,15 +914,15 @@ void menu_DrawSelListPicks(
     table = draw_context->resource_root.v80076FF8->unk_14;
     for (i = 0; i < SELWORK->selected_match_count_index + 3; i++) {
         s.has_color = 0;
-        s.header = table[arg2[i] + 1];
+        s.header = table[pick_slots[i] + 1];
         var_3 = s.header[2].cells;
-        if (SELWORK->f3C[arg3] == i ||
-            SELWORK->selection_phase.half[arg3] >= 4) {
-            s.header += 1 + arg3;
+        if (SELWORK->f3C[player_index] == i ||
+            SELWORK->selection_phase.half[player_index] >= 4) {
+            s.header += 1 + player_index;
         }
         s.table = var_3;
         s.table += s.header->count * 2;
-        s.x = arg3 * 240;
+        s.x = player_index * 240;
         s.y = i * 34;
         s.ot_idx = ot_index;
         s.sprt_out = draw_context->primitive_cursors.sprite_prims;
@@ -920,23 +930,24 @@ void menu_DrawSelListPicks(
     }
 
     table = draw_context->resource_root.v80076FF8->unk_30;
-    for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
-        if (SELWORK->f3C[arg3] != i ||
-            SELWORK->selection_phase.half[arg3] >= 4) {
-            idx = SELWORK->picked_list_entries[arg3][i];
+    for (i = 0; i < SELWORK->f3C[player_index] + 1; i++) {
+        if (SELWORK->f3C[player_index] != i ||
+            SELWORK->selection_phase.half[player_index] >= 4) {
+            idx = SELWORK->picked_list_entries[player_index][i];
             s.has_color = 0;
         } else {
             idx = SELWORK->remaining_list_entries
-                      [arg3][SELWORK->remaining_list_cursor[arg3]];
+                      [player_index]
+                      [SELWORK->remaining_list_cursor[player_index]];
             s.has_color = 1;
         }
         s.header = table[(s16)idx * 2];
         var_3 = s.header[2].cells;
-        if (SELWORK->f3C[arg3] == i ||
-            SELWORK->selection_phase.half[arg3] >= 4) {
-            s.header += 1 + arg3;
+        if (SELWORK->f3C[player_index] == i ||
+            SELWORK->selection_phase.half[player_index] >= 4) {
+            s.header += 1 + player_index;
         }
-        s.x = arg3 * 240;
+        s.x = player_index * 240;
         s.table = var_3;
         s.y = i * 34;
         s.ot_idx = ot_index;
@@ -956,13 +967,13 @@ void menu_DrawSelListPicks(
         s.has_color = 0;
         s.header = table[i];
         var_3 = s.header[2].cells;
-        if (SELWORK->f3C[arg3] == i ||
-            SELWORK->selection_phase.half[arg3] >= 4) {
-            s.header += 1 + arg3;
+        if (SELWORK->f3C[player_index] == i ||
+            SELWORK->selection_phase.half[player_index] >= 4) {
+            s.header += 1 + player_index;
         }
         s.table = var_3;
         s.table += s.header->count;
-        s.x = arg3 * 240;
+        s.x = player_index * 240;
         s.y = i * 34;
         s.sprt_out = draw_context->primitive_cursors.sprite_prims;
         draw_context->primitive_cursors.sprite_prims = gpu_AddSpriteCells(&s);
@@ -976,92 +987,105 @@ void menu_DrawSelListPicks(
     draw_context->primitive_cursors.unk_14++;
 }
 
-void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_UpdateSelListPicks(
+    s32 pressed_buttons, s32 grid_page, s16 *pick_slots, s32 player_index) {
     s16 i;
     s16 j;
 
-    if (SELWORK->panel_slide_state.half[arg3] != 0) {
+    if (SELWORK->panel_slide_state.half[player_index] != 0) {
         return;
     }
-    if (arg0 & (0xA000 << (arg3 * 16))) {
+    if (pressed_buttons & (0xA000 << (player_index * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
     switch (pad_StepOffsetsGetDirectionEvents(
-                (u32 *)&arg0, arg3, SELWORK->direction_nudge_offsets[arg3],
-                g_sel_offset_steps[arg3]) &
+                (u32 *)&pressed_buttons, player_index,
+                SELWORK->direction_nudge_offsets[player_index],
+                g_sel_offset_steps[player_index]) &
             0xFF) {
     case 1:
-        SELWORK->remaining_list_cursor[arg3]++;
-        if (SELWORK->remaining_list_cursor[arg3] >=
-            SELWORK->remaining_list_count[arg3]) {
-            SELWORK->remaining_list_cursor[arg3] = 0;
+        SELWORK->remaining_list_cursor[player_index]++;
+        if (SELWORK->remaining_list_cursor[player_index] >=
+            SELWORK->remaining_list_count[player_index]) {
+            SELWORK->remaining_list_cursor[player_index] = 0;
         }
         break;
     case 2:
-        SELWORK->remaining_list_cursor[arg3]--;
-        if (SELWORK->remaining_list_cursor[arg3] < 0) {
-            SELWORK->remaining_list_cursor[arg3] =
-                SELWORK->remaining_list_count[arg3] - 1;
+        SELWORK->remaining_list_cursor[player_index]--;
+        if (SELWORK->remaining_list_cursor[player_index] < 0) {
+            SELWORK->remaining_list_cursor[player_index] =
+                SELWORK->remaining_list_count[player_index] - 1;
         }
         break;
     }
 
-    if (arg0 & (0x40 << (arg3 * 16))) {
-        if (SELWORK->f3C[arg3] < SELWORK->selected_match_count_index + 3) {
+    if (pressed_buttons & (0x40 << (player_index * 16))) {
+        if (SELWORK->f3C[player_index] <
+            SELWORK->selected_match_count_index + 3) {
             snd_QueueSound(1, 0x7F, 0x7F);
-            SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3]] =
+            SELWORK->picked_list_entries[player_index]
+                                        [SELWORK->f3C[player_index]] =
                 SELWORK->remaining_list_entries
-                    [arg3][SELWORK->remaining_list_cursor[arg3]];
-            if (SELWORK->f3C[arg3] == SELWORK->selected_match_count_index + 2) {
-                SELWORK->selection_phase.half[arg3] = 4;
+                    [player_index]
+                    [SELWORK->remaining_list_cursor[player_index]];
+            if (SELWORK->f3C[player_index] ==
+                SELWORK->selected_match_count_index + 2) {
+                SELWORK->selection_phase.half[player_index] = 4;
                 return;
             }
-            SELWORK->remaining_list_count[arg3]--;
-            for (i = SELWORK->remaining_list_cursor[arg3];
-                 i < SELWORK->remaining_list_count[arg3]; i++) {
-                SELWORK->remaining_list_entries[arg3][i] =
-                    SELWORK->remaining_list_entries[arg3][i + 1];
+            SELWORK->remaining_list_count[player_index]--;
+            for (i = SELWORK->remaining_list_cursor[player_index];
+                 i < SELWORK->remaining_list_count[player_index]; i++) {
+                SELWORK->remaining_list_entries[player_index][i] =
+                    SELWORK->remaining_list_entries[player_index][i + 1];
             }
-            SELWORK->remaining_list_cursor[arg3] = 0;
-            SELWORK->f3C[arg3]++;
+            SELWORK->remaining_list_cursor[player_index] = 0;
+            SELWORK->f3C[player_index]++;
         }
-    } else if (arg0 & (0x10 << (arg3 * 16))) {
+    } else if (pressed_buttons & (0x10 << (player_index * 16))) {
         snd_QueueSound(2, 0x7F, 0x7F);
-        if (SELWORK->f3C[arg3] == 0) {
-            SELWORK->panel_slide_state.half[arg3] = 3;
-            SELWORK->pending_selection_phase[arg3] = 2;
-            SELWORK->pending_selection_cursor[arg3] =
+        if (SELWORK->f3C[player_index] == 0) {
+            SELWORK->panel_slide_state.half[player_index] = 3;
+            SELWORK->pending_selection_phase[player_index] = 2;
+            SELWORK->pending_selection_cursor[player_index] =
                 SELWORK->selected_match_count_index + 2;
             g_sel_entry_availability_and_claims
-                [arg2[SELWORK->pending_selection_cursor[arg3]]] &= ~(4 << arg3);
-            SELWORK->remaining_list_count[arg3] = 5;
-            for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
-                SELWORK->remaining_list_entries[arg3][i] = i;
+                [pick_slots[SELWORK->pending_selection_cursor[player_index]]] &=
+                ~(4 << player_index);
+            SELWORK->remaining_list_count[player_index] = 5;
+            for (i = 0; i < SELWORK->remaining_list_count[player_index]; i++) {
+                SELWORK->remaining_list_entries[player_index][i] = i;
             }
-            if (arg1 != 0) {
-                SELWORK->remaining_list_entries[arg3][4] = 5;
+            if (grid_page != 0) {
+                SELWORK->remaining_list_entries[player_index][4] = 5;
             }
             return;
         }
         /* Put the last taken entry back into the list in sorted position. */
-        for (i = 0; i < SELWORK->remaining_list_count[arg3]; i++) {
-            if (SELWORK->remaining_list_entries[arg3][i] >
-                SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1]) {
-                for (j = SELWORK->remaining_list_count[arg3] - 1; j >= i; j--) {
-                    SELWORK->remaining_list_entries[arg3][j + 1] =
-                        SELWORK->remaining_list_entries[arg3][j];
+        for (i = 0; i < SELWORK->remaining_list_count[player_index]; i++) {
+            if (SELWORK->remaining_list_entries[player_index][i] >
+                SELWORK->picked_list_entries[player_index]
+                                            [SELWORK->f3C[player_index] - 1]) {
+                for (j = SELWORK->remaining_list_count[player_index] - 1;
+                     j >= i; j--) {
+                    SELWORK->remaining_list_entries[player_index][j + 1] =
+                        SELWORK->remaining_list_entries[player_index][j];
                 }
-                SELWORK->remaining_list_entries[arg3][i] =
-                    SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1];
+                SELWORK->remaining_list_entries[player_index][i] =
+                    SELWORK
+                        ->picked_list_entries[player_index]
+                                             [SELWORK->f3C[player_index] - 1];
                 break;
             }
-            if (i == SELWORK->remaining_list_count[arg3] - 1) {
-                SELWORK->remaining_list_entries[arg3][i + 1] =
-                    SELWORK->picked_list_entries[arg3][SELWORK->f3C[arg3] - 1];
+            if (i == SELWORK->remaining_list_count[player_index] - 1) {
+                SELWORK->remaining_list_entries[player_index][i + 1] =
+                    SELWORK
+                        ->picked_list_entries[player_index]
+                                             [SELWORK->f3C[player_index] - 1];
             }
         }
-        SELWORK->remaining_list_count[arg3]++;
-        SELWORK->f3C[arg3]--;
+        SELWORK->remaining_list_count[player_index]++;
+        SELWORK->f3C[player_index]--;
     }
 }
 
@@ -1148,7 +1172,9 @@ Unk8006E49CRec *menu_GetSelPrimBuffer(s32 buffer_index) {
 
 extern s32 menu_RelocateSelLists(s32 *);
 
-s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
+s32 menu_InitSelScreen(
+    s32 prim_buffer_pair_addr, Unk8009BD24Block *working_record,
+    s32 compacted_unlock_mask) {
     s16 sp[2] = {0, 0};
     /* work: the entry list pointer (arg0 + 0x58), then the work area
        gpu_InitPrimBufferPair returns (Ruling 11, Q78) */
@@ -1158,8 +1184,8 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     s16 a2;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    work = (void *)(arg0 + 0x58);
-    g_sel_prim_buffers = (Unk8006E49CRec *)arg0;
+    work = (void *)(prim_buffer_pair_addr + 0x58);
+    g_sel_prim_buffers = (Unk8006E49CRec *)prim_buffer_pair_addr;
     resource_FreeSlotsAndBlocksAndInvalidateEntryCache();
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(6, work);
     r = menu_RelocateSelLists(work);
@@ -1206,7 +1232,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
             s32 mask = 1 << idx;
             g_sel_entry_availability_and_claims[idx] =
                 (u8)(g_sel_entry_availability_and_claims[idx] & 0xF2);
-            if ((arg2 & mask) != 0) {
+            if ((compacted_unlock_mask & mask) != 0) {
                 g_sel_entry_availability_and_claims[idx] =
                     (u8)(g_sel_entry_availability_and_claims[idx] | 1);
                 sp[t0] += 1;
@@ -1233,7 +1259,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     }
     {
         SelWork *q = SELWORK;
-        q->sel_result_record = arg1;
+        q->sel_result_record = working_record;
         q->selected_match_count_index = 0;
     }
     SELWORK->selected_win_target_index = 1;
@@ -1246,7 +1272,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
 /* Tail word after menu_HandleSelPhase0CursorInput's switch table. */
 const u32 D_80015A20[1] = {0x00000000};
 
-s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
+s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
     s32 ret;
     s16 i;
 
@@ -1266,21 +1292,22 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
         switch (SELWORK->selection_phase.half[i]) {
         case 0:
             if (i == 0) {
-                ret = menu_HandleSelPhase0CursorInput(arg0);
+                ret = menu_HandleSelPhase0CursorInput(pressed_buttons);
                 menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
                     draw_context);
             }
             break;
         case 1:
-            menu_HandleSelOpposedChoice(arg0, i);
+            menu_HandleSelOpposedChoice(pressed_buttons, i);
             menu_DrawSelPhaseSheet(
                 draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelOpposedChoice(draw_context, i);
             menu_DrawSelPanel(draw_context, i);
             break;
         case 2:
-            menu_UpdateSelGridPicks(arg0, SELWORK->selected_grid_page[i],
-                                    SELWORK->grid_pick_slots[i], i);
+            menu_UpdateSelGridPicks(
+                pressed_buttons, SELWORK->selected_grid_page[i],
+                SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPhaseSheet(
                 draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelRowTiles(draw_context, i, 0);
@@ -1289,8 +1316,9 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
             menu_DrawSelPanel(draw_context, i);
             break;
         case 3:
-            menu_UpdateSelListPicks(arg0, SELWORK->selected_grid_page[i],
-                                    SELWORK->grid_pick_slots[i], i);
+            menu_UpdateSelListPicks(
+                pressed_buttons, SELWORK->selected_grid_page[i],
+                SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPhaseSheet(
                 draw_context, i, (s16)(SELWORK->selection_phase.half[i] - 1));
             menu_DrawSelRowTiles(draw_context, i, 1);
@@ -1304,7 +1332,7 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
             menu_DrawSelListPicks(draw_context, SELWORK->selected_grid_page[i],
                                   SELWORK->grid_pick_slots[i], i);
             menu_DrawSelPanel(draw_context, i);
-            if (arg0 & (0x10 << (i * 16))) {
+            if (pressed_buttons & (0x10 << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
                 SELWORK->selection_phase.half[i] = 3;
             }
@@ -1322,7 +1350,7 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *draw_context) {
     return ret;
 }
 
-s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
+s32 menu_StepSelScreen(s32 arg0, s32 pressed_buttons) {
     Unk8006EACCRec s;
     Unk8006E49CRec *p;
     s32 temp_v1;
@@ -1342,11 +1370,12 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
     s.primitive_cursors.draw_area_prims = p->draw_area_prims;
     s.primitive_cursors.draw_offset_prims = p->draw_offset_prims;
     s.unk_24 = p->unk_20;
-    return menu_RunSelPhases(arg1, &s);
+    return menu_RunSelPhases(pressed_buttons, &s);
 }
 
-s32 InitRowMenuBlackBgResetFlow(s32 a0) {
-    menu_LoadResourcesInitStateSelectFirstEnabledRow(a0, &g_working_record);
+s32 InitRowMenuBlackBgResetFlow(s32 prim_buffer_pair_addr) {
+    menu_LoadResourcesInitStateSelectFirstEnabledRow(
+        prim_buffer_pair_addr, &g_working_record);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     g_option_mode_flow_state = 0;
     return 1;
@@ -1360,12 +1389,12 @@ s32 DrawWhiteTileAndSheetsAndResetFlowOnPadMatch(void) {
     return 0;
 }
 
-s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
+s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 pressed_buttons) {
     s32 ret;
     s32 result;
 
     ret = 0;
-    result = menu_UpdateRowMenu(arg0, arg1);
+    result = menu_UpdateRowMenu(arg0, pressed_buttons);
     if (result >= 0) {
         ret = 1;
         g_option_mode_flow_state = 0;
@@ -1385,31 +1414,33 @@ s32 ResetFlowAndFetchRowTablePair(void) {
                                                           .fight_mode][0];
 }
 
-void StoreCompactedBits(s32 arg0) {
+void StoreCompactedBits(s32 unlock_mask) {
     g_menu_compacted_unlock_mask =
-        (arg0 & 0x3FF) + ((u32)(arg0 & 0x3FF000) >> 2) +
-        ((u32)(arg0 & 0x01000000) >> 4) + ((u32)(arg0 & 0x04000000) >> 5);
+        (unlock_mask & 0x3FF) + ((u32)(unlock_mask & 0x3FF000) >> 2) +
+        ((u32)(unlock_mask & 0x01000000) >> 4) +
+        ((u32)(unlock_mask & 0x04000000) >> 5);
 }
 
-s32 InitWithCachedValueAndStoredBitsBlackBg(s32 a0) {
+s32 InitWithCachedValueAndStoredBitsBlackBg(s32 prim_buffer_pair_addr) {
     InitDisplayStateLoadPackAndSetEntryFlags(
-        a0, g_menu_pending_entry_extra_slot_count, &g_working_record,
-        g_menu_compacted_unlock_mask);
+        prim_buffer_pair_addr, g_menu_pending_entry_extra_slot_count,
+        &g_working_record, g_menu_compacted_unlock_mask);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 
-s32 StepThenCloseVab1OnNonzero(s32 arg0, s32 arg1) {
-    s32 ret = StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, arg1);
+s32 StepThenCloseVab1OnNonzero(s32 arg0, s32 pressed_buttons) {
+    s32 ret =
+        StepSlideBuildFrameRecordAndDispatchStateHandler(arg0, pressed_buttons);
     if (ret) {
         snd_CloseVab1();
     }
     return ret;
 }
 
-s32 menu_ResetFlowThenRunUpdate(s32 a0, s32 a1) {
+s32 menu_ResetFlowThenRunUpdate(s32 a0, s32 pressed_buttons) {
     g_option_mode_flow_state = 0;
-    return menu_UpdateStoredChoice(a0, a1);
+    return menu_UpdateStoredChoice(a0, pressed_buttons);
 }
 
 void menu_ResetFlowBackgroundAndConfirmCursor(void) {
@@ -1424,8 +1455,9 @@ s32 func_80077A60(s32 arg0, s32 arg1) {
 
 s32 menu_InitSelScreen(s32, Unk8009BD24Block *, s32);
 
-s32 menu_InitSelWithStoredBits(s32 a0) {
-    menu_InitSelScreen(a0, &g_working_record, g_menu_compacted_unlock_mask);
+s32 menu_InitSelWithStoredBits(s32 prim_buffer_pair_addr) {
+    menu_InitSelScreen(
+        prim_buffer_pair_addr, &g_working_record, g_menu_compacted_unlock_mask);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
@@ -1443,17 +1475,17 @@ extern s32 column;
 
 extern s32 rand(void);
 
-s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
-    s32 s2;
+s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 pressed_buttons) {
+    s32 return_value;
     s32 result;
 
     switch (g_option_mode_flow_state) {
     case 0:
-        s2 = 0;
-        result = menu_UpdateOptionMenuChoices(arg0, arg1);
+        return_value = 0;
+        result = menu_UpdateOptionMenuChoices(arg0, pressed_buttons);
         switch (result) {
         case 1:
-            s2 = -1;
+            return_value = -1;
             break;
         case 2:
             g_option_mode_flow_state = 1;
@@ -1470,8 +1502,8 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         }
         break;
     case 1:
-        s2 = 0;
-        result = func_8006C1FC(arg0, arg1);
+        return_value = 0;
+        result = func_8006C1FC(arg0, pressed_buttons);
         if (result == 1) {
             g_option_mode_flow_state = 0;
         } else if (result == 2) {
@@ -1481,18 +1513,18 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         }
         break;
     case 2:
-        s2 = 2;
+        return_value = 2;
         break;
     case 3:
-        s2 = 3;
+        return_value = 3;
         break;
     case 4:
         menu_ResetRowBitCursors();
         g_option_mode_flow_state++;
         /* fall through */
     case 5:
-        s2 = 0;
-        result = menu_UpdateRowBitMenu(arg0, arg1);
+        return_value = 0;
+        result = menu_UpdateRowBitMenu(arg0, pressed_buttons);
         if (result == 1) {
             g_option_mode_flow_state = 0;
             g_working_record.committed_button_mappings[0] =
@@ -1506,7 +1538,7 @@ s32 menu_RunOptionModeFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
         }
         break;
     }
-    return s2;
+    return return_value;
 }
 
 Unk8009BD24Block *GetWorkingRecord(void) { return &g_working_record; }
@@ -1733,13 +1765,13 @@ void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *draw_context) {
     }
 }
 
-s32 InitTimedSpriteSequence(s32 arg0) {
+s32 InitTimedSpriteSequence(s32 prim_buffer_pair_addr) {
     Ctx77D94 *resource_root;
     s32 prim_storage;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    resource_root = (Ctx77D94 *)(arg0 + 0x58);
-    g_gpu_timed_sprite_prim_buffers = (Unk8006E49CRec *)arg0;
+    resource_root = (Ctx77D94 *)(prim_buffer_pair_addr + 0x58);
+    g_gpu_timed_sprite_prim_buffers = (Unk8006E49CRec *)prim_buffer_pair_addr;
     g_gpu_timed_sprite_resources = resource_root;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
         0x32, &resource_root->resource_head);
@@ -1844,12 +1876,13 @@ void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *primitive_cursors) {
 
 extern s32 g_gpu_scrolling_sprite_step_count;
 
-s32 InitScrollingSpriteDisplay(s32 arg0) {
+s32 InitScrollingSpriteDisplay(s32 prim_buffer_pair_addr) {
     Unk80078824Rec *resource_root;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
-    resource_root = (Unk80078824Rec *)(arg0 + 0x58);
-    g_gpu_scrolling_sprite_prim_buffers = (Unk8006E49CRec *)arg0;
+    resource_root = (Unk80078824Rec *)(prim_buffer_pair_addr + 0x58);
+    g_gpu_scrolling_sprite_prim_buffers =
+        (Unk8006E49CRec *)prim_buffer_pair_addr;
     g_gpu_scrolling_sprite_resources = resource_root;
     gpu_ReadCdFileRelocateAndUploadImagesAndBottomStrip(
         0x5F, &resource_root->resource_head);

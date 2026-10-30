@@ -2632,7 +2632,7 @@ u8 eff_SpawnParticles(
     MATRIX m;
     SVECTOR rotation_angles;
     VECTOR out;
-    SVECTOR var_5;
+    SVECTOR emitter_vector;
     s16 base;
     s16 scale_mask;
     s16 angle_mask;
@@ -2679,9 +2679,9 @@ u8 eff_SpawnParticles(
         angle_mask = 0x7F;
         angle_offset = 0x3F;
     }
-    var_5.vx = g_eff_particle_emitter_vectors[particle_row_index].vx;
-    var_5.vy = g_eff_particle_emitter_vectors[particle_row_index].vy;
-    var_5.vz = g_eff_particle_emitter_vectors[particle_row_index].vz;
+    emitter_vector.vx = g_eff_particle_emitter_vectors[particle_row_index].vx;
+    emitter_vector.vy = g_eff_particle_emitter_vectors[particle_row_index].vy;
+    emitter_vector.vz = g_eff_particle_emitter_vectors[particle_row_index].vz;
     for (particle_index = (particle_count >> 1) * half_index;
          particle_index < (particle_count >> 1) * (half_index + 1);
          particle_index++) {
@@ -2700,9 +2700,9 @@ u8 eff_SpawnParticles(
         random_values[3] &= scale_mask;
         random_values[4] &= scale_mask;
         random_values[5] &= scale_mask;
-        v.vx = var_5.vx * (base + random_values[3]) / scale_mask;
-        v.vy = var_5.vy * (base + random_values[4]) / scale_mask;
-        v.vz = var_5.vz * (base + random_values[5]) / scale_mask;
+        v.vx = emitter_vector.vx * (base + random_values[3]) / scale_mask;
+        v.vy = emitter_vector.vy * (base + random_values[4]) / scale_mask;
+        v.vz = emitter_vector.vz * (base + random_values[5]) / scale_mask;
         p = &g_eff_particles[particle_row_index][particle_index];
         p->group_position_index = particle_index / 16;
         p->frame_age = 0;
