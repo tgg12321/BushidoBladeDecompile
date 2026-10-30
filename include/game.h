@@ -1353,8 +1353,9 @@ typedef union {
  * passes it on, or addresses it directly (object_UpdatePool /
  * fight_UpdateBallisticRecords use Unk1F8002B8_8005344C instead). shape_points
  * / other_shape_points hold point pointers (fighter_ProcessWeaponContacts reads
- * shape_points[0..2]); bone_hit_mask / unkC4 are fighter_TestTriangleBoneHits's
- * two hit masks (fighter_ProcessWeaponBodyHits reads them; no 17AFC code
+ * shape_points[0..2]); bone_hit_mask / inner_bone_hit_mask are
+ * fighter_TestTriangleBoneHits's two hit masks (outer and inner sphere tests;
+ * fighter_ProcessWeaponBodyHits reads them; no 17AFC code
  * accesses unkD4 as a member); rot_matrix is the matrix the RotMatrix* calls
  * build, and the GTE rotates unkA8 through it; func_8002DE20 rotates three
  * points, relative to the origin *shape_points[0], into unk118 and tests them
