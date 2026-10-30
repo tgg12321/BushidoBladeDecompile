@@ -176,7 +176,7 @@ structure to identify several sub-fields and clusters:
 ### Vec3i32 members at +0x174 and +0x18C
 
 Two adjacent Vec3i32 members that fight_UpdateFighterInteractionsAndPointCaches fills with averages of
-scratchpad points (17AFC.c:2542-2559) and func_80022580 sets to `unk_F4`
+scratchpad points (17AFC.c:2544-2561) and func_80022580 sets to `unk_F4`
 (9F9C.c:4034, :4036):
 
 | Offset | Member (rec[0] address) | fight_UpdateFighterInteractionsAndPointCaches computation (record i) |

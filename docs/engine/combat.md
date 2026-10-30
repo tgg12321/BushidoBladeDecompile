@@ -8,9 +8,9 @@ stated, otherwise only its use is described.
 
 ## Per-frame entry: `fight_UpdateFighterInteractionsAndPointCaches`
 
-`fight_UpdateFighterInteractionsAndPointCaches` (src/main/17AFC.c:2466) runs once per frame; its callers are
+`fight_UpdateFighterInteractionsAndPointCaches` (src/main/17AFC.c:2468) runs once per frame; its callers are
 src/main/9F9C.c:2220, :2269 and :2394, each followed by `object_UpdatePool` (the
-object-pool update, src/main/17AFC.c:4321). It branches on fighter 0's state
+object-pool update, src/main/17AFC.c:4323). It branches on fighter 0's state
 `move_kind`:
 
 - 0xF, 0x1C..0x21: `fight_UpdatePairedInputTotalsEventsAndMidpointEffects` (src/main/175A4.c:23) only.
@@ -25,7 +25,7 @@ object-pool update, src/main/17AFC.c:4321). It branches on fighter 0's state
   3. `g_fight_weapon_contact_result = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1216): the blade
      contact test between the two fighters (comment at :1203); it returns
      `(fighter-1 grid << 1) | fighter-0 grid` on contact, else -1.
-  4. On contact, `fighter_BlendCurrentAndPreviousContactPoints` (src/main/17AFC.c:2388), then
+  4. On contact, `fighter_BlendCurrentAndPreviousContactPoints` (src/main/17AFC.c:2390), then
      `fighter_ResolveWeaponContact` (src/main/17AFC.c:634) for each fighter when either has
      `attack_hit_armed` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
   5. When both fighters have `update_count >= 3`, `D_800A38A8` is set, both
@@ -35,9 +35,9 @@ object-pool update, src/main/17AFC.c:4321). It branches on fighter 0's state
   (`g_main_loop_handler_index = 0x1C`, with `g_fight_followup_fighter_index` the other fighter's index); the
   scratchpad body points are copied into `prev_weapon_points` / `prev_second_weapon_points`, `bone_hit_points_1_3_centroid`
   (the centroid of points 1..3) and `bone_hit_points_4_5_midpoint` (the midpoint of points 4..5)
-  (src/main/17AFC.c:2365-2391); and while fighter 0's `pending_move_event` is -1,
-  `object_ResolveFighterHits` (src/main/17AFC.c:4589) tests the pool objects against the
-  fighters, followed by `fight_TriggerOpposingFighterEventFromNearBallisticRecords` (src/main/17AFC.c:4796) when that
+  (src/main/17AFC.c:2366-2393); and while fighter 0's `pending_move_event` is -1,
+  `object_ResolveFighterHits` (src/main/17AFC.c:4591) tests the pool objects against the
+  fighters, followed by `fight_TriggerOpposingFighterEventFromNearBallisticRecords` (src/main/17AFC.c:4798) when that
   left `pending_move_event` unchanged.
 
 `pending_move_event` is the reaction code these paths write; -1 means none pending.
@@ -60,7 +60,7 @@ target, with the opponent as the attacker:
 2. Each blade quad (this frame's points from the scratchpad and last frame's
    from `prev_weapon_points` / `prev_second_weapon_points`) is split into 2 or 4 triangles (4 when the tip
    moved more than 2500 units) and each triangle goes through `math_PrepareTriangleCollisionFrame`
-   (src/main/17AFC.c:2665) and `fighter_TestTriangleBoneHits` (src/main/17AFC.c:2579), which
+   (src/main/17AFC.c:2667) and `fighter_TestTriangleBoneHits` (src/main/17AFC.c:2581), which
    leave bit masks of struck limb records in the scratch record.
 3. Of the struck records among the target's 22 limb records (`g_fighter_bone_hit_records[i]`)
    it picks the one nearest the attacker's point `prev_weapon_points[1]`
@@ -107,40 +107,40 @@ src/main/17AFC.c:2215 records both call shapes). Its branches, in order:
 
 Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 
-- `fighter_ReadFrameMetadata` (src/main/17AFC.c:4845; called at src/main/9F9C.c:3624)
+- `fighter_ReadFrameMetadata` (src/main/17AFC.c:4847; called at src/main/9F9C.c:3624)
   resets the window fields and reads: 0xFF skips six bytes, a byte below 0x80
   skips one, and 0x80..0x8B take the next byte into `weapon_hit_start_frames[0]`,
   `weapon_hit_end_frames[0]`, `release_frame`, `object_pickup_frame`,
   `opponent_turn_frame`, `frame_window_start`, `frame_window_end`, `weapon_hit_start_frames[1]`,
   `weapon_hit_end_frames[1]`, `paired_move_hit_frame`, `opponent_transition_start_frame`, `weapon_reload_frame`
-  (src/main/17AFC.c:4863-4909). `weapon_hit_start_frames[k]` /
+  (src/main/17AFC.c:4865-4911). `weapon_hit_start_frames[k]` /
   `weapon_hit_end_frames[k]` are the frame windows the contact tests compare `move_frame` with.
-- `fighter_ProcessFrameEvents` (src/main/17AFC.c:5538; called at src/main/9F9C.c:5802 and
+- `fighter_ProcessFrameEvents` (src/main/17AFC.c:5540; called at src/main/9F9C.c:5802 and
   src/main/28708.c:1498) reads the same stream: 0xFF tests a 32-bit mask
   against `1 << rec->character_data_index` and skips 4 or 6 bytes; a byte `c` below 0x80
   is followed by a frame number, and when that equals `move_frame` it calls
-  `fighter_DispatchFrameEvent(rec, c - 1)` (src/main/17AFC.c:5156); it stops at the first
+  `fighter_DispatchFrameEvent(rec, c - 1)` (src/main/17AFC.c:5158); it stops at the first
   frame number above `move_frame`.
 
 ## Geometry helpers
 
-- `math_TestSegmentCircle2D` (src/main/17AFC.c:2873): segment against circle in x/z.
-- `math_TryPrepareTriangleNormalFrame` (src/main/17AFC.c:3095) / `math_PrepareTriangleCollisionFrame`: a triangle's
+- `math_TestSegmentCircle2D` (src/main/17AFC.c:2875): segment against circle in x/z.
+- `math_TryPrepareTriangleNormalFrame` (src/main/17AFC.c:3097) / `math_PrepareTriangleCollisionFrame`: a triangle's
   local frame from its edge vectors and normal.
-- `func_8002DE20` (src/main/17AFC.c:3178): cuts a triangle rotated by the GTE
+- `func_8002DE20` (src/main/17AFC.c:3180): cuts a triangle rotated by the GTE
   matrix with the plane z = 0 and tests the cut segment against a second
   triangle.
-- `math_PointInTriangleXZ` (src/main/17AFC.c:3371): point in triangle.
-- `math_TriangleNormalYawWithPositiveYHalfTurn` (src/main/17AFC.c:3836): the GTE cross product of
+- `math_PointInTriangleXZ` (src/main/17AFC.c:3373): point in triangle.
+- `math_TriangleNormalYawWithPositiveYHalfTurn` (src/main/17AFC.c:3838): the GTE cross product of
   `(second_vertex - first_vertex)` and `(third_vertex - first_vertex)`, returning `ratan2` of its x/z (+0x800 when y is
-  positive). `fighter_IsBoneTriangleCrossYPositive` (src/main/17AFC.c:3866) takes the same cross
+  positive). `fighter_IsBoneTriangleCrossYPositive` (src/main/17AFC.c:3868) takes the same cross
   product for a fighter's scratchpad points 2 and 3 about point 1 and returns
   1 when its y is positive, else 0; the result is stored in `bone_triangle_cross_y_positive`
   (src/main/9F9C.c:5640).
 
 ## Cues
 
-`fight_RecordReplayEventAndDispatchSoundOrEffect(who, event_kind, src_position, src_command_vector)` (src/main/17AFC.c:4996) dispatches the
+`fight_RecordReplayEventAndDispatchSoundOrEffect(who, event_kind, src_position, src_command_vector)` (src/main/17AFC.c:4998) dispatches the
 effect and sound cues the paths above play; sound cues are `who * 40 + id`
-(per-player blocks of 40) panned by `snd_QueuePositionalSound` (src/main/17AFC.c:4916)
+(per-player blocks of 40) panned by `snd_QueuePositionalSound` (src/main/17AFC.c:4918)
 from `src_position` relative to `g_listener_cam`.

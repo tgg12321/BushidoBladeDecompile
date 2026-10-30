@@ -458,7 +458,7 @@
 /* Lines from a consumer-role pass; each tail now cites its accesses. */
 /* See pre-slim-2026-10-01:docs/naming/RODATA_RECORD_SCHEMA.md */
 /* for that pass's multiplier analysis. */
-/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (cdrom_mix.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (cdrom_update.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
+/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (cdrom_mix.c:26-32); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (cdrom_update.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
 
 /* === Cluster at 0x800A34F8-3514 (2026-05-17) -- 4 highs === */
 /* Discovered via cluster-consumer analysis: g_menu_packed_cursors/350C/3514 are */
@@ -634,7 +634,7 @@
 /* RENAME 0x800A36FA: retired name 'D_800A36FA' — preserved note: three values (0 / 1 / 2): camera_ApplyFightView picks its view record (D_800F6608 or D_800F5328), FOV and func_8003F218 argument by it (9F9C.c:2047-2075) */  /* data-wave 2026-10-08: was g_gnd_init_flag */
 
 /* === Byte tables g_fight_config_id_data_rows / D_8008D55C + misc state (2026-05-17) -- 5 highs === */
-/* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:5743, 5830, 5993, 2B344.c:247, 283) */
+/* g_fight_config_id_data_rows is indexed by g_fight_config.unk_4[0] (17AFC.c:5745, 5832, 5995, 2B344.c:247, 283) */
 /* or fighter_Init's roster_index (9F9C.c:3895-3896); D_8008D55C maps a table index */
 /* into the g_fight_config.unk_4 id space.  g_listener_cam, g_fight_weapon_contact_result and */
 /* g_fight_opponent_order: see their lines. */
