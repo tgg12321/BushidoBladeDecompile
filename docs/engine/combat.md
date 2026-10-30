@@ -9,8 +9,8 @@ stated, otherwise only its use is described.
 ## Per-frame entry: `fight_UpdateFighterInteractionsAndPointCaches`
 
 `fight_UpdateFighterInteractionsAndPointCaches` (src/main/17AFC.c:2466) runs once per frame; its callers are
-src/main/9F9C.c:2218, :2267 and :2392, each followed by `object_UpdatePool` (the
-object-pool update, src/main/17AFC.c:4110). It branches on fighter 0's state
+src/main/9F9C.c:2220, :2269 and :2394, each followed by `object_UpdatePool` (the
+object-pool update, src/main/17AFC.c:4321). It branches on fighter 0's state
 `move_kind`:
 
 - 0xF, 0x1C..0x21: `fight_UpdatePairedInputTotalsEventsAndMidpointEffects` (src/main/175A4.c:23) only.
@@ -60,7 +60,7 @@ target, with the opponent as the attacker:
 2. Each blade quad (this frame's points from the scratchpad and last frame's
    from `prev_weapon_points` / `prev_second_weapon_points`) is split into 2 or 4 triangles (4 when the tip
    moved more than 2500 units) and each triangle goes through `math_PrepareTriangleCollisionFrame`
-   (src/main/17AFC.c:2490) and `fighter_TestTriangleBoneHits` (src/main/17AFC.c:2579), which
+   (src/main/17AFC.c:2665) and `fighter_TestTriangleBoneHits` (src/main/17AFC.c:2579), which
    leave bit masks of struck limb records in the scratch record.
 3. Of the struck records among the target's 22 limb records (`g_fighter_bone_hit_records[i]`)
    it picks the one nearest the attacker's point `prev_weapon_points[1]`

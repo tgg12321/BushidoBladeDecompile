@@ -1796,7 +1796,7 @@ void func_8003E2AC(void) {
 
 u32 gpu_GetLastFogOtIndex(void) { return g_gpu_last_fog_ot_index; }
 
-extern void gpu_SetCellGateBit(s16 *arg0);
+extern void gpu_SetCellGateBit(s16 *cell_pos);
 
 void gpu_SetSegmentCellsGateBit(s32 arg0, s32 arg1, s32 end_x, s32 end_z) {
     s16 cell_pos[4];
@@ -2512,7 +2512,8 @@ void softbody_FreeAllAndClearWriteOnlyWords(void) {
 }
 
 extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
-void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2);
+void softbody_AddColliders(
+    Unk80045878Obj *slot_object, Unk8003F824Rec *rec, s16 *a2);
 
 void softbody_SetupObject(Unk80045878Obj *slot_object, s32 resize_asset_block) {
     Unk8003F62CRec *softbody_set;

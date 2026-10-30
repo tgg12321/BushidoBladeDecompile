@@ -34,7 +34,7 @@ start-up code, in order:
      (`ClearOTagR(ot, 0x1008)`), sets `g_gpu_ot_ptr` and the primitive cursor
      `g_prim_buf_cursor = D_800A3770[idx]`;
    - `eff_SelectQuadBuffer(idx)` (src/main/51268.c), `font_BeginFrame()`
-     (src/main/2B344.c:1135), `pad_Update(skip)` (last frame's `g_main_present_skip_frames`),
+     (src/main/2B344.c:1211), `pad_Update(skip)` (last frame's `g_main_present_skip_frames`),
      `cdrom_Update()`,
      `snd_FlushSoundQueue()` (src/main/4BC3C.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
@@ -42,7 +42,7 @@ start-up code, in order:
      (`g_local_ot_draw_mode = DISP_DISABLED`), clears the request and `g_menu_mode_subflow_init_pending`, and
      sets mode 8;
    - calls the mode handler `g_main_loop_handlers[g_main_loop_handler_index]()` (src/main/6CF8.c:468),
-     then `font_AddTpage()` (src/main/2B344.c:1149);
+     then `font_AddTpage()` (src/main/2B344.c:1226);
    - waits until root counter 2 (`GetRCnt(0xF2000001)`) reaches
      `((g_main_frame_period - 1) << 8) + 0x80`, calling `rand()` while it waits; then
      `VSync(1)`, `DrawSync(0)`, `VSync(0)`, `ResetRCnt(0xF2000001)`;
@@ -96,34 +96,34 @@ assigns to `g_main_loop_handler_index` itself.
 | 3 | `menu_PrintEditAndApplyConfigWithPerPadCursors` (src/main/24F08.c:28) | | prints the `g_fight_config` settings with `font_Printf` and steps the two cursors `g_config_menu_cursors`; calls `ApplyPendingConfigAndInitializeMode` |
 | 4 | `replay_Start` (src/main/28708.c:1311) | 5 | view and fighter setup |
 | 5 | `replay_PlayFrame` (src/main/28708.c:1370) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
-| 6 | `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:477) | 7 | loads a script scene ([menus.md](menus.md)) |
-| 7 | `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:549) | 0 | waits, then the next script step |
+| 6 | `fight_StartDescriptorPlaybackAndAudio` (src/main/2B344.c:500) | 7 | loads a script scene ([menus.md](menus.md)) |
+| 7 | `fight_HandleDescriptorPlaybackCompletion` (src/main/2B344.c:577) | 0 | waits, then the next script step |
 | 8 | `menu_ReleaseResourcesConditionallyCloseLinkAndVabsAndInitRowMenu` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `g_menu_mode_subflow_init_pending` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 9 | `menu_UpdateRowMenuAndSubflows` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
-| 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:594) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
-| 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:613) | 0x1A, 8 | waits for Cross, merges unlock bits into `g_saved_record` |
+| 10 | `fight_InitScrollingSpriteDisplayAndAudio` (src/main/2B344.c:623) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
+| 11 | `fight_UpdateScrollingSpriteDisplayAndMergeBitFlags` (src/main/2B344.c:642) | 0x1A, 8 | waits for Cross, merges unlock bits into `g_saved_record` |
 | 12 | `fight_InitFighterFocusViewAndThreeItemMenu` (src/main/9F9C.c:2237) | 0xD | |
 | 13 | `fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange` (src/main/9F9C.c:2252) | 0, 8 | per-frame fight variant with the view `camera_SetFighterFocusView` and the cursor `g_fight_choice_menu_cursor` |
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
-| 15 | `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:650) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
+| 15 | `ExecMovieOverlayAndReinitialize` (src/main/2B344.c:682) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
 | 16 | `func_8001EEB4` (src/main/9F9C.c:2351) | 0x11 | when gated, starts an indexed common script on fighter `g_fight_followup_fighter_index` (`fighter_StartMoveScript`) and sets its `hit_record_group_6_9_intact` |
 | 17 | `fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress` (src/main/9F9C.c:2376) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`g_fight_mode_selector` 4 / 6, or 1 with `g_fight_followup_fighter_index != 0`), calls `fight_AdvanceOpponentOrder` (`g_fight_mode_selector` 1, `g_fight_followup_fighter_index == 0`), or sets 2 |
-| 18 | `fight_InitImageAndPlaybackPresentation` (src/main/2B344.c:665) | 0x13 | scene setup chosen by `g_fight_presentation_index` |
-| 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:724) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush`, then picks the next mode |
-| 20 | `fight_TallyMatchResultsAndInitPresentation` (src/main/2B344.c:755) | 0x15 | |
-| 21 | `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:788) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
-| 22 | `fight_InitCommandStreamImageLoad` (src/main/2B344.c:420) | 0x17 | |
-| 23 | `fight_UpdateCommandStreamImageLoadAndResume` (src/main/2B344.c:431) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
-| 24 | `fight_InitRotatingViewThreeOptionChoice` (src/main/2B344.c:879) | 0x19 | |
-| 25 | `fight_UpdateRotatingViewThreeOptionChoice` (src/main/2B344.c:888) | 0, 8 | view (`gpu_ResetDrawQueueAndPrepareViewAndLighting`) and its own per-frame work |
+| 18 | `fight_InitImageAndPlaybackPresentation` (src/main/2B344.c:697) | 0x13 | scene setup chosen by `g_fight_presentation_index` |
+| 19 | `fight_UpdateSplitWipeImageAndPlaybackPresentation` (src/main/2B344.c:764) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `motion_ResetDrawQueueAdvanceCounterSetOtUpdatePlaybackAndFlush`, then picks the next mode |
+| 20 | `fight_TallyMatchResultsAndInitPresentation` (src/main/2B344.c:799) | 0x15 | |
+| 21 | `fight_UpdateMatchTallyPresentation` (src/main/2B344.c:831) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
+| 22 | `fight_InitCommandStreamImageLoad` (src/main/2B344.c:441) | 0x17 | |
+| 23 | `fight_UpdateCommandStreamImageLoadAndResume` (src/main/2B344.c:453) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
+| 24 | `fight_InitRotatingViewThreeOptionChoice` (src/main/2B344.c:937) | 0x19 | |
+| 25 | `fight_UpdateRotatingViewThreeOptionChoice` (src/main/2B344.c:946) | 0, 8 | view (`gpu_ResetDrawQueueAndPrepareViewAndLighting`) and its own per-frame work |
 | 26 | `menu_ReleaseResourcesCloseVabsAndInitRowMenu` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 27 | `DrawGradientAndStepMemcardSavePromptsThenSelectRowMenuInit` (src/main/25C38.c:407) | 8 | screen gradient and the memory-card flow `memcard_StepSaveOverwriteAndFormatPrompts` |
-| 28 | `fight_InitNearestStartPairPlayback` (src/main/2B344.c:992) | 0x1D | view and scene setup |
-| 29 | `fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams` (src/main/2B344.c:1041) | 0x18 | frame-threshold cues on `g_handler_frame_counter` |
-| 30 | `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:824) | 0x1F | stores the three clock records |
-| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:871) | | on Cross or frame 0xF1 calls `fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank` (src/main/17AFC.c:6005), which sets 0x12, 0x1A or 8 |
-| 32 | `fight_InitRotatingViewDecimalPresentation` (src/main/2B344.c:961) | 0x21 | |
-| 33 | `fight_UpdateRotatingViewDecimalPresentation` (src/main/2B344.c:969) | 8 | |
+| 28 | `fight_InitNearestStartPairPlayback` (src/main/2B344.c:1064) | 0x1D | view and scene setup |
+| 29 | `fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams` (src/main/2B344.c:1117) | 0x18 | frame-threshold cues on `g_handler_frame_counter` |
+| 30 | `fight_PackTimeRecordsAndInitPresentation` (src/main/2B344.c:879) | 0x1F | stores the three clock records |
+| 31 | `fight_UpdateTimeRecordPresentation` (src/main/2B344.c:925) | | on Cross or frame 0xF1 calls `fight_SetSelectorAndMainLoopHandlerFromFlagsAndBestTimeRank` (src/main/17AFC.c:6005), which sets 0x12, 0x1A or 8 |
+| 32 | `fight_InitRotatingViewDecimalPresentation` (src/main/2B344.c:1028) | 0x21 | |
+| 33 | `fight_UpdateRotatingViewDecimalPresentation` (src/main/2B344.c:1036) | 8 | |
 
 Modes the main loop itself sets: 0xF at start, 8 on a link abort. Many
 handlers draw through `gpu_DrawDisplayModeOnLocalOtAndSync` (src/main/6CF8.c:526), which returns at

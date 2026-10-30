@@ -2245,7 +2245,7 @@ typedef struct {
  * slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock stores;
  * softbody_block / softbody_params: the attached Unk8003F62CRec block and the
  * s16 list softbody_SetupObject walks up to its -3 end (softbody_RebaseObject
- * moves both by its a1).
+ * moves both by its byte_offset).
  * - transform_nodes[]: node 0 is the root
  * (node_QueueEntryNodesFromTransformOrUpdatedSlotNode reads its xf.mat);
  * node_InitObjectHierarchyFromTemplates builds 0..20,
