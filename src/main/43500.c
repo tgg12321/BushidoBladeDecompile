@@ -849,9 +849,9 @@ void motion_DrawSyncApplyHeaderSectionsAndFreePlaybackBlock(void) {
  * g_node_entry_pair_local_transforms ends at 0x80099D54; 4510C.c's
  * g_cpu_profiles follows): per-entry base sequence ids (-1: none);
  * motion_StartPlaybackAtIndexedBasePlusOffset starts sequence
- * g_motion_playback_file_id_bases[a0] + a1 - 0x131. The final 0 fills the 0x34
- * bytes to g_cpu_profiles. Defined after every function, so no body sees a
- * definition where it saw an extern. */
+ * g_motion_playback_file_id_bases[file_base_index] + file_id_offset - 0x131.
+ * The final 0 fills the 0x34 bytes to g_cpu_profiles. Defined after every
+ * function, so no body sees a definition where it saw an extern. */
 s16 g_motion_playback_file_id_bases[26] = {
     0x131, 0x151, 0x171, 0x192, 0x1AD, -1,    0x1CB, 0x1E6, 0x204,
     0x222, -1,    -1,    0x241, 0x264, 0x287, 0x2AA, -1,    0x2CD,

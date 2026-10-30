@@ -302,8 +302,8 @@ extern s16 D_800A324A;
 extern MATRIX g_math_light_plane_projection;
 
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
- * g_gpu_vram_scrolls, which wave_SampleLastRowStepsAtCachedIndex's [v1 + 1]
- * reaches at v1 == 17 */
+ * g_gpu_vram_scrolls, which wave_SampleLastRowStepsAtCachedIndex's
+ * [column_index + 1] reaches at column_index == 17 */
 extern s32 g_wave_last_row_steps[18];
 extern u8 g_fight_start_position_pairs;
 extern s16 g_gpu_raised_ot_cutoff_requested;

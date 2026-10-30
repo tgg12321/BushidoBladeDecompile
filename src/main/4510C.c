@@ -1105,8 +1105,8 @@ extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 
 /* fighter_CalcOpponentDistanceThresholdFromTables: per-record table lookup on
- * arg0->other: its row (motion_metadata[3] * 40), plus a D_8009A830 /
- * D_8009A838 (by arg0->move_is_common) or D_8009A840 (when
+ * fighter_record->other: its row (motion_metadata[3] * 40), plus a D_8009A830 /
+ * D_8009A838 (by fighter_record->move_is_common) or D_8009A840 (when
  * weapon_hit_end_frames[0] is 0xFF) term, plus its scale_distance_offset and
  * 300. */
 s32 fighter_CalcOpponentDistanceThresholdFromTables(
@@ -1497,14 +1497,14 @@ void fighter_GetNavCornerPoint(
         vertex_z + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
-/* Walks the vertex ring of arg0's polygon nav_set->polys[arg0->cpu_route.poly]
- * both ways from vertex cpu_route.vtx, each way starting at arg0->world_pos.
+/* Walks the vertex ring of nav_set->polys[fighter_record->cpu_route.poly] both
+ * ways from vertex cpu_route.vtx, each starting at fighter_record->world_pos.
  * While math_IntersectSegments reports that the segment from the way's current
  * point to (target_x, target_z) crosses a polygon edge, the way steps to the
  * next vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its
  * CpuRoute and adds the step's SquareRoot0 length to its sum; a clear segment
  * adds that segment's length and ends the way. The way with the smaller sum is
- * appended, last point first, to arg0->cpu_route. */
+ * appended, last point first, to fighter_record->cpu_route. */
 void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
                              NavPolySet *nav_set, s32 target_x, s32 target_z) {
     CpuRoute detour_routes[2];
@@ -1568,7 +1568,7 @@ void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
     for (iter = 0; iter < polygon_edge_count; iter++) {
         /* var_29 holds four values, each the address of an x/z pair: the
          * edge's start (i) and end (next) in the edge scan, then the corners
-         * at var_12 and var_13 (Ruling 11,
+         * at backward_vertex_index and forward_vertex_index (Ruling 11,
          * reused-local-necessity). */
         s16 *var_29;
         /* node holds two values: the waypoint appended to &detour_routes[0],
