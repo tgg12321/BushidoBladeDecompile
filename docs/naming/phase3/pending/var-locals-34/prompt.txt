@@ -1,0 +1,37 @@
+# Research (read-only): local / parameter names, wave 34 (row var-locals-34, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-33/prompt.txt` (which chains to var-locals-32 / 31 / 30 /
+29 / 26 / 15 and the wave-15..32 lessons) exactly, plus `pending/var-locals-{31,32,33}/notes.txt`, with
+these changes:
+
+- Source tree: read the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-b at
+  HEAD ae91a4755 (read-only; equals main, wave 33 applied and its comment pass landed; 32D04.c and
+  35000.c lines moved in wave 33's reflow, so re-derive every line you cite).
+- Output: write ONE file, main's `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-34-research.md`
+  (overrides any output file the earlier prompts name), same shape as wave 33: HEAD first, then the
+  proposed `local_manifest.csv` in a ```csv block (columns exactly as
+  pending/var-locals-33/local_manifest.csv), then the notes (NO_NAME / skipped bindings with
+  reasons, comments citing old tokens with file:line, INCLUDING symbol_addrs.txt, named_syms.txt,
+  include/*.h and docs/engine/*.md and other live docs; tools/trace/scenarios/** hits listed, not
+  edited), ending with a "### LEADS for var-locals-35" section. Return only a one-line summary.
+- Wave size: up to 80 rows: propose up to ~90 RENAMEs.
+- Scope, in this order (stop at ~90 RENAMEs):
+  1. var-locals-33's 11 CAP-CUT rows (pending/var-locals-33/notes.txt "CAP-CUT": arena_OpenBlock:a0,
+     arena_SetBlockEnd a0 / a1, arena_SetMoveCallback a0 / a1, arena_ClearMoveCallback:a0,
+     arena_GetBlockAddr a0 / v0, arena_Copy a0 / a1 / a2): re-derive against the current source.
+  2. pending/var-locals-33/notes.txt "LEADS for var-locals-34" in order (35000.c
+     slot_OpenObjectBlockFreeSoftbodyAndLoadOrReuseAssetBlock a0 / a2 / s3 / v0 / s1 and its a1
+     (asset_file_index or NO_NAME: a1 is stored to the member asset_index, so asset_index itself
+     collides), s0 two roles = neutral; slot_LoadObjectBuildNodesSoftbodyAndFogLevels a1 / a2
+     (309CC.c); slot_ResizeAssetBlockAndUpdatePeak; slot_StopAllVoicesCloseVabAndFreeObjectAndAssetBlocks;
+     slot_RebaseObjectOrAssetBlockAndFakeOpenVab; and the rest of that list); then the rest of
+     35000.c and later game TUs in ROM-offset order (`ls src/main`, skip psxsdk/) with auto-named
+     bindings (a0..a3, arg<N>, var_<N>, v0, s<N>, sp<N>, temp_*) not on any NO_NAME / neutral list.
+- Left neutral on purpose, do not re-propose without new evidence: as var-locals-33's prompt.
+- Do not re-propose wave 8-33 NO_NAME / dropped / reverted bindings
+  (pending/var-locals-{8,...,33}/notes.txt) without new evidence, said in the row.
+- Prototype parameter edits (a prototype elsewhere naming the same parameter, e.g. include/game.h)
+  go in the comment list; they land in the comment commit.
+- Lessons (unchanged from var-locals-33's prompt), plus from wave 33: when a comment edit or
+  format.py reflow would change a header's line count, say so in the comment list (header
+  file:line cites are many; the comment pass keeps line counts where it can).
