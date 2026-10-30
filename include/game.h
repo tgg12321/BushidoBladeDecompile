@@ -1420,7 +1420,7 @@ typedef struct {
     Unk80107850Rec weapon_points[2][3];
     Unk80107850Rec second_weapon_points[2][2];
     Unk80107850Rec body_overlap_points[2][2];
-    Unk80107850Rec bone_hit_points[2][22];
+    Unk80107850Rec spadA8[2][22];
     Unk1F8002B8Union unk2B8;
 } ScrPad;
 
@@ -1738,12 +1738,12 @@ typedef struct Unk80101EC8Record {
      * weapon_points[fighter_index][0] */
     Unk80107850Rec opponent_elevation_origin;
     s32 elevation_origin_from_weapon;
-    s16 bone_group_6_9_intact;
-    s16 bone_group_14_21_hit_tally;
-    s16 bone_group_10_13_hit_tally;
+    s16 hit_record_group_6_9_intact;
+    s16 hit_record_group_14_21_hit_tally;
+    s16 hit_record_group_10_13_hit_tally;
     s16 unk_272;
-    s16 bone_group_6_9_lost_step_scale;
-    s16 bone_group_10_13_step_scales[4];
+    s16 hit_record_group_6_9_lost_step_scale;
+    s16 hit_record_group_10_13_step_scales[4];
     s16 unk_27E[4];
     s16 pending_move_event;
     /* per blade (weapon_hit_start_frames / weapon_hit_end_frames bounds),
@@ -2406,7 +2406,7 @@ typedef struct {
     } ends;
 
     s32 field_8;
-    s32 group_id;
+    s32 field_C;
 } Func80017848Edge;
 
 /* 6CF8's object record (sizeof = 0x34): g_softbody_slots holds eight,
@@ -2420,7 +2420,7 @@ typedef struct {
     SVECTOR *points;
     s16 count;
     s16 edge_count;
-    s32 flags;
+    s32 a44out_08;
     Func80017A44Record *nodes;
     Func80017848Edge *edges;
     MATRIX matrix;
@@ -2459,7 +2459,7 @@ typedef struct Unk8003F6D8Coll {
  * object's matrix and the buffer the node / edge tables go to. */
 typedef struct {
     s16 count;
-    s16 flags;
+    s16 field_2;
     SVECTOR *points;
     s16 *groups;
     MATRIX *matrix;

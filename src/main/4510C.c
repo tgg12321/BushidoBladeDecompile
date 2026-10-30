@@ -913,15 +913,15 @@ void fighter_BuildCpuPad(s32 fighter_index, PadState *pad_out) {
          (!(g_cpu_profiles[rec->cpu_profile].flags & 0x20) &&
           (((rec->cpu_state_flags & 0x80) && rec->incoming_attack_state == 3) ||
            (rec->other->move_kind == 0x2A &&
-            rec->other->bone_group_6_9_intact == 0) ||
+            rec->other->hit_record_group_6_9_intact == 0) ||
            (rec->other->move_kind == 0x12 &&
             (!((0x78 >> rec->other->collision_hit_tag) & 1) ||
-             rec->other->bone_group_6_9_intact == 0)) ||
+             rec->other->hit_record_group_6_9_intact == 0)) ||
            (rec->other->move_kind == 0xB &&
             ((rec->other->carried_object_count == 0 &&
               rec->incoming_projectile_state != 1 &&
               rec->incoming_projectile_state != 2) ||
-             rec->other->bone_group_6_9_intact == 0)))) ||
+             rec->other->hit_record_group_6_9_intact == 0)))) ||
          ((g_cpu_profiles[rec->cpu_profile].flags & 0x20) &&
           (rec->other->move_kind == 0x25 || rec->other->move_kind == 9 ||
            rec->other->move_kind == 0x16 || rec->other->move_kind == 0x17 ||
@@ -1960,13 +1960,14 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                    p->move_frame == p->cur_move->last_command_frame - 1) {
             {
                 s32 a, b, c;
-                a = p->bone_group_14_21_hit_tally;
-                b = p->bone_group_10_13_hit_tally;
+                a = p->hit_record_group_14_21_hit_tally;
+                b = p->hit_record_group_10_13_hit_tally;
                 c = p->unk_272;
                 work3 =
-                    0x1000 -
-                    (((p->bone_group_6_9_intact == 0 ? a + 4 + b : a + b) + c)
-                     << 8);
+                    0x1000 - (((p->hit_record_group_6_9_intact == 0 ? a + 4 + b
+                                                                    : a + b) +
+                               c)
+                              << 8);
                 work3 = (p->cpu_level * work3) >> 12;
                 if ((rand() & 0xFFF) < work3) {
                     p->cpu_decided_pad_held = 0x20;
@@ -2724,7 +2725,8 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                             }
                             var_32 += 5;
                         }
-                        if ((e[0] & 0x80) && p->bone_group_6_9_intact == 0) {
+                        if ((e[0] & 0x80) &&
+                            p->hit_record_group_6_9_intact == 0) {
                             goto next;
                         }
                         work1 = e[1] * 40;
@@ -2833,7 +2835,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
                     }
                 }
             } else if (
-                state == 0x15 && p->bone_group_6_9_intact != 0 &&
+                state == 0x15 && p->hit_record_group_6_9_intact != 0 &&
                 p->latched_motion_metadata_nibble != 4 &&
                 /* Q76: as above, 4.12 factor 0x100; target lh; sra 4 at
                    0x8005ACCC. */
@@ -2922,7 +2924,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
             }
         } else if (p->weapon_id >= 6) {
             if (p->weapon_ammo == 0 && p->weapon_refills_left != 0 &&
-                p->bone_group_6_9_intact != 0 &&
+                p->hit_record_group_6_9_intact != 0 &&
                 p->other->filtered_script_max_distances[p->other
                                                             ->variant_index] <
                     g_fighter_horizontal_separation) {

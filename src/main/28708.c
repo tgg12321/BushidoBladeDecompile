@@ -1445,7 +1445,7 @@ void replay_PlayFrame(void) {
                 i * 2 | 1, (p->b18 >> 5) & 1);
         }
         fighter_UpdateBoneWorldData(
-            var_11, SPAD->bone_hit_points[i], SPAD->weapon_points[i],
+            var_11, SPAD->spadA8[i], SPAD->weapon_points[i],
             SPAD->second_weapon_points[i]);
         fighter_ProbeVerticalCollisionAtPointPairMidpointForTagAndClass(
             var_11, &out_b1, &out_b2);

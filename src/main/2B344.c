@@ -2715,7 +2715,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     softbody_SetAnchorWeights(init.in.points, init.in.count, cmds);
 
     init.in.matrix = &obj->node.xf.mat;
-    init.in.flags = 0xE00;
+    init.in.field_2 = 0xE00;
     rec->slot_index = softbody_Create(&init.in);
     obj->softbody_nodes = init.in.buf;
     rec->inner.count = 0;

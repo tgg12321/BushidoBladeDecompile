@@ -666,7 +666,7 @@ s32 softbody_AddSpring(Func80017A44Output *softbody, s32 arg1, s32 a, s32 b) {
     edge = &softbody->edges[softbody->edge_count];
     edge->dist = dist;
     edge->field_8 = dist * 3;
-    edge->group_id = arg1;
+    edge->field_C = arg1;
     edge->ends.pair = (a << 16) | b;
     softbody->nodes[a].a_edges[softbody->nodes[a].a_edge_count++] =
         softbody->edge_count;
@@ -768,7 +768,7 @@ s32 softbody_Create(Func80017A44Input *input) {
     softbody->count = input->count;
     softbody->points = input->points;
     softbody->matrix = *input->matrix;
-    softbody->flags = input->flags;
+    softbody->a44out_08 = input->field_2;
     c = (Func80017A44Record *)input->buf;
     softbody->edge_count = 0;
     softbody->nodes = c;

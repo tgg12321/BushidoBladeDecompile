@@ -2356,7 +2356,7 @@ void func_8001EEB4(void) {
             entry->move_is_common = 1;
             fighter_StartMoveScript(idx2, common_script, 1);
         }
-        entry->bone_group_6_9_intact = 1;
+        entry->hit_record_group_6_9_intact = 1;
     }
 
     eff_StopCommands();
@@ -2481,7 +2481,7 @@ void motion_AdjustFighterPose(
     s32 temp;
     s16 t;
 
-    if (obj->bone_group_6_9_intact == 0) {
+    if (obj->hit_record_group_6_9_intact == 0) {
         motion_SetFixedChannelBlock(a);
         motion_SetFixedChannelBlock(b);
     }
@@ -2621,7 +2621,7 @@ void motion_AdjustFighterPose(
         b->node_channels[0x33] += obj->opponent_elevation_offset;
     }
 
-    if (obj->bone_group_14_21_hit_tally != 0 && obj->is_defeated == 0) {
+    if (obj->hit_record_group_14_21_hit_tally != 0 && obj->is_defeated == 0) {
         temp = (rng_Next() & 0x3F) - 0x20;
         a->node_channels[0] += temp;
         b->node_channels[0] += temp;
@@ -2725,21 +2725,21 @@ clamp:
     fighter_record->move_frame_step = 0x1000;
     return;
 multpath_start:
-    if (fighter_record->bone_group_6_9_intact == 0) {
-        s32 f = fighter_record->bone_group_6_9_lost_step_scale;
+    if (fighter_record->hit_record_group_6_9_intact == 0) {
+        s32 f = fighter_record->hit_record_group_6_9_lost_step_scale;
         frame_step = (frame_step * f) >> 12;
     }
     {
-        s16 var_7 = fighter_record->bone_group_10_13_hit_tally;
+        s16 var_7 = fighter_record->hit_record_group_10_13_hit_tally;
         if (var_7 >= 4) {
             var_7 = 3;
         }
         idx = var_7;
     }
-    factor = fighter_record->bone_group_10_13_step_scales[idx];
+    factor = fighter_record->hit_record_group_10_13_step_scales[idx];
     frame_step = (frame_step * factor) >> 12;
 defaultpath: {
-    s32 var_8 = fighter_record->bone_group_14_21_hit_tally;
+    s32 var_8 = fighter_record->hit_record_group_14_21_hit_tally;
     s32 var_9 = fighter_record->unk_272;
     s32 sum = var_8 + var_9;
     s32 sum_or_3 = (sum < 4) ? sum : 3;
@@ -2795,7 +2795,7 @@ s32 fighter_PassesPairedMoveEntryGates(
         return 0;
     }
     if (arg1 != 0) {
-        return fighter_record->bone_group_6_9_intact != 0;
+        return fighter_record->hit_record_group_6_9_intact != 0;
     }
     return 1;
 }
@@ -3054,9 +3054,7 @@ void fighter_DispatchArmedBoneVectorEventAndDisarm(Unk80101EC8Record *rec) {
             }
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 fighter_index, 4,
-                &SPAD->bone_hit_points[fighter_index]
-                                      [rec->bone_event_bone_index]
-                                          .x,
+                &SPAD->spadA8[fighter_index][rec->bone_event_bone_index].x,
                 out);
         }
         if (rec->bone_event_counter >= 0x96) {
@@ -3393,13 +3391,14 @@ void fighter_AssignMotionSlotAndScanDataIdNibbles(s32 fighter_index) {
                 rec->object_variant_index = i;
                 if (g_fight_mode_selector != 3 || fighter_index != 1 ||
                     g_fight_step_row_column == nibble) {
-                    rec->object_variant_enabled = rec->bone_group_6_9_intact;
+                    rec->object_variant_enabled =
+                        rec->hit_record_group_6_9_intact;
                 }
             } else if (nibble == 5) {
                 rec->unk_8E = i;
                 if (g_fight_mode_selector != 0 || D_800A385C == 0 ||
                     fighter_index != 0) {
-                    rec->unk_90 = rec->bone_group_6_9_intact;
+                    rec->unk_90 = rec->hit_record_group_6_9_intact;
                 }
             }
         }
@@ -3857,9 +3856,9 @@ s32 motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
 }
 
 void fighter_ResetBoneGroupHitState(Unk80101EC8Record *fighter_record) {
-    fighter_record->bone_group_6_9_intact = 1;
-    fighter_record->bone_group_14_21_hit_tally = 0;
-    fighter_record->bone_group_10_13_hit_tally = 0;
+    fighter_record->hit_record_group_6_9_intact = 1;
+    fighter_record->hit_record_group_14_21_hit_tally = 0;
+    fighter_record->hit_record_group_10_13_hit_tally = 0;
     fighter_record->unk_272 = 0;
 }
 
@@ -4037,10 +4036,10 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
         g_fight_stage_start_count < 2 || g_fight_reinit_reuses_assets != 0) {
         fighter_ResetBoneGroupHitState(p);
     }
-    p->bone_group_6_9_lost_step_scale =
+    p->hit_record_group_6_9_lost_step_scale =
         g_fighter_lost_bone_group_step_scales[p->character_data_index];
     for (i = 0; i < 4; i++) {
-        p->bone_group_10_13_step_scales[i] =
+        p->hit_record_group_10_13_step_scales[i] =
             D_8008E3F8[p->character_data_index][i];
         p->unk_27E[i] = D_8008E4D0[p->character_data_index][i];
     }
@@ -4860,7 +4859,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                     }
                 } else if ((transition_command & 0xF) == 0xA) {
                     transition_command = (transition_command & 0xFFF0) | 5;
-                    if (fighter_record->bone_group_6_9_intact == 0) {
+                    if (fighter_record->hit_record_group_6_9_intact == 0) {
                         transition_pad_buttons = 0;
                     }
                 }
@@ -5467,7 +5466,7 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
           fighter_record->move_kind == 0x28 ||
           fighter_record->move_kind == 0x26) &&
          fighter_record->weapon_hit_start_frames[1] < 0xFF &&
-         fighter_record->bone_group_6_9_intact != 0 &&
+         fighter_record->hit_record_group_6_9_intact != 0 &&
          fighter_record->move_frame >= fighter_record->frame_window_start &&
          fighter_record->move_frame <= fighter_record->frame_window_end) ||
         (fighter_record->character_data_index == 0xE &&
@@ -5580,10 +5579,9 @@ skip_62:
         fighter_record->other->world_pos.z - fighter_record->world_pos.z);
     fighter_record->unk_24C = fighter_record->base_velocity;
     fighter_CacheDownwardProbeHit(fighter_record);
-    fighter_UpdateBoneWorldData(
-        fighter_record, SPAD->bone_hit_points[fighter_index],
-        SPAD->weapon_points[fighter_index],
-        SPAD->second_weapon_points[fighter_index]);
+    fighter_UpdateBoneWorldData(fighter_record, SPAD->spadA8[fighter_index],
+                                SPAD->weapon_points[fighter_index],
+                                SPAD->second_weapon_points[fighter_index]);
     if (fighter_record->update_count == 1) {
         fighter_record->prev_weapon_points[0] =
             SPAD->weapon_points[fighter_index][0];
@@ -5741,7 +5739,7 @@ skip_62:
                     if (fighter_record->throw_charges_left != 0) {
                         fighter_record->throw_charges_left--;
                     }
-                } else if (fighter_record->bone_group_6_9_intact != 0 &&
+                } else if (fighter_record->hit_record_group_6_9_intact != 0 &&
                            object_ThrowQueuedKind(fighter_record) ==
                                fighter_record->wielded_object_kind) {
                     fighter_record->object_variant_enabled = 0;
@@ -5752,10 +5750,10 @@ skip_62:
             if (object_PickUpNearby(fighter_record) ==
                 fighter_record->wielded_object_kind) {
                 fighter_record->object_variant_enabled =
-                    fighter_record->bone_group_6_9_intact;
+                    fighter_record->hit_record_group_6_9_intact;
             }
         } else if (
-            fighter_record->bone_group_6_9_intact != 0 &&
+            fighter_record->hit_record_group_6_9_intact != 0 &&
             (fighter_record->move_kind == 0xC ||
              fighter_record->move_kind == 0x2A) &&
             fighter_record->move_frame == fighter_record->object_pickup_frame &&
@@ -5766,14 +5764,14 @@ skip_62:
         if (fighter_record->move_kind == 0x12 &&
             fighter_record->move_frame == fighter_record->release_frame &&
             ((0x78 >> fighter_record->collision_hit_tag) & 1) &&
-            fighter_record->bone_group_6_9_intact != 0) {
+            fighter_record->hit_record_group_6_9_intact != 0) {
             fight_CreateBallisticRecordAndDispatchEvent(
                 fighter_record,
                 ((0x18 >> fighter_record->collision_hit_tag) & 1) ? 1 : 2);
         }
         if (fighter_record->move_kind == 0x10 &&
             fighter_record->move_frame == fighter_record->weapon_reload_frame &&
-            fighter_record->bone_group_6_9_intact != 0 &&
+            fighter_record->hit_record_group_6_9_intact != 0 &&
             fighter_record->weapon_refills_left != 0) {
             fighter_record->weapon_ammo = 0xA;
             fighter_record->weapon_refills_left--;
@@ -5787,7 +5785,7 @@ skip_62:
             fighter_ProcessFrameEvents(fighter_record);
         }
     }
-    if (fighter_record->bone_group_6_9_intact != 0) {
+    if (fighter_record->hit_record_group_6_9_intact != 0) {
         fighter_record->frame_flags |= 0x80;
     }
     if (fighter_record->is_defeated != 0) {

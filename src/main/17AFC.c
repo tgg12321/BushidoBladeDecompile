@@ -139,7 +139,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 7:
     case 8:
     case 9:
-        fighter_record->bone_group_6_9_intact = 0;
+        fighter_record->hit_record_group_6_9_intact = 0;
         fighter_record->unk_90 = 0;
         fighter_record->object_variant_enabled = 0;
         break;
@@ -147,7 +147,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 11:
     case 12:
     case 13:
-        fighter_record->bone_group_10_13_hit_tally += increment;
+        fighter_record->hit_record_group_10_13_hit_tally += increment;
         break;
     case 14:
     case 15:
@@ -157,7 +157,7 @@ void fighter_AccumulateOrClearByBoneGroup(
     case 19:
     case 20:
     case 21:
-        fighter_record->bone_group_14_21_hit_tally += increment;
+        fighter_record->hit_record_group_14_21_hit_tally += increment;
         break;
     }
 }
@@ -402,7 +402,7 @@ s32 fighter_ResolveBoneHit(
     other_record = fighter_record->other;
     var_0 = rec;
     var_1 = rec;
-    hit_point = &SPAD->bone_hit_points[fighter_index][hit_record_index].x;
+    hit_point = &SPAD->spadA8[fighter_index][hit_record_index].x;
     *out = 0;
     if (fighter_record->character_roster_index == 0x1C) {
         bone_axis_dot = (fighter_record->bone_y_axis.x * D_800A37E8 +
@@ -591,7 +591,7 @@ s32 fighter_ResolveBoneHit(
     case 8:
     case 9:
         if (g_fight_mode_selector != 5) {
-            fighter_record->bone_group_6_9_intact = 0;
+            fighter_record->hit_record_group_6_9_intact = 0;
         }
         fighter_record->pending_move_event = 4;
         fighter_record->unk_90 = 0;
@@ -605,7 +605,7 @@ s32 fighter_ResolveBoneHit(
     case 12:
     case 13:
         if (g_fight_mode_selector != 5) {
-            fighter_record->bone_group_10_13_hit_tally++;
+            fighter_record->hit_record_group_10_13_hit_tally++;
         }
         fighter_record->pending_move_event = 5;
         fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -621,7 +621,7 @@ s32 fighter_ResolveBoneHit(
     case 20:
     case 21:
         if (g_fight_mode_selector != 5) {
-            fighter_record->bone_group_14_21_hit_tally++;
+            fighter_record->hit_record_group_14_21_hit_tally++;
         }
         fighter_record->pending_move_event = 3;
         fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -914,18 +914,15 @@ void fighter_ResolveBodyOverlap(void) {
         return;
     }
     for (c = 0; c < 2; c++) {
-        SPAD->body_overlap_points[c][0].x = SPAD->bone_hit_points[c][1].x;
-        SPAD->body_overlap_points[c][0].y = SPAD->bone_hit_points[c][1].y;
-        SPAD->body_overlap_points[c][0].z = SPAD->bone_hit_points[c][1].z;
+        SPAD->body_overlap_points[c][0].x = SPAD->spadA8[c][1].x;
+        SPAD->body_overlap_points[c][0].y = SPAD->spadA8[c][1].y;
+        SPAD->body_overlap_points[c][0].z = SPAD->spadA8[c][1].z;
         SPAD->body_overlap_points[c][1].x =
-            (SPAD->bone_hit_points[c][15].x + SPAD->bone_hit_points[c][19].x) /
-            2;
+            (SPAD->spadA8[c][15].x + SPAD->spadA8[c][19].x) / 2;
         SPAD->body_overlap_points[c][1].y =
-            (SPAD->bone_hit_points[c][15].y + SPAD->bone_hit_points[c][19].y) /
-            2;
+            (SPAD->spadA8[c][15].y + SPAD->spadA8[c][19].y) / 2;
         SPAD->body_overlap_points[c][1].z =
-            (SPAD->bone_hit_points[c][15].z + SPAD->bone_hit_points[c][19].z) /
-            2;
+            (SPAD->spadA8[c][15].z + SPAD->spadA8[c][19].z) / 2;
     }
     var_1 = 0;
     first_push_x = first_push_z = second_push_x = second_push_z = 0;
@@ -1213,7 +1210,7 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
  * << 1) | record-0 grid, else -1; the points are restored. */
 s32 fighter_ProcessWeaponContacts(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    Unk80107850Rec *blade_sweep_points = SPAD->bone_hit_points[0];
+    Unk80107850Rec *blade_sweep_points = SPAD->spadA8[0];
     Unk80107850Rec saved[16];
     s32 count[2];
     /* i, j, n, k: loop counters, each shared by several loops */
@@ -1234,7 +1231,7 @@ s32 fighter_ProcessWeaponContacts(void) {
         return -1;
     }
     for (k = 0; k < 16; k++) {
-        saved[k] = SPAD->bone_hit_points[0][k];
+        saved[k] = SPAD->spadA8[0][k];
     }
 
     for (i = 0; i < 2; i++) {
@@ -1430,7 +1427,7 @@ s32 fighter_ProcessWeaponContacts(void) {
                     scr, scr->other_shape_points[0], scr->other_shape_points[1],
                     scr->other_shape_points[2]) != 0) {
                 for (k = 0; k < 16; k++) {
-                    SPAD->bone_hit_points[0][k] = saved[k];
+                    SPAD->spadA8[0][k] = saved[k];
                 }
                 return ((n >> 1) * 2) | (j >> 1);
             }
@@ -1438,7 +1435,7 @@ s32 fighter_ProcessWeaponContacts(void) {
     }
     if (mask == 0) {
         for (k = 0; k < 16; k++) {
-            SPAD->bone_hit_points[0][k] = saved[k];
+            SPAD->spadA8[0][k] = saved[k];
         }
         return -1;
     }
@@ -1541,14 +1538,14 @@ s32 fighter_ProcessWeaponContacts(void) {
                     scr, scr->other_shape_points[0], scr->other_shape_points[1],
                     scr->other_shape_points[2]) != 0) {
                 for (k = 0; k < 16; k++) {
-                    SPAD->bone_hit_points[0][k] = saved[k];
+                    SPAD->spadA8[0][k] = saved[k];
                 }
                 return ((j >> 1) * 2) | (n >> 1);
             }
         }
     }
     for (k = 0; k < 16; k++) {
-        SPAD->bone_hit_points[0][k] = saved[k];
+        SPAD->spadA8[0][k] = saved[k];
     }
     return -1;
 }
@@ -1676,10 +1673,10 @@ void fighter_CastWeaponSegment(Unk80101EC8Record *obj, u32 *outer_hit_mask,
         } while (0);
         for (i = 0; i < 22; i++, rec++) {
             Unk80107850Rec *pos;
-            if (obj->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
+            if (obj->hit_record_group_6_9_intact == 0 && i >= 6 && i <= 9) {
                 continue;
             }
-            pos = &SPAD->bone_hit_points[id][i];
+            pos = &SPAD->spadA8[id][i];
             if (math_TestPreparedSegmentSphere(
                     scr, pos, rec->outer_radius, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
@@ -1843,7 +1840,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         }
         if ((other_record->character_roster_index == 0x1D ||
              other_record->character_roster_index == 0xE) &&
-            other_record->bone_group_6_9_intact != 0 &&
+            other_record->hit_record_group_6_9_intact != 0 &&
             (other_record->move_kind == 2 || other_record->move_kind == 0x1B ||
              other_record->move_kind == 0x28 ||
              other_record->move_kind == 0x26) &&
@@ -2022,9 +2019,9 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         scr->unkC8.z = other_record->prev_weapon_points[1].z;
         for (temp3 = 0; temp3 < 22; temp3++, rec++) {
             if (outer_hit_mask & (1 << temp3)) {
-                dx = SPAD->bone_hit_points[i][temp3].x - scr->unkC8.x;
-                dy = SPAD->bone_hit_points[i][temp3].y - scr->unkC8.y;
-                dz = SPAD->bone_hit_points[i][temp3].z - scr->unkC8.z;
+                dx = SPAD->spadA8[i][temp3].x - scr->unkC8.x;
+                dy = SPAD->spadA8[i][temp3].y - scr->unkC8.y;
+                dz = SPAD->spadA8[i][temp3].z - scr->unkC8.z;
                 work = dx * dx + dy * dy + dz * dz - rec->unk_0E;
                 if (work < best) {
                     best = work;
@@ -2035,7 +2032,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         if (mode == 1) {
             math_NegNormalize3D(&other_record->weapon_point_delta[0].vx, var_1);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
-                i, 4, &SPAD->bone_hit_points[i][idx].x, var_1);
+                i, 4, &SPAD->spadA8[i][idx].x, var_1);
             return;
         }
         just_before_hit_start = 0;
@@ -2536,23 +2533,23 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
 
     for (i = 0; i < 2; i++) {
         D_80101EC8[i].bone_hit_points_1_3_centroid.x =
-            (SPAD->bone_hit_points[i][1].x + SPAD->bone_hit_points[i][2].x +
-             SPAD->bone_hit_points[i][3].x) /
+            (SPAD->spadA8[i][1].x + SPAD->spadA8[i][2].x +
+             SPAD->spadA8[i][3].x) /
             3;
         D_80101EC8[i].bone_hit_points_1_3_centroid.y =
-            (SPAD->bone_hit_points[i][1].y + SPAD->bone_hit_points[i][2].y +
-             SPAD->bone_hit_points[i][3].y) /
+            (SPAD->spadA8[i][1].y + SPAD->spadA8[i][2].y +
+             SPAD->spadA8[i][3].y) /
             3;
         D_80101EC8[i].bone_hit_points_1_3_centroid.z =
-            (SPAD->bone_hit_points[i][1].z + SPAD->bone_hit_points[i][2].z +
-             SPAD->bone_hit_points[i][3].z) /
+            (SPAD->spadA8[i][1].z + SPAD->spadA8[i][2].z +
+             SPAD->spadA8[i][3].z) /
             3;
         D_80101EC8[i].bone_hit_points_4_5_midpoint.x =
-            (SPAD->bone_hit_points[i][4].x + SPAD->bone_hit_points[i][5].x) / 2;
+            (SPAD->spadA8[i][4].x + SPAD->spadA8[i][5].x) / 2;
         D_80101EC8[i].bone_hit_points_4_5_midpoint.y =
-            (SPAD->bone_hit_points[i][4].y + SPAD->bone_hit_points[i][5].y) / 2;
+            (SPAD->spadA8[i][4].y + SPAD->spadA8[i][5].y) / 2;
         D_80101EC8[i].bone_hit_points_4_5_midpoint.z =
-            (SPAD->bone_hit_points[i][4].z + SPAD->bone_hit_points[i][5].z) / 2;
+            (SPAD->spadA8[i][4].z + SPAD->spadA8[i][5].z) / 2;
     }
 
     {
@@ -2589,7 +2586,8 @@ void fighter_TestTriangleBoneHits(
         s32 r;
         s32 var_11;
 
-        if (fighter_record->bone_group_6_9_intact == 0 && i >= 6 && i <= 9) {
+        if (fighter_record->hit_record_group_6_9_intact == 0 && i >= 6 &&
+            i <= 9) {
             continue;
         }
 
@@ -2598,15 +2596,15 @@ void fighter_TestTriangleBoneHits(
          * reject, read by the `continue` test, then overwritten by the call); a
          * separate flag takes $a1 instead of the target's $s0 (score 3) */
         var_11 = 0;
-        x = SPAD->bone_hit_points[id][i].x;
+        x = SPAD->spadA8[id][i].x;
         if (scr->bbox_max.x < x - r || x + r < scr->unk78.x) {
             var_11 = 1;
         } else {
-            y = SPAD->bone_hit_points[id][i].y;
+            y = SPAD->spadA8[id][i].y;
             if (scr->bbox_max.y < y - r || y + r < scr->unk78.y) {
                 var_11 = 1;
             } else {
-                z = SPAD->bone_hit_points[id][i].z;
+                z = SPAD->spadA8[id][i].z;
                 if (scr->bbox_max.z < z - r || z + r < scr->unk78.z) {
                     var_11 = 1;
                 }
@@ -2618,7 +2616,7 @@ void fighter_TestTriangleBoneHits(
 
         if (a1 != 0) {
             var_11 = math_TestPreparedTriangleSphere(
-                0, scr, (s32 *)&SPAD->bone_hit_points[id][i], r, rec->unk_0E);
+                0, scr, (s32 *)&SPAD->spadA8[id][i], r, rec->unk_0E);
             if (var_11 != 0) {
                 if (rec->has_inner_sphere != 0 && test_inner_spheres != 0) {
                     if (math_TestPreparedTriangleSphere(
@@ -2630,7 +2628,7 @@ void fighter_TestTriangleBoneHits(
             }
         } else {
             var_11 = math_TestSphereAgainstPreparedAxialVertexSpan(
-                0, scr, &SPAD->bone_hit_points[id][i], r, rec->unk_0E);
+                0, scr, &SPAD->spadA8[id][i], r, rec->unk_0E);
             if (var_11 != 0) {
                 if (rec->has_inner_sphere != 0 && test_inner_spheres != 0) {
                     if (math_TestSphereAgainstPreparedAxialVertexSpan(
@@ -3864,7 +3862,7 @@ s32 fighter_IsBoneTriangleCrossYPositive(Unk80101EC8Record *fighter_record) {
     /* The character's points 2 and 3 relative to its point 1, into the
      * collision record's unkA8 and unkB8, the GTE operands below; their
      * cross product lands in unkC8. */
-    bone_points = SPAD->bone_hit_points[fighter_record->index];
+    bone_points = SPAD->spadA8[fighter_record->index];
     SPAD->unk2B8.rec.unkA8.x = bone_points[2].x - bone_points[1].x;
     SPAD->unk2B8.rec.unkA8.y = bone_points[2].y - bone_points[1].y;
     SPAD->unk2B8.rec.unkA8.z = bone_points[2].z - bone_points[1].z;
@@ -4627,9 +4625,10 @@ void object_ResolveFighterHits(void) {
         rec = g_fighter_bone_hit_records[target_fighter_index];
         for (j = 0; j < 22; j++, rec++) {
             Unk80107850Rec *pos;
-            if (target_fighter->bone_group_6_9_intact == 0 && j >= 6 && j <= 9)
+            if (target_fighter->hit_record_group_6_9_intact == 0 && j >= 6 &&
+                j <= 9)
                 continue;
-            pos = &SPAD->bone_hit_points[target_fighter_index][j];
+            pos = &SPAD->spadA8[target_fighter_index][j];
             outer_sphere_hit = math_TestPreparedSegmentSphere(
                 scr, pos, rec->outer_radius, rec->unk_0E);
             if (outer_sphere_hit != 0) {
@@ -4667,7 +4666,7 @@ void object_ResolveFighterHits(void) {
         if (r != 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 (obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
-                &SPAD->bone_hit_points[target_fighter_index][j].x, 0);
+                &SPAD->spadA8[target_fighter_index][j].x, 0);
             object_AttachToOpponentBone(obj, rec->bone);
             obj->can_hit_fighter = 0;
             target_move_kind = target_fighter->move_kind;
@@ -4680,7 +4679,7 @@ void object_ResolveFighterHits(void) {
         if (kind == 0xF) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 target_fighter_index ^ 1, 0xE,
-                &SPAD->bone_hit_points[target_fighter_index][j].x,
+                &SPAD->spadA8[target_fighter_index][j].x,
                 /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
                  * by the first's address, passed to
                  * fight_RecordReplayEventAndDispatchSoundOrEffect (Q96 / Q117;
@@ -4695,7 +4694,7 @@ void object_ResolveFighterHits(void) {
         } else if (flag == 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 (kind ^ D_800A36F2[0]) != 0, 0x2B,
-                &SPAD->bone_hit_points[target_fighter_index][j].x, 0);
+                &SPAD->spadA8[target_fighter_index][j].x, 0);
         }
         object_DeflectFromFighterHit(scr, obj, j);
         obj->can_hit_fighter = 0;
