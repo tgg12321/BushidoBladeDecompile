@@ -1,0 +1,36 @@
+rc=0
+==============================================================================
+NAMING WAVE — 4 operations (0 RESET, 4 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (6) --
+  asm: 4 files, 8 substitutions
+      asm/funcs/func_80067130.s  (2)
+      asm/funcs/func_80067164.s  (2)
+      asm/funcs/func_80067830.s  (2)
+      asm/funcs/func_8006786C.s  (2)
+  src: 2 files, 12 substitutions
+      src/main/51268.c  (4)
+      src/main/d_8BC50.c  (8)
+
+-- .s file renames (4) --
+  asm/funcs/func_80067130.s -> asm/funcs/eff_SpawnRecycledYawedParticlesFirstSlotFirstHalf.s
+  asm/funcs/func_80067164.s -> asm/funcs/eff_SpawnRecycledYawedParticlesFirstSlotSecondHalf.s
+  asm/funcs/func_80067830.s -> asm/funcs/eff_DrawAndAdvanceRecycledYawedParticlesFirstSlot.s
+  asm/funcs/func_8006786C.s -> asm/funcs/eff_DrawAndAdvanceRecycledYawedParticlesSecondSlot.s
+
+-- ledger directory renames (2) --
+  memory/grind/func_80067130 -> memory/grind/eff_SpawnRecycledYawedParticlesFirstSlotFirstHalf
+  memory/grind/func_80067164 -> memory/grind/eff_SpawnRecycledYawedParticlesFirstSlotSecondHalf
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (2) --
+  memory/grind/func_80067130/layer2.jsonl: 1 changes
+      line 1: func func_80067130 -> eff_SpawnRecycledYawedParticlesFirstSlotFirstHalf
+  memory/grind/func_80067164/layer2.jsonl: 1 changes
+      line 1: func func_80067164 -> eff_SpawnRecycledYawedParticlesFirstSlotSecondHalf
+
+DRY RUN — nothing written. Re-run with --apply.

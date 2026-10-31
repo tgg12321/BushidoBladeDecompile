@@ -1,0 +1,33 @@
+wave103 (func-second-pass-13): 4 RENAME (0 CHANGED FROM RESEARCH); 0 KEEP; 0 dropped. Verdicts are PENDING with an empty verifier_note: the naming-reviewer sets them.
+Wave id: wave103 (wave102 = func-second-pass-12 is the highest docs/naming/phase3/ dir).
+Drafted 2026-10-31 (naming-b) at HEAD b823eb6a9. Research input tmp/fsp13-research.md (untrusted); every use, table index, issuer line and pixel number re-derived below.
+Run: python docs/naming/phase3/pending/func-second-pass-13/build.py (writes docs/naming/phase3/wave103/); dry run: wsl bash .../func-second-pass-13/dry.sh (output in dry.txt). Scratch tmp/p3w103.
+Rows (the command-slot route; the 5 NO_NAME rounds w58,w72,w77,w83,w94 only tried the particle_mode route):
+ 0x80067130 func_80067130 -> eff_SpawnRecycledYawedParticlesFirstSlotFirstHalf   (command 0x18 phase 0; table [54])
+ 0x80067164 func_80067164 -> eff_SpawnRecycledYawedParticlesFirstSlotSecondHalf  (command 0x18 phase 1; table [55])
+ 0x80067830 func_80067830 -> eff_DrawAndAdvanceRecycledYawedParticlesFirstSlot   (command 0x18 phase 2; table [56])
+ 0x8006786C func_8006786C -> eff_DrawAndAdvanceRecycledYawedParticlesSecondSlot  (command 0x19 phase 2; table [59])
+CODE-ONLY ROW: 0x8006786C. Its Q124 stub showed no difference (0 px at 9150-9160), so the runtime corroborates nothing for it. It is kept because the code argument stands on its own
+ (same body shape as 0x80067830 with mode 7 / row 2, and the handler table ties it to the second slot of the only issuer); per naming-runtime-evidence the code establishes, the runtime only corroborates.
+ If the reviewer holds the "no visible difference" bar, drop it to NO_NAME (no_name.tsv:92 stays).
+CONTRADICTION CHECK against the research: no claim contradicted; corrections only.
+ - The research cited the 0x17 trio at 51268.c:2586-2590 (spawn) and :2753-2757 (draw). At HEAD the 0x17 spawns are func_800670C8 / func_800670FC at :2583-2594 and the draw func_800677F4 at :2756-2760;
+   the 0x16 spawns func_80067060 / func_80067094 are :2571-2581 and the draw func_800677B8 :2750-2754. The rows use the corrected cites. The "mode 6/7 `< 8` branch" is :2829-2837 (research said 2830-2837).
+ - The research said each func_ name has only the table use plus the definition. At HEAD func_8006786C also occurs in two comments in include/game.h (:782 and :1118, range ends "func_800676C8..func_8006786C").
+   The dry run does NOT list include/game.h among its edits, so apply must hand-edit these two comments in the wave (naming-bar: no old name survives in a build file, comments included); recorded in the row.
+Uses re-derived at HEAD (git grep over src include asm symbol_addrs.txt named_syms.txt docs/naming/function-names.csv):
+ - func_80067130: src/main/51268.c:2595 def; src/main/d_8BC50.c:259 prototype, :323 table [54]; asm/funcs/func_80067130.s:1,15; function-names.csv:883; named_syms.txt:1692 (RESET note, retired efc_spawn_80067130).
+ - func_80067164: 51268.c:2601; d_8BC50.c:260, :324 [55]; asm .s:1,15; csv:884; named_syms.txt:1693 (RESET note).
+ - func_80067830: 51268.c:2762; d_8BC50.c:261, :325 [56]; asm .s:1,17; csv:894; named_syms.txt:1438 (RESET note).
+ - func_8006786C: 51268.c:2768; d_8BC50.c:264, :328 [59]; asm .s:1,17; csv:895; named_syms.txt:1439 (RESET note); include/game.h:782, :1118 (comments).
+ - No symbol_addrs.txt line for any. Each function has exactly one table use.
+Table indices re-derived: g_eff_command_handler_bases (d_8BC50.c:200-203) [24] = 0x36 = 54, [25] = 0x39 = 57; g_eff_command_handlers (d_8BC50.c:268, index 0 at :269): :323 = [54], :324 [55], :325 [56], :326 [57] func_80067198, :327 [58] func_800671CC, :328 [59].
+Issuer lines re-derived: 0x10018 at 51268.c:678 (asm eff_StartRecycledYawedParticles.s:64-65), 0x10019 at :681 (asm :76-77); git grep 0x1001[89] over src/asm/include hits nothing else. Only caller 17AFC.c:5089 (case 13, :5087-5090).
+Runtime re-read: knockout.tsv (docs/naming/runtime/versus-2p-kimigaura-kick-particle-stub-2/): func_80067830 changed px 9150-9156 = 0, 9157 = 3, 9158 = 3 (bbox 469,149-470,150), 9160 = 87 (bbox 449,138-471,151), 9162 = 50025, 9165 = 43298;
+ func_8006786C 0 at 9150-9160, 9162 = 50113, 9165 = 43347. knockout.manifest.json SHAs: baseline 924cc770..., func_80067830 eaa48d39..., func_8006786C 3b0ef2fc.... coverage.tsv lines 832, 891, 892, 902, 903 as cited (header at line 1).
+ The "white puff at P2's front foot" is the commit body's viewed-zoomed reading; I did not open the PNGs and no name claims a visual.
+Names taken? None: eff_(DrawAndAdvance|Spawn)RecycledYawedParticles* occur nowhere in the tree (git grep); build.py fresh() enforces src/include.
+Weak spots for the reviewer: (1) "Recycled" is the issuer's word and names the command pair, not an action of the handler. (2) Particle rows 2 and 3 are shared with the 0x16/0x17 trio, so "Slot" is the command slot. (3) 0x8006786C is code-only.
+ (4) Follow-up, out of scope: func_80067198 / func_800671CC (0x19 spawns, 51268.c:2607-2617) and the 0x16/0x17 trios would follow the same argument. (5) The dry run lists memory/grind ledger renames for the two spawn handlers (layer2.jsonl retarget).
+Comment pass after apply: hand-edit include/game.h:782 and :1118 (see above); nothing else expected.
+gates: tmp/p3w103/gates.sh is not created by this draft (tmp/p3w102/gates.sh did not exist in this worktree); gates.ps1 expects it from the lane.
