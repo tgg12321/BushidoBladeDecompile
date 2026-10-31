@@ -1,0 +1,34 @@
+wave100 (func-second-pass-9): 3 RENAME kept (0 CHANGED FROM RESEARCH); 2 NO_NAME stay (func_80046B44, func_8004A940); 0 dropped.
+DEPENDENCY: func_8003F1E4's name uses "CoordinateShift", the noun of data row var-globals-o (D_800F6658 -> g_gpu_view_coordinate_shift).
+Land it in the same wave as that row or after it; if var-globals-o FAILs, drop func_8003F1E4 back to NO_NAME (no_name.tsv w50/w50b/w82/w92/w97
+objection stands; "SetFarViewGridFogControl" alone omits a write and fails N1). func_8001B6F4 and func_8004C404 do not depend on it.
+Verdicts are empty: the naming-reviewer sets them (rows.py VERDICT = "").
+Kept rows:
+ 0x8003F1E4 func_8003F1E4 -> gpu_SetFarViewGridFogControlAndCoordinateShift (research name kept)
+ 0x8001B6F4 func_8001B6F4 -> camera_ResetViewsForReplay (research name kept)
+ 0x8004C404 func_8004C404 -> gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets (research name kept)
+Re-derived from the worktree (02a603673), all facts held except one count:
+ - func_8003F1E4 (2B344.c:2302-2310): if (a0) { g_gpu_grid_and_fog_control = 3; D_800F6658 = 2; } else { ... = 0; ... = 1; }. Uses: 10 C calls, NOT 11 as the
+   research said (9F9C.c:574 [only non-constant arg, view_record->is_far_view, hysteresis 9F9C.c:569-573] /740/766/790/908/1046/1058; 2B344.c:947/1037/2321),
+   10 asm jal (camera_UpdateTwoFighterView.s:312, camera_InitTwoFighterView.s:23, camera_InitTrackedFighterFocus.s:23, camera_UpdateTrackedFighterView.s:8,
+   camera_SetFighterFocusView.s:8, camera_SetInterpolatedFighterView.s:11, func_8001B6F4.s:17, fight_UpdateRotatingViewThreeOptionChoice.s:4,
+   fight_UpdateRotatingViewDecimalPresentation.s:4, func_8003F218.s:13), decl include/bb2.h:574. No table or address-taken use.
+ - func_8001B6F4 (9F9C.c:902-909): two node_SetPrimitiveTableSelect...(slot, 0) calls, g_camera_fight_view_mode = 1, both view records' replay_view_started = 0,
+   func_8003F1E4(0). One caller: 28708.c:1318 (replay_Start), asm replay_Start.s:20; decl bb2.h:698.
+ - func_8004C404 (INCLUDE_ASM, 3AB48.c:25): one caller, func_8004A940.s:493 (node-kind 12 case .L8004B0C8), return replaces $s7; setup reads D_800F6658 (.s:15-19,
+   shift at .s:27+), loop re-enters .L8004C5BC while the next draw-queue entry is kind 0xC (.s:340-354), packet dispatch through D_80015470 (.s:316-331).
+   Also cited in known_psyq_stdlib.txt:35, inline_asm_canonical.txt:201, memory/grind/func_8004C404/ (layer-2 ledger dir).
+ - Freshness: the three new names occur nowhere in src include asm registries (build.py fresh() enforces src/include).
+ - Dry run: see dry.txt (0 rejects expected); apply.sh uses --stale-map-ok.
+Weak spots for the reviewer:
+ (1) gpu_ vs camera_ for func_8003F1E4 (callers are camera code; the body touches gpu state only).
+ (2) func_8003F1E4's far-to-near transition was not observed in the capture (value stays 2 after frame 8530); the name rests on the code, the trace corroborates.
+ (3) "Run" in func_8004C404 (a reviewer may prefer "Consecutive"); fixed light setup and scratch setup are not in the name.
+ (4) "ForReplay" in func_8001B6F4 rests on one caller (N3 class 3); the node_ calls are covered only via camera_ApplyFightView's mode-1 pairing.
+Old-name citations for the comment pass (naming_wave substitutes the first group, not the rest):
+ substituted by naming_wave: the definitions 2B344.c:2302 / 9F9C.c:902, bb2.h:574/698, all C calls, asm jal/glabel sites, asm/funcs/func_8003F1E4.s,
+   func_8001B6F4.s, func_8004C404.s renamed, INCLUDE_ASM in 3AB48.c:25, registry/ledger lines per dry.txt.
+ comment/doc pass (check after apply): src/main/9F9C.c:456 (comment in camera_UpdateTwoFighterView), symbol_addrs.txt:144 and :1981 (notes naming func_8003F1E4),
+   tools/rename_funcs.py:344 (dead historical map entry, leave), docs/naming/runtime and tools/trace/scenarios (capture data, leave),
+   docs/naming/phase3/no_name.tsv rows for the three addresses (batch lander removes them), docs/naming/function-names.csv rows 70/395/657 (census regenerates).
+gates: tmp/p3w100/gates.sh does not exist yet; the lander copies it from tmp/p3w99/gates.sh before running gates.ps1.

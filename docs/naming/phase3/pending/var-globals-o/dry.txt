@@ -1,0 +1,20 @@
+==============================================================================
+DATA WAVE — 1 addresses, 1 identifiers remapped
+  0x800f6658: D_800F6658 -> g_gpu_view_coordinate_shift
+
+-- file edits (9) --
+  asm/data/94000.bss.s  (2)
+  asm/funcs/func_8003F1E4.s  (2)
+  asm/funcs/func_80046B44.s  (2)
+  asm/funcs/func_8004A940.s  (2)
+  asm/funcs/func_8004C404.s  (2)
+  include/bb2.h  (1)
+  src/main/2B344.c  (2)
+  src/main/368E4.c  (1)
+  symbol_addrs.txt  (2)
+
+-- registry lines --
+  symbol_addrs.txt:145 D_800F6658 -> g_gpu_view_coordinate_shift
+  symbol_addrs.txt:1849 D_800F6658 -> g_gpu_view_coordinate_shift
+
+DRY RUN — nothing written. Re-run with --apply.

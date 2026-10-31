@@ -1,0 +1,1 @@
+D_800F6658=g_gpu_view_coordinate_shift

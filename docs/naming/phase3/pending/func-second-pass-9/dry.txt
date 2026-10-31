@@ -1,0 +1,41 @@
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  3 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (21) --
+  (root): 2 files, 2 substitutions
+      inline_asm_canonical.txt  (1)
+      known_psyq_stdlib.txt  (1)
+  asm: 14 files, 18 substitutions
+      asm/funcs/camera_InitTrackedFighterFocus.s  (1)
+      asm/funcs/camera_InitTwoFighterView.s  (1)
+      asm/funcs/camera_SetFighterFocusView.s  (1)
+      asm/funcs/camera_SetInterpolatedFighterView.s  (1)
+      asm/funcs/camera_UpdateTrackedFighterView.s  (1)
+      asm/funcs/camera_UpdateTwoFighterView.s  (1)
+      ... and 8 more
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 4 files, 14 substitutions
+      src/main/28708.c  (1)
+      src/main/2B344.c  (4)
+      src/main/3AB48.c  (1)
+      src/main/9F9C.c  (8)
+
+-- .s file renames (3) --
+  asm/funcs/func_8001B6F4.s -> asm/funcs/camera_ResetViewsForReplay.s
+  asm/funcs/func_8003F1E4.s -> asm/funcs/gpu_SetFarViewGridFogControlAndCoordinateShift.s
+  asm/funcs/func_8004C404.s -> asm/funcs/gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets.s
+
+-- ledger directory renames (1) --
+  memory/grind/func_8004C404 -> memory/grind/gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (1) --
+  memory/grind/func_8004C404/layer2.jsonl: 1 changes
+      line 1: func func_8004C404 -> gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets
+
+DRY RUN — nothing written. Re-run with --apply.
