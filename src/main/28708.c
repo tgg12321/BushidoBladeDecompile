@@ -554,7 +554,7 @@ s32 memcard_StartLoadOnceStepAndDrawSheetPair(void) {
         result = -1;
         break;
     }
-    gpu_DrawSheetPairCenteredTileWithOptionalSelection(0, -1);
+    gpu_DrawSheetPairPanelWithOptionalSelection(0, -1);
     if (result) {
         g_memcard_load_request_armed = 1;
         g_memcard_validation_load_active = 0;
@@ -603,7 +603,7 @@ s32 menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult(void) {
         snd_QueueSound(0, 0x7F, 0x7F);
         g_menu_two_choice_prompt_cursor = 1;
     }
-    gpu_DrawSheetPairCenteredTileWithOptionalSelection(
+    gpu_DrawSheetPairPanelWithOptionalSelection(
         0x13, g_menu_two_choice_prompt_cursor);
     if (result != 0) {
         g_menu_prompt_rearm = 1;
@@ -635,7 +635,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     request_status = memcard_Update();
 
     if (g_memcard_retry_load_status8_latched != 0) {
-        gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
+        gpu_DrawSheetPairPanelWithOptionalSelection(0xA, -1);
         goto timer;
     }
 
@@ -693,8 +693,7 @@ s32 memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress(void) {
     }
 
     if (sheet_pair_index >= 0) {
-        gpu_DrawSheetPairCenteredTileWithOptionalSelection(
-            sheet_pair_index, -1);
+        gpu_DrawSheetPairPanelWithOptionalSelection(sheet_pair_index, -1);
     }
 
     if (g_memcard_validation_load_active != 0) {
@@ -805,7 +804,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     v0 = memcard_Update();
 
     if (D_800A3354 != 0) {
-        gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
+        gpu_DrawSheetPairPanelWithOptionalSelection(0xA, -1);
         g_memcard_message_countdown--;
         if (((u8)g_memcard_message_countdown) == 0 ||
             (g_pad_state.pressed & 0x100010)) {
@@ -851,7 +850,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
     case 0:
         sheet_pair_index = 0x11;
         /* each case that passes g_memcard_prompt_choice to
-           gpu_DrawSheetPairCenteredTileWithOptionalSelection sets
+           gpu_DrawSheetPairPanelWithOptionalSelection sets
            highlighted_cell_index in its own body (cross-jump merges the stores;
            one shared store reached by goto: score 13) */
         highlighted_cell_index = g_memcard_prompt_choice;
@@ -918,7 +917,7 @@ s32 memcard_StepSaveOverwriteAndFormatPrompts(void) {
 
 sel_dispatch:
     if (sheet_pair_index >= 0) {
-        gpu_DrawSheetPairCenteredTileWithOptionalSelection(
+        gpu_DrawSheetPairPanelWithOptionalSelection(
             sheet_pair_index, highlighted_cell_index);
     }
 

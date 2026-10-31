@@ -558,7 +558,7 @@ void fight_StartDescriptorPlaybackAndAudio(void) {
         resource_SelectRetainedSubblockOrApplyHeaderSections(-1);
     if ((s8)g_fight_config.unk_4[1] == 0xE ||
         (s8)g_fight_config.unk_4[1] == 0x1D) {
-        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+        gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
             g_fight_operand_tint_red, g_fight_operand_tint_green,
             g_fight_operand_tint_blue);
     }
@@ -990,7 +990,7 @@ void fight_UpdateRotatingViewThreeOptionChoice(void) {
 
     if (g_fight_choice_menu_cursor == 0) {
         g_prim_buf_cursor +=
-            gpu_DrawSelectedStretchedSpritePair(0, (s32)g_prim_buf_cursor, 1) /
+            gpu_DrawSelectedStretchedSheetPair(0, (s32)g_prim_buf_cursor, 1) /
             4;
     }
     g_fight_choice_confirm_delay = g_fight_choice_confirm_delay + 1;

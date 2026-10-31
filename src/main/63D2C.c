@@ -365,7 +365,7 @@ void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
     draw_context->primitive_cursors.flat_quad_prims = flat_quad_cursor;
 }
 
-void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
+void menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles(
     Unk8006EACCRec *draw_context) {
     Unk8007352CRec s;
     s16 mask;

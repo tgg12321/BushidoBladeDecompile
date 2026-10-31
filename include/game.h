@@ -2535,7 +2535,7 @@ typedef struct {
  * - rect_rows: the Rec_8006C21C rows
  * menu_DrawKeyConfigRowBitSheetsTilesAndGradientQuads draws;
  * sheet_pair_box_sizes: the Size2s16 box sizes (x = width, y = height)
- * gpu_DrawSheetPairCenteredTileWithOptionalSelection reads. The -1 ending
+ * gpu_DrawSheetPairPanelWithOptionalSelection reads. The -1 ending
  * reloc_RelocateSelfOffsets's offset list follows at +0x4C; no reader touches
  * it. */
 typedef struct {

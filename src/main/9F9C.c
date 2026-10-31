@@ -1429,7 +1429,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         }
         func_8001C51C();
         if (g_fight_step_row_column < 4) {
-            gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+            gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                 g_fight_step_row_tint_red, g_fight_step_row_tint_green,
                 g_fight_step_row_tint_blue);
         }
@@ -1575,7 +1575,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 g_main_loop_handler_index = 0;
             }
         } else if (D_800A37E1 != 0) {
-            g_prim_buf_cursor += gpu_DrawSelectedStretchedSpritePair(
+            g_prim_buf_cursor += gpu_DrawSelectedStretchedSheetPair(
                                      2, (s32)g_prim_buf_cursor, 1) /
                                  4;
             if (++D_800A37E1 == 0x3C) {
@@ -1602,7 +1602,7 @@ void fight_UpdateModeDisplaysAndMatchProgress(void) {
                 }
             }
         } else if (g_fight_point_award_phase_timer != 0) {
-            g_prim_buf_cursor += gpu_DrawSelectedStretchedSpritePair(
+            g_prim_buf_cursor += gpu_DrawSelectedStretchedSheetPair(
                                      1, (s32)g_prim_buf_cursor, 1) /
                                  4;
             if (++g_fight_point_award_phase_timer == 0x1E) {
@@ -1965,18 +1965,18 @@ void fight_Init(void) {
         node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
         node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
         if (g_fight_mode_selector == 0 && D_800A3712 == 0) {
-            gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+            gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                 g_fight_operand_tint_red, g_fight_operand_tint_green,
                 g_fight_operand_tint_blue);
         } else if (g_fight_mode_selector == 3) {
-            gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+            gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                 g_fight_step_row_tint_red, g_fight_step_row_tint_green,
                 g_fight_step_row_tint_blue);
         } else if (g_fight_mode_selector == 2) {
             u8 *p = g_fight_group_tint_colors
                 [g_fighter_group_flags[D_80101EC8[0].character_data_index]];
             if (D_800A389A == 0) {
-                gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+                gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
                     p[0], p[1], p[2]);
             }
         }
@@ -2322,7 +2322,7 @@ void fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange(
     }
     if (g_fight_choice_menu_cursor == 0) {
         g_prim_buf_cursor +=
-            gpu_DrawSelectedStretchedSpritePair(0, (s32)g_prim_buf_cursor, 1) /
+            gpu_DrawSelectedStretchedSheetPair(0, (s32)g_prim_buf_cursor, 1) /
             4;
     }
     g_fight_choice_confirm_delay = g_fight_choice_confirm_delay + 1;
@@ -3866,7 +3866,7 @@ s32 fight_FindNearestStartPair(Vec3i32 *position) {
     return best;
 }
 
-s32 motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
+s32 motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue(
     Unk80101EC8Record *fighter_record) {
     u8 *p;
     s32 val;
@@ -3945,7 +3945,7 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
 
     if (g_fight_mode_selector == 3 && fighter_index == 1) {
         p->default_variant_index =
-            motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue(
+            motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue(
                 p);
         var_2 = (g_fight_step_table_next_row - 1) / 10 + 1;
         p->base_move_frame_step = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
@@ -5482,8 +5482,8 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
     }
     if (fighter_record->variant_index == fighter_record->object_variant_index &&
         fighter_record->object_variant_enabled != 0) {
-        if (fighter_TestMoveFrameWindowOrObjectVariantKind(fighter_record) !=
-            0) {
+        if (fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
+                fighter_record) != 0) {
             fighter_record->wielded_object_live_state =
                 fighter_record->wielded_object_live_state != 0 ? 1 : 2;
             fighter_record->frame_flags |= 4;

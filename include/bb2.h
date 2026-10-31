@@ -58,7 +58,7 @@ extern Unk8009BCF8Record g_sel_grid_page_cells[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by
  * menu_HandleSelPhase0CursorInput,
- * menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles and
+ * menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles and
  * menu_InitSelScreen. */
 extern u8 g_sel_sheet_code_pairs[2][2];
 
@@ -299,7 +299,8 @@ extern Unk80099D88Rec g_cpu_profiles[];
 extern Unk8009A8C8Entry D_8009A8C8[][8];
 extern u8 D_8009A9B4[][2]; /* byte pairs (fighter_InitCpuControl) */
 /* [g_fighter_group_flags flag] -> 3 bytes
- * (gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels args), stride 4 */
+ * (gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels args), stride
+ * 4 */
 extern u8 g_fight_group_tint_colors[][4];
 extern s16 g_fighter_forward_move_rate_limits[4];
 extern s32 g_fighter_opponent_response_max_separation;
@@ -733,7 +734,8 @@ extern s32 fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow(
 extern void fighter_Update(s32, PadState *);
 extern void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void);
 extern void motion_SetFixedChannelBlock(MotionFrame *);
-extern s32 fighter_TestMoveFrameWindowOrObjectVariantKind(Unk80101EC8Record *);
+extern s32 fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
+    Unk80101EC8Record *);
 /* fighter_TryDropQueuedHeadAtBone (17AFC.c, void (Unk80101EC8Record *)) has no
  * declaration: 175A4.c calls it implicitly, and any truthful declaration
  * changes fight_UpdatePairedInputTotalsEventsAndMidpointEffects's register-save
@@ -870,7 +872,8 @@ extern void node_UpdateWorldMatrix(Unk80101DF0Record *);
 extern void node_SetMatrixFromNegatedRot(Unk80101DF0Record *);
 extern void gpu_LoadRequestedAvailableTimGroupsForSlot(s32, s32, s32, s32);
 extern void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *);
-extern void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(s32, s32, s32);
+extern void gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
+    s32, s32, s32);
 extern void light_SetPointLight(VECTOR *, s32);
 extern void light_ResetPointLight(void);
 extern void light_SetPointLightTarget(s32, s32);
@@ -997,14 +1000,14 @@ extern void snd_StopVoicesAndReverb(void);
 extern void snd_StopVoicesSetMaxMasterVolumeStereoAndClearAutoKeyOffMode(void);
 extern s32 snd_QueueSound(s32, s32, s32); /* FAKE: int, see definition */
 extern s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(s32, s32, s32, s32);
-extern s32 gpu_DrawFixedSpritePairWithSelectedSheets(s32, s32);
+extern s32 gpu_DrawSheetPairSelectedByDrawMode(s32, s32);
 extern s32 gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle(s32, s32);
 extern s32 gpu_DrawTimeFieldsAndDecimalCounter(Unk8001CD68Rec *, s32, s32, s32);
 extern s32 gpu_DrawTwoDigitCounterWithOptionalSecondSide(s32, s32, s32, s32);
 extern s32 gpu_DrawDecrementedSingleSideCounter(s32, s32, s32);
 extern s32 gpu_DrawPackedComparisonRowsAndTotals(u32, s32, s32);
 extern s32 gpu_DrawPairedMarkRowsAndTimeFields(Unk8001CD68Rec *, s32, s32, s32);
-extern s32 gpu_DrawSelectedStretchedSpritePair(s32, s32, s32);
+extern s32 gpu_DrawSelectedStretchedSheetPair(s32, s32, s32);
 extern void gpu_ReadCdFileUploadTwoRegionsAndResetSplitWipe(s32, u8 *);
 extern s32 gpu_DrawImageAndAdvanceSplitWipe(s32, s32);
 extern s32 gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite(s32, s32, s32);
@@ -1046,7 +1049,7 @@ extern void gpu_AddThreeGreyTilesStackedUp(s32 *, u16 *, s32);
 extern void gpu_SetTileRgbFromBlockFlag(void *);
 extern void gpu_SetPolyF4RgbFromBlockFlag(void *);
 extern s32 menu_UpdateOptionMenuChoices(s32, u32);
-extern void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32, s32);
+extern void gpu_DrawSheetPairPanelWithOptionalSelection(s32, s32);
 extern s32 func_8006C1FC(s32, s32);
 extern void menu_ResetRowBitCursors(void);
 extern s32 menu_UpdateRowBitMenu(s32, s32);
@@ -1074,7 +1077,7 @@ extern s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *, s32);
 extern s32 gpu_AddRotatedSpriteQuads();
 extern void gpu_DrawThreeSheetsWithOptionalTileAndOpaqueQuads(
     Unk8006EACCRec *, s32);
-extern void menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
+extern void menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles(
     Unk8006EACCRec *);
 extern s32 InitRowMenuBlackBgResetFlow(s32);
 extern s32 menu_UpdateRowMenuStoreResult(s32, s32);

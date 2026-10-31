@@ -11,7 +11,7 @@
 extern void sys_StoreZeroPastScratchpadOnFailedCheck(void);
 
 INCLUDE_ASM("asm/funcs", math_RotMatrixZYX);
-INCLUDE_ASM("asm/funcs", gpu_DrawQueuedNodes);
+INCLUDE_ASM("asm/funcs", gpu_DrawQueuedEntries);
 INCLUDE_ASM("asm/funcs", gte_ProjectSVectorTriples);
 INCLUDE_ASM("asm/funcs", gte_ProjectPackedVertices);
 

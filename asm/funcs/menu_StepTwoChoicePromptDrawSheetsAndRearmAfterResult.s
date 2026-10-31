@@ -48,7 +48,7 @@ glabel menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult
     /* 29154 80038954 4C0282A3 */  sb         $v0, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
   .L80038958:
     /* 29158 80038958 4C028593 */  lbu        $a1, %gp_rel(g_menu_two_choice_prompt_cursor)($gp)
-    /* 2915C 8003895C B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
+    /* 2915C 8003895C B1AF010C */  jal        gpu_DrawSheetPairPanelWithOptionalSelection
     /* 29160 80038960 13000424 */   addiu     $a0, $zero, 0x13
     /* 29164 80038964 02000012 */  beqz       $s0, .L80038970
     /* 29168 80038968 01000224 */   addiu     $v0, $zero, 0x1

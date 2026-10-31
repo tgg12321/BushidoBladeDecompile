@@ -631,8 +631,8 @@ s32 D_8008EB14 = -800;
 s32 D_8008EB18 = 0;
 
 /* [g_fight_step_row_column]
- * (motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue); 6
- * pairs from the gap. */
+ * (motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue);
+ * 6 pairs from the gap. */
 u8 g_motion_preferred_variant_nibble_pairs[6][2] = {
     {1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
 

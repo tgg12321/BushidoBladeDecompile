@@ -258,7 +258,7 @@ void resource_FreeLoadedBlockAndClearSelectorAndRetainedSubblocks(void) {
 }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
-extern void wave_MoveCellBuffer(s32);
+extern void wave_RebaseCellBuffer(s32);
 
 void resource_RebaseLoadedBlockSections(s32 a0, s32 byte_offset) {
     s32 rebase_delta;
@@ -277,7 +277,7 @@ void resource_RebaseLoadedBlockSections(s32 a0, s32 byte_offset) {
         reloc_RebaseBlock(8);
         break;
     case 11:
-        wave_MoveCellBuffer(byte_offset);
+        wave_RebaseCellBuffer(byte_offset);
         break;
     }
 }
@@ -303,7 +303,7 @@ extern s16 D_800A324A;
 extern MATRIX g_math_light_plane_projection;
 
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
- * g_gpu_vram_scrolls, which wave_SampleLastRowStepsAtCachedIndex's
+ * g_gpu_vram_scrolls, which wave_SampleStepTableBaseAtCachedIndex's
  * [column_index + 1] reaches at column_index == 17 */
 extern s32 g_wave_last_row_steps[18];
 extern u8 g_fight_start_position_pairs;
@@ -1011,7 +1011,7 @@ void wave_Draw(void) {
     }
 }
 
-s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
+s32 wave_SampleRow8BaseCachingIndexAndRemainderParity(s32 a0) {
     s32 column_index = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
@@ -1031,7 +1031,7 @@ s32 wave_SampleLastRowCachingIndexAndRemainderParity(s32 a0) {
     }
 }
 
-s32 wave_SampleLastRowStepsAtCachedIndex(void) {
+s32 wave_SampleStepTableBaseAtCachedIndex(void) {
     s32 column_index = g_wave_cached_column_index;
     if ((u32)column_index >= 18) {
         return 0;
@@ -1051,7 +1051,7 @@ s32 wave_GetCellBufferSize(void) { return 0xD00; }
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 
-void wave_MoveCellBuffer(s32 byte_offset) {
+void wave_RebaseCellBuffer(s32 byte_offset) {
     g_wave_cell_buffer = (s16 *)((u8 *)g_wave_cell_buffer + byte_offset);
 }
 

@@ -118,7 +118,7 @@ glabel fight_UpdateRotatingViewThreeOptionChoice
     /* 2D358 8003CB58 21200000 */   addu      $a0, $zero, $zero
     /* 2D35C 8003CB5C 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* 2D360 8003CB60 B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* 2D364 8003CB64 A67E010C */  jal        gpu_DrawSelectedStretchedSpritePair
+    /* 2D364 8003CB64 A67E010C */  jal        gpu_DrawSelectedStretchedSheetPair
     /* 2D368 8003CB68 01000624 */   addiu     $a2, $zero, 0x1
     /* 2D36C 8003CB6C 02004104 */  bgez       $v0, .L8003CB78
     /* 2D370 8003CB70 00000000 */   nop

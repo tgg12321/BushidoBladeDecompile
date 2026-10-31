@@ -1678,7 +1678,7 @@ extern u8 g_sheet_pair_sprite_buffers[];
 extern DR_MODE g_sheet_pair_draw_mode_buffers[];
 extern TILE g_sheet_pair_panel_tile_buffers[];
 
-void gpu_DrawSheetPairCenteredTileWithOptionalSelection(
+void gpu_DrawSheetPairPanelWithOptionalSelection(
     s32 sheet_pair_index, s32 highlighted_cell_index) {
     Unk8007352CRec draw_desc;
     s32 buffer_index;

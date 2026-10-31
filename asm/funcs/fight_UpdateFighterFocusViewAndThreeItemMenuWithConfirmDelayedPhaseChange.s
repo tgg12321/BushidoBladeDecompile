@@ -191,7 +191,7 @@ glabel fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange
     /* F554 8001ED54 21200000 */   addu      $a0, $zero, $zero
     /* F558 8001ED58 0A80053C */  lui        $a1, %hi(g_prim_buf_cursor)
     /* F55C 8001ED5C B438A58C */  lw         $a1, %lo(g_prim_buf_cursor)($a1)
-    /* F560 8001ED60 A67E010C */  jal        gpu_DrawSelectedStretchedSpritePair
+    /* F560 8001ED60 A67E010C */  jal        gpu_DrawSelectedStretchedSheetPair
     /* F564 8001ED64 01000624 */   addiu     $a2, $zero, 0x1
     /* F568 8001ED68 02004104 */  bgez       $v0, .L8001ED74
     /* F56C 8001ED6C 00000000 */   nop

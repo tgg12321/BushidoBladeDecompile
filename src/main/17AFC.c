@@ -311,7 +311,7 @@ void fighter_DispatchBoneHitSoundEvent(
         ptr->other->index, 0x24, hit_point, (s16 *)0);
 }
 
-s32 fighter_TestMoveFrameWindowOrObjectVariantKind(
+s32 fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
     Unk80101EC8Record *fighter_record) {
     s32 result = 0;
 
@@ -339,7 +339,7 @@ void fighter_TryDropQueuedHeadAtBone(Unk80101EC8Record *fighter_record) {
     s16 current_variant = fighter_record->variant_index;
     if (current_variant == fighter_record->object_variant_index) {
         if (fighter_record->object_variant_enabled) {
-            if (fighter_TestMoveFrameWindowOrObjectVariantKind(
+            if (fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
                     fighter_record)) {
                 MATRIX **bone_matrices =
                     node_GetSlotMatrixPointerArray(fighter_record->index);
@@ -2389,7 +2389,7 @@ void fight_UpdateSpacingTurnFacingWeaponBodyHitsAndQueueMoveEvents(void) {
  * fight_UpdateFighterInteractionsAndPointCaches copied into D_80101EC8[k]
  * (prev_second_weapon_points / prev_weapon_points); the result goes to
  * contact_point. */
-void fighter_BlendCurrentAndPreviousContactPoints(void) {
+void fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80101EC8Record *rec0 = &D_80101EC8[0];
     Unk80101EC8Record *rec1 = &D_80101EC8[1];
@@ -2463,10 +2463,10 @@ void fighter_BlendCurrentAndPreviousContactPoints(void) {
 /* Per-frame update of the two D_80101EC8 records.  The three
  * scratchpad points per character at SPAD->weapon_points and the two at
  * SPAD->second_weapon_points are copied into each record's prev_weapon_points /
- * prev_second_weapon_points (fighter_BlendCurrentAndPreviousContactPoints reads
- * them back); bone_hit_points_1_3_centroid is the centroid of
- * SPAD->spadA8[k][1..3] and bone_hit_points_4_5_midpoint the midpoint
- * of SPAD->spadA8[k][4..5]. */
+ * prev_second_weapon_points
+ * (fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint reads them back);
+ * bone_hit_points_1_3_centroid is the centroid of SPAD->spadA8[k][1..3] and
+ * bone_hit_points_4_5_midpoint the midpoint of SPAD->spadA8[k][4..5]. */
 void fight_UpdateFighterInteractionsAndPointCaches(void) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
      * both players' pending_move_event values are tested before the clash
@@ -2489,7 +2489,7 @@ void fight_UpdateFighterInteractionsAndPointCaches(void) {
         fighter_ResolveBodyOverlap();
         g_fight_weapon_contact_result = fighter_ProcessWeaponContacts();
         if (g_fight_weapon_contact_result >= 0) {
-            fighter_BlendCurrentAndPreviousContactPoints();
+            fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint();
         }
         if (g_fight_weapon_contact_result >= 0 &&
             (firstPlayer->attack_hit_armed != 0 ||

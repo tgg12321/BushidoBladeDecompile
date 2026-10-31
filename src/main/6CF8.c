@@ -551,7 +551,7 @@ void gpu_DrawDisplayModeOnLocalOtAndSync(void) {
     case 1:
     case 2:
         draw_chunk_addr =
-            gpu_DrawFixedSpritePairWithSelectedSheets(draw_chunk_addr, temp2);
+            gpu_DrawSheetPairSelectedByDrawMode(draw_chunk_addr, temp2);
         if (g_gpu_jitter_burst_enabled != 0) {
             s32 i;
             temp = (rand() & 3) + 4;

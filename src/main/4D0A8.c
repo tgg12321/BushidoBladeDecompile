@@ -1,6 +1,6 @@
 /* 17 game functions: UI drawing (gpu_DrawModeSizedPanelWithSelectedCellOpaque,
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle,
- * gpu_DrawSelectedStretchedSpritePair,
+ * gpu_DrawSelectedStretchedSheetPair,
  * gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite,
  * gpu_DrawIndexedCellsDigitPairsAndGrowingBars, ...). .text 0x8005C8A8 (ROM
  * 0x4D0A8). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #136): no
@@ -322,7 +322,7 @@ s32 gpu_DrawModeSizedPanelWithSelectedCellOpaque(
 }
 
 /* 0x8009B2C8: two rows of five sprite-sheet headers
- * (gpu_DrawFixedSpritePairWithSelectedSheets draws headers 0 / 1 of
+ * (gpu_DrawSheetPairSelectedByDrawMode draws headers 0 / 1 of
  * row sheet_row_index with the cells at D_8009B340 / D_8009B358;
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle headers 2 and 3 / 4 with
  * D_8009B388's), then the cells: three under header 0 (count 3), six under
@@ -331,7 +331,7 @@ extern Unk8009B0E0Record D_8009B2C8[2][5];
 extern Unk8009B400Record D_8009B340[3];
 extern Unk8009B400Record D_8009B358[6];
 
-s32 gpu_DrawFixedSpritePairWithSelectedSheets(s32 ft4_out_addr, s32 draw_mode) {
+s32 gpu_DrawSheetPairSelectedByDrawMode(s32 ft4_out_addr, s32 draw_mode) {
     Unk8007352CRec s;
     s32 sheet_row_index;
     sheet_row_index = draw_mode;
@@ -1249,7 +1249,7 @@ s32 gpu_DrawPairedMarkRowsAndTimeFields(
     return end_off - arg2;
 }
 
-/* gpu_DrawSelectedStretchedSpritePair's sheets: three headers at 0x8009B610
+/* gpu_DrawSelectedStretchedSheetPair's sheets: three headers at 0x8009B610
  * (the second draw, header sheet_index, its one cell at 0x8009B634) and
  * three at 0x8009B63C (counts 2 / 1 / 4) whose cells follow at 0x8009B660
  * (0-1, 2, 3-6).
@@ -1259,7 +1259,7 @@ extern Unk8009B400Record D_8009B634;
 extern Unk8009B0E0Record D_8009B63C[3];
 extern Unk8009B400Record D_8009B660[7];
 
-s32 gpu_DrawSelectedStretchedSpritePair(
+s32 gpu_DrawSelectedStretchedSheetPair(
     s32 sheet_index, s32 arg1, s32 ot_index) {
     Unk8007352CRec s;
     s32 ft4_out_addr = arg1;
@@ -1976,7 +1976,7 @@ Unk8009B2BCRecord g_panel_frame_sizes[3] = {
     {328, 155},
 };
 
-/* gpu_DrawFixedSpritePairWithSelectedSheets /
+/* gpu_DrawSheetPairSelectedByDrawMode /
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle's header rows D_8009B2C8 and
  * their cells D_8009B340 / D_8009B358 / D_8009B388; the sheet headers
  * D_8009B398 that gpu_DrawTimeFieldsAndDecimalCounter ..

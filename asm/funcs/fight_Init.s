@@ -281,7 +281,7 @@ glabel fight_Init
     /* E8C0 8001E0C0 01004590 */  lbu        $a1, 0x1($v0)
     /* E8C4 8001E0C4 02004690 */  lbu        $a2, 0x2($v0)
   .L8001E0C8:
-    /* E8C8 8001E0C8 FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+    /* E8C8 8001E0C8 FD06010C */  jal        gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
     /* E8CC 8001E0CC 00000000 */   nop
   .L8001E0D0:
     /* E8D0 8001E0D0 E475000C */  jal        fight_ResetGraphAndReloadResourcesOnCachedKeyChange

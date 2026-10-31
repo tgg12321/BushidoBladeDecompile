@@ -45,7 +45,7 @@ glabel fight_UpdateFighterInteractionsAndPointCaches
     /* 1CEBC 8002C6BC 00140200 */  sll        $v0, $v0, 16
     /* 1CEC0 8002C6C0 1F004004 */  bltz       $v0, .L8002C740
     /* 1CEC4 8002C6C4 00000000 */   nop
-    /* 1CEC8 8002C6C8 8BB0000C */  jal        fighter_BlendCurrentAndPreviousContactPoints
+    /* 1CEC8 8002C6C8 8BB0000C */  jal        fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
     /* 1CECC 8002C6CC 00000000 */   nop
     /* 1CED0 8002C6D0 0A80023C */  lui        $v0, %hi(g_fight_weapon_contact_result)
     /* 1CED4 8002C6D4 24384284 */  lh         $v0, %lo(g_fight_weapon_contact_result)($v0)

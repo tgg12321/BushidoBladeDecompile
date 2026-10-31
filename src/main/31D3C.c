@@ -239,7 +239,7 @@ void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *arg0) {
     DrawSync(0);
 }
 
-void gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels(
+void gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
     s32 tint_red, s32 tint_green, s32 tint_blue) {
     Unk80045878Obj *obj;
     s32 r;

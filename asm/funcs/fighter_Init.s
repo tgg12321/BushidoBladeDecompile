@@ -165,7 +165,7 @@ glabel fighter_Init
     /* 12FE4 800227E4 01000224 */   addiu     $v0, $zero, 0x1
     /* 12FE8 800227E8 2B004216 */  bne        $s2, $v0, .L80022898
     /* 12FEC 800227EC 00000000 */   nop
-    /* 12FF0 800227F0 3889000C */  jal        motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue
+    /* 12FF0 800227F0 3889000C */  jal        motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue
     /* 12FF4 800227F4 21200002 */   addu      $a0, $s0, $zero
     /* 12FF8 800227F8 6666043C */  lui        $a0, (0x66666667 >> 16)
     /* 12FFC 800227FC 0A80033C */  lui        $v1, %hi(g_fight_step_table_next_row)

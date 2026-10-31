@@ -220,7 +220,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D400 8001CC00 ED38A590 */  lbu        $a1, %lo(g_fight_step_row_tint_green)($a1)
     /* D404 8001CC04 0A80063C */  lui        $a2, %hi(g_fight_step_row_tint_blue)
     /* D408 8001CC08 EE38C690 */  lbu        $a2, %lo(g_fight_step_row_tint_blue)($a2)
-    /* D40C 8001CC0C FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+    /* D40C 8001CC0C FD06010C */  jal        gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
     /* D410 8001CC10 00000000 */   nop
     /* D414 8001CC14 44730008 */  j          .L8001CD10
     /* D418 8001CC18 00000000 */   nop

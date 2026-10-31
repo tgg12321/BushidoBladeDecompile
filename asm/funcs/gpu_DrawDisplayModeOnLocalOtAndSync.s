@@ -43,7 +43,7 @@ glabel gpu_DrawDisplayModeOnLocalOtAndSync
     /* 7D94 80017594 00000000 */   nop
     /* 7D98 80017598 5200A010 */  beqz       $a1, .L800176E4
     /* 7D9C 8001759C 00000000 */   nop
-    /* 7DA0 800175A0 1B75010C */  jal        gpu_DrawFixedSpritePairWithSelectedSheets
+    /* 7DA0 800175A0 1B75010C */  jal        gpu_DrawSheetPairSelectedByDrawMode
     /* 7DA4 800175A4 21204002 */   addu      $a0, $s2, $zero
     /* 7DA8 800175A8 DC058393 */  lbu        $v1, %gp_rel(g_gpu_jitter_burst_enabled)($gp)
     /* 7DAC 800175AC 00000000 */  nop

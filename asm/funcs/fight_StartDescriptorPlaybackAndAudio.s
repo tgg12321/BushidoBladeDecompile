@@ -156,7 +156,7 @@ glabel fight_StartDescriptorPlaybackAndAudio
     /* 2C408 8003BC08 B537A590 */  lbu        $a1, %lo(g_fight_operand_tint_green)($a1)
     /* 2C40C 8003BC0C 0A80063C */  lui        $a2, %hi(g_fight_operand_tint_blue)
     /* 2C410 8003BC10 B637C690 */  lbu        $a2, %lo(g_fight_operand_tint_blue)($a2)
-    /* 2C414 8003BC14 FD06010C */  jal        gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels
+    /* 2C414 8003BC14 FD06010C */  jal        gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
     /* 2C418 8003BC18 00000000 */   nop
   .L8003BC1C:
     /* 2C41C 8003BC1C F976000C */  jal        fight_WaitForCounterThenClearAndEnableDisplay

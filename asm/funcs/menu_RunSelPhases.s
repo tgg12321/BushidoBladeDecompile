@@ -58,7 +58,7 @@ glabel menu_RunSelPhases
     /* 67C44 80077444 F6D1010C */  jal        menu_HandleSelPhase0CursorInput
     /* 67C48 80077448 21208002 */   addu      $a0, $s4, $zero
     /* 67C4C 8007744C 21A84000 */  addu       $s5, $v0, $zero
-    /* 67C50 80077450 22D1010C */  jal        menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles
+    /* 67C50 80077450 22D1010C */  jal        menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles
     /* 67C54 80077454 21204002 */   addu      $a0, $s2, $zero
     /* 67C58 80077458 B8DD0108 */  j          .L800776E0
     /* 67C5C 8007745C 01006226 */   addiu     $v0, $s3, 0x1

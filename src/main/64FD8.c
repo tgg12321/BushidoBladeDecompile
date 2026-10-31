@@ -1293,7 +1293,7 @@ s32 menu_RunSelPhases(s32 pressed_buttons, Unk8006EACCRec *draw_context) {
         case 0:
             if (i == 0) {
                 ret = menu_HandleSelPhase0CursorInput(pressed_buttons);
-                menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles(
+                menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles(
                     draw_context);
             }
             break;

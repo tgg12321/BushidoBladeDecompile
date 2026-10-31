@@ -1128,7 +1128,7 @@ void func_800444E0(void) {
 
 extern MATRIX g_gpu_flush_work_matrix;
 
-extern void gpu_DrawQueuedNodes(void);
+extern void gpu_DrawQueuedEntries(void);
 
 void gpu_PrepareViewAndFlushDrawQueue(u32 *ot) {
     math_RotMatrixZXY(g_gpu_flush_rotation_angles, &g_gpu_flush_work_matrix);
@@ -1156,7 +1156,7 @@ void gpu_PrepareViewAndFlushDrawQueue(u32 *ot) {
     } else {
         *(s32 *)0x1F800018 = 0xBE;
     }
-    gpu_DrawQueuedNodes();
+    gpu_DrawQueuedEntries();
     gpu_SetRaisedOtCutoffRequested(1);
     g_draw_queue_cursor = g_draw_queue;
 }
@@ -1223,7 +1223,7 @@ void node_InitFrameEntriesFromWorldTranslations(void) {
  * primitive-type handler tables (gpu_FailCheckOnUnhandledPrimitiveType, which
  * calls sys_StoreZeroPastScratchpadOnFailedCheck, is the default entry; the
  * others are 3AB48.c's draw routines) that func_800430E4 installs at scratchpad
- * word 0x1F80001C and 3AB48.c's gpu_DrawQueuedNodes selects from, then
+ * word 0x1F80001C and 3AB48.c's gpu_DrawQueuedEntries selects from, then
  * gpu_OffsetTexPrimStream's per-type halfword sizes
  * g_gpu_prim_type_halfword_sizes. Sizes from the data labels. Defined after
  * every function. */
