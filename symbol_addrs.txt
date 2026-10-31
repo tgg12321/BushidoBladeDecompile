@@ -141,8 +141,8 @@ g_resource_selector_callbacks = 0x800948BC; // {init, unk4} pairs indexed by res
 g_gpu_last_grid_pass_view_yaw = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
 D_800A322C = 0x800A322C; // player count  // data-wave 2026-09-25: was g_game_player_count
 D_800F665C = 0x800F665C; // write-only (func_80046B44, func_8003F218)  // data-wave 2026-10-08: was g_game_mirror_mode
-g_gpu_grid_and_fog_control = 0x800F6656; // s16 flag word: bit 0 gates the grid/fog passes in 2B344.c; bit 1 is set with it by func_8003F1E4 (= 3) and cleared by func_8003E2AC, never tested  // data-wave 2026-09-25: was g_game_p1_ctrl
-g_gpu_view_coordinate_shift = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
+g_gpu_grid_and_fog_control = 0x800F6656; // s16 flag word: bit 0 gates the grid/fog passes in 2B344.c; bit 1 is set with it by gpu_SetFarViewGridFogControlAndCoordinateShift (= 3) and cleared by func_8003E2AC, never tested  // data-wave 2026-09-25: was g_game_p1_ctrl
+g_gpu_view_coordinate_shift = 0x800F6658; // shift count on camera-relative coordinates: gpu_SetFarViewGridFogControlAndCoordinateShift writes 1 (near) / 2 (far), func_80046B44 writes 2 at init; read in INCLUDE_ASM func_8004A940 / gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets  // data-wave 2026-09-25: was g_game_p2_ctrl
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_a
 D_800A3374 = 0x800A3374; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_b
 g_gpu_raised_ot_cutoff_requested = 0x800F6654; // 0/1 request for the raised OT cutoff; read by gpu_GetRaisedOtCutoffRequested  // data-wave 2026-09-25: was g_game_pause
@@ -1978,7 +1978,7 @@ D_800F6618 = 0x800F6618; /* g_camera_default_view_record.camera_angles.vx: the X
 D_800F661A = 0x800F661A; /* g_camera_default_view_record.camera_angles.vy: the Y rotation camera_CalcEye applies (9F9C.c:428); camera_InitTwoFighterView sets it to 0x400 - ratan2 of the fighters' separation (:799-801) */  /* data-wave 2026-10-08: was g_gnd_facing_angle */
 D_800F661C = 0x800F661C; /* g_camera_default_view_record.camera_angles.vz: the Z rotation camera_CalcEye applies (9F9C.c:429); written 0 */  /* data-wave 2026-10-08: was g_gnd_misc_counter */
 D_800F6620 = 0x800F6620; /* g_camera_default_view_record.eye_distance: the eye's distance from focus_point in camera_CalcEye (9F9C.c:355-374) */  /* data-wave 2026-10-08: was g_gnd_round_time_max */
-D_800F6626 = 0x800F6626; /* g_camera_default_view_record.is_far_view: hysteresis flag on eye_distance, recomputed by camera_UpdateTwoFighterView on every call and passed to func_8003F1E4 (9F9C.c:569-574) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag */
+D_800F6626 = 0x800F6626; /* g_camera_default_view_record.is_far_view: hysteresis flag on eye_distance, recomputed by camera_UpdateTwoFighterView on every call and passed to gpu_SetFarViewGridFogControlAndCoordinateShift (9F9C.c:570-575) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag */
 D_800F6638 = 0x800F6638; /* g_camera_default_view_record.forced_cell_coordinates[0][0]: a cell x (gpu_SetCellForceBit's column); 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_a_max */
 D_800F663A = 0x800F663A; /* g_camera_default_view_record.forced_cell_coordinates[0][1]: written 0, read only by camera_ApplyFightView's whole-record copy */  /* data-wave 2026-10-08: was g_gnd_gauge_a_cur */
 D_800F663C = 0x800F663C; /* g_camera_default_view_record.forced_cell_coordinates[0][2]: a cell z (gpu_SetCellForceBit's row); 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_b_max */
@@ -2156,7 +2156,7 @@ Result_plus_0x10 = 0x800F19B0; /* +8 from g_cdrom_callback_buf_b (0x800F19A8) */
 D_800F1AFC = 0x800F1AFC; /* +4 from g_spu_xfer_status_snapshot (0x800F1AF8) */  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot_plus_4 */
 _svm_voice_plus_0x1D = 0x800F4E35; /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h); retire with _SsVmFlush */
 D_800F6627 = 0x800F6627; /* +1 from D_800F6626 (0x800F6626) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag_plus_1 */
-D_800F665A = 0x800F665A; /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
+D_800F665A = 0x800F665A; /* +2 from g_gpu_view_coordinate_shift (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 g_gpu_flush_work_matrix = 0x80101BD0; /* MATRIX, 4 bytes past LIBSND's 1-byte _SsVmMaxVoice (0x80101BCC): gpu_PrepareViewAndFlushDrawQueue's math_RotMatrixZXY output, then a MulMatrix / MulMatrix2 operand (32D04.c:1134-1136) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
 D_80101F88 = 0x80101F88; /* D_80101EC8[0].unk_B8.vz (D_80101F84 + 4) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_BC_plus_4 */
 D_80101FB0 = 0x80101FB0; /* +0xE8 of D_80101EC8[0]: x of VECTOR unk_E8, set to (0, -0x384, 0) */  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8 */
