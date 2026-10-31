@@ -602,14 +602,14 @@ s32 gpu_DrawTimeFieldsAndDecimalCounter(
         tile->r0 = 0xFF;
         tile->g0 = 0x10;
         tile->b0 = 0x10;
-        tile->x0 = g_gpu_time_field_line_origins[j].x;
-        tile->y0 = g_gpu_time_field_line_origins[j].y;
-        tile->w = 0x238 - g_gpu_time_field_line_origins[j].x;
+        tile->x0 = g_gpu_time_and_counter_line_origins[j].x;
+        tile->y0 = g_gpu_time_and_counter_line_origins[j].y;
+        tile->w = 0x238 - g_gpu_time_and_counter_line_origins[j].x;
         tile->h = 1;
         SetSemiTrans(tile, 0);
         AddPrim(g_gpu_ot_ptr + ot_index, tile);
         tile++;
-        s.y = g_gpu_time_field_line_origins[j].y;
+        s.y = g_gpu_time_and_counter_line_origins[j].y;
         s.header = &D_8009B398[2];
         s.table = &g_gpu_time_field_cells[5];
         s.sprt_out = cur;

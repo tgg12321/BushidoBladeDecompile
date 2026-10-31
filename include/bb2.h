@@ -85,7 +85,7 @@ extern u8 g_entry_menu_entry_flags[];
 extern Unk8009B0E0Record D_8009B398[4];
 extern Unk8009B400Record g_gpu_decimal_digit_cells[10];
 extern Unk8009B400Record D_8009B458[3][2];
-extern Unk8009B450Record g_gpu_time_field_line_origins[2];
+extern Unk8009B450Record g_gpu_time_and_counter_line_origins[2];
 
 /* Two 8-byte sprite cells, the cell table
  * gpu_DrawJitteredQuadPairsAndAdvanceRepeatCycle hands gpu_AddScaledSpriteQuads

@@ -22,7 +22,8 @@
 #include <psxsdk/libgte.h>
 
 /* 4D0A8.c's sheets (its .data head, 0x8009ADB4..0x8009B450, is in 4D0A8.c). */
-Unk8009B450Record g_gpu_time_field_line_origins[2] = {{418, 36}, {503, 55}};
+Unk8009B450Record g_gpu_time_and_counter_line_origins[2] = {
+    {418, 36}, {503, 55}};
 Unk8009B400Record D_8009B458[3][2] = {
     {{565, 23, 0xC0, 0x1C, 0x3C, 0x0E}, {15, 23, 0xC0, 0x1C, 0x3C, 0x0E}},
     {{568, 0, 0xC0, 0xDB, 0x23, 0x01}, {603, 0, 0xE3, 0xDB, 0x1D, 0x01}},

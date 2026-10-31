@@ -52,9 +52,9 @@ static s32 *g_eff_geom_screen_work;
 static s32 *g_eff_perspective_scale;
 static s32 *g_eff_screen_xy;
 static s16 *g_eff_left_x_offset;
-static s16 *g_eff_right_x_offset;
+static s16 *g_eff_x_extent_work;
 static s32 *g_eff_upper_y_offset;
-static s32 *g_eff_lower_y_offset_word;
+static s32 *g_eff_y_extent_work;
 static s32 *g_eff_rtp_flag;
 static s32 *g_eff_depth_work;
 static u16 *g_eff_top_left_uv;
@@ -236,9 +236,9 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_perspective_scale = &SPAD51268->perspective_scale;
     g_eff_screen_xy = SPAD51268->screen_xy;
     g_eff_left_x_offset = &SPAD51268->left_x_offset;
-    g_eff_right_x_offset = &SPAD51268->right_x_offset;
+    g_eff_x_extent_work = &SPAD51268->right_x_offset;
     g_eff_upper_y_offset = &SPAD51268->upper_y_offset;
-    g_eff_lower_y_offset_word = &SPAD51268->y_extent_work;
+    g_eff_y_extent_work = &SPAD51268->y_extent_work;
     g_eff_rtp_flag = &SPAD51268->unk8C;
     g_eff_depth_work = SPAD51268->depth_work;
     g_eff_top_left_uv = &SPAD51268->top_left_uv;
@@ -1220,18 +1220,18 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                         *g_eff_geom_screen_work / *g_eff_depth_work;
                     /* Sprite size = base size * depth scale, in 1/256 units,
                        at least 8. */
-                    *g_eff_right_x_offset =
+                    *g_eff_x_extent_work =
                         *g_eff_base_width * *g_eff_perspective_scale > 0x800
                             ? *g_eff_base_width * *g_eff_perspective_scale >> 8
                             : 8;
-                    *g_eff_lower_y_offset_word =
+                    *g_eff_y_extent_work =
                         *g_eff_base_height * *g_eff_perspective_scale > 0x800
                             ? *g_eff_base_height * *g_eff_perspective_scale >> 8
                             : 8;
                     if (billboard_index == 0) {
                         if (g_eff_billboard_pair_ages[slot_index] < 5) {
-                            *g_eff_right_x_offset =
-                                *g_eff_right_x_offset *
+                            *g_eff_x_extent_work =
+                                *g_eff_x_extent_work *
                                 (rcos((g_eff_billboard_pair_ages[slot_index]
                                        << 10) /
                                       5) *
@@ -1239,8 +1239,8 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                                  7) /
                                 10;
                         } else if (g_eff_billboard_pair_ages[slot_index] < 16) {
-                            *g_eff_right_x_offset =
-                                *g_eff_right_x_offset *
+                            *g_eff_x_extent_work =
+                                *g_eff_x_extent_work *
                                 (rcos(((g_eff_billboard_pair_ages[slot_index] -
                                         5)
                                        << 10) /
@@ -1249,16 +1249,16 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                                 10;
                         }
                         if (g_eff_billboard_pair_ages[slot_index] < 10) {
-                            *g_eff_lower_y_offset_word =
-                                *g_eff_lower_y_offset_word *
+                            *g_eff_y_extent_work =
+                                *g_eff_y_extent_work *
                                 (rsin((g_eff_billboard_pair_ages[slot_index]
                                        << 10) /
                                       10) *
                                  85 / 4096) /
                                 100;
                         } else if (g_eff_billboard_pair_ages[slot_index] < 16) {
-                            *g_eff_lower_y_offset_word =
-                                *g_eff_lower_y_offset_word *
+                            *g_eff_y_extent_work =
+                                *g_eff_y_extent_work *
                                 (rcos(((g_eff_billboard_pair_ages[slot_index] -
                                         10)
                                        << 10) /
@@ -1276,10 +1276,10 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                             rsin((g_eff_billboard_pair_ages[slot_index] << 10) /
                                  12) *
                             12 / 4096;
-                        *g_eff_right_x_offset =
-                            *g_eff_right_x_offset * scale / 10;
-                        *g_eff_lower_y_offset_word =
-                            *g_eff_lower_y_offset_word * scale / 10;
+                        *g_eff_x_extent_work =
+                            *g_eff_x_extent_work * scale / 10;
+                        *g_eff_y_extent_work =
+                            *g_eff_y_extent_work * scale / 10;
                         if (g_eff_billboard_pair_ages[slot_index] >= 9) {
                             /* *var_6 = age - 15: the colour word below is built
                              * from -*var_6 * 128 / 5 and -*var_6 * 255 / 5. */
@@ -1294,23 +1294,22 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
                     }
                     setlen(prim, 9);
                     prim->code = 0x2E;
-                    *g_eff_right_x_offset = *g_eff_right_x_offset >> 1;
-                    *g_eff_left_x_offset = -*g_eff_right_x_offset;
-                    *g_eff_upper_y_offset =
-                        *g_eff_lower_y_offset_word * 60 / 64;
-                    *g_eff_lower_y_offset_word = 0;
+                    *g_eff_x_extent_work = *g_eff_x_extent_work >> 1;
+                    *g_eff_left_x_offset = -*g_eff_x_extent_work;
+                    *g_eff_upper_y_offset = *g_eff_y_extent_work * 60 / 64;
+                    *g_eff_y_extent_work = 0;
                     *(s32 *)&prim->x0 =
                         *g_eff_screen_xy + *g_eff_left_x_offset -
                         (*g_eff_upper_y_offset << 16);
                     *(s32 *)&prim->x1 =
-                        *g_eff_screen_xy + *g_eff_right_x_offset -
+                        *g_eff_screen_xy + *g_eff_x_extent_work -
                         (*g_eff_upper_y_offset << 16);
                     *(s32 *)&prim->x2 =
                         *g_eff_screen_xy + *g_eff_left_x_offset +
-                        (*g_eff_lower_y_offset_word << 16);
+                        (*g_eff_y_extent_work << 16);
                     *(s32 *)&prim->x3 =
-                        *g_eff_screen_xy + *g_eff_right_x_offset +
-                        (*g_eff_lower_y_offset_word << 16);
+                        *g_eff_screen_xy + *g_eff_x_extent_work +
+                        (*g_eff_y_extent_work << 16);
                     *(s32 *)&prim->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
                     *(s32 *)&prim->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
                     *(u16 *)&prim->u2 = *g_eff_bottom_left_uv;
@@ -3026,51 +3025,50 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
         if (particle_mode < 2) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
-            *g_eff_right_x_offset =
+            *g_eff_x_extent_work =
                 *g_eff_base_width * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_width * *g_eff_perspective_scale >> 9
                     : 1;
-            *g_eff_lower_y_offset_word =
+            *g_eff_y_extent_work =
                 *g_eff_base_height * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_height * *g_eff_perspective_scale >> 9
                     : 1;
         } else if (particle_mode < 4) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
-            *g_eff_right_x_offset =
+            *g_eff_x_extent_work =
                 *g_eff_base_width * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_width * *g_eff_perspective_scale >> 9
                     : 1;
-            *g_eff_lower_y_offset_word =
+            *g_eff_y_extent_work =
                 *g_eff_base_height * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_height * *g_eff_perspective_scale >> 9
                     : 1;
-            *g_eff_right_x_offset +=
-                *g_eff_right_x_offset * 20 / (*var_14 * 6 + 1);
-            *g_eff_lower_y_offset_word +=
-                *g_eff_lower_y_offset_word * 20 / (*var_14 * 6 + 1);
+            *g_eff_x_extent_work +=
+                *g_eff_x_extent_work * 20 / (*var_14 * 6 + 1);
+            *g_eff_y_extent_work +=
+                *g_eff_y_extent_work * 20 / (*var_14 * 6 + 1);
         } else if (particle_mode < 6) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
-            *g_eff_right_x_offset =
+            *g_eff_x_extent_work =
                 *g_eff_base_width * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_width * *g_eff_perspective_scale >> 9
                     : 1;
-            *g_eff_lower_y_offset_word =
+            *g_eff_y_extent_work =
                 *g_eff_base_height * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_height * *g_eff_perspective_scale >> 9
                     : 1;
-            *g_eff_right_x_offset += *g_eff_right_x_offset * *var_14 / 2;
-            *g_eff_lower_y_offset_word +=
-                *g_eff_lower_y_offset_word * *var_14 / 2;
+            *g_eff_x_extent_work += *g_eff_x_extent_work * *var_14 / 2;
+            *g_eff_y_extent_work += *g_eff_y_extent_work * *var_14 / 2;
         } else if (particle_mode < 8) {
             *g_eff_perspective_scale =
                 *g_eff_geom_screen_work * 200 / g_eff_depth_work[1];
-            *g_eff_right_x_offset =
+            *g_eff_x_extent_work =
                 *g_eff_base_width * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_width * *g_eff_perspective_scale >> 9
                     : 1;
-            *g_eff_lower_y_offset_word =
+            *g_eff_y_extent_work =
                 *g_eff_base_height * *g_eff_perspective_scale > 0x200
                     ? *g_eff_base_height * *g_eff_perspective_scale >> 9
                     : 1;
@@ -3078,13 +3076,13 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
             sxy[2] += rand() * 20 / 32768;
             sxy[3] += rand() * 10 / 32768;
         }
-        if (*g_eff_right_x_offset > *g_eff_base_width * 2) {
-            *g_eff_right_x_offset = *g_eff_base_width >> 1;
-            *g_eff_lower_y_offset_word = *g_eff_base_height >> 1;
+        if (*g_eff_x_extent_work > *g_eff_base_width * 2) {
+            *g_eff_x_extent_work = *g_eff_base_width >> 1;
+            *g_eff_y_extent_work = *g_eff_base_height >> 1;
         }
-        *g_eff_left_x_offset = -*g_eff_right_x_offset;
-        *g_eff_upper_y_offset = -*g_eff_lower_y_offset_word;
-        *g_eff_lower_y_offset_word <<= 16;
+        *g_eff_left_x_offset = -*g_eff_x_extent_work;
+        *g_eff_upper_y_offset = -*g_eff_y_extent_work;
+        *g_eff_y_extent_work <<= 16;
         *g_eff_upper_y_offset <<= 16;
 
         squared_length = p_out[0] + p_out[1] + p_out[2];
@@ -3106,14 +3104,14 @@ void eff_UpdateParticles(s32 particle_mode, s32 particle_row_index) {
                 g_eff_screen_xy[*p_n] + *g_eff_left_x_offset +
                 *g_eff_upper_y_offset;
             *(s32 *)&(*p_prim)->x1 =
-                g_eff_screen_xy[*p_n] + *g_eff_right_x_offset +
+                g_eff_screen_xy[*p_n] + *g_eff_x_extent_work +
                 *g_eff_upper_y_offset;
             *(s32 *)&(*p_prim)->x2 =
                 g_eff_screen_xy[*p_n] + *g_eff_left_x_offset +
-                *g_eff_lower_y_offset_word;
+                *g_eff_y_extent_work;
             *(s32 *)&(*p_prim)->x3 =
-                g_eff_screen_xy[*p_n] + *g_eff_right_x_offset +
-                *g_eff_lower_y_offset_word;
+                g_eff_screen_xy[*p_n] + *g_eff_x_extent_work +
+                *g_eff_y_extent_work;
             *(s32 *)&(*p_prim)->u0 = *g_eff_top_left_uv + *g_eff_clut_word;
             *(s32 *)&(*p_prim)->u1 = *g_eff_top_right_uv + *g_eff_tpage_word;
             *(u16 *)&(*p_prim)->u2 = *g_eff_bottom_left_uv;
