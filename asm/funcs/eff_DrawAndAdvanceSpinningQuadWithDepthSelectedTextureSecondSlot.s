@@ -1,4 +1,4 @@
-glabel func_80065394
+glabel eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot
     /* 55B94 80065394 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55B98 80065398 1000BFAF */  sw         $ra, 0x10($sp)
     /* 55B9C 8006539C 0096010C */  jal        eff_DrawAnimatedQuads
@@ -20,4 +20,4 @@ glabel func_80065394
     /* 55BD8 800653D8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 55BDC 800653DC 0800E003 */  jr         $ra
     /* 55BE0 800653E0 00000000 */   nop
-endlabel func_80065394
+endlabel eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot

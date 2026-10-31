@@ -215,18 +215,18 @@ u8 eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf(void);
 u8 eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot(void);
 void eff_InitCosineScaledQuad(void);
 u8 eff_DrawAndAdvanceCosineScaledQuad(void);
-void func_80064ED8(void);
-u8 func_80065344(void);
-void func_80064F20(void);
-u8 func_80065394(void);
+void eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot(void);
+u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot(void);
+void eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot(void);
+u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot(void);
 s32 eff_SpawnJitteredBillboards(void);
 s32 eff_DrawAndAdvanceJitteredBillboards(void);
 s32 eff_SpawnBillboardPair(void);
 s32 eff_DrawAndAdvanceBillboardPairs(void);
-s32 func_80064F68(void);
-u8 func_800653E4(void);
-s32 func_80064FB4(void);
-u8 func_80065434(void);
+s32 eff_InitPreseededGrowingQuadFirstSlot(void);
+u8 eff_DrawAndAdvancePreseededGrowingQuadFirstSlot(void);
+s32 eff_InitPreseededGrowingQuadSecondSlot(void);
+u8 eff_DrawAndAdvancePreseededGrowingQuadSecondSlot(void);
 s32 eff_InitRateSelectedCosineScaledQuad(void);
 u8 eff_DrawAndAdvanceRateSelectedCosineScaledQuad(void);
 void eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay(void);
@@ -279,18 +279,18 @@ s32 g_eff_command_handlers[62] = {
     (s32)eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot,
     (s32)eff_InitCosineScaledQuad,
     (s32)eff_DrawAndAdvanceCosineScaledQuad,
-    (s32)func_80064ED8,
-    (s32)func_80065344,
-    (s32)func_80064F20,
-    (s32)func_80065394,
+    (s32)eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot,
+    (s32)eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot,
+    (s32)eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot,
+    (s32)eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot,
     (s32)eff_SpawnJitteredBillboards,
     (s32)eff_DrawAndAdvanceJitteredBillboards,
     (s32)eff_SpawnBillboardPair,
     (s32)eff_DrawAndAdvanceBillboardPairs,
-    (s32)func_80064F68,
-    (s32)func_800653E4,
-    (s32)func_80064FB4,
-    (s32)func_80065434,
+    (s32)eff_InitPreseededGrowingQuadFirstSlot,
+    (s32)eff_DrawAndAdvancePreseededGrowingQuadFirstSlot,
+    (s32)eff_InitPreseededGrowingQuadSecondSlot,
+    (s32)eff_DrawAndAdvancePreseededGrowingQuadSecondSlot,
     (s32)eff_InitRateSelectedCosineScaledQuad,
     (s32)eff_DrawAndAdvanceRateSelectedCosineScaledQuad,
     (s32)eff_InitQuadPairWithFirstMirroredByViewSettingOutsideReplay,

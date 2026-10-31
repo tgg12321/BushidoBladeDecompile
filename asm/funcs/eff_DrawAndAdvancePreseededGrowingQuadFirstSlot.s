@@ -1,4 +1,4 @@
-glabel func_800653E4
+glabel eff_DrawAndAdvancePreseededGrowingQuadFirstSlot
     /* 55BE4 800653E4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 55BE8 800653E8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 55BEC 800653EC 0096010C */  jal        eff_DrawAnimatedQuads
@@ -20,4 +20,4 @@ glabel func_800653E4
     /* 55C28 80065428 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 55C2C 8006542C 0800E003 */  jr         $ra
     /* 55C30 80065430 00000000 */   nop
-endlabel func_800653E4
+endlabel eff_DrawAndAdvancePreseededGrowingQuadFirstSlot

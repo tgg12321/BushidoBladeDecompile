@@ -1782,7 +1782,7 @@ void eff_InitCosineScaledQuad(void) {
     g_eff_animated_quad_counters[0] = 0;
 }
 
-void func_80064ED8(void) {
+void eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot(void) {
     g_eff_animated_quad_positions[1].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[1].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[1].world_z = g_eff_command_position[2];
@@ -1790,7 +1790,7 @@ void func_80064ED8(void) {
     g_eff_animated_quad_counters[1] = 0;
 }
 
-void func_80064F20(void) {
+void eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot(void) {
     g_eff_animated_quad_positions[2].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[2].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[2].world_z = g_eff_command_position[2];
@@ -1798,7 +1798,7 @@ void func_80064F20(void) {
     g_eff_animated_quad_counters[2] = 0;
 }
 
-s32 func_80064F68(void) {
+s32 eff_InitPreseededGrowingQuadFirstSlot(void) {
     g_eff_animated_quad_positions[3].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[3].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[3].world_z = g_eff_command_position[2];
@@ -1807,7 +1807,7 @@ s32 func_80064F68(void) {
     return 1;
 }
 
-s32 func_80064FB4(void) {
+s32 eff_InitPreseededGrowingQuadSecondSlot(void) {
     g_eff_animated_quad_positions[4].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[4].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[4].world_z = g_eff_command_position[2];
@@ -1913,7 +1913,7 @@ u8 eff_DrawAndAdvanceCosineScaledQuad(void) {
     return 0;
 }
 
-u8 func_80065344(void) {
+u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(1);
     s16 *p = &g_eff_animated_quad_counters[1];
     u16 quad_counter = *p;
@@ -1925,7 +1925,7 @@ u8 func_80065344(void) {
     return 0;
 }
 
-u8 func_80065394(void) {
+u8 eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(2);
     s16 *p = &g_eff_animated_quad_counters[2];
     s16 quad_counter = *p;
@@ -1937,7 +1937,7 @@ u8 func_80065394(void) {
     return 0;
 }
 
-u8 func_800653E4(void) {
+u8 eff_DrawAndAdvancePreseededGrowingQuadFirstSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(3);
     s16 *p = &g_eff_animated_quad_counters[3];
     s16 quad_counter = *p;
@@ -1949,7 +1949,7 @@ u8 func_800653E4(void) {
     return 0;
 }
 
-u8 func_80065434(void) {
+u8 eff_DrawAndAdvancePreseededGrowingQuadSecondSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(4);
     s16 *p = &g_eff_animated_quad_counters[4];
     u16 quad_counter = *p;

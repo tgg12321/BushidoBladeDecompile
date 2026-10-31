@@ -1,4 +1,4 @@
-glabel func_80064ED8
+glabel eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot
     /* 556D8 80064ED8 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 556DC 80064EDC 00000000 */  nop
     /* 556E0 80064EE0 0000628C */  lw         $v0, 0x0($v1)
@@ -17,4 +17,4 @@ glabel func_80064ED8
     /* 55714 80064F14 B40C23AC */  sw         $v1, %lo(D_800F0CB4)($at)
     /* 55718 80064F18 0800E003 */  jr         $ra
     /* 5571C 80064F1C 00000000 */   nop
-endlabel func_80064ED8
+endlabel eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot

@@ -1,4 +1,4 @@
-glabel func_80064FB4
+glabel eff_InitPreseededGrowingQuadSecondSlot
     /* 557B4 80064FB4 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 557B8 80064FB8 00000000 */  nop
     /* 557BC 80064FBC 0000628C */  lw         $v0, 0x0($v1)
@@ -18,4 +18,4 @@ glabel func_80064FB4
     /* 557F4 80064FF4 D80C23AC */  sw         $v1, %lo(D_800F0CD8)($at)
     /* 557F8 80064FF8 0800E003 */  jr         $ra
     /* 557FC 80064FFC 01000224 */   addiu     $v0, $zero, 0x1
-endlabel func_80064FB4
+endlabel eff_InitPreseededGrowingQuadSecondSlot

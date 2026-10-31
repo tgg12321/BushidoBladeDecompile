@@ -1,4 +1,4 @@
-glabel func_80064F20
+glabel eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot
     /* 55720 80064F20 B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 55724 80064F24 00000000 */  nop
     /* 55728 80064F28 0000628C */  lw         $v0, 0x0($v1)
@@ -17,4 +17,4 @@ glabel func_80064F20
     /* 5575C 80064F5C C00C23AC */  sw         $v1, %lo(D_800F0CC0)($at)
     /* 55760 80064F60 0800E003 */  jr         $ra
     /* 55764 80064F64 00000000 */   nop
-endlabel func_80064F20
+endlabel eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot
