@@ -1,0 +1,40 @@
+# wave109 compiled dry run on 891427c44 (dry.sh)
+rc=0
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (8) --
+  asm: 4 files, 6 substitutions
+      asm/funcs/func_80046B44.s  (1)
+      asm/funcs/gpu_LoadRequestedAvailableTimGroupsForSlot.s  (2)
+      asm/funcs/node_InitRootNodePairWithNegatedRotationMatrices.s  (2)
+      asm/funcs/slot_FinalizeObjectLoadSoundTexturesAndArena.s  (1)
+  include: 1 files, 1 substitutions
+      include/bb2.h  (1)
+  src: 3 files, 5 substitutions
+      src/main/309CC.c  (1)
+      src/main/31D3C.c  (1)
+      src/main/368E4.c  (3)
+
+-- .s file renames (2) --
+  asm/funcs/gpu_LoadRequestedAvailableTimGroupsForSlot.s -> asm/funcs/gpu_LoadRequestedMaskedTimGroupsForSlot.s
+  asm/funcs/node_InitRootNodePairWithNegatedRotationMatrices.s -> asm/funcs/node_InitViewRootNodePair.s
+
+-- ledger directory renames (2) --
+  memory/grind/gpu_LoadRequestedAvailableTimGroupsForSlot -> memory/grind/gpu_LoadRequestedMaskedTimGroupsForSlot
+  memory/grind/_completed/node_InitRootNodePairWithNegatedRotationMatrices -> memory/grind/_completed/node_InitViewRootNodePair
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (2) --
+  memory/grind/gpu_LoadRequestedAvailableTimGroupsForSlot/layer2.jsonl: 2 changes
+      line 1: func gpu_LoadRequestedAvailableTimGroupsForSlot -> gpu_LoadRequestedMaskedTimGroupsForSlot
+      line 2: func gpu_LoadRequestedAvailableTimGroupsForSlot -> gpu_LoadRequestedMaskedTimGroupsForSlot
+  memory/grind/_completed/node_InitRootNodePairWithNegatedRotationMatrices/layer2.jsonl: 2 changes
+      line 1: func node_InitRootNodePairWithNegatedRotationMatrices -> node_InitViewRootNodePair
+      line 2: func node_InitRootNodePairWithNegatedRotationMatrices -> node_InitViewRootNodePair
+
+DRY RUN — nothing written. Re-run with --apply.

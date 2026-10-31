@@ -1,0 +1,40 @@
+wave109 (func-audit-2): 2 RENAME (0 changed from research, 0 dropped); 4 KEEP (not rows); 0 RESET. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave109 (func-second-pass-17 holds wave108; no wave109 dir, pending claim or tool reference exists at 891427c44; if another lane lands wave109 first, rename the id in rows.py/build.py/dry.sh/apply.sh/gates.ps1 and redo the dry run).
+Drafted 2026-10-31 (naming-b) at HEAD 891427c44 in the ln-naming-b worktree. Research input tmp/codex/func-audit-2-research.md (untrusted proposals); every home and use re-derived with git grep -w over src include asm named_syms.txt symbol_addrs.txt inline_asm_canonical.txt known_psyq_stdlib.txt tools engine docs/engine .claude docs/naming/function-names.csv.
+Generated: build.py writes the manifests to docs/naming/phase3/wave109/ (func_manifest.csv, data_manifest.csv); git status after the dry run shows only pending/func-audit-2/ and wave109/ (both untracked). The dry run restores function-names.csv and removes the staged zz-wave109-dry copy. gates.ps1 needs gates.sh copied into tmp/p3w109/ (as in earlier waves).
+
+CONTRADICTION CHECK against the research: NONE. Every home/use/count in the research held. Both proposed names are absent from src include asm named_syms.txt symbol_addrs.txt function-names.csv (git grep -i; the only repo hit is the phase3/backlog.tsv row naming the audits). No name clash.
+
+Per-row facts re-derived (current name -> proposed; homes and uses at HEAD):
+ 0x80041988 gpu_LoadRequestedAvailableTimGroupsForSlot -> gpu_LoadRequestedMaskedTimGroupsForSlot: glabel asm/funcs/...ForSlot.s:1 (endlabel :91); def src/main/31D3C.c:163; decl include/bb2.h:873; one call src/main/309CC.c:274 (+ slot_FinalizeObjectLoadSoundTexturesAndArena.s:194 jal); comments 31D3C.c:519 and symbol_addrs.txt:907. Body tests the request AND the constant per-asset mask g_gpu_asset_tim_group_load_masks (31D3C.c:525; 0x1F for indices 0..12, 15..27, 30, 63, else 0); nothing shows the mask means "available".
+ 0x80049E4C node_InitRootNodePairWithNegatedRotationMatrices -> node_InitViewRootNodePair: glabel asm/funcs/...Matrices.s:1 (endlabel :66); def src/main/368E4.c:2256; local extern 368E4.c:313; one call 368E4.c:434 in func_80046B44 (+ func_80046B44.s:12 jal); no header decl; comments include/game.h:2112, named_syms.txt:984, symbol_addrs.txt:656 and :749. Body zeroes rot/work.t of the two view root nodes, calls node_SetMatrixFromNegatedRot (which negates angles, not matrices; zero here) and publishes g_view_camera_root_ptr / g_view_identity_root_ptr.
+Recorded runtime data under docs/naming/runtime (hitmap.tsv, evidence/*.tsv) keeps the old names (e.g. runtime/debug-config-menu-1/hitmap.tsv:450, evidence/screens.tsv:43712); not touched by the wave. After apply confirm via git status that nothing under docs/naming/runtime or tools/trace changed.
+Dry run: rc=0, 2 operations (0 RESET, 2 RENAME), 8 file edits (4 asm, 1 include, 3 src), 2 .s renames, 2 ledger dir renames (memory/grind, memory/grind/_completed), 2 layer2.jsonl key edits (4 lines); link map STALE (expected, as in earlier dry runs). Output in dry.txt.
+
+COMMENT PASS (every comment/doc occurrence of the two old names; the applier does not rewrite comments, hand-edit them in the wave, then naming_keycheck --sub-comments):
+ gpu_LoadRequestedAvailableTimGroupsForSlot:
+  src/main/31D3C.c:519 (.data top comment, "gpu_LoadRequestedAvailableTimGroupsForSlot's per-index 5-bit mask table")
+  symbol_addrs.txt:907 (comment on g_gpu_asset_tim_group_load_masks)
+  (code, handled by the applier: include/bb2.h:873 decl, src/main/31D3C.c:163 def, src/main/309CC.c:274 call, 2 asm files + the .s rename)
+  docs/naming/function-names.csv:449 (census, rebuilt by build_census.py); none in tools/, engine/, docs/engine/, .claude/rules, named_syms.txt
+ node_InitRootNodePairWithNegatedRotationMatrices:
+  include/game.h:2112 (Unk80101DF0Record layout comment)
+  named_syms.txt:984 (comment "From text1b.c ...")
+  symbol_addrs.txt:656 (comment on g_view_camera_root_ptr) and :749 (comment on g_view_identity_root_ptr)
+  (code, handled by the applier: src/main/368E4.c:313 extern, :434 call, :2256 def; 2 asm files + the .s rename)
+  docs/naming/function-names.csv:643 (own row) and :739 (node_GetRootNodeMatrixTranslation evidence text; census); none in tools/, engine/, docs/engine/, .claude/rules
+ Wrapped-comment caution: game.h:2112 sits at a line end ("node_InitRootNodePairWithNegatedRotationMatrices: 0x80101DF0 (node_kind ="); the shorter new name may re-wrap on tools/format.py.
+
+KEEP (not rows; names stay):
+ 0x80042504 math_HsvToRgb (audit-99 #38): the grayscale override (gpu_RefreshGrayscaleMode() forces S = 0) is the project-wide display policy applied the same way by sibling colour routines whose admitted names do not mention it (gpu_SetBackgroundClearColorAndFarColor 31D3C.c:504-515, 31D3C.c:115/:269/:468, 368E4.c:336/:1275/:1342); under the mode the function still does an HSV->RGB conversion (of the desaturated colour), so nothing contradicts the name; "WithGrayscaleMode" here alone would break the sibling convention. No use (comment only, 32D04.c:80).
+ 0x80016A8C gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth (audit-110 #2): the 640x240 SetDefDispEnv at 6CF8.c:232 writes back exactly the value disp_Init (6CF8.c:163/:173) put in g_gpu_db[1].disp, and that env is the double-buffer display env main submits every presented frame (PutDispEnv at 6CF8.c:486, :367), so "RestoreDisplayWidth" is true; "ResetDisplayEnvWidth" is no truer. One call (6CF8.c:442). Counter-evidence: the live hardware mode stays 320 until main's first present.
+ 0x8004777C node_InitLumberyardFrameEntriesFromWorldTranslations (audit-215 #15): the stage word is a Q132 role word (.claude/rules/naming-runtime-evidence.md:13-16) landed by wave102 after a naming-reviewer PASS; docs/naming/runtime/evidence/only_x.tsv has 34 pair rows for 0x8004777C, all tag stage:lumberyard, and each of the 17 other stages is excluded by a conclusive zero row. Its one use is the .init slot of selector row 18 (d_80DF8.c:892), whose ndata file 0x12 + 0x27 is the Lumberyard stage. The audit's suggestion is the pre-wave102 name.
+ 0x80077860 DrawWhiteTileAndSheetsAndResetFlowOnPadMatch (audit-219 #8): every part composes from the admitted callee gpu_DrawWhiteTileAndSheetsTestPadMask (success = arg1 & 0x400040, the project's both-pads accept mask, 35 hits in 7 TUs) and the global it writes (g_option_mode_flow_state = 0, the TU's own ResetFlow vocabulary, 64FD8.c:1376-1381, :1408). No use at all (dead code), so none contradicts "Pad"; the audit's "OnHelperSuccess" names nothing. An unprefixed flow helper matches the TU's siblings rated ok by audit-219 #10/#11. Lead (out of scope): the callee's "PadMask" rests on that constant convention alone.
+
+SETTLED-LIST (copied from the research; audit numbers consumed by this wave):
+- audit-99 #26: gpu_LoadRequestedAvailableTimGroupsForSlot (RENAME gpu_LoadRequestedMaskedTimGroupsForSlot)
+- audit-99 #38: math_HsvToRgb (KEEP)
+- audit-103 #5: node_InitRootNodePairWithNegatedRotationMatrices (RENAME node_InitViewRootNodePair)
+- audit-110 #2: gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth (KEEP)
+- audit-215 #15: node_InitLumberyardFrameEntriesFromWorldTranslations (KEEP)
+- audit-219 #8: DrawWhiteTileAndSheetsAndResetFlowOnPadMatch (KEEP)
