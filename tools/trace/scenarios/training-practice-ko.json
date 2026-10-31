@@ -6,7 +6,9 @@
     "menu:pause"
   ],
   "evidence": [
-    "docs/naming/runtime/training-practice-ko-1/spec.json"
+    "docs/naming/runtime/training-practice-ko-1/spec.json",
+    "docs/naming/runtime/training-practice-ko-orange-stub-1/baseline/spec.json",
+    "docs/naming/runtime/training-practice-ko-orange-stub-1/eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires/spec.json"
   ],
   "use": [
     "boot"

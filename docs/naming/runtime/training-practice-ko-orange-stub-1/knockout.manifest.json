@@ -1,0 +1,12 @@
+{
+  "baseline/capture.manifest.json": "62cb4903fb8744ff2af1ce395c3f97f910e7169b",
+  "baseline/capture.script.lua": "1e443ddba8380fe183d7770489621a5a7cf87556",
+  "baseline/run.log": "75a0c335419c427b022ab6efc2222d020ab0227c",
+  "baseline/spec.json": "d81330199a66a2e06341a3e95b49d3f60f9bf97a",
+  "eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires/capture.manifest.json": "4de6fbf35acf1bacd101e42abf8bbe572e0ad2c2",
+  "eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires/capture.script.lua": "f8aa8933c21e8f65d36d6941f3f93295bf73988b",
+  "eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires/run.log": "acdb271e58a50ffe41a9d798dbd2c031f669f3ba",
+  "eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires/spec.json": "4b4e47eb3ffe4ce33a7ea1d4f8a7ca99fa0d0ba0",
+  "knockout.md": "fd7f5fab12c63c6fea37d778473d00b071b57915",
+  "knockout.tsv": "c20c9b6c4b23e4aa19b7a07c3cdafcf9c5722b63"
+}
