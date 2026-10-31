@@ -1,4 +1,4 @@
-glabel func_8006702C
+glabel eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf
     /* 5782C 8006702C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 57830 80067030 03000424 */  addiu      $a0, $zero, 0x3
     /* 57834 80067034 21280000 */  addu       $a1, $zero, $zero
@@ -12,4 +12,4 @@ glabel func_8006702C
     /* 57854 80067054 FF004230 */  andi       $v0, $v0, 0xFF
     /* 57858 80067058 0800E003 */  jr         $ra
     /* 5785C 8006705C 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_8006702C
+endlabel eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf

@@ -1,4 +1,4 @@
-glabel func_80067740
+glabel eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot
     /* 57F40 80067740 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 57F44 80067744 1000BFAF */  sw         $ra, 0x10($sp)
     /* 57F48 80067748 02000424 */  addiu      $a0, $zero, 0x2
@@ -14,4 +14,4 @@ glabel func_80067740
     /* 57F70 80067770 FF004230 */  andi       $v0, $v0, 0xFF
     /* 57F74 80067774 0800E003 */  jr         $ra
     /* 57F78 80067778 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80067740
+endlabel eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot

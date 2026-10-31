@@ -244,12 +244,12 @@ void func_80065264(void);
 u8 func_80065760(void);
 void func_800652AC(void);
 u8 func_800657B0(void);
-u8 func_80066F90(void);
-u8 func_80066FC4(void);
-u8 func_80067740(void);
-u8 func_80066FF8(void);
-u8 func_8006702C(void);
-u8 func_8006777C(void);
+u8 eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf(void);
+u8 eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot(void);
+u8 eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotFirstHalf(void);
+u8 eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesSecondSlot(void);
 u8 eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf(void);
 u8 eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf(void);
 u8 eff_DrawAndAdvanceTextureSelectedParticlesFirstSlot(void);
@@ -308,12 +308,12 @@ s32 g_eff_command_handlers[62] = {
     (s32)func_80065760,
     (s32)func_800652AC,
     (s32)func_800657B0,
-    (s32)func_80066F90,
-    (s32)func_80066FC4,
-    (s32)func_80067740,
-    (s32)func_80066FF8,
-    (s32)func_8006702C,
-    (s32)func_8006777C,
+    (s32)eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf,
+    (s32)eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot,
+    (s32)eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotFirstHalf,
+    (s32)eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesSecondSlot,
     (s32)eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf,
     (s32)eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf,
     (s32)eff_DrawAndAdvanceTextureSelectedParticlesFirstSlot,
