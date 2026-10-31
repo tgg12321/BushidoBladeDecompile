@@ -439,7 +439,7 @@ void func_80046B44(void) {
     D_800F6650 = 0;
     g_gpu_raised_ot_cutoff_requested = 1;
     g_gpu_grid_and_fog_control = 0;
-    D_800F6658 = 2;
+    g_gpu_view_coordinate_shift = 2;
     D_800F665A = 1;
     D_800F665C = 0;
     D_800A3790 = 0x23;

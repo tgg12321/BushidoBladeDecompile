@@ -142,7 +142,7 @@ g_gpu_last_grid_pass_view_yaw = 0x800A336C; // game mode/state  // data-wave 202
 D_800A322C = 0x800A322C; // player count  // data-wave 2026-09-25: was g_game_player_count
 D_800F665C = 0x800F665C; // write-only (func_80046B44, func_8003F218)  // data-wave 2026-10-08: was g_game_mirror_mode
 g_gpu_grid_and_fog_control = 0x800F6656; // s16 flag word: bit 0 gates the grid/fog passes in 2B344.c; bit 1 is set with it by func_8003F1E4 (= 3) and cleared by func_8003E2AC, never tested  // data-wave 2026-09-25: was g_game_p1_ctrl
-D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
+g_gpu_view_coordinate_shift = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_a
 D_800A3374 = 0x800A3374; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_b
 g_gpu_raised_ot_cutoff_requested = 0x800F6654; // 0/1 request for the raised OT cutoff; read by gpu_GetRaisedOtCutoffRequested  // data-wave 2026-09-25: was g_game_pause
@@ -1846,7 +1846,7 @@ _svm_vab_start = 0x80107810; /* data-wave 2026-09-07: was g_snd_ch_addr */
 _svm_vab_count = 0x80107808; /* data-wave 2026-09-07: was g_snd_ch_count */
 g_math_light_plane_projection = 0x800EEDB0; /* data-wave 2026-09-29: was g_cam_matrix */
 D_800F665C = 0x800F665C; /* data-wave 2026-10-08: was g_game_mirror_mode */
-D_800F6658 = 0x800F6658; /* data-wave 2026-09-25: was g_game_p2_ctrl */
+g_gpu_view_coordinate_shift = 0x800F6658; /* data-wave 2026-09-25: was g_game_p2_ctrl */
 g_pad_buf = 0x800FF580; /* data-wave 2026-09-24: was g_pad_data */
 g_gpu_db = 0x800F7438; /* GpuDb[2] display double buffer (include/game.h); data-wave 2026-09-24: was g_disp_fb_base */
 g_softbody_slots = 0x800F6740; /* data-wave 2026-10-08: was g_file_data_buf */

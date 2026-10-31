@@ -762,8 +762,8 @@ glabel func_8004A940
     /* 3BCF8 8004B4F8 23400B01 */  subu       $t0, $t0, $t3
     /* 3BCFC 8004B4FC 23482C01 */  subu       $t1, $t1, $t4
     /* 3BD00 8004B500 23504D01 */  subu       $t2, $t2, $t5
-    /* 3BD04 8004B504 0F80153C */  lui        $s5, %hi(D_800F6658)
-    /* 3BD08 8004B508 5866B586 */  lh         $s5, %lo(D_800F6658)($s5)
+    /* 3BD04 8004B504 0F80153C */  lui        $s5, %hi(g_gpu_view_coordinate_shift)
+    /* 3BD08 8004B508 5866B586 */  lh         $s5, %lo(g_gpu_view_coordinate_shift)($s5)
     /* 3BD0C 8004B50C 00000000 */  nop
     /* 3BD10 8004B510 0740A802 */  srav       $t0, $t0, $s5
     /* 3BD14 8004B514 200028A6 */  sh         $t0, 0x20($s1)

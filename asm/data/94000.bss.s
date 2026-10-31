@@ -1653,9 +1653,9 @@ dlabel g_gpu_grid_and_fog_control
 enddlabel g_gpu_grid_and_fog_control
 
 /* 800F6658 */
-dlabel D_800F6658
+dlabel g_gpu_view_coordinate_shift
     .space 0x2
-enddlabel D_800F6658
+enddlabel g_gpu_view_coordinate_shift
 
 /* 800F665A */
 dlabel D_800F665A

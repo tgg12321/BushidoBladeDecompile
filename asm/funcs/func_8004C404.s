@@ -12,8 +12,8 @@ glabel func_8004C404
     /* 3CC2C 8004C42C 21908000 */  addu       $s2, $a0, $zero
     /* 3CC30 8004C430 2188A000 */  addu       $s1, $a1, $zero
     /* 3CC34 8004C434 801F133C */  lui        $s3, (0x1F8001B0 >> 16)
-    /* 3CC38 8004C438 0F80143C */  lui        $s4, %hi(D_800F6658)
-    /* 3CC3C 8004C43C 58669486 */  lh         $s4, %lo(D_800F6658)($s4)
+    /* 3CC38 8004C438 0F80143C */  lui        $s4, %hi(g_gpu_view_coordinate_shift)
+    /* 3CC3C 8004C43C 58669486 */  lh         $s4, %lo(g_gpu_view_coordinate_shift)($s4)
     /* 3CC40 8004C440 03000824 */  addiu      $t0, $zero, 0x3
     /* 3CC44 8004C444 22401401 */  sub        $t0, $t0, $s4 /* handwritten instruction */
     /* 3CC48 8004C448 C60168A6 */  sh         $t0, (0x1F8001C6 & 0xFFFF)($s3)

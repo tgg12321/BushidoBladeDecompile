@@ -10,8 +10,8 @@ glabel func_8003F1E4
     /* 2FA00 8003F200 0F80013C */  lui        $at, %hi(g_gpu_grid_and_fog_control)
     /* 2FA04 8003F204 566620A4 */  sh         $zero, %lo(g_gpu_grid_and_fog_control)($at)
   .L8003F208:
-    /* 2FA08 8003F208 0F80013C */  lui        $at, %hi(D_800F6658)
-    /* 2FA0C 8003F20C 586622A4 */  sh         $v0, %lo(D_800F6658)($at)
+    /* 2FA08 8003F208 0F80013C */  lui        $at, %hi(g_gpu_view_coordinate_shift)
+    /* 2FA0C 8003F20C 586622A4 */  sh         $v0, %lo(g_gpu_view_coordinate_shift)($at)
     /* 2FA10 8003F210 0800E003 */  jr         $ra
     /* 2FA14 8003F214 00000000 */   nop
 endlabel func_8003F1E4

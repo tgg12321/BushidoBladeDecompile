@@ -34,7 +34,7 @@ extern RECT g_font_rect;
 extern u8 g_local_ot_draw_mode;
 extern u8 g_gpu_jitter_burst_enabled;
 extern s16 D_800F665C;
-extern s16 D_800F6658;
+extern s16 g_gpu_view_coordinate_shift;
 extern s32 D_800A3790;
 extern s16 g_loaded_resource_selector;
 extern s16 g_resource_has_retained_subblocks;

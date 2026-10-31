@@ -2302,10 +2302,10 @@ void *gpu_GetGridNodeRecordTable(void) { return g_gpu_grid_node_records; }
 void func_8003F1E4(s32 a0) {
     if (a0) {
         g_gpu_grid_and_fog_control = 3;
-        D_800F6658 = 2;
+        g_gpu_view_coordinate_shift = 2;
     } else {
         g_gpu_grid_and_fog_control = 0;
-        D_800F6658 = 1;
+        g_gpu_view_coordinate_shift = 1;
     }
 }
 
