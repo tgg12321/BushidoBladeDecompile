@@ -1,0 +1,19 @@
+# Research (read-only): local / parameter names, wave 37 (row var-locals-37, research: Opus)
+
+Research was done by Opus (output: tmp/codex/var-locals-37-research.md, 7 rows); the Sonnet drafter
+re-derived every row from the lane worktree ln-naming-a at HEAD 6d8da6727 (= main). Brief, summarized:
+follow pending/var-locals-36/prompt.txt (which chains to var-locals-34 / 33 / ... / 15) and
+pending/var-locals-36/notes.txt, with this scope:
+
+- (a) the var-locals-36 "resume" pairs that waited on tooling: fighter_BuildCpuOrbitRoute left + var_3
+  (plus_side_point / minus_side_point, renamed together), resource_LoadOrReuseSelectedBlock:arg1
+  (ALIGN4 macro argument), softbody_CreateForNode point_count / cmds (in-body aggregate): all three
+  families are accepted by scoped_plan since commit 6d8da6727.
+- audit leftovers fighter_UpdateCpuProbes:flags (RESET to neutral var_8) and menu_UpdateRowMenu:flags
+  (refused: two bindings), plus softbody_Step:dist2 (still refused by scoped_plan). One more row was
+  found: menu_LoadResourcesInitStateSelectFirstEnabledRow:flags (RESET var_6).
+- (b) / (c) prerequisite check: whether D_8009A8AC / D_8009A8B4 / D_8009A8C0, D_800A37D2 / D_800A37D3,
+  D_8008E5A8 + g_fight_config.unk_4, Unk800EFAE8Rec.unk44 / unk48, D_800A3548 have been named since
+  var-locals-36 (all still neutral).
+- Do not re-propose NO_NAME / dropped / reverted bindings without new evidence (local or parameter
+  names are never evidence, naming-bar N3). An empty or small manifest is a valid result.

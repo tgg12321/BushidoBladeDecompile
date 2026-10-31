@@ -1,0 +1,7 @@
+fighter_BuildCpuOrbitRoute:left=plus_side_point
+fighter_BuildCpuOrbitRoute:var_3=minus_side_point
+resource_LoadOrReuseSelectedBlock:arg1=staging_addr
+softbody_CreateForNode:point_count=edge_capacity
+softbody_CreateForNode:cmds=params
+fighter_UpdateCpuProbes:flags=var_8
+menu_LoadResourcesInitStateSelectFirstEnabledRow:flags=var_6

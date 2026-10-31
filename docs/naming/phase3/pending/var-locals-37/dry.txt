@@ -1,0 +1,19 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs. naming_member_apply.py handles T.m=n only
+("no T.m=n pairs"; same tool result as waves 16-36); naming_keycheck.py compares an already-applied base/new pair of trees and
+naming_wave.py is function-name only. Local pairs are proven at the apply gate (keycheck cc1
+differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {}) over the working tree
+(base = every src/ and include/ .c/.h/.inc file plus Makefile, read with newline=''; lane worktree ln-naming-a, HEAD 6d8da6727 = main; NAMING_KEYCHECK_ROOT = the worktree; tools/ on sys.path)
+accepted all 7 pairs (61 token substitutions: 2B344.c 7, 368E4.c 10, 4510C.c 27, 596CC.c 17; no include/ file touched; the comment edit listed in notes.txt
+R6 WATCH: 368E4.c:93). Each pair was also run alone: all accepted, none rejected (alone-counts sum to 61, equal to the together total; the per-file counts of the alone runs summed equal the together per-file counts).
+The count of every pair equals a token scan of the binding in its definition (signature and body, comments and strings excluded, ./-> member tokens excluded; separate
+tokenizer, not the plan), pair by pair, line list and count: no mismatch. The runs modified no file in the worktree (git status shows no tracked change; the only new path is the pending dir).
+Per-pair substitutions (function:old=new count):
+  fighter_BuildCpuOrbitRoute:left=plus_side_point 7
+  fighter_BuildCpuOrbitRoute:var_3=minus_side_point 4
+  resource_LoadOrReuseSelectedBlock:arg1=staging_addr 10
+  softbody_CreateForNode:point_count=edge_capacity 5
+  softbody_CreateForNode:cmds=params 2
+  fighter_UpdateCpuProbes:flags=var_8 16
+  menu_LoadResourcesInitStateSelectFirstEnabledRow:flags=var_6 17
+Total 61 (together) = 61 (sum alone). Per file together: src/main/2B344.c 7, src/main/368E4.c 10, src/main/4510C.c 27, src/main/596CC.c 17.
+Probe scripts (scratch, main tmp/vl37/): dry37.py (scoped_plan alone + together + token-scan equality + new-name-in-body freshness + old-token-in-comment scan), scan.py (tokenizer). Each new name is a token of no src/ or include/ file except staging_addr (landed parameter of other functions: 309CC.c, 35000.c, 368E4.c:554-555) and the neutral var_8 / var_6 (tokens of other functions only); zero occurrences inside the renamed function bodies.
