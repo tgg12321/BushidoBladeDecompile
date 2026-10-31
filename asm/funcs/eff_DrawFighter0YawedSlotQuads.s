@@ -1,4 +1,4 @@
-glabel func_80063B78
+glabel eff_DrawFighter0YawedSlotQuads
     /* 54378 80063B78 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 5437C 80063B7C B403838F */  lw         $v1, %gp_rel(g_eff_yawed_quad_tex_index)($gp)
     /* 54380 80063B80 90038287 */  lh         $v0, %gp_rel(g_eff_yawed_quad_tex_selectors)($gp)
@@ -10,4 +10,4 @@ glabel func_80063B78
     /* 54398 80063B98 FF004230 */  andi       $v0, $v0, 0xFF
     /* 5439C 80063B9C 0800E003 */  jr         $ra
     /* 543A0 80063BA0 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80063B78
+endlabel eff_DrawFighter0YawedSlotQuads

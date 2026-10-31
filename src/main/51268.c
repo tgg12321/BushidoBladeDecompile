@@ -1339,14 +1339,14 @@ s32 eff_DrawAndAdvanceBillboardPairs(void) {
 
 u8 eff_AllocateOrRecycleYawedQuadSlot(s32);
 
-u8 func_80063AF0(void) {
+u8 eff_SpawnFighter0YawedSlotQuad(void) {
     g_eff_command_phase[0] = 1;
     g_eff_yawed_quad_tex_selectors[0] =
         (g_eff_active_command_block->command_word.w >> 17) & 3;
     return eff_AllocateOrRecycleYawedQuadSlot(0);
 }
 
-u8 func_80063B34(void) {
+u8 eff_SpawnFighter1YawedSlotQuad(void) {
     g_eff_command_phase[1] = 1;
     g_eff_yawed_quad_tex_selectors[1] =
         (g_eff_active_command_block->command_word.w >> 17) & 3;
@@ -1356,12 +1356,12 @@ u8 func_80063B34(void) {
 s32 eff_DrawYawedSlotQuads(s32);
 void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx);
 
-u8 func_80063B78(void) {
+u8 eff_DrawFighter0YawedSlotQuads(void) {
     *g_eff_yawed_quad_tex_index = g_eff_yawed_quad_tex_selectors[0];
     return eff_DrawYawedSlotQuads(0);
 }
 
-u8 func_80063BA4(void) {
+u8 eff_DrawFighter1YawedSlotQuads(void) {
     *g_eff_yawed_quad_tex_index = g_eff_yawed_quad_tex_selectors[1];
     return eff_DrawYawedSlotQuads(1);
 }

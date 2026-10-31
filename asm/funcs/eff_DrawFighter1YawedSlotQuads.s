@@ -1,4 +1,4 @@
-glabel func_80063BA4
+glabel eff_DrawFighter1YawedSlotQuads
     /* 543A4 80063BA4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 543A8 80063BA8 B403838F */  lw         $v1, %gp_rel(g_eff_yawed_quad_tex_index)($gp)
     /* 543AC 80063BAC 92038287 */  lh         $v0, %gp_rel(D_800A345E)($gp)
@@ -10,4 +10,4 @@ glabel func_80063BA4
     /* 543C4 80063BC4 FF004230 */  andi       $v0, $v0, 0xFF
     /* 543C8 80063BC8 0800E003 */  jr         $ra
     /* 543CC 80063BCC 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80063BA4
+endlabel eff_DrawFighter1YawedSlotQuads

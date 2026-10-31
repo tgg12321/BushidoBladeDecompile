@@ -991,10 +991,10 @@ typedef struct {
  * eff_StartCommand. g_eff_billboards follows g_eff_command_block, so that copy
  * ends at +0x2C. Each copy sets one pointer pair:
  * - command_word: one word, stored whole and read whole (bit 21 in
- * eff_StartCommand, bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
- * eff_InitRateSelectedCosineScaledQuad); eff_StartCommand / eff_StepCommand
- * also read its low halfword (`lhu`), their g_eff_command_phase /
- * g_eff_command_handler_bases index.
+ * eff_StartCommand, bits 17-18 / 19-20 in eff_SpawnFighter0YawedSlotQuad /
+ * eff_SpawnFighter1YawedSlotQuad / eff_InitRateSelectedCosineScaledQuad);
+ * eff_StartCommand / eff_StepCommand also read its low halfword (`lhu`), their
+ * g_eff_command_phase / g_eff_command_handler_bases index.
  * - bound_rotation_src / bound_position_src: the three halfwords / three words
  * eff_StepCommand and eff_DrawBillboardList copy into the scratchpad block's
  * vector_copy / position_copy (through g_eff_view_angles / g_eff_view_origin).

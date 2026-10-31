@@ -202,10 +202,10 @@ u8 g_eff_command_handler_bases[28] = {
     0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24, 0x26, 0x28,
     0x2A, 0x2D, 0x30, 0x33, 0x36, 0x39, 0x3C, 0x00};
 
-u8 func_80063AF0(void);
-u8 func_80063B78(void);
-u8 func_80063B34(void);
-u8 func_80063BA4(void);
+u8 eff_SpawnFighter0YawedSlotQuad(void);
+u8 eff_DrawFighter0YawedSlotQuads(void);
+u8 eff_SpawnFighter1YawedSlotQuad(void);
+u8 eff_DrawFighter1YawedSlotQuads(void);
 u8 func_80066EC0(void);
 u8 func_80066EF4(void);
 u8 func_800676C8(void);
@@ -266,10 +266,10 @@ s32 eff_SpawnRotatedQuadCluster(void);
 s32 eff_DrawAndAdvanceRotatedQuadClusters(void);
 
 s32 g_eff_command_handlers[62] = {
-    (s32)func_80063AF0,
-    (s32)func_80063B78,
-    (s32)func_80063B34,
-    (s32)func_80063BA4,
+    (s32)eff_SpawnFighter0YawedSlotQuad,
+    (s32)eff_DrawFighter0YawedSlotQuads,
+    (s32)eff_SpawnFighter1YawedSlotQuad,
+    (s32)eff_DrawFighter1YawedSlotQuads,
     (s32)func_80066EC0,
     (s32)func_80066EF4,
     (s32)func_800676C8,

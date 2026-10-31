@@ -1,4 +1,4 @@
-glabel func_80063B34
+glabel eff_SpawnFighter1YawedSlotQuad
     /* 54334 80063B34 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 54338 80063B38 9C03838F */  lw         $v1, %gp_rel(g_eff_active_command_block)($gp)
     /* 5433C 80063B3C 01000224 */  addiu      $v0, $zero, 0x1
@@ -16,4 +16,4 @@ glabel func_80063B34
     /* 5436C 80063B6C FF004230 */  andi       $v0, $v0, 0xFF
     /* 54370 80063B70 0800E003 */  jr         $ra
     /* 54374 80063B74 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80063B34
+endlabel eff_SpawnFighter1YawedSlotQuad
