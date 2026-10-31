@@ -1,0 +1,19 @@
+# var-globals-audit-1 notes (cites at 75bffd3f1; worktree ln-naming-b; research tmp/codex/var-globals-audit-1-research.md (Codex) re-derived by the drafter; verdicts left empty for the reviewer)
+0x8009B450: PROPOSED g_gpu_time_field_line_origins -> g_gpu_time_and_counter_line_origins. Entry 0 underlines the time row, entry 1 the decimal counter row (4D0A8.c:600-619, rows at y 22 / 41, h 14); 'time_field' is false for entry 1. Confidence high.
+0x800A34C0: PROPOSED g_eff_right_x_offset -> g_eff_x_extent_work. Holds the full projected width at 51268.c:1223-1282 (billboard path) before :1297 halves it; right offset only afterwards and in the particle path. Confidence medium-high.
+0x800A34C8: PROPOSED g_eff_lower_y_offset_word -> g_eff_y_extent_work. Holds the full height at 51268.c:1227-1300 (source of the upper offset at :1300); lower offset only from :1301 and in the particle path; matches member y_extent_work (game.h:1223). Confidence medium-high.
+Names changed from research: none. Rows dropped: none (3 kept). Freshness: the three proposed names have zero hits in src, include, asm, registries and .claude. Format note: the new d_8BC50.c:25 definition line is longer than 80 columns; the wave's format pass handles it.
+
+## KEEP
+- 0x800A3814 g_memcard_request_retry_count: KEEP. audit-227 #21 is wrong. Each counted -1 is one failed card probe (func_80037D14 returns D_800A3890 once per completed probe, src/main/28514.c:95-100, and resets it to 0 on the next call's state 0, :23-28); memcard_Update (28708.c:462-469) re-issues the probe every frame while g_memcard_request_state < 2, and memcard_StepRequest (28708.c:329-333) keeps the request in state 1 until the 4th failure, then gives up with status 8. That is a bounded retry of failed attempts. Width and lifetime agree: s16, lhu / sh at every access (memcard_StepRequest.s:56 / :59), zeroed per request at 28708.c:473 / :482 / :490 / :497. The alternative g_memcard_request_error_poll_count is also true but not clearly truer.
+
+## Leads
+- Struct member SPAD51268.right_x_offset (include/game.h:1221, s16) has the same overclaim as its global g_eff_right_x_offset (full width at 51268.c:1223-1282). A member-track lead (candidate x_extent_work, to be checked against the member's own accesses), not in this wave. The member y_extent_work (game.h:1223) is already named.
+- Siblings g_eff_left_x_offset (51268.c:54) and g_eff_upper_y_offset (51268.c:56): KEEP, true at every use.
+
+## Comment / doc occurrences of the old spelling (R6 comment pass)
+- g_gpu_time_field_line_origins: src/main/d_8BC50.c:9 and :18 (file top comment); src/main/4D0A8.c:1746 (.data boundary comment); include/game.h:227 (Unk8009B400Record comment). Registry: symbol_addrs.txt:479, :1068. (Code tokens: d_8BC50.c:25, bb2.h:88, 4D0A8.c:605-612, asm/funcs/gpu_DrawTimeFieldsAndDecimalCounter.s:491-503.)
+- g_eff_right_x_offset: include/game.h:1221 (member comment `/* g_eff_right_x_offset */`). Registry: symbol_addrs.txt:1343.
+- g_eff_lower_y_offset_word: include/game.h:1223 (member comment `/* g_eff_lower_y_offset_word */`). Registry: symbol_addrs.txt:1345.
+- named_syms.txt: no hit for any of the three. .claude/rules: no hit for any of the three.
+- Not in scope (KEEP): g_memcard_request_retry_count comments at symbol_addrs.txt:1872 / :2116 and named_syms.txt:539 need no change.

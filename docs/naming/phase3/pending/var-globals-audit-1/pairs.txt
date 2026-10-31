@@ -1,0 +1,3 @@
+g_gpu_time_field_line_origins=g_gpu_time_and_counter_line_origins
+g_eff_right_x_offset=g_eff_x_extent_work
+g_eff_lower_y_offset_word=g_eff_y_extent_work

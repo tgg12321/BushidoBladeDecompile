@@ -1,0 +1,24 @@
+==============================================================================
+DATA WAVE — 3 addresses, 6 identifiers remapped
+  0x8009b450: D_8009B450, g_gpu_time_field_line_origins -> g_gpu_time_and_counter_line_origins
+  0x800a34c0: D_800A34C0, g_eff_right_x_offset -> g_eff_x_extent_work
+  0x800a34c8: D_800A34C8, g_eff_lower_y_offset_word -> g_eff_y_extent_work
+
+-- file edits (9) --
+  asm/funcs/eff_BindScratchpad.s  (2)
+  asm/funcs/eff_DrawAndAdvanceBillboardPairs.s  (13)
+  asm/funcs/eff_UpdateParticles.s  (19)
+  asm/funcs/gpu_DrawTimeFieldsAndDecimalCounter.s  (4)
+  include/bb2.h  (1)
+  src/main/4D0A8.c  (4)
+  src/main/51268.c  (53)
+  src/main/d_8BC50.c  (1)
+  symbol_addrs.txt  (4)
+
+-- registry lines --
+  symbol_addrs.txt:479 g_gpu_time_field_line_origins -> g_gpu_time_and_counter_line_origins
+  symbol_addrs.txt:1068 g_gpu_time_field_line_origins -> g_gpu_time_and_counter_line_origins
+  symbol_addrs.txt:1343 g_eff_right_x_offset -> g_eff_x_extent_work
+  symbol_addrs.txt:1345 g_eff_lower_y_offset_word -> g_eff_y_extent_work
+
+DRY RUN — nothing written. Re-run with --apply.
