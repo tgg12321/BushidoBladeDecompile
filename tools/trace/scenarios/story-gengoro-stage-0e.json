@@ -12,7 +12,9 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/story-gengoro-stage-0e-1/spec.json"
+    "docs/naming/runtime/story-gengoro-stage-0e-1/spec.json",
+    "docs/naming/runtime/story-courtyard-vram-scroll-stub-1/baseline/spec.json",
+    "docs/naming/runtime/story-courtyard-vram-scroll-stub-1/func_8004775C/spec.json"
   ],
   "use": [
     "boot"
