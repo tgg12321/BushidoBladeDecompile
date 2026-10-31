@@ -1202,7 +1202,7 @@ extern s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj);
 extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
                          Unk80107850Rec *p1, Unk80107850Rec *p2);
 
-/* Blade contact test between the two D_80101EC8 records (called by
+/* Weapon contact test between the two D_80101EC8 records (called by
  * fight_UpdateFighterInteractionsAndPointCaches; the result goes to
  * g_fight_weapon_contact_result). Returns -1 unless both records' +0x3C are at
  * least 4. Borrows the first 16 SPAD->spadA8 points as two 2x2 grids
