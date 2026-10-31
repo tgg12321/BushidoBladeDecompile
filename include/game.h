@@ -1454,20 +1454,21 @@ typedef struct CpuWaypoint {
     u8 unk5;
 } CpuWaypoint;
 
-/* A CPU route: the polygon and edge (its first vertex) of the nearest crossing
- * fighter_FindNearestNavCrossing found, the waypoint count and the waypoints.
- * Unk80101EC8Record carries one at +0x360; fighter_AppendNavDetour builds two
- * candidates of the same layout on its stack and appends the cheaper one. */
+/* A CPU route: the vertex chain and edge (its first vertex) of the nearest
+ * crossing fighter_FindNearestNavCrossing found, the waypoint count and the
+ * waypoints. Unk80101EC8Record carries one at +0x360; fighter_AppendNavDetour
+ * builds two candidates of the same layout on its stack and appends the cheaper
+ * one. */
 typedef struct CpuRoute {
     u8 poly;  /* index into the stage's NavPolySet.polys */
-    u8 vtx;   /* vertex index in that polygon */
+    u8 vtx;   /* vertex index in that chain */
     u8 count; /* number of waypoints in node[] */
     CpuWaypoint node[8];
 } CpuRoute; /* sizeof == 0x34 */
 
-/* One polygon of a stage's navigation set (8 bytes): flags (0x80 = open chain,
- * the last vertex does not close back to the first), a kind byte copied into
- * the route waypoints built around it, a corner margin
+/* One vertex chain of a stage's navigation set (8 bytes): flags (0x80 = open
+ * chain, the last vertex does not close back to the first), a kind byte copied
+ * into the route waypoints built around it, a corner margin
  * (fighter_GetNavCornerPoint scales it by 40), the vertex count and the vertex
  * table of x/z pairs. */
 typedef struct NavPoly {
@@ -1479,7 +1480,7 @@ typedef struct NavPoly {
 } NavPoly;
 
 /* A stage's navigation set: a g_cpu_stage_nav_sets row (12 bytes: count word,
- * polygon array, zero word). */
+ * vertex-chain array, zero word). */
 typedef struct NavPolySet {
     u8 npolys;
     u8 unk1[3];

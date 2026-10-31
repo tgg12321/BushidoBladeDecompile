@@ -1,11 +1,11 @@
 /* Data-only file: .data 0x8009A088..0x8009AD1C (ROM 0x8A588): 4510C.c's CPU
- * fighter tables (the stage navigation sets and their polygons, the probe,
+ * fighter tables (the stage navigation sets and their vertex chains, the probe,
  * distance and pad-script tables), then snd.c's sound tables.
  * Owner ruling Q122 (data-only-no-sdata):
  * 1. One run: 4510C.c's g_cpu_profiles ends at 0x8009A088 and snd.c's
  * g_snd_stage_reverb_types starts at 0x8009AD1C. No uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or by the pointer
- *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
+ *    that reaches it: D_8009A088 (u8[8]); the one-chain NavPoly arrays
  *    D_8009A384 / D_8009A3E0 / D_8009A3F4 / D_8009A598 (their
  * g_cpu_stage_nav_sets row's npolys); the distance byte tables D_8009A830
  * (fighter_CalcOpponentDistanceThresholdFromTables) and D_8009A838
@@ -18,15 +18,15 @@
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005490C + 0x6B30 = 0x8005B43C); so no code module owns them.
  * Readers: 4510C.c (D_8009A088 .. g_cpu_route_sector_dpad_masks; the vertex
- * tables and polygon arrays only through g_cpu_stage_nav_sets), snd.c
+ * tables and chain arrays only through g_cpu_stage_nav_sets), snd.c
  * (g_snd_sound_vab_entries, g_vab_id_list) and 4D0A8.c (g_vab_id_list). */
 #include "common.h"
 #include "bb2.h"
 
 u8 D_8009A088[8] = {0x0A, 0x02, 0x02, 0x02, 0x04, 0x07, 0x00, 0x00};
 
-/* The stage navigation sets: each polygon's vertex table (x / z pairs), then
- * the polygons, then g_cpu_stage_nav_sets, one NavPolySet per stage. */
+/* The stage navigation sets: each chain's vertex table (x / z pairs), then
+ * the chains, then g_cpu_stage_nav_sets, one NavPolySet per stage. */
 s16 D_8009A090[6][2] = {{8000, 4600}, {8550, 4270}, {8550, 3720},
                         {8000, 3440}, {7440, 3720}, {7440, 4270}};
 s16 D_8009A0A8[6][2] = {{8000, -3390}, {8550, -3720}, {8550, -4280},

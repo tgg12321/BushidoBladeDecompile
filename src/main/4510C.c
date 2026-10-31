@@ -1459,8 +1459,9 @@ s32 fighter_FindNearestNavCrossing(
 }
 
 /* Per-vertex neighbour-angle midpoint: computes the bisector direction
- * at vertex vertex_index of polygon nav_poly and writes the offset point into
- * *corner_x_out / *corner_z_out. */
+ * at vertex vertex_index of chain nav_poly and writes the offset point into
+ * *corner_x_out / *corner_z_out (it treats the chain as a ring, wrapping
+ * prev/next even for an open one). */
 void fighter_GetNavCornerPoint(
     NavPoly *nav_poly, s32 vertex_index, s16 *corner_x_out, s16 *corner_z_out) {
     s16 prev;
@@ -1497,11 +1498,12 @@ void fighter_GetNavCornerPoint(
         vertex_z + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
-/* Walks the vertex ring of nav_set->polys[fighter_record->cpu_route.poly] both
- * ways from vertex cpu_route.vtx, each starting at fighter_record->world_pos.
- * While math_IntersectSegments reports that the segment from the way's current
- * point to (target_x, target_z) crosses a polygon edge, the way steps to the
- * next vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its
+/* Walks the vertex chain of nav_set->polys[fighter_record->cpu_route.poly]
+ * (wraps the closed ones; an open chain stops at its end) both ways from vertex
+ * cpu_route.vtx, each starting at fighter_record->world_pos. While
+ * math_IntersectSegments reports that the segment from the way's current point
+ * to (target_x, target_z) crosses a chain edge, the way steps to the next
+ * vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its
  * CpuRoute and adds the step's SquareRoot0 length to its sum; a clear segment
  * adds that segment's length and ends the way. The way with the smaller sum is
  * appended, last point first, to fighter_record->cpu_route. */
