@@ -2520,25 +2520,25 @@ again:
 
 u8 eff_SpawnParticles(s32, s32, s32);
 
-u8 func_80066EC0(void) {
+u8 eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf(void) {
     u8 spawn_result = eff_SpawnParticles(0, 0, 0);
     g_eff_command_phase[2] = 1;
     return spawn_result;
 }
 
-u8 func_80066EF4(void) {
+u8 eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf(void) {
     u8 spawn_result = eff_SpawnParticles(0, 0, 1);
     g_eff_command_phase[2] = 2;
     return spawn_result;
 }
 
-u8 func_80066F28(void) {
+u8 eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf(void) {
     u8 spawn_result = eff_SpawnParticles(1, 1, 0);
     g_eff_command_phase[3] = 1;
     return spawn_result;
 }
 
-u8 func_80066F5C(void) {
+u8 eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf(void) {
     u8 spawn_result = eff_SpawnParticles(1, 1, 1);
     g_eff_command_phase[3] = 2;
     return spawn_result;
@@ -2723,13 +2723,13 @@ u8 eff_PrepareParticles(s32, s32);
 void eff_UpdateParticles(s32, s32);
 u8 eff_LinkParticleQuads(s32, s32);
 
-u8 func_800676C8(void) {
+u8 eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot(void) {
     eff_PrepareParticles(0, 0);
     eff_UpdateParticles(0, 0);
     return eff_LinkParticleQuads(0, 0);
 }
 
-u8 func_80067704(void) {
+u8 eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot(void) {
     eff_PrepareParticles(1, 1);
     eff_UpdateParticles(1, 1);
     return eff_LinkParticleQuads(1, 1);

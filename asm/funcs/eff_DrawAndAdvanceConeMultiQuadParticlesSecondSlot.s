@@ -1,4 +1,4 @@
-glabel func_80067704
+glabel eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot
     /* 57F04 80067704 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 57F08 80067708 1000BFAF */  sw         $ra, 0x10($sp)
     /* 57F0C 8006770C 01000424 */  addiu      $a0, $zero, 0x1
@@ -14,4 +14,4 @@ glabel func_80067704
     /* 57F34 80067734 FF004230 */  andi       $v0, $v0, 0xFF
     /* 57F38 80067738 0800E003 */  jr         $ra
     /* 57F3C 8006773C 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80067704
+endlabel eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot

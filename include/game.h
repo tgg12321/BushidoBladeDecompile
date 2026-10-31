@@ -780,7 +780,7 @@ typedef union {
  * g_eff_animated_quad_positions): 4 rows of 3 records of 3 s32 words.
  * eff_PrepareParticles indexes it [particle_row_index][idx]
  * (particle_row_index 0..3 from the callers
- * func_800676C8..eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot);
+ * eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot..eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot);
  * eff_SpawnParticles and eff_UpdateParticles use it too. */
 typedef struct {
     /* 0x0 */ s32 world_x;
@@ -1115,7 +1115,8 @@ typedef struct {
 } Unk1F8000B8_80065800;
 
 /* The layout eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads
- * share (Unk1F8000B8Union.v800678A8): each of the wrappers func_800676C8 ..
+ * share (Unk1F8000B8Union.v800678A8): each of the wrappers
+ * eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot ..
  * eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot calls the three in
  * turn, and values cross the calls (squared_distance_limit,
  * particle_scan_count, particle_quad_cursor, the quad_ot_index_table;

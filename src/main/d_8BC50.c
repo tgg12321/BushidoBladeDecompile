@@ -206,12 +206,12 @@ u8 eff_SpawnFighter0YawedSlotQuad(void);
 u8 eff_DrawFighter0YawedSlotQuads(void);
 u8 eff_SpawnFighter1YawedSlotQuad(void);
 u8 eff_DrawFighter1YawedSlotQuads(void);
-u8 func_80066EC0(void);
-u8 func_80066EF4(void);
-u8 func_800676C8(void);
-u8 func_80066F28(void);
-u8 func_80066F5C(void);
-u8 func_80067704(void);
+u8 eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf(void);
+u8 eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot(void);
+u8 eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf(void);
+u8 eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot(void);
 void eff_InitCosineScaledQuad(void);
 u8 eff_DrawAndAdvanceCosineScaledQuad(void);
 void func_80064ED8(void);
@@ -270,12 +270,12 @@ s32 g_eff_command_handlers[62] = {
     (s32)eff_DrawFighter0YawedSlotQuads,
     (s32)eff_SpawnFighter1YawedSlotQuad,
     (s32)eff_DrawFighter1YawedSlotQuads,
-    (s32)func_80066EC0,
-    (s32)func_80066EF4,
-    (s32)func_800676C8,
-    (s32)func_80066F28,
-    (s32)func_80066F5C,
-    (s32)func_80067704,
+    (s32)eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf,
+    (s32)eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot,
+    (s32)eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf,
+    (s32)eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot,
     (s32)eff_InitCosineScaledQuad,
     (s32)eff_DrawAndAdvanceCosineScaledQuad,
     (s32)func_80064ED8,

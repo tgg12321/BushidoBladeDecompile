@@ -1,4 +1,4 @@
-glabel func_80066EC0
+glabel eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf
     /* 576C0 80066EC0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 576C4 80066EC4 21200000 */  addu       $a0, $zero, $zero
     /* 576C8 80066EC8 21280000 */  addu       $a1, $zero, $zero
@@ -12,4 +12,4 @@ glabel func_80066EC0
     /* 576E8 80066EE8 FF004230 */  andi       $v0, $v0, 0xFF
     /* 576EC 80066EEC 0800E003 */  jr         $ra
     /* 576F0 80066EF0 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80066EC0
+endlabel eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf
