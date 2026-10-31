@@ -2,4 +2,3 @@ NavPoly=NavVertexChain
 NavPolySet=NavVertexChainSet
 NavPolySet.npolys=nchains
 NavPolySet.polys=chains
-CpuRoute.poly=chain_index

@@ -1460,7 +1460,7 @@ typedef struct CpuWaypoint {
  * builds two candidates of the same layout on its stack and appends the cheaper
  * one. */
 typedef struct CpuRoute {
-    u8 poly;  /* index into the stage's NavPolySet.polys */
+    u8 poly;  /* index into the stage's NavVertexChainSet.chains */
     u8 vtx;   /* vertex index in that chain */
     u8 count; /* number of waypoints in node[] */
     CpuWaypoint node[8];
@@ -1471,22 +1471,22 @@ typedef struct CpuRoute {
  * into the route waypoints built around it, a corner margin
  * (fighter_GetNavCornerPoint scales it by 40), the vertex count and the vertex
  * table of x/z pairs. */
-typedef struct NavPoly {
+typedef struct NavVertexChain {
     u8 flags;
     u8 kind;
     u8 margin;
     u8 nvtx;
     s16 (*vtx)[2];
-} NavPoly;
+} NavVertexChain;
 
 /* A stage's navigation set: a g_cpu_stage_nav_sets row (12 bytes: count word,
  * vertex-chain array, zero word). */
-typedef struct NavPolySet {
-    u8 npolys;
+typedef struct NavVertexChainSet {
+    u8 nchains;
     u8 unk1[3];
-    NavPoly *polys;
+    NavVertexChain *chains;
     u8 unk8[4];
-} NavPolySet;
+} NavVertexChainSet;
 
 /* One decoded motion frame (0x84 bytes, 33 words): motion_DecodeFrame decodes
  * one stream entry into one, and fighter_Update fills two per call

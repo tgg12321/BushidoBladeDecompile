@@ -1412,7 +1412,7 @@ extern s32 math_IntersectSegments(
     s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
 
 s32 fighter_FindNearestNavCrossing(
-    Unk80101EC8Record *fighter_record, NavPolySet *nav_set, s32 target_x,
+    Unk80101EC8Record *fighter_record, NavVertexChainSet *nav_set, s32 target_x,
     s32 target_z) {
     s32 crossing_x;
     s32 crossing_z;
@@ -1421,14 +1421,14 @@ s32 fighter_FindNearestNavCrossing(
     s16 edge_vertex_index;
     s16 k;
     s16 n;
-    NavPoly *nav_poly;
+    NavVertexChain *nav_poly;
     s32 dx;
     s32 dy;
     s32 d;
 
     nearest_crossing_distance = 100000;
-    for (polygon_index = 0; polygon_index < nav_set->npolys; polygon_index++) {
-        nav_poly = &nav_set->polys[polygon_index];
+    for (polygon_index = 0; polygon_index < nav_set->nchains; polygon_index++) {
+        nav_poly = &nav_set->chains[polygon_index];
         n = nav_poly->nvtx;
         if (nav_poly->flags & 0x80) {
             n = nav_poly->nvtx - 1;
@@ -1462,8 +1462,8 @@ s32 fighter_FindNearestNavCrossing(
  * at vertex vertex_index of chain nav_poly and writes the offset point into
  * *corner_x_out / *corner_z_out (it treats the chain as a ring, wrapping
  * prev/next even for an open one). */
-void fighter_GetNavCornerPoint(
-    NavPoly *nav_poly, s32 vertex_index, s16 *corner_x_out, s16 *corner_z_out) {
+void fighter_GetNavCornerPoint(NavVertexChain *nav_poly, s32 vertex_index,
+                               s16 *corner_x_out, s16 *corner_z_out) {
     s16 prev;
     s16 next;
     s16 vertex_x, vertex_z;
@@ -1498,7 +1498,7 @@ void fighter_GetNavCornerPoint(
         vertex_z + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
-/* Walks the vertex chain of nav_set->polys[fighter_record->cpu_route.poly]
+/* Walks the vertex chain of nav_set->chains[fighter_record->cpu_route.poly]
  * (wraps the closed ones; an open chain stops at its end) both ways from vertex
  * cpu_route.vtx, each starting at fighter_record->world_pos. While
  * math_IntersectSegments reports that the segment from the way's current point
@@ -1507,8 +1507,9 @@ void fighter_GetNavCornerPoint(
  * CpuRoute and adds the step's SquareRoot0 length to its sum; a clear segment
  * adds that segment's length and ends the way. The way with the smaller sum is
  * appended, last point first, to fighter_record->cpu_route. */
-void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
-                             NavPolySet *nav_set, s32 target_x, s32 target_z) {
+void fighter_AppendNavDetour(
+    Unk80101EC8Record *fighter_record, NavVertexChainSet *nav_set, s32 target_x,
+    s32 target_z) {
     CpuRoute detour_routes[2];
     s16 start_corner_x;
     s16 start_corner_z;
@@ -1539,7 +1540,7 @@ void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
     s16 az;
     s16 bx;
     s16 bz;
-    NavPoly *poly;
+    NavVertexChain *poly;
     /* route holds three values: &detour_routes[0] in the first corner block,
      * &detour_routes[1] in the second corner block, and the cheaper of the two
      * for the copy loop (Ruling 11, reused-local-necessity). */
@@ -1547,7 +1548,7 @@ void fighter_AppendNavDetour(Unk80101EC8Record *fighter_record,
 
     backward_active = 1;
     forward_active = 1;
-    poly = &nav_set->polys[fighter_record->cpu_route.poly];
+    poly = &nav_set->chains[fighter_record->cpu_route.poly];
     backward_point_x = forward_point_x = fighter_record->world_pos.x;
     backward_point_z = forward_point_z = fighter_record->world_pos.z;
     detour_routes[1].count = 0;
@@ -1726,14 +1727,14 @@ extern u8 D_8009A8AC[];
 extern u8 D_8009A8B4[];
 extern u8 D_8009A8C0[];
 extern u8 g_cpu_move_range_rules[8][4];
-extern NavPolySet g_cpu_stage_nav_sets[];
+extern NavVertexChainSet g_cpu_stage_nav_sets[];
 extern u16 D_8009A928[][23];
 extern u8 D_8009A9DC[][3];
 extern s32 D_8009A9F0[][8];
 extern u8 D_800A325C[4];
 extern u8 D_800A3260[4];
 extern void fighter_AppendNavDetour(
-    Unk80101EC8Record *, NavPolySet *, s32, s32);
+    Unk80101EC8Record *, NavVertexChainSet *, s32, s32);
 
 #define CPU_SQ(x) ((x) * (x))
 
@@ -1800,7 +1801,7 @@ s32 fighter_UpdateCpuNavigationChooseScriptsAndHeldInput(Unk80101EC8Record *p) {
     s32 var_22;
     s32 var_23;
     s16 script_score;
-    NavPolySet *nav_set;
+    NavVertexChainSet *nav_set;
     s32 tx, tz;
     s32 r;
     s32 var_29;
