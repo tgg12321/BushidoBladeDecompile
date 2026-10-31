@@ -1,0 +1,32 @@
+{
+  "description": "story-final-fight-retail's run (Story Mode, KANNUKI, no pokes) cut at 98300: Lumberyard (resource selector 0x12) loads at 93436 and a blade sweep starts animated stage entries 8 at 97709 and 9 at 97953 (node_StartFrameAnimatedEntryAndInitPairedNode); phase lumber from 97000 marks where a knockout stub begins, screenshots around both starts",
+  "covers": [],
+  "evidence": [
+    "docs/naming/runtime/frame-anim-story-lumberyard-cut-1/spec.json",
+    "docs/naming/runtime/story-lumberyard-node-stub-1/baseline/spec.json",
+    "docs/naming/runtime/story-lumberyard-node-stub-1/func_8004779C/spec.json"
+  ],
+  "extends": "story-final-fight-retail",
+  "end_frame": 98300,
+  "phases": [
+    "97000:lumber"
+  ],
+  "shots": [
+    "93500:story.93500",
+    "97700:lumber.97700",
+    "97712:lumber.97712",
+    "97724:lumber.97724",
+    "97740:lumber.97740",
+    "97760:lumber.97760",
+    "97800:lumber.97800",
+    "97850:lumber.97850",
+    "97900:lumber.97900",
+    "97956:lumber.97956",
+    "97970:lumber.97970",
+    "97990:lumber.97990",
+    "98030:lumber.98030",
+    "98100:lumber.98100",
+    "98200:lumber.98200",
+    "98290:lumber.98290"
+  ]
+}

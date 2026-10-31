@@ -12,6 +12,9 @@ D_800F6658	write	func_8003F1E4	t_load	0x8003F20C	coverage	0	2	6	[1]	0	far-view-v
 D_800F6658	write	func_80046B44	boot_intro	0x80046BCC	coverage	0	2	1	[2]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	1	coverage_next_start_bound;group_has_unresolved_site
 D_800F6658	write	func_80046B44	t_menu	0x80046BCC	coverage	0	2	1	[2]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	0	coverage_next_start_bound
 func_8003F218	call	fight_Init	t_load	0x8001DD1C	coverage			1	[[0,255,4294967295,0]]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	0	coverage_next_start_bound
+func_8004777C	call	resource_InvokeLoadedSelectorInitCallback	story	0x8003F1B0	coverage			1	[[7,2147772096,96,2148461920]]	0	frame-anim-story-lumberyard-cut-1@1594db197f8c	0	coverage_next_start_bound
+node_StartFrameAnimatedEntryAndInitPairedNode	call	fight_ProcessPositionRecordsInQuad	lumber	0x8002939C	coverage			2	[[8,1825,1,0],[9,1926,1,0]]	0	frame-anim-story-lumberyard-cut-1@1594db197f8c	0	coverage_next_start_bound
+snd_QueuePositionSequence	call	fight_ProcessPositionRecordsInQuad	lumber	0x800293A4	coverage			2	[[528482472,2148166120,0,4096],[528482472,2148166224,0,4096]]	0	frame-anim-story-lumberyard-cut-1@1594db197f8c	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site;unresolved_function
 0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site
 0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound

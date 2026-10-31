@@ -1,0 +1,507 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "d1c8736df948fbc7836f043720e3ed253a66efa1",
+      "size": 110640
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a387e6db3f2613ec9d7bd8dbfb6f16b3029c8a4e",
+      "size": 30208
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "869f22852bdade0b3d2245cb9726d6073072c32a",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--headless",
+    "--emulator",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--bios",
+    "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "--cue",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--map",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.map",
+    "--elf",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.elf",
+    "--slot-wait",
+    "7200"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.map",
+      "sha1": "b5a60fbc7c99026b2b45dcf6f6cd0e31fa091668",
+      "size": 419199
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.elf",
+      "sha1": "602c13396e78e2d9ef80fa271fc378229e625429",
+      "size": 872140
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\spec.json",
+    "sha1": "99551d294c29180f4d20089a55c353597211cdb7",
+    "size": 585336
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Downloads\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.script.lua",
+      "sha1": "6a52915f87e7c54b0c451ad10ba4812ccc5d3ef7",
+      "size": 495567
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 1,
+    "ambiguous_stops": 0,
+    "stubs": [
+      {
+        "at": "func_8004779C",
+        "addr": 2147776412,
+        "when": "lumber",
+        "ret": null,
+        "words": "0800e00300000000",
+        "orig": "e8ffbd271000bfaf",
+        "applied": {
+          "frame": 97000,
+          "pc": 2147483776,
+          "ok": true,
+          "mid_stub": false
+        },
+        "at_end": "intact"
+      }
+    ],
+    "modified_game": "stubbed functions: hits and screenshots after a stub went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x8004779C+5",
+      "0x800477A2+2",
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.jsonl",
+      "sha1": "c631a8efa2f448bcfebba0ac0f29c99edd938675",
+      "size": 243012,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.s.5489.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.s.8899.png",
+      "sha1": "86d5daef52e383596fe6bcc1e26a57588627f214",
+      "size": 30022,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.story.93500.png",
+      "sha1": "0add8d2d885ae40524aba34d95ea3b1b6c3e69ac",
+      "size": 22202,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97700.png",
+      "sha1": "e26398a073aa7e12d17141c1ac5b2d88fe22e943",
+      "size": 44242,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97700.png",
+      "sha1": "e26398a073aa7e12d17141c1ac5b2d88fe22e943",
+      "size": 44242,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97712.png",
+      "sha1": "1f40d4e6504b251ff990c7e88705447d74940494",
+      "size": 43837,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97712.png",
+      "sha1": "1f40d4e6504b251ff990c7e88705447d74940494",
+      "size": 43837,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97724.png",
+      "sha1": "67f530526f281732aab136e74ebeb7883f4ea7de",
+      "size": 43245,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97724.png",
+      "sha1": "67f530526f281732aab136e74ebeb7883f4ea7de",
+      "size": 43245,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97740.png",
+      "sha1": "7bc6bc8fa4f6df9803677797897084303c769967",
+      "size": 42347,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97740.png",
+      "sha1": "7bc6bc8fa4f6df9803677797897084303c769967",
+      "size": 42347,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97760.png",
+      "sha1": "defbeefb344b401f7e76f836d85b57c797853384",
+      "size": 40926,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97760.png",
+      "sha1": "defbeefb344b401f7e76f836d85b57c797853384",
+      "size": 40926,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97800.png",
+      "sha1": "a122adff16a4c3a9e853f1f5b7e2c703d3941c2a",
+      "size": 33675,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97800.png",
+      "sha1": "a122adff16a4c3a9e853f1f5b7e2c703d3941c2a",
+      "size": 33675,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97850.png",
+      "sha1": "3b4441bf791ff09136c1df83851d58b908d9e07c",
+      "size": 31041,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97850.png",
+      "sha1": "3b4441bf791ff09136c1df83851d58b908d9e07c",
+      "size": 31041,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97900.png",
+      "sha1": "6b7d2baef0a1c82b6a9d711bf5468d20821a7165",
+      "size": 32017,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97900.png",
+      "sha1": "6b7d2baef0a1c82b6a9d711bf5468d20821a7165",
+      "size": 32017,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97956.png",
+      "sha1": "de77eed1bdbe782dc7f8fdef8117fd2ff94da315",
+      "size": 33069,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97956.png",
+      "sha1": "de77eed1bdbe782dc7f8fdef8117fd2ff94da315",
+      "size": 33069,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97970.png",
+      "sha1": "a0542d5dc79918cedb2d74dfc22fa5440d31cf28",
+      "size": 28903,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97970.png",
+      "sha1": "a0542d5dc79918cedb2d74dfc22fa5440d31cf28",
+      "size": 28903,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.97990.png",
+      "sha1": "adcdef37964269c93796d18023a54dcf6f8667c8",
+      "size": 34207,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.97990.png",
+      "sha1": "adcdef37964269c93796d18023a54dcf6f8667c8",
+      "size": 34207,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.98030.png",
+      "sha1": "35d3fa2a30e04907419ecf36ed9fe5b37c5cdf9e",
+      "size": 37447,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.98030.png",
+      "sha1": "35d3fa2a30e04907419ecf36ed9fe5b37c5cdf9e",
+      "size": 37447,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.98100.png",
+      "sha1": "297e69bc4368dee297408cf4c6a5219e1a73671a",
+      "size": 33856,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.98100.png",
+      "sha1": "297e69bc4368dee297408cf4c6a5219e1a73671a",
+      "size": 33856,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.98200.png",
+      "sha1": "96dc38edb20ad2c7f011c1f12b0d93ec5e44d10a",
+      "size": 35554,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.98200.png",
+      "sha1": "96dc38edb20ad2c7f011c1f12b0d93ec5e44d10a",
+      "size": 35554,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.98290.png",
+      "sha1": "5170319c6046a84c0302be7af1f779b49a1bee3e",
+      "size": 29213,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.lumber.98290.png",
+      "sha1": "5170319c6046a84c0302be7af1f779b49a1bee3e",
+      "size": 29213,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.knockout.live.png",
+      "sha1": "d7af15b021cf07d2f8f42a0c101065c5ed849ecf",
+      "size": 37648,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.script.log",
+      "sha1": "2f04cc6cf4dd517f9e8a27bbab344be8aaf7df7b",
+      "size": 226964,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-lumberyard-node-stub-1\\func_8004779C\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}

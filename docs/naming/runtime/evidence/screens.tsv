@@ -21369,6 +21369,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80033510	snd_ResetStageSoundState	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8398	8398	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80033510	snd_ResetStageSoundState	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9339	9339	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80033510	snd_ResetStageSoundState	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11012	11012	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80033550	snd_QueuePositionSequence	frame-anim-story-lumberyard-cut-1@1594db197f8c	lumber	97709	97953	2	lumber.97712@97712#1f40d4e6504b;lumber.97956@97956#d45a80dd70c2	recorded hits only; capture limits apply	0	
 0x80033550	snd_QueuePositionSequence	lib-story-final-fight-retail-1@2c1def7be909	story	97709	97709	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x800335D8	snd_UpdateStageSounds	group-battle-draw-1@2004f4b160e6	bout1	9446	9446	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x800335D8	snd_UpdateStageSounds	group-battle-draw-1@2004f4b160e6	bout1_again	24841	24841	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
@@ -46373,6 +46374,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80044800	func_80044800	versus-2p-tatsumi-pickup-1@dc9817c9453d	fight	8350	8350	1	fight.8660@8660#8bf2b139cafc	hitmap:first 1 hits per phase only	0	
 0x80044800	func_80044800	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_load	8318	8318	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x80044800	func_80044800	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x80044B30	func_80044B30	frame-anim-story-lumberyard-cut-1@1594db197f8c	lumber	97709	97953	2	lumber.97712@97712#1f40d4e6504b;lumber.97956@97956#d45a80dd70c2	recorded hits only; capture limits apply	0	
 0x80044B30	func_80044B30	lib-story-final-fight-retail-1@2c1def7be909	story	97709	97709	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80044C70	func_80044C70	lib-story-final-fight-retail-1@2c1def7be909	story	93508	93508	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80044C70	func_80044C70	versus-2p-rematch-1@e593ee02ab83	t_sub_menu	13138	13138	1	t_sub_menu.mid@13350#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
@@ -53456,6 +53458,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800475A4	node_OrientAndQueueViewOffsetNode	versus-2p-pair-castle-2@7abacc3d7902	t_load	8602	8602	1	t_load.last@8699#fa0039b49bc2	hitmap:first 1 hits per phase only	0	
 0x80047738	func_80047738	story-gengoro-stage-0e-1@1e4d10fc1ac3	stage_0e	85344	85344	1	stage_0e.86000@86000#80f979c1c34c	hitmap:first 1 hits per phase only	0	
 0x8004775C	func_8004775C	story-gengoro-stage-0e-1@1e4d10fc1ac3	stage_0e	85871	85871	1	stage_0e.86000@86000#80f979c1c34c	hitmap:first 1 hits per phase only	0	
+0x8004777C	func_8004777C	frame-anim-story-lumberyard-cut-1@1594db197f8c	story	93436	93436	1	story.93500@93500#0add8d2d885a	recorded hits only; capture limits apply	0	
 0x8004777C	func_8004777C	lib-story-final-fight-retail-1@2c1def7be909	story	93436	93436	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x8004777C	func_8004777C	versus-2p-pair-lumberyard-1@7b6b46cd792a	t_load	8168	8168	1	t_load.mid@8200#0f2b082505c0	hitmap:first 1 hits per phase only	0	
 0x8004777C	func_8004777C	versus-2p-pair-lumberyard-2@c947f2d49488	t_load	8168	8168	1	t_load.mid@8200#0f2b082505c0	hitmap:first 1 hits per phase only	0	
