@@ -1,0 +1,29 @@
+wave106 (func-second-pass-15): 2 RENAME kept (0 CHANGED FROM RESEARCH); 0 dropped; 0 NO_NAME. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave106 = next free after the highest phase3 dir on disk (wave105; wave103 is a dropped draft and not on disk, wave106 is referenced nowhere; no other worktree has a wave10x dir).
+Drafted 2026-10-31 (naming-a) at HEAD 92609d0dc. Research input tmp/codex/func-second-pass-15-research.md (untrusted); every use re-derived at HEAD.
+Kept rows:
+ 0x800474AC func_800474AC -> gpu_InitSelector5VramScroll
+ 0x800474D0 func_800474D0 -> gpu_QueueSelector5VramScroll
+Uses re-derived at HEAD (git grep over src include asm symbol_addrs.txt named_syms.txt docs/naming/function-names.csv; no jal/call anywhere):
+ - Definitions src/main/368E4.c:683 (gpu_InitVramScroll(0, 0)) and :685 (gpu_QueueVramScroll(0)). Declarations src/main/d_80DF8.c:28-29 (block comment :25).
+ - The only other use of each is g_resource_selector_callbacks[38] (d_80DF8.c:873; row 0 at :874), row 5 = :879 {func_800474AC, func_800474D0}. .init is called by
+   resource_InvokeLoadedSelectorInitCallback (2B344.c:2292-2296; from 368E4.c:70 and :182, selector set at :77); .unk4 by
+   gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards (2B344.c:2081-2082).
+ - asm glabels asm/funcs/func_800474AC.s:1,11 and func_800474D0.s:1,10.
+ - Census function-names.csv:589-590 (AUTO, KEEP). named_syms.txt:167/168 RESET notes (retired game_AnimInit / game_AnimCleanup), :1393/1394 back-references. No symbol_addrs.txt or
+   undefined_syms_auto.txt line. tools/rename_funcs.py:51-52 (excluded by naming_wave). No comment in src/ or include/ names either function.
+ - Callees: gpu_InitVramScroll 368E4.c:1690-1709 (preset 0 = d_89C78.c:213), gpu_QueueVramScroll 368E4.c:1711-1776.
+ - Freshness: git grep -i "Selector5|InitSelector5|QueueSelector5" over src include = zero hits; both new names occur nowhere. build.py fresh() enforces src/include.
+Spelling: Selector5 is the same digit in decimal and hex, so the wave101 decimal convention needs no choice. Matches landed gpu_InitSelector14VramScroll / gpu_QueueSelector14VramScroll (csv:597-598).
+only_x: only_x.tsv:277/278 inconclusive (capture_level_only), pair rows :2570/:2571 inconclusive, versus-cpu-clear-retail-1 has no phase_tags: no stage word, no Pier.
+Prefix gpu_ (callees gpu_ CORROBORATED); resource_ (the table owner) not used.
+Not re-shown by this draft (research claims, marked as such): hit-map first hits (19428 / 19664), stub frame 19220, knockout 0-pixel result, capture manifest SHA1s. The name takes no role part from them.
+HAZARD (old names in capture paths / recorded data): naming_wave does NOT substitute these and they must stay: tools/trace/scenarios/versus-cpu-clear-retail.json; docs/naming/runtime/
+ versus-cpu-pier-vram-scroll-stub-1/func_800474D0/; knockout.*; hitmap.tsv, evidence/*.tsv, matrix/*.tsv. The dry run edits only 368E4.c, d_80DF8.c and the two asm/funcs/*.s files (+ 2 renames); see dry.txt.
+Weak spots for the reviewer:
+ (1) Numbers in names - the heuristic is a research-prompt line, not naming-bar.md; Selector14/18 precedent landed. (2) Reader hazard: g_fight_mode_selector == 5 is a different global; fallback
+ ResourceSelector5 only with renaming the wave101 pair. (3) gpu_QueueSelector5VramScroll justified by init-before-hook ordering (368E4.c:77, :70, :182). (4) Preset index not in the init name (row fixes it).
+ (5) The 0-pixel knockout neither supports nor contradicts VramScroll (callee wording). (6) The revived NO_NAME ledger objections (no_name.tsv:34/35: numeric-only presets; 'Q132 forwarder exception' is in no rule) were answered by wave101.
+ (7) Row-4/row-7 twins stay func_ names.
+Comment pass after apply: no comment names either function; nothing to hand-edit expected.
+gates: tmp/p3w106/gates.sh does not exist yet; the lander copies it from the latest tmp/p3w*/gates.sh before running gates.ps1.

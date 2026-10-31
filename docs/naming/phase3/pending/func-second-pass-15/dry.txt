@@ -1,0 +1,36 @@
+rc=0
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (4) --
+  asm: 2 files, 4 substitutions
+      asm/funcs/func_800474AC.s  (2)
+      asm/funcs/func_800474D0.s  (2)
+  src: 2 files, 6 substitutions
+      src/main/368E4.c  (2)
+      src/main/d_80DF8.c  (4)
+
+-- .s file renames (2) --
+  asm/funcs/func_800474AC.s -> asm/funcs/gpu_InitSelector5VramScroll.s
+  asm/funcs/func_800474D0.s -> asm/funcs/gpu_QueueSelector5VramScroll.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
+
+HAZARD CHECK (old names func_800474AC / func_800474D0 in committed capture paths / recorded data):
+this dry run edits only asm/funcs/func_800474AC.s, func_800474D0.s, src/main/368E4.c and src/main/d_80DF8.c (4 files, 10
+substitutions) and renames the two .s files. It touches NOTHING under docs/naming/runtime/, tools/trace/scenarios/ or
+docs/foundation/ (git status after the dry run showed only the untracked pending dir and the generated wave106 manifest dir).
+Reason (tools/naming_wave.py): C/H are substituted only under src/ and include/, asm only under asm/funcs and asm/data, tool
+.py only under tools/ and engine/ (tools/rename_funcs.py is excluded; the scenarios are .json), registries only line-wise by
+symbol-owner. The old names stay in tools/trace/scenarios/versus-cpu-clear-retail.json and in docs/naming/runtime/
+{versus-cpu-pier-vram-scroll-stub-1/func_800474D0/, hitmap.tsv, evidence/*.tsv, matrix/*.tsv}. After apply, confirm with git
+status that no path under docs/naming/runtime or tools/trace changed.
