@@ -375,7 +375,10 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
 # Phase 3 waves (owner ruling Q111, .claude/rules/naming-bar.md): one directory per wave,
 # applied in name order, so a later wave's row for an address supersedes an earlier one.
 MANIFESTS += [(ap, None, None) for ap in
-              sorted(glob.glob(J("docs", "naming", "phase3", "*", "func_manifest*.csv")))]
+              sorted(glob.glob(J("docs", "naming", "phase3", "*", "func_manifest*.csv")),
+                     # numeric, not lexicographic: wave105 must come after wave92
+                     key=lambda p: [int(t) if t.isdigit() else t
+                                    for t in re.split(r"(\d+)", p.replace("\\", "/"))])]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),
