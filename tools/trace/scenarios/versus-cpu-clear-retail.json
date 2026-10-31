@@ -10,7 +10,9 @@
     "event:vs_cpu_clear"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-cpu-clear-retail-1/spec.json"
+    "docs/naming/runtime/versus-cpu-clear-retail-1/spec.json",
+    "docs/naming/runtime/versus-cpu-pier-vram-scroll-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-cpu-pier-vram-scroll-stub-1/func_800474D0/spec.json"
   ],
   "use": [
     "boot"
