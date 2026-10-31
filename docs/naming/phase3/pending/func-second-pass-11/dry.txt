@@ -1,0 +1,41 @@
+rc=0
+==============================================================================
+NAMING WAVE — 4 operations (0 RESET, 4 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (6) --
+  asm: 4 files, 8 substitutions
+      asm/funcs/func_80047738.s  (2)
+      asm/funcs/func_8004775C.s  (2)
+      asm/funcs/func_8004777C.s  (2)
+      asm/funcs/func_8004779C.s  (2)
+  src: 2 files, 12 substitutions
+      src/main/368E4.c  (4)
+      src/main/d_80DF8.c  (8)
+
+-- .s file renames (4) --
+  asm/funcs/func_80047738.s -> asm/funcs/gpu_InitSelector14VramScroll.s
+  asm/funcs/func_8004775C.s -> asm/funcs/gpu_QueueSelector14VramScroll.s
+  asm/funcs/func_8004777C.s -> asm/funcs/node_InitSelector18FrameEntriesFromWorldTranslations.s
+  asm/funcs/func_8004779C.s -> asm/funcs/node_AdvanceSelector18FrameAnimatedEntriesAndQueueDraws.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
+
+HAZARD CHECK (old names func_8004777C / func_8004779C / func_80047738 / func_8004775C in committed capture paths / recorded data):
+this dry run edits only asm/funcs/func_80047738.s, func_8004775C.s, func_8004777C.s, func_8004779C.s, src/main/368E4.c and
+src/main/d_80DF8.c (6 files, 20 substitutions) and renames the four .s files. It touches NOTHING under docs/naming/runtime/,
+tools/trace/scenarios/ or docs/foundation/ (confirmed: git status after the dry run showed only the untracked pending dir and the
+generated wave101 manifest dir, since removed). Reason (tools/naming_wave.py): C/H are substituted only under src/ and include/,
+asm only under asm/funcs and asm/data, tool .py only under tools/ and engine/ (tools/rename_funcs.py is excluded; the scenarios are
+.json), registries only line-wise by symbol-owner, ledger dirs under memory/grind. The old names stay in tools/trace/scenarios/
+story-gengoro-stage-0e.json:2,17 and story-lumberyard-cut.json:7 and in docs/naming/runtime/{story-courtyard-vram-scroll-stub-1/
+func_8004775C/, story-lumberyard-node-stub-1/func_8004779C/, hitmap.tsv, evidence/*.tsv, matrix/*.tsv}. No restore/exclude is needed
+at apply; the apply step should still confirm (git status) that no path under docs/naming/runtime or tools/trace changed.
