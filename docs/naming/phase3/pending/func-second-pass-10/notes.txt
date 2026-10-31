@@ -1,0 +1,34 @@
+wave101 (func-second-pass-10): 2 RENAME kept (0 CHANGED FROM RESEARCH); 4 NO_NAME stay; 0 dropped. Verdicts are PENDING: the naming-reviewer sets them.
+Drafted 2026-10-31 (naming-a) at HEAD 03842e204. Research input tmp/codex/func-second-pass-10-research.md (untrusted); every use re-derived at HEAD.
+Kept rows:
+ 0x8004777C func_8004777C -> node_InitLumberyardFrameEntriesFromWorldTranslations
+ 0x8004779C func_8004779C -> node_AdvanceLumberyardFrameAnimatedEntriesAndQueueDraws
+NO_NAME (stay; research verdicts, no row, no change): func_8004746C, func_8004748C (selector-4 twins, 368E4.c:678/:680, d_80DF8.c:878),
+ func_800474F0, func_80047510 (selector-7 twins, 368E4.c:686/:688, d_80DF8.c:881). No code evidence specific to them newer than their no_name.tsv rows
+ (32-37); the members named since (anim_yaw, paired_grid_nodes, frame_entry_count) are shared by all three selectors. Twin objection stands.
+ Possible later revive of the selector-7 pair as ...Bamboo... once a capture reaches its starter (research); not part of this wave.
+Re-derived at HEAD (all held; line numbers shifted from the ledger's 744/746/890 to 751/753/892):
+ - Definitions src/main/368E4.c:751, :753 (one-line forwarders). Declarations src/main/d_80DF8.c:40-41. Only other use: d_80DF8.c:892 {func_8004777C, func_8004779C},
+   which is index 0x12 (table g_resource_selector_callbacks[38] opens at :874 = index 0; init slot called by resource_InvokeLoadedSelectorInitCallback 2B344.c:2292-2296,
+   .unk4 slot by 2B344.c:2081-2082). No jal / call anywhere; asm glabels asm/funcs/func_8004777C.s:1,10 and func_8004779C.s:1,10 (each jal's the callee).
+ - Callee selector cases checked: 32D04.c:1184-1185 (0x12 -> 10 entries), 35000.c:67-91 (selector 0x12 poses the paired grid node), 35000.c:99-101.
+ - Census function-names.csv:599-600 AUTO KEEP; named_syms.txt:281-282 RESET notes (retired names only); no symbol_addrs.txt / undefined_*_auto.txt line; no comment names them.
+ - Role word: the stage card "Next Battle Stage / Lumberyard" at frame 93500 of frame-anim-story-lumberyard-cut-1 (image read from the capture store); stub-and-observe
+   story-lumberyard-node-stub-1 (knockout.md rows from 97724 differ, 97700/97712 identical).
+ - Not independently re-shown by this draft (left to the reviewer, kept as research claims, marked as such in the rows): events.tsv rows for the entry-8/9 starts at 97709 / 97953,
+   the katze-phase hit at 126600 being the same lumber shed, the pixel-region reading of the knockout.
+ - Freshness: both new names occur nowhere in the tree (git grep -i; no identifier in src/, include/, asm/ or registries contains "lumberyard"); build.py fresh() enforces src/include.
+HAZARD (old name in capture paths / recorded data) - FINDING: naming_wave's dry run would NOT substitute any of these. Files holding the old name func_8004779C
+ (or func_8004777C in hitmaps/evidence): tools/trace/scenarios/story-lumberyard-cut.json:7, docs/naming/runtime/story-lumberyard-node-stub-1/func_8004779C/{capture.manifest.json,
+ capture.script.lua,spec.json}, story-lumberyard-node-stub-1/knockout.{manifest.json,md,tsv}, docs/naming/runtime/evidence/{events,screens,only_x}.tsv, matrix/{coverage,facts}.tsv,
+ frame-anim-story-lumberyard-cut-1/spec.json, ~110 */hitmap.tsv. The dry run edits only 4 files (368E4.c, d_80DF8.c, the two asm/funcs/*.s) + 2 .s renames; see dry.txt.
+ The tool never reads docs/naming/runtime or tools/trace JSON (src/include C/H, asm, tools+engine *.py minus rename_funcs.py, line-wise registries, ledger dirs only).
+ Apply needs no exclusion/restore; after apply, confirm with git status that nothing under docs/naming/runtime or tools/trace changed. The capture path therefore keeps the
+ old spelling (history/recorded data), and the census / keycheck read docs/naming/phase3/** as the only free path, so the lander must not hand-edit the runtime files either.
+Weak spots for the reviewer:
+ (1) Q132 matrix: all 33 stage:lumberyard pair rows are inconclusive (hit_in_untagged_capture: lib-story-final-fight-retail-1); a literal reading may FAIL the role word until that capture is stage-tagged.
+ (2) Lumberyard as a role word vs an identity the code does not show (answer: the code shows the stage-id row, the capture shows which stage).
+ (3) prefix node_ vs lumberyard_; length (node_InitLumberyardFrameEntries drops FromWorldTranslations, part of the effect).
+ (4) libscan lists both among 8-word LIBAPI/SEND shape matches (size-only, dismissed).
+Comment pass after apply: no comment names either function; named_syms.txt:281-282 mention only retired names; nothing to hand-edit expected.
+gates: tmp/p3w101/gates.sh does not exist yet; the lander copies it from the latest tmp/p3w*/gates.sh before running gates.ps1.

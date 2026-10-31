@@ -1,0 +1,33 @@
+rc=0
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (4) --
+  asm: 2 files, 4 substitutions
+      asm/funcs/func_8004777C.s  (2)
+      asm/funcs/func_8004779C.s  (2)
+  src: 2 files, 6 substitutions
+      src/main/368E4.c  (2)
+      src/main/d_80DF8.c  (4)
+
+-- .s file renames (2) --
+  asm/funcs/func_8004777C.s -> asm/funcs/node_InitLumberyardFrameEntriesFromWorldTranslations.s
+  asm/funcs/func_8004779C.s -> asm/funcs/node_AdvanceLumberyardFrameAnimatedEntriesAndQueueDraws.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
+
+HAZARD CHECK (old name func_8004779C in committed capture paths / recorded data): this dry run edits only asm/funcs/func_8004777C.s,
+func_8004779C.s, src/main/368E4.c and src/main/d_80DF8.c (4 files, 10 substitutions) and renames the two .s files. It touches NOTHING under
+docs/naming/runtime/, tools/trace/scenarios/ or docs/foundation/. Reason (tools/naming_wave.py): C/H are substituted only under src/ and include/,
+asm only under asm/funcs and asm/data, tool .py only under tools/ and engine/ (tools/rename_funcs.py is excluded; the scenario is .json, not .py),
+registries only line-wise by symbol-owner, ledger dirs under memory/grind. No restore/exclude is needed at apply; the apply step should still confirm
+(git status) that no path under docs/naming/runtime or tools/trace changed.
