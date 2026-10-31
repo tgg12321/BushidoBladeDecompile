@@ -34,6 +34,16 @@ sources.tsv has one row per input file per capture (including the optional
 no-name registry). Start time uses manifest start.time/start_time, falling back
 to the JSONL start event because existing manifests record only start context.
 
+phase_tags.tsv restates each claiming scenario's phase_covers for the
+capture's phases.tsv phases (capture, phase, tags). refines.tsv has one row per
+capture of a scenario that another scenario's "refines" names, and per capture
+of that refining scenario: status is ok only when both runs share their
+recorded start (power-on kind, build EXE, BIOS, disc tracks, emulator exe /
+main / version, memory cards at start), each refining phase lies inside one
+refined phase, both span the same frames, and the hit maps agree: the same
+functions, and for every refined phase a hit there exactly when some refining
+phase inside it has one (no ? cell on either side); else status lists why.
+
 Regenerate and verify from the repository root:
 python tools/trace/matrix.py build --all --no-name docs/naming/phase3/no_name.tsv
 python tools/trace/matrix.py check --all --no-name docs/naming/phase3/no_name.tsv
@@ -54,6 +64,7 @@ import sys
 from scenarios import scen
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.trace import store
+from gdbtrace import manifest_part
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -192,6 +203,7 @@ def load_capture(path):
     if unmapped_phases and (path / "phases.tsv").exists():
         read("phases.tsv")
     functions = {}
+    spans = []
     if mapped:
         phases = table(read("phases.tsv"), ["phase", "first_frame", "last_frame",
                                             "screen", "inputs", "screenshots"])
@@ -209,6 +221,7 @@ def load_capture(path):
                 raise InvalidCapture("invalid or overlapping phase span")
             previous = int(last)
             known.add(phase)
+            spans.append((phase, int(first), int(last)))
         rows = table(read("hitmap.tsv"), ["function", "addr"])
         if len(rows[0]) < 3 or not set(rows[0][2:]) <= known:
             raise InvalidCapture("hitmap.tsv has missing or unknown phases")
@@ -269,7 +282,7 @@ def load_capture(path):
     return dict(ident=ident, kind=kind, kinds=kinds, path=path, complete=complete,
                 manifest=manifest, script=spec.get("script"), start=when, order=order,
                 hashes=hashes, functions=functions, mapped=mapped, values=values,
-                polls=polls)
+                polls=polls, spans=spans)
 
 
 def scenario_rows(captures, all_evidence=False):
@@ -328,6 +341,7 @@ def scenario_rows(captures, all_evidence=False):
     except scen.ScenError as ex:
         raise InvalidCapture(str(ex)) from None
     rows = [["capture", "scenario", "extends", "covers", "kind", "manifest_sha1", "match"]]
+    claimed = {}
     for capture in captures:
         if not capture["mapped"]:
             continue
@@ -342,13 +356,95 @@ def scenario_rows(captures, all_evidence=False):
             if convention and convention[1] in scenarios:
                 names = [convention[1]]
                 match = "dirname"
+        claimed[capture["ident"]] = names
         covers = sorted({key for name in names for key in scenarios[name].get("covers", [])})
         lineage = sorted({chains[name] for name in names} - {"-"})
         rows.append([capture["ident"], ",".join(names) or "-",
                      ",".join(lineage) or "-", ",".join(covers) or "-",
                      ",".join(capture["kinds"]) or "-",
                      capture["hashes"]["capture.manifest.json"], match])
-    return rows
+    return rows, claimed, scenarios
+
+
+START_FIELDS = [("start", "kind"), ("build", "exe"), ("bios",), ("disc", "tracks"),
+                ("emulator", "exe"), ("emulator", "main"), ("emulator", "version"),
+                ("start", "memcard1", "sha1_at_start"), ("start", "memcard2", "sha1_at_start")]
+
+
+def cells_of(capture, addr):
+    cell = capture["functions"][addr][1]
+    return dict(pair.rsplit(":", 1) for pair in cell.split(";")) if cell != "." else {}
+
+
+def refinement_status(base, fine):
+    """Why `fine` (a refining run) does not split `base`'s hit map, or ok."""
+    problems = {}
+    differs = []
+    for keys in START_FIELDS:
+        a, b = (manifest_part(c["manifest"], keys) for c in (base, fine))
+        if a is None or a != b:
+            differs.append(".".join(keys))
+    if differs:
+        problems["start_differs"] = differs
+    inside = {}
+    for name, first, last in fine["spans"]:
+        owner = [p for p, f, l in base["spans"] if f <= first and last <= l]
+        if len(owner) != 1:
+            problems.setdefault("phase_not_nested", []).append(name)
+        else:
+            inside.setdefault(owner[0], []).append(name)
+    ends = [(s[0][1], s[-1][2]) if s else None for s in (base["spans"], fine["spans"])]
+    if ends[0] != ends[1]:
+        problems["frames_differ"] = ends
+    if set(base["functions"]) != set(fine["functions"]):
+        problems["functions_differ"] = len(set(base["functions"]) ^ set(fine["functions"]))
+    elif "phase_not_nested" not in problems:
+        disagree = []
+        for addr in sorted(base["functions"]):
+            coarse, split = cells_of(base, addr), cells_of(fine, addr)
+            if "?" in coarse.values() or "?" in split.values():
+                disagree.append(addr)
+                continue
+            for phase, _, _ in base["spans"]:
+                if (phase in coarse) != any(p in split for p in inside.get(phase, [])):
+                    disagree.append(addr)
+                    break
+        if disagree:
+            problems["hits_disagree"] = [f"0x{a:08X}" for a in disagree[:20]]
+            problems["hits_disagree_count"] = len(disagree)
+    return json.dumps(problems, sort_keys=True, separators=(",", ":")) if problems else "ok"
+
+
+def phase_rows(captures, claimed, scenarios):
+    by_ident = {c["ident"]: c for c in captures}
+    usable = {c["ident"] for c in captures if c["mapped"] and c["kind"] != "stub"
+              and c["spans"]}
+    tags = [["capture", "phase", "tags"]]
+    refines = [["capture", "refined_by", "status"]]
+    for ident in sorted(claimed):
+        if ident not in usable:
+            continue
+        own = {p for p, _, _ in by_ident[ident]["spans"]}
+        merged = {}
+        for name in claimed[ident]:
+            for phase, keys in scenarios[name].get("phase_covers", {}).items():
+                merged.setdefault(phase, set()).update(keys)
+        for phase, _, _ in by_ident[ident]["spans"]:
+            if phase in merged:
+                tags.append([ident, phase, ",".join(sorted(merged[phase]))])
+        if set(merged) - own:
+            raise InvalidCapture(ident + ": phase_covers phases not in phases.tsv: "
+                                 + ", ".join(sorted(set(merged) - own)))
+    for fine in sorted(claimed):
+        for name in claimed[fine]:
+            base_name = scenarios[name].get("refines")
+            if not base_name or fine not in usable:
+                continue
+            for base in sorted(claimed):
+                if base != fine and base in usable and base_name in claimed[base]:
+                    refines.append([base, fine, refinement_status(by_ident[base],
+                                                                  by_ident[fine])])
+    return tags, refines
 
 
 def render(paths, no_name=None, all_evidence=False, current=frozenset()):
@@ -385,6 +481,8 @@ def render(paths, no_name=None, all_evidence=False, current=frozenset()):
         readings = [c["functions"].get(addr, ("", "-", False)) for c in mapped]
         coverage.append([f"0x{addr:08X}", name, others, int(addr in registry),
                          sum(r[2] for r in readings)] + [r[1] for r in readings])
+    scenario_table, claimed, scenarios = scenario_rows(captures, all_evidence)
+    phase_tags, refines = phase_rows(captures, claimed, scenarios)
     values = [["capture", "phase", "symbol/entry", "offset", "bytes",
                "error", "frame", "entry", "addr", "read_at", "end", "pause_frame", "ptr", "len"]]
     polls = [["capture", "phase", "symbol/entry", "addr", "t", "bytes", "len"]]
@@ -408,7 +506,8 @@ def render(paths, no_name=None, all_evidence=False, current=frozenset()):
     return {"coverage.tsv": tsv(coverage), "values.tsv": tsv(values),
             "polls.tsv": tsv(polls),
             "sources.tsv": tsv(sources),
-            "scenarios.tsv": tsv(scenario_rows(captures, all_evidence))}
+            "scenarios.tsv": tsv(scenario_table),
+            "phase_tags.tsv": tsv(phase_tags), "refines.tsv": tsv(refines)}
 
 
 def discover(root):

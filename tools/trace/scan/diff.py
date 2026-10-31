@@ -12,6 +12,11 @@ Conclusive differential evidence is in pair rows: one tag differs on the same
 WHOLE_CAPTURE_AXES axis (mode/stage), all hit-side replicas hit, all zero-side
 replicas are armed and never hit, and hits span multiple matrix scenarios.
 Matrix-wide checks reject zero-tag hits, hit-tag zeros, and untagged hits.
+For those hit-side checks a capture's axis values are its phase_tags.tsv tags
+of the phases the function was hit in, when it has phase tags (a hit phase
+with no tag on the axis, or any ? cell, is untagged); a capture whose refines.tsv status is ok
+is read through its refining capture when that one hits too (a split of the
+same run); otherwise its scenarios.tsv covers.
 Pairs require matching manifest start kinds, memory-card start hashes, BIOS,
 disc cue/track hashes, emulator exe/main hashes and version, and display mode.
 The imported gdbtrace.SAME_INPUTS also requires matching trace-tool hashes
@@ -413,6 +418,34 @@ def render(matrix):
             groups.setdefault(name, []).append(capture)
     if set(captures) - tags.keys():
         raise ValueError("coverage captures missing scenarios")
+    phase_tags, refined_by = {}, {}
+    if (matrix / "phase_tags.tsv").is_file():
+        for item in read_table(matrix / "phase_tags.tsv", ["capture", "phase", "tags"])[1]:
+            phase_tags.setdefault(item["capture"], {})[item["phase"]] = set(item["tags"].split(","))
+    if (matrix / "refines.tsv").is_file():
+        for item in read_table(matrix / "refines.tsv", ["capture", "refined_by", "status"])[1]:
+            if item["status"] == "ok" and item["refined_by"] in captures:
+                refined_by.setdefault(item["capture"], []).append(item["refined_by"])
+
+    def hit_values(capture, states, axis):
+        """The axis values of the phases `capture` hit in, or None if untagged."""
+        for fine in sorted(refined_by.get(capture, [])):
+            if states[fine][0] == "hit":
+                capture = fine
+                break
+        if capture not in phase_tags:
+            found = {t for t in tags[capture] if t.split(":", 1)[0] == axis}
+            return found or None
+        if states[capture][1]:
+            return None  # a ? cell may be a hit in any phase
+        found = set()
+        for phase in states[capture][2]:
+            here = {t for t in phase_tags[capture].get(phase, ()) if t.split(":", 1)[0] == axis}
+            if not here:
+                return None
+            found |= here
+        return found or None
+
     phases = {}
     starts = {c: capture_start(matrix.parent / c) for c in captures}
     for capture in captures:
@@ -497,8 +530,9 @@ def render(matrix):
             not_reproduced = sorted(c for c in groups[a] if states[c][0] == ".")
             if not_reproduced:
                 reasons["hit_side_not_reproduced"] = not_reproduced
+            axis = tag.split(":", 1)[0]
             elsewhere = sorted(c for c in hits - set(groups[a]) - set(groups[b])
-                               if other in tags[c])
+                               if other in (hit_values(c, states, axis) or ()))
             if elsewhere:
                 reasons["zero_tag_hit_elsewhere"] = elsewhere
             outside_pair = set(captures) - set(groups[a]) - set(groups[b])
@@ -506,9 +540,7 @@ def render(matrix):
                                    if tag in tags[c] and states[c][0] == ".")
             if hit_tag_zeros:
                 reasons["hit_tag_zero_elsewhere"] = hit_tag_zeros
-            axis = tag.split(":", 1)[0]
-            untagged = sorted(c for c in hits if not any(
-                t.split(":", 1)[0] == axis for t in tags[c]))
+            untagged = sorted(c for c in hits if hit_values(c, states, axis) is None)
             if untagged:
                 reasons["hit_in_untagged_capture"] = untagged
             reasons.update(divergence_reasons({c: phases_hit[c] for c in hit},

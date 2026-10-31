@@ -23,6 +23,14 @@ Scenario keys (all optional except end_frame, unless "extends" gives it):
                tools/trace/knockout.py run counts when its script is
                exactly knockout_script(this scenario's, its frames)
   extends      another scenario: start from its compiled lists
+  phase_covers {"PHASE": [keys]}: covers keys that hold for that whole
+               compiled phase only (e.g. the stage of one story fight);
+               not claimed for the whole run (keep them out of "covers"
+               unless they are), backed like covers by an evidence capture
+  refines      a scenario this one re-runs unchanged: the same end_frame,
+               inputs, pokes and memcards, every phase mark of it kept,
+               only phase marks and screenshots added (`verify`), so a
+               capture of this one splits a capture of that one's phases
   use          segment names, merged in order
   end_frame    last frame; inputs released after it, phases and
                screenshots at or after it are dropped (cut runs)
@@ -88,7 +96,7 @@ STEP_RE = re.compile(r"\+(\d+):([A-Z0-9_|+]+)(?:/(\d+))?(?:@([12]))?")
 MARK_RE = re.compile(r"(\d+):(\S+)")
 KEYS = {"description", "covers", "evidence", "extends", "use", "end_frame",
         "inputs", "repeat", "phases", "shots", "shots_drop", "segment",
-        "pokes", "memcards"}
+        "pokes", "memcards", "phase_covers", "refines"}
 POKE_KEYS = {"at", "hex", "phase"}
 INSTRUMENT = {
     "none": {"max_events": 200000, "duration_s": 7200},
@@ -435,6 +443,44 @@ def cmd_build(args) -> int:
     return 0
 
 
+def refinement_problems(name: str, base: str) -> list[str]:
+    """Why `name` is not `base` re-run with only phase marks and
+    screenshots added (empty: it refines it)."""
+    mine, theirs = compile_script(name), compile_script(base)
+    problems = []
+    for key in ("end_frame", "inputs"):
+        if json.dumps(mine[key], sort_keys=True) !=                 json.dumps(theirs[key], sort_keys=True):
+            problems.append(first_diff(theirs[key], mine[key], key))
+    marks = {(p["frame"], p["name"]) for p in mine["phases"]}
+    lost = [p for p in theirs["phases"] if (p["frame"], p["name"]) not in marks]
+    if lost:
+        problems.append(f"phase marks of {base} not kept: {lost}")
+    if json.dumps(compile_pokes(name), sort_keys=True) !=             json.dumps(compile_pokes(base), sort_keys=True):
+        problems.append("pokes differ")
+    if compile_memcards(name) != compile_memcards(base):
+        problems.append("memcards differ")
+    return problems
+
+
+def phase_cover_problems(name: str, d: dict, keys: set[str]) -> list[str]:
+    covers = d.get("phase_covers", {})
+    if not isinstance(covers, dict):
+        return ["phase_covers is not an object"]
+    phases = {p["name"] for p in compile_script(name)["phases"]}
+    problems = [] if not covers or d.get("evidence") else [
+        "phase_covers without an evidence capture"]
+    for phase, tags in sorted(covers.items()):
+        if phase not in phases:
+            problems.append(f"phase_covers: no compiled phase {phase!r}")
+        if not isinstance(tags, list) or not tags or                 not all(isinstance(t, str) for t in tags):
+            problems.append(f"phase_covers {phase!r}: not a list of keys")
+            continue
+        if set(tags) - keys:
+            problems.append(f"phase_covers {phase!r}: keys not in "
+                            f"targets.json: {sorted(set(tags) - keys)}")
+    return problems
+
+
 def cmd_verify(args) -> int:
     ok = True
     keys = target_keys(load_targets())
@@ -455,6 +501,16 @@ def cmd_verify(args) -> int:
             ok = False
         if d.get("covers") and not d.get("evidence"):
             print(f"FAIL {n}: covers without an evidence capture")
+            ok = False
+        try:
+            problems = phase_cover_problems(n, d, keys)
+            if "refines" in d:
+                problems += [f"refines {d['refines']}: {p}" for p in
+                             refinement_problems(n, d["refines"])]
+        except ScenError as e:
+            problems = [str(e)]
+        for problem in problems:
+            print(f"FAIL {n}: {problem}")
             ok = False
         for ev in d.get("evidence", []):
             p = os.path.join(REPO, ev)

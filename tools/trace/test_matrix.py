@@ -88,6 +88,60 @@ class MatrixTest(unittest.TestCase):
                                 str(self.registry)] + [str(p) for p in (paths or self.paths)])
         return code, stderr.getvalue()
 
+    def run_dict(self, spans, cells, **manifest):
+        start = {"kind": "power-on", "memcard1": {"sha1_at_start": "1"},
+                 "memcard2": {"sha1_at_start": "2"}}
+        base = {"start": start, "build": {"exe": {"sha1": "e"}}, "bios": {"sha1": "b"},
+                "disc": {"tracks": [{"sha1": "t"}]},
+                "emulator": {"exe": {"sha1": "x"}, "main": {"sha1": "m"}, "version": "v"}}
+        base.update(manifest)
+        return {"manifest": base, "spans": spans,
+                "functions": {addr: ("f", cell, cell != ".") for addr, cell in cells.items()}}
+
+    def test_refinement_status(self):
+        coarse = [("boot", 0, 9), ("story", 10, 99)]
+        fine = [("boot", 0, 9), ("story", 10, 49), ("s2", 50, 99)]
+        base = self.run_dict(coarse, {1: "story:1", 2: "boot:1", 3: "."})
+        ok = self.run_dict(fine, {1: "s2:1", 2: "boot:1", 3: "."})
+        self.assertEqual(matrix.refinement_status(base, ok), "ok")
+        both = self.run_dict(fine, {1: "story:1;s2:1", 2: "boot:1", 3: "."})
+        self.assertEqual(matrix.refinement_status(base, both), "ok")
+        extra = self.run_dict(fine, {1: "s2:1", 2: "boot:1", 3: "boot:1"})
+        self.assertEqual(json.loads(matrix.refinement_status(base, extra)),
+                         {"hits_disagree": ["0x00000003"], "hits_disagree_count": 1})
+        unknown = self.run_dict(fine, {1: "s2:?", 2: "boot:1", 3: "."})
+        self.assertEqual(json.loads(matrix.refinement_status(base, unknown))["hits_disagree_count"], 1)
+        crossing = self.run_dict([("boot", 0, 19), ("story", 20, 99)],
+                                 {1: "story:1", 2: "boot:1", 3: "."})
+        self.assertEqual(json.loads(matrix.refinement_status(base, crossing)),
+                         {"phase_not_nested": ["boot"]})
+        shorter = self.run_dict(fine[:2], {1: "story:1", 2: "boot:1", 3: "."})
+        self.assertEqual(json.loads(matrix.refinement_status(base, shorter)),
+                         {"frames_differ": [[0, 99], [0, 49]]})
+        other = self.run_dict(fine, {1: "s2:1", 2: "boot:1", 3: "."}, bios={"sha1": "c"})
+        self.assertEqual(json.loads(matrix.refinement_status(base, other)),
+                         {"start_differs": ["bios"]})
+        fewer = self.run_dict(fine, {1: "s2:1", 2: "boot:1"})
+        self.assertEqual(json.loads(matrix.refinement_status(base, fewer)),
+                         {"functions_differ": 1})
+
+    def test_phase_rows(self):
+        def cap(ident, spans, kind="hitmap"):
+            return dict(self.run_dict(spans, {1: "."}), ident=ident, mapped=True, kind=kind)
+        coarse = cap("old", [("boot", 0, 9), ("story", 10, 99)])
+        fine = cap("new", [("boot", 0, 9), ("st1", 10, 49), ("st2", 50, 99)])
+        stub = cap("stubbed", [("boot", 0, 9), ("st1", 10, 49), ("st2", 50, 99)], "stub")
+        scenarios = {"base": {}, "split": {"refines": "base", "phase_covers": {
+            "st1": ["stage:a"], "st2": ["stage:b", "event:x"]}}}
+        claimed = {"old": ["base"], "new": ["split"], "stubbed": ["split"]}
+        tags, refines = matrix.phase_rows([coarse, fine, stub], claimed, scenarios)
+        self.assertEqual(tags, [["capture", "phase", "tags"], ["new", "st1", "stage:a"],
+                                ["new", "st2", "event:x,stage:b"]])
+        self.assertEqual(refines, [["capture", "refined_by", "status"], ["old", "new", "ok"]])
+        scenarios["split"]["phase_covers"]["gone"] = ["stage:c"]
+        with self.assertRaises(matrix.InvalidCapture):
+            matrix.phase_rows([coarse, fine], claimed, scenarios)
+
     def test_exact_outputs(self):
         expected_coverage = (
             "addr\tcapture_name\tother_capture_names\tno_name\tcaptures_hit\ta\tb\n"
@@ -111,6 +165,8 @@ class MatrixTest(unittest.TestCase):
         expected = {"coverage.tsv": expected_coverage, "values.tsv": expected_values,
                     "polls.tsv": "capture\tphase\tsymbol/entry\taddr\tt\tbytes\tlen\n",
                     "sources.tsv": expected_sources,
+                    "phase_tags.tsv": "capture\tphase\ttags\n",
+                    "refines.tsv": "capture\trefined_by\tstatus\n",
                     "scenarios.tsv": "capture\tscenario\textends\tcovers\tkind\tmanifest_sha1\tmatch\n"
                     + "".join(f"{p.name}\t-\t-\t-\thitmap\t"
                               f"{hashlib.sha1((p / 'capture.manifest.json').read_bytes()).hexdigest()}\t-\n"

@@ -1,0 +1,545 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "d1c8736df948fbc7836f043720e3ed253a66efa1",
+      "size": 110640
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a387e6db3f2613ec9d7bd8dbfb6f16b3029c8a4e",
+      "size": 30208
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "30d78257631e00ffa948422e594d46ebe233cda0",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.map",
+      "sha1": "2265998bb855e823ddff410702596de516229107",
+      "size": 419367
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.elf",
+      "sha1": "4b85e152c716c4edb02f63966b7507c552b9eddb",
+      "size": 872308
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\spec.json",
+    "sha1": "0e5cc926254dd93571af089fa401e4b01d6d3360",
+    "size": 1056012
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Downloads\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.script.lua",
+      "sha1": "85b3b4b8b88ab30f29633aa1304ab288f89bf6c5",
+      "size": 929603
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 3228,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.jsonl",
+      "sha1": "58ffaa0e84cfbc57365bf74216f2bc39f37a33eb",
+      "size": 1331690,
+      "store_name": "capture.jsonl.sha1-58ffaa0e84cfbc57365bf74216f2bc39f37a33eb",
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.5489.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel08.8503.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel08.8739.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.8899.png",
+      "sha1": "86d5daef52e383596fe6bcc1e26a57588627f214",
+      "size": 30022,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel0f.26153.png",
+      "sha1": "ff6abd692f93e656977618f42da3443745d557de",
+      "size": 26286,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel0f.26389.png",
+      "sha1": "7e0d16b5611982bf62b969a4f16b74151285c10c",
+      "size": 26437,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel10.46112.png",
+      "sha1": "b1282583c1bef51ddb26b68a9d40e2aee3035c4c",
+      "size": 23696,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel10.46348.png",
+      "sha1": "d2a8d8f50de6b99f8bad1c0c590212ab59fea163",
+      "size": 23873,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel12.93500.png",
+      "sha1": "0add8d2d885ae40524aba34d95ea3b1b6c3e69ac",
+      "size": 22202,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel12.93736.png",
+      "sha1": "fa5e4d3b5094652c587e8204eeaef07031b4e735",
+      "size": 22197,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.126599.png",
+      "sha1": "19334832b96343a0c6d840547540996099d11915",
+      "size": 48189,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel13.127780.png",
+      "sha1": "c0a60d1a5ae16ded78e94b6e1884831d8fb3f9e9",
+      "size": 25437,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.127900.png",
+      "sha1": "f3de50fc58bd7e95520313e39f6325be862bf153",
+      "size": 25426,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.128000.png",
+      "sha1": "0de0747a2980c4abe4f47e7cccec6800174a18c4",
+      "size": 25438,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel13.128016.png",
+      "sha1": "0de0747a2980c4abe4f47e7cccec6800174a18c4",
+      "size": 25438,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.128700.png",
+      "sha1": "8bed85b46a95c53a766e326f973273e26bd9a551",
+      "size": 27897,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.128800.png",
+      "sha1": "8cdfcbb2afc6f1f6bab140fe527ea0ba35f8a7c5",
+      "size": 29903,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.128900.png",
+      "sha1": "f0b953860ff2432f826cb805ad59e4498d0d0792",
+      "size": 42787,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.129000.png",
+      "sha1": "03f5c5a229eebafc389d3fb5a54bd4d82c986a98",
+      "size": 52299,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.129100.png",
+      "sha1": "5ed29a416fbf1d6ea22327a756cc1de57ab7b14b",
+      "size": 52995,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.129200.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel03.129476.png",
+      "sha1": "b2f8671444463ff38f34ff636899b8b63591b764",
+      "size": 21871,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.129600.png",
+      "sha1": "0c97f1fe9f95e5371f4001f865fb620e96234191",
+      "size": 21857,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel03.129712.png",
+      "sha1": "9186b6a578c0e2c9c32fced16c614ebec9a14723",
+      "size": 21871,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.141700.png",
+      "sha1": "465f2f0709bef0bb2166c98c436cb62654437e33",
+      "size": 25133,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel0c.144464.png",
+      "sha1": "4a0e06e9415b909ea97fd2e844fb118d5498afc6",
+      "size": 27117,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel0c.144700.png",
+      "sha1": "815480b67ccec51876e6a73d9ed9d0ab65e5e38b",
+      "size": 27105,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.151400.png",
+      "sha1": "faf94ad1586ef0124c82742b2b32658eca5bca70",
+      "size": 59276,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel02.153796.png",
+      "sha1": "c22caaee9128a2c7bb35e978b9cb8f5c1631424b",
+      "size": 21580,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.153900.png",
+      "sha1": "729c7c873193308e2d0e2b7dd4efda07a58e0ed1",
+      "size": 21592,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154000.png",
+      "sha1": "afbb28707c3c766a83a1fd899fad160fdbcbefb7",
+      "size": 21592,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.sel02.154032.png",
+      "sha1": "afbb28707c3c766a83a1fd899fad160fdbcbefb7",
+      "size": 21592,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154100.png",
+      "sha1": "01cd8be4c4b57cc9199411969863fd554b578d90",
+      "size": 21571,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154200.png",
+      "sha1": "3678af3bb1a891bcce8f31aaf9149a876dd8b433",
+      "size": 21733,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154300.png",
+      "sha1": "f3760facc32b164dabb442bbea7ffb96345a7876",
+      "size": 41305,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154400.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154500.png",
+      "sha1": "31bf9352c5286038792b8dd3c9be7576e309cd0a",
+      "size": 22296,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154600.png",
+      "sha1": "15f6583d7137051e76ae0232905e27a85987bbe6",
+      "size": 28428,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.154700.png",
+      "sha1": "5387e3ea9450bf95248622e8a463157284416ea1",
+      "size": 30176,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.155000.png",
+      "sha1": "59e647fb92aabeffc0607b42bd1c39b0155e3a56",
+      "size": 27458,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.156400.png",
+      "sha1": "87b96380fdf707a4b6d913b9c721e10bd1cef7c6",
+      "size": 33396,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.157650.png",
+      "sha1": "9dfceab12149fb331d04300e8ae18f2073eea559",
+      "size": 27180,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.157700.png",
+      "sha1": "6dcefd5242c17afb933c5f7a3df3a504038ad13c",
+      "size": 27818,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.s.157950.png",
+      "sha1": "93bfa0e6de7d3c4f596e676d966a5d1f830e5e0d",
+      "size": 27252,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.script.log",
+      "sha1": "35ea37b2a338801848bc41c9c9b0132a08a994d2",
+      "size": 427936,
+      "store_name": "capture.script.log.sha1-35ea37b2a338801848bc41c9c9b0132a08a994d2",
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-final-fight-stages-1\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}

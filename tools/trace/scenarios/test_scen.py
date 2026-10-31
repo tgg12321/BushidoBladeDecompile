@@ -407,7 +407,60 @@ def main():
             finally:
                 scen.HERE, scen.REPO = real
 
+    def verify_refines():
+        real = (scen.HERE, scen.REPO)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scen.HERE = str(root / "scen")
+            scen.REPO = str(root)
+            try:
+                write(root / "scen", "targets", {"groups": {"stages": {
+                    "keys": ["stage:x", "stage:y"]}}})
+                write(root / "scen", "b", {
+                    "end_frame": 100, "phases": ["0:boot", "50:story"],
+                    "inputs": ["10:CROSS"]})
+                split = {"extends": "b", "refines": "b",
+                         "phases": ["70:st2"], "shots": ["80:st2.80"],
+                         "phase_covers": {"st2": ["stage:x"]},
+                         "evidence": ["docs/naming/runtime/c/spec.json"]}
+                write(root / "scen", "r", split)
+                write(root / "docs/naming/runtime/c", "spec",
+                      {"script": scen.compile_script("r")})
+                keys = {"stage:x", "stage:y"}
+                run("refines: phases and shots only",
+                    lambda: equal(scen.refinement_problems("r", "b"), []))
+                write(root / "scen", "r", {**split, "inputs": ["90:START"]})
+                run("refines: an added input is refused", lambda: equal(
+                    [q.split(":")[0] for q in scen.refinement_problems("r", "b")],
+                    ["inputs"]))
+                write(root / "scen", "r", {**split, "end_frame": 90})
+                run("refines: a cut run is refused", lambda: equal(
+                    len(scen.refinement_problems("r", "b")), 1))
+                write(root / "scen", "r", split)
+                for label, covers, want in (
+                    ("phase_covers: ok", {"st2": ["stage:x"]}, 0),
+                    ("phase_covers: unknown phase", {"st9": ["stage:x"]}, 1),
+                    ("phase_covers: another target key", {"st2": ["stage:y"]}, 0),
+                    ("phase_covers: key not a target", {"st2": ["stage:z"]}, 1),
+                    ("phase_covers: empty list", {"st2": []}, 1),
+                ):
+                    run(label, lambda c=covers, w=want: equal(len(
+                        scen.phase_cover_problems("r", {**split, "phase_covers": c},
+                                                  keys)), w))
+                bare = {k: v for k, v in split.items() if k != "evidence"}
+                run("phase_covers: no evidence capture", lambda: equal(
+                    scen.phase_cover_problems("r", bare, keys),
+                    ["phase_covers without an evidence capture"]))
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    got = scen.main(["verify"])
+                run("verify: refining scenario passes", lambda g=got, o=output.getvalue():
+                    equal((g, o.strip().splitlines()[-1]), (0, "scen verify: PASS")))
+            finally:
+                scen.HERE, scen.REPO = real
+
     verify_pokes()
+    verify_refines()
     verify_knockout()
     verify_memcards()
     run("real library verify", verify_library)

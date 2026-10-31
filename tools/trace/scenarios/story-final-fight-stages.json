@@ -1,0 +1,42 @@
+{
+  "description": "story-final-fight-retail's run unchanged (refines it: same inputs, end_frame and cards) with two more phase marks at resource-selector loads: 93436, where g_loaded_resource_selector becomes 0x12 (resource_InvokeLoadedSelectorInitCallback), and 127716, where it becomes 0x13 (selector-loads-story-final-fight-retail-1: loads at 8439 0x08, 26089 0x0F, 46048 0x10, 93436 0x12, 127716 0x13, 129412 0x03, 144400 0x0C, 153732 0x02); so selector 0x12 is loaded through sel12 and katze (93436-127715) and in no other phase; screenshots 64 and 300 frames after each load (a 14-phase split, one phase per load, lost PCSX-Redux at the 129300 phase start on both tries)",
+  "covers": [
+    "mode:story",
+    "menu:stage_card"
+  ],
+  "phase_covers": {
+    "sel12": [
+      "stage:lumberyard"
+    ],
+    "katze": [
+      "stage:lumberyard"
+    ]
+  },
+  "evidence": [
+    "docs/naming/runtime/story-final-fight-stages-1/spec.json"
+  ],
+  "extends": "story-final-fight-retail",
+  "refines": "story-final-fight-retail",
+  "phases": [
+    "93436:sel12",
+    "127716:sel13"
+  ],
+  "shots": [
+    "8503:sel08.8503",
+    "8739:sel08.8739",
+    "26153:sel0f.26153",
+    "26389:sel0f.26389",
+    "46112:sel10.46112",
+    "46348:sel10.46348",
+    "93500:sel12.93500",
+    "93736:sel12.93736",
+    "127780:sel13.127780",
+    "128016:sel13.128016",
+    "129476:sel03.129476",
+    "129712:sel03.129712",
+    "144464:sel0c.144464",
+    "144700:sel0c.144700",
+    "153796:sel02.153796",
+    "154032:sel02.154032"
+  ]
+}

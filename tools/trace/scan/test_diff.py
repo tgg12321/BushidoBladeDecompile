@@ -606,6 +606,34 @@ class DiffTest(unittest.TestCase):
         self.assertEqual(row["inconclusive"], "1")
         self.assertEqual(self.reasons(row), {"zero_tag_hit_elsewhere": ["c"]})
 
+    def test_pair_phase_tags_attribute_multi_stage_hit(self):
+        self.cells = ["p:1", "p:2", ".", "fight:1"]
+        self.scenarios[-1] = ("c", "three", "mode:y,stage:a,stage:b")
+        pair = lambda: next(r for r in self.rows() if r["kind"] == "pair")
+        self.assertEqual(self.reasons(pair()), {"zero_tag_hit_elsewhere": ["c"]})
+        for tags, expected in (("stage:a", {}), ("stage:b", {"zero_tag_hit_elsewhere": ["c"]}),
+                               ("mode:y", {"hit_in_untagged_capture": ["c"]}),
+                               ("stage:a?", {"hit_in_untagged_capture": ["c"]})):
+            with self.subTest(tags=tags):
+                self.cells[3] = "fight:1;q:?" if tags.endswith("?") else "fight:1"
+                self.write_table(self.matrix / "phase_tags.tsv", ["capture", "phase", "tags"],
+                                 [("c", "p", "stage:b"), ("c", "fight", tags.rstrip("?"))])
+                row = pair()
+                self.assertEqual(self.reasons(row), expected)
+                self.assertEqual(row["inconclusive"], "1" if expected else "0")
+
+    def test_pair_refined_capture_read_through_its_refiner(self):
+        self.cells = ["p:1", "p:2", ".", "fight:1"]
+        self.scenarios[-1] = ("c", "three", "mode:y")
+        pair = lambda: next(r for r in self.rows() if r["kind"] == "pair")
+        self.assertEqual(self.reasons(pair()), {"hit_in_untagged_capture": ["c"]})
+        for status, expected in (("ok", {}), ('{"hits_disagree_count":1}',
+                                              {"hit_in_untagged_capture": ["c"]})):
+            with self.subTest(status=status):
+                self.write_table(self.matrix / "refines.tsv", ["capture", "refined_by", "status"],
+                                 [("c", "a", status)])
+                self.assertEqual(self.reasons(pair()), expected)
+
     def test_pair_start_state_fields_must_match(self):
         self.cells = ["p:1", "p:2", ".", "fight:1"]
         probes = [("start.kind", "savestate"),
