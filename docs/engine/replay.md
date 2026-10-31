@@ -104,7 +104,7 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 
 ## `gpu_ResetDrawQueueAndPrepareViewAndLighting`: the view transform (once `replay_camera_rob_back_win_near`)
 
-`gpu_ResetDrawQueueAndPrepareViewAndLighting(focus_point, camera_angles, eye_distance)` (src/main/368E4.c:450) sets up the frame's view and draw state:
+`gpu_ResetDrawQueueAndPrepareViewAndLighting(focus_point, camera_angles, eye_distance)` (src/main/368E4.c:451) sets up the frame's view and draw state:
 
 1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
    `g_gpu_ot_offset_ptr`) and increments `D_800A38D6`.

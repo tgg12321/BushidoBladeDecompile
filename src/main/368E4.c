@@ -90,9 +90,9 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
 
     if (staging_addr != 0) {
         /* s3 is the header word count of the buffer being read (s0's in the
-         * case blocks and below, arg1's here), the way SOTN's white-dragon
-         * segment update reuses var_s2 for posX then posY (Q51; a separate
-         * local or the inline read: score 2) */
+         * case blocks and below, staging_addr's here), the way SOTN's
+         * white-dragon segment update reuses var_s2 for posX then posY (Q51; a
+         * separate local or the inline read: score 2) */
         /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
         s3 = *(s32 *)staging_addr;
         arena_Copy(staging_addr, (s32)s0, ((s32 *)staging_addr)[s3]);
