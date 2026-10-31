@@ -10,7 +10,13 @@
   ],
   "evidence": [
     "docs/naming/runtime/versus-2p-kimigaura-events-1/spec.json",
-    "docs/naming/runtime/lib-versus-2p-kimigaura-effects-1/spec.json"
+    "docs/naming/runtime/lib-versus-2p-kimigaura-effects-1/spec.json",
+    "docs/naming/runtime/eff-yawed-versus-2p-kimigaura-effects-1/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80063AF0/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80063B34/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80064ED8/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80064F68/spec.json"
   ],
   "use": [
     "boot",
