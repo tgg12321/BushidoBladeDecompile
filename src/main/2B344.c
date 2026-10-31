@@ -2609,7 +2609,7 @@ typedef struct {
 s16 *softbody_SetAnchorWeights(
     SVECTOR *points, s32 point_count, s16 *param_cursor);
 
-u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
+u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *params, u8 *cur) {
     /* FAKE: frame layout (oversized live object): softbody_Create's argument
        plus an unwritten tail (two or three words are byte-identical: three
        chosen); the argument alone gives a frame 8 short (0x48 for 0x50):
@@ -2625,7 +2625,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     s16 count;
     u16 flags;
     s32 mode;
-    s32 point_count;
+    s32 edge_capacity;
     s32 value;
     s32 n;
     s16 *packet;
@@ -2655,21 +2655,21 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     }
 
     block = src;
-    point_count = 0;
+    edge_capacity = 0;
     count = *src++;
     while (count != 0) {
         flags = *src++;
         if (flags & 8) {
-            point_count += count * 6;
+            edge_capacity += count * 6;
         } else {
-            point_count += count * 3;
+            edge_capacity += count * 3;
         }
         src += g_softbody_face_record_strides[(flags >> 3) & 3] * count;
         count = *src++;
     }
 
     init.in.buf = cur;
-    cur = cur + softbody_GetBufferSize(init.in.count, point_count);
+    cur = cur + softbody_GetBufferSize(init.in.count, edge_capacity);
     cur = ((u32)cur & 3) ? cur + 2 : cur;
 
     src = block;
@@ -2727,7 +2727,7 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     if (*src != 0) {
         sys_StoreZeroPastScratchpadOnFailedCheck(D_80010D8C);
     }
-    softbody_SetAnchorWeights(init.in.points, init.in.count, cmds);
+    softbody_SetAnchorWeights(init.in.points, init.in.count, params);
 
     init.in.matrix = &obj->node.xf.mat;
     init.in.field_2 = 0xE00;

@@ -1000,7 +1000,7 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *fighter_record) {
     for (probe_index = first_probe_index; probe_index < first_probe_index + 2;
          probe_index++) {
         Unk80101EC8Record *probe_origin_fighter;
-        s32 flags;
+        s32 var_8;
         s32 probe_distance;
         s16 *probe_sine_ptr;
         s16 *probe_cosine_ptr;
@@ -1008,26 +1008,26 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *fighter_record) {
         s32 probe_z;
 
         probe_origin_fighter = fighter_record;
-        flags = g_fighter_cpu_probes[probe_index][1] << 8;
-        if ((flags & 0x1000) != 0) {
+        var_8 = g_fighter_cpu_probes[probe_index][1] << 8;
+        if ((var_8 & 0x1000) != 0) {
             probe_origin_fighter = fighter_record->other;
         }
 
         if (fighter_record->move_kind == 0x13 ||
             fighter_record->move_kind == 6) {
-            flags += probe_origin_fighter->orientation.vy;
+            var_8 += probe_origin_fighter->orientation.vy;
         } else {
-            flags += ratan2(g_camera_default_view_record.focus_point.x -
+            var_8 += ratan2(g_camera_default_view_record.focus_point.x -
                                 probe_origin_fighter->world_pos.x,
                             g_camera_default_view_record.focus_point.z -
                                 probe_origin_fighter->world_pos.z);
         }
 
-        probe_sine_ptr = &Judge[flags & 0xFFF];
+        probe_sine_ptr = &Judge[var_8 & 0xFFF];
         probe_distance = g_fighter_cpu_probes[probe_index][0] << 8;
         x = probe_origin_fighter->collision_pos.vx +
             ((probe_distance * *probe_sine_ptr) >> 12);
-        probe_cosine_ptr = &Judge[(flags + 0x400) & 0xFFF];
+        probe_cosine_ptr = &Judge[(var_8 + 0x400) & 0xFFF];
         probe_z = probe_origin_fighter->collision_pos.vz +
                   ((probe_distance * *probe_cosine_ptr) >> 12);
         segment_start[0] = probe_origin_fighter->collision_pos.vx;
@@ -1037,9 +1037,9 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *fighter_record) {
         segment_end[1] = probe_origin_fighter->collision_pos.vy - 0x320;
         segment_end[2] = probe_z;
 
-        flags = collision_TestSegmentWithWork(
+        var_8 = collision_TestSegmentWithWork(
             segment_start, segment_end, horizontal_hit_point, work, 0x1F8002B8);
-        if (flags != 0) {
+        if (var_8 != 0) {
             x += (*probe_sine_ptr * 0x7D) >> 8;
             probe_z += (*probe_cosine_ptr * 0x7D) >> 8;
         }
@@ -1051,16 +1051,16 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *fighter_record) {
         segment_end[1] = probe_origin_fighter->collision_pos.vy + 0x1004;
         segment_end[2] = probe_z;
 
-        flags |=
+        var_8 |=
             collision_TestSegmentWithWork(segment_start, segment_end,
                                           vertical_hit_point, work, 0x1F8002B8)
             << 1;
-        flags += 1;
-        if (flags == 3 &&
+        var_8 += 1;
+        if (var_8 == 3 &&
             vertical_hit_point[1] - probe_origin_fighter->collision_pos.vy <
                 5) {
-            flags = 0;
-        } else if (flags == 4) {
+            var_8 = 0;
+        } else if (var_8 == 4) {
             s32 horizontal_hit_dx = horizontal_hit_point[0] -
                                     probe_origin_fighter->collision_pos.vx;
             s32 horizontal_hit_dz = horizontal_hit_point[2] -
@@ -1071,11 +1071,11 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *fighter_record) {
                 if ((y - vertical_hit_point[1] >= 0
                          ? y - vertical_hit_point[1]
                          : vertical_hit_point[1] - y) >= 0x3E9) {
-                    flags = 5;
+                    var_8 = 5;
                 }
             }
         }
-        fighter_record->cpu_probes[probe_index] = flags;
+        fighter_record->cpu_probes[probe_index] = var_8;
     }
 }
 
@@ -1175,8 +1175,8 @@ typedef struct {
 s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
     Vec4_571C0 candidate_point;
     Vec4_571C0 top;
-    Vec4_571C0 left;
-    Vec4_571C0 var_3;
+    Vec4_571C0 plus_side_point;
+    Vec4_571C0 minus_side_point;
     s32 var_4[4];
     s16 work[4];
     s32 route_node_count;
@@ -1205,11 +1205,11 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
     minus_side_active = 1;
     plus_side_active = 1;
     route_node_count = 0;
-    left.x = fighter_record->collision_pos.vx;
-    left.y = fighter_record->collision_pos.vy - 5;
+    plus_side_point.x = fighter_record->collision_pos.vx;
+    plus_side_point.y = fighter_record->collision_pos.vy - 5;
     probe_radius = g_fighter_horizontal_separation + 800;
-    left.z = fighter_record->collision_pos.vz;
-    var_3 = left;
+    plus_side_point.z = fighter_record->collision_pos.vz;
+    minus_side_point = plus_side_point;
     for (orbit_angle_offset = 0x200; orbit_angle_offset <= 0x800;
          orbit_angle_offset += 0x200) {
         if (plus_side_active) {
@@ -1228,12 +1228,12 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
                     &candidate_point.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
-                plus_side_active =
-                    collision_TestSegmentWithWork(&left.x, &candidate_point.x,
-                                                  var_4, work, 0x1F8002B8) == 0;
+                plus_side_active = collision_TestSegmentWithWork(
+                                       &plus_side_point.x, &candidate_point.x,
+                                       var_4, work, 0x1F8002B8) == 0;
             }
             if (plus_side_active) {
-                left = candidate_point;
+                plus_side_point = candidate_point;
                 var_7++;
             }
         }
@@ -1253,12 +1253,12 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *fighter_record) {
             top.z = probe_z;
             if (collision_TestSegmentWithWork(
                     &candidate_point.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
-                minus_side_active =
-                    collision_TestSegmentWithWork(&var_3.x, &candidate_point.x,
-                                                  var_4, work, 0x1F8002B8) == 0;
+                minus_side_active = collision_TestSegmentWithWork(
+                                        &minus_side_point.x, &candidate_point.x,
+                                        var_4, work, 0x1F8002B8) == 0;
             }
             if (minus_side_active) {
-                var_3 = candidate_point;
+                minus_side_point = candidate_point;
                 temp++;
             }
         }

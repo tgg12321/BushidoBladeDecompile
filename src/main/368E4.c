@@ -37,7 +37,7 @@ static s32 g_node_retained_draw_node_buffer;
 static s16 g_resource_pair_selection[2];
 static s32 g_resource_entry_category;
 
-void resource_LoadOrReuseSelectedBlock(s32 selector, s32 arg1) {
+void resource_LoadOrReuseSelectedBlock(s32 selector, s32 staging_addr) {
     s32 *s0;
     s32 s7;
     s32 *s6, *s4, *s2;
@@ -82,20 +82,20 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 arg1) {
     s7 = 7;
     s0 = arena_OpenBlock(7);
 
-    if (arg1 != 0) {
-        func_80044F30(selector, arg1);
+    if (staging_addr != 0) {
+        func_80044F30(selector, staging_addr);
     } else {
         func_80044F30(selector, (s32)s0);
     }
 
-    if (arg1 != 0) {
+    if (staging_addr != 0) {
         /* s3 is the header word count of the buffer being read (s0's in the
          * case blocks and below, arg1's here), the way SOTN's white-dragon
          * segment update reuses var_s2 for posX then posY (Q51; a separate
          * local or the inline read: score 2) */
         /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
-        s3 = *(s32 *)arg1;
-        arena_Copy(arg1, (s32)s0, ((s32 *)arg1)[s3]);
+        s3 = *(s32 *)staging_addr;
+        arena_Copy(staging_addr, (s32)s0, ((s32 *)staging_addr)[s3]);
     }
 
     {
@@ -114,8 +114,9 @@ void resource_LoadOrReuseSelectedBlock(s32 selector, s32 arg1) {
                 s2 = (s32 *)((u8 *)s0 + off);
             }
 
-            if (arg1 != 0) {
-                tim_group = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
+            if (staging_addr != 0) {
+                tim_group = (s32 *)((u8 *)staging_addr +
+                                    ALIGN4(((s32 *)staging_addr)[s3]));
             } else {
                 tim_group = s2;
                 {

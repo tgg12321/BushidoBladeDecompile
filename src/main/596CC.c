@@ -91,11 +91,11 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
     {
         s32 var_4 = -0x10;
         s32 var_5;
-        s32 flags = g_menu_packed_cursors;
+        s32 var_6 = g_menu_packed_cursors;
         var_5 = g_row_menu_row_state.rows_on;
 
-        flags &= var_4;
-        g_menu_packed_cursors = flags;
+        var_6 &= var_4;
+        g_menu_packed_cursors = var_6;
         if (!((u32)var_5 & 1)) {
             u32 mask;
             s32 var_8;
@@ -104,20 +104,20 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             do {
                 s32 next_row;
                 s32 lo;
-                flags = g_menu_packed_cursors;
-                lo = flags;
+                var_6 = g_menu_packed_cursors;
+                lo = var_6;
                 lo &= 0xF;
                 if (lo >= 7) {
-                    g_menu_packed_cursors = flags & mask;
+                    g_menu_packed_cursors = var_6 & mask;
                     break;
                 }
                 next_row = lo + 1;
-                flags = (flags & mask) | (next_row & 0xF);
-                g_menu_packed_cursors = flags;
-                flags &= 0xF;
-                flags = (u32)var_8 >> flags;
-                flags &= 1;
-            } while (!flags);
+                var_6 = (var_6 & mask) | (next_row & 0xF);
+                g_menu_packed_cursors = var_6;
+                var_6 &= 0xF;
+                var_6 = (u32)var_8 >> var_6;
+                var_6 &= 1;
+            } while (!var_6);
         }
         {
             /* FAKE: one s16 * holder per stored work-block field, set before
@@ -155,13 +155,13 @@ s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
             g_menu_stored_choice_cursor = 0;
             *p_2A = value;
             *p_28 = value;
-            flags = g_menu_packed_cursors & ~0x1C00;
+            var_6 = g_menu_packed_cursors & ~0x1C00;
             D_800A3510[1] = 0;
             D_800A3510[0] = 0;
             g_menu_draw_offset_steps[1] = 0;
             g_menu_draw_offset_steps[0] = 0;
-            flags |= 0x1000;
-            g_menu_packed_cursors = flags;
+            var_6 |= 0x1000;
+            g_menu_packed_cursors = var_6;
             *p_12 = 0;
             *p_10 = 0;
             *p_0E = 0;
