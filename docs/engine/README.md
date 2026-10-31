@@ -119,7 +119,7 @@ address is the stable key.
 | `text1a_c_tu2.c` | 0x80044800-0x800460E4 | NDATA pack cache (`ndata_LoadPack` / `ndata_ReadFromPack`) and channel helpers |
 | `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`resource_LoadOrReuseSelectedBlock`, `game_*Init`, `resource_HasRetainedSubblocks`), SE allocation/stop, camera bone setup |
 | `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `motion_StartPlayback` / `motion_UpdatePlayback` (fill and play back the `g_motion_playback_record` camera / motion block) |
-| `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: the 16 `eff_SpawnParticles` particle-bank wrappers (`func_80066EC0`..`eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf`), `motion_ex_*`, animated sprite/object drawing |
+| `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: the 16 `eff_SpawnParticles` particle-bank wrappers (`eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf`..`eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf`), `motion_ex_*`, animated sprite/object drawing |
 | `text1b_tu1d.c` | 0x8006E534-0x8007352C | HUD/overlay rendering, replay display setup |
 | `text1b_tu1e.c` | 0x8007352C-0x800747D8 | Sprite/animated-object drawing (5 functions) |
 | `text1b_b.c` | 0x800747D8-0x80079244 | Game code to 0x80078948 (character-select `SelWork` drawing, display setup, replay camera), then PsyQ libapi/libetc/libc (`Exec`, events, pad, root counters, `memcpy`, `rand`, `printf`) |
