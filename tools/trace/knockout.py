@@ -245,6 +245,19 @@ def run_batch(args, passthrough):
         raise ValueError('requested frames must be strictly after the stub phase start frame')
     script = scen.knockout_script(script, frames)
     runkit.check_script(script)
+    # The scenario's own pokes and cards are part of the game it runs (as
+    # scen.build_spec); without them a scenario that needs a poke (an unlock
+    # word) or a saved card runs a different game in baseline and stubs.
+    game = {}
+    pokes = scen.compile_pokes(args.scenario)
+    if pokes:
+        game['pokes'] = pokes
+    cards = scen.compile_memcards(args.scenario)
+    if cards:
+        game['memcards'] = cards
+    for slot in cards:
+        if getattr(args, f'memcard{slot}', None):
+            raise ValueError(f'--memcard{slot} given but the scenario defines card {slot}')
     duration = float(args.duration) if args.duration is not None else 7200
     if not math.isfinite(duration) or duration <= 0:
         raise ValueError('--duration must be finite and positive')
@@ -253,6 +266,7 @@ def run_batch(args, passthrough):
         raise ValueError('output directory must be empty (never mix captures)')
     out.mkdir(parents=True, exist_ok=True)
     spec = dict(duration_s=duration, max_events=200000, script=script)
+    spec.update(game)
     codes = {'baseline': run_capture(out / 'baseline', spec, passthrough)}
     problems = []
     if codes['baseline'] != 0:

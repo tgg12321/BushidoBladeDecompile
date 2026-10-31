@@ -32,6 +32,13 @@ class KnockoutTest(unittest.TestCase):
         self.lock = threading.Lock()
         self.runs = []
         self.launch_args = []
+        # The scenario's own pokes / cards (scen.compile_pokes / _memcards).
+        self.pokes, self.cards = [], {}
+        for name, value in (('compile_pokes', lambda _: self.pokes),
+                            ('compile_memcards', lambda _: self.cards)):
+            patcher = patch.object(k.scen, name, side_effect=value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
         for flag in ('emulator', 'cue', 'bios'):
             path = self.root / flag
             path.write_bytes(b'fake input')
@@ -235,6 +242,37 @@ class KnockoutTest(unittest.TestCase):
         self.assertNotIn('--duration', self.runs[1][2])
         self.assertEqual(rows[0]['ret'], '0')
         self.assertIn('end_frame 200 past requested frames 100,120', rows[0]['reason'])
+
+    def test_scenario_pokes_and_cards_in_every_run(self):
+        _, _ = self.batch(('one', 'two'))
+        for _, spec, _ in self.runs:
+            self.assertNotIn('pokes', spec)
+            self.assertNotIn('memcards', spec)
+        shutil.rmtree(self.out)
+        self.runs = []
+        self.pokes = [dict(at='0x80106A50', hex='FFF33F05', phase='menu')]
+        self.cards = {'1': 'unformatted'}
+        self.batch(('one', 'two'), ('--phase', 'menu', '--ret', '0'))
+        self.assertEqual(len(self.runs), 3)
+        for _, spec, _ in self.runs:
+            self.assertEqual(spec['pokes'], self.pokes)
+            self.assertEqual(spec['memcards'], self.cards)
+        self.assertEqual(k.check(self.out), 0)
+        shutil.rmtree(self.out)
+        self.runs = []
+        script = dict(end_frame=200, inputs=[], screenshots=[],
+                      phases=[dict(frame=0, name='boot'), dict(frame=50, name='menu')])
+        err = io.StringIO()
+        with patch.object(k.scen, 'compile_script', return_value=script), \
+                patch.object(k, 'run_capture', side_effect=self.fake_run), \
+                contextlib.redirect_stderr(err):
+            self.assertEqual(k.main(['run', '--scenario', 'fake', '--funcs', 'one',
+                                     '--frames', '100', '--out', str(self.out),
+                                     '--ret', 'none', '--memcard1', str(self.root / 'card.mcd'),
+                                     *self.launch_args]), 1)
+        self.assertIn('--memcard1 given but the scenario defines card 1', err.getvalue())
+        self.assertEqual(self.runs, [])
+        self.assertFalse(self.out.exists())
 
     def test_run_command_headless(self):
         with patch.object(k.subprocess, 'run') as run:
