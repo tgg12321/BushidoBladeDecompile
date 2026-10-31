@@ -1,0 +1,64 @@
+rc=0
+==============================================================================
+NAMING WAVE — 12 operations (0 RESET, 12 RENAME)
+  12 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (14) --
+  asm: 12 files, 24 substitutions
+      asm/funcs/func_80067060.s  (2)
+      asm/funcs/func_80067094.s  (2)
+      asm/funcs/func_800670C8.s  (2)
+      asm/funcs/func_800670FC.s  (2)
+      asm/funcs/func_80067130.s  (2)
+      asm/funcs/func_80067164.s  (2)
+      ... and 6 more
+  src: 2 files, 36 substitutions
+      src/main/51268.c  (12)
+      src/main/d_8BC50.c  (24)
+
+-- .s file renames (12) --
+  asm/funcs/func_80067060.s -> asm/funcs/eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf.s
+  asm/funcs/func_80067094.s -> asm/funcs/eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf.s
+  asm/funcs/func_800670C8.s -> asm/funcs/eff_SpawnTextureSelectedParticlesSecondSlotFirstHalf.s
+  asm/funcs/func_800670FC.s -> asm/funcs/eff_SpawnTextureSelectedParticlesSecondSlotSecondHalf.s
+  asm/funcs/func_80067130.s -> asm/funcs/eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf.s
+  asm/funcs/func_80067164.s -> asm/funcs/eff_SpawnAdditiveSingleQuadParticlesFirstSlotSecondHalf.s
+  asm/funcs/func_80067198.s -> asm/funcs/eff_SpawnAdditiveSingleQuadParticlesSecondSlotFirstHalf.s
+  asm/funcs/func_800671CC.s -> asm/funcs/eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf.s
+  asm/funcs/func_800677B8.s -> asm/funcs/eff_DrawAndAdvanceTextureSelectedParticlesFirstSlot.s
+  asm/funcs/func_800677F4.s -> asm/funcs/eff_DrawAndAdvanceTextureSelectedParticlesSecondSlot.s
+  ... and 2 more
+
+-- ledger directory renames (8) --
+  memory/grind/func_80067060 -> memory/grind/eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf
+  memory/grind/func_80067094 -> memory/grind/eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf
+  memory/grind/func_800670C8 -> memory/grind/eff_SpawnTextureSelectedParticlesSecondSlotFirstHalf
+  memory/grind/func_800670FC -> memory/grind/eff_SpawnTextureSelectedParticlesSecondSlotSecondHalf
+  memory/grind/func_80067130 -> memory/grind/eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf
+  memory/grind/func_80067164 -> memory/grind/eff_SpawnAdditiveSingleQuadParticlesFirstSlotSecondHalf
+  memory/grind/func_80067198 -> memory/grind/eff_SpawnAdditiveSingleQuadParticlesSecondSlotFirstHalf
+  memory/grind/func_800671CC -> memory/grind/eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (8) --
+  memory/grind/func_80067060/layer2.jsonl: 1 changes
+      line 1: func func_80067060 -> eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf
+  memory/grind/func_80067094/layer2.jsonl: 1 changes
+      line 1: func func_80067094 -> eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf
+  memory/grind/func_800670C8/layer2.jsonl: 1 changes
+      line 1: func func_800670C8 -> eff_SpawnTextureSelectedParticlesSecondSlotFirstHalf
+  memory/grind/func_800670FC/layer2.jsonl: 1 changes
+      line 1: func func_800670FC -> eff_SpawnTextureSelectedParticlesSecondSlotSecondHalf
+  memory/grind/func_80067130/layer2.jsonl: 1 changes
+      line 1: func func_80067130 -> eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf
+  memory/grind/func_80067164/layer2.jsonl: 1 changes
+      line 1: func func_80067164 -> eff_SpawnAdditiveSingleQuadParticlesFirstSlotSecondHalf
+  memory/grind/func_80067198/layer2.jsonl: 1 changes
+      line 1: func func_80067198 -> eff_SpawnAdditiveSingleQuadParticlesSecondSlotFirstHalf
+  memory/grind/func_800671CC/layer2.jsonl: 1 changes
+      line 1: func func_800671CC -> eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf
+
+DRY RUN — nothing written. Re-run with --apply.
