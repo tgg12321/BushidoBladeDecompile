@@ -25,8 +25,8 @@
 /* g_resource_selector_callbacks's hooks, defined in 368E4.c. */
 void func_8004746C(void);
 void func_8004748C(void);
-void func_800474AC(void);
-void func_800474D0(void);
+void gpu_InitSelector5VramScroll(void);
+void gpu_QueueSelector5VramScroll(void);
 void func_800474F0(void);
 void func_80047510(void);
 void func_800477CC(void);
@@ -876,7 +876,7 @@ Unk800948BCEntry g_resource_selector_callbacks[38] = {
     {0, 0},
     {0, 0},
     {func_8004746C, func_8004748C},
-    {func_800474AC, func_800474D0},
+    {gpu_InitSelector5VramScroll, gpu_QueueSelector5VramScroll},
     {0, 0},
     {func_800474F0, func_80047510},
     {func_800477CC, func_800477D4},
