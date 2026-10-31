@@ -1,0 +1,35 @@
+var-locals-audit-3 (naming-a 2026-10-31): local findings of the Codex second pass audit-164 .. audit-192
+(tmp/codex/audit-<n>.md; 1,740 names, 1,726 ok, 14 flagged). Tree: ln-naming-a = main 437f3a0ff.
+Result: no row proposed. 13 findings are re-finds of audit-1/-2 leftovers whose blocker still holds;
+1 is new and KEEP.
+
+NEW
+- audit-167 gpu_RemapDepthToOtIndex:depth (32D04.c:525-530; overclaims, suggested value). KEEP.
+  The function has no caller (no C call, no jal, no address word); its only evidence is the
+  function name, CORROBORATED in docs/naming/function-names.csv:474: gpu_EmitOtCutoffRawTexturedTriangles
+  computes the same remap from the avsz3 average Z and indexes the OT at 0x1F80000C with it. The
+  parameter is the input of exactly that depth-to-OT remap, so `depth` says what the function name
+  says and no more. A rename to `value` would contradict the admitted function name; if the depth
+  claim is wrong it is wrong for the function, which is the func track's to reopen.
+  scoped_plan accepts the pair (2 substitutions), so tooling does not block a future change.
+
+RE-FINDS, still blocked (checked at 437f3a0ff)
+- audit-165 slot_BlendTwoPosesIntoNodeMatrices:offset (31548.c:201): FAKE 31548.c:213-214 names it.
+- audit-175 fighter_InitCpuControl:hi2_val (4510C.c:290): FAKE 4510C.c:428-432 names it.
+- audit-175 fighter_UpdateCpuProbes:flags (4510C.c:1003): scoped_plan refuses ("flags occurs in a
+  #define body or token paste in src/main/psxsdk/libc2/prnt.c"); same for menu_UpdateRowMenu:flags.
+- audit-176 fighter_BuildCpuOrbitRoute:left (4510C.c:1178): scoped_plan refuses ("left occurs in a
+  #define body or token paste in src/main/9F9C.c"); plan left -> plus_side_point, var_3 -> minus_side_point stands.
+- audit-178 end_off in gpu_DrawTimeFieldsAndDecimalCounter, gpu_DrawTwoDigitCounterWithOptionalSecondSide,
+  gpu_DrawPackedComparisonRowsAndTotals, gpu_DrawPairedMarkRowsAndTimeFields, gpu_DrawImageAndAdvanceSplitWipe,
+  gpu_DrawOneOrTwoDigitValueAndDigitCountShiftedSprite (4D0A8.c): FAKE comments cite `end_off`
+  (4D0A8.c:473, 638, 793, ...).
+- audit-178 gpu_DrawPackedComparisonRowsAndTotals:digit (4D0A8.c:787): engine/volatile_cheats.py:804
+  allowlists the pad by name (("digit", 3)); a reset needs an engine: re-key first.
+- audit-180 eff_DrawAndAdvanceRotatedQuadClusters:prim (51268.c:951) and audit-181
+  eff_DrawYawedSlotQuads:prim (51268.c:1455): FAKEs 51268.c:961-966 and 1461-1468 name `prim`.
+- Carried from audit-2 (not re-flagged, still blocked): math_TestPreparedTriangleSphere:dist,
+  math_TryPrepareTriangleNormalFrame:dist, gpu_BuildFogImageLevels:r_src / g_src (FAKE-cited),
+  softbody_CreateForNode:point_count (scoped_plan: "function-local aggregate definitions are unsupported").
+
+Leads and true names per binding: pending/var-locals-audit-1/notes.txt, pending/var-locals-audit-2/notes.txt.
