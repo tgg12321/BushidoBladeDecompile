@@ -9,7 +9,10 @@
   ],
   "evidence": [
     "docs/naming/runtime/versus-2p-hidden-suminagashi-double-throw-1/spec.json",
-    "docs/naming/runtime/eff-slot-versus-2p-hidden-suminagashi-double-throw-1/spec.json"
+    "docs/naming/runtime/eff-slot-versus-2p-hidden-suminagashi-double-throw-1/spec.json",
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-pale-red-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-pale-red-stub-1/func_80067740/spec.json",
+    "docs/naming/runtime/versus-2p-hidden-suminagashi-pale-red-stub-1/func_8006777C/spec.json"
   ],
   "extends": "versus-2p-hidden-suminagashi",
   "end_frame": 9300,
