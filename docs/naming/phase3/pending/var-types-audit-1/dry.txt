@@ -1,0 +1,284 @@
+var-types-audit-1 dry.txt (base 75bffd3f1, lane worktree ln-naming-c)
+
+(a) whole-word occurrences. TU ids: src/main/4510C.c = main/4510C; src/main/d_8A588.c = main/d_8A588; header include/game.h.
+$ git grep -n -w -E 'NavPoly|NavPolySet' -- src include
+include/game.h:1462:    u8 poly;  /* index into the stage's NavPolySet.polys */
+include/game.h:1473:typedef struct NavPoly {
+include/game.h:1479:} NavPoly;
+include/game.h:1483:typedef struct NavPolySet {
+include/game.h:1486:    NavPoly *polys;
+include/game.h:1488:} NavPolySet;
+src/main/4510C.c:1415:    Unk80101EC8Record *fighter_record, NavPolySet *nav_set, s32 target_x,
+src/main/4510C.c:1424:    NavPoly *nav_poly;
+src/main/4510C.c:1465:    NavPoly *nav_poly, s32 vertex_index, s16 *corner_x_out, s16 *corner_z_out) {
+src/main/4510C.c:1509:                             NavPolySet *nav_set, s32 target_x, s32 target_z) {
+src/main/4510C.c:1540:    NavPoly *poly;
+src/main/4510C.c:1727:extern NavPolySet g_cpu_stage_nav_sets[];
+src/main/4510C.c:1734:    Unk80101EC8Record *, NavPolySet *, s32, s32);
+src/main/4510C.c:1801:    NavPolySet *nav_set;
+src/main/d_8A588.c:8: *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
+src/main/d_8A588.c:29: * the polygons, then g_cpu_stage_nav_sets, one NavPolySet per stage. */
+src/main/d_8A588.c:38:NavPoly D_8009A0E0[4] = {{0x00, 6, 37, 6, D_8009A090},
+src/main/d_8A588.c:45:NavPoly D_8009A11C[2] = {
+src/main/d_8A588.c:55:NavPoly D_8009A17C[2] = {
+src/main/d_8A588.c:63:NavPoly D_8009A1D0[3] = {{0x00, 3, 37, 4, D_8009A18C},
+src/main/d_8A588.c:72:NavPoly D_8009A220[4] = {{0x80, 3, 37, 3, D_8009A1E8},
+src/main/d_8A588.c:80:NavPoly D_8009A268[3] = {{0x80, 3, 37, 3, D_8009A240},
+src/main/d_8A588.c:87:NavPoly D_8009A2A8[2] = {
+src/main/d_8A588.c:91:NavPoly D_8009A2D0[2] = {
+src/main/d_8A588.c:98:NavPoly D_8009A31C[5] = {
+src/main/d_8A588.c:107:NavPoly D_8009A364[2] = {
+src/main/d_8A588.c:111:NavPoly D_8009A384[1] = {{0x80, 3, 37, 4, D_8009A374}};
+src/main/d_8A588.c:117:NavPoly D_8009A3B8[3] = {{0x80, 3, 37, 3, D_8009A38C},
+src/main/d_8A588.c:121:NavPoly D_8009A3E0[1] = {{0x80, 3, 37, 4, D_8009A3D0}};
+src/main/d_8A588.c:123:NavPoly D_8009A3F4[1] = {{0x80, 3, 37, 3, D_8009A3E8}};
+src/main/d_8A588.c:132:NavPoly D_8009A43C[4] = {{0xC0, 3, 37, 4, D_8009A3FC},
+src/main/d_8A588.c:144:NavPoly D_8009A4B4[4] = {{0x00, 3, 37, 6, D_8009A45C},
+src/main/d_8A588.c:151:NavPoly D_8009A4F8[3] = {{0x80, 3, 37, 3, D_8009A4D4},
+src/main/d_8A588.c:157:NavPoly D_8009A52C[2] = {
+src/main/d_8A588.c:161:NavPoly D_8009A554[2] = {
+src/main/d_8A588.c:165:NavPoly D_8009A57C[2] = {
+src/main/d_8A588.c:168:NavPoly D_8009A598[1] = {{0x80, 3, 37, 3, D_8009A58C}};
+src/main/d_8A588.c:174:NavPoly D_8009A5D8[4] = {{0x80, 3, 37, 4, D_8009A5A0},
+src/main/d_8A588.c:184:NavPoly D_8009A638[4] = {{0xC0, 3, 37, 4, D_8009A5F8},
+src/main/d_8A588.c:188:NavPolySet g_cpu_stage_nav_sets[38] = {
+(40 lines)
+$ git grep -n -w NavVertexChain -- src include tools engine '*.txt'  => 0 hits
+$ git grep -n -w NavVertexChainSet -- src include tools engine '*.txt'  => 0 hits
+$ git grep -n -w nchains -- src include tools engine '*.txt'  => 0 hits
+$ git grep -n -w chains -- src include tools engine '*.txt'  => 26 hits
+$ git grep -n -w chain_index -- src include tools engine '*.txt'  => 0 hits
+plain 'chain' (CpuRoute fallback name), src include:
+include/game.h:1468:/* One polygon of a stage's navigation set (8 bytes): flags (0x80 = open chain,
+include/psx.h:30:#define OT_TERMINATOR 0x01000000 /* OT chain terminator */
+src/main/2B344.c:1597: * chain-extender detours (zero emitted bytes; dead-store-fake-exception). */
+src/main/2B344.c:1699:                     * (dead-store-fake-exception chain extender, owner ruling
+src/main/2B344.c:1709:            /* FAKE: j chain extender (+j/-j folds away); the extra refs lift j
+src/main/4510C.c:1754:     * g_cpu_move_range_rules scan; cpu_probes[6] for the lim chain;
+src/main/4510C.c:2110:         * Q131). The target's $s2 re-test after the || chain is real (without
+src/main/4510C.c:2111:         * it the chain is two instructions shorter), but this C spelling is
+src/main/9F9C.c:1071:        /* FAKE: div4 taken first; written at its use the multiply chain is
+src/main/psxsdk/libgte/fgo_03.c:6: * arg0 (s16[3]), looks up cos/sin for each, applies the rotation chain to
+(only prose in comments; no declaration, macro or type)
+$ git grep -n -w -E 'npolys|polys|poly' -- src include
+include/game.h:1462:    u8 poly;  /* index into the stage's NavPolySet.polys */
+include/game.h:1484:    u8 npolys;
+include/game.h:1486:    NavPoly *polys;
+src/main/4510C.c:1430:    for (polygon_index = 0; polygon_index < nav_set->npolys; polygon_index++) {
+src/main/4510C.c:1431:        nav_poly = &nav_set->polys[polygon_index];
+src/main/4510C.c:1452:                    fighter_record->cpu_route.poly = polygon_index;
+src/main/4510C.c:1500:/* Walks the vertex ring of nav_set->polys[fighter_record->cpu_route.poly] both
+src/main/4510C.c:1540:    NavPoly *poly;
+src/main/4510C.c:1548:    poly = &nav_set->polys[fighter_record->cpu_route.poly];
+src/main/4510C.c:1557:    if (!(forward_vertex_index < poly->nvtx)) {
+src/main/4510C.c:1558:        if (poly->flags & 0x80) {
+src/main/4510C.c:1564:    polygon_edge_count = poly->nvtx;
+src/main/4510C.c:1565:    if (poly->flags & 0x80) {
+src/main/4510C.c:1584:            if (!(next < poly->nvtx)) {
+src/main/4510C.c:1587:            var_29 = poly->vtx[i];
+src/main/4510C.c:1591:                poly, i, &start_corner_x, &start_corner_z);
+src/main/4510C.c:1592:            var_29 = poly->vtx[next];
+src/main/4510C.c:1595:            fighter_GetNavCornerPoint(poly, next, &end_corner_x, &end_corner_z);
+src/main/4510C.c:1628:                var_29 = poly->vtx[backward_vertex_index];
+src/main/4510C.c:1633:                fighter_GetNavCornerPoint(poly, backward_vertex_index,
+src/main/4510C.c:1644:                node->kind = poly->kind;
+src/main/4510C.c:1646:                    if (poly->flags & 0x80) {
+src/main/4510C.c:1650:                        backward_vertex_index = poly->nvtx - 1;
+src/main/4510C.c:1665:                var_29 = poly->vtx[forward_vertex_index];
+src/main/4510C.c:1670:                fighter_GetNavCornerPoint(poly, forward_vertex_index,
+src/main/4510C.c:1681:                node->kind = poly->kind;
+src/main/4510C.c:1682:                if (!(++forward_vertex_index < poly->nvtx)) {
+src/main/4510C.c:1683:                    if (poly->flags & 0x80) {
+src/main/596CC.c:503:    POLY_F4 *poly;
+src/main/596CC.c:576:    poly = (POLY_F4 *)draw_context[3];
+src/main/596CC.c:578:    SetPolyF4(poly);
+src/main/596CC.c:579:    gpu_SetPolyF4RgbFromBlockFlag(poly);
+src/main/596CC.c:580:    poly->x0 = 0;
+src/main/596CC.c:581:    poly->y0 = 0xB9;
+src/main/596CC.c:582:    poly->x1 = 0x122;
+src/main/596CC.c:583:    poly->y1 = 0;
+src/main/596CC.c:584:    poly->x2 = 0;
+src/main/596CC.c:585:    poly->y2 = 0xEF;
+src/main/596CC.c:586:    poly->x3 = 0x122;
+src/main/596CC.c:587:    poly->y3 = 0xEF;
+src/main/596CC.c:588:    SetSemiTrans(poly, 0);
+src/main/596CC.c:589:    AddPrim(g_gpu_ot_ptr + 0x13, poly);
+src/main/596CC.c:590:    poly++;
+src/main/596CC.c:592:    SetPolyF4(poly);
+src/main/596CC.c:593:    gpu_SetPolyF4RgbFromBlockFlag(poly);
+src/main/596CC.c:594:    poly->x0 = 0x15E;
+src/main/596CC.c:595:    poly->x1 = 0x27F;
+src/main/596CC.c:596:    poly->y0 = 0;
+src/main/596CC.c:597:    poly->y1 = 0;
+src/main/596CC.c:598:    poly->x2 = 0x15E;
+src/main/596CC.c:599:    poly->y2 = 0xEF;
+src/main/596CC.c:600:    poly->x3 = 0x27F;
+src/main/596CC.c:601:    poly->y3 = 0x36;
+src/main/596CC.c:602:    SetSemiTrans(poly, 0);
+src/main/596CC.c:603:    AddPrim(g_gpu_ot_ptr + 0x13, poly);
+src/main/596CC.c:604:    poly++;
+src/main/596CC.c:606:    SetPolyF4(poly);
+src/main/596CC.c:607:    gpu_SetPolyF4RgbFromBlockFlag(poly);
+src/main/596CC.c:608:    poly->x0 = 0x122;
+src/main/596CC.c:609:    poly->y0 = 0;
+src/main/596CC.c:610:    poly->x1 = 0x15E;
+src/main/596CC.c:611:    poly->y1 = 0;
+src/main/596CC.c:612:    poly->x2 = 0x122;
+src/main/596CC.c:613:    poly->y2 = 0xEF;
+src/main/596CC.c:614:    poly->x3 = 0x15E;
+src/main/596CC.c:615:    poly->y3 = 0xEF;
+src/main/596CC.c:616:    SetSemiTrans(poly, 0);
+src/main/596CC.c:617:    AddPrim(g_gpu_ot_ptr + 0x13, poly);
+src/main/596CC.c:618:    poly++;
+src/main/596CC.c:620:    draw_context[3] = (s32)poly;
+src/main/596CC.c:1780:    POLY_G4 *poly;
+src/main/596CC.c:1920:    poly = (POLY_G4 *)draw_context[4];
+src/main/596CC.c:1926:            SetPolyG4(poly);
+src/main/596CC.c:1928:                SetSemiTrans(poly, 1);
+src/main/596CC.c:1930:                poly->r0 = pulse_brightness;
+src/main/596CC.c:1931:                poly->g0 = pulse_brightness;
+src/main/596CC.c:1932:                poly->b0 = pulse_brightness;
+src/main/596CC.c:1933:                poly->r1 = pulse_brightness;
+src/main/596CC.c:1934:                poly->g1 = pulse_brightness;
+src/main/596CC.c:1935:                poly->b1 = pulse_brightness;
+src/main/596CC.c:1936:                poly->r2 = var_10;
+src/main/596CC.c:1937:                poly->g2 = 0;
+src/main/596CC.c:1938:                poly->b2 = 0;
+src/main/596CC.c:1939:                poly->r3 = var_10;
+src/main/596CC.c:1940:                poly->g3 = 0;
+src/main/596CC.c:1941:                poly->b3 = 0;
+src/main/596CC.c:1942:                setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w,
+src/main/596CC.c:1945:                SetSemiTrans(poly, 0);
+src/main/596CC.c:1947:                poly->r0 = pulse_brightness;
+src/main/596CC.c:1948:                poly->g0 = 0;
+src/main/596CC.c:1949:                poly->b0 = 0;
+src/main/596CC.c:1950:                poly->r1 = pulse_brightness;
+src/main/596CC.c:1951:                poly->g1 = 0;
+src/main/596CC.c:1952:                poly->b1 = 0;
+src/main/596CC.c:1953:                poly->r2 = var_10;
+src/main/596CC.c:1954:                poly->g2 = 0;
+src/main/596CC.c:1955:                poly->b2 = 0;
+src/main/596CC.c:1956:                poly->r3 = var_10;
+src/main/596CC.c:1957:                poly->g3 = 0;
+src/main/596CC.c:1958:                poly->b3 = 0;
+src/main/596CC.c:1959:                setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w,
+src/main/596CC.c:1962:            AddPrim(g_gpu_ot_ptr + 8, poly);
+src/main/596CC.c:1963:            poly++;
+src/main/596CC.c:1964:            SetPolyG4(poly);
+src/main/596CC.c:1966:                SetSemiTrans(poly, 1);
+src/main/596CC.c:1968:                poly->r0 = pulse_brightness;
+src/main/596CC.c:1969:                poly->g0 = pulse_brightness;
+src/main/596CC.c:1970:                poly->b0 = pulse_brightness;
+src/main/596CC.c:1971:                poly->r2 = pulse_brightness;
+src/main/596CC.c:1972:                poly->g2 = pulse_brightness;
+src/main/596CC.c:1973:                poly->b2 = pulse_brightness;
+src/main/596CC.c:1974:                poly->r1 = var_10;
+src/main/596CC.c:1975:                poly->g1 = 0;
+src/main/596CC.c:1976:                poly->b1 = 0;
+src/main/596CC.c:1977:                poly->r3 = var_10;
+src/main/596CC.c:1978:                poly->g3 = 0;
+src/main/596CC.c:1979:                poly->b3 = 0;
+src/main/596CC.c:1980:                poly->x0 = rec->x + rec->w * row + x;
+src/main/596CC.c:1981:                poly->y0 = rec->y + 1;
+src/main/596CC.c:1982:                poly->x1 = rec->x + rec->w * row + x + (4 + row * -8);
+src/main/596CC.c:1983:                poly->y1 = rec->y + 1;
+src/main/596CC.c:1984:                poly->x2 = rec->x + rec->w * row + x;
+src/main/596CC.c:1985:                poly->y2 = rec[1].y - 1;
+src/main/596CC.c:1986:                poly->x3 = rec->x + rec->w * row + x + (4 + row * -8);
+src/main/596CC.c:1987:                poly->y3 = rec[1].y - 1;
+src/main/596CC.c:1989:                SetSemiTrans(poly, 0);
+src/main/596CC.c:1991:                poly->r0 = pulse_brightness;
+src/main/596CC.c:1992:                poly->g0 = 0;
+src/main/596CC.c:1993:                poly->b0 = 0;
+src/main/596CC.c:1994:                poly->r2 = pulse_brightness;
+src/main/596CC.c:1995:                poly->g2 = 0;
+src/main/596CC.c:1996:                poly->b2 = 0;
+src/main/596CC.c:1997:                poly->r1 = var_10;
+src/main/596CC.c:1998:                poly->g1 = 0;
+src/main/596CC.c:1999:                poly->b1 = 0;
+src/main/596CC.c:2000:                poly->r3 = var_10;
+src/main/596CC.c:2001:                poly->g3 = 0;
+src/main/596CC.c:2002:                poly->b3 = 0;
+src/main/596CC.c:2003:                poly->x0 = rec->x + rec->w * row + x;
+src/main/596CC.c:2004:                poly->y0 = rec->y + 1;
+src/main/596CC.c:2005:                poly->x1 = rec->x + rec->w * row + x + (-4 * row + 2);
+src/main/596CC.c:2006:                poly->y1 = rec->y + 1;
+src/main/596CC.c:2007:                poly->x2 = rec->x + rec->w * row + x;
+src/main/596CC.c:2008:                poly->y2 = rec[1].y - 1;
+src/main/596CC.c:2009:                poly->x3 = rec->x + rec->w * row + x + (-4 * row + 2);
+src/main/596CC.c:2010:                poly->y3 = rec[1].y - 1;
+src/main/596CC.c:2012:            AddPrim(g_gpu_ot_ptr + 8, poly);
+src/main/596CC.c:2013:            poly++;
+src/main/596CC.c:2020:    draw_context[4] = (s32)poly;
+src/main/d_8A588.c:10: * g_cpu_stage_nav_sets row's npolys); the distance byte tables D_8009A830
+NOTE: pad is NOT fresh as a member, so Vec4_571C0.w=pad was dropped: git grep -n -w pad -- include shows members at game.h:306, 886, 2159, libgte.h:14, 18, 31, libgpu.h:336-370, libsnd_i.h:36 (and src/main/psxsdk/libsnd/libsnd_i.h).
+
+(b) member dry run
+Order finding: naming_member_apply.py ignores Old=New lines (its docstring: other lines are ignored) and handles only T.m=n lines, accepting either the pre- or post-global spelling of T (naming_keycheck.py docstring line 95: 'either pre- or post-global spelling of T is accepted'), so the order of type vs member pairs does not matter; the member pairs here use the CURRENT type names NavPolySet / CpuRoute. naming_keycheck additionally requires a member destination to be fresh against every other member, type and macro (docstring ~line 170), which rules out pad.
+$ wsl bash /mnt/c/Users/Trenton/Desktop/bb2-worktrees/ln-naming-c/tmp/vta1_dry.sh   (cd ln-naming-c && . .venv/bin/activate && python3 tools/naming_member_apply.py --dry-run docs/naming/phase3/pending/var-types-audit-1/pairs.txt)
+PASS NavPolySet.npolys=nchains, NavPolySet.polys=chains, CpuRoute.poly=chain_index
+decl NavPolySet.npolys -> nchains  include/game.h:1484
+decl NavPolySet.polys -> chains  include/game.h:1486
+decl CpuRoute.poly -> chain_index  include/game.h:1462
+  round 0: 5 member error line(s)
+    src/main/4510C.c:1430 npolys x1
+    src/main/4510C.c:1431 polys x1
+    src/main/4510C.c:1452 poly x1
+    src/main/4510C.c:1548 poly x1
+    src/main/4510C.c:1548 polys x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1462 +1462 @@
+-    u8 poly;  /* index into the stage's NavPolySet.polys */
++    u8 chain_index;  /* index into the stage's NavPolySet.polys */
+@@ -1484 +1484 @@
+-    u8 npolys;
++    u8 nchains;
+@@ -1486 +1486 @@
+-    NavPoly *polys;
++    NavPoly *chains;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -1430,2 +1430,2 @@
+-    for (polygon_index = 0; polygon_index < nav_set->npolys; polygon_index++) {
+-        nav_poly = &nav_set->polys[polygon_index];
++    for (polygon_index = 0; polygon_index < nav_set->nchains; polygon_index++) {
++        nav_poly = &nav_set->chains[polygon_index];
+@@ -1452 +1452 @@
+-                    fighter_record->cpu_route.poly = polygon_index;
++                    fighter_record->cpu_route.chain_index = polygon_index;
+@@ -1548 +1548 @@
+-    poly = &nav_set->polys[fighter_record->cpu_route.poly];
++    poly = &nav_set->chains[fighter_record->cpu_route.chain_index];
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
+No UNRESOLVED lines, so no hand edit at apply time. Two comments still name the old members (game.h:1462 'NavPolySet.polys', 4510C.c:1500 'nav_set->polys[...cpu_route.poly]') and are covered by the comment prep below.
+
+(c) comment-prep list (comment-only commit before the wave; polygon/ring claims about these records) with proposed rewording
+include/game.h:1457: CURRENT: /* A CPU route: the polygon and edge (its first vertex) of the nearest crossing
+    REWORD: 'A CPU route: the polygon and edge (its first vertex) of the nearest crossing' -> 'A CPU route: the vertex chain and edge (its first vertex) of the nearest crossing'
+include/game.h:1463: CURRENT: u8 vtx;   /* vertex index in that polygon */
+    REWORD: 'vertex index in that polygon' -> 'vertex index in that chain'
+include/game.h:1468: CURRENT: /* One polygon of a stage's navigation set (8 bytes): flags (0x80 = open chain,
+    REWORD: 'One polygon of a stage's navigation set (8 bytes): flags (0x80 = open chain,' -> 'One vertex chain of a stage's navigation set (8 bytes): flags (0x80 = open chain,'
+include/game.h:1482: CURRENT: * polygon array, zero word). */
+    REWORD: 'polygon array, zero word). */' -> 'vertex-chain array, zero word). */'
+src/main/4510C.c:1462: CURRENT: * at vertex vertex_index of polygon nav_poly and writes the offset point into
+    REWORD: 'at vertex vertex_index of polygon nav_poly and writes the offset point into' -> 'at vertex vertex_index of chain nav_poly and writes the offset point into (it treats the chain as a ring, wrapping prev/next even for an open one)'
+src/main/4510C.c:1500: CURRENT: /* Walks the vertex ring of nav_set->polys[fighter_record->cpu_route.poly] both
+    REWORD: 'Walks the vertex ring of nav_set->polys[...' -> 'Walks the vertex chain of nav_set->polys[...] (wraps the closed ones; an open chain stops at its end)'
+src/main/4510C.c:1503: CURRENT: * point to (target_x, target_z) crosses a polygon edge, the way steps to the
+    REWORD: 'crosses a polygon edge' -> 'crosses a chain edge'
+src/main/d_8A588.c:2: CURRENT: * fighter tables (the stage navigation sets and their polygons, the probe,
+    REWORD: '(the stage navigation sets and their polygons' -> '(the stage navigation sets and their vertex chains'
+src/main/d_8A588.c:8: CURRENT: *    that reaches it: D_8009A088 (u8[8]); the one-polygon NavPoly arrays
+    REWORD: 'the one-polygon NavPoly arrays' -> 'the one-chain NavPoly arrays'
+src/main/d_8A588.c:21: CURRENT: * tables and polygon arrays only through g_cpu_stage_nav_sets), snd.c
+    REWORD: 'tables and polygon arrays only through' -> 'tables and chain arrays only through'
+src/main/d_8A588.c:28: CURRENT: /* The stage navigation sets: each polygon's vertex table (x / z pairs), then
+    REWORD: 'each polygon's vertex table (x / z pairs), then' -> 'each chain's vertex table (x / z pairs), then'
+src/main/d_8A588.c:29: CURRENT: * the polygons, then g_cpu_stage_nav_sets, one NavPolySet per stage. */
+    REWORD: 'the polygons, then g_cpu_stage_nav_sets, one NavPolySet per stage.' -> 'the chains, then g_cpu_stage_nav_sets, one NavPolySet per stage.'
+Also check d_8A588.c:10 (prose 'row's npolys') and the last 4510C.c comment words 'polygon_index' etc. are code identifiers (locals nav_poly, poly, polygon_index, polygon_edge_count), left to a locals wave. Note 4510C.c:1500-1505 wraps lines; re-run python tools/format.py on touched files.
