@@ -16,7 +16,10 @@
     "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80063AF0/spec.json",
     "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80063B34/spec.json",
     "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80064ED8/spec.json",
-    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80064F68/spec.json"
+    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80064F68/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-anim-quad-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-anim-quad-stub-1/func_80065344/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-anim-quad-stub-1/func_800653E4/spec.json"
   ],
   "use": [
     "boot",
