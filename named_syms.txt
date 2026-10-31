@@ -13,7 +13,7 @@
 /* data-wave 2026-09-07: g_cd_ready_flag = 0x800A11D4 retired; CD_mode is now object-defined */
 /* data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined */
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
-/* RETIRED 0x800EF7BC (lane-fake-a 2026-10-16): g_wave_vertex_grid[8][0], row 8 of the s32[9][17] table (368E4.c func_80047A90 / wave_SampleLastRowCachingIndexAndRemainderParity); C reads it as g_wave_vertex_grid[8][...]; was g_snd_config_tbl */
+/* RETIRED 0x800EF7BC (lane-fake-a 2026-10-16): g_wave_vertex_grid[8][0], row 8 of the s32[9][17] table (368E4.c func_80047A90 / wave_SampleRow8BaseCachingIndexAndRemainderParity); C reads it as g_wave_vertex_grid[8][...]; was g_snd_config_tbl */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
 /* RENAME 0x800A3710: retired name 'D_800A3710' — preserved note: data-wave 2026-09-25: was g_file_vram_timer */
 
