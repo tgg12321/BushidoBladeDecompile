@@ -16,7 +16,7 @@ NEW
 RE-FINDS, still blocked (checked at 437f3a0ff)
 - audit-165 slot_BlendTwoPosesIntoNodeMatrices:offset (31548.c:201): FAKE 31548.c:213-214 names it.
 - audit-175 fighter_InitCpuControl:hi2_val (4510C.c:290): FAKE 4510C.c:428-432 names it.
-- audit-175 fighter_UpdateCpuProbes:flags (4510C.c:1003): scoped_plan refuses ("flags occurs in a
+- SETTLED by var-locals-37 (2026-10-31): fighter_UpdateCpuProbes:flags = var_8 and menu_LoadResourcesInitStateSelectFirstEnabledRow:flags = var_6 (RESETs); menu_UpdateRowMenu:flags still refused (two bindings). Was: audit-175 fighter_UpdateCpuProbes:flags (4510C.c:1003): scoped_plan refuses ("flags occurs in a
   #define body or token paste in src/main/psxsdk/libc2/prnt.c"); same for menu_UpdateRowMenu:flags.
 - audit-176 fighter_BuildCpuOrbitRoute:left (4510C.c:1178): scoped_plan refuses ("left occurs in a
   #define body or token paste in src/main/9F9C.c"); plan left -> plus_side_point, var_3 -> minus_side_point stands.
