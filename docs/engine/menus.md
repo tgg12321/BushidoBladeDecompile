@@ -44,7 +44,7 @@ until an opcode ends the step. The opcodes and what they do:
 - 18: mode 0.
 - 19: keeps a 4-byte block in `g_fight_active_playback_descriptor`; mode 6.
 - 20: keeps a 12-byte block in `D_800A385C` (`fight_SetFixedFighterBytesAndLoadBothFighters`,
-  `func_8003B56C(1)`).
+  `fight_QueueFixedFighterCommandDescriptorPlayback(1)`).
 
 Handlers that the script's modes reach:
 

@@ -22,7 +22,7 @@ fighter_Init's roster_index for fighter 1, 9F9C.c:1244-1250):
         fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
         unk_4[1] = operand 6, shown as "0x0E|0x1D then 0xNN"
   op 20 (12): D_800A385C = the operands, fight_SetFixedFighterBytesAndLoadBothFighters: unk_4[1] = 0x1F,
-        func_8003B56C(1): D_800A3834 = 6, ends the call
+        fight_QueueFixedFighterCommandDescriptorPlayback(1): D_800A3834 = 6, ends the call
   op 1  (1): D_800A36A4 = op0, D_800A3834 = 22, ends the call
   op 19 (4): g_fight_active_playback_descriptor = the operands, D_800A3834 = 6, ends the call
   op 0, op 18 (0): end the call (op 18: D_800A3834 = 0)
