@@ -114,8 +114,7 @@ matches the landed body. For a draft/candidate file not in `src/`, `body_hash` i
 # Scratch
 
 If you need a scratch copy (a clone, a build, a diff dump), make ONE folder `tmp/rev-<topic>-<id>/`
-under main and delete everything you put in it before you return: list it, delete the files,
-`rmdir` the folders (never a recursive force delete; don't follow junctions). Prefer reading
+under main and delete it before you return: verify, then delete: resolve the folder to an absolute path, list it, confirm it is your own scratch, then `rm -rf "<absolute path>"` (never chained after `cd`, never a bare glob or a possibly-empty variable; a folder holding a worktree or junction goes through `tools/safe_remove_worktree.ps1`). Prefer reading
 `git show` / `git diff` output over cloning the repo.
 
 # Output — JSON only

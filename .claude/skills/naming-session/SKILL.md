@@ -79,7 +79,7 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   worktrees through `tools/safe_remove_worktree.ps1` and deletes the branch (never use a raw
   `git worktree remove`). Remove the scratch you and your subagents made under main's `tmp/`
   (e.g. `tmp/p3w<N>`, review copies, unconsumed `*.done` / `*.tmp` markers in `tmp/<lane>-done/` and that folder;
-  CLAUDE.md: list, delete the files, `rmdir`; the research extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
+  CLAUDE.md: verify, then delete: resolve the folder to an absolute path, list it, confirm it is your own scratch, then `rm -rf "<absolute path>"` (never chained after `cd`, never a bare glob or a possibly-empty variable; a folder holding a worktree or junction goes through `tools/safe_remove_worktree.ps1`); the research extracts in `tmp/codex/` stay). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
 - **Nothing waits on Codex (owner 2026-10-27).** Codex is a separate parallel lane (its usage may
   run out), so a session researches with an Opus subagent (PREPARE step 1). The Codex lane
@@ -116,7 +116,7 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
     that folder (absolute paths, quoted: they contain spaces), containing your complete final
     answer (a reviewer: the whole JSON verdict; others: the one-line result and the paths of
     your output files)". A reviewer has no Write tool: it uses PowerShell, `Set-Content
-    -LiteralPath "<tmp>"` then `Rename-Item -LiteralPath "<tmp>" -NewName <task>.done`.
+    -LiteralPath "<tmp>" -Value <the whole final answer>` then `Rename-Item -LiteralPath "<tmp>" -NewName <task>.done`.
   - If an Agent call returns its result, ignore the marker (it goes at cleanup). If it returns
     only a launch acknowledgement, wait with one `Bash` call per marker, `run_in_background:
     true` (one completion notice, no 30-min cap, as for `lanes.py land`), on the quoted bash path

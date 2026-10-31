@@ -81,7 +81,7 @@ in an `authorize` bucket and take the Judge-gated canonical-grant path ([[judge-
 - Commit conventions: `docs/COMMIT_CONVENTIONS.md` (engine work uses `engine:`).
 - **Clean up your own scratch (owner 2026-10-25).** One `tmp/<task>-<id>/` folder per task
   (reviewers and other subagents included); before you end or return, remove what you created:
-  list it, delete your files, `rmdir` the folders. No clones, wave copies or captures left
+  verify, then delete: resolve the folder to an absolute path, list it, confirm it is your own scratch, then `rm -rf "<absolute path>"` (never chained after `cd`, never a bare glob or a possibly-empty variable; a folder holding a worktree or junction goes through `tools/safe_remove_worktree.ps1`). No clones, wave copies or captures left
   behind; Codex items end with `codex_worker.py cleanup <item>`. The orchestrator starts no
   session under 5 GB free and reports `tmp/` folders untouched for 3+ days.
 

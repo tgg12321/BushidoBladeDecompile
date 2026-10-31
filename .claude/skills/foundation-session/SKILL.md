@@ -85,7 +85,7 @@ live session owns, and say which one you took.
    land or drop what is left), then run `python tools/lanes/lanes.py close <lane> --remove`. It
    removes the lane and landing worktrees through `tools/safe_remove_worktree.ps1` and deletes the
    branch. Remove the scratch you and your subagents made under main's `tmp/` (CLAUDE.md:
-   list it, delete the files, `rmdir` the folders) and `codex_worker.py cleanup <item>` for every
+   verify, then delete: resolve the folder to an absolute path, list it, confirm it is your own scratch, then `rm -rf "<absolute path>"` (never chained after `cd`, never a bare glob or a possibly-empty variable; a folder holding a worktree or junction goes through `tools/safe_remove_worktree.ps1`)) and `codex_worker.py cleanup <item>` for every
    landed Codex item. Report one line per unit (and the scratch removed), say plainly that the
    session is complete, and stop. Don't hand off and don't wait on anything.
 

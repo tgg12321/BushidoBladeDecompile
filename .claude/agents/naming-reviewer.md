@@ -90,8 +90,7 @@ PowerShell `Set-Content -LiteralPath "<...>.tmp" -Value <the same JSON verdict y
 # Scratch
 
 If you need a scratch copy (a clone, a wave dry run), make ONE folder `tmp/rev-<topic>-<id>/` under
-main and delete everything you put in it before you return: list it, delete the files, `rmdir` the
-folders (never a recursive force delete; don't follow junctions). Prefer reading `git show` /
+main and delete it before you return: verify, then delete: resolve the folder to an absolute path, list it, confirm it is your own scratch, then `rm -rf "<absolute path>"` (never chained after `cd`, never a bare glob or a possibly-empty variable; a folder holding a worktree or junction goes through `tools/safe_remove_worktree.ps1`). Prefer reading `git show` /
 `git diff` and the wave's own dry-run output over cloning the repo.
 
 # Output
