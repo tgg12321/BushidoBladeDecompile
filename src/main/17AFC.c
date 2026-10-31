@@ -1217,7 +1217,7 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
  * << 1) | record-0 grid, else -1; the points are restored. */
 s32 fighter_ProcessWeaponContacts(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    Unk80107850Rec *blade_sweep_points = SPAD->spadA8[0];
+    Unk80107850Rec *weapon_sweep_points = SPAD->spadA8[0];
     Unk80107850Rec saved[16];
     s32 count[2];
     /* i, j, n, k: loop counters, each shared by several loops */
@@ -1251,31 +1251,31 @@ s32 fighter_ProcessWeaponContacts(void) {
             continue;
         }
         if (rec->weapon_id == 4 || rec->weapon_id == 5) {
-            blade_sweep_points[0] = SPAD->weapon_points[i][0];
-            blade_sweep_points[1] = SPAD->weapon_points[i][2];
-            blade_sweep_points[2] = rec->prev_weapon_points[0];
-            blade_sweep_points[3] = rec->prev_weapon_points[2];
-            blade_sweep_points[4] = SPAD->weapon_points[i][0];
-            blade_sweep_points[5] = SPAD->weapon_points[i][1];
-            blade_sweep_points[6] = rec->prev_weapon_points[0];
-            blade_sweep_points[7] = rec->prev_weapon_points[1];
+            weapon_sweep_points[0] = SPAD->weapon_points[i][0];
+            weapon_sweep_points[1] = SPAD->weapon_points[i][2];
+            weapon_sweep_points[2] = rec->prev_weapon_points[0];
+            weapon_sweep_points[3] = rec->prev_weapon_points[2];
+            weapon_sweep_points[4] = SPAD->weapon_points[i][0];
+            weapon_sweep_points[5] = SPAD->weapon_points[i][1];
+            weapon_sweep_points[6] = rec->prev_weapon_points[0];
+            weapon_sweep_points[7] = rec->prev_weapon_points[1];
         } else {
-            blade_sweep_points[0] = SPAD->weapon_points[i][0];
-            blade_sweep_points[1] = SPAD->weapon_points[i][1];
-            blade_sweep_points[2] = rec->prev_weapon_points[0];
-            blade_sweep_points[3] = rec->prev_weapon_points[1];
+            weapon_sweep_points[0] = SPAD->weapon_points[i][0];
+            weapon_sweep_points[1] = SPAD->weapon_points[i][1];
+            weapon_sweep_points[2] = rec->prev_weapon_points[0];
+            weapon_sweep_points[3] = rec->prev_weapon_points[1];
             if (rec->wielded_object_live_state != 0) {
-                blade_sweep_points[4] = SPAD->second_weapon_points[i][0];
-                blade_sweep_points[5] = SPAD->second_weapon_points[i][1];
-                blade_sweep_points[6] = rec->prev_second_weapon_points[0];
-                blade_sweep_points[7] = rec->prev_second_weapon_points[1];
+                weapon_sweep_points[4] = SPAD->second_weapon_points[i][0];
+                weapon_sweep_points[5] = SPAD->second_weapon_points[i][1];
+                weapon_sweep_points[6] = rec->prev_second_weapon_points[0];
+                weapon_sweep_points[7] = rec->prev_second_weapon_points[1];
             }
         }
         if (rec->move_frame >= rec->weapon_hit_start_frames[0] &&
             rec->move_frame <= rec->weapon_hit_end_frames[0] &&
             fight_ProcessPositionRecordsInQuad(
                 0, rec->weapon_id == 4 || rec->weapon_id == 5,
-                blade_sweep_points) != 0) {
+                weapon_sweep_points) != 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i, 1, &scr->unk100[0].x, 0);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -1285,11 +1285,11 @@ s32 fighter_ProcessWeaponContacts(void) {
             rec->pending_move_event =
                 rec->wielded_object_live_state != 0 ? 0x19 : 0xB;
             rec->attack_hit_armed = 0;
-        } else if (
-            rec->wielded_object_live_state != 0 &&
-            rec->move_frame >= rec->weapon_hit_start_frames[1] &&
-            rec->move_frame <= rec->weapon_hit_end_frames[1] &&
-            fight_ProcessPositionRecordsInQuad(1, 0, blade_sweep_points) != 0) {
+        } else if (rec->wielded_object_live_state != 0 &&
+                   rec->move_frame >= rec->weapon_hit_start_frames[1] &&
+                   rec->move_frame <= rec->weapon_hit_end_frames[1] &&
+                   fight_ProcessPositionRecordsInQuad(
+                       1, 0, weapon_sweep_points) != 0) {
             fight_RecordReplayEventAndDispatchSoundOrEffect(
                 i, 1, &scr->unk100[0].x, 0);
             fight_RecordReplayEventAndDispatchSoundOrEffect(
@@ -1302,7 +1302,7 @@ s32 fighter_ProcessWeaponContacts(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        Unk80107850Rec *dst = &blade_sweep_points[i * 8];
+        Unk80107850Rec *dst = &weapon_sweep_points[i * 8];
         rec = &D_80101EC8[i];
         dst[0] = SPAD->weapon_points[i][0];
         dst[1] = SPAD->weapon_points[i][1];
@@ -1327,7 +1327,7 @@ s32 fighter_ProcessWeaponContacts(void) {
 
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 4; j++) {
-            p = (s32 *)((u8 *)blade_sweep_points + (i * 0x60 + j * 0x18));
+            p = (s32 *)((u8 *)weapon_sweep_points + (i * 0x60 + j * 0x18));
             p[0] >>= 1;
             p[1] >>= 1;
             p[2] >>= 1;
@@ -1341,24 +1341,24 @@ s32 fighter_ProcessWeaponContacts(void) {
     for (j = 0; j < count[0]; j++) {
         switch (j) {
         case 0:
-            scr->shape_points[0] = &blade_sweep_points[2];
-            scr->shape_points[1] = &blade_sweep_points[3];
-            scr->shape_points[2] = &blade_sweep_points[1];
+            scr->shape_points[0] = &weapon_sweep_points[2];
+            scr->shape_points[1] = &weapon_sweep_points[3];
+            scr->shape_points[2] = &weapon_sweep_points[1];
             break;
         case 1:
-            scr->shape_points[0] = &blade_sweep_points[0];
-            scr->shape_points[1] = &blade_sweep_points[1];
-            scr->shape_points[2] = &blade_sweep_points[2];
+            scr->shape_points[0] = &weapon_sweep_points[0];
+            scr->shape_points[1] = &weapon_sweep_points[1];
+            scr->shape_points[2] = &weapon_sweep_points[2];
             break;
         case 2:
-            scr->shape_points[0] = &blade_sweep_points[6];
-            scr->shape_points[1] = &blade_sweep_points[7];
-            scr->shape_points[2] = &blade_sweep_points[5];
+            scr->shape_points[0] = &weapon_sweep_points[6];
+            scr->shape_points[1] = &weapon_sweep_points[7];
+            scr->shape_points[2] = &weapon_sweep_points[5];
             break;
         case 3:
-            scr->shape_points[0] = &blade_sweep_points[4];
-            scr->shape_points[1] = &blade_sweep_points[5];
-            scr->shape_points[2] = &blade_sweep_points[6];
+            scr->shape_points[0] = &weapon_sweep_points[4];
+            scr->shape_points[1] = &weapon_sweep_points[5];
+            scr->shape_points[2] = &weapon_sweep_points[6];
             break;
         }
         if (math_TryPrepareTriangleNormalFrame(scr) == 0) {
@@ -1387,24 +1387,24 @@ s32 fighter_ProcessWeaponContacts(void) {
         for (n = 0; n < count[1]; n++) {
             switch (n) {
             case 0:
-                scr->other_shape_points[0] = &blade_sweep_points[10];
-                scr->other_shape_points[1] = &blade_sweep_points[11];
-                scr->other_shape_points[2] = &blade_sweep_points[9];
+                scr->other_shape_points[0] = &weapon_sweep_points[10];
+                scr->other_shape_points[1] = &weapon_sweep_points[11];
+                scr->other_shape_points[2] = &weapon_sweep_points[9];
                 break;
             case 1:
-                scr->other_shape_points[0] = &blade_sweep_points[8];
-                scr->other_shape_points[1] = &blade_sweep_points[9];
-                scr->other_shape_points[2] = &blade_sweep_points[10];
+                scr->other_shape_points[0] = &weapon_sweep_points[8];
+                scr->other_shape_points[1] = &weapon_sweep_points[9];
+                scr->other_shape_points[2] = &weapon_sweep_points[10];
                 break;
             case 2:
-                scr->other_shape_points[0] = &blade_sweep_points[14];
-                scr->other_shape_points[1] = &blade_sweep_points[15];
-                scr->other_shape_points[2] = &blade_sweep_points[13];
+                scr->other_shape_points[0] = &weapon_sweep_points[14];
+                scr->other_shape_points[1] = &weapon_sweep_points[15];
+                scr->other_shape_points[2] = &weapon_sweep_points[13];
                 break;
             case 3:
-                scr->other_shape_points[0] = &blade_sweep_points[12];
-                scr->other_shape_points[1] = &blade_sweep_points[13];
-                scr->other_shape_points[2] = &blade_sweep_points[14];
+                scr->other_shape_points[0] = &weapon_sweep_points[12];
+                scr->other_shape_points[1] = &weapon_sweep_points[13];
+                scr->other_shape_points[2] = &weapon_sweep_points[14];
                 break;
             }
             scr->other_bbox_max = *scr->other_shape_points[0];
@@ -1450,24 +1450,24 @@ s32 fighter_ProcessWeaponContacts(void) {
     for (j = 0; j < count[1]; j++) {
         switch (j) {
         case 0:
-            scr->shape_points[0] = &blade_sweep_points[10];
-            scr->shape_points[1] = &blade_sweep_points[11];
-            scr->shape_points[2] = &blade_sweep_points[9];
+            scr->shape_points[0] = &weapon_sweep_points[10];
+            scr->shape_points[1] = &weapon_sweep_points[11];
+            scr->shape_points[2] = &weapon_sweep_points[9];
             break;
         case 1:
-            scr->shape_points[0] = &blade_sweep_points[8];
-            scr->shape_points[1] = &blade_sweep_points[9];
-            scr->shape_points[2] = &blade_sweep_points[10];
+            scr->shape_points[0] = &weapon_sweep_points[8];
+            scr->shape_points[1] = &weapon_sweep_points[9];
+            scr->shape_points[2] = &weapon_sweep_points[10];
             break;
         case 2:
-            scr->shape_points[0] = &blade_sweep_points[14];
-            scr->shape_points[1] = &blade_sweep_points[15];
-            scr->shape_points[2] = &blade_sweep_points[13];
+            scr->shape_points[0] = &weapon_sweep_points[14];
+            scr->shape_points[1] = &weapon_sweep_points[15];
+            scr->shape_points[2] = &weapon_sweep_points[13];
             break;
         case 3:
-            scr->shape_points[0] = &blade_sweep_points[12];
-            scr->shape_points[1] = &blade_sweep_points[13];
-            scr->shape_points[2] = &blade_sweep_points[14];
+            scr->shape_points[0] = &weapon_sweep_points[12];
+            scr->shape_points[1] = &weapon_sweep_points[13];
+            scr->shape_points[2] = &weapon_sweep_points[14];
             break;
         }
         if (math_TryPrepareTriangleNormalFrame(scr) == 0) {
@@ -1498,24 +1498,24 @@ s32 fighter_ProcessWeaponContacts(void) {
             }
             switch (n) {
             case 0:
-                scr->other_shape_points[0] = &blade_sweep_points[2];
-                scr->other_shape_points[1] = &blade_sweep_points[3];
-                scr->other_shape_points[2] = &blade_sweep_points[1];
+                scr->other_shape_points[0] = &weapon_sweep_points[2];
+                scr->other_shape_points[1] = &weapon_sweep_points[3];
+                scr->other_shape_points[2] = &weapon_sweep_points[1];
                 break;
             case 1:
-                scr->other_shape_points[0] = &blade_sweep_points[0];
-                scr->other_shape_points[1] = &blade_sweep_points[1];
-                scr->other_shape_points[2] = &blade_sweep_points[2];
+                scr->other_shape_points[0] = &weapon_sweep_points[0];
+                scr->other_shape_points[1] = &weapon_sweep_points[1];
+                scr->other_shape_points[2] = &weapon_sweep_points[2];
                 break;
             case 2:
-                scr->other_shape_points[0] = &blade_sweep_points[6];
-                scr->other_shape_points[1] = &blade_sweep_points[7];
-                scr->other_shape_points[2] = &blade_sweep_points[5];
+                scr->other_shape_points[0] = &weapon_sweep_points[6];
+                scr->other_shape_points[1] = &weapon_sweep_points[7];
+                scr->other_shape_points[2] = &weapon_sweep_points[5];
                 break;
             case 3:
-                scr->other_shape_points[0] = &blade_sweep_points[4];
-                scr->other_shape_points[1] = &blade_sweep_points[5];
-                scr->other_shape_points[2] = &blade_sweep_points[6];
+                scr->other_shape_points[0] = &weapon_sweep_points[4];
+                scr->other_shape_points[1] = &weapon_sweep_points[5];
+                scr->other_shape_points[2] = &weapon_sweep_points[6];
                 break;
             }
             scr->other_bbox_max = *scr->other_shape_points[0];

@@ -1477,13 +1477,13 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
     rec = g_gpu_fog_move_settings[arg0];
     if (rec[0] != 0) {
         {
-            s32 base = func_8003F268();
-            if (base == 0) {
-                base = 0x6590;
+            s32 var_4 = func_8003F268();
+            if (var_4 == 0) {
+                var_4 = 0x6590;
             } else {
-                base = 0x55F0;
+                var_4 = 0x55F0;
             }
-            dist = base - arg1;
+            dist = var_4 - arg1;
         }
         if (dist < 0x1770) {
             offset = 0x1770 - dist;
