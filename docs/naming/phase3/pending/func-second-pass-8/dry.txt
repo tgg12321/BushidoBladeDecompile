@@ -1,0 +1,65 @@
+==============================================================================
+NAMING WAVE — 4 operations (0 RESET, 4 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (6) --
+  asm: 4 files, 8 substitutions
+      asm/funcs/func_80063AF0.s  (2)
+      asm/funcs/func_80063B34.s  (2)
+      asm/funcs/func_80063B78.s  (2)
+      asm/funcs/func_80063BA4.s  (2)
+  src: 2 files, 12 substitutions
+      src/main/51268.c  (4)
+      src/main/d_8BC50.c  (8)
+
+-- .s file renames (4) --
+  asm/funcs/func_80063AF0.s -> asm/funcs/eff_SpawnFighter0YawedSlotQuad.s
+  asm/funcs/func_80063B34.s -> asm/funcs/eff_SpawnFighter1YawedSlotQuad.s
+  asm/funcs/func_80063B78.s -> asm/funcs/eff_DrawFighter0YawedSlotQuads.s
+  asm/funcs/func_80063BA4.s -> asm/funcs/eff_DrawFighter1YawedSlotQuads.s
+
+-- ledger directory renames (5) --
+  memory/grind/func_80063B34 -> memory/grind/eff_SpawnFighter1YawedSlotQuad
+  memory/grind/_completed/func_80063AF0 -> memory/grind/_completed/eff_SpawnFighter0YawedSlotQuad
+  memory/grind/_completed/func_80063B34 -> memory/grind/_completed/eff_SpawnFighter1YawedSlotQuad
+  memory/grind/_completed/func_80063B78 -> memory/grind/_completed/eff_DrawFighter0YawedSlotQuads
+  memory/grind/_completed/func_80063BA4 -> memory/grind/_completed/eff_DrawFighter1YawedSlotQuads
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (5) --
+  memory/grind/func_80063B34/layer2.jsonl: 1 changes
+      line 1: func func_80063B34 -> eff_SpawnFighter1YawedSlotQuad
+  memory/grind/_completed/func_80063AF0/layer2.jsonl: 2 changes
+      line 1: func func_80063AF0 -> eff_SpawnFighter0YawedSlotQuad
+      line 2: func func_80063AF0 -> eff_SpawnFighter0YawedSlotQuad
+  memory/grind/_completed/func_80063B34/layer2.jsonl: 2 changes
+      line 1: func func_80063B34 -> eff_SpawnFighter1YawedSlotQuad
+      line 2: func func_80063B34 -> eff_SpawnFighter1YawedSlotQuad
+  memory/grind/_completed/func_80063B78/layer2.jsonl: 2 changes
+      line 1: func func_80063B78 -> eff_DrawFighter0YawedSlotQuads
+      line 2: func func_80063B78 -> eff_DrawFighter0YawedSlotQuads
+  memory/grind/_completed/func_80063BA4/layer2.jsonl: 2 changes
+      line 1: func func_80063BA4 -> eff_DrawFighter1YawedSlotQuads
+      line 2: func func_80063BA4 -> eff_DrawFighter1YawedSlotQuads
+
+DRY RUN — nothing written. Re-run with --apply.
+
+-- live citations of the 4 old names (git grep src include symbol_addrs.txt named_syms.txt tools docs/engine .claude/rules) at 7ad9f4409 --
+include/game.h:994: * eff_StartCommand, bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 /
+src/main/51268.c:1342:u8 func_80063AF0(void) {
+src/main/51268.c:1349:u8 func_80063B34(void) {
+src/main/51268.c:1359:u8 func_80063B78(void) {
+src/main/51268.c:1364:u8 func_80063BA4(void) {
+src/main/d_8BC50.c:205:u8 func_80063AF0(void);
+src/main/d_8BC50.c:206:u8 func_80063B78(void);
+src/main/d_8BC50.c:207:u8 func_80063B34(void);
+src/main/d_8BC50.c:208:u8 func_80063BA4(void);
+src/main/d_8BC50.c:269:    (s32)func_80063AF0,
+src/main/d_8BC50.c:270:    (s32)func_80063B78,
+src/main/d_8BC50.c:271:    (s32)func_80063B34,
+src/main/d_8BC50.c:272:    (s32)func_80063BA4,
+tools/trace/scenarios/versus-2p-kimigaura-effects.json:16:    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80063AF0/spec.json",
+tools/trace/scenarios/versus-2p-kimigaura-effects.json:17:    "docs/naming/runtime/versus-2p-kimigaura-eff-stub-1/func_80063B34/spec.json",
