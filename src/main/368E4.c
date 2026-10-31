@@ -749,7 +749,7 @@ void gpu_InitSelector14VramScroll(void) { gpu_InitVramScroll(1, 0); }
 
 void gpu_QueueSelector14VramScroll(void) { gpu_QueueVramScroll(0); }
 
-void node_InitSelector18FrameEntriesFromWorldTranslations(void) {
+void node_InitLumberyardFrameEntriesFromWorldTranslations(void) {
     node_InitFrameEntriesFromWorldTranslations();
 }
 
