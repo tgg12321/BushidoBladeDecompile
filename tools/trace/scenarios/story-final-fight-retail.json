@@ -7,7 +7,9 @@
   "evidence": [
     "docs/naming/runtime/story-final-fight-retail-1/spec.json",
     "docs/naming/runtime/lib-story-final-fight-retail-1/spec.json",
-    "docs/naming/runtime/selector-loads-story-final-fight-retail-1/spec.json"
+    "docs/naming/runtime/selector-loads-story-final-fight-retail-1/spec.json",
+    "docs/naming/runtime/story-final-fight-magenta-stub-1/baseline/spec.json",
+    "docs/naming/runtime/story-final-fight-magenta-stub-1/func_80065760/spec.json"
   ],
   "end_frame": 158000,
   "inputs": [
