@@ -444,7 +444,7 @@
 /* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
 
 /* === Per-id state arrays (2026-05-17) === */
-/* Init pattern (51268.c, func_80064ED8..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
+/* Init pattern (51268.c, eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
 /* The per-id 12-byte state records and 2-byte counters are the arrays g_eff_animated_quad_positions[18] and g_eff_animated_quad_counters[18]
  * (include/game.h; merged 2026-09-30 with eff_DrawAnimatedQuads, which retired their per-word alias names). */
 /* 2026-10-16: D_800F10E0 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
