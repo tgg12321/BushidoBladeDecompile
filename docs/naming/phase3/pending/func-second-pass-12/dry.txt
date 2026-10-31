@@ -1,0 +1,30 @@
+rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (3) --
+  asm: 1 files, 2 substitutions
+      asm/funcs/node_InitSelector18FrameEntriesFromWorldTranslations.s  (2)
+  src: 2 files, 3 substitutions
+      src/main/368E4.c  (1)
+      src/main/d_80DF8.c  (2)
+
+-- .s file renames (1) --
+  asm/funcs/node_InitSelector18FrameEntriesFromWorldTranslations.s -> asm/funcs/node_InitLumberyardFrameEntriesFromWorldTranslations.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
+
+HAZARD CHECK: the wave edits only asm/funcs/node_InitSelector18FrameEntriesFromWorldTranslations.s, src/main/368E4.c and
+src/main/d_80DF8.c (3 files, 5 substitutions) and renames the one .s file. The current (wave101) name does not occur under
+docs/naming/runtime/ or tools/trace/ as far as this draft checked; the older func_8004777C spelling stays in recorded data
+there (hitmaps, evidence/*.tsv, matrix/*.tsv, story-lumberyard-cut.json) and is not touched. After apply, confirm with git
+status that nothing under docs/naming/runtime or tools/trace changed.

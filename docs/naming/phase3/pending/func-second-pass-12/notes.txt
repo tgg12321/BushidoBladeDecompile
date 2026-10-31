@@ -1,0 +1,41 @@
+wave102 (func-second-pass-12): 1 RENAME (0 CHANGED FROM RESEARCH); 3 KEEP (not rows); 0 dropped. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave102 (wave101 = func-second-pass-11, landed; docs/naming/phase3/ had wave101 as its highest dir).
+Drafted 2026-10-31 (naming-b) at HEAD da94f6084. Research input tmp/codex/func-second-pass-12-research.md (untrusted); every use and every evidence claim re-derived below.
+Row:
+ 0x8004777C node_InitSelector18FrameEntriesFromWorldTranslations -> node_InitLumberyardFrameEntriesFromWorldTranslations
+ The name is the func-second-pass-10 draft's (pending/func-second-pass-10, dropped: pre-apply mechanics PASS, FAIL only on the role word because all 33 rows were
+ inconclusive by hit_in_untagged_capture). Only the role word is new work; trace-story-stage-tags (landed) stage-tagged the story capture.
+CONTRADICTION CHECK against the research: NONE. Every research claim for 0x8004777C held on re-reading.
+Uses of the current name re-derived at HEAD (git grep over src include asm symbol_addrs.txt named_syms.txt docs/naming/function-names.csv; comments included):
+ - src/main/368E4.c:751 definition (body only node_InitFrameEntriesFromWorldTranslations()); src/main/d_80DF8.c:40 declaration; d_80DF8.c:892 the one address-taken use
+   (.init of row 18 = 0x12, {init, node_AdvanceSelector18FrameAnimatedEntriesAndQueueDraws}; table g_resource_selector_callbacks[38] at :873, row 0 at :874);
+   asm/funcs/node_InitSelector18FrameEntriesFromWorldTranslations.s:1,10 (glabel/endlabel; jal at :4); docs/naming/function-names.csv:599. Nothing else: no jal/call,
+   no comment in src/ or include/, no symbol_addrs.txt / undefined_syms_auto.txt line, no occurrence in docs/naming/runtime or tools. named_syms.txt:281 is a RESET note naming only
+   the retired game_EffStart_8004777C. Table calls: init by resource_InvokeLoadedSelectorInitCallback (2B344.c:2292-2296; from 368E4.c:70 reuse and :181 fresh load after :77).
+ - Callee node_InitFrameEntriesFromWorldTranslations 32D04.c:1192-1219; frame_entry_count per selector 32D04.c:1177-1186 (0x12 -> 0xA).
+only_x evidence re-read (docs/naming/runtime/evidence/only_x.tsv:2846-2879, header line 1):
+ - 34 pair rows for 0x8004777C (awk count 34), all tag stage:lumberyard / axis stage; 22 conclusive (inconclusive column 0, reason {}), 12 inconclusive. Matches the research (34/22/12).
+ - Inconclusive: 7 zero_side_shorter (stage-map1-4 vs station :2847, parking_lot :2853, future_dump :2860, purple_cavern :2868, shainto_gate :2873, snake_cliff :2875, terraced :2877),
+   bamboo :2851 (inputs_differ_after_divergence + start_state_differs), railway :2870 (start_state_differs), kimigaura :2861, :2863, :2864 (phase_lists_differ).
+ - Every one of the 17 other stages has at least one conclusive zero row (lines: station :2846, tunnel :2848/:2849, bamboo :2850, parking_lot :2852, rooftop :2854, castle :2855/:2856,
+   ferry_dock :2857/:2858, future_dump :2859, kimigaura :2862, dojo :2865/:2866, purple_cavern :2867, railway :2869, cemetery :2871, gate :2872, snake_cliff :2874, terraced :2876,
+   under_railway :2878/:2879). No stage is without one.
+ - No row records a hit outside stage:lumberyard: every row's hit_captures are versus-2p-pair-lumberyard-1/-2 or versus-2p-stage-map1-4 (scenarios.tsv:81,82,108 all stage:lumberyard);
+   matrix/facts.tsv:2071 reach.hit = 5 captures (lib-story-final-fight-retail-1 [story], story-final-fight-stages-1 [sel12], pair-lumberyard-1/-2 [t_load], stage-map1-4 [t_load]); the story
+   ones carry the tag via matrix/refines.tsv:2 (ok) and phase_tags.tsv:2 (sel12 = stage:lumberyard); evidence/screens.tsv:55637-55642 lists the six hit rows; no hit_in_untagged_capture left.
+ - Stage card: screens.tsv:55640 story-final-fight-stages-1 sel12 hit at 93436, shot sel12.93500; events.tsv:15 and :482 the 93436 call (ra 0x8003F1B8). I did not open the PNG here (research claim).
+Why the other three wave101 names are KEEP and not rows:
+ - 0x8004779C node_AdvanceSelector18FrameAnimatedEntriesAndQueueDraws: 0/34 pair rows conclusive (17 zero_side_shorter [fight_tail]; 14 stage-map1-4 rows inputs_differ_after_divergence +
+   zero_side_shorter, bamboo and railway also start_state_differs; 3 kimigaura phase_lists_differ), so the Q132 matrix gives no role (research; not re-counted line by line by this draft).
+ - 0x80047738 gpu_InitSelector14VramScroll and 0x8004775C gpu_QueueSelector14VramScroll: one only_x row each, tag `-`, inconclusive (capture_level_only, single hit scenario
+   story-gengoro-stage-0e); stage_0e has no stage card or name; a stage-tagged selector-0x0E capture is needed first.
+PAIR SPLIT: Init says Lumberyard while its Advance twin keeps Selector18, so one table row (d_80DF8.c:892-893) reads Lumberyard / Selector18.
+Decimal 18 = 0x12: the Selector18 spelling (wave101) was the decimal row index; row 12 (hex 0xC, d_80DF8.c:886) is the empty {0, 0} row. The Lumberyard name drops that code key (368E4.c:56-58, :148,
+ :272-279 case 18; 32D04.c:1184; 35000.c:67); the row stays findable from d_80DF8.c:892.
+Freshness: node_InitLumberyardFrameEntriesFromWorldTranslations occurs only in the dropped pending/func-second-pass-10 (and these files); build.py fresh() enforces src/include.
+Weak spots for the reviewer: (1) 12 inconclusive rows remain; Q132 asks for a hit in X and none outside, which the 17 conclusive stage zeros settle, but diff.py help says single pair rows are
+ never only-X conclusions (whole-set judgment). (2) Pair split. (3) Lost code key 0x12; first stage word in an admitted name. (4) motion_StartPlayback loads with its own selector
+ ((field&0x3F)-1): the code alone does not confine 0x12 to a stage. (5) Katze phase (stage:lumberyard tag, no screenshot) irrelevant: the hit is in sel12. (6) Matrix freshness: research says
+ matrix.py check --all reports coverage.tsv/sources.tsv differ and no_name columns stale; no hits, zeros or verdicts change (not re-run by this draft). (7) libscan 8-word shape matches are size-only.
+Comment pass after apply: no comment names the function; nothing to hand-edit expected.
+gates: tmp/p3w102/gates.sh created in the lane worktree (integrity check + keycheck with the venv).
