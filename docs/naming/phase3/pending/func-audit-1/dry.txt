@@ -1,0 +1,121 @@
+# wave105 compiled dry run on 582e6e827 (dry.sh)
+rc=0
+==============================================================================
+NAMING WAVE — 12 operations (0 RESET, 12 RENAME)
+  12 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (47) --
+  (root): 2 files, 2 substitutions
+      inline_asm_canonical.txt  (1)
+      known_psyq_stdlib.txt  (1)
+  asm: 30 files, 45 substitutions
+      asm/funcs/fight_Init.s  (1)
+      asm/funcs/fight_StartDescriptorPlaybackAndAudio.s  (1)
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (1)
+      asm/funcs/fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s  (1)
+      asm/funcs/fight_UpdateFighterInteractionsAndPointCaches.s  (1)
+      asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s  (2)
+      ... and 24 more
+  include: 1 files, 6 substitutions
+      include/bb2.h  (6)
+  src: 13 files, 37 substitutions
+      src/main/17AFC.c  (4)
+      src/main/28708.c  (6)
+      src/main/2B344.c  (2)
+      src/main/31D3C.c  (1)
+      src/main/32D04.c  (2)
+      src/main/368E4.c  (5)
+      ... and 7 more
+  tools: 1 files, 1 substitutions
+      tools/ra_solver/validate.py  (1)
+
+-- .s file renames (12) --
+  asm/funcs/fighter_BlendCurrentAndPreviousContactPoints.s -> asm/funcs/fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint.s
+  asm/funcs/fighter_TestMoveFrameWindowOrObjectVariantKind.s -> asm/funcs/fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant.s
+  asm/funcs/gpu_DrawFixedSpritePairWithSelectedSheets.s -> asm/funcs/gpu_DrawSheetPairSelectedByDrawMode.s
+  asm/funcs/gpu_DrawQueuedNodes.s -> asm/funcs/gpu_DrawQueuedEntries.s
+  asm/funcs/gpu_DrawSelectedStretchedSpritePair.s -> asm/funcs/gpu_DrawSelectedStretchedSheetPair.s
+  asm/funcs/gpu_DrawSheetPairCenteredTileWithOptionalSelection.s -> asm/funcs/gpu_DrawSheetPairPanelWithOptionalSelection.s
+  asm/funcs/gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels.s -> asm/funcs/gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels.s
+  asm/funcs/menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles.s -> asm/funcs/menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles.s
+  asm/funcs/motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue.s -> asm/funcs/motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue.s
+  asm/funcs/wave_MoveCellBuffer.s -> asm/funcs/wave_RebaseCellBuffer.s
+  ... and 2 more
+
+-- ledger directory renames (17) --
+  memory/grind/fighter_BlendCurrentAndPreviousContactPoints -> memory/grind/fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+  memory/grind/fighter_TestMoveFrameWindowOrObjectVariantKind -> memory/grind/fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant
+  memory/grind/gpu_DrawFixedSpritePairWithSelectedSheets -> memory/grind/gpu_DrawSheetPairSelectedByDrawMode
+  memory/grind/gpu_DrawQueuedNodes -> memory/grind/gpu_DrawQueuedEntries
+  memory/grind/gpu_DrawSelectedStretchedSpritePair -> memory/grind/gpu_DrawSelectedStretchedSheetPair
+  memory/grind/gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> memory/grind/gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+  memory/grind/motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue -> memory/grind/motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue
+  memory/grind/wave_SampleLastRowCachingIndexAndRemainderParity -> memory/grind/wave_SampleRow8BaseCachingIndexAndRemainderParity
+  memory/grind/wave_SampleLastRowStepsAtCachedIndex -> memory/grind/wave_SampleStepTableBaseAtCachedIndex
+  memory/grind/_completed/fighter_BlendCurrentAndPreviousContactPoints -> memory/grind/_completed/fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+  ... and 7 more
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (17) --
+  memory/grind/fighter_BlendCurrentAndPreviousContactPoints/layer2.jsonl: 1 changes
+      line 1: func fighter_BlendCurrentAndPreviousContactPoints -> fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+  memory/grind/fighter_TestMoveFrameWindowOrObjectVariantKind/layer2.jsonl: 1 changes
+      line 1: func fighter_TestMoveFrameWindowOrObjectVariantKind -> fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant
+  memory/grind/gpu_DrawFixedSpritePairWithSelectedSheets/layer2.jsonl: 1 changes
+      line 1: func gpu_DrawFixedSpritePairWithSelectedSheets -> gpu_DrawSheetPairSelectedByDrawMode
+  memory/grind/gpu_DrawQueuedNodes/layer2.jsonl: 1 changes
+      line 1: func gpu_DrawQueuedNodes -> gpu_DrawQueuedEntries
+  memory/grind/gpu_DrawSelectedStretchedSpritePair/layer2.jsonl: 3 changes
+      line 1: func gpu_DrawSelectedStretchedSpritePair -> gpu_DrawSelectedStretchedSheetPair
+      line 2: func gpu_DrawSelectedStretchedSpritePair -> gpu_DrawSelectedStretchedSheetPair
+      line 3: func gpu_DrawSelectedStretchedSpritePair -> gpu_DrawSelectedStretchedSheetPair
+  memory/grind/gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels/layer2.jsonl: 2 changes
+      line 1: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+      line 2: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+  memory/grind/motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue/layer2.jsonl: 1 changes
+      line 1: func motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue -> motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue
+  memory/grind/wave_SampleLastRowCachingIndexAndRemainderParity/layer2.jsonl: 1 changes
+      line 1: func wave_SampleLastRowCachingIndexAndRemainderParity -> wave_SampleRow8BaseCachingIndexAndRemainderParity
+  memory/grind/wave_SampleLastRowStepsAtCachedIndex/layer2.jsonl: 1 changes
+      line 1: func wave_SampleLastRowStepsAtCachedIndex -> wave_SampleStepTableBaseAtCachedIndex
+  memory/grind/_completed/fighter_BlendCurrentAndPreviousContactPoints/layer2.jsonl: 4 changes
+      line 1: func fighter_BlendCurrentAndPreviousContactPoints -> fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+      line 2: func fighter_BlendCurrentAndPreviousContactPoints -> fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+      line 3: func fighter_BlendCurrentAndPreviousContactPoints -> fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+      line 4: func fighter_BlendCurrentAndPreviousContactPoints -> fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
+  memory/grind/_completed/fighter_TestMoveFrameWindowOrObjectVariantKind/layer2.jsonl: 1 changes
+      line 1: func fighter_TestMoveFrameWindowOrObjectVariantKind -> fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant
+  memory/grind/_completed/gpu_DrawFixedSpritePairWithSelectedSheets/layer2.jsonl: 3 changes
+      line 1: func gpu_DrawFixedSpritePairWithSelectedSheets -> gpu_DrawSheetPairSelectedByDrawMode
+      line 2: func gpu_DrawFixedSpritePairWithSelectedSheets -> gpu_DrawSheetPairSelectedByDrawMode
+      line 3: func gpu_DrawFixedSpritePairWithSelectedSheets -> gpu_DrawSheetPairSelectedByDrawMode
+  memory/grind/_completed/gpu_DrawSelectedStretchedSpritePair/layer2.jsonl: 2 changes
+      line 1: func gpu_DrawSelectedStretchedSpritePair -> gpu_DrawSelectedStretchedSheetPair
+      line 2: func gpu_DrawSelectedStretchedSpritePair -> gpu_DrawSelectedStretchedSheetPair
+  memory/grind/_completed/gpu_DrawSheetPairCenteredTileWithOptionalSelection/layer2.jsonl: 5 changes
+      line 1: func gpu_DrawSheetPairCenteredTileWithOptionalSelection -> gpu_DrawSheetPairPanelWithOptionalSelection
+      line 2: func gpu_DrawSheetPairCenteredTileWithOptionalSelection -> gpu_DrawSheetPairPanelWithOptionalSelection
+      line 3: func gpu_DrawSheetPairCenteredTileWithOptionalSelection -> gpu_DrawSheetPairPanelWithOptionalSelection
+      line 4: func gpu_DrawSheetPairCenteredTileWithOptionalSelection -> gpu_DrawSheetPairPanelWithOptionalSelection
+      line 5: func gpu_DrawSheetPairCenteredTileWithOptionalSelection -> gpu_DrawSheetPairPanelWithOptionalSelection
+  memory/grind/_completed/gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels/layer2.jsonl: 5 changes
+      line 1: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+      line 2: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+      line 3: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+      line 4: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+      line 5: func gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels
+  memory/grind/_completed/menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles/layer2.jsonl: 6 changes
+      line 1: func menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles -> menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles
+      line 2: func menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles -> menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles
+      line 3: func menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles -> menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles
+      line 4: func menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles -> menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles
+      line 5: func menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles -> menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles
+      ... and 1 more
+  memory/grind/_completed/motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue/layer2.jsonl: 2 changes
+      line 1: func motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue -> motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue
+      line 2: func motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue -> motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue
+
+DRY RUN — nothing written. Re-run with --apply.

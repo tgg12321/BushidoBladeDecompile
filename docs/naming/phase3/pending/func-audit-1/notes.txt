@@ -1,0 +1,47 @@
+wave105 (func-audit-1): 12 RENAME kept (0 changed from research, 0 dropped); 5 KEEP (not rows); 0 RESET. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave105 (drafted as wave104; func-second-pass-14 landed wave104 first (582e6e827), so the reviewed commit bounced and was redone as wave105 on 582e6e827; the rows are disjoint from wave104's, re-dry-run on the new main).
+Drafted 2026-10-31 (naming-a) at HEAD d4e1e57b3. Research input tmp/codex/func-audit-1-research.md (untrusted proposals); every home and use re-derived with git grep -w over src include asm named_syms.txt symbol_addrs.txt inline_asm_canonical.txt known_psyq_stdlib.txt docs/naming/function-names.csv.
+Generated: build.py writes the manifests to docs/naming/phase3/wave105/ (func_manifest.csv, data_manifest.csv) in the lane worktree; git status after the dry run shows only pending/func-audit-1/ and wave105/ (both untracked). The dry run restored function-names.csv and removed the staged zz-wave105-dry dir. Scratch: <main>/tmp/p3w105 (gates.sh, rundry.sh, dryout.txt).
+
+CONTRADICTION CHECK against the research: NONE. Every home/use/count in the research held. Every proposed name is absent from src include asm named_syms.txt symbol_addrs.txt function-names.csv (git grep -i; the only repo hit is the phase3/backlog.tsv row naming them). No name clash.
+
+Per-row facts re-derived (current name -> proposed; homes and uses at HEAD):
+ 0x8002798C fighter_TestMoveFrameWindowOrObjectVariantKind -> fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant: glabel .s:1; def 17AFC.c:314; decl include/bb2.h:736; uses 17AFC.c:342 (+ fighter_TryDropQueuedHeadAtBone.s:15 jal), 9F9C.c:5485 (+ fighter_Update.s:2144 jal). named_syms.txt:1340 is an address-match note (registry), not a definition.
+ 0x8002C22C fighter_BlendCurrentAndPreviousContactPoints -> fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint: glabel; def 17AFC.c:2392; no header decl; one use 17AFC.c:2492 (+ fight_UpdateFighterInteractionsAndPointCaches.s:48 jal); comment 17AFC.c:2466. Outside the wave's reach: docs/engine/combat.md:28 and tools/manual_session.ps1:21 (usage text) name the old identifier (the dry run edits only tools/ra_solver/validate.py in tools/).
+ 0x80047D94 wave_SampleLastRowCachingIndexAndRemainderParity -> wave_SampleRow8BaseCachingIndexAndRemainderParity: glabel; def 368E4.c:1014; no caller; named_syms.txt:16 and :270 notes. Range 0..17 from the sltiu 0x12 guard; ci 16/17 read past row 8.
+ 0x80047E5C wave_SampleLastRowStepsAtCachedIndex -> wave_SampleStepTableBaseAtCachedIndex: glabel; def 368E4.c:1034; no caller; comment 368E4.c:306; named_syms.txt:271 note.
+ 0x80047ED0 wave_MoveCellBuffer -> wave_RebaseCellBuffer: glabel; def 368E4.c:1054; local extern 368E4.c:261; one call 368E4.c:280 (+ resource_RebaseLoadedBlockSections.s:47 jal).
+ 0x80074488 menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles -> menu_DrawOptionSheetsWithSelectionEffectsAndGreyTiles: glabel; def 63D2C.c:368; decl bb2.h:1077; comment bb2.h:61; one call 64FD8.c:1296 (+ menu_RunSelPhases.s:61 jal).
+ 0x8005D46C gpu_DrawFixedSpritePairWithSelectedSheets -> gpu_DrawSheetPairSelectedByDrawMode: glabel; def 4D0A8.c:334; decl bb2.h:1000; comments 4D0A8.c:325, :1979; one call 6CF8.c:554 (+ gpu_DrawDisplayModeOnLocalOtAndSync.s:46 jal).
+ 0x8005FA98 gpu_DrawSelectedStretchedSpritePair -> gpu_DrawSelectedStretchedSheetPair: glabel; def 4D0A8.c:1262; decl bb2.h:1007; comments 4D0A8.c:3, :1252; calls 2B344.c:993, 9F9C.c:1578/:1605/:2325 + asm jals in fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange.s:194, fight_UpdateModeDisplaysAndMatchProgress.s:139/:233, fight_UpdateRotatingViewThreeOptionChoice.s:121. Pair with 0x8005D46C (same reading).
+ 0x80041BF4 gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels -> gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels: glabel; def 31D3C.c:242; decl bb2.h:873; comment bb2.h:302; calls 2B344.c:561, 9F9C.c:1432/:1968/:1972/:1979 + asm jals fight_Init.s:284, fight_StartDescriptorPlaybackAndAudio.s:159, fight_UpdateDefeatDelayAndModeProgress.s:223; symbol_addrs.txt:760/:1939-1941 comments. APPLIER WATCH: tools/ra_solver/validate.py:9 holds the name in a table; the dry run shows the wave edits it (1 substitution in tools/). It is a non-runtime tool table keyed by function name; confirm its check/test still passes after apply.
+ 0x800224E0 motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue -> motion_SelectVariantNibblePositionMatchingEitherPreferredNibbleInOpponentValue: glabel; def 9F9C.c:3869; one call 9F9C.c:3948 (+ fighter_Init.s:168 jal); comment d_7D920.c:634. 78-character name (parts all admitted).
+ 0x8006BEC4 gpu_DrawSheetPairCenteredTileWithOptionalSelection -> gpu_DrawSheetPairPanelWithOptionalSelection: glabel; def 596CC.c:1681; decl bb2.h:1049; comments game.h:2537, 28708.c:854, symbol_addrs.txt:1440; calls 28708.c:557/:606/:638/:696/:808/:921 + asm jals in memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress.s:32/:90, memcard_StartLoadOnceStepAndDrawSheetPair.s:33, memcard_StepSaveOverwriteAndFormatPrompts.s:27/:181, menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult.s:51.
+ 0x8004A4E0 gpu_DrawQueuedNodes -> gpu_DrawQueuedEntries: WHOLE-BODY CANONICAL ASM. glabel; src/main/3AB48.c:14 INCLUDE_ASM; local extern 32D04.c:1131; one call 32D04.c:1159 (+ gpu_PrepareViewAndFlushDrawQueue.s:77 jal); comment 32D04.c:1226. The name also occurs in inline_asm_canonical.txt:200 and known_psyq_stdlib.txt:28. APPLIER WATCH: the dry run's file edits list both inline_asm_canonical.txt (1 substitution) and known_psyq_stdlib.txt (1) under (root), so tools/naming_wave.py rewrites them (rule/key files, naming_wave.py:80,97); after apply confirm inline_asm_canonical.txt:200 reads gpu_DrawQueuedEntries and tools/check_completion_integrity.py plus the canonical gate pass. Lead (not in batch): wave100's gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets (0x8004C404) borrowed 'QueuedNode' from this name; a later row should check whether kind 12 is a cell-record kind.
+ Recorded runtime data under docs/naming/runtime (hitmap.tsv, evidence/*.tsv) keeps the old names; not touched by the wave. After apply confirm via git status that nothing under docs/naming/runtime or tools/trace changed.
+Dry run: rc=0, 12 operations (0 RESET, 12 RENAME), 47 file edits (2 root .txt, 30 asm, 1 include, 13 src, 1 tools), 12 .s renames, 17 ledger dir renames (memory/grind), 17 layer2.jsonl key edits; link map STALE (expected, as in earlier dry runs). Output in dry.txt.
+
+KEEP (not rows; names stay):
+ 0x8001EA04 fight_InitFighterFocusViewAndThreeItemMenu (audit-199): Init names the phase it starts; the body zeroes g_handler_frame_counter (the focus view's ramp) and the three-item menu cursors/confirm delay, matching the Init/Update pair convention of the handler table (d_7D870.c:40-49).
+ 0x80037540 sys_ExecMovieOverlay (audit-52, -113, -203): the exec'd file is always MOVOVL.EXE (group 6 file 0 = g_cd_file_table[156], size 124928 = disc/STR/MOVOVL.EXE; entry 158 = TITLE.TIM size; entry 157 = stream-sized), so MovieOverlay is data-shown; the audits could not see the file identity.
+ 0x80037B00 memcard_HasFile (audit-113, -203): the only name ever passed is the 20-char BASLUS-00663BUSHIDO2 filling DIRENTRY.name[20]; a longer entry with that prefix cannot arise, so HasFile is what both callers get.
+ 0x80043278 gpu_RemapDepthToOtIndex (audit-31, -100, -207): dead code, but the identical transform in gpu_EmitOtCutoffRawTexturedTriangles takes the avsz3 OTZ and indexes the OT with the result; admitted on that ground (function-names.csv:474), kept.
+ 0x800290B8 fight_ProcessPositionRecordsInQuad (audit-35): the audit's miss-falls-through case is reachable only after the internal restart (idx 1, flag != 0), for a record already inside a triangle of the passed quad's grid; both real call sites (17AFC.c:1276, :1291) keep InQuad true.
+
+SETTLED-LIST (copied from the research; audit numbers consumed by this wave):
+- audit-29, audit-108: menu_DrawSheetsWithSelectedPulseOffsetDimmedOthersAndGreyTiles (RENAME)
+- audit-30: gpu_DrawFixedSpritePairWithSelectedSheets (RENAME), gpu_DrawSelectedStretchedSpritePair (RENAME), gpu_RestoreTintBackedUpFixedSlotVramRowsAndFogLevels (RENAME)
+- audit-31, audit-100, audit-207: gpu_RemapDepthToOtIndex (KEEP)
+- audit-32, audit-102, audit-210: wave_SampleLastRowCachingIndexAndRemainderParity (RENAME), wave_SampleLastRowStepsAtCachedIndex (RENAME)
+- audit-210: wave_MoveCellBuffer (RENAME)
+- audit-33: motion_SelectVariantNibblePositionMatchingPreferredPairInOpponentValue (RENAME)
+- audit-35: fight_ProcessPositionRecordsInQuad (KEEP)
+- audit-36, audit-107: gpu_DrawSheetPairCenteredTileWithOptionalSelection (RENAME)
+- audit-40: gpu_DrawQueuedNodes (RENAME)
+- audit-43, audit-201: fighter_TestMoveFrameWindowOrObjectVariantKind (RENAME)
+- audit-201: fighter_BlendCurrentAndPreviousContactPoints (RENAME)
+- audit-52, audit-113, audit-203: sys_ExecMovieOverlay (KEEP)
+- audit-113, audit-203: memcard_HasFile (KEEP)
+- audit-199: fight_InitFighterFocusViewAndThreeItemMenu (KEEP)
+
+Still open, outside this row's scope (from the research): audit-99 gpu_LoadRequestedAvailableTimGroupsForSlot and math_HsvToRgb; audit-103 node_InitRootNodePairWithNegatedRotationMatrices; audit-110 gpu_ShowCdFileImageFadeByHalvingColorsAndRestoreDisplayWidth.
