@@ -1,0 +1,142 @@
+"""wave98 rows (func-second-pass-7): Q132 mechanical names for the 2 functions revived in the
+func-second-pass-7 batch (NO_NAME ledger re-scan, round 2): the descriptor-playback queue setters
+0x8003B534 and 0x8003B56C (main/2B344), served by fight_RunCommandStream commands 2 and 20. They are a PAIR:
+each name holds on its own, but the twins are told apart only by the storing command, so land both or neither
+(a reviewer FAIL on one sends both back to blocked).
+Research input: tmp/codex/func-second-pass-7-research.md (2 RENAME, 0 NO_NAME over 2 targets; untrusted proposals).
+Every use of both functions was re-derived at ce2e5e3da from the C bodies, the 7 + 3 C call sites, the asm jal
+sites, the writers/readers of D_800A3894 / D_800A385C / D_800A37B0 / D_800A390C and
+fight_HandleDescriptorPlaybackCompletion. No name changed; 0 dropped.
+(DATA is empty.)
+"""
+import csv
+import glob
+import os
+import re
+
+VERDICT = "CONFIRM"
+VERIFIER_NOTE = "naming-reviewer pre-apply PASS 2/2 (2026-10-30, naming-a); pair, each name holds alone"
+NOTES = {}
+
+# names changed against the research (research name -> name used); an entry with old == new is a kept row
+ADJUSTED = {
+    "0x8003B534": ("fight_QueueSubstitutionCommandDescriptorPlayback", "fight_QueueSubstitutionCommandDescriptorPlayback", ""),
+    "0x8003B56C": ("fight_QueueFixedFighterCommandDescriptorPlayback", "fight_QueueFixedFighterCommandDescriptorPlayback", ""),
+}
+DROPPED = {}
+
+for _a, (_old, _new, _why) in ADJUSTED.items():
+    if _old != _new:
+        NOTES[_a] = f"adjusted from research {_old}: {_why}. naming-reviewer pre-apply PASS."
+
+WT = os.environ.get("P3WT", r"C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a")
+
+# ---------------------------------------------------------------------------------------------------------
+_SRC = {}
+for _f in sorted(glob.glob(os.path.join(WT, "src", "main", "*.c"))):
+    _SRC[os.path.basename(_f)] = open(_f, encoding="utf-8", errors="replace").read().split("\n")
+
+_COV = {}
+_covp = os.path.join(WT, "docs", "naming", "runtime", "matrix", "coverage.tsv")
+_rd = list(csv.reader(open(_covp, encoding="utf-8"), delimiter="\t"))
+_CAPS = _rd[0][5:]
+for _r in _rd[1:]:
+    _COV[_r[0].lower()] = [_CAPS[i] for i in range(len(_CAPS)) if _r[5 + i] not in (".", "")]
+
+
+def B(fn, f):
+    """src/main/<file>:<first>-<last> of the C definition of fn."""
+    lines = _SRC[f]
+    for k, l in enumerate(lines):
+        if not re.match(r"^[A-Za-z_][\w \*]*\b%s\(" % fn, l) or l.startswith("extern"):
+            continue
+        j = k
+        while j < len(lines) and lines[j] != "}" and not (j == k and l.rstrip().endswith("}")):
+            j += 1
+        return f"src/main/{f}:{k + 1}-{j + 1}" if j != k else f"src/main/{f}:{k + 1}"
+    for k, l in enumerate(lines):
+        if l.startswith("INCLUDE_ASM") and fn in l:
+            return f"src/main/{f}:{k + 1} (INCLUDE_ASM, no C body)"
+    raise SystemExit(f"no C definition of {fn}")
+
+
+def T(addr):
+    """Reach clause from coverage.tsv (verified at build time); no role rests on it."""
+    h = _COV[addr.lower()]
+    return (f"TRACE: not used; coverage.tsv lists the function in {len(h)} of {len(_CAPS)} registered captures "
+            f"(docs/naming/runtime/matrix/coverage.tsv), and no part of the name rests on a runtime observation (Q132 mechanical name).")
+
+
+def ch(addr):
+    if addr not in ADJUSTED:
+        return ""
+    old, new, why = ADJUSTED[addr]
+    if old == new:
+        return ""
+    return f"CHANGED FROM RESEARCH: {old}; {why}. "
+
+
+def R(addr, new, fn, f, body, callers, why, counter, prior):
+    assert ADJUSTED[addr][1] == new, (addr, new)
+    ev = (f"{ch(addr)}BODY: {B(fn, f)}: {body}. CALLERS: {callers}. WHY: {why}. COUNTER-EVIDENCE: {counter}. "
+          f"Prior manifests: {prior}. {T(addr)}")
+    return (addr, new, "RENAME", ev)
+
+
+FUNCS = [
+    R("0x8003B534", "fight_QueueSubstitutionCommandDescriptorPlayback", "func_8003B534", "2B344.c",
+      "D_800A37B0 = a0; g_main_loop_handler_index = 6 (g_main_loop_handlers[6] = fight_StartDescriptorPlaybackAndAudio, "
+      "d_7D870.c:36); g_fight_active_playback_descriptor = D_800A3894 + (a0 * 4 + 1); void, no calls, no return. "
+      "D_800A3894 (u8 *, include/bb2.h:639) is stored non-zero only by fight_RunCommandStream command 2 (2B344.c:418 = the stream "
+      "cursor, advanced 0x1D at :419), cleared by fight_InitCommandStream (:235) and fight_HandleDescriptorPlaybackCompletion (:603); "
+      "command 2 is the only caller of fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState (:420), which "
+      "substitutes byte 0 of that block into g_fight_config.unk_4[0] (:254-259); the body indexes the same block at 9 + 4k "
+      "(callers pass 2..6, offsets 9..28 of the 0x1D-byte block). D_800A37B0 (u8) is written only here and read only by "
+      "fight_HandleDescriptorPlaybackCompletion under D_800A3894 != 0 (:589-606)",
+      "C: 28708.c:1569 (var_19 ? 3 : 6) and :1573 (var_19 ? 2 : 5) inside if (D_800A3894 != 0) at :1567 (replay_PlayFrame); "
+      "28708.c:1590 (6) / :1592 (4) after the restore (:1581 g_fight_saved_first_fighter_selection != 0xFF, which only the "
+      "Save/Substitute function sets, 2B344.c:252, and fight_InitCommandStream / the Restore function reset to 0xFF); "
+      "2B344.c:1188 (4) after the same restore with mode 0 and the saved selection != 0xFF (:1182-1183); 9F9C.c:1381 (2) / :1383 (5) "
+      "inside if (D_800A3894 != 0) at :1378. asm: replay_PlayFrame.s:520 (one jal shared by all four 28708.c calls via "
+      "j .L8003A0D8 at :479/:486/:525 and the beqz at :477/:484/:512), fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s:203, "
+      "fight_UpdateDefeatDelayAndModeProgress.s:100 and :105. Local extern 2B344.c:1114, declaration "
+      "include/bb2.h:821. No table or address-taken use. No caller reads a result",
+      "Queue = the body plays nothing; it points the active playback descriptor at one four-byte record and sets the handler index "
+      "so the next main-loop dispatch runs fight_StartDescriptorPlaybackAndAudio, keeping the index for the completion handler. "
+      "SubstitutionCommand = the stream command whose operand block D_800A3894 holds is the one command that substitutes the "
+      "stream's fighter-0 selection (accepted callee name above); that tells it from func_8003B56C, which indexes the fixed-fighter "
+      "command's block. Descriptor = the accepted noun of fight_StartDescriptorPlaybackAndAudio / "
+      "fight_HandleDescriptorPlaybackCompletion for the same record (2B344.c:516-561). fight_ for the stream's callees and data "
+      "(N4). Holds at every use: at 28708.c:1590/1592 and 2B344.c:1188 the substitution has just been undone, but the body "
+      "still indexes the substitution command's block, which is all the name says",
+      "the name does not say 'while substituted' and claims no story or cutscene role, and does not encode the index base or "
+      "values; command 2 also configures fighter 1 and starts a bout, but substitution is its distinguishing callee; the w87 "
+      "objection (both twins write the same handler and descriptor globals) is met because the name is told apart by the block, "
+      "not by those writes; var-globals-b/notes.txt:51 said a descriptor-block name 'fits D_800A3894 equally': true of a "
+      "block-shape name, not of a name by the storing command. Pair rule: stands or falls with 0x8003B56C",
+      "no_name.tsv w50/w50b/w69/w87/w92 twin objection; revive evidence: the b9d07e4b8 capture separates the twins' blocks (op 20 "
+      "stores D_800A385C and calls func_8003B56C) and the D_800A3894 role is derived from code"),
+    R("0x8003B56C", "fight_QueueFixedFighterCommandDescriptorPlayback", "func_8003B56C", "2B344.c",
+      "D_800A390C = arg0; g_main_loop_handler_index = 6; g_fight_active_playback_descriptor = D_800A385C + (arg0 * 4 - 4); void, "
+      "no calls, no return. D_800A385C (u8 *, include/bb2.h:430) is stored non-zero only by command 20 (2B344.c:430 = the stream "
+      "cursor, advanced 12 at :431: three four-byte records for indices 1..3), cleared by fight_InitCommandStream (:236) and "
+      "fight_HandleDescriptorPlaybackCompletion (:618); command 20 is the only caller of "
+      "fight_SetFixedFighterBytesAndLoadBothFighters (:433), then plays record 1. Other readers of D_800A385C test it non-zero only "
+      "(9F9C.c:1360, :1394, :2804, :3419, :3924, :4127, :4719, :5765 and the fighter_* asm) and never index it. D_800A390C (u8, "
+      "include/bb2.h:478) is written only here and read only by the completion handler when D_800A3894 == 0 and D_800A385C != 0 "
+      "(:608-618)",
+      "C: 2B344.c:434 func_8003B56C(1) right after command 20 stores the block; 9F9C.c:1362 (3) (mode 0, D_800A385C != 0, fighter 0 "
+      "collision_hit_class == 1, :1360) and :1396 (2) (mode 0, D_800A385C != 0 at :1394). asm: fight_RunCommandStream.s:182, "
+      "fight_UpdateDefeatDelayAndModeProgress.s:39 and :127. Declaration include/bb2.h:822. No table or address-taken use. "
+      "No caller reads a result",
+      "Queue, Descriptor and fight_ as for 0x8003B534. FixedFighterCommand = the stream command whose operand block D_800A385C "
+      "holds is the one command that sets the fixed fighter bytes and loads both fighters (accepted callee name above); that, not "
+      "the shared writes, tells it from func_8003B534. Holds at the 9F9C.c uses: the body still indexes command 20's block there",
+      "the 9F9C.c arms (3 and 2) were not reached at runtime in the b9d07e4b8 capture; the name does not depend on them, only on "
+      "the block, which they test non-zero before calling. The name claims no ending, intro or story role; it does not encode "
+      "the 1-based index. Pair rule: stands or falls with 0x8003B534",
+      "no_name.tsv w50/w50b/w69/w87/w92 twin of 0x8003B534; revive evidence: story-gengoro-op20-poke-1 (b9d07e4b8) reaches "
+      "func_8003B56C(1) from command 20 with D_800A385C = command 20's block (reach only, Q124; the name rests on the code)"),
+]
+
+DATA = []

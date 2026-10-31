@@ -1,0 +1,35 @@
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (10) --
+  asm: 6 files, 11 substitutions
+      asm/funcs/fight_RunCommandStream.s  (1)
+      asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s  (4)
+      asm/funcs/fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams.s  (1)
+      asm/funcs/func_8003B534.s  (2)
+      asm/funcs/func_8003B56C.s  (2)
+      asm/funcs/replay_PlayFrame.s  (1)
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 3 files, 13 substitutions
+      src/main/28708.c  (4)
+      src/main/2B344.c  (5)
+      src/main/9F9C.c  (4)
+
+-- .s file renames (2) --
+  asm/funcs/func_8003B534.s -> asm/funcs/fight_QueueSubstitutionCommandDescriptorPlayback.s
+  asm/funcs/func_8003B56C.s -> asm/funcs/fight_QueueFixedFighterCommandDescriptorPlayback.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ tools/trace/scan/story_streams.py:L2: ['func_8003B56C'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
