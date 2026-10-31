@@ -12,7 +12,10 @@
     "docs/naming/runtime/versus-2p-kimigaura-kick-2p-1/spec.json",
     "docs/naming/runtime/versus-2p-kimigaura-kick-particle-stub-2/baseline/spec.json",
     "docs/naming/runtime/versus-2p-kimigaura-kick-particle-stub-2/func_80067830/spec.json",
-    "docs/naming/runtime/versus-2p-kimigaura-kick-particle-stub-2/func_8006786C/spec.json"
+    "docs/naming/runtime/versus-2p-kimigaura-kick-particle-stub-2/func_8006786C/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-kick-sand-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-kick-sand-stub-1/func_800677B8/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-kick-sand-stub-1/func_800677F4/spec.json"
   ],
   "use": [
     "boot",
