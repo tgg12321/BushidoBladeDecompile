@@ -981,7 +981,7 @@
 
 /* === Camera and identity root nodes (2026-05-17) -- 4 highs === */
 /* 2026-09-23: g_replay_target_a/b_init_val (2 of the 4) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
-/* From text1b.c node_InitRootNodePairWithNegatedRotationMatrices: 2 parallel transform records */
+/* From text1b.c node_InitViewRootNodePair: 2 parallel transform records */
 /* initialized together.  g_view_camera_root_node is the camera root node (type 0x64; per-frame camera angles/eye); */
 /* g_view_identity_root_node is the identity root node (type 0x65; zeroed at init).  After init, pointers are */
 /* stored to g_view_camera_root_ptr and g_view_identity_root_ptr, and */

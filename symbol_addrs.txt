@@ -653,7 +653,7 @@ g_cdrom_audio_entries = 0x8008F13C; /* data-wave 2026-10-08: was g_special_cam_c
 g_working_record = 0x8009BD24; /* data-wave 2026-10-08: was g_disp_config */
 // RENAME 0x80046798: retired name 'func_80046798' — preserved note: 4-insn lh-based signed getter for D_80099478 */  /* naming wave07 2026-10-08: was stage_GetId
 g_gpu_presented_frame_count = 0x800A36AC; /* presented-frame count: zeroed by main, ++ after each DrawOTag; most readers take `& 1` as the double-buffer index, fight_UpdateRotatingViewThreeOptionChoice / fight_UpdateRotatingViewDecimalPresentation use the whole value */  /* data-wave 2026-10-08: was g_frame_parity */
-g_view_camera_root_ptr = 0x800A3708; /* = &g_view_camera_root_node (node_InitRootNodePairWithNegatedRotationMatrices); +0x4C/+0x54 are work.t[0]/[2], mapped to a 32x32 cell */  /* data-wave 2026-10-08: was g_stage_data_ptr */
+g_view_camera_root_ptr = 0x800A3708; /* = &g_view_camera_root_node (node_InitViewRootNodePair); +0x4C/+0x54 are work.t[0]/[2], mapped to a 32x32 cell */  /* data-wave 2026-10-08: was g_stage_data_ptr */
 g_fight_followup_fighter_index = 0x800A3748; /* index into D_80101EC8; -1 == none */  /* data-wave 2026-10-03: was g_practice_menu_index */
 g_gpu_ot_offset_ptr = 0x800A378C; /* ordering-table pointer: every store is g_gpu_ot_ptr + 4; every reader links GPU packets (DR_MOVE, OT words) into it */  /* data-wave 2026-10-08: was g_palette_base_ptr */
 D_800A3044 = 0x800A3044; /* SioRegs *: holds 0x1F801050, the SIO port 1 (link cable) register block; libcomb only (comb.c:17, include/psxsdk/libapi.h:23-37) */  /* data-wave 2026-10-09: was g_spu_reg_base_ptr */
@@ -746,7 +746,7 @@ g_menu_mode_subflow_init_pending = 0x800A31DA; /* ref: menu_ReleaseResourcesCond
 g_memcard_validation_load_active = 0x800A31FC; /* 0/1 flag of the memory-card status flow (memcard_RetryLoadDrawStatusSheetsAndWaitForTimeoutOrPress / memcard_StepSaveOverwriteAndFormatPrompts) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
 g_memcard_load_request_armed = 0x800A3203; /* one-shot latch that re-arms the memory-card status poll through memcard_RequestLoad (28708.c:511-512, 559) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
 g_gpu_flush_rotation_angles = 0x800A3678; /* ref: math_RotMatrixZXY (gpu_PrepareViewAndFlushDrawQueue, 32D04.c:1134) */  /* data-wave 2026-10-08: was g_leaf_muki_buffer */
-g_view_identity_root_ptr = 0x800A370C; /* = &g_view_identity_root_node (node_InitRootNodePairWithNegatedRotationMatrices); read by gpu_PrepareViewAndFlushDrawQueue */  /* data-wave 2026-10-08: was g_replay_camera_target_ptr_b */
+g_view_identity_root_ptr = 0x800A370C; /* = &g_view_identity_root_node (node_InitViewRootNodePair); read by gpu_PrepareViewAndFlushDrawQueue */  /* data-wave 2026-10-08: was g_replay_camera_target_ptr_b */
 g_gpu_ot_ptr = 0x800A374C; /* ref: tslDrTex1Init2 */  /* data-wave 2026-09-24: was g_dma_buf_base */
 g_fight_bone_group_tim_requests = 0x800A376A; /* refs: fighter_AccumulateBoneGroupFlagWhenGameModeZero, ApplyPendingConfigResetCellsAndClearSlotTimGroupRequests, fight_SaveFighter0SelectionAndStateSubstituteStreamSelectionClearState, fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields, fight_InitCommandStreamImageLoad */  /* data-wave 2026-10-08: was g_tslTm_loaded_flags */
 g_fight_stage_list_entries = 0x800A37A8; /* command-1 operand bytes of the running script (count g_fight_stage_command_count), shown one by one by gpu_DrawDisplayModeOnLocalOtAndSync (6CF8.c:566-590) */  /* data-wave 2026-10-08: was g_mental_bar_packet_buf */
@@ -904,7 +904,7 @@ D_800A30FD = 0x800A30FD; /* caches D_8008E5A8[(s8)g_fight_config.unk_4[1]] for f
 D_800A3778 = 0x800A3778; /* stores camera_GetViewMatrixWithHalvedMiddleRow()'s return (&g_camera_halved_row_view_matrix); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_fighter_dpad_angle_offsets = 0x8008EB40; /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4247, :4340) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
 g_gpu_asset_draw_move_masks = 0x80094B48; /* byte mask indexed by the object's asset_index (`mask &= D[asset_index]`); each set bit i calls gpu_AddDrawMove(slot_index, 4 - i) */  /* data-wave 2026-10-08: was g_sprite_class_mask_table */
-g_gpu_asset_tim_group_load_masks = 0x80094D40; /* bit-mask table indexed by asset_index in gpu_LoadRequestedAvailableTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */
+g_gpu_asset_tim_group_load_masks = 0x80094D40; /* bit-mask table indexed by asset_index in gpu_LoadRequestedMaskedTimGroupsForSlot */  /* data-wave 2026-10-08: was g_sprite_anim_table */
 g_object_scale_factors = 0x80094C68; /* u16 table; stored into the fighter record's +0x1A (9F9C.c:3917 / :3919) and an Unk80045878Obj's +0x12 (309CC.c) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
 D_80094B96 = 0x80094B96; /* D_80094B96[0].parent_index: s16 parent-node index, -1 for none (node_InitObjectHierarchyFromTemplates) */  /* data-wave 2026-10-08: was g_attack_scale_x */
 D_80094B98 = 0x80094B98; /* D_80094B96[0].node_translation[0]: s16, times slot_object->position_scale >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
