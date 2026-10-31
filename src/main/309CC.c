@@ -271,7 +271,7 @@ after_select:
 
 done_cases:
     DrawSync(0);
-    gpu_LoadRequestedAvailableTimGroupsForSlot(
+    gpu_LoadRequestedMaskedTimGroupsForSlot(
         slot_object->arena_id, slot_object->asset_index,
         g_slot_tim_group_requests[slot_object->arena_id], (s32)tim_groups);
 

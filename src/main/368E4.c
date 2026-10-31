@@ -310,7 +310,7 @@ extern u8 g_fight_start_position_pairs;
 extern s16 g_gpu_raised_ot_cutoff_requested;
 extern MATRIX g_camera_halved_row_view_matrix;
 
-extern void node_InitRootNodePairWithNegatedRotationMatrices(void);
+extern void node_InitViewRootNodePair(void);
 extern void light_InitDefaults(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
@@ -431,7 +431,7 @@ void func_80046B44(void) {
     arena_Reset();
     math_InitRotMatrixFuncs();
     reloc_ClearCounts();
-    node_InitRootNodePairWithNegatedRotationMatrices();
+    node_InitViewRootNodePair();
     light_InitDefaults();
     gpu_InitFogDrawMoves();
     slot_ClearObjectPointersAndTextureRequests();
@@ -2253,7 +2253,7 @@ void resource_InvalidateEntrySelectionCache(void) {
     g_resource_last_selection_index = -1;
 }
 
-void node_InitRootNodePairWithNegatedRotationMatrices(void) {
+void node_InitViewRootNodePair(void) {
     Unk80101DF0Record *camera_root = &g_view_camera_root_node;
     Unk80101DF0Record *identity_root = &g_view_identity_root_node;
     camera_root->node_kind = 0x64;

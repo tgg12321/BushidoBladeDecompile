@@ -191,7 +191,7 @@ glabel slot_FinalizeObjectLoadSoundTexturesAndArena
     /* 31058 80040858 0980013C */  lui        $at, %hi(g_slot_tim_group_requests)
     /* 3105C 8004085C 21082200 */  addu       $at, $at, $v0
     /* 31060 80040860 884B268C */  lw         $a2, %lo(g_slot_tim_group_requests)($at)
-    /* 31064 80040864 6206010C */  jal        gpu_LoadRequestedAvailableTimGroupsForSlot
+    /* 31064 80040864 6206010C */  jal        gpu_LoadRequestedMaskedTimGroupsForSlot
     /* 31068 80040868 21386002 */   addu      $a3, $s3, $zero
     /* 3106C 8004086C E0FF033C */  lui        $v1, (0xFFE0FFFF >> 16)
     /* 31070 80040870 FFFF6334 */  ori        $v1, $v1, (0xFFE0FFFF & 0xFFFF)

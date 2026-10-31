@@ -1,4 +1,4 @@
-glabel node_InitRootNodePairWithNegatedRotationMatrices
+glabel node_InitViewRootNodePair
     /* 3A64C 80049E4C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 3A650 80049E50 1400B1AF */  sw         $s1, 0x14($sp)
     /* 3A654 80049E54 1080113C */  lui        $s1, %hi(g_view_camera_root_node)
@@ -63,4 +63,4 @@ glabel node_InitRootNodePairWithNegatedRotationMatrices
     /* 3A740 80049F40 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 3A744 80049F44 0800E003 */  jr         $ra
     /* 3A748 80049F48 00000000 */   nop
-endlabel node_InitRootNodePairWithNegatedRotationMatrices
+endlabel node_InitViewRootNodePair

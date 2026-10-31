@@ -1,4 +1,4 @@
-glabel gpu_LoadRequestedAvailableTimGroupsForSlot
+glabel gpu_LoadRequestedMaskedTimGroupsForSlot
     /* 32188 80041988 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 3218C 8004198C 2400B3AF */  sw         $s3, 0x24($sp)
     /* 32190 80041990 21988000 */  addu       $s3, $a0, $zero
@@ -88,4 +88,4 @@ glabel gpu_LoadRequestedAvailableTimGroupsForSlot
     /* 322BC 80041ABC 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 322C0 80041AC0 0800E003 */  jr         $ra
     /* 322C4 80041AC4 00000000 */   nop
-endlabel gpu_LoadRequestedAvailableTimGroupsForSlot
+endlabel gpu_LoadRequestedMaskedTimGroupsForSlot

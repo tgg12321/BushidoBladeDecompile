@@ -870,7 +870,7 @@ extern void node_RebaseParents(s32, Unk80045878Node *, s32);
 extern Unk80045878Obj *slot_GetObject(s32);
 extern void node_UpdateWorldMatrix(Unk80101DF0Record *);
 extern void node_SetMatrixFromNegatedRot(Unk80101DF0Record *);
-extern void gpu_LoadRequestedAvailableTimGroupsForSlot(s32, s32, s32, s32);
+extern void gpu_LoadRequestedMaskedTimGroupsForSlot(s32, s32, s32, s32);
 extern void gpu_BackUpFixedSlotVramRowsAndRecordAssetIndex(Unk80045878Obj *);
 extern void gpu_RestoreAndTintBackedUpFixedSlotVramRowsAndRebuildFogLevels(
     s32, s32, s32);

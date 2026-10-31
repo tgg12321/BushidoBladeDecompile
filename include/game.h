@@ -2110,7 +2110,7 @@ typedef struct Unk8001CD68Rec {
 } Unk8001CD68Rec;
 
 /* Two 0x58-byte records set up side by side by
- * node_InitRootNodePairWithNegatedRotationMatrices: 0x80101DF0 (node_kind =
+ * node_InitViewRootNodePair: 0x80101DF0 (node_kind =
  * 0x64, rotation_order = 5; pointer stored to g_view_camera_root_ptr) and
  * 0x800FF638 (node_kind = 0x65, rotation_order = 2; pointer stored to
  * g_view_identity_root_ptr). node_SetMatrixFromNegatedRot passes a negated
