@@ -1,0 +1,46 @@
+rc=0
+==============================================================================
+NAMING WAVE — 6 operations (0 RESET, 6 RENAME)
+  6 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (8) --
+  asm: 6 files, 12 substitutions
+      asm/funcs/func_80066F90.s  (2)
+      asm/funcs/func_80066FC4.s  (2)
+      asm/funcs/func_80066FF8.s  (2)
+      asm/funcs/func_8006702C.s  (2)
+      asm/funcs/func_80067740.s  (2)
+      asm/funcs/func_8006777C.s  (2)
+  src: 2 files, 18 substitutions
+      src/main/51268.c  (6)
+      src/main/d_8BC50.c  (12)
+
+-- .s file renames (6) --
+  asm/funcs/func_80066F90.s -> asm/funcs/eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf.s
+  asm/funcs/func_80066FC4.s -> asm/funcs/eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf.s
+  asm/funcs/func_80066FF8.s -> asm/funcs/eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotFirstHalf.s
+  asm/funcs/func_8006702C.s -> asm/funcs/eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf.s
+  asm/funcs/func_80067740.s -> asm/funcs/eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot.s
+  asm/funcs/func_8006777C.s -> asm/funcs/eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesSecondSlot.s
+
+-- ledger directory renames (4) --
+  memory/grind/func_80066F90 -> memory/grind/eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf
+  memory/grind/func_80066FC4 -> memory/grind/eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf
+  memory/grind/func_80066FF8 -> memory/grind/eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotFirstHalf
+  memory/grind/func_8006702C -> memory/grind/eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (4) --
+  memory/grind/func_80066F90/layer2.jsonl: 1 changes
+      line 1: func func_80066F90 -> eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf
+  memory/grind/func_80066FC4/layer2.jsonl: 1 changes
+      line 1: func func_80066FC4 -> eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf
+  memory/grind/func_80066FF8/layer2.jsonl: 1 changes
+      line 1: func func_80066FF8 -> eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotFirstHalf
+  memory/grind/func_8006702C/layer2.jsonl: 1 changes
+      line 1: func func_8006702C -> eff_SpawnOmnidirectionalMultiQuadParticlesSecondSlotSecondHalf
+
+DRY RUN — nothing written. Re-run with --apply.
