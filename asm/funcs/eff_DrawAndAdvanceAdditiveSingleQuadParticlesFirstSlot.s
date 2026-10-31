@@ -1,4 +1,4 @@
-glabel func_80067830
+glabel eff_DrawAndAdvanceAdditiveSingleQuadParticlesFirstSlot
     /* 58030 80067830 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 58034 80067834 1000BFAF */  sw         $ra, 0x10($sp)
     /* 58038 80067838 06000424 */  addiu      $a0, $zero, 0x6
@@ -14,4 +14,4 @@ glabel func_80067830
     /* 58060 80067860 FF004230 */  andi       $v0, $v0, 0xFF
     /* 58064 80067864 0800E003 */  jr         $ra
     /* 58068 80067868 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80067830
+endlabel eff_DrawAndAdvanceAdditiveSingleQuadParticlesFirstSlot

@@ -2568,49 +2568,49 @@ u8 func_8006702C(void) {
     return spawn_result;
 }
 
-u8 func_80067060(void) {
+u8 eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf(void) {
     u8 spawn_result = eff_SpawnParticles(4, 2, 0);
     g_eff_command_phase[22] = 1;
     return spawn_result;
 }
 
-u8 func_80067094(void) {
+u8 eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf(void) {
     u8 spawn_result = eff_SpawnParticles(4, 2, 1);
     g_eff_command_phase[22] = 2;
     return spawn_result;
 }
 
-u8 func_800670C8(void) {
+u8 eff_SpawnTextureSelectedParticlesSecondSlotFirstHalf(void) {
     u8 spawn_result = eff_SpawnParticles(5, 3, 0);
     g_eff_command_phase[23] = 1;
     return spawn_result;
 }
 
-u8 func_800670FC(void) {
+u8 eff_SpawnTextureSelectedParticlesSecondSlotSecondHalf(void) {
     u8 spawn_result = eff_SpawnParticles(5, 3, 1);
     g_eff_command_phase[23] = 2;
     return spawn_result;
 }
 
-u8 func_80067130(void) {
+u8 eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf(void) {
     u8 spawn_result = eff_SpawnParticles(6, 3, 0);
     g_eff_command_phase[24] = 1;
     return spawn_result;
 }
 
-u8 func_80067164(void) {
+u8 eff_SpawnAdditiveSingleQuadParticlesFirstSlotSecondHalf(void) {
     u8 spawn_result = eff_SpawnParticles(6, 3, 1);
     g_eff_command_phase[24] = 2;
     return spawn_result;
 }
 
-u8 func_80067198(void) {
+u8 eff_SpawnAdditiveSingleQuadParticlesSecondSlotFirstHalf(void) {
     u8 spawn_result = eff_SpawnParticles(7, 2, 0);
     g_eff_command_phase[25] = 1;
     return spawn_result;
 }
 
-u8 func_800671CC(void) {
+u8 eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf(void) {
     u8 spawn_result = eff_SpawnParticles(7, 2, 1);
     g_eff_command_phase[25] = 2;
     return spawn_result;
@@ -2747,25 +2747,25 @@ u8 func_8006777C(void) {
     return eff_LinkParticleQuads(3, 0);
 }
 
-u8 func_800677B8(void) {
+u8 eff_DrawAndAdvanceTextureSelectedParticlesFirstSlot(void) {
     eff_PrepareParticles(4, 2);
     eff_UpdateParticles(4, 2);
     return eff_LinkParticleQuads(4, 2);
 }
 
-u8 func_800677F4(void) {
+u8 eff_DrawAndAdvanceTextureSelectedParticlesSecondSlot(void) {
     eff_PrepareParticles(5, 3);
     eff_UpdateParticles(5, 3);
     return eff_LinkParticleQuads(5, 3);
 }
 
-u8 func_80067830(void) {
+u8 eff_DrawAndAdvanceAdditiveSingleQuadParticlesFirstSlot(void) {
     eff_PrepareParticles(6, 3);
     eff_UpdateParticles(6, 3);
     return eff_LinkParticleQuads(6, 3);
 }
 
-u8 func_8006786C(void) {
+u8 eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot(void) {
     eff_PrepareParticles(7, 2);
     eff_UpdateParticles(7, 2);
     return eff_LinkParticleQuads(7, 2);

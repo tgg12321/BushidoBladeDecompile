@@ -1,4 +1,4 @@
-glabel func_800677F4
+glabel eff_DrawAndAdvanceTextureSelectedParticlesSecondSlot
     /* 57FF4 800677F4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 57FF8 800677F8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 57FFC 800677FC 05000424 */  addiu      $a0, $zero, 0x5
@@ -14,4 +14,4 @@ glabel func_800677F4
     /* 58024 80067824 FF004230 */  andi       $v0, $v0, 0xFF
     /* 58028 80067828 0800E003 */  jr         $ra
     /* 5802C 8006782C 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_800677F4
+endlabel eff_DrawAndAdvanceTextureSelectedParticlesSecondSlot

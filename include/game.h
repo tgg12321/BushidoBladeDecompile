@@ -779,7 +779,8 @@ typedef union {
 /* Record table at 0x800F0C10 (0x90 bytes, ends at
  * g_eff_animated_quad_positions): 4 rows of 3 records of 3 s32 words.
  * eff_PrepareParticles indexes it [particle_row_index][idx]
- * (particle_row_index 0..3 from the callers func_800676C8..func_8006786C);
+ * (particle_row_index 0..3 from the callers
+ * func_800676C8..eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot);
  * eff_SpawnParticles and eff_UpdateParticles use it too. */
 typedef struct {
     /* 0x0 */ s32 world_x;
@@ -1115,13 +1116,13 @@ typedef struct {
 
 /* The layout eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads
  * share (Unk1F8000B8Union.v800678A8): each of the wrappers func_800676C8 ..
- * func_8006786C calls the three in turn, and values cross the calls
- * (squared_distance_limit, particle_scan_count, particle_quad_cursor, the
- * quad_ot_index_table; eff_PrepareParticles and eff_UpdateParticles each use
- * unk70 for their own value). eff_PrepareParticles sets it up,
- * eff_UpdateParticles builds the quads at particle_quad_cursor and records each
- * one's depth (its OT slot index) in quad_ot_index_table, eff_LinkParticleQuads
- * links them. */
+ * eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot calls the three in
+ * turn, and values cross the calls (squared_distance_limit,
+ * particle_scan_count, particle_quad_cursor, the quad_ot_index_table;
+ * eff_PrepareParticles and eff_UpdateParticles each use unk70 for their own
+ * value). eff_PrepareParticles sets it up, eff_UpdateParticles builds the quads
+ * at particle_quad_cursor and records each one's depth (its OT slot index) in
+ * quad_ot_index_table, eff_LinkParticleQuads links them. */
 typedef struct {
     u16 tex_right_u_offset;  /* eff_PrepareParticles: added to the texture u */
     u16 tex_bottom_v_offset; /* eff_PrepareParticles: added to the texture v */

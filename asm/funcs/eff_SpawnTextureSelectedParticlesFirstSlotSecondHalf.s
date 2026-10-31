@@ -1,4 +1,4 @@
-glabel func_80067094
+glabel eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf
     /* 57894 80067094 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 57898 80067098 04000424 */  addiu      $a0, $zero, 0x4
     /* 5789C 8006709C 02000524 */  addiu      $a1, $zero, 0x2
@@ -12,4 +12,4 @@ glabel func_80067094
     /* 578BC 800670BC FF004230 */  andi       $v0, $v0, 0xFF
     /* 578C0 800670C0 0800E003 */  jr         $ra
     /* 578C4 800670C4 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80067094
+endlabel eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf

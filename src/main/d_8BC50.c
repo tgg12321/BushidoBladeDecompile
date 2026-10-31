@@ -250,18 +250,18 @@ u8 func_80067740(void);
 u8 func_80066FF8(void);
 u8 func_8006702C(void);
 u8 func_8006777C(void);
-u8 func_80067060(void);
-u8 func_80067094(void);
-u8 func_800677B8(void);
-u8 func_800670C8(void);
-u8 func_800670FC(void);
-u8 func_800677F4(void);
-u8 func_80067130(void);
-u8 func_80067164(void);
-u8 func_80067830(void);
-u8 func_80067198(void);
-u8 func_800671CC(void);
-u8 func_8006786C(void);
+u8 eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf(void);
+u8 eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceTextureSelectedParticlesFirstSlot(void);
+u8 eff_SpawnTextureSelectedParticlesSecondSlotFirstHalf(void);
+u8 eff_SpawnTextureSelectedParticlesSecondSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceTextureSelectedParticlesSecondSlot(void);
+u8 eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf(void);
+u8 eff_SpawnAdditiveSingleQuadParticlesFirstSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceAdditiveSingleQuadParticlesFirstSlot(void);
+u8 eff_SpawnAdditiveSingleQuadParticlesSecondSlotFirstHalf(void);
+u8 eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf(void);
+u8 eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot(void);
 s32 eff_SpawnRotatedQuadCluster(void);
 s32 eff_DrawAndAdvanceRotatedQuadClusters(void);
 
@@ -314,18 +314,18 @@ s32 g_eff_command_handlers[62] = {
     (s32)func_80066FF8,
     (s32)func_8006702C,
     (s32)func_8006777C,
-    (s32)func_80067060,
-    (s32)func_80067094,
-    (s32)func_800677B8,
-    (s32)func_800670C8,
-    (s32)func_800670FC,
-    (s32)func_800677F4,
-    (s32)func_80067130,
-    (s32)func_80067164,
-    (s32)func_80067830,
-    (s32)func_80067198,
-    (s32)func_800671CC,
-    (s32)func_8006786C,
+    (s32)eff_SpawnTextureSelectedParticlesFirstSlotFirstHalf,
+    (s32)eff_SpawnTextureSelectedParticlesFirstSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceTextureSelectedParticlesFirstSlot,
+    (s32)eff_SpawnTextureSelectedParticlesSecondSlotFirstHalf,
+    (s32)eff_SpawnTextureSelectedParticlesSecondSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceTextureSelectedParticlesSecondSlot,
+    (s32)eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf,
+    (s32)eff_SpawnAdditiveSingleQuadParticlesFirstSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceAdditiveSingleQuadParticlesFirstSlot,
+    (s32)eff_SpawnAdditiveSingleQuadParticlesSecondSlotFirstHalf,
+    (s32)eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf,
+    (s32)eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot,
     (s32)eff_SpawnRotatedQuadCluster,
     (s32)eff_DrawAndAdvanceRotatedQuadClusters};
 VECTOR g_eff_rotation_matrix_scale = {0x1000, 0x800, 0x1000, 0x0};

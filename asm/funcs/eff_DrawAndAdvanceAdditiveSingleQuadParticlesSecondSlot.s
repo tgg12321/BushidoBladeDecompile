@@ -1,4 +1,4 @@
-glabel func_8006786C
+glabel eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot
     /* 5806C 8006786C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 58070 80067870 1000BFAF */  sw         $ra, 0x10($sp)
     /* 58074 80067874 07000424 */  addiu      $a0, $zero, 0x7
@@ -14,4 +14,4 @@ glabel func_8006786C
     /* 5809C 8006789C FF004230 */  andi       $v0, $v0, 0xFF
     /* 580A0 800678A0 0800E003 */  jr         $ra
     /* 580A4 800678A4 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_8006786C
+endlabel eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot

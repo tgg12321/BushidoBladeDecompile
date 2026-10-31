@@ -1,4 +1,4 @@
-glabel func_80067130
+glabel eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf
     /* 57930 80067130 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 57934 80067134 06000424 */  addiu      $a0, $zero, 0x6
     /* 57938 80067138 03000524 */  addiu      $a1, $zero, 0x3
@@ -12,4 +12,4 @@ glabel func_80067130
     /* 57958 80067158 FF004230 */  andi       $v0, $v0, 0xFF
     /* 5795C 8006715C 0800E003 */  jr         $ra
     /* 57960 80067160 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80067130
+endlabel eff_SpawnAdditiveSingleQuadParticlesFirstSlotFirstHalf
