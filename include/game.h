@@ -224,7 +224,7 @@ typedef struct {
  * gpu_DrawTwoDigitCounterWithOptionalSecondSide index it with a 0..9 value),
  * and 0x8009B458..0x8009B487 6 more
  * (gpu_DrawTwoDigitCounterWithOptionalSecondSide);
- * g_gpu_time_field_line_origins and D_8009B488 follow. */
+ * g_gpu_time_and_counter_line_origins and D_8009B488 follow. */
 typedef struct {
     s16 x;
     s16 y;
@@ -1218,9 +1218,9 @@ typedef struct {
     s32 perspective_scale; /* g_eff_perspective_scale */
     s32 screen_xy[3];      /* g_eff_screen_xy */
     s16 left_x_offset;     /* g_eff_left_x_offset */
-    s16 right_x_offset;    /* g_eff_right_x_offset */
+    s16 right_x_offset;    /* g_eff_x_extent_work */
     s32 upper_y_offset;    /* g_eff_upper_y_offset */
-    s32 y_extent_work;     /* g_eff_lower_y_offset_word */
+    s32 y_extent_work;     /* g_eff_y_extent_work */
     s32 unk8C;             /* g_eff_rtp_flag */
     s32 depth_work[2];     /* g_eff_depth_work */
     u16 top_left_uv;       /* g_eff_top_left_uv */

@@ -6,7 +6,7 @@
  * 51268.o(.data) is empty, so 596CC.c's g_row_menu_row_state follows at
  * 0x8009BC04. No uninitialized objects.
  * 2. Small objects in .data, each with its own readers:
- * g_gpu_time_field_line_origins (two points,
+ * g_gpu_time_and_counter_line_origins (two points,
  * gpu_DrawTimeFieldsAndDecimalCounter), the single cells D_8009B488, D_8009B4FC
  * .. D_8009B51C, D_8009B5E8, D_8009B634, D_8009B7D0 (4D0A8.c), the one-record
  * TexRec tables D_8009B8C8 .. D_8009B9E8 and the SVECTORs D_8009BBE4
@@ -15,8 +15,8 @@
  * 3. Neighbours in .data link order: 4D0A8.c and 51268.c, -G8 code modules
  *    with their own .sdata / .sbss and gp accesses, whose .text is adjacent
  *    (0x8005C8A8 + 0x41C0 = 0x80060A68); so no code module owns them.
- * Readers: g_gpu_time_field_line_origins .. D_8009B850 (4D0A8.c), D_8009B890 ..
- * D_8009BBFC (51268.c). */
+ * Readers: g_gpu_time_and_counter_line_origins .. D_8009B850 (4D0A8.c),
+ * D_8009B890 .. D_8009BBFC (51268.c). */
 #include "common.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
