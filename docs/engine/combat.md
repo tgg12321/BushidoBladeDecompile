@@ -25,7 +25,7 @@ object-pool update, src/main/17AFC.c:4325). It branches on fighter 0's state
   3. `g_fight_weapon_contact_result = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1218): the blade
      contact test between the two fighters (comment at :1203); it returns
      `(fighter-1 grid << 1) | fighter-0 grid` on contact, else -1.
-  4. On contact, `fighter_BlendCurrentAndPreviousContactPoints` (src/main/17AFC.c:2392), then
+  4. On contact, `fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint` (src/main/17AFC.c:2392), then
      `fighter_ResolveWeaponContact` (src/main/17AFC.c:636) for each fighter when either has
      `attack_hit_armed` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
   5. When both fighters have `update_count >= 3`, `D_800A38A8` is set, both

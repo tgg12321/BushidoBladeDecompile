@@ -18,7 +18,7 @@
 
 .EXAMPLE
   pwsh tools/manual_session.ps1 begin
-  pwsh tools/manual_session.ps1 begin -Func fighter_BlendCurrentAndPreviousContactPoints
+  pwsh tools/manual_session.ps1 begin -Func fighter_BlendCurrentAndPreviousWeaponPointsToContactPoint
   pwsh tools/manual_session.ps1 end -NoRelaunch
 #>
 [CmdletBinding()]
