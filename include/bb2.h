@@ -818,8 +818,8 @@ extern void
 fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
     void);
 extern s32 fight_ConfigureFighter1FromOperandsAndLoad(u8 *);
-extern void func_8003B534(s32);
-extern void func_8003B56C(s32);
+extern void fight_QueueSubstitutionCommandDescriptorPlayback(s32);
+extern void fight_QueueFixedFighterCommandDescriptorPlayback(s32);
 extern void fight_RunCommandStream(void);
 extern void font_LoadImage(void);
 extern void font_BeginFrame(void);

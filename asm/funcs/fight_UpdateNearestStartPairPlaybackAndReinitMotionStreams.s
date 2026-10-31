@@ -200,7 +200,7 @@ glabel fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams
     /* 2DA70 8003D270 21200000 */   addu      $a0, $zero, $zero
     /* 2DA74 8003D274 FFEB000C */  jal        fight_RequestBothFightersEntriesAndReloadOnChange
     /* 2DA78 8003D278 00000000 */   nop
-    /* 2DA7C 8003D27C 4DED000C */  jal        func_8003B534
+    /* 2DA7C 8003D27C 4DED000C */  jal        fight_QueueSubstitutionCommandDescriptorPlayback
     /* 2DA80 8003D280 04000424 */   addiu     $a0, $zero, 0x4
     /* 2DA84 8003D284 A5F40008 */  j          .L8003D294
     /* 2DA88 8003D288 00000000 */   nop

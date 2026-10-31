@@ -179,7 +179,7 @@ glabel fight_RunCommandStream
     /* 2C034 8003B834 443822AC */  sw         $v0, %lo(g_fight_command_stream_cursor)($at)
     /* 2C038 8003B838 37ED000C */  jal        fight_SetFixedFighterBytesAndLoadBothFighters
     /* 2C03C 8003B83C 01001024 */   addiu     $s0, $zero, 0x1
-    /* 2C040 8003B840 5BED000C */  jal        func_8003B56C
+    /* 2C040 8003B840 5BED000C */  jal        fight_QueueFixedFighterCommandDescriptorPlayback
     /* 2C044 8003B844 01000424 */   addiu     $a0, $zero, 0x1
     /* 2C048 8003B848 0A80013C */  lui        $at, %hi(g_fight_tracked_view_setting)
     /* 2C04C 8003B84C BA3820A4 */  sh         $zero, %lo(g_fight_tracked_view_setting)($at)

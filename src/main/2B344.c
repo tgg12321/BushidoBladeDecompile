@@ -321,13 +321,13 @@ void fight_SetFixedFighterBytesAndLoadBothFighters(void) {
     fight_RequestBothFightersEntriesAndReloadOnChange();
 }
 
-void func_8003B534(s32 a0) {
+void fight_QueueSubstitutionCommandDescriptorPlayback(s32 a0) {
     D_800A37B0 = a0;
     g_main_loop_handler_index = 6;
     g_fight_active_playback_descriptor = D_800A3894 + (a0 * 4 + 1);
 }
 
-void func_8003B56C(s32 arg0) {
+void fight_QueueFixedFighterCommandDescriptorPlayback(s32 arg0) {
     D_800A390C = arg0;
     g_main_loop_handler_index = 6;
     g_fight_active_playback_descriptor = D_800A385C + (arg0 * 4 - 4);
@@ -431,7 +431,7 @@ void fight_RunCommandStream(void) {
             g_fight_command_stream_cursor += 12;
             var_0 = 1;
             fight_SetFixedFighterBytesAndLoadBothFighters();
-            func_8003B56C(1);
+            fight_QueueFixedFighterCommandDescriptorPlayback(1);
             g_fight_tracked_view_setting = 0;
             break;
         }
@@ -1111,7 +1111,7 @@ void fight_InitNearestStartPairPlayback(void) {
 extern void
 fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields(
     void);
-extern void func_8003B534(s32);
+extern void fight_QueueSubstitutionCommandDescriptorPlayback(s32);
 extern SVECTOR D_800A312C;
 
 void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
@@ -1185,7 +1185,7 @@ void fight_UpdateNearestStartPairPlaybackAndReinitMotionStreams(void) {
             fight_RestoreFighter0SelectionAndStateKeepingDisplacedPairAndResetFighter0Fields();
             fight_FillMissingConfigInitFighterAndLoadObject(0);
             fight_RequestBothFightersEntriesAndReloadOnChange();
-            func_8003B534(4);
+            fight_QueueSubstitutionCommandDescriptorPlayback(4);
         } else {
             g_main_loop_handler_index = 0x18;
         }

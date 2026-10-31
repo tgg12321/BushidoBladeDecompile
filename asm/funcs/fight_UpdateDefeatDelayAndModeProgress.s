@@ -36,7 +36,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D15C 8001C95C 00000000 */  nop
     /* D160 8001C960 03006214 */  bne        $v1, $v0, .L8001C970
     /* D164 8001C964 00000000 */   nop
-    /* D168 8001C968 5BED000C */  jal        func_8003B56C
+    /* D168 8001C968 5BED000C */  jal        fight_QueueFixedFighterCommandDescriptorPlayback
     /* D16C 8001C96C 03000424 */   addiu     $a0, $zero, 0x3
   .L8001C970:
     /* D170 8001C970 0A80023C */  lui        $v0, %hi(g_fight_defeat_delay_frames)
@@ -97,12 +97,12 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D244 8001CA44 FF000224 */  addiu      $v0, $zero, 0xFF
     /* D248 8001CA48 05006210 */  beq        $v1, $v0, .L8001CA60
     /* D24C 8001CA4C 00000000 */   nop
-    /* D250 8001CA50 4DED000C */  jal        func_8003B534
+    /* D250 8001CA50 4DED000C */  jal        fight_QueueSubstitutionCommandDescriptorPlayback
     /* D254 8001CA54 02000424 */   addiu     $a0, $zero, 0x2
     /* D258 8001CA58 44730008 */  j          .L8001CD10
     /* D25C 8001CA5C 00000000 */   nop
   .L8001CA60:
-    /* D260 8001CA60 4DED000C */  jal        func_8003B534
+    /* D260 8001CA60 4DED000C */  jal        fight_QueueSubstitutionCommandDescriptorPlayback
     /* D264 8001CA64 05000424 */   addiu     $a0, $zero, 0x5
     /* D268 8001CA68 44730008 */  j          .L8001CD10
     /* D26C 8001CA6C 00000000 */   nop
@@ -124,7 +124,7 @@ glabel fight_UpdateDefeatDelayAndModeProgress
     /* D2A0 8001CAA0 00000000 */  nop
     /* D2A4 8001CAA4 98004010 */  beqz       $v0, .L8001CD08
     /* D2A8 8001CAA8 04000224 */   addiu     $v0, $zero, 0x4
-    /* D2AC 8001CAAC 5BED000C */  jal        func_8003B56C
+    /* D2AC 8001CAAC 5BED000C */  jal        fight_QueueFixedFighterCommandDescriptorPlayback
     /* D2B0 8001CAB0 02000424 */   addiu     $a0, $zero, 0x2
     /* D2B4 8001CAB4 44730008 */  j          .L8001CD10
     /* D2B8 8001CAB8 00000000 */   nop

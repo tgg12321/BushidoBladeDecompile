@@ -1,4 +1,4 @@
-glabel func_8003B56C
+glabel fight_QueueFixedFighterCommandDescriptorPlayback
     /* 2BD6C 8003B56C 06000224 */  addiu      $v0, $zero, 0x6
     /* 2BD70 8003B570 0A80013C */  lui        $at, %hi(D_800A390C)
     /* 2BD74 8003B574 0C3924A0 */  sb         $a0, %lo(D_800A390C)($at)
@@ -13,4 +13,4 @@ glabel func_8003B56C
     /* 2BD98 8003B598 783822AC */  sw         $v0, %lo(g_fight_active_playback_descriptor)($at)
     /* 2BD9C 8003B59C 0800E003 */  jr         $ra
     /* 2BDA0 8003B5A0 00000000 */   nop
-endlabel func_8003B56C
+endlabel fight_QueueFixedFighterCommandDescriptorPlayback

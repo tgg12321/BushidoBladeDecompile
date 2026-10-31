@@ -1359,7 +1359,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         g_fight_defeat_delay_frames++;
     } else if (g_fight_mode_selector == 0 && D_800A385C != 0 &&
                D_80101EC8[0].collision_hit_class == 1) {
-        func_8003B56C(3);
+        fight_QueueFixedFighterCommandDescriptorPlayback(3);
     }
     if (g_fight_defeat_delay_frames < 0x3D)
         goto end;
@@ -1378,9 +1378,9 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
                 if (D_800A3894 != 0) {
                     fight_ConfigureFighter1FromOperandsAndLoad(D_800A3894 + 6);
                     if (g_fight_saved_first_fighter_selection != 0xFF) {
-                        func_8003B534(2);
+                        fight_QueueSubstitutionCommandDescriptorPlayback(2);
                     } else {
-                        func_8003B534(5);
+                        fight_QueueSubstitutionCommandDescriptorPlayback(5);
                     }
                 } else {
                     fight_RunCommandStream();
@@ -1393,7 +1393,7 @@ void fight_UpdateDefeatDelayAndModeProgress(void) {
         }
         if (D_800A385C == 0)
             break;
-        func_8003B56C(2);
+        fight_QueueFixedFighterCommandDescriptorPlayback(2);
         goto end;
     case 3:
         if (D_80101EC8[0].is_defeated != 0)

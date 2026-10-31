@@ -517,7 +517,7 @@ glabel replay_PlayFrame
     /* 2A8D0 8003A0D0 05004010 */  beqz       $v0, .L8003A0E8
     /* 2A8D4 8003A0D4 06000424 */   addiu     $a0, $zero, 0x6
   .L8003A0D8:
-    /* 2A8D8 8003A0D8 4DED000C */  jal        func_8003B534
+    /* 2A8D8 8003A0D8 4DED000C */  jal        fight_QueueSubstitutionCommandDescriptorPlayback
     /* 2A8DC 8003A0DC 00000000 */   nop
     /* 2A8E0 8003A0E0 50E80008 */  j          .L8003A140
     /* 2A8E4 8003A0E4 00000000 */   nop

@@ -1566,11 +1566,13 @@ void replay_PlayFrame(void) {
                 snd_ResetVoicesQueueReverbAndCloseVab9OrVabs8And4ByMode();
                 if (D_800A3894 != 0) {
                     if (D_800A3712 != 0) {
-                        func_8003B534(var_19 ? 3 : 6);
+                        fight_QueueSubstitutionCommandDescriptorPlayback(
+                            var_19 ? 3 : 6);
                     } else {
                         fight_ConfigureFighter1FromOperandsAndLoad(
                             D_800A3894 + 6);
-                        func_8003B534(var_19 ? 2 : 5);
+                        fight_QueueSubstitutionCommandDescriptorPlayback(
+                            var_19 ? 2 : 5);
                     }
                 } else {
                     fight_RunCommandStream();
@@ -1587,9 +1589,9 @@ void replay_PlayFrame(void) {
             fight_FillMissingConfigInitFighterAndLoadObject(0);
             fight_RequestBothFightersEntriesAndReloadOnChange();
             if (D_800A3712 != 0 && D_80101EC8[1].is_defeated != 0) {
-                func_8003B534(6);
+                fight_QueueSubstitutionCommandDescriptorPlayback(6);
             } else {
-                func_8003B534(4);
+                fight_QueueSubstitutionCommandDescriptorPlayback(4);
             }
             return;
         case 3:
