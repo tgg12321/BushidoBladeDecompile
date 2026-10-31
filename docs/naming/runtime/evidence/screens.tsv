@@ -35257,6 +35257,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8003F1D4	gpu_GetGridNodeRecordTable	versus-2p-tatsumi-drop-1@23ee9986923d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x8003F1D4	gpu_GetGridNodeRecordTable	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x8003F1D4	gpu_GetGridNodeRecordTable	versus-cpu-tatsumi-1@016e75c2a56c	opp3	10772	10772	1	opp3.10800@10800#2a6301f92dcd	hitmap:first 1 hits per phase only	0	
+0x8003F1E4	func_8003F1E4	far-view-versus-2p-kimigaura-1@c64ba5411193	fight	8231	9799	580	fight.8300@8300#b12dd25a48c0;fight.8500@8500#72b2b774b710;fight.8700@8700#beffe68b0cd4;fight.8900@8900#e82d8d01fdb4;fight.9100@9100#553b125f178f;fight.9300@9300#0bf150804fe9;fight.9500@9500#c7ccaf63b9ec;fight.9700@9700#716f13e95ef7	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8003F1E4	func_8003F1E4	far-view-versus-2p-kimigaura-1@c64ba5411193	t_load	8149	8229	6	fight.first@8230#aa4cda7bc1ec;t_load.last@8229#2cffc4b4614f	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8003F1E4	func_8003F1E4	group-battle-draw-1@2004f4b160e6	bout1	9444	9444	1	bout1.first@9450#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	func_8003F1E4	group-battle-draw-1@2004f4b160e6	bout1_again	24839	24839	1	bout1_again.first@24845#5f69eaa3a7b1	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	func_8003F1E4	group-battle-draw-1@2004f4b160e6	bout2	13912	13912	1	bout2.first@13918#96d6d20da860	hitmap:first 1 hits per phase only	0	
@@ -35496,6 +35498,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8003F1E4	func_8003F1E4	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9339	9339	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	func_8003F1E4	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11012	11012	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	func_8003F1E4	versus-cpu-tatsumi-1@016e75c2a56c	t_load	8328	8328	1	opp1.first@8350#b70ffc2b33c0	hitmap:first 1 hits per phase only	0	
+0x8003F218	func_8003F218	far-view-versus-2p-kimigaura-1@c64ba5411193	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	recorded hits only; capture limits apply	0	
 0x8003F218	func_8003F218	group-battle-draw-1@2004f4b160e6	t_bout1_again	24239	24239	1	t_bout1_again.mid@24538#aa713a6468ff	hitmap:first 1 hits per phase only	0	
 0x8003F218	func_8003F218	group-battle-draw-1@2004f4b160e6	t_bout2	13530	13530	1	t_bout2.mid@13720#8dab36e468fa	hitmap:first 1 hits per phase only	0	
 0x8003F218	func_8003F218	group-battle-draw-1@2004f4b160e6	t_bout3	18720	18720	1	t_bout3.mid@18951#21edff9c0cf6	hitmap:first 1 hits per phase only	0	
@@ -50453,6 +50456,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80046AE8	rcnt_StartCnt1	versus-cpu-clear-retail-1@d1b76e2e5d49	t_menu	5656	5656	1	top_menu.first@6050#3ac52ba0daf7	hitmap:first 1 hits per phase only	0	
 0x80046AE8	rcnt_StartCnt1	versus-cpu-tatsumi-1@016e75c2a56c	boot_intro	619	619	1	boot_intro.last@5489#e7bfd030cbff	hitmap:first 1 hits per phase only	0	
 0x80046AE8	rcnt_StartCnt1	versus-cpu-tatsumi-1@016e75c2a56c	t_menu	5656	5656	1	top_menu.first@6050#3ac52ba0daf7	hitmap:first 1 hits per phase only	0	
+0x80046B44	func_80046B44	far-view-versus-2p-kimigaura-1@c64ba5411193	boot_intro	724	724	1	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x80046B44	func_80046B44	far-view-versus-2p-kimigaura-1@c64ba5411193	t_menu	5764	5764	1	top_menu.first@6050#3ac52ba0daf7	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80046B44	func_80046B44	group-battle-draw-1@2004f4b160e6	boot_intro	724	724	1	boot_intro.last@5489#e7bfd030cbff	hitmap:first 1 hits per phase only	0	
 0x80046B44	func_80046B44	group-battle-draw-1@2004f4b160e6	t_menu	5764	5764	1	top_menu.first@6050#3ac52ba0daf7	hitmap:first 1 hits per phase only	0	
 0x80046B44	func_80046B44	group-battle-shainto-wins-1@27428197ed01	boot_intro	724	724	1	boot_intro.last@5489#e7bfd030cbff	hitmap:first 1 hits per phase only	0	
@@ -85988,6 +85993,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8007855C	StepTimedSpriteSequenceWithSkip	story-concede-1@40003b32c8bd	t_story	6351	6351	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x8007855C	StepTimedSpriteSequenceWithSkip	story-gengoro-stage-0e-1@1e4d10fc1ac3	t_story	6351	6351	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x8007855C	StepTimedSpriteSequenceWithSkip	story-pov-rematch-1@766b7b5b6104	t_story	6351	6351	1	t_story.mid@6455#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
+?	?	far-view-versus-2p-kimigaura-1@c64ba5411193	boot_intro	271	464	2	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	ground-tag-versus-2p-bamboo-1@62861b8b921c	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	ground-tag-versus-2p-castle-1@e5e3b7f93222	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function

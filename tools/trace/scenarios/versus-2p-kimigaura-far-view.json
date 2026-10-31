@@ -1,0 +1,71 @@
+{
+  "description": "versus-2p flow on Kimigaura Coast (stage LEFT); from 8300 to 9318 P1 holds LEFT and P2 holds RIGHT, walking apart (the camera's far view switches on at 8530); from 9320 both walk back; no blows, no KO by the end",
+  "covers": [
+    "mode:vs_2p",
+    "stage:kimigaura_coast"
+  ],
+  "evidence": [
+    "docs/naming/runtime/far-view-versus-2p-kimigaura-1/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-far-view-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-far-view-stub-1/func_8003F1E4/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 9800,
+  "inputs": [
+    "7300:LEFT",
+    "7450:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8300,
+      "every": 30,
+      "count": 34,
+      "steps": [
+        "+0:LEFT/28"
+      ]
+    },
+    {
+      "from": 8300,
+      "every": 30,
+      "count": 34,
+      "steps": [
+        "+0:RIGHT/28@2"
+      ]
+    },
+    {
+      "from": 9320,
+      "every": 30,
+      "count": 15,
+      "steps": [
+        "+0:RIGHT/28"
+      ]
+    },
+    {
+      "from": 9320,
+      "every": 30,
+      "count": 15,
+      "steps": [
+        "+0:LEFT/28@2"
+      ]
+    }
+  ],
+  "phases": [
+    "7450:t_load",
+    "8230:fight"
+  ],
+  "shots": [
+    "8229:t_load.last",
+    "8230:fight.first",
+    "8300:fight.8300",
+    "8500:fight.8500",
+    "8700:fight.8700",
+    "8900:fight.8900",
+    "9100:fight.9100",
+    "9300:fight.9300",
+    "9500:fight.9500",
+    "9700:fight.9700"
+  ]
+}

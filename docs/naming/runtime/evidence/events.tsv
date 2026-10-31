@@ -5,6 +5,13 @@ eff_StartYawedQuadSlotCommand	call	fighter_DispatchFrameEvent	fight	0x80032E8C	c
 eff_StartYawedQuadSlotCommand	call	fighter_DispatchFrameEvent	fight	0x80032F98	coverage			29	[[2149579848,25,262144,0],[2149579848,66,262144,0],[2149579848,76,262144,0],[2149579848,106,262144,0],[2149579848,120,262144,0],[2149579848,121,262144,0],[2149579848,286,262144,0],[2149579848,1522,131072,1]]	20	eff-yawed-versus-2p-kimigaura-effects-1@e91af39de6b9	0	coverage_next_start_bound
 func_80063AF0	call	eff_StartCommand	fight	0x80060B24	coverage			35	[[0,0,262144,0]]	0	eff-yawed-versus-2p-kimigaura-effects-1@e91af39de6b9	0	coverage_next_start_bound
 func_80063B34	call	eff_StartCommand	fight	0x80060B24	coverage			14	[[1,0,131072,1]]	0	eff-yawed-versus-2p-kimigaura-effects-1@e91af39de6b9	0	coverage_next_start_bound
+D_800F6658	write	?	boot_intro	0x800836FC	none	0	4	1	[0]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	1	group_has_unresolved_site;unresolved_function
+D_800F6658	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	1	group_has_unresolved_site
+D_800F6658	write	func_8003F1E4	fight	0x8003F20C	coverage	0	2	580	[1,2]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	0	coverage_next_start_bound
+D_800F6658	write	func_8003F1E4	t_load	0x8003F20C	coverage	0	2	6	[1]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	0	coverage_next_start_bound
+D_800F6658	write	func_80046B44	boot_intro	0x80046BCC	coverage	0	2	1	[2]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	1	coverage_next_start_bound;group_has_unresolved_site
+D_800F6658	write	func_80046B44	t_menu	0x80046BCC	coverage	0	2	1	[2]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	0	coverage_next_start_bound
+func_8003F218	call	fight_Init	t_load	0x8001DD1C	coverage			1	[[0,255,4294967295,0]]	0	far-view-versus-2p-kimigaura-1@c64ba5411193	0	coverage_next_start_bound
 0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site;unresolved_function
 0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site
 0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
