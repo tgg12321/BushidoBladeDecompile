@@ -571,7 +571,7 @@ extern s32 cdrom_GetFileIndex(s32, s32);
 extern void comb_ExchangePad(PadState *);
 extern void fight_ScanCommandStreamAndLoadImage(u8 *);
 extern void gpu_BuildFogImageLevels(RECT *, s32);
-extern void func_8003F1E4(s32);
+extern void gpu_SetFarViewGridFogControlAndCoordinateShift(s32);
 extern void node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(s32, s32);
 extern void node_SetSlotRelativeMatrixQueueRetainedNodesAndLinkOrderingTable(
     s32, s32, s32);
@@ -695,7 +695,7 @@ extern void pad_Update();
 extern void motion_InitStream(s32, u32 *);
 extern void motion_DecodeFrame(s32, s32, MotionFrame *, u16 *);
 extern void camera_UpdatePadOffset(s32 *);
-extern void func_8001B6F4(void);
+extern void camera_ResetViewsForReplay(void);
 extern void camera_UpdateReplayViewWithSineYawOffset(Rec1C *, Rec1C *, s32);
 extern void camera_UpdateReplayViewWithConstantYawOffset(Rec1C *, Rec1C *, s32);
 extern void fight_InitSettings(void);

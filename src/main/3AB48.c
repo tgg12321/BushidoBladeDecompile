@@ -22,7 +22,7 @@ INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedTriangle);
 INCLUDE_ASM("asm/funcs", gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision);
 INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedQuad);
 INCLUDE_ASM("asm/funcs", math_MidpointS16x3U8x2);
-INCLUDE_ASM("asm/funcs", func_8004C404);
+INCLUDE_ASM("asm/funcs", gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets);
 INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedTriangles);
 INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedDepthBiasedFlatLitTexturedQuads);
 INCLUDE_ASM("asm/funcs", gpu_EmitOrientationAdjustedDepthBiasedGouraudTexturedTriangles);

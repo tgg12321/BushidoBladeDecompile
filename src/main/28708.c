@@ -1315,7 +1315,7 @@ void replay_Start(void) {
     SetGeomScreen(math_FovToScreenDist(0x2D));
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
-    func_8001B6F4();
+    camera_ResetViewsForReplay();
     eff_StopCommands();
     g_replay_playback_frame = 0;
     g_main_loop_handler_index = 5;

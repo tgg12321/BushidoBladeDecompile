@@ -490,7 +490,7 @@ glabel func_8004A940
   jlabel .L8004B0C8
     /* 3B8C8 8004B0C8 2120E002 */  addu       $a0, $s7, $zero
     /* 3B8CC 8004B0CC 21284002 */  addu       $a1, $s2, $zero
-    /* 3B8D0 8004B0D0 0131010C */  jal        func_8004C404
+    /* 3B8D0 8004B0D0 0131010C */  jal        gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets
     /* 3B8D4 8004B0D4 2130C002 */   addu      $a2, $s6, $zero
     /* 3B8D8 8004B0D8 21B84000 */  addu       $s7, $v0, $zero
     /* 3B8DC 8004B0DC 74290108 */  j          .L8004A5D0

@@ -5,7 +5,7 @@ glabel camera_SetFighterFocusView
     /* C47C 8001BC7C 1400B1AF */  sw         $s1, 0x14($sp)
     /* C480 8001BC80 2188A000 */  addu       $s1, $a1, $zero
     /* C484 8001BC84 1800BFAF */  sw         $ra, 0x18($sp)
-    /* C488 8001BC88 79FC000C */  jal        func_8003F1E4
+    /* C488 8001BC88 79FC000C */  jal        gpu_SetFarViewGridFogControlAndCoordinateShift
     /* C48C 8001BC8C 21200000 */   addu      $a0, $zero, $zero
     /* C490 8001BC90 0F80053C */  lui        $a1, %hi(g_camera_default_view_record)
     /* C494 8001BC94 0866A524 */  addiu      $a1, $a1, %lo(g_camera_default_view_record)

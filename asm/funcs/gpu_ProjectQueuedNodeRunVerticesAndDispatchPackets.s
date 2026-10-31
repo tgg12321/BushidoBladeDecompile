@@ -1,4 +1,4 @@
-glabel func_8004C404
+glabel gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets
     /* 3CC04 8004C404 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 3CC08 8004C408 3000BFAF */  sw         $ra, 0x30($sp)
     /* 3CC0C 8004C40C 2C00BEAF */  sw         $fp, 0x2C($sp)
@@ -364,4 +364,4 @@ glabel func_8004C404
     /* 3D188 8004C988 1000B18F */  lw         $s1, 0x10($sp)
     /* 3D18C 8004C98C 0800E003 */  jr         $ra
     /* 3D190 8004C990 3800BD27 */   addiu     $sp, $sp, 0x38
-endlabel func_8004C404
+endlabel gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets

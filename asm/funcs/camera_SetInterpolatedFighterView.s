@@ -8,7 +8,7 @@ glabel camera_SetInterpolatedFighterView
     /* C508 8001BD08 1400B1AF */  sw         $s1, 0x14($sp)
     /* C50C 8001BD0C 23885000 */  subu       $s1, $v0, $s0
     /* C510 8001BD10 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* C514 8001BD14 79FC000C */  jal        func_8003F1E4
+    /* C514 8001BD14 79FC000C */  jal        gpu_SetFarViewGridFogControlAndCoordinateShift
     /* C518 8001BD18 21200000 */   addu      $a0, $zero, $zero
     /* C51C 8001BD1C 0F80053C */  lui        $a1, %hi(g_camera_default_view_record)
     /* C520 8001BD20 0866A524 */  addiu      $a1, $a1, %lo(g_camera_default_view_record)

@@ -17,7 +17,7 @@ glabel replay_Start
     /* 2A010 80039810 01000424 */  addiu      $a0, $zero, 0x1
     /* 2A014 80039814 A205010C */  jal        node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor
     /* 2A018 80039818 21280000 */   addu      $a1, $zero, $zero
-    /* 2A01C 8003981C BD6D000C */  jal        func_8001B6F4
+    /* 2A01C 8003981C BD6D000C */  jal        camera_ResetViewsForReplay
     /* 2A020 80039820 00000000 */   nop
     /* 2A024 80039824 5E84010C */  jal        eff_StopCommands
     /* 2A028 80039828 00000000 */   nop

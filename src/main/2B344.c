@@ -944,7 +944,7 @@ void fight_InitRotatingViewThreeOptionChoice(void) {
 }
 
 void fight_UpdateRotatingViewThreeOptionChoice(void) {
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     g_camera_default_view_record.focus_point.x = 0;
     g_camera_default_view_record.focus_point.y = -0xBB8;
     g_camera_default_view_record.focus_point.z = 0;
@@ -1034,7 +1034,7 @@ void fight_InitRotatingViewDecimalPresentation(void) {
 }
 
 void fight_UpdateRotatingViewDecimalPresentation(void) {
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     g_camera_default_view_record.focus_point.x = 0;
     g_camera_default_view_record.focus_point.y = -0xBB8;
     g_camera_default_view_record.focus_point.z = 0;
@@ -2299,7 +2299,7 @@ s32 gpu_GetLastGridPassViewYaw(void) { return g_gpu_last_grid_pass_view_yaw; }
 
 void *gpu_GetGridNodeRecordTable(void) { return g_gpu_grid_node_records; }
 
-void func_8003F1E4(s32 a0) {
+void gpu_SetFarViewGridFogControlAndCoordinateShift(s32 a0) {
     if (a0) {
         g_gpu_grid_and_fog_control = 3;
         g_gpu_view_coordinate_shift = 2;
@@ -2318,7 +2318,7 @@ void func_8003F218(s32 a0) {
     }
     D_800A322C = a0;
     if (!a0) {
-        func_8003F1E4(0);
+        gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     }
     D_800F665C = (s16)D_800A322C;
 }

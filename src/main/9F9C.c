@@ -453,13 +453,14 @@ typedef struct {
  * square root, GTE leading-zero count for large inputs) into the value
  * g_camera_default_view_record.eye_distance eases 1/12 toward (0xBB8 in some
  * first_fighter->move_kind states), clamps eye_distance, and sets a hysteresis
- * flag for func_8003F1E4; eases camera_angles.vy / vz toward the facing yaw and
- * zero; then per fighter bisects camera_angles.vx (rot_x) so the segment from
- * its collision_pos less 0xC8 in vy to the eye passes
- * collision_TestSegmentWithWork's camera-collision test (step in
- * g_camera_pitch_search_steps[], blocked flag in g_camera_eye_blocked_flags[]),
- * and eases camera_angles.vx toward the larger result, clamped to 0x80..0x1C0.
- * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
+ * flag for gpu_SetFarViewGridFogControlAndCoordinateShift; eases
+ * camera_angles.vy / vz toward the facing yaw and zero; then per fighter
+ * bisects camera_angles.vx (rot_x) so the segment from its collision_pos less
+ * 0xC8 in vy to the eye passes collision_TestSegmentWithWork's camera-collision
+ * test (step in g_camera_pitch_search_steps[], blocked flag in
+ * g_camera_eye_blocked_flags[]), and eases camera_angles.vx toward the larger
+ * result, clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2,
+ * gte_stlzc). */
 void camera_UpdateTwoFighterView(
     Vec3i32 *first_camera_point, Vec3i32 *second_camera_point,
     Unk80101EC8Record *first_fighter, Unk80101EC8Record *second_fighter) {
@@ -571,7 +572,7 @@ void camera_UpdateTwoFighterView(
     } else {
         view_record->is_far_view = view_record->eye_distance >= 0x55F1;
     }
-    func_8003F1E4(view_record->is_far_view);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(view_record->is_far_view);
 
     if (first_fighter->move_kind == 0x11) {
         scr->yaw = view_record->camera_angles.vy;
@@ -737,7 +738,7 @@ void camera_InitTwoFighterView(
     g_camera_default_view_record.forced_cell_coordinates[1][0] = 0x64;
     g_camera_default_view_record.forced_cell_coordinates[1][1] = 0;
     g_camera_default_view_record.forced_cell_coordinates[1][2] = 0x64;
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     g_camera_default_view_record.focus_point.x =
         (first_fighter->world_pos.x + second_fighter->world_pos.x) / 2;
     g_camera_default_view_record.focus_point.y =
@@ -763,7 +764,7 @@ void camera_InitTrackedFighterFocus(
     g_camera_alternate_view_record.forced_cell_coordinates[1][0] = 0x64;
     g_camera_alternate_view_record.forced_cell_coordinates[1][1] = 0;
     g_camera_alternate_view_record.forced_cell_coordinates[1][2] = 0x64;
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     if (g_fight_tracked_fighter_index != 0) {
         a0 = a1;
     }
@@ -787,7 +788,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *tracked_fighter) {
     s32 val;
     s32 var_3;
 
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
 
     val = (tracked_fighter->ground_probe_points[0].y +
            tracked_fighter->ground_probe_points[1].y) /
@@ -899,13 +900,13 @@ void camera_StartTurnEasingOnLargeHeadingChange(
     }
 }
 
-void func_8001B6F4(void) {
+void camera_ResetViewsForReplay(void) {
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(0, 0);
     node_SetPrimitiveTableSelectOnObjectNodesAndPatchColor(1, 0);
     g_camera_fight_view_mode = 1;
     g_camera_default_view_record.replay_view_started = 0;
     g_camera_alternate_view_record.replay_view_started = 0;
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
 }
 
 /* Q65: this file's statics (.sbss), in address order. */
@@ -1043,7 +1044,7 @@ void camera_UpdateReplayViewWithConstantYawOffset(
 }
 
 void camera_SetFighterFocusView(Unk80101EC8Record *fighter_record, s32 yaw) {
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
     g_camera_default_view_record.focus_point =
         fighter_record->bone_hit_points_4_5_midpoint;
     g_camera_default_view_record.camera_angles.vx = 0x120;
@@ -1055,7 +1056,7 @@ void camera_SetFighterFocusView(Unk80101EC8Record *fighter_record, s32 yaw) {
 void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
     s32 diff = 0x1000 - arg1;
 
-    func_8003F1E4(0);
+    gpu_SetFarViewGridFogControlAndCoordinateShift(0);
 
     /* FAKE: block copy of collision_pos's x / y / z (three lw, then three sw
        through one base); the three member assignments interleave the loads and
