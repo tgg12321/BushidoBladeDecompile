@@ -1,0 +1,46 @@
+rc=0
+==============================================================================
+NAMING WAVE — 6 operations (0 RESET, 6 RENAME)
+  6 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (8) --
+  asm: 6 files, 12 substitutions
+      asm/funcs/func_80066EC0.s  (2)
+      asm/funcs/func_80066EF4.s  (2)
+      asm/funcs/func_80066F28.s  (2)
+      asm/funcs/func_80066F5C.s  (2)
+      asm/funcs/func_800676C8.s  (2)
+      asm/funcs/func_80067704.s  (2)
+  src: 2 files, 18 substitutions
+      src/main/51268.c  (6)
+      src/main/d_8BC50.c  (12)
+
+-- .s file renames (6) --
+  asm/funcs/func_80066EC0.s -> asm/funcs/eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf.s
+  asm/funcs/func_80066EF4.s -> asm/funcs/eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf.s
+  asm/funcs/func_80066F28.s -> asm/funcs/eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf.s
+  asm/funcs/func_80066F5C.s -> asm/funcs/eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf.s
+  asm/funcs/func_800676C8.s -> asm/funcs/eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot.s
+  asm/funcs/func_80067704.s -> asm/funcs/eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot.s
+
+-- ledger directory renames (4) --
+  memory/grind/func_80066EC0 -> memory/grind/eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf
+  memory/grind/func_80066EF4 -> memory/grind/eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf
+  memory/grind/func_80066F28 -> memory/grind/eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf
+  memory/grind/func_80066F5C -> memory/grind/eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (4) --
+  memory/grind/func_80066EC0/layer2.jsonl: 1 changes
+      line 1: func func_80066EC0 -> eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf
+  memory/grind/func_80066EF4/layer2.jsonl: 1 changes
+      line 1: func func_80066EF4 -> eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf
+  memory/grind/func_80066F28/layer2.jsonl: 1 changes
+      line 1: func func_80066F28 -> eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf
+  memory/grind/func_80066F5C/layer2.jsonl: 1 changes
+      line 1: func func_80066F5C -> eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf
+
+DRY RUN — nothing written. Re-run with --apply.

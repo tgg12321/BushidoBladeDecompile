@@ -1,0 +1,26 @@
+wave107 (func-second-pass-16): 6 RENAME kept; 0 dropped; 0 NO_NAME. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave107 = next free (wave106 = func-second-pass-15, reviewed and not landed; git log --all shows no wave107; no wave107 dir).
+Drafted 2026-10-31 (naming-b) at HEAD 8a6830a29. Research input tmp/codex/func-second-pass-16-research.md (untrusted); every use re-derived at HEAD.
+Kept rows:
+ 0x80066EC0 func_80066EC0 -> eff_SpawnConeMultiQuadParticlesFirstSlotFirstHalf
+ 0x80066EF4 func_80066EF4 -> eff_SpawnConeMultiQuadParticlesFirstSlotSecondHalf
+ 0x800676C8 func_800676C8 -> eff_DrawAndAdvanceConeMultiQuadParticlesFirstSlot
+ 0x80066F28 func_80066F28 -> eff_SpawnConeMultiQuadParticlesSecondSlotFirstHalf
+ 0x80066F5C func_80066F5C -> eff_SpawnConeMultiQuadParticlesSecondSlotSecondHalf
+ 0x80067704 func_80067704 -> eff_DrawAndAdvanceConeMultiQuadParticlesSecondSlot
+Uses re-derived at HEAD (git grep -w each name over src include asm symbol_addrs.txt named_syms.txt undefined_syms_auto.txt tools docs memory; no jal anywhere):
+ - Definitions src/main/51268.c:2523/2529/2535/2541 (spawns), :2726/:2732 (draws). Prototypes src/main/d_8BC50.c:209-214.
+ - Only other use of each: g_eff_command_handlers[4..9] (d_8BC50.c:273-278), bases[2]=4, bases[3]=7 (d_8BC50.c:200-201). Command 2/3 issued only by eff_StartRecycledVectorCommandWithRedLight (51268.c:502-525).
+ - asm glabel/endlabel asm/funcs/<name>.s:1 and :15 (spawns) / :17 (draws; jal eff_LinkParticleQuads at :11).
+ - Census docs/naming/function-names.csv:871-874, 888, 889 (AUTO, KEEP). named_syms.txt:1680-1683 and :1432/:1433 RESET notes (retired efc_ names, address keyed). No symbol_addrs.txt / undefined_syms_auto.txt line. No tools/ file names them.
+ - memory/grind/<name>/layer2.jsonl for the four spawns (moved by naming_wave; the draws have none).
+Code facts re-shown: eff_SpawnParticles 51268.c:2669-2681 (mode<2: 0xFF/0x7F; mode<4: 0xFFF/0; modes 4-7: 0x7F/0x3F). Prepare :2798-2811 (mode<2 base 0x40x0x20; mode 2/3 0x20x0x10), Update :3026-3051 and :3122-3126. Quad count: p_n is 1 or 2 (the p_n=0 arm at :3093 is unreachable after the var_1/3 test), loop falls through :3151-3153 -> 2-3 quads; modes 4-7 break after one (:3127-3149). Research said "2-3"; confirmed, with the unreachable-arm detail.
+Comment pass (dry run does NOT edit these; hand-edit in the wave, rerun naming_keycheck --sub-comments):
+ - include/game.h:783 ("particle_row_index 0..3 from the callers func_800676C8..eff_DrawAndAdvanceAdditiveSingleQuadParticlesSecondSlot") range start
+ - include/game.h:1118 ("each of the wrappers func_800676C8 ..") range start
+ - docs/engine/README.md:122 ("func_80066EC0..eff_SpawnAdditiveSingleQuadParticlesSecondSlotSecondHalf") range start, doc not a build file; reword if the lander wants.
+ No tool file cites them.
+HAZARD (old names in recorded data, must stay): docs/naming/runtime/** (versus-2p-kimigaura-blood-link-stub-1, matrix/*.tsv, evidence/*.tsv), docs/naming/apiscan/evidence.json, docs/naming/phase3/no_name.tsv, older wave manifests, pending var-locals-20/21 files (they key on the func_ names; the lander must check ordering/rekey for var-locals-20/21 local_manifest rows func_80066EC0/EF4/F28/F5C).
+Dry run: rc=0, 6 RENAME, edits only src/main/51268.c (6) and src/main/d_8BC50.c (12) plus 6 asm files, 6 .s renames, 4 ledger dir renames, 4 layer2 retargets. TUs edited: main/51268, main/d_8BC50 (plus include/game.h by hand).
+Weak spots for the reviewer: (1) Cone/MultiQuad are each local to only half the trio (Cone to the spawns, MultiQuad to the draw); other half is borrowed from the command, as wave104. Fallback: NO_NAME the two draws, keep the spawns; if both refused, all NO_NAME. (2) Row 0/1 shared with commands 0x15/0x14. (3) Commands 0x14/0x15 trios stay neutral. (4) Runtime evidence is reach only (no visual word; stub run diverges whole screen from 10592). (5) Command 3 rows have no stub capture (4 coverage captures only).
+gates: tmp/p3w107/gates.sh does not exist yet; the lander copies it from the latest tmp/p3w*/gates.sh before running gates.ps1.
