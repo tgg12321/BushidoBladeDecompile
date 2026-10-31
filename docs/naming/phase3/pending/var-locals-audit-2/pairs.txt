@@ -1,0 +1,2 @@
+fighter_ProcessWeaponContacts:blade_sweep_points=weapon_sweep_points
+gpu_LatchFogDepthOnTransitionAndQueueMoves:base=var_4

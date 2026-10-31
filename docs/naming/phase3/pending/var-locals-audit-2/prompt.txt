@@ -1,0 +1,33 @@
+# Research (read-only): local / parameter correction batch (row var-locals-audit-2, research: Opus)
+
+Follow `docs/naming/phase3/pending/var-locals-audit-1/prompt.txt` (method, rigor, evidence format,
+output shape, neutral-reset spelling) and `pending/var-locals-audit-1/{local_manifest.csv,notes.txt}`
+plus `.claude/rules/naming-bar.md`, with these changes:
+
+- Source tree: the lane worktree C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-a at HEAD
+  d5e119e16 (read-only; equals main). Re-derive every line you cite.
+- Output: write ONE file, main's
+  `C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\codex\var-locals-audit-2-research.md`,
+  same shape as var-locals-audit-1's research: HEAD first, the proposed `local_manifest.csv` in a
+  ```csv block (columns exactly as pending/var-locals-audit-1/local_manifest.csv), the notes (rows
+  NOT proposed with reasons; comments citing old tokens with file:line in src, include,
+  symbol_addrs.txt, named_syms.txt, docs/engine/*.md and other live docs; a FAKE comment that would
+  need changing makes the row NO_NAME), ending with "### LEADS for var-locals-audit-3" (what stays
+  open, if anything). Run scoped_plan (tools/naming_keycheck.py in the worktree, read-only, from a
+  script under main's tmp/naming-a-done/) on each proposed pair alone and on the set, and record
+  the substitution counts as audit-1's evidence does. Return only a one-line summary.
+- CORRECTION batch: each finding is a lead, not a verdict. RENAME where one true role exists (the
+  audit's suggestion is only a candidate), RESET to the house neutral spelling where the binding has
+  two roles, KEEP (notes only) where the landed name is true at every use.
+- Targets (Codex second-pass audits; full reasoning in main's tmp/codex/audit-<n>.md):
+  audit-155: fighter_ProcessWeaponContacts:blade_sweep_points (17AFC.c ~1220; filled from weapon
+    points and second weapon points for every weapon id that reaches it; suggested
+    weapon_sweep_points). Check what weapon ids 4/5/6/7 are before judging "blade".
+  audit-162: gpu_LatchFogDepthOnTransitionAndQueueMoves:base (2B344.c ~1480: first the
+    func_8003F268 return used as a selector, then the baseline constant 0x6590/0x55F0; suggested
+    neutral).
+  Already known blocked (confirm still true at d5e119e16 and list in notes; propose only if the
+  blocker is gone): audit-156 math_TestPreparedTriangleSphere:dist and
+  math_TryPrepareTriangleNormalFrame:dist (both cited by FAKE comments, 17AFC.c ~3053, ~3124);
+  audit-162 gpu_BuildFogImageLevels:r_src, g_src (FAKEs 2B344.c ~1595-1597, ~1669-1672);
+  audit-163 softbody_CreateForNode:point_count (scoped_plan refused: function-local aggregate).

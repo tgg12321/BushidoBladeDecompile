@@ -1,0 +1,31 @@
+Drafter (Sonnet) re-derivation of the Opus research (2 rows, tmp/codex/var-locals-audit-2-research.md) at d5e119e16 = HEAD of ln-naming-a: declaration, every use (separate token scan of each definition: signature and body, comments / strings and ./-> member tokens excluded; the multi-line FAKE comment at 2B344.c:1511-1514 holds the word base in prose and is correctly excluded, so 5 uses, not 6), the bodies read (17AFC.c fighter_ProcessWeaponContacts 1218-1558 incl. the first loop 1244-1301, the second fill loop 1304-1326 and the halving loop 1328-1340; 2B344.c gpu_LatchFogDepthOnTransitionAndQueueMoves 1467-1524).
+Result: 2 research rows, 0 dropped, 2 kept (1 RENAME + 1 RESET; 74 token substitutions: 17AFC.c 69, 2B344.c 5; each pair alone equals its USES count, both together accepted, 74 = sum of the alone counts; the runs modified no file in the worktree). 69/69 and 5/5 use-line lists equal the research USES lists.
+
+RENAMED BY THE DRAFTER (0 rows): every research spelling kept.
+DROPPED (0): both rows shown at every use from the source. Declaration order of the 2B344.c locals: rec, ptr, dist, offset, base (block-local), v1, mask, idx, so base is the 5th local, var_4; neither weapon_sweep_points nor var_4 is a token in 17AFC.c / 2B344.c.
+NEUTRAL SPELLING: var_<n>, n = 0-based position among the function's local declarations in source order, parameters not counted.
+
+KEEP: None.
+### NO_NAME: a /* FAKE */ comment cites the old token (house rule; still true at d5e119e16)
+
+scoped_plan itself accepts these pairs (probes: math_TestPreparedTriangleSphere:dist 9, math_TryPrepareTriangleNormalFrame:dist 9, gpu_BuildFogImageLevels:r_src 8, g_src 6 substitutions), so the FAKE text is the only blocker:
+- math_TestPreparedTriangleSphere:dist (DECL 17AFC.c:3041): r_sq - y * y, the squared radius of the sphere's cut at height y, passed as math_TestSegmentCircle2D's r_sq (3074-3087); a true name exists (audit-156 suggests cross_section_radius_sq; audit-75 circle_radius_sq). FAKE 17AFC.c:3053-3056 names `dist` ('breaks the m == dist equivalence ... not dist ($s1)').
+- math_TryPrepareTriangleNormalFrame:dist (DECL 17AFC.c:3103): the scaled z component (3128-3131, written back to obj->unkC8.z), then the table root of dist_sq (3134 on): two roles, neutral (var_3: locals mat, sp_tmp, dist_sq, dist). FAKE 17AFC.c:3124-3126 names `dist`.
+- gpu_BuildFogImageLevels:r_src, g_src (DECL 2B344.c:1659-1660): source channel, then the far-colour term (1674 / 1679), then the blended channel (1676-1677 / 1681): as before, red / green work values (audit-162 suggests red_work / green_work). FAKEs 2B344.c:1595-1597 (function header: 'the r_src / g_src far-colour staging') and 1669-1672 ('r_src / g_src reused for the far-colour term') name both.
+
+### BLOCKED on scoped_plan tooling (re-checked this run)
+
+- softbody_CreateForNode:point_count (DECL 2B344.c:2628): scoped_plan still refuses: 'softbody_CreateForNode:point_count: function-local aggregate definitions are unsupported' (probe with spring_capacity). Role (unchanged): zeroed at 2658, += count * 6 per quad group (flags & 8, 2663) or count * 3 per triangle group (2665), passed as softbody_GetBufferSize's second argument beside init.in.count (2672); audit-163 suggests spring_capacity (six edges per quad, three per triangle). Read softbody_GetBufferSize before naming. Not a point count at 2663-2672 (the points are init.in.count).
+
+### Comments citing the old tokens (R6 WATCH; line numbers at d5e119e16)
+
+- Required edits: none. symbol_addrs.txt, named_syms.txt, include/**, docs/engine/*.md and other live docs (docs/*.md, .claude/rules/*.md) hold neither blade_sweep_points nor a `base` token of gpu_LatchFogDepthOnTransitionAndQueueMoves; blade_sweep_points occurs only in 17AFC.c inside the definition. No prototype names either (include/bb2.h:743, 830 are unnamed).
+- MUST NOT change: FAKE 2B344.c:1474-1476 and 1511-1514 (the latter's 'array base' is prose); FAKE 17AFC.c:3053-3056, 3124-3126; 2B344.c:1595-1597, 1669-1672 (the blocked bindings above).
+- Line width: 17AFC.c:1292 goes 80 -> 81 columns with weapon_sweep_points (`fight_ProcessPositionRecordsInQuad(1, 0, weapon_sweep_points) != 0) {`): format.py reflows it in the naming commit; re-point cites against the base. Every other line stays within 80; the var_4 reset only shortens lines.
+- Hygiene seen (non-blocking prose, no token): 17AFC.c:1205 'Blade contact test', docs/engine/combat.md:25 'the blade contact test', include/game.h:1654-1655 'the second blade' all describe a weapon test that also runs for the firearm ids 6 / 7.
+
+### LEADS for var-locals-audit-3
+
+- FAKE-cited overclaims (4 bindings above: math_TestPreparedTriangleSphere:dist, math_TryPrepareTriangleNormalFrame:dist, gpu_BuildFogImageLevels:r_src / g_src): released only by a ruling that a FAKE comment may change by the pair word alone, or by a code rewrite; the tool accepts the pairs today.
+- softbody_CreateForNode:point_count: needs scoped_plan support for a function with a local aggregate definition (the FAKE `init` struct), then a read of softbody_GetBufferSize.
+- Optional prose fix (not a naming row): 'blade' in the 17AFC.c:1205 header comment and combat.md:25 could read 'weapon' to match weapon_sweep_points.
