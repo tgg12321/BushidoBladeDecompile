@@ -744,13 +744,17 @@ void node_OrientAndQueueViewOffsetNode(void) {
     }
 }
 
-void func_80047738(void) { gpu_InitVramScroll(1, 0); }
+void gpu_InitSelector14VramScroll(void) { gpu_InitVramScroll(1, 0); }
 
-void func_8004775C(void) { gpu_QueueVramScroll(0); }
+void gpu_QueueSelector14VramScroll(void) { gpu_QueueVramScroll(0); }
 
-void func_8004777C(void) { node_InitFrameEntriesFromWorldTranslations(); }
+void node_InitSelector18FrameEntriesFromWorldTranslations(void) {
+    node_InitFrameEntriesFromWorldTranslations();
+}
 
-void func_8004779C(void) { node_AdvanceFrameAnimatedEntriesAndQueueDraws(); }
+void node_AdvanceSelector18FrameAnimatedEntriesAndQueueDraws(void) {
+    node_AdvanceFrameAnimatedEntriesAndQueueDraws();
+}
 
 void func_800477BC(void) {}
 

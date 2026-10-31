@@ -1,4 +1,4 @@
-glabel func_80047738
+glabel gpu_InitSelector14VramScroll
     /* 37F38 80047738 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37F3C 8004773C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 37F40 80047740 01000424 */  addiu      $a0, $zero, 0x1
@@ -8,4 +8,4 @@ glabel func_80047738
     /* 37F50 80047750 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 37F54 80047754 0800E003 */  jr         $ra
     /* 37F58 80047758 00000000 */   nop
-endlabel func_80047738
+endlabel gpu_InitSelector14VramScroll

@@ -1,4 +1,4 @@
-glabel func_8004775C
+glabel gpu_QueueSelector14VramScroll
     /* 37F5C 8004775C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37F60 80047760 1000BFAF */  sw         $ra, 0x10($sp)
     /* 37F64 80047764 FF23010C */  jal        gpu_QueueVramScroll
@@ -7,4 +7,4 @@ glabel func_8004775C
     /* 37F70 80047770 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 37F74 80047774 0800E003 */  jr         $ra
     /* 37F78 80047778 00000000 */   nop
-endlabel func_8004775C
+endlabel gpu_QueueSelector14VramScroll

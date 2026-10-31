@@ -35,10 +35,10 @@ void wave_InitCallback(void);
 void wave_UpdateCallback(void);
 void node_InitViewOffsetNodeWithYXZRotation(void);
 void node_OrientAndQueueViewOffsetNode(void);
-void func_80047738(void);
-void func_8004775C(void);
-void func_8004777C(void);
-void func_8004779C(void);
+void gpu_InitSelector14VramScroll(void);
+void gpu_QueueSelector14VramScroll(void);
+void node_InitSelector18FrameEntriesFromWorldTranslations(void);
+void node_AdvanceSelector18FrameAnimatedEntriesAndQueueDraws(void);
 void func_800477BC(void);
 void func_800477C4(void);
 
@@ -885,11 +885,12 @@ Unk800948BCEntry g_resource_selector_callbacks[38] = {
     {wave_InitCallback, wave_UpdateCallback},
     {0, 0},
     {node_InitViewOffsetNodeWithYXZRotation, node_OrientAndQueueViewOffsetNode},
-    {func_80047738, func_8004775C},
+    {gpu_InitSelector14VramScroll, gpu_QueueSelector14VramScroll},
     {0, 0},
     {0, 0},
     {0, 0},
-    {func_8004777C, func_8004779C},
+    {node_InitSelector18FrameEntriesFromWorldTranslations,
+     node_AdvanceSelector18FrameAnimatedEntriesAndQueueDraws},
     {0, 0},
     {0, 0},
     {0, 0},
