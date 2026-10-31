@@ -1,0 +1,61 @@
+rc=0
+==============================================================================
+NAMING WAVE — 8 operations (0 RESET, 8 RENAME)
+  8 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (10) --
+  asm: 8 files, 16 substitutions
+      asm/funcs/func_80064ED8.s  (2)
+      asm/funcs/func_80064F20.s  (2)
+      asm/funcs/func_80064F68.s  (2)
+      asm/funcs/func_80064FB4.s  (2)
+      asm/funcs/func_80065344.s  (2)
+      asm/funcs/func_80065394.s  (2)
+      ... and 2 more
+  src: 2 files, 24 substitutions
+      src/main/51268.c  (8)
+      src/main/d_8BC50.c  (16)
+
+-- .s file renames (8) --
+  asm/funcs/func_80064ED8.s -> asm/funcs/eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot.s
+  asm/funcs/func_80064F20.s -> asm/funcs/eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot.s
+  asm/funcs/func_80064F68.s -> asm/funcs/eff_InitPreseededGrowingQuadFirstSlot.s
+  asm/funcs/func_80064FB4.s -> asm/funcs/eff_InitPreseededGrowingQuadSecondSlot.s
+  asm/funcs/func_80065344.s -> asm/funcs/eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureFirstSlot.s
+  asm/funcs/func_80065394.s -> asm/funcs/eff_DrawAndAdvanceSpinningQuadWithDepthSelectedTextureSecondSlot.s
+  asm/funcs/func_800653E4.s -> asm/funcs/eff_DrawAndAdvancePreseededGrowingQuadFirstSlot.s
+  asm/funcs/func_80065434.s -> asm/funcs/eff_DrawAndAdvancePreseededGrowingQuadSecondSlot.s
+
+-- ledger directory renames (8) --
+  memory/grind/func_80064ED8 -> memory/grind/eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot
+  memory/grind/func_80064F20 -> memory/grind/eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot
+  memory/grind/func_80064F68 -> memory/grind/eff_InitPreseededGrowingQuadFirstSlot
+  memory/grind/func_80064FB4 -> memory/grind/eff_InitPreseededGrowingQuadSecondSlot
+  memory/grind/_completed/func_80064ED8 -> memory/grind/_completed/eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot
+  memory/grind/_completed/func_80064F20 -> memory/grind/_completed/eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot
+  memory/grind/_completed/func_80064F68 -> memory/grind/_completed/eff_InitPreseededGrowingQuadFirstSlot
+  memory/grind/_completed/func_80064FB4 -> memory/grind/_completed/eff_InitPreseededGrowingQuadSecondSlot
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (8) --
+  memory/grind/func_80064ED8/layer2.jsonl: 1 changes
+      line 1: func func_80064ED8 -> eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot
+  memory/grind/func_80064F20/layer2.jsonl: 1 changes
+      line 1: func func_80064F20 -> eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot
+  memory/grind/func_80064F68/layer2.jsonl: 1 changes
+      line 1: func func_80064F68 -> eff_InitPreseededGrowingQuadFirstSlot
+  memory/grind/func_80064FB4/layer2.jsonl: 1 changes
+      line 1: func func_80064FB4 -> eff_InitPreseededGrowingQuadSecondSlot
+  memory/grind/_completed/func_80064ED8/layer2.jsonl: 1 changes
+      line 1: func func_80064ED8 -> eff_InitSpinningQuadWithDepthSelectedTextureFirstSlot
+  memory/grind/_completed/func_80064F20/layer2.jsonl: 1 changes
+      line 1: func func_80064F20 -> eff_InitSpinningQuadWithDepthSelectedTextureSecondSlot
+  memory/grind/_completed/func_80064F68/layer2.jsonl: 1 changes
+      line 1: func func_80064F68 -> eff_InitPreseededGrowingQuadFirstSlot
+  memory/grind/_completed/func_80064FB4/layer2.jsonl: 1 changes
+      line 1: func func_80064FB4 -> eff_InitPreseededGrowingQuadSecondSlot
+
+DRY RUN — nothing written. Re-run with --apply.
