@@ -1,0 +1,42 @@
+rc=0
+==============================================================================
+NAMING WAVE — 4 operations (0 RESET, 4 RENAME)
+  4 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (6) --
+  asm: 4 files, 8 substitutions
+      asm/funcs/func_80065264.s  (2)
+      asm/funcs/func_800652AC.s  (2)
+      asm/funcs/func_80065760.s  (2)
+      asm/funcs/func_800657B0.s  (2)
+  src: 2 files, 12 substitutions
+      src/main/51268.c  (4)
+      src/main/d_8BC50.c  (8)
+
+-- .s file renames (4) --
+  asm/funcs/func_80065264.s -> asm/funcs/eff_InitSpinningQuadWithFixedTextureFirstSlot.s
+  asm/funcs/func_800652AC.s -> asm/funcs/eff_InitSpinningQuadWithFixedTextureSecondSlot.s
+  asm/funcs/func_80065760.s -> asm/funcs/eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot.s
+  asm/funcs/func_800657B0.s -> asm/funcs/eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot.s
+
+-- ledger directory renames (4) --
+  memory/grind/func_80065264 -> memory/grind/eff_InitSpinningQuadWithFixedTextureFirstSlot
+  memory/grind/func_800652AC -> memory/grind/eff_InitSpinningQuadWithFixedTextureSecondSlot
+  memory/grind/_completed/func_80065264 -> memory/grind/_completed/eff_InitSpinningQuadWithFixedTextureFirstSlot
+  memory/grind/_completed/func_800652AC -> memory/grind/_completed/eff_InitSpinningQuadWithFixedTextureSecondSlot
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (4) --
+  memory/grind/func_80065264/layer2.jsonl: 1 changes
+      line 1: func func_80065264 -> eff_InitSpinningQuadWithFixedTextureFirstSlot
+  memory/grind/func_800652AC/layer2.jsonl: 1 changes
+      line 1: func func_800652AC -> eff_InitSpinningQuadWithFixedTextureSecondSlot
+  memory/grind/_completed/func_80065264/layer2.jsonl: 1 changes
+      line 1: func func_80065264 -> eff_InitSpinningQuadWithFixedTextureFirstSlot
+  memory/grind/_completed/func_800652AC/layer2.jsonl: 1 changes
+      line 1: func func_800652AC -> eff_InitSpinningQuadWithFixedTextureSecondSlot
+
+DRY RUN — nothing written. Re-run with --apply.
