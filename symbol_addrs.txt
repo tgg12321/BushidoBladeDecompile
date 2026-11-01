@@ -146,7 +146,7 @@ g_gpu_view_coordinate_shift = 0x800F6658; // shift count on camera-relative coor
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_a
 D_800A3374 = 0x800A3374; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_b
 g_gpu_raised_ot_cutoff_requested = 0x800F6654; // 0/1 request for the raised OT cutoff; read by gpu_GetRaisedOtCutoffRequested  // data-wave 2026-09-25: was g_game_pause
-g_gpu_draw_option_mask = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
+g_gpu_draw_option_mask = 0x800A3790; // bit mask of gpu draw options: constant 0x23 set by func_80046B44; bit 3 far OT cull, bits 0-1 UV shift mode, bit 2 level colour; read by gpu_PrepareViewAndFlushDrawQueue and via scratch 0x1F8001C0  // data-wave 2026-09-25: was g_game_timer
 
 // === Sound Config ===
 D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
@@ -1178,7 +1178,7 @@ g_fight_paired_move_flags = 0x800A36CA; /* 15 refs; copy of the buffered move's 
 g_fight_paired_move = 0x800A36D8; /* 19 refs; +4 from D_800A36D4 */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash_plus_4_800A36D8 */
 g_cd_result = 0x800A3760; /* u8[8] result buffer of CdSync(1, .) / CdReady(1, .) in cdrom_update.c (e.g. :47, :106) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
 D_800A37E8 = 0x800A37E8; /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
-D_800A37EA = 0x800A37EA; /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
+D_800A37EA = 0x800A37EA; /* 11 refs; s16 y of the x,y,z vector at D_800A37E8 (17AFC.c:1728 stores -qy; 17AFC.c:409 dot with bone_y_axis.y) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
 D_800A37EC = 0x800A37EC; /* 11 refs; +4 from timer base */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */
 g_cpu_pad_metadata_nibble_dpad_bits = 0x800A3258; /* 7 refs; constant table of four bit numbers: fighter_BuildCpuPad sets pad.held |= 1 << bits.bit[rec->motion_metadata_nibble] (4510C.c:867) */  /* data-wave 2026-10-08: was g_game_state_field_0_800A3258 */
 D_800A325C = 0x800A325C; /* 7 refs; constant 4-byte table fighter_UpdateCpuNavigationChooseScriptsAndHeldInput indexes by p->other->motion_metadata_nibble when p->other->unk_6A == 0x19 (4510C.c:2154) */  /* data-wave 2026-10-08: was g_game_state_field_4_800A325C */

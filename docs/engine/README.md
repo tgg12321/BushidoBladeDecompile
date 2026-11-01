@@ -173,7 +173,7 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   (`ings.c:625`).
 - `g_game_mode` (0x800A336C) — coarse game state (set up by `game_Init`).
 - `g_gpu_raised_ot_cutoff_requested` (0x800F6654) — 0/1 request for the raised OT cutoff.
-- `g_game_timer` (0x800A3790) — global game timer (frames or ticks).
+- `g_gpu_draw_option_mask` (0x800A3790) — bit mask of gpu draw options (constant 0x23 set by func_80046B44).
 
 ### Display / frame
 - `g_local_ot_draw_mode` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
