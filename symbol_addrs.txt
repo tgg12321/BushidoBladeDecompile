@@ -139,7 +139,7 @@ g_resource_selector_callbacks = 0x800948BC; // {init, unk4} pairs indexed by res
 
 // === Game State ===
 g_gpu_last_grid_pass_view_yaw = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
-g_gpu_tracked_fighter_view_active = 0x800A322C; // player count  // data-wave 2026-09-25: was g_game_player_count
+g_gpu_tracked_fighter_view_active = 0x800A322C; // 1 while the tracked-fighter camera view (camera mode 0) is live, set by func_8003F218; 0 in third-person views  // data-wave 2026-09-25: was g_game_player_count
 D_800F665C = 0x800F665C; // write-only (func_80046B44, func_8003F218)  // data-wave 2026-10-08: was g_game_mirror_mode
 g_gpu_grid_and_fog_control = 0x800F6656; // s16 flag word: bit 0 gates the grid/fog passes in 2B344.c; bit 1 is set with it by gpu_SetFarViewGridFogControlAndCoordinateShift (= 3) and cleared by func_8003E2AC, never tested  // data-wave 2026-09-25: was g_game_p1_ctrl
 g_gpu_view_coordinate_shift = 0x800F6658; // shift count on camera-relative coordinates: gpu_SetFarViewGridFogControlAndCoordinateShift writes 1 (near) / 2 (far), func_80046B44 writes 2 at init; read in INCLUDE_ASM func_8004A940 / gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets  // data-wave 2026-09-25: was g_game_p2_ctrl
