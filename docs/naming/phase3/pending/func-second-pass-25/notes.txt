@@ -1,0 +1,9 @@
+func-second-pass-25 (wave117), lane naming-a 2026-11-01.
+research: Opus (session; tmp/codex/func-second-pass-25-research.md, untrusted; every claim re-derived in rows.py).
+Revive: func_80046E8C, NO_NAME w49,w61,w70,w86,w116 (no_name.tsv:28). New evidence: var-globals-q (7e7b2f947) named its
+only noun, D_800A3790 -> g_gpu_draw_option_mask; w116 left it neutral only for want of that noun
+(pending/func-second-pass-24/notes.txt, tmp/codex/func-second-pass-24-research.md:36-46).
+Proposal: gpu_ResetDrawOptionMask (RENAME). Research alternative: gpu_SetDrawOptionMaskToInitValue.
+Verb: Reset over Init (func_80046B44 is the (re)init; this is one of its stores alone) and over Set (no argument).
+Dry run: 1 RENAME, asm/funcs/func_80046E8C.s (2) + src/main/368E4.c (1), .s rename; no registry deletions.
+func_8004A940 stays NO_NAME (jtbl extent, w100 objection; not in this row).

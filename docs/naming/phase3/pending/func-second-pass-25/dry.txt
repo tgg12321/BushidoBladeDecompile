@@ -1,0 +1,23 @@
+wave117 dry run (dry.sh, lane naming-a, HEAD 26f5d2d5f, 2026-11-01)
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_funcs_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (2) --
+  asm: 1 files, 2 substitutions
+      asm/funcs/func_80046E8C.s  (2)
+  src: 1 files, 1 substitutions
+      src/main/368E4.c  (1)
+
+-- .s file renames (1) --
+  asm/funcs/func_80046E8C.s -> asm/funcs/gpu_ResetDrawOptionMask.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (0) --
+
+DRY RUN — nothing written. Re-run with --apply.
