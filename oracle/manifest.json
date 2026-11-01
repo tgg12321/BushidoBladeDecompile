@@ -14,7 +14,6 @@
     "python": "Python 3.12.3"
   },
   "corpus": {
-    "src/main/175A4.c": "9f8c7cf815ec549003502c2e4e59f3a51ae33edd",
     "src/main/17AFC.c": "7095208c1a0442f467706ec2b0888436e3f223f9",
     "src/main/24BF0.c": "79347d6e44e2ca39666a2e5dcc3d9e074fbe2430",
     "src/main/25788.c": "8d73afbf73fa2f9c83e5151fdc6a46671ae459b7",
@@ -48,6 +47,7 @@
     "src/main/d_15EC.c": "56a93a4e4a9d03afc38b409b6f1c44eb89f5a1b0",
     "src/main/d_5BF0.c": "b9f9c4056d368a7d5c5b2ebea07ae982d4ac2b42",
     "src/main/d_7D870.c": "c8401db14bfa9259b510ebc9707d17c88c884f13",
+    "src/main/fight_paired_input_totals.c": "9f8c7cf815ec549003502c2e4e59f3a51ae33edd",
     "src/main/memcard.c": "fd3547ac6ff11c1db41b015841c0867410abce33",
     "src/main/menu_config.c": "3aa1eafbb1ec17bd87fd8096049ea7cf2a76b058",
     "src/main/node_rebase_parents.c": "f1f39f1eae278ab51eb494b21f14b019f9ebf302",

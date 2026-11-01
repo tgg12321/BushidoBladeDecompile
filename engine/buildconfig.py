@@ -93,7 +93,7 @@ DATA_ONLY_NO_SDATA_FILES = {"main/d_7D920", "main/d_80DF8", "main/d_89C78", "mai
 # One rule for all objects; the per-file .align sed is retired.
 RODATA_OBJ_ALIGN = "--set-section-alignment .rodata=4"
 NO_SR_FILES = set()
-NOWARN_FILES = {"main/175A4", "main/psxsdk/libspu/spu"}
+NOWARN_FILES = {"main/fight_paired_input_totals", "main/psxsdk/libspu/spu"}
 
 # Mirrors the Makefile LINKED_ASM_FUNCS list: per-function objects assembled
 # straight from asm/funcs/<name>.s and linked by bb2.ld. Explicit opt-in, never

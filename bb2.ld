@@ -43,7 +43,7 @@ SECTIONS
         build/src/main/6CF8.o(.rodata);
         build/src/main/87A0.o(.rodata);
         build/src/main/9F9C.o(.rodata);
-        build/src/main/175A4.o(.rodata);
+        build/src/main/fight_paired_input_totals.o(.rodata);
         build/src/main/17AFC.o(.rodata);
         build/src/main/24BF0.o(.rodata);
         build/src/main/d_1068.o(.rodata);
@@ -100,7 +100,7 @@ SECTIONS
         build/src/main/6CF8.o(.text);
         build/src/main/87A0.o(.text);
         build/src/main/9F9C.o(.text);
-        build/src/main/175A4.o(.text);
+        build/src/main/fight_paired_input_totals.o(.text);
         build/src/main/17AFC.o(.text);
         build/src/main/24BF0.o(.text);
         build/src/main/menu_config.o(.text);
@@ -332,7 +332,7 @@ SECTIONS
         main_DATA_START = .;
         build/src/main/87A0.o(.data);
         build/src/main/9F9C.o(.data);
-        build/src/main/175A4.o(.data);
+        build/src/main/fight_paired_input_totals.o(.data);
         build/src/main/17AFC.o(.data);
         build/src/main/24BF0.o(.data);
         build/src/main/menu_config.o(.data);
@@ -646,7 +646,7 @@ SECTIONS
         main_BSS_START = .;
         build/src/main/87A0.o(.bss);
         build/src/main/9F9C.o(.bss);
-        build/src/main/175A4.o(.bss);
+        build/src/main/fight_paired_input_totals.o(.bss);
         build/src/main/17AFC.o(.bss);
         build/src/main/24BF0.o(.bss);
         build/src/main/menu_config.o(.bss);

@@ -5,7 +5,7 @@
 # Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
 # src-digest 117f41285192de99d81a28beb0c0b827765949ec
 # recorded 2026-10-17T05:02:18Z
-f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4
+f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/fight_paired_input_totals
 eb5244d51239b6d11da8ebacc89d26fef2550991  main/17AFC
 8b4646f7e37cad51c92f4376a61bb779a1265143  main/24BF0
 aa30b79cdf6797870adf2dfdfd14fe9e9c166fc7  main/menu_config
