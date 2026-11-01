@@ -540,7 +540,7 @@ s32 gpu_GetRaisedOtCutoffRequested(void) {
     return g_gpu_raised_ot_cutoff_requested;
 }
 
-void func_80046E8C(void) { g_gpu_draw_option_mask = 0x23; }
+void gpu_ResetDrawOptionMask(void) { g_gpu_draw_option_mask = 0x23; }
 
 void gpu_RunGridDrawPassAndQueueFogMoves(s32 eye_distance) {
     gpu_CollectGridDrawablesInvokeLoadedSelectorCallbackAndDrawBillboards(
