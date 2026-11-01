@@ -1,0 +1,40 @@
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (18) --
+  (root): 1 files, 1 substitutions
+      symbol_addrs.txt  (1)
+  asm: 11 files, 13 substitutions
+      asm/funcs/camera_ApplyFightView.s  (1)
+      asm/funcs/fight_Init.s  (1)
+      asm/funcs/fight_InitNearestStartPairPlayback.s  (1)
+      asm/funcs/func_8003F218.s  (2)
+      asm/funcs/func_8003F268.s  (2)
+      asm/funcs/gpu_LatchFogDepthOnTransitionAndQueueMoves.s  (1)
+      ... and 5 more
+  include: 1 files, 2 substitutions
+      include/bb2.h  (2)
+  src: 5 files, 11 substitutions
+      src/main/28708.c  (1)
+      src/main/2B344.c  (6)
+      src/main/32D04.c  (1)
+      src/main/43500.c  (1)
+      src/main/9F9C.c  (2)
+
+-- .s file renames (2) --
+  asm/funcs/func_8003F218.s -> asm/funcs/gpu_SetTrackedFighterViewFlag.s
+  asm/funcs/func_8003F268.s -> asm/funcs/gpu_GetTrackedFighterViewFlag.s
+
+-- ledger directory renames (0) --
+
+-- symbol-registry line deletions (1) --
+  symbol_addrs.txt:1198  func_8003F218 = 0x8003F218; /* store D_800F665C + game_SetControllerPorts */
+
+-- JSON key/field edits (1) --
+  oracle/manifest.json: 1 changes
+      golden_fixtures[1].name: func_8003F268 -> gpu_GetTrackedFighterViewFlag
+
+DRY RUN — nothing written. Re-run with --apply.
