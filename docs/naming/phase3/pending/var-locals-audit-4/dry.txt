@@ -1,0 +1,7 @@
+SKIPPED: no unapplied-tree dry mode for f:l=n pairs (naming_member_apply.py handles T.m=n only; naming_wave.py is function-name only).
+Local pairs are proven at the apply gate (keycheck cc1 differential + oracle build). Drafting aid only (not the gate): naming_keycheck.scoped_plan(base, pairs, {})
+over the lane worktree ln-naming-b at HEAD 51c82108d (= main; base = every src/ and include/ .c/.h/.inc file plus Makefile; NAMING_KEYCHECK_ROOT = the worktree)
+accepted the 1 pair: 4 token substitutions, all src/main/2B344.c (1442, 1447, 1448, 1460); no include/ file touched; no comment or doc edit needed.
+The count equals a token scan of the binding in its definition (2B344.c:1440-1461). The run modified no file in the worktree.
+Per-pair substitutions (function:old=new count):
+  gpu_SetDrawMoveArray:moves_left=moves_after_this 4

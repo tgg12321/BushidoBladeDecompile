@@ -1,0 +1,12 @@
+Research: Opus (session, naming-b 2026-11-01) of the one open local finding of the name-audit local third pass, audit-253 (Codex 20261101-142725, main's tmp/codex/audit-253.md): gpu_SetDrawMoveArray:moves_left (2B344.c:1442), suggested moves_left_minus_one or a remaining-after-this name. Drafted at 51c82108d = main.
+Result: 1 row, RENAME moves_left -> moves_after_this (4 token substitutions, 2B344.c).
+
+KEEP: none. NO_NAME: none.
+Not proposed (out of scope, no finding): the parameter a2 (DR_MOVE (*)[2], the double-buffered move pairs filled one per pass).
+
+### Comments citing the old token (R6 WATCH; lines at 51c82108d)
+- Required edits: none. moves_left occurs only at 2B344.c:1442, 1447, 1448, 1460; no prototype, header, symbol_addrs.txt / named_syms.txt note or live doc spells it.
+- Line width: every changed line stays within 80 columns (longest: `        } while (--moves_after_this != -1);`).
+
+### LEADS for the next local row
+- Whatever the name-audit local third pass reports from item 1021 on (Codex weekly reset Fri 2026-11-06); var-locals-audit-3 / var-locals-38 blockers unchanged.
