@@ -1883,7 +1883,7 @@ void func_800651F0(void) {
     g_eff_animated_quad_counters[15] = 0;
 }
 
-void func_80065264(void) {
+void eff_InitSpinningQuadWithFixedTextureFirstSlot(void) {
     g_eff_animated_quad_positions[16].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[16].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[16].world_z = g_eff_command_position[2];
@@ -1891,7 +1891,7 @@ void func_80065264(void) {
     g_eff_animated_quad_counters[16] = 0;
 }
 
-void func_800652AC(void) {
+void eff_InitSpinningQuadWithFixedTextureSecondSlot(void) {
     g_eff_animated_quad_positions[17].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[17].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[17].world_z = g_eff_command_position[2];
@@ -2066,7 +2066,7 @@ s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void) {
     return 0;
 }
 
-u8 func_80065760(void) {
+u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0x10);
     s16 *p = &g_eff_animated_quad_counters[16];
     s16 quad_counter = *p;
@@ -2078,7 +2078,7 @@ u8 func_80065760(void) {
     return 0;
 }
 
-u8 func_800657B0(void) {
+u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot(void) {
     u8 draw_result = eff_DrawAnimatedQuads(0x11);
     s16 *p = &g_eff_animated_quad_counters[17];
     s16 quad_counter = *p;
@@ -2091,13 +2091,13 @@ u8 func_800657B0(void) {
 }
 
 /* Shared draw routine of the per-mode effect wrappers
- * (eff_DrawAndAdvanceCosineScaledQuad..func_800657B0, mode 0..0x11): projects
- * this mode's g_eff_animated_quad_positions position record through the current
- * camera, picks the texture/colour and quad size from the mode and its
- * g_eff_animated_quad_counters timer, shapes the four corners (switch 2) and
- * links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the paired mode
- * (mode_index + 2, i.e. 8/9) via `goto again`; the re-run is guarded by
- * `mode_index < 9`, so modes 10/11 draw once. */
+ * (eff_DrawAndAdvanceCosineScaledQuad..eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot,
+ * mode 0..0x11): projects this mode's g_eff_animated_quad_positions position
+ * record through the current camera, picks the texture/colour and quad size
+ * from the mode and its g_eff_animated_quad_counters timer, shapes the four
+ * corners (switch 2) and links one POLY_FT4 into the OT. Modes 6/7 re-run the
+ * body for the paired mode (mode_index + 2, i.e. 8/9) via `goto again`; the
+ * re-run is guarded by `mode_index < 9`, so modes 10/11 draw once. */
 u8 eff_DrawAnimatedQuads(s32 mode_index) {
     extern s16 g_main_loop_handler_index;
     extern s32 ReadGeomScreen(void);

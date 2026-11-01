@@ -125,8 +125,10 @@ extern Unk800F0C10Record g_eff_particle_group_positions[4][3];
 
 /* Per-effect-mode state, modes 0..0x11 (eff_DrawAnimatedQuads): the timers here
  * and the position records in g_eff_animated_quad_positions. The init functions
- * eff_InitCosineScaledQuad.. func_800652AC fill them; the step functions
- * eff_DrawAndAdvanceCosineScaledQuad..func_800657B0 advance the timers. */
+ * eff_InitCosineScaledQuad.. eff_InitSpinningQuadWithFixedTextureSecondSlot
+ * fill them; the step functions
+ * eff_DrawAndAdvanceCosineScaledQuad..eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot
+ * advance the timers. */
 extern s16 g_eff_animated_quad_counters[18];
 
 extern Unk800F0C10Record g_eff_animated_quad_positions[18];

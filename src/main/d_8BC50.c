@@ -241,10 +241,10 @@ void func_8006517C(void);
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires(void);
 void func_800651F0(void);
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void);
-void func_80065264(void);
-u8 func_80065760(void);
-void func_800652AC(void);
-u8 func_800657B0(void);
+void eff_InitSpinningQuadWithFixedTextureFirstSlot(void);
+u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot(void);
+void eff_InitSpinningQuadWithFixedTextureSecondSlot(void);
+u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot(void);
 u8 eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf(void);
 u8 eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf(void);
 u8 eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot(void);
@@ -305,10 +305,10 @@ s32 g_eff_command_handlers[62] = {
     (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires,
     (s32)func_800651F0,
     (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires,
-    (s32)func_80065264,
-    (s32)func_80065760,
-    (s32)func_800652AC,
-    (s32)func_800657B0,
+    (s32)eff_InitSpinningQuadWithFixedTextureFirstSlot,
+    (s32)eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot,
+    (s32)eff_InitSpinningQuadWithFixedTextureSecondSlot,
+    (s32)eff_DrawAndAdvanceSpinningQuadWithFixedTextureSecondSlot,
     (s32)eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotFirstHalf,
     (s32)eff_SpawnOmnidirectionalMultiQuadParticlesFirstSlotSecondHalf,
     (s32)eff_DrawAndAdvanceOmnidirectionalMultiQuadParticlesFirstSlot,

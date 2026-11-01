@@ -1,4 +1,4 @@
-glabel func_800652AC
+glabel eff_InitSpinningQuadWithFixedTextureSecondSlot
     /* 55AAC 800652AC B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 55AB0 800652B0 00000000 */  nop
     /* 55AB4 800652B4 0000628C */  lw         $v0, 0x0($v1)
@@ -17,4 +17,4 @@ glabel func_800652AC
     /* 55AE8 800652E8 740D23AC */  sw         $v1, %lo(D_800F0D74)($at)
     /* 55AEC 800652EC 0800E003 */  jr         $ra
     /* 55AF0 800652F0 00000000 */   nop
-endlabel func_800652AC
+endlabel eff_InitSpinningQuadWithFixedTextureSecondSlot
