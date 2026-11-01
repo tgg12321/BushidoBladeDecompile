@@ -84181,6 +84181,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80072084	func_80072084	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7450	7450	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x80072084	func_80072084	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	stage_select	7316	7316	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x80072084	func_80072084	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7450	7450	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x80072084	func_80072084	stage-pages-versus-2p-kimigaura-1@f573e77ab01d	stage_select	7316	7449	134	stage_select.7325@7325#f8ebbd062ddc;stage_select.7355@7355#22f454a190df;stage_select.last@7449#7c37f2bcc2db	recorded hits only; capture limits apply	1	no_later_screenshot
+0x80072084	func_80072084	stage-pages-versus-2p-kimigaura-1@f573e77ab01d	t_load	7450	7450	1	t_load.mid@7900#35444b75f27e	recorded hits only; capture limits apply	0	
 0x80072084	func_80072084	versus-2p-kimigaura-paired-2@08ea760ae7d7	stage_select	7316	7316	1	stage_select.7325@7325#f8ebbd062ddc	hitmap:first 1 hits per phase only	0	
 0x80072084	func_80072084	versus-2p-kimigaura-paired-2@08ea760ae7d7	t_load	7450	7450	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x80072084	func_80072084	versus-2p-kimigaura-sub-menu-1@a41e77626d8b	stage_select	7316	7316	1	stage_select.7325@7325#f8ebbd062ddc	hitmap:first 1 hits per phase only	0	
@@ -84215,6 +84217,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800720AC	func_800720AC	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_stage	7156	7156	1	stage_select.first@7175#d13ca6ed48e8	hitmap:first 1 hits per phase only	0	
 0x800720AC	func_800720AC	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	stage_select	7175	7175	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x800720AC	func_800720AC	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_stage	7156	7156	1	stage_select.first@7175#d13ca6ed48e8	hitmap:first 1 hits per phase only	0	
+0x800720AC	func_800720AC	stage-pages-versus-2p-castle-1@e52f513c8218	stage_select	7175	7495	321	stage_select.7299@7299#726a8ff15038;stage_select.7350@7350#847949bb8f24;stage_select.7410@7410#df0f86684f70;stage_select.7470@7470#c81222dd1262;stage_select.7530@7530#dcaecd1f669c	recorded hits only; capture limits apply	0	
+0x800720AC	func_800720AC	stage-pages-versus-2p-castle-1@e52f513c8218	t_stage	7156	7174	19	stage_select.first@7175#d13ca6ed48e8	recorded hits only; capture limits apply	0	
+0x800720AC	func_800720AC	stage-pages-versus-2p-kimigaura-1@f573e77ab01d	stage_select	7175	7315	141	stage_select.7299@7299#726a8ff15038;stage_select.7325@7325#f8ebbd062ddc	recorded hits only; capture limits apply	0	
+0x800720AC	func_800720AC	stage-pages-versus-2p-kimigaura-1@f573e77ab01d	t_stage	7156	7174	19	stage_select.first@7175#d13ca6ed48e8	recorded hits only; capture limits apply	0	
 0x800720AC	func_800720AC	versus-2p-concede-1@7566d1d1621b	stage_select	7175	7175	1	stage_select.last@7524#2ff1e7601f1c	hitmap:first 1 hits per phase only	0	
 0x800720AC	func_800720AC	versus-2p-concede-1@7566d1d1621b	t_stage	7156	7156	1	stage_select.first@7175#d13ca6ed48e8	hitmap:first 1 hits per phase only	0	
 0x800720AC	func_800720AC	versus-2p-kimigaura-paired-2@08ea760ae7d7	stage_select	7175	7175	1	stage_select.7299@7299#726a8ff15038	hitmap:first 1 hits per phase only	0	
@@ -84313,6 +84319,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800720AC	func_800720AC	versus-2p-tatsumi-drop-1@23ee9986923d	t_stage	7156	7156	1	stage_select.first@7175#d13ca6ed48e8	hitmap:first 1 hits per phase only	0	
 0x800720AC	func_800720AC	versus-2p-tatsumi-pickup-1@dc9817c9453d	stage_select	7175	7175	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x800720AC	func_800720AC	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_stage	7156	7156	1	stage_select.first@7175#d13ca6ed48e8	hitmap:first 1 hits per phase only	0	
+0x800720D4	func_800720D4	stage-pages-versus-2p-castle-1@e52f513c8218	stage_select	7496	7719	224	stage_select.7530@7530#dcaecd1f669c;stage_select.7599@7599#d9942ef32605;stage_select.7645@7645#35a890cb0e20;stage_select.7705@7705#576e00ce6bb5;stage_select.last@7719#6a1e79f477f1	recorded hits only; capture limits apply	1	no_later_screenshot
+0x800720D4	func_800720D4	stage-pages-versus-2p-castle-1@e52f513c8218	t_load	7720	7720	1	t_load.mid@8120#2060c3b5e9fe	recorded hits only; capture limits apply	0	
 0x800720D4	func_800720D4	versus-2p-pair-castle-1@6e3388c2fb8d	stage_select	7496	7496	1	stage_select.last@7839#759026eec042	hitmap:first 1 hits per phase only	0	
 0x800720D4	func_800720D4	versus-2p-pair-castle-1@6e3388c2fb8d	t_load	7840	7840	1	t_load.mid@8200#a16980f6b1db	hitmap:first 1 hits per phase only	0	
 0x800720D4	func_800720D4	versus-2p-pair-castle-2@7abacc3d7902	stage_select	7496	7496	1	stage_select.last@7839#759026eec042	hitmap:first 1 hits per phase only	0	

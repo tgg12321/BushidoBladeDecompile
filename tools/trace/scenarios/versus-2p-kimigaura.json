@@ -17,7 +17,8 @@
     "docs/naming/runtime/ground-tag-versus-2p-kimigaura-1/spec.json",
     "docs/naming/runtime/collision-grid-versus-2p-kimigaura-1/spec.json",
     "docs/naming/runtime/versus-2p-kimigaura-blood-link-stub-1/baseline/spec.json",
-    "docs/naming/runtime/versus-2p-kimigaura-blood-link-stub-1/eff_LinkParticleQuads/spec.json"
+    "docs/naming/runtime/versus-2p-kimigaura-blood-link-stub-1/eff_LinkParticleQuads/spec.json",
+    "docs/naming/runtime/stage-pages-versus-2p-kimigaura-1/spec.json"
   ],
   "use": [
     "boot",
