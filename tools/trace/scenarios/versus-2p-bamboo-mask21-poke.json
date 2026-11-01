@@ -1,0 +1,24 @@
+{
+  "description": "versus-2p-bamboo with D_800A3790 (0x800A3790) poked 0x23 -> 0x21 at the top menu (a modified game: bits 0-1 = 1 instead of 3); the only stores are 0x23, by func_80046B44 (368E4.c:429-447, boot and every reinit) and func_80046E8C (368E4.c:543, no caller); gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets and func_8004A940 (0x8004B6C8) copy it to scratchpad 0x1F8001C0, where gpu_EmitOtCutoffFlatLitTexturedQuadsWithOptionalSubdivision and the node case at 0x8004B8AC / 0x8004B9E8 (in func_8004A940's extent) test bits 0-1 (andi 3: selects the right shift applied to halfwords 6-0xC of each record, with 0x1F8001E0 and a depth level) and bit 2 (andi 4); gpu_PrepareViewAndFlushDrawQueue tests bit 3 (versus-2p-fog-cutoff-poke); no read of bit 5 found",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:bamboo_thicket",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-bamboo-mask21-poke-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "pokes": [
+    {
+      "at": "0x800A3790",
+      "hex": "21000000",
+      "phase": "top_menu"
+    }
+  ]
+}
