@@ -1859,7 +1859,7 @@ void func_80065134(void) {
     g_eff_animated_quad_counters[11] = 0;
 }
 
-void func_8006517C(void) {
+void eff_InitTwoAnimatedQuadsFirstSlot(void) {
     g_eff_animated_quad_positions[12].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[12].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[12].world_z = g_eff_command_position[2];
@@ -1871,7 +1871,7 @@ void func_8006517C(void) {
     g_eff_animated_quad_counters[14] = 0;
 }
 
-void func_800651F0(void) {
+void eff_InitTwoAnimatedQuadsSecondSlot(void) {
     g_eff_animated_quad_positions[13].world_x = g_eff_command_position[0];
     g_eff_animated_quad_positions[13].world_y = g_eff_command_position[1];
     g_eff_animated_quad_positions[13].world_z = g_eff_command_position[2];

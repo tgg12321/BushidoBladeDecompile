@@ -237,9 +237,9 @@ void func_800650EC(void);
 u8 eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay(void);
 void func_80065134(void);
 u8 eff_DrawAndAdvanceQuadNotMirroredByViewSetting(void);
-void func_8006517C(void);
+void eff_InitTwoAnimatedQuadsFirstSlot(void);
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires(void);
-void func_800651F0(void);
+void eff_InitTwoAnimatedQuadsSecondSlot(void);
 s32 eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires(void);
 void eff_InitSpinningQuadWithFixedTextureFirstSlot(void);
 u8 eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot(void);
@@ -301,9 +301,9 @@ s32 g_eff_command_handlers[62] = {
     (s32)eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay,
     (s32)func_80065134,
     (s32)eff_DrawAndAdvanceQuadNotMirroredByViewSetting,
-    (s32)func_8006517C,
+    (s32)eff_InitTwoAnimatedQuadsFirstSlot,
     (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilSecondCounterExpires,
-    (s32)func_800651F0,
+    (s32)eff_InitTwoAnimatedQuadsSecondSlot,
     (s32)eff_DrawAndAdvanceTwoAnimatedQuadsUntilFirstCounterExpires,
     (s32)eff_InitSpinningQuadWithFixedTextureFirstSlot,
     (s32)eff_DrawAndAdvanceSpinningQuadWithFixedTextureFirstSlot,

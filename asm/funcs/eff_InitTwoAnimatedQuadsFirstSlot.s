@@ -1,4 +1,4 @@
-glabel func_8006517C
+glabel eff_InitTwoAnimatedQuadsFirstSlot
     /* 5597C 8006517C B003838F */  lw         $v1, %gp_rel(g_eff_command_position)($gp)
     /* 55980 80065180 00000000 */  nop
     /* 55984 80065184 0000628C */  lw         $v0, 0x0($v1)
@@ -28,4 +28,4 @@ glabel func_8006517C
     /* 559E4 800651E4 500D23AC */  sw         $v1, %lo(D_800F0D50)($at)
     /* 559E8 800651E8 0800E003 */  jr         $ra
     /* 559EC 800651EC 00000000 */   nop
-endlabel func_8006517C
+endlabel eff_InitTwoAnimatedQuadsFirstSlot
