@@ -1477,7 +1477,7 @@ void gpu_LatchFogDepthOnTransitionAndQueueMoves(s32 arg0, s32 arg1) {
     rec = g_gpu_fog_move_settings[arg0];
     if (rec[0] != 0) {
         {
-            s32 var_4 = func_8003F268();
+            s32 var_4 = gpu_GetTrackedFighterViewFlag();
             if (var_4 == 0) {
                 var_4 = 0x6590;
             } else {
@@ -1542,7 +1542,7 @@ void gpu_QueueDepthSpacedMovesAndLinkTerminalPacket(
     if (g_gpu_grid_and_fog_control & 1) {
         var_1 = g_gpu_latched_fog_depth_span;
     } else {
-        if (func_8003F268() == 0) {
+        if (gpu_GetTrackedFighterViewFlag() == 0) {
             var_1 = 0x6590 - move_depth;
         } else {
             var_1 = 0x55F0 - move_depth;
@@ -2323,7 +2323,7 @@ void func_8003F218(s32 a0) {
     D_800F665C = (s16)D_800A322C;
 }
 
-s32 func_8003F268(void) { return D_800A322C; }
+s32 gpu_GetTrackedFighterViewFlag(void) { return D_800A322C; }
 
 void gpu_ResetAndStampViewCenteredCellAttributes(void) {
     s32 i, j;
@@ -2340,7 +2340,7 @@ void gpu_ResetAndStampViewCenteredCellAttributes(void) {
         ptr++;
     } while (i >= 0);
 
-    func_8003F268();
+    gpu_GetTrackedFighterViewFlag();
 
     view_cell_x = (g_view_camera_root_ptr->work.t[0] + 0x7D00) / 2000;
     view_cell_z = (g_view_camera_root_ptr->work.t[2] + 0x7D00) / 2000;

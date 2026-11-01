@@ -1149,7 +1149,7 @@ void gpu_PrepareViewAndFlushDrawQueue(u32 *ot) {
     } else {
         *(s32 *)0x1F800010 = 0x7FFFFFFF;
     }
-    if (func_8003F268() != 0) {
+    if (gpu_GetTrackedFighterViewFlag() != 0) {
         *(s32 *)0x1F800018 = 0xBE;
     } else if (gpu_GetRaisedOtCutoffRequested() != 0) {
         *(s32 *)0x1F800018 = 0x182;

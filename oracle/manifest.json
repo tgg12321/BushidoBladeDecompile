@@ -270,7 +270,7 @@
       "text_sha1": "8fd380de7634f1fc52f617b899e4f7b952531fb6"
     },
     {
-      "name": "func_8003F268",
+      "name": "gpu_GetTrackedFighterViewFlag",
       "file": "src/main/2B344.c",
       "vram": "0x8003F268",
       "size": 12,
