@@ -14,7 +14,11 @@
     "event:pov_view"
   ],
   "evidence": [
-    "docs/naming/runtime/story-pov-rematch-1/spec.json"
+    "docs/naming/runtime/story-pov-rematch-1/spec.json",
+    "docs/naming/runtime/pov-view-story-pov-rematch-1/spec.json",
+    "docs/naming/runtime/story-pov-rematch-view-flag-stub-1/baseline/spec.json",
+    "docs/naming/runtime/story-pov-rematch-view-flag-stub-1/func_8003F218/spec.json",
+    "docs/naming/runtime/story-pov-rematch-view-flag-stub-1/func_8003F268/spec.json"
   ],
   "use": [
     "boot"

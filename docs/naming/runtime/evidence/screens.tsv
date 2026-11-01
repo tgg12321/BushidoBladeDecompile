@@ -36688,6 +36688,11 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	walk_5	9430	9430	1	kick_5.0@9510#af17316bb385	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	walk_6	9630	9630	1	kick_6.0@9710#a6472c1e4dfc	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	walk_7	9831	9831	1	kick_7.0@9910#9b632d6b2eb7	hitmap:first 1 hits per phase only	0	
+0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	pov-view-story-pov-rematch-1@95982af2cca4	fight	8900	12397	3348	fight.10100@10100#fa245d45abc3;fight.10400@10400#9873a59f3916;fight.10700@10700#483756bbfc62;fight.11000@11000#77a74f9a0e97;fight.11300@11300#c3921edf9494;fight.11600@11600#691273e912e0;fight.11900@11900#c9e9c042402c;fight.12200@12200#6e7d8a61d160;fight.9200@9200#af2fdf10bc28;fight.9500@9500#02ec0b78fb23;fight.9800@9800#314776b55985;fight.last@12399#3e65dfe86b19	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	pov-view-story-pov-rematch-1@95982af2cca4	fight_2	13201	14199	1000	fight_2.13500@13500#38127e74f028;fight_2.13800@13800#9be3b7ee7641;fight_2.14100@14100#02ebe16770b1;fight_2.last@14199#f9edcaec1542	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	pov-view-story-pov-rematch-1@95982af2cca4	rematch_menu	12850	12998	75	rematch_menu.last@12999#4bd76850608a	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	pov-view-story-pov-rematch-1@95982af2cca4	t_ko	12400	12848	151	t_ko.12500@12500#5447d31529b8;t_ko.12600@12600#7677bcd50151;t_ko.last@12849#7364258c6a58	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	pov-view-story-pov-rematch-1@95982af2cca4	t_rematch	13000	13199	140	fight_2.first@13200#4fcce2969929;t_rematch.last@13199#439ff30dbe35	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	story-concede-1@40003b32c8bd	after	9872	9872	1	after.9950@9950#6ce62dcba285	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	story-concede-1@40003b32c8bd	concede	9001	9001	1	concede.9050@9050#27b4809cb016	hitmap:first 1 hits per phase only	0	
 0x8003F1E4	gpu_SetFarViewGridFogControlAndCoordinateShift	story-concede-1@40003b32c8bd	fight	8901	8901	1	fight.last@8999#2ceb2005e12e	hitmap:first 1 hits per phase only	0	
@@ -36904,6 +36909,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8003F218	func_8003F218	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7485	7485	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x8003F218	func_8003F218	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x8003F218	func_8003F218	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x8003F218	func_8003F218	pov-view-story-pov-rematch-1@95982af2cca4	fight	8911	9947	499	fight.10100@10100#fa245d45abc3;fight.9200@9200#af2fdf10bc28;fight.9500@9500#02ec0b78fb23;fight.9800@9800#314776b55985	recorded hits only; capture limits apply	1	max_hits_reached:Z0:func_8003F218:500
+0x8003F218	func_8003F218	pov-view-story-pov-rematch-1@95982af2cca4	stage_card	8714	8714	3	stage_card.last@8799#8c9ed88c64be	recorded hits only; capture limits apply	1	coverage_next_start_bound;max_hits_reached:Z0:func_8003F218:500
+0x8003F218	func_8003F218	pov-view-story-pov-rematch-1@95982af2cca4	t_ko	12548	12548	2	t_ko.12600@12600#7677bcd50151	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8003F218	func_8003F218	pov-view-story-pov-rematch-1@95982af2cca4	t_rematch	13120	13120	2	t_rematch.last@13199#439ff30dbe35	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8003F218	func_8003F218	story-concede-1@40003b32c8bd	concede	9221	9221	1	concede.9250@9250#5a01b4b272fb	hitmap:first 1 hits per phase only	0	
 0x8003F218	func_8003F218	story-concede-1@40003b32c8bd	stage_card	8714	8714	1		hitmap:first 1 hits per phase only	1	no_later_screenshot
 0x8003F218	func_8003F218	story-final-fight-stages-1@58ffaa0e84cf	after_katze	129769	129769	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
@@ -52564,6 +52573,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80046B44	func_80046B44	memory-card-format-1@e64c6d1eb0c7	t_menu	5692	5692	1	top_menu.first@6050#b41c2f9c3785	hitmap:first 1 hits per phase only	0	
 0x80046B44	func_80046B44	memory-card-overwrite-1@d82acfaf278e	boot_intro	724	724	1	boot_intro.last@5489#e7bfd030cbff	hitmap:first 1 hits per phase only	0	
 0x80046B44	func_80046B44	memory-card-overwrite-1@d82acfaf278e	t_menu	5764	5764	1	top_menu.first@6050#3ac52ba0daf7	hitmap:first 1 hits per phase only	0	
+0x80046B44	func_80046B44	pov-view-story-pov-rematch-1@95982af2cca4	boot_intro	724	724	2	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x80046B44	func_80046B44	pov-view-story-pov-rematch-1@95982af2cca4	t_menu	5764	5764	2	top_menu.first@6060#2607fc28352b	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80046B44	func_80046B44	story-concede-1@40003b32c8bd	boot_intro	724	724	1	boot_intro.last@5489#e7bfd030cbff	hitmap:first 1 hits per phase only	0	
 0x80046B44	func_80046B44	story-concede-1@40003b32c8bd	t_menu	5764	5764	1	top_menu.first@6060#2607fc28352b	hitmap:first 1 hits per phase only	0	
 0x80046B44	func_80046B44	story-final-fight-stages-1@58ffaa0e84cf	boot_intro	724	724	1	s.5489@5489#e7bfd030cbff	hitmap:first 1 hits per phase only	0	
@@ -89259,6 +89270,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 ?	?	ground-tag-versus-2p-underrail-1@ea88b127e2b5	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	group-battle-draw-1@2004f4b160e6	boot_intro	258	462	8	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	group-battle-shainto-wins-1@27428197ed01	boot_intro	258	462	10	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
+?	?	pov-view-story-pov-rematch-1@95982af2cca4	boot_intro	258	464	5	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	story-concede-1@40003b32c8bd	boot_intro	258	462	6	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	story-gengoro-stage-0e-1@1e4d10fc1ac3	boot_intro	258	462	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	max_hits_reached:Z2:D_800A3844:60;unknown_function_address;unresolved_function
 ?	?	story-pov-rematch-1@766b7b5b6104	boot_intro	258	464	10	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function

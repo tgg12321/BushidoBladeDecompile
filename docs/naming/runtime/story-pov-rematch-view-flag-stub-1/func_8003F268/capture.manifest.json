@@ -1,0 +1,717 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "d1c8736df948fbc7836f043720e3ed253a66efa1",
+      "size": 110640
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "097148e2ae2ebabd81cdcb12b60241b7476552b1",
+      "size": 30530
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "23f14978d2a662315b671cd1c96e27a063835544",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--headless",
+    "--emulator",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--bios",
+    "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "--cue",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.map",
+      "sha1": "2d05a6c37e6232f4e68d763235f67bb993b30206",
+      "size": 420993
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.elf",
+      "sha1": "101536e5c08a4c233423fd4da16426708f005581",
+      "size": 873928
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\spec.json",
+    "sha1": "736dc17d885a9e43d94bb1e508e802b14a1461b9",
+    "size": 8932
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2400",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Downloads\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Downloads/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.script.lua",
+      "sha1": "06962ebfb4050bc6ac60e565c166d455ec7d90bd",
+      "size": 9252
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 0,
+    "port": 2400,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-0\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 5,
+    "ambiguous_stops": 0,
+    "stubs": [
+      {
+        "at": "func_8003F268",
+        "addr": 2147742312,
+        "when": "stage_card",
+        "ret": 0,
+        "words": "0800e00300000224",
+        "orig": "6001828f0800e003",
+        "applied": {
+          "frame": 8360,
+          "pc": 2147483776,
+          "ok": true,
+          "mid_stub": false
+        },
+        "at_end": "intact"
+      }
+    ],
+    "modified_game": "stubbed functions: hits and screenshots after a stub went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x8003F268+5",
+      "0x8003F26E+2",
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.jsonl",
+      "sha1": "0fdaa018802ee7302bd3bb936b4266d38000256d",
+      "size": 10107,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.top_menu.first.png",
+      "sha1": "2607fc28352b684edfa2617119a39a158017a61e",
+      "size": 31576,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.top_menu.side_view.png",
+      "sha1": "96a08edfa3d049dbdc3e0f7b25c1d0391306b73a",
+      "size": 31540,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.top_menu.pov.png",
+      "sha1": "f371316beccb1cb6620acd8252d226bf58dbb0ad",
+      "size": 32062,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.top_menu.last.png",
+      "sha1": "8b01dfc248f7db7535aa8d9cdc115e7413206747",
+      "size": 32047,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_story.first.png",
+      "sha1": "5379dfbe87057802dfb6a1d89273ece5ac66d4af",
+      "size": 32044,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_story.mid.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_story.last.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.story_text.first.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.story_text.last.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_char.first.png",
+      "sha1": "75ebaa261d5fb3b8cea573aece68cbca9ad6ecd3",
+      "size": 2288,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_char.last.png",
+      "sha1": "95b6684b1ba98477204110b843a284d28e2c990c",
+      "size": 19403,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.char_select.first.png",
+      "sha1": "05c8fcd620261e5646396035747d1e834ab658b3",
+      "size": 19403,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.char_select.mid.png",
+      "sha1": "48c1aff71b036c7cf1580a049aca52853ff2d199",
+      "size": 19468,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.char_select.last.png",
+      "sha1": "e32d5901a4df1c8709e3c040b581b3822d6835fb",
+      "size": 19486,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_weapon.first.png",
+      "sha1": "546636267e5624601e29c4e181af82f399065624",
+      "size": 19462,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_weapon.last.png",
+      "sha1": "f5567a2a613cfe5e50ddf855f85bdf2dee8fd35f",
+      "size": 18718,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.weapon_select.first.png",
+      "sha1": "8cac00beb32a7a94286a78fe9e4be8f62abf9bf7",
+      "size": 19165,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.weapon_select.mid.png",
+      "sha1": "02636243456b84626fa56614b8ba4e75d916d86a",
+      "size": 18991,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.weapon_select.last.png",
+      "sha1": "45e25dccdfa07a4bed83b6edb0c1cbf8868c7fc6",
+      "size": 18990,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_stage.first.png",
+      "sha1": "281037b8abee0ece1fabc1917280c4940f230513",
+      "size": 18989,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_stage.mid.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_stage.last.png",
+      "sha1": "bdb8c6a866f4f40fd3d5ceedd46a617117dba60a",
+      "size": 23905,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.stage_card.first.png",
+      "sha1": "bdb8c6a866f4f40fd3d5ceedd46a617117dba60a",
+      "size": 23905,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.stage_card.mid.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.stage_card.last.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_fight.first.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_fight.last.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.first.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.8900.png",
+      "sha1": "8c9ed88c64be64a0aa84095a74ae88a77972ca5b",
+      "size": 24066,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.9200.png",
+      "sha1": "af2fdf10bc286c27e01c984c531d4db16019fde2",
+      "size": 19287,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.9200.png",
+      "sha1": "af2fdf10bc286c27e01c984c531d4db16019fde2",
+      "size": 19287,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.9500.png",
+      "sha1": "26452abf321e94d6a7f1bbc9c14fc95770bcb809",
+      "size": 19429,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.9500.png",
+      "sha1": "26452abf321e94d6a7f1bbc9c14fc95770bcb809",
+      "size": 19429,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.9800.png",
+      "sha1": "162c2cf9dec116a1bc57d8594f30e3d5283cb2e8",
+      "size": 20175,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.9800.png",
+      "sha1": "162c2cf9dec116a1bc57d8594f30e3d5283cb2e8",
+      "size": 20175,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.10100.png",
+      "sha1": "6bf6d3abd0fedd0b2fca7ed83ced2a083e4a91d6",
+      "size": 20110,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.10100.png",
+      "sha1": "6bf6d3abd0fedd0b2fca7ed83ced2a083e4a91d6",
+      "size": 20110,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.10400.png",
+      "sha1": "97372a410fd0bf518f61042dc4c499e232b1bcb4",
+      "size": 20395,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.10700.png",
+      "sha1": "b418c1e6508ca0bbb5d3b3a870869b74dcb51acb",
+      "size": 15508,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.11000.png",
+      "sha1": "a22f6df0b36da1458fcb392164f16a17a3633441",
+      "size": 34000,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.11000.png",
+      "sha1": "a22f6df0b36da1458fcb392164f16a17a3633441",
+      "size": 34000,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.11300.png",
+      "sha1": "798a96bfd8ee02b2cb7bc714cd8e8aacd89610fa",
+      "size": 43176,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.11600.png",
+      "sha1": "5109cd87a65553c8b1c1d77df1357812060c13c7",
+      "size": 45903,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.11900.png",
+      "sha1": "b4f68fcceb26aa94e30a669e7c4b8fdd25bf0006",
+      "size": 43453,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.12200.png",
+      "sha1": "4772b12bb5269b4bab4cb63a6024e036458ea0cb",
+      "size": 36301,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.12200.png",
+      "sha1": "4772b12bb5269b4bab4cb63a6024e036458ea0cb",
+      "size": 36301,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight.last.png",
+      "sha1": "62aa72ef6e244e972219b036656cf0e06177461a",
+      "size": 42586,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.12399.png",
+      "sha1": "62aa72ef6e244e972219b036656cf0e06177461a",
+      "size": 42586,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_ko.first.png",
+      "sha1": "6ac3d5bcb297f631d7b6007644782d55b53ca1c1",
+      "size": 42116,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.12500.png",
+      "sha1": "662e231cc0fa538d7620cdc8733750abb79f5e9d",
+      "size": 39332,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_ko.12500.png",
+      "sha1": "662e231cc0fa538d7620cdc8733750abb79f5e9d",
+      "size": 39332,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_ko.12600.png",
+      "sha1": "39f157fa1ad09ea4650c193ba3b03ff05e11d61f",
+      "size": 43693,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_ko.mid.png",
+      "sha1": "ae2662068463fcf89b47a8d05cd843b189b561a8",
+      "size": 45909,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.12700.png",
+      "sha1": "51cd0ddbc988b9ce0e32a5bc5a0b8a5b3d3f1b03",
+      "size": 41510,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_ko.12700.png",
+      "sha1": "51cd0ddbc988b9ce0e32a5bc5a0b8a5b3d3f1b03",
+      "size": 41510,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_ko.last.png",
+      "sha1": "e2e06742257b90146e696499e089f5d03c3b34f9",
+      "size": 44775,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.rematch_menu.first.png",
+      "sha1": "7868f516253beb944492260a9db6ddec61e28229",
+      "size": 44980,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.rematch_menu.last.png",
+      "sha1": "23711967aac8c596faefbeae679353b7151f3fab",
+      "size": 41253,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_rematch.first.png",
+      "sha1": "483dab14357ef0bbed116594dbbfea5bb005f97e",
+      "size": 41927,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.t_rematch.last.png",
+      "sha1": "2b7d0ee6293cd2a8ac6a353b841fc52052a1c9db",
+      "size": 25829,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight_2.first.png",
+      "sha1": "18d2a3dd1082a676a10731b63c021d522c4e9ed3",
+      "size": 25969,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.13200.png",
+      "sha1": "18d2a3dd1082a676a10731b63c021d522c4e9ed3",
+      "size": 25969,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight_2.13500.png",
+      "sha1": "417376208af1d333072908f1fa42f3245476eb67",
+      "size": 20661,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.13500.png",
+      "sha1": "417376208af1d333072908f1fa42f3245476eb67",
+      "size": 20661,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight_2.13800.png",
+      "sha1": "17a654eb41f54527fa7949b724891e00f7a398c1",
+      "size": 20726,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight_2.14100.png",
+      "sha1": "847d2d405c1a50e8ade2500f2fdc4e95e870be0d",
+      "size": 27331,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.14100.png",
+      "sha1": "847d2d405c1a50e8ade2500f2fdc4e95e870be0d",
+      "size": 27331,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.fight_2.last.png",
+      "sha1": "6956e7d037bfb798455dbfa04f4e73ab16e68f53",
+      "size": 28100,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.knockout.live.png",
+      "sha1": "6956e7d037bfb798455dbfa04f4e73ab16e68f53",
+      "size": 28100,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.script.log",
+      "sha1": "5e1b31d70ad79f13245406a08bc8926a1eef4f31",
+      "size": 3826,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace-a\\docs\\naming\\runtime\\story-pov-rematch-view-flag-stub-1\\func_8003F268\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072,
+      "stored": true
+    }
+  ]
+}
