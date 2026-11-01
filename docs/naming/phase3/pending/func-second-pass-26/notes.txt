@@ -1,0 +1,26 @@
+func-second-pass-26 (wave118), lane naming-a 2026-11-01, HEAD 005c275e9. Draft: 5 RENAME rows kept, 0 dropped, 0 NO_NAME.
+research: tmp/codex/func-second-pass-26-research.md (untrusted); every use re-derived by git grep over src, include, asm, symbol_addrs.txt,
+named_syms.txt, undefined_syms_auto.txt, docs/engine, and the bodies re-read (9F9C.c:2358-2381, 368E4.c:679-689, d_80DF8.c:874-883).
+Verified: g_resource_selector_callbacks row 4 = d_80DF8.c:879, row 7 = :882 (table opens at :875 = row 0); func_8001EEB4 = g_main_loop_handlers
+slot 0x10 (d_7D870.c:46, fight_Init at :30 is slot 0), written only by 28708.c:1606; slot 0x11 = fight_UpdateInterpolatedFighterView...; callee
+32D04.c case 7 -> 0x11 entries, case 4 -> 2; only_x.tsv 2572-2605 recounted: 34 pair rows for 0x800474F0, 17 conclusive, 17 distinct other
+stages covered (18 stages total with Bamboo); only_x.tsv 2606-2639 for 0x80047510: 34 of 34 inconclusive. No proposed name or fallback is in
+docs/naming/function-names.csv or anywhere in src/include. Each function has no use beyond its one table slot / handler slot (no jal).
+Rows and evidence pointers (full text in rows.py):
+- func_8004746C -> node_InitSelector4FrameEntriesFromWorldTranslations (row 4 .init; code-keyed, wave101/106 scheme; trace reach only).
+- func_8004748C -> node_AdvanceSelector4FrameAnimatedEntriesAndQueueDraws (row 4 .unk4).
+- func_800474F0 -> node_InitBambooThicketFrameEntriesFromWorldTranslations (row 7 .init; Q132 stage word, same shape as wave102 Lumberyard:
+  only_x.tsv:2572-2605, facts.tsv:2063, selector-hooks-versus-2p-bamboo-1).
+  BambooThicket alternative: node_InitSelector7FrameEntriesFromWorldTranslations (code-only, if the reviewer refuses the stage word; only_x.tsv:283
+  is inconclusive for story-mode loads).
+- func_80047510 -> node_AdvanceSelector7FrameAnimatedEntriesAndQueueDraws (row 7 .unk4; 0/34 pair rows conclusive, so no stage word, as selector 18).
+  Selector7 is also the name its init twin falls back to, so the pair stays aligned either way.
+- func_8001EEB4 -> fight_StartFollowupFighterPostKoCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase (WEAKEST).
+  Weak spots: no only-X event:ko row (only_x.tsv:26, :951-968 inconclusive); two hit captures lack event:ko; many KO captures never hit it; the
+  one-instruction patch cannot separate the script start from the intact flag; which move is unknown; eff_StopCommands not in the name; 99
+  characters (longest landed fight_ name 80); PostKo rests on the c0f63fc4c runtime captures. Previously NO_NAME for 7 rounds (no_name.tsv:7,
+  w51..w97, "a respelling adds no role"); the new evidence is the guard-only patch and hit map.
+  Fallback: fight_StartFollowupFighterCommonScriptMarkHitRecordGroup6To9IntactAndEnterInterpolatedViewPhase (code only). If ruled a respelling:
+  NO_NAME again (leave the row out; the other four are independent).
+Comment pass after apply: docs/engine/main_loop.md:109 names func_8001EEB4 (named_syms.txt RESET notes keep the retired game_* names; untouched).
+Verdict is PENDING: the naming-reviewer sets CONFIRM; dry.sh stages a CONFIRM copy only for the dry run.
