@@ -139,8 +139,8 @@ g_resource_selector_callbacks = 0x800948BC; // {init, unk4} pairs indexed by res
 
 // === Game State ===
 g_gpu_last_grid_pass_view_yaw = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
-g_gpu_tracked_fighter_view_active = 0x800A322C; // 1 while the tracked-fighter camera view (camera mode 0) is live, set by func_8003F218; 0 in third-person views  // data-wave 2026-09-25: was g_game_player_count
-D_800F665C = 0x800F665C; // write-only (func_80046B44, func_8003F218)  // data-wave 2026-10-08: was g_game_mirror_mode
+g_gpu_tracked_fighter_view_active = 0x800A322C; // 1 while the tracked-fighter camera view (camera mode 0) is live, set by gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear; 0 in third-person views  // data-wave 2026-09-25: was g_game_player_count
+D_800F665C = 0x800F665C; // write-only (func_80046B44, gpu_SetTrackedFighterViewFlagAndApplyNonFarViewGridFogAndShiftOnClear)  // data-wave 2026-10-08: was g_game_mirror_mode
 g_gpu_grid_and_fog_control = 0x800F6656; // s16 flag word: bit 0 gates the grid/fog passes in 2B344.c; bit 1 is set with it by gpu_SetFarViewGridFogControlAndCoordinateShift (= 3) and cleared by func_8003E2AC, never tested  // data-wave 2026-09-25: was g_game_p1_ctrl
 g_gpu_view_coordinate_shift = 0x800F6658; // shift count on camera-relative coordinates: gpu_SetFarViewGridFogControlAndCoordinateShift writes 1 (near) / 2 (far), func_80046B44 writes 2 at init; read in INCLUDE_ASM func_8004A940 / gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets  // data-wave 2026-09-25: was g_game_p2_ctrl
 D_800A3370 = 0x800A3370; // write-only word (0; ClearSavedWordPairsAndTwoWriteOnlyWords / softbody_FreeAllAndClearWriteOnlyWords)  // data-wave 2026-10-08: was g_game_flag_a
@@ -941,7 +941,7 @@ D_800A31F8 = 0x800A31F8; /* func_80037D14's return D_800A3890: 0 while the card 
 g_menu_prompt_rearm = 0x800A3204; /* re-arm latch: menu_StepTwoChoicePromptDrawSheetsAndRearmAfterResult sets it when its two-way pad prompt returns a choice; the next call clears it and resets g_menu_two_choice_prompt_cursor (28708.c:575-597) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear */
 g_fight_presentation_cd_audio_entries = 0x8008EA70; /* s8 pairs indexed by g_fight_presentation_index: [0] = group-5 CD file number started by cdrom_StartAudio (negative: none), [1] = its audio channel (fight_InitImageAndPlaybackPresentation, 2B344.c:744-748) */  /* data-wave 2026-10-08: was g_unlock_anim_p_pair_table */
 g_fight_presentation_playback_file_id_offsets = 0x8009016C; /* u8[10] offsets indexed by g_fight_presentation_index (0..9) in fight_InitImageAndPlaybackPresentation (2B344.c:738); motion_StartPlaybackAtIndexedBasePlusOffset adds one to g_motion_playback_file_id_bases[0x16] to form motion_StartPlayback's id (43500.c:637) */  /* data-wave 2026-10-08: was g_unlock_anim_char_table */
-g_gpu_default_primitive_handlers = 0x80095328; /* 88-word table of function addresses; func_800430E4 / gpu_PrepareViewAndFlushDrawQueue store its address to scratchpad 0x1F80001C */  /* data-wave 2026-10-08: was g_scratchpad_cached_data_ptr */
+g_gpu_default_primitive_handlers = 0x80095328; /* 88-word table of function addresses; gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift / gpu_PrepareViewAndFlushDrawQueue store its address to scratchpad 0x1F80001C */  /* data-wave 2026-10-08: was g_scratchpad_cached_data_ptr */
 spu_bcr = 0x800A2D34; /* SPU DMA block count = (count >> 6) + (count & 0x3F != 0), BCR's high half (spu.c:297-300) */  /* data-wave 2026-10-09: was g_spu_dma_madr_high */
 dma_spu_bcr = 0x800A2CE4; /* pointer to SPU DMA BCR register (block count) */  /* data-wave 2026-10-09: was g_spu_dma_bcr_reg_ptr */
 dma_spu_chcr = 0x800A2CE8; /* pointer to SPU DMA CHCR register (channel control) */  /* data-wave 2026-10-09: was g_spu_dma_chcr_reg_ptr */
@@ -2115,7 +2115,7 @@ g_memcard_hw_event_timeout = 0x800A3848; /* OpenEvent(HwCARD=0xF0000011, EvSpTIM
 g_memcard_hw_event_new = 0x800A3850; /* OpenEvent(HwCARD=0xF0000011, EvSpNEW=0x2000) by memcard_Init */
 g_fight_reinit_phase_timer = 0x800A3816; /* +2 from g_memcard_request_retry_count */  /* data-wave 2026-10-08: was g_pad_analog_frame_counter_plus_2 */
 g_fight_time_up_phase_timer = 0x800A381E; /* frame counter of fight_UpdateModeDisplaysAndMatchProgress's g_fight_mode_selector == 5 branch; cleared by fight_AdvanceMatch */  /* data-wave 2026-10-08: was g_stage_helper_result_cache_plus_6 */
-g_light_selected_setup = 0x800A3828; /* = &g_light_setups[arg2] (func_800430E4); read by gte_ColorGroupedNormalStreamWithSelectedMatrices */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
+g_light_selected_setup = 0x800A3828; /* = &g_light_setups[arg2] (gpu_DrawPerMatrixSectionsWithHalvedYViewAndComplementedDepthShift); read by gte_ColorGroupedNormalStreamWithSelectedMatrices */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
 g_fight_defeat_delay_frames = 0x800A382E; /* frame counter gating fight_UpdateDefeatDelayAndModeProgress at 0x3D */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_1 */
 g_motion_common_buffer = 0x800A3830; /* load address 0x80120000 used as a CD read destination (9F9C.c:3236 / :3244) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_3 */
 D_800A3864 = 0x800A3864; /* g_motion_fighter_buffers[1] (= 0x80190800, motion_InitBuffers) */  /* data-wave 2026-10-08: was g_motion_data_base_ptr_plus_4 */
