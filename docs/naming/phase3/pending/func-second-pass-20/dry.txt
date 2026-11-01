@@ -1,0 +1,38 @@
+rc=0
+==============================================================================
+NAMING WAVE — 2 operations (0 RESET, 2 RENAME)
+  2 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (4) --
+  asm: 2 files, 4 substitutions
+      asm/funcs/func_8006517C.s  (2)
+      asm/funcs/func_800651F0.s  (2)
+  src: 2 files, 6 substitutions
+      src/main/51268.c  (2)
+      src/main/d_8BC50.c  (4)
+
+-- .s file renames (2) --
+  asm/funcs/func_8006517C.s -> asm/funcs/eff_InitTwoAnimatedQuadsFirstSlot.s
+  asm/funcs/func_800651F0.s -> asm/funcs/eff_InitTwoAnimatedQuadsSecondSlot.s
+
+-- ledger directory renames (4) --
+  memory/grind/func_8006517C -> memory/grind/eff_InitTwoAnimatedQuadsFirstSlot
+  memory/grind/func_800651F0 -> memory/grind/eff_InitTwoAnimatedQuadsSecondSlot
+  memory/grind/_completed/func_8006517C -> memory/grind/_completed/eff_InitTwoAnimatedQuadsFirstSlot
+  memory/grind/_completed/func_800651F0 -> memory/grind/_completed/eff_InitTwoAnimatedQuadsSecondSlot
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (4) --
+  memory/grind/func_8006517C/layer2.jsonl: 1 changes
+      line 1: func func_8006517C -> eff_InitTwoAnimatedQuadsFirstSlot
+  memory/grind/func_800651F0/layer2.jsonl: 1 changes
+      line 1: func func_800651F0 -> eff_InitTwoAnimatedQuadsSecondSlot
+  memory/grind/_completed/func_8006517C/layer2.jsonl: 1 changes
+      line 1: func func_8006517C -> eff_InitTwoAnimatedQuadsFirstSlot
+  memory/grind/_completed/func_800651F0/layer2.jsonl: 1 changes
+      line 1: func func_800651F0 -> eff_InitTwoAnimatedQuadsSecondSlot
+
+DRY RUN — nothing written. Re-run with --apply.
