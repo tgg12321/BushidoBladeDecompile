@@ -1439,13 +1439,13 @@ void gpu_InitFogDrawMoves(void) {
 
 void gpu_SetDrawMoveArray(RECT *src_rect, s32 move_count, DR_MOVE (*a2)[2]) {
     s32 start_x, start_y;
-    s32 moves_left;
+    s32 moves_after_this;
 
     start_x = src_rect->x;
     start_y = src_rect->y;
 
-    moves_left = move_count - 1;
-    if (moves_left != -1) {
+    moves_after_this = move_count - 1;
+    if (moves_after_this != -1) {
         do {
             s16 next_y;
             next_y = src_rect->y + src_rect->h;
@@ -1457,7 +1457,7 @@ void gpu_SetDrawMoveArray(RECT *src_rect, s32 move_count, DR_MOVE (*a2)[2]) {
             SetDrawMove(&(*a2)[0], src_rect, start_x, start_y);
             (*a2)[1] = (*a2)[0];
             a2++;
-        } while (--moves_left != -1);
+        } while (--moves_after_this != -1);
     }
 }
 
