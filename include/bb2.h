@@ -739,9 +739,10 @@ extern void motion_SetFixedChannelBlock(MotionFrame *);
 extern s32 fighter_TestMoveFrameWindowOrMoveKindWithObjectVariant(
     Unk80101EC8Record *);
 /* fighter_TryDropQueuedHeadAtBone (17AFC.c, void (Unk80101EC8Record *)) has no
- * declaration: 175A4.c calls it implicitly, and any truthful declaration
- * changes fight_UpdatePairedInputTotalsEventsAndMidpointEffects's register-save
- * order. */
+ * declaration: fight_paired_input_totals.c calls it implicitly, and any
+ * truthful declaration changes
+ * fight_UpdatePairedInputTotalsEventsAndMidpointEffects's register-save order.
+ */
 extern void fighter_ResolveBodyOverlap(void);
 extern void fight_ClearPositionRecordUsage(void);
 extern s32 fighter_ProcessWeaponContacts(void);

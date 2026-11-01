@@ -21,9 +21,9 @@
  *    data, none pointing into the run) and in .data link order cdrom_update.o's
  *    empty .data (cdrom_update.c is -G8, gp accesses). After it, cdrom.o, a
  *    game module with no small data that references no object in the run (Q123:
- * not an owner candidate). Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c,
- * 28708.c, 2B344.c, 4510C.c (interleaved against .data link order, so no reader
- * owns it). Not including bb2.h: it declares
+ * not an owner candidate). Readers: 9F9C.c, fight_paired_input_totals.c,
+ * 17AFC.c, 24BF0.c, 25788.c, 28708.c, 2B344.c, 4510C.c (interleaved against
+ * .data link order, so no reader owns it). Not including bb2.h: it declares
  * g_snd_stage_cd_audio_entry_indices, D_8008D55C, D_8008E748 and
  * g_fight_opponent_stage_indices as scalars (their readers index &D_8008xxxx),
  * which these array definitions would contradict. */
