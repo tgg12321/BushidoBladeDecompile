@@ -16,7 +16,8 @@
     "docs/naming/runtime/versus-cpu-tatsumi-green-init-stub-1/baseline/spec.json",
     "docs/naming/runtime/versus-cpu-tatsumi-green-init-stub-1/func_800650EC/spec.json",
     "docs/naming/runtime/versus-cpu-tatsumi-green-init-stub-1/func_80065134/spec.json",
-    "docs/naming/runtime/eff-green-init-versus-cpu-tatsumi-1/spec.json"
+    "docs/naming/runtime/eff-green-init-versus-cpu-tatsumi-1/spec.json",
+    "docs/naming/runtime/selector-hooks-versus-cpu-tatsumi-1/spec.json"
   ],
   "use": [
     "boot"

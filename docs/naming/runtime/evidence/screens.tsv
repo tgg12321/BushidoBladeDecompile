@@ -36555,6 +36555,10 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8003F168	resource_InvokeLoadedSelectorInitCallback	lib-versus-2p-kimigaura-effects-1@19e872f6ca37	t_load	7774	7774	1	t_load.mid@7900#35444b75f27e	hitmap:first 1 hits per phase only	0	
 0x8003F168	resource_InvokeLoadedSelectorInitCallback	lib-versus-2p-kimigaura-kick-2p-1@fd688595c842	t_load	7774	7774	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
 0x8003F168	resource_InvokeLoadedSelectorInitCallback	lib-versus-2p-kimigaura-shore-kick-1@4a533c05b4be	t_load	7774	7774	1	t_load.last@8229#2cffc4b4614f	hitmap:first 1 hits per phase only	0	
+0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-hooks-versus-2p-bamboo-1@49928c6b4288	t_load	7826	7826	1	t_load.mid@7900#992afaea6c20	recorded hits only; capture limits apply	0	
+0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-hooks-versus-cpu-tatsumi-1@ade4035fb8bc	opp2	9095	9095	1	opp2.9200@9200#d3c3c0478b43	recorded hits only; capture limits apply	0	
+0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-hooks-versus-cpu-tatsumi-1@ade4035fb8bc	opp3	10772	10772	1	opp3.10800@10800#2a6301f92dcd	recorded hits only; capture limits apply	0	
+0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-hooks-versus-cpu-tatsumi-1@ade4035fb8bc	t_load	7953	7953	1	t_load.mid@8000#aa39ad949db8	recorded hits only; capture limits apply	0	
 0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-loads-story-final-fight-retail-1@24e9e1a12e96	after_katze	129412	144400	4	s.129600@129600#0c97f1fe9f95;s.141700@141700#465f2f0709be;s.151400@151400#faf94ad1586e	recorded hits only; capture limits apply	0	
 0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-loads-story-final-fight-retail-1@24e9e1a12e96	boot_intro	8439	8439	1	s.8899@8899#86d5daef52e3	recorded hits only; capture limits apply	0	
 0x8003F168	resource_InvokeLoadedSelectorInitCallback	selector-loads-story-final-fight-retail-1@24e9e1a12e96	final_fight	153732	154314	2	s.153900@153900#729c7c873193;s.154400@154400#5a01b4b272fb	recorded hits only; capture limits apply	0	
@@ -55545,16 +55549,20 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80047384	camera_CalcAngles	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8400	8400	1	opp1.8600@8600#d88f72a357c4	hitmap:first 1 hits per phase only	0	
 0x80047384	camera_CalcAngles	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9340	9340	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x80047384	camera_CalcAngles	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
+0x8004746C	func_8004746C	selector-hooks-versus-cpu-tatsumi-1@ade4035fb8bc	opp3	10772	10772	1	opp3.10800@10800#2a6301f92dcd	recorded hits only; capture limits apply	0	
 0x8004746C	func_8004746C	versus-cpu-tatsumi-1@016e75c2a56c	opp3	10772	10772	1	opp3.10800@10800#2a6301f92dcd	hitmap:first 1 hits per phase only	0	
+0x8004748C	func_8004748C	selector-hooks-versus-cpu-tatsumi-1@ade4035fb8bc	opp3	11013	11052	20	opp3.11200@11200#599ec9aae5e9	recorded hits only; capture limits apply	1	max_hits_reached:Z0:func_8004748C:20
 0x8004748C	func_8004748C	versus-cpu-tatsumi-1@016e75c2a56c	opp3	11013	11013	1	opp3.11200@11200#599ec9aae5e9	hitmap:first 1 hits per phase only	0	
 0x800474AC	func_800474AC	versus-cpu-clear-retail-1@d1b76e2e5d49	opp4	19428	19428	1	opp4.19700@19700#7cdcbb59ed58	hitmap:first 1 hits per phase only	0	
 0x800474D0	func_800474D0	versus-cpu-clear-retail-1@d1b76e2e5d49	opp4	19664	19664	1	opp4.19700@19700#7cdcbb59ed58	hitmap:first 1 hits per phase only	0	
+0x800474F0	func_800474F0	selector-hooks-versus-2p-bamboo-1@49928c6b4288	t_load	7826	7826	1	t_load.mid@7900#992afaea6c20	recorded hits only; capture limits apply	0	
 0x800474F0	func_800474F0	versus-2p-pair-bamboo-1@07355ecd9358	t_load	8166	8166	1	t_load.mid@8200#d8d5628340eb	hitmap:first 1 hits per phase only	0	
 0x800474F0	func_800474F0	versus-2p-pair-bamboo-2@c7a90811abaf	t_load	8166	8166	1	t_load.mid@8200#d8d5628340eb	hitmap:first 1 hits per phase only	0	
 0x800474F0	func_800474F0	versus-2p-rematch-1@e593ee02ab83	t_load	7826	7826	1	t_load.mid@7937#eb018063c041	hitmap:first 1 hits per phase only	0	
 0x800474F0	func_800474F0	versus-2p-rematch-1@e593ee02ab83	t_load_2	14926	14926	1	t_load_2.mid@15025#04b6ad78a3d9	hitmap:first 1 hits per phase only	0	
 0x800474F0	func_800474F0	versus-2p-tatsumi-drop-1@23ee9986923d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
 0x800474F0	func_800474F0	versus-2p-tatsumi-pickup-1@dc9817c9453d	t_load	7826	7826	1	fight.first@8350#7b2d472e8b36	hitmap:first 1 hits per phase only	0	
+0x80047510	func_80047510	selector-hooks-versus-2p-bamboo-1@49928c6b4288	t_load	8310	8349	20	fight.first@8350#c958a848220b;t_load.last@8349#d31546a4e459	recorded hits only; capture limits apply	1	max_hits_reached:Z0:func_80047510:20
 0x80047510	func_80047510	versus-2p-pair-bamboo-1@07355ecd9358	fight	8701	8701	1	fight.9000@9000#5225217576b3	hitmap:first 1 hits per phase only	0	
 0x80047510	func_80047510	versus-2p-pair-bamboo-1@07355ecd9358	fight_tail	10151	10151	1	fight_tail.last@10199#1f25c1b7906c	hitmap:first 1 hits per phase only	0	
 0x80047510	func_80047510	versus-2p-pair-bamboo-1@07355ecd9358	t_load	8650	8650	1	t_load.last@8699#c80cd96af2e0	hitmap:first 1 hits per phase only	0	

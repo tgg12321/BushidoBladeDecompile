@@ -20,7 +20,8 @@
     "docs/naming/runtime/versus-2p-bamboo-node-draw-stub-1/baseline/spec.json",
     "docs/naming/runtime/versus-2p-bamboo-node-draw-stub-1/func_800430E4/spec.json",
     "docs/naming/runtime/versus-2p-bamboo-node-draw-stub-1/func_8004DDB4/spec.json",
-    "docs/naming/runtime/resource-section-read-versus-2p-bamboo-2/spec.json"
+    "docs/naming/runtime/resource-section-read-versus-2p-bamboo-2/spec.json",
+    "docs/naming/runtime/selector-hooks-versus-2p-bamboo-1/spec.json"
   ],
   "use": [
     "boot",
