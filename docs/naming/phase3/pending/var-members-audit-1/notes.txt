@@ -1,0 +1,25 @@
+var-members-audit-1 -- draft notes (research tmp/codex/var-members-audit-1-research.md at 422ad92a6, treated as hints; every use re-derived by git grep -n -w in ln-naming-b at 422ad92a6)
+
+RESULT: 7 pairs / 7 manifest rows, all research RENAMEs kept, no name changes. Dry run: dry.txt, exit 0, "OK: every member access renamed" (round 0: 122 error lines, round 1: 0), no unresolved lines. Verdict / verifier_note are empty. Family kept together: decaying_xz_velocity + _damping_x/_y/_z (4 rows, rename together or not at all). Re-derivation matched the research line numbers; extras found: cpu_decided_pad_held also at 4510C.c:2063, 2070 (W) and 2082-2083 (R, returned), which the manifest lists.
+
+KEEP rows (not in pairs)
+- FileRecord.staff_roll_character_mask (game.h:32): KEEP. The code shows a per-character mask set when the scrolling display ends (2B344.c:669-670), cleared at 6CF8.c:136, tested ==0x3F at 25C38.c:24 and :290; 'staff_roll' is carried by runtime evidence (docs/naming/runtime/story-ending-poke-1/phases.tsv:18-19, credits phase, byte 0x80106A54 <- 1 at the roll's end), an admitted class-3 source. This settles audit-114 #40 (never settled KEEP before) and audit-232 (carried): both KEEP, same reason; the landed name stands (599016f0f).
+- Unk1F800000Rec.y_extent_work (game.h:1223): KEEP; already the consistent sibling of x_extent_work (full height, scaled, reused as bottom offset), R6-judged in var-members-rest-10.
+- Unk80101EC8Record.base_velocity_damping_x/y/z (game.h:1708-1710): KEEP; 4.12 retention factors on base_velocity (R 9F9C.c:5333/5337/5341, W :4041-4043, :5718-5724), the same 'damping' usage as the renamed decaying family, so the two families stay parallel.
+
+Still-blocked leftovers (not proposed)
+- CpuRoute.poly=chain_index: blocked. 596CC.c keeps a local `poly` passed to function-like macros (SetPolyF4(poly) :578, uses :503/576-585); naming_keycheck's member-pair rule (tools/naming_keycheck.py:2265-2294) requires each kept macro-argument `poly` to come out of cpp as a member access; no later keycheck commit lifted it.
+- Vec4_571C0.w (4510C.c:1172): blocked; `pad` is not fresh (21 `pad;` member declarations in src/include); options are neutral or a code-commit retype to VECTOR.
+
+Comment sites the apply must hand-edit (naming_member_apply does not touch comments; verified present at 422ad92a6)
+- src/main/17AFC.c:895 (inside the fighter_ResolveBodyOverlap header comment): "to decaying_xz_velocity.vx / .vz. */" -> "to decaying_velocity.vx / .vz. */".
+- src/main/9F9C.c:4660: " * decaying_xz_velocity) into the position, resolves it" -> " * decaying_velocity) into the position, resolves it" (re-wrap the comment if clang-format/80 columns needs it).
+- include/game.h:540: "- unk14_*: the word at +0x14. fight_mode (`& 0xF`;" -> "menu_mode (`& 0xF`;" (the decl at game.h:555 is renamed by the apply). Also consider the sentence stating that menu_UpdateRowMenuStoreResult stores it: still true.
+- include/bb2.h:217: "n = g_working_record.fight_mode. */" -> "n = g_working_record.menu_mode. */".
+- NOT to change: 17AFC.c:121-123 local `fight_mode` (copies g_fight_mode_selector, true). include/game.h:1221 trailing comment names only the global g_eff_x_extent_work (unchanged); no comment names right_x_offset or cpu_decided_pad_held. Possibly reformat after apply (python tools/format.py): the dry diff makes 64FD8.c:1411-1414 lines shorter, and the longer decaying_velocity_* lines in 9F9C.c shorten, so clang-format may re-wrap.
+
+Data-track lead (not a member): src/main/5ED34.c:57 `static s32 g_entry_menu_fight_mode` (D_800A35BC, landed in var-globals-b) is the only write-once copy of this member (5ED34.c:70, which the member rename changes to ->menu_mode); it carries the same overclaim (the copied value is 0..6 there, so it is true for that copy: sources are 0..6 only; the objection applies only if the value 7 ever reaches it, which :80-104 / entry-flag tests suggest it does not). Candidate g_entry_menu_mode, decide after the member rename lands; check readers 5ED34.c:80-104, 129-134, 234 ... (== 2 / == 3 / == 6 gates) first.
+
+TUs the wave edits (from the dry run diff): main/175A4, main/17AFC, main/4510C, main/51268, main/5ED34, main/64FD8, main/9F9C, main/snd (plus include/game.h, and bb2.h:217 by hand; main/17AFC and main/9F9C also via the comment edits).
+Land-claim tokens: topic:type:Unk1F800000Rec topic:type:Unk80101EC8Record topic:type:Unk8009BD24Block
+(Reviewer note: INCLUDE_ASM check was done by scanning the 137 live asm/funcs bodies for the record offsets and for the old names; no hit. asm/funcs/eff_*.s listings cite g_eff_x_extent_work but are stale reference listings.)

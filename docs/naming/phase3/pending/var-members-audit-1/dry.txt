@@ -1,0 +1,491 @@
+PASS Unk1F800000Rec.right_x_offset=x_extent_work, Unk80101EC8Record.decaying_xz_velocity=decaying_velocity, Unk80101EC8Record.decaying_xz_velocity_damping_x=decaying_velocity_damping_x, Unk80101EC8Record.decaying_xz_velocity_damping_y=decaying_velocity_damping_y, Unk80101EC8Record.decaying_xz_velocity_damping_z=decaying_velocity_damping_z, Unk80101EC8Record.cpu_decided_pad_held=cpu_pad_decision_result, Unk8009BD24Block.fight_mode=menu_mode
+decl Unk1F800000Rec.right_x_offset -> x_extent_work  include/game.h:1221
+decl Unk80101EC8Record.decaying_xz_velocity -> decaying_velocity  include/game.h:1700
+decl Unk80101EC8Record.decaying_xz_velocity_damping_x -> decaying_velocity_damping_x  include/game.h:1712
+decl Unk80101EC8Record.decaying_xz_velocity_damping_y -> decaying_velocity_damping_y  include/game.h:1713
+decl Unk80101EC8Record.decaying_xz_velocity_damping_z -> decaying_velocity_damping_z  include/game.h:1714
+decl Unk80101EC8Record.cpu_decided_pad_held -> cpu_pad_decision_result  include/game.h:1826
+decl Unk8009BD24Block.fight_mode -> menu_mode  include/game.h:555
+  round 0: 122 member error line(s)
+    src/main/175A4.c:74 decaying_xz_velocity x1
+    src/main/175A4.c:78 decaying_xz_velocity x1
+    src/main/17AFC.c:248 decaying_xz_velocity x1
+    src/main/17AFC.c:249 decaying_xz_velocity x1
+    src/main/17AFC.c:250 decaying_xz_velocity x1
+    src/main/17AFC.c:493 decaying_xz_velocity x1
+    src/main/17AFC.c:494 decaying_xz_velocity x1
+    src/main/17AFC.c:515 decaying_xz_velocity x1
+    src/main/17AFC.c:516 decaying_xz_velocity x1
+    src/main/17AFC.c:1057 decaying_xz_velocity x1
+    src/main/17AFC.c:1058 decaying_xz_velocity x1
+    src/main/17AFC.c:1059 decaying_xz_velocity x1
+    src/main/17AFC.c:1060 decaying_xz_velocity x1
+    src/main/17AFC.c:2150 decaying_xz_velocity x1
+    src/main/17AFC.c:2151 decaying_xz_velocity x1
+    src/main/17AFC.c:2153 decaying_xz_velocity x1
+    src/main/17AFC.c:2154 decaying_xz_velocity x1
+    src/main/17AFC.c:2269 decaying_xz_velocity x1
+    src/main/17AFC.c:2270 decaying_xz_velocity x1
+    src/main/17AFC.c:2271 decaying_xz_velocity x1
+    src/main/17AFC.c:2273 decaying_xz_velocity x1
+    src/main/17AFC.c:2319 decaying_xz_velocity x1
+    src/main/17AFC.c:2320 decaying_xz_velocity x1
+    src/main/17AFC.c:2321 decaying_xz_velocity x1
+    src/main/17AFC.c:2323 decaying_xz_velocity x1
+    src/main/4510C.c:584 cpu_decided_pad_held x1
+    src/main/4510C.c:631 cpu_decided_pad_held x1
+    src/main/4510C.c:1860 cpu_decided_pad_held x1
+    src/main/4510C.c:1874 cpu_decided_pad_held x1
+    src/main/4510C.c:1922 cpu_decided_pad_held x1
+    src/main/4510C.c:1928 cpu_decided_pad_held x1
+    src/main/4510C.c:1940 cpu_decided_pad_held x1
+    src/main/4510C.c:1944 cpu_decided_pad_held x1
+    src/main/4510C.c:1951 cpu_decided_pad_held x1
+    src/main/4510C.c:1960 cpu_decided_pad_held x1
+    src/main/4510C.c:1962 cpu_decided_pad_held x1
+    src/main/4510C.c:1975 cpu_decided_pad_held x1
+    src/main/4510C.c:1982 cpu_decided_pad_held x1
+    src/main/4510C.c:1985 cpu_decided_pad_held x1
+    src/main/4510C.c:1987 cpu_decided_pad_held x1
+    src/main/4510C.c:1990 cpu_decided_pad_held x1
+    src/main/4510C.c:2009 cpu_decided_pad_held x1
+    src/main/4510C.c:2011 cpu_decided_pad_held x1
+    src/main/4510C.c:2063 cpu_decided_pad_held x1
+    src/main/4510C.c:2070 cpu_decided_pad_held x1
+    src/main/4510C.c:2082 cpu_decided_pad_held x1
+    src/main/4510C.c:2083 cpu_decided_pad_held x1
+    src/main/4510C.c:2261 cpu_decided_pad_held x1
+    src/main/4510C.c:2262 cpu_decided_pad_held x1
+    src/main/4510C.c:2298 cpu_decided_pad_held x1
+    src/main/4510C.c:2302 cpu_decided_pad_held x1
+    src/main/4510C.c:2333 cpu_decided_pad_held x1
+    src/main/4510C.c:2334 cpu_decided_pad_held x1
+    src/main/4510C.c:2420 cpu_decided_pad_held x1
+    src/main/4510C.c:2425 cpu_decided_pad_held x1
+    src/main/4510C.c:2430 cpu_decided_pad_held x1
+    src/main/4510C.c:2435 cpu_decided_pad_held x1
+    src/main/4510C.c:2479 cpu_decided_pad_held x1
+    src/main/4510C.c:2488 cpu_decided_pad_held x1
+    src/main/4510C.c:2493 cpu_decided_pad_held x1
+    src/main/4510C.c:2633 cpu_decided_pad_held x1
+    src/main/4510C.c:2634 cpu_decided_pad_held x1
+    src/main/4510C.c:2943 cpu_decided_pad_held x1
+    src/main/4510C.c:2944 cpu_decided_pad_held x1
+    src/main/4510C.c:2967 cpu_decided_pad_held x1
+    src/main/4510C.c:3001 cpu_decided_pad_held x1
+    src/main/4510C.c:3006 cpu_decided_pad_held x1
+    src/main/51268.c:178 fight_mode x1
+    src/main/51268.c:239 right_x_offset x1
+    src/main/5ED34.c:70 fight_mode x1
+    src/main/64FD8.c:1401 fight_mode x1
+    src/main/64FD8.c:1411 fight_mode x1
+    src/main/64FD8.c:1414 fight_mode x1
+    src/main/9F9C.c:1315 decaying_xz_velocity x1
+    src/main/9F9C.c:1316 decaying_xz_velocity x1
+    src/main/9F9C.c:1317 decaying_xz_velocity x1
+    src/main/9F9C.c:4032 decaying_xz_velocity x1
+    src/main/9F9C.c:4033 decaying_xz_velocity x1
+    src/main/9F9C.c:4034 decaying_xz_velocity x1
+    src/main/9F9C.c:4044 decaying_xz_velocity_damping_x x1
+    src/main/9F9C.c:4045 decaying_xz_velocity_damping_y x1
+    src/main/9F9C.c:4046 decaying_xz_velocity_damping_z x1
+    src/main/9F9C.c:5323 decaying_xz_velocity x1
+    src/main/9F9C.c:5325 decaying_xz_velocity x1
+    src/main/9F9C.c:5365 decaying_xz_velocity x1
+    src/main/9F9C.c:5366 decaying_xz_velocity x1
+    src/main/9F9C.c:5367 decaying_xz_velocity x1
+    src/main/9F9C.c:5372 decaying_xz_velocity x1
+    src/main/9F9C.c:5378 decaying_xz_velocity x1
+    src/main/9F9C.c:5379 decaying_xz_velocity x1
+    src/main/9F9C.c:5380 decaying_xz_velocity_damping_x x1
+    src/main/9F9C.c:5382 decaying_xz_velocity x1
+    src/main/9F9C.c:5383 decaying_xz_velocity x1
+    src/main/9F9C.c:5384 decaying_xz_velocity x1
+    src/main/9F9C.c:5386 decaying_xz_velocity x1
+    src/main/9F9C.c:5387 decaying_xz_velocity x1
+    src/main/9F9C.c:5388 decaying_xz_velocity_damping_y x1
+    src/main/9F9C.c:5390 decaying_xz_velocity x1
+    src/main/9F9C.c:5391 decaying_xz_velocity x1
+    src/main/9F9C.c:5392 decaying_xz_velocity x1
+    src/main/9F9C.c:5394 decaying_xz_velocity x1
+    src/main/9F9C.c:5395 decaying_xz_velocity x1
+    src/main/9F9C.c:5396 decaying_xz_velocity_damping_z x1
+    src/main/9F9C.c:5398 decaying_xz_velocity x1
+    src/main/9F9C.c:5399 decaying_xz_velocity x1
+    src/main/9F9C.c:5400 decaying_xz_velocity x1
+    src/main/9F9C.c:5404 decaying_xz_velocity x1
+    src/main/9F9C.c:5405 decaying_xz_velocity x1
+    src/main/9F9C.c:5406 decaying_xz_velocity x1
+    src/main/9F9C.c:5408 decaying_xz_velocity x1
+    src/main/9F9C.c:5409 decaying_xz_velocity x1
+    src/main/9F9C.c:5410 decaying_xz_velocity x1
+    src/main/9F9C.c:5705 decaying_xz_velocity_damping_x x1
+    src/main/9F9C.c:5706 decaying_xz_velocity_damping_y x1
+    src/main/9F9C.c:5707 decaying_xz_velocity_damping_z x1
+    src/main/9F9C.c:5709 decaying_xz_velocity_damping_x x1
+    src/main/9F9C.c:5710 decaying_xz_velocity_damping_y x1
+    src/main/9F9C.c:5711 decaying_xz_velocity_damping_z x1
+    src/main/9F9C.c:5713 decaying_xz_velocity_damping_x x1
+    src/main/9F9C.c:5714 decaying_xz_velocity_damping_y x1
+    src/main/9F9C.c:5715 decaying_xz_velocity_damping_z x1
+    src/main/snd.c:457 fight_mode x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -555 +555 @@
+-    u32 fight_mode : 4;
++    u32 menu_mode : 4;
+@@ -1221 +1221 @@
+-    s16 right_x_offset;    /* g_eff_x_extent_work */
++    s16 x_extent_work;    /* g_eff_x_extent_work */
+@@ -1700 +1700 @@
+-    VECTOR decaying_xz_velocity;
++    VECTOR decaying_velocity;
+@@ -1712,3 +1712,3 @@
+-    s16 decaying_xz_velocity_damping_x;
+-    s16 decaying_xz_velocity_damping_y;
+-    s16 decaying_xz_velocity_damping_z;
++    s16 decaying_velocity_damping_x;
++    s16 decaying_velocity_damping_y;
++    s16 decaying_velocity_damping_z;
+@@ -1826 +1826 @@
+-    s32 cpu_decided_pad_held;
++    s32 cpu_pad_decision_result;
+--- a/src/main/175A4.c
++++ b/src/main/175A4.c
+@@ -74 +74 @@
+-                fighter_record->decaying_xz_velocity.vx -=
++                fighter_record->decaying_velocity.vx -=
+@@ -78 +78 @@
+-                fighter_record->decaying_xz_velocity.vz +=
++                fighter_record->decaying_velocity.vz +=
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -248,3 +248,3 @@
+-    fighter_record->decaying_xz_velocity.vx = 0;
+-    fighter_record->decaying_xz_velocity.vy = 0;
+-    fighter_record->decaying_xz_velocity.vz = 0;
++    fighter_record->decaying_velocity.vx = 0;
++    fighter_record->decaying_velocity.vy = 0;
++    fighter_record->decaying_velocity.vz = 0;
+@@ -493,2 +493,2 @@
+-                fighter_record->decaying_xz_velocity.vx -= vec[0] / 16;
+-                fighter_record->decaying_xz_velocity.vz -= vec[2] / 16;
++                fighter_record->decaying_velocity.vx -= vec[0] / 16;
++                fighter_record->decaying_velocity.vz -= vec[2] / 16;
+@@ -515,2 +515,2 @@
+-                fighter_record->decaying_xz_velocity.vx -= vec[0] / 16;
+-                fighter_record->decaying_xz_velocity.vz -= vec[2] / 16;
++                fighter_record->decaying_velocity.vx -= vec[0] / 16;
++                fighter_record->decaying_velocity.vz -= vec[2] / 16;
+@@ -1057,4 +1057,4 @@
+-        D_80101EC8[0].decaying_xz_velocity.vx += first_push_x;
+-        D_80101EC8[0].decaying_xz_velocity.vz += first_push_z;
+-        D_80101EC8[1].decaying_xz_velocity.vx += second_push_x;
+-        D_80101EC8[1].decaying_xz_velocity.vz += second_push_z;
++        D_80101EC8[0].decaying_velocity.vx += first_push_x;
++        D_80101EC8[0].decaying_velocity.vz += first_push_z;
++        D_80101EC8[1].decaying_velocity.vx += second_push_x;
++        D_80101EC8[1].decaying_velocity.vz += second_push_z;
+@@ -2150,2 +2150,2 @@
+-                    fighter_record->decaying_xz_velocity.vx += dx / 2;
+-                    fighter_record->decaying_xz_velocity.vz += dz / 2;
++                    fighter_record->decaying_velocity.vx += dx / 2;
++                    fighter_record->decaying_velocity.vz += dz / 2;
+@@ -2153,2 +2153,2 @@
+-                    fighter_record->decaying_xz_velocity.vx += dx;
+-                    fighter_record->decaying_xz_velocity.vz += dz;
++                    fighter_record->decaying_velocity.vx += dx;
++                    fighter_record->decaying_velocity.vz += dz;
+@@ -2269,3 +2269,3 @@
+-        rec0->decaying_xz_velocity.vx = (separation_x * correction) / temp_v0;
+-        rec0->decaying_xz_velocity.vz = (separation_z * correction) / temp_v0;
+-        rec1->decaying_xz_velocity.vx =
++        rec0->decaying_velocity.vx = (separation_x * correction) / temp_v0;
++        rec0->decaying_velocity.vz = (separation_z * correction) / temp_v0;
++        rec1->decaying_velocity.vx =
+@@ -2273 +2273 @@
+-        rec1->decaying_xz_velocity.vz =
++        rec1->decaying_velocity.vz =
+@@ -2319,3 +2319,3 @@
+-        rec0->decaying_xz_velocity.vx = (separation_x * correction) / temp_v0;
+-        rec0->decaying_xz_velocity.vz = (separation_z * correction) / temp_v0;
+-        rec1->decaying_xz_velocity.vx =
++        rec0->decaying_velocity.vx = (separation_x * correction) / temp_v0;
++        rec0->decaying_velocity.vz = (separation_z * correction) / temp_v0;
++        rec1->decaying_velocity.vx =
+@@ -2323 +2323 @@
+-        rec1->decaying_xz_velocity.vz =
++        rec1->decaying_velocity.vz =
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -584 +584 @@
+-    fighter_record->cpu_decided_pad_held = -1;
++    fighter_record->cpu_pad_decision_result = -1;
+@@ -631 +631 @@
+-    rec->cpu_decided_pad_held = 0;
++    rec->cpu_pad_decision_result = 0;
+@@ -1860 +1860 @@
+-                p->cpu_decided_pad_held = 0;
++                p->cpu_pad_decision_result = 0;
+@@ -1874 +1874 @@
+-                    p->cpu_decided_pad_held = 0;
++                    p->cpu_pad_decision_result = 0;
+@@ -1922 +1922 @@
+-            return p->cpu_decided_pad_held;
++            return p->cpu_pad_decision_result;
+@@ -1928 +1928 @@
+-            p->cpu_decided_pad_held = 0x2000;
++            p->cpu_pad_decision_result = 0x2000;
+@@ -1940 +1940 @@
+-                        p->cpu_decided_pad_held = 0x4000;
++                        p->cpu_pad_decision_result = 0x4000;
+@@ -1944 +1944 @@
+-                        p->cpu_decided_pad_held = 0x1000;
++                        p->cpu_pad_decision_result = 0x1000;
+@@ -1951 +1951 @@
+-                (p->cpu_decided_pad_held == 0 ||
++                (p->cpu_pad_decision_result == 0 ||
+@@ -1960 +1960 @@
+-                    p->cpu_decided_pad_held = 0x8000;
++                    p->cpu_pad_decision_result = 0x8000;
+@@ -1962 +1962 @@
+-                    p->cpu_decided_pad_held = 0x2000;
++                    p->cpu_pad_decision_result = 0x2000;
+@@ -1975 +1975 @@
+-                p->cpu_decided_pad_held = 0x8000;
++                p->cpu_pad_decision_result = 0x8000;
+@@ -1982 +1982 @@
+-                p->cpu_decided_pad_held = base_pad_buttons;
++                p->cpu_pad_decision_result = base_pad_buttons;
+@@ -1985 +1985 @@
+-                        p->cpu_decided_pad_held = base_pad_buttons | 0x1000;
++                        p->cpu_pad_decision_result = base_pad_buttons | 0x1000;
+@@ -1987 +1987 @@
+-                        p->cpu_decided_pad_held = base_pad_buttons | 0x4000;
++                        p->cpu_pad_decision_result = base_pad_buttons | 0x4000;
+@@ -1990 +1990 @@
+-                    p->cpu_decided_pad_held =
++                    p->cpu_pad_decision_result =
+@@ -2009 +2009 @@
+-                    p->cpu_decided_pad_held = 0x20;
++                    p->cpu_pad_decision_result = 0x20;
+@@ -2011 +2011 @@
+-                    p->cpu_decided_pad_held = 0x20;
++                    p->cpu_pad_decision_result = 0x20;
+@@ -2063 +2063 @@
+-                                    p->cpu_decided_pad_held =
++                                    p->cpu_pad_decision_result =
+@@ -2070 +2070 @@
+-                                    p->cpu_decided_pad_held =
++                                    p->cpu_pad_decision_result =
+@@ -2082,2 +2082,2 @@
+-    if (p->cpu_decided_pad_held != 0) {
+-        return p->cpu_decided_pad_held;
++    if (p->cpu_pad_decision_result != 0) {
++        return p->cpu_pad_decision_result;
+@@ -2261,2 +2261,2 @@
+-                    if (p->cpu_decided_pad_held != 0) {
+-                        return p->cpu_decided_pad_held;
++                    if (p->cpu_pad_decision_result != 0) {
++                        return p->cpu_pad_decision_result;
+@@ -2298 +2298 @@
+-                    p->cpu_decided_pad_held =
++                    p->cpu_pad_decision_result =
+@@ -2302 +2302 @@
+-                    var_22 = p->cpu_decided_pad_held & 4;
++                    var_22 = p->cpu_pad_decision_result & 4;
+@@ -2333,2 +2333,2 @@
+-            if (p->cpu_decided_pad_held != 0) {
+-                return p->cpu_decided_pad_held;
++            if (p->cpu_pad_decision_result != 0) {
++                return p->cpu_pad_decision_result;
+@@ -2420 +2420 @@
+-                    p->cpu_decided_pad_held = 0x8000;
++                    p->cpu_pad_decision_result = 0x8000;
+@@ -2425 +2425 @@
+-                    p->cpu_decided_pad_held = 0x2000;
++                    p->cpu_pad_decision_result = 0x2000;
+@@ -2430 +2430 @@
+-                    p->cpu_decided_pad_held = 0x4000;
++                    p->cpu_pad_decision_result = 0x4000;
+@@ -2435 +2435 @@
+-                    p->cpu_decided_pad_held = 0x1000;
++                    p->cpu_pad_decision_result = 0x1000;
+@@ -2479 +2479 @@
+-                if (p->cpu_decided_pad_held != 0) {
++                if (p->cpu_pad_decision_result != 0) {
+@@ -2488 +2488 @@
+-                (p->cpu_decided_pad_held == 0x2000 &&
++                (p->cpu_pad_decision_result == 0x2000 &&
+@@ -2493 +2493 @@
+-                p->cpu_decided_pad_held = 0;
++                p->cpu_pad_decision_result = 0;
+@@ -2633,2 +2633,2 @@
+-    if (p->cpu_decided_pad_held != 0 || p->cpu_action_countdown != 0) {
+-        return p->cpu_decided_pad_held;
++    if (p->cpu_pad_decision_result != 0 || p->cpu_action_countdown != 0) {
++        return p->cpu_pad_decision_result;
+@@ -2943,2 +2943,2 @@
+-    if (p->cpu_decided_pad_held != 0) {
+-        return p->cpu_decided_pad_held;
++    if (p->cpu_pad_decision_result != 0) {
++        return p->cpu_pad_decision_result;
+@@ -2967 +2967 @@
+-                p->cpu_decided_pad_held = 0x80;
++                p->cpu_pad_decision_result = 0x80;
+@@ -3001 +3001 @@
+-                p->cpu_decided_pad_held = 0x80;
++                p->cpu_pad_decision_result = 0x80;
+@@ -3006 +3006 @@
+-    return p->cpu_decided_pad_held;
++    return p->cpu_pad_decision_result;
+--- a/src/main/51268.c
++++ b/src/main/51268.c
+@@ -178 +178 @@
+-    v = g_working_record.fight_mode;
++    v = g_working_record.menu_mode;
+@@ -239 +239 @@
+-    g_eff_x_extent_work = &SPAD51268->right_x_offset;
++    g_eff_x_extent_work = &SPAD51268->x_extent_work;
+--- a/src/main/5ED34.c
++++ b/src/main/5ED34.c
+@@ -70 +70 @@
+-    g_entry_menu_fight_mode = working_record->fight_mode;
++    g_entry_menu_fight_mode = working_record->menu_mode;
+--- a/src/main/64FD8.c
++++ b/src/main/64FD8.c
+@@ -1401 +1401 @@
+-        g_working_record.fight_mode = result;
++        g_working_record.menu_mode = result;
+@@ -1411 +1411 @@
+-        g_menu_mode_selector_and_extra_slot_counts[g_working_record.fight_mode]
++        g_menu_mode_selector_and_extra_slot_counts[g_working_record.menu_mode]
+@@ -1414 +1414 @@
+-                                                          .fight_mode][0];
++                                                          .menu_mode][0];
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -1315,3 +1315,3 @@
+-    fighter_record->decaying_xz_velocity.vx = 0;
+-    fighter_record->decaying_xz_velocity.vy = 0;
+-    fighter_record->decaying_xz_velocity.vz = 0;
++    fighter_record->decaying_velocity.vx = 0;
++    fighter_record->decaying_velocity.vy = 0;
++    fighter_record->decaying_velocity.vz = 0;
+@@ -4032,3 +4032,3 @@
+-    p->decaying_xz_velocity.vx = 0;
+-    p->decaying_xz_velocity.vy = 0;
+-    p->decaying_xz_velocity.vz = 0;
++    p->decaying_velocity.vx = 0;
++    p->decaying_velocity.vy = 0;
++    p->decaying_velocity.vz = 0;
+@@ -4044,3 +4044,3 @@
+-    p->decaying_xz_velocity_damping_x = 0xC00;
+-    p->decaying_xz_velocity_damping_y = 0xC00;
+-    p->decaying_xz_velocity_damping_z = 0xC00;
++    p->decaying_velocity_damping_x = 0xC00;
++    p->decaying_velocity_damping_y = 0xC00;
++    p->decaying_velocity_damping_z = 0xC00;
+@@ -5323 +5323 @@
+-            fighter_record->decaying_xz_velocity.vx -=
++            fighter_record->decaying_velocity.vx -=
+@@ -5325 +5325 @@
+-            fighter_record->decaying_xz_velocity.vz -=
++            fighter_record->decaying_velocity.vz -=
+@@ -5365,3 +5365,3 @@
+-            fighter_record->decaying_xz_velocity.vx /= 2;
+-            fighter_record->decaying_xz_velocity.vz /= 2;
+-            fighter_record->decaying_xz_velocity.vx +=
++            fighter_record->decaying_velocity.vx /= 2;
++            fighter_record->decaying_velocity.vz /= 2;
++            fighter_record->decaying_velocity.vx +=
+@@ -5372 +5372 @@
+-            fighter_record->decaying_xz_velocity.vz +=
++            fighter_record->decaying_velocity.vz +=
+@@ -5378,3 +5378,3 @@
+-    fighter_record->decaying_xz_velocity.vx =
+-        (fighter_record->decaying_xz_velocity.vx *
+-         fighter_record->decaying_xz_velocity_damping_x) >>
++    fighter_record->decaying_velocity.vx =
++        (fighter_record->decaying_velocity.vx *
++         fighter_record->decaying_velocity_damping_x) >>
+@@ -5382,7 +5382,7 @@
+-    if (fighter_record->decaying_xz_velocity.vx >= -3 &&
+-        fighter_record->decaying_xz_velocity.vx <= 3) {
+-        fighter_record->decaying_xz_velocity.vx = 0;
+-    }
+-    fighter_record->decaying_xz_velocity.vy =
+-        (fighter_record->decaying_xz_velocity.vy *
+-         fighter_record->decaying_xz_velocity_damping_y) >>
++    if (fighter_record->decaying_velocity.vx >= -3 &&
++        fighter_record->decaying_velocity.vx <= 3) {
++        fighter_record->decaying_velocity.vx = 0;
++    }
++    fighter_record->decaying_velocity.vy =
++        (fighter_record->decaying_velocity.vy *
++         fighter_record->decaying_velocity_damping_y) >>
+@@ -5390,7 +5390,7 @@
+-    if (fighter_record->decaying_xz_velocity.vy >= -3 &&
+-        fighter_record->decaying_xz_velocity.vy <= 3) {
+-        fighter_record->decaying_xz_velocity.vy = 0;
+-    }
+-    fighter_record->decaying_xz_velocity.vz =
+-        (fighter_record->decaying_xz_velocity.vz *
+-         fighter_record->decaying_xz_velocity_damping_z) >>
++    if (fighter_record->decaying_velocity.vy >= -3 &&
++        fighter_record->decaying_velocity.vy <= 3) {
++        fighter_record->decaying_velocity.vy = 0;
++    }
++    fighter_record->decaying_velocity.vz =
++        (fighter_record->decaying_velocity.vz *
++         fighter_record->decaying_velocity_damping_z) >>
+@@ -5398,3 +5398,3 @@
+-    if (fighter_record->decaying_xz_velocity.vz >= -3 &&
+-        fighter_record->decaying_xz_velocity.vz <= 3) {
+-        fighter_record->decaying_xz_velocity.vz = 0;
++    if (fighter_record->decaying_velocity.vz >= -3 &&
++        fighter_record->decaying_velocity.vz <= 3) {
++        fighter_record->decaying_velocity.vz = 0;
+@@ -5404,3 +5404,3 @@
+-        fighter_record->decaying_xz_velocity.vx = 0;
+-        fighter_record->decaying_xz_velocity.vy = 0;
+-        fighter_record->decaying_xz_velocity.vz = 0;
++        fighter_record->decaying_velocity.vx = 0;
++        fighter_record->decaying_velocity.vy = 0;
++        fighter_record->decaying_velocity.vz = 0;
+@@ -5408,3 +5408,3 @@
+-        fighter_record->base_pos.x += fighter_record->decaying_xz_velocity.vx;
+-        fighter_record->base_pos.y += fighter_record->decaying_xz_velocity.vy;
+-        fighter_record->base_pos.z += fighter_record->decaying_xz_velocity.vz;
++        fighter_record->base_pos.x += fighter_record->decaying_velocity.vx;
++        fighter_record->base_pos.y += fighter_record->decaying_velocity.vy;
++        fighter_record->base_pos.z += fighter_record->decaying_velocity.vz;
+@@ -5705,3 +5705,3 @@
+-        fighter_record->decaying_xz_velocity_damping_x = 0x600;
+-        fighter_record->decaying_xz_velocity_damping_y = 0x600;
+-        fighter_record->decaying_xz_velocity_damping_z = 0x600;
++        fighter_record->decaying_velocity_damping_x = 0x600;
++        fighter_record->decaying_velocity_damping_y = 0x600;
++        fighter_record->decaying_velocity_damping_z = 0x600;
+@@ -5709,3 +5709,3 @@
+-        fighter_record->decaying_xz_velocity_damping_x = 0x100;
+-        fighter_record->decaying_xz_velocity_damping_y = 0x100;
+-        fighter_record->decaying_xz_velocity_damping_z = 0x100;
++        fighter_record->decaying_velocity_damping_x = 0x100;
++        fighter_record->decaying_velocity_damping_y = 0x100;
++        fighter_record->decaying_velocity_damping_z = 0x100;
+@@ -5713,3 +5713,3 @@
+-        fighter_record->decaying_xz_velocity_damping_x = 0xC00;
+-        fighter_record->decaying_xz_velocity_damping_y = 0xC00;
+-        fighter_record->decaying_xz_velocity_damping_z = 0xC00;
++        fighter_record->decaying_velocity_damping_x = 0xC00;
++        fighter_record->decaying_velocity_damping_y = 0xC00;
++        fighter_record->decaying_velocity_damping_z = 0xC00;
+--- a/src/main/snd.c
++++ b/src/main/snd.c
+@@ -457 +457 @@
+-    if (GetWorkingRecord()->fight_mode == 3 && vab_id == 5) {
++    if (GetWorkingRecord()->menu_mode == 3 && vab_id == 5) {
+DRY RUN: 9 file(s) would change; nothing written
+OK: every member access renamed
