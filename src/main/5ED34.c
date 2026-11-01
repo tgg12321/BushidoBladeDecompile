@@ -1718,15 +1718,15 @@ void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelect
 
 void menu_UpdateChoiceGrid(Unk8006EACCRec *, Unk8009B0E0Record **, s32);
 
-void func_80072084(Unk8006EACCRec *draw_context) {
+void menu_UpdateChoiceGridPage1(Unk8006EACCRec *draw_context) {
     menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_68, 0);
 }
 
-void func_800720AC(Unk8006EACCRec *draw_context) {
+void menu_UpdateChoiceGridPage2(Unk8006EACCRec *draw_context) {
     menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_6C, 1);
 }
 
-void func_800720D4(Unk8006EACCRec *draw_context) {
+void menu_UpdateChoiceGridPage3(Unk8006EACCRec *draw_context) {
     menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_70, 2);
 }
 

@@ -1,4 +1,4 @@
-glabel func_80072084
+glabel menu_UpdateChoiceGridPage1
     /* 62884 80072084 DC04828F */  lw         $v0, %gp_rel(g_entry_menu_resources)($gp)
     /* 62888 80072088 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6288C 8007208C 1000BFAF */  sw         $ra, 0x10($sp)
@@ -9,4 +9,4 @@ glabel func_80072084
     /* 628A0 800720A0 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 628A4 800720A4 0800E003 */  jr         $ra
     /* 628A8 800720A8 00000000 */   nop
-endlabel func_80072084
+endlabel menu_UpdateChoiceGridPage1

@@ -37,9 +37,9 @@ void DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection(
     Unk8006EACCRec *);
 void DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections(
     Unk8006EACCRec *);
-void func_80072084(Unk8006EACCRec *);
-void func_800720AC(Unk8006EACCRec *);
-void func_800720D4(Unk8006EACCRec *);
+void menu_UpdateChoiceGridPage1(Unk8006EACCRec *);
+void menu_UpdateChoiceGridPage2(Unk8006EACCRec *);
+void menu_UpdateChoiceGridPage3(Unk8006EACCRec *);
 
 /* the SEL.BIN menu's per-mode update handlers, indexed by
  * g_entry_menu_handler_index */
@@ -48,9 +48,9 @@ void (*g_entry_menu_handlers[7])(Unk8006EACCRec *) = {
     menu_UpdateRow,
     DrawRotatedEntryCountdownAndRequestState3OrDrawDarkenedSelection,
     DrawRotatedEntriesAndOnFullCounterFinishWithResultOrNextStateAndStoreSelections,
-    func_80072084,
-    func_800720AC,
-    func_800720D4,
+    menu_UpdateChoiceGridPage1,
+    menu_UpdateChoiceGridPage2,
+    menu_UpdateChoiceGridPage3,
 };
 
 u8 D_8009BC38[6] = {4, 3, 0, 2, 1, 5};
