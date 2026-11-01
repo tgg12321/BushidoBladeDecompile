@@ -75852,6 +75852,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80061658	eff_StartArgSelectedCommandWithCyanLight	versus-cpu-clear-retail-1@d1b76e2e5d49	opp1	8948	8948	1	opp1.last@9250#0f379139c711	hitmap:first 1 hits per phase only	0	
 0x80061658	eff_StartArgSelectedCommandWithCyanLight	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	11987	11987	1	opp2.12000@12000#8b7f445ec35b	hitmap:first 1 hits per phase only	0	
 0x80061658	eff_StartArgSelectedCommandWithCyanLight	versus-cpu-clear-retail-1@d1b76e2e5d49	opp3	15350	15350	1	opp3.16000@16000#360a0a26a85c	hitmap:first 1 hits per phase only	0	
+0x80061710	eff_StartArgSelectedCommandWithGreenLight	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp2	9877	9972	2	opp2.10000@10000#345997568672	recorded hits only; capture limits apply	0	
+0x80061710	eff_StartArgSelectedCommandWithGreenLight	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp3	12306	12306	1	opp3.12400@12400#2603d3db595b	recorded hits only; capture limits apply	0	
 0x80061710	eff_StartArgSelectedCommandWithGreenLight	lib-story-final-fight-retail-1@2c1def7be909	after_katze	131303	131303	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
 0x80061710	eff_StartArgSelectedCommandWithGreenLight	lib-story-final-fight-retail-1@2c1def7be909	final_fight	154821	154821	1	s.155000@155000#59e647fb92aa	hitmap:first 1 hits per phase only	0	
 0x80061710	eff_StartArgSelectedCommandWithGreenLight	lib-story-final-fight-retail-1@2c1def7be909	katze	126778	126778	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	
@@ -76682,6 +76684,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800650A4	eff_InitQuadPairNotMirroredByViewSetting	versus-cpu-clear-retail-1@d1b76e2e5d49	opp1	8948	8948	1	opp1.last@9250#0f379139c711	hitmap:first 1 hits per phase only	0	
 0x800650A4	eff_InitQuadPairNotMirroredByViewSetting	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	11987	11987	1	opp2.12000@12000#8b7f445ec35b	hitmap:first 1 hits per phase only	0	
 0x800650A4	eff_InitQuadPairNotMirroredByViewSetting	versus-cpu-clear-retail-1@d1b76e2e5d49	opp3	15350	15350	1	opp3.16000@16000#360a0a26a85c	hitmap:first 1 hits per phase only	0	
+0x800650EC	func_800650EC	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp2	9877	9877	1	opp2.10000@10000#345997568672	recorded hits only; capture limits apply	0	
+0x800650EC	func_800650EC	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp3	12306	12306	1	opp3.12400@12400#2603d3db595b	recorded hits only; capture limits apply	0	
 0x800650EC	func_800650EC	lib-story-final-fight-retail-1@2c1def7be909	after_katze	142904	142904	1	s.151400@151400#faf94ad1586e	hitmap:first 1 hits per phase only	0	
 0x800650EC	func_800650EC	lib-story-final-fight-retail-1@2c1def7be909	final_fight	154821	154821	1	s.155000@155000#59e647fb92aa	hitmap:first 1 hits per phase only	0	
 0x800650EC	func_800650EC	lib-story-final-fight-retail-1@2c1def7be909	katze	126778	126778	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	
@@ -76702,6 +76706,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800650EC	func_800650EC	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	21784	21784	1	opp5.22500@22500#dc36ca57c1fb	hitmap:first 1 hits per phase only	0	
 0x800650EC	func_800650EC	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9877	9877	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x800650EC	func_800650EC	versus-cpu-tatsumi-1@016e75c2a56c	opp3	12306	12306	1	opp3.12400@12400#2603d3db595b	hitmap:first 1 hits per phase only	0	
+0x80065134	func_80065134	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp2	9972	9972	1	opp2.10000@10000#345997568672	recorded hits only; capture limits apply	0	
 0x80065134	func_80065134	lib-story-final-fight-retail-1@2c1def7be909	after_katze	131303	131303	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
 0x80065134	func_80065134	lib-story-final-fight-retail-1@2c1def7be909	story	11455	11455	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80065134	func_80065134	story-final-fight-stages-1@58ffaa0e84cf	after_katze	131303	131303	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
@@ -76845,6 +76850,8 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80065590	eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting	versus-cpu-clear-retail-1@d1b76e2e5d49	opp1	8950	8950	1	opp1.last@9250#0f379139c711	hitmap:first 1 hits per phase only	0	
 0x80065590	eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	11989	11989	1	opp2.12000@12000#8b7f445ec35b	hitmap:first 1 hits per phase only	0	
 0x80065590	eff_DrawAndAdvanceQuadPairNotMirroredByViewSetting	versus-cpu-clear-retail-1@d1b76e2e5d49	opp3	15352	15352	1	opp3.16000@16000#360a0a26a85c	hitmap:first 1 hits per phase only	0	
+0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp2	9880	9895	6	opp2.10000@10000#345997568672	recorded hits only; capture limits apply	0	
+0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp3	12308	12318	6	opp3.12400@12400#2603d3db595b	recorded hits only; capture limits apply	0	
 0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	lib-story-final-fight-retail-1@2c1def7be909	after_katze	142906	142906	1	s.151400@151400#faf94ad1586e	hitmap:first 1 hits per phase only	0	
 0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	lib-story-final-fight-retail-1@2c1def7be909	final_fight	154823	154823	1	s.155000@155000#59e647fb92aa	hitmap:first 1 hits per phase only	0	
 0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	lib-story-final-fight-retail-1@2c1def7be909	katze	126780	126780	1	s.127900@127900#f3de50fc58bd	hitmap:first 1 hits per phase only	0	
@@ -76865,6 +76872,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	21786	21786	1	opp5.22500@22500#dc36ca57c1fb	hitmap:first 1 hits per phase only	0	
 0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	versus-cpu-tatsumi-1@016e75c2a56c	opp2	9880	9880	1	opp2.10000@10000#345997568672	hitmap:first 1 hits per phase only	0	
 0x800655E0	eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay	versus-cpu-tatsumi-1@016e75c2a56c	opp3	12308	12308	1	opp3.12400@12400#2603d3db595b	hitmap:first 1 hits per phase only	0	
+0x80065630	eff_DrawAndAdvanceQuadNotMirroredByViewSetting	eff-green-init-versus-cpu-tatsumi-1@76e520c7adb6	opp2	9975	9987	6	opp2.10000@10000#345997568672	recorded hits only; capture limits apply	0	
 0x80065630	eff_DrawAndAdvanceQuadNotMirroredByViewSetting	lib-story-final-fight-retail-1@2c1def7be909	after_katze	131305	131305	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
 0x80065630	eff_DrawAndAdvanceQuadNotMirroredByViewSetting	lib-story-final-fight-retail-1@2c1def7be909	story	11457	11457	1	s.126599@126599#19334832b963	hitmap:first 1 hits per phase only	0	
 0x80065630	eff_DrawAndAdvanceQuadNotMirroredByViewSetting	story-final-fight-stages-1@58ffaa0e84cf	after_katze	131305	131305	1	s.141700@141700#465f2f0709be	hitmap:first 1 hits per phase only	0	
