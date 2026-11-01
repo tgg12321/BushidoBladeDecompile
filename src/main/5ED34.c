@@ -67,7 +67,7 @@ s32 InitDisplayStateLoadPackAndSetEntryFlags(
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     g_entry_menu_last_grid_pass_second_slot_entry_value = 0x7F;
-    g_entry_menu_fight_mode = working_record->fight_mode;
+    g_entry_menu_fight_mode = working_record->menu_mode;
     g_entry_menu_prim_buffers = (Unk8006E49CRec *)prim_buffer_pair_addr;
     g_entry_menu_working_record_ptr = working_record;
     g_entry_menu_row_phase_extra_slot_count = 0;

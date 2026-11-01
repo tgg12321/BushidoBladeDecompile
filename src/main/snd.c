@@ -454,7 +454,7 @@ s32 snd_LoadVabPack(
     s16 vab_index;
     s16 id;
 
-    if (GetWorkingRecord()->fight_mode == 3 && vab_id == 5) {
+    if (GetWorkingRecord()->menu_mode == 3 && vab_id == 5) {
         return 0;
     }
     func_800858D0(0);

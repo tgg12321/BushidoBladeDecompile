@@ -1312,9 +1312,9 @@ void func_8001C624(void) {
     fighter_record->weapon_point_delta[1].vx = 0;
     fighter_record->weapon_point_delta[1].vy = 0;
     fighter_record->weapon_point_delta[1].vz = 0;
-    fighter_record->decaying_xz_velocity.vx = 0;
-    fighter_record->decaying_xz_velocity.vy = 0;
-    fighter_record->decaying_xz_velocity.vz = 0;
+    fighter_record->decaying_velocity.vx = 0;
+    fighter_record->decaying_velocity.vy = 0;
+    fighter_record->decaying_velocity.vz = 0;
     fighter_record->unk_144 = 0;
     fighter_record->remaining_turn = 0;
     fighter_record->unk_150 = 0;
@@ -4029,9 +4029,9 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->weapon_point_delta[1].vx = 0;
     p->weapon_point_delta[1].vy = 0;
     p->weapon_point_delta[1].vz = 0;
-    p->decaying_xz_velocity.vx = 0;
-    p->decaying_xz_velocity.vy = 0;
-    p->decaying_xz_velocity.vz = 0;
+    p->decaying_velocity.vx = 0;
+    p->decaying_velocity.vy = 0;
+    p->decaying_velocity.vz = 0;
     p->unk_144 = 0;
     p->ground_y = p->collision_pos.vy;
     p->remaining_turn = 0;
@@ -4041,9 +4041,9 @@ void fighter_Init(s32 fighter_index, s32 is_cpu_controlled, s32 roster_index,
     p->base_velocity_damping_x = 0xC00;
     p->base_velocity_damping_y = 0xF80;
     p->base_velocity_damping_z = 0xC00;
-    p->decaying_xz_velocity_damping_x = 0xC00;
-    p->decaying_xz_velocity_damping_y = 0xC00;
-    p->decaying_xz_velocity_damping_z = 0xC00;
+    p->decaying_velocity_damping_x = 0xC00;
+    p->decaying_velocity_damping_y = 0xC00;
+    p->decaying_velocity_damping_z = 0xC00;
     p->eased_pose_elevation_offset = 0;
     p->eased_pose_bearing_offset = 0;
     p->opponent_elevation_offset = 0;
@@ -5320,9 +5320,9 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
         s32 state = fighter_record->move_kind;
 
         if (state == 8 || state == 0x22) {
-            fighter_record->decaying_xz_velocity.vx -=
+            fighter_record->decaying_velocity.vx -=
                 fighter_record->horizontal_probe_normal.vx / 256;
-            fighter_record->decaying_xz_velocity.vz -=
+            fighter_record->decaying_velocity.vz -=
                 fighter_record->horizontal_probe_normal.vz / 256;
         }
     }
@@ -5362,52 +5362,52 @@ void fighter_Update(s32 fighter_index, PadState *pad) {
                    ? 1
                    : -((fighter_record->pad_input.held & 0x4000) != 0);
         if (temp != 0) {
-            fighter_record->decaying_xz_velocity.vx /= 2;
-            fighter_record->decaying_xz_velocity.vz /= 2;
-            fighter_record->decaying_xz_velocity.vx +=
+            fighter_record->decaying_velocity.vx /= 2;
+            fighter_record->decaying_velocity.vz /= 2;
+            fighter_record->decaying_velocity.vx +=
                 (Judge[fighter_record->opponent_bearing & 0xFFF] -
                  Judge[(fighter_record->opponent_bearing + 0x400) & 0xFFF] *
                      temp * 3) /
                 128;
-            fighter_record->decaying_xz_velocity.vz +=
+            fighter_record->decaying_velocity.vz +=
                 (Judge[(fighter_record->opponent_bearing + 0x400) & 0xFFF] +
                  Judge[fighter_record->opponent_bearing & 0xFFF] * temp * 3) /
                 128;
         }
     }
-    fighter_record->decaying_xz_velocity.vx =
-        (fighter_record->decaying_xz_velocity.vx *
-         fighter_record->decaying_xz_velocity_damping_x) >>
+    fighter_record->decaying_velocity.vx =
+        (fighter_record->decaying_velocity.vx *
+         fighter_record->decaying_velocity_damping_x) >>
         12;
-    if (fighter_record->decaying_xz_velocity.vx >= -3 &&
-        fighter_record->decaying_xz_velocity.vx <= 3) {
-        fighter_record->decaying_xz_velocity.vx = 0;
+    if (fighter_record->decaying_velocity.vx >= -3 &&
+        fighter_record->decaying_velocity.vx <= 3) {
+        fighter_record->decaying_velocity.vx = 0;
     }
-    fighter_record->decaying_xz_velocity.vy =
-        (fighter_record->decaying_xz_velocity.vy *
-         fighter_record->decaying_xz_velocity_damping_y) >>
+    fighter_record->decaying_velocity.vy =
+        (fighter_record->decaying_velocity.vy *
+         fighter_record->decaying_velocity_damping_y) >>
         12;
-    if (fighter_record->decaying_xz_velocity.vy >= -3 &&
-        fighter_record->decaying_xz_velocity.vy <= 3) {
-        fighter_record->decaying_xz_velocity.vy = 0;
+    if (fighter_record->decaying_velocity.vy >= -3 &&
+        fighter_record->decaying_velocity.vy <= 3) {
+        fighter_record->decaying_velocity.vy = 0;
     }
-    fighter_record->decaying_xz_velocity.vz =
-        (fighter_record->decaying_xz_velocity.vz *
-         fighter_record->decaying_xz_velocity_damping_z) >>
+    fighter_record->decaying_velocity.vz =
+        (fighter_record->decaying_velocity.vz *
+         fighter_record->decaying_velocity_damping_z) >>
         12;
-    if (fighter_record->decaying_xz_velocity.vz >= -3 &&
-        fighter_record->decaying_xz_velocity.vz <= 3) {
-        fighter_record->decaying_xz_velocity.vz = 0;
+    if (fighter_record->decaying_velocity.vz >= -3 &&
+        fighter_record->decaying_velocity.vz <= 3) {
+        fighter_record->decaying_velocity.vz = 0;
     }
     if (fighter_record->move_kind == 4 || fighter_record->move_kind == 0x14 ||
         fighter_record->character_roster_index == 0x1F) {
-        fighter_record->decaying_xz_velocity.vx = 0;
-        fighter_record->decaying_xz_velocity.vy = 0;
-        fighter_record->decaying_xz_velocity.vz = 0;
+        fighter_record->decaying_velocity.vx = 0;
+        fighter_record->decaying_velocity.vy = 0;
+        fighter_record->decaying_velocity.vz = 0;
     } else {
-        fighter_record->base_pos.x += fighter_record->decaying_xz_velocity.vx;
-        fighter_record->base_pos.y += fighter_record->decaying_xz_velocity.vy;
-        fighter_record->base_pos.z += fighter_record->decaying_xz_velocity.vz;
+        fighter_record->base_pos.x += fighter_record->decaying_velocity.vx;
+        fighter_record->base_pos.y += fighter_record->decaying_velocity.vy;
+        fighter_record->base_pos.z += fighter_record->decaying_velocity.vz;
     }
     proposed_collision_pos.vx =
         fighter_record->base_pos.x + fighter_record->root_offset.x;
@@ -5702,17 +5702,17 @@ skip_62:
         }
     }
     if (fighter_record->move_kind == 6) {
-        fighter_record->decaying_xz_velocity_damping_x = 0x600;
-        fighter_record->decaying_xz_velocity_damping_y = 0x600;
-        fighter_record->decaying_xz_velocity_damping_z = 0x600;
+        fighter_record->decaying_velocity_damping_x = 0x600;
+        fighter_record->decaying_velocity_damping_y = 0x600;
+        fighter_record->decaying_velocity_damping_z = 0x600;
     } else if (fighter_record->move_kind == 8) {
-        fighter_record->decaying_xz_velocity_damping_x = 0x100;
-        fighter_record->decaying_xz_velocity_damping_y = 0x100;
-        fighter_record->decaying_xz_velocity_damping_z = 0x100;
+        fighter_record->decaying_velocity_damping_x = 0x100;
+        fighter_record->decaying_velocity_damping_y = 0x100;
+        fighter_record->decaying_velocity_damping_z = 0x100;
     } else {
-        fighter_record->decaying_xz_velocity_damping_x = 0xC00;
-        fighter_record->decaying_xz_velocity_damping_y = 0xC00;
-        fighter_record->decaying_xz_velocity_damping_z = 0xC00;
+        fighter_record->decaying_velocity_damping_x = 0xC00;
+        fighter_record->decaying_velocity_damping_y = 0xC00;
+        fighter_record->decaying_velocity_damping_z = 0xC00;
     }
     if (fighter_record->downward_probe_hit != 0) {
         fighter_record->base_velocity_damping_x = 0xD00;

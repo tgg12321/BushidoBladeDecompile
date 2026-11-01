@@ -552,7 +552,7 @@ typedef struct {
    records. */
 typedef struct {
     Unk8009BD24Record match_picks[2][5];
-    u32 fight_mode : 4;
+    u32 menu_mode : 4;
     u32 stage_index : 6;
     u32 match_count_index : 2;
     u32 time_limit_index : 2;
@@ -1218,7 +1218,7 @@ typedef struct {
     s32 perspective_scale; /* g_eff_perspective_scale */
     s32 screen_xy[3];      /* g_eff_screen_xy */
     s16 left_x_offset;     /* g_eff_left_x_offset */
-    s16 right_x_offset;    /* g_eff_x_extent_work */
+    s16 x_extent_work;     /* g_eff_x_extent_work */
     s32 upper_y_offset;    /* g_eff_upper_y_offset */
     s32 y_extent_work;     /* g_eff_y_extent_work */
     s32 unk8C;             /* g_eff_rtp_flag */
@@ -1697,7 +1697,7 @@ typedef struct Unk80101EC8Record {
     /* per blade; fighter_ProcessWeaponBodyHits indexes it with its 0/1 blade
      * flag */
     VECTOR weapon_point_delta[2];
-    VECTOR decaying_xz_velocity;
+    VECTOR decaying_velocity;
     s32 unk_144;
     s32 ground_y;
     s16 remaining_turn;
@@ -1709,9 +1709,9 @@ typedef struct Unk80101EC8Record {
     s16 base_velocity_damping_y;
     s16 base_velocity_damping_z;
     u8 unk_15C[0x15E - 0x15C];
-    s16 decaying_xz_velocity_damping_x;
-    s16 decaying_xz_velocity_damping_y;
-    s16 decaying_xz_velocity_damping_z;
+    s16 decaying_velocity_damping_x;
+    s16 decaying_velocity_damping_y;
+    s16 decaying_velocity_damping_z;
     u8 unk_164[0x168 - 0x164];
     Vec3i32 camera_fighter_point;
     Vec3i32 bone_hit_points_4_5_midpoint;
@@ -1823,7 +1823,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_3C2;
     s32 unk_3C4;
     s32 cpu_pad_script_held;
-    s32 cpu_decided_pad_held;
+    s32 cpu_pad_decision_result;
     /* the pad record fighter_BuildCpuPad builds for
      * fighter_BuildCpuOrMappedPadState */
     PadState last_cpu_pad;

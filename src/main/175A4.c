@@ -71,11 +71,11 @@ void fight_UpdatePairedInputTotalsEventsAndMidpointEffects(void) {
                 } else {
                     drift_sign = 0;
                 }
-                fighter_record->decaying_xz_velocity.vx -=
+                fighter_record->decaying_velocity.vx -=
                     (Judge[(fighter_record->orientation.vy + 0x400) & 0xFFF] *
                      drift_sign) /
                     256;
-                fighter_record->decaying_xz_velocity.vz +=
+                fighter_record->decaying_velocity.vz +=
                     (Judge[(u16)fighter_record->orientation.vy & 0xFFF] *
                      drift_sign) /
                     256;

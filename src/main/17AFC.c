@@ -245,9 +245,9 @@ void fighter_RelocateAndStartEventMove(Unk80101EC8Record *fighter_record) {
     fighter_record->base_velocity.vx = 0;
     fighter_record->base_velocity.vy = 0;
     fighter_record->base_velocity.vz = 0;
-    fighter_record->decaying_xz_velocity.vx = 0;
-    fighter_record->decaying_xz_velocity.vy = 0;
-    fighter_record->decaying_xz_velocity.vz = 0;
+    fighter_record->decaying_velocity.vx = 0;
+    fighter_record->decaying_velocity.vy = 0;
+    fighter_record->decaying_velocity.vz = 0;
     r1 = motion_ResolveMoveData(
         fighter_record, fighter_record->cur_move->event_move_table_id,
         &fighter_record->move_is_common);
@@ -490,8 +490,8 @@ s32 fighter_ResolveBoneHit(
             }
             if (vec[1] * vec[1] < vec[0] * vec[0] + vec[2] * vec[2]) {
                 fighter_SetTurnDelta(fighter_record, ratan2(vec[0], vec[2]));
-                fighter_record->decaying_xz_velocity.vx -= vec[0] / 16;
-                fighter_record->decaying_xz_velocity.vz -= vec[2] / 16;
+                fighter_record->decaying_velocity.vx -= vec[0] / 16;
+                fighter_record->decaying_velocity.vz -= vec[2] / 16;
             }
             return 0;
         }
@@ -512,8 +512,8 @@ s32 fighter_ResolveBoneHit(
                     fighter_index, 0x25, hit_point, 0);
                 fighter_record->pending_move_event = 1;
                 fighter_SetTurnDelta(fighter_record, ratan2(vec[0], vec[2]));
-                fighter_record->decaying_xz_velocity.vx -= vec[0] / 16;
-                fighter_record->decaying_xz_velocity.vz -= vec[2] / 16;
+                fighter_record->decaying_velocity.vx -= vec[0] / 16;
+                fighter_record->decaying_velocity.vz -= vec[2] / 16;
                 *out = arg0;
                 return 0;
             }
@@ -1054,10 +1054,10 @@ void fighter_ResolveBodyOverlap(void) {
         }
     }
     if (var_1 != 0) {
-        D_80101EC8[0].decaying_xz_velocity.vx += first_push_x;
-        D_80101EC8[0].decaying_xz_velocity.vz += first_push_z;
-        D_80101EC8[1].decaying_xz_velocity.vx += second_push_x;
-        D_80101EC8[1].decaying_xz_velocity.vz += second_push_z;
+        D_80101EC8[0].decaying_velocity.vx += first_push_x;
+        D_80101EC8[0].decaying_velocity.vz += first_push_z;
+        D_80101EC8[1].decaying_velocity.vx += second_push_x;
+        D_80101EC8[1].decaying_velocity.vz += second_push_z;
     }
 }
 
@@ -2147,11 +2147,11 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                     other_record->move_kind == 7 ||
                     other_record->move_kind == 0xD ||
                     other_record->move_kind == 0x2C) {
-                    fighter_record->decaying_xz_velocity.vx += dx / 2;
-                    fighter_record->decaying_xz_velocity.vz += dz / 2;
+                    fighter_record->decaying_velocity.vx += dx / 2;
+                    fighter_record->decaying_velocity.vz += dz / 2;
                 } else {
-                    fighter_record->decaying_xz_velocity.vx += dx;
-                    fighter_record->decaying_xz_velocity.vz += dz;
+                    fighter_record->decaying_velocity.vx += dx;
+                    fighter_record->decaying_velocity.vz += dz;
                 }
                 if ((fighter_record->move_kind == 0x13 ||
                      fighter_record->move_kind == 0x1B ||
@@ -2266,11 +2266,11 @@ s32 fighter_SetBasePositionSeparationCorrectionsAndGetDistance(
     {
         s32 temp_v0 = target_separation - 0x64;
         s32 negated_correction = -correction;
-        rec0->decaying_xz_velocity.vx = (separation_x * correction) / temp_v0;
-        rec0->decaying_xz_velocity.vz = (separation_z * correction) / temp_v0;
-        rec1->decaying_xz_velocity.vx =
+        rec0->decaying_velocity.vx = (separation_x * correction) / temp_v0;
+        rec0->decaying_velocity.vz = (separation_z * correction) / temp_v0;
+        rec1->decaying_velocity.vx =
             (separation_x * negated_correction) / temp_v0;
-        rec1->decaying_xz_velocity.vz =
+        rec1->decaying_velocity.vz =
             (separation_z * negated_correction) / temp_v0;
     }
     return (s32)distance;
@@ -2316,11 +2316,11 @@ s32 fighter_CalcSeparationErrorAndOpposedOffsets(void) {
     {
         s32 temp_v0 = 0x3E8;
         s32 negated_correction = -correction;
-        rec0->decaying_xz_velocity.vx = (separation_x * correction) / temp_v0;
-        rec0->decaying_xz_velocity.vz = (separation_z * correction) / temp_v0;
-        rec1->decaying_xz_velocity.vx =
+        rec0->decaying_velocity.vx = (separation_x * correction) / temp_v0;
+        rec0->decaying_velocity.vz = (separation_z * correction) / temp_v0;
+        rec1->decaying_velocity.vx =
             (separation_x * negated_correction) / temp_v0;
-        rec1->decaying_xz_velocity.vz =
+        rec1->decaying_velocity.vz =
             (separation_z * negated_correction) / temp_v0;
     }
     return (s32)distance - 0x44C;

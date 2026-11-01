@@ -175,7 +175,7 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 quad_storage) {
     s32 second_quad_buffer_addr;
     new_var = arg0;
     cdrom_WaitIdle();
-    v = g_working_record.fight_mode;
+    v = g_working_record.menu_mode;
     if (v == 0) {
         cdrom_StartRead(cdrom_GetFileIndex(2, 0x3C), arg0);
     } else if (v == 3) {
@@ -236,7 +236,7 @@ void eff_BindScratchpad(s16 *src_rotation, s32 *src_position) {
     g_eff_perspective_scale = &SPAD51268->perspective_scale;
     g_eff_screen_xy = SPAD51268->screen_xy;
     g_eff_left_x_offset = &SPAD51268->left_x_offset;
-    g_eff_x_extent_work = &SPAD51268->right_x_offset;
+    g_eff_x_extent_work = &SPAD51268->x_extent_work;
     g_eff_upper_y_offset = &SPAD51268->upper_y_offset;
     g_eff_y_extent_work = &SPAD51268->y_extent_work;
     g_eff_rtp_flag = &SPAD51268->unk8C;

@@ -1398,7 +1398,7 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 pressed_buttons) {
     if (result >= 0) {
         ret = 1;
         g_option_mode_flow_state = 0;
-        g_working_record.fight_mode = result;
+        g_working_record.menu_mode = result;
     } else if (result == -2) {
         ret = -1;
     }
@@ -1408,10 +1408,10 @@ s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 pressed_buttons) {
 s32 ResetFlowAndFetchRowTablePair(void) {
     g_option_mode_flow_state = 0;
     g_menu_pending_entry_extra_slot_count =
-        g_menu_mode_selector_and_extra_slot_counts[g_working_record.fight_mode]
+        g_menu_mode_selector_and_extra_slot_counts[g_working_record.menu_mode]
                                                   [1];
     return g_menu_mode_selector_and_extra_slot_counts[g_working_record
-                                                          .fight_mode][0];
+                                                          .menu_mode][0];
 }
 
 void StoreCompactedBits(s32 unlock_mask) {
