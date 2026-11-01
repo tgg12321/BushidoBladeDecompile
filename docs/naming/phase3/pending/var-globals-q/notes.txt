@@ -1,0 +1,18 @@
+# var-globals-q notes (cites at bb6db63e9; worktree ln-naming-a; research tmp/codex/var-globals-q-research.md (Codex, same HEAD) re-derived by the drafter; verdict left empty for the reviewer)
+0x800A3790: PROPOSED g_gpu_draw_option_mask. Confidence medium-strong (fallback D_800A3790). Retired: g_game_timer, g_round_timer (sweep-2026-09-25b), not reused. Fresh: zero hits for g_gpu_draw_option_mask in the tree (research grep).
+Re-derivation: every D_800A3790 / 800A3790 hit over src, include, asm, symbol_addrs.txt matches the research (32D04.c:1147,1518; 368E4.c:446,543; bb2.h:38; 93E18.data.s:660-664; func_80046B44.s:39-40, func_80046E8C.s:3-4, func_8004A940.s:875-876, gpu_PrepareViewAndFlushDrawQueue.s:46, gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets.s:24-25; symbol_addrs.txt:149,646,1181). Spot-read and confirmed: 32D04.c:1147-1151 (bit 3 -> 0x1F800010 fog OT index), the 0x1F8001C0 store/loads (ProjectQueued...s:27, func_8004A940.s:878/1003/1087, Emit...s:147/238; andi 3 / andi 4), D_80015470 dispatch (ProjectQueued...s:323-327; d_5BF0.c:70-75), jtbl entry 14 (d_5BF0.c:59-63), wave_Draw.s:97 jal Emit, func_8004A940.s:980-985 reads 0x1F800010, the dry-run edit counts (19 token hits). No cite dropped or changed. Capture dirs / manifest SHA1s and commit-body claims (12dc91639, 455935a77) were NOT re-read here; they are corroboration only, the name rests on the code.
+D_80103624: NO_NAME. Only access is gpu_ProjectQueuedNodeRunVerticesAndDispatchPackets.s:20-23 (lw, sw to scratch 0x1F8001C8); nothing loads 0x1F8001C8, no writer in C or asm, so the copied word has no consumer and no role is shown. Stays D_80103624.
+Bits: bit 5 (0x20) set in retail but read nowhere; bit 3 never set in retail (dead fog-cull arm). Name claims only "a set of draw switches tested by bit". Bit #defines not part of this wave.
+
+## R6 comment pass (stale old spelling / retired g_game_timer)
+- symbol_addrs.txt:149 and :646 (note "game timer" / "was g_game_timer"): data_wave replaces both lines.
+- symbol_addrs.txt:1181 (D_800A37EA note "paired secondary timer near g_game_timer (0x800A3790)"): stale, not a pair token; hand-fix only if the wave's surface rules allow, else leave.
+- docs/engine/README.md:176 ("`g_game_timer` (0x800A3790) - global game timer"): false since the sweep reset; separate docs fix.
+- tools/trace/scenarios/versus-2p-bamboo-mask{03,20,21,22,27}-poke.json and versus-2p-fog-cutoff-poke.json: one D_800A3790 each in "description" (pair substitution allowed, or leave as recorded scenario text). docs/naming/runtime/versus-2p-*-poke-1/ spec.json / capture.manifest.json carry only the address: leave.
+- No comment occurrence in src/ or include/. History, leave: docs/naming/MISNOMERS.md:346,355, function-names.csv, backlog.tsv, earlier pending/ dirs, sweep-2026-09-25b/.
+
+## Coordination
+- func-second-pass-24 (func_80046E8C): its whole body is D_800A3790 = 0x23 (368E4.c:543), no caller; with this name it could read gpu_ResetDrawOptionMask. That is naming-c's call (dead code stays neutral under Q124 unless the code-only N1 case holds). func_80046B44 is a multi-subsystem reinit and gains nothing; func_8004A940's jtbl-extent blocker (no_name.tsv:39) is not answered by the mask. Land var-globals-q and func-second-pass-24 in either order, but a function name using "draw_option_mask" must follow this PASS.
+
+## Successor
+- After this wave the globals track is revive-only again: D_80103624, D_800F665A, D_800F665C, D_8009B398 and all other m / n / o NO_NAME globals stay NO_NAME until a new reader function is named or a new capture shows a role.
