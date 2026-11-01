@@ -1,0 +1,40 @@
+rc=0
+==============================================================================
+NAMING WAVE — 3 operations (0 RESET, 3 RENAME)
+  3 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (5) --
+  asm: 3 files, 6 substitutions
+      asm/funcs/func_80072084.s  (2)
+      asm/funcs/func_800720AC.s  (2)
+      asm/funcs/func_800720D4.s  (2)
+  src: 2 files, 9 substitutions
+      src/main/5ED34.c  (3)
+      src/main/d_8C41C.c  (6)
+
+-- .s file renames (3) --
+  asm/funcs/func_80072084.s -> asm/funcs/menu_UpdateChoiceGridPage1.s
+  asm/funcs/func_800720AC.s -> asm/funcs/menu_UpdateChoiceGridPage2.s
+  asm/funcs/func_800720D4.s -> asm/funcs/menu_UpdateChoiceGridPage3.s
+
+-- ledger directory renames (3) --
+  memory/grind/_completed/func_80072084 -> memory/grind/_completed/menu_UpdateChoiceGridPage1
+  memory/grind/_completed/func_800720AC -> memory/grind/_completed/menu_UpdateChoiceGridPage2
+  memory/grind/_completed/func_800720D4 -> memory/grind/_completed/menu_UpdateChoiceGridPage3
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (3) --
+  memory/grind/_completed/func_80072084/layer2.jsonl: 2 changes
+      line 1: func func_80072084 -> menu_UpdateChoiceGridPage1
+      line 2: func func_80072084 -> menu_UpdateChoiceGridPage1
+  memory/grind/_completed/func_800720AC/layer2.jsonl: 2 changes
+      line 1: func func_800720AC -> menu_UpdateChoiceGridPage2
+      line 2: func func_800720AC -> menu_UpdateChoiceGridPage2
+  memory/grind/_completed/func_800720D4/layer2.jsonl: 2 changes
+      line 1: func func_800720D4 -> menu_UpdateChoiceGridPage3
+      line 2: func func_800720D4 -> menu_UpdateChoiceGridPage3
+
+DRY RUN — nothing written. Re-run with --apply.

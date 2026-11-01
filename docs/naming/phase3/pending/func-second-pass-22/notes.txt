@@ -1,0 +1,26 @@
+wave114 (func-second-pass-22): 3 RENAME kept; 0 dropped; 0 NO_NAME. Verdicts are PENDING: the naming-reviewer sets them.
+Wave id: wave114 (lane naming-a). Highest landed wave is wave112 (2055f3bee); func-second-pass-21 is pending in another lane and presumably takes wave113, so this is wave114 and may be renumbered at land. Drafted 2026-10-31 at HEAD 23f14978d.
+Research input tmp/codex/func-second-pass-22-research.md (untrusted); every claim below re-derived from the code at HEAD in the lane worktree. Capture claims were NOT re-hashed in this draft (commit 6002e8dd4 body only); the reviewer re-reads them under naming-runtime-evidence.md.
+Kept rows (entries 4/5/6 of g_entry_menu_handlers):
+ 0x80072084 func_80072084 -> menu_UpdateChoiceGridPage1
+ 0x800720AC func_800720AC -> menu_UpdateChoiceGridPage2
+ 0x800720D4 func_800720D4 -> menu_UpdateChoiceGridPage3
+Code facts (src/main/5ED34.c unless noted; full list in rows.py docstring):
+ Bodies: :1721-1723 / :1725-1727 / :1729-1731 = menu_UpdateChoiceGrid(draw_context, g_entry_menu_resources->unk_68 / unk_6C / unk_70, 0 / 1 / 2).
+ Slots: src/main/d_8C41C.c:51 / :52 / :53 (table :46-54), prototypes :40-42; include/bb2.h:78 extern. Sole dispatch :275-278 (g_entry_menu_handlers[g_entry_menu_handler_index]); no jal anywhere.
+ mode indexes per-page tables in menu_UpdateChoiceGrid (:1733-2014): cells block cells + (mode*6 + i) :1795 and selected cell (row + mode*3)*2 + column :1783-1784; g_entry_menu_choice_grid_draw_offsets[mode] :1816-1821 (d_8C41C.c:109-110 = {0,0x17},{0x99,3},{0xA0,0x24}); grid-code row (g_entry_menu_handler_index - 4)*8 :1891 and :1997 (equals mode: handler 4+k passes k); bytes 6/7 of a row = Left/Right link, low nibble -> g_entry_menu_next_handler_index (0xF = none), high nibble -> slide phase :1891-1895; :289 commits next -> handler_index; transition lerp only while both in 4..6 :1822-1826.
+ Opening pages (:1691-1696): fight_mode<2 exits with stage from menu_SelectStageIndexFromFirstSlotEntryFlag; fight_mode==4 -> next=5 (page 2); fight_mode==6 -> next=6 (page 3), choice_grid_row=1, column=1; else exit. Nothing opens page 1 (mode 0).
+ Page 3 / mode==2 special cases: fight_mode==6 && mode==2 skips cell 3 (row1,col1) in the selected-cell draw :1778-1781 and the cell loop :1791, uses sheet_headers[12] for that sheet :1951-1955, and grid code 0xD becomes stage 0x25 on Cross :2001-2005 (that last test keys on fight_mode only, not mode; it fires on any page whose code is 0xD).
+ Reached from nowhere else: handler_index / next_handler_index are file-static (:42-43). handler_index writes :115, :289, :1981, :1986; next writes :477, :1146, :1422, :1532, :1591, :1692, :1694, :1893. No other TU or asm reference (git grep of both index names and g_entry_menu_handlers: only 5ED34.c, d_8C41C.c, bb2.h:78, the asm gp_rel loads in DrawRotated*/gpu_AddPanel* helpers and the symbol registries).
+ Correction to the research: it says the :2001 test is part of mode==2 cases; the code keys it on fight_mode == 6 and code 0xD only (no mode test), so rows.py states it that way.
+Names claim only the ordinal (1-based, matching the on-screen [Map n] in capture 6002e8dd4); no stage, arrow, link target, fight mode or opening role. 'Stage' left out to stay keyed to the landed callee menu_UpdateChoiceGrid.
+Freshness: git grep -i ChoiceGridPage over the whole tree at HEAD = 0 hits. build.py fresh() also checks src/ and include/.
+Dry run (dry.txt): rc=0, 3 RENAME, 0 RESET; FATAL/REJECT none; link map STALE (unrelated). Edits only src/main/5ED34.c, src/main/d_8C41C.c and the 3 asm/funcs files, (src: 5ED34.c 3, d_8C41C.c 6), 3 .s renames, 3 memory/grind/_completed ledger dir renames (no live memory/grind dirs), 3 layer2.jsonl retargets (2 lines each).
+Live citations of the three old names for the comment pass (git grep -n over src include symbol_addrs.txt named_syms.txt docs/engine tools .claude/rules):
+ src/main/5ED34.c:1721, :1725, :1729 (definitions; renamed by the tool)
+ src/main/d_8C41C.c:40-42 (prototypes), :51-53 (initializers); renamed by the tool
+ symbol_addrs.txt:854 (g_entry_menu_handlers comment listing the 7 entries; text, in the tool's registry-comment surface only if it rewrites it - lander checks, else hand-edit the three names in that comment)
+ named_syms.txt, include/, docs/engine, tools, .claude/rules: no hit.
+ Not live (recorded data, must stay): docs/naming/runtime/** hitmaps/screens/events/only_x, apiscan/evidence.json, proposals.csv, older wave manifests (wave07/09/10/56), pending var-globals-b / var-locals-23 / var-members-rest-14, docs/foundation/backlog.tsv. Remove docs/naming/phase3/no_name.tsv rows 54-56 (the revive rows, w56/w89/w94) when the wave lands, and update the func-second-pass-22 row in docs/naming/phase3/backlog.tsv:107.
+Weak spots for the reviewer: (1) twins differ only by sheet member and mode constant; the separator Page<n> rests on mode being the ordinal for the tables above, not on what each page shows. (2) page ordering on screen, link targets and arrows are data (SEL.BIN), unproven by code; only the 1-based numbering is corroborated by capture. (3) Page1 is not any opening page; the name does not say otherwise.
+gates: tmp/p3w114/gates.sh does not exist yet; the lander copies it from the latest tmp/p3w*/gates.sh before running gates.ps1.
