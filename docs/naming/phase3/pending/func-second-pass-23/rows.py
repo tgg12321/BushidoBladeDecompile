@@ -33,7 +33,7 @@ import re
 VERDICT = "CONFIRM"
 VERIFIER_NOTE = "naming-reviewer pre-apply PASS (fresh default-FAIL reviewer, lane naming-c 2026-10-31)"
 NOTES = {"0x8003F218": "suggested: the pre-apply reviewer FAILed gpu_SetTrackedFighterViewFlagAndDisableFarViewOnClear (R4: DisableFarView over-claims; the callee(0) resets grid/fog control, is_far_view is untouched) and suggested gpu_SetTrackedFighterViewFlag; R6 must judge it fresh at every use"}
-DROPPED = {}
+DROPPED = {"0x8003F218": "R6 FAIL (N1): gpu_SetTrackedFighterViewFlag (the pre-apply reviewer's suggestion) omits the clear-side gpu_SetFarViewGridFogControlAndCoordinateShift(0) reset of g_gpu_grid_and_fog_control / g_gpu_view_coordinate_shift; R6 suggests gpu_SetTrackedFighterViewFlagAndResetGridFogOnClear as a later func row"}
 
 WT = os.environ.get("P3WT", r"C:\Users\Trenton\Desktop\bb2-worktrees\ln-naming-c")
 
@@ -99,7 +99,6 @@ _GET = (
 )
 
 FUNCS = [
-    ("0x8003F218", "gpu_SetTrackedFighterViewFlag", "RENAME", _SET),
     ("0x8003F268", "gpu_GetTrackedFighterViewFlag", "RENAME", _GET),
 ]
 
