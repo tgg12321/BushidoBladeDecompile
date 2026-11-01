@@ -9,7 +9,10 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-cpu-tatsumi-1/spec.json"
+    "docs/naming/runtime/versus-cpu-tatsumi-1/spec.json",
+    "docs/naming/runtime/versus-cpu-tatsumi-green-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-cpu-tatsumi-green-stub-1/eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay/spec.json",
+    "docs/naming/runtime/versus-cpu-tatsumi-green-stub-1/eff_DrawAndAdvanceQuadNotMirroredByViewSetting/spec.json"
   ],
   "use": [
     "boot"

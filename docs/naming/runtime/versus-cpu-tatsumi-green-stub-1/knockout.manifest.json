@@ -1,0 +1,16 @@
+{
+  "baseline/capture.manifest.json": "e4f0a50df917c870a8c13c170897ddbff92e3433",
+  "baseline/capture.script.lua": "f1fa5ed7d6426268214d83257ceda459cc06de84",
+  "baseline/run.log": "a93a7e70a159979280ff95715db8d21e1ee5b2fe",
+  "baseline/spec.json": "3b3bf81dde8429ed1a02b96c2e7bcb75de6fd6f9",
+  "eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay/capture.manifest.json": "4a1de3376543fc8e6ff08dc71a2d3e9f130203cc",
+  "eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay/capture.script.lua": "86cea28a1de3c2f5e6164546894705fc7a553115",
+  "eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay/run.log": "157a841b65ffac81093535ef015ddf88101072e8",
+  "eff_DrawAndAdvanceQuadMirroredByViewSettingOutsideReplay/spec.json": "4ea23e59d3edce5889fc487083c961c4621a977c",
+  "eff_DrawAndAdvanceQuadNotMirroredByViewSetting/capture.manifest.json": "c419cfa7fb3ce86db8b16151d7e0d0c761d2c481",
+  "eff_DrawAndAdvanceQuadNotMirroredByViewSetting/capture.script.lua": "05d6a2da764396b93f3434b78b1070af42307db8",
+  "eff_DrawAndAdvanceQuadNotMirroredByViewSetting/run.log": "0c23da9070388bfa7e1b6109c7c3102b724aa4fa",
+  "eff_DrawAndAdvanceQuadNotMirroredByViewSetting/spec.json": "38463698814b8e9a03a9a475ec55216548495c56",
+  "knockout.md": "72639b13fe5c8092d62c9115ff4c4c211ff3ef1e",
+  "knockout.tsv": "476d60e6e16de15eb1f8c7af0b73ae1133cc9ed0"
+}
