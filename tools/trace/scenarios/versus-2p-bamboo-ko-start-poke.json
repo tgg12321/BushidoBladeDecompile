@@ -1,0 +1,14 @@
+{
+  "description": "versus-2p-bamboo with one instruction of func_8001EEB4 (main-loop handler 0x10, 9F9C.c:2358) patched at the fight start (a modified game): the beq at 0x8001EF00 (move_kind == 0xA test) becomes an unconditional b to 0x8001EF6C (hex 1A000010 = 0x1000001A), so the handler skips motion_ResetVariantIndex / motion_GetCommonScriptAtFighterBufferIndexedOffset / fighter_StartMoveScript and the two flag stores for the follow-up fighter, and still runs eff_StopCommands and sets handler 0x11; compared with versus-2p-bamboo to show what the skipped common-script start does after the KO",
+  "evidence": [
+    "docs/naming/runtime/versus-2p-bamboo-ko-start-poke-1/spec.json"
+  ],
+  "extends": "versus-2p-bamboo",
+  "pokes": [
+    {
+      "at": "0x8001EF00",
+      "hex": "1A000010",
+      "phase": "fight"
+    }
+  ]
+}

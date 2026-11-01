@@ -10760,6 +10760,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8001EA84	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	versus-2p-tatsumi-drop-1@23ee9986923d	fight	9884	9884	1	fight.10000@10000#bd2269918768	hitmap:first 1 hits per phase only	0	
 0x8001EA84	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	versus-cpu-clear-retail-1@d1b76e2e5d49	opp2	11405	13720	4	opp2.12000@12000#8b7f445ec35b;opp2.13000@13000#d7c6aba5a310;opp2.last@14400#54f7145def40	hitmap:first 1 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8001EA84	fight_UpdateFighterFocusViewAndThreeItemMenuWithConfirmDelayedPhaseChange	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22665	22820	2	opp5.23100@23100#516a33e1d875	hitmap:first 1 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8001EEB4	func_8001EEB4	ko-followup-versus-2p-bamboo-1@2a04405351e6	t_ko	10150	10150	1	t_ko.10350@10350#10ddc0b6e211	recorded hits only; capture limits apply	0	
 0x8001EEB4	func_8001EEB4	versus-2p-kimigaura-paired-2@08ea760ae7d7	c06	9092	9092	1	c06.75@9105#c20b8da1d138	hitmap:first 1 hits per phase only	0	
 0x8001EEB4	func_8001EEB4	versus-2p-kimigaura-sub-menu-1@a41e77626d8b	t_ko	10956	10956	1	t_ko.11000@11000#70e213a48f7c	hitmap:first 1 hits per phase only	0	
 0x8001EEB4	func_8001EEB4	versus-2p-rematch-1@e593ee02ab83	t_ko	10150	10150	2	t_ko.mid@10175#614a0a56cf97	hitmap:first 1 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound
@@ -10773,6 +10774,9 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8001EEB4	func_8001EEB4	versus-cpu-clear-retail-1@d1b76e2e5d49	opp5	22623	23143	3	opp5.23100@23100#516a33e1d875;opp5.last@23340#433e3770bfb5	hitmap:first 1 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8001EEB4	func_8001EEB4	versus-cpu-tatsumi-1@016e75c2a56c	opp1	8822	8822	2	opp1.last@8850#cbd475543ab8	hitmap:first 1 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8001EEB4	func_8001EEB4	versus-cpu-tatsumi-1@016e75c2a56c	opp2	10503	10503	2	opp2.last@10540#fbea24a640a6	hitmap:first 1 hits per phase only;recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8001EF34	0x8001EF34	ko-followup-versus-2p-bamboo-1@2a04405351e6	t_ko	10150	10150	1	t_ko.10350@10350#10ddc0b6e211	recorded hits only; capture limits apply	0	
+0x8001EF60	0x8001EF60	ko-followup-versus-2p-bamboo-1@2a04405351e6	t_ko	10150	10150	1	t_ko.10350@10350#10ddc0b6e211	recorded hits only; capture limits apply	0	
+0x8001EF6C	0x8001EF6C	ko-followup-versus-2p-bamboo-1@2a04405351e6	t_ko	10150	10150	1	t_ko.10350@10350#10ddc0b6e211	recorded hits only; capture limits apply	0	
 0x8001EFA0	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	versus-2p-kimigaura-paired-2@08ea760ae7d7	c06	9094	9094	1	c06.75@9105#c20b8da1d138	hitmap:first 1 hits per phase only	0	
 0x8001EFA0	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	versus-2p-kimigaura-paired-2@08ea760ae7d7	c07	9130	9130	1	c07.55@9185#08a97f55640c	hitmap:first 1 hits per phase only	0	
 0x8001EFA0	fight_UpdateInterpolatedFighterViewAndSelectNextPhaseByModeOnTimeoutOrPadPress	versus-2p-kimigaura-sub-menu-1@a41e77626d8b	t_ko	10958	10958	1	t_ko.11000@11000#70e213a48f7c	hitmap:first 1 hits per phase only	0	
