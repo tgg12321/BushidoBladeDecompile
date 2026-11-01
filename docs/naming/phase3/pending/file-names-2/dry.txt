@@ -1,0 +1,42 @@
+Dry run 2026-11-01 from cwd the clean lane worktree (lanes/naming-b at 12b20618f; git status clean before), move_tu.py without --apply; output copied from tmp/fn2/dry-175A4.txt. Then git-grep hits verbatim, classified.
+
+### python tools/move_tu.py main/175A4 main/fight_paired_input_totals (dry run)
+move_tu: src/main/175A4.c -> src/main/fight_paired_input_totals.c (dry run)
+  bb2.ld: 4 section line(s)
+  flag lists: NOWARN_FILES
+  canonical_asm_regions: 0 grant(s)
+  oracle/manifest.json: 1 key(s)
+  cc1_tu_expectation: 1 line(s)
+  queue.json: 0 item(s)
+  lanes.json regenerate: 0 path(s), 0 command(s), 0 subject(s), 0 input(s)
+  rule paths: 0 file(s)
+  files rewritten: Makefile, bb2.ld, engine/buildconfig.py, oracle/manifest.json, tools/cc1_tu_expectation.txt, tools/tu_renames.tsv
+  (dry run: pass --apply to perform)
+
+move_tu prints no "other tracked references" leftover list for this move.
+
+### git grep -n -w -E "175A4(\.c)?" -- src include symbol_addrs.txt named_syms.txt .claude/rules
+include/bb2.h:742: * declaration: 175A4.c calls it implicitly, and any truthful declaration
+src/main/d_7D920.c:24: * not an owner candidate). Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c,
+symbol_addrs.txt:2057:D_80101F32 = ... (9F9C.c:1665, :2055; 175A4.c:34, :52, :148; 17AFC.c:...)
+symbol_addrs.txt:2060:D_8010237E = ... (9F9C.c:1665, :2056; 175A4.c:91; 17AFC.c:...)
+(.claude/rules and named_syms.txt: no hits. src/main/175A4.c itself has no -w hit: its top comment says "ROM 0x175A4", which -w does not match as 175A4.)
+
+CLASSIFICATION (all four hits are live citations of the file; none is a ROM-offset mention)
+- include/bb2.h:742: live citation -> rewrite to fight_paired_input_totals.c at LAND (comment commit).
+- src/main/d_7D920.c:24: live citation (reader list) -> rewrite.
+- symbol_addrs.txt:2057: file:line citations 175A4.c:34, :52, :148 -> rewrite the name; re-point lines if format.py changes the line count.
+- symbol_addrs.txt:2060: 175A4.c:91 -> same.
+ROM-offset mentions that STAY: src/main/175A4.c top comment "(ROM 0x175A4)" (keep with its boundary evidence); asm byte comments; docs/ and memory/ history.
+
+### Makefile engine tools (git grep -n -w -E "175A4(\.c)?")
+Makefile:177:NOWARN_FILES := main/175A4 main/psxsdk/libspu/spu            (TU id; rewritten by move_tu)
+engine/buildconfig.py:96:NOWARN_FILES = {"main/175A4", "main/psxsdk/libspu/spu"}  (TU id; rewritten by move_tu)
+tools/cc1_tu_expectation.txt:8:f0794ea2848865ef42396f92b2d3fc6f0ad4b195  main/175A4  (TU id; rewritten by move_tu)
+tools/tu_renames.tsv:12:code6cac_b<TAB>main/175A4<TAB>after:40002ab70b6a  (history map; move_tu appends the new row, the old line stays)
+Also rewritten by move_tu: bb2.ld (4 section lines), oracle/manifest.json (1 key).
+
+OTHER src/ TUs TO CLAIM AT LAND (topic:tu:<id>, besides topic:tu:main/175A4):
+d_7D920 (src/main/d_7D920.c:24).
+Header/registry hits (no TU claim): include/bb2.h:742, symbol_addrs.txt:2057, 2060.
+No other moved TU cites 175A4.

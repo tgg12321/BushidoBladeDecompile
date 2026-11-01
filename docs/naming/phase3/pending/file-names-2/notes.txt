@@ -1,0 +1,33 @@
+BASIS
+Re-derived 2026-11-01 in the lane worktree (lanes/naming-b at 12b20618f, clean). src/main/175A4.c read in full: ONE function, a C body (no INCLUDE_ASM line, no static, no data definition in the source). Census docs/naming/function-names.csv:150: 0x80026DA4 fight_UpdatePairedInputTotalsEventsAndMidpointEffects, CORROBORATED (sotn-review), src 175A4.c:23. build/bb2.map (fresh) for 175A4.o: .rodata 0x8001042C size 0x4C (the 19-word jump table of the tail switch on (u16)D_80101EC8[0].move_kind, cases 0xF..0x21, no symbol) and .text; no .data/.sdata/.bss/COMMON. g_fight_paired_input_tally_update_count (incremented and zeroed here) is declared at include/bb2.h:444 and defined elsewhere (asm/data/94000.bss.s); g_fight_midpoint_effect_* likewise. No src/ or include/ file is named fight_* or *paired_input* (git ls-files: only asm/funcs/fight_*.s and memory/ files carry fight_ names). Dry run and grep hits: dry.txt.
+
+PER-ROW LISTING (brief)
+175A4 -> fight_paired_input_totals: fight_UpdatePairedInputTotalsEventsAndMidpointEffects. .rodata jump table only. Body: fighter_CalcSeparationErrorAndOpposedOffsets; for move_kind 0x1C a frame-4 pending_move_event 3/4 assignment to the selected pair; otherwise, for move_kind != 0xF, per fighter: pad 0x20 / 0x40 presses add power to mash_contest_score, plus a drift velocity for move_kinds 0x1D/0x1E/0x20; then the shared tally counter, the winner at >= 0x2B (pending_move_event 3/4, event 0x2D), distance/vertical/held-input checks setting pending_move_event 2/5; tail: midpoint effect chosen by move_kind.
+
+CHANGED FROM RESEARCH
+- None. Primary stays fight_paired_input_totals; fallback fight_update_paired_input_totals (verb form).
+
+WHAT THE NAME DOES NOT COVER (for the reviewer)
+The name states the lead clause only. It does not claim the move_kind-0x1C frame-4 pending-event assignment, the 0x1D/0x1E/0x20 drift velocity, the distance/vertical/held-input follow-up events (pending_move_event 2/5), or the midpoint effect tail (the second half of the body). Like node_rebase_parents it names the file by the function's own leading words, not its full effect. The fight_ prefix is the admitted subsystem of the sole function. "paired" is the function's own word; 9F9C's fight_UpdatePairedMoves is the paired-MOVE family, and this name says "paired_input", which no other file or function uses. Not claimed as a "practice mode" file (the source comment's "practice modes" is context, N3).
+
+ALTERNATIVE FOR THE REVIEWER
+The member the body touches, mash_contest_score (include/game.h:1771; only 175A4.c and 17AFC.c:2517-2520 touch it, 17AFC only zeroing it with the tally), suggests fight_mash_contest: the totals are a mash contest (presses of 0x20 / 0x40 add power; the first past tally 0x2B decides the winner; winner/loser get pending_move_event 3/4). It is shorter and names the mechanism, but it claims "contest", a role the 0x1C branch and the tail do not touch and that rests on the member's name; the research name states only what the code computes. Keep the research name unless the reviewer prefers the member-derived wording.
+
+KEPT OFFSET-NAMED (N6: mixed, or admitted names state no subsystem), from the research census of 27 offset-named game TUs
+17AFC (83 fns, math/fighter/fight/object/snd/motion + 5 unnamed), 24BF0 (2 unprefixed config fns; the mode-name strings are read only by d_7D920.c:700, the formats only by menu_config.c:82, so "config" would claim menu_config's family), 25788, 25C38, 267A8 (cdrom x3 + snd_SerialMixOn), 28514, 28708, 2B344, 309CC, 31548, 31D3C, 32D04, 35000, 368E4, 3AB48, 43500, 4510C, 4D0A8 (17 gpu_ fns; no mechanical narrowing holds: callers span 2B344/6CF8/9F9C, two are CD-file VRAM loaders, the family also lives in 63D2C/596CC/5ED34/3AB48), 51268, 596CC, 5ED34, 63D2C, 64FD8, 6CF8, 87A0, 9F9C.
+
+LEADS (not candidates now)
+- 28514: func_80037D14 (the memcard _card_info/_card_load/_card_clear state machine, 28514.c:1) has NO census row; data D_800109C8 "bu%1d%1d:" (memcard_Format's path), .sdata g_memcard_card_loaded, g_memcard_info_load_state. Once it gets a memcard_ name and census row, a narrow memcard_<x> file name would qualify (memcard.c exists).
+- 51268: 97 eff_ + func_800650EC, func_80065134; naming those two eff_ makes it an eff candidate.
+- 4D0A8: keep unless new evidence gives a mechanical narrowing for all 17.
+- 24BF0: keep (names unprefixed; the data disagree).
+- 43500: collision x9 + motion x3 + gte stays mixed even after func_800545F4 is named.
+
+R6 WATCH LIST
+- File:line citations into the moved file (symbol_addrs.txt:2057 175A4.c:34, :52, :148; :2060 175A4.c:91) must be re-pointed if format.py changes the line count (git grep -n "fight_paired_input_totals.c:").
+- Rewrite the live citations include/bb2.h:742 and src/main/d_7D920.c:24 at LAND; keep the moved file's top comment and its "ROM 0x175A4" boundary evidence.
+- NOWARN_FILES (Makefile:177, engine/buildconfig.py:96) is rewritten by move_tu; verify-oracle --rebuild must keep SHA1 unchanged.
+- The FAKE comments in the body cite SOTN sources, not this file name; unaffected.
+- Layer-2 records for the function (memory/grind/_completed/fight_UpdatePairedInputTotalsEventsAndMidpointEffects) are keyed by body; a rename-only move should leave them valid (check with layer2 check).
+
+PRE-APPLY REVIEW (naming-reviewer, one batch, 2026-11-01, naming-b): 1/1 PASS, main/175A4 -> main/fight_paired_input_totals. fight_mash_contest not endorsed ('contest' rests on the member name, N3). dry.txt complete. VERDICT CONFIRM (verifier: session re-read the reviewer's grep list against dry.txt; LAND claims topic:tu:main/175A4 topic:tu:main/d_7D920).

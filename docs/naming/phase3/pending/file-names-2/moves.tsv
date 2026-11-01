@@ -1,0 +1,2 @@
+old_id	new_id	evidence
+main/175A4	main/fight_paired_input_totals	1 fn fight_UpdatePairedInputTotalsEventsAndMidpointEffects (CORROBORATED, 175A4.c:23); lead clause = per-fighter input totals (mash_contest_score += power on pad presses 0x20/0x40, tally g_fight_paired_input_tally_update_count, winner at >= 0x2B, 175A4.c:55-113); data = .rodata jump table only (0x4C, no symbol), no .data/.sdata/.bss/statics; the file-names-1 FAIL lead (a name for the one body); no fight_* or *paired_input* src/include file
